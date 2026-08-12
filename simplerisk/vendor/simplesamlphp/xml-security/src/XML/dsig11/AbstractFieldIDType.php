@@ -7,10 +7,10 @@ namespace SimpleSAML\XMLSecurity\XML\dsig11;
 use DOMElement;
 use SimpleSAML\Assert\Assert;
 use SimpleSAML\XML\Chunk;
-use SimpleSAML\XML\Exception\SchemaViolationException;
 use SimpleSAML\XML\ExtendableElementTrait;
 use SimpleSAML\XML\SerializableElementInterface;
-use SimpleSAML\XML\XsNamespace as NS;
+use SimpleSAML\XMLSchema\Exception\SchemaViolationException;
+use SimpleSAML\XMLSchema\XML\Constants\NS;
 use SimpleSAML\XMLSecurity\Constants as C;
 
 /**
@@ -26,8 +26,8 @@ abstract class AbstractFieldIDType extends AbstractDsig11Element
         setElements as private;
     }
 
-    /** @var \SimpleSAML\XML\XsNamespace */
-    public const XS_ANY_ELT_NAMESPACE = NS::OTHER;
+
+    public const string XS_ANY_ELT_NAMESPACE = NS::OTHER;
 
 
     /**
@@ -74,7 +74,6 @@ abstract class AbstractFieldIDType extends AbstractDsig11Element
      * Convert this FieldIDType element to XML.
      *
      * @param \DOMElement|null $parent The element we should append this FieldIDType element to.
-     * @return \DOMElement
      */
     public function toXML(?DOMElement $parent = null): DOMElement
     {

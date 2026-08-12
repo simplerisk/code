@@ -646,7 +646,7 @@ $lang = array(
     'ControlPhase' => 'Хяналтын Үе Шат',
     'ControlPriority' => 'Хяналтын Ач Холбогдол',
     'ControlFamily' => 'Хяналтын Гэр Бүл',
-    'AllFrameworks'=>'Бүх Бүтэц',
+    'AllFrameworks'=>'Бүх хүрээ',
     'NewControlName' => 'Шинэ Хяналтын Нэр',
     'NewControlDescription' => 'Шинэ Хяналтын Тодорхойлолт',
     'AreYouSureYouWantToDeleteThisControl' => 'Are you sure you want to delete this хяналтын?',
@@ -1345,7 +1345,6 @@ $lang = array(
     'UpdateAssetGroupTooltip' => 'Актив бүлгийг шинэчлэх',
     'DeleteAssetGroupTooltip' => 'Актив бүлэг устгах',
     'RemoveAssetTooltip' => 'Актив бүлгээс хөрөнгө устгах',
-    'ControlShortNameFieldRequired' => 'Хяналтын Богино Нэр талбар шаардлагатай.',
     'AffectedAssetsWidgetPlaceholder' => 'Сонгох нь Хөрөнгө эсвэл Хөрөнгийн Бүлэг',
     'AffectedAssetsWidgetNoDropdownPlaceholder' => 'Нэмэх Хөрөнгийн нэр',
     'AffectedAssetsWidgetInstructions' => 'Сонгох нь Хөрөнгө эсвэл Хөрөнгийн Бүлэг. Та create a new Asset нэмж түүний нэрийг бич.',
@@ -2341,7 +2340,7 @@ $lang = array(
     'Advanced_Search_no_results_1' => 'Таны асуулгад илэрц байхгүй бололтой.',
     'Advanced_Search_no_results_2' => 'Хайлтаа үг үсгийн алдаа, үсгийн алдаа байгаа эсэхийг давхар шалгах эсвэл өөр хайлтын нэр томъёог оролдоно уу.',
     'IncidentsPerDay' => 'Өдөрт тохиолдох тохиолдол',
-    'CurrentVsDesiredMaturity' => 'Хяналтын гэр бүлийн одоогийн болон Хүссэн төлөвшил',
+    'CurrentVsDesiredMaturity' => 'Хяналтын гэр бүлийн төлөвшил',
     'RiskDistribution' => 'Эрсдэлийн хуваарилалт',
     'RiskDistributionDescription'=>'Дээрх дугуй диаграмууд нь төрөл бүрийн эрсдэлийн түвшин дэх эрсдэлийн тархалтыг харуулахад тусалдаг. Бид эрсдэлийг бууруулах хүчин чармайлтынхаа ахиц дэвшлийг харуулахын тулд эдгээр хоёр бялууг ашиглаж болно. Хэрэв үлдэгдэл эрсдэлийн бялуу нь маш өндөр эсвэл өндөр эрсдэлтэй том хэсгүүдийг харуулж байвал энэ нь танай байгууллага хэт их эрсдэл хүлээж байгаагийн шинж бөгөөд цаашид эрсдэлийг бууруулах хүчин чармайлт шаардагдана.',
     'EnableTabs' => 'Табуудыг идэвхжүүл',
@@ -2413,7 +2412,7 @@ $lang = array(
     'EditModeInformation' => 'Засварлах горимыг асаана уу. Үүнийг унтрааснаар зураглал автоматаар хадгалагдахгүй.',
     'InvalidLayout' => 'Зохицуулалт буруу!',
     'InvalidLayoutOnlyCustomAllowedAsDefault' => 'Зохицуулалт буруу! Зөвхөн захиалгат байршлыг анхдагч байдлаар хадгалах боломжтой.',
-    'LayoutSaved' => 'Бүдүүвчийг хадгалсан!',
+    'LayoutSaved' => 'Таны хяналтын самбарын загварыг хадгалсан.',
     'DefaultLayout' => 'Өгөгдмөл байршил',
     'DefaultLayoutInformation' => 'Захиалгат зохион байгуулалтгүй хэрэглэгчдэд зориулсан SimpleRisk-с өгсөн байршлын оронд ашиглахын тулд энэ бүдүүвчийг өгөгдмөл болгож тохируулна. Та зөвхөн хадгалсан хоосон бус захиалгат байршлыг анхдагч байдлаар тохируулах боломжтой. Хэрэв өгөгдмөл гэж тэмдэглэсэн байршлыг өгөгдмөл байрлалд нь сэргээвэл SimpleRisk-ийн өгсөн өгөгдмөл рүү буцаах болно.',
     'LayoutDefaultStatusUpdated' => 'Байршлын өгөгдмөл статус шинэчлэгдсэн.',
@@ -2422,7 +2421,7 @@ $lang = array(
     'DefaultLayoutRestored' => 'Өгөгдмөл байршлыг амжилттай сэргээлээ!',
     'SavedLayoutRestored' => 'Хадгалсан байршлыг амжилттай сэргээлээ!',
     'ConfirmRestoreLayout' => 'Та итгэлтэй байна уу? Та энэ байршилд хийсэн өөрчлөлтөө алдах болно.',
-    'ConfirmDisableEditModeWithPendingChanges' => 'Танд хадгалагдаагүй өөрчлөлтүүд байгаа бөгөөд хуудаснаас гарахад алдах болно. Та "Засварлах горим"-ыг идэвхгүй болгож, өөрчлөлтөө хадгалахаа мартмаар байна уу?',
+    'ConfirmDisableEditModeWithPendingChanges' => 'Та энэ хяналтын самбарт хадгалаагүй өөрчлөлтүүдтэй байна. Тэдгээрийг устгаад засварлахаа болих уу?',
     'ConfirmSave' => 'Эдгээр өөрчлөлтийг хадгалснаар таны өмнө хадгалсан бүдүүвчийг дарж бичих болно. Та үргэлжлүүлэхдээ итгэлтэй байна уу?',
     'ConfirmSaveAdminDefault' => 'Энэ бүдүүвчийг энэ хэлбэрийн хувьд өгөгдмөл байдлаар тохируулсан. Эдгээр өөрчлөлтийг хадгалснаар энэ бүдүүвчийн төрөлд тохируулсан загвар байхгүй бүх хэрэглэгчдийн байршлыг өөрчлөх болно. Та үргэлжлүүлэхдээ итгэлтэй байна уу?',
     'RisksByMonth' => 'Сараар эрсдэл',
@@ -3111,6 +3110,1523 @@ $lang = array(
     'ResendAssessmentDescription' => 'Үнэлгээг давтагдах хэмнэлээр автоматаар дахин гаргана.',
     'ResendEveryDays' => '{$day} өдөр тутамд дахин илгээх',
     'QuestionnaireSaveBarHint' => '"Save & Send" нь асуулгыг харилцагчиддаа нэн даруй илгээнэ.',
+    // Home dashboard — KPI tile labels
+    'NewSelfAssessment' => 'Шинэ өөрийгөө үнэлэх',
+    'SelfAssessmentPrereqIntro' => 'Өөрийгөө үнэлэх нь танд байгууллагаа Аюулгүй Хяналтын Хүрээлэнтэй харьцуулан үнэлэх, алдаа гарсан хяналтаас автоматаар эрсдэл үүсгэх боломжийг олгоно. Эхлээд хоёр тохиргооны алхам шаардлагатай:',
+    'RegisterYourInstance' => 'Өөрийн жишээг бүртгүүлнэ үү',
+    'RegisterYourInstanceHelp' => 'Бүртгэл нь энэ тохиолдлыг SimpleRisk-ийн лицензийн үйлчилгээтэй холбодог тул үнэгүй Нэмэлтүүдийг (SCF-г оруулаад) татаж авах боломжтой.',
+    'InstallTheSCF' => 'Аюулгүй Хяналтын Хүрээг Суулгах',
+    'InstallTheSCFHelp' => 'SCF нь энэхүү функцийн үнэлдэг хүрээ, хяналтын асуултууд болон эрсдэлийн зураглалыг өгдөг үнэгүй нэмэлт юм. Суулгалт нь ард ажилладаг бөгөөд хэдэн минут шаардагдаж магадгүй.',
+    'GoToRegistration' => 'Бүртгэл рүү очих',
+    'GoToSCF' => 'Аюулгүй Хяналтын Хүрээ рүү очно уу',
+    'SelfAssessmentEnableTip' => 'Заавал биш: Засаглал > Хүрээ хэсэгт та үнэлгээг эхлүүлэхдээ тодорхой SCF фрэймворкуудад богино жагсаалтыг харах боломжийг олгож болно. Та мөн SCF-ийн бүрэн каталог дахь аливаа фрэймворкийг идэвхжүүлэлгүйгээр үнэлж болно.',
+    'ChooseAFramework' => 'Үнэлгээ хийх хүрээг сонгоно уу',
+    'EnabledFrameworks' => 'Идэвхжүүлсэн хүрээнүүд',
+    'AllScfFrameworks' => 'Бүх SCF хүрээнүүд',
+    'Start' => 'Эхлэх',
+    'Resume' => 'Анкет',
+    'ControlQuestion' => 'Хяналтын асуулт',
+    'NotApplicable' => 'Байхгүй',
+    'SaveProgress' => 'Ахиц дэвшлийг хадгалах',
+    'MarkComplete' => 'Дууссан гэж тэмдэглэх',
+    'AnsweredOfTotal' => 'хариулсан',
+    'FailedSoFar' => 'одоогоор амжилтгүй болсон',
+    'StartedBy' => 'Эхлүүлсэн',
+    'FailedControls' => 'Амжилтгүй болсон хяналтууд',
+    'PushToRisk' => 'Эрсдэл рүү түлхэх',
+    'ConfirmDeleteSelfAssessment' => 'Энэ өөрийгөө үнэлэх үйлдлийг устгах уу? Үүнийг буцаах боломжгүй.',
+    'ConfirmCompleteSelfAssessment' => 'Энэ үнэлгээг дууссан гэж тэмдэглэх үү? Эрсдэлүүд нь бүтэлгүйтсэн хяналтаас үүсэх болно.',
+    'NoSelfAssessmentsYet' => 'Өөрийгөө үнэлэх ажил хараахан хийгдээгүй байна. Эхлэхийн тулд нэгийг нь хий.',
+    'RequestFailed' => 'Хүсэлтийг гүйцэтгэж чадсангүй. Дахин оролдоно уу.',
+    'NoPendingRisks' => 'Хүлээгдэж буй эрсдэл байхгүй. Амжилтгүй хяналтаас эрсдэл үүсгэхийн тулд үнэлгээг хийж гүйцэтгэнэ үү.',
+    'NoFailedControls' => 'Энэ шүүлтүүрт харуулах хяналтын үр дүн алга.',
+    'ControlResultsTruncated' => 'Хамгийн сүүлийн үеийн 2000 үр дүнг харуулж байна. Илүү ихийг харахын тулд шүүлтүүрийг нарийсгана уу.',
+    'GeneratedFromSelfAssessment' => 'Өөрийгөө үнэлэхээс үүссэн',
+    'SelfAssessmentMitigationSolution' => 'Энэхүү эрсдэлийг бууруулахын тулд энэхүү өөрийгөө үнэлэх явцад алдаа гарсан гэж тодорхойлогдсон доорх хяналтын аргуудыг хэрэгжүүлнэ үү.',
+    'NSelected' => '{n} сонгосон',
+    'FilterByControl' => 'Хяналтаар шүүх',
+    'Pushing' => '…-г түлхэж байна',
+    'Deleting' => '…-г устгаж байна',
+    'ConfirmPushSelectedPendingRisks' => '{n} сонгосон хүлээгдэж буй эрсдэл(үүд)-ийг эрсдэл рүү түлхэх үү?',
+    'ConfirmDeleteSelectedPendingRisks' => 'Сонгосон {n} хүлээгдэж буй эрсдэл(үүд)-ийг устгах уу? Үүнийг буцаах боломжгүй.',
+    'ConfirmDeleteSelectedSelfAssessments' => 'Сонгосон {n} өөрийгөө үнэлэх үнэлгээг устгах уу? Үүнийг буцаах боломжгүй.',
+    'BulkPartialFailure' => '{total} зүйлийн {n} амжилттай болсон; үлдсэн нь амжилтгүй болсон. Одоогийн төлөвийг харахын тулд дахин ачаална уу.',
+
+    // Workflows Extra - deactivation confirm ('Deactivate' at line 480 is reused as-is)
+    'WorkflowsExtraDeactivateConfirm' => 'Ажлын урсгалын нэмэлтийг идэвхгүй болгох уу? Хэрэглэгчийн үүсгэсэн бүх ажлын урсгалын тодорхойлолтууд бүрмөсөн устах болно. Системийн ажлын урсгалууд хадгалагдах болно.',
+    'HomeKpiOpenRisks' => 'Нээлттэй Эрсдэлүүд',
+    'HomeKpiNeedsReview' => 'Хяналт шаардлагатай',
+    'HomeKpiUnmitigated' => 'Сааруулах арга хэмжээ аваагүй',
+    'HomeKpiClosedRisks' => 'Хаагдсан эрсдэлүүд',
+    'HomeKpiControlPassRate' => 'Хяналтын тэнцлийн түвшин',
+    'HomeKpiFailingControls' => 'Алдаатай хяналтууд',
+    'HomeKpiOpenAudits' => 'Нээлттэй аудитууд',
+    'HomeKpiTestsDueSoon' => 'Удахгүй болох шинжилгээнүүд',
+    'HomeKpiActiveFrameworks' => 'Идэвхтэй Бүтэц',
+    'HomeKpiTotalControls' => 'Нийт хяналт',
+    // Home dashboard — What's Next feed
+    'WhatsNext' => 'Дараагийнх нь юу вэ?',
+    'WhatsNextAllCaughtUp' => 'Та бүгдийг нь дуусгалаа.',
+    'WhatsNextRegisterInstance' => 'SimpleRisk инстансаа бүртгүүлнэ үү',
+    'WhatsNextSubmitFirstRisk' => 'Эхний эрсдэлээ илгээнэ үү',
+    'WhatsNextLoadFramework' => 'Хяналтын хүрээг ачаалах',
+    'WhatsNextUnreviewedRisks' => 'Хянах эрсдэлүүд',
+    'WhatsNextUnmitigatedRisks' => 'Бууруулах эрсдэлүүд',
+    'WhatsNextInitiateAudits' => 'Эхлүүлэх аудитууд',
+    // Home dashboard — widget picker type labels
+    'WidgetType_kpi' => 'KPI хавтан',
+    'WidgetType_whats_next' => 'Жагсаалт',
+    // Home dashboard — hub catalog entry
+    'HomeDashboard' => 'Нүүр хуудас',
+    'HomeDashboardDesc' => 'Таны эхлэх цэг — гол үзүүлэлтүүд болон дараа нь юу хийх талаар товчхон харуулав.',
+    'HomeChartRiskByLevel' => 'Түвшнээр нь эрсдэл',
+    'HomeKpiThisMonth' => 'энэ сард',
+    'HomeKpiNoChange' => 'Өөрчлөлт байхгүй',
+    'EditLayout' => 'Байршуулалтыг засах',
+    'ListHighestRisks' => 'Миний хамгийн өндөр эрсдэлүүд',
+    'ListPastDueReviews' => 'Хугацаа нь дууссан үнэлгээ',
+    'ListUpcomingTests' => 'Удахгүй болох шалгалтууд',
+    'ListRecentFailures' => 'Сүүлийн үеийн бүтэлгүйтлүүд',
+    'ListPoliciesReview' => 'Хяналтад байгаа баримт бичгүүд',
+    'ListExpiringExceptions' => 'Хугацаа дуусах онцгой тохиолдлууд',
+    'ImKpiOpenIncidents' => 'Нийт нээлттэй',
+    'ImKpiOverdue' => 'Хугацаа хэтэрсэн',
+    'ImKpiMttr30' => 'Дундаж нягтрал',
+    'ImKpiMttrQuarter' => 'Дундаж нягтрал (90d)',
+    'ImKpiMttrYear' => 'Дундаж Шийдвэр (1 жил)',
+    'ImKpiMttrAll' => 'Дундаж Шийдвэр (Бүгд)',
+    'ImKpiResolved30' => 'Шийдэгдсэн',
+    'ImChartBySeverity' => 'Хүнд байдлын дагуу',
+    'ImChartByStatus' => 'Статусаар',
+    'ImListRecent' => 'Саяхны үйл явдлууд',
+    'ImListUnassigned' => 'Оноогдоогүй тохиолдлууд',
+    'HomeKpiOpenExceptions' => 'Нээлттэй Үл хамаарах зүйлс',
+    'HomeKpiPolicies' => 'Бодлого',
+    'ResolutionTargets' => 'Шийдвэрлэх зорилтууд (Өдөр)',
+    'ResolutionTargetsHelp' => 'Тухайн хэрэг явдал хугацаа хэтэрсэн гэж тооцогдохоос өмнө нээлттэй байж болох хоногийн тоо.',
+    'DefaultTarget' => 'Анхдагч',
+    'PerSeverityOverrideHelp' => 'Тодорхой хүндийн хувьд анхдагч утгыг сонголтоор дарж болно (анхдагч утгыг ашиглахын тулд хоосон үлдээнэ үү):',
+    'ResolutionTargetUsesDefault' => 'Анхдагч утга (%d)',
+    'SeverityColors' => 'Хүнд зэргийн өнгө',
+    'SeverityColorsHelp' => 'Ослын хяналтын самбар болон ослын дэлгэрэнгүй хуудсан дээр харуулсан ноцтой байдал бүрийн өнгийг харуулна.',
+    'Editing' => 'Засварлах',
+    'SetAsDefaultForEveryone' => 'Хүн бүрт анхдагчаар тохируулах',
+    'EditLayoutHint' => 'Хавтанг зөөхийн тулд чирнэ үү · хэмжээг нь өөрчлөхийн тулд ирмэгийг чирнэ үү · ✕ арилгахын тулд',
+    'RemoveWidget' => 'Виджетийг устгах',
+    'AddWidget' => 'Виджет нэмэх',
+    'AddToDashboard' => 'Хяналтын самбарт нэмэх',
+    'AllWidgetsAdded' => 'Бүх боломжтой виджетүүд энэ хяналтын самбар дээр байна.',
+    'AddText' => 'Текст нэмэх',
+    'GettingStarted' => 'Эхлэх',
+    'GettingStartedTitle' => 'SimpleRisk-д тавтай морилно уу',
+    'GettingStartedSubtitle' => 'SimpleRisk-ийг хамгийн их үр дүнд хүрэхийн тулд хэдэн хурдан алхам хий.',
+    'GSProgressCount' => '{total} -с {done} дууссан',
+    'GSNextUp' => 'Дараагийнх нь',
+    'GSArea_setup' => 'Тохируулах',
+    'GSArea_risk' => 'Эрсдэл',
+    'GSArea_assessment' => 'Үнэлгээ',
+    'GSArea_compliance' => 'Дагаж мөрдөх',
+    'GSArea_assets' => 'Актив',
+    'GSArea_ai' => 'Тохируулах',
+    'GSHide' => 'Эхлэхийг нуух',
+    'GSDismissStep' => 'Энэ алхмыг үл хэрэгсэх',
+    'GSAllSet' => 'Та бэлэн боллоо - сайн ажиллалаа!',
+    'GSWalkthrough' => '30 минутын дэлгэрэнгүй мэдээлэл',
+    'Explore' => 'Судлах',
+    'Learn' => 'Сурах',
+    'AdminGuide' => 'Админы гарын авлага',
+    'LearnMore' => 'Дэлгэрэнгүй мэдээлэл авах',
+    'GSRegisterTitle' => 'Өөрийн жишээг бүртгүүлнэ үү',
+    'GSRegisterDesc' => 'Лицензийн түлхүүрээрээ дэмжлэг болон шинэчлэлтийг идэвхжүүлнэ үү.',
+    'GSRegisterCta' => 'Бүртгүүлэх',
+    'GSScfTitle' => 'Аюулгүй Хяналтын Хүрээг Суулгах',
+    'GSScfDesc' => 'Стандартын дагуу хяналтын сан болох SCF-г суулгана уу.',
+    'GSScfCta' => 'SCF-г суулгах',
+    'GSInviteTitle' => 'Багаа урь',
+    'GSInviteDesc' => 'Ажлыг оноож, хянах боломжтой байхын тулд хамт ажиллагсдаа нэмээрэй.',
+    'GSInviteCta' => 'Хэрэглэгчид нэмэх',
+    'GSAiTitle' => 'Хиймэл оюун ухааныг тохируулах',
+    'GSAiDesc' => 'Хиймэл оюун ухааны тусламжтайгаар SimpleRisk туршлагыг сайжруулна уу.',
+    'GSAiCta' => 'Хиймэл оюун ухааныг тохируулах',
+    'GSSubmitRiskTitle' => 'Эхний эрсдэлээ илгээнэ үү',
+    'GSSubmitRiskDesc' => 'Танай байгууллага тулгарч буй эрсдэлийг бүртгэ.',
+    'GSSubmitRiskCta' => 'Эрсдэлийг илгээх',
+    'GSMitigateTitle' => 'Бууруулах төлөвлөгөө гаргах',
+    'GSMitigateDesc' => 'Нээлттэй эрсдэлд бууруулах төлөвлөгөө нэмэх.',
+    'GSMitigateCta' => 'Төлөвлөгөөний бууруулах арга хэмжээ',
+    'GSReviewTitle' => 'Эрсдэлийн үнэлгээ хийх',
+    'GSReviewDesc' => 'Эрсдэлийг хянаж үзээд дараагийн алхамаа шийд.',
+    'GSReviewCta' => 'Шалгалт хийх',
+    'GSDefineTestTitle' => 'Хяналтын тестийг тодорхойлох',
+    'GSDefineTestDesc' => 'Хяналтыг хэрхэн шалгахыг тохируулна уу.',
+    'GSDefineTestCta' => 'Тестийг тодорхойлох',
+    'GSInitiateAuditTitle' => 'Аудит эхлүүлэх',
+    'GSInitiateAuditDesc' => 'Тест эсвэл аудитын мөчлөгийг эхлүүл.',
+    'GSInitiateAuditCta' => 'Аудит эхлүүлэх',
+    'GSAssetTitle' => 'Өөрийн хөрөнгөө нэмнэ үү',
+    'GSAssetDesc' => 'Хамгаалж буй хөрөнгийг тань бүртгэлд оруулна уу.',
+    'GSAssetCta' => 'Хөрөнгө нэмэх',
+    'GSInvalidStep' => 'Эхлүүлэх алхам буруу байна.',
+    'GSPagerLabel' => '{from}– {total}-с{to}',
+    'GSPrevCards' => 'Өмнөх алхмуудыг харуулах',
+    'GSNextCards' => 'Дараагийн алхмуудыг харуулах',
+    'WhatsNextInstallSCF' => 'Аюулгүй Хяналтын Хүрээг Суулгах',
+    'GSActivateScfTitle' => 'Аюулгүй Хяналтын Хүрээг Идэвхжүүлэх',
+    'GSActivateScfDesc' => 'Суулгасан SCF-г асааж, түүний удирдлагыг номын санд ачаална уу.',
+    'GSActivateScfCta' => 'SCF-г идэвхжүүлэх',
+    'WhatsNextActivateSCF' => 'Аюулгүй Хяналтын Хүрээг Идэвхжүүлэх',
+    'GSEnableFrameworksTitle' => 'Холбогдох хүрээг идэвхжүүлэх',
+    'GSEnableFrameworksDesc' => 'Байгууллагадаа хамаарах SCF хүрээг идэвхжүүл.',
+    'GSEnableFrameworksCta' => 'Фреймворкийг идэвхжүүлэх',
+    'WhatsNextEnableFrameworks' => 'Холбогдох хүрээг идэвхжүүлэх',
+    'GSSelfAssessTitle' => 'Өөрийгөө үнэлэх',
+    'GSSelfAssessDesc' => 'Байгууллагаа 250+ хүрээний эсрэг үнэлж, бүтэлгүйтсэн хяналтаас эрсдэл үүсгээрэй.',
+    'GSSelfAssessCta' => 'Үнэлгээг эхлүүлэх',
+    'WhatsNextTakeSelfAssessment' => 'Өөрийгөө үнэлэх',
+    'WhatsNextConfigureAI' => 'Хиймэл оюун ухааныг тохируулах',
+    'ListUnreviewedRisks' => 'Хянагдаагүй эрсдэлүүд',
+    'ControlsByDomain' => 'Домэйн хяналтууд',
+    'ControlsByClass' => 'Ангилалаар удирддаг зүйлс',
+    'ControlsByPhase' => 'Фазын хяналт',
+    'ControlsByPriority' => 'Тэргүүлэх чиглэлийн хяналтууд',
+    'ControlsByCurrentMaturity' => 'Одоогийн төлөвшлийн хяналтууд',
+    'ControlStatusOverTime' => 'Цаг хугацааны явцад хяналтын төлөв',
+    'ComplianceTotalControls' => 'Нийт хяналт',
+    'HomeKpiOverdueTests' => 'Хугацаа хэтэрсэн шалгалтууд',
+    'Total' => 'Нийт',
+    'StartTheTest' => 'Тестийг эхлүүлэх',
+    'TestStartsAutomatically' => 'Тест автоматаар эхэлнэ',
+    'GoToTest' => 'Тест рүү очих',
+    'NotTested' => 'Туршилт хийгээгүй',
+    'PassingPercent' => 'Тэнцсэн %',
+    'ListFailingControls' => 'Алдаатай хяналтууд',
+    'Exceptions' => 'Үл хамаарах зүйлс',
+    'Documents' => 'Баримт бичиг',
+    'ControlsBelowMaturity' => 'Насанд хүрээгүй хяналтууд',
+    'ControlsAtMaturity' => 'Насанд хүрсэн үеийн хяналтууд',
+    'ControlsAboveMaturity' => 'Насанд хүрсэн үеэс дээш хяналт',
+    'Maturity' => 'Төлөвшил',
+    'AllTime' => 'Бүх цаг үе',
+    'Last7Days' => 'Сүүлийн 7 хоног',
+    'Last30Days' => 'Сүүлийн 30 хоног',
+    'Last90Days' => 'Сүүлийн 90 хоног',
+    'YearToDate' => 'Жилээс өнөөг хүртэл',
+    'CustomRange' => 'Захиалгат хүрээ',
+    'Age' => 'Нас',
+    'ImOpenIncidents' => 'Нээлттэй тохиолдлууд',
+    'ImClosedIncidents' => 'Хаалттай үйл явдлууд',
+    'ImByAttackVector' => 'Довтолгооны вектороор нээх',
+    'ImBySource' => 'Эх сурвалжаар нээх',
+    'AverageDaysToDetect' => 'Илрүүлэх дундаж өдрүүд',
+    'ImKpiAvgTtd' => 'Дундаж илрүүлэлт',
+    'Days' => 'Өдөр',
+    'ImKpiCriticalOpen' => 'Чухал нээлттэй',
+    'ImKpiResolvedInSla' => 'Үйлчилгээний гэрээнд шийдвэрлэгдсэн',
+    'Events' => 'Үйл явдлууд',
+    'ImEventsIncidents' => 'Үйл явдал ба тохиолдлууд',
+    'ImSourceBreakdown' => 'Ангиллаар нь эх сурвалж',
+    'ImClosureSummary' => 'Хаалтын хураангуй',
+    'ImSignalQuality' => 'Дохионы чанар',
+    'ImSignalLowSample' => 'Найдвартай үнэлгээ өгөхөд хангалттай шийдвэрлэгдсэн хаалтууд байхгүй байна',
+    'ImportExportExportPdf' => 'PDF экспортлох',
+    'ImportExportExporting' => 'PDF бэлтгэж байна…',
+    'ImportExportExportFailed' => 'PDF файлыг үүсгэж чадсангүй. Дахин оролдоно уу.',
+    'ImportExportGeneratedOn' => 'Үүсгэсэн',
+    'ImportExportPage' => 'Хуудас',
+    'ImportExportPageOf' => '-ын',
+    'ResolutionTargetsUpdated' => 'Хүндрэлийн зэрэг тус бүрийн шийдвэрлэх зорилтуудыг шинэчилсэн.',
+    'SeverityColorsUpdated' => 'Хүнд байдлын өнгийг шинэчилсэн.',
+    // AI Capabilities Catalog + AI settings hub (unified AI settings)
+    'AICapGrcRecommendations' => 'GRC-ийн хүрээний зөвлөмжүүд',
+    'AICapGrcRecommendationsDesc' => 'Танай байгууллагын нөхцөл байдалд тохируулан хиймэл оюун ухаанаар үүсгэгдсэн хүрээний зөвлөмж болон гүйцэтгэх хураангуй.',
+    'AICapRiskRecommendations' => 'Эрсдэлийн зөвлөмж',
+    'AICapRiskRecommendationsDesc' => 'Эрсдэл, түүнийг бууруулах арга хэмжээ, хяналтаас гаргаж авсан эрсдэлийн дэлгэрэнгүй мэдээлэл болон бууруулах эрсдэл тус бүрийн саналууд.',
+    'AICapFairAnalysis' => 'ШУДАРГА Тоон Шинжилгээ',
+    'AICapFairAnalysisDesc' => 'Хиймэл оюун ухаан нь Бета-PERT алдагдлын параметрүүдийг тооцоолдог; SimpleRisk нь эрсдэлийг доллараар тоон үзүүлэлтээр илэрхийлэхийн тулд 10,000 давталттай Монте Карлогийн шинжилгээг ажиллуулдаг.',
+    'AICapDocumentCustomization' => 'Баримт бичгийн тохируулга',
+    'AICapDocumentCustomizationDesc' => 'Таны баримт бичгийн загварт орлуулагчийг дүүргэж, бодлогын текстийг цэвэрлэснээр загвар бодлого таных гэж уншигддаг.',
+    'AICapDocumentControlMatching' => 'Баримт бичиг ↔ Хяналтын тохируулга',
+    'AICapDocumentControlMatchingDesc' => 'Таны хянаж болох итгэлцлийн оноо болон үндэслэл бүхий хяналтыг бодлогын баримт бичигт автоматаар холбодог.',
+    'AICapDocumentTemplates' => 'Баримт бичгийн загварын сан',
+    'AICapDocumentTemplatesDesc' => 'SimpleRisk сангаас боловсруулсан бодлого, удирдамж, журмын загваруудыг суулгана уу.',
+    'AICapControlReferenceEnhancement' => 'Хяналтын лавлагааны сайжруулалт',
+    'AICapControlReferenceEnhancementDesc' => 'Хяналтын лавлагаагаа баяжуулахын тулд вэб хайлтаар үгчилсэн хяналтын текстийг судалдаг.',
+    'AICapAiChat' => 'Чат туслах',
+    'AICapAiChatDesc' => 'SimpleRisk-ийн хаана ч байсан асуултуудад хариулдаг GRC туслах.',
+    'AICapSurfacedRecommendations' => 'Хиймэл оюун ухааны хуудас',
+    'AICapSurfacedRiskView' => 'Эрсдэлийн харагдац — Дэлгэрэнгүй мэдээлэл ба бууруулах арга хэмжээ',
+    'AICapSurfacedFairTab' => 'Эрсдэлийн харагдац — ШУДАРГА таб',
+    'AICapSurfacedDocuments' => 'Засаглал — Баримт бичиг',
+    'AICapSurfacedControls' => 'Дагаж мөрдөх — Хяналтууд',
+    'AICapSurfacedEveryPage' => 'Хуудас бүр - хөвөгч туслах',
+    'AICapabilitiesCatalog' => 'Чадварууд',
+    'AICapSearchPlaceholder' => 'Хайлтын хиймэл оюун ухааны чадавхи…',
+    'AICapFilterDomain' => 'Домэйн',
+    'AICapFilterTier' => 'Түвшин',
+    'AICapFilterState' => 'Муж улс',
+    'AICapTierExtra' => 'Хиймэл оюун ухааны нэмэлт',
+    'AICapStateLocked' => 'Түгжээтэй',
+    'AICapIncludedInExtra' => 'AI Extra-д багтсан болно',
+    'AICapPurchaseExtra' => 'AI Extra худалдаж аваарай',
+    'AICapNeedsProvider' => 'Үйлчилгээ үзүүлэгчийн тохиргоог шаарддаг',
+    'AICapNoMatch' => 'Тохирох чадвар байхгүй',
+    'AICapNoMatchHint' => 'Өөр домэйн, түвшин эсвэл хайлтын нэр томьёо туршиж үзнэ үү.',
+    'AICapCountSingular' => 'чадвар',
+    'AICapCountPlural' => 'чадварууд',
+    'DomainAssistant' => 'Туслах',
+    'AICapLoadError' => 'Хиймэл оюун ухааны чадавхийг ачаалж чадсангүй. Дахин оролдоно уу.',
+    'AIProviderConfigSubtitle' => 'Хиймэл оюун ухааны чадавхийг идэвхжүүлэхийн тулд SimpleRisk-ийг хиймэл оюун ухааны үйлчилгээ үзүүлэгчтэй холбоно уу.',
+    'AIHowToGetAPIKeyFor' => 'API түлхүүрийг хэрхэн авах вэ',
+    'AIExtraNotActivated' => 'Идэвхжүүлээгүй байна',
+    'AIExtraValueProp' => 'Сайжруулсан хиймэл оюун ухаан — ШУДАРГА эрсдэлийн тоон үзүүлэлт, баримтжуулалт болон хяналтын туслалцаа, хиймэл оюун ухааны чатын туслах.',
+    'AICtxOrgName' => 'Танай байгууллагын нэр юу вэ?',
+    'AICtxOrgSizeEmployees' => 'Танай байгууллага хэдэн ажилтантай вэ?',
+    'AICtxOrgSizeRevenue' => 'Танай байгууллагын жилийн орлого хэд вэ?',
+    'AICtxOrgObjective' => 'Танай байгууллагын бизнесийн үндсэн зорилго, стратегийн зорилтууд юу вэ?',
+    'AICtxOrgIndustry' => 'Танай байгууллагын гол салбар эсвэл салбар юу вэ?',
+    'AICtxOrgLocation' => 'Танай байгууллага аль улс орон эсвэл бүс нутагт үйл ажиллагаа явуулдаг вэ?',
+    'AICtxOrgType' => 'Та ямар төрлийн байгууллага вэ?',
+    'AICtxDataTypes' => 'Танай байгууллага ямар төрлийн өгөгдөл цуглуулдаг, боловсруулдаг эсвэл хадгалдаг вэ (жишээ нь, хувийн мэдээлэл, санхүүгийн мэдээлэл, эрүүл мэндийн мэдээлэл)?',
+    'AICtxDataCustomers' => 'Таны гол үйлчлүүлэгчид эсвэл оролцогч талууд (жишээлбэл, хэрэглэгчид, бизнес эрхлэгчид, засгийн газрын байгууллагууд) хэн бэ?',
+    'AICtxDataRegulatory' => 'Танай салбарт ямар нэгэн тодорхой зохицуулалтын шаардлагад захирагддаг уу?',
+    'AICtxDataThirdParties' => 'Танд хууль тогтоомжийн хэрэгжилтийн хяналт шаардлагатай гуравдагч талын харилцаа эсвэл гадны үйлчилгээ байгаа юу?',
+    'AICtxMaturityIssues' => 'Сүүлийн 3-5 жилийн хугацаанд та ямар нэгэн ноцтой нийцлийн асуудал, аюулгүй байдлын зөрчил, эрсдэлийн үйл явдалтай тулгарсан уу?',
+    'AICtxMaturityConcerns' => 'Одоогийн GRC процессууддаа тодорхойлсон санаа зовоосон асуудал эсвэл сайжруулалтын чиглэлүүд байна уу?',
+    'AICtxMaturityAppetite' => 'Танай байгууллагын эрсдэлийн дуршил болон тэсвэр тэвчээр ямар вэ?',
+    'AICtxMaturityLevel' => 'Засаглал, эрсдэлийн удирдлага, хууль тогтоомжийн хэрэгжилтийн практикийн хувьд та одоогоор ямар түвшинд байна вэ?',
+    'AICtxImplementationChanges' => 'Танай бизнесийн загвар, технологийн дэд бүтэц эсвэл зах зээлд таны зохицуулалтын шаардлагад нөлөөлж болзошгүй ямар нэгэн өөрчлөлт гарах уу?',
+    'AICtxImplementationResourcesBudget' => 'Тохирлын хүрээг хэрэгжүүлж, хадгалахад танд ямар төсвийн хуваарилалтын нөөц байгаа вэ?',
+    'AICtxImplementationResourcesPersonnel' => 'Тохирлын хүрээг хэрэгжүүлж, хадгалахад танд ямар боловсон хүчний нөөц байгаа вэ?',
+    'AICtxImplementationResourcesTechnology' => 'Тохирлын хүрээг хэрэгжүүлж, хадгалахад танд ямар технологийн дэд бүтцийн нөөц байгаа вэ?',
+    'AICtxImplementationResourcesTraining' => 'Тохирлын хүрээг хэрэгжүүлж, хадгалахын тулд танд ямар сургалт, хөгжлийн нөөц байгаа вэ?',
+    'AICtxImplementationResourcesExternal' => 'Тохирлын хүрээг хэрэгжүүлж, хадгалахын тулд танд ямар гадны дэмжлэгийн нөөц байгаа вэ?',
+    'AIAPIKeySecurityNote' => 'Таны түлхүүр серверийн талд хадгалагдсан бөгөөд хөтөч рүү хэзээ ч буцаагдахгүй. Нийлүүлэгчийн URL-ууд нь config.php файлд тохируулж болох SSRF зөвшөөрлийн жагсаалттай харьцуулан баталгаажсан болно.',
+    'AIContextEgressWarning' => 'Таны хариултуудыг таны тохируулсан хиймэл оюун ухаан үйлчилгээ үзүүлэгч рүү илгээж, зөвлөмжийг нь үндэслэнэ. Тэдэнтэй хуваалцахгүй зүйлээ оруулж болохгүй.',
+    'Provider' => 'Нийлүүлэгч',
+    'AIProviderURLHostNotAllowed' => '"%s" хост нь хиймэл оюун ухаан үйлчилгээ үзүүлэгчийн зөвшөөрөгдсөн жагсаалтад байхгүй байна. Үүнийг config.php файл дахь $ai_allowed_provider_hosts файлд нэмээд хадгална уу. (Мэдэгдэж буй хиймэл оюун ухаан үйлчилгээ үзүүлэгчид болон 127.0.0.1 давталт хаягууд үргэлж зөвшөөрөгддөг.)',
+    'AIContextLastSaved' => 'Хамгийн сүүлд хадгалагдсан',
+    'AIContextNeverSaved' => 'Хараахан хадгалагдаагүй байна',
+    'AICtxCardSubtitle' => 'Дөрвөн чиглэлээр 21 асуулт. Та хэдий чинээ их хариулна, төдий чинээ зөвлөмж бүр илүү тодорхой болно.',
+    'AICtxAnswered' => '%2$d хариултын %1$d',
+    'AICtxAllOptional' => 'Заавал',
+    'AIContextSaving' => '… хадгалж байна',
+    'AIContextSaveFailed' => 'Таны өөрчлөлтийг хадгалж чадсангүй. Дахин оролдоно уу.',
+    'AISettingsSavedNotReachable' => 'Хиймэл оюун ухааны тохиргоог хадгалсан боловч үйлчилгээ үзүүлэгчтэй холбогдож чадсангүй. Ажиллаж байгаа болон URL зөв эсэхийг шалгана уу.',
+    'AISettingsSavedKeyRequired' => 'Хиймэл оюун ухааны тохиргоог хадгалсан боловч энэ үйлчилгээ үзүүлэгч функцуудыг ашиглахаас өмнө API түлхүүр шаарддаг.',
+    'TestAndSave' => 'Туршиж хадгалах',
+    'AICapEnableAll' => 'Бүгдийг идэвхжүүлэх',
+    'AICapDisableAll' => 'Бүгдийг идэвхгүй болгох',
+    'AISettingsSavedConnected' => 'Хиймэл оюун ухааны тохиргоо хадгалагдсан — холболт амжилттай боллоо.',
+    'AISettingsSavedNotConnected' => 'Хиймэл оюун ухааны тохиргоог хадгалсан боловч холболтын тест амжилтгүй болсон. Загвар, түлхүүр болон URL хаягийг шалгана уу.',
+    'AIProviderURLNotOnAllowlist' => 'Энэ хост нь хиймэл оюун ухаан үйлчилгээ үзүүлэгчийн SSRF зөвшөөрөгдсөн жагсаалтад байхгүй байна. Хадгалахаасаа өмнө config.php файл доторх $ai_allowed_provider_hosts файлд нэмнэ үү.',
+    'Connected' => 'Холбогдсон',
+    'NotConnected' => 'Холбогдоогүй байна',
+    'AICapBulkError' => 'Зарим чадавхийг шинэчилж чадсангүй. Дахин оролдоно уу.',
+    'QuestionnaireAlreadyCompleted' => 'Энэ асуулгыг аль хэдийн бөглөсөн байна.',
+    'QuestionnaireDraftError' => 'Нооргийг хадгалахад алдаа гарлаа. Дэлгэрэнгүй мэдээллийг консолоос үзнэ үү.',
+
+    // Audit cadence scheduling - Define Test modal (Interval/Calendar schedule redesign)
+    // 'Overdue' duplicates the English of 'ImKpiOverdue' on purpose: that key is
+    // an Incident Management KPI label, and a compliance status pill reusing an
+    // IM-scoped key would couple the two domains for a translator (and break the
+    // moment either wording moves). This is the generic, cross-domain one.
+    'Overdue' => 'Хугацаа хэтэрсэн',
+    // Deliberate: the only other key rendering 'Manual' is 'ManualValuation',
+    // an asset-valuation label. Pointing a schedule mode at it would couple two
+    // unrelated domains for translators and break the moment either reworded.
+    'ScheduleManual' => 'Гарын авлага',
+    'ScheduleInterval' => 'Интервал',
+    'ScheduleCalendar' => 'Хуанли',
+    'Cadence' => 'Каденс',
+    'CadenceBiweekly' => 'Хоёр долоо хоног тутамд',
+    'CadenceSemiAnnually' => 'Хагас жил тутамд',
+    'AnchorDate' => 'Анкерын огноо',
+    'UpcomingOccurrences' => 'Удахгүй болох үйл явдлууд',
+    'AuditLeadInDays' => 'Аудитын танилцуулгын өдрүүд',
+    'SkipOccurrence' => 'Алгасах',
+    'OverrideDate' => 'Дарах огноо',
+    'Week' => 'Долоо хоног',
+    'NoUpcomingOccurrences' => 'Энэ цонхонд удахгүй болох үйл явдал байхгүй байна.',
+    'FailedToLoadUpcomingOccurrences' => 'Удахгүй болох үйл явдлуудын урьдчилсан тоймыг ачаалж чадсангүй.',
+    'AnchorDateMustBeTodayOrLater' => 'Зангууны огноо өнөөдөр эсвэл түүнээс хойш байх ёстой. Өнгөрсөн огноог төлөвлөхийн тулд оронд нь Гараар шалгах тест үүсгэнэ үү.',
+    'InvalidScheduleType' => 'Хуваарийн төрөл буруу байна. Зөвшөөрөгдсөн утга: Гарын авлага, Интервал, Хуанли.',
+    'Weeks' => 'Долоо хоногууд',
+    'Months' => 'Сарууд',
+    'Years' => 'Жилүүд',
+    'ScheduleSummaryEvery' => '{$interval} {$unit} бүр',
+
+    // Define Tests redesign - client-rendered grid (Phase 1, Task 6)
+    'LastResult' => 'Сүүлийн үр дүн',
+    'NextDue' => 'Дараагийн хугацаа',
+    'DueSoon' => 'Удахгүй төлөх ёстой',
+    'Retired' => 'Тэтгэвэрт гарсан',
+    'MyTests' => 'Миний тестүүд',
+    'Failing' => 'Амжилтгүй болсон',
+    'Untested' => 'Туршигдаагүй',
+    'ShowRetired' => 'Тэтгэвэрт гарсан хүмүүсийг харуулах',
+    'Tests' => 'Тестүүд',
+    'NoTestsForThisControl' => 'Энэ хяналтын туршилт хараахан хийгдээгүй байна.',
+    'NoControlsDefinedYet' => 'Одоогоор хяналт тодорхойлогдоогүй байна',
+    'NoControlsDefinedYetBody' => 'Тест нэмэхээсээ өмнө Засаглалд хяналтыг тодорхойл.',
+    'NoTestsMatchFilters' => 'Таны шүүлтүүртэй тохирох тест байхгүй',
+    'NoTestsMatchFiltersBody' => 'Хайлт эсвэл шүүлтүүрээ тохируулж үзнэ үү.',
+    'CouldNotLoadTests' => 'Тестүүдийг ачаалж чадсангүй',
+    'CouldNotLoadTestsBody' => 'Алдаа гарлаа. Таны өгөгдөл аюулгүй байна — дахин ачаалж үзнэ үү.',
+    'ShowingXToYOfZ' => '{$start}– {$total}-с{$end} -г харуулж байна',
+    // Define Tests grid -- SCF-mapping + read-only procedure expand (Phase 1, Task 7)
+    'Reference' => 'Лавлагаа',
+    'NoFrameworksMapped' => 'Энэ хяналтад ямар ч хүрээг харуулаагүй байна.',
+    // Define Tests grid -- batch select + retire/delete + quick filters (Phase 1, Task 8)
+    'Retire' => 'Тэтгэвэрт гарах',
+    'ReassignTester' => 'Тестерийг дахин оноох',
+    'SetSchedule' => 'Хуваарь тохируулах',
+    'ConfirmRetireSelectedTests' => 'Сонгосон {n} тест(үүд)-ийг хүчингүй болгох уу?',
+    'ConfirmDeleteSelectedTests' => 'Сонгосон {n} тестийг устгах уу? Үүнийг буцаах боломжгүй.',
+    // Define Tests grid -- Coverage toolbar select (Issue 4)
+    'Coverage' => 'Хамрах хүрээ',
+    'CoverageWithTests' => 'Тесттэй хяналтууд',
+    'CoverageAllControls' => 'Бүх удирдлага',
+    'CoverageGaps' => 'Цоорхойнууд',
+    // Define Tests insights band (Phase 2, Task 4) -- KPI tile labels + subtitles.
+    // 'Overdue', 'DueSoon', and 'Failing' are reused from the grid's quick-filter
+    // chips above (identical text) rather than duplicated here.
+    'DtTotalTests' => 'Нийт тестүүд',
+    'DtCoverageGaps' => 'Хамрах хүрээний цоорхой',
+    'DtAcrossNControls' => '{$n} удирдлагын дагуу',
+    'DtControlsWithNoTest' => 'Туршилтгүй хяналтууд',
+    'DtNeedInitiationNow' => 'Одоо санаачилга хэрэгтэй байна',
+    'DtWithinLeadInWindow' => 'Хар тугалган цонхны дотор талд',
+    'DtLastResultFailed' => 'Сүүлийн үр дүн амжилтгүй боллоо',
+    'InvalidTestMethod' => 'Туршилтын арга нь лавлагаа, ажиглалт, шалгалт эсвэл давтан гүйцэтгэлийн аль нэг байх ёстой!',
+    'TesterCannotBeApprover' => 'Тестерийг энэ туршилтын зөвшөөрөгчөөр жагсаах боломжгүй.',
+    'ApproverNotEligible' => 'Нэг буюу хэд хэдэн сонгосон зөвшөөрөл олгогч нь "Тестийг батлах" үүрэг хүлээхгүй.',
+    'TestMethod' => 'Туршилтын арга',
+    'TestMethodInquiry' => 'Лавлагаа',
+    'TestMethodObservation' => 'Ажиглалт',
+    'TestMethodInspection' => 'Шалгалт',
+    'TestMethodReperformance' => 'Дахин тоглолт',
+    'Sample' => 'Дээж',
+    'RequiredEvidence' => 'Шаардлагатай нотолгоо',
+    'Approvers' => 'Зөвшөөрөл олгогчид',
+    'AuditLog_TestAuditApproved' => '"{$test_audit_name}"(ID: {$test_audit_id}) аудитыг "{$user_name} " хэрэглэгч зөвшөөрсөн.',
+    'AuditLog_TestAuditRejected' => '"{$test_audit_name}"(ID: {$test_audit_id}) аудитыг "{$user_name}" хэрэглэгч "{$comment} " гэсэн тайлбартайгаар татгалзсан.',
+    'AuditLog_TestAuditAwaitingApproval' => '"{$test_audit_name}"(ID: {$test_audit_id}) аудитыг "{$user_name}" хэрэглэгч хаахаар илгээсэн бөгөөд батлагдахыг хүлээж байна. Өөрчлөлтүүд: {$changes}.',
+    'AuditApproved' => 'Аудитыг амжилттай баталсан.',
+    'AuditRejected' => 'Аудитыг амжилттай няцаасан.',
+    'RejectCommentRequired' => 'Аудитаас татгалзахын тулд тайлбар шаардлагатай.',
+    'NotAnApproverOfThisAudit' => 'Та энэ аудитын тохируулсан зөвшөөрөл олгогч биш байна.',
+    'ApproverCannotBeTester' => 'Зөвшөөрөгч нь энэ аудитын туршигч байж болохгүй.',
+    'AuditNotAwaitingApproval' => 'Энэ аудит одоогоор батлагдахгүй байна.',
+    'NotificationAuditAwaitingApprovalTitle' => 'Таны зөвшөөрлийг хүлээж буй аудит',
+    'NotificationAuditAwaitingApprovalBody' => '"{$test_audit_name}" аудитыг хаалтад оруулахаар ирүүлсэн бөгөөд таны зөвшөөрлийг хүлээж байна.',
+    'NotificationAuditRejectedTitle' => 'Аудитыг няцаасан',
+    'NotificationAuditRejectedBody' => '"{$test_audit_name}" аудитыг "{$comment} " гэсэн тайлбартайгаар няцаасан.',
+    'AwaitingApproval' => 'Зөвшөөрөл хүлээж байна',
+    'AwaitingApprovalBannerText' => 'Энэхүү аудитыг хаахаар ирүүлсэн бөгөөд хаахаас өмнө тохируулсан зөвшөөрөгчөөс зөвшөөрөл хүлээж байна.',
+    'ReturnedForRework' => 'Дахин боловсруулахаар буцааж өгсөн',
+    'ReturnedForReworkBannerText' => 'Энэхүү аудитыг хэрэгсэхгүй болгож, дахин боловсруулахаар буцаасан.',
+    'RejectReason' => 'Татгалзах шалтгаан',
+    'AreYouSureYouWantToApproveThisAudit' => 'Та энэ аудитыг батлахдаа итгэлтэй байна уу?',
+    'AtLeastOneControlRequired' => 'Дор хаяж нэг хяналт шаардлагатай.',
+    'DtNCommonAcrossNControls' => '{$common} нийтлэг · {$n} хяналтууд',
+    'DtUntestedControls' => 'Туршигдаагүй хяналтууд',
+    'DtControlsInScopeNoCoverage' => 'Хамрах хүрээгүй',
+    'Passing' => 'Дамжуулах',
+    'DtLastResultPassed' => 'Сүүлийн үр дүн батлагдсан',
+    'AllFamilies' => 'Бүх гэр бүл',
+    'SearchTestsPlaceholder' => 'Хайлтын тест, хяналт болон хүрээ',
+    'AnySchedule' => 'Ямар ч хуваарь',
+    'AnyTag' => 'Дурын шошго',
+    'AuditAutoClosedTestRetired' => 'Туршилтыг зогсоосон тул автоматаар "Үнэгүй" гэж хаасан.',
+    'Common' => 'Нийтлэг',
+    'ValidatesAcrossMappedFrameworks' => 'Зураглагдсан хүрээнүүдийн хооронд баталгаажуулдаг',
+    'EditTest' => 'Тестийг засах',
+    'ControlHasNoTestCoverage' => 'Энэхүү хамрах хүрээний хяналт нь одоогоор туршилтын хамрах хүрээгүй байна.',
+    'AddTheFirstTest' => 'Эхний тестийг нэмнэ үү',
+    'ApplyCommonTestHint' => 'Энэ хяналтад нэг буюу хэд хэдэн одоо байгаа тестийг хэрэглэнэ үү. Тест бүр одоогийн хяналтаа хадгалж, үүнийг хамарсан нийтлэг тест болно.',
+    'CommonTestApplied' => 'Энэ хяналтад хэрэглэсэн туршилт.',
+    'CouldNotApplyCommonTest' => 'Энэ хяналтад тестийг хэрэглэж чадсангүй.',
+    'SelectOneOrMoreTests' => 'Нэг буюу хэд хэдэн тест сонгоно уу',
+    'CommonTestsApplied' => '{n} энэ хяналтад хэрэглэсэн тестүүд.',
+    'ApplyCommonTests' => 'Нийтлэг тестүүдийг хэрэглэх…',
+    'History' => 'Түүх',
+    'Result' => 'Үр дүн',
+    'Approval' => 'Зөвшөөрөл',
+    'ThisTestHasNotBeenRunYet' => 'Энэ туршилтыг хараахан хийгээгүй байна.',
+    'CouldNotLoadTestHistory' => 'Энэ тестийн түүхийг ачаалж чадсангүй.',
+    'Identity' => 'Хувь хүн',
+    'IdentitySectionHint' => 'Нэр, шалгагч болон түүний баталгаажуулдаг хяналтууд',
+    'WhenTheAuditInitiates' => 'Аудит эхлэх үед',
+    'ProcedureAndEvidence' => 'Журам ба нотлох баримт',
+    'CommonTestControlsHint' => 'Нэг тест нь олон хяналтыг баталгаажуулж чадна - энэ бол нийтлэг тест юм. Үүнийг хяналтын "+ Тест нэмэх" цэснээс нээхэд энд урьдчилан сонгогдоно.',
+    'SeparationOfDutiesNote' => 'Үүргийг хуваарилах — батлагч нь туршигч байж болохгүй.',
+    'CommonTestEditScopeHint' => 'Энэхүү нийтлэг тестийг ашиглаж буй бүх газарт өөрчлөлтүүд хамаарна.',
+    'Mode' => 'Горим',
+    'AddOrRemove' => '… нэмэх эсвэл хасах',
+    'AddOrSearchTags' => '… шошго нэмэх эсвэл хайх',
+    'CreateTagX' => '“{tag} ” үүсгэх',
+    'Archived' => 'Архивлагдсан',
+    'ShowAllTests' => 'Бүх шинжилгээ',
+    'ShowActiveTests' => 'Идэвхтэй туршилтууд',
+    'ShowRetiredTests' => 'Тэтгэвэрт гарсан шалгалтууд',
+    'UntestedControls' => 'Туршигдаагүй хяналтууд',
+    'OverdueByXDays' => 'Хугацаа хэтэрсэн · {n} хоног',
+    'OverdueByOneDay' => 'Хугацаа хэтэрсэн · 1 өдөр',
+    'DueInXDays' => '{n} хоногийн дараа төлөх ёстой',
+    'DueTomorrow' => 'Маргааш төлөх ёстой',
+    'DueToday' => 'Өнөөдөр төлөх ёстой',
+    'ScheduledForX' => 'Хуваарьт · {date}',
+    'AllTesters' => 'Бүх туршигчид',
+    'AllStatuses' => 'Бүх төлөв',
+    'OnTrack' => 'Замдаа',
+    'NextTestDateDerivedHint' => 'Сүүлийн туршилтын огнооноос туршилтын давтамж дээр үндэслэн тооцоолсон. Давтамжийг автоматаар хуваарилахаар тохируулах эсвэл энэ огноог өөрөө тохируулахын тулд давтамжийг хоосон үлдээнэ үү.',
+    'DueStatus' => 'Төлөх ёстой байдал',
+    'AllResults' => 'Бүх үр дүн',
+    // Remove a test from one control (Define Tests grid unlink row action)
+    'RemoveFromThisControl' => 'Энэ хяналтаас хасах',
+    'RemoveTestFromControl' => 'Туршилтыг хяналтаас хасах',
+    'RemoveTestFromControlConfirm' => '{control_name}-с "{test_name}"-г хасах уу?',
+    'RemoveTestFromControlStays' => 'Тест нь {n} бусад хяналтууд дээрээ үлдэнэ. Юу ч устгагдахгүй.',
+    'RemoveTestFromControlStaysOne' => 'Тест нь өөр 1 хяналт дээрээ хэвээр байна. Юу ч устгагдахгүй.',
+    'CannotRemoveTestsOnlyControl' => 'Тест нь дор хаяж нэг хяналтад хамаарах ёстой. Үүний оронд тестийг хүчингүй болгох эсвэл устгана уу.',
+    'TestRemovedFromControl' => 'Туршилтыг хяналтаас хассан.',
+    'CouldNotRemoveTestFromControl' => 'Туршилтыг хяналтаас хасаж чадсангүй.',
+    'TestRemovedFromControlAuditLogMessage' => '"{$test_name}"(ID: {$test_id}) тестийг "{$user} " хэрэглэгч хяналтаас (ID: {$control_id}) хассан.',
+    'DeleteTestUsedByNControls' => 'Үүнийг {n} удирдлага ашигладаг бөгөөд тэдгээрээс бүгдийг нь устгах болно.',
+    'BulkDeleteSharedTestsNote' => 'Эдгээрээс {n} -г бусад хяналтууд ашигладаг бөгөөд тэдгээрээс мөн хасах болно.',
+    'BulkRetireSharedTestsNote' => 'Эдгээрээс {n} -г бусад хяналтууд ашигладаг бөгөөд тэнд ч мөн ашиглахаа болино.',
+    'BulkDeleteOneSharedTestNote' => 'Эдгээрийн 1-ийг бусад хяналтууд ашигладаг бөгөөд тэдгээрээс мөн хасах болно.',
+    'BulkRetireOneSharedTestNote' => 'Эдгээрийн 1-ийг бусад хяналтууд ашигладаг бөгөөд тэнд ч мөн ашиглахаа болино.',
+    'CouldNotLoadTest' => 'Энэ тестийг ачаалж чадсангүй.',
+    'Expand' => 'Өргөжүүлэх',
+    'SearchMappings' => 'Хайлтын хүрээ болон лавлагаа',
+    'NoMatchingMappings' => 'Тухайн хайлттай тохирох зураглал алга.',
+    'Insights' => 'Ойлголтууд',
+    'ShowInsights' => 'Мэдлэгийн хавтангуудыг харуулах',
+    'HideInsights' => 'Мэдлэгийн хавтангуудыг хураангуй мөр болгон хумих',
+    'ChooseControls' => 'Хяналтыг сонгоно уу',
+    'UseTheseControls' => 'Эдгээр удирдлагыг ашиглана уу',
+    'SearchControlsPlaceholder' => 'Дугаар эсвэл нэрээр хайх',
+    'PickerKeyboardHint' => 'Дээш/доош шилжих, сонгохын тулд Enter, цуцлах бол Esc',
+    'NoControlsMatchFilters' => 'Энд тохирох зүйл алга. Зүүн талын нэг алхамыг өргөжүүлэх эсвэл хайлтыг арилгана уу.',
+    'NoControlsSelectedYet' => 'Одоогоор юу ч сонгоогүй байна.',
+    'AllControls' => 'Бүх удирдлага',
+    'AddOrRemoveControls' => 'Хяналтыг нэмэх эсвэл хасах…',
+    'LastTested' => 'Хамгийн сүүлд туршсан',
+    'LastTestDateAnchorHint' => 'Зангууны интервалын хуваарь (энэ огноо дээр давтамжийг нэмсэн). Туршилтын үр дүнг бүртгэсний дараа хүснэгтэд хамгийн шинэ үр дүнгийн огноог харуулна.',
+    'Filters' => 'Шүүлтүүрүүд',
+    'ShowFilters' => 'Шүүлтүүрүүдийг харуулах',
+    'HideFilters' => 'Шүүлтүүрийг нуух',
+
+    // App shell — collapsing sidebar / new base design (SR app-shell redesign)
+    'AI' => 'Хиймэл оюун ухаан',
+    'CollapseSidebar' => 'Хажуугийн цэсийг хумих',
+    'FooterCopyright' => '© %s SimpleRisk. Бүх эрх хуулиар хамгаалагдсан.',
+    'ExpandSidebar' => 'Хажуугийн самбарыг дэлгэх',
+    'WorkflowsCloneConfirm' => 'Ажлын урсгалыг клонлох \'{$name}\'?',
+    'WorkflowsDeleteConfirm' => 'Ажлын урсгалыг устгах \'{$name}\'? Үүнийг буцаах боломжгүй.',
+    'WorkflowActionFailed' => 'Үйлдэл амжилтгүй боллоо: {$msg}',
+    'ClickToDisable' => 'Идэвхгүй болгохын тулд дарна уу',
+    'ClickToEnable' => 'Идэвхжүүлэхийн тулд дарна уу',
+    'ENABLED' => 'ИДЭВХЖҮҮЛСЭН',
+    'DISABLED' => 'ИДЭВХГҮЙ БАЙДАЛТАЙ',
+    'BackToWorkflows' => 'Ажлын урсгал руу буцах',
+    'BackToHistory' => 'Түүх рүү буцах',
+    'NewWorkflow' => 'Шинэ ажлын урсгал',
+    'ViewSteps' => 'Алхамуудыг харах',
+    'SaveWorkflow' => 'Ажлын урсгалыг хадгалах',
+    'WorkflowSavedSuccessfully' => 'Ажлын урсгалыг амжилттай хадгаллаа.',
+    'WorkflowNotFound' => 'Ажлын урсгал олдсонгүй.',
+    'EditWorkflow' => 'Ажлын урсгалыг засах: {$name}',
+    'OrganizationContextProfile' => 'Байгууллагын контекст профайл',
+    'AICtxAutoAcceptThreshold' => 'Танай байгууллагын эрсдэлийг автоматаар хүлээн зөвшөөрөх босго хэмжээ хэд вэ (долларын хэмжээ эсвэл ALE-ийн хувь)?',
+    'AICtxGrcBudget' => 'Танай жилийн GRC/аюулгүй байдлын төсөв хэд вэ?',
+    'AICtxAuditorPerspective' => 'Та хэний үүднээс голчлон аудит хийлгэдэг вэ?',
+    'AICtxUnitCurrency' => 'Валют ($)',
+    'AICtxUnitPercentOfAle' => 'ALE-ийн хувь (%)',
+    'AICtxFrameworksInUse' => 'Одоо ашиглагдаж буй хүрээнүүд',
+    'AICtxNoFrameworksInUse' => 'Идэвхтэй хүрээ олдсонгүй. Засаглал > Хүрээний зураглал гэсэн хэсэгт хүрээ нэмнэ үү.',
+    'AICtxFromYourData' => 'Таны өгөгдлөөс',
+    'AICtxAuthoritative' => 'Эрх мэдэлтэй',
+    'AICtxAppetiteNotSet' => 'Тохируулаагүй байна',
+    'AICtxAppetiteManageLink' => 'Эрсдэлийн тохиргоонд удирдах',
+    'AICapControlTestGeneration' => 'Хяналтын туршилтын үүсгэлт',
+    'AICapControlTestGenerationDesc' => 'Хяналтын хүрээний зураглал, одоо байгаа тестүүд болон өөрийгөө үнэлэх үр дүнг ашиглан хяналтын тестүүдийг хянан үзэхээр ноороглодог - та батлах хүртэл юу ч бүтээгдэхгүй.',
+    'AICapSurfacedControlTestGeneration' => 'Тохиромжтой байдал — Тестийг тодорхойлох',
+    'AIControlTestGenUnavailable' => 'ҮЙЛЧИЛГЭЭ БОЛОМЖГҮЙ: Админ энэ функцийг хиймэл оюун ухааны тохиргоонд идэвхжүүлэх ёстой.',
+    'AIControlTestGenInvalidId' => 'БУРУУ ХҮСЭЛТ: Эерэг хяналтын дугаар шаардлагатай.',
+    'AIControlTestGenNotFound' => 'ОЛДСОНГҮЙ: Заасан хяналтыг олж чадсангүй.',
+    'AIControlTestGenConflict' => 'ЗӨРЧИЛӨӨ: Үе шат нь энэ хяналтад аль хэдийн дараалалд орсон байна.',
+    'AIControlTestGenQueued' => 'ХҮЛЭЭН АВСАН: Хяналтын тест үүсгэх дараалалд орсон.',
+    'AIControlTestGenFailed' => 'ДОТООД СЕРВЕРИЙН АЛДАА: Дарааллын хяналтын туршилтын үүсгэлт амжилтгүй боллоо.',
+    'AIControlTestGenCheckFailed' => 'АЛДАА: Дараалалд орохоос өмнө хяналтыг баталгаажуулж чадсангүй.',
+    'GenerateTestsWithAI' => 'Хиймэл оюун ухаанаар тест үүсгэх',
+    'ShowAiSuggestedTests' => 'Хиймэл оюун ухааны санал болгосон туршилтууд',
+    'AiSuggested' => 'Хиймэл оюун ухаан санал болгосон',
+    'ReviewAndEdit' => 'Шалгах болон засах',
+    'CreateSelected' => 'Сонгогдсоныг үүсгэх',
+    'TestCreatedFromSuggestion' => 'Санал болгосноос үүссэн тест.',
+    'SuggestionDismissed' => 'Санал болголтыг хэрэгсэхгүй болгосон.',
+    'TestGenerationQueued' => 'Тест үүсгэх дараалалд орсон.',
+    'Generating' => '… үүсгэж байна',
+    'SuggestionDismissFailed' => 'Тестийг үүсгэсэн боловч хиймэл оюун ухааны саналыг хэрэгсэхгүй болгож чадсангүй. Хэрэв хэвээр байвал гараар хэрэгсэхгүй болгоно уу.',
+    'AICtxAuditorBig4' => 'Том 4 (гадаад)',
+    'AICtxAuditorBoutique' => 'Бутик / бүс нутгийн (гадаад)',
+    'AICtxAuditorInternal' => 'Зөвхөн дотоод аудит',
+    'AICtxAuditorSelfAssessed' => 'Өөрийгөө үнэлсэн',
+    'AICtxAuditorNotSure' => 'Итгэлгүй байна',
+    'AICtxAppetiteCautious' => 'Болгоомжтой',
+    'AICtxAppetiteBalanced' => 'Тэнцвэртэй',
+    'AICtxAppetiteAggressive' => 'Түрэмгий',
+    'TestGenerationComplete' => 'Хиймэл оюун ухаанаар боловсруулсан хяналтын туршилтуудыг хянуулахад бэлэн боллоо.',
+    'TestGenerationStillRunning' => 'Туршилтын үе шат үргэлжилж байна; ноорог удахгүй гарч ирнэ.',
+    'TestGenerationNoNew' => 'Үелэлт дууссан — энэ хяналтад санал болгох шинэ туршилт байхгүй.',
+    'SearchEntities' => 'Аж ахуйн нэгжүүдийг хайх',
+    'SearchEntitiesPlaceholder' => 'Эрсдэл, хяналт, бодлого, үл хамаарах зүйлсийг хайх…',
+    'ShowTypes' => 'Төрлүүдийг харуулах',
+    'Depth' => 'Гүн',
+    'Inspector' => 'Байцаагч',
+    'Connections' => 'Холболтууд',
+    'NoConnectionsFound' => 'Сонгосон аж ахуйн нэгжид холболт олдсонгүй.',
+    'CouldNotLoadGraph' => 'Холболтын графикийг ачаалж чадсангүй.',
+    'CouldNotSearchEntities' => 'Аж ахуйн нэгжүүдийг хайж чадсангүй.',
+    'ShowingTopNOfM' => '{1}-с шилдэг {0} -г харуулж байна',
+    'RankedByMaturityGap' => 'Төлөвшлийн зөрүүгээр эрэмбэлсэн',
+    'RankedByRiskScore' => 'Эрсдэлийн оноогоор эрэмбэлсэн',
+    'RankedByRecentFailure' => 'Хамгийн сүүлийн үеийн бүтэлгүйтлээр эрэмбэлсэн',
+    'RankedByReviewDate' => 'Дараагийн үнэлгээний огноогоор эрэмбэлсэн',
+    'RankedBySeverity' => 'Хүнд байдлаас нь хамааран эрэмбэлсэн',
+    'RankedByName' => 'Нэрээр нь эрэмбэлсэн',
+    'NodeTypeSelfAssessmentResult' => 'Өөрийгөө үнэлэх үр дүн',
+    'Relationship' => 'Харилцаа холбоо',
+    'Exception' => 'Үл хамаарах зүйл',
+    'DesiredMaturity' => 'Хүссэн төлөвшил',
+    'ApprovalState' => 'Зөвшөөрлийн төлөв',
+    'RelationshipOfType' => '{1}-с {0}',
+    // Connectivity Explorer Inspector: labels for enrichment field keys
+    // (ai_context_enrich_fetch(), ai_context_enrich_vulnerabilities()) that
+    // fieldLabel() in connectivity-visualizer.js did not yet cover.
+    'LastDate' => 'Сүүлийн огноо',
+    'LastResultDate' => 'Сүүлийн үр дүнгийн огноо',
+    'PercentComplete' => 'Дууссан хувь',
+    'AssessmentDate' => 'Үнэлгээний огноо',
+    'NextDate' => 'Дараагийн огноо',
+    'Number' => 'Дугаар',
+    'Grouping' => 'Бүлэглэх',
+    'Hidden' => 'Нуугдсан',
+    'FirstFound' => 'Анх олдсон',
+    'LastFound' => 'Сүүлд олдсон',
+    'Patchable' => 'Нөхөж болдог',
+    'Solution' => 'Шийдэл',
+    'Breadcrumb' => 'Талхны үйрмэг',
+    'SelectANodeToInspect' => 'Дэлгэрэнгүй мэдээллийг харахын тулд зангилаа сонгоно уу.',
+    'HiddenUnreachableNodes' => '{0} далд зангилаа(ууд): далд төрөл(үүд)-гүйгээр холбогдохоо больсон.',
+    // Connectivity Explorer canvas launchpad (Level-1 type tiles / Level-2
+    // browsable entity list) -- docs/superpowers/specs/2026-07-27-
+    // connectivity-explorer-launchpad.md
+    'BrowsableEntityTypes' => 'Үзэж болох аж ахуйн нэгжийн төрлүүд',
+    'CountFloor' => '{0}+',
+    'NoBrowsableTypes' => 'Танд ямар ч төрлийн аж ахуйн нэгжийг үзэх зөвшөөрөл байхгүй.',
+    'AllTypes' => 'Бүх төрөл',
+    'FilterEntitiesPlaceholder' => 'Шүүлтүүр…',
+    'NoMatchingEntities' => 'Таны шүүлтүүртэй тохирох ямар ч объект алга.',
+    'LoadMore' => 'Илүү ихийг ачаалах',
+    'Loading' => '… ачааллаж байна',
+    'CouldNotLoadEntityCounts' => 'Аж ахуйн нэгжийн тооллогыг ачаалж чадсангүй.',
+    'CouldNotLoadEntities' => 'Аж ахуйн нэгжүүдийг ачаалж чадсангүй.',
+    'ClearGraph' => 'Тодорхой график',
+    // Connectivity Explorer node-type chip label for the 'audit' type. Not
+    // reused from 'TeamType_audit' (same English text, "Audit") -- that key
+    // is scoped to the Team Separation team-type picker, a different feature
+    // whose wording should be free to diverge from this one's.
+    'Audit' => 'Аудитын',
+    // Queued email send-failure notifications
+    'EmailSendFailedNotificationTitle' => 'Имэйл хүргэлт амжилтгүй боллоо',
+    'EmailSendFailedNotificationBody' => 'Нэг буюу хэд хэдэн дараалалд байгаа имэйлийг хүргэж чадсангүй. Имэйл тохиргоогоо шалгаад дараа нь дэлгэрэнгүй мэдээллийг Дарааллын Хянагч болон серверийн бүртгэлээс үзнэ үү.',
+    'QuestionnaireShareInvalidEmailAddress' => 'Санал асуулгын үр дүнг хүчинтэй имэйл хаяггүй харилцагчтай хуваалцах боломжгүй.',
+    'AssessmentSendInvalidEmailAddress' => 'Үнэлгээг хүчингүй имэйл хаяг руу илгээх боломжгүй.',
+    'AssessmentSentTo' => 'Үнэлгээг "{$email} " хаягаар илгээсэн.',
+    'AssessmentNotSentNoValidRecipients' => 'Үнэлгээг илгээгээгүй — хүчинтэй имэйл хаяг өгөөгүй байна.',
+    'AssessmentContactUnusableEmailNotificationTitle' => 'Асуулгын хуудас илгээгдээгүй',
+    'AssessmentContactUnusableEmailNotificationBody' => '"{$questionnaire}" асуулгыг "{$contact}" хаяг руу илгээж чадсангүй. Учир нь тус харилцагч файл дээр хүчинтэй имэйл хаяггүй байна. Илгээлтийг үргэлжлүүлэхийн тулд харилцагчийн бүртгэлийг шинэчилнэ үү.',
+    'EmailFailureNotificationRetention' => 'Имэйл хүргэлтийн алдааны мэдэгдлийг хадгалах',
+    'EmailFailureNotificationRetentionOutOfRange' => 'Имэйл хүргэлтийн алдааны мэдэгдлийг хадгалах хугацаа {$min} -аас {$max} хоногийн хооронд байх ёстой.',
+    'MailSettingsUpdatedSuccessfully' => 'Мэйл тохиргоог амжилттай шинэчиллээ.',
+    // Questionnaire audit-trail entries for the API submit/draft paths (SR-1714).
+    // The token form credits the contact; an API caller is an authenticated
+    // SimpleRisk user acting on that contact's questionnaire, so both the
+    // contact and the acting user are named.
+    'QuestionnaireCompletedAuditLogViaApi' => '"{$user_name} " хэрэглэгч API-ээр дамжуулан "{$questionnaire_name}" холбоо барих "{$contact_name}" асуулгын хуудсыг бөглөсөн.',
+    'QuestionnaireDraftAuditLogViaApi' => 'Questionnaire "{$questionnaire_name}" for contact "{$contact_name}" was saved as draft via the API by user "{$user_name}".',
+    // Bad-input response for the questionnaire risk-list endpoints, which
+    // previously reported a malformed questionnaire_id as a permission denial.
+    // Mirrors the existing 'MissingOrInvalidTrackingID'.
+    'MissingOrInvalidQuestionnaireID' => 'Санал асуулгын дугаар дутуу эсвэл хүчингүй.',
+    // POST /api/v2/assessments/questionnaire/result/file response messages.
+    // The `id` path deliberately returns QuestionIdCannotAcceptFile for every
+    // question-level rejection so a sequential tracking id cannot be used to
+    // probe questionnaire structure; the token path returns the specific reason.
+    'QuestionnaireResultNotFoundForTokenOrId' => 'ОЛДСОНГҮЙ: Заасан токен эсвэл id бүхий асуулгын үр дүнг олж чадсангүй',
+    'QuestionIdCannotAcceptFile' => 'БУРУУ ХҮСЭЛТ: question_id {$question_id} энэ асуулгын үр дүнгийн файлыг хүлээн авах боломжгүй',
+    'QuestionIdNotFoundInQuestionnaire' => 'БУРУУ ХҮСЭЛТ: question_id {$question_id} энэ асуулгад олдсонгүй',
+    'QuestionIdInMultipleTemplates' => 'БУРУУ ХҮСЭЛТ: question_id {$question_id} нь энэ асуулгын олон загварт гарч ирнэ',
+    'QuestionIdDoesNotAcceptFileUploads' => 'БУРУУ ХҮСЭЛТ: question_id {$question_id} файл байршуулахыг зөвшөөрдөггүй',
+    // The Statement of Applicability's two UNVERIFIED implementation states.
+    //
+    // They exist because "we have not checked" is not "it does not work", and an
+    // SoA is ATTESTED — printing "No" for an unverified control is a false
+    // statement against yourself, exactly as printing "Yes" without evidence is
+    // a false statement the other way. Before these keys existed both states
+    // fell through to 'No', which on a framework where most controls carry no
+    // test meant the whole document read "not implemented".
+    //
+    // They are two states rather than one because they are different findings
+    // with different owners: no test defined is a GOVERNANCE gap (nobody decided
+    // how to verify this control), never run is an OPERATIONAL one (somebody
+    // decided, and it was not done).
+    //
+    // WORDING. Both must be unmistakably distinct from the bare 'No' in the same
+    // column. 'Tests never run' rather than 'Never run': in a column headed
+    // "Implemented", the bare phrase reads for a moment as though the CONTROL
+    // was never run, when the subject is its tests.
+    //
+    // BOTH ARE PLURAL, and that is not only style. English takes the plural
+    // after "no" when the expected quantity could exceed one ("no results
+    // found"), and a control normally carries several tests — the singular
+    // implies only ever one was expected. 'Tests never run' is the stronger
+    // case: soa_implemented_for() returns `never_run` only when NOT ONE of the
+    // control's tests has produced a verdict, so the state is inherently about
+    // the whole set. With four tests defined and none run, the singular reads as
+    // one omission rather than a wholesale one.
+    'SoaImplementedNoTestDefined' => 'Тодорхойлсон тест байхгүй',
+    'SoaImplementedNeverRun' => 'Тестүүд хэзээ ч ажилладаггүй',
+
+    // The Implemented column's fallback for a token neither sink recognizes.
+    //
+    // DELIBERATELY NOT A VERDICT, and the reason this key exists at all. Both
+    // sinks previously ended in a fallthrough to 'No', so adding a state without
+    // adding its label printed a confident, wrong answer into a compliance
+    // document. Falling through to 'Yes' would be worse. The only safe failure
+    // mode is a value that states nothing about the control — a visible bug
+    // instead of a silent misstatement.
+    'SoaImplementedUnknown' => 'Статус боломжгүй',
+    // How an APPLICABLE control's stored inclusion reason(s) join to its own
+    // freeform justification when it recorded both (spec §4). Reached ONLY when
+    // both halves exist — reasons alone print as the reason list, prose alone
+    // prints verbatim — so this string is punctuation and word order, not prose.
+    // It is a language key rather than a hardcoded separator because a locale
+    // that joins clauses with a colon, a full stop, or right-to-left ordering
+    // must be able to say so; both placeholders have to survive translation.
+    'SoaJustifiedByInclusionReasons' => '{reasons} — {narrative}',
+    // The Set applicability modal's reason field, which became a MULTI-select
+    // when reasons moved to a join table: a control is commonly included (or
+    // excluded) for more than one reason, and the singular 'Reason' the field
+    // used to reuse now under-describes it. 'Reason' is left alone rather than
+    // repointed -- the row drawer and the SoA still print exactly one joined
+    // value under it, and redefining a key changes every surface that reads it.
+    'ApplicabilityReasons' => 'Шалтгаан',
+    // Said once, above a group of checkboxes, rather than implied by the widget.
+    // The old single <select> answered "how many may I pick?" by construction;
+    // a checkbox group does not, and a user who ticks one and stops has made the
+    // SoA less truthful than the one they meant to write.
+    'ApplicabilityReasonsHint' => 'Холбогдох бүх шалтгааныг сонгоно уу.',
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // THE STATEMENT OF APPLICABILITY'S MARKERS AND ITS LEGEND (spec §1, §3).
+    // ─────────────────────────────────────────────────────────────────────────
+
+    // THE EVIDENCE COLUMN'S TWO ABSENCES, which are OPPOSITES.
+    //
+    // 'No evidence linked' is a FINDING: the control is in scope, is possibly
+    // claimed implemented, and nothing substantiates it. The em dash below is
+    // the other answer -- the control is excluded, so no evidence is expected
+    // and the absence is correct. Rendering both as an empty cell hides the
+    // first, which is the one an auditor circles.
+    'SoaNoEvidenceLinked' => 'Холбоотой нотлох баримт байхгүй',
+    // PUNCTUATION, NOT PROSE -- the glyph the Evidence cell prints when nothing
+    // is expected. A language key rather than a hardcoded character for the same
+    // reason 'SoaJustifiedByInclusionReasons' is one: a locale that marks "not
+    // applicable" with a different dash, or with a word, must be able to say so.
+    'SoaEvidenceNotExpected' => '—',
+    // Whether the evidence a test DECLARED it requires actually arrived with the
+    // result. A stronger claim than a pass/fail alone, and few SoA tools make it.
+
+    // THE REMEDIATION BLOCK -- what is being done about a control that reads
+    // Partial or No. The SoA points AT the risk treatment plan (clause 6.1.3(e))
+    // rather than becoming one.
+    'SoaRemediation' => 'Нөхөн сэргээлт',
+    // THE MOST SERIOUS THING THAT BLOCK CAN FIND: the test failed and it is
+    // linked to no risk, so no treatment plan traces back to it. Dropping such a
+    // row for want of a risk to join to would render it as a blank cell, which
+    // reads as "nothing to report".
+    'SoaRemediationUnplanned' => 'Эрсдэлтэй холбоогүй',
+
+    // THE LEGEND. Required in both variants and every export format, because six
+    // implementation states plus three markers is more nuanced than the
+    // Yes/No/Partial an auditor expects, and an undefined vocabulary invites the
+    // reader to guess unfavourably.
+    'SoaLegendTitle' => 'Энэ мэдэгдлийг хэрхэн унших вэ',
+    'SoaLegendYes' => 'Энэ хяналтад тодорхойлсон бүх тест хамгийн сүүлд ажиллах үед тэнцсэн.',
+    'SoaLegendPartial' => 'Хяналтын шалгалтууд хоорондоо зөрүүтэй байна: дор хаяж нэг нь тэнцсэн, дор хаяж нэг нь унасан эсвэл ямар ч дүгнэлт гаргаагүй.',
+    'SoaLegendNo' => 'Энэ хяналтын аль ч тестийг хамгийн сүүлд ажиллуулахад тэнцээгүй бөгөөд дор хаяж нэг нь амжилтгүй болсон.',
+    // The two unverified states are DIFFERENT FINDINGS WITH DIFFERENT OWNERS,
+    // and the labels alone do not quite carry that -- so the legend spells it
+    // out. This is the distinction the whole six-state set exists for.
+    'SoaLegendNoTestDefined' => 'Энэ хяналтад ямар ч туршилт тодорхойлогдоогүй тул түүний ажиллагааг хэзээ ч баталгаажуулаагүй. Энэ нь хяналт байхгүй эсвэл бүтэлгүйтсэн гэсэн мэдэгдэл биш - зөвхөн энэ мэдэгдэл үүнийг харуулахгүй байна. Засаглалын цоорхой: энэ хяналтыг хэрхэн шалгахыг хэн ч шийдээгүй байна.',
+    'SoaLegendNeverRun' => 'Энэ хяналтад туршилтууд байдаг боловч тэдгээрийн аль нь ч хийгдэж байгаагүй тул түүний ажиллагааг энд харуулаагүй болно. Энэ нь хяналт дутуу эсвэл бүтэлгүйтсэн гэсэн мэдэгдэл биш юм. Үйл ажиллагааны цоорхой: шалгалтыг шийдсэн боловч хийгээгүй байна.',
+    'SoaLegendNotApplicable' => 'Хяналт нь энэ хүрээний хамрах хүрээнээс хасагдсан тул хэрэгжилтийн статусгүй байна.',
+    // The one most in need of explaining: with nothing to define it, this reads
+    // as an admission about the control rather than as what it is.
+    'SoaLegendUnknown' => 'SimpleRisk нь бичигдсэн төлөвийг шошголож чадаагүй тул хэрэгжилтийг энд харуулаагүй болно. Энэ нь програм хангамжийн алдаа бөгөөд хяналтын талаар юу ч хэлээгүй -- ажилладаг эсвэл ажилладаггүй гэсэн ч биш.',
+    'SoaLegendOverdue' => 'Харуулсан үр дүн хэвээрээ байгаа ч түүний ард байгаа туршилтуудын дор хаяж нэг нь дараагийн туршилтын хугацаанаас хэтэрсэн байна. Нотлох баримт нь хуучирсан байна.',
+    'SoaLegendNoEvidence' => 'Хяналт нь хамрах хүрээнд байгаа бөгөөд үүнийг нотлох ямар ч холбоос байхгүй: баталгаажсан баримт бичиг, үр дүн гаргасан туршилт байхгүй.',
+    'SoaLegendEvidenceNotExpected' => 'Хяналт нь хамрах хүрээнээс хасагдсан тул ямар ч нотлох баримт хүлээгдэхгүй.',
+    'SoaLegendUnplanned' => 'Ямар ч эрсдэлгүй холбоотой бүтэлгүйтсэн тест тул эмчилгээний төлөвлөгөө байхгүй.',
+
+    // THE TWO VARIANTS, chosen on the launcher before the document is generated
+    // and PRINTED ON ITS COVER. A Statement of Applicability is a controlled
+    // document: two of them for the same framework that show different things,
+    // with nothing on either to say which is which, is a document nobody can
+    // file.
+
+    // THE THREE DETAILED-ONLY COLUMNS.
+    // What those three columns say instead of nothing. A blank cell in an audit
+    // document reads as a formatting artefact; "Not recorded" is a fact the
+    // reader can act on.
+
+    // THE BROWSER PRINT ROUTE. Beside the two downloads on the launcher, and the
+    // only PDF route for a framework too large for the server-side writer.
+    // Shown in place of "Download as PDF" when the chosen framework is above
+    // SOA_EXPORT_PDF_MAX_CONTROLS. The affordance is absent rather than
+    // disabled, so this sentence is what tells the reader the absence is
+    // deliberate and what to do instead.
+    // The footer of every printed page. {page} and {pages} are substituted with
+    // the browser's own page counters, so the two tokens must both survive
+    // translation -- but their ORDER and the words around them are the
+    // translator's, which is why this is one string and not "Page" + "of".
+    'SoaPrintPageNumber' => '{pages} хуудасны {page} хуудас',
+
+    // THE ONE PDF AFFORDANCE on the statement-of-applicability launcher, beside
+    // 'DownloadAsXLSX'. It replaces the pair that used to sit there --
+    // 'SoaPrintToPdf' and 'DownloadAsPDF' -- because a Statement of Applicability
+    // is a controlled document and two PDF buttons let two people hand an auditor
+    // two different-looking PDFs of the same statement.
+    //
+    // JUST "PDF", AND DELIBERATELY SO. Below SOA_EXPORT_PDF_MAX_CONTROLS the
+    // button downloads a server-rendered file and above it the browser writes
+    // one, but that is a mechanism and not a choice the reader has to make. A
+    // label that named the mechanism ("Print to PDF" / "Download as PDF") would
+    // put the difference back in front of them.
+    //
+    // 'SoaPrintToPdf' and 'SoaPdfTooLargeHint' above are LEFT IN PLACE with no
+    // caller: 39 locales carry them, and this file is append-only precisely so a
+    // customer running a custom lang.<locale>.php can reconcile it with a tail
+    // diff.
+    'SoaPdf' => 'PDF',
+
+    // THE OTHER TWO ACTIONS IN THAT SAME ROW, shortened to match it.
+    //
+    // The row read "Open in browser" / "Download as XLSX" / "PDF", which put a
+    // verb on two of three actions and made the odd one out look like an
+    // abbreviation of something longer. The row's own context supplies the
+    // verbs -- these are the things you can DO with the framework you just
+    // chose -- so they carried no information and cost the reader a comparison.
+    // 'SoaPdf' is short because naming its mechanism would be dishonest (above
+    // SOA_EXPORT_PDF_MAX_CONTROLS it opens a print view rather than downloading
+    // a file), and the shortest of the three is the one that has to be right.
+    //
+    // NOT the generic 'Open' at line ~1021: that key lives among 'Mitigated' /
+    // 'Reviewed' and is the risk-status ADJECTIVE -- fr "Ouvert", de "Offen" --
+    // so reusing it would label a button with a state rather than an action in
+    // most of the 39 locales.
+    //
+    // 'SoaOpenInBrowser' above is LEFT IN PLACE with no caller, for the same
+    // reason 'SoaPrintToPdf' is: the locales carry it and this file is
+    // append-only so a customer's custom lang.<locale>.php reconciles with a
+    // tail diff. 'DownloadAsXLSX' keeps a caller either way -- the Assessments
+    // Extra's questionnaire results still use it.
+    'SoaOpen' => 'Нээлттэй',
+    'SoaXlsx' => 'XLSX',
+    // ---- The locked-affordance treatment -------------------------------------
+    // SHARED COPY, not chooser copy. SimpleRisk now SHOWS what's possible and
+    // MARKS what's out of reach because it isn't licensed, rather than hiding
+    // it -- so these strings appear both as a menu row's explanation (Define
+    // Control Frameworks' "+ Add framework" chooser) and beside a disabled
+    // toolbar button (the Statement of Applicability's PDF/XLSX exports). Each
+    // one is worded to read correctly in BOTH places, which is why none of them
+    // starts with "This route" or "This button".
+    //
+    // 'LockedAffordanceBadge' duplicates the English of 'AICapStateLocked'
+    // rather than reusing it: that key sits in the AI Capabilities Catalog's
+    // block and is scoped to a capability's state, and translators work from
+    // the key's neighbourhood as much as from its value.
+    'LockedAffordanceBadge' => 'Түгжээтэй',
+    // The two SCF steps before it can be switched on. admin/register.php serves
+    // both -- it is the registration form AND where the per-Extra download
+    // buttons render -- so these differ in what they say, not where they go.
+    'UnlockRegisterInstanceNote' => 'Аюулгүй Хяналтын Хүрээг авахын тулд энэ тохиолдлыг бүртгүүлнэ үү.',
+    'UnlockRegisterInstanceLink' => 'Бүртгүүлэх SimpleRisk',
+    'UnlockDownloadScfNote' => 'Энэ тохиолдол бүртгэгдсэн байна. Үүнийг ашиглахын тулд Secure Controls Framework-г татаж авна уу.',
+    'UnlockDownloadScfLink' => 'Татаж авах',
+    'UnlockActivateScfNote' => 'Аюулгүй Хяналтын Хүрээг татаж авсан боловч асаагаагүй байна.',
+    'UnlockActivateScfLink' => 'Асаах',
+    // Import-Export is a paid Extra, so "not installed" is an upsell rather
+    // than a registration prompt. Deliberately a bare capability sentence: it
+    // has to sit under a menu row and next to an export button equally well.
+    'RequiresImportExportExtra' => 'Импорт-экспортын нэмэлт шаардлагатай.',
+    'UnlockImportExportLink' => 'Юу нэмснийг нь хараарай',
+    'UnlockActivateImportExportNote' => 'Импорт-Экспортын нэмэлт суулгагдсан боловч асаагаагүй байна.',
+    'UnlockActivateImportExportLink' => 'Асаах',
+    // Shown instead of any of the above to a user who is not an administrator:
+    // every unlock step lives on a check_admin page, so they get the half that
+    // is useful to them -- that the capability exists, and who to ask -- and no
+    // link that would only bounce them.
+    'UnlockNeedsAdministrator' => 'Администратор үүнийг тохируулж болно.',
+    // API date parsing. {$field} is the request field name (next_date, last_date,
+    // test_date); {$format} is this instance's configured display date format.
+    'InvalidSubmittedDate' => '{$field} утга нь хүчинтэй огноо биш байна. Үүнийг YYYY-MM-DD хэлбэрээр эсвэл энэ тохиолдолд байгаа огнооны форматаар ({$format} ) илгээнэ үү.',
+    // Companion to InvalidSubmittedDate, for a value that matches the expected
+    // shape but names a day that does not exist (February 31st, month 13).
+    // Saying "submit it as MM/DD/YYYY" there would repeat what the caller did.
+    // {$value} is the submitted value, echoed back truncated.
+    'ImpossibleSubmittedDate' => '{$field} утга "{$value}" нь жинхэнэ хуанлийн огноо биш юм. Өдөр болон сарыг шалгана уу - энэ тохиолдолд огноог {$format} гэж уншина.',
+    // The Statement of Applicability's merged verification column. Replaces three
+    // separate headings (Implemented / Evidence / Review Cadence) with the one
+    // question all three answer: how do we know this control is working?
+    // The two appendices printed after the register. Justifications are truncated
+    // in the row and given in full here; remediation plans live here rather than
+    // in the table because ISO 27001 keeps the SoA (6.1.3(d)) and the risk
+    // treatment plan (6.1.3(e)) as separate artifacts.
+    'SoaAppendixJustifications' => 'Хавсралт А — Үндэслэлүүд',
+    'SoaAppendixRemediation' => 'Хавсралт R — Нөхөн сэргээлтийн төлөвлөгөө',
+    // Appendix E carries the WORDING of each test's evidence requirement. The row
+    // keeps only whether that evidence arrived, which is the finding; the wording
+    // is reference material and was the bulkiest thing in the Verification cell.
+    'SoaRequiredEvidenceSupplied' => 'шаардлагатай нотлох баримтыг өгсөн',
+    'SoaRequiredEvidenceNotSupplied' => 'шаардлагатай нотлох баримт өгөөгүй',
+    // The one scheduling fact the SoA prints: the soonest date any of a control's
+    // tests is next due. Replaces a per-test "Manual — Next Test Date: ..." line,
+    // whose schedule type belongs on Define Tests and whose date is now on each
+    // test's own evidence bullet.
+    // The two dates on a test's evidence bullet. LABELLED, because two bare dates
+    // side by side are ambiguous in a way one is not.
+    // SINGULAR document-type labels for one piece of design evidence. SimpleRisk's
+    // existing keys are the plural tab names, which would read "Access Control
+    // Standard (Standards)".
+    'SoaEvidencePolicy' => 'Бодлого',
+    'SoaEvidenceStandard' => 'Стандарт',
+    'SoaEvidenceProcedure' => 'Журам',
+    'SoaEvidenceGuideline' => 'Удирдамж',
+    // ── The legend, grouped by column (SOA_LEGEND_GROUPS, includes/soa.php) ──
+    // The Applicability column's three values. These were never in the legend,
+    // so an auditor met "Inherited" -- a word with no meaning outside SimpleRisk
+    // -- with nothing to look it up in.
+    'SoaLegendApplicable' => 'Хяналт нь энэхүү хүрээнд хамаарах бөгөөд байгууллага нь үүнийг ажиллуулах үүрэгтэй.',
+    // DISTINCT from 'SoaLegendNotApplicable', which defines the "N/A" that appears
+    // in the Implementation Status column. This one is the DECISION to exclude;
+    // that one is the consequence for the status.
+    'SoaLegendApplicabilityNotApplicable' => 'Хяналтыг энэ хүрээний хамрах хүрээнээс хассан. Үндэслэлийн баганад яагаад, хэн шийдсэнийг тэмдэглэсэн болно.',
+    'SoaLegendInherited' => 'Хяналт нь хамрах хүрээнд байгаа боловч үүнийг энэ байгууллага биш харин гуравдагч этгээд -- үүлэн үйлчилгээ үзүүлэгч, эцэг байгууллага, гадны байгууллага -- ажиллуулдаг. Үйлчилгээ үзүүлэгчийг үндэслэлийн хажууд нэрлэсэн болно.',
+    // The Evidence column's four bullet glyphs. Load-bearing since the visible
+    // result word was dropped from pass and fail bullets, and until now defined
+    // nowhere at all.
+    'SoaLegendEvidencePass' => 'Энэ хяналтын шалгалт нь хамгийн сүүлд гүйсэн үед нь тэнцсэн гэж бүртгэгдсэн. Үүний хажууд байгаа огноо нь гүйсэн үе юм.',
+    'SoaLegendEvidenceFail' => 'Энэ хяналтын туршилт нь хамгийн сүүлд ажилласан үед алдаа гарсан гэж бүртгэгдсэн. Хавсралт R-д эмчилгээний төлөвлөгөө байгаа бол түүнийг оруулсан болно.',
+    'SoaLegendEvidenceInconclusive' => 'Энэ хяналтын туршилт явагдсан боловч ямар ч шийдвэр гараагүй. Энэ баримт бичиг танихгүй үр дүнд ижил тэмдгийг ашигласан бөгөөд энэ тохиолдолд үр дүн нь түүний хажууд хэвлэгдсэн байна.',
+    // The TERM beside the § glyph. Not a document type -- the four types
+    // (Policy, Standard, Procedure, Guideline) are printed per item; this names
+    // the CATEGORY of evidence a document is.
+    'SoaEvidenceDesignDocument' => 'Дизайны баримт бичиг',
+    'SoaLegendEvidenceDocument' => 'Энэхүү хяналтын нотолгоо болгон баталгаажуулсан засаглалын баримт бичиг -- үйл ажиллагаанаас илүүтэйгээр түүний загвар. Баримт бичигт ямар ч шийдвэр байдаггүй тул тэмдэглэгээ хийгээгүй болно.',
+    // The XLSX export's first worksheet tab. The workbook's other four tabs reuse
+    // headings that already exist ('How to read this statement', 'Statement of
+    // Applicability', and the two appendix headings); the cover had no name of its
+    // own because it used to be the top of a single sheet.
+    //
+    // KEEP IT SHORT. Excel caps a worksheet name at 31 characters and
+    // soa_export_sheet_name() truncates rather than failing the export, so a long
+    // translation loses its tail on the tab.
+    'SoaSheetCover' => 'Хавтас',
+
+    'SearchFrameworks' => 'Хайлтын хүрээ',
+    'SearchControls' => 'Хайлтын удирдлага',
+    'AddFramework' => 'Фреймворк нэмэх',
+    'Applicability' => 'Хэрэглэх боломж',
+    'AnyFamily' => 'Ямар ч гэр бүл',
+    'AnyOwner' => 'Аливаа эзэмшигч',
+    'AnyClass' => 'Ямар ч анги',
+    'AnyPhase' => 'Аль ч үе шат',
+    'AnyPriority' => 'Аливаа тэргүүлэх чиглэл',
+    'AnyType' => 'Ямар ч төрөл',
+    'AnyStatus' => 'Аливаа статус',
+    'SelectAllN' => 'Бүгдийг сонгох {n}',
+    'Classification' => 'Ангилал',
+    'Placement' => 'Байршуулалт',
+    'OwnershipAndMaturity' => 'Эзэмшил ба төлөвшил',
+    'MappingsAndGuidance' => 'Газрын зураглал ба удирдамж',
+    'DeleteFrameworkTitle' => '\'{$name} \' хүрээг устгах уу?',
+    'DeleteControlTitle' => '\'{$name} \' удирдлагыг устгах уу?',
+    'DeleteControlsTitle' => '{$n} удирдлагыг устгах уу?',
+    'DeleteCannotBeUndone' => 'Үүнийг буцаах боломжгүй.',
+    'DeleteFrameworkConsequence' => 'Энэ нь хүрээ болон түүний бүх хяналтын зураглалыг арилгана.',
+    'DeleteControlConsequence' => 'Энэ нь холбогдсон бүх хүрээнээс хяналтыг арилгадаг.',
+    'DeleteControlsConsequence' => 'Энэ нь сонгосон хяналт бүрийг холбогдсон бүх хүрээнээс устгадаг.',
+    // Task 9: empty states (design-system.md §10) -- the four intents on
+    // Define Control Frameworks. Reuses existing keys where the copy already
+    // fits exactly (AddControl, AddFramework, ClearFilters, Retry,
+    // NoControlsDefinedYet, NoTestsMatchFiltersBody, CouldNotLoadTestsBody,
+    // RegisterYourInstance, GoToSCF, ImportExportExtra) -- only the strings
+    // with no existing match are added below.
+    'NoControlsMatch' => 'Таны шүүлтүүртэй тохирох хяналт байхгүй',
+    'CouldNotLoadControls' => 'Хяналтыг ачаалж чадсангүй',
+    'ControlsYouAddWillAppearHere' => 'Таны нэмсэн хяналтууд энд харагдах болно.',
+    'NoFrameworksYet' => 'Одоогоор ямар ч фреймворк алга',
+    'FrameworksYouAddWillAppearHere' => 'Таны нэмсэн эсвэл импортолсон фрэймворкууд энд харагдах болно.',
+    'CouldNotLoadFrameworks' => 'Фреймворкийг ачаалж чадсангүй',
+    // Task 9 review fix: the framework rail's own "no results" intent, shown
+    // when the user has explicitly switched the status dropdown away from
+    // Active and that status has nothing (distinct from "No frameworks yet",
+    // which is reserved for the default Active status where the endpoint
+    // can't yet tell "no frameworks at all" from "none active").
+    'NoFrameworksMatchFilter' => 'Энэ төлөвтэй тохирох фреймворк алга',
+    'ViewActiveFrameworks' => 'Идэвхтэй фреймворкуудыг харах',
+    // Task 10: Define Control Frameworks insights band (governance/index.php)
+    // -- KPI tile labels/subtitles. 'Controls', 'Pass', 'Fail', 'NotTested'
+    // already exist and are reused as label keys for their tiles.
+    'BelowTarget' => 'Зорилтот түвшингээс доогуур',
+    'Excluded' => 'Хасагдсан',
+    'FwInScope' => 'Хамрах хүрээнд',
+    'FwLastTestPassed' => 'Сүүлийн шалгалтыг давсан',
+    'FwLastTestFailed' => 'Сүүлийн туршилт амжилтгүй болсон',
+    'FwNoEvidence' => 'Холбогдох, нотлох баримт байхгүй',
+    'FwMaturityUnderDesired' => 'Хүссэн хугацаанаас доош төлөвшил',
+    'FwScopeAFramework' => 'Шийдвэр гаргах хүрээний цар хүрээ',
+    'FwNotApplicableOrInherited' => 'Хамаарахгүй эсвэл өвлөгдөөгүй',
+    // Task 22: framework rail search (governance/index.php's #sr-fw-search,
+    // wired client-side in governance-frameworks.js). Reuses the shipped
+    // "no results" empty-state tile (#sr-fw-filtered, Task 9) rather than
+    // inventing a fourth rail empty state -- only the title and action swap
+    // depending on whether a status filter or a search narrowed the list to
+    // nothing; NoTestsMatchFiltersBody already covers both as body copy.
+    'NoFrameworksMatchSearch' => 'Таны хайлтад тохирох фреймворк алга',
+    'ClearSearch' => 'Хайлтыг цэвэрлэх',
+    // Task 24: Clone control pre-fills the Add Control modal from the source
+    // control (governance-frameworks.js's openControlForClone()) rather than
+    // creating a duplicate outright, so the modal needs to say plainly which
+    // control it was cloned from -- the reviewer's core complaint about an
+    // earlier one-click version of this feature was not knowing what was
+    // cloned. {$name} follows the same client-side formatTemplate()
+    // substitution ShowingXToYOfZ/NSelected already use on this page.
+    'ClonedFromControlNotice' => '"{$name}"-с хуулбарласан. Доорх талбаруудыг шалгаад Хадгалах гэснийг товшино уу.',
+    // Task 24 review follow-up: the banner alone left the modal titled "New
+    // Control" over pre-populated fields -- "it doesn't prompt or anything
+    // so the user doesn't know what was cloned" (Josh) -- which reads as a
+    // bug, not a feature. Retitling #control--add-title to this (governance-
+    // frameworks.js's show.bs.modal delegate for #control--add) makes the
+    // clone unambiguous at a glance; NewControl is restored for a plain add.
+    'CloneOfControlTitle' => '"{$name} "-н хуулбар',
+    // Task 27: the framework rail's SCF-origin chip (governance-frameworks.js's
+    // railRow()) -- shown only for frameworks created via the ComplianceForge
+    // SCF Extra's authoritative-source import (get_scf_origin_framework_ids(),
+    // includes/governance.php). SCF is the badge text itself; ScfOriginHint is
+    // its title/tooltip.
+    'SCF' => 'SCF',
+    'ScfOriginHint' => 'Аюулгүй Хяналтын Хүрээнээс (SCF)',
+    // Task 34: the Maturity filter facet's placeholder on the Define Control
+    // Frameworks filter sheet (governance-frameworks.js's ensureFilterSheet()),
+    // matching the AnyFamily/AnyOwner/AnyClass/... set above. The facet's three
+    // OPTIONS reuse the existing BelowMaturity/AtMaturity/AboveMaturity keys --
+    // the same labels the governance dashboard's maturity-gap widgets already
+    // carry -- and the column chip renders those same three strings, so the
+    // filter and the cell can never read differently.
+    'AnyMaturity' => 'Ямар ч боловсорсон хугацаа',
+    // Task 46: accessible name for the control table's pager landmark
+    // (governance-frameworks.js's renderPager()). The pager's own buttons
+    // reuse the existing Previous/Next keys Define Tests' pager already
+    // carries; only the <nav> label is new, and it names WHICH table's pager
+    // it is because the Define Control Frameworks page has two lists on it.
+    'ControlsPagination' => 'Хуудаслах үйлдлийг хянадаг',
+    // Task 14: the Applicability column's state chip (governance-frameworks.js's
+    // renderApplicability()), the matching filter facet (its three option labels
+    // reuse these same three keys) and its "Any applicability" placeholder.
+    //
+    // The three states are PREFIXED rather than named 'Applicable'/
+    // 'NotApplicable'/'Inherited' because 'NotApplicable' already exists above
+    // as the ABBREVIATION 'N/A' -- the self-assessment answer chip and three
+    // reporting charts render it -- and redefining that key to the spelled-out
+    // phrase this column needs would silently change all four of those
+    // surfaces. The prefix also keeps the trio recognisable as one family.
+    //
+    // The column HEADER and the facet's accessible name reuse the existing
+    // 'Applicability' key, and the drawer's record reuses 'Reason', 'Provider'
+    // and 'Justification' -- all four already carry exactly the right string.
+    'ApplicabilityApplicable' => 'Холбогдох',
+    'ApplicabilityNotApplicable' => 'Хамаарахгүй',
+    'ApplicabilityInherited' => 'Өв залгамжлагдсан',
+    'AnyApplicability' => 'Аливаа хэрэглээ',
+    // The drawer's applicability record: who recorded the decision and when.
+    // Both are attribution for an audited decision a customer may have to
+    // defend years later, which is why the drawer names them at all.
+    'ApplicabilityDecidedBy' => 'Шийдвэрлэсэн',
+    'ApplicabilityDecidedOn' => 'Шийдвэрлэсэн',
+    // The framework-level Statement of Applicability card in the Add/Edit
+    // framework modals (display_framework_soa_card(), includes/governance.php).
+    // These two fields are what ISO/IEC 27001:2022 clause 6.1.3(d) needs on an
+    // SoA cover: the scope the framework is certified against, and how inclusion
+    // was determined for the controls that are simply applicable.
+    //
+    // 'IsmsScopeStatement' rather than a bare 'ScopeStatement' because "scope"
+    // is already overloaded across SimpleRisk (assessment scope, audit scope,
+    // risk scope); the ISMS prefix is what an ISO practitioner calls this exact
+    // field and keeps it from being reused for an unrelated one.
+    'StatementOfApplicability' => 'Хэрэглэх тухай мэдэгдэл',
+    'IsmsScopeStatement' => 'Хамрах хүрээний мэдэгдэл',
+    'IsmsScopeStatementHint' => 'Энэ хүрээний баталгаажуулсан хүрээ. SoA нүүр хуудсан дээр гарч ирнэ.',
+    'DefaultInclusionJustification' => 'Анхдагч оруулах үндэслэл',
+    'DefaultInclusionJustificationHint' => 'Холбогдох эрсдэлгүй холбогдох хяналтуудад ашиглагдана. Хүрээг биш, драйверыг нэрлэнэ үү.',
+    // THE DEFAULT SENTENCE, in all three of its roles: the create form seeds the
+    // textarea with it, the Edit form shows it as a placeholder, and
+    // soa_framework_default_justification() (includes/soa.php) substitutes it at
+    // read time for a framework that has none. One key, because a reader must not
+    // be able to tell a stored default from a fallen-back one, and because three
+    // keys holding the same sentence is three chances for a translator to make
+    // them disagree. The name predates the seeding decision (Task 67) and is kept
+    // rather than churned through Crowdin for 39 locales.
+    //
+    // It names the DRIVER (the risk assessment) rather than the framework:
+    // "included because it is part of this framework" is circular, and ISO 6.1.3
+    // derives controls from risk treatment, using Annex A afterwards only as a
+    // completeness cross-check.
+    //
+    // It was a placeholder ONLY until Task 67, so that an unreviewed sentence
+    // could not reach a customer's SoA by inaction. Measured, that produced the
+    // opposite failure: 19 of 20 frameworks left the field NULL and the SoA's
+    // Justification column came out BLANK for every applicable control with no
+    // linked risks -- the finding an SoA is most often failed on, and one a
+    // boilerplate sentence does not attract.
+    'DefaultInclusionJustificationPlaceholder' => 'Байгууллагын мэдээллийн аюулгүй байдлын эрсдэлийн үнэлгээгээр тодорхойлогдож, шаардлагатай хяналт болгон хадгалагдана.',
+    // Task 15: bulk-setting applicability from the control table's selection bar
+    // (#applicability--set, governance/index.php + governance-frameworks.js).
+    //
+    // The action's own label and the modal's one section. 'Applicability',
+    // 'Reason', 'Provider', 'Justification', 'Save' and 'Cancel' already exist
+    // and are reused; only the strings with no existing home are added here.
+    'SetApplicability' => 'Хэрэглэхийг тохируулах',
+    'ApplicabilityDecision' => 'Шийдвэр',
+    // The amber scope note, in two sentences the page assembles separately
+    // because they answer two different questions: WHICH framework the decision
+    // is scoped to, and WHICH controls are about to receive it. The second one
+    // has two spellings, because the header checkbox selects the current PAGE
+    // while "Select all N" escalates to the whole filtered result set -- the two
+    // genuinely differ once the table pages, and a note that blurred them would
+    // let the user write 1,535 decisions believing they had written 25.
+    'ApplicabilityScopeNote' => 'Энэ шийдвэр нь зөвхөн "{$framework}" дотор хүчинтэй. Ижил хяналт нь өөр хүрээнд хүчинтэй хэвээр байж болно.',
+    'ApplicabilityAppliesToSelected' => 'Үүнийг энэ хуудсан дээр сонгосон {$n} хяналтын элементийн эсрэг бичих болно.',
+    'ApplicabilityAppliesToAllFiltered' => 'Үүнийг бусад хуудсан дээрх шүүлтүүрүүдийг оролцуулан одоогийн шүүлтүүртэй тохирох бүх {$n} хяналт(ууд)-тай харьцуулан бичих болно.',
+    // Per-state hints under the segmented control. The "applicable" one is the
+    // load-bearing sentence of the whole modal, and the SoA audit-readiness work
+    // rewrote it: an applicable control MAY now carry its own reasons and
+    // justification (ISO/IEC 27001 clause 6.1.3(d) asks for one per control, for
+    // inclusion as much as for exclusion), and leaving both empty is what falls
+    // back to the framework's default inclusion justification. The old sentence
+    // -- "this removes any recorded decision. No justification is needed." --
+    // is now false in both halves.
+    'ApplicabilityApplicableHint' => 'Энэ хүрээнд хамаарна. Шалтгаан болон үндэслэл нь заавал биш; хоёуланг нь хоосон орхивол уг хүрээнд анхдагч оруулах үндэслэлийг ашиглана.',
+    'ApplicabilityNotApplicableHint' => 'Энэ хүрээний хүрээнээс хяналтыг хасах. Шалтгаан болон бичгээр үндэслэл хоёулаа шаардлагатай.',
+    'ApplicabilityInheritedHint' => 'Таны өмнөөс энэ хяналтыг өөр хэн нэгэн гүйцэтгэнэ. Тэднийг нэрлэж, юу хийдгийг нь хэлнэ үү.',
+    'ApplicabilityNarrativeHint' => 'Хэрэглэх тухай мэдэгдэлд гарч ирнэ. Шийдвэрийг хүлээн авахын тулд аудитор юу шаардлагатайг бичнэ үү.',
+    'ApplicabilityProviderHint' => 'Хяналтыг гүйцэтгэдэг байгууллага: үүлэн үйлчилгээ үзүүлэгч, удирддаг үйлчилгээ, эцэг компани.',
+    'ChooseAReason' => 'Шалтгаан сонгоно уу',
+    'ApplicabilityNoReason' => 'Шалтгаангүй',
+    // Result toasts. Both interpolate a COUNT taken from the API response and
+    // nothing else -- no submitted text is ever reflected into a toast, which
+    // toastr renders as HTML.
+    'ApplicabilitySetResult' => '{$n} хяналт(ууд)-д хэрэглэх боломж шинэчлэгдсэн.',
+    'ApplicabilityClearResult' => 'Хэрэглэх боломж нь {$n} удирдлага(ууд)-д хамаарахаар дахин тохируулагдсан.',
+    // Bulk control delete (Task 54, corrected Task 55). Deleting a control is
+    // final either way the delete engine implements it: a control with test
+    // history is soft-deleted (framework_controls.deleted = 1) to keep test
+    // history intact, a control with no tests is removed outright -- but
+    // nothing anywhere flips that flag back, so from the user's side there is
+    // no "kept" case, only "deleted, and its test history survives for audit
+    // purposes." Every sentence therefore leads with the same irreversible
+    // warning; the only thing that varies is whether an audit-history clause
+    // is appended, and that clause is omitted entirely rather than printed
+    // with a count of zero -- "0 are retained for audit history" reads as a
+    // warning about something that is not going to happen, and on a delete
+    // confirmation that is exactly the kind of noise that trains people to
+    // stop reading. Every {$...} is a count from the API response; no user
+    // text is ever interpolated, which matters because toastr renders HTML.
+    'DeleteControlsPreviewChecking' => 'Юуг устгахыг шалгаж байна...',
+    'DeleteControlsPreviewSplit' => '{$n} хяналт(ууд) устгагдах болно. Үүнийг буцаах боломжгүй. Эдгээрээс {$m} -ийн туршилтын үр дүнг аудитын түүхэнд хадгална.',
+    'DeleteControlsPreviewKeptOnly' => 'Бүх {$n} хяналт(ууд) устах болно. Үүнийг буцаах боломжгүй. Туршилтын үр дүнг аудитын түүхэнд хадгална.',
+    'DeleteControlsPreviewRemovedOnly' => '{$n} хяналт(ууд) устах болно. Үүнийг буцаах боломжгүй.',
+    'DeleteControlsPreviewNone' => 'Устгах зүйл алга: сонгосон хяналт(ууд) байхгүй болсон.',
+    'ControlsDeletedResult' => '{$n} хяналт(ууд) устгагдсан.',
+
+    // The Add/Edit framework modal's Status field. The label reuses the existing
+    // 'Status' key -- the same word the rail's Active/Inactive/All filter already
+    // uses -- so only the explanatory hint is new. It says the two things a user
+    // cannot see from the control itself: that Inactive is the NON-destructive way
+    // to retire a framework (unlike Delete, which cannot be undone), and that the
+    // change cascades through the hierarchy, which is what update_framework_status()
+    // has always done and is genuinely surprising when a parent is deactivated.
+    'FrameworkStatusHint' => 'Идэвхгүй фрэймворкууд нь бүх хяналт болон холболтоо хадгалдаг боловч анхдагч фрэймворкийн жагсаалтаас нуугдаж, удирдлагын хяналтын самбараас гадуур үлддэг. Фреймворкийг идэвхгүй болгох нь түүний доорх бүх фрэймворкийг идэвхгүй болгодог; нэгийг нь идэвхжүүлэх нь түүний эцэг эхийг мөн идэвхжүүлдэг.',
+
+    // Task 60: the same #applicability--set modal, opened from ONE control's row
+    // action instead of the selection bulk bar. The button's own label reuses
+    // 'SetApplicability'; these two exist because the modal now has to say which
+    // of the two it is acting on, and both spellings must be unambiguous.
+    //
+    // The title names the specific object (design-system.md §8) and the note
+    // says "only", because the dangerous reading is the silent one: with rows
+    // ticked -- or with "Select all N filtered" in force -- a modal that said
+    // nothing would let a click the user believed applied to one row be read as
+    // applying to every control in the framework. Naming the control in both
+    // places is what makes the narrower scope visible rather than assumed.
+    // Corrected in Task 63. This spelling used to end "...only, whatever else is
+    // selected", which was printed on every row-action open whether or not
+    // anything else WAS selected -- a dangling absolute with no antecedent, so
+    // it read as a sentence that had been cut off. It is now the plain form, and
+    // the reassurance about a competing selection moved to
+    // 'ApplicabilityAppliesToControlNotSelection' below, which is printed only
+    // when there is a competing selection to reassure anyone about.
+    'SetApplicabilityForControl' => 'Хэрэглэх тохиргоо: {$name}',
+    'ApplicabilityAppliesToControl' => 'Үүнийг зөвхөн "{$name}"-ийн эсрэг бичих болно.',
+
+    // Task 17: the Statement of Applicability report itself
+    // (reports/statement_of_applicability.php + pages/statement-of-applicability.js),
+    // the document ISO/IEC 27001:2022 clause 6.1.3(d) asks for and the one every
+    // applicability decision recorded on the Define Control Frameworks page
+    // exists to produce.
+    //
+    // 'StatementOfApplicability' already exists above (the framework modal's SoA
+    // card) and is reused for the report's own title, as are 'IsmsScopeStatement',
+    // 'DefaultInclusionJustification', the three 'Applicability*' state labels,
+    // 'ApplicabilityDecidedBy'/'DecidedOn', and the plain 'Framework',
+    // 'ControlNumber', 'ControlName', 'Justification', 'Evidence', 'Reason',
+    // 'Provider', 'Total', 'Controls' and 'Export' keys. Only strings with no
+    // existing home are added here.
+    'StatementOfApplicabilityDesc' => 'Нэг хүрээний хувьд: хяналт бүр, хэрэгжиж байгаа эсэх, яагаад оруулсан эсвэл хассан, мөн хэрэгжүүлж байгаа эсэх.',
+    // The header button on Define Control Frameworks. The verb is "generate"
+    // rather than "view" because the document is assembled at the moment it is
+    // asked for -- there is no stored SoA that could be out of date.
+    'GenerateStatementOfApplicability' => 'Хэрэглэх боломжтой байдлын мэдэгдэл үүсгэх',
+
+    // The Justification column's SECOND resolution step, and the reason an SoA
+    // built here beats the spreadsheet it replaces: the risks that drove the
+    // control are already recorded against it, so nobody retypes them and they
+    // cannot go stale. {risks} is substituted with the displayed risk ids.
+    //
+    // Phrased to match clause 6.1.3, which derives controls from risk treatment
+    // and uses Annex A afterwards only as a completeness cross-check -- the same
+    // reasoning behind 'DefaultInclusionJustificationPlaceholder' above.
+    'SoaJustifiedByRiskAssessment' => 'Байгууллагын мэдээллийн аюулгүй байдлын эрсдэлийн үнэлгээгээр тодорхойлно. Холбоотой эрсдэлүүд: {risks}.',
+
+    // The Implemented column. DERIVED from maturity and the last test result on
+    // every read, never stored, so it cannot drift out of sync with the control.
+    // 'Yes' and 'No' already exist and are reused; only the middle value and the
+    // header need keys of their own. An excluded control's cell reuses the
+    // existing 'NotApplicable' ('N/A'), which is exactly the right abbreviation
+    // in a dense table.
+    'SoaImplemented' => 'Хэрэгжүүлсэн',
+    'SoaImplementedPartial' => 'Хэсэгчилсэн',
+
+    // The cover block.
+    'SoaGeneratedOn' => 'Үүсгэсэн огноо',
+    'SoaExcludedCount' => 'Хасагдсан',
+
+    // The prompt shown when the framework has never been given the two cover
+    // fields. It PROMPTS rather than silently printing a blank cover: an SoA
+    // whose scope is empty is the one defect an auditor spots first, and the
+    // moment somebody opens the report is the only moment those fields matter.
+    // Both spellings of empty (never set, and deliberately cleared) prompt --
+    // from a reader's point of view there is nothing to print either way.
+    //
+    // The inclusion-justification line states a WEAKER consequence than it used
+    // to, because Task 67 made the stronger one untrue: the column no longer goes
+    // blank when the field is empty -- soa_framework_default_justification()
+    // substitutes the generic default sentence. The prompt survives because a
+    // generic sentence is not the organization's own, and an auditor reading 1,500
+    // identical rows of boilerplate is entitled to ask whose risk assessment it
+    // refers to.
+    'SoaMissingFieldsTitle' => 'Энэ мэдэгдэлд хавтасны дэлгэрэнгүй мэдээлэл дутуу байна',
+    'SoaMissingScopeStatement' => 'Энэ хүрээнд хамрах хүрээний мэдэгдэл бүртгэгдээгүй байна. SoA нь ямар хүрээнд хамаарахаа зааж өгөх ёстой.',
+    'SoaMissingInclusionJustification' => 'Анхдагч оруулах үндэслэл бүртгэгдээгүй байна. Холбогдох эрсдэлгүй холбогдох хяналтууд нь таных биш харин ерөнхий мэдэгдэлд тулгуурлах болно.',
+    'SoaEditFrameworkToAdd' => 'Тэдгээрийг хүрээ дээр нэмнэ үү',
+
+    // Opened from the Reporting Hub, which cannot supply a framework. A picker,
+    // not an error: an SoA is a per-framework document by definition -- the same
+    // control excluded from ISO 27001 is not thereby excluded from PCI DSS --
+    // and there is no cross-framework roll-up to offer instead.
+    'SoaChooseFramework' => 'Хүрээ сонгох',
+    'SoaChooseFrameworkHint' => 'Хэрэглэх боломжтой байдлын мэдэгдлийг нэг дор нэг хүрээний талаар бичсэн байдаг.',
+    // The picker has a roster but nothing in it. Distinct from "this framework
+    // has no controls": there is no framework to write a statement about at all,
+    // and the fix is on a different page, so it says which one.
+    // The launcher's affordance row. "Open in browser" rather than "View"
+    // because it names what actually happens -- the document opens in a new tab,
+    // chrome-free -- and because Task 18 adds "Download as PDF" and "Download as
+    // XLSX" beside it, where "open" vs "download" is the distinction that
+    // matters.
+    // The document has no sidebar, so it needs its own way back for anyone who
+    // arrives from a bookmark or a shared link. Screen only; never printed.
+    'SoaBackToSelector' => 'Хэрэглэх тухай мэдэгдэл рүү буцах',
+    'SoaNoFrameworks' => 'Идэвхтэй фреймворк байхгүй',
+    'SoaNoFrameworksHint' => 'Засаглал > Хяналтын хүрээг тодорхойлох хэсэгт хүрээг суулгах эсвэл идэвхжүүлэх бөгөөд энэ нь энд харагдах болно.',
+
+    // The two refusals. Both explain rather than just failing, because the user
+    // arrived here deliberately.
+    'SoaFrameworkInactiveTitle' => 'Энэ хүрээ идэвхгүй байна',
+    'SoaFrameworkInactiveBody' => 'Хэрэглэх боломжтой байдлын мэдэгдэлд тухайн байгууллага одоогоор ямар хүрээнд үйл ажиллагаа явуулж байгааг тайлбарласан болно. Нэгийг үүсгэхийн тулд уг хүрээг дахин идэвхжүүлнэ үү.',
+    'SoaFrameworkNotFoundBody' => 'Тэр хүрээ байхгүй болсон.',
+
+    // A framework with no controls mapped into it. Not an error -- it is a real
+    // and recoverable state, and saying so beats an empty table.
+    'SoaNoControls' => 'Энэ хүрээ ямар ч хяналтгүй',
+    'SoaNoControlsHint' => 'Хяналтыг хүрээ рүү оруулаад, хэрэглэх боломжтой байдлын мэдэгдэлд тэдгээрийг жагсаах болно.',
+
+    // The second half of the statement-of-applicability launcher's affordance
+    // row, beside "Open in browser" and the existing 'DownloadAsXLSX'. Rendered
+    // only where the Import/Export Extra is active, which is what supplies the
+    // export. "Download as" rather than "Export to" so the pair reads as one
+    // choice of format, and so it matches the XLSX label already in this file.
+    'DownloadAsPDF' => 'PDF хэлбэрээр татаж авах',
+
+    // The fourth column of the control modal's "Mapped Control Frameworks"
+    // widget, between the reference code and the reference text. The
+    // FRAMEWORK's own title for the control it is citing -- what a Statement of
+    // Applicability prints beside the clause number. Distinct from the existing
+    // 'ReferenceText', which holds the framework's full control statement, and
+    // from the SimpleRisk control's own name.
+    'ReferenceSubject' => 'Лавлагааны сэдэв',
+    // Placeholder/help text under that field, and the reason it is worth
+    // filling in: without it the Statement of Applicability has nothing to
+    // print but the source catalogue's name for its own control.
+    'ReferenceSubjectHint' => "Энэ удирдлагын хүрээний өөрийн гарчиг.",
+
+    // Task 63: the row-scoped population sentence in the Set applicability
+    // modal, in the one situation where the plain
+    // 'ApplicabilityAppliesToControl' above leaves a real question unanswered --
+    // the user has controls ticked, or a standing "Select all N filtered", and
+    // has just opened the modal from ONE row's own action.
+    //
+    // It states the guarantee rather than implying it. A user whose escalated
+    // selection covers an entire framework needs to know that this click is not
+    // about to overwrite it, and {$n} is the count of the OTHER selected
+    // controls -- the target is excluded, because it is very often ticked too
+    // and a promise that included it would be false.
+    'ApplicabilityAppliesToControlNotSelection' => 'Үүнийг зөвхөн "{$name}"-ын эсрэг бичих болно — таны сонгосон {$n} удирдлага(ууд)-д нөлөөлөхгүй.',
+
+    // Task 65: the VISIBLE label on the controls toolbar's SoA button. The full
+    // sentence ('GenerateStatementOfApplicability' above) stays as the button's
+    // title and aria-label, and is still what the SoA page itself is called;
+    // this is the short form for a toolbar row it shares with the page's one
+    // primary action. At full length the secondary button measured more than
+    // twice the primary's width and became the largest element in the row.
+    //
+    // "SoA" is safe to abbreviate HERE and only here: the button appears solely
+    // when a single framework is scoped, beside an Applicability column, and it
+    // expands on hover.
+    'GenerateSoa' => 'SoA үүсгэх',
+
+    // ===== Clone framework (Task 64) =======================================
+    // The framework half of Clone control's framing (CloneOfControlTitle /
+    // ClonedFromControlNotice above), and for the same reason: the clone
+    // pre-fills the Add Framework modal rather than creating anything, so the
+    // modal has to say what was carried over before the user saves it.
+    //
+    // Separate keys from the control pair rather than one shared "Clone of
+    // {$name}" -- the two banners do not say the same thing. A cloned control
+    // simply asks to be reviewed; a cloned FRAMEWORK has to explain two things
+    // its fields cannot: that the source's control mappings come with it, and
+    // that the empty scope statement is deliberate. The blank field is the
+    // whole reason the banner is longer than the control's -- a scope statement
+    // left blank with no explanation reads as a field that failed to populate,
+    // and the one thing a clone exists to be given is a NEW scope (Josh: "you
+    // might want to use the same controls as one framework, but scope it
+    // differently"). {$name} and {$n} follow the same client-side
+    // formatTemplate() substitution the rest of this page's templates use.
+    'CloneOfFrameworkTitle' => '"{$name} "-н хуулбар',
+    // {$n} is the count the rail is SHOWING for the source row -- its controls,
+    // not its raw mapping rows. Those differ (a framework can cite one control
+    // under two clause numbers, and the rail excludes deleted controls), and the
+    // number to promise is the one the user is looking at when they click and
+    // the one the clone's own rail row will show afterwards.
+    'ClonedFromFrameworkNotice' => '"{$name}"-с хуулбарлагдсан. Үүний {$n} хяналтуудыг шинэ хүрээ рүү хуулах бөгөөд тэдгээрийн аль нь ч эхнээсээ хэрэглэгдэх болно - хэрэглээний шийдвэрүүдийн аль нь ч үргэлжлэхгүй. Хамрах хүрээний мэдэгдэл нь зориудаар хоосон байна: Хэрэглэх байдлын мэдэгдлийг үүсгэхээсээ өмнө энэ хүрээний хамрах хүрээг заана уу.',
+    // Seeds the name field so the clone can be saved without a rename --
+    // framework names are unique, so a verbatim copy is refused on save.
+    'CloneOfFrameworkName' => '{$name} (Клон)',
+    'CloneFramework' => 'Клон фреймворк',
+    // Extras version independently of Core, so an updated Import/Export Extra
+    // can end up calling a Core function the installed Core does not have. The
+    // export refuses with this rather than fataling -- see
+    // soa_export_refuse_if_core_too_old(), extras/import-export/includes/soa_export.php.
+    'SoaExportRequiresNewerCore' => 'Энэ экспорт нь суулгаснаасаа илүү SimpleRisk Core-н шинэ хувилбарыг шаарддаг. SimpleRisk-г шинэчилсний дараа экспортыг дахин оролдоно уу.',
+    // The framework ACQUISITION chooser (Task 26): "+ Add framework" asks how you
+    // want to get one, rather than assuming you want to type it in. Each option is
+    // rendered only when the route behind it actually exists for this user, so the
+    // hint text may state plainly what the route does -- it is never shown to
+    // someone who cannot take it.
+    'HowDoYouWantToAddAFramework' => 'Та хэрхэн framework нэмэхийг хүсэж байна вэ?',
+    'CreateFrameworkManually' => 'Гараар нэгийг үүсгэх',
+    'CreateFrameworkManuallyHint' => 'Хүрээг өөрөө нэрлээд, дараа нь түүний удирдлагыг нэмж эсвэл зураглана уу.',
+    // Named for the framework rather than for its vendor. The hint was reworded
+    // at the same time: it used to end "...load its Secure Controls Framework
+    // controls", which read as a stutter once the label carried those words.
+    'GetFrameworkFromScf' => 'Secure Controls Framework-с нэгийг аваарай',
+    'GetFrameworkFromScfHint' => 'Нийтлэгдсэн фреймворкийг сонгоод, түүний зураглагдсан удирдлагыг нэг алхамаар ачаална уу.',
+    'ImportFrameworkFromCatalog' => 'Нэгийг импортлох',
+    'ImportFrameworkFromCatalogHint' => 'SimpleRisk контент каталогоос framework болон түүний удирдлагыг суулгана уу.',
+
+    // The framework acquisition chooser's third route, which now offers the
+    // Import-Export Extra's CONTROL import (a spreadsheet naming a framework
+    // that does not exist yet creates it) rather than the GitHub catalogue the
+    // two keys above described. Those two are left in place, unreferenced, so a
+    // customer maintaining a custom lang.<locale>.php still reconciles by tail
+    // diff.
+    'ImportFrameworkFromSpreadsheet' => 'Хүснэгтээс нэгийг импортлох',
+    'ImportFrameworkFromSpreadsheetHint' => 'Хүрээг нэрлэсэн удирдлагын хүснэгтийг байршуулбал хоёулаа үүснэ.',
+
+    // The Define Control Frameworks rail's second synthetic scope: the controls
+    // mapped to no framework at all. Its first, "All controls", reuses the
+    // existing AllControls key rather than adding a second string with the same
+    // English -- it replaced 'AllFrameworks' on that row, which named a union of
+    // frameworks while scoping to every control, mapped or not. 'AllFrameworks'
+    // is left in place and unreferenced by that page: other surfaces still use
+    // it, and every locale carries it.
+    'UnassignedControls' => 'Оноогдоогүй хяналтууд',
+    // APPLICABILITY VALIDATION FAILURES. These reach the user: the v2 endpoint
+    // returns the exception's message as the API status message and the page
+    // renders it in a toast, so a hardcoded English literal here would be
+    // permanently English for every locale.
+    //
+    // NOTHING THE CALLER TYPED IS EVER INTERPOLATED INTO THESE. The parameters
+    // are validated enum values, integer ids and byte limits the server itself
+    // owns -- naming the ALLOWED values rather than echoing the rejected one is
+    // deliberate (it is both safe and more useful than repeating a typo).
+    'ApplicabilityErrUnknownState' => 'Хэрэглэх төлөв тодорхойгүй байна. Дараах төлөвүүдийн аль нэгийг нь оруулах ёстой: {$states}.',
+    'ApplicabilityErrNarrativeRequired' => '\'{$state} \'-д хүүрнэл шаардлагатай.',
+    'ApplicabilityErrNarrativeTooLong' => 'Өгүүлэмж нь {$bytes} байтаас урт байна.',
+    'ApplicabilityErrReasonRequired' => 'Хяналтыг хамаарахгүй гэж тэмдэглэхийн тулд хасах шалтгаан шаардлагатай.',
+    'ApplicabilityErrProviderRequired' => 'Өвлөгдсөн хяналтыг тэмдэглэх шаардлагатай.',
+    'ApplicabilityErrProviderTooLong' => 'Үйлчилгээ үзүүлэгчийн нэр {$bytes} байтаас урт байна.',
+    'ApplicabilityErrReasonsNotFound' => 'Эдгээр хэрэглэх үндэслэл байхгүй байна: {$ids}.',
+    'ApplicabilityErrReasonsNotOffered' => 'Эдгээр хэрэглэх үндэслэлийг энэ төлөвт санал болгоогүй болно: {$ids}.',
+    'ApplicabilityErrFrameworkNotFound' => '{$framework} хүрээ байхгүй байна.',
+    'ApplicabilityErrControlsNotFound' => 'Эдгээр хяналтын дугаарууд байхгүй байна: {$ids}.',
+    // Controls/Risks import result messages (validation gate, individual bad-row
+    // alerts, and the batched submitted/created/updated summaries)
+    'ControlIdOrShortNameFieldRequired' => 'Хяналтын ID эсвэл Хяналтын богино нэрийн талбаруудын аль нэгийг нь тэмдэглэсэн байх ёстой -- тэдгээрийн аль нэггүйгээр мөрийг тодорхойлох боломжгүй.',
+    'RiskImportSubjectNull' => 'Эрсдэлийн ID {$risk_id}: Гарчиг талбар хоосон эсвэл байхгүй тул шинэчлэгдээгүй.',
+    'RiskImportSummary' => '{$submitted} эрсдэл(үүд)-ийг илгээж, {$updated} эрсдэл(үүд)-ийг шинэчилсэн.',
+    'ControlImportSummary' => '{$created} удирдлага(ууд)-ыг үүсгэсэн бөгөөд {$updated} удирдлага(ууд)-ыг шинэчилсэн.',
+    'ImportAdditionalIssuesSuppressed' => '{$count} нэмэлт мөр(үүд)-д тус тусад нь харуулаагүй асуудлууд байсан.',
+    'EncryptionPipelineStalledTask' => 'Шифрлэлтийн дамжуулах хоолой (task #{$id}, {$type}) зогссон бололтой - энэ нь ер бусын удаан хугацаанд {$status} ажиллаж байгаа бөгөөд урагшлахгүй байна. Энэ нь ихэвчлэн арын дарааллын ажилтан ажиллахгүй байна гэсэн үг юм; хуваарьтай эсэхийг шалгаад, зогссон даалгаврыг боловсруулсны дараа дахин оролдоно уу.',
+    'EncryptionPipelineStalledState' => 'Шифрлэлтийн дамжуулах хоолой гацсан бололтой - энэ нь ер бусын удаан хугацаанд үргэлжилж байгааг тэмдэглэсэн бөгөөд заах тохирох суурь даалгавар байхгүй байна. Энэ нь ихэвчлэн дарааллын ажилтан ажиллахгүй байгаа эсвэл өмнөх дамжуулах хоолой үүнийг зөв шинэчлэхгүйгээр дууссан гэсэн үг юм. Дахин оролдохоосоо өмнө дибаг хийх бүртгэлийг шалгана уу.',
+    // DEMO_MODE — shown when a visitor to a shared demo instance attempts one
+    // of the operations that would spoil the demo for the next visitor
+    'ActionDisabledOnDemoInstance' => 'Энэ үйлдлийг SimpleRisk демо хувилбар дээр идэвхгүй болгосон.',
+
+    // The one-click upgrade progress window: the step an upgrade is on, and
+    // the line shown once it finishes
+    // Shown when an upgrade's progress record has not been touched for long
+    // enough that the process running it is presumed gone
+    'UpgradeJobStalled' => 'Шинэчлэлт хариу өгөхөө больсон. Дахин оролдохоосоо өмнө серверийн бүртгэлийг шалгана уу.',
+    // Shown when an upgrade replaced the instance's configuration file and could
+    // not put the original back
+    // Shown when the database was brought up to date but the application files
+    // could not be replaced, so the instance has NOT moved to the new release
+    'UpdateAppFailed' => 'Аппликейшний файлууд шинэчлэгдээгүй тул энэ хувилбар өмнөх хувилбараа ажиллуулсаар байна. Учир шалтгааныг SimpleRisk бүртгэлээс шалгаад шинэчлэлтийг дахин ажиллуулна уу.',
+    // The one-click upgrade progress screen
+    'UpgradeInProgress' => 'Үргэлжилж байна',
+    'UpgradeStepNotNeeded' => 'Шаардлагагүй',
+    // Recovering an Upgrade Extra whose files are damaged
+    'UpgradeExtraDamagedReinstalling' => 'Суулгасан Upgrade Extra эвдэрсэн байна. Шинэ хуулбарыг татаж байна.',
+    'UpgradeExtraDamagedRepaired' => 'Upgrade Extra-г ажиллаж байгаа хувилбараар сольсон.',
+    'UpgradeExtraDamagedFailed' => 'Upgrade Extra эвдэрсэн тул автоматаар солих боломжгүй. Үүнийг Нэмэлт хуудаснаас дахин суулгана уу эсвэл simplerisk/extras/upgrade/-г нөөц хуулбараас сэргээгээд дахин оролдоно уу.',
+    'UpgradeAlreadyCurrent' => 'Энэ жишээ нь аль хэдийн {version}дээр байгаа бөгөөд энэ нь хамгийн сүүлийн үеийн хувилбар юм. Шинэчлэх шаардлагагүй.',
+    'UpgradeShowWhatItDid' => 'Юу хийснийг нь харуул',
+    'UpgradeBackupsListed' => 'Эдгээр нөөцлөлтүүдийг Тохиргоо > Нөөцлөлтүүд хэсэгт жагсаасан болно.',
+    'UpgradingTo' => '{version} руу шинэчилж байна',
+    'UpgradeSafeToClose' => 'Энэ цонхыг хаахад аюулгүй. Сервер дээр шинэчлэлт үргэлжилж байгаа бөгөөд энэ хуудас дахин хавсаргана.',
+    'UpgradeDownloadLog' => 'Лог татаж авах',
+    'UpgradeStatementsApplied' => '{started} эхлүүлсэн · {count} мэдэгдлүүдийг ашигласан',
+    // The Upgrade Extra's pre-upgrade check of the instance it is sitting on
+    'UpgradeCheckingInstance' => 'Энэ тохиолдлыг шалгаж байна',
+    'UpgradeInstanceChecked' => 'Жишээг шалгасан, залруулга шаардлагагүй.',
+    'UpgradeBlockedByCorrections' => 'Энэ тохиолдолд автоматаар хэрэгжих боломжгүй засвар шаардлагатай байгаа тул шинэчлэлт зогссон. Дээрх зааврыг дагаж, шинэчлэлтийг дахин ажиллуулна уу. Өөр юу ч өөрчлөгдөөгүй.',
+    // Shown when an upgrade replaced the instance's configuration file and could not put the original back
+    'ConfigRestoreFailed' => 'Шинэчлэлт нь энэ тохиолдлын тохиргооны файлыг сэргээж чадсангүй. Үргэлжлүүлэхээсээ өмнө simplerisk/includes/config.php файлыг нөөцөөс сэргээнэ үү.',
+    'UpgradeDidNotAdvance' => '"{$version}" хувилбарын шинэчлэх функц нь өгөгдлийн сангийн хувилбарыг урагшлаагүй; дахин ажиллуулахгүйн тулд зогсоож байна.',
+    'BackupDatabaseNative' => 'Өгөгдлийн санг нөөцлөх (гадаад хэрэгсэл шаардлагагүй)...',
+    'UpgradeAlreadyRunning' => 'Энэ тохиолдолд шинэчлэлт аль хэдийн ажиллаж байна.',
+    'UpgradeStatusUnreachable' => 'Шинэчлэлт ажиллаж байх үед сервертэй холбоо тасарсан. SimpleRisk бүртгэлийг шалгана уу; шинэчлэлт хийгдэж байж магадгүй.',
+    'UpgradeJobUnwritable' => 'Шинэчлэлтийн явцыг бичиж чадаагүй тул шинэчлэлтийг эхлүүлж чадсангүй. Системийн түр лавлахыг вэб хэрэглэгч бичих боломжтой эсэхийг шалгана уу.',
+    'UpgradeStepCheckingVersions' => 'Шалгах хувилбарууд',
+    'UpgradeStepUpgradingDatabase' => 'Өгөгдлийн сангийн схемийг шинэчлэх',
+    'UpgradeStepFinalising' => 'Шинэчлэлтийн дараах хөрвүүлэлтийг хэрэгжүүлж байна',
+    'UpgradeDatabaseHeading' => 'Өгөгдлийн санг шинэчлэх',
+    'UpgradeDatabaseComplete' => 'Өгөгдлийн сангийн шинэчлэлт дууссан.',
+    'UpgradeHideWhatItDid' => 'Юу хийснийг нь нуух',
+    'UpgradeStateRunning' => 'Гүйлт',
+    'UpgradeSessionExpired' => 'Таны хуралдаан дууссан. Шинэчлэлтийг харахын тулд дахин нэвтэрнэ үү.',
+    'UpgradeLostContact' => 'Сервертэй холбоо тасарсан. Шинэчлэлтэд дахин холбохын тулд энэ хуудсыг дахин ачаална уу.',
+    'UpgradeDatabaseAlreadyCurrent' => 'Өгөгдлийн сан нь аль хэдийн програмын хувилбар дээр байна.',
+    'UpgradeConversionsApplied' => 'Хөдөлгүүр болон тэмдэгтийн багцын хөрвүүлэлтийг ашигласан.',
+    'UpgradeStoppedShort' => 'Шинэчлэлт {reached} дээр {app}дээр хүрэлгүйгээр зогссон. Серверийн бүртгэлийг үзнэ үү.',
+    'UpgradeStepBackingUp' => 'Нөөцлөх',
+    'UpgradeStepUpgradingFiles' => 'Аппликейшний файлуудыг шинэчлэх',
+    'UpgradeStepUpgradingExtras' => 'Суулгасан нэмэлтүүдийг шинэчлэх',
+    'UpgradeStepUpdatingUpgradeExtra' => 'Шинэчлэлтийн нэмэлтийг шинэчилж байна',
+    // The Upgrade Extra's pre-chain corrections: what is wrong, and what to do
+    // about it. These are the highest-stakes messages the upgrade produces --
+    // an operator reads them to unstick an instance that cannot upgrade.
+    'UpgradeCorrectionUnknownVersionTitle' => 'Бичсэн мэдээллийн сангийн хувилбар нь жинхэнэ хувилбарыг нэрлээгүй байна',
+    'UpgradeCorrectionNoRecordedVersion' => 'Өгөгдлийн санд бүртгэгдсэн хувилбар байхгүй байна.',
+    'UpgradeCorrectionUnknownVersionFinding' => 'Өгөгдлийн сангийн тайлангийн хувилбар нь \'{$version}\' бөгөөд энэ нь SimpleRisk хувилбарыг нэрлээгүй байна. Шинэчлэлт нь үүнээс эхлэх цэгийг сонгож чадахгүй.',
+    'UpgradeCorrectionUnknownVersionGuidance' => 'db_version тохиргоог энэ мэдээллийн сангийн схемтэй хувилбараар тохируулаад шинэчлэлтийг дахин ажиллуулна уу: UPDATE settings SET value=\'<release>\'WHERE name=\'db_version\'. Хэрэв утга нь 2026XXXX-001 гэх мэт орлуулагч бол зөв утга нь бараг үргэлж шинэчлэлт эхлэхээс өмнө суулгасан хамгийн сүүлийн үеийн жинхэнэ хувилбар байдаг.',
+    'UpgradeCorrectionLegacySessionsTitle' => 'Сессийн хүснэгт нь шинэчлэлтийн тэмдэгтийн багцын хөрвүүлэлтийг тэсвэрлэж чадахгүй байна',
+    'UpgradeCorrectionLegacySessionsFinding' => '`sessions`.`id` нь MyISAM хүснэгт дээрх VARCHAR({$width}) байна. Үүнийг 20230106-001 хувилбарыг цаашид гаргадаг utf8mb4 болгон хөрвүүлбэл MyISAM-ийн 1000 байтын индексийн хязгаараас давж, шинэчлэлт амжилтгүй болно.',
+    'UpgradeCorrectionLegacySessionsGuidance' => 'Нэг буюу хэд хэдэн идэвхтэй сесс нь 128 тэмдэгтээс урт id ашигладаг. Одоо баганыг нарийсгах нь тэдгээр хэрэглэгчдийг гаргах тул үүнийг орхисон. Эдгээр сессийн хугацаа дуусахад шинэчлэлтийг дахин оролдоно уу.',
+    'UpgradeCorrectionApplied' => 'Зассан.',
+    'UpgradeCorrectionFailed' => 'Энэ залруулгыг хэрэглэж чадсангүй. Шалтгааныг SimpleRisk бүртгэлээс үзнэ үү.',
+    'UpgradeCorrectionAppliedLine' => 'Зассан: {$title} {$message}',
+    'UpgradeCorrectionNotAppliedLine' => 'ЗАСВАРЛААГҮЙ: {$title} {$message}',
+    'UpgradeCorrectionsNeeded' => 'Энэ инстансыг шинэчлэхээс өмнө шаардлагатай залруулга: {$count}',
+    'UpgradeCorrectionsNeededShort' => 'Залруулга шаардлагатай: {$count}',
+    'UpdateDatabase' => 'Өгөгдлийн санг шинэчилж байна...',
+    // Authentication screens (index.php, reset.php, reset_password.php)
+    'EnterTheCredentialsForYourAccount' => 'Өөрийн бүртгэлийн итгэмжлэлийг оруулна уу.',
+    'TroubleSigningIn' => 'Нэвтрэхэд асуудалтай байна уу? SimpleRisk админтайгаа холбогдоно уу.',
+    'BackToLogin' => 'Нэвтрэх рүү буцах',
+    'Or' => 'эсвэл',
+    'WeWillEmailAResetTokenToYourAccount' => 'Бид таны бүртгэл дээрх хаяг руу дахин тохируулах токеныг имэйлээр илгээх болно.',
+    'EnterTheResetTokenFromYourEmail' => 'Имэйлээсээ ирсэн дахин тохируулах тэмдгийг шинэ нууц үгтэйгээ хамт оруулна уу.',
+    'ChooseANewPasswordToContinue' => 'Үргэлжлүүлэхийн тулд шинэ нууц үг сонгоно уу.',
+    'FromZeroToGRCInMinutes' => 'Тэгээс GRC хүртэл хэдхэн минутын дотор.',
+    'OrganizationLogo' => 'Байгууллагын лого',
+    'LoginScreenBranding' => 'Нэвтрэх дэлгэцийн брэндинг',
+    'CustomLogo' => 'Захиалгат лого',
+    'CustomLogoHint' => 'PNG, JPG, GIF эсвэл WebP, 1 MB хүртэл, 2000x2000 хүртэл хэмжээтэй. 260x64 хүртэлх нягтралтайгаар харуулсан тул өндөр нягтралтай дэлгэцийн хувьд 520x128 орчим хэмжээтэйг нийлүүлнэ үү. Дээд талын мөр болон нэвтрэх самбар нь бараан өнгөтэй тул бараан дэвсгэр дээр бичигдсэн лого байршуулна уу. SimpleRisk руу буцахын тулд логог устгана уу.',
+    'CurrentLogo' => 'Одоогийн лого',
+    'RemoveLogo' => 'Логог устгах',
+    'LoginTagline' => 'Нэвтрэх уриа',
+    'LoginTaglineHint' => 'Нэвтрэх дэлгэц дээрх SimpleRisk уриа лоозонг орлоно. Нэг богино мөр хамгийн сайн уншигдана. SimpleRisk уриа лоозонг хадгалахын тулд хоосон үлдээнэ үү.',
+    'LoginNotice' => 'Системийн хэрэглээний мэдэгдэл',
+    'LoginNoticeHint' => 'Хэн нэгэн нэвтрэхээс өмнө нэвтрэх дэлгэц дээр харагдана. Үүнийг зөвшөөрөгдсөн хэрэглээ эсвэл системийн хэрэглээний мэдэгдэлд ашиглана уу. Мэдэгдэл харуулахгүйн тулд хоосон үлдээнэ үү. Холбоос болон зургийг зөвшөөрөхгүй.',
+    'BrandingRequiresCustomization' => 'Нэвтрэх дэлгэцийн брэндинг нь Тохируулгын нэмэлтийн нэг хэсэг юм.',
+    'LogoMustBeAnImage' => 'Лого нь PNG, JPG, GIF эсвэл WebP зураг байх ёстой.',
+    'LogoTooLarge' => 'Лого нь 1 МБ-аас хэтрэхгүй байх ёстой.',
+    'LogoDimensionsTooLarge' => 'Лого нь 2000x2000 пикселээс хэтрэхгүй хэмжээтэй байх ёстой.',
+    'LogoDimensionsTooSmall' => 'Логоны хамгийн урт ирмэг нь дор хаяж 32 пиксел байх ёстой.',
+    'LogoUploadFailed' => 'Логог байршуулж чадсангүй. Дахин оролдоно уу.',
+    'LogoUpdated' => 'Лого шинэчлэгдсэн.',
+    'LogoRemoved' => 'Логог нь хассан.',
+    'NoSystemUseNoticeSet' => 'Системийн хэрэглээний мэдэгдэл тохируулагдаагүй байна.',
+    'NoticeSizeSmall' => 'Жижиг',
+    'NoticeSizeNormal' => 'Хэвийн',
+    'NoticeSizeLarge' => 'Том',
     '' => '',
 );
 ?>

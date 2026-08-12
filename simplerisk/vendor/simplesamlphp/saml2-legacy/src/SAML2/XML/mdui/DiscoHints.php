@@ -5,9 +5,8 @@ declare(strict_types=1);
 namespace SAML2\XML\mdui;
 
 use DOMElement;
-
 use SAML2\Utils;
-use SAML2\XML\Chunk;
+use SimpleSAML\XML\Chunk;
 
 /**
  * Class for handling the metadata extensions for login and discovery user interface
@@ -22,7 +21,7 @@ class DiscoHints
      *
      * The elements can be any of the other \SAML2\XML\mdui\* elements.
      *
-     * @var \SAML2\XML\Chunk[]
+     * @var \SimpleSAML\XML\Chunk[]
      */
     private $children = [];
 
@@ -64,7 +63,7 @@ class DiscoHints
         $this->GeolocationHint = Utils::extractStrings($xml, Common::NS, 'GeolocationHint');
 
         /** @var \DOMElement $node */
-        foreach (Utils::xpQuery($xml, "./*[namespace-uri()!='".Common::NS."']") as $node) {
+        foreach (Utils::xpQuery($xml, "./*[namespace-uri()!='" . Common::NS . "']") as $node) {
             $this->children[] = new Chunk($node);
         }
     }
@@ -75,7 +74,7 @@ class DiscoHints
      *
      * @return string[]
      */
-    public function getIPHint() : array
+    public function getIPHint(): array
     {
         return $this->IPHint;
     }
@@ -85,9 +84,8 @@ class DiscoHints
      * Set the value of the IPHint-property
      *
      * @param string[] $hints
-     * @return void
      */
-    public function setIPHint(array $hints) : void
+    public function setIPHint(array $hints): void
     {
         $this->IPHint = $hints;
     }
@@ -98,7 +96,7 @@ class DiscoHints
      *
      * @return string[]
      */
-    public function getDomainHint() : array
+    public function getDomainHint(): array
     {
         return $this->DomainHint;
     }
@@ -108,9 +106,8 @@ class DiscoHints
      * Set the value of the DomainHint-property
      *
      * @param string[] $hints
-     * @return void
      */
-    public function setDomainHint(array $hints) : void
+    public function setDomainHint(array $hints): void
     {
         $this->DomainHint = $hints;
     }
@@ -121,7 +118,7 @@ class DiscoHints
      *
      * @return string[]
      */
-    public function getGeolocationHint() : array
+    public function getGeolocationHint(): array
     {
         return $this->GeolocationHint;
     }
@@ -131,9 +128,8 @@ class DiscoHints
      * Set the value of the GeolocationHint-property
      *
      * @param string[] $hints
-     * @return void
      */
-    public function setGeolocationHint(array $hints) : void
+    public function setGeolocationHint(array $hints): void
     {
         $this->GeolocationHint = $hints;
     }
@@ -142,9 +138,9 @@ class DiscoHints
     /**
      * Collect the value of the children-property
      *
-     * @return \SAML2\XML\Chunk[]
+     * @return \SimpleSAML\XML\Chunk[]
      */
-    public function getChildren() : array
+    public function getChildren(): array
     {
         return $this->children;
     }
@@ -154,9 +150,8 @@ class DiscoHints
      * Set the value of the childen-property
      *
      * @param array $children
-     * @return void
      */
-    public function setChildren(array $children) : void
+    public function setChildren(array $children): void
     {
         $this->children = $children;
     }
@@ -165,10 +160,9 @@ class DiscoHints
     /**
      * Add the value to the children-property
      *
-     * @param \SAML2\XML\Chunk $child
-     * @return void
+     * @param \SimpleSAML\XML\Chunk $child
      */
-    public function addChildren(Chunk $child) : void
+    public function addChildren(Chunk $child): void
     {
         $this->children[] = $child;
     }
@@ -178,14 +172,14 @@ class DiscoHints
      * Convert this DiscoHints to XML.
      *
      * @param \DOMElement $parent The element we should append to.
-     * @return \DOMElement|null
      */
-    public function toXML(DOMElement $parent) : ?DOMElement
+    public function toXML(DOMElement $parent): ?DOMElement
     {
-        if (!empty($this->IPHint)
-         || !empty($this->DomainHint)
-         || !empty($this->GeolocationHint)
-         || !empty($this->children)
+        if (
+            !empty($this->IPHint)
+            || !empty($this->DomainHint)
+            || !empty($this->GeolocationHint)
+            || !empty($this->children)
         ) {
             $doc = $parent->ownerDocument;
 

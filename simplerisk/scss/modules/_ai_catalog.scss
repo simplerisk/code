@@ -1,0 +1,702 @@
+// ===== AI Capabilities Catalog (client-rendered, SR-AI-CAT) =====
+// Card grid mounted at #ai-capabilities-catalog and rendered client-side by
+// js/simplerisk/ai-capabilities-catalog.js from the v2 API. Cards mirror the
+// .sr-qcard surface (8px radius / $gray-300 border / $shadow) documented in
+// design-system.md §5; the switch reuses the $sr-important on-state (§1/§5).
+#ai-capabilities-catalog {
+    .aic-toolbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-bottom: 14px;
+    }
+
+    // Search grows to fill the toolbar (the count pill sits at the right).
+    .aic-search {
+        position: relative;
+        flex: 1;
+        min-width: 220px;
+
+        svg {
+            position: absolute;
+            left: 11px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 15px;
+            height: 15px;
+            color: $gray-500;
+            pointer-events: none;
+        }
+
+        input {
+            width: 100%;
+            padding: 8px 12px 8px 33px;
+            border: 1px solid $gray-400;
+            border-radius: 6px;
+            background: $sr-body;
+            font-size: 14px;
+            color: $sr-primary;
+
+            &:focus {
+                outline: none;
+                border-color: $sr-important;
+                box-shadow: 0 0 0 0.2rem rgba($sr-important, 0.15);
+            }
+        }
+    }
+
+    // Bulk Enable all / Disable all — right-aligned on the State filter row.
+    .aic-bulk {
+        margin-left: auto;
+        display: flex;
+        gap: 6px;
+    }
+
+    // Per-card enabled control: a design-system checkbox (App Red when checked)
+    // in the top-right of the card head. Replaces the old pill switch.
+    .aic-enable {
+        margin-left: auto;
+        flex: none;
+        width: 18px;
+        height: 18px;
+        accent-color: $sr-important;
+        cursor: pointer;
+
+        &:disabled { cursor: default; opacity: .6; }
+    }
+
+    .aic-bulkbtn {
+        font-size: 12px;
+        font-weight: 700;
+        color: $sr-primary;
+        background: $sr-body;
+        border: 1px solid $gray-300;
+        border-radius: 6px;
+        padding: 6px 12px;
+        white-space: nowrap;
+
+        &:hover:not(:disabled) { border-color: $sr-important; color: $sr-important; }
+        &:disabled { opacity: .5; cursor: default; }
+    }
+
+    // Count as a pill chip (matches the concept).
+    .aic-count {
+        flex: none;
+        font-size: 12px;
+        font-weight: 700;
+        color: $gray-600;
+        background: $gray-100;
+        border: 1px solid $gray-300;
+        border-radius: 20px;
+        padding: 4px 11px;
+        font-variant-numeric: tabular-nums;
+        white-space: nowrap;
+    }
+
+    .aic-filters {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        margin-bottom: 18px;
+        padding-bottom: 14px;
+        border-bottom: 1px solid $gray-300;
+    }
+
+    // Each filter group (Tier, Domain, State) is its own row; the fixed-width
+    // label keeps the chip columns aligned across rows.
+    .aic-set {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 6px;
+    }
+
+    .aic-setlbl {
+        flex: none;
+        min-width: 64px;
+        margin-right: 4px;
+        font-size: 11px;
+        font-weight: 800;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        color: $gray-500;
+    }
+
+    .aic-chip {
+        border: 1px solid $gray-300;
+        border-radius: 2em;
+        background: $sr-body;
+        color: $sr-primary;
+        font-size: 12px;
+        font-weight: 600;
+        padding: 4px 12px;
+        cursor: pointer;
+        transition: background-color .15s ease, color .15s ease, border-color .15s ease;
+
+        &:hover {
+            border-color: $gray-400;
+        }
+
+        &.on {
+            background: $sr-primary;
+            border-color: $sr-primary;
+            color: $white;
+        }
+    }
+
+    .aic-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+        gap: 16px;
+
+        &[hidden] {
+            display: none;
+        }
+    }
+
+    .aic-card {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        padding: 16px;
+        background: $sr-body;
+        border: 1px solid $gray-300;
+        border-radius: 8px;
+        box-shadow: $shadow;
+
+        // Locked (Extra-gated, not installed) cards stay visible but dimmed —
+        // discoverable, not hidden, per the catalog's design spec.
+        &.locked {
+            opacity: .6;
+        }
+
+        // Enabled capability — a subtle App Red accent (a thin left bar + faint
+        // tint) marks it as on without flooding the grid with red.
+        &.enabled {
+            border-color: rgba($sr-important, .45);
+            box-shadow: inset 3px 0 0 0 $sr-important, $shadow;
+        }
+    }
+
+    // Card head: icon + name on one row.
+    .aic-top {
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+    }
+
+    .aic-ico {
+        flex: none;
+        width: 38px;
+        height: 38px;
+        border-radius: 7px;
+        background: $gray-100;
+        border: 1px solid $gray-300;
+        display: grid;
+        place-items: center;
+        color: $sr-primary;
+
+        svg { width: 19px; height: 19px; }
+    }
+
+    .aic-name {
+        font-size: 14.5px;
+        font-weight: 800;
+        color: $sr-primary;
+        align-self: center;
+    }
+
+    .aic-desc {
+        flex: 1;
+        font-size: 12.5px;
+        color: $gray-600;
+    }
+
+    .aic-tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+    }
+
+    // Domain chip — soft/neutral per the state-pill family (§7); the dot
+    // carries the domain's identity color so it survives grayscale.
+    .aic-dchip {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 3px 10px 3px 8px;
+        border-radius: 2em;
+        background: $gray-100;
+        color: $gray-700;
+        font-size: 11.5px;
+        font-weight: 700;
+    }
+
+    .aic-dot {
+        flex: none;
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+
+        &.info { background: $cyan; }        // Recommendations
+        &.risk { background: $orange; }      // Risk
+        &.docs { background: $blue; }        // Documents
+        &.controls { background: $success; } // Controls
+        &.assistant { background: $purple; } // Assistant
+    }
+
+    .aic-tier {
+        display: inline-flex;
+        align-items: center;
+        padding: 3px 10px;
+        border-radius: 2em;
+        font-size: 11.5px;
+        font-weight: 700;
+
+        &.free {
+            background: $gray-100;
+            color: $gray-700;
+        }
+
+        &.extra {
+            background: lighten($state-warning, 30%);
+            color: darken($state-warning, 30%);
+        }
+    }
+
+    .aic-foot {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-top: 4px;
+        padding-top: 10px;
+        border-top: 1px solid $gray-300;
+    }
+
+    .aic-surfaced {
+        font-size: 11px;
+        color: $gray-500;
+    }
+
+    .aic-lock {
+        border: 1px solid $gray-300;
+        border-radius: 6px;
+        background: $gray-100;
+        color: $gray-500;
+        font-size: 11.5px;
+        font-weight: 700;
+        padding: 5px 10px;
+        cursor: not-allowed;
+    }
+
+    .aic-empty {
+        padding: 48px 24px;
+        text-align: center;
+        color: $gray-600;
+
+        h3 {
+            margin-bottom: 4px;
+            font-size: 15px;
+            font-weight: 800;
+            color: $sr-primary;
+        }
+
+        p {
+            margin-bottom: 16px;
+            font-size: 12.5px;
+        }
+    }
+
+    .aic-error {
+        padding: 24px;
+        text-align: center;
+        color: $danger;
+        font-size: 13px;
+    }
+}
+
+/* ── AI settings hub: gray ground + underline tabs (design-system §12) ───────
+   Wraps the Provider / Context / Capabilities tab area so the .sr-qform and
+   catalog cards float on the gray page ground instead of a flat white slab. */
+.sr-aihub {
+    .nav-tabs {
+        border-bottom: 1px solid $gray-300;
+        gap: 4px;
+        margin-bottom: 18px;
+
+        .nav-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            border: 0;
+            border-bottom: 2px solid transparent;
+            border-radius: 0;
+            margin-bottom: -1px;
+            padding: 11px 16px 12px;
+            background: transparent;
+            color: $gray-600;
+            font-weight: 700;
+            cursor: pointer;
+
+            svg { width: 16px; height: 16px; flex: none; }
+
+            &:hover { color: $sr-primary; }
+
+            &.active {
+                color: $sr-primary;
+                background: transparent;
+                border-bottom-color: $sr-important;
+            }
+        }
+    }
+
+    .tab-content { background: transparent; }
+}
+
+/* Reveal the page-wrapper gray behind the AI hub (mirrors the .sr-qform rule at
+   the bottom of _questionnaire.scss) so the cards float on the page ground
+   instead of a white bordered slab. */
+.content:has(> .row > .col-12 > .sr-aihub) {
+    background-color: transparent !important;
+    border-color: transparent !important;
+}
+
+/* On the AI hub pages, move the breadcrumb beneath the page title (title first,
+   breadcrumb under it — matches the design concept). Scoped via :has() so it
+   only affects the AI settings pages, not the global page header. */
+body:has(.sr-aihub) {
+    .page-breadcrumb .col-12 {
+        flex-direction: column;
+        align-items: flex-start !important;
+    }
+    .page-breadcrumb .ms-auto {
+        margin-left: 0 !important;
+        margin-top: 6px;
+        text-align: left !important;
+    }
+    .page-breadcrumb .breadcrumb {
+        margin-bottom: 0;
+        font-size: 12.5px;
+    }
+}
+
+/* ── AI Extra unified page header (breadcrumb + title + status + action) ─────
+   Replaces the stock page header on the Extra page, in every state, so the
+   title/breadcrumb aren't duplicated by the activation status. */
+.sr-ai-exthead {
+    background: $sr-body;
+    border: 1px solid $gray-300;
+    border-left: 4px solid $success;
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin-bottom: 18px;
+    box-shadow: $shadow;
+
+    &.inactive { border-left-color: $gray-400; }
+
+    .sr-ai-exthead-crumbs {
+        font-size: 12px;
+        color: $gray-600;
+        margin-bottom: 10px;
+
+        a { color: $gray-600; text-decoration: none; &:hover { color: $sr-important; } }
+        .sep { margin: 0 6px; color: $gray-500; }
+        .cur { color: $sr-primary; font-weight: 600; }
+    }
+
+    .sr-ai-exthead-main { display: flex; align-items: center; gap: 14px; }
+
+    .sr-ai-exthead-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: $success;
+        flex: none;
+        box-shadow: 0 0 0 3px rgba($success, 0.2);
+    }
+    &.inactive .sr-ai-exthead-dot {
+        background: $gray-500;
+        box-shadow: 0 0 0 3px rgba($gray-500, 0.2);
+    }
+
+    .sr-ai-exthead-text { flex: 1; min-width: 0; }
+    .sr-ai-exthead-titlerow { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+    .sr-ai-exthead-title { font-size: 20px; font-weight: 900; margin: 0; color: $sr-primary; }
+    .sr-ai-exthead-status {
+        font-size: 10.5px;
+        font-weight: 800;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        border-radius: 20px;
+        padding: 3px 10px;
+        color: $success;
+        background: rgba($success, 0.13);
+    }
+    &.inactive .sr-ai-exthead-status { color: $gray-700; background: $gray-100; }
+    .sr-ai-exthead-version { font-size: 12px; color: $gray-600; font-variant-numeric: tabular-nums; }
+    .sr-ai-exthead-desc { font-size: 12.5px; color: $gray-600; margin: 5px 0 0; }
+    .sr-ai-exthead-note { font-size: 12.5px; color: $gray-700; font-style: italic; }
+
+    .sr-ai-exthead-action { flex: none; }
+    form { margin: 0; }
+
+    .sr-ai-btn {
+        display: inline-block;
+        font-size: 13px;
+        font-weight: 700;
+        border-radius: 6px;
+        padding: 8px 18px;
+        cursor: pointer;
+        border: 1px solid $gray-400;
+        background: $sr-body;
+        color: $sr-primary;
+        text-decoration: none;
+
+        &:hover { border-color: $sr-important; color: $sr-important; }
+    }
+    .sr-ai-btn-primary {
+        background: $sr-important;
+        border-color: $sr-important;
+        color: $white;
+
+        &:hover { filter: brightness(0.94); color: $white; border-color: $sr-important; }
+    }
+}
+
+/* On the Extra page (which renders its own .sr-ai-exthead), hide the stock
+   page header so the title/breadcrumb aren't duplicated. Scoped via :has()
+   so no other page is affected. */
+body:has(.sr-ai-exthead) .page-breadcrumb { display: none; }
+
+/* ── Neutral help / getting-started panel (NOT the amber .sr-qnote caution) ── */
+.sr-qhelp {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    background: $gray-100;
+    border: 1px solid $gray-300;
+    border-radius: 6px;
+    padding: 12px 14px;
+    margin-bottom: 16px;
+    font-size: 13px;
+    line-height: 1.6;
+    color: $sr-primary;
+
+    .sr-qhelp-ico {
+        flex: none;
+        margin-top: 2px;
+        color: $gray-600;
+    }
+}
+
+/* ── Provider "getting started" collapsible (per-provider, auto-open when a key
+   is not yet configured) ─────────────────────────────────────────────────── */
+.ai-getting-started {
+    grid-column: 1 / -1;
+    background: $gray-100;
+    border: 1px solid $gray-300;
+    border-radius: 6px;
+    overflow: hidden;
+
+    summary {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 14px;
+        font-size: 13px;
+        font-weight: 700;
+        color: $sr-primary;
+        cursor: pointer;
+        list-style: none;
+
+        &::-webkit-details-marker { display: none; }
+
+        .ai-gs-chev {
+            flex: none;
+            color: $gray-600;
+            transition: transform 0.15s;
+        }
+    }
+
+    &[open] summary .ai-gs-chev { transform: rotate(90deg); }
+
+    .ai-gs-body {
+        padding: 2px 16px 14px 34px;
+        font-size: 12.5px;
+        line-height: 1.7;
+        color: $sr-primary;
+
+        strong { display: block; margin-bottom: 6px; }
+        ol { margin: 0; padding-left: 18px; }
+        a { color: $info; }
+    }
+}
+
+/* ── API-key row: input + inline Reset / Test / Save buttons (provider tab).
+   The action buttons that used to live in the sticky .sr-qactions bar are now
+   inline with the key input; re-declare their ghost/outline/primary treatment
+   here since they no longer inherit it from .sr-qactions. ─────────────────── */
+.sr-aihub {
+    .ai-key-row {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: stretch;
+        gap: 8px;
+
+        .form-control {
+            flex: 1 1 240px;
+            min-width: 0;
+        }
+
+        .btn {
+            flex: none;
+            border-radius: 6px;
+            white-space: nowrap;
+        }
+
+        // Reset — ghost
+        .sr-qcancel {
+            background: transparent;
+            color: $gray-600;
+            border: 1px solid $gray-300;
+
+            &:hover { color: $sr-primary; border-color: $gray-500; }
+        }
+
+        // Test connection — outline (red on hover)
+        .sr-qsave {
+            background: $sr-body;
+            color: $sr-primary;
+            border: 1px solid $gray-300;
+
+            &:hover { color: $sr-important; border-color: $sr-important; }
+        }
+
+        // Save — red primary
+        .sr-qsend {
+            background: $sr-important;
+            color: $white;
+            border: 1px solid $sr-important;
+
+            &:hover { background: darken($sr-important, 8%); border-color: darken($sr-important, 8%); }
+        }
+    }
+
+    .ai-key-note { display: block; margin-top: 6px; }
+
+    // Inline SSRF pre-check warning under the API URL field (shown by JS when the
+    // entered URL would be rejected by the server-side allow-list).
+    .ai-url-warning {
+        display: flex;
+        align-items: flex-start;
+        gap: 8px;
+        margin-top: 8px;
+        padding: 9px 11px;
+        background: rgba($orange, 0.1);
+        border: 1px solid rgba($orange, 0.4);
+        border-radius: 6px;
+        font-size: 12px;
+        line-height: 1.45;
+        color: $sr-primary;
+
+        svg { flex: none; color: $orange; margin-top: 1px; }
+    }
+
+    .ai-key-status {
+        margin-top: 6px;
+        font-size: 12px;
+        font-weight: 600;
+    }
+
+    /* ── Context tab: warning-note breathing room + dynamic last-saved ─────── */
+    .sr-qnote { margin-bottom: 16px; }
+
+    .sr-qnote-saved {
+        color: $gray-600;
+        font-weight: 600;
+        white-space: nowrap;
+    }
+
+    /* ── Context Questions: four inner sub-accordions inside one outer card.
+       Replaces the previous four stand-alone area cards to match the concept:
+       a single "Context Questions" card whose body holds lightweight,
+       collapsible area rows. ──────────────────────────────────────────────── */
+    .sr-qsubacc-group {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .sr-qsubacc {
+        border: 1px solid $gray-300;
+        border-radius: 8px;
+        overflow: hidden;
+        background: $sr-body;
+    }
+
+    .sr-qsubacc-head.accordion-button {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 11px 14px;
+        background: $gray-100;
+        color: $sr-primary;
+        font-weight: 700;
+        box-shadow: none;
+
+        &.collapsed { background: $sr-body; }
+        &:not(.collapsed) { border-bottom: 1px solid $gray-300; }
+        &:focus { box-shadow: none; border-color: $gray-300; }
+        &::after { margin-left: 8px; }
+
+        .sr-qsubacc-ico {
+            flex: none;
+            width: 26px;
+            height: 26px;
+            border-radius: 6px;
+            background: $sr-body;
+            border: 1px solid $gray-300;
+            display: grid;
+            place-items: center;
+            color: $sr-primary;
+
+            svg { width: 15px; height: 15px; }
+        }
+        &.collapsed .sr-qsubacc-ico { background: $gray-100; }
+
+        .sr-qsubacc-title {
+            font-size: 14px;
+            font-weight: 700;
+        }
+
+        // Answered badge — pushed to the right; the Bootstrap chevron follows it
+        .sr-qsubacc-badge {
+            margin-left: auto;
+            font-size: 11px;
+            font-weight: 700;
+            color: $gray-600;
+            background: $sr-body;
+            border: 1px solid $gray-300;
+            border-radius: 20px;
+            padding: 2px 10px;
+        }
+        &.collapsed .sr-qsubacc-badge { background: $gray-100; }
+
+        // Explicit chevron affordance (SimpleRisk's bundle omits Bootstrap's
+        // .accordion-button::after chevron). Points down when open, right when
+        // collapsed.
+        .sr-qsubacc-chev {
+            flex: none;
+            margin-left: 8px;
+            color: $gray-600;
+            transition: transform 0.15s;
+        }
+        &.collapsed .sr-qsubacc-chev { transform: rotate(-90deg); }
+
+        &::after { display: none; }
+    }
+
+    .sr-qsubacc-body { padding: 16px; }
+}

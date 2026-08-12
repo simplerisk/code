@@ -1,0 +1,1672 @@
+// Define Control Frameworks -- master-detail shell. Only the two-pane grid
+// and rail rows live here; the table card, toolbar, and scroll surface reuse
+// .sr-table-card / .sr-table-* from _tables.scss.
+//
+// ===== The compact tier has NO THRESHOLD (Task 45) =========================
+// It is measured, not declared. `.sr-fw-compact` on .sr-fw-panes is the whole
+// tier -- there is no width in this stylesheet, no @media, and no custom
+// property, because every number this tier has ever been given went stale:
+//
+//   Task 5   picked 1400px from the card widths of the day.
+//   Task 42  found 1400 was 140px short of the fit, and replaced the picked
+//            number with a DERIVED one: the control table's measured 959px
+//            min-content plus 582px of measured chrome => 1540px.
+//   Task 14  added the Applicability column. Min-content moved 959 -> 1081 in
+//            the framework-scoped view, and 1540 was invalid the moment it
+//            landed: between 1541 and 1662, scoped, the table sat frozen at
+//            1081px inside a 977-1056px scroller and the row-actions column --
+//            being the LAST column -- hung up to 90px outside it, exactly the
+//            unreachable Edit/Clone/Delete that Task 42 existed to fix.
+//
+// Deriving the number instead of picking it did not stop it going stale; it
+// only made the staleness better-documented. The reason is structural: the
+// condition this tier encodes is "the full column set fits the pane", and BOTH
+// of its terms are emergent layout facts that CSS cannot read.
+//
+// A container query on the pane -- the fix this task was filed proposing --
+// does not solve it either, and it is worth writing down why, because it looks
+// like it should. A container query measures the CONTAINER, and the pane's
+// inline size is IDENTICAL in both scopes; what differs between them is the
+// TABLE's min-content (959 vs 1081). So a pane container query is no more
+// scope-aware than a viewport media query is -- it would still need one
+// hardcoded threshold per column set, which is two stale numbers instead of
+// one. And a container query condition cannot read a custom property, so the
+// threshold cannot be computed per scope in CSS at all.
+//
+// What can read both terms is the browser, which has already computed them:
+// .sr-table-scroll's scrollWidth (what the full column set needs) against its
+// clientWidth (what the pane has). governance-frameworks.js's
+// evaluateCompactTier() reads exactly that pair, ALWAYS with the tier removed
+// so the input to the decision can never depend on its own output, and puts
+// the answer on .sr-fw-panes as `.sr-fw-compact`. That is still ONE definition
+// of "the full column set fits the pane" -- Task 42's single-source-of-truth
+// property is preserved, the definition has simply moved from a constant that
+// approximates the fit to the measurement of the fit itself. It is scope-aware,
+// sidebar-state-aware, zoom-aware and font-size-aware for free, and it cannot
+// go stale when the next column is added, because it never knew how many
+// columns there were.
+//
+// The page ships `.sr-fw-compact` ON in governance/index.php's markup, so the
+// SAFE state is the default: with no JS, or before the first measurement, the
+// row actions are the ⋯ menu and are reachable. JS only ever RELAXES the tier,
+// and only after measuring that relaxing it is safe.
+//
+// Everything the tier does lives in the one `.sr-fw-panes.sr-fw-compact` block
+// at the bottom of this file: the rail width, the folded columns, and the
+// shipped row-actions overflow mixin. The facet fold in
+// governance-frameworks.js reads the same class rather than a second query.
+//
+// ===== ...AND NEITHER DOES THE ONE BELOW IT (Task 48) ======================
+// The same measurement is applied twice now, because "the FOLDED set fits" is
+// exactly as emergent a fact as "the full set fits" -- and at narrow panes it
+// was false. Folding to the ⋯ menu buys back 42px against overflows measured up
+// to 105px, so the toggle that replaced a clipped cluster was itself clipped
+// and the row actions were reachable by no path at all. `.sr-fw-queue` is that
+// second fold; see the queue-tier note further down for the measurements and
+// for why the sidebar, not the viewport, is what made this reproducible.
+// governance/index.php ships that class on too, so the fail-safe default moves
+// down with the ladder.
+
+// ===== The two-pane grid ===================================================
+// minmax(0, 1fr), NOT a bare 1fr, on the content track (Task 31). A bare
+// `1fr` is shorthand for `minmax(auto, 1fr)`, and a grid track's `auto`
+// MINIMUM is min-content -- so the track can never resolve narrower than the
+// control table's own min-content width, no matter how little room the pane
+// actually has. Measured live before the fix: between 1420px and ~1655px the
+// full responsive tier shows every column, pinning min-content at 1071.66px
+// while the pane could only offer ~840-1060px, so the track stayed frozen at
+// 1071.66px and #sr-ctl-table's right edge ran up to 232px PAST the pane's.
+// Nothing scrolled either -- .sr-table-card is overflow-x: visible by design
+// (_tables.scss: clipping it would cut off row-action/filter dropdowns that
+// must escape the card), and the page body didn't grow (documentElement's
+// scrollWidth === clientWidth at every width), so the excess was simply
+// CLIPPED and unreachable. Below 1420 the compact tier hides Family/Owner/
+// Maturity, dropping min-content under the available width, which is exactly
+// why the bug only appeared in that window.
+//
+// minmax(0, ...) floors the track at zero instead, letting it take the width
+// the pane actually has. The table then overflows the SHIPPED .sr-table-scroll
+// wrapper (overflow-x: auto, _tables.scss) inside the card and scrolls there
+// -- the repo's standing rule that wide content scrolls in its own container
+// and the page body never scrolls sideways. No page-local scroll rule is
+// added here: that affordance is already in the markup (governance/index.php
+// wraps the <table> in .sr-table-scroll) and already styled; it simply never
+// had a reason to engage while the card was free to grow instead.
+//
+// Task 34 narrows the Maturity column, which lowers min-content and would
+// mask this at today's column set -- deliberately fixed at the track instead,
+// so the next column added doesn't reintroduce it.
+.sr-fw-panes {
+    display: grid;
+    grid-template-columns: 276px minmax(0, 1fr);
+    gap: 1rem;
+    align-items: start;
+    @media (max-width: 900px) { grid-template-columns: minmax(0, 1fr); }
+}
+// A CSS Grid, not a flex row (Task 23 review fix): a flex row with
+// margin-left:auto on the count left the count sitting to the LEFT of where
+// it sits on the "All frameworks" row, because .sr-row-actions is always in
+// the DOM for a real framework row (opacity:0 until hover, per the shipped
+// _tables.scss pattern -- it does NOT use display:none), so it always
+// reserved its own width in the flex flow, while "All frameworks" (no
+// framework to edit/delete) never renders that element at all. Each <li> is
+// its own independent grid, and a fixed-width track reserves the same space
+// on EVERY row regardless of what that row actually contains.
+//
+// TWO columns, left to right: name (+ the SCF chip, inline after it) | count.
+// Revised four times post-review (Josh):
+//   - 1st pass: names truncated to one line with the SCF chip inline beside
+//     them; count right-aligned via a flex margin-left:auto trick.
+//   - 2nd pass: names WRAP again (a rail this narrow -- ~232-276px -- makes
+//     wrapping the norm, not an edge case) and both chips moved to a shared
+//     right-hand column. The FIRST attempt at this pass gave the SCF chip its
+//     OWN separate fixed column (name | chip | count | actions, 4 tracks) --
+//     measured live, that left only ~67px for the name at this rail's widest
+//     tier, which forced mid-word breaks on ordinary words ("Cybersecurity"
+//     -> "Cybersecu"/"rity") because no single word fit the column, not just
+//     long names as a whole. Stacking the chip ABOVE the count in one narrow
+//     column instead of beside it reclaims that width for the name (~120px at
+//     the same tier) while still satisfying both asks -- "right-align the
+//     chips" and "count chips the same width" -- since both live in the
+//     identical fixed-width slot, just on separate lines.
+//   - 3rd pass (this version): "align the framework count chip with the right
+//     side of the frameworks card". The 2nd pass still carried a THIRD 56px
+//     track for the row actions, which held the count 64px (56px track +
+//     the 8px column gap) inside the row's content edge -- measured at
+//     1700px: card right 536, row content right 523, count chip right 459.
+//     The chip cannot reach the edge while actions occupy a track of their
+//     own, so the track is gone and .sr-row-actions is an absolutely
+//     positioned overlay pinned to the row's content edge instead (below).
+//   - 4th pass: "align the SCF chip to the right of the framework name and
+//     style it more like the count chip." The chip left the meta column for
+//     the name's own text flow -- INLINE after the last word, inside
+//     .sr-fw-namewrap, never a track of its own (the 2nd pass already proved
+//     what a track costs the name). The meta column had one child left after
+//     that, so it went too and the count chip is the 2nd grid item directly.
+//
+// Taking the actions OUT OF FLOW is what preserves the Task 23 fix rather
+// than undoing it. That fix needed real and "All frameworks" rows to reserve
+// the SAME trailing space; the 56px track did it by making both reserve 56px.
+// An out-of-flow overlay does it by making both reserve NOTHING -- the count
+// column's right edge is the row's content edge on every row, whether or not
+// that row has an actions element at all. What must never happen is the
+// in-between state the original bug was: one row type reserving space the
+// other doesn't.
+//
+// grid-template-columns, not a flex row, is also WHY the count column lands at
+// the same x on every row: a flex row has no notion of "the 2nd cell's width"
+// independent of its own content, but a grid's 2nd column-track is a fixed
+// size the SAME on every row's independent grid. That is what keeps a row
+// carrying an SCF chip aligned with one that doesn't -- the chip now lives in
+// the FIRST column's text flow, where it cannot move the second column at all
+// (which is also why railRow() needs no always-present placeholder for it:
+// omitting an inline child shifts nothing, the way omitting a grid child
+// would).
+.sr-fw-item {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 60px;
+    // Anchor for the .sr-row-actions overlay below.
+    position: relative;
+    // Rows are variable-height now that names wrap (a 2-3 line name is
+    // common at this width). align-items: center would leave the meta
+    // column floating in the vertical middle of a tall multi-line name --
+    // visually "adrift", disconnected from anything in particular.
+    // start anchors it level with the name's FIRST line instead, the way
+    // an email client's list row pins its metadata badges to the subject's
+    // first line rather than the vertical center of a wrapped subject. Short
+    // (single-line) names -- still the common case for shorter framework
+    // names -- look identical under center or start, so this costs nothing
+    // there and fixes the tall-row case.
+    align-items: start;
+    column-gap: .5rem;
+    padding: .5rem .75rem; cursor: pointer;
+    border-left: 3px solid transparent;
+    // A tint only -- no geometry, in any state. The rail's actions are keyed
+    // on SELECTION now (below), so nothing about hovering a row may move
+    // anything in it: hovering is how a user reads a list, not how they commit
+    // to a row. :focus-within alongside :hover so a keyboard user gets the
+    // same feedback a mouse user does.
+    &:hover,
+    &:focus-within { background: $gray-100; }
+    // Deliberately AFTER :hover/:focus-within and at equal specificity, so a
+    // selected row keeps its own tint rather than flattening to grey when
+    // hovered.
+    &[aria-current="true"] { background: $sr-row-selected; border-left-color: $sr-important; font-weight: 800; }
+    &:focus-visible { outline: 2px solid $sr-important; outline-offset: -2px; }
+
+    // ===== Edit/Delete belong to the SELECTED framework ====================
+    // Not to whatever the cursor is passing over. This rail is a navigation
+    // list whose job is picking a framework; editing or deleting one is a
+    // low-frequency operation on the framework you are already working in,
+    // which is what selection means. Hover-revealing them (the shape through
+    // Task 36) cost three things at once: every row swapped content as the
+    // cursor crossed it, the count vanished exactly when attention landed on
+    // that row, and a destructive Delete sat under the cursor on rows the user
+    // had not committed to. Keying on [aria-current="true"] removes all three,
+    // and removes hover from the rail's layout entirely -- a row's geometry is
+    // now identical whether the pointer is over it or not.
+    //
+    // Still an overlay pinned to the row's content edge, not a grid track, for
+    // the reason the 3rd/4th pass notes above give: a track is what held the
+    // count chip 64px short of the card's edge, and out-of-flow is what lets
+    // real rows and "All frameworks" reserve the SAME trailing space (none).
+    //
+    // Task 36 moved the overlay from .sr-row-actions to its WRAP, so the wrap
+    // carries the shipped .sr-row-actions-toggle (rowActionsWrap(),
+    // governance-frameworks.js) that _tables.scss's compact tier pops the
+    // cluster from, and .sr-row-actions keeps _tables.scss's own menu
+    // positioning (position: absolute; top: calc(100% + 4px); right: 0,
+    // relative to this wrap) -- except for the HORIZONTAL anchor, which Task 94
+    // flips to `left: 0` whenever the right-anchored menu would not fit inside
+    // this rail (the `is-right` rule under #sr-fw-rail, further down). It opens
+    // below the row and overhangs the card freely on the last row, and now to
+    // the right of it as well: .sr-table-card sets no overflow of its own and
+    // .sr-fw-list is a plain <ul>, so nothing clips it in either direction.
+    //
+    // `right`/`top` repeat the row's own padding, which lands the cluster
+    // exactly where the count chip's own right edge is -- flush with the row's
+    // content edge, level with the name's FIRST line. Cross-row alignment is
+    // therefore preserved by construction: the actions take the chip's place
+    // rather than being fitted around it.
+    .sr-row-actions-wrap {
+        position: absolute;
+        top: .5rem;
+        right: .75rem;
+        // Absent, not merely invisible: an opacity-0 wrap still takes the
+        // click, and its toggle stopPropagation()s the row selection the row
+        // was expecting -- clicking a rail row's count would silently open an
+        // invisible menu instead of selecting the framework.
+        display: none;
+    }
+
+    // Shown persistently on the selected row -- no transition, because there
+    // is no hover to fade in and out of, and the one moment it appears is a
+    // deliberate click.
+    //
+    // What is shown is the ⋯ TOGGLE, at every width: the rail's cluster is now
+    // always the menu the toggle pops (#sr-fw-rail's own
+    // sr-row-actions-overflow-tier include, further down this file), so the
+    // cluster's own opacity is the menu's business and is lifted by that
+    // mixin's `.sr-row-actions-wrap.is-open` rule. The page-local
+    // `.sr-row-actions { opacity: 1 }` that used to stand here is gone with the
+    // inline presentation it existed for.
+    // :not([data-sr-fw=""]) excludes the synthetic "All frameworks" row, which
+    // railRow() gives no actions at all (there is no framework to edit or
+    // delete) and which is SELECTED BY DEFAULT on every page load. Keyed on
+    // [aria-current="true"] alone, the chip rule below hid that row's grand
+    // total the moment the page rendered, with nothing standing in its place
+    // -- measured live, the default view lost its count entirely. The empty
+    // `data-sr-fw` is the attribute railRow()/highlightRail() already use to
+    // mean exactly "this is the All row", so no new class or :has() is needed
+    // to say it. The other two rules are no-ops on that row (it has no wrap
+    // and no cluster) and are scoped alongside only to keep one condition.
+    &[aria-current="true"]:not([data-sr-fw=""]) {
+
+        .sr-row-actions-wrap { display: inline-flex; }
+
+        // ===== Task 64's backdrop is GONE, with what it was masking =========
+        // Task 64 added a FOURTH action (Clone) to an inline cluster. Four
+        // icons measure 116px against the 60px meta track (+ .5rem gap) this
+        // overlay was sized to take the place of, so it reached ~48px into the
+        // NAME column and painted icons on a long framework name's last
+        // characters -- measured across a 900-1920px sweep in 40px steps, both
+        // sidebar states, framework selected: newly occluded at 26 of 52
+        // widths. The remedy then was an opaque backdrop with a leading fade,
+        // so the name read as continuing BENEATH a panel.
+        //
+        // That was a mitigation for an inline cluster this rail no longer has
+        // (Josh: "we should change it to just use the three dot dropdown list,
+        // by default"). One 30px toggle sits entirely inside the 60px track it
+        // replaces, so nothing reaches the name column and there is nothing
+        // left to mask -- the backdrop and its gradient would now paint 20px of
+        // $sr-row-selected over empty row, and the (hover: hover) guard they
+        // needed (to stay off the popped menu's own background) is gone with
+        // them. Verified live before removal: worst name/actions overlap
+        // -38px -- i.e. a 38px gap -- at every width from 900 to 1920.
+
+        // Both chips stand down while the actions stand. The count is a
+        // literal duplicate at this point -- Tasks 37/40 scoped the insights
+        // band to the rail selection, so the selected framework's control
+        // count is already on screen in the Controls tile directly above the
+        // table (verified: ISO 27001 (2022) rail chip 51, tile "51 In scope").
+        // Hiding it is what lets the actions sit at the chip's own flush
+        // position with nothing behind them -- no overlay collision, no
+        // background to keep in step with this row's tint, and no arithmetic
+        // holding the two apart.
+        //
+        // visibility, NOT display: none. .sr-fw-origin is INLINE inside the
+        // name's own text flow (4th pass, above), so removing it from flow
+        // would re-wrap the name and change the row's height -- the selected
+        // row would grow or shrink against its neighbours, which is its own
+        // flicker. visibility: hidden leaves both boxes exactly where they
+        // were, so selection changes what is painted and nothing else.
+        .sr-fw-n,
+        .sr-fw-origin { visibility: hidden; }
+    }
+
+    // An open menu paints above the rows it overlaps. Every .sr-fw-item is
+    // position: relative -- it has to be, it is the overlay's containing block
+    // -- so without this the menu is painted UNDER the following row's own
+    // content: measured, Edit and Delete on the FIRST rail row both
+    // hit-tested to the count chip of the row beneath them. 21 sits one step
+    // above the menu's own z-index: 20 (_tables.scss) so the two read as one
+    // scale.
+    .sr-row-actions-wrap.is-open { z-index: 21; }
+}
+.sr-fw-child { padding-left: 1.9rem; }
+.sr-fw-zero  { color: $gray-500; }
+
+// The grid's first item: the name, plus the SCF chip flowing inline after it.
+// min-width: 0 lives here rather than on .sr-fw-name because THIS is the grid
+// item now, and a track's automatic minimum is min-content unless the item
+// says otherwise.
+.sr-fw-namewrap {
+    min-width: 0;
+    overflow-wrap: break-word;
+}
+
+// Name -- wraps (no more overflow:hidden/ellipsis/nowrap). overflow-wrap
+// guards the pathological case of one long unbroken token (a framework name
+// with no spaces) that would otherwise overflow its 1fr column instead of
+// breaking -- ordinary space-separated names wrap between words first, this
+// is only the fallback for a single word wider than the column itself.
+.sr-fw-name {
+    overflow-wrap: break-word;
+}
+
+// SCF-origin chip -- the framework came from the Secure Controls Framework.
+//
+// Josh: "align the SCF chip to the right of the framework name and style it
+// more like the count chip." It now COMPOSES the shipped .sr-table-count pill
+// (railRow() adds that class) rather than restating it, so its radius, type,
+// colour, background and border are the count chip's by construction and
+// cannot drift from it. What it doesn't take is the fixed 60px width -- that
+// is keyed on `#sr-fw-list .sr-fw-n` below, and exists so numerals line up
+// down a column; a badge beside a name is content-width.
+//
+// Everything this rule used to declare is gone with it: 9.5px/800 type,
+// uppercase, and .03em letter-spacing were exactly what made it read as a
+// different species of chip beside a 12px/700 pill. (The uppercase was a §2
+// carve-out for caps-from-CSS; the value it renders, $lang['SCF'], is already
+// capitalised at the source, so nothing is lost.) What's left is only what
+// makes it sit correctly in a line of text.
+//
+// Note the composition is one-way: .sr-table-count is scoped under
+// .sr-table-card, so it outranks this bare class selector -- these three
+// declarations work because .sr-table-count sets none of them, and a genuine
+// override here would need matching specificity.
+.sr-fw-origin {
+    display: inline-block;
+    // Far enough that it reads as a separate badge rather than a last word of
+    // the name, close enough that it still belongs to it.
+    margin-left: 6px;
+    vertical-align: middle;
+    white-space: nowrap;
+}
+
+// Count chip: 60px comfortably fits this instance's widest real value,
+// "1,537", with room to spare (verified live: every count from "2" to
+// "1,537" measured exactly 60px, none clipped). Fixed rather than fluid on
+// purpose -- Josh: "don't let a 4-digit count widen its row relative to a
+// 1-digit one." It is the grid's SECOND item directly now; the .sr-fw-meta
+// flex column it used to sit in existed only to stack the SCF chip above it,
+// and a wrapper around one child arranges nothing. A grid item stretches
+// across its track by default, so the chip's OWN box -- .sr-table-count's
+// pill background -- still fills the full 60px, exactly as align-self:
+// stretch made it do inside the flex column: "1" and "1,537" produce the
+// SAME-SIZE visible pill, not just the same column.
+#sr-fw-list .sr-fw-n {
+    text-align: center;
+}
+
+// Task 23 review fix: <ul> carries Bootstrap Reboot's ul/ol padding-left:2rem
+// by default, which insets every .sr-fw-item (and its border-left selection
+// band) that far from the card's actual left edge -- a "dead gap" between
+// the rail's edge and the red band that none of the card's OTHER chrome
+// (the search box, "+ Add framework") has, since those aren't <ul> children.
+// Resetting it here makes the selection band span the full name-area width,
+// flush with the rest of the rail's content.
+.sr-fw-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+// ===== Row actions (Task 8): Edit / Delete per rail row =====================
+// The rail still reuses the SHIPPED .sr-row-actions/.sr-row-action(-danger)
+// component (_tables.scss, scoped to .sr-table-card -- #sr-fw-rail already
+// carries that class); what changed is the trigger, which now lives entirely
+// in the [aria-current="true"] block on .sr-fw-item above.
+//
+// Two rules stood here and are deliberately GONE rather than adapted:
+//
+//   .sr-fw-item:hover/:focus-within .sr-row-actions { opacity: 1 }
+//       The page-local hover trigger, needed because _tables.scss keys the
+//       cluster off `tbody tr:hover` and this rail is a <ul>/<li>. Selection
+//       replaces hover outright, so the cluster's opacity is lifted on the
+//       selected row instead.
+//
+//   @media (hover: none) { .sr-fw-item { padding-right: calc(.75rem + 38px) } }
+//       Task 36's carve-out, which stood the toggle up permanently on a
+//       pointer that cannot hover and bought it room by insetting EVERY row.
+//       It existed only because the actions were hover-revealed, and a touch
+//       pointer produces no hover at any width. With the reveal keyed on
+//       selection -- a tap selects a rail row exactly as a click does -- a
+//       no-hover pointer now reaches the actions by the same route every
+//       other pointer does, and the carve-out is not merely redundant but
+//       wrong: it would inset all 17 counts from the card's edge on touch,
+//       which is the alignment this file has spent three passes protecting.
+//
+// _tables.scss's own `(hover: none)` tier is untouched -- the control table
+// keeps its hover model, and this decision is about the rail only.
+
+// ===== The rail's actions are a MENU, at every width (Task 90) ==============
+// Josh: "four action buttons render inline and hide the framework name
+// underneath. We should change it to just use the three dot dropdown list, by
+// default."
+//
+// The overflow disclosure was already this rail's presentation below ~1400px
+// and on any pointer that cannot hover (_tables.scss's two @media triggers on
+// .sr-table-card, which #sr-fw-rail carries). This makes it the presentation
+// FULL STOP, by @including the same one definition unconditionally -- no new
+// rule, no second copy of what "the cluster becomes a menu" means, and no
+// third responsive rung. What the mixin needs is only that it sit inside a
+// .sr-table-card rule; #sr-fw-rail IS one, so its selectors resolve exactly as
+// they do under the two @media triggers, which continue to fire and now say
+// the same thing this rule already said.
+//
+// WHY THE RAIL AND NOT THE CONTROL TABLE. §6 of the design system specifies a
+// hover-revealed icon cluster for a DATA TABLE row, and the control table
+// keeps it: its actions column is a column, with a width budget of its own and
+// room for icons that never touch another cell. The rail is not a data table
+// -- it is a navigation list whose row is a name and a count, and whose
+// actions are an out-of-flow overlay pinned on top of that row precisely so
+// the count can sit flush with the card. An overlay has no width budget: every
+// action added is width taken from the name underneath it, which is how a
+// fourth icon came to paint over framework names at 26 of 52 swept widths
+// (Task 64). One toggle is a FIXED 30px whatever the action count becomes, so
+// this is also what stops the next action re-opening the same defect.
+//
+// What the rail gains, beyond the name back: the menu is the only presentation
+// that carries LABELS. `content: attr(title)` in the mixin turns each item
+// into an icon plus its localized name, so "Generate Statement of
+// Applicability" is read rather than guessed at from a shield glyph. What it
+// does NOT carry is section rules: Task 94 removed them, and railRow()'s
+// ordering alone carries the intent grouping (governance-frameworks.js).
+#sr-fw-rail {
+    @include sr-row-actions-overflow-tier;
+
+    // ===== ...and it opens RIGHTWARD, because the rail is narrower than it ===
+    // Josh: "It also expands so far left that the icons are buried under the
+    // left navigation bar."
+    //
+    // The mixin anchors the menu to the toggle's RIGHT edge (`right: 0`) so it
+    // opens INTO the row rather than off the card's right edge. That is the
+    // correct default for the surface it was written for -- a data table, whose
+    // card is hundreds of pixels wider than any menu. This rail is not that: it
+    // is a 232px (compact tier) to 276px column, and the menu the previous pass
+    // made it wear at EVERY width carries text labels, which measures 255px. A
+    // menu wider than the pane it is anchored inside has nowhere to grow but
+    // out of the pane's left edge, and what is immediately left of this pane is
+    // the sidebar. Measured on the pre-fix build, sidebar expanded, every width
+    // from 900 to 1920: the menu's left edge sat 36px outside the rail and 26px
+    // under the navigation, on the first and last rail rows alike.
+    //
+    // Anchoring to the toggle's LEFT edge instead sends it into the controls
+    // pane, which has the width the rail does not -- the same trade the menu
+    // already makes vertically, where it overhangs the rows below it rather
+    // than being squeezed into the row that popped it.
+    //
+    // Scoped here rather than in the mixin: _tables.scss is shared, and the
+    // control table's own menu must keep opening leftward, since ITS overflow
+    // has always been off the card's RIGHT edge (Tasks 42/45). This rule states
+    // only what "opens rightward" looks like; WHETHER it applies is a
+    // measurement -- the rail spans the full width below 900px, where the
+    // shipped right-anchored geometry is the correct one -- so the class is set
+    // at open time by orientRowActionMenu() (governance-frameworks.js),
+    // alongside the `is-up` decision it composes with.
+    .sr-row-actions-wrap.is-right .sr-row-actions {
+        right: auto;
+        left: 0;
+    }
+}
+
+// ===== "+ Add framework" (Task 8, design-system.md §4.2) ====================
+// The dashed .sr-qaddrow look is already shipped in _questionnaire.scss, but
+// scoped to .questionnaire-result-container/#questionnaire_responses.
+//
+// MUST stay scoped under #sr-fw-rail, not a bare `.sr-qaddrow { ... }` --
+// this file compiles into the SAME global style.min.css as every other
+// module, so a bare rule here doesn't just avoid duplicating the
+// questionnaire page's look, it OVERRIDES/duplicates onto every other
+// .sr-qaddrow in the product, including the differently-shaped
+// .sr-qform .sr-qaddrow the Assessments Extra already ships
+// (extras/assessments/index.php's "Add template and contacts" row). Caught
+// in review by diffing the COMPILED bundle, not just this source file --
+// verify there too, not just here, before assuming a rule is page-local.
+#sr-fw-rail .sr-qaddrow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    width: 100%;
+    // Flush against the status dropdown above it. That 8px top margin was the
+    // ENTIRE gap Josh saw between the Active/Inactive/All select and this
+    // button -- measured at 1700px, .sr-fw-rail-tools ended at 360 and this
+    // button began at 368, with nothing else contributing (the rail card is
+    // display: block with no flex gap, .sr-fw-rail-tools carries no rule of its
+    // own, and neither neighbour pads its facing edge).
+    //
+    // Zeroing it moves nothing else: the margin was top-only, so the button's
+    // relationship to whatever follows -- the list, or one of the rail's
+    // empty-state tiles, which render BELOW it and never replace it -- is
+    // unchanged in every state. That is why this stays a plain `margin: 0`
+    // rather than an adjacent-sibling rule scoped to the dropdown.
+    margin: 0;
+    font-size: 13px;
+    font-weight: 700;
+    color: $sr-primary;
+    background: $gray-100;
+    border: 1px dashed $gray-400;
+    border-radius: 6px;
+    padding: 9px 14px;
+    cursor: pointer;
+
+    .sr-qaddicon { flex: none; }
+
+    &:hover { border-color: $sr-important; color: $sr-important; }
+}
+
+// ===== Framework acquisition chooser (Task 26) =============================
+// The menu that hangs off "+ Add framework" when there is more than one way to
+// GET a framework (create it here / ComplianceForge SCF / the content
+// catalogue). Rendered by display_framework_acquisition_chooser()
+// (includes/governance.php), which decides how many routes exist -- with one
+// route there is no wrapper and no menu at all, so nothing below applies and
+// the dashed row is exactly what it was before this feature.
+//
+// NO SECOND ACCENT. The trigger keeps whatever chrome its caller gave it (the
+// dashed .sr-qaddrow in the rail, the existing .btn-submit in the empty tile);
+// nothing here paints $sr-important on a surface that did not already have it.
+// The one place it appears is the hover/focus affordance on a route, which is
+// the same treatment .sr-fw-empty-links' anchors already use.
+//
+// Scoped on .sr-fw-acquire* -- classes this file introduces -- rather than on
+// a bare .dropdown-menu, for the reason spelled out above #sr-fw-rail
+// .sr-qaddrow: this module compiles into the same global bundle as everything
+// else, so an unscoped rule here restyles every dropdown in the product.
+.sr-fw-acquire {
+    // The rail's trigger spans the card, exactly as the bare .sr-qaddrow did
+    // before it gained this wrapper. The empty tile's trigger is a normal
+    // inline button, so only the rail's instance is stretched.
+    #sr-fw-rail > & {
+        width: 100%;
+    }
+}
+
+.sr-fw-acquire-menu.dropdown-menu {
+    // Wider than Bootstrap's 10rem default (each route carries a hint line),
+    // and never wider than the viewport it opens in -- the rail is the narrow
+    // pane and this menu opens inside it.
+    min-width: 100%;
+    width: max-content;
+    max-width: min(340px, calc(100vw - 24px));
+    padding: 6px;
+    border: 1px solid $gray-300;
+    border-radius: 8px;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, .09);
+}
+
+// "How do you want to add a framework?" -- the menu's own question, so the
+// three routes read as answers rather than as three unrelated commands.
+.sr-fw-acquire-head {
+    display: block;
+    padding: 4px 8px 6px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+    color: $gray-600;
+}
+
+// Both selectors, because a LOCKED route is deliberately NOT a .dropdown-item:
+// Bootstrap's keyboard handler walks .dropdown-item and focuses each in turn,
+// and its .dropdown-item.disabled rule sets pointer-events: none, which would
+// make the unlock link inside a locked row unclickable. Locked rows are plain
+// <div class="sr-fw-acquire-item sr-locked">, so the layout they share with the
+// walkable rows has to be reachable without the Bootstrap class.
+.sr-fw-acquire-item,
+.sr-fw-acquire-item.dropdown-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    width: 100%;
+    padding: 8px;
+    border: 0;
+    border-radius: 6px;
+    background: none;
+    text-align: left;
+    // Bootstrap's .dropdown-item is white-space: nowrap; the hint is a
+    // sentence, so it has to be allowed to wrap.
+    white-space: normal;
+
+    // Hover/focus feedback belongs only to the rows that can be taken. A locked
+    // row that lights up on hover is claiming to be clickable.
+    &:not(.sr-locked) {
+        &:hover,
+        &:focus {
+            background: $gray-100;
+        }
+
+        &:focus-visible {
+            outline: 2px solid $sr-important;
+            outline-offset: -2px;
+        }
+    }
+}
+
+// The locked rows' own muting. Applied here rather than in
+// _locked-affordance.scss because it is this menu's typography that has to
+// yield -- the shared component owns the badge, the note and the link, which
+// look the same wherever they are used.
+//
+// $gray-500 rather than an opacity: the row must stay fully LEGIBLE. A washed
+// out row reads as content that failed to load, which is the misreading this
+// whole treatment exists to prevent -- these rows are the upsell.
+.sr-fw-acquire-item.sr-locked {
+    .sr-fw-acquire-label,
+    .sr-fw-acquire-hint {
+        color: $gray-500;
+    }
+
+    .sr-fw-acquire-icon {
+        background: $gray-100;
+        color: $gray-500;
+    }
+}
+
+.sr-fw-acquire-icon {
+    flex: none;
+    width: 26px;
+    height: 26px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    background: $gray-100;
+    color: $gray-600;
+    font-size: 12px;
+
+    .sr-fw-acquire-item:not(.sr-locked):hover & {
+        color: $sr-important;
+    }
+}
+
+.sr-fw-acquire-text {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    min-width: 0;
+}
+
+.sr-fw-acquire-label {
+    font-size: 13px;
+    font-weight: 700;
+    color: $sr-primary;
+    overflow-wrap: break-word;
+}
+
+.sr-fw-acquire-hint {
+    font-size: 12px;
+    font-weight: 400;
+    line-height: 1.35;
+    color: $gray-600;
+    overflow-wrap: break-word;
+}
+
+// Toolbar search field (Task 4) -- .sr-table-tools (_tables.scss) already
+// handles the flex row/gap/right-alignment; Bootstrap's .form-control alone
+// has no min-width as a flex item, so without this it can end up squeezed
+// to a sliver beside the Filters/Add buttons. Mirrors .dt-search input's own
+// min-width in _tables.scss so a plain (non-DataTables) search box in this
+// toolbar sizes the same way.
+.sr-table-tools .sr-table-search {
+    min-width: 210px;
+    max-width: 320px;
+}
+
+// ===== Filter sheet (Task 4): the 7 sr-selects + Clear filters behind
+// "Filters · n" ===========================================================
+// A panel between the toolbar and the table, toggled open/closed by
+// #sr-ctl-filters. Task 5 (responsive ladder) decides whether/when this
+// collapses further by width; today it's a plain show/hide at every width.
+.sr-ctl-filter-sheet {
+    padding: 14px 16px 16px;
+    background: $gray-100;
+    border-bottom: 1px solid $gray-300;
+
+    &[hidden] {
+        display: none;
+    }
+}
+
+.sr-ctl-filter-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+    gap: 10px 14px;
+}
+
+.sr-ctl-filter-field {
+    min-width: 0;
+
+    // (Task 29 replaced this field's <label> with the select's own placeholder
+    // option, so the `label { ... }` rule that used to live here matched
+    // nothing and was deleted in Task 30.)
+
+    // .sr-select is inline-block by default (_sr-select.scss); block+100%
+    // here so the grid COLUMN governs its width instead of its own content,
+    // same as every other field in this grid.
+    .sr-select {
+        display: block;
+        width: 100%;
+    }
+}
+
+.sr-ctl-filter-actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 12px;
+}
+
+.sr-ctl-filter-clear {
+    font-size: 12.5px;
+    font-weight: 700;
+    color: $sr-primary;
+    background: $sr-body;
+    border: 1px solid $gray-400;
+    border-radius: 6px;
+    padding: 6px 12px;
+    cursor: pointer;
+
+    &:hover {
+        border-color: $sr-important;
+        color: $sr-important;
+    }
+}
+
+// ===== Responsive ladder (Task 5): full -> compact -> queue =================
+// design-system.md 6b: a row must answer "what is this, and does it need me
+// today?" without scrolling sideways. Status answers "does it need me today"
+// for this table, so Status is pinned at every width and is the LAST column
+// standing -- Maturity folds first (explicit product decision, do not reorder).
+//
+// BASE RULES FIRST -- Task 3 renders .sr-ctl-sub, .sr-ctl-name, .sr-mat and
+// .sr-mat-none with NO styling of their own. .sr-ctl-sub is a <span>, so
+// without an explicit `display: none` it is INLINE and visible at full width,
+// duplicating the Family and Owner columns it exists to replace at narrower
+// widths. (Caught reviewing Task 3; do not omit this block.)
+.sr-ctl-sub {
+    display: none;                       // compact/queue tiers turn it back on
+    font-size: 11.5px;
+    color: $gray-600;
+}
+.sr-ctl-name { font-weight: 600; }
+
+// Maturity level pair (Task 30): the SHIPPED .sr-maturity-pill /
+// .sr-maturity-arrow pair the governance dashboard's maturity-gap widgets
+// render (_home.scss), not a second treatment. .sr-mat is only the wrapper --
+// the pills carry their own type and colour.
+//
+// Task 34 moved this pair out of the Maturity COLUMN and into the row drawer
+// (maturityLevelPair(), governance-frameworks.js). The column now renders a
+// single Below/At/Above chip built entirely from the shipped .sr-state-pill
+// family -- no rule of its own is needed here for it, which is why there
+// isn't one. The pair kept its markup and this styling verbatim; only its
+// home changed.
+.sr-mat {
+    white-space: nowrap;
+
+    // Shortfall of 2+ levels -- a narrower statement than the column's
+    // "below", which is any shortfall at all, so it is still worth marking
+    // here. The arrow carries the flag rather than a third glyph beside the
+    // two pills; maturityLevelPair() pairs it with visually-hidden text so the
+    // state is not colour-only.
+    //
+    // .sr-maturity-arrow is shared with the dashboard, but this only ever
+    // applies BELOW .sr-mat--gap, a class nothing outside
+    // governance-frameworks.js emits -- so the dashboard's own arrows are out
+    // of reach. (Deliberate: a bare .sr-maturity-arrow rule here would compile
+    // into the same global bundle and repaint theirs too.)
+    &.sr-mat--gap .sr-maturity-arrow { color: $warning; font-weight: 900; }
+}
+// The Maturity column's no-desired-target cell -- an em dash, never a chip
+// (renderMaturity()): with no target to compare against, "at" and "above"
+// would both be unfounded.
+.sr-mat-none { color: $gray-500; }
+
+// ===== The controls pane names its subject ==================================
+// The pane's <h2> carries the SELECTED FRAMEWORK'S NAME, not the fixed word
+// "Controls" (renderToolbar()/controlsPaneHeading(), governance-frameworks.js).
+// Before that, the header was byte-identical whichever framework was selected
+// -- "Controls" plus a count -- so the only thing on screen saying which
+// framework you were in was the rail's highlight, which is gone the moment the
+// rail is scrolled and unavailable at the widths where the rail collapses. A
+// detail pane that doesn't name its subject is an orientation gap on its own.
+//
+// It is also where the SCF-origin signal lives for the framework being worked
+// in, now that the rail hides the selected row's own chips (the actions take
+// their place). .sr-ctl-title-origin composes the SHIPPED .sr-table-count pill
+// exactly as .sr-fw-origin does in the rail -- so the two are one badge, not
+// two -- and needs no size or colour rule of its own: .sr-table-title is
+// already `display: flex; align-items: baseline; gap: 8px`, which spaces and
+// baselines the chip beside the name for free.
+//
+// What DOES need saying is that this heading is now user-authored text of
+// unbounded length, where it used to be one short word. Without min-width: 0 a
+// flex item cannot resolve below its min-content width, so one long unbroken
+// framework name would push .sr-table-tools -- the search box and Add Control
+// -- off the toolbar's right edge instead of wrapping. The three declarations
+// are the standard flex-item escape: shrink, wrap between words, and break
+// inside a single word only as the last resort. (The wrapper below is what is
+// actually the toolbar's flex item now -- these three still apply to the <h2>
+// itself, one level in, so the name keeps shrinking/wrapping exactly as
+// before inside it.)
+#sr-ctl-toolbar .sr-table-title {
+    min-width: 0;
+    flex-wrap: wrap;
+    overflow-wrap: break-word;
+}
+
+// The heading and the result-count chip beside it (renderToolbar(),
+// governance-frameworks.js) -- measured live, the count chip's mid sat ~4px
+// below the name's: .sr-table-toolbar is `align-items: center`, which centers
+// each child's BOX, and the name (15px/18px), the SCF chip inside it
+// (12px/14.4px), and the count chip (12px line-height:18px per
+// .sr-table-count) are three different box heights sharing a line -- centring
+// their boxes doesn't line up their TEXT. `align-items: baseline` fixes that
+// (verified live: aligns the two to within 0.1px) and is the typographically
+// correct relationship for text sharing a line, but it cannot be set on
+// .sr-table-toolbar itself -- that class is shared with Define Tests and the
+// rail's own header (_tables.scss), and re-baselining it there would instead
+// pull .sr-table-tools (the search box/filters), a much taller control, up
+// out of its current centered position. Wrapping just the name and the count
+// in their own flex group scopes the baseline alignment to the two text
+// elements it belongs to and leaves .sr-table-tools and every other
+// .sr-table-toolbar consumer untouched.
+//
+// The framework rail's own header (governance/index.php, #sr-fw-rail) has the
+// identical problem -- "Frameworks" (.sr-table-title) and #sr-fw-count
+// (.sr-table-count) are the same two mismatched box heights sharing the same
+// .sr-table-toolbar -- so it wraps its title and count in the SAME
+// .sr-title-count-group markup rather than a second near-identical class, and
+// this one rule is scoped to both containers instead of being repeated. It is
+// still a selector LIST, not a bare `.sr-title-count-group { ... }` -- each
+// branch stays tied to the one toolbar it fixes, so a future third
+// .sr-table-toolbar consumer (Define Tests, _tables.scss) does not silently
+// inherit baseline alignment it was never measured against.
+//
+// min-width: 0 and flex-wrap: wrap mirror the .sr-table-title rule above --
+// this group, not the <h2> alone, is now the toolbar's actual flex item, so
+// it is what needs to be able to shrink and, failing that, drop the count
+// chip to its own line rather than pushing the toolbar's other children off
+// the edge. gap matches .sr-table-toolbar's own so the visible spacing
+// between the name and the count is unchanged from when they were direct
+// toolbar siblings.
+#sr-ctl-toolbar .sr-title-count-group,
+#sr-fw-rail .sr-title-count-group {
+    display: flex;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: 12px;
+    min-width: 0;
+}
+
+// ===== The controls pane's toolbar is TWO ROWS (Task 49) ===================
+// Explicitly, at every width -- not as a consequence of wrapping.
+//
+// .sr-table-toolbar is `display: flex; flex-wrap: wrap`, which is right for its
+// other consumers and wrong here, because this toolbar carries three things
+// that do not fit one line: the pane's subject (a user-authored framework name,
+// plus an SCF chip and a count), a search box with two or four filter controls
+// beside it, and the page's one primary action. Flex-wrap resolved that
+// differently at almost every width, and because a wrapped flex line
+// re-baselines whatever lands on it, the ORDER changed as well as the shape.
+// Measured live, sidebar expanded, a framework selected -- top edges:
+//
+//   1920-1400   title 264, tools 260, add 260   the search/filter block sits
+//                                               4px ABOVE the heading
+//   1300        title 286, tools 260, add 305   the framework NAME drops BELOW
+//                                               the filters, and Add lands on a
+//                                               third line of its own
+//   1200-1100   title 260, tools 300, add 301   title above tools -- correct,
+//                                               and only by accident
+//   1024         title 260, tools 300, add 345  three rows again
+//
+// Josh: "the framework name drops down and the search and filter elements go
+// up." A tweak to the wrapping cannot fix that, because the wrapping IS the
+// behaviour: the same rule has to produce a different line count at different
+// widths, and which child leads a line is then decided by whatever fits. Two
+// declared rows behave identically at every width, so there is nothing left to
+// resolve:
+//
+//   row 1   [ Framework name  SCF  51 ] .................. [ + Add control ]
+//   row 2   [ Search ] [ Family ▾ ] [ Owner ▾ ] [ Filters · n ] ...........
+//
+// A grid, and an explicitly PLACED one. Auto-placement would reproduce the
+// original failure in a new costume -- the third item's position would again be
+// a function of what fit -- so all three children name their own cell. That also
+// lets the DOM stay in reading order (title -> Add -> tools, renderToolbar()),
+// so tab order and visual order agree by construction rather than one being a
+// side effect of the other.
+//
+// Scoped to #sr-ctl-toolbar. `display`, `grid-template-columns` and the three
+// placements are all set HERE, never on .sr-table-toolbar, which is shared with
+// Define Tests and the framework rail's own header (_tables.scss) -- both of
+// which carry two children and are correct as a flex row. Measured before and
+// after on both: Define Tests' toolbar unchanged at top 275 / left 261 / 1110 x
+// 52 with its title at 294, count at 295, tools at 288 and its quickfilters row
+// at 327; the rail's toolbar unchanged at 43px tall with its group at 263.59 and
+// .sr-fw-rail-tools at 293.59. Neither moved by a pixel.
+//
+// The toolbar's own `gap: 12px` becomes the grid's row and column gap, and
+// `align-items: center` still centres each child in its row track, so the
+// heading sits level with the Add button exactly as it did when they shared a
+// flex line. The .sr-title-count-group baseline alignment (0fefc9241) is
+// internal to that group and is untouched -- verified still within 0.25px.
+#sr-ctl-toolbar {
+    display: grid;
+    // The name takes the slack and can shrink to nothing before the button
+    // does; the button is content-width and never compressed.
+    grid-template-columns: minmax(0, 1fr) auto;
+
+    // Even out the two rows' vertical rhythm. Measured live before this pair,
+    // framework selected, at every width from 900 to 1920: the gap from the
+    // title group's bottom to the tools row's top was 16px, and the gap from
+    // the tools row's bottom to the first column header was 4px -- four times
+    // as much air above the search box as below it, which is what makes the
+    // row read as hanging off the heading rather than sitting between the
+    // heading and the table.
+    //
+    // Both numbers are inherited, not chosen. The 16 is .sr-table-toolbar's
+    // shared `gap: 12px` (which the grid takes as its ROW gap as well as its
+    // column gap) plus the 4px of slack `align-items: center` leaves above the
+    // 27px title group inside the 35px row-1 track. The 4 is the shared
+    // `padding: 13px 16px 4px` -- correct for _tables.scss's other consumers,
+    // where a .sr-table-quickfilters row follows INSIDE the card and supplies
+    // the separation itself, and wrong here, where row 2 is the last thing in
+    // the header zone and the table starts immediately under it.
+    //
+    // Scoped to #sr-ctl-toolbar, and `row-gap` specifically -- the shared
+    // 12px stays the COLUMN gap between the heading and "+ Add control" on
+    // row 1, and .sr-table-toolbar itself is untouched, so Define Tests
+    // (compliance.php) and the framework rail's own header keep the padding
+    // and gap they ship with. 8 + the same 4px of centring slack puts 12px
+    // above the tools row and 12px below it: measured 12/12 after.
+    row-gap: 8px;
+    padding-bottom: 12px;
+}
+
+#sr-ctl-toolbar .sr-title-count-group {
+    grid-column: 1;
+    grid-row: 1;
+}
+
+// Row 1's action cluster, opposite the subject it acts on. renderToolbar()
+// makes THIS the direct child of the toolbar -- "+ Add control" used to live
+// inside .sr-table-tools (now row 2 in its entirety), then briefly sat on the
+// grid itself, and now shares a wrapper with the framework-scoped "Generate
+// statement of applicability" (Task 17).
+//
+// The wrapper is what keeps the grid at THREE placements. A second action
+// placed directly on the grid would auto-place onto an implicit third row
+// spanning both columns -- the toolbar is declared as two rows and
+// SCENARIO-26 asserts it at every width, so a fourth direct child is a
+// regression, not a layout detail.
+//
+// `justify-self: end` on the wrapper, and "+ Add control" appended LAST inside
+// it, together keep the page's one accent fill flush with the toolbar's right
+// edge (also SCENARIO-26). The secondary action therefore sits to its LEFT,
+// which is the ordering the accent discipline wants anyway: the primary action
+// is the one at the edge the eye lands on.
+#sr-ctl-toolbar .sr-ctl-toolbar-actions {
+    grid-column: 2;
+    grid-row: 1;
+    justify-self: end;
+    display: flex;
+    align-items: center;
+    // Tighter than the toolbar's own 12px: these two are one cluster acting on
+    // the same subject, not two independent toolbar regions.
+    gap: 8px;
+}
+
+// "Generate statement of applicability" is a long label on a row whose other
+// occupant is a user-authored framework name, and column 1 is the minmax(0, 1fr)
+// track while column 2 is `auto` -- so every pixel the actions cluster takes
+// comes out of the title, and none of it comes out of the buttons.
+//
+// MEASURED at 1024px with the sidebar expanded: toolbar 486px, actions 321px of
+// it (211px label + 8px gap + 102px Add), leaving the title group 121px. The
+// framework name wrapped to two lines and the count dropped below it -- an
+// outright breach of the one-baseline rule SCENARIO-26 asserts, and visibly
+// wrong besides. Shortening the label only moves the width at which it happens,
+// because the name on the other side of the row is customer data of unbounded
+// length.
+//
+// So the LABEL yields and the title does not. Below the threshold the button is
+// its icon alone; `title`/`aria-label` (set in renderToolbar()) carry the name
+// in both states, so nothing is lost to a screen reader or to a hover.
+//
+// A CONTAINER QUERY, not a media query, and this is the one place on this page
+// where that is the right tool. Task 45's note explains why a container query on
+// the PANE cannot express the compact-table tier: the pane's inline size is
+// identical in both framework scopes and what differs is the table's
+// min-content, which CSS cannot read. This constraint is the opposite shape --
+// "does this toolbar have room for a title and two buttons" is purely a function
+// of the toolbar's own inline size, which is exactly what a container query
+// measures. A viewport media query would get it wrong in the other direction,
+// since collapsing the sidebar hands the pane ~194px at an unchanged viewport.
+//
+// 700px is the measured floor with headroom: at 1024/expanded the toolbar is
+// 486px and at 1300/expanded it is ~762px, which comfortably seats the title,
+// the label and Add together.
+#sr-ctl-toolbar {
+    container-type: inline-size;
+    container-name: sr-ctl-toolbar;
+}
+
+@container sr-ctl-toolbar (max-width: 700px) {
+    #sr-soa-btn .sr-soa-btn-label {
+        display: none;
+    }
+}
+
+// The icon needs the gap only while the label is beside it.
+#sr-soa-btn .sr-soa-btn-label {
+    margin-left: 6px;
+}
+
+// The SoA button's WEIGHT (Task 65). It shipped as `btn btn-outline-secondary
+// btn-sm` and read as unstyled, for two reasons that are worth keeping
+// separate:
+//
+//  - btn-sm made it 28.4px tall / 12.25px text beside a 35px / 14px neighbour,
+//    sitting 3.3px lower on a row whose whole job is one baseline. Dropping the
+//    size class -- so it carries the same bare `.btn` geometry #sr-ctl-add does
+//    -- fixes height, font and baseline together. Measured after: 35 / 14 /
+//    level.
+//  - btn-outline-secondary is raw Bootstrap grey ($gray-600 text and border),
+//    which appears nowhere in this product's palette. That is why it read as
+//    UNSTYLED rather than merely mis-sized.
+//
+// MIDDLE WEIGHT, per design-system.md §5's three: ghost (.sr-qcancel) <
+// outline-with-red-on-hover (.sr-qsave) < red fill (.sr-qsend / .btn-submit).
+// §6 spends App Red once per view and it is spent on "+ Add control", so this
+// cannot be a second fill; and neutral-until-hover is exactly what "actionable,
+// not primary" means in the system's own vocabulary. The values below ARE
+// .sr-qsave's -- $sr-body ground, $sr-primary text, $gray-300 border, both text
+// and border going $sr-important on hover.
+//
+// §6 describes the toolbar as holding "the one primary action", so a second
+// toolbar action is outside the pattern as written and there is no shipped
+// table-toolbar secondary to reach for: .sr-q* are form-bar classes, and
+// .sr-table-filter (the nearest shipped toolbar outline) is the Filters
+// disclosure, hovering to a grey border rather than red. .btn-outline-submit
+// exists from custom.scss's generator but is a STANDING red -- red text and
+// border at rest -- which is the accent spent twice.
+//
+// So no new class at all: this is an ID selector in the page's own partial,
+// which cannot leak into the global bundle the way a bare class in a page
+// partial already has (the Assessments Extra regression §6 warns about).
+//
+// Set through Bootstrap's own custom properties rather than as flat
+// declarations, so focus, active and disabled keep going through .btn's
+// machinery instead of being half-overridden by specificity.
+#sr-soa-btn {
+    --bs-btn-color: #{$sr-primary};
+    --bs-btn-bg: #{$sr-body};
+    --bs-btn-border-color: #{$gray-300};
+    --bs-btn-hover-color: #{$sr-important};
+    --bs-btn-hover-bg: #{$sr-body};
+    --bs-btn-hover-border-color: #{$sr-important};
+    --bs-btn-active-color: #{$sr-important};
+    --bs-btn-active-bg: #{$sr-body};
+    --bs-btn-active-border-color: #{$sr-important};
+}
+
+// Row 2, spanning both columns, left-aligned. Both overrides undo positioning
+// that .sr-table-tools carries for its life as a flex item in a one-row toolbar
+// (`margin-left: auto` + `justify-content: flex-end` push it to the right, away
+// from a title on the same line). Neither applies to a row of its own, and
+// left-aligned is what puts the search box on the card's own left edge, in line
+// with the heading above it and the first column below -- the same relationship
+// _tables.scss's shipped .sr-qf-selects filter row already has.
+#sr-ctl-toolbar .sr-table-tools {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    margin-left: 0;
+    justify-content: flex-start;
+}
+
+// The search field takes row 2's slack, which is also what right-aligns
+// "Filters · n" on it.
+//
+// Measured live before this rule, framework selected: the search box sat at a
+// flat 320px (its max-width below) whatever the row measured, so it was 24.5%
+// of the row at 1920 and 35% at 1541, and the Filters button -- the last thing
+// on the row -- ended 666px / 446px / 287px short of the row's right edge at
+// 1920 / 1700 / 1541. A row whose contents huddle into its first third reads
+// as unfinished, and the field being reached for on a grid this wide is the
+// search.
+//
+// One declaration does both halves of that. Growing the search consumes the
+// row's free space, and a flex line with no free space left puts its LAST item
+// flush against the end -- so Filters lands on the row's right edge as a
+// consequence of the search filling, not as a second, separately-maintained
+// rule. Deliberately NOT `margin-left: auto` on the button: auto margins
+// absorb positive free space BEFORE flex-grow is applied (CSS Flexbox §9.5),
+// so pinning the button that way would leave the search frozen at its basis
+// and re-open the gap it is meant to close.
+//
+// max-width, not min-width, is what is relaxed. The 210px min-width above is
+// the sliver guard -- a bare .form-control has no min-width as a flex item and
+// collapses next to the buttons -- and it is still doing that job here: it is
+// the floor the field shrinks to at the narrow tiers, and the flex-basis it
+// grows from at the wide ones.
+//
+// Scoped to #sr-ctl-toolbar because filling the row is only correct where the
+// row IS the search's own row (Task 49's second declared row). In a one-line
+// .sr-table-tools -- Define Tests, self-assessment -- the search shares the
+// line with the primary action and the 320px cap is what keeps them a
+// cluster; _tables.scss's shared rule and the unscoped rule above are both
+// left alone.
+#sr-ctl-toolbar .sr-table-tools .sr-table-search {
+    flex: 1 1 210px;
+    max-width: none;
+}
+
+// The controls pane's title/count group doesn't need anything past the shared
+// rule above -- #sr-ctl-toolbar also holds .sr-table-tools (a 35.5px-tall search
+// box) on the row below, so the TOOLBAR's own height is the sum of two declared
+// rows regardless of what the group measures.
+// #sr-fw-rail's toolbar holds ONLY the title and the count -- no
+// .sr-table-tools inside it (the rail's search/status live in the sibling
+// .sr-fw-rail-tools block below the toolbar, in normal flow right after it)
+// -- so here the GROUP's own height is what sizes the toolbar, and that
+// pushes .sr-fw-rail-tools down or up by however much the group grows or
+// shrinks.
+//
+// Measured live: <h2 class="sr-table-title"> carries Bootstrap's unreset
+// default heading margin (margin: 0 0 8px), invisible under the shared rule's
+// align-items: center because the toolbar's tallest child was always
+// whichever of .sr-table-title's 26px margin-box (18px line-height + that
+// 8px margin) or #sr-fw-count's 22px box won -- 26, so the toolbar rendered
+// at 43px (17px padding + 26px). Switching this group to align-items:
+// baseline recomputes the required box from each child's ascent/descent
+// instead of its margin-box height, and the two don't come out equal for
+// these two children -- measured 27.5px, not 26px -- so the toolbar grew to
+// 44.5px and pushed #sr-fw-search/#sr-fw-status (in the sibling
+// .sr-fw-rail-tools block right below) down 1.5px each. A fixed height here,
+// derived from the SAME two measured quantities the old center-aligned
+// height was already built from (18px line-height + 8px margin = 26px),
+// restores the toolbar to its pre-existing 43px and both controls to their
+// pre-existing position -- verified live, pixel-identical before/after this
+// fix in every state tested (wide, compact-tier narrow, empty rail). It does
+// not touch flex-wrap: wrap's job above: at every rail width this title/count
+// pair actually reaches ("Frameworks" plus a numeric pill), the pair still
+// fits on one line well under this height, so there is no second line for a
+// fixed height to clip.
+#sr-fw-rail .sr-title-count-group {
+    height: 26px;
+}
+
+// ===== The compact tier ====================================================
+// A CLASS, not an @media -- see the long note at the top of this file for why
+// this tier has no width in it at all. governance-frameworks.js's
+// evaluateResponsiveTiers() measures .sr-table-scroll's scrollWidth against its
+// clientWidth (the full column set's requirement against the room the pane
+// actually has, both read with this class OFF so the measurement is never a
+// function of its own result) and toggles `.sr-fw-compact` on .sr-fw-panes.
+// governance/index.php ships the class ON, so the reachable state is the
+// default and JS only ever relaxes it.
+//
+// This is rung 2 of three. Where even the folded set below does not fit, the
+// same function adds `.sr-fw-queue` on top of this class and the queue tier
+// takes over -- so the paragraph below about the cluster's right edge being
+// outside the container "no matter what occupies it" now has an answer rather
+// than only a mitigation.
+//
+// Everything the tier does is here, in one block, for the reason Task 42
+// collapsed three copies of this condition into one: the rail width, the
+// folded columns and the row-actions disclosure are all the same statement
+// about the same fit, and when they were separate rules they drifted.
+.sr-fw-panes.sr-fw-compact {
+    // minmax(0, 1fr) for the same reason as the base rule above -- this tier
+    // hides three columns, but a narrow-enough pane (measured: a 0.88px
+    // overflow at 1024) can still be squeezed below what the remaining
+    // columns need.
+    //
+    // Note this also out-specifies the base block's own
+    // `@media (max-width: 900px) { grid-template-columns: minmax(0, 1fr) }`,
+    // exactly as the old compact @media did by source order -- measured live
+    // before this change, .sr-fw-panes resolved to `232px <rest>` at 860px,
+    // not to a stacked single column. Behaviour is deliberately unchanged
+    // here; the stacked-rail rule has been dead since Task 5 and reviving it
+    // is a layout decision, not part of this fix.
+    grid-template-columns: 232px minmax(0, 1fr);
+
+    #sr-ctl-table { .sr-col-family, .sr-col-owner, .sr-col-mat { display: none; } }
+    .sr-ctl-sub { display: block; }
+
+    // The row actions become the ⋯ menu on the SAME condition the columns
+    // fold on (Task 42), via _tables.scss's shipped mixin -- the one
+    // definition of "the cluster becomes a menu" that the compact and
+    // no-hover tiers there already share, composed here rather than restated.
+    //
+    // It has to be this tier and not a rule of its own. The cluster is the
+    // table's LAST column, so it sits at the table's right edge, and whenever
+    // the table is pinned at its min-content width INSIDE a narrower scroller
+    // that right edge is outside the container no matter what occupies it.
+    // Swapping three icons for one toggle saves 42px against overflows
+    // measured at up to 107px (Task 42) and 90px (Task 45), so a lone
+    // actions-tier change would move a clipped cluster off screen and put a
+    // clipped TOGGLE in its place. What actually buys the room back is this
+    // tier's column hiding, which is why the two belong to one condition.
+    //
+    // Scoped to #sr-ctl-table, NOT to every .sr-table-card on the page: the
+    // rail (#sr-fw-rail, also a .sr-table-card) has no fit problem to solve
+    // here. Its cluster is two icons in an out-of-flow overlay pinned to a
+    // fixed-width row, measured 13px INSIDE the rail card at every width from
+    // 768 to 1920, so it keeps _tables.scss's own 1400px boundary. Widening
+    // the rail's menu band to match the table's would trade a working hover
+    // cluster for a disclosure at widths where nothing is overflowing.
+    #sr-ctl-table { @include sr-row-actions-overflow-tier; }
+
+    // Family/Owner are NOT hidden here -- governance-frameworks.js's
+    // syncInlineFacetPlacement() physically MOVES the pair (native <select>
+    // + its sr-select wrapper) out of #sr-ctl-toolbar and into
+    // #sr-ctl-filter-sheet whenever this class is on, keyed off the class
+    // itself rather than a second query of its own. A hidden-in-place filter
+    // is unreachable -- can't be seen or cleared -- and a hidden-but-applied
+    // filter makes the Filters badge lie about what's actionable, which is
+    // worse than not having the filter (fixed post-review; see
+    // task-5-report.md).
+}
+
+// ===== The queue tier ======================================================
+// ONE definition, TWO triggers -- the same shape _tables.scss's
+// sr-row-actions-overflow-tier mixin uses, and for the same reason: the failure
+// mode of writing a tier twice is that the copies drift and the page ends up
+// laid out one way and behaving the other.
+//
+//   @media (max-width: 900px)   "is this a phone, so should the row stop being
+//                               a row and become a stacked block?" -- a
+//                               question about how the row is READ. It is not a
+//                               fit test and is deliberately still a width.
+//   .sr-fw-panes.sr-fw-queue    "the FOLDED column set does not fit either" --
+//                               a fit test, measured, set by
+//                               governance-frameworks.js's
+//                               evaluateResponsiveTiers().
+//
+// The second trigger is Task 48. The compact tier swaps three action icons for
+// one ⋯ toggle, which buys back 42px -- and at narrow panes the folded set was
+// still overflowing by up to 105px, so the toggle that replaced a clipped
+// cluster was itself clipped and Edit / Clone / Delete were reachable by no path
+// at all. Measured live, framework selected, sidebar EXPANDED: 105px over at a
+// 1020px viewport, 93 at 1040, 73 at 1060, 53 at 1080, 33 at 1100, 13 at 1120.
+// The sidebar is the trigger -- expanding it costs the pane ~194px, so the same
+// viewport is fine collapsed and broken expanded, which is why this rung is
+// keyed on the PANE's measured fit and not on any viewport width.
+//
+// This tier is what STOPS the ladder, structurally rather than arithmetically:
+// it rebuilds every row as a grid, and a grid row cannot overflow, so the
+// actions are inside the scroller by construction. There is no fourth rung to
+// need.
+//
+// It always rides on top of the compact tier (evaluateResponsiveTiers() only
+// ever sets .sr-fw-queue alongside .sr-fw-compact, and the @media branch holds
+// the compact tier on by its own route), so the columns are already folded and
+// the ⋯ disclosure is already standing when these rules apply.
+@mixin sr-fw-queue-tier {
+    #sr-ctl-table {
+        thead { display: none; }
+        .sr-ctl-row {
+            display: grid; grid-template-columns: auto 1fr auto;
+            gap: .25rem .5rem; padding: .7rem .75rem;
+            border-bottom: 1px solid $gray-300;
+            td { display: block; border: 0; padding: 0; }
+
+            // Runtime-verified gotcha, and it survives Task 45's move to a
+            // measured tier -- but for a DIFFERENT reason than it used to, so
+            // read this before touching either side.
+            //
+            // The compact tier is always on wherever this tier is, and under
+            // the @media trigger it is NOT because the columns don't fit: this
+            // tier turns every row into a grid, so the table stops being able
+            // to overflow at all and a fit test would read "everything fits"
+            // and switch the compact tier OFF. That would take `.sr-ctl-sub`
+            // with it -- the only place Family and Owner survive once the rules
+            // below hide their columns -- so evaluateResponsiveTiers() detects
+            // that trigger (by `thead` computing to display:none with both tier
+            // classes stripped) and holds the compact tier ON rather than
+            // measuring. Under the CLASS trigger the compact tier is on for the
+            // ordinary reason -- rung 2 measured it and the folded set did not
+            // fit either. See the note there.
+            //
+            // Which means the compact tier's `.sr-col-mat { display: none; }`
+            // is in effect here too. `#sr-ctl-table .sr-ctl-row td` (1 id,
+            // 1 class, 1 type) OUTRANKS the pre-Task-45 `#sr-ctl-table
+            // .sr-col-mat` (1 id, 1 class, 0 type) on specificity regardless of
+            // source order, so the td rule above silently won and un-hid
+            // family/owner/maturity at this tier. The re-assert below, nested
+            // one level deeper (1 id, 2 classes, 0 type), beats it. Task 45's
+            // `.sr-fw-panes.sr-fw-compact #sr-ctl-table .sr-col-mat` (1 id,
+            // 3 classes) now out-specifies the td rule on its own, so this is
+            // belt-and-braces today -- keep it: it is what makes this block
+            // correct independently of how the compact tier is expressed.
+            .sr-col-family, .sr-col-owner, .sr-col-mat { display: none; }
+        }
+
+        // The min-content probe (Task 47) is REMOVED at this tier, and it has to
+        // be. This tier's whole guarantee is that a row rebuilt as a grid cannot
+        // overflow, so the actions are inside the scroller by construction --
+        // and the probe rows are deliberately NOT `.sr-ctl-row` (they are not
+        // addressable control rows), so the grid rules above do not reach them.
+        // They stayed ordinary table rows carrying the FULL column set inside a
+        // stacked table, and set a min-content nothing else had: measured 12-22px
+        // of horizontal overflow at 960-1020px in the settled queue state, i.e.
+        // the probe broke the invariant it was added to protect.
+        //
+        // Safe to drop here because the ladder never reads the probe at this
+        // tier: evaluateResponsiveTiers() takes rung 1 with BOTH classes
+        // stripped and rung 2 with `.sr-fw-compact` alone, so in both reads this
+        // block is not in force and the probe is present. Only the SETTLED queue
+        // state hides it -- exactly the state in which its width is meaningless.
+        tr.sr-ctl-probe { display: none; }
+        .sr-col-check { grid-column: 1; grid-row: 1; }
+        .sr-col-num   { grid-column: 2; grid-row: 1; }
+        .sr-col-acts  { grid-column: 3; grid-row: 1; text-align: right; }
+        .sr-col-name  { grid-column: 2 / -1; grid-row: 2; }
+        // Applicability and Status take the next two rows by AUTO-PLACEMENT,
+        // not by a pinned grid-row (Task 14). The Applicability cell is only
+        // rendered when the rail has scoped to one framework -- outside that
+        // scope it isn't in the DOM at all -- and a Status pinned to row 4 then
+        // leaves row 3 as an empty implicit track that still costs its
+        // row-gap. Measured at 820px on "All frameworks" before this change:
+        // grid-template-rows resolved to `30px 37.5px 0px 20.25px`, i.e. a 0px
+        // phantom row between the name and the status, plus 4px of gap for
+        // nothing. With a definite column and an auto row, the two land on
+        // rows 3 and 4 when both are present and on row 3 alone when only
+        // Status is -- one rule that is correct in both states, rather than a
+        // second rule keyed on which columns happen to exist.
+        .sr-col-appl  { grid-column: 2 / -1; }
+        .sr-col-stat  { grid-column: 2 / -1; }
+    }
+}
+
+// Trigger 1 (unchanged): the viewport is phone-shaped.
+@media (max-width: 900px) {
+    @include sr-fw-queue-tier;
+}
+
+// Trigger 2 (Task 48): the PANE cannot hold the folded set either. Every
+// selector inside gains .sr-fw-panes.sr-fw-queue here, so this branch
+// out-specifies both the base rules and the compact tier's own -- which is what
+// it needs to do, being one fold further down the same ladder.
+.sr-fw-panes.sr-fw-queue {
+    @include sr-fw-queue-tier;
+}
+
+// ===== Row drawer (Task 6): in-place read view =============================
+// The drawer is a read view (design-system §11): values, not disabled
+// controls. Its outer shell is the SHIPPED tr.sr-expand-row/.sr-expand-panel
+// pattern (_tables.scss, scoped to .sr-table-card -- #sr-ctl-table already
+// carries that class), the same disclosure shell Define Tests uses under its
+// own group/test rows (Task 23 review fix -- this used to be a bespoke
+// .sr-ctl-drawer with its own gray-tinted <td>, styled here; that block is
+// gone, the shipped shell fully replaces it, and only the .sr-dl-*/rich-text
+// content classes below remain page-local). Its <tr> is a SIBLING of
+// .sr-ctl-row, not a .sr-ctl-row itself, so none of the queue-tier grid
+// rules above (which key off .sr-ctl-row td) apply to it -- it stays a plain
+// block at every width.
+//
+// The expand caret that opens it is the shipped .sr-group-caret, but STAYS
+// A REAL <button> (governance-frameworks.js's renderRow()) rather than
+// Define Tests' clickable-<tr>-with-inert-<span> shape, so it keeps its own
+// keyboard operability and aria-expanded.
+//
+// Task 23 review fix (2nd pass, measured live): the shipped .sr-group-caret
+// rules in _tables.scss were written against Define Tests' <span> and only
+// set size/color/transition -- a <span> has no user-agent chrome to begin
+// with. A <button> does: browser default background, a 3D "outset" border,
+// and its own padding, none of which those shipped rules ever neutralise
+// (they had nothing to neutralise on a span). Left alone, ours rendered as a
+// grey 3D box around the chevron instead of a bare icon. Computed-style
+// comparison against Define Tests' caret confirmed size/color/icon already
+// matched exactly -- only background/border/padding differed, and only
+// because of the element type. Scoped to #sr-ctl-table, NOT a bare
+// `.sr-group-caret { ... }` -- per this file's own rule (see the "+ Add
+// framework" section above): a bare rule here compiles into the same global
+// bundle Define Tests' and Self-Assessment's own .sr-group-caret spans share,
+// and would reach theirs too.
+#sr-ctl-table .sr-group-caret {
+    background: none;
+    border: 0;
+    padding: 0;
+    appearance: none;
+    font: inherit;
+    line-height: 1;
+    cursor: pointer;
+
+    // Chrome is gone, but this is a real focusable control -- removing the
+    // UA default outline along with the rest of the chrome must not remove
+    // focus visibility for keyboard users.
+    &:focus-visible {
+        outline: 2px solid $sr-important;
+        outline-offset: 1px;
+    }
+}
+
+// The shipped rotate-on-expand rule in _tables.scss keys off the ANCESTOR
+// row's aria-expanded/.is-expanded (tr.sr-group-row[aria-expanded="true"]
+// .sr-group-caret) because Define Tests puts aria-expanded on the row; ours
+// puts it on the button itself (the correct target for a real button per
+// ARIA authoring practice), so that ancestor-keyed selector never matches
+// here -- this re-targets the same rotate/color treatment, same 90deg/same
+// transition (inherited from the shipped .sr-group-caret's own `transition:
+// transform $transitions`), at the button's own aria-expanded instead.
+#sr-ctl-table .sr-group-caret[aria-expanded="true"] {
+    transform: rotate(90deg);
+    color: $sr-primary;
+}
+
+.sr-dl {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: .75rem 1.25rem;
+    margin-bottom: .75rem;
+}
+.sr-dl-item { min-width: 0; }            // lets long values ellipsize instead of blowing the grid
+// The maturity level pair (Task 34) is the one drawer value that is markup,
+// not a string: two .sr-maturity-pill boxes plus an arrow. Those pills carry
+// a shared min-width of 104px (_home.scss -- it exists so the dashboard's gap
+// tables line up), which puts the pair at ~230px against a .sr-dl track that
+// resolves to roughly 150-190px on a typical drawer. `min-width: 0` above lets
+// the ITEM shrink, but the pair inside it is white-space: nowrap and would
+// simply spill over the neighbouring cell. Spanning two tracks gives it the
+// width it actually needs instead of shrinking it into an overlap.
+.sr-dl-item--wide { grid-column: span 2; }
+.sr-dl-label {
+    display: block;
+    font-size: 10.5px;
+    font-weight: 800;
+    letter-spacing: .05em;
+    text-transform: uppercase;           // §2 carve-out: caps come from CSS, not the lang value
+    color: $gray-600;
+}
+.sr-dl-value { font-size: 13px; }
+.sr-dl-value.is-empty { color: $gray-500; }   // the em dash for a missing value
+.sr-dl-block {
+    background: $sr-body;
+    border: 1px solid $gray-300;
+    border-radius: 6px;
+    padding: .7rem .8rem;
+    margin-top: .6rem;
+}
+// Purified rich text from the server. Constrain it so a stored <h1> or a wide
+// <table> can't blow out the row.
+.sr-dl-rich {
+    font-size: 13px;
+    overflow-x: auto;
+    img { max-width: 100%; height: auto; }
+    h1, h2, h3, h4 { font-size: 13.5px; font-weight: 800; margin: .4rem 0 .2rem; }
+    p:last-child { margin-bottom: 0; }
+}
+
+// ===== Selection + contextual bulk bar (Task 7) =============================
+// The bar itself, its count, its actions cluster, and the checkbox column
+// are the SHIPPED design-system §6 pattern -- .sr-bulk-bar / .sr-bulk-count /
+// .sr-bulk-actions / .sr-bulk-clear / .sr-check-col in _tables.scss, already
+// used by Define Tests (includes/compliance.php) and Self-Assessment
+// (self-assessment.js). #sr-ctl-bulk lives inside #sr-ctl-table, which
+// already carries .sr-table-card, so those rules apply here with no new CSS
+// (post-review fix -- an earlier version of this file duplicated the whole
+// component under invented sr-table-bulk/sr-bulk-n names; removed).
+//
+// "Select all N" has no shipped equivalent -- Define Tests/Self-Assessment's
+// bulk bars never escalate past the current page -- so it stays a
+// page-local affordance. It reads as a link, not a button, so it doesn't
+// compete with the real actions beside it.
+.sr-bulk-lnk {
+    font-size: 12.5px;
+    font-weight: 700;
+    color: $gray-600;
+    text-decoration: underline;
+    cursor: pointer;
+    background: none;
+    border: 0;
+    padding: 0;
+    &:hover { color: $sr-important; }
+    &:focus-visible { outline: 2px solid $sr-important; outline-offset: 2px; }
+}
+
+// Tint the checked rows so the bar's count is visibly tied to the rows it
+// will act on. Must outrank the table's own hover tint.
+#sr-ctl-table tbody tr.sr-row-checked,
+#sr-ctl-table tbody tr.sr-row-checked:hover { background: $sr-row-selected; }
+
+// ===== Empty states (Task 9, design-system.md §10) ==========================
+// The shipped .sr-table-empty family (_tables.scss) covers the shell (icon
+// tile / title / body / action) for every intent on both #sr-ctl-table and
+// #sr-fw-rail as-is -- both already carry .sr-table-card, which is what
+// .sr-table-empty is scoped under. Nothing new is needed for the shell
+// itself; only the rail's narrower column and its onboarding links need
+// page-local rules, both scoped under #sr-fw-rail per this file's own
+// pattern above (a bare rule here compiles into the SAME global bundle
+// every other module does).
+//
+// The rail is a 276px column (.sr-fw-panes above), far narrower than a full
+// table card -- the shipped 56px/24px padding was sized for the wide table
+// and reads as oversized whitespace in a panel this narrow.
+#sr-fw-rail .sr-table-empty { padding: 32px 16px; }
+
+// Onboarding routes (Task 9): the only place the product now tells a new
+// customer how to obtain frameworks, replacing the removed third-party
+// fetch that used to run during page render. Quiet links underneath the
+// tile's one primary action (+ Add framework, design-system.md §10 allows
+// "one primary action plus supporting links") -- not buttons, so they don't
+// compete with it.
+.sr-fw-empty-links {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    margin-top: 10px;
+
+    a {
+        font-size: 12.5px;
+        font-weight: 700;
+        color: $gray-600;
+        text-decoration: underline;
+
+        &:hover { color: $sr-important; }
+        &:focus-visible { outline: 2px solid $sr-important; outline-offset: 2px; }
+    }
+}
+
+// ===== Virtual scrolling for the control table (Task 47) ====================
+//
+// Three pieces of layout, all of them consequences of the render strategy in
+// governance-frameworks.js rather than decisions of their own:
+//
+//   .sr-table-scroll-virt   the bounded scroll region the virtual list needs
+//   tr.sr-ctl-probe         the hidden rows that pin the table's min-content
+//   tr.sr-ctl-spacer        the two blocks the scrollbar is actually made of
+//   tr.sr-ctl-skel          a placeholder for a row whose chunk is in flight
+//
+// All four are scoped under #sr-ctl-table, per this file's own rule: a bare
+// rule here compiles into the global bundle and would reach Define Tests' and
+// Self-Assessment's tables too.
+
+#sr-ctl-table {
+    // The virtual list needs a scrollport with a HEIGHT, and this is the only
+    // state on this page that has one -- .sr-table-scroll is otherwise
+    // unbounded vertically (its `overflow-y: auto` is computed, not asked for;
+    // see _tables.scss). The height itself is set inline by virtSyncViewport(),
+    // measured from the room the page shell has, because a declared value is
+    // exactly what this page's tier ladder exists to stop keeping.
+    //
+    // `scroll`, not `auto`: the tier ladder compares the table's min-content
+    // against this element's clientWidth, and a scrollbar that appears once
+    // enough rows have loaded would move clientWidth by ~15px underneath that
+    // comparison. Reserving the gutter unconditionally makes the ladder's
+    // denominator constant. In virtual mode there is always more content than
+    // viewport anyway, so nothing is being reserved for a bar that never comes.
+    .sr-table-scroll-virt {
+        overflow-y: scroll;
+        overscroll-behavior: contain;
+    }
+
+    // The sticky header (_tables.scss sets `position: sticky; top: 0` on every
+    // .sr-table thead th) becomes REAL here for the first time: sticky pins
+    // against the nearest scrollport, and until this class existed that
+    // scrollport could not scroll vertically, so the header travelled with the
+    // page like any other content. Only the z-index is added -- without it the
+    // rows scroll over the header rather than under it.
+    .sr-table-scroll-virt thead th { z-index: 2; }
+
+    // The probe rows exist to be MEASURED and never to be seen. Every property
+    // here is load-bearing:
+    //
+    //   visibility: hidden  keeps them out of find-in-page and off the
+    //                       accessibility tree while STILL contributing to
+    //                       layout -- which display:none would not, and layout
+    //                       is the entire point.
+    //   line-height: 0      collapses the row to ~0px tall. Text width is a
+    //                       function of font-size, not line-height, so the
+    //                       min-content this row contributes is unaffected.
+    //   padding/border: 0   so six probe rows cost no vertical space at all.
+    //   pointer-events      nothing here is clickable, belt-and-braces beside
+    //                       the disabled/tabindex="-1" the JS already sets.
+    tr.sr-ctl-probe {
+        visibility: hidden;
+        pointer-events: none;
+        line-height: 0;
+
+        td {
+            // ONLY the vertical padding is zeroed. The horizontal padding is
+            // left to the shipped `tbody td { padding: 11px 14px }`
+            // (_tables.scss) on purpose: it is 28px of every column's
+            // min-content, and a probe that dropped it was 61-89px NARROWER
+            // than the real rows it exists to dominate -- so min-content still
+            // came from the rendered window and the ladder still oscillated
+            // (measured: rung-1 spread 28px survived the first probe
+            // implementation entirely). The probe must be as wide as a real
+            // cell, and a real cell includes its padding.
+            padding-top: 0;
+            padding-bottom: 0;
+            border: 0;
+            line-height: 0;
+        }
+    }
+
+    // The scrollbar's length. Two rows whose single cell holds a block of the
+    // exact height of the rows that are NOT rendered above and below the
+    // window. A <div> inside the <td> rather than a height on the <tr>: a table
+    // row treats `height` as a minimum and negotiates it with its cells, so the
+    // only way to state a spacer's height exactly is to put a block in it.
+    tr.sr-ctl-spacer {
+        td {
+            padding: 0;
+            border: 0;
+        }
+
+        div { width: 1px; }
+    }
+
+    // A row whose 200-row chunk is still in flight. Shaped like a row so the
+    // column widths do not jump when the real one replaces it, and deliberately
+    // NOT a .sr-ctl-row -- there is no control here to select, expand or act on.
+    tr.sr-ctl-skel td {
+        padding: 10px 14px;
+        border-bottom: 1px solid $gray-300;
+    }
+
+    .sr-skel-bar {
+        display: block;
+        height: 10px;
+        border-radius: 5px;
+        background: $gray-200;
+        // The pulse is the only motion this page adds, and it is suppressed
+        // for anyone who has asked for less of it.
+        animation: sr-skel-pulse 1.2s ease-in-out infinite;
+
+        @media (prefers-reduced-motion: reduce) {
+            animation: none;
+        }
+    }
+}
+
+@keyframes sr-skel-pulse {
+    0%, 100% { opacity: 1; }
+    50%      { opacity: .45; }
+}

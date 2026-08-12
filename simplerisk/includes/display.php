@@ -4,6 +4,14 @@
 * License, v. 2.0. If a copy of the MPL was not distributed with this
 * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 require_once(realpath(__DIR__ . '/../vendor/autoload.php'));
+// Declared directly, not leaned on transitively. display_auth_brand_panel()
+// below calls purify_html_login_notice(), get_custom_logo_src() and _lang(),
+// all defined in functions.php, which this file otherwise reaches only through
+// reporting.php. CLAUDE.md requires every direct consumer of a shared helper to
+// require the defining file itself, because an include reorder or a split entry
+// point can strip a transitive chain and turn the call into a fatal.
+// require_once makes the duplicate load a no-op for callers that already have it.
+require_once(realpath(__DIR__ . '/functions.php'));
 require_once(realpath(__DIR__ . '/displayrisks.php'));
 require_once(realpath(__DIR__ . '/assets.php'));
 require_once(realpath(__DIR__ . '/assessments.php'));
@@ -11,6 +19,138 @@ require_once(realpath(__DIR__ . '/permissions.php'));
 require_once(realpath(__DIR__ . '/governance.php'));
 require_once(realpath(__DIR__ . '/reporting.php'));
 require_once(realpath(__DIR__ . '/extras.php'));
+
+/**********************************
+* FUNCTION: DISPLAY AUTH BRAND PANEL *
+***********************************/
+/**
+ * The charcoal brand panel on the left of the unauthenticated split-panel
+ * screens -- index.php (login / MFA), reset.php (password reset request and
+ * token redemption) and reset_password.php (forced password change).
+ *
+ * It lives here rather than being repeated in each of those three files
+ * because it is identical on all of them; each caller already require_once's
+ * this file directly, so the call is reachable without relying on a
+ * transitive include.
+ *
+ * Styles are in scss/modules/_auth.scss, scoped to `.sr-auth`. The photograph
+ * is decorative -- the wordmark beside it already names the product -- so both
+ * backdrop layers are hidden from assistive technology.
+ *
+ * The panel carries the wordmark, a single tagline, and the copyright line.
+ * The tagline is deliberately ONE short line rather than the value-proposition
+ * paragraph this screen used to show: everyone who reaches it has already
+ * obtained and installed SimpleRisk, so a sales argument addresses a reader who
+ * is not here. A brand signature under the wordmark is a different thing from a
+ * pitch, and it doubles as the visible hint that the slot is configurable.
+ *
+ * Both the mark and the tagline are the SimpleRisk defaults. The Customization
+ * Extra replaces them with the customer's own, and adds a separate system-use
+ * notice field; when that Extra is not active these defaults are what renders.
+ *
+ * The brandmark follows the same rule as the authenticated shell's
+ * `.sr-wordmark` (header.php): the two-tone text at desktop widths, the logo
+ * mark alone below `sm`. Showing both at once would make this a third brand
+ * lockup that exists nowhere else in the product.
+ */
+function display_auth_brand_panel()
+{
+    global $lang, $escaper;
+
+    // Customer branding is a Customization Extra feature. When that Extra is
+    // inactive the stored values are ignored entirely rather than merely being
+    // uneditable, so an instance that never had it -- or that let it lapse --
+    // renders the SimpleRisk defaults. Reading the settings behind the gate
+    // also means a value planted by any other route cannot reach this page
+    // while the Extra is off.
+    $customization_active = customization_extra();
+
+    $tagline = $customization_active ? trim((string)get_setting('login_tagline')) : '';
+    if ($tagline === '') {
+        $tagline = $lang['FromZeroToGRCInMinutes'];
+    }
+
+    // Sanitized again here, not only on save. A row written by a restore, a
+    // direct database edit or some future API has never been through the save
+    // path, and this page is served to unauthenticated visitors -- so the
+    // render boundary re-applies the allowlist rather than trusting storage.
+    // purify_html_login_notice() is idempotent, so already-clean values are
+    // unchanged.
+    $notice = $customization_active ? (string)get_setting('login_notice') : '';
+    $notice = $notice !== '' ? purify_html_login_notice($notice) : '';
+
+    // One shared decision (functions.php) rather than a third copy of it: the
+    // gate, the filename, the content version and the URL all resolve there.
+    // Still a settings read, never a blob query -- the bytes are fetched by the
+    // browser from the endpoint, so rendering this page pulls no image out of
+    // the database.
+    $custom_logo_src = get_custom_logo_src();
+
+    // Pick the type size from the tagline's length.
+    //
+    // This is done here, in PHP, rather than in CSS because CSS cannot do it:
+    // clamp() and container queries size text against the VIEWPORT, and nothing
+    // sizes it against how much text there is. The alternative is a JavaScript
+    // measure-and-shrink pass, which would put a reflow on the page that has to
+    // load fastest and would make a customer's notice render correctly only
+    // when scripting is available.
+    //
+    // Thresholds are in characters, which is an approximation of rendered width
+    // -- good enough to choose between three sizes, and it degrades in the safe
+    // direction because a wide string simply lands in a smaller bucket. The
+    // Customization tagline field caps its own length as well; these buckets
+    // absorb a reasonable range rather than making any length work.
+    // The bucketing itself lives in functions.php as a pure function, so the
+    // boundaries can be pinned by a test. Transposing two thresholds here would
+    // otherwise only ever show up as a customer's tagline rendering at the wrong
+    // size, which nothing asserts.
+    $tagline_size_class = auth_tagline_size_class($tagline);
+
+    echo "
+        <aside class='sr-auth-brand'>
+            <div class='sr-auth-brand-media' aria-hidden='true'></div>
+            <div class='sr-auth-brand-scrim' aria-hidden='true'></div>
+    ";
+
+    // A configured logo REPLACES the wordmark rather than sitting beside it --
+    // two marks in one lockup is exactly the third-variant problem the
+    // brandmark rule exists to avoid. Neither branch is a link: this screen is
+    // unauthenticated, and sending someone mid-sign-in out to simplerisk.com is
+    // the wrong affordance -- more so when the mark is the customer's own.
+    if ($custom_logo_src !== '') {
+        echo "
+            <span class='sr-auth-brandmark sr-auth-brandmark--custom'>
+                <img class='sr-auth-customlogo' src='" . $escaper->escapeHtmlAttr($custom_logo_src) . "' alt='" . $escaper->escapeHtmlAttr($lang['OrganizationLogo']) . "' />
+            </span>
+        ";
+    } else {
+        echo "
+            <span class='sr-auth-brandmark'>
+                <img class='sr-auth-brandlogo' src='images/simplerisk-logo-icon.png' alt='SimpleRisk' />
+                <span class='sr-auth-brandtext'><span class='s'>Simple</span><span class='r'>Risk</span></span>
+            </span>
+        ";
+    }
+
+    echo "
+            <p class='sr-auth-tagline {$tagline_size_class}'>" . $escaper->escapeHtml($tagline) . "</p>
+    ";
+
+    // The notice sits between the tagline and the copyright line. Emitted as
+    // raw HTML because it is restricted rich text -- purify_html_login_notice()
+    // above is what makes that safe, and escaping here as well would show the
+    // operator their own markup as literal text.
+    if ($notice !== '') {
+        echo "
+            <div class='sr-auth-notice'>{$notice}</div>
+        ";
+    }
+
+    echo "
+            <p class='sr-auth-legal'>" . $escaper->escapeHtml(sprintf($lang['FooterCopyright'], date('Y'))) . "</p>
+        </aside>
+    ";
+}
 
 /****************************
 * FUNCTION: VIEW SCORE HTML *
@@ -1993,10 +2133,10 @@ function print_mitigation_controls_table($control_ids, $mitigation_id, $flag="vi
             $(document).ready(function(){
                 var mitigationControlDatatable = $('#{$tableID}').DataTable({
                     scrollX: true,
-                    bFilter: false,
+                    searching: false,
                     processing: true,
                     serverSide: true,
-                    bSort: true,
+                    ordering: true,
                     ajax: {
                         url: BASE_URL + '/api/v2/datatable/mitigation_controls',
                         type: 'POST',
@@ -5895,61 +6035,6 @@ function display_upgrade()
     }
 }
 
-/*************************************
-* FUNCTION: DISPLAY SELF ASSESSMENTS *
-**************************************/
-function display_self_assessments() {
-
-    global $lang;
-    global $escaper;
-
-    echo "
-        <div class='mt-2'>
-            <nav class='nav nav-tabs'>
-                <a class='nav-link active' data-bs-target='#self_assessments' data-bs-toggle='tab'>{$escaper->escapeHtml($lang['Assessments'])}</a>
-                <a class='nav-link' data-bs-target='#pending_risks' data-bs-toggle='tab'>{$escaper->escapeHtml($lang['PendingRisks'])}</a>
-            </nav>
-        </div>
-        <div class='tab-content'>
-            <div id='self_assessments' class='tab-pane active card-body my-2 border'>
-    ";
-
-    // Start the list
-    echo "
-                <ul class='nav nav-pills nav-stacked flex-column'>
-    ";
-
-    // Get the assessments
-    $assessments = get_assessment_names();
-
-    // For each entry in the assessments array
-    foreach ($assessments as $assessment) {
-
-        // Get the assessment values
-        $assessment_name = $assessment['name'];
-        $assessment_id = (int)$assessment['id'];
-
-        // Display the assessment
-        echo "
-                    <li style='text-align:center'>
-                        <a class='nav-link text-info' href='index.php?action=view&assessment_id={$escaper->escapeHtml($assessment_id)}'>{$escaper->escapeHTML($assessment_name)}</a>
-                    </li>
-        ";
-    }
-
-    // End the list
-    echo "
-                </ul>
-            </div>
-            <div id='pending_risks' class='tab-pane card-body my-2 border'>
-    ";
-                display_pending_risks();
-    echo "
-            </div>
-        </div>
-    ";
-
-}
 
 /*******************************************
 * FUNCTION: DISPLAY ADD DELETE ROW SCRIPT *
@@ -8038,8 +8123,8 @@ function display_plan_mitigations()
                     });
                 });
                 var datatableInstance = $('#{$tableID}').DataTable({
-                    bFilter: true,
-                    bSort: true,
+                    searching: true,
+                    ordering: true,
                     orderCellsTop: true,
                     scrollX: true,
                     createdRow: function(row, data, index){
@@ -8215,8 +8300,8 @@ function display_management_review()
                     });
                 });
                 var datatableInstance = $('#{$tableID}').DataTable({
-                    bFilter: true,
-                    bSort: true,
+                    searching: true,
+                    ordering: true,
                     orderCellsTop: true,
                     scrollX: true,
                     createdRow: function(row, data, index){
@@ -8396,8 +8481,8 @@ function display_review_risks()
                     });
                 });
                  var datatableInstance = $('#{$tableID}').DataTable({
-                    bFilter: true,
-                    bSort: true,
+                    searching: true,
+                    ordering: true,
                     orderCellsTop: true,
                     scrollX: true,
                     createdRow: function(row, data, index){
@@ -8619,8 +8704,8 @@ function display_review_date_issues()
         <script>
             $(function () {
                 var datatableInstance = $('#{$tableID}').DataTable({
-                    bFilter: false,
-                    bSort: true,
+                    searching: false,
+                    ordering: true,
                     createdRow: function(row, data, index){
                         var background = $('.background-class', $(row)).data('background');
                         $(row).find('td').addClass(background)
@@ -11378,6 +11463,39 @@ function display_generic_dropdown($select_name, $select_array = [], $selected_va
     echo $text;
 }
 
+/*********************************************
+ * FUNCTION: DISPLAY GENERIC KEYED DROPDOWN  *
+ * Like display_generic_dropdown(), but for  *
+ * key => display maps (e.g. slug taxonomies)*
+ * where the submitted option VALUE must be  *
+ * the key, not the display text.            *
+ *********************************************/
+function display_generic_keyed_dropdown($select_name, $select_array = [], $selected_value = null)
+{
+    global $escaper;
+
+    // Create the default text
+    $text = "<select name='" . $escaper->escapeHtml($select_name) . "' class='form-select'>\n";
+
+    // For each key => display pair in the array
+    foreach ($select_array as $key => $value)
+    {
+        // Check if this key is selected
+        $selected = ($selected_value == $key ? " selected" : "");
+
+        // Add the option: value = key, text = display
+        // NOTE: neither the key nor the value is HTML encoded as we don't want to strip
+        // out HTML in this function, but make sure you HTML encode any user supplied
+        // data from the select_array first.
+        $text .= "<option value='" . $escaper->escapeHtml($key) . "'{$selected}>" . $escaper->escapeHtml($value) . "</option>\n";
+    }
+
+    $text .= "</select>";
+
+    // Output the text
+    echo $text;
+}
+
 /*************************************************
  * FUNCTION: DISPLAY DOCUMENTS TO CONTROLS TABLE *
  *************************************************/
@@ -11483,8 +11601,8 @@ function display_document_to_controls()
                     });
                 });
                 var datatableInstance = $('#{$tableID}').DataTable({
-                    bFilter: true,
-                    bSort: true,
+                    searching: true,
+                    ordering: true,
                     orderCellsTop: true,
                     scrollX: true,
                     createdRow: function(row, data, index){

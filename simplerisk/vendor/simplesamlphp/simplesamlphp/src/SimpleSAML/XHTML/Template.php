@@ -37,7 +37,7 @@ use function class_exists;
 use function count;
 use function date;
 use function explode;
-use function hash;
+use function hash_hmac_file;
 use function in_array;
 use function is_null;
 use function key;
@@ -126,7 +126,7 @@ class Template extends Response
      * Constructor
      *
      * @param \SimpleSAML\Configuration $configuration Configuration object
-     * @param string                   $template Which template file to load
+     * @param string $template Which template file to load
      */
     public function __construct(
         private Configuration $configuration,
@@ -154,7 +154,6 @@ class Template extends Response
                 class_exists($controller)
                 && in_array(TemplateControllerInterface::class, class_implements($controller))
             ) {
-                /** @var \SimpleSAML\XHTML\TemplateControllerInterface $this->controller */
                 $this->controller = new $controller();
             } else {
                 throw new Error\ConfigurationError(
@@ -205,13 +204,17 @@ class Template extends Response
             return $path;
         }
 
-        $file = new File($file);
-
-        $tag = $this->configuration->getVersion();
-        if ($tag === 'master') {
-            $tag = strval($file->getMtime());
+        // Use the `assets.salt` to enhance security.
+        // Do not make it easy to guess the underlying SSP version.
+        $salt = 'assets.salt.default';
+        $assetsConfig = $this->configuration->getOptionalArray('assets', []);
+        if (!empty($assetsConfig['salt'])) {
+            $salt = $assetsConfig['salt'];
         }
-        $tag = substr(hash('md5', $tag), 0, 5);
+
+        $tagLength = 5;
+        $mac = hash_hmac_file('sha256', $file, $salt);
+        $tag = substr($mac, 0, $tagLength);
 
         return $path . '?tag=' . $tag;
     }
@@ -247,7 +250,7 @@ class Template extends Response
     /**
      * Set up the places where twig can look for templates.
      *
-     * @return TemplateLoader The twig template loader or false if the template does not exist.
+     * @return \SimpleSAML\XHTML\TemplateLoader The twig template loader or false if the template does not exist.
      * @throws \Twig\Error\LoaderError In case a failure occurs.
      */
     private function setupTwigTemplatepaths(): TemplateLoader
@@ -532,6 +535,7 @@ class Template extends Response
         $this->data['header'] = $this->configuration->getOptionalString('theme.header', 'SimpleSAMLphp');
     }
 
+
     /**
      * Helper function for locale extraction: just compile but not display
      * this template. This is not generally useful, getContents() will normally
@@ -541,6 +545,7 @@ class Template extends Response
     {
         $this->twig->load($this->twig_template);
     }
+
 
     /**
      * Get the contents produced by this template.
@@ -570,10 +575,10 @@ class Template extends Response
      * @return $this This response.
      * @throws \Exception if the template cannot be found.
      */
-    public function send(): static
+    public function send(bool $flush = true): static
     {
         $this->content = $this->getContents();
-        return parent::send();
+        return parent::send($flush);
     }
 
 
@@ -645,6 +650,7 @@ class Template extends Response
         return $this->translator->getLanguage()->isLanguageRTL();
     }
 
+
     /**
      * Search through entity metadata to find the best display name for this
      * entity. It will search in order for the current language, default
@@ -669,6 +675,7 @@ class Template extends Response
         }
         return $data['entityid'];
     }
+
 
     /**
      * Search through entity metadata to find the best value for a

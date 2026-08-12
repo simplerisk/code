@@ -16,7 +16,30 @@ require_once(realpath(__DIR__ . '/../includes/authenticate.php'));
 require_once(realpath(__DIR__ . '/../includes/display.php'));
 require_once(realpath(__DIR__ . '/../includes/messages.php'));
 require_once(realpath(__DIR__ . '/../includes/alerts.php'));
+require_once(realpath(__DIR__ . '/../includes/config_check.php'));
 require_once(realpath(__DIR__ . '/../vendor/autoload.php'));
+
+// The whole MFA configuration surface is closed on a shared demo instance,
+// and this is the worst of the doors DEMO_MODE shuts. Every visitor signs in
+// with the same account, so a visitor who enrolls it walks away with the only
+// TOTP seed and locks out everyone who comes after — unlike a changed
+// password, there is nothing the next visitor can even be told to try.
+// Disabling is refused for the mirror-image reason: it would quietly undo a
+// configuration the operator chose.
+//
+// The guard sits ahead of both POST handlers rather than inside them so a
+// visitor is never shown an enrollment QR code the page is going to refuse,
+// and so a hand-crafted POST straight to this page is turned away too. The
+// redirect-after-render pattern is the one already used by the handlers
+// below and by profile.php.
+if (demo_mode())
+{
+    set_alert(true, "bad", $lang['ActionDisabledOnDemoInstance']);
+
+    header("Location: profile.php");
+
+    exit;
+}
 
 // If the user attempted to verify the MFA
 if (isset($_POST['verify']))

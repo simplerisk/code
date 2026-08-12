@@ -342,13 +342,13 @@ function queue_license_expiration_notifications(?PDO $db = null): void
         $guid       = "license:{$license_id}:{$event}";
 
         if ($event === 'expired') {
-            $title = _lang('LicenseExpiredTitle', ['extra' => $label], false);
-            $body  = _lang('LicenseExpiredBody', ['extra' => $label, 'date' => $end_date], false);
+            $title = _lang_raw('LicenseExpiredTitle', ['extra' => $label]);
+            $body  = _lang_raw('LicenseExpiredBody', ['extra' => $label, 'date' => $end_date]);
         } else {
             $end_ts = strtotime($end_date);
             $days   = $end_ts !== false ? (int)ceil(($end_ts - $now) / 86400) : (int)$event;
-            $title  = _lang('LicenseExpiringSoonTitle', ['extra' => $label], false);
-            $body   = _lang('LicenseExpiringSoonBody', ['extra' => $label, 'date' => $end_date, 'days' => $days], false);
+            $title  = _lang_raw('LicenseExpiringSoonTitle', ['extra' => $label]);
+            $body   = _lang_raw('LicenseExpiringSoonBody', ['extra' => $label, 'date' => $end_date, 'days' => $days]);
         }
 
         try {
@@ -436,6 +436,48 @@ function parse_license_check_response(string $body): array
         'mode' => $mode,
         'ping_processed' => !empty($decoded['ping_processed']),
     ];
+}
+
+/**
+ * Build the per-Extra subobject of the /license/check payload. Pure helper.
+ *
+ * Every name in $extra_names gets an entry, unconditionally. That is the whole
+ * point of this helper: the payload is derived from available_extra_short_names()
+ * rather than from a second, hand-maintained list of Extras. The legacy flat ping
+ * this replaced enumerated each Extra's three fields by hand, and the Workflows
+ * Extra shipped without ever being added to it — so it reported as absent on every
+ * instance running that code. Deriving the list makes that failure unrepresentable.
+ *
+ * installed/enabled are cast to real booleans because the licensing service
+ * coerces them with a STRICT in_array against [1, '1', true, 'true', 'yes'].
+ * A truthy-but-unlisted value ('TRUE', 'Yes', 'y', 1.0, '01') silently reads
+ * as false there, so a loose value here would be dropped rather than rejected.
+ *
+ * @param string[] $extra_names  Extra short names, i.e. available_extra_short_names().
+ * @param callable $is_installed fn(string $name): bool  — Extra present on disk.
+ * @param callable $is_enabled   fn(string $name): bool  — Extra activated.
+ * @param callable $version_of   fn(string $name): ?string — called only when installed.
+ * @return array<string, array{installed: bool, enabled: bool, version: ?string}>
+ */
+function build_license_check_extras(
+    array $extra_names,
+    callable $is_installed,
+    callable $is_enabled,
+    callable $version_of
+): array {
+    $extras = [];
+    foreach ($extra_names as $name) {
+        $installed = (bool)$is_installed($name);
+        $extras[$name] = [
+            'installed' => $installed,
+            'enabled'   => (bool)$is_enabled($name),
+            // Not installed means there is no version to report. null clears the
+            // corresponding property on the licensing side rather than pinning it
+            // to a stale value from a previous check-in.
+            'version'   => $installed ? $version_of($name) : null,
+        ];
+    }
+    return $extras;
 }
 
 /**

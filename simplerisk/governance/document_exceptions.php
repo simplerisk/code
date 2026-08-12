@@ -145,76 +145,108 @@ function display($display = "")
 
     });
 
+    // Fetch an exception's definition and open the "update exception" modal
+    // populated with it. Shared by the per-tab edit click handler and the
+    // ?exception_id= deep-link (e.g. the governance dashboard's Expiring
+    // Exceptions list). Fully API-driven, so it works regardless of which
+    // treegrid tab (if any) has loaded. The endpoint enforces exception
+    // permission on its own. type is optional — when omitted (deep-link) it is
+    // derived from the fetched record.
+    function openExceptionForEdit(exception_id, type) {
+        $("#exception-update-form [name='additional_stakeholders[]']").multiselect('deselectAll', false);
+        $("#exception-update-form [name='associated_risks[]']").multiselect('deselectAll', false);
+        $("#exception-update-form .file-uploader input").val("");
+        $("#exception-update-form #file-size").text("");
+
+        $.ajax({
+            url: BASE_URL + '/api/v2/exceptions/exception?id=' + exception_id,
+            type: 'GET',
+            success : function (res){
+                var data = res.data;
+
+                // Type: use the caller's value, else derive from the record
+                // (control-linked → control, otherwise policy).
+                var exception_type = type ? type : (data.control_framework_id ? 'control' : 'policy');
+
+                // Unapprove button: shown for an approved exception, hidden otherwise
+                // (equivalent to the old approved-tab vs unapproved-tab branch).
+                if (data.approved) {
+                    $("#exception--update #unapprove_exception").show();
+                } else {
+                    $("#exception--update #unapprove_exception").hide();
+                }
+
+                $("#exception-update-form [name=type]").val(exception_type);
+
+                $("#exception-update-form [name=exception_id]").val(exception_id);
+                $("#exception-update-form [name=document_exceptions_status]").val(data.document_exceptions_status);
+                $("#exception-update-form [name=name]").val(data.name);
+                $("#exception-update-form [name=policy]").val(data.policy_document_id);
+                $("#exception-update-form [name=framework]").val(data.framework_id);
+                $("#exception-update-form .selected_control_values").val(data.control_framework_id);
+                load_framework_controls($('#exception--update'));
+                $("#exception-update-form [name=owner]").val(data.owner);
+                $("#exception-update-form [name='additional_stakeholders[]']").multiselect('select', data.additional_stakeholders);
+
+                $("#exception-update-form [name='additional_stakeholders[]']").multiselect('updateButtonText');
+
+                $("#exception-update-form [name='associated_risks[]']").multiselect('select', data.associated_risks);
+                $("#exception-update-form [name=creation_date]").val(data.creation_date);
+                $("#exception-update-form [name=review_frequency]").val(data.review_frequency);
+                $("#exception-update-form [name=next_review_date]").val(data.next_review_date);
+                $("#exception-update-form [name=approval_date]").val(data.approval_date);
+                $("#exception-update-form [name=approver]").val(data.approver);
+                $("#exception-update-form [name=approved_original]").prop('checked', data.approved);
+                $("#exception-update-form [name=description]").val(data.description);
+                $("#exception-update-form [name=justification]").val(data.justification);
+
+                // set contents into the WYSIWYG editor dynamically.
+                setEditorContent("update_description", data.description);
+                setEditorContent("update_justification", data.justification);
+
+                if (data.file_name) {
+                    $("#exception-update-form input.readonly").val(data.file_name);
+                    displayFileSize($("#exception-update-form #file-size"), data.file_size);
+                }
+
+                refresh_type_selects_display($('#exception--update'));
+
+                $("#exception--update").modal('show');
+            }
+        });
+    }
+
+    // Deep-link: open a specific exception's edit modal on load — e.g. the
+    // governance dashboard's Expiring Exceptions list
+    // (governance/document_exceptions.php?exception_id=N). No-op when the modal
+    // is absent or the param is missing/non-numeric; the endpoint enforces
+    // access. The modal's WYSIWYG editors initialise asynchronously, so wait
+    // until they're live (bounded) before opening so setEditorContent() can run.
+    $(function() {
+        if (!$('#exception--update').length) return;
+        var deepExceptionId = new URLSearchParams(window.location.search).get('exception_id');
+        if (!(deepExceptionId && /^\d+$/.test(deepExceptionId))) return;
+
+        var tries = 0;
+        (function waitAndOpen() {
+            var ready = ['update_description', 'update_justification'].every(function(id) {
+                var ed = (typeof hugerte !== 'undefined') && hugerte.get(id);
+                try { return !!(ed && ed.getBody && ed.getBody()); } catch (e) { return false; }
+            });
+            if (ready || tries >= 50) {
+                openExceptionForEdit(deepExceptionId);
+            } else {
+                tries++;
+                setTimeout(waitAndOpen, 100);
+            }
+        })();
+    });
+
     function wireActionButtons(tab) {
 
         //Edit
         $("#"+ tab + "-exceptions .exception--edit").click(function(){
-            var exception_id = $(this).data("id");
-            var type = $(this).data("type");
-
-            // When editing an unapproved exception
-            if (tab == "unapproved") {
-
-                // Hide the unapprove button
-                $("#exception--update #unapprove_exception").hide();
-
-            // When editing an approved exception
-            } else {
-
-                // Show the unapprove button
-                $("#exception--update #unapprove_exception").show();
-
-            }
-
-            $("#exception-update-form [name='additional_stakeholders[]']").multiselect('deselectAll', false);
-            $("#exception-update-form [name='associated_risks[]']").multiselect('deselectAll', false);
-            $("#exception-update-form .file-uploader input").val("");
-            $("#exception-update-form #file-size").text("");
-            
-            $.ajax({
-                url: BASE_URL + '/api/v2/exceptions/exception?id=' + exception_id,
-                type: 'GET',
-                success : function (res){
-                    var data = res.data;
-
-                    $("#exception-update-form [name=type]").val(type);
-
-                    $("#exception-update-form [name=exception_id]").val(exception_id);
-                    $("#exception-update-form [name=document_exceptions_status]").val(data.document_exceptions_status);
-                    $("#exception-update-form [name=name]").val(data.name);
-                    $("#exception-update-form [name=policy]").val(data.policy_document_id);
-                    $("#exception-update-form [name=framework]").val(data.framework_id);
-                    $("#exception-update-form .selected_control_values").val(data.control_framework_id);
-                    load_framework_controls($('#exception--update'));
-                    $("#exception-update-form [name=owner]").val(data.owner);
-                    $("#exception-update-form [name='additional_stakeholders[]']").multiselect('select', data.additional_stakeholders);
-
-                    $("#exception-update-form [name='additional_stakeholders[]']").multiselect('updateButtonText');
-
-                    $("#exception-update-form [name='associated_risks[]']").multiselect('select', data.associated_risks);
-                    $("#exception-update-form [name=creation_date]").val(data.creation_date);
-                    $("#exception-update-form [name=review_frequency]").val(data.review_frequency);
-                    $("#exception-update-form [name=next_review_date]").val(data.next_review_date);
-                    $("#exception-update-form [name=approval_date]").val(data.approval_date);
-                    $("#exception-update-form [name=approver]").val(data.approver);
-                    $("#exception-update-form [name=approved_original]").prop('checked', data.approved);
-                    $("#exception-update-form [name=description]").val(data.description);
-                    $("#exception-update-form [name=justification]").val(data.justification);
-
-                    // set contents into the WYSIWYG editor dynamically.
-                    setEditorContent("update_description", data.description);
-                    setEditorContent("update_justification", data.justification);
-
-                    if (data.file_name) {
-                        $("#exception-update-form input.readonly").val(data.file_name);
-                        displayFileSize($("#exception-update-form #file-size"), data.file_size);
-                    }
-
-                    refresh_type_selects_display($('#exception--update'));
-
-                    $("#exception--update").modal('show');
-                }
-            });
+            openExceptionForEdit($(this).data("id"), $(this).data("type"));
         });
 
         //Info + Approve

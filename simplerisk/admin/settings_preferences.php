@@ -5,7 +5,27 @@
 
     // Render the header and sidebar
     require_once(realpath(__DIR__ . '/../includes/renderutils.php'));
-    render_header_and_sidebar(['blockUI', 'CUSTOM:common.js', 'tabs:logic'], ['check_admin' => true]);
+    // customization_extra() lives in functions.php, which renderutils.php does
+    // NOT pull in -- and the call below runs before render_header_and_sidebar()
+    // loads anything else, so without this the page fatals with "Call to
+    // undefined function". Declared here per CLAUDE.md's rule that every direct
+    // consumer requires the file defining the helper rather than relying on a
+    // transitive include.
+    require_once(realpath(__DIR__ . '/../includes/functions.php'));
+    // The WYSIWYG bundle is ~460KB (HugeRTE + its skin) and is only ever
+    // attached to the system-use-notice field, which exists only when the
+    // Customization Extra is active. Loading it unconditionally made every
+    // admin on this page pay for an editor most of them never see.
+    $preferences_scripts = ['blockUI', 'CUSTOM:common.js', 'tabs:logic'];
+    $preferences_localization = [];
+
+    if (customization_extra()) {
+        $preferences_scripts[] = 'WYSIWYG';
+        // The editor's style-dropdown labels; see init_notice_editor().
+        $preferences_localization = ['NoticeSizeSmall', 'NoticeSizeNormal', 'NoticeSizeLarge'];
+    }
+
+    render_header_and_sidebar($preferences_scripts, ['check_admin' => true], '', '', '', '', '', null, $preferences_localization);
 
     // If the Preferences settings form was submitted
     if (isset($_POST['update_preferences_settings'])) {
@@ -181,6 +201,133 @@
             update_setting("alert_timeout", $alert_timeout);
         }
 
+        // ---- Login screen branding (System) --------------------------------
+        //
+        // Gated on the Extra HERE, independently of the UI. The form disables
+        // these controls when Customization is inactive, but a disabled input
+        // is a rendering choice, not an authorization control -- a request
+        // built outside the browser never sees it. Everything below is skipped
+        // outright rather than validated-then-skipped, so an unlicensed
+        // instance has no write path to these settings at all.
+        //
+        // The `custom_logo` TABLE belongs to the Customization Extra, which
+        // creates it on activation, so the second half of this gate is the
+        // Core/Extra boundary guard CLAUDE.md requires before Core touches an
+        // Extra-owned table. customization_extra() alone reads the settings
+        // flag, which can be true while the table is absent -- an instance
+        // mid-upgrade, or one whose flag was flipped directly in the database.
+        // The tagline and notice are plain `settings` rows and need no such
+        // guard, but they sit inside it because they are the same feature and
+        // an admin is better served by one coherent refusal than by a form that
+        // half-saves.
+        $custom_logo_table_ready = customization_extra() && table_exists('custom_logo');
+
+        if ($custom_logo_table_ready) {
+
+            // Tagline: plain text, length enforced server-side as well as by
+            // the field's maxlength, for the same reason.
+            if (isset($_POST['login_tagline'])) {
+                $login_tagline = trim($_POST['login_tagline']);
+                if (mb_strlen($login_tagline) > 120) {
+                    $login_tagline = mb_substr($login_tagline, 0, 120);
+                }
+                if ($login_tagline != get_setting('login_tagline')) {
+                    update_setting('login_tagline', $login_tagline);
+                }
+            }
+
+            // Notice: sanitized on the way IN as well as at render. Storing it
+            // clean means the login page is not the only thing standing between
+            // an operator's markup and an unauthenticated visitor.
+            if (isset($_POST['login_notice'])) {
+                $login_notice = purify_html_login_notice(trim($_POST['login_notice']));
+                if ($login_notice != get_setting('login_notice')) {
+                    update_setting('login_notice', $login_notice);
+                }
+            }
+
+            // Remove an existing logo. Checked before the upload branch so a
+            // submit that both removes and uploads ends up with the upload,
+            // which is what the admin most recently chose.
+            if (isset($_POST['remove_custom_logo']) && empty($_FILES['custom_logo']['name'])) {
+                $db = db_open();
+                $db->prepare("DELETE FROM `custom_logo` WHERE `id` = 1;")->execute();
+                db_close($db);
+                update_setting('custom_logo', '');
+                update_setting('custom_logo_version', '');
+                set_alert(true, "good", $lang['LogoRemoved']);
+            }
+
+            // Upload a new logo.
+            if (!empty($_FILES['custom_logo']['name']) && $_FILES['custom_logo']['error'] !== UPLOAD_ERR_NO_FILE) {
+
+                $logo_error = false;
+
+                if ($_FILES['custom_logo']['error'] !== UPLOAD_ERR_OK) {
+                    set_alert(true, "bad", $lang['LogoUploadFailed']);
+                    $logo_error = true;
+                }
+
+                // getimagesize() is the gate, not $_FILES['type'] -- that field
+                // is supplied by the client and means nothing. This reads the
+                // file's own header, so it proves the upload is really an
+                // image, yields the MIME we store and serve, and gives the
+                // dimensions, all without decoding the pixels.
+                $logo_info = $logo_error ? false : @getimagesize($_FILES['custom_logo']['tmp_name']);
+
+                // The rules themselves live in a pure helper so they can be
+                // tested directly rather than through a form post.
+                if (!$logo_error) {
+                    $logo_rejection = validate_custom_logo_upload((int)$_FILES['custom_logo']['size'], $logo_info);
+
+                    if ($logo_rejection !== null) {
+                        set_alert(true, "bad", $lang[$logo_rejection]);
+                        $logo_error = true;
+                    }
+                }
+
+                $allowed_logo_types = get_custom_logo_types();
+
+                if (!$logo_error) {
+                    $logo_bytes = file_get_contents($_FILES['custom_logo']['tmp_name']);
+
+                    if ($logo_bytes === false) {
+                        set_alert(true, "bad", $lang['LogoUploadFailed']);
+                    } else {
+                        // The bytes are stored EXACTLY as uploaded -- no resize,
+                        // no re-encode. Image parsers are a classic
+                        // vulnerability class, and running every customer's
+                        // upload through one to save a few pixels is a poor
+                        // trade when CSS already bounds the display size.
+                        //
+                        // The stored filename is display-only (the settings
+                        // screen names the current file); it never reaches a
+                        // path, a URL or a response header.
+                        $logo_name = mb_substr(basename($_FILES['custom_logo']['name']), 0, 255);
+
+                        $db = db_open();
+                        $stmt = $db->prepare("
+                            REPLACE INTO `custom_logo` (`id`, `filename`, `mime_type`, `content`, `updated_at`)
+                            VALUES (1, :filename, :mime_type, :content, NOW());
+                        ");
+                        $stmt->bindParam(":filename", $logo_name, PDO::PARAM_STR);
+                        $stmt->bindParam(":mime_type", $allowed_logo_types[$logo_info[2]], PDO::PARAM_STR);
+                        $stmt->bindParam(":content", $logo_bytes, PDO::PARAM_LOB);
+                        $stmt->execute();
+                        db_close($db);
+
+                        update_setting('custom_logo', $logo_name);
+                        // Version by the bytes, not the name. Re-uploading a
+                        // corrected image under the same filename otherwise
+                        // produced an identical ?v= and the endpoint's 24h
+                        // Cache-Control served the old one for a day.
+                        update_setting('custom_logo_version', substr(md5($logo_bytes), 0, 8));
+                        set_alert(true, "good", $lang['LogoUpdated']);
+                    }
+                }
+            }
+        }
+
         // Asset Valuation (Asset Management tab): branch by the selected mode
         // so the Linear / Exponential / Manual paths run independently. All
         // three write to the same 10 asset_values rows; running more than
@@ -315,7 +462,7 @@
 ?>
 <div class="row">
     <div class="col-12">
-        <form name="preferences_settings" method="post" action="">
+        <form name="preferences_settings" method="post" action="" enctype="multipart/form-data">
             <nav class="nav nav-tabs" role="tablist">
                 <a class="nav-link active" id="system-tab" data-bs-toggle="tab" data-bs-target="#system" type="button" role="tab" aria-controls="system" aria-selected="true">
                     <?= $escaper->escapeHtml($lang['System']) ?>
@@ -418,6 +565,98 @@
 
 ?>
                                     </select>
+                                </div>
+                            </div>
+                        </div>
+<?php
+    // ---- Login screen branding (Customization Extra) ------------------------
+    //
+    // Rendered whether or not the Extra is active. An unavailable capability is
+    // shown and MARKED, never hidden: burying a feature cannot create a sell
+    // opportunity, which is the rule the .sr-locked component exists to carry
+    // (scss/modules/_locked-affordance.scss, already used by Define Control
+    // Frameworks and the Statement of Applicability).
+    //
+    // The controls are disabled rather than merely styled when locked, and the
+    // save path refuses these three writes independently -- a disabled input is
+    // a UI affordance, not an authorization control, and a crafted POST does
+    // not go through the UI at all.
+    $branding_unlocked = customization_extra();
+    $branding_logo = $branding_unlocked ? trim((string)get_setting('custom_logo')) : '';
+    $branding_disabled = $branding_unlocked ? '' : " disabled";
+?>
+                        <div class="row<?= $branding_unlocked ? '' : ' sr-locked' ?>">
+                            <div class="col-12">
+                                <h5 class="mt-3">
+                                    <?= $escaper->escapeHtml($lang['LoginScreenBranding']); ?>
+<?php if (!$branding_unlocked) { ?>
+                                    <span class="sr-locked-badge"><i class="fa fa-lock" aria-hidden="true"></i> <?= $escaper->escapeHtml($lang['LockedAffordanceBadge']); ?></span>
+<?php } ?>
+                                </h5>
+<?php if (!$branding_unlocked) { ?>
+                                <span class="sr-locked-note">
+                                    <?= $escaper->escapeHtml($lang['BrandingRequiresCustomization']); ?>
+                                    <a class="sr-locked-link" href="https://www.simplerisk.com/extras/customization" target="_blank" rel="noopener noreferrer"><?= $escaper->escapeHtml($lang['LearnMore']); ?></a>
+                                </span>
+<?php } ?>
+                            </div>
+                            <div class="col-6">
+                                <div class="form-group">
+                                    <label for="custom_logo"><?= $escaper->escapeHtml($lang['CustomLogo']); ?> :</label>
+                                    <input type="file" class="form-control" name="custom_logo" id="custom_logo" accept="image/png,image/jpeg,image/gif,image/webp"<?= $branding_disabled ?> />
+                                    <small class="form-text text-muted"><?= $escaper->escapeHtml($lang['CustomLogoHint']); ?></small>
+<?php if ($branding_logo !== '') { ?>
+                                    <div class="mt-2">
+                                        <span class="me-2"><?= $escaper->escapeHtml($lang['CurrentLogo']); ?>: <b><?= $escaper->escapeHtml($branding_logo); ?></b></span>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="remove_custom_logo" id="remove_custom_logo" value="1"<?= $branding_disabled ?> />
+                                            <label class="form-check-label" for="remove_custom_logo"><?= $escaper->escapeHtml($lang['RemoveLogo']); ?></label>
+                                        </div>
+                                    </div>
+<?php } ?>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="form-group">
+                                    <label for="login_tagline"><?= $escaper->escapeHtml($lang['LoginTagline']); ?> :</label>
+                                    <input type="text" class="form-control" name="login_tagline" id="login_tagline" maxlength="120" value="<?= $escaper->escapeHtmlAttr(get_setting('login_tagline')); ?>"<?= $branding_disabled ?> />
+                                    <small class="form-text text-muted"><?= $escaper->escapeHtml($lang['LoginTaglineHint']); ?></small>
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <div class="form-group">
+                                    <label for="login_notice"><?= $escaper->escapeHtml($lang['LoginNotice']); ?> :</label>
+<?php
+    if ($branding_unlocked) {
+?>
+                                    <textarea class="form-control login-notice-editor" name="login_notice" id="login_notice"><?= $escaper->escapeHtml(get_setting('login_notice')); ?></textarea>
+<?php
+    } else {
+        // Locked: show the notice AS IT RENDERS, not as markup. A disabled
+        // textarea full of tags tells an admin nothing about what visitors
+        // actually see, and the editor is deliberately not attached to a
+        // disabled control -- so the read-only state gets a preview instead.
+        //
+        // No name attribute, so it submits nothing. That is presentation, not
+        // protection: the save path refuses these writes on its own.
+        //
+        // Re-purified at this boundary for the same reason the login panel
+        // re-purifies: a value that reached storage by some other route has
+        // never passed the save path, and this is an HTML sink.
+        $locked_notice = purify_html_login_notice((string)get_setting('login_notice'));
+
+        if ($locked_notice !== '') {
+?>
+                                    <div class="sr-notice-preview"><?= $locked_notice ?></div>
+<?php
+        } else {
+?>
+                                    <div class="sr-notice-preview sr-notice-preview--empty"><?= $escaper->escapeHtml($lang['NoSystemUseNoticeSet']); ?></div>
+<?php
+        }
+    }
+?>
+                                    <small class="form-text text-muted"><?= $escaper->escapeHtml($lang['LoginNoticeHint']); ?></small>
                                 </div>
                             </div>
                         </div>
@@ -614,6 +853,18 @@
         }
         sel.addEventListener('change', applyMode);
         applyMode();
+    });
+
+    // The system-use notice editor. Only attached when the Customization Extra
+    // is active -- with it locked the textarea is disabled, and turning a
+    // disabled control into a rich-text editor would make it look editable
+    // again. editor.js is deferred, so wait for it rather than assuming it has
+    // parsed by DOMContentLoaded.
+    window.addEventListener('load', function () {
+        if (typeof init_notice_editor !== 'function') { return; }
+        var notice = document.getElementById('login_notice');
+        if (!notice || notice.disabled) { return; }
+        init_notice_editor('#login_notice');
     });
 </script>
 <?php

@@ -646,7 +646,7 @@ $lang = array(
     'ControlPhase' => 'नियंत्रण चरण',
     'ControlPriority' => 'नियंत्रण प्राथमिकता',
     'ControlFamily' => 'नियंत्रण परिवार',
-    'AllFrameworks'=>'सभी चौखट',
+    'AllFrameworks'=>'सभी ढाँचे',
     'NewControlName' => 'नया नियंत्रण नाम',
     'NewControlDescription' => 'नया नियंत्रण विवरण',
     'AreYouSureYouWantToDeleteThisControl' => 'क्या आप वाकई इस नियंत्रण को हटाना चाहते हैं?',
@@ -1345,7 +1345,6 @@ $lang = array(
     'UpdateAssetGroupTooltip' => 'अद्यतन संपत्ति समूह',
     'DeleteAssetGroupTooltip' => 'एसेट समूह हटाएं',
     'RemoveAssetTooltip' => 'एसेट समूह से एसेट निकालें',
-    'ControlShortNameFieldRequired' => 'नियंत्रण छोटा नाम फ़ील्ड आवश्यक है ।',
     'AffectedAssetsWidgetPlaceholder' => 'किसी संपत्ति या संपत्ति समूह का चयन करें',
     'AffectedAssetsWidgetNoDropdownPlaceholder' => 'कोई संपत्ति नाम जोड़ें',
     'AffectedAssetsWidgetInstructions' => 'किसी एसेट या एसेट समूह का चयन करें. आप सूची में इसका नाम जोड़कर एक नई संपत्ति बना सकते हैं.',
@@ -2341,7 +2340,7 @@ $lang = array(
     'Advanced_Search_no_results_1' => 'ऐसा प्रतीत होता है कि आपके प्रश्न का कोई परिणाम नहीं है।',
     'Advanced_Search_no_results_2' => 'किसी भी टंकण त्रुटि, वर्तनी त्रुटि के लिए अपनी खोज की दोबारा जांच करें या कोई अन्य खोज शब्द आज़माएं।',
     'IncidentsPerDay' => 'प्रतिदिन की घटनाएं',
-    'CurrentVsDesiredMaturity' => 'नियंत्रित परिवार द्वारा वर्तमान बनाम वांछित परिपक्वता',
+    'CurrentVsDesiredMaturity' => 'नियंत्रण परिवार द्वारा परिपक्वता',
     'RiskDistribution' => 'जोखिम वितरण',
     'RiskDistributionDescription'=>'उपरोक्त पाई चार्ट अंतर्निहित और अवशिष्ट जोखिम दोनों के लिए विभिन्न जोखिम स्तरों के बीच जोखिमों के वितरण को दिखाने में मदद करते हैं। हम अपने जोखिम शमन प्रयासों में प्रगति दिखाने के लिए इन दो पाई का उपयोग कर सकते हैं। यदि अवशिष्ट जोखिम पाई बहुत अधिक या उच्च जोखिमों के बड़े स्लाइस दिखाती है तो यह संकेत हो सकता है कि आपका संगठन बहुत अधिक जोखिम उठा रहा है और आगे के शमन प्रयासों की आवश्यकता है।',
     'EnableTabs' => 'टैब सक्षम करें',
@@ -2413,7 +2412,7 @@ $lang = array(
     'EditModeInformation' => 'संपादन मोड चालू करें लेआउट संपादित करें। इसे बंद करने से लेआउट स्वचालित रूप से सहेजा नहीं जाएगा।',
     'InvalidLayout' => 'अवैध लेआउट!',
     'InvalidLayoutOnlyCustomAllowedAsDefault' => 'अमान्य लेआउट! केवल कस्टम लेआउट को ही डिफ़ॉल्ट के रूप में सहेजा जा सकता है।',
-    'LayoutSaved' => 'लेआउट सहेजा गया!',
+    'LayoutSaved' => 'आपके डैशबोर्ड का लेआउट सेव हो गया है।',
     'DefaultLayout' => 'डिफ़ॉल्ट लेआउट',
     'DefaultLayoutInformation' => 'इस लेआउट को डिफ़ॉल्ट के रूप में सेट करता है, जिसका उपयोग SimpleRisk द्वारा प्रदान किए गए लेआउट के बजाय उन उपयोगकर्ताओं के लिए किया जाता है जिनके पास कस्टम लेआउट सेट नहीं है। आप केवल सहेजे गए गैर-खाली कस्टम लेआउट को डिफ़ॉल्ट के रूप में सेट कर सकते हैं। यदि डिफ़ॉल्ट के रूप में चिह्नित लेआउट डिफ़ॉल्ट लेआउट में पुनर्स्थापित हो जाता है, तो यह इसे SimpleRisk द्वारा प्रदान किए गए डिफ़ॉल्ट पर पुनर्स्थापित कर देगा।',
     'LayoutDefaultStatusUpdated' => 'लेआउट की डिफ़ॉल्ट स्थिति अपडेट कर दी गई है.',
@@ -2422,7 +2421,7 @@ $lang = array(
     'DefaultLayoutRestored' => 'डिफ़ॉल्ट लेआउट सफलतापूर्वक बहाल कर दिया गया है!',
     'SavedLayoutRestored' => 'सहेजे गए लेआउट को सफलतापूर्वक बहाल कर दिया गया है!',
     'ConfirmRestoreLayout' => 'क्या आप निश्चित हैं? इस लेआउट में किए गए आपके परिवर्तन खो जाएंगे।',
-    'ConfirmDisableEditModeWithPendingChanges' => 'आपके पास सहेजे नहीं गए परिवर्तन हैं जो पेज छोड़ने पर खो जाएँगे। क्या आप वाकई \'संपादन मोड\' को अक्षम करना चाहते हैं और संभवतः अपने परिवर्तनों को सहेजना भूल जाना चाहते हैं?',
+    'ConfirmDisableEditModeWithPendingChanges' => 'इस डैशबोर्ड में आपके कुछ बदलाव अभी तक सेव नहीं हुए हैं। कृपया उन्हें हटा दें और संपादन बंद कर दें।',
     'ConfirmSave' => 'इन परिवर्तनों को सहेजने से आपका पहले से सहेजा गया लेआउट ओवरराइट हो जाएगा। क्या आप वाकई जारी रखना चाहते हैं?',
     'ConfirmSaveAdminDefault' => 'यह लेआउट इस लेआउट प्रकार के लिए डिफ़ॉल्ट के रूप में सेट किया गया है। इन परिवर्तनों को सहेजने से उन सभी उपयोगकर्ताओं के लिए लेआउट बदल जाएगा जिनके पास इस लेआउट प्रकार के लिए कोई कस्टम लेआउट सेट नहीं है। क्या आप वाकई जारी रखना चाहते हैं?',
     'RisksByMonth' => 'महीने के अनुसार जोखिम',
@@ -3111,6 +3110,1523 @@ $lang = array(
     'ResendAssessmentDescription' => 'नियमित अंतराल पर स्वचालित रूप से मूल्यांकन को पुनः जारी करें।',
     'ResendEveryDays' => 'हर {$day} दिनों में पुनः भेजें',
     'QuestionnaireSaveBarHint' => '"सेव एंड सेंड" प्रश्नावली को तुरंत अपने संपर्कों को भेज देता है।',
+    // Home dashboard — KPI tile labels
+    'NewSelfAssessment' => 'नया स्व-मूल्यांकन',
+    'SelfAssessmentPrereqIntro' => 'स्व-मूल्यांकन आपको एक सुरक्षित नियंत्रण ढांचे के आधार पर अपने संगठन का मूल्यांकन करने और विफल नियंत्रणों से उत्पन्न जोखिमों को स्वचालित रूप से पहचानने की सुविधा देता है। इसके लिए पहले दो सेटअप चरणों की आवश्यकता होती है:',
+    'RegisterYourInstance' => 'अपने इंस्टेंस को रजिस्टर करें',
+    'RegisterYourInstanceHelp' => 'पंजीकरण इस इंस्टेंस को SimpleRisk की लाइसेंसिंग सेवा से जोड़ता है ताकि मुफ्त एक्स्ट्रा (SCF सहित) डाउनलोड किए जा सकें।',
+    'InstallTheSCF' => 'सुरक्षित नियंत्रण फ्रेमवर्क स्थापित करें',
+    'InstallTheSCFHelp' => 'SCF एक निःशुल्क अतिरिक्त सेवा है जो इस सुविधा द्वारा मूल्यांकन किए जाने वाले फ्रेमवर्क, नियंत्रण प्रश्न और जोखिम मानचित्रण प्रदान करती है। इसकी स्थापना पृष्ठभूमि में होती है और इसमें कुछ मिनट लग सकते हैं।',
+    'GoToRegistration' => 'पंजीकरण पर जाएं',
+    'GoToSCF' => 'सुरक्षित नियंत्रण फ्रेमवर्क पर जाएं',
+    'SelfAssessmentEnableTip' => 'वैकल्पिक: गवर्नेंस > फ्रेमवर्क्स के अंतर्गत आप विशिष्ट SCF फ्रेमवर्क्स को सक्षम कर सकते हैं ताकि मूल्यांकन शुरू करते समय आपको चुनिंदा फ्रेमवर्क्स की एक छोटी सूची दिखाई दे। आप इसे सक्षम किए बिना भी संपूर्ण SCF कैटलॉग में किसी भी फ्रेमवर्क के विरुद्ध मूल्यांकन कर सकते हैं।',
+    'ChooseAFramework' => 'मूल्यांकन के लिए एक ढांचा चुनें',
+    'EnabledFrameworks' => 'सक्षम फ्रेमवर्क',
+    'AllScfFrameworks' => 'सभी एससीएफ फ्रेमवर्क',
+    'Start' => 'शुरू',
+    'Resume' => 'जारी रखें',
+    'ControlQuestion' => 'नियंत्रण प्रश्न',
+    'NotApplicable' => 'लागू नहीं',
+    'SaveProgress' => 'प्रगति सहेजें',
+    'MarkComplete' => 'पूरा हुआ चिह्नित करें',
+    'AnsweredOfTotal' => 'उत्तर',
+    'FailedSoFar' => 'अभी तक असफल रहा',
+    'StartedBy' => 'द्वारा आरंभ किया गया',
+    'FailedControls' => 'नियंत्रण विफल',
+    'PushToRisk' => 'जोखिम की ओर धकेलें',
+    'ConfirmDeleteSelfAssessment' => 'क्या आप इस स्व-मूल्यांकन को हटाना चाहते हैं? इसे वापस नहीं लिया जा सकता।',
+    'ConfirmCompleteSelfAssessment' => 'क्या यह मूल्यांकन पूरा हो गया है? नियंत्रणों में विफलता से जोखिम उत्पन्न होंगे।',
+    'NoSelfAssessmentsYet' => 'अभी तक कोई स्व-मूल्यांकन नहीं किया गया है। शुरुआत करने के लिए एक स्व-मूल्यांकन शुरू करें।',
+    'RequestFailed' => 'अनुरोध पूरा नहीं हो सका। कृपया पुनः प्रयास करें।',
+    'NoPendingRisks' => 'कोई लंबित जोखिम नहीं। नियंत्रणों की विफलता से उत्पन्न जोखिमों का आकलन करने के लिए एक मूल्यांकन पूरा करें।',
+    'NoFailedControls' => 'इस फ़िल्टर के लिए कोई नियंत्रण परिणाम उपलब्ध नहीं हैं।',
+    'ControlResultsTruncated' => 'सबसे हाल के 2000 परिणाम दिखाए जा रहे हैं। अधिक परिणाम देखने के लिए फ़िल्टर को सीमित करें।',
+    'GeneratedFromSelfAssessment' => 'स्व-मूल्यांकन से उत्पन्न',
+    'SelfAssessmentMitigationSolution' => 'इस जोखिम को कम करने के लिए, नीचे दिए गए नियंत्रणों को लागू करें, जिन्हें इस स्व-मूल्यांकन के दौरान विफल पाया गया था।',
+    'NSelected' => '{n} चयनित',
+    'FilterByControl' => 'नियंत्रण द्वारा फ़िल्टर करें',
+    'Pushing' => 'पुशिंग…',
+    'Deleting' => '… को हटाना',
+    'ConfirmPushSelectedPendingRisks' => 'Push the {n} selected pending risk(s) to risks?',
+    'ConfirmDeleteSelectedPendingRisks' => 'Delete the {n} selected pending risk(s)? This cannot be undone.',
+    'ConfirmDeleteSelectedSelfAssessments' => 'Delete the {n} selected self-assessment(s)? This cannot be undone.',
+    'BulkPartialFailure' => '{total} आइटमों में से {n} सफल रहे; बाकी असफल रहे। वर्तमान स्थिति देखने के लिए पेज रीफ़्रेश करें।',
+
+    // Workflows Extra - deactivation confirm ('Deactivate' at line 480 is reused as-is)
+    'WorkflowsExtraDeactivateConfirm' => 'वर्कफ़्लो एक्स्ट्रा को निष्क्रिय करें? उपयोगकर्ता द्वारा बनाई गई सभी वर्कफ़्लो परिभाषाएँ स्थायी रूप से हटा दी जाएंगी। सिस्टम वर्कफ़्लो सुरक्षित रहेंगे।',
+    'HomeKpiOpenRisks' => 'खुला जोखिम',
+    'HomeKpiNeedsReview' => 'समीक्षा की आवश्यकता है',
+    'HomeKpiUnmitigated' => 'शमन रहित',
+    'HomeKpiClosedRisks' => 'बंद जोखिम',
+    'HomeKpiControlPassRate' => 'नियंत्रण उत्तीर्ण दर',
+    'HomeKpiFailingControls' => 'नियंत्रण विफल हो रहे हैं',
+    'HomeKpiOpenAudits' => 'ओपन ऑडिट',
+    'HomeKpiTestsDueSoon' => 'जल्द ही परीक्षाएं होने वाली हैं',
+    'HomeKpiActiveFrameworks' => 'सक्रिय फ़्रेमवर्क',
+    'HomeKpiTotalControls' => 'कुल नियंत्रण',
+    // Home dashboard — What's Next feed
+    'WhatsNext' => 'आगे क्या होगा?',
+    'WhatsNextAllCaughtUp' => 'आप सभी अपडेट्स से अवगत हैं।',
+    'WhatsNextRegisterInstance' => 'अपने SimpleRisk इंस्टेंस को रजिस्टर करें',
+    'WhatsNextSubmitFirstRisk' => 'अपना पहला जोखिम प्रस्तुत करें',
+    'WhatsNextLoadFramework' => 'नियंत्रण ढांचा लोड करें',
+    'WhatsNextUnreviewedRisks' => 'जोखिमों की समीक्षा करें',
+    'WhatsNextUnmitigatedRisks' => 'जोखिमों को कम करने के उपाय',
+    'WhatsNextInitiateAudits' => 'लेखापरीक्षाएं शुरू करने के लिए',
+    // Home dashboard — widget picker type labels
+    'WidgetType_kpi' => 'केपीआई टाइल',
+    'WidgetType_whats_next' => 'सूची',
+    // Home dashboard — hub catalog entry
+    'HomeDashboard' => 'घर',
+    'HomeDashboardDesc' => 'आपका प्रारंभिक बिंदु — प्रमुख मापदंड और आगे क्या करना है, एक नज़र में।',
+    'HomeChartRiskByLevel' => 'स्तर के अनुसार जोखिम',
+    'HomeKpiThisMonth' => 'इस महीने',
+    'HomeKpiNoChange' => 'कोई परिवर्तन नहीं होता है',
+    'EditLayout' => 'लेआउट संपादित करें',
+    'ListHighestRisks' => 'मेरे सबसे बड़े जोखिम',
+    'ListPastDueReviews' => 'बकाया समीक्षाएँ',
+    'ListUpcomingTests' => 'आगामी टेस्ट',
+    'ListRecentFailures' => 'हाल की विफलताएँ',
+    'ListPoliciesReview' => 'समीक्षाधीन दस्तावेज़',
+    'ListExpiringExceptions' => 'समाप्त होने वाले अपवाद',
+    'ImKpiOpenIncidents' => 'कुल खुला',
+    'ImKpiOverdue' => 'अतिदेय',
+    'ImKpiMttr30' => 'औसत रिज़ॉल्यूशन',
+    'ImKpiMttrQuarter' => 'औसत समाधान (90 दिन)',
+    'ImKpiMttrYear' => 'औसत समाधान (1 वर्ष)',
+    'ImKpiMttrAll' => 'औसत समाधान (सभी)',
+    'ImKpiResolved30' => 'हल किया',
+    'ImChartBySeverity' => 'गंभीरता के अनुसार',
+    'ImChartByStatus' => 'स्थिति के अनुसार',
+    'ImListRecent' => 'हाल की घटनाएँ',
+    'ImListUnassigned' => 'अनिर्दिष्ट घटनाएँ',
+    'HomeKpiOpenExceptions' => 'खुली अपवाद',
+    'HomeKpiPolicies' => 'नीतियों',
+    'ResolutionTargets' => 'समाधान के लक्ष्य (दिनों में)',
+    'ResolutionTargetsHelp' => 'किसी घटना को लंबित माने जाने से पहले जितने दिनों तक उसे लंबित रखा जा सकता है, वह संख्या।',
+    'DefaultTarget' => 'डिफ़ॉल्ट',
+    'PerSeverityOverrideHelp' => 'विशिष्ट गंभीरता स्तरों के लिए डिफ़ॉल्ट मान को वैकल्पिक रूप से ओवरराइड करें (डिफ़ॉल्ट मान का उपयोग करने के लिए इसे खाली छोड़ दें):',
+    'ResolutionTargetUsesDefault' => 'डिफ़ॉल्ट (%d)',
+    'SeverityColors' => 'गंभीरता रंग',
+    'SeverityColorsHelp' => 'घटना की गंभीरता के लिए अलग-अलग रंग, जो घटना डैशबोर्ड और घटना विवरण पृष्ठ पर दिखाए जाते हैं।',
+    'Editing' => 'संपादन',
+    'SetAsDefaultForEveryone' => 'इसे सभी के लिए डिफ़ॉल्ट के रूप में सेट करें',
+    'EditLayoutHint' => 'टाइल को खींचकर स्थानांतरित करें · किनारे को खींचकर आकार बदलें · ✕ दबाकर हटाएं',
+    'RemoveWidget' => 'विजेट हटाएं',
+    'AddWidget' => 'विजेट जोड़ें',
+    'AddToDashboard' => 'डैशबोर्ड में जोड़ें',
+    'AllWidgetsAdded' => 'इस डैशबोर्ड पर सभी उपलब्ध विजेट मौजूद हैं।',
+    'AddText' => 'लेख जोड़ें',
+    'GettingStarted' => 'शुरू करना',
+    'GettingStartedTitle' => 'SimpleRisk में आपका स्वागत है',
+    'GettingStartedSubtitle' => 'SimpleRisk का अधिकतम लाभ उठाने के लिए कुछ आसान चरण।',
+    'GSProgressCount' => '{done} में से {total} पूर्ण',
+    'GSNextUp' => 'अगला',
+    'GSArea_setup' => 'स्थापित करना',
+    'GSArea_risk' => 'जोखिम',
+    'GSArea_assessment' => 'आकलन',
+    'GSArea_compliance' => 'अनुपालन',
+    'GSArea_assets' => 'संपत्ति',
+    'GSArea_ai' => 'स्थापित करना',
+    'GSHide' => 'आरंभ करना छुपाएँ',
+    'GSDismissStep' => 'इस चरण को खारिज करें',
+    'GSAllSet' => 'सब कुछ ठीक है — बहुत बढ़िया!',
+    'GSWalkthrough' => '30 मिनट का भ्रमण',
+    'Explore' => 'अन्वेषण करना',
+    'Learn' => 'सीखना',
+    'AdminGuide' => 'प्रशासनिक मार्गदर्शिका',
+    'LearnMore' => 'और अधिक जानें',
+    'GSRegisterTitle' => 'अपने इंस्टेंस को रजिस्टर करें',
+    'GSRegisterDesc' => 'अपने लाइसेंस कुंजी का उपयोग करके सपोर्ट और अपडेट सक्रिय करें।',
+    'GSRegisterCta' => 'पंजीकृत करें',
+    'GSScfTitle' => 'सुरक्षित नियंत्रण फ्रेमवर्क स्थापित करें',
+    'GSScfDesc' => 'SCF स्थापित करें — यह विभिन्न मानकों के लिए आपकी नियंत्रण लाइब्रेरी है।',
+    'GSScfCta' => 'एससीएफ स्थापित करें',
+    'GSInviteTitle' => 'अपनी टीम को आमंत्रित करें',
+    'GSInviteDesc' => 'सहकर्मियों को जोड़ें ताकि काम सौंपा जा सके और उसकी समीक्षा की जा सके।',
+    'GSInviteCta' => 'उपयोगकर्ता जोड़ें',
+    'GSAiTitle' => 'एआई को कॉन्फ़िगर करें',
+    'GSAiDesc' => 'कृत्रिम बुद्धिमत्ता के साथ अपने SimpleRisk अनुभव को बेहतर बनाएं।',
+    'GSAiCta' => 'एआई स्थापित करें',
+    'GSSubmitRiskTitle' => 'अपना पहला जोखिम प्रस्तुत करें',
+    'GSSubmitRiskDesc' => 'अपने संगठन के सामने मौजूद किसी जोखिम को दर्ज करें।',
+    'GSSubmitRiskCta' => 'जोखिम प्रस्तुत करें',
+    'GSMitigateTitle' => 'शमन की योजना बनाएं',
+    'GSMitigateDesc' => 'किसी खुले जोखिम में शमन योजना जोड़ें।',
+    'GSMitigateCta' => 'योजना शमन',
+    'GSReviewTitle' => 'जोखिम समीक्षा करें',
+    'GSReviewDesc' => 'किसी जोखिम की समीक्षा करें और उसके अगले चरण का निर्णय लें।',
+    'GSReviewCta' => 'समीक्षा करें',
+    'GSDefineTestTitle' => 'नियंत्रण परीक्षण को परिभाषित करें',
+    'GSDefineTestDesc' => 'यह निर्धारित करें कि नियंत्रण का परीक्षण कैसे किया जाएगा।',
+    'GSDefineTestCta' => 'परीक्षण को परिभाषित करें',
+    'GSInitiateAuditTitle' => 'ऑडिट शुरू करें',
+    'GSInitiateAuditDesc' => 'परीक्षण या ऑडिट चक्र शुरू करें।',
+    'GSInitiateAuditCta' => 'लेखापरीक्षा शुरू करें',
+    'GSAssetTitle' => 'अपनी संपत्तियां जोड़ें',
+    'GSAssetDesc' => 'जिन संपत्तियों की आप सुरक्षा कर रहे हैं, उनकी सूची बनाएं।',
+    'GSAssetCta' => 'संपत्तियां जोड़ें',
+    'GSInvalidStep' => 'आरंभ करने का चरण अमान्य है।',
+    'GSPagerLabel' => '{from}–{to} of {total}',
+    'GSPrevCards' => 'पिछले चरण दिखाएँ',
+    'GSNextCards' => 'अगले चरण दिखाएँ',
+    'WhatsNextInstallSCF' => 'सुरक्षित नियंत्रण फ्रेमवर्क स्थापित करें',
+    'GSActivateScfTitle' => 'सुरक्षित नियंत्रण ढांचा सक्रिय करें',
+    'GSActivateScfDesc' => 'अपनी लाइब्रेरी में इसके कंट्रोल लोड करने के लिए इंस्टॉल किए गए SCF को चालू करें।',
+    'GSActivateScfCta' => 'एससीएफ को सक्रिय करें',
+    'WhatsNextActivateSCF' => 'सुरक्षित नियंत्रण ढांचा सक्रिय करें',
+    'GSEnableFrameworksTitle' => 'उपयुक्त ढाँचों को सक्षम करें',
+    'GSEnableFrameworksDesc' => 'अपने संगठन पर लागू होने वाले एससीएफ फ्रेमवर्क को सक्रिय करें।',
+    'GSEnableFrameworksCta' => 'फ्रेमवर्क सक्षम करें',
+    'WhatsNextEnableFrameworks' => 'उपयुक्त ढाँचों को सक्षम करें',
+    'GSSelfAssessTitle' => 'स्व-मूल्यांकन करें',
+    'GSSelfAssessDesc' => '250 से अधिक फ्रेमवर्क के आधार पर अपने संगठन का मूल्यांकन करें और विफल नियंत्रणों से उत्पन्न जोखिमों का पता लगाएं।',
+    'GSSelfAssessCta' => 'मूल्यांकन शुरू करें',
+    'WhatsNextTakeSelfAssessment' => 'स्व-मूल्यांकन करें',
+    'WhatsNextConfigureAI' => 'एआई को कॉन्फ़िगर करें',
+    'ListUnreviewedRisks' => 'असमीक्षित जोखिम',
+    'ControlsByDomain' => 'डोमेन द्वारा नियंत्रण',
+    'ControlsByClass' => 'वर्ग द्वारा नियंत्रण',
+    'ControlsByPhase' => 'चरणबद्ध नियंत्रण',
+    'ControlsByPriority' => 'प्राथमिकता के आधार पर नियंत्रण',
+    'ControlsByCurrentMaturity' => 'वर्तमान परिपक्वता द्वारा नियंत्रण',
+    'ControlStatusOverTime' => 'समय के साथ नियंत्रण की स्थिति',
+    'ComplianceTotalControls' => 'कुल नियंत्रण',
+    'HomeKpiOverdueTests' => 'विलंबित परीक्षण',
+    'Total' => 'कुल',
+    'StartTheTest' => 'टेस्ट शुरू करें',
+    'TestStartsAutomatically' => 'टेस्ट स्वचालित रूप से शुरू होता है',
+    'GoToTest' => 'टेस्ट पर जाएं',
+    'NotTested' => 'परीक्षण नहीं किया गया',
+    'PassingPercent' => 'उत्तीर्ण प्रतिशत',
+    'ListFailingControls' => 'नियंत्रण विफल हो रहे हैं',
+    'Exceptions' => 'अपवाद',
+    'Documents' => 'दस्तावेज़',
+    'ControlsBelowMaturity' => 'परिपक्वता से नीचे के नियंत्रण',
+    'ControlsAtMaturity' => 'परिपक्वता पर नियंत्रण',
+    'ControlsAboveMaturity' => 'परिपक्वता से ऊपर नियंत्रण',
+    'Maturity' => 'परिपक्वता',
+    'AllTime' => 'पूरे समय',
+    'Last7Days' => 'पिछले 7 दिन',
+    'Last30Days' => 'पिछले 30 दिन',
+    'Last90Days' => 'पिछले 90 दिन',
+    'YearToDate' => 'चालू वर्ष की 1 जनवरी से आज तक',
+    'CustomRange' => 'कस्टम रेंज',
+    'Age' => 'आयु',
+    'ImOpenIncidents' => 'खुली घटनाएं',
+    'ImClosedIncidents' => 'बंद घटनाएँ',
+    'ImByAttackVector' => 'अटैक वेक्टर द्वारा खोलें',
+    'ImBySource' => 'स्रोत द्वारा खोलें',
+    'AverageDaysToDetect' => 'पता लगाने में लगने वाले औसत दिन',
+    'ImKpiAvgTtd' => 'औसत पहचान',
+    'Days' => 'दिन',
+    'ImKpiCriticalOpen' => 'क्रिटिकल ओपन',
+    'ImKpiResolvedInSla' => 'एसएलए में हल किया गया',
+    'Events' => 'घटनाएँ',
+    'ImEventsIncidents' => 'घटनाएँ और दुर्घटनाएँ',
+    'ImSourceBreakdown' => 'श्रेणी के अनुसार स्रोत',
+    'ImClosureSummary' => 'समापन सारांश',
+    'ImSignalQuality' => 'सिग्नल की गुणवत्ता',
+    'ImSignalLowSample' => 'विश्वसनीय मूल्यांकन के लिए पर्याप्त संख्या में न्यायिक रूप से स्वीकृत बंद मामले नहीं हैं।',
+    'ImportExportExportPdf' => 'पीडीएफ निर्यात करें',
+    'ImportExportExporting' => 'पीडीएफ तैयार हो रही है…',
+    'ImportExportExportFailed' => 'पीडीएफ जनरेट नहीं हो सकी। कृपया पुनः प्रयास करें।',
+    'ImportExportGeneratedOn' => 'जनरेट किया गया',
+    'ImportExportPage' => 'पृष्ठ',
+    'ImportExportPageOf' => 'का',
+    'ResolutionTargetsUpdated' => 'गंभीरता-आधारित समाधान लक्ष्यों को अद्यतन किया गया।',
+    'SeverityColorsUpdated' => 'गंभीरता दर्शाने वाले रंगों को अपडेट किया गया।',
+    // AI Capabilities Catalog + AI settings hub (unified AI settings)
+    'AICapGrcRecommendations' => 'जीआरसी फ्रेमवर्क अनुशंसाएँ',
+    'AICapGrcRecommendationsDesc' => 'एआई द्वारा तैयार किए गए फ्रेमवर्क संबंधी सुझाव और एक कार्यकारी सारांश, जो आपके संगठन के संदर्भ के अनुरूप हो।',
+    'AICapRiskRecommendations' => 'जोखिम संबंधी अनुशंसाएँ',
+    'AICapRiskRecommendationsDesc' => 'जोखिम, उसके निवारण और समीक्षा के आधार पर जोखिम के विवरण और निवारण के लिए प्रति-जोखिम सुझाव।',
+    'AICapFairAnalysis' => 'FAIR मात्रात्मक विश्लेषण',
+    'AICapFairAnalysisDesc' => 'एआई बीटा-पीआरटी हानि मापदंडों का अनुमान लगाता है; सिंपलरिस्क जोखिम को डॉलर में मापने के लिए 10,000 पुनरावृत्तियों वाला मोंटे कार्लो सिमुलेशन चलाता है।',
+    'AICapDocumentCustomization' => 'दस्तावेज़ अनुकूलन',
+    'AICapDocumentCustomizationDesc' => 'यह आपके दस्तावेज़ टेम्पलेट्स में प्लेसहोल्डर्स को भरता है और पॉलिसी टेक्स्ट को साफ करता है ताकि एक स्टैंडर्ड पॉलिसी आपकी अपनी पॉलिसी की तरह दिखे।',
+    'AICapDocumentControlMatching' => 'दस्तावेज़ ↔ नियंत्रण मिलान',
+    'AICapDocumentControlMatchingDesc' => 'यह स्वचालित रूप से नियंत्रणों को पॉलिसी दस्तावेजों से मैप करता है, जिसमें एक विश्वास स्कोर और तर्क शामिल होता है जिसकी आप समीक्षा कर सकते हैं।',
+    'AICapDocumentTemplates' => 'दस्तावेज़ टेम्पलेट लाइब्रेरी',
+    'AICapDocumentTemplatesDesc' => 'SimpleRisk लाइब्रेरी से चयनित नीति, दिशानिर्देश और प्रक्रिया टेम्पलेट इंस्टॉल करें।',
+    'AICapControlReferenceEnhancement' => 'नियंत्रण संदर्भ संवर्धन',
+    'AICapControlReferenceEnhancementDesc' => 'संदर्भ संदर्भों को समृद्ध करने के लिए वेब खोज के माध्यम से नियंत्रण पाठ का शब्दशः शोध करें।',
+    'AICapAiChat' => 'चैट सहायक',
+    'AICapAiChatDesc' => 'एक जीआरसी सहायक जो सिंपलरिस्क में कहीं भी संदर्भ के अनुसार प्रश्नों के उत्तर देता है।',
+    'AICapSurfacedRecommendations' => 'कृत्रिम बुद्धिमत्ता पृष्ठ',
+    'AICapSurfacedRiskView' => 'जोखिम का दृष्टिकोण — विवरण और निवारण',
+    'AICapSurfacedFairTab' => 'जोखिम दृश्य — FAIR टैब',
+    'AICapSurfacedDocuments' => 'शासन — दस्तावेज़',
+    'AICapSurfacedControls' => 'अनुपालन — नियंत्रण',
+    'AICapSurfacedEveryPage' => 'प्रत्येक पृष्ठ — फ्लोटिंग असिस्टेंट',
+    'AICapabilitiesCatalog' => 'क्षमताओं',
+    'AICapSearchPlaceholder' => 'खोज एआई क्षमताएं…',
+    'AICapFilterDomain' => 'कार्यक्षेत्र',
+    'AICapFilterTier' => 'टीयर',
+    'AICapFilterState' => 'राज्य',
+    'AICapTierExtra' => 'एआई एक्स्ट्रा',
+    'AICapStateLocked' => 'बंद',
+    'AICapIncludedInExtra' => 'एआई एक्स्ट्रा में शामिल है',
+    'AICapPurchaseExtra' => 'एआई एक्स्ट्रा खरीदें',
+    'AICapNeedsProvider' => 'प्रदाता सेटअप आवश्यक है',
+    'AICapNoMatch' => 'कोई क्षमता मेल नहीं खाती',
+    'AICapNoMatchHint' => 'किसी दूसरे डोमेन, स्तर या खोज शब्द को आजमाएं।',
+    'AICapCountSingular' => 'क्षमता',
+    'AICapCountPlural' => 'क्षमताओं',
+    'DomainAssistant' => 'सहायक',
+    'AICapLoadError' => 'एआई क्षमताओं को लोड नहीं किया जा सका। कृपया पुनः प्रयास करें।',
+    'AIProviderConfigSubtitle' => 'सिंपलरस्क की एआई क्षमताओं को सशक्त बनाने के लिए इसे किसी एआई प्रदाता से कनेक्ट करें।',
+    'AIHowToGetAPIKeyFor' => 'एपीआई कुंजी कैसे प्राप्त करें',
+    'AIExtraNotActivated' => 'सक्रिय नहीं है',
+    'AIExtraValueProp' => 'उन्नत एआई — FAIR जोखिम मात्रा निर्धारण, दस्तावेज़ और नियंत्रण सहायता, और एआई चैट सहायक।',
+    'AICtxOrgName' => 'आपकी संस्था का नाम क्या है?',
+    'AICtxOrgSizeEmployees' => 'आपकी संस्था में कितने कर्मचारी हैं?',
+    'AICtxOrgSizeRevenue' => 'आपकी संस्था का वार्षिक राजस्व कितना है?',
+    'AICtxOrgObjective' => 'आपकी संस्था के प्राथमिक व्यावसायिक उद्देश्य और रणनीतिक लक्ष्य क्या हैं?',
+    'AICtxOrgIndustry' => 'आपकी संस्था का प्राथमिक उद्योग या क्षेत्र क्या है?',
+    'AICtxOrgLocation' => 'आपका संगठन किन देशों या क्षेत्रों में कार्यरत है?',
+    'AICtxOrgType' => 'आप किस प्रकार का संगठन हैं?',
+    'AICtxDataTypes' => 'आपका संगठन किस प्रकार का डेटा एकत्र करता है, संसाधित करता है या संग्रहीत करता है (उदाहरण के लिए, व्यक्तिगत डेटा, वित्तीय डेटा, स्वास्थ्य संबंधी जानकारी)?',
+    'AICtxDataCustomers' => 'आपके प्राथमिक ग्राहक या हितधारक कौन हैं (उदाहरण के लिए, उपभोक्ता, व्यवसाय, सरकारी संस्थाएं)?',
+    'AICtxDataRegulatory' => 'क्या आपका उद्योग किसी विशिष्ट नियामक आवश्यकताओं के अधीन है?',
+    'AICtxDataThirdParties' => 'क्या आपके किसी तीसरे पक्ष के साथ संबंध हैं या आप कोई आउटसोर्स सेवाएं प्रदान करते हैं जिनके लिए अनुपालन निरीक्षण की आवश्यकता होती है?',
+    'AICtxMaturityIssues' => 'क्या पिछले 3-5 वर्षों में आपको अनुपालन संबंधी कोई महत्वपूर्ण समस्या, सुरक्षा उल्लंघन या जोखिम भरी घटना का सामना करना पड़ा है?',
+    'AICtxMaturityConcerns' => 'क्या आपने अपनी मौजूदा जीआरसी प्रक्रियाओं में सुधार या चिंता के किसी विशेष क्षेत्र की पहचान की है?',
+    'AICtxMaturityAppetite' => 'आपके संगठन की जोखिम लेने की क्षमता और सहनशीलता क्या है?',
+    'AICtxMaturityLevel' => 'शासन, जोखिम प्रबंधन और अनुपालन प्रथाओं के संदर्भ में आपका वर्तमान परिपक्वता स्तर क्या है?',
+    'AICtxImplementationChanges' => 'क्या आपके व्यवसाय मॉडल, प्रौद्योगिकी अवसंरचना या बाजार में कोई ऐसे आगामी परिवर्तन होने वाले हैं जो आपकी अनुपालन आवश्यकताओं को प्रभावित कर सकते हैं?',
+    'AICtxImplementationResourcesBudget' => 'अनुपालन ढांचे को लागू करने और बनाए रखने के लिए आपके पास बजट आवंटन के कौन-कौन से संसाधन उपलब्ध हैं?',
+    'AICtxImplementationResourcesPersonnel' => 'अनुपालन ढांचे को लागू करने और बनाए रखने के लिए आपके पास कौन-कौन से कार्मिक संसाधन उपलब्ध हैं?',
+    'AICtxImplementationResourcesTechnology' => 'अनुपालन ढांचे को लागू करने और बनाए रखने के लिए आपके पास कौन-कौन से तकनीकी अवसंरचना संसाधन उपलब्ध हैं?',
+    'AICtxImplementationResourcesTraining' => 'अनुपालन ढांचे को लागू करने और बनाए रखने के लिए आपके पास कौन-कौन से प्रशिक्षण और विकास संसाधन उपलब्ध हैं?',
+    'AICtxImplementationResourcesExternal' => 'अनुपालन ढांचे को लागू करने और बनाए रखने के लिए आपके पास कौन-कौन से बाहरी सहायता संसाधन उपलब्ध हैं?',
+    'AIAPIKeySecurityNote' => 'आपकी कुंजी सर्वर पर संग्रहीत होती है और ब्राउज़र को कभी वापस नहीं भेजी जाती। प्रदाता URL को SSRF अनुमति सूची के विरुद्ध मान्य किया जाता है, जिसे config.php फ़ाइल में कॉन्फ़िगर किया जा सकता है।',
+    'AIContextEgressWarning' => 'आपके उत्तर आपके कॉन्फ़िगर किए गए AI प्रदाता को भेजे जाते हैं ताकि वह अपनी अनुशंसाओं को आधार प्रदान कर सके। ऐसी कोई भी जानकारी शामिल न करें जिसे आप उनके साथ साझा नहीं करना चाहेंगे।',
+    'Provider' => 'प्रदाता',
+    'AIProviderURLHostNotAllowed' => 'होस्ट "%s" एआई प्रदाता अनुमति सूची में नहीं है। इसे config.php में $ai_allowed_provider_hosts में जोड़ें और फिर सहेजें। (ज्ञात एआई प्रदाता और 127.0.0.1 लूपबैक पते हमेशा अनुमत हैं।)',
+    'AIContextLastSaved' => 'अंतिम बार सहेजा गया',
+    'AIContextNeverSaved' => 'अभी तक सहेजा नहीं गया',
+    'AICtxCardSubtitle' => 'चार क्षेत्रों में फैले 21 प्रश्न। आप जितने अधिक प्रश्नों के उत्तर देंगे, आपकी अनुशंसा उतनी ही सटीक होगी।',
+    'AICtxAnswered' => '%1$d में से %2$d ने उत्तर दिया',
+    'AICtxAllOptional' => 'वैकल्पिक',
+    'AIContextSaving' => 'सहेजा जा रहा है…',
+    'AIContextSaveFailed' => 'आपके बदलाव सहेजे नहीं जा सके। कृपया पुनः प्रयास करें।',
+    'AISettingsSavedNotReachable' => 'एआई सेटिंग्स सहेज ली गईं, लेकिन सेवा प्रदाता से संपर्क नहीं हो पा रहा है। सुनिश्चित करें कि यह चल रहा है और यूआरएल सही है।',
+    'AISettingsSavedKeyRequired' => 'एआई सेटिंग्स सहेज ली गई हैं, लेकिन इस प्रदाता की सुविधाओं का उपयोग करने से पहले एक एपीआई कुंजी की आवश्यकता होती है।',
+    'TestAndSave' => 'टेस्ट करें और सेव करें',
+    'AICapEnableAll' => 'सभी को सक्षम करें',
+    'AICapDisableAll' => 'सभी को अक्षम करें',
+    'AISettingsSavedConnected' => 'एआई सेटिंग्स सहेज ली गईं — कनेक्शन सफल रहा।',
+    'AISettingsSavedNotConnected' => 'एआई सेटिंग्स सेव हो गईं, लेकिन कनेक्शन टेस्ट विफल रहा। मॉडल, कुंजी और यूआरएल की जाँच करें।',
+    'AIProviderURLNotOnAllowlist' => 'यह होस्ट AI प्रदाता SSRF अनुमति सूची में नहीं है। इसे सहेजने से पहले config.php में $ai_allowed_provider_hosts में जोड़ें।',
+    'Connected' => 'जुड़े हुए',
+    'NotConnected' => 'जुड़े नहीं हैं',
+    'AICapBulkError' => 'कुछ सुविधाओं को अपडेट नहीं किया जा सका। कृपया पुनः प्रयास करें।',
+    'QuestionnaireAlreadyCompleted' => 'यह प्रश्नावली पहले ही पूरी हो चुकी है।',
+    'QuestionnaireDraftError' => 'ड्राफ्ट सहेजने में त्रुटि। विवरण के लिए कंसोल देखें।',
+
+    // Audit cadence scheduling - Define Test modal (Interval/Calendar schedule redesign)
+    // 'Overdue' duplicates the English of 'ImKpiOverdue' on purpose: that key is
+    // an Incident Management KPI label, and a compliance status pill reusing an
+    // IM-scoped key would couple the two domains for a translator (and break the
+    // moment either wording moves). This is the generic, cross-domain one.
+    'Overdue' => 'अतिदेय',
+    // Deliberate: the only other key rendering 'Manual' is 'ManualValuation',
+    // an asset-valuation label. Pointing a schedule mode at it would couple two
+    // unrelated domains for translators and break the moment either reworded.
+    'ScheduleManual' => 'मैन्युअल',
+    'ScheduleInterval' => 'अंतराल',
+    'ScheduleCalendar' => 'कैलेंडर',
+    'Cadence' => 'आवृत्ति',
+    'CadenceBiweekly' => 'सप्ताह में दो बार',
+    'CadenceSemiAnnually' => 'अर्द्ध वार्षिक',
+    'AnchorDate' => 'एंकर तिथि',
+    'UpcomingOccurrences' => 'आगामी घटनाएँ',
+    'AuditLeadInDays' => 'ऑडिट की तैयारी के दिन',
+    'SkipOccurrence' => 'छोडना',
+    'OverrideDate' => 'ओवरराइड तिथि',
+    'Week' => 'सप्ताह',
+    'NoUpcomingOccurrences' => 'इस अवधि में कोई आगामी कार्यक्रम नहीं हैं।',
+    'FailedToLoadUpcomingOccurrences' => 'आगामी घटनाओं का पूर्वावलोकन लोड करने में विफल।',
+    'AnchorDateMustBeTodayOrLater' => 'एंकर तिथि आज की या उसके बाद की होनी चाहिए। पिछली तिथि निर्धारित करने के लिए, मैन्युअल परीक्षण बनाएं।',
+    'InvalidScheduleType' => 'अमान्य शेड्यूल प्रकार। अनुमत मान: मैनुअल, अंतराल, कैलेंडर।',
+    'Weeks' => 'हफ्तों',
+    'Months' => 'महीने',
+    'Years' => 'साल',
+    'ScheduleSummaryEvery' => 'प्रत्येक {$interval} {$unit}',
+
+    // Define Tests redesign - client-rendered grid (Phase 1, Task 6)
+    'LastResult' => 'अंतिम परिणाम',
+    'NextDue' => 'अगली देय तिथि',
+    'DueSoon' => 'जल्द ही आने वाला है',
+    'Retired' => 'सेवानिवृत्त',
+    'MyTests' => 'मेरे परीक्षण',
+    'Failing' => 'असफलता',
+    'Untested' => 'अपरीक्षित',
+    'ShowRetired' => 'शो सेवानिवृत्त',
+    'Tests' => 'परीक्षण',
+    'NoTestsForThisControl' => 'इस नियंत्रण के लिए अभी तक कोई परीक्षण नहीं किया गया है।',
+    'NoControlsDefinedYet' => 'अभी तक कोई नियंत्रण परिभाषित नहीं किया गया है',
+    'NoControlsDefinedYetBody' => 'टेस्ट जोड़ने से पहले गवर्नेंस में नियंत्रण परिभाषित करें।',
+    'NoTestsMatchFilters' => 'आपके फ़िल्टर से कोई परीक्षण मेल नहीं खाता।',
+    'NoTestsMatchFiltersBody' => 'अपनी खोज या फ़िल्टर को समायोजित करने का प्रयास करें।',
+    'CouldNotLoadTests' => 'टेस्ट लोड नहीं हो सके',
+    'CouldNotLoadTestsBody' => 'कुछ गड़बड़ हो गई। आपका डेटा सुरक्षित है — कृपया पृष्ठ को रीफ़्रेश करें।',
+    'ShowingXToYOfZ' => '{$total} में से {$start}–{$end} दिखाया जा रहा है',
+    // Define Tests grid -- SCF-mapping + read-only procedure expand (Phase 1, Task 7)
+    'Reference' => 'संदर्भ',
+    'NoFrameworksMapped' => 'इस कंट्रोल से कोई फ्रेमवर्क मैप नहीं किया गया है।',
+    // Define Tests grid -- batch select + retire/delete + quick filters (Phase 1, Task 8)
+    'Retire' => 'रिटायर',
+    'ReassignTester' => 'परीक्षक को पुनः नियुक्त करें',
+    'SetSchedule' => 'अनुसूची निर्धारित करें',
+    'ConfirmRetireSelectedTests' => 'Retire the {n} selected test(s)?',
+    'ConfirmDeleteSelectedTests' => 'Delete the {n} selected test(s)? This cannot be undone.',
+    // Define Tests grid -- Coverage toolbar select (Issue 4)
+    'Coverage' => 'कवरेज',
+    'CoverageWithTests' => 'परीक्षणों के साथ नियंत्रण',
+    'CoverageAllControls' => 'सभी नियंत्रण',
+    'CoverageGaps' => 'अंतराल',
+    // Define Tests insights band (Phase 2, Task 4) -- KPI tile labels + subtitles.
+    // 'Overdue', 'DueSoon', and 'Failing' are reused from the grid's quick-filter
+    // chips above (identical text) rather than duplicated here.
+    'DtTotalTests' => 'कुल परीक्षण',
+    'DtCoverageGaps' => 'कवरेज अंतराल',
+    'DtAcrossNControls' => '{$n} नियंत्रणों के पार',
+    'DtControlsWithNoTest' => 'बिना परीक्षण वाले नियंत्रण',
+    'DtNeedInitiationNow' => 'अभी शुरुआत की जरूरत है',
+    'DtWithinLeadInWindow' => 'लीड-इन विंडो के भीतर',
+    'DtLastResultFailed' => 'पिछला परिणाम विफल रहा',
+    'InvalidTestMethod' => 'परीक्षण विधि पूछताछ, अवलोकन, निरीक्षण या पुन: निष्पादन में से एक होनी चाहिए!',
+    'TesterCannotBeApprover' => 'परीक्षक को इस परीक्षण के लिए अनुमोदक के रूप में भी सूचीबद्ध नहीं किया जा सकता है।',
+    'ApproverNotEligible' => 'एक या अधिक चयनित अनुमोदकों के पास "परीक्षणों को अनुमोदित करने" की जिम्मेदारी नहीं है।',
+    'TestMethod' => 'परिक्षण विधि',
+    'TestMethodInquiry' => 'जाँच करना',
+    'TestMethodObservation' => 'अवलोकन',
+    'TestMethodInspection' => 'निरीक्षण',
+    'TestMethodReperformance' => 'पुनःप्रदर्शन',
+    'Sample' => 'नमूना',
+    'RequiredEvidence' => 'आवश्यक साक्ष्य',
+    'Approvers' => 'अनुमोदकों',
+    'AuditLog_TestAuditApproved' => 'ऑडिट "{$test_audit_name}"(आईडी: {$test_audit_id}) को उपयोगकर्ता "{$user_name} " द्वारा अनुमोदित किया गया था।',
+    'AuditLog_TestAuditRejected' => 'ऑडिट "{$test_audit_name}"(आईडी: {$test_audit_id}) को उपयोगकर्ता "{$user_name}" द्वारा टिप्पणी "{$comment} " के साथ अस्वीकार कर दिया गया।',
+    'AuditLog_TestAuditAwaitingApproval' => 'ऑडिट "{$test_audit_name}"(आईडी: {$test_audit_id}) उपयोगकर्ता "{$user_name}" द्वारा बंद करने के लिए प्रस्तुत किया गया था और अनुमोदन की प्रतीक्षा कर रहा है। परिवर्तन: {$changes}।',
+    'AuditApproved' => 'ऑडिट को सफलतापूर्वक मंजूरी मिल गई।',
+    'AuditRejected' => 'ऑडिट को सफलतापूर्वक अस्वीकार कर दिया गया।',
+    'RejectCommentRequired' => 'ऑडिट को अस्वीकार करने के लिए एक टिप्पणी आवश्यक है।',
+    'NotAnApproverOfThisAudit' => 'आप इस ऑडिट के लिए अधिकृत अनुमोदक नहीं हैं।',
+    'ApproverCannotBeTester' => 'अनुमोदक इस ऑडिट का परीक्षक भी नहीं हो सकता।',
+    'AuditNotAwaitingApproval' => 'यह ऑडिट फिलहाल अनुमोदन के लिए लंबित नहीं है।',
+    'NotificationAuditAwaitingApprovalTitle' => 'ऑडिट आपकी स्वीकृति की प्रतीक्षा कर रहा है।',
+    'NotificationAuditAwaitingApprovalBody' => 'ऑडिट "{$test_audit_name}" को बंद करने के लिए प्रस्तुत कर दिया गया है और आपकी स्वीकृति की प्रतीक्षा कर रहा है।',
+    'NotificationAuditRejectedTitle' => 'ऑडिट अस्वीकृत',
+    'NotificationAuditRejectedBody' => 'ऑडिट "{$test_audit_name}" को इस टिप्पणी के साथ अस्वीकार कर दिया गया: "{$comment}"',
+    'AwaitingApproval' => 'मंजूरी का इंतजार',
+    'AwaitingApprovalBannerText' => 'इस ऑडिट को समापन के लिए प्रस्तुत कर दिया गया है और समापन से पहले इसे एक निर्धारित अनुमोदक से अनुमोदन की प्रतीक्षा है।',
+    'ReturnedForRework' => 'पुनर्कार्य के लिए वापस भेजा गया',
+    'ReturnedForReworkBannerText' => 'इस ऑडिट को अस्वीकार कर दिया गया और पुनः कार्य के लिए वापस भेज दिया गया।',
+    'RejectReason' => 'अस्वीकृति का कारण',
+    'AreYouSureYouWantToApproveThisAudit' => 'क्या आप वाकई इस ऑडिट को मंजूरी देना चाहते हैं?',
+    'AtLeastOneControlRequired' => 'कम से कम एक नियंत्रण आवश्यक है।',
+    'DtNCommonAcrossNControls' => '{$common} सामान्य · {$n} नियंत्रण',
+    'DtUntestedControls' => 'अप्रमाणित नियंत्रण',
+    'DtControlsInScopeNoCoverage' => 'कवरंज नहीं',
+    'Passing' => 'पासिंग',
+    'DtLastResultPassed' => 'पिछला परिणाम उत्तीर्ण हुआ',
+    'AllFamilies' => 'सभी परिवार',
+    'SearchTestsPlaceholder' => 'खोज परीक्षण, नियंत्रण और फ्रेमवर्क',
+    'AnySchedule' => 'कोई भी अनुसूची',
+    'AnyTag' => 'कोई भी टैग',
+    'AuditAutoClosedTestRetired' => 'परीक्षण बंद होने के कारण इसे स्वचालित रूप से अनिर्णायक मानकर बंद कर दिया गया।',
+    'Common' => 'सामान्य',
+    'ValidatesAcrossMappedFrameworks' => 'मैप किए गए फ्रेमवर्क में मान्य करता है',
+    'EditTest' => 'संपादन परीक्षण',
+    'ControlHasNoTestCoverage' => 'इस दायरे में आने वाले नियंत्रण के लिए अभी तक कोई परीक्षण कवरेज उपलब्ध नहीं है।',
+    'AddTheFirstTest' => 'पहला परीक्षण जोड़ें',
+    'ApplyCommonTestHint' => 'इस नियंत्रण पर एक या अधिक मौजूदा परीक्षण लागू करें। प्रत्येक परीक्षण अपने वर्तमान नियंत्रणों को बरकरार रखता है और एक सामान्य परीक्षण बन जाता है जो इसे भी कवर करता है।',
+    'CommonTestApplied' => 'इस नियंत्रण पर परीक्षण लागू किया गया।',
+    'CouldNotApplyCommonTest' => 'इस नियंत्रण पर परीक्षण लागू नहीं किया जा सका।',
+    'SelectOneOrMoreTests' => 'एक या अधिक परीक्षण चुनें',
+    'CommonTestsApplied' => 'इस नियंत्रण पर {n} परीक्षण लागू किए गए।',
+    'ApplyCommonTests' => 'सामान्य परीक्षण लागू करें…',
+    'History' => 'इतिहास',
+    'Result' => 'परिणाम',
+    'Approval' => 'अनुमोदन',
+    'ThisTestHasNotBeenRunYet' => 'यह परीक्षण अभी तक नहीं किया गया है।',
+    'CouldNotLoadTestHistory' => 'इस टेस्ट का इतिहास लोड नहीं हो सका।',
+    'Identity' => 'पहचान',
+    'IdentitySectionHint' => 'नाम, परीक्षक और वे नियंत्रण जिन्हें यह मान्य करता है',
+    'WhenTheAuditInitiates' => 'जब ऑडिट शुरू होता है',
+    'ProcedureAndEvidence' => 'प्रक्रिया और साक्ष्य',
+    'CommonTestControlsHint' => 'एक ही परीक्षण कई नियंत्रणों को मान्य कर सकता है - यह एक सामान्य परीक्षण है। किसी नियंत्रण के "+ परीक्षण जोड़ें" विकल्प से इसे खोलने पर वह यहाँ पहले से ही चयनित हो जाता है।',
+    'SeparationOfDutiesNote' => 'कर्तव्यों का पृथक्करण — अनुमोदक ही परीक्षक नहीं हो सकता।',
+    'CommonTestEditScopeHint' => 'ये बदलाव उन सभी जगहों पर लागू होते हैं जहां इस सामान्य परीक्षण का उपयोग किया जाता है।',
+    'Mode' => 'तरीका',
+    'AddOrRemove' => '… जोड़ें या हटाएं',
+    'AddOrSearchTags' => 'टैग जोड़ें या खोजें…',
+    'CreateTagX' => '“{tag} ” बनाएँ',
+    'Archived' => 'संग्रहीत',
+    'ShowAllTests' => 'सभी परीक्षण',
+    'ShowActiveTests' => 'सक्रिय परीक्षण',
+    'ShowRetiredTests' => 'सेवानिवृत्त परीक्षण',
+    'UntestedControls' => 'अप्रमाणित नियंत्रण',
+    'OverdueByXDays' => 'बकाया · {n} दिन',
+    'OverdueByOneDay' => 'बकाया · 1 दिन',
+    'DueInXDays' => '{n} दिनों में देय',
+    'DueTomorrow' => 'कल देय',
+    'DueToday' => 'आज देय',
+    'ScheduledForX' => 'निर्धारित · {date}',
+    'AllTesters' => 'सभी परीक्षकों',
+    'AllStatuses' => 'सभी स्थितियाँ',
+    'OnTrack' => 'ट्रैक पर',
+    'NextTestDateDerivedHint' => 'अंतिम परीक्षण तिथि और परीक्षण आवृत्ति के योग से गणना की जाती है। इसे स्वचालित रूप से शेड्यूल करने के लिए आवृत्ति निर्धारित करें, या इस तिथि को स्वयं निर्धारित करने के लिए आवृत्ति को खाली छोड़ दें।',
+    'DueStatus' => 'उचित स्थिति',
+    'AllResults' => 'सभी परिणाम',
+    // Remove a test from one control (Define Tests grid unlink row action)
+    'RemoveFromThisControl' => 'इस नियंत्रण से हटाएँ',
+    'RemoveTestFromControl' => 'नियंत्रण से परीक्षण हटाएँ',
+    'RemoveTestFromControlConfirm' => '{control_name} में से "{test_name}" हटाएँ?',
+    'RemoveTestFromControlStays' => 'टेस्ट अपने {n} अन्य नियंत्रणों पर बना रहता है। कुछ भी डिलीट नहीं किया जाता है।',
+    'RemoveTestFromControlStaysOne' => 'टेस्ट अपने एकमात्र अन्य कंट्रोल पर ही रहता है। कुछ भी डिलीट नहीं किया जाता है।',
+    'CannotRemoveTestsOnlyControl' => 'एक परीक्षण कम से कम एक नियंत्रण का हिस्सा होना चाहिए। इसके बजाय परीक्षण को हटा दें या रद्द कर दें।',
+    'TestRemovedFromControl' => 'परीक्षण को नियंत्रण समूह से हटा दिया गया।',
+    'CouldNotRemoveTestFromControl' => 'परीक्षण को नियंत्रण से हटाया नहीं जा सका।',
+    'TestRemovedFromControlAuditLogMessage' => 'टेस्ट "{$test_name}"(आईडी: {$test_id}) को उपयोगकर्ता "{$user} " द्वारा नियंत्रण (आईडी: {$control_id}) से हटा दिया गया था।',
+    'DeleteTestUsedByNControls' => 'इसका उपयोग {n} नियंत्रणों द्वारा किया जाता है और इसे उन सभी से हटा दिया जाएगा।',
+    'BulkDeleteSharedTestsNote' => 'इनमें से {n} का उपयोग अन्य नियंत्रणों द्वारा किया जाता है और उन्हें उनसे भी हटा दिया जाएगा।',
+    'BulkRetireSharedTestsNote' => 'इनमें से {n} का उपयोग अन्य नियंत्रणों द्वारा किया जाता है और उन्हें वहां भी हटा दिया जाएगा।',
+    'BulkDeleteOneSharedTestNote' => 'इनमें से 1 का उपयोग अन्य नियंत्रणों द्वारा किया जाता है और इसे उनसे भी हटा दिया जाएगा।',
+    'BulkRetireOneSharedTestNote' => 'इनमें से एक का उपयोग अन्य नियंत्रणों द्वारा किया जाता है और इसे वहां से भी हटा दिया जाएगा।',
+    'CouldNotLoadTest' => 'यह टेस्ट लोड नहीं हो सका।',
+    'Expand' => 'विस्तृत करें',
+    'SearchMappings' => 'खोज फ्रेमवर्क और संदर्भ',
+    'NoMatchingMappings' => 'उस खोज से मेल खाने वाले कोई मैप नहीं हैं।',
+    'Insights' => 'इनसाइट्स',
+    'ShowInsights' => 'इनसाइट्स टाइल्स दिखाएँ',
+    'HideInsights' => 'इनसाइट्स टाइल्स को संक्षिप्त पंक्ति में सिकोड़ें',
+    'ChooseControls' => 'नियंत्रण चुनें',
+    'UseTheseControls' => 'इन नियंत्रणों का उपयोग करें',
+    'SearchControlsPlaceholder' => 'संख्या या नाम से खोजें',
+    'PickerKeyboardHint' => 'ऊपर/नीचे करके आगे बढ़ें, एंटर दबाकर चुनें, एस्केप दबाकर रद्द करें',
+    'NoControlsMatchFilters' => 'यहां कुछ भी मेल नहीं खाता। बाईं ओर एक कदम बढ़ाएं, या खोज को रद्द करें।',
+    'NoControlsSelectedYet' => 'अभी तक कुछ भी चयनित नहीं हुआ है।',
+    'AllControls' => 'सभी नियंत्रण',
+    'AddOrRemoveControls' => 'नियंत्रण जोड़ें या हटाएं…',
+    'LastTested' => 'अंतिम बार परीक्षण किया गया',
+    'LastTestDateAnchorHint' => 'एंकर अंतराल शेड्यूलिंग (यह तिथि और आवृत्ति)। परीक्षण के परिणाम दर्ज हो जाने के बाद, ग्रिड में नवीनतम परिणाम की तिथि दिखाई देगी।',
+    'Filters' => 'फिल्टर',
+    'ShowFilters' => 'फ़िल्टर दिखाएँ',
+    'HideFilters' => 'फ़िल्टर छुपाएँ',
+
+    // App shell — collapsing sidebar / new base design (SR app-shell redesign)
+    'AI' => 'ऐ',
+    'CollapseSidebar' => 'साइडबार को छोटा करें',
+    'FooterCopyright' => '© %s SimpleRisk. सर्वाधिकार सुरक्षित।',
+    'ExpandSidebar' => 'साइडबार का विस्तार करें',
+    'WorkflowsCloneConfirm' => 'वर्कफ़्लो \'{$name} \' को क्लोन करें?',
+    'WorkflowsDeleteConfirm' => 'वर्कफ़्लो \'{$name}\' हटाएं? इसे पूर्ववत नहीं किया जा सकता।',
+    'WorkflowActionFailed' => 'कार्रवाई विफल: {$msg}',
+    'ClickToDisable' => 'अक्षम करने के लिए क्लिक करें',
+    'ClickToEnable' => 'सक्षम करने के लिए क्लिक करें',
+    'ENABLED' => 'सक्षम',
+    'DISABLED' => 'अक्षम',
+    'BackToWorkflows' => 'वर्कफ़्लो पर वापस जाएँ',
+    'BackToHistory' => 'इतिहास पर वापस जाएँ',
+    'NewWorkflow' => 'नया वर्कफ़्लो',
+    'ViewSteps' => 'चरण देखें',
+    'SaveWorkflow' => 'वर्कफ़्लो सहेजें',
+    'WorkflowSavedSuccessfully' => 'वर्कफ़्लो सफलतापूर्वक सहेज लिया गया।',
+    'WorkflowNotFound' => 'वर्कफ़्लो नहीं मिला।',
+    'EditWorkflow' => 'संपादन कार्यप्रवाह: {$name}',
+    'OrganizationContextProfile' => 'संगठन संदर्भ प्रोफ़ाइल',
+    'AICtxAutoAcceptThreshold' => 'आपके संगठन में जोखिम के लिए स्वतः स्वीकृति की सीमा क्या है (डॉलर की राशि या एएलई का प्रतिशत)?',
+    'AICtxGrcBudget' => 'आपका वार्षिक जीआरसी/सुरक्षा बजट कितना है?',
+    'AICtxAuditorPerspective' => 'मुख्य रूप से किस दृष्टिकोण से आपका ऑडिट किया जाता है?',
+    'AICtxUnitCurrency' => 'मुद्रा ($)',
+    'AICtxUnitPercentOfAle' => 'एएलई का प्रतिशत (%)',
+    'AICtxFrameworksInUse' => 'वर्तमान में उपयोग में आने वाले फ्रेमवर्क',
+    'AICtxNoFrameworksInUse' => 'अभी तक कोई सक्रिय फ्रेमवर्क नहीं मिला है। कृपया गवर्नेंस > फ्रेमवर्क मैपिंग के अंतर्गत फ्रेमवर्क जोड़ें।',
+    'AICtxFromYourData' => 'आपके डेटा से',
+    'AICtxAuthoritative' => 'आधिकारिक',
+    'AICtxAppetiteNotSet' => 'सेट नहीं',
+    'AICtxAppetiteManageLink' => 'जोखिम विन्यास में प्रबंधन करें',
+    'AICapControlTestGeneration' => 'नियंत्रण परीक्षण उत्पादन',
+    'AICapControlTestGenerationDesc' => 'नियंत्रण के फ्रेमवर्क मैपिंग, मौजूदा परीक्षणों और स्व-मूल्यांकन परिणामों का उपयोग करते हुए, समीक्षा के लिए नियंत्रण परीक्षणों का मसौदा तैयार किया जाता है - जब तक आप इसे अनुमोदित नहीं करते, तब तक कुछ भी नहीं बनाया जाता है।',
+    'AICapSurfacedControlTestGeneration' => 'अनुपालन — परीक्षणों को परिभाषित करें',
+    'AIControlTestGenUnavailable' => 'सेवा अनुपलब्ध: प्रशासक को एआई सेटिंग्स में इस कार्यक्षमता को सक्षम करना होगा।',
+    'AIControlTestGenInvalidId' => 'गलत अनुरोध: एक सकारात्मक नियंत्रण आईडी आवश्यक है।',
+    'AIControlTestGenNotFound' => 'नहीं मिला: निर्दिष्ट नियंत्रण नहीं मिल सका।',
+    'AIControlTestGenConflict' => 'विवाद: इस नियंत्रण के लिए जनरेशन पहले से ही कतार में है।',
+    'AIControlTestGenQueued' => 'स्वीकृत: नियंत्रण परीक्षण निर्माण कतार में डाल दिया गया है।',
+    'AIControlTestGenFailed' => 'आंतरिक सर्वर त्रुटि: नियंत्रण परीक्षण निर्माण को कतारबद्ध करने में विफल।',
+    'AIControlTestGenCheckFailed' => 'त्रुटि: कतार में डालने से पहले नियंत्रण को सत्यापित करने में असमर्थ।',
+    'GenerateTestsWithAI' => 'एआई की मदद से टेस्ट जेनरेट करें',
+    'ShowAiSuggestedTests' => 'एआई द्वारा सुझाए गए परीक्षण',
+    'AiSuggested' => 'एआई ने सुझाव दिया',
+    'ReviewAndEdit' => 'समीक्षा और संपादन',
+    'CreateSelected' => 'चयनित बनाएँ',
+    'TestCreatedFromSuggestion' => 'सुझाव के आधार पर परीक्षण तैयार किया गया।',
+    'SuggestionDismissed' => 'सुझाव खारिज कर दिया गया।',
+    'TestGenerationQueued' => 'टेस्ट जनरेशन कतार में है।',
+    'Generating' => 'जनरेट हो रहा है…',
+    'SuggestionDismissFailed' => 'टेस्ट तैयार हो गया है, लेकिन इसके AI सुझाव को हटाया नहीं जा सका। यदि यह सुझाव बना रहता है, तो इसे मैन्युअल रूप से हटा दें।',
+    'AICtxAuditorBig4' => 'बिग 4 (बाहरी)',
+    'AICtxAuditorBoutique' => 'बुटीक / क्षेत्रीय (बाहरी)',
+    'AICtxAuditorInternal' => 'केवल आंतरिक लेखापरीक्षा',
+    'AICtxAuditorSelfAssessed' => 'स्वयं का मूल्यांकन',
+    'AICtxAuditorNotSure' => 'निश्चित नहीं',
+    'AICtxAppetiteCautious' => 'सावधान',
+    'AICtxAppetiteBalanced' => 'संतुलित',
+    'AICtxAppetiteAggressive' => 'आक्रामक',
+    'TestGenerationComplete' => 'एआई द्वारा तैयार किए गए नियंत्रण परीक्षण समीक्षा के लिए तैयार हैं।',
+    'TestGenerationStillRunning' => 'टेस्ट तैयार करने का काम अभी भी जारी है; ड्राफ्ट जल्द ही उपलब्ध होंगे।',
+    'TestGenerationNoNew' => 'उत्पादन प्रक्रिया पूरी हो गई है - इस नियंत्रण के लिए कोई नए परीक्षण सुझाने की आवश्यकता नहीं है।',
+    'SearchEntities' => 'खोज इकाई',
+    'SearchEntitiesPlaceholder' => 'जोखिम, नियंत्रण, नीतियां, अपवाद खोजें…',
+    'ShowTypes' => 'प्रकार दिखाएँ',
+    'Depth' => 'गहराई',
+    'Inspector' => 'निरीक्षक',
+    'Connections' => 'कनेक्शन',
+    'NoConnectionsFound' => 'चयनित इकाई के लिए कोई कनेक्शन नहीं मिला।',
+    'CouldNotLoadGraph' => 'कनेक्टिविटी ग्राफ लोड नहीं हो सका।',
+    'CouldNotSearchEntities' => 'संस्थाओं की खोज नहीं हो सकी।',
+    'ShowingTopNOfM' => 'शीर्ष {0} में से {1} दिखा रहा है',
+    'RankedByMaturityGap' => 'परिपक्वता अंतर के आधार पर क्रमबद्ध',
+    'RankedByRiskScore' => 'जोखिम स्कोर के आधार पर क्रमबद्ध',
+    'RankedByRecentFailure' => 'सबसे हालिया विफलता के आधार पर क्रमबद्ध',
+    'RankedByReviewDate' => 'अगली समीक्षा तिथि के अनुसार क्रमबद्ध',
+    'RankedBySeverity' => 'गंभीरता के आधार पर क्रमबद्ध',
+    'RankedByName' => 'नाम के अनुसार क्रमबद्ध',
+    'NodeTypeSelfAssessmentResult' => 'स्व-मूल्यांकन परिणाम',
+    'Relationship' => 'संबंध',
+    'Exception' => 'अपवाद',
+    'DesiredMaturity' => 'वांछित परिपक्वता',
+    'ApprovalState' => 'अनुमोदन स्थिति',
+    'RelationshipOfType' => '{0} का {1}',
+    // Connectivity Explorer Inspector: labels for enrichment field keys
+    // (ai_context_enrich_fetch(), ai_context_enrich_vulnerabilities()) that
+    // fieldLabel() in connectivity-visualizer.js did not yet cover.
+    'LastDate' => 'अंतिम तिथि',
+    'LastResultDate' => 'अंतिम परिणाम तिथि',
+    'PercentComplete' => 'पूर्ण प्रतिशत',
+    'AssessmentDate' => 'मूल्यांकन तिथि',
+    'NextDate' => 'अगली तारीख',
+    'Number' => 'संख्या',
+    'Grouping' => 'समूहन',
+    'Hidden' => 'छिपा हुआ',
+    'FirstFound' => 'पहली बार पाया गया',
+    'LastFound' => 'अंतिम बार मिला',
+    'Patchable' => 'पैच करने योग्य',
+    'Solution' => 'समाधान',
+    'Breadcrumb' => 'ब्रेडक्रम्ब',
+    'SelectANodeToInspect' => 'किसी नोड का विवरण देखने के लिए उसे चुनें।',
+    'HiddenUnreachableNodes' => '{0} नोड(ओं) छिपे हुए: छिपे हुए प्रकारों के बिना अब कनेक्टेड नहीं हैं।',
+    // Connectivity Explorer canvas launchpad (Level-1 type tiles / Level-2
+    // browsable entity list) -- docs/superpowers/specs/2026-07-27-
+    // connectivity-explorer-launchpad.md
+    'BrowsableEntityTypes' => 'ब्राउज़ करने योग्य इकाई प्रकार',
+    'CountFloor' => '{0}+',
+    'NoBrowsableTypes' => 'आपको किसी भी प्रकार की इकाई को ब्राउज़ करने की अनुमति नहीं है।',
+    'AllTypes' => 'सभी प्रकार',
+    'FilterEntitiesPlaceholder' => 'फ़िल्टर…',
+    'NoMatchingEntities' => 'आपके फ़िल्टर से कोई इकाई मेल नहीं खाती।',
+    'LoadMore' => 'और लोड करें',
+    'Loading' => 'लोडिंग…',
+    'CouldNotLoadEntityCounts' => 'एंटिटी की संख्या लोड नहीं हो सकी।',
+    'CouldNotLoadEntities' => 'एंटिटी लोड नहीं हो सकीं।',
+    'ClearGraph' => 'स्पष्ट ग्राफ',
+    // Connectivity Explorer node-type chip label for the 'audit' type. Not
+    // reused from 'TeamType_audit' (same English text, "Audit") -- that key
+    // is scoped to the Team Separation team-type picker, a different feature
+    // whose wording should be free to diverge from this one's.
+    'Audit' => 'ऑडिट',
+    // Queued email send-failure notifications
+    'EmailSendFailedNotificationTitle' => 'ईमेल डिलीवरी विफल रही',
+    'EmailSendFailedNotificationBody' => 'एक या अधिक कतारबद्ध ईमेल डिलीवर नहीं हो सके। कृपया अपनी मेल सेटिंग जांचें, फिर विवरण के लिए क्यू मॉनिटर और सर्वर लॉग देखें।',
+    'QuestionnaireShareInvalidEmailAddress' => 'जिस व्यक्ति के पास वैध ईमेल पता नहीं है, उसके साथ प्रश्नावली के परिणाम साझा नहीं किए जा सकते।',
+    'AssessmentSendInvalidEmailAddress' => 'अमान्य ईमेल पते पर मूल्यांकन नहीं भेजा जा सकता।',
+    'AssessmentSentTo' => 'मूल्यांकन "{$email} " को भेजा गया था।',
+    'AssessmentNotSentNoValidRecipients' => 'मूल्यांकन भेजा नहीं गया — कोई वैध ईमेल पता प्रदान नहीं किया गया था।',
+    'AssessmentContactUnusableEmailNotificationTitle' => 'प्रश्नावली नहीं भेजी गई',
+    'AssessmentContactUnusableEmailNotificationBody' => 'प्रश्नावली "{$questionnaire}" " को "{$contact}" को नहीं भेजी जा सकी क्योंकि उस संपर्क का कोई वैध ईमेल पता दर्ज नहीं है। कृपया भेजने की प्रक्रिया पुनः शुरू करने के लिए संपर्क रिकॉर्ड को अपडेट करें।',
+    'EmailFailureNotificationRetention' => 'ईमेल डिलीवरी विफलता अधिसूचना प्रतिधारण',
+    'EmailFailureNotificationRetentionOutOfRange' => 'ईमेल डिलीवरी विफलता अधिसूचना प्रतिधारण अवधि {$min} और {$max} दिनों के बीच होनी चाहिए।',
+    'MailSettingsUpdatedSuccessfully' => 'ईमेल सेटिंग्स सफलतापूर्वक अपडेट हो गईं।',
+    // Questionnaire audit-trail entries for the API submit/draft paths (SR-1714).
+    // The token form credits the contact; an API caller is an authenticated
+    // SimpleRisk user acting on that contact's questionnaire, so both the
+    // contact and the acting user are named.
+    'QuestionnaireCompletedAuditLogViaApi' => 'संपर्क "{$contact_name}" के लिए प्रश्नावली "{$questionnaire_name}" उपयोगकर्ता "{$user_name} " द्वारा एपीआई के माध्यम से पूरी की गई।',
+    'QuestionnaireDraftAuditLogViaApi' => 'संपर्क "{$contact_name}" के लिए प्रश्नावली "{$questionnaire_name}" को उपयोगकर्ता "{$user_name} " द्वारा एपीआई के माध्यम से ड्राफ्ट के रूप में सहेजा गया था।',
+    // Bad-input response for the questionnaire risk-list endpoints, which
+    // previously reported a malformed questionnaire_id as a permission denial.
+    // Mirrors the existing 'MissingOrInvalidTrackingID'.
+    'MissingOrInvalidQuestionnaireID' => 'प्रश्नावली आईडी गुम या अमान्य है।',
+    // POST /api/v2/assessments/questionnaire/result/file response messages.
+    // The `id` path deliberately returns QuestionIdCannotAcceptFile for every
+    // question-level rejection so a sequential tracking id cannot be used to
+    // probe questionnaire structure; the token path returns the specific reason.
+    'QuestionnaireResultNotFoundForTokenOrId' => 'परिणाम नहीं मिला: निर्दिष्ट टोकन या आईडी के साथ प्रश्नावली का परिणाम नहीं मिल पाया।',
+    'QuestionIdCannotAcceptFile' => 'अनुरोध विफल: प्रश्न आईडी {$question_id} इस प्रश्नावली परिणाम पर कोई फ़ाइल स्वीकार नहीं कर सकता',
+    'QuestionIdNotFoundInQuestionnaire' => 'अनुरोध विफल: प्रश्न आईडी {$question_id} इस प्रश्नावली में नहीं मिली।',
+    'QuestionIdInMultipleTemplates' => 'त्रुटिपूर्ण अनुरोध: प्रश्न आईडी {$question_id} इस प्रश्नावली के कई टेम्पलेट्स में दिखाई देता है',
+    'QuestionIdDoesNotAcceptFileUploads' => 'अनुरोध अस्वीकृत: प्रश्न आईडी {$question_id} फ़ाइल अपलोड स्वीकार नहीं करता है',
+    // The Statement of Applicability's two UNVERIFIED implementation states.
+    //
+    // They exist because "we have not checked" is not "it does not work", and an
+    // SoA is ATTESTED — printing "No" for an unverified control is a false
+    // statement against yourself, exactly as printing "Yes" without evidence is
+    // a false statement the other way. Before these keys existed both states
+    // fell through to 'No', which on a framework where most controls carry no
+    // test meant the whole document read "not implemented".
+    //
+    // They are two states rather than one because they are different findings
+    // with different owners: no test defined is a GOVERNANCE gap (nobody decided
+    // how to verify this control), never run is an OPERATIONAL one (somebody
+    // decided, and it was not done).
+    //
+    // WORDING. Both must be unmistakably distinct from the bare 'No' in the same
+    // column. 'Tests never run' rather than 'Never run': in a column headed
+    // "Implemented", the bare phrase reads for a moment as though the CONTROL
+    // was never run, when the subject is its tests.
+    //
+    // BOTH ARE PLURAL, and that is not only style. English takes the plural
+    // after "no" when the expected quantity could exceed one ("no results
+    // found"), and a control normally carries several tests — the singular
+    // implies only ever one was expected. 'Tests never run' is the stronger
+    // case: soa_implemented_for() returns `never_run` only when NOT ONE of the
+    // control's tests has produced a verdict, so the state is inherently about
+    // the whole set. With four tests defined and none run, the singular reads as
+    // one omission rather than a wholesale one.
+    'SoaImplementedNoTestDefined' => 'कोई परीक्षण परिभाषित नहीं',
+    'SoaImplementedNeverRun' => 'टेस्ट कभी नहीं चलते',
+
+    // The Implemented column's fallback for a token neither sink recognizes.
+    //
+    // DELIBERATELY NOT A VERDICT, and the reason this key exists at all. Both
+    // sinks previously ended in a fallthrough to 'No', so adding a state without
+    // adding its label printed a confident, wrong answer into a compliance
+    // document. Falling through to 'Yes' would be worse. The only safe failure
+    // mode is a value that states nothing about the control — a visible bug
+    // instead of a silent misstatement.
+    'SoaImplementedUnknown' => 'स्थिति अनुपलब्ध',
+    // How an APPLICABLE control's stored inclusion reason(s) join to its own
+    // freeform justification when it recorded both (spec §4). Reached ONLY when
+    // both halves exist — reasons alone print as the reason list, prose alone
+    // prints verbatim — so this string is punctuation and word order, not prose.
+    // It is a language key rather than a hardcoded separator because a locale
+    // that joins clauses with a colon, a full stop, or right-to-left ordering
+    // must be able to say so; both placeholders have to survive translation.
+    'SoaJustifiedByInclusionReasons' => '{reasons} — {narrative}',
+    // The Set applicability modal's reason field, which became a MULTI-select
+    // when reasons moved to a join table: a control is commonly included (or
+    // excluded) for more than one reason, and the singular 'Reason' the field
+    // used to reuse now under-describes it. 'Reason' is left alone rather than
+    // repointed -- the row drawer and the SoA still print exactly one joined
+    // value under it, and redefining a key changes every surface that reads it.
+    'ApplicabilityReasons' => 'कारण',
+    // Said once, above a group of checkboxes, rather than implied by the widget.
+    // The old single <select> answered "how many may I pick?" by construction;
+    // a checkbox group does not, and a user who ticks one and stops has made the
+    // SoA less truthful than the one they meant to write.
+    'ApplicabilityReasonsHint' => 'जो भी कारण लागू हो, उसे चुनें।',
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // THE STATEMENT OF APPLICABILITY'S MARKERS AND ITS LEGEND (spec §1, §3).
+    // ─────────────────────────────────────────────────────────────────────────
+
+    // THE EVIDENCE COLUMN'S TWO ABSENCES, which are OPPOSITES.
+    //
+    // 'No evidence linked' is a FINDING: the control is in scope, is possibly
+    // claimed implemented, and nothing substantiates it. The em dash below is
+    // the other answer -- the control is excluded, so no evidence is expected
+    // and the absence is correct. Rendering both as an empty cell hides the
+    // first, which is the one an auditor circles.
+    'SoaNoEvidenceLinked' => 'कोई साक्ष्य संबद्ध नहीं',
+    // PUNCTUATION, NOT PROSE -- the glyph the Evidence cell prints when nothing
+    // is expected. A language key rather than a hardcoded character for the same
+    // reason 'SoaJustifiedByInclusionReasons' is one: a locale that marks "not
+    // applicable" with a different dash, or with a word, must be able to say so.
+    'SoaEvidenceNotExpected' => '—',
+    // Whether the evidence a test DECLARED it requires actually arrived with the
+    // result. A stronger claim than a pass/fail alone, and few SoA tools make it.
+
+    // THE REMEDIATION BLOCK -- what is being done about a control that reads
+    // Partial or No. The SoA points AT the risk treatment plan (clause 6.1.3(e))
+    // rather than becoming one.
+    'SoaRemediation' => 'उपचार',
+    // THE MOST SERIOUS THING THAT BLOCK CAN FIND: the test failed and it is
+    // linked to no risk, so no treatment plan traces back to it. Dropping such a
+    // row for want of a risk to join to would render it as a blank cell, which
+    // reads as "nothing to report".
+    'SoaRemediationUnplanned' => 'कोई जोखिम नहीं है',
+
+    // THE LEGEND. Required in both variants and every export format, because six
+    // implementation states plus three markers is more nuanced than the
+    // Yes/No/Partial an auditor expects, and an undefined vocabulary invites the
+    // reader to guess unfavourably.
+    'SoaLegendTitle' => 'इस कथन को कैसे पढ़ें',
+    'SoaLegendYes' => 'इस नियंत्रण के लिए परिभाषित सभी परीक्षण पिछली बार चलाए जाने पर सफल रहे।',
+    'SoaLegendPartial' => 'नियंत्रण समूह के परीक्षणों के परिणाम भिन्न हैं: कम से कम एक परीक्षण सफल रहा, और कम से कम एक परीक्षण असफल रहा या उसका कोई परिणाम नहीं निकला।',
+    'SoaLegendNo' => 'इस नियंत्रण का कोई भी परीक्षण पिछली बार चलाए जाने पर सफल नहीं हुआ, और कम से कम एक परीक्षण असफल रहा।',
+    // The two unverified states are DIFFERENT FINDINGS WITH DIFFERENT OWNERS,
+    // and the labels alone do not quite carry that -- so the legend spells it
+    // out. This is the distinction the whole six-state set exists for.
+    'SoaLegendNoTestDefined' => 'इस नियंत्रण के लिए कोई परीक्षण परिभाषित नहीं किया गया है, इसलिए इसके संचालन का कभी सत्यापन नहीं हुआ है। इसका यह अर्थ नहीं है कि नियंत्रण अनुपस्थित है या विफल है - बल्कि यह कथन इसे सिद्ध नहीं करता है। एक प्रशासनिक खामी: किसी ने यह तय नहीं किया है कि इस नियंत्रण की जाँच कैसे की जाएगी।',
+    'SoaLegendNeverRun' => 'इस नियंत्रण के लिए परीक्षण मौजूद हैं, लेकिन उनमें से किसी को भी कभी चलाया नहीं गया है, इसलिए इसका संचालन यहां प्रदर्शित नहीं किया गया है। इसका यह अर्थ नहीं है कि नियंत्रण अनुपस्थित है या विफल है। यह एक परिचालन संबंधी कमी है: जांच का निर्णय लिया गया था लेकिन उसे लागू नहीं किया गया है।',
+    'SoaLegendNotApplicable' => 'यह नियंत्रण इस फ्रेमवर्क के दायरे से बाहर है, इसलिए इसकी कोई कार्यान्वयन स्थिति नहीं है।',
+    // The one most in need of explaining: with nothing to define it, this reads
+    // as an admission about the control rather than as what it is.
+    'SoaLegendUnknown' => 'SimpleRisk रिकॉर्ड किए गए स्टेटस को लेबल नहीं कर सका, इसलिए इसका कार्यान्वयन यहाँ प्रदर्शित नहीं किया गया है। यह सॉफ़्टवेयर में एक दोष है और नियंत्रण के बारे में कुछ भी नहीं बताता है - न तो यह कि यह काम करता है और न ही यह कि यह काम नहीं करता है।',
+    'SoaLegendOverdue' => 'दिखाया गया परिणाम अभी भी मान्य है, लेकिन इसके पीछे किए गए परीक्षणों में से कम से कम एक की अगली परीक्षण तिथि बीत चुकी है। साक्ष्य अब पुराना हो चुका है।',
+    'SoaLegendNoEvidence' => 'यह नियंत्रण दायरे में है और इसे प्रमाणित करने के लिए कुछ भी नहीं मिला है: न तो कोई पुष्ट दस्तावेज है और न ही कोई ऐसा परीक्षण है जिससे कोई परिणाम प्राप्त हुआ हो।',
+    'SoaLegendEvidenceNotExpected' => 'किसी साक्ष्य की अपेक्षा नहीं की जाती है, क्योंकि नियंत्रण को दायरे से बाहर रखा गया है।',
+    'SoaLegendUnplanned' => 'एक असफल परीक्षण जिसका किसी जोखिम से कोई संबंध नहीं है, इसलिए कोई भी उपचार योजना इससे जुड़ी नहीं है।',
+
+    // THE TWO VARIANTS, chosen on the launcher before the document is generated
+    // and PRINTED ON ITS COVER. A Statement of Applicability is a controlled
+    // document: two of them for the same framework that show different things,
+    // with nothing on either to say which is which, is a document nobody can
+    // file.
+
+    // THE THREE DETAILED-ONLY COLUMNS.
+    // What those three columns say instead of nothing. A blank cell in an audit
+    // document reads as a formatting artefact; "Not recorded" is a fact the
+    // reader can act on.
+
+    // THE BROWSER PRINT ROUTE. Beside the two downloads on the launcher, and the
+    // only PDF route for a framework too large for the server-side writer.
+    // Shown in place of "Download as PDF" when the chosen framework is above
+    // SOA_EXPORT_PDF_MAX_CONTROLS. The affordance is absent rather than
+    // disabled, so this sentence is what tells the reader the absence is
+    // deliberate and what to do instead.
+    // The footer of every printed page. {page} and {pages} are substituted with
+    // the browser's own page counters, so the two tokens must both survive
+    // translation -- but their ORDER and the words around them are the
+    // translator's, which is why this is one string and not "Page" + "of".
+    'SoaPrintPageNumber' => 'पृष्ठ {page} का {pages}',
+
+    // THE ONE PDF AFFORDANCE on the statement-of-applicability launcher, beside
+    // 'DownloadAsXLSX'. It replaces the pair that used to sit there --
+    // 'SoaPrintToPdf' and 'DownloadAsPDF' -- because a Statement of Applicability
+    // is a controlled document and two PDF buttons let two people hand an auditor
+    // two different-looking PDFs of the same statement.
+    //
+    // JUST "PDF", AND DELIBERATELY SO. Below SOA_EXPORT_PDF_MAX_CONTROLS the
+    // button downloads a server-rendered file and above it the browser writes
+    // one, but that is a mechanism and not a choice the reader has to make. A
+    // label that named the mechanism ("Print to PDF" / "Download as PDF") would
+    // put the difference back in front of them.
+    //
+    // 'SoaPrintToPdf' and 'SoaPdfTooLargeHint' above are LEFT IN PLACE with no
+    // caller: 39 locales carry them, and this file is append-only precisely so a
+    // customer running a custom lang.<locale>.php can reconcile it with a tail
+    // diff.
+    'SoaPdf' => 'पीडीएफ',
+
+    // THE OTHER TWO ACTIONS IN THAT SAME ROW, shortened to match it.
+    //
+    // The row read "Open in browser" / "Download as XLSX" / "PDF", which put a
+    // verb on two of three actions and made the odd one out look like an
+    // abbreviation of something longer. The row's own context supplies the
+    // verbs -- these are the things you can DO with the framework you just
+    // chose -- so they carried no information and cost the reader a comparison.
+    // 'SoaPdf' is short because naming its mechanism would be dishonest (above
+    // SOA_EXPORT_PDF_MAX_CONTROLS it opens a print view rather than downloading
+    // a file), and the shortest of the three is the one that has to be right.
+    //
+    // NOT the generic 'Open' at line ~1021: that key lives among 'Mitigated' /
+    // 'Reviewed' and is the risk-status ADJECTIVE -- fr "Ouvert", de "Offen" --
+    // so reusing it would label a button with a state rather than an action in
+    // most of the 39 locales.
+    //
+    // 'SoaOpenInBrowser' above is LEFT IN PLACE with no caller, for the same
+    // reason 'SoaPrintToPdf' is: the locales carry it and this file is
+    // append-only so a customer's custom lang.<locale>.php reconciles with a
+    // tail diff. 'DownloadAsXLSX' keeps a caller either way -- the Assessments
+    // Extra's questionnaire results still use it.
+    'SoaOpen' => 'खोलें',
+    'SoaXlsx' => 'एक्सएलएसएक्स',
+    // ---- The locked-affordance treatment -------------------------------------
+    // SHARED COPY, not chooser copy. SimpleRisk now SHOWS what's possible and
+    // MARKS what's out of reach because it isn't licensed, rather than hiding
+    // it -- so these strings appear both as a menu row's explanation (Define
+    // Control Frameworks' "+ Add framework" chooser) and beside a disabled
+    // toolbar button (the Statement of Applicability's PDF/XLSX exports). Each
+    // one is worded to read correctly in BOTH places, which is why none of them
+    // starts with "This route" or "This button".
+    //
+    // 'LockedAffordanceBadge' duplicates the English of 'AICapStateLocked'
+    // rather than reusing it: that key sits in the AI Capabilities Catalog's
+    // block and is scoped to a capability's state, and translators work from
+    // the key's neighbourhood as much as from its value.
+    'LockedAffordanceBadge' => 'बंद',
+    // The two SCF steps before it can be switched on. admin/register.php serves
+    // both -- it is the registration form AND where the per-Extra download
+    // buttons render -- so these differ in what they say, not where they go.
+    'UnlockRegisterInstanceNote' => 'सिक्योर कंट्रोल्स फ्रेमवर्क प्राप्त करने के लिए इस इंस्टेंस को रजिस्टर करें।',
+    'UnlockRegisterInstanceLink' => 'SimpleRisk रजिस्टर',
+    'UnlockDownloadScfNote' => 'यह इंस्टेंस पंजीकृत है। इसका उपयोग करने के लिए सिक्योर कंट्रोल्स फ्रेमवर्क डाउनलोड करें।',
+    'UnlockDownloadScfLink' => 'इसे डाउनलोड करें',
+    'UnlockActivateScfNote' => 'सिक्योर कंट्रोल्स फ्रेमवर्क डाउनलोड तो हो गया है लेकिन चालू नहीं हुआ है।',
+    'UnlockActivateScfLink' => 'इसे चालू करें',
+    // Import-Export is a paid Extra, so "not installed" is an upsell rather
+    // than a registration prompt. Deliberately a bare capability sentence: it
+    // has to sit under a menu row and next to an export button equally well.
+    'RequiresImportExportExtra' => 'इसके लिए आयात-निर्यात अतिरिक्त शुल्क आवश्यक है।',
+    'UnlockImportExportLink' => 'देखें इससे क्या लाभ होता है',
+    'UnlockActivateImportExportNote' => 'इंपोर्ट-एक्सपोर्ट एक्स्ट्रा इंस्टॉल तो है लेकिन चालू नहीं है।',
+    'UnlockActivateImportExportLink' => 'इसे चालू करें',
+    // Shown instead of any of the above to a user who is not an administrator:
+    // every unlock step lives on a check_admin page, so they get the half that
+    // is useful to them -- that the capability exists, and who to ask -- and no
+    // link that would only bounce them.
+    'UnlockNeedsAdministrator' => 'एक प्रशासक इसे सेट अप कर सकता है।',
+    // API date parsing. {$field} is the request field name (next_date, last_date,
+    // test_date); {$format} is this instance's configured display date format.
+    'InvalidSubmittedDate' => '{$field} मान एक मान्य तिथि नहीं है। इसे YYYY-MM-DD प्रारूप में या इस उदाहरण के तिथि प्रारूप ({$format} ) में सबमिट करें।',
+    // Companion to InvalidSubmittedDate, for a value that matches the expected
+    // shape but names a day that does not exist (February 31st, month 13).
+    // Saying "submit it as MM/DD/YYYY" there would repeat what the caller did.
+    // {$value} is the submitted value, echoed back truncated.
+    'ImpossibleSubmittedDate' => '{$field} मान "{$value}" वास्तविक कैलेंडर तिथि नहीं है। दिन और महीने की जाँच करें — यह उदाहरण तिथियों को {$format} के रूप में पढ़ता है।',
+    // The Statement of Applicability's merged verification column. Replaces three
+    // separate headings (Implemented / Evidence / Review Cadence) with the one
+    // question all three answer: how do we know this control is working?
+    // The two appendices printed after the register. Justifications are truncated
+    // in the row and given in full here; remediation plans live here rather than
+    // in the table because ISO 27001 keeps the SoA (6.1.3(d)) and the risk
+    // treatment plan (6.1.3(e)) as separate artifacts.
+    'SoaAppendixJustifications' => 'परिशिष्ट ए — औचित्य',
+    'SoaAppendixRemediation' => 'परिशिष्ट आर — सुधारात्मक योजनाएँ',
+    // Appendix E carries the WORDING of each test's evidence requirement. The row
+    // keeps only whether that evidence arrived, which is the finding; the wording
+    // is reference material and was the bulkiest thing in the Verification cell.
+    'SoaRequiredEvidenceSupplied' => 'आवश्यक साक्ष्य प्रस्तुत किए गए',
+    'SoaRequiredEvidenceNotSupplied' => 'आवश्यक साक्ष्य उपलब्ध नहीं कराए गए',
+    // The one scheduling fact the SoA prints: the soonest date any of a control's
+    // tests is next due. Replaces a per-test "Manual — Next Test Date: ..." line,
+    // whose schedule type belongs on Define Tests and whose date is now on each
+    // test's own evidence bullet.
+    // The two dates on a test's evidence bullet. LABELLED, because two bare dates
+    // side by side are ambiguous in a way one is not.
+    // SINGULAR document-type labels for one piece of design evidence. SimpleRisk's
+    // existing keys are the plural tab names, which would read "Access Control
+    // Standard (Standards)".
+    'SoaEvidencePolicy' => 'नीति',
+    'SoaEvidenceStandard' => 'मानक',
+    'SoaEvidenceProcedure' => 'प्रक्रिया',
+    'SoaEvidenceGuideline' => 'दिशानिर्देश',
+    // ── The legend, grouped by column (SOA_LEGEND_GROUPS, includes/soa.php) ──
+    // The Applicability column's three values. These were never in the legend,
+    // so an auditor met "Inherited" -- a word with no meaning outside SimpleRisk
+    // -- with nothing to look it up in.
+    'SoaLegendApplicable' => 'यह नियंत्रण इस ढांचे के दायरे में आता है और संगठन इसके संचालन के लिए जिम्मेदार है।',
+    // DISTINCT from 'SoaLegendNotApplicable', which defines the "N/A" that appears
+    // in the Implementation Status column. This one is the DECISION to exclude;
+    // that one is the consequence for the status.
+    'SoaLegendApplicabilityNotApplicable' => 'इस नियंत्रण को इस ढांचे के दायरे से बाहर रखा गया है। औचित्य स्तंभ में यह दर्ज है कि ऐसा क्यों किया गया और किसने यह निर्णय लिया।',
+    'SoaLegendInherited' => 'नियंत्रण दायरे में है, लेकिन इसका संचालन इस संगठन के बजाय किसी तीसरे पक्ष द्वारा किया जाता है - जैसे कि क्लाउड प्रदाता, मूल संगठन या आउटसोर्स की गई कोई शाखा। प्रदाता का नाम स्पष्टीकरण के साथ दिया गया है।',
+    // The Evidence column's four bullet glyphs. Load-bearing since the visible
+    // result word was dropped from pass and fail bullets, and until now defined
+    // nowhere at all.
+    'SoaLegendEvidencePass' => 'इस नियंत्रण के परीक्षण में पिछली बार सफलता मिली थी। इसके बगल में दी गई तिथि परीक्षण की तिथि दर्शाती है।',
+    'SoaLegendEvidenceFail' => 'इस नियंत्रण के परीक्षण में पिछली बार विफलता दर्ज की गई थी। परिशिष्ट R में उपचार योजना दी गई है, यदि कोई उपलब्ध हो।',
+    'SoaLegendEvidenceInconclusive' => 'इस नियंत्रण का परीक्षण किया गया और कोई निष्कर्ष नहीं निकला। इस दस्तावेज़ द्वारा अस्वीकृत परिणाम के लिए भी यही चिह्न प्रयोग किया जाता है, और उस स्थिति में परिणाम स्वयं इसके बगल में मुद्रित किया जाता है।',
+    // The TERM beside the § glyph. Not a document type -- the four types
+    // (Policy, Standard, Procedure, Guideline) are printed per item; this names
+    // the CATEGORY of evidence a document is.
+    'SoaEvidenceDesignDocument' => 'डिजाइन दस्तावेज़',
+    'SoaLegendEvidenceDocument' => 'एक प्रशासनिक दस्तावेज़ इस नियंत्रण के प्रमाण के रूप में इसकी कार्यप्रणाली के बजाय इसके डिज़ाइन की पुष्टि करता है। दस्तावेज़ में कोई निर्णय नहीं होता, इसलिए इस पर सही का निशान नहीं लगाया जाता।',
+    // The XLSX export's first worksheet tab. The workbook's other four tabs reuse
+    // headings that already exist ('How to read this statement', 'Statement of
+    // Applicability', and the two appendix headings); the cover had no name of its
+    // own because it used to be the top of a single sheet.
+    //
+    // KEEP IT SHORT. Excel caps a worksheet name at 31 characters and
+    // soa_export_sheet_name() truncates rather than failing the export, so a long
+    // translation loses its tail on the tab.
+    'SoaSheetCover' => 'ढकना',
+
+    'SearchFrameworks' => 'खोज फ्रेमवर्क',
+    'SearchControls' => 'खोज नियंत्रण',
+    'AddFramework' => 'फ्रेमवर्क जोड़ें',
+    'Applicability' => 'प्रयोज्यता',
+    'AnyFamily' => 'कोई भी परिवार',
+    'AnyOwner' => 'कोई भी मालिक',
+    'AnyClass' => 'कोई भी वर्ग',
+    'AnyPhase' => 'किसी भी चरण',
+    'AnyPriority' => 'कोई प्राथमिकता',
+    'AnyType' => 'किसी भी प्रकार',
+    'AnyStatus' => 'कोई भी स्थिति',
+    'SelectAllN' => 'सभी का चयन करें {n}',
+    'Classification' => 'वर्गीकरण',
+    'Placement' => 'प्लेसमेंट',
+    'OwnershipAndMaturity' => 'स्वामित्व और परिपक्वता',
+    'MappingsAndGuidance' => 'मानचित्रण एवं मार्गदर्शन',
+    'DeleteFrameworkTitle' => 'फ़्रेमवर्क \'{$name} \' को हटाएँ?',
+    'DeleteControlTitle' => '\'{$name} \' कंट्रोल को हटाएं?',
+    'DeleteControlsTitle' => '{$n} नियंत्रण हटाएं?',
+    'DeleteCannotBeUndone' => 'इसे बदला नहीं जा सकता।',
+    'DeleteFrameworkConsequence' => 'इससे फ्रेमवर्क और इसके सभी कंट्रोल मैपिंग हट जाते हैं।',
+    'DeleteControlConsequence' => 'इससे उन सभी फ्रेमवर्क से नियंत्रण हट जाता है जिनसे यह जुड़ा हुआ है।',
+    'DeleteControlsConsequence' => 'यह चयनित प्रत्येक कंट्रोल को उन सभी फ्रेमवर्क से हटा देता है जिनसे वह मैप किया गया है।',
+    // Task 9: empty states (design-system.md §10) -- the four intents on
+    // Define Control Frameworks. Reuses existing keys where the copy already
+    // fits exactly (AddControl, AddFramework, ClearFilters, Retry,
+    // NoControlsDefinedYet, NoTestsMatchFiltersBody, CouldNotLoadTestsBody,
+    // RegisterYourInstance, GoToSCF, ImportExportExtra) -- only the strings
+    // with no existing match are added below.
+    'NoControlsMatch' => 'आपके फ़िल्टर से कोई नियंत्रण मेल नहीं खाता।',
+    'CouldNotLoadControls' => 'नियंत्रण लोड नहीं हो सके',
+    'ControlsYouAddWillAppearHere' => 'आपके द्वारा जोड़े गए नियंत्रण यहां दिखाई देंगे।',
+    'NoFrameworksYet' => 'अभी तक कोई ढांचा नहीं है',
+    'FrameworksYouAddWillAppearHere' => 'आपके द्वारा जोड़े या आयात किए गए फ्रेमवर्क यहां दिखाई देंगे।',
+    'CouldNotLoadFrameworks' => 'फ़्रेमवर्क लोड नहीं हो सके',
+    // Task 9 review fix: the framework rail's own "no results" intent, shown
+    // when the user has explicitly switched the status dropdown away from
+    // Active and that status has nothing (distinct from "No frameworks yet",
+    // which is reserved for the default Active status where the endpoint
+    // can't yet tell "no frameworks at all" from "none active").
+    'NoFrameworksMatchFilter' => 'कोई भी फ्रेमवर्क इस स्थिति से मेल नहीं खाता।',
+    'ViewActiveFrameworks' => 'सक्रिय फ्रेमवर्क देखें',
+    // Task 10: Define Control Frameworks insights band (governance/index.php)
+    // -- KPI tile labels/subtitles. 'Controls', 'Pass', 'Fail', 'NotTested'
+    // already exist and are reused as label keys for their tiles.
+    'BelowTarget' => 'लक्ष्य से नीचे',
+    'Excluded' => 'छोड़ा गया',
+    'FwInScope' => 'दायरे में',
+    'FwLastTestPassed' => 'पिछली परीक्षा उत्तीर्ण हुई',
+    'FwLastTestFailed' => 'पिछला परीक्षण विफल रहा',
+    'FwNoEvidence' => 'लागू, कोई सबूत नहीं',
+    'FwMaturityUnderDesired' => 'वांछित परिपक्वता के अंतर्गत',
+    'FwScopeAFramework' => 'निर्णय लेने के लिए एक रूपरेखा तैयार करें',
+    'FwNotApplicableOrInherited' => 'लागू नहीं या विरासत में नहीं',
+    // Task 22: framework rail search (governance/index.php's #sr-fw-search,
+    // wired client-side in governance-frameworks.js). Reuses the shipped
+    // "no results" empty-state tile (#sr-fw-filtered, Task 9) rather than
+    // inventing a fourth rail empty state -- only the title and action swap
+    // depending on whether a status filter or a search narrowed the list to
+    // nothing; NoTestsMatchFiltersBody already covers both as body copy.
+    'NoFrameworksMatchSearch' => 'आपकी खोज से मेल खाने वाले कोई फ्रेमवर्क नहीं हैं।',
+    'ClearSearch' => 'खोज साफ़ करें',
+    // Task 24: Clone control pre-fills the Add Control modal from the source
+    // control (governance-frameworks.js's openControlForClone()) rather than
+    // creating a duplicate outright, so the modal needs to say plainly which
+    // control it was cloned from -- the reviewer's core complaint about an
+    // earlier one-click version of this feature was not knowing what was
+    // cloned. {$name} follows the same client-side formatTemplate()
+    // substitution ShowingXToYOfZ/NSelected already use on this page.
+    'ClonedFromControlNotice' => '"{$name}" से क्लोन किया गया। नीचे दिए गए फ़ील्ड की समीक्षा करें, फिर सहेजें।',
+    // Task 24 review follow-up: the banner alone left the modal titled "New
+    // Control" over pre-populated fields -- "it doesn't prompt or anything
+    // so the user doesn't know what was cloned" (Josh) -- which reads as a
+    // bug, not a feature. Retitling #control--add-title to this (governance-
+    // frameworks.js's show.bs.modal delegate for #control--add) makes the
+    // clone unambiguous at a glance; NewControl is restored for a plain add.
+    'CloneOfControlTitle' => '"{$name} " का क्लोन',
+    // Task 27: the framework rail's SCF-origin chip (governance-frameworks.js's
+    // railRow()) -- shown only for frameworks created via the ComplianceForge
+    // SCF Extra's authoritative-source import (get_scf_origin_framework_ids(),
+    // includes/governance.php). SCF is the badge text itself; ScfOriginHint is
+    // its title/tooltip.
+    'SCF' => 'एस सी एफ',
+    'ScfOriginHint' => 'सुरक्षित नियंत्रण ढांचा (SCF) से',
+    // Task 34: the Maturity filter facet's placeholder on the Define Control
+    // Frameworks filter sheet (governance-frameworks.js's ensureFilterSheet()),
+    // matching the AnyFamily/AnyOwner/AnyClass/... set above. The facet's three
+    // OPTIONS reuse the existing BelowMaturity/AtMaturity/AboveMaturity keys --
+    // the same labels the governance dashboard's maturity-gap widgets already
+    // carry -- and the column chip renders those same three strings, so the
+    // filter and the cell can never read differently.
+    'AnyMaturity' => 'किसी भी परिपक्वता',
+    // Task 46: accessible name for the control table's pager landmark
+    // (governance-frameworks.js's renderPager()). The pager's own buttons
+    // reuse the existing Previous/Next keys Define Tests' pager already
+    // carries; only the <nav> label is new, and it names WHICH table's pager
+    // it is because the Define Control Frameworks page has two lists on it.
+    'ControlsPagination' => 'पेजिंग को नियंत्रित करता है',
+    // Task 14: the Applicability column's state chip (governance-frameworks.js's
+    // renderApplicability()), the matching filter facet (its three option labels
+    // reuse these same three keys) and its "Any applicability" placeholder.
+    //
+    // The three states are PREFIXED rather than named 'Applicable'/
+    // 'NotApplicable'/'Inherited' because 'NotApplicable' already exists above
+    // as the ABBREVIATION 'N/A' -- the self-assessment answer chip and three
+    // reporting charts render it -- and redefining that key to the spelled-out
+    // phrase this column needs would silently change all four of those
+    // surfaces. The prefix also keeps the trio recognisable as one family.
+    //
+    // The column HEADER and the facet's accessible name reuse the existing
+    // 'Applicability' key, and the drawer's record reuses 'Reason', 'Provider'
+    // and 'Justification' -- all four already carry exactly the right string.
+    'ApplicabilityApplicable' => 'उपयुक्त',
+    'ApplicabilityNotApplicable' => 'लागू नहीं',
+    'ApplicabilityInherited' => 'विरासत में मिला',
+    'AnyApplicability' => 'किसी भी प्रयोज्यता',
+    // The drawer's applicability record: who recorded the decision and when.
+    // Both are attribution for an audited decision a customer may have to
+    // defend years later, which is why the drawer names them at all.
+    'ApplicabilityDecidedBy' => 'द्वारा तय किया गया',
+    'ApplicabilityDecidedOn' => 'इस दिन निर्णय किया गया',
+    // The framework-level Statement of Applicability card in the Add/Edit
+    // framework modals (display_framework_soa_card(), includes/governance.php).
+    // These two fields are what ISO/IEC 27001:2022 clause 6.1.3(d) needs on an
+    // SoA cover: the scope the framework is certified against, and how inclusion
+    // was determined for the controls that are simply applicable.
+    //
+    // 'IsmsScopeStatement' rather than a bare 'ScopeStatement' because "scope"
+    // is already overloaded across SimpleRisk (assessment scope, audit scope,
+    // risk scope); the ISMS prefix is what an ISO practitioner calls this exact
+    // field and keeps it from being reused for an unrelated one.
+    'StatementOfApplicability' => 'प्रयोज्यता का विवरण',
+    'IsmsScopeStatement' => 'स्कोप स्टेटमेंट',
+    'IsmsScopeStatementHint' => 'इस फ्रेमवर्क को जिस दायरे के लिए प्रमाणित किया गया है, वह SoA के कवर पेज पर दिखाई देता है।',
+    'DefaultInclusionJustification' => 'डिफ़ॉल्ट समावेशन औचित्य',
+    'DefaultInclusionJustificationHint' => 'इसका उपयोग उन लागू नियंत्रणों के लिए किया जाता है जिनमें कोई संबंधित जोखिम नहीं होता है। इसमें चालक का नाम लिखें, फ्रेमवर्क का नहीं।',
+    // THE DEFAULT SENTENCE, in all three of its roles: the create form seeds the
+    // textarea with it, the Edit form shows it as a placeholder, and
+    // soa_framework_default_justification() (includes/soa.php) substitutes it at
+    // read time for a framework that has none. One key, because a reader must not
+    // be able to tell a stored default from a fallen-back one, and because three
+    // keys holding the same sentence is three chances for a translator to make
+    // them disagree. The name predates the seeding decision (Task 67) and is kept
+    // rather than churned through Crowdin for 39 locales.
+    //
+    // It names the DRIVER (the risk assessment) rather than the framework:
+    // "included because it is part of this framework" is circular, and ISO 6.1.3
+    // derives controls from risk treatment, using Annex A afterwards only as a
+    // completeness cross-check.
+    //
+    // It was a placeholder ONLY until Task 67, so that an unreviewed sentence
+    // could not reach a customer's SoA by inaction. Measured, that produced the
+    // opposite failure: 19 of 20 frameworks left the field NULL and the SoA's
+    // Justification column came out BLANK for every applicable control with no
+    // linked risks -- the finding an SoA is most often failed on, and one a
+    // boilerplate sentence does not attract.
+    'DefaultInclusionJustificationPlaceholder' => 'संगठन के सूचना सुरक्षा जोखिम मूल्यांकन द्वारा निर्धारित और एक आवश्यक नियंत्रण के रूप में बनाए रखा गया।',
+    // Task 15: bulk-setting applicability from the control table's selection bar
+    // (#applicability--set, governance/index.php + governance-frameworks.js).
+    //
+    // The action's own label and the modal's one section. 'Applicability',
+    // 'Reason', 'Provider', 'Justification', 'Save' and 'Cancel' already exist
+    // and are reused; only the strings with no existing home are added here.
+    'SetApplicability' => 'प्रयोज्यता निर्धारित करें',
+    'ApplicabilityDecision' => 'फ़ैसला',
+    // The amber scope note, in two sentences the page assembles separately
+    // because they answer two different questions: WHICH framework the decision
+    // is scoped to, and WHICH controls are about to receive it. The second one
+    // has two spellings, because the header checkbox selects the current PAGE
+    // while "Select all N" escalates to the whole filtered result set -- the two
+    // genuinely differ once the table pages, and a note that blurred them would
+    // let the user write 1,535 decisions believing they had written 25.
+    'ApplicabilityScopeNote' => 'यह निर्णय केवल "{$framework}" के भीतर ही लागू होता है। यही नियंत्रण किसी अन्य फ्रेमवर्क में भी लागू रह सकता है।',
+    'ApplicabilityAppliesToSelected' => 'इसे इस पृष्ठ पर चयनित {$n} नियंत्रण(ओं) के विरुद्ध रिकॉर्ड किया जाएगा।',
+    'ApplicabilityAppliesToAllFiltered' => 'इसे वर्तमान फ़िल्टर से मेल खाने वाले सभी {$n} नियंत्रणों के विरुद्ध रिकॉर्ड किया जाएगा, जिसमें अन्य पृष्ठों पर मौजूद नियंत्रण भी शामिल हैं।',
+    // Per-state hints under the segmented control. The "applicable" one is the
+    // load-bearing sentence of the whole modal, and the SoA audit-readiness work
+    // rewrote it: an applicable control MAY now carry its own reasons and
+    // justification (ISO/IEC 27001 clause 6.1.3(d) asks for one per control, for
+    // inclusion as much as for exclusion), and leaving both empty is what falls
+    // back to the framework's default inclusion justification. The old sentence
+    // -- "this removes any recorded decision. No justification is needed." --
+    // is now false in both halves.
+    'ApplicabilityApplicableHint' => 'इस फ्रेमवर्क के दायरे में। कारण और औचित्य वैकल्पिक हैं; दोनों को खाली छोड़ने पर फ्रेमवर्क का डिफ़ॉल्ट समावेशन औचित्य लागू होता है।',
+    'ApplicabilityNotApplicableHint' => 'इस ढांचे के दायरे से किसी नियंत्रण को बाहर रखना। इसके लिए कारण और लिखित स्पष्टीकरण दोनों आवश्यक हैं।',
+    'ApplicabilityInheritedHint' => 'कोई और व्यक्ति आपकी ओर से यह नियंत्रण कार्य करता है। उनका नाम बताइए और यह भी बताइए कि वे क्या करते हैं।',
+    'ApplicabilityNarrativeHint' => 'प्रयोज्यता विवरण में दिखाई देता है। लेखा परीक्षक को निर्णय स्वीकार करने के लिए किन बातों की आवश्यकता होगी, यह लिखें।',
+    'ApplicabilityProviderHint' => 'नियंत्रण करने वाली संस्था: क्लाउड प्रदाता, प्रबंधित सेवा प्रदाता, मूल कंपनी।',
+    'ChooseAReason' => 'एक कारण चुनें',
+    'ApplicabilityNoReason' => 'कोई कारण नहीं',
+    // Result toasts. Both interpolate a COUNT taken from the API response and
+    // nothing else -- no submitted text is ever reflected into a toast, which
+    // toastr renders as HTML.
+    'ApplicabilitySetResult' => '{$n} नियंत्रण(ओं) के लिए प्रयोज्यता अद्यतन की गई।',
+    'ApplicabilityClearResult' => '{$n} नियंत्रण(ओं) के लिए प्रयोज्यता को रीसेट किया गया।',
+    // Bulk control delete (Task 54, corrected Task 55). Deleting a control is
+    // final either way the delete engine implements it: a control with test
+    // history is soft-deleted (framework_controls.deleted = 1) to keep test
+    // history intact, a control with no tests is removed outright -- but
+    // nothing anywhere flips that flag back, so from the user's side there is
+    // no "kept" case, only "deleted, and its test history survives for audit
+    // purposes." Every sentence therefore leads with the same irreversible
+    // warning; the only thing that varies is whether an audit-history clause
+    // is appended, and that clause is omitted entirely rather than printed
+    // with a count of zero -- "0 are retained for audit history" reads as a
+    // warning about something that is not going to happen, and on a delete
+    // confirmation that is exactly the kind of noise that trains people to
+    // stop reading. Every {$...} is a count from the API response; no user
+    // text is ever interpolated, which matters because toastr renders HTML.
+    'DeleteControlsPreviewChecking' => 'यह जांच की जा रही है कि क्या हटाया जाएगा...',
+    'DeleteControlsPreviewSplit' => '{$n} नियंत्रण हटा दिए जाएंगे। इसे पूर्ववत नहीं किया जा सकता। इनमें से {$m} के परीक्षण परिणाम ऑडिट इतिहास के लिए सुरक्षित रखे जाएंगे।',
+    'DeleteControlsPreviewKeptOnly' => 'सभी {$n} नियंत्रण हटा दिए जाएंगे। इसे पूर्ववत नहीं किया जा सकता। ऑडिट इतिहास के लिए परीक्षण परिणाम सुरक्षित रखे जाएंगे।',
+    'DeleteControlsPreviewRemovedOnly' => '{$n} नियंत्रण हटा दिए जाएंगे। इसे पूर्ववत नहीं किया जा सकता।',
+    'DeleteControlsPreviewNone' => 'हटाने के लिए कुछ नहीं है: चयनित नियंत्रण अब मौजूद नहीं हैं।',
+    'ControlsDeletedResult' => '{$n} नियंत्रण हटा दिए गए.',
+
+    // The Add/Edit framework modal's Status field. The label reuses the existing
+    // 'Status' key -- the same word the rail's Active/Inactive/All filter already
+    // uses -- so only the explanatory hint is new. It says the two things a user
+    // cannot see from the control itself: that Inactive is the NON-destructive way
+    // to retire a framework (unlike Delete, which cannot be undone), and that the
+    // change cascades through the hierarchy, which is what update_framework_status()
+    // has always done and is genuinely surprising when a parent is deactivated.
+    'FrameworkStatusHint' => 'निष्क्रिय फ़्रेमवर्क अपने सभी नियंत्रण और मैपिंग को बनाए रखते हैं, लेकिन डिफ़ॉल्ट फ़्रेमवर्क सूची से छिपे रहते हैं और गवर्नेंस डैशबोर्ड से बाहर रहते हैं। किसी फ़्रेमवर्क को निष्क्रिय करने से उसके नीचे के सभी फ़्रेमवर्क भी निष्क्रिय हो जाते हैं; किसी एक को सक्रिय करने से उसके सभी पैरेंट फ़्रेमवर्क भी सक्रिय हो जाते हैं।',
+
+    // Task 60: the same #applicability--set modal, opened from ONE control's row
+    // action instead of the selection bulk bar. The button's own label reuses
+    // 'SetApplicability'; these two exist because the modal now has to say which
+    // of the two it is acting on, and both spellings must be unambiguous.
+    //
+    // The title names the specific object (design-system.md §8) and the note
+    // says "only", because the dangerous reading is the silent one: with rows
+    // ticked -- or with "Select all N filtered" in force -- a modal that said
+    // nothing would let a click the user believed applied to one row be read as
+    // applying to every control in the framework. Naming the control in both
+    // places is what makes the narrower scope visible rather than assumed.
+    // Corrected in Task 63. This spelling used to end "...only, whatever else is
+    // selected", which was printed on every row-action open whether or not
+    // anything else WAS selected -- a dangling absolute with no antecedent, so
+    // it read as a sentence that had been cut off. It is now the plain form, and
+    // the reassurance about a competing selection moved to
+    // 'ApplicabilityAppliesToControlNotSelection' below, which is printed only
+    // when there is a competing selection to reassure anyone about.
+    'SetApplicabilityForControl' => 'प्रयोज्यता निर्धारित करें: {$name}',
+    'ApplicabilityAppliesToControl' => 'इसे केवल "{$name}" के विरुद्ध ही रिकॉर्ड किया जाएगा।',
+
+    // Task 17: the Statement of Applicability report itself
+    // (reports/statement_of_applicability.php + pages/statement-of-applicability.js),
+    // the document ISO/IEC 27001:2022 clause 6.1.3(d) asks for and the one every
+    // applicability decision recorded on the Define Control Frameworks page
+    // exists to produce.
+    //
+    // 'StatementOfApplicability' already exists above (the framework modal's SoA
+    // card) and is reused for the report's own title, as are 'IsmsScopeStatement',
+    // 'DefaultInclusionJustification', the three 'Applicability*' state labels,
+    // 'ApplicabilityDecidedBy'/'DecidedOn', and the plain 'Framework',
+    // 'ControlNumber', 'ControlName', 'Justification', 'Evidence', 'Reason',
+    // 'Provider', 'Total', 'Controls' and 'Export' keys. Only strings with no
+    // existing home are added here.
+    'StatementOfApplicabilityDesc' => 'एक रूपरेखा के लिए: प्रत्येक नियंत्रण, चाहे वह लागू हो या नहीं, उसे क्यों शामिल या बाहर रखा गया, और क्या उसे लागू किया गया है।',
+    // The header button on Define Control Frameworks. The verb is "generate"
+    // rather than "view" because the document is assembled at the moment it is
+    // asked for -- there is no stored SoA that could be out of date.
+    'GenerateStatementOfApplicability' => 'प्रयोज्यता का विवरण तैयार करें',
+
+    // The Justification column's SECOND resolution step, and the reason an SoA
+    // built here beats the spreadsheet it replaces: the risks that drove the
+    // control are already recorded against it, so nobody retypes them and they
+    // cannot go stale. {risks} is substituted with the displayed risk ids.
+    //
+    // Phrased to match clause 6.1.3, which derives controls from risk treatment
+    // and uses Annex A afterwards only as a completeness cross-check -- the same
+    // reasoning behind 'DefaultInclusionJustificationPlaceholder' above.
+    'SoaJustifiedByRiskAssessment' => 'संगठन के सूचना सुरक्षा जोखिम मूल्यांकन द्वारा निर्धारित। संबंधित जोखिम: {risks}।',
+
+    // The Implemented column. DERIVED from maturity and the last test result on
+    // every read, never stored, so it cannot drift out of sync with the control.
+    // 'Yes' and 'No' already exist and are reused; only the middle value and the
+    // header need keys of their own. An excluded control's cell reuses the
+    // existing 'NotApplicable' ('N/A'), which is exactly the right abbreviation
+    // in a dense table.
+    'SoaImplemented' => 'कार्यान्वित',
+    'SoaImplementedPartial' => 'आंशिक',
+
+    // The cover block.
+    'SoaGeneratedOn' => 'पर उत्पन्न',
+    'SoaExcludedCount' => 'छोड़ा गया',
+
+    // The prompt shown when the framework has never been given the two cover
+    // fields. It PROMPTS rather than silently printing a blank cover: an SoA
+    // whose scope is empty is the one defect an auditor spots first, and the
+    // moment somebody opens the report is the only moment those fields matter.
+    // Both spellings of empty (never set, and deliberately cleared) prompt --
+    // from a reader's point of view there is nothing to print either way.
+    //
+    // The inclusion-justification line states a WEAKER consequence than it used
+    // to, because Task 67 made the stronger one untrue: the column no longer goes
+    // blank when the field is empty -- soa_framework_default_justification()
+    // substitutes the generic default sentence. The prompt survives because a
+    // generic sentence is not the organization's own, and an auditor reading 1,500
+    // identical rows of boilerplate is entitled to ask whose risk assessment it
+    // refers to.
+    'SoaMissingFieldsTitle' => 'इस बयान में इसके कवर विवरण का अभाव है।',
+    'SoaMissingScopeStatement' => 'इस फ्रेमवर्क के लिए कोई स्कोप स्टेटमेंट दर्ज नहीं किया गया है। SoA में उस स्कोप का उल्लेख होना चाहिए जिसके लिए इसे बनाया गया है।',
+    'SoaMissingInclusionJustification' => 'कोई डिफ़ॉल्ट समावेशन औचित्य दर्ज नहीं किया गया है। संबंधित जोखिमों से रहित लागू नियंत्रण आपके अपने कथन के बजाय एक सामान्य कथन पर वापस आ जाएंगे।',
+    'SoaEditFrameworkToAdd' => 'उन्हें फ्रेमवर्क पर जोड़ें',
+
+    // Opened from the Reporting Hub, which cannot supply a framework. A picker,
+    // not an error: an SoA is a per-framework document by definition -- the same
+    // control excluded from ISO 27001 is not thereby excluded from PCI DSS --
+    // and there is no cross-framework roll-up to offer instead.
+    'SoaChooseFramework' => 'एक ढांचा चुनें',
+    'SoaChooseFrameworkHint' => 'प्रयोज्यता का विवरण एक समय में एक ही फ्रेमवर्क के बारे में लिखा जाता है।',
+    // The picker has a roster but nothing in it. Distinct from "this framework
+    // has no controls": there is no framework to write a statement about at all,
+    // and the fix is on a different page, so it says which one.
+    // The launcher's affordance row. "Open in browser" rather than "View"
+    // because it names what actually happens -- the document opens in a new tab,
+    // chrome-free -- and because Task 18 adds "Download as PDF" and "Download as
+    // XLSX" beside it, where "open" vs "download" is the distinction that
+    // matters.
+    // The document has no sidebar, so it needs its own way back for anyone who
+    // arrives from a bookmark or a shared link. Screen only; never printed.
+    'SoaBackToSelector' => 'प्रयोज्यता के विवरण पर वापस जाएँ',
+    'SoaNoFrameworks' => 'कोई सक्रिय फ्रेमवर्क नहीं',
+    'SoaNoFrameworksHint' => 'गवर्नेंस > डिफाइन कंट्रोल फ्रेमवर्क्स के अंतर्गत एक फ्रेमवर्क इंस्टॉल या एक्टिवेट करें, और यह यहां उपलब्ध होगा।',
+
+    // The two refusals. Both explain rather than just failing, because the user
+    // arrived here deliberately.
+    'SoaFrameworkInactiveTitle' => 'यह ढांचा निष्क्रिय है',
+    'SoaFrameworkInactiveBody' => 'प्रयोज्यता विवरण किसी संगठन के वर्तमान कार्यक्षेत्र का वर्णन करता है। इसे तैयार करने के लिए फ्रेमवर्क को पुनः सक्रिय करें।',
+    'SoaFrameworkNotFoundBody' => 'वह ढांचा अब मौजूद नहीं है।',
+
+    // A framework with no controls mapped into it. Not an error -- it is a real
+    // and recoverable state, and saying so beats an empty table.
+    'SoaNoControls' => 'इस फ्रेमवर्क में कोई नियंत्रण नहीं है',
+    'SoaNoControlsHint' => 'फ्रेमवर्क में मैप कंट्रोल डालें और इसकी प्रयोज्यता का विवरण उन्हें सूचीबद्ध करेगा।',
+
+    // The second half of the statement-of-applicability launcher's affordance
+    // row, beside "Open in browser" and the existing 'DownloadAsXLSX'. Rendered
+    // only where the Import/Export Extra is active, which is what supplies the
+    // export. "Download as" rather than "Export to" so the pair reads as one
+    // choice of format, and so it matches the XLSX label already in this file.
+    'DownloadAsPDF' => 'पीडीएफ के रूप में डाउनलोड करें',
+
+    // The fourth column of the control modal's "Mapped Control Frameworks"
+    // widget, between the reference code and the reference text. The
+    // FRAMEWORK's own title for the control it is citing -- what a Statement of
+    // Applicability prints beside the clause number. Distinct from the existing
+    // 'ReferenceText', which holds the framework's full control statement, and
+    // from the SimpleRisk control's own name.
+    'ReferenceSubject' => 'संदर्भ विषय',
+    // Placeholder/help text under that field, and the reason it is worth
+    // filling in: without it the Statement of Applicability has nothing to
+    // print but the source catalogue's name for its own control.
+    'ReferenceSubjectHint' => "इस नियंत्रण के लिए फ्रेमवर्क का अपना शीर्षक।",
+
+    // Task 63: the row-scoped population sentence in the Set applicability
+    // modal, in the one situation where the plain
+    // 'ApplicabilityAppliesToControl' above leaves a real question unanswered --
+    // the user has controls ticked, or a standing "Select all N filtered", and
+    // has just opened the modal from ONE row's own action.
+    //
+    // It states the guarantee rather than implying it. A user whose escalated
+    // selection covers an entire framework needs to know that this click is not
+    // about to overwrite it, and {$n} is the count of the OTHER selected
+    // controls -- the target is excluded, because it is very often ticked too
+    // and a promise that included it would be false.
+    'ApplicabilityAppliesToControlNotSelection' => 'इसे केवल "{$name}" के विरुद्ध रिकॉर्ड किया जाएगा — आपके द्वारा चयनित {$n} नियंत्रण प्रभावित नहीं होंगे।',
+
+    // Task 65: the VISIBLE label on the controls toolbar's SoA button. The full
+    // sentence ('GenerateStatementOfApplicability' above) stays as the button's
+    // title and aria-label, and is still what the SoA page itself is called;
+    // this is the short form for a toolbar row it shares with the page's one
+    // primary action. At full length the secondary button measured more than
+    // twice the primary's width and became the largest element in the row.
+    //
+    // "SoA" is safe to abbreviate HERE and only here: the button appears solely
+    // when a single framework is scoped, beside an Applicability column, and it
+    // expands on hover.
+    'GenerateSoa' => 'एसओए उत्पन्न करें',
+
+    // ===== Clone framework (Task 64) =======================================
+    // The framework half of Clone control's framing (CloneOfControlTitle /
+    // ClonedFromControlNotice above), and for the same reason: the clone
+    // pre-fills the Add Framework modal rather than creating anything, so the
+    // modal has to say what was carried over before the user saves it.
+    //
+    // Separate keys from the control pair rather than one shared "Clone of
+    // {$name}" -- the two banners do not say the same thing. A cloned control
+    // simply asks to be reviewed; a cloned FRAMEWORK has to explain two things
+    // its fields cannot: that the source's control mappings come with it, and
+    // that the empty scope statement is deliberate. The blank field is the
+    // whole reason the banner is longer than the control's -- a scope statement
+    // left blank with no explanation reads as a field that failed to populate,
+    // and the one thing a clone exists to be given is a NEW scope (Josh: "you
+    // might want to use the same controls as one framework, but scope it
+    // differently"). {$name} and {$n} follow the same client-side
+    // formatTemplate() substitution the rest of this page's templates use.
+    'CloneOfFrameworkTitle' => '"{$name} " का क्लोन',
+    // {$n} is the count the rail is SHOWING for the source row -- its controls,
+    // not its raw mapping rows. Those differ (a framework can cite one control
+    // under two clause numbers, and the rail excludes deleted controls), and the
+    // number to promise is the one the user is looking at when they click and
+    // the one the clone's own rail row will show afterwards.
+    'ClonedFromFrameworkNotice' => 'इसे "{$name}" से क्लोन किया गया है। इसके {$n} नियंत्रणों को नए फ्रेमवर्क में कॉपी किया जाएगा, और शुरुआत में वे सभी लागू होंगे — इसके लागू होने संबंधी कोई भी निर्णय आगे नहीं ले जाए जाएंगे। स्कोप स्टेटमेंट जानबूझकर खाली रखा गया है: लागू होने संबंधी स्टेटमेंट तैयार करने से पहले इस फ्रेमवर्क के दायरे को स्पष्ट करें।',
+    // Seeds the name field so the clone can be saved without a rename --
+    // framework names are unique, so a verbatim copy is refused on save.
+    'CloneOfFrameworkName' => '{$name} (क्लोन)',
+    'CloneFramework' => 'क्लोन फ्रेमवर्क',
+    // Extras version independently of Core, so an updated Import/Export Extra
+    // can end up calling a Core function the installed Core does not have. The
+    // export refuses with this rather than fataling -- see
+    // soa_export_refuse_if_core_too_old(), extras/import-export/includes/soa_export.php.
+    'SoaExportRequiresNewerCore' => 'इस एक्सपोर्ट के लिए SimpleRisk Core के मौजूदा इंस्टॉल किए गए वर्शन से नए वर्शन की आवश्यकता है। SimpleRisk को अपडेट करें और फिर से एक्सपोर्ट करने का प्रयास करें।',
+    // The framework ACQUISITION chooser (Task 26): "+ Add framework" asks how you
+    // want to get one, rather than assuming you want to type it in. Each option is
+    // rendered only when the route behind it actually exists for this user, so the
+    // hint text may state plainly what the route does -- it is never shown to
+    // someone who cannot take it.
+    'HowDoYouWantToAddAFramework' => 'आप फ्रेमवर्क कैसे जोड़ना चाहते हैं?',
+    'CreateFrameworkManually' => 'इसे मैन्युअल रूप से बनाएं',
+    'CreateFrameworkManuallyHint' => 'आप स्वयं फ्रेमवर्क का नाम दें, फिर उसके कंट्रोल्स को जोड़ें या मैप करें।',
+    // Named for the framework rather than for its vendor. The hint was reworded
+    // at the same time: it used to end "...load its Secure Controls Framework
+    // controls", which read as a stutter once the label carried those words.
+    'GetFrameworkFromScf' => 'सिक्योर कंट्रोल्स फ्रेमवर्क से एक प्राप्त करें',
+    'GetFrameworkFromScfHint' => 'एक प्रकाशित फ्रेमवर्क चुनें और एक ही चरण में उसके मैप किए गए कंट्रोल्स को लोड करें।',
+    'ImportFrameworkFromCatalog' => 'एक आयात करें',
+    'ImportFrameworkFromCatalogHint' => 'SimpleRisk कंटेंट कैटलॉग से एक फ्रेमवर्क और उसके कंट्रोल्स इंस्टॉल करें।',
+
+    // The framework acquisition chooser's third route, which now offers the
+    // Import-Export Extra's CONTROL import (a spreadsheet naming a framework
+    // that does not exist yet creates it) rather than the GitHub catalogue the
+    // two keys above described. Those two are left in place, unreferenced, so a
+    // customer maintaining a custom lang.<locale>.php still reconciles by tail
+    // diff.
+    'ImportFrameworkFromSpreadsheet' => 'स्प्रेडशीट से एक आयात करें',
+    'ImportFrameworkFromSpreadsheetHint' => 'फ्रेमवर्क का नाम बताने वाले कंट्रोल्स की एक स्प्रेडशीट अपलोड करें, और दोनों बन जाएंगे।',
+
+    // The Define Control Frameworks rail's second synthetic scope: the controls
+    // mapped to no framework at all. Its first, "All controls", reuses the
+    // existing AllControls key rather than adding a second string with the same
+    // English -- it replaced 'AllFrameworks' on that row, which named a union of
+    // frameworks while scoping to every control, mapped or not. 'AllFrameworks'
+    // is left in place and unreferenced by that page: other surfaces still use
+    // it, and every locale carries it.
+    'UnassignedControls' => 'अनिर्दिष्ट नियंत्रण',
+    // APPLICABILITY VALIDATION FAILURES. These reach the user: the v2 endpoint
+    // returns the exception's message as the API status message and the page
+    // renders it in a toast, so a hardcoded English literal here would be
+    // permanently English for every locale.
+    //
+    // NOTHING THE CALLER TYPED IS EVER INTERPOLATED INTO THESE. The parameters
+    // are validated enum values, integer ids and byte limits the server itself
+    // owns -- naming the ALLOWED values rather than echoing the rejected one is
+    // deliberate (it is both safe and more useful than repeating a typo).
+    'ApplicabilityErrUnknownState' => 'अज्ञात प्रयोज्यता स्थिति। इनमें से एक अपेक्षित है: {$states}।',
+    'ApplicabilityErrNarrativeRequired' => '\'{$state} \' के लिए एक विवरण आवश्यक है।',
+    'ApplicabilityErrNarrativeTooLong' => 'यह विवरण {$bytes} बाइट्स से लंबा है।',
+    'ApplicabilityErrReasonRequired' => 'किसी नियंत्रण को लागू न होने के रूप में चिह्नित करने के लिए अपवर्जन का कारण बताना आवश्यक है।',
+    'ApplicabilityErrProviderRequired' => 'प्रदाता को विरासत में मिले नियंत्रण को चिह्नित करना आवश्यक है।',
+    'ApplicabilityErrProviderTooLong' => 'प्रदाता का नाम {$bytes} बाइट्स से लंबा है।',
+    'ApplicabilityErrReasonsNotFound' => 'ये प्रयोज्यता कारण मौजूद नहीं हैं: {$ids}.',
+    'ApplicabilityErrReasonsNotOffered' => 'इस स्थिति के लिए ये प्रयोज्यता कारण प्रस्तुत नहीं किए गए हैं: {$ids}.',
+    'ApplicabilityErrFrameworkNotFound' => 'फ्रेमवर्क {$framework} मौजूद नहीं है।',
+    'ApplicabilityErrControlsNotFound' => 'ये नियंत्रण आईडी मौजूद नहीं हैं: {$ids}.',
+    // Controls/Risks import result messages (validation gate, individual bad-row
+    // alerts, and the batched submitted/created/updated summaries)
+    'ControlIdOrShortNameFieldRequired' => 'कंट्रोल आईडी या कंट्रोल शॉर्ट नेम फ़ील्ड में से किसी एक को मैप किया जाना चाहिए - इनमें से किसी एक के बिना किसी पंक्ति की पहचान नहीं की जा सकती।',
+    'RiskImportSubjectNull' => 'जोखिम आईडी {$risk_id}: विषय फ़ील्ड खाली या अनुपस्थित होने के कारण अपडेट नहीं किया गया।',
+    'RiskImportSummary' => '{$submitted} जोखिम प्रस्तुत किए गए और {$updated} जोखिम अपडेट किए गए।',
+    'ControlImportSummary' => '{$created} नियंत्रण बनाए गए और {$updated} नियंत्रण अपडेट किए गए।',
+    'ImportAdditionalIssuesSuppressed' => '{$count} अतिरिक्त पंक्ति(यों) में समस्याएँ थीं जिन्हें यहाँ अलग से नहीं दिखाया गया है।',
+    'EncryptionPipelineStalledTask' => 'An encryption pipeline (task #{$id}, {$type}) appears stalled — it has been {$status} for an unusually long time without progressing. This usually means the background queue worker isn\'t running; check that it\'s scheduled, then try again once it has processed the stalled task.',
+    'EncryptionPipelineStalledState' => 'ऐसा प्रतीत होता है कि एन्क्रिप्शन प्रक्रिया रुक गई है — इसे असामान्य रूप से लंबे समय से प्रगति पर दिखाया जा रहा है, जबकि इससे संबंधित कोई पृष्ठभूमि कार्य नहीं दिख रहा है। आमतौर पर इसका मतलब यह होता है कि क्यू वर्कर नहीं चल रहा है, या पिछली प्रक्रिया इसे सही ढंग से अपडेट किए बिना समाप्त हो गई है। पुनः प्रयास करने से पहले डिबग लॉग की जाँच करें।',
+    // DEMO_MODE — shown when a visitor to a shared demo instance attempts one
+    // of the operations that would spoil the demo for the next visitor
+    'ActionDisabledOnDemoInstance' => 'SimpleRisk के डेमो इंस्टेंस पर यह सुविधा अक्षम है।',
+
+    // The one-click upgrade progress window: the step an upgrade is on, and
+    // the line shown once it finishes
+    // Shown when an upgrade's progress record has not been touched for long
+    // enough that the process running it is presumed gone
+    'UpgradeJobStalled' => 'अपग्रेड प्रक्रिया रुक गई है। पुनः प्रयास करने से पहले सर्वर लॉग की जाँच करें।',
+    // Shown when an upgrade replaced the instance's configuration file and could
+    // not put the original back
+    // Shown when the database was brought up to date but the application files
+    // could not be replaced, so the instance has NOT moved to the new release
+    'UpdateAppFailed' => 'एप्लिकेशन फ़ाइलें अपग्रेड नहीं हुईं, इसलिए यह इंस्टेंस अभी भी अपने पिछले संस्करण पर चल रहा है। कारण जानने के लिए SimpleRisk लॉग देखें, फिर अपग्रेड को दोबारा चलाएँ।',
+    // The one-click upgrade progress screen
+    'UpgradeInProgress' => 'प्रगति पर है',
+    'UpgradeStepNotNeeded' => 'जरूरत नहीं',
+    // Recovering an Upgrade Extra whose files are damaged
+    'UpgradeExtraDamagedReinstalling' => 'स्थापित अपग्रेड एक्स्ट्रा क्षतिग्रस्त है। एक नई प्रति डाउनलोड की जा रही है।',
+    'UpgradeExtraDamagedRepaired' => 'अपग्रेड एक्स्ट्रा को एक कार्यशील कॉपी से बदल दिया गया।',
+    'UpgradeExtraDamagedFailed' => 'अपग्रेड एक्स्ट्रा क्षतिग्रस्त हो गया है और इसे स्वचालित रूप से बदला नहीं जा सका। इसे एक्स्ट्रा पेज से पुनः स्थापित करें, या बैकअप से simplerisk/extras/upgrade/ को पुनर्स्थापित करें, फिर पुनः प्रयास करें।',
+    'UpgradeAlreadyCurrent' => 'यह इंस्टेंस पहले से ही {version}पर है, जो कि नवीनतम रिलीज़ है। किसी अपग्रेड की आवश्यकता नहीं है।',
+    'UpgradeShowWhatItDid' => 'दिखाओ कि इसने क्या किया',
+    'UpgradeBackupsListed' => 'ये बैकअप कॉन्फ़िगर करें > बैकअप के अंतर्गत सूचीबद्ध हैं।',
+    'UpgradingTo' => '{version} में अपग्रेड किया जा रहा है',
+    'UpgradeSafeToClose' => 'इस विंडो को बंद करना सुरक्षित है। सर्वर पर अपग्रेड जारी है और यह पेज फिर से खुल जाएगा।',
+    'UpgradeDownloadLog' => 'लॉग डाउनलोड करें',
+    'UpgradeStatementsApplied' => 'प्रारंभ {started} · {count} कथन लागू किए गए',
+    // The Upgrade Extra's pre-upgrade check of the instance it is sitting on
+    'UpgradeCheckingInstance' => 'इस उदाहरण की जाँच की जा रही है',
+    'UpgradeInstanceChecked' => 'उदाहरण की जाँच हो गई है, किसी सुधार की आवश्यकता नहीं है।',
+    'UpgradeBlockedByCorrections' => 'अपग्रेड रुक गया क्योंकि इस इंस्टेंस में एक सुधार की आवश्यकता है जिसे स्वचालित रूप से लागू नहीं किया जा सका। ऊपर दिए गए निर्देशों का पालन करें और फिर से अपग्रेड चलाएँ। इसके अलावा कुछ भी नहीं बदला गया है।',
+    // Shown when an upgrade replaced the instance's configuration file and could not put the original back
+    'ConfigRestoreFailed' => 'अपग्रेड इस इंस्टेंस की कॉन्फ़िगरेशन फ़ाइल को पुनर्स्थापित नहीं कर सका। कृपया आगे बढ़ने से पहले बैकअप से simplerisk/includes/config.php फ़ाइल को पुनर्स्थापित करें।',
+    'UpgradeDidNotAdvance' => 'संस्करण "{$version}" के लिए अपग्रेड फ़ंक्शन ने डेटाबेस संस्करण को आगे नहीं बढ़ाया; इसे रोका जा रहा है ताकि यह दोबारा न चले।',
+    'BackupDatabaseNative' => 'डेटाबेस का बैकअप लिया जा रहा है (किसी बाहरी उपकरण की आवश्यकता नहीं है)...',
+    'UpgradeAlreadyRunning' => 'इस इंस्टेंस पर पहले से ही एक अपग्रेड चल रहा है।',
+    'UpgradeStatusUnreachable' => 'अपग्रेड प्रक्रिया के दौरान सर्वर से संपर्क टूट गया। SimpleRisk लॉग की जाँच करें; अपग्रेड प्रक्रिया अभी भी जारी हो सकती है।',
+    'UpgradeJobUnwritable' => 'अपग्रेड शुरू नहीं हो सका क्योंकि इसकी प्रगति का रिकॉर्ड नहीं लिखा जा सका। कृपया जांचें कि सिस्टम की अस्थायी निर्देशिका वेब उपयोगकर्ता द्वारा लिखने योग्य है या नहीं।',
+    'UpgradeStepCheckingVersions' => 'संस्करणों की जाँच करना',
+    'UpgradeStepUpgradingDatabase' => 'डेटाबेस स्कीमा को अपग्रेड करना',
+    'UpgradeStepFinalising' => 'अपग्रेड के बाद के रूपांतरणों को लागू करना',
+    'UpgradeDatabaseHeading' => 'डेटाबेस को अपग्रेड किया जा रहा है',
+    'UpgradeDatabaseComplete' => 'डेटाबेस अपग्रेड पूरा हो गया।',
+    'UpgradeHideWhatItDid' => 'इसने जो किया उसे छुपाओ',
+    'UpgradeStateRunning' => 'चल रहा है',
+    'UpgradeSessionExpired' => 'आपका सत्र समाप्त हो गया है। अपग्रेड देखने के लिए दोबारा साइन इन करें।',
+    'UpgradeLostContact' => 'सर्वर से संपर्क टूट गया है। अपग्रेड से पुनः जुड़ने के लिए इस पृष्ठ को पुनः लोड करें।',
+    'UpgradeDatabaseAlreadyCurrent' => 'डेटाबेस पहले से ही एप्लिकेशन संस्करण पर है।',
+    'UpgradeConversionsApplied' => 'इंजन और कैरेक्टर-सेट रूपांतरण लागू किए गए।',
+    'UpgradeStoppedShort' => 'अपग्रेड {reached} पर रुक गया, {app}तक नहीं पहुंचा। सर्वर लॉग देखें।',
+    'UpgradeStepBackingUp' => 'बैकअप लेना',
+    'UpgradeStepUpgradingFiles' => 'एप्लिकेशन फ़ाइलों को अपग्रेड करना',
+    'UpgradeStepUpgradingExtras' => 'स्थापित अतिरिक्त सुविधाओं को अपग्रेड करना',
+    'UpgradeStepUpdatingUpgradeExtra' => 'अपग्रेड एक्स्ट्रा को अपडेट करना',
+    // The Upgrade Extra's pre-chain corrections: what is wrong, and what to do
+    // about it. These are the highest-stakes messages the upgrade produces --
+    // an operator reads them to unstick an instance that cannot upgrade.
+    'UpgradeCorrectionUnknownVersionTitle' => 'रिकॉर्ड किए गए डेटाबेस संस्करण में वास्तविक रिलीज़ का नाम नहीं है।',
+    'UpgradeCorrectionNoRecordedVersion' => 'डेटाबेस में इसका कोई रिकॉर्डेड संस्करण नहीं है।',
+    'UpgradeCorrectionUnknownVersionFinding' => 'डेटाबेस में संस्करण \'{$version}\' दर्ज है, जिसमें SimpleRisk के किसी रिलीज़ का नाम नहीं है। अपग्रेड के लिए इससे कोई प्रारंभिक बिंदु नहीं चुना जा सकता।',
+    'UpgradeCorrectionUnknownVersionGuidance' => 'db_version सेटिंग को उस रिलीज़ पर सेट करें जिसका स्कीमा वास्तव में इस डेटाबेस में है, फिर अपग्रेड को दोबारा चलाएँ: UPDATE settings SET value=\'<release>\' WHERE name=\'db_version\'. यदि मान 2026XXXX-001 जैसा प्लेसहोल्डर है, तो सही मान लगभग हमेशा अपग्रेड चलने से पहले इंस्टॉल की गई सबसे हालिया वास्तविक रिलीज़ होती है।',
+    'UpgradeCorrectionLegacySessionsTitle' => 'अपग्रेड के कैरेक्टर सेट रूपांतरण के बाद सेशंस टेबल काम नहीं कर पाएगी।',
+    'UpgradeCorrectionLegacySessionsFinding' => '`sessions`.`id` MyISAM टेबल पर VARCHAR({$width}) फॉर्मेट में है। इसे utf8mb4 में परिवर्तित करने से, जो कि रिलीज़ 20230106-001 और उसके बाद के संस्करणों में किया जाता है, MyISAM की 1000-बाइट इंडेक्स सीमा पार हो जाएगी और अपग्रेड विफल हो जाएगा।',
+    'UpgradeCorrectionLegacySessionsGuidance' => 'एक या अधिक सक्रिय सत्रों में 128 अक्षरों से अधिक लंबी आईडी का उपयोग हो रहा है। कॉलम को छोटा करने से वे उपयोगकर्ता लॉग आउट हो जाएंगे, इसलिए इसे वैसे ही छोड़ दिया गया है। उन सत्रों के समाप्त होने पर अपग्रेड को पुनः प्रयास करें।',
+    'UpgradeCorrectionApplied' => 'सुधार किया गया।',
+    'UpgradeCorrectionFailed' => 'यह सुधार लागू नहीं किया जा सका। कारण जानने के लिए SimpleRisk लॉग देखें।',
+    'UpgradeCorrectionAppliedLine' => 'संशोधित: {$title} {$message}',
+    'UpgradeCorrectionNotAppliedLine' => 'संशोधित नहीं: {$title} {$message}',
+    'UpgradeCorrectionsNeeded' => 'इस इंस्टेंस को अपग्रेड करने से पहले कुछ सुधारों की आवश्यकता है: {$count}',
+    'UpgradeCorrectionsNeededShort' => 'सुधार आवश्यक: {$count}',
+    'UpdateDatabase' => 'डेटाबेस अपग्रेड किया जा रहा है...',
+    // Authentication screens (index.php, reset.php, reset_password.php)
+    'EnterTheCredentialsForYourAccount' => 'अपने खाते की जानकारी दर्ज करें।',
+    'TroubleSigningIn' => 'लॉग इन करने में परेशानी हो रही है? अपने SimpleRisk एडमिनिस्ट्रेटर से संपर्क करें।',
+    'BackToLogin' => 'लॉगिन पर वापस जाएं',
+    'Or' => 'या',
+    'WeWillEmailAResetTokenToYourAccount' => 'हम आपके खाते में दिए गए ईमेल पते पर एक रीसेट टोकन भेजेंगे।',
+    'EnterTheResetTokenFromYourEmail' => 'अपने ईमेल से प्राप्त रीसेट टोकन और अपना नया पासवर्ड दर्ज करें।',
+    'ChooseANewPasswordToContinue' => 'आगे बढ़ने के लिए नया पासवर्ड चुनें।',
+    'FromZeroToGRCInMinutes' => 'शून्य से जीआरसी तक मिनटों में।',
+    'OrganizationLogo' => 'संगठन का लोगो',
+    'LoginScreenBranding' => 'लॉगिन स्क्रीन ब्रांडिंग',
+    'CustomLogo' => 'कस्टम लोगो',
+    'CustomLogoHint' => 'PNG, JPG, GIF या WebP फॉर्मेट में फ़ाइलें अपलोड करें, जिनका आकार 1 MB तक और रिज़ॉल्यूशन 2000x2000 हो। इमेज रिज़ॉल्यूशन 260x64 तक दिखाया जा सकता है, इसलिए हाई-डेंसिटी स्क्रीन के लिए लगभग 520x128 रिज़ॉल्यूशन वाली फ़ाइल अपलोड करें। टॉप बार और लॉगिन पैनल डार्क बैकग्राउंड पर हैं, इसलिए डार्क बैकग्राउंड पर दिखने वाला लोगो अपलोड करें। SimpleRisk का लोगो वापस लगाने के लिए लोगो हटा दें।',
+    'CurrentLogo' => 'वर्तमान लोगो',
+    'RemoveLogo' => 'लोगो हटाएँ',
+    'LoginTagline' => 'लॉगिन टैगलाइन',
+    'LoginTaglineHint' => 'लॉगिन स्क्रीन पर SimpleRisk टैगलाइन को बदल देता है। एक छोटी सी पंक्ति सबसे उपयुक्त रहती है। SimpleRisk टैगलाइन को बनाए रखने के लिए इसे खाली छोड़ दें।',
+    'LoginNotice' => 'सिस्टम उपयोग सूचना',
+    'LoginNoticeHint' => 'लॉगिन स्क्रीन पर लॉग इन करने से पहले इसे दिखाया जाता है। इसका उपयोग स्वीकार्य उपयोग या सिस्टम उपयोग की सूचना के लिए करें। कोई सूचना न दिखाने के लिए इसे खाली छोड़ दें। लिंक और चित्र डालने की अनुमति नहीं है।',
+    'BrandingRequiresCustomization' => 'लॉगिन स्क्रीन ब्रांडिंग कस्टमाइजेशन एक्स्ट्रा का हिस्सा है।',
+    'LogoMustBeAnImage' => 'लोगो एक PNG, JPG, GIF या WebP इमेज होनी चाहिए।',
+    'LogoTooLarge' => 'लोगो का आकार 1 एमबी से अधिक नहीं होना चाहिए।',
+    'LogoDimensionsTooLarge' => 'लोगो का आकार 2000x2000 पिक्सल से अधिक नहीं होना चाहिए।',
+    'LogoDimensionsTooSmall' => 'लोगो की सबसे लंबी भुजा कम से कम 32 पिक्सल की होनी चाहिए।',
+    'LogoUploadFailed' => 'लोगो अपलोड नहीं हो सका। कृपया पुनः प्रयास करें।',
+    'LogoUpdated' => 'लोगो को अपडेट कर दिया गया है।',
+    'LogoRemoved' => 'लोगो हटा दिया गया।',
+    'NoSystemUseNoticeSet' => 'सिस्टम उपयोग संबंधी कोई सूचना निर्धारित नहीं है।',
+    'NoticeSizeSmall' => 'छोटा',
+    'NoticeSizeNormal' => 'सामान्य',
+    'NoticeSizeLarge' => 'बड़ा',
     '' => '',
 );
 ?>

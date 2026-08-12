@@ -1,6 +1,6 @@
-# DataTables
+# DataTables - The Javascript table library
 
-This package contains distribution files for the [DataTables table enhancement library](https://datatables.net). Only the core software for this library is contained in this package - to be correctly styled, a styling package for DataTables must also be included (e.g. default, Bootstrap, Bulma, Foundation or others) - please see the [npm installation documentation on the DataTables site](https://datatables.net/manual/installation#Node.js-/-NPM) for full details.
+This package contains distribution files for the [DataTables table library](https://datatables.net). While DataTables is dependency free, only the core software for this library is contained in this package - to be correctly styled, a styling package for DataTables must also be included (e.g. default, Bootstrap, Bulma, Foundation or others). Please see the [npm installation documentation on the DataTables site](https://datatables.net/manual/installation#Node.js-/-NPM) for full details.
 
 DataTables is a table enhancing library which adds features such as paging, ordering, search, scrolling and many more to a static HTML page. A comprehensive API is also available that can be used to manipulate the table. Please refer to the [DataTables web-site](//datatables.net) for a full range of documentation and examples.
 

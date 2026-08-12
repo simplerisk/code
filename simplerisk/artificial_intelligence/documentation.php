@@ -7,7 +7,19 @@
 require_once(realpath(__DIR__ . '/../includes/renderutils.php'));
 require_once(realpath(__DIR__ . '/../includes/functions.php'));
 require_once(realpath(__DIR__ . '/../includes/artificial_intelligence.php'));
-render_header_and_sidebar(['blockUI', 'tabs:logic', 'CUSTOM:pages/governance.js'], ['check_ai' => true]);
+// CUSTOM:common.js is a dependency of CUSTOM:pages/governance.js, not an
+// extra: governance.js's setupAssetsAssetGroupsWidget() delegates to the
+// shared selectize implementation that lives in common.js. Every other page
+// that loads governance.js already declared it; this one did not.
+render_header_and_sidebar(['blockUI', 'tabs:logic', 'CUSTOM:common.js', 'CUSTOM:pages/governance.js'], ['check_ai' => true]);
+
+// If the Document Installation capability is disabled, deny access to this page
+if (!ai_capability_enabled('document_templates')) {
+
+    header("Location: ../index.php");
+    exit(0);
+
+}
 
 global $escaper, $lang;
 

@@ -646,7 +646,7 @@ $lang = array(
     'ControlPhase' => 'Fase de control',
     'ControlPriority' => 'Prioridad de control',
     'ControlFamily' => 'Familia de control',
-    'AllFrameworks'=>'Todos los frameworks',
+    'AllFrameworks'=>'Todos los marcos',
     'NewControlName' => 'Nuevo nombre de control',
     'NewControlDescription' => 'Nueva descripción del control',
     'AreYouSureYouWantToDeleteThisControl' => '¿confirma que desea eliminar este control?',
@@ -1345,7 +1345,6 @@ $lang = array(
     'UpdateAssetGroupTooltip' => 'Actualizar grupo de activos',
     'DeleteAssetGroupTooltip' => 'Eliminar grupo de activos',
     'RemoveAssetTooltip' => 'Quite el recurso del grupo de activos',
-    'ControlShortNameFieldRequired' => 'El campo nombre corto de control es obligatorio.',
     'AffectedAssetsWidgetPlaceholder' => 'Seleccione un activo o grupo de activos',
     'AffectedAssetsWidgetNoDropdownPlaceholder' => 'Añadir un nombre de recurso',
     'AffectedAssetsWidgetInstructions' => 'Seleccione un activo o un grupo de activos. Puede crear un nuevo recurso agregando su nombre a la lista.',
@@ -2341,7 +2340,7 @@ $lang = array(
     'Advanced_Search_no_results_1' => 'Parece que no hay resultados para su consulta.',
     'Advanced_Search_no_results_2' => 'Vuelva a revisar su búsqueda para detectar errores tipográficos u ortográficos o pruebe con un término de búsqueda diferente.',
     'IncidentsPerDay' => 'Incidentes por día',
-    'CurrentVsDesiredMaturity' => 'Madurez actual vs madurez deseada por familia de control',
+    'CurrentVsDesiredMaturity' => 'Madurez por familia de control',
     'RiskDistribution' => 'Distribución de riesgos',
     'RiskDistributionDescription'=>'Los gráficos circulares anteriores ayudan a mostrar la distribución de los riesgos entre los distintos niveles de riesgo, tanto para el riesgo inherente como para el residual. Podemos utilizar estos dos gráficos circulares para mostrar el progreso de nuestros esfuerzos de mitigación de riesgos. Si el gráfico circular de riesgo residual muestra grandes porciones de riesgo muy alto o alto, puede ser una señal de que su organización está asumiendo demasiado riesgo y se requieren más esfuerzos de mitigación.',
     'EnableTabs' => 'Habilitar pestañas',
@@ -2413,7 +2412,7 @@ $lang = array(
     'EditModeInformation' => 'Activa el modo de edición para editar el diseño. Si lo desactivas, el diseño no se guardará automáticamente.',
     'InvalidLayout' => '¡Diseño no válido!',
     'InvalidLayoutOnlyCustomAllowedAsDefault' => '¡Diseño no válido! Solo se pueden guardar como predeterminados los diseños personalizados.',
-    'LayoutSaved' => '¡Diseño guardado!',
+    'LayoutSaved' => 'El diseño de su panel de control se ha guardado.',
     'DefaultLayout' => 'Disposición predeterminada',
     'DefaultLayoutInformation' => 'Establece este diseño como predeterminado, para que se utilice en lugar del que proporciona SimpleRisk para los usuarios que no tienen un diseño personalizado establecido. Solo puede establecer un diseño personalizado guardado que no esté vacío como predeterminado. Si un diseño marcado como predeterminado se restaura al diseño predeterminado, se restaurará al predeterminado proporcionado por SimpleRisk.',
     'LayoutDefaultStatusUpdated' => 'Se ha actualizado el estado predeterminado del diseño.',
@@ -2422,7 +2421,7 @@ $lang = array(
     'DefaultLayoutRestored' => '¡El diseño predeterminado se ha restaurado correctamente!',
     'SavedLayoutRestored' => '¡El diseño guardado ha sido restaurado exitosamente!',
     'ConfirmRestoreLayout' => '¿Estás seguro? Perderás los cambios que hayas realizado en este diseño.',
-    'ConfirmDisableEditModeWithPendingChanges' => 'Tienes cambios sin guardar que perderás al salir de la página. ¿Estás seguro de que deseas desactivar el "Modo de edición" y posiblemente olvidarte de guardar los cambios?',
+    'ConfirmDisableEditModeWithPendingChanges' => 'Tienes cambios sin guardar en este panel. ¿Descartarlos y dejar de editar?',
     'ConfirmSave' => 'Al guardar estos cambios se sobrescribirá el diseño que hayas guardado anteriormente. ¿Estás seguro de que deseas continuar?',
     'ConfirmSaveAdminDefault' => 'Este diseño está configurado como predeterminado para este tipo de diseño. Al guardar estos cambios, se cambiará el diseño para todos los usuarios que no tengan un diseño personalizado configurado para este tipo de diseño. ¿Está seguro de que desea continuar?',
     'RisksByMonth' => 'Riesgos por mes',
@@ -3111,6 +3110,1523 @@ $lang = array(
     'ResendAssessmentDescription' => 'Reemitir automáticamente la evaluación con una periodicidad recurrente.',
     'ResendEveryDays' => 'Reenviar cada {$day} días',
     'QuestionnaireSaveBarHint' => '“Guardar y enviar” envía el cuestionario a sus contactos de inmediato.',
+    // Home dashboard — KPI tile labels
+    'NewSelfAssessment' => 'Nueva autoevaluación',
+    'SelfAssessmentPrereqIntro' => 'Las autoevaluaciones le permiten evaluar su organización con respecto a un marco de controles seguros y generar automáticamente riesgos a partir de los controles que fallan. Primero se requieren dos pasos de configuración:',
+    'RegisterYourInstance' => 'Registra tu instancia',
+    'RegisterYourInstanceHelp' => 'El registro vincula esta instancia con el servicio de licencias de SimpleRisk para que se puedan descargar los complementos gratuitos (incluido el SCF).',
+    'InstallTheSCF' => 'Instale el marco de controles seguros.',
+    'InstallTheSCFHelp' => 'El SCF es un complemento gratuito que proporciona los marcos de trabajo, las preguntas de control y los mapas de riesgos que esta función evalúa. La instalación se ejecuta en segundo plano y puede tardar unos minutos.',
+    'GoToRegistration' => 'Ir a Registro',
+    'GoToSCF' => 'Ir al Marco de Controles Seguros',
+    'SelfAssessmentEnableTip' => 'Opcional: en Gobernanza > Marcos de referencia, puede habilitar marcos de referencia SCF específicos para ver una lista breve y seleccionada al iniciar una evaluación. También puede evaluar con cualquier marco de referencia del catálogo completo de SCF sin habilitarlo.',
+    'ChooseAFramework' => 'Elija un marco para evaluar según',
+    'EnabledFrameworks' => 'marcos habilitados',
+    'AllScfFrameworks' => 'Todos los marcos SCF',
+    'Start' => 'Comenzar',
+    'Resume' => 'Reanudar',
+    'ControlQuestion' => 'Pregunta de control',
+    'NotApplicable' => 'N / A',
+    'SaveProgress' => 'Guardar progreso',
+    'MarkComplete' => 'Marcar como completado',
+    'AnsweredOfTotal' => 'respondido',
+    'FailedSoFar' => 'ha fallado hasta ahora',
+    'StartedBy' => 'Iniciado por',
+    'FailedControls' => 'Controles fallidos',
+    'PushToRisk' => 'Enviar al riesgo',
+    'ConfirmDeleteSelfAssessment' => '¿Eliminar esta autoevaluación? Esta acción es irreversible.',
+    'ConfirmCompleteSelfAssessment' => '¿Marcar esta evaluación como completada? Se generarán riesgos a partir de controles fallidos.',
+    'NoSelfAssessmentsYet' => 'Aún no hay autoevaluaciones. Inicie una para comenzar.',
+    'RequestFailed' => 'No se pudo completar la solicitud. Inténtelo de nuevo.',
+    'NoPendingRisks' => 'No hay riesgos pendientes. Complete la evaluación para generar riesgos derivados de controles fallidos.',
+    'NoFailedControls' => 'No hay resultados de control para mostrar para este filtro.',
+    'ControlResultsTruncated' => 'Mostrando los 2000 resultados más recientes. Ajuste el filtro para ver más.',
+    'GeneratedFromSelfAssessment' => 'Generado a partir de la autoevaluación',
+    'SelfAssessmentMitigationSolution' => 'Implemente los controles que se indican a continuación, los cuales se identificaron como deficientes durante esta autoevaluación, para mitigar este riesgo.',
+    'NSelected' => '{n} seleccionado',
+    'FilterByControl' => 'Filtrar por control',
+    'Pushing' => 'Enviando…',
+    'Deleting' => 'Eliminando…',
+    'ConfirmPushSelectedPendingRisks' => '¿Añadir los {n} riesgos pendientes seleccionados a riesgos?',
+    'ConfirmDeleteSelectedPendingRisks' => '¿Eliminar los {n} riesgos pendientes seleccionados? Esta acción no se puede deshacer.',
+    'ConfirmDeleteSelectedSelfAssessments' => '¿Eliminar la(s) autoevaluación(es) {n} seleccionada(s)? Esta acción no se puede deshacer.',
+    'BulkPartialFailure' => '{n} de {total} elementos se procesaron correctamente; el resto falló. Actualice la página para ver el estado actual.',
+
+    // Workflows Extra - deactivation confirm ('Deactivate' at line 480 is reused as-is)
+    'WorkflowsExtraDeactivateConfirm' => '¿Desactivar la función adicional de flujos de trabajo? Todas las definiciones de flujo de trabajo creadas por el usuario se eliminarán permanentemente. Los flujos de trabajo del sistema se conservarán.',
+    'HomeKpiOpenRisks' => 'Riesgos Abiertos',
+    'HomeKpiNeedsReview' => 'Requiere revisión',
+    'HomeKpiUnmitigated' => 'No mitigado',
+    'HomeKpiClosedRisks' => 'Riesgos Cerrados',
+    'HomeKpiControlPassRate' => 'Tasa de aprobación del control',
+    'HomeKpiFailingControls' => 'Controles defectuosos',
+    'HomeKpiOpenAudits' => 'Auditorías abiertas',
+    'HomeKpiTestsDueSoon' => 'Próximamente se realizarán las pruebas.',
+    'HomeKpiActiveFrameworks' => 'Frameworks activos',
+    'HomeKpiTotalControls' => 'Controles totales',
+    // Home dashboard — What's Next feed
+    'WhatsNext' => '¿Qué sigue?',
+    'WhatsNextAllCaughtUp' => 'Ya estás al día.',
+    'WhatsNextRegisterInstance' => 'Registre su instancia de SimpleRisk',
+    'WhatsNextSubmitFirstRisk' => 'Presenta tu primer riesgo',
+    'WhatsNextLoadFramework' => 'Cargar un marco de control',
+    'WhatsNextUnreviewedRisks' => 'Riesgos a revisar',
+    'WhatsNextUnmitigatedRisks' => 'Riesgos a mitigar',
+    'WhatsNextInitiateAudits' => 'Auditorías para iniciar',
+    // Home dashboard — widget picker type labels
+    'WidgetType_kpi' => 'Mosaico KPI',
+    'WidgetType_whats_next' => 'Lista',
+    // Home dashboard — hub catalog entry
+    'HomeDashboard' => 'Inicio',
+    'HomeDashboardDesc' => 'Su punto de partida: indicadores clave y pasos a seguir, todo de un vistazo.',
+    'HomeChartRiskByLevel' => 'Riesgo por nivel',
+    'HomeKpiThisMonth' => 'este mes',
+    'HomeKpiNoChange' => 'Sin cambios',
+    'EditLayout' => 'Editar diseño',
+    'ListHighestRisks' => 'Mis mayores riesgos',
+    'ListPastDueReviews' => 'Revisiones vencidas',
+    'ListUpcomingTests' => 'Próximas pruebas',
+    'ListRecentFailures' => 'Fallos recientes',
+    'ListPoliciesReview' => 'Documentos sujetos a revisión',
+    'ListExpiringExceptions' => 'Excepciones que caducan',
+    'ImKpiOpenIncidents' => 'Total abiertos',
+    'ImKpiOverdue' => 'Atrasado',
+    'ImKpiMttr30' => 'Resolución media',
+    'ImKpiMttrQuarter' => 'Resolución promedio (90 días)',
+    'ImKpiMttrYear' => 'Resolución promedio (1 año)',
+    'ImKpiMttrAll' => 'Resolución promedio (total)',
+    'ImKpiResolved30' => 'Resuelto',
+    'ImChartBySeverity' => 'Por gravedad',
+    'ImChartByStatus' => 'Por estado',
+    'ImListRecent' => 'Incidentes recientes',
+    'ImListUnassigned' => 'Incidentes no asignados',
+    'HomeKpiOpenExceptions' => 'Excepciones abiertas',
+    'HomeKpiPolicies' => 'Políticas',
+    'ResolutionTargets' => 'Plazos de resolución (días)',
+    'ResolutionTargetsHelp' => 'El número de días que un incidente puede permanecer abierto antes de que se considere vencido.',
+    'DefaultTarget' => 'Predeterminado',
+    'PerSeverityOverrideHelp' => 'Opcionalmente, puede anular el valor predeterminado para niveles de gravedad específicos (deje este campo en blanco para usar el valor predeterminado):',
+    'ResolutionTargetUsesDefault' => 'Predeterminado (%d)',
+    'SeverityColors' => 'Colores de gravedad',
+    'SeverityColorsHelp' => 'El color que indica cada nivel de gravedad se muestra en el panel de control de incidentes y en la página de detalles del incidente.',
+    'Editing' => 'Edición',
+    'SetAsDefaultForEveryone' => 'Establecer como predeterminado para todos',
+    'EditLayoutHint' => 'Arrastra una ficha para moverla · arrastra un borde para cambiar el tamaño · ✕ para eliminarla',
+    'RemoveWidget' => 'Eliminar widget',
+    'AddWidget' => 'Agregar widget',
+    'AddToDashboard' => 'Agregar al panel de control',
+    'AllWidgetsAdded' => 'Todos los widgets disponibles se encuentran en este panel de control.',
+    'AddText' => 'Agregar texto',
+    'GettingStarted' => 'Empezando',
+    'GettingStartedTitle' => 'Bienvenido a SimpleRisk',
+    'GettingStartedSubtitle' => 'Unos sencillos pasos para sacar el máximo partido a SimpleRisk.',
+    'GSProgressCount' => '{done} de {total} completo',
+    'GSNextUp' => 'A continuación',
+    'GSArea_setup' => 'Configuración',
+    'GSArea_risk' => 'Riesgo',
+    'GSArea_assessment' => 'Evaluación',
+    'GSArea_compliance' => 'Cumplimiento',
+    'GSArea_assets' => 'Activos',
+    'GSArea_ai' => 'Configuración',
+    'GSHide' => 'Ocultar Primeros pasos',
+    'GSDismissStep' => 'Descartar este paso',
+    'GSAllSet' => '¡Ya está todo listo! ¡Buen trabajo!',
+    'GSWalkthrough' => 'Recorrido de 30 minutos',
+    'Explore' => 'Explorar',
+    'Learn' => 'Aprender',
+    'AdminGuide' => 'Guía del administrador',
+    'LearnMore' => 'Más información',
+    'GSRegisterTitle' => 'Registra tu instancia',
+    'GSRegisterDesc' => 'Active el soporte y las actualizaciones con su clave de licencia.',
+    'GSRegisterCta' => 'Registrarse',
+    'GSScfTitle' => 'Instale el marco de controles seguros.',
+    'GSScfDesc' => 'Instale SCF: su biblioteca de control compatible con diversos estándares.',
+    'GSScfCta' => 'Instalar SCF',
+    'GSInviteTitle' => 'Invita a tu equipo',
+    'GSInviteDesc' => 'Agrega a tus compañeros para que puedan asignar y revisar el trabajo.',
+    'GSInviteCta' => 'Agregar usuarios',
+    'GSAiTitle' => 'Configurar IA',
+    'GSAiDesc' => 'Mejora tu experiencia con SimpleRisk gracias a la inteligencia artificial.',
+    'GSAiCta' => 'Configurar la IA',
+    'GSSubmitRiskTitle' => 'Presenta tu primer riesgo',
+    'GSSubmitRiskDesc' => 'Identifique un riesgo al que se enfrenta su organización.',
+    'GSSubmitRiskCta' => 'Enviar riesgo',
+    'GSMitigateTitle' => 'Planificar una mitigación',
+    'GSMitigateDesc' => 'Agregue un plan de mitigación a un riesgo abierto.',
+    'GSMitigateCta' => 'Planificar medidas de mitigación',
+    'GSReviewTitle' => 'Realizar una revisión de riesgos',
+    'GSReviewDesc' => 'Analizar un riesgo y decidir el siguiente paso a seguir.',
+    'GSReviewCta' => 'Realizar revisión',
+    'GSDefineTestTitle' => 'Defina una prueba de control',
+    'GSDefineTestDesc' => 'Configurar cómo se prueba un control.',
+    'GSDefineTestCta' => 'Definir prueba',
+    'GSInitiateAuditTitle' => 'Iniciar una auditoría',
+    'GSInitiateAuditDesc' => 'Iniciar un ciclo de pruebas o auditorías.',
+    'GSInitiateAuditCta' => 'Iniciar auditoría',
+    'GSAssetTitle' => 'Añade tus activos',
+    'GSAssetDesc' => 'Haz un inventario de los activos que estás protegiendo.',
+    'GSAssetCta' => 'Agregar activos',
+    'GSInvalidStep' => 'Paso de inicio no válido.',
+    'GSPagerLabel' => '{from}–{to} de {total}',
+    'GSPrevCards' => 'Mostrar pasos anteriores',
+    'GSNextCards' => 'Mostrar los siguientes pasos',
+    'WhatsNextInstallSCF' => 'Instale el marco de controles seguros.',
+    'GSActivateScfTitle' => 'Active el marco de controles seguros.',
+    'GSActivateScfDesc' => 'Active la biblioteca SCF instalada para cargar sus controles en su biblioteca.',
+    'GSActivateScfCta' => 'Activar SCF',
+    'WhatsNextActivateSCF' => 'Active el marco de controles seguros.',
+    'GSEnableFrameworksTitle' => 'Habilitar los marcos de trabajo aplicables',
+    'GSEnableFrameworksDesc' => 'Active los marcos de trabajo SCF que sean aplicables a su organización.',
+    'GSEnableFrameworksCta' => 'Habilitar marcos',
+    'WhatsNextEnableFrameworks' => 'Habilitar los marcos de trabajo aplicables',
+    'GSSelfAssessTitle' => 'Realiza una autoevaluación',
+    'GSSelfAssessDesc' => 'Evalúe su organización comparándola con más de 250 marcos de referencia y genere riesgos derivados de controles fallidos.',
+    'GSSelfAssessCta' => 'Iniciar evaluación',
+    'WhatsNextTakeSelfAssessment' => 'Realiza una autoevaluación',
+    'WhatsNextConfigureAI' => 'Configurar IA',
+    'ListUnreviewedRisks' => 'Riesgos no evaluados',
+    'ControlsByDomain' => 'Controles por dominio',
+    'ControlsByClass' => 'Controles por clase',
+    'ControlsByPhase' => 'Controles por fase',
+    'ControlsByPriority' => 'Controles por prioridad',
+    'ControlsByCurrentMaturity' => 'Controles por madurez actual',
+    'ControlStatusOverTime' => 'Estado del control a lo largo del tiempo',
+    'ComplianceTotalControls' => 'Controles totales',
+    'HomeKpiOverdueTests' => 'Pruebas pendientes',
+    'Total' => 'Total',
+    'StartTheTest' => 'Iniciar la prueba',
+    'TestStartsAutomatically' => 'La prueba comienza automáticamente',
+    'GoToTest' => 'Ir a la prueba',
+    'NotTested' => 'No probado',
+    'PassingPercent' => 'Porcentaje de aprobados',
+    'ListFailingControls' => 'Controles defectuosos',
+    'Exceptions' => 'Excepciones',
+    'Documents' => 'Documentos',
+    'ControlsBelowMaturity' => 'Controles por debajo del nivel de madurez',
+    'ControlsAtMaturity' => 'Controles en la madurez',
+    'ControlsAboveMaturity' => 'Controles por encima del punto de madurez',
+    'Maturity' => 'Madurez',
+    'AllTime' => 'Todos los tiempos',
+    'Last7Days' => 'Últimos 7 días',
+    'Last30Days' => 'Últimos 30 días',
+    'Last90Days' => 'Últimos 90 días',
+    'YearToDate' => 'El año hasta la fecha',
+    'CustomRange' => 'Rango personalizado',
+    'Age' => 'Antigüedad',
+    'ImOpenIncidents' => 'Incidentes abiertos',
+    'ImClosedIncidents' => 'Incidentes cerrados',
+    'ImByAttackVector' => 'Abiertos por fuente',
+    'ImBySource' => 'Abierto por código fuente',
+    'AverageDaysToDetect' => 'Días promedio para detectar',
+    'ImKpiAvgTtd' => 'Detección promedio',
+    'Days' => 'Días',
+    'ImKpiCriticalOpen' => 'Críticos abiertos',
+    'ImKpiResolvedInSla' => 'Resuelto en el SLA',
+    'Events' => 'Eventos',
+    'ImEventsIncidents' => 'Eventos e incidentes',
+    'ImSourceBreakdown' => 'Fuente por categoría',
+    'ImClosureSummary' => 'Resumen de cierre',
+    'ImSignalQuality' => 'Calidad de la señal',
+    'ImSignalLowSample' => 'No hay suficientes cierres judiciales para realizar una evaluación fiable.',
+    'ImportExportExportPdf' => 'Exportar PDF',
+    'ImportExportExporting' => 'Preparando PDF…',
+    'ImportExportExportFailed' => 'No se pudo generar el PDF. Inténtelo de nuevo.',
+    'ImportExportGeneratedOn' => 'Generado',
+    'ImportExportPage' => 'Página',
+    'ImportExportPageOf' => 'de',
+    'ResolutionTargetsUpdated' => 'Se actualizaron los objetivos de resolución según la gravedad.',
+    'SeverityColorsUpdated' => 'Se actualizaron los colores de gravedad.',
+    // AI Capabilities Catalog + AI settings hub (unified AI settings)
+    'AICapGrcRecommendations' => 'Recomendaciones del marco GRC',
+    'AICapGrcRecommendationsDesc' => 'Recomendaciones de marco de trabajo generadas por IA y un resumen ejecutivo, adaptados al contexto de su organización.',
+    'AICapRiskRecommendations' => 'Recomendaciones de riesgo',
+    'AICapRiskRecommendationsDesc' => 'Sugerencias específicas para cada riesgo, que incluyen detalles y medidas de mitigación, generadas a partir del riesgo, su mitigación y su revisión.',
+    'AICapFairAnalysis' => 'Análisis cuantitativo FAIR',
+    'AICapFairAnalysisDesc' => 'La IA estima los parámetros de pérdida Beta-PERT; SimpleRisk ejecuta un modelo de Monte Carlo de 10.000 iteraciones para cuantificar el riesgo en dólares.',
+    'AICapDocumentCustomization' => 'Personalización de documentos',
+    'AICapDocumentCustomizationDesc' => 'Rellena los marcadores de posición y limpia el texto de las políticas en tus plantillas de documentos para que una política estándar parezca escrita por ti.',
+    'AICapDocumentControlMatching' => 'Documento ↔ Control de coincidencia',
+    'AICapDocumentControlMatchingDesc' => 'Asigna automáticamente los controles a los documentos de política con una puntuación de confianza y una justificación que usted puede revisar.',
+    'AICapDocumentTemplates' => 'Biblioteca de plantillas de documentos',
+    'AICapDocumentTemplatesDesc' => 'Instale plantillas de políticas, directrices y procedimientos seleccionadas de la biblioteca de SimpleRisk.',
+    'AICapControlReferenceEnhancement' => 'Mejora de la referencia de control',
+    'AICapControlReferenceEnhancementDesc' => 'Investiga el texto de control textualmente mediante búsquedas en la web para enriquecer tus referencias de control.',
+    'AICapAiChat' => 'Asistente de chat',
+    'AICapAiChatDesc' => 'Un asistente de GRC que responde preguntas en contexto en cualquier parte de SimpleRisk.',
+    'AICapSurfacedRecommendations' => 'Página de Inteligencia Artificial',
+    'AICapSurfacedRiskView' => 'Análisis de riesgos: detalles y mitigación',
+    'AICapSurfacedFairTab' => 'Vista de riesgos — pestaña FAIR',
+    'AICapSurfacedDocuments' => 'Gobernanza — Documentos',
+    'AICapSurfacedControls' => 'Cumplimiento — Controles',
+    'AICapSurfacedEveryPage' => 'Cada página: asistente flotante',
+    'AICapabilitiesCatalog' => 'Capacidades',
+    'AICapSearchPlaceholder' => 'Capacidades de IA de búsqueda…',
+    'AICapFilterDomain' => 'Dominio',
+    'AICapFilterTier' => 'Nivel',
+    'AICapFilterState' => 'Estado',
+    'AICapTierExtra' => 'IA Extra',
+    'AICapStateLocked' => 'Bloqueado',
+    'AICapIncludedInExtra' => 'Incluido en el extra de IA',
+    'AICapPurchaseExtra' => 'Adquiera el complemento de IA',
+    'AICapNeedsProvider' => 'Requiere configuración del proveedor',
+    'AICapNoMatch' => 'No se encontraron coincidencias de capacidades.',
+    'AICapNoMatchHint' => 'Pruebe con un dominio, nivel o término de búsqueda diferente.',
+    'AICapCountSingular' => 'capacidad',
+    'AICapCountPlural' => 'capacidades',
+    'DomainAssistant' => 'Asistente',
+    'AICapLoadError' => 'No se pudieron cargar las funciones de IA. Inténtalo de nuevo.',
+    'AIProviderConfigSubtitle' => 'Conecte SimpleRisk a un proveedor de IA para potenciar sus capacidades de inteligencia artificial.',
+    'AIHowToGetAPIKeyFor' => 'Cómo obtener una clave API para',
+    'AIExtraNotActivated' => 'No activado',
+    'AIExtraValueProp' => 'Inteligencia artificial mejorada: cuantificación de riesgos FAIR, asistencia para la documentación y el control, y asistente de chat con IA.',
+    'AICtxOrgName' => '¿Cuál es el nombre de su organización?',
+    'AICtxOrgSizeEmployees' => '¿Cuántos empleados tiene su organización?',
+    'AICtxOrgSizeRevenue' => '¿Cuáles son los ingresos anuales de su organización?',
+    'AICtxOrgObjective' => '¿Cuáles son los principales objetivos comerciales y metas estratégicas de su organización?',
+    'AICtxOrgIndustry' => '¿Cuál es la industria o sector principal de su organización?',
+    'AICtxOrgLocation' => '¿En qué países o regiones opera su organización?',
+    'AICtxOrgType' => '¿Qué tipo de organización son ustedes?',
+    'AICtxDataTypes' => '¿Qué tipos de datos recopila, procesa o almacena su organización (por ejemplo, datos personales, datos financieros, información de salud)?',
+    'AICtxDataCustomers' => '¿Quiénes son sus principales clientes o partes interesadas (por ejemplo, consumidores, empresas, entidades gubernamentales)?',
+    'AICtxDataRegulatory' => '¿Está usted sujeto a algún requisito normativo específico en su sector?',
+    'AICtxDataThirdParties' => '¿Tiene usted relaciones con terceros o servicios subcontratados que requieran supervisión del cumplimiento normativo?',
+    'AICtxMaturityIssues' => '¿Ha experimentado algún problema significativo de cumplimiento normativo, fallos de seguridad o incidentes de riesgo en los últimos 3 a 5 años?',
+    'AICtxMaturityConcerns' => '¿Ha identificado alguna área específica de preocupación o mejora en sus procesos actuales de GRC?',
+    'AICtxMaturityAppetite' => '¿Cuál es el nivel de riesgo aceptable y tolerante de su organización?',
+    'AICtxMaturityLevel' => '¿Cuál es su nivel de madurez actual en términos de gobernanza, gestión de riesgos y prácticas de cumplimiento normativo?',
+    'AICtxImplementationChanges' => '¿Existen cambios previstos en su modelo de negocio, infraestructura tecnológica o mercado que puedan afectar a sus necesidades de cumplimiento normativo?',
+    'AICtxImplementationResourcesBudget' => '¿De qué recursos presupuestarios dispone para implementar y mantener los marcos de cumplimiento normativo?',
+    'AICtxImplementationResourcesPersonnel' => '¿Qué recursos humanos tiene disponibles para implementar y mantener los marcos de cumplimiento normativo?',
+    'AICtxImplementationResourcesTechnology' => '¿Qué recursos de infraestructura tecnológica tiene disponibles para implementar y mantener marcos de cumplimiento normativo?',
+    'AICtxImplementationResourcesTraining' => '¿Qué recursos de formación y desarrollo tienen disponibles para implementar y mantener marcos de cumplimiento normativo?',
+    'AICtxImplementationResourcesExternal' => '¿Qué recursos de apoyo externos tienen disponibles para la implementación y el mantenimiento de marcos de cumplimiento normativo?',
+    'AIAPIKeySecurityNote' => 'Tu clave se almacena en el servidor y nunca se envía al navegador. Las URL de los proveedores se validan con una lista de permitidos SSRF configurable en el archivo config.php.',
+    'AIContextEgressWarning' => 'Tus respuestas se envían a tu proveedor de IA configurado para que este base sus recomendaciones. No incluyas nada que no compartirías con ellos.',
+    'Provider' => 'Proveedor',
+    'AIProviderURLHostNotAllowed' => 'El host "%s" no está en la lista de proveedores de IA permitidos. Agréguelo a $ai_allowed_provider_hosts en config.php y luego guarde. (Los proveedores de IA conocidos y las direcciones de bucle invertido 127.0.0.1 siempre están permitidos).',
+    'AIContextLastSaved' => 'Última vez guardado',
+    'AIContextNeverSaved' => 'Aún no se ha guardado',
+    'AICtxCardSubtitle' => '21 preguntas repartidas en cuatro áreas. Cuantas más respuestas proporcione, más precisas serán las recomendaciones.',
+    'AICtxAnswered' => '%1$d de %2$d respondido',
+    'AICtxAllOptional' => 'Opcional',
+    'AIContextSaving' => 'Guardando…',
+    'AIContextSaveFailed' => 'No se pudieron guardar los cambios. Inténtalo de nuevo.',
+    'AISettingsSavedNotReachable' => 'Se guardaron los ajustes de IA, pero no se pudo acceder al proveedor. Asegúrese de que esté en funcionamiento y de que la URL sea correcta.',
+    'AISettingsSavedKeyRequired' => 'Se han guardado los ajustes de IA, pero este proveedor requiere una clave API antes de poder utilizar sus funciones.',
+    'TestAndSave' => 'Prueba y guarda',
+    'AICapEnableAll' => 'Habilitar todo',
+    'AICapDisableAll' => 'Deshabilitar todo',
+    'AISettingsSavedConnected' => 'Configuración de IA guardada: conexión exitosa.',
+    'AISettingsSavedNotConnected' => 'Se guardaron los ajustes de IA, pero la prueba de conexión falló. Compruebe el modelo, la clave y la URL.',
+    'AIProviderURLNotOnAllowlist' => 'Este host no está en la lista de permitidos SSRF del proveedor de IA. Agréguelo a $ai_allowed_provider_hosts en config.php antes de que se pueda guardar.',
+    'Connected' => 'Conectado',
+    'NotConnected' => 'No conectado',
+    'AICapBulkError' => 'No se pudieron actualizar algunas funciones. Inténtelo de nuevo.',
+    'QuestionnaireAlreadyCompleted' => 'Este cuestionario ya ha sido completado.',
+    'QuestionnaireDraftError' => 'Error al guardar el borrador. Consulte la consola para obtener más detalles.',
+
+    // Audit cadence scheduling - Define Test modal (Interval/Calendar schedule redesign)
+    // 'Overdue' duplicates the English of 'ImKpiOverdue' on purpose: that key is
+    // an Incident Management KPI label, and a compliance status pill reusing an
+    // IM-scoped key would couple the two domains for a translator (and break the
+    // moment either wording moves). This is the generic, cross-domain one.
+    'Overdue' => 'Atrasado',
+    // Deliberate: the only other key rendering 'Manual' is 'ManualValuation',
+    // an asset-valuation label. Pointing a schedule mode at it would couple two
+    // unrelated domains for translators and break the moment either reworded.
+    'ScheduleManual' => 'Manual',
+    'ScheduleInterval' => 'Intervalo',
+    'ScheduleCalendar' => 'Calendario',
+    'Cadence' => 'Cadencia',
+    'CadenceBiweekly' => 'Quincenal',
+    'CadenceSemiAnnually' => 'Semestralmente',
+    'AnchorDate' => 'Fecha de anclaje',
+    'UpcomingOccurrences' => 'Próximos eventos',
+    'AuditLeadInDays' => 'Días de preparación para la auditoría',
+    'SkipOccurrence' => 'Saltar',
+    'OverrideDate' => 'Fecha de anulación',
+    'Week' => 'Semana',
+    'NoUpcomingOccurrences' => 'No hay eventos programados en este período.',
+    'FailedToLoadUpcomingOccurrences' => 'No se pudo cargar la vista previa de los próximos eventos.',
+    'AnchorDateMustBeTodayOrLater' => 'La fecha de referencia debe ser hoy o posterior. Para programar una fecha anterior, cree una prueba manual.',
+    'InvalidScheduleType' => 'Tipo de programación no válido. Valores permitidos: Manual, Intervalo, Calendario.',
+    'Weeks' => 'Semanas',
+    'Months' => 'Meses',
+    'Years' => 'Años',
+    'ScheduleSummaryEvery' => 'Cada {$interval} {$unit}',
+
+    // Define Tests redesign - client-rendered grid (Phase 1, Task 6)
+    'LastResult' => 'Último resultado',
+    'NextDue' => 'Próximo vencimiento',
+    'DueSoon' => 'Próximamente',
+    'Retired' => 'Retirado',
+    'MyTests' => 'Mis pruebas',
+    'Failing' => 'Fallando',
+    'Untested' => 'Sin probar',
+    'ShowRetired' => 'Mostrar retirado',
+    'Tests' => 'Pruebas',
+    'NoTestsForThisControl' => 'Aún no se han realizado pruebas para este control.',
+    'NoControlsDefinedYet' => 'Aún no se han definido los controles.',
+    'NoControlsDefinedYetBody' => 'Defina los controles en la gobernanza antes de agregar pruebas.',
+    'NoTestsMatchFilters' => 'No hay pruebas que coincidan con sus filtros.',
+    'NoTestsMatchFiltersBody' => 'Intenta ajustar tu búsqueda o filtros.',
+    'CouldNotLoadTests' => 'No se pudieron cargar las pruebas',
+    'CouldNotLoadTestsBody' => 'Algo salió mal. Tus datos están a salvo; intenta actualizar la página.',
+    'ShowingXToYOfZ' => 'Mostrando {$start}–{$end} de {$total}',
+    // Define Tests grid -- SCF-mapping + read-only procedure expand (Phase 1, Task 7)
+    'Reference' => 'Referencia',
+    'NoFrameworksMapped' => 'No se ha asignado ningún marco de trabajo a este control.',
+    // Define Tests grid -- batch select + retire/delete + quick filters (Phase 1, Task 8)
+    'Retire' => 'Retirar',
+    'ReassignTester' => 'Reasignar probador',
+    'SetSchedule' => 'Establecer horario',
+    'ConfirmRetireSelectedTests' => '¿Retirar la(s) prueba(s) {n} seleccionada(s)?',
+    'ConfirmDeleteSelectedTests' => '¿Eliminar la(s) prueba(s) {n} seleccionada(s)? Esto no se puede deshacer.',
+    // Define Tests grid -- Coverage toolbar select (Issue 4)
+    'Coverage' => 'Cobertura',
+    'CoverageWithTests' => 'Controles con pruebas',
+    'CoverageAllControls' => 'Todos los controles',
+    'CoverageGaps' => 'Brechas',
+    // Define Tests insights band (Phase 2, Task 4) -- KPI tile labels + subtitles.
+    // 'Overdue', 'DueSoon', and 'Failing' are reused from the grid's quick-filter
+    // chips above (identical text) rather than duplicated here.
+    'DtTotalTests' => 'Pruebas totales',
+    'DtCoverageGaps' => 'Lagunas en la cobertura',
+    'DtAcrossNControls' => 'En {$n} controles',
+    'DtControlsWithNoTest' => 'Controles sin prueba',
+    'DtNeedInitiationNow' => 'Necesitan iniciarse ahora',
+    'DtWithinLeadInWindow' => 'Dentro del período de introducción',
+    'DtLastResultFailed' => 'El último resultado falló.',
+    'InvalidTestMethod' => 'El método de prueba debe ser uno de los siguientes: Indagación, Observación, Inspección o Repetición.',
+    'TesterCannotBeApprover' => 'El evaluador no puede figurar también como aprobador de esta prueba.',
+    'ApproverNotEligible' => 'Uno o más aprobadores seleccionados no tienen la responsabilidad de "Aprobar pruebas".',
+    'TestMethod' => 'Método de prueba',
+    'TestMethodInquiry' => 'Consulta',
+    'TestMethodObservation' => 'Observación',
+    'TestMethodInspection' => 'Inspección',
+    'TestMethodReperformance' => 'Repetición de procedimiento',
+    'Sample' => 'Muestra',
+    'RequiredEvidence' => 'Evidencia requerida',
+    'Approvers' => 'Aprobadores',
+    'AuditLog_TestAuditApproved' => 'La auditoría "{$test_audit_name}"(ID: {$test_audit_id}) fue aprobada por el usuario "{$user_name}".',
+    'AuditLog_TestAuditRejected' => 'La auditoría "{$test_audit_name}"(ID: {$test_audit_id}) fue rechazada por el usuario "{$user_name}" con el comentario "{$comment}".',
+    'AuditLog_TestAuditAwaitingApproval' => 'La auditoría "{$test_audit_name}"(ID: {$test_audit_id}) fue enviada para su cierre por el usuario "{$user_name}" y está pendiente de aprobación. Cambios: {$changes}.',
+    'AuditApproved' => 'La auditoría fue aprobada satisfactoriamente.',
+    'AuditRejected' => 'La auditoría fue rechazada satisfactoriamente.',
+    'RejectCommentRequired' => 'Se requiere un comentario para rechazar una auditoría.',
+    'NotAnApproverOfThisAudit' => 'Usted no es un aprobador configurado para esta auditoría.',
+    'ApproverCannotBeTester' => 'La persona que aprueba la auditoría no puede ser también quien la realiza.',
+    'AuditNotAwaitingApproval' => 'Esta auditoría no está pendiente de aprobación en este momento.',
+    'NotificationAuditAwaitingApprovalTitle' => 'Auditoría pendiente de su aprobación',
+    'NotificationAuditAwaitingApprovalBody' => 'La auditoría "{$test_audit_name}" ha sido enviada para su cierre y está pendiente de su aprobación.',
+    'NotificationAuditRejectedTitle' => 'Auditoría rechazada',
+    'NotificationAuditRejectedBody' => 'La auditoría "{$test_audit_name}" fue rechazada con el comentario: "{$comment}"',
+    'AwaitingApproval' => 'En espera de aprobación',
+    'AwaitingApprovalBannerText' => 'Esta auditoría se ha presentado para su cierre y está pendiente de aprobación por parte de un aprobador designado antes de poder cerrarse.',
+    'ReturnedForRework' => 'Devuelto para ser reacondicionado.',
+    'ReturnedForReworkBannerText' => 'Esta auditoría fue rechazada y devuelta para su revisión.',
+    'RejectReason' => 'Motivo del rechazo',
+    'AreYouSureYouWantToApproveThisAudit' => '¿Está seguro de que desea aprobar esta auditoría?',
+    'AtLeastOneControlRequired' => 'Se requiere al menos un control.',
+    'DtNCommonAcrossNControls' => '{$common} común · {$n} controles',
+    'DtUntestedControls' => 'Controles no probados',
+    'DtControlsInScopeNoCoverage' => 'Sin cobertura',
+    'Passing' => 'Aprobado',
+    'DtLastResultPassed' => 'Último resultado aprobado',
+    'AllFamilies' => 'Todas las familias',
+    'SearchTestsPlaceholder' => 'Pruebas, controles y marcos de búsqueda',
+    'AnySchedule' => 'Cualquier horario',
+    'AnyTag' => 'Cualquier etiqueta',
+    'AuditAutoClosedTestRetired' => 'Se cerró automáticamente como inconcluso porque la prueba se suspendió.',
+    'Common' => 'Común',
+    'ValidatesAcrossMappedFrameworks' => 'Valida en todos los marcos de trabajo mapeados.',
+    'EditTest' => 'Editar prueba',
+    'ControlHasNoTestCoverage' => 'Este control incluido en el alcance aún no tiene cobertura de prueba.',
+    'AddTheFirstTest' => 'Añade la primera prueba',
+    'ApplyCommonTestHint' => 'Aplique una o más pruebas existentes a este control. Cada prueba conserva sus controles actuales y se convierte en una prueba común que también cubre este.',
+    'CommonTestApplied' => 'Prueba aplicada a este control.',
+    'CouldNotApplyCommonTest' => 'No se pudo aplicar la prueba a este control.',
+    'SelectOneOrMoreTests' => 'Seleccione una o más pruebas',
+    'CommonTestsApplied' => '{n} pruebas aplicadas a este control.',
+    'ApplyCommonTests' => 'Aplicar pruebas comunes…',
+    'History' => 'Historia',
+    'Result' => 'Resultado',
+    'Approval' => 'Aprobación',
+    'ThisTestHasNotBeenRunYet' => 'Esta prueba aún no se ha realizado.',
+    'CouldNotLoadTestHistory' => 'No se pudo cargar el historial de esta prueba.',
+    'Identity' => 'Identidad',
+    'IdentitySectionHint' => 'Nombre, evaluador y controles que valida',
+    'WhenTheAuditInitiates' => 'Cuando se inicia la auditoría',
+    'ProcedureAndEvidence' => 'Procedimiento y evidencia',
+    'CommonTestControlsHint' => 'Una sola prueba puede validar muchos controles; es una prueba común. Al abrirla desde el botón "+ Agregar prueba" de un control, se preselecciona aquí.',
+    'SeparationOfDutiesNote' => 'Separación de funciones: quien aprueba no puede ser también quien realiza las pruebas.',
+    'CommonTestEditScopeHint' => 'Los cambios se aplican en todos los lugares donde se utiliza esta prueba común.',
+    'Mode' => 'Modo',
+    'AddOrRemove' => 'Agregar o eliminar…',
+    'AddOrSearchTags' => 'Agregar o buscar etiquetas…',
+    'CreateTagX' => 'Crear “{tag}”',
+    'Archived' => 'Archivado',
+    'ShowAllTests' => 'Todas las pruebas',
+    'ShowActiveTests' => 'Pruebas activas',
+    'ShowRetiredTests' => 'Pruebas retiradas',
+    'UntestedControls' => 'Controles no probados',
+    'OverdueByXDays' => 'Vencido · {n} días',
+    'OverdueByOneDay' => 'Vencido · 1 día',
+    'DueInXDays' => 'Vencimiento en {n} días',
+    'DueTomorrow' => 'Vence mañana',
+    'DueToday' => 'Vence hoy',
+    'ScheduledForX' => 'Programado · {date}',
+    'AllTesters' => 'Todos los evaluadores',
+    'AllStatuses' => 'Todos los estados',
+    'OnTrack' => 'En buen camino',
+    'NextTestDateDerivedHint' => 'Calculado a partir de la fecha de la última prueba más la frecuencia de las pruebas. Establezca una frecuencia para programarla automáticamente, o deje la frecuencia en blanco para establecer esta fecha manualmente.',
+    'DueStatus' => 'Estado de vencimiento',
+    'AllResults' => 'Todos los resultados',
+    // Remove a test from one control (Define Tests grid unlink row action)
+    'RemoveFromThisControl' => 'Eliminar de este control',
+    'RemoveTestFromControl' => 'Eliminar la prueba del control',
+    'RemoveTestFromControlConfirm' => '¿Eliminar "{test_name}" de {control_name}?',
+    'RemoveTestFromControlStays' => 'La prueba permanece en sus {n} otros controles. No se elimina nada.',
+    'RemoveTestFromControlStaysOne' => 'La prueba permanece en su otro control. No se elimina nada.',
+    'CannotRemoveTestsOnlyControl' => 'Una prueba debe pertenecer al menos a un control. En su lugar, retire o elimine la prueba.',
+    'TestRemovedFromControl' => 'La prueba fue retirada del grupo de control.',
+    'CouldNotRemoveTestFromControl' => 'La prueba no pudo ser retirada del control.',
+    'TestRemovedFromControlAuditLogMessage' => 'La prueba "{$test_name}"(ID: {$test_id}) fue eliminada del control (ID: {$control_id}) por el usuario "{$user}".',
+    'DeleteTestUsedByNControls' => 'Es utilizado por los controles {n} y será eliminado de todos ellos.',
+    'BulkDeleteSharedTestsNote' => '{n} de estos son utilizados por otros controles y también serán eliminados de ellos.',
+    'BulkRetireSharedTestsNote' => '{n} de estos son utilizados por otros controles y también serán retirados allí.',
+    'BulkDeleteOneSharedTestNote' => 'Uno de ellos lo utilizan otros controles y también se eliminará de ellos.',
+    'BulkRetireOneSharedTestNote' => 'Uno de ellos lo utilizan otros sistemas de control y también se retirará de ellos.',
+    'CouldNotLoadTest' => 'No se pudo cargar esta prueba.',
+    'Expand' => 'Expandir',
+    'SearchMappings' => 'Marcos de búsqueda y referencias',
+    'NoMatchingMappings' => 'No se encontraron coincidencias para esa búsqueda.',
+    'Insights' => 'Perspectivas',
+    'ShowInsights' => 'Mostrar los mosaicos de información',
+    'HideInsights' => 'Colapsa los mosaicos de información en una línea de resumen.',
+    'ChooseControls' => 'Seleccionar controles',
+    'UseTheseControls' => 'Utilice estos controles',
+    'SearchControlsPlaceholder' => 'Buscar por número o nombre',
+    'PickerKeyboardHint' => 'Arriba/abajo para mover, Enter para seleccionar, Esc para cancelar',
+    'NoControlsMatchFilters' => 'Aquí no hay coincidencias. Amplíe el campo un paso a la izquierda o borre la búsqueda.',
+    'NoControlsSelectedYet' => 'Aún no se ha seleccionado nada.',
+    'AllControls' => 'Todos los controles',
+    'AddOrRemoveControls' => 'Agregar o eliminar controles…',
+    'LastTested' => 'Última prueba realizada',
+    'LastTestDateAnchorHint' => 'Anclas de programación de intervalos (esta fecha más la frecuencia). Una vez que la prueba ha registrado resultados, la cuadrícula muestra la fecha del resultado más reciente.',
+    'Filters' => 'Filtros',
+    'ShowFilters' => 'Mostrar filtros',
+    'HideFilters' => 'Ocultar filtros',
+
+    // App shell — collapsing sidebar / new base design (SR app-shell redesign)
+    'AI' => 'AI',
+    'CollapseSidebar' => 'Contraer la barra lateral',
+    'FooterCopyright' => '© %s SimpleRisk. Todos los derechos reservados.',
+    'ExpandSidebar' => 'Expandir barra lateral',
+    'WorkflowsCloneConfirm' => '¿Clonar flujo de trabajo \'{$name}\'?',
+    'WorkflowsDeleteConfirm' => '¿Eliminar el flujo de trabajo \'{$name}\'? Esto no se puede deshacer.',
+    'WorkflowActionFailed' => 'La acción falló: {$msg}',
+    'ClickToDisable' => 'Haz clic para desactivar',
+    'ClickToEnable' => 'Haz clic para habilitar',
+    'ENABLED' => 'ACTIVADO',
+    'DISABLED' => 'DESACTIVADO',
+    'BackToWorkflows' => 'Volver a Flujos de trabajo',
+    'BackToHistory' => 'Volver al historial',
+    'NewWorkflow' => 'Nuevo flujo de trabajo',
+    'ViewSteps' => 'Ver pasos',
+    'SaveWorkflow' => 'Guardar flujo de trabajo',
+    'WorkflowSavedSuccessfully' => 'Flujo de trabajo guardado correctamente.',
+    'WorkflowNotFound' => 'Flujo de trabajo no encontrado.',
+    'EditWorkflow' => 'Editar flujo de trabajo: {$name}',
+    'OrganizationContextProfile' => 'Perfil del contexto de la organización',
+    'AICtxAutoAcceptThreshold' => '¿Cuál es el umbral de aceptación automática de riesgo de su organización (una cantidad en dólares o un porcentaje del ALE)?',
+    'AICtxGrcBudget' => '¿Cuál es su presupuesto anual de GRC/seguridad?',
+    'AICtxAuditorPerspective' => '¿Desde qué perspectiva se le realiza la auditoría principalmente?',
+    'AICtxUnitCurrency' => 'Moneda ($)',
+    'AICtxUnitPercentOfAle' => 'Porcentaje de ALE (%)',
+    'AICtxFrameworksInUse' => 'Marcos de trabajo actualmente en uso',
+    'AICtxNoFrameworksInUse' => 'Aún no se han encontrado marcos de trabajo activos. Añada marcos de trabajo en Gobernanza > Asignación de marcos de trabajo.',
+    'AICtxFromYourData' => 'A partir de sus datos',
+    'AICtxAuthoritative' => 'Autorizado',
+    'AICtxAppetiteNotSet' => 'No está configurado',
+    'AICtxAppetiteManageLink' => 'Gestionar en la configuración de riesgos',
+    'AICapControlTestGeneration' => 'Generación de pruebas de control',
+    'AICapControlTestGenerationDesc' => 'Elabora borradores de pruebas de control para su revisión, utilizando la asignación del marco de control, las pruebas existentes y los resultados de la autoevaluación; no se crea nada hasta que usted lo apruebe.',
+    'AICapSurfacedControlTestGeneration' => 'Cumplimiento — Definir las pruebas',
+    'AIControlTestGenUnavailable' => 'SERVICIO NO DISPONIBLE: Un administrador debe habilitar esta funcionalidad en la configuración de IA.',
+    'AIControlTestGenInvalidId' => 'SOLICITUD INCORRECTA: Se requiere un ID de control positivo.',
+    'AIControlTestGenNotFound' => 'NO ENCONTRADO: No se pudo encontrar el control especificado.',
+    'AIControlTestGenConflict' => 'CONFLICTO: La generación ya está en cola para este control.',
+    'AIControlTestGenQueued' => 'ACEPTADO: Generación de prueba de control en cola.',
+    'AIControlTestGenFailed' => 'ERROR INTERNO DEL SERVIDOR: No se pudo poner en cola la generación de la prueba de control.',
+    'AIControlTestGenCheckFailed' => 'ERROR: No se pudo verificar el control antes de ponerlo en cola.',
+    'GenerateTestsWithAI' => 'Genera pruebas con IA',
+    'ShowAiSuggestedTests' => 'Pruebas sugeridas por IA',
+    'AiSuggested' => 'Sugerido por IA',
+    'ReviewAndEdit' => 'Revisar y editar',
+    'CreateSelected' => 'Crear seleccionado',
+    'TestCreatedFromSuggestion' => 'Prueba creada a partir de la sugerencia.',
+    'SuggestionDismissed' => 'Sugerencia rechazada.',
+    'TestGenerationQueued' => 'Generación de pruebas en cola.',
+    'Generating' => 'Generando…',
+    'SuggestionDismissFailed' => 'Se creó la prueba, pero no se pudo descartar la sugerencia de la IA. Descártala manualmente si persiste.',
+    'AICtxAuditorBig4' => 'Las cuatro grandes (externas)',
+    'AICtxAuditorBoutique' => 'Boutique / regional (externa)',
+    'AICtxAuditorInternal' => 'Auditoría interna únicamente',
+    'AICtxAuditorSelfAssessed' => 'Autoevaluación',
+    'AICtxAuditorNotSure' => 'No estoy seguro',
+    'AICtxAppetiteCautious' => 'Precavido',
+    'AICtxAppetiteBalanced' => 'Equilibrado',
+    'AICtxAppetiteAggressive' => 'Agresivo',
+    'TestGenerationComplete' => 'Las pruebas de control elaboradas por IA están listas para su revisión.',
+    'TestGenerationStillRunning' => 'La generación de pruebas aún está en curso; los borradores aparecerán en breve.',
+    'TestGenerationNoNew' => 'Generación finalizada: no hay nuevas pruebas que sugerir para este control.',
+    'SearchEntities' => 'Entidades de búsqueda',
+    'SearchEntitiesPlaceholder' => 'Riesgos de búsqueda, controles, políticas, excepciones…',
+    'ShowTypes' => 'Mostrar tipos',
+    'Depth' => 'Profundidad',
+    'Inspector' => 'Inspector',
+    'Connections' => 'Conexiones',
+    'NoConnectionsFound' => 'No se encontraron conexiones para la entidad seleccionada.',
+    'CouldNotLoadGraph' => 'No se pudo cargar el gráfico de conectividad.',
+    'CouldNotSearchEntities' => 'No se pudieron buscar entidades.',
+    'ShowingTopNOfM' => 'Mostrando los mejores {0} de {1}',
+    'RankedByMaturityGap' => 'Clasificado por brecha de madurez',
+    'RankedByRiskScore' => 'Clasificado por puntuación de riesgo',
+    'RankedByRecentFailure' => 'Clasificado por fallo más reciente',
+    'RankedByReviewDate' => 'Clasificado por fecha de la próxima revisión',
+    'RankedBySeverity' => 'Clasificado por gravedad',
+    'RankedByName' => 'Clasificado por nombre',
+    'NodeTypeSelfAssessmentResult' => 'Resultado de la autoevaluación',
+    'Relationship' => 'Relación',
+    'Exception' => 'Excepción',
+    'DesiredMaturity' => 'Madurez deseada',
+    'ApprovalState' => 'Estado de aprobación',
+    'RelationshipOfType' => '{0} de {1}',
+    // Connectivity Explorer Inspector: labels for enrichment field keys
+    // (ai_context_enrich_fetch(), ai_context_enrich_vulnerabilities()) that
+    // fieldLabel() in connectivity-visualizer.js did not yet cover.
+    'LastDate' => 'Última fecha',
+    'LastResultDate' => 'Fecha del último resultado',
+    'PercentComplete' => 'Porcentaje completado',
+    'AssessmentDate' => 'Fecha de evaluación',
+    'NextDate' => 'Próxima fecha',
+    'Number' => 'Número',
+    'Grouping' => 'Agrupamiento',
+    'Hidden' => 'Oculto',
+    'FirstFound' => 'Primero encontrado',
+    'LastFound' => 'Último encontrado',
+    'Patchable' => 'Parcheable',
+    'Solution' => 'Solución',
+    'Breadcrumb' => 'Ruta de navegación',
+    'SelectANodeToInspect' => 'Seleccione un nodo para ver sus detalles.',
+    'HiddenUnreachableNodes' => '{0} nodo(s) oculto(s): ya no está(n) conectado(s) sin el/los tipo(s) oculto(s).',
+    // Connectivity Explorer canvas launchpad (Level-1 type tiles / Level-2
+    // browsable entity list) -- docs/superpowers/specs/2026-07-27-
+    // connectivity-explorer-launchpad.md
+    'BrowsableEntityTypes' => 'Tipos de entidades navegables',
+    'CountFloor' => '{0}+',
+    'NoBrowsableTypes' => 'No tienes permiso para explorar ningún tipo de entidad.',
+    'AllTypes' => 'Todos los tipos',
+    'FilterEntitiesPlaceholder' => 'Filtro…',
+    'NoMatchingEntities' => 'No se encontraron entidades que coincidan con su filtro.',
+    'LoadMore' => 'Cargar más',
+    'Loading' => 'Cargando…',
+    'CouldNotLoadEntityCounts' => 'No se pudieron cargar los recuentos de entidades.',
+    'CouldNotLoadEntities' => 'No se pudieron cargar las entidades.',
+    'ClearGraph' => 'Borrar gráfico',
+    // Connectivity Explorer node-type chip label for the 'audit' type. Not
+    // reused from 'TeamType_audit' (same English text, "Audit") -- that key
+    // is scoped to the Team Separation team-type picker, a different feature
+    // whose wording should be free to diverge from this one's.
+    'Audit' => 'Auditoría',
+    // Queued email send-failure notifications
+    'EmailSendFailedNotificationTitle' => 'Error en la entrega del correo electrónico',
+    'EmailSendFailedNotificationBody' => 'No se pudo entregar uno o más correos electrónicos en cola. Verifique la configuración de su correo electrónico y, a continuación, consulte el Monitor de cola y el registro del servidor para obtener más detalles.',
+    'QuestionnaireShareInvalidEmailAddress' => 'No se pueden compartir los resultados del cuestionario con un contacto que no tenga una dirección de correo electrónico válida.',
+    'AssessmentSendInvalidEmailAddress' => 'No se puede enviar la evaluación a una dirección de correo electrónico no válida.',
+    'AssessmentSentTo' => 'La evaluación se envió a "{$email}".',
+    'AssessmentNotSentNoValidRecipients' => 'La evaluación no se envió; no se proporcionó una dirección de correo electrónico válida.',
+    'AssessmentContactUnusableEmailNotificationTitle' => 'Cuestionario no enviado',
+    'AssessmentContactUnusableEmailNotificationBody' => 'El cuestionario "{$questionnaire}" no se pudo enviar a "{$contact}" porque ese contacto no tiene una dirección de correo electrónico válida registrada. Actualice el registro del contacto para reanudar el envío.',
+    'EmailFailureNotificationRetention' => 'Retención de notificaciones de fallos en la entrega de correo electrónico',
+    'EmailFailureNotificationRetentionOutOfRange' => 'El período de retención de la notificación de error en la entrega del correo electrónico debe estar entre {$min} y {$max} días.',
+    'MailSettingsUpdatedSuccessfully' => 'La configuración de correo electrónico se actualizó correctamente.',
+    // Questionnaire audit-trail entries for the API submit/draft paths (SR-1714).
+    // The token form credits the contact; an API caller is an authenticated
+    // SimpleRisk user acting on that contact's questionnaire, so both the
+    // contact and the acting user are named.
+    'QuestionnaireCompletedAuditLogViaApi' => 'El cuestionario "{$questionnaire_name}" para el contacto "{$contact_name}" fue completado a través de la API por el usuario "{$user_name}".',
+    'QuestionnaireDraftAuditLogViaApi' => 'El cuestionario "{$questionnaire_name}" para el contacto "{$contact_name}" fue guardado como borrador a través de la API por el usuario "{$user_name}".',
+    // Bad-input response for the questionnaire risk-list endpoints, which
+    // previously reported a malformed questionnaire_id as a permission denial.
+    // Mirrors the existing 'MissingOrInvalidTrackingID'.
+    'MissingOrInvalidQuestionnaireID' => 'Falta el ID del cuestionario o este es inválido.',
+    // POST /api/v2/assessments/questionnaire/result/file response messages.
+    // The `id` path deliberately returns QuestionIdCannotAcceptFile for every
+    // question-level rejection so a sequential tracking id cannot be used to
+    // probe questionnaire structure; the token path returns the specific reason.
+    'QuestionnaireResultNotFoundForTokenOrId' => 'NO ENCONTRADO: No se pudo encontrar un resultado del cuestionario con el token o ID especificado.',
+    'QuestionIdCannotAcceptFile' => 'SOLICITUD INCORRECTA: question_id {$question_id} no puede aceptar un archivo en el resultado de este cuestionario.',
+    'QuestionIdNotFoundInQuestionnaire' => 'SOLICITUD INCORRECTA: No se encontró question_id {$question_id} en este cuestionario.',
+    'QuestionIdInMultipleTemplates' => 'SOLICITUD INCORRECTA: question_id {$question_id} aparece en varias plantillas para este cuestionario.',
+    'QuestionIdDoesNotAcceptFileUploads' => 'SOLICITUD INCORRECTA: question_id {$question_id} no acepta cargas de archivos',
+    // The Statement of Applicability's two UNVERIFIED implementation states.
+    //
+    // They exist because "we have not checked" is not "it does not work", and an
+    // SoA is ATTESTED — printing "No" for an unverified control is a false
+    // statement against yourself, exactly as printing "Yes" without evidence is
+    // a false statement the other way. Before these keys existed both states
+    // fell through to 'No', which on a framework where most controls carry no
+    // test meant the whole document read "not implemented".
+    //
+    // They are two states rather than one because they are different findings
+    // with different owners: no test defined is a GOVERNANCE gap (nobody decided
+    // how to verify this control), never run is an OPERATIONAL one (somebody
+    // decided, and it was not done).
+    //
+    // WORDING. Both must be unmistakably distinct from the bare 'No' in the same
+    // column. 'Tests never run' rather than 'Never run': in a column headed
+    // "Implemented", the bare phrase reads for a moment as though the CONTROL
+    // was never run, when the subject is its tests.
+    //
+    // BOTH ARE PLURAL, and that is not only style. English takes the plural
+    // after "no" when the expected quantity could exceed one ("no results
+    // found"), and a control normally carries several tests — the singular
+    // implies only ever one was expected. 'Tests never run' is the stronger
+    // case: soa_implemented_for() returns `never_run` only when NOT ONE of the
+    // control's tests has produced a verdict, so the state is inherently about
+    // the whole set. With four tests defined and none run, the singular reads as
+    // one omission rather than a wholesale one.
+    'SoaImplementedNoTestDefined' => 'No se han definido pruebas',
+    'SoaImplementedNeverRun' => 'Las pruebas nunca se ejecutan',
+
+    // The Implemented column's fallback for a token neither sink recognizes.
+    //
+    // DELIBERATELY NOT A VERDICT, and the reason this key exists at all. Both
+    // sinks previously ended in a fallthrough to 'No', so adding a state without
+    // adding its label printed a confident, wrong answer into a compliance
+    // document. Falling through to 'Yes' would be worse. The only safe failure
+    // mode is a value that states nothing about the control — a visible bug
+    // instead of a silent misstatement.
+    'SoaImplementedUnknown' => 'Estado no disponible',
+    // How an APPLICABLE control's stored inclusion reason(s) join to its own
+    // freeform justification when it recorded both (spec §4). Reached ONLY when
+    // both halves exist — reasons alone print as the reason list, prose alone
+    // prints verbatim — so this string is punctuation and word order, not prose.
+    // It is a language key rather than a hardcoded separator because a locale
+    // that joins clauses with a colon, a full stop, or right-to-left ordering
+    // must be able to say so; both placeholders have to survive translation.
+    'SoaJustifiedByInclusionReasons' => '{reasons} — {narrative}',
+    // The Set applicability modal's reason field, which became a MULTI-select
+    // when reasons moved to a join table: a control is commonly included (or
+    // excluded) for more than one reason, and the singular 'Reason' the field
+    // used to reuse now under-describes it. 'Reason' is left alone rather than
+    // repointed -- the row drawer and the SoA still print exactly one joined
+    // value under it, and redefining a key changes every surface that reads it.
+    'ApplicabilityReasons' => 'Razones',
+    // Said once, above a group of checkboxes, rather than implied by the widget.
+    // The old single <select> answered "how many may I pick?" by construction;
+    // a checkbox group does not, and a user who ticks one and stops has made the
+    // SoA less truthful than the one they meant to write.
+    'ApplicabilityReasonsHint' => 'Seleccione todas las razones que correspondan.',
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // THE STATEMENT OF APPLICABILITY'S MARKERS AND ITS LEGEND (spec §1, §3).
+    // ─────────────────────────────────────────────────────────────────────────
+
+    // THE EVIDENCE COLUMN'S TWO ABSENCES, which are OPPOSITES.
+    //
+    // 'No evidence linked' is a FINDING: the control is in scope, is possibly
+    // claimed implemented, and nothing substantiates it. The em dash below is
+    // the other answer -- the control is excluded, so no evidence is expected
+    // and the absence is correct. Rendering both as an empty cell hides the
+    // first, which is the one an auditor circles.
+    'SoaNoEvidenceLinked' => 'No hay evidencia que lo vincule',
+    // PUNCTUATION, NOT PROSE -- the glyph the Evidence cell prints when nothing
+    // is expected. A language key rather than a hardcoded character for the same
+    // reason 'SoaJustifiedByInclusionReasons' is one: a locale that marks "not
+    // applicable" with a different dash, or with a word, must be able to say so.
+    'SoaEvidenceNotExpected' => '—',
+    // Whether the evidence a test DECLARED it requires actually arrived with the
+    // result. A stronger claim than a pass/fail alone, and few SoA tools make it.
+
+    // THE REMEDIATION BLOCK -- what is being done about a control that reads
+    // Partial or No. The SoA points AT the risk treatment plan (clause 6.1.3(e))
+    // rather than becoming one.
+    'SoaRemediation' => 'Remediación',
+    // THE MOST SERIOUS THING THAT BLOCK CAN FIND: the test failed and it is
+    // linked to no risk, so no treatment plan traces back to it. Dropping such a
+    // row for want of a risk to join to would render it as a blank cell, which
+    // reads as "nothing to report".
+    'SoaRemediationUnplanned' => 'No se ha vinculado ningún riesgo',
+
+    // THE LEGEND. Required in both variants and every export format, because six
+    // implementation states plus three markers is more nuanced than the
+    // Yes/No/Partial an auditor expects, and an undefined vocabulary invites the
+    // reader to guess unfavourably.
+    'SoaLegendTitle' => 'Cómo leer esta declaración',
+    'SoaLegendYes' => 'Todas las pruebas definidas para este control se superaron la última vez que se ejecutaron.',
+    'SoaLegendPartial' => 'Las pruebas del grupo de control no coinciden: al menos una tuvo éxito y al menos una fracasó o no arrojó ningún resultado.',
+    'SoaLegendNo' => 'Ninguna de las pruebas de este control se superó la última vez que se ejecutó, y al menos una falló.',
+    // The two unverified states are DIFFERENT FINDINGS WITH DIFFERENT OWNERS,
+    // and the labels alone do not quite carry that -- so the legend spells it
+    // out. This is the distinction the whole six-state set exists for.
+    'SoaLegendNoTestDefined' => 'No se ha definido ninguna prueba para este control, por lo que su funcionamiento nunca se ha verificado. Esto no significa que el control falte o que falle, sino simplemente que esta afirmación no lo demuestra. Existe una laguna en la gobernanza: nadie ha decidido cómo se verifica este control.',
+    'SoaLegendNeverRun' => 'Existen pruebas para este control, pero ninguna se ha ejecutado, por lo que su funcionamiento no se demuestra aquí. Esto no significa que el control falte o que falle. Se trata de una deficiencia operativa: se decidieron realizar las comprobaciones, pero no se llevaron a cabo.',
+    'SoaLegendNotApplicable' => 'Este control está excluido del ámbito de este marco, por lo que no tiene estado de implementación.',
+    // The one most in need of explaining: with nothing to define it, this reads
+    // as an admission about the control rather than as what it is.
+    'SoaLegendUnknown' => 'SimpleRisk no pudo etiquetar el estado registrado, por lo que aquí no se muestra su implementación. Esto constituye un defecto del software y no aporta ninguna información sobre el control, ni indica si funciona o no.',
+    'SoaLegendOverdue' => 'El resultado mostrado sigue siendo válido, pero al menos una de las pruebas que lo respaldan ya superó su fecha de vencimiento. La evidencia está desactualizada.',
+    'SoaLegendNoEvidence' => 'El control está incluido en el alcance, pero no se ha aportado ningún elemento que lo corrobore: ningún documento confirmado ni ninguna prueba que haya producido un resultado.',
+    'SoaLegendEvidenceNotExpected' => 'No se espera evidencia alguna, ya que el control está excluido del alcance del estudio.',
+    'SoaLegendUnplanned' => 'Una prueba fallida que no está vinculada a ningún riesgo, por lo que ningún plan de tratamiento se remonta a ella.',
+
+    // THE TWO VARIANTS, chosen on the launcher before the document is generated
+    // and PRINTED ON ITS COVER. A Statement of Applicability is a controlled
+    // document: two of them for the same framework that show different things,
+    // with nothing on either to say which is which, is a document nobody can
+    // file.
+
+    // THE THREE DETAILED-ONLY COLUMNS.
+    // What those three columns say instead of nothing. A blank cell in an audit
+    // document reads as a formatting artefact; "Not recorded" is a fact the
+    // reader can act on.
+
+    // THE BROWSER PRINT ROUTE. Beside the two downloads on the launcher, and the
+    // only PDF route for a framework too large for the server-side writer.
+    // Shown in place of "Download as PDF" when the chosen framework is above
+    // SOA_EXPORT_PDF_MAX_CONTROLS. The affordance is absent rather than
+    // disabled, so this sentence is what tells the reader the absence is
+    // deliberate and what to do instead.
+    // The footer of every printed page. {page} and {pages} are substituted with
+    // the browser's own page counters, so the two tokens must both survive
+    // translation -- but their ORDER and the words around them are the
+    // translator's, which is why this is one string and not "Page" + "of".
+    'SoaPrintPageNumber' => 'Página {page} de {pages}',
+
+    // THE ONE PDF AFFORDANCE on the statement-of-applicability launcher, beside
+    // 'DownloadAsXLSX'. It replaces the pair that used to sit there --
+    // 'SoaPrintToPdf' and 'DownloadAsPDF' -- because a Statement of Applicability
+    // is a controlled document and two PDF buttons let two people hand an auditor
+    // two different-looking PDFs of the same statement.
+    //
+    // JUST "PDF", AND DELIBERATELY SO. Below SOA_EXPORT_PDF_MAX_CONTROLS the
+    // button downloads a server-rendered file and above it the browser writes
+    // one, but that is a mechanism and not a choice the reader has to make. A
+    // label that named the mechanism ("Print to PDF" / "Download as PDF") would
+    // put the difference back in front of them.
+    //
+    // 'SoaPrintToPdf' and 'SoaPdfTooLargeHint' above are LEFT IN PLACE with no
+    // caller: 39 locales carry them, and this file is append-only precisely so a
+    // customer running a custom lang.<locale>.php can reconcile it with a tail
+    // diff.
+    'SoaPdf' => 'PDF',
+
+    // THE OTHER TWO ACTIONS IN THAT SAME ROW, shortened to match it.
+    //
+    // The row read "Open in browser" / "Download as XLSX" / "PDF", which put a
+    // verb on two of three actions and made the odd one out look like an
+    // abbreviation of something longer. The row's own context supplies the
+    // verbs -- these are the things you can DO with the framework you just
+    // chose -- so they carried no information and cost the reader a comparison.
+    // 'SoaPdf' is short because naming its mechanism would be dishonest (above
+    // SOA_EXPORT_PDF_MAX_CONTROLS it opens a print view rather than downloading
+    // a file), and the shortest of the three is the one that has to be right.
+    //
+    // NOT the generic 'Open' at line ~1021: that key lives among 'Mitigated' /
+    // 'Reviewed' and is the risk-status ADJECTIVE -- fr "Ouvert", de "Offen" --
+    // so reusing it would label a button with a state rather than an action in
+    // most of the 39 locales.
+    //
+    // 'SoaOpenInBrowser' above is LEFT IN PLACE with no caller, for the same
+    // reason 'SoaPrintToPdf' is: the locales carry it and this file is
+    // append-only so a customer's custom lang.<locale>.php reconciles with a
+    // tail diff. 'DownloadAsXLSX' keeps a caller either way -- the Assessments
+    // Extra's questionnaire results still use it.
+    'SoaOpen' => 'Abierto',
+    'SoaXlsx' => 'XLSX',
+    // ---- The locked-affordance treatment -------------------------------------
+    // SHARED COPY, not chooser copy. SimpleRisk now SHOWS what's possible and
+    // MARKS what's out of reach because it isn't licensed, rather than hiding
+    // it -- so these strings appear both as a menu row's explanation (Define
+    // Control Frameworks' "+ Add framework" chooser) and beside a disabled
+    // toolbar button (the Statement of Applicability's PDF/XLSX exports). Each
+    // one is worded to read correctly in BOTH places, which is why none of them
+    // starts with "This route" or "This button".
+    //
+    // 'LockedAffordanceBadge' duplicates the English of 'AICapStateLocked'
+    // rather than reusing it: that key sits in the AI Capabilities Catalog's
+    // block and is scoped to a capability's state, and translators work from
+    // the key's neighbourhood as much as from its value.
+    'LockedAffordanceBadge' => 'Bloqueado',
+    // The two SCF steps before it can be switched on. admin/register.php serves
+    // both -- it is the registration form AND where the per-Extra download
+    // buttons render -- so these differ in what they say, not where they go.
+    'UnlockRegisterInstanceNote' => 'Registre esta instancia para obtener el marco de controles seguros.',
+    'UnlockRegisterInstanceLink' => 'Registro SimpleRisk',
+    'UnlockDownloadScfNote' => 'Esta instancia está registrada. Descargue el marco de control de seguridad para utilizarla.',
+    'UnlockDownloadScfLink' => 'Descárgalo',
+    'UnlockActivateScfNote' => 'El marco de controles seguros se ha descargado, pero no se ha activado.',
+    'UnlockActivateScfLink' => 'Enciéndelo',
+    // Import-Export is a paid Extra, so "not installed" is an upsell rather
+    // than a registration prompt. Deliberately a bare capability sentence: it
+    // has to sit under a menu row and next to an export button equally well.
+    'RequiresImportExportExtra' => 'Requiere el paquete adicional de Importación-Exportación.',
+    'UnlockImportExportLink' => 'Mira lo que añade',
+    'UnlockActivateImportExportNote' => 'La función Import-Export Extra está instalada pero no activada.',
+    'UnlockActivateImportExportLink' => 'Enciéndelo',
+    // Shown instead of any of the above to a user who is not an administrator:
+    // every unlock step lives on a check_admin page, so they get the half that
+    // is useful to them -- that the capability exists, and who to ask -- and no
+    // link that would only bounce them.
+    'UnlockNeedsAdministrator' => 'Un administrador puede configurarlo.',
+    // API date parsing. {$field} is the request field name (next_date, last_date,
+    // test_date); {$format} is this instance's configured display date format.
+    'InvalidSubmittedDate' => 'El valor {$field} no es una fecha válida. Envíelo como AAAA-MM-DD o en el formato de fecha de esta instancia ({$format}).',
+    // Companion to InvalidSubmittedDate, for a value that matches the expected
+    // shape but names a day that does not exist (February 31st, month 13).
+    // Saying "submit it as MM/DD/YYYY" there would repeat what the caller did.
+    // {$value} is the submitted value, echoed back truncated.
+    'ImpossibleSubmittedDate' => 'El valor {$field} "{$value}" no es una fecha de calendario real. Compruebe el día y el mes; esta instancia lee las fechas como {$format}.',
+    // The Statement of Applicability's merged verification column. Replaces three
+    // separate headings (Implemented / Evidence / Review Cadence) with the one
+    // question all three answer: how do we know this control is working?
+    // The two appendices printed after the register. Justifications are truncated
+    // in the row and given in full here; remediation plans live here rather than
+    // in the table because ISO 27001 keeps the SoA (6.1.3(d)) and the risk
+    // treatment plan (6.1.3(e)) as separate artifacts.
+    'SoaAppendixJustifications' => 'Apéndice A — Justificaciones',
+    'SoaAppendixRemediation' => 'Apéndice R — Planes de remediación',
+    // Appendix E carries the WORDING of each test's evidence requirement. The row
+    // keeps only whether that evidence arrived, which is the finding; the wording
+    // is reference material and was the bulkiest thing in the Verification cell.
+    'SoaRequiredEvidenceSupplied' => 'Se proporcionaron las pruebas requeridas.',
+    'SoaRequiredEvidenceNotSupplied' => 'No se proporcionaron las pruebas requeridas.',
+    // The one scheduling fact the SoA prints: the soonest date any of a control's
+    // tests is next due. Replaces a per-test "Manual — Next Test Date: ..." line,
+    // whose schedule type belongs on Define Tests and whose date is now on each
+    // test's own evidence bullet.
+    // The two dates on a test's evidence bullet. LABELLED, because two bare dates
+    // side by side are ambiguous in a way one is not.
+    // SINGULAR document-type labels for one piece of design evidence. SimpleRisk's
+    // existing keys are the plural tab names, which would read "Access Control
+    // Standard (Standards)".
+    'SoaEvidencePolicy' => 'Política',
+    'SoaEvidenceStandard' => 'Estándar',
+    'SoaEvidenceProcedure' => 'Procedimiento',
+    'SoaEvidenceGuideline' => 'Pauta',
+    // ── The legend, grouped by column (SOA_LEGEND_GROUPS, includes/soa.php) ──
+    // The Applicability column's three values. These were never in the legend,
+    // so an auditor met "Inherited" -- a word with no meaning outside SimpleRisk
+    // -- with nothing to look it up in.
+    'SoaLegendApplicable' => 'El control está contemplado en este marco y la organización es responsable de su funcionamiento.',
+    // DISTINCT from 'SoaLegendNotApplicable', which defines the "N/A" that appears
+    // in the Implementation Status column. This one is the DECISION to exclude;
+    // that one is the consequence for the status.
+    'SoaLegendApplicabilityNotApplicable' => 'El control ha sido excluido del alcance de este marco. La columna de justificación indica el motivo y quién tomó la decisión.',
+    'SoaLegendInherited' => 'El control está incluido en el alcance, pero lo gestiona un tercero (un proveedor de servicios en la nube, una organización matriz, una función subcontratada) en lugar de esta organización. El proveedor se menciona junto a la justificación.',
+    // The Evidence column's four bullet glyphs. Load-bearing since the visible
+    // result word was dropped from pass and fail bullets, and until now defined
+    // nowhere at all.
+    'SoaLegendEvidencePass' => 'Una prueba de este control registró un resultado positivo la última vez que se ejecutó. La fecha que aparece al lado es cuando se ejecutó.',
+    'SoaLegendEvidenceFail' => 'La última vez que se ejecutó este control, se registró un fallo. El apéndice R contiene el plan de tratamiento, si lo hay.',
+    'SoaLegendEvidenceInconclusive' => 'Se realizó una prueba de este control, pero no se llegó a ningún veredicto. La misma marca se utiliza para un resultado que este documento no reconoce; en ese caso, el resultado se imprime junto a ella.',
+    // The TERM beside the § glyph. Not a document type -- the four types
+    // (Policy, Standard, Procedure, Guideline) are printed per item; this names
+    // the CATEGORY of evidence a document is.
+    'SoaEvidenceDesignDocument' => 'Documento de diseño',
+    'SoaLegendEvidenceDocument' => 'Un documento de gobernanza se confirmó como evidencia de este control: su diseño, más que su funcionamiento. Un documento no contiene un veredicto, por lo que no está marcado con una casilla de verificación.',
+    // The XLSX export's first worksheet tab. The workbook's other four tabs reuse
+    // headings that already exist ('How to read this statement', 'Statement of
+    // Applicability', and the two appendix headings); the cover had no name of its
+    // own because it used to be the top of a single sheet.
+    //
+    // KEEP IT SHORT. Excel caps a worksheet name at 31 characters and
+    // soa_export_sheet_name() truncates rather than failing the export, so a long
+    // translation loses its tail on the tab.
+    'SoaSheetCover' => 'Portada',
+
+    'SearchFrameworks' => 'marcos de búsqueda',
+    'SearchControls' => 'Buscar controles',
+    'AddFramework' => 'Agregar marco',
+    'Applicability' => 'Aplicabilidad',
+    'AnyFamily' => 'Cualquier familia',
+    'AnyOwner' => 'Cualquier propietario',
+    'AnyClass' => 'Cualquier clase',
+    'AnyPhase' => 'Cualquier fase',
+    'AnyPriority' => 'Cualquier prioridad',
+    'AnyType' => 'Cualquier tipo',
+    'AnyStatus' => 'Cualquier estado',
+    'SelectAllN' => 'Seleccionar todo {n}',
+    'Classification' => 'Clasificación',
+    'Placement' => 'Colocación',
+    'OwnershipAndMaturity' => 'Propiedad y madurez',
+    'MappingsAndGuidance' => 'Mapas y guías',
+    'DeleteFrameworkTitle' => '¿Eliminar el marco \'{$name}\'?',
+    'DeleteControlTitle' => '¿Eliminar el control \'{$name}\'?',
+    'DeleteControlsTitle' => '¿Eliminar los controles {$n}?',
+    'DeleteCannotBeUndone' => 'Esto no se puede deshacer.',
+    'DeleteFrameworkConsequence' => 'Esto elimina el marco de trabajo y todas sus asignaciones de control.',
+    'DeleteControlConsequence' => 'Esto elimina el control de cada marco de trabajo al que está asignado.',
+    'DeleteControlsConsequence' => 'Esto elimina cada control seleccionado de cada marco de trabajo al que está asignado.',
+    // Task 9: empty states (design-system.md §10) -- the four intents on
+    // Define Control Frameworks. Reuses existing keys where the copy already
+    // fits exactly (AddControl, AddFramework, ClearFilters, Retry,
+    // NoControlsDefinedYet, NoTestsMatchFiltersBody, CouldNotLoadTestsBody,
+    // RegisterYourInstance, GoToSCF, ImportExportExtra) -- only the strings
+    // with no existing match are added below.
+    'NoControlsMatch' => 'Ningún control coincide con sus filtros.',
+    'CouldNotLoadControls' => 'No se pudieron cargar los controles',
+    'ControlsYouAddWillAppearHere' => 'Los controles que añada aparecerán aquí.',
+    'NoFrameworksYet' => 'Aún no hay marcos de trabajo.',
+    'FrameworksYouAddWillAppearHere' => 'Los frameworks que añadas o importes aparecerán aquí.',
+    'CouldNotLoadFrameworks' => 'No se pudieron cargar los frameworks.',
+    // Task 9 review fix: the framework rail's own "no results" intent, shown
+    // when the user has explicitly switched the status dropdown away from
+    // Active and that status has nothing (distinct from "No frameworks yet",
+    // which is reserved for the default Active status where the endpoint
+    // can't yet tell "no frameworks at all" from "none active").
+    'NoFrameworksMatchFilter' => 'Ningún marco coincide con este estado.',
+    'ViewActiveFrameworks' => 'Ver marcos activos',
+    // Task 10: Define Control Frameworks insights band (governance/index.php)
+    // -- KPI tile labels/subtitles. 'Controls', 'Pass', 'Fail', 'NotTested'
+    // already exist and are reused as label keys for their tiles.
+    'BelowTarget' => 'Por debajo del objetivo',
+    'Excluded' => 'Excluido',
+    'FwInScope' => 'En el ámbito',
+    'FwLastTestPassed' => 'Última prueba superada',
+    'FwLastTestFailed' => 'La última prueba falló.',
+    'FwNoEvidence' => 'Aplicable, sin evidencia',
+    'FwMaturityUnderDesired' => 'Madurez inferior a la deseada',
+    'FwScopeAFramework' => 'Definir un marco para decidir',
+    'FwNotApplicableOrInherited' => 'No aplicable o heredado',
+    // Task 22: framework rail search (governance/index.php's #sr-fw-search,
+    // wired client-side in governance-frameworks.js). Reuses the shipped
+    // "no results" empty-state tile (#sr-fw-filtered, Task 9) rather than
+    // inventing a fourth rail empty state -- only the title and action swap
+    // depending on whether a status filter or a search narrowed the list to
+    // nothing; NoTestsMatchFiltersBody already covers both as body copy.
+    'NoFrameworksMatchSearch' => 'No se encontraron frameworks que coincidan con su búsqueda.',
+    'ClearSearch' => 'Borrar búsqueda',
+    // Task 24: Clone control pre-fills the Add Control modal from the source
+    // control (governance-frameworks.js's openControlForClone()) rather than
+    // creating a duplicate outright, so the modal needs to say plainly which
+    // control it was cloned from -- the reviewer's core complaint about an
+    // earlier one-click version of this feature was not knowing what was
+    // cloned. {$name} follows the same client-side formatTemplate()
+    // substitution ShowingXToYOfZ/NSelected already use on this page.
+    'ClonedFromControlNotice' => 'Clonado desde "{$name}". Revise los campos a continuación y luego guarde.',
+    // Task 24 review follow-up: the banner alone left the modal titled "New
+    // Control" over pre-populated fields -- "it doesn't prompt or anything
+    // so the user doesn't know what was cloned" (Josh) -- which reads as a
+    // bug, not a feature. Retitling #control--add-title to this (governance-
+    // frameworks.js's show.bs.modal delegate for #control--add) makes the
+    // clone unambiguous at a glance; NewControl is restored for a plain add.
+    'CloneOfControlTitle' => 'Clon de "{$name}"',
+    // Task 27: the framework rail's SCF-origin chip (governance-frameworks.js's
+    // railRow()) -- shown only for frameworks created via the ComplianceForge
+    // SCF Extra's authoritative-source import (get_scf_origin_framework_ids(),
+    // includes/governance.php). SCF is the badge text itself; ScfOriginHint is
+    // its title/tooltip.
+    'SCF' => 'SCF',
+    'ScfOriginHint' => 'Del Marco de Controles Seguros (SCF)',
+    // Task 34: the Maturity filter facet's placeholder on the Define Control
+    // Frameworks filter sheet (governance-frameworks.js's ensureFilterSheet()),
+    // matching the AnyFamily/AnyOwner/AnyClass/... set above. The facet's three
+    // OPTIONS reuse the existing BelowMaturity/AtMaturity/AboveMaturity keys --
+    // the same labels the governance dashboard's maturity-gap widgets already
+    // carry -- and the column chip renders those same three strings, so the
+    // filter and the cell can never read differently.
+    'AnyMaturity' => 'Cualquier madurez',
+    // Task 46: accessible name for the control table's pager landmark
+    // (governance-frameworks.js's renderPager()). The pager's own buttons
+    // reuse the existing Previous/Next keys Define Tests' pager already
+    // carries; only the <nav> label is new, and it names WHICH table's pager
+    // it is because the Define Control Frameworks page has two lists on it.
+    'ControlsPagination' => 'Paginación de controles',
+    // Task 14: the Applicability column's state chip (governance-frameworks.js's
+    // renderApplicability()), the matching filter facet (its three option labels
+    // reuse these same three keys) and its "Any applicability" placeholder.
+    //
+    // The three states are PREFIXED rather than named 'Applicable'/
+    // 'NotApplicable'/'Inherited' because 'NotApplicable' already exists above
+    // as the ABBREVIATION 'N/A' -- the self-assessment answer chip and three
+    // reporting charts render it -- and redefining that key to the spelled-out
+    // phrase this column needs would silently change all four of those
+    // surfaces. The prefix also keeps the trio recognisable as one family.
+    //
+    // The column HEADER and the facet's accessible name reuse the existing
+    // 'Applicability' key, and the drawer's record reuses 'Reason', 'Provider'
+    // and 'Justification' -- all four already carry exactly the right string.
+    'ApplicabilityApplicable' => 'Aplicable',
+    'ApplicabilityNotApplicable' => 'No aplicable',
+    'ApplicabilityInherited' => 'Heredado',
+    'AnyApplicability' => 'Cualquier aplicabilidad',
+    // The drawer's applicability record: who recorded the decision and when.
+    // Both are attribution for an audited decision a customer may have to
+    // defend years later, which is why the drawer names them at all.
+    'ApplicabilityDecidedBy' => 'Decidido por',
+    'ApplicabilityDecidedOn' => 'Decidido el',
+    // The framework-level Statement of Applicability card in the Add/Edit
+    // framework modals (display_framework_soa_card(), includes/governance.php).
+    // These two fields are what ISO/IEC 27001:2022 clause 6.1.3(d) needs on an
+    // SoA cover: the scope the framework is certified against, and how inclusion
+    // was determined for the controls that are simply applicable.
+    //
+    // 'IsmsScopeStatement' rather than a bare 'ScopeStatement' because "scope"
+    // is already overloaded across SimpleRisk (assessment scope, audit scope,
+    // risk scope); the ISMS prefix is what an ISO practitioner calls this exact
+    // field and keeps it from being reused for an unrelated one.
+    'StatementOfApplicability' => 'Declaración de aplicabilidad',
+    'IsmsScopeStatement' => 'Declaración de alcance',
+    'IsmsScopeStatementHint' => 'El alcance para el que se certifica este marco. Aparece en la portada del SoA.',
+    'DefaultInclusionJustification' => 'Justificación de la inclusión por defecto',
+    'DefaultInclusionJustificationHint' => 'Se utiliza para controles aplicables sin riesgos asociados. Mencione el factor determinante, no el marco de trabajo.',
+    // THE DEFAULT SENTENCE, in all three of its roles: the create form seeds the
+    // textarea with it, the Edit form shows it as a placeholder, and
+    // soa_framework_default_justification() (includes/soa.php) substitutes it at
+    // read time for a framework that has none. One key, because a reader must not
+    // be able to tell a stored default from a fallen-back one, and because three
+    // keys holding the same sentence is three chances for a translator to make
+    // them disagree. The name predates the seeding decision (Task 67) and is kept
+    // rather than churned through Crowdin for 39 locales.
+    //
+    // It names the DRIVER (the risk assessment) rather than the framework:
+    // "included because it is part of this framework" is circular, and ISO 6.1.3
+    // derives controls from risk treatment, using Annex A afterwards only as a
+    // completeness cross-check.
+    //
+    // It was a placeholder ONLY until Task 67, so that an unreviewed sentence
+    // could not reach a customer's SoA by inaction. Measured, that produced the
+    // opposite failure: 19 of 20 frameworks left the field NULL and the SoA's
+    // Justification column came out BLANK for every applicable control with no
+    // linked risks -- the finding an SoA is most often failed on, and one a
+    // boilerplate sentence does not attract.
+    'DefaultInclusionJustificationPlaceholder' => 'Determinado en función de la evaluación de riesgos de seguridad de la información de la organización y mantenido como un control necesario.',
+    // Task 15: bulk-setting applicability from the control table's selection bar
+    // (#applicability--set, governance/index.php + governance-frameworks.js).
+    //
+    // The action's own label and the modal's one section. 'Applicability',
+    // 'Reason', 'Provider', 'Justification', 'Save' and 'Cancel' already exist
+    // and are reused; only the strings with no existing home are added here.
+    'SetApplicability' => 'Establecer aplicabilidad',
+    'ApplicabilityDecision' => 'Decisión',
+    // The amber scope note, in two sentences the page assembles separately
+    // because they answer two different questions: WHICH framework the decision
+    // is scoped to, and WHICH controls are about to receive it. The second one
+    // has two spellings, because the header checkbox selects the current PAGE
+    // while "Select all N" escalates to the whole filtered result set -- the two
+    // genuinely differ once the table pages, and a note that blurred them would
+    // let the user write 1,535 decisions believing they had written 25.
+    'ApplicabilityScopeNote' => 'Esta decisión se aplica únicamente dentro de "{$framework}". El mismo control puede seguir siendo aplicable en otro marco.',
+    'ApplicabilityAppliesToSelected' => 'Se registrará en el/los control(es) {$n} seleccionado(s) en esta página.',
+    'ApplicabilityAppliesToAllFiltered' => 'Se registrará en todos los controles {$n} que coincidan con los filtros actuales, incluidos los de otras páginas.',
+    // Per-state hints under the segmented control. The "applicable" one is the
+    // load-bearing sentence of the whole modal, and the SoA audit-readiness work
+    // rewrote it: an applicable control MAY now carry its own reasons and
+    // justification (ISO/IEC 27001 clause 6.1.3(d) asks for one per control, for
+    // inclusion as much as for exclusion), and leaving both empty is what falls
+    // back to the framework's default inclusion justification. The old sentence
+    // -- "this removes any recorded decision. No justification is needed." --
+    // is now false in both halves.
+    'ApplicabilityApplicableHint' => 'Este marco de trabajo se incluye en su ámbito de aplicación. El motivo y la justificación son opcionales; si se dejan ambos campos vacíos, se utiliza la justificación de inclusión predeterminada del marco de trabajo.',
+    'ApplicabilityNotApplicableHint' => 'Exclusión de un control del alcance de este marco. Se requiere tanto una razón como una justificación por escrito.',
+    'ApplicabilityInheritedHint' => 'Otra persona realiza este control en tu nombre. Indica quién es y qué hace.',
+    'ApplicabilityNarrativeHint' => 'Aparece en la Declaración de Aplicabilidad. Escriba qué necesitaría un auditor para aceptar la decisión.',
+    'ApplicabilityProviderHint' => 'La organización que realiza el control: un proveedor de servicios en la nube, un servicio gestionado, una empresa matriz.',
+    'ChooseAReason' => 'Elige una razón',
+    'ApplicabilityNoReason' => 'Sin motivo',
+    // Result toasts. Both interpolate a COUNT taken from the API response and
+    // nothing else -- no submitted text is ever reflected into a toast, which
+    // toastr renders as HTML.
+    'ApplicabilitySetResult' => 'Aplicabilidad actualizada para el/los control(es) {$n}.',
+    'ApplicabilityClearResult' => 'La aplicabilidad se restablece a aplicable para el/los control(es) {$n}.',
+    // Bulk control delete (Task 54, corrected Task 55). Deleting a control is
+    // final either way the delete engine implements it: a control with test
+    // history is soft-deleted (framework_controls.deleted = 1) to keep test
+    // history intact, a control with no tests is removed outright -- but
+    // nothing anywhere flips that flag back, so from the user's side there is
+    // no "kept" case, only "deleted, and its test history survives for audit
+    // purposes." Every sentence therefore leads with the same irreversible
+    // warning; the only thing that varies is whether an audit-history clause
+    // is appended, and that clause is omitted entirely rather than printed
+    // with a count of zero -- "0 are retained for audit history" reads as a
+    // warning about something that is not going to happen, and on a delete
+    // confirmation that is exactly the kind of noise that trains people to
+    // stop reading. Every {$...} is a count from the API response; no user
+    // text is ever interpolated, which matters because toastr renders HTML.
+    'DeleteControlsPreviewChecking' => 'Comprobando qué se eliminará...',
+    'DeleteControlsPreviewSplit' => 'Se eliminarán {$n} controles. Esta acción es irreversible. Los resultados de las pruebas de {$m} de ellos se conservarán para el historial de auditoría.',
+    'DeleteControlsPreviewKeptOnly' => 'Se eliminarán todos los controles {$n} . Esta acción es irreversible. Los resultados de las pruebas se conservan para el historial de auditoría.',
+    'DeleteControlsPreviewRemovedOnly' => 'Se eliminarán los controles {$n} . Esto no se puede deshacer.',
+    'DeleteControlsPreviewNone' => 'No hay nada que eliminar: el/los control(es) seleccionado(s) ya no existen.',
+    'ControlsDeletedResult' => '{$n} control(es) eliminado(s).',
+
+    // The Add/Edit framework modal's Status field. The label reuses the existing
+    // 'Status' key -- the same word the rail's Active/Inactive/All filter already
+    // uses -- so only the explanatory hint is new. It says the two things a user
+    // cannot see from the control itself: that Inactive is the NON-destructive way
+    // to retire a framework (unlike Delete, which cannot be undone), and that the
+    // change cascades through the hierarchy, which is what update_framework_status()
+    // has always done and is genuinely surprising when a parent is deactivated.
+    'FrameworkStatusHint' => 'Los marcos inactivos conservan todos sus controles y asignaciones, pero se ocultan de la lista de marcos predeterminados y no aparecen en el panel de gobernanza. Al desactivar un marco, también se desactivan todos los marcos que contiene; al activar uno, se activan sus marcos principales.',
+
+    // Task 60: the same #applicability--set modal, opened from ONE control's row
+    // action instead of the selection bulk bar. The button's own label reuses
+    // 'SetApplicability'; these two exist because the modal now has to say which
+    // of the two it is acting on, and both spellings must be unambiguous.
+    //
+    // The title names the specific object (design-system.md §8) and the note
+    // says "only", because the dangerous reading is the silent one: with rows
+    // ticked -- or with "Select all N filtered" in force -- a modal that said
+    // nothing would let a click the user believed applied to one row be read as
+    // applying to every control in the framework. Naming the control in both
+    // places is what makes the narrower scope visible rather than assumed.
+    // Corrected in Task 63. This spelling used to end "...only, whatever else is
+    // selected", which was printed on every row-action open whether or not
+    // anything else WAS selected -- a dangling absolute with no antecedent, so
+    // it read as a sentence that had been cut off. It is now the plain form, and
+    // the reassurance about a competing selection moved to
+    // 'ApplicabilityAppliesToControlNotSelection' below, which is printed only
+    // when there is a competing selection to reassure anyone about.
+    'SetApplicabilityForControl' => 'Establecer aplicabilidad: {$name}',
+    'ApplicabilityAppliesToControl' => 'Se registrará únicamente contra "{$name}".',
+
+    // Task 17: the Statement of Applicability report itself
+    // (reports/statement_of_applicability.php + pages/statement-of-applicability.js),
+    // the document ISO/IEC 27001:2022 clause 6.1.3(d) asks for and the one every
+    // applicability decision recorded on the Define Control Frameworks page
+    // exists to produce.
+    //
+    // 'StatementOfApplicability' already exists above (the framework modal's SoA
+    // card) and is reused for the report's own title, as are 'IsmsScopeStatement',
+    // 'DefaultInclusionJustification', the three 'Applicability*' state labels,
+    // 'ApplicabilityDecidedBy'/'DecidedOn', and the plain 'Framework',
+    // 'ControlNumber', 'ControlName', 'Justification', 'Evidence', 'Reason',
+    // 'Provider', 'Total', 'Controls' and 'Export' keys. Only strings with no
+    // existing home are added here.
+    'StatementOfApplicabilityDesc' => 'Para un marco de trabajo específico: cada control, si es aplicable, por qué se incluyó o excluyó y si se implementa.',
+    // The header button on Define Control Frameworks. The verb is "generate"
+    // rather than "view" because the document is assembled at the moment it is
+    // asked for -- there is no stored SoA that could be out of date.
+    'GenerateStatementOfApplicability' => 'Generar declaración de aplicabilidad',
+
+    // The Justification column's SECOND resolution step, and the reason an SoA
+    // built here beats the spreadsheet it replaces: the risks that drove the
+    // control are already recorded against it, so nobody retypes them and they
+    // cannot go stale. {risks} is substituted with the displayed risk ids.
+    //
+    // Phrased to match clause 6.1.3, which derives controls from risk treatment
+    // and uses Annex A afterwards only as a completeness cross-check -- the same
+    // reasoning behind 'DefaultInclusionJustificationPlaceholder' above.
+    'SoaJustifiedByRiskAssessment' => 'Determinado por la evaluación de riesgos de seguridad de la información de la organización. Riesgos vinculados: {risks}.',
+
+    // The Implemented column. DERIVED from maturity and the last test result on
+    // every read, never stored, so it cannot drift out of sync with the control.
+    // 'Yes' and 'No' already exist and are reused; only the middle value and the
+    // header need keys of their own. An excluded control's cell reuses the
+    // existing 'NotApplicable' ('N/A'), which is exactly the right abbreviation
+    // in a dense table.
+    'SoaImplemented' => 'Implementado',
+    'SoaImplementedPartial' => 'Parcial',
+
+    // The cover block.
+    'SoaGeneratedOn' => 'Generado el',
+    'SoaExcludedCount' => 'Excluido',
+
+    // The prompt shown when the framework has never been given the two cover
+    // fields. It PROMPTS rather than silently printing a blank cover: an SoA
+    // whose scope is empty is the one defect an auditor spots first, and the
+    // moment somebody opens the report is the only moment those fields matter.
+    // Both spellings of empty (never set, and deliberately cleared) prompt --
+    // from a reader's point of view there is nothing to print either way.
+    //
+    // The inclusion-justification line states a WEAKER consequence than it used
+    // to, because Task 67 made the stronger one untrue: the column no longer goes
+    // blank when the field is empty -- soa_framework_default_justification()
+    // substitutes the generic default sentence. The prompt survives because a
+    // generic sentence is not the organization's own, and an auditor reading 1,500
+    // identical rows of boilerplate is entitled to ask whose risk assessment it
+    // refers to.
+    'SoaMissingFieldsTitle' => 'A este comunicado le faltan los detalles de la portada.',
+    'SoaMissingScopeStatement' => 'No se ha registrado ninguna declaración de alcance para este marco. Una Declaración de Alcance (SoA) debe indicar el alcance para el que se realiza.',
+    'SoaMissingInclusionJustification' => 'No se ha registrado ninguna justificación de inclusión predeterminada. Los controles aplicables sin riesgos asociados recurrirán a una declaración genérica en lugar de la suya propia.',
+    'SoaEditFrameworkToAdd' => 'Añádelos al marco',
+
+    // Opened from the Reporting Hub, which cannot supply a framework. A picker,
+    // not an error: an SoA is a per-framework document by definition -- the same
+    // control excluded from ISO 27001 is not thereby excluded from PCI DSS --
+    // and there is no cross-framework roll-up to offer instead.
+    'SoaChooseFramework' => 'Elija un marco',
+    'SoaChooseFrameworkHint' => 'La declaración de aplicabilidad se redacta para un marco de trabajo a la vez.',
+    // The picker has a roster but nothing in it. Distinct from "this framework
+    // has no controls": there is no framework to write a statement about at all,
+    // and the fix is on a different page, so it says which one.
+    // The launcher's affordance row. "Open in browser" rather than "View"
+    // because it names what actually happens -- the document opens in a new tab,
+    // chrome-free -- and because Task 18 adds "Download as PDF" and "Download as
+    // XLSX" beside it, where "open" vs "download" is the distinction that
+    // matters.
+    // The document has no sidebar, so it needs its own way back for anyone who
+    // arrives from a bookmark or a shared link. Screen only; never printed.
+    'SoaBackToSelector' => 'Volver a la declaración de aplicabilidad',
+    'SoaNoFrameworks' => 'No hay marcos de trabajo activos',
+    'SoaNoFrameworksHint' => 'Instale o active un marco de control en Gobernanza > Definir marcos de control, y estará disponible aquí.',
+
+    // The two refusals. Both explain rather than just failing, because the user
+    // arrived here deliberately.
+    'SoaFrameworkInactiveTitle' => 'Este marco está inactivo.',
+    'SoaFrameworkInactiveBody' => 'Una declaración de aplicabilidad describe el ámbito de operación actual de una organización. Reactive el marco para generar una.',
+    'SoaFrameworkNotFoundBody' => 'Ese marco ya no existe.',
+
+    // A framework with no controls mapped into it. Not an error -- it is a real
+    // and recoverable state, and saying so beats an empty table.
+    'SoaNoControls' => 'Este marco no tiene controles',
+    'SoaNoControlsHint' => 'Asigne los controles al marco y su declaración de aplicabilidad los enumerará.',
+
+    // The second half of the statement-of-applicability launcher's affordance
+    // row, beside "Open in browser" and the existing 'DownloadAsXLSX'. Rendered
+    // only where the Import/Export Extra is active, which is what supplies the
+    // export. "Download as" rather than "Export to" so the pair reads as one
+    // choice of format, and so it matches the XLSX label already in this file.
+    'DownloadAsPDF' => 'Descargar como PDF',
+
+    // The fourth column of the control modal's "Mapped Control Frameworks"
+    // widget, between the reference code and the reference text. The
+    // FRAMEWORK's own title for the control it is citing -- what a Statement of
+    // Applicability prints beside the clause number. Distinct from the existing
+    // 'ReferenceText', which holds the framework's full control statement, and
+    // from the SimpleRisk control's own name.
+    'ReferenceSubject' => 'Tema de referencia',
+    // Placeholder/help text under that field, and the reason it is worth
+    // filling in: without it the Statement of Applicability has nothing to
+    // print but the source catalogue's name for its own control.
+    'ReferenceSubjectHint' => "El propio nombre que el marco de trabajo le da a este control.",
+
+    // Task 63: the row-scoped population sentence in the Set applicability
+    // modal, in the one situation where the plain
+    // 'ApplicabilityAppliesToControl' above leaves a real question unanswered --
+    // the user has controls ticked, or a standing "Select all N filtered", and
+    // has just opened the modal from ONE row's own action.
+    //
+    // It states the guarantee rather than implying it. A user whose escalated
+    // selection covers an entire framework needs to know that this click is not
+    // about to overwrite it, and {$n} is the count of the OTHER selected
+    // controls -- the target is excluded, because it is very often ticked too
+    // and a promise that included it would be false.
+    'ApplicabilityAppliesToControlNotSelection' => 'Se registrará únicamente contra "{$name}"; los controles {$n} que haya seleccionado no se verán afectados.',
+
+    // Task 65: the VISIBLE label on the controls toolbar's SoA button. The full
+    // sentence ('GenerateStatementOfApplicability' above) stays as the button's
+    // title and aria-label, and is still what the SoA page itself is called;
+    // this is the short form for a toolbar row it shares with the page's one
+    // primary action. At full length the secondary button measured more than
+    // twice the primary's width and became the largest element in the row.
+    //
+    // "SoA" is safe to abbreviate HERE and only here: the button appears solely
+    // when a single framework is scoped, beside an Applicability column, and it
+    // expands on hover.
+    'GenerateSoa' => 'Generar SoA',
+
+    // ===== Clone framework (Task 64) =======================================
+    // The framework half of Clone control's framing (CloneOfControlTitle /
+    // ClonedFromControlNotice above), and for the same reason: the clone
+    // pre-fills the Add Framework modal rather than creating anything, so the
+    // modal has to say what was carried over before the user saves it.
+    //
+    // Separate keys from the control pair rather than one shared "Clone of
+    // {$name}" -- the two banners do not say the same thing. A cloned control
+    // simply asks to be reviewed; a cloned FRAMEWORK has to explain two things
+    // its fields cannot: that the source's control mappings come with it, and
+    // that the empty scope statement is deliberate. The blank field is the
+    // whole reason the banner is longer than the control's -- a scope statement
+    // left blank with no explanation reads as a field that failed to populate,
+    // and the one thing a clone exists to be given is a NEW scope (Josh: "you
+    // might want to use the same controls as one framework, but scope it
+    // differently"). {$name} and {$n} follow the same client-side
+    // formatTemplate() substitution the rest of this page's templates use.
+    'CloneOfFrameworkTitle' => 'Clon de "{$name}"',
+    // {$n} is the count the rail is SHOWING for the source row -- its controls,
+    // not its raw mapping rows. Those differ (a framework can cite one control
+    // under two clause numbers, and the rail excludes deleted controls), and the
+    // number to promise is the one the user is looking at when they click and
+    // the one the clone's own rail row will show afterwards.
+    'ClonedFromFrameworkNotice' => 'Clonado de "{$name}". Sus controles {$n} se copiarán al nuevo marco, y todos ellos serán aplicables desde el principio; ninguna de sus decisiones de aplicabilidad se transferirá. La declaración de alcance está intencionalmente en blanco: indique el alcance que cubre este marco antes de generar su Declaración de Aplicabilidad.',
+    // Seeds the name field so the clone can be saved without a rename --
+    // framework names are unique, so a verbatim copy is refused on save.
+    'CloneOfFrameworkName' => '{$name} (Clon)',
+    'CloneFramework' => 'Clonar marco',
+    // Extras version independently of Core, so an updated Import/Export Extra
+    // can end up calling a Core function the installed Core does not have. The
+    // export refuses with this rather than fataling -- see
+    // soa_export_refuse_if_core_too_old(), extras/import-export/includes/soa_export.php.
+    'SoaExportRequiresNewerCore' => 'Esta exportación requiere una versión más reciente de SimpleRisk Core que la instalada. Actualice SimpleRisk y vuelva a intentar la exportación.',
+    // The framework ACQUISITION chooser (Task 26): "+ Add framework" asks how you
+    // want to get one, rather than assuming you want to type it in. Each option is
+    // rendered only when the route behind it actually exists for this user, so the
+    // hint text may state plainly what the route does -- it is never shown to
+    // someone who cannot take it.
+    'HowDoYouWantToAddAFramework' => '¿Cómo quieres añadir un marco?',
+    'CreateFrameworkManually' => 'Crea uno manualmente',
+    'CreateFrameworkManuallyHint' => 'Tú mismo defines el marco de trabajo y, a continuación, añades o asignas sus controles.',
+    // Named for the framework rather than for its vendor. The hint was reworded
+    // at the same time: it used to end "...load its Secure Controls Framework
+    // controls", which read as a stutter once the label carried those words.
+    'GetFrameworkFromScf' => 'Obtenga uno del Marco de Controles Seguros',
+    'GetFrameworkFromScfHint' => 'Seleccione un framework publicado y cargue sus controles mapeados en un solo paso.',
+    'ImportFrameworkFromCatalog' => 'Importar uno',
+    'ImportFrameworkFromCatalogHint' => 'Instale un marco de trabajo y sus controles desde el catálogo de contenido de SimpleRisk.',
+
+    // The framework acquisition chooser's third route, which now offers the
+    // Import-Export Extra's CONTROL import (a spreadsheet naming a framework
+    // that does not exist yet creates it) rather than the GitHub catalogue the
+    // two keys above described. Those two are left in place, unreferenced, so a
+    // customer maintaining a custom lang.<locale>.php still reconciles by tail
+    // diff.
+    'ImportFrameworkFromSpreadsheet' => 'Importar uno desde una hoja de cálculo',
+    'ImportFrameworkFromSpreadsheetHint' => 'Cargue una hoja de cálculo con los controles que indiquen el nombre del marco de trabajo, y ambos se crearán.',
+
+    // The Define Control Frameworks rail's second synthetic scope: the controls
+    // mapped to no framework at all. Its first, "All controls", reuses the
+    // existing AllControls key rather than adding a second string with the same
+    // English -- it replaced 'AllFrameworks' on that row, which named a union of
+    // frameworks while scoping to every control, mapped or not. 'AllFrameworks'
+    // is left in place and unreferenced by that page: other surfaces still use
+    // it, and every locale carries it.
+    'UnassignedControls' => 'Controles no asignados',
+    // APPLICABILITY VALIDATION FAILURES. These reach the user: the v2 endpoint
+    // returns the exception's message as the API status message and the page
+    // renders it in a toast, so a hardcoded English literal here would be
+    // permanently English for every locale.
+    //
+    // NOTHING THE CALLER TYPED IS EVER INTERPOLATED INTO THESE. The parameters
+    // are validated enum values, integer ids and byte limits the server itself
+    // owns -- naming the ALLOWED values rather than echoing the rejected one is
+    // deliberate (it is both safe and more useful than repeating a typo).
+    'ApplicabilityErrUnknownState' => 'Estado de aplicabilidad desconocido. Se esperaba uno de los siguientes: {$states}.',
+    'ApplicabilityErrNarrativeRequired' => 'Se requiere una narración para \'{$state}\'.',
+    'ApplicabilityErrNarrativeTooLong' => 'La narración es más larga que {$bytes} bytes.',
+    'ApplicabilityErrReasonRequired' => 'Se requiere un motivo de exclusión para marcar un control como no aplicable.',
+    'ApplicabilityErrProviderRequired' => 'Un proveedor está obligado a marcar un control como heredado.',
+    'ApplicabilityErrProviderTooLong' => 'El nombre del proveedor es más largo que {$bytes} bytes.',
+    'ApplicabilityErrReasonsNotFound' => 'Estas razones de aplicabilidad no existen: {$ids}.',
+    'ApplicabilityErrReasonsNotOffered' => 'Estas razones de aplicabilidad no se ofrecen para este estado: {$ids}.',
+    'ApplicabilityErrFrameworkNotFound' => 'El marco {$framework} no existe.',
+    'ApplicabilityErrControlsNotFound' => 'Estos identificadores de control no existen: {$ids}.',
+    // Controls/Risks import result messages (validation gate, individual bad-row
+    // alerts, and the batched submitted/created/updated summaries)
+    'ControlIdOrShortNameFieldRequired' => 'Es necesario asignar el campo ID de control o el campo Nombre corto de control; no se puede identificar una fila sin uno de ellos.',
+    'RiskImportSubjectNull' => 'ID de riesgo {$risk_id}: No se actualizó porque el campo Asunto está vacío o falta.',
+    'RiskImportSummary' => 'Se enviaron {$submitted} riesgos y se actualizaron {$updated} riesgos.',
+    'ControlImportSummary' => 'Se crearon los controles {$created} y se actualizaron los controles {$updated}.',
+    'ImportAdditionalIssuesSuppressed' => '{$count} fila(s) adicional(es) tuvieron problemas que no se muestran individualmente aquí.',
+    'EncryptionPipelineStalledTask' => 'Una canalización de cifrado (tarea #{$id}, {$type}) parece estar bloqueada: lleva {$status} un tiempo inusualmente largo sin avanzar. Esto suele significar que el trabajador de la cola en segundo plano no se está ejecutando; compruebe que esté programado y vuelva a intentarlo una vez que haya procesado la tarea bloqueada.',
+    'EncryptionPipelineStalledState' => 'Parece que una canalización de cifrado está bloqueada: lleva un tiempo inusualmente largo marcada como en curso sin que se haya identificado ninguna tarea en segundo plano. Esto suele significar que el proceso de cola no se está ejecutando o que una canalización anterior finalizó sin actualizarse correctamente. Consulte el registro de depuración antes de intentarlo de nuevo.',
+    // DEMO_MODE — shown when a visitor to a shared demo instance attempts one
+    // of the operations that would spoil the demo for the next visitor
+    'ActionDisabledOnDemoInstance' => 'Esta acción está deshabilitada en la instancia de demostración de SimpleRisk.',
+
+    // The one-click upgrade progress window: the step an upgrade is on, and
+    // the line shown once it finishes
+    // Shown when an upgrade's progress record has not been touched for long
+    // enough that the process running it is presumed gone
+    'UpgradeJobStalled' => 'La actualización dejó de responder. Compruebe el registro del servidor antes de volver a intentarlo.',
+    // Shown when an upgrade replaced the instance's configuration file and could
+    // not put the original back
+    // Shown when the database was brought up to date but the application files
+    // could not be replaced, so the instance has NOT moved to the new release
+    'UpdateAppFailed' => 'Los archivos de la aplicación no se actualizaron, por lo que esta instancia sigue ejecutando la versión anterior. Consulta el registro de SimpleRisk para conocer el motivo y, a continuación, vuelve a ejecutar la actualización.',
+    // The one-click upgrade progress screen
+    'UpgradeInProgress' => 'En curso',
+    'UpgradeStepNotNeeded' => 'No es necesario',
+    // Recovering an Upgrade Extra whose files are damaged
+    'UpgradeExtraDamagedReinstalling' => 'La actualización adicional instalada está dañada. Se descargará una copia nueva.',
+    'UpgradeExtraDamagedRepaired' => 'La actualización adicional fue reemplazada por una copia funcional.',
+    'UpgradeExtraDamagedFailed' => 'La actualización adicional está dañada y no se pudo reemplazar automáticamente. Reinstálela desde la página de extras o restaure simplerisk/extras/upgrade/ desde una copia de seguridad y vuelva a intentarlo.',
+    'UpgradeAlreadyCurrent' => 'Esta instancia ya está en {version}, que es la versión más reciente. No era necesario actualizar nada.',
+    'UpgradeShowWhatItDid' => 'Muestra lo que hizo',
+    'UpgradeBackupsListed' => 'Estas copias de seguridad se encuentran en Configurar > Copias de seguridad.',
+    'UpgradingTo' => 'Actualizando a {version}',
+    'UpgradeSafeToClose' => 'Puede cerrar esta ventana sin problemas. La actualización continúa en el servidor y esta página se volverá a cargar.',
+    'UpgradeDownloadLog' => 'Descargar registro',
+    'UpgradeStatementsApplied' => 'Se han aplicado las declaraciones {started} · {count}',
+    // The Upgrade Extra's pre-upgrade check of the instance it is sitting on
+    'UpgradeCheckingInstance' => 'Comprobando esta instancia',
+    'UpgradeInstanceChecked' => 'Instancia revisada, no se necesitan correcciones.',
+    'UpgradeBlockedByCorrections' => 'La actualización se detuvo porque esta instancia necesita una corrección que no se pudo aplicar automáticamente. Siga las instrucciones anteriores y vuelva a ejecutar la actualización. No se modificó nada más.',
+    // Shown when an upgrade replaced the instance's configuration file and could not put the original back
+    'ConfigRestoreFailed' => 'La actualización no pudo restaurar el archivo de configuración de esta instancia. Restaure simplerisk/includes/config.php desde la copia de seguridad antes de continuar.',
+    'UpgradeDidNotAdvance' => 'La función de actualización para la versión "{$version}" no avanzó la versión de la base de datos; se detiene para que no se vuelva a ejecutar.',
+    'BackupDatabaseNative' => 'Realizando una copia de seguridad de la base de datos (no se requieren herramientas externas)...',
+    'UpgradeAlreadyRunning' => 'Ya se está ejecutando una actualización en esta instancia.',
+    'UpgradeStatusUnreachable' => 'Se perdió la conexión con el servidor durante la actualización. Consulte el registro de SimpleRisk; es posible que la actualización aún esté en curso.',
+    'UpgradeJobUnwritable' => 'La actualización no pudo iniciarse porque no se pudo escribir el registro de progreso. Compruebe que el directorio temporal del sistema tenga permisos de escritura para el usuario web.',
+    'UpgradeStepCheckingVersions' => 'Comprobación de versiones',
+    'UpgradeStepUpgradingDatabase' => 'Actualización del esquema de la base de datos',
+    'UpgradeStepFinalising' => 'Aplicación de las conversiones posteriores a la actualización',
+    'UpgradeDatabaseHeading' => 'Actualizando la base de datos',
+    'UpgradeDatabaseComplete' => 'La actualización de la base de datos ha finalizado.',
+    'UpgradeHideWhatItDid' => 'Ocultar lo que hizo',
+    'UpgradeStateRunning' => 'En ejecución',
+    'UpgradeSessionExpired' => 'Tu sesión ha caducado. Vuelve a iniciar sesión para ver la actualización.',
+    'UpgradeLostContact' => 'Se perdió la conexión con el servidor. Recargue esta página para volver a conectarse a la actualización.',
+    'UpgradeDatabaseAlreadyCurrent' => 'La base de datos ya está en la versión de la aplicación.',
+    'UpgradeConversionsApplied' => 'Se aplicaron conversiones de motor y conjunto de caracteres.',
+    'UpgradeStoppedShort' => 'La actualización se detuvo en {reached} sin llegar a {app}. Consulte el registro del servidor.',
+    'UpgradeStepBackingUp' => 'Haciendo una copia de seguridad',
+    'UpgradeStepUpgradingFiles' => 'Actualizando los archivos de la aplicación',
+    'UpgradeStepUpgradingExtras' => 'Actualización de los extras instalados',
+    'UpgradeStepUpdatingUpgradeExtra' => 'Actualizando el complemento de actualización',
+    // The Upgrade Extra's pre-chain corrections: what is wrong, and what to do
+    // about it. These are the highest-stakes messages the upgrade produces --
+    // an operator reads them to unstick an instance that cannot upgrade.
+    'UpgradeCorrectionUnknownVersionTitle' => 'La versión de la base de datos registrada no menciona una versión real.',
+    'UpgradeCorrectionNoRecordedVersion' => 'La base de datos no tiene ninguna versión registrada.',
+    'UpgradeCorrectionUnknownVersionFinding' => 'La base de datos informa la versión \'{$version}\', que no especifica ninguna versión de SimpleRisk. La actualización no puede elegir un punto de partida a partir de ella.',
+    'UpgradeCorrectionUnknownVersionGuidance' => 'Establezca el valor de db_version en la versión cuyo esquema tiene realmente esta base de datos y, a continuación, ejecute la actualización de nuevo: UPDATE settings SET value=\'<release>\' WHERE name=\'db_version\'. Si el valor es un marcador de posición como 2026XXXX-001, el valor correcto casi siempre es la versión real más reciente que se instaló antes de ejecutar la actualización.',
+    'UpgradeCorrectionLegacySessionsTitle' => 'La tabla de sesiones no puede sobrevivir a la conversión de codificación de caracteres de la actualización.',
+    'UpgradeCorrectionLegacySessionsFinding' => '`sessions`.`id` es VARCHAR({$width}) en una tabla MyISAM. Convertirlo a utf8mb4, lo cual se hace a partir de la versión 20230106-001, excedería el límite de índice de 1000 bytes de MyISAM y la actualización fallaría.',
+    'UpgradeCorrectionLegacySessionsGuidance' => 'Una o más sesiones activas utilizan un ID de más de 128 caracteres. Si se redujera el tamaño de la columna, esos usuarios cerrarían sesión, por lo que se dejó como estaba. Vuelva a intentar la actualización cuando esas sesiones hayan caducado.',
+    'UpgradeCorrectionApplied' => 'Corregido.',
+    'UpgradeCorrectionFailed' => 'No se pudo aplicar esta corrección. Consulte el registro de SimpleRisk para conocer el motivo.',
+    'UpgradeCorrectionAppliedLine' => 'Corregido: {$title} {$message}',
+    'UpgradeCorrectionNotAppliedLine' => 'NO corregido: {$title} {$message}',
+    'UpgradeCorrectionsNeeded' => 'Correcciones necesarias antes de que esta instancia pueda actualizarse: {$count}',
+    'UpgradeCorrectionsNeededShort' => 'Se necesitan correcciones: {$count}',
+    'UpdateDatabase' => 'Actualizando la base de datos...',
+    // Authentication screens (index.php, reset.php, reset_password.php)
+    'EnterTheCredentialsForYourAccount' => 'Introduce las credenciales de tu cuenta.',
+    'TroubleSigningIn' => '¿Problemas para iniciar sesión? Póngase en contacto con su administrador de SimpleRisk.',
+    'BackToLogin' => 'Volver a iniciar sesión',
+    'Or' => 'o',
+    'WeWillEmailAResetTokenToYourAccount' => 'Le enviaremos un código de restablecimiento por correo electrónico a la dirección asociada a su cuenta.',
+    'EnterTheResetTokenFromYourEmail' => 'Introduce el código de restablecimiento que recibiste por correo electrónico junto con tu nueva contraseña.',
+    'ChooseANewPasswordToContinue' => 'Elige una nueva contraseña para continuar.',
+    'FromZeroToGRCInMinutes' => 'De cero a GRC en minutos.',
+    'OrganizationLogo' => 'Logotipo de la organización',
+    'LoginScreenBranding' => 'Personalización de la pantalla de inicio de sesión',
+    'CustomLogo' => 'Logotipo personalizado',
+    'CustomLogoHint' => 'PNG, JPG, GIF o WebP, hasta 1 MB y 2000x2000. Se muestra a una resolución máxima de 260x64, así que proporcione un tamaño aproximado de 520x128 para pantallas de alta densidad. La barra superior y el panel de inicio de sesión son oscuros, así que suba un logotipo que se vea bien sobre un fondo oscuro. Elimine el logotipo para volver al de SimpleRisk.',
+    'CurrentLogo' => 'Logotipo actual',
+    'RemoveLogo' => 'Eliminar el logotipo',
+    'LoginTagline' => 'eslogan de inicio de sesión',
+    'LoginTaglineHint' => 'Sustituye el eslogan de SimpleRisk en la pantalla de inicio de sesión. Una línea corta es la más legible. Déjalo en blanco para conservar el eslogan de SimpleRisk.',
+    'LoginNotice' => 'Aviso sobre el uso del sistema',
+    'LoginNoticeHint' => 'Se muestra en la pantalla de inicio de sesión antes de que alguien inicie sesión. Úselo para una notificación de uso aceptable o del sistema. Déjelo en blanco para no mostrar ningún aviso. No se permiten enlaces ni imágenes.',
+    'BrandingRequiresCustomization' => 'La personalización de la pantalla de inicio de sesión forma parte de las opciones de personalización adicionales.',
+    'LogoMustBeAnImage' => 'El logotipo debe ser una imagen en formato PNG, JPG, GIF o WebP.',
+    'LogoTooLarge' => 'El logotipo no debe superar 1 MB.',
+    'LogoDimensionsTooLarge' => 'El logotipo no debe ser mayor de 2000x2000 píxeles.',
+    'LogoDimensionsTooSmall' => 'El logotipo debe tener al menos 32 píxeles en su lado más largo.',
+    'LogoUploadFailed' => 'No se pudo cargar el logotipo. Inténtalo de nuevo.',
+    'LogoUpdated' => 'El logotipo fue actualizado.',
+    'LogoRemoved' => 'El logotipo fue retirado.',
+    'NoSystemUseNoticeSet' => 'No se ha configurado ningún aviso de uso del sistema.',
+    'NoticeSizeSmall' => 'Pequeño',
+    'NoticeSizeNormal' => 'Normal',
+    'NoticeSizeLarge' => 'Grande',
     '' => '',
 );
 ?>

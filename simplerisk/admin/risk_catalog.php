@@ -307,7 +307,6 @@
         // GET THE RISK DATATABLE
         risk_table = $('#risk_catalog').DataTable({
             ajax: BASE_URL + '/api/v2/admin/risk_catalog/datatable',
-            bSort: true,
             paging: false,
             ordering: false,
             columns: [
@@ -431,7 +430,6 @@
         
         threat_table = $('#threat_catalog').DataTable({
             ajax: BASE_URL + '/api/v2/admin/threat_catalog/datatable',
-            bSort: true,
             paging: false,
             ordering: false,
             columns: [

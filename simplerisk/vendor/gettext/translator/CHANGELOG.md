@@ -4,6 +4,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.2.3] - 2026-06-18
+### Added
+- Add "format" to ArrayGenerator options [#13]
+
+### Fixed
+- Fix "null as an array offset" deprecation [#12]
+
+## [1.2.2] - 2026-06-17
+### Fixed
+- ArrayGenerator with includeEmpty breaks generated .php file [#10]
+
 ## [1.2.1] - 2025-01-09
 ### Fixed
 - Support for PHP 8.4 [#9]
@@ -33,7 +44,12 @@ First version
 [#5]: https://github.com/php-gettext/Translator/issues/5
 [#8]: https://github.com/php-gettext/Translator/issues/8
 [#9]: https://github.com/php-gettext/Translator/issues/9
+[#10]: https://github.com/php-gettext/Translator/issues/10
+[#12]: https://github.com/php-gettext/Translator/issues/12
+[#13]: https://github.com/php-gettext/Translator/issues/13
 
+[1.2.3]: https://github.com/php-gettext/Translator/compare/v1.2.2...v1.2.3
+[1.2.2]: https://github.com/php-gettext/Translator/compare/v1.2.1...v1.2.2
 [1.2.1]: https://github.com/php-gettext/Translator/compare/v1.2.0...v1.2.1
 [1.2.0]: https://github.com/php-gettext/Translator/compare/v1.1.1...v1.2.0
 [1.1.1]: https://github.com/php-gettext/Translator/compare/v1.1.0...v1.1.1

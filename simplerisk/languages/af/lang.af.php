@@ -1345,7 +1345,6 @@ $lang = array(
     'UpdateAssetGroupTooltip' => 'Dateer Bategroep op',
     'DeleteAssetGroupTooltip' => 'Skrap Bategroep',
     'RemoveAssetTooltip' => 'Verwyder bate van Bategroep',
-    'ControlShortNameFieldRequired' => 'Beheer kort naam veld word vereis.',
     'AffectedAssetsWidgetPlaceholder' => 'Kies \'n bate-of Bategroep',
     'AffectedAssetsWidgetNoDropdownPlaceholder' => 'Voeg \'n bate naam by',
     'AffectedAssetsWidgetInstructions' => 'Kies \'n bate of Bategroep. Jy kan \'n nuwe bate skep deur sy naam by die lys te voeg.',
@@ -2226,7 +2225,7 @@ $lang = array(
     'IncidentSummaryUpdateSuccessful' => 'Opsomming suksesvol opgedateer.',
     'ImportSuccessful' => 'Invoer suksesvol!',
     'Document' => 'Dokument',
-    'SelfAssessments' => 'Self Assesserings',
+    'SelfAssessments' => 'Selfassesserings',
     'AssetId'=>'Bate-ID',
     'ExportTemplateGroups' => 'Voer sjabloongroepe uit',
     'ImportTemplateGroups' => 'Voer sjabloongroepe in',
@@ -2341,7 +2340,7 @@ $lang = array(
     'Advanced_Search_no_results_1' => 'Dit lyk asof daar geen resultate vir jou navraag is nie.',
     'Advanced_Search_no_results_2' => 'Gaan jou soektog na vir enige tikfoute, spelfoute of probeer \'n ander soekterm.',
     'IncidentsPerDay' => 'Voorvalle per dag',
-    'CurrentVsDesiredMaturity' => 'Huidige vs gewenste volwassenheid deur beheerfamilie',
+    'CurrentVsDesiredMaturity' => 'Volwassenheid per Kontrolefamilie',
     'RiskDistribution' => 'Risiko verspreiding',
     'RiskDistributionDescription'=>'Bogenoemde sirkeldiagramme help om die verspreiding van risiko\'s tussen die verskillende risikovlakke vir beide inherente en residuele risiko te wys. Ons kan hierdie twee pasteie gebruik om vordering in ons risikoversagtingspogings te toon. As die Residual Risiko-pastei groot snye van baie hoë of hoë risiko\'s toon, kan dit \'n teken wees dat jou organisasie te veel risiko\'s aangaan en verdere versagtingspogings word vereis.',
     'EnableTabs' => 'Aktiveer oortjies',
@@ -2413,7 +2412,7 @@ $lang = array(
     'EditModeInformation' => 'Skakel Redigeermodus aan. Wysig die uitleg. Deur dit af te skakel, sal die uitleg nie outomaties gestoor word nie.',
     'InvalidLayout' => 'Ongeldige uitleg!',
     'InvalidLayoutOnlyCustomAllowedAsDefault' => 'Ongeldige uitleg! Slegs pasgemaakte uitlegte kan as verstek gestoor word.',
-    'LayoutSaved' => 'Uitleg gestoor!',
+    'LayoutSaved' => 'Jou dashboard-uitleg is gestoor.',
     'DefaultLayout' => 'Verstek uitleg',
     'DefaultLayoutInformation' => 'Stel hierdie uitleg as die verstek, om gebruik te word in plaas van die een wat deur SimpleRisk verskaf word vir gebruikers wat nie \'n pasgemaakte uitlegstel het nie. Jy kan slegs \'n gestoorde nie-leë persoonlike uitleg as verstek stel. As \'n uitleg wat as verstek gemerk is, na die verstekuitleg herstel word, sal dit dit herstel na die verstek wat deur SimpleRisk verskaf word.',
     'LayoutDefaultStatusUpdated' => 'Die uitleg se verstekstatus is opgedateer.',
@@ -2422,7 +2421,7 @@ $lang = array(
     'DefaultLayoutRestored' => 'Verstek uitleg is suksesvol teruggestel!',
     'SavedLayoutRestored' => 'Gestoorde uitleg is suksesvol teruggestel!',
     'ConfirmRestoreLayout' => 'Is jy seker? Jy sal jou veranderinge wat aan hierdie uitleg gemaak is, verloor.',
-    'ConfirmDisableEditModeWithPendingChanges' => 'Jy het ongestoorde veranderinge wat jy sal verloor as jy die bladsy verlaat. Is jy seker jy wil \'Redigeermodus\' deaktiveer en moontlik vergeet om jou veranderinge te stoor?',
+    'ConfirmDisableEditModeWithPendingChanges' => 'Jy het ongestoorde veranderinge aan hierdie dashboard. Gooi hulle weg en stop met wysiging?',
     'ConfirmSave' => 'Deur hierdie veranderinge te stoor, sal jou voorheen gestoorde uitleg oorskryf. Is jy seker jy wil voortgaan?',
     'ConfirmSaveAdminDefault' => 'Hierdie uitleg is gestel as die verstek vir hierdie uitlegtipe. Deur hierdie veranderinge te stoor, sal die uitleg verander vir alle gebruikers wat nie \'n gepasmaakte uitleg vir hierdie uitlegtipe gestel het nie. Is jy seker jy wil voortgaan?',
     'RisksByMonth' => 'Risiko\'s per maand',
@@ -3111,6 +3110,1523 @@ $lang = array(
     'ResendAssessmentDescription' => 'Heruitreik die assessering outomaties op \'n herhalende kadens.',
     'ResendEveryDays' => 'Stuur weer elke {$day} dae',
     'QuestionnaireSaveBarHint' => '“Stoor en Stuur” stuur die vraelys onmiddellik aan sy kontakte uit.',
+    // Home dashboard — KPI tile labels
+    'NewSelfAssessment' => 'Nuwe Selfassessering',
+    'SelfAssessmentPrereqIntro' => 'Selfassesserings laat jou toe om jou organisasie te evalueer teen \'n Veilige Beheerraamwerk en outomaties risiko\'s te genereer uit die beheermaatreëls wat misluk. Twee opstelstappe is eers nodig:',
+    'RegisterYourInstance' => 'Registreer jou instansie',
+    'RegisterYourInstanceHelp' => 'Registrasie koppel hierdie instansie aan SimpleRisk se lisensiediens sodat gratis ekstras (insluitend die SCF) afgelaai kan word.',
+    'InstallTheSCF' => 'Installeer die Veilige Beheerraamwerk',
+    'InstallTheSCFHelp' => 'Die SCF is \'n gratis ekstra wat die raamwerke, beheervrae en risikokarterings verskaf waarteen hierdie funksie assesseer. Installasie loop in die agtergrond en kan \'n paar minute duur.',
+    'GoToRegistration' => 'Gaan na Registrasie',
+    'GoToSCF' => 'Gaan na Veilige Beheerraamwerk',
+    'SelfAssessmentEnableTip' => 'Opsioneel: onder Bestuur > Raamwerke kan jy spesifieke SCF-raamwerke in staat stel om \'n kort saamgestelde lys te sien wanneer \'n assessering begin word. Jy kan ook teen enige raamwerk in die volledige SCF-katalogus assesseer sonder om dit te aktiveer.',
+    'ChooseAFramework' => 'Kies \'n raamwerk om teen te assesseer',
+    'EnabledFrameworks' => 'Geaktiveerde raamwerke',
+    'AllScfFrameworks' => 'Alle SCF-raamwerke',
+    'Start' => 'Begin',
+    'Resume' => 'Hervat',
+    'ControlQuestion' => 'Beheervraag',
+    'NotApplicable' => 'N/A',
+    'SaveProgress' => 'Stoor vordering',
+    'MarkComplete' => 'Merk Voltooi',
+    'AnsweredOfTotal' => 'geantwoord',
+    'FailedSoFar' => 'tot dusver misluk',
+    'StartedBy' => 'Begin deur',
+    'FailedControls' => 'Mislukte kontroles',
+    'PushToRisk' => 'Stoot na Risiko',
+    'ConfirmDeleteSelfAssessment' => 'Vee hierdie selfassessering uit? Dit kan nie ongedaan gemaak word nie.',
+    'ConfirmCompleteSelfAssessment' => 'Merk hierdie assessering as voltooid? Risiko\'s sal gegenereer word deur mislukte beheermaatreëls.',
+    'NoSelfAssessmentsYet' => 'Geen selfassesserings nog nie. Begin een om te begin.',
+    'RequestFailed' => 'Die versoek kon nie voltooi word nie. Probeer asseblief weer.',
+    'NoPendingRisks' => 'Geen hangende risiko\'s nie. Voltooi \'n assessering om risiko\'s uit mislukte beheermaatreëls te genereer.',
+    'NoFailedControls' => 'Geen kontroleresultate om vir hierdie filter te wys nie.',
+    'ControlResultsTruncated' => 'Wys die mees onlangse 2000 resultate. Verfyn die filter om meer te sien.',
+    'GeneratedFromSelfAssessment' => 'Gegenereer uit selfassessering',
+    'SelfAssessmentMitigationSolution' => 'Implementeer die kontroles wat hieronder gekoppel is, wat tydens hierdie selfassessering as misluk geïdentifiseer is, om hierdie risiko te verminder.',
+    'NSelected' => '{n} gekies',
+    'FilterByControl' => 'Filtreer volgens kontrole',
+    'Pushing' => 'Druk…',
+    'Deleting' => 'Besig om uit te vee…',
+    'ConfirmPushSelectedPendingRisks' => 'Stoot die {n} gekose hangende risiko(\'s) na risiko\'s?',
+    'ConfirmDeleteSelectedPendingRisks' => 'Vee die {n} gekose hangende risiko(\'s) uit? Dit kan nie ongedaan gemaak word nie.',
+    'ConfirmDeleteSelectedSelfAssessments' => 'Vee die {n} gekose selfassessering(e) uit? Dit kan nie ongedaan gemaak word nie.',
+    'BulkPartialFailure' => '{n} van {total} items het geslaag; die res het misluk. Verfris om die huidige status te sien.',
+
+    // Workflows Extra - deactivation confirm ('Deactivate' at line 480 is reused as-is)
+    'WorkflowsExtraDeactivateConfirm' => 'Deaktiveer die Werkvloei Ekstra? Alle gebruiker-geskepte werkvloeidefinisies sal permanent verwyder word. Stelselwerkvloei sal behoue bly.',
+    'HomeKpiOpenRisks' => 'Oop risiko\'s',
+    'HomeKpiNeedsReview' => 'Benodig hersiening',
+    'HomeKpiUnmitigated' => 'Onversag',
+    'HomeKpiClosedRisks' => 'Geslote risiko\'s',
+    'HomeKpiControlPassRate' => 'Beheer Slaagsyfer',
+    'HomeKpiFailingControls' => 'Mislukte beheermaatreëls',
+    'HomeKpiOpenAudits' => 'Oop Oudits',
+    'HomeKpiTestsDueSoon' => 'Toetse binnekort verskuldig',
+    'HomeKpiActiveFrameworks' => 'Aktiewe raamwerke',
+    'HomeKpiTotalControls' => 'Totale Kontroles',
+    // Home dashboard — What's Next feed
+    'WhatsNext' => 'Wat is volgende?',
+    'WhatsNextAllCaughtUp' => 'Jy is heeltemal op hoogte.',
+    'WhatsNextRegisterInstance' => 'Registreer jou SimpleRisk-instansie',
+    'WhatsNextSubmitFirstRisk' => 'Dien jou eerste risiko in',
+    'WhatsNextLoadFramework' => 'Laai \'n beheerraamwerk',
+    'WhatsNextUnreviewedRisks' => 'Risiko\'s om te hersien',
+    'WhatsNextUnmitigatedRisks' => 'Risiko\'s om te verminder',
+    'WhatsNextInitiateAudits' => 'Oudits om te begin',
+    // Home dashboard — widget picker type labels
+    'WidgetType_kpi' => 'KPI-teël',
+    'WidgetType_whats_next' => 'Lys',
+    // Home dashboard — hub catalog entry
+    'HomeDashboard' => 'Tuis',
+    'HomeDashboardDesc' => 'Jou beginpunt — sleutelmaatstawwe en wat om volgende te doen, in \'n oogopslag.',
+    'HomeChartRiskByLevel' => 'Risiko per vlak',
+    'HomeKpiThisMonth' => 'hierdie maand',
+    'HomeKpiNoChange' => 'Geen verandering',
+    'EditLayout' => 'Wysig uitleg',
+    'ListHighestRisks' => 'My hoogste risiko\'s',
+    'ListPastDueReviews' => 'Agterstallige Hersienings',
+    'ListUpcomingTests' => 'Komende Toetse',
+    'ListRecentFailures' => 'Onlangse mislukkings',
+    'ListPoliciesReview' => 'Dokumente ter hersiening',
+    'ListExpiringExceptions' => 'Uitsonderings wat verval',
+    'ImKpiOpenIncidents' => 'Totaal Oop',
+    'ImKpiOverdue' => 'Agterstallig',
+    'ImKpiMttr30' => 'Gemiddelde Resolusie',
+    'ImKpiMttrQuarter' => 'Gem. Oplossing (90d)',
+    'ImKpiMttrYear' => 'Gem. Oplossing (1j)',
+    'ImKpiMttrAll' => 'Gem. Oplossing (Alles)',
+    'ImKpiResolved30' => 'Opgelos',
+    'ImChartBySeverity' => 'Volgens Ernstigheid',
+    'ImChartByStatus' => 'Volgens Status',
+    'ImListRecent' => 'Onlangse voorvalle',
+    'ImListUnassigned' => 'Ongetoegekende voorvalle',
+    'HomeKpiOpenExceptions' => 'Oop Uitsonderings',
+    'HomeKpiPolicies' => 'Beleide',
+    'ResolutionTargets' => 'Resolusieteikens (Dae)',
+    'ResolutionTargetsHelp' => 'Die aantal dae wat \'n voorval oop mag bly voordat dit as agterstallig getel word.',
+    'DefaultTarget' => 'Verstek',
+    'PerSeverityOverrideHelp' => 'Opsioneel kan die verstekwaarde vir spesifieke ernsgrade oorskryf word (los leeg om die verstekwaarde te gebruik):',
+    'ResolutionTargetUsesDefault' => 'Standaard (%d)',
+    'SeverityColors' => 'Ernstigheidskleure',
+    'SeverityColorsHelp' => 'Die kleur vir elke erns, wat op die Insident-dashboard en die insidentbesonderhede-bladsy getoon word.',
+    'Editing' => 'Redigering',
+    'SetAsDefaultForEveryone' => 'Stel as verstek vir almal',
+    'EditLayoutHint' => 'Sleep \'n teël om te skuif · sleep \'n rand om te verander · ✕ om te verwyder',
+    'RemoveWidget' => 'Verwyder widget',
+    'AddWidget' => 'Voeg widget by',
+    'AddToDashboard' => 'Voeg by dashboard',
+    'AllWidgetsAdded' => 'Alle beskikbare widgets is op hierdie dashboard.',
+    'AddText' => 'Voeg teks by',
+    'GettingStarted' => 'Aan die gang kom',
+    'GettingStartedTitle' => 'Welkom by SimpleRisk',
+    'GettingStartedSubtitle' => '\'n Paar vinnige stappe om die meeste uit SimpleRisk te kry.',
+    'GSProgressCount' => '{done} van {total} voltooi',
+    'GSNextUp' => 'Volgende op',
+    'GSArea_setup' => 'Opstelling',
+    'GSArea_risk' => 'Risiko',
+    'GSArea_assessment' => 'Assessering',
+    'GSArea_compliance' => 'Nakoming',
+    'GSArea_assets' => 'Bates',
+    'GSArea_ai' => 'Opstelling',
+    'GSHide' => 'Versteek Aan die gang',
+    'GSDismissStep' => 'Maak hierdie stap toe',
+    'GSAllSet' => 'Jy\'s gereed – mooi werk!',
+    'GSWalkthrough' => '30-minuut stap-vir-stap gids',
+    'Explore' => 'Verken',
+    'Learn' => 'Leer',
+    'AdminGuide' => 'Admingids',
+    'LearnMore' => 'Leer meer',
+    'GSRegisterTitle' => 'Registreer jou instansie',
+    'GSRegisterDesc' => 'Aktiveer ondersteuning en opdaterings met jou lisensiesleutel.',
+    'GSRegisterCta' => 'Registreer',
+    'GSScfTitle' => 'Installeer die Veilige Beheerraamwerk',
+    'GSScfDesc' => 'Installeer die SCF — jou beheerbiblioteek oor standaarde heen.',
+    'GSScfCta' => 'Installeer SCF',
+    'GSInviteTitle' => 'Nooi jou span',
+    'GSInviteDesc' => 'Voeg kollegas by sodat werk toegeken en hersien kan word.',
+    'GSInviteCta' => 'Voeg gebruikers by',
+    'GSAiTitle' => 'Konfigureer KI',
+    'GSAiDesc' => 'Verbeter jou SimpleRisk-ervaring met Kunsmatige Intelligensie.',
+    'GSAiCta' => 'Stel KI op',
+    'GSSubmitRiskTitle' => 'Dien jou eerste risiko in',
+    'GSSubmitRiskDesc' => 'Neem \'n risiko vas wat jou organisasie in die gesig staar.',
+    'GSSubmitRiskCta' => 'Dien risiko in',
+    'GSMitigateTitle' => 'Beplan \'n versagting',
+    'GSMitigateDesc' => 'Voeg \'n versagtingsplan by \'n oop risiko.',
+    'GSMitigateCta' => 'Beplan versagting',
+    'GSReviewTitle' => 'Doen \'n risiko-oorsig',
+    'GSReviewDesc' => 'Hersien \'n risiko en besluit oor die volgende stap.',
+    'GSReviewCta' => 'Voer hersiening uit',
+    'GSDefineTestTitle' => 'Definieer \'n beheertoets',
+    'GSDefineTestDesc' => 'Stel op hoe \'n kontrole getoets word.',
+    'GSDefineTestCta' => 'Definieer toets',
+    'GSInitiateAuditTitle' => 'Begin \'n oudit',
+    'GSInitiateAuditDesc' => 'Begin \'n toets- of ouditsiklus.',
+    'GSInitiateAuditCta' => 'Begin oudit',
+    'GSAssetTitle' => 'Voeg jou bates by',
+    'GSAssetDesc' => 'Inventariseer die bates wat jy beskerm.',
+    'GSAssetCta' => 'Voeg bates by',
+    'GSInvalidStep' => 'Ongeldige aanvangstap.',
+    'GSPagerLabel' => '{from}–{to} van {total}',
+    'GSPrevCards' => 'Wys vorige stappe',
+    'GSNextCards' => 'Wys volgende stappe',
+    'WhatsNextInstallSCF' => 'Installeer die Veilige Beheerraamwerk',
+    'GSActivateScfTitle' => 'Aktiveer die Veilige Beheerraamwerk',
+    'GSActivateScfDesc' => 'Skakel die geïnstalleerde SCF aan om die kontroles in jou biblioteek te laai.',
+    'GSActivateScfCta' => 'Aktiveer SCF',
+    'WhatsNextActivateSCF' => 'Aktiveer die Veilige Beheerraamwerk',
+    'GSEnableFrameworksTitle' => 'Aktiveer toepaslike raamwerke',
+    'GSEnableFrameworksDesc' => 'Skakel die SCF-raamwerke aan wat op jou organisasie van toepassing is.',
+    'GSEnableFrameworksCta' => 'Aktiveer raamwerke',
+    'WhatsNextEnableFrameworks' => 'Aktiveer toepaslike raamwerke',
+    'GSSelfAssessTitle' => 'Neem \'n selfassessering',
+    'GSSelfAssessDesc' => 'Evalueer jou organisasie teen meer as 250 raamwerke en genereer risiko\'s uit mislukte beheermaatreëls.',
+    'GSSelfAssessCta' => 'Begin assessering',
+    'WhatsNextTakeSelfAssessment' => 'Neem \'n selfassessering',
+    'WhatsNextConfigureAI' => 'Konfigureer KI',
+    'ListUnreviewedRisks' => 'Ongeëvalueerde Risiko\'s',
+    'ControlsByDomain' => 'Kontroles per Domein',
+    'ControlsByClass' => 'Kontroles per Klas',
+    'ControlsByPhase' => 'Kontroles per Fase',
+    'ControlsByPriority' => 'Kontroles volgens prioriteit',
+    'ControlsByCurrentMaturity' => 'Kontroles volgens huidige volwassenheid',
+    'ControlStatusOverTime' => 'Beheerstatus oor tyd',
+    'ComplianceTotalControls' => 'Totale Beheermaatreëls',
+    'HomeKpiOverdueTests' => 'Agterstallige Toetse',
+    'Total' => 'Totaal',
+    'StartTheTest' => 'Begin die toets',
+    'TestStartsAutomatically' => 'Toets begin outomaties',
+    'GoToTest' => 'Gaan na Toets',
+    'NotTested' => 'Nie getoets nie',
+    'PassingPercent' => 'Slaagpersentasie',
+    'ListFailingControls' => 'Mislukte beheermaatreëls',
+    'Exceptions' => 'Uitsonderings',
+    'Documents' => 'Dokumente',
+    'ControlsBelowMaturity' => 'Kontroles onder volwassenheid',
+    'ControlsAtMaturity' => 'Kontroles by Volwassenheid',
+    'ControlsAboveMaturity' => 'Beheer bo volwassenheid',
+    'Maturity' => 'Volwassenheid',
+    'AllTime' => 'Alle tye',
+    'Last7Days' => 'Laaste 7 Dae',
+    'Last30Days' => 'Laaste 30 Dae',
+    'Last90Days' => 'Laaste 90 Dae',
+    'YearToDate' => 'Jaar tot op datum',
+    'CustomRange' => 'Pasgemaakte reeks',
+    'Age' => 'Ouderdom',
+    'ImOpenIncidents' => 'Oop Voorvalle',
+    'ImClosedIncidents' => 'Geslote Voorvalle',
+    'ImByAttackVector' => 'Maak oop deur Aanvalvektor',
+    'ImBySource' => 'Oopmaak volgens Bron',
+    'AverageDaysToDetect' => 'Gemiddelde dae om op te spoor',
+    'ImKpiAvgTtd' => 'Gemiddelde Deteksie',
+    'Days' => 'Dae',
+    'ImKpiCriticalOpen' => 'Kritieke Oop',
+    'ImKpiResolvedInSla' => 'Opgelos in SLA',
+    'Events' => 'Gebeurtenisse',
+    'ImEventsIncidents' => 'Gebeurtenisse en voorvalle',
+    'ImSourceBreakdown' => 'Bron volgens kategorie',
+    'ImClosureSummary' => 'Sluitingsopsomming',
+    'ImSignalQuality' => 'Seinkwaliteit',
+    'ImSignalLowSample' => 'Nie genoeg beoordeelde sluitings om betroubaar te gradeer nie',
+    'ImportExportExportPdf' => 'Uitvoer PDF',
+    'ImportExportExporting' => 'Berei PDF voor…',
+    'ImportExportExportFailed' => 'Kon nie die PDF genereer nie. Probeer asseblief weer.',
+    'ImportExportGeneratedOn' => 'Gegenereer',
+    'ImportExportPage' => 'Bladsy',
+    'ImportExportPageOf' => 'van',
+    'ResolutionTargetsUpdated' => 'Resolusieteikens per ernsgraad is opgedateer.',
+    'SeverityColorsUpdated' => 'Ernstigheidskleure is opgedateer.',
+    // AI Capabilities Catalog + AI settings hub (unified AI settings)
+    'AICapGrcRecommendations' => 'Aanbevelings van die GRC-raamwerk',
+    'AICapGrcRecommendationsDesc' => 'KI-gegenereerde raamwerkaanbevelings en \'n uitvoerende opsomming, afgestem op jou organisasie se konteks.',
+    'AICapRiskRecommendations' => 'Risiko-aanbevelings',
+    'AICapRiskRecommendationsDesc' => 'Voorstelle per risiko vir risikobesonderhede en -versagting, gegenereer uit die risiko, die versagting daarvan en hersiening.',
+    'AICapFairAnalysis' => 'FAIR Kwantitatiewe Analise',
+    'AICapFairAnalysisDesc' => 'KI skat Beta-PERT-verliesparameters; SimpleRisk voer \'n Monte Carlo-berekening van 10 000 iterasies uit om risiko in dollars te kwantifiseer.',
+    'AICapDocumentCustomization' => 'Dokumentaanpassing',
+    'AICapDocumentCustomizationDesc' => 'Vul plekhouers in en maak beleidsteks in jou dokumentsjablone skoon sodat \'n standaardbeleid as joune lees.',
+    'AICapDocumentControlMatching' => 'Dokument ↔ Beheer-ooreenstemming',
+    'AICapDocumentControlMatchingDesc' => 'Koppel outomaties kontroles aan beleidsdokumente met \'n vertrouenstelling en redenasie wat jy kan hersien.',
+    'AICapDocumentTemplates' => 'Dokumentsjabloonbiblioteek',
+    'AICapDocumentTemplatesDesc' => 'Installeer saamgestelde beleid-, riglyn- en proseduresjablone uit die SimpleRisk-biblioteek.',
+    'AICapControlReferenceEnhancement' => 'Verbetering van beheerverwysing',
+    'AICapControlReferenceEnhancementDesc' => 'Doen navorsing oor woordelikse kontroleteks via websoektogte om jou kontroleverwysings te verryk.',
+    'AICapAiChat' => 'Kletsassistent',
+    'AICapAiChatDesc' => '\'n GRC-assistent wat vrae in konteks beantwoord oral in SimpleRisk.',
+    'AICapSurfacedRecommendations' => 'Kunsmatige Intelligensie-bladsy',
+    'AICapSurfacedRiskView' => 'Risiko-aansig — Besonderhede en versagting',
+    'AICapSurfacedFairTab' => 'Risiko-aansig — FAIR-oortjie',
+    'AICapSurfacedDocuments' => 'Bestuur — Dokumente',
+    'AICapSurfacedControls' => 'Nakoming — Beheermaatreëls',
+    'AICapSurfacedEveryPage' => 'Elke bladsy — swewende assistent',
+    'AICapabilitiesCatalog' => 'Vermoëns',
+    'AICapSearchPlaceholder' => 'Soek KI-vermoëns…',
+    'AICapFilterDomain' => 'Domein',
+    'AICapFilterTier' => 'Vlak',
+    'AICapFilterState' => 'Toestand',
+    'AICapTierExtra' => 'KI Ekstra',
+    'AICapStateLocked' => 'Gesluit',
+    'AICapIncludedInExtra' => 'Ingesluit in die KI Ekstra',
+    'AICapPurchaseExtra' => 'Koop die KI Ekstra',
+    'AICapNeedsProvider' => 'Vereis verskafferopstelling',
+    'AICapNoMatch' => 'Geen ooreenstemmende vermoëns nie',
+    'AICapNoMatchHint' => 'Probeer \'n ander domein, vlak of soekterm.',
+    'AICapCountSingular' => 'vermoë',
+    'AICapCountPlural' => 'vermoëns',
+    'DomainAssistant' => 'Assistent',
+    'AICapLoadError' => 'Kon nie KI-vermoëns laai nie. Probeer asseblief weer.',
+    'AIProviderConfigSubtitle' => 'Koppel SimpleRisk aan \'n KI-verskaffer om die KI-vermoëns aan te dryf.',
+    'AIHowToGetAPIKeyFor' => 'Hoe om \'n API-sleutel te kry vir',
+    'AIExtraNotActivated' => 'Nie geaktiveer nie',
+    'AIExtraValueProp' => 'Verbeterde KI — FAIR-risikokwantifisering, dokument- en beheerbystand, en die KI-kletsassistent.',
+    'AICtxOrgName' => 'Wat is die naam van jou organisasie?',
+    'AICtxOrgSizeEmployees' => 'Hoeveel werknemers het u organisasie?',
+    'AICtxOrgSizeRevenue' => 'Wat is die jaarlikse inkomste van u organisasie?',
+    'AICtxOrgObjective' => 'Wat is u organisasie se primêre besigheidsdoelwitte en strategiese doelwitte?',
+    'AICtxOrgIndustry' => 'Wat is die primêre bedryf of sektor van u organisasie?',
+    'AICtxOrgLocation' => 'In watter lande of streke is u organisasie bedrywig?',
+    'AICtxOrgType' => 'Watter tipe organisasie is jy?',
+    'AICtxDataTypes' => 'Watter tipes data versamel, verwerk of stoor u organisasie (bv. persoonlike data, finansiële data, gesondheidsinligting)?',
+    'AICtxDataCustomers' => 'Wie is jou primêre kliënte of belanghebbendes (bv. verbruikers, besighede, regeringsentiteite)?',
+    'AICtxDataRegulatory' => 'Is u onderworpe aan enige spesifieke regulatoriese vereistes in u bedryf?',
+    'AICtxDataThirdParties' => 'Het u enige derdeparty-verhoudings of uitkontrakteringsdienste wat voldoeningstoesig vereis?',
+    'AICtxMaturityIssues' => 'Het u enige beduidende voldoeningsprobleme, sekuriteitsbreuke of risikogebeure in die afgelope 3-5 jaar ervaar?',
+    'AICtxMaturityConcerns' => 'Is daar enige spesifieke areas van kommer of verbetering wat u in u huidige GRC-prosesse geïdentifiseer het?',
+    'AICtxMaturityAppetite' => 'Wat is u organisasie se risiko-aptyt en -toleransie?',
+    'AICtxMaturityLevel' => 'Wat is u huidige vlak van volwassenheid in terme van bestuur, risikobestuur en nakomingspraktyke?',
+    'AICtxImplementationChanges' => 'Is daar enige komende veranderinge in u besigheidsmodel, tegnologie-infrastruktuur of mark wat u voldoeningsbehoeftes kan beïnvloed?',
+    'AICtxImplementationResourcesBudget' => 'Watter begrotingstoewysingsbronne het u beskikbaar vir die implementering en instandhouding van voldoeningsraamwerke?',
+    'AICtxImplementationResourcesPersonnel' => 'Watter personeelhulpbronne het u beskikbaar vir die implementering en instandhouding van voldoeningsraamwerke?',
+    'AICtxImplementationResourcesTechnology' => 'Watter tegnologie-infrastruktuurhulpbronne het u beskikbaar vir die implementering en instandhouding van voldoeningsraamwerke?',
+    'AICtxImplementationResourcesTraining' => 'Watter opleidings- en ontwikkelingshulpbronne het u beskikbaar vir die implementering en instandhouding van voldoeningsraamwerke?',
+    'AICtxImplementationResourcesExternal' => 'Watter eksterne ondersteuningshulpbronne het u beskikbaar vir die implementering en instandhouding van voldoeningsraamwerke?',
+    'AIAPIKeySecurityNote' => 'Jou sleutel word aan die bedienerkant gestoor en nooit na die blaaier terugbesorg nie. Verskaffer-URL\'e word gevalideer teen \'n SSRF-toelaatlys wat in die config.php-lêer konfigureerbaar is.',
+    'AIContextEgressWarning' => 'Jou antwoorde word na jou gekonfigureerde KI-verskaffer gestuur om sy aanbevelings te baseer. Moenie enigiets insluit wat jy nie met hulle sou deel nie.',
+    'Provider' => 'Verskaffer',
+    'AIProviderURLHostNotAllowed' => 'Die gasheer "%s" is nie op die KI-verskaffer se toelaatlys nie. Voeg dit by $ai_allowed_provider_hosts in config.php, en stoor dit dan. (Bekende KI-verskaffers en 127.0.0.1-terugloopadresse word altyd toegelaat.)',
+    'AIContextLastSaved' => 'Laas gestoor',
+    'AIContextNeverSaved' => 'Nog nie gestoor nie',
+    'AICtxCardSubtitle' => '21 vrae oor vier areas. Hoe meer jy antwoord, hoe skerper elke aanbeveling.',
+    'AICtxAnswered' => '%1$d van %2$d het geantwoord',
+    'AICtxAllOptional' => 'Opsioneel',
+    'AIContextSaving' => 'Stoor…',
+    'AIContextSaveFailed' => 'Kon nie jou veranderinge stoor nie. Probeer asseblief weer.',
+    'AISettingsSavedNotReachable' => 'KI-instellings gestoor, maar die verskaffer kon nie bereik word nie. Maak seker dat dit loop en dat die URL korrek is.',
+    'AISettingsSavedKeyRequired' => 'KI-instellings is gestoor, maar hierdie verskaffer benodig \'n API-sleutel voordat die funksies daarvan gebruik kan word.',
+    'TestAndSave' => 'Toets en stoor',
+    'AICapEnableAll' => 'Aktiveer alles',
+    'AICapDisableAll' => 'Deaktiveer alles',
+    'AISettingsSavedConnected' => 'KI-instellings gestoor — verbinding suksesvol.',
+    'AISettingsSavedNotConnected' => 'KI-instellings gestoor, maar die verbindingstoets het misluk. Kontroleer die model, sleutel en URL.',
+    'AIProviderURLNotOnAllowlist' => 'Hierdie gasheer is nie op die KI-verskaffer se SSRF-toelaatlys nie. Voeg dit by $ai_allowed_provider_hosts in config.php voordat dit gestoor kan word.',
+    'Connected' => 'Verbonde',
+    'NotConnected' => 'Nie gekoppel nie',
+    'AICapBulkError' => 'Sommige vermoëns kon nie opgedateer word nie. Probeer asseblief weer.',
+    'QuestionnaireAlreadyCompleted' => 'Hierdie vraelys is reeds voltooi.',
+    'QuestionnaireDraftError' => 'Kon nie konsep stoor nie. Sien konsole vir besonderhede.',
+
+    // Audit cadence scheduling - Define Test modal (Interval/Calendar schedule redesign)
+    // 'Overdue' duplicates the English of 'ImKpiOverdue' on purpose: that key is
+    // an Incident Management KPI label, and a compliance status pill reusing an
+    // IM-scoped key would couple the two domains for a translator (and break the
+    // moment either wording moves). This is the generic, cross-domain one.
+    'Overdue' => 'Agterstallig',
+    // Deliberate: the only other key rendering 'Manual' is 'ManualValuation',
+    // an asset-valuation label. Pointing a schedule mode at it would couple two
+    // unrelated domains for translators and break the moment either reworded.
+    'ScheduleManual' => 'Handmatig',
+    'ScheduleInterval' => 'Interval',
+    'ScheduleCalendar' => 'Kalender',
+    'Cadence' => 'Kadens',
+    'CadenceBiweekly' => 'Tweeweekliks',
+    'CadenceSemiAnnually' => 'Halfjaarliks',
+    'AnchorDate' => 'Ankerdatum',
+    'UpcomingOccurrences' => 'Aankomende gebeurtenisse',
+    'AuditLeadInDays' => 'Oudit-inleidingdae',
+    'SkipOccurrence' => 'Slaan oor',
+    'OverrideDate' => 'Oorskryfdatum',
+    'Week' => 'Week',
+    'NoUpcomingOccurrences' => 'Geen komende gebeurtenisse in hierdie venster nie.',
+    'FailedToLoadUpcomingOccurrences' => 'Kon nie die voorskou van komende gebeurtenisse laai nie.',
+    'AnchorDateMustBeTodayOrLater' => 'Ankerdatum moet vandag of later wees. Om \'n vorige datum te skeduleer, skep eerder \'n handmatige toets.',
+    'InvalidScheduleType' => 'Ongeldige skeduletipe. Toegelate waardes: Handmatig, Interval, Kalender.',
+    'Weeks' => 'Weke',
+    'Months' => 'Maande',
+    'Years' => 'Jare',
+    'ScheduleSummaryEvery' => 'Elke {$interval} {$unit}',
+
+    // Define Tests redesign - client-rendered grid (Phase 1, Task 6)
+    'LastResult' => 'Laaste Resultaat',
+    'NextDue' => 'Volgende Sperdatum',
+    'DueSoon' => 'Binnekort verskuldig',
+    'Retired' => 'Afgetree',
+    'MyTests' => 'My Toetse',
+    'Failing' => 'Misluk',
+    'Untested' => 'Ongetoets',
+    'ShowRetired' => 'Wys Afgetree',
+    'Tests' => 'Toetse',
+    'NoTestsForThisControl' => 'Geen toetse nog vir hierdie kontrole nie.',
+    'NoControlsDefinedYet' => 'Geen kontroles nog gedefinieer nie',
+    'NoControlsDefinedYetBody' => 'Definieer kontroles in Bestuur voordat toetse bygevoeg word.',
+    'NoTestsMatchFilters' => 'Geen toetse stem ooreen met jou filters nie',
+    'NoTestsMatchFiltersBody' => 'Probeer om jou soektog of filters aan te pas.',
+    'CouldNotLoadTests' => 'Kon nie toetse laai nie',
+    'CouldNotLoadTestsBody' => 'Iets het verkeerd geloop. Jou data is veilig — probeer om te verfris.',
+    'ShowingXToYOfZ' => 'Wys {$start}–{$end} van {$total}',
+    // Define Tests grid -- SCF-mapping + read-only procedure expand (Phase 1, Task 7)
+    'Reference' => 'Verwysing',
+    'NoFrameworksMapped' => 'Geen raamwerke is aan hierdie kontrole toegeken nie.',
+    // Define Tests grid -- batch select + retire/delete + quick filters (Phase 1, Task 8)
+    'Retire' => 'Tree af',
+    'ReassignTester' => 'Hertoewysing van toetser',
+    'SetSchedule' => 'Stel skedule',
+    'ConfirmRetireSelectedTests' => 'Trek die {n} gekose toets(e) terug?',
+    'ConfirmDeleteSelectedTests' => 'Vee die {n} gekose toets(e) uit? Dit kan nie ongedaan gemaak word nie.',
+    // Define Tests grid -- Coverage toolbar select (Issue 4)
+    'Coverage' => 'Dekking',
+    'CoverageWithTests' => 'Kontroles met toetse',
+    'CoverageAllControls' => 'Alle kontroles',
+    'CoverageGaps' => 'Gapings',
+    // Define Tests insights band (Phase 2, Task 4) -- KPI tile labels + subtitles.
+    // 'Overdue', 'DueSoon', and 'Failing' are reused from the grid's quick-filter
+    // chips above (identical text) rather than duplicated here.
+    'DtTotalTests' => 'Totale Toetse',
+    'DtCoverageGaps' => 'Dekkingsgapings',
+    'DtAcrossNControls' => 'Oor {$n} kontroles',
+    'DtControlsWithNoTest' => 'Kontroles sonder toets',
+    'DtNeedInitiationNow' => 'Benodig nou inisiasie',
+    'DtWithinLeadInWindow' => 'Binne die inloopvenster',
+    'DtLastResultFailed' => 'Laaste resultaat het misluk',
+    'InvalidTestMethod' => 'Toetsmetode moet een van Navraag, Waarneming, Inspeksie of Heruitvoering wees!',
+    'TesterCannotBeApprover' => 'Die toetser kan nie ook as \'n goedkeurder vir hierdie toets gelys word nie.',
+    'ApproverNotEligible' => 'Een of meer gekose goedkeurders het nie die verantwoordelikheid om toetse goed te keur nie.',
+    'TestMethod' => 'Toetsmetode',
+    'TestMethodInquiry' => 'Ondersoek',
+    'TestMethodObservation' => 'Waarneming',
+    'TestMethodInspection' => 'Inspeksie',
+    'TestMethodReperformance' => 'Heruitvoering',
+    'Sample' => 'Voorbeeld',
+    'RequiredEvidence' => 'Vereiste Bewyse',
+    'Approvers' => 'Goedkeurders',
+    'AuditLog_TestAuditApproved' => 'Oudit "{$test_audit_name}" (ID: {$test_audit_id}) is goedgekeur deur gebruiker "{$user_name}".',
+    'AuditLog_TestAuditRejected' => 'Oudit "{$test_audit_name}" (ID: {$test_audit_id}) is verwerp deur gebruiker "{$user_name}" met kommentaar "{$comment}".',
+    'AuditLog_TestAuditAwaitingApproval' => 'Oudit "{$test_audit_name}" (ID: {$test_audit_id}) is deur gebruiker "{$user_name}" vir sluiting ingedien en wag op goedkeuring. Wysigings: {$changes}.',
+    'AuditApproved' => 'Die oudit is suksesvol goedgekeur.',
+    'AuditRejected' => 'Die oudit is suksesvol verwerp.',
+    'RejectCommentRequired' => '\'n Kommentaar is nodig om \'n oudit te verwerp.',
+    'NotAnApproverOfThisAudit' => 'Jy is nie \'n gekonfigureerde goedkeurder vir hierdie oudit nie.',
+    'ApproverCannotBeTester' => 'Die goedkeurder kan nie ook die toetser van hierdie oudit wees nie.',
+    'AuditNotAwaitingApproval' => 'Hierdie oudit wag tans nie op goedkeuring nie.',
+    'NotificationAuditAwaitingApprovalTitle' => 'Oudit wag op u goedkeuring',
+    'NotificationAuditAwaitingApprovalBody' => 'Die oudit "{$test_audit_name}" is vir sluiting ingedien en wag op u goedkeuring.',
+    'NotificationAuditRejectedTitle' => 'Oudit verwerp',
+    'NotificationAuditRejectedBody' => 'Die oudit "{$test_audit_name}" is verwerp met die opmerking: "{$comment}"',
+    'AwaitingApproval' => 'Wag vir goedkeuring',
+    'AwaitingApprovalBannerText' => 'Hierdie oudit is vir sluiting ingedien en wag op goedkeuring van \'n gekonfigureerde goedkeurder voordat dit kan sluit.',
+    'ReturnedForRework' => 'Terugbesorg vir herbewerking',
+    'ReturnedForReworkBannerText' => 'Hierdie oudit is verwerp en teruggestuur vir herbewerking.',
+    'RejectReason' => 'Rede vir verwerping',
+    'AreYouSureYouWantToApproveThisAudit' => 'Is jy seker jy wil hierdie oudit goedkeur?',
+    'AtLeastOneControlRequired' => 'Ten minste een kontrole word benodig.',
+    'DtNCommonAcrossNControls' => '{$common} algemeen · {$n} kontroles',
+    'DtUntestedControls' => 'Ongetoetste Kontroles',
+    'DtControlsInScopeNoCoverage' => 'Geen dekking nie',
+    'Passing' => 'Geslaag',
+    'DtLastResultPassed' => 'Laaste resultaat geslaag',
+    'AllFamilies' => 'Alle families',
+    'SearchTestsPlaceholder' => 'Soek toetse, kontroles en raamwerke',
+    'AnySchedule' => 'Enige skedule',
+    'AnyTag' => 'Enige etiket',
+    'AuditAutoClosedTestRetired' => 'Outomaties gesluit as Onbeslis omdat die toets afgetree is.',
+    'Common' => 'Algemeen',
+    'ValidatesAcrossMappedFrameworks' => 'Valideer oor gekarteerde raamwerke',
+    'EditTest' => 'Wysig toets',
+    'ControlHasNoTestCoverage' => 'Hierdie binne-omvang-kontrole het nog geen toetsdekking nie.',
+    'AddTheFirstTest' => 'Voeg die eerste toets by',
+    'ApplyCommonTestHint' => 'Pas een of meer bestaande toetse op hierdie kontrole toe. Elke toets behou sy huidige kontroles en word \'n algemene toets wat ook hierdie een dek.',
+    'CommonTestApplied' => 'Toets toegepas op hierdie kontrole.',
+    'CouldNotApplyCommonTest' => 'Kon nie die toets op hierdie kontrole toepas nie.',
+    'SelectOneOrMoreTests' => 'Kies een of meer toetse',
+    'CommonTestsApplied' => '{n} toetse is op hierdie kontrole toegepas.',
+    'ApplyCommonTests' => 'Pas algemene toetse toe…',
+    'History' => 'Geskiedenis',
+    'Result' => 'Resultaat',
+    'Approval' => 'Goedkeuring',
+    'ThisTestHasNotBeenRunYet' => 'Hierdie toets is nog nie uitgevoer nie.',
+    'CouldNotLoadTestHistory' => 'Kon nie hierdie toets se geskiedenis laai nie.',
+    'Identity' => 'Identiteit',
+    'IdentitySectionHint' => 'Naam, toetser en die kontroles wat dit valideer',
+    'WhenTheAuditInitiates' => 'Wanneer die oudit begin',
+    'ProcedureAndEvidence' => 'Prosedure en bewyse',
+    'CommonTestControlsHint' => 'Een toets kan baie kontroles valideer — \'n algemene toets. As jy dit oopmaak vanaf \'n kontrole se "+ Voeg toets by" word dit hier vooraf gekies.',
+    'SeparationOfDutiesNote' => 'Skeiding van pligte — \'n goedkeurder kan nie ook die toetser wees nie.',
+    'CommonTestEditScopeHint' => 'Veranderinge geld oral waar hierdie algemene toets gebruik word.',
+    'Mode' => 'Modus',
+    'AddOrRemove' => 'Voeg by of verwyder…',
+    'AddOrSearchTags' => 'Voeg by of soek etikette…',
+    'CreateTagX' => 'Skep “{tag}”',
+    'Archived' => 'Geargiveer',
+    'ShowAllTests' => 'Alle toetse',
+    'ShowActiveTests' => 'Aktiewe toetse',
+    'ShowRetiredTests' => 'Afgetrede toetse',
+    'UntestedControls' => 'Ongetoetste kontroles',
+    'OverdueByXDays' => 'Agterstallig · {n} dae',
+    'OverdueByOneDay' => 'Agterstallig · 1 dag',
+    'DueInXDays' => 'Verskuldig oor {n} dae',
+    'DueTomorrow' => 'Verskuldig môre',
+    'DueToday' => 'Verskuldig vandag',
+    'ScheduledForX' => 'Geskeduleer · {date}',
+    'AllTesters' => 'Alle toetsers',
+    'AllStatuses' => 'Alle statusse',
+    'OnTrack' => 'Op koers',
+    'NextTestDateDerivedHint' => 'Bereken vanaf die laaste toetsdatum plus die toetsfrekwensie. Stel \'n frekwensie om dit outomaties te skeduleer, of los die frekwensie leeg om hierdie datum self in te stel.',
+    'DueStatus' => 'Verskuldigde status',
+    'AllResults' => 'Alle resultate',
+    // Remove a test from one control (Define Tests grid unlink row action)
+    'RemoveFromThisControl' => 'Verwyder van hierdie kontrole',
+    'RemoveTestFromControl' => 'Verwyder toets van beheer',
+    'RemoveTestFromControlConfirm' => 'Verwyder "{test_name}" van {control_name}?',
+    'RemoveTestFromControlStays' => 'Die toets bly op sy {n} ander kontroles. Niks word uitgevee nie.',
+    'RemoveTestFromControlStaysOne' => 'Die toets bly op sy 1 ander kontrole. Niks word uitgevee nie.',
+    'CannotRemoveTestsOnlyControl' => '\'n Toets moet aan ten minste een kontrole behoort. Trek die toets eerder terug of verwyder dit.',
+    'TestRemovedFromControl' => 'Die toets is uit die kontrole verwyder.',
+    'CouldNotRemoveTestFromControl' => 'Die toets kon nie van die kontrole verwyder word nie.',
+    'TestRemovedFromControlAuditLogMessage' => 'Toets "{$test_name}" (ID: {$test_id}) is deur gebruiker "{$user} " van beheer (ID: {$control_id}) verwyder.',
+    'DeleteTestUsedByNControls' => 'Dit word deur {n} kontroles gebruik en sal van almal verwyder word.',
+    'BulkDeleteSharedTestsNote' => '{n} hiervan word deur ander kontroles gebruik en sal ook van hulle verwyder word.',
+    'BulkRetireSharedTestsNote' => '{n} hiervan word deur ander kontroles gebruik en sal ook daar afgetree word.',
+    'BulkDeleteOneSharedTestNote' => 'Een hiervan word deur ander kontroles gebruik en sal ook van hulle verwyder word.',
+    'BulkRetireOneSharedTestNote' => 'Een hiervan word deur ander kontroles gebruik en sal ook daar afgetree word.',
+    'CouldNotLoadTest' => 'Kon nie hierdie toets laai nie.',
+    'Expand' => 'Brei uit',
+    'SearchMappings' => 'Soek raamwerke en verwysings',
+    'NoMatchingMappings' => 'Geen kartering stem ooreen met daardie soektog nie.',
+    'Insights' => 'Insigte',
+    'ShowInsights' => 'Wys die insigte-teëls',
+    'HideInsights' => 'Vou die insigte-teëls in tot \'n opsommingslyn',
+    'ChooseControls' => 'Kies kontroles',
+    'UseTheseControls' => 'Gebruik hierdie kontroles',
+    'SearchControlsPlaceholder' => 'Soek volgens nommer of naam',
+    'PickerKeyboardHint' => 'Op/af om te beweeg, Enter om te kies, Esc om te kanselleer',
+    'NoControlsMatchFilters' => 'Niks hier stem ooreen nie. Verbreed \'n stap aan die linkerkant, of maak die soektog skoon.',
+    'NoControlsSelectedYet' => 'Niks nog gekies nie.',
+    'AllControls' => 'Alle kontroles',
+    'AddOrRemoveControls' => 'Voeg kontroles by of verwyder hulle…',
+    'LastTested' => 'Laas getoets',
+    'LastTestDateAnchorHint' => 'Ankerintervalskedulering (hierdie datum plus die frekwensie). Sodra die toets resultate aangeteken het, wys die rooster eerder die datum van die nuutste resultaat.',
+    'Filters' => 'Filters',
+    'ShowFilters' => 'Wys filters',
+    'HideFilters' => 'Versteek filters',
+
+    // App shell — collapsing sidebar / new base design (SR app-shell redesign)
+    'AI' => 'KI',
+    'CollapseSidebar' => 'Vou sybalk in',
+    'FooterCopyright' => '© %s SimpleRisk. Alle regte voorbehou.',
+    'ExpandSidebar' => 'Vou die sybalk uit',
+    'WorkflowsCloneConfirm' => 'Kloon werkvloei \'{$name}\'?',
+    'WorkflowsDeleteConfirm' => 'Vee werkvloei \'{$name}\' uit? Dit kan nie ongedaan gemaak word nie.',
+    'WorkflowActionFailed' => 'Aksie het misluk: {$msg}',
+    'ClickToDisable' => 'Klik om te deaktiveer',
+    'ClickToEnable' => 'Klik om te aktiveer',
+    'ENABLED' => 'GEAKTIWEER',
+    'DISABLED' => 'GEDEAKTIVEER',
+    'BackToWorkflows' => 'Terug na Werkvloeie',
+    'BackToHistory' => 'Terug na Geskiedenis',
+    'NewWorkflow' => 'Nuwe Werkvloei',
+    'ViewSteps' => 'Bekyk Stappe',
+    'SaveWorkflow' => 'Stoor Werkvloei',
+    'WorkflowSavedSuccessfully' => 'Werkvloei suksesvol gestoor.',
+    'WorkflowNotFound' => 'Werkvloei nie gevind nie.',
+    'EditWorkflow' => 'Wysig Werkvloei: {$name}',
+    'OrganizationContextProfile' => 'Organisasie Konteks Profiel',
+    'AICtxAutoAcceptThreshold' => 'Wat is jou organisasie se outomatiese aanvaardingsdrempel vir risiko (’n dollarbedrag of ’n persentasie van ALE)?',
+    'AICtxGrcBudget' => 'Wat is jou jaarlikse GRC/sekuriteitsbegroting?',
+    'AICtxAuditorPerspective' => 'Vanuit wie se perspektief word u hoofsaaklik geoudit?',
+    'AICtxUnitCurrency' => 'Geldeenheid ($)',
+    'AICtxUnitPercentOfAle' => 'Persentasie van ALE (%)',
+    'AICtxFrameworksInUse' => 'Raamwerke tans in gebruik',
+    'AICtxNoFrameworksInUse' => 'Geen aktiewe raamwerke nog gevind nie. Voeg raamwerke by onder Bestuur > Raamwerkkartering.',
+    'AICtxFromYourData' => 'Van jou data',
+    'AICtxAuthoritative' => 'Gesaghebbend',
+    'AICtxAppetiteNotSet' => 'Nie gestel nie',
+    'AICtxAppetiteManageLink' => 'Bestuur in Risikokonfigurasie',
+    'AICapControlTestGeneration' => 'Beheertoetsgenerering',
+    'AICapControlTestGenerationDesc' => 'Stel konsepkontroletoetse op vir hersiening, deur die kontrole se raamwerkkartering, bestaande toetse en selfassesseringsresultate te gebruik — niks word geskep totdat jy dit goedkeur nie.',
+    'AICapSurfacedControlTestGeneration' => 'Nakoming — Definieer Toetse',
+    'AIControlTestGenUnavailable' => 'DIENS ONGESKIKBAAR: \'n Administrateur moet hierdie funksionaliteit in die KI-instellings aktiveer.',
+    'AIControlTestGenInvalidId' => 'ONGELDIGE VERSOEK: \'n Positiewe beheer-ID word benodig.',
+    'AIControlTestGenNotFound' => 'NIE GEVIND NIE: Die gespesifiseerde kontrole kon nie gevind word nie.',
+    'AIControlTestGenConflict' => 'KONFLIKT: Generering is reeds in die waglys vir hierdie kontrole.',
+    'AIControlTestGenQueued' => 'AANVAAR: Beheertoetsgenerering in die waglys geplaas.',
+    'AIControlTestGenFailed' => 'INTERNE BEDIENERFOUT: Kon nie die generering van die beheertoets in die waglys plaas nie.',
+    'AIControlTestGenCheckFailed' => 'FOUT: Kon nie die kontrole verifieer voor dit in die tou geplaas word nie.',
+    'GenerateTestsWithAI' => 'Genereer toetse met KI',
+    'ShowAiSuggestedTests' => 'KI-voorgestelde toetse',
+    'AiSuggested' => 'KI voorgestel',
+    'ReviewAndEdit' => 'Hersien en wysig',
+    'CreateSelected' => 'Skep gekose',
+    'TestCreatedFromSuggestion' => 'Toets geskep uit die voorstel.',
+    'SuggestionDismissed' => 'Voorstel van die hand gewys.',
+    'TestGenerationQueued' => 'Toetsgenerering in die waglys.',
+    'Generating' => 'Genereer…',
+    'SuggestionDismissFailed' => 'Die toets is geskep, maar die KI-voorstel kon nie van die hand gewys word nie. Maak dit handmatig van die hand as dit steeds bestaan.',
+    'AICtxAuditorBig4' => 'Groot 4 (ekstern)',
+    'AICtxAuditorBoutique' => 'Boetiek / streeks (ekstern)',
+    'AICtxAuditorInternal' => 'Slegs interne oudit',
+    'AICtxAuditorSelfAssessed' => 'Selfgeassesseerd',
+    'AICtxAuditorNotSure' => 'Nie seker nie',
+    'AICtxAppetiteCautious' => 'Versigtig',
+    'AICtxAppetiteBalanced' => 'Gebalanseerd',
+    'AICtxAppetiteAggressive' => 'Aggressief',
+    'TestGenerationComplete' => 'KI-opgestelde beheertoetse is gereed vir hersiening.',
+    'TestGenerationStillRunning' => 'Toetsgenerering is steeds aan die gang; die konsepte sal binnekort verskyn.',
+    'TestGenerationNoNew' => 'Generasie voltooi — geen nuwe toetse om vir hierdie beheermaatreël voor te stel nie.',
+    'SearchEntities' => 'Soek entiteite',
+    'SearchEntitiesPlaceholder' => 'Soek risiko\'s, beheermaatreëls, beleide, uitsonderings…',
+    'ShowTypes' => 'Wys tipes',
+    'Depth' => 'Diepte',
+    'Inspector' => 'Inspekteur',
+    'Connections' => 'Verbindings',
+    'NoConnectionsFound' => 'Geen verbindings gevind vir die gekose entiteit nie.',
+    'CouldNotLoadGraph' => 'Kon nie die konnektiwiteitsgrafiek laai nie.',
+    'CouldNotSearchEntities' => 'Kon nie entiteite deursoek nie.',
+    'ShowingTopNOfM' => 'Wys top {0} van {1}',
+    'RankedByMaturityGap' => 'Gerangskik volgens volwassenheidsgaping',
+    'RankedByRiskScore' => 'Gerangskik volgens risikotelling',
+    'RankedByRecentFailure' => 'Gerangskik volgens mees onlangse mislukking',
+    'RankedByReviewDate' => 'Gerangskik volgens volgende hersieningsdatum',
+    'RankedBySeverity' => 'Gerangskik volgens erns',
+    'RankedByName' => 'Gerangskik volgens naam',
+    'NodeTypeSelfAssessmentResult' => 'Selfassesseringsresultaat',
+    'Relationship' => 'Verhouding',
+    'Exception' => 'Uitsondering',
+    'DesiredMaturity' => 'Gewenste volwassenheid',
+    'ApprovalState' => 'Goedkeuringsstatus',
+    'RelationshipOfType' => '{0} van {1}',
+    // Connectivity Explorer Inspector: labels for enrichment field keys
+    // (ai_context_enrich_fetch(), ai_context_enrich_vulnerabilities()) that
+    // fieldLabel() in connectivity-visualizer.js did not yet cover.
+    'LastDate' => 'Laaste Datum',
+    'LastResultDate' => 'Laaste Resultaat Datum',
+    'PercentComplete' => 'Persentasie Voltooi',
+    'AssessmentDate' => 'Assesseringsdatum',
+    'NextDate' => 'Volgende Datum',
+    'Number' => 'Nommer',
+    'Grouping' => 'Groepering',
+    'Hidden' => 'Versteek',
+    'FirstFound' => 'Eerste gevind',
+    'LastFound' => 'Laas Gevind',
+    'Patchable' => 'Regmaakbaar',
+    'Solution' => 'Oplossing',
+    'Breadcrumb' => 'Broodkrummel',
+    'SelectANodeToInspect' => 'Kies \'n nodus om die besonderhede daarvan te sien.',
+    'HiddenUnreachableNodes' => '{0} nodus(e) versteek: nie meer gekoppel sonder die versteekte tipe(s) nie.',
+    // Connectivity Explorer canvas launchpad (Level-1 type tiles / Level-2
+    // browsable entity list) -- docs/superpowers/specs/2026-07-27-
+    // connectivity-explorer-launchpad.md
+    'BrowsableEntityTypes' => 'Blaaibare entiteitstipes',
+    'CountFloor' => '{0}+',
+    'NoBrowsableTypes' => 'Jy het nie toestemming om deur enige entiteittipe te blaai nie.',
+    'AllTypes' => 'Alle tipes',
+    'FilterEntitiesPlaceholder' => 'Filter…',
+    'NoMatchingEntities' => 'Geen entiteite stem ooreen met jou filter nie.',
+    'LoadMore' => 'Laai meer',
+    'Loading' => 'Laai…',
+    'CouldNotLoadEntityCounts' => 'Kon nie entiteittellings laai nie.',
+    'CouldNotLoadEntities' => 'Kon nie entiteite laai nie.',
+    'ClearGraph' => 'Maak grafiek skoon',
+    // Connectivity Explorer node-type chip label for the 'audit' type. Not
+    // reused from 'TeamType_audit' (same English text, "Audit") -- that key
+    // is scoped to the Team Separation team-type picker, a different feature
+    // whose wording should be free to diverge from this one's.
+    'Audit' => 'Oudit',
+    // Queued email send-failure notifications
+    'EmailSendFailedNotificationTitle' => 'E-posaflewering het misluk',
+    'EmailSendFailedNotificationBody' => 'Een of meer e-posse in die waglys kon nie afgelewer word nie. Gaan jou posinstellings na en sien dan die Waglysmonitor en die bedienerlog vir besonderhede.',
+    'QuestionnaireShareInvalidEmailAddress' => 'Kan nie vraelysresultate deel met \'n kontak wat geen geldige e-posadres het nie.',
+    'AssessmentSendInvalidEmailAddress' => 'Kan nie die assessering na \'n ongeldige e-posadres stuur nie.',
+    'AssessmentSentTo' => 'Assessering is gestuur na "{$email}".',
+    'AssessmentNotSentNoValidRecipients' => 'Die assessering is nie gestuur nie — geen geldige e-posadres is verskaf nie.',
+    'AssessmentContactUnusableEmailNotificationTitle' => 'Vraelys nie gestuur nie',
+    'AssessmentContactUnusableEmailNotificationBody' => 'Die vraelys "{$questionnaire}" kon nie na "{$contact}" gestuur word nie, want daardie kontak het geen geldige e-posadres op lêer nie. Dateer die kontakrekord op om die stuur te hervat.',
+    'EmailFailureNotificationRetention' => 'Behoud van kennisgewings oor mislukking in e-posaflewering',
+    'EmailFailureNotificationRetentionOutOfRange' => 'Die bewaring van die kennisgewing oor mislukking van e-posaflewering moet tussen {$min} en {$max} dae wees.',
+    'MailSettingsUpdatedSuccessfully' => 'Posinstellings is suksesvol opgedateer.',
+    // Questionnaire audit-trail entries for the API submit/draft paths (SR-1714).
+    // The token form credits the contact; an API caller is an authenticated
+    // SimpleRisk user acting on that contact's questionnaire, so both the
+    // contact and the acting user are named.
+    'QuestionnaireCompletedAuditLogViaApi' => 'Die vraelys "{$questionnaire_name}" vir kontak "{$contact_name}" is via die API deur gebruiker "{$user_name} " voltooi.',
+    'QuestionnaireDraftAuditLogViaApi' => 'Vraelys "{$questionnaire_name}" vir kontak "{$contact_name}" is as konsep via die API deur gebruiker "{$user_name} " gestoor.',
+    // Bad-input response for the questionnaire risk-list endpoints, which
+    // previously reported a malformed questionnaire_id as a permission denial.
+    // Mirrors the existing 'MissingOrInvalidTrackingID'.
+    'MissingOrInvalidQuestionnaireID' => 'Ontbrekende of ongeldige vraelys-ID.',
+    // POST /api/v2/assessments/questionnaire/result/file response messages.
+    // The `id` path deliberately returns QuestionIdCannotAcceptFile for every
+    // question-level rejection so a sequential tracking id cannot be used to
+    // probe questionnaire structure; the token path returns the specific reason.
+    'QuestionnaireResultNotFoundForTokenOrId' => 'NIE GEVIND NIE: Kon nie \'n vraelysresultaat met die gespesifiseerde teken of ID vind nie.',
+    'QuestionIdCannotAcceptFile' => 'ONGELDIGE VERSOEK: vraag_id {$question_id} kan nie \'n lêer op hierdie vraelysresultaat aanvaar nie',
+    'QuestionIdNotFoundInQuestionnaire' => 'ONGELDIGE VERSOEK: vraag_id {$question_id} is nie in hierdie vraelys gevind nie',
+    'QuestionIdInMultipleTemplates' => 'ONGELDIGE VERSOEK: vraag_id {$question_id} verskyn in verskeie sjablone vir hierdie vraelys',
+    'QuestionIdDoesNotAcceptFileUploads' => 'ONGELDIGE VERSOEK: vraag_id {$question_id} aanvaar nie lêeroplaaie nie',
+    // The Statement of Applicability's two UNVERIFIED implementation states.
+    //
+    // They exist because "we have not checked" is not "it does not work", and an
+    // SoA is ATTESTED — printing "No" for an unverified control is a false
+    // statement against yourself, exactly as printing "Yes" without evidence is
+    // a false statement the other way. Before these keys existed both states
+    // fell through to 'No', which on a framework where most controls carry no
+    // test meant the whole document read "not implemented".
+    //
+    // They are two states rather than one because they are different findings
+    // with different owners: no test defined is a GOVERNANCE gap (nobody decided
+    // how to verify this control), never run is an OPERATIONAL one (somebody
+    // decided, and it was not done).
+    //
+    // WORDING. Both must be unmistakably distinct from the bare 'No' in the same
+    // column. 'Tests never run' rather than 'Never run': in a column headed
+    // "Implemented", the bare phrase reads for a moment as though the CONTROL
+    // was never run, when the subject is its tests.
+    //
+    // BOTH ARE PLURAL, and that is not only style. English takes the plural
+    // after "no" when the expected quantity could exceed one ("no results
+    // found"), and a control normally carries several tests — the singular
+    // implies only ever one was expected. 'Tests never run' is the stronger
+    // case: soa_implemented_for() returns `never_run` only when NOT ONE of the
+    // control's tests has produced a verdict, so the state is inherently about
+    // the whole set. With four tests defined and none run, the singular reads as
+    // one omission rather than a wholesale one.
+    'SoaImplementedNoTestDefined' => 'Geen toetse gedefinieer nie',
+    'SoaImplementedNeverRun' => 'Toetse loop nooit',
+
+    // The Implemented column's fallback for a token neither sink recognizes.
+    //
+    // DELIBERATELY NOT A VERDICT, and the reason this key exists at all. Both
+    // sinks previously ended in a fallthrough to 'No', so adding a state without
+    // adding its label printed a confident, wrong answer into a compliance
+    // document. Falling through to 'Yes' would be worse. The only safe failure
+    // mode is a value that states nothing about the control — a visible bug
+    // instead of a silent misstatement.
+    'SoaImplementedUnknown' => 'Status onbeskikbaar',
+    // How an APPLICABLE control's stored inclusion reason(s) join to its own
+    // freeform justification when it recorded both (spec §4). Reached ONLY when
+    // both halves exist — reasons alone print as the reason list, prose alone
+    // prints verbatim — so this string is punctuation and word order, not prose.
+    // It is a language key rather than a hardcoded separator because a locale
+    // that joins clauses with a colon, a full stop, or right-to-left ordering
+    // must be able to say so; both placeholders have to survive translation.
+    'SoaJustifiedByInclusionReasons' => '{reasons} — {narrative}',
+    // The Set applicability modal's reason field, which became a MULTI-select
+    // when reasons moved to a join table: a control is commonly included (or
+    // excluded) for more than one reason, and the singular 'Reason' the field
+    // used to reuse now under-describes it. 'Reason' is left alone rather than
+    // repointed -- the row drawer and the SoA still print exactly one joined
+    // value under it, and redefining a key changes every surface that reads it.
+    'ApplicabilityReasons' => 'Redes',
+    // Said once, above a group of checkboxes, rather than implied by the widget.
+    // The old single <select> answered "how many may I pick?" by construction;
+    // a checkbox group does not, and a user who ticks one and stops has made the
+    // SoA less truthful than the one they meant to write.
+    'ApplicabilityReasonsHint' => 'Kies elke rede wat van toepassing is.',
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // THE STATEMENT OF APPLICABILITY'S MARKERS AND ITS LEGEND (spec §1, §3).
+    // ─────────────────────────────────────────────────────────────────────────
+
+    // THE EVIDENCE COLUMN'S TWO ABSENCES, which are OPPOSITES.
+    //
+    // 'No evidence linked' is a FINDING: the control is in scope, is possibly
+    // claimed implemented, and nothing substantiates it. The em dash below is
+    // the other answer -- the control is excluded, so no evidence is expected
+    // and the absence is correct. Rendering both as an empty cell hides the
+    // first, which is the one an auditor circles.
+    'SoaNoEvidenceLinked' => 'Geen bewyse gekoppel nie',
+    // PUNCTUATION, NOT PROSE -- the glyph the Evidence cell prints when nothing
+    // is expected. A language key rather than a hardcoded character for the same
+    // reason 'SoaJustifiedByInclusionReasons' is one: a locale that marks "not
+    // applicable" with a different dash, or with a word, must be able to say so.
+    'SoaEvidenceNotExpected' => '—',
+    // Whether the evidence a test DECLARED it requires actually arrived with the
+    // result. A stronger claim than a pass/fail alone, and few SoA tools make it.
+
+    // THE REMEDIATION BLOCK -- what is being done about a control that reads
+    // Partial or No. The SoA points AT the risk treatment plan (clause 6.1.3(e))
+    // rather than becoming one.
+    'SoaRemediation' => 'Remediëring',
+    // THE MOST SERIOUS THING THAT BLOCK CAN FIND: the test failed and it is
+    // linked to no risk, so no treatment plan traces back to it. Dropping such a
+    // row for want of a risk to join to would render it as a blank cell, which
+    // reads as "nothing to report".
+    'SoaRemediationUnplanned' => 'Geen risiko gekoppel nie',
+
+    // THE LEGEND. Required in both variants and every export format, because six
+    // implementation states plus three markers is more nuanced than the
+    // Yes/No/Partial an auditor expects, and an undefined vocabulary invites the
+    // reader to guess unfavourably.
+    'SoaLegendTitle' => 'Hoe om hierdie stelling te lees',
+    'SoaLegendYes' => 'Elke toets wat vir hierdie kontrole gedefinieer is, het geslaag toe dit laas uitgevoer is.',
+    'SoaLegendPartial' => 'Die kontrole se toetse verskil: ten minste een het geslaag, en ten minste een het gedruip of geen uitspraak gelewer nie.',
+    'SoaLegendNo' => 'Geen toets van hierdie beheer het geslaag toe dit laas uitgevoer is nie, en ten minste een het misluk.',
+    // The two unverified states are DIFFERENT FINDINGS WITH DIFFERENT OWNERS,
+    // and the labels alone do not quite carry that -- so the legend spells it
+    // out. This is the distinction the whole six-state set exists for.
+    'SoaLegendNoTestDefined' => 'Geen toets is vir hierdie beheermaatreël gedefinieer nie, dus is die werking daarvan nog nooit geverifieer nie. Dit is nie \'n stelling dat die beheermaatreël ontbreek of dat dit faal nie -- slegs dat hierdie stelling dit nie demonstreer nie. \'n Bestuursgaping: niemand het besluit hoe hierdie beheermaatreël nagegaan word nie.',
+    'SoaLegendNeverRun' => 'Toetse bestaan vir hierdie beheermaatreël, maar geeneen daarvan is ooit uitgevoer nie, dus word die werking daarvan nie hier gedemonstreer nie. Dit is nie \'n stelling dat die beheermaatreël ontbreek of dat dit faal nie. \'n Operasionele gaping: daar is besluit oor die kontroles en is nog nie uitgevoer nie.',
+    'SoaLegendNotApplicable' => 'Die beheer is uitgesluit van hierdie raamwerk se bestek, dus het dit geen implementeringsstatus nie.',
+    // The one most in need of explaining: with nothing to define it, this reads
+    // as an admission about the control rather than as what it is.
+    'SoaLegendUnknown' => 'SimpleRisk kon nie die aangetekende status benoem nie, daarom word implementering nie hier gedemonstreer nie. Dit is \'n fout in die sagteware en sê niks oor die beheer nie -- nie dat dit werk of dat dit nie werk nie.',
+    'SoaLegendOverdue' => 'Die resultaat wat getoon word, staan steeds, maar ten minste een van die toetse daaragter is verby sy eie volgende toetsdatum. Die bewyse is verouderd.',
+    'SoaLegendNoEvidence' => 'Die beheermaatreël is binne omvang en niks is gekoppel om dit te staaf nie: geen bevestigde dokument en geen toets wat \'n resultaat opgelewer het nie.',
+    'SoaLegendEvidenceNotExpected' => 'Geen bewyse word verwag nie, want die beheer is van die omvang uitgesluit.',
+    'SoaLegendUnplanned' => '\'n Mislukte toets wat aan geen risiko gekoppel is nie, dus geen behandelingsplan kan daarna teruggevoer word nie.',
+
+    // THE TWO VARIANTS, chosen on the launcher before the document is generated
+    // and PRINTED ON ITS COVER. A Statement of Applicability is a controlled
+    // document: two of them for the same framework that show different things,
+    // with nothing on either to say which is which, is a document nobody can
+    // file.
+
+    // THE THREE DETAILED-ONLY COLUMNS.
+    // What those three columns say instead of nothing. A blank cell in an audit
+    // document reads as a formatting artefact; "Not recorded" is a fact the
+    // reader can act on.
+
+    // THE BROWSER PRINT ROUTE. Beside the two downloads on the launcher, and the
+    // only PDF route for a framework too large for the server-side writer.
+    // Shown in place of "Download as PDF" when the chosen framework is above
+    // SOA_EXPORT_PDF_MAX_CONTROLS. The affordance is absent rather than
+    // disabled, so this sentence is what tells the reader the absence is
+    // deliberate and what to do instead.
+    // The footer of every printed page. {page} and {pages} are substituted with
+    // the browser's own page counters, so the two tokens must both survive
+    // translation -- but their ORDER and the words around them are the
+    // translator's, which is why this is one string and not "Page" + "of".
+    'SoaPrintPageNumber' => 'Bladsy {page} van {pages}',
+
+    // THE ONE PDF AFFORDANCE on the statement-of-applicability launcher, beside
+    // 'DownloadAsXLSX'. It replaces the pair that used to sit there --
+    // 'SoaPrintToPdf' and 'DownloadAsPDF' -- because a Statement of Applicability
+    // is a controlled document and two PDF buttons let two people hand an auditor
+    // two different-looking PDFs of the same statement.
+    //
+    // JUST "PDF", AND DELIBERATELY SO. Below SOA_EXPORT_PDF_MAX_CONTROLS the
+    // button downloads a server-rendered file and above it the browser writes
+    // one, but that is a mechanism and not a choice the reader has to make. A
+    // label that named the mechanism ("Print to PDF" / "Download as PDF") would
+    // put the difference back in front of them.
+    //
+    // 'SoaPrintToPdf' and 'SoaPdfTooLargeHint' above are LEFT IN PLACE with no
+    // caller: 39 locales carry them, and this file is append-only precisely so a
+    // customer running a custom lang.<locale>.php can reconcile it with a tail
+    // diff.
+    'SoaPdf' => 'PDF',
+
+    // THE OTHER TWO ACTIONS IN THAT SAME ROW, shortened to match it.
+    //
+    // The row read "Open in browser" / "Download as XLSX" / "PDF", which put a
+    // verb on two of three actions and made the odd one out look like an
+    // abbreviation of something longer. The row's own context supplies the
+    // verbs -- these are the things you can DO with the framework you just
+    // chose -- so they carried no information and cost the reader a comparison.
+    // 'SoaPdf' is short because naming its mechanism would be dishonest (above
+    // SOA_EXPORT_PDF_MAX_CONTROLS it opens a print view rather than downloading
+    // a file), and the shortest of the three is the one that has to be right.
+    //
+    // NOT the generic 'Open' at line ~1021: that key lives among 'Mitigated' /
+    // 'Reviewed' and is the risk-status ADJECTIVE -- fr "Ouvert", de "Offen" --
+    // so reusing it would label a button with a state rather than an action in
+    // most of the 39 locales.
+    //
+    // 'SoaOpenInBrowser' above is LEFT IN PLACE with no caller, for the same
+    // reason 'SoaPrintToPdf' is: the locales carry it and this file is
+    // append-only so a customer's custom lang.<locale>.php reconciles with a
+    // tail diff. 'DownloadAsXLSX' keeps a caller either way -- the Assessments
+    // Extra's questionnaire results still use it.
+    'SoaOpen' => 'Oop',
+    'SoaXlsx' => 'XLSX',
+    // ---- The locked-affordance treatment -------------------------------------
+    // SHARED COPY, not chooser copy. SimpleRisk now SHOWS what's possible and
+    // MARKS what's out of reach because it isn't licensed, rather than hiding
+    // it -- so these strings appear both as a menu row's explanation (Define
+    // Control Frameworks' "+ Add framework" chooser) and beside a disabled
+    // toolbar button (the Statement of Applicability's PDF/XLSX exports). Each
+    // one is worded to read correctly in BOTH places, which is why none of them
+    // starts with "This route" or "This button".
+    //
+    // 'LockedAffordanceBadge' duplicates the English of 'AICapStateLocked'
+    // rather than reusing it: that key sits in the AI Capabilities Catalog's
+    // block and is scoped to a capability's state, and translators work from
+    // the key's neighbourhood as much as from its value.
+    'LockedAffordanceBadge' => 'Gesluit',
+    // The two SCF steps before it can be switched on. admin/register.php serves
+    // both -- it is the registration form AND where the per-Extra download
+    // buttons render -- so these differ in what they say, not where they go.
+    'UnlockRegisterInstanceNote' => 'Registreer hierdie instansie om die Veilige Beheerraamwerk te kry.',
+    'UnlockRegisterInstanceLink' => 'Register SimpleRisk',
+    'UnlockDownloadScfNote' => 'Hierdie instansie is geregistreer. Laai die Secure Controls Framework af om dit te gebruik.',
+    'UnlockDownloadScfLink' => 'Laai dit af',
+    'UnlockActivateScfNote' => 'Die Secure Controls Framework is afgelaai, maar nie aangeskakel nie.',
+    'UnlockActivateScfLink' => 'Skakel dit aan',
+    // Import-Export is a paid Extra, so "not installed" is an upsell rather
+    // than a registration prompt. Deliberately a bare capability sentence: it
+    // has to sit under a menu row and next to an export button equally well.
+    'RequiresImportExportExtra' => 'Vereis die Invoer-Uitvoer Ekstra.',
+    'UnlockImportExportLink' => 'Kyk wat dit byvoeg',
+    'UnlockActivateImportExportNote' => 'Die Invoer-Uitvoer Ekstra is geïnstalleer, maar nie aangeskakel nie.',
+    'UnlockActivateImportExportLink' => 'Skakel dit aan',
+    // Shown instead of any of the above to a user who is not an administrator:
+    // every unlock step lives on a check_admin page, so they get the half that
+    // is useful to them -- that the capability exists, and who to ask -- and no
+    // link that would only bounce them.
+    'UnlockNeedsAdministrator' => '\'n Administrateur kan dit opstel.',
+    // API date parsing. {$field} is the request field name (next_date, last_date,
+    // test_date); {$format} is this instance's configured display date format.
+    'InvalidSubmittedDate' => 'Die waarde {$field} is nie \'n geldige datum nie. Dien dit in as JJJJ-MM-DD of in hierdie geval se datumformaat ({$format}).',
+    // Companion to InvalidSubmittedDate, for a value that matches the expected
+    // shape but names a day that does not exist (February 31st, month 13).
+    // Saying "submit it as MM/DD/YYYY" there would repeat what the caller did.
+    // {$value} is the submitted value, echoed back truncated.
+    'ImpossibleSubmittedDate' => 'Die {$field} waarde "{$value}" is nie \'n regte kalenderdatum nie. Kontroleer die dag en maand — hierdie geval lees datums as {$format}.',
+    // The Statement of Applicability's merged verification column. Replaces three
+    // separate headings (Implemented / Evidence / Review Cadence) with the one
+    // question all three answer: how do we know this control is working?
+    // The two appendices printed after the register. Justifications are truncated
+    // in the row and given in full here; remediation plans live here rather than
+    // in the table because ISO 27001 keeps the SoA (6.1.3(d)) and the risk
+    // treatment plan (6.1.3(e)) as separate artifacts.
+    'SoaAppendixJustifications' => 'Aanhangsel A — Regverdigings',
+    'SoaAppendixRemediation' => 'Aanhangsel R — Remediëringsplanne',
+    // Appendix E carries the WORDING of each test's evidence requirement. The row
+    // keeps only whether that evidence arrived, which is the finding; the wording
+    // is reference material and was the bulkiest thing in the Verification cell.
+    'SoaRequiredEvidenceSupplied' => 'vereiste bewyse verskaf',
+    'SoaRequiredEvidenceNotSupplied' => 'vereiste bewyse nie verskaf nie',
+    // The one scheduling fact the SoA prints: the soonest date any of a control's
+    // tests is next due. Replaces a per-test "Manual — Next Test Date: ..." line,
+    // whose schedule type belongs on Define Tests and whose date is now on each
+    // test's own evidence bullet.
+    // The two dates on a test's evidence bullet. LABELLED, because two bare dates
+    // side by side are ambiguous in a way one is not.
+    // SINGULAR document-type labels for one piece of design evidence. SimpleRisk's
+    // existing keys are the plural tab names, which would read "Access Control
+    // Standard (Standards)".
+    'SoaEvidencePolicy' => 'Beleid',
+    'SoaEvidenceStandard' => 'Standaard',
+    'SoaEvidenceProcedure' => 'Prosedure',
+    'SoaEvidenceGuideline' => 'Riglyn',
+    // ── The legend, grouped by column (SOA_LEGEND_GROUPS, includes/soa.php) ──
+    // The Applicability column's three values. These were never in the legend,
+    // so an auditor met "Inherited" -- a word with no meaning outside SimpleRisk
+    // -- with nothing to look it up in.
+    'SoaLegendApplicable' => 'Die beheer val binne die bestek van hierdie raamwerk en die organisasie is verantwoordelik vir die bedryf daarvan.',
+    // DISTINCT from 'SoaLegendNotApplicable', which defines the "N/A" that appears
+    // in the Implementation Status column. This one is the DECISION to exclude;
+    // that one is the consequence for the status.
+    'SoaLegendApplicabilityNotApplicable' => 'Die beheer is uitgesluit van hierdie raamwerk se omvang. Die regverdigingskolom teken aan hoekom en wie besluit het.',
+    'SoaLegendInherited' => 'Die beheer is binne die bestek, maar dit word deur \'n derde party bedryf -- \'n wolkverskaffer, \'n ouerorganisasie, \'n uitkontrakteringsfunksie -- eerder as deur hierdie organisasie. Die verskaffer word langs die regverdiging genoem.',
+    // The Evidence column's four bullet glyphs. Load-bearing since the visible
+    // result word was dropped from pass and fail bullets, and until now defined
+    // nowhere at all.
+    'SoaLegendEvidencePass' => '\'n Toets van hierdie kontrole het \'n slaag aangeteken die laaste keer wat dit geloop het. Die datum langsaan is wanneer dit geloop het.',
+    'SoaLegendEvidenceFail' => '\'n Toets van hierdie beheermaatreël het \'n mislukking aangeteken die laaste keer wat dit geloop het. Aanhangsel R bevat die behandelingsplan, waar een bestaan.',
+    'SoaLegendEvidenceInconclusive' => '\'n Toets van hierdie beheermaatreël is uitgevoer en het geen uitslag opgelewer nie. Dieselfde merk word gebruik vir \'n resultaat wat hierdie dokument nie herken nie, en in daardie geval word die resultaat self langsaan gedruk.',
+    // The TERM beside the § glyph. Not a document type -- the four types
+    // (Policy, Standard, Procedure, Guideline) are printed per item; this names
+    // the CATEGORY of evidence a document is.
+    'SoaEvidenceDesignDocument' => 'Ontwerpdokument',
+    'SoaLegendEvidenceDocument' => '\'n Beheerdokument wat as bewys vir hierdie beheer bevestig is -- die ontwerp daarvan eerder as die werking daarvan. \'n Dokument dra geen uitspraak nie, en daarom word dit nie met \'n regmerkie gemerk nie.',
+    // The XLSX export's first worksheet tab. The workbook's other four tabs reuse
+    // headings that already exist ('How to read this statement', 'Statement of
+    // Applicability', and the two appendix headings); the cover had no name of its
+    // own because it used to be the top of a single sheet.
+    //
+    // KEEP IT SHORT. Excel caps a worksheet name at 31 characters and
+    // soa_export_sheet_name() truncates rather than failing the export, so a long
+    // translation loses its tail on the tab.
+    'SoaSheetCover' => 'Omslag',
+
+    'SearchFrameworks' => 'Soek raamwerke',
+    'SearchControls' => 'Soek kontroles',
+    'AddFramework' => 'Voeg raamwerk by',
+    'Applicability' => 'Toepaslikheid',
+    'AnyFamily' => 'Enige familie',
+    'AnyOwner' => 'Enige eienaar',
+    'AnyClass' => 'Enige klas',
+    'AnyPhase' => 'Enige fase',
+    'AnyPriority' => 'Enige prioriteit',
+    'AnyType' => 'Enige tipe',
+    'AnyStatus' => 'Enige status',
+    'SelectAllN' => 'Kies alles {n}',
+    'Classification' => 'Klassifikasie',
+    'Placement' => 'Plasing',
+    'OwnershipAndMaturity' => 'Eienaarskap en volwassenheid',
+    'MappingsAndGuidance' => 'Kartering en leiding',
+    'DeleteFrameworkTitle' => 'Vee raamwerk \'{$name}\' uit?',
+    'DeleteControlTitle' => 'Vee beheer \'{$name}\' uit?',
+    'DeleteControlsTitle' => 'Vee {$n} kontroles uit?',
+    'DeleteCannotBeUndone' => 'Dit kan nie ongedaan gemaak word nie.',
+    'DeleteFrameworkConsequence' => 'Dit verwyder die raamwerk en al sy beheerkarterings.',
+    'DeleteControlConsequence' => 'Dit verwyder die beheer van elke raamwerk waaraan dit gekarteer is.',
+    'DeleteControlsConsequence' => 'Dit verwyder elke gekose kontrole van elke raamwerk waarna dit gekarteer is.',
+    // Task 9: empty states (design-system.md §10) -- the four intents on
+    // Define Control Frameworks. Reuses existing keys where the copy already
+    // fits exactly (AddControl, AddFramework, ClearFilters, Retry,
+    // NoControlsDefinedYet, NoTestsMatchFiltersBody, CouldNotLoadTestsBody,
+    // RegisterYourInstance, GoToSCF, ImportExportExtra) -- only the strings
+    // with no existing match are added below.
+    'NoControlsMatch' => 'Geen kontroles stem ooreen met jou filters nie',
+    'CouldNotLoadControls' => 'Kon nie kontroles laai nie',
+    'ControlsYouAddWillAppearHere' => 'Kontroles wat jy byvoeg, sal hier verskyn.',
+    'NoFrameworksYet' => 'Geen raamwerke nog nie',
+    'FrameworksYouAddWillAppearHere' => 'Raamwerke wat jy byvoeg of invoer, sal hier verskyn.',
+    'CouldNotLoadFrameworks' => 'Kon nie raamwerke laai nie',
+    // Task 9 review fix: the framework rail's own "no results" intent, shown
+    // when the user has explicitly switched the status dropdown away from
+    // Active and that status has nothing (distinct from "No frameworks yet",
+    // which is reserved for the default Active status where the endpoint
+    // can't yet tell "no frameworks at all" from "none active").
+    'NoFrameworksMatchFilter' => 'Geen raamwerke stem ooreen met hierdie status nie',
+    'ViewActiveFrameworks' => 'Bekyk aktiewe raamwerke',
+    // Task 10: Define Control Frameworks insights band (governance/index.php)
+    // -- KPI tile labels/subtitles. 'Controls', 'Pass', 'Fail', 'NotTested'
+    // already exist and are reused as label keys for their tiles.
+    'BelowTarget' => 'Onder teiken',
+    'Excluded' => 'Uitgesluit',
+    'FwInScope' => 'Binne omvang',
+    'FwLastTestPassed' => 'Laaste toets geslaag',
+    'FwLastTestFailed' => 'Laaste toets het misluk',
+    'FwNoEvidence' => 'Toepaslik, geen bewyse nie',
+    'FwMaturityUnderDesired' => 'Volwassenheid onder die verlangde',
+    'FwScopeAFramework' => 'Omvang \'n raamwerk om te besluit',
+    'FwNotApplicableOrInherited' => 'Nie van toepassing of geërf nie',
+    // Task 22: framework rail search (governance/index.php's #sr-fw-search,
+    // wired client-side in governance-frameworks.js). Reuses the shipped
+    // "no results" empty-state tile (#sr-fw-filtered, Task 9) rather than
+    // inventing a fourth rail empty state -- only the title and action swap
+    // depending on whether a status filter or a search narrowed the list to
+    // nothing; NoTestsMatchFiltersBody already covers both as body copy.
+    'NoFrameworksMatchSearch' => 'Geen raamwerke stem ooreen met jou soektog nie',
+    'ClearSearch' => 'Vee soektog uit',
+    // Task 24: Clone control pre-fills the Add Control modal from the source
+    // control (governance-frameworks.js's openControlForClone()) rather than
+    // creating a duplicate outright, so the modal needs to say plainly which
+    // control it was cloned from -- the reviewer's core complaint about an
+    // earlier one-click version of this feature was not knowing what was
+    // cloned. {$name} follows the same client-side formatTemplate()
+    // substitution ShowingXToYOfZ/NSelected already use on this page.
+    'ClonedFromControlNotice' => 'Gekloon vanaf "{$name}". Hersien die velde hieronder en stoor dan.',
+    // Task 24 review follow-up: the banner alone left the modal titled "New
+    // Control" over pre-populated fields -- "it doesn't prompt or anything
+    // so the user doesn't know what was cloned" (Josh) -- which reads as a
+    // bug, not a feature. Retitling #control--add-title to this (governance-
+    // frameworks.js's show.bs.modal delegate for #control--add) makes the
+    // clone unambiguous at a glance; NewControl is restored for a plain add.
+    'CloneOfControlTitle' => 'Kloon van "{$name}"',
+    // Task 27: the framework rail's SCF-origin chip (governance-frameworks.js's
+    // railRow()) -- shown only for frameworks created via the ComplianceForge
+    // SCF Extra's authoritative-source import (get_scf_origin_framework_ids(),
+    // includes/governance.php). SCF is the badge text itself; ScfOriginHint is
+    // its title/tooltip.
+    'SCF' => 'SCF',
+    'ScfOriginHint' => 'Van die Veilige Beheerraamwerk (SCF)',
+    // Task 34: the Maturity filter facet's placeholder on the Define Control
+    // Frameworks filter sheet (governance-frameworks.js's ensureFilterSheet()),
+    // matching the AnyFamily/AnyOwner/AnyClass/... set above. The facet's three
+    // OPTIONS reuse the existing BelowMaturity/AtMaturity/AboveMaturity keys --
+    // the same labels the governance dashboard's maturity-gap widgets already
+    // carry -- and the column chip renders those same three strings, so the
+    // filter and the cell can never read differently.
+    'AnyMaturity' => 'Enige volwassenheid',
+    // Task 46: accessible name for the control table's pager landmark
+    // (governance-frameworks.js's renderPager()). The pager's own buttons
+    // reuse the existing Previous/Next keys Define Tests' pager already
+    // carries; only the <nav> label is new, and it names WHICH table's pager
+    // it is because the Define Control Frameworks page has two lists on it.
+    'ControlsPagination' => 'Beheer paginering',
+    // Task 14: the Applicability column's state chip (governance-frameworks.js's
+    // renderApplicability()), the matching filter facet (its three option labels
+    // reuse these same three keys) and its "Any applicability" placeholder.
+    //
+    // The three states are PREFIXED rather than named 'Applicable'/
+    // 'NotApplicable'/'Inherited' because 'NotApplicable' already exists above
+    // as the ABBREVIATION 'N/A' -- the self-assessment answer chip and three
+    // reporting charts render it -- and redefining that key to the spelled-out
+    // phrase this column needs would silently change all four of those
+    // surfaces. The prefix also keeps the trio recognisable as one family.
+    //
+    // The column HEADER and the facet's accessible name reuse the existing
+    // 'Applicability' key, and the drawer's record reuses 'Reason', 'Provider'
+    // and 'Justification' -- all four already carry exactly the right string.
+    'ApplicabilityApplicable' => 'Toepaslik',
+    'ApplicabilityNotApplicable' => 'Nie van toepassing nie',
+    'ApplicabilityInherited' => 'Geërf',
+    'AnyApplicability' => 'Enige toepaslikheid',
+    // The drawer's applicability record: who recorded the decision and when.
+    // Both are attribution for an audited decision a customer may have to
+    // defend years later, which is why the drawer names them at all.
+    'ApplicabilityDecidedBy' => 'Besluit deur',
+    'ApplicabilityDecidedOn' => 'Besluit op',
+    // The framework-level Statement of Applicability card in the Add/Edit
+    // framework modals (display_framework_soa_card(), includes/governance.php).
+    // These two fields are what ISO/IEC 27001:2022 clause 6.1.3(d) needs on an
+    // SoA cover: the scope the framework is certified against, and how inclusion
+    // was determined for the controls that are simply applicable.
+    //
+    // 'IsmsScopeStatement' rather than a bare 'ScopeStatement' because "scope"
+    // is already overloaded across SimpleRisk (assessment scope, audit scope,
+    // risk scope); the ISMS prefix is what an ISO practitioner calls this exact
+    // field and keeps it from being reused for an unrelated one.
+    'StatementOfApplicability' => 'Verklaring van toepaslikheid',
+    'IsmsScopeStatement' => 'Omvangsverklaring',
+    'IsmsScopeStatementHint' => 'Die omvang waarteen hierdie raamwerk gesertifiseer is. Verskyn op die SoA-voorblad.',
+    'DefaultInclusionJustification' => 'Standaard insluitingsregverdiging',
+    'DefaultInclusionJustificationHint' => 'Gebruik vir toepaslike beheermaatreëls sonder gekoppelde risiko\'s. Noem die drywer, nie die raamwerk nie.',
+    // THE DEFAULT SENTENCE, in all three of its roles: the create form seeds the
+    // textarea with it, the Edit form shows it as a placeholder, and
+    // soa_framework_default_justification() (includes/soa.php) substitutes it at
+    // read time for a framework that has none. One key, because a reader must not
+    // be able to tell a stored default from a fallen-back one, and because three
+    // keys holding the same sentence is three chances for a translator to make
+    // them disagree. The name predates the seeding decision (Task 67) and is kept
+    // rather than churned through Crowdin for 39 locales.
+    //
+    // It names the DRIVER (the risk assessment) rather than the framework:
+    // "included because it is part of this framework" is circular, and ISO 6.1.3
+    // derives controls from risk treatment, using Annex A afterwards only as a
+    // completeness cross-check.
+    //
+    // It was a placeholder ONLY until Task 67, so that an unreviewed sentence
+    // could not reach a customer's SoA by inaction. Measured, that produced the
+    // opposite failure: 19 of 20 frameworks left the field NULL and the SoA's
+    // Justification column came out BLANK for every applicable control with no
+    // linked risks -- the finding an SoA is most often failed on, and one a
+    // boilerplate sentence does not attract.
+    'DefaultInclusionJustificationPlaceholder' => 'Bepaal deur die organisasie se inligtingsekuriteitsrisikobepaling en behou as \'n noodsaaklike beheermaatreël.',
+    // Task 15: bulk-setting applicability from the control table's selection bar
+    // (#applicability--set, governance/index.php + governance-frameworks.js).
+    //
+    // The action's own label and the modal's one section. 'Applicability',
+    // 'Reason', 'Provider', 'Justification', 'Save' and 'Cancel' already exist
+    // and are reused; only the strings with no existing home are added here.
+    'SetApplicability' => 'Stel toepaslikheid',
+    'ApplicabilityDecision' => 'Besluit',
+    // The amber scope note, in two sentences the page assembles separately
+    // because they answer two different questions: WHICH framework the decision
+    // is scoped to, and WHICH controls are about to receive it. The second one
+    // has two spellings, because the header checkbox selects the current PAGE
+    // while "Select all N" escalates to the whole filtered result set -- the two
+    // genuinely differ once the table pages, and a note that blurred them would
+    // let the user write 1,535 decisions believing they had written 25.
+    'ApplicabilityScopeNote' => 'Hierdie besluit is slegs van toepassing binne "{$framework}". Dieselfde beheer kan in \'n ander raamwerk van toepassing bly.',
+    'ApplicabilityAppliesToSelected' => 'Dit sal aangeteken word teen die {$n} kontrole(s) wat op hierdie bladsy gekies is.',
+    'ApplicabilityAppliesToAllFiltered' => 'Dit sal aangeteken word teen alle {$n} kontrole(s) wat ooreenstem met die huidige filters, insluitend dié op ander bladsye.',
+    // Per-state hints under the segmented control. The "applicable" one is the
+    // load-bearing sentence of the whole modal, and the SoA audit-readiness work
+    // rewrote it: an applicable control MAY now carry its own reasons and
+    // justification (ISO/IEC 27001 clause 6.1.3(d) asks for one per control, for
+    // inclusion as much as for exclusion), and leaving both empty is what falls
+    // back to the framework's default inclusion justification. The old sentence
+    // -- "this removes any recorded decision. No justification is needed." --
+    // is now false in both halves.
+    'ApplicabilityApplicableHint' => 'Binne die bestek van hierdie raamwerk. \'n Rede en \'n regverdiging is opsioneel; as beide leeg gelaat word, word die raamwerk se standaard insluitingsregverdiging gebruik.',
+    'ApplicabilityNotApplicableHint' => 'Uitsluiting van \'n beheermaatreël van hierdie raamwerk se omvang. Beide \'n rede en \'n skriftelike regverdiging word vereis.',
+    'ApplicabilityInheritedHint' => 'Iemand anders voer hierdie beheer namens jou uit. Noem hulle en sê wat hulle doen.',
+    'ApplicabilityNarrativeHint' => 'Verskyn in die Verklaring van Toepaslikheid. Skryf neer wat \'n ouditeur nodig sou hê om die besluit te aanvaar.',
+    'ApplicabilityProviderHint' => 'Die organisasie wat die beheer uitvoer: \'n wolkverskaffer, \'n bestuurde diens, \'n moedermaatskappy.',
+    'ChooseAReason' => 'Kies \'n rede',
+    'ApplicabilityNoReason' => 'Geen rede nie',
+    // Result toasts. Both interpolate a COUNT taken from the API response and
+    // nothing else -- no submitted text is ever reflected into a toast, which
+    // toastr renders as HTML.
+    'ApplicabilitySetResult' => 'Toepaslikheid opgedateer vir {$n} kontrole(s).',
+    'ApplicabilityClearResult' => 'Toepaslikheid teruggestel na van toepassing vir {$n} kontrole(s).',
+    // Bulk control delete (Task 54, corrected Task 55). Deleting a control is
+    // final either way the delete engine implements it: a control with test
+    // history is soft-deleted (framework_controls.deleted = 1) to keep test
+    // history intact, a control with no tests is removed outright -- but
+    // nothing anywhere flips that flag back, so from the user's side there is
+    // no "kept" case, only "deleted, and its test history survives for audit
+    // purposes." Every sentence therefore leads with the same irreversible
+    // warning; the only thing that varies is whether an audit-history clause
+    // is appended, and that clause is omitted entirely rather than printed
+    // with a count of zero -- "0 are retained for audit history" reads as a
+    // warning about something that is not going to happen, and on a delete
+    // confirmation that is exactly the kind of noise that trains people to
+    // stop reading. Every {$...} is a count from the API response; no user
+    // text is ever interpolated, which matters because toastr renders HTML.
+    'DeleteControlsPreviewChecking' => 'Kontroleer wat uitgevee sal word...',
+    'DeleteControlsPreviewSplit' => '{$n} kontrole(s) sal uitgevee word. Dit kan nie ongedaan gemaak word nie. Toetsresultate vir {$m} daarvan word vir ouditgeskiedenis behou.',
+    'DeleteControlsPreviewKeptOnly' => 'Alle {$n} kontrole(s) sal uitgevee word. Dit kan nie ongedaan gemaak word nie. Toetsresultate word vir ouditgeskiedenis behou.',
+    'DeleteControlsPreviewRemovedOnly' => '{$n} kontrole(s) sal uitgevee word. Dit kan nie ongedaan gemaak word nie.',
+    'DeleteControlsPreviewNone' => 'Niks om te verwyder nie: die gekose kontrole(s) bestaan nie meer nie.',
+    'ControlsDeletedResult' => '{$n} kontrole(s) is verwyder.',
+
+    // The Add/Edit framework modal's Status field. The label reuses the existing
+    // 'Status' key -- the same word the rail's Active/Inactive/All filter already
+    // uses -- so only the explanatory hint is new. It says the two things a user
+    // cannot see from the control itself: that Inactive is the NON-destructive way
+    // to retire a framework (unlike Delete, which cannot be undone), and that the
+    // change cascades through the hierarchy, which is what update_framework_status()
+    // has always done and is genuinely surprising when a parent is deactivated.
+    'FrameworkStatusHint' => 'Onaktiewe raamwerke behou al hul kontroles en kartering, maar word versteek van die standaard raamwerklys en uit die bestuursdashboard gelaat. Deaktivering van \'n raamwerk deaktiveer ook elke raamwerk daaronder; die aktivering van een aktiveer ook sy ouers.',
+
+    // Task 60: the same #applicability--set modal, opened from ONE control's row
+    // action instead of the selection bulk bar. The button's own label reuses
+    // 'SetApplicability'; these two exist because the modal now has to say which
+    // of the two it is acting on, and both spellings must be unambiguous.
+    //
+    // The title names the specific object (design-system.md §8) and the note
+    // says "only", because the dangerous reading is the silent one: with rows
+    // ticked -- or with "Select all N filtered" in force -- a modal that said
+    // nothing would let a click the user believed applied to one row be read as
+    // applying to every control in the framework. Naming the control in both
+    // places is what makes the narrower scope visible rather than assumed.
+    // Corrected in Task 63. This spelling used to end "...only, whatever else is
+    // selected", which was printed on every row-action open whether or not
+    // anything else WAS selected -- a dangling absolute with no antecedent, so
+    // it read as a sentence that had been cut off. It is now the plain form, and
+    // the reassurance about a competing selection moved to
+    // 'ApplicabilityAppliesToControlNotSelection' below, which is printed only
+    // when there is a competing selection to reassure anyone about.
+    'SetApplicabilityForControl' => 'Stel toepaslikheid: {$name}',
+    'ApplicabilityAppliesToControl' => 'Dit sal slegs teen "{$name}" aangeteken word.',
+
+    // Task 17: the Statement of Applicability report itself
+    // (reports/statement_of_applicability.php + pages/statement-of-applicability.js),
+    // the document ISO/IEC 27001:2022 clause 6.1.3(d) asks for and the one every
+    // applicability decision recorded on the Define Control Frameworks page
+    // exists to produce.
+    //
+    // 'StatementOfApplicability' already exists above (the framework modal's SoA
+    // card) and is reused for the report's own title, as are 'IsmsScopeStatement',
+    // 'DefaultInclusionJustification', the three 'Applicability*' state labels,
+    // 'ApplicabilityDecidedBy'/'DecidedOn', and the plain 'Framework',
+    // 'ControlNumber', 'ControlName', 'Justification', 'Evidence', 'Reason',
+    // 'Provider', 'Total', 'Controls' and 'Export' keys. Only strings with no
+    // existing home are added here.
+    'StatementOfApplicabilityDesc' => 'Vir een raamwerk: elke beheermaatreël, of dit van toepassing is, waarom dit ingesluit of uitgesluit is, en of dit geïmplementeer word.',
+    // The header button on Define Control Frameworks. The verb is "generate"
+    // rather than "view" because the document is assembled at the moment it is
+    // asked for -- there is no stored SoA that could be out of date.
+    'GenerateStatementOfApplicability' => 'Genereer \'n verklaring van toepaslikheid',
+
+    // The Justification column's SECOND resolution step, and the reason an SoA
+    // built here beats the spreadsheet it replaces: the risks that drove the
+    // control are already recorded against it, so nobody retypes them and they
+    // cannot go stale. {risks} is substituted with the displayed risk ids.
+    //
+    // Phrased to match clause 6.1.3, which derives controls from risk treatment
+    // and uses Annex A afterwards only as a completeness cross-check -- the same
+    // reasoning behind 'DefaultInclusionJustificationPlaceholder' above.
+    'SoaJustifiedByRiskAssessment' => 'Bepaal deur die organisasie se inligtingsekuriteitsrisikobepaling. Gekoppelde risiko\'s: {risks}.',
+
+    // The Implemented column. DERIVED from maturity and the last test result on
+    // every read, never stored, so it cannot drift out of sync with the control.
+    // 'Yes' and 'No' already exist and are reused; only the middle value and the
+    // header need keys of their own. An excluded control's cell reuses the
+    // existing 'NotApplicable' ('N/A'), which is exactly the right abbreviation
+    // in a dense table.
+    'SoaImplemented' => 'Geïmplementeer',
+    'SoaImplementedPartial' => 'Gedeeltelik',
+
+    // The cover block.
+    'SoaGeneratedOn' => 'Gegenereer op',
+    'SoaExcludedCount' => 'Uitgesluit',
+
+    // The prompt shown when the framework has never been given the two cover
+    // fields. It PROMPTS rather than silently printing a blank cover: an SoA
+    // whose scope is empty is the one defect an auditor spots first, and the
+    // moment somebody opens the report is the only moment those fields matter.
+    // Both spellings of empty (never set, and deliberately cleared) prompt --
+    // from a reader's point of view there is nothing to print either way.
+    //
+    // The inclusion-justification line states a WEAKER consequence than it used
+    // to, because Task 67 made the stronger one untrue: the column no longer goes
+    // blank when the field is empty -- soa_framework_default_justification()
+    // substitutes the generic default sentence. The prompt survives because a
+    // generic sentence is not the organization's own, and an auditor reading 1,500
+    // identical rows of boilerplate is entitled to ask whose risk assessment it
+    // refers to.
+    'SoaMissingFieldsTitle' => 'Hierdie stelling ontbreek sy dekbesonderhede',
+    'SoaMissingScopeStatement' => 'Geen omvangsverklaring is vir hierdie raamwerk aangeteken nie. \'n SoA moet die omvang waarteen dit gemaak word, aandui.',
+    'SoaMissingInclusionJustification' => 'Geen standaardinsluitingsregverdiging is aangeteken nie. Toepaslike beheermaatreëls sonder gekoppelde risiko\'s sal terugval op \'n generiese stelling eerder as u eie.',
+    'SoaEditFrameworkToAdd' => 'Voeg hulle by die raamwerk',
+
+    // Opened from the Reporting Hub, which cannot supply a framework. A picker,
+    // not an error: an SoA is a per-framework document by definition -- the same
+    // control excluded from ISO 27001 is not thereby excluded from PCI DSS --
+    // and there is no cross-framework roll-up to offer instead.
+    'SoaChooseFramework' => 'Kies \'n raamwerk',
+    'SoaChooseFrameworkHint' => '\'n Toepaslikheidsverklaring word oor een raamwerk op \'n slag geskryf.',
+    // The picker has a roster but nothing in it. Distinct from "this framework
+    // has no controls": there is no framework to write a statement about at all,
+    // and the fix is on a different page, so it says which one.
+    // The launcher's affordance row. "Open in browser" rather than "View"
+    // because it names what actually happens -- the document opens in a new tab,
+    // chrome-free -- and because Task 18 adds "Download as PDF" and "Download as
+    // XLSX" beside it, where "open" vs "download" is the distinction that
+    // matters.
+    // The document has no sidebar, so it needs its own way back for anyone who
+    // arrives from a bookmark or a shared link. Screen only; never printed.
+    'SoaBackToSelector' => 'Terug na die verklaring van toepaslikheid',
+    'SoaNoFrameworks' => 'Geen aktiewe raamwerke nie',
+    'SoaNoFrameworksHint' => 'Installeer of aktiveer \'n raamwerk onder Bestuur > Definieer Beheerraamwerke, en dit sal hier beskikbaar wees.',
+
+    // The two refusals. Both explain rather than just failing, because the user
+    // arrived here deliberately.
+    'SoaFrameworkInactiveTitle' => 'Hierdie raamwerk is onaktief',
+    'SoaFrameworkInactiveBody' => '\'n Toepaslikheidsverklaring beskryf die omvang waaronder \'n organisasie tans opereer. Heraktiveer die raamwerk om een te genereer.',
+    'SoaFrameworkNotFoundBody' => 'Daardie raamwerk bestaan nie meer nie.',
+
+    // A framework with no controls mapped into it. Not an error -- it is a real
+    // and recoverable state, and saying so beats an empty table.
+    'SoaNoControls' => 'Hierdie raamwerk het geen kontroles nie',
+    'SoaNoControlsHint' => 'Kaart kontroles in die raamwerk en die verklaring van toepaslikheid daarvan sal hulle lys.',
+
+    // The second half of the statement-of-applicability launcher's affordance
+    // row, beside "Open in browser" and the existing 'DownloadAsXLSX'. Rendered
+    // only where the Import/Export Extra is active, which is what supplies the
+    // export. "Download as" rather than "Export to" so the pair reads as one
+    // choice of format, and so it matches the XLSX label already in this file.
+    'DownloadAsPDF' => 'Laai af as PDF',
+
+    // The fourth column of the control modal's "Mapped Control Frameworks"
+    // widget, between the reference code and the reference text. The
+    // FRAMEWORK's own title for the control it is citing -- what a Statement of
+    // Applicability prints beside the clause number. Distinct from the existing
+    // 'ReferenceText', which holds the framework's full control statement, and
+    // from the SimpleRisk control's own name.
+    'ReferenceSubject' => 'Verwysingsonderwerp',
+    // Placeholder/help text under that field, and the reason it is worth
+    // filling in: without it the Statement of Applicability has nothing to
+    // print but the source catalogue's name for its own control.
+    'ReferenceSubjectHint' => "Die raamwerk se eie titel vir hierdie kontrole.",
+
+    // Task 63: the row-scoped population sentence in the Set applicability
+    // modal, in the one situation where the plain
+    // 'ApplicabilityAppliesToControl' above leaves a real question unanswered --
+    // the user has controls ticked, or a standing "Select all N filtered", and
+    // has just opened the modal from ONE row's own action.
+    //
+    // It states the guarantee rather than implying it. A user whose escalated
+    // selection covers an entire framework needs to know that this click is not
+    // about to overwrite it, and {$n} is the count of the OTHER selected
+    // controls -- the target is excluded, because it is very often ticked too
+    // and a promise that included it would be false.
+    'ApplicabilityAppliesToControlNotSelection' => 'Dit sal slegs teen "{$name}" aangeteken word — die {$n} kontrole(s) wat jy gekies het, word nie beïnvloed nie.',
+
+    // Task 65: the VISIBLE label on the controls toolbar's SoA button. The full
+    // sentence ('GenerateStatementOfApplicability' above) stays as the button's
+    // title and aria-label, and is still what the SoA page itself is called;
+    // this is the short form for a toolbar row it shares with the page's one
+    // primary action. At full length the secondary button measured more than
+    // twice the primary's width and became the largest element in the row.
+    //
+    // "SoA" is safe to abbreviate HERE and only here: the button appears solely
+    // when a single framework is scoped, beside an Applicability column, and it
+    // expands on hover.
+    'GenerateSoa' => 'Genereer SoA',
+
+    // ===== Clone framework (Task 64) =======================================
+    // The framework half of Clone control's framing (CloneOfControlTitle /
+    // ClonedFromControlNotice above), and for the same reason: the clone
+    // pre-fills the Add Framework modal rather than creating anything, so the
+    // modal has to say what was carried over before the user saves it.
+    //
+    // Separate keys from the control pair rather than one shared "Clone of
+    // {$name}" -- the two banners do not say the same thing. A cloned control
+    // simply asks to be reviewed; a cloned FRAMEWORK has to explain two things
+    // its fields cannot: that the source's control mappings come with it, and
+    // that the empty scope statement is deliberate. The blank field is the
+    // whole reason the banner is longer than the control's -- a scope statement
+    // left blank with no explanation reads as a field that failed to populate,
+    // and the one thing a clone exists to be given is a NEW scope (Josh: "you
+    // might want to use the same controls as one framework, but scope it
+    // differently"). {$name} and {$n} follow the same client-side
+    // formatTemplate() substitution the rest of this page's templates use.
+    'CloneOfFrameworkTitle' => 'Kloon van "{$name}"',
+    // {$n} is the count the rail is SHOWING for the source row -- its controls,
+    // not its raw mapping rows. Those differ (a framework can cite one control
+    // under two clause numbers, and the rail excludes deleted controls), and the
+    // number to promise is the one the user is looking at when they click and
+    // the one the clone's own rail row will show afterwards.
+    'ClonedFromFrameworkNotice' => 'Gekloon vanaf "{$name}". Die {$n} kontroles sal na die nuwe raamwerk gekopieer word, met elkeen van hulle van meet af aan van toepassing — geeneen van die toepaslikheidsbesluite word oorgedra nie. Die omvangverklaring is doelbewus leeg: meld die omvang wat hierdie raamwerk dek voordat die Verklaring van Toepaslikheid gegenereer word.',
+    // Seeds the name field so the clone can be saved without a rename --
+    // framework names are unique, so a verbatim copy is refused on save.
+    'CloneOfFrameworkName' => '{$name} (Kloon)',
+    'CloneFramework' => 'Kloonraamwerk',
+    // Extras version independently of Core, so an updated Import/Export Extra
+    // can end up calling a Core function the installed Core does not have. The
+    // export refuses with this rather than fataling -- see
+    // soa_export_refuse_if_core_too_old(), extras/import-export/includes/soa_export.php.
+    'SoaExportRequiresNewerCore' => 'Hierdie uitvoer vereis \'n nuwer weergawe van SimpleRisk Core as die een wat geïnstalleer is. Dateer SimpleRisk op en probeer dan weer die uitvoer.',
+    // The framework ACQUISITION chooser (Task 26): "+ Add framework" asks how you
+    // want to get one, rather than assuming you want to type it in. Each option is
+    // rendered only when the route behind it actually exists for this user, so the
+    // hint text may state plainly what the route does -- it is never shown to
+    // someone who cannot take it.
+    'HowDoYouWantToAddAFramework' => 'Hoe wil jy \'n raamwerk byvoeg?',
+    'CreateFrameworkManually' => 'Skep een handmatig',
+    'CreateFrameworkManuallyHint' => 'Benoem die raamwerk self, voeg dan die kontroles by of karteer dit.',
+    // Named for the framework rather than for its vendor. The hint was reworded
+    // at the same time: it used to end "...load its Secure Controls Framework
+    // controls", which read as a stutter once the label carried those words.
+    'GetFrameworkFromScf' => 'Kry een van die Secure Controls Framework',
+    'GetFrameworkFromScfHint' => 'Kies \'n gepubliseerde raamwerk en laai die gekarteerde kontroles in een stap.',
+    'ImportFrameworkFromCatalog' => 'Voer een in',
+    'ImportFrameworkFromCatalogHint' => 'Installeer \'n raamwerk en sy kontroles vanaf die SimpleRisk-inhoudkatalogus.',
+
+    // The framework acquisition chooser's third route, which now offers the
+    // Import-Export Extra's CONTROL import (a spreadsheet naming a framework
+    // that does not exist yet creates it) rather than the GitHub catalogue the
+    // two keys above described. Those two are left in place, unreferenced, so a
+    // customer maintaining a custom lang.<locale>.php still reconciles by tail
+    // diff.
+    'ImportFrameworkFromSpreadsheet' => 'Voer een in vanaf \'n sigblad',
+    'ImportFrameworkFromSpreadsheetHint' => 'Laai \'n sigblad van kontroles op wat die raamwerk benoem, en albei word geskep.',
+
+    // The Define Control Frameworks rail's second synthetic scope: the controls
+    // mapped to no framework at all. Its first, "All controls", reuses the
+    // existing AllControls key rather than adding a second string with the same
+    // English -- it replaced 'AllFrameworks' on that row, which named a union of
+    // frameworks while scoping to every control, mapped or not. 'AllFrameworks'
+    // is left in place and unreferenced by that page: other surfaces still use
+    // it, and every locale carries it.
+    'UnassignedControls' => 'Ongetoegekende kontroles',
+    // APPLICABILITY VALIDATION FAILURES. These reach the user: the v2 endpoint
+    // returns the exception's message as the API status message and the page
+    // renders it in a toast, so a hardcoded English literal here would be
+    // permanently English for every locale.
+    //
+    // NOTHING THE CALLER TYPED IS EVER INTERPOLATED INTO THESE. The parameters
+    // are validated enum values, integer ids and byte limits the server itself
+    // owns -- naming the ALLOWED values rather than echoing the rejected one is
+    // deliberate (it is both safe and more useful than repeating a typo).
+    'ApplicabilityErrUnknownState' => 'Onbekende toepaslikheidstoestand. Het een van die volgende verwag: {$states}.',
+    'ApplicabilityErrNarrativeRequired' => '\'n Narratief word vereis vir \'{$state}\'.',
+    'ApplicabilityErrNarrativeTooLong' => 'Die narratief is langer as {$bytes} grepe.',
+    'ApplicabilityErrReasonRequired' => '\'n Uitsluitingsrede is nodig om \'n kontrole as nie van toepassing te merk nie.',
+    'ApplicabilityErrProviderRequired' => '\'n Verskaffer moet \'n beheer as geërf merk.',
+    'ApplicabilityErrProviderTooLong' => 'Die verskaffernaam is langer as {$bytes} grepe.',
+    'ApplicabilityErrReasonsNotFound' => 'Hierdie toepaslikheidsredes bestaan nie: {$ids}.',
+    'ApplicabilityErrReasonsNotOffered' => 'Hierdie toepaslikheidsredes word nie vir hierdie toestand aangebied nie: {$ids}.',
+    'ApplicabilityErrFrameworkNotFound' => 'Raamwerk {$framework} bestaan nie.',
+    'ApplicabilityErrControlsNotFound' => 'Hierdie beheer-ID\'s bestaan nie: {$ids}.',
+    // Controls/Risks import result messages (validation gate, individual bad-row
+    // alerts, and the batched submitted/created/updated summaries)
+    'ControlIdOrShortNameFieldRequired' => 'Óf die Beheer-ID óf die Beheer-kortnaam-veld moet gekarteer word -- \'n ry kan nie sonder een van hulle geïdentifiseer word nie.',
+    'RiskImportSubjectNull' => 'Risiko-ID {$risk_id}: Is nie opgedateer nie, want die Onderwerp-veld is leeg of ontbreek.',
+    'RiskImportSummary' => '{$submitted} risiko(s) ingedien en {$updated} risiko(s) opgedateer.',
+    'ControlImportSummary' => 'Het {$created} kontrole(s) geskep en {$updated} kontrole(s) opgedateer.',
+    'ImportAdditionalIssuesSuppressed' => '{$count} bykomende ry(e) het probleme gehad wat nie individueel hier getoon word nie.',
+    'EncryptionPipelineStalledTask' => '\'n Enkripsiepyplyn (taak #{$id}, {$type}) lyk asof dit vasgevang is — dit was vir \'n buitengewoon lang tyd {$status} sonder om te vorder. Dit beteken gewoonlik dat die agtergrondwaglyswerker nie loop nie; maak seker dat dit geskeduleer is, en probeer dan weer sodra dit die vasgevangde taak verwerk het.',
+    'EncryptionPipelineStalledState' => '\'n Enkripsiepyplyn lyk vasgevang — dit is vir \'n buitengewoon lang tyd as aan die gang gemerk sonder enige ooreenstemmende agtergrondtaak om na te wys. Dit beteken gewoonlik dat die touwerker nie loop nie, of dat \'n vorige pyplyn voltooi is sonder om dit korrek op te dateer. Gaan die ontfoutingslogboek na voordat u weer probeer.',
+    // DEMO_MODE — shown when a visitor to a shared demo instance attempts one
+    // of the operations that would spoil the demo for the next visitor
+    'ActionDisabledOnDemoInstance' => 'Hierdie aksie is gedeaktiveer op die SimpleRisk-demo-instansie.',
+
+    // The one-click upgrade progress window: the step an upgrade is on, and
+    // the line shown once it finishes
+    // Shown when an upgrade's progress record has not been touched for long
+    // enough that the process running it is presumed gone
+    'UpgradeJobStalled' => 'Die opgradering het opgehou reageer. Gaan die bedienerlogboek na voordat u weer probeer.',
+    // Shown when an upgrade replaced the instance's configuration file and could
+    // not put the original back
+    // Shown when the database was brought up to date but the application files
+    // could not be replaced, so the instance has NOT moved to the new release
+    'UpdateAppFailed' => 'Die toepassingslêers is nie opgegradeer nie, dus hierdie instansie gebruik steeds sy vorige weergawe. Gaan die SimpleRisk-log na vir die rede, en voer dan die opgradering weer uit.',
+    // The one-click upgrade progress screen
+    'UpgradeInProgress' => 'Aan die gang',
+    'UpgradeStepNotNeeded' => 'Nie nodig nie',
+    // Recovering an Upgrade Extra whose files are damaged
+    'UpgradeExtraDamagedReinstalling' => 'Die geïnstalleerde Opgradering Ekstra is beskadig. Laai tans \'n nuwe kopie af.',
+    'UpgradeExtraDamagedRepaired' => 'Die Opgradering Ekstra is vervang met \'n werkende kopie.',
+    'UpgradeExtraDamagedFailed' => 'Die Opgraderingsekstra is beskadig en kon nie outomaties vervang word nie. Herinstalleer dit vanaf die Ekstras-bladsy, of herstel simplerisk/extras/upgrade/ vanaf \'n rugsteun, en probeer dan weer.',
+    'UpgradeAlreadyCurrent' => 'Hierdie instansie is reeds by {version}, wat die mees onlangse vrystelling is. Niks hoef opgegradeer te word nie.',
+    'UpgradeShowWhatItDid' => 'Wys wat dit gedoen het',
+    'UpgradeBackupsListed' => 'Hierdie rugsteun word gelys onder Konfigureer > Rugsteun.',
+    'UpgradingTo' => 'Opgradeer na {version}',
+    'UpgradeSafeToClose' => 'Dit is veilig om hierdie venster toe te maak. Die opgradering gaan voort op die bediener en hierdie bladsy sal weer aanheg.',
+    'UpgradeDownloadLog' => 'Laai log af',
+    'UpgradeStatementsApplied' => 'Begin {started} · {count} stellings toegepas',
+    // The Upgrade Extra's pre-upgrade check of the instance it is sitting on
+    'UpgradeCheckingInstance' => 'Kontroleer hierdie instansie',
+    'UpgradeInstanceChecked' => 'Instansie nagegaan, geen regstellings nodig nie.',
+    'UpgradeBlockedByCorrections' => 'Die opgradering het gestaak omdat hierdie instansie \'n regstelling benodig wat nie outomaties toegepas kon word nie. Volg die instruksies hierbo en voer die opgradering dan weer uit. Niks anders is verander nie.',
+    // Shown when an upgrade replaced the instance's configuration file and could not put the original back
+    'ConfigRestoreFailed' => 'Die opgradering kon nie hierdie instansie se konfigurasielêer herstel nie. Herstel simplerisk/includes/config.php vanaf die rugsteun voordat u voortgaan.',
+    'UpgradeDidNotAdvance' => 'Die opgraderingsfunksie vir weergawe "{$version}" het nie die databasisweergawe bevorder nie; dit word gestop sodat dit nie weer uitgevoer word nie.',
+    'BackupDatabaseNative' => 'Rugsteun van die databasis (geen eksterne gereedskap benodig nie)...',
+    'UpgradeAlreadyRunning' => '\'n Opgradering loop reeds op hierdie instansie.',
+    'UpgradeStatusUnreachable' => 'Kontak met die bediener verloor terwyl die opgradering aan die gang was. Gaan die SimpleRisk-log na; die opgradering is dalk steeds aan die gang.',
+    'UpgradeJobUnwritable' => 'Die opgradering kon nie begin nie, want die vorderingsrekord kon nie geskryf word nie. Kontroleer of die tydelike stelselgids deur die webgebruiker geskryf kan word.',
+    'UpgradeStepCheckingVersions' => 'Kontroleer weergawes',
+    'UpgradeStepUpgradingDatabase' => 'Opgradering van die databasisskema',
+    'UpgradeStepFinalising' => 'Toepassing van die omskakelings na opgradering',
+    'UpgradeDatabaseHeading' => 'Opgradering van die databasis',
+    'UpgradeDatabaseComplete' => 'Die databasisopgradering is voltooi.',
+    'UpgradeHideWhatItDid' => 'Versteek wat dit gedoen het',
+    'UpgradeStateRunning' => 'Loop',
+    'UpgradeSessionExpired' => 'Jou sessie het verval. Meld weer aan om die opgradering te sien.',
+    'UpgradeLostContact' => 'Kontak met bediener verloor. Herlaai hierdie bladsy om weer aan die opgradering te koppel.',
+    'UpgradeDatabaseAlreadyCurrent' => 'Die databasis is reeds op die toepassingsweergawe.',
+    'UpgradeConversionsApplied' => 'Enjin- en karakterstel-omskakelings toegepas.',
+    'UpgradeStoppedShort' => 'Die opgradering het gestop by {reached} sonder om {app}te bereik. Sien die bedienerlogboek.',
+    'UpgradeStepBackingUp' => 'Rugsteun',
+    'UpgradeStepUpgradingFiles' => 'Opgradering van toepassingslêers',
+    'UpgradeStepUpgradingExtras' => 'Opgradering van geïnstalleerde ekstras',
+    'UpgradeStepUpdatingUpgradeExtra' => 'Opdatering van die Opgradering Ekstra',
+    // The Upgrade Extra's pre-chain corrections: what is wrong, and what to do
+    // about it. These are the highest-stakes messages the upgrade produces --
+    // an operator reads them to unstick an instance that cannot upgrade.
+    'UpgradeCorrectionUnknownVersionTitle' => 'Die opgeneemde databasisweergawe noem nie \'n werklike vrystelling nie',
+    'UpgradeCorrectionNoRecordedVersion' => 'Die databasis het geen aangetekende weergawe nie.',
+    'UpgradeCorrectionUnknownVersionFinding' => 'Die databasis rapporteer weergawe \'{$version}\', wat geen SimpleRisk-vrystelling noem nie. Die opgradering kan nie \'n beginpunt daaruit kies nie.',
+    'UpgradeCorrectionUnknownVersionGuidance' => 'Stel die db_version-instelling op die vrystelling waarvan die skema hierdie databasis werklik het, en voer dan die opgradering weer uit: UPDATE-instellings SET value=\'<release>\' WHERE naam=\'db_version\'. As die waarde \'n plekhouer soos 2026XXXX-001 is, is die korrekte waarde amper altyd die mees onlangse werklike vrystelling wat geïnstalleer is voordat die opgradering uitgevoer is.',
+    'UpgradeCorrectionLegacySessionsTitle' => 'Die sessietabel kan nie die opgradering se karakterstel-omskakeling oorleef nie.',
+    'UpgradeCorrectionLegacySessionsFinding' => '`sessions`.`id` is VARCHAR({$width}) op \'n MyISAM-tabel. Om dit na utf8mb4 om te skakel, wat vanaf weergawe 20230106-001 wel doen, sal MyISAM se 1000-greep indekslimiet oorskry en die opgradering misluk.',
+    'UpgradeCorrectionLegacySessionsGuidance' => 'Een of meer aktiewe sessies gebruik \'n ID langer as 128 karakters. As die kolom nou vernou word, sal daardie gebruikers uitgelog word, so dit is net so gelaat. Probeer die opgradering weer wanneer daardie sessies verval het.',
+    'UpgradeCorrectionApplied' => 'Gekorrigeer.',
+    'UpgradeCorrectionFailed' => 'Hierdie regstelling kon nie toegepas word nie. Sien die SimpleRisk-log vir die rede.',
+    'UpgradeCorrectionAppliedLine' => 'Gekorrigeer: {$title} {$message}',
+    'UpgradeCorrectionNotAppliedLine' => 'NIE reggestel nie: {$title} {$message}',
+    'UpgradeCorrectionsNeeded' => 'Korreksies benodig voordat hierdie instansie opgegradeer kan word: {$count}',
+    'UpgradeCorrectionsNeededShort' => 'Korreksies benodig: {$count}',
+    'UpdateDatabase' => 'Opgradering van databasis...',
+    // Authentication screens (index.php, reset.php, reset_password.php)
+    'EnterTheCredentialsForYourAccount' => 'Voer die aanmeldbesonderhede vir jou rekening in.',
+    'TroubleSigningIn' => 'Probleme met aanmelding? Kontak jou SimpleRisk-administrateur.',
+    'BackToLogin' => 'Terug na aanmelding',
+    'Or' => 'of',
+    'WeWillEmailAResetTokenToYourAccount' => 'Ons sal \'n terugstelteken per e-pos na die adres op jou rekening stuur.',
+    'EnterTheResetTokenFromYourEmail' => 'Voer die herstelteken van jou e-pos saam met jou nuwe wagwoord in.',
+    'ChooseANewPasswordToContinue' => 'Kies \'n nuwe wagwoord om voort te gaan.',
+    'FromZeroToGRCInMinutes' => 'Van NUL na GRC in minute.',
+    'OrganizationLogo' => 'Organisasie-logo',
+    'LoginScreenBranding' => 'Aanmeldskerm handelsmerk',
+    'CustomLogo' => 'Pasgemaakte logo',
+    'CustomLogoHint' => 'PNG, JPG, GIF of WebP, tot 1 MB en 2000x2000. Word vertoon tot 260x64, so verskaf ongeveer 520x128 vir hoëdigtheidskerms. Die boonste balk en aanmeldpaneel is donker, so laai \'n logo op wat op \'n donker agtergrond lees. Verwyder die logo om terug te gaan na die SimpleRisk-een.',
+    'CurrentLogo' => 'Huidige logo',
+    'RemoveLogo' => 'Verwyder die logo',
+    'LoginTagline' => 'Aanmeld-slagspreuk',
+    'LoginTaglineHint' => 'Vervang die SimpleRisk-slagspreuk op die aanmeldskerm. Een kort reël lees die beste. Los dit leeg om die SimpleRisk-slagspreuk te behou.',
+    'LoginNotice' => 'Kennisgewing van stelselgebruik',
+    'LoginNoticeHint' => 'Word op die aanmeldskerm gewys voordat enigiemand aanmeld. Gebruik dit vir \'n aanvaarbare gebruik- of stelselgebruikkennisgewing. Los dit leeg om geen kennisgewing te wys nie. Skakels en beelde word nie toegelaat nie.',
+    'BrandingRequiresCustomization' => 'Aanmeldskerm-handelsmerk is deel van die Aanpassing-ekstra.',
+    'LogoMustBeAnImage' => 'Die logo moet \'n PNG-, JPG-, GIF- of WebP-beeld wees.',
+    'LogoTooLarge' => 'Die logo mag nie groter as 1 MB wees nie.',
+    'LogoDimensionsTooLarge' => 'Die logo mag nie groter as 2000x2000 pixels wees nie.',
+    'LogoDimensionsTooSmall' => 'Die logo moet ten minste 32 pixels op sy langste rand wees.',
+    'LogoUploadFailed' => 'Die logo kon nie opgelaai word nie. Probeer asseblief weer.',
+    'LogoUpdated' => 'Die logo is opgedateer.',
+    'LogoRemoved' => 'Die logo is verwyder.',
+    'NoSystemUseNoticeSet' => 'Geen stelselgebruikskennisgewing is ingestel nie.',
+    'NoticeSizeSmall' => 'Klein',
+    'NoticeSizeNormal' => 'Normaal',
+    'NoticeSizeLarge' => 'Groot',
     '' => '',
 );
 ?>

@@ -8,6 +8,10 @@
     require_once(realpath(__DIR__ . '/../includes/authenticate.php'));
     require_once(realpath(__DIR__ . '/../includes/bootstrap.php'));
     require_once(realpath(__DIR__ . '/../includes/upgrade.php'));
+    // The job record. Declared here rather than relied on through upgrade.php,
+    // per CLAUDE.md's function-reachability rule.
+    require_once(realpath(__DIR__ . '/../includes/upgrade/job.php'));
+    require_once(realpath(__DIR__ . '/../includes/upgrade/page.php'));
     require_once(realpath(__DIR__ . '/../includes/alerts.php'));
     require_once(realpath(__DIR__ . '/../vendor/autoload.php'));
 
@@ -40,6 +44,60 @@
 
     // Check for session timeout or renegotiation
     session_check();
+
+    // ── The progress endpoints ─────────────────────────────────────────────
+    //
+    // This page used to run the whole upgrade inline and stream its output into
+    // the response. Whether an operator saw any of that depended entirely on
+    // the server: Apache's mod_deflate buffers text/html by default, nginx
+    // buffers proxied responses, FastCGI buffers too, and none of it is
+    // reliably defeatable from PHP. On a large database the page went blank for
+    // exactly the part that takes longest, which reads as a hung upgrade.
+    //
+    // Now the schema upgrade is a job the page polls, the same shape the
+    // one-click flow uses. Every poll response is small and complete, so no
+    // buffer can hide it, and the run survives a closed tab.
+    //
+    // DELIBERATELY SCHEMA ONLY. This page has no orchestrator: it does not
+    // download an Extra, take a backup, fetch a bundle or replace any files,
+    // and it should not start now. It runs the release chain and the post-chain
+    // conversions, which is what an operator who has already swapped the files
+    // by hand needs it to do.
+    if (isset($_GET['upgrade_status']))
+    {
+        header('Content-Type: application/json; charset=utf-8');
+        header('Cache-Control: no-store');
+
+        if (!isset($_SESSION['admin']) || $_SESSION['admin'] != "1") {
+            http_response_code(403);
+            echo json_encode(array('state' => 'forbidden'));
+            exit(0);
+        }
+
+        // Release the session row lock before reading the record. These polls
+        // fire every two seconds and SimpleRiskSessionHandler::read() holds
+        // SELECT ... FOR UPDATE on the session row for the life of the request,
+        // so without this they serialise against each other and against the
+        // upgrade. The Extra's twin endpoint does the same, for the same reason.
+        session_write_close();
+
+        $job = upgrade_job_read();
+
+        if ($job === null) {
+            echo json_encode(array('state' => 'none'));
+            exit(0);
+        }
+
+        // A run whose process died would otherwise leave the screen polling a
+        // job that claims to be running for ever.
+        if (upgrade_job_is_stale($job)) {
+            $job['state']   = 'failed';
+            $job['message'] = $lang['UpgradeJobStalled'] ?? 'The upgrade stopped responding. Check the server log before retrying.';
+        }
+
+        echo json_encode($job);
+        exit(0);
+    }
 
     // If the user requested a logout
     if (isset($_GET['logout']) && $_GET['logout'] == "true") {
@@ -157,9 +215,16 @@
             <header class="topbar" data-navbarbg="skin5">
                 <nav class="navbar top-navbar navbar-expand-md navbar-dark justify-content-between">
                     <div class="navbar-header">
-                        <a class="navbar-brand" href="https://www.simplerisk.com">
-                            <img src="../images/logo@2x.png" alt="homepage" class="logo"/>
-                        </a>
+<?php
+    // SAFE AGAINST A NOT-YET-UPGRADED DATABASE, which matters more here than
+    // on any other caller: this page exists to run against one.
+    //
+    // On a release predating the branding work the `custom_logo` setting does
+    // not exist, get_setting() returns false, and the SimpleRisk mark renders.
+    // Because the <img> is then never emitted, custom_logo.php -- which reads
+    // a table that release also lacks -- is never requested.
+    display_brand_logo('../');
+?>
                     </div>
                     <div class="navbar-content">
                         <ul class="nav"> 
@@ -203,29 +268,9 @@
 
         // Otherwise, CONTINUE was pressed
         } else {
-            
-            echo "
-                                        <div class='card' style='margin-top: 43.8px; '>
-                                            <div class='card-body'>
-            ";
 
-                                                // Upgrade the database
-                                                upgrade_database();
-
-                                                // Convert tables to InnoDB
-                                                convert_tables_to_innodb();
-
-                                                // Convert tables to utf8_general_ci
-                                                convert_tables_to_utf8();
-
-                                                // Display the clear cache warning
-                                                display_cache_clear_warning();
-
-            echo "
-                                                <span class='d-block m-t-25'>!-- " . $escaper->escapeHtml($lang['UPGRADECOMPLETED']) . " --!</span>
-                                            </div>
-                                        </div>
-            ";
+                                                // Start the job, detach, and let the page poll it.
+                                                start_database_upgrade_job();
         }
     }
 ?>
@@ -248,6 +293,185 @@
         		// Fading out the preloader once everything is done rendering
         		$(".preloader").fadeOut();
             });
+
+		// ── The progress poller ─────────────────────────────────────────
+		//
+		// Only runs when the card is on the page, i.e. after Continue was
+		// pressed. Deliberately a poller and not a stream: a stream can be
+		// swallowed whole by mod_deflate, nginx proxy buffering or FastCGI,
+		// none of which a customer can be asked to reconfigure before they
+		// are allowed to upgrade. Small complete responses cannot be hidden
+		// by a buffer.
+		//
+		// The same shape and the same markup as the one-click screen in
+		// admin/register.php, so an operator who has seen one recognises the
+		// other. Deliberately NOT shared code: this page runs mid-upgrade on
+		// a Core whose files may have just been replaced, and a shared asset
+		// is one more thing that has to be in step.
+		$(function() {
+			var $card = $('#db-upgrade-card');
+			if (!$card.length) { return; }
+
+			var expandedSteps = {};
+			var failures = 0;
+			var waitedForJob = 0;
+
+			$(document).on('click', '.sr-upgrade-toggle', function() {
+				var key = $(this).data('step');
+				expandedSteps[key] = !expandedSteps[key];
+				if (lastJob) { renderJob(lastJob); }
+			});
+
+			var lastJob = null;
+
+			function renderJob(job) {
+				lastJob = job;
+				var steps = job.steps || [];
+				var statements = job.statements || [];
+
+				var byStep = {};
+				$.each(statements, function(i, st) {
+					var key = (st && st.step) ? st.step : '';
+					(byStep[key] = byStep[key] || []).push(st.text);
+				});
+
+				var $list = $('#db-upgrade-steps').empty();
+
+				$.each(steps, function(i, step) {
+					var state = step.state || 'todo';
+					var $row = $('<li>').addClass('sr-upgrade-step is-' + state);
+
+					// A second, non-colour signal, so a done step reads as done
+					// in grayscale too.
+					var $mark = $('<span>').addClass('sr-upgrade-mark');
+					if (state === 'done') {
+						$mark.text('\u2713');
+					} else if (state === 'running') {
+						$mark.html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>');
+					} else if (state === 'skipped') {
+						// A dash, not an empty circle: the step is settled, it
+						// just had nothing to do.
+						$mark.text('\u2013');
+					} else {
+						$mark.text('\u25cb');
+					}
+
+					var $body = $('<div>').addClass('sr-upgrade-body')
+						.append($('<div>').addClass('sr-upgrade-label').text(step.label || ''));
+
+					if (step.detail) {
+						$body.append($('<div>').addClass('sr-upgrade-detail').text(step.detail));
+					}
+
+					var lines = byStep[step.key] || [];
+					if (lines.length) {
+						var $ul = $('<ul>').addClass('sr-upgrade-statements');
+						$.each(lines, function(j, line) { $ul.append($('<li>').text(line)); });
+
+						if (state === 'running') {
+							$body.append($ul);
+							setTimeout(function() { $ul.scrollTop($ul[0].scrollHeight); }, 0);
+						} else {
+							var open = expandedSteps[step.key] === true;
+							$body.append(
+								$('<button>').attr('type', 'button')
+									.addClass('sr-upgrade-toggle')
+									.attr('data-step', step.key)
+									.text(open ? '<?php echo $escaper->escapeJs($lang['UpgradeHideWhatItDid'] ?? 'Hide what it did'); ?>'
+									           : '<?php echo $escaper->escapeJs($lang['UpgradeShowWhatItDid'] ?? 'Show what it did'); ?>')
+							);
+							if (open) { $body.append($ul); }
+						}
+					}
+
+					$row.append($mark).append($body);
+					if (step.meta) {
+						$row.append($('<span>').addClass('sr-upgrade-meta').text(step.meta));
+					}
+					$list.append($row);
+				});
+
+				var done = $.grep(steps, function(s) { return s.state === 'done' || s.state === 'skipped'; }).length;
+				$('#db-upgrade-counts').text(done + ' / ' + steps.length);
+
+				// removeClass() with no argument strips everything, so the
+				// base class has to go back on with the state class -- the
+				// .sr-state-* families style the pill, .sr-state-pill gives it
+				// its shape.
+				var $pill = $('#db-upgrade-state').removeClass();
+				if (job.state === 'running') {
+					$pill.addClass('sr-state-pill sr-state-info').text('<?php echo $escaper->escapeJs($lang['UpgradeStateRunning'] ?? 'Running'); ?>');
+				} else if (job.state === 'done') {
+					$pill.addClass('sr-state-pill sr-state-success').text('<?php echo $escaper->escapeJs($lang['Complete']); ?>');
+				} else {
+					$pill.addClass('sr-state-pill sr-state-danger').text('<?php echo $escaper->escapeJs($lang['Failed']); ?>');
+				}
+
+				// The conclusion in words. A run that changed nothing needs this
+				// as much as a failure does -- ticks over a row of dashes do not
+				// say "you were already current".
+				if (job.message) {
+					$('#db-upgrade-outcome')
+						.toggleClass('is-failure', job.state !== 'done')
+						.text(job.message)
+						.show();
+				}
+			}
+
+			function poll() {
+				$.getJSON('upgrade.php?upgrade_status=1')
+					.done(function(job) {
+						failures = 0;
+						// Bounded, like admin/register.php. An unbounded retry here
+						// is the spinner-that-never-resolves this whole change
+						// exists to remove: if the job record was never written,
+						// the page would poll every two seconds for ever.
+						if (!job || job.state === 'none') {
+							if (++waitedForJob > 30) {
+								$('#db-upgrade-outcome').addClass('is-failure')
+									.text('<?php echo $escaper->escapeJs($lang['UpgradeJobUnwritable'] ?? 'The upgrade could not start because its progress record could not be written.'); ?>')
+									.show();
+								return;
+							}
+							setTimeout(poll, 2000); return;
+						}
+						renderJob(job);
+						// Keep polling only while there is something to watch.
+						if (job.state === 'running') { setTimeout(poll, 2000); }
+					})
+					.fail(function(xhr) {
+						// A 403 is an answer, not a hiccup: the session went
+						// away. Saying so beats a spinner that never resolves.
+						if (xhr && xhr.status === 403) {
+							$('#db-upgrade-outcome').addClass('is-failure')
+								.text('<?php echo $escaper->escapeJs($lang['UpgradeSessionExpired'] ?? 'Your session expired. Sign in again to see the upgrade.'); ?>')
+								.show();
+							return;
+						}
+						// Anything else is treated as transient -- the web
+						// server is genuinely restarting during some upgrades --
+						// but not for ever.
+						if (++failures > 30) {
+							$('#db-upgrade-outcome').addClass('is-failure')
+								.text('<?php echo $escaper->escapeJs($lang['UpgradeLostContact'] ?? 'Lost contact with the server. Reload this page to reattach to the upgrade.'); ?>')
+								.show();
+							return;
+						}
+						setTimeout(poll, 3000);
+					});
+			}
+
+			poll();
+		});
     	</script>
     </body>
 </html>
+<?php
+    // The page is fully emitted -- card, poller and all. NOW close the response
+    // and run the upgrade with nobody listening.
+    //
+    // A no-op unless CONTINUE was pressed and the job was claimed. Deliberately
+    // last: detaching any earlier discards everything after it, which is what
+    // left the progress card on screen with no JavaScript attached to it.
+    finish_database_upgrade_page();
+?>

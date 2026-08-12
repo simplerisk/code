@@ -5,8 +5,8 @@
 (function () {
     'use strict';
 
-    // Localization helper — _lang is populated from required_localization_keys.
-    var L = function (k) { return (window._lang && window._lang[k]) || k; };
+    // Localization helper L(k) is defined once, globally, in header.php
+    // (window.L). _lang is populated from required_localization_keys.
 
     var root = document.getElementById('licenses-page');
     if (!root) { return; }

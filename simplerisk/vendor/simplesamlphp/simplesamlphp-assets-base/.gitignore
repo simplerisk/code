@@ -1,5 +1,9 @@
+1
+2
+3
+.phplint.cache/
 !/css/.gitkeep
-!/fonts/.gitkeep
+!/webfonts/.gitkeep
 !/js/.gitkeep
 /super-linter-output/
 /js/postSubmit.js

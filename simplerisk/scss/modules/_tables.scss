@@ -1,0 +1,2569 @@
+// ===== Shared table design-system module (design-system.md §6/§7) =====
+//
+// .sr-table-card is the approved DataTables surface: one card, three zones
+// (toolbar, table, footer). It restyles DataTables' own generated chrome —
+// same approach `.sr-qform` uses to tame selectize — rather than replacing
+// it. See .claude/skills/designing-ui/references/design-system.md §6 for
+// the full spec and §7 for the "state — soft" pill family built below.
+//
+// NOTE on DataTables markup: the restyle targets below (.dataTables_filter,
+// .paginate_button, .dataTables_info, .dataTables_length) are the classic
+// DataTables-generated class names named explicitly in design-system.md §6.
+// This app's `datatables.net-bs5` build (see
+// simplerisk/scss/core/datatables/datatables.scss) can also emit the newer
+// dt-* layout class names (.dt-search, .dt-paging, .dt-info, .dt-length)
+// depending on how a given table is initialized. The `[aria-sort]`
+// attribute selectors below are version-agnostic (DataTables sets
+// aria-sort on the active header regardless of layout mode) so sort-state
+// styling keeps working either way; a future consumer that ends up with
+// the dt-* layout will need a small selector addendum here.
+.sr-table-card {
+    background: $sr-body;
+    border: 1px solid $gray-300;
+    border-radius: 8px;
+    box-shadow: $shadow;
+    margin-bottom: 16px;
+    // No overflow:hidden on the card itself — same reasoning as .sr-qcard
+    // (_questionnaire.scss): it would clip filter/row-action dropdowns that
+    // need to escape the card's stacking context. The rounded corners are
+    // instead carried explicitly by the toolbar (top) and footer (bottom).
+
+    // ===== Toolbar zone: title + count, search, filters, one primary action =====
+    .sr-table-toolbar {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
+        padding: 13px 16px 4px;
+        // No divider here: the toolbar and the filter row below it read as one
+        // header zone. The single rule separating that header from the table
+        // sits under the filter row (.sr-table-quickfilters).
+        border-top-left-radius: 8px;
+        border-top-right-radius: 8px;
+    }
+
+    .sr-table-title {
+        font-size: 15px;
+        font-weight: 800;
+        color: $sr-primary;
+        display: flex;
+        align-items: baseline;
+        gap: 8px;
+    }
+
+    // Result-count pill — a neutral, tabular-nums meta badge (§7 "count/meta
+    // badges"), never the accent. JS fills in the number.
+    .sr-table-count {
+        font-size: 12px;
+        font-weight: 700;
+        color: $gray-600;
+        background: $gray-100;
+        border: 1px solid $gray-300;
+        border-radius: 20px;
+        padding: 1px 9px;
+        font-variant-numeric: tabular-nums;
+    }
+
+    // Attention variant of the count pill — the "N overdue" pill beside the
+    // title (mirrors the artifact's .count-pill.attn). App-Red tint + accent
+    // text; a scoped, meaningful spend (an at-a-glance "needs attention" count),
+    // never the neutral pill's grey.
+    .sr-table-count--attn {
+        color: $sr-important;
+        background: rgba($sr-important, .10);
+        border-color: transparent;
+    }
+
+    // Search + the one primary action. The filters live on their own row
+    // below (.sr-qf-selects), so this zone stays "what is this, and what can
+    // I do here" — and the search field is free to take the slack.
+    .sr-table-tools {
+        margin-left: auto;
+        display: flex;
+        align-items: center;
+        gap: 9px;
+        flex-wrap: wrap;
+        // Claim the space the filters used to occupy: the search field is the
+        // tool being reached for on a wide grid, and a fixed-width box beside a
+        // large empty gap reads as an oversight. flex-shrink keeps it from
+        // crowding the primary action when the toolbar is narrow.
+        flex: 1 1 auto;
+        justify-content: flex-end;
+
+        .dt-search {
+            flex: 1 1 240px;
+            max-width: 520px;
+
+            input {
+                width: 100%;
+            }
+        }
+
+        // A native <select> filter in the toolbar (e.g. the Define Tests
+        // coverage filter). Bootstrap's .form-select is width:100%, which makes
+        // it span a full row and pushes the primary action to wrap — turning the
+        // one-row toolbar the design calls for into a tall three-row stack.
+        // Shrink to content so it sits inline beside the search field, the
+        // multiselect filters, and the Add Test button (matching the compact
+        // single-row toolbar in the approved mockup). Bootstrap-multiselect
+        // filters hide their own native <select>, so this only affects the
+        // visible plain selects.
+        .form-select {
+            width: auto;
+            min-width: 120px;
+            font-size: 13px;
+            border-color: $gray-400;
+            border-radius: 6px;   // design-system control radius (inputs square globally; rounded per-control)
+        }
+
+        // bootstrap-multiselect renders each Framework/Family filter as a
+        // .multiselect toggle button. Bootstrap squares it ($border-radius: 1px)
+        // and gives it the default control border; round it to the 6px control
+        // radius and match the search field's border/type so the three toolbar
+        // filters read as one consistent rounded set (designing-ui).
+        button.multiselect {
+            border-radius: 6px;
+            border-color: $gray-400;
+            font-size: 13px;
+            font-weight: 400;
+            color: $sr-primary;
+            background: $sr-body;
+        }
+
+        // The Framework/Family dropdown menu defaults to a fixed ~160px and clips
+        // longer names ("NIST Cybersecurity Framework (v2.0)", "ComplianceForge
+        // SCF"). Let it size to its content within a sensible range, and wrap
+        // long option labels rather than clip them.
+        .multiselect-container {
+            width: auto;
+            min-width: 240px;
+            max-width: 380px;
+
+            .multiselect-option,
+            li label {
+                white-space: normal;
+            }
+        }
+    }
+
+    // A status/segment <select> filter in the toolbar (e.g. Fail/Pass/N-A/All).
+    // Bootstrap's .form-select is width:100%; shrink it to its content so it
+    // sits inline beside the search field rather than wrapping to its own row.
+    .sr-table-status-filter {
+        width: auto;
+        min-width: 120px;
+        font-size: 13px;
+    }
+
+    // A selectize-enhanced multi-select filter (e.g. Pending Risks "by control")
+    // keeps a usable width inline in the toolbar.
+    .selectize-control {
+        min-width: 220px;
+        max-width: 340px;
+        font-size: 13px;
+    }
+
+    // ===== Selection column + contextual bulk bar (design-system §6) =====
+    .sr-check-col {
+        width: 34px;
+        text-align: center;
+        padding-left: 14px;
+        padding-right: 6px;
+
+        .form-check-input {
+            margin: 0;
+            cursor: pointer;
+        }
+    }
+
+    // Row-checks replace the toolbar with this bar (tinted $sr-row-selected):
+    // a clear (×), the selection count, then the bulk actions on the right.
+    .sr-bulk-bar {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 9px 16px;
+        background: $sr-row-selected;
+        border-bottom: 1px solid $gray-300;
+        border-top-left-radius: 8px;
+        border-top-right-radius: 8px;
+
+        .sr-bulk-count {
+            font-size: 13px;
+            font-weight: 800;
+            color: $sr-primary;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .sr-bulk-actions {
+            margin-left: auto;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+
+            // Grey outline actions that darken on hover (matches the row's
+            // Review & edit); Create selected is the blue affirmative (matches
+            // the row Create) and Delete is neutral-until-hover-red (§6:
+            // bulk-delete is never a standing red button). Scoped to win over
+            // Bootstrap's outline variants without !important.
+            .btn {
+                padding: 4px 12px;
+                font-size: 13px;
+                font-weight: 600;
+                border-radius: 6px;
+                border: 1px solid $gray-300;
+                background: transparent;
+                color: $gray-600;
+
+                &:hover { color: $sr-primary; border-color: $gray-500; }
+                &:disabled { opacity: .5; }
+            }
+
+            #define-tests-bulk-create {
+                color: $info;
+                border-color: $info;
+
+                &:hover { background: $info; color: $white; border-color: $info; }
+            }
+
+            #define-tests-bulk-delete {
+                color: $sr-important;
+
+                &:hover { background: $sr-important; border-color: $sr-important; color: $white; }
+            }
+        }
+
+        .sr-bulk-clear {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 24px;
+            height: 24px;
+            padding: 0;
+            border: none;
+            background: transparent;
+            color: $gray-600;
+            font-size: 20px;
+            line-height: 1;
+            cursor: pointer;
+
+            &:hover {
+                color: $sr-primary;
+            }
+        }
+    }
+
+    // A locked action button (bulk or per-row) while its request is in flight.
+    .is-busy {
+        opacity: .6;
+        pointer-events: none;
+        cursor: default;
+    }
+
+    // A non-search filter control (e.g. "Filters (2)"). Layout/token only —
+    // content is JS-provided.
+    .sr-table-filter {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 13px;
+        font-weight: 700;
+        color: $sr-primary;
+        background: $sr-body;
+        border: 1px solid $gray-300;
+        border-radius: 6px;
+        padding: 7px 11px;
+        cursor: pointer;
+
+        &:hover {
+            border-color: $gray-500;
+        }
+
+        // Active-filter-count badge nested in a filter control.
+        .sr-table-fcount {
+            font-size: 11px;
+            font-weight: 800;
+            color: $sr-body;
+            background: $sr-primary;
+            border-radius: 10px;
+            padding: 0 6px;
+        }
+    }
+
+    // DataTables' generated search box, restyled as the toolbar search field.
+    // `.dataTables_filter` is the DT 1.x name; `.dt-search` is the DT 2.x (bs5)
+    // name this build actually emits — target both.
+    .dataTables_filter,
+    .dt-search {
+        display: flex;
+        align-items: center;
+        // DT 2.x renders <label> and <input> as siblings here, so the buffer
+        // between "Search:" and the field must sit on this flex container (a gap
+        // on the label only spaces the label's own children — the DT 1.x layout).
+        gap: 12px;
+
+        label {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin: 0;
+            font-size: 13px;
+            font-weight: 400;
+            color: $gray-600;
+        }
+
+        input {
+            border: 1px solid $gray-400;
+            border-radius: 6px;
+            padding: 7px 10px;
+            background: $sr-body;
+            font: inherit;
+            font-size: 13.5px;
+            color: $sr-primary;
+            min-width: 210px;
+
+            &::placeholder {
+                color: $gray-500;
+            }
+
+            &:focus {
+                outline: 0;
+                border-color: $sr-primary;
+            }
+        }
+    }
+
+    // ===== Table zone =====
+    // Horizontal scroll lives inside the card so a wide table never pushes
+    // the page body itself into horizontal scroll (design-system.md §6).
+    .sr-table-scroll {
+        overflow-x: auto;
+    }
+
+    // Lifted while a row-actions overflow menu is open, and ONLY when the
+    // table isn't actually using the horizontal scroll (the page's toggle
+    // handler checks scrollWidth against clientWidth before adding this).
+    //
+    // `overflow-x: auto` computes overflow-y to `auto` along with it -- the two
+    // axes cannot be auto/visible -- so the scroller clips the popped menu
+    // vertically even though it was only ever asked to handle horizontal
+    // overflow. On a short table that is fatal in both directions at once:
+    // measured with a single filtered row at 1200px, the scroller was 117px
+    // tall against a 92px menu, so the menu was cut off opening downward AND
+    // cut off opening upward, and elementFromPoint() on its top item returned
+    // the toolbar button above the table. Nothing is being scrolled in that
+    // state, so the clip costs the menu everything and buys the table nothing.
+    .sr-table-scroll.is-unclipped {
+        overflow: visible;
+    }
+
+    table.sr-table,
+    table.dataTable {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 13.5px;
+
+        thead th {
+            position: sticky;
+            top: 0;
+            background: $gray-100;
+            text-align: left;
+            font-size: 11px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: .04em;
+            color: $gray-600;
+            padding: 10px 14px;
+            border-bottom: 1px solid $gray-300;
+            white-space: nowrap;
+            user-select: none;
+
+            // Every data column sorts; the select-checkbox and row-actions
+            // columns simply don't carry the sorting class/attribute.
+            &.sorting,
+            &[aria-sort],
+            &.dt-orderable-asc,
+            &.dt-orderable-desc {
+                cursor: pointer;
+
+                &:hover {
+                    color: $sr-primary;
+                }
+            }
+
+            // Sort indicators: use DataTables' own grey up/down carets (the
+            // `.dt-column-order` span this 2.x build renders on every sortable
+            // column). We deliberately add NO custom ::after caret — a second one
+            // layered a solid black caret on top of the grey pair on the active
+            // column (the "extra caret").
+        }
+
+        tbody td {
+            padding: 11px 14px; // ~44px row height with the 13.5px base font
+            border-bottom: 1px solid $gray-300;
+            vertical-align: middle;
+            color: $sr-primary;
+        }
+
+        tbody tr:last-child td {
+            border-bottom: 0;
+        }
+
+        // Only data/group rows carry the hover tint. Expand/detail rows must
+        // NOT tint: their inner panel is inset within the padded td, so a row
+        // hover would reveal the tint as a grey frame around the white panel
+        // (a stray "outer box" behind the detail content).
+        tbody tr:hover:not(.sr-expand-row) {
+            background: $gray-100;
+        }
+    }
+
+    // Numeric-column helper (ID, score, dates, counts) — right-align with
+    // tabular figures so digits line up in columns. Apply to both the
+    // header cell and its body cells.
+    .sr-num {
+        text-align: right;
+        font-variant-numeric: tabular-nums;
+    }
+
+    // ===== Footer zone: row-count, page-size, pager =====
+    .sr-table-foot {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        flex-wrap: wrap;
+        padding: 11px 16px;
+        border-top: 1px solid $gray-300;
+        border-bottom-left-radius: 8px;
+        border-bottom-right-radius: 8px;
+        font-size: 12.5px;
+        color: $gray-600;
+    }
+
+    // "Showing 1-25 of 142" footer text. (DT 1.x `.dataTables_info` / DT 2.x
+    // `.dt-info`.)
+    .dataTables_info,
+    .dt-info {
+        color: $gray-600;
+        font-variant-numeric: tabular-nums;
+    }
+
+    // Right-hand footer group: page-length select + pager on one line, pushed
+    // to the far right (row-count stays on the left).
+    .sr-table-foot-right {
+        margin-left: auto;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+
+        // The pager's own auto-margin would fight the group's flex gap.
+        .dataTables_paginate,
+        .dt-paging {
+            margin-left: 0;
+        }
+
+        // Bootstrap gives the pager's <ul.pagination> a bottom margin; zero it
+        // so it sits vertically centered on the footer row.
+        .pagination {
+            margin-bottom: 0;
+        }
+    }
+
+    // Rows-per-page select. (DT 1.x `.dataTables_length` / DT 2.x `.dt-length`.)
+    .dataTables_length,
+    .dt-length {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        color: $gray-600;
+
+        select {
+            border: 1px solid $gray-400;
+            border-radius: 6px;
+            padding: 4px 8px;
+            background: $sr-body;
+            color: $sr-primary;
+            font: inherit;
+            font-size: 12.5px;
+
+            &:focus {
+                outline: 0;
+                border-color: $sr-primary;
+            }
+        }
+    }
+
+    // Pager. DT 1.x renders `.paginate_button` anchors directly; DT 2.x (bs5)
+    // renders Bootstrap markup — `ul.pagination > li.page-item > button.page-link`.
+    // Style both to the same design-system button.
+    .dataTables_paginate,
+    .dt-paging {
+        margin-left: auto;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+
+        // Strip Bootstrap's pagination chrome so the buttons read as the
+        // design-system pager rather than the default blue link group.
+        .pagination {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            margin: 0;
+            padding: 0;
+            list-style: none;
+        }
+
+        .page-item {
+            margin: 0;
+        }
+
+        .paginate_button,
+        .page-link {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 30px;
+            height: 30px;
+            padding: 0 8px;
+            border-radius: 6px;
+            border: 1px solid $gray-300;
+            background: $sr-body;
+            font: inherit;
+            font-size: 12.5px;
+            font-weight: 700;
+            color: $sr-primary;
+            cursor: pointer;
+            font-variant-numeric: tabular-nums;
+
+            &:hover:not(.current):not(.disabled) {
+                border-color: $gray-500;
+            }
+
+            &:focus {
+                outline: 0;
+                box-shadow: none;
+            }
+        }
+
+        // Active page = charcoal ($sr-primary), never the red accent — accent
+        // discipline (design-system.md §6): App Red is spent once, on the
+        // toolbar's primary action.
+        .paginate_button.current,
+        .paginate_button.active,
+        .page-item.active .page-link {
+            background: $sr-primary;
+            color: $sr-body;
+            border-color: $sr-primary;
+        }
+
+        .paginate_button.disabled,
+        .page-item.disabled .page-link {
+            opacity: .4;
+            cursor: default;
+        }
+    }
+}
+
+// ===== State pills — "soft" workflow status (design-system.md §7) =====
+//
+// Categorical workflow state (Where in the workflow?), NOT the ordered
+// risk-level severity scale (§7 "severity — solid", a separate, not-yet-
+// built pattern). State pills stay quiet: a soft semantic tint + a status
+// dot + colored text, content-width, NEVER a solid fill — that's reserved
+// for severity. Five semantic families by *meaning*, so a customer-
+// customized status label inherits the right family with no per-label CSS.
+// These render the answer pills (Yes/No/N-A) and control-status pills
+// (Pass/Fail) for the Self-Assessments / Failed Controls surfaces.
+.sr-state-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    width: fit-content; // content-width — never stretches to fill a cell
+    font-size: 11.5px;
+    font-weight: 700;
+    line-height: 1;
+    border-radius: 20px;
+    padding: 3px 11px;
+    white-space: nowrap;
+    border: 1px solid transparent;
+
+    // The status dot — color is never alone; the label always renders too,
+    // the dot is the secondary (non-text) signal.
+    &::before {
+        content: "";
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        flex: none;
+    }
+}
+
+// Neutral — Closed, Untreated, Unmitigated, Draft.
+.sr-state-neutral {
+    background: $gray-100;
+    color: $gray-700;
+    border-color: $gray-300;
+
+    &::before {
+        background: $gray-500;
+    }
+}
+
+// Info / active — New, In Progress, Reopened, Open.
+.sr-state-info {
+    background: rgba($info, .12);
+    color: darken($info, 22%);
+    border-color: rgba($info, .35);
+
+    &::before {
+        background: $info;
+    }
+}
+
+// Success — Mitigated, Reviewed, Approved, Pass.
+.sr-state-success {
+    background: rgba($success, .12);
+    color: darken($success, 15%);
+    border-color: rgba($success, .35);
+
+    &::before {
+        background: $success;
+    }
+}
+
+// Warning — Pending, Past Due, Awaiting Review.
+.sr-state-warning {
+    background: rgba($warning, .18);
+    color: darken($warning, 38%);
+    border-color: rgba($warning, .5);
+
+    &::before {
+        background: darken($warning, 8%);
+    }
+}
+
+// Danger — Rejected, Fail, Overdue. Soft red tint only — state never goes
+// solid red, so it never competes with the single solid-red primary action.
+.sr-state-danger {
+    background: rgba($danger, .10);
+    color: darken($danger, 15%);
+    border-color: rgba($danger, .35);
+
+    &::before {
+        background: $danger;
+    }
+}
+
+// Last-result lane modifier. Content-width made "Fail" (55px) and
+// "Inconclusive" (101px) ragged down the column; this centers the label at a
+// shared width so the column scans as one lane, the same treatment
+// .sr-state-pill-due gives the next-due column. min-width rather than a fixed
+// width, because result labels come from the customer-configurable
+// `test_results` table — a longer custom label grows the pill instead of
+// overflowing it.
+//
+// Top-level, NOT nested under .sr-table-card: the History modal renders this
+// same pill for the same data outside the grid card, and the two must read
+// identically.
+.sr-state-pill-result {
+    min-width: 105px;
+    justify-content: center;
+}
+
+// A pill whose state is carried by a glyph rather than the generic status dot
+// (see resultPill() in compliance-define-tests.js). The dot and the glyph are
+// alternatives, not companions -- two marks before one word is noise -- so the
+// modifier drops the ::before. The glyph inherits the family's text colour,
+// which keeps it a second signal on top of hue rather than a third colour.
+.sr-state-pill-glyph {
+    &::before {
+        display: none;
+    }
+
+    > .fa {
+        font-size: 10.5px;
+        line-height: 1;
+    }
+}
+
+// ===== Test history modal — the test's runs, newest first ================
+// The Define Tests grid's History row action. Top-level for the same reason
+// as the pill modifier above: the modal is a sibling of the grid card, not a
+// descendant of it.
+.sr-history-table {
+    width: 100%;
+    font-size: 13px;
+
+    th {
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        color: $gray-600;
+        padding: 0 10px 6px 0;
+        border-bottom: 1px solid $gray-300;
+    }
+
+    td {
+        padding: 8px 10px 8px 0;
+        border-bottom: 1px solid $gray-200;
+        vertical-align: middle;
+        white-space: nowrap;
+    }
+
+    tbody tr:last-child td {
+        border-bottom: 0;
+    }
+
+    // The deep-link arrow: quiet until hovered, like the grid's own row
+    // actions — the row's data is the content, the link is the affordance.
+    .sr-history-link {
+        width: 1%;
+        text-align: right;
+
+        a {
+            color: $gray-500;
+
+            &:hover {
+                color: $sr-important;
+            }
+        }
+    }
+}
+
+// ===== Severity pill — "solid" risk-level scale (design-system.md §7) =====
+//
+// *How bad.* An ordered, customer-configured scale, so — unlike the soft state
+// pills — it earns a solid, saturated, centered chip. The fill color is the
+// level's configured color from `risk_levels`, applied inline by JS via the
+// style property (validated by the browser); text color defaults to white and
+// flips to charcoal for pale fills via the `.on-light` modifier JS adds from
+// the fill's luminance. Renders the Pending Risks score as "<score> · <level>".
+.sr-sev-pill {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 64px;
+    padding: 3px 11px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 800;
+    line-height: 1;
+    white-space: nowrap;
+    color: $white;
+    background: $gray-500; // fallback until JS paints the configured color
+    font-variant-numeric: tabular-nums;
+
+    // Pale fills (e.g. a yellow "Low") need dark text for contrast.
+    &.on-light {
+        color: $sr-primary;
+    }
+
+    // Denser variant for table cells.
+    &.sr-sev-pill-sm {
+        min-width: 58px;
+        padding: 2px 9px;
+        font-size: 11.5px;
+    }
+}
+
+// ===== Define Tests grid additions (design-system.md §6/§7/§10) =====
+//
+// Built for the Define Tests redesign — grouped-by-control rows, the
+// control/test expand panels, the neutral schedule + mapping badges, the
+// filter row, and the empty/coverage-gap state. See
+// docs/superpowers/specs/2026-07-16-define-tests-redesign-design.md and the
+// Task 6-8 briefs (.superpowers/sdd/) for the JS/markup consumer — the class
+// names below are the binding contract those tasks render against.
+.sr-table-card {
+    // --- Group-header rows: one per control, collapsed by default -------
+    // A clickable <tr> that stands in for the DataTables row grouping;
+    // toggling it reveals the .sr-expand-row (control detail) directly
+    // below via a JS-added .is-expanded class / aria-expanded attribute.
+    tr.sr-group-row {
+        background: $gray-100;
+        cursor: pointer;
+
+        td {
+            font-weight: 700;
+            color: $sr-primary;
+        }
+
+        &:hover {
+            background: darken($gray-100, 2%);
+        }
+
+        // Group rows never carry the sort/hover-tint treatment of a data
+        // row — they're navigation, not a record.
+        &:hover td {
+            background: transparent;
+        }
+    }
+
+    // Wraps at EVERY width, deliberately, because the row's own width is not
+    // knowable from a stylesheet. .sr-group-actions is `flex: none` (below --
+    // it has to be, or the buttons would squash into unreadable slivers), and
+    // how many buttons are in it depends on the viewer's permissions AND on
+    // whether the AI control-test-generation capability is on. Turning that
+    // capability on adds a third button and, measured at 1024px, pushed the
+    // group row 120px past its card -- reproduced to the pixel by removing the
+    // control's own .sr-group-meta (-> 0) and by removing just the "Generate
+    // Tests with AI" button (-> 0), so it is the pair that overflows, not
+    // either alone.
+    //
+    // A media query cannot answer this. The width at which the cluster stops
+    // fitting moves with the button count, and this file has already watched
+    // that kind of constant go stale twice on the sibling control table (1400
+    // -> 1540 -> invalid, Tasks 42 and 45), each time leaving actions painted
+    // outside the thing that clips them. `flex-wrap` makes the LAYOUT ENGINE
+    // do the measuring, continuously and for free: while the cluster fits it
+    // is inline exactly as before, and the moment it does not it takes the
+    // next line instead of the card's right edge. The container's own `gap`
+    // spaces that second line, so there is no second constant either.
+    .sr-group-main {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 10px;
+        min-width: 0;
+    }
+
+    // Caret rotates via a state class/attribute the JS toggles alongside
+    // the panel's visibility — no icon-font dependency, any inline SVG/
+    // glyph placed inside inherits the rotation.
+    .sr-group-caret {
+        flex: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 16px;
+        height: 16px;
+        color: $gray-600;
+        transition: transform $transitions;
+
+        svg {
+            width: 12px;
+            height: 12px;
+        }
+    }
+
+    tr.sr-group-row.is-expanded .sr-group-caret,
+    tr.sr-group-row[aria-expanded="true"] .sr-group-caret {
+        transform: rotate(90deg);
+        color: $sr-primary;
+    }
+
+    .sr-group-number {
+        // Never the element that gives: the control number is short and
+        // identifying, so it holds its line while the name (which owns the
+        // ellipsis below) absorbs the squeeze at narrow widths. Without this
+        // the chip wrapped to two lines and grew the whole group row.
+        flex: none;
+        white-space: nowrap;
+        color: $gray-600;
+        font-weight: 700;
+        margin-right: 2px;
+    }
+
+    .sr-group-name {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    // Owner + test-count meta, muted and secondary to the control name.
+    .sr-group-meta {
+        color: $gray-600;
+        font-weight: 400;
+        font-size: 12.5px;
+        white-space: nowrap;
+    }
+
+    // The group row's right-hand action cluster ("+ Add test" ·
+    // "Apply a common test…"). The wrapper owns the auto push so the pair
+    // travels together; giving each button its own `margin-left: auto`
+    // would split the free space between them.
+    .sr-group-actions {
+        margin-left: auto;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex: none;
+
+        .sr-group-add {
+            margin-left: 0;
+        }
+    }
+
+    // Per-control "+ Add test" — a quiet ghost affordance, not a second
+    // primary action (the toolbar's Add stays the one accent spend).
+    .sr-group-add {
+        margin-left: auto;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        flex: none;
+        border: 1px dashed $gray-400;
+        border-radius: 6px;
+        background: $sr-body;
+        color: $gray-600;
+        font-size: 12px;
+        font-weight: 700;
+        padding: 4px 10px;
+        cursor: pointer;
+
+        &:hover {
+            border-color: $sr-important;
+            color: $sr-important;
+        }
+    }
+
+    // --- Badges: SCF-mapping count + "Common" test reuse -----------------
+    // Neutral meta chips (§7 "count/meta badges") — never the accent;
+    // App Red stays spent on the toolbar's one primary action.
+    .sr-badge-frameworks,
+    .sr-badge-common {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        flex: none;
+        font-size: 11px;
+        font-weight: 700;
+        color: $gray-600;
+        background: $sr-body;
+        border: 1px solid $gray-300;
+        border-radius: 20px;
+        padding: 1px 8px;
+        font-variant-numeric: tabular-nums;
+        white-space: nowrap;
+    }
+
+    // Archived/retired test — a quiet neutral tag, not a status pill (it
+    // isn't a workflow state, it's a lifecycle marker).
+    .sr-badge-retired {
+        display: inline-flex;
+        align-items: center;
+        flex: none;
+        font-size: 10.5px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: .03em;
+        color: $gray-600;
+        background: $gray-100;
+        border: 1px solid $gray-300;
+        border-radius: 4px;
+        padding: 1px 6px;
+    }
+
+    // --- Schedule chip: mode + cadence ("Cal · Quarterly", "Manual") -----
+    // Neutral and informational — distinct from the semantic state pills;
+    // it states a fact (the schedule), not a judgement (on-track/overdue).
+    // --- Test name cell: caret + name -------------------------------------
+    // Mirrors the group row's .sr-group-caret so the control-level and
+    // test-level "expand to read more" affordances look like one pattern.
+    .sr-test-namecell {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        // Wrap so the sorted view's control context can take its own line
+        // beneath the name instead of being squeezed in beside it as another
+        // flex item (which is what a bare display:block does inside a flex row).
+        flex-wrap: wrap;
+    }
+
+    .sr-test-caret {
+        flex: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 14px;
+        height: 14px;
+        color: $gray-500;
+        cursor: pointer;
+        transition: transform $transitions;
+
+        svg {
+            width: 11px;
+            height: 11px;
+        }
+    }
+
+    tr.sr-test-row[aria-expanded="true"] .sr-test-caret {
+        transform: rotate(90deg);
+        color: $sr-primary;
+    }
+
+    .sr-test-name {
+        cursor: pointer;
+    }
+
+    // --- Tester identity: initials avatar + name --------------------------
+    .sr-who {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .sr-avatar {
+        flex: none;
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 10px;
+        font-weight: 800;
+        letter-spacing: .02em;
+        color: $sr-body;
+    }
+
+    // Identity palette — deliberately NOT the semantic hues (green/amber/red
+    // mean pass/due/overdue elsewhere in this grid) and never the accent, so
+    // an avatar can't be misread as status. Six muted slots, assigned
+    // deterministically per tester name by avatarColorIndex() in
+    // compliance-define-tests.js.
+    $sr-avatar-1: #5b6ee1; // indigo
+    $sr-avatar-2: #2f8f9d; // teal
+    $sr-avatar-3: #a05fc0; // purple
+    $sr-avatar-4: #6c7a89; // slate
+    $sr-avatar-5: #4a7fb5; // blue
+    $sr-avatar-6: #9c5f7a; // plum
+
+    .sr-avatar-c1 { background: $sr-avatar-1; }
+    .sr-avatar-c2 { background: $sr-avatar-2; }
+    .sr-avatar-c3 { background: $sr-avatar-3; }
+    .sr-avatar-c4 { background: $sr-avatar-4; }
+    .sr-avatar-c5 { background: $sr-avatar-5; }
+    .sr-avatar-c6 { background: $sr-avatar-6; }
+
+    // Retired rows drop out of the identity palette: the colours mark who is
+    // carrying live work, and an archived test isn't work.
+    .sr-avatar-muted { background: $gray-500; }
+
+    // "—" / "— Archived" in a cell that has no live value to show.
+    .sr-cell-dash {
+        color: $gray-500;
+        font-size: 12.5px;
+    }
+
+    // Schedule mode badge (Calendar / Interval) — the disambiguator, since
+    // format_test_schedule_summary() renders both as "Every N <unit>".
+    .sr-sched-mode {
+        font-size: 10px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: .03em;
+        color: $gray-600;
+    }
+
+    // Content-width made "Manual" (68px) and "INTERVAL Every 90 days" (175px)
+    // ragged down the column. A shared min-width makes the column scan as one
+    // lane -- the same treatment .sr-state-pill-result and .sr-state-pill-due
+    // already give their columns. min-width, not width: a longer cadence
+    // ("Every 6 Months" and friends) grows the chip instead of overflowing it.
+    .sr-schedule-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        min-width: 170px;
+        justify-content: center;
+        font-size: 12px;
+        font-weight: 600;
+        color: $sr-primary;
+        background: $gray-100;
+        border: 1px solid $gray-300;
+        border-radius: 20px;
+        padding: 3px 10px;
+        white-space: nowrap;
+
+        svg {
+            width: 11px;
+            height: 11px;
+            flex: none;
+            color: $gray-600;
+        }
+    }
+
+    // --- Next-due pill: same soft state-pill family, uniform column width
+    // "uniform-width in the next-due column" (design-system.md §6) — the
+    // base .sr-state-pill is content-width so short labels ("Manual") and
+    // long ones ("Due soon") don't line up; this modifier fixes a shared
+    // width and centers the label so the column scans as a single lane.
+    // The due lane. Sized to the widest label the column actually produces --
+    // a formatted date ("Scheduled · 10/13/2026", 166px) -- so every pill
+    // renders at the same width and the column scans as one lane.
+    //
+    // min-width rather than a fixed width, for the same reason as the result
+    // lane: the date format is instance-configurable
+    // (get_default_date_format()), so a locale with a longer format grows the
+    // pill instead of clipping the date out of it.
+    .sr-state-pill-due {
+        min-width: 170px;
+        justify-content: center;
+
+        // The clock/calendar glyph is what marks this column as TIME rather
+        // than health; the dot would be a second, redundant mark beside it.
+        &::before {
+            display: none;
+        }
+
+        .fa {
+            font-size: 10px;
+            opacity: .75;
+        }
+    }
+
+
+    // --- Severity stripe: marks overdue / due-soon rows at a glance ------
+    // A left-edge stripe, not a row background fill — the row keeps its
+    // normal hover/selection treatment; the stripe alone carries the cue,
+    // and it's paired with the next-due pill's own label, never color-only.
+    tbody tr.sr-row-overdue {
+        box-shadow: inset 3px 0 0 $danger;
+    }
+
+    tbody tr.sr-row-due-soon {
+        box-shadow: inset 3px 0 0 $warning;
+    }
+
+    // --- Retired rows: archive, not workload -----------------------------
+    // Dimmed as a whole so the row recedes behind the live tests it sits
+    // among, while staying legible and findable. Deliberately one opacity on
+    // the <tr> rather than per-cell colour overrides: it dims EVERY column at
+    // once (name, tester, result, actions) and can't drift out of step as
+    // cells are added. Paired with the "Retired" tag in the name cell -- the
+    // dimming is the fast signal, the tag is the unambiguous one.
+    tbody tr.sr-test-row.sr-row-retired {
+        opacity: .55;
+
+        // No severity stripe: a retired test isn't late, it's out of service.
+        box-shadow: none;
+
+        // Hovering an archived row shouldn't feel broken -- lift it back to
+        // near-full so its Restore/Delete actions are readable when reached.
+        &:hover {
+            opacity: .85;
+        }
+    }
+
+    // --- AI-suggested rows: a draft, not a live test ---------------------
+    // A pending AI-drafted test proposal (design-system.md §6), shown inline
+    // under its control but unmistakably a draft: a soft info-cyan wash across
+    // the whole row plus a left-edge stripe in the same info hue -- distinct
+    // from the live tests it sits among in the interleaved "All tests" view,
+    // and from the danger/warning severity stripes above. Paired with the
+    // "✨ AI suggested" Info state-pill in the name cell: the tint is the fast
+    // signal, the pill the unambiguous one (never colour-only).
+    tbody tr.sr-test-row.sr-row-suggestion {
+        background: rgba($info, .06);
+        box-shadow: inset 3px 0 0 $info;
+
+        &:hover {
+            background: rgba($info, .1);
+        }
+    }
+
+    // The three suggestion actions (Create / Review & edit / Dismiss) are
+    // ALWAYS visible -- never behind the ⋯ overflow or gated on row hover --
+    // so a review decision is one click away in every view. A small inline
+    // cluster, right-aligned in the actions column like the icon cluster it
+    // replaces.
+    .sr-suggestion-actions {
+        display: inline-flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 6px;
+        white-space: nowrap;
+
+        // Three-weight hierarchy (design system §5). The App Red accent is NOT
+        // spent here -- the toolbar's red "+ Add Test" is the view's one primary
+        // -- so Create leads as a blue ($info) outline that fills on hover,
+        // Review is a neutral grey outline, and Dismiss is a ghost that goes red
+        // on hover only (destructive-on-hover, never a standing red button).
+        // Scoped to the semantic classes so these win over Bootstrap's
+        // .btn-outline-secondary without !important.
+        .btn {
+            padding: 4px 12px;
+            font-size: 13px;
+            font-weight: 600;
+            border-radius: 6px;
+            border: 1px solid transparent;
+            line-height: 1.4;
+        }
+
+        // Create — blue outline that fills on hover. Per the design-system
+        // artifact, the affirmative AI-suggestion action reads as $info (the
+        // same cyan-blue as the "AI suggested" pill): not the App Red accent
+        // (reserved for the one toolbar primary) and not a charcoal fill
+        // (charcoal is a text/active colour, never a button fill).
+        .suggestion-create {
+            background: transparent;
+            color: $info;
+            border-color: $info;
+
+            &:hover { background: $info; color: $white; border-color: $info; }
+        }
+
+        // Review & edit — grey outline that just darkens on hover.
+        .suggestion-review {
+            background: transparent;
+            color: $gray-600;
+            border-color: $gray-300;
+
+            &:hover { background: transparent; color: $sr-primary; border-color: $gray-500; }
+        }
+
+        // Dismiss — grey text only, red on hover (destructive, no standing red).
+        .suggestion-dismiss {
+            background: transparent;
+            color: $gray-600;
+            border-color: transparent;
+
+            &:hover { background: transparent; color: $sr-important; border-color: transparent; }
+        }
+    }
+
+    // --- Row actions: revealed on hover, destructive red only on hover ---
+    .sr-row-actions {
+        display: inline-flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 4px;
+        opacity: 0;
+        transition: opacity $transitions;
+    }
+
+    tbody tr:hover .sr-row-actions,
+    tbody tr:focus-within .sr-row-actions {
+        opacity: 1;
+    }
+
+    // NO GROUP SEPARATORS (Task 94). The framework rail's menu was the only
+    // cluster in the product that ever emitted a `.sr-row-actions-sep`, and it
+    // no longer does -- four items cut into 2/1/1 is more structure than four
+    // items can carry (Josh: "The three dot menu looks weird with the lines for
+    // sections"), and the order already encodes the grouping. The two rules
+    // that stood here and in the mixin -- the inline `display: none` and the
+    // menu's hairline -- are gone with the markup that was their only consumer,
+    // rather than left behind as dead style waiting for a re-emitter.
+
+    .sr-row-action {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 26px;
+        height: 26px;
+        border: none;
+        background: transparent;
+        border-radius: 6px;
+        color: $gray-600;
+        cursor: pointer;
+
+        svg {
+            width: 14px;
+            height: 14px;
+        }
+
+        &:hover {
+            background: $gray-200;
+            color: $sr-primary;
+        }
+
+        // Destructive icon: neutral-until-hover, never a standing red
+        // button (design-system.md §6 "Row actions on hover").
+        &.sr-row-action-danger:hover {
+            background: rgba($danger, .1);
+            color: $danger;
+        }
+    }
+
+    // --- Expand panels: control SCF-mapping detail + test procedure ------
+    // Both panels render as a full-width row directly under the row they
+    // expand (group row → detail; test row → procedure), sharing the same
+    // shell so the two "expand to read more" moments feel like one pattern.
+    tr.sr-expand-row {
+        background: $sr-body;
+
+        > td {
+            padding: 0;
+            border-bottom: 1px solid $gray-300;
+        }
+    }
+
+    .sr-expand-panel {
+        padding: 16px 20px 18px 42px; // left-indented under the caret column
+        // Detail area is one clean white surface (matches the approved
+        // mockup's detail rows); the mapping sub-table below carries its own
+        // border. No grey inner panel — that read as a stray grey box inset
+        // in the white row and revealed more grey on horizontal scroll.
+        background: $sr-body;
+    }
+
+    // Coverage-gap empty state (a control with zero tests): a single compact
+    // line -- the "no tests yet" note with the "+ Add test" affordance inline
+    // beside it -- instead of the full expand panel's stacked text + button,
+    // so a zero-test control row stays short rather than a tall blank band.
+    .sr-empty-tests {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding-left: 28px; // + the td's 14px = ~42px, aligned under the caret column
+        font-size: 13px;
+        color: $gray-600;
+
+        .sr-group-add {
+            margin-left: 0; // sit inline right after the note, not pushed to the far right
+        }
+    }
+
+    // Control detail: a titled section (label + body). Spacing lives on the
+    // block so the description and the mapping table are separated the same
+    // way the test drawer separates its meta and procedure zones.
+    .sr-detail-block + .sr-detail-block {
+        margin-top: 14px;
+    }
+
+    .sr-detail-desc {
+        font-size: 13px;
+        color: $sr-primary;
+        max-width: 780px;
+    }
+
+
+    // Test procedure: a read-only definition-list grid (design-system.md
+    // §11 "Fields are values, not disabled controls") — label above value,
+    // never a greyed-out input.
+    .sr-proc-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 12px 22px;
+        max-width: 900px;
+    }
+
+    .sr-proc-field {
+        min-width: 0;
+
+        &.sr-col-2 {
+            grid-column: 1 / -1;
+        }
+    }
+
+    // The single drawer label token. Used by BOTH expand drawers — the
+    // control drawer's section labels and the test drawer's field labels —
+    // and matched by the mapping table's column headers above, so every
+    // label inside an expanded row reads as one treatment. Smaller and
+    // heavier than the main grid's column headers so a drawer stays
+    // visually subordinate to the table it opens from.
+    .sr-proc-label {
+        display: block;
+        font-size: 10px;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: .05em;
+        color: $gray-600;
+        margin-bottom: 4px;
+    }
+
+    .sr-proc-value {
+        font-size: 13px;
+        color: $sr-primary;
+        word-break: break-word;
+
+        // A missing value renders as an em dash, never a blank box
+        // (design-system.md §11) — JS emits this class when the field is
+        // NULL rather than leaving the value empty.
+        &.sr-proc-empty {
+            color: $gray-500;
+        }
+    }
+
+    // Tester → Approver reads as one flow, so a missing approver is obvious.
+    .sr-proc-arrow {
+        color: $gray-500;
+        margin: 0 6px;
+    }
+
+    // --- Procedure prose block: the read-only write-up under the meta grid --
+    // Separated from the meta grid by whitespace alone — no rule. The drawer
+    // is already bounded by its own row; an inner divider reads as a second
+    // card edge and competes with the grid's row dividers.
+    .sr-proc-body {
+        display: grid;
+        gap: 12px;
+        max-width: 900px;
+        margin-top: 14px;
+    }
+
+    .sr-proc-block {
+        min-width: 0;
+    }
+
+    // Test steps authored as a list stay a list (htmlToLines()), so a tester
+    // can follow them in order instead of reading one run-on sentence.
+    .sr-proc-steps {
+        margin: 2px 0 0;
+        padding-left: 20px;
+        font-size: 13.5px;
+        color: $sr-primary;
+
+        li {
+            margin: 2px 0;
+        }
+    }
+
+    // Required evidence renders as discrete chips — an auditor collects these
+    // as a checklist, so each item wants its own boundary.
+    .sr-proc-evidence {
+        list-style: none;
+        margin: 3px 0 0;
+        padding-left: 0;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+
+        li {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            color: $sr-primary;
+            background: $gray-100;
+            border: 1px solid $gray-300;
+            border-radius: 6px;
+            padding: 3px 9px;
+
+            i {
+                color: $gray-600;
+                font-size: 11px;
+            }
+        }
+    }
+
+    .sr-proc-actions {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-top: 14px;
+    }
+
+    .sr-proc-action {
+        font-size: 12.5px;
+        font-weight: 700;
+        color: $sr-primary;
+        background: $sr-body;
+        border: 1px solid $gray-400;
+        border-radius: 6px;
+        padding: 5px 12px;
+        cursor: pointer;
+
+        &:hover {
+            border-color: $sr-important;
+            color: $sr-important;
+        }
+    }
+
+    // --- Filter row: sits below the toolbar, above the table -------------
+    // Carries every filter for the surface. The accent stays spent once, on
+    // the toolbar's primary action; nothing here competes with it.
+    .sr-table-quickfilters {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+        padding: 10px 16px;
+        border-bottom: 1px solid $gray-300;
+    }
+
+    // --- The filter row's selects ----------------------------------------
+    // Every filter for the surface lives here (the chip row it replaced is
+    // gone); compact + rounded so the nine read as one set.
+    // Every filter for the surface, on one row of its own. Left-aligned (not
+    // pushed right) so the first filter starts on the card's own left edge,
+    // in line with the title above and the first column below.
+    //
+    // Wrapping matters here: this row carries nine filters, so at narrower
+    // widths it becomes two lines. `row-gap` keeps the second line breathing
+    // like the first, and `align-items: center` (not stretch) keeps a wrapped
+    // control the same height as its neighbours rather than growing to fill
+    // the line box.
+    .sr-qf-selects {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 8px;
+        row-gap: 8px;
+
+        .form-select {
+            width: auto;
+            min-width: 130px;
+            font-size: 13px;
+            border-color: $gray-400;
+            border-radius: 6px;
+        }
+    }
+
+    // --- Empty / coverage-gap state (design-system.md §10) ---------------
+    // One shared block for all four intents; the modifier picks the tint.
+    // Default (no modifier) = "no data yet" / "no results" (quiet neutral).
+    .sr-table-empty {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        padding: 56px 24px;
+        gap: 6px;
+    }
+
+    .sr-table-empty-icon {
+        display: grid;
+        place-items: center;
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        background: $gray-100;
+        border: 1px solid $gray-300;
+        color: $gray-500;
+        margin-bottom: 10px;
+
+        svg {
+            width: 22px;
+            height: 22px;
+        }
+    }
+
+    .sr-table-empty-title {
+        font-size: 15px;
+        font-weight: 800;
+        color: $sr-primary;
+    }
+
+    .sr-table-empty-body {
+        font-size: 13px;
+        color: $gray-600;
+        max-width: 420px;
+    }
+
+    .sr-table-empty-action {
+        margin-top: 10px;
+    }
+
+    // "Couldn't load" — soft danger tint on the icon tile only; copy and
+    // action styling are unchanged (color is never the only signal).
+    &.sr-table-empty-danger .sr-table-empty-icon,
+    .sr-table-empty.sr-table-empty-danger .sr-table-empty-icon {
+        background: rgba($danger, .1);
+        border-color: rgba($danger, .35);
+        color: $danger;
+    }
+
+    // "All caught up" — soft success tint, no action (queue meant to be
+    // empty is a good outcome, not a task to complete).
+    &.sr-table-empty-success .sr-table-empty-icon,
+    .sr-table-empty.sr-table-empty-success .sr-table-empty-icon {
+        background: rgba($success, .12);
+        border-color: rgba($success, .35);
+        color: $success;
+    }
+
+    // Coverage-gap variant: an in-scope control with no tests. Same shell,
+    // amber/warning tint — a gap to close, distinct from a genuine "no
+    // results" filter state.
+    &.sr-table-empty-gap .sr-table-empty-icon,
+    .sr-table-empty.sr-table-empty-gap .sr-table-empty-icon {
+        background: rgba($warning, .18);
+        border-color: rgba($warning, .5);
+        color: darken($warning, 15%);
+    }
+}
+
+// Test ID column — a stable identifier, not a measurement, so it stays quiet:
+// narrow, tabular so the digits line up down the column, and secondary-coloured
+// so it never competes with the test name beside it.
+.sr-table-card {
+    .sr-id-col {
+        width: 68px;
+        white-space: nowrap;
+    }
+
+    .sr-id-cell {
+        font-size: 12.5px;
+        font-variant-numeric: tabular-nums;
+        color: $gray-600;
+    }
+}
+
+// The test row's expand caret gets its own leading column so the affordance
+// lines up down the table's left edge with the group rows' carets, instead of
+// starting at a different x on every row depending on the name beside it.
+.sr-table-card {
+    .sr-caret-col {
+        width: 26px;
+        padding-right: 0;
+        text-align: center;
+    }
+}
+
+// Sortable column headers. The arrow is always present but neutral until the
+// column is the active sort — a header that only reveals its affordance on
+// hover is undiscoverable on touch, and one that appears on click has already
+// missed its moment.
+.sr-table-card {
+    th.sr-sortable {
+        cursor: pointer;
+        user-select: none;
+        white-space: nowrap;
+
+        &:hover,
+        &:focus-visible {
+            color: $sr-primary;
+        }
+
+        &:focus-visible {
+            outline: 2px solid $sr-important;
+            outline-offset: -2px;
+        }
+
+        .sr-sort-icon {
+            margin-left: 6px;
+            font-size: 10px;
+            color: $gray-400;
+        }
+
+        &.is-sorted {
+            color: $sr-primary;
+
+            .sr-sort-icon {
+                color: $sr-important;
+            }
+        }
+    }
+
+    // Sorted view: the control a row belongs to, since there is no group row
+    // above it to say so. Secondary to the test name it sits under.
+    .sr-test-controlctx {
+        // flex-basis 100% forces the line break inside the wrapping name cell.
+        flex: 0 0 100%;
+        margin-top: 2px;
+        font-size: 11.5px;
+        color: $gray-600;
+
+        .sr-ctx-number {
+            font-weight: 700;
+            margin-right: 5px;
+        }
+    }
+
+    .sr-lastdate-cell {
+        white-space: nowrap;
+    }
+
+    // Same neutral treatment as .sr-schedule-chip: a structural fact, not a
+    // status. The two semantic pills in this row (Last Result, Next Due) keep
+    // colour to themselves so it still means something.
+    .sr-date-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        width: fit-content;
+        font-size: 12px;
+        font-weight: 600;
+        color: $sr-primary;
+        background: $gray-100;
+        border: 1px solid $gray-300;
+        border-radius: 20px;
+        padding: 3px 10px;
+        white-space: nowrap;
+        font-variant-numeric: tabular-nums;
+
+        i {
+            font-size: 10px;
+            color: $gray-500;
+        }
+    }
+}
+
+
+// ===== Narrow-screen column budget =================================
+// The grid carries more columns than a 1366px laptop has room for: at that
+// width the card offers ~1076px and the full column set needs ~1258 (grouped)
+// or ~1450 (sorted, which adds Control). Something has to give, and a
+// horizontal scrollbar under every page load is the worst of the options --
+// it hides the columns anyway, and hides WHICH ones it hid.
+//
+// So the least-load-bearing columns stand down as the window narrows, in the
+// order they'd be missed:
+//
+//   Test ID   -- an identifier for support conversations and URLs, not
+//                something anyone scans a grid by. It is still in the row's
+//                own tooltip and in every /api/v2/compliance/tests/{id} link.
+//   Tester    -- who owns the work. Genuinely useful, but the Tester FILTER
+//                above the grid answers "whose tests are these" better than a
+//                column does, and the expand drawer names them per test.
+//
+// Nothing is lost: both survive in the drawer, and the wide-screen layout is
+// unchanged. Hiding beats truncating here because these two are short values
+// where an ellipsis would leave a column that costs width and says nothing.
+// ===== The fold rungs, as mixins with two triggers each =====================
+// Each rung below is ONE definition @included from TWO places -- the viewport
+// @media it has always had, and a measured class that compliance-define-tests.js
+// sets when it has read that the rung is actually needed. Same shape, and for
+// the same reason, as sr-row-actions-overflow-tier above: the failure mode of
+// writing a tier twice is that the copies drift and the grid ends up laid out
+// one way and behaving the other.
+//
+// WHY A MEASURED TRIGGER AT ALL. A viewport width is a PREDICTION of the fit;
+// the fit is a fact about the table's min-content width against the room the
+// card has, and the two disagree. Measured live on this page at 2px resolution
+// (grouped view, sidebar expanded), the shipped @media-only ladder left two
+// residual overflow bands, each sitting immediately ABOVE a threshold that had
+// been placed just slightly too low:
+//
+//   1502-1540px  the full set needs 1265px; the card offers 1212-1250. The
+//                table froze at its 1265px min-content inside the scroller and
+//                the Actions column -- the LAST column, so at the table's right
+//                edge -- hung up to 53px outside it. The 1500 threshold folds
+//                Test ID + Tester and drops the requirement to 1230, so the
+//                same viewport is fine 2px lower and broken here.
+//   1102-1140px  the same story one rung down: 852px needed, 812-850 offered,
+//                up to 40px over, closed by the 1100 threshold's Schedule fold.
+//
+// And a threshold cannot be nudged to fix this, because there is no single
+// correct value: the SORTED (flat) view carries a Control column the grouped
+// view does not, which moves min-content by ~190px. Measured across 900-1920px
+// in 10px steps, the sorted view overflowed at 70 of 103 sampled widths, by up
+// to 236px -- the same defect the governance controls table hit when its
+// Applicability column landed (see _governance-frameworks.scss). One number
+// cannot serve two column sets, and a container query cannot help either: it
+// measures the CONTAINER, and the card is the same width in both views.
+//
+// So the rungs keep their @media -- unchanged, so a no-JS page behaves exactly
+// as it does today and nothing downstream of these widths moves -- and the JS
+// ladder climbs FURTHER when it measures that it has to. It only ever folds
+// more, never less, so it cannot undo a tier the stylesheet applied.
+@mixin sr-dt-fold-ids-tier {
+
+    .sr-id-col,
+    .sr-id-cell {
+        display: none;
+    }
+
+    // Tester stands down here too, not 100px later. The pair was split
+    // across 1500/1400 on the assumption that dropping Test ID alone
+    // bought enough: it doesn't. At 1440 the card is 1152px and the
+    // remaining set still measured 1176 -- a 26px overhang, which is a
+    // horizontal scrollbar under every page load and, by the rule in
+    // design-system.md 6b, a row that stops answering at the widest tier
+    // anyone actually uses.
+    .sr-tester-col {
+        display: none;
+    }
+}
+
+@media (max-width: 1500px) {
+
+    .sr-table-card {
+        @include sr-dt-fold-ids-tier;
+    }
+}
+
+.sr-table-card.sr-dt-fold-ids {
+    @include sr-dt-fold-ids-tier;
+}
+
+// The row-actions overflow disclosure, as one definition with two triggers.
+//
+// Two independent conditions want the identical treatment -- a narrow viewport
+// (the compact tier below) and a pointer that cannot hover (touch, further
+// below) -- and the failure mode of writing it twice is that the copies drift
+// and a row's actions end up styled one way and behaving the other. Both
+// callers @include this, so there is exactly one definition of what "the
+// cluster becomes a menu" means. Must be included INSIDE a .sr-table-card
+// rule; every selector below is relative to it.
+@mixin sr-row-actions-overflow-tier {
+
+    .sr-row-actions-toggle {
+        display: inline-flex;
+    }
+
+    // The cluster becomes a menu, anchored to the toggle. Right-aligned so
+    // it opens INTO the row rather than off the card's right edge.
+    .sr-row-actions {
+        display: none;
+        position: absolute;
+        top: calc(100% + 4px);
+        right: 0;
+        z-index: 20;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 2px;
+        min-width: 44px;
+        padding: 4px;
+        background: $sr-body;
+        border: 1px solid $gray-300;
+        border-radius: 6px;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, .12);
+    }
+
+    // Hover-reveal is a wide-screen affordance and a menu is not: once
+    // opened it stays visible whatever the pointer does.
+    .sr-row-actions-wrap.is-open .sr-row-actions {
+        display: flex;
+        opacity: 1;
+        visibility: visible;
+    }
+
+    // Opens UPWARD when there is no room below it. A table's rows sit inside
+    // .sr-table-scroll, whose `overflow-x: auto` computes overflow-y to `auto`
+    // along with it -- so a menu popped from the LAST row is clipped by that
+    // scroller rather than overhanging the card. Measured at 1200px on the
+    // Define Control Frameworks table before this existed: the menu ran 52px
+    // past the scroller and elementFromPoint on Clone and Delete landed on the
+    // footer, i.e. the last row's actions were opened but not clickable.
+    //
+    // The stylesheet only says what "up" looks like; whether it applies is a
+    // measurement (the menu's height against the space below it), so the class
+    // is set by the page's own toggle handler at open time.
+    .sr-row-actions-wrap.is-up .sr-row-actions {
+        top: auto;
+        bottom: calc(100% + 4px);
+    }
+
+    // In the cluster an icon is enough, because hovering it names it. A
+    // menu gets no hover on touch and is read rather than scanned, so each
+    // item carries its label -- pulled from the button's own `title`, which
+    // is already the localized action name, so there is no second string to
+    // translate and no way for the two to disagree.
+    .sr-row-actions .sr-row-action {
+        width: auto;
+        justify-content: flex-start;
+        gap: 9px;
+        padding: 6px 12px 6px 9px;
+        border-radius: 4px;
+        font-size: 12.5px;
+        white-space: nowrap;
+
+        &::after {
+            content: attr(title);
+            font-weight: 600;
+        }
+
+        i {
+            width: 14px;
+            text-align: center;
+        }
+    }
+}
+
+// The overflow toggle itself. Present in the markup at every width and hidden
+// until the compact tier claims it, so the tiers are a stylesheet decision --
+// no resize listener, no re-render at a breakpoint.
+.sr-table-card {
+
+    .sr-row-actions-wrap {
+        position: relative;
+        display: inline-flex;
+        align-items: center;
+        justify-content: flex-end;
+    }
+
+    .sr-row-actions-toggle {
+        display: none;
+        align-items: center;
+        justify-content: center;
+        width: 30px;
+        height: 30px;
+        padding: 0;
+        border: 1px solid transparent;
+        border-radius: 6px;
+        background: none;
+        color: $gray-600;
+        line-height: 1;
+
+        &:hover,
+        &[aria-expanded='true'] {
+            border-color: $gray-300;
+            background: $gray-100;
+            color: $sr-primary;
+        }
+    }
+
+    // Hidden at full width; the compact tier turns it on (above).
+    .sr-result-date {
+        display: none;
+    }
+}
+
+// ===== The compact tier (design-system.md 6b) ======================
+// The rule: a row must always answer "what is this, and does it need me
+// today?" without scrolling sideways. Hiding Test ID and Tester holds the line
+// down to ~1440 (card 1152, table 1150); one step narrower the same set still
+// measures 1075 against a 992px card, and the columns falling off the right
+// edge are the ones carrying the ANSWER -- Last Result and Next Due. A queue whose state is reachable only by scrolling reads as a queue
+// with no state, so the table stops paying for what it can say more briefly.
+//
+//   Last Tested  -> folded into the Last Result cell (.sr-result-date). "Pass
+//                   . 04/12" is one fact; two columns to say it was a luxury
+//                   of a wide screen.
+//   Actions      -> one overflow toggle instead of up to six standing icon
+//                   buttons; the cluster becomes the menu it pops.
+//   Test Name    -> takes the reclaimed width instead of wrapping to four
+//                   lines, which is what made rows 112px tall.
+@mixin sr-dt-fold-compact-tier {
+
+        .sr-lastdate-col {
+            display: none;
+        }
+
+        // Sits under the pill, not beside it: the pill already carries the
+        // row's colour, and a date on the same line competes with it for the
+        // same glance. Tabular so the dates line up down the lane.
+        .sr-result-date {
+            display: block;
+            margin-top: 3px;
+            font-size: 11.5px;
+            color: $gray-600;
+            font-variant-numeric: tabular-nums;
+            white-space: nowrap;
+        }
+
+        // The name gets the slack. No width cap and no truncation: this is the
+        // one field a row cannot be read without.
+        .sr-name-col {
+            width: auto;
+            min-width: 180px;
+        }
+
+        .sr-actions-col {
+            width: 44px;
+        }
+
+        // The shared min-widths that make each lane scan as one column are a
+        // wide-screen luxury: three lanes at 170px is 510px of a ~740px card,
+        // spent on alignment rather than on content. Let the pills shrink to
+        // what they say. The lanes still read as lanes -- the pills keep their
+        // shape and colour, they just stop being padded out to a common width.
+        .sr-schedule-chip,
+        .sr-state-pill-due,
+        .sr-state-pill-result {
+            min-width: 0;
+        }
+
+        @include sr-row-actions-overflow-tier;
+}
+
+@media (max-width: 1400px) {
+
+    .sr-table-card {
+        @include sr-dt-fold-compact-tier;
+    }
+}
+
+.sr-table-card.sr-dt-fold-compact {
+    @include sr-dt-fold-compact-tier;
+}
+
+// ===== The same disclosure, claimed by a pointer that cannot hover =========
+// The compact tier above swaps the hover-revealed cluster for a menu because
+// the ROW runs out of width. A touch pointer has the identical problem for a
+// different reason: it never produces a hover at all, so a cluster that is
+// opacity: 0 until :hover is not reachable at ANY viewport width -- there is
+// simply no gesture that reveals it. Same component, same remedy, keyed on the
+// pointer instead of the viewport.
+//
+// Deliberately ONLY the actions half of the compact tier, via the shared mixin
+// -- not its column-hiding. A wide touch screen has no width problem to solve,
+// so folding Last Tested away there would be a cost with nothing bought. The
+// mixin exists so the two triggers can never drift into styling the same
+// component two different ways.
+@media (hover: none) {
+
+    .sr-table-card {
+        @include sr-row-actions-overflow-tier;
+    }
+}
+
+// ===== The filter sheet (design-system.md 6b) ======================
+// Filters collapse before the table does. Nine selects wrap to five rows on a
+// narrow card and steal the vertical space the first data row needed -- the
+// toolbar grew 52px -> 152px measured at 600px wide -- so below the compact
+// tier the row folds behind one button and becomes its sheet.
+.sr-table-card {
+
+    .sr-qf-toggle {
+        display: none;
+        align-items: center;
+        gap: 7px;
+        padding: 6px 12px;
+        border: 1px solid $gray-400;
+        border-radius: 6px;
+        background: $sr-body;
+        color: $sr-primary;
+        font-size: 13px;
+        line-height: 1.2;
+
+        i {
+            font-size: 11px;
+            color: $gray-600;
+        }
+
+        &:hover {
+            border-color: $gray-600;
+        }
+
+        // The count is the whole point of the button: a filtered view that
+        // looks unfiltered is how a user concludes the data is missing. The
+        // tinted count badge is the same scoped, meaningful accent spend the
+        // toolbar's overdue count already makes (design-system.md 7) -- and it
+        // is the ONLY accent here. The button's own border stays neutral: the
+        // accent is spent once per view, on the primary action beside it.
+        .sr-qf-toggle-count {
+            min-width: 18px;
+            padding: 0 5px;
+            border-radius: 20px;
+            background: rgba($sr-important, .12);
+            color: $sr-important;
+            font-size: 11.5px;
+            font-weight: 800;
+            text-align: center;
+            font-variant-numeric: tabular-nums;
+        }
+
+        // Active filters read from the badge, and from a border that firms up
+        // rather than changes hue.
+        &.has-filters {
+            border-color: $gray-600;
+            font-weight: 600;
+        }
+    }
+}
+
+@media (max-width: 1100px) {
+
+    .sr-table-card {
+
+        .sr-qf-toggle {
+            display: inline-flex;
+        }
+
+        // The row is still the row -- same selects, same handlers, same state.
+        // It is hidden until the button asks for it, and then it stacks one
+        // filter per line, because a filter you have deliberately opened is
+        // being read, not scanned past.
+        .sr-table-quickfilters {
+            display: none;
+
+            &.is-open {
+                display: block;
+            }
+        }
+
+        .sr-qf-selects {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 8px;
+
+            > * {
+                width: 100%;
+                max-width: none;
+            }
+        }
+    }
+}
+
+// ===== The queue tier (design-system.md 6b) ========================
+// Below ~900px the card is under ~610px and no column arrangement survives:
+// four lanes of 90px is not a table, it is a puzzle. The row stops being a row
+// and becomes a stacked block -- the same fields, read top to bottom, in the
+// order the rule names them: what is this (the name), does it need me today
+// (the due pill), how did it last go (the result), then the quiet rest.
+//
+// Nothing is removed and nothing moves house: the checkbox, the caret, the
+// overflow, the drawer and the bulk bar are the same elements doing the same
+// job, so selecting, expanding and bulk-acting keep working untouched. These
+// are display overrides on real <tr>/<td>s, so sorting and every JS selector
+// that walks rows still sees a table.
+//
+// This is also the ladder's LAST rung, and it is the rung that makes the ladder
+// terminate rather than merely improve. The three folds above buy width back by
+// standing columns down, which is arithmetic and can run out: measured in the
+// sorted (flat) view, the fully-folded set was still overflowing by up to 111px
+// between 910 and 1130px, and since the Actions column is the table's last one
+// the ⋯ toggle that had replaced the clipped cluster was itself clipped -- Edit
+// / Retire / Delete reachable by no path at all. That is the same dead end
+// _governance-frameworks.scss reached, and it has the same answer: once a row
+// is a GRID it cannot overflow, because minmax(0, ...) tracks have no
+// min-content floor to be pinned at. So the last rung stops being a width
+// argument and becomes a construction.
+@mixin sr-dt-queue-tier {
+
+        // A lone "TEST NAME" over a stack of blocks is a caption that lies.
+        #define-tests-table thead {
+            display: none;
+        }
+
+        #define-tests-table,
+        #define-tests-table tbody,
+        #define-tests-table tr {
+            display: block;
+            width: auto;
+        }
+
+        //   [x] [>] name ......................... [...]
+        //           [due pill]  [result]
+        //           [schedule]  tester
+        //
+        // Column 3 sizes to the widest pill and column 4 takes the slack, so
+        // the state fields pair two-up and sit NEXT to each other -- with a
+        // 1fr in column 3 instead, the second field is flung to the card's
+        // right edge and the pair stops reading as one line.
+        #define-tests-tbody tr.sr-test-row {
+            display: grid;
+            grid-template-columns: 30px 22px minmax(0, auto) minmax(0, 1fr) 38px;
+            align-items: center;
+            gap: 5px 8px;
+            padding: 10px 12px;
+
+            > td {
+                display: block;
+                padding: 0;
+                border: 0;
+            }
+
+            // The blanket display:block above would resurrect the cells the
+            // wider tiers stood down -- Test ID, and the Last Tested column
+            // whose date now rides in the result cell. Re-hide them by name.
+            > .sr-id-col,
+            > .sr-lastdate-col {
+                display: none;
+            }
+
+            .sr-check-col { grid-area: 1 / 1; }
+            .sr-caret-col { grid-area: 1 / 2; }
+            .sr-name-col  { grid-area: 1 / 3 / 2 / 5; }
+
+            .sr-actions-col {
+                grid-area: 1 / 5;
+                width: auto;
+                justify-self: end;
+            }
+
+            .sr-due-col    { grid-area: 2 / 3; }
+            .sr-result-col { grid-area: 2 / 4; justify-self: start; }
+            .sr-sched-col  { grid-area: 3 / 3; }
+            .sr-tester-col { grid-area: 3 / 4; justify-self: start; }
+
+            // Present ONLY in the sorted (flat) view, which has no group row
+            // above a test to say which control it belongs to -- so here it is
+            // the line that answers "what is this" as much as the name does,
+            // and it gets its own full-width row rather than the auto-placed
+            // slot it fell into before. Its 190px cap is a COLUMN's cap; as a
+            // line in a block it has the whole width and no lane to line up
+            // with, so the cap only truncates a name there was room to finish.
+            .sr-control-col {
+                grid-area: 4 / 3 / 5 / 5;
+                width: auto;
+                max-width: none;
+            }
+
+            // Restored at this width -- they are lines in the block now, not
+            // columns competing for the table's width.
+            .sr-sched-col,
+            .sr-tester-col {
+                display: block;
+            }
+
+            .sr-name-col {
+                min-width: 0;
+                font-size: 13.5px;
+            }
+
+            .sr-tester-col {
+                font-size: 12px;
+                color: $gray-600;
+            }
+
+            // No lanes left to line up, so the shared widths only add air.
+            // white-space too: at ~310px of card the pair "Overdue - 10 days"
+            // + "Pass" cannot both stay on one unbroken line, and a pill that
+            // refuses to wrap takes the card's width with it.
+            .sr-schedule-chip,
+            .sr-state-pill-due,
+            .sr-state-pill-result {
+                min-width: 0;
+                white-space: normal;
+            }
+
+            > .sr-due-col,
+            > .sr-result-col,
+            > .sr-sched-col,
+            > .sr-tester-col {
+                min-width: 0;
+            }
+
+            // The folded date sits under its pill exactly as in the compact
+            // tier; nothing about the fold changes here.
+            .sr-result-date {
+                display: block;
+            }
+        }
+
+        // The group row is the heading this block belongs under: losing it
+        // would leave a flat list of tests with no control context, at the
+        // width where context matters most. Its own contents wrap rather than
+        // set the card's width -- the control name and the two group actions
+        // together want ~610px, which is what was still forcing a horizontal
+        // scrollbar after the test rows themselves had stopped needing one.
+        #define-tests-tbody tr.sr-group-row {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 6px;
+            padding: 10px 12px;
+
+            > td {
+                display: block;
+                border: 0;
+                padding: 0;
+                min-width: 0;
+                max-width: 100%;
+            }
+
+            // No flex-wrap here: the base rule wraps at every width now, and a
+            // second copy is how the two drift into disagreeing.
+            .sr-group-main {
+                max-width: 100%;
+            }
+
+            .sr-group-name {
+                white-space: normal;
+            }
+
+            // Below the group's own heading rather than trailing it -- at this
+            // width they would otherwise push the control's name off the card.
+            // The base rule already drops them to their own line WHEN THEY DO
+            // NOT FIT; this makes it unconditional in the queue tier, where a
+            // control name sharing its line with a button cluster reads as
+            // cramped even on the occasions it technically fits.
+            .sr-group-actions {
+                flex-basis: 100%;
+                margin-top: 6px;
+            }
+        }
+
+        // Detail rows (SCF mappings, the procedure drawer) span the block.
+        #define-tests-tbody tr.sr-expand-row {
+
+            > td {
+                display: block;
+                padding: 0 12px 12px;
+            }
+        }
+
+        // Suggestion rows carry three wide TEXT actions (Create / Review & edit
+        // / Dismiss), not the icon cluster a real row folds into the narrow
+        // actions column -- cramming them into that ~38px cell overlaps the name
+        // and the "AI suggested" pill. Give suggestions their own block: name +
+        // cadence stacked, actions on a full-width row that wraps. The run-history
+        // cells are placeholder dashes for a suggestion, so drop them.
+        #define-tests-tbody tr.sr-test-row.sr-row-suggestion {
+            grid-template-columns: 30px 22px minmax(0, 1fr);
+
+            > .sr-tester-col,
+            > .sr-result-col,
+            > .sr-due-col {
+                display: none;
+            }
+
+            .sr-name-col    { grid-area: 1 / 3 / 2 / 4; }
+            .sr-sched-col   { grid-area: 2 / 3 / 3 / 4; }
+            .sr-actions-col {
+                grid-area: 3 / 1 / 4 / 4;
+                width: auto;
+                justify-self: stretch;
+            }
+
+            .sr-suggestion-actions {
+                justify-content: flex-start;
+                flex-wrap: wrap;
+            }
+        }
+}
+
+@media (max-width: 900px) {
+
+    .sr-table-card {
+        @include sr-dt-queue-tier;
+    }
+}
+
+.sr-table-card.sr-dt-queue {
+    @include sr-dt-queue-tier;
+}
+
+// Last step of the queue tier: one content column.
+//
+// Two state fields side by side need ~250px of content column; a 600px
+// viewport gives the card 312px, because the shell's fixed sidebar takes 290
+// of them whatever the width (design-system.md 12 -- the sidebar's own
+// responsive collapse is what actually fixes phone widths). Until it does, the
+// block still has to hold together, so the pairs unstack and each field takes
+// its own line rather than pushing a scrollbar under the card.
+@media (max-width: 700px) {
+
+    .sr-table-card {
+
+        #define-tests-tbody tr.sr-test-row {
+            grid-template-columns: 28px 20px minmax(0, 1fr) 34px;
+
+            .sr-name-col   { grid-area: 1 / 3 / 2 / 4; }
+            .sr-actions-col { grid-area: 1 / 4; }
+            .sr-due-col    { grid-area: 2 / 3 / 3 / 5; }
+            .sr-result-col { grid-area: 3 / 3 / 4 / 5; }
+            .sr-sched-col  { grid-area: 4 / 3 / 5 / 5; }
+            .sr-tester-col { grid-area: 5 / 3 / 6 / 5; }
+
+            // The result's date rides beside its pill here rather than under
+            // it: on its own line the pair has the room, and a fifth stacked
+            // line for four characters is not worth the height.
+            .sr-result-date {
+                display: inline;
+                margin-left: 8px;
+            }
+        }
+
+        // Suggestion rows keep their own block at this tier too (see the 900px
+        // note): name + cadence stacked, three text actions on a full-width
+        // wrapping row, run-history placeholder dashes dropped.
+        #define-tests-tbody tr.sr-test-row.sr-row-suggestion {
+            grid-template-columns: 28px 20px minmax(0, 1fr);
+
+            > .sr-tester-col,
+            > .sr-result-col,
+            > .sr-due-col {
+                display: none;
+            }
+
+            .sr-name-col    { grid-area: 1 / 3 / 2 / 4; }
+            .sr-sched-col   { grid-area: 2 / 3 / 3 / 4; }
+            .sr-actions-col {
+                grid-area: 3 / 1 / 4 / 4;
+                width: auto;
+                justify-self: stretch;
+            }
+
+            .sr-suggestion-actions {
+                justify-content: flex-start;
+                flex-wrap: wrap;
+            }
+        }
+    }
+}
+
+// Second step of the compact tier. Folding Last Tested and the action cluster
+// buys a fitting table down to ~1180px; below that the widest remaining lane
+// is Schedule (200px, sized by "INTERVAL Every 90 days") -- and it is the one
+// column here that answers neither half of the rule: "how it recurs" is not
+// "what is this" or "does it need me today". The Next Due pill already carries
+// the timing that decides action, and the drawer's Schedule card carries the
+// cadence in full (renderTestProcedure(): schedule_summary + Next Test Date).
+@mixin sr-dt-fold-sched-tier {
+
+    .sr-sched-col {
+        display: none;
+    }
+}
+
+@media (max-width: 1100px) {
+
+    .sr-table-card {
+        @include sr-dt-fold-sched-tier;
+    }
+}
+
+.sr-table-card.sr-dt-fold-sched {
+    @include sr-dt-fold-sched-tier;
+}
+
+
+// Control column — present only in the sorted (flat) view, where there is no
+// group row above a test to say which control it belongs to. Its own column
+// rather than a line crammed under the test name, so the control is scannable
+// down its own lane like every other field.
+.sr-table-card {
+    // width alone is only a SUGGESTION to a table cell: with no max-width and
+    // no truncation, a long control name grew this column to whatever the
+    // longest name needed (~400px on an SCF import) and the table with it, so
+    // sorting made the grid noticeably wider than merely adding a column
+    // should. The name truncates instead; the cell's title carries the full
+    // identification for anyone who needs it.
+    //
+    // This is not the whole story of the grid's width -- see the note on the
+    // schedule/due lanes above; it is the part that was a bug rather than a
+    // budget.
+    .sr-control-col {
+        width: 190px;
+        max-width: 190px;
+    }
+
+    .sr-control-cell {
+        font-size: 12.5px;
+        line-height: 1.35;
+        overflow: hidden;
+
+        .sr-ctx-number {
+            display: block;
+            font-weight: 700;
+            color: $sr-primary;
+        }
+
+        .sr-ctx-name {
+            display: block;
+            color: $gray-600;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+    }
+}
+
+// Mapped-frameworks panel: a summary line per framework — its name and the
+// reference ids as chips — over a collapsed detail list.
+//
+// The summary answers "which frameworks, which references" at a glance, which
+// is the whole question while references carry no text. Expanding answers "and
+// what does that reference say", which is the question once the AI Extra has
+// written it. A framework with nothing to reveal gets no caret rather than an
+// expander that opens onto a repeat of the chips above it.
+.sr-mapping-head {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 12px;
+
+    .sr-mapping-filter {
+        width: auto;
+        flex: 1 1 240px;
+        max-width: 340px;
+        font-size: 13px;
+        padding: 5px 10px;
+        border-color: $gray-400;
+        border-radius: 6px;
+    }
+}
+
+.sr-mapping-groups {
+    display: flex;
+    flex-direction: column;
+}
+
+.sr-mapping-group {
+    border-bottom: 1px solid $gray-200;
+
+    &:last-child {
+        border-bottom: 0;
+    }
+}
+
+.sr-mapping-group-head {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    padding: 7px 0;
+
+    .sr-mapping-fw {
+        font-size: 12.5px;
+        font-weight: 800;
+        color: $sr-primary;
+    }
+}
+
+.sr-mapping-group.is-expandable > .sr-mapping-group-head {
+    cursor: pointer;
+
+    &:hover .sr-mapping-fw {
+        color: $sr-important;
+    }
+
+    &:focus-visible {
+        outline: 2px solid $sr-important;
+        outline-offset: -2px;
+    }
+}
+
+// Rotates on open, mirroring the grid's own row carets so "expand to read
+// more" looks the same everywhere on this page.
+.sr-mapping-caret {
+    flex: none;
+    width: 12px;
+    font-size: 10px;
+    color: $gray-500;
+    transition: $transitions;
+
+    &.is-empty {
+        visibility: hidden;
+    }
+}
+
+.sr-mapping-group[aria-expanded="true"] > .sr-mapping-group-head .sr-mapping-caret {
+    transform: rotate(90deg);
+}
+
+// The summary chips sit after the name; they wrap as a set when a framework
+// carries many references.
+.sr-mapping-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    margin-left: 4px;
+}
+
+.sr-mapping-refs {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 4px 0 12px 20px;
+}
+
+// One reference: id, then its explanation. Grid rather than flex so the text
+// of every reference starts at the same x — with 25 references under one
+// framework, ragged left edges are hard to scan.
+.sr-mapping-ref {
+    display: grid;
+    grid-template-columns: minmax(90px, max-content) 1fr;
+    gap: 10px;
+    align-items: baseline;
+}
+
+.sr-ref-chip {
+    display: inline-flex;
+    align-items: center;
+    justify-self: start;
+    font-size: 11.5px;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    color: $sr-primary;
+    background: $gray-100;
+    border: 1px solid $gray-300;
+    border-radius: 5px;
+    padding: 1px 7px;
+    white-space: nowrap;
+}
+
+// The explanation — prose, so it reads at body size and wraps normally.
+.sr-ref-text {
+    font-size: 12.5px;
+    line-height: 1.5;
+    color: $gray-600;
+    overflow-wrap: anywhere;
+}
+
+.sr-mapping-nomatch {
+    margin-top: 8px;
+    font-style: italic;
+    color: $gray-500;
+}

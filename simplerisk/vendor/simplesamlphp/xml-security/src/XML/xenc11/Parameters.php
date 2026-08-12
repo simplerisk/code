@@ -6,10 +6,10 @@ namespace SimpleSAML\XMLSecurity\XML\xenc11;
 
 use DOMElement;
 use SimpleSAML\Assert\Assert;
-use SimpleSAML\XML\Exception\InvalidDOMElementException;
 use SimpleSAML\XML\ExtendableAttributesTrait;
 use SimpleSAML\XML\ExtendableElementTrait;
-use SimpleSAML\XML\XsNamespace as NS;
+use SimpleSAML\XMLSchema\Exception\InvalidDOMElementException;
+use SimpleSAML\XMLSchema\XML\Constants\NS;
 
 /**
  * Class representing xenc11:Parameters
@@ -21,11 +21,12 @@ final class Parameters extends AbstractXenc11Element
     use ExtendableAttributesTrait;
     use ExtendableElementTrait;
 
+
     /** The namespace-attribute for the xs:any element */
-    public const XS_ANY_ELT_NAMESPACE = NS::ANY;
+    public const string XS_ANY_ELT_NAMESPACE = NS::ANY;
 
     /** The namespace-attribute for the xs:anyAttribute element */
-    public const XS_ANY_ATTR_NAMESPACE = NS::ANY;
+    public const string XS_ANY_ATTR_NAMESPACE = NS::ANY;
 
 
     /**
@@ -41,11 +42,8 @@ final class Parameters extends AbstractXenc11Element
     }
 
 
-
     /**
      * Test if an object, at the state it's in, would produce an empty XML-element
-     *
-     * @return bool
      */
     public function isEmptyElement(): bool
     {
@@ -58,9 +56,8 @@ final class Parameters extends AbstractXenc11Element
      * Convert XML into a Parameters element
      *
      * @param \DOMElement $xml The XML element we should load
-     * @return static
      *
-     * @throws \SimpleSAML\XML\Exception\InvalidDOMElementException
+     * @throws \SimpleSAML\XMLSchema\Exception\InvalidDOMElementException
      *   if the qualified name of the supplied element is wrong
      */
     public static function fromXML(DOMElement $xml): static
@@ -79,7 +76,6 @@ final class Parameters extends AbstractXenc11Element
      * Convert this Parameters element to XML.
      *
      * @param \DOMElement|null $parent The element we should append this Parameters to.
-     * @return \DOMElement
      */
     public function toXML(?DOMElement $parent = null): DOMElement
     {
@@ -90,7 +86,6 @@ final class Parameters extends AbstractXenc11Element
         }
 
         foreach ($this->getElements() as $element) {
-            /** @psalm-var \SimpleSAML\XML\SerializableElementInterface $element */
             $element->toXML($e);
         }
 

@@ -19,6 +19,27 @@ use function sprintf;
 class KeyTransportAlgorithmFactory
 {
     /**
+     * An array of blacklisted algorithms.
+     *
+     * Defaults to RSA 1.5.
+     *
+     * @var string[]
+     */
+    public const array DEFAULT_BLACKLIST = [
+        C::KEY_TRANSPORT_RSA_1_5,
+    ];
+
+    /**
+     * An array of default algorithms that can be used.
+     *
+     * @var class-string[]
+     */
+    private const array SUPPORTED_DEFAULTS = [
+        RSA::class,
+    ];
+
+
+    /**
      * A cache of algorithm implementations indexed by algorithm ID.
      *
      * @var array<string, \SimpleSAML\XMLSecurity\Alg\KeyTransport\KeyTransportAlgorithmInterface>
@@ -27,31 +48,8 @@ class KeyTransportAlgorithmFactory
 
     /**
      * Whether the factory has been initialized or not.
-     *
-     * @var bool
      */
     protected static bool $initialized = false;
-
-    /**
-     * An array of blacklisted algorithms.
-     *
-     * Defaults to RSA 1.5.
-     *
-     * @var string[]
-     */
-    public const DEFAULT_BLACKLIST = [
-        C::KEY_TRANSPORT_RSA_1_5,
-    ];
-
-
-    /**
-     * An array of default algorithms that can be used.
-     *
-     * @var class-string[]
-     */
-    private const SUPPORTED_DEFAULTS = [
-        RSA::class,
-    ];
 
 
     /**

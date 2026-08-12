@@ -25,9 +25,14 @@ enforce_permission("riskmanagement");
     ?>
 </div>
 <?php
+require_once(realpath(__DIR__ . '/../../includes/artificial_intelligence.php'));
 $_ai_show_section = false;
 $_ai_status = null;
-if (artificial_intelligence_extra() && get_setting('extra_ai_risk_suggestions') == 1) {
+// Core/Extra boundary: ai_recommendations_risk is created by the AI Extra.
+// ai_capability_enabled('risk_recommendations') is an extra-tier gate (false
+// unless the Extra is active), but pair it with the canonical table_exists()
+// guard so Core never touches the Extra table on a Core-only install.
+if (ai_capability_enabled('risk_recommendations') && table_exists('ai_recommendations_risk')) {
     $_ai_db = db_open();
     $_ai_stmt = $_ai_db->prepare("SELECT `status` FROM `ai_recommendations_risk` WHERE `risk_id` = :risk_id LIMIT 1");
     $_ai_stmt->execute([':risk_id' => $id]);

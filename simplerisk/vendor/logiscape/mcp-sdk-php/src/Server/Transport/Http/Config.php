@@ -1,0 +1,375 @@
+<?php
+
+/**
+ * Model Context Protocol SDK for PHP
+ *
+ * (c) 2025 Logiscape LLC <https://logiscape.com>
+ *
+ * Developed by:
+ * - Josh Abbott
+ * - Claude 3.7 Sonnet (Anthropic AI model)
+ * - ChatGPT o1 pro mode
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ *
+ * @package    logiscape/mcp-sdk-php 
+ * @author     Josh Abbott <https://joshabbott.com>
+ * @copyright  Logiscape LLC
+ * @license    MIT License
+ * @link       https://github.com/logiscape/mcp-sdk-php
+ *
+ * Filename: Server/Transport/Http/Config.php
+ */
+
+declare(strict_types=1);
+
+namespace Mcp\Server\Transport\Http;
+
+use Mcp\Server\Auth\TokenValidatorInterface;
+
+/**
+ * Configuration management for HTTP transport.
+ * 
+ * This class manages the configuration options for the HTTP transport,
+ * including auto-detection of environment capabilities.
+ */
+class Config
+{
+    /**
+     * Default configuration options.
+     *
+     * @var array<string, mixed>
+     */
+    private array $options = [
+        'session_timeout' => 3600,     // 1 hour default
+        'enable_sse' => false,         // Default disabled for compatibility
+        'max_queue_size' => 1000,      // Maximum messages in queue
+        'auto_detect' => true,         // Auto-detect environment
+        'shared_hosting' => null,      // Force shared hosting mode (null = auto-detect)
+        'session_handler' => 'auto',   // Session handler (auto, file, database, memory)
+        'host' => 'localhost',         // Server host for CLI mode
+        'port' => 8080,                // Server port for CLI mode
+        'server_header' => 'MCP-PHP-Server/1.0', // Server identification
+        'auth_enabled' => false,          // OAuth disabled by default
+        'authorization_servers' => [],    // Authorization server metadata
+        'resource' => null,               // Protected resource identifier
+        'resource_metadata_path' => '/.well-known/oauth-protected-resource',
+        'token_validator' => null,        // Instance of TokenValidatorInterface
+        'allowed_origins' => null,        // Allowed hostnames for Origin validation (null = disabled, auto-set by McpServer for localhost)
+        'sse_retry_ms' => 1500,           // Reconnect hint emitted on SSE streams (WHATWG `retry` field)
+        'sse_event_log_capacity' => 64,   // Max events retained per session for resumable replay
+        'sse_standalone_get_idle_ms' => 0,// How long an idle standalone-GET SSE stream stays open (0 = close immediately)
+        'sse_mode' => 'auto',             // SSE emission mode: 'auto' | 'streaming' | 'buffered'
+        'subscription_bus' => null,       // SubscriptionBusInterface for subscriptions/listen event fan-out (null = no cross-request events)
+        'listen_max_ms' => 30000,         // Max lifetime of a subscriptions/listen stream before the server closes it
+        'listen_poll_ms' => 50,           // Bus poll interval inside the listen loop
+        'listen_keepalive_ms' => 250,     // SSE comment keep-alive interval (also surfaces client aborts)
+    ];
+    
+    /**
+     * Constructor.
+     *
+     * @param array<string, mixed> $customOptions Custom configuration options
+     */
+    public function __construct(array $customOptions = [])
+    {
+        // Validate auth configuration if enabled
+        if (isset($customOptions['auth_enabled']) && $customOptions['auth_enabled']) {
+            $this->validateAuthConfig($customOptions);
+        }
+
+        if (isset($customOptions['auto_detect']) && $customOptions['auto_detect'] === true) {
+            $this->autoDetectOptions();
+        } elseif (!isset($customOptions['auto_detect']) && $this->options['auto_detect']) {
+            $this->autoDetectOptions();
+        }
+        
+        // Merge custom options
+        $this->options = array_merge($this->options, $customOptions);
+    }
+    
+    /**
+     * Validate OAuth configuration
+     * 
+     * @param array<string, mixed> $options Configuration options
+     * @return void
+     * @throws \InvalidArgumentException If configuration is invalid
+     */
+    private function validateAuthConfig(array $options): void
+    {
+        if (!isset($options['resource']) || empty($options['resource'])) {
+            throw new \InvalidArgumentException(
+                'resource identifier is required when auth_enabled is true'
+            );
+        }
+        
+        if (!isset($options['authorization_servers']) || empty($options['authorization_servers'])) {
+            throw new \InvalidArgumentException(
+                'authorization_servers array is required when auth_enabled is true'
+            );
+        }
+        
+        if (!isset($options['token_validator'])) {
+            throw new \InvalidArgumentException(
+                'token_validator is required when auth_enabled is true'
+            );
+        }
+        
+        if (!$options['token_validator'] instanceof TokenValidatorInterface) {
+            throw new \InvalidArgumentException(
+                'token_validator must implement TokenValidatorInterface'
+            );
+        }
+    }
+
+    /**
+     * Get a configuration option.
+     *
+     * @param string $key Option key
+     * @return mixed|null Option value or null if not found
+     */
+    public function get(string $key)
+    {
+        return $this->options[$key] ?? null;
+    }
+    
+    /**
+     * Set a configuration option.
+     *
+     * @param string $key Option key
+     * @param mixed $value Option value
+     * @return void
+     */
+    public function set(string $key, $value): void
+    {
+        $this->options[$key] = $value;
+    }
+    
+    /**
+     * Get all configuration options.
+     *
+     * @return array<string, mixed> All configuration options
+     */
+    public function all(): array
+    {
+        return $this->options;
+    }
+
+    /**
+     * Check if OAuth authorization is enabled.
+     */
+    public function isAuthEnabled(): bool
+    {
+        return (bool)($this->options['auth_enabled'] ?? false);
+    }
+
+    /**
+     * Get configured authorization servers.
+     *
+     * @return array<int, string>
+     */
+    public function getAuthorizationServers(): array
+    {
+        $servers = $this->options['authorization_servers'] ?? [];
+        return is_array($servers) ? $servers : [];
+    }
+
+    /**
+     * Get the identifier for this protected resource.
+     */
+    public function getResource(): ?string
+    {
+        $resource = $this->options['resource'] ?? null;
+        return $resource !== null ? (string)$resource : null;
+    }
+
+    /**
+     * Get the OAuth resource metadata path.
+     */
+    public function getResourceMetadataPath(): string
+    {
+        return (string)($this->options['resource_metadata_path'] ?? '/.well-known/oauth-protected-resource');
+    }
+
+    /**
+     * Get the token validator instance if configured.
+     */
+    public function getTokenValidator(): ?TokenValidatorInterface
+    {
+        return $this->options['token_validator'] ?? null;
+    }
+    
+    /**
+     * Check if SSE is enabled.
+     *
+     * @return bool True if SSE is enabled
+     */
+    public function isSseEnabled(): bool
+    {
+        return (bool)$this->options['enable_sse'];
+    }
+
+    /**
+     * Reconnect hint (in milliseconds) emitted on SSE streams via the WHATWG
+     * `retry` field. The client waits this long before attempting to resume
+     * via GET + Last-Event-ID after a disconnect.
+     */
+    public function getSseRetryMs(): int
+    {
+        return (int)($this->options['sse_retry_ms'] ?? 1500);
+    }
+
+    /**
+     * Maximum number of events retained in the per-session event log. Bounds
+     * the JSON size of serialized session metadata in FileSessionStore; tune
+     * down on shared hosts with tight disk quotas.
+     */
+    public function getSseEventLogCapacity(): int
+    {
+        $n = (int)($this->options['sse_event_log_capacity'] ?? 64);
+        return $n < 1 ? 1 : $n;
+    }
+
+    /**
+     * How long (ms) a standalone GET SSE stream with no Last-Event-ID stays
+     * open before the server emits retry + closes. 0 means close immediately
+     * after priming — the default on PHP-FPM since there is no background
+     * worker to push idle server-initiated messages.
+     */
+    public function getSseStandaloneGetIdleMs(): int
+    {
+        $n = (int)($this->options['sse_standalone_get_idle_ms'] ?? 0);
+        return $n < 0 ? 0 : $n;
+    }
+
+    /**
+     * Configured SSE emission mode:
+     *  - `auto` (default): prefer streaming when the runtime supports it AND
+     *    the POST carries a `progressToken` _meta — otherwise buffer.
+     *  - `streaming`: force streaming whenever `Environment::canStreamSse()`
+     *    is true. If the runtime cannot stream, the request falls back to
+     *    buffered so the response is still delivered.
+     *  - `buffered`: force the legacy buffered-body path regardless of
+     *    runtime capability — useful for deployments that want the spec-
+     *    compliant wire format without the flush-per-frame risk.
+     */
+    public function getSseMode(): string
+    {
+        $mode = strtolower((string)($this->options['sse_mode'] ?? 'auto'));
+        return in_array($mode, ['auto', 'streaming', 'buffered'], true) ? $mode : 'auto';
+    }
+
+    /**
+     * Decide whether the given POST should use the streaming-SSE path.
+     *
+     * The runner calls this after the transport has selected SSE response
+     * mode. `buffered` mode short-circuits to the legacy emitter. The other
+     * modes additionally require `Environment::canStreamSse()` — if the
+     * runtime cannot reliably flush, streaming silently downgrades to
+     * buffered so no request ever hangs on a misdetected environment.
+     *
+     * `auto` is additionally gated on the presence of a `progressToken`
+     * in the client's request `_meta`: most JSON-RPC roundtrips (e.g.
+     * resources/list) emit a single response frame and get no benefit
+     * from header-flush overhead, so they stay on the buffered path.
+     */
+    public function shouldStream(?string $rawJsonBody): bool
+    {
+        $mode = $this->getSseMode();
+        if ($mode === 'buffered') {
+            return false;
+        }
+
+        if (!Environment::canStreamSse()) {
+            return false;
+        }
+
+        if ($mode === 'streaming') {
+            return true;
+        }
+
+        // mode === 'auto': stream only when the request declares a
+        // progressToken, so short round-trips keep the simpler buffered path.
+        if ($rawJsonBody === null || $rawJsonBody === '') {
+            return false;
+        }
+
+        // Cheap substring probe avoids a full JSON decode on every hit; the
+        // token key is distinctive enough that false positives are rare and
+        // harmless (a spurious stream still completes correctly).
+        if (stripos($rawJsonBody, 'progressToken') === false) {
+            return false;
+        }
+
+        try {
+            $data = json_decode($rawJsonBody, true, 32, JSON_THROW_ON_ERROR);
+        } catch (\JsonException) {
+            return false;
+        }
+
+        return self::hasProgressToken($data);
+    }
+
+    /**
+     * Walk a decoded JSON-RPC request (or batch) looking for a `_meta.progressToken`.
+     *
+     * @param mixed $data
+     */
+    private static function hasProgressToken($data): bool
+    {
+        if (!is_array($data)) {
+            return false;
+        }
+        if (array_is_list($data)) {
+            foreach ($data as $item) {
+                if (self::hasProgressToken($item)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+        $params = $data['params'] ?? null;
+        if (!is_array($params)) {
+            return false;
+        }
+        $meta = $params['_meta'] ?? null;
+        if (!is_array($meta)) {
+            return false;
+        }
+        return array_key_exists('progressToken', $meta);
+    }
+    
+    /**
+     * Check if running in shared hosting mode.
+     *
+     * @return bool True if in shared hosting mode
+     */
+    public function isSharedHosting(): bool
+    {
+        // If explicitly set, use that value
+        if ($this->options['shared_hosting'] !== null) {
+            return (bool)$this->options['shared_hosting'];
+        }
+        
+        // Otherwise, detect
+        return Environment::isSharedHosting();
+    }
+    
+    /**
+     * Auto-detect and set recommended options based on environment.
+     *
+     * @return void
+     */
+    private function autoDetectOptions(): void
+    {
+        $recommended = Environment::getRecommendedConfig();
+        
+        // Merge recommended options, preserving existing ones
+        foreach ($recommended as $key => $value) {
+            if (array_key_exists($key, $this->options)) {
+                $this->options[$key] = $value;
+            }
+        }
+    }
+}

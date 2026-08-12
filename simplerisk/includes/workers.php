@@ -5,6 +5,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 require_once(realpath(__DIR__ . '/functions.php'));
+require_once(realpath(__DIR__ . '/queues.php'));
 
 $GLOBALS['_worker_state'] = [];
 $GLOBALS['_worker_flags'] = [
@@ -567,6 +568,66 @@ function worker_get_job_definition(string $jobType, int $reloadAttempts = 1): ?a
     // Still missing after reload attempts
     write_debug_log("No job definition found for type '{$jobType}' after {$reloadAttempts} reload attempt(s).", "error");
     return null;
+}
+
+/**
+ * Run a job's optional 'on_terminal_failure' hook.
+ *
+ * A job that wants to surface a failure to a user (a notification, an alert)
+ * must do it HERE rather than from its own queue_check. queue_check runs on
+ * every attempt, so notifying from there fires on the first recoverable blip —
+ * a connection reset or a DNS hiccup — and the retry then succeeds, leaving the
+ * user holding a permanent alert for work that actually completed. This hook
+ * runs only once handle_queue_task_failure() has exhausted the retry budget and
+ * marked the task 'failed', which is the point at which the failure is real.
+ *
+ * "The task exhausted its retries" is queue-framework knowledge, not per-job
+ * knowledge — a job cannot see maxRetryAttempts, which the worker owns. Keeping
+ * the decision here also means the next job that wants this surface declares one
+ * callable instead of reimplementing the retry accounting.
+ *
+ * The hook is best-effort: a notifier that throws must never mask the original
+ * task failure or take the worker down, so everything is caught and logged.
+ *
+ * @param array<string,mixed> $job_def The job definition from worker_get_job_definition().
+ * @param array<string,mixed> $task    The failed task row.
+ */
+function worker_run_terminal_failure_hook(array $job_def, PDO $db, array $task, string $errorMessage): void
+{
+    $hook = $job_def['on_terminal_failure'] ?? null;
+    if (!is_callable($hook)) {
+        return;
+    }
+
+    try {
+        $hook($task, $db, $errorMessage);
+    } catch (\Throwable $t) {
+        write_debug_log(
+            "on_terminal_failure hook for task #{$task['id']} ({$task['task_type']}) threw: " . $t->getMessage(),
+            'error'
+        );
+    }
+}
+
+/**
+ * Record a task attempt's failure and, only once it becomes terminal, run the
+ * job's on_terminal_failure hook.
+ *
+ * Extracted out of cron_queue_worker.php's while(true) loop so this decision —
+ * "is this failure terminal, and if so, tell the job" — is testable on its own,
+ * independent of the loop's live-queue/signal-handling machinery it would
+ * otherwise be entangled with. Both of the worker's failure paths (a handler
+ * returning false, and a caught \Throwable) call this one function, so a
+ * regression in either wiring point is caught by the same test.
+ *
+ * @param array<string,mixed> $job_def The job definition from worker_get_job_definition().
+ * @param array<string,mixed> $task    The failed task row.
+ */
+function worker_handle_task_failure(array $job_def, PDO $db, array $task, string $errorMessage, int $maxRetryAttempts = 5, int $baseRetryDelay = 5, int $maxRetryDelay = 3600): void
+{
+    if (handle_queue_task_failure($db, $task, $errorMessage, $maxRetryAttempts, $baseRetryDelay, $maxRetryDelay)) {
+        worker_run_terminal_failure_hook($job_def, $db, $task, $errorMessage);
+    }
 }
 
 /**

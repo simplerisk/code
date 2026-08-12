@@ -114,9 +114,7 @@ $current_app_version = current_version("app");
             <header class="topbar" data-navbarbg="skin5">
                 <nav class="navbar top-navbar navbar-expand-md navbar-dark">
                     <div class="navbar-header">
-                        <a class="navbar-brand" href="https://www.simplerisk.com">
-                            <img src="../images/logo@2x.png" alt="homepage" class="logo"/>
-                        </a>
+<?php display_brand_logo('../'); ?>
                     </div>
                 </nav>
             </header>

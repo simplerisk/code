@@ -6,12 +6,15 @@ namespace SimpleSAML\XMLSecurity\XML\ds;
 
 use DOMElement;
 use SimpleSAML\XML\Constants as C;
-use SimpleSAML\XML\Exception\InvalidDOMElementException;
-use SimpleSAML\XML\Exception\MissingElementException;
-use SimpleSAML\XML\Exception\SchemaViolationException;
 use SimpleSAML\XML\SchemaValidatableElementInterface;
 use SimpleSAML\XML\SchemaValidatableElementTrait;
+use SimpleSAML\XMLSchema\Exception\InvalidDOMElementException;
+use SimpleSAML\XMLSchema\Exception\MissingElementException;
+use SimpleSAML\XMLSchema\Exception\SchemaViolationException;
+use SimpleSAML\XMLSchema\Type\IDValue;
 use SimpleSAML\XMLSecurity\Assert\Assert;
+
+use function strval;
 
 /**
  * Class representing a ds:SignatureProperties element.
@@ -22,19 +25,19 @@ final class SignatureProperties extends AbstractDsElement implements SchemaValid
 {
     use SchemaValidatableElementTrait;
 
+
     /**
      * Initialize a ds:SignatureProperties
      *
      * @param \SimpleSAML\XMLSecurity\XML\ds\SignatureProperty[] $signatureProperty
-     * @param string|null $Id
+     * @param \SimpleSAML\XMLSchema\Type\IDValue|null $Id
      */
     public function __construct(
         protected array $signatureProperty,
-        protected ?string $Id = null,
+        protected ?IDValue $Id = null,
     ) {
         Assert::maxCount($signatureProperty, C::UNBOUNDED_LIMIT);
         Assert::allIsInstanceOf($signatureProperty, SignatureProperty::class, SchemaViolationException::class);
-        Assert::nullOrValidNCName($Id);
     }
 
 
@@ -48,9 +51,9 @@ final class SignatureProperties extends AbstractDsElement implements SchemaValid
 
 
     /**
-     * @return string|null
+     * @return \SimpleSAML\XMLSchema\Type\IDValue|null
      */
-    public function getId(): ?string
+    public function getId(): ?IDValue
     {
         return $this->Id;
     }
@@ -60,9 +63,8 @@ final class SignatureProperties extends AbstractDsElement implements SchemaValid
      * Convert XML into a SignatureProperties element
      *
      * @param \DOMElement $xml The XML element we should load
-     * @return static
      *
-     * @throws \SimpleSAML\XML\Exception\InvalidDOMElementException
+     * @throws \SimpleSAML\XMLSchema\Exception\InvalidDOMElementException
      *   If the qualified name of the supplied element is wrong
      */
     public static function fromXML(DOMElement $xml): static
@@ -71,8 +73,6 @@ final class SignatureProperties extends AbstractDsElement implements SchemaValid
         Assert::same($xml->namespaceURI, SignatureProperties::NS, InvalidDOMElementException::class);
 
         $signatureProperty = SignatureProperty::getChildrenOfClass($xml);
-        $Id = self::getOptionalAttribute($xml, 'Id', null);
-
         Assert::minCount(
             $signatureProperty,
             1,
@@ -82,7 +82,7 @@ final class SignatureProperties extends AbstractDsElement implements SchemaValid
 
         return new static(
             $signatureProperty,
-            $Id,
+            self::getOptionalAttribute($xml, 'Id', IDValue::class, null),
         );
     }
 
@@ -91,14 +91,13 @@ final class SignatureProperties extends AbstractDsElement implements SchemaValid
      * Convert this SignatureProperties element to XML.
      *
      * @param \DOMElement|null $parent The element we should append this SignatureProperties element to.
-     * @return \DOMElement
      */
     public function toXML(?DOMElement $parent = null): DOMElement
     {
         $e = $this->instantiateParentElement($parent);
 
         if ($this->getId() !== null) {
-            $e->setAttribute('Id', $this->getId());
+            $e->setAttribute('Id', strval($this->getId()));
         }
 
         foreach ($this->getSignatureProperty() as $signatureProperty) {

@@ -6,15 +6,18 @@ namespace SimpleSAML\XMLSecurity\XML\xenc;
 
 use DOMElement;
 use SimpleSAML\XML\Constants as C;
-use SimpleSAML\XML\Exception\InvalidDOMElementException;
-use SimpleSAML\XML\Exception\MissingElementException;
-use SimpleSAML\XML\Exception\SchemaViolationException;
 use SimpleSAML\XML\ExtendableAttributesTrait;
 use SimpleSAML\XML\ExtendableElementTrait;
 use SimpleSAML\XML\SchemaValidatableElementInterface;
 use SimpleSAML\XML\SchemaValidatableElementTrait;
-use SimpleSAML\XML\XsNamespace as NS;
+use SimpleSAML\XMLSchema\Exception\InvalidDOMElementException;
+use SimpleSAML\XMLSchema\Exception\MissingElementException;
+use SimpleSAML\XMLSchema\Type\AnyURIValue;
+use SimpleSAML\XMLSchema\Type\IDValue;
+use SimpleSAML\XMLSchema\XML\Constants\NS;
 use SimpleSAML\XMLSecurity\Assert\Assert;
+
+use function strval;
 
 /**
  * Class representing <xenc:EncryptionPropertyType>.
@@ -28,30 +31,29 @@ abstract class AbstractEncryptionPropertyType extends AbstractXencElement implem
     use ExtendableElementTrait;
     use SchemaValidatableElementTrait;
 
+
     /** The namespace-attribute for the xs:anyAttribute element */
-    public const XS_ANY_ATTR_NAMESPACE = [C::NS_XML];
+    public const array XS_ANY_ATTR_NAMESPACE = [C::NS_XML];
 
     /** The namespace-attribute for the xs:any element */
-    public const XS_ANY_ELT_NAMESPACE = NS::OTHER;
+    public const string XS_ANY_ELT_NAMESPACE = NS::OTHER;
 
 
     /**
      * EncryptionProperty constructor.
      *
      * @param \SimpleSAML\XML\SerializableElementInterface[] $children
-     * @param string|null $Target
-     * @param string|null $Id
+     * @param \SimpleSAML\XMLSchema\Type\AnyURIValue|null $Target
+     * @param \SimpleSAML\XMLSchema\Type\IDValue|null $Id
      * @param \SimpleSAML\XML\Attribute[] $namespacedAttributes
      */
     final public function __construct(
         array $children,
-        protected ?string $Target = null,
-        protected ?string $Id = null,
+        protected ?AnyURIValue $Target = null,
+        protected ?IDValue $Id = null,
         array $namespacedAttributes = [],
     ) {
         Assert::minCount($children, 1, MissingElementException::class);
-        Assert::nullOrValidURI($Target, SchemaViolationException::class);
-        Assert::nullOrValidNCName($Id, SchemaViolationException::class);
 
         $this->setElements($children);
         $this->setAttributesNS($namespacedAttributes);
@@ -61,9 +63,9 @@ abstract class AbstractEncryptionPropertyType extends AbstractXencElement implem
     /**
      * Get the value of the $Target property.
      *
-     * @return string|null
+     * @return \SimpleSAML\XMLSchema\Type\AnyURIValue|null
      */
-    public function getTarget(): ?string
+    public function getTarget(): ?AnyURIValue
     {
         return $this->Target;
     }
@@ -72,9 +74,9 @@ abstract class AbstractEncryptionPropertyType extends AbstractXencElement implem
     /**
      * Get the value of the $Id property.
      *
-     * @return string|null
+     * @return \SimpleSAML\XMLSchema\Type\IDValue
      */
-    public function getId(): ?string
+    public function getId(): ?IDValue
     {
         return $this->Id;
     }
@@ -83,7 +85,7 @@ abstract class AbstractEncryptionPropertyType extends AbstractXencElement implem
     /**
      * @inheritDoc
      *
-     * @throws \SimpleSAML\XML\Exception\InvalidDOMElementException
+     * @throws \SimpleSAML\XMLSchema\Exception\InvalidDOMElementException
      *   If the qualified name of the supplied element is wrong
      */
     public static function fromXML(DOMElement $xml): static
@@ -93,8 +95,8 @@ abstract class AbstractEncryptionPropertyType extends AbstractXencElement implem
 
         return new static(
             self::getChildElementsFromXML($xml),
-            self::getOptionalAttribute($xml, 'Target', null),
-            self::getOptionalAttribute($xml, 'Id', null),
+            self::getOptionalAttribute($xml, 'Target', AnyURIValue::class, null),
+            self::getOptionalAttribute($xml, 'Id', IDValue::class, null),
             self::getAttributesNSFromXML($xml),
         );
     }
@@ -108,11 +110,11 @@ abstract class AbstractEncryptionPropertyType extends AbstractXencElement implem
         $e = $this->instantiateParentElement($parent);
 
         if ($this->getTarget() !== null) {
-            $e->setAttribute('Target', $this->getTarget());
+            $e->setAttribute('Target', strval($this->getTarget()));
         }
 
         if ($this->getId() !== null) {
-            $e->setAttribute('Id', $this->getId());
+            $e->setAttribute('Id', strval($this->getId()));
         }
 
         foreach ($this->getAttributesNS() as $attr) {

@@ -5,12 +5,14 @@ declare(strict_types=1);
 namespace SimpleSAML\XMLSecurity\XML\xenc;
 
 use DOMElement;
-use SimpleSAML\XML\Exception\InvalidDOMElementException;
-use SimpleSAML\XML\Exception\MissingElementException;
-use SimpleSAML\XML\Exception\SchemaViolationException;
 use SimpleSAML\XML\SchemaValidatableElementInterface;
 use SimpleSAML\XML\SchemaValidatableElementTrait;
+use SimpleSAML\XMLSchema\Exception\InvalidDOMElementException;
+use SimpleSAML\XMLSchema\Exception\MissingElementException;
+use SimpleSAML\XMLSchema\Type\IDValue;
 use SimpleSAML\XMLSecurity\Assert\Assert;
+
+use function strval;
 
 /**
  * Class representing <xenc:EncryptionPropertiesType>.
@@ -22,18 +24,18 @@ abstract class AbstractEncryptionPropertiesType extends AbstractXencElement impl
 {
     use SchemaValidatableElementTrait;
 
+
     /**
      * EncryptionProperty constructor.
      *
      * @param \SimpleSAML\XMLSecurity\XML\xenc\EncryptionProperty[] $encryptionProperty
-     * @param string|null $Id
+     * @param \SimpleSAML\XMLSchema\Type\IDValue|null $Id
      */
     final public function __construct(
         protected array $encryptionProperty,
-        protected ?string $Id = null,
+        protected ?IDValue $Id = null,
     ) {
         Assert::minCount($encryptionProperty, 1, MissingElementException::class);
-        Assert::nullOrValidNCName($Id, SchemaViolationException::class);
     }
 
 
@@ -51,9 +53,9 @@ abstract class AbstractEncryptionPropertiesType extends AbstractXencElement impl
     /**
      * Get the value of the $Id property.
      *
-     * @return string|null
+     * @return \SimpleSAML\XMLSchema\Type\IDValue|null
      */
-    public function getId(): ?string
+    public function getId(): ?IDValue
     {
         return $this->Id;
     }
@@ -62,7 +64,7 @@ abstract class AbstractEncryptionPropertiesType extends AbstractXencElement impl
     /**
      * @inheritDoc
      *
-     * @throws \SimpleSAML\XML\Exception\InvalidDOMElementException
+     * @throws \SimpleSAML\XMLSchema\Exception\InvalidDOMElementException
      *   If the qualified name of the supplied element is wrong
      */
     public static function fromXML(DOMElement $xml): static
@@ -72,7 +74,7 @@ abstract class AbstractEncryptionPropertiesType extends AbstractXencElement impl
 
         return new static(
             EncryptionProperty::getChildrenOfClass($xml),
-            self::getOptionalAttribute($xml, 'Id', null),
+            self::getOptionalAttribute($xml, 'Id', IDValue::class, null),
         );
     }
 
@@ -89,7 +91,7 @@ abstract class AbstractEncryptionPropertiesType extends AbstractXencElement impl
         }
 
         if ($this->getId() !== null) {
-            $e->setAttribute('Id', $this->getId());
+            $e->setAttribute('Id', strval($this->getId()));
         }
 
         return $e;

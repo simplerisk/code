@@ -1,522 +1,422 @@
-/*! RowGroup 1.6.0
- * © SpryMedia Ltd - datatables.net/license
+/*! RowGroup 2.0.0 for DataTables
+ * Copyright (c) SpryMedia Ltd - datatables.net/license
  */
 
-(function( factory ){
-	if ( typeof define === 'function' && define.amd ) {
+(function(factory){
+	if (typeof define === 'function' && define.amd) {
 		// AMD
-		define( ['jquery', 'datatables.net'], function ( $ ) {
-			return factory( $, window, document );
-		} );
+		define(['datatables.net'], function (dt) {
+			return factory(window, document, dt);
+		});
 	}
-	else if ( typeof exports === 'object' ) {
+	else if (typeof exports === 'object') {
 		// CommonJS
-		var jq = require('jquery');
-		var cjsRequires = function (root, $) {
-			if ( ! $.fn.dataTable ) {
-				require('datatables.net')(root, $);
+		var cjsRequires = function (root) {
+			if (! root.DataTable) {
+				require('datatables.net')(root);
 			}
 		};
 
 		if (typeof window === 'undefined') {
-			module.exports = function (root, $) {
-				if ( ! root ) {
+			module.exports = function (root) {
+				if (! root) {
 					// CommonJS environments without a window global must pass a
 					// root. This will give an error otherwise
 					root = window;
 				}
 
-				if ( ! $ ) {
-					$ = jq( root );
-				}
-
-				cjsRequires( root, $ );
-				return factory( $, root, root.document );
+				cjsRequires(root);
+				return factory(root, root.document, root.DataTable);
 			};
 		}
 		else {
-			cjsRequires( window, jq );
-			module.exports = factory( jq, window, window.document );
+			cjsRequires(window);
+			module.exports = factory(window, window.document, window.DataTable);
 		}
 	}
 	else {
 		// Browser
-		factory( jQuery, window, document );
+		factory(window, document, window.DataTable);
 	}
-}(function( $, window, document ) {
+}(function(window, document, DataTable) {
 'use strict';
-var DataTable = $.fn.dataTable;
 
+var Dom = DataTable.Dom;
+var util = DataTable.util;
 
-
-/**
- * @summary     RowGroup
- * @description RowGrouping for DataTables
- * @version     1.6.0
- * @author      SpryMedia Ltd (www.sprymedia.co.uk)
- * @contact     datatables.net
- * @copyright   SpryMedia Ltd.
- *
- * This source file is free software, available under the following license:
- *   MIT license - http://datatables.net/license/mit
- *
- * This source file is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
- * or FITNESS FOR A PARTICULAR PURPOSE. See the license files for details.
- *
- * For details please refer to: http://www.datatables.net
- */
-
-var RowGroup = function (dt, opts) {
-	// Sanity check
-	if (!DataTable.versionCheck || !DataTable.versionCheck('2')) {
-		throw new Error('RowGroup requires DataTables 2 or newer');
-	}
-
-	// User and defaults configuration object
-	this.c = $.extend(true, {}, DataTable.defaults.rowGroup, RowGroup.defaults, opts);
-
-	// Internal settings
-	this.s = {
-		dt: new DataTable.Api(dt)
-	};
-
-	// DOM items
-	this.dom = {};
-
-	// Check if row grouping has already been initialised on this table
-	var settings = this.s.dt.settings()[0];
-	var existing = settings.rowGroup;
-	if (existing) {
-		return existing;
-	}
-
-	settings.rowGroup = this;
-	this._constructor();
-};
-
-$.extend(RowGroup.prototype, {
-	/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-	 * API methods for DataTables API interface
-	 */
-
-	/**
-	 * Get/set the grouping data source - need to call draw after this is
-	 * executed as a setter
-	 * @returns string~RowGroup
-	 */
-	dataSrc: function (val) {
-		if (val === undefined) {
-			return this.c.dataSrc;
-		}
-
-		var dt = this.s.dt;
-
-		this.c.dataSrc = val;
-
-		$(dt.table().node()).triggerHandler('rowgroup-datasrc.dt', [dt, val]);
-
-		return this;
-	},
-
-	/**
-	 * Disable - need to call draw after this is executed
-	 * @returns RowGroup
-	 */
-	disable: function () {
-		this.c.enable = false;
-		return this;
-	},
-
-	/**
-	 * Enable - need to call draw after this is executed
-	 * @returns RowGroup
-	 */
-	enable: function (flag) {
-		if (flag === false) {
-			return this.disable();
-		}
-
-		this.c.enable = true;
-		return this;
-	},
-
-	/**
-	 * Get enabled flag
-	 * @returns boolean
-	 */
-	enabled: function () {
-		return this.c.enable;
-	},
-
-	/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-	 * Constructor
-	 */
-	_constructor: function () {
-		var that = this;
-		var dt = this.s.dt;
-		var hostSettings = dt.settings()[0];
-		var scroller = $('div.dt-scroll-body', dt.table().container());
-
-		dt.on('draw.dtrg', function (e, s) {
-			if (that.c.enable && hostSettings === s) {
-				that._draw();
-
-				// Restore scrolling position if set and paging wasn't reset
-				if (scrollTop && scroller.scrollTop()) {
-					scroller.scrollTop(scrollTop);
-					scrollTop = null;
-				}
-			}
-		});
-
-		dt.on('column-visibility.dt.dtrg responsive-resize.dt.dtrg', function () {
-			that._adjustColspan();
-		});
-
-		dt.on('destroy', function () {
-			dt.off('.dtrg');
-		});
-
-		// When scrolling is enabled, when adding grouping rows above the scrolling view
-		// port, the browser (both FF and Chrome) will put the element in and adjust the
-		// scrollTop so that it doesn't move the current viewport. This isn't what we
-		// want since prior to the draw the grouping elements were in place, but they then
-		// are removed and reinserted. So we need to shift the scrollTop back to what it
-		// was!
-		var scrollTop = null;
-
-		if (scroller.length) {
-			dt.on('preDraw', function () {
-				scrollTop = scroller.scrollTop();
-			});
-		}
-	},
-
-	/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-	 * Private methods
-	 */
-
-	/**
-	 * Adjust column span when column visibility changes
-	 * @private
-	 */
-	_adjustColspan: function () {
-		let cells = $('tr.' + this.c.className, this.s.dt.table().body())
-			.find('th:visible, td:visible');
-
-		// Only perform the adjust if there is a single cell. If there is more the renderer must
-		// have returned multiple cells and it is the responsibility of the rendering function to
-		// get the number of cells right.
-		if (cells.length === 1) {
-			cells.attr('colspan', this._colspan());
-		}
-	},
-
-	/**
-	 * Get the number of columns that a grouping row should span
-	 * @private
-	 */
-	_colspan: function () {
-		return this.s.dt
-			.columns()
-			.visible()
-			.reduce(function (a, b) {
-				return a + b;
-			}, 0);
-	},
-
-	/**
-	 * Update function that is called whenever we need to draw the grouping rows.
-	 * This is basically a bootstrap for the self iterative _group and _groupDisplay
-	 * methods
-	 * @private
-	 */
-	_draw: function () {
-		var dt = this.s.dt;
-
-		// Don't do anything if there is no data source
-		if (
-			this.c.dataSrc === null ||
-			(Array.isArray(this.c.dataSrc) && this.c.dataSrc.length === 0)
-		) {
-			return;
-		}
-
-		var groupedRows = this._group(0, dt.rows({ page: 'current' }).indexes());
-
-		this._groupDisplay(0, groupedRows);
-	},
-
-	/**
-	 * Get the grouping information from a data set (index) of rows
-	 * @param {number} level Nesting level
-	 * @param {DataTables.Api} rows API of the rows to consider for this group
-	 * @returns {object[]} Nested grouping information - it is structured like this:
-	 *	{
-	 *		dataPoint: 'Edinburgh',
-	 *		rows: [ 1,2,3,4,5,6,7 ],
-	 *		children: [ {
-	 *			dataPoint: 'developer'
-	 *			rows: [ 1, 2, 3 ]
-	 *		},
-	 *		{
-	 *			dataPoint: 'support',
-	 *			rows: [ 4, 5, 6, 7 ]
-	 *		} ]
-	 *	}
-	 * @private
-	 */
-	_group: function (level, rows) {
-		var fns = Array.isArray(this.c.dataSrc) ? this.c.dataSrc : [this.c.dataSrc];
-		var fn = DataTable.util.get(fns[level]);
-		var dt = this.s.dt;
-		var group, last;
-		var i, ien;
-		var data = [];
-		var that = this;
-
-		for (i = 0, ien = rows.length; i < ien; i++) {
-			var rowIndex = rows[i];
-			var rowData = dt.row(rowIndex).data();
-
-			group = fn(rowData, level);
-
-			if (group === null || group === undefined) {
-				group = that.c.emptyDataGroup;
-			}
-
-			if (last === undefined || group !== last) {
-				data.push({
-					dataPoint: group,
-					rows: []
-				});
-
-				last = group;
-			}
-
-			data[data.length - 1].rows.push(rowIndex);
-		}
-
-		if (fns[level + 1] !== undefined) {
-			for (i = 0, ien = data.length; i < ien; i++) {
-				data[i].children = this._group(level + 1, data[i].rows);
-			}
-		}
-
-		return data;
-	},
-
-	/**
-	 * Row group display - insert the rows into the document
-	 * @param {number} level Nesting level
-	 * @param {object[]} groups Takes the nested array from `_group`
-	 * @private
-	 */
-	_groupDisplay: function (level, groups) {
-		var dt = this.s.dt;
-		var display;
-
-		for (var i = 0, ien = groups.length; i < ien; i++) {
-			var group = groups[i];
-			var groupName = group.dataPoint;
-			var row;
-			var rows = group.rows;
-
-			if (this.c.startRender) {
-				display = this.c.startRender.call(this, dt.rows(rows), groupName, level);
-				row = this._rowWrap(display, this.c.startClassName, level);
-
-				if (row) {
-					row.insertBefore(dt.row(rows[0]).node());
-				}
-			}
-
-			if (this.c.endRender) {
-				display = this.c.endRender.call(this, dt.rows(rows), groupName, level);
-				row = this._rowWrap(display, this.c.endClassName, level);
-
-				if (row) {
-					row.insertAfter(dt.row(rows[rows.length - 1]).node());
-				}
-			}
-
-			if (group.children) {
-				this._groupDisplay(level + 1, group.children);
-			}
-		}
-	},
-
-	/**
-	 * Take a rendered value from an end user and make it suitable for display
-	 * as a row, by wrapping it in a row, or detecting that it is a row.
-	 * @param {node|jQuery|string} display Display value
-	 * @param {string} className Class to add to the row
-	 * @param {array} group
-	 * @param {number} group level
-	 * @private
-	 */
-	_rowWrap: function (display, className, level) {
-		var row;
-
-		if (display === null || display === '') {
-			display = this.c.emptyDataGroup;
-		}
-
-		if (display === undefined || display === null) {
-			return null;
-		}
-
-		if (
-			typeof display === 'object' &&
-			display.nodeName &&
-			display.nodeName.toLowerCase() === 'tr'
-		) {
-			row = $(display);
-		}
-		else if (
-			display instanceof $ &&
-			display.length &&
-			display[0].nodeName.toLowerCase() === 'tr'
-		) {
-			row = display;
-		}
-		else {
-			row = $('<tr/>').append(
-				$('<th/>').attr('colspan', this._colspan()).attr('scope', 'row').append(display)
-			);
-		}
-
-		return row
-			.addClass(this.c.className)
-			.addClass(className)
-			.addClass('dtrg-level-' + level);
-	}
-});
-
-/**
- * RowGroup default settings for initialisation
- *
- * @namespace
- * @name RowGroup.defaults
- * @static
- */
+if (!DataTable || !DataTable.versionCheck || !DataTable.versionCheck('3')) {
+    throw new Error('RowGroup requires DataTables 3 or newer');
+}
+class RowGroup {
+    /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+     * API methods for DataTables API interface
+     */
+    /**
+     * Get/set the grouping data source - need to call draw after this is
+     * executed as a setter
+     *
+     * @returns string~RowGroup
+     */
+    dataSrc(val) {
+        if (val === undefined) {
+            return this.c.dataSrc;
+        }
+        var dt = this.s.dt;
+        this.c.dataSrc = val;
+        Dom.s(dt.table().node()).trigger('rowgroup-datasrc.dt', false, [
+            dt,
+            val
+        ]);
+        return this;
+    }
+    /**
+     * Disable - need to call draw after this is executed
+     *
+     * @returns RowGroup
+     */
+    disable() {
+        this.c.enable = false;
+        return this;
+    }
+    /**
+     * Enable - need to call draw after this is executed
+     *
+     * @returns RowGroup
+     */
+    enable(flag) {
+        if (flag === false) {
+            return this.disable();
+        }
+        this.c.enable = true;
+        return this;
+    }
+    /**
+     * Get enabled flag
+     * @returns boolean
+     */
+    enabled() {
+        return this.c.enable;
+    }
+    /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+     * Constructor
+     */
+    constructor(dt, opts) {
+        // Sanity check
+        // User and defaults configuration object
+        this.c = util.object.assignDeep({}, DataTable.defaults.rowGroup, RowGroup.defaults, opts);
+        // Internal settings
+        this.s = {
+            dt: new DataTable.Api(dt)
+        };
+        // Check if row grouping has already been initialised on this table
+        var settings = this.s.dt.settings()[0];
+        var existing = settings.rowGroup;
+        if (existing) {
+            return existing;
+        }
+        settings.rowGroup = this;
+        this._init();
+    }
+    _init() {
+        var that = this;
+        var dt = this.s.dt;
+        var hostSettings = dt.settings()[0];
+        var scroller = Dom.s(dt.table().container()).find('div.dt-scroll-body');
+        dt.on('draw.dtrg', function (e, s) {
+            if (that.c.enable && hostSettings === s) {
+                that._draw();
+                // Restore scrolling position if set and paging wasn't reset
+                if (scrollTop && scroller.scrollTop()) {
+                    scroller.scrollTop(scrollTop);
+                    scrollTop = null;
+                }
+            }
+        });
+        dt.on('column-visibility.dt.dtrg responsive-resize.dt.dtrg', function () {
+            that._adjustColspan();
+        });
+        dt.on('destroy', function () {
+            dt.off('.dtrg');
+        });
+        // When scrolling is enabled, when adding grouping rows above the
+        // scrolling view port, the browser (both FF and Chrome) will put the
+        // element in and adjust the scrollTop so that it doesn't move the
+        // current viewport. This isn't what we want since prior to the draw the
+        // grouping elements were in place, but they then are removed and
+        // reinserted. So we need to shift the scrollTop back to what it was!
+        var scrollTop = null;
+        if (scroller.count()) {
+            dt.on('preDraw', function () {
+                scrollTop = scroller.scrollTop();
+            });
+        }
+    }
+    /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+     * Private methods
+     */
+    /**
+     * Adjust column span when column visibility changes
+     */
+    _adjustColspan() {
+        Dom.s(this.s.dt.table().body())
+            .find('tr.' + this.c.className)
+            .each(row => {
+            let cells = Dom.s(row)
+                .find('th, td')
+                .map(cell => (Dom.s(cell).isVisible() ? cell : null));
+            // Only perform the adjust if there is a single cell. If there
+            // is more the renderer must have returned multiple cells and it
+            // is the responsibility of the rendering function to get the
+            // number of cells right.
+            if (cells.count() === 1) {
+                cells.attr('colspan', this._colspan());
+            }
+        });
+    }
+    /**
+     * Get the number of columns that a grouping row should span
+     */
+    _colspan() {
+        return this.s.dt.columns(':visible').count();
+    }
+    /**
+     * Update function that is called whenever we need to draw the grouping
+     * rows. This is basically a bootstrap for the self iterative _group and
+     * _groupDisplay methods
+     */
+    _draw() {
+        var dt = this.s.dt;
+        // Don't do anything if there is no data source
+        if (this.c.dataSrc === null ||
+            (Array.isArray(this.c.dataSrc) && this.c.dataSrc.length === 0)) {
+            return;
+        }
+        var groupedRows = this._group(0, dt.rows({ page: 'current' }).indexes().toArray());
+        this._groupDisplay(0, groupedRows);
+    }
+    /**
+     * Get the grouping information from a data set (index) of rows
+     *
+     * @param level Nesting level
+     * @param rows API of the rows to consider for this group
+     * @returns Nested grouping information
+     */
+    _group(level, rows) {
+        var fns = Array.isArray(this.c.dataSrc)
+            ? this.c.dataSrc
+            : [this.c.dataSrc];
+        var fn = DataTable.util.get(fns[level]);
+        var dt = this.s.dt;
+        var group, last;
+        var i, ien;
+        var data = [];
+        var that = this;
+        for (i = 0, ien = rows.length; i < ien; i++) {
+            var rowIndex = rows[i];
+            var rowData = dt.row(rowIndex).data();
+            group = fn(rowData, level);
+            if (group === null || group === undefined) {
+                group = that.c.emptyDataGroup;
+            }
+            if (last === undefined || group !== last) {
+                data.push({
+                    dataPoint: group,
+                    rows: []
+                });
+                last = group;
+            }
+            data[data.length - 1].rows.push(rowIndex);
+        }
+        if (fns[level + 1] !== undefined) {
+            for (i = 0, ien = data.length; i < ien; i++) {
+                data[i].children = this._group(level + 1, data[i].rows);
+            }
+        }
+        return data;
+    }
+    /**
+     * Row group display - insert the rows into the document
+     *
+     * @param level Nesting level
+     * @param groups Takes the nested array from `_group`
+     */
+    _groupDisplay(level, groups) {
+        var dt = this.s.dt;
+        var display;
+        for (var i = 0, ien = groups.length; i < ien; i++) {
+            var group = groups[i];
+            var groupName = group.dataPoint;
+            var row;
+            var rows = group.rows;
+            if (this.c.startRender) {
+                display = this.c.startRender.call(this, dt.rows(rows), groupName, level);
+                row = this._rowWrap(display, this.c.startClassName, level);
+                if (row) {
+                    row.insertBefore(dt.row(rows[0]).node());
+                }
+            }
+            if (this.c.endRender) {
+                display = this.c.endRender.call(this, dt.rows(rows), groupName, level);
+                row = this._rowWrap(display, this.c.endClassName, level);
+                if (row) {
+                    row.insertAfter(dt.row(rows[rows.length - 1]).node());
+                }
+            }
+            if (group.children) {
+                this._groupDisplay(level + 1, group.children);
+            }
+        }
+    }
+    /**
+     * Take a rendered value from an end user and make it suitable for display
+     * as a row, by wrapping it in a row, or detecting that it is a row.
+     *
+     * @param display Display value
+     * @param className Class to add to the row
+     * @param group level
+     */
+    _rowWrap(display, className, level) {
+        var row;
+        if (display === null || display === '') {
+            display = this.c.emptyDataGroup;
+        }
+        if (display === undefined || display === null) {
+            return null;
+        }
+        if (util.is.element(display) &&
+            display.nodeName.toLowerCase() === 'tr') {
+            row = Dom.s(display);
+        }
+        else if (util.is.dom(display) &&
+            display.count() &&
+            display.get(0).nodeName.toLowerCase() === 'tr') {
+            row = display;
+        }
+        else if (util.is.jquery(display) &&
+            display.length &&
+            display.get(0).nodeName.toLowerCase() === 'tr') {
+            row = Dom.s(display);
+        }
+        else {
+            let cell = Dom.c('th')
+                .attr('colspan', this._colspan())
+                .attr('scope', 'row');
+            if (typeof display === 'string') {
+                cell.html(display);
+            }
+            else {
+                cell.append(display);
+            }
+            row = Dom.c('tr').append(cell);
+        }
+        return row
+            .classAdd(this.c.className)
+            .classAdd(className)
+            .classAdd('dtrg-level-' + level);
+    }
+}
 RowGroup.defaults = {
-	/**
-	 * Class to apply to grouping rows - applied to both the start and
-	 * end grouping rows.
-	 * @type string
-	 */
-	className: 'dtrg-group',
-
-	/**
-	 * Data property from which to read the grouping information
-	 * @type string|integer|array
-	 */
-	dataSrc: 0,
-
-	/**
-	 * Text to show if no data is found for a group
-	 * @type string
-	 */
-	emptyDataGroup: 'No group',
-
-	/**
-	 * Initial enablement state
-	 * @boolean
-	 */
-	enable: true,
-
-	/**
-	 * Class name to give to the end grouping row
-	 * @type string
-	 */
-	endClassName: 'dtrg-end',
-
-	/**
-	 * End grouping label function
-	 * @function
-	 */
-	endRender: null,
-
-	/**
-	 * Class name to give to the start grouping row
-	 * @type string
-	 */
-	startClassName: 'dtrg-start',
-
-	/**
-	 * Start grouping label function
-	 * @function
-	 */
-	startRender: function (rows, group) {
-		return group;
-	}
+    /**
+     * Class to apply to grouping rows - applied to both the start and
+     * end grouping rows.
+     * @type string
+     */
+    className: 'dtrg-group',
+    /**
+     * Data property from which to read the grouping information
+     * @type string|integer|array
+     */
+    dataSrc: 0,
+    /**
+     * Text to show if no data is found for a group
+     * @type string
+     */
+    emptyDataGroup: 'No group',
+    /**
+     * Initial enablement state
+     * @boolean
+     */
+    enable: true,
+    /**
+     * Class name to give to the end grouping row
+     * @type string
+     */
+    endClassName: 'dtrg-end',
+    /**
+     * End grouping label function
+     * @function
+     */
+    endRender: null,
+    /**
+     * Class name to give to the start grouping row
+     * @type string
+     */
+    startClassName: 'dtrg-start',
+    /**
+     * Start grouping label function
+     * @function
+     */
+    startRender(rows, group, level) {
+        return group;
+    }
 };
+RowGroup.version = '2.0.0';
 
-RowGroup.version = '1.6.0';
 
-$.fn.dataTable.RowGroup = RowGroup;
-$.fn.DataTable.RowGroup = RowGroup;
-
+DataTable.RowGroup = RowGroup;
 DataTable.Api.register('rowGroup()', function () {
-	return this;
+    return this.inst(this.context);
 });
-
 DataTable.Api.register('rowGroup().disable()', function () {
-	return this.iterator('table', function (ctx) {
-		if (ctx.rowGroup) {
-			ctx.rowGroup.enable(false);
-		}
-	});
+    return this.iterator('table', function (ctx) {
+        if (ctx.rowGroup) {
+            ctx.rowGroup.enable(false);
+        }
+    });
 });
-
 DataTable.Api.register('rowGroup().enable()', function (opts) {
-	return this.iterator('table', function (ctx) {
-		if (ctx.rowGroup) {
-			ctx.rowGroup.enable(opts === undefined ? true : opts);
-		}
-	});
+    return this.iterator('table', function (ctx) {
+        if (ctx.rowGroup) {
+            ctx.rowGroup.enable(opts === undefined ? true : opts);
+        }
+    });
 });
-
 DataTable.Api.register('rowGroup().enabled()', function () {
-	var ctx = this.context;
-
-	return ctx.length && ctx[0].rowGroup ? ctx[0].rowGroup.enabled() : false;
+    var ctx = this.context;
+    return ctx.length && ctx[0].rowGroup ? ctx[0].rowGroup.enabled() : false;
 });
-
 DataTable.Api.register('rowGroup().dataSrc()', function (val) {
-	if (val === undefined) {
-		let s = this.context[0].rowGroup;
-		return s ? s.dataSrc() : [];
-	}
-
-	return this.iterator('table', function (ctx) {
-		if (! ctx.rowGroup) {
-			new RowGroup(this.context[0]);
-		}
-		
-		ctx.rowGroup.dataSrc(val);
-	});
+    if (val === undefined) {
+        let s = this.context[0].rowGroup;
+        return s ? s.dataSrc() : [];
+    }
+    return this.iterator('table', function (ctx) {
+        if (!ctx.rowGroup) {
+            new RowGroup(this.context[0]);
+        }
+        ctx.rowGroup.dataSrc(val);
+    });
 });
-
 // Attach a listener to the document which listens for DataTables initialisation
 // events so we can automatically initialise
-$(document).on('preInit.dt.dtrg', function (e, settings, json) {
-	if (e.namespace !== 'dt') {
-		return;
-	}
-
-	var init = settings.oInit.rowGroup;
-	var defaults = DataTable.defaults.rowGroup;
-
-	if (init || defaults) {
-		var opts = $.extend({}, defaults, init);
-
-		if (init !== false) {
-			new RowGroup(settings, opts);
-		}
-	}
+Dom.s(document).on('preInit.dt.dtrg', function (e, settings, json) {
+    if (e.namespace !== 'dt') {
+        return;
+    }
+    let init = settings.init.rowGroup;
+    let defaults = DataTable.defaults.rowGroup;
+    if (init || defaults) {
+        let opts = {};
+        if (util.is.plainObject(defaults)) {
+            util.object.assign(opts, defaults);
+        }
+        if (util.is.plainObject(init)) {
+            util.object.assign(opts, init);
+        }
+        if (init !== false) {
+            new RowGroup(settings, opts);
+        }
+    }
 });
 
 

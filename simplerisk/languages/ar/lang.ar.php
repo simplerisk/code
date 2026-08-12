@@ -1345,7 +1345,6 @@ $lang = array(
     'UpdateAssetGroupTooltip' => 'تحديث مجموعه الأصول',
     'DeleteAssetGroupTooltip' => 'حذف مجموعه الأصول',
     'RemoveAssetTooltip' => 'أزاله الأصل من مجموعه الأصول',
-    'ControlShortNameFieldRequired' => 'حقل الاسم القصير التحكم مطلوب.',
     'AffectedAssetsWidgetPlaceholder' => 'تحديد مجموعة أصول أو أصول',
     'AffectedAssetsWidgetNoDropdownPlaceholder' => 'إضافة اسم أصل',
     'AffectedAssetsWidgetInstructions' => 'حدد مجموعة أصول أو أصول. يمكنك إنشاء أصل جديد عن طريق إضافة اسمه إلى القائمة.',
@@ -2226,7 +2225,7 @@ $lang = array(
     'IncidentSummaryUpdateSuccessful' => 'تم تحديث الملخص بنجاح.',
     'ImportSuccessful' => 'تم الاستيراد بنجاح!',
     'Document' => 'الوثيقه',
-    'SelfAssessments' => 'التقييم الذاتي',
+    'SelfAssessments' => 'التقييمات الذاتية',
     'AssetId'=>'معرف الأصول',
     'ExportTemplateGroups' => 'تصدير مجموعات القوالب',
     'ImportTemplateGroups' => 'استيراد مجموعات القوالب',
@@ -2341,7 +2340,7 @@ $lang = array(
     'Advanced_Search_no_results_1' => 'يبدو أنه لا توجد نتائج لاستعلامك.',
     'Advanced_Search_no_results_2' => 'تأكد جيدًا من بحثك للتأكد من عدم وجود أخطاء مطبعية أو إملائية أو جرب مصطلح بحث مختلفًا.',
     'IncidentsPerDay' => 'الحوادث في اليوم الواحد',
-    'CurrentVsDesiredMaturity' => 'النضج الحالي مقابل النضج المرغوب فيه حسب عائلة التحكم',
+    'CurrentVsDesiredMaturity' => 'النضج حسب عائلة الضوابط',
     'RiskDistribution' => 'توزيع المخاطر',
     'RiskDistributionDescription'=>'تساعد المخططات الدائرية أعلاه في إظهار توزيع المخاطر بين مستويات المخاطر المختلفة لكل من المخاطر الكامنة والمتبقية. يمكننا استخدام هاتين الفطيرتين لإظهار التقدم المحرز في جهودنا للتخفيف من حدة المخاطر. إذا أظهرت فطيرة المخاطر المتبقية شرائح كبيرة من المخاطر المرتفعة جدًا أو المرتفعة، فقد يكون ذلك علامة على أن مؤسستك تتحمل قدرًا كبيرًا من المخاطر وأن الأمر يتطلب بذل المزيد من جهود التخفيف.',
     'EnableTabs' => 'تمكين علامات التبويب',
@@ -2413,7 +2412,7 @@ $lang = array(
     'EditModeInformation' => 'قم بتشغيل وضع التحرير لتحرير التخطيط. لن يؤدي إيقاف تشغيله إلى حفظ التخطيط تلقائيًا.',
     'InvalidLayout' => 'تخطيط غير صالح!',
     'InvalidLayoutOnlyCustomAllowedAsDefault' => 'تخطيط غير صالح! لا يمكن حفظ سوى التخطيطات المخصصة كتخطيطات افتراضية.',
-    'LayoutSaved' => 'تم حفظ التخطيط!',
+    'LayoutSaved' => 'تم حفظ تصميم لوحة التحكم الخاصة بك.',
     'DefaultLayout' => 'التخطيط الافتراضي',
     'DefaultLayoutInformation' => 'يضبط هذا التخطيط كتخطيط افتراضي، ليتم استخدامه بدلاً من التخطيط الذي توفره SimpleRisk للمستخدمين الذين ليس لديهم تخطيط مخصص. يمكنك فقط تعيين تخطيط مخصص غير فارغ محفوظ كتخطيط افتراضي. إذا تمت استعادة تخطيط تم تحديده كتخطيط افتراضي إلى التخطيط الافتراضي، فسيتم استعادته إلى التخطيط الافتراضي الذي توفره SimpleRisk.',
     'LayoutDefaultStatusUpdated' => 'تم تحديث الحالة الافتراضية للتخطيط.',
@@ -2422,7 +2421,7 @@ $lang = array(
     'DefaultLayoutRestored' => 'تم استعادة التخطيط الافتراضي بنجاح!',
     'SavedLayoutRestored' => 'تم استعادة التخطيط المحفوظ بنجاح!',
     'ConfirmRestoreLayout' => 'هل أنت متأكد؟ سوف تفقد التغييرات التي أجريتها على هذا التخطيط.',
-    'ConfirmDisableEditModeWithPendingChanges' => 'لديك تغييرات غير محفوظة ستفقدها عند مغادرة الصفحة. هل أنت متأكد من أنك تريد تعطيل "وضع التحرير" وربما تنسى حفظ التغييرات؟',
+    'ConfirmDisableEditModeWithPendingChanges' => 'لديك تغييرات غير محفوظة في هذه اللوحة. هل تريد تجاهلها والتوقف عن التحرير؟',
     'ConfirmSave' => 'سيؤدي حفظ هذه التغييرات إلى استبدال التخطيط المحفوظ مسبقًا. هل أنت متأكد من رغبتك في المتابعة؟',
     'ConfirmSaveAdminDefault' => 'تم تعيين هذا التخطيط كتخطيط افتراضي لهذا النوع من التخطيط. سيؤدي حفظ هذه التغييرات إلى تغيير التخطيط لجميع المستخدمين الذين ليس لديهم تخطيط مخصص تم تعيينه لهذا النوع من التخطيط. هل أنت متأكد من أنك تريد المتابعة؟',
     'RisksByMonth' => 'المخاطر حسب الشهر',
@@ -3111,6 +3110,1523 @@ $lang = array(
     'ResendAssessmentDescription' => 'إعادة إصدار التقييم تلقائيًا بشكل دوري.',
     'ResendEveryDays' => 'أعد الإرسال كل {$day} أيام',
     'QuestionnaireSaveBarHint' => 'تقوم خدمة "الحفظ والإرسال" بإصدار الاستبيان إلى جهات الاتصال الخاصة بها على الفور.',
+    // Home dashboard — KPI tile labels
+    'NewSelfAssessment' => 'التقييم الذاتي الجديد',
+    'SelfAssessmentPrereqIntro' => 'تتيح لك التقييمات الذاتية تقييم مؤسستك وفقًا لإطار عمل الضوابط الآمنة، وتُنشئ تلقائيًا المخاطر الناتجة عن الضوابط التي لا تُطبّق. يتطلب الأمر خطوتين إعداديتين أولًا:',
+    'RegisterYourInstance' => 'سجل حسابك',
+    'RegisterYourInstanceHelp' => 'يربط التسجيل هذه النسخة بخدمة ترخيص SimpleRisk بحيث يمكن تنزيل الإضافات المجانية (بما في ذلك SCF).',
+    'InstallTheSCF' => 'قم بتثبيت إطار عمل الضوابط الآمنة',
+    'InstallTheSCFHelp' => 'تُعدّ أداة SCF إضافة مجانية توفر الأطر وأسئلة التحكم وخرائط المخاطر التي تقيّمها هذه الميزة. يتم التثبيت في الخلفية وقد يستغرق بضع دقائق.',
+    'GoToRegistration' => 'انتقل إلى صفحة التسجيل',
+    'GoToSCF' => 'انتقل إلى إطار عمل الضوابط الآمنة',
+    'SelfAssessmentEnableTip' => 'اختياري: ضمن قسم الحوكمة > الأطر، يمكنك تفعيل أطر عمل محددة من إطار عمل سلسلة التوريد (SCF) لعرض قائمة مختصرة ومنتقاة عند بدء التقييم. كما يمكنك إجراء التقييم باستخدام أي إطار عمل من كتالوج إطار عمل سلسلة التوريد (SCF) الكامل دون تفعيله.',
+    'ChooseAFramework' => 'اختر إطار عمل للتقييم بناءً عليه',
+    'EnabledFrameworks' => 'الأطر المُمكّنة',
+    'AllScfFrameworks' => 'جميع أطر عمل SCF',
+    'Start' => 'ابدأ',
+    'Resume' => 'استئناف',
+    'ControlQuestion' => 'سؤال التحكم',
+    'NotApplicable' => 'غير متوفر',
+    'SaveProgress' => 'حفظ التقدم',
+    'MarkComplete' => 'علامة مكتملة',
+    'AnsweredOfTotal' => 'تمت الإجابة',
+    'FailedSoFar' => 'فشلوا حتى الآن',
+    'StartedBy' => 'بدأ بواسطة',
+    'FailedControls' => 'الضوابط الفاشلة',
+    'PushToRisk' => 'ادفع نحو المخاطرة',
+    'ConfirmDeleteSelfAssessment' => 'هل تريد حذف هذا التقييم الذاتي؟ لا يمكن التراجع عن هذا الإجراء.',
+    'ConfirmCompleteSelfAssessment' => 'هل تم اعتبار هذا التقييم مكتملاً؟ ستنشأ المخاطر من فشل الضوابط.',
+    'NoSelfAssessmentsYet' => 'لا توجد تقييمات ذاتية حتى الآن. ابدأ بواحدة للبدء.',
+    'RequestFailed' => 'لم يتم إكمال الطلب. يرجى المحاولة مرة أخرى.',
+    'NoPendingRisks' => 'لا توجد مخاطر معلقة. أكمل التقييم لتحديد المخاطر الناجمة عن فشل الضوابط.',
+    'NoFailedControls' => 'لا توجد نتائج تحكم لعرضها لهذا المرشح.',
+    'ControlResultsTruncated' => 'يتم عرض آخر 2000 نتيجة. قم بتضييق نطاق البحث لعرض المزيد.',
+    'GeneratedFromSelfAssessment' => 'تم استخلاصها من التقييم الذاتي',
+    'SelfAssessmentMitigationSolution' => 'قم بتطبيق الضوابط المرتبطة أدناه، والتي تم تحديدها على أنها فاشلة خلال هذا التقييم الذاتي، للتخفيف من هذا الخطر.',
+    'NSelected' => '{n} تم الاختيار',
+    'FilterByControl' => 'التصفية حسب عنصر التحكم',
+    'Pushing' => 'دفع…',
+    'Deleting' => 'حذف…',
+    'ConfirmPushSelectedPendingRisks' => 'هل تريد تحويل المخاطر المعلقة المحددة {n} إلى مخاطر؟',
+    'ConfirmDeleteSelectedPendingRisks' => 'هل تريد حذف المخاطر المعلقة المحددة {n} ؟ لا يمكن التراجع عن هذا الإجراء.',
+    'ConfirmDeleteSelectedSelfAssessments' => 'هل تريد حذف التقييم الذاتي المحدد (التقييمات الذاتية) {n} ؟ لا يمكن التراجع عن هذا الإجراء.',
+    'BulkPartialFailure' => 'نجحت عملية تحميل {n} عنصر من أصل {total} عنصر؛ أما الباقي فقد فشل. قم بتحديث الصفحة للاطلاع على الحالة الحالية.',
+
+    // Workflows Extra - deactivation confirm ('Deactivate' at line 480 is reused as-is)
+    'WorkflowsExtraDeactivateConfirm' => 'هل تريد تعطيل ميزة "سير العمل الإضافي"؟ سيتم حذف جميع تعريفات سير العمل التي أنشأها المستخدم نهائيًا. سيتم الاحتفاظ بسير عمل النظام.',
+    'HomeKpiOpenRisks' => 'مخاطر مفتوحة',
+    'HomeKpiNeedsReview' => 'يحتاج إلى مراجعة',
+    'HomeKpiUnmitigated' => 'غير مخفف',
+    'HomeKpiClosedRisks' => 'المخاطر المنتهية',
+    'HomeKpiControlPassRate' => 'معدل نجاح الضوابط',
+    'HomeKpiFailingControls' => 'الضوابط الفاشلة',
+    'HomeKpiOpenAudits' => 'عمليات التدقيق المفتوحة',
+    'HomeKpiTestsDueSoon' => 'الاختبارات قادمة قريباً',
+    'HomeKpiActiveFrameworks' => 'الأطر النشطة',
+    'HomeKpiTotalControls' => 'إجمالي الضوابط',
+    // Home dashboard — What's Next feed
+    'WhatsNext' => 'ماذا بعد؟',
+    'WhatsNextAllCaughtUp' => 'لقد اطلعت على كل شيء.',
+    'WhatsNextRegisterInstance' => 'سجل نسخة SimpleRisk الخاصة بك',
+    'WhatsNextSubmitFirstRisk' => 'قدّم أول تقرير مخاطرة لديك',
+    'WhatsNextLoadFramework' => 'قم بتحميل إطار عمل التحكم',
+    'WhatsNextUnreviewedRisks' => 'المخاطر التي يجب مراجعتها',
+    'WhatsNextUnmitigatedRisks' => 'المخاطر التي يجب التخفيف منها',
+    'WhatsNextInitiateAudits' => 'عمليات التدقيق للبدء',
+    // Home dashboard — widget picker type labels
+    'WidgetType_kpi' => 'بلاطة مؤشرات الأداء الرئيسية',
+    'WidgetType_whats_next' => 'قائمة',
+    // Home dashboard — hub catalog entry
+    'HomeDashboard' => 'الصفحة الرئيسية',
+    'HomeDashboardDesc' => 'نقطة انطلاقك - المقاييس الرئيسية وما يجب فعله بعد ذلك، في لمحة سريعة.',
+    'HomeChartRiskByLevel' => 'المخاطر حسب المستوى',
+    'HomeKpiThisMonth' => 'هذا الشهر',
+    'HomeKpiNoChange' => 'لا تغيير',
+    'EditLayout' => 'تعديل التخطيط',
+    'ListHighestRisks' => 'أعلى المخاطر التي أواجهها',
+    'ListPastDueReviews' => 'المراجعات المتأخرة',
+    'ListUpcomingTests' => 'الاختبارات القادمة',
+    'ListRecentFailures' => 'الإخفاقات الأخيرة',
+    'ListPoliciesReview' => 'الوثائق قيد المراجعة',
+    'ListExpiringExceptions' => 'الاستثناءات المنتهية الصلاحية',
+    'ImKpiOpenIncidents' => 'إجمالي مفتوح',
+    'ImKpiOverdue' => 'متأخر',
+    'ImKpiMttr30' => 'متوسط الدقة',
+    'ImKpiMttrQuarter' => 'متوسط الدقة (90 يومًا)',
+    'ImKpiMttrYear' => 'متوسط مدة الحل (سنة واحدة)',
+    'ImKpiMttrAll' => 'متوسط الدقة (الكل)',
+    'ImKpiResolved30' => 'تم حل المشكلة',
+    'ImChartBySeverity' => 'حسب درجة الخطورة',
+    'ImChartByStatus' => 'حسب الحالة',
+    'ImListRecent' => 'الحوادث الأخيرة',
+    'ImListUnassigned' => 'الحوادث غير المخصصة',
+    'HomeKpiOpenExceptions' => 'الاستثناءات المفتوحة',
+    'HomeKpiPolicies' => 'السياسات',
+    'ResolutionTargets' => 'أهداف الحل (بالأيام)',
+    'ResolutionTargetsHelp' => 'عدد الأيام التي يمكن أن يبقى فيها الحادث مفتوحًا قبل اعتباره متأخرًا.',
+    'DefaultTarget' => 'افتراضي',
+    'PerSeverityOverrideHelp' => 'يمكنك اختيارياً تجاوز الإعداد الافتراضي لمستويات خطورة محددة (اتركه فارغاً لاستخدام الإعداد الافتراضي):',
+    'ResolutionTargetUsesDefault' => 'الافتراضي (%d)',
+    'SeverityColors' => 'ألوان الشدة',
+    'SeverityColorsHelp' => 'اللون الخاص بكل مستوى من مستويات الخطورة، والذي يظهر في لوحة معلومات الحوادث وصفحة تفاصيل الحادث.',
+    'Editing' => 'التحرير',
+    'SetAsDefaultForEveryone' => 'قم بتعيينه كإعداد افتراضي للجميع',
+    'EditLayoutHint' => 'اسحب مربعًا لتحريكه · اسحب حافة لتغيير حجمه · ✕ لإزالته',
+    'RemoveWidget' => 'إزالة الأداة',
+    'AddWidget' => 'إضافة أداة',
+    'AddToDashboard' => 'أضف إلى لوحة التحكم',
+    'AllWidgetsAdded' => 'جميع الأدوات المتاحة موجودة في لوحة التحكم هذه.',
+    'AddText' => 'أضف نصًا',
+    'GettingStarted' => 'ابدء',
+    'GettingStartedTitle' => 'أهلاً بكم في SimpleRisk',
+    'GettingStartedSubtitle' => 'بعض الخطوات السريعة لتحقيق أقصى استفادة من SimpleRisk.',
+    'GSProgressCount' => '{done} من {total} مكتمل',
+    'GSNextUp' => 'التالي',
+    'GSArea_setup' => 'الإعداد',
+    'GSArea_risk' => 'المخاطر',
+    'GSArea_assessment' => 'التقييم',
+    'GSArea_compliance' => 'امتثال',
+    'GSArea_assets' => 'الاصول',
+    'GSArea_ai' => 'الإعداد',
+    'GSHide' => 'إخفاء بدء الاستخدام',
+    'GSDismissStep' => 'تجاهل هذه الخطوة',
+    'GSAllSet' => 'أنت جاهز تماماً - عمل رائع!',
+    'GSWalkthrough' => 'جولة تعريفية مدتها 30 دقيقة',
+    'Explore' => 'استكشف',
+    'Learn' => 'تعلّم',
+    'AdminGuide' => 'دليل الإدارة',
+    'LearnMore' => 'تعلّم أكثر',
+    'GSRegisterTitle' => 'سجل حسابك',
+    'GSRegisterDesc' => 'قم بتفعيل الدعم والتحديثات باستخدام مفتاح الترخيص الخاص بك.',
+    'GSRegisterCta' => 'تسجيل',
+    'GSScfTitle' => 'قم بتثبيت إطار عمل الضوابط الآمنة',
+    'GSScfDesc' => 'قم بتثبيت SCF - مكتبة التحكم الخاصة بك عبر المعايير.',
+    'GSScfCta' => 'تثبيت SCF',
+    'GSInviteTitle' => 'ادعُ فريقك',
+    'GSInviteDesc' => 'أضف زملاء حتى يمكن إسناد العمل إليهم ومراجعته.',
+    'GSInviteCta' => 'إضافة مستخدمين',
+    'GSAiTitle' => 'تكوين الذكاء الاصطناعي',
+    'GSAiDesc' => 'حسّن تجربتك مع SimpleRisk باستخدام الذكاء الاصطناعي.',
+    'GSAiCta' => 'إعداد الذكاء الاصطناعي',
+    'GSSubmitRiskTitle' => 'قدّم أول تقرير مخاطرة لديك',
+    'GSSubmitRiskDesc' => 'حدد أحد المخاطر التي تواجهها مؤسستك.',
+    'GSSubmitRiskCta' => 'تقديم المخاطر',
+    'GSMitigateTitle' => 'خطة للتخفيف من المخاطر',
+    'GSMitigateDesc' => 'أضف خطة تخفيف المخاطر إلى المخاطر القائمة.',
+    'GSMitigateCta' => 'خطة التخفيف',
+    'GSReviewTitle' => 'إجراء مراجعة للمخاطر',
+    'GSReviewDesc' => 'قم بمراجعة المخاطرة وحدد الخطوة التالية.',
+    'GSReviewCta' => 'إجراء مراجعة',
+    'GSDefineTestTitle' => 'حدد اختبار التحكم',
+    'GSDefineTestDesc' => 'حدد كيفية اختبار عنصر التحكم.',
+    'GSDefineTestCta' => 'تعريف الاختبار',
+    'GSInitiateAuditTitle' => 'بدء عملية التدقيق',
+    'GSInitiateAuditDesc' => 'ابدأ دورة اختبار أو تدقيق.',
+    'GSInitiateAuditCta' => 'بدء عملية التدقيق',
+    'GSAssetTitle' => 'أضف أصولك',
+    'GSAssetDesc' => 'قم بجرد الأصول التي تحميها.',
+    'GSAssetCta' => 'إضافة أصول',
+    'GSInvalidStep' => 'خطوة بدء التشغيل غير صالحة.',
+    'GSPagerLabel' => '{from}–{to} من {total}',
+    'GSPrevCards' => 'عرض الخطوات السابقة',
+    'GSNextCards' => 'عرض الخطوات التالية',
+    'WhatsNextInstallSCF' => 'قم بتثبيت إطار عمل الضوابط الآمنة',
+    'GSActivateScfTitle' => 'تفعيل إطار عمل الضوابط الآمنة',
+    'GSActivateScfDesc' => 'قم بتشغيل SCF المثبت لتحميل عناصر التحكم الخاصة به في مكتبتك.',
+    'GSActivateScfCta' => 'تفعيل SCF',
+    'WhatsNextActivateSCF' => 'تفعيل إطار عمل الضوابط الآمنة',
+    'GSEnableFrameworksTitle' => 'تفعيل الأطر المطبقة',
+    'GSEnableFrameworksDesc' => 'قم بتفعيل أطر عمل SCF التي تنطبق على مؤسستك.',
+    'GSEnableFrameworksCta' => 'تمكين الأطر',
+    'WhatsNextEnableFrameworks' => 'تفعيل الأطر المطبقة',
+    'GSSelfAssessTitle' => 'قم بإجراء تقييم ذاتي',
+    'GSSelfAssessDesc' => 'قم بتقييم مؤسستك وفقًا لأكثر من 250 إطار عمل، وقم بتوليد المخاطر الناتجة عن فشل الضوابط.',
+    'GSSelfAssessCta' => 'بدء التقييم',
+    'WhatsNextTakeSelfAssessment' => 'قم بإجراء تقييم ذاتي',
+    'WhatsNextConfigureAI' => 'تكوين الذكاء الاصطناعي',
+    'ListUnreviewedRisks' => 'مخاطر غير مُراجعة',
+    'ControlsByDomain' => 'عناصر التحكم حسب المجال',
+    'ControlsByClass' => 'عناصر التحكم حسب الفئة',
+    'ControlsByPhase' => 'التحكم حسب المرحلة',
+    'ControlsByPriority' => 'التحكم حسب الأولوية',
+    'ControlsByCurrentMaturity' => 'الضوابط حسب مستوى النضج الحالي',
+    'ControlStatusOverTime' => 'حالة التحكم بمرور الوقت',
+    'ComplianceTotalControls' => 'إجمالي الضوابط',
+    'HomeKpiOverdueTests' => 'الاختبارات المتأخرة',
+    'Total' => 'المجموع',
+    'StartTheTest' => 'ابدأ الاختبار',
+    'TestStartsAutomatically' => 'يبدأ الاختبار تلقائيًا',
+    'GoToTest' => 'انتقل إلى الاختبار',
+    'NotTested' => 'لم يتم اختباره',
+    'PassingPercent' => 'نسبة النجاح',
+    'ListFailingControls' => 'خلل في الضوابط',
+    'Exceptions' => 'الاستثناءات',
+    'Documents' => 'وثائق',
+    'ControlsBelowMaturity' => 'الضوابط دون مستوى النضج',
+    'ControlsAtMaturity' => 'الضوابط عند النضج',
+    'ControlsAboveMaturity' => 'ضوابط تتجاوز مرحلة النضج',
+    'Maturity' => 'نضج',
+    'AllTime' => 'كل الأوقات',
+    'Last7Days' => 'آخر 7 أيام',
+    'Last30Days' => 'آخر 30 يومًا',
+    'Last90Days' => 'آخر 90 يومًا',
+    'YearToDate' => 'من بداية العام حتى اليوم',
+    'CustomRange' => 'نطاق مخصص',
+    'Age' => 'عمر',
+    'ImOpenIncidents' => 'الحوادث المفتوحة',
+    'ImClosedIncidents' => 'الحوادث المغلقة',
+    'ImByAttackVector' => 'فتح بواسطة ناقل الهجوم',
+    'ImBySource' => 'افتح من المصدر',
+    'AverageDaysToDetect' => 'متوسط عدد الأيام اللازمة للكشف',
+    'ImKpiAvgTtd' => 'متوسط الكشف',
+    'Days' => 'أيام',
+    'ImKpiCriticalOpen' => 'مفتوحة وحرجة',
+    'ImKpiResolvedInSla' => 'تم حل المشكلة في اتفاقية مستوى الخدمة',
+    'Events' => 'الفعاليات',
+    'ImEventsIncidents' => 'الأحداث والوقائع',
+    'ImSourceBreakdown' => 'المصدر حسب الفئة',
+    'ImClosureSummary' => 'ملخص الإغلاق',
+    'ImSignalQuality' => 'جودة الإشارة',
+    'ImSignalLowSample' => 'لا توجد عمليات إغلاق محكوم بها كافية لإجراء تقييم موثوق.',
+    'ImportExportExportPdf' => 'تصدير ملف PDF',
+    'ImportExportExporting' => 'إعداد ملف PDF…',
+    'ImportExportExportFailed' => 'تعذر إنشاء ملف PDF. يرجى المحاولة مرة أخرى.',
+    'ImportExportGeneratedOn' => 'تم إنشاؤه',
+    'ImportExportPage' => 'صفحة',
+    'ImportExportPageOf' => 'ل',
+    'ResolutionTargetsUpdated' => 'تم تحديث أهداف حل المشكلات لكل مستوى من مستويات الخطورة.',
+    'SeverityColorsUpdated' => 'تم تحديث ألوان مستوى الخطورة.',
+    // AI Capabilities Catalog + AI settings hub (unified AI settings)
+    'AICapGrcRecommendations' => 'توصيات إطار عمل إدارة الحوكمة والمخاطر والامتثال',
+    'AICapGrcRecommendationsDesc' => 'توصيات إطار العمل المُولّدة بواسطة الذكاء الاصطناعي وملخص تنفيذي، مُصممة خصيصًا لسياق مؤسستك.',
+    'AICapRiskRecommendations' => 'توصيات بشأن المخاطر',
+    'AICapRiskRecommendationsDesc' => 'اقتراحات لكل خطر فيما يتعلق بتفاصيل المخاطر والتخفيف من حدتها، والتي تم توليدها من المخاطر والتخفيف من حدتها ومراجعتها.',
+    'AICapFairAnalysis' => 'التحليل الكمي العادل',
+    'AICapFairAnalysisDesc' => 'يقوم الذكاء الاصطناعي بتقدير معلمات خسارة بيتا-بيرت؛ ويقوم برنامج SimpleRisk بتشغيل مونت كارلو 10000 تكرار لتحديد المخاطر بالدولار.',
+    'AICapDocumentCustomization' => 'تخصيص المستندات',
+    'AICapDocumentCustomizationDesc' => 'يقوم بتعبئة العناصر النائبة وتنظيف نص السياسة في قوالب المستندات الخاصة بك بحيث تبدو السياسة الجاهزة وكأنها سياستك الخاصة.',
+    'AICapDocumentControlMatching' => 'مطابقة المستند ↔ عنصر التحكم',
+    'AICapDocumentControlMatchingDesc' => 'يقوم النظام تلقائيًا بربط عناصر التحكم بوثائق السياسة مع درجة ثقة وأسباب يمكنك مراجعتها.',
+    'AICapDocumentTemplates' => 'مكتبة قوالب المستندات',
+    'AICapDocumentTemplatesDesc' => 'قم بتثبيت قوالب السياسات والإرشادات والإجراءات المنسقة من مكتبة SimpleRisk.',
+    'AICapControlReferenceEnhancement' => 'تحسين مرجع التحكم',
+    'AICapControlReferenceEnhancementDesc' => 'يقوم بإجراء بحث حرفي عن النصوص المرجعية عبر البحث على الإنترنت لإثراء مراجعك المرجعية.',
+    'AICapAiChat' => 'مساعد الدردشة',
+    'AICapAiChatDesc' => 'مساعد إدارة المخاطر والامتثال الذي يجيب على الأسئلة في سياقها في أي مكان في SimpleRisk.',
+    'AICapSurfacedRecommendations' => 'الذكاء الاصطناعي',
+    'AICapSurfacedRiskView' => 'عرض المخاطر - التفاصيل والتخفيف',
+    'AICapSurfacedFairTab' => 'عرض المخاطر - علامة تبويب FAIR',
+    'AICapSurfacedDocuments' => 'الحوكمة - الوثائق',
+    'AICapSurfacedControls' => 'الامتثال - الضوابط',
+    'AICapSurfacedEveryPage' => 'كل صفحة - مساعد عائم',
+    'AICapabilitiesCatalog' => 'القدرات',
+    'AICapSearchPlaceholder' => 'ابحث عن إمكانيات الذكاء الاصطناعي…',
+    'AICapFilterDomain' => 'اِختِصاص',
+    'AICapFilterTier' => 'المستوى',
+    'AICapFilterState' => 'الحالة',
+    'AICapTierExtra' => 'الذكاء الاصطناعي الإضافي',
+    'AICapStateLocked' => 'مغلق',
+    'AICapIncludedInExtra' => 'مضمن في AI Extra',
+    'AICapPurchaseExtra' => 'اشترِ إضافة الذكاء الاصطناعي',
+    'AICapNeedsProvider' => 'يتطلب إعداد الموفر',
+    'AICapNoMatch' => 'لا توجد قدرات مطابقة',
+    'AICapNoMatchHint' => 'جرب نطاقًا أو مستوى أو مصطلح بحث مختلفًا.',
+    'AICapCountSingular' => 'القدرة',
+    'AICapCountPlural' => 'القدرات',
+    'DomainAssistant' => 'مساعد',
+    'AICapLoadError' => 'تعذر تحميل إمكانيات الذكاء الاصطناعي. يرجى المحاولة مرة أخرى.',
+    'AIProviderConfigSubtitle' => 'قم بتوصيل SimpleRisk بمزود خدمة الذكاء الاصطناعي لتفعيل قدرات الذكاء الاصطناعي.',
+    'AIHowToGetAPIKeyFor' => 'كيفية الحصول على مفتاح API لـ',
+    'AIExtraNotActivated' => 'غير مفعل',
+    'AIExtraValueProp' => 'الذكاء الاصطناعي المحسن - تحديد كمية المخاطر وفقًا لمبادئ FAIR، والمساعدة في المستندات والتحكم، ومساعد الدردشة المدعوم بالذكاء الاصطناعي.',
+    'AICtxOrgName' => 'ما اسم مؤسستكم؟',
+    'AICtxOrgSizeEmployees' => 'كم عدد الموظفين في مؤسستكم؟',
+    'AICtxOrgSizeRevenue' => 'ما هو إجمالي الإيرادات السنوية لمنظمتكم؟',
+    'AICtxOrgObjective' => 'ما هي أهداف العمل الرئيسية والأهداف الاستراتيجية لمنظمتكم؟',
+    'AICtxOrgIndustry' => 'ما هو القطاع أو الصناعة الرئيسية لمنظمتكم؟',
+    'AICtxOrgLocation' => 'في أي البلدان أو المناطق تعمل مؤسستكم؟',
+    'AICtxOrgType' => 'ما نوع المنظمة التي تنتمي إليها؟',
+    'AICtxDataTypes' => 'ما هي أنواع البيانات التي تجمعها مؤسستك أو تعالجها أو تخزنها (مثل البيانات الشخصية والبيانات المالية والمعلومات الصحية)؟',
+    'AICtxDataCustomers' => 'من هم عملاؤك أو أصحاب المصلحة الرئيسيون (مثل المستهلكين والشركات والجهات الحكومية)؟',
+    'AICtxDataRegulatory' => 'هل تخضع لأي متطلبات تنظيمية محددة في مجال عملك؟',
+    'AICtxDataThirdParties' => 'هل لديك أي علاقات مع أطراف ثالثة أو خدمات خارجية تتطلب إشرافاً على الامتثال؟',
+    'AICtxMaturityIssues' => 'هل واجهت أي مشكلات كبيرة تتعلق بالامتثال، أو اختراقات أمنية، أو أحداث خطرة في السنوات الثلاث إلى الخمس الماضية؟',
+    'AICtxMaturityConcerns' => 'هل هناك أي مجالات محددة تثير القلق أو تحتاج إلى تحسينات قمت بتحديدها في عمليات إدارة المخاطر والامتثال والحوكمة الحالية لديكم؟',
+    'AICtxMaturityAppetite' => 'ما مدى تقبل مؤسستكم للمخاطر وقدرتها على تحملها؟',
+    'AICtxMaturityLevel' => 'ما هو مستوى نضجك الحالي فيما يتعلق بالحوكمة وإدارة المخاطر وممارسات الامتثال؟',
+    'AICtxImplementationChanges' => 'هل هناك أي تغييرات قادمة في نموذج عملك أو البنية التحتية التكنولوجية أو السوق قد تؤثر على متطلبات الامتثال الخاصة بك؟',
+    'AICtxImplementationResourcesBudget' => 'ما هي موارد تخصيص الميزانية المتاحة لديكم لتنفيذ وصيانة أطر الامتثال؟',
+    'AICtxImplementationResourcesPersonnel' => 'ما هي الموارد البشرية المتاحة لديكم لتنفيذ وصيانة أطر الامتثال؟',
+    'AICtxImplementationResourcesTechnology' => 'ما هي موارد البنية التحتية التكنولوجية المتاحة لديكم لتنفيذ وصيانة أطر الامتثال؟',
+    'AICtxImplementationResourcesTraining' => 'ما هي موارد التدريب والتطوير المتاحة لديكم لتنفيذ وصيانة أطر الامتثال؟',
+    'AICtxImplementationResourcesExternal' => 'ما هي موارد الدعم الخارجية المتاحة لديكم لتنفيذ وصيانة أطر الامتثال؟',
+    'AIAPIKeySecurityNote' => 'يتم تخزين مفتاحك على الخادم ولا يتم إرساله إلى المتصفح مطلقًا. يتم التحقق من صحة عناوين URL الخاصة بالمزودين باستخدام قائمة السماح الخاصة بهجمات SSRF، والتي يمكن ضبطها في ملف config.php.',
+    'AIContextEgressWarning' => 'تُرسل إجاباتك إلى مزود الذكاء الاصطناعي الذي قمت بضبطه لتدعيم توصياته. لا تُدرج أي معلومات لا ترغب بمشاركتها معهم.',
+    'Provider' => 'مزود',
+    'AIProviderURLHostNotAllowed' => 'المضيف "%s" غير مدرج في قائمة مزودي الذكاء الاصطناعي المسموح بهم. أضفه إلى $ai_allowed_provider_hosts في ملف config.php، ثم احفظ التغييرات. (يُسمح دائمًا بمزودي الذكاء الاصطناعي المعروفين وعناوين الاسترجاع 127.0.0.1).',
+    'AIContextLastSaved' => 'آخر حفظ',
+    'AIContextNeverSaved' => 'لم يتم الحفظ بعد',
+    'AICtxCardSubtitle' => '٢١ سؤالاً موزعة على أربعة مجالات. كلما زادت إجاباتك، كانت كل توصية أكثر دقة.',
+    'AICtxAnswered' => 'تمت الإجابة على %1$d من أصل %2$d',
+    'AICtxAllOptional' => 'اختياري',
+    'AIContextSaving' => 'جارٍ التوفير…',
+    'AIContextSaveFailed' => 'لم يتم حفظ التغييرات. يرجى المحاولة مرة أخرى.',
+    'AISettingsSavedNotReachable' => 'تم حفظ إعدادات الذكاء الاصطناعي، ولكن تعذر الوصول إلى المزوّد. تأكد من تشغيله وأن عنوان URL صحيح.',
+    'AISettingsSavedKeyRequired' => 'تم حفظ إعدادات الذكاء الاصطناعي، ولكن هذا المزود يتطلب مفتاح API قبل أن يتمكن من استخدام ميزاته.',
+    'TestAndSave' => 'اختبر واحفظ',
+    'AICapEnableAll' => 'تفعيل الكل',
+    'AICapDisableAll' => 'تعطيل الكل',
+    'AISettingsSavedConnected' => 'تم حفظ إعدادات الذكاء الاصطناعي - تم الاتصال بنجاح.',
+    'AISettingsSavedNotConnected' => 'تم حفظ إعدادات الذكاء الاصطناعي، لكن اختبار الاتصال فشل. يرجى التحقق من الطراز والمفتاح وعنوان URL.',
+    'AIProviderURLNotOnAllowlist' => 'هذا المضيف غير مدرج في قائمة السماح الخاصة بمزود الذكاء الاصطناعي لهجمات SSRF. أضفه إلى $ai_allowed_provider_hosts في ملف config.php قبل حفظ التغييرات.',
+    'Connected' => 'متصل',
+    'NotConnected' => 'غير متصل',
+    'AICapBulkError' => 'تعذر تحديث بعض الإمكانيات. يرجى المحاولة مرة أخرى.',
+    'QuestionnaireAlreadyCompleted' => 'تم استكمال هذا الاستبيان بالفعل.',
+    'QuestionnaireDraftError' => 'حدث خطأ أثناء حفظ المسودة. راجع وحدة التحكم لمزيد من التفاصيل.',
+
+    // Audit cadence scheduling - Define Test modal (Interval/Calendar schedule redesign)
+    // 'Overdue' duplicates the English of 'ImKpiOverdue' on purpose: that key is
+    // an Incident Management KPI label, and a compliance status pill reusing an
+    // IM-scoped key would couple the two domains for a translator (and break the
+    // moment either wording moves). This is the generic, cross-domain one.
+    'Overdue' => 'متأخر',
+    // Deliberate: the only other key rendering 'Manual' is 'ManualValuation',
+    // an asset-valuation label. Pointing a schedule mode at it would couple two
+    // unrelated domains for translators and break the moment either reworded.
+    'ScheduleManual' => 'يدوي',
+    'ScheduleInterval' => 'فاصل زمني',
+    'ScheduleCalendar' => 'تقويم',
+    'Cadence' => 'إيقاع',
+    'CadenceBiweekly' => 'كل أسبوعين',
+    'CadenceSemiAnnually' => 'نصف سنوي',
+    'AnchorDate' => 'تاريخ التثبيت',
+    'UpcomingOccurrences' => 'الأحداث القادمة',
+    'AuditLeadInDays' => 'أيام التحضير للتدقيق',
+    'SkipOccurrence' => 'يتخطى',
+    'OverrideDate' => 'تاريخ التجاوز',
+    'Week' => 'أسبوع',
+    'NoUpcomingOccurrences' => 'لا توجد أحداث قادمة في هذه الفترة.',
+    'FailedToLoadUpcomingOccurrences' => 'فشل تحميل معاينة الأحداث القادمة.',
+    'AnchorDateMustBeTodayOrLater' => 'يجب أن يكون تاريخ التثبيت اليوم أو بعده. لجدولة تاريخ سابق، أنشئ اختبارًا يدويًا بدلاً من ذلك.',
+    'InvalidScheduleType' => 'نوع الجدول غير صالح. القيم المسموح بها: يدوي، فاصل زمني، تقويم.',
+    'Weeks' => 'أسابيع',
+    'Months' => 'شهور',
+    'Years' => 'سنين',
+    'ScheduleSummaryEvery' => 'كل {$interval} {$unit}',
+
+    // Define Tests redesign - client-rendered grid (Phase 1, Task 6)
+    'LastResult' => 'النتيجة الأخيرة',
+    'NextDue' => 'الموعد التالي',
+    'DueSoon' => 'قريباً',
+    'Retired' => 'متقاعد',
+    'MyTests' => 'اختباراتي',
+    'Failing' => 'الفشل',
+    'Untested' => 'غير مختبر',
+    'ShowRetired' => 'عرض المتوقفة',
+    'Tests' => 'الاختبارات',
+    'NoTestsForThisControl' => 'لم تُجرَ أي اختبارات لهذا العنصر الضابط حتى الآن.',
+    'NoControlsDefinedYet' => 'لم يتم تحديد أي ضوابط بعد',
+    'NoControlsDefinedYetBody' => 'حدد عناصر التحكم في الحوكمة قبل إضافة الاختبارات.',
+    'NoTestsMatchFilters' => 'لا توجد اختبارات مطابقة لمرشحاتك',
+    'NoTestsMatchFiltersBody' => 'حاول تعديل بحثك أو فلاتر البحث.',
+    'CouldNotLoadTests' => 'تعذر تحميل الاختبارات',
+    'CouldNotLoadTestsBody' => 'حدث خطأ ما. بياناتك آمنة - حاول تحديث الصفحة.',
+    'ShowingXToYOfZ' => 'عرض {$start}–{$end} من {$total}',
+    // Define Tests grid -- SCF-mapping + read-only procedure expand (Phase 1, Task 7)
+    'Reference' => 'مرجع',
+    'NoFrameworksMapped' => 'لا توجد أطر عمل مرتبطة بهذا العنصر.',
+    // Define Tests grid -- batch select + retire/delete + quick filters (Phase 1, Task 8)
+    'Retire' => 'إيقاف',
+    'ReassignTester' => 'إعادة تعيين المختبر',
+    'SetSchedule' => 'تحديد جدول زمني',
+    'ConfirmRetireSelectedTests' => 'هل تريد إيقاف الاختبار (الاختبارات) المحددة {n}؟',
+    'ConfirmDeleteSelectedTests' => 'هل تريد حذف الاختبار (الاختبارات) المحددة {n}؟ لا يمكن التراجع عن هذا الإجراء.',
+    // Define Tests grid -- Coverage toolbar select (Issue 4)
+    'Coverage' => 'التغطية',
+    'CoverageWithTests' => 'الضوابط مع الاختبارات',
+    'CoverageAllControls' => 'جميع عناصر التحكم',
+    'CoverageGaps' => 'الفجوات',
+    // Define Tests insights band (Phase 2, Task 4) -- KPI tile labels + subtitles.
+    // 'Overdue', 'DueSoon', and 'Failing' are reused from the grid's quick-filter
+    // chips above (identical text) rather than duplicated here.
+    'DtTotalTests' => 'إجمالي الاختبارات',
+    'DtCoverageGaps' => 'ثغرات التغطية',
+    'DtAcrossNControls' => 'عبر عناصر التحكم {$n}',
+    'DtControlsWithNoTest' => 'الضوابط بدون اختبار',
+    'DtNeedInitiationNow' => 'أحتاج إلى بدء الآن',
+    'DtWithinLeadInWindow' => 'خلال فترة التمهيد',
+    'DtLastResultFailed' => 'فشلت النتيجة الأخيرة',
+    'InvalidTestMethod' => 'يجب أن تكون طريقة الاختبار إحدى طرق الاستقصاء أو الملاحظة أو الفحص أو إعادة الأداء!',
+    'TesterCannotBeApprover' => 'لا يمكن إدراج المُختبِر أيضاً كمُعتمد لهذا الاختبار.',
+    'ApproverNotEligible' => 'لا يتحمل واحد أو أكثر من الموافقين المختارين مسؤولية "الموافقة على الاختبارات".',
+    'TestMethod' => 'طريقة الاختبار',
+    'TestMethodInquiry' => 'سؤال',
+    'TestMethodObservation' => 'ملاحظة',
+    'TestMethodInspection' => 'تفتيش',
+    'TestMethodReperformance' => 'إعادة الأداء',
+    'Sample' => 'عينة',
+    'RequiredEvidence' => 'الأدلة المطلوبة',
+    'Approvers' => 'الموافقون',
+    'AuditLog_TestAuditApproved' => 'تمت الموافقة على التدقيق "{$test_audit_name}"(ID: {$test_audit_id}) من قبل المستخدم "{$user_name}".',
+    'AuditLog_TestAuditRejected' => 'تم رفض التدقيق "{$test_audit_name}"(ID: {$test_audit_id})" بواسطة المستخدم "{$user_name}" مع التعليق "{$comment}".',
+    'AuditLog_TestAuditAwaitingApproval' => 'تم تقديم طلب التدقيق "{$test_audit_name}" (المعرف: {$test_audit_id}) للإغلاق من قِبل المستخدم "{$user_name}" وهو بانتظار الموافقة. التغييرات: {$changes}.',
+    'AuditApproved' => 'تمت الموافقة على التدقيق بنجاح.',
+    'AuditRejected' => 'تم رفض التدقيق بنجاح.',
+    'RejectCommentRequired' => 'يلزم تقديم تعليق لرفض عملية التدقيق.',
+    'NotAnApproverOfThisAudit' => 'أنت لستَ مُوافقاً مُعتمداً لهذه المراجعة.',
+    'ApproverCannotBeTester' => 'لا يجوز أن يكون الشخص الذي يوافق على هذه المراجعة هو نفسه الشخص الذي يجري اختبارها.',
+    'AuditNotAwaitingApproval' => 'لا ينتظر هذا التدقيق الموافقة حاليًا.',
+    'NotificationAuditAwaitingApprovalTitle' => 'التدقيق بانتظار موافقتكم',
+    'NotificationAuditAwaitingApprovalBody' => 'تم تقديم التدقيق "{$test_audit_name}" للإغلاق وهو في انتظار موافقتكم.',
+    'NotificationAuditRejectedTitle' => 'تم رفض التدقيق',
+    'NotificationAuditRejectedBody' => 'تم رفض التدقيق "{$test_audit_name}" مع التعليق التالي: "{$comment}"',
+    'AwaitingApproval' => 'في انتظار الموافقة',
+    'AwaitingApprovalBannerText' => 'تم تقديم هذا التدقيق للإغلاق وهو ينتظر موافقة جهة الموافقة المحددة قبل أن يتمكن من الإغلاق.',
+    'ReturnedForRework' => 'تمت إعادته لإعادة العمل',
+    'ReturnedForReworkBannerText' => 'تم رفض هذا التدقيق وإعادته لإعادة العمل عليه.',
+    'RejectReason' => 'سبب الرفض',
+    'AreYouSureYouWantToApproveThisAudit' => 'هل أنت متأكد من رغبتك في الموافقة على هذه المراجعة؟',
+    'AtLeastOneControlRequired' => 'يلزم وجود عنصر تحكم واحد على الأقل.',
+    'DtNCommonAcrossNControls' => '{$common} عام · {$n} عناصر التحكم',
+    'DtUntestedControls' => 'أدوات تحكم غير مختبرة',
+    'DtControlsInScopeNoCoverage' => 'لا يوجد تغطية',
+    'Passing' => 'ناجح',
+    'DtLastResultPassed' => 'تم اجتياز آخر نتيجة',
+    'AllFamilies' => 'جميع العائلات',
+    'SearchTestsPlaceholder' => 'اختبارات البحث، وضوابطها، وأطر عملها',
+    'AnySchedule' => 'أي جدول زمني',
+    'AnyTag' => 'أي علامة',
+    'AuditAutoClosedTestRetired' => 'تم إغلاق الاختبار تلقائياً لعدم حسمه بسبب إيقاف الاختبار.',
+    'Common' => 'شائع',
+    'ValidatesAcrossMappedFrameworks' => 'التحقق من الصحة عبر الأطر المحددة',
+    'EditTest' => 'تعديل الاختبار',
+    'ControlHasNoTestCoverage' => 'لا يوجد تغطية اختبارية لهذا العنصر المشمول بالنطاق حتى الآن.',
+    'AddTheFirstTest' => 'أضف الاختبار الأول',
+    'ApplyCommonTestHint' => 'قم بتطبيق اختبار واحد أو أكثر من الاختبارات الموجودة على عنصر التحكم هذا. يحتفظ كل اختبار بعناصر التحكم الحالية الخاصة به ويصبح اختبارًا مشتركًا يغطي هذا العنصر أيضًا.',
+    'CommonTestApplied' => 'تم تطبيق الاختبار على هذا العنصر الضابط.',
+    'CouldNotApplyCommonTest' => 'تعذر تطبيق الاختبار على عنصر التحكم هذا.',
+    'SelectOneOrMoreTests' => 'اختر اختبارًا واحدًا أو أكثر',
+    'CommonTestsApplied' => '{n} تم تطبيق الاختبارات على عنصر التحكم هذا.',
+    'ApplyCommonTests' => 'تطبيق الاختبارات الشائعة…',
+    'History' => 'تاريخ',
+    'Result' => 'نتيجة',
+    'Approval' => 'موافقة',
+    'ThisTestHasNotBeenRunYet' => 'لم يتم إجراء هذا الاختبار بعد.',
+    'CouldNotLoadTestHistory' => 'تعذر تحميل سجل هذا الاختبار.',
+    'Identity' => 'هوية',
+    'IdentitySectionHint' => 'الاسم، والمختبِر، وعناصر التحكم التي يتحقق منها',
+    'WhenTheAuditInitiates' => 'عندما تبدأ عملية التدقيق',
+    'ProcedureAndEvidence' => 'الإجراءات والأدلة',
+    'CommonTestControlsHint' => 'يمكن لاختبار واحد التحقق من صحة العديد من عناصر التحكم - وهو اختبار شائع. يؤدي فتح هذا الاختبار من خلال "+ إضافة اختبار" الخاص بعنصر التحكم إلى تحديده مسبقًا هنا.',
+    'SeparationOfDutiesNote' => 'فصل المهام - لا يمكن أن يكون الشخص الذي يوافق على شيء ما هو نفسه الشخص الذي يقوم باختباره.',
+    'CommonTestEditScopeHint' => 'تُطبّق التغييرات في كل مكان يُستخدم فيه هذا الاختبار الشائع.',
+    'Mode' => 'وضع',
+    'AddOrRemove' => 'أضف أو احذف…',
+    'AddOrSearchTags' => 'أضف أو ابحث عن الوسوم…',
+    'CreateTagX' => 'أنشئ "{tag}"',
+    'Archived' => 'مؤرشف',
+    'ShowAllTests' => 'جميع الاختبارات',
+    'ShowActiveTests' => 'الاختبارات النشطة',
+    'ShowRetiredTests' => 'الاختبارات المتقاعدة',
+    'UntestedControls' => 'عناصر تحكم غير مختبرة',
+    'OverdueByXDays' => 'متأخر · {n} أيام',
+    'OverdueByOneDay' => 'متأخر · يوم واحد',
+    'DueInXDays' => 'يُستحق خلال {n} يومًا',
+    'DueTomorrow' => 'الموعد النهائي غداً',
+    'DueToday' => 'مستحق اليوم',
+    'ScheduledForX' => 'مُجدول · {date}',
+    'AllTesters' => 'جميع المختبرين',
+    'AllStatuses' => 'جميع الحالات',
+    'OnTrack' => 'على المسار الصحيح',
+    'NextTestDateDerivedHint' => 'يتم حساب التاريخ بناءً على تاريخ آخر اختبار بالإضافة إلى عدد مرات الاختبار. حدد عدد مرات الاختبار لجدولة الاختبار تلقائيًا، أو اترك خانة عدد مرات الاختبار فارغة لتحديد هذا التاريخ بنفسك.',
+    'DueStatus' => 'الوضع المستحق',
+    'AllResults' => 'جميع النتائج',
+    // Remove a test from one control (Define Tests grid unlink row action)
+    'RemoveFromThisControl' => 'إزالة من هذا التحكم',
+    'RemoveTestFromControl' => 'إزالة الاختبار من عنصر التحكم',
+    'RemoveTestFromControlConfirm' => 'هل تريد حذف "{test_name}" من {control_name}؟',
+    'RemoveTestFromControlStays' => 'يبقى الاختبار على عناصر التحكم الأخرى {n} . لا يتم حذف أي شيء.',
+    'RemoveTestFromControlStaysOne' => 'يبقى الاختبار على عنصر التحكم الآخر الخاص به. لا يتم حذف أي شيء.',
+    'CannotRemoveTestsOnlyControl' => 'يجب أن ينتمي الاختبار إلى عنصر تحكم واحد على الأقل. بدلاً من ذلك، قم بإلغاء الاختبار أو حذفه.',
+    'TestRemovedFromControl' => 'تم استبعاد الاختبار من المجموعة الضابطة.',
+    'CouldNotRemoveTestFromControl' => 'لم يكن من الممكن إزالة الاختبار من المجموعة الضابطة.',
+    'TestRemovedFromControlAuditLogMessage' => 'تمت إزالة الاختبار "{$test_name}"(ID: {$test_id}) من عنصر التحكم (ID: {$control_id}) بواسطة المستخدم "{$user}".',
+    'DeleteTestUsedByNControls' => 'يتم استخدامه بواسطة عناصر التحكم {n} وسيتم إزالته من جميعها.',
+    'BulkDeleteSharedTestsNote' => 'يتم استخدام {n} من هذه العناصر بواسطة عناصر تحكم أخرى وسيتم إزالتها من تلك العناصر أيضًا.',
+    'BulkRetireSharedTestsNote' => 'يتم استخدام {n} من هذه العناصر بواسطة عناصر تحكم أخرى وسيتم إيقافها هناك أيضًا.',
+    'BulkDeleteOneSharedTestNote' => 'يتم استخدام أحد هذه العناصر بواسطة عناصر تحكم أخرى وسيتم إزالته منها أيضًا.',
+    'BulkRetireOneSharedTestNote' => 'يتم استخدام أحد هذه العناصر بواسطة عناصر تحكم أخرى وسيتم إيقاف تشغيله هناك أيضًا.',
+    'CouldNotLoadTest' => 'تعذر تحميل هذا الاختبار.',
+    'Expand' => 'توسيع',
+    'SearchMappings' => 'أطر البحث والمراجع',
+    'NoMatchingMappings' => 'لا توجد نتائج مطابقة لهذا البحث.',
+    'Insights' => 'رؤى',
+    'ShowInsights' => 'عرض مربعات المعلومات',
+    'HideInsights' => 'قم بطي مربعات المعلومات إلى سطر ملخص',
+    'ChooseControls' => 'اختر عناصر التحكم',
+    'UseTheseControls' => 'استخدم عناصر التحكم هذه',
+    'SearchControlsPlaceholder' => 'ابحث بالرقم أو الاسم',
+    'PickerKeyboardHint' => 'لأعلى/لأسفل للتحريك، اضغط على مفتاح الإدخال للاختيار، اضغط على مفتاح الهروب للإلغاء',
+    'NoControlsMatchFilters' => 'لا توجد نتائج مطابقة هنا. قم بتوسيع الخطوة إلى اليسار، أو امسح البحث.',
+    'NoControlsSelectedYet' => 'لم يتم اختيار أي شيء بعد.',
+    'AllControls' => 'جميع عناصر التحكم',
+    'AddOrRemoveControls' => 'إضافة أو إزالة عناصر التحكم…',
+    'LastTested' => 'آخر اختبار',
+    'LastTestDateAnchorHint' => 'جدولة فترات التثبيت (هذا التاريخ بالإضافة إلى التكرار). بمجرد تسجيل نتائج الاختبار، يعرض الجدول تاريخ أحدث نتيجة بدلاً من ذلك.',
+    'Filters' => 'الفلاتر',
+    'ShowFilters' => 'يعرض الفلاتر',
+    'HideFilters' => 'إخفاء الفلاتر',
+
+    // App shell — collapsing sidebar / new base design (SR app-shell redesign)
+    'AI' => 'الذكاء الاصطناعي',
+    'CollapseSidebar' => 'طي الشريط الجانبي',
+    'FooterCopyright' => '© %s SimpleRisk. جميع الحقوق محفوظة.',
+    'ExpandSidebar' => 'توسيع الشريط الجانبي',
+    'WorkflowsCloneConfirm' => 'استنساخ سير العمل \'{$name}\'؟',
+    'WorkflowsDeleteConfirm' => 'حذف سير العمل \'{$name}\'؟ لا يمكن التراجع عن هذا الإجراء.',
+    'WorkflowActionFailed' => 'فشلت العملية: {$msg}',
+    'ClickToDisable' => 'انقر لتعطيل',
+    'ClickToEnable' => 'انقر للتفعيل',
+    'ENABLED' => 'مُفعّل',
+    'DISABLED' => 'معطّل',
+    'BackToWorkflows' => 'العودة إلى سير العمل',
+    'BackToHistory' => 'العودة إلى التاريخ',
+    'NewWorkflow' => 'سير عمل جديد',
+    'ViewSteps' => 'عرض الخطوات',
+    'SaveWorkflow' => 'حفظ سير العمل',
+    'WorkflowSavedSuccessfully' => 'تم حفظ سير العمل بنجاح.',
+    'WorkflowNotFound' => 'لم يتم العثور على سير العمل.',
+    'EditWorkflow' => 'تعديل سير العمل: {$name}',
+    'OrganizationContextProfile' => 'نبذة عن سياق المنظمة',
+    'AICtxAutoAcceptThreshold' => 'ما هو الحد الأدنى للقبول التلقائي للمخاطر في مؤسستك (مبلغ بالدولار أو نسبة مئوية من إجمالي الخسائر المتوقعة)؟',
+    'AICtxGrcBudget' => 'ما هي ميزانيتك السنوية لإدارة المخاطر والامتثال والحوكمة والأمن؟',
+    'AICtxAuditorPerspective' => 'من أي منظور يتم تدقيق حساباتك بشكل أساسي؟',
+    'AICtxUnitCurrency' => 'العملة ($)',
+    'AICtxUnitPercentOfAle' => 'نسبة ALE (%)',
+    'AICtxFrameworksInUse' => 'الأطر المستخدمة حاليًا',
+    'AICtxNoFrameworksInUse' => 'لم يتم العثور على أي أطر عمل نشطة حتى الآن. أضف أطر العمل من خلال الحوكمة > تعيين أطر العمل.',
+    'AICtxFromYourData' => 'من بياناتك',
+    'AICtxAuthoritative' => 'مرجع موثوق',
+    'AICtxAppetiteNotSet' => 'غير محدد',
+    'AICtxAppetiteManageLink' => 'إدارة تكوين المخاطر',
+    'AICapControlTestGeneration' => 'توليد اختبار التحكم',
+    'AICapControlTestGenerationDesc' => 'يقوم بإعداد مسودات لاختبارات التحكم للمراجعة، باستخدام مخطط إطار التحكم والاختبارات الحالية ونتائج التقييم الذاتي - لا يتم إنشاء أي شيء حتى توافق عليه.',
+    'AICapSurfacedControlTestGeneration' => 'الامتثال - تحديد الاختبارات',
+    'AIControlTestGenUnavailable' => 'الخدمة غير متوفرة: يجب على المسؤول تفعيل هذه الوظيفة في إعدادات الذكاء الاصطناعي.',
+    'AIControlTestGenInvalidId' => 'طلب غير صالح: يلزم وجود معرّف تحكم إيجابي.',
+    'AIControlTestGenNotFound' => 'غير موجود: تعذر العثور على عنصر التحكم المحدد.',
+    'AIControlTestGenConflict' => 'تعارض: تم بالفعل وضع عملية التوليد في قائمة الانتظار لهذا التحكم.',
+    'AIControlTestGenQueued' => 'تم القبول: تم وضع عملية إنشاء اختبار التحكم في قائمة الانتظار.',
+    'AIControlTestGenFailed' => 'خطأ في الخادم الداخلي: فشل في وضع عملية إنشاء اختبار التحكم في قائمة الانتظار.',
+    'AIControlTestGenCheckFailed' => 'خطأ: تعذر التحقق من عنصر التحكم قبل وضعه في قائمة الانتظار.',
+    'GenerateTestsWithAI' => 'إنشاء اختبارات باستخدام الذكاء الاصطناعي',
+    'ShowAiSuggestedTests' => 'اقترح الذكاء الاصطناعي اختبارات',
+    'AiSuggested' => 'اقترح الذكاء الاصطناعي',
+    'ReviewAndEdit' => 'مراجعة وتحرير',
+    'CreateSelected' => 'إنشاء',
+    'TestCreatedFromSuggestion' => 'تم إنشاء الاختبار بناءً على الاقتراح.',
+    'SuggestionDismissed' => 'تم رفض الاقتراح.',
+    'TestGenerationQueued' => 'تم وضع اختبار التوليد في قائمة الانتظار.',
+    'Generating' => 'جارٍ إنشاء…',
+    'SuggestionDismissFailed' => 'تم إنشاء الاختبار، ولكن لا يمكن تجاهل اقتراح الذكاء الاصطناعي. قم بتجاهله يدويًا إذا استمر.',
+    'AICtxAuditorBig4' => 'الشركات الأربع الكبرى (الخارجية)',
+    'AICtxAuditorBoutique' => 'بوتيك / إقليمي (خارجي)',
+    'AICtxAuditorInternal' => 'التدقيق الداخلي فقط',
+    'AICtxAuditorSelfAssessed' => 'التقييم الذاتي',
+    'AICtxAuditorNotSure' => 'لست متأكداً',
+    'AICtxAppetiteCautious' => 'حذر',
+    'AICtxAppetiteBalanced' => 'متوازن',
+    'AICtxAppetiteAggressive' => 'عدواني',
+    'TestGenerationComplete' => 'أصبحت اختبارات التحكم التي صاغها الذكاء الاصطناعي جاهزة للمراجعة.',
+    'TestGenerationStillRunning' => 'لا يزال إنشاء الاختبارات جارياً؛ ستظهر المسودات قريباً.',
+    'TestGenerationNoNew' => 'انتهى الجيل - لا توجد اختبارات جديدة مقترحة لهذا التحكم.',
+    'SearchEntities' => 'كيانات البحث',
+    'SearchEntitiesPlaceholder' => 'مخاطر البحث، والضوابط، والسياسات، والاستثناءات…',
+    'ShowTypes' => 'عرض الأنواع',
+    'Depth' => 'عمق',
+    'Inspector' => 'مفتش',
+    'Connections' => 'الاتصالات',
+    'NoConnectionsFound' => 'لم يتم العثور على أي روابط للكيان المحدد.',
+    'CouldNotLoadGraph' => 'تعذر تحميل مخطط الاتصال.',
+    'CouldNotSearchEntities' => 'تعذر البحث عن الكيانات.',
+    'ShowingTopNOfM' => 'عرض أعلى {0} من {1}',
+    'RankedByMaturityGap' => 'مصنفة حسب فجوة النضج',
+    'RankedByRiskScore' => 'مصنفة حسب درجة المخاطر',
+    'RankedByRecentFailure' => 'مصنفة حسب آخر فشل',
+    'RankedByReviewDate' => 'مرتبة حسب تاريخ المراجعة التالية',
+    'RankedBySeverity' => 'مصنفة حسب شدة الخطورة',
+    'RankedByName' => 'مرتبة حسب الاسم',
+    'NodeTypeSelfAssessmentResult' => 'نتيجة التقييم الذاتي',
+    'Relationship' => 'علاقة',
+    'Exception' => 'استثناء',
+    'DesiredMaturity' => 'النضج المطلوب',
+    'ApprovalState' => 'حالة الموافقة',
+    'RelationshipOfType' => '{0} من {1}',
+    // Connectivity Explorer Inspector: labels for enrichment field keys
+    // (ai_context_enrich_fetch(), ai_context_enrich_vulnerabilities()) that
+    // fieldLabel() in connectivity-visualizer.js did not yet cover.
+    'LastDate' => 'آخر موعد',
+    'LastResultDate' => 'تاريخ آخر نتيجة',
+    'PercentComplete' => 'نسبة الإنجاز',
+    'AssessmentDate' => 'تاريخ التقييم',
+    'NextDate' => 'الموعد التالي',
+    'Number' => 'رقم',
+    'Grouping' => 'التجميع',
+    'Hidden' => 'مخفي',
+    'FirstFound' => 'تم العثور عليه لأول مرة',
+    'LastFound' => 'آخر مكان تم العثور عليه',
+    'Patchable' => 'قابل للتصحيح',
+    'Solution' => 'حل',
+    'Breadcrumb' => 'فتات الخبز',
+    'SelectANodeToInspect' => 'حدد عقدة لعرض تفاصيلها.',
+    'HiddenUnreachableNodes' => '{0} العقدة (العقد) مخفية: لم تعد متصلة بدون النوع (الأنواع) المخفية.',
+    // Connectivity Explorer canvas launchpad (Level-1 type tiles / Level-2
+    // browsable entity list) -- docs/superpowers/specs/2026-07-27-
+    // connectivity-explorer-launchpad.md
+    'BrowsableEntityTypes' => 'أنواع الكيانات القابلة للتصفح',
+    'CountFloor' => '{0}+',
+    'NoBrowsableTypes' => 'ليس لديك إذن بتصفح أي نوع من أنواع الكيانات.',
+    'AllTypes' => 'جميع الأنواع',
+    'FilterEntitiesPlaceholder' => 'تصفية…',
+    'NoMatchingEntities' => 'لا توجد كيانات مطابقة لمرشحك.',
+    'LoadMore' => 'تحميل المزيد',
+    'Loading' => 'جارٍ التحميل…',
+    'CouldNotLoadEntityCounts' => 'تعذر تحميل عدد الكيانات.',
+    'CouldNotLoadEntities' => 'تعذر تحميل الكيانات.',
+    'ClearGraph' => 'رسم بياني واضح',
+    // Connectivity Explorer node-type chip label for the 'audit' type. Not
+    // reused from 'TeamType_audit' (same English text, "Audit") -- that key
+    // is scoped to the Team Separation team-type picker, a different feature
+    // whose wording should be free to diverge from this one's.
+    'Audit' => 'تدقيق',
+    // Queued email send-failure notifications
+    'EmailSendFailedNotificationTitle' => 'فشل تسليم البريد الإلكتروني',
+    'EmailSendFailedNotificationBody' => 'تعذر تسليم رسالة بريد إلكتروني واحدة أو أكثر من الرسائل الموجودة في قائمة الانتظار. يرجى مراجعة إعدادات بريدك الإلكتروني، ثم الاطلاع على سجل مراقبة قائمة الانتظار وسجل الخادم لمزيد من التفاصيل.',
+    'QuestionnaireShareInvalidEmailAddress' => 'لا يمكن مشاركة نتائج الاستبيان مع جهة اتصال ليس لديها عنوان بريد إلكتروني صالح.',
+    'AssessmentSendInvalidEmailAddress' => 'لا يمكن إرسال التقييم إلى عنوان بريد إلكتروني غير صالح.',
+    'AssessmentSentTo' => 'تم إرسال التقييم إلى "{$email}".',
+    'AssessmentNotSentNoValidRecipients' => 'لم يتم إرسال التقييم - لم يتم تقديم عنوان بريد إلكتروني صالح.',
+    'AssessmentContactUnusableEmailNotificationTitle' => 'لم يتم إرسال الاستبيان',
+    'AssessmentContactUnusableEmailNotificationBody' => 'لم يتم إرسال الاستبيان "{$questionnaire}" إلى "{$contact}" لعدم وجود عنوان بريد إلكتروني صالح مسجل لدى جهة الاتصال. يُرجى تحديث سجل جهة الاتصال لاستئناف الإرسال.',
+    'EmailFailureNotificationRetention' => 'الاحتفاظ بإشعارات فشل تسليم البريد الإلكتروني',
+    'EmailFailureNotificationRetentionOutOfRange' => 'يجب أن تكون فترة الاحتفاظ بإشعار فشل تسليم البريد الإلكتروني بين {$min} و {$max} يومًا.',
+    'MailSettingsUpdatedSuccessfully' => 'تم تحديث إعدادات البريد بنجاح.',
+    // Questionnaire audit-trail entries for the API submit/draft paths (SR-1714).
+    // The token form credits the contact; an API caller is an authenticated
+    // SimpleRisk user acting on that contact's questionnaire, so both the
+    // contact and the acting user are named.
+    'QuestionnaireCompletedAuditLogViaApi' => 'تم إكمال الاستبيان "{$questionnaire_name}" الخاص بجهة الاتصال "{$contact_name}" عبر واجهة برمجة التطبيقات بواسطة المستخدم "{$user_name}".',
+    'QuestionnaireDraftAuditLogViaApi' => 'تم حفظ الاستبيان "{$questionnaire_name}" الخاص بجهة الاتصال "{$contact_name}" كمسودة عبر واجهة برمجة التطبيقات بواسطة المستخدم "{$user_name}".',
+    // Bad-input response for the questionnaire risk-list endpoints, which
+    // previously reported a malformed questionnaire_id as a permission denial.
+    // Mirrors the existing 'MissingOrInvalidTrackingID'.
+    'MissingOrInvalidQuestionnaireID' => 'معرف الاستبيان مفقود أو غير صالح.',
+    // POST /api/v2/assessments/questionnaire/result/file response messages.
+    // The `id` path deliberately returns QuestionIdCannotAcceptFile for every
+    // question-level rejection so a sequential tracking id cannot be used to
+    // probe questionnaire structure; the token path returns the specific reason.
+    'QuestionnaireResultNotFoundForTokenOrId' => 'غير موجود: تعذر العثور على نتيجة استبيان بالرمز المميز أو المعرف المحدد',
+    'QuestionIdCannotAcceptFile' => 'طلب غير صالح: لا يمكن لـ question_id {$question_id} قبول ملف حول نتيجة هذا الاستبيان',
+    'QuestionIdNotFoundInQuestionnaire' => 'طلب غير صالح: لم يتم العثور على question_id {$question_id} في هذا الاستبيان',
+    'QuestionIdInMultipleTemplates' => 'طلب غير صالح: يظهر المعرّف question_id {$question_id} في قوالب متعددة لهذا الاستبيان',
+    'QuestionIdDoesNotAcceptFileUploads' => 'طلب غير صالح: لا يقبل question_id {$question_id} تحميل الملفات',
+    // The Statement of Applicability's two UNVERIFIED implementation states.
+    //
+    // They exist because "we have not checked" is not "it does not work", and an
+    // SoA is ATTESTED — printing "No" for an unverified control is a false
+    // statement against yourself, exactly as printing "Yes" without evidence is
+    // a false statement the other way. Before these keys existed both states
+    // fell through to 'No', which on a framework where most controls carry no
+    // test meant the whole document read "not implemented".
+    //
+    // They are two states rather than one because they are different findings
+    // with different owners: no test defined is a GOVERNANCE gap (nobody decided
+    // how to verify this control), never run is an OPERATIONAL one (somebody
+    // decided, and it was not done).
+    //
+    // WORDING. Both must be unmistakably distinct from the bare 'No' in the same
+    // column. 'Tests never run' rather than 'Never run': in a column headed
+    // "Implemented", the bare phrase reads for a moment as though the CONTROL
+    // was never run, when the subject is its tests.
+    //
+    // BOTH ARE PLURAL, and that is not only style. English takes the plural
+    // after "no" when the expected quantity could exceed one ("no results
+    // found"), and a control normally carries several tests — the singular
+    // implies only ever one was expected. 'Tests never run' is the stronger
+    // case: soa_implemented_for() returns `never_run` only when NOT ONE of the
+    // control's tests has produced a verdict, so the state is inherently about
+    // the whole set. With four tests defined and none run, the singular reads as
+    // one omission rather than a wholesale one.
+    'SoaImplementedNoTestDefined' => 'لم يتم تحديد أي اختبارات',
+    'SoaImplementedNeverRun' => 'لا يتم إجراء الاختبارات أبدًا',
+
+    // The Implemented column's fallback for a token neither sink recognizes.
+    //
+    // DELIBERATELY NOT A VERDICT, and the reason this key exists at all. Both
+    // sinks previously ended in a fallthrough to 'No', so adding a state without
+    // adding its label printed a confident, wrong answer into a compliance
+    // document. Falling through to 'Yes' would be worse. The only safe failure
+    // mode is a value that states nothing about the control — a visible bug
+    // instead of a silent misstatement.
+    'SoaImplementedUnknown' => 'الحالة غير متوفرة',
+    // How an APPLICABLE control's stored inclusion reason(s) join to its own
+    // freeform justification when it recorded both (spec §4). Reached ONLY when
+    // both halves exist — reasons alone print as the reason list, prose alone
+    // prints verbatim — so this string is punctuation and word order, not prose.
+    // It is a language key rather than a hardcoded separator because a locale
+    // that joins clauses with a colon, a full stop, or right-to-left ordering
+    // must be able to say so; both placeholders have to survive translation.
+    'SoaJustifiedByInclusionReasons' => '{reasons} — {narrative}',
+    // The Set applicability modal's reason field, which became a MULTI-select
+    // when reasons moved to a join table: a control is commonly included (or
+    // excluded) for more than one reason, and the singular 'Reason' the field
+    // used to reuse now under-describes it. 'Reason' is left alone rather than
+    // repointed -- the row drawer and the SoA still print exactly one joined
+    // value under it, and redefining a key changes every surface that reads it.
+    'ApplicabilityReasons' => 'الأسباب',
+    // Said once, above a group of checkboxes, rather than implied by the widget.
+    // The old single <select> answered "how many may I pick?" by construction;
+    // a checkbox group does not, and a user who ticks one and stops has made the
+    // SoA less truthful than the one they meant to write.
+    'ApplicabilityReasonsHint' => 'اختر كل سبب ينطبق عليك.',
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // THE STATEMENT OF APPLICABILITY'S MARKERS AND ITS LEGEND (spec §1, §3).
+    // ─────────────────────────────────────────────────────────────────────────
+
+    // THE EVIDENCE COLUMN'S TWO ABSENCES, which are OPPOSITES.
+    //
+    // 'No evidence linked' is a FINDING: the control is in scope, is possibly
+    // claimed implemented, and nothing substantiates it. The em dash below is
+    // the other answer -- the control is excluded, so no evidence is expected
+    // and the absence is correct. Rendering both as an empty cell hides the
+    // first, which is the one an auditor circles.
+    'SoaNoEvidenceLinked' => 'لا توجد أدلة مرتبطة',
+    // PUNCTUATION, NOT PROSE -- the glyph the Evidence cell prints when nothing
+    // is expected. A language key rather than a hardcoded character for the same
+    // reason 'SoaJustifiedByInclusionReasons' is one: a locale that marks "not
+    // applicable" with a different dash, or with a word, must be able to say so.
+    'SoaEvidenceNotExpected' => '—',
+    // Whether the evidence a test DECLARED it requires actually arrived with the
+    // result. A stronger claim than a pass/fail alone, and few SoA tools make it.
+
+    // THE REMEDIATION BLOCK -- what is being done about a control that reads
+    // Partial or No. The SoA points AT the risk treatment plan (clause 6.1.3(e))
+    // rather than becoming one.
+    'SoaRemediation' => 'المعالجة',
+    // THE MOST SERIOUS THING THAT BLOCK CAN FIND: the test failed and it is
+    // linked to no risk, so no treatment plan traces back to it. Dropping such a
+    // row for want of a risk to join to would render it as a blank cell, which
+    // reads as "nothing to report".
+    'SoaRemediationUnplanned' => 'لا توجد مخاطر مرتبطة',
+
+    // THE LEGEND. Required in both variants and every export format, because six
+    // implementation states plus three markers is more nuanced than the
+    // Yes/No/Partial an auditor expects, and an undefined vocabulary invites the
+    // reader to guess unfavourably.
+    'SoaLegendTitle' => 'كيفية قراءة هذا البيان',
+    'SoaLegendYes' => 'اجتازت جميع الاختبارات المحددة لهذا العنصر التحكمي عند تشغيله آخر مرة.',
+    'SoaLegendPartial' => 'تختلف نتائج اختبارات المجموعة الضابطة: فقد نجح اختبار واحد على الأقل، وفشل اختبار واحد على الأقل أو لم يصدر أي حكم.',
+    'SoaLegendNo' => 'لم ينجح أي اختبار لهذا العنصر عند تشغيله آخر مرة، وفشل واحد على الأقل.',
+    // The two unverified states are DIFFERENT FINDINGS WITH DIFFERENT OWNERS,
+    // and the labels alone do not quite carry that -- so the legend spells it
+    // out. This is the distinction the whole six-state set exists for.
+    'SoaLegendNoTestDefined' => 'لم يُحدد اختبارٌ لهذا الإجراء الضابط، لذا لم يتم التحقق من عمله مطلقًا. هذا لا يعني أن الإجراء الضابط مفقود أو أنه معطل، بل يعني فقط أن هذا البيان لا يُثبت ذلك. ثغرةٌ في الحوكمة: لم يُحدد أحدٌ كيفية التحقق من هذا الإجراء الضابط.',
+    'SoaLegendNeverRun' => 'توجد اختبارات لهذا العنصر الضابط، لكن لم يُجرَ أي منها، لذا لم يُوضَّح تشغيله هنا. هذا لا يعني أن العنصر الضابط مفقود أو أنه معطل، بل هو مجرد ثغرة تشغيلية: فقد تقرر إجراء الفحوصات ولم تُنفَّذ.',
+    'SoaLegendNotApplicable' => 'تم استبعاد عنصر التحكم من نطاق هذا الإطار، لذلك ليس له حالة تنفيذ.',
+    // The one most in need of explaining: with nothing to define it, this reads
+    // as an admission about the control rather than as what it is.
+    'SoaLegendUnknown' => 'لم يتمكن برنامج SimpleRisk من تصنيف الحالة المسجلة، لذا لم يتم توضيح كيفية التنفيذ هنا. هذا عيب في البرنامج ولا يدل على أي شيء بخصوص آلية التحكم - لا أنها تعمل ولا أنها لا تعمل.',
+    'SoaLegendOverdue' => 'لا تزال النتيجة المعروضة قائمة، ولكن أحد الاختبارات التي استندت إليها على الأقل قد تجاوز موعد اختباره التالي. الأدلة قديمة.',
+    'SoaLegendNoEvidence' => 'إن عنصر التحكم موجود ضمن النطاق ولم يتم ربط أي شيء لإثبات ذلك: لا توجد وثيقة مؤكدة، ولا يوجد اختبار أسفر عن نتيجة.',
+    'SoaLegendEvidenceNotExpected' => 'لا يُتوقع وجود أي دليل، لأن عنصر التحكم مستبعد من النطاق.',
+    'SoaLegendUnplanned' => 'نتيجة اختبار فاشلة لا ترتبط بأي خطر، وبالتالي لا توجد خطة علاجية مرتبطة بها.',
+
+    // THE TWO VARIANTS, chosen on the launcher before the document is generated
+    // and PRINTED ON ITS COVER. A Statement of Applicability is a controlled
+    // document: two of them for the same framework that show different things,
+    // with nothing on either to say which is which, is a document nobody can
+    // file.
+
+    // THE THREE DETAILED-ONLY COLUMNS.
+    // What those three columns say instead of nothing. A blank cell in an audit
+    // document reads as a formatting artefact; "Not recorded" is a fact the
+    // reader can act on.
+
+    // THE BROWSER PRINT ROUTE. Beside the two downloads on the launcher, and the
+    // only PDF route for a framework too large for the server-side writer.
+    // Shown in place of "Download as PDF" when the chosen framework is above
+    // SOA_EXPORT_PDF_MAX_CONTROLS. The affordance is absent rather than
+    // disabled, so this sentence is what tells the reader the absence is
+    // deliberate and what to do instead.
+    // The footer of every printed page. {page} and {pages} are substituted with
+    // the browser's own page counters, so the two tokens must both survive
+    // translation -- but their ORDER and the words around them are the
+    // translator's, which is why this is one string and not "Page" + "of".
+    'SoaPrintPageNumber' => 'الصفحة {page} من {pages}',
+
+    // THE ONE PDF AFFORDANCE on the statement-of-applicability launcher, beside
+    // 'DownloadAsXLSX'. It replaces the pair that used to sit there --
+    // 'SoaPrintToPdf' and 'DownloadAsPDF' -- because a Statement of Applicability
+    // is a controlled document and two PDF buttons let two people hand an auditor
+    // two different-looking PDFs of the same statement.
+    //
+    // JUST "PDF", AND DELIBERATELY SO. Below SOA_EXPORT_PDF_MAX_CONTROLS the
+    // button downloads a server-rendered file and above it the browser writes
+    // one, but that is a mechanism and not a choice the reader has to make. A
+    // label that named the mechanism ("Print to PDF" / "Download as PDF") would
+    // put the difference back in front of them.
+    //
+    // 'SoaPrintToPdf' and 'SoaPdfTooLargeHint' above are LEFT IN PLACE with no
+    // caller: 39 locales carry them, and this file is append-only precisely so a
+    // customer running a custom lang.<locale>.php can reconcile it with a tail
+    // diff.
+    'SoaPdf' => 'ملف PDF',
+
+    // THE OTHER TWO ACTIONS IN THAT SAME ROW, shortened to match it.
+    //
+    // The row read "Open in browser" / "Download as XLSX" / "PDF", which put a
+    // verb on two of three actions and made the odd one out look like an
+    // abbreviation of something longer. The row's own context supplies the
+    // verbs -- these are the things you can DO with the framework you just
+    // chose -- so they carried no information and cost the reader a comparison.
+    // 'SoaPdf' is short because naming its mechanism would be dishonest (above
+    // SOA_EXPORT_PDF_MAX_CONTROLS it opens a print view rather than downloading
+    // a file), and the shortest of the three is the one that has to be right.
+    //
+    // NOT the generic 'Open' at line ~1021: that key lives among 'Mitigated' /
+    // 'Reviewed' and is the risk-status ADJECTIVE -- fr "Ouvert", de "Offen" --
+    // so reusing it would label a button with a state rather than an action in
+    // most of the 39 locales.
+    //
+    // 'SoaOpenInBrowser' above is LEFT IN PLACE with no caller, for the same
+    // reason 'SoaPrintToPdf' is: the locales carry it and this file is
+    // append-only so a customer's custom lang.<locale>.php reconciles with a
+    // tail diff. 'DownloadAsXLSX' keeps a caller either way -- the Assessments
+    // Extra's questionnaire results still use it.
+    'SoaOpen' => 'فتح',
+    'SoaXlsx' => 'XLSX',
+    // ---- The locked-affordance treatment -------------------------------------
+    // SHARED COPY, not chooser copy. SimpleRisk now SHOWS what's possible and
+    // MARKS what's out of reach because it isn't licensed, rather than hiding
+    // it -- so these strings appear both as a menu row's explanation (Define
+    // Control Frameworks' "+ Add framework" chooser) and beside a disabled
+    // toolbar button (the Statement of Applicability's PDF/XLSX exports). Each
+    // one is worded to read correctly in BOTH places, which is why none of them
+    // starts with "This route" or "This button".
+    //
+    // 'LockedAffordanceBadge' duplicates the English of 'AICapStateLocked'
+    // rather than reusing it: that key sits in the AI Capabilities Catalog's
+    // block and is scoped to a capability's state, and translators work from
+    // the key's neighbourhood as much as from its value.
+    'LockedAffordanceBadge' => 'مغلق',
+    // The two SCF steps before it can be switched on. admin/register.php serves
+    // both -- it is the registration form AND where the per-Extra download
+    // buttons render -- so these differ in what they say, not where they go.
+    'UnlockRegisterInstanceNote' => 'قم بتسجيل هذه النسخة للحصول على إطار عمل الضوابط الآمنة.',
+    'UnlockRegisterInstanceLink' => 'سجل SimpleRisk',
+    'UnlockDownloadScfNote' => 'تم تسجيل هذه النسخة. قم بتنزيل إطار عمل الضوابط الآمنة لاستخدامها.',
+    'UnlockDownloadScfLink' => 'قم بتنزيله',
+    'UnlockActivateScfNote' => 'تم تنزيل إطار عمل الضوابط الآمنة ولكن لم يتم تشغيله.',
+    'UnlockActivateScfLink' => 'قم بتشغيله',
+    // Import-Export is a paid Extra, so "not installed" is an upsell rather
+    // than a registration prompt. Deliberately a bare capability sentence: it
+    // has to sit under a menu row and next to an export button equally well.
+    'RequiresImportExportExtra' => 'يتطلب ذلك إضافة الاستيراد والتصدير.',
+    'UnlockImportExportLink' => 'انظر ماذا يضيف ذلك',
+    'UnlockActivateImportExportNote' => 'تم تثبيت برنامج الاستيراد والتصدير الإضافي ولكنه غير مُفعّل.',
+    'UnlockActivateImportExportLink' => 'قم بتشغيله',
+    // Shown instead of any of the above to a user who is not an administrator:
+    // every unlock step lives on a check_admin page, so they get the half that
+    // is useful to them -- that the capability exists, and who to ask -- and no
+    // link that would only bounce them.
+    'UnlockNeedsAdministrator' => 'يمكن للمسؤول إعداد ذلك.',
+    // API date parsing. {$field} is the request field name (next_date, last_date,
+    // test_date); {$format} is this instance's configured display date format.
+    'InvalidSubmittedDate' => 'القيمة {$field} ليست تاريخاً صالحاً. يرجى إرسالها بصيغة YYYY-MM-DD أو بصيغة التاريخ المستخدمة في هذه الحالة ({$format}).',
+    // Companion to InvalidSubmittedDate, for a value that matches the expected
+    // shape but names a day that does not exist (February 31st, month 13).
+    // Saying "submit it as MM/DD/YYYY" there would repeat what the caller did.
+    // {$value} is the submitted value, echoed back truncated.
+    'ImpossibleSubmittedDate' => 'القيمة {$field} "{$value}" ليست تاريخًا حقيقيًا. تحقق من اليوم والشهر — في هذه الحالة، تُقرأ التواريخ على أنها {$format}.',
+    // The Statement of Applicability's merged verification column. Replaces three
+    // separate headings (Implemented / Evidence / Review Cadence) with the one
+    // question all three answer: how do we know this control is working?
+    // The two appendices printed after the register. Justifications are truncated
+    // in the row and given in full here; remediation plans live here rather than
+    // in the table because ISO 27001 keeps the SoA (6.1.3(d)) and the risk
+    // treatment plan (6.1.3(e)) as separate artifacts.
+    'SoaAppendixJustifications' => 'الملحق أ - المبررات',
+    'SoaAppendixRemediation' => 'الملحق ر - خطط المعالجة',
+    // Appendix E carries the WORDING of each test's evidence requirement. The row
+    // keeps only whether that evidence arrived, which is the finding; the wording
+    // is reference material and was the bulkiest thing in the Verification cell.
+    'SoaRequiredEvidenceSupplied' => 'تم تقديم الأدلة المطلوبة',
+    'SoaRequiredEvidenceNotSupplied' => 'لم يتم تقديم الأدلة المطلوبة',
+    // The one scheduling fact the SoA prints: the soonest date any of a control's
+    // tests is next due. Replaces a per-test "Manual — Next Test Date: ..." line,
+    // whose schedule type belongs on Define Tests and whose date is now on each
+    // test's own evidence bullet.
+    // The two dates on a test's evidence bullet. LABELLED, because two bare dates
+    // side by side are ambiguous in a way one is not.
+    // SINGULAR document-type labels for one piece of design evidence. SimpleRisk's
+    // existing keys are the plural tab names, which would read "Access Control
+    // Standard (Standards)".
+    'SoaEvidencePolicy' => 'السياسات',
+    'SoaEvidenceStandard' => 'معيار',
+    'SoaEvidenceProcedure' => 'إجراء',
+    'SoaEvidenceGuideline' => 'دليل إرشادي',
+    // ── The legend, grouped by column (SOA_LEGEND_GROUPS, includes/soa.php) ──
+    // The Applicability column's three values. These were never in the legend,
+    // so an auditor met "Inherited" -- a word with no meaning outside SimpleRisk
+    // -- with nothing to look it up in.
+    'SoaLegendApplicable' => 'يقع نطاق الرقابة ضمن هذا الإطار، والمنظمة مسؤولة عن تشغيله.',
+    // DISTINCT from 'SoaLegendNotApplicable', which defines the "N/A" that appears
+    // in the Implementation Status column. This one is the DECISION to exclude;
+    // that one is the consequence for the status.
+    'SoaLegendApplicabilityNotApplicable' => 'تم استبعاد عنصر التحكم من نطاق هذا الإطار. ويسجل عمود التبرير السبب والجهة التي اتخذت القرار.',
+    'SoaLegendInherited' => 'يقع التحكم ضمن نطاق التطبيق، ولكنه يُدار من قِبل طرف ثالث - مزود خدمة سحابية، أو مؤسسة أم، أو وظيفة خارجية - وليس من قِبل هذه المؤسسة. وقد ذُكر اسم المزود بجانب التبرير.',
+    // The Evidence column's four bullet glyphs. Load-bearing since the visible
+    // result word was dropped from pass and fail bullets, and until now defined
+    // nowhere at all.
+    'SoaLegendEvidencePass' => 'أظهر اختبار هذا العنصر التحكمي نجاحاً في آخر مرة تم تشغيله فيها. التاريخ المجاور له هو تاريخ التشغيل.',
+    'SoaLegendEvidenceFail' => 'أظهر اختبار هذا النظام فشلاً في آخر مرة تم تشغيله فيها. يحتوي الملحق (ر) على خطة العلاج، إن وجدت.',
+    'SoaLegendEvidenceInconclusive' => 'أُجري اختبار لهذا العنصر الرقابي ولم يُسفر عن نتيجة. تُستخدم العلامة نفسها لنتيجة لا يعترف بها هذا المستند، وفي هذه الحالة تُطبع النتيجة نفسها بجانبها.',
+    // The TERM beside the § glyph. Not a document type -- the four types
+    // (Policy, Standard, Procedure, Guideline) are printed per item; this names
+    // the CATEGORY of evidence a document is.
+    'SoaEvidenceDesignDocument' => 'وثيقة التصميم',
+    'SoaLegendEvidenceDocument' => 'تم تأكيد وثيقة حوكمة كدليل على هذا التحكم - تصميمه وليس تشغيله. الوثيقة لا تحمل حكماً، ولهذا السبب لا يتم وضع علامة صح عليها.',
+    // The XLSX export's first worksheet tab. The workbook's other four tabs reuse
+    // headings that already exist ('How to read this statement', 'Statement of
+    // Applicability', and the two appendix headings); the cover had no name of its
+    // own because it used to be the top of a single sheet.
+    //
+    // KEEP IT SHORT. Excel caps a worksheet name at 31 characters and
+    // soa_export_sheet_name() truncates rather than failing the export, so a long
+    // translation loses its tail on the tab.
+    'SoaSheetCover' => 'غطاء',
+
+    'SearchFrameworks' => 'البحث في أطر العمل',
+    'SearchControls' => 'البحث في الضوابط',
+    'AddFramework' => 'إضافة إطار العمل',
+    'Applicability' => 'قابلية التطبيق',
+    'AnyFamily' => 'أي عائلة',
+    'AnyOwner' => 'أي مالك',
+    'AnyClass' => 'أي فصل',
+    'AnyPhase' => 'أي مرحلة',
+    'AnyPriority' => 'أي أولوية',
+    'AnyType' => 'أي نوع',
+    'AnyStatus' => 'أي حالة',
+    'SelectAllN' => 'حدد الكل {n}',
+    'Classification' => 'تصنيف',
+    'Placement' => 'موضع الضابط',
+    'OwnershipAndMaturity' => 'الملكية والنضج',
+    'MappingsAndGuidance' => 'الخرائط والإرشادات',
+    'DeleteFrameworkTitle' => 'حذف إطار العمل \'{$name}\'؟',
+    'DeleteControlTitle' => 'حذف عنصر التحكم \'{$name}\'؟',
+    'DeleteControlsTitle' => 'حذف عناصر التحكم {$n}؟',
+    'DeleteCannotBeUndone' => 'لا يمكن التراجع عن هذا.',
+    'DeleteFrameworkConsequence' => 'يؤدي هذا إلى إزالة الإطار وجميع عمليات تعيين التحكم الخاصة به.',
+    'DeleteControlConsequence' => 'يؤدي هذا إلى إزالة التحكم من كل إطار عمل يتم ربطه به.',
+    'DeleteControlsConsequence' => 'يؤدي هذا إلى إزالة كل عنصر تحكم محدد من كل إطار عمل مرتبط به.',
+    // Task 9: empty states (design-system.md §10) -- the four intents on
+    // Define Control Frameworks. Reuses existing keys where the copy already
+    // fits exactly (AddControl, AddFramework, ClearFilters, Retry,
+    // NoControlsDefinedYet, NoTestsMatchFiltersBody, CouldNotLoadTestsBody,
+    // RegisterYourInstance, GoToSCF, ImportExportExtra) -- only the strings
+    // with no existing match are added below.
+    'NoControlsMatch' => 'لا توجد عناصر تحكم مطابقة لمرشحاتك',
+    'CouldNotLoadControls' => 'تعذر تحميل عناصر التحكم',
+    'ControlsYouAddWillAppearHere' => 'ستظهر عناصر التحكم التي تضيفها هنا.',
+    'NoFrameworksYet' => 'لا توجد أطر عمل حتى الآن',
+    'FrameworksYouAddWillAppearHere' => 'ستظهر هنا الأطر التي تضيفها أو تستوردها.',
+    'CouldNotLoadFrameworks' => 'تعذر تحميل الأطر',
+    // Task 9 review fix: the framework rail's own "no results" intent, shown
+    // when the user has explicitly switched the status dropdown away from
+    // Active and that status has nothing (distinct from "No frameworks yet",
+    // which is reserved for the default Active status where the endpoint
+    // can't yet tell "no frameworks at all" from "none active").
+    'NoFrameworksMatchFilter' => 'لا توجد أطر عمل تتطابق مع هذه الحالة',
+    'ViewActiveFrameworks' => 'عرض الأطر النشطة',
+    // Task 10: Define Control Frameworks insights band (governance/index.php)
+    // -- KPI tile labels/subtitles. 'Controls', 'Pass', 'Fail', 'NotTested'
+    // already exist and are reused as label keys for their tiles.
+    'BelowTarget' => 'أقل من الهدف',
+    'Excluded' => 'مستبعد',
+    'FwInScope' => 'ضمن النطاق',
+    'FwLastTestPassed' => 'اجتاز الاختبار الأخير بنجاح',
+    'FwLastTestFailed' => 'فشل الاختبار الأخير',
+    'FwNoEvidence' => 'ينطبق، لا يوجد دليل',
+    'FwMaturityUnderDesired' => 'النضج أقل من المستوى المطلوب',
+    'FwScopeAFramework' => 'تحديد نطاق إطار عمل لاتخاذ القرار',
+    'FwNotApplicableOrInherited' => 'غير قابل للتطبيق أو موروث',
+    // Task 22: framework rail search (governance/index.php's #sr-fw-search,
+    // wired client-side in governance-frameworks.js). Reuses the shipped
+    // "no results" empty-state tile (#sr-fw-filtered, Task 9) rather than
+    // inventing a fourth rail empty state -- only the title and action swap
+    // depending on whether a status filter or a search narrowed the list to
+    // nothing; NoTestsMatchFiltersBody already covers both as body copy.
+    'NoFrameworksMatchSearch' => 'لا توجد أطر عمل مطابقة لبحثك',
+    'ClearSearch' => 'مسح البحث',
+    // Task 24: Clone control pre-fills the Add Control modal from the source
+    // control (governance-frameworks.js's openControlForClone()) rather than
+    // creating a duplicate outright, so the modal needs to say plainly which
+    // control it was cloned from -- the reviewer's core complaint about an
+    // earlier one-click version of this feature was not knowing what was
+    // cloned. {$name} follows the same client-side formatTemplate()
+    // substitution ShowingXToYOfZ/NSelected already use on this page.
+    'ClonedFromControlNotice' => 'تم استنساخها من "{$name}". راجع الحقول أدناه، ثم احفظها.',
+    // Task 24 review follow-up: the banner alone left the modal titled "New
+    // Control" over pre-populated fields -- "it doesn't prompt or anything
+    // so the user doesn't know what was cloned" (Josh) -- which reads as a
+    // bug, not a feature. Retitling #control--add-title to this (governance-
+    // frameworks.js's show.bs.modal delegate for #control--add) makes the
+    // clone unambiguous at a glance; NewControl is restored for a plain add.
+    'CloneOfControlTitle' => 'نسخة من "{$name}"',
+    // Task 27: the framework rail's SCF-origin chip (governance-frameworks.js's
+    // railRow()) -- shown only for frameworks created via the ComplianceForge
+    // SCF Extra's authoritative-source import (get_scf_origin_framework_ids(),
+    // includes/governance.php). SCF is the badge text itself; ScfOriginHint is
+    // its title/tooltip.
+    'SCF' => 'SCF',
+    'ScfOriginHint' => 'من إطار الضوابط الآمنة (SCF)',
+    // Task 34: the Maturity filter facet's placeholder on the Define Control
+    // Frameworks filter sheet (governance-frameworks.js's ensureFilterSheet()),
+    // matching the AnyFamily/AnyOwner/AnyClass/... set above. The facet's three
+    // OPTIONS reuse the existing BelowMaturity/AtMaturity/AboveMaturity keys --
+    // the same labels the governance dashboard's maturity-gap widgets already
+    // carry -- and the column chip renders those same three strings, so the
+    // filter and the cell can never read differently.
+    'AnyMaturity' => 'أي نضج',
+    // Task 46: accessible name for the control table's pager landmark
+    // (governance-frameworks.js's renderPager()). The pager's own buttons
+    // reuse the existing Previous/Next keys Define Tests' pager already
+    // carries; only the <nav> label is new, and it names WHICH table's pager
+    // it is because the Define Control Frameworks page has two lists on it.
+    'ControlsPagination' => 'يتحكم في ترقيم الصفحات',
+    // Task 14: the Applicability column's state chip (governance-frameworks.js's
+    // renderApplicability()), the matching filter facet (its three option labels
+    // reuse these same three keys) and its "Any applicability" placeholder.
+    //
+    // The three states are PREFIXED rather than named 'Applicable'/
+    // 'NotApplicable'/'Inherited' because 'NotApplicable' already exists above
+    // as the ABBREVIATION 'N/A' -- the self-assessment answer chip and three
+    // reporting charts render it -- and redefining that key to the spelled-out
+    // phrase this column needs would silently change all four of those
+    // surfaces. The prefix also keeps the trio recognisable as one family.
+    //
+    // The column HEADER and the facet's accessible name reuse the existing
+    // 'Applicability' key, and the drawer's record reuses 'Reason', 'Provider'
+    // and 'Justification' -- all four already carry exactly the right string.
+    'ApplicabilityApplicable' => 'ملائم',
+    'ApplicabilityNotApplicable' => 'غير قابل للتطبيق',
+    'ApplicabilityInherited' => 'موروث',
+    'AnyApplicability' => 'أي قابلية للتطبيق',
+    // The drawer's applicability record: who recorded the decision and when.
+    // Both are attribution for an audited decision a customer may have to
+    // defend years later, which is why the drawer names them at all.
+    'ApplicabilityDecidedBy' => 'تم اتخاذ القرار بواسطة',
+    'ApplicabilityDecidedOn' => 'تم اتخاذ القرار',
+    // The framework-level Statement of Applicability card in the Add/Edit
+    // framework modals (display_framework_soa_card(), includes/governance.php).
+    // These two fields are what ISO/IEC 27001:2022 clause 6.1.3(d) needs on an
+    // SoA cover: the scope the framework is certified against, and how inclusion
+    // was determined for the controls that are simply applicable.
+    //
+    // 'IsmsScopeStatement' rather than a bare 'ScopeStatement' because "scope"
+    // is already overloaded across SimpleRisk (assessment scope, audit scope,
+    // risk scope); the ISMS prefix is what an ISO practitioner calls this exact
+    // field and keeps it from being reused for an unrelated one.
+    'StatementOfApplicability' => 'بيان قابلية التطبيق',
+    'IsmsScopeStatement' => 'بيان النطاق',
+    'IsmsScopeStatementHint' => 'نطاق اعتماد هذا الإطار. يظهر على صفحة غلاف وثيقة الخدمات الموجهة.',
+    'DefaultInclusionJustification' => 'مبررات الإدراج الافتراضية',
+    'DefaultInclusionJustificationHint' => 'يُستخدم هذا الإجراء للضوابط المناسبة التي لا ترتبط بها مخاطر. حدد العامل الرئيسي، وليس الإطار.',
+    // THE DEFAULT SENTENCE, in all three of its roles: the create form seeds the
+    // textarea with it, the Edit form shows it as a placeholder, and
+    // soa_framework_default_justification() (includes/soa.php) substitutes it at
+    // read time for a framework that has none. One key, because a reader must not
+    // be able to tell a stored default from a fallen-back one, and because three
+    // keys holding the same sentence is three chances for a translator to make
+    // them disagree. The name predates the seeding decision (Task 67) and is kept
+    // rather than churned through Crowdin for 39 locales.
+    //
+    // It names the DRIVER (the risk assessment) rather than the framework:
+    // "included because it is part of this framework" is circular, and ISO 6.1.3
+    // derives controls from risk treatment, using Annex A afterwards only as a
+    // completeness cross-check.
+    //
+    // It was a placeholder ONLY until Task 67, so that an unreviewed sentence
+    // could not reach a customer's SoA by inaction. Measured, that produced the
+    // opposite failure: 19 of 20 frameworks left the field NULL and the SoA's
+    // Justification column came out BLANK for every applicable control with no
+    // linked risks -- the finding an SoA is most often failed on, and one a
+    // boilerplate sentence does not attract.
+    'DefaultInclusionJustificationPlaceholder' => 'يتم تحديدها من خلال تقييم مخاطر أمن المعلومات للمنظمة ويتم الاحتفاظ بها كإجراء تحكم ضروري.',
+    // Task 15: bulk-setting applicability from the control table's selection bar
+    // (#applicability--set, governance/index.php + governance-frameworks.js).
+    //
+    // The action's own label and the modal's one section. 'Applicability',
+    // 'Reason', 'Provider', 'Justification', 'Save' and 'Cancel' already exist
+    // and are reused; only the strings with no existing home are added here.
+    'SetApplicability' => 'نطاق التطبيق',
+    'ApplicabilityDecision' => 'قرار',
+    // The amber scope note, in two sentences the page assembles separately
+    // because they answer two different questions: WHICH framework the decision
+    // is scoped to, and WHICH controls are about to receive it. The second one
+    // has two spellings, because the header checkbox selects the current PAGE
+    // while "Select all N" escalates to the whole filtered result set -- the two
+    // genuinely differ once the table pages, and a note that blurred them would
+    // let the user write 1,535 decisions believing they had written 25.
+    'ApplicabilityScopeNote' => 'ينطبق هذا القرار فقط ضمن "{$framework}". ويمكن أن يظل التحكم نفسه ساريًا في إطار عمل آخر.',
+    'ApplicabilityAppliesToSelected' => 'سيتم تسجيل ذلك مقابل عنصر التحكم {$n} المحدد في هذه الصفحة.',
+    'ApplicabilityAppliesToAllFiltered' => 'سيتم تسجيل ذلك مقابل جميع عناصر التحكم {$n} التي تطابق عوامل التصفية الحالية، بما في ذلك تلك الموجودة في الصفحات الأخرى.',
+    // Per-state hints under the segmented control. The "applicable" one is the
+    // load-bearing sentence of the whole modal, and the SoA audit-readiness work
+    // rewrote it: an applicable control MAY now carry its own reasons and
+    // justification (ISO/IEC 27001 clause 6.1.3(d) asks for one per control, for
+    // inclusion as much as for exclusion), and leaving both empty is what falls
+    // back to the framework's default inclusion justification. The old sentence
+    // -- "this removes any recorded decision. No justification is needed." --
+    // is now false in both halves.
+    'ApplicabilityApplicableHint' => 'ضمن نطاق هذا الإطار. يُعدّ كل من السبب والتبرير اختياريين؛ وتركهما فارغين يؤدي إلى استخدام تبرير الإدراج الافتراضي للإطار.',
+    'ApplicabilityNotApplicableHint' => 'استبعاد عنصر تحكم من نطاق هذا الإطار. يلزم تقديم سبب وتبرير كتابي.',
+    'ApplicabilityInheritedHint' => 'يقوم شخص آخر بهذا التحكم نيابةً عنك. اذكر اسمه، واشرح ما يفعله.',
+    'ApplicabilityNarrativeHint' => 'يظهر في بيان نطاق التطبيق. اكتب ما يحتاجه المدقق لقبول القرار.',
+    'ApplicabilityProviderHint' => 'المنظمة التي تقوم بالرقابة: مزود خدمة سحابية، خدمة مُدارة، شركة أم.',
+    'ChooseAReason' => 'اختر سببًا',
+    'ApplicabilityNoReason' => 'لا يوجد سبب',
+    // Result toasts. Both interpolate a COUNT taken from the API response and
+    // nothing else -- no submitted text is ever reflected into a toast, which
+    // toastr renders as HTML.
+    'ApplicabilitySetResult' => 'تم تحديث إمكانية التطبيق لعنصر التحكم {$n}.',
+    'ApplicabilityClearResult' => 'تمت إعادة ضبط نطاق التطبيق ليكون قابلاً للتطبيق على عنصر (عناصر) التحكم {$n}.',
+    // Bulk control delete (Task 54, corrected Task 55). Deleting a control is
+    // final either way the delete engine implements it: a control with test
+    // history is soft-deleted (framework_controls.deleted = 1) to keep test
+    // history intact, a control with no tests is removed outright -- but
+    // nothing anywhere flips that flag back, so from the user's side there is
+    // no "kept" case, only "deleted, and its test history survives for audit
+    // purposes." Every sentence therefore leads with the same irreversible
+    // warning; the only thing that varies is whether an audit-history clause
+    // is appended, and that clause is omitted entirely rather than printed
+    // with a count of zero -- "0 are retained for audit history" reads as a
+    // warning about something that is not going to happen, and on a delete
+    // confirmation that is exactly the kind of noise that trains people to
+    // stop reading. Every {$...} is a count from the API response; no user
+    // text is ever interpolated, which matters because toastr renders HTML.
+    'DeleteControlsPreviewChecking' => 'جارٍ التحقق مما سيتم حذفه...',
+    'DeleteControlsPreviewSplit' => 'سيتم حذف عنصر التحكم {$n} . لا يمكن التراجع عن هذا الإجراء. سيتم الاحتفاظ بنتائج اختبار {$m} منها لأغراض التدقيق.',
+    'DeleteControlsPreviewKeptOnly' => 'سيتم حذف جميع عناصر التحكم {$n} . لا يمكن التراجع عن هذا الإجراء. يتم الاحتفاظ بنتائج الاختبار لأغراض التدقيق.',
+    'DeleteControlsPreviewRemovedOnly' => 'سيتم حذف عنصر التحكم {$n} . لا يمكن التراجع عن هذا الإجراء.',
+    'DeleteControlsPreviewNone' => 'لا يوجد شيء لحذفه: لم تعد عناصر التحكم المحددة موجودة.',
+    'ControlsDeletedResult' => 'تم حذف عنصر التحكم {$n}.',
+
+    // The Add/Edit framework modal's Status field. The label reuses the existing
+    // 'Status' key -- the same word the rail's Active/Inactive/All filter already
+    // uses -- so only the explanatory hint is new. It says the two things a user
+    // cannot see from the control itself: that Inactive is the NON-destructive way
+    // to retire a framework (unlike Delete, which cannot be undone), and that the
+    // change cascades through the hierarchy, which is what update_framework_status()
+    // has always done and is genuinely surprising when a parent is deactivated.
+    'FrameworkStatusHint' => 'تحتفظ الأطر غير النشطة بجميع عناصر التحكم والتعيينات الخاصة بها، ولكنها تُخفى من قائمة الأطر الافتراضية وتُستبعد من لوحة تحكم الحوكمة. يؤدي تعطيل إطار عمل إلى تعطيل جميع الأطر التابعة له؛ بينما يؤدي تنشيط إطار عمل إلى تنشيط الأطر الرئيسية التابعة له.',
+
+    // Task 60: the same #applicability--set modal, opened from ONE control's row
+    // action instead of the selection bulk bar. The button's own label reuses
+    // 'SetApplicability'; these two exist because the modal now has to say which
+    // of the two it is acting on, and both spellings must be unambiguous.
+    //
+    // The title names the specific object (design-system.md §8) and the note
+    // says "only", because the dangerous reading is the silent one: with rows
+    // ticked -- or with "Select all N filtered" in force -- a modal that said
+    // nothing would let a click the user believed applied to one row be read as
+    // applying to every control in the framework. Naming the control in both
+    // places is what makes the narrower scope visible rather than assumed.
+    // Corrected in Task 63. This spelling used to end "...only, whatever else is
+    // selected", which was printed on every row-action open whether or not
+    // anything else WAS selected -- a dangling absolute with no antecedent, so
+    // it read as a sentence that had been cut off. It is now the plain form, and
+    // the reassurance about a competing selection moved to
+    // 'ApplicabilityAppliesToControlNotSelection' below, which is printed only
+    // when there is a competing selection to reassure anyone about.
+    'SetApplicabilityForControl' => 'نطاق التطبيق: {$name}',
+    'ApplicabilityAppliesToControl' => 'سيتم تسجيله مقابل "{$name}" فقط.',
+
+    // Task 17: the Statement of Applicability report itself
+    // (reports/statement_of_applicability.php + pages/statement-of-applicability.js),
+    // the document ISO/IEC 27001:2022 clause 6.1.3(d) asks for and the one every
+    // applicability decision recorded on the Define Control Frameworks page
+    // exists to produce.
+    //
+    // 'StatementOfApplicability' already exists above (the framework modal's SoA
+    // card) and is reused for the report's own title, as are 'IsmsScopeStatement',
+    // 'DefaultInclusionJustification', the three 'Applicability*' state labels,
+    // 'ApplicabilityDecidedBy'/'DecidedOn', and the plain 'Framework',
+    // 'ControlNumber', 'ControlName', 'Justification', 'Evidence', 'Reason',
+    // 'Provider', 'Total', 'Controls' and 'Export' keys. Only strings with no
+    // existing home are added here.
+    'StatementOfApplicabilityDesc' => 'بالنسبة لإطار عمل واحد: كل عنصر تحكم، سواء كان قابلاً للتطبيق، ولماذا تم تضمينه أو استبعاده، وما إذا كان قد تم تنفيذه.',
+    // The header button on Define Control Frameworks. The verb is "generate"
+    // rather than "view" because the document is assembled at the moment it is
+    // asked for -- there is no stored SoA that could be out of date.
+    'GenerateStatementOfApplicability' => 'إعداد بيان قابلية التطبيق',
+
+    // The Justification column's SECOND resolution step, and the reason an SoA
+    // built here beats the spreadsheet it replaces: the risks that drove the
+    // control are already recorded against it, so nobody retypes them and they
+    // cannot go stale. {risks} is substituted with the displayed risk ids.
+    //
+    // Phrased to match clause 6.1.3, which derives controls from risk treatment
+    // and uses Annex A afterwards only as a completeness cross-check -- the same
+    // reasoning behind 'DefaultInclusionJustificationPlaceholder' above.
+    'SoaJustifiedByRiskAssessment' => 'يتم تحديد ذلك بناءً على تقييم مخاطر أمن المعلومات الخاص بالمنظمة. المخاطر المرتبطة: {risks}.',
+
+    // The Implemented column. DERIVED from maturity and the last test result on
+    // every read, never stored, so it cannot drift out of sync with the control.
+    // 'Yes' and 'No' already exist and are reused; only the middle value and the
+    // header need keys of their own. An excluded control's cell reuses the
+    // existing 'NotApplicable' ('N/A'), which is exactly the right abbreviation
+    // in a dense table.
+    'SoaImplemented' => 'مُنفّذ',
+    'SoaImplementedPartial' => 'جزئي',
+
+    // The cover block.
+    'SoaGeneratedOn' => 'تم إنشاؤه في',
+    'SoaExcludedCount' => 'مستبعد',
+
+    // The prompt shown when the framework has never been given the two cover
+    // fields. It PROMPTS rather than silently printing a blank cover: an SoA
+    // whose scope is empty is the one defect an auditor spots first, and the
+    // moment somebody opens the report is the only moment those fields matter.
+    // Both spellings of empty (never set, and deliberately cleared) prompt --
+    // from a reader's point of view there is nothing to print either way.
+    //
+    // The inclusion-justification line states a WEAKER consequence than it used
+    // to, because Task 67 made the stronger one untrue: the column no longer goes
+    // blank when the field is empty -- soa_framework_default_justification()
+    // substitutes the generic default sentence. The prompt survives because a
+    // generic sentence is not the organization's own, and an auditor reading 1,500
+    // identical rows of boilerplate is entitled to ask whose risk assessment it
+    // refers to.
+    'SoaMissingFieldsTitle' => 'هذا البيان يفتقر إلى تفاصيل الغلاف',
+    'SoaMissingScopeStatement' => 'لم يتم تسجيل أي بيان نطاق لهذا الإطار. يجب أن يحدد بيان نطاق العمل النطاق الذي تم إعداده من أجله.',
+    'SoaMissingInclusionJustification' => 'لم يتم تسجيل أي مبرر افتراضي للإدراج. ستعتمد الضوابط المطبقة التي لا ترتبط بمخاطر على بيان عام بدلاً من بيانك الخاص.',
+    'SoaEditFrameworkToAdd' => 'أضفها إلى الإطار',
+
+    // Opened from the Reporting Hub, which cannot supply a framework. A picker,
+    // not an error: an SoA is a per-framework document by definition -- the same
+    // control excluded from ISO 27001 is not thereby excluded from PCI DSS --
+    // and there is no cross-framework roll-up to offer instead.
+    'SoaChooseFramework' => 'اختر إطار عمل',
+    'SoaChooseFrameworkHint' => 'تُكتب عبارة التطبيق حول إطار عمل واحد في كل مرة.',
+    // The picker has a roster but nothing in it. Distinct from "this framework
+    // has no controls": there is no framework to write a statement about at all,
+    // and the fix is on a different page, so it says which one.
+    // The launcher's affordance row. "Open in browser" rather than "View"
+    // because it names what actually happens -- the document opens in a new tab,
+    // chrome-free -- and because Task 18 adds "Download as PDF" and "Download as
+    // XLSX" beside it, where "open" vs "download" is the distinction that
+    // matters.
+    // The document has no sidebar, so it needs its own way back for anyone who
+    // arrives from a bookmark or a shared link. Screen only; never printed.
+    'SoaBackToSelector' => 'العودة إلى بيان نطاق التطبيق',
+    'SoaNoFrameworks' => 'لا توجد أطر عمل نشطة',
+    'SoaNoFrameworksHint' => 'قم بتثبيت أو تفعيل إطار عمل ضمن الحوكمة > تحديد أطر التحكم، وسيكون متاحًا هنا.',
+
+    // The two refusals. Both explain rather than just failing, because the user
+    // arrived here deliberately.
+    'SoaFrameworkInactiveTitle' => 'هذا الإطار غير نشط',
+    'SoaFrameworkInactiveBody' => 'يصف بيان التطبيق النطاق الذي تعمل المنظمة ضمنه حاليًا. أعد تفعيل الإطار لإنشاء بيان.',
+    'SoaFrameworkNotFoundBody' => 'لم يعد هذا الإطار موجوداً.',
+
+    // A framework with no controls mapped into it. Not an error -- it is a real
+    // and recoverable state, and saying so beats an empty table.
+    'SoaNoControls' => 'لا يحتوي هذا الإطار على أي ضوابط',
+    'SoaNoControlsHint' => 'قم بربط عناصر التحكم بالإطار، وسيقوم بيان قابلية تطبيقه بإدراجها.',
+
+    // The second half of the statement-of-applicability launcher's affordance
+    // row, beside "Open in browser" and the existing 'DownloadAsXLSX'. Rendered
+    // only where the Import/Export Extra is active, which is what supplies the
+    // export. "Download as" rather than "Export to" so the pair reads as one
+    // choice of format, and so it matches the XLSX label already in this file.
+    'DownloadAsPDF' => 'قم بالتنزيل كملف PDF',
+
+    // The fourth column of the control modal's "Mapped Control Frameworks"
+    // widget, between the reference code and the reference text. The
+    // FRAMEWORK's own title for the control it is citing -- what a Statement of
+    // Applicability prints beside the clause number. Distinct from the existing
+    // 'ReferenceText', which holds the framework's full control statement, and
+    // from the SimpleRisk control's own name.
+    'ReferenceSubject' => 'الموضوع المرجعي',
+    // Placeholder/help text under that field, and the reason it is worth
+    // filling in: without it the Statement of Applicability has nothing to
+    // print but the source catalogue's name for its own control.
+    'ReferenceSubjectHint' => "العنوان الخاص بهذا العنصر في إطار العمل.",
+
+    // Task 63: the row-scoped population sentence in the Set applicability
+    // modal, in the one situation where the plain
+    // 'ApplicabilityAppliesToControl' above leaves a real question unanswered --
+    // the user has controls ticked, or a standing "Select all N filtered", and
+    // has just opened the modal from ONE row's own action.
+    //
+    // It states the guarantee rather than implying it. A user whose escalated
+    // selection covers an entire framework needs to know that this click is not
+    // about to overwrite it, and {$n} is the count of the OTHER selected
+    // controls -- the target is excluded, because it is very often ticked too
+    // and a promise that included it would be false.
+    'ApplicabilityAppliesToControlNotSelection' => 'سيتم تسجيله مقابل "{$name}" فقط — عناصر التحكم {$n} التي قمت بتحديدها لن تتأثر.',
+
+    // Task 65: the VISIBLE label on the controls toolbar's SoA button. The full
+    // sentence ('GenerateStatementOfApplicability' above) stays as the button's
+    // title and aria-label, and is still what the SoA page itself is called;
+    // this is the short form for a toolbar row it shares with the page's one
+    // primary action. At full length the secondary button measured more than
+    // twice the primary's width and became the largest element in the row.
+    //
+    // "SoA" is safe to abbreviate HERE and only here: the button appears solely
+    // when a single framework is scoped, beside an Applicability column, and it
+    // expands on hover.
+    'GenerateSoa' => 'إنشاء بنية الخدمات الموجهة (SoA)',
+
+    // ===== Clone framework (Task 64) =======================================
+    // The framework half of Clone control's framing (CloneOfControlTitle /
+    // ClonedFromControlNotice above), and for the same reason: the clone
+    // pre-fills the Add Framework modal rather than creating anything, so the
+    // modal has to say what was carried over before the user saves it.
+    //
+    // Separate keys from the control pair rather than one shared "Clone of
+    // {$name}" -- the two banners do not say the same thing. A cloned control
+    // simply asks to be reviewed; a cloned FRAMEWORK has to explain two things
+    // its fields cannot: that the source's control mappings come with it, and
+    // that the empty scope statement is deliberate. The blank field is the
+    // whole reason the banner is longer than the control's -- a scope statement
+    // left blank with no explanation reads as a field that failed to populate,
+    // and the one thing a clone exists to be given is a NEW scope (Josh: "you
+    // might want to use the same controls as one framework, but scope it
+    // differently"). {$name} and {$n} follow the same client-side
+    // formatTemplate() substitution the rest of this page's templates use.
+    'CloneOfFrameworkTitle' => 'نسخة من "{$name}"',
+    // {$n} is the count the rail is SHOWING for the source row -- its controls,
+    // not its raw mapping rows. Those differ (a framework can cite one control
+    // under two clause numbers, and the rail excludes deleted controls), and the
+    // number to promise is the one the user is looking at when they click and
+    // the one the clone's own rail row will show afterwards.
+    'ClonedFromFrameworkNotice' => 'تم استنساخها من "{$name}". سيتم نسخ عناصر التحكم الخاصة بها {$n} إلى الإطار الجديد، مع تطبيق كل منها تلقائيًا في البداية - لن يتم نقل أي من قرارات التطبيق الخاصة بها. بيان النطاق فارغ عمدًا: حدد النطاق الذي يغطيه هذا الإطار قبل إنشاء بيان التطبيق الخاص به.',
+    // Seeds the name field so the clone can be saved without a rename --
+    // framework names are unique, so a verbatim copy is refused on save.
+    'CloneOfFrameworkName' => '{$name} (استنساخ)',
+    'CloneFramework' => 'إطار عمل الاستنساخ',
+    // Extras version independently of Core, so an updated Import/Export Extra
+    // can end up calling a Core function the installed Core does not have. The
+    // export refuses with this rather than fataling -- see
+    // soa_export_refuse_if_core_too_old(), extras/import-export/includes/soa_export.php.
+    'SoaExportRequiresNewerCore' => 'يتطلب هذا التصدير إصدارًا أحدث من SimpleRisk Core مقارنةً بالإصدار المُثبّت. قم بتحديث SimpleRisk، ثم حاول التصدير مرة أخرى.',
+    // The framework ACQUISITION chooser (Task 26): "+ Add framework" asks how you
+    // want to get one, rather than assuming you want to type it in. Each option is
+    // rendered only when the route behind it actually exists for this user, so the
+    // hint text may state plainly what the route does -- it is never shown to
+    // someone who cannot take it.
+    'HowDoYouWantToAddAFramework' => 'كيف تريد إضافة إطار عمل؟',
+    'CreateFrameworkManually' => 'قم بإنشاء واحد يدويًا',
+    'CreateFrameworkManuallyHint' => 'قم بتسمية الإطار بنفسك، ثم أضف أو قم بتعيين عناصر التحكم الخاصة به.',
+    // Named for the framework rather than for its vendor. The hint was reworded
+    // at the same time: it used to end "...load its Secure Controls Framework
+    // controls", which read as a stutter once the label carried those words.
+    'GetFrameworkFromScf' => 'احصل على واحد من إطار عمل الضوابط الآمنة',
+    'GetFrameworkFromScfHint' => 'اختر إطار عمل منشورًا وقم بتحميل عناصر التحكم الخاصة به في خطوة واحدة.',
+    'ImportFrameworkFromCatalog' => 'استورد واحدة',
+    'ImportFrameworkFromCatalogHint' => 'قم بتثبيت إطار العمل وعناصر التحكم الخاصة به من كتالوج محتوى SimpleRisk.',
+
+    // The framework acquisition chooser's third route, which now offers the
+    // Import-Export Extra's CONTROL import (a spreadsheet naming a framework
+    // that does not exist yet creates it) rather than the GitHub catalogue the
+    // two keys above described. Those two are left in place, unreferenced, so a
+    // customer maintaining a custom lang.<locale>.php still reconciles by tail
+    // diff.
+    'ImportFrameworkFromSpreadsheet' => 'استورد واحدة من جدول بيانات',
+    'ImportFrameworkFromSpreadsheetHint' => 'قم بتحميل جدول بيانات يحتوي على عناصر التحكم التي تحدد الإطار، وسيتم إنشاء كليهما.',
+
+    // The Define Control Frameworks rail's second synthetic scope: the controls
+    // mapped to no framework at all. Its first, "All controls", reuses the
+    // existing AllControls key rather than adding a second string with the same
+    // English -- it replaced 'AllFrameworks' on that row, which named a union of
+    // frameworks while scoping to every control, mapped or not. 'AllFrameworks'
+    // is left in place and unreferenced by that page: other surfaces still use
+    // it, and every locale carries it.
+    'UnassignedControls' => 'عناصر تحكم غير مُخصصة',
+    // APPLICABILITY VALIDATION FAILURES. These reach the user: the v2 endpoint
+    // returns the exception's message as the API status message and the page
+    // renders it in a toast, so a hardcoded English literal here would be
+    // permanently English for every locale.
+    //
+    // NOTHING THE CALLER TYPED IS EVER INTERPOLATED INTO THESE. The parameters
+    // are validated enum values, integer ids and byte limits the server itself
+    // owns -- naming the ALLOWED values rather than echoing the rejected one is
+    // deliberate (it is both safe and more useful than repeating a typo).
+    'ApplicabilityErrUnknownState' => 'حالة التطبيق غير معروفة. المتوقع أحد الخيارات التالية: {$states}.',
+    'ApplicabilityErrNarrativeRequired' => 'يلزم وجود سرد لـ \'{$state}\'.',
+    'ApplicabilityErrNarrativeTooLong' => 'يبلغ طول السرد أكثر من {$bytes} بايت.',
+    'ApplicabilityErrReasonRequired' => 'يلزم ذكر سبب الاستبعاد لتحديد عنصر تحكم غير قابل للتطبيق.',
+    'ApplicabilityErrProviderRequired' => 'يُطلب من المزوّد وضع علامة على عنصر تحكم موروث.',
+    'ApplicabilityErrProviderTooLong' => 'اسم الموفر أطول من {$bytes} بايت.',
+    'ApplicabilityErrReasonsNotFound' => 'لا توجد أسباب التطبيق هذه: {$ids}.',
+    'ApplicabilityErrReasonsNotOffered' => 'لا تُقدم أسباب الانطباق هذه لهذه الحالة: {$ids}.',
+    'ApplicabilityErrFrameworkNotFound' => 'الإطار {$framework} غير موجود.',
+    'ApplicabilityErrControlsNotFound' => 'معرفات التحكم هذه غير موجودة: {$ids}.',
+    // Controls/Risks import result messages (validation gate, individual bad-row
+    // alerts, and the batched submitted/created/updated summaries)
+    'ControlIdOrShortNameFieldRequired' => 'يجب تعيين إما حقل معرف التحكم أو حقل الاسم المختصر للتحكم - لا يمكن تحديد صف بدون أحدهما.',
+    'RiskImportSubjectNull' => 'معرف المخاطر {$risk_id}: لم يتم تحديثه لأن حقل الموضوع فارغ أو مفقود.',
+    'RiskImportSummary' => 'تم تقديم {$submitted} المخاطر وتم تحديث {$updated} المخاطر.',
+    'ControlImportSummary' => 'تم إنشاء عنصر تحكم {$created} وتحديث عنصر تحكم {$updated}.',
+    'ImportAdditionalIssuesSuppressed' => '{$count} كان هناك عدد من الصفوف الإضافية التي لم يتم عرضها بشكل فردي هنا.',
+    'EncryptionPipelineStalledTask' => 'يبدو أن مسار التشفير (المهمة #{$id}، {$type}) متوقف - فقد ظل {$status} متوقفًا لفترة طويلة بشكل غير معتاد دون إحراز أي تقدم. هذا يعني عادةً أن عامل قائمة الانتظار في الخلفية لا يعمل؛ تحقق من جدولة تشغيله، ثم حاول مرة أخرى بعد معالجته للمهمة المتوقفة.',
+    'EncryptionPipelineStalledState' => 'يبدو أن عملية التشفير متوقفة، حيث تم وضع علامة "قيد التقدم" عليها لفترة طويلة بشكل غير معتاد دون وجود مهمة خلفية مطابقة للإشارة إليها. هذا يعني عادةً أن عامل قائمة الانتظار لا يعمل، أو أن عملية تشفير سابقة قد انتهت دون تحديث هذه الحالة بشكل صحيح. يُرجى مراجعة سجل التصحيح قبل المحاولة مرة أخرى.',
+    // DEMO_MODE — shown when a visitor to a shared demo instance attempts one
+    // of the operations that would spoil the demo for the next visitor
+    'ActionDisabledOnDemoInstance' => 'تم تعطيل هذا الإجراء في النسخة التجريبية من SimpleRisk.',
+
+    // The one-click upgrade progress window: the step an upgrade is on, and
+    // the line shown once it finishes
+    // Shown when an upgrade's progress record has not been touched for long
+    // enough that the process running it is presumed gone
+    'UpgradeJobStalled' => 'توقف التحديث عن الاستجابة. تحقق من سجل الخادم قبل إعادة المحاولة.',
+    // Shown when an upgrade replaced the instance's configuration file and could
+    // not put the original back
+    // Shown when the database was brought up to date but the application files
+    // could not be replaced, so the instance has NOT moved to the new release
+    'UpdateAppFailed' => 'لم يتم تحديث ملفات التطبيق، لذا لا تزال هذه النسخة تعمل بإصدارها السابق. راجع سجل SimpleRisk لمعرفة السبب، ثم أعد تشغيل التحديث.',
+    // The one-click upgrade progress screen
+    'UpgradeInProgress' => 'في تَقَدم',
+    'UpgradeStepNotNeeded' => 'غير مطلوب',
+    // Recovering an Upgrade Extra whose files are damaged
+    'UpgradeExtraDamagedReinstalling' => 'ملف الترقية الإضافي المثبت تالف. جارٍ تنزيل نسخة جديدة.',
+    'UpgradeExtraDamagedRepaired' => 'تم استبدال النسخة الإضافية للترقية بنسخة عاملة.',
+    'UpgradeExtraDamagedFailed' => 'برنامج الترقية الإضافي تالف ولا يمكن استبداله تلقائيًا. أعد تثبيته من صفحة الإضافات، أو استعد النسخة الاحتياطية من simplerisk/extras/upgrade/، ثم حاول مرة أخرى.',
+    'UpgradeAlreadyCurrent' => 'هذه النسخة موجودة بالفعل على الإصدار {version}، وهو أحدث إصدار. لم تكن هناك حاجة إلى أي ترقية.',
+    'UpgradeShowWhatItDid' => 'أظهر ما فعله',
+    'UpgradeBackupsListed' => 'يتم إدراج هذه النسخ الاحتياطية ضمن التكوين > النسخ الاحتياطية.',
+    'UpgradingTo' => 'الترقية إلى {version}',
+    'UpgradeSafeToClose' => 'يمكنك إغلاق هذه النافذة بأمان. سيستمر التحديث على الخادم، وسيتم إعادة ربط هذه الصفحة.',
+    'UpgradeDownloadLog' => 'سجل التنزيل',
+    'UpgradeStatementsApplied' => 'تم بدء {started} · تم تطبيق {count} من العبارات',
+    // The Upgrade Extra's pre-upgrade check of the instance it is sitting on
+    'UpgradeCheckingInstance' => 'جارٍ التحقق من هذه الحالة',
+    'UpgradeInstanceChecked' => 'تم فحص النسخة، ولا حاجة لأي تصحيحات.',
+    'UpgradeBlockedByCorrections' => 'توقفت عملية الترقية لأن هذه الحالة تحتاج إلى تصحيح لا يمكن تطبيقه تلقائيًا. اتبع التعليمات المذكورة أعلاه، ثم أعد تشغيل الترقية. لم يتم تغيير أي شيء آخر.',
+    // Shown when an upgrade replaced the instance's configuration file and could not put the original back
+    'ConfigRestoreFailed' => 'لم يتمكن التحديث من استعادة ملف إعدادات هذه النسخة. يُرجى استعادة الملف simplerisk/includes/config.php من النسخة الاحتياطية قبل المتابعة.',
+    'UpgradeDidNotAdvance' => 'لم تُحدث وظيفة الترقية للإصدار "{$version}" تغييرًا في إصدار قاعدة البيانات؛ لذا تم إيقافها حتى لا يتم تشغيلها مرة أخرى.',
+    'BackupDatabaseNative' => 'نسخ قاعدة البيانات احتياطيًا (لا حاجة لأدوات خارجية)...',
+    'UpgradeAlreadyRunning' => 'يتم بالفعل إجراء ترقية على هذه النسخة.',
+    'UpgradeStatusUnreachable' => 'انقطع الاتصال بالخادم أثناء عملية الترقية. راجع سجل SimpleRisk؛ فقد تكون عملية الترقية لا تزال جارية.',
+    'UpgradeJobUnwritable' => 'تعذّر بدء الترقية لعدم إمكانية كتابة سجل التقدم. تأكد من أن مجلد النظام المؤقت قابل للكتابة من قِبل مستخدم الويب.',
+    'UpgradeStepCheckingVersions' => 'يتم الآن التحقق من الإصدارات',
+    'UpgradeStepUpgradingDatabase' => 'تحديث مخطط قاعدة البيانات',
+    'UpgradeStepFinalising' => 'تطبيق التحويلات بعد الترقية',
+    'UpgradeDatabaseHeading' => 'تحديث قاعدة البيانات',
+    'UpgradeDatabaseComplete' => 'اكتملت ترقية قاعدة البيانات.',
+    'UpgradeHideWhatItDid' => 'أخفِ ما فعله',
+    'UpgradeStateRunning' => 'قيد التشغيل',
+    'UpgradeSessionExpired' => 'انتهت صلاحية جلستك. سجّل الدخول مرة أخرى للاطلاع على التحديث.',
+    'UpgradeLostContact' => 'انقطع الاتصال بالخادم. أعد تحميل هذه الصفحة لإعادة الاتصال بالتحديث.',
+    'UpgradeDatabaseAlreadyCurrent' => 'قاعدة البيانات موجودة بالفعل في إصدار التطبيق.',
+    'UpgradeConversionsApplied' => 'تم تطبيق تحويلات المحرك ومجموعة الأحرف.',
+    'UpgradeStoppedShort' => 'توقفت عملية الترقية عند {reached} دون الوصول إلى {app}. راجع سجل الخادم.',
+    'UpgradeStepBackingUp' => 'النسخ الاحتياطي',
+    'UpgradeStepUpgradingFiles' => 'تحديث ملفات التطبيق',
+    'UpgradeStepUpgradingExtras' => 'ترقية الإضافات المثبتة',
+    'UpgradeStepUpdatingUpgradeExtra' => 'تحديث الترقية الإضافية',
+    // The Upgrade Extra's pre-chain corrections: what is wrong, and what to do
+    // about it. These are the highest-stakes messages the upgrade produces --
+    // an operator reads them to unstick an instance that cannot upgrade.
+    'UpgradeCorrectionUnknownVersionTitle' => 'لا يشير إصدار قاعدة البيانات المسجل إلى إصدار حقيقي',
+    'UpgradeCorrectionNoRecordedVersion' => 'لا توجد نسخة مسجلة في قاعدة البيانات.',
+    'UpgradeCorrectionUnknownVersionFinding' => 'تشير قاعدة البيانات إلى الإصدار \'{$version}\'، وهو إصدار غير مُحدد من SimpleRisk. لا يمكن للترقية اختيار نقطة بداية منه.',
+    'UpgradeCorrectionUnknownVersionGuidance' => 'قم بتعيين إعداد db_version إلى الإصدار الذي يتوافق مخططه مع قاعدة البيانات الحالية، ثم أعد تشغيل الترقية: UPDATE settings SET value=\'<release>\' WHERE name=\'db_version\'. إذا كانت القيمة عنصرًا نائبًا مثل 2026XXXX-001، فإن القيمة الصحيحة غالبًا ما تكون أحدث إصدار فعلي تم تثبيته قبل تشغيل الترقية.',
+    'UpgradeCorrectionLegacySessionsTitle' => 'لا يمكن لجدول الجلسات أن يصمد بعد عملية تحويل ترميز الأحرف الخاصة بالترقية',
+    'UpgradeCorrectionLegacySessionsFinding' => 'يُعرَّف حقل `sessions`.`id` في جدول MyISAM على أنه من نوع VARCHAR({$width}). تحويله إلى utf8mb4، كما هو الحال في الإصدار 20230106-001 وما بعده، سيتجاوز حدّ فهرس MyISAM البالغ 1000 بايت، مما سيؤدي إلى فشل الترقية.',
+    'UpgradeCorrectionLegacySessionsGuidance' => 'تستخدم جلسة واحدة أو أكثر من الجلسات النشطة معرّفًا أطول من 128 حرفًا. سيؤدي تضييق نطاق العمود الآن إلى تسجيل خروج هؤلاء المستخدمين، لذلك تُرك الأمر كما هو. أعد محاولة الترقية بعد انتهاء صلاحية تلك الجلسات.',
+    'UpgradeCorrectionApplied' => 'تم التصحيح.',
+    'UpgradeCorrectionFailed' => 'لم يتم تطبيق هذا التصحيح. راجع سجل SimpleRisk لمعرفة السبب.',
+    'UpgradeCorrectionAppliedLine' => 'تم التصحيح: {$title} {$message}',
+    'UpgradeCorrectionNotAppliedLine' => 'غير مصحح: {$title} {$message}',
+    'UpgradeCorrectionsNeeded' => 'يلزم إجراء تصحيحات قبل ترقية هذه النسخة: {$count}',
+    'UpgradeCorrectionsNeededShort' => 'التصحيحات المطلوبة: {$count}',
+    'UpdateDatabase' => 'جارٍ تحديث قاعدة البيانات...',
+    // Authentication screens (index.php, reset.php, reset_password.php)
+    'EnterTheCredentialsForYourAccount' => 'أدخل بيانات اعتماد حسابك.',
+    'TroubleSigningIn' => 'هل تواجه مشكلة في تسجيل الدخول؟ تواصل مع مسؤول SimpleRisk الخاص بك.',
+    'BackToLogin' => 'العودة إلى صفحة تسجيل الدخول',
+    'Or' => 'أو',
+    'WeWillEmailAResetTokenToYourAccount' => 'سنرسل رمز إعادة التعيين إلى العنوان الموجود في حسابك عبر البريد الإلكتروني.',
+    'EnterTheResetTokenFromYourEmail' => 'أدخل رمز إعادة التعيين الموجود في بريدك الإلكتروني مع كلمة المرور الجديدة.',
+    'ChooseANewPasswordToContinue' => 'اختر كلمة مرور جديدة للمتابعة.',
+    'FromZeroToGRCInMinutes' => 'من الصفر إلى إدارة المخاطر والامتثال والحوكمة في دقائق.',
+    'OrganizationLogo' => 'شعار المنظمة',
+    'LoginScreenBranding' => 'العلامة التجارية لشاشة تسجيل الدخول',
+    'CustomLogo' => 'شعار مخصص',
+    'CustomLogoHint' => 'بصيغة PNG أو JPG أو GIF أو WebP، بحجم يصل إلى 1 ميجابايت ودقة 2000×2000 بكسل. يُعرض الشعار بدقة تصل إلى 260×64 بكسل، لذا يُرجى اختيار دقة 520×128 بكسل للشاشات عالية الكثافة. الشريط العلوي ولوحة تسجيل الدخول داكنان، لذا يُرجى تحميل شعار يظهر بوضوح على خلفية داكنة. احذف الشعار للعودة إلى شعار SimpleRisk.',
+    'CurrentLogo' => 'الشعار الحالي',
+    'RemoveLogo' => 'قم بإزالة الشعار',
+    'LoginTagline' => 'شعار تسجيل الدخول',
+    'LoginTaglineHint' => 'يستبدل هذا النص شعار SimpleRisk على شاشة تسجيل الدخول. سطر واحد قصير هو الأنسب. اتركه فارغًا للاحتفاظ بشعار SimpleRisk.',
+    'LoginNotice' => 'إشعار استخدام النظام',
+    'LoginNoticeHint' => 'يظهر هذا الحقل على شاشة تسجيل الدخول قبل تسجيل دخول أي مستخدم. استخدمه لإشعار الاستخدام المقبول أو استخدام النظام. اتركه فارغًا لعدم إظهار أي إشعار. الروابط والصور غير مسموح بها.',
+    'BrandingRequiresCustomization' => 'تُعدّ العلامة التجارية لشاشة تسجيل الدخول جزءًا من خدمة التخصيص الإضافية.',
+    'LogoMustBeAnImage' => 'يجب أن يكون الشعار صورة بصيغة PNG أو JPG أو GIF أو WebP.',
+    'LogoTooLarge' => 'يجب ألا يتجاوز حجم الشعار 1 ميجابايت.',
+    'LogoDimensionsTooLarge' => 'يجب ألا يتجاوز حجم الشعار 2000 × 2000 بكسل.',
+    'LogoDimensionsTooSmall' => 'يجب ألا يقل طول الشعار عن 32 بكسل على أطول ضلع فيه.',
+    'LogoUploadFailed' => 'تعذر تحميل الشعار. يرجى المحاولة مرة أخرى.',
+    'LogoUpdated' => 'تم تحديث الشعار.',
+    'LogoRemoved' => 'تمت إزالة الشعار.',
+    'NoSystemUseNoticeSet' => 'لم يتم تعيين أي إشعار لاستخدام النظام.',
+    'NoticeSizeSmall' => 'صغير',
+    'NoticeSizeNormal' => 'طبيعي',
+    'NoticeSizeLarge' => 'كبير',
     '' => '',
 );
 ?>

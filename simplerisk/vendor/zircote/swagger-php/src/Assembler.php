@@ -1,0 +1,110 @@
+<?php declare(strict_types=1);
+
+/**
+ * @license Apache 2.0
+ */
+
+namespace OpenApi;
+
+use OpenApi\Utils\AttributeFactory;
+use OpenApi\Utils\TokenScanner;
+
+/**
+ * Collects OpenAPI spec attributes from PHP reflectors and assembles them into a Specification.
+ *
+ * The assembler operates in two passes:
+ *
+ * 1. Stack-resolve (resolveNesting): On each reflector, sibling attributes are merged
+ *    using merge() — e.g., a Schema adjacent to a Property on the same parameter
+ *    fills the Property's $schema slot.
+ *
+ * 2. Hierarchical absorb (resolveHierarchy): Attributes from inner reflectors (properties,
+ *    parameters, constants) flow up into enclosing-level containers using contains() —
+ *    e.g., Property instances from class members are absorbed into the class-level Schema.
+ *
+ * After both passes, only root attributes (isRoot() = true) should remain.
+ */
+class Assembler
+{
+    protected TokenScanner $tokenScanner;
+
+    public function __construct(
+        protected Specification $specification = new Specification(),
+        protected AttributeFactory $attributeFactory = new AttributeFactory(),
+    ) {
+        $this->tokenScanner = $this->attributeFactory->getTokenScanner();
+    }
+
+    public function getSpecification(): Specification
+    {
+        return $this->specification;
+    }
+
+    public function getAttributeFactory(): AttributeFactory
+    {
+        return $this->attributeFactory;
+    }
+
+    /**
+     * Collect all OpenAPI attributes from the given reflectors into the specification.
+     */
+    public function collect(\ReflectionClass|\ReflectionMethod|\ReflectionProperty|\ReflectionParameter|\ReflectionClassConstant ...$reflectors): static
+    {
+        foreach ($reflectors as $reflector) {
+            $this->collectFromReflector($reflector);
+        }
+
+        return $this;
+    }
+
+    protected function collectFromReflector(\ReflectionClass|\ReflectionMethod|\ReflectionProperty|\ReflectionParameter|\ReflectionClassConstant $reflector): void
+    {
+        $this->attributeFactory->resetTranslators();
+
+        if ($reflector instanceof \ReflectionClass) {
+            $this->collectFromClass($reflector);
+
+            return;
+        }
+
+        $this->specification->add(...$this->attributeFactory->fromReflector($reflector));
+    }
+
+    /**
+     * Collect attributes from a class: stack-resolve at each structural level,
+     * then hierarchically absorb inner attributes into class-level containers.
+     */
+    protected function collectFromClass(\ReflectionClass $class): void
+    {
+        $outer = $this->attributeFactory->fromReflector($class);
+
+        if ($outer !== []) {
+            // Only collect own members when the class has a root attribute (e.g. Schema).
+            // Classes without root attributes (plain parents/traits) are handled later
+            // by the `Inheritance` augmenter, which merges their members into the child schema.
+            $inner = $this->attributeFactory->membersOf($class);
+            $roots = $this->attributeFactory->resolveHierarchy($outer, $inner);
+
+            $this->specification->add(...$roots);
+        }
+
+        // Methods are always processed — a controller may have operations without
+        // any class-level schema attribute. Properties on methods are handled via
+        // membersOf() (absorbed into class schema) or ExpandHierarchy (non-schema interfaces).
+        foreach ($class->getMethods(\ReflectionMethod::IS_PUBLIC) as $method) {
+            $scannerDetails = $this->tokenScanner->detailsFor($class);
+            if ($method->isConstructor()
+                || $method->getDeclaringClass()->getName() !== $class->getName()
+                || ($scannerDetails && !in_array($method->getName(), $scannerDetails['methods'], true))
+            ) {
+                continue;
+            }
+
+            if ($this->attributeFactory->hasOnlyProperties($method)) {
+                continue;
+            }
+
+            $this->specification->add(...$this->attributeFactory->fromReflector($method));
+        }
+    }
+}

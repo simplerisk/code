@@ -11,7 +11,7 @@ use Composer\Plugin\PluginInterface;
 
 class XMLProviderInstallerPlugin implements PluginInterface
 {
-    /** @var \SimpleSAML\Composer\XMLProviderInstaller */
+    /** @var \SimpleSAML\Composer\XMLProvider\XMLProviderInstaller */
     private XMLProviderInstaller $installer;
 
 

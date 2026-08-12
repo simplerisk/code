@@ -7,6 +7,14 @@
 require_once(realpath(__DIR__ . '/api.php'));
 require_once(realpath(__DIR__ . '/../../../includes/functions.php'));
 require_once(realpath(__DIR__ . '/../../../includes/extras.php'));
+// entity_graph.php defines the get_*_connectivity_for_risk() walkers called
+// directly below (api_v2_risks_associations()); declared explicitly per
+// CLAUDE.md's function-reachability rule even though it is also reachable
+// transitively today via includes/reporting.php.
+require_once(realpath(__DIR__ . '/../../../includes/entity_graph.php'));
+// ai_context_search_visible_ids() (the L4/Team-Separation record filter
+// applied to the walker results below) is defined here.
+require_once(realpath(__DIR__ . '/../../../includes/ai_context_graph.php'));
 
 require_once(language_file());
 
@@ -98,6 +106,19 @@ function api_v2_risks_associations()
             // Get the connectivity for the risk
             $asset_associations = get_asset_connectivity_for_risk($id);
             $control_associations = get_control_connectivity_for_risk($id);
+
+            // L4 (Team Separation) record filter. get_asset_connectivity_for_risk()
+            // has no L4 awareness of its own (unlike the risk-neighbor walkers,
+            // which strip team-inaccessible risks internally). This endpoint
+            // calls the walker directly rather than through the /ai/context
+            // orchestrator (which applies its own L4 pass over the assembled
+            // node set), so without this the assets bucket leaks off-team
+            // records to any caller who can see this risk (see
+            // l4-audit.md Finding 3b).
+            if (!empty($asset_associations)) {
+                $visibleAssetIds = ai_context_search_visible_ids('asset', array_column($asset_associations, 'asset_id'));
+                $asset_associations = graph_filter_rows_by_visible_ids($asset_associations, 'asset_id', $visibleAssetIds);
+            }
 
             // Set the status
             $status_code = 200;
@@ -627,7 +648,7 @@ function api_v2_risk_submit()
     $risk_id = (int)$last_insert_id + 1000;
 
     // Compose response
-    set_alert(true, "good", _lang("RiskSubmitSuccess", ["subject" => $subject], false));
+    set_alert(true, "good", _lang_raw("RiskSubmitSuccess", ["subject" => $subject]));
     api_v2_json_result(
         200,
         $associate_test ? get_alert(true) : null,

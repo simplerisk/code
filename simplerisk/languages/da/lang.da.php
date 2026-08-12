@@ -1345,7 +1345,6 @@ $lang = array(
     'UpdateAssetGroupTooltip' => 'Opdater aktiv gruppe',
     'DeleteAssetGroupTooltip' => 'Slet aktiv gruppe',
     'RemoveAssetTooltip' => 'Fjern aktiv fra aktiv gruppe',
-    'ControlShortNameFieldRequired' => 'Feltet kontrolkort navn er påkrævet.',
     'AffectedAssetsWidgetPlaceholder' => 'Vælg et aktiv eller en aktiv gruppe',
     'AffectedAssetsWidgetNoDropdownPlaceholder' => 'Tilføj et aktiv navn',
     'AffectedAssetsWidgetInstructions' => 'Vælg et aktiv eller en aktiv gruppe. Du kan oprette et nyt aktiv ved at føje dets navn til listen.',
@@ -2226,7 +2225,7 @@ $lang = array(
     'IncidentSummaryUpdateSuccessful' => 'Resumé blev opdateret.',
     'ImportSuccessful' => 'Importen lykkedes!',
     'Document' => 'Dokument',
-    'SelfAssessments' => 'Selvvurderinger',
+    'SelfAssessments' => 'Selvevalueringer',
     'AssetId'=>'Aktiv-id',
     'ExportTemplateGroups' => 'Eksportér skabelongrupper',
     'ImportTemplateGroups' => 'Importer skabelongrupper',
@@ -2341,7 +2340,7 @@ $lang = array(
     'Advanced_Search_no_results_1' => 'Der ser ikke ud til at være nogen resultater for din forespørgsel.',
     'Advanced_Search_no_results_2' => 'Dobbelttjek din søgning for stavefejl, stavefejl, eller prøv en anden søgeterm.',
     'IncidentsPerDay' => 'Hændelser pr. dag',
-    'CurrentVsDesiredMaturity' => 'Aktuel vs ønsket modenhed af kontrolfamilie',
+    'CurrentVsDesiredMaturity' => 'Modenhed efter kontrolfamilie',
     'RiskDistribution' => 'Risikofordeling',
     'RiskDistributionDescription'=>'Ovenstående cirkeldiagrammer hjælper med at vise fordelingen af risici mellem de forskellige risikoniveauer for både iboende og resterende risiko. Vi kan bruge disse to tærter til at vise fremskridt i vores risikobegrænsende indsats. Hvis kagen med resterende risiko viser store stykker af meget høje eller høje risici, kan det være et tegn på, at din organisation påtager sig for meget risiko, og at der er behov for yderligere afbødningsindsats.',
     'EnableTabs' => 'Aktiver faner',
@@ -2413,7 +2412,7 @@ $lang = array(
     'EditModeInformation' => 'Slå redigeringstilstand til, rediger layoutet. Hvis du slår det fra, gemmes layoutet ikke automatisk.',
     'InvalidLayout' => 'Ugyldigt layout!',
     'InvalidLayoutOnlyCustomAllowedAsDefault' => 'Ugyldigt layout! Kun brugerdefinerede layouts kan gemmes som standard.',
-    'LayoutSaved' => 'Layout gemt!',
+    'LayoutSaved' => 'Dit dashboardlayout er blevet gemt.',
     'DefaultLayout' => 'Standardlayout',
     'DefaultLayoutInformation' => 'Indstiller dette layout som standard, der skal bruges i stedet for det, der leveres af SimpleRisk til brugere, der ikke har et brugerdefineret layoutsæt. Du kan kun indstille et gemt ikke-tomt brugerdefineret layout som standard. Hvis et layout, der er markeret som standard, gendannes til standardlayoutet, vil det gendanne det til standarden leveret af SimpleRisk.',
     'LayoutDefaultStatusUpdated' => 'Layoutets standardstatus er blevet opdateret.',
@@ -2422,7 +2421,7 @@ $lang = array(
     'DefaultLayoutRestored' => 'Standardlayoutet er blevet gendannet!',
     'SavedLayoutRestored' => 'Gemt layout er blevet gendannet med succes!',
     'ConfirmRestoreLayout' => 'Er du sikker? Du mister dine ændringer i dette layout.',
-    'ConfirmDisableEditModeWithPendingChanges' => 'Du har ikke-gemte ændringer, som du vil miste, når du forlader siden. Er du sikker på, at du vil deaktivere \'Redigeringstilstand\' og muligvis glemmer at gemme dine ændringer?',
+    'ConfirmDisableEditModeWithPendingChanges' => 'Du har ikke-gemte ændringer på dette dashboard. Vil du kassere dem og stoppe redigeringen?',
     'ConfirmSave' => 'Hvis du gemmer disse ændringer, overskrives dit tidligere gemte layout. Er du sikker på, at du vil fortsætte?',
     'ConfirmSaveAdminDefault' => 'Dette layout er indstillet som standard for denne layouttype. Hvis du gemmer disse ændringer, ændres layoutet for alle brugere, der ikke har et tilpasset layout indstillet til denne layouttype. Er du sikker på, at du vil fortsætte?',
     'RisksByMonth' => 'Risici pr. måned',
@@ -3111,6 +3110,1523 @@ $lang = array(
     'ResendAssessmentDescription' => 'Genudsted automatisk vurderingen i en tilbagevendende kadence.',
     'ResendEveryDays' => 'Send igen hver {$day} dage',
     'QuestionnaireSaveBarHint' => '"Gem og send" sender spørgeskemaet til sine kontakter med det samme.',
+    // Home dashboard — KPI tile labels
+    'NewSelfAssessment' => 'Ny selvevaluering',
+    'SelfAssessmentPrereqIntro' => 'Selvevalueringer giver dig mulighed for at evaluere din organisation i forhold til et Secure Controls Framework og automatisk generere risici fra de kontroller, der fejler. Først kræves der to opsætningstrin:',
+    'RegisterYourInstance' => 'Registrer din instans',
+    'RegisterYourInstanceHelp' => 'Registrering forbinder denne instans til SimpleRisks licenstjeneste, så gratis ekstramateriale (inklusive SCF) kan downloades.',
+    'InstallTheSCF' => 'Installer Secure Controls Framework',
+    'InstallTheSCFHelp' => 'SCF er et gratis ekstraværktøj, der leverer de rammer, kontrolspørgsmål og risikokortlægninger, som denne funktion vurderer i forhold til. Installationen kører i baggrunden og kan tage et par minutter.',
+    'GoToRegistration' => 'Gå til registrering',
+    'GoToSCF' => 'Gå til Sikker kontrolramme',
+    'SelfAssessmentEnableTip' => 'Valgfrit: Under Styring > Frameworks kan du aktivere specifikke SCF-frameworks til at se en kort kurateret liste, når du starter en vurdering. Du kan også vurdere i forhold til ethvert framework i det fulde SCF-katalog uden at aktivere det.',
+    'ChooseAFramework' => 'Vælg en ramme at vurdere i forhold til',
+    'EnabledFrameworks' => 'Aktiverede rammer',
+    'AllScfFrameworks' => 'Alle SCF-rammer',
+    'Start' => 'Starte',
+    'Resume' => 'Genoptage',
+    'ControlQuestion' => 'Kontrolspørgsmål',
+    'NotApplicable' => 'Ikke tilgængelig',
+    'SaveProgress' => 'Gem fremskridt',
+    'MarkComplete' => 'Markér fuldført',
+    'AnsweredOfTotal' => 'besvaret',
+    'FailedSoFar' => 'mislykkedes indtil videre',
+    'StartedBy' => 'Startet af',
+    'FailedControls' => 'Fejlslagne kontroller',
+    'PushToRisk' => 'Skub til risiko',
+    'ConfirmDeleteSelfAssessment' => 'Vil du slette denne selvevaluering? Dette kan ikke fortrydes.',
+    'ConfirmCompleteSelfAssessment' => 'Markerer du denne vurdering som fuldført? Der vil opstå risici som følge af fejlslagne kontroller.',
+    'NoSelfAssessmentsYet' => 'Ingen selvevalueringer endnu. Start en for at komme i gang.',
+    'RequestFailed' => 'Anmodningen kunne ikke fuldføres. Prøv igen.',
+    'NoPendingRisks' => 'Ingen udestående risici. Udfør en vurdering for at generere risici fra fejlslagne kontroller.',
+    'NoFailedControls' => 'Ingen kontrolresultater at vise for dette filter.',
+    'ControlResultsTruncated' => 'Viser de seneste 2000 resultater. Indskrænk filteret for at se flere.',
+    'GeneratedFromSelfAssessment' => 'Genereret fra selvevaluering',
+    'SelfAssessmentMitigationSolution' => 'Implementer de kontroller, der er linket nedenfor, og som blev identificeret som mangelfulde under denne selvevaluering, for at afbøde denne risiko.',
+    'NSelected' => '{n} valgt',
+    'FilterByControl' => 'Filtrer efter kontrolelement',
+    'Pushing' => 'Tryk…',
+    'Deleting' => 'Sletter…',
+    'ConfirmPushSelectedPendingRisks' => 'Skub den/de valgte ventende risiko(er) {n} til risici?',
+    'ConfirmDeleteSelectedPendingRisks' => 'Vil du slette den/de valgte, ventende risiko(er) {n} ? Dette kan ikke fortrydes.',
+    'ConfirmDeleteSelectedSelfAssessments' => 'Vil du slette den/de valgte selvevaluering(er) {n} ? Dette kan ikke fortrydes.',
+    'BulkPartialFailure' => '{n} af {total} elementer lykkedes; resten mislykkedes. Opdater for at se den aktuelle tilstand.',
+
+    // Workflows Extra - deactivation confirm ('Deactivate' at line 480 is reused as-is)
+    'WorkflowsExtraDeactivateConfirm' => 'Vil du deaktivere Workflows Extra? Alle brugeroprettede arbejdsgangsdefinitioner slettes permanent. Systemarbejdsgange bevares.',
+    'HomeKpiOpenRisks' => 'Åben Risici',
+    'HomeKpiNeedsReview' => 'Behov for gennemgang',
+    'HomeKpiUnmitigated' => 'Ikke mitigeret',
+    'HomeKpiClosedRisks' => 'Lukkede Risici',
+    'HomeKpiControlPassRate' => 'Kontrolbeståelsesprocent',
+    'HomeKpiFailingControls' => 'Fejlende kontroller',
+    'HomeKpiOpenAudits' => 'Åbne revisioner',
+    'HomeKpiTestsDueSoon' => 'Test forfalder snart',
+    'HomeKpiActiveFrameworks' => 'Aktive rammer',
+    'HomeKpiTotalControls' => 'Total kontrol',
+    // Home dashboard — What's Next feed
+    'WhatsNext' => 'Hvad er det næste?',
+    'WhatsNextAllCaughtUp' => 'Du er helt opdateret.',
+    'WhatsNextRegisterInstance' => 'Registrer din SimpleRisk-instans',
+    'WhatsNextSubmitFirstRisk' => 'Indsend din første risiko',
+    'WhatsNextLoadFramework' => 'Indlæs en kontrolramme',
+    'WhatsNextUnreviewedRisks' => 'Risici at gennemgå',
+    'WhatsNextUnmitigatedRisks' => 'Risici, der skal afbødes',
+    'WhatsNextInitiateAudits' => 'Revisioner, der skal iværksættes',
+    // Home dashboard — widget picker type labels
+    'WidgetType_kpi' => 'KPI-flise',
+    'WidgetType_whats_next' => 'Liste',
+    // Home dashboard — hub catalog entry
+    'HomeDashboard' => 'Hjem',
+    'HomeDashboardDesc' => 'Dit udgangspunkt – overblik over de vigtigste målinger og hvad du skal gøre nu.',
+    'HomeChartRiskByLevel' => 'Risiko efter niveau',
+    'HomeKpiThisMonth' => 'denne måned',
+    'HomeKpiNoChange' => 'Ingen ændring',
+    'EditLayout' => 'Rediger layout',
+    'ListHighestRisks' => 'Mine højeste risici',
+    'ListPastDueReviews' => 'Forfaldne anmeldelser',
+    'ListUpcomingTests' => 'Kommende tests',
+    'ListRecentFailures' => 'Nylige fejl',
+    'ListPoliciesReview' => 'Dokumenter til gennemgang',
+    'ListExpiringExceptions' => 'Udløbende undtagelser',
+    'ImKpiOpenIncidents' => 'Totalt åbne',
+    'ImKpiOverdue' => 'Forsinket',
+    'ImKpiMttr30' => 'Gennemsnitlig opløsning',
+    'ImKpiMttrQuarter' => 'Gennemsnitlig opløsning (90 dage)',
+    'ImKpiMttrYear' => 'Gennemsnitlig løsning (1 år)',
+    'ImKpiMttrAll' => 'Gennemsnitlig løsning (alle)',
+    'ImKpiResolved30' => 'Løst',
+    'ImChartBySeverity' => 'Efter sværhedsgrad',
+    'ImChartByStatus' => 'Efter status',
+    'ImListRecent' => 'Nylige hændelser',
+    'ImListUnassigned' => 'Ikke-tildelte hændelser',
+    'HomeKpiOpenExceptions' => 'Åbne undtagelser',
+    'HomeKpiPolicies' => 'Politikker',
+    'ResolutionTargets' => 'Løsningsmål (dage)',
+    'ResolutionTargetsHelp' => 'Antallet af dage, en hændelse må forblive åben, før den tæller som forsinket.',
+    'DefaultTarget' => 'Standard',
+    'PerSeverityOverrideHelp' => 'Tilsidesæt eventuelt standardindstillingen for specifikke alvorlighedsgrader (lad feltet stå tomt for at bruge standardindstillingen):',
+    'ResolutionTargetUsesDefault' => 'Standard (%d)',
+    'SeverityColors' => 'Sværhedsgradsfarver',
+    'SeverityColorsHelp' => 'Farven for hver alvorlighedsgrad, vist på hændelsesdashboardet og siden med hændelsesdetaljer.',
+    'Editing' => 'Redigering',
+    'SetAsDefaultForEveryone' => 'Angiv som standard for alle',
+    'EditLayoutHint' => 'Træk en flise for at flytte den · træk en kant for at ændre størrelsen · ✕ for at fjerne den',
+    'RemoveWidget' => 'Fjern widget',
+    'AddWidget' => 'Tilføj widget',
+    'AddToDashboard' => 'Føj til dashboard',
+    'AllWidgetsAdded' => 'Alle tilgængelige widgets findes på dette dashboard.',
+    'AddText' => 'Tilføj tekst',
+    'GettingStarted' => 'Kom godt i gang',
+    'GettingStartedTitle' => 'Velkommen til SimpleRisk',
+    'GettingStartedSubtitle' => 'Et par hurtige trin til at få mest muligt ud af SimpleRisk.',
+    'GSProgressCount' => '{done} af {total} fuldført',
+    'GSNextUp' => 'Næste op',
+    'GSArea_setup' => 'Opsætning',
+    'GSArea_risk' => 'Risiko',
+    'GSArea_assessment' => 'Vurdering',
+    'GSArea_compliance' => 'Overholdelse',
+    'GSArea_assets' => 'Aktiver',
+    'GSArea_ai' => 'Opsætning',
+    'GSHide' => 'Skjul Introduktion',
+    'GSDismissStep' => 'Afvis dette trin',
+    'GSAllSet' => 'Så er du klar – godt gået!',
+    'GSWalkthrough' => '30-minutters gennemgang',
+    'Explore' => 'Udforske',
+    'Learn' => 'Lære',
+    'AdminGuide' => 'Administratorvejledning',
+    'LearnMore' => 'Lær mere',
+    'GSRegisterTitle' => 'Registrer din instans',
+    'GSRegisterDesc' => 'Aktivér support og opdateringer med din licensnøgle.',
+    'GSRegisterCta' => 'Registrer dig',
+    'GSScfTitle' => 'Installer Secure Controls Framework',
+    'GSScfDesc' => 'Installer SCF — dit kontrolbibliotek på tværs af standarder.',
+    'GSScfCta' => 'Installer SCF',
+    'GSInviteTitle' => 'Inviter dit hold',
+    'GSInviteDesc' => 'Tilføj kolleger, så arbejde kan tildeles og gennemgås.',
+    'GSInviteCta' => 'Tilføj brugere',
+    'GSAiTitle' => 'Konfigurer AI',
+    'GSAiDesc' => 'Gør din SimpleRisk-oplevelse bedre med kunstig intelligens.',
+    'GSAiCta' => 'Opsæt AI',
+    'GSSubmitRiskTitle' => 'Indsend din første risiko',
+    'GSSubmitRiskDesc' => 'Registrer en risiko, som din organisation står over for.',
+    'GSSubmitRiskCta' => 'Indsend risiko',
+    'GSMitigateTitle' => 'Planlæg en afbødning',
+    'GSMitigateDesc' => 'Tilføj en afværgeplan til en åben risiko.',
+    'GSMitigateCta' => 'Planlæg afbødning',
+    'GSReviewTitle' => 'Udfør en risikovurdering',
+    'GSReviewDesc' => 'Gennemgå en risiko og beslut dens næste skridt.',
+    'GSReviewCta' => 'Udfør gennemgang',
+    'GSDefineTestTitle' => 'Definer en kontroltest',
+    'GSDefineTestDesc' => 'Konfigurer, hvordan en kontrol testes.',
+    'GSDefineTestCta' => 'Definer test',
+    'GSInitiateAuditTitle' => 'Start en revision',
+    'GSInitiateAuditDesc' => 'Start en test- eller revisionscyklus.',
+    'GSInitiateAuditCta' => 'Iværksæt revision',
+    'GSAssetTitle' => 'Tilføj dine aktiver',
+    'GSAssetDesc' => 'Lav en opgørelse over de aktiver, du beskytter.',
+    'GSAssetCta' => 'Tilføj aktiver',
+    'GSInvalidStep' => 'Ugyldigt introduktionstrin.',
+    'GSPagerLabel' => '{from}–{to} af {total}',
+    'GSPrevCards' => 'Vis forrige trin',
+    'GSNextCards' => 'Vis de næste trin',
+    'WhatsNextInstallSCF' => 'Installer Secure Controls Framework',
+    'GSActivateScfTitle' => 'Aktivér Secure Controls Framework',
+    'GSActivateScfDesc' => 'Slå den installerede SCF til for at indlæse dens kontrolelementer i dit bibliotek.',
+    'GSActivateScfCta' => 'Aktivér SCF',
+    'WhatsNextActivateSCF' => 'Aktivér Secure Controls Framework',
+    'GSEnableFrameworksTitle' => 'Aktivér relevante rammer',
+    'GSEnableFrameworksDesc' => 'Aktivér de SCF-rammer, der gælder for din organisation.',
+    'GSEnableFrameworksCta' => 'Aktivér rammer',
+    'WhatsNextEnableFrameworks' => 'Aktivér relevante rammer',
+    'GSSelfAssessTitle' => 'Tag en selvevaluering',
+    'GSSelfAssessDesc' => 'Evaluer din organisation i forhold til mere end 250 rammeværk og generer risici fra fejlslagne kontroller.',
+    'GSSelfAssessCta' => 'Start vurdering',
+    'WhatsNextTakeSelfAssessment' => 'Tag en selvevaluering',
+    'WhatsNextConfigureAI' => 'Konfigurer AI',
+    'ListUnreviewedRisks' => 'Ikke-gennemgåede risici',
+    'ControlsByDomain' => 'Kontroller efter domæne',
+    'ControlsByClass' => 'Kontroller efter klasse',
+    'ControlsByPhase' => 'Kontroller efter fase',
+    'ControlsByPriority' => 'Kontroller efter prioritet',
+    'ControlsByCurrentMaturity' => 'Kontroller efter nuværende modenhed',
+    'ControlStatusOverTime' => 'Kontrolstatus over tid',
+    'ComplianceTotalControls' => 'Total kontrol',
+    'HomeKpiOverdueTests' => 'Forsinkede prøver',
+    'Total' => 'Total',
+    'StartTheTest' => 'Start testen',
+    'TestStartsAutomatically' => 'Testen starter automatisk',
+    'GoToTest' => 'Gå til Test',
+    'NotTested' => 'Ikke testet',
+    'PassingPercent' => 'Bestået %',
+    'ListFailingControls' => 'Fejlende kontroller',
+    'Exceptions' => 'Undtagelser',
+    'Documents' => 'Dokumenter',
+    'ControlsBelowMaturity' => 'Kontroller under modenhed',
+    'ControlsAtMaturity' => 'Kontroller ved modenhedsmålet',
+    'ControlsAboveMaturity' => 'Kontroller over modenhed',
+    'Maturity' => 'Modenhed',
+    'AllTime' => 'Alle tider',
+    'Last7Days' => 'Sidste 7 dage',
+    'Last30Days' => 'Sidste 30 dage',
+    'Last90Days' => 'Sidste 90 dage',
+    'YearToDate' => 'År til dato',
+    'CustomRange' => 'Brugerdefineret område',
+    'Age' => 'Alder',
+    'ImOpenIncidents' => 'Åbne hændelser',
+    'ImClosedIncidents' => 'Lukkede hændelser',
+    'ImByAttackVector' => 'Åbne efter angrebsvektor',
+    'ImBySource' => 'Åbne efter kilde',
+    'AverageDaysToDetect' => 'Gennemsnitlige dage til at opdage',
+    'ImKpiAvgTtd' => 'Gennemsnitlig detektion',
+    'Days' => 'Dage',
+    'ImKpiCriticalOpen' => 'Kritisk åben',
+    'ImKpiResolvedInSla' => 'Løst i SLA',
+    'Events' => 'Begivenheder',
+    'ImEventsIncidents' => 'Begivenheder og hændelser',
+    'ImSourceBreakdown' => 'Kilde efter kategori',
+    'ImClosureSummary' => 'Opsummering af lukning',
+    'ImSignalQuality' => 'Signalkvalitet',
+    'ImSignalLowSample' => 'Ikke nok bedømte lukninger til at vurdere pålideligt',
+    'ImportExportExportPdf' => 'Eksportér PDF',
+    'ImportExportExporting' => 'Forbereder PDF…',
+    'ImportExportExportFailed' => 'Kunne ikke generere PDF-filen. Prøv igen.',
+    'ImportExportGeneratedOn' => 'Genereret',
+    'ImportExportPage' => 'Side',
+    'ImportExportPageOf' => 'af',
+    'ResolutionTargetsUpdated' => 'Målene for løsning pr. alvorlighedsgrad blev opdateret.',
+    'SeverityColorsUpdated' => 'Alvorlighedsfarverne blev opdateret.',
+    // AI Capabilities Catalog + AI settings hub (unified AI settings)
+    'AICapGrcRecommendations' => 'Anbefalinger fra GRC-rammen',
+    'AICapGrcRecommendationsDesc' => 'AI-genererede rammeanbefalinger og et resumé, der er tilpasset din organisations kontekst.',
+    'AICapRiskRecommendations' => 'Risikoanbefalinger',
+    'AICapRiskRecommendationsDesc' => 'Forslag pr. risiko til risikodetaljer og afbødning, genereret ud fra risikoen, dens afbødning og gennemgang.',
+    'AICapFairAnalysis' => 'FAIR kvantitativ analyse',
+    'AICapFairAnalysisDesc' => 'AI estimerer Beta-PERT-tabsparametre; SimpleRisk kører en Monte Carlo-beregning med 10.000 iterationer for at kvantificere risiko i dollars.',
+    'AICapDocumentCustomization' => 'Dokumenttilpasning',
+    'AICapDocumentCustomizationDesc' => 'Udfylder pladsholdere og renser politiktekst i dine dokumentskabeloner, så en standardpolitik læses som din.',
+    'AICapDocumentControlMatching' => 'Dokument ↔ Kontrolmatchning',
+    'AICapDocumentControlMatchingDesc' => 'Knytter automatisk kontroller til politikdokumenter med en konfidensscore og argumentation, du kan gennemgå.',
+    'AICapDocumentTemplates' => 'Dokumentskabelonbibliotek',
+    'AICapDocumentTemplatesDesc' => 'Installer kuraterede skabeloner til politikker, retningslinjer og procedurer fra SimpleRisk-biblioteket.',
+    'AICapControlReferenceEnhancement' => 'Forbedring af kontrolreferencer',
+    'AICapControlReferenceEnhancementDesc' => 'Undersøger ordret kontroltekst via websøgning for at berige dine kontrolreferencer.',
+    'AICapAiChat' => 'Chatassistent',
+    'AICapAiChatDesc' => 'En GRC-assistent, der besvarer spørgsmål i kontekst overalt i SimpleRisk.',
+    'AICapSurfacedRecommendations' => 'Kunstig intelligens-side',
+    'AICapSurfacedRiskView' => 'Risikovisning — Detaljer og afbødning',
+    'AICapSurfacedFairTab' => 'Risikovisning — fanen FAIR',
+    'AICapSurfacedDocuments' => 'Styring — Dokumenter',
+    'AICapSurfacedControls' => 'Overholdelse — Kontroller',
+    'AICapSurfacedEveryPage' => 'Hver side — flydende assistent',
+    'AICapabilitiesCatalog' => 'Evner',
+    'AICapSearchPlaceholder' => 'Søg efter AI-funktioner…',
+    'AICapFilterDomain' => 'Domæne',
+    'AICapFilterTier' => 'Niveau',
+    'AICapFilterState' => 'Tilstand',
+    'AICapTierExtra' => 'AI Ekstra',
+    'AICapStateLocked' => 'Låst',
+    'AICapIncludedInExtra' => 'Inkluderet i AI Extra',
+    'AICapPurchaseExtra' => 'Køb AI Extra',
+    'AICapNeedsProvider' => 'Kræver udbyderopsætning',
+    'AICapNoMatch' => 'Ingen matchende egenskaber',
+    'AICapNoMatchHint' => 'Prøv et andet domæne, niveau eller søgeord.',
+    'AICapCountSingular' => 'evne',
+    'AICapCountPlural' => 'evner',
+    'DomainAssistant' => 'Assistent',
+    'AICapLoadError' => 'Kunne ikke indlæse AI-funktioner. Prøv igen.',
+    'AIProviderConfigSubtitle' => 'Forbind SimpleRisk til en AI-udbyder for at styrke AI-funktionerne.',
+    'AIHowToGetAPIKeyFor' => 'Sådan får du en API-nøgle til',
+    'AIExtraNotActivated' => 'Ikke aktiveret',
+    'AIExtraValueProp' => 'Forbedret AI — FAIR-risikokvantificering, dokument- og kontrolassistance og AI-chatassistent.',
+    'AICtxOrgName' => 'Hvad er navnet på din organisation?',
+    'AICtxOrgSizeEmployees' => 'Hvor mange ansatte har din organisation?',
+    'AICtxOrgSizeRevenue' => 'Hvad er din organisations årlige omsætning?',
+    'AICtxOrgObjective' => 'Hvad er din organisations primære forretningsmål og strategiske mål?',
+    'AICtxOrgIndustry' => 'Hvad er din organisations primære branche eller sektor?',
+    'AICtxOrgLocation' => 'I hvilke lande eller regioner opererer din organisation?',
+    'AICtxOrgType' => 'Hvilken type organisation er du?',
+    'AICtxDataTypes' => 'Hvilke typer data indsamler, behandler eller opbevarer din organisation (f.eks. personoplysninger, økonomiske data, sundhedsoplysninger)?',
+    'AICtxDataCustomers' => 'Hvem er dine primære kunder eller interessenter (f.eks. forbrugere, virksomheder, offentlige enheder)?',
+    'AICtxDataRegulatory' => 'Er I underlagt specifikke lovgivningsmæssige krav i jeres branche?',
+    'AICtxDataThirdParties' => 'Har I tredjepartsrelationer eller outsourcede tjenester, der kræver compliance-tilsyn?',
+    'AICtxMaturityIssues' => 'Har du oplevet væsentlige compliance-problemer, sikkerhedsbrud eller risikobegivenheder i de seneste 3-5 år?',
+    'AICtxMaturityConcerns' => 'Er der specifikke områder, der giver anledning til bekymring eller forbedringer, som I har identificeret i jeres nuværende GRC-processer?',
+    'AICtxMaturityAppetite' => 'Hvad er din organisations risikoappetit og -tolerance?',
+    'AICtxMaturityLevel' => 'Hvad er jeres nuværende modenhedsniveau med hensyn til governance, risikostyring og compliance-praksis?',
+    'AICtxImplementationChanges' => 'Er der kommende ændringer i jeres forretningsmodel, teknologiske infrastruktur eller marked, der kan påvirke jeres compliance-behov?',
+    'AICtxImplementationResourcesBudget' => 'Hvilke budgetressourcer har I til rådighed til implementering og vedligeholdelse af compliance-rammer?',
+    'AICtxImplementationResourcesPersonnel' => 'Hvilke personaleressourcer har I til rådighed til at implementere og vedligeholde compliance-rammer?',
+    'AICtxImplementationResourcesTechnology' => 'Hvilke teknologiske infrastrukturressourcer har I til rådighed til at implementere og vedligeholde compliance-rammer?',
+    'AICtxImplementationResourcesTraining' => 'Hvilke trænings- og udviklingsressourcer har I til rådighed til implementering og vedligeholdelse af compliance-rammer?',
+    'AICtxImplementationResourcesExternal' => 'Hvilke eksterne supportressourcer har I til rådighed til implementering og vedligeholdelse af compliance-rammer?',
+    'AIAPIKeySecurityNote' => 'Din nøgle gemmes på serversiden og returneres aldrig til browseren. Udbyder-URL\'er valideres mod en SSRF-tilladelsesliste, der kan konfigureres i config.php-filen.',
+    'AIContextEgressWarning' => 'Dine svar sendes til din konfigurerede AI-udbyder, som skal basere sine anbefalinger. Medtag ikke noget, du ikke ville dele med dem.',
+    'Provider' => 'Udbyder',
+    'AIProviderURLHostNotAllowed' => 'Værten "%s" er ikke på AI-udbyderens tilladelsesliste. Tilføj den til $ai_allowed_provider_hosts i config.php, og gem derefter. (Kendte AI-udbydere og 127.0.0.1 loopback-adresser er altid tilladt.)',
+    'AIContextLastSaved' => 'Sidst gemt',
+    'AIContextNeverSaved' => 'Ikke gemt endnu',
+    'AICtxCardSubtitle' => '21 spørgsmål på tværs af fire områder. Jo flere du svarer, desto skarpere bliver hver anbefaling.',
+    'AICtxAnswered' => '%1$d af %2$d besvarede',
+    'AICtxAllOptional' => 'Valgfri',
+    'AIContextSaving' => 'Gemmer…',
+    'AIContextSaveFailed' => 'Dine ændringer kunne ikke gemmes. Prøv igen.',
+    'AISettingsSavedNotReachable' => 'AI-indstillingerne er gemt, men udbyderen kunne ikke kontaktes. Sørg for, at den kører, og at URL\'en er korrekt.',
+    'AISettingsSavedKeyRequired' => 'AI-indstillinger er gemt, men denne udbyder kræver en API-nøgle, før dens funktioner kan bruges.',
+    'TestAndSave' => 'Test og gem',
+    'AICapEnableAll' => 'Aktivér alle',
+    'AICapDisableAll' => 'Deaktiver alle',
+    'AISettingsSavedConnected' => 'AI-indstillinger gemt — forbindelsen er oprettet.',
+    'AISettingsSavedNotConnected' => 'AI-indstillingerne blev gemt, men forbindelsestesten mislykkedes. Kontroller model, nøgle og URL.',
+    'AIProviderURLNotOnAllowlist' => 'Denne vært er ikke på AI-udbyderens SSRF-tilladelsesliste. Tilføj den til $ai_allowed_provider_hosts i config.php, før den kan gemmes.',
+    'Connected' => 'Forbundet',
+    'NotConnected' => 'Ikke forbundet',
+    'AICapBulkError' => 'Nogle funktioner kunne ikke opdateres. Prøv igen.',
+    'QuestionnaireAlreadyCompleted' => 'Dette spørgeskema er allerede udfyldt.',
+    'QuestionnaireDraftError' => 'Fejl under lagring af kladde. Se konsollen for detaljer.',
+
+    // Audit cadence scheduling - Define Test modal (Interval/Calendar schedule redesign)
+    // 'Overdue' duplicates the English of 'ImKpiOverdue' on purpose: that key is
+    // an Incident Management KPI label, and a compliance status pill reusing an
+    // IM-scoped key would couple the two domains for a translator (and break the
+    // moment either wording moves). This is the generic, cross-domain one.
+    'Overdue' => 'Forsinket',
+    // Deliberate: the only other key rendering 'Manual' is 'ManualValuation',
+    // an asset-valuation label. Pointing a schedule mode at it would couple two
+    // unrelated domains for translators and break the moment either reworded.
+    'ScheduleManual' => 'Manuel',
+    'ScheduleInterval' => 'Interval',
+    'ScheduleCalendar' => 'Kalender',
+    'Cadence' => 'Kadence',
+    'CadenceBiweekly' => 'Hver anden uge',
+    'CadenceSemiAnnually' => 'Halvårligt',
+    'AnchorDate' => 'Ankerdato',
+    'UpcomingOccurrences' => 'Kommende hændelser',
+    'AuditLeadInDays' => 'Revisionens indledende dage',
+    'SkipOccurrence' => 'Spring over',
+    'OverrideDate' => 'Tilsidesættelsesdato',
+    'Week' => 'Uge',
+    'NoUpcomingOccurrences' => 'Ingen kommende hændelser i dette vindue.',
+    'FailedToLoadUpcomingOccurrences' => 'Kunne ikke indlæse forhåndsvisningen af kommende hændelser.',
+    'AnchorDateMustBeTodayOrLater' => 'Ankerdatoen skal være i dag eller senere. For at planlægge en tidligere dato, opret en manuel test i stedet.',
+    'InvalidScheduleType' => 'Ugyldig tidsplantype. Tilladte værdier: Manuel, Interval, Kalender.',
+    'Weeks' => 'Uger',
+    'Months' => 'Måneder',
+    'Years' => 'År',
+    'ScheduleSummaryEvery' => 'Hver {$interval} {$unit}',
+
+    // Define Tests redesign - client-rendered grid (Phase 1, Task 6)
+    'LastResult' => 'Sidste resultat',
+    'NextDue' => 'Næste forfaldsdato',
+    'DueSoon' => 'Forfalder snart',
+    'Retired' => 'Pensioneret',
+    'MyTests' => 'Mine tests',
+    'Failing' => 'Fejler',
+    'Untested' => 'Uafprøvet',
+    'ShowRetired' => 'Vis pensioneret',
+    'Tests' => 'Test',
+    'NoTestsForThisControl' => 'Ingen test endnu for denne kontrol.',
+    'NoControlsDefinedYet' => 'Ingen kontroller defineret endnu',
+    'NoControlsDefinedYetBody' => 'Definer kontroller i Governance, før du tilføjer tests.',
+    'NoTestsMatchFilters' => 'Ingen tests matcher dine filtre',
+    'NoTestsMatchFiltersBody' => 'Prøv at justere din søgning eller dine filtre.',
+    'CouldNotLoadTests' => 'Kunne ikke indlæse testene',
+    'CouldNotLoadTestsBody' => 'Noget gik galt. Dine data er sikre – prøv at opdatere.',
+    'ShowingXToYOfZ' => 'Viser {$start}–{$end} af {$total}',
+    // Define Tests grid -- SCF-mapping + read-only procedure expand (Phase 1, Task 7)
+    'Reference' => 'Reference',
+    'NoFrameworksMapped' => 'Ingen frameworks er knyttet til dette kontrolelement.',
+    // Define Tests grid -- batch select + retire/delete + quick filters (Phase 1, Task 8)
+    'Retire' => 'Udfas',
+    'ReassignTester' => 'Omfordel tester',
+    'SetSchedule' => 'Sæt tidsplan',
+    'ConfirmRetireSelectedTests' => 'Vil du trække den/de valgte {n} test(er) tilbage?',
+    'ConfirmDeleteSelectedTests' => 'Vil du slette den/de valgte test(er) {n} ? Dette kan ikke fortrydes.',
+    // Define Tests grid -- Coverage toolbar select (Issue 4)
+    'Coverage' => 'Dækning',
+    'CoverageWithTests' => 'Kontroller med test',
+    'CoverageAllControls' => 'Alle kontroller',
+    'CoverageGaps' => 'Huller',
+    // Define Tests insights band (Phase 2, Task 4) -- KPI tile labels + subtitles.
+    // 'Overdue', 'DueSoon', and 'Failing' are reused from the grid's quick-filter
+    // chips above (identical text) rather than duplicated here.
+    'DtTotalTests' => 'Samlede tests',
+    'DtCoverageGaps' => 'Dækningshuller',
+    'DtAcrossNControls' => 'På tværs af {$n} kontrolelementer',
+    'DtControlsWithNoTest' => 'Kontroller uden test',
+    'DtNeedInitiationNow' => 'Har brug for igangsættelse nu',
+    'DtWithinLeadInWindow' => 'Inden for indføringsvinduet',
+    'DtLastResultFailed' => 'Sidste resultat mislykkedes',
+    'InvalidTestMethod' => 'Testmetoden skal være en af følgende: Forespørgsel, Observation, Inspektion eller Genudførelse!',
+    'TesterCannotBeApprover' => 'Testeren kan ikke også være angivet som godkender for denne test.',
+    'ApproverNotEligible' => 'En eller flere udvalgte godkendere har ikke ansvaret for "Godkend test".',
+    'TestMethod' => 'Testmetode',
+    'TestMethodInquiry' => 'Forespørgsel',
+    'TestMethodObservation' => 'Observation',
+    'TestMethodInspection' => 'Inspektion',
+    'TestMethodReperformance' => 'Genopførelse',
+    'Sample' => 'Prøve',
+    'RequiredEvidence' => 'Nødvendig dokumentation',
+    'Approvers' => 'Godkendere',
+    'AuditLog_TestAuditApproved' => 'Revisionen "{$test_audit_name}" (ID: {$test_audit_id}) blev godkendt af brugeren "{$user_name}".',
+    'AuditLog_TestAuditRejected' => 'Revisionen "{$test_audit_name}" (ID: {$test_audit_id}) blev afvist af brugeren "{$user_name}" med kommentaren "{$comment}".',
+    'AuditLog_TestAuditAwaitingApproval' => 'Revisionen "{$test_audit_name}" (ID: {$test_audit_id}) blev indsendt til lukning af brugeren "{$user_name}" og afventer godkendelse. Ændringer: {$changes}.',
+    'AuditApproved' => 'Revisionen blev godkendt.',
+    'AuditRejected' => 'Revisionen blev afvist.',
+    'RejectCommentRequired' => 'En kommentar er påkrævet for at afvise en revision.',
+    'NotAnApproverOfThisAudit' => 'Du er ikke en konfigureret godkender for denne revision.',
+    'ApproverCannotBeTester' => 'Godkenderen kan ikke også være tester af denne revision.',
+    'AuditNotAwaitingApproval' => 'Denne revision afventer ikke godkendelse i øjeblikket.',
+    'NotificationAuditAwaitingApprovalTitle' => 'Revision afventer din godkendelse',
+    'NotificationAuditAwaitingApprovalBody' => 'Revisionen "{$test_audit_name}" er blevet indsendt til afslutning og afventer din godkendelse.',
+    'NotificationAuditRejectedTitle' => 'Revision afvist',
+    'NotificationAuditRejectedBody' => 'Revisionen "{$test_audit_name}" blev afvist med kommentaren: "{$comment}"',
+    'AwaitingApproval' => 'Venter på godkendelse',
+    'AwaitingApprovalBannerText' => 'Denne revision er blevet indsendt til lukning og afventer godkendelse fra en konfigureret godkender, før den kan lukkes.',
+    'ReturnedForRework' => 'Returneret til omarbejde',
+    'ReturnedForReworkBannerText' => 'Denne revision blev afvist og returneret til genbearbejdning.',
+    'RejectReason' => 'Afvisningsårsag',
+    'AreYouSureYouWantToApproveThisAudit' => 'Er du sikker på, at du vil godkende denne revision?',
+    'AtLeastOneControlRequired' => 'Mindst én kontrol er påkrævet.',
+    'DtNCommonAcrossNControls' => '{$common} fælles · {$n} kontrolelementer',
+    'DtUntestedControls' => 'Utestede kontroller',
+    'DtControlsInScopeNoCoverage' => 'Ingen dækning',
+    'Passing' => 'Beståelse',
+    'DtLastResultPassed' => 'Sidste resultat bestået',
+    'AllFamilies' => 'Alle familier',
+    'SearchTestsPlaceholder' => 'Søg efter tests, kontroller og frameworks',
+    'AnySchedule' => 'Enhver tidsplan',
+    'AnyTag' => 'Ethvert tag',
+    'AuditAutoClosedTestRetired' => 'Automatisk lukket som uafklaret, fordi testen blev trukket tilbage.',
+    'Common' => 'Fælles',
+    'ValidatesAcrossMappedFrameworks' => 'Validerer på tværs af kortlagte rammer',
+    'EditTest' => 'Rediger test',
+    'ControlHasNoTestCoverage' => 'Denne kontrol inden for området har endnu ingen testdækning.',
+    'AddTheFirstTest' => 'Tilføj den første test',
+    'ApplyCommonTestHint' => 'Anvend en eller flere eksisterende tests på denne kontrol. Hver test beholder sine nuværende kontroller og bliver en fælles test, der også dækker denne.',
+    'CommonTestApplied' => 'Test anvendt på denne kontrol.',
+    'CouldNotApplyCommonTest' => 'Testen kunne ikke anvendes på dette kontrolelement.',
+    'SelectOneOrMoreTests' => 'Vælg en eller flere tests',
+    'CommonTestsApplied' => '{n} test anvendt på denne kontrol.',
+    'ApplyCommonTests' => 'Anvend almindelige tests…',
+    'History' => 'Historie',
+    'Result' => 'Resultat',
+    'Approval' => 'Godkendelse',
+    'ThisTestHasNotBeenRunYet' => 'Denne test er ikke blevet kørt endnu.',
+    'CouldNotLoadTestHistory' => 'Kunne ikke indlæse denne tests historik.',
+    'Identity' => 'Identitet',
+    'IdentitySectionHint' => 'Navn, tester og de kontroller, den validerer',
+    'WhenTheAuditInitiates' => 'Når revisionen starter',
+    'ProcedureAndEvidence' => 'Procedure og beviser',
+    'CommonTestControlsHint' => 'Én test kan validere mange kontroller – en fælles test. Hvis du åbner denne fra en kontrols "+ Tilføj test", vælges den her på forhånd.',
+    'SeparationOfDutiesNote' => 'Funktionsadskillelse — en godkender kan ikke også være testeren.',
+    'CommonTestEditScopeHint' => 'Ændringer gælder overalt, hvor denne fælles test anvendes.',
+    'Mode' => 'Mode',
+    'AddOrRemove' => 'Tilføj eller fjern…',
+    'AddOrSearchTags' => 'Tilføj eller søg efter tags…',
+    'CreateTagX' => 'Opret “{tag}”',
+    'Archived' => 'Arkiveret',
+    'ShowAllTests' => 'Alle tests',
+    'ShowActiveTests' => 'Aktive tests',
+    'ShowRetiredTests' => 'Udgåede tests',
+    'UntestedControls' => 'Utestede kontroller',
+    'OverdueByXDays' => 'Forsinket · {n} dage',
+    'OverdueByOneDay' => 'Forsinket · 1 dag',
+    'DueInXDays' => 'Forfalder om {n} dage',
+    'DueTomorrow' => 'Forfalder i morgen',
+    'DueToday' => 'Forfald i dag',
+    'ScheduledForX' => 'Planlagt · {date}',
+    'AllTesters' => 'Alle testere',
+    'AllStatuses' => 'Alle statusser',
+    'OnTrack' => 'På rette spor',
+    'NextTestDateDerivedHint' => 'Beregnet ud fra den sidste testdato plus testfrekvensen. Angiv en frekvens for at planlægge den automatisk, eller lad frekvensen stå tom for selv at indstille denne dato.',
+    'DueStatus' => 'Forfaldsstatus',
+    'AllResults' => 'Alle resultater',
+    // Remove a test from one control (Define Tests grid unlink row action)
+    'RemoveFromThisControl' => 'Fjern fra denne kontrol',
+    'RemoveTestFromControl' => 'Fjern test fra kontrol',
+    'RemoveTestFromControlConfirm' => 'Fjern "{test_name}" fra {control_name}?',
+    'RemoveTestFromControlStays' => 'Testen forbliver på sine {n} andre kontrolelementer. Intet slettes.',
+    'RemoveTestFromControlStaysOne' => 'Testen forbliver på dens ene anden kontrol. Intet slettes.',
+    'CannotRemoveTestsOnlyControl' => 'En test skal tilhøre mindst én kontrol. Tilbagekald eller slet testen i stedet.',
+    'TestRemovedFromControl' => 'Testen blev fjernet fra kontrolgruppen.',
+    'CouldNotRemoveTestFromControl' => 'Testen kunne ikke fjernes fra kontrollen.',
+    'TestRemovedFromControlAuditLogMessage' => 'Testen "{$test_name}" (ID: {$test_id}) blev fjernet fra kontrolelementet (ID: {$control_id}) af brugeren "{$user}".',
+    'DeleteTestUsedByNControls' => 'Den bruges af {n} kontrolelementer og vil blive fjernet fra dem alle.',
+    'BulkDeleteSharedTestsNote' => '{n} af disse bruges af andre kontrolelementer og vil også blive fjernet fra disse.',
+    'BulkRetireSharedTestsNote' => '{n} af disse bruges af andre kontrolelementer og vil også blive udfaset der.',
+    'BulkDeleteOneSharedTestNote' => '1 af disse bruges af andre kontrolelementer og vil også blive fjernet fra disse.',
+    'BulkRetireOneSharedTestNote' => '1 af disse bruges af andre kontrolelementer og vil også blive udfaset der.',
+    'CouldNotLoadTest' => 'Kunne ikke indlæse denne test.',
+    'Expand' => 'Udvide',
+    'SearchMappings' => 'Søg i rammeværk og referencer',
+    'NoMatchingMappings' => 'Ingen kortlægninger matcher den søgning.',
+    'Insights' => 'Indsigt',
+    'ShowInsights' => 'Vis indsigtsfelterne',
+    'HideInsights' => 'Skjul indsigtsfelterne til en oversigtslinje',
+    'ChooseControls' => 'Vælg kontroller',
+    'UseTheseControls' => 'Brug disse kontroller',
+    'SearchControlsPlaceholder' => 'Søg efter nummer eller navn',
+    'PickerKeyboardHint' => 'Op/ned for at flytte, Enter for at vælge, Esc for at annullere',
+    'NoControlsMatchFilters' => 'Intet her matcher. Udvid et trin til venstre, eller ryd søgningen.',
+    'NoControlsSelectedYet' => 'Intet er valgt endnu.',
+    'AllControls' => 'Alle kontroller',
+    'AddOrRemoveControls' => 'Tilføj eller fjern kontrolelementer…',
+    'LastTested' => 'Sidst testet',
+    'LastTestDateAnchorHint' => 'Planlægning af ankerintervaller (denne dato plus hyppigheden). Når testen har registreret resultater, viser gitteret datoen for det nyeste resultat i stedet.',
+    'Filters' => 'Filtre',
+    'ShowFilters' => 'Vis filtre',
+    'HideFilters' => 'Skjul filtre',
+
+    // App shell — collapsing sidebar / new base design (SR app-shell redesign)
+    'AI' => 'AI',
+    'CollapseSidebar' => 'Skjul sidebjælken',
+    'FooterCopyright' => '© %s SimpleRisk. Alle rettigheder forbeholdes.',
+    'ExpandSidebar' => 'Udvid sidebjælken',
+    'WorkflowsCloneConfirm' => 'Klon arbejdsgang \'{$name}\'?',
+    'WorkflowsDeleteConfirm' => 'Sletter du arbejdsgangen \'{$name}\'? Dette kan ikke fortrydes.',
+    'WorkflowActionFailed' => 'Handling mislykkedes: {$msg}',
+    'ClickToDisable' => 'Klik for at deaktivere',
+    'ClickToEnable' => 'Klik for at aktivere',
+    'ENABLED' => 'AKTIVERET',
+    'DISABLED' => 'DEAKTIVERET',
+    'BackToWorkflows' => 'Tilbage til arbejdsgange',
+    'BackToHistory' => 'Tilbage til historien',
+    'NewWorkflow' => 'Ny arbejdsgang',
+    'ViewSteps' => 'Se trin',
+    'SaveWorkflow' => 'Gem arbejdsgang',
+    'WorkflowSavedSuccessfully' => 'Arbejdsgangen er gemt.',
+    'WorkflowNotFound' => 'Arbejdsgangen blev ikke fundet.',
+    'EditWorkflow' => 'Rediger arbejdsgang: {$name}',
+    'OrganizationContextProfile' => 'Organisationskontekstprofil',
+    'AICtxAutoAcceptThreshold' => 'Hvad er din organisations automatiske acceptgrænse for risiko (et dollarbeløb eller en procentdel af ALE)?',
+    'AICtxGrcBudget' => 'Hvad er jeres årlige GRC/sikkerhedsbudget?',
+    'AICtxAuditorPerspective' => 'Fra hvis perspektiv bliver du primært revideret?',
+    'AICtxUnitCurrency' => 'Valuta ($)',
+    'AICtxUnitPercentOfAle' => 'Procent af ALE (%)',
+    'AICtxFrameworksInUse' => 'Rammer i brug i øjeblikket',
+    'AICtxNoFrameworksInUse' => 'Ingen aktive rammer fundet endnu. Tilføj rammer under Styring > Rammekortlægning.',
+    'AICtxFromYourData' => 'Fra dine data',
+    'AICtxAuthoritative' => 'Autoritativ',
+    'AICtxAppetiteNotSet' => 'Ikke indstillet',
+    'AICtxAppetiteManageLink' => 'Administrer i risikokonfiguration',
+    'AICapControlTestGeneration' => 'Generering af kontroltest',
+    'AICapControlTestGenerationDesc' => 'Udarbejder kladder til kontroltests til gennemgang ved hjælp af kontrollens framework-kortlægning, eksisterende tests og resultater af selvevaluering – intet oprettes, før du godkender det.',
+    'AICapSurfacedControlTestGeneration' => 'Overholdelse — Definer test',
+    'AIControlTestGenUnavailable' => 'TJENESTE IKKE TILGÆNGELIG: En administrator skal aktivere denne funktion i AI-indstillingerne.',
+    'AIControlTestGenInvalidId' => 'FORKERT ANMODNING: Et positivt kontrol-id er påkrævet.',
+    'AIControlTestGenNotFound' => 'IKKE FUNDET: Det angivne kontrolelement kunne ikke findes.',
+    'AIControlTestGenConflict' => 'KONFLIKT: Generering er allerede i kø for dette kontrolelement.',
+    'AIControlTestGenQueued' => 'ACCEPTERET: Generering af kontroltest sat i kø.',
+    'AIControlTestGenFailed' => 'INTERN SERVERFEJL: Kunne ikke generere kontroltest i kø.',
+    'AIControlTestGenCheckFailed' => 'FEJL: Kontrollen kunne ikke verificeres før køopsætning.',
+    'GenerateTestsWithAI' => 'Generer tests med AI',
+    'ShowAiSuggestedTests' => 'AI-foreslåede tests',
+    'AiSuggested' => 'AI foreslået',
+    'ReviewAndEdit' => 'Gennemgå og rediger',
+    'CreateSelected' => 'Opret valgte',
+    'TestCreatedFromSuggestion' => 'Test oprettet ud fra forslaget.',
+    'SuggestionDismissed' => 'Forslag afvist.',
+    'TestGenerationQueued' => 'Testgenerering sat i kø.',
+    'Generating' => 'Genererer…',
+    'SuggestionDismissFailed' => 'Testen blev oprettet, men dens AI-forslag kunne ikke afvises. Afvis den manuelt, hvis den forbliver.',
+    'AICtxAuditorBig4' => 'De fire store (ekstern)',
+    'AICtxAuditorBoutique' => 'Butik / regional (ekstern)',
+    'AICtxAuditorInternal' => 'Kun intern revision',
+    'AICtxAuditorSelfAssessed' => 'Selvvurderet',
+    'AICtxAuditorNotSure' => 'Ikke sikker',
+    'AICtxAppetiteCautious' => 'Forsigtig',
+    'AICtxAppetiteBalanced' => 'Balanceret',
+    'AICtxAppetiteAggressive' => 'Aggressiv',
+    'TestGenerationComplete' => 'AI-udarbejdede kontroltests er klar til gennemgang.',
+    'TestGenerationStillRunning' => 'Testgenereringen kører stadig; udkastene vil blive offentliggjort snart.',
+    'TestGenerationNoNew' => 'Generation færdig — ingen nye tests at foreslå for denne kontrol.',
+    'SearchEntities' => 'Søg enheder',
+    'SearchEntitiesPlaceholder' => 'Søg risici, kontroller, politikker, undtagelser…',
+    'ShowTypes' => 'Vis typer',
+    'Depth' => 'Dybde',
+    'Inspector' => 'Inspektør',
+    'Connections' => 'Forbindelser',
+    'NoConnectionsFound' => 'Der blev ikke fundet nogen forbindelser til den valgte enhed.',
+    'CouldNotLoadGraph' => 'Kunne ikke indlæse forbindelsesgrafen.',
+    'CouldNotSearchEntities' => 'Kunne ikke søge efter enheder.',
+    'ShowingTopNOfM' => 'Viser top {0} af {1}',
+    'RankedByMaturityGap' => 'Rangeret efter modenhedsgab',
+    'RankedByRiskScore' => 'Rangeret efter risikoscore',
+    'RankedByRecentFailure' => 'Rangeret efter seneste fiasko',
+    'RankedByReviewDate' => 'Rangeret efter næste anmeldelsesdato',
+    'RankedBySeverity' => 'Rangeret efter sværhedsgrad',
+    'RankedByName' => 'Rangeret efter navn',
+    'NodeTypeSelfAssessmentResult' => 'Resultat af selvevaluering',
+    'Relationship' => 'Forhold',
+    'Exception' => 'Undtagelse',
+    'DesiredMaturity' => 'Ønsket modenhed',
+    'ApprovalState' => 'Godkendelsesstatus',
+    'RelationshipOfType' => '{0} af {1}',
+    // Connectivity Explorer Inspector: labels for enrichment field keys
+    // (ai_context_enrich_fetch(), ai_context_enrich_vulnerabilities()) that
+    // fieldLabel() in connectivity-visualizer.js did not yet cover.
+    'LastDate' => 'Sidste dato',
+    'LastResultDate' => 'Dato for sidste resultat',
+    'PercentComplete' => 'Procent fuldført',
+    'AssessmentDate' => 'Vurderingsdato',
+    'NextDate' => 'Næste dato',
+    'Number' => 'Antal',
+    'Grouping' => 'Gruppering',
+    'Hidden' => 'Skjult',
+    'FirstFound' => 'Først fundet',
+    'LastFound' => 'Sidst fundet',
+    'Patchable' => 'Kan patches',
+    'Solution' => 'Løsning',
+    'Breadcrumb' => 'Brødkrumme',
+    'SelectANodeToInspect' => 'Vælg en node for at se dens detaljer.',
+    'HiddenUnreachableNodes' => '{0} node(r) skjult: ikke længere forbundet uden den/de skjulte type(r).',
+    // Connectivity Explorer canvas launchpad (Level-1 type tiles / Level-2
+    // browsable entity list) -- docs/superpowers/specs/2026-07-27-
+    // connectivity-explorer-launchpad.md
+    'BrowsableEntityTypes' => 'Gennemsebare enhedstyper',
+    'CountFloor' => '{0}+',
+    'NoBrowsableTypes' => 'Du har ikke tilladelse til at gennemse nogen enhedstyper.',
+    'AllTypes' => 'Alle typer',
+    'FilterEntitiesPlaceholder' => 'Filter…',
+    'NoMatchingEntities' => 'Ingen enheder matcher dit filter.',
+    'LoadMore' => 'Indlæs mere',
+    'Loading' => 'Indlæser…',
+    'CouldNotLoadEntityCounts' => 'Kunne ikke indlæse enhedsantal.',
+    'CouldNotLoadEntities' => 'Kunne ikke indlæse enheder.',
+    'ClearGraph' => 'Ryd graf',
+    // Connectivity Explorer node-type chip label for the 'audit' type. Not
+    // reused from 'TeamType_audit' (same English text, "Audit") -- that key
+    // is scoped to the Team Separation team-type picker, a different feature
+    // whose wording should be free to diverge from this one's.
+    'Audit' => 'Revision',
+    // Queued email send-failure notifications
+    'EmailSendFailedNotificationTitle' => 'E-maillevering mislykkedes',
+    'EmailSendFailedNotificationBody' => 'En eller flere e-mails i køen kunne ikke leveres. Tjek dine e-mailindstillinger, og se derefter Køovervågningen og serverloggen for at få flere oplysninger.',
+    'QuestionnaireShareInvalidEmailAddress' => 'Kan ikke dele spørgeskemaresultater med en kontaktperson, der ikke har en gyldig e-mailadresse.',
+    'AssessmentSendInvalidEmailAddress' => 'Vurderingen kan ikke sendes til en ugyldig e-mailadresse.',
+    'AssessmentSentTo' => 'Vurderingen blev sendt til "{$email}".',
+    'AssessmentNotSentNoValidRecipients' => 'Vurderingen blev ikke sendt — der blev ikke angivet nogen gyldig e-mailadresse.',
+    'AssessmentContactUnusableEmailNotificationTitle' => 'Spørgeskema ikke sendt',
+    'AssessmentContactUnusableEmailNotificationBody' => 'Spørgeskemaet "{$questionnaire}" kunne ikke sendes til "{$contact}", fordi kontakten ikke har en gyldig e-mailadresse registreret. Opdater kontaktpersonens post for at genoptage afsendelsen.',
+    'EmailFailureNotificationRetention' => 'Opbevaring af meddelelse om manglende e-maillevering',
+    'EmailFailureNotificationRetentionOutOfRange' => 'Opbevaringen af beskeder om manglende levering af e-mails skal være mellem {$min} og {$max} dage.',
+    'MailSettingsUpdatedSuccessfully' => 'Mailindstillingerne blev opdateret.',
+    // Questionnaire audit-trail entries for the API submit/draft paths (SR-1714).
+    // The token form credits the contact; an API caller is an authenticated
+    // SimpleRisk user acting on that contact's questionnaire, so both the
+    // contact and the acting user are named.
+    'QuestionnaireCompletedAuditLogViaApi' => 'Spørgeskemaet "{$questionnaire_name}" til kontakten "{$contact_name}" blev udfyldt via API\'en af brugeren "{$user_name}".',
+    'QuestionnaireDraftAuditLogViaApi' => 'Spørgeskemaet "{$questionnaire_name}" til kontakten "{$contact_name}" blev gemt som kladde via API\'en af brugeren "{$user_name}".',
+    // Bad-input response for the questionnaire risk-list endpoints, which
+    // previously reported a malformed questionnaire_id as a permission denial.
+    // Mirrors the existing 'MissingOrInvalidTrackingID'.
+    'MissingOrInvalidQuestionnaireID' => 'Manglende eller ugyldigt spørgeskema-ID.',
+    // POST /api/v2/assessments/questionnaire/result/file response messages.
+    // The `id` path deliberately returns QuestionIdCannotAcceptFile for every
+    // question-level rejection so a sequential tracking id cannot be used to
+    // probe questionnaire structure; the token path returns the specific reason.
+    'QuestionnaireResultNotFoundForTokenOrId' => 'IKKE FUNDET: Der blev ikke fundet et spørgeskemaresultat med det angivne token eller id',
+    'QuestionIdCannotAcceptFile' => 'FORKERT ANMODNING: question_id {$question_id} kan ikke acceptere en fil på dette spørgeskemaresultat',
+    'QuestionIdNotFoundInQuestionnaire' => 'FORKERT ANMODNING: question_id {$question_id} blev ikke fundet i dette spørgeskema',
+    'QuestionIdInMultipleTemplates' => 'FORKERT ANMODNING: spørgsmåls-id {$question_id} vises i flere skabeloner til dette spørgeskema',
+    'QuestionIdDoesNotAcceptFileUploads' => 'FORKERT ANMODNING: question_id {$question_id} accepterer ikke filuploads',
+    // The Statement of Applicability's two UNVERIFIED implementation states.
+    //
+    // They exist because "we have not checked" is not "it does not work", and an
+    // SoA is ATTESTED — printing "No" for an unverified control is a false
+    // statement against yourself, exactly as printing "Yes" without evidence is
+    // a false statement the other way. Before these keys existed both states
+    // fell through to 'No', which on a framework where most controls carry no
+    // test meant the whole document read "not implemented".
+    //
+    // They are two states rather than one because they are different findings
+    // with different owners: no test defined is a GOVERNANCE gap (nobody decided
+    // how to verify this control), never run is an OPERATIONAL one (somebody
+    // decided, and it was not done).
+    //
+    // WORDING. Both must be unmistakably distinct from the bare 'No' in the same
+    // column. 'Tests never run' rather than 'Never run': in a column headed
+    // "Implemented", the bare phrase reads for a moment as though the CONTROL
+    // was never run, when the subject is its tests.
+    //
+    // BOTH ARE PLURAL, and that is not only style. English takes the plural
+    // after "no" when the expected quantity could exceed one ("no results
+    // found"), and a control normally carries several tests — the singular
+    // implies only ever one was expected. 'Tests never run' is the stronger
+    // case: soa_implemented_for() returns `never_run` only when NOT ONE of the
+    // control's tests has produced a verdict, so the state is inherently about
+    // the whole set. With four tests defined and none run, the singular reads as
+    // one omission rather than a wholesale one.
+    'SoaImplementedNoTestDefined' => 'Ingen test defineret',
+    'SoaImplementedNeverRun' => 'Testene kører aldrig',
+
+    // The Implemented column's fallback for a token neither sink recognizes.
+    //
+    // DELIBERATELY NOT A VERDICT, and the reason this key exists at all. Both
+    // sinks previously ended in a fallthrough to 'No', so adding a state without
+    // adding its label printed a confident, wrong answer into a compliance
+    // document. Falling through to 'Yes' would be worse. The only safe failure
+    // mode is a value that states nothing about the control — a visible bug
+    // instead of a silent misstatement.
+    'SoaImplementedUnknown' => 'Status utilgængelig',
+    // How an APPLICABLE control's stored inclusion reason(s) join to its own
+    // freeform justification when it recorded both (spec §4). Reached ONLY when
+    // both halves exist — reasons alone print as the reason list, prose alone
+    // prints verbatim — so this string is punctuation and word order, not prose.
+    // It is a language key rather than a hardcoded separator because a locale
+    // that joins clauses with a colon, a full stop, or right-to-left ordering
+    // must be able to say so; both placeholders have to survive translation.
+    'SoaJustifiedByInclusionReasons' => '{reasons} — {narrative}',
+    // The Set applicability modal's reason field, which became a MULTI-select
+    // when reasons moved to a join table: a control is commonly included (or
+    // excluded) for more than one reason, and the singular 'Reason' the field
+    // used to reuse now under-describes it. 'Reason' is left alone rather than
+    // repointed -- the row drawer and the SoA still print exactly one joined
+    // value under it, and redefining a key changes every surface that reads it.
+    'ApplicabilityReasons' => 'Årsager',
+    // Said once, above a group of checkboxes, rather than implied by the widget.
+    // The old single <select> answered "how many may I pick?" by construction;
+    // a checkbox group does not, and a user who ticks one and stops has made the
+    // SoA less truthful than the one they meant to write.
+    'ApplicabilityReasonsHint' => 'Vælg alle relevante årsager.',
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // THE STATEMENT OF APPLICABILITY'S MARKERS AND ITS LEGEND (spec §1, §3).
+    // ─────────────────────────────────────────────────────────────────────────
+
+    // THE EVIDENCE COLUMN'S TWO ABSENCES, which are OPPOSITES.
+    //
+    // 'No evidence linked' is a FINDING: the control is in scope, is possibly
+    // claimed implemented, and nothing substantiates it. The em dash below is
+    // the other answer -- the control is excluded, so no evidence is expected
+    // and the absence is correct. Rendering both as an empty cell hides the
+    // first, which is the one an auditor circles.
+    'SoaNoEvidenceLinked' => 'Ingen beviser forbundet',
+    // PUNCTUATION, NOT PROSE -- the glyph the Evidence cell prints when nothing
+    // is expected. A language key rather than a hardcoded character for the same
+    // reason 'SoaJustifiedByInclusionReasons' is one: a locale that marks "not
+    // applicable" with a different dash, or with a word, must be able to say so.
+    'SoaEvidenceNotExpected' => '—',
+    // Whether the evidence a test DECLARED it requires actually arrived with the
+    // result. A stronger claim than a pass/fail alone, and few SoA tools make it.
+
+    // THE REMEDIATION BLOCK -- what is being done about a control that reads
+    // Partial or No. The SoA points AT the risk treatment plan (clause 6.1.3(e))
+    // rather than becoming one.
+    'SoaRemediation' => 'Afhjælpning',
+    // THE MOST SERIOUS THING THAT BLOCK CAN FIND: the test failed and it is
+    // linked to no risk, so no treatment plan traces back to it. Dropping such a
+    // row for want of a risk to join to would render it as a blank cell, which
+    // reads as "nothing to report".
+    'SoaRemediationUnplanned' => 'Ingen risiko forbundet',
+
+    // THE LEGEND. Required in both variants and every export format, because six
+    // implementation states plus three markers is more nuanced than the
+    // Yes/No/Partial an auditor expects, and an undefined vocabulary invites the
+    // reader to guess unfavourably.
+    'SoaLegendTitle' => 'Sådan læser du denne udtalelse',
+    'SoaLegendYes' => 'Alle de test, der er defineret for dette kontrolelement, bestod, da det sidst blev kørt.',
+    'SoaLegendPartial' => 'Kontroltestene er uenige: mindst én bestod, og mindst én dumpede eller gav ingen konklusion.',
+    'SoaLegendNo' => 'Ingen test af denne kontrol bestod, da den sidst blev kørt, og mindst én mislykkedes.',
+    // The two unverified states are DIFFERENT FINDINGS WITH DIFFERENT OWNERS,
+    // and the labels alone do not quite carry that -- so the legend spells it
+    // out. This is the distinction the whole six-state set exists for.
+    'SoaLegendNoTestDefined' => 'Der er ikke defineret nogen test for denne kontrol, så dens funktion er aldrig blevet verificeret. Dette er ikke en påstand om, at kontrollen mangler eller fejler – kun at denne påstand ikke demonstrerer det. Et styringsgab: ingen har besluttet, hvordan denne kontrol kontrolleres.',
+    'SoaLegendNeverRun' => 'Der findes tests til denne kontrol, men ingen af dem er nogensinde blevet kørt, så dens funktion demonstreres ikke her. Dette er ikke en påstand om, at kontrollen mangler eller fejler. En operationel mangel: kontrollerne blev besluttet og er ikke blevet udført.',
+    'SoaLegendNotApplicable' => 'Kontrollen er undtaget fra dette frameworks anvendelsesområde, så den har ingen implementeringsstatus.',
+    // The one most in need of explaining: with nothing to define it, this reads
+    // as an admission about the control rather than as what it is.
+    'SoaLegendUnknown' => 'SimpleRisk kunne ikke mærke den registrerede status, så implementeringen demonstreres ikke her. Dette er en fejl i softwaren og siger ingenting om kontrollen -- hverken at den virker eller at den ikke gør.',
+    'SoaLegendOverdue' => 'Det viste resultat står stadig, men mindst én af de bagvedliggende tests har overskredet sin egen næste testdato. Beviserne er forældede.',
+    'SoaLegendNoEvidence' => 'Kontrollen er inden for omfanget, og der er ikke blevet forbundet noget, der underbygger den: intet bekræftet dokument og ingen test, der gav et resultat.',
+    'SoaLegendEvidenceNotExpected' => 'Der forventes ingen beviser, da kontrollen er udelukket fra anvendelsesområdet.',
+    'SoaLegendUnplanned' => 'En fejlende test, der ikke er forbundet med nogen risiko, så ingen behandlingsplan kan spores tilbage til den.',
+
+    // THE TWO VARIANTS, chosen on the launcher before the document is generated
+    // and PRINTED ON ITS COVER. A Statement of Applicability is a controlled
+    // document: two of them for the same framework that show different things,
+    // with nothing on either to say which is which, is a document nobody can
+    // file.
+
+    // THE THREE DETAILED-ONLY COLUMNS.
+    // What those three columns say instead of nothing. A blank cell in an audit
+    // document reads as a formatting artefact; "Not recorded" is a fact the
+    // reader can act on.
+
+    // THE BROWSER PRINT ROUTE. Beside the two downloads on the launcher, and the
+    // only PDF route for a framework too large for the server-side writer.
+    // Shown in place of "Download as PDF" when the chosen framework is above
+    // SOA_EXPORT_PDF_MAX_CONTROLS. The affordance is absent rather than
+    // disabled, so this sentence is what tells the reader the absence is
+    // deliberate and what to do instead.
+    // The footer of every printed page. {page} and {pages} are substituted with
+    // the browser's own page counters, so the two tokens must both survive
+    // translation -- but their ORDER and the words around them are the
+    // translator's, which is why this is one string and not "Page" + "of".
+    'SoaPrintPageNumber' => 'Side {page} af {pages}',
+
+    // THE ONE PDF AFFORDANCE on the statement-of-applicability launcher, beside
+    // 'DownloadAsXLSX'. It replaces the pair that used to sit there --
+    // 'SoaPrintToPdf' and 'DownloadAsPDF' -- because a Statement of Applicability
+    // is a controlled document and two PDF buttons let two people hand an auditor
+    // two different-looking PDFs of the same statement.
+    //
+    // JUST "PDF", AND DELIBERATELY SO. Below SOA_EXPORT_PDF_MAX_CONTROLS the
+    // button downloads a server-rendered file and above it the browser writes
+    // one, but that is a mechanism and not a choice the reader has to make. A
+    // label that named the mechanism ("Print to PDF" / "Download as PDF") would
+    // put the difference back in front of them.
+    //
+    // 'SoaPrintToPdf' and 'SoaPdfTooLargeHint' above are LEFT IN PLACE with no
+    // caller: 39 locales carry them, and this file is append-only precisely so a
+    // customer running a custom lang.<locale>.php can reconcile it with a tail
+    // diff.
+    'SoaPdf' => 'PDF-fil',
+
+    // THE OTHER TWO ACTIONS IN THAT SAME ROW, shortened to match it.
+    //
+    // The row read "Open in browser" / "Download as XLSX" / "PDF", which put a
+    // verb on two of three actions and made the odd one out look like an
+    // abbreviation of something longer. The row's own context supplies the
+    // verbs -- these are the things you can DO with the framework you just
+    // chose -- so they carried no information and cost the reader a comparison.
+    // 'SoaPdf' is short because naming its mechanism would be dishonest (above
+    // SOA_EXPORT_PDF_MAX_CONTROLS it opens a print view rather than downloading
+    // a file), and the shortest of the three is the one that has to be right.
+    //
+    // NOT the generic 'Open' at line ~1021: that key lives among 'Mitigated' /
+    // 'Reviewed' and is the risk-status ADJECTIVE -- fr "Ouvert", de "Offen" --
+    // so reusing it would label a button with a state rather than an action in
+    // most of the 39 locales.
+    //
+    // 'SoaOpenInBrowser' above is LEFT IN PLACE with no caller, for the same
+    // reason 'SoaPrintToPdf' is: the locales carry it and this file is
+    // append-only so a customer's custom lang.<locale>.php reconciles with a
+    // tail diff. 'DownloadAsXLSX' keeps a caller either way -- the Assessments
+    // Extra's questionnaire results still use it.
+    'SoaOpen' => 'Åbne',
+    'SoaXlsx' => 'XLSX',
+    // ---- The locked-affordance treatment -------------------------------------
+    // SHARED COPY, not chooser copy. SimpleRisk now SHOWS what's possible and
+    // MARKS what's out of reach because it isn't licensed, rather than hiding
+    // it -- so these strings appear both as a menu row's explanation (Define
+    // Control Frameworks' "+ Add framework" chooser) and beside a disabled
+    // toolbar button (the Statement of Applicability's PDF/XLSX exports). Each
+    // one is worded to read correctly in BOTH places, which is why none of them
+    // starts with "This route" or "This button".
+    //
+    // 'LockedAffordanceBadge' duplicates the English of 'AICapStateLocked'
+    // rather than reusing it: that key sits in the AI Capabilities Catalog's
+    // block and is scoped to a capability's state, and translators work from
+    // the key's neighbourhood as much as from its value.
+    'LockedAffordanceBadge' => 'Låst',
+    // The two SCF steps before it can be switched on. admin/register.php serves
+    // both -- it is the registration form AND where the per-Extra download
+    // buttons render -- so these differ in what they say, not where they go.
+    'UnlockRegisterInstanceNote' => 'Registrer denne instans for at få Secure Controls Framework.',
+    'UnlockRegisterInstanceLink' => 'Registrer SimpleRisk',
+    'UnlockDownloadScfNote' => 'Denne instans er registreret. Download Secure Controls Framework for at bruge den.',
+    'UnlockDownloadScfLink' => 'Download det',
+    'UnlockActivateScfNote' => 'Secure Controls Framework er downloadet, men ikke aktiveret.',
+    'UnlockActivateScfLink' => 'Tænd den',
+    // Import-Export is a paid Extra, so "not installed" is an upsell rather
+    // than a registration prompt. Deliberately a bare capability sentence: it
+    // has to sit under a menu row and next to an export button equally well.
+    'RequiresImportExportExtra' => 'Kræver import-eksport-ekstraudstyret.',
+    'UnlockImportExportLink' => 'Se hvad det tilføjer',
+    'UnlockActivateImportExportNote' => 'Import-Export Extra er installeret, men ikke aktiveret.',
+    'UnlockActivateImportExportLink' => 'Tænd den',
+    // Shown instead of any of the above to a user who is not an administrator:
+    // every unlock step lives on a check_admin page, so they get the half that
+    // is useful to them -- that the capability exists, and who to ask -- and no
+    // link that would only bounce them.
+    'UnlockNeedsAdministrator' => 'En administrator kan konfigurere dette.',
+    // API date parsing. {$field} is the request field name (next_date, last_date,
+    // test_date); {$format} is this instance's configured display date format.
+    'InvalidSubmittedDate' => 'Værdien {$field} er ikke en gyldig dato. Indsend den som ÅÅÅÅ-MM-DD eller i dette tilfælde datoformatet ({$format}).',
+    // Companion to InvalidSubmittedDate, for a value that matches the expected
+    // shape but names a day that does not exist (February 31st, month 13).
+    // Saying "submit it as MM/DD/YYYY" there would repeat what the caller did.
+    // {$value} is the submitted value, echoed back truncated.
+    'ImpossibleSubmittedDate' => 'Værdien {$field} "{$value}" er ikke en rigtig kalenderdato. Kontroller dagen og måneden — denne instans læser datoer som {$format}.',
+    // The Statement of Applicability's merged verification column. Replaces three
+    // separate headings (Implemented / Evidence / Review Cadence) with the one
+    // question all three answer: how do we know this control is working?
+    // The two appendices printed after the register. Justifications are truncated
+    // in the row and given in full here; remediation plans live here rather than
+    // in the table because ISO 27001 keeps the SoA (6.1.3(d)) and the risk
+    // treatment plan (6.1.3(e)) as separate artifacts.
+    'SoaAppendixJustifications' => 'Bilag A — Begrundelser',
+    'SoaAppendixRemediation' => 'Bilag R — Afhjælpningsplaner',
+    // Appendix E carries the WORDING of each test's evidence requirement. The row
+    // keeps only whether that evidence arrived, which is the finding; the wording
+    // is reference material and was the bulkiest thing in the Verification cell.
+    'SoaRequiredEvidenceSupplied' => 'krævet dokumentation fremlagt',
+    'SoaRequiredEvidenceNotSupplied' => 'krævet dokumentation ikke fremlagt',
+    // The one scheduling fact the SoA prints: the soonest date any of a control's
+    // tests is next due. Replaces a per-test "Manual — Next Test Date: ..." line,
+    // whose schedule type belongs on Define Tests and whose date is now on each
+    // test's own evidence bullet.
+    // The two dates on a test's evidence bullet. LABELLED, because two bare dates
+    // side by side are ambiguous in a way one is not.
+    // SINGULAR document-type labels for one piece of design evidence. SimpleRisk's
+    // existing keys are the plural tab names, which would read "Access Control
+    // Standard (Standards)".
+    'SoaEvidencePolicy' => 'Politik',
+    'SoaEvidenceStandard' => 'Standard',
+    'SoaEvidenceProcedure' => 'Procedure',
+    'SoaEvidenceGuideline' => 'Retningslinje',
+    // ── The legend, grouped by column (SOA_LEGEND_GROUPS, includes/soa.php) ──
+    // The Applicability column's three values. These were never in the legend,
+    // so an auditor met "Inherited" -- a word with no meaning outside SimpleRisk
+    // -- with nothing to look it up in.
+    'SoaLegendApplicable' => 'Kontrollen er omfattet af denne ramme, og organisationen er ansvarlig for at drive den.',
+    // DISTINCT from 'SoaLegendNotApplicable', which defines the "N/A" that appears
+    // in the Implementation Status column. This one is the DECISION to exclude;
+    // that one is the consequence for the status.
+    'SoaLegendApplicabilityNotApplicable' => 'Kontrollen er blevet udeladt fra dette frameworks anvendelsesområde. Begrundelseskolonnen angiver hvorfor, og hvem der besluttede.',
+    'SoaLegendInherited' => 'Kontrollen er inden for rammerne af licensen, men den drives af en tredjepart – en cloududbyder, en moderorganisation, en outsourcet funktion – snarere end af denne organisation. Udbyderen er navngivet ved siden af begrundelsen.',
+    // The Evidence column's four bullet glyphs. Load-bearing since the visible
+    // result word was dropped from pass and fail bullets, and until now defined
+    // nowhere at all.
+    'SoaLegendEvidencePass' => 'En test af denne kontrol registrerede en beståelse sidste gang den kørte. Datoen ved siden af er, hvornår den kørte.',
+    'SoaLegendEvidenceFail' => 'En test af denne kontrol registrerede en fejl sidste gang den kørte. Bilag R indeholder behandlingsplanen, hvor en sådan findes.',
+    'SoaLegendEvidenceInconclusive' => 'En test af denne kontrol blev udført og nåede ikke frem til nogen konklusion. Det samme mærke bruges til et resultat, som dette dokument ikke genkender, og i så fald udskrives selve resultatet ved siden af.',
+    // The TERM beside the § glyph. Not a document type -- the four types
+    // (Policy, Standard, Procedure, Guideline) are printed per item; this names
+    // the CATEGORY of evidence a document is.
+    'SoaEvidenceDesignDocument' => 'Designdokument',
+    'SoaLegendEvidenceDocument' => 'Et styringsdokument bekræftet som bevis for denne kontrol – dens design snarere end dens funktion. Et dokument bærer ingen konklusion, hvorfor det ikke er markeret med et flueben.',
+    // The XLSX export's first worksheet tab. The workbook's other four tabs reuse
+    // headings that already exist ('How to read this statement', 'Statement of
+    // Applicability', and the two appendix headings); the cover had no name of its
+    // own because it used to be the top of a single sheet.
+    //
+    // KEEP IT SHORT. Excel caps a worksheet name at 31 characters and
+    // soa_export_sheet_name() truncates rather than failing the export, so a long
+    // translation loses its tail on the tab.
+    'SoaSheetCover' => 'Forside',
+
+    'SearchFrameworks' => 'Søg i rammer',
+    'SearchControls' => 'Søg i kontroller',
+    'AddFramework' => 'Tilføj ramme',
+    'Applicability' => 'Anvendelighed',
+    'AnyFamily' => 'Enhver familie',
+    'AnyOwner' => 'Enhver ejer',
+    'AnyClass' => 'Enhver klasse',
+    'AnyPhase' => 'Enhver fase',
+    'AnyPriority' => 'Enhver prioritet',
+    'AnyType' => 'Enhver type',
+    'AnyStatus' => 'Enhver status',
+    'SelectAllN' => 'Vælg alle {n}',
+    'Classification' => 'Klassifikation',
+    'Placement' => 'Placering',
+    'OwnershipAndMaturity' => 'Ejerskab og modenhed',
+    'MappingsAndGuidance' => 'Kortlægninger og vejledning',
+    'DeleteFrameworkTitle' => 'Slet rammeværket \'{$name}\'?',
+    'DeleteControlTitle' => 'Slet kontrol \'{$name}\'?',
+    'DeleteControlsTitle' => 'Slet {$n} kontrolelementer?',
+    'DeleteCannotBeUndone' => 'Dette kan ikke fortrydes.',
+    'DeleteFrameworkConsequence' => 'Dette fjerner frameworket og alle dets kontroltilknytninger.',
+    'DeleteControlConsequence' => 'Dette fjerner kontrollen fra alle frameworks, den er knyttet til.',
+    'DeleteControlsConsequence' => 'Dette fjerner hvert markeret kontrolelement fra hvert framework, det er knyttet til.',
+    // Task 9: empty states (design-system.md §10) -- the four intents on
+    // Define Control Frameworks. Reuses existing keys where the copy already
+    // fits exactly (AddControl, AddFramework, ClearFilters, Retry,
+    // NoControlsDefinedYet, NoTestsMatchFiltersBody, CouldNotLoadTestsBody,
+    // RegisterYourInstance, GoToSCF, ImportExportExtra) -- only the strings
+    // with no existing match are added below.
+    'NoControlsMatch' => 'Ingen kontrolelementer matcher dine filtre',
+    'CouldNotLoadControls' => 'Kunne ikke indlæse kontrolelementerne',
+    'ControlsYouAddWillAppearHere' => 'Kontrolelementer, du tilføjer, vises her.',
+    'NoFrameworksYet' => 'Ingen rammer endnu',
+    'FrameworksYouAddWillAppearHere' => 'Frameworks, du tilføjer eller importerer, vises her.',
+    'CouldNotLoadFrameworks' => 'Kunne ikke indlæse frameworks',
+    // Task 9 review fix: the framework rail's own "no results" intent, shown
+    // when the user has explicitly switched the status dropdown away from
+    // Active and that status has nothing (distinct from "No frameworks yet",
+    // which is reserved for the default Active status where the endpoint
+    // can't yet tell "no frameworks at all" from "none active").
+    'NoFrameworksMatchFilter' => 'Ingen rammer matcher denne status',
+    'ViewActiveFrameworks' => 'Se aktive frameworks',
+    // Task 10: Define Control Frameworks insights band (governance/index.php)
+    // -- KPI tile labels/subtitles. 'Controls', 'Pass', 'Fail', 'NotTested'
+    // already exist and are reused as label keys for their tiles.
+    'BelowTarget' => 'Under målet',
+    'Excluded' => 'Ekskluderet',
+    'FwInScope' => 'Inden for rammerne',
+    'FwLastTestPassed' => 'Sidste bestået test',
+    'FwLastTestFailed' => 'Sidste test mislykkedes',
+    'FwNoEvidence' => 'Gældende, ingen beviser',
+    'FwMaturityUnderDesired' => 'Modenhed under ønsket',
+    'FwScopeAFramework' => 'Afgrænse et rammeværk for at beslutte',
+    'FwNotApplicableOrInherited' => 'Ikke relevant eller arvet',
+    // Task 22: framework rail search (governance/index.php's #sr-fw-search,
+    // wired client-side in governance-frameworks.js). Reuses the shipped
+    // "no results" empty-state tile (#sr-fw-filtered, Task 9) rather than
+    // inventing a fourth rail empty state -- only the title and action swap
+    // depending on whether a status filter or a search narrowed the list to
+    // nothing; NoTestsMatchFiltersBody already covers both as body copy.
+    'NoFrameworksMatchSearch' => 'Ingen rammer matcher din søgning',
+    'ClearSearch' => 'Ryd søgning',
+    // Task 24: Clone control pre-fills the Add Control modal from the source
+    // control (governance-frameworks.js's openControlForClone()) rather than
+    // creating a duplicate outright, so the modal needs to say plainly which
+    // control it was cloned from -- the reviewer's core complaint about an
+    // earlier one-click version of this feature was not knowing what was
+    // cloned. {$name} follows the same client-side formatTemplate()
+    // substitution ShowingXToYOfZ/NSelected already use on this page.
+    'ClonedFromControlNotice' => 'Klonet fra "{$name}". Gennemgå felterne nedenfor, og gem derefter.',
+    // Task 24 review follow-up: the banner alone left the modal titled "New
+    // Control" over pre-populated fields -- "it doesn't prompt or anything
+    // so the user doesn't know what was cloned" (Josh) -- which reads as a
+    // bug, not a feature. Retitling #control--add-title to this (governance-
+    // frameworks.js's show.bs.modal delegate for #control--add) makes the
+    // clone unambiguous at a glance; NewControl is restored for a plain add.
+    'CloneOfControlTitle' => 'Klon af "{$name}"',
+    // Task 27: the framework rail's SCF-origin chip (governance-frameworks.js's
+    // railRow()) -- shown only for frameworks created via the ComplianceForge
+    // SCF Extra's authoritative-source import (get_scf_origin_framework_ids(),
+    // includes/governance.php). SCF is the badge text itself; ScfOriginHint is
+    // its title/tooltip.
+    'SCF' => 'SCF',
+    'ScfOriginHint' => 'Fra Secure Controls Framework (SCF)',
+    // Task 34: the Maturity filter facet's placeholder on the Define Control
+    // Frameworks filter sheet (governance-frameworks.js's ensureFilterSheet()),
+    // matching the AnyFamily/AnyOwner/AnyClass/... set above. The facet's three
+    // OPTIONS reuse the existing BelowMaturity/AtMaturity/AboveMaturity keys --
+    // the same labels the governance dashboard's maturity-gap widgets already
+    // carry -- and the column chip renders those same three strings, so the
+    // filter and the cell can never read differently.
+    'AnyMaturity' => 'Enhver modenhed',
+    // Task 46: accessible name for the control table's pager landmark
+    // (governance-frameworks.js's renderPager()). The pager's own buttons
+    // reuse the existing Previous/Next keys Define Tests' pager already
+    // carries; only the <nav> label is new, and it names WHICH table's pager
+    // it is because the Define Control Frameworks page has two lists on it.
+    'ControlsPagination' => 'Kontrollerer paginering',
+    // Task 14: the Applicability column's state chip (governance-frameworks.js's
+    // renderApplicability()), the matching filter facet (its three option labels
+    // reuse these same three keys) and its "Any applicability" placeholder.
+    //
+    // The three states are PREFIXED rather than named 'Applicable'/
+    // 'NotApplicable'/'Inherited' because 'NotApplicable' already exists above
+    // as the ABBREVIATION 'N/A' -- the self-assessment answer chip and three
+    // reporting charts render it -- and redefining that key to the spelled-out
+    // phrase this column needs would silently change all four of those
+    // surfaces. The prefix also keeps the trio recognisable as one family.
+    //
+    // The column HEADER and the facet's accessible name reuse the existing
+    // 'Applicability' key, and the drawer's record reuses 'Reason', 'Provider'
+    // and 'Justification' -- all four already carry exactly the right string.
+    'ApplicabilityApplicable' => 'Gældende',
+    'ApplicabilityNotApplicable' => 'Ikke relevant',
+    'ApplicabilityInherited' => 'Arvet',
+    'AnyApplicability' => 'Enhver anvendelighed',
+    // The drawer's applicability record: who recorded the decision and when.
+    // Both are attribution for an audited decision a customer may have to
+    // defend years later, which is why the drawer names them at all.
+    'ApplicabilityDecidedBy' => 'Besluttet af',
+    'ApplicabilityDecidedOn' => 'Besluttet på',
+    // The framework-level Statement of Applicability card in the Add/Edit
+    // framework modals (display_framework_soa_card(), includes/governance.php).
+    // These two fields are what ISO/IEC 27001:2022 clause 6.1.3(d) needs on an
+    // SoA cover: the scope the framework is certified against, and how inclusion
+    // was determined for the controls that are simply applicable.
+    //
+    // 'IsmsScopeStatement' rather than a bare 'ScopeStatement' because "scope"
+    // is already overloaded across SimpleRisk (assessment scope, audit scope,
+    // risk scope); the ISMS prefix is what an ISO practitioner calls this exact
+    // field and keeps it from being reused for an unrelated one.
+    'StatementOfApplicability' => 'Erklæring om anvendelighed',
+    'IsmsScopeStatement' => 'Omfangserklæring',
+    'IsmsScopeStatementHint' => 'Det omfang, som dette framework er certificeret i forhold til. Fremgår af SoA-forsiden.',
+    'DefaultInclusionJustification' => 'Standardbegrundelse for inkludering',
+    'DefaultInclusionJustificationHint' => 'Bruges til relevante kontroller uden tilknyttede risici. Navngiv drivkraften, ikke rammeværket.',
+    // THE DEFAULT SENTENCE, in all three of its roles: the create form seeds the
+    // textarea with it, the Edit form shows it as a placeholder, and
+    // soa_framework_default_justification() (includes/soa.php) substitutes it at
+    // read time for a framework that has none. One key, because a reader must not
+    // be able to tell a stored default from a fallen-back one, and because three
+    // keys holding the same sentence is three chances for a translator to make
+    // them disagree. The name predates the seeding decision (Task 67) and is kept
+    // rather than churned through Crowdin for 39 locales.
+    //
+    // It names the DRIVER (the risk assessment) rather than the framework:
+    // "included because it is part of this framework" is circular, and ISO 6.1.3
+    // derives controls from risk treatment, using Annex A afterwards only as a
+    // completeness cross-check.
+    //
+    // It was a placeholder ONLY until Task 67, so that an unreviewed sentence
+    // could not reach a customer's SoA by inaction. Measured, that produced the
+    // opposite failure: 19 of 20 frameworks left the field NULL and the SoA's
+    // Justification column came out BLANK for every applicable control with no
+    // linked risks -- the finding an SoA is most often failed on, and one a
+    // boilerplate sentence does not attract.
+    'DefaultInclusionJustificationPlaceholder' => 'Bestemmes af organisationens risikovurdering for informationssikkerhed og bevares som en nødvendig kontrol.',
+    // Task 15: bulk-setting applicability from the control table's selection bar
+    // (#applicability--set, governance/index.php + governance-frameworks.js).
+    //
+    // The action's own label and the modal's one section. 'Applicability',
+    // 'Reason', 'Provider', 'Justification', 'Save' and 'Cancel' already exist
+    // and are reused; only the strings with no existing home are added here.
+    'SetApplicability' => 'Angiv anvendelighed',
+    'ApplicabilityDecision' => 'Afgørelse',
+    // The amber scope note, in two sentences the page assembles separately
+    // because they answer two different questions: WHICH framework the decision
+    // is scoped to, and WHICH controls are about to receive it. The second one
+    // has two spellings, because the header checkbox selects the current PAGE
+    // while "Select all N" escalates to the whole filtered result set -- the two
+    // genuinely differ once the table pages, and a note that blurred them would
+    // let the user write 1,535 decisions believing they had written 25.
+    'ApplicabilityScopeNote' => 'Denne beslutning gælder kun inden for "{$framework}". Den samme kontrol kan forblive gældende i et andet framework.',
+    'ApplicabilityAppliesToSelected' => 'Det vil blive registreret mod den/de {$n} kontrol(er), der er valgt på denne side.',
+    'ApplicabilityAppliesToAllFiltered' => 'Det vil blive registreret mod alle {$n} kontrol(er), der matcher de aktuelle filtre, inklusive dem på andre sider.',
+    // Per-state hints under the segmented control. The "applicable" one is the
+    // load-bearing sentence of the whole modal, and the SoA audit-readiness work
+    // rewrote it: an applicable control MAY now carry its own reasons and
+    // justification (ISO/IEC 27001 clause 6.1.3(d) asks for one per control, for
+    // inclusion as much as for exclusion), and leaving both empty is what falls
+    // back to the framework's default inclusion justification. The old sentence
+    // -- "this removes any recorded decision. No justification is needed." --
+    // is now false in both halves.
+    'ApplicabilityApplicableHint' => 'Inden for rammens anvendelsesområde. En årsag og en begrundelse er valgfrie; hvis begge efterlades tomme, bruges rammens standardbegrundelse for inkludering.',
+    'ApplicabilityNotApplicableHint' => 'En kontrol er udelukket fra denne rammes anvendelsesområde. Både en begrundelse og en skriftlig begrundelse er påkrævet.',
+    'ApplicabilityInheritedHint' => 'En anden udfører denne kontrol på dine vegne. Navngiv dem, og fortæl hvad de gør.',
+    'ApplicabilityNarrativeHint' => 'Fremgår af erklæringen om anvendelighed. Skriv, hvad en revisor skal bruge for at acceptere afgørelsen.',
+    'ApplicabilityProviderHint' => 'Den organisation, der udfører kontrollen: en cloududbyder, en administreret tjeneste, et moderselskab.',
+    'ChooseAReason' => 'Vælg en grund',
+    'ApplicabilityNoReason' => 'Ingen grund',
+    // Result toasts. Both interpolate a COUNT taken from the API response and
+    // nothing else -- no submitted text is ever reflected into a toast, which
+    // toastr renders as HTML.
+    'ApplicabilitySetResult' => 'Anvendelsesmulighed opdateret for {$n} kontrol(er).',
+    'ApplicabilityClearResult' => 'Anvendelsesmulighed nulstillet til gældende for {$n} kontrol(er).',
+    // Bulk control delete (Task 54, corrected Task 55). Deleting a control is
+    // final either way the delete engine implements it: a control with test
+    // history is soft-deleted (framework_controls.deleted = 1) to keep test
+    // history intact, a control with no tests is removed outright -- but
+    // nothing anywhere flips that flag back, so from the user's side there is
+    // no "kept" case, only "deleted, and its test history survives for audit
+    // purposes." Every sentence therefore leads with the same irreversible
+    // warning; the only thing that varies is whether an audit-history clause
+    // is appended, and that clause is omitted entirely rather than printed
+    // with a count of zero -- "0 are retained for audit history" reads as a
+    // warning about something that is not going to happen, and on a delete
+    // confirmation that is exactly the kind of noise that trains people to
+    // stop reading. Every {$...} is a count from the API response; no user
+    // text is ever interpolated, which matters because toastr renders HTML.
+    'DeleteControlsPreviewChecking' => 'Tjekker hvad der vil blive slettet...',
+    'DeleteControlsPreviewSplit' => '{$n} kontrol(er) vil blive slettet. Dette kan ikke fortrydes. Testresultater for {$m} af dem gemmes til revisionshistorikken.',
+    'DeleteControlsPreviewKeptOnly' => 'Alle {$n} kontrol(er) vil blive slettet. Dette kan ikke fortrydes. Testresultaterne gemmes til revisionshistorikken.',
+    'DeleteControlsPreviewRemovedOnly' => '{$n} kontrol(er) vil blive slettet. Dette kan ikke fortrydes.',
+    'DeleteControlsPreviewNone' => 'Intet at slette: den/de valgte kontrol(er) findes ikke længere.',
+    'ControlsDeletedResult' => '{$n} kontrol(er) slettet.',
+
+    // The Add/Edit framework modal's Status field. The label reuses the existing
+    // 'Status' key -- the same word the rail's Active/Inactive/All filter already
+    // uses -- so only the explanatory hint is new. It says the two things a user
+    // cannot see from the control itself: that Inactive is the NON-destructive way
+    // to retire a framework (unlike Delete, which cannot be undone), and that the
+    // change cascades through the hierarchy, which is what update_framework_status()
+    // has always done and is genuinely surprising when a parent is deactivated.
+    'FrameworkStatusHint' => 'Inaktive frameworks beholder alle deres kontrolelementer og tilknytninger, men er skjult fra standardlisten over frameworks og udeladt af styringsdashboardet. Deaktivering af et framework deaktiverer også alle underliggende frameworks; aktivering af et framework aktiverer også dets overordnede.',
+
+    // Task 60: the same #applicability--set modal, opened from ONE control's row
+    // action instead of the selection bulk bar. The button's own label reuses
+    // 'SetApplicability'; these two exist because the modal now has to say which
+    // of the two it is acting on, and both spellings must be unambiguous.
+    //
+    // The title names the specific object (design-system.md §8) and the note
+    // says "only", because the dangerous reading is the silent one: with rows
+    // ticked -- or with "Select all N filtered" in force -- a modal that said
+    // nothing would let a click the user believed applied to one row be read as
+    // applying to every control in the framework. Naming the control in both
+    // places is what makes the narrower scope visible rather than assumed.
+    // Corrected in Task 63. This spelling used to end "...only, whatever else is
+    // selected", which was printed on every row-action open whether or not
+    // anything else WAS selected -- a dangling absolute with no antecedent, so
+    // it read as a sentence that had been cut off. It is now the plain form, and
+    // the reassurance about a competing selection moved to
+    // 'ApplicabilityAppliesToControlNotSelection' below, which is printed only
+    // when there is a competing selection to reassure anyone about.
+    'SetApplicabilityForControl' => 'Angiv anvendelighed: {$name}',
+    'ApplicabilityAppliesToControl' => 'Den vil kun blive optaget mod "{$name}".',
+
+    // Task 17: the Statement of Applicability report itself
+    // (reports/statement_of_applicability.php + pages/statement-of-applicability.js),
+    // the document ISO/IEC 27001:2022 clause 6.1.3(d) asks for and the one every
+    // applicability decision recorded on the Define Control Frameworks page
+    // exists to produce.
+    //
+    // 'StatementOfApplicability' already exists above (the framework modal's SoA
+    // card) and is reused for the report's own title, as are 'IsmsScopeStatement',
+    // 'DefaultInclusionJustification', the three 'Applicability*' state labels,
+    // 'ApplicabilityDecidedBy'/'DecidedOn', and the plain 'Framework',
+    // 'ControlNumber', 'ControlName', 'Justification', 'Evidence', 'Reason',
+    // 'Provider', 'Total', 'Controls' and 'Export' keys. Only strings with no
+    // existing home are added here.
+    'StatementOfApplicabilityDesc' => 'For ét framework: hver kontrol, om den er relevant, hvorfor den blev inkluderet eller udeladt, og om den er implementeret.',
+    // The header button on Define Control Frameworks. The verb is "generate"
+    // rather than "view" because the document is assembled at the moment it is
+    // asked for -- there is no stored SoA that could be out of date.
+    'GenerateStatementOfApplicability' => 'Generer en anvendelighedserklæring',
+
+    // The Justification column's SECOND resolution step, and the reason an SoA
+    // built here beats the spreadsheet it replaces: the risks that drove the
+    // control are already recorded against it, so nobody retypes them and they
+    // cannot go stale. {risks} is substituted with the displayed risk ids.
+    //
+    // Phrased to match clause 6.1.3, which derives controls from risk treatment
+    // and uses Annex A afterwards only as a completeness cross-check -- the same
+    // reasoning behind 'DefaultInclusionJustificationPlaceholder' above.
+    'SoaJustifiedByRiskAssessment' => 'Bestemt af organisationens risikovurdering for informationssikkerhed. Tilknyttede risici: {risks}.',
+
+    // The Implemented column. DERIVED from maturity and the last test result on
+    // every read, never stored, so it cannot drift out of sync with the control.
+    // 'Yes' and 'No' already exist and are reused; only the middle value and the
+    // header need keys of their own. An excluded control's cell reuses the
+    // existing 'NotApplicable' ('N/A'), which is exactly the right abbreviation
+    // in a dense table.
+    'SoaImplemented' => 'Implementeret',
+    'SoaImplementedPartial' => 'Delvis',
+
+    // The cover block.
+    'SoaGeneratedOn' => 'Genereret den',
+    'SoaExcludedCount' => 'Ekskluderet',
+
+    // The prompt shown when the framework has never been given the two cover
+    // fields. It PROMPTS rather than silently printing a blank cover: an SoA
+    // whose scope is empty is the one defect an auditor spots first, and the
+    // moment somebody opens the report is the only moment those fields matter.
+    // Both spellings of empty (never set, and deliberately cleared) prompt --
+    // from a reader's point of view there is nothing to print either way.
+    //
+    // The inclusion-justification line states a WEAKER consequence than it used
+    // to, because Task 67 made the stronger one untrue: the column no longer goes
+    // blank when the field is empty -- soa_framework_default_justification()
+    // substitutes the generic default sentence. The prompt survives because a
+    // generic sentence is not the organization's own, and an auditor reading 1,500
+    // identical rows of boilerplate is entitled to ask whose risk assessment it
+    // refers to.
+    'SoaMissingFieldsTitle' => 'Denne erklæring mangler sine forsideoplysninger',
+    'SoaMissingScopeStatement' => 'Der er ikke registreret nogen omfangserklæring for dette framework. En SoA skal angive det omfang, den er udarbejdet i forhold til.',
+    'SoaMissingInclusionJustification' => 'Der er ikke registreret nogen standardbegrundelse for inkludering. Gældende kontroller uden tilknyttede risici vil blive baseret på en generisk erklæring i stedet for din egen.',
+    'SoaEditFrameworkToAdd' => 'Tilføj dem på rammen',
+
+    // Opened from the Reporting Hub, which cannot supply a framework. A picker,
+    // not an error: an SoA is a per-framework document by definition -- the same
+    // control excluded from ISO 27001 is not thereby excluded from PCI DSS --
+    // and there is no cross-framework roll-up to offer instead.
+    'SoaChooseFramework' => 'Vælg en ramme',
+    'SoaChooseFrameworkHint' => 'En anvendelighedserklæring skrives om én ramme ad gangen.',
+    // The picker has a roster but nothing in it. Distinct from "this framework
+    // has no controls": there is no framework to write a statement about at all,
+    // and the fix is on a different page, so it says which one.
+    // The launcher's affordance row. "Open in browser" rather than "View"
+    // because it names what actually happens -- the document opens in a new tab,
+    // chrome-free -- and because Task 18 adds "Download as PDF" and "Download as
+    // XLSX" beside it, where "open" vs "download" is the distinction that
+    // matters.
+    // The document has no sidebar, so it needs its own way back for anyone who
+    // arrives from a bookmark or a shared link. Screen only; never printed.
+    'SoaBackToSelector' => 'Tilbage til erklæring om anvendelighed',
+    'SoaNoFrameworks' => 'Ingen aktive rammer',
+    'SoaNoFrameworksHint' => 'Installer eller aktiver et framework under Governance > Definer kontrolframeworks, og det vil være tilgængeligt her.',
+
+    // The two refusals. Both explain rather than just failing, because the user
+    // arrived here deliberately.
+    'SoaFrameworkInactiveTitle' => 'Denne ramme er inaktiv',
+    'SoaFrameworkInactiveBody' => 'En anvendelighedserklæring beskriver det omfang, en organisation i øjeblikket opererer under. Genaktiver rammeværket for at generere et.',
+    'SoaFrameworkNotFoundBody' => 'Den ramme eksisterer ikke længere.',
+
+    // A framework with no controls mapped into it. Not an error -- it is a real
+    // and recoverable state, and saying so beats an empty table.
+    'SoaNoControls' => 'Denne ramme har ingen kontrolfunktioner',
+    'SoaNoControlsHint' => 'Kortlæg kontroller i frameworket, og dets anvendelighedserklæring vil liste dem.',
+
+    // The second half of the statement-of-applicability launcher's affordance
+    // row, beside "Open in browser" and the existing 'DownloadAsXLSX'. Rendered
+    // only where the Import/Export Extra is active, which is what supplies the
+    // export. "Download as" rather than "Export to" so the pair reads as one
+    // choice of format, and so it matches the XLSX label already in this file.
+    'DownloadAsPDF' => 'Download som PDF',
+
+    // The fourth column of the control modal's "Mapped Control Frameworks"
+    // widget, between the reference code and the reference text. The
+    // FRAMEWORK's own title for the control it is citing -- what a Statement of
+    // Applicability prints beside the clause number. Distinct from the existing
+    // 'ReferenceText', which holds the framework's full control statement, and
+    // from the SimpleRisk control's own name.
+    'ReferenceSubject' => 'Referenceemne',
+    // Placeholder/help text under that field, and the reason it is worth
+    // filling in: without it the Statement of Applicability has nothing to
+    // print but the source catalogue's name for its own control.
+    'ReferenceSubjectHint' => "Frameworkets egen titel for denne kontrol.",
+
+    // Task 63: the row-scoped population sentence in the Set applicability
+    // modal, in the one situation where the plain
+    // 'ApplicabilityAppliesToControl' above leaves a real question unanswered --
+    // the user has controls ticked, or a standing "Select all N filtered", and
+    // has just opened the modal from ONE row's own action.
+    //
+    // It states the guarantee rather than implying it. A user whose escalated
+    // selection covers an entire framework needs to know that this click is not
+    // about to overwrite it, and {$n} is the count of the OTHER selected
+    // controls -- the target is excluded, because it is very often ticked too
+    // and a promise that included it would be false.
+    'ApplicabilityAppliesToControlNotSelection' => 'Den vil kun blive optaget mod "{$name}" — den/de {$n} kontrol(er), du har valgt, påvirkes ikke.',
+
+    // Task 65: the VISIBLE label on the controls toolbar's SoA button. The full
+    // sentence ('GenerateStatementOfApplicability' above) stays as the button's
+    // title and aria-label, and is still what the SoA page itself is called;
+    // this is the short form for a toolbar row it shares with the page's one
+    // primary action. At full length the secondary button measured more than
+    // twice the primary's width and became the largest element in the row.
+    //
+    // "SoA" is safe to abbreviate HERE and only here: the button appears solely
+    // when a single framework is scoped, beside an Applicability column, and it
+    // expands on hover.
+    'GenerateSoa' => 'Generer SoA',
+
+    // ===== Clone framework (Task 64) =======================================
+    // The framework half of Clone control's framing (CloneOfControlTitle /
+    // ClonedFromControlNotice above), and for the same reason: the clone
+    // pre-fills the Add Framework modal rather than creating anything, so the
+    // modal has to say what was carried over before the user saves it.
+    //
+    // Separate keys from the control pair rather than one shared "Clone of
+    // {$name}" -- the two banners do not say the same thing. A cloned control
+    // simply asks to be reviewed; a cloned FRAMEWORK has to explain two things
+    // its fields cannot: that the source's control mappings come with it, and
+    // that the empty scope statement is deliberate. The blank field is the
+    // whole reason the banner is longer than the control's -- a scope statement
+    // left blank with no explanation reads as a field that failed to populate,
+    // and the one thing a clone exists to be given is a NEW scope (Josh: "you
+    // might want to use the same controls as one framework, but scope it
+    // differently"). {$name} and {$n} follow the same client-side
+    // formatTemplate() substitution the rest of this page's templates use.
+    'CloneOfFrameworkTitle' => 'Klon af "{$name}"',
+    // {$n} is the count the rail is SHOWING for the source row -- its controls,
+    // not its raw mapping rows. Those differ (a framework can cite one control
+    // under two clause numbers, and the rail excludes deleted controls), and the
+    // number to promise is the one the user is looking at when they click and
+    // the one the clone's own rail row will show afterwards.
+    'ClonedFromFrameworkNotice' => 'Klonet fra "{$name}". Dens {$n} -kontroller vil blive kopieret til det nye framework, hvor alle er gældende fra starten — ingen af dets anvendelighedsbeslutninger overføres. Omfangserklæringen er bevidst tom: Angiv det omfang, som dette framework dækker, før du genererer dens anvendelighedserklæring.',
+    // Seeds the name field so the clone can be saved without a rename --
+    // framework names are unique, so a verbatim copy is refused on save.
+    'CloneOfFrameworkName' => '{$name} (Klon)',
+    'CloneFramework' => 'Klon ramme',
+    // Extras version independently of Core, so an updated Import/Export Extra
+    // can end up calling a Core function the installed Core does not have. The
+    // export refuses with this rather than fataling -- see
+    // soa_export_refuse_if_core_too_old(), extras/import-export/includes/soa_export.php.
+    'SoaExportRequiresNewerCore' => 'Denne eksport kræver en nyere version af SimpleRisk Core end den installerede. Opdater SimpleRisk, og prøv derefter at eksportere igen.',
+    // The framework ACQUISITION chooser (Task 26): "+ Add framework" asks how you
+    // want to get one, rather than assuming you want to type it in. Each option is
+    // rendered only when the route behind it actually exists for this user, so the
+    // hint text may state plainly what the route does -- it is never shown to
+    // someone who cannot take it.
+    'HowDoYouWantToAddAFramework' => 'Hvordan vil du tilføje et framework?',
+    'CreateFrameworkManually' => 'Opret en manuelt',
+    'CreateFrameworkManuallyHint' => 'Navngiv selv frameworket, og tilføj eller tilknyt derefter dets kontrolelementer.',
+    // Named for the framework rather than for its vendor. The hint was reworded
+    // at the same time: it used to end "...load its Secure Controls Framework
+    // controls", which read as a stutter once the label carried those words.
+    'GetFrameworkFromScf' => 'Hent en fra Secure Controls Framework',
+    'GetFrameworkFromScfHint' => 'Vælg et publiceret framework, og indlæs dets tilknyttede kontrolelementer i ét trin.',
+    'ImportFrameworkFromCatalog' => 'Importér én',
+    'ImportFrameworkFromCatalogHint' => 'Installer et framework og dets kontroller fra SimpleRisk-indholdskataloget.',
+
+    // The framework acquisition chooser's third route, which now offers the
+    // Import-Export Extra's CONTROL import (a spreadsheet naming a framework
+    // that does not exist yet creates it) rather than the GitHub catalogue the
+    // two keys above described. Those two are left in place, unreferenced, so a
+    // customer maintaining a custom lang.<locale>.php still reconciles by tail
+    // diff.
+    'ImportFrameworkFromSpreadsheet' => 'Importér en fra et regneark',
+    'ImportFrameworkFromSpreadsheetHint' => 'Upload et regneark med kontrolelementer, der navngiver frameworket, og begge oprettes.',
+
+    // The Define Control Frameworks rail's second synthetic scope: the controls
+    // mapped to no framework at all. Its first, "All controls", reuses the
+    // existing AllControls key rather than adding a second string with the same
+    // English -- it replaced 'AllFrameworks' on that row, which named a union of
+    // frameworks while scoping to every control, mapped or not. 'AllFrameworks'
+    // is left in place and unreferenced by that page: other surfaces still use
+    // it, and every locale carries it.
+    'UnassignedControls' => 'Ikke-tildelte kontroller',
+    // APPLICABILITY VALIDATION FAILURES. These reach the user: the v2 endpoint
+    // returns the exception's message as the API status message and the page
+    // renders it in a toast, so a hardcoded English literal here would be
+    // permanently English for every locale.
+    //
+    // NOTHING THE CALLER TYPED IS EVER INTERPOLATED INTO THESE. The parameters
+    // are validated enum values, integer ids and byte limits the server itself
+    // owns -- naming the ALLOWED values rather than echoing the rejected one is
+    // deliberate (it is both safe and more useful than repeating a typo).
+    'ApplicabilityErrUnknownState' => 'Ukendt anvendelighedstilstand. Forventede en af: {$states}.',
+    'ApplicabilityErrNarrativeRequired' => 'En fortælling er påkrævet for \'{$state}\'.',
+    'ApplicabilityErrNarrativeTooLong' => 'Fortællingen er længere end {$bytes} bytes.',
+    'ApplicabilityErrReasonRequired' => 'En udelukkelsesårsag er påkrævet for at markere en kontrol som ikke relevant.',
+    'ApplicabilityErrProviderRequired' => 'En udbyder skal markere en kontrol som nedarvet.',
+    'ApplicabilityErrProviderTooLong' => 'Udbydernavnet er længere end {$bytes} bytes.',
+    'ApplicabilityErrReasonsNotFound' => 'Disse anvendelighedsårsager findes ikke: {$ids}.',
+    'ApplicabilityErrReasonsNotOffered' => 'Disse anvendelighedsårsager gives ikke for denne tilstand: {$ids}.',
+    'ApplicabilityErrFrameworkNotFound' => 'Frameworket {$framework} findes ikke.',
+    'ApplicabilityErrControlsNotFound' => 'Disse kontrol-id\'er findes ikke: {$ids}.',
+    // Controls/Risks import result messages (validation gate, individual bad-row
+    // alerts, and the batched submitted/created/updated summaries)
+    'ControlIdOrShortNameFieldRequired' => 'Enten feltet Kontrol-ID eller Kontrolkortnavn skal være tilknyttet – en række kan ikke identificeres uden en af dem.',
+    'RiskImportSubjectNull' => 'Risiko-ID {$risk_id}: Blev ikke opdateret, fordi emnefeltet er tomt eller mangler.',
+    'RiskImportSummary' => 'Indsendt {$submitted} risiko(er) og opdateret {$updated} risiko(er).',
+    'ControlImportSummary' => 'Oprettede {$created} kontrol(er) og opdaterede {$updated} kontrol(er).',
+    'ImportAdditionalIssuesSuppressed' => '{$count} yderligere række(r) havde problemer, der ikke vises enkeltvis her.',
+    'EncryptionPipelineStalledTask' => 'En krypteringspipeline (opgave #{$id}, {$type}) ser ud til at være gået i stå — den har været {$status} i usædvanlig lang tid uden at fortsætte. Dette betyder normalt, at baggrundskøarbejderen ikke kører. Kontroller, at den er planlagt, og prøv derefter igen, når den har behandlet den gåede opgave.',
+    'EncryptionPipelineStalledState' => 'En krypteringspipeline ser ud til at være gået i stå – den har været markeret som igangværende i usædvanlig lang tid uden nogen matchende baggrundsopgave at pege på. Dette betyder normalt, at køarbejderen ikke kører, eller at en tidligere pipeline er afsluttet uden korrekt opdatering. Tjek fejlfindingsloggen, før du prøver igen.',
+    // DEMO_MODE — shown when a visitor to a shared demo instance attempts one
+    // of the operations that would spoil the demo for the next visitor
+    'ActionDisabledOnDemoInstance' => 'Denne handling er deaktiveret på SimpleRisk-demoinstansen.',
+
+    // The one-click upgrade progress window: the step an upgrade is on, and
+    // the line shown once it finishes
+    // Shown when an upgrade's progress record has not been touched for long
+    // enough that the process running it is presumed gone
+    'UpgradeJobStalled' => 'Opgraderingen svarer ikke længere. Tjek serverloggen, før du prøver igen.',
+    // Shown when an upgrade replaced the instance's configuration file and could
+    // not put the original back
+    // Shown when the database was brought up to date but the application files
+    // could not be replaced, so the instance has NOT moved to the new release
+    'UpdateAppFailed' => 'Programfilerne blev ikke opgraderet, så denne instans kører stadig sin tidligere udgivelse. Tjek SimpleRisk-loggen for at finde årsagen, og kør derefter opgraderingen igen.',
+    // The one-click upgrade progress screen
+    'UpgradeInProgress' => 'I gang',
+    'UpgradeStepNotNeeded' => 'Ikke nødvendigt',
+    // Recovering an Upgrade Extra whose files are damaged
+    'UpgradeExtraDamagedReinstalling' => 'Den installerede Upgrade Extra er beskadiget. Downloader en ny kopi.',
+    'UpgradeExtraDamagedRepaired' => 'Opgraderingsprogrammet blev erstattet med en fungerende kopi.',
+    'UpgradeExtraDamagedFailed' => 'Opgraderings-ekstraen er beskadiget og kunne ikke udskiftes automatisk. Geninstaller den fra siden Ekstra, eller gendan simplerisk/extras/upgrade/ fra en sikkerhedskopi, og prøv derefter igen.',
+    'UpgradeAlreadyCurrent' => 'Denne instans er allerede på {version}, som er den seneste udgivelse. Intet krævede opgradering.',
+    'UpgradeShowWhatItDid' => 'Vis hvad den gjorde',
+    'UpgradeBackupsListed' => 'Disse sikkerhedskopier er angivet under Konfigurer > Sikkerhedskopier.',
+    'UpgradingTo' => 'Opgradering til {version}',
+    'UpgradeSafeToClose' => 'Det er sikkert at lukke dette vindue. Opgraderingen fortsætter på serveren, og denne side vil blive tilknyttet igen.',
+    'UpgradeDownloadLog' => 'Download logfil',
+    'UpgradeStatementsApplied' => 'Startede {started} · {count} sætninger anvendt',
+    // The Upgrade Extra's pre-upgrade check of the instance it is sitting on
+    'UpgradeCheckingInstance' => 'Tjekker denne instans',
+    'UpgradeInstanceChecked' => 'Instans kontrolleret, ingen rettelser nødvendige.',
+    'UpgradeBlockedByCorrections' => 'Opgraderingen blev stoppet, fordi denne instans kræver en rettelse, der ikke kunne anvendes automatisk. Følg instruktionerne ovenfor, og kør derefter opgraderingen igen. Intet andet blev ændret.',
+    // Shown when an upgrade replaced the instance's configuration file and could not put the original back
+    'ConfigRestoreFailed' => 'Opgraderingen kunne ikke gendanne denne instans\' konfigurationsfil. Gendan simplerisk/includes/config.php fra sikkerhedskopien, før du fortsætter.',
+    'UpgradeDidNotAdvance' => 'Opgraderingsfunktionen for version "{$version}" forbedrede ikke databaseversionen; den stopper, så den ikke kører igen.',
+    'BackupDatabaseNative' => 'Sikkerhedskopiering af databasen (ingen eksterne værktøjer kræves)...',
+    'UpgradeAlreadyRunning' => 'En opgradering kører allerede på denne instans.',
+    'UpgradeStatusUnreachable' => 'Mistede kontakten med serveren, mens opgraderingen kørte. Tjek SimpleRisk-loggen; opgraderingen er muligvis stadig i gang.',
+    'UpgradeJobUnwritable' => 'Opgraderingen kunne ikke starte, fordi dens statusregistrering ikke kunne skrives. Kontroller, at webbrugeren kan skrive til systemets midlertidige mappe.',
+    'UpgradeStepCheckingVersions' => 'Kontrollerer versioner',
+    'UpgradeStepUpgradingDatabase' => 'Opgradering af databaseskemaet',
+    'UpgradeStepFinalising' => 'Anvendelse af konverteringer efter opgradering',
+    'UpgradeDatabaseHeading' => 'Opgradering af databasen',
+    'UpgradeDatabaseComplete' => 'Databaseopgraderingen er fuldført.',
+    'UpgradeHideWhatItDid' => 'Skjul hvad den gjorde',
+    'UpgradeStateRunning' => 'Kører',
+    'UpgradeSessionExpired' => 'Din session er udløbet. Log ind igen for at se opgraderingen.',
+    'UpgradeLostContact' => 'Mistet kontakt med serveren. Genindlæs denne side for at oprette forbindelse til opgraderingen igen.',
+    'UpgradeDatabaseAlreadyCurrent' => 'Databasen findes allerede på applikationsversionen.',
+    'UpgradeConversionsApplied' => 'Motor- og tegnsætkonverteringer anvendt.',
+    'UpgradeStoppedShort' => 'Opgraderingen stoppede ved {reached} uden at nå {app}. Se serverloggen.',
+    'UpgradeStepBackingUp' => 'Sikkerhedskopiering',
+    'UpgradeStepUpgradingFiles' => 'Opgradering af programfiler',
+    'UpgradeStepUpgradingExtras' => 'Opgradering af installerede ekstrafunktioner',
+    'UpgradeStepUpdatingUpgradeExtra' => 'Opdatering af opgraderings-ekstraen',
+    // The Upgrade Extra's pre-chain corrections: what is wrong, and what to do
+    // about it. These are the highest-stakes messages the upgrade produces --
+    // an operator reads them to unstick an instance that cannot upgrade.
+    'UpgradeCorrectionUnknownVersionTitle' => 'Den registrerede databaseversion nævner ikke en rigtig udgivelse',
+    'UpgradeCorrectionNoRecordedVersion' => 'Databasen har ingen registreret version.',
+    'UpgradeCorrectionUnknownVersionFinding' => 'Databasen rapporterer version \'{$version}\', som ikke navngiver nogen SimpleRisk-udgivelse. Opgraderingen kan ikke vælge et startpunkt ud fra den.',
+    'UpgradeCorrectionUnknownVersionGuidance' => 'Indstil indstillingen db_version til den udgivelse, hvis skema denne database rent faktisk har, og kør derefter opgraderingen igen: UPDATE settings SET value=\'<release>\' WHERE name=\'db_version\'. Hvis værdien er en pladsholder, f.eks. 2026XXXX-001, er den korrekte værdi næsten altid den seneste faktiske udgivelse, der blev installeret, før opgraderingen kørte.',
+    'UpgradeCorrectionLegacySessionsTitle' => 'Sessionstabellen kan ikke overleve opgraderingens tegnsætkonvertering',
+    'UpgradeCorrectionLegacySessionsFinding' => '`sessions`.`id` er VARCHAR({$width}) på en MyISAM-tabel. Konvertering af den til utf8mb4, som version 20230106-001 og fremefter gør, ville overskride MyISAMs indeksgrænse på 1000 byte og mislykkes med opgraderingen.',
+    'UpgradeCorrectionLegacySessionsGuidance' => 'En eller flere aktive sessioner bruger et id, der er længere end 128 tegn. Hvis kolonnen blev indsnævret nu, ville disse brugere blive logget ud, så den blev ladt være. Prøv at opgradere igen, når disse sessioner er udløbet.',
+    'UpgradeCorrectionApplied' => 'Rettet.',
+    'UpgradeCorrectionFailed' => 'Denne rettelse kunne ikke anvendes. Se årsagen i SimpleRisk-loggen.',
+    'UpgradeCorrectionAppliedLine' => 'Rettet: {$title} {$message}',
+    'UpgradeCorrectionNotAppliedLine' => 'IKKE rettet: {$title} {$message}',
+    'UpgradeCorrectionsNeeded' => 'Rettelser nødvendige før denne instans kan opgraderes: {$count}',
+    'UpgradeCorrectionsNeededShort' => 'Nødvendige rettelser: {$count}',
+    'UpdateDatabase' => 'Opgraderer database...',
+    // Authentication screens (index.php, reset.php, reset_password.php)
+    'EnterTheCredentialsForYourAccount' => 'Indtast loginoplysningerne til din konto.',
+    'TroubleSigningIn' => 'Problemer med at logge ind? Kontakt din SimpleRisk-administrator.',
+    'BackToLogin' => 'Tilbage til login',
+    'Or' => 'eller',
+    'WeWillEmailAResetTokenToYourAccount' => 'Vi sender en nulstillingstoken via e-mail til adressen på din konto.',
+    'EnterTheResetTokenFromYourEmail' => 'Indtast nulstillingstokenet fra din e-mail sammen med din nye adgangskode.',
+    'ChooseANewPasswordToContinue' => 'Vælg en ny adgangskode for at fortsætte.',
+    'FromZeroToGRCInMinutes' => 'Fra NUL til GRC på få minutter.',
+    'OrganizationLogo' => 'Organisationslogo',
+    'LoginScreenBranding' => 'Branding af loginskærmen',
+    'CustomLogo' => 'Brugerdefineret logo',
+    'CustomLogoHint' => 'PNG, JPG, GIF eller WebP, op til 1 MB og 2000x2000. Vises i op til 260x64, så angiv omkring 520x128 til skærme med høj tæthed. Den øverste bjælke og loginpanelet er mørke, så upload et logo, der læses på en mørk baggrund. Fjern logoet for at gå tilbage til SimpleRisk-logoet.',
+    'CurrentLogo' => 'Nuværende logo',
+    'RemoveLogo' => 'Fjern logoet',
+    'LoginTagline' => 'Login-slogan',
+    'LoginTaglineHint' => 'Erstatter SimpleRisk-taglinen på loginskærmen. Én kort linje læses bedst. Lad den være tom for at beholde SimpleRisk-taglinen.',
+    'LoginNotice' => 'Meddelelse om systembrug',
+    'LoginNoticeHint' => 'Vises på loginskærmen, før nogen logger ind. Brug den til en notifikation om acceptabel brug eller systembrug. Lad feltet stå tomt for ikke at vise nogen notifikation. Links og billeder er ikke tilladt.',
+    'BrandingRequiresCustomization' => 'Branding af loginskærmen er en del af Customization Extra.',
+    'LogoMustBeAnImage' => 'Logoet skal være et PNG-, JPG-, GIF- eller WebP-billede.',
+    'LogoTooLarge' => 'Logoet må ikke være større end 1 MB.',
+    'LogoDimensionsTooLarge' => 'Logoet må ikke være større end 2000x2000 pixels.',
+    'LogoDimensionsTooSmall' => 'Logoet skal være mindst 32 pixels på sin længste kant.',
+    'LogoUploadFailed' => 'Logoet kunne ikke uploades. Prøv igen.',
+    'LogoUpdated' => 'Logoet blev opdateret.',
+    'LogoRemoved' => 'Logoet blev fjernet.',
+    'NoSystemUseNoticeSet' => 'Der er ikke angivet nogen meddelelse om systembrug.',
+    'NoticeSizeSmall' => 'Lille',
+    'NoticeSizeNormal' => 'Normal',
+    'NoticeSizeLarge' => 'Stor',
     '' => '',
 );
 ?>

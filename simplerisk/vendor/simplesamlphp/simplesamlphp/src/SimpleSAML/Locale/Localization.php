@@ -13,9 +13,11 @@ namespace SimpleSAML\Locale;
 use Exception;
 use Gettext\Generator\ArrayGenerator;
 use Gettext\Loader\PoLoader;
-use Gettext\{Translations, Translator, TranslatorFunctions};
-use SimpleSAML\{Configuration, Logger};
+use Gettext\Translator;
+use Gettext\TranslatorFunctions;
+use SimpleSAML\Configuration;
 use SimpleSAML\Locale\Translate;
+use SimpleSAML\Logger;
 use Symfony\Component\HttpFoundation\File\File;
 
 use function explode;
@@ -24,11 +26,11 @@ class Localization
 {
     /**
      * The default gettext domain.
-     *
-     * @var string
      */
-    public const DEFAULT_DOMAIN = 'messages';
-    public const CORE_DOMAIN = 'core';
+    public const string DEFAULT_DOMAIN = 'messages';
+
+    public const string CORE_DOMAIN = 'core';
+
 
     /**
      * The default locale directory
@@ -80,6 +82,7 @@ class Localization
         $this->language = new Language($configuration);
         $this->langcode = $this->language->getPosixLanguage($this->language->getLanguage());
         $this->setupL10N();
+        $this->addAttributeDomains();
     }
 
 
@@ -94,8 +97,6 @@ class Localization
 
     /**
      * Dump the default locale directory
-     *
-     * @return string
      */
     public function getLocaleDir(): string
     {
@@ -107,8 +108,6 @@ class Localization
      * Get the default locale dir for a specific module aka. domain
      *
      * @param string $domain Name of module/domain
-     *
-     * @return string
      */
     public function getDomainLocaleDir(string $domain): string
     {
@@ -136,6 +135,9 @@ class Localization
     }
 
 
+    /**
+     * @param string $domain
+     */
     public function defaultDomain(string $domain): self
     {
         $this->translator->defaultDomain($domain);
@@ -164,8 +166,6 @@ class Localization
      *
      * @param string $domain Name of localization domain
      * @throws \Exception If the path does not exist even for the default, fallback language
-     *
-     * @return string
      */
     public function getLangPath(string $domain = self::DEFAULT_DOMAIN): string
     {
@@ -300,13 +300,12 @@ class Localization
 
     /**
      * Show which domains are registered
-     *
-     * @return array
      */
     public function getRegisteredDomains(): array
     {
         return $this->localeDomainMap;
     }
+
 
     /**
      * Add translation domains specifically used for translating attributes names:

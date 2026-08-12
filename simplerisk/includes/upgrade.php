@@ -16,89 +16,23 @@ require_once(realpath(__DIR__ . '/assets.php'));
 require_once(realpath(__DIR__ . '/governance.php'));
 require_once(realpath(__DIR__ . '/permissions.php'));
 require_once(realpath(__DIR__ . '/Components/WordHandler.php'));
+// The migration helpers extracted out of this file live in two places: those
+// that belong to a subsystem sit beside it (migrate_user_mfa_enrolment_tracking()
+// in mfa.php, seed_ai_capability_settings() in artificial_intelligence.php), and
+// the rest live in upgrade/common.php. All are called from
+// upgrade_from_20260709001(), so they are required here rather than relied on
+// transitively.
+require_once(realpath(__DIR__ . '/mfa.php'));
+require_once(realpath(__DIR__ . '/artificial_intelligence.php'));
+// Upgrade-only shared helpers (the five migrate_* functions the current release
+// extracted out of upgrade_from_20260709001(), plus the standing integrity
+// checks). Required AFTER functions.php so functions.php stays the canonical
+// definition of anything they share.
+require_once(realpath(__DIR__ . '/upgrade/common.php'));
 
 // Include the language file
 require_once(language_file());
 require_once(realpath(__DIR__ . '/../vendor/autoload.php'));
-
-// These are here to make sure they're available when upgrading
-if (!function_exists('index_exists_on_table')) {
-    // @phan-suppress-next-line PhanRedefineFunction -- guarded by function_exists() check above; alternate definition in includes/functions.php
-    function index_exists_on_table($index_name, $table) {
-
-        // Open the database connection
-        $db = db_open();
-
-        $stmt = $db->prepare("SHOW INDEX FROM `{$table}` WHERE `Key_name` = '{$index_name}';");
-        $stmt->execute();
-
-        // Fetch the results
-        $results = $stmt->rowCount();
-
-        // Close the database connection
-        db_close($db);
-
-        return $results;
-    }
-}
-
-if (!function_exists('field_exists_in_table')) {
-    // @phan-suppress-next-line PhanRedefineFunction -- guarded by function_exists() check above; alternate definition in includes/functions.php
-    function field_exists_in_table($field, $table) {
-
-        // Open the database connection
-        $db = db_open();
-
-        // Query the field of the table
-        $stmt = $db->prepare("
-            SELECT
-                1
-            FROM
-                information_schema.columns
-            WHERE
-                table_schema = :database
-                AND table_name = :table
-                AND column_name = :field;
-        ");
-        $database = DB_DATABASE; //Have to make a variable as bindParam can't take parameter by reference
-        $stmt->bindParam(":database", $database, PDO::PARAM_STR);
-        $stmt->bindParam(":table", $table, PDO::PARAM_STR);
-        $stmt->bindParam(":field", $field, PDO::PARAM_STR);
-        $stmt->execute();
-
-        // Fetch the results
-        $results = $stmt->rowCount();
-
-        // Close the database connection
-        db_close($db);
-
-        return $results;
-    }
-}
-
-if (!function_exists('table_exists')) {
-    // @phan-suppress-next-line PhanRedefineFunction -- guarded by function_exists() check above; alternate definition in includes/functions.php
-    function table_exists($table) {
-
-        // Open the database connection
-        $db = db_open();
-
-        // Query the schema for the table
-        $database = DB_DATABASE; //Have to make a variable as bindParam can't take parameter by reference
-        $stmt = $db->prepare("SELECT table_name FROM information_schema.tables WHERE table_schema = :database AND table_name = :table;");
-        $stmt->bindParam(":database", $database, PDO::PARAM_STR);
-        $stmt->bindParam(":table", $table, PDO::PARAM_STR);
-        $stmt->execute();
-
-        // Fetch the results
-        $results = $stmt->fetchAll();
-
-        // Close the database connection
-        db_close($db);
-
-        return count($results) > 0;
-    }
-}
 
 global $releases;
 $releases = [
@@ -200,6 +134,7 @@ $releases = [
     "20260422-001",
     "20260519-001",
     "20260709-001",
+    "20260811-001",
 ];
 
 /*************************
@@ -274,28 +209,40 @@ function display_login_form()
     global $lang;
     global $escaper;
 
+    // Same card as the two states that follow it, so signing in, reading the
+    // versions and watching the upgrade are visibly one flow rather than three
+    // screens that happen to share a URL.
+    //
+    // $lang here and English literals below it is not an inconsistency: these
+    // keys predate this page and already exist in every locale, whereas the
+    // upgrade's own commentary is written where the language file on disk may
+    // already belong to the incoming release.
     echo "
-        <h3>Upgrade the SimpleRisk Database</h3>
-        <div class='card'>
-            <form class='loginForm' action='' method='post' name='authenticate'>
-                <div class='card-body'>
-                    <h4 class='card-title'>" . $escaper->escapeHtml($lang['LogInHere']) . ":</h4>
-                    <div class='form-group'>
-                        <label>" . $escaper->escapeHtml($lang['Username']) . "</label>
+        <div class='sr-qform'>
+        <div class='sr-qcard'>
+            <div class='sr-qcard-head'>
+                <span class='sr-qcard-htext'>
+                    <h2>Upgrade the SimpleRisk Database</h2>
+                    <span class='sr-qcard-hsub'>" . $escaper->escapeHtml($lang['LogInHere']) . "</span>
+                </span>
+            </div>
+            <form action='' method='post' name='authenticate'>
+                <div class='sr-qcard-body'>
+                    <div class='sr-qfield sr-qfield-mb'>
+                        <label class='sr-qlabel' for='user'>" . $escaper->escapeHtml($lang['Username']) . "</label>
                         <input type='text' class='form-control user' id='user' name='user' required/>
                     </div>
-                    <div class='form-group'>
-                        <label>" . $escaper->escapeHtml($lang['Password']) . "</label>
+                    <div class='sr-qfield sr-qfield-mb'>
+                        <label class='sr-qlabel' for='pass'>" . $escaper->escapeHtml($lang['Password']) . "</label>
                         <input type='password' class='form-control pass' id='pass' name='pass' required/>
                     </div>
-                    <div class='form-group justify-content-end'>
-                        <div>
-                            <button type='reset' class='btn btn-dark'>" . $escaper->escapeHtml($lang['Reset']) . "</button>
-                            <button type='submit' class='btn btn-submit' name='submit' value='submit'>" . $escaper->escapeHtml($lang['Login']) . "</button>
-                        </div>
+                    <div class='sr-qactions'>
+                        <button type='reset' class='btn btn-secondary'>" . $escaper->escapeHtml($lang['Reset']) . "</button>
+                        <button type='submit' class='btn btn-submit' name='submit' value='submit'>" . $escaper->escapeHtml($lang['Login']) . "</button>
                     </div>
                 </div>
             </form>
+        </div>
         </div>
     ";
 }
@@ -308,28 +255,37 @@ function display_upgrade_info()
 
     global $escaper;
 
-    echo "
-        <div class='card' style='margin-top: 43.8px;'>
-            <div class='card-body'>
-    ";
-
-    // Get the current application version
     $app_version = current_version("app");
+    $db_version  = current_version("db");
 
+    // The versions read as a pair, so they are laid out as one -- an operator's
+    // first question here is whether these two differ, and two sentences in a
+    // paragraph make that a reading exercise rather than a glance.
     echo "
-                <p>The current application version is: " . $escaper->escapeHtml($app_version) . "</p>
-    ";
-
-    // Get the current database version
-    $db_version = current_version("db");
-
-    echo "
-                <p>The current database version is: " . $escaper->escapeHtml($db_version) . "</p>
-                <p>This script will ugprade your database to the next version of SimpleRisk.  Please make sure you have backed up your database before proceeding.  Click &quot;CONTINUE&quot; to begin.</p>
+        <div class='sr-qform'>
+        <div class='sr-qcard'>
+            <div class='sr-qcard-head'>
+                <span class='sr-qcard-htext'>
+                    <h2>Upgrade the SimpleRisk Database</h2>
+                    <span class='sr-qcard-hsub'>Applies any outstanding database schema changes.</span>
+                </span>
+            </div>
+            <div class='sr-qcard-body'>
+                <div class='sr-info-grid' style='display: grid; grid-template-columns: max-content 1fr; column-gap: 1.5rem; row-gap: 0.4rem; align-items: baseline;'>
+                    <span class='sr-qlabel'>Application version</span>
+                    <span>" . $escaper->escapeHtml($app_version) . "</span>
+                    <span class='sr-qlabel'>Database version</span>
+                    <span>" . $escaper->escapeHtml($db_version) . "</span>
+                </div>
+                <p class='sr-qfield-mb' style='margin-top: 16px;'>This script will upgrade your database to the next version of SimpleRisk. It changes the database only &mdash; it does not download anything, take a backup, or replace any application files. <strong>Make sure you have backed up your database before proceeding.</strong></p>
                 <form name='upgrade_database' method='post' action=''>
-                    <button type='submit' name='upgrade_database' class='btn btn-dark float-end'>CONTINUE</button>
+                    <div class='sr-qactions'>
+                        <span class='sr-qactions-hint'>The upgrade continues on the server if you close this tab.</span>
+                        <button type='submit' name='upgrade_database' class='btn btn-submit'>CONTINUE</button>
+                    </div>
                 </form>
             </div>
+        </div>
         </div>
     ";
 }
@@ -358,9 +314,15 @@ function convert_tables_to_innodb()
         // We cannot convert the session table due to id characters
         if ($table_name != "sessions")
         {
-            // Change the table to InnoDB
-            $stmt = $db->prepare("ALTER TABLE `" . $table_name . "` ENGINE=InnoDB;");
-            $stmt->execute();
+            // Per table, so one that refuses does not take the rest with it.
+            // See the note in convert_tables_to_utf8().
+            try {
+                // Change the table to InnoDB
+                $stmt = $db->prepare("ALTER TABLE `" . $table_name . "` ENGINE=InnoDB;");
+                $stmt->execute();
+            } catch (Exception $e) {
+                write_debug_log("Could not convert table `{$table_name}` to InnoDB: " . $e->getMessage(), 'warning');
+            }
         }
     }
 
@@ -383,19 +345,66 @@ function convert_tables_to_utf8()
     // Store the list in the array
     $array = $stmt->fetchAll();
 
-    // For each table that is not InnoDB
+    // For each table that is not utf8mb4
     foreach ($array as $value)
     {
         // Get the table name
         $table_name = $value['table_name'];
 
-        // Change the table to InnoDB
-        $stmt = $db->prepare("ALTER TABLE `" . $table_name . "` CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;");
-        $stmt->execute();
+        // One table at a time, and a refusal is logged rather than thrown.
+        //
+        // A widening CONVERT can legitimately fail on a specific table on a
+        // specific server -- the classic is a legacy MyISAM `sessions` with a
+        // VARCHAR(255) primary key, where utf8mb4 pushes the key past the index
+        // limit and MySQL raises 3886. (convert_tables_to_innodb() above has
+        // skipped `sessions` by name for years for the same underlying reason;
+        // this loop never did.)
+        //
+        // Without this the first such table aborts the whole loop, so every
+        // table after it stays unconverted, and the exception escapes a function
+        // whose entire job is to make the schema consistent -- turning a
+        // reportable per-table problem into an uncaught fatal in whichever
+        // upgrade channel happened to call it. Converting the rest and logging
+        // the one that refused is strictly better on both counts.
+        try {
+            $stmt = $db->prepare("ALTER TABLE `" . $table_name . "` CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;");
+            $stmt->execute();
+        } catch (Exception $e) {
+            write_debug_log("Could not convert table `{$table_name}` to utf8mb4: " . $e->getMessage(), 'warning');
+        }
     }
 
     // Disconnect from the database
     db_close($db);
+}
+
+/**********************************************
+ * FUNCTION: FINALIZE DATABASE UPGRADE        *
+ **********************************************/
+/**
+ * The steps that must follow the upgrade_from_* chain, in one place.
+ *
+ * These conversions were previously bolted on by individual callers -- the
+ * upgrade page, the one-click flow and the Upgrade Extra each called them, while
+ * run_database_upgrade_structured() (the management /upgrade endpoint) and
+ * api_v2_admin_upgrade_db() did not. An operator whose only upgrade channel was
+ * one of those two API paths finished on utf8mb3 while everyone else finished on
+ * utf8mb4 -- not a difference any caller should be able to introduce by
+ * forgetting a line.
+ *
+ * Both conversions are idempotent: each selects only the tables not already in
+ * the target state, so a second call does nothing.
+ *
+ * convert_tables_to_utf8() is not cosmetic. MySQL implements CONVERT TO
+ * CHARACTER SET by widening column types where the wider charset needs more
+ * bytes for the same character count -- TEXT becomes MEDIUMTEXT, verified
+ * directly -- so an instance that skips this step differs from one that ran it
+ * in column TYPE, not merely in collation.
+ */
+function finalize_database_upgrade()
+{
+    convert_tables_to_innodb();
+    convert_tables_to_utf8();
 }
 
 /**************************
@@ -513,17 +522,40 @@ function check_grants($db)
  *************************************/
 function update_database_version($db, $version_to_upgrade, $version_upgrading_to)
 {
+    // Only a REAL release version may be written. The unreleased placeholder an
+    // in-flight upgrade function targets ('2026XXXX-001') must leave db_version
+    // alone at the last real release -- which is what the guard below was always
+    // meant to do.
+    //
+    // It did not. `preg_match()` returns 1 on a match, 0 on NO match and false
+    // only on error, so the original `!== false` was true for both 1 and 0 and
+    // never blocked anything: the placeholder was written like any other version.
+    // A database carrying it then matches no entry in $releases,
+    // get_database_upgrade_function_for_release() returns false, and the upgrade
+    // page can only answer "Unable to find an upgrade function for the current
+    // SimpleRisk database version". The instance is stranded there -- and stays
+    // stranded through the next release, because at release time the placeholder
+    // is renamed to the real version in the CODE while the row still holds the
+    // literal '2026XXXX-001', which by then names nothing at all.
+    if (!is_release_version_string($version_upgrading_to))
+    {
+        // Deliberately quiet about the version, loud about the fact: this is the
+        // normal state of a development instance mid-cycle, not a fault.
+        echo "Leaving the database version unchanged -- this upgrade targets an unreleased version.<br />\n";
+        return;
+    }
+
     // Update the database version information
     echo "Updating the database version information.<br />\n";
 
-    // If the version upgrading to is in the proper YYYYMMDD-VVV format
-    // This will prevent us from changing the version while still upgrading the database in test environments
-    if (preg_match("/^\d{8}-\d{3}$/", $version_upgrading_to) !== false)
-    {
-        // Go ahead and update the db version
-        $stmt = $db->prepare("UPDATE `settings` SET `value` = '" . $version_upgrading_to . "' WHERE `settings`.`name` = 'db_version' AND `settings`.`value` = '" . $version_to_upgrade . "' LIMIT 1 ;");
-        $stmt->execute();
-    }
+    // Go ahead and update the db version. Both values are bound rather than
+    // concatenated -- they are hardcoded in the upgrade functions today, so this
+    // is belt-and-braces, but it costs nothing and stops the guard above from
+    // being the only thing between a version string and the SQL.
+    $stmt = $db->prepare("UPDATE `settings` SET `value` = :version_upgrading_to WHERE `settings`.`name` = 'db_version' AND `settings`.`value` = :version_to_upgrade LIMIT 1 ;");
+    $stmt->bindParam(":version_upgrading_to", $version_upgrading_to, PDO::PARAM_STR);
+    $stmt->bindParam(":version_to_upgrade", $version_to_upgrade, PDO::PARAM_STR);
+    $stmt->execute();
 }
 
 /**************************************
@@ -551,11 +583,16 @@ function upgrade_from_20140728001($db)
     $array = $stmt->fetchAll();
     foreach ($array as $value)
     {
+        // bindValue(), not bindParam(): bindParam() takes its second argument BY
+        // REFERENCE, so passing the return of stripslashes() raised "Only
+        // variables should be passed by reference" on every row of every upgrade
+        // from this release. bindValue() takes it by value, which is what these
+        // three always wanted.
         $stmt = $db->prepare("UPDATE user SET name=:name, email=:email, username=:username WHERE value=:value");
         $stmt->bindParam(":value", $value['value']);
-        $stmt->bindParam(":name", stripslashes($value['name']));
-        $stmt->bindParam(":email", stripslashes($value['email']));
-        $stmt->bindParam(":username", stripslashes($value['username']));
+        $stmt->bindValue(":name", stripslashes($value['name']));
+        $stmt->bindValue(":email", stripslashes($value['email']));
+        $stmt->bindValue(":username", stripslashes($value['username']));
         $stmt->execute();
     }
 
@@ -567,8 +604,8 @@ function upgrade_from_20140728001($db)
     foreach ($array as $value){
         $stmt = $db->prepare("UPDATE closures SET close_reason=:close_reason, note=:note WHERE id=:id");
         $stmt->bindParam(":id", $value['id']);
-        $stmt->bindParam(":close_reason", stripslashes($value['close_reason']));
-        $stmt->bindParam(":note", stripslashes($value['note']));
+        $stmt->bindValue(":close_reason", stripslashes($value['close_reason']));
+        $stmt->bindValue(":note", stripslashes($value['note']));
         $stmt->execute();
     }
 
@@ -581,12 +618,12 @@ function upgrade_from_20140728001($db)
     {
         $stmt = $db->prepare("UPDATE risks SET subject=:subject, reference_id=:reference_id, control_number=:control_number, location=:location, assessment=:assessment, notes=:notes WHERE id=:id");
         $stmt->bindParam(":id", $value['id']);
-        $stmt->bindParam(":subject", stripslashes($value['subject']));
-        $stmt->bindParam(":reference_id", stripslashes($value['reference_id']));
-        $stmt->bindParam(":control_number", stripslashes($value['control_number']));
-        $stmt->bindParam(":location", stripslashes($value['location']));
-        $stmt->bindParam(":assessment", stripslashes($value['assessment']));
-        $stmt->bindParam(":notes", stripslashes($value['notes']));
+        $stmt->bindValue(":subject", stripslashes($value['subject']));
+        $stmt->bindValue(":reference_id", stripslashes($value['reference_id']));
+        $stmt->bindValue(":control_number", stripslashes($value['control_number']));
+        $stmt->bindValue(":location", stripslashes($value['location']));
+        $stmt->bindValue(":assessment", stripslashes($value['assessment']));
+        $stmt->bindValue(":notes", stripslashes($value['notes']));
         $stmt->execute();
     }
 
@@ -1416,10 +1453,6 @@ function upgrade_from_20160124001($db)
     $stmt = $db->prepare("CREATE TABLE IF NOT EXISTS `pending_risks` (`id` INT AUTO_INCREMENT PRIMARY KEY, `assessment_id` INT NOT NULL, `subject` varchar(300) NOT NULL, `score` INT NOT NULL, `owner` INT, `asset` varchar(200), `submission_date` TIMESTAMP DEFAULT NOW()) ENGINE=InnoDB DEFAULT CHARSET=utf8;");
     $stmt->execute();
 
-    // Add the Critical Security Controls assessment
-    //require_once(realpath(__DIR__ . '/assessments.php'));
-    critical_security_controls_assessment();
-
     // Add PHPMailer settings
     echo "Adding PHPMailer settings.<br />\n";
     $stmt = $db->prepare("INSERT INTO `settings` VALUES ('phpmailer_transport', 'sendmail');");
@@ -1684,7 +1717,15 @@ function upgrade_from_20170102001($db){
     $stmt->execute();
 
     // Set a primary key to risk score table.
-    if (!field_exists_in_table('id', 'risk_scoring_history')) {
+    //
+    // Guarded on the PRIMARY KEY, not on the column. The original guard asked
+    // whether the `id` COLUMN existed -- which the CREATE TABLE immediately
+    // above always makes true -- so ADD PRIMARY KEY never ran, and the
+    // AUTO_INCREMENT modification below then failed with "there can be only one
+    // auto column and it must be defined as a key" (MySQL 1075). That broke the
+    // upgrade chain for anyone passing through 20170102-001, which is every
+    // instance older than it.
+    if (!constraint_exists_on_table($db, 'risk_scoring_history', 'PRIMARY KEY')) {
         $stmt = $db->prepare("ALTER TABLE `risk_scoring_history` ADD PRIMARY KEY (`id`);");
         $stmt->execute();
     }
@@ -2024,18 +2065,6 @@ function upgrade_from_20170724001($db){
     echo "Updating the pending risks table to accept a float for risk score.<br />\n";
     $stmt = $db->prepare("ALTER TABLE `pending_risks` MODIFY `score` float NOT NULL;");
     $stmt->execute();
-
-    // Add the NIST 800-171 Assessment Questionnaire
-    echo "Adding the NIST 800-171 assessment questionnaire.<br />\n";
-    nist_800_171_assessment();
-
-    // Add the PCI DSS 3.2 Assessment Questionnaire
-    echo "Adding the PCI DSS 3.2 assessment questionnaire.<br />\n";
-    pci_dss_3_2_assessment();
-
-    // Add the HIPAA (April 2016) Assessment Questionnaire
-    echo "Adding the HIPAA (April 2016) assessment questionnaire.<br />\n";
-    hipaa_april_2016_assessment();
 
     // Add the field tracking table
     echo "Adding a field tracking table.<br />\n";
@@ -10399,13 +10428,7 @@ function upgrade_from_20260519001($db) {
     // an install that already has the key) is a no-op. Best-effort: a
     // failure here must not fatal the rest of the upgrade.
     try {
-        $audit_has_pk = (bool)$db->query("
-            SELECT 1 FROM information_schema.TABLE_CONSTRAINTS
-             WHERE TABLE_SCHEMA = DATABASE()
-               AND TABLE_NAME = 'audit_log'
-               AND CONSTRAINT_TYPE = 'PRIMARY KEY'
-             LIMIT 1
-        ")->fetchColumn();
+        $audit_has_pk = constraint_exists_on_table($db, 'audit_log', 'PRIMARY KEY');
 
         if (!$audit_has_pk) {
             $db->prepare("ALTER TABLE `audit_log` ADD COLUMN `id` INT NOT NULL AUTO_INCREMENT PRIMARY KEY FIRST")->execute();
@@ -10509,6 +10532,814 @@ function upgrade_from_20260519001($db) {
     echo "Finished SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
 }
 
+/***************************************
+ * FUNCTION: UPGRADE FROM 20260709-001 *
+ ***************************************/
+function upgrade_from_20260709001($db) {
+    // Database version to upgrade
+    $version_to_upgrade = '20260709-001';
+
+    // Database version upgrading to
+    $version_upgrading_to = '20260811-001';
+
+    echo "Beginning SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
+
+    // Home dashboard KPI history: one snapshot per metric per day so KPIs whose
+    // value has no date column (Active Frameworks, Total Controls, Open
+    // Exceptions, Policies, ...) can still show a real period-over-period delta.
+    // Idempotent — guarded by table_exists; the UNIQUE (metric_key, snapshot_date)
+    // makes the daily upsert safe to repeat.
+    if (!table_exists('kpi_snapshots')) {
+        $db->query("
+            CREATE TABLE `kpi_snapshots` (
+                `id` INT NOT NULL AUTO_INCREMENT,
+                `metric_key` VARCHAR(100) NOT NULL,
+                `value` DECIMAL(14,2) NOT NULL DEFAULT 0,
+                `snapshot_date` DATE NOT NULL,
+                PRIMARY KEY (`id`),
+                UNIQUE KEY `metric_date` (`metric_key`, `snapshot_date`)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+        ");
+        echo "Created the kpi_snapshots table for KPI history/deltas.<br />\n";
+    }
+
+    // Getting Started widget: per-user dismissal store. Completion is derived
+    // live from existing data (registration status, risks submitted by the user,
+    // etc.) — only dismissals are persisted. See the getting-started-widget spec.
+    // Idempotent: guarded by table_exists().
+    if (!table_exists('getting_started_dismissed')) {
+        $stmt = $db->prepare("
+            CREATE TABLE `getting_started_dismissed` (
+                `user_id`   INT NOT NULL,
+                `step_key`  VARCHAR(50) NOT NULL,
+                `dismissed` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                PRIMARY KEY (`user_id`, `step_key`)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+        ");
+        $stmt->execute();
+        echo "Created the getting_started_dismissed table.<br />\n";
+    }
+
+    // Rename the risk dashboard layout key 'overview' -> 'risk_dashboard' so its
+    // saved per-user layouts keep working after the config/dispatcher rename (for
+    // consistency with compliance_dashboard / governance_dashboard). Two parts:
+    // the layout_name column, and the per-widget "layout":"overview" inside each
+    // saved layout's JSON (that field is what each widget sends as its layout_name
+    // when it loads). Idempotent: a second run matches nothing and is a no-op.
+    $stmt = $db->prepare("UPDATE `layouts` SET `layout_name` = 'risk_dashboard' WHERE `layout_name` = 'overview';");
+    $stmt->execute();
+    $stmt = $db->prepare("UPDATE `layouts` SET `layout` = REPLACE(`layout`, '\"layout\":\"overview\"', '\"layout\":\"risk_dashboard\"') WHERE `layout` LIKE '%\"layout\":\"overview\"%';");
+    $stmt->execute();
+    echo "Renamed saved 'overview' dashboard layouts to 'risk_dashboard'.<br />\n";
+
+    // --- SCF-based Self-Assessments: schema ---
+    if (!table_exists('self_assessments')) {
+        echo "Creating `self_assessments` table.<br />\n";
+        $db->prepare("
+            CREATE TABLE IF NOT EXISTS `self_assessments` (
+                `id` INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+                `name` VARCHAR(255) NOT NULL,
+                `scf_source_id` INT NOT NULL,
+                `framework_name` VARCHAR(255) NOT NULL,
+                `status` ENUM('in_progress','completed') NOT NULL DEFAULT 'in_progress',
+                `started_by` INT NOT NULL DEFAULT 0,
+                `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                `completed_at` TIMESTAMP NULL DEFAULT NULL,
+                INDEX(`status`), INDEX(`scf_source_id`)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+        ")->execute();
+    }
+
+    if (!table_exists('self_assessment_responses')) {
+        echo "Creating `self_assessment_responses` table.<br />\n";
+        $db->prepare("
+            CREATE TABLE IF NOT EXISTS `self_assessment_responses` (
+                `id` INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+                `self_assessment_id` INT NOT NULL,
+                `control_id` INT NOT NULL,
+                `response` ENUM('','pass','fail','na') NOT NULL DEFAULT '',
+                `comment` TEXT NULL,
+                `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                UNIQUE KEY `sa_control` (`self_assessment_id`, `control_id`),
+                INDEX(`self_assessment_id`)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+        ")->execute();
+    }
+
+    if (!table_exists('pending_risk_to_controls')) {
+        echo "Creating `pending_risk_to_controls` table.<br />\n";
+        $db->prepare("
+            CREATE TABLE IF NOT EXISTS `pending_risk_to_controls` (
+                `pending_risk_id` INT NOT NULL,
+                `control_id` INT NOT NULL,
+                UNIQUE KEY `pr_control` (`pending_risk_id`, `control_id`),
+                INDEX(`pending_risk_id`)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+        ")->execute();
+    }
+
+    if (!field_exists_in_table('risk_catalog_id', 'pending_risks')) {
+        echo "Adding `risk_catalog_id` to `pending_risks`.<br />\n";
+        $db->prepare("ALTER TABLE `pending_risks` ADD COLUMN `risk_catalog_id` INT NULL DEFAULT NULL")->execute();
+    }
+    if (!field_exists_in_table('self_assessment_id', 'pending_risks')) {
+        echo "Adding `self_assessment_id` to `pending_risks`.<br />\n";
+        $db->prepare("ALTER TABLE `pending_risks` ADD COLUMN `self_assessment_id` INT NULL DEFAULT NULL")->execute();
+    }
+
+    // NOTE: the four static assessments (Critical Security Controls, NIST 800-171,
+    // PCI DSS 3.2, HIPAA) are deliberately NOT deleted. The SCF redesign replaces
+    // the Core Self-Assessments *UI*, but those `assessments` rows are shared —
+    // the Assessments Extra seeds its four default questionnaire templates from
+    // them, so deleting them would break the Extra's questionnaire feature.
+
+    // --- Audit cadence scheduling: test-level recurrence rule + exceptions ---
+    if (!field_exists_in_table('schedule_type', 'framework_control_tests')) {
+        echo "Adding cadence columns to `framework_control_tests`.<br />\n";
+        $db->prepare("ALTER TABLE `framework_control_tests`
+            ADD COLUMN `schedule_type` VARCHAR(16) NULL DEFAULT NULL,
+            ADD COLUMN `cadence_unit` VARCHAR(8) NULL DEFAULT NULL,
+            ADD COLUMN `cadence_interval` INT NULL DEFAULT NULL,
+            ADD COLUMN `cadence_anchor_date` DATE NULL DEFAULT NULL")->execute();
+    }
+
+    // Backfill existing tests: those with an auto-initiation offset were 'interval',
+    // everything else stays 'manual' (no behavior change on upgrade).
+    echo "Backfilling `schedule_type` for existing tests.<br />\n";
+    $db->prepare("UPDATE `framework_control_tests`
+        SET `schedule_type` = CASE WHEN `audit_initiation_offset` IS NOT NULL THEN 'interval' ELSE 'manual' END
+        WHERE `schedule_type` IS NULL")->execute();
+
+    if (!table_exists('framework_control_test_schedule_exceptions')) {
+        echo "Creating `framework_control_test_schedule_exceptions` table.<br />\n";
+        $db->prepare("
+            CREATE TABLE IF NOT EXISTS `framework_control_test_schedule_exceptions` (
+                `id` INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+                `test_id` INT NOT NULL,
+                `occurrence_date` DATE NOT NULL,
+                `override_date` DATE NULL DEFAULT NULL,
+                `skipped` TINYINT(1) NOT NULL DEFAULT 0,
+                UNIQUE KEY `test_occurrence` (`test_id`, `occurrence_date`),
+                INDEX(`test_id`)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+        ")->execute();
+    }
+    // --- AI Capabilities Catalog: seed per-capability toggles from today's effective state ---
+    echo "Seeding AI capability settings.<br />\n";
+    seed_ai_capability_settings($db);
+
+    // AI provider model: Anthropic RETIRED claude-sonnet-4-20250514 and
+    // claude-opus-4-20250514 (both retired 2026-06-15 — the API now rejects them),
+    // so any instance still on the old auto-seeded default has broken AI. Migrate
+    // just those two retired IDs to their current comparable replacement. Guarded
+    // to the retired values only, so an admin's explicit choice of any *supported*
+    // model is left to their discretion. Idempotent — a re-run matches no rows.
+    $db->query("UPDATE `settings` SET `value` = 'claude-sonnet-5' WHERE `name` = 'ai_model' AND `value` = 'claude-sonnet-4-20250514';");
+    $db->query("UPDATE `settings` SET `value` = 'claude-opus-4-8' WHERE `name` = 'ai_model' AND `value` = 'claude-opus-4-20250514';");
+    echo "Migrated any retired Anthropic default model to its current replacement.<br />\n";
+
+    // AI Context Profile: the org_industry answer used to be stored as its
+    // display string (e.g. "Healthcare and Pharmaceuticals"); it is now stored
+    // as its taxonomy slug (e.g. "healthcare_pharmaceuticals"). Idempotent by
+    // construction — a re-run is a no-op once the value is already a slug.
+    require_once(realpath(__DIR__ . '/artificial_intelligence.php'));
+    migrate_ai_context_org_industry_to_slug();
+    echo "Migrated any legacy ai_context_org_industry display-string value to its taxonomy slug.<br />\n";
+
+    // Governance dashboard: default new controls to "Not Tested" (2) instead of
+    // Pass (1), and collapse the never-modeled NULL state into it.
+    migrate_control_status_not_null($db);
+
+    // Statement of Applicability: per-framework control applicability, kept off
+    // `framework_control_mappings` so an SCF rebuild cannot destroy an audited
+    // exclusion justification. "Applicable" is the default and is never stored.
+    migrate_control_applicability_schema($db);
+
+    // Statement of Applicability: the framework's OWN title for each control it
+    // cites, so the Name column stops repeating the SCF's name for the SCF's
+    // control in a document about somebody else's standard.
+    migrate_framework_control_mapping_subject($db);
+
+    // Statement of Applicability: give the frameworks that predate the field a
+    // default inclusion justification, so the Justification column stops printing
+    // blank cells for every applicable control with no linked risks. Ordered
+    // AFTER migrate_control_applicability_schema(), which adds the column.
+    migrate_framework_default_inclusion_justification($db);
+
+    // AI proposals (HITL governance framework) — Spec 2 Plan A.
+    if (!table_exists('ai_proposals')) {
+        require_once(realpath(__DIR__ . '/ai_proposals.php'));
+        $db->exec(ai_proposals_table_ddl());
+    }
+
+    // AI Context Access permission — gates the MCP server surface (Spec 2 Plan C).
+    // Now Extra-scoped: only installs with the Artificial Intelligence Extra active
+    // receive it here (fresh activation is handled by enable_artificial_intelligence_extra();
+    // disable retracts it). Guarding on the Extra keeps non-AI installs free of a
+    // permission they can never use. Idempotent — add_new_permissions() INSERT IGNOREs.
+    if (function_exists('artificial_intelligence_extra') && artificial_intelligence_extra()) {
+        echo "Adding a new permission for AI Context Access (MCP server).<br />\n";
+        $permission_groups_and_permissions = [
+            'artificial_intelligence' => [
+                'name' => 'Artificial Intelligence',
+                'description' => 'Permissions for Artificial Intelligence',
+                'order' => 7,
+                'permissions' => [
+                    'ai_context_access' => [
+                        'name' => 'AI Context Access',
+                        'description' => 'Allows an API-key identity to use the MCP server and AI context tools',
+                        'order' => 2,
+                    ],
+                ],
+            ],
+        ];
+        add_new_permissions($permission_groups_and_permissions);
+    }
+    // Define Tests redesign: retire/archive state for tests. NULL = active;
+    // a non-NULL timestamp marks the test retired (soft-hidden from the
+    // active test list, still retained for its audit history). Idempotent —
+    // guarded by field_exists_in_table.
+    if (!field_exists_in_table('retired_at', 'framework_control_tests')) {
+        echo "Adding `retired_at` to `framework_control_tests`.<br />\n";
+        $db->prepare("ALTER TABLE `framework_control_tests` ADD COLUMN `retired_at` DATETIME NULL DEFAULT NULL")->execute();
+    }
+
+    // --- Phase 3a: test-definition fields + approver assignment ---
+    if (!field_exists_in_table('test_method', 'framework_control_tests')) {
+        echo "Adding test-definition columns to `framework_control_tests`.<br />\n";
+        $db->prepare("ALTER TABLE `framework_control_tests`
+            ADD COLUMN `test_method` VARCHAR(16) NULL DEFAULT NULL,
+            ADD COLUMN `sample` TEXT NULL,
+            ADD COLUMN `required_evidence` TEXT NULL")->execute();
+    }
+    if (!table_exists('framework_control_test_approvers')) {
+        echo "Creating `framework_control_test_approvers` table.<br />\n";
+        $db->prepare("
+            CREATE TABLE IF NOT EXISTS `framework_control_test_approvers` (
+                `test_id` INT NOT NULL,
+                `user_id` INT NOT NULL,
+                PRIMARY KEY (`test_id`, `user_id`),
+                INDEX (`user_id`)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+        ")->execute();
+    }
+    echo "Adding the `approve_tests` permission.<br />\n";
+    add_new_permissions([
+        'compliance' => [
+            'name' => 'Compliance', 'description' => '', 'order' => 3,
+            'permissions' => [
+                'approve_tests' => [
+                    'name' => 'Able to Approve Tests',
+                    'description' => 'Allows a user to be selected as an approver on a compliance test and to sign off on completed audits for tests that require approval.',
+                    'order' => 10,
+                ],
+            ],
+        ],
+    ]);
+
+    // --- Phase 3b: audit approval workflow ---
+    if (!field_exists_in_table('approval_state', 'framework_control_test_audits')) {
+        echo "Adding approval_state to `framework_control_test_audits`.<br />\n";
+        $db->prepare("ALTER TABLE `framework_control_test_audits`
+            ADD COLUMN `approval_state` ENUM('none','pending','approved','rejected') NOT NULL DEFAULT 'none'")->execute();
+    }
+    if (!table_exists('framework_control_test_audit_approvals')) {
+        echo "Creating `framework_control_test_audit_approvals` table.<br />\n";
+        $db->prepare("
+            CREATE TABLE IF NOT EXISTS `framework_control_test_audit_approvals` (
+                `id` INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+                `audit_id` INT NOT NULL,
+                `decision` ENUM('approved','rejected') NOT NULL,
+                `user_id` INT NOT NULL,
+                `comment` TEXT NULL,
+                `created_at` DATETIME NOT NULL,
+                INDEX (`audit_id`)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+        ")->execute();
+    }
+
+    // --- Phase 4a: common tests -- test_control_map junction (authoritative) ---
+    if (!table_exists('test_control_map')) {
+        echo "Creating `test_control_map` table.<br />\n";
+        $db->prepare("
+            CREATE TABLE IF NOT EXISTS `test_control_map` (
+                `test_id` INT NOT NULL,
+                `framework_control_id` INT NOT NULL,
+                PRIMARY KEY (`test_id`, `framework_control_id`),
+                INDEX (`framework_control_id`)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+        ")->execute();
+    }
+    // Backfill one row per existing test from its (soon-to-be-dead) framework_control_id.
+    // INSERT IGNORE on the PK makes the backfill safe to re-run.
+    echo "Backfilling `test_control_map` from existing tests.<br />\n";
+    $db->prepare("
+        INSERT IGNORE INTO `test_control_map` (`test_id`, `framework_control_id`)
+        SELECT `id`, `framework_control_id` FROM `framework_control_tests`
+        WHERE `framework_control_id` IS NOT NULL AND `framework_control_id` <> 0;
+    ")->execute();
+
+    // --- Phase 4b: common tests -- audit_control_map snapshot (authoritative) ---
+    if (!table_exists('audit_control_map')) {
+        echo "Creating `audit_control_map` table.<br />\n";
+        $db->prepare("
+            CREATE TABLE IF NOT EXISTS `audit_control_map` (
+                `audit_id` INT NOT NULL,
+                `framework_control_id` INT NOT NULL,
+                PRIMARY KEY (`audit_id`, `framework_control_id`),
+                INDEX (`framework_control_id`)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+        ")->execute();
+    }
+    // Backfill one row per existing audit from its (soon-to-be-dead)
+    // framework_control_id. INSERT IGNORE on the (audit_id, framework_control_id)
+    // PK makes the backfill safe to re-run.
+    echo "Backfilling `audit_control_map` from existing audits.<br />\n";
+    $db->prepare("
+        INSERT IGNORE INTO `audit_control_map` (`audit_id`, `framework_control_id`)
+        SELECT `id`, `framework_control_id` FROM `framework_control_test_audits`
+        WHERE `framework_control_id` IS NOT NULL AND `framework_control_id` <> 0;
+    ")->execute();
+
+    // The Define Tests grid reads the latest audit per test on every request --
+    // including every debounced keystroke in its search box -- via
+    // get_tests_last_results(), which filters `framework_control_test_audits` on
+    // `test_id` with a correlated NOT EXISTS. That table shipped with only its
+    // PRIMARY KEY on `id`, so each of those lookups was a full scan of a table
+    // that only ever grows with an org's audit history. Composite (test_id,
+    // created_at) because the subquery orders by created_at within a test.
+    if (!index_exists_on_table('idx_fct_audits_test_id_created', 'framework_control_test_audits')) {
+        echo "Adding an index on `framework_control_test_audits` (`test_id`, `created_at`).<br />\n";
+        $db->prepare("CREATE INDEX `idx_fct_audits_test_id_created` ON `framework_control_test_audits` (`test_id`, `created_at`)")->execute();
+    }
+
+    // MFA secrets: widen user_mfa.secret so it can hold the secret we actually
+    // generate. Google2FA::generateSecretKey() defaults to 32 base32 characters
+    // (160 bits, RFC 4226's recommended size), but the column was created as
+    // VARCHAR(16). On a non-strict sql_mode (SimpleRisk's supported
+    // configuration — the installer strips STRICT_TRANS_TABLES when the DB user
+    // holds SUPER) MySQL silently truncated every secret to 16 characters, so
+    // enrolled users have 80-bit secrets. On a strict-mode instance the INSERT
+    // instead raised "Data too long for column 'secret'" (error 1406) and MFA
+    // enrollment failed outright with an uncaught PDOException.
+    //
+    // Widening to 64 leaves headroom above the 32 we generate; VARCHAR is
+    // length-prefixed, so the extra width costs nothing for existing short rows.
+    //
+    // Existing 16-character secrets are deliberately left in place and keep
+    // working: TOTP verification is length-agnostic, so a legacy secret and a new
+    // one validate through the identical code path with no branch on length.
+    //
+    // Idempotent — guarded on the current column width so a re-run skips the
+    // table rebuild rather than repeating it.
+    $mfa_secret_length = $db->query("
+        SELECT `CHARACTER_MAXIMUM_LENGTH`
+        FROM `information_schema`.`COLUMNS`
+        WHERE `TABLE_SCHEMA` = DATABASE()
+            AND `TABLE_NAME` = 'user_mfa'
+            AND `COLUMN_NAME` = 'secret';
+    ")->fetchColumn();
+    if ($mfa_secret_length !== false && (int)$mfa_secret_length < 64) {
+        $db->query("ALTER TABLE `user_mfa` MODIFY `secret` VARCHAR(64) DEFAULT NULL;");
+        echo "Widened user_mfa.secret to VARCHAR(64) so full-length MFA secrets are no longer truncated.<br />\n";
+    }
+
+    // Record MFA enrolment explicitly instead of inferring it.
+    //
+    // enable_mfa_for_all_users() — run by the "Require MFA for all users"
+    // password-policy toggle — used to call verify_mfa_for_uid() on every user,
+    // marking people verified who had never enrolled an authenticator. A
+    // verified user is routed to the token-entry login page instead of the QR
+    // enrolment page, so those users were stranded with no self-service path.
+    // That root cause is fixed in mfa.php; this column is what lets the login
+    // path tell a real enrolment from a flag set in bulk.
+    //
+    // There is deliberately NO attempt to infer enrolment from last_mfa_token
+    // being NULL. upgrade_from_20240205001() added last_mfa_token with no
+    // backfill, so every user who enrolled before 20240315-001 and has not
+    // completed an MFA login since has a NULL there while being genuinely
+    // enrolled. Resetting those rows would route real MFA users to the enrolment
+    // page, which renders a QR of their existing secret to anyone holding just
+    // the password — an MFA downgrade dressed up as a lockout repair.
+    //
+    // Existing verified rows are backfilled as enrolled. That is the safe
+    // direction: it never weakens an account. Users stranded by the original bug
+    // therefore stay verified and still need an admin "Reset MFA" to recover —
+    // an audited, per-user action rather than a blanket flag rewrite this
+    // migration has no way to target correctly.
+    //
+    migrate_user_mfa_enrolment_tracking($db);
+
+    // Remove the Ruby build-phase tooling that was shipped by mistake. Bundler
+    // used to be configured (per the old README) with `bundle config set path
+    // 'simplerisk/vendor'`, which installed license_finder + its dependencies
+    // inside the directory publish-bundle.yml tars up, so ~450 dev-only files
+    // rode along in every bundle from 20240603-001 through 20251118-001. The
+    // application never loads any of it (no PHP references vendor/ruby), but it
+    // leaves old third-party gems and CI shell/PowerShell scripts on customer
+    // web roots where dependency scanners flag them. Idempotent — guarded by
+    // is_dir/is_file, so a re-run finds nothing to do.
+    $ruby_tooling_path = __DIR__ . '/../vendor/ruby';
+    $ruby_tooling_dir  = realpath($ruby_tooling_path);
+    $vendor_root       = realpath(__DIR__ . '/../vendor');
+    if ($ruby_tooling_dir !== false && is_dir($ruby_tooling_dir)) {
+        // Confinement check before a recursive delete. delete_dir() ->
+        // linux_delete_dir() recurses with `is_dir("$dir/$file")`, which follows
+        // symlinks and carries NO is_link() guard, so it happily descends into a
+        // symlinked entry and unlinks the target's contents. Checking only the
+        // top-level vendor/ruby is not enough: a symlink nested ANYWHERE in the
+        // tree is followed just the same, and this tree spent 18 months holding
+        // Bundler-installed gem content on customer installs. So refuse unless
+        // (a) vendor/ruby is a real directory resolving inside simplerisk/vendor/,
+        // and (b) no entry anywhere beneath it is a symlink.
+        $inside_vendor = ($vendor_root !== false)
+            && strncmp($ruby_tooling_dir, $vendor_root . DIRECTORY_SEPARATOR, strlen($vendor_root) + 1) === 0;
+        $nested_symlink = false;
+        if (!is_link($ruby_tooling_path) && $inside_vendor) {
+            try {
+                // SELF_FIRST yields each entry before descending, so a symlinked
+                // directory is seen (and breaks the loop) before it is followed.
+                $walker = new RecursiveIteratorIterator(
+                    new RecursiveDirectoryIterator($ruby_tooling_dir, FilesystemIterator::SKIP_DOTS),
+                    RecursiveIteratorIterator::SELF_FIRST
+                );
+                foreach ($walker as $entry) {
+                    if ($entry->isLink()) {
+                        $nested_symlink = true;
+                        break;
+                    }
+                }
+            } catch (\Throwable $e) {
+                // Unreadable subdirectory: we cannot prove the tree is link-free,
+                // so treat it exactly like finding one and leave the tree alone.
+                $nested_symlink = true;
+                write_debug_log("Upgrade could not scan vendor/ruby for symlinks: " . $e->getMessage(), 'warning');
+            }
+        }
+        if (is_link($ruby_tooling_path) || !$inside_vendor || $nested_symlink) {
+            echo "Skipped removing vendor/ruby: it is a symlink, contains one, or resolves outside vendor/. Remove it by hand.<br />\n";
+            write_debug_log("Upgrade skipped vendor/ruby cleanup — symlink, nested symlink, or outside vendor/: " . $ruby_tooling_dir, 'warning');
+        } else {
+            delete_dir($ruby_tooling_dir);
+            // delete_dir() is void — it cannot report a partial failure (a
+            // permission-locked file leaves the tree in place). Re-stat instead
+            // of claiming success, so the log never says "removed" about a
+            // directory that is still on disk.
+            clearstatcache(true, $ruby_tooling_dir);
+            if (is_dir($ruby_tooling_dir)) {
+                echo "Could not fully remove the Ruby build tooling directory (check permissions): vendor/ruby.<br />\n";
+                write_debug_log("Upgrade could not fully remove Ruby build tooling directory: " . $ruby_tooling_dir, 'warning');
+            } else {
+                echo "Removed the unused Ruby build tooling directory (vendor/ruby).<br />\n";
+                write_debug_log("Upgrade removed unused Ruby build tooling directory: " . $ruby_tooling_dir, 'notice');
+            }
+        }
+    }
+
+    // The matching Bundler binstubs, which lived alongside the Composer ones.
+    // Named individually rather than by glob so a customer's Composer binaries
+    // in the same directory are never touched.
+    $ruby_binstubs = [
+        __DIR__ . '/../vendor/bin/bundle',
+        __DIR__ . '/../vendor/bin/bundle-audit',
+        __DIR__ . '/../vendor/bin/bundler-audit',
+        __DIR__ . '/../vendor/bin/license_finder',
+        __DIR__ . '/../vendor/bin/license_finder_pip.py',
+        __DIR__ . '/../vendor/bin/thor',
+    ];
+    // Deliberately NOT realpath()'d: unlinking the resolved target would follow
+    // a symlink out of vendor/bin and delete whatever it points at. Unlinking
+    // the literal path removes the entry itself, which is all we want.
+    foreach ($ruby_binstubs as $ruby_binstub) {
+        if (is_file($ruby_binstub)) {
+            if (delete_file($ruby_binstub)) {
+                echo "Removed stale file: " . htmlspecialchars($ruby_binstub) . ".<br />\n";
+                write_debug_log("Upgrade removed stale file: " . $ruby_binstub, 'notice');
+            } else {
+                echo "Could not remove stale file (check permissions): " . htmlspecialchars($ruby_binstub) . ".<br />\n";
+                write_debug_log("Upgrade could not remove stale file: " . $ruby_binstub, 'warning');
+            }
+        }
+    }
+
+    // Remove `questionnaire_to_control_type` from instances that should never
+    // have had it.
+    //
+    // The table belongs to the Assessments Extra -- it is created, read, written
+    // and deleted only there, and nothing in Core references it. It nevertheless
+    // appears in every published installer schema from 20250731-001 onward
+    // (absent through 20250411-001), because that baseline predates the
+    // Core-only generate_database_sql.yml pipeline (added 2026-06-07) and was
+    // produced from an instance that had the Extra installed. Each baseline is
+    // built as "previous baseline + one Core hop", so the table has been carried
+    // forward into every fresh Core install since.
+    //
+    // Dropping it here also clears it from future installer schemas, since the
+    // generator applies this very function to the previous baseline.
+    //
+    // Three guards, because this is a DROP and Core does not own the table:
+    //   1. it is actually present;
+    //   2. the Assessments Extra is not ACTIVATED. Deliberately activation
+    //      (assessments_extra(), a setting) rather than installation
+    //      (is_extra_installed(), a file check): publish-bundle.yml strips
+    //      simplerisk/extras from the Core bundle, so the file check is false on
+    //      a customer Core install but TRUE in this repo and therefore in CI --
+    //      which would leave the installer schemas, the thing this cleanup
+    //      mainly exists to fix, untouched. An installed-but-inactive Extra
+    //      recreates the table on activation, so dropping an empty one costs it
+    //      nothing;
+    //   3. it is empty -- an instance that once ran the Extra could still hold
+    //      real questionnaire mappings, and no cleanup is worth destroying those.
+    // Idempotent: a second run finds no table and does nothing.
+    if (table_exists('questionnaire_to_control_type') && !assessments_extra())
+    {
+        $stmt = $db->prepare("SELECT COUNT(*) FROM `questionnaire_to_control_type`;");
+        $stmt->execute();
+        $leftover_rows = (int)$stmt->fetchColumn();
+
+        if ($leftover_rows === 0)
+        {
+            $stmt = $db->prepare("DROP TABLE `questionnaire_to_control_type`;");
+            $stmt->execute();
+            echo "Removed the empty `questionnaire_to_control_type` table (it belongs to the Assessments Extra, which is not activated).<br />\n";
+            write_debug_log("Upgrade dropped the empty, Extra-owned questionnaire_to_control_type table; the Assessments Extra is not activated.", 'notice');
+        }
+        else
+        {
+            echo "Keeping `questionnaire_to_control_type`: the Assessments Extra is not activated, but the table holds " . $leftover_rows . " row(s).<br />\n";
+            write_debug_log("Upgrade left questionnaire_to_control_type in place: Assessments Extra not activated but the table holds " . $leftover_rows . " row(s).", 'warning');
+        }
+    }
+
+    // ---------------------------------------------------------------------
+    // Converge the schema of upgraded instances with fresh installs.
+    //
+    // A database reached by upgrading and one created from the installer
+    // baseline had drifted apart in 19 columns across 12 tables, found by
+    // tests/compare-upgraded-schema.sh. Two causes:
+    //
+    //   * convert_tables_to_utf8() issues CONVERT TO CHARACTER SET, which MySQL
+    //     implements by WIDENING column types where the wider charset needs more
+    //     bytes -- TEXT becomes MEDIUMTEXT. An upgraded instance passed through
+    //     utf8mb3 and was widened; a fresh install was created at utf8mb4 and
+    //     never converted, so it kept the narrower type.
+    //   * Four one-off defects where the chain and the baseline disagree.
+    //
+    // Every operation below reads the column's CURRENT definition first and acts
+    // only if it differs. That is what makes this safe for an instance arriving
+    // from any release -- it never assumes a shape -- and what stops it
+    // rebuilding large tables on instances that already match.
+    // ---------------------------------------------------------------------
+    echo "Checking for schema differences between upgraded and freshly-installed databases.<br />\n";
+
+    // (A) TEXT -> MEDIUMTEXT. The upgraded shape is the wider one, so this is
+    // what a fresh install lacks; an already-upgraded instance skips. The guard
+    // matters most for `compliance_files`, which holds document blobs -- without
+    // it every upgrade would rebuild that table for nothing.
+    $widen_to_mediumtext = [
+        ['compliance_files',            'keywords'],
+        ['framework_control_mappings',  'reference_text'],
+        ['framework_controls',          'keywords'],
+        ['graphical_saved_selections',  'graphical_display_settings'],
+        ['user',                        'custom_display_settings'],
+        ['user',                        'custom_plan_mitigation_display_settings'],
+        ['user',                        'custom_perform_reviews_display_settings'],
+        ['user',                        'custom_reviewregularly_display_settings'],
+        ['user',                        'custom_risks_and_issues_settings'],
+    ];
+
+    foreach ($widen_to_mediumtext as $widen)
+    {
+        list($widen_table, $widen_column) = $widen;
+        $attributes = column_attributes($db, $widen_table, $widen_column);
+
+        // Absent on this instance, or already wide enough.
+        if ($attributes === null || strtolower((string)$attributes['DATA_TYPE']) !== 'text')
+        {
+            continue;
+        }
+
+        // Carry the existing nullability rather than letting MODIFY reset it.
+        $nullability = ($attributes['IS_NULLABLE'] === 'NO') ? 'NOT NULL' : 'NULL';
+
+        echo "Widening `" . $widen_table . "`.`" . $widen_column . "` to MEDIUMTEXT.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `" . $widen_table . "` MODIFY `" . $widen_column . "` MEDIUMTEXT " . $nullability . ";");
+        $stmt->execute();
+    }
+
+    // (B) timestamp NULL -> NOT NULL, but ONLY where no row holds a NULL.
+    //
+    // SimpleRisk does not run MySQL in strict mode, which makes the unguarded
+    // form dangerous rather than merely noisy: ALTER ... NOT NULL on a column
+    // containing NULL does not fail, it silently rewrites every NULL to the
+    // moment of the upgrade. On `last_password_change_date` that would make a
+    // never-changed password look freshly changed and reset any expiry clock
+    // derived from it. Verified directly against MySQL 8 in non-strict mode.
+    //
+    // So converge the instances that can be converged losslessly, and leave the
+    // rest alone with a log line rather than inventing dates.
+    $timestamps_to_tighten = [
+        ['assessments',            'created'],
+        ['assets',                 'created'],
+        ['failed_login_attempts',  'date'],
+        ['pending_risks',          'submission_date'],
+        ['user',                   'last_password_change_date'],
+        ['user_pass_history',      'add_date'],
+    ];
+
+    foreach ($timestamps_to_tighten as $tighten)
+    {
+        list($ts_table, $ts_column) = $tighten;
+        $attributes = column_attributes($db, $ts_table, $ts_column);
+
+        if ($attributes === null || $attributes['IS_NULLABLE'] !== 'YES')
+        {
+            continue;
+        }
+
+        $stmt = $db->prepare("SELECT COUNT(*) FROM `" . $ts_table . "` WHERE `" . $ts_column . "` IS NULL;");
+        $stmt->execute();
+        $null_rows = (int)$stmt->fetchColumn();
+
+        if ($null_rows > 0)
+        {
+            echo "Leaving `" . $ts_table . "`.`" . $ts_column . "` nullable: " . $null_rows . " row(s) hold no value, and filling them in would invent a date.<br />\n";
+            write_debug_log(
+                "Upgrade left {$ts_table}.{$ts_column} nullable: {$null_rows} NULL row(s); tightening it in non-strict mode would rewrite them to the upgrade timestamp.",
+                'warning'
+            );
+            continue;
+        }
+
+        // Preserve ON UPDATE CURRENT_TIMESTAMP where the instance has it.
+        $on_update = (stripos((string)$attributes['EXTRA'], 'on update') !== false)
+            ? ' ON UPDATE CURRENT_TIMESTAMP'
+            : '';
+
+        echo "Making `" . $ts_table . "`.`" . $ts_column . "` NOT NULL.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `" . $ts_table . "` MODIFY `" . $ts_column . "` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP" . $on_update . ";");
+        $stmt->execute();
+    }
+
+    // (C1) `tags`.`tag` -- the chain narrows it to VARCHAR(255) and nothing ever
+    // widens it again, so an upgraded instance cannot store a tag a fresh
+    // install accepts.
+    $tag_attributes = column_attributes($db, 'tags', 'tag');
+    if ($tag_attributes !== null && (int)$tag_attributes['CHARACTER_MAXIMUM_LENGTH'] < 500)
+    {
+        echo "Widening `tags`.`tag` to VARCHAR(500).<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `tags` MODIFY `tag` VARCHAR(500) NOT NULL;");
+        $stmt->execute();
+    }
+
+    // (C2) `user`.`multi_factor` -- upgrade_from_20221013001() prepared the
+    // statement that sets this default to 0 and never executed it, so every
+    // instance upgraded since October 2022 still defaults new users to 1.
+    $mfa_attributes = column_attributes($db, 'user', 'multi_factor');
+    if ($mfa_attributes !== null && (string)$mfa_attributes['COLUMN_DEFAULT'] !== '0')
+    {
+        echo "Setting the default for `user`.`multi_factor` to 0.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `user` MODIFY `multi_factor` int NOT NULL DEFAULT '0';");
+        $stmt->execute();
+    }
+
+    // (C3) `settings`.`name` -- fresh installs carry DEFAULT ''.
+    $setting_name_attributes = column_attributes($db, 'settings', 'name');
+    if ($setting_name_attributes !== null && $setting_name_attributes['COLUMN_DEFAULT'] === null)
+    {
+        echo "Setting the default for `settings`.`name` to an empty string.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `settings` MODIFY `name` varchar(100) NOT NULL DEFAULT '';");
+        $stmt->execute();
+    }
+
+    // (C4) `user`.`custom_documents_to_controls_display_settings` -- the default
+    // gained a `tfidf_match` entry (added at upgrade.php:8356, and display.php
+    // builds the same set), but the published installer baseline still carries
+    // the version without it, so a fresh install hands new users a stale set.
+    // NOTE the bracket. The 2022 ALTER that introduced this column wrote a
+    // literal whose `control_columns` array closes one bracket early, so the
+    // value does not parse -- display_document_to_controls() json_decode()s it,
+    // gets null, and silently falls back to a hardcoded column list. Copying it
+    // verbatim here would have made this convergence a no-op that only looked
+    // like a fix. The original is left as it is: every instance that ran it
+    // already has that value, and rewriting a released migration changes
+    // nothing for them. This one writes JSON that actually parses.
+    $matching_default = '{"document_columns":[["document_id","0"],["document","1"]],"control_columns":[["control_id","1"],["control_number","1"],["selected","1"]],"matching_columns":[["score","0"],["tfidf_similarity","0"],["keyword_match","0"],["tfidf_match", "0"],["ai_match","0"],["ai_confidence","0"],["ai_reasoning","0"],["matching","1"],["recommendation","1"]]}';
+    $matching_attributes = column_attributes($db, 'user', 'custom_documents_to_controls_display_settings');
+    if ($matching_attributes !== null && strpos((string)$matching_attributes['COLUMN_DEFAULT'], 'tfidf_match') === false)
+    {
+        echo "Refreshing the default column set for `user`.`custom_documents_to_controls_display_settings`.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `user` MODIFY `custom_documents_to_controls_display_settings` VARCHAR(2000) NULL DEFAULT :matching_default;");
+        $stmt->bindParam(":matching_default", $matching_default, PDO::PARAM_STR);
+        $stmt->execute();
+    }
+
+    // (C5) `sessions` -- the last table that does not converge. An instance
+    // upgraded from an old release carries it as MyISAM; a fresh install has
+    // InnoDB. convert_tables_to_innodb() skips it deliberately, and the reason
+    // was real: `sessions`.`id` was widened to VARCHAR(255) by
+    // upgrade_from_20150202001(), and 255 x 4 bytes of utf8mb4 is 1020 bytes
+    // against MyISAM's 1000-byte index limit -- MySQL refuses with
+    // "ERROR 3886 ... would exceed the max key length of 1000 bytes" (verified).
+    // Older InnoDB, capped at 767 bytes before large prefixes, refused it too.
+    //
+    // Fresh installs use VARCHAR(128) = 512 bytes, which fits under every limit
+    // MySQL has ever applied, so converging on that width is what makes the
+    // engine conversion safe rather than a gamble on the server's version.
+    //
+    // Narrowing is itself guarded: a truncated session id would silently log
+    // that user out, and during an upgrade the most likely victim is the
+    // administrator running it.
+    if (table_exists('sessions'))
+    {
+        $session_id_attributes = column_attributes($db, 'sessions', 'id');
+
+        if ($session_id_attributes !== null && (int)$session_id_attributes['CHARACTER_MAXIMUM_LENGTH'] > 128)
+        {
+            $stmt = $db->prepare("SELECT COUNT(*) FROM `sessions` WHERE LENGTH(`id`) > 128;");
+            $stmt->execute();
+            $long_ids = (int)$stmt->fetchColumn();
+
+            if ($long_ids === 0)
+            {
+                echo "Narrowing `sessions`.`id` to VARCHAR(128), matching a fresh install.<br />\n";
+                $stmt = $db->prepare("ALTER TABLE `sessions` MODIFY `id` VARCHAR(128) NOT NULL;");
+                $stmt->execute();
+            }
+            else
+            {
+                echo "Leaving `sessions`.`id` at its current width: " . $long_ids . " active session(s) use more than 128 characters.<br />\n";
+                write_debug_log("Upgrade left sessions.id wide: {$long_ids} row(s) exceed 128 characters, and narrowing would log those users out.", 'warning');
+            }
+        }
+
+        $stmt = $db->prepare("SELECT `ENGINE` FROM `information_schema`.`TABLES` WHERE `TABLE_SCHEMA` = :database AND `TABLE_NAME` = 'sessions' LIMIT 1;");
+        $session_database = DB_DATABASE;
+        $stmt->bindParam(":database", $session_database, PDO::PARAM_STR);
+        $stmt->execute();
+        $session_engine = (string)$stmt->fetchColumn();
+
+        if ($session_engine !== '' && strcasecmp($session_engine, 'InnoDB') !== 0)
+        {
+            // Attempted rather than assumed. The index-length maths above holds
+            // on every MySQL this product supports, but an instance that kept a
+            // wide id (the guarded branch above) on an old server could still be
+            // refused -- and failing the whole upgrade over the session table,
+            // which holds nothing durable, would be the wrong trade.
+            try
+            {
+                $stmt = $db->prepare("ALTER TABLE `sessions` ENGINE=InnoDB;");
+                $stmt->execute();
+                echo "Converted the `sessions` table to InnoDB.<br />\n";
+            }
+            catch (\Throwable $e)
+            {
+                echo "Left the `sessions` table on " . $session_engine . ": it could not be converted to InnoDB.<br />\n";
+                write_debug_log("Upgrade could not convert sessions to InnoDB: " . $e->getMessage(), 'warning');
+            }
+        }
+    }
+
+    // (D) The orphan cleanup that never ran: the DELETE at upgrade.php:2830 was
+    // prepared and then had $stmt reassigned without executing, so the sibling
+    // cleanup for `risk_scoring_history` ran and this one never did. Re-issued
+    // here, because fixing it in the original function helps nobody already past
+    // that release.
+    if (table_exists('residual_risk_scoring_history'))
+    {
+        $stmt = $db->prepare("DELETE FROM `residual_risk_scoring_history` WHERE `risk_id` NOT IN (SELECT `id` FROM `risks` WHERE `id` IS NOT NULL);");
+        $stmt->execute();
+        $orphan_rows = $stmt->rowCount();
+        if ($orphan_rows > 0)
+        {
+            echo "Removed " . $orphan_rows . " residual risk scoring history row(s) belonging to deleted risks.<br />\n";
+        }
+    }
+
+    // Login-screen branding (the uploaded logo, the tagline and the system use
+    // notice) is a Customization Extra feature, so nothing for it is created
+    // here. The `custom_logo` table is created by that Extra --
+    // create_customization_extra_tables() on activation, and
+    // upgrade_customization_extra_20260810001() for customers who already have
+    // it switched on. Core only ever READS this feature, and every read is
+    // gated: get_custom_logo_src() checks customization_extra(), and
+    // resources/custom_logo.php checks table_exists('custom_logo').
+    //
+    // The four settings rows (custom_logo, custom_logo_version, login_tagline,
+    // login_notice) are not seeded anywhere, and deliberately so.
+    // update_setting() is an upsert -- INSERT ... ON DUPLICATE KEY UPDATE -- so
+    // the save path creates the row on first write, and get_setting() returns
+    // false for a row that does not exist, which every reader already coerces
+    // to '' and treats as "use the SimpleRisk default". Seeding empty rows
+    // would only have made Core carry defaults for a feature it does not own.
+
+    // Update the database version last, so a failure in any of the
+    // migration operations above leaves the row at the old version and
+    // the upgrade runner re-attempts this function on the next pass.
+    update_database_version($db, $version_to_upgrade, $version_upgrading_to);
+    echo "Finished SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
+}
+
 /*******************************************************************************
  * FUNCTION: UPGRADE OUTPUT TO MESSAGES                                         *
  * SR-1651: turn a release upgrade function's echoed HTML progress (<br/>-      *
@@ -10534,8 +11365,54 @@ function upgrade_output_to_messages($raw) {
  * page's echoed output. Each processed release yields                          *
  * ['from','to','success','messages']; the loop stops on the first failing       *
  * release. Returns ['success' => bool, 'releases' => array].                   *
+ *                                                                              *
+ * $include_in_flight opts into running the migration for a release that has    *
+ * not been cut yet (see the guard in the loop). Default false keeps the        *
+ * hosted fleet's already-current call a no-op.                                 *
+ *                                                                              *
+ * $transport / $cache_warm are forwarded, untouched, to                        *
+ * run_upgrade_integrity_checks() at the bottom. The management API calls this  *
+ * with $db alone, so production behaviour is unchanged. They exist so a test   *
+ * can reach the branch that appends an integrity-check entry to $releases      *
+ * without a real rotation reaching the licensing service -- that branch is the *
+ * hosted-instance passive-heal path, and with the real defaults the only       *
+ * reachable case is the silent no-op.                                          *
  *******************************************************************************/
-function run_database_upgrade_structured($db) {
+function run_database_upgrade_structured($db, ?callable $transport = null, ?callable $cache_warm = null, $include_in_flight = false) {
+    // Serialised against every other upgrade channel. This driver backs the
+    // management extra's /upgrade -- how the hosted fleet upgrades, on a timer,
+    // unattended -- and POST /api/v2/admin/upgrade/db. Either can fire while an
+    // administrator is part-way through a one-click upgrade in the browser, and
+    // two chains on one database is the failure mode with the fewest good
+    // outcomes. See with_upgrade_lock().
+    return with_upgrade_lock(
+        function () use ($db, $transport, $cache_warm, $include_in_flight) {
+            return run_database_upgrade_structured_locked($db, $transport, $cache_warm, $include_in_flight);
+        },
+        0,
+        [
+            // 'refused' distinguishes "the lock is held" from "the upgrade
+            // failed". Without it the v2 endpoint mapped a refusal onto 500 --
+            // "page someone" -- when the correct answer is 409, "retry in a
+            // minute, nothing changed". The named-version branch already
+            // answered 409 for the identical condition.
+            'refused'  => true,
+            'success'  => false,
+            'releases' => [[
+                'from'     => current_version("db"),
+                'to'       => current_version("db"),
+                'success'  => false,
+                'messages' => [$GLOBALS['lang']['UpgradeAlreadyRunning'] ?? "An upgrade is already running on this instance."],
+            ]],
+        ]
+    );
+}
+
+/**
+ * The chain itself. Callers want run_database_upgrade_structured(), which is
+ * this behind the instance-wide lock.
+ */
+function run_database_upgrade_structured_locked($db, ?callable $transport = null, ?callable $cache_warm = null, $include_in_flight = false) {
     // The DB user must hold the privileges the migrations need.
     if (!check_grants($db)) {
         return [
@@ -10559,15 +11436,47 @@ function run_database_upgrade_structured($db) {
     // bounds the outer loop as belt-and-suspenders.
     $max_steps = 200;
 
+    $in_flight = false;
+
     while ($max_steps-- > 0) {
         $db_version  = current_version("db");
         $app_version = current_version("app");
-        if ($db_version == $app_version) {
-            break; // already fully upgraded
+
+        // Dispatch through the same predicate the interactive driver uses,
+        // rather than "stop once the versions match". That shortcut meant this
+        // driver could never reach the in-flight function -- the one still being
+        // written for the release currently in development, which by definition
+        // runs while the two versions already agree. It is how in-development
+        // schema changes get applied and tested, and the two channels that use
+        // this driver (the management extra and POST /admin/upgrade/db) had no
+        // way to run it.
+        $fn = get_database_upgrade_function_for_release($db_version);
+        $action = decide_database_upgrade_action(
+            $app_version,
+            $db_version,
+            ($fn !== false && function_exists($fn)),
+            is_newest_known_release($db_version, $GLOBALS['releases'] ?? [])
+        );
+
+        if ($action === 'up_to_date') {
+            break;
         }
 
-        $fn = get_database_upgrade_function_for_release($db_version);
-        if ($fn === false || !function_exists($fn)) {
+        // The in-flight migration -- the one still being written for a release
+        // that has not been cut -- runs only when a caller asks for it.
+        //
+        // Opt-in rather than always, because the two callers want opposite
+        // things. POST /admin/upgrade/db is how an in-development release gets
+        // tested, so it asks. The management extra's /upgrade is how the hosted
+        // fleet upgrades, and there "already current" must stay a no-op: the
+        // function for the newest release exists in released code too, so
+        // running it unconditionally would replay a full migration on every
+        // call rather than doing nothing.
+        if ($action === 'run_in_flight' && !$include_in_flight) {
+            break;
+        }
+
+        if ($action === 'no_upgrade_function') {
             $releases[] = [
                 'from'     => $db_version,
                 'to'       => $db_version,
@@ -10578,34 +11487,53 @@ function run_database_upgrade_structured($db) {
             break;
         }
 
-        // Capture the release function's echoed progress and catch any failure.
-        ob_start();
-        $error = null;
-        try {
-            call_user_func($fn, $db);
-        } catch (\Throwable $e) {
-            $error = $e->getMessage();
-        }
-        $messages = upgrade_output_to_messages(ob_get_clean());
+        // An in-flight migration targets a release that has not been cut, so
+        // update_database_version() refuses to write its version and the chain
+        // cannot advance past it. Running it is the point; not advancing is the
+        // expected outcome, and there is nothing after it.
+        $in_flight = ($action === 'run_in_flight');
 
-        $new_db_version = current_version("db");
-        $advanced = ($new_db_version != $db_version);
-        $success  = ($error === null && $advanced);
-        if ($error !== null) {
+        // One release, applied through the step every channel shares. The
+        // capture, the exception handling and the advancement check used to be
+        // written out here; they now live in apply_database_release() so the v2
+        // endpoint gets the same behaviour instead of its own weaker copy.
+        $step = apply_database_release($db, $db_version);
+
+        // No function for this release: the chain cannot continue, and saying so
+        // is more useful than reporting a failed migration that never ran.
+        if (!$step['ran']) {
+            $releases[] = [
+                'from'     => $db_version,
+                'to'       => $db_version,
+                'success'  => false,
+                'messages' => ["No upgrade function is available for release {$db_version}."],
+            ];
+            $overall = false;
+            break;
+        }
+
+        $messages = $step['messages'];
+        // For an in-flight migration the only failure mode is an error: it is
+        // not expected to move the version, so absence of movement is success.
+        $success  = $in_flight ? ($step['error'] === '') : $step['success'];
+
+        if ($step['error'] !== '') {
             // Log the full exception server-side only. Raw exception text can
             // contain internal table/column names, file paths, and MySQL error
             // strings; disclosing it to the API caller would hand a schema map
             // to any holder of the management key. The caller gets a generic
             // label and looks at the server log for detail.
-            write_debug_log("Management /upgrade migration error on release {$db_version}: {$error}", 'error');
+            write_debug_log("Management /upgrade migration error on release {$db_version}: " . $step['error'], 'error');
             $messages[] = "The upgrade encountered an error while processing this release. See the server log for details.";
-        } elseif (!$advanced) {
+        } elseif ($in_flight) {
+            $messages[] = "Changes applied. The database version stays at {$step['to']} because this upgrade targets a release that has not been cut yet.";
+        } elseif (!$step['advanced']) {
             $messages[] = "The release did not advance the database version.";
         }
 
         $releases[] = [
             'from'     => $db_version,
-            'to'       => $new_db_version,
+            'to'       => $step['to'],
             'success'  => $success,
             'messages' => $messages,
         ];
@@ -10615,7 +11543,13 @@ function run_database_upgrade_structured($db) {
             break; // stop on the first failing release
         }
 
-        $applied = true; // this release's migration ran and advanced the version
+        $applied = true; // this release's migration ran
+
+        if ($in_flight) {
+            // Nothing follows it, and it cannot move the version -- looping
+            // would re-dispatch the same function until the step cap.
+            break;
+        }
     }
 
     // If the safety cap was exhausted while the database is still behind the app
@@ -10630,6 +11564,48 @@ function run_database_upgrade_structured($db) {
             'success'  => false,
             'messages' => ["The upgrade did not reach the application version within the release-processing limit."],
         ];
+    }
+
+    // Post-chain conversions. Every other upgrade channel does this -- the
+    // upgrade page, the one-click flow and the Upgrade Extra -- and this driver
+    // did not, so an instance upgraded through the management /upgrade endpoint
+    // finished on utf8mb3 while every other route finished on utf8mb4.
+    //
+    // Gated on BOTH: $applied so a no-op run does no work, and $overall so a
+    // chain that stopped part-way does not get its schema rewritten underneath
+    // a failure the operator has not looked at yet. upgrade_database(), the
+    // interactive driver, only reaches these in its fully-completed base case,
+    // and this driver differing there was the whole class of bug this
+    // consolidation exists to remove. The conversions are idempotent, so
+    // deferring them to the run that finally succeeds costs nothing.
+    if ($applied && $overall) {
+        finalize_database_upgrade();
+    }
+
+    // Standing integrity checks -- the structured driver's equivalent of the
+    // base-case call in upgrade_database(). Gated on $overall so they only run
+    // once the database actually reached the app version; a partially-upgraded
+    // or failed run should not have its identity rotated.
+    //
+    // The result entry is only appended when a check actually reported
+    // something, so the overwhelmingly common no-op costs the API caller
+    // nothing.
+    if ($overall) {
+        ob_start();
+        try {
+            run_upgrade_integrity_checks($db, $transport, $cache_warm);
+        } finally {
+            $check_messages = upgrade_output_to_messages(ob_get_clean());
+        }
+
+        if (!empty($check_messages)) {
+            $releases[] = [
+                'from'     => current_version("db"),
+                'to'       => current_version("db"),
+                'success'  => true,
+                'messages' => $check_messages,
+            ];
+        }
     }
 
     // Post-upgrade housekeeping: recycle long-running workers so they reload the
@@ -10662,6 +11638,91 @@ function upgrade_database()
 {
     global $escaper;
 
+    // Serialised against every other upgrade channel -- the management
+    // /upgrade endpoint and POST /admin/upgrade/db both walk this same chain
+    // from their own request, and fleet automation calls them unattended. See
+    // with_upgrade_lock(). The recursion below calls the inner function
+    // directly, so the lock is taken once for the whole chain rather than once
+    // per release.
+    // Returns true when the chain ran, false when the lock refused it.
+    //
+    // The caller cannot infer this from the version numbers: if the database
+    // already happens to be at the app version, "refused" and "completed" look
+    // identical -- and includes/upgrade/page.php was reporting the refusal as a
+    // completed upgrade because that is all it had to go on.
+    $ran = with_upgrade_lock(function () {
+        upgrade_database_chain();
+
+        // The post-chain steps, HERE rather than inside the recursion.
+        //
+        // They used to live in the chain's `up_to_date` branch, described as
+        // its base case -- and that branch is unreachable at the end of a real
+        // upgrade. Once the chain catches up, the application and database
+        // versions agree, and an upgrade function for the newest release
+        // exists in released code just as much as in development, so
+        // decide_database_upgrade_action() returns 'run_in_flight'. That
+        // function runs and (by design) does not advance the version, so the
+        // recursion stops on the did-not-advance branch and never reaches the
+        // base case at all.
+        //
+        // The consequence was silent and total: the two channels this driver
+        // serves -- admin/upgrade.php and the one-click flow, which is most
+        // upgrades -- ran neither the InnoDB/utf8mb4 conversions nor the
+        // standing integrity checks. The whole point of centralising them was
+        // that every channel gets them, and the channel that centralised them
+        // was the one that stopped. Found by running all four channels from a
+        // 2014 schema and diffing the results; a test that asserts the call
+        // APPEARS in the function cannot see this, because it does appear.
+        //
+        // Gated on the chain having actually arrived. A run that stopped on a
+        // missing upgrade function, or gave up part-way, must not have its
+        // schema rewritten underneath a failure nobody has looked at -- the
+        // same rule run_database_upgrade_structured() follows.
+        // "Did the chain arrive?" -- and NOT simply db == app.
+        //
+        // current_version("app") reads the APP_VERSION constant, and both
+        // one-click drivers resolve it BEFORE the file swap: upgrade_application()
+        // extracts the new bundle in the SAME request, and a PHP constant cannot
+        // be redefined. So on the one-click path the chain finishes with the
+        // database on the NEW release while APP_VERSION still names the old one,
+        // and a bare equality gate is false exactly there -- on the busiest
+        // channel, the one whose explicit conversion calls this change removed
+        // from includes/api.php. It would have ended up running neither.
+        //
+        // is_newest_known_release() is the same predicate
+        // decide_database_upgrade_action() uses to call that state up_to_date,
+        // so the two agree about when the chain is done.
+        global $releases;
+        $reached = current_version("db");
+
+        if ($reached == current_version("app") || is_newest_known_release($reached, $releases)) {
+            $db = db_open();
+            run_upgrade_integrity_checks($db);
+            db_close($db);
+
+            finalize_database_upgrade();
+        }
+
+        return true;
+    }, 0, false);
+
+    if ($ran !== true) {
+        global $lang;
+        echo $escaper->escapeHtml(
+            $lang['UpgradeAlreadyRunning'] ?? 'An upgrade is already running on this instance.'
+        ) . "<br />\n";
+
+        return false;
+    }
+
+    return true;
+}
+
+function upgrade_database_chain()
+{
+    global $escaper;
+    global $releases;
+
     // Connect to the database
     $db = db_open();
 
@@ -10671,24 +11732,83 @@ function upgrade_database()
         // Get the current application and database versions
         $app_version = current_version("app");
         $db_version = current_version("db");
-        
-        // If the application version is not the same as the database version
-        if ($app_version != $db_version)
+
+        // Resolve the upgrade function for whatever version the database is on.
+        // Note this is looked up for BOTH the behind case and the versions-match
+        // case: mid-development cycle the function for the CURRENT version is the
+        // one still being written, and running it is how in-flight changes get
+        // applied. See decide_database_upgrade_action() for the full matrix.
+        $release_function_name = get_database_upgrade_function_for_release($db_version);
+        $upgrade_function_exists = ($release_function_name != false && function_exists($release_function_name));
+
+        $action = decide_database_upgrade_action(
+            $app_version,
+            $db_version,
+            $upgrade_function_exists,
+            is_newest_known_release($db_version, $releases)
+        );
+
+        if ($action === 'run_chain' || $action === 'run_in_flight')
         {
-            // Get the upgrade function to call for this release version
-            $release_function_name = get_database_upgrade_function_for_release($db_version);
-
-            // If a release function name was provided
-            if ($release_function_name != false)
+            if ($action === 'run_in_flight')
             {
-                // If the release function exists
-                if (function_exists($release_function_name))
-                {
-                    // Call the release function
-                    call_user_func($release_function_name, $db);
+                // Deliberately says nothing about WHY a function exists for the
+                // current version: a developer's in-flight function and a
+                // customer's one-click upgrade with a pre-swap APP_VERSION both
+                // land here, and only the version read back afterwards tells them
+                // apart. See decide_database_upgrade_action().
+                //
+                // English literal rather than a $lang lookup, consistently with
+                // the rest of this file: the upgrade page is an operator surface
+                // that runs mid-file-swap, when the language file on disk may
+                // already belong to the incoming release.
+                echo "An upgrade function is available for the current database version. Running it.<br />\n";
+            }
 
-                    // Recursively run the database upgrade for the next release
-                    upgrade_database();
+            // Call the release function
+            call_user_func($release_function_name, $db);
+
+            // Did it actually move the database version? Recursing on an
+            // unchanged version would resolve the SAME function forever and
+            // replay its DDL on every frame. The other two drivers ask the same
+            // question through the same predicate.
+            $new_db_version = current_version("db");
+
+            if (!upgrade_chain_advanced($db_version, $new_db_version))
+            {
+                // Also when the database is already on the newest known
+                // release, not just when the ACTION was run_in_flight.
+                //
+                // They are the same physical situation reached two ways. On the
+                // one-click path APP_VERSION is the pre-swap constant, so once
+                // the chain reaches the newest release the versions still
+                // differ and decide_database_upgrade_action() answers
+                // 'run_chain' -- yet the function it dispatches is the in-flight
+                // one, which targets the uncut placeholder and deliberately does
+                // not advance. Keying only on the action therefore reported
+                // every SUCCESSFUL one-click upgrade as a halted chain, and
+                // wrote an error-level log line on the happy path of the busiest
+                // channel. Same predicate the post-chain gate and the Extra's
+                // arrival check use, so all three agree.
+                if ($action === 'run_in_flight' || is_newest_known_release($db_version, $releases))
+                {
+                    // An in-flight function targets the unreleased placeholder,
+                    // which update_database_version() refuses to write -- so not
+                    // advancing is the expected outcome here, not a failure.
+                    echo "Changes applied. The database version stays at " . $escaper->escapeHtml($db_version) . " because this upgrade targets a release that has not been cut yet.<br />\n";
+                }
+                else
+                {
+                    echo "The upgrade function for version " . $escaper->escapeHtml($db_version) . " did not advance the database version; stopping so it is not run again.<br />\n";
+                    write_debug_log("Upgrade function '" . $release_function_name . "' did not advance db_version from '" . $db_version . "'; halting the upgrade chain rather than re-dispatching it.", 'error');
+                }
+            }
+            else
+            {
+                    // Recursively run the database upgrade for the next release.
+                    // The inner function, not upgrade_database(): the lock is
+                    // already held for this whole chain.
+                    upgrade_database_chain();
 
                     // A migration ran, so any long-running queue/promise worker
                     // still holds the previous release's code in memory and can
@@ -10741,15 +11861,29 @@ function upgrade_database()
                             echo "Deleted the installed.json file.<br />\n";
                         }
                     }
-                }
-                else echo "The specified database upgrade function could not be found.<br />\n";
             }
-            else echo "Unable to find an upgrade function for the current SimpleRisk database version.<br />\n";
+        }
+        // The database version names no release we have a function for. Left for
+        // an operator rather than repaired: nothing about such a value tells us
+        // which schema is actually behind it, so writing a guessed version would
+        // assert a state nobody has checked.
+        elseif ($action === 'no_upgrade_function')
+        {
+            echo "Unable to find an upgrade function for the current SimpleRisk database version.<br />\n";
         }
         // The application and database are updated to the same version
         else
         {
             echo "You are currently running the version of the SimpleRisk database that goes along with your application version.<br />\n";
+
+            // The post-chain steps and the standing integrity checks used to be
+            // here, called the base case of this recursion. They are not
+            // reachable here: once the chain catches up, the versions agree and
+            // an upgrade function exists for the newest release, so the action
+            // is 'run_in_flight' and the recursion stops on the did-not-advance
+            // branch above instead of arriving in this one. They now run in
+            // upgrade_database(), once, after the chain returns. Do not move
+            // them back.
         }
     }
     // If the grant check was not successful

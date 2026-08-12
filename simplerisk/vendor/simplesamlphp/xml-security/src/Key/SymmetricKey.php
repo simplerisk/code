@@ -28,6 +28,7 @@ class SymmetricKey implements KeyInterface
      * @param string $material The associated key material.
      */
     public function __construct(
+        #[\SensitiveParameter]
         protected string $material,
     ) {
     }

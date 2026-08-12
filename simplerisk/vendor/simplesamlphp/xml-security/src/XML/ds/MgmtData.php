@@ -6,7 +6,8 @@ namespace SimpleSAML\XMLSecurity\XML\ds;
 
 use SimpleSAML\XML\SchemaValidatableElementInterface;
 use SimpleSAML\XML\SchemaValidatableElementTrait;
-use SimpleSAML\XML\StringElementTrait;
+use SimpleSAML\XML\TypedTextContentTrait;
+use SimpleSAML\XMLSchema\Type\StringValue;
 
 /**
  * Class representing a ds:MgmtData element.
@@ -16,14 +17,8 @@ use SimpleSAML\XML\StringElementTrait;
 final class MgmtData extends AbstractDsElement implements SchemaValidatableElementInterface
 {
     use SchemaValidatableElementTrait;
-    use StringElementTrait;
+    use TypedTextContentTrait;
 
 
-    /**
-     * @param string $content
-     */
-    public function __construct(string $content)
-    {
-        $this->setContent($content);
-    }
+    public const string TEXTCONTENT_TYPE = StringValue::class;
 }

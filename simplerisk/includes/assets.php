@@ -400,31 +400,39 @@ function update_asset($asset_id, $ip, $name, $value=null, $location=null, $teams
         "verified"              => $verified,
     );
 
-    $sql = "UPDATE assets SET ";
+    $set_clauses = array();
     foreach($data as $key => $val){
         if(!is_null($val))
-            $sql .= " {$key}=:{$key}, ";
+            $set_clauses[] = " {$key}=:{$key} ";
     }
-    $sql = trim($sql, ", ");
-    $sql .= " WHERE id = :id ";
 
-    // Open the database connection
-    $db = db_open();
+    // Only run the UPDATE when at least one column actually changes. A caller
+    // that names none of these columns -- e.g. PATCH /assets/{id} carrying only
+    // `associated_risks` or `tags`, both of which are handled below rather than
+    // in the assets row -- would otherwise produce
+    // `UPDATE assets SET  WHERE id = :id` and fail with a SQL syntax error
+    // (SQLSTATE 42000) instead of updating the associations it was asked to.
+    if ($set_clauses) {
+        $sql = "UPDATE assets SET " . implode(",", $set_clauses) . " WHERE id = :id ";
 
-    // Update the risk
-    $stmt = $db->prepare($sql);
-    $stmt->bindParam(":id", $asset_id, PDO::PARAM_INT);
-    foreach($data as $key => $val){
-        if(!is_null($val)){
-            $stmt->bindParam(":{$key}", $data[$key]);
+        // Open the database connection
+        $db = db_open();
+
+        // Update the risk
+        $stmt = $db->prepare($sql);
+        $stmt->bindParam(":id", $asset_id, PDO::PARAM_INT);
+        foreach($data as $key => $val){
+            if(!is_null($val)){
+                $stmt->bindParam(":{$key}", $data[$key]);
+            }
+            unset($val);
         }
-        unset($val);
+
+        $stmt->execute();
+
+        // Close the database connection
+        db_close($db);
     }
-
-    $stmt->execute();
-
-    // Close the database connection
-    db_close($db);
 
     if(!is_null($mapped_controls)) {
         save_asset_to_controls($asset_id, $mapped_controls);
@@ -435,7 +443,13 @@ function update_asset($asset_id, $ip, $name, $value=null, $location=null, $teams
     // Storing the current list of associated risks, so we can calculate the list of risk changes for the risk update notification
     $associated_risks_original = get_associated_risks_for_asset($asset_id);
 
-    if (!array_equal($associated_risks, $associated_risks_original)) {
+    // null means "the caller did not name this field" -- same convention the
+    // scalar columns above already use. Without this guard a null would fall
+    // through array_equal() (which is false for a non-array) into
+    // update_asset_risks_associations(), which deletes every association and
+    // then fatals on `foreach (null)`. An explicitly-sent empty array is a
+    // different thing and still clears the associations.
+    if (!is_null($associated_risks) && !array_equal($associated_risks, $associated_risks_original)) {
         update_asset_risks_associations($asset_id, $associated_risks);
 
         if ($notification_extra) {
@@ -2095,12 +2109,11 @@ function delete_asset_group($asset_group_id) {
     // Delete leftover junction entries
     cleanup_after_delete('asset_groups');
     
-    $message = _lang('AssetGroupDeleteAuditLog', array(
+    $message = _lang_raw('AssetGroupDeleteAuditLog', array(
             'user' => $_SESSION['user'],
             'group_name' => $name,
             'id' => $asset_group_id
-        ), false
-    );
+        ));
 
     write_log($asset_group_id + 1000, $_SESSION['uid'] ?? 0, $message, 'asset_group');
 
@@ -2138,14 +2151,13 @@ function remove_asset_from_asset_group($asset_id, $asset_group_id) {
 
     db_close($db);
 
-    $message = _lang('AssetGroupRemoveAssetAuditLog', array(
+    $message = _lang_raw('AssetGroupRemoveAssetAuditLog', array(
             'user' => $_SESSION['user'],
             'asset_name' => $asset_name,
             'asset_id' => $asset_id,
             'group_name' => $asset_group_name,
             'group_id' => $asset_group_id
-        ), false
-    );
+        ));
 
     write_log($asset_group_id + 1000, $_SESSION['uid'] ?? 0, $message, 'asset_group');
 
@@ -2365,32 +2377,30 @@ function update_assets_of_asset_group($assets, $asset_group_id, $asset_group_nam
         $assets_to_add = get_names_by_values('assets', $assets_to_add, false, false, true);
 
         if ($assets_to_add)
-            $asset_changes[] = _lang('AssetGroupUpdateAuditLogAdded', array('assets_added' => $assets_to_add), false);
+            $asset_changes[] = _lang_raw('AssetGroupUpdateAuditLogAdded', array('assets_added' => $assets_to_add));
 
         if (!$create) {
             $assets_to_remove = get_names_by_values('assets', $assets_to_remove, false, false, true);
             if ($assets_to_remove)
-                $asset_changes[] = _lang('AssetGroupUpdateAuditLogRemoved', array('assets_removed' => $assets_to_remove), false);
+                $asset_changes[] = _lang_raw('AssetGroupUpdateAuditLogRemoved', array('assets_removed' => $assets_to_remove));
 
             $assets_current = get_names_by_values('assets', $assets_current, false, false, true);
 
-            $message = _lang('AssetGroupUpdateAuditLog', array(
+            $message = _lang_raw('AssetGroupUpdateAuditLog', array(
                     'user' => $_SESSION['user'],
                     'group_name' => $asset_group_name,
                     'id' => $asset_group_id,
                     'assets_from' => $assets_current,
                     'assets_to' => $assets,
                     'asset_changes' => implode(", ", $asset_changes)
-                ), false
-            );
+                ));
         } else {
-            $message = _lang('AssetGroupCreateAuditLog', array(
+            $message = _lang_raw('AssetGroupCreateAuditLog', array(
                     'user' => $_SESSION['user'],
                     'group_name' => $asset_group_name,
                     'id' => $asset_group_id,
                     'assets_to' => $assets
-                ), false
-            );
+                ));
         }
 
         write_log($asset_group_id + 1000, $_SESSION['uid'] ?? 0, $message, 'asset_group');
@@ -3107,6 +3117,24 @@ function get_assets_and_asset_groups_by_control_for_dropdown($control_id = false
         $team_based_separation_where_condition = '';
     }
 
+    // ONE flag drives both the SQL and the bind, because they used to be able
+    // to disagree. The `:control_maturity` token is only ever emitted inside
+    // the `$control_id ? ... : ""` branches below -- there is no maturity
+    // filter to apply without a control to filter against -- but the bind at
+    // the bottom was guarded on `$control_maturity !== false` alone. Any
+    // caller that sent a maturity WITHOUT a control therefore bound a
+    // parameter the prepared statement had no token for and got
+    // "SQLSTATE[HY093] ... number of bound variables does not match number of
+    // tokens" back as a 500 instead of the asset list.
+    //
+    // That is not a hypothetical caller: it is every freshly added "Mapped
+    // Assets" row in the control modal. The widget sends both values for a
+    // row that has no control yet, and jQuery serializes an undefined value
+    // as an empty string -- so the endpoint reads control_id='' (falsy, no
+    // token emitted) but control_maturity='' -> (int)'' -> 0, which is
+    // !== false and bound anyway.
+    $filter_by_maturity = $control_id && $control_maturity !== false;
+
     $sql = "
         SELECT
             *
@@ -3119,7 +3147,7 @@ function get_assets_and_asset_groups_by_control_for_dropdown($control_id = false
     ($control_id ? ",`cta`.`asset_id` IS NOT NULL as selected" : "") . "
             FROM
                 `assets` a " .
-    ($control_id ? "LEFT OUTER JOIN `control_to_assets` cta ON `cta`.`asset_id` = `a`.`id` and `cta`.`control_id` = :control_id" . ($control_maturity !== false ? " and cta.control_maturity = :control_maturity " : "") : "") . "
+    ($control_id ? "LEFT OUTER JOIN `control_to_assets` cta ON `cta`.`asset_id` = `a`.`id` and `cta`.`control_id` = :control_id" . ($filter_by_maturity ? " and cta.control_maturity = :control_maturity " : "") : "") . "
             WHERE
                 `a`.`verified` = 1" . ($control_id ? " or `cta`.`asset_id` IS NOT NULL" : "") . " {$team_based_separation_where_condition}
         UNION ALL
@@ -3131,7 +3159,7 @@ function get_assets_and_asset_groups_by_control_for_dropdown($control_id = false
     ($control_id ? ",`ctag`.`asset_group_id` IS NOT NULL as selected" : "") . "
             FROM
                 `asset_groups` ag " .
-    ($control_id ? "LEFT OUTER JOIN `control_to_asset_groups` ctag ON `ctag`.`asset_group_id` = `ag`.`id` and `ctag`.`control_id` = :control_id " . ($control_maturity !== false ? " and ctag.control_maturity = :control_maturity " : "") : "") . 
+    ($control_id ? "LEFT OUTER JOIN `control_to_asset_groups` ctag ON `ctag`.`asset_group_id` = `ag`.`id` and `ctag`.`control_id` = :control_id " . ($filter_by_maturity ? " and ctag.control_maturity = :control_maturity " : "") : "") . 
     (encryption_extra() ? "JOIN (SELECT @rownum := 0) rn" : "") . "
         ) u
         ORDER BY
@@ -3148,7 +3176,7 @@ function get_assets_and_asset_groups_by_control_for_dropdown($control_id = false
 
     if ($control_id)
         $stmt->bindParam(":control_id", $control_id, PDO::PARAM_INT);
-    if ($control_maturity !== false)
+    if ($filter_by_maturity)
         $stmt->bindParam(":control_maturity", $control_maturity, PDO::PARAM_INT);
 
     $stmt->execute();
@@ -3773,7 +3801,7 @@ function update_asset_API_v2($view) {
     // If the asset name is alread taken, but not on this asset
     $asset_id_tmp = asset_exists($_POST['name']);
     if (!empty($_POST['name']) && $asset_id_tmp &&  $id !== $asset_id_tmp) {
-        set_alert(true, "bad", _lang('EditFailed_FieldMustBeUnique', ['field' => 'name'], false));
+        set_alert(true, "bad", _lang_raw('EditFailed_FieldMustBeUnique', ['field' => 'name']));
         api_v2_json_result(400, get_alert(true), NULL);
     }
     
@@ -3942,7 +3970,7 @@ function update_asset_API_v2($view) {
     $changes = get_changes_in_asset($original, $updated);
 
     if (!empty($changes)) {
-        write_log($id, $_SESSION['uid'] ?? 0, _lang('AssetAuditLogUpdate', array('asset_name' => $asset_name, 'user' => $_SESSION['user'], 'changes' => implode(', ', $changes)), false), 'asset');
+        write_log($id, $_SESSION['uid'] ?? 0, _lang_raw('AssetAuditLogUpdate', array('asset_name' => $asset_name, 'user' => $_SESSION['user'], 'changes' => implode(', ', $changes))), 'asset');
 
         trigger_workflow_event('asset.updated', [
             'asset_id' => $id,
@@ -3965,7 +3993,7 @@ function create_asset_API_v2($view) {
     
     // If the asset name is alread taken, but not on this asset
     if (!empty($_POST['name']) && asset_exists($_POST['name'])) {
-        set_alert(true, "bad", _lang('EditFailed_FieldMustBeUnique', ['field' => 'name'], false));
+        set_alert(true, "bad", _lang_raw('EditFailed_FieldMustBeUnique', ['field' => 'name']));
         api_v2_json_result(400, get_alert(true), NULL);
     }
     
@@ -4343,7 +4371,7 @@ function get_changes_in_asset($original, $updated) {
                 $value = html_to_plain_text($value);
                 $new_value = html_to_plain_text($new_value);
             }
-            $changes[] = _lang('AssetAuditLogUpdateChange', array('key' => $key, 'value' => $value, 'new_value' => $new_value), false);
+            $changes[] = _lang_raw('AssetAuditLogUpdateChange', array('key' => $key, 'value' => $value, 'new_value' => $new_value));
         }
     }
     return $changes;

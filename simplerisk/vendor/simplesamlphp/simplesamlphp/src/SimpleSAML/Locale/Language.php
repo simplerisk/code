@@ -10,11 +10,21 @@ declare(strict_types=1);
 
 namespace SimpleSAML\Locale;
 
-use SimpleSAML\{Configuration, Logger, Utils};
+use SimpleSAML\Configuration;
+use SimpleSAML\Logger;
+use SimpleSAML\Utils;
 use Symfony\Component\Intl\Locales;
+
+use function sprintf;
 
 class Language
 {
+    /**
+     * The final fallback language to use when no current or default available
+     */
+    public const string FALLBACKLANGUAGE = 'en';
+
+
     /**
      * This is the default language map. It is used to map languages codes from the user agent to other language codes.
      * @var array<string, string>
@@ -41,13 +51,6 @@ class Language
      * @var string
      */
     private string $defaultLanguage;
-
-    /**
-     * The final fallback language to use when no current or default available
-     *
-     * @var string
-     */
-    public const FALLBACKLANGUAGE = 'en';
 
     /**
      * An array holding a list of languages that are written from right to left.
@@ -194,7 +197,10 @@ class Language
                 $availableLanguages[] = $code;
             } else {
                 /* The configured language code can't be found in Symfony's list of known locales */
-                Logger::error("Locale \"$code\" is not known to the translation system. Check language settings in your config.");
+                Logger::error(sprintf(
+                    "Locale \"%s\" is not known to the translation system. Check language settings in your config.",
+                    $code,
+                ));
             }
         }
 
@@ -399,6 +405,7 @@ class Language
         return in_array($this->getLanguage(), $this->rtlLanguages, true);
     }
 
+
     /**
      * Returns the list of languages in order of preference. This is useful
      * to search e.g. an array of entity names for first the current language,
@@ -409,6 +416,7 @@ class Language
         $curLanguage = $this->getLanguage();
         return array_unique([0 => $curLanguage, 1 => $this->defaultLanguage, 2 => self::FALLBACKLANGUAGE]);
     }
+
 
     /**
      * Retrieve the user-selected language from a cookie.
@@ -430,6 +438,7 @@ class Language
 
         return null;
     }
+
 
     /**
      * This method will attempt to set the user-selected language in a cookie. It will do nothing if the language

@@ -48,51 +48,50 @@ class State
     /**
      * The index in the state array which contains the identifier.
      */
-    public const ID = '\SimpleSAML\Auth\State.id';
+    public const string ID = '\SimpleSAML\Auth\State.id';
 
     /**
      * The index in the cloned state array which contains the identifier of the
      * original state.
      */
-    public const CLONE_ORIGINAL_ID = '\SimpleSAML\Auth\State.cloneOriginalId';
+    public const string CLONE_ORIGINAL_ID = '\SimpleSAML\Auth\State.cloneOriginalId';
 
     /**
      * The index in the state array which contains the current stage.
      */
-    public const STAGE = '\SimpleSAML\Auth\State.stage';
+    public const string STAGE = '\SimpleSAML\Auth\State.stage';
 
     /**
      * The index in the state array which contains the restart URL.
      */
-    public const RESTART = '\SimpleSAML\Auth\State.restartURL';
+    public const string RESTART = '\SimpleSAML\Auth\State.restartURL';
 
     /**
      * The index in the state array which contains the exception handler URL.
      */
-    public const EXCEPTION_HANDLER_URL = '\SimpleSAML\Auth\State.exceptionURL';
+    public const string EXCEPTION_HANDLER_URL = '\SimpleSAML\Auth\State.exceptionURL';
 
     /**
      * The index in the state array which contains the exception handler function.
      */
-    public const EXCEPTION_HANDLER_FUNC = '\SimpleSAML\Auth\State.exceptionFunc';
+    public const string EXCEPTION_HANDLER_FUNC = '\SimpleSAML\Auth\State.exceptionFunc';
 
     /**
      * The index in the state array which contains the exception data.
      */
-    public const EXCEPTION_DATA = '\SimpleSAML\Auth\State.exceptionData';
+    public const string EXCEPTION_DATA = '\SimpleSAML\Auth\State.exceptionData';
 
     /**
      * The stage of a state with an exception.
      */
-    public const EXCEPTION_STAGE = '\SimpleSAML\Auth\State.exceptionStage';
-
+    public const string EXCEPTION_STAGE = '\SimpleSAML\Auth\State.exceptionStage';
 
     /**
      * The URL parameter which contains the exception state id.
      * Note that this does not contain a "." since it's used in the
      * _REQUEST superglobal that does not allow dots.
      */
-    public const EXCEPTION_PARAM = '\SimpleSAML\Auth\State_exceptionId';
+    public const string EXCEPTION_PARAM = '\SimpleSAML\Auth\State_exceptionId';
 
 
     /**
@@ -126,7 +125,7 @@ class State
             'Attributes',
             'Expire',
             'LogoutState',
-            'AuthInstant',
+            'AuthnInstant',
             'RememberMe',
             'saml:sp:NameID',
         ];
@@ -168,6 +167,7 @@ class State
         return $id . ':' . $state[self::RESTART];
     }
 
+
     /**
      * Perform syntactic validation of an incoming state ID.
      *
@@ -184,6 +184,7 @@ class State
             throw new Exception("Invalid AuthState return URL syntax: " . $parts[1]);
         }
     }
+
 
     /**
      * Retrieve state timeout.
@@ -272,8 +273,8 @@ class State
      * @throws \SimpleSAML\Error\NoState If we couldn't find the state and there's no URL defined to redirect to.
      * @throws \Exception If the stage of the state is invalid and there's no URL defined to redirect to.
      *
-     * @return array|null  State information, or NULL if the state is missing and $allowMissing is true.
-     * @psalm-return ($allowMissing is true ? array|null : array)
+     * @return ($allowMissing is true ? array|null : array)
+     *   State information, or NULL if the state is missing and $allowMissing is true.
      */
     public static function loadState(string $id, string $stage, bool $allowMissing = false): ?array
     {

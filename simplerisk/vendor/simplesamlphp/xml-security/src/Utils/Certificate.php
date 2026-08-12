@@ -20,16 +20,17 @@ class Certificate
     /**
      * The pattern that the contents of a certificate should adhere to
      */
-    public const CERTIFICATE_PATTERN = '/^-----BEGIN CERTIFICATE-----([^-]*)^-----END CERTIFICATE-----/m';
-    public const PUBLIC_KEY_PATTERN = '/^-----BEGIN PUBLIC KEY-----([^-]*)^-----END PUBLIC KEY-----/m';
-    public const PRIVATE_KEY_PATTERN = '/^-----BEGIN RSA PRIVATE KEY-----([^-]*)^-----END RSA PRIVATE KEY-----/m';
+    public const string CERTIFICATE_PATTERN =
+        '/^-----BEGIN CERTIFICATE-----([^-]*)^-----END CERTIFICATE-----/m';
+
+    public const string PUBLIC_KEY_PATTERN =
+        '/^-----BEGIN PUBLIC KEY-----([^-]*)^-----END PUBLIC KEY-----/m';
+
+    public const string PRIVATE_KEY_PATTERN =
+        '/^-----BEGIN RSA PRIVATE KEY-----([^-]*)^-----END RSA PRIVATE KEY-----/m';
 
 
     /**
-     * @param string $certificate
-     * @param string $pattern
-     *
-     * @return bool
      */
     public static function hasValidStructure(string $certificate, string $pattern = self::PUBLIC_KEY_PATTERN): bool
     {
@@ -38,9 +39,6 @@ class Certificate
 
 
     /**
-     * @param string $X509CertificateContents
-     *
-     * @return string
      */
     public static function convertToCertificate(string $X509CertificateContents): string
     {
@@ -52,8 +50,6 @@ class Certificate
 
     /**
      * @param array<string, mixed>|string $issuer
-     *
-     * @return string
      */
     public static function parseIssuer(array|string $issuer): string
     {

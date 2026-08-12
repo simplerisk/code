@@ -1,0 +1,112 @@
+<?php
+
+/**
+ * Model Context Protocol SDK for PHP
+ *
+ * (c) 2024 Logiscape LLC <https://logiscape.com>
+ *
+ * Based on the Python SDK for the Model Context Protocol
+ * https://github.com/modelcontextprotocol/python-sdk
+ *
+ * PHP conversion developed by:
+ * - Josh Abbott
+ * - Claude 3.5 Sonnet (Anthropic AI model)
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ *
+ * @package    logiscape/mcp-sdk-php
+ * @author     Josh Abbott <https://joshabbott.com>
+ * @copyright  Logiscape LLC
+ * @license    MIT License
+ * @link       https://github.com/logiscape/mcp-sdk-php
+ *
+ * Filename: Types/NotificationParams.php
+ */
+
+declare(strict_types=1);
+
+namespace Mcp\Types;
+
+/**
+ * Represents the `params` object in a Notification.
+ * Similar to RequestParams, it can have `_meta?: object` and arbitrary fields.
+ *
+ * Known dynamic properties used by the MCP protocol:
+ * @property string|null $level Logging level (notifications/message)
+ * @property mixed $data Log data (notifications/message)
+ * @property string|null $logger Logger name (notifications/message)
+ * @property string|null $uri Resource URI (notifications/resources/updated)
+ * @property int|string|null $progressToken Progress token (notifications/progress)
+ * @property float|null $progress Current progress value (notifications/progress)
+ * @property float|null $total Total progress value (notifications/progress)
+ * @property string|null $elicitationId Elicitation identifier (notifications/elicitation/complete)
+ * @property string|int|null $requestId Request ID (notifications/cancelled)
+ * @property string|null $reason Cancellation reason (notifications/cancelled)
+ */
+class NotificationParams implements McpModel {
+    use ExtraFieldsTrait;
+
+    public function __construct(
+        public ?Meta $_meta = null,
+    ) {}
+
+    /**
+     * Apply arbitrary wire fields onto this params object, routing the reserved
+     * `_meta` key into the typed {@see Meta} object.
+     *
+     * A raw `_meta` array assigned straight onto the declared `?Meta $_meta`
+     * property bypasses {@see ExtraFieldsTrait::__set} (which only fires for
+     * undeclared names) and throws a TypeError, so `_meta` must be normalized
+     * here. Every other key is forwarded as an extra field.
+     *
+     * @param array<string, mixed> $fields Raw params from the JSON-RPC frame.
+     * @param list<string>         $skip   Keys already consumed by a typed constructor arg.
+     */
+    public function applyWireFields(array $fields, array $skip = []): void {
+        foreach ($fields as $key => $value) {
+            if (in_array($key, $skip, true)) {
+                continue;
+            }
+            if ($key === '_meta') {
+                // A non-array _meta is malformed per spec; ignore rather than fatal.
+                if (is_array($value)) {
+                    $meta = new Meta();
+                    foreach ($value as $metaKey => $metaValue) {
+                        $meta->$metaKey = $metaValue;
+                    }
+                    $this->_meta = $meta;
+                }
+                continue;
+            }
+            $this->$key = $value;
+        }
+    }
+
+    public function validate(): void {
+        if ($this->_meta !== null) {
+            $this->_meta->validate();
+        }
+    }
+
+    public function jsonSerialize(): mixed {
+        $data = [];
+        
+        // If $_meta is non-null, let it be serialized, and only add if not empty
+        if ($this->_meta !== null) {
+            $serializedMeta = $this->_meta->jsonSerialize();
+            if (!($serializedMeta instanceof \stdClass && count(get_object_vars($serializedMeta)) === 0) && 
+                !(is_array($serializedMeta) && empty($serializedMeta))) {
+                $data['_meta'] = $serializedMeta;
+            }
+        }
+        
+        // Only merge extraFields if they are non-empty
+        if (!empty($this->extraFields)) {
+            $data = array_merge($data, $this->extraFields);
+        }
+        
+        // Return empty object if data is empty
+        return !empty($data) ? $data : new \stdClass();
+    }
+}

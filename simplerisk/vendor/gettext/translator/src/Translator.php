@@ -167,7 +167,7 @@ class Translator implements TranslatorInterface
     protected function getTranslation(?string $domain, ?string $context, string $original): ?array
     {
         if ($domain === null) {
-            $domain = $this->domain;
+            $domain = (string) $this->domain;
         }
 
         if ($context === null) {
@@ -186,7 +186,7 @@ class Translator implements TranslatorInterface
     protected function getPluralIndex(?string $domain, int $n, bool $fallback): int
     {
         if ($domain === null) {
-            $domain = $this->domain;
+            $domain = (string) $this->domain;
         }
 
         //Not loaded domain or translation, use a fallback

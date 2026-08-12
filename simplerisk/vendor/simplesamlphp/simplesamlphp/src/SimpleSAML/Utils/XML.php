@@ -17,12 +17,13 @@ use DOMException;
 use DOMNode;
 use DOMText;
 use Exception;
-use SAML2\Constants as C;
-use SAML2\DOMDocumentFactory;
+use InvalidArgumentException;
 use SimpleSAML\Assert\Assert;
 use SimpleSAML\Configuration;
 use SimpleSAML\Error;
 use SimpleSAML\Logger;
+use SimpleSAML\SAML2\Constants as C;
+use SimpleSAML\XML\DOMDocumentFactory;
 use SimpleSAML\XML\Errors;
 
 class XML
@@ -39,14 +40,12 @@ class XML
      * @throws \InvalidArgumentException If $message is not a string or $type is not a string containing one of the
      *     values allowed.
      * @throws \SimpleSAML\Error\Exception If $message contains a doctype declaration.
-     *
-     *
      */
     public function checkSAMLMessage(string $message, string $type): void
     {
         $allowed_types = ['saml20', 'saml-meta'];
         if (!in_array($type, $allowed_types, true)) {
-            throw new \InvalidArgumentException('Invalid input parameters.');
+            throw new InvalidArgumentException('Invalid input parameters.');
         }
 
         // a SAML message should not contain a doctype-declaration
@@ -91,8 +90,6 @@ class XML
      *      - 'encrypt': for encrypted messages.
      *
      * @throws \InvalidArgumentException If $type is not a string or $message is neither a string nor a \DOMElement.
-     *
-     *
      */
     public function debugSAMLMessage(string|DOMElement $message, string $type): void
     {
@@ -146,8 +143,6 @@ class XML
      *     string.
      *
      * @throws \InvalidArgumentException If $root is not a DOMElement or $indentBase is not a string.
-     *
-     *
      */
     public function formatDOMElement(DOMNode $root, string $indentBase = ''): void
     {
@@ -232,7 +227,6 @@ class XML
      * @return string The formatted string.
      * @throws \InvalidArgumentException If the parameters are not strings.
      * @throws \DOMException If the input does not parse correctly as an XML string.
-     *
      */
     public function formatXMLString(string $xml, string $indentBase = ''): string
     {
@@ -266,7 +260,6 @@ class XML
      *
      * @return boolean True if both namespace and local name matches, false otherwise.
      * @throws \InvalidArgumentException If the namespace shortcut is unknown.
-     *
      */
     public function isDOMNodeOfType(DOMNode $element, string $name, string $nsURI): bool
     {
@@ -279,7 +272,7 @@ class XML
         if ($nsURI[0] === '@') {
             // the defined shortcuts
             $shortcuts = [
-                '@ds'      => 'http://www.w3.org/2000/09/xmldsig#',
+                '@ds'      => C::NS_XDSIG,
                 '@md'      => C::NS_MD,
                 '@saml2'   => C::NS_SAML,
                 '@saml2p'  => C::NS_SAMLP,
@@ -287,7 +280,7 @@ class XML
 
             // check if it is a valid shortcut
             if (!array_key_exists($nsURI, $shortcuts)) {
-                throw new \InvalidArgumentException('Unknown namespace shortcut: ' . $nsURI);
+                throw new InvalidArgumentException('Unknown namespace shortcut: ' . $nsURI);
             }
 
             // expand the shortcut
@@ -315,9 +308,8 @@ class XML
      *
      * @return bool|string Returns a string with errors found if validation fails. True if validation passes ok.
      * @throws \InvalidArgumentException If $schema is not a string, or $xml is neither a string nor a \DOMDocument.
-     *
      */
-    public function isValid(string|DOMDocument $xml, string $schema)
+    public function isValid(string|DOMDocument $xml, string $schema): bool|string
     {
         Errors::begin();
 
@@ -336,7 +328,9 @@ class XML
         if ($res === true) {
             $config = Configuration::getInstance();
             $sysUtils = new System();
-            $schemaFile = $sysUtils->resolvePath($config->getVendorDir() . 'simplesamlphp/saml2/resources/schemas/' . $schema);
+            $schemaFile = $sysUtils->resolvePath(
+                $config->getVendorDir() . 'simplesamlphp/saml2/resources/schemas/' . $schema,
+            );
 
             libxml_set_external_entity_loader(
                 /**
@@ -345,7 +339,12 @@ class XML
                  * @param array $context
                  * @return string|null
                  */
-                function (?string $public = null, string $system = '', /** @scrutinizer ignore-unused */ array $context = []) {
+                function (
+                    ?string $public = null,
+                    string $system = '',
+                    /** @scrutinizer ignore-unused */
+                    array $context = [],
+                ) {
                     if (filter_var($system, FILTER_VALIDATE_URL) === $system) {
                         return null;
                     }
@@ -353,7 +352,7 @@ class XML
                 },
             );
 
-            /** @psalm-suppress PossiblyUndefinedVariable */
+            /** @phpstan-ignore variable.undefined */
             $res = $dom->schemaValidate($schemaFile);
             if ($res) {
                 Errors::end();

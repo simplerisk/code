@@ -1345,7 +1345,6 @@ $lang = array(
     'UpdateAssetGroupTooltip' => 'Kıymet grubunu Güncelleştir',
     'DeleteAssetGroupTooltip' => 'Varlık grubunu sil',
     'RemoveAssetTooltip' => 'Kıymet grubundan varlığı kaldır',
-    'ControlShortNameFieldRequired' => 'Denetim kısa adı alanı gereklidir.',
     'AffectedAssetsWidgetPlaceholder' => 'Varlık veya kıymet grubu seçme',
     'AffectedAssetsWidgetNoDropdownPlaceholder' => 'Varlık adı ekleme',
     'AffectedAssetsWidgetInstructions' => 'Bir varlık veya kıymet grubu seçin. Adını listeye ekleyerek yeni bir varlık oluşturabilirsiniz.',
@@ -2226,7 +2225,7 @@ $lang = array(
     'IncidentSummaryUpdateSuccessful' => 'Özet başarıyla güncellendi.',
     'ImportSuccessful' => 'İçe Aktarma Başarılı!',
     'Document' => 'Belge',
-    'SelfAssessments' => 'Kişisel Değerlendirmeler',
+    'SelfAssessments' => 'Öz Değerlendirmeler',
     'AssetId'=>'Öğe kimliği',
     'ExportTemplateGroups' => 'Şablon Gruplarını Dışa Aktar',
     'ImportTemplateGroups' => 'Şablon Gruplarını İçe Aktar',
@@ -2341,7 +2340,7 @@ $lang = array(
     'Advanced_Search_no_results_1' => 'Sorgunuz için sonuç yok gibi görünüyor.',
     'Advanced_Search_no_results_2' => 'Aramanızı herhangi bir yazım hatası veya yazım hatası açısından bir kez daha kontrol edin veya farklı bir arama terimi deneyin.',
     'IncidentsPerDay' => 'Günlük Olay Sayısı',
-    'CurrentVsDesiredMaturity' => 'Kontrol Ailesine Göre Mevcut ve İstenilen Olgunluk',
+    'CurrentVsDesiredMaturity' => 'Control Family tarafından Olgunluk',
     'RiskDistribution' => 'Risk Dağılımı',
     'RiskDistributionDescription'=>'Yukarıdaki pasta grafikler, hem doğal hem de artık risk için çeşitli risk seviyeleri arasındaki risklerin dağılımını göstermeye yardımcı olur. Bu iki pastayı risk azaltma çabalarımızdaki ilerlemeyi göstermek için kullanabiliriz. Artık Risk pastası çok yüksek veya yüksek risklerden oluşan büyük dilimler gösteriyorsa bu, kuruluşunuzun çok fazla risk üstlendiğine ve daha fazla risk azaltma çabası gerektiğine dair bir işaret olabilir.',
     'EnableTabs' => 'Sekmeleri Etkinleştir',
@@ -2413,7 +2412,7 @@ $lang = array(
     'EditModeInformation' => 'Düzenleme Modunu açın ve düzeni düzenleyin. Kapatmak düzeni otomatik olarak kaydetmez.',
     'InvalidLayout' => 'Geçersiz Düzen!',
     'InvalidLayoutOnlyCustomAllowedAsDefault' => 'Geçersiz Düzen! Yalnızca özel düzenler varsayılan olarak kaydedilebilir.',
-    'LayoutSaved' => 'Düzen Kaydedildi!',
+    'LayoutSaved' => 'Kontrol paneli düzeniniz kaydedildi.',
     'DefaultLayout' => 'Varsayılan Düzen',
     'DefaultLayoutInformation' => 'Bu düzeni, özel düzen ayarı olmayan kullanıcılar için SimpleRisk tarafından sağlanan düzen yerine kullanılacak varsayılan düzen olarak ayarlar. Yalnızca kaydedilmiş, boş olmayan bir özel düzeni varsayılan olarak ayarlayabilirsiniz. Varsayılan olarak işaretlenmiş bir düzen varsayılan düzene geri yüklenirse, SimpleRisk tarafından sağlanan varsayılana geri yüklenir.',
     'LayoutDefaultStatusUpdated' => 'Düzenin varsayılan durumu güncellendi.',
@@ -2422,7 +2421,7 @@ $lang = array(
     'DefaultLayoutRestored' => 'Varsayılan düzen başarıyla geri yüklendi!',
     'SavedLayoutRestored' => 'Kaydedilen düzen başarıyla geri yüklendi!',
     'ConfirmRestoreLayout' => 'Emin misiniz? Bu düzende yaptığınız değişiklikleri kaybedeceksiniz.',
-    'ConfirmDisableEditModeWithPendingChanges' => 'Sayfadan ayrıldığınızda kaybedeceğiniz kaydedilmemiş değişiklikleriniz var. \'Düzenleme Modu\'nu devre dışı bırakmak ve potansiyel olarak değişikliklerinizi kaydetmeyi unutmak istediğinizden emin misiniz?',
+    'ConfirmDisableEditModeWithPendingChanges' => 'Bu kontrol panelinde kaydedilmemiş değişiklikleriniz var. Bunları silmek ve düzenlemeyi durdurmak ister misiniz?',
     'ConfirmSave' => 'Bu değişiklikleri kaydetmek daha önce kaydettiğiniz düzenin üzerine yazacaktır. Devam etmek istediğinizden emin misiniz?',
     'ConfirmSaveAdminDefault' => 'Bu düzen, bu düzen türü için varsayılan olarak ayarlanmıştır. Bu değişiklikleri kaydetmek, bu düzen türü için özel bir düzen ayarlamamış tüm kullanıcılar için düzeni değiştirecektir. Devam etmek istediğinizden emin misiniz?',
     'RisksByMonth' => 'Aylara Göre Riskler',
@@ -3111,6 +3110,1523 @@ $lang = array(
     'ResendAssessmentDescription' => 'Değerlendirmeyi düzenli aralıklarla otomatik olarak yeniden yayınlayın.',
     'ResendEveryDays' => '{$day} günde bir yeniden gönder',
     'QuestionnaireSaveBarHint' => '“Kaydet ve Gönder” özelliği, anketi anında iletişim kurduğu kişilere gönderir.',
+    // Home dashboard — KPI tile labels
+    'NewSelfAssessment' => 'Yeni Öz Değerlendirme',
+    'SelfAssessmentPrereqIntro' => 'Öz Değerlendirmeler, kuruluşunuzu Güvenli Kontroller Çerçevesine göre değerlendirmenize ve başarısız olan kontrollerden kaynaklanan riskleri otomatik olarak oluşturmanıza olanak tanır. İlk olarak iki kurulum adımı gereklidir:',
+    'RegisterYourInstance' => 'Örneğinizi kaydedin',
+    'RegisterYourInstanceHelp' => 'Kayıt işlemi, bu örneği SimpleRisk\'in lisanslama hizmetine bağlayarak ücretsiz Ekstraların (SCF dahil) indirilmesini sağlar.',
+    'InstallTheSCF' => 'Güvenli Kontrol Çerçevesini Kurun',
+    'InstallTheSCFHelp' => 'SCF, bu özelliğin değerlendirdiği çerçeveleri, kontrol sorularını ve risk eşleştirmelerini sağlayan ücretsiz bir Ek bileşendir. Kurulum arka planda çalışır ve birkaç dakika sürebilir.',
+    'GoToRegistration' => 'Kayıt sayfasına git',
+    'GoToSCF' => 'Güvenli Kontroller Çerçevesine gidin',
+    'SelfAssessmentEnableTip' => 'İsteğe bağlı: Yönetişim > Çerçeveler altında, değerlendirmeye başlarken kısa bir seçilmiş liste görmek için belirli SCF çerçevelerini etkinleştirebilirsiniz. Ayrıca, etkinleştirmeden de tam SCF kataloğundaki herhangi bir çerçeveye göre değerlendirme yapabilirsiniz.',
+    'ChooseAFramework' => 'Değerlendirme yapacağınız bir çerçeve seçin.',
+    'EnabledFrameworks' => 'Etkinleştirilmiş çerçeveler',
+    'AllScfFrameworks' => 'Tüm SCF çerçeveleri',
+    'Start' => 'Başlangıç',
+    'Resume' => 'Sürdürmek',
+    'ControlQuestion' => 'Kontrol Sorusu',
+    'NotApplicable' => 'Yok',
+    'SaveProgress' => 'İlerlemeyi Kaydet',
+    'MarkComplete' => 'Tamamlandı olarak işaretle',
+    'AnsweredOfTotal' => 'cevaplandı',
+    'FailedSoFar' => 'şimdiye kadar başarısız oldu',
+    'StartedBy' => 'Başlatan',
+    'FailedControls' => 'Kontroller başarısız oldu.',
+    'PushToRisk' => 'Riske Yönelme',
+    'ConfirmDeleteSelfAssessment' => 'Bu öz değerlendirmeyi silmek mi istiyorsunuz? Bu işlem geri alınamaz.',
+    'ConfirmCompleteSelfAssessment' => 'Bu değerlendirmeyi tamamlandı olarak işaretle? Başarısız kontrollerden riskler doğacaktır.',
+    'NoSelfAssessmentsYet' => 'Henüz öz değerlendirme yapılmadı. Başlamak için bir tane başlatın.',
+    'RequestFailed' => 'İstek tamamlanamadı. Lütfen tekrar deneyin.',
+    'NoPendingRisks' => 'Bekleyen risk yok. Başarısız kontrollerden kaynaklanabilecek riskleri belirlemek için bir değerlendirme yapın.',
+    'NoFailedControls' => 'Bu filtre için gösterilecek kontrol sonucu yok.',
+    'ControlResultsTruncated' => 'En son 2000 sonuç gösteriliyor. Daha fazla sonuç görmek için filtreyi daraltın.',
+    'GeneratedFromSelfAssessment' => 'Öz değerlendirmeden oluşturulmuştur.',
+    'SelfAssessmentMitigationSolution' => 'Bu öz değerlendirme sırasında başarısız olduğu tespit edilen ve aşağıda bağlantıları verilen kontrolleri uygulayarak bu riski azaltın.',
+    'NSelected' => '{n} seçildi',
+    'FilterByControl' => 'Kontrole göre filtrele',
+    'Pushing' => '…\'ı itmek',
+    'Deleting' => '… siliniyor',
+    'ConfirmPushSelectedPendingRisks' => 'Push the {n} selected pending risk(s) to risks?',
+    'ConfirmDeleteSelectedPendingRisks' => 'Delete the {n} selected pending risk(s)? This cannot be undone.',
+    'ConfirmDeleteSelectedSelfAssessments' => 'Delete the {n} selected self-assessment(s)? This cannot be undone.',
+    'BulkPartialFailure' => '{n} öğeden {total} \'i başarılı oldu; geri kalanı başarısız oldu. Geçerli durumu görmek için sayfayı yenileyin.',
+
+    // Workflows Extra - deactivation confirm ('Deactivate' at line 480 is reused as-is)
+    'WorkflowsExtraDeactivateConfirm' => 'İş Akışları Ekstrasını devre dışı bırakmak mı istiyorsunuz? Kullanıcı tarafından oluşturulan tüm iş akışı tanımları kalıcı olarak silinecektir. Sistem iş akışları korunacaktır.',
+    'HomeKpiOpenRisks' => 'Açık Riskleri',
+    'HomeKpiNeedsReview' => 'Gözden Geçirilmesi Gerekiyor',
+    'HomeKpiUnmitigated' => 'Dinmeyen',
+    'HomeKpiClosedRisks' => 'Kapalı Riskleri',
+    'HomeKpiControlPassRate' => 'Kontrol Geçiş Oranı',
+    'HomeKpiFailingControls' => 'Arızalı Kontroller',
+    'HomeKpiOpenAudits' => 'Açık Denetimler',
+    'HomeKpiTestsDueSoon' => 'Testlerin Sonuçları Yakında',
+    'HomeKpiActiveFrameworks' => 'Etkin çerçeveler',
+    'HomeKpiTotalControls' => 'Toplam Kontroller',
+    // Home dashboard — What's Next feed
+    'WhatsNext' => 'Sırada Ne Var?',
+    'WhatsNextAllCaughtUp' => 'Her şeyden haberdarsınız.',
+    'WhatsNextRegisterInstance' => 'SimpleRisk örneğinizi kaydedin.',
+    'WhatsNextSubmitFirstRisk' => 'İlk riskinizi bildirin',
+    'WhatsNextLoadFramework' => 'Bir kontrol çerçevesi yükleyin',
+    'WhatsNextUnreviewedRisks' => 'Gözden geçirilmesi gereken riskler',
+    'WhatsNextUnmitigatedRisks' => 'Azaltılması gereken riskler',
+    'WhatsNextInitiateAudits' => 'Denetimlerin başlatılması',
+    // Home dashboard — widget picker type labels
+    'WidgetType_kpi' => 'KPI Kutucuğu',
+    'WidgetType_whats_next' => 'Liste',
+    // Home dashboard — hub catalog entry
+    'HomeDashboard' => 'Ana Sayfa',
+    'HomeDashboardDesc' => 'Başlangıç noktanız — temel ölçütler ve bundan sonra yapmanız gerekenler, bir bakışta.',
+    'HomeChartRiskByLevel' => 'Seviyeye Göre Risk',
+    'HomeKpiThisMonth' => 'bu ay',
+    'HomeKpiNoChange' => 'Değişiklik yok.',
+    'EditLayout' => 'Düzeni düzenle',
+    'ListHighestRisks' => 'En Yüksek Risklerim',
+    'ListPastDueReviews' => 'Gecikmiş Değerlendirmeler',
+    'ListUpcomingTests' => 'Yaklaşan Testler',
+    'ListRecentFailures' => 'Son Başarısızlıklar',
+    'ListPoliciesReview' => 'İncelemeye Sunulan Belgeler',
+    'ListExpiringExceptions' => 'Süresi Dolan İstisnalar',
+    'ImKpiOpenIncidents' => 'Toplam Açık',
+    'ImKpiOverdue' => 'Gecikmiş',
+    'ImKpiMttr30' => 'Ortalama Çözünürlük',
+    'ImKpiMttrQuarter' => 'Ortalama Çözünürlük (90 gün)',
+    'ImKpiMttrYear' => 'Ortalama Çözünürlük (1y)',
+    'ImKpiMttrAll' => 'Ortalama Çözünürlük (Tüm)',
+    'ImKpiResolved30' => 'Çözüldü',
+    'ImChartBySeverity' => 'Şiddetine Göre',
+    'ImChartByStatus' => 'Duruma Göre',
+    'ImListRecent' => 'Son Olaylar',
+    'ImListUnassigned' => 'Atanmamış Olaylar',
+    'HomeKpiOpenExceptions' => 'Açık İstisnalar',
+    'HomeKpiPolicies' => 'Koşullarıdır',
+    'ResolutionTargets' => 'Çözüm Hedefleri (Gün)',
+    'ResolutionTargetsHelp' => 'Bir olayın, gecikmiş olarak sayılmadan önce açık kalabileceği gün sayısı.',
+    'DefaultTarget' => 'Varsayılan',
+    'PerSeverityOverrideHelp' => 'İsteğe bağlı olarak, belirli önem dereceleri için varsayılan değeri geçersiz kılabilirsiniz (varsayılanı kullanmak için boş bırakın):',
+    'ResolutionTargetUsesDefault' => 'Varsayılan (%d)',
+    'SeverityColors' => 'Şiddet Renkleri',
+    'SeverityColorsHelp' => 'Olay kontrol panelinde ve olay ayrıntıları sayfasında gösterilen her bir önem derecesi için kullanılan renk.',
+    'Editing' => 'Düzenleme',
+    'SetAsDefaultForEveryone' => 'Herkes için varsayılan olarak ayarla',
+    'EditLayoutHint' => 'Bir kutucuğu sürükleyerek taşıyabilirsiniz · bir kenarı sürükleyerek boyutunu değiştirebilirsiniz · ✕ işaretiyle kaldırabilirsiniz',
+    'RemoveWidget' => 'Widget\'ı kaldır',
+    'AddWidget' => 'Widget ekle',
+    'AddToDashboard' => 'Kontrol paneline ekle',
+    'AllWidgetsAdded' => 'Mevcut tüm araçlar bu kontrol panelinde yer almaktadır.',
+    'AddText' => 'Metin ekle',
+    'GettingStarted' => 'Başlarken',
+    'GettingStartedTitle' => 'SimpleRisk\'e hoş geldiniz.',
+    'GettingStartedSubtitle' => 'SimpleRisk\'ten en iyi şekilde yararlanmak için birkaç hızlı adım.',
+    'GSProgressCount' => '{done} / {total} tamamlandı',
+    'GSNextUp' => 'Sıradaki',
+    'GSArea_setup' => 'Kurmak',
+    'GSArea_risk' => 'Risk',
+    'GSArea_assessment' => 'Değerlendirme',
+    'GSArea_compliance' => 'Uyumluluk',
+    'GSArea_assets' => 'Varlık',
+    'GSArea_ai' => 'Kurmak',
+    'GSHide' => 'Başlangıç Kılavuzunu Gizle',
+    'GSDismissStep' => 'Bu adımı atla',
+    'GSAllSet' => 'Her şey tamam, harika iş!',
+    'GSWalkthrough' => '30 dakikalık tanıtım turu',
+    'Explore' => 'Keşfetmek',
+    'Learn' => 'Öğrenmek',
+    'AdminGuide' => 'Yönetici Kılavuzu',
+    'LearnMore' => 'Daha fazla bilgi edin',
+    'GSRegisterTitle' => 'Örneğinizi kaydedin',
+    'GSRegisterDesc' => 'Lisans anahtarınızla destek ve güncellemeleri etkinleştirin.',
+    'GSRegisterCta' => 'Kayıt',
+    'GSScfTitle' => 'Güvenli Kontrol Çerçevesini Kurun',
+    'GSScfDesc' => 'SCF\'yi kurun — standartlar arası kontrol kütüphaneniz.',
+    'GSScfCta' => 'SCF\'yi yükleyin',
+    'GSInviteTitle' => 'Ekibinizi davet edin',
+    'GSInviteDesc' => 'İş atamaları ve incelemeleri yapılabilmesi için iş arkadaşlarınızı ekleyin.',
+    'GSInviteCta' => 'Kullanıcı ekle',
+    'GSAiTitle' => 'Yapay zekayı yapılandırın',
+    'GSAiDesc' => 'Yapay Zeka ile SimpleRisk deneyiminizi geliştirin.',
+    'GSAiCta' => 'Yapay zekayı kurun',
+    'GSSubmitRiskTitle' => 'İlk riskinizi bildirin',
+    'GSSubmitRiskDesc' => 'Kuruluşunuzun karşı karşıya olduğu bir riski belirleyin.',
+    'GSSubmitRiskCta' => 'Riski gönder',
+    'GSMitigateTitle' => 'Bir risk azaltma planı oluşturun.',
+    'GSMitigateDesc' => 'Açık bir riske yönelik bir risk azaltma planı ekleyin.',
+    'GSMitigateCta' => 'Plan azaltma',
+    'GSReviewTitle' => 'Risk değerlendirmesi yapın',
+    'GSReviewDesc' => 'Bir riski değerlendirin ve sonraki adımı belirleyin.',
+    'GSReviewCta' => 'İnceleme gerçekleştirin',
+    'GSDefineTestTitle' => 'Kontrol testini tanımlayın.',
+    'GSDefineTestDesc' => 'Kontrol grubunun nasıl test edileceğini ayarlayın.',
+    'GSDefineTestCta' => 'Testi tanımla',
+    'GSInitiateAuditTitle' => 'Denetimi başlatın',
+    'GSInitiateAuditDesc' => 'Bir test veya denetim döngüsü başlatın.',
+    'GSInitiateAuditCta' => 'Denetimi başlatın',
+    'GSAssetTitle' => 'Varlıklarınızı ekleyin',
+    'GSAssetDesc' => 'Koruma altına aldığınız varlıkların envanterini çıkarın.',
+    'GSAssetCta' => 'Varlık ekle',
+    'GSInvalidStep' => 'Geçersiz başlangıç adımı.',
+    'GSPagerLabel' => '{from}–{to} / {total}',
+    'GSPrevCards' => 'Önceki adımları göster',
+    'GSNextCards' => 'Sonraki adımları göster',
+    'WhatsNextInstallSCF' => 'Güvenli Kontrol Çerçevesini Kurun',
+    'GSActivateScfTitle' => 'Güvenli Kontroller Çerçevesini Etkinleştirin',
+    'GSActivateScfDesc' => 'Yüklediğiniz SCF\'yi açarak kontrollerini kütüphanenize yükleyin.',
+    'GSActivateScfCta' => 'SCF\'yi etkinleştirin',
+    'WhatsNextActivateSCF' => 'Güvenli Kontroller Çerçevesini Etkinleştirin',
+    'GSEnableFrameworksTitle' => 'Uygulanabilir çerçeveleri etkinleştirin',
+    'GSEnableFrameworksDesc' => 'Kuruluşunuz için geçerli olan SCF çerçevelerini etkinleştirin.',
+    'GSEnableFrameworksCta' => 'Çerçeveleri etkinleştirin',
+    'WhatsNextEnableFrameworks' => 'Uygulanabilir çerçeveleri etkinleştirin',
+    'GSSelfAssessTitle' => 'Kendinizi değerlendirin.',
+    'GSSelfAssessDesc' => 'Organizasyonunuzu 250\'den fazla çerçeveye göre değerlendirin ve başarısız kontrollerden kaynaklanan riskleri belirleyin.',
+    'GSSelfAssessCta' => 'Değerlendirmeye başla',
+    'WhatsNextTakeSelfAssessment' => 'Kendinizi değerlendirin.',
+    'WhatsNextConfigureAI' => 'Yapay Zekayı Yapılandır',
+    'ListUnreviewedRisks' => 'Gözden Geçirilmemiş Riskler',
+    'ControlsByDomain' => 'Alan Adına Göre Kontroller',
+    'ControlsByClass' => 'Sınıfa Göre Kontroller',
+    'ControlsByPhase' => 'Fazlara Göre Kontroller',
+    'ControlsByPriority' => 'Öncelik Sırasına Göre Kontroller',
+    'ControlsByCurrentMaturity' => 'Mevcut Vadeye Göre Kontroller',
+    'ControlStatusOverTime' => 'Zaman İçinde Kontrol Durumu',
+    'ComplianceTotalControls' => 'Toplam Kontroller',
+    'HomeKpiOverdueTests' => 'Gecikmiş Testler',
+    'Total' => 'Toplam',
+    'StartTheTest' => 'Testi Başlat',
+    'TestStartsAutomatically' => 'Test Otomatik Olarak Başlıyor',
+    'GoToTest' => 'Teste Git',
+    'NotTested' => 'Test Edilmedi',
+    'PassingPercent' => 'Geçme yüzdesi',
+    'ListFailingControls' => 'Arızalı Kontroller',
+    'Exceptions' => 'İstisnalar',
+    'Documents' => 'Belgeler',
+    'ControlsBelowMaturity' => 'Vade Altı Kontroller',
+    'ControlsAtMaturity' => 'Vade Sonunda Kontroller',
+    'ControlsAboveMaturity' => 'Vade Üstü Kontroller',
+    'Maturity' => 'Olgunluk',
+    'AllTime' => 'Tüm Zamanlar',
+    'Last7Days' => 'Son 7 Gün',
+    'Last30Days' => 'Son 30 Gün',
+    'Last90Days' => 'Son 90 Gün',
+    'YearToDate' => 'Sene başından beri',
+    'CustomRange' => 'Özel Seri',
+    'Age' => 'Yaş',
+    'ImOpenIncidents' => 'Açık Olaylar',
+    'ImClosedIncidents' => 'Kapatılan Olaylar',
+    'ImByAttackVector' => 'Saldırı Vektörü ile Aç',
+    'ImBySource' => 'Kaynak Kodunu Açık Hale Getir',
+    'AverageDaysToDetect' => 'Ortalama Tespit Süresi (Gün)',
+    'ImKpiAvgTtd' => 'Ortalama Algılama',
+    'Days' => 'Günler',
+    'ImKpiCriticalOpen' => 'Kritik Açık',
+    'ImKpiResolvedInSla' => 'SLA kapsamında çözüldü.',
+    'Events' => 'Olaylar',
+    'ImEventsIncidents' => 'Olaylar ve Vakalar',
+    'ImSourceBreakdown' => 'Kategoriye Göre Kaynak',
+    'ImClosureSummary' => 'Kapanış Özeti',
+    'ImSignalQuality' => 'Sinyal Kalitesi',
+    'ImSignalLowSample' => 'Güvenilir bir şekilde değerlendirme yapmaya yetecek kadar mahkeme kararıyla sonuçlanmış kapanış vakası yok.',
+    'ImportExportExportPdf' => 'PDF olarak dışa aktar',
+    'ImportExportExporting' => 'PDF hazırlanıyor…',
+    'ImportExportExportFailed' => 'PDF dosyası oluşturulamadı. Lütfen tekrar deneyin.',
+    'ImportExportGeneratedOn' => 'Oluşturuldu',
+    'ImportExportPage' => 'Sayfa',
+    'ImportExportPageOf' => 'ile ilgili',
+    'ResolutionTargetsUpdated' => 'Ciddiyet düzeyine göre çözüm hedefleri güncellendi.',
+    'SeverityColorsUpdated' => 'Ciddiyet renkleri güncellendi.',
+    // AI Capabilities Catalog + AI settings hub (unified AI settings)
+    'AICapGrcRecommendations' => 'GRC Çerçeve Önerileri',
+    'AICapGrcRecommendationsDesc' => 'Yapay zeka tarafından oluşturulan çerçeve önerileri ve kuruluşunuzun bağlamına göre uyarlanmış bir özet.',
+    'AICapRiskRecommendations' => 'Risk Önerileri',
+    'AICapRiskRecommendationsDesc' => 'Risk, risk azaltma yöntemleri ve değerlendirme sonucunda oluşturulan, risk detayları ve risk azaltma önlemlerine ilişkin risk bazlı öneriler.',
+    'AICapFairAnalysis' => 'FAIR Nicel Analizi',
+    'AICapFairAnalysisDesc' => 'Yapay zeka Beta-PERT kayıp parametrelerini tahmin eder; SimpleRisk, riski dolar cinsinden ölçmek için 10.000 yinelemeli bir Monte Carlo simülasyonu yürütür.',
+    'AICapDocumentCustomization' => 'Belge Özelleştirme',
+    'AICapDocumentCustomizationDesc' => 'Belge şablonlarınızdaki yer tutucuları doldurur ve politika metnini temizler, böylece standart bir politika metni sizin metniniz gibi görünür.',
+    'AICapDocumentControlMatching' => 'Belge ↔ Kontrol Eşleştirme',
+    'AICapDocumentControlMatchingDesc' => 'Kontrolleri, inceleyebileceğiniz bir güven puanı ve gerekçeyle birlikte otomatik olarak politika belgelerine eşleştirir.',
+    'AICapDocumentTemplates' => 'Belge Şablon Kütüphanesi',
+    'AICapDocumentTemplatesDesc' => 'SimpleRisk kütüphanesinden derlenmiş politika, yönerge ve prosedür şablonlarını yükleyin.',
+    'AICapControlReferenceEnhancement' => 'Kontrol Referansı Geliştirme',
+    'AICapControlReferenceEnhancementDesc' => 'Kontrol referanslarınızı zenginleştirmek için web araması yoluyla birebir kontrol metni araştırması yapar.',
+    'AICapAiChat' => 'Sohbet Asistanı',
+    'AICapAiChatDesc' => 'SimpleRisk\'te bağlam içinde soruları yanıtlayan bir GRC asistanı.',
+    'AICapSurfacedRecommendations' => 'Yapay Zeka sayfası',
+    'AICapSurfacedRiskView' => 'Risk değerlendirmesi — Ayrıntılar ve Azaltma Yöntemleri',
+    'AICapSurfacedFairTab' => 'Risk görünümü — FAIR sekmesi',
+    'AICapSurfacedDocuments' => 'Yönetişim — Belgeler',
+    'AICapSurfacedControls' => 'Uyumluluk — Kontroller',
+    'AICapSurfacedEveryPage' => 'Her sayfa — yüzen asistan',
+    'AICapabilitiesCatalog' => 'Yetenekler',
+    'AICapSearchPlaceholder' => 'Arama yapay zeka yetenekleri…',
+    'AICapFilterDomain' => 'İhtisas',
+    'AICapFilterTier' => 'Aşama',
+    'AICapFilterState' => 'Durum',
+    'AICapTierExtra' => 'Yapay Zeka Ekstra',
+    'AICapStateLocked' => 'Kilitli',
+    'AICapIncludedInExtra' => 'AI Extra\'ya dahildir.',
+    'AICapPurchaseExtra' => 'AI Extra\'yı satın alın',
+    'AICapNeedsProvider' => 'Sağlayıcı kurulumu gerektirir.',
+    'AICapNoMatch' => 'Hiçbir özellik eşleşmiyor.',
+    'AICapNoMatchHint' => 'Farklı bir alan adı, kademe veya arama terimi deneyin.',
+    'AICapCountSingular' => 'yetenek',
+    'AICapCountPlural' => 'yetenekler',
+    'DomainAssistant' => 'Asistan',
+    'AICapLoadError' => 'Yapay zeka özellikleri yüklenemedi. Lütfen tekrar deneyin.',
+    'AIProviderConfigSubtitle' => 'SimpleRisk\'i yapay zeka özelliklerini güçlendirmek için bir yapay zeka sağlayıcısına bağlayın.',
+    'AIHowToGetAPIKeyFor' => 'API anahtarı nasıl alınır?',
+    'AIExtraNotActivated' => 'Etkinleştirilmedi',
+    'AIExtraValueProp' => 'Gelişmiş Yapay Zeka — FAIR risk ölçümü, belge ve kontrol desteği ve yapay zeka destekli sohbet asistanı.',
+    'AICtxOrgName' => 'Organizasyonunuzun adı nedir?',
+    'AICtxOrgSizeEmployees' => 'Kuruluşunuzun kaç çalışanı var?',
+    'AICtxOrgSizeRevenue' => 'Kuruluşunuzun yıllık geliri ne kadar?',
+    'AICtxOrgObjective' => 'Kuruluşunuzun başlıca iş hedefleri ve stratejik amaçları nelerdir?',
+    'AICtxOrgIndustry' => 'Kuruluşunuzun ana faaliyet alanı veya sektörü nedir?',
+    'AICtxOrgLocation' => 'Organizasyonunuz hangi ülkelerde veya bölgelerde faaliyet göstermektedir?',
+    'AICtxOrgType' => 'Ne tür bir organizasyonsunuz?',
+    'AICtxDataTypes' => 'Kuruluşunuz ne tür veriler toplar, işler veya saklar (örneğin, kişisel veriler, finansal veriler, sağlık bilgileri)?',
+    'AICtxDataCustomers' => 'Başlıca müşterileriniz veya paydaşlarınız kimlerdir (örneğin, tüketiciler, işletmeler, devlet kurumları)?',
+    'AICtxDataRegulatory' => 'Sektörünüzde herhangi bir özel düzenleyici gerekliliğe tabi misiniz?',
+    'AICtxDataThirdParties' => 'Uyumluluk denetimi gerektiren üçüncü taraf ilişkileriniz veya dış kaynaklı hizmetleriniz var mı?',
+    'AICtxMaturityIssues' => 'Son 3-5 yıl içinde önemli uyumluluk sorunları, güvenlik ihlalleri veya risk olayları yaşadınız mı?',
+    'AICtxMaturityConcerns' => 'Mevcut GRC süreçlerinizde tespit ettiğiniz, endişe duyduğunuz veya iyileştirilmesi gereken belirli alanlar var mı?',
+    'AICtxMaturityAppetite' => 'Kuruluşunuzun risk iştahı ve risk toleransı nedir?',
+    'AICtxMaturityLevel' => 'Yönetişim, risk yönetimi ve uyumluluk uygulamaları açısından mevcut olgunluk seviyeniz nedir?',
+    'AICtxImplementationChanges' => 'İş modelinizde, teknoloji altyapınızda veya pazarda uyumluluk ihtiyaçlarınızı etkileyebilecek herhangi bir değişiklik var mı?',
+    'AICtxImplementationResourcesBudget' => 'Uyumluluk çerçevelerinin uygulanması ve sürdürülmesi için kullanabileceğiniz bütçe kaynaklarınız nelerdir?',
+    'AICtxImplementationResourcesPersonnel' => 'Uyumluluk çerçevelerinin uygulanması ve sürdürülmesi için elinizde ne tür personel kaynakları bulunmaktadır?',
+    'AICtxImplementationResourcesTechnology' => 'Uyumluluk çerçevelerini uygulamak ve sürdürmek için hangi teknoloji altyapı kaynaklarına sahipsiniz?',
+    'AICtxImplementationResourcesTraining' => 'Uyumluluk çerçevelerinin uygulanması ve sürdürülmesi için hangi eğitim ve geliştirme kaynaklarınız mevcuttur?',
+    'AICtxImplementationResourcesExternal' => 'Uyumluluk çerçevelerinin uygulanması ve sürdürülmesi için hangi harici destek kaynaklarınız mevcuttur?',
+    'AIAPIKeySecurityNote' => 'Anahtarınız sunucu tarafında saklanır ve asla tarayıcıya geri gönderilmez. Sağlayıcı URL\'leri, config.php dosyasında yapılandırılabilen bir SSRF izin listesine göre doğrulanır.',
+    'AIContextEgressWarning' => 'Yanıtlarınız, önerilerini temellendirmek için yapılandırdığınız yapay zeka sağlayıcısına gönderilir. Onlarla paylaşmayacağınız hiçbir şeyi eklemeyin.',
+    'Provider' => 'Sağlayıcı',
+    'AIProviderURLHostNotAllowed' => '"%s" sunucusu yapay zeka sağlayıcı izin listesinde bulunmuyor. Bunu config.php dosyasındaki $ai_allowed_provider_hosts bölümüne ekleyin ve kaydedin. (Bilinen yapay zeka sağlayıcıları ve 127.0.0.1 loopback adreslerine her zaman izin verilir.)',
+    'AIContextLastSaved' => 'Son kaydedilen',
+    'AIContextNeverSaved' => 'Henüz kaydedilmedi',
+    'AICtxCardSubtitle' => 'Dört farklı alanda 21 soru. Ne kadar çok soru cevaplarsanız, her öneri o kadar etkili olur.',
+    'AICtxAnswered' => '%1$d / %2$d cevaplandı',
+    'AICtxAllOptional' => 'İsteğe bağlı',
+    'AIContextSaving' => 'Kaydediliyor…',
+    'AIContextSaveFailed' => 'Değişiklikleriniz kaydedilemedi. Lütfen tekrar deneyin.',
+    'AISettingsSavedNotReachable' => 'Yapay zeka ayarları kaydedildi, ancak sağlayıcıya ulaşılamadı. Çalışır durumda olduğundan ve URL\'nin doğru olduğundan emin olun.',
+    'AISettingsSavedKeyRequired' => 'Yapay zeka ayarları kaydedildi, ancak bu sağlayıcının özelliklerini kullanabilmek için bir API anahtarına ihtiyacınız var.',
+    'TestAndSave' => 'Test Et ve Kaydet',
+    'AICapEnableAll' => 'Tümünü Etkinleştir',
+    'AICapDisableAll' => 'Tümünü Devre Dışı Bırak',
+    'AISettingsSavedConnected' => 'Yapay zeka ayarları kaydedildi — bağlantı başarılı.',
+    'AISettingsSavedNotConnected' => 'Yapay zeka ayarları kaydedildi, ancak bağlantı testi başarısız oldu. Lütfen modeli, anahtarı ve URL\'yi kontrol edin.',
+    'AIProviderURLNotOnAllowlist' => 'Bu sunucu, yapay zeka sağlayıcısının SSRF izin verilenler listesinde yer almıyor. Kaydedilebilmesi için lütfen config.php dosyasındaki $ai_allowed_provider_hosts satırına ekleyin.',
+    'Connected' => 'Bağlı',
+    'NotConnected' => 'Bağlı Değil',
+    'AICapBulkError' => 'Bazı özellikler güncellenemedi. Lütfen tekrar deneyin.',
+    'QuestionnaireAlreadyCompleted' => 'Bu anket zaten tamamlandı.',
+    'QuestionnaireDraftError' => 'Taslak kaydedilirken hata oluştu. Ayrıntılar için konsola bakın.',
+
+    // Audit cadence scheduling - Define Test modal (Interval/Calendar schedule redesign)
+    // 'Overdue' duplicates the English of 'ImKpiOverdue' on purpose: that key is
+    // an Incident Management KPI label, and a compliance status pill reusing an
+    // IM-scoped key would couple the two domains for a translator (and break the
+    // moment either wording moves). This is the generic, cross-domain one.
+    'Overdue' => 'Gecikmiş',
+    // Deliberate: the only other key rendering 'Manual' is 'ManualValuation',
+    // an asset-valuation label. Pointing a schedule mode at it would couple two
+    // unrelated domains for translators and break the moment either reworded.
+    'ScheduleManual' => 'Manuel',
+    'ScheduleInterval' => 'Aralık',
+    'ScheduleCalendar' => 'Takvim',
+    'Cadence' => 'Ritim',
+    'CadenceBiweekly' => 'İki haftada bir',
+    'CadenceSemiAnnually' => 'Altı ayda bir',
+    'AnchorDate' => 'Çapa Tarihi',
+    'UpcomingOccurrences' => 'Yaklaşan Etkinlikler',
+    'AuditLeadInDays' => 'Denetim Öncesi Günler',
+    'SkipOccurrence' => 'Atlamak',
+    'OverrideDate' => 'Geçersiz Kılma Tarihi',
+    'Week' => 'Hafta',
+    'NoUpcomingOccurrences' => 'Bu zaman diliminde yaklaşan bir etkinlik bulunmamaktadır.',
+    'FailedToLoadUpcomingOccurrences' => 'Yaklaşan etkinliklerin önizlemesi yüklenemedi.',
+    'AnchorDateMustBeTodayOrLater' => 'Başlangıç tarihi bugün veya daha sonraki bir tarih olmalıdır. Geçmiş bir tarih planlamak için bunun yerine Manuel test oluşturun.',
+    'InvalidScheduleType' => 'Geçersiz zamanlama türü. İzin verilen değerler: Manuel, Aralıklı, Takvim.',
+    'Weeks' => 'Haftalar',
+    'Months' => 'Aylar',
+    'Years' => 'Yıllar',
+    'ScheduleSummaryEvery' => 'Her {$interval} {$unit}',
+
+    // Define Tests redesign - client-rendered grid (Phase 1, Task 6)
+    'LastResult' => 'Sonuç',
+    'NextDue' => 'Bir sonraki tarih',
+    'DueSoon' => 'Yakında',
+    'Retired' => 'Emekli',
+    'MyTests' => 'Testlerim',
+    'Failing' => 'Başarısız',
+    'Untested' => 'Test edilmemiş',
+    'ShowRetired' => 'Emekli Olanları Göster',
+    'Tests' => 'Testler',
+    'NoTestsForThisControl' => 'Bu kontrol için henüz test yapılmadı.',
+    'NoControlsDefinedYet' => 'Henüz tanımlanmış kontrol yok.',
+    'NoControlsDefinedYetBody' => 'Testleri eklemeden önce Yönetişim bölümünde kontrolleri tanımlayın.',
+    'NoTestsMatchFilters' => 'Filtrelerinizle eşleşen test bulunamadı.',
+    'NoTestsMatchFiltersBody' => 'Arama ayarlarınızı veya filtrelerinizi değiştirmeyi deneyin.',
+    'CouldNotLoadTests' => 'Testler yüklenemedi.',
+    'CouldNotLoadTestsBody' => 'Bir sorun oluştu. Verileriniz güvende; sayfayı yenilemeyi deneyin.',
+    'ShowingXToYOfZ' => '{$start}–{$end} arası {$total} gösteriliyor.',
+    // Define Tests grid -- SCF-mapping + read-only procedure expand (Phase 1, Task 7)
+    'Reference' => 'Referans',
+    'NoFrameworksMapped' => 'Bu denetime eşlenmiş herhangi bir çerçeve bulunmamaktadır.',
+    // Define Tests grid -- batch select + retire/delete + quick filters (Phase 1, Task 8)
+    'Retire' => 'Emekli olmak',
+    'ReassignTester' => 'Test uzmanını yeniden görevlendirin',
+    'SetSchedule' => 'Programı Belirle',
+    'ConfirmRetireSelectedTests' => 'Retire the {n} selected test(s)?',
+    'ConfirmDeleteSelectedTests' => 'Delete the {n} selected test(s)? This cannot be undone.',
+    // Define Tests grid -- Coverage toolbar select (Issue 4)
+    'Coverage' => 'Kapsam',
+    'CoverageWithTests' => 'Testlerle yapılan kontroller',
+    'CoverageAllControls' => 'Tüm kontroller',
+    'CoverageGaps' => 'Boşluklar',
+    // Define Tests insights band (Phase 2, Task 4) -- KPI tile labels + subtitles.
+    // 'Overdue', 'DueSoon', and 'Failing' are reused from the grid's quick-filter
+    // chips above (identical text) rather than duplicated here.
+    'DtTotalTests' => 'Toplam Testler',
+    'DtCoverageGaps' => 'Kapsama Açıkları',
+    'DtAcrossNControls' => '{$n} kontrolleri boyunca',
+    'DtControlsWithNoTest' => 'Test yapılmayan kontroller',
+    'DtNeedInitiationNow' => 'Şimdi başlatma işlemi gerekiyor.',
+    'DtWithinLeadInWindow' => 'Giriş penceresi dahilinde',
+    'DtLastResultFailed' => 'Sonuç başarısız oldu.',
+    'InvalidTestMethod' => 'Test yöntemi, sorgulama, gözlem, inceleme veya yeniden uygulama yöntemlerinden biri olmalıdır!',
+    'TesterCannotBeApprover' => 'Testi yapan kişi aynı zamanda bu testin onaylayıcıları arasında da yer alamaz.',
+    'ApproverNotEligible' => 'Seçilen onaylayıcılardan bir veya daha fazlasının "Testleri Onaylama" sorumluluğu bulunmamaktadır.',
+    'TestMethod' => 'Test Yöntemi',
+    'TestMethodInquiry' => 'Sorgu',
+    'TestMethodObservation' => 'Gözlem',
+    'TestMethodInspection' => 'Denetleme',
+    'TestMethodReperformance' => 'Tekrar Performans',
+    'Sample' => 'Örnek',
+    'RequiredEvidence' => 'Gerekli Kanıtlar',
+    'Approvers' => 'Onaylayıcılar',
+    'AuditLog_TestAuditApproved' => 'Denetim "{$test_audit_name}"(ID: {$test_audit_id}) kullanıcı "{$user_name} " tarafından onaylandı.',
+    'AuditLog_TestAuditRejected' => 'Denetim "{$test_audit_name}"(ID: {$test_audit_id}) "{$user_name}" kullanıcısı tarafından "{$comment} " yorumuyla reddedildi.',
+    'AuditLog_TestAuditAwaitingApproval' => 'Denetim "{$test_audit_name}"(ID: {$test_audit_id}) kullanıcı "{$user_name}" tarafından kapatılmak üzere gönderildi ve onay bekliyor. Değişiklikler: {$changes}.',
+    'AuditApproved' => 'Denetim başarıyla onaylandı.',
+    'AuditRejected' => 'Denetim başarıyla reddedildi.',
+    'RejectCommentRequired' => 'Denetimi reddetmek için bir yorum yapılması gerekmektedir.',
+    'NotAnApproverOfThisAudit' => 'Bu denetim için yetkilendirilmiş bir onaylayıcı değilsiniz.',
+    'ApproverCannotBeTester' => 'Onaylayan kişi aynı zamanda bu denetimin testini yapan kişi olamaz.',
+    'AuditNotAwaitingApproval' => 'Bu denetim şu anda onay beklemiyor.',
+    'NotificationAuditAwaitingApprovalTitle' => 'Denetim onayınızı bekliyor.',
+    'NotificationAuditAwaitingApprovalBody' => '"{$test_audit_name}" denetim dosyası kapatılmak üzere gönderildi ve onayınızı bekliyor.',
+    'NotificationAuditRejectedTitle' => 'Denetim reddedildi',
+    'NotificationAuditRejectedBody' => '"{$test_audit_name}" denetimi şu yorumla reddedildi: "{$comment}"',
+    'AwaitingApproval' => 'Onay Bekleniyor',
+    'AwaitingApprovalBannerText' => 'Bu denetim kapatılmak üzere gönderildi ve kapatılabilmesi için yapılandırılmış bir onaylayıcıdan onay bekliyor.',
+    'ReturnedForRework' => 'Yeniden işleme için geri gönderildi.',
+    'ReturnedForReworkBannerText' => 'Bu denetim reddedildi ve yeniden incelenmek üzere geri gönderildi.',
+    'RejectReason' => 'Reddetme Nedeni',
+    'AreYouSureYouWantToApproveThisAudit' => 'Bu denetimi onaylamak istediğinizden emin misiniz?',
+    'AtLeastOneControlRequired' => 'En az bir kontrol yapılması gerekmektedir.',
+    'DtNCommonAcrossNControls' => '{$common} ortak · {$n} kontroller',
+    'DtUntestedControls' => 'Test Edilmemiş Kontroller',
+    'DtControlsInScopeNoCoverage' => 'Kapsam yok.',
+    'Passing' => 'Geçmek',
+    'DtLastResultPassed' => 'Sonuç olumlu çıktı.',
+    'AllFamilies' => 'Tüm aileler',
+    'SearchTestsPlaceholder' => 'Arama testleri, kontrolleri ve çerçeveleri',
+    'AnySchedule' => 'Herhangi bir program',
+    'AnyTag' => 'Herhangi bir etiket',
+    'AuditAutoClosedTestRetired' => 'Testin iptal edilmesi nedeniyle sonuçsuz olarak otomatik olarak kapatıldı.',
+    'Common' => 'Yaygın',
+    'ValidatesAcrossMappedFrameworks' => 'Eşleştirilmiş çerçeveler genelinde doğrulama yapar.',
+    'EditTest' => 'Düzenleme testi',
+    'ControlHasNoTestCoverage' => 'Bu kapsam dahilindeki kontrolün henüz test kapsamı bulunmamaktadır.',
+    'AddTheFirstTest' => 'İlk testi ekleyin',
+    'ApplyCommonTestHint' => 'Bu kontrole bir veya daha fazla mevcut testi uygulayın. Her test mevcut kontrollerini korur ve bu kontrolü de kapsayan ortak bir test haline gelir.',
+    'CommonTestApplied' => 'Bu kontrol grubuna uygulanan test.',
+    'CouldNotApplyCommonTest' => 'Bu kontrol grubuna test uygulanamadı.',
+    'SelectOneOrMoreTests' => 'Bir veya daha fazla test seçin',
+    'CommonTestsApplied' => 'Bu kontrole {n} test uygulandı.',
+    'ApplyCommonTests' => 'Ortak testleri uygulayın…',
+    'History' => 'Tarih',
+    'Result' => 'Sonuç',
+    'Approval' => 'Onay',
+    'ThisTestHasNotBeenRunYet' => 'Bu test henüz yapılmadı.',
+    'CouldNotLoadTestHistory' => 'Bu testin geçmişi yüklenemedi.',
+    'Identity' => 'Kimlik',
+    'IdentitySectionHint' => 'Adı, test eden kişi ve doğruladığı kontroller',
+    'WhenTheAuditInitiates' => 'Denetim başlatıldığında',
+    'ProcedureAndEvidence' => 'Prosedür ve kanıtlar',
+    'CommonTestControlsHint' => 'Bir test, birçok kontrolü doğrulayabilir; bu, yaygın bir testtir. Bunu bir kontrolün "+ Test ekle" seçeneğinden açmak, kontrolü burada otomatik olarak seçer.',
+    'SeparationOfDutiesNote' => 'Görevlerin ayrılması — onaylayıcı aynı zamanda testçi olamaz.',
+    'CommonTestEditScopeHint' => 'Bu yaygın testin kullanıldığı her yerde değişiklikler geçerlidir.',
+    'Mode' => 'Mod',
+    'AddOrRemove' => '… ekleyin veya kaldırın',
+    'AddOrSearchTags' => 'Etiket ekle veya ara…',
+    'CreateTagX' => '“{tag} ” oluşturun',
+    'Archived' => 'Arşivlendi',
+    'ShowAllTests' => 'Tüm testler',
+    'ShowActiveTests' => 'Aktif testler',
+    'ShowRetiredTests' => 'Emekli testler',
+    'UntestedControls' => 'Test edilmemiş kontroller',
+    'OverdueByXDays' => 'Gecikmiş · {n} gün',
+    'OverdueByOneDay' => 'Gecikmiş · 1 gün',
+    'DueInXDays' => '{n} gün içinde teslim edilecek',
+    'DueTomorrow' => 'Yarın teslim edilecek',
+    'DueToday' => 'Bugün teslim edilecek',
+    'ScheduledForX' => 'Planlandı · {date}',
+    'AllTesters' => 'Tüm testçiler',
+    'AllStatuses' => 'Tüm durumlar',
+    'OnTrack' => 'Yolda',
+    'NextTestDateDerivedHint' => 'Son test tarihi ile test sıklığının toplamı alınarak hesaplanır. Otomatik olarak planlanması için bir sıklık belirleyin veya bu tarihi kendiniz belirlemek için sıklığı boş bırakın.',
+    'DueStatus' => 'Vadesi gelen durum',
+    'AllResults' => 'Tüm sonuçlar',
+    // Remove a test from one control (Define Tests grid unlink row action)
+    'RemoveFromThisControl' => 'Bu kontrolden kaldır',
+    'RemoveTestFromControl' => 'Testi kontrolden kaldırın.',
+    'RemoveTestFromControlConfirm' => '{control_name} ifadesinden "{test_name}" ifadesini kaldır?',
+    'RemoveTestFromControlStays' => 'The test stays on its {n} other controls. Nothing is deleted.',
+    'RemoveTestFromControlStaysOne' => 'Test, diğer 1 kontrol noktasında kalır. Hiçbir şey silinmez.',
+    'CannotRemoveTestsOnlyControl' => 'Bir test en az bir kontrol grubuna ait olmalıdır. Aksi takdirde testi devre dışı bırakın veya silin.',
+    'TestRemovedFromControl' => 'Test, kontrol grubundan çıkarıldı.',
+    'CouldNotRemoveTestFromControl' => 'Test, kontrol grubundan çıkarılamadı.',
+    'TestRemovedFromControlAuditLogMessage' => '"{$test_name}" testi (ID: {$test_id}), "{$user} " kullanıcısı tarafından kontrol grubundan (ID: {$control_id}) kaldırıldı.',
+    'DeleteTestUsedByNControls' => 'Bu, {n} kontrolleri tarafından kullanılıyor ve hepsinden kaldırılacak.',
+    'BulkDeleteSharedTestsNote' => '{n} bunlardan bazıları diğer kontroller tarafından kullanılıyor ve onlardan da kaldırılacak.',
+    'BulkRetireSharedTestsNote' => 'Bunlardan {n} \'ı diğer kontroller tarafından kullanılıyor ve orada da kullanımdan kaldırılacak.',
+    'BulkDeleteOneSharedTestNote' => 'Bunlardan biri diğer kontroller tarafından kullanılıyor ve onlardan da kaldırılacak.',
+    'BulkRetireOneSharedTestNote' => 'Bunlardan biri diğer kontroller tarafından kullanılıyor ve orada da devre dışı bırakılacak.',
+    'CouldNotLoadTest' => 'Bu test yüklenemedi.',
+    'Expand' => 'Genişletmek',
+    'SearchMappings' => 'Arama çerçeveleri ve referanslar',
+    'NoMatchingMappings' => 'Bu aramayla eşleşen hiçbir eşleşme bulunamadı.',
+    'Insights' => 'İçgörüler',
+    'ShowInsights' => 'Analiz kutucuklarını göster',
+    'HideInsights' => 'Bilgi kutucuklarını özet satırına daraltın.',
+    'ChooseControls' => 'Kontrolleri seçin',
+    'UseTheseControls' => 'Bu kontrolleri kullanın',
+    'SearchControlsPlaceholder' => 'Numaraya veya isme göre arama yapın',
+    'PickerKeyboardHint' => 'Yukarı/aşağı tuş kombinasyonuyla hareket edin, Enter tuşuyla seçin, Esc tuşuyla iptal edin.',
+    'NoControlsMatchFilters' => 'Burada eşleşen bir şey yok. Soldaki adımı genişletin veya aramayı temizleyin.',
+    'NoControlsSelectedYet' => 'Henüz hiçbir şey seçilmedi.',
+    'AllControls' => 'Tüm kontroller',
+    'AddOrRemoveControls' => 'Denetimleri ekle veya kaldır…',
+    'LastTested' => 'Son Test Edilen',
+    'LastTestDateAnchorHint' => 'Çapa aralıklı zamanlama (bu tarih artı sıklık). Test sonuçları kaydedildikten sonra, tablo bunun yerine en yeni sonucun tarihini gösterir.',
+    'Filters' => 'Filtreler',
+    'ShowFilters' => 'Filtreleri göster',
+    'HideFilters' => 'Filtreleri gizle',
+
+    // App shell — collapsing sidebar / new base design (SR app-shell redesign)
+    'AI' => 'Yapay zeka',
+    'CollapseSidebar' => 'Kenar çubuğunu daralt',
+    'FooterCopyright' => '© %s SimpleRisk. Tüm hakları saklıdır.',
+    'ExpandSidebar' => 'Kenar çubuğunu genişlet',
+    'WorkflowsCloneConfirm' => '\'{$name} \' iş akışını klonla?',
+    'WorkflowsDeleteConfirm' => '\'{$name}\' iş akışını silmek mi istiyorsunuz? Bu işlem geri alınamaz.',
+    'WorkflowActionFailed' => 'İşlem başarısız oldu: {$msg}',
+    'ClickToDisable' => 'Devre dışı bırakmak için tıklayın',
+    'ClickToEnable' => 'Etkinleştirmek için tıklayın',
+    'ENABLED' => 'ETKİNLEŞTİRİLMİŞ',
+    'DISABLED' => 'ENGELLİ',
+    'BackToWorkflows' => 'İş Akışlarına Geri Dön',
+    'BackToHistory' => 'Tarihe geri dön',
+    'NewWorkflow' => 'Yeni İş Akışı',
+    'ViewSteps' => 'Adımları Görüntüle',
+    'SaveWorkflow' => 'İş Akışını Kaydet',
+    'WorkflowSavedSuccessfully' => 'İş akışı başarıyla kaydedildi.',
+    'WorkflowNotFound' => 'İş akışı bulunamadı.',
+    'EditWorkflow' => 'Düzenleme İş Akışı: {$name}',
+    'OrganizationContextProfile' => 'Organizasyon Bağlam Profili',
+    'AICtxAutoAcceptThreshold' => 'Kuruluşunuzun risk için otomatik kabul eşiği nedir (dolar cinsinden bir tutar mı yoksa ALE\'nin yüzdesi mi)?',
+    'AICtxGrcBudget' => 'Yıllık GRC/güvenlik bütçeniz ne kadar?',
+    'AICtxAuditorPerspective' => 'Öncelikle kimin bakış açısına göre denetleniyorsunuz?',
+    'AICtxUnitCurrency' => 'Para Birimi ($)',
+    'AICtxUnitPercentOfAle' => 'ALE yüzdesi (%)',
+    'AICtxFrameworksInUse' => 'Şu anda kullanımda olan çerçeveler',
+    'AICtxNoFrameworksInUse' => 'Henüz aktif çerçeve bulunamadı. Çerçeveleri Yönetişim > Çerçeve Eşleştirme altından ekleyin.',
+    'AICtxFromYourData' => 'Verilerinizden',
+    'AICtxAuthoritative' => 'Yetkili',
+    'AICtxAppetiteNotSet' => 'Ayarlanmadı',
+    'AICtxAppetiteManageLink' => 'Risk Yapılandırmasında Yönetin',
+    'AICapControlTestGeneration' => 'Kontrol Testi Üretimi',
+    'AICapControlTestGenerationDesc' => 'Taslak kontrol testleri, kontrolün çerçeve eşleştirmesi, mevcut testler ve öz değerlendirme sonuçları kullanılarak incelenmek üzere hazırlanır; siz onaylayana kadar hiçbir şey oluşturulmaz.',
+    'AICapSurfacedControlTestGeneration' => 'Uyumluluk — Testleri Tanımlama',
+    'AIControlTestGenUnavailable' => 'HİZMET KULLANILAMAZ: Bu işlevin yapay zeka ayarlarında bir yönetici tarafından etkinleştirilmesi gerekir.',
+    'AIControlTestGenInvalidId' => 'GEÇERSİZ İSTEK: Geçerli bir kontrol kimliği gereklidir.',
+    'AIControlTestGenNotFound' => 'BULUNAMADI: Belirtilen kontrol bulunamadı.',
+    'AIControlTestGenConflict' => 'ÇATIŞMA: Bu kontrol için üretim zaten sıraya alınmış durumda.',
+    'AIControlTestGenQueued' => 'KABUL EDİLDİ: Kontrol testi oluşturma işlemi sıraya alındı.',
+    'AIControlTestGenFailed' => 'İÇ SUNUCU HATASI: Kontrol testi oluşturma sıraya alınamadı.',
+    'AIControlTestGenCheckFailed' => 'HATA: Sıraya almadan önce kontrol doğrulanamadı.',
+    'GenerateTestsWithAI' => 'Yapay Zeka ile Testler Oluşturun',
+    'ShowAiSuggestedTests' => 'Yapay zeka tarafından önerilen testler',
+    'AiSuggested' => 'Yapay zeka önerdi',
+    'ReviewAndEdit' => 'Gözden geçir ve düzenle',
+    'CreateSelected' => 'Seçilenleri oluştur',
+    'TestCreatedFromSuggestion' => 'Önerilen test oluşturuldu.',
+    'SuggestionDismissed' => 'Öneri reddedildi.',
+    'TestGenerationQueued' => 'Test oluşturma işlemi sıraya alındı.',
+    'Generating' => '… oluşturuluyor',
+    'SuggestionDismissFailed' => 'Test oluşturuldu, ancak yapay zeka önerisi kapatılamadı. Eğer hala duruyorsa, manuel olarak kapatın.',
+    'AICtxAuditorBig4' => 'Büyük 4 (harici)',
+    'AICtxAuditorBoutique' => 'Butik / bölgesel (harici)',
+    'AICtxAuditorInternal' => 'Sadece iç denetim',
+    'AICtxAuditorSelfAssessed' => 'Öz değerlendirme',
+    'AICtxAuditorNotSure' => 'Emin değilim.',
+    'AICtxAppetiteCautious' => 'Dikkatli',
+    'AICtxAppetiteBalanced' => 'Dengeli',
+    'AICtxAppetiteAggressive' => 'Saldırgan',
+    'TestGenerationComplete' => 'Yapay zekâ tarafından hazırlanan kontrol testleri incelemeye hazır.',
+    'TestGenerationStillRunning' => 'Test oluşturma işlemi devam ediyor; taslaklar kısa süre içinde yayınlanacak.',
+    'TestGenerationNoNew' => 'Üretim tamamlandı — bu kontrol için önerilebilecek yeni test yok.',
+    'SearchEntities' => 'Arama varlıkları',
+    'SearchEntitiesPlaceholder' => 'Riskleri, kontrolleri, politikaları, istisnaları arayın…',
+    'ShowTypes' => 'Türleri göster',
+    'Depth' => 'Derinlik',
+    'Inspector' => 'Müfettiş',
+    'Connections' => 'Bağlantılar',
+    'NoConnectionsFound' => 'Seçilen varlık için hiçbir bağlantı bulunamadı.',
+    'CouldNotLoadGraph' => 'Bağlantı grafiği yüklenemedi.',
+    'CouldNotSearchEntities' => 'Arama işlemi başarısız oldu.',
+    'ShowingTopNOfM' => '{1}\'in en üstteki {0} \'ini gösteriyor',
+    'RankedByMaturityGap' => 'Olgunluk farkına göre sıralanmıştır.',
+    'RankedByRiskScore' => 'Risk puanına göre sıralanmıştır.',
+    'RankedByRecentFailure' => 'En son başarısızlığa göre sıralanmıştır.',
+    'RankedByReviewDate' => 'Sonraki değerlendirme tarihine göre sıralanmıştır.',
+    'RankedBySeverity' => 'Ciddiyet derecesine göre sıralanmıştır.',
+    'RankedByName' => 'İsim sırasına göre sıralanmıştır.',
+    'NodeTypeSelfAssessmentResult' => 'Öz Değerlendirme Sonucu',
+    'Relationship' => 'İlişki',
+    'Exception' => 'İstisna',
+    'DesiredMaturity' => 'İstenilen olgunluk',
+    'ApprovalState' => 'Onay durumu',
+    'RelationshipOfType' => '{0} / {1}',
+    // Connectivity Explorer Inspector: labels for enrichment field keys
+    // (ai_context_enrich_fetch(), ai_context_enrich_vulnerabilities()) that
+    // fieldLabel() in connectivity-visualizer.js did not yet cover.
+    'LastDate' => 'Son Tarih',
+    'LastResultDate' => 'Son Sonuç Tarihi',
+    'PercentComplete' => 'Tamamlanma Yüzdesi',
+    'AssessmentDate' => 'Değerlendirme Tarihi',
+    'NextDate' => 'Sonraki Tarih',
+    'Number' => 'Sayı',
+    'Grouping' => 'Gruplandırma',
+    'Hidden' => 'Gizlenmiş',
+    'FirstFound' => 'İlk Bulundu',
+    'LastFound' => 'Son Bulunma Tarihi',
+    'Patchable' => 'Yama yapılabilir',
+    'Solution' => 'Çözüm',
+    'Breadcrumb' => 'Ekmek kırıntısı',
+    'SelectANodeToInspect' => 'Ayrıntılarını görüntülemek için bir düğüm seçin.',
+    'HiddenUnreachableNodes' => '{0} gizli düğüm(ler): gizli tür(ler) olmadan artık bağlı değil.',
+    // Connectivity Explorer canvas launchpad (Level-1 type tiles / Level-2
+    // browsable entity list) -- docs/superpowers/specs/2026-07-27-
+    // connectivity-explorer-launchpad.md
+    'BrowsableEntityTypes' => 'Göz atılabilir varlık türleri',
+    'CountFloor' => '{0}+',
+    'NoBrowsableTypes' => 'Herhangi bir varlık türüne göz atma izniniz yok.',
+    'AllTypes' => 'Tüm tipler',
+    'FilterEntitiesPlaceholder' => 'Filtre…',
+    'NoMatchingEntities' => 'Filtrenize uyan hiçbir varlık bulunamadı.',
+    'LoadMore' => 'Daha fazla yükle',
+    'Loading' => 'Yükleniyor…',
+    'CouldNotLoadEntityCounts' => 'Varlık sayımları yüklenemedi.',
+    'CouldNotLoadEntities' => 'Varlıklar yüklenemedi.',
+    'ClearGraph' => 'Net grafik',
+    // Connectivity Explorer node-type chip label for the 'audit' type. Not
+    // reused from 'TeamType_audit' (same English text, "Audit") -- that key
+    // is scoped to the Team Separation team-type picker, a different feature
+    // whose wording should be free to diverge from this one's.
+    'Audit' => 'Denetim',
+    // Queued email send-failure notifications
+    'EmailSendFailedNotificationTitle' => 'E-posta Gönderimi Başarısız Oldu',
+    'EmailSendFailedNotificationBody' => 'Sıraya alınmış bir veya daha fazla e-posta gönderilemedi. Ayrıntılar için posta ayarlarınızı kontrol edin, ardından Sıra İzleyici\'ye ve sunucu günlüğüne bakın.',
+    'QuestionnaireShareInvalidEmailAddress' => 'Geçerli bir e-posta adresi olmayan kişilerle anket sonuçlarını paylaşamıyorum.',
+    'AssessmentSendInvalidEmailAddress' => 'Değerlendirme geçersiz bir e-posta adresine gönderilemiyor.',
+    'AssessmentSentTo' => 'Değerlendirme "{$email} " adresine gönderildi.',
+    'AssessmentNotSentNoValidRecipients' => 'Değerlendirme gönderilmedi — geçerli bir e-posta adresi verilmedi.',
+    'AssessmentContactUnusableEmailNotificationTitle' => 'Anket Gönderilmedi',
+    'AssessmentContactUnusableEmailNotificationBody' => 'The questionnaire "{$questionnaire}" could not be sent to "{$contact}" because that contact has no valid email address on file. Update the contact record to resume sending.',
+    'EmailFailureNotificationRetention' => 'E-posta Gönderim Başarısızlığı Bildirimi Saklama',
+    'EmailFailureNotificationRetentionOutOfRange' => 'E-posta gönderim hatası bildiriminin saklanma süresi {$min} ile {$max} gün arasında olmalıdır.',
+    'MailSettingsUpdatedSuccessfully' => 'E-posta ayarları başarıyla güncellendi.',
+    // Questionnaire audit-trail entries for the API submit/draft paths (SR-1714).
+    // The token form credits the contact; an API caller is an authenticated
+    // SimpleRisk user acting on that contact's questionnaire, so both the
+    // contact and the acting user are named.
+    'QuestionnaireCompletedAuditLogViaApi' => '"{$contact_name}" kişisine ait "{$questionnaire_name}" anketi, "{$user_name} " kullanıcısı tarafından API aracılığıyla tamamlandı.',
+    'QuestionnaireDraftAuditLogViaApi' => '"{$contact_name}" kişisi için "{$questionnaire_name}" anketi, "{$user_name} " kullanıcısı tarafından API aracılığıyla taslak olarak kaydedildi.',
+    // Bad-input response for the questionnaire risk-list endpoints, which
+    // previously reported a malformed questionnaire_id as a permission denial.
+    // Mirrors the existing 'MissingOrInvalidTrackingID'.
+    'MissingOrInvalidQuestionnaireID' => 'Anket kimliği eksik veya geçersiz.',
+    // POST /api/v2/assessments/questionnaire/result/file response messages.
+    // The `id` path deliberately returns QuestionIdCannotAcceptFile for every
+    // question-level rejection so a sequential tracking id cannot be used to
+    // probe questionnaire structure; the token path returns the specific reason.
+    'QuestionnaireResultNotFoundForTokenOrId' => 'BULUNAMADI: Belirtilen token veya kimlikle bir anket sonucu bulunamadı.',
+    'QuestionIdCannotAcceptFile' => 'HATALI İSTEK: question_id {$question_id} bu anket sonucunda dosya kabul edemiyor.',
+    'QuestionIdNotFoundInQuestionnaire' => 'GEÇERSİZ İSTEK: question_id {$question_id} bu ankette bulunamadı.',
+    'QuestionIdInMultipleTemplates' => 'HATALI İSTEK: question_id {$question_id} bu anketin birden fazla şablonunda görünüyor.',
+    'QuestionIdDoesNotAcceptFileUploads' => 'GEÇERSİZ İSTEK: question_id {$question_id} dosya yüklemeyi kabul etmiyor',
+    // The Statement of Applicability's two UNVERIFIED implementation states.
+    //
+    // They exist because "we have not checked" is not "it does not work", and an
+    // SoA is ATTESTED — printing "No" for an unverified control is a false
+    // statement against yourself, exactly as printing "Yes" without evidence is
+    // a false statement the other way. Before these keys existed both states
+    // fell through to 'No', which on a framework where most controls carry no
+    // test meant the whole document read "not implemented".
+    //
+    // They are two states rather than one because they are different findings
+    // with different owners: no test defined is a GOVERNANCE gap (nobody decided
+    // how to verify this control), never run is an OPERATIONAL one (somebody
+    // decided, and it was not done).
+    //
+    // WORDING. Both must be unmistakably distinct from the bare 'No' in the same
+    // column. 'Tests never run' rather than 'Never run': in a column headed
+    // "Implemented", the bare phrase reads for a moment as though the CONTROL
+    // was never run, when the subject is its tests.
+    //
+    // BOTH ARE PLURAL, and that is not only style. English takes the plural
+    // after "no" when the expected quantity could exceed one ("no results
+    // found"), and a control normally carries several tests — the singular
+    // implies only ever one was expected. 'Tests never run' is the stronger
+    // case: soa_implemented_for() returns `never_run` only when NOT ONE of the
+    // control's tests has produced a verdict, so the state is inherently about
+    // the whole set. With four tests defined and none run, the singular reads as
+    // one omission rather than a wholesale one.
+    'SoaImplementedNoTestDefined' => 'Tanımlanmış test yok.',
+    'SoaImplementedNeverRun' => 'Testler asla çalıştırılmaz.',
+
+    // The Implemented column's fallback for a token neither sink recognizes.
+    //
+    // DELIBERATELY NOT A VERDICT, and the reason this key exists at all. Both
+    // sinks previously ended in a fallthrough to 'No', so adding a state without
+    // adding its label printed a confident, wrong answer into a compliance
+    // document. Falling through to 'Yes' would be worse. The only safe failure
+    // mode is a value that states nothing about the control — a visible bug
+    // instead of a silent misstatement.
+    'SoaImplementedUnknown' => 'Durum mevcut değil.',
+    // How an APPLICABLE control's stored inclusion reason(s) join to its own
+    // freeform justification when it recorded both (spec §4). Reached ONLY when
+    // both halves exist — reasons alone print as the reason list, prose alone
+    // prints verbatim — so this string is punctuation and word order, not prose.
+    // It is a language key rather than a hardcoded separator because a locale
+    // that joins clauses with a colon, a full stop, or right-to-left ordering
+    // must be able to say so; both placeholders have to survive translation.
+    'SoaJustifiedByInclusionReasons' => '{reasons} — {narrative}',
+    // The Set applicability modal's reason field, which became a MULTI-select
+    // when reasons moved to a join table: a control is commonly included (or
+    // excluded) for more than one reason, and the singular 'Reason' the field
+    // used to reuse now under-describes it. 'Reason' is left alone rather than
+    // repointed -- the row drawer and the SoA still print exactly one joined
+    // value under it, and redefining a key changes every surface that reads it.
+    'ApplicabilityReasons' => 'Sebepler',
+    // Said once, above a group of checkboxes, rather than implied by the widget.
+    // The old single <select> answered "how many may I pick?" by construction;
+    // a checkbox group does not, and a user who ticks one and stops has made the
+    // SoA less truthful than the one they meant to write.
+    'ApplicabilityReasonsHint' => 'Uygun olan tüm nedenleri seçin.',
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // THE STATEMENT OF APPLICABILITY'S MARKERS AND ITS LEGEND (spec §1, §3).
+    // ─────────────────────────────────────────────────────────────────────────
+
+    // THE EVIDENCE COLUMN'S TWO ABSENCES, which are OPPOSITES.
+    //
+    // 'No evidence linked' is a FINDING: the control is in scope, is possibly
+    // claimed implemented, and nothing substantiates it. The em dash below is
+    // the other answer -- the control is excluded, so no evidence is expected
+    // and the absence is correct. Rendering both as an empty cell hides the
+    // first, which is the one an auditor circles.
+    'SoaNoEvidenceLinked' => 'Bağlantılı herhangi bir kanıt yok.',
+    // PUNCTUATION, NOT PROSE -- the glyph the Evidence cell prints when nothing
+    // is expected. A language key rather than a hardcoded character for the same
+    // reason 'SoaJustifiedByInclusionReasons' is one: a locale that marks "not
+    // applicable" with a different dash, or with a word, must be able to say so.
+    'SoaEvidenceNotExpected' => '—',
+    // Whether the evidence a test DECLARED it requires actually arrived with the
+    // result. A stronger claim than a pass/fail alone, and few SoA tools make it.
+
+    // THE REMEDIATION BLOCK -- what is being done about a control that reads
+    // Partial or No. The SoA points AT the risk treatment plan (clause 6.1.3(e))
+    // rather than becoming one.
+    'SoaRemediation' => 'İyileştirme',
+    // THE MOST SERIOUS THING THAT BLOCK CAN FIND: the test failed and it is
+    // linked to no risk, so no treatment plan traces back to it. Dropping such a
+    // row for want of a risk to join to would render it as a blank cell, which
+    // reads as "nothing to report".
+    'SoaRemediationUnplanned' => 'Herhangi bir risk bağlantısı yok.',
+
+    // THE LEGEND. Required in both variants and every export format, because six
+    // implementation states plus three markers is more nuanced than the
+    // Yes/No/Partial an auditor expects, and an undefined vocabulary invites the
+    // reader to guess unfavourably.
+    'SoaLegendTitle' => 'Bu ifade nasıl okunur?',
+    'SoaLegendYes' => 'Bu kontrol için tanımlanan tüm testler, en son çalıştırıldığında başarılı bir şekilde tamamlandı.',
+    'SoaLegendPartial' => 'Kontrol grubunun testleri farklı sonuçlar verdi: en az bir test başarılı oldu, en az bir test ise başarısız oldu veya sonuç vermedi.',
+    'SoaLegendNo' => 'Bu kontrolün son çalıştırılmasında hiçbir test başarılı olmadı ve en az bir tanesi başarısız oldu.',
+    // The two unverified states are DIFFERENT FINDINGS WITH DIFFERENT OWNERS,
+    // and the labels alone do not quite carry that -- so the legend spells it
+    // out. This is the distinction the whole six-state set exists for.
+    'SoaLegendNoTestDefined' => 'Bu kontrol için herhangi bir test tanımlanmadığından, çalışması hiçbir zaman doğrulanmamıştır. Bu, kontrolün eksik olduğu veya başarısız olduğu anlamına gelmez; sadece bu ifadenin bunu göstermediği anlamına gelir. Bir yönetim açığı: bu kontrolün nasıl denetleneceğine kimse karar vermemiştir.',
+    'SoaLegendNeverRun' => 'Bu kontrol için testler mevcut, ancak bunların hiçbiri bugüne kadar uygulanmadı, bu nedenle işleyişi burada gösterilmemektedir. Bu, kontrolün eksik olduğu veya başarısız olduğu anlamına gelmez. Operasyonel bir eksiklik: kontroller kararlaştırıldı ancak gerçekleştirilmedi.',
+    'SoaLegendNotApplicable' => 'Bu kontrol, bu çerçevenin kapsamı dışında tutulduğu için herhangi bir uygulama durumuna sahip değildir.',
+    // The one most in need of explaining: with nothing to define it, this reads
+    // as an admission about the control rather than as what it is.
+    'SoaLegendUnknown' => 'SimpleRisk kaydedilen durumu etiketleyemediği için burada uygulama gösterilmemiştir. Bu, yazılımda bir kusurdur ve kontrol hakkında hiçbir şey söylemez; ne çalıştığını ne de çalışmadığını belirtir.',
+    'SoaLegendOverdue' => 'Gösterilen sonuç hala geçerliliğini koruyor, ancak arkasındaki testlerden en az birinin bir sonraki test tarihi geçmiş durumda. Kanıtlar güncelliğini yitirmiş.',
+    'SoaLegendNoEvidence' => 'Kontrol kapsam dahilindedir ve bunu destekleyecek hiçbir şey ortaya konmamıştır: onaylanmış bir belge yok ve sonuç veren bir test de yok.',
+    'SoaLegendEvidenceNotExpected' => 'Kontrol kapsam dışında bırakıldığı için herhangi bir kanıt beklenmiyor.',
+    'SoaLegendUnplanned' => 'Riskle bağlantılı olmayan başarısız bir test, dolayısıyla herhangi bir tedavi planı buna dayandırılamaz.',
+
+    // THE TWO VARIANTS, chosen on the launcher before the document is generated
+    // and PRINTED ON ITS COVER. A Statement of Applicability is a controlled
+    // document: two of them for the same framework that show different things,
+    // with nothing on either to say which is which, is a document nobody can
+    // file.
+
+    // THE THREE DETAILED-ONLY COLUMNS.
+    // What those three columns say instead of nothing. A blank cell in an audit
+    // document reads as a formatting artefact; "Not recorded" is a fact the
+    // reader can act on.
+
+    // THE BROWSER PRINT ROUTE. Beside the two downloads on the launcher, and the
+    // only PDF route for a framework too large for the server-side writer.
+    // Shown in place of "Download as PDF" when the chosen framework is above
+    // SOA_EXPORT_PDF_MAX_CONTROLS. The affordance is absent rather than
+    // disabled, so this sentence is what tells the reader the absence is
+    // deliberate and what to do instead.
+    // The footer of every printed page. {page} and {pages} are substituted with
+    // the browser's own page counters, so the two tokens must both survive
+    // translation -- but their ORDER and the words around them are the
+    // translator's, which is why this is one string and not "Page" + "of".
+    'SoaPrintPageNumber' => 'Sayfa {page} / {pages}',
+
+    // THE ONE PDF AFFORDANCE on the statement-of-applicability launcher, beside
+    // 'DownloadAsXLSX'. It replaces the pair that used to sit there --
+    // 'SoaPrintToPdf' and 'DownloadAsPDF' -- because a Statement of Applicability
+    // is a controlled document and two PDF buttons let two people hand an auditor
+    // two different-looking PDFs of the same statement.
+    //
+    // JUST "PDF", AND DELIBERATELY SO. Below SOA_EXPORT_PDF_MAX_CONTROLS the
+    // button downloads a server-rendered file and above it the browser writes
+    // one, but that is a mechanism and not a choice the reader has to make. A
+    // label that named the mechanism ("Print to PDF" / "Download as PDF") would
+    // put the difference back in front of them.
+    //
+    // 'SoaPrintToPdf' and 'SoaPdfTooLargeHint' above are LEFT IN PLACE with no
+    // caller: 39 locales carry them, and this file is append-only precisely so a
+    // customer running a custom lang.<locale>.php can reconcile it with a tail
+    // diff.
+    'SoaPdf' => 'PDF',
+
+    // THE OTHER TWO ACTIONS IN THAT SAME ROW, shortened to match it.
+    //
+    // The row read "Open in browser" / "Download as XLSX" / "PDF", which put a
+    // verb on two of three actions and made the odd one out look like an
+    // abbreviation of something longer. The row's own context supplies the
+    // verbs -- these are the things you can DO with the framework you just
+    // chose -- so they carried no information and cost the reader a comparison.
+    // 'SoaPdf' is short because naming its mechanism would be dishonest (above
+    // SOA_EXPORT_PDF_MAX_CONTROLS it opens a print view rather than downloading
+    // a file), and the shortest of the three is the one that has to be right.
+    //
+    // NOT the generic 'Open' at line ~1021: that key lives among 'Mitigated' /
+    // 'Reviewed' and is the risk-status ADJECTIVE -- fr "Ouvert", de "Offen" --
+    // so reusing it would label a button with a state rather than an action in
+    // most of the 39 locales.
+    //
+    // 'SoaOpenInBrowser' above is LEFT IN PLACE with no caller, for the same
+    // reason 'SoaPrintToPdf' is: the locales carry it and this file is
+    // append-only so a customer's custom lang.<locale>.php reconciles with a
+    // tail diff. 'DownloadAsXLSX' keeps a caller either way -- the Assessments
+    // Extra's questionnaire results still use it.
+    'SoaOpen' => 'Açık',
+    'SoaXlsx' => 'XLSX',
+    // ---- The locked-affordance treatment -------------------------------------
+    // SHARED COPY, not chooser copy. SimpleRisk now SHOWS what's possible and
+    // MARKS what's out of reach because it isn't licensed, rather than hiding
+    // it -- so these strings appear both as a menu row's explanation (Define
+    // Control Frameworks' "+ Add framework" chooser) and beside a disabled
+    // toolbar button (the Statement of Applicability's PDF/XLSX exports). Each
+    // one is worded to read correctly in BOTH places, which is why none of them
+    // starts with "This route" or "This button".
+    //
+    // 'LockedAffordanceBadge' duplicates the English of 'AICapStateLocked'
+    // rather than reusing it: that key sits in the AI Capabilities Catalog's
+    // block and is scoped to a capability's state, and translators work from
+    // the key's neighbourhood as much as from its value.
+    'LockedAffordanceBadge' => 'Kilitli',
+    // The two SCF steps before it can be switched on. admin/register.php serves
+    // both -- it is the registration form AND where the per-Extra download
+    // buttons render -- so these differ in what they say, not where they go.
+    'UnlockRegisterInstanceNote' => 'Güvenli Kontrol Çerçevesini edinmek için bu örneği kaydedin.',
+    'UnlockRegisterInstanceLink' => 'Kayıt SimpleRisk',
+    'UnlockDownloadScfNote' => 'Bu örnek kaydedildi. Kullanmak için Güvenli Kontrol Çerçevesini indirin.',
+    'UnlockDownloadScfLink' => 'İndirin',
+    'UnlockActivateScfNote' => 'Güvenli Kontrol Çerçevesi indirildi ancak etkinleştirilmedi.',
+    'UnlockActivateScfLink' => 'Açın',
+    // Import-Export is a paid Extra, so "not installed" is an upsell rather
+    // than a registration prompt. Deliberately a bare capability sentence: it
+    // has to sit under a menu row and next to an export button equally well.
+    'RequiresImportExportExtra' => 'İçe Aktarma-Dışa Aktarma Ek Paketi gereklidir.',
+    'UnlockImportExportLink' => 'Neler kattığına bakın.',
+    'UnlockActivateImportExportNote' => 'İçe Aktarma-Dışa Aktarma Ekstrası yüklü ancak etkinleştirilmemiş.',
+    'UnlockActivateImportExportLink' => 'Açın',
+    // Shown instead of any of the above to a user who is not an administrator:
+    // every unlock step lives on a check_admin page, so they get the half that
+    // is useful to them -- that the capability exists, and who to ask -- and no
+    // link that would only bounce them.
+    'UnlockNeedsAdministrator' => 'Yönetici bunu ayarlayabilir.',
+    // API date parsing. {$field} is the request field name (next_date, last_date,
+    // test_date); {$format} is this instance's configured display date format.
+    'InvalidSubmittedDate' => '{$field} değeri geçerli bir tarih değil. Lütfen YYYY-MM-DD formatında veya bu örnekteki tarih formatında ({$format} ) gönderin.',
+    // Companion to InvalidSubmittedDate, for a value that matches the expected
+    // shape but names a day that does not exist (February 31st, month 13).
+    // Saying "submit it as MM/DD/YYYY" there would repeat what the caller did.
+    // {$value} is the submitted value, echoed back truncated.
+    'ImpossibleSubmittedDate' => '{$field} değeri "{$value}" gerçek bir takvim tarihi değil. Gün ve ayı kontrol edin — bu örnek tarihleri {$format} olarak okuyor.',
+    // The Statement of Applicability's merged verification column. Replaces three
+    // separate headings (Implemented / Evidence / Review Cadence) with the one
+    // question all three answer: how do we know this control is working?
+    // The two appendices printed after the register. Justifications are truncated
+    // in the row and given in full here; remediation plans live here rather than
+    // in the table because ISO 27001 keeps the SoA (6.1.3(d)) and the risk
+    // treatment plan (6.1.3(e)) as separate artifacts.
+    'SoaAppendixJustifications' => 'Ek A — Gerekçeler',
+    'SoaAppendixRemediation' => 'Ek R — İyileştirme planları',
+    // Appendix E carries the WORDING of each test's evidence requirement. The row
+    // keeps only whether that evidence arrived, which is the finding; the wording
+    // is reference material and was the bulkiest thing in the Verification cell.
+    'SoaRequiredEvidenceSupplied' => 'Gerekli kanıtlar sunuldu.',
+    'SoaRequiredEvidenceNotSupplied' => 'Gerekli kanıtlar sağlanmadı.',
+    // The one scheduling fact the SoA prints: the soonest date any of a control's
+    // tests is next due. Replaces a per-test "Manual — Next Test Date: ..." line,
+    // whose schedule type belongs on Define Tests and whose date is now on each
+    // test's own evidence bullet.
+    // The two dates on a test's evidence bullet. LABELLED, because two bare dates
+    // side by side are ambiguous in a way one is not.
+    // SINGULAR document-type labels for one piece of design evidence. SimpleRisk's
+    // existing keys are the plural tab names, which would read "Access Control
+    // Standard (Standards)".
+    'SoaEvidencePolicy' => 'Ilkesi',
+    'SoaEvidenceStandard' => 'Standart',
+    'SoaEvidenceProcedure' => 'Prosedür',
+    'SoaEvidenceGuideline' => 'Kılavuz',
+    // ── The legend, grouped by column (SOA_LEGEND_GROUPS, includes/soa.php) ──
+    // The Applicability column's three values. These were never in the legend,
+    // so an auditor met "Inherited" -- a word with no meaning outside SimpleRisk
+    // -- with nothing to look it up in.
+    'SoaLegendApplicable' => 'Bu çerçeve kapsamındaki denetimler, ilgili kuruluşun sorumluluğundadır ve bunların işletilmesi de kuruluşa aittir.',
+    // DISTINCT from 'SoaLegendNotApplicable', which defines the "N/A" that appears
+    // in the Implementation Status column. This one is the DECISION to exclude;
+    // that one is the consequence for the status.
+    'SoaLegendApplicabilityNotApplicable' => 'Bu kontrol, bu çerçevenin kapsamı dışında bırakılmıştır. Gerekçe sütununda neden ve kimin karar verdiği kaydedilmiştir.',
+    'SoaLegendInherited' => 'Kontrol kapsam dahilindedir, ancak bu kuruluş tarafından değil, üçüncü bir tarafça (bir bulut sağlayıcısı, ana kuruluş, dış kaynaklı bir işlev) yürütülmektedir. Sağlayıcının adı gerekçenin yanında belirtilmiştir.',
+    // The Evidence column's four bullet glyphs. Load-bearing since the visible
+    // result word was dropped from pass and fail bullets, and until now defined
+    // nowhere at all.
+    'SoaLegendEvidencePass' => 'Bu kontrolün son çalıştırılmasında başarılı bir sonuç kaydedildi. Yanındaki tarih, çalıştırıldığı tarihi göstermektedir.',
+    'SoaLegendEvidenceFail' => 'Bu kontrolün son çalışmasında başarısızlık kaydedildi. Ek R, mevcutsa tedavi planını içermektedir.',
+    'SoaLegendEvidenceInconclusive' => 'Bu kontrolün bir testi yapıldı ve herhangi bir sonuca varılamadı. Bu belgenin tanımadığı bir sonuç için aynı işaret kullanılır ve bu durumda sonuç, işaretin yanına yazdırılır.',
+    // The TERM beside the § glyph. Not a document type -- the four types
+    // (Policy, Standard, Procedure, Guideline) are printed per item; this names
+    // the CATEGORY of evidence a document is.
+    'SoaEvidenceDesignDocument' => 'Tasarım belgesi',
+    'SoaLegendEvidenceDocument' => 'Bu kontrolün kanıtı olarak bir yönetim belgesi sunulmuştur; bu belge, işleyişinden ziyade tasarımını teyit etmektedir. Belge herhangi bir hüküm içermez, bu nedenle onay işaretiyle işaretlenmez.',
+    // The XLSX export's first worksheet tab. The workbook's other four tabs reuse
+    // headings that already exist ('How to read this statement', 'Statement of
+    // Applicability', and the two appendix headings); the cover had no name of its
+    // own because it used to be the top of a single sheet.
+    //
+    // KEEP IT SHORT. Excel caps a worksheet name at 31 characters and
+    // soa_export_sheet_name() truncates rather than failing the export, so a long
+    // translation loses its tail on the tab.
+    'SoaSheetCover' => 'Kapak',
+
+    'SearchFrameworks' => 'Arama çerçeveleri',
+    'SearchControls' => 'Arama kontrolleri',
+    'AddFramework' => 'Çerçeve ekle',
+    'Applicability' => 'Uygulanabilirlik',
+    'AnyFamily' => 'Herhangi bir aile',
+    'AnyOwner' => 'Herhangi bir sahibi',
+    'AnyClass' => 'Herhangi bir sınıf',
+    'AnyPhase' => 'Herhangi bir aşama',
+    'AnyPriority' => 'Herhangi bir öncelik',
+    'AnyType' => 'Herhangi bir tür',
+    'AnyStatus' => 'Herhangi bir durum',
+    'SelectAllN' => 'Tümünü seç {n}',
+    'Classification' => 'Sınıflandırma',
+    'Placement' => 'Atama',
+    'OwnershipAndMaturity' => 'Mülkiyet ve olgunluk',
+    'MappingsAndGuidance' => 'Haritalama ve rehberlik',
+    'DeleteFrameworkTitle' => '\'{$name} \' çerçevesini silmek mi istiyorsunuz?',
+    'DeleteControlTitle' => '\'{$name} \' kontrolünü silmek mi istiyorsunuz?',
+    'DeleteControlsTitle' => '{$n} kontrollerini silmek mi?',
+    'DeleteCannotBeUndone' => 'Bu geri alınamaz.',
+    'DeleteFrameworkConsequence' => 'Bu işlem, çerçeveyi ve tüm kontrol eşlemelerini kaldırır.',
+    'DeleteControlConsequence' => 'Bu, eşlendiği her çerçeveden kontrolü kaldırır.',
+    'DeleteControlsConsequence' => 'Bu işlem, seçilen her bir denetimi, eşlendiği tüm çerçevelerden kaldırır.',
+    // Task 9: empty states (design-system.md §10) -- the four intents on
+    // Define Control Frameworks. Reuses existing keys where the copy already
+    // fits exactly (AddControl, AddFramework, ClearFilters, Retry,
+    // NoControlsDefinedYet, NoTestsMatchFiltersBody, CouldNotLoadTestsBody,
+    // RegisterYourInstance, GoToSCF, ImportExportExtra) -- only the strings
+    // with no existing match are added below.
+    'NoControlsMatch' => 'Filtrelerinizle eşleşen kontrol bulunamadı.',
+    'CouldNotLoadControls' => 'Kontroller yüklenemedi',
+    'ControlsYouAddWillAppearHere' => 'Eklediğiniz kontroller burada görünecektir.',
+    'NoFrameworksYet' => 'Henüz hiçbir çerçeve yok.',
+    'FrameworksYouAddWillAppearHere' => 'Eklediğiniz veya içe aktardığınız çerçeveler burada görünecektir.',
+    'CouldNotLoadFrameworks' => 'Çerçeveler yüklenemedi.',
+    // Task 9 review fix: the framework rail's own "no results" intent, shown
+    // when the user has explicitly switched the status dropdown away from
+    // Active and that status has nothing (distinct from "No frameworks yet",
+    // which is reserved for the default Active status where the endpoint
+    // can't yet tell "no frameworks at all" from "none active").
+    'NoFrameworksMatchFilter' => 'Bu statüye uyan hiçbir çerçeve yok.',
+    'ViewActiveFrameworks' => 'Etkin çerçeveleri görüntüle',
+    // Task 10: Define Control Frameworks insights band (governance/index.php)
+    // -- KPI tile labels/subtitles. 'Controls', 'Pass', 'Fail', 'NotTested'
+    // already exist and are reused as label keys for their tiles.
+    'BelowTarget' => 'Hedefin altında',
+    'Excluded' => 'Hariç tutuldu',
+    'FwInScope' => 'Kapsam dahilinde',
+    'FwLastTestPassed' => 'Son sınavı geçtim.',
+    'FwLastTestFailed' => 'Son test başarısız oldu.',
+    'FwNoEvidence' => 'Uygulanabilir, kanıt yok',
+    'FwMaturityUnderDesired' => 'İstenilen olgunluk seviyesinde',
+    'FwScopeAFramework' => 'Karar vermek için bir çerçeve belirleyin.',
+    'FwNotApplicableOrInherited' => 'Uygulanamaz veya miras yoluyla geçmez',
+    // Task 22: framework rail search (governance/index.php's #sr-fw-search,
+    // wired client-side in governance-frameworks.js). Reuses the shipped
+    // "no results" empty-state tile (#sr-fw-filtered, Task 9) rather than
+    // inventing a fourth rail empty state -- only the title and action swap
+    // depending on whether a status filter or a search narrowed the list to
+    // nothing; NoTestsMatchFiltersBody already covers both as body copy.
+    'NoFrameworksMatchSearch' => 'Arama kriterlerinize uyan çerçeve bulunamadı.',
+    'ClearSearch' => 'Arama sonuçlarını temizle',
+    // Task 24: Clone control pre-fills the Add Control modal from the source
+    // control (governance-frameworks.js's openControlForClone()) rather than
+    // creating a duplicate outright, so the modal needs to say plainly which
+    // control it was cloned from -- the reviewer's core complaint about an
+    // earlier one-click version of this feature was not knowing what was
+    // cloned. {$name} follows the same client-side formatTemplate()
+    // substitution ShowingXToYOfZ/NSelected already use on this page.
+    'ClonedFromControlNotice' => '"{$name}" adresinden klonlandı. Aşağıdaki alanları inceleyin ve ardından kaydedin.',
+    // Task 24 review follow-up: the banner alone left the modal titled "New
+    // Control" over pre-populated fields -- "it doesn't prompt or anything
+    // so the user doesn't know what was cloned" (Josh) -- which reads as a
+    // bug, not a feature. Retitling #control--add-title to this (governance-
+    // frameworks.js's show.bs.modal delegate for #control--add) makes the
+    // clone unambiguous at a glance; NewControl is restored for a plain add.
+    'CloneOfControlTitle' => '"{$name} "\'nin klonu',
+    // Task 27: the framework rail's SCF-origin chip (governance-frameworks.js's
+    // railRow()) -- shown only for frameworks created via the ComplianceForge
+    // SCF Extra's authoritative-source import (get_scf_origin_framework_ids(),
+    // includes/governance.php). SCF is the badge text itself; ScfOriginHint is
+    // its title/tooltip.
+    'SCF' => 'SCF',
+    'ScfOriginHint' => 'Güvenli Kontroller Çerçevesinden (SCF)',
+    // Task 34: the Maturity filter facet's placeholder on the Define Control
+    // Frameworks filter sheet (governance-frameworks.js's ensureFilterSheet()),
+    // matching the AnyFamily/AnyOwner/AnyClass/... set above. The facet's three
+    // OPTIONS reuse the existing BelowMaturity/AtMaturity/AboveMaturity keys --
+    // the same labels the governance dashboard's maturity-gap widgets already
+    // carry -- and the column chip renders those same three strings, so the
+    // filter and the cell can never read differently.
+    'AnyMaturity' => 'Herhangi bir olgunluk',
+    // Task 46: accessible name for the control table's pager landmark
+    // (governance-frameworks.js's renderPager()). The pager's own buttons
+    // reuse the existing Previous/Next keys Define Tests' pager already
+    // carries; only the <nav> label is new, and it names WHICH table's pager
+    // it is because the Define Control Frameworks page has two lists on it.
+    'ControlsPagination' => 'Sayfalama kontrolü',
+    // Task 14: the Applicability column's state chip (governance-frameworks.js's
+    // renderApplicability()), the matching filter facet (its three option labels
+    // reuse these same three keys) and its "Any applicability" placeholder.
+    //
+    // The three states are PREFIXED rather than named 'Applicable'/
+    // 'NotApplicable'/'Inherited' because 'NotApplicable' already exists above
+    // as the ABBREVIATION 'N/A' -- the self-assessment answer chip and three
+    // reporting charts render it -- and redefining that key to the spelled-out
+    // phrase this column needs would silently change all four of those
+    // surfaces. The prefix also keeps the trio recognisable as one family.
+    //
+    // The column HEADER and the facet's accessible name reuse the existing
+    // 'Applicability' key, and the drawer's record reuses 'Reason', 'Provider'
+    // and 'Justification' -- all four already carry exactly the right string.
+    'ApplicabilityApplicable' => 'Uygulanabilir',
+    'ApplicabilityNotApplicable' => 'Uygulanamaz',
+    'ApplicabilityInherited' => 'Miras yoluyla',
+    'AnyApplicability' => 'Herhangi bir uygulanabilirlik',
+    // The drawer's applicability record: who recorded the decision and when.
+    // Both are attribution for an audited decision a customer may have to
+    // defend years later, which is why the drawer names them at all.
+    'ApplicabilityDecidedBy' => 'Karar veren:',
+    'ApplicabilityDecidedOn' => 'Karar verildi',
+    // The framework-level Statement of Applicability card in the Add/Edit
+    // framework modals (display_framework_soa_card(), includes/governance.php).
+    // These two fields are what ISO/IEC 27001:2022 clause 6.1.3(d) needs on an
+    // SoA cover: the scope the framework is certified against, and how inclusion
+    // was determined for the controls that are simply applicable.
+    //
+    // 'IsmsScopeStatement' rather than a bare 'ScopeStatement' because "scope"
+    // is already overloaded across SimpleRisk (assessment scope, audit scope,
+    // risk scope); the ISMS prefix is what an ISO practitioner calls this exact
+    // field and keeps it from being reused for an unrelated one.
+    'StatementOfApplicability' => 'Uygulanabilirlik beyanı',
+    'IsmsScopeStatement' => 'Kapsam bildirimi',
+    'IsmsScopeStatementHint' => 'Bu çerçevenin onaylandığı kapsam. SoA kapak sayfasında yer almaktadır.',
+    'DefaultInclusionJustification' => 'Varsayılan dahil etme gerekçesi',
+    'DefaultInclusionJustificationHint' => 'Bağlantılı risk içermeyen uygulanabilir kontroller için kullanılır. Çerçeveyi değil, etkeni belirtin.',
+    // THE DEFAULT SENTENCE, in all three of its roles: the create form seeds the
+    // textarea with it, the Edit form shows it as a placeholder, and
+    // soa_framework_default_justification() (includes/soa.php) substitutes it at
+    // read time for a framework that has none. One key, because a reader must not
+    // be able to tell a stored default from a fallen-back one, and because three
+    // keys holding the same sentence is three chances for a translator to make
+    // them disagree. The name predates the seeding decision (Task 67) and is kept
+    // rather than churned through Crowdin for 39 locales.
+    //
+    // It names the DRIVER (the risk assessment) rather than the framework:
+    // "included because it is part of this framework" is circular, and ISO 6.1.3
+    // derives controls from risk treatment, using Annex A afterwards only as a
+    // completeness cross-check.
+    //
+    // It was a placeholder ONLY until Task 67, so that an unreviewed sentence
+    // could not reach a customer's SoA by inaction. Measured, that produced the
+    // opposite failure: 19 of 20 frameworks left the field NULL and the SoA's
+    // Justification column came out BLANK for every applicable control with no
+    // linked risks -- the finding an SoA is most often failed on, and one a
+    // boilerplate sentence does not attract.
+    'DefaultInclusionJustificationPlaceholder' => 'Kuruluşun bilgi güvenliği risk değerlendirmesi sonucunda belirlenmiş ve gerekli bir kontrol olarak muhafaza edilmiştir.',
+    // Task 15: bulk-setting applicability from the control table's selection bar
+    // (#applicability--set, governance/index.php + governance-frameworks.js).
+    //
+    // The action's own label and the modal's one section. 'Applicability',
+    // 'Reason', 'Provider', 'Justification', 'Save' and 'Cancel' already exist
+    // and are reused; only the strings with no existing home are added here.
+    'SetApplicability' => 'Uygulanabilirliği ayarlayın',
+    'ApplicabilityDecision' => 'Karar',
+    // The amber scope note, in two sentences the page assembles separately
+    // because they answer two different questions: WHICH framework the decision
+    // is scoped to, and WHICH controls are about to receive it. The second one
+    // has two spellings, because the header checkbox selects the current PAGE
+    // while "Select all N" escalates to the whole filtered result set -- the two
+    // genuinely differ once the table pages, and a note that blurred them would
+    // let the user write 1,535 decisions believing they had written 25.
+    'ApplicabilityScopeNote' => 'Bu karar yalnızca "{$framework}" çerçevesinde geçerlidir. Aynı kontrol başka bir çerçevede de uygulanabilir kalabilir.',
+    'ApplicabilityAppliesToSelected' => 'Bu, bu sayfada seçilen {$n} kontrol(ler)ine kaydedilecektir.',
+    'ApplicabilityAppliesToAllFiltered' => 'Bu, diğer sayfalardakiler de dahil olmak üzere, mevcut filtrelerle eşleşen tüm {$n} kontrollerine karşı kaydedilecektir.',
+    // Per-state hints under the segmented control. The "applicable" one is the
+    // load-bearing sentence of the whole modal, and the SoA audit-readiness work
+    // rewrote it: an applicable control MAY now carry its own reasons and
+    // justification (ISO/IEC 27001 clause 6.1.3(d) asks for one per control, for
+    // inclusion as much as for exclusion), and leaving both empty is what falls
+    // back to the framework's default inclusion justification. The old sentence
+    // -- "this removes any recorded decision. No justification is needed." --
+    // is now false in both halves.
+    'ApplicabilityApplicableHint' => 'Bu çerçevenin kapsamı dahilinde. Bir neden ve gerekçe belirtmek isteğe bağlıdır; ikisini de boş bırakmak, çerçevenin varsayılan dahil etme gerekçesini kullanır.',
+    'ApplicabilityNotApplicableHint' => 'Bir kontrolün bu çerçevenin kapsamı dışında tutulması. Hem gerekçe hem de yazılı açıklama gereklidir.',
+    'ApplicabilityInheritedHint' => 'Bu kontrolü sizin adınıza başka biri gerçekleştiriyor. O kişinin adını ve ne iş yaptığını belirtin.',
+    'ApplicabilityNarrativeHint' => 'Uygulanabilirlik Bildirimi\'nde yer alır. Bir denetçinin kararı kabul etmesi için gerekenleri yazın.',
+    'ApplicabilityProviderHint' => 'Denetimi gerçekleştiren kuruluş: bir bulut sağlayıcısı, bir yönetilen hizmet sağlayıcısı, bir ana şirket.',
+    'ChooseAReason' => 'Bir neden seçin',
+    'ApplicabilityNoReason' => 'Sebep yok',
+    // Result toasts. Both interpolate a COUNT taken from the API response and
+    // nothing else -- no submitted text is ever reflected into a toast, which
+    // toastr renders as HTML.
+    'ApplicabilitySetResult' => '{$n} denetimi için geçerlilik güncellendi.',
+    'ApplicabilityClearResult' => 'Uygulanabilirlik, {$n} denetim için geçerli olacak şekilde sıfırlandı.',
+    // Bulk control delete (Task 54, corrected Task 55). Deleting a control is
+    // final either way the delete engine implements it: a control with test
+    // history is soft-deleted (framework_controls.deleted = 1) to keep test
+    // history intact, a control with no tests is removed outright -- but
+    // nothing anywhere flips that flag back, so from the user's side there is
+    // no "kept" case, only "deleted, and its test history survives for audit
+    // purposes." Every sentence therefore leads with the same irreversible
+    // warning; the only thing that varies is whether an audit-history clause
+    // is appended, and that clause is omitted entirely rather than printed
+    // with a count of zero -- "0 are retained for audit history" reads as a
+    // warning about something that is not going to happen, and on a delete
+    // confirmation that is exactly the kind of noise that trains people to
+    // stop reading. Every {$...} is a count from the API response; no user
+    // text is ever interpolated, which matters because toastr renders HTML.
+    'DeleteControlsPreviewChecking' => 'Silinecekleri kontrol ediliyor...',
+    'DeleteControlsPreviewSplit' => '{$n} adet kontrol silinecektir. Bu işlem geri alınamaz. Bunlardan {$m} tanesinin test sonuçları denetim geçmişi için saklanacaktır.',
+    'DeleteControlsPreviewKeptOnly' => 'Tüm {$n} kontrol silinecektir. Bu işlem geri alınamaz. Test sonuçları denetim geçmişi için saklanır.',
+    'DeleteControlsPreviewRemovedOnly' => '{$n} denetim silinecek. Bu işlem geri alınamaz.',
+    'DeleteControlsPreviewNone' => 'Silinecek bir şey yok: Seçilen kontrol(ler) artık mevcut değil.',
+    'ControlsDeletedResult' => '{$n} kontrol silindi.',
+
+    // The Add/Edit framework modal's Status field. The label reuses the existing
+    // 'Status' key -- the same word the rail's Active/Inactive/All filter already
+    // uses -- so only the explanatory hint is new. It says the two things a user
+    // cannot see from the control itself: that Inactive is the NON-destructive way
+    // to retire a framework (unlike Delete, which cannot be undone), and that the
+    // change cascades through the hierarchy, which is what update_framework_status()
+    // has always done and is genuinely surprising when a parent is deactivated.
+    'FrameworkStatusHint' => 'Devre dışı bırakılan çerçeveler tüm kontrollerini ve eşlemelerini korur, ancak varsayılan çerçeve listesinden gizlenir ve yönetim panosundan çıkarılır. Bir çerçeveyi devre dışı bırakmak, altındaki tüm çerçeveleri de devre dışı bırakır; birini etkinleştirmek ise üst çerçevelerini de etkinleştirir.',
+
+    // Task 60: the same #applicability--set modal, opened from ONE control's row
+    // action instead of the selection bulk bar. The button's own label reuses
+    // 'SetApplicability'; these two exist because the modal now has to say which
+    // of the two it is acting on, and both spellings must be unambiguous.
+    //
+    // The title names the specific object (design-system.md §8) and the note
+    // says "only", because the dangerous reading is the silent one: with rows
+    // ticked -- or with "Select all N filtered" in force -- a modal that said
+    // nothing would let a click the user believed applied to one row be read as
+    // applying to every control in the framework. Naming the control in both
+    // places is what makes the narrower scope visible rather than assumed.
+    // Corrected in Task 63. This spelling used to end "...only, whatever else is
+    // selected", which was printed on every row-action open whether or not
+    // anything else WAS selected -- a dangling absolute with no antecedent, so
+    // it read as a sentence that had been cut off. It is now the plain form, and
+    // the reassurance about a competing selection moved to
+    // 'ApplicabilityAppliesToControlNotSelection' below, which is printed only
+    // when there is a competing selection to reassure anyone about.
+    'SetApplicabilityForControl' => 'Uygulanabilirlik kümesi: {$name}',
+    'ApplicabilityAppliesToControl' => 'Bu yalnızca "{$name}" karşısında kaydedilecektir.',
+
+    // Task 17: the Statement of Applicability report itself
+    // (reports/statement_of_applicability.php + pages/statement-of-applicability.js),
+    // the document ISO/IEC 27001:2022 clause 6.1.3(d) asks for and the one every
+    // applicability decision recorded on the Define Control Frameworks page
+    // exists to produce.
+    //
+    // 'StatementOfApplicability' already exists above (the framework modal's SoA
+    // card) and is reused for the report's own title, as are 'IsmsScopeStatement',
+    // 'DefaultInclusionJustification', the three 'Applicability*' state labels,
+    // 'ApplicabilityDecidedBy'/'DecidedOn', and the plain 'Framework',
+    // 'ControlNumber', 'ControlName', 'Justification', 'Evidence', 'Reason',
+    // 'Provider', 'Total', 'Controls' and 'Export' keys. Only strings with no
+    // existing home are added here.
+    'StatementOfApplicabilityDesc' => 'Tek bir çerçeve için: her bir kontrol, uygulanabilir olup olmadığı, neden dahil edildiği veya hariç tutulduğu ve uygulanıp uygulanmadığı.',
+    // The header button on Define Control Frameworks. The verb is "generate"
+    // rather than "view" because the document is assembled at the moment it is
+    // asked for -- there is no stored SoA that could be out of date.
+    'GenerateStatementOfApplicability' => 'Uygulanabilirlik beyanı oluşturun',
+
+    // The Justification column's SECOND resolution step, and the reason an SoA
+    // built here beats the spreadsheet it replaces: the risks that drove the
+    // control are already recorded against it, so nobody retypes them and they
+    // cannot go stale. {risks} is substituted with the displayed risk ids.
+    //
+    // Phrased to match clause 6.1.3, which derives controls from risk treatment
+    // and uses Annex A afterwards only as a completeness cross-check -- the same
+    // reasoning behind 'DefaultInclusionJustificationPlaceholder' above.
+    'SoaJustifiedByRiskAssessment' => 'Kuruluşun bilgi güvenliği risk değerlendirmesine göre belirlenmiştir. Bağlantılı riskler: {risks}.',
+
+    // The Implemented column. DERIVED from maturity and the last test result on
+    // every read, never stored, so it cannot drift out of sync with the control.
+    // 'Yes' and 'No' already exist and are reused; only the middle value and the
+    // header need keys of their own. An excluded control's cell reuses the
+    // existing 'NotApplicable' ('N/A'), which is exactly the right abbreviation
+    // in a dense table.
+    'SoaImplemented' => 'Uygulandı',
+    'SoaImplementedPartial' => 'Kısmi',
+
+    // The cover block.
+    'SoaGeneratedOn' => 'Oluşturulma tarihi',
+    'SoaExcludedCount' => 'Hariç tutuldu',
+
+    // The prompt shown when the framework has never been given the two cover
+    // fields. It PROMPTS rather than silently printing a blank cover: an SoA
+    // whose scope is empty is the one defect an auditor spots first, and the
+    // moment somebody opens the report is the only moment those fields matter.
+    // Both spellings of empty (never set, and deliberately cleared) prompt --
+    // from a reader's point of view there is nothing to print either way.
+    //
+    // The inclusion-justification line states a WEAKER consequence than it used
+    // to, because Task 67 made the stronger one untrue: the column no longer goes
+    // blank when the field is empty -- soa_framework_default_justification()
+    // substitutes the generic default sentence. The prompt survives because a
+    // generic sentence is not the organization's own, and an auditor reading 1,500
+    // identical rows of boilerplate is entitled to ask whose risk assessment it
+    // refers to.
+    'SoaMissingFieldsTitle' => 'Bu açıklamada kapak detayları eksik.',
+    'SoaMissingScopeStatement' => 'Bu çerçeve için herhangi bir kapsam bildirimi kaydedilmemiştir. Bir SoA\'nın (Soyadı Anlaşması) hangi kapsamda oluşturulduğunu belirtmesi gerekir.',
+    'SoaMissingInclusionJustification' => 'Varsayılan dahil etme gerekçesi kaydedilmemiştir. Bağlantılı riskleri olmayan geçerli kontroller, kendi ifadeniz yerine genel bir ifadeye geri dönecektir.',
+    'SoaEditFrameworkToAdd' => 'Bunları çerçeveye ekleyin.',
+
+    // Opened from the Reporting Hub, which cannot supply a framework. A picker,
+    // not an error: an SoA is a per-framework document by definition -- the same
+    // control excluded from ISO 27001 is not thereby excluded from PCI DSS --
+    // and there is no cross-framework roll-up to offer instead.
+    'SoaChooseFramework' => 'Bir çerçeve seçin',
+    'SoaChooseFrameworkHint' => 'Uygulanabilirlik bildirimi, her seferinde yalnızca bir çerçeve için yazılır.',
+    // The picker has a roster but nothing in it. Distinct from "this framework
+    // has no controls": there is no framework to write a statement about at all,
+    // and the fix is on a different page, so it says which one.
+    // The launcher's affordance row. "Open in browser" rather than "View"
+    // because it names what actually happens -- the document opens in a new tab,
+    // chrome-free -- and because Task 18 adds "Download as PDF" and "Download as
+    // XLSX" beside it, where "open" vs "download" is the distinction that
+    // matters.
+    // The document has no sidebar, so it needs its own way back for anyone who
+    // arrives from a bookmark or a shared link. Screen only; never printed.
+    'SoaBackToSelector' => 'Uygulanabilirlik beyanına geri dön',
+    'SoaNoFrameworks' => 'Aktif çerçeve yok.',
+    'SoaNoFrameworksHint' => 'Yönetişim > Kontrol Çerçevelerini Tanımla altında bir çerçeve yükleyin veya etkinleştirin; bu çerçeve burada kullanılabilir olacaktır.',
+
+    // The two refusals. Both explain rather than just failing, because the user
+    // arrived here deliberately.
+    'SoaFrameworkInactiveTitle' => 'Bu çerçeve devre dışı.',
+    'SoaFrameworkInactiveBody' => 'Uygulanabilirlik bildirimi, bir kuruluşun şu anda faaliyet gösterdiği kapsamı tanımlar. Bir tane oluşturmak için çerçeveyi yeniden etkinleştirin.',
+    'SoaFrameworkNotFoundBody' => 'Bu çerçeve artık mevcut değil.',
+
+    // A framework with no controls mapped into it. Not an error -- it is a real
+    // and recoverable state, and saying so beats an empty table.
+    'SoaNoControls' => 'Bu çerçevede herhangi bir kontrol bulunmamaktadır.',
+    'SoaNoControlsHint' => 'Kontrolleri çerçeveye entegre edin ve uygulanabilirlik bildirimi bunları listeleyecektir.',
+
+    // The second half of the statement-of-applicability launcher's affordance
+    // row, beside "Open in browser" and the existing 'DownloadAsXLSX'. Rendered
+    // only where the Import/Export Extra is active, which is what supplies the
+    // export. "Download as" rather than "Export to" so the pair reads as one
+    // choice of format, and so it matches the XLSX label already in this file.
+    'DownloadAsPDF' => 'PDF olarak indir',
+
+    // The fourth column of the control modal's "Mapped Control Frameworks"
+    // widget, between the reference code and the reference text. The
+    // FRAMEWORK's own title for the control it is citing -- what a Statement of
+    // Applicability prints beside the clause number. Distinct from the existing
+    // 'ReferenceText', which holds the framework's full control statement, and
+    // from the SimpleRisk control's own name.
+    'ReferenceSubject' => 'Referans Konusu',
+    // Placeholder/help text under that field, and the reason it is worth
+    // filling in: without it the Statement of Applicability has nothing to
+    // print but the source catalogue's name for its own control.
+    'ReferenceSubjectHint' => "Çerçeve sisteminin bu kontrol için kullandığı kendi başlığı.",
+
+    // Task 63: the row-scoped population sentence in the Set applicability
+    // modal, in the one situation where the plain
+    // 'ApplicabilityAppliesToControl' above leaves a real question unanswered --
+    // the user has controls ticked, or a standing "Select all N filtered", and
+    // has just opened the modal from ONE row's own action.
+    //
+    // It states the guarantee rather than implying it. A user whose escalated
+    // selection covers an entire framework needs to know that this click is not
+    // about to overwrite it, and {$n} is the count of the OTHER selected
+    // controls -- the target is excluded, because it is very often ticked too
+    // and a promise that included it would be false.
+    'ApplicabilityAppliesToControlNotSelection' => 'Bu işlem yalnızca "{$name}" üzerinde kaydedilecektir; seçtiğiniz {$n} kontrolleri etkilenmeyecektir.',
+
+    // Task 65: the VISIBLE label on the controls toolbar's SoA button. The full
+    // sentence ('GenerateStatementOfApplicability' above) stays as the button's
+    // title and aria-label, and is still what the SoA page itself is called;
+    // this is the short form for a toolbar row it shares with the page's one
+    // primary action. At full length the secondary button measured more than
+    // twice the primary's width and became the largest element in the row.
+    //
+    // "SoA" is safe to abbreviate HERE and only here: the button appears solely
+    // when a single framework is scoped, beside an Applicability column, and it
+    // expands on hover.
+    'GenerateSoa' => 'SoA\'yı oluşturun',
+
+    // ===== Clone framework (Task 64) =======================================
+    // The framework half of Clone control's framing (CloneOfControlTitle /
+    // ClonedFromControlNotice above), and for the same reason: the clone
+    // pre-fills the Add Framework modal rather than creating anything, so the
+    // modal has to say what was carried over before the user saves it.
+    //
+    // Separate keys from the control pair rather than one shared "Clone of
+    // {$name}" -- the two banners do not say the same thing. A cloned control
+    // simply asks to be reviewed; a cloned FRAMEWORK has to explain two things
+    // its fields cannot: that the source's control mappings come with it, and
+    // that the empty scope statement is deliberate. The blank field is the
+    // whole reason the banner is longer than the control's -- a scope statement
+    // left blank with no explanation reads as a field that failed to populate,
+    // and the one thing a clone exists to be given is a NEW scope (Josh: "you
+    // might want to use the same controls as one framework, but scope it
+    // differently"). {$name} and {$n} follow the same client-side
+    // formatTemplate() substitution the rest of this page's templates use.
+    'CloneOfFrameworkTitle' => '"{$name} "\'nin klonu',
+    // {$n} is the count the rail is SHOWING for the source row -- its controls,
+    // not its raw mapping rows. Those differ (a framework can cite one control
+    // under two clause numbers, and the rail excludes deleted controls), and the
+    // number to promise is the one the user is looking at when they click and
+    // the one the clone's own rail row will show afterwards.
+    'ClonedFromFrameworkNotice' => '"{$name}"\'dan klonlandı. {$n} kontrolleri yeni çerçeveye kopyalanacak ve bunların her biri başlangıçta uygulanabilir olacak; uygulanabilirlik kararlarının hiçbiri aktarılmayacak. Kapsam ifadesi kasıtlı olarak boştur: Uygulanabilirlik Bildirimi oluşturulmadan önce bu çerçevenin kapsadığı kapsamı belirtin.',
+    // Seeds the name field so the clone can be saved without a rename --
+    // framework names are unique, so a verbatim copy is refused on save.
+    'CloneOfFrameworkName' => '{$name} (Klon)',
+    'CloneFramework' => 'Klon çerçevesi',
+    // Extras version independently of Core, so an updated Import/Export Extra
+    // can end up calling a Core function the installed Core does not have. The
+    // export refuses with this rather than fataling -- see
+    // soa_export_refuse_if_core_too_old(), extras/import-export/includes/soa_export.php.
+    'SoaExportRequiresNewerCore' => 'Bu dışa aktarma işlemi, yüklü olan SimpleRisk Core sürümünden daha yeni bir sürüm gerektirir. SimpleRisk\'i güncelleyin ve ardından dışa aktarma işlemini tekrar deneyin.',
+    // The framework ACQUISITION chooser (Task 26): "+ Add framework" asks how you
+    // want to get one, rather than assuming you want to type it in. Each option is
+    // rendered only when the route behind it actually exists for this user, so the
+    // hint text may state plainly what the route does -- it is never shown to
+    // someone who cannot take it.
+    'HowDoYouWantToAddAFramework' => 'Çerçeveyi nasıl eklemek istersiniz?',
+    'CreateFrameworkManually' => 'Birini manuel olarak oluşturun',
+    'CreateFrameworkManuallyHint' => 'Çerçeveye kendiniz bir isim verin, ardından kontrollerini ekleyin veya eşleştirin.',
+    // Named for the framework rather than for its vendor. The hint was reworded
+    // at the same time: it used to end "...load its Secure Controls Framework
+    // controls", which read as a stutter once the label carried those words.
+    'GetFrameworkFromScf' => 'Güvenli Kontroller Çerçevesinden bir tane edinin.',
+    'GetFrameworkFromScfHint' => 'Yayınlanmış bir çerçeve seçin ve eşlenmiş kontrollerini tek adımda yükleyin.',
+    'ImportFrameworkFromCatalog' => 'Bir tane ithal edin',
+    'ImportFrameworkFromCatalogHint' => 'SimpleRisk içerik kataloğundan bir çerçeve ve onun kontrollerini yükleyin.',
+
+    // The framework acquisition chooser's third route, which now offers the
+    // Import-Export Extra's CONTROL import (a spreadsheet naming a framework
+    // that does not exist yet creates it) rather than the GitHub catalogue the
+    // two keys above described. Those two are left in place, unreferenced, so a
+    // customer maintaining a custom lang.<locale>.php still reconciles by tail
+    // diff.
+    'ImportFrameworkFromSpreadsheet' => 'Bir elektronik tablodan içe aktarın',
+    'ImportFrameworkFromSpreadsheetHint' => 'Çerçeveyi adlandıran kontrollerin yer aldığı bir elektronik tablo yükleyin, her ikisi de oluşturulacaktır.',
+
+    // The Define Control Frameworks rail's second synthetic scope: the controls
+    // mapped to no framework at all. Its first, "All controls", reuses the
+    // existing AllControls key rather than adding a second string with the same
+    // English -- it replaced 'AllFrameworks' on that row, which named a union of
+    // frameworks while scoping to every control, mapped or not. 'AllFrameworks'
+    // is left in place and unreferenced by that page: other surfaces still use
+    // it, and every locale carries it.
+    'UnassignedControls' => 'Atanmamış kontroller',
+    // APPLICABILITY VALIDATION FAILURES. These reach the user: the v2 endpoint
+    // returns the exception's message as the API status message and the page
+    // renders it in a toast, so a hardcoded English literal here would be
+    // permanently English for every locale.
+    //
+    // NOTHING THE CALLER TYPED IS EVER INTERPOLATED INTO THESE. The parameters
+    // are validated enum values, integer ids and byte limits the server itself
+    // owns -- naming the ALLOWED values rather than echoing the rejected one is
+    // deliberate (it is both safe and more useful than repeating a typo).
+    'ApplicabilityErrUnknownState' => 'Bilinmeyen uygulanabilirlik durumu. Beklenenlerden biri: {$states}.',
+    'ApplicabilityErrNarrativeRequired' => '\'{$state} \' için bir açıklama gereklidir.',
+    'ApplicabilityErrNarrativeTooLong' => 'Anlatım {$bytes} bayttan daha uzundur.',
+    'ApplicabilityErrReasonRequired' => 'Bir kontrolün uygulanamaz olduğunu işaretlemek için bir dışlama nedeni gereklidir.',
+    'ApplicabilityErrProviderRequired' => 'Bir sağlayıcının, devralınan bir kontrolü işaretlemesi gerekmektedir.',
+    'ApplicabilityErrProviderTooLong' => 'Sağlayıcı adı {$bytes} bayttan daha uzun.',
+    'ApplicabilityErrReasonsNotFound' => 'Bu uygulanabilirlik nedenleri mevcut değildir: {$ids}.',
+    'ApplicabilityErrReasonsNotOffered' => 'Bu uygulanabilirlik nedenleri bu durum için sunulmamaktadır: {$ids}.',
+    'ApplicabilityErrFrameworkNotFound' => '{$framework} çerçevesi mevcut değil.',
+    'ApplicabilityErrControlsNotFound' => 'Bu kontrol kimlikleri mevcut değil: {$ids}.',
+    // Controls/Risks import result messages (validation gate, individual bad-row
+    // alerts, and the batched submitted/created/updated summaries)
+    'ControlIdOrShortNameFieldRequired' => 'Ya Kontrol Kimliği ya da Kontrol Kısa Adı alanlarından birinin eşleştirilmesi gerekir; bunlardan biri olmadan bir satır tanımlanamaz.',
+    'RiskImportSubjectNull' => 'Risk Kimliği {$risk_id}: Konu alanı boş veya eksik olduğu için güncellenmedi.',
+    'RiskImportSummary' => '{$submitted} risk gönderildi ve {$updated} risk güncellendi.',
+    'ControlImportSummary' => '{$created} adet kontrol oluşturuldu ve {$updated} adet kontrol güncellendi.',
+    'ImportAdditionalIssuesSuppressed' => '{$count} ek satırda burada ayrı ayrı gösterilmeyen sorunlar vardı.',
+    'EncryptionPipelineStalledTask' => 'Bir şifreleme işlem hattı (görev #{$id}, {$type}) takılıp kalmış görünüyor — alışılmadık derecede uzun süredir {$status} beklemede ve ilerleme göstermiyor. Bu genellikle arka plan kuyruk işçisinin çalışmadığı anlamına gelir; planlanmış olup olmadığını kontrol edin, ardından takılıp kalan görevi işledikten sonra tekrar deneyin.',
+    'EncryptionPipelineStalledState' => 'Şifreleme işlem hattı takılı kalmış gibi görünüyor; alışılmadık derecede uzun süredir devam ediyor olarak işaretlenmiş ancak eşleşen bir arka plan görevi bulunmuyor. Bu genellikle kuyruk işçisinin çalışmadığı veya önceki bir işlem hattının bunu doğru şekilde güncellemeden tamamlandığı anlamına gelir. Tekrar denemeden önce hata ayıklama günlüğünü kontrol edin.',
+    // DEMO_MODE — shown when a visitor to a shared demo instance attempts one
+    // of the operations that would spoil the demo for the next visitor
+    'ActionDisabledOnDemoInstance' => 'Bu işlem SimpleRisk demo örneğinde devre dışı bırakılmıştır.',
+
+    // The one-click upgrade progress window: the step an upgrade is on, and
+    // the line shown once it finishes
+    // Shown when an upgrade's progress record has not been touched for long
+    // enough that the process running it is presumed gone
+    'UpgradeJobStalled' => 'Yükseltme işlemi yanıt vermeyi durdurdu. Yeniden denemeden önce sunucu günlüklerini kontrol edin.',
+    // Shown when an upgrade replaced the instance's configuration file and could
+    // not put the original back
+    // Shown when the database was brought up to date but the application files
+    // could not be replaced, so the instance has NOT moved to the new release
+    'UpdateAppFailed' => 'Uygulama dosyaları güncellenmedi, bu nedenle bu örnek hala önceki sürümünü kullanıyor. Bunun nedenini SimpleRisk günlüğünde kontrol edin, ardından güncellemeyi tekrar çalıştırın.',
+    // The one-click upgrade progress screen
+    'UpgradeInProgress' => 'Devam etmekte',
+    'UpgradeStepNotNeeded' => 'Gerek yok',
+    // Recovering an Upgrade Extra whose files are damaged
+    'UpgradeExtraDamagedReinstalling' => 'Yüklenen Upgrade Extra hasar görmüş. Yeni bir kopyası indiriliyor.',
+    'UpgradeExtraDamagedRepaired' => 'Upgrade Extra, çalışan bir kopyasıyla değiştirildi.',
+    'UpgradeExtraDamagedFailed' => 'Upgrade Extra hasar görmüş ve otomatik olarak değiştirilemedi. Ekstralar sayfasından yeniden yükleyin veya simplerisk/extras/upgrade/ dizinini bir yedeklemeden geri yükleyin, ardından tekrar deneyin.',
+    'UpgradeAlreadyCurrent' => 'Bu örnek zaten {version}sürümünde, yani en son sürümde. Yükseltmeye gerek yok.',
+    'UpgradeShowWhatItDid' => 'Ne yaptığını göster',
+    'UpgradeBackupsListed' => 'Bu yedeklemeler Yapılandırma > Yedeklemeler altında listelenmiştir.',
+    'UpgradingTo' => '{version} sürümüne yükseltiliyor',
+    'UpgradeSafeToClose' => 'Bu pencereyi güvenle kapatabilirsiniz. Sunucuda yükseltme işlemi devam ediyor ve bu sayfa yeniden bağlanacak.',
+    'UpgradeDownloadLog' => 'İndirme günlüğü',
+    'UpgradeStatementsApplied' => '{started} başlatıldı · {count} ifade uygulandı',
+    // The Upgrade Extra's pre-upgrade check of the instance it is sitting on
+    'UpgradeCheckingInstance' => 'Bu örneği kontrol ediyorum.',
+    'UpgradeInstanceChecked' => 'Örnek kontrol edildi, düzeltme gerekmiyor.',
+    'UpgradeBlockedByCorrections' => 'Yükseltme işlemi durduruldu çünkü bu örnekte otomatik olarak uygulanamayan bir düzeltme gerekiyor. Yukarıdaki talimatları izleyin ve ardından yükseltme işlemini tekrar çalıştırın. Başka hiçbir şey değiştirilmedi.',
+    // Shown when an upgrade replaced the instance's configuration file and could not put the original back
+    'ConfigRestoreFailed' => 'Yükseltme işlemi bu örneğin yapılandırma dosyasını geri yükleyemedi. Devam etmeden önce simplerisk/includes/config.php dosyasını yedekten geri yükleyin.',
+    'UpgradeDidNotAdvance' => '"{$version}" sürümü için yükseltme işlevi veritabanı sürümünü ilerletmedi; tekrar çalıştırılmaması için durduruluyor.',
+    'BackupDatabaseNative' => 'Veritabanının yedeklenmesi (harici araçlara gerek yok)...',
+    'UpgradeAlreadyRunning' => 'Bu örnekte yükseltme işlemi zaten devam ediyor.',
+    'UpgradeStatusUnreachable' => 'Yükseltme işlemi devam ederken sunucuyla bağlantı kesildi. SimpleRisk günlüklerini kontrol edin; yükseltme işlemi hala devam ediyor olabilir.',
+    'UpgradeJobUnwritable' => 'Yükseltme işlemi, ilerleme kaydı yazılamadığı için başlatılamadı. Sistem geçici dizininin web kullanıcısı tarafından yazılabilir olduğundan emin olun.',
+    'UpgradeStepCheckingVersions' => 'Sürümleri denetleme',
+    'UpgradeStepUpgradingDatabase' => 'Veritabanı şemasının güncellenmesi',
+    'UpgradeStepFinalising' => 'Yükseltme sonrası dönüşümlerin uygulanması',
+    'UpgradeDatabaseHeading' => 'Veritabanının güncellenmesi',
+    'UpgradeDatabaseComplete' => 'Veritabanı yükseltme işlemi tamamlandı.',
+    'UpgradeHideWhatItDid' => 'Ne yaptığını gizle',
+    'UpgradeStateRunning' => 'Koşma',
+    'UpgradeSessionExpired' => 'Oturumunuzun süresi doldu. Güncellemeyi görmek için tekrar giriş yapın.',
+    'UpgradeLostContact' => 'Sunucuyla bağlantı kesildi. Yükseltmeye yeniden bağlanmak için bu sayfayı yeniden yükleyin.',
+    'UpgradeDatabaseAlreadyCurrent' => 'Veritabanı zaten uygulama sürümünde mevcut.',
+    'UpgradeConversionsApplied' => 'Motor ve karakter seti dönüşümleri uygulandı.',
+    'UpgradeStoppedShort' => 'Yükseltme işlemi {reached} noktasında durdu ve {app}noktasına ulaşamadı. Sunucu günlüğüne bakın.',
+    'UpgradeStepBackingUp' => 'Geriye doğru',
+    'UpgradeStepUpgradingFiles' => 'Uygulama dosyaları güncelleniyor',
+    'UpgradeStepUpgradingExtras' => 'Mevcut ek özelliklerin yükseltilmesi',
+    'UpgradeStepUpdatingUpgradeExtra' => 'Upgrade Extra\'yı Güncelleme',
+    // The Upgrade Extra's pre-chain corrections: what is wrong, and what to do
+    // about it. These are the highest-stakes messages the upgrade produces --
+    // an operator reads them to unstick an instance that cannot upgrade.
+    'UpgradeCorrectionUnknownVersionTitle' => 'Kaydedilen veritabanı sürümü gerçek bir sürümü belirtmemektedir.',
+    'UpgradeCorrectionNoRecordedVersion' => 'Veritabanında kayıtlı bir sürüm bulunmamaktadır.',
+    'UpgradeCorrectionUnknownVersionFinding' => 'Veritabanı, SimpleRisk sürümlerinden hiçbirini belirtmeyen \'{$version}\' sürümünü rapor ediyor. Yükseltme işlemi, bu sürümden bir başlangıç noktası seçemez.',
+    'UpgradeCorrectionUnknownVersionGuidance' => '`db_version` ayarını, bu veritabanının gerçekte sahip olduğu şemaya ait sürüme ayarlayın, ardından yükseltmeyi tekrar çalıştırın: `UPDATE settings SET value=\'<release>\' WHERE name=\'db_version\'`. Değer `2026XXXX-001` gibi bir yer tutucu ise, doğru değer neredeyse her zaman yükseltme çalıştırılmadan önce yüklenen en son gerçek sürümdür.',
+    'UpgradeCorrectionLegacySessionsTitle' => 'Oturum tablosu, yükseltmenin karakter seti dönüşümünden sonra varlığını sürdüremez.',
+    'UpgradeCorrectionLegacySessionsFinding' => '`sessions`.`id`, MyISAM tablosunda VARCHAR({$width}) türündedir. 20230106-001 sürümünden itibaren utf8mb4\'e dönüştürülmesi, MyISAM\'ın 1000 baytlık indeks sınırını aşacak ve yükseltmeyi başarısız kılacaktır.',
+    'UpgradeCorrectionLegacySessionsGuidance' => 'Bir veya daha fazla aktif oturum, 128 karakterden daha uzun bir kimlik kullanıyor. Sütunu şimdi daraltmak bu kullanıcıların oturumunu kapatacağından, olduğu gibi bırakıldı. Bu oturumların süresi dolduğunda yükseltmeyi tekrar deneyin.',
+    'UpgradeCorrectionApplied' => 'Düzeltildi.',
+    'UpgradeCorrectionFailed' => 'Bu düzeltme uygulanamadı. Sebebi için SimpleRisk günlüğüne bakın.',
+    'UpgradeCorrectionAppliedLine' => 'Düzeltildi: {$title} {$message}',
+    'UpgradeCorrectionNotAppliedLine' => 'Düzeltilmedi: {$title} {$message}',
+    'UpgradeCorrectionsNeeded' => 'Bu örneğin yükseltilebilmesi için gerekli düzeltmeler: {$count}',
+    'UpgradeCorrectionsNeededShort' => 'Gerekli düzeltmeler: {$count}',
+    'UpdateDatabase' => 'Veritabanı güncelleniyor...',
+    // Authentication screens (index.php, reset.php, reset_password.php)
+    'EnterTheCredentialsForYourAccount' => 'Hesabınızın giriş bilgilerini girin.',
+    'TroubleSigningIn' => 'Giriş yaparken sorun mu yaşıyorsunuz? SimpleRisk yöneticinizle iletişime geçin.',
+    'BackToLogin' => 'Giriş sayfasına geri dön',
+    'Or' => 'veya',
+    'WeWillEmailAResetTokenToYourAccount' => 'Hesabınızda kayıtlı adrese bir sıfırlama belirteci e-postası göndereceğiz.',
+    'EnterTheResetTokenFromYourEmail' => 'E-postanızda yer alan sıfırlama kodunu ve yeni şifrenizi girin.',
+    'ChooseANewPasswordToContinue' => 'Devam etmek için yeni bir parola seçin.',
+    'FromZeroToGRCInMinutes' => 'Dakikalar içinde sıfırdan GRC\'ye ulaşın.',
+    'OrganizationLogo' => 'Organizasyon logosu',
+    'LoginScreenBranding' => 'Giriş ekranı marka kimliği',
+    'CustomLogo' => 'Özel logo',
+    'CustomLogoHint' => 'PNG, JPG, GIF veya WebP formatlarında, en fazla 1 MB ve 2000x2000 çözünürlükte görseller kabul edilir. Görseller 260x64 çözünürlüğe kadar gösterilir, bu nedenle yüksek çözünürlüklü ekranlar için yaklaşık 520x128 çözünürlükte görseller sağlayın. Üst çubuk ve giriş paneli koyu renkte olduğundan, koyu bir arka plana sahip bir logo yükleyin. SimpleRisk logosuna geri dönmek için logoyu kaldırın.',
+    'CurrentLogo' => 'Mevcut logo',
+    'RemoveLogo' => 'Logoyu kaldır',
+    'LoginTagline' => 'Giriş sloganı',
+    'LoginTaglineHint' => 'Giriş ekranındaki SimpleRisk sloganının yerini alır. Tek ve kısa bir satır en iyisidir. SimpleRisk sloganının kalmasını istiyorsanız boş bırakın.',
+    'LoginNotice' => 'Sistem kullanım bildirimi',
+    'LoginNoticeHint' => 'Giriş ekranında, herhangi bir kullanıcı oturum açmadan önce gösterilir. Kabul edilebilir kullanım veya sistem kullanımı bildirimi için kullanın. Bildirim göstermemek için boş bırakın. Bağlantı ve resimlere izin verilmez.',
+    'BrandingRequiresCustomization' => 'Giriş ekranı marka kimliği, Özelleştirme Ekstrası\'nın bir parçasıdır.',
+    'LogoMustBeAnImage' => 'Logo, PNG, JPG, GIF veya WebP formatında bir görsel olmalıdır.',
+    'LogoTooLarge' => 'Logonun boyutu 1 MB\'ı geçmemelidir.',
+    'LogoDimensionsTooLarge' => 'Logo 2000x2000 pikselden büyük olmamalıdır.',
+    'LogoDimensionsTooSmall' => 'Logonun en uzun kenarı en az 32 piksel olmalıdır.',
+    'LogoUploadFailed' => 'Logo yüklenemedi. Lütfen tekrar deneyin.',
+    'LogoUpdated' => 'Logo güncellendi.',
+    'LogoRemoved' => 'Logo kaldırıldı.',
+    'NoSystemUseNoticeSet' => 'Sistem kullanımına ilişkin herhangi bir uyarı ayarlanmadı.',
+    'NoticeSizeSmall' => 'Küçük',
+    'NoticeSizeNormal' => 'Normal',
+    'NoticeSizeLarge' => 'Büyük',
     '' => '',
 );
 ?>

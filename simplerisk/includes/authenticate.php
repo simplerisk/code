@@ -2148,6 +2148,18 @@ function check_add_password_reuse_history($user_id, $plaintext_password)
 /****************************
  * FUNCTION: RESET PASSWORD *
  ****************************/
+/**
+ * Changes a user's password and signs them in with it.
+ *
+ * Returns whether the password was actually changed. Callers need that, because
+ * what happens next differs: login() below only redirects on the no-MFA branch,
+ * so a caller that renders a form cannot tell "done, stop rendering" from
+ * "rejected, show the error" without an answer from here.
+ *
+ * @return bool True when the password was changed, false for every rejection
+ *              (wrong current password, policy failure, reuse limit, DEMO_MODE).
+ *              Every false path has already set its own alert.
+ */
 function reset_password($user_id, $current_password, $new_password, $confirm_password)
 {
 	global $lang;
@@ -2177,8 +2189,15 @@ function reset_password($user_id, $current_password, $new_password, $confirm_pas
 				// Add the old data to the pass_history table
 				add_last_password_history($user_id, $old_data["salt"], $old_data["password"]);
 
-				// Update the password
-				update_password($username, $hash);
+				// Update the password. A false return means the change was
+				// refused and the reason has already been shown to the user
+				// (DEMO_MODE). Stop before the success bookkeeping below —
+				// login() in particular would otherwise sign the visitor in
+				// against a password that was never stored.
+				if (!update_password($username, $hash))
+				{
+					return false;
+				}
 
             
 				// Display an alert
@@ -2189,7 +2208,23 @@ function reset_password($user_id, $current_password, $new_password, $confirm_pas
 				{
 					unset($_SESSION['change_password']);
 				}
-            
+
+				// Clear the forced-change marker HERE, not in the caller.
+				//
+				// reset_password.php gates on this value ("this visitor still
+				// owes us a password change") and clears it after we return —
+				// but on the no-MFA branch login() below may never return.
+				// select_redirect() -> registration_redirect() ends in exit(0)
+				// whenever $_SESSION['requested_url'] is set, which is the
+				// ordinary case for anyone who was bounced to the login page
+				// from a deep link. Clearing it before that point is what makes
+				// "the change is done" true on every path rather than most of
+				// them; the caller's unset then costs nothing.
+				if (isset($_SESSION['first_login_uid']))
+				{
+					unset($_SESSION['first_login_uid']);
+				}
+
 				// Set the user permissions
 				set_user_permissions($username);
 
@@ -2205,6 +2240,8 @@ function reset_password($user_id, $current_password, $new_password, $confirm_pas
 
 				// Set login status
 				login($username, $new_password);
+
+				return true;
 			}
 			else
 			{
@@ -2222,6 +2259,8 @@ function reset_password($user_id, $current_password, $new_password, $confirm_pas
 		}
 	}
 	else set_alert(true, "bad", $lang['PasswordIncorrect']);
+
+	return false;
 }
 
 /*******************

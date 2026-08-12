@@ -6,12 +6,11 @@ namespace SAML2\XML\saml;
 
 use DOMElement;
 use RobRichards\XMLSecLibs\XMLSecurityDSig;
-use Webmozart\Assert\Assert;
-
 use SAML2\Constants;
 use SAML2\Utils;
-use SAML2\XML\Chunk;
 use SAML2\XML\ds\KeyInfo;
+use SimpleSAML\XML\Chunk;
+use Webmozart\Assert\Assert;
 
 /**
  * Class representing SAML 2 SubjectConfirmationData element.
@@ -59,19 +58,17 @@ class SubjectConfirmationData
      * The various key information elements.
      *
      * Array with various elements describing this key.
-     * Unknown elements will be represented by \SAML2\XML\Chunk.
+     * Unknown elements will be represented by \SimpleSAML\XML\Chunk.
      *
-     * @var (\SAML2\XML\ds\KeyInfo|\SAML2\XML\Chunk)[]
+     * @var (\SAML2\XML\ds\KeyInfo|\SimpleSAML\XML\Chunk)[]
      */
     private $info = [];
 
 
     /**
      * Collect the value of the NotBefore-property
-     *
-     * @return int|null
      */
-    public function getNotBefore() : ?int
+    public function getNotBefore(): ?int
     {
         return $this->NotBefore;
     }
@@ -79,11 +76,8 @@ class SubjectConfirmationData
 
     /**
      * Set the value of the NotBefore-property
-     *
-     * @param int|null $notBefore
-     * @return void
      */
-    public function setNotBefore(?int $notBefore = null) : void
+    public function setNotBefore(?int $notBefore = null): void
     {
         $this->NotBefore = $notBefore;
     }
@@ -91,10 +85,8 @@ class SubjectConfirmationData
 
     /**
      * Collect the value of the NotOnOrAfter-property
-     *
-     * @return int|null
      */
-    public function getNotOnOrAfter() : ?int
+    public function getNotOnOrAfter(): ?int
     {
         return $this->NotOnOrAfter;
     }
@@ -102,11 +94,8 @@ class SubjectConfirmationData
 
     /**
      * Set the value of the NotOnOrAfter-property
-     *
-     * @param int|null $notOnOrAfter
-     * @return void
      */
-    public function setNotOnOrAfter(?int $notOnOrAfter = null) : void
+    public function setNotOnOrAfter(?int $notOnOrAfter = null): void
     {
         $this->NotOnOrAfter = $notOnOrAfter;
     }
@@ -114,10 +103,8 @@ class SubjectConfirmationData
 
     /**
      * Collect the value of the Recipient-property
-     *
-     * @return string|null
      */
-    public function getRecipient() : ?string
+    public function getRecipient(): ?string
     {
         return $this->Recipient;
     }
@@ -125,11 +112,8 @@ class SubjectConfirmationData
 
     /**
      * Set the value of the Recipient-property
-     *
-     * @param string|null $recipient
-     * @return void
      */
-    public function setRecipient(?string $recipient = null) : void
+    public function setRecipient(?string $recipient = null): void
     {
         $this->Recipient = $recipient;
     }
@@ -137,10 +121,8 @@ class SubjectConfirmationData
 
     /**
      * Collect the value of the InResponseTo-property
-     *
-     * @return string|null
      */
-    public function getInResponseTo() : ?string
+    public function getInResponseTo(): ?string
     {
         return $this->InResponseTo;
     }
@@ -148,11 +130,8 @@ class SubjectConfirmationData
 
     /**
      * Set the value of the InResponseTo-property
-     *
-     * @param string|null $inResponseTo
-     * @return void
      */
-    public function setInResponseTo(?string $inResponseTo = null) : void
+    public function setInResponseTo(?string $inResponseTo = null): void
     {
         $this->InResponseTo = $inResponseTo;
     }
@@ -160,10 +139,8 @@ class SubjectConfirmationData
 
     /**
      * Collect the value of the Address-property
-     *
-     * @return string|null
      */
-    public function getAddress() : ?string
+    public function getAddress(): ?string
     {
         return $this->Address;
     }
@@ -171,14 +148,16 @@ class SubjectConfirmationData
 
     /**
      * Set the value of the Address-property
-     *
-     * @param string|null $address
-     * @return void
      */
-    public function setAddress(?string $address = null) : void
+    public function setAddress(?string $address = null): void
     {
-        if (!is_null($address) && !filter_var($address, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4 | FILTER_FLAG_IPV6)) {
-            Utils::getContainer()->getLogger()->warning(sprintf('Provided argument (%s) is not a valid IP address.', $address));
+        if (
+            !is_null($address)
+            && !filter_var($address, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4 | FILTER_FLAG_IPV6)
+        ) {
+            Utils::getContainer()->getLogger()->warning(
+                sprintf('Provided argument (%s) is not a valid IP address.', $address),
+            );
         }
         $this->Address = $address;
     }
@@ -187,9 +166,9 @@ class SubjectConfirmationData
     /**
      * Collect the value of the info-property
      *
-     * @return (\SAML2\XML\ds\KeyInfo|\SAML2\XML\Chunk)[]
+     * @return (\SAML2\XML\ds\KeyInfo|\SimpleSAML\XML\Chunk)[]
      */
-    public function getInfo() : array
+    public function getInfo(): array
     {
         return $this->info;
     }
@@ -198,10 +177,9 @@ class SubjectConfirmationData
     /**
      * Set the value of the info-property
      *
-     * @param (\SAML2\XML\ds\KeyInfo|\SAML2\XML\Chunk)[] $info
-     * @return void
+     * @param (\SAML2\XML\ds\KeyInfo|\SimpleSAML\XML\Chunk)[] $info
      */
-    public function setInfo(array $info) : void
+    public function setInfo(array $info): void
     {
         $this->info = $info;
     }
@@ -210,10 +188,9 @@ class SubjectConfirmationData
     /**
      * Add the value to the info-property
      *
-     * @param \SAML2\XML\Chunk|\SAML2\XML\ds\KeyInfo $info
-     * @return void
+     * @param \SimpleSAML\XML\Chunk|\SAML2\XML\ds\KeyInfo $info
      */
-    public function addInfo($info) : void
+    public function addInfo($info): void
     {
         Assert::isInstanceOfAny($info, [Chunk::class, KeyInfo::class]);
         $this->info[] = $info;
@@ -272,7 +249,7 @@ class SubjectConfirmationData
      * @param  \DOMElement $parent The parent element we should append this element to.
      * @return \DOMElement This element, as XML.
      */
-    public function toXML(DOMElement $parent) : DOMElement
+    public function toXML(DOMElement $parent): DOMElement
     {
         $e = $parent->ownerDocument->createElementNS(Constants::NS_SAML, 'saml:SubjectConfirmationData');
         $parent->appendChild($e);
@@ -292,7 +269,7 @@ class SubjectConfirmationData
         if ($this->Address !== null) {
             $e->setAttribute('Address', $this->Address);
         }
-        /** @var \SAML2\XML\ds\KeyInfo|\SAML2\XML\Chunk $n */
+        /** @var \SAML2\XML\ds\KeyInfo|\SimpleSAML\XML\Chunk $n */
         foreach ($this->getInfo() as $n) {
             $n->toXML($e);
         }

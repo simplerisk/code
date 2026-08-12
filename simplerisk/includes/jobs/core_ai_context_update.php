@@ -8,6 +8,9 @@
 // auto-load. Declare it directly so this consumer's defining file is always
 // reachable, not only transitively via the worker (CLAUDE.md).
 require_once(realpath(__DIR__ . '/../promises.php'));
+// ai_provider_is_configured() lives in artificial_intelligence.php, which
+// functions.php does not auto-load either — declare it directly (CLAUDE.md).
+require_once(realpath(__DIR__ . '/../artificial_intelligence.php'));
 
 return [
     'type' => 'core_ai_context_update',
@@ -48,9 +51,9 @@ return [
      * already exists, false if nothing to queue.
      ************************************************************/
     'task_check' => function(PDO $db) {
-        // If an AI API key is not set
-        if (get_setting("ai_api_key", false, false, db: $db) === false) {
-            write_debug_log("AI API Key not set.", "notice");
+        // If no AI provider is configured (a key, or a keyless-local provider — SR-1931)
+        if (!ai_provider_is_configured($db)) {
+            write_debug_log("AI provider not configured.", "notice");
             return false;
         }
 

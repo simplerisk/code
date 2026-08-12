@@ -222,7 +222,10 @@ while (true) {
         write_debug_log("Task #{$task['id']} handler returned: " . var_export($result, true), "debug");
 
         if ($result === false) {
-            handle_queue_task_failure($db, $task, "Handler returned false");
+            // worker_handle_task_failure() only surfaces the failure to a user
+            // once retries are exhausted — handle_queue_task_failure() (which it
+            // calls) returns true exactly then.
+            worker_handle_task_failure($job_def, $db, $task, "Handler returned false");
         } else {
             if (!empty($job_def['stages']) && is_array($job_def['stages'])) {
                 queue_update_status($task['id'], 'in_progress', $db);
@@ -232,7 +235,9 @@ while (true) {
         }
     } catch (\Throwable $t) {
         write_debug_log("Unexpected error processing task #{$task['id']}: " . $t->getMessage(), "error");
-        handle_queue_task_failure($db, $task, $t->getMessage(), 5, 5, 3600);
+        // Same retry/backoff policy as the false-return path above — left to the
+        // function's defaults on both so the two can't drift.
+        worker_handle_task_failure($job_def, $db, $task, $t->getMessage());
     }
 
     $lastWorkTime = time();

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace SimpleSAML\XMLSecurity\XML;
 
+use SimpleSAML\XMLSchema\Type\IDValue;
 use SimpleSAML\XMLSecurity\Alg\Signature\SignatureAlgorithmInterface;
 use SimpleSAML\XMLSecurity\Key\KeyInterface;
 use SimpleSAML\XMLSecurity\XML\ds\Signature;
@@ -20,9 +21,9 @@ interface SignedElementInterface extends CanonicalizableElementInterface
      *
      * When this method returns null, the signature created for this object will reference the entire document.
      *
-     * @return string|null The ID of this element, or null if we don't have one.
+     * @return \SimpleSAML\XML\Type\IDValue|null The ID of this element, or null if we don't have one.
      */
-    public function getId(): ?string;
+    public function getId(): ?IDValue;
 
 
     /**
@@ -44,8 +45,6 @@ interface SignedElementInterface extends CanonicalizableElementInterface
 
     /**
      * Whether this object is signed or not.
-     *
-     * @return bool
      */
     public function isSigned(): bool;
 
@@ -57,9 +56,10 @@ interface SignedElementInterface extends CanonicalizableElementInterface
      * but cannot be verified, an exception will be thrown.
      *
      * @param \SimpleSAML\XMLSecurity\Alg\Signature\SignatureAlgorithmInterface|null $verifier The verifier to use to
-     * verify the signature. If null, attempt to verify it with the KeyInfo information in the signature.
+     *  verify the signature. If null, attempt to verify it with the KeyInfo information in the signature.
      * @return \SimpleSAML\XMLSecurity\XML\SignedElementInterface The object processed again from its canonicalised
-     * representation verified by the signature.
+     *  representation verified by the signature.
+     *
      * @throws \SimpleSAML\XMLSecurity\Exception\NoSignatureFoundException if the object is not signed.
      * @throws \SimpleSAML\XMLSecurity\Exception\InvalidArgumentException if no key is passed and there is no KeyInfo
      * in the signature.

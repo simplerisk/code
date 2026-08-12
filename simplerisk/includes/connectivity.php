@@ -296,9 +296,9 @@ function fetch_url_content_via_stream($http_options, $validate_ssl, $url, $param
     // predefined $http_response_header magic variable in favor of
     // http_get_last_response_headers() (added in PHP 8.4). Prefer the new
     // function when available; fall back to the magic variable on PHP < 8.4.
-    // Phan runs against the PHP 8.1 floor and does not know about the new
-    // function, so the function_exists() and call_user_func() lines are
-    // suppressed individually.
+    // Phan runs against the PHP 8.3 floor and does not know about the new
+    // function (added in 8.4), so the function_exists() and call_user_func()
+    // lines are suppressed individually.
     // @phan-suppress-next-line PhanUndeclaredFunctionInCallable
     if (function_exists('http_get_last_response_headers')) {
         // @phan-suppress-next-line PhanUndeclaredFunctionInCallable

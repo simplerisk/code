@@ -16,7 +16,6 @@ use function sprintf;
  */
 trait Base64Trait
 {
-    /** @var string */
     private static string $base64_regex = '/^(?:[a-z0-9+\/]{4})*(?:[a-z0-9+\/]{2}==|[a-z0-9+\/]{3}=)?$/i';
 
 
@@ -32,11 +31,8 @@ trait Base64Trait
     /**
      * Note: This test is not bullet-proof but prevents a string containing illegal characters
      * from being passed and ensures the string roughly follows the correct format for a Base64 encoded string
-     *
-     * @param string $value
-     * @param string $message
      */
-    protected static function validBase64(string $value, string $message = ''): void
+    protected static function validBase64(string $value, string $message = ''): string
     {
         $result = true;
 
@@ -57,5 +53,7 @@ trait Base64Trait
                 $value,
             ));
         }
+
+        return $value;
     }
 }

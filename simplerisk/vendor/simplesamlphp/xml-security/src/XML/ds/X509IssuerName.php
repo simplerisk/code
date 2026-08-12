@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace SimpleSAML\XMLSecurity\XML\ds;
 
-use SimpleSAML\XML\StringElementTrait;
+use SimpleSAML\XML\TypedTextContentTrait;
+use SimpleSAML\XMLSchema\Type\StringValue;
 
 /**
  * Class representing a ds:X509IssuerName element.
@@ -13,14 +14,8 @@ use SimpleSAML\XML\StringElementTrait;
  */
 final class X509IssuerName extends AbstractDsElement
 {
-    use StringElementTrait;
+    use TypedTextContentTrait;
 
 
-    /**
-     * @param string $content
-     */
-    public function __construct(string $content)
-    {
-        $this->setContent($content);
-    }
+    public const string TEXTCONTENT_TYPE = StringValue::class;
 }

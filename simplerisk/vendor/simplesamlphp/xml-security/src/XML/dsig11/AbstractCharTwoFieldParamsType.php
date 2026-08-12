@@ -39,7 +39,6 @@ abstract class AbstractCharTwoFieldParamsType extends AbstractDsig11Element
      * Convert this CharTwoFieldParamsType element to XML.
      *
      * @param \DOMElement|null $parent The element we should append this CharTwoFieldParamsType element to.
-     * @return \DOMElement
      */
     public function toXML(?DOMElement $parent = null): DOMElement
     {

@@ -1,0 +1,353 @@
+<?php
+
+/**
+ * Model Context Protocol SDK for PHP
+ *
+ * (c) 2025 Logiscape LLC <https://logiscape.com>
+ *
+ * Developed by:
+ * - Josh Abbott
+ * - Claude 3.7 Sonnet (Anthropic AI model)
+ * - ChatGPT o1 pro mode
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ *
+ * @package    logiscape/mcp-sdk-php 
+ * @author     Josh Abbott <https://joshabbott.com>
+ * @copyright  Logiscape LLC
+ * @license    MIT License
+ * @link       https://github.com/logiscape/mcp-sdk-php
+ *
+ * Filename: Client/Transport/HttpSessionManager.php
+ */
+
+ declare(strict_types=1);
+
+ namespace Mcp\Client\Transport;
+ 
+ use Psr\Log\LoggerInterface;
+ use Psr\Log\NullLogger;
+ 
+ /**
+  * Manages MCP session state for HTTP-based transports.
+  * 
+  * This class handles client-side session responsibilities as defined in the 
+  * Streamable HTTP transport specification, including:
+  * - Storing session IDs received from servers during initialization
+  * - Including session IDs in all subsequent requests
+  * - Tracking the last event ID for resumable connections
+  * - Managing session termination and renewal
+  */
+ class HttpSessionManager {
+     /**
+      * The MCP session ID header name
+      */
+     private const SESSION_HEADER = 'Mcp-Session-Id';
+
+     /**
+      * The MCP protocol version header name (required after initialization per 2025-11-25 spec)
+      */
+     private const PROTOCOL_VERSION_HEADER = 'MCP-Protocol-Version';
+
+     /**
+      * The session ID received from the server during initialization
+      */
+     private ?string $sessionId = null;
+     
+     /**
+      * The ID of the last SSE event received on a POST response stream.
+      *
+      * Tracked separately from the standalone GET stream cursor because per
+      * the MCP Streamable HTTP spec each stream has its own event-id namespace
+      * and `Last-Event-ID` on a resumption GET must address the specific
+      * stream being resumed. Mixing the two would cause a compliant server
+      * to replay messages on the wrong stream.
+      */
+     private ?string $lastEventId = null;
+
+     /**
+      * The ID of the last SSE event received on the standalone GET stream
+      * that the client opens after initialization to field server-initiated
+      * requests/notifications with no `relatedRequestId`. Persisted across
+      * session restore so a resumed client can pick up where it left off by
+      * sending `Last-Event-ID` on the re-opened standalone GET.
+      */
+     private ?string $standaloneLastEventId = null;
+
+     /**
+      * The negotiated protocol version (set after initialization)
+      */
+     private ?string $protocolVersion = null;
+
+     /**
+      * Whether the session has been initialized
+      */
+     private bool $initialized = false;
+     
+     /**
+      * Whether the session has been invalidated (e.g., by receiving a 404)
+      */
+     private bool $invalidated = false;
+ 
+     /**
+      * @param LoggerInterface $logger PSR-3 compatible logger
+      */
+     public function __construct(
+         private LoggerInterface $logger = new NullLogger()
+     ) {}
+ 
+     /**
+      * Get HTTP headers that should be included in every request made in the
+      * context of this session.
+      *
+      * Per the MCP Streamable HTTP transport spec, `Last-Event-ID` is a
+      * stream-specific cursor that belongs on a resumption GET only — it is
+      * NOT a session-wide header and MUST NOT be attached to unrelated POSTs
+      * or DELETEs. Callers that are opening a resumption GET must set
+      * `Last-Event-ID` explicitly on that specific request; the value tracked
+      * here (see updateLastEventId / getLastEventId) remains available for
+      * serialization across session restore but is deliberately excluded
+      * from the default request header set.
+      *
+      * @return array<string, string> Key-value pairs of headers
+      */
+     public function getRequestHeaders(): array {
+         $headers = [];
+
+         // Include session ID if available
+         if ($this->sessionId !== null) {
+             $headers[self::SESSION_HEADER] = $this->sessionId;
+         }
+
+         // Include protocol version if set (required after initialization)
+         if ($this->protocolVersion !== null) {
+             $headers[self::PROTOCOL_VERSION_HEADER] = $this->protocolVersion;
+         }
+
+         return $headers;
+     }
+ 
+     /**
+      * Process response headers to extract and update session information.
+      * 
+      * @param array<string, string> $headers Response headers (normalized to key-value pairs)
+      * @param int $statusCode HTTP status code
+      * @param bool $isInitialization Whether this is the initial response
+      * @return bool True if session is still valid, false if it needs to be reinitialized
+      */
+     public function processResponseHeaders(array $headers, int $statusCode, bool $isInitialization = false): bool {
+         // Handle session initialization
+         $normalized = array_change_key_case($headers, CASE_LOWER);
+         $sessionKey = strtolower(self::SESSION_HEADER);
+
+         if ($isInitialization) {
+             $this->initialized = true;
+
+             if (isset($normalized[$sessionKey])) {
+                 $this->sessionId    = $normalized[$sessionKey];
+                 $this->invalidated  = false;
+                 $this->logger->info("Initialized MCP session with ID: {$this->sessionId}");
+             } else {
+                 $this->sessionId = null;
+                 $this->logger->debug("Server did not provide a session ID during initialization");
+             }
+
+             return true;
+         }
+         
+         // Handle potential session invalidation (404 response)
+         if ($statusCode === 404 && $this->sessionId !== null) {
+             $this->logger->warning("Session ID {$this->sessionId} was invalidated (received 404)");
+             $this->invalidateSession();
+             return false;
+         }
+         
+         // Handle other response codes
+         if ($statusCode >= 400) {
+             $this->logger->error("Received error status code: {$statusCode}");
+             return true; // Still maintain session, error might be request-specific
+         }
+         
+         // All is well, session continues
+         return true;
+     }
+ 
+     /**
+      * Update the last event ID for resumable SSE connections.
+      * 
+      * @param string $eventId The last event ID received
+      */
+     public function updateLastEventId(string $eventId): void {
+         $this->lastEventId = $eventId;
+         $this->logger->debug("Updated last event ID: {$eventId}");
+     }
+ 
+     /**
+      * Clear the last event ID (e.g., when starting a new SSE connection).
+      */
+     public function clearLastEventId(): void {
+         $this->lastEventId = null;
+     }
+
+     /**
+      * Update the standalone-stream last event ID.
+      *
+      * The standalone GET stream (opened after initialization to receive
+      * server-initiated requests with no relatedRequestId) has its own
+      * event-id namespace. Callers must NOT feed POST-stream event ids
+      * here, nor vice-versa.
+      */
+     public function updateStandaloneLastEventId(string $eventId): void {
+         $this->standaloneLastEventId = $eventId;
+         $this->logger->debug("Updated standalone stream last event ID: {$eventId}");
+     }
+
+     /**
+      * Get the last event ID observed on the standalone GET stream.
+      */
+     public function getStandaloneLastEventId(): ?string {
+         return $this->standaloneLastEventId;
+     }
+
+     /**
+      * Clear the standalone-stream last event ID.
+      */
+     public function clearStandaloneLastEventId(): void {
+         $this->standaloneLastEventId = null;
+     }
+ 
+     /**
+      * Invalidate the current session.
+      * 
+      * This marks the session as invalid, requiring reinitialization
+      * before further requests can be made.
+      */
+     public function invalidateSession(): void {
+         $this->invalidated = true;
+         // We keep the session ID for reference/logging but it's no longer used
+     }
+ 
+     /**
+      * Check if the session is initialized.
+      * 
+      * @return bool True if initialized, false otherwise
+      */
+     public function isInitialized(): bool {
+         return $this->initialized;
+     }
+ 
+     /**
+      * Check if the session is valid.
+      * 
+      * @return bool True if initialized and not invalidated, false otherwise
+      */
+     public function isValid(): bool {
+         return $this->initialized && !$this->invalidated;
+     }
+ 
+     /**
+      * Check if the session has been invalidated.
+      * 
+      * @return bool True if invalidated, false otherwise
+      */
+     public function isInvalidated(): bool {
+         return $this->invalidated;
+     }
+ 
+     /**
+      * Check if the session requires a session ID.
+      * 
+      * @return bool True if a session ID is required for requests, false otherwise
+      */
+     public function requiresSessionId(): bool {
+         return $this->sessionId !== null && !$this->invalidated;
+     }
+ 
+     /**
+      * Get the current session ID.
+      * 
+      * @return string|null The session ID or null if not set
+      */
+     public function getSessionId(): ?string {
+         return $this->sessionId;
+     }
+ 
+     /**
+      * Get the last event ID.
+      * 
+      * @return string|null The last event ID or null if not set
+      */
+     public function getLastEventId(): ?string {
+         return $this->lastEventId;
+     }
+ 
+     /**
+      * Set the negotiated protocol version.
+      *
+      * @param string $version The negotiated protocol version
+      */
+     public function setProtocolVersion(string $version): void {
+         $this->protocolVersion = $version;
+         $this->logger->debug("Set protocol version: {$version}");
+     }
+
+     /**
+      * Get the negotiated protocol version.
+      *
+      * @return string|null The protocol version or null if not set
+      */
+     public function getProtocolVersion(): ?string {
+         return $this->protocolVersion;
+     }
+
+     /**
+      * Reset the session state entirely.
+      * 
+      * This completely clears all session state, as if creating a new instance.
+      */
+     public function reset(): void {
+         $this->sessionId = null;
+         $this->lastEventId = null;
+         $this->standaloneLastEventId = null;
+         $this->protocolVersion = null;
+         $this->initialized = false;
+         $this->invalidated = false;
+         $this->logger->info("Session state completely reset");
+     }
+
+     /**
+      * Serialize session state to an array for persistence across PHP requests.
+      *
+      * @return array<string, string|bool|null> Session state data
+      */
+     public function toArray(): array {
+         return [
+             'sessionId' => $this->sessionId,
+             'lastEventId' => $this->lastEventId,
+             'standaloneLastEventId' => $this->standaloneLastEventId,
+             'protocolVersion' => $this->protocolVersion,
+             'initialized' => $this->initialized,
+             'invalidated' => $this->invalidated,
+         ];
+     }
+
+     /**
+      * Restore session state from a previously serialized array.
+      *
+      * @param array<string, string|bool|null> $data Session state data from toArray()
+      * @param LoggerInterface|null $logger PSR-3 compatible logger
+      * @return self Restored session manager
+      */
+     public static function fromArray(array $data, ?LoggerInterface $logger = null): self {
+         $manager = new self($logger ?? new NullLogger());
+         $manager->sessionId = $data['sessionId'] ?? null;
+         $manager->lastEventId = $data['lastEventId'] ?? null;
+         $manager->standaloneLastEventId = $data['standaloneLastEventId'] ?? null;
+         $manager->protocolVersion = $data['protocolVersion'] ?? null;
+         $manager->initialized = $data['initialized'] ?? false;
+         $manager->invalidated = $data['invalidated'] ?? false;
+         return $manager;
+     }
+ }
+ 

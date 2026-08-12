@@ -212,9 +212,13 @@ function display_install_header()
     <header class="topbar" data-navbarbg="skin5">
         <nav class="navbar top-navbar navbar-expand-md navbar-dark">
             <div class="navbar-header">
-                <a class="navbar-brand" href="https://www.simplerisk.com">
-                    <img src="images/logo@2x.png" alt="homepage" class="logo"/>
-                </a>
+                <!-- The wordmark, not display_brand_logo(): this page runs before
+                     config.php exists, so there is no database to read a custom
+                     logo setting from. The markup and its CSS need neither. -->
+                <span class="navbar-brand sr-wordmark">
+                    <img class="sr-brand-logo" src="images/simplerisk-logo-icon.png" alt="SimpleRisk" />
+                    <span class="sr-brand-text"><span class="s">Simple</span><span class="r">Risk</span></span>
+                </span>
             </div>
             <div class="navbar-collapse collapse show" id="navbarSupportedContent" data-navbarbg="skin5">
                 <!-- Right side toggle and nav items -->
@@ -1452,6 +1456,18 @@ function load_file($db_host, $db_port, $db_user, $db_pass, $sr_db, $memory_file)
     // Connect to the simplerisk database
     $db = installer_db_open($db_host, $db_port, $db_user, $db_pass, $sr_db);
 
+    // Disable foreign-key checks for the duration of the load. mysqldump emits
+    // CREATE TABLE statements in alphabetical order, so a child table can be
+    // created before the parent it references (e.g. `notification_recipients`
+    // has a foreign key to `notifications`, but sorts first). The dump guards
+    // against this with a `/*!40014 ... FOREIGN_KEY_CHECKS=0 */` directive, but
+    // the comment-stripping below removes that directive along with every other
+    // block comment — so we set it explicitly here. Without this, the
+    // out-of-order child CREATE fails with MySQL error 1824 ("Failed to open
+    // the referenced table"), the schema load aborts partway, and the installer
+    // never reaches its completion screen.
+    $db->exec("SET FOREIGN_KEY_CHECKS=0");
+
     // Get the data from the memory file
     $content = stream_get_contents($memory_file);
 
@@ -1483,6 +1499,9 @@ function load_file($db_host, $db_port, $db_user, $db_pass, $sr_db, $memory_file)
             }
         }
     }
+
+    // Re-enable foreign-key checks now that every table exists.
+    $db->exec("SET FOREIGN_KEY_CHECKS=1");
 
     // Close the simplerisk database
     installer_db_close($db);

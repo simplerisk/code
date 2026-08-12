@@ -20,14 +20,18 @@ if (isset($_POST['change_language'])) {
     // If its not the default selection
     if ($language != 0) {
 
-        // Update the language for the current user
-        update_language($_SESSION['uid'], get_name_by_value("languages", $language));
+        // Update the language for the current user. A false return means the
+        // change was refused and the reason has already been shown to the user
+        // (DEMO_MODE), so don't claim success on top of it.
+        if (update_language($_SESSION['uid'], get_name_by_value("languages", $language))) {
 
-        // Use the new language file
-        require_once(language_file());
+            // Use the new language file
+            require_once(language_file());
 
-        // Display an alert
-        set_alert(true, "good", $lang['LanguageUpdated']);
+            // Display an alert
+            set_alert(true, "good", $lang['LanguageUpdated']);
+
+        }
 
     } else {
 
@@ -100,17 +104,24 @@ if (isset($_POST['change_password'])) {
                 // Add the old data to the pass_history table
                 add_last_password_history($_SESSION["uid"], $old_data["salt"], $old_data["password"]);
 
-                // Update the password
-                update_password($team, $hash);
+                // Update the password. A false return means the change was
+                // refused and the reason has already been shown to the user
+                // (DEMO_MODE). Everything below is success bookkeeping and must
+                // not run in that case — kill_other_sessions_of_current_user()
+                // in particular, since on a demo every visitor is signed in as
+                // this same user and "other sessions" means all of them.
+                if (update_password($team, $hash)) {
 
-                // Clean up other sessions of the user and roll the current session's id
-                kill_other_sessions_of_current_user();
+                    // Clean up other sessions of the user and roll the current session's id
+                    kill_other_sessions_of_current_user();
 
-                // Expire any active password reset tokens for this user
-                expire_reset_token_for_username($username);
+                    // Expire any active password reset tokens for this user
+                    expire_reset_token_for_username($username);
 
-                // Display an alert
-                set_alert(true, "good", $lang['PasswordUpdated']);
+                    // Display an alert
+                    set_alert(true, "good", $lang['PasswordUpdated']);
+
+                }
 
             } else {
 

@@ -8,13 +8,14 @@ namespace OpenApi\Processors;
 
 use OpenApi\Analysis;
 use OpenApi\Annotations as OA;
-use OpenApi\Generator;
+use OpenApi\Undefined;
 
 /**
  * Checks if the annotation has a summary and/or description property
  * and uses the text in the comment block (above the annotations) as summary and/or description.
  *
- * Use <code>null</code>, for example: <code>@Annotation(description=null)</code>, if you don't want the annotation to have a description.
+ * Use <code>null</code>, for example <code>@Annotation(description=null)</code>,
+ * if you don't want the annotation to have a description.
  */
 class DocBlockDescriptions
 {
@@ -31,6 +32,11 @@ class DocBlockDescriptions
 
             if (!$this->isDocblockRoot($annotation)) {
                 // only top-level annotations
+                continue;
+            }
+
+            if ($annotation instanceof OA\Parameter || $annotation instanceof OA\Property) {
+                // they have their dedicated processor
                 continue;
             }
 
@@ -53,9 +59,9 @@ class DocBlockDescriptions
      */
     protected function description(OA\AbstractAnnotation $annotation): void
     {
-        if (!Generator::isDefault($annotation->description)) {
+        if (!Undefined::isDefault($annotation->description)) {
             if ($annotation->description === null) {
-                $annotation->description = Generator::UNDEFINED;
+                $annotation->description = Undefined::UNDEFINED;
             }
 
             return;
@@ -69,16 +75,16 @@ class DocBlockDescriptions
      */
     protected function summaryAndDescription(OA\AbstractAnnotation $annotation): void
     {
-        $ignoreSummary = !Generator::isDefault($annotation->summary);
-        $ignoreDescription = !Generator::isDefault($annotation->description);
+        $ignoreSummary = !Undefined::isDefault($annotation->summary);
+        $ignoreDescription = !Undefined::isDefault($annotation->description);
 
         if ($annotation->summary === null) {
             $ignoreSummary = true;
-            $annotation->summary = Generator::UNDEFINED;
+            $annotation->summary = Undefined::UNDEFINED;
         }
 
         if ($annotation->description === null) {
-            $annotation->description = Generator::UNDEFINED;
+            $annotation->description = Undefined::UNDEFINED;
             $ignoreDescription = true;
         }
 

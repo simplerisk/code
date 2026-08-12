@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace SimpleSAML\XMLSecurity\XML\dsig11;
 
-use SimpleSAML\XML\Base64ElementTrait;
+use SimpleSAML\XML\TypedTextContentTrait;
+use SimpleSAML\XMLSecurity\Type\CryptoBinaryValue;
 
 /**
  * Class representing a dsig11:Order element.
@@ -13,17 +14,8 @@ use SimpleSAML\XML\Base64ElementTrait;
  */
 final class Order extends AbstractDsig11Element
 {
-    use Base64ElementTrait;
+    use TypedTextContentTrait;
 
 
-    /**
-     * Initialize a Order element.
-     *
-     * @param string $value
-     */
-    public function __construct(
-        string $value,
-    ) {
-        $this->setContent($value);
-    }
+    public const string TEXTCONTENT_TYPE = CryptoBinaryValue::class;
 }

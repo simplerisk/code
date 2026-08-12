@@ -11,7 +11,7 @@ declare(strict_types=1);
 namespace SimpleSAML\Locale;
 
 use Gettext\TranslatorFunctions;
-use SimpleSAML\{Configuration, Logger};
+use SimpleSAML\Configuration;
 
 class Translate
 {
@@ -26,6 +26,7 @@ class Translate
      * A theme and module may exist together as dual default translation domains
      */
     private static array $defaultDomains = [];
+
 
     /**
      * Constructor
@@ -62,10 +63,15 @@ class Translate
         return $tag;
     }
 
+
+    /**
+     * @param string $domain
+     */
     public static function addDefaultDomain(string $domain): void
     {
         array_push(self::$defaultDomains, $domain);
     }
+
 
     /**
      * Translate a singular text.
@@ -76,11 +82,6 @@ class Translate
      * NOTE: This may be called from TwigTranslator::trans()
      * which will pass the following arguments.
      * The $id will match $original above but there are other arguments which may also be used in this method.
-     *
-     * @param string $id
-     * @param array $parameters
-     * @param string|null $domain
-     * @param string|null $locale
      *
      * @return string The translated string.
      */
@@ -105,7 +106,7 @@ class Translate
                     // try attributes.po
                     if ($text === $original) {
                         // @TODO: Fix this to be compatible with PHP 8.4 - domain cannot be an empty string
-                        $text = TranslatorFunctions::getTranslator()->dgettext("", $original);
+                        $text = TranslatorFunctions::getTranslator()->dgettext("attributes", $original);
                     }
                 }
             }
@@ -172,6 +173,7 @@ class Translate
         // nothing we can use, return null so that we can set a default
         return null;
     }
+
 
     /**
      * Prefix tag

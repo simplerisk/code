@@ -14,7 +14,6 @@ namespace SimpleSAML\XMLSecurity\Exception;
 class UnsupportedAlgorithmException extends RuntimeException
 {
     /**
-     * @param string $message
      */
     public function __construct(string $message = 'Unsupported algorithm.')
     {

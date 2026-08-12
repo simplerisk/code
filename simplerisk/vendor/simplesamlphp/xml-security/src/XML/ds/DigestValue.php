@@ -4,9 +4,10 @@ declare(strict_types=1);
 
 namespace SimpleSAML\XMLSecurity\XML\ds;
 
-use SimpleSAML\XML\Base64ElementTrait;
 use SimpleSAML\XML\SchemaValidatableElementInterface;
 use SimpleSAML\XML\SchemaValidatableElementTrait;
+use SimpleSAML\XML\TypedTextContentTrait;
+use SimpleSAML\XMLSecurity\Type\DigestValue as DigestValueType;
 
 /**
  * Class representing a ds:DigestValue element.
@@ -15,15 +16,9 @@ use SimpleSAML\XML\SchemaValidatableElementTrait;
  */
 final class DigestValue extends AbstractDsElement implements SchemaValidatableElementInterface
 {
-    use Base64ElementTrait;
     use SchemaValidatableElementTrait;
+    use TypedTextContentTrait;
 
 
-    /**
-     * @param string $content
-     */
-    public function __construct(string $content)
-    {
-        $this->setContent($content);
-    }
+    public const string TEXTCONTENT_TYPE = DigestValueType::class;
 }

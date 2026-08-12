@@ -12,7 +12,15 @@ require_once(realpath(__DIR__ . '/../includes/permissions.php'));
 // is enabled, im_reporting is a valid gate; otherwise the perm is
 // irrelevant and we keep it off the list so a user with a stale
 // im_reporting session value can't land on an empty hub.
-$hub_required = ['riskmanagement', 'asset', 'governance', 'compliance'];
+//
+// view_exception is included because at least one catalog tile
+// (connectivity_visualizer) is reachable by a view_exception-only caller
+// (reports_catalog.php's 'permissions.require' for that entry, kept in sync
+// with connectivity_visualizer.php's own page gate -- see that file's
+// comment). Without it here, a view_exception-only caller is redirected
+// away from this hub shell before the catalog ever loads, so the tile they
+// are otherwise entitled to see is unreachable by normal navigation.
+$hub_required = ['riskmanagement', 'asset', 'governance', 'compliance', 'view_exception'];
 if (incident_management_extra()) {
     $hub_required[] = 'im_reporting';
 }

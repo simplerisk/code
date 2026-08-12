@@ -1,0 +1,47 @@
+{
+  "name": "iobuffer",
+  "version": "5.4.0",
+  "description": "Read and write binary data on ArrayBuffers",
+  "main": "./lib/IOBuffer.js",
+  "module": "./lib-esm/IOBuffer.js",
+  "types": "./lib/IOBuffer.d.ts",
+  "files": [
+    "src",
+    "lib",
+    "lib-esm"
+  ],
+  "scripts": {
+    "check-types": "tsc --noEmit",
+    "clean": "rimraf lib lib-esm",
+    "eslint": "eslint src",
+    "eslint-fix": "npm run eslint -- --fix",
+    "prepack": "npm run tsc",
+    "prettier": "prettier --check src",
+    "prettier-write": "prettier --write src",
+    "test": "npm run test-only && npm run eslint && npm run prettier && npm run check-types",
+    "test-only": "vitest run --coverage",
+    "tsc": "npm run clean && npm run tsc-cjs && npm run tsc-esm",
+    "tsc-cjs": "tsc --project tsconfig.cjs.json",
+    "tsc-esm": "tsc --project tsconfig.esm.json"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/image-js/iobuffer.git"
+  },
+  "author": "Michaël Zasso",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/image-js/iobuffer/issues"
+  },
+  "homepage": "https://github.com/image-js/iobuffer#readme",
+  "devDependencies": {
+    "@types/node": "^22.13.0",
+    "@vitest/coverage-v8": "^3.0.4",
+    "eslint": "^9.19.0",
+    "eslint-config-cheminfo-typescript": "^17.0.0",
+    "prettier": "^3.4.2",
+    "rimraf": "^6.0.1",
+    "typescript": "^5.7.3",
+    "vitest": "^3.0.4"
+  }
+}

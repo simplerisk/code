@@ -68,7 +68,6 @@ abstract class AbstractPnBFieldParamsType extends AbstractCharTwoFieldParamsType
      * Convert this PnBFieldParamsType element to XML.
      *
      * @param \DOMElement|null $parent The element we should append this PnBFieldParamsType element to.
-     * @return \DOMElement
      */
     public function toXML(?DOMElement $parent = null): DOMElement
     {

@@ -6,10 +6,12 @@
 
 namespace OpenApi\Annotations;
 
-use OpenApi\Generator;
+use OpenApi\Undefined;
 
 /**
  * Each Media Type object provides schema and examples for the media type identified by its key.
+ *
+ * Parameter encodings can be set either here, or on nested `Property` annotations directly.
  *
  * @see [Media Type Object](https://spec.openapis.org/oas/v3.1.1.html#media-type-object)
  *
@@ -22,14 +24,14 @@ class MediaType extends AbstractAnnotation
      *
      * @var string
      */
-    public $mediaType = Generator::UNDEFINED;
+    public $mediaType = Undefined::UNDEFINED;
 
     /**
      * The schema defining the type used for the request body.
      *
      * @var Schema
      */
-    public $schema = Generator::UNDEFINED;
+    public $schema = Undefined::UNDEFINED;
 
     /**
      * Example of the media type.
@@ -39,8 +41,10 @@ class MediaType extends AbstractAnnotation
      *
      * Furthermore, if referencing a schema which contains an example,
      * the example value shall override the example provided by the schema.
+     *
+     * @var mixed
      */
-    public $example = Generator::UNDEFINED;
+    public $example = Undefined::UNDEFINED;
 
     /**
      * Examples of the media type.
@@ -51,7 +55,7 @@ class MediaType extends AbstractAnnotation
      *
      * @var array<Examples>
      */
-    public $examples = Generator::UNDEFINED;
+    public $examples = Undefined::UNDEFINED;
 
     /**
      * A map between a property name and its encoding information.
@@ -61,9 +65,9 @@ class MediaType extends AbstractAnnotation
      * The encoding object shall only apply to requestBody objects when the media type is multipart or
      * application/x-www-form-urlencoded.
      *
-     * @var Encoding[]
+     * @var list<Encoding>
      */
-    public $encoding = Generator::UNDEFINED;
+    public $encoding = Undefined::UNDEFINED;
 
     /**
      * @inheritdoc
@@ -82,17 +86,6 @@ class MediaType extends AbstractAnnotation
         Response::class,
         RequestBody::class,
     ];
-
-    public function __construct(array $properties)
-    {
-        if (array_key_exists('encoding', $properties)) {
-            $properties['encoding'] = $this->encodingCompat(
-                $properties['encoding'],
-                fn (array $args): Encoding => new Encoding($args),
-            );
-        }
-        parent::__construct($properties);
-    }
 
     protected function encodingCompat($encoding, callable $factory)
     {

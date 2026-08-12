@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace SimpleSAML\XMLSecurity\TestUtils;
 
 use DOMDocument;
+use SimpleSAML\XMLSchema\Type\Base64BinaryValue;
 use SimpleSAML\XMLSecurity\Alg\Signature\SignatureAlgorithmFactory;
 use SimpleSAML\XMLSecurity\Constants as C;
 use SimpleSAML\XMLSecurity\Exception\InvalidArgumentException;
@@ -28,13 +29,13 @@ use function sprintf;
  * you are testing to the $testedClass property.
  *
  * @package simplesamlphp/xml-security
+ *
+ * @phpstan-ignore trait.unused
  */
 trait SignedElementTestTrait
 {
     /**
      * A base document that we can reuse in our tests.
-     *
-     * @var \DOMDocument
      */
     protected static DOMDocument $xmlRepresentation;
 
@@ -81,12 +82,20 @@ trait SignedElementTestTrait
                 );
 
                 $keyInfo = new KeyInfo([
-                    new X509Data([new X509Certificate(
-                        PEMCertificatesMock::getPlainPublicKeyContents(PEMCertificatesMock::PUBLIC_KEY),
-                    )]),
-                    new X509Data([new X509Certificate(
-                        PEMCertificatesMock::getPlainPublicKeyContents(PEMCertificatesMock::OTHER_PUBLIC_KEY),
-                    )]),
+                    new X509Data([
+                        new X509Certificate(
+                            Base64BinaryValue::fromString(
+                                PEMCertificatesMock::getPlainPublicKeyContents(PEMCertificatesMock::PUBLIC_KEY),
+                            ),
+                        ),
+                    ]),
+                    new X509Data([
+                        new X509Certificate(
+                            Base64BinaryValue::fromString(
+                                PEMCertificatesMock::getPlainPublicKeyContents(PEMCertificatesMock::OTHER_PUBLIC_KEY),
+                            ),
+                        ),
+                    ]),
                 ]);
 
                 $unsigned = self::$testedClass::fromXML(self::$xmlRepresentation->documentElement);
@@ -99,7 +108,7 @@ trait SignedElementTestTrait
 
                 // verify signature
                 $verifier = (new SignatureAlgorithmFactory([]))->getAlgorithm(
-                    $signed->getSignature()->getSignedInfo()->getSignatureMethod()->getAlgorithm(),
+                    $signed->getSignature()->getSignedInfo()->getSignatureMethod()->getAlgorithm()->getValue(),
                     PEMCertificatesMock::getPublicKey(PEMCertificatesMock::PUBLIC_KEY),
                 );
 

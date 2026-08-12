@@ -17,8 +17,8 @@ use SimpleSAML\XMLSecurity\Key\KeyInterface;
  */
 abstract class AbstractEncryptor implements EncryptionAlgorithmInterface
 {
-    /** @var string */
-    protected const DEFAULT_BACKEND = Backend\OpenSSL::class;
+    protected const string DEFAULT_BACKEND = Backend\OpenSSL::class;
+
 
     /** @var \SimpleSAML\XMLSecurity\Backend\EncryptionBackend */
     protected EncryptionBackend $backend;
@@ -53,7 +53,6 @@ abstract class AbstractEncryptor implements EncryptionAlgorithmInterface
 
 
     /**
-     * @return string
      */
     public function getAlgorithmId(): string
     {

@@ -1345,7 +1345,6 @@ $lang = array(
     'UpdateAssetGroupTooltip' => '更新资产组',
     'DeleteAssetGroupTooltip' => '删除资产组',
     'RemoveAssetTooltip' => '从资产组中删除资产',
-    'ControlShortNameFieldRequired' => '"控制短名称" 字段是必需的。',
     'AffectedAssetsWidgetPlaceholder' => '选择资产或资产组',
     'AffectedAssetsWidgetNoDropdownPlaceholder' => '添加资产名称',
     'AffectedAssetsWidgetInstructions' => '选择资产或资产组。您可以通过将新资产的名称添加到列表中来创建新的资产。',
@@ -2341,7 +2340,7 @@ $lang = array(
     'Advanced_Search_no_results_1' => '您的查询似乎没有结果。',
     'Advanced_Search_no_results_2' => '仔细检查您的搜索是否有任何错别字、拼写错误，或者尝试不同的搜索词。',
     'IncidentsPerDay' => '每日事故数',
-    'CurrentVsDesiredMaturity' => '控制家族的当前成熟度与预期成熟度',
+    'CurrentVsDesiredMaturity' => '按控制家族划分的成熟度',
     'RiskDistribution' => '风险分布',
     'RiskDistributionDescription'=>'上面的饼图有助于显示固有风险和残留风险在不同风险等级之间的分布情况。我们可以使用这两个饼图来显示风险缓解工作的进展。如果残留风险饼图显示大量非常高或高风险，则可能表明您的组织承担了过多的风险，需要进一步采取缓解措施。',
     'EnableTabs' => '启用标签',
@@ -2413,7 +2412,7 @@ $lang = array(
     'EditModeInformation' => '打开编辑模式编辑布局。关闭它不会自动保存布局。',
     'InvalidLayout' => '布局无效！',
     'InvalidLayoutOnlyCustomAllowedAsDefault' => '布局无效！只有自定义布局才可以保存为默认布局。',
-    'LayoutSaved' => '布局已保存！',
+    'LayoutSaved' => '您的仪表盘布局已保存。',
     'DefaultLayout' => '默认布局',
     'DefaultLayoutInformation' => '将此布局设置为默认布局，用于替代 SimpleRisk 为未设置自定义布局的用户提供的布局。您只能将已保存的非空自定义布局设置为默认布局。如果标记为默认的布局恢复为默认布局，它将恢复为 SimpleRisk 提供的默认布局。',
     'LayoutDefaultStatusUpdated' => '布局的默认状态已更新。',
@@ -2422,7 +2421,7 @@ $lang = array(
     'DefaultLayoutRestored' => '默认布局已成功恢复！',
     'SavedLayoutRestored' => '保存的布局已成功恢复！',
     'ConfirmRestoreLayout' => '您确定吗？您将丢失对此布局所做的更改。',
-    'ConfirmDisableEditModeWithPendingChanges' => '您有未保存的更改，离开页面后这些更改将会丢失。您确定要禁用“编辑模式”并可能忘记保存更改吗？',
+    'ConfirmDisableEditModeWithPendingChanges' => '您对此仪表板有未保存的更改。放弃这些更改并停止编辑吗？',
     'ConfirmSave' => '保存这些更改将覆盖您之前保存的布局。您确定要继续吗？',
     'ConfirmSaveAdminDefault' => '此布局已设置为此布局类型的默认布局。保存这些更改将更改所有未为此布局类型设置自定义布局的用户的布局。您确定要继续吗？',
     'RisksByMonth' => '按月划分的风险',
@@ -3111,6 +3110,1523 @@ $lang = array(
     'ResendAssessmentDescription' => '按周期自动重新发布评估。',
     'ResendEveryDays' => '每隔 {$day} 天重新发送',
     'QuestionnaireSaveBarHint' => '“保存并发送”功能会立即向联系人发送调查问卷。',
+    // Home dashboard — KPI tile labels
+    'NewSelfAssessment' => '新的自我评估',
+    'SelfAssessmentPrereqIntro' => '自我评估功能可帮助您根据安全控制框架评估您的组织，并自动生成失效控制措施带来的风险。首先需要完成两个设置步骤：',
+    'RegisterYourInstance' => '注册您的实例',
+    'RegisterYourInstanceHelp' => '注册后，此实例将与 SimpleRisk 的许可服务关联，以便可以下载免费的附加功能（包括 SCF）。',
+    'InstallTheSCF' => '安装安全控制框架',
+    'InstallTheSCFHelp' => 'SCF 是一个免费的附加组件，它提供了此功能评估所依据的框架、控制问题和风险映射。安装过程在后台运行，可能需要几分钟时间。',
+    'GoToRegistration' => '前往注册',
+    'GoToSCF' => '前往安全控制框架',
+    'SelfAssessmentEnableTip' => '可选：在“治理”>“框架”下，您可以启用特定的 SCF 框架，以便在开始评估时看到一个精选的框架列表。您也可以在不启用框架的情况下，使用 SCF 完整目录中的任何框架进行评估。',
+    'ChooseAFramework' => '选择一个评估框架',
+    'EnabledFrameworks' => '已启用框架',
+    'AllScfFrameworks' => '所有SCF框架',
+    'Start' => '开始',
+    'Resume' => '恢复',
+    'ControlQuestion' => '控制问题',
+    'NotApplicable' => '不适用',
+    'SaveProgress' => '保存进度',
+    'MarkComplete' => '标记完成',
+    'AnsweredOfTotal' => '回答',
+    'FailedSoFar' => '目前为止失败了',
+    'StartedBy' => '由……发起',
+    'FailedControls' => '控制失败',
+    'PushToRisk' => '推动风险',
+    'ConfirmDeleteSelfAssessment' => '删除这份自我评估报告？无法撤销。',
+    'ConfirmCompleteSelfAssessment' => '这项评估完成了吗？失效的控制措施会产生风险。',
+    'NoSelfAssessmentsYet' => '目前还没有人进行自我评估。不妨先开始一次。',
+    'RequestFailed' => '请求未能完成，请重试。',
+    'NoPendingRisks' => '无潜在风险。完成评估，以识别失效控制措施带来的风险。',
+    'NoFailedControls' => '此筛选条件没有可显示的对照结果。',
+    'ControlResultsTruncated' => '显示最近 2000 条结果。缩小筛选范围以查看更多结果。',
+    'GeneratedFromSelfAssessment' => '由自我评估生成',
+    'SelfAssessmentMitigationSolution' => '实施以下链接中的控制措施（这些措施在本次自我评估中被认定为存在缺陷），以降低此风险。',
+    'NSelected' => '{n} 已选择',
+    'FilterByControl' => '按控件筛选',
+    'Pushing' => '推送…',
+    'Deleting' => '删除…',
+    'ConfirmPushSelectedPendingRisks' => '将选定的待处理风险 {n} 推送到风险？',
+    'ConfirmDeleteSelectedPendingRisks' => '删除已选定的待处理风险（ {n} ）？此操作无法撤销。',
+    'ConfirmDeleteSelectedSelfAssessments' => '删除已选择的 {n} 项自我评估？此操作无法撤销。',
+    'BulkPartialFailure' => '{n} 个项目成功，共 {total} 个项目失败。请刷新页面查看当前状态。',
+
+    // Workflows Extra - deactivation confirm ('Deactivate' at line 480 is reused as-is)
+    'WorkflowsExtraDeactivateConfirm' => '停用 Workflows Extra 功能？所有用户创建的工作流定义都将被永久删除。系统工作流将保留。',
+    'HomeKpiOpenRisks' => '开放的风险',
+    'HomeKpiNeedsReview' => '需要审查',
+    'HomeKpiUnmitigated' => '未缓解',
+    'HomeKpiClosedRisks' => '已关闭的风险',
+    'HomeKpiControlPassRate' => '控制通过率',
+    'HomeKpiFailingControls' => '控制失效',
+    'HomeKpiOpenAudits' => '公开审计',
+    'HomeKpiTestsDueSoon' => '考试即将到来',
+    'HomeKpiActiveFrameworks' => '活动框架',
+    'HomeKpiTotalControls' => '完全控制',
+    // Home dashboard — What's Next feed
+    'WhatsNext' => '接下来是什么？',
+    'WhatsNextAllCaughtUp' => '你已经全部跟上了。',
+    'WhatsNextRegisterInstance' => '注册您的 SimpleRisk 实例',
+    'WhatsNextSubmitFirstRisk' => '提交您的第一个风险',
+    'WhatsNextLoadFramework' => '加载控制框架',
+    'WhatsNextUnreviewedRisks' => '需审查的风险',
+    'WhatsNextUnmitigatedRisks' => '需降低的风险',
+    'WhatsNextInitiateAudits' => '启动审计',
+    // Home dashboard — widget picker type labels
+    'WidgetType_kpi' => 'KPI 瓷砖',
+    'WidgetType_whats_next' => '列表',
+    // Home dashboard — hub catalog entry
+    'HomeDashboard' => '首页',
+    'HomeDashboardDesc' => '您的起点——关键指标和下一步行动一目了然。',
+    'HomeChartRiskByLevel' => '按级别划分的风险',
+    'HomeKpiThisMonth' => '本月',
+    'HomeKpiNoChange' => '无变化',
+    'EditLayout' => '编辑布局',
+    'ListHighestRisks' => '我面临的最大风险',
+    'ListPastDueReviews' => '逾期审查',
+    'ListUpcomingTests' => '即将进行的测试',
+    'ListRecentFailures' => '近期失败案例',
+    'ListPoliciesReview' => '待审核文件',
+    'ListExpiringExceptions' => '即将失效的例外情况',
+    'ImKpiOpenIncidents' => '总开盘价',
+    'ImKpiOverdue' => '逾期',
+    'ImKpiMttr30' => '平均分辨率',
+    'ImKpiMttrQuarter' => '平均分辨率（90天）',
+    'ImKpiMttrYear' => '平均分辨率（1年）',
+    'ImKpiMttrAll' => '平均分辨率（全部）',
+    'ImKpiResolved30' => '已解决',
+    'ImChartBySeverity' => '按严重程度',
+    'ImChartByStatus' => '按状态',
+    'ImListRecent' => '近期事件',
+    'ImListUnassigned' => '未分配事件',
+    'HomeKpiOpenExceptions' => '未解决的例外情况',
+    'HomeKpiPolicies' => '政策',
+    'ResolutionTargets' => '解决目标（天）',
+    'ResolutionTargetsHelp' => '事件在被计为逾期之前可以保持开放状态的天数。',
+    'DefaultTarget' => '默认',
+    'PerSeverityOverrideHelp' => '（可选）针对特定严重程度覆盖默认值（留空则使用默认值）：',
+    'ResolutionTargetUsesDefault' => '默认值（%d）',
+    'SeverityColors' => '严重程度颜色',
+    'SeverityColorsHelp' => '事件仪表板和事件详情页面上会显示每种严重程度对应的颜色。',
+    'Editing' => '编辑',
+    'SetAsDefaultForEveryone' => '设置为所有人的默认值',
+    'EditLayoutHint' => '拖动图块移动 · 拖动边缘调整大小 · ✕ 移除',
+    'RemoveWidget' => '移除小部件',
+    'AddWidget' => '添加小部件',
+    'AddToDashboard' => '添加到仪表板',
+    'AllWidgetsAdded' => '所有可用的组件都在此仪表板上。',
+    'AddText' => '添加文本',
+    'GettingStarted' => '入门',
+    'GettingStartedTitle' => '欢迎来到 SimpleRisk',
+    'GettingStartedSubtitle' => '几个简单的步骤即可充分利用 SimpleRisk。',
+    'GSProgressCount' => '{done} 的 {total} 已完成',
+    'GSNextUp' => '接下来',
+    'GSArea_setup' => '设置',
+    'GSArea_risk' => '风险',
+    'GSArea_assessment' => '评估',
+    'GSArea_compliance' => '遵守',
+    'GSArea_assets' => '资产',
+    'GSArea_ai' => '设置',
+    'GSHide' => '隐藏入门指南',
+    'GSDismissStep' => '忽略此步骤',
+    'GSAllSet' => '一切就绪——干得漂亮！',
+    'GSWalkthrough' => '30分钟参观',
+    'Explore' => '探索',
+    'Learn' => '学习',
+    'AdminGuide' => '管理员指南',
+    'LearnMore' => '了解更多',
+    'GSRegisterTitle' => '注册您的实例',
+    'GSRegisterDesc' => '使用您的许可证密钥激活支持和更新。',
+    'GSRegisterCta' => '注册',
+    'GSScfTitle' => '安装安全控制框架',
+    'GSScfDesc' => '安装 SCF——您的跨标准控制库。',
+    'GSScfCta' => '安装 SCF',
+    'GSInviteTitle' => '邀请您的团队',
+    'GSInviteDesc' => '添加同事，以便分配和审核工作。',
+    'GSInviteCta' => '添加用户',
+    'GSAiTitle' => '配置人工智能',
+    'GSAiDesc' => '利用人工智能提升您的 SimpleRisk 使用体验。',
+    'GSAiCta' => '建立人工智能',
+    'GSSubmitRiskTitle' => '提交您的第一个风险',
+    'GSSubmitRiskDesc' => '找出贵组织面临的风险。',
+    'GSSubmitRiskCta' => '提交风险',
+    'GSMitigateTitle' => '制定缓解措施',
+    'GSMitigateDesc' => '为未解决的风险添加缓解计划。',
+    'GSMitigateCta' => '制定缓解措施',
+    'GSReviewTitle' => '进行风险评估',
+    'GSReviewDesc' => '评估风险并决定下一步措施。',
+    'GSReviewCta' => '执行审查',
+    'GSDefineTestTitle' => '定义一个控制测试',
+    'GSDefineTestDesc' => '设置如何测试控件。',
+    'GSDefineTestCta' => '定义测试',
+    'GSInitiateAuditTitle' => '启动审计',
+    'GSInitiateAuditDesc' => '启动测试或审核周期。',
+    'GSInitiateAuditCta' => '启动审计',
+    'GSAssetTitle' => '添加您的资产',
+    'GSAssetDesc' => '清点您正在保护的资产。',
+    'GSAssetCta' => '添加资产',
+    'GSInvalidStep' => '入门步骤无效。',
+    'GSPagerLabel' => '{from}–{to} 的 {total}',
+    'GSPrevCards' => '显示之前的步骤',
+    'GSNextCards' => '显示后续步骤',
+    'WhatsNextInstallSCF' => '安装安全控制框架',
+    'GSActivateScfTitle' => '激活安全控制框架',
+    'GSActivateScfDesc' => '启用已安装的 SCF，将其控件加载到您的库中。',
+    'GSActivateScfCta' => '激活SCF',
+    'WhatsNextActivateSCF' => '激活安全控制框架',
+    'GSEnableFrameworksTitle' => '启用适用的框架',
+    'GSEnableFrameworksDesc' => '启用适用于贵组织的 SCF 框架。',
+    'GSEnableFrameworksCta' => '启用框架',
+    'WhatsNextEnableFrameworks' => '启用适用的框架',
+    'GSSelfAssessTitle' => '进行自我评估',
+    'GSSelfAssessDesc' => '对照 250 多个框架评估您的组织，并找出控制措施失效带来的风险。',
+    'GSSelfAssessCta' => '开始评估',
+    'WhatsNextTakeSelfAssessment' => '进行自我评估',
+    'WhatsNextConfigureAI' => '配置人工智能',
+    'ListUnreviewedRisks' => '未经评估的风险',
+    'ControlsByDomain' => '按域控制',
+    'ControlsByClass' => '按类控制',
+    'ControlsByPhase' => '相位控制',
+    'ControlsByPriority' => '按优先级控制',
+    'ControlsByCurrentMaturity' => '按当前成熟度进行控制',
+    'ControlStatusOverTime' => '控制状态随时间变化',
+    'ComplianceTotalControls' => '完全控制',
+    'HomeKpiOverdueTests' => '逾期测试',
+    'Total' => '全部的',
+    'StartTheTest' => '开始测试',
+    'TestStartsAutomatically' => '测试自动开始',
+    'GoToTest' => '前往测试',
+    'NotTested' => '未经测试',
+    'PassingPercent' => '及格率',
+    'ListFailingControls' => '控制失效',
+    'Exceptions' => '例外情况',
+    'Documents' => '文件',
+    'ControlsBelowMaturity' => '成熟度以下的控制',
+    'ControlsAtMaturity' => '成熟期的控制',
+    'ControlsAboveMaturity' => '成熟度以上的控制',
+    'Maturity' => '成熟度',
+    'AllTime' => '所有时间',
+    'Last7Days' => '过去7天',
+    'Last30Days' => '过去30天',
+    'Last90Days' => '过去90天',
+    'YearToDate' => '今年迄今为止',
+    'CustomRange' => '定制系列',
+    'Age' => '存续时间',
+    'ImOpenIncidents' => '未决事件',
+    'ImClosedIncidents' => '已结案事件',
+    'ImByAttackVector' => '通过攻击向量打开',
+    'ImBySource' => '开源',
+    'AverageDaysToDetect' => '平均检测天数',
+    'ImKpiAvgTtd' => '平均检测',
+    'Days' => '天',
+    'ImKpiCriticalOpen' => '关键开放',
+    'ImKpiResolvedInSla' => '已在服务级别协议 (SLA) 中解决',
+    'Events' => '活动',
+    'ImEventsIncidents' => '事件与事故',
+    'ImSourceBreakdown' => '按类别来源',
+    'ImClosureSummary' => '结案总结',
+    'ImSignalQuality' => '告警信号质量',
+    'ImSignalLowSample' => '经裁决的结案案例数量不足，无法进行可靠评级。',
+    'ImportExportExportPdf' => '导出PDF',
+    'ImportExportExporting' => '准备 PDF…',
+    'ImportExportExportFailed' => '无法生成PDF文件，请重试。',
+    'ImportExportGeneratedOn' => '生成',
+    'ImportExportPage' => '页',
+    'ImportExportPageOf' => '的',
+    'ResolutionTargetsUpdated' => '针对不同严重程度的解决目标已更新。',
+    'SeverityColorsUpdated' => '严重程度颜色已更新。',
+    // AI Capabilities Catalog + AI settings hub (unified AI settings)
+    'AICapGrcRecommendations' => 'GRC框架建议',
+    'AICapGrcRecommendationsDesc' => '根据贵组织的实际情况，提供人工智能生成的框架建议和执行摘要。',
+    'AICapRiskRecommendations' => '风险建议',
+    'AICapRiskRecommendationsDesc' => '根据风险、其缓解措施和审查结果，针对每个风险提出风险详情和缓解措施的建议。',
+    'AICapFairAnalysis' => '公平定量分析',
+    'AICapFairAnalysisDesc' => 'AI 估算 Beta-PERT 损失参数；SimpleRisk 运行 10,000 次迭代的蒙特卡罗模拟来量化风险（以美元计）。',
+    'AICapDocumentCustomization' => '文档定制',
+    'AICapDocumentCustomizationDesc' => '填充文档模板中的占位符并清理政策文本，使模板政策读起来就像是您自己的政策。',
+    'AICapDocumentControlMatching' => '文档↔控制匹配',
+    'AICapDocumentControlMatchingDesc' => '自动将控制措施映射到政策文件，并提供置信度评分和理由供您查看。',
+    'AICapDocumentTemplates' => '文档模板库',
+    'AICapDocumentTemplatesDesc' => '从 SimpleRisk 库安装精选的政策、指南和程序模板。',
+    'AICapControlReferenceEnhancement' => '控制参考增强',
+    'AICapControlReferenceEnhancementDesc' => '通过网络搜索查找逐字对照文本，以丰富您的对照参考文献。',
+    'AICapAiChat' => '聊天助手',
+    'AICapAiChatDesc' => 'SimpleRisk 中的 GRC 助手，可在任何上下文中回答相关问题。',
+    'AICapSurfacedRecommendations' => '人工智能页面',
+    'AICapSurfacedRiskView' => '风险评估——详情及缓解措施',
+    'AICapSurfacedFairTab' => '风险视图 — FAIR 标签页',
+    'AICapSurfacedDocuments' => '治理——文件',
+    'AICapSurfacedControls' => '合规性——控制',
+    'AICapSurfacedEveryPage' => '每页——浮动助手',
+    'AICapabilitiesCatalog' => '能力',
+    'AICapSearchPlaceholder' => '搜索 AI 功能…',
+    'AICapFilterDomain' => '领域',
+    'AICapFilterTier' => '层级',
+    'AICapFilterState' => '状态',
+    'AICapTierExtra' => 'AI 额外',
+    'AICapStateLocked' => '已锁定',
+    'AICapIncludedInExtra' => '包含在 AI Extra 中',
+    'AICapPurchaseExtra' => '购买 AI Extra',
+    'AICapNeedsProvider' => '需要提供商设置',
+    'AICapNoMatch' => '没有匹配的功能',
+    'AICapNoMatchHint' => '尝试使用不同的域名、层级或搜索词。',
+    'AICapCountSingular' => '能力',
+    'AICapCountPlural' => '能力',
+    'DomainAssistant' => '助手',
+    'AICapLoadError' => 'AI功能加载失败，请重试。',
+    'AIProviderConfigSubtitle' => '将 SimpleRisk 与 AI 提供商连接，以支持 AI 功能。',
+    'AIHowToGetAPIKeyFor' => '如何获取 API 密钥',
+    'AIExtraNotActivated' => '未激活',
+    'AIExtraValueProp' => '增强型人工智能——FAIR风险量化、文档和控制协助以及人工智能聊天助手。',
+    'AICtxOrgName' => '贵组织的名称是什么？',
+    'AICtxOrgSizeEmployees' => '贵公司有多少名员工？',
+    'AICtxOrgSizeRevenue' => '贵公司年收入是多少？',
+    'AICtxOrgObjective' => '贵组织的主要业务目标和战略目标是什么？',
+    'AICtxOrgIndustry' => '贵公司的主要行业或领域是什么？',
+    'AICtxOrgLocation' => '贵公司在哪些国家或地区开展业务？',
+    'AICtxOrgType' => '你们是哪种类型的组织？',
+    'AICtxDataTypes' => '贵组织收集、处理或存储哪些类型的数据（例如，个人数据、财务数据、健康信息）？',
+    'AICtxDataCustomers' => '您的主要客户或利益相关者是谁（例如，消费者、企业、政府机构）？',
+    'AICtxDataRegulatory' => '您所在的行业是否受到任何特定的监管要求约束？',
+    'AICtxDataThirdParties' => '贵公司是否有任何需要合规监管的第三方合作关系或外包服务？',
+    'AICtxMaturityIssues' => '过去 3-5 年内，您是否遇到过任何重大的合规问题、安全漏洞或风险事件？',
+    'AICtxMaturityConcerns' => '您在当前的 GRC 流程中是否发现了任何需要关注或改进的具体领域？',
+    'AICtxMaturityAppetite' => '贵组织的风险偏好和风险承受能力如何？',
+    'AICtxMaturityLevel' => '您在公司治理、风险管理和合规实践方面的成熟度目前如何？',
+    'AICtxImplementationChanges' => '您的业务模式、技术基础设施或市场是否有任何即将发生的变化可能会影响您的合规需求？',
+    'AICtxImplementationResourcesBudget' => '您有哪些预算拨款资源可用于实施和维护合规框架？',
+    'AICtxImplementationResourcesPersonnel' => '您有哪些人力资源可用于实施和维护合规框架？',
+    'AICtxImplementationResourcesTechnology' => '您有哪些技术基础设施资源可用于实施和维护合规框架？',
+    'AICtxImplementationResourcesTraining' => '你们有哪些培训和发展资源可用于实施和维护合规框架？',
+    'AICtxImplementationResourcesExternal' => '为了实施和维护合规框架，您有哪些外部支持资源可用？',
+    'AIAPIKeySecurityNote' => '您的密钥存储在服务器端，绝不会返回给浏览器。提供商 URL 会根据 config.php 文件中配置的 SSRF 允许列表进行验证。',
+    'AIContextEgressWarning' => '您的答案将发送给您配置的 AI 服务提供商，以用于提供推荐依据。请勿包含任何您不愿与他们分享的信息。',
+    'Provider' => '提供者',
+    'AIProviderURLHostNotAllowed' => '主机“%s”不在AI提供商的允许列表中。请将其添加到config.php文件中的 $ai_allowed_provider_hosts ，然后保存。（已知的AI提供商和127.0.0.1回环地址始终允许访问。）',
+    'AIContextLastSaved' => '上次保存',
+    'AIContextNeverSaved' => '尚未保存',
+    'AICtxCardSubtitle' => '涵盖四个领域的21个问题。回答的问题越多，给出的建议就越精准。',
+    'AICtxAnswered' => '%1$d 中的 %2$d 回答',
+    'AICtxAllOptional' => '可选',
+    'AIContextSaving' => '正在保存…',
+    'AIContextSaveFailed' => '无法保存更改，请重试。',
+    'AISettingsSavedNotReachable' => 'AI 设置已保存，但无法连接到服务提供商。请确保服务提供商正在运行且 URL 正确。',
+    'AISettingsSavedKeyRequired' => 'AI 设置已保存，但该提供商需要 API 密钥才能使用其功能。',
+    'TestAndSave' => '测试并保存',
+    'AICapEnableAll' => '全部启用',
+    'AICapDisableAll' => '全部禁用',
+    'AISettingsSavedConnected' => 'AI设置已保存——连接成功。',
+    'AISettingsSavedNotConnected' => 'AI设置已保存，但连接测试失败。请检查模型、密钥和URL。',
+    'AIProviderURLNotOnAllowlist' => '此主机不在 AI 提供商的 SSRF 允许列表中。请先将其添加到 config.php 文件中的 $ai_allowed_provider_hosts 中，然后才能保存。',
+    'Connected' => '已连接',
+    'NotConnected' => '未连接',
+    'AICapBulkError' => '部分功能更新失败，请稍后重试。',
+    'QuestionnaireAlreadyCompleted' => '这份问卷已经填写完毕。',
+    'QuestionnaireDraftError' => '保存草稿时出错。请查看控制台了解详情。',
+
+    // Audit cadence scheduling - Define Test modal (Interval/Calendar schedule redesign)
+    // 'Overdue' duplicates the English of 'ImKpiOverdue' on purpose: that key is
+    // an Incident Management KPI label, and a compliance status pill reusing an
+    // IM-scoped key would couple the two domains for a translator (and break the
+    // moment either wording moves). This is the generic, cross-domain one.
+    'Overdue' => '逾期',
+    // Deliberate: the only other key rendering 'Manual' is 'ManualValuation',
+    // an asset-valuation label. Pointing a schedule mode at it would couple two
+    // unrelated domains for translators and break the moment either reworded.
+    'ScheduleManual' => '手动的',
+    'ScheduleInterval' => '间隔',
+    'ScheduleCalendar' => '日历',
+    'Cadence' => '频率',
+    'CadenceBiweekly' => '双周',
+    'CadenceSemiAnnually' => '每半年',
+    'AnchorDate' => '锚定日期',
+    'UpcomingOccurrences' => '即将发生的事件',
+    'AuditLeadInDays' => '审计准备日',
+    'SkipOccurrence' => '跳过',
+    'OverrideDate' => '覆盖日期',
+    'Week' => '星期',
+    'NoUpcomingOccurrences' => '此时间段内没有即将发生的事件。',
+    'FailedToLoadUpcomingOccurrences' => '无法加载即将发生的事件预览。',
+    'AnchorDateMustBeTodayOrLater' => '锚定日期必须为今天或之后。要安排过去的日期，请创建手动测试。',
+    'InvalidScheduleType' => '无效的日程类型。允许的值：手动、间隔、日历。',
+    'Weeks' => '周',
+    'Months' => '月份',
+    'Years' => '年',
+    'ScheduleSummaryEvery' => '每 {$interval} {$unit}',
+
+    // Define Tests redesign - client-rendered grid (Phase 1, Task 6)
+    'LastResult' => '最新结果',
+    'NextDue' => '下一个到期日',
+    'DueSoon' => '即将到来',
+    'Retired' => '已停用',
+    'MyTests' => '我的测试',
+    'Failing' => '失败',
+    'Untested' => '未经测试',
+    'ShowRetired' => '显示已停用项',
+    'Tests' => '测试',
+    'NoTestsForThisControl' => '该对照组尚未进行任何测试。',
+    'NoControlsDefinedYet' => '尚未定义任何控制变量',
+    'NoControlsDefinedYetBody' => '在添加测试之前，先在治理中定义控制措施。',
+    'NoTestsMatchFilters' => '没有符合您筛选条件的测试。',
+    'NoTestsMatchFiltersBody' => '请尝试调整搜索条件或筛选条件。',
+    'CouldNotLoadTests' => '无法加载测试',
+    'CouldNotLoadTestsBody' => '出错了。您的数据安全无虞——请尝试刷新页面。',
+    'ShowingXToYOfZ' => '显示 {$start}–{$end} 共 {$total} 个',
+    // Define Tests grid -- SCF-mapping + read-only procedure expand (Phase 1, Task 7)
+    'Reference' => '参考',
+    'NoFrameworksMapped' => '没有框架映射到此控件。',
+    // Define Tests grid -- batch select + retire/delete + quick filters (Phase 1, Task 8)
+    'Retire' => '停用',
+    'ReassignTester' => '重新分配测试员',
+    'SetSchedule' => '设定时间表',
+    'ConfirmRetireSelectedTests' => '放弃选定的 {n} 个测试？',
+    'ConfirmDeleteSelectedTests' => '删除选定的测试（ {n} ）？此操作无法撤销。',
+    // Define Tests grid -- Coverage toolbar select (Issue 4)
+    'Coverage' => '覆盖范围',
+    'CoverageWithTests' => '对照试验',
+    'CoverageAllControls' => '所有控件',
+    'CoverageGaps' => '差距',
+    // Define Tests insights band (Phase 2, Task 4) -- KPI tile labels + subtitles.
+    // 'Overdue', 'DueSoon', and 'Failing' are reused from the grid's quick-filter
+    // chips above (identical text) rather than duplicated here.
+    'DtTotalTests' => '总测试次数',
+    'DtCoverageGaps' => '覆盖范围缺口',
+    'DtAcrossNControls' => '跨越 {$n} 控件',
+    'DtControlsWithNoTest' => '未进行测试的对照组',
+    'DtNeedInitiationNow' => '现在需要启动',
+    'DtWithinLeadInWindow' => '在导入窗口内',
+    'DtLastResultFailed' => '上次结果失败',
+    'InvalidTestMethod' => '测试方法必须是询问、观察、检验或复测之一！',
+    'TesterCannotBeApprover' => '测试人员不能同时被列为该测试的审批人。',
+    'ApproverNotEligible' => '一个或多个选定的审批人没有“批准测试”的职责。',
+    'TestMethod' => '测试方法',
+    'TestMethodInquiry' => '询问',
+    'TestMethodObservation' => '观察',
+    'TestMethodInspection' => '检查',
+    'TestMethodReperformance' => '再表演',
+    'Sample' => '样本',
+    'RequiredEvidence' => '所需证据',
+    'Approvers' => '审批人',
+    'AuditLog_TestAuditApproved' => '审计“{$test_audit_name}”（ID： {$test_audit_id}）已由用户“{$user_name}”批准。',
+    'AuditLog_TestAuditRejected' => '审核“{$test_audit_name}”（ID： {$test_audit_id}）被用户“{$user_name}”拒绝，并附有评论“{$comment}”。',
+    'AuditLog_TestAuditAwaitingApproval' => '用户“{$user_name}”提交了审计“{$test_audit_name}”（ID： {$test_audit_id}）以待关闭，目前正在等待批准。变更： {$changes}。',
+    'AuditApproved' => '审计工作已顺利通过。',
+    'AuditRejected' => '审计被成功驳回。',
+    'RejectCommentRequired' => '拒绝审计报告需要提出意见。',
+    'NotAnApproverOfThisAudit' => '您不是本次审核的指定审批人。',
+    'ApproverCannotBeTester' => '审批人不能同时担任本次审计的测试人员。',
+    'AuditNotAwaitingApproval' => '本次审计目前无需等待批准。',
+    'NotificationAuditAwaitingApprovalTitle' => '审计待您批准',
+    'NotificationAuditAwaitingApprovalBody' => '审计“{$test_audit_name}”已提交结案，等待您的批准。',
+    'NotificationAuditRejectedTitle' => '审计拒绝',
+    'NotificationAuditRejectedBody' => '审计“{$test_audit_name}”被拒绝，并附有评论：“{$comment}”',
+    'AwaitingApproval' => '等待批准',
+    'AwaitingApprovalBannerText' => '该审计已提交结案，正在等待指定审批人的批准才能结案。',
+    'ReturnedForRework' => '退回重做',
+    'ReturnedForReworkBannerText' => '该审计报告被驳回并退回重做。',
+    'RejectReason' => '拒绝理由',
+    'AreYouSureYouWantToApproveThisAudit' => '您确定要批准这项审计吗？',
+    'AtLeastOneControlRequired' => '至少需要一个控制变量。',
+    'DtNCommonAcrossNControls' => '{$common} 通用 · {$n} 控件',
+    'DtUntestedControls' => '未经测试的控制',
+    'DtControlsInScopeNoCoverage' => '无保障',
+    'Passing' => '通过',
+    'DtLastResultPassed' => '最后结果通过',
+    'AllFamilies' => '所有控制族',
+    'SearchTestsPlaceholder' => '搜索测试、控制和框架',
+    'AnySchedule' => '任何日程安排',
+    'AnyTag' => '任何标签',
+    'AuditAutoClosedTestRetired' => '由于测试已终止，因此自动关闭，结果为“结论不明确”。',
+    'Common' => '常见的',
+    'ValidatesAcrossMappedFrameworks' => '跨映射框架进行验证',
+    'EditTest' => '编辑测试',
+    'ControlHasNoTestCoverage' => '该范围内的控制项目前还没有测试覆盖率。',
+    'AddTheFirstTest' => '添加第一个测试',
+    'ApplyCommonTestHint' => '将一个或多个现有测试应用于此控件。每个测试保留其当前控件，并成为一个涵盖此控件的通用测试。',
+    'CommonTestApplied' => '对该对照组进行了测试。',
+    'CouldNotApplyCommonTest' => '无法将此测试应用于此对照组。',
+    'SelectOneOrMoreTests' => '选择一项或多项测试',
+    'CommonTestsApplied' => '{n} 测试应用于此控件。',
+    'ApplyCommonTests' => '应用通用测试…',
+    'History' => '历史',
+    'Result' => '结果',
+    'Approval' => '赞同',
+    'ThisTestHasNotBeenRunYet' => '该测试尚未运行。',
+    'CouldNotLoadTestHistory' => '无法加载此测试的历史记录。',
+    'Identity' => '基本信息',
+    'IdentitySectionHint' => '名称、测试人员及其验证的控件',
+    'WhenTheAuditInitiates' => '审计开始时',
+    'ProcedureAndEvidence' => '程序与证据',
+    'CommonTestControlsHint' => '一个测试可以验证多个控件——这是一个通用测试。从控件的“+ 添加测试”打开此测试，即可预先选中它。',
+    'SeparationOfDutiesNote' => '职责分离——审批人不能同时担任测试人。',
+    'CommonTestEditScopeHint' => '凡是使用此通用测试的地方，均适用以下变更。',
+    'Mode' => '模式',
+    'AddOrRemove' => '添加或删除…',
+    'AddOrSearchTags' => '添加或搜索标签…',
+    'CreateTagX' => '创建“{tag}”',
+    'Archived' => '已存档',
+    'ShowAllTests' => '所有测试',
+    'ShowActiveTests' => '主动测试',
+    'ShowRetiredTests' => '已停用的测试',
+    'UntestedControls' => '未经测试的对照',
+    'OverdueByXDays' => '逾期 · {n} 天',
+    'OverdueByOneDay' => '逾期 · 1 天',
+    'DueInXDays' => '预计在 {n} 天内到期',
+    'DueTomorrow' => '明天到期',
+    'DueToday' => '今天到期',
+    'ScheduledForX' => '已安排 · {date}',
+    'AllTesters' => '所有测试人员',
+    'AllStatuses' => '所有状态',
+    'OnTrack' => '一切顺利',
+    'NextTestDateDerivedHint' => '根据上次测试日期加上测试频率计算得出。设置测试频率可自动安排测试，或将频率留空以手动设置测试日期。',
+    'DueStatus' => '到期状态',
+    'AllResults' => '所有结果',
+    // Remove a test from one control (Define Tests grid unlink row action)
+    'RemoveFromThisControl' => '从此控件中移除',
+    'RemoveTestFromControl' => '从对照组中移除测试',
+    'RemoveTestFromControlConfirm' => '从 {control_name} 中移除“{test_name}”？',
+    'RemoveTestFromControlStays' => '测试结果保留在其 {n} 其他控件上。不会删除任何内容。',
+    'RemoveTestFromControlStaysOne' => '测试仍保留在其第一个对照组上。没有任何数据被删除。',
+    'CannotRemoveTestsOnlyControl' => '一个测试必须至少属于一个对照组。如果不符合条件，请将该测试移除或删除。',
+    'TestRemovedFromControl' => '该测试已从对照组中移除。',
+    'CouldNotRemoveTestFromControl' => '该测试无法从对照组中移除。',
+    'TestRemovedFromControlAuditLogMessage' => '测试“{$test_name}”（ID： {$test_id}）被用户“{$user}”从控制（ID： {$control_id}）中移除。',
+    'DeleteTestUsedByNControls' => '它被 {n} 控件使用，并将从所有这些控件中移除。',
+    'BulkDeleteSharedTestsNote' => '{n} 中的一些控件被其他控件使用，也将从这些控件中移除。',
+    'BulkRetireSharedTestsNote' => '{n} 这些控件被其他控件使用，也将在那里停用。',
+    'BulkDeleteOneSharedTestNote' => '其中一个控件被其他控件使用，也将从这些控件中移除。',
+    'BulkRetireOneSharedTestNote' => '其中 1 个被其他控件使用，也将在那里停用。',
+    'CouldNotLoadTest' => '无法加载此测试。',
+    'Expand' => '扩张',
+    'SearchMappings' => '搜索框架和参考资料',
+    'NoMatchingMappings' => '没有找到符合该搜索条件的映射。',
+    'Insights' => '洞察',
+    'ShowInsights' => '显示洞察图块',
+    'HideInsights' => '将洞察图块折叠成摘要行',
+    'ChooseControls' => '选择控件',
+    'UseTheseControls' => '使用这些控件',
+    'SearchControlsPlaceholder' => '按号码或名称搜索',
+    'PickerKeyboardHint' => '上下移动，回车键选择，Esc键取消',
+    'NoControlsMatchFilters' => '这里没有匹配项。请将左侧的选项加宽一些，或清除搜索条件。',
+    'NoControlsSelectedYet' => '尚未选择任何内容。',
+    'AllControls' => '所有控件',
+    'AddOrRemoveControls' => '添加或移除控件…',
+    'LastTested' => '上次测试',
+    'LastTestDateAnchorHint' => '锚定间隔排程（此日期加上频率）。测试记录结果后，表格将显示最新结果的日期。',
+    'Filters' => '过滤器',
+    'ShowFilters' => '显示筛选器',
+    'HideFilters' => '隐藏筛选器',
+
+    // App shell — collapsing sidebar / new base design (SR app-shell redesign)
+    'AI' => '人工智能',
+    'CollapseSidebar' => '折叠侧边栏',
+    'FooterCopyright' => '© %s SimpleRisk。版权所有。',
+    'ExpandSidebar' => '展开侧边栏',
+    'WorkflowsCloneConfirm' => '克隆工作流“{$name}”？',
+    'WorkflowsDeleteConfirm' => '删除工作流“{$name}”？此操作无法撤销。',
+    'WorkflowActionFailed' => '操作失败： {$msg}',
+    'ClickToDisable' => '点击禁用',
+    'ClickToEnable' => '点击启用',
+    'ENABLED' => '已启用',
+    'DISABLED' => '已禁用',
+    'BackToWorkflows' => '返回工作流程',
+    'BackToHistory' => '返回历史记录',
+    'NewWorkflow' => '新工作流程',
+    'ViewSteps' => '查看步骤',
+    'SaveWorkflow' => '保存工作流程',
+    'WorkflowSavedSuccessfully' => '工作流已成功保存。',
+    'WorkflowNotFound' => '未找到工作流。',
+    'EditWorkflow' => '编辑工作流程： {$name}',
+    'OrganizationContextProfile' => '组织背景概况',
+    'AICtxAutoAcceptThreshold' => '贵组织的风险自动接受阈值是多少（以美元金额或 ALE 的百分比表示）？',
+    'AICtxGrcBudget' => '贵公司年度GRC/安全预算是多少？',
+    'AICtxAuditorPerspective' => '你主要接受谁的审计？',
+    'AICtxUnitCurrency' => '货币（美元）',
+    'AICtxUnitPercentOfAle' => 'ALE百分比（%）',
+    'AICtxFrameworksInUse' => '当前使用的框架',
+    'AICtxNoFrameworksInUse' => '尚未找到任何已激活的框架。请在“治理”>“框架映射”下添加框架。',
+    'AICtxFromYourData' => '根据您的数据',
+    'AICtxAuthoritative' => '权威性',
+    'AICtxAppetiteNotSet' => '未设置',
+    'AICtxAppetiteManageLink' => '风险管理配置',
+    'AICapControlTestGeneration' => '控制测试生成',
+    'AICapControlTestGenerationDesc' => '使用控制框架映射、现有测试和自我评估结果，起草控制测试以供审查——在您批准之前，不会创建任何东西。',
+    'AICapSurfacedControlTestGeneration' => '合规性——定义测试。',
+    'AIControlTestGenUnavailable' => '服务不可用：管理员必须在 AI 设置中启用此功能。',
+    'AIControlTestGenInvalidId' => '错误请求：需要提供阳性对照 ID。',
+    'AIControlTestGenNotFound' => '未找到：找不到指定的控件。',
+    'AIControlTestGenConflict' => '冲突：此控件的生成操作已排队。',
+    'AIControlTestGenQueued' => '已接受：控制测试生成已排队。',
+    'AIControlTestGenFailed' => '内部服务器错误：控制测试生成排队失败。',
+    'AIControlTestGenCheckFailed' => '错误：排队前无法验证控件。',
+    'GenerateTestsWithAI' => '利用人工智能生成测试',
+    'ShowAiSuggestedTests' => '人工智能建议的测试',
+    'AiSuggested' => '人工智能建议',
+    'ReviewAndEdit' => '审阅和编辑',
+    'CreateSelected' => '创建选定项',
+    'TestCreatedFromSuggestion' => '根据建议创建了测试用例。',
+    'SuggestionDismissed' => '建议被驳回。',
+    'TestGenerationQueued' => '测试生成已排队。',
+    'Generating' => '正在生成…',
+    'SuggestionDismissFailed' => '测试已创建，但其 AI 建议无法关闭。如果仍然存在，请手动关闭。',
+    'AICtxAuditorBig4' => '四大（外部）',
+    'AICtxAuditorBoutique' => '精品/区域（外部）',
+    'AICtxAuditorInternal' => '仅限内部审计',
+    'AICtxAuditorSelfAssessed' => '自我评估',
+    'AICtxAuditorNotSure' => '没有把握',
+    'AICtxAppetiteCautious' => '谨慎',
+    'AICtxAppetiteBalanced' => '均衡',
+    'AICtxAppetiteAggressive' => '挑衅的',
+    'TestGenerationComplete' => '人工智能生成的控制测试已准备好接受审核。',
+    'TestGenerationStillRunning' => '测试生成仍在进行中；草案很快就会发布。',
+    'TestGenerationNoNew' => '世代结束——没有新的测试建议用于此对照组。',
+    'SearchEntities' => '搜索实体',
+    'SearchEntitiesPlaceholder' => '搜索风险、控制措施、政策、例外情况…',
+    'ShowTypes' => '显示类型',
+    'Depth' => '深度',
+    'Inspector' => '检查器',
+    'Connections' => '连接',
+    'NoConnectionsFound' => '未找到与所选实体的任何连接。',
+    'CouldNotLoadGraph' => '无法加载连接图。',
+    'CouldNotSearchEntities' => '无法搜索实体。',
+    'ShowingTopNOfM' => '显示前 {0} 个，共 {1} 个',
+    'RankedByMaturityGap' => '按成熟度差距排名',
+    'RankedByRiskScore' => '按风险评分排名',
+    'RankedByRecentFailure' => '按最近一次失败次数排名',
+    'RankedByReviewDate' => '按下次审核日期排名',
+    'RankedBySeverity' => '按严重程度排名',
+    'RankedByName' => '按名称排名',
+    'NodeTypeSelfAssessmentResult' => '自我评估结果',
+    'Relationship' => '关系',
+    'Exception' => '例外',
+    'DesiredMaturity' => '期望的成熟度',
+    'ApprovalState' => '批准状态',
+    'RelationshipOfType' => '{0} 的 {1}',
+    // Connectivity Explorer Inspector: labels for enrichment field keys
+    // (ai_context_enrich_fetch(), ai_context_enrich_vulnerabilities()) that
+    // fieldLabel() in connectivity-visualizer.js did not yet cover.
+    'LastDate' => '上次日期',
+    'LastResultDate' => '最后结果日期',
+    'PercentComplete' => '完成百分比',
+    'AssessmentDate' => '评估日期',
+    'NextDate' => '下次日期',
+    'Number' => '数字',
+    'Grouping' => '分组',
+    'Hidden' => '隐',
+    'FirstFound' => '首次发现',
+    'LastFound' => '最后找到',
+    'Patchable' => '可修补的',
+    'Solution' => '解决方案',
+    'Breadcrumb' => '面包屑',
+    'SelectANodeToInspect' => '选择一个节点以查看其详细信息。',
+    'HiddenUnreachableNodes' => '{0} 节点已隐藏：不再连接，且类型已隐藏。',
+    // Connectivity Explorer canvas launchpad (Level-1 type tiles / Level-2
+    // browsable entity list) -- docs/superpowers/specs/2026-07-27-
+    // connectivity-explorer-launchpad.md
+    'BrowsableEntityTypes' => '可浏览的实体类型',
+    'CountFloor' => '{0}+',
+    'NoBrowsableTypes' => '您没有浏览任何实体类型的权限。',
+    'AllTypes' => '所有类型',
+    'FilterEntitiesPlaceholder' => '筛选…',
+    'NoMatchingEntities' => '没有实体符合您的筛选条件。',
+    'LoadMore' => '加载更多',
+    'Loading' => '加载中…',
+    'CouldNotLoadEntityCounts' => '无法加载实体计数。',
+    'CouldNotLoadEntities' => '无法加载实体。',
+    'ClearGraph' => '清除图表',
+    // Connectivity Explorer node-type chip label for the 'audit' type. Not
+    // reused from 'TeamType_audit' (same English text, "Audit") -- that key
+    // is scoped to the Team Separation team-type picker, a different feature
+    // whose wording should be free to diverge from this one's.
+    'Audit' => '审计',
+    // Queued email send-failure notifications
+    'EmailSendFailedNotificationTitle' => '邮件发送失败',
+    'EmailSendFailedNotificationBody' => '一封或多封已排队的邮件未能成功投递。请检查您的邮件设置，然后查看队列监视器和服务器日志以获取详细信息。',
+    'QuestionnaireShareInvalidEmailAddress' => '无法与没有有效电子邮件地址的联系人分享问卷调查结果。',
+    'AssessmentSendInvalidEmailAddress' => '无法将评估结果发送到无效的电子邮件地址。',
+    'AssessmentSentTo' => '评估结果已发送至“{$email}”。',
+    'AssessmentNotSentNoValidRecipients' => '评估报告未发送——未提供有效的电子邮件地址。',
+    'AssessmentContactUnusableEmailNotificationTitle' => '问卷未发送',
+    'AssessmentContactUnusableEmailNotificationBody' => '问卷“{$questionnaire}”无法发送至“{$contact}”，因为该联系人没有有效的电子邮件地址。请更新联系人记录以恢复发送。',
+    'EmailFailureNotificationRetention' => '电子邮件投递失败通知保留',
+    'EmailFailureNotificationRetentionOutOfRange' => '电子邮件投递失败通知的保留期限必须在 {$min} 天到 {$max} 天之间。',
+    'MailSettingsUpdatedSuccessfully' => '邮件设置已成功更新。',
+    // Questionnaire audit-trail entries for the API submit/draft paths (SR-1714).
+    // The token form credits the contact; an API caller is an authenticated
+    // SimpleRisk user acting on that contact's questionnaire, so both the
+    // contact and the acting user are named.
+    'QuestionnaireCompletedAuditLogViaApi' => '用户“{$user_name}”通过 API 完成了联系“{$contact_name}”的问卷“{$questionnaire_name}”。',
+    'QuestionnaireDraftAuditLogViaApi' => '问卷“{$questionnaire_name}”用于联系“{$contact_name}”，已由用户“{$user_name}”通过 API 保存为草稿。',
+    // Bad-input response for the questionnaire risk-list endpoints, which
+    // previously reported a malformed questionnaire_id as a permission denial.
+    // Mirrors the existing 'MissingOrInvalidTrackingID'.
+    'MissingOrInvalidQuestionnaireID' => '问卷编号缺失或无效。',
+    // POST /api/v2/assessments/questionnaire/result/file response messages.
+    // The `id` path deliberately returns QuestionIdCannotAcceptFile for every
+    // question-level rejection so a sequential tracking id cannot be used to
+    // probe questionnaire structure; the token path returns the specific reason.
+    'QuestionnaireResultNotFoundForTokenOrId' => '未找到：无法找到具有指定令牌或 ID 的问卷调查结果',
+    'QuestionIdCannotAcceptFile' => '错误请求：question_id {$question_id} 无法接受此问卷结果中的文件',
+    'QuestionIdNotFoundInQuestionnaire' => '错误请求：问卷中未找到问题 ID {$question_id}',
+    'QuestionIdInMultipleTemplates' => '错误请求：此问卷的 question_id {$question_id} 出现在多个模板中',
+    'QuestionIdDoesNotAcceptFileUploads' => '错误请求：question_id {$question_id} 不接受文件上传。',
+    // The Statement of Applicability's two UNVERIFIED implementation states.
+    //
+    // They exist because "we have not checked" is not "it does not work", and an
+    // SoA is ATTESTED — printing "No" for an unverified control is a false
+    // statement against yourself, exactly as printing "Yes" without evidence is
+    // a false statement the other way. Before these keys existed both states
+    // fell through to 'No', which on a framework where most controls carry no
+    // test meant the whole document read "not implemented".
+    //
+    // They are two states rather than one because they are different findings
+    // with different owners: no test defined is a GOVERNANCE gap (nobody decided
+    // how to verify this control), never run is an OPERATIONAL one (somebody
+    // decided, and it was not done).
+    //
+    // WORDING. Both must be unmistakably distinct from the bare 'No' in the same
+    // column. 'Tests never run' rather than 'Never run': in a column headed
+    // "Implemented", the bare phrase reads for a moment as though the CONTROL
+    // was never run, when the subject is its tests.
+    //
+    // BOTH ARE PLURAL, and that is not only style. English takes the plural
+    // after "no" when the expected quantity could exceed one ("no results
+    // found"), and a control normally carries several tests — the singular
+    // implies only ever one was expected. 'Tests never run' is the stronger
+    // case: soa_implemented_for() returns `never_run` only when NOT ONE of the
+    // control's tests has produced a verdict, so the state is inherently about
+    // the whole set. With four tests defined and none run, the singular reads as
+    // one omission rather than a wholesale one.
+    'SoaImplementedNoTestDefined' => '未定义测试',
+    'SoaImplementedNeverRun' => '测试从未运行',
+
+    // The Implemented column's fallback for a token neither sink recognizes.
+    //
+    // DELIBERATELY NOT A VERDICT, and the reason this key exists at all. Both
+    // sinks previously ended in a fallthrough to 'No', so adding a state without
+    // adding its label printed a confident, wrong answer into a compliance
+    // document. Falling through to 'Yes' would be worse. The only safe failure
+    // mode is a value that states nothing about the control — a visible bug
+    // instead of a silent misstatement.
+    'SoaImplementedUnknown' => '状态不可用',
+    // How an APPLICABLE control's stored inclusion reason(s) join to its own
+    // freeform justification when it recorded both (spec §4). Reached ONLY when
+    // both halves exist — reasons alone print as the reason list, prose alone
+    // prints verbatim — so this string is punctuation and word order, not prose.
+    // It is a language key rather than a hardcoded separator because a locale
+    // that joins clauses with a colon, a full stop, or right-to-left ordering
+    // must be able to say so; both placeholders have to survive translation.
+    'SoaJustifiedByInclusionReasons' => '{reasons} — {narrative}',
+    // The Set applicability modal's reason field, which became a MULTI-select
+    // when reasons moved to a join table: a control is commonly included (or
+    // excluded) for more than one reason, and the singular 'Reason' the field
+    // used to reuse now under-describes it. 'Reason' is left alone rather than
+    // repointed -- the row drawer and the SoA still print exactly one joined
+    // value under it, and redefining a key changes every surface that reads it.
+    'ApplicabilityReasons' => '原因',
+    // Said once, above a group of checkboxes, rather than implied by the widget.
+    // The old single <select> answered "how many may I pick?" by construction;
+    // a checkbox group does not, and a user who ticks one and stops has made the
+    // SoA less truthful than the one they meant to write.
+    'ApplicabilityReasonsHint' => '请选择所有适用的理由。',
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // THE STATEMENT OF APPLICABILITY'S MARKERS AND ITS LEGEND (spec §1, §3).
+    // ─────────────────────────────────────────────────────────────────────────
+
+    // THE EVIDENCE COLUMN'S TWO ABSENCES, which are OPPOSITES.
+    //
+    // 'No evidence linked' is a FINDING: the control is in scope, is possibly
+    // claimed implemented, and nothing substantiates it. The em dash below is
+    // the other answer -- the control is excluded, so no evidence is expected
+    // and the absence is correct. Rendering both as an empty cell hides the
+    // first, which is the one an auditor circles.
+    'SoaNoEvidenceLinked' => '没有证据表明与此有关',
+    // PUNCTUATION, NOT PROSE -- the glyph the Evidence cell prints when nothing
+    // is expected. A language key rather than a hardcoded character for the same
+    // reason 'SoaJustifiedByInclusionReasons' is one: a locale that marks "not
+    // applicable" with a different dash, or with a word, must be able to say so.
+    'SoaEvidenceNotExpected' => '—',
+    // Whether the evidence a test DECLARED it requires actually arrived with the
+    // result. A stronger claim than a pass/fail alone, and few SoA tools make it.
+
+    // THE REMEDIATION BLOCK -- what is being done about a control that reads
+    // Partial or No. The SoA points AT the risk treatment plan (clause 6.1.3(e))
+    // rather than becoming one.
+    'SoaRemediation' => '补救措施',
+    // THE MOST SERIOUS THING THAT BLOCK CAN FIND: the test failed and it is
+    // linked to no risk, so no treatment plan traces back to it. Dropping such a
+    // row for want of a risk to join to would render it as a blank cell, which
+    // reads as "nothing to report".
+    'SoaRemediationUnplanned' => '无风险关联',
+
+    // THE LEGEND. Required in both variants and every export format, because six
+    // implementation states plus three markers is more nuanced than the
+    // Yes/No/Partial an auditor expects, and an undefined vocabulary invites the
+    // reader to guess unfavourably.
+    'SoaLegendTitle' => '如何解读这份声明',
+    'SoaLegendYes' => '该控件定义的所有测试在上次运行时均通过。',
+    'SoaLegendPartial' => '对照组的测试结果不一致：至少有一项测试通过，至少有一项测试失败或没有得出任何结果。',
+    'SoaLegendNo' => '上次运行此控件时，所有测试均未通过，至少有一项测试失败。',
+    // The two unverified states are DIFFERENT FINDINGS WITH DIFFERENT OWNERS,
+    // and the labels alone do not quite carry that -- so the legend spells it
+    // out. This is the distinction the whole six-state set exists for.
+    'SoaLegendNoTestDefined' => '由于没有针对此控制项定义测试，因此其运行从未得到验证。这并非意味着该控制项缺失或失效，而只是说明该控制项本身并未体现这一点。治理漏洞在于：目前尚无人决定如何检查此控制项。',
+    'SoaLegendNeverRun' => '针对此控制措施存在测试用例，但从未执行过，因此此处不演示其运行情况。这并非意味着该控制措施缺失或失效。这只是一个运行上的漏洞：检查方案已制定但尚未执行。',
+    'SoaLegendNotApplicable' => '该控件不属于此框架的范围，因此它没有实现状态。',
+    // The one most in need of explaining: with nothing to define it, this reads
+    // as an admission about the control rather than as what it is.
+    'SoaLegendUnknown' => 'SimpleRisk 无法标记记录的状态，因此此处未演示具体实现。这是软件缺陷，与控制功能本身无关——既不能说明其有效，也不能说明其无效。',
+    'SoaLegendOverdue' => '所示结果仍然有效，但至少其中一项检测已过了下次检测日期。证据已过时。',
+    'SoaLegendNoEvidence' => '该控制措施在范围内，但没有任何证据支持：没有已确认的文件，也没有产生结果的测试。',
+    'SoaLegendEvidenceNotExpected' => '预计不会有证据，因为该控制措施不在研究范围内。',
+    'SoaLegendUnplanned' => '一项与风险无关的失败测试，因此没有治疗方案可以追溯到它。',
+
+    // THE TWO VARIANTS, chosen on the launcher before the document is generated
+    // and PRINTED ON ITS COVER. A Statement of Applicability is a controlled
+    // document: two of them for the same framework that show different things,
+    // with nothing on either to say which is which, is a document nobody can
+    // file.
+
+    // THE THREE DETAILED-ONLY COLUMNS.
+    // What those three columns say instead of nothing. A blank cell in an audit
+    // document reads as a formatting artefact; "Not recorded" is a fact the
+    // reader can act on.
+
+    // THE BROWSER PRINT ROUTE. Beside the two downloads on the launcher, and the
+    // only PDF route for a framework too large for the server-side writer.
+    // Shown in place of "Download as PDF" when the chosen framework is above
+    // SOA_EXPORT_PDF_MAX_CONTROLS. The affordance is absent rather than
+    // disabled, so this sentence is what tells the reader the absence is
+    // deliberate and what to do instead.
+    // The footer of every printed page. {page} and {pages} are substituted with
+    // the browser's own page counters, so the two tokens must both survive
+    // translation -- but their ORDER and the words around them are the
+    // translator's, which is why this is one string and not "Page" + "of".
+    'SoaPrintPageNumber' => '第 {page} 页，共 {pages} 页',
+
+    // THE ONE PDF AFFORDANCE on the statement-of-applicability launcher, beside
+    // 'DownloadAsXLSX'. It replaces the pair that used to sit there --
+    // 'SoaPrintToPdf' and 'DownloadAsPDF' -- because a Statement of Applicability
+    // is a controlled document and two PDF buttons let two people hand an auditor
+    // two different-looking PDFs of the same statement.
+    //
+    // JUST "PDF", AND DELIBERATELY SO. Below SOA_EXPORT_PDF_MAX_CONTROLS the
+    // button downloads a server-rendered file and above it the browser writes
+    // one, but that is a mechanism and not a choice the reader has to make. A
+    // label that named the mechanism ("Print to PDF" / "Download as PDF") would
+    // put the difference back in front of them.
+    //
+    // 'SoaPrintToPdf' and 'SoaPdfTooLargeHint' above are LEFT IN PLACE with no
+    // caller: 39 locales carry them, and this file is append-only precisely so a
+    // customer running a custom lang.<locale>.php can reconcile it with a tail
+    // diff.
+    'SoaPdf' => 'PDF',
+
+    // THE OTHER TWO ACTIONS IN THAT SAME ROW, shortened to match it.
+    //
+    // The row read "Open in browser" / "Download as XLSX" / "PDF", which put a
+    // verb on two of three actions and made the odd one out look like an
+    // abbreviation of something longer. The row's own context supplies the
+    // verbs -- these are the things you can DO with the framework you just
+    // chose -- so they carried no information and cost the reader a comparison.
+    // 'SoaPdf' is short because naming its mechanism would be dishonest (above
+    // SOA_EXPORT_PDF_MAX_CONTROLS it opens a print view rather than downloading
+    // a file), and the shortest of the three is the one that has to be right.
+    //
+    // NOT the generic 'Open' at line ~1021: that key lives among 'Mitigated' /
+    // 'Reviewed' and is the risk-status ADJECTIVE -- fr "Ouvert", de "Offen" --
+    // so reusing it would label a button with a state rather than an action in
+    // most of the 39 locales.
+    //
+    // 'SoaOpenInBrowser' above is LEFT IN PLACE with no caller, for the same
+    // reason 'SoaPrintToPdf' is: the locales carry it and this file is
+    // append-only so a customer's custom lang.<locale>.php reconciles with a
+    // tail diff. 'DownloadAsXLSX' keeps a caller either way -- the Assessments
+    // Extra's questionnaire results still use it.
+    'SoaOpen' => '打开',
+    'SoaXlsx' => 'XLSX',
+    // ---- The locked-affordance treatment -------------------------------------
+    // SHARED COPY, not chooser copy. SimpleRisk now SHOWS what's possible and
+    // MARKS what's out of reach because it isn't licensed, rather than hiding
+    // it -- so these strings appear both as a menu row's explanation (Define
+    // Control Frameworks' "+ Add framework" chooser) and beside a disabled
+    // toolbar button (the Statement of Applicability's PDF/XLSX exports). Each
+    // one is worded to read correctly in BOTH places, which is why none of them
+    // starts with "This route" or "This button".
+    //
+    // 'LockedAffordanceBadge' duplicates the English of 'AICapStateLocked'
+    // rather than reusing it: that key sits in the AI Capabilities Catalog's
+    // block and is scoped to a capability's state, and translators work from
+    // the key's neighbourhood as much as from its value.
+    'LockedAffordanceBadge' => '已锁定',
+    // The two SCF steps before it can be switched on. admin/register.php serves
+    // both -- it is the registration form AND where the per-Extra download
+    // buttons render -- so these differ in what they say, not where they go.
+    'UnlockRegisterInstanceNote' => '注册此实例即可获取安全控制框架。',
+    'UnlockRegisterInstanceLink' => '注册 SimpleRisk',
+    'UnlockDownloadScfNote' => '此实例已注册。请下载安全控制框架以使用它。',
+    'UnlockDownloadScfLink' => '下载它',
+    'UnlockActivateScfNote' => '安全控制框架已下载但未启用。',
+    'UnlockActivateScfLink' => '打开它',
+    // Import-Export is a paid Extra, so "not installed" is an upsell rather
+    // than a registration prompt. Deliberately a bare capability sentence: it
+    // has to sit under a menu row and next to an export button equally well.
+    'RequiresImportExportExtra' => '需要导入导出附加组件。',
+    'UnlockImportExportLink' => '看看它能带来什么好处',
+    'UnlockActivateImportExportNote' => '已安装进出口扩展程序，但未启用。',
+    'UnlockActivateImportExportLink' => '打开它',
+    // Shown instead of any of the above to a user who is not an administrator:
+    // every unlock step lives on a check_admin page, so they get the half that
+    // is useful to them -- that the capability exists, and who to ask -- and no
+    // link that would only bounce them.
+    'UnlockNeedsAdministrator' => '管理员可以进行设置。',
+    // API date parsing. {$field} is the request field name (next_date, last_date,
+    // test_date); {$format} is this instance's configured display date format.
+    'InvalidSubmittedDate' => '{$field} 值不是有效日期。请以 YYYY-MM-DD 格式提交，或以本例中的日期格式 ({$format}) 提交。',
+    // Companion to InvalidSubmittedDate, for a value that matches the expected
+    // shape but names a day that does not exist (February 31st, month 13).
+    // Saying "submit it as MM/DD/YYYY" there would repeat what the caller did.
+    // {$value} is the submitted value, echoed back truncated.
+    'ImpossibleSubmittedDate' => '{$field} 值“{$value}”不是实际的日历日期。请检查日期和月份——此实例将日期读取为 {$format}。',
+    // The Statement of Applicability's merged verification column. Replaces three
+    // separate headings (Implemented / Evidence / Review Cadence) with the one
+    // question all three answer: how do we know this control is working?
+    // The two appendices printed after the register. Justifications are truncated
+    // in the row and given in full here; remediation plans live here rather than
+    // in the table because ISO 27001 keeps the SoA (6.1.3(d)) and the risk
+    // treatment plan (6.1.3(e)) as separate artifacts.
+    'SoaAppendixJustifications' => '附录A——理由',
+    'SoaAppendixRemediation' => '附录 R — 补救计划',
+    // Appendix E carries the WORDING of each test's evidence requirement. The row
+    // keeps only whether that evidence arrived, which is the finding; the wording
+    // is reference material and was the bulkiest thing in the Verification cell.
+    'SoaRequiredEvidenceSupplied' => '所需证据已提供',
+    'SoaRequiredEvidenceNotSupplied' => '未提供所需证据',
+    // The one scheduling fact the SoA prints: the soonest date any of a control's
+    // tests is next due. Replaces a per-test "Manual — Next Test Date: ..." line,
+    // whose schedule type belongs on Define Tests and whose date is now on each
+    // test's own evidence bullet.
+    // The two dates on a test's evidence bullet. LABELLED, because two bare dates
+    // side by side are ambiguous in a way one is not.
+    // SINGULAR document-type labels for one piece of design evidence. SimpleRisk's
+    // existing keys are the plural tab names, which would read "Access Control
+    // Standard (Standards)".
+    'SoaEvidencePolicy' => '政策',
+    'SoaEvidenceStandard' => '标准',
+    'SoaEvidenceProcedure' => '程序',
+    'SoaEvidenceGuideline' => '指南',
+    // ── The legend, grouped by column (SOA_LEGEND_GROUPS, includes/soa.php) ──
+    // The Applicability column's three values. These were never in the legend,
+    // so an auditor met "Inherited" -- a word with no meaning outside SimpleRisk
+    // -- with nothing to look it up in.
+    'SoaLegendApplicable' => '该控制措施属于本框架的适用范围，组织负责实施该措施。',
+    // DISTINCT from 'SoaLegendNotApplicable', which defines the "N/A" that appears
+    // in the Implementation Status column. This one is the DECISION to exclude;
+    // that one is the consequence for the status.
+    'SoaLegendApplicabilityNotApplicable' => '该控制项已排除在本框架的适用范围之外。“理由”栏记录了原因以及做出决定的人员。',
+    'SoaLegendInherited' => '该控制权在控制范围内，但由第三方（云服务提供商、母公司或外包部门）而非本组织运营。提供商名称已在理由说明旁列出。',
+    // The Evidence column's four bullet glyphs. Load-bearing since the visible
+    // result word was dropped from pass and fail bullets, and until now defined
+    // nowhere at all.
+    'SoaLegendEvidencePass' => '该控件的测试结果显示，上次运行通过。旁边的日期是运行日期。',
+    'SoaLegendEvidenceFail' => '该控制措施的测试上次运行结果为失败。附录 R 载有处理方案（如有）。',
+    'SoaLegendEvidenceInconclusive' => '对该控件的测试已运行，但未得出任何结果。对于本文档无法识别的结果，也使用相同的标记，在这种情况下，结果本身会打印在标记旁边。',
+    // The TERM beside the § glyph. Not a document type -- the four types
+    // (Policy, Standard, Procedure, Guideline) are printed per item; this names
+    // the CATEGORY of evidence a document is.
+    'SoaEvidenceDesignDocument' => '设计文件',
+    'SoaLegendEvidenceDocument' => '一份治理文件被证实为这种控制措施的证据——是其设计而非运作方式。文件本身并不代表最终结论，因此不会被勾选。',
+    // The XLSX export's first worksheet tab. The workbook's other four tabs reuse
+    // headings that already exist ('How to read this statement', 'Statement of
+    // Applicability', and the two appendix headings); the cover had no name of its
+    // own because it used to be the top of a single sheet.
+    //
+    // KEEP IT SHORT. Excel caps a worksheet name at 31 characters and
+    // soa_export_sheet_name() truncates rather than failing the export, so a long
+    // translation loses its tail on the tab.
+    'SoaSheetCover' => '封面',
+
+    'SearchFrameworks' => '搜索框架',
+    'SearchControls' => '搜索控制措施',
+    'AddFramework' => '添加框架',
+    'Applicability' => '适用性',
+    'AnyFamily' => '任何控制族',
+    'AnyOwner' => '任何所有者',
+    'AnyClass' => '任何类别',
+    'AnyPhase' => '任何阶段',
+    'AnyPriority' => '任何优先级',
+    'AnyType' => '任何类型的',
+    'AnyStatus' => '任何状态',
+    'SelectAllN' => '全选 {n}',
+    'Classification' => '分类',
+    'Placement' => '放置',
+    'OwnershipAndMaturity' => '所有权与成熟度',
+    'MappingsAndGuidance' => '地图和指南',
+    'DeleteFrameworkTitle' => '删除框架“{$name}”？',
+    'DeleteControlTitle' => '删除控件“{$name}”？',
+    'DeleteControlsTitle' => '删除 {$n} 控件？',
+    'DeleteCannotBeUndone' => '这已经无法挽回了。',
+    'DeleteFrameworkConsequence' => '这将移除框架及其所有控制映射。',
+    'DeleteControlConsequence' => '这会移除它所映射到的每个框架的控制权。',
+    'DeleteControlsConsequence' => '这将从每个与其映射的框架中移除每个选定的控件。',
+    // Task 9: empty states (design-system.md §10) -- the four intents on
+    // Define Control Frameworks. Reuses existing keys where the copy already
+    // fits exactly (AddControl, AddFramework, ClearFilters, Retry,
+    // NoControlsDefinedYet, NoTestsMatchFiltersBody, CouldNotLoadTestsBody,
+    // RegisterYourInstance, GoToSCF, ImportExportExtra) -- only the strings
+    // with no existing match are added below.
+    'NoControlsMatch' => '没有与您的筛选条件匹配的控件',
+    'CouldNotLoadControls' => '无法加载控件',
+    'ControlsYouAddWillAppearHere' => '您添加的控件将显示在此处。',
+    'NoFrameworksYet' => '尚无框架',
+    'FrameworksYouAddWillAppearHere' => '您添加或导入的框架将显示在此处。',
+    'CouldNotLoadFrameworks' => '无法加载框架',
+    // Task 9 review fix: the framework rail's own "no results" intent, shown
+    // when the user has explicitly switched the status dropdown away from
+    // Active and that status has nothing (distinct from "No frameworks yet",
+    // which is reserved for the default Active status where the endpoint
+    // can't yet tell "no frameworks at all" from "none active").
+    'NoFrameworksMatchFilter' => '没有框架符合此状态',
+    'ViewActiveFrameworks' => '查看活跃框架',
+    // Task 10: Define Control Frameworks insights band (governance/index.php)
+    // -- KPI tile labels/subtitles. 'Controls', 'Pass', 'Fail', 'NotTested'
+    // already exist and are reused as label keys for their tiles.
+    'BelowTarget' => '低于目标',
+    'Excluded' => '已排除',
+    'FwInScope' => '范围',
+    'FwLastTestPassed' => '上次测试通过',
+    'FwLastTestFailed' => '上次测试失败',
+    'FwNoEvidence' => '适用，无证据',
+    'FwMaturityUnderDesired' => '预期成熟度',
+    'FwScopeAFramework' => '制定一个框架来决定',
+    'FwNotApplicableOrInherited' => '不适用或继承',
+    // Task 22: framework rail search (governance/index.php's #sr-fw-search,
+    // wired client-side in governance-frameworks.js). Reuses the shipped
+    // "no results" empty-state tile (#sr-fw-filtered, Task 9) rather than
+    // inventing a fourth rail empty state -- only the title and action swap
+    // depending on whether a status filter or a search narrowed the list to
+    // nothing; NoTestsMatchFiltersBody already covers both as body copy.
+    'NoFrameworksMatchSearch' => '没有框架符合您的搜索条件',
+    'ClearSearch' => '清除搜索',
+    // Task 24: Clone control pre-fills the Add Control modal from the source
+    // control (governance-frameworks.js's openControlForClone()) rather than
+    // creating a duplicate outright, so the modal needs to say plainly which
+    // control it was cloned from -- the reviewer's core complaint about an
+    // earlier one-click version of this feature was not knowing what was
+    // cloned. {$name} follows the same client-side formatTemplate()
+    // substitution ShowingXToYOfZ/NSelected already use on this page.
+    'ClonedFromControlNotice' => '克隆自“{$name}”。请查看以下字段，然后保存。',
+    // Task 24 review follow-up: the banner alone left the modal titled "New
+    // Control" over pre-populated fields -- "it doesn't prompt or anything
+    // so the user doesn't know what was cloned" (Josh) -- which reads as a
+    // bug, not a feature. Retitling #control--add-title to this (governance-
+    // frameworks.js's show.bs.modal delegate for #control--add) makes the
+    // clone unambiguous at a glance; NewControl is restored for a plain add.
+    'CloneOfControlTitle' => '克隆“{$name}”',
+    // Task 27: the framework rail's SCF-origin chip (governance-frameworks.js's
+    // railRow()) -- shown only for frameworks created via the ComplianceForge
+    // SCF Extra's authoritative-source import (get_scf_origin_framework_ids(),
+    // includes/governance.php). SCF is the badge text itself; ScfOriginHint is
+    // its title/tooltip.
+    'SCF' => '超级临界流体',
+    'ScfOriginHint' => '来自安全控制框架（SCF）',
+    // Task 34: the Maturity filter facet's placeholder on the Define Control
+    // Frameworks filter sheet (governance-frameworks.js's ensureFilterSheet()),
+    // matching the AnyFamily/AnyOwner/AnyClass/... set above. The facet's three
+    // OPTIONS reuse the existing BelowMaturity/AtMaturity/AboveMaturity keys --
+    // the same labels the governance dashboard's maturity-gap widgets already
+    // carry -- and the column chip renders those same three strings, so the
+    // filter and the cell can never read differently.
+    'AnyMaturity' => '任何成熟度',
+    // Task 46: accessible name for the control table's pager landmark
+    // (governance-frameworks.js's renderPager()). The pager's own buttons
+    // reuse the existing Previous/Next keys Define Tests' pager already
+    // carries; only the <nav> label is new, and it names WHICH table's pager
+    // it is because the Define Control Frameworks page has two lists on it.
+    'ControlsPagination' => '控制分页',
+    // Task 14: the Applicability column's state chip (governance-frameworks.js's
+    // renderApplicability()), the matching filter facet (its three option labels
+    // reuse these same three keys) and its "Any applicability" placeholder.
+    //
+    // The three states are PREFIXED rather than named 'Applicable'/
+    // 'NotApplicable'/'Inherited' because 'NotApplicable' already exists above
+    // as the ABBREVIATION 'N/A' -- the self-assessment answer chip and three
+    // reporting charts render it -- and redefining that key to the spelled-out
+    // phrase this column needs would silently change all four of those
+    // surfaces. The prefix also keeps the trio recognisable as one family.
+    //
+    // The column HEADER and the facet's accessible name reuse the existing
+    // 'Applicability' key, and the drawer's record reuses 'Reason', 'Provider'
+    // and 'Justification' -- all four already carry exactly the right string.
+    'ApplicabilityApplicable' => '适用的',
+    'ApplicabilityNotApplicable' => '不适用',
+    'ApplicabilityInherited' => '遗传',
+    'AnyApplicability' => '任何适用性',
+    // The drawer's applicability record: who recorded the decision and when.
+    // Both are attribution for an audited decision a customer may have to
+    // defend years later, which is why the drawer names them at all.
+    'ApplicabilityDecidedBy' => '由……决定',
+    'ApplicabilityDecidedOn' => '已决定',
+    // The framework-level Statement of Applicability card in the Add/Edit
+    // framework modals (display_framework_soa_card(), includes/governance.php).
+    // These two fields are what ISO/IEC 27001:2022 clause 6.1.3(d) needs on an
+    // SoA cover: the scope the framework is certified against, and how inclusion
+    // was determined for the controls that are simply applicable.
+    //
+    // 'IsmsScopeStatement' rather than a bare 'ScopeStatement' because "scope"
+    // is already overloaded across SimpleRisk (assessment scope, audit scope,
+    // risk scope); the ISMS prefix is what an ISO practitioner calls this exact
+    // field and keeps it from being reused for an unrelated one.
+    'StatementOfApplicability' => '适用性声明',
+    'IsmsScopeStatement' => '范围说明',
+    'IsmsScopeStatementHint' => '本框架的认证范围已在SoA封面页上列出。',
+    'DefaultInclusionJustification' => '默认包含理由',
+    'DefaultInclusionJustificationHint' => '用于适用且无关联风险的控制措施。请指明驱动因素，而非框架。',
+    // THE DEFAULT SENTENCE, in all three of its roles: the create form seeds the
+    // textarea with it, the Edit form shows it as a placeholder, and
+    // soa_framework_default_justification() (includes/soa.php) substitutes it at
+    // read time for a framework that has none. One key, because a reader must not
+    // be able to tell a stored default from a fallen-back one, and because three
+    // keys holding the same sentence is three chances for a translator to make
+    // them disagree. The name predates the seeding decision (Task 67) and is kept
+    // rather than churned through Crowdin for 39 locales.
+    //
+    // It names the DRIVER (the risk assessment) rather than the framework:
+    // "included because it is part of this framework" is circular, and ISO 6.1.3
+    // derives controls from risk treatment, using Annex A afterwards only as a
+    // completeness cross-check.
+    //
+    // It was a placeholder ONLY until Task 67, so that an unreviewed sentence
+    // could not reach a customer's SoA by inaction. Measured, that produced the
+    // opposite failure: 19 of 20 frameworks left the field NULL and the SoA's
+    // Justification column came out BLANK for every applicable control with no
+    // linked risks -- the finding an SoA is most often failed on, and one a
+    // boilerplate sentence does not attract.
+    'DefaultInclusionJustificationPlaceholder' => '根据组织的信息安全风险评估确定，并作为必要的控制措施保留。',
+    // Task 15: bulk-setting applicability from the control table's selection bar
+    // (#applicability--set, governance/index.php + governance-frameworks.js).
+    //
+    // The action's own label and the modal's one section. 'Applicability',
+    // 'Reason', 'Provider', 'Justification', 'Save' and 'Cancel' already exist
+    // and are reused; only the strings with no existing home are added here.
+    'SetApplicability' => '设置适用性',
+    'ApplicabilityDecision' => '决定',
+    // The amber scope note, in two sentences the page assembles separately
+    // because they answer two different questions: WHICH framework the decision
+    // is scoped to, and WHICH controls are about to receive it. The second one
+    // has two spellings, because the header checkbox selects the current PAGE
+    // while "Select all N" escalates to the whole filtered result set -- the two
+    // genuinely differ once the table pages, and a note that blurred them would
+    // let the user write 1,535 decisions believing they had written 25.
+    'ApplicabilityScopeNote' => '此决定仅适用于“{$framework}”框架。同一控制项在其他框架中仍然适用。',
+    'ApplicabilityAppliesToSelected' => '它将被记录到此页面上选定的 {$n} 控件中。',
+    'ApplicabilityAppliesToAllFiltered' => '它将针对所有与当前筛选条件匹配的 {$n} 控件进行记录，包括其他页面上的控件。',
+    // Per-state hints under the segmented control. The "applicable" one is the
+    // load-bearing sentence of the whole modal, and the SoA audit-readiness work
+    // rewrote it: an applicable control MAY now carry its own reasons and
+    // justification (ISO/IEC 27001 clause 6.1.3(d) asks for one per control, for
+    // inclusion as much as for exclusion), and leaving both empty is what falls
+    // back to the framework's default inclusion justification. The old sentence
+    // -- "this removes any recorded decision. No justification is needed." --
+    // is now false in both halves.
+    'ApplicabilityApplicableHint' => '本框架适用。理由和论证是可选的；如果两者都留空，则使用框架的默认纳入理由。',
+    'ApplicabilityNotApplicableHint' => '将某项控制措施排除在本框架的适用范围之外。需要提供理由和书面说明。',
+    'ApplicabilityInheritedHint' => '有人代表你执行此控制操作。请说出他们的名字，并说明他们执行的操作。',
+    'ApplicabilityNarrativeHint' => '该决定出现在适用性声明中。请写出审计师需要哪些条件才能接受该决定。',
+    'ApplicabilityProviderHint' => '执行控制的组织：云提供商、托管服务提供商、母公司。',
+    'ChooseAReason' => '选择一个理由',
+    'ApplicabilityNoReason' => '没有理由',
+    // Result toasts. Both interpolate a COUNT taken from the API response and
+    // nothing else -- no submitted text is ever reflected into a toast, which
+    // toastr renders as HTML.
+    'ApplicabilitySetResult' => '已更新对 {$n} 控件的适用性。',
+    'ApplicabilityClearResult' => '适用性重置为适用于 {$n} 控件。',
+    // Bulk control delete (Task 54, corrected Task 55). Deleting a control is
+    // final either way the delete engine implements it: a control with test
+    // history is soft-deleted (framework_controls.deleted = 1) to keep test
+    // history intact, a control with no tests is removed outright -- but
+    // nothing anywhere flips that flag back, so from the user's side there is
+    // no "kept" case, only "deleted, and its test history survives for audit
+    // purposes." Every sentence therefore leads with the same irreversible
+    // warning; the only thing that varies is whether an audit-history clause
+    // is appended, and that clause is omitted entirely rather than printed
+    // with a count of zero -- "0 are retained for audit history" reads as a
+    // warning about something that is not going to happen, and on a delete
+    // confirmation that is exactly the kind of noise that trains people to
+    // stop reading. Every {$...} is a count from the API response; no user
+    // text is ever interpolated, which matters because toastr renders HTML.
+    'DeleteControlsPreviewChecking' => '正在检查哪些内容将被删除……',
+    'DeleteControlsPreviewSplit' => '{$n} 个控件将被删除。此操作无法撤销。其中 {$m} 个控件的测试结果将保留以供审计历史记录。',
+    'DeleteControlsPreviewKeptOnly' => '所有 {$n} 控件将被删除。此操作无法撤销。测试结果将保留以供审计历史记录。',
+    'DeleteControlsPreviewRemovedOnly' => '{$n} 控件将被删除。此操作无法撤销。',
+    'DeleteControlsPreviewNone' => '无需删除：所选控件已不存在。',
+    'ControlsDeletedResult' => '{$n} 控件已删除。',
+
+    // The Add/Edit framework modal's Status field. The label reuses the existing
+    // 'Status' key -- the same word the rail's Active/Inactive/All filter already
+    // uses -- so only the explanatory hint is new. It says the two things a user
+    // cannot see from the control itself: that Inactive is the NON-destructive way
+    // to retire a framework (unlike Delete, which cannot be undone), and that the
+    // change cascades through the hierarchy, which is what update_framework_status()
+    // has always done and is genuinely surprising when a parent is deactivated.
+    'FrameworkStatusHint' => '未激活的框架保留所有控件和映射，但会从默认框架列表中隐藏，并且不会显示在治理仪表板中。停用一个框架也会停用其下的所有框架；激活一个框架也会激活其父框架。',
+
+    // Task 60: the same #applicability--set modal, opened from ONE control's row
+    // action instead of the selection bulk bar. The button's own label reuses
+    // 'SetApplicability'; these two exist because the modal now has to say which
+    // of the two it is acting on, and both spellings must be unambiguous.
+    //
+    // The title names the specific object (design-system.md §8) and the note
+    // says "only", because the dangerous reading is the silent one: with rows
+    // ticked -- or with "Select all N filtered" in force -- a modal that said
+    // nothing would let a click the user believed applied to one row be read as
+    // applying to every control in the framework. Naming the control in both
+    // places is what makes the narrower scope visible rather than assumed.
+    // Corrected in Task 63. This spelling used to end "...only, whatever else is
+    // selected", which was printed on every row-action open whether or not
+    // anything else WAS selected -- a dangling absolute with no antecedent, so
+    // it read as a sentence that had been cut off. It is now the plain form, and
+    // the reassurance about a competing selection moved to
+    // 'ApplicabilityAppliesToControlNotSelection' below, which is printed only
+    // when there is a competing selection to reassure anyone about.
+    'SetApplicabilityForControl' => '设置适用范围： {$name}',
+    'ApplicabilityAppliesToControl' => '它将仅记录在“{$name}”下。',
+
+    // Task 17: the Statement of Applicability report itself
+    // (reports/statement_of_applicability.php + pages/statement-of-applicability.js),
+    // the document ISO/IEC 27001:2022 clause 6.1.3(d) asks for and the one every
+    // applicability decision recorded on the Define Control Frameworks page
+    // exists to produce.
+    //
+    // 'StatementOfApplicability' already exists above (the framework modal's SoA
+    // card) and is reused for the report's own title, as are 'IsmsScopeStatement',
+    // 'DefaultInclusionJustification', the three 'Applicability*' state labels,
+    // 'ApplicabilityDecidedBy'/'DecidedOn', and the plain 'Framework',
+    // 'ControlNumber', 'ControlName', 'Justification', 'Evidence', 'Reason',
+    // 'Provider', 'Total', 'Controls' and 'Export' keys. Only strings with no
+    // existing home are added here.
+    'StatementOfApplicabilityDesc' => '对于一个框架：每个控制项，它是否适用，为什么被包含或排除，以及它是否被实施。',
+    // The header button on Define Control Frameworks. The verb is "generate"
+    // rather than "view" because the document is assembled at the moment it is
+    // asked for -- there is no stored SoA that could be out of date.
+    'GenerateStatementOfApplicability' => '生成适用性声明',
+
+    // The Justification column's SECOND resolution step, and the reason an SoA
+    // built here beats the spreadsheet it replaces: the risks that drove the
+    // control are already recorded against it, so nobody retypes them and they
+    // cannot go stale. {risks} is substituted with the displayed risk ids.
+    //
+    // Phrased to match clause 6.1.3, which derives controls from risk treatment
+    // and uses Annex A afterwards only as a completeness cross-check -- the same
+    // reasoning behind 'DefaultInclusionJustificationPlaceholder' above.
+    'SoaJustifiedByRiskAssessment' => '由组织的信息安全风险评估确定。关联风险： {risks}。',
+
+    // The Implemented column. DERIVED from maturity and the last test result on
+    // every read, never stored, so it cannot drift out of sync with the control.
+    // 'Yes' and 'No' already exist and are reused; only the middle value and the
+    // header need keys of their own. An excluded control's cell reuses the
+    // existing 'NotApplicable' ('N/A'), which is exactly the right abbreviation
+    // in a dense table.
+    'SoaImplemented' => '实施的',
+    'SoaImplementedPartial' => '部分的',
+
+    // The cover block.
+    'SoaGeneratedOn' => '生成于',
+    'SoaExcludedCount' => '已排除',
+
+    // The prompt shown when the framework has never been given the two cover
+    // fields. It PROMPTS rather than silently printing a blank cover: an SoA
+    // whose scope is empty is the one defect an auditor spots first, and the
+    // moment somebody opens the report is the only moment those fields matter.
+    // Both spellings of empty (never set, and deliberately cleared) prompt --
+    // from a reader's point of view there is nothing to print either way.
+    //
+    // The inclusion-justification line states a WEAKER consequence than it used
+    // to, because Task 67 made the stronger one untrue: the column no longer goes
+    // blank when the field is empty -- soa_framework_default_justification()
+    // substitutes the generic default sentence. The prompt survives because a
+    // generic sentence is not the organization's own, and an auditor reading 1,500
+    // identical rows of boilerplate is entitled to ask whose risk assessment it
+    // refers to.
+    'SoaMissingFieldsTitle' => '此声明缺少封面详情',
+    'SoaMissingScopeStatement' => '该框架尚未记录范围声明。范围声明应明确其适用范围。',
+    'SoaMissingInclusionJustification' => '未记录任何默认纳入理由。对于不涉及任何关联风险的适用控制措施，将采用通用声明，而非您自己的声明。',
+    'SoaEditFrameworkToAdd' => '将它们添加到框架中',
+
+    // Opened from the Reporting Hub, which cannot supply a framework. A picker,
+    // not an error: an SoA is a per-framework document by definition -- the same
+    // control excluded from ISO 27001 is not thereby excluded from PCI DSS --
+    // and there is no cross-framework roll-up to offer instead.
+    'SoaChooseFramework' => '选择一个框架',
+    'SoaChooseFrameworkHint' => '适用性声明是针对单个框架编写的。',
+    // The picker has a roster but nothing in it. Distinct from "this framework
+    // has no controls": there is no framework to write a statement about at all,
+    // and the fix is on a different page, so it says which one.
+    // The launcher's affordance row. "Open in browser" rather than "View"
+    // because it names what actually happens -- the document opens in a new tab,
+    // chrome-free -- and because Task 18 adds "Download as PDF" and "Download as
+    // XLSX" beside it, where "open" vs "download" is the distinction that
+    // matters.
+    // The document has no sidebar, so it needs its own way back for anyone who
+    // arrives from a bookmark or a shared link. Screen only; never printed.
+    'SoaBackToSelector' => '返回适用性声明',
+    'SoaNoFrameworks' => '没有活跃的框架',
+    'SoaNoFrameworksHint' => '在“治理”>“定义控制框架”下安装或激活框架，即可在此处使用。',
+
+    // The two refusals. Both explain rather than just failing, because the user
+    // arrived here deliberately.
+    'SoaFrameworkInactiveTitle' => '此框架已失效',
+    'SoaFrameworkInactiveBody' => '适用性声明描述了组织当前运营的范围。重新激活框架即可生成一份适用性声明。',
+    'SoaFrameworkNotFoundBody' => '那个框架已经不存在了。',
+
+    // A framework with no controls mapped into it. Not an error -- it is a real
+    // and recoverable state, and saying so beats an empty table.
+    'SoaNoControls' => '该框架没有控制功能',
+    'SoaNoControlsHint' => '将控件映射到框架中，其适用性声明将列出这些控件。',
+
+    // The second half of the statement-of-applicability launcher's affordance
+    // row, beside "Open in browser" and the existing 'DownloadAsXLSX'. Rendered
+    // only where the Import/Export Extra is active, which is what supplies the
+    // export. "Download as" rather than "Export to" so the pair reads as one
+    // choice of format, and so it matches the XLSX label already in this file.
+    'DownloadAsPDF' => '下载为PDF',
+
+    // The fourth column of the control modal's "Mapped Control Frameworks"
+    // widget, between the reference code and the reference text. The
+    // FRAMEWORK's own title for the control it is citing -- what a Statement of
+    // Applicability prints beside the clause number. Distinct from the existing
+    // 'ReferenceText', which holds the framework's full control statement, and
+    // from the SimpleRisk control's own name.
+    'ReferenceSubject' => '参考主题',
+    // Placeholder/help text under that field, and the reason it is worth
+    // filling in: without it the Statement of Applicability has nothing to
+    // print but the source catalogue's name for its own control.
+    'ReferenceSubjectHint' => "框架中该控件的自身名称。",
+
+    // Task 63: the row-scoped population sentence in the Set applicability
+    // modal, in the one situation where the plain
+    // 'ApplicabilityAppliesToControl' above leaves a real question unanswered --
+    // the user has controls ticked, or a standing "Select all N filtered", and
+    // has just opened the modal from ONE row's own action.
+    //
+    // It states the guarantee rather than implying it. A user whose escalated
+    // selection covers an entire framework needs to know that this click is not
+    // about to overwrite it, and {$n} is the count of the OTHER selected
+    // controls -- the target is excluded, because it is very often ticked too
+    // and a promise that included it would be false.
+    'ApplicabilityAppliesToControlNotSelection' => '它只会记录在“{$name}”下——您选择的 {$n} 控件不受影响。',
+
+    // Task 65: the VISIBLE label on the controls toolbar's SoA button. The full
+    // sentence ('GenerateStatementOfApplicability' above) stays as the button's
+    // title and aria-label, and is still what the SoA page itself is called;
+    // this is the short form for a toolbar row it shares with the page's one
+    // primary action. At full length the secondary button measured more than
+    // twice the primary's width and became the largest element in the row.
+    //
+    // "SoA" is safe to abbreviate HERE and only here: the button appears solely
+    // when a single framework is scoped, beside an Applicability column, and it
+    // expands on hover.
+    'GenerateSoa' => '生成 SoA',
+
+    // ===== Clone framework (Task 64) =======================================
+    // The framework half of Clone control's framing (CloneOfControlTitle /
+    // ClonedFromControlNotice above), and for the same reason: the clone
+    // pre-fills the Add Framework modal rather than creating anything, so the
+    // modal has to say what was carried over before the user saves it.
+    //
+    // Separate keys from the control pair rather than one shared "Clone of
+    // {$name}" -- the two banners do not say the same thing. A cloned control
+    // simply asks to be reviewed; a cloned FRAMEWORK has to explain two things
+    // its fields cannot: that the source's control mappings come with it, and
+    // that the empty scope statement is deliberate. The blank field is the
+    // whole reason the banner is longer than the control's -- a scope statement
+    // left blank with no explanation reads as a field that failed to populate,
+    // and the one thing a clone exists to be given is a NEW scope (Josh: "you
+    // might want to use the same controls as one framework, but scope it
+    // differently"). {$name} and {$n} follow the same client-side
+    // formatTemplate() substitution the rest of this page's templates use.
+    'CloneOfFrameworkTitle' => '克隆“{$name}”',
+    // {$n} is the count the rail is SHOWING for the source row -- its controls,
+    // not its raw mapping rows. Those differ (a framework can cite one control
+    // under two clause numbers, and the rail excludes deleted controls), and the
+    // number to promise is the one the user is looking at when they click and
+    // the one the clone's own rail row will show afterwards.
+    'ClonedFromFrameworkNotice' => '此框架克隆自“{$name}”。其“ {$n} ”控件将被复制到新框架，所有控件均会立即生效——其任何适用性决策均不会继承。范围声明特意留空：请在生成适用性声明之前，声明此框架涵盖的范围。',
+    // Seeds the name field so the clone can be saved without a rename --
+    // framework names are unique, so a verbatim copy is refused on save.
+    'CloneOfFrameworkName' => '{$name} （克隆）',
+    'CloneFramework' => '克隆框架',
+    // Extras version independently of Core, so an updated Import/Export Extra
+    // can end up calling a Core function the installed Core does not have. The
+    // export refuses with this rather than fataling -- see
+    // soa_export_refuse_if_core_too_old(), extras/import-export/includes/soa_export.php.
+    'SoaExportRequiresNewerCore' => '此导出功能需要比当前安装版本更新的 SimpleRisk Core 版本。请更新 SimpleRisk，然后重试导出。',
+    // The framework ACQUISITION chooser (Task 26): "+ Add framework" asks how you
+    // want to get one, rather than assuming you want to type it in. Each option is
+    // rendered only when the route behind it actually exists for this user, so the
+    // hint text may state plainly what the route does -- it is never shown to
+    // someone who cannot take it.
+    'HowDoYouWantToAddAFramework' => '你想如何添加框架？',
+    'CreateFrameworkManually' => '手动创建一个',
+    'CreateFrameworkManuallyHint' => '自行命名框架，然后添加或映射其控件。',
+    // Named for the framework rather than for its vendor. The hint was reworded
+    // at the same time: it used to end "...load its Secure Controls Framework
+    // controls", which read as a stutter once the label carried those words.
+    'GetFrameworkFromScf' => '从安全控制框架中获取一个',
+    'GetFrameworkFromScfHint' => '选择一个已发布的框架，然后一步加载其映射的控件。',
+    'ImportFrameworkFromCatalog' => '进口一个',
+    'ImportFrameworkFromCatalogHint' => '从 SimpleRisk 内容目录安装框架及其控件。',
+
+    // The framework acquisition chooser's third route, which now offers the
+    // Import-Export Extra's CONTROL import (a spreadsheet naming a framework
+    // that does not exist yet creates it) rather than the GitHub catalogue the
+    // two keys above described. Those two are left in place, unreferenced, so a
+    // customer maintaining a custom lang.<locale>.php still reconciles by tail
+    // diff.
+    'ImportFrameworkFromSpreadsheet' => '从电子表格导入一个',
+    'ImportFrameworkFromSpreadsheetHint' => '上传一个包含控件名称的电子表格（用于命名框架），两者即被创建。',
+
+    // The Define Control Frameworks rail's second synthetic scope: the controls
+    // mapped to no framework at all. Its first, "All controls", reuses the
+    // existing AllControls key rather than adding a second string with the same
+    // English -- it replaced 'AllFrameworks' on that row, which named a union of
+    // frameworks while scoping to every control, mapped or not. 'AllFrameworks'
+    // is left in place and unreferenced by that page: other surfaces still use
+    // it, and every locale carries it.
+    'UnassignedControls' => '未分配的控制项',
+    // APPLICABILITY VALIDATION FAILURES. These reach the user: the v2 endpoint
+    // returns the exception's message as the API status message and the page
+    // renders it in a toast, so a hardcoded English literal here would be
+    // permanently English for every locale.
+    //
+    // NOTHING THE CALLER TYPED IS EVER INTERPOLATED INTO THESE. The parameters
+    // are validated enum values, integer ids and byte limits the server itself
+    // owns -- naming the ALLOWED values rather than echoing the rejected one is
+    // deliberate (it is both safe and more useful than repeating a typo).
+    'ApplicabilityErrUnknownState' => '适用状态未知。预期值为： {$states}。',
+    'ApplicabilityErrNarrativeRequired' => '\'{$state}\'需要叙述。',
+    'ApplicabilityErrNarrativeTooLong' => '这段文字的长度超过 {$bytes} 字节。',
+    'ApplicabilityErrReasonRequired' => '要将某个控制项标记为不适用，必须提供排除理由。',
+    'ApplicabilityErrProviderRequired' => '提供者需要将控件标记为已继承。',
+    'ApplicabilityErrProviderTooLong' => '提供商名称长度超过 {$bytes} 字节。',
+    'ApplicabilityErrReasonsNotFound' => '这些适用性理由并不存在： {$ids}。',
+    'ApplicabilityErrReasonsNotOffered' => '本状态不提供这些适用性理由： {$ids}。',
+    'ApplicabilityErrFrameworkNotFound' => '框架 {$framework} 不存在。',
+    'ApplicabilityErrControlsNotFound' => '这些控件 ID 不存在： {$ids}。',
+    // Controls/Risks import result messages (validation gate, individual bad-row
+    // alerts, and the batched submitted/created/updated summaries)
+    'ControlIdOrShortNameFieldRequired' => '控件 ID 或控件简称字段必须进行映射——缺少其中之一，则无法识别行。',
+    'RiskImportSubjectNull' => '风险 ID {$risk_id}：由于主题字段为空或缺失，因此未更新。',
+    'RiskImportSummary' => '已提交 {$submitted} 项风险，并已更新 {$updated} 项风险。',
+    'ControlImportSummary' => '创建了 {$created} 个控件并更新了 {$updated} 个控件。',
+    'ImportAdditionalIssuesSuppressed' => '{$count} 额外的行存在问题，此处未单独显示。',
+    'EncryptionPipelineStalledTask' => '加密管道（任务 #{$id}， {$type}）似乎已停滞——它已经 {$status} 很长时间没有进展。这通常意味着后台队列工作进程没有运行；请检查它是否已调度，并在它处理完停滞的任务后重试。',
+    'EncryptionPipelineStalledState' => '加密管道似乎已停止运行——它被标记为正在进行中的时间异常长，但没有匹配的后台任务可以指向它。这通常意味着队列工作进程未运行，或者之前的管道已完成但未正确更新此状态。请检查调试日志后再试一次。',
+    // DEMO_MODE — shown when a visitor to a shared demo instance attempts one
+    // of the operations that would spoil the demo for the next visitor
+    'ActionDisabledOnDemoInstance' => '此操作在 SimpleRisk 演示实例中已禁用。',
+
+    // The one-click upgrade progress window: the step an upgrade is on, and
+    // the line shown once it finishes
+    // Shown when an upgrade's progress record has not been touched for long
+    // enough that the process running it is presumed gone
+    'UpgradeJobStalled' => '升级过程停止响应。请先查看服务器日志再重试。',
+    // Shown when an upgrade replaced the instance's configuration file and could
+    // not put the original back
+    // Shown when the database was brought up to date but the application files
+    // could not be replaced, so the instance has NOT moved to the new release
+    'UpdateAppFailed' => '应用程序文件未升级，因此此实例仍在运行之前的版本。请查看 SimpleRisk 日志以了解原因，然后再次运行升级。',
+    // The one-click upgrade progress screen
+    'UpgradeInProgress' => '进行中',
+    'UpgradeStepNotNeeded' => '不需要',
+    // Recovering an Upgrade Extra whose files are damaged
+    'UpgradeExtraDamagedReinstalling' => '已安装的升级附加组件已损坏。正在下载全新副本。',
+    'UpgradeExtraDamagedRepaired' => '升级附加包已替换为可用副本。',
+    'UpgradeExtraDamagedFailed' => '升级插件已损坏，无法自动替换。请从“插件”页面重新安装，或从备份恢复 simplerisk/extras/upgrade/ 目录，然后重试。',
+    'UpgradeAlreadyCurrent' => '此实例已是最新版本 {version}，无需升级。',
+    'UpgradeShowWhatItDid' => '展示它做了什么',
+    'UpgradeBackupsListed' => '这些备份文件列在“配置”>“备份”下。',
+    'UpgradingTo' => '升级到 {version}',
+    'UpgradeSafeToClose' => '可以安全关闭此窗口。服务器将继续升级，此页面将重新打开。',
+    'UpgradeDownloadLog' => '下载日志',
+    'UpgradeStatementsApplied' => '已应用 {started} · {count} 条语句',
+    // The Upgrade Extra's pre-upgrade check of the instance it is sitting on
+    'UpgradeCheckingInstance' => '正在检查此实例',
+    'UpgradeInstanceChecked' => '实例已检查，无需更正。',
+    'UpgradeBlockedByCorrections' => '升级已停止，因为此实例需要进行无法自动应用的更正。请按照上述说明操作，然后再次运行升级。其他任何设置均未更改。',
+    // Shown when an upgrade replaced the instance's configuration file and could not put the original back
+    'ConfigRestoreFailed' => '升级无法恢复此实例的配置文件。请先从备份中恢复 simplerisk/includes/config.php 文件，然后再继续。',
+    'UpgradeDidNotAdvance' => '版本“{$version}”的升级功能未能提升数据库版本；已停止，因此不会再次运行。',
+    'BackupDatabaseNative' => '正在备份数据库（无需外部工具）……',
+    'UpgradeAlreadyRunning' => '此实例上正在运行升级。',
+    'UpgradeStatusUnreachable' => '升级过程中与服务器失去连接。请查看 SimpleRisk 日志；升级可能仍在进行中。',
+    'UpgradeJobUnwritable' => '升级无法启动，因为无法写入进度记录。请检查系统临时目录是否对 Web 用户具有写入权限。',
+    'UpgradeStepCheckingVersions' => '正在检查版本',
+    'UpgradeStepUpgradingDatabase' => '升级数据库模式',
+    'UpgradeStepFinalising' => '应用升级后转换',
+    'UpgradeDatabaseHeading' => '数据库升级',
+    'UpgradeDatabaseComplete' => '数据库升级完成。',
+    'UpgradeHideWhatItDid' => '掩盖它所做的事情',
+    'UpgradeStateRunning' => '运行中',
+    'UpgradeSessionExpired' => '您的会话已过期。请重新登录以查看升级内容。',
+    'UpgradeLostContact' => '与服务器失去连接。请重新加载此页面以重新连接到升级。',
+    'UpgradeDatabaseAlreadyCurrent' => '数据库已存在于应用程序版本中。',
+    'UpgradeConversionsApplied' => '已应用引擎和字符集转换。',
+    'UpgradeStoppedShort' => '升级过程在 {reached} 处停止，未到达 {app}。请查看服务器日志。',
+    'UpgradeStepBackingUp' => '备份',
+    'UpgradeStepUpgradingFiles' => '升级应用程序文件',
+    'UpgradeStepUpgradingExtras' => '升级已安装的附加组件',
+    'UpgradeStepUpdatingUpgradeExtra' => '更新升级附加功能',
+    // The Upgrade Extra's pre-chain corrections: what is wrong, and what to do
+    // about it. These are the highest-stakes messages the upgrade produces --
+    // an operator reads them to unstick an instance that cannot upgrade.
+    'UpgradeCorrectionUnknownVersionTitle' => '数据库中记录的版本号并非实际版本。',
+    'UpgradeCorrectionNoRecordedVersion' => '数据库中没有已记录的版本。',
+    'UpgradeCorrectionUnknownVersionFinding' => '数据库报告的版本为“{$version}”，其中并未指定任何 SimpleRisk 版本。升级程序无法从中选择起始版本。',
+    'UpgradeCorrectionUnknownVersionGuidance' => '将 db_version 设置设为此数据库实际使用的架构对应的版本，然后再次运行升级：UPDATE settings SET value=\'<release>\' WHERE name=\'db_version\'。如果该值为占位符（例如 2026XXXX-001），则正确的值几乎总是升级运行之前安装的最新实际版本。',
+    'UpgradeCorrectionLegacySessionsTitle' => '会话表无法在升级过程中进行字符集转换。',
+    'UpgradeCorrectionLegacySessionsFinding' => 'MyISAM 表中的 `sessions`.`id` 类型为 VARCHAR({$width})。从 20230106-001 版本开始，将其转换为 utf8mb4 类型，会超出 MyISAM 的 1000 字节索引限制，导致升级失败。',
+    'UpgradeCorrectionLegacySessionsGuidance' => '一个或多个活动会话的 ID 长度超过 128 个字符。此时缩小此列的宽度会导致这些用户被注销，因此暂不进行此操作。待这些会话过期后，请重试升级。',
+    'UpgradeCorrectionApplied' => '已更正。',
+    'UpgradeCorrectionFailed' => '此更正未能成功应用。请查看 SimpleRisk 日志了解原因。',
+    'UpgradeCorrectionAppliedLine' => '已更正： {$title} {$message}',
+    'UpgradeCorrectionNotAppliedLine' => '未更正： {$title} {$message}',
+    'UpgradeCorrectionsNeeded' => '升级此实例前需要进行以下更正： {$count}',
+    'UpgradeCorrectionsNeededShort' => '需要更正： {$count}',
+    'UpdateDatabase' => '数据库正在升级……',
+    // Authentication screens (index.php, reset.php, reset_password.php)
+    'EnterTheCredentialsForYourAccount' => '请输入您的账户凭据。',
+    'TroubleSigningIn' => '登录遇到问题？请联系您的 SimpleRisk 管理员。',
+    'BackToLogin' => '返回登录',
+    'Or' => '或者',
+    'WeWillEmailAResetTokenToYourAccount' => '我们将向您账户上的邮箱地址发送重置令牌。',
+    'EnterTheResetTokenFromYourEmail' => '请输入您邮箱中的重置令牌以及您的新密码。',
+    'ChooseANewPasswordToContinue' => '请选择新密码继续。',
+    'FromZeroToGRCInMinutes' => '几分钟内从零基础到GRC。',
+    'OrganizationLogo' => '组织标志',
+    'LoginScreenBranding' => '登录界面品牌设计',
+    'CustomLogo' => '自定义徽标',
+    'CustomLogoHint' => '图片格式为 PNG、JPG、GIF 或 WebP，最大 1 MB，分辨率为 2000x2000。显示分辨率最高为 260x64，因此对于高密度屏幕，请提供 520x128 左右的图片。顶部栏和登录面板为深色背景，因此请上传一个适合深色背景的 logo。移除此 logo 即可恢复 SimpleRisk 默认 logo。',
+    'CurrentLogo' => '当前标志',
+    'RemoveLogo' => '移除标志',
+    'LoginTagline' => '登录标语',
+    'LoginTaglineHint' => '替换登录界面上的 SimpleRisk 标语。一行简短的文字效果最佳。如果留空，则保留 SimpleRisk 标语。',
+    'LoginNotice' => '系统使用通知',
+    'LoginNoticeHint' => '在用户登录前显示在登录界面。可用于发布合理使用规则或系统使用通知。留空则不显示任何通知。禁止添加链接和图片。',
+    'BrandingRequiresCustomization' => '登录界面品牌化是定制服务的一部分。',
+    'LogoMustBeAnImage' => '徽标必须为 PNG、JPG、GIF 或 WebP 格式的图像。',
+    'LogoTooLarge' => '徽标大小不得超过 1 MB。',
+    'LogoDimensionsTooLarge' => '标志尺寸不得超过 2000x2000 像素。',
+    'LogoDimensionsTooSmall' => '标志最长边必须至少为 32 像素。',
+    'LogoUploadFailed' => '徽标上传失败，请重试。',
+    'LogoUpdated' => '标志已更新。',
+    'LogoRemoved' => '标志已被移除。',
+    'NoSystemUseNoticeSet' => '未设置系统使用通知。',
+    'NoticeSizeSmall' => '小的',
+    'NoticeSizeNormal' => '普通的',
+    'NoticeSizeLarge' => '大的',
     '' => '',
 );
 ?>

@@ -12,19 +12,27 @@
         "class": "SimpleSAML\\Composer\\ModuleInstallerPlugin"
     },
     "require": {
-        "php": "^8.1",
+        "php": "^8.3",
+        "ext-mbstring": "*",
 
-        "composer-plugin-api": "^2.6",
-        "simplesamlphp/assert": "^1.6"
+        "composer-plugin-api": "~2.9",
+        "simplesamlphp/assert": "~2.0"
     },
     "require-dev": {
-        "composer/composer": "^2.8.3",
-        "simplesamlphp/simplesamlphp-test-framework": "^1.8.0"
+        "composer/composer": "~2.9",
+        "simplesamlphp/simplesamlphp-test-framework": "~1.11"
+    },
+    "extra": {
+        "class": "SimpleSAML\\Composer\\ModuleInstallerPlugin",
+        "branch-alias": {
+            "dev-master": "1.8.0.x-dev"
+        }
     },
     "config": {
         "allow-plugins": {
             "dealerdirect/phpcodesniffer-composer-installer": true,
-            "phpstan/extension-installer": true
+            "phpstan/extension-installer": true,
+            "simplesamlphp/composer-xmlprovider-installer": true
         }
     }
 }

@@ -249,7 +249,7 @@ if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQ
 
         // Display an alert   
         ob_end_clean();
-        set_alert(true, "good", _lang("RiskSubmitSuccess", ["subject" => $subject], false));
+        set_alert(true, "good", _lang_raw("RiskSubmitSuccess", ["subject" => $subject]));
         
         // Only return the alert messages in this response if it will be processed on the Compliance > Active/Past Audits pages
         // because when normally creating a risk we're redirecting to the view risk page and we want the messages to stay in the session

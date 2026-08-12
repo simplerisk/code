@@ -1,0 +1,47 @@
+{
+  "name": "graphology-traversal",
+  "version": "0.3.1",
+  "description": "Traversal functions for graphology.",
+  "main": "index.js",
+  "files": [
+    "*.d.ts",
+    "bfs.js",
+    "index.js",
+    "dfs.js",
+    "utils.js"
+  ],
+  "types": "./index.d.ts",
+  "scripts": {
+    "prepublishOnly": "npm test",
+    "test": "mocha test.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/graphology/graphology.git"
+  },
+  "keywords": [
+    "graph",
+    "graphology",
+    "traversal",
+    "dfs",
+    "bfs"
+  ],
+  "contributors": [
+    {
+      "name": "Guillaume Plique",
+      "url": "http://github.com/Yomguithereal"
+    }
+  ],
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/graphology/graphology/issues"
+  },
+  "homepage": "https://github.com/graphology/graphology#readme",
+  "peerDependencies": {
+    "graphology-types": ">=0.20.0"
+  },
+  "dependencies": {
+    "graphology-indices": "^0.17.0",
+    "graphology-utils": "^2.0.0"
+  }
+}

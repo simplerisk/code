@@ -646,7 +646,7 @@ $lang = array(
     'ControlPhase' => 'Етапу контролю',
     'ControlPriority' => 'Керування пріоритетом',
     'ControlFamily' => 'Управління сім\'ї',
-    'AllFrameworks'=>'Всі Каркаси',
+    'AllFrameworks'=>'Усі фреймворки',
     'NewControlName' => 'Нове ім\'я елемента керування',
     'NewControlDescription' => 'Новий Опис контролю',
     'AreYouSureYouWantToDeleteThisControl' => 'Ви дійсно бажаєте видалити цей елемент керування?',
@@ -1345,7 +1345,6 @@ $lang = array(
     'UpdateAssetGroupTooltip' => 'Оновити групу активів',
     'DeleteAssetGroupTooltip' => 'Видалити групу активів',
     'RemoveAssetTooltip' => 'Видалення активу із групи активів',
-    'ControlShortNameFieldRequired' => 'Поле "коротке ім\'я" обов\'язкове.',
     'AffectedAssetsWidgetPlaceholder' => 'Вибір групи активів або активів',
     'AffectedAssetsWidgetNoDropdownPlaceholder' => 'Додавання імені активу',
     'AffectedAssetsWidgetInstructions' => 'Виберіть групу активів або активу. Можна створити новий актив, додавши його ім\'я до списку.',
@@ -2226,7 +2225,7 @@ $lang = array(
     'IncidentSummaryUpdateSuccessful' => 'Резюме успішно оновлено.',
     'ImportSuccessful' => 'Імпорт успішно!',
     'Document' => 'Документ',
-    'SelfAssessments' => 'Самооцінки',
+    'SelfAssessments' => 'Самооцінювання',
     'AssetId'=>'ID активу',
     'ExportTemplateGroups' => 'Експорт груп шаблонів',
     'ImportTemplateGroups' => 'Імпорт груп шаблонів',
@@ -2341,7 +2340,7 @@ $lang = array(
     'Advanced_Search_no_results_1' => 'Здається, на ваш запит немає результатів.',
     'Advanced_Search_no_results_2' => 'Ще раз перевірте свій пошук на наявність опечаток, орфографічних помилок або спробуйте інший пошуковий термін.',
     'IncidentsPerDay' => 'Інцидентів на день',
-    'CurrentVsDesiredMaturity' => 'Поточна та бажана зрілість контрольною родиною',
+    'CurrentVsDesiredMaturity' => 'Зрілість за контрольною сім\'єю',
     'RiskDistribution' => 'Розподіл ризиків',
     'RiskDistributionDescription'=>'Наведені вище кругові діаграми допомагають показати розподіл ризиків між різними рівнями ризику як для внутрішнього, так і для залишкового ризику. Ми можемо використати ці два пироги, щоб продемонструвати прогрес у наших зусиллях зі зменшення ризиків. Якщо сектор «Залишковий ризик» показує великі фрагменти дуже високих або високих ризиків, це може означати, що ваша організація бере на себе занадто великий ризик і потрібні подальші зусилля з пом’якшення.',
     'EnableTabs' => 'Увімкнути вкладки',
@@ -2413,7 +2412,7 @@ $lang = array(
     'EditModeInformation' => 'Увімкніть режим редагування, редагуйте макет. Вимкнення не призведе до автоматичного збереження макета.',
     'InvalidLayout' => 'Недійсний макет!',
     'InvalidLayoutOnlyCustomAllowedAsDefault' => 'Недійсний макет! Лише спеціальні макети можна зберегти як типові.',
-    'LayoutSaved' => 'Макет збережено!',
+    'LayoutSaved' => 'Макет вашої інформаційної панелі збережено.',
     'DefaultLayout' => 'Типовий макет',
     'DefaultLayoutInformation' => 'Встановлює цей макет за замовчуванням, який використовуватиметься замість макета, наданого SimpleRisk для користувачів, які не мають спеціального набору макета. За замовчуванням можна встановити лише збережений непорожній спеціальний макет. Якщо макет, позначений як типовий, буде відновлено до макета за замовчуванням, він відновить його до стандартного, наданого SimpleRisk.',
     'LayoutDefaultStatusUpdated' => 'Стандартний статус макета оновлено.',
@@ -2422,7 +2421,7 @@ $lang = array(
     'DefaultLayoutRestored' => 'Типовий макет успішно відновлено!',
     'SavedLayoutRestored' => 'Збережений макет успішно відновлено!',
     'ConfirmRestoreLayout' => 'Ви впевнені? Ви втратите зміни, внесені до цього макета.',
-    'ConfirmDisableEditModeWithPendingChanges' => 'У вас є незбережені зміни, які ви втратите, покидаючи сторінку. Ви впевнені, що бажаєте вимкнути «Режим редагування» та потенційно забути про збереження змін?',
+    'ConfirmDisableEditModeWithPendingChanges' => 'У вас є незбережені зміни на цій інформаційній панелі. Скасувати їх та припинити редагування?',
     'ConfirmSave' => 'Збереження цих змін перезапише ваш попередньо збережений макет. Ви впевнені, що бажаєте продовжити?',
     'ConfirmSaveAdminDefault' => 'Цей макет встановлено як типовий для цього типу макета. Якщо зберегти ці зміни, макет буде змінено для всіх користувачів, які не мають спеціального макета для цього типу макета. Ви впевнені, що бажаєте продовжити?',
     'RisksByMonth' => 'Ризики по місяцях',
@@ -3111,6 +3110,1523 @@ $lang = array(
     'ResendAssessmentDescription' => 'Автоматично повторно видавати оцінювання з періодичною частотою.',
     'ResendEveryDays' => 'Надсилати повторно кожні {$day} днів',
     'QuestionnaireSaveBarHint' => '«Зберегти та надіслати» негайно надсилає анкету своїм контактам.',
+    // Home dashboard — KPI tile labels
+    'NewSelfAssessment' => 'Нова самооцінка',
+    'SelfAssessmentPrereqIntro' => 'Самооцінювання дозволяє вам оцінити вашу організацію за рамковою системою безпечного контролю та автоматично генерувати ризики на основі невдалих заходів контролю. Спочатку необхідно виконати два кроки налаштування:',
+    'RegisterYourInstance' => 'Зареєструйте свій екземпляр',
+    'RegisterYourInstanceHelp' => 'Реєстрація пов\'язує цей екземпляр із сервісом ліцензування SimpleRisk, тому можна завантажити безкоштовні додаткові матеріали (включно з SCF).',
+    'InstallTheSCF' => 'Встановлення системи безпечного контролю',
+    'InstallTheSCFHelp' => 'SCF – це безкоштовний додатковий компонент, який надає структури, контрольні питання та схеми ризиків, за якими оцінюється ця функція. Інсталяція працює у фоновому режимі та може тривати кілька хвилин.',
+    'GoToRegistration' => 'Перейти до реєстрації',
+    'GoToSCF' => 'Перейти до системи безпечного контролю',
+    'SelfAssessmentEnableTip' => 'Додатково: у розділі «Управління» > «Фреймворки» ви можете ввімкнути відображення короткого списку підібраних фреймворків SCF під час початку оцінювання. Ви також можете оцінювати будь-який фреймворк у повному каталозі SCF, не вмикаючи його.',
+    'ChooseAFramework' => 'Виберіть систему оцінювання',
+    'EnabledFrameworks' => 'Увімкнені фреймворки',
+    'AllScfFrameworks' => 'Усі рамки SCF',
+    'Start' => 'Початок',
+    'Resume' => 'Резюме',
+    'ControlQuestion' => 'Контрольне питання',
+    'NotApplicable' => 'Немає даних',
+    'SaveProgress' => 'Зберегти прогрес',
+    'MarkComplete' => 'Позначити як завершене',
+    'AnsweredOfTotal' => 'відповів',
+    'FailedSoFar' => 'поки що не вдалося',
+    'StartedBy' => 'Розпочато',
+    'FailedControls' => 'Невдалі елементи керування',
+    'PushToRisk' => 'Підштовхнути до ризику',
+    'ConfirmDeleteSelfAssessment' => 'Видалити цю самооцінку? Цю дію неможливо скасувати.',
+    'ConfirmCompleteSelfAssessment' => 'Позначити цю оцінку як завершену? Ризики виникнуть через невдалі заходи контролю.',
+    'NoSelfAssessmentsYet' => 'Поки що немає самооцінювання. Почніть його для початку.',
+    'RequestFailed' => 'Запит не вдалося виконати. Спробуйте ще раз.',
+    'NoPendingRisks' => 'Немає незавершених ризиків. Проведіть оцінку, щоб створити ризики, що виникають внаслідок невдалих заходів контролю.',
+    'NoFailedControls' => 'Для цього фільтра немає результатів керування.',
+    'ControlResultsTruncated' => 'Показано найновіші результати за 2000 років. Звузьте фільтр, щоб побачити більше.',
+    'GeneratedFromSelfAssessment' => 'Згенеровано на основі самооцінки',
+    'SelfAssessmentMitigationSolution' => 'Впровадьте заходи контролю, перелічені нижче, які були визначені як неефективні під час цієї самооцінки, щоб зменшити цей ризик.',
+    'NSelected' => '{n} вибрано',
+    'FilterByControl' => 'Фільтрувати за елементом керування',
+    'Pushing' => 'Натискання…',
+    'Deleting' => 'Видалення…',
+    'ConfirmPushSelectedPendingRisks' => 'Перемістити {n} вибраних ризиків, що очікують розв\'язання, до списку ризиків?',
+    'ConfirmDeleteSelectedPendingRisks' => 'Видалити {n} вибраних ризиків, що очікують розгляду? Цю дію неможливо скасувати.',
+    'ConfirmDeleteSelectedSelfAssessments' => 'Видалити {n} вибраних самооцінок? Цю дію не можна скасувати.',
+    'BulkPartialFailure' => '{n} з {total} елементів виконано успішно; решта не виконано. Оновіть сторінку, щоб побачити поточний стан.',
+
+    // Workflows Extra - deactivation confirm ('Deactivate' at line 480 is reused as-is)
+    'WorkflowsExtraDeactivateConfirm' => 'Деактивувати додаткові робочі процеси? Усі створені користувачем визначення робочих процесів будуть остаточно видалені. Системні робочі процеси будуть збережені.',
+    'HomeKpiOpenRisks' => 'Відкриті Ризики',
+    'HomeKpiNeedsReview' => 'Потребує перегляду',
+    'HomeKpiUnmitigated' => 'Незм\'якшений',
+    'HomeKpiClosedRisks' => 'Закриті Ризики',
+    'HomeKpiControlPassRate' => 'Коефіцієнт успішного проходження контролю',
+    'HomeKpiFailingControls' => 'Невдалі елементи керування',
+    'HomeKpiOpenAudits' => 'Відкриті аудити',
+    'HomeKpiTestsDueSoon' => 'Тести мають бути здані найближчим часом',
+    'HomeKpiActiveFrameworks' => 'Активної рамки',
+    'HomeKpiTotalControls' => 'Повний контроль',
+    // Home dashboard — What's Next feed
+    'WhatsNext' => 'Що далі?',
+    'WhatsNextAllCaughtUp' => 'Ви все встигли.',
+    'WhatsNextRegisterInstance' => 'Зареєструйте свій екземпляр SimpleRisk',
+    'WhatsNextSubmitFirstRisk' => 'Надішліть свій перший ризик',
+    'WhatsNextLoadFramework' => 'Завантаження системи керування',
+    'WhatsNextUnreviewedRisks' => 'Ризики, які слід переглянути',
+    'WhatsNextUnmitigatedRisks' => 'Ризики, які слід пом\'якшити',
+    'WhatsNextInitiateAudits' => 'Аудити для початку',
+    // Home dashboard — widget picker type labels
+    'WidgetType_kpi' => 'Плитка ключових показників ефективності (KPI)',
+    'WidgetType_whats_next' => 'Список',
+    // Home dashboard — hub catalog entry
+    'HomeDashboard' => 'Головна',
+    'HomeDashboardDesc' => 'Ваша відправна точка — ключові показники та подальші дії, короткий огляд.',
+    'HomeChartRiskByLevel' => 'Ризик за рівнем',
+    'HomeKpiThisMonth' => 'цього місяця',
+    'HomeKpiNoChange' => 'Без змін',
+    'EditLayout' => 'Редагувати макет',
+    'ListHighestRisks' => 'Мої найвищі ризики',
+    'ListPastDueReviews' => 'Прострочені огляди',
+    'ListUpcomingTests' => 'Майбутні тести',
+    'ListRecentFailures' => 'Нещодавні невдачі',
+    'ListPoliciesReview' => 'Документи на розгляд',
+    'ListExpiringExceptions' => 'Винятки, термін дії яких закінчується',
+    'ImKpiOpenIncidents' => 'Всього відкрито',
+    'ImKpiOverdue' => 'Прострочено',
+    'ImKpiMttr30' => 'Середня роздільна здатність',
+    'ImKpiMttrQuarter' => 'Середня роздільна здатність (90 днів)',
+    'ImKpiMttrYear' => 'Середня роздільна здатність (1 рік)',
+    'ImKpiMttrAll' => 'Середня роздільна здатність (усі)',
+    'ImKpiResolved30' => 'Вирішено',
+    'ImChartBySeverity' => 'За ступенем серйозності',
+    'ImChartByStatus' => 'За статусом',
+    'ImListRecent' => 'Нещодавні інциденти',
+    'ImListUnassigned' => 'Непризначені інциденти',
+    'HomeKpiOpenExceptions' => 'Відкриті винятки',
+    'HomeKpiPolicies' => 'Політики',
+    'ResolutionTargets' => 'Цілі вирішення (дні)',
+    'ResolutionTargetsHelp' => 'Кількість днів, протягом яких інцидент може залишатися відкритим, перш ніж його буде вважатися простроченим.',
+    'DefaultTarget' => 'За замовчуванням',
+    'PerSeverityOverrideHelp' => 'За потреби, можна змінити значення за замовчуванням для певних рівнів серйозності (залиште поле порожнім, щоб використовувати значення за замовчуванням):',
+    'ResolutionTargetUsesDefault' => 'За замовчуванням (%d)',
+    'SeverityColors' => 'Кольори серйозності',
+    'SeverityColorsHelp' => 'Колір для кожного ступеня серйозності, що відображається на інформаційній панелі інциденту та сторінці з деталями інциденту.',
+    'Editing' => 'Редагування',
+    'SetAsDefaultForEveryone' => 'Встановити за замовчуванням для всіх',
+    'EditLayoutHint' => 'Перетягніть плитку, щоб перемістити · перетягніть край, щоб змінити розмір · ✕, щоб видалити',
+    'RemoveWidget' => 'Видалити віджет',
+    'AddWidget' => 'Додати віджет',
+    'AddToDashboard' => 'Додати до інформаційної панелі',
+    'AllWidgetsAdded' => 'Усі доступні віджети знаходяться на цій панелі інструментів.',
+    'AddText' => 'Додати текст',
+    'GettingStarted' => 'Початок роботи',
+    'GettingStartedTitle' => 'Ласкаво просимо до SimpleRisk',
+    'GettingStartedSubtitle' => 'Кілька швидких кроків, щоб отримати максимальну користь від SimpleRisk.',
+    'GSProgressCount' => '{done} з {total} завершено',
+    'GSNextUp' => 'Далі',
+    'GSArea_setup' => 'Налаштування',
+    'GSArea_risk' => 'Ризик',
+    'GSArea_assessment' => 'Оцінювання',
+    'GSArea_compliance' => 'Дотримання вимог',
+    'GSArea_assets' => 'Активи',
+    'GSArea_ai' => 'Налаштування',
+    'GSHide' => 'Приховати початок роботи',
+    'GSDismissStep' => 'Відхилити цей крок',
+    'GSAllSet' => 'Ви готові — чудова робота!',
+    'GSWalkthrough' => '30-хвилинна прогулянка',
+    'Explore' => 'Дослідити',
+    'Learn' => 'Дізнатися',
+    'AdminGuide' => 'Посібник адміністратора',
+    'LearnMore' => 'Дізнатися більше',
+    'GSRegisterTitle' => 'Зареєструйте свій екземпляр',
+    'GSRegisterDesc' => 'Активуйте підтримку та оновлення за допомогою ліцензійного ключа.',
+    'GSRegisterCta' => 'Зареєструватися',
+    'GSScfTitle' => 'Встановлення системи безпечного контролю',
+    'GSScfDesc' => 'Встановіть SCF — вашу бібліотеку керування для різних стандартів.',
+    'GSScfCta' => 'Встановлення SCF',
+    'GSInviteTitle' => 'Запросіть свою команду',
+    'GSInviteDesc' => 'Додайте колег, щоб роботу можна було призначати та переглядати.',
+    'GSInviteCta' => 'Додати користувачів',
+    'GSAiTitle' => 'Налаштуйте ШІ',
+    'GSAiDesc' => 'Покращте свій досвід роботи з SimpleRisk за допомогою штучного інтелекту.',
+    'GSAiCta' => 'Налаштування ШІ',
+    'GSSubmitRiskTitle' => 'Надішліть свій перший ризик',
+    'GSSubmitRiskDesc' => 'Визначте ризик, з яким стикається ваша організація.',
+    'GSSubmitRiskCta' => 'Надіслати ризик',
+    'GSMitigateTitle' => 'Планування пом\'якшувальних заходів',
+    'GSMitigateDesc' => 'Додайте план пом\'якшення наслідків до відкритого ризику.',
+    'GSMitigateCta' => 'План пом\'якшення',
+    'GSReviewTitle' => 'Проведіть аналіз ризиків',
+    'GSReviewDesc' => 'Перегляньте ризик та визначте його наступний крок.',
+    'GSReviewCta' => 'Виконати огляд',
+    'GSDefineTestTitle' => 'Визначте контрольний тест',
+    'GSDefineTestDesc' => 'Налаштуйте, як тестуватиметься елемент керування.',
+    'GSDefineTestCta' => 'Визначити тест',
+    'GSInitiateAuditTitle' => 'Ініціювати аудит',
+    'GSInitiateAuditDesc' => 'Розпочніть цикл тестування або аудиту.',
+    'GSInitiateAuditCta' => 'Розпочати аудит',
+    'GSAssetTitle' => 'Додайте свої ресурси',
+    'GSAssetDesc' => 'Проведіть інвентаризацію активів, які ви захищаєте.',
+    'GSAssetCta' => 'Додати ресурси',
+    'GSInvalidStep' => 'Недійсний крок початку роботи.',
+    'GSPagerLabel' => '{from}–{to} з {total}',
+    'GSPrevCards' => 'Показати попередні кроки',
+    'GSNextCards' => 'Показати наступні кроки',
+    'WhatsNextInstallSCF' => 'Встановлення системи безпечного контролю',
+    'GSActivateScfTitle' => 'Активуйте систему безпечного контролю',
+    'GSActivateScfDesc' => 'Увімкніть встановлений SCF, щоб завантажити його елементи керування у вашу бібліотеку.',
+    'GSActivateScfCta' => 'Активувати SCF',
+    'WhatsNextActivateSCF' => 'Активуйте систему безпечного контролю',
+    'GSEnableFrameworksTitle' => 'Увімкнути відповідні фреймворки',
+    'GSEnableFrameworksDesc' => 'Увімкніть рамки SCF, що застосовуються до вашої організації.',
+    'GSEnableFrameworksCta' => 'Увімкнути фреймворки',
+    'WhatsNextEnableFrameworks' => 'Увімкнути відповідні фреймворки',
+    'GSSelfAssessTitle' => 'Пройдіть самооцінку',
+    'GSSelfAssessDesc' => 'Оцініть свою організацію за понад 250 фреймворками та визначте ризики, що виникають через невдалі заходи контролю.',
+    'GSSelfAssessCta' => 'Почати оцінювання',
+    'WhatsNextTakeSelfAssessment' => 'Пройдіть самооцінку',
+    'WhatsNextConfigureAI' => 'Налаштуйте ШІ',
+    'ListUnreviewedRisks' => 'Непереглянуті ризики',
+    'ControlsByDomain' => 'Елементи керування за доменом',
+    'ControlsByClass' => 'Елементи керування за класом',
+    'ControlsByPhase' => 'Керування за фазою',
+    'ControlsByPriority' => 'Елементи керування за пріоритетом',
+    'ControlsByCurrentMaturity' => 'Контролі за поточним терміном погашення',
+    'ControlStatusOverTime' => 'Стан контролю з плином часу',
+    'ComplianceTotalControls' => 'Повний контроль',
+    'HomeKpiOverdueTests' => 'Прострочені тести',
+    'Total' => 'Всього',
+    'StartTheTest' => 'Розпочати тест',
+    'TestStartsAutomatically' => 'Тест починається автоматично',
+    'GoToTest' => 'Перейти до тесту',
+    'NotTested' => 'Не протестовано',
+    'PassingPercent' => '% пасів',
+    'ListFailingControls' => 'Невдалі елементи керування',
+    'Exceptions' => 'Винятки',
+    'Documents' => 'Документи',
+    'ControlsBelowMaturity' => 'Контрольні заходи нижче вікової межі зрілості',
+    'ControlsAtMaturity' => 'Контроль на етапі зрілості',
+    'ControlsAboveMaturity' => 'Контроль, що перевищує термін зрілості',
+    'Maturity' => 'Зрілість',
+    'AllTime' => 'Весь час',
+    'Last7Days' => 'Останні 7 днів',
+    'Last30Days' => 'Останні 30 днів',
+    'Last90Days' => 'Останні 90 днів',
+    'YearToDate' => 'З початку року',
+    'CustomRange' => 'Користувацький діапазон',
+    'Age' => 'Вік',
+    'ImOpenIncidents' => 'Відкриті інциденти',
+    'ImClosedIncidents' => 'Закриті інциденти',
+    'ImByAttackVector' => 'Відкрити вектором атаки',
+    'ImBySource' => 'Відкрити за джерелом',
+    'AverageDaysToDetect' => 'Середня кількість днів для виявлення',
+    'ImKpiAvgTtd' => 'Середнє виявлення',
+    'Days' => 'Дні',
+    'ImKpiCriticalOpen' => 'Критично відкрито',
+    'ImKpiResolvedInSla' => 'Вирішено в угоді про рівень обслуговування',
+    'Events' => 'Події',
+    'ImEventsIncidents' => 'Події та інциденти',
+    'ImSourceBreakdown' => 'Джерело за категорією',
+    'ImClosureSummary' => 'Зведення про закриття',
+    'ImSignalQuality' => 'Якість сигналу',
+    'ImSignalLowSample' => 'Недостатньо судових рішень щодо закриття справ для надійної оцінки',
+    'ImportExportExportPdf' => 'Експорт PDF-файлу',
+    'ImportExportExporting' => 'Підготовка PDF-файлу…',
+    'ImportExportExportFailed' => 'Не вдалося створити PDF-файл. Спробуйте ще раз.',
+    'ImportExportGeneratedOn' => 'Згенеровано',
+    'ImportExportPage' => 'Сторінка',
+    'ImportExportPageOf' => 'з',
+    'ResolutionTargetsUpdated' => 'Цільові показники вирішення проблем для кожного рівня серйозності було оновлено.',
+    'SeverityColorsUpdated' => 'Кольори серйозності оновлено.',
+    // AI Capabilities Catalog + AI settings hub (unified AI settings)
+    'AICapGrcRecommendations' => 'Рекомендації Рамкової програми GRC',
+    'AICapGrcRecommendationsDesc' => 'Рекомендації щодо структури, згенеровані штучним інтелектом, та короткий виклад, адаптований до контексту вашої організації.',
+    'AICapRiskRecommendations' => 'Рекомендації щодо ризиків',
+    'AICapRiskRecommendationsDesc' => 'Пропозиції щодо деталей ризику та його пом\'якшення для кожного окремого ризику, що генеруються на основі ризику, його пом\'якшення та аналізу.',
+    'AICapFairAnalysis' => 'Кількісний аналіз FAIR',
+    'AICapFairAnalysisDesc' => 'Штучний інтелект оцінює параметри збитків за бета-PERT; SimpleRisk проводить 10 000-ітераційний метод Монте-Карло для кількісної оцінки ризику в доларах.',
+    'AICapDocumentCustomization' => 'Налаштування документів',
+    'AICapDocumentCustomizationDesc' => 'Заповнює заповнювачі та очищує текст політики у шаблонах документів, щоб шаблонна політика читалася як ваша.',
+    'AICapDocumentControlMatching' => 'Зіставлення документів ↔ з елементами керування',
+    'AICapDocumentControlMatchingDesc' => 'Автоматично зіставляє елементи керування з документами політики з оцінкою достовірності та обґрунтуванням, яке ви можете переглянути.',
+    'AICapDocumentTemplates' => 'Бібліотека шаблонів документів',
+    'AICapDocumentTemplatesDesc' => 'Встановіть шаблони кураторських політик, інструкцій та процедур з бібліотеки SimpleRisk.',
+    'AICapControlReferenceEnhancement' => 'Покращення контрольних посилань',
+    'AICapControlReferenceEnhancementDesc' => 'Досліджує дослівний контрольний текст за допомогою веб-пошуку, щоб збагатити ваші контрольні посилання.',
+    'AICapAiChat' => 'Помічник у чаті',
+    'AICapAiChatDesc' => 'Помічник GRC, який відповідає на запитання в контексті будь-де в SimpleRisk.',
+    'AICapSurfacedRecommendations' => 'Сторінка штучного інтелекту',
+    'AICapSurfacedRiskView' => 'Огляд ризиків — Деталі та пом\'якшення наслідків',
+    'AICapSurfacedFairTab' => 'Перегляд ризиків — вкладка СПРАВЕДЛИВІСТЬ',
+    'AICapSurfacedDocuments' => 'Управління — Документи',
+    'AICapSurfacedControls' => 'Відповідність — Контроль',
+    'AICapSurfacedEveryPage' => 'Кожна сторінка — плаваючий помічник',
+    'AICapabilitiesCatalog' => 'Можливості',
+    'AICapSearchPlaceholder' => 'Пошук можливостей штучного інтелекту…',
+    'AICapFilterDomain' => 'Домен',
+    'AICapFilterTier' => 'Рівень',
+    'AICapFilterState' => 'Штат',
+    'AICapTierExtra' => 'ШІ Додатково',
+    'AICapStateLocked' => 'Заблоковано',
+    'AICapIncludedInExtra' => 'Включено до додаткового опції AI',
+    'AICapPurchaseExtra' => 'Придбайте Додатковий ШІ',
+    'AICapNeedsProvider' => 'Потрібне налаштування постачальника',
+    'AICapNoMatch' => 'Немає відповідності можливостей',
+    'AICapNoMatchHint' => 'Спробуйте інший домен, рівень або пошуковий термін.',
+    'AICapCountSingular' => 'можливості',
+    'AICapCountPlural' => 'можливості',
+    'DomainAssistant' => 'Помічник',
+    'AICapLoadError' => 'Не вдалося завантажити можливості штучного інтелекту. Спробуйте ще раз.',
+    'AIProviderConfigSubtitle' => 'Підключіть SimpleRisk до постачальника штучного інтелекту, щоб забезпечити можливості штучного інтелекту.',
+    'AIHowToGetAPIKeyFor' => 'Як отримати ключ API для',
+    'AIExtraNotActivated' => 'Не активовано',
+    'AIExtraValueProp' => 'Покращений штучний інтелект — кількісна оцінка ризиків FAIR, допомога з документуванням та контролем, а також помічник у чаті зі штучним інтелектом.',
+    'AICtxOrgName' => 'Як називається ваша організація?',
+    'AICtxOrgSizeEmployees' => 'Скільки співробітників у вашій організації?',
+    'AICtxOrgSizeRevenue' => 'Який річний дохід вашої організації?',
+    'AICtxOrgObjective' => 'Які основні бізнес-цілі та стратегічні цілі вашої організації?',
+    'AICtxOrgIndustry' => 'Яка основна галузь або сектор вашої організації?',
+    'AICtxOrgLocation' => 'У яких країнах або регіонах працює ваша організація?',
+    'AICtxOrgType' => 'До якого типу організації ви належите?',
+    'AICtxDataTypes' => 'Які типи даних збирає, обробляє або зберігає ваша організація (наприклад, персональні дані, фінансові дані, медичну інформацію)?',
+    'AICtxDataCustomers' => 'Хто ваші основні клієнти або зацікавлені сторони (наприклад, споживачі, підприємства, державні установи)?',
+    'AICtxDataRegulatory' => 'Чи поширюються на вас якісь особливі регуляторні вимоги у вашій галузі?',
+    'AICtxDataThirdParties' => 'Чи маєте ви якісь відносини з третіми сторонами або аутсорсингові послуги, які потребують нагляду за дотриманням вимог?',
+    'AICtxMaturityIssues' => 'Чи стикалися ви з будь-якими суттєвими проблемами з дотриманням вимог, порушеннями безпеки або ризикованими подіями протягом останніх 3-5 років?',
+    'AICtxMaturityConcerns' => 'Чи є якісь конкретні проблемні області або області, що викликають покращення, які ви визначили у ваших поточних процесах GRC?',
+    'AICtxMaturityAppetite' => 'Яка схильність до ризику та толерантність вашої організації?',
+    'AICtxMaturityLevel' => 'Який ваш поточний рівень зрілості з точки зору корпоративного управління, управління ризиками та практики дотримання вимог?',
+    'AICtxImplementationChanges' => 'Чи плануються якісь майбутні зміни у вашій бізнес-моделі, технологічній інфраструктурі або ринку, які можуть вплинути на ваші потреби у дотриманні вимог?',
+    'AICtxImplementationResourcesBudget' => 'Які бюджетні ресурси ви маєте в своєму розпорядженні для впровадження та підтримки систем дотримання вимог?',
+    'AICtxImplementationResourcesPersonnel' => 'Які кадрові ресурси ви маєте в своєму розпорядженні для впровадження та підтримки систем відповідності?',
+    'AICtxImplementationResourcesTechnology' => 'Які ресурси технологічної інфраструктури ви маєте в наявності для впровадження та підтримки систем відповідності?',
+    'AICtxImplementationResourcesTraining' => 'Які ресурси для навчання та розвитку ви маєте в наявності для впровадження та підтримки систем відповідності?',
+    'AICtxImplementationResourcesExternal' => 'Які зовнішні ресурси підтримки ви маєте в наявності для впровадження та підтримки систем відповідності?',
+    'AIAPIKeySecurityNote' => 'Ваш ключ зберігається на стороні сервера та ніколи не повертається до браузера. URL-адреси постачальників перевіряються на відповідність списку дозволених адрес SSRF, який можна налаштувати у файлі config.php.',
+    'AIContextEgressWarning' => 'Ваші відповіді надсилаються налаштованому вами постачальнику штучного інтелекту для обґрунтування його рекомендацій. Не включайте нічого, чим ви б не поділилися з ними.',
+    'Provider' => 'Постачальник',
+    'AIProviderURLHostNotAllowed' => 'Хост "%s" не входить до білого списку постачальників ШІ. Додайте його до $ai_allowed_provider_hosts у config.php, а потім збережіть. (Відомі постачальники ШІ та адреси зворотного зв\'язку 127.0.0.1 завжди дозволені.)',
+    'AIContextLastSaved' => 'Останнє збереження',
+    'AIContextNeverSaved' => 'Ще не збережено',
+    'AICtxCardSubtitle' => '21 запитання з чотирьох областей. Чим більше ви відповісте, тим чіткішою буде кожна рекомендація.',
+    'AICtxAnswered' => '%1$d з %2$d відповіли',
+    'AICtxAllOptional' => 'Необов\'язково',
+    'AIContextSaving' => 'Збереження…',
+    'AIContextSaveFailed' => 'Не вдалося зберегти ваші зміни. Спробуйте ще раз.',
+    'AISettingsSavedNotReachable' => 'Налаштування штучного інтелекту збережено, але постачальника не вдалося знайти. Переконайтеся, що він працює, а URL-адреса правильна.',
+    'AISettingsSavedKeyRequired' => 'Налаштування штучного інтелекту збережено, але для використання функцій цього постачальника потрібен ключ API.',
+    'TestAndSave' => 'Тестування та збереження',
+    'AICapEnableAll' => 'Увімкнути все',
+    'AICapDisableAll' => 'Вимкнути все',
+    'AISettingsSavedConnected' => 'Налаштування ШІ збережено — підключення успішне.',
+    'AISettingsSavedNotConnected' => 'Налаштування ШІ збережено, але перевірка з’єднання не вдалася. Перевірте модель, ключ та URL-адресу.',
+    'AIProviderURLNotOnAllowlist' => 'Цього хоста немає у білому списку SSRF постачальників штучного інтелекту. Додайте його до $ai_allowed_provider_hosts у config.php, перш ніж його можна буде зберегти.',
+    'Connected' => 'Підключено',
+    'NotConnected' => 'Не підключено',
+    'AICapBulkError' => 'Деякі можливості не вдалося оновити. Спробуйте ще раз.',
+    'QuestionnaireAlreadyCompleted' => 'Цю анкету вже заповнено.',
+    'QuestionnaireDraftError' => 'Помилка збереження чернетки. Див. консоль для отримання детальної інформації.',
+
+    // Audit cadence scheduling - Define Test modal (Interval/Calendar schedule redesign)
+    // 'Overdue' duplicates the English of 'ImKpiOverdue' on purpose: that key is
+    // an Incident Management KPI label, and a compliance status pill reusing an
+    // IM-scoped key would couple the two domains for a translator (and break the
+    // moment either wording moves). This is the generic, cross-domain one.
+    'Overdue' => 'Прострочено',
+    // Deliberate: the only other key rendering 'Manual' is 'ManualValuation',
+    // an asset-valuation label. Pointing a schedule mode at it would couple two
+    // unrelated domains for translators and break the moment either reworded.
+    'ScheduleManual' => 'Ручний',
+    'ScheduleInterval' => 'Інтервал',
+    'ScheduleCalendar' => 'Календар',
+    'Cadence' => 'Каденція',
+    'CadenceBiweekly' => 'Двотижневик',
+    'CadenceSemiAnnually' => 'Півріччя',
+    'AnchorDate' => 'Дата прив\'язки',
+    'UpcomingOccurrences' => 'Майбутні події',
+    'AuditLeadInDays' => 'Підготовчі дні до аудиту',
+    'SkipOccurrence' => 'Пропустити',
+    'OverrideDate' => 'Дата заміни',
+    'Week' => 'Тиждень',
+    'NoUpcomingOccurrences' => 'У цьому вікні немає майбутніх подій.',
+    'FailedToLoadUpcomingOccurrences' => 'Не вдалося завантажити попередній перегляд майбутніх подій.',
+    'AnchorDateMustBeTodayOrLater' => 'Дата прив’язки має бути сьогоднішньою або пізнішою. Щоб запланувати минулу дату, створіть ручний тест.',
+    'InvalidScheduleType' => 'Недійсний тип розкладу. Допустимі значення: Вручну, Інтервал, Календар.',
+    'Weeks' => 'Тижні',
+    'Months' => 'Місяці',
+    'Years' => 'Роки',
+    'ScheduleSummaryEvery' => 'Кожні {$interval} {$unit}',
+
+    // Define Tests redesign - client-rendered grid (Phase 1, Task 6)
+    'LastResult' => 'Останній результат',
+    'NextDue' => 'Наступний термін',
+    'DueSoon' => 'Термін виконання незабаром',
+    'Retired' => 'На пенсії',
+    'MyTests' => 'Мої тести',
+    'Failing' => 'Невдача',
+    'Untested' => 'Неперевірений',
+    'ShowRetired' => 'Показати виведені з експлуатації',
+    'Tests' => 'Тести',
+    'NoTestsForThisControl' => 'Для цього контролю ще немає тестів.',
+    'NoControlsDefinedYet' => 'Елементи керування ще не визначені',
+    'NoControlsDefinedYetBody' => 'Визначте елементи керування в розділі «Управління» перед додаванням тестів.',
+    'NoTestsMatchFilters' => 'Немає тестів, що відповідають вашим фільтрам',
+    'NoTestsMatchFiltersBody' => 'Спробуйте змінити пошук або фільтри.',
+    'CouldNotLoadTests' => 'Не вдалося завантажити тести',
+    'CouldNotLoadTestsBody' => 'Щось пішло не так. Ваші дані в безпеці — спробуйте оновити сторінку.',
+    'ShowingXToYOfZ' => 'Показано {$start}–{$end} з {$total}',
+    // Define Tests grid -- SCF-mapping + read-only procedure expand (Phase 1, Task 7)
+    'Reference' => 'Довідка',
+    'NoFrameworksMapped' => 'Жодних фреймворків, пов\'язаних з цим елементом керування, не зіставлено.',
+    // Define Tests grid -- batch select + retire/delete + quick filters (Phase 1, Task 8)
+    'Retire' => 'Вихід на пенсію',
+    'ReassignTester' => 'Перепризначити тестувальника',
+    'SetSchedule' => 'Встановити розклад',
+    'ConfirmRetireSelectedTests' => 'Вилучити {n} вибраних тестів?',
+    'ConfirmDeleteSelectedTests' => 'Видалити вибрані тести ( {n} )? Цю дію не можна скасувати.',
+    // Define Tests grid -- Coverage toolbar select (Issue 4)
+    'Coverage' => 'Покриття',
+    'CoverageWithTests' => 'Контроль за допомогою тестів',
+    'CoverageAllControls' => 'Усі елементи керування',
+    'CoverageGaps' => 'Прогалини',
+    // Define Tests insights band (Phase 2, Task 4) -- KPI tile labels + subtitles.
+    // 'Overdue', 'DueSoon', and 'Failing' are reused from the grid's quick-filter
+    // chips above (identical text) rather than duplicated here.
+    'DtTotalTests' => 'Загальна кількість тестів',
+    'DtCoverageGaps' => 'Прогалини в охопленні',
+    'DtAcrossNControls' => 'Серед елементів керування {$n}',
+    'DtControlsWithNoTest' => 'Контрольні групи без тесту',
+    'DtNeedInitiationNow' => 'Потрібна ініціація зараз',
+    'DtWithinLeadInWindow' => 'У межах підготовчого вікна',
+    'DtLastResultFailed' => 'Останній результат не вдалося',
+    'InvalidTestMethod' => 'Метод тестування має бути одним із наступних: Дослідження, Спостереження, Інспекція або Повторне виконання!',
+    'TesterCannotBeApprover' => 'Тестера також не можна вказати як схвалювача для цього тесту.',
+    'ApproverNotEligible' => 'Один або декілька вибраних осіб, що затверджують, не мають обов\'язку «Затверджувати тести».',
+    'TestMethod' => 'Метод випробування',
+    'TestMethodInquiry' => 'Запит',
+    'TestMethodObservation' => 'Спостереження',
+    'TestMethodInspection' => 'Інспекція',
+    'TestMethodReperformance' => 'Повторне виконання',
+    'Sample' => 'Зразок',
+    'RequiredEvidence' => 'Необхідні докази',
+    'Approvers' => 'Затверджувачі',
+    'AuditLog_TestAuditApproved' => 'Аудит «{$test_audit_name}» (ID: {$test_audit_id}) було схвалено користувачем «{$user_name}».',
+    'AuditLog_TestAuditRejected' => 'Аудит «{$test_audit_name}» (ID: {$test_audit_id}) було відхилено користувачем «{$user_name}» з коментарем «{$comment}».',
+    'AuditLog_TestAuditAwaitingApproval' => 'Аудит «{$test_audit_name}» (ID: {$test_audit_id}) було подано на закриття користувачем «{$user_name}» та очікує на схвалення. Зміни: {$changes}.',
+    'AuditApproved' => 'Аудит було успішно схвалено.',
+    'AuditRejected' => 'Аудит було успішно відхилено.',
+    'RejectCommentRequired' => 'Для відхилення аудиту потрібен коментар.',
+    'NotAnApproverOfThisAudit' => 'Ви не є налаштованим затверджувачем для цього аудиту.',
+    'ApproverCannotBeTester' => 'Особа, що затверджує, не може також бути тестером цього аудиту.',
+    'AuditNotAwaitingApproval' => 'Цей аудит наразі не очікує затвердження.',
+    'NotificationAuditAwaitingApprovalTitle' => 'Аудит очікує вашого схвалення',
+    'NotificationAuditAwaitingApprovalBody' => 'Аудит «{$test_audit_name}» подано на закриття та очікує вашого схвалення.',
+    'NotificationAuditRejectedTitle' => 'Аудит відхилено',
+    'NotificationAuditRejectedBody' => 'Аудит «{$test_audit_name}» було відхилено з коментарем: «{$comment}»',
+    'AwaitingApproval' => 'Очікує схвалення',
+    'AwaitingApprovalBannerText' => 'Цей аудит надіслано на закриття та очікує схвалення від налаштованого затверджувача, перш ніж його можна буде закрити.',
+    'ReturnedForRework' => 'Повернуто на доопрацювання',
+    'ReturnedForReworkBannerText' => 'Цей аудит було відхилено та повернуто на доопрацювання.',
+    'RejectReason' => 'Причина відхилення',
+    'AreYouSureYouWantToApproveThisAudit' => 'Ви впевнені, що хочете схвалити цей аудит?',
+    'AtLeastOneControlRequired' => 'Потрібен принаймні один елемент керування.',
+    'DtNCommonAcrossNControls' => '{$common} загальні · {$n} елементи керування',
+    'DtUntestedControls' => 'Неперевірені засоби контролю',
+    'DtControlsInScopeNoCoverage' => 'Без покриття',
+    'Passing' => 'Пасування',
+    'DtLastResultPassed' => 'Останній результат прийнято',
+    'AllFamilies' => 'Усі родини',
+    'SearchTestsPlaceholder' => 'Пошук тестів, контролів та фреймворків',
+    'AnySchedule' => 'Будь-який розклад',
+    'AnyTag' => 'Будь-який тег',
+    'AuditAutoClosedTestRetired' => 'Автоматично закрито як непереконливий, оскільки тест було скасовано.',
+    'Common' => 'Звичайний',
+    'ValidatesAcrossMappedFrameworks' => 'Перевіряє в різних зіставлених фреймворках',
+    'EditTest' => 'Редагувати тест',
+    'ControlHasNoTestCoverage' => 'Цей елемент керування в області застосування ще не має тестового покриття.',
+    'AddTheFirstTest' => 'Додайте перший тест',
+    'ApplyCommonTestHint' => 'Застосуйте один або декілька існуючих тестів до цього елемента керування. Кожен тест зберігає свої поточні елементи керування та стає загальним тестом, що охоплює також і цей.',
+    'CommonTestApplied' => 'Тест, застосований до цього елемента керування.',
+    'CouldNotApplyCommonTest' => 'Не вдалося застосувати тест до цього елемента керування.',
+    'SelectOneOrMoreTests' => 'Виберіть один або декілька тестів',
+    'CommonTestsApplied' => '{n} тестів, застосованих до цього елемента керування.',
+    'ApplyCommonTests' => 'Застосовуйте поширені тести…',
+    'History' => 'Історія',
+    'Result' => 'Результат',
+    'Approval' => 'Схвалення',
+    'ThisTestHasNotBeenRunYet' => 'Цей тест ще не проводився.',
+    'CouldNotLoadTestHistory' => 'Не вдалося завантажити історію цього тесту.',
+    'Identity' => 'Ідентичність',
+    'IdentitySectionHint' => 'Ім\'я, тестер та елементи керування, які він перевіряє',
+    'WhenTheAuditInitiates' => 'Коли починається аудит',
+    'ProcedureAndEvidence' => 'Процедура та докази',
+    'CommonTestControlsHint' => 'Один тест може перевірити багато елементів керування — поширений тест. Відкриття цього з пункту керування «+ Додати тест» попередньо вибирає його тут.',
+    'SeparationOfDutiesNote' => 'Розподіл обов\'язків — особа, яка затверджує, не може бути одночасно і тестувальником.',
+    'CommonTestEditScopeHint' => 'Зміни застосовуються скрізь, де використовується цей загальний тест.',
+    'Mode' => 'Режим',
+    'AddOrRemove' => 'Додати або видалити…',
+    'AddOrSearchTags' => 'Додати або знайти теги…',
+    'CreateTagX' => 'Створити «{tag}»',
+    'Archived' => 'Архівовано',
+    'ShowAllTests' => 'Усі тести',
+    'ShowActiveTests' => 'Активні тести',
+    'ShowRetiredTests' => 'Виведені з експлуатації тести',
+    'UntestedControls' => 'Неперевірені засоби контролю',
+    'OverdueByXDays' => 'Прострочено · {n} днів',
+    'OverdueByOneDay' => 'Прострочено · 1 день',
+    'DueInXDays' => 'Термін сплати {n} днів',
+    'DueTomorrow' => 'Термін подання завтра',
+    'DueToday' => 'Термін сплати сьогодні',
+    'ScheduledForX' => 'Заплановано · {date}',
+    'AllTesters' => 'Усі тестувальники',
+    'AllStatuses' => 'Усі статуси',
+    'OnTrack' => 'На правильному шляху',
+    'NextTestDateDerivedHint' => 'Розраховується на основі дати останнього тестування плюс частота тестування. Встановіть частоту, щоб запланувати його автоматично, або залиште поле частоти порожнім, щоб встановити цю дату самостійно.',
+    'DueStatus' => 'Статус виконання',
+    'AllResults' => 'Усі результати',
+    // Remove a test from one control (Define Tests grid unlink row action)
+    'RemoveFromThisControl' => 'Видалити з цього елемента керування',
+    'RemoveTestFromControl' => 'Видалити тест з контролю',
+    'RemoveTestFromControlConfirm' => 'Видалити "{test_name}" з {control_name}?',
+    'RemoveTestFromControlStays' => 'Тест залишається на своїх {n} інших елементах керування. Нічого не видаляється.',
+    'RemoveTestFromControlStaysOne' => 'Тест залишається на 1 іншому контрольному елементі. Нічого не видаляється.',
+    'CannotRemoveTestsOnlyControl' => 'Тест має належати принаймні до одного елемента керування. Натомість скасуйте або видаліть тест.',
+    'TestRemovedFromControl' => 'Тест було вилучено з контролю.',
+    'CouldNotRemoveTestFromControl' => 'Тест не вдалося видалити з контролю.',
+    'TestRemovedFromControlAuditLogMessage' => 'Тест «{$test_name}» (ID: {$test_id}) було видалено з контролю (ID: {$control_id}) користувачем «{$user}».',
+    'DeleteTestUsedByNControls' => 'Він використовується елементами керування {n} і буде видалений з усіх них.',
+    'BulkDeleteSharedTestsNote' => '{n} з них використовуються іншими елементами керування та будуть видалені з них також.',
+    'BulkRetireSharedTestsNote' => '{n} з них використовуються іншими елементами керування та будуть вилучені там також.',
+    'BulkDeleteOneSharedTestNote' => 'Один з них використовується іншими елементами керування та буде видалений і з них.',
+    'BulkRetireOneSharedTestNote' => 'Один з них використовується іншими елементами керування і там також буде вилучено.',
+    'CouldNotLoadTest' => 'Не вдалося завантажити цей тест.',
+    'Expand' => 'Розгорнути',
+    'SearchMappings' => 'Пошук фреймворків та посилань',
+    'NoMatchingMappings' => 'Жодні зіставлення не відповідають цьому пошуку.',
+    'Insights' => 'Статистика',
+    'ShowInsights' => 'Показати плитки з аналітикою',
+    'HideInsights' => 'Згорнути плитки аналітики до рядка зведення',
+    'ChooseControls' => 'Вибір елементів керування',
+    'UseTheseControls' => 'Використовуйте ці елементи керування',
+    'SearchControlsPlaceholder' => 'Пошук за номером або іменем',
+    'PickerKeyboardHint' => 'Вгору/вниз для переміщення, Enter для вибору, Esc для скасування',
+    'NoControlsMatchFilters' => 'Тут нічого не знайдено. Розширте пошук на крок ліворуч або очистіть пошук.',
+    'NoControlsSelectedYet' => 'Ще нічого не вибрано.',
+    'AllControls' => 'Усі елементи керування',
+    'AddOrRemoveControls' => 'Додати або видалити елементи керування…',
+    'LastTested' => 'Останнє тестування',
+    'LastTestDateAnchorHint' => 'Інтервал прив’язки до графіка (ця дата плюс частота). Після того, як тест зафіксує результати, у сітці замість цього відображається дата найновішого результату.',
+    'Filters' => 'Фільтри',
+    'ShowFilters' => 'Показати фільтри',
+    'HideFilters' => 'Приховати фільтри',
+
+    // App shell — collapsing sidebar / new base design (SR app-shell redesign)
+    'AI' => 'Штучний інтелект',
+    'CollapseSidebar' => 'Згорнути бічну панель',
+    'FooterCopyright' => '© %s SimpleRisk. Усі права захищено.',
+    'ExpandSidebar' => 'Розгорнути бічну панель',
+    'WorkflowsCloneConfirm' => 'Клонувати робочий процес \'{$name}\'?',
+    'WorkflowsDeleteConfirm' => 'Видалити робочий процес \'{$name}\'? Цю дію неможливо скасувати.',
+    'WorkflowActionFailed' => 'Дія не вдалася: {$msg}',
+    'ClickToDisable' => 'Натисніть, щоб вимкнути',
+    'ClickToEnable' => 'Натисніть, щоб увімкнути',
+    'ENABLED' => 'УВІМКНЕНО',
+    'DISABLED' => 'ІНВАЛІД',
+    'BackToWorkflows' => 'Назад до робочих процесів',
+    'BackToHistory' => 'Назад до історії',
+    'NewWorkflow' => 'Новий робочий процес',
+    'ViewSteps' => 'Переглянути кроки',
+    'SaveWorkflow' => 'Зберегти робочий процес',
+    'WorkflowSavedSuccessfully' => 'Робочий процес успішно збережено.',
+    'WorkflowNotFound' => 'Робочий процес не знайдено.',
+    'EditWorkflow' => 'Редагувати робочий процес: {$name}',
+    'OrganizationContextProfile' => 'Профіль контексту організації',
+    'AICtxAutoAcceptThreshold' => 'Який поріг автоматичного прийняття ризику у вашій організації (сума в доларах США або відсоток від ALE)?',
+    'AICtxGrcBudget' => 'Який ваш річний бюджет GRC/безпеки?',
+    'AICtxAuditorPerspective' => 'З чиєї точки зору вас переважно перевіряють?',
+    'AICtxUnitCurrency' => 'Валюта ($)',
+    'AICtxUnitPercentOfAle' => 'Відсоток ALE (%)',
+    'AICtxFrameworksInUse' => 'Фреймворки, що використовуються зараз',
+    'AICtxNoFrameworksInUse' => 'Активних фреймворків поки що не знайдено. Додайте фреймворки в розділі «Керування» > «Зіставлення фреймворків».',
+    'AICtxFromYourData' => 'З ваших даних',
+    'AICtxAuthoritative' => 'Авторитетний',
+    'AICtxAppetiteNotSet' => 'Не встановлено',
+    'AICtxAppetiteManageLink' => 'Керування в конфігурації ризиків',
+    'AICapControlTestGeneration' => 'Генерація контрольних тестів',
+    'AICapControlTestGenerationDesc' => 'Готує чернетки контрольних тестів для перегляду, використовуючи зіставлення структури контролю, існуючі тести та результати самооцінювання — нічого не створюється, доки ви це не затвердите.',
+    'AICapSurfacedControlTestGeneration' => 'Відповідність — Визначення тестів',
+    'AIControlTestGenUnavailable' => 'ПОСЛУГА НЕДОСТУПНА: Адміністратор повинен увімкнути цю функцію в налаштуваннях ШІ.',
+    'AIControlTestGenInvalidId' => 'НЕПРАВИЛЬНИЙ ЗАПИТ: Потрібен ідентифікатор позитивного контролю.',
+    'AIControlTestGenNotFound' => 'НЕ ЗНАЙДЕНО: Вказаний елемент керування не знайдено.',
+    'AIControlTestGenConflict' => 'КОНФЛІКТ: Генерація вже поставлена в чергу для цього елемента керування.',
+    'AIControlTestGenQueued' => 'ПРИЙНЯТО: Генерація контрольного тесту поставлена в чергу.',
+    'AIControlTestGenFailed' => 'ВНУТРІШНЯ ПОМИЛКА СЕРВЕРА: Не вдалося поставити в чергу створення тесту керування.',
+    'AIControlTestGenCheckFailed' => 'ПОМИЛКА: Не вдалося перевірити елемент керування перед постановкою в чергу.',
+    'GenerateTestsWithAI' => 'Генеруйте тести за допомогою штучного інтелекту',
+    'ShowAiSuggestedTests' => 'Тести, запропоновані ШІ',
+    'AiSuggested' => 'Штучний інтелект запропонував',
+    'ReviewAndEdit' => 'Переглянути та відредагувати',
+    'CreateSelected' => 'Створити вибране',
+    'TestCreatedFromSuggestion' => 'Тест створено на основі пропозиції.',
+    'SuggestionDismissed' => 'Пропозицію відхилено.',
+    'TestGenerationQueued' => 'Генерація тесту поставлена в чергу.',
+    'Generating' => 'Генерація…',
+    'SuggestionDismissFailed' => 'Тест створено, але його пропозицію штучного інтелекту не вдалося відхилити. Відхиліть його вручну, якщо вона залишилася.',
+    'AICtxAuditorBig4' => 'Велика четвірка (зовнішня)',
+    'AICtxAuditorBoutique' => 'Бутік / регіональний (зовнішній)',
+    'AICtxAuditorInternal' => 'Тільки внутрішній аудит',
+    'AICtxAuditorSelfAssessed' => 'Самооцінка',
+    'AICtxAuditorNotSure' => 'Не впевнений',
+    'AICtxAppetiteCautious' => 'Обережний',
+    'AICtxAppetiteBalanced' => 'Збалансований',
+    'AICtxAppetiteAggressive' => 'Агресивний',
+    'TestGenerationComplete' => 'Контрольні тести, розроблені за допомогою штучного інтелекту, готові до перевірки.',
+    'TestGenerationStillRunning' => 'Генерація тестів все ще триває; чернетки з\'являться незабаром.',
+    'TestGenerationNoNew' => 'Генерацію завершено — нових тестів для цього контролю немає.',
+    'SearchEntities' => 'Пошук об\'єктів',
+    'SearchEntitiesPlaceholder' => 'Пошук ризиків, засобів контролю, політик, винятків…',
+    'ShowTypes' => 'Показати типи',
+    'Depth' => 'Глибина',
+    'Inspector' => 'Інспектор',
+    'Connections' => 'З\'єднання',
+    'NoConnectionsFound' => 'Для вибраної сутності не знайдено жодних з’єднань.',
+    'CouldNotLoadGraph' => 'Не вдалося завантажити графік зв\'язності.',
+    'CouldNotSearchEntities' => 'Не вдалося знайти об\'єкти.',
+    'ShowingTopNOfM' => 'Показано перші {0} з {1}',
+    'RankedByMaturityGap' => 'Ранжування за розривом у зрілості',
+    'RankedByRiskScore' => 'Ранжування за шкалою ризику',
+    'RankedByRecentFailure' => 'Рейтинг за останнім збоєм',
+    'RankedByReviewDate' => 'Рейтинг за датою наступного огляду',
+    'RankedBySeverity' => 'Рейтинг за тяжкістю',
+    'RankedByName' => 'Рейтинг за назвою',
+    'NodeTypeSelfAssessmentResult' => 'Результат самооцінювання',
+    'Relationship' => 'Стосунки',
+    'Exception' => 'Виняток',
+    'DesiredMaturity' => 'Бажана зрілість',
+    'ApprovalState' => 'Стан схвалення',
+    'RelationshipOfType' => '{0} з {1}',
+    // Connectivity Explorer Inspector: labels for enrichment field keys
+    // (ai_context_enrich_fetch(), ai_context_enrich_vulnerabilities()) that
+    // fieldLabel() in connectivity-visualizer.js did not yet cover.
+    'LastDate' => 'Остання дата',
+    'LastResultDate' => 'Дата останнього результату',
+    'PercentComplete' => 'Відсоток виконання',
+    'AssessmentDate' => 'Дата оцінювання',
+    'NextDate' => 'Наступна дата',
+    'Number' => 'Номер',
+    'Grouping' => 'Групування',
+    'Hidden' => 'Прихований',
+    'FirstFound' => 'Вперше знайдено',
+    'LastFound' => 'Останній знайдений',
+    'Patchable' => 'Можна виправляти',
+    'Solution' => 'Рішення',
+    'Breadcrumb' => 'Хлібна крихта',
+    'SelectANodeToInspect' => 'Виберіть вузол, щоб переглянути його деталі.',
+    'HiddenUnreachableNodes' => '{0} вузол(и) прихований(і): більше не підключено без прихованого(их) типу(ів).',
+    // Connectivity Explorer canvas launchpad (Level-1 type tiles / Level-2
+    // browsable entity list) -- docs/superpowers/specs/2026-07-27-
+    // connectivity-explorer-launchpad.md
+    'BrowsableEntityTypes' => 'Типи сутностей, доступні для перегляду',
+    'CountFloor' => '{0}+',
+    'NoBrowsableTypes' => 'У вас немає дозволу на перегляд будь-якого типу сутності.',
+    'AllTypes' => 'Усі типи',
+    'FilterEntitiesPlaceholder' => 'Фільтр…',
+    'NoMatchingEntities' => 'Немає об\'єктів, що відповідають вашому фільтру.',
+    'LoadMore' => 'Завантажити більше',
+    'Loading' => 'Завантаження…',
+    'CouldNotLoadEntityCounts' => 'Не вдалося завантажити кількість об\'єктів.',
+    'CouldNotLoadEntities' => 'Не вдалося завантажити об\'єкти.',
+    'ClearGraph' => 'Очистити графік',
+    // Connectivity Explorer node-type chip label for the 'audit' type. Not
+    // reused from 'TeamType_audit' (same English text, "Audit") -- that key
+    // is scoped to the Team Separation team-type picker, a different feature
+    // whose wording should be free to diverge from this one's.
+    'Audit' => 'Аудит',
+    // Queued email send-failure notifications
+    'EmailSendFailedNotificationTitle' => 'Не вдалося доставити електронний лист',
+    'EmailSendFailedNotificationBody' => 'Не вдалося доставити один або кілька електронних листів із черги. Перевірте налаштування пошти, а потім перегляньте монітор черги та журнал сервера для отримання детальної інформації.',
+    'QuestionnaireShareInvalidEmailAddress' => 'Неможливо поділитися результатами анкети з контактом, який не має дійсної адреси електронної пошти.',
+    'AssessmentSendInvalidEmailAddress' => 'Неможливо надіслати оцінювання на недійсну адресу електронної пошти.',
+    'AssessmentSentTo' => 'Оцінку надіслано до "{$email}".',
+    'AssessmentNotSentNoValidRecipients' => 'Оцінку не надіслано — не було вказано дійсну адресу електронної пошти.',
+    'AssessmentContactUnusableEmailNotificationTitle' => 'Анкету не надіслано',
+    'AssessmentContactUnusableEmailNotificationBody' => 'Анкету «{$questionnaire}» не вдалося надіслати контакту «{$contact}», оскільки цей контакт не має дійсної адреси електронної пошти у файлі. Оновіть запис контакту, щоб відновити надсилання.',
+    'EmailFailureNotificationRetention' => 'Зберігання сповіщень про помилку доставки електронної пошти',
+    'EmailFailureNotificationRetentionOutOfRange' => 'Термін зберігання сповіщень про помилку доставки електронної пошти має становити від {$min} до {$max} днів.',
+    'MailSettingsUpdatedSuccessfully' => 'Налаштування пошти успішно оновлено.',
+    // Questionnaire audit-trail entries for the API submit/draft paths (SR-1714).
+    // The token form credits the contact; an API caller is an authenticated
+    // SimpleRisk user acting on that contact's questionnaire, so both the
+    // contact and the acting user are named.
+    'QuestionnaireCompletedAuditLogViaApi' => 'Анкета «{$questionnaire_name}» для контакту «{$contact_name}» була заповнена через API користувачем «{$user_name}».',
+    'QuestionnaireDraftAuditLogViaApi' => 'Анкета «{$questionnaire_name}» для контакту «{$contact_name}» була збережена як чернетка через API користувачем «{$user_name}».',
+    // Bad-input response for the questionnaire risk-list endpoints, which
+    // previously reported a malformed questionnaire_id as a permission denial.
+    // Mirrors the existing 'MissingOrInvalidTrackingID'.
+    'MissingOrInvalidQuestionnaireID' => 'Відсутній або недійсний ідентифікатор анкети.',
+    // POST /api/v2/assessments/questionnaire/result/file response messages.
+    // The `id` path deliberately returns QuestionIdCannotAcceptFile for every
+    // question-level rejection so a sequential tracking id cannot be used to
+    // probe questionnaire structure; the token path returns the specific reason.
+    'QuestionnaireResultNotFoundForTokenOrId' => 'НЕ ЗНАЙДЕНО: Не вдалося знайти результат анкети з вказаним токеном або ідентифікатором',
+    'QuestionIdCannotAcceptFile' => 'НЕПРАВИЛЬНИЙ ЗАПИТ: question_id {$question_id} не може прийняти файл з результатом цього опитування',
+    'QuestionIdNotFoundInQuestionnaire' => 'НЕПРАВИЛЬНИЙ ЗАПИТ: question_id {$question_id} не знайдено в цій анкеті',
+    'QuestionIdInMultipleTemplates' => 'НЕПРАВИЛЬНИЙ ЗАПИТ: question_id {$question_id} зустрічається в кількох шаблонах для цієї анкети',
+    'QuestionIdDoesNotAcceptFileUploads' => 'НЕПРАВИЛЬНИЙ ЗАПИТ: question_id {$question_id} не приймає завантаження файлів',
+    // The Statement of Applicability's two UNVERIFIED implementation states.
+    //
+    // They exist because "we have not checked" is not "it does not work", and an
+    // SoA is ATTESTED — printing "No" for an unverified control is a false
+    // statement against yourself, exactly as printing "Yes" without evidence is
+    // a false statement the other way. Before these keys existed both states
+    // fell through to 'No', which on a framework where most controls carry no
+    // test meant the whole document read "not implemented".
+    //
+    // They are two states rather than one because they are different findings
+    // with different owners: no test defined is a GOVERNANCE gap (nobody decided
+    // how to verify this control), never run is an OPERATIONAL one (somebody
+    // decided, and it was not done).
+    //
+    // WORDING. Both must be unmistakably distinct from the bare 'No' in the same
+    // column. 'Tests never run' rather than 'Never run': in a column headed
+    // "Implemented", the bare phrase reads for a moment as though the CONTROL
+    // was never run, when the subject is its tests.
+    //
+    // BOTH ARE PLURAL, and that is not only style. English takes the plural
+    // after "no" when the expected quantity could exceed one ("no results
+    // found"), and a control normally carries several tests — the singular
+    // implies only ever one was expected. 'Tests never run' is the stronger
+    // case: soa_implemented_for() returns `never_run` only when NOT ONE of the
+    // control's tests has produced a verdict, so the state is inherently about
+    // the whole set. With four tests defined and none run, the singular reads as
+    // one omission rather than a wholesale one.
+    'SoaImplementedNoTestDefined' => 'Тести не визначено',
+    'SoaImplementedNeverRun' => 'Тести ніколи не проводяться',
+
+    // The Implemented column's fallback for a token neither sink recognizes.
+    //
+    // DELIBERATELY NOT A VERDICT, and the reason this key exists at all. Both
+    // sinks previously ended in a fallthrough to 'No', so adding a state without
+    // adding its label printed a confident, wrong answer into a compliance
+    // document. Falling through to 'Yes' would be worse. The only safe failure
+    // mode is a value that states nothing about the control — a visible bug
+    // instead of a silent misstatement.
+    'SoaImplementedUnknown' => 'Статус недоступний',
+    // How an APPLICABLE control's stored inclusion reason(s) join to its own
+    // freeform justification when it recorded both (spec §4). Reached ONLY when
+    // both halves exist — reasons alone print as the reason list, prose alone
+    // prints verbatim — so this string is punctuation and word order, not prose.
+    // It is a language key rather than a hardcoded separator because a locale
+    // that joins clauses with a colon, a full stop, or right-to-left ordering
+    // must be able to say so; both placeholders have to survive translation.
+    'SoaJustifiedByInclusionReasons' => '{reasons} — {narrative}',
+    // The Set applicability modal's reason field, which became a MULTI-select
+    // when reasons moved to a join table: a control is commonly included (or
+    // excluded) for more than one reason, and the singular 'Reason' the field
+    // used to reuse now under-describes it. 'Reason' is left alone rather than
+    // repointed -- the row drawer and the SoA still print exactly one joined
+    // value under it, and redefining a key changes every surface that reads it.
+    'ApplicabilityReasons' => 'Причини',
+    // Said once, above a group of checkboxes, rather than implied by the widget.
+    // The old single <select> answered "how many may I pick?" by construction;
+    // a checkbox group does not, and a user who ticks one and stops has made the
+    // SoA less truthful than the one they meant to write.
+    'ApplicabilityReasonsHint' => 'Виберіть усі підходящі причини.',
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // THE STATEMENT OF APPLICABILITY'S MARKERS AND ITS LEGEND (spec §1, §3).
+    // ─────────────────────────────────────────────────────────────────────────
+
+    // THE EVIDENCE COLUMN'S TWO ABSENCES, which are OPPOSITES.
+    //
+    // 'No evidence linked' is a FINDING: the control is in scope, is possibly
+    // claimed implemented, and nothing substantiates it. The em dash below is
+    // the other answer -- the control is excluded, so no evidence is expected
+    // and the absence is correct. Rendering both as an empty cell hides the
+    // first, which is the one an auditor circles.
+    'SoaNoEvidenceLinked' => 'Немає пов\'язаних доказів',
+    // PUNCTUATION, NOT PROSE -- the glyph the Evidence cell prints when nothing
+    // is expected. A language key rather than a hardcoded character for the same
+    // reason 'SoaJustifiedByInclusionReasons' is one: a locale that marks "not
+    // applicable" with a different dash, or with a word, must be able to say so.
+    'SoaEvidenceNotExpected' => '—',
+    // Whether the evidence a test DECLARED it requires actually arrived with the
+    // result. A stronger claim than a pass/fail alone, and few SoA tools make it.
+
+    // THE REMEDIATION BLOCK -- what is being done about a control that reads
+    // Partial or No. The SoA points AT the risk treatment plan (clause 6.1.3(e))
+    // rather than becoming one.
+    'SoaRemediation' => 'Рекультивація',
+    // THE MOST SERIOUS THING THAT BLOCK CAN FIND: the test failed and it is
+    // linked to no risk, so no treatment plan traces back to it. Dropping such a
+    // row for want of a risk to join to would render it as a blank cell, which
+    // reads as "nothing to report".
+    'SoaRemediationUnplanned' => 'Без ризику',
+
+    // THE LEGEND. Required in both variants and every export format, because six
+    // implementation states plus three markers is more nuanced than the
+    // Yes/No/Partial an auditor expects, and an undefined vocabulary invites the
+    // reader to guess unfavourably.
+    'SoaLegendTitle' => 'Як читати це твердження',
+    'SoaLegendYes' => 'Кожен тест, визначений для цього елемента керування, пройшов успішно під час його останнього запуску.',
+    'SoaLegendPartial' => 'Тести контрольної групи розходяться в думках: принаймні один пройшов успішно, а принаймні один не пройшов або не дав жодного висновку.',
+    'SoaLegendNo' => 'Жоден тест цього контролю не пройшов успішно під час його останнього запуску, і принаймні один не пройшов.',
+    // The two unverified states are DIFFERENT FINDINGS WITH DIFFERENT OWNERS,
+    // and the labels alone do not quite carry that -- so the legend spells it
+    // out. This is the distinction the whole six-state set exists for.
+    'SoaLegendNoTestDefined' => 'Для цього елемента керування не було визначено жодного тесту, тому його роботу ніколи не перевірялося. Це не твердження про відсутність елемента керування або його невдачу – лише те, що це твердження не демонструє цього. Прогалина в управлінні: ніхто не вирішив, як перевіряється цей елемент керування.',
+    'SoaLegendNeverRun' => 'Для цього елемента керування існують тести, але жоден з них ніколи не проводився, тому його робота тут не демонструється. Це не означає, що елемент керування відсутній або що він не працює. Операційна прогалина: перевірки були прийняті, але не були проведені.',
+    'SoaLegendNotApplicable' => 'Цей елемент керування виключено з області застосування цієї системи, тому він не має статусу реалізації.',
+    // The one most in need of explaining: with nothing to define it, this reads
+    // as an admission about the control rather than as what it is.
+    'SoaLegendUnknown' => 'SimpleRisk не зміг позначити записаний статус, тому реалізація тут не продемонстрована. Це дефект програмного забезпечення, який нічого не говорить про керування – ні про те, що воно працює, ні про те, що воно не працює.',
+    'SoaLegendOverdue' => 'Показаний результат залишається в силі, але принаймні один з тестів, що лежать в його основі, вже пройшов наступну дату тестування. Докази застаріли.',
+    'SoaLegendNoEvidence' => 'Контроль входить до сфери застосування, і жодних посилань на його підтвердження не було: жодного підтвердженого документа та жодного тесту, який би дав результат.',
+    'SoaLegendEvidenceNotExpected' => 'Не очікується жодних доказів, оскільки контроль виключено з сфери застосування.',
+    'SoaLegendUnplanned' => 'Невдалий тест, який не пов\'язаний з жодним ризиком, тому жоден план лікування не пов\'язаний з ним.',
+
+    // THE TWO VARIANTS, chosen on the launcher before the document is generated
+    // and PRINTED ON ITS COVER. A Statement of Applicability is a controlled
+    // document: two of them for the same framework that show different things,
+    // with nothing on either to say which is which, is a document nobody can
+    // file.
+
+    // THE THREE DETAILED-ONLY COLUMNS.
+    // What those three columns say instead of nothing. A blank cell in an audit
+    // document reads as a formatting artefact; "Not recorded" is a fact the
+    // reader can act on.
+
+    // THE BROWSER PRINT ROUTE. Beside the two downloads on the launcher, and the
+    // only PDF route for a framework too large for the server-side writer.
+    // Shown in place of "Download as PDF" when the chosen framework is above
+    // SOA_EXPORT_PDF_MAX_CONTROLS. The affordance is absent rather than
+    // disabled, so this sentence is what tells the reader the absence is
+    // deliberate and what to do instead.
+    // The footer of every printed page. {page} and {pages} are substituted with
+    // the browser's own page counters, so the two tokens must both survive
+    // translation -- but their ORDER and the words around them are the
+    // translator's, which is why this is one string and not "Page" + "of".
+    'SoaPrintPageNumber' => 'Сторінка {page} з {pages}',
+
+    // THE ONE PDF AFFORDANCE on the statement-of-applicability launcher, beside
+    // 'DownloadAsXLSX'. It replaces the pair that used to sit there --
+    // 'SoaPrintToPdf' and 'DownloadAsPDF' -- because a Statement of Applicability
+    // is a controlled document and two PDF buttons let two people hand an auditor
+    // two different-looking PDFs of the same statement.
+    //
+    // JUST "PDF", AND DELIBERATELY SO. Below SOA_EXPORT_PDF_MAX_CONTROLS the
+    // button downloads a server-rendered file and above it the browser writes
+    // one, but that is a mechanism and not a choice the reader has to make. A
+    // label that named the mechanism ("Print to PDF" / "Download as PDF") would
+    // put the difference back in front of them.
+    //
+    // 'SoaPrintToPdf' and 'SoaPdfTooLargeHint' above are LEFT IN PLACE with no
+    // caller: 39 locales carry them, and this file is append-only precisely so a
+    // customer running a custom lang.<locale>.php can reconcile it with a tail
+    // diff.
+    'SoaPdf' => 'PDF-файл',
+
+    // THE OTHER TWO ACTIONS IN THAT SAME ROW, shortened to match it.
+    //
+    // The row read "Open in browser" / "Download as XLSX" / "PDF", which put a
+    // verb on two of three actions and made the odd one out look like an
+    // abbreviation of something longer. The row's own context supplies the
+    // verbs -- these are the things you can DO with the framework you just
+    // chose -- so they carried no information and cost the reader a comparison.
+    // 'SoaPdf' is short because naming its mechanism would be dishonest (above
+    // SOA_EXPORT_PDF_MAX_CONTROLS it opens a print view rather than downloading
+    // a file), and the shortest of the three is the one that has to be right.
+    //
+    // NOT the generic 'Open' at line ~1021: that key lives among 'Mitigated' /
+    // 'Reviewed' and is the risk-status ADJECTIVE -- fr "Ouvert", de "Offen" --
+    // so reusing it would label a button with a state rather than an action in
+    // most of the 39 locales.
+    //
+    // 'SoaOpenInBrowser' above is LEFT IN PLACE with no caller, for the same
+    // reason 'SoaPrintToPdf' is: the locales carry it and this file is
+    // append-only so a customer's custom lang.<locale>.php reconciles with a
+    // tail diff. 'DownloadAsXLSX' keeps a caller either way -- the Assessments
+    // Extra's questionnaire results still use it.
+    'SoaOpen' => 'Відкрити',
+    'SoaXlsx' => 'XLSX',
+    // ---- The locked-affordance treatment -------------------------------------
+    // SHARED COPY, not chooser copy. SimpleRisk now SHOWS what's possible and
+    // MARKS what's out of reach because it isn't licensed, rather than hiding
+    // it -- so these strings appear both as a menu row's explanation (Define
+    // Control Frameworks' "+ Add framework" chooser) and beside a disabled
+    // toolbar button (the Statement of Applicability's PDF/XLSX exports). Each
+    // one is worded to read correctly in BOTH places, which is why none of them
+    // starts with "This route" or "This button".
+    //
+    // 'LockedAffordanceBadge' duplicates the English of 'AICapStateLocked'
+    // rather than reusing it: that key sits in the AI Capabilities Catalog's
+    // block and is scoped to a capability's state, and translators work from
+    // the key's neighbourhood as much as from its value.
+    'LockedAffordanceBadge' => 'Заблоковано',
+    // The two SCF steps before it can be switched on. admin/register.php serves
+    // both -- it is the registration form AND where the per-Extra download
+    // buttons render -- so these differ in what they say, not where they go.
+    'UnlockRegisterInstanceNote' => 'Зареєструйте цей екземпляр, щоб отримати Secure Controls Framework.',
+    'UnlockRegisterInstanceLink' => 'Зареєструвати SimpleRisk',
+    'UnlockDownloadScfNote' => 'Цей екземпляр зареєстровано. Завантажте Secure Controls Framework, щоб використовувати його.',
+    'UnlockDownloadScfLink' => 'Завантажте це',
+    'UnlockActivateScfNote' => 'Систему безпечного контролю завантажено, але не ввімкнено.',
+    'UnlockActivateScfLink' => 'Увімкніть це',
+    // Import-Export is a paid Extra, so "not installed" is an upsell rather
+    // than a registration prompt. Deliberately a bare capability sentence: it
+    // has to sit under a menu row and next to an export button equally well.
+    'RequiresImportExportExtra' => 'Потрібна додаткова опція «Імпорт-Експорт».',
+    'UnlockImportExportLink' => 'Подивіться, що це додає',
+    'UnlockActivateImportExportNote' => 'Додатковий модуль імпорту-експорту встановлено, але не ввімкнено.',
+    'UnlockActivateImportExportLink' => 'Увімкніть це',
+    // Shown instead of any of the above to a user who is not an administrator:
+    // every unlock step lives on a check_admin page, so they get the half that
+    // is useful to them -- that the capability exists, and who to ask -- and no
+    // link that would only bounce them.
+    'UnlockNeedsAdministrator' => 'Адміністратор може це налаштувати.',
+    // API date parsing. {$field} is the request field name (next_date, last_date,
+    // test_date); {$format} is this instance's configured display date format.
+    'InvalidSubmittedDate' => 'Значення {$field} не є дійсною датою. Надішліть його у форматі РРРР-ММ-ДД або у форматі дати цього екземпляра ({$format}).',
+    // Companion to InvalidSubmittedDate, for a value that matches the expected
+    // shape but names a day that does not exist (February 31st, month 13).
+    // Saying "submit it as MM/DD/YYYY" there would repeat what the caller did.
+    // {$value} is the submitted value, echoed back truncated.
+    'ImpossibleSubmittedDate' => 'Значення {$field} "{$value}" не є справжньою датою календаря. Перевірте день і місяць — у цьому випадку дати читаються як {$format}.',
+    // The Statement of Applicability's merged verification column. Replaces three
+    // separate headings (Implemented / Evidence / Review Cadence) with the one
+    // question all three answer: how do we know this control is working?
+    // The two appendices printed after the register. Justifications are truncated
+    // in the row and given in full here; remediation plans live here rather than
+    // in the table because ISO 27001 keeps the SoA (6.1.3(d)) and the risk
+    // treatment plan (6.1.3(e)) as separate artifacts.
+    'SoaAppendixJustifications' => 'Додаток А — Обґрунтування',
+    'SoaAppendixRemediation' => 'Додаток R — Плани відновлення',
+    // Appendix E carries the WORDING of each test's evidence requirement. The row
+    // keeps only whether that evidence arrived, which is the finding; the wording
+    // is reference material and was the bulkiest thing in the Verification cell.
+    'SoaRequiredEvidenceSupplied' => 'необхідні докази надані',
+    'SoaRequiredEvidenceNotSupplied' => 'необхідні докази не надані',
+    // The one scheduling fact the SoA prints: the soonest date any of a control's
+    // tests is next due. Replaces a per-test "Manual — Next Test Date: ..." line,
+    // whose schedule type belongs on Define Tests and whose date is now on each
+    // test's own evidence bullet.
+    // The two dates on a test's evidence bullet. LABELLED, because two bare dates
+    // side by side are ambiguous in a way one is not.
+    // SINGULAR document-type labels for one piece of design evidence. SimpleRisk's
+    // existing keys are the plural tab names, which would read "Access Control
+    // Standard (Standards)".
+    'SoaEvidencePolicy' => 'Політики',
+    'SoaEvidenceStandard' => 'Стандартний',
+    'SoaEvidenceProcedure' => 'Процедура',
+    'SoaEvidenceGuideline' => 'Керівництво',
+    // ── The legend, grouped by column (SOA_LEGEND_GROUPS, includes/soa.php) ──
+    // The Applicability column's three values. These were never in the legend,
+    // so an auditor met "Inherited" -- a word with no meaning outside SimpleRisk
+    // -- with nothing to look it up in.
+    'SoaLegendApplicable' => 'Контроль входить до сфери застосування цієї структури, і організація несе відповідальність за його функціонування.',
+    // DISTINCT from 'SoaLegendNotApplicable', which defines the "N/A" that appears
+    // in the Implementation Status column. This one is the DECISION to exclude;
+    // that one is the consequence for the status.
+    'SoaLegendApplicabilityNotApplicable' => 'Цей контроль виключено з сфери застосування цієї структури. У стовпці обґрунтування зазначається, чому та хто прийняв рішення.',
+    'SoaLegendInherited' => 'Контроль входить до сфери застосування, але ним керує третя сторона – постачальник хмарних послуг, материнська організація, аутсорсингова функція, – а не ця організація. Постачальника вказано поруч із обґрунтуванням.',
+    // The Evidence column's four bullet glyphs. Load-bearing since the visible
+    // result word was dropped from pass and fail bullets, and until now defined
+    // nowhere at all.
+    'SoaLegendEvidencePass' => 'Тест цього елемента керування пройшов успішно під час останнього запуску. Дата поруч із ним вказує на дату запуску.',
+    'SoaLegendEvidenceFail' => 'Тест цього контролю під час останнього запуску показав невдачу. Додаток R містить план лікування, якщо такий є.',
+    'SoaLegendEvidenceInconclusive' => 'Тест цього контролю було проведено, але результат не був отриманий. Той самий знак використовується для результату, який цей документ не розпізнає, і в такому випадку сам результат друкується поруч.',
+    // The TERM beside the § glyph. Not a document type -- the four types
+    // (Policy, Standard, Procedure, Guideline) are printed per item; this names
+    // the CATEGORY of evidence a document is.
+    'SoaEvidenceDesignDocument' => 'Дизайн-документ',
+    'SoaLegendEvidenceDocument' => 'Документ управління, підтверджений як доказ цього контролю – його задум, а не його функціонування. Документ не містить жодного вердикту, тому він не позначений галочкою.',
+    // The XLSX export's first worksheet tab. The workbook's other four tabs reuse
+    // headings that already exist ('How to read this statement', 'Statement of
+    // Applicability', and the two appendix headings); the cover had no name of its
+    // own because it used to be the top of a single sheet.
+    //
+    // KEEP IT SHORT. Excel caps a worksheet name at 31 characters and
+    // soa_export_sheet_name() truncates rather than failing the export, so a long
+    // translation loses its tail on the tab.
+    'SoaSheetCover' => 'Обкладинка',
+
+    'SearchFrameworks' => 'Пошукові фреймворки',
+    'SearchControls' => 'Елементи керування пошуком',
+    'AddFramework' => 'Додати фреймворк',
+    'Applicability' => 'Застосовність',
+    'AnyFamily' => 'Будь-яка сім\'я',
+    'AnyOwner' => 'Будь-який власник',
+    'AnyClass' => 'Будь-який клас',
+    'AnyPhase' => 'Будь-яка фаза',
+    'AnyPriority' => 'Будь-який пріоритет',
+    'AnyType' => 'Будь-який тип',
+    'AnyStatus' => 'Будь-який статус',
+    'SelectAllN' => 'Вибрати все {n}',
+    'Classification' => 'Класифікація',
+    'Placement' => 'Розміщення',
+    'OwnershipAndMaturity' => 'Власність та термін зрілості',
+    'MappingsAndGuidance' => 'Картування та інструкції',
+    'DeleteFrameworkTitle' => 'Видалити фреймворк \'{$name}\'?',
+    'DeleteControlTitle' => 'Видалити елемент керування \'{$name}\'?',
+    'DeleteControlsTitle' => 'Видалити елементи керування {$n}?',
+    'DeleteCannotBeUndone' => 'Цього не можна скасувати.',
+    'DeleteFrameworkConsequence' => 'Це видаляє фреймворк та всі його схеми керування.',
+    'DeleteControlConsequence' => 'Це видаляє керування з кожного фреймворку, на який воно пов\'язане.',
+    'DeleteControlsConsequence' => 'Це видаляє кожен вибраний елемент керування з кожного фреймворку, з яким він зіставлений.',
+    // Task 9: empty states (design-system.md §10) -- the four intents on
+    // Define Control Frameworks. Reuses existing keys where the copy already
+    // fits exactly (AddControl, AddFramework, ClearFilters, Retry,
+    // NoControlsDefinedYet, NoTestsMatchFiltersBody, CouldNotLoadTestsBody,
+    // RegisterYourInstance, GoToSCF, ImportExportExtra) -- only the strings
+    // with no existing match are added below.
+    'NoControlsMatch' => 'Немає елементів керування, що відповідають вашим фільтрам',
+    'CouldNotLoadControls' => 'Не вдалося завантажити елементи керування',
+    'ControlsYouAddWillAppearHere' => 'Додані вами елементи керування з’являтимуться тут.',
+    'NoFrameworksYet' => 'Поки що немає фреймворків',
+    'FrameworksYouAddWillAppearHere' => 'Додані або імпортовані вами фреймворки з’являться тут.',
+    'CouldNotLoadFrameworks' => 'Не вдалося завантажити фреймворки',
+    // Task 9 review fix: the framework rail's own "no results" intent, shown
+    // when the user has explicitly switched the status dropdown away from
+    // Active and that status has nothing (distinct from "No frameworks yet",
+    // which is reserved for the default Active status where the endpoint
+    // can't yet tell "no frameworks at all" from "none active").
+    'NoFrameworksMatchFilter' => 'Жодні фреймворки не відповідають цьому статусу',
+    'ViewActiveFrameworks' => 'Переглянути активні фреймворки',
+    // Task 10: Define Control Frameworks insights band (governance/index.php)
+    // -- KPI tile labels/subtitles. 'Controls', 'Pass', 'Fail', 'NotTested'
+    // already exist and are reused as label keys for their tiles.
+    'BelowTarget' => 'Нижче цільового показника',
+    'Excluded' => 'Виключено',
+    'FwInScope' => 'У сфері застосування',
+    'FwLastTestPassed' => 'Останній тест пройдено',
+    'FwLastTestFailed' => 'Останній тест не вдався',
+    'FwNoEvidence' => 'Застосовується, немає доказів',
+    'FwMaturityUnderDesired' => 'Зрілість нижче бажаного',
+    'FwScopeAFramework' => 'Охопити рамки для прийняття рішення',
+    'FwNotApplicableOrInherited' => 'Не застосовується або успадковано',
+    // Task 22: framework rail search (governance/index.php's #sr-fw-search,
+    // wired client-side in governance-frameworks.js). Reuses the shipped
+    // "no results" empty-state tile (#sr-fw-filtered, Task 9) rather than
+    // inventing a fourth rail empty state -- only the title and action swap
+    // depending on whether a status filter or a search narrowed the list to
+    // nothing; NoTestsMatchFiltersBody already covers both as body copy.
+    'NoFrameworksMatchSearch' => 'Немає фреймворків, що відповідають вашому пошуку',
+    'ClearSearch' => 'Очистити пошук',
+    // Task 24: Clone control pre-fills the Add Control modal from the source
+    // control (governance-frameworks.js's openControlForClone()) rather than
+    // creating a duplicate outright, so the modal needs to say plainly which
+    // control it was cloned from -- the reviewer's core complaint about an
+    // earlier one-click version of this feature was not knowing what was
+    // cloned. {$name} follows the same client-side formatTemplate()
+    // substitution ShowingXToYOfZ/NSelected already use on this page.
+    'ClonedFromControlNotice' => 'Клоновано з "{$name}". Перевірте поля нижче, а потім натисніть "Зберегти".',
+    // Task 24 review follow-up: the banner alone left the modal titled "New
+    // Control" over pre-populated fields -- "it doesn't prompt or anything
+    // so the user doesn't know what was cloned" (Josh) -- which reads as a
+    // bug, not a feature. Retitling #control--add-title to this (governance-
+    // frameworks.js's show.bs.modal delegate for #control--add) makes the
+    // clone unambiguous at a glance; NewControl is restored for a plain add.
+    'CloneOfControlTitle' => 'Клон "{$name}"',
+    // Task 27: the framework rail's SCF-origin chip (governance-frameworks.js's
+    // railRow()) -- shown only for frameworks created via the ComplianceForge
+    // SCF Extra's authoritative-source import (get_scf_origin_framework_ids(),
+    // includes/governance.php). SCF is the badge text itself; ScfOriginHint is
+    // its title/tooltip.
+    'SCF' => 'СФК',
+    'ScfOriginHint' => 'Зі структури безпечного контролю (SCF)',
+    // Task 34: the Maturity filter facet's placeholder on the Define Control
+    // Frameworks filter sheet (governance-frameworks.js's ensureFilterSheet()),
+    // matching the AnyFamily/AnyOwner/AnyClass/... set above. The facet's three
+    // OPTIONS reuse the existing BelowMaturity/AtMaturity/AboveMaturity keys --
+    // the same labels the governance dashboard's maturity-gap widgets already
+    // carry -- and the column chip renders those same three strings, so the
+    // filter and the cell can never read differently.
+    'AnyMaturity' => 'Будь-який термін погашення',
+    // Task 46: accessible name for the control table's pager landmark
+    // (governance-frameworks.js's renderPager()). The pager's own buttons
+    // reuse the existing Previous/Next keys Define Tests' pager already
+    // carries; only the <nav> label is new, and it names WHICH table's pager
+    // it is because the Define Control Frameworks page has two lists on it.
+    'ControlsPagination' => 'Керує пагінацією',
+    // Task 14: the Applicability column's state chip (governance-frameworks.js's
+    // renderApplicability()), the matching filter facet (its three option labels
+    // reuse these same three keys) and its "Any applicability" placeholder.
+    //
+    // The three states are PREFIXED rather than named 'Applicable'/
+    // 'NotApplicable'/'Inherited' because 'NotApplicable' already exists above
+    // as the ABBREVIATION 'N/A' -- the self-assessment answer chip and three
+    // reporting charts render it -- and redefining that key to the spelled-out
+    // phrase this column needs would silently change all four of those
+    // surfaces. The prefix also keeps the trio recognisable as one family.
+    //
+    // The column HEADER and the facet's accessible name reuse the existing
+    // 'Applicability' key, and the drawer's record reuses 'Reason', 'Provider'
+    // and 'Justification' -- all four already carry exactly the right string.
+    'ApplicabilityApplicable' => 'Застосовується',
+    'ApplicabilityNotApplicable' => 'Не застосовується',
+    'ApplicabilityInherited' => 'Успадковано',
+    'AnyApplicability' => 'Будь-яке застосування',
+    // The drawer's applicability record: who recorded the decision and when.
+    // Both are attribution for an audited decision a customer may have to
+    // defend years later, which is why the drawer names them at all.
+    'ApplicabilityDecidedBy' => 'Вирішено',
+    'ApplicabilityDecidedOn' => 'Вирішено',
+    // The framework-level Statement of Applicability card in the Add/Edit
+    // framework modals (display_framework_soa_card(), includes/governance.php).
+    // These two fields are what ISO/IEC 27001:2022 clause 6.1.3(d) needs on an
+    // SoA cover: the scope the framework is certified against, and how inclusion
+    // was determined for the controls that are simply applicable.
+    //
+    // 'IsmsScopeStatement' rather than a bare 'ScopeStatement' because "scope"
+    // is already overloaded across SimpleRisk (assessment scope, audit scope,
+    // risk scope); the ISMS prefix is what an ISO practitioner calls this exact
+    // field and keeps it from being reused for an unrelated one.
+    'StatementOfApplicability' => 'Заява про застосовність',
+    'IsmsScopeStatement' => 'Заява про сферу застосування',
+    'IsmsScopeStatementHint' => 'Сфера застосування, на яку сертифіковано цю платформу. Відображається на титульній сторінці SoA.',
+    'DefaultInclusionJustification' => 'Обґрунтування включення за замовчуванням',
+    'DefaultInclusionJustificationHint' => 'Використовується для відповідних засобів контролю без пов\'язаних ризиків. Назвіть рушійну силу, а не структуру.',
+    // THE DEFAULT SENTENCE, in all three of its roles: the create form seeds the
+    // textarea with it, the Edit form shows it as a placeholder, and
+    // soa_framework_default_justification() (includes/soa.php) substitutes it at
+    // read time for a framework that has none. One key, because a reader must not
+    // be able to tell a stored default from a fallen-back one, and because three
+    // keys holding the same sentence is three chances for a translator to make
+    // them disagree. The name predates the seeding decision (Task 67) and is kept
+    // rather than churned through Crowdin for 39 locales.
+    //
+    // It names the DRIVER (the risk assessment) rather than the framework:
+    // "included because it is part of this framework" is circular, and ISO 6.1.3
+    // derives controls from risk treatment, using Annex A afterwards only as a
+    // completeness cross-check.
+    //
+    // It was a placeholder ONLY until Task 67, so that an unreviewed sentence
+    // could not reach a customer's SoA by inaction. Measured, that produced the
+    // opposite failure: 19 of 20 frameworks left the field NULL and the SoA's
+    // Justification column came out BLANK for every applicable control with no
+    // linked risks -- the finding an SoA is most often failed on, and one a
+    // boilerplate sentence does not attract.
+    'DefaultInclusionJustificationPlaceholder' => 'Визначається оцінкою ризиків інформаційної безпеки організації та зберігається як необхідний контрольний засіб.',
+    // Task 15: bulk-setting applicability from the control table's selection bar
+    // (#applicability--set, governance/index.php + governance-frameworks.js).
+    //
+    // The action's own label and the modal's one section. 'Applicability',
+    // 'Reason', 'Provider', 'Justification', 'Save' and 'Cancel' already exist
+    // and are reused; only the strings with no existing home are added here.
+    'SetApplicability' => 'Встановити застосовність',
+    'ApplicabilityDecision' => 'Рішення',
+    // The amber scope note, in two sentences the page assembles separately
+    // because they answer two different questions: WHICH framework the decision
+    // is scoped to, and WHICH controls are about to receive it. The second one
+    // has two spellings, because the header checkbox selects the current PAGE
+    // while "Select all N" escalates to the whole filtered result set -- the two
+    // genuinely differ once the table pages, and a note that blurred them would
+    // let the user write 1,535 decisions believing they had written 25.
+    'ApplicabilityScopeNote' => 'Це рішення застосовується лише в межах "{$framework}". Той самий елемент керування може залишатися застосовним в іншій платформі.',
+    'ApplicabilityAppliesToSelected' => 'Його буде записано для елемента(ів) керування {$n} , вибраного(их) на цій сторінці.',
+    'ApplicabilityAppliesToAllFiltered' => 'Його буде записано для всіх елементів керування {$n} , що відповідають поточним фільтрам, включаючи ті, що знаходяться на інших сторінках.',
+    // Per-state hints under the segmented control. The "applicable" one is the
+    // load-bearing sentence of the whole modal, and the SoA audit-readiness work
+    // rewrote it: an applicable control MAY now carry its own reasons and
+    // justification (ISO/IEC 27001 clause 6.1.3(d) asks for one per control, for
+    // inclusion as much as for exclusion), and leaving both empty is what falls
+    // back to the framework's default inclusion justification. The old sentence
+    // -- "this removes any recorded decision. No justification is needed." --
+    // is now false in both halves.
+    'ApplicabilityApplicableHint' => 'В рамках цієї структури. Причина та обґрунтування необов\'язкові; якщо залишити обидва поля порожніми, використовуватиметься обґрунтування включення за замовчуванням у цій структурі.',
+    'ApplicabilityNotApplicableHint' => 'Виключення контролю зі сфери застосування цієї структури. Потрібні як причина, так і письмове обґрунтування.',
+    'ApplicabilityInheritedHint' => 'Хтось інший виконує цей контроль від вашого імені. Назвіть їх і скажіть, що вони роблять.',
+    'ApplicabilityNarrativeHint' => 'Міститься у Заяві про застосовність. Напишіть, що потрібно аудитору для прийняття рішення.',
+    'ApplicabilityProviderHint' => 'Організація, яка здійснює керування: хмарний постачальник, керований сервіс, материнська компанія.',
+    'ChooseAReason' => 'Виберіть причину',
+    'ApplicabilityNoReason' => 'Без причини',
+    // Result toasts. Both interpolate a COUNT taken from the API response and
+    // nothing else -- no submitted text is ever reflected into a toast, which
+    // toastr renders as HTML.
+    'ApplicabilitySetResult' => 'Застосовність оновлено для {$n} елементів керування.',
+    'ApplicabilityClearResult' => 'Застосовність скинуто до застосовної для {$n} елементів керування.',
+    // Bulk control delete (Task 54, corrected Task 55). Deleting a control is
+    // final either way the delete engine implements it: a control with test
+    // history is soft-deleted (framework_controls.deleted = 1) to keep test
+    // history intact, a control with no tests is removed outright -- but
+    // nothing anywhere flips that flag back, so from the user's side there is
+    // no "kept" case, only "deleted, and its test history survives for audit
+    // purposes." Every sentence therefore leads with the same irreversible
+    // warning; the only thing that varies is whether an audit-history clause
+    // is appended, and that clause is omitted entirely rather than printed
+    // with a count of zero -- "0 are retained for audit history" reads as a
+    // warning about something that is not going to happen, and on a delete
+    // confirmation that is exactly the kind of noise that trains people to
+    // stop reading. Every {$...} is a count from the API response; no user
+    // text is ever interpolated, which matters because toastr renders HTML.
+    'DeleteControlsPreviewChecking' => 'Перевірка того, що буде видалено...',
+    'DeleteControlsPreviewSplit' => '{$n} елементів керування буде видалено. Цю дію неможливо скасувати. Результати тестування для {$m} з них зберігаються для історії аудиту.',
+    'DeleteControlsPreviewKeptOnly' => 'Усі елементи керування {$n} будуть видалені. Цю дію неможливо скасувати. Результати тестів зберігаються для історії аудиту.',
+    'DeleteControlsPreviewRemovedOnly' => '{$n} елементів керування буде видалено. Цю дію не можна скасувати.',
+    'DeleteControlsPreviewNone' => 'Немає чого видаляти: вибрані елементи керування більше не існують.',
+    'ControlsDeletedResult' => '{$n} елементів керування видалено.',
+
+    // The Add/Edit framework modal's Status field. The label reuses the existing
+    // 'Status' key -- the same word the rail's Active/Inactive/All filter already
+    // uses -- so only the explanatory hint is new. It says the two things a user
+    // cannot see from the control itself: that Inactive is the NON-destructive way
+    // to retire a framework (unlike Delete, which cannot be undone), and that the
+    // change cascades through the hierarchy, which is what update_framework_status()
+    // has always done and is genuinely surprising when a parent is deactivated.
+    'FrameworkStatusHint' => 'Неактивні фреймворки зберігають усі свої елементи керування та зіставлення, але приховані від списку фреймворків за замовчуванням та виключені з панелі керування. Деактивація фреймворку також деактивує всі фреймворки під ним; активація одного з них також активує його батьківські фреймворки.',
+
+    // Task 60: the same #applicability--set modal, opened from ONE control's row
+    // action instead of the selection bulk bar. The button's own label reuses
+    // 'SetApplicability'; these two exist because the modal now has to say which
+    // of the two it is acting on, and both spellings must be unambiguous.
+    //
+    // The title names the specific object (design-system.md §8) and the note
+    // says "only", because the dangerous reading is the silent one: with rows
+    // ticked -- or with "Select all N filtered" in force -- a modal that said
+    // nothing would let a click the user believed applied to one row be read as
+    // applying to every control in the framework. Naming the control in both
+    // places is what makes the narrower scope visible rather than assumed.
+    // Corrected in Task 63. This spelling used to end "...only, whatever else is
+    // selected", which was printed on every row-action open whether or not
+    // anything else WAS selected -- a dangling absolute with no antecedent, so
+    // it read as a sentence that had been cut off. It is now the plain form, and
+    // the reassurance about a competing selection moved to
+    // 'ApplicabilityAppliesToControlNotSelection' below, which is printed only
+    // when there is a competing selection to reassure anyone about.
+    'SetApplicabilityForControl' => 'Встановити застосовність: {$name}',
+    'ApplicabilityAppliesToControl' => 'Це буде записано лише для "{$name}".',
+
+    // Task 17: the Statement of Applicability report itself
+    // (reports/statement_of_applicability.php + pages/statement-of-applicability.js),
+    // the document ISO/IEC 27001:2022 clause 6.1.3(d) asks for and the one every
+    // applicability decision recorded on the Define Control Frameworks page
+    // exists to produce.
+    //
+    // 'StatementOfApplicability' already exists above (the framework modal's SoA
+    // card) and is reused for the report's own title, as are 'IsmsScopeStatement',
+    // 'DefaultInclusionJustification', the three 'Applicability*' state labels,
+    // 'ApplicabilityDecidedBy'/'DecidedOn', and the plain 'Framework',
+    // 'ControlNumber', 'ControlName', 'Justification', 'Evidence', 'Reason',
+    // 'Provider', 'Total', 'Controls' and 'Export' keys. Only strings with no
+    // existing home are added here.
+    'StatementOfApplicabilityDesc' => 'Для однієї структури: кожен елемент керування, чи він застосовується, чому його було включено чи виключено, і чи він реалізований.',
+    // The header button on Define Control Frameworks. The verb is "generate"
+    // rather than "view" because the document is assembled at the moment it is
+    // asked for -- there is no stored SoA that could be out of date.
+    'GenerateStatementOfApplicability' => 'Створити заяву про застосовність',
+
+    // The Justification column's SECOND resolution step, and the reason an SoA
+    // built here beats the spreadsheet it replaces: the risks that drove the
+    // control are already recorded against it, so nobody retypes them and they
+    // cannot go stale. {risks} is substituted with the displayed risk ids.
+    //
+    // Phrased to match clause 6.1.3, which derives controls from risk treatment
+    // and uses Annex A afterwards only as a completeness cross-check -- the same
+    // reasoning behind 'DefaultInclusionJustificationPlaceholder' above.
+    'SoaJustifiedByRiskAssessment' => 'Визначається оцінкою ризиків інформаційної безпеки організації. Пов’язані ризики: {risks}.',
+
+    // The Implemented column. DERIVED from maturity and the last test result on
+    // every read, never stored, so it cannot drift out of sync with the control.
+    // 'Yes' and 'No' already exist and are reused; only the middle value and the
+    // header need keys of their own. An excluded control's cell reuses the
+    // existing 'NotApplicable' ('N/A'), which is exactly the right abbreviation
+    // in a dense table.
+    'SoaImplemented' => 'Впроваджено',
+    'SoaImplementedPartial' => 'Часткове',
+
+    // The cover block.
+    'SoaGeneratedOn' => 'Згенеровано',
+    'SoaExcludedCount' => 'Виключено',
+
+    // The prompt shown when the framework has never been given the two cover
+    // fields. It PROMPTS rather than silently printing a blank cover: an SoA
+    // whose scope is empty is the one defect an auditor spots first, and the
+    // moment somebody opens the report is the only moment those fields matter.
+    // Both spellings of empty (never set, and deliberately cleared) prompt --
+    // from a reader's point of view there is nothing to print either way.
+    //
+    // The inclusion-justification line states a WEAKER consequence than it used
+    // to, because Task 67 made the stronger one untrue: the column no longer goes
+    // blank when the field is empty -- soa_framework_default_justification()
+    // substitutes the generic default sentence. The prompt survives because a
+    // generic sentence is not the organization's own, and an auditor reading 1,500
+    // identical rows of boilerplate is entitled to ask whose risk assessment it
+    // refers to.
+    'SoaMissingFieldsTitle' => 'У цій заяві відсутні супровідні дані',
+    'SoaMissingScopeStatement' => 'Для цієї структури не було записано жодної заяви про обсяг застосування. У заяві про оцінку (SoA) має бути зазначена сфера застосування, для якої вона складена.',
+    'SoaMissingInclusionJustification' => 'Не було зафіксовано жодного обґрунтування включення за замовчуванням. Застосовувані засоби контролю без пов\'язаних ризиків будуть використовувати загальне твердження, а не ваше власне.',
+    'SoaEditFrameworkToAdd' => 'Додайте їх до фреймворку',
+
+    // Opened from the Reporting Hub, which cannot supply a framework. A picker,
+    // not an error: an SoA is a per-framework document by definition -- the same
+    // control excluded from ISO 27001 is not thereby excluded from PCI DSS --
+    // and there is no cross-framework roll-up to offer instead.
+    'SoaChooseFramework' => 'Виберіть фреймворк',
+    'SoaChooseFrameworkHint' => 'Заява про застосовність пишеться для кожної окремої фреймворку.',
+    // The picker has a roster but nothing in it. Distinct from "this framework
+    // has no controls": there is no framework to write a statement about at all,
+    // and the fix is on a different page, so it says which one.
+    // The launcher's affordance row. "Open in browser" rather than "View"
+    // because it names what actually happens -- the document opens in a new tab,
+    // chrome-free -- and because Task 18 adds "Download as PDF" and "Download as
+    // XLSX" beside it, where "open" vs "download" is the distinction that
+    // matters.
+    // The document has no sidebar, so it needs its own way back for anyone who
+    // arrives from a bookmark or a shared link. Screen only; never printed.
+    'SoaBackToSelector' => 'Повернутися до заяви про застосовність',
+    'SoaNoFrameworks' => 'Немає активних фреймворків',
+    'SoaNoFrameworksHint' => 'Встановіть або активуйте фреймворк у розділі «Керування» > «Визначити фреймворки контролю», і він буде доступний тут.',
+
+    // The two refusals. Both explain rather than just failing, because the user
+    // arrived here deliberately.
+    'SoaFrameworkInactiveTitle' => 'Цей фреймворк неактивний',
+    'SoaFrameworkInactiveBody' => 'Заява про застосовність описує сферу діяльності організації. Щоб створити таку заяву, повторно активуйте структуру.',
+    'SoaFrameworkNotFoundBody' => 'Цієї структури більше не існує.',
+
+    // A framework with no controls mapped into it. Not an error -- it is a real
+    // and recoverable state, and saying so beats an empty table.
+    'SoaNoControls' => 'Цей фреймворк не має жодних елементів керування',
+    'SoaNoControlsHint' => 'Зв\'яжіть елементи керування з фреймворком, і його твердження про застосовність їх перерахує.',
+
+    // The second half of the statement-of-applicability launcher's affordance
+    // row, beside "Open in browser" and the existing 'DownloadAsXLSX'. Rendered
+    // only where the Import/Export Extra is active, which is what supplies the
+    // export. "Download as" rather than "Export to" so the pair reads as one
+    // choice of format, and so it matches the XLSX label already in this file.
+    'DownloadAsPDF' => 'Завантажити як PDF',
+
+    // The fourth column of the control modal's "Mapped Control Frameworks"
+    // widget, between the reference code and the reference text. The
+    // FRAMEWORK's own title for the control it is citing -- what a Statement of
+    // Applicability prints beside the clause number. Distinct from the existing
+    // 'ReferenceText', which holds the framework's full control statement, and
+    // from the SimpleRisk control's own name.
+    'ReferenceSubject' => 'Тема посилання',
+    // Placeholder/help text under that field, and the reason it is worth
+    // filling in: without it the Statement of Applicability has nothing to
+    // print but the source catalogue's name for its own control.
+    'ReferenceSubjectHint' => "Власна назва фреймворку для цього елемента керування.",
+
+    // Task 63: the row-scoped population sentence in the Set applicability
+    // modal, in the one situation where the plain
+    // 'ApplicabilityAppliesToControl' above leaves a real question unanswered --
+    // the user has controls ticked, or a standing "Select all N filtered", and
+    // has just opened the modal from ONE row's own action.
+    //
+    // It states the guarantee rather than implying it. A user whose escalated
+    // selection covers an entire framework needs to know that this click is not
+    // about to overwrite it, and {$n} is the count of the OTHER selected
+    // controls -- the target is excluded, because it is very often ticked too
+    // and a promise that included it would be false.
+    'ApplicabilityAppliesToControlNotSelection' => 'Запис буде здійснено лише для "{$name}" — вибрані вами елементи керування {$n} залишаться в силі.',
+
+    // Task 65: the VISIBLE label on the controls toolbar's SoA button. The full
+    // sentence ('GenerateStatementOfApplicability' above) stays as the button's
+    // title and aria-label, and is still what the SoA page itself is called;
+    // this is the short form for a toolbar row it shares with the page's one
+    // primary action. At full length the secondary button measured more than
+    // twice the primary's width and became the largest element in the row.
+    //
+    // "SoA" is safe to abbreviate HERE and only here: the button appears solely
+    // when a single framework is scoped, beside an Applicability column, and it
+    // expands on hover.
+    'GenerateSoa' => 'Генерація SoA',
+
+    // ===== Clone framework (Task 64) =======================================
+    // The framework half of Clone control's framing (CloneOfControlTitle /
+    // ClonedFromControlNotice above), and for the same reason: the clone
+    // pre-fills the Add Framework modal rather than creating anything, so the
+    // modal has to say what was carried over before the user saves it.
+    //
+    // Separate keys from the control pair rather than one shared "Clone of
+    // {$name}" -- the two banners do not say the same thing. A cloned control
+    // simply asks to be reviewed; a cloned FRAMEWORK has to explain two things
+    // its fields cannot: that the source's control mappings come with it, and
+    // that the empty scope statement is deliberate. The blank field is the
+    // whole reason the banner is longer than the control's -- a scope statement
+    // left blank with no explanation reads as a field that failed to populate,
+    // and the one thing a clone exists to be given is a NEW scope (Josh: "you
+    // might want to use the same controls as one framework, but scope it
+    // differently"). {$name} and {$n} follow the same client-side
+    // formatTemplate() substitution the rest of this page's templates use.
+    'CloneOfFrameworkTitle' => 'Клон "{$name}"',
+    // {$n} is the count the rail is SHOWING for the source row -- its controls,
+    // not its raw mapping rows. Those differ (a framework can cite one control
+    // under two clause numbers, and the rail excludes deleted controls), and the
+    // number to promise is the one the user is looking at when they click and
+    // the one the clone's own rail row will show afterwards.
+    'ClonedFromFrameworkNotice' => 'Клоновано з "{$name}". Його елементи керування {$n} будуть скопійовані до нового фреймворку, причому кожен з них буде застосовним спочатку — жодне з рішень щодо застосовності не переноситься. Опис області застосування навмисно порожній: вкажіть область застосування, яку охоплює цей фреймворк, перш ніж створювати його Опис області застосування.',
+    // Seeds the name field so the clone can be saved without a rename --
+    // framework names are unique, so a verbatim copy is refused on save.
+    'CloneOfFrameworkName' => '{$name} (Клон)',
+    'CloneFramework' => 'Клон фреймворку',
+    // Extras version independently of Core, so an updated Import/Export Extra
+    // can end up calling a Core function the installed Core does not have. The
+    // export refuses with this rather than fataling -- see
+    // soa_export_refuse_if_core_too_old(), extras/import-export/includes/soa_export.php.
+    'SoaExportRequiresNewerCore' => 'Для цього експорту потрібна новіша версія SimpleRisk Core, ніж та, що встановлена. Оновіть SimpleRisk, а потім спробуйте експортувати ще раз.',
+    // The framework ACQUISITION chooser (Task 26): "+ Add framework" asks how you
+    // want to get one, rather than assuming you want to type it in. Each option is
+    // rendered only when the route behind it actually exists for this user, so the
+    // hint text may state plainly what the route does -- it is never shown to
+    // someone who cannot take it.
+    'HowDoYouWantToAddAFramework' => 'Як ви хочете додати фреймворк?',
+    'CreateFrameworkManually' => 'Створіть його вручну',
+    'CreateFrameworkManuallyHint' => 'Назвіть фреймворк самостійно, а потім додайте або зіставте його елементи керування.',
+    // Named for the framework rather than for its vendor. The hint was reworded
+    // at the same time: it used to end "...load its Secure Controls Framework
+    // controls", which read as a stutter once the label carried those words.
+    'GetFrameworkFromScf' => 'Отримайте його з Secure Controls Framework',
+    'GetFrameworkFromScfHint' => 'Виберіть опублікований фреймворк та завантажте його відображені елементи керування за один крок.',
+    'ImportFrameworkFromCatalog' => 'Імпортувати один',
+    'ImportFrameworkFromCatalogHint' => 'Встановіть фреймворк та його елементи керування з каталогу контенту SimpleRisk.',
+
+    // The framework acquisition chooser's third route, which now offers the
+    // Import-Export Extra's CONTROL import (a spreadsheet naming a framework
+    // that does not exist yet creates it) rather than the GitHub catalogue the
+    // two keys above described. Those two are left in place, unreferenced, so a
+    // customer maintaining a custom lang.<locale>.php still reconciles by tail
+    // diff.
+    'ImportFrameworkFromSpreadsheet' => 'Імпортувати з електронної таблиці',
+    'ImportFrameworkFromSpreadsheetHint' => 'Завантажте електронну таблицю з елементами керування, яка містить назву фреймворку, і обидва будуть створені.',
+
+    // The Define Control Frameworks rail's second synthetic scope: the controls
+    // mapped to no framework at all. Its first, "All controls", reuses the
+    // existing AllControls key rather than adding a second string with the same
+    // English -- it replaced 'AllFrameworks' on that row, which named a union of
+    // frameworks while scoping to every control, mapped or not. 'AllFrameworks'
+    // is left in place and unreferenced by that page: other surfaces still use
+    // it, and every locale carries it.
+    'UnassignedControls' => 'Непризначені елементи керування',
+    // APPLICABILITY VALIDATION FAILURES. These reach the user: the v2 endpoint
+    // returns the exception's message as the API status message and the page
+    // renders it in a toast, so a hardcoded English literal here would be
+    // permanently English for every locale.
+    //
+    // NOTHING THE CALLER TYPED IS EVER INTERPOLATED INTO THESE. The parameters
+    // are validated enum values, integer ids and byte limits the server itself
+    // owns -- naming the ALLOWED values rather than echoing the rejected one is
+    // deliberate (it is both safe and more useful than repeating a typo).
+    'ApplicabilityErrUnknownState' => 'Невідомий стан застосовності. Очікується один із таких станів: {$states}.',
+    'ApplicabilityErrNarrativeRequired' => 'Для \'{$state} \' потрібен описовий текст.',
+    'ApplicabilityErrNarrativeTooLong' => 'Розмір оповіді перевищує {$bytes} байтів.',
+    'ApplicabilityErrReasonRequired' => 'Щоб позначити елемент керування як непридатний, потрібна причина виключення.',
+    'ApplicabilityErrProviderRequired' => 'Постачальник повинен позначити елемент керування як успадкований.',
+    'ApplicabilityErrProviderTooLong' => 'Назва постачальника довша за {$bytes} байтів.',
+    'ApplicabilityErrReasonsNotFound' => 'Ці причини застосовності не існують: {$ids}.',
+    'ApplicabilityErrReasonsNotOffered' => 'Ці причини застосовності не наведено для цього стану: {$ids}.',
+    'ApplicabilityErrFrameworkNotFound' => 'Фреймворк {$framework} не існує.',
+    'ApplicabilityErrControlsNotFound' => 'Ці ідентифікатори елементів керування не існують: {$ids}.',
+    // Controls/Risks import result messages (validation gate, individual bad-row
+    // alerts, and the batched submitted/created/updated summaries)
+    'ControlIdOrShortNameFieldRequired' => 'Поле «Ідентифікатор елемента керування» або «Коротка назва елемента керування» має бути зіставлене – рядок не можна ідентифікувати без одного з них.',
+    'RiskImportSubjectNull' => 'Ідентифікатор ризику {$risk_id}: Не оновлено, оскільки поле «Тема» порожнє або відсутнє.',
+    'RiskImportSummary' => 'Надіслано {$submitted} ризик(ів) та оновлено {$updated} ризик(ів).',
+    'ControlImportSummary' => 'Створено {$created} елементів керування та оновлено {$updated} елементів керування.',
+    'ImportAdditionalIssuesSuppressed' => '{$count} додаткових рядків мали проблеми, які тут не показано окремо.',
+    'EncryptionPipelineStalledTask' => 'Конвеєр шифрування (завдання #{$id}, {$type}) виглядає зупиненим — воно {$status} було виконано незвично довго без прогресу. Зазвичай це означає, що фоновий обробник черги не працює; перевірте, чи він запланований, а потім спробуйте ще раз, коли він обробить зупинене завдання.',
+    'EncryptionPipelineStalledState' => 'Конвеєр шифрування, схоже, зупинився — він був позначений як виконаний протягом надзвичайно тривалого часу без відповідного фонового завдання, на яке можна було б вказати. Зазвичай це означає, що обробник черги не працює або попередній конвеєр завершився без його коректного оновлення. Перевірте журнал налагодження, перш ніж повторити спробу.',
+    // DEMO_MODE — shown when a visitor to a shared demo instance attempts one
+    // of the operations that would spoil the demo for the next visitor
+    'ActionDisabledOnDemoInstance' => 'Ця дія вимкнена в демонстраційному екземплярі SimpleRisk.',
+
+    // The one-click upgrade progress window: the step an upgrade is on, and
+    // the line shown once it finishes
+    // Shown when an upgrade's progress record has not been touched for long
+    // enough that the process running it is presumed gone
+    'UpgradeJobStalled' => 'Оновлення перестало відповідати. Перевірте журнал сервера, перш ніж повторити спробу.',
+    // Shown when an upgrade replaced the instance's configuration file and could
+    // not put the original back
+    // Shown when the database was brought up to date but the application files
+    // could not be replaced, so the instance has NOT moved to the new release
+    'UpdateAppFailed' => 'Файли програми не оновлено, тому цей екземпляр все ще використовує попередню версію. Перевірте журнал SimpleRisk, щоб дізнатися причину, а потім знову запустіть оновлення.',
+    // The one-click upgrade progress screen
+    'UpgradeInProgress' => 'У процесі',
+    'UpgradeStepNotNeeded' => 'Не потрібно',
+    // Recovering an Upgrade Extra whose files are damaged
+    'UpgradeExtraDamagedReinstalling' => 'Встановлене додаткове оновлення пошкоджено. Завантаження нової копії.',
+    'UpgradeExtraDamagedRepaired' => 'Додаткове оновлення було замінено робочою копією.',
+    'UpgradeExtraDamagedFailed' => 'Додаткове оновлення пошкоджено та не може бути замінене автоматично. Перевстановіть його зі сторінки "Додаткові можливості" або відновіть simplerisk/extras/upgrade/ з резервної копії, а потім спробуйте ще раз.',
+    'UpgradeAlreadyCurrent' => 'Цей екземпляр вже має версію {version}, що є найновішою версією. Оновлення не потрібне.',
+    'UpgradeShowWhatItDid' => 'Покажіть, що воно зробило',
+    'UpgradeBackupsListed' => 'Ці резервні копії перелічені в розділі Налаштування > Резервні копії.',
+    'UpgradingTo' => 'Оновлення до {version}',
+    'UpgradeSafeToClose' => 'Безпечно закрити це вікно. Оновлення продовжується на сервері, і ця сторінка знову під’єднається.',
+    'UpgradeDownloadLog' => 'Завантажити журнал',
+    'UpgradeStatementsApplied' => 'Розпочато {started} · Застосовано {count} операторів',
+    // The Upgrade Extra's pre-upgrade check of the instance it is sitting on
+    'UpgradeCheckingInstance' => 'Перевірка цього екземпляра',
+    'UpgradeInstanceChecked' => 'Екземпляр перевірено, виправлення не потрібні.',
+    'UpgradeBlockedByCorrections' => 'Оновлення зупинено, оскільки цей екземпляр потребує виправлення, яке не вдалося застосувати автоматично. Виконайте наведені вище інструкції, а потім знову запустіть оновлення. Більше нічого не змінилося.',
+    // Shown when an upgrade replaced the instance's configuration file and could not put the original back
+    'ConfigRestoreFailed' => 'Оновлення не змогло відновити файл конфігурації цього екземпляра. Відновіть simplerisk/includes/config.php з резервної копії, перш ніж продовжити.',
+    'UpgradeDidNotAdvance' => 'Функція оновлення для версії "{$version}" не підвищила версію бази даних; її зупинено, щоб вона не запускалася знову.',
+    'BackupDatabaseNative' => 'Резервне копіювання бази даних (зовнішні інструменти не потрібні)...',
+    'UpgradeAlreadyRunning' => 'Оновлення цього екземпляра вже виконується.',
+    'UpgradeStatusUnreachable' => 'Під час оновлення втрачено зв\'язок із сервером. Перевірте журнал SimpleRisk; можливо, оновлення все ще триває.',
+    'UpgradeJobUnwritable' => 'Оновлення не вдалося розпочати, оскільки не вдалося записати запис про його перебіг. Перевірте, чи веб-користувач може записувати тимчасовий системний каталог.',
+    'UpgradeStepCheckingVersions' => 'Перевірка версій',
+    'UpgradeStepUpgradingDatabase' => 'Оновлення схеми бази даних',
+    'UpgradeStepFinalising' => 'Застосування конверсій після оновлення',
+    'UpgradeDatabaseHeading' => 'Оновлення бази даних',
+    'UpgradeDatabaseComplete' => 'Оновлення бази даних завершено.',
+    'UpgradeHideWhatItDid' => 'Приховати, що воно зробило',
+    'UpgradeStateRunning' => 'Біг',
+    'UpgradeSessionExpired' => 'Термін дії вашого сеансу минув. Увійдіть знову, щоб побачити оновлення.',
+    'UpgradeLostContact' => 'Втрачено зв\'язок із сервером. Перезавантажте цю сторінку, щоб знову приєднатися до оновлення.',
+    'UpgradeDatabaseAlreadyCurrent' => 'База даних вже є у версії програми.',
+    'UpgradeConversionsApplied' => 'Застосовано перетворення рушія та набору символів.',
+    'UpgradeStoppedShort' => 'Оновлення зупинилося на позначці {reached} , не досягнувши {app}. Див. журнал сервера.',
+    'UpgradeStepBackingUp' => 'Резервне копіювання',
+    'UpgradeStepUpgradingFiles' => 'Оновлення файлів програми',
+    'UpgradeStepUpgradingExtras' => 'Оновлення встановлених додаткових функцій',
+    'UpgradeStepUpdatingUpgradeExtra' => 'Оновлення додаткового оновлення',
+    // The Upgrade Extra's pre-chain corrections: what is wrong, and what to do
+    // about it. These are the highest-stakes messages the upgrade produces --
+    // an operator reads them to unstick an instance that cannot upgrade.
+    'UpgradeCorrectionUnknownVersionTitle' => 'Записана версія бази даних не вказує на справжній реліз',
+    'UpgradeCorrectionNoRecordedVersion' => 'База даних не має записаної версії.',
+    'UpgradeCorrectionUnknownVersionFinding' => 'База даних повідомляє про версію \'{$version}\', яка не містить імені релізу SimpleRisk. Оновлення не може вибрати початкову точку з неї.',
+    'UpgradeCorrectionUnknownVersionGuidance' => 'Встановіть для параметра db_version значення випуску, схему якого фактично має ця база даних, а потім знову запустіть оновлення: UPDATE settings SET value=\'<release>\' WHERE name=\'db_version\'. Якщо значення є тимчасовим рядком, наприклад, 2026XXXX-001, правильним значенням майже завжди є найновіший реальний випуск, встановлений перед оновленням.',
+    'UpgradeCorrectionLegacySessionsTitle' => 'Таблиця сесій не може витримати перетворення кодування під час оновлення',
+    'UpgradeCorrectionLegacySessionsFinding' => '`sessions`.`id` має тип VARCHAR({$width}) у таблиці MyISAM. Перетворення його на utf8mb4, що робить версія 20230106-001 та новіші, призведе до перевищення ліміту індексу MyISAM у 1000 байтів та невдалого оновлення.',
+    'UpgradeCorrectionLegacySessionsGuidance' => 'Один або декілька активних сеансів використовують ідентифікатор, довший за 128 символів. Звуження стовпця зараз призведе до виходу цих користувачів із системи, тому його залишили без змін. Повторіть оновлення, коли термін дії цих сеансів закінчиться.',
+    'UpgradeCorrectionApplied' => 'Виправлено.',
+    'UpgradeCorrectionFailed' => 'Це виправлення не вдалося застосувати. Дивіться причину в журналі SimpleRisk.',
+    'UpgradeCorrectionAppliedLine' => 'Виправлено: {$title} {$message}',
+    'UpgradeCorrectionNotAppliedLine' => 'НЕ виправлено: {$title} {$message}',
+    'UpgradeCorrectionsNeeded' => 'Виправлення, необхідні для оновлення цього екземпляра: {$count}',
+    'UpgradeCorrectionsNeededShort' => 'Потрібні виправлення: {$count}',
+    'UpdateDatabase' => 'Оновлення бази даних...',
+    // Authentication screens (index.php, reset.php, reset_password.php)
+    'EnterTheCredentialsForYourAccount' => 'Введіть облікові дані для вашого облікового запису.',
+    'TroubleSigningIn' => 'Проблеми зі входом? Зверніться до адміністратора SimpleRisk.',
+    'BackToLogin' => 'Назад до входу',
+    'Or' => 'або',
+    'WeWillEmailAResetTokenToYourAccount' => 'Ми надішлемо токен скидання на адресу, вказану у вашому обліковому записі.',
+    'EnterTheResetTokenFromYourEmail' => 'Введіть токен скидання з вашої електронної пошти разом із новим паролем.',
+    'ChooseANewPasswordToContinue' => 'Виберіть новий пароль, щоб продовжити.',
+    'FromZeroToGRCInMinutes' => 'Від НУЛЯ до GRC за лічені хвилини.',
+    'OrganizationLogo' => 'Логотип організації',
+    'LoginScreenBranding' => 'Брендування екрана входу',
+    'CustomLogo' => 'Власний логотип',
+    'CustomLogoHint' => 'PNG, JPG, GIF або WebP, до 1 МБ та 2000x2000. Відображається з роздільною здатністю до 260x64, тому для екранів високої щільності надайте приблизно 520x128. Верхня панель та панель входу темні, тому завантажте логотип, який читається на темному фоні. Видаліть логотип, щоб повернутися до логотипу SimpleRisk.',
+    'CurrentLogo' => 'Поточний логотип',
+    'RemoveLogo' => 'Видалити логотип',
+    'LoginTagline' => 'Слоган для входу',
+    'LoginTaglineHint' => 'Замінює слоган SimpleRisk на екрані входу. Один короткий рядок читається найкраще. Залиште його порожнім, щоб зберегти слоган SimpleRisk.',
+    'LoginNotice' => 'Повідомлення про використання системи',
+    'LoginNoticeHint' => 'Відображається на екрані входу перед тим, як хтось увійде в систему. Використовуйте його для сповіщення про допустиме використання або використання системи. Залиште це поле порожнім, щоб не відображати жодного сповіщення. Посилання та зображення заборонені.',
+    'BrandingRequiresCustomization' => 'Брендування екрана входу є частиною додаткової функції налаштування.',
+    'LogoMustBeAnImage' => 'Логотип має бути зображенням у форматі PNG, JPG, GIF або WebP.',
+    'LogoTooLarge' => 'Розмір логотипу не повинен перевищувати 1 МБ.',
+    'LogoDimensionsTooLarge' => 'Розмір логотипу не повинен перевищувати 2000x2000 пікселів.',
+    'LogoDimensionsTooSmall' => 'Розмір найдовшого краю логотипа має становити щонайменше 32 пікселі.',
+    'LogoUploadFailed' => 'Не вдалося завантажити логотип. Спробуйте ще раз.',
+    'LogoUpdated' => 'Логотип було оновлено.',
+    'LogoRemoved' => 'Логотип було видалено.',
+    'NoSystemUseNoticeSet' => 'Повідомлення про використання системи не встановлено.',
+    'NoticeSizeSmall' => 'Малий',
+    'NoticeSizeNormal' => 'Звичайний',
+    'NoticeSizeLarge' => 'Великий',
     '' => '',
 );
 ?>

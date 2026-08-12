@@ -1,0 +1,48 @@
+{
+  "name": "xml-writer",
+  "version": "1.7.0",
+  "author": "Nicolas Thouvenin <nthouvenin@gmail.com>",
+  "contributors": [
+    {
+      "name": "Anton Zem"
+    },
+    {
+      "name": "Chip Lee",
+      "url": "https://github.com/chipincode"
+    },
+    {
+      "name": "Peecky",
+      "url": "https://github.com/peecky"
+    },
+    {
+      "name": "Julian Scheid",
+      "url": "https://github.com/jscheid"
+    }
+  ],
+  "description": "Native and full Javascript implementation of the classic XMLWriter class",
+  "keywords": [
+    "xml",
+    "writer",
+    "XMLWriter",
+    "generator"
+  ],
+  "homepage": "http://github.com/touv/node-xml-writer",
+  "scripts": {
+    "truc": "nodeunit test/",
+    "test": "./node_modules/.bin/istanbul test ./node_modules/.bin/nodeunit test/"
+  },
+  "main": "./index.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/touv/node-xml-writer.git"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "nodeunit": ">=0.7.3",
+    "istanbul": "*"
+  },
+  "license": "MIT",
+  "engines": {
+    "node": ">=0.4.0"
+  }
+}

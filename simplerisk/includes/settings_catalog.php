@@ -757,3 +757,148 @@ function compute_extra_tile_state(array $entry, callable $is_active, callable $i
     return $entry['uninstalled_state'] ?? 'uninstalled';
 }
 
+/******************************************************
+ * FUNCTION: SETTINGS CATALOG ENTRY FOR EXTRA         *
+ ******************************************************/
+/**
+ * The catalog entry that represents a given Extra, or null when the catalog
+ * has no tile for it.
+ *
+ * Exists so a consumer OUTSIDE the Settings Hub can ask the hub's own catalog
+ * where an Extra lives and what state vocabulary it uses, instead of keeping a
+ * second copy of `path` / `uninstalled_state`. Two places sending users to
+ * different install-or-activate flows for the same Extra is a divergence this
+ * codebase has had to repair more than once.
+ *
+ * Pure: settings_catalog() returns a literal array.
+ *
+ * @param string $extra_name canonical Extra slug, e.g. 'complianceforgescf'
+ *
+ * @return array|null
+ */
+function settings_catalog_entry_for_extra(string $extra_name): ?array
+{
+    foreach (settings_catalog() as $entry) {
+        $name = $entry['extra_name'] ?? ($entry['visibility']['extra'] ?? '');
+        if ($name !== '' && $name === $extra_name) {
+            return $entry;
+        }
+    }
+
+    return null;
+}
+
+/******************************************************
+ * FUNCTION: RESOLVE EXTRA AFFORDANCE                 *
+ ******************************************************/
+/**
+ * THE SHARED "SHOW WHAT'S POSSIBLE, MARK WHAT'S LOCKED" DECISION.
+ *
+ * SimpleRisk's standing habit was to make an affordance for an Extra the
+ * customer does not have ABSENT — not greyed, not a teaser. That hides the
+ * product from the person most likely to buy it: burying a feature cannot
+ * create a sell opportunity. The rule is now the opposite and it is general,
+ * not per-surface: SHOW WHAT'S POSSIBLE, AND MARK WHAT'S OUT OF REACH BECAUSE
+ * IT ISN'T LICENSED (or isn't downloaded, or isn't switched on). A locked row
+ * names the Extra and says how to unlock it; it never pretends to be clickable.
+ *
+ * This function is the DECISION half of that treatment and is deliberately
+ * separate from any rendering, so a dropdown row (Define Control Frameworks'
+ * acquisition chooser) and a toolbar button (the Statement of Applicability's
+ * PDF/XLSX exports) can reach the same answer without sharing markup. The
+ * presentation half is the `.sr-locked*` component in
+ * scss/modules/_locked-affordance.scss.
+ *
+ * It is a thin, pure layer over compute_extra_tile_state() — the Settings Hub's
+ * existing state machine — and adds exactly two things that machine cannot know
+ * on its own:
+ *
+ *   1. REGISTRATION. compute_extra_tile_state() collapses "not installed" to
+ *      the entry's `uninstalled_state`, which for the SCF tile is the constant
+ *      'registration_required'. But an instance that IS already registered has
+ *      nothing left to register — its next step is downloading the Extra. So a
+ *      'registration_required' result on a registered instance is refined to
+ *      'ready_to_download', the same state name the hub's own license
+ *      enrichment produces for a downloadable Extra.
+ *
+ *   2. WHERE TO GO. Each state's unlock destination, taken from the catalog
+ *      entry itself (`path`) or from the destination the Settings Hub's click
+ *      router already uses for that state, so the two agree by construction:
+ *        registration_required / ready_to_download → admin/register.php
+ *              (settings-hub.js routes 'registration_required' there, and
+ *              register.php is also where core_display_upgrade_extras() renders
+ *              the per-Extra download buttons — the same two-step onboarding
+ *              getting_started_catalog() encodes as 'register' → 'install_scf')
+ *        deactivated                               → the entry's own `path`
+ *              (each Extra's admin page carries the Activate button; the hub
+ *              opens a modal that POSTs the same activation, and
+ *              getting_started_catalog()'s 'activate_scf' points at the page)
+ *        purchase                                  → simplerisk.com/extras/
+ *              (settings-hub.js's openPurchaseModal() opens exactly this)
+ *
+ * A NOTE ON 'purchase' vs 'ready_to_download' for a PAID Extra: the hub can
+ * tell them apart only after an async license lookup against the SimpleRisk
+ * API. Server-side, synchronously, we cannot — so an uninstalled Extra with no
+ * `uninstalled_state` override resolves to 'purchase', which is the honest
+ * upsell answer and the one the customer most often needs. (A customer who has
+ * already bought it will find it waiting on the Register & Upgrade page.)
+ *
+ * `path` is returned CATALOG-RELATIVE (relative to simplerisk/, e.g.
+ * 'admin/register.php'), exactly as settings_catalog() stores it. Callers
+ * prefix it for their own depth; that is what keeps a subpath install
+ * (https://host/simplerisk/) working without a base-URL lookup.
+ *
+ * Pure — the three facts it depends on are injected, so every combination is
+ * testable without a database, a session, or an installed Extra.
+ *
+ * @param array $entry         a settings_catalog() entry (see
+ *                             settings_catalog_entry_for_extra())
+ * @param bool  $is_activated  <name>_extra() — the Extra is switched on
+ * @param bool  $is_installed  is_extra_installed(<name>) — its files are present
+ * @param bool  $is_registered get_setting('registration_registered') == 1
+ *
+ * @return array{state: string, path: ?string, external: bool}
+ *         state ∈ activated | deactivated | ready_to_download |
+ *                 registration_required | purchase
+ */
+function resolve_extra_affordance(array $entry, bool $is_activated, bool $is_installed, bool $is_registered): array
+{
+    // "Activated" is only believable when the files are actually there. The
+    // activation flag is a settings row and the Extra is a directory, and a
+    // restore or a partial upgrade can leave the row saying "on" with nothing
+    // behind it — the same drift is_dir() guarded against where this decision
+    // used to live. Folding it in here means every consumer inherits the guard
+    // instead of each remembering it.
+    $really_active = $is_activated && $is_installed;
+
+    $state = compute_extra_tile_state(
+        $entry,
+        static fn(string $name): bool => $really_active,
+        static fn(string $name): bool => $is_installed
+    );
+
+    // Refinement 1: registration is a prerequisite, not a permanent state.
+    if ($state === 'registration_required' && $is_registered) {
+        $state = 'ready_to_download';
+    }
+
+    // Refinement 2: an uninstalled Extra with no override is a paid one, and
+    // the synchronous answer we can give is the marketplace.
+    if ($state === 'uninstalled') {
+        $state = 'purchase';
+    }
+
+    switch ($state) {
+        case 'registration_required':
+        case 'ready_to_download':
+            return ['state' => $state, 'path' => 'admin/register.php', 'external' => false];
+        case 'deactivated':
+            return ['state' => $state, 'path' => $entry['path'] ?? null, 'external' => false];
+        case 'purchase':
+            return ['state' => $state, 'path' => 'https://www.simplerisk.com/extras/', 'external' => true];
+        default:
+            // 'activated' — nothing to unlock, so nowhere to send anyone.
+            return ['state' => $state, 'path' => null, 'external' => false];
+    }
+}
+

@@ -14,9 +14,27 @@
 
     // If incident detail page was displayed
     if (isset($_GET['incident_id'])) {
+        // "Incident Details" is the breadcrumb leaf (rendered from the title
+        // key), and the parent submenu below places it one level under the list
+        // it was opened from — e.g. "Incident Management > Response > Incident
+        // Details". Leave $active_sidebar_forthmenu EMPTY: a non-empty forthmenu
+        // tells the breadcrumb JS the sidebar nests three active levels deep and
+        // makes it un-hide the "thirdmenu" <li> populated from the *second*
+        // active sidebar link. The Incident Management sidebar only nests one
+        // level (menu > submenu), so that second link doesn't exist and the
+        // thirdmenu <li> renders as an empty chevron segment.
         $breadcrumb_title_key = "IncidentDetails";
-        $active_sidebar_submenu ="Response";
-        $active_sidebar_forthmenu = "IncidentDetails";
+        // The parent (breadcrumb + sidebar highlight) reflects the list the
+        // incident was opened from, not always "Response" — a closed incident's
+        // details should read "Closed".
+        switch ($_GET['menu'] ?? 'response') {
+            case 'closed':          $active_sidebar_submenu = "Closed"; break;
+            case 'lessonslearned':  $active_sidebar_submenu = "LessonsLearned"; break;
+            case 'identification':  $active_sidebar_submenu = "Identification"; break;
+            case 'preparation':     $active_sidebar_submenu = "Preparation"; break;
+            case 'response':
+            default:                $active_sidebar_submenu = "Response"; break;
+        }
     } else {
 
         // If a menu was provided

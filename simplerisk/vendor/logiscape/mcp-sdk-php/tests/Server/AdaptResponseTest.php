@@ -1,0 +1,236 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Mcp\Tests\Server;
+
+use Mcp\Server\InitializationOptions;
+use Mcp\Server\ServerSession;
+use Mcp\Shared\Version;
+use Mcp\Types\Annotations;
+use Mcp\Types\AudioContent;
+use Mcp\Types\CallToolResult;
+use Mcp\Types\ImageContent;
+use Mcp\Types\JsonRpcMessage;
+use Mcp\Types\JSONRPCRequest;
+use Mcp\Types\JSONRPCResponse;
+use Mcp\Types\RequestId;
+use Mcp\Types\RequestParams;
+use Mcp\Types\Icon;
+use Mcp\Types\ListToolsResult;
+use Mcp\Types\ResourceLinkContent;
+use Mcp\Types\ServerCapabilities;
+use Mcp\Types\TextContent;
+use Mcp\Types\Tool;
+use Mcp\Types\ToolAnnotations;
+use Mcp\Types\ToolInputProperties;
+use Mcp\Types\ToolInputSchema;
+use PHPUnit\Framework\TestCase;
+
+/**
+ * Tests for adaptResponseForClient() in ServerSession.
+ *
+ * Validates that responses are properly adapted for clients using older
+ * protocol versions, stripping unsupported features.
+ */
+final class AdaptResponseTest extends TestCase
+{
+    /**
+     * Test that ResourceLinkContent is stripped for pre-2025-06-18 clients.
+     */
+    public function testStripsResourceLinkContentForOlderClients(): void {
+        $session = $this->createInitializedSession('2025-03-26');
+
+        $result = new CallToolResult([
+            new TextContent('hello'),
+            new ResourceLinkContent(uri: 'file://test.txt', name: 'Test'),
+        ]);
+
+        $adapted = $session->adaptResponseForClient($result);
+        $this->assertInstanceOf(CallToolResult::class, $adapted);
+        $this->assertCount(1, $adapted->content);
+        $this->assertInstanceOf(TextContent::class, $adapted->content[0]);
+    }
+
+    /**
+     * Test that structuredContent is stripped for pre-2025-06-18 clients.
+     */
+    public function testStripsStructuredContentForOlderClients(): void {
+        $session = $this->createInitializedSession('2025-03-26');
+
+        $result = new CallToolResult(
+            content: [new TextContent('{"x":1}')],
+            structuredContent: ['x' => 1],
+        );
+
+        $adapted = $session->adaptResponseForClient($result);
+        $this->assertInstanceOf(CallToolResult::class, $adapted);
+        $this->assertNull($adapted->structuredContent);
+    }
+
+    /**
+     * Test that AudioContent is stripped for pre-2025-03-26 clients.
+     */
+    public function testStripsAudioContentForPre20250326Clients(): void {
+        $session = $this->createInitializedSession('2024-11-05');
+
+        $result = new CallToolResult([
+            new TextContent('text'),
+            new AudioContent('base64data', 'audio/wav'),
+        ]);
+
+        $adapted = $session->adaptResponseForClient($result);
+        $this->assertInstanceOf(CallToolResult::class, $adapted);
+        $this->assertCount(1, $adapted->content);
+        $this->assertInstanceOf(TextContent::class, $adapted->content[0]);
+    }
+
+    /**
+     * Test that annotations are stripped for pre-2025-03-26 clients.
+     */
+    public function testStripsAnnotationsForPre20250326Clients(): void {
+        $session = $this->createInitializedSession('2024-11-05');
+
+        $result = new CallToolResult([
+            new TextContent('hello', new Annotations(priority: 0.5)),
+            new ImageContent('imgdata', 'image/png', new Annotations(priority: 0.8)),
+        ]);
+
+        $adapted = $session->adaptResponseForClient($result);
+        $this->assertInstanceOf(CallToolResult::class, $adapted);
+        $this->assertCount(2, $adapted->content);
+        $this->assertNull($adapted->content[0]->annotations);
+        $this->assertNull($adapted->content[1]->annotations);
+    }
+
+    /**
+     * Tool annotations entered the spec in 2025-03-26, so a 2024-11-05
+     * client must not see them on tools/list — but stripping them must not
+     * take any other tool field with it: title, icons, outputSchema,
+     * execution, and extra fields (the Apps `_meta.ui` link) all survive,
+     * and the handler's own Tool instance is never mutated.
+     */
+    public function testStripsToolAnnotationsForPre20250326ClientsPreservingOtherFields(): void {
+        $session = $this->createInitializedSession('2024-11-05');
+
+        $tool = new Tool(
+            name: 'loaded',
+            inputSchema: new ToolInputSchema(properties: ToolInputProperties::fromArray([])),
+            description: 'Fully loaded tool',
+            annotations: new ToolAnnotations(readOnlyHint: true),
+            title: 'Loaded Tool',
+            icons: [new Icon('https://example.com/icon.png')],
+            outputSchema: ['type' => 'object'],
+            execution: ['taskSupport' => 'optional'],
+        );
+        $tool->setExtraField('_meta', ['ui' => ['resourceUri' => 'ui://app/main']]);
+
+        $adapted = $session->adaptResponseForClient(new ListToolsResult([$tool]));
+        $this->assertInstanceOf(ListToolsResult::class, $adapted);
+        $adaptedTool = $adapted->tools[0];
+
+        $this->assertNull($adaptedTool->annotations, 'Annotations stripped for 2024-11-05');
+        $this->assertEquals('Loaded Tool', $adaptedTool->title, 'title preserved');
+        $this->assertCount(1, $adaptedTool->icons, 'icons preserved');
+        $this->assertEquals(['type' => 'object'], $adaptedTool->outputSchema, 'outputSchema preserved');
+        $this->assertEquals(['taskSupport' => 'optional'], $adaptedTool->execution, 'execution preserved');
+        $this->assertEquals(
+            ['ui' => ['resourceUri' => 'ui://app/main']],
+            $adaptedTool->getExtraField('_meta'),
+            'Extra fields (Apps _meta.ui link) preserved'
+        );
+
+        $this->assertNotSame($tool, $adaptedTool, 'Adaptation works on a copy');
+        $this->assertNotNull($tool->annotations, 'Handler-owned instance never mutated');
+    }
+
+    /**
+     * Clients on 2025-03-26 and later keep tool annotations; the tool
+     * instance passes through the list adaptation untouched.
+     */
+    public function testKeepsToolAnnotationsFor20250326Clients(): void {
+        $session = $this->createInitializedSession('2025-03-26');
+
+        $tool = new Tool(
+            name: 'annotated',
+            inputSchema: new ToolInputSchema(properties: ToolInputProperties::fromArray([])),
+            annotations: new ToolAnnotations(readOnlyHint: true),
+        );
+
+        $adapted = $session->adaptResponseForClient(new ListToolsResult([$tool]));
+        $this->assertInstanceOf(ListToolsResult::class, $adapted);
+        $this->assertSame($tool, $adapted->tools[0], 'Tool rides through unchanged');
+        $this->assertTrue($adapted->tools[0]->annotations->readOnlyHint);
+    }
+
+    /**
+     * Nothing is stripped for clients on the latest version: every content
+     * type and the structuredContent ride through unchanged (the modern
+     * path only STAMPS the required 2026-07-28 fields). Adaptation
+     * operates on a copy — the handler's own instance is never mutated,
+     * so a cached result reused across requests/eras keeps its state
+     * (see HttpModernRequestTest::testHandlerCachedResultSurvivesCrossEraAdaptation).
+     */
+    public function testNothingStrippedForLatestVersion(): void {
+        $session = $this->createInitializedSession(Version::LATEST_PROTOCOL_VERSION);
+
+        $result = new CallToolResult(
+            content: [
+                new TextContent('hello', new Annotations(priority: 0.5)),
+                new AudioContent('data', 'audio/wav'),
+                new ResourceLinkContent(uri: 'file://test.txt', name: 'Test'),
+            ],
+            structuredContent: ['key' => 'value'],
+        );
+
+        $adapted = $session->adaptResponseForClient($result);
+        $this->assertInstanceOf(CallToolResult::class, $adapted);
+        $this->assertNotSame($result, $adapted, 'Adaptation works on a copy, never the handler instance');
+        $this->assertCount(3, $adapted->content, 'No content stripped for the latest version');
+        $this->assertNotNull($adapted->content[0]->annotations, 'Annotations preserved');
+        $this->assertSame(['key' => 'value'], $adapted->structuredContent, 'structuredContent preserved');
+        $this->assertSame('complete', $adapted->resultType, 'Modern path stamps the required resultType');
+        $this->assertNull($result->resultType, 'Stamping never leaks into the handler instance');
+    }
+
+    /**
+     * Create a ServerSession initialized with a specific negotiated protocol version.
+     */
+    private function createInitializedSession(string $protocolVersion): ServerSession {
+        $transport = new AdaptTestTransport();
+        $options = new InitializationOptions(
+            serverName: 'test-server',
+            serverVersion: '1.0.0',
+            capabilities: new ServerCapabilities()
+        );
+        $session = new ServerSession($transport, $options);
+
+        // Use reflection to set the negotiated version and initialization state
+        $ref = new \ReflectionClass($session);
+
+        $versionProp = $ref->getProperty('negotiatedProtocolVersion');
+        $versionProp->setAccessible(true);
+        $versionProp->setValue($session, $protocolVersion);
+
+        $stateProp = $ref->getProperty('initializationState');
+        $stateProp->setAccessible(true);
+        $stateProp->setValue($session, \Mcp\Server\InitializationState::Initialized);
+
+        return $session;
+    }
+}
+
+/**
+ * Minimal transport for adapt response tests.
+ */
+final class AdaptTestTransport implements \Mcp\Server\Transport\Transport
+{
+    public array $writtenMessages = [];
+
+    public function start(): void {}
+    public function stop(): void {}
+    public function readMessage(): ?JsonRpcMessage { return null; }
+    public function writeMessage(JsonRpcMessage $message): void {
+        $this->writtenMessages[] = $message;
+    }
+}

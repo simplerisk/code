@@ -1,0 +1,530 @@
+<?php
+
+/**
+ * Model Context Protocol SDK for PHP
+ *
+ * (c) 2024 Logiscape LLC <https://logiscape.com>
+ *
+ * Based on the Python SDK for the Model Context Protocol
+ * https://github.com/modelcontextprotocol/python-sdk
+ *
+ * PHP conversion developed by:
+ * - Josh Abbott
+ * - Claude 3.5 Sonnet (Anthropic AI model)
+ * - ChatGPT o1 pro mode
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ *
+ * @package    logiscape/mcp-sdk-php 
+ * @author     Josh Abbott <https://joshabbott.com>
+ * @copyright  Logiscape LLC
+ * @license    MIT License
+ * @link       https://github.com/logiscape/mcp-sdk-php
+ *
+ * Filename: Shared/BaseSession.php
+ */
+
+declare(strict_types=1);
+
+namespace Mcp\Shared;
+
+use Mcp\Types\JsonRpcMessage;
+use Mcp\Types\RequestId;
+use Mcp\Shared\ErrorData;
+use Mcp\Types\ProgressToken;
+use Mcp\Types\ProgressNotification;
+use Mcp\Types\JSONRPCRequest;
+use Mcp\Types\JSONRPCNotification;
+use Mcp\Types\JSONRPCResponse;
+use Mcp\Types\JSONRPCError;
+use Mcp\Types\JsonRpcErrorObject;
+use Mcp\Types\McpModel;
+use Mcp\Types\Notification;
+use Mcp\Types\Request;
+use Mcp\Types\RequestWrapperInterface;
+use Mcp\Types\Result;
+use Mcp\Shared\McpError;
+use InvalidArgumentException;
+use RuntimeException;
+
+/**
+ * Base session for managing MCP communication.
+ *
+ * This class acts as a synchronous equivalent to the Python BaseSession. It does not
+ * use async/await or streaming memory objects, but tries to replicate the logic.
+ *
+ * Subclasses should implement the abstract methods to handle I/O and message processing.
+ */
+abstract class BaseSession {
+    protected bool $isInitialized = false;
+    /** @var array<int, callable(JsonRpcMessage):void> */
+    private array $responseHandlers = [];
+    /** @var callable[] */
+    private array $requestHandlers = [];
+    /** @var callable[] */
+    private array $notificationHandlers = [];
+    private int $requestId = 0;
+
+    /**
+     * @param string $receiveRequestType       A fully-qualified class name of a type implementing RequestWrapperInterface for incoming requests.
+     * @param string $receiveNotificationType  A fully-qualified class name of a type implementing McpModel for incoming notifications.
+     */
+    public function __construct(
+        private readonly string $receiveRequestType,
+        private readonly string $receiveNotificationType,
+    ) {}
+
+    /**
+     * Initializes the session and starts message processing.
+     */
+    public function initialize(): void {
+        if ($this->isInitialized) {
+            throw new RuntimeException('Session already initialized');
+        }
+        $this->isInitialized = true;
+        $this->startMessageProcessing();
+    }
+
+    /**
+     * Checks if the session is initialized.
+     */
+    public function isInitialized(): bool {
+        return $this->isInitialized;
+    }
+
+    /**
+     * Closes the session and stops message processing.
+     */
+    public function close(): void {
+        if (!$this->isInitialized) {
+            return;
+        }
+        $this->stopMessageProcessing();
+        $this->isInitialized = false;
+    }
+
+    /**
+     * Sends a request and waits for a typed result. If an error response is received, throws an exception.
+     *
+     * @template T of Result
+     * @param Request $request A typed request object (e.g., InitializeRequest, PingRequest).
+     * @param class-string<T> $resultType The fully-qualified class name of the expected result type.
+     * @return T The validated result object.
+     * @throws McpError If an error response is received.
+     */
+    public function sendRequest(Request $request, string $resultType): Result {
+
+        $requestIdValue = $this->requestId++;
+        $requestId = new RequestId($requestIdValue);
+
+        // Convert the typed request into a JSON-RPC request message
+        // Assuming $request has public properties: method, params
+        $jsonRpcRequest = new JsonRpcMessage(new JSONRPCRequest(
+            jsonrpc: '2.0',
+            id: $requestId,
+            method: $request->method,
+            params: $request->params ?? null
+        ));
+
+        // Store a handler that will be called when a response with this requestId is received
+        /** @var T|null $futureResult */
+        $futureResult = null;
+        $this->responseHandlers[$requestIdValue] = function (JsonRpcMessage $message) use (&$futureResult, $resultType): void {
+            $innerMessage = $message->message;
+
+            if ($innerMessage instanceof JSONRPCError) {
+                // It's an error response
+                // Convert JsonRpcErrorObject into ErrorData
+                $errorData = new \Mcp\Shared\ErrorData(
+                    code: $innerMessage->error->code,
+                    message: $innerMessage->error->message,
+                    data: $innerMessage->error->data
+                );
+                throw new McpError($errorData);
+            } elseif ($innerMessage instanceof JSONRPCResponse) {
+                // It's a success response
+                // Server transports wrap incoming response results in a generic
+                // Result object; client transports pass the raw array. Normalize
+                // so typed fromResponseData(array) calls work in both cases.
+                $rawResult = $innerMessage->result;
+                if ($rawResult instanceof Result) {
+                    $rawResult = self::resultObjectToArray($rawResult);
+                } elseif (!is_array($rawResult)) {
+                    $rawResult = (array) $rawResult;
+                }
+                /** @var T $resultInstance */
+                $resultInstance = $resultType::fromResponseData($rawResult);
+                $futureResult = $resultInstance;
+            } else {
+                // Invalid response
+                throw new InvalidArgumentException('Invalid JSON-RPC response received');
+            }
+        };
+
+        // Send the request message
+        $this->writeMessage($jsonRpcRequest);
+
+        // Wait for the response synchronously
+        return $this->waitForResponse($requestIdValue, $resultType, $futureResult);
+    }
+
+    /**
+     * Flatten a generic Result object (as produced by server transports when
+     * parsing incoming JSON-RPC responses) into the associative array shape
+     * that typed Result::fromResponseData() implementations expect.
+     *
+     * Dynamic properties set on a Result instance land in its protected
+     * $extraFields bag via ExtraFieldsTrait::__set, so a plain
+     * get_object_vars() from this scope would not see them — use reflection
+     * to read every declared and inherited property regardless of visibility.
+     *
+     * @return array<string, mixed>
+     */
+    private static function resultObjectToArray(Result $result): array {
+        $all = self::readAllProperties($result);
+        $extra = $all['extraFields'] ?? [];
+        unset($all['extraFields']);
+
+        $data = [];
+        foreach ($all as $k => $v) {
+            if ($v !== null) {
+                $data[$k] = $v;
+            }
+        }
+        if (is_array($extra)) {
+            $data = array_merge($data, $extra);
+        }
+
+        if (isset($data['_meta']) && $data['_meta'] instanceof \Mcp\Types\Meta) {
+            $meta = $data['_meta'];
+            $metaVars = self::readAllProperties($meta);
+            $metaExtra = $metaVars['extraFields'] ?? [];
+            unset($metaVars['extraFields']);
+            $metaArr = [];
+            foreach ($metaVars as $k => $v) {
+                if ($v !== null) {
+                    $metaArr[$k] = $v;
+                }
+            }
+            if (is_array($metaExtra)) {
+                $metaArr = array_merge($metaArr, $metaExtra);
+            }
+            $data['_meta'] = $metaArr;
+        }
+
+        return $data;
+    }
+
+    /**
+     * Read every declared and inherited property on an object (public,
+     * protected, and private) as an associative array.
+     *
+     * @return array<string, mixed>
+     */
+    private static function readAllProperties(object $object): array {
+        $out = [];
+        $ref = new \ReflectionObject($object);
+        while ($ref !== false) {
+            foreach ($ref->getProperties() as $prop) {
+                $name = $prop->getName();
+                if (array_key_exists($name, $out)) {
+                    continue;
+                }
+                $prop->setAccessible(true);
+                if ($prop->isInitialized($object)) {
+                    $out[$name] = $prop->getValue($object);
+                }
+            }
+            $ref = $ref->getParentClass();
+        }
+        return $out;
+    }
+
+    /**
+     * Sends a notification. Notifications do not expect a response.
+     * @param Notification $notification A typed notification object.
+     */
+    public function sendNotification(Notification $notification): void {
+        // Convert the typed notification into a JSON-RPC notification message
+        $jsonRpcNotification = new JSONRPCNotification(
+            jsonrpc: '2.0',
+            method: $notification->method,
+            params: $notification->params ?? null
+        );
+
+        $jsonRpcMessage = new JsonRpcMessage($jsonRpcNotification);
+
+        $this->writeMessage($jsonRpcMessage);
+    }
+
+    /**
+     * Sends a response to a previously received request.
+     * @param RequestId $requestId The request ID to respond to.
+     * @param McpModel|ErrorData $response Either a typed result model or an ErrorData for an error response.
+     */
+    public function sendResponse(RequestId $requestId, mixed $response): void {
+        if ($response instanceof ErrorData) {
+            // Error response
+            $jsonRpcError = new JSONRPCError(
+                jsonrpc: '2.0',
+                id: $requestId,
+                error: new JsonRpcErrorObject(
+                    code: $response->code,
+                    message: $response->message,
+                    data: $response->data ?? null
+                )
+            );
+            $message = new JsonRpcMessage($jsonRpcError);
+        } else {
+            // Success result
+            // Assuming $response implements jsonSerialize()
+            $jsonRpcResponse = new JSONRPCResponse(
+                jsonrpc: '2.0',
+                id: $requestId,
+                result: $response
+            );
+            $message = new JsonRpcMessage($jsonRpcResponse);
+        }
+
+        $this->writeMessage($message);
+    }
+
+    /**
+     * Sends a progress notification for a request currently in progress.
+     */
+    public function sendProgressNotification(
+        ProgressToken $progressToken,
+        float $progress,
+        ?float $total = null
+    ): void {
+        $progressNotification = new ProgressNotification(
+            new \Mcp\Types\ProgressNotificationParams(
+                progressToken: $progressToken,
+                progress: $progress,
+                total: $total
+            )
+        );
+
+        $jsonRpcNotification = new JSONRPCNotification(
+            jsonrpc: '2.0',
+            method: $progressNotification->method,
+            params: $progressNotification->params
+        );
+
+        $jsonRpcMessage = new JsonRpcMessage($jsonRpcNotification);
+
+        $this->writeMessage($jsonRpcMessage);
+    }
+
+    /**
+     * Registers a callback to handle incoming requests.
+     * The callback will receive a RequestResponder as argument.
+     */
+    public function onRequest(callable $handler): void {
+        $this->requestHandlers[] = $handler;
+    }
+
+    /**
+     * Registers a callback to handle incoming notifications.
+     */
+    public function onNotification(callable $handler): void {
+        $this->notificationHandlers[] = $handler;
+    }
+
+    /**
+     * Public entry point for dispatching an incoming JSON-RPC message into
+     * the session's request / notification / response handlers.
+     *
+     * Transports use this to service messages that arrive synchronously
+     * inside a blocking send (e.g. a server-initiated `sampling/createMessage`
+     * interleaved on a POST SSE response stream that the server is holding
+     * open while it waits for the client's response). Without an out-of-band
+     * dispatch path, BaseSession's normal read loop would not run until the
+     * outer send returns, and the two sides would deadlock.
+     *
+     * Dispatched handlers run on the current call stack; if a request
+     * handler issues a follow-up `sendResponse` / `sendRequest`, the
+     * resulting writeMessage call re-enters the transport with an
+     * independent HTTP request, which is safe.
+     *
+     * @param JsonRpcMessage $message The incoming message.
+     */
+    public function dispatchIncomingMessage(JsonRpcMessage $message): void {
+        $this->handleIncomingMessage($message);
+    }
+
+    /**
+     * Handles an incoming message. Called by the subclass that implements message processing.
+     * @param JsonRpcMessage $message The incoming message.
+     */
+    protected function handleIncomingMessage(JsonRpcMessage $message): void {
+        $this->validateMessage($message);
+
+        $innerMessage = $message->message;
+
+        if ($innerMessage instanceof JSONRPCRequest) {
+            // It's a request
+            $request = $this->validateIncomingRequest($innerMessage);
+
+            // Validate request
+            $request->validate();
+
+            $paramsArray = [];
+            if ($innerMessage->params instanceof \Mcp\Types\McpModel) {
+                // Convert to array. This ensures even empty \stdClass is cast to [].
+                $serialized = $innerMessage->params->jsonSerialize();
+                if ($serialized instanceof \stdClass) {
+                    $serialized = (array) $serialized;
+                }
+                $paramsArray = (array) $serialized;
+            }
+
+            // Now pass the entire param array into RequestResponder
+            $responder = new RequestResponder(
+                requestId: $innerMessage->id,
+                params: $paramsArray,
+                request: $request,
+                session: $this
+            );
+
+            // Call onRequest handlers
+            foreach ($this->requestHandlers as $handler) {
+                $handler($responder);
+            }
+        } elseif ($innerMessage instanceof JSONRPCResponse || $innerMessage instanceof JSONRPCError) {
+            // It's a response
+            $requestIdValue = $innerMessage->id->getValue();
+            if (isset($this->responseHandlers[$requestIdValue])) {
+                $handler = $this->responseHandlers[$requestIdValue];
+                unset($this->responseHandlers[$requestIdValue]);
+                $handler($message);
+            } else {
+                // Received a response for an unknown request ID
+                // Log or handle error as appropriate
+            }
+        } elseif ($innerMessage instanceof JSONRPCNotification) {
+            // It's a notification
+            $notification = $this->validateIncomingNotification($innerMessage);
+            $notification->validate();
+
+            // Call onNotification handlers
+            foreach ($this->notificationHandlers as $handler) {
+                $handler($notification);
+            }
+        } else {
+            // Invalid message type
+            throw new InvalidArgumentException('Invalid message type received');
+        }
+    }
+
+    private function validateMessage(JsonRpcMessage $message): void {
+        $innerMessage = $message->message;
+        if ($innerMessage->jsonrpc !== '2.0') {
+            throw new InvalidArgumentException('Invalid JSON-RPC version');
+        }
+    }
+
+    /**
+     * Converts an incoming JSONRPCRequest into a typed request object.
+     * @throws InvalidArgumentException If instantiation fails.
+     */
+    private function validateIncomingRequest(JSONRPCRequest $message): RequestWrapperInterface {
+        $requestClass = $this->receiveRequestType;
+        
+        $params = $message->params ?? [];
+        if (is_object($params)) {
+            // Force cast to array
+            $params = (array) $params->jsonSerialize();
+        }
+        
+        $request = $requestClass::fromMethodAndParams($message->method, $params);
+        return $request;
+    }
+
+    /**
+     * Converts an incoming JSONRPCNotification into a typed notification object.
+     * @throws InvalidArgumentException If instantiation fails.
+     */
+    private function validateIncomingNotification(JSONRPCNotification $message): McpModel {
+        $notificationClass = $this->receiveNotificationType;
+        
+        $params = $message->params ?? [];
+        if (is_object($params)) {
+            // Force cast to array
+            $params = (array) $params->jsonSerialize();
+        }
+    
+        $notification = $notificationClass::fromMethodAndParams($message->method, $params);
+        return $notification;
+    }
+
+    /**
+     * Waits for a response with the given requestId, blocking until it arrives.
+     * In a synchronous environment, this might mean reading messages from the underlying transport
+     * until we find a response with the correct ID.
+     *
+     * @template T of Result
+     * @param int $requestIdValue The numeric request ID value.
+     * @param class-string<T> $resultType The expected result type.
+     * @param T|null $futureResult A reference that will be set by the response handler closure.
+     * @return T The result object.
+     * @throws McpError If an error response is received.
+     * @throws InvalidArgumentException If no result is received.
+     */
+    protected function waitForResponse(int $requestIdValue, string $resultType, ?Result &$futureResult): Result {
+        // The handler we set above will set $futureResult when the response arrives.
+        // So we run a loop reading messages until $futureResult is not null or an error is thrown.
+
+        while ($futureResult === null) {
+            $message = $this->readNextMessage();
+            $this->handleIncomingMessage($message);
+            // If the response handler threw an exception (McpError), it won't reach here.
+            // Otherwise, we keep looping until futureResult is set.
+        }
+
+        return $futureResult;
+    }
+
+    /**
+     * Get the current request ID counter value.
+     *
+     * @return int The next request ID that will be used
+     */
+    protected function getNextRequestId(): int {
+        return $this->requestId;
+    }
+
+    /**
+     * Set the request ID counter value.
+     *
+     * Used when restoring a session to avoid request ID collisions.
+     *
+     * @param int $id The request ID counter value to set
+     */
+    protected function setNextRequestId(int $id): void {
+        $this->requestId = $id;
+    }
+
+    /**
+     * Reads the next message from the underlying transport.
+     * This must be implemented by subclasses and should block until a message is available.
+     */
+    abstract protected function readNextMessage(): JsonRpcMessage;
+
+    /**
+     * Starts message processing. For a synchronous model, this might be a no-op or set up resources.
+     */
+    abstract protected function startMessageProcessing(): void;
+
+    /**
+     * Stops message processing. For synchronous model, may close streams or sockets.
+     */
+    abstract protected function stopMessageProcessing(): void;
+
+    /**
+     * Writes a JsonRpcMessage to the underlying transport.
+     * Implementations must serialize the message to JSON and send it to the peer.
+     */
+    abstract protected function writeMessage(JsonRpcMessage $message): void;
+}

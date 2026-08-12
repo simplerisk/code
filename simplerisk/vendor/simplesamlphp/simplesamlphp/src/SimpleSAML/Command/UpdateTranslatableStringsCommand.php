@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace SimpleSAML\Command;
 
+use ArrayIterator;
 use Gettext\Generator\PoGenerator;
 use Gettext\Loader\PoLoader;
 use Gettext\Merge;
@@ -14,6 +15,7 @@ use SimpleSAML\Configuration;
 use SimpleSAML\Module;
 use SimpleSAML\TestUtils\ArrayLogger;
 use SimpleSAML\Utils;
+use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -32,15 +34,14 @@ use function in_array;
 use function ksort;
 use function sprintf;
 
+#[AsCommand(
+    name: 'translations:update:translatable',
+    description: 'Generates fresh .po translation files based on the translatable strings from PHP and Twig files.',
+)]
 class UpdateTranslatableStringsCommand extends Command
 {
     /**
-     * @var string|null
-     */
-    protected static $defaultName = 'translations:update:translatable';
-
-
-    /**
+     * @return void
      */
     protected function configure(): void
     {
@@ -54,9 +55,6 @@ class UpdateTranslatableStringsCommand extends Command
             'simplesaml',
         );
 
-        $this->setDescription(
-            'Generates fresh .po translation files based on the translatable strings from PHP and Twig files',
-        );
         $this->addOption(
             'module',
             null,
@@ -78,16 +76,17 @@ class UpdateTranslatableStringsCommand extends Command
         );
     }
 
+
     /**
      * Clone the entries from $iterator into the passed Translations object.
      * It is expected that $iterator was made by getIterator() on Translations.
      * This can be useful as the entries are cloned in the iterator order.
      *
-     * @param Gettext\Translations $ret
-     * @param iterable $iterator
-     * @return $ret
+     * @param \Gettext\Translations $ret
+     * @param \ArrayIterator $iterator
+     * @return \Gettext\Translations $ret
      */
-    protected function cloneIteratorToTranslations(Translations $ret, iterable $iterator): Translations
+    protected function cloneIteratorToTranslations(Translations $ret, ArrayIterator $iterator): Translations
     {
         while ($iterator->valid()) {
             $ret->addOrMerge(
@@ -98,6 +97,7 @@ class UpdateTranslatableStringsCommand extends Command
         }
         return $ret;
     }
+
 
     /**
      * @param \Symfony\Component\Console\Input\InputInterface $input
@@ -112,7 +112,7 @@ class UpdateTranslatableStringsCommand extends Command
         if (in_array('all', $inputModules) || $inputModules === []) {
             $modules = array_merge([''], $registeredModules);
         } elseif (in_array('main', $inputModules)) {
-            $modules = array_merge([''], ['core', 'admin', 'cron', 'exampleauth', 'multiauth', 'saml']);
+            $modules = array_merge([''], ['core', 'admin', 'cron', 'debugsp', 'exampleauth', 'multiauth', 'saml']);
         } else {
             $known = array_intersect($registeredModules, $inputModules);
             $unknown = array_diff($inputModules, $registeredModules);
@@ -199,38 +199,44 @@ class UpdateTranslatableStringsCommand extends Command
                 $moduleLocalesDir = $moduleDir . '/locales/';
                 $domain = $domain ?: 'messages';
 
-                $finder = new Finder();
-                foreach ($finder->files()->in($moduleLocalesDir . '**/LC_MESSAGES/')->name("{$domain}.po") as $poFile) {
-                    $current = $loader->loadFile($poFile->getPathName());
+                if (file_exists($moduleLocalesDir)) {
+                    // The module contains translations - if not we skip it.
 
-                    $merged = $template->mergeWith(
-                        $current,
-                        Merge::TRANSLATIONS_OVERRIDE
-                        | Merge::COMMENTS_OURS
-                        | Merge::HEADERS_OURS
-                        | Merge::REFERENCES_THEIRS
-                        | Merge::EXTRACTED_COMMENTS_OURS,
-                    );
-                    $merged->setDomain($domain);
+                    $finder = new Finder();
+                    $poFiles = $finder->files()->in($moduleLocalesDir . '**/LC_MESSAGES/')->name("{$domain}.po");
+                    foreach ($poFiles as $poFile) {
+                        $current = $loader->loadFile($poFile->getPathName());
 
-                    //
-                    // Sort the translations in a predictable way
-                    //
-                    $iter = $merged->getIterator();
-                    $iter->ksort();
-                    $merged = $this->cloneIteratorToTranslations(
-                        Translations::create($merged->getDomain(), $merged->getLanguage()),
-                        $iter,
-                    );
+                        $merged = $template->mergeWith(
+                            $current,
+                            Merge::TRANSLATIONS_OVERRIDE
+                            | Merge::COMMENTS_OURS
+                            | Merge::HEADERS_OURS
+                            | Merge::REFERENCES_THEIRS
+                            | Merge::EXTRACTED_COMMENTS_OURS,
+                        );
+                        $merged->setDomain($domain);
 
-                    $language = basename(dirname($poFile->getPath()));
-                    $merged->getHeaders()
-                        ->set('Project-Id-Version', 'SimpleSAMLphp')
-                        ->set('MIME-Version', '1.0')
-                        ->set('Content-Type', 'text/plain; charset=UTF-8')
-                        ->set('Content-Transfer-Encoding', '8bit')
-                        ->setLanguage($language);
-                    $poGenerator->generateFile($merged, $poFile->getPathName());
+                        //
+                        // Sort the translations in a predictable way
+                        //
+                        /** @var \ArrayIterator $iter */
+                        $iter = $merged->getIterator();
+                        $iter->ksort();
+                        $merged = $this->cloneIteratorToTranslations(
+                            Translations::create($merged->getDomain(), $merged->getLanguage()),
+                            $iter,
+                        );
+
+                        $language = basename(dirname($poFile->getPath()));
+                        $merged->getHeaders()
+                            ->set('Project-Id-Version', 'SimpleSAMLphp')
+                            ->set('MIME-Version', '1.0')
+                            ->set('Content-Type', 'text/plain; charset=UTF-8')
+                            ->set('Content-Transfer-Encoding', '8bit')
+                            ->setLanguage($language);
+                        $poGenerator->generateFile($merged, $poFile->getPathName());
+                    }
                 }
             }
         }

@@ -7,8 +7,10 @@ namespace SimpleSAML\Module\cron;
 use Exception;
 use SimpleSAML\Assert\Assert;
 use SimpleSAML\Configuration;
+use SimpleSAML\Event\Dispatcher\ModuleEventDispatcherFactory;
 use SimpleSAML\Logger;
 use SimpleSAML\Module;
+use SimpleSAML\Module\cron\Event\CronEvent;
 
 /**
  * Handles interactions with SSP's cron system/hooks.
@@ -34,6 +36,7 @@ class Cron
         $this->cronconfig = $cronconfig;
     }
 
+
     /**
      * Invoke the cron hook for the given tag
      * @param string $tag The tag to use. Must be valid in the cronConfig
@@ -52,7 +55,17 @@ class Cron
             'tag' => $tag,
         ];
 
+        // DEPRECATED: call the hook infrastructure
         Module::callHooks('cron', $croninfo);
+        // NEW: dispatch the cron event
+        $eventDispatcher = ModuleEventDispatcherFactory::getInstance();
+        /** @var \SimpleSAML\Module\cron\Event\CronEvent $event */
+        $event = $eventDispatcher->dispatch(new CronEvent($tag));
+        // merge results from the event into $croninfo. Can be removed when hook infrastructure is removed.
+        $croninfo['summary'] = array_merge($croninfo['summary'], array_map(
+            fn ($result) => $result['message'],
+            $event->getResults(),
+        ));
         Assert::isArray($croninfo);
 
         foreach ($summary as $s) {
@@ -62,6 +75,7 @@ class Cron
         /** @psalm-suppress NullableReturnStatement */
         return $croninfo;
     }
+
 
     /**
      * @param string $tag

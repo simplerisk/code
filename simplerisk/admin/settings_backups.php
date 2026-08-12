@@ -109,13 +109,13 @@
             // Display an alert
             set_alert(true, "good", "The settings were updated successfully.");
 
-            $message = _lang('BackupSettingsUpdated', ['user_name' => $_SESSION['name']], false);
+            $message = _lang_raw('BackupSettingsUpdated', ['user_name' => $_SESSION['name']]);
             write_log(0, $_SESSION['uid'] ?? 0, $message, 'backup');
 
             // If we should also do a backup
             if (isset($_POST['submit_and_backup_now'])) {
 
-                $message = _lang('BackupInitiatedByUser', ['user_name' => $_SESSION['name']], false);
+                $message = _lang_raw('BackupInitiatedByUser', ['user_name' => $_SESSION['name']]);
                 write_debug_log($message, 'notice');
                 write_log(0, $_SESSION['uid'] ?? 0, $message, 'backup');
 

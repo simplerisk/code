@@ -7,8 +7,8 @@
 namespace OpenApi\Processors;
 
 use OpenApi\Analysis;
-use OpenApi\Annotations as OA;
-use OpenApi\Generator;
+use OpenApi\Annotations\Schema;
+use OpenApi\Undefined;
 
 /**
  * Look at all (direct) traits for a schema and:
@@ -21,8 +21,7 @@ class ExpandTraits
 
     public function __invoke(Analysis $analysis): void
     {
-        /** @var OA\Schema[] $schemas */
-        $schemas = $analysis->getAnnotationsOfType(OA\Schema::class, true);
+        $schemas = $analysis->getAnnotationsOfType(Schema::class, true);
 
         // do regular trait inheritance / merge
         foreach ($schemas as $schema) {
@@ -30,9 +29,9 @@ class ExpandTraits
                 $traits = $analysis->getTraitsOfClass($schema->_context->fullyQualifiedName($schema->_context->trait), true);
                 $existing = [];
                 foreach ($traits as $trait) {
-                    $traitSchema = $analysis->getSchemaForSource($trait['context']->fullyQualifiedName($trait['trait']));
-                    if ($traitSchema) {
-                        $refPath = Generator::isDefault($traitSchema->schema) ? $trait['trait'] : $traitSchema->schema;
+                    $traitSchema = $analysis->getAnnotationForSource($trait['context']->fullyQualifiedName($trait['trait']));
+                    if ($traitSchema instanceof Schema) {
+                        $refPath = Undefined::isDefault($traitSchema->schema) ? $trait['trait'] : $traitSchema->schema;
                         $this->inheritFrom($analysis, $schema, $traitSchema, $refPath, $trait['context']);
                     } else {
                         $this->mergeMethods($schema, $trait, $existing);
@@ -48,9 +47,9 @@ class ExpandTraits
                 $traits = $analysis->getTraitsOfClass($schema->_context->fullyQualifiedName($schema->_context->class), true);
                 $existing = [];
                 foreach ($traits as $trait) {
-                    $traitSchema = $analysis->getSchemaForSource($trait['context']->fullyQualifiedName($trait['trait']));
-                    if ($traitSchema) {
-                        $refPath = Generator::isDefault($traitSchema->schema) ? $trait['trait'] : $traitSchema->schema;
+                    $traitSchema = $analysis->getAnnotationForSource($trait['context']->fullyQualifiedName($trait['trait']));
+                    if ($traitSchema instanceof Schema) {
+                        $refPath = Undefined::isDefault($traitSchema->schema) ? $trait['trait'] : $traitSchema->schema;
                         $this->inheritFrom($analysis, $schema, $traitSchema, $refPath, $trait['context']);
                     } else {
                         $this->mergeMethods($schema, $trait, $existing);
@@ -62,8 +61,8 @@ class ExpandTraits
                 $ancestors = $analysis->getSuperClasses($schema->_context->fullyQualifiedName($schema->_context->class));
                 $existing = [];
                 foreach ($ancestors as $ancestor) {
-                    $ancestorSchema = $analysis->getSchemaForSource($ancestor['context']->fullyQualifiedName($ancestor['class']));
-                    if ($ancestorSchema) {
+                    $ancestorSchema = $analysis->getAnnotationForSource($ancestor['context']->fullyQualifiedName($ancestor['class']));
+                    if ($ancestorSchema instanceof Schema) {
                         // stop here as we inherit everything above
                         break;
                     } else {

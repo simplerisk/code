@@ -1,12 +1,9 @@
 <?php if (realpath($_SERVER['SCRIPT_FILENAME']) === __FILE__) { http_response_code(403); exit; } ?>
                 </div>
                 <!-- End of content -->
-                <!-- footer -->
-                <footer class="footer text-center">
-                  Copyright 2026 SimpleRisk, Inc.  All rights reserved.
-                  <a href="#"></a>
-                </footer>
-                <!-- End footer -->
+                <!-- The app footer now lives pinned at the bottom of the left sidebar
+                     (see sidebar.php / .sr-sidebar-footer) so it doesn't cost a row of
+                     content height. -->
         	</div>
         	<!-- End of content-wrapper -->
 		</div>

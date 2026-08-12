@@ -52,9 +52,11 @@ class LogoutStore
                      * NOTE: We get the name of the index by looking for the only unique index with a default name.
                      */
                     $update = [
+                        // phpcs:disable Generic.Files.LineLength.TooLong
                         'ALTER TABLE ' . $store->prefix . '_saml_LogoutStore DROP INDEX IF EXISTS SELECT CONSTRAINT_NAME ' .
                           'FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS WHERE TABLE_NAME=' . $store->prefix . '_saml_LogoutStore ' .
                           'AND CONSTRAINT_NAME LIKE \'UQ__%"\'',
+                        // phpcs:enable Generic.Files.LineLength.TooLong
                         'ALTER TABLE ' . $store->prefix . '_saml_LogoutStore ADD CONSTRAINT _authSource ' .
                           'PRIMARY KEY CLUSTERED (_authSource, _nameId, _sessionIndex)',
                     ];
@@ -322,7 +324,7 @@ class LogoutStore
      * @param array $sessionIndexes  The SessionIndexes we should log out of. Logs out of all if this is empty.
      * @return int|false  Number of sessions logged out, or FALSE if not supported.
      */
-    public static function logoutSessions(string $authId, NameID $nameId, array $sessionIndexes)
+    public static function logoutSessions(string $authId, NameID $nameId, array $sessionIndexes): int|false
     {
         $config = Configuration::getInstance();
         $storeType = $config->getOptionalString('store.type', 'phpsession');

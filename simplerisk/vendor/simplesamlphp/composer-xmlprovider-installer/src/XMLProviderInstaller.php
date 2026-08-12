@@ -25,7 +25,7 @@ class XMLProviderInstaller extends LibraryInstaller
      */
     public function ensureBinariesPresence(PackageInterface $package)
     {
-        $result = parent::ensureBinariesPresence($package);
+        parent::ensureBinariesPresence($package);
 
         $downloadPath = $this->getInstallPath($package);
         $registry = $downloadPath . '/classes/element.registry.php';
@@ -37,8 +37,6 @@ class XMLProviderInstaller extends LibraryInstaller
                 link($registry, $target);
             }
         }
-
-        return $result;
     }
 
 

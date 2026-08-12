@@ -6,7 +6,6 @@ namespace SimpleSAML\Module\multiauth\Auth\Source;
 
 use Exception;
 use SAML2\Exception\Protocol\NoAuthnContextException;
-use SimpleSAML\Assert\Assert;
 use SimpleSAML\Auth;
 use SimpleSAML\Configuration;
 use SimpleSAML\Error;
@@ -26,22 +25,23 @@ class MultiAuth extends Auth\Source
     /**
      * The key of the AuthId field in the state.
      */
-    public const AUTHID = '\SimpleSAML\Module\multiauth\Auth\Source\MultiAuth.AuthId';
+    public const string AUTHID = '\SimpleSAML\Module\multiauth\Auth\Source\MultiAuth.AuthId';
 
     /**
      * The string used to identify our states.
      */
-    public const STAGEID = '\SimpleSAML\Module\multiauth\Auth\Source\MultiAuth.StageId';
+    public const string STAGEID = '\SimpleSAML\Module\multiauth\Auth\Source\MultiAuth.StageId';
 
     /**
      * The key where the sources is saved in the state.
      */
-    public const SOURCESID = '\SimpleSAML\Module\multiauth\Auth\Source\MultiAuth.SourceId';
+    public const string SOURCESID = '\SimpleSAML\Module\multiauth\Auth\Source\MultiAuth.SourceId';
 
     /**
      * The key where the selected source is saved in the session.
      */
-    public const SESSION_SOURCE = 'multiauth:selectedSource';
+    public const string SESSION_SOURCE = 'multiauth:selectedSource';
+
 
     /**
      * Array of sources we let the user chooses among.
@@ -94,7 +94,7 @@ class MultiAuth extends Auth\Source
      *
      * @param array &$state Information about the current authentication.
      */
-    public function authenticate(array &$state): void
+    public function authenticate(array &$state): never
     {
         $state[self::AUTHID] = $this->authId;
         $state[self::SOURCESID] = $this->sources;
@@ -145,9 +145,6 @@ class MultiAuth extends Auth\Source
 
         $httpUtils = new Utils\HTTP();
         $httpUtils->redirectTrustedURL($url, $params);
-
-        // The previous function never returns, so this code is never executed
-        Assert::true(false);
     }
 
 

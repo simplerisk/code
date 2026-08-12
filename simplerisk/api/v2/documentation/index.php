@@ -100,6 +100,11 @@ function autoloader(string $name)
     {
         require_once realpath(__DIR__ . '/notifications.php');
     }
+
+    if (file_exists(realpath(__DIR__ . '/self_assessments.php')))
+    {
+        require_once realpath(__DIR__ . '/self_assessments.php');
+    }
 }
 
 // Include required functions file
@@ -120,6 +125,7 @@ $scan_directories = [
     realpath(__DIR__ . '/exceptions.php'),
     realpath(__DIR__ . '/ui.php'),
     realpath(__DIR__ . '/notifications.php'),
+    realpath(__DIR__ . '/self_assessments.php'),
 ];
 
 // If the Secure Controls Framework (SCF) Extra is installed

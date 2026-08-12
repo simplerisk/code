@@ -8,6 +8,13 @@ require_once(realpath(__DIR__ . '/api.php'));
 require_once(realpath( __DIR__ . '/../../../includes/assets.php'));
 require_once(realpath(__DIR__ . '/../../../includes/functions.php'));
 require_once(realpath(__DIR__ . '/../../../includes/extras.php'));
+// get_risk_connectivity_for_asset(). It moved out of includes/reporting.php
+// into entity_graph.php. It is reachable transitively today only because
+// api/v2/index.php happens to load governance.php/risks.php (which require
+// entity_graph.php directly) before this file -- an include reorder would turn
+// the call into a fatal "Call to undefined function", and Phan cannot see it.
+// Declared directly per CLAUDE.md's function-reachability rule.
+require_once(realpath(__DIR__ . '/../../../includes/entity_graph.php'));
 
 require_once(language_file());
 

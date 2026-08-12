@@ -646,7 +646,7 @@ $lang = array(
     'ControlPhase' => 'Kontrolní fáze',
     'ControlPriority' => 'Priorita řízení',
     'ControlFamily' => 'Kontrolní rodina',
-    'AllFrameworks'=>'Všechny rámce',
+    'AllFrameworks'=>'Všechny frameworky',
     'NewControlName' => 'Nový název ovládacího prvku',
     'NewControlDescription' => 'Nový popis ovládacího prvku',
     'AreYouSureYouWantToDeleteThisControl' => 'Opravdu chcete odstranit tento ovládací prvek?',
@@ -1345,7 +1345,6 @@ $lang = array(
     'UpdateAssetGroupTooltip' => 'Aktualizovat skupinu majetku',
     'DeleteAssetGroupTooltip' => 'Odstranit skupinu majetku',
     'RemoveAssetTooltip' => 'Odebrat majetek ze skupiny majetku',
-    'ControlShortNameFieldRequired' => 'Pole krátký název ovládacího prvku je povinné.',
     'AffectedAssetsWidgetPlaceholder' => 'Vyberte majetek nebo skupinu majetku',
     'AffectedAssetsWidgetNoDropdownPlaceholder' => 'Přidání názvu majetku',
     'AffectedAssetsWidgetInstructions' => 'Vyberte majetek nebo skupinu majetku. Nový majetek můžete vytvořit přidáním jeho názvu do seznamu.',
@@ -2226,7 +2225,7 @@ $lang = array(
     'IncidentSummaryUpdateSuccessful' => 'Souhrn byl úspěšně aktualizován.',
     'ImportSuccessful' => 'Import byl úspěšný!',
     'Document' => 'Dokument',
-    'SelfAssessments' => 'Vlastní hodnocení',
+    'SelfAssessments' => 'Sebehodnocení',
     'AssetId'=>'ID aktiva',
     'ExportTemplateGroups' => 'Exportovat skupiny šablon',
     'ImportTemplateGroups' => 'Importovat skupiny šablon',
@@ -2341,7 +2340,7 @@ $lang = array(
     'Advanced_Search_no_results_1' => 'Zdá se, že pro váš dotaz nebyly nalezeny žádné výsledky.',
     'Advanced_Search_no_results_2' => 'Zkontrolujte, zda ve vyhledávání nejsou překlepy, pravopisné chyby, nebo zkuste jiný hledaný výraz.',
     'IncidentsPerDay' => 'Incidenty za den',
-    'CurrentVsDesiredMaturity' => 'Aktuální versus požadovaná zralost podle kontrolní rodiny',
+    'CurrentVsDesiredMaturity' => 'Zralost podle kontrolní rodiny',
     'RiskDistribution' => 'Rozložení rizik',
     'RiskDistributionDescription'=>'Výše uvedené koláčové grafy pomáhají ukázat rozložení rizik mezi různé úrovně rizika jak pro přirozené, tak pro zbytkové riziko. Tyto dva koláče můžeme použít k prokázání pokroku v našem úsilí o zmírnění rizik. Pokud koláč zbytkového rizika ukazuje velké části velmi vysokých nebo vysokých rizik, může to být známkou toho, že vaše organizace podstupuje příliš velké riziko a je zapotřebí další úsilí o zmírnění.',
     'EnableTabs' => 'Povolit karty',
@@ -2413,7 +2412,7 @@ $lang = array(
     'EditModeInformation' => 'Zapněte režim úprav a upravte rozvržení. Vypnutím se rozložení automaticky neuloží.',
     'InvalidLayout' => 'Neplatné rozvržení!',
     'InvalidLayoutOnlyCustomAllowedAsDefault' => 'Neplatné rozvržení! Jako výchozí lze uložit pouze vlastní rozvržení.',
-    'LayoutSaved' => 'Rozvržení uloženo!',
+    'LayoutSaved' => 'Rozvržení vašeho řídicího panelu bylo uloženo.',
     'DefaultLayout' => 'Výchozí rozložení',
     'DefaultLayoutInformation' => 'Nastaví toto rozvržení jako výchozí a použije se místo toho, které poskytuje SimpleRisk pro uživatele, kteří nemají nastaveno vlastní rozvržení. Jako výchozí můžete nastavit pouze uložené neprázdné vlastní rozvržení. Pokud se rozvržení označené jako výchozí obnoví na výchozí rozvržení, obnoví se na výchozí, které poskytuje SimpleRisk.',
     'LayoutDefaultStatusUpdated' => 'Výchozí stav rozvržení byl aktualizován.',
@@ -2422,7 +2421,7 @@ $lang = array(
     'DefaultLayoutRestored' => 'Výchozí rozložení bylo úspěšně obnoveno!',
     'SavedLayoutRestored' => 'Uložené rozvržení bylo úspěšně obnoveno!',
     'ConfirmRestoreLayout' => 'jsi si jistý? Ztratíte změny provedené v tomto rozvržení.',
-    'ConfirmDisableEditModeWithPendingChanges' => 'Máte neuložené změny, o které při opuštění stránky přijdete. Opravdu chcete deaktivovat režim úprav a případně zapomenout na uložení změn?',
+    'ConfirmDisableEditModeWithPendingChanges' => 'V tomto dashboardu máte neuložené změny. Chcete je zahodit a ukončit úpravy?',
     'ConfirmSave' => 'Uložením těchto změn přepíšete dříve uložené rozvržení. Opravdu chcete pokračovat?',
     'ConfirmSaveAdminDefault' => 'Toto rozvržení je nastaveno jako výchozí pro tento typ rozvržení. Uložením těchto změn se změní rozvržení pro všechny uživatele, kteří nemají nastaveno vlastní rozvržení pro tento typ rozvržení. Opravdu chcete pokračovat?',
     'RisksByMonth' => 'Rizika podle měsíce',
@@ -3111,6 +3110,1523 @@ $lang = array(
     'ResendAssessmentDescription' => 'Automaticky znovu vydat hodnocení v opakující se kadenci.',
     'ResendEveryDays' => 'Znovu odeslat každých {$day} dní',
     'QuestionnaireSaveBarHint' => '„Uložit a odeslat“ okamžitě odešle dotazník svým kontaktům.',
+    // Home dashboard — KPI tile labels
+    'NewSelfAssessment' => 'Nové sebehodnocení',
+    'SelfAssessmentPrereqIntro' => 'Sebehodnocení vám umožňuje vyhodnotit vaši organizaci podle rámce zabezpečených kontrol a automaticky generovat rizika z kontrol, které selhávají. Nejprve je nutné provést dva kroky nastavení:',
+    'RegisterYourInstance' => 'Zaregistrujte si instanci',
+    'RegisterYourInstanceHelp' => 'Registrace propojuje tuto instanci s licenční službou SimpleRisk, takže si lze stáhnout bezplatné doplňky (včetně SCF).',
+    'InstallTheSCF' => 'Instalace frameworku zabezpečených kontrol',
+    'InstallTheSCFHelp' => 'SCF je bezplatný doplněk, který poskytuje rámce, kontrolní otázky a mapování rizik, na jejichž základě tato funkce provádí posouzení. Instalace běží na pozadí a může trvat několik minut.',
+    'GoToRegistration' => 'Přejít k registraci',
+    'GoToSCF' => 'Přejít na rámec zabezpečených kontrol',
+    'SelfAssessmentEnableTip' => 'Volitelné: v části Správa > Rámce můžete povolit zobrazení krátkého seznamu frameworků SCF při zahájení hodnocení konkrétním frameworkům SCF. Můžete také posoudit libovolný framework v kompletním katalogu SCF, aniž byste jej povolili.',
+    'ChooseAFramework' => 'Vyberte rámec pro hodnocení',
+    'EnabledFrameworks' => 'Povolené frameworky',
+    'AllScfFrameworks' => 'Všechny rámce SCF',
+    'Start' => 'Start',
+    'Resume' => 'Pokračovat',
+    'ControlQuestion' => 'Kontrolní otázka',
+    'NotApplicable' => 'Není k dispozici',
+    'SaveProgress' => 'Uložit postup',
+    'MarkComplete' => 'Označit jako dokončené',
+    'AnsweredOfTotal' => 'zodpovězeno',
+    'FailedSoFar' => 'zatím selhal',
+    'StartedBy' => 'Zahájeno uživatelem',
+    'FailedControls' => 'Selhaly ovládací prvky',
+    'PushToRisk' => 'Přesunout do rizik',
+    'ConfirmDeleteSelfAssessment' => 'Smazat toto sebehodnocení? Tuto akci nelze vrátit zpět.',
+    'ConfirmCompleteSelfAssessment' => 'Označit toto hodnocení jako dokončené? Selhání kontrolních mechanismů bude mít za následek vznik rizik.',
+    'NoSelfAssessmentsYet' => 'Zatím žádné sebehodnocení. Pro začátek si ho začněte.',
+    'RequestFailed' => 'Požadavek se nepodařilo dokončit. Zkuste to prosím znovu.',
+    'NoPendingRisks' => 'Žádná nevyřešená rizika. Dokončete posouzení, abyste vygenerovali rizika z neúspěšných kontrol.',
+    'NoFailedControls' => 'Pro tento filtr nebyly zobrazeny žádné kontrolní výsledky.',
+    'ControlResultsTruncated' => 'Zobrazují se nejnovější 2000 výsledky. Zúžte filtr pro zobrazení dalších výsledků.',
+    'GeneratedFromSelfAssessment' => 'Vygenerováno ze sebehodnocení',
+    'SelfAssessmentMitigationSolution' => 'Zaveďte níže uvedené kontrolní mechanismy, které byly během tohoto sebehodnocení identifikovány jako selhávající, aby se toto riziko zmírnilo.',
+    'NSelected' => '{n} vybráno',
+    'FilterByControl' => 'Filtrovat podle ovládacího prvku',
+    'Pushing' => 'Přesouvám…',
+    'Deleting' => 'Mazání…',
+    'ConfirmPushSelectedPendingRisks' => 'Přesunout {n} vybraných čekajících rizik do kategorie rizik?',
+    'ConfirmDeleteSelectedPendingRisks' => 'Smazat {n} vybraných čekajících rizik? Tuto akci nelze vrátit zpět.',
+    'ConfirmDeleteSelectedSelfAssessments' => 'Smazat {n} vybraných sebehodnocení? Tuto akci nelze vrátit zpět.',
+    'BulkPartialFailure' => '{n} z {total} položek se povedlo; zbytek se nezdařil. Aktualizujte stránku pro zobrazení aktuálního stavu.',
+
+    // Workflows Extra - deactivation confirm ('Deactivate' at line 480 is reused as-is)
+    'WorkflowsExtraDeactivateConfirm' => 'Deaktivovat doplňkové funkce Workflows Extra? Všechny uživatelem vytvořené definice workflowů budou trvale smazány. Systémové workflowy budou zachovány.',
+    'HomeKpiOpenRisks' => 'Otevřená rizika',
+    'HomeKpiNeedsReview' => 'Potřebuje kontrolu',
+    'HomeKpiUnmitigated' => 'Nemitigovaný',
+    'HomeKpiClosedRisks' => 'Uzavřená rizika',
+    'HomeKpiControlPassRate' => 'Míra úspěšnosti kontroly',
+    'HomeKpiFailingControls' => 'Selhávající kontroly',
+    'HomeKpiOpenAudits' => 'Otevřené audity',
+    'HomeKpiTestsDueSoon' => 'Testy budou brzy odevzdány',
+    'HomeKpiActiveFrameworks' => 'Aktivní rámce',
+    'HomeKpiTotalControls' => 'Celkový počet kontrol',
+    // Home dashboard — What's Next feed
+    'WhatsNext' => 'Co bude dál?',
+    'WhatsNextAllCaughtUp' => 'Všechno máte v plánu.',
+    'WhatsNextRegisterInstance' => 'Zaregistrujte si instanci SimpleRisk',
+    'WhatsNextSubmitFirstRisk' => 'Odešlete své první riziko',
+    'WhatsNextLoadFramework' => 'Načtení řídicího rámce',
+    'WhatsNextUnreviewedRisks' => 'Rizika k přezkoumání',
+    'WhatsNextUnmitigatedRisks' => 'Rizika k zmírnění',
+    'WhatsNextInitiateAudits' => 'Audity k zahájení',
+    // Home dashboard — widget picker type labels
+    'WidgetType_kpi' => 'Dlaždice klíčových ukazatelů výkonnosti (KPI)',
+    'WidgetType_whats_next' => 'Seznam',
+    // Home dashboard — hub catalog entry
+    'HomeDashboard' => 'Domů',
+    'HomeDashboardDesc' => 'Váš výchozí bod – klíčové metriky a co dělat dál, v kostce.',
+    'HomeChartRiskByLevel' => 'Riziko podle úrovně',
+    'HomeKpiThisMonth' => 'tento měsíc',
+    'HomeKpiNoChange' => 'Žádná změna',
+    'EditLayout' => 'Upravit rozvržení',
+    'ListHighestRisks' => 'Moje nejvyšší rizika',
+    'ListPastDueReviews' => 'Recenze po termínu',
+    'ListUpcomingTests' => 'Nadcházející testy',
+    'ListRecentFailures' => 'Nedávné selhání',
+    'ListPoliciesReview' => 'Dokumenty k recenzi',
+    'ListExpiringExceptions' => 'Výjimky s vypršením platnosti',
+    'ImKpiOpenIncidents' => 'Celkem otevřeno',
+    'ImKpiOverdue' => 'Po splatnosti',
+    'ImKpiMttr30' => 'Průměrná doba řešení',
+    'ImKpiMttrQuarter' => 'Průměrná doba řešení (90 dní)',
+    'ImKpiMttrYear' => 'Průměrná doba řešení (1 rok)',
+    'ImKpiMttrAll' => 'Průměrná doba řešení (vše)',
+    'ImKpiResolved30' => 'Vyřešeno',
+    'ImChartBySeverity' => 'Podle závažnosti',
+    'ImChartByStatus' => 'Podle stavu',
+    'ImListRecent' => 'Nedávné incidenty',
+    'ImListUnassigned' => 'Nepřiřazené incidenty',
+    'HomeKpiOpenExceptions' => 'Otevřené výjimky',
+    'HomeKpiPolicies' => 'Politiky',
+    'ResolutionTargets' => 'Cíle řešení (dny)',
+    'ResolutionTargetsHelp' => 'Počet dní, po které může incident zůstat otevřený, než bude započítán jako po termínu.',
+    'DefaultTarget' => 'Výchozí',
+    'PerSeverityOverrideHelp' => 'Volitelně přepište výchozí nastavení pro konkrétní závažnosti (ponechte prázdné pro použití výchozího nastavení):',
+    'ResolutionTargetUsesDefault' => 'Výchozí (%d)',
+    'SeverityColors' => 'Barvy závažnosti',
+    'SeverityColorsHelp' => 'Barva pro každou závažnost zobrazená na řídicím panelu Incident a na stránce s podrobnostmi o incidentu.',
+    'Editing' => 'Editace',
+    'SetAsDefaultForEveryone' => 'Nastavit jako výchozí pro všechny',
+    'EditLayoutHint' => 'Přetažením dlaždice ji přesunete · přetažením okraje změníte velikost · ✕ dlaždici odstraníte',
+    'RemoveWidget' => 'Odebrat widget',
+    'AddWidget' => 'Přidat widget',
+    'AddToDashboard' => 'Přidat na řídicí panel',
+    'AllWidgetsAdded' => 'Všechny dostupné widgety jsou na tomto dashboardu.',
+    'AddText' => 'Přidat text',
+    'GettingStarted' => 'Začínáme',
+    'GettingStartedTitle' => 'Vítejte v SimpleRisk',
+    'GettingStartedSubtitle' => 'Pár rychlých kroků, jak ze SimpleRisk vytěžit maximum.',
+    'GSProgressCount' => '{done} z {total} dokončeno',
+    'GSNextUp' => 'Další na řadě',
+    'GSArea_setup' => 'Nastavení',
+    'GSArea_risk' => 'Riziko',
+    'GSArea_assessment' => 'Posouzení',
+    'GSArea_compliance' => 'Dodržování',
+    'GSArea_assets' => 'Aktiva',
+    'GSArea_ai' => 'Nastavení',
+    'GSHide' => 'Skrýt Začínáme',
+    'GSDismissStep' => 'Zavřít tento krok',
+    'GSAllSet' => 'Všechno je hotové – dobrá práce!',
+    'GSWalkthrough' => '30minutová prohlídka',
+    'Explore' => 'Prozkoumat',
+    'Learn' => 'Učit se',
+    'AdminGuide' => 'Průvodce pro administrátory',
+    'LearnMore' => 'Zjistěte více',
+    'GSRegisterTitle' => 'Zaregistrujte si instanci',
+    'GSRegisterDesc' => 'Aktivujte podporu a aktualizace pomocí licenčního klíče.',
+    'GSRegisterCta' => 'Registrovat',
+    'GSScfTitle' => 'Instalace frameworku zabezpečených kontrol',
+    'GSScfDesc' => 'Nainstalujte SCF – vaši řídicí knihovnu napříč standardy.',
+    'GSScfCta' => 'Instalace SCF',
+    'GSInviteTitle' => 'Pozvěte svůj tým',
+    'GSInviteDesc' => 'Přidejte kolegy, aby bylo možné přiřadit a zkontrolovat práci.',
+    'GSInviteCta' => 'Přidat uživatele',
+    'GSAiTitle' => 'Konfigurace umělé inteligence',
+    'GSAiDesc' => 'Vylepšete si zážitek ze SimpleRisk pomocí umělé inteligence.',
+    'GSAiCta' => 'Nastavení umělé inteligence',
+    'GSSubmitRiskTitle' => 'Odešlete své první riziko',
+    'GSSubmitRiskDesc' => 'Zaznamenejte riziko, kterému vaše organizace čelí.',
+    'GSSubmitRiskCta' => 'Odeslat riziko',
+    'GSMitigateTitle' => 'Naplánujte zmírnění',
+    'GSMitigateDesc' => 'Přidejte k otevřenému riziku plán zmírnění dopadů.',
+    'GSMitigateCta' => 'Plán zmírnění',
+    'GSReviewTitle' => 'Proveďte analýzu rizik',
+    'GSReviewDesc' => 'Prozkoumejte riziko a rozhodněte se o jeho dalším postupu.',
+    'GSReviewCta' => 'Provést kontrolu',
+    'GSDefineTestTitle' => 'Definujte kontrolní test',
+    'GSDefineTestDesc' => 'Nastavte, jak se bude kontrolní prvek testovat.',
+    'GSDefineTestCta' => 'Definovat test',
+    'GSInitiateAuditTitle' => 'Zahájit audit',
+    'GSInitiateAuditDesc' => 'Zahajte testovací nebo auditní cyklus.',
+    'GSInitiateAuditCta' => 'Zahájit audit',
+    'GSAssetTitle' => 'Přidejte svá aktiva',
+    'GSAssetDesc' => 'Proveďte inventuru aktiv, která chráníte.',
+    'GSAssetCta' => 'Přidat aktiva',
+    'GSInvalidStep' => 'Neplatný krok pro začátek.',
+    'GSPagerLabel' => '{from}–{to} z {total}',
+    'GSPrevCards' => 'Zobrazit předchozí kroky',
+    'GSNextCards' => 'Zobrazit další kroky',
+    'WhatsNextInstallSCF' => 'Instalace frameworku zabezpečených kontrol',
+    'GSActivateScfTitle' => 'Aktivace rámce zabezpečených kontrol',
+    'GSActivateScfDesc' => 'Zapněte nainstalovaný SCF, abyste načetli jeho ovládací prvky do knihovny.',
+    'GSActivateScfCta' => 'Aktivovat SCF',
+    'WhatsNextActivateSCF' => 'Aktivace rámce zabezpečených kontrol',
+    'GSEnableFrameworksTitle' => 'Povolit příslušné frameworky',
+    'GSEnableFrameworksDesc' => 'Zapněte rámce SCF, které se vztahují na vaši organizaci.',
+    'GSEnableFrameworksCta' => 'Povolit frameworky',
+    'WhatsNextEnableFrameworks' => 'Povolit příslušné frameworky',
+    'GSSelfAssessTitle' => 'Proveďte sebehodnocení',
+    'GSSelfAssessDesc' => 'Vyhodnoťte svou organizaci na základě více než 250 rámců a vygenerujte rizika z neúspěšných kontrol.',
+    'GSSelfAssessCta' => 'Zahájit hodnocení',
+    'WhatsNextTakeSelfAssessment' => 'Proveďte sebehodnocení',
+    'WhatsNextConfigureAI' => 'Konfigurace umělé inteligence',
+    'ListUnreviewedRisks' => 'Neprověřená rizika',
+    'ControlsByDomain' => 'Ovládací prvky podle domény',
+    'ControlsByClass' => 'Ovládací prvky podle třídy',
+    'ControlsByPhase' => 'Ovládání podle fáze',
+    'ControlsByPriority' => 'Ovládací prvky podle priority',
+    'ControlsByCurrentMaturity' => 'Kontroly podle aktuální zralosti',
+    'ControlStatusOverTime' => 'Stav kontroly v čase',
+    'ComplianceTotalControls' => 'Celkový počet kontrol',
+    'HomeKpiOverdueTests' => 'Testy po termínu',
+    'Total' => 'Celkový',
+    'StartTheTest' => 'Spusťte test',
+    'TestStartsAutomatically' => 'Test se spustí automaticky',
+    'GoToTest' => 'Přejít na test',
+    'NotTested' => 'Netestováno',
+    'PassingPercent' => 'Procento úspěšnosti přihrávek',
+    'ListFailingControls' => 'Selhávající kontroly',
+    'Exceptions' => 'Výjimky',
+    'Documents' => 'Dokumenty',
+    'ControlsBelowMaturity' => 'Kontroly nedosahují úrovně zralosti',
+    'ControlsAtMaturity' => 'Kontroly na požadované úrovni zralosti',
+    'ControlsAboveMaturity' => 'Kontroly nad požadovanou úrovní zralosti',
+    'Maturity' => 'Zralost',
+    'AllTime' => 'Všechny časy',
+    'Last7Days' => 'Posledních 7 dní',
+    'Last30Days' => 'Posledních 30 dní',
+    'Last90Days' => 'Posledních 90 dní',
+    'YearToDate' => 'Rok od začátku roku',
+    'CustomRange' => 'Vlastní rozsah',
+    'Age' => 'Stáří',
+    'ImOpenIncidents' => 'Otevřené incidenty',
+    'ImClosedIncidents' => 'Uzavřené incidenty',
+    'ImByAttackVector' => 'Otevřeno podle útočného vektoru',
+    'ImBySource' => 'Otevřít podle zdroje',
+    'AverageDaysToDetect' => 'Průměrný počet dní do detekce',
+    'ImKpiAvgTtd' => 'Průměrná detekce',
+    'Days' => 'Dny',
+    'ImKpiCriticalOpen' => 'Kritické otevření',
+    'ImKpiResolvedInSla' => 'Vyřešeno v SLA',
+    'Events' => 'Události',
+    'ImEventsIncidents' => 'Události a incidenty',
+    'ImSourceBreakdown' => 'Zdroj podle kategorie',
+    'ImClosureSummary' => 'Souhrn uzavření',
+    'ImSignalQuality' => 'Kvalita signálu',
+    'ImSignalLowSample' => 'Nedostatek uznaných uzavření pro spolehlivé hodnocení',
+    'ImportExportExportPdf' => 'Exportovat PDF',
+    'ImportExportExporting' => 'Příprava PDF…',
+    'ImportExportExportFailed' => 'Nepodařilo se vygenerovat PDF. Zkuste to prosím znovu.',
+    'ImportExportGeneratedOn' => 'Vygenerováno',
+    'ImportExportPage' => 'Strana',
+    'ImportExportPageOf' => 'z',
+    'ResolutionTargetsUpdated' => 'Cíle řešení podle závažnosti byly aktualizovány.',
+    'SeverityColorsUpdated' => 'Barvy závažnosti byly aktualizovány.',
+    // AI Capabilities Catalog + AI settings hub (unified AI settings)
+    'AICapGrcRecommendations' => 'Doporučení rámce GRC',
+    'AICapGrcRecommendationsDesc' => 'Doporučení a shrnutí pro manažery generované umělou inteligencí, přizpůsobené kontextu vaší organizace.',
+    'AICapRiskRecommendations' => 'Doporučení k rizikům',
+    'AICapRiskRecommendationsDesc' => 'Návrhy na podrobnosti o riziku a jeho zmírnění, generované na základě rizika, jeho zmírnění a kontroly.',
+    'AICapFairAnalysis' => 'FAIR kvantitativní analýza',
+    'AICapFairAnalysisDesc' => 'Umělá inteligence odhaduje parametry ztráty pomocí Beta-PERT; SimpleRisk spouští 10 000 iterační Monte Carlo model pro kvantifikaci rizika v dolarech.',
+    'AICapDocumentCustomization' => 'Přizpůsobení dokumentu',
+    'AICapDocumentCustomizationDesc' => 'Vyplní zástupné symboly a vyčistí text zásad v šablonách dokumentů tak, aby se standardní zásada četla jako vaše.',
+    'AICapDocumentControlMatching' => 'Porovnávání dokumentů ↔ kontrol',
+    'AICapDocumentControlMatchingDesc' => 'Automaticky mapuje ovládací prvky k dokumentům zásad s hodnocením spolehlivosti a zdůvodněním, které si můžete prohlédnout.',
+    'AICapDocumentTemplates' => 'Knihovna šablon dokumentů',
+    'AICapDocumentTemplatesDesc' => 'Nainstalujte si šablony upravených zásad, pokynů a postupů z knihovny SimpleRisk.',
+    'AICapControlReferenceEnhancement' => 'Vylepšení referenčních bodů řízení',
+    'AICapControlReferenceEnhancementDesc' => 'Prostřednictvím webového vyhledávání vyhledává doslovný text kontrol a obohacuje tak vaše referenční zdroje.',
+    'AICapAiChat' => 'Asistent chatu',
+    'AICapAiChatDesc' => 'Asistent GRC, který odpovídá na otázky v kontextu kdekoli v SimpleRisk.',
+    'AICapSurfacedRecommendations' => 'Stránka s umělou inteligencí',
+    'AICapSurfacedRiskView' => 'Pohled na rizika – Podrobnosti a zmírnění rizik',
+    'AICapSurfacedFairTab' => 'Zobrazení rizik – záložka FAIR',
+    'AICapSurfacedDocuments' => 'Správa věcí veřejných – Dokumenty',
+    'AICapSurfacedControls' => 'Dodržování předpisů – Kontrolní mechanismy',
+    'AICapSurfacedEveryPage' => 'Každá stránka – plovoucí asistent',
+    'AICapabilitiesCatalog' => 'Schopnosti',
+    'AICapSearchPlaceholder' => 'Vyhledávání možností umělé inteligence…',
+    'AICapFilterDomain' => 'Doména',
+    'AICapFilterTier' => 'Úroveň',
+    'AICapFilterState' => 'Stav',
+    'AICapTierExtra' => 'AI Extra',
+    'AICapStateLocked' => 'Zamčeno',
+    'AICapIncludedInExtra' => 'Zahrnuto v doplňku AI',
+    'AICapPurchaseExtra' => 'Zakupte si AI Extra',
+    'AICapNeedsProvider' => 'Vyžaduje nastavení poskytovatele',
+    'AICapNoMatch' => 'Žádné odpovídající schopnosti',
+    'AICapNoMatchHint' => 'Zkuste jinou doménu, úroveň nebo hledaný výraz.',
+    'AICapCountSingular' => 'schopnost',
+    'AICapCountPlural' => 'schopnosti',
+    'DomainAssistant' => 'Asistent',
+    'AICapLoadError' => 'Nepodařilo se načíst funkce umělé inteligence. Zkuste to prosím znovu.',
+    'AIProviderConfigSubtitle' => 'Propojte SimpleRisk s poskytovatelem umělé inteligence, abyste mohli využívat funkce umělé inteligence.',
+    'AIHowToGetAPIKeyFor' => 'Jak získat API klíč pro',
+    'AIExtraNotActivated' => 'Neaktivováno',
+    'AIExtraValueProp' => 'Vylepšená umělá inteligence – kvantifikace rizik FAIR, pomoc s dokumentací a kontrolou a chatovací asistent s umělou inteligencí.',
+    'AICtxOrgName' => 'Jak se jmenuje vaše organizace?',
+    'AICtxOrgSizeEmployees' => 'Kolik zaměstnanců má vaše organizace?',
+    'AICtxOrgSizeRevenue' => 'Jaký je roční příjem vaší organizace?',
+    'AICtxOrgObjective' => 'Jaké jsou hlavní obchodní cíle a strategické záměry vaší organizace?',
+    'AICtxOrgIndustry' => 'Jaké je primární odvětví nebo sektor vaší organizace?',
+    'AICtxOrgLocation' => 'Ve kterých zemích nebo regionech vaše organizace působí?',
+    'AICtxOrgType' => 'Jaký typ organizace jste?',
+    'AICtxDataTypes' => 'Jaké typy dat vaše organizace shromažďuje, zpracovává nebo ukládá (např. osobní údaje, finanční údaje, zdravotní informace)?',
+    'AICtxDataCustomers' => 'Kdo jsou vaši hlavní zákazníci nebo zainteresované strany (např. spotřebitelé, firmy, vládní subjekty)?',
+    'AICtxDataRegulatory' => 'Vztahují se na vás nějaké specifické regulační požadavky ve vašem odvětví?',
+    'AICtxDataThirdParties' => 'Máte nějaké vztahy s třetími stranami nebo externě zadávané služby, které vyžadují dohled nad dodržováním předpisů?',
+    'AICtxMaturityIssues' => 'Zaznamenali jste v posledních 3–5 letech nějaké významné problémy s dodržováním předpisů, narušení bezpečnosti nebo rizikové události?',
+    'AICtxMaturityConcerns' => 'Identifikovali jste ve svých současných procesech GRC nějaké konkrétní oblasti, ve kterých se můžete obávat problémů nebo vylepšit?',
+    'AICtxMaturityAppetite' => 'Jaká je chuť k riziku a tolerance vaší organizace?',
+    'AICtxMaturityLevel' => 'Jaká je vaše současná úroveň vyspělosti, pokud jde o postupy správy a řízení, řízení rizik a dodržování předpisů?',
+    'AICtxImplementationChanges' => 'Chystají se nějaké změny ve vašem obchodním modelu, technologické infrastruktuře nebo na trhu, které by mohly ovlivnit vaše potřeby v oblasti dodržování předpisů?',
+    'AICtxImplementationResourcesBudget' => 'Jaké rozpočtové prostředky máte k dispozici na implementaci a udržování rámců pro dodržování předpisů?',
+    'AICtxImplementationResourcesPersonnel' => 'Jaké personální zdroje máte k dispozici pro implementaci a údržbu rámců pro dodržování předpisů?',
+    'AICtxImplementationResourcesTechnology' => 'Jaké zdroje technologické infrastruktury máte k dispozici pro implementaci a údržbu rámců pro dodržování předpisů?',
+    'AICtxImplementationResourcesTraining' => 'Jaké školicí a rozvojové zdroje máte k dispozici pro implementaci a udržování rámců pro dodržování předpisů?',
+    'AICtxImplementationResourcesExternal' => 'Jaké externí podpůrné zdroje máte k dispozici pro implementaci a údržbu rámců pro dodržování předpisů?',
+    'AIAPIKeySecurityNote' => 'Váš klíč je uložen na straně serveru a nikdy se nevrací do prohlížeče. URL adresy poskytovatelů jsou ověřovány podle seznamu povolených položek SSRF, který lze konfigurovat v souboru config.php.',
+    'AIContextEgressWarning' => 'Vaše odpovědi se odesílají vašemu nakonfigurovanému poskytovateli umělé inteligence, aby odůvodnil jeho doporučení. Nepřidávejte nic, co byste s ním nesdíleli.',
+    'Provider' => 'Poskytovatel',
+    'AIProviderURLHostNotAllowed' => 'Hostitel „%s“ není na seznamu povolených poskytovatelů AI. Přidejte ho do $ai_allowed_provider_hosts v souboru config.php a poté uložte. (Známí poskytovatelé AI a adresy zpětné smyčky 127.0.0.1 jsou vždy povoleny.)',
+    'AIContextLastSaved' => 'Naposledy uloženo',
+    'AIContextNeverSaved' => 'Zatím neuloženo',
+    'AICtxCardSubtitle' => '21 otázek ve čtyřech oblastech. Čím více zodpovíte, tím přesnější bude každé doporučení.',
+    'AICtxAnswered' => '%1$d z %2$d odpověděl(a)',
+    'AICtxAllOptional' => 'Nepovinné',
+    'AIContextSaving' => 'Ukládání…',
+    'AIContextSaveFailed' => 'Nepodařilo se uložit změny. Zkuste to prosím znovu.',
+    'AISettingsSavedNotReachable' => 'Nastavení umělé inteligence uloženo, ale poskytovatele nelze kontaktovat. Ujistěte se, že je spuštěná a URL adresa je správná.',
+    'AISettingsSavedKeyRequired' => 'Nastavení umělé inteligence uloženo, ale tento poskytovatel vyžaduje před použitím svých funkcí klíč API.',
+    'TestAndSave' => 'Otestujte a uložte',
+    'AICapEnableAll' => 'Povolit vše',
+    'AICapDisableAll' => 'Zakázat vše',
+    'AISettingsSavedConnected' => 'Nastavení AI uloženo – připojení úspěšné.',
+    'AISettingsSavedNotConnected' => 'Nastavení umělé inteligence uloženo, ale test připojení selhal. Zkontrolujte model, klíč a URL.',
+    'AIProviderURLNotOnAllowlist' => 'Tento hostitel není na seznamu povolených poskytovatelů AI SSRF. Před uložením jej přidejte do $ai_allowed_provider_hosts v souboru config.php.',
+    'Connected' => 'Připojeno',
+    'NotConnected' => 'Nepřipojeno',
+    'AICapBulkError' => 'Některé funkce se nepodařilo aktualizovat. Zkuste to prosím znovu.',
+    'QuestionnaireAlreadyCompleted' => 'Tento dotazník již byl vyplněn.',
+    'QuestionnaireDraftError' => 'Chyba při ukládání konceptu. Podrobnosti naleznete v konzoli.',
+
+    // Audit cadence scheduling - Define Test modal (Interval/Calendar schedule redesign)
+    // 'Overdue' duplicates the English of 'ImKpiOverdue' on purpose: that key is
+    // an Incident Management KPI label, and a compliance status pill reusing an
+    // IM-scoped key would couple the two domains for a translator (and break the
+    // moment either wording moves). This is the generic, cross-domain one.
+    'Overdue' => 'Po splatnosti',
+    // Deliberate: the only other key rendering 'Manual' is 'ManualValuation',
+    // an asset-valuation label. Pointing a schedule mode at it would couple two
+    // unrelated domains for translators and break the moment either reworded.
+    'ScheduleManual' => 'Ruční',
+    'ScheduleInterval' => 'Interval',
+    'ScheduleCalendar' => 'Kalendář',
+    'Cadence' => 'Kadence',
+    'CadenceBiweekly' => 'Dvoutýdenní',
+    'CadenceSemiAnnually' => 'Pololetně',
+    'AnchorDate' => 'Datum ukotvení',
+    'UpcomingOccurrences' => 'Nadcházející události',
+    'AuditLeadInDays' => 'Úvodní dny auditu',
+    'SkipOccurrence' => 'Přeskočit',
+    'OverrideDate' => 'Datum přepsání',
+    'Week' => 'Týden',
+    'NoUpcomingOccurrences' => 'V tomto okně nejsou žádné nadcházející události.',
+    'FailedToLoadUpcomingOccurrences' => 'Nepodařilo se načíst náhled nadcházejících událostí.',
+    'AnchorDateMustBeTodayOrLater' => 'Datum ukotvení musí být dnes nebo později. Chcete-li naplánovat datum v minulosti, vytvořte místo toho ruční test.',
+    'InvalidScheduleType' => 'Neplatný typ rozvrhu. Povolené hodnoty: Ruční, Interval, Kalendář.',
+    'Weeks' => 'Týdny',
+    'Months' => 'Měsíce',
+    'Years' => 'Roky',
+    'ScheduleSummaryEvery' => 'Každý {$interval} {$unit}',
+
+    // Define Tests redesign - client-rendered grid (Phase 1, Task 6)
+    'LastResult' => 'Poslední výsledek',
+    'NextDue' => 'Další termín',
+    'DueSoon' => 'Brzy splatné',
+    'Retired' => 'Vyřazeno',
+    'MyTests' => 'Moje testy',
+    'Failing' => 'Selhání',
+    'Untested' => 'Nevyzkoušeno',
+    'ShowRetired' => 'Zobrazit vyřazené',
+    'Tests' => 'Testy',
+    'NoTestsForThisControl' => 'Pro tuto kontrolu zatím nejsou k dispozici žádné testy.',
+    'NoControlsDefinedYet' => 'Zatím nejsou definovány žádné ovládací prvky',
+    'NoControlsDefinedYetBody' => 'Před přidáním testů definujte ovládací prvky v systému Governance.',
+    'NoTestsMatchFilters' => 'Žádné testy neodpovídají vašim filtrům',
+    'NoTestsMatchFiltersBody' => 'Zkuste upravit vyhledávání nebo filtry.',
+    'CouldNotLoadTests' => 'Nepodařilo se načíst testy',
+    'CouldNotLoadTestsBody' => 'Něco se pokazilo. Vaše data jsou v bezpečí – zkuste je obnovit.',
+    'ShowingXToYOfZ' => 'Zobrazeno {$start}–{$end} z {$total}',
+    // Define Tests grid -- SCF-mapping + read-only procedure expand (Phase 1, Task 7)
+    'Reference' => 'Odkaz',
+    'NoFrameworksMapped' => 'Na tento ovládací prvek nejsou namapovány žádné frameworky.',
+    // Define Tests grid -- batch select + retire/delete + quick filters (Phase 1, Task 8)
+    'Retire' => 'Vyřadit',
+    'ReassignTester' => 'Znovu přiřadit testera',
+    'SetSchedule' => 'Nastavit plán',
+    'ConfirmRetireSelectedTests' => 'Zrušit {n} vybraných testů?',
+    'ConfirmDeleteSelectedTests' => 'Smazat {n} vybraných testů? Tuto akci nelze vrátit zpět.',
+    // Define Tests grid -- Coverage toolbar select (Issue 4)
+    'Coverage' => 'Krytí',
+    'CoverageWithTests' => 'Kontroly s testy',
+    'CoverageAllControls' => 'Všechny ovládací prvky',
+    'CoverageGaps' => 'Mezery',
+    // Define Tests insights band (Phase 2, Task 4) -- KPI tile labels + subtitles.
+    // 'Overdue', 'DueSoon', and 'Failing' are reused from the grid's quick-filter
+    // chips above (identical text) rather than duplicated here.
+    'DtTotalTests' => 'Celkový počet testů',
+    'DtCoverageGaps' => 'Mezery v pokrytí',
+    'DtAcrossNControls' => 'Napříč ovládacími prvky {$n}',
+    'DtControlsWithNoTest' => 'Kontroly bez testu',
+    'DtNeedInitiationNow' => 'Potřebuji iniciaci hned',
+    'DtWithinLeadInWindow' => 'V rámci úvodního okna',
+    'DtLastResultFailed' => 'Poslední výsledek selhal',
+    'InvalidTestMethod' => 'Zkušební metoda musí být dotazovací, pozorovací, inspekční nebo opakované provedení!',
+    'TesterCannotBeApprover' => 'Tester nemůže být zároveň uveden jako schvalovatel tohoto testu.',
+    'ApproverNotEligible' => 'Jeden nebo více vybraných schvalovatelů nemá odpovědnost za „schválení testů“.',
+    'TestMethod' => 'Zkušební metoda',
+    'TestMethodInquiry' => 'Dotaz',
+    'TestMethodObservation' => 'Pozorování',
+    'TestMethodInspection' => 'Inspekce',
+    'TestMethodReperformance' => 'Opakované provedení',
+    'Sample' => 'Vzorek',
+    'RequiredEvidence' => 'Požadované důkazy',
+    'Approvers' => 'Schvalovatelé',
+    'AuditLog_TestAuditApproved' => 'Audit „{$test_audit_name}„(ID: {$test_audit_id}) byl schválen uživatelem „{$user_name}„.',
+    'AuditLog_TestAuditRejected' => 'Audit „{$test_audit_name}„(ID: {$test_audit_id}) byl odmítnut uživatelem „{$user_name}„ s komentářem „{$comment}„.',
+    'AuditLog_TestAuditAwaitingApproval' => 'Audit „{$test_audit_name}“ (ID: {$test_audit_id}) byl odeslán k uzavření uživatelem „{$user_name}“ a čeká na schválení. Změny: {$changes}.',
+    'AuditApproved' => 'Audit byl úspěšně schválen.',
+    'AuditRejected' => 'Audit byl úspěšně zamítnut.',
+    'RejectCommentRequired' => 'K odmítnutí auditu je nutný komentář.',
+    'NotAnApproverOfThisAudit' => 'Pro tento audit nejste nakonfigurovaný schvalovatel.',
+    'ApproverCannotBeTester' => 'Schvalovatel nemůže být zároveň testerem tohoto auditu.',
+    'AuditNotAwaitingApproval' => 'Tento audit v současné době nečeká na schválení.',
+    'NotificationAuditAwaitingApprovalTitle' => 'Audit čeká na vaše schválení',
+    'NotificationAuditAwaitingApprovalBody' => 'Audit „{$test_audit_name}“ byl odeslán k uzavření a čeká na vaše schválení.',
+    'NotificationAuditRejectedTitle' => 'Audit zamítnut',
+    'NotificationAuditRejectedBody' => 'Audit „{$test_audit_name}“ byl zamítnut s komentářem: „{$comment}“',
+    'AwaitingApproval' => 'Čeká na schválení',
+    'AwaitingApprovalBannerText' => 'Tento audit byl odeslán k uzavření a před jeho uzavřením čeká na schválení nakonfigurovaným schvalovatelem.',
+    'ReturnedForRework' => 'Vráceno k přepracování',
+    'ReturnedForReworkBannerText' => 'Tento audit byl zamítnut a vrácen k přepracování.',
+    'RejectReason' => 'Důvod odmítnutí',
+    'AreYouSureYouWantToApproveThisAudit' => 'Jste si jisti, že chcete tento audit schválit?',
+    'AtLeastOneControlRequired' => 'Je vyžadován alespoň jeden ovládací prvek.',
+    'DtNCommonAcrossNControls' => '{$common} běžné · {$n} ovládací prvky',
+    'DtUntestedControls' => 'Netestované kontroly',
+    'DtControlsInScopeNoCoverage' => 'Bez krytí',
+    'Passing' => 'Prošlo',
+    'DtLastResultPassed' => 'Poslední výsledek prošel',
+    'AllFamilies' => 'Všechny rodiny',
+    'SearchTestsPlaceholder' => 'Vyhledávání testů, kontrol a frameworků',
+    'AnySchedule' => 'Libovolný rozvrh',
+    'AnyTag' => 'Jakýkoli štítek',
+    'AuditAutoClosedTestRetired' => 'Automaticky uzavřeno jako neprůkazné, protože test byl vyřazen.',
+    'Common' => 'Společný',
+    'ValidatesAcrossMappedFrameworks' => 'Ověřuje napříč mapovanými frameworky',
+    'EditTest' => 'Upravit test',
+    'ControlHasNoTestCoverage' => 'Tento ovládací prvek v rámci rozsahu zatím nemá žádné testovací pokrytí.',
+    'AddTheFirstTest' => 'Přidejte první test',
+    'ApplyCommonTestHint' => 'Na tento ovládací prvek použijte jeden nebo více existujících testů. Každý test si zachovává své aktuální ovládací prvky a stává se společným testem, který bude pokrývat i tento.',
+    'CommonTestApplied' => 'Test aplikovaný na tuto kontrolu.',
+    'CouldNotApplyCommonTest' => 'Test se nepodařilo na tuto kontrolu aplikovat.',
+    'SelectOneOrMoreTests' => 'Vyberte jeden nebo více testů',
+    'CommonTestsApplied' => '{n} testů aplikovaných na tuto kontrolu.',
+    'ApplyCommonTests' => 'Použijte běžné testy…',
+    'History' => 'Historie',
+    'Result' => 'Výsledek',
+    'Approval' => 'Schválení',
+    'ThisTestHasNotBeenRunYet' => 'Tento test ještě nebyl proveden.',
+    'CouldNotLoadTestHistory' => 'Nepodařilo se načíst historii tohoto testu.',
+    'Identity' => 'Identita',
+    'IdentitySectionHint' => 'Jméno, tester a ovládací prvky, které ověřuje',
+    'WhenTheAuditInitiates' => 'Kdy je audit zahájen',
+    'ProcedureAndEvidence' => 'Postup a důkazy',
+    'CommonTestControlsHint' => 'Jeden test může ověřit mnoho ovládacích prvků – běžný test. Otevřením z nabídky „+ Přidat test“ ovládacího prvku jej zde předem vyberete.',
+    'SeparationOfDutiesNote' => 'Oddělení povinností – schvalovatel nemůže být zároveň testerem.',
+    'CommonTestEditScopeHint' => 'Změny platí všude, kde se tento společný test používá.',
+    'Mode' => 'Režim',
+    'AddOrRemove' => 'Přidat nebo odebrat…',
+    'AddOrSearchTags' => 'Přidat nebo vyhledat štítky…',
+    'CreateTagX' => 'Vytvořit „{tag}“',
+    'Archived' => 'Archivováno',
+    'ShowAllTests' => 'Všechny testy',
+    'ShowActiveTests' => 'Aktivní testy',
+    'ShowRetiredTests' => 'Vyřazené testy',
+    'UntestedControls' => 'Netestované kontroly',
+    'OverdueByXDays' => 'Po splatnosti · {n} dní',
+    'OverdueByOneDay' => 'Po splatnosti · 1 den',
+    'DueInXDays' => 'Splatné za {n} dní',
+    'DueTomorrow' => 'Splatné zítra',
+    'DueToday' => 'Splatné dnes',
+    'ScheduledForX' => 'Naplánováno · {date}',
+    'AllTesters' => 'Všichni testeři',
+    'AllStatuses' => 'Všechny stavy',
+    'OnTrack' => 'Na dobré cestě',
+    'NextTestDateDerivedHint' => 'Vypočítáno z data posledního testu a četnosti testu. Nastavte frekvenci pro automatické naplánování nebo ponechte pole prázdné a nastavte si datum sami.',
+    'DueStatus' => 'Stav splatnosti',
+    'AllResults' => 'Všechny výsledky',
+    // Remove a test from one control (Define Tests grid unlink row action)
+    'RemoveFromThisControl' => 'Odebrat z tohoto ovládacího prvku',
+    'RemoveTestFromControl' => 'Odebrání testu z kontroly',
+    'RemoveTestFromControlConfirm' => 'Odebrat „{test_name}“ z {control_name}?',
+    'RemoveTestFromControlStays' => 'Test zůstává na svých {n} dalších ovládacích prvcích. Nic se nesmaže.',
+    'RemoveTestFromControlStaysOne' => 'Test zůstává na svém 1 dalším kontrolním prvku. Nic se nesmaže.',
+    'CannotRemoveTestsOnlyControl' => 'Test musí patřit alespoň k jednomu ovládacímu prvku. Místo toho test zrušte nebo smažte.',
+    'TestRemovedFromControl' => 'Test byl z kontroly vyřazen.',
+    'CouldNotRemoveTestFromControl' => 'Test se nepodařilo odebrat z kontroly.',
+    'TestRemovedFromControlAuditLogMessage' => 'Test „{$test_name}„(ID: {$test_id}) byl odstraněn z kontroly (ID: {$control_id}) uživatelem „{$user}„.',
+    'DeleteTestUsedByNControls' => 'Používají ho ovládací prvky {n} a bude ze všech z nich odstraněn.',
+    'BulkDeleteSharedTestsNote' => '{n} z nich používají jiné ovládací prvky a budou z nich také odstraněny.',
+    'BulkRetireSharedTestsNote' => '{n} z nich používají jiné ovládací prvky a budou i tam vyřazeny.',
+    'BulkDeleteOneSharedTestNote' => 'Jeden z nich je používán jinými ovládacími prvky a bude z nich také odstraněn.',
+    'BulkRetireOneSharedTestNote' => 'Jeden z nich používají jiné ovládací prvky a bude i tam vyřazen.',
+    'CouldNotLoadTest' => 'Tento test se nepodařilo načíst.',
+    'Expand' => 'Rozšířit',
+    'SearchMappings' => 'Vyhledávání frameworků a referencí',
+    'NoMatchingMappings' => 'Žádné mapování neodpovídá tomuto vyhledávání.',
+    'Insights' => 'Přehledy',
+    'ShowInsights' => 'Zobrazit dlaždice s přehledy',
+    'HideInsights' => 'Sbalení dlaždic s přehledy do souhrnného řádku',
+    'ChooseControls' => 'Vyberte ovládací prvky',
+    'UseTheseControls' => 'Použijte tyto ovládací prvky',
+    'SearchControlsPlaceholder' => 'Hledat podle čísla nebo jména',
+    'PickerKeyboardHint' => 'Nahoru/dolů pro pohyb, Enter pro výběr, Esc pro zrušení',
+    'NoControlsMatchFilters' => 'Nic se zde neshoduje. Rozšiřte vyhledávání o krok vlevo nebo vymažte vyhledávání.',
+    'NoControlsSelectedYet' => 'Zatím nic nebylo vybráno.',
+    'AllControls' => 'Všechny ovládací prvky',
+    'AddOrRemoveControls' => 'Přidat nebo odebrat ovládací prvky…',
+    'LastTested' => 'Naposledy testováno',
+    'LastTestDateAnchorHint' => 'Plánování intervalů kotev (toto datum plus frekvence). Jakmile test zaznamená výsledky, mřížka místo toho zobrazí datum nejnovějšího výsledku.',
+    'Filters' => 'Filtry',
+    'ShowFilters' => 'Zobrazit filtry',
+    'HideFilters' => 'Skrýt filtry',
+
+    // App shell — collapsing sidebar / new base design (SR app-shell redesign)
+    'AI' => 'Umělá inteligence',
+    'CollapseSidebar' => 'Sbalit postranní panel',
+    'FooterCopyright' => '© %s SimpleRisk. Všechna práva vyhrazena.',
+    'ExpandSidebar' => 'Rozbalit postranní panel',
+    'WorkflowsCloneConfirm' => 'Klonovat pracovní postup \'{$name}\'?',
+    'WorkflowsDeleteConfirm' => 'Smazat pracovní postup \'{$name}\'? Tuto akci nelze vrátit zpět.',
+    'WorkflowActionFailed' => 'Akce se nezdařila: {$msg}',
+    'ClickToDisable' => 'Kliknutím zakážete',
+    'ClickToEnable' => 'Kliknutím povolíte',
+    'ENABLED' => 'POVOLENO',
+    'DISABLED' => 'ZAKÁZÁNO',
+    'BackToWorkflows' => 'Zpět k pracovním postupům',
+    'BackToHistory' => 'Zpět k historii',
+    'NewWorkflow' => 'Nový pracovní postup',
+    'ViewSteps' => 'Zobrazit kroky',
+    'SaveWorkflow' => 'Uložit pracovní postup',
+    'WorkflowSavedSuccessfully' => 'Pracovní postup byl úspěšně uložen.',
+    'WorkflowNotFound' => 'Pracovní postup nebyl nalezen.',
+    'EditWorkflow' => 'Úprava pracovního postupu: {$name}',
+    'OrganizationContextProfile' => 'Profil kontextu organizace',
+    'AICtxAutoAcceptThreshold' => 'Jaká je prahová hodnota automatického přijetí rizika ve vaší organizaci (částka v dolarech nebo procento ALE)?',
+    'AICtxGrcBudget' => 'Jaký je váš roční rozpočet na GRC/bezpečnost?',
+    'AICtxAuditorPerspective' => 'Z čího pohledu jste primárně auditováni?',
+    'AICtxUnitCurrency' => 'Měna ($)',
+    'AICtxUnitPercentOfAle' => 'Procento ALE (%)',
+    'AICtxFrameworksInUse' => 'Aktuálně používané rámce',
+    'AICtxNoFrameworksInUse' => 'Zatím nenalezeny žádné aktivní frameworky. Přidejte frameworky v sekci Řízení > Mapování frameworků.',
+    'AICtxFromYourData' => 'Z vašich dat',
+    'AICtxAuthoritative' => 'Autoritativní',
+    'AICtxAppetiteNotSet' => 'Není nastaveno',
+    'AICtxAppetiteManageLink' => 'Spravovat v konfiguraci rizik',
+    'AICapControlTestGeneration' => 'Generování kontrolních testů',
+    'AICapControlTestGenerationDesc' => 'Vytváří návrhy kontrolních testů k revizi s využitím mapování rámce kontroly, stávajících testů a výsledků sebehodnocení – nic se nevytvoří, dokud to neschválíte.',
+    'AICapSurfacedControlTestGeneration' => 'Shoda s předpisy – Definování testů',
+    'AIControlTestGenUnavailable' => 'SLUŽBA NENÍ K DISPOZICI: Správce musí tuto funkci povolit v nastavení AI.',
+    'AIControlTestGenInvalidId' => 'CHYBNÝ POŽADAVEK: Je vyžadováno ID pozitivní kontroly.',
+    'AIControlTestGenNotFound' => 'NENALEZEN: Zadaný ovládací prvek nebyl nalezen.',
+    'AIControlTestGenConflict' => 'KONFLIKT: Generování pro tento ovládací prvek je již zařazeno do fronty.',
+    'AIControlTestGenQueued' => 'PŘIJATO: Generování kontrolního testu je zařazeno do fronty.',
+    'AIControlTestGenFailed' => 'VNITŘNÍ CHYBA SERVERU: Nepodařilo se zařadit generování testu řízení do fronty.',
+    'AIControlTestGenCheckFailed' => 'CHYBA: Nelze ověřit ovládací prvek před zařazením do fronty.',
+    'GenerateTestsWithAI' => 'Generování testů pomocí umělé inteligence',
+    'ShowAiSuggestedTests' => 'Testy navrhované umělou inteligencí',
+    'AiSuggested' => 'AI navrhla',
+    'ReviewAndEdit' => 'Zkontrolovat a upravit',
+    'CreateSelected' => 'Vytvořit vybrané',
+    'TestCreatedFromSuggestion' => 'Test vytvořený z návrhu.',
+    'SuggestionDismissed' => 'Návrh zamítnut.',
+    'TestGenerationQueued' => 'Generování testů je zařazeno do fronty.',
+    'Generating' => 'Generování…',
+    'SuggestionDismissFailed' => 'Test byl vytvořen, ale jeho návrh umělé inteligence nebylo možné zavřít. Pokud stále existuje, zavřete jej ručně.',
+    'AICtxAuditorBig4' => 'Velká čtyřka (externí)',
+    'AICtxAuditorBoutique' => 'Butik / regionální (externí)',
+    'AICtxAuditorInternal' => 'Pouze interní audit',
+    'AICtxAuditorSelfAssessed' => 'Sebehodnocení',
+    'AICtxAuditorNotSure' => 'Nejsem si jistý/á',
+    'AICtxAppetiteCautious' => 'Opatrný',
+    'AICtxAppetiteBalanced' => 'Vyrovnaný',
+    'AICtxAppetiteAggressive' => 'Agresivní',
+    'TestGenerationComplete' => 'Kontrolní testy navržené umělou inteligencí jsou připraveny k posouzení.',
+    'TestGenerationStillRunning' => 'Generování testů stále probíhá; koncepty se brzy objeví.',
+    'TestGenerationNoNew' => 'Generování dokončeno – pro tuto kontrolu nebyly navrženy žádné nové testy.',
+    'SearchEntities' => 'Vyhledávání entit',
+    'SearchEntitiesPlaceholder' => 'Rizika vyhledávání, kontroly, zásady, výjimky…',
+    'ShowTypes' => 'Zobrazit typy',
+    'Depth' => 'Hloubka',
+    'Inspector' => 'Inspektor',
+    'Connections' => 'Připojení',
+    'NoConnectionsFound' => 'Pro vybranou entitu nebyla nalezena žádná připojení.',
+    'CouldNotLoadGraph' => 'Nepodařilo se načíst graf konektivity.',
+    'CouldNotSearchEntities' => 'Nepodařilo se vyhledat entity.',
+    'ShowingTopNOfM' => 'Zobrazeno prvních {0} z {1}',
+    'RankedByMaturityGap' => 'Seřazeno podle rozdílu ve vyspělosti',
+    'RankedByRiskScore' => 'Seřazeno podle skóre rizika',
+    'RankedByRecentFailure' => 'Seřazeno podle nejnovějšího selhání',
+    'RankedByReviewDate' => 'Seřazeno podle data další kontroly',
+    'RankedBySeverity' => 'Seřazeno podle závažnosti',
+    'RankedByName' => 'Seřazeno podle jména',
+    'NodeTypeSelfAssessmentResult' => 'Výsledek sebehodnocení',
+    'Relationship' => 'Vztah',
+    'Exception' => 'Výjimka',
+    'DesiredMaturity' => 'Požadovaná zralost',
+    'ApprovalState' => 'Stav schválení',
+    'RelationshipOfType' => '{0} z {1}',
+    // Connectivity Explorer Inspector: labels for enrichment field keys
+    // (ai_context_enrich_fetch(), ai_context_enrich_vulnerabilities()) that
+    // fieldLabel() in connectivity-visualizer.js did not yet cover.
+    'LastDate' => 'Poslední datum',
+    'LastResultDate' => 'Datum posledního výsledku',
+    'PercentComplete' => 'Procento dokončení',
+    'AssessmentDate' => 'Datum posouzení',
+    'NextDate' => 'Další datum',
+    'Number' => 'Číslo',
+    'Grouping' => 'Seskupování',
+    'Hidden' => 'Skrytý',
+    'FirstFound' => 'První nalezeno',
+    'LastFound' => 'Naposledy nalezeno',
+    'Patchable' => 'Opravitelná',
+    'Solution' => 'Řešení',
+    'Breadcrumb' => 'Drobečková navigace',
+    'SelectANodeToInspect' => 'Vyberte uzel pro zobrazení jeho podrobností.',
+    'HiddenUnreachableNodes' => '{0} skrytý(é) uzel(y): již není připojen(é) bez skrytého(ých) typu(ů).',
+    // Connectivity Explorer canvas launchpad (Level-1 type tiles / Level-2
+    // browsable entity list) -- docs/superpowers/specs/2026-07-27-
+    // connectivity-explorer-launchpad.md
+    'BrowsableEntityTypes' => 'Prohledávatelné typy entit',
+    'CountFloor' => '{0}+',
+    'NoBrowsableTypes' => 'Nemáte oprávnění k procházení žádného typu entity.',
+    'AllTypes' => 'Všechny typy',
+    'FilterEntitiesPlaceholder' => 'Filtr…',
+    'NoMatchingEntities' => 'Žádné entity neodpovídají vašemu filtru.',
+    'LoadMore' => 'Načíst další',
+    'Loading' => 'Načítání…',
+    'CouldNotLoadEntityCounts' => 'Nepodařilo se načíst počty entit.',
+    'CouldNotLoadEntities' => 'Nepodařilo se načíst entity.',
+    'ClearGraph' => 'Vymazat graf',
+    // Connectivity Explorer node-type chip label for the 'audit' type. Not
+    // reused from 'TeamType_audit' (same English text, "Audit") -- that key
+    // is scoped to the Team Separation team-type picker, a different feature
+    // whose wording should be free to diverge from this one's.
+    'Audit' => 'Audit',
+    // Queued email send-failure notifications
+    'EmailSendFailedNotificationTitle' => 'Doručení e-mailu se nezdařilo',
+    'EmailSendFailedNotificationBody' => 'Jeden nebo více e-mailů ve frontě se nepodařilo doručit. Zkontrolujte nastavení pošty a poté se podívejte do Monitoru fronty a do protokolu serveru, kde naleznete podrobnosti.',
+    'QuestionnaireShareInvalidEmailAddress' => 'Výsledky dotazníku nelze sdílet s kontaktem, který nemá platnou e-mailovou adresu.',
+    'AssessmentSendInvalidEmailAddress' => 'Hodnocení nelze odeslat na neplatnou e-mailovou adresu.',
+    'AssessmentSentTo' => 'Hodnocení bylo odesláno uživateli „{$email}“.',
+    'AssessmentNotSentNoValidRecipients' => 'Hodnocení nebylo odesláno – nebyla poskytnuta platná e-mailová adresa.',
+    'AssessmentContactUnusableEmailNotificationTitle' => 'Dotazník nebyl odeslán',
+    'AssessmentContactUnusableEmailNotificationBody' => 'Dotazník „{$questionnaire}“ se nepodařilo odeslat kontaktu „{$contact}“, protože tento kontakt nemá v záznamu platnou e-mailovou adresu. Aktualizujte záznam kontaktu, aby se odesílání obnovilo.',
+    'EmailFailureNotificationRetention' => 'Uchovávání oznámení o selhání doručení e-mailu',
+    'EmailFailureNotificationRetentionOutOfRange' => 'Doba uchovávání oznámení o selhání doručení e-mailu musí být mezi {$min} a {$max} dny.',
+    'MailSettingsUpdatedSuccessfully' => 'Nastavení pošty bylo úspěšně aktualizováno.',
+    // Questionnaire audit-trail entries for the API submit/draft paths (SR-1714).
+    // The token form credits the contact; an API caller is an authenticated
+    // SimpleRisk user acting on that contact's questionnaire, so both the
+    // contact and the acting user are named.
+    'QuestionnaireCompletedAuditLogViaApi' => 'Dotazník „{$questionnaire_name}“ pro kontakt „{$contact_name}“ byl vyplněn prostřednictvím API uživatelem „{$user_name}“.',
+    'QuestionnaireDraftAuditLogViaApi' => 'Dotazník „{$questionnaire_name}“ pro kontakt „{$contact_name}“ byl uložen jako koncept prostřednictvím API uživatelem „{$user_name}“.',
+    // Bad-input response for the questionnaire risk-list endpoints, which
+    // previously reported a malformed questionnaire_id as a permission denial.
+    // Mirrors the existing 'MissingOrInvalidTrackingID'.
+    'MissingOrInvalidQuestionnaireID' => 'Chybějící nebo neplatné ID dotazníku.',
+    // POST /api/v2/assessments/questionnaire/result/file response messages.
+    // The `id` path deliberately returns QuestionIdCannotAcceptFile for every
+    // question-level rejection so a sequential tracking id cannot be used to
+    // probe questionnaire structure; the token path returns the specific reason.
+    'QuestionnaireResultNotFoundForTokenOrId' => 'NENALEZENO: Nelze najít výsledek dotazníku se zadaným tokenem nebo ID.',
+    'QuestionIdCannotAcceptFile' => 'CHYBNÝ POŽADAVEK: question_id {$question_id} nemůže přijmout soubor s tímto výsledkem dotazníku',
+    'QuestionIdNotFoundInQuestionnaire' => 'CHYBNÝ POŽADAVEK: question_id {$question_id} nebyl v tomto dotazníku nalezen',
+    'QuestionIdInMultipleTemplates' => 'CHYBNÝ POŽADAVEK: question_id {$question_id} se objevuje ve více šablonách pro tento dotazník',
+    'QuestionIdDoesNotAcceptFileUploads' => 'CHYBNÝ POŽADAVEK: question_id {$question_id} nepřijímá nahrávání souborů',
+    // The Statement of Applicability's two UNVERIFIED implementation states.
+    //
+    // They exist because "we have not checked" is not "it does not work", and an
+    // SoA is ATTESTED — printing "No" for an unverified control is a false
+    // statement against yourself, exactly as printing "Yes" without evidence is
+    // a false statement the other way. Before these keys existed both states
+    // fell through to 'No', which on a framework where most controls carry no
+    // test meant the whole document read "not implemented".
+    //
+    // They are two states rather than one because they are different findings
+    // with different owners: no test defined is a GOVERNANCE gap (nobody decided
+    // how to verify this control), never run is an OPERATIONAL one (somebody
+    // decided, and it was not done).
+    //
+    // WORDING. Both must be unmistakably distinct from the bare 'No' in the same
+    // column. 'Tests never run' rather than 'Never run': in a column headed
+    // "Implemented", the bare phrase reads for a moment as though the CONTROL
+    // was never run, when the subject is its tests.
+    //
+    // BOTH ARE PLURAL, and that is not only style. English takes the plural
+    // after "no" when the expected quantity could exceed one ("no results
+    // found"), and a control normally carries several tests — the singular
+    // implies only ever one was expected. 'Tests never run' is the stronger
+    // case: soa_implemented_for() returns `never_run` only when NOT ONE of the
+    // control's tests has produced a verdict, so the state is inherently about
+    // the whole set. With four tests defined and none run, the singular reads as
+    // one omission rather than a wholesale one.
+    'SoaImplementedNoTestDefined' => 'Žádné testy nejsou definovány',
+    'SoaImplementedNeverRun' => 'Testy se nikdy neběží',
+
+    // The Implemented column's fallback for a token neither sink recognizes.
+    //
+    // DELIBERATELY NOT A VERDICT, and the reason this key exists at all. Both
+    // sinks previously ended in a fallthrough to 'No', so adding a state without
+    // adding its label printed a confident, wrong answer into a compliance
+    // document. Falling through to 'Yes' would be worse. The only safe failure
+    // mode is a value that states nothing about the control — a visible bug
+    // instead of a silent misstatement.
+    'SoaImplementedUnknown' => 'Stav není k dispozici',
+    // How an APPLICABLE control's stored inclusion reason(s) join to its own
+    // freeform justification when it recorded both (spec §4). Reached ONLY when
+    // both halves exist — reasons alone print as the reason list, prose alone
+    // prints verbatim — so this string is punctuation and word order, not prose.
+    // It is a language key rather than a hardcoded separator because a locale
+    // that joins clauses with a colon, a full stop, or right-to-left ordering
+    // must be able to say so; both placeholders have to survive translation.
+    'SoaJustifiedByInclusionReasons' => '{reasons} — {narrative}',
+    // The Set applicability modal's reason field, which became a MULTI-select
+    // when reasons moved to a join table: a control is commonly included (or
+    // excluded) for more than one reason, and the singular 'Reason' the field
+    // used to reuse now under-describes it. 'Reason' is left alone rather than
+    // repointed -- the row drawer and the SoA still print exactly one joined
+    // value under it, and redefining a key changes every surface that reads it.
+    'ApplicabilityReasons' => 'Důvody',
+    // Said once, above a group of checkboxes, rather than implied by the widget.
+    // The old single <select> answered "how many may I pick?" by construction;
+    // a checkbox group does not, and a user who ticks one and stops has made the
+    // SoA less truthful than the one they meant to write.
+    'ApplicabilityReasonsHint' => 'Vyberte všechny důvody, které se vás týkají.',
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // THE STATEMENT OF APPLICABILITY'S MARKERS AND ITS LEGEND (spec §1, §3).
+    // ─────────────────────────────────────────────────────────────────────────
+
+    // THE EVIDENCE COLUMN'S TWO ABSENCES, which are OPPOSITES.
+    //
+    // 'No evidence linked' is a FINDING: the control is in scope, is possibly
+    // claimed implemented, and nothing substantiates it. The em dash below is
+    // the other answer -- the control is excluded, so no evidence is expected
+    // and the absence is correct. Rendering both as an empty cell hides the
+    // first, which is the one an auditor circles.
+    'SoaNoEvidenceLinked' => 'Žádné důkazy nesouvisejí',
+    // PUNCTUATION, NOT PROSE -- the glyph the Evidence cell prints when nothing
+    // is expected. A language key rather than a hardcoded character for the same
+    // reason 'SoaJustifiedByInclusionReasons' is one: a locale that marks "not
+    // applicable" with a different dash, or with a word, must be able to say so.
+    'SoaEvidenceNotExpected' => '—',
+    // Whether the evidence a test DECLARED it requires actually arrived with the
+    // result. A stronger claim than a pass/fail alone, and few SoA tools make it.
+
+    // THE REMEDIATION BLOCK -- what is being done about a control that reads
+    // Partial or No. The SoA points AT the risk treatment plan (clause 6.1.3(e))
+    // rather than becoming one.
+    'SoaRemediation' => 'Sanace',
+    // THE MOST SERIOUS THING THAT BLOCK CAN FIND: the test failed and it is
+    // linked to no risk, so no treatment plan traces back to it. Dropping such a
+    // row for want of a risk to join to would render it as a blank cell, which
+    // reads as "nothing to report".
+    'SoaRemediationUnplanned' => 'Žádné riziko spojené s',
+
+    // THE LEGEND. Required in both variants and every export format, because six
+    // implementation states plus three markers is more nuanced than the
+    // Yes/No/Partial an auditor expects, and an undefined vocabulary invites the
+    // reader to guess unfavourably.
+    'SoaLegendTitle' => 'Jak číst toto prohlášení',
+    'SoaLegendYes' => 'Každý test definovaný pro tento ovládací prvek prošel při jeho posledním spuštění.',
+    'SoaLegendPartial' => 'Testy kontrolní skupiny se neshodují: alespoň jeden prošel a alespoň jeden selhal nebo nevedl k žádnému výsledku.',
+    'SoaLegendNo' => 'Žádný test této kontroly neprošel při jejím posledním spuštění a alespoň jeden selhal.',
+    // The two unverified states are DIFFERENT FINDINGS WITH DIFFERENT OWNERS,
+    // and the labels alone do not quite carry that -- so the legend spells it
+    // out. This is the distinction the whole six-state set exists for.
+    'SoaLegendNoTestDefined' => 'Pro tento ovládací prvek nebyl definován žádný test, takže jeho fungování nebylo nikdy ověřeno. Toto neznamená, že ovládací prvek chybí nebo že selhává – pouze to, že toto tvrzení to nedemonstruje. Mezera v řízení: nikdo nerozhodl, jak bude tento ovládací prvek kontrolován.',
+    'SoaLegendNeverRun' => 'Pro tento ovládací prvek existují testy, ale žádný z nich nebyl nikdy spuštěn, takže jeho fungování zde není demonstrováno. Toto neznamená, že ovládací prvek chybí nebo že selhává. Provozní mezera: kontroly byly rozhodnuty a nebyly provedeny.',
+    'SoaLegendNotApplicable' => 'Ovládací prvek je vyloučen z rozsahu tohoto frameworku, takže nemá žádný implementační stav.',
+    // The one most in need of explaining: with nothing to define it, this reads
+    // as an admission about the control rather than as what it is.
+    'SoaLegendUnknown' => 'SimpleRisk nedokázal označit zaznamenaný stav, takže implementace zde není demonstrována. Jedná se o softwarovou chybu a o ovládacím prvku to vůbec nic neříká – ani to, že funguje, ani to, že nefunguje.',
+    'SoaLegendOverdue' => 'Uvedený výsledek stále platí, ale alespoň jeden z testů, které za ním stojí, už má za sebou další datum testování. Důkazy jsou zastaralé.',
+    'SoaLegendNoEvidence' => 'Kontrola je v rozsahu a nic, co by ji dokládalo, nebylo propojeno: žádný potvrzený dokument ani žádný test, který by přinesl výsledek.',
+    'SoaLegendEvidenceNotExpected' => 'Neočekávají se žádné důkazy, protože daná kontrola je z rozsahu zkoumání vyloučena.',
+    'SoaLegendUnplanned' => 'Neúspěšný test, který není spojen s žádným rizikem, takže k němu nevede žádný léčebný plán.',
+
+    // THE TWO VARIANTS, chosen on the launcher before the document is generated
+    // and PRINTED ON ITS COVER. A Statement of Applicability is a controlled
+    // document: two of them for the same framework that show different things,
+    // with nothing on either to say which is which, is a document nobody can
+    // file.
+
+    // THE THREE DETAILED-ONLY COLUMNS.
+    // What those three columns say instead of nothing. A blank cell in an audit
+    // document reads as a formatting artefact; "Not recorded" is a fact the
+    // reader can act on.
+
+    // THE BROWSER PRINT ROUTE. Beside the two downloads on the launcher, and the
+    // only PDF route for a framework too large for the server-side writer.
+    // Shown in place of "Download as PDF" when the chosen framework is above
+    // SOA_EXPORT_PDF_MAX_CONTROLS. The affordance is absent rather than
+    // disabled, so this sentence is what tells the reader the absence is
+    // deliberate and what to do instead.
+    // The footer of every printed page. {page} and {pages} are substituted with
+    // the browser's own page counters, so the two tokens must both survive
+    // translation -- but their ORDER and the words around them are the
+    // translator's, which is why this is one string and not "Page" + "of".
+    'SoaPrintPageNumber' => 'Strana {page} z {pages}',
+
+    // THE ONE PDF AFFORDANCE on the statement-of-applicability launcher, beside
+    // 'DownloadAsXLSX'. It replaces the pair that used to sit there --
+    // 'SoaPrintToPdf' and 'DownloadAsPDF' -- because a Statement of Applicability
+    // is a controlled document and two PDF buttons let two people hand an auditor
+    // two different-looking PDFs of the same statement.
+    //
+    // JUST "PDF", AND DELIBERATELY SO. Below SOA_EXPORT_PDF_MAX_CONTROLS the
+    // button downloads a server-rendered file and above it the browser writes
+    // one, but that is a mechanism and not a choice the reader has to make. A
+    // label that named the mechanism ("Print to PDF" / "Download as PDF") would
+    // put the difference back in front of them.
+    //
+    // 'SoaPrintToPdf' and 'SoaPdfTooLargeHint' above are LEFT IN PLACE with no
+    // caller: 39 locales carry them, and this file is append-only precisely so a
+    // customer running a custom lang.<locale>.php can reconcile it with a tail
+    // diff.
+    'SoaPdf' => 'PDF',
+
+    // THE OTHER TWO ACTIONS IN THAT SAME ROW, shortened to match it.
+    //
+    // The row read "Open in browser" / "Download as XLSX" / "PDF", which put a
+    // verb on two of three actions and made the odd one out look like an
+    // abbreviation of something longer. The row's own context supplies the
+    // verbs -- these are the things you can DO with the framework you just
+    // chose -- so they carried no information and cost the reader a comparison.
+    // 'SoaPdf' is short because naming its mechanism would be dishonest (above
+    // SOA_EXPORT_PDF_MAX_CONTROLS it opens a print view rather than downloading
+    // a file), and the shortest of the three is the one that has to be right.
+    //
+    // NOT the generic 'Open' at line ~1021: that key lives among 'Mitigated' /
+    // 'Reviewed' and is the risk-status ADJECTIVE -- fr "Ouvert", de "Offen" --
+    // so reusing it would label a button with a state rather than an action in
+    // most of the 39 locales.
+    //
+    // 'SoaOpenInBrowser' above is LEFT IN PLACE with no caller, for the same
+    // reason 'SoaPrintToPdf' is: the locales carry it and this file is
+    // append-only so a customer's custom lang.<locale>.php reconciles with a
+    // tail diff. 'DownloadAsXLSX' keeps a caller either way -- the Assessments
+    // Extra's questionnaire results still use it.
+    'SoaOpen' => 'Otevřený',
+    'SoaXlsx' => 'XLSX',
+    // ---- The locked-affordance treatment -------------------------------------
+    // SHARED COPY, not chooser copy. SimpleRisk now SHOWS what's possible and
+    // MARKS what's out of reach because it isn't licensed, rather than hiding
+    // it -- so these strings appear both as a menu row's explanation (Define
+    // Control Frameworks' "+ Add framework" chooser) and beside a disabled
+    // toolbar button (the Statement of Applicability's PDF/XLSX exports). Each
+    // one is worded to read correctly in BOTH places, which is why none of them
+    // starts with "This route" or "This button".
+    //
+    // 'LockedAffordanceBadge' duplicates the English of 'AICapStateLocked'
+    // rather than reusing it: that key sits in the AI Capabilities Catalog's
+    // block and is scoped to a capability's state, and translators work from
+    // the key's neighbourhood as much as from its value.
+    'LockedAffordanceBadge' => 'Zamčeno',
+    // The two SCF steps before it can be switched on. admin/register.php serves
+    // both -- it is the registration form AND where the per-Extra download
+    // buttons render -- so these differ in what they say, not where they go.
+    'UnlockRegisterInstanceNote' => 'Zaregistrujte tuto instanci a získejte rozhraní Secure Controls Framework.',
+    'UnlockRegisterInstanceLink' => 'Zaregistrujte SimpleRisk',
+    'UnlockDownloadScfNote' => 'Tato instance je registrovaná. Stáhněte si framework Secure Controls Framework, abyste ji mohli používat.',
+    'UnlockDownloadScfLink' => 'Stáhněte si to',
+    'UnlockActivateScfNote' => 'Systém Secure Controls Framework je stažen, ale není zapnutý.',
+    'UnlockActivateScfLink' => 'Zapněte to',
+    // Import-Export is a paid Extra, so "not installed" is an upsell rather
+    // than a registration prompt. Deliberately a bare capability sentence: it
+    // has to sit under a menu row and next to an export button equally well.
+    'RequiresImportExportExtra' => 'Vyžaduje doplňkovou funkci Import-Export.',
+    'UnlockImportExportLink' => 'Podívejte se, co to přidává',
+    'UnlockActivateImportExportNote' => 'Doplněk Import-Export je nainstalován, ale není zapnutý.',
+    'UnlockActivateImportExportLink' => 'Zapněte to',
+    // Shown instead of any of the above to a user who is not an administrator:
+    // every unlock step lives on a check_admin page, so they get the half that
+    // is useful to them -- that the capability exists, and who to ask -- and no
+    // link that would only bounce them.
+    'UnlockNeedsAdministrator' => 'Toto může nastavit administrátor.',
+    // API date parsing. {$field} is the request field name (next_date, last_date,
+    // test_date); {$format} is this instance's configured display date format.
+    'InvalidSubmittedDate' => 'Hodnota {$field} není platné datum. Odešlete ji ve formátu RRRR-MM-DD nebo ve formátu data pro tento případ ({$format}).',
+    // Companion to InvalidSubmittedDate, for a value that matches the expected
+    // shape but names a day that does not exist (February 31st, month 13).
+    // Saying "submit it as MM/DD/YYYY" there would repeat what the caller did.
+    // {$value} is the submitted value, echoed back truncated.
+    'ImpossibleSubmittedDate' => 'Hodnota {$field} „{$value}“ není skutečné datum v kalendáři. Zkontrolujte den a měsíc – tato instance přečte data jako {$format}.',
+    // The Statement of Applicability's merged verification column. Replaces three
+    // separate headings (Implemented / Evidence / Review Cadence) with the one
+    // question all three answer: how do we know this control is working?
+    // The two appendices printed after the register. Justifications are truncated
+    // in the row and given in full here; remediation plans live here rather than
+    // in the table because ISO 27001 keeps the SoA (6.1.3(d)) and the risk
+    // treatment plan (6.1.3(e)) as separate artifacts.
+    'SoaAppendixJustifications' => 'Dodatek A – Odůvodnění',
+    'SoaAppendixRemediation' => 'Dodatek R – Plány nápravných opatření',
+    // Appendix E carries the WORDING of each test's evidence requirement. The row
+    // keeps only whether that evidence arrived, which is the finding; the wording
+    // is reference material and was the bulkiest thing in the Verification cell.
+    'SoaRequiredEvidenceSupplied' => 'požadované důkazy předložené',
+    'SoaRequiredEvidenceNotSupplied' => 'požadované důkazy nebyly předloženy',
+    // The one scheduling fact the SoA prints: the soonest date any of a control's
+    // tests is next due. Replaces a per-test "Manual — Next Test Date: ..." line,
+    // whose schedule type belongs on Define Tests and whose date is now on each
+    // test's own evidence bullet.
+    // The two dates on a test's evidence bullet. LABELLED, because two bare dates
+    // side by side are ambiguous in a way one is not.
+    // SINGULAR document-type labels for one piece of design evidence. SimpleRisk's
+    // existing keys are the plural tab names, which would read "Access Control
+    // Standard (Standards)".
+    'SoaEvidencePolicy' => 'Zásad',
+    'SoaEvidenceStandard' => 'Norma',
+    'SoaEvidenceProcedure' => 'Postup',
+    'SoaEvidenceGuideline' => 'Pokyny',
+    // ── The legend, grouped by column (SOA_LEGEND_GROUPS, includes/soa.php) ──
+    // The Applicability column's three values. These were never in the legend,
+    // so an auditor met "Inherited" -- a word with no meaning outside SimpleRisk
+    // -- with nothing to look it up in.
+    'SoaLegendApplicable' => 'Kontrola spadá do rozsahu působnosti tohoto rámce a organizace je zodpovědná za její provozování.',
+    // DISTINCT from 'SoaLegendNotApplicable', which defines the "N/A" that appears
+    // in the Implementation Status column. This one is the DECISION to exclude;
+    // that one is the consequence for the status.
+    'SoaLegendApplicabilityNotApplicable' => 'Ovládací prvek byl vyloučen z rozsahu působnosti tohoto rámce. Sloupec odůvodnění zaznamenává proč a kdo rozhodl.',
+    'SoaLegendInherited' => 'Kontrola je v rozsahu působnosti, ale je provozována třetí stranou – poskytovatelem cloudových služeb, mateřskou organizací, externě zadanou funkcí – nikoli touto organizací. Jméno poskytovatele je uvedeno vedle odůvodnění.',
+    // The Evidence column's four bullet glyphs. Load-bearing since the visible
+    // result word was dropped from pass and fail bullets, and until now defined
+    // nowhere at all.
+    'SoaLegendEvidencePass' => 'Test tohoto ovládacího prvku zaznamenal při posledním spuštění úspěšný výsledek. Datum vedle něj udává, kdy byl spuštěn.',
+    'SoaLegendEvidenceFail' => 'Test této kontroly při posledním spuštění zaznamenal selhání. Dodatek R obsahuje plán léčby, pokud existuje.',
+    'SoaLegendEvidenceInconclusive' => 'Test této kontroly byl proveden a nedošel k žádnému výsledku. Stejná značka se používá pro výsledek, který tento dokument nerozpoznává, a v takovém případě je samotný výsledek vytištěn vedle něj.',
+    // The TERM beside the § glyph. Not a document type -- the four types
+    // (Policy, Standard, Procedure, Guideline) are printed per item; this names
+    // the CATEGORY of evidence a document is.
+    'SoaEvidenceDesignDocument' => 'Návrhový dokument',
+    'SoaLegendEvidenceDocument' => 'Dokument o řízení potvrzený jako důkaz pro tuto kontrolu – spíše její návrh než fungování. Dokument neobsahuje žádný verdikt, a proto není označen fajfkou.',
+    // The XLSX export's first worksheet tab. The workbook's other four tabs reuse
+    // headings that already exist ('How to read this statement', 'Statement of
+    // Applicability', and the two appendix headings); the cover had no name of its
+    // own because it used to be the top of a single sheet.
+    //
+    // KEEP IT SHORT. Excel caps a worksheet name at 31 characters and
+    // soa_export_sheet_name() truncates rather than failing the export, so a long
+    // translation loses its tail on the tab.
+    'SoaSheetCover' => 'Titulní stránka',
+
+    'SearchFrameworks' => 'Vyhledávací frameworky',
+    'SearchControls' => 'Ovládací prvky vyhledávání',
+    'AddFramework' => 'Přidat rámec',
+    'Applicability' => 'Použitelnost',
+    'AnyFamily' => 'Jakákoli rodina',
+    'AnyOwner' => 'Jakýkoli vlastník',
+    'AnyClass' => 'Jakákoli třída',
+    'AnyPhase' => 'Jakákoli fáze',
+    'AnyPriority' => 'Jakákoli priorita',
+    'AnyType' => 'Jakýkoli typ',
+    'AnyStatus' => 'Jakýkoli stav',
+    'SelectAllN' => 'Vybrat vše {n}',
+    'Classification' => 'Klasifikace',
+    'Placement' => 'Umístění',
+    'OwnershipAndMaturity' => 'Vlastnictví a zralost',
+    'MappingsAndGuidance' => 'Mapování a pokyny',
+    'DeleteFrameworkTitle' => 'Smazat framework \'{$name}\'?',
+    'DeleteControlTitle' => 'Smazat ovládací prvek \'{$name}\'?',
+    'DeleteControlsTitle' => 'Smazat ovládací prvky {$n}?',
+    'DeleteCannotBeUndone' => 'To se nedá vrátit zpět.',
+    'DeleteFrameworkConsequence' => 'Tím se odstraní framework a všechna jeho mapování ovládacích prvků.',
+    'DeleteControlConsequence' => 'Tím se odebere ovládací prvek z každého frameworku, na který je namapován.',
+    'DeleteControlsConsequence' => 'Tím se odstraní každý vybraný ovládací prvek z každého frameworku, na který je namapován.',
+    // Task 9: empty states (design-system.md §10) -- the four intents on
+    // Define Control Frameworks. Reuses existing keys where the copy already
+    // fits exactly (AddControl, AddFramework, ClearFilters, Retry,
+    // NoControlsDefinedYet, NoTestsMatchFiltersBody, CouldNotLoadTestsBody,
+    // RegisterYourInstance, GoToSCF, ImportExportExtra) -- only the strings
+    // with no existing match are added below.
+    'NoControlsMatch' => 'Žádné ovládací prvky neodpovídají vašim filtrům',
+    'CouldNotLoadControls' => 'Nepodařilo se načíst ovládací prvky',
+    'ControlsYouAddWillAppearHere' => 'Ovládací prvky, které přidáte, se zobrazí zde.',
+    'NoFrameworksYet' => 'Zatím žádné frameworky',
+    'FrameworksYouAddWillAppearHere' => 'Zde se zobrazí frameworky, které přidáte nebo importujete.',
+    'CouldNotLoadFrameworks' => 'Nepodařilo se načíst frameworky',
+    // Task 9 review fix: the framework rail's own "no results" intent, shown
+    // when the user has explicitly switched the status dropdown away from
+    // Active and that status has nothing (distinct from "No frameworks yet",
+    // which is reserved for the default Active status where the endpoint
+    // can't yet tell "no frameworks at all" from "none active").
+    'NoFrameworksMatchFilter' => 'Tomuto stavu neodpovídají žádné frameworky.',
+    'ViewActiveFrameworks' => 'Zobrazit aktivní frameworky',
+    // Task 10: Define Control Frameworks insights band (governance/index.php)
+    // -- KPI tile labels/subtitles. 'Controls', 'Pass', 'Fail', 'NotTested'
+    // already exist and are reused as label keys for their tiles.
+    'BelowTarget' => 'Pod cílovou hodnotou',
+    'Excluded' => 'Vyloučeno',
+    'FwInScope' => 'V rozsahu',
+    'FwLastTestPassed' => 'Poslední test prošel',
+    'FwLastTestFailed' => 'Poslední test selhal',
+    'FwNoEvidence' => 'Použitelné, žádné důkazy',
+    'FwMaturityUnderDesired' => 'Zralost pod požadovanou úrovní',
+    'FwScopeAFramework' => 'Vymezení rámce pro rozhodnutí',
+    'FwNotApplicableOrInherited' => 'Nepoužitelné nebo zděděné',
+    // Task 22: framework rail search (governance/index.php's #sr-fw-search,
+    // wired client-side in governance-frameworks.js). Reuses the shipped
+    // "no results" empty-state tile (#sr-fw-filtered, Task 9) rather than
+    // inventing a fourth rail empty state -- only the title and action swap
+    // depending on whether a status filter or a search narrowed the list to
+    // nothing; NoTestsMatchFiltersBody already covers both as body copy.
+    'NoFrameworksMatchSearch' => 'Žádné frameworky neodpovídají vašemu vyhledávání',
+    'ClearSearch' => 'Vymazat vyhledávání',
+    // Task 24: Clone control pre-fills the Add Control modal from the source
+    // control (governance-frameworks.js's openControlForClone()) rather than
+    // creating a duplicate outright, so the modal needs to say plainly which
+    // control it was cloned from -- the reviewer's core complaint about an
+    // earlier one-click version of this feature was not knowing what was
+    // cloned. {$name} follows the same client-side formatTemplate()
+    // substitution ShowingXToYOfZ/NSelected already use on this page.
+    'ClonedFromControlNotice' => 'Naklonováno z „{$name}“. Zkontrolujte níže uvedená pole a poté klikněte na Uložit.',
+    // Task 24 review follow-up: the banner alone left the modal titled "New
+    // Control" over pre-populated fields -- "it doesn't prompt or anything
+    // so the user doesn't know what was cloned" (Josh) -- which reads as a
+    // bug, not a feature. Retitling #control--add-title to this (governance-
+    // frameworks.js's show.bs.modal delegate for #control--add) makes the
+    // clone unambiguous at a glance; NewControl is restored for a plain add.
+    'CloneOfControlTitle' => 'Klon „{$name}“',
+    // Task 27: the framework rail's SCF-origin chip (governance-frameworks.js's
+    // railRow()) -- shown only for frameworks created via the ComplianceForge
+    // SCF Extra's authoritative-source import (get_scf_origin_framework_ids(),
+    // includes/governance.php). SCF is the badge text itself; ScfOriginHint is
+    // its title/tooltip.
+    'SCF' => 'SCF',
+    'ScfOriginHint' => 'Z rámce zabezpečených kontrol (SCF)',
+    // Task 34: the Maturity filter facet's placeholder on the Define Control
+    // Frameworks filter sheet (governance-frameworks.js's ensureFilterSheet()),
+    // matching the AnyFamily/AnyOwner/AnyClass/... set above. The facet's three
+    // OPTIONS reuse the existing BelowMaturity/AtMaturity/AboveMaturity keys --
+    // the same labels the governance dashboard's maturity-gap widgets already
+    // carry -- and the column chip renders those same three strings, so the
+    // filter and the cell can never read differently.
+    'AnyMaturity' => 'Jakákoli zralost',
+    // Task 46: accessible name for the control table's pager landmark
+    // (governance-frameworks.js's renderPager()). The pager's own buttons
+    // reuse the existing Previous/Next keys Define Tests' pager already
+    // carries; only the <nav> label is new, and it names WHICH table's pager
+    // it is because the Define Control Frameworks page has two lists on it.
+    'ControlsPagination' => 'Ovládá stránkování',
+    // Task 14: the Applicability column's state chip (governance-frameworks.js's
+    // renderApplicability()), the matching filter facet (its three option labels
+    // reuse these same three keys) and its "Any applicability" placeholder.
+    //
+    // The three states are PREFIXED rather than named 'Applicable'/
+    // 'NotApplicable'/'Inherited' because 'NotApplicable' already exists above
+    // as the ABBREVIATION 'N/A' -- the self-assessment answer chip and three
+    // reporting charts render it -- and redefining that key to the spelled-out
+    // phrase this column needs would silently change all four of those
+    // surfaces. The prefix also keeps the trio recognisable as one family.
+    //
+    // The column HEADER and the facet's accessible name reuse the existing
+    // 'Applicability' key, and the drawer's record reuses 'Reason', 'Provider'
+    // and 'Justification' -- all four already carry exactly the right string.
+    'ApplicabilityApplicable' => 'Použitelné',
+    'ApplicabilityNotApplicable' => 'Nevztahuje se',
+    'ApplicabilityInherited' => 'Zděděno',
+    'AnyApplicability' => 'Jakákoli použitelnost',
+    // The drawer's applicability record: who recorded the decision and when.
+    // Both are attribution for an audited decision a customer may have to
+    // defend years later, which is why the drawer names them at all.
+    'ApplicabilityDecidedBy' => 'Rozhodl/a',
+    'ApplicabilityDecidedOn' => 'Rozhodnuto o',
+    // The framework-level Statement of Applicability card in the Add/Edit
+    // framework modals (display_framework_soa_card(), includes/governance.php).
+    // These two fields are what ISO/IEC 27001:2022 clause 6.1.3(d) needs on an
+    // SoA cover: the scope the framework is certified against, and how inclusion
+    // was determined for the controls that are simply applicable.
+    //
+    // 'IsmsScopeStatement' rather than a bare 'ScopeStatement' because "scope"
+    // is already overloaded across SimpleRisk (assessment scope, audit scope,
+    // risk scope); the ISMS prefix is what an ISO practitioner calls this exact
+    // field and keeps it from being reused for an unrelated one.
+    'StatementOfApplicability' => 'Prohlášení o použitelnosti',
+    'IsmsScopeStatement' => 'Prohlášení o rozsahu',
+    'IsmsScopeStatementHint' => 'Rozsah, pro který je tento rámec certifikován. Zobrazuje se na titulní straně dokumentu SoA.',
+    'DefaultInclusionJustification' => 'Výchozí odůvodnění zahrnutí',
+    'DefaultInclusionJustificationHint' => 'Používá se pro příslušné kontroly bez propojených rizik. Uveďte hnací sílu, nikoli rámec.',
+    // THE DEFAULT SENTENCE, in all three of its roles: the create form seeds the
+    // textarea with it, the Edit form shows it as a placeholder, and
+    // soa_framework_default_justification() (includes/soa.php) substitutes it at
+    // read time for a framework that has none. One key, because a reader must not
+    // be able to tell a stored default from a fallen-back one, and because three
+    // keys holding the same sentence is three chances for a translator to make
+    // them disagree. The name predates the seeding decision (Task 67) and is kept
+    // rather than churned through Crowdin for 39 locales.
+    //
+    // It names the DRIVER (the risk assessment) rather than the framework:
+    // "included because it is part of this framework" is circular, and ISO 6.1.3
+    // derives controls from risk treatment, using Annex A afterwards only as a
+    // completeness cross-check.
+    //
+    // It was a placeholder ONLY until Task 67, so that an unreviewed sentence
+    // could not reach a customer's SoA by inaction. Measured, that produced the
+    // opposite failure: 19 of 20 frameworks left the field NULL and the SoA's
+    // Justification column came out BLANK for every applicable control with no
+    // linked risks -- the finding an SoA is most often failed on, and one a
+    // boilerplate sentence does not attract.
+    'DefaultInclusionJustificationPlaceholder' => 'Určeno na základě posouzení rizik informační bezpečnosti organizace a uchováváno jako nezbytná kontrola.',
+    // Task 15: bulk-setting applicability from the control table's selection bar
+    // (#applicability--set, governance/index.php + governance-frameworks.js).
+    //
+    // The action's own label and the modal's one section. 'Applicability',
+    // 'Reason', 'Provider', 'Justification', 'Save' and 'Cancel' already exist
+    // and are reused; only the strings with no existing home are added here.
+    'SetApplicability' => 'Nastavit použitelnost',
+    'ApplicabilityDecision' => 'Rozhodnutí',
+    // The amber scope note, in two sentences the page assembles separately
+    // because they answer two different questions: WHICH framework the decision
+    // is scoped to, and WHICH controls are about to receive it. The second one
+    // has two spellings, because the header checkbox selects the current PAGE
+    // while "Select all N" escalates to the whole filtered result set -- the two
+    // genuinely differ once the table pages, and a note that blurred them would
+    // let the user write 1,535 decisions believing they had written 25.
+    'ApplicabilityScopeNote' => 'Toto rozhodnutí platí pouze v rámci "{$framework}". Stejný ovládací prvek může zůstat použitelný i v jiném frameworku.',
+    'ApplicabilityAppliesToSelected' => 'Bude zaznamenáno pro ovládací prvek {$n} vybraný na této stránce.',
+    'ApplicabilityAppliesToAllFiltered' => 'Bude zaznamenáno pro všechny ovládací prvky {$n} odpovídající aktuálním filtrům, včetně těch na jiných stránkách.',
+    // Per-state hints under the segmented control. The "applicable" one is the
+    // load-bearing sentence of the whole modal, and the SoA audit-readiness work
+    // rewrote it: an applicable control MAY now carry its own reasons and
+    // justification (ISO/IEC 27001 clause 6.1.3(d) asks for one per control, for
+    // inclusion as much as for exclusion), and leaving both empty is what falls
+    // back to the framework's default inclusion justification. The old sentence
+    // -- "this removes any recorded decision. No justification is needed." --
+    // is now false in both halves.
+    'ApplicabilityApplicableHint' => 'V rozsahu tohoto rámce. Důvod a odůvodnění jsou volitelné; pokud obě pole ponecháte prázdná, použije se výchozí odůvodnění zahrnutí rámce.',
+    'ApplicabilityNotApplicableHint' => 'Vyloučení kontroly z rozsahu tohoto rámce. Je vyžadován jak důvod, tak písemné odůvodnění.',
+    'ApplicabilityInheritedHint' => 'Tuto kontrolu za vás provádí někdo jiný. Jmenujte ho a řekněte, co dělá.',
+    'ApplicabilityNarrativeHint' => 'Uvádí se v Prohlášení o použitelnosti. Popište, co by auditor potřeboval k přijetí rozhodnutí.',
+    'ApplicabilityProviderHint' => 'Organizace, která provádí řízení: poskytovatel cloudových služeb, poskytovatel spravované služby, mateřská společnost.',
+    'ChooseAReason' => 'Vyberte důvod',
+    'ApplicabilityNoReason' => 'Žádný důvod',
+    // Result toasts. Both interpolate a COUNT taken from the API response and
+    // nothing else -- no submitted text is ever reflected into a toast, which
+    // toastr renders as HTML.
+    'ApplicabilitySetResult' => 'Použitelnost aktualizována pro {$n} ovládacích prvků.',
+    'ApplicabilityClearResult' => 'Použitelnost resetována na použitelnou pro {$n} ovládacích prvků.',
+    // Bulk control delete (Task 54, corrected Task 55). Deleting a control is
+    // final either way the delete engine implements it: a control with test
+    // history is soft-deleted (framework_controls.deleted = 1) to keep test
+    // history intact, a control with no tests is removed outright -- but
+    // nothing anywhere flips that flag back, so from the user's side there is
+    // no "kept" case, only "deleted, and its test history survives for audit
+    // purposes." Every sentence therefore leads with the same irreversible
+    // warning; the only thing that varies is whether an audit-history clause
+    // is appended, and that clause is omitted entirely rather than printed
+    // with a count of zero -- "0 are retained for audit history" reads as a
+    // warning about something that is not going to happen, and on a delete
+    // confirmation that is exactly the kind of noise that trains people to
+    // stop reading. Every {$...} is a count from the API response; no user
+    // text is ever interpolated, which matters because toastr renders HTML.
+    'DeleteControlsPreviewChecking' => 'Kontrola, co bude smazáno...',
+    'DeleteControlsPreviewSplit' => '{$n} kontrol bude smazáno. Tuto akci nelze vrátit zpět. Výsledky testů pro {$m} z nich jsou uchovány pro historii auditu.',
+    'DeleteControlsPreviewKeptOnly' => 'Všechny ovládací prvky {$n} budou smazány. Tuto akci nelze vrátit zpět. Výsledky testů jsou uchovávány pro historii auditu.',
+    'DeleteControlsPreviewRemovedOnly' => '{$n} ovládacích prvků bude smazáno. Tuto akci nelze vrátit zpět.',
+    'DeleteControlsPreviewNone' => 'Není co smazat: vybraný(é) ovládací prvek(y) již neexistuje(í).',
+    'ControlsDeletedResult' => '{$n} ovládacích prvků smazáno.',
+
+    // The Add/Edit framework modal's Status field. The label reuses the existing
+    // 'Status' key -- the same word the rail's Active/Inactive/All filter already
+    // uses -- so only the explanatory hint is new. It says the two things a user
+    // cannot see from the control itself: that Inactive is the NON-destructive way
+    // to retire a framework (unlike Delete, which cannot be undone), and that the
+    // change cascades through the hierarchy, which is what update_framework_status()
+    // has always done and is genuinely surprising when a parent is deactivated.
+    'FrameworkStatusHint' => 'Neaktivní frameworky si zachovávají všechny své ovládací prvky a mapování, ale jsou skryté ve výchozím seznamu frameworků a vynechány z řídicího panelu governance. Deaktivace frameworku deaktivuje také všechny frameworky pod ním; aktivace jednoho frameworku aktivuje také jeho nadřazené frameworky.',
+
+    // Task 60: the same #applicability--set modal, opened from ONE control's row
+    // action instead of the selection bulk bar. The button's own label reuses
+    // 'SetApplicability'; these two exist because the modal now has to say which
+    // of the two it is acting on, and both spellings must be unambiguous.
+    //
+    // The title names the specific object (design-system.md §8) and the note
+    // says "only", because the dangerous reading is the silent one: with rows
+    // ticked -- or with "Select all N filtered" in force -- a modal that said
+    // nothing would let a click the user believed applied to one row be read as
+    // applying to every control in the framework. Naming the control in both
+    // places is what makes the narrower scope visible rather than assumed.
+    // Corrected in Task 63. This spelling used to end "...only, whatever else is
+    // selected", which was printed on every row-action open whether or not
+    // anything else WAS selected -- a dangling absolute with no antecedent, so
+    // it read as a sentence that had been cut off. It is now the plain form, and
+    // the reassurance about a competing selection moved to
+    // 'ApplicabilityAppliesToControlNotSelection' below, which is printed only
+    // when there is a competing selection to reassure anyone about.
+    'SetApplicabilityForControl' => 'Nastavit použitelnost: {$name}',
+    'ApplicabilityAppliesToControl' => 'Bude zaznamenáno pouze pro „{$name}“.',
+
+    // Task 17: the Statement of Applicability report itself
+    // (reports/statement_of_applicability.php + pages/statement-of-applicability.js),
+    // the document ISO/IEC 27001:2022 clause 6.1.3(d) asks for and the one every
+    // applicability decision recorded on the Define Control Frameworks page
+    // exists to produce.
+    //
+    // 'StatementOfApplicability' already exists above (the framework modal's SoA
+    // card) and is reused for the report's own title, as are 'IsmsScopeStatement',
+    // 'DefaultInclusionJustification', the three 'Applicability*' state labels,
+    // 'ApplicabilityDecidedBy'/'DecidedOn', and the plain 'Framework',
+    // 'ControlNumber', 'ControlName', 'Justification', 'Evidence', 'Reason',
+    // 'Provider', 'Total', 'Controls' and 'Export' keys. Only strings with no
+    // existing home are added here.
+    'StatementOfApplicabilityDesc' => 'Pro jeden rámec: každá kontrola, zda je použitelná, proč byla zahrnuta nebo vyloučena a zda je implementována.',
+    // The header button on Define Control Frameworks. The verb is "generate"
+    // rather than "view" because the document is assembled at the moment it is
+    // asked for -- there is no stored SoA that could be out of date.
+    'GenerateStatementOfApplicability' => 'Generovat prohlášení o použitelnosti',
+
+    // The Justification column's SECOND resolution step, and the reason an SoA
+    // built here beats the spreadsheet it replaces: the risks that drove the
+    // control are already recorded against it, so nobody retypes them and they
+    // cannot go stale. {risks} is substituted with the displayed risk ids.
+    //
+    // Phrased to match clause 6.1.3, which derives controls from risk treatment
+    // and uses Annex A afterwards only as a completeness cross-check -- the same
+    // reasoning behind 'DefaultInclusionJustificationPlaceholder' above.
+    'SoaJustifiedByRiskAssessment' => 'Určeno na základě posouzení rizik informační bezpečnosti organizace. Související rizika: {risks}.',
+
+    // The Implemented column. DERIVED from maturity and the last test result on
+    // every read, never stored, so it cannot drift out of sync with the control.
+    // 'Yes' and 'No' already exist and are reused; only the middle value and the
+    // header need keys of their own. An excluded control's cell reuses the
+    // existing 'NotApplicable' ('N/A'), which is exactly the right abbreviation
+    // in a dense table.
+    'SoaImplemented' => 'Implementováno',
+    'SoaImplementedPartial' => 'Částečný',
+
+    // The cover block.
+    'SoaGeneratedOn' => 'Vygenerováno dne',
+    'SoaExcludedCount' => 'Vyloučeno',
+
+    // The prompt shown when the framework has never been given the two cover
+    // fields. It PROMPTS rather than silently printing a blank cover: an SoA
+    // whose scope is empty is the one defect an auditor spots first, and the
+    // moment somebody opens the report is the only moment those fields matter.
+    // Both spellings of empty (never set, and deliberately cleared) prompt --
+    // from a reader's point of view there is nothing to print either way.
+    //
+    // The inclusion-justification line states a WEAKER consequence than it used
+    // to, because Task 67 made the stronger one untrue: the column no longer goes
+    // blank when the field is empty -- soa_framework_default_justification()
+    // substitutes the generic default sentence. The prompt survives because a
+    // generic sentence is not the organization's own, and an auditor reading 1,500
+    // identical rows of boilerplate is entitled to ask whose risk assessment it
+    // refers to.
+    'SoaMissingFieldsTitle' => 'V tomto prohlášení chybí podrobnosti o obalu.',
+    'SoaMissingScopeStatement' => 'Pro tento rámec nebylo zaznamenáno žádné prohlášení o rozsahu. Prohlášení o ochraně osobních údajů (SoA) by mělo uvádět rozsah, pro který je vypracováno.',
+    'SoaMissingInclusionJustification' => 'Nebylo zaznamenáno žádné zdůvodnění pro zahrnutí ve výchozím nastavení. Příslušné kontroly bez souvisejících rizik se uplatní spíše jako obecné prohlášení než vaše vlastní.',
+    'SoaEditFrameworkToAdd' => 'Přidejte je do rámce',
+
+    // Opened from the Reporting Hub, which cannot supply a framework. A picker,
+    // not an error: an SoA is a per-framework document by definition -- the same
+    // control excluded from ISO 27001 is not thereby excluded from PCI DSS --
+    // and there is no cross-framework roll-up to offer instead.
+    'SoaChooseFramework' => 'Vyberte si rámec',
+    'SoaChooseFrameworkHint' => 'Prohlášení o použitelnosti se píše pro každý rámec zvlášť.',
+    // The picker has a roster but nothing in it. Distinct from "this framework
+    // has no controls": there is no framework to write a statement about at all,
+    // and the fix is on a different page, so it says which one.
+    // The launcher's affordance row. "Open in browser" rather than "View"
+    // because it names what actually happens -- the document opens in a new tab,
+    // chrome-free -- and because Task 18 adds "Download as PDF" and "Download as
+    // XLSX" beside it, where "open" vs "download" is the distinction that
+    // matters.
+    // The document has no sidebar, so it needs its own way back for anyone who
+    // arrives from a bookmark or a shared link. Screen only; never printed.
+    'SoaBackToSelector' => 'Zpět k prohlášení o použitelnosti',
+    'SoaNoFrameworks' => 'Žádné aktivní frameworky',
+    'SoaNoFrameworksHint' => 'Nainstalujte nebo aktivujte rámec v části Řízení > Definovat kontrolní rámce a bude zde k dispozici.',
+
+    // The two refusals. Both explain rather than just failing, because the user
+    // arrived here deliberately.
+    'SoaFrameworkInactiveTitle' => 'Tento rámec je neaktivní',
+    'SoaFrameworkInactiveBody' => 'Prohlášení o použitelnosti popisuje rozsah, v němž organizace aktuálně působí. Pro jeho vygenerování znovu aktivujte rámec.',
+    'SoaFrameworkNotFoundBody' => 'Ten rámec už neexistuje.',
+
+    // A framework with no controls mapped into it. Not an error -- it is a real
+    // and recoverable state, and saying so beats an empty table.
+    'SoaNoControls' => 'Tento rámec nemá žádné ovládací prvky',
+    'SoaNoControlsHint' => 'Namapujte ovládací prvky do frameworku a jeho prohlášení o použitelnosti je vypíše.',
+
+    // The second half of the statement-of-applicability launcher's affordance
+    // row, beside "Open in browser" and the existing 'DownloadAsXLSX'. Rendered
+    // only where the Import/Export Extra is active, which is what supplies the
+    // export. "Download as" rather than "Export to" so the pair reads as one
+    // choice of format, and so it matches the XLSX label already in this file.
+    'DownloadAsPDF' => 'Stáhnout jako PDF',
+
+    // The fourth column of the control modal's "Mapped Control Frameworks"
+    // widget, between the reference code and the reference text. The
+    // FRAMEWORK's own title for the control it is citing -- what a Statement of
+    // Applicability prints beside the clause number. Distinct from the existing
+    // 'ReferenceText', which holds the framework's full control statement, and
+    // from the SimpleRisk control's own name.
+    'ReferenceSubject' => 'Referenční předmět',
+    // Placeholder/help text under that field, and the reason it is worth
+    // filling in: without it the Statement of Applicability has nothing to
+    // print but the source catalogue's name for its own control.
+    'ReferenceSubjectHint' => "Vlastní název frameworku pro tento ovládací prvek.",
+
+    // Task 63: the row-scoped population sentence in the Set applicability
+    // modal, in the one situation where the plain
+    // 'ApplicabilityAppliesToControl' above leaves a real question unanswered --
+    // the user has controls ticked, or a standing "Select all N filtered", and
+    // has just opened the modal from ONE row's own action.
+    //
+    // It states the guarantee rather than implying it. A user whose escalated
+    // selection covers an entire framework needs to know that this click is not
+    // about to overwrite it, and {$n} is the count of the OTHER selected
+    // controls -- the target is excluded, because it is very often ticked too
+    // and a promise that included it would be false.
+    'ApplicabilityAppliesToControlNotSelection' => 'Bude zaznamenáno pouze pro „{$name}“ – vybrané ovládací prvky {$n} tím nebudou ovlivněny.',
+
+    // Task 65: the VISIBLE label on the controls toolbar's SoA button. The full
+    // sentence ('GenerateStatementOfApplicability' above) stays as the button's
+    // title and aria-label, and is still what the SoA page itself is called;
+    // this is the short form for a toolbar row it shares with the page's one
+    // primary action. At full length the secondary button measured more than
+    // twice the primary's width and became the largest element in the row.
+    //
+    // "SoA" is safe to abbreviate HERE and only here: the button appears solely
+    // when a single framework is scoped, beside an Applicability column, and it
+    // expands on hover.
+    'GenerateSoa' => 'Generování SoA',
+
+    // ===== Clone framework (Task 64) =======================================
+    // The framework half of Clone control's framing (CloneOfControlTitle /
+    // ClonedFromControlNotice above), and for the same reason: the clone
+    // pre-fills the Add Framework modal rather than creating anything, so the
+    // modal has to say what was carried over before the user saves it.
+    //
+    // Separate keys from the control pair rather than one shared "Clone of
+    // {$name}" -- the two banners do not say the same thing. A cloned control
+    // simply asks to be reviewed; a cloned FRAMEWORK has to explain two things
+    // its fields cannot: that the source's control mappings come with it, and
+    // that the empty scope statement is deliberate. The blank field is the
+    // whole reason the banner is longer than the control's -- a scope statement
+    // left blank with no explanation reads as a field that failed to populate,
+    // and the one thing a clone exists to be given is a NEW scope (Josh: "you
+    // might want to use the same controls as one framework, but scope it
+    // differently"). {$name} and {$n} follow the same client-side
+    // formatTemplate() substitution the rest of this page's templates use.
+    'CloneOfFrameworkTitle' => 'Klon „{$name}“',
+    // {$n} is the count the rail is SHOWING for the source row -- its controls,
+    // not its raw mapping rows. Those differ (a framework can cite one control
+    // under two clause numbers, and the rail excludes deleted controls), and the
+    // number to promise is the one the user is looking at when they click and
+    // the one the clone's own rail row will show afterwards.
+    'ClonedFromFrameworkNotice' => 'Naklonováno z „{$name}“. Jeho ovládací prvky {$n} budou zkopírovány do nového frameworku, přičemž každý z nich bude použitelný od začátku – žádná z jeho rozhodnutí o použitelnosti se nepřenesou. Prohlášení o rozsahu je záměrně prázdné: před generováním prohlášení o použitelnosti uveďte rozsah, který tento framework pokrývá.',
+    // Seeds the name field so the clone can be saved without a rename --
+    // framework names are unique, so a verbatim copy is refused on save.
+    'CloneOfFrameworkName' => '{$name} (Klon)',
+    'CloneFramework' => 'Klonovací framework',
+    // Extras version independently of Core, so an updated Import/Export Extra
+    // can end up calling a Core function the installed Core does not have. The
+    // export refuses with this rather than fataling -- see
+    // soa_export_refuse_if_core_too_old(), extras/import-export/includes/soa_export.php.
+    'SoaExportRequiresNewerCore' => 'Tento export vyžaduje novější verzi SimpleRisk Core, než je ta, která je nainstalována. Aktualizujte SimpleRisk a poté zkuste export znovu.',
+    // The framework ACQUISITION chooser (Task 26): "+ Add framework" asks how you
+    // want to get one, rather than assuming you want to type it in. Each option is
+    // rendered only when the route behind it actually exists for this user, so the
+    // hint text may state plainly what the route does -- it is never shown to
+    // someone who cannot take it.
+    'HowDoYouWantToAddAFramework' => 'Jak chcete přidat framework?',
+    'CreateFrameworkManually' => 'Vytvořte si ho ručně',
+    'CreateFrameworkManuallyHint' => 'Pojmenujte framework sami a poté přidejte nebo namapujte jeho ovládací prvky.',
+    // Named for the framework rather than for its vendor. The hint was reworded
+    // at the same time: it used to end "...load its Secure Controls Framework
+    // controls", which read as a stutter once the label carried those words.
+    'GetFrameworkFromScf' => 'Získejte jeden z rámce Secure Controls Framework',
+    'GetFrameworkFromScfHint' => 'Vyberte publikovaný framework a načtěte jeho mapované ovládací prvky v jednom kroku.',
+    'ImportFrameworkFromCatalog' => 'Importovat jeden',
+    'ImportFrameworkFromCatalogHint' => 'Nainstalujte framework a jeho ovládací prvky z katalogu obsahu SimpleRisk.',
+
+    // The framework acquisition chooser's third route, which now offers the
+    // Import-Export Extra's CONTROL import (a spreadsheet naming a framework
+    // that does not exist yet creates it) rather than the GitHub catalogue the
+    // two keys above described. Those two are left in place, unreferenced, so a
+    // customer maintaining a custom lang.<locale>.php still reconciles by tail
+    // diff.
+    'ImportFrameworkFromSpreadsheet' => 'Importovat z tabulky',
+    'ImportFrameworkFromSpreadsheetHint' => 'Nahrajte tabulku s ovládacími prvky, která pojmenovává framework, a oba jsou vytvořeny.',
+
+    // The Define Control Frameworks rail's second synthetic scope: the controls
+    // mapped to no framework at all. Its first, "All controls", reuses the
+    // existing AllControls key rather than adding a second string with the same
+    // English -- it replaced 'AllFrameworks' on that row, which named a union of
+    // frameworks while scoping to every control, mapped or not. 'AllFrameworks'
+    // is left in place and unreferenced by that page: other surfaces still use
+    // it, and every locale carries it.
+    'UnassignedControls' => 'Nepřiřazené ovládací prvky',
+    // APPLICABILITY VALIDATION FAILURES. These reach the user: the v2 endpoint
+    // returns the exception's message as the API status message and the page
+    // renders it in a toast, so a hardcoded English literal here would be
+    // permanently English for every locale.
+    //
+    // NOTHING THE CALLER TYPED IS EVER INTERPOLATED INTO THESE. The parameters
+    // are validated enum values, integer ids and byte limits the server itself
+    // owns -- naming the ALLOWED values rather than echoing the rejected one is
+    // deliberate (it is both safe and more useful than repeating a typo).
+    'ApplicabilityErrUnknownState' => 'Neznámý stav použitelnosti. Očekává se jeden z: {$states}.',
+    'ApplicabilityErrNarrativeRequired' => 'Pro \'{$state} \' je vyžadován popis.',
+    'ApplicabilityErrNarrativeTooLong' => 'Popis je delší než {$bytes} bajtů.',
+    'ApplicabilityErrReasonRequired' => 'Pro označení kontroly jako nepoužitelné je vyžadován důvod vyloučení.',
+    'ApplicabilityErrProviderRequired' => 'Poskytovatel je povinen označit ovládací prvek jako zděděný.',
+    'ApplicabilityErrProviderTooLong' => 'Název poskytovatele je delší než {$bytes} bajtů.',
+    'ApplicabilityErrReasonsNotFound' => 'Tyto důvody použitelnosti neexistují: {$ids}.',
+    'ApplicabilityErrReasonsNotOffered' => 'Tyto důvody použitelnosti nejsou pro tento stav uvedeny: {$ids}.',
+    'ApplicabilityErrFrameworkNotFound' => 'Rámec {$framework} neexistuje.',
+    'ApplicabilityErrControlsNotFound' => 'Tato ID kontrol neexistují: {$ids}.',
+    // Controls/Risks import result messages (validation gate, individual bad-row
+    // alerts, and the batched submitted/created/updated summaries)
+    'ControlIdOrShortNameFieldRequired' => 'Musí být namapováno buď pole ID ovládacího prvku, nebo pole Krátký název ovládacího prvku – řádek nelze identifikovat bez jednoho z nich.',
+    'RiskImportSubjectNull' => 'ID rizika {$risk_id}: Nebylo aktualizováno, protože pole Předmět je prázdné nebo chybí.',
+    'RiskImportSummary' => 'Odesláno {$submitted} rizik a aktualizováno {$updated} rizik.',
+    'ControlImportSummary' => 'Vytvořeno {$created} ovládacích prvků a aktualizováno {$updated} ovládacích prvků.',
+    'ImportAdditionalIssuesSuppressed' => '{$count} dalších řádků obsahovalo problémy, které zde nejsou jednotlivě zobrazeny.',
+    'EncryptionPipelineStalledTask' => 'Šifrovací kanál (úloha #{$id}, {$type}) se jeví jako zablokovaný – byl {$status} neobvykle dlouhou dobu bez pokroku. To obvykle znamená, že pracovník fronty na pozadí neběží; zkontrolujte, zda je naplánován, a poté to zkuste znovu, jakmile zpracuje zablokovanou úlohu.',
+    'EncryptionPipelineStalledState' => 'Šifrovací kanál se zdá být zastavený – je neobvykle dlouho označen jako rozpracovaný a neexistuje žádná odpovídající úloha na pozadí, na kterou by odkazovalo. To obvykle znamená, že proces fronty neběží nebo že předchozí kanál dokončil proces bez správné aktualizace. Před dalším pokusem zkontrolujte protokol ladění.',
+    // DEMO_MODE — shown when a visitor to a shared demo instance attempts one
+    // of the operations that would spoil the demo for the next visitor
+    'ActionDisabledOnDemoInstance' => 'Tato akce je v demo instanci SimpleRisk zakázána.',
+
+    // The one-click upgrade progress window: the step an upgrade is on, and
+    // the line shown once it finishes
+    // Shown when an upgrade's progress record has not been touched for long
+    // enough that the process running it is presumed gone
+    'UpgradeJobStalled' => 'Aktualizace přestala reagovat. Před opětovným pokusem zkontrolujte protokol serveru.',
+    // Shown when an upgrade replaced the instance's configuration file and could
+    // not put the original back
+    // Shown when the database was brought up to date but the application files
+    // could not be replaced, so the instance has NOT moved to the new release
+    'UpdateAppFailed' => 'Soubory aplikace nebyly aktualizovány, takže tato instance stále používá předchozí verzi. Zkontrolujte protokol SimpleRisk, zda se to týká důvodu, a poté spusťte aktualizaci znovu.',
+    // The one-click upgrade progress screen
+    'UpgradeInProgress' => 'Probíhá',
+    'UpgradeStepNotNeeded' => 'Není potřeba',
+    // Recovering an Upgrade Extra whose files are damaged
+    'UpgradeExtraDamagedReinstalling' => 'Nainstalovaný upgrade Extra je poškozen. Stahování nové kopie.',
+    'UpgradeExtraDamagedRepaired' => 'Dodatečný upgrade byl nahrazen funkční kopií.',
+    'UpgradeExtraDamagedFailed' => 'Doplňkový modul Upgrade je poškozený a nelze jej automaticky nahradit. Znovu jej nainstalujte ze stránky Doplňky nebo obnovte soubor simplerisk/extras/upgrade/ ze zálohy a zkuste to znovu.',
+    'UpgradeAlreadyCurrent' => 'Tato instance je již na adrese {version}, což je nejnovější verze. Nic nebylo potřeba upgradovat.',
+    'UpgradeShowWhatItDid' => 'Ukaž, co to udělalo',
+    'UpgradeBackupsListed' => 'Tyto zálohy jsou uvedeny v části Konfigurovat > Zálohy.',
+    'UpgradingTo' => 'Aktualizace na {version}',
+    'UpgradeSafeToClose' => 'Toto okno lze bezpečně zavřít. Aktualizace na serveru pokračuje a tato stránka se znovu připojí.',
+    'UpgradeDownloadLog' => 'Stáhnout protokol',
+    'UpgradeStatementsApplied' => 'Zahájeno {started} · Použito {count} příkazů',
+    // The Upgrade Extra's pre-upgrade check of the instance it is sitting on
+    'UpgradeCheckingInstance' => 'Kontrola této instance',
+    'UpgradeInstanceChecked' => 'Instance zkontrolována, opravy nejsou potřeba.',
+    'UpgradeBlockedByCorrections' => 'Aktualizace byla zastavena, protože tato instance potřebuje opravu, kterou nebylo možné použít automaticky. Postupujte podle výše uvedených pokynů a poté spusťte aktualizaci znovu. Nic dalšího se nezměnilo.',
+    // Shown when an upgrade replaced the instance's configuration file and could not put the original back
+    'ConfigRestoreFailed' => 'Aktualizace nemohla obnovit konfigurační soubor této instance. Před pokračováním obnovte soubor simplerisk/includes/config.php ze zálohy.',
+    'UpgradeDidNotAdvance' => 'Funkce upgradu pro verzi „{$version}“ nezlepšila verzi databáze; probíhá zastavení, aby se již znovu nespustila.',
+    'BackupDatabaseNative' => 'Zálohování databáze (nejsou potřeba žádné externí nástroje)...',
+    'UpgradeAlreadyRunning' => 'V této instanci již probíhá upgrade.',
+    'UpgradeStatusUnreachable' => 'Během aktualizace došlo ke ztrátě kontaktu se serverem. Zkontrolujte protokol SimpleRisk; aktualizace může stále probíhat.',
+    'UpgradeJobUnwritable' => 'Aktualizaci nebylo možné spustit, protože se nepodařilo zapsat záznam o jejím průběhu. Zkontrolujte, zda je dočasný systémový adresář zapisovatelný webovým uživatelem.',
+    'UpgradeStepCheckingVersions' => 'Kontroluji verze',
+    'UpgradeStepUpgradingDatabase' => 'Aktualizace schématu databáze',
+    'UpgradeStepFinalising' => 'Použití konverzí po upgradu',
+    'UpgradeDatabaseHeading' => 'Aktualizace databáze',
+    'UpgradeDatabaseComplete' => 'Aktualizace databáze dokončena.',
+    'UpgradeHideWhatItDid' => 'Skrýt, co to udělalo',
+    'UpgradeStateRunning' => 'Běh',
+    'UpgradeSessionExpired' => 'Vaše relace vypršela. Pro zobrazení aktualizace se znovu přihlaste.',
+    'UpgradeLostContact' => 'Ztraceno spojení se serverem. Znovu načtěte tuto stránku pro opětovné připojení k aktualizaci.',
+    'UpgradeDatabaseAlreadyCurrent' => 'Databáze je již ve verzi aplikace.',
+    'UpgradeConversionsApplied' => 'Použity konverze enginu a znakové sady.',
+    'UpgradeStoppedShort' => 'Aktualizace se zastavila na {reached} bez dosažení {app}. Viz protokol serveru.',
+    'UpgradeStepBackingUp' => 'Zálohování',
+    'UpgradeStepUpgradingFiles' => 'Aktualizace souborů aplikace',
+    'UpgradeStepUpgradingExtras' => 'Aktualizace nainstalovaných doplňků',
+    'UpgradeStepUpdatingUpgradeExtra' => 'Aktualizace doplňkového upgradu',
+    // The Upgrade Extra's pre-chain corrections: what is wrong, and what to do
+    // about it. These are the highest-stakes messages the upgrade produces --
+    // an operator reads them to unstick an instance that cannot upgrade.
+    'UpgradeCorrectionUnknownVersionTitle' => 'Zaznamenaná verze databáze neuvádí skutečné vydání',
+    'UpgradeCorrectionNoRecordedVersion' => 'Databáze nemá žádnou zaznamenanou verzi.',
+    'UpgradeCorrectionUnknownVersionFinding' => 'Databáze uvádí verzi \'{$version}\', která neuvádí žádnou verzi SimpleRisk. Aktualizace z ní nemůže vybrat počáteční bod.',
+    'UpgradeCorrectionUnknownVersionGuidance' => 'Nastavte parametr db_version na verzi, jejíž schéma tato databáze skutečně používá, a poté spusťte upgrade znovu: UPDATE settings SET value=\'<release>\' WHERE name=\'db_version\'. Pokud je hodnota zástupným symbolem, například 2026XXXX-001, správná hodnota je téměř vždy nejnovější skutečná verze, která byla nainstalována před spuštěním upgradu.',
+    'UpgradeCorrectionLegacySessionsTitle' => 'Tabulka sessions nemůže přežít konverzi znakové sady při aktualizaci.',
+    'UpgradeCorrectionLegacySessionsFinding' => '`sessions`.`id` je VARCHAR({$width}) v tabulce MyISAM. Jeho převod na utf8mb4, který je platný od verze 20230106-001 a novější, by překročil 1000bajtový limit indexu MyISAM a upgrade by selhal.',
+    'UpgradeCorrectionLegacySessionsGuidance' => 'Jedna nebo více aktivních relací používá ID delší než 128 znaků. Zúžení sloupce nyní by odhlásilo tyto uživatele, takže sloupec byl ponechán beze změny. Po vypršení platnosti těchto relací zkuste aktualizaci znovu.',
+    'UpgradeCorrectionApplied' => 'Opraveno.',
+    'UpgradeCorrectionFailed' => 'Tuto opravu nebylo možné použít. Důvod naleznete v protokolu SimpleRisk.',
+    'UpgradeCorrectionAppliedLine' => 'Opraveno: {$title} {$message}',
+    'UpgradeCorrectionNotAppliedLine' => 'NEOPRAVENO: {$title} {$message}',
+    'UpgradeCorrectionsNeeded' => 'Opravy potřebné před upgradem této instance: {$count}',
+    'UpgradeCorrectionsNeededShort' => 'Potřebné opravy: {$count}',
+    'UpdateDatabase' => 'Aktualizace databáze...',
+    // Authentication screens (index.php, reset.php, reset_password.php)
+    'EnterTheCredentialsForYourAccount' => 'Zadejte přihlašovací údaje k vašemu účtu.',
+    'TroubleSigningIn' => 'Máte potíže s přihlášením? Kontaktujte svého administrátora SimpleRisk.',
+    'BackToLogin' => 'Zpět k přihlášení',
+    'Or' => 'nebo',
+    'WeWillEmailAResetTokenToYourAccount' => 'Na adresu uvedenou ve vašem účtu vám e-mailem zašleme resetovací token.',
+    'EnterTheResetTokenFromYourEmail' => 'Zadejte resetovací token z vašeho e-mailu spolu s novým heslem.',
+    'ChooseANewPasswordToContinue' => 'Pro pokračování zvolte nové heslo.',
+    'FromZeroToGRCInMinutes' => 'Z NULY na GRC během několika minut.',
+    'OrganizationLogo' => 'Logo organizace',
+    'LoginScreenBranding' => 'Branding přihlašovací obrazovky',
+    'CustomLogo' => 'Vlastní logo',
+    'CustomLogoHint' => 'PNG, JPG, GIF nebo WebP, až do 1 MB a 2000x2000. Zobrazuje se v rozlišení až 260x64, takže pro obrazovky s vysokou hustotou obrazu použijte rozlišení přibližně 520x128. Horní lišta a přihlašovací panel jsou tmavé, proto nahrajte logo, které se čte na tmavém pozadí. Odstraňte logo a vraťte se k logu SimpleRisk.',
+    'CurrentLogo' => 'Aktuální logo',
+    'RemoveLogo' => 'Odstraňte logo',
+    'LoginTagline' => 'Přihlašovací heslo',
+    'LoginTaglineHint' => 'Nahrazuje slogan SimpleRisk na přihlašovací obrazovce. Nejlépe se čte jeden krátký řádek. Chcete-li zachovat slogan SimpleRisk, ponechte jej prázdný.',
+    'LoginNotice' => 'Oznámení o používání systému',
+    'LoginNoticeHint' => 'Zobrazuje se na přihlašovací obrazovce předtím, než se kdokoli přihlásí. Použijte jej pro oznámení o přijatelném použití nebo použití systému. Pokud nechcete zobrazovat žádné oznámení, ponechte jej prázdné. Odkazy a obrázky nejsou povoleny.',
+    'BrandingRequiresCustomization' => 'Branding přihlašovací obrazovky je součástí doplňkové úpravy.',
+    'LogoMustBeAnImage' => 'Logo musí být ve formátu PNG, JPG, GIF nebo WebP.',
+    'LogoTooLarge' => 'Logo nesmí být větší než 1 MB.',
+    'LogoDimensionsTooLarge' => 'Logo nesmí být větší než 2000x2000 pixelů.',
+    'LogoDimensionsTooSmall' => 'Logo musí mít na své nejdelší straně alespoň 32 pixelů.',
+    'LogoUploadFailed' => 'Logo se nepodařilo nahrát. Zkuste to prosím znovu.',
+    'LogoUpdated' => 'Logo bylo aktualizováno.',
+    'LogoRemoved' => 'Logo bylo odstraněno.',
+    'NoSystemUseNoticeSet' => 'Není nastaveno žádné oznámení o používání systému.',
+    'NoticeSizeSmall' => 'Malý',
+    'NoticeSizeNormal' => 'Normální',
+    'NoticeSizeLarge' => 'Velký',
     '' => '',
 );
 ?>

@@ -33,7 +33,8 @@ class Session implements Utils\ClearableState
      * This is a timeout value for setData, which indicates that the data
      * should never be deleted, i.e. lasts the whole session lifetime.
      */
-    public const DATA_TIMEOUT_SESSION_END = 'sessionEndTimeout';
+    public const string DATA_TIMEOUT_SESSION_END = 'sessionEndTimeout';
+
 
     /**
      * The list of loaded session objects.
@@ -180,7 +181,11 @@ class Session implements Utils\ClearableState
 
             // initialize data for session check function if defined
             $checkFunction = self::$config->getOptionalValue('session.check_function', null);
-            if (is_callable($checkFunction)) {
+            if ($checkFunction) {
+                Assert::isCallable(
+                    $checkFunction,
+                    'Configuration error: session.check_function is not callable',
+                );
                 call_user_func($checkFunction, $this, true);
             }
         }
@@ -190,7 +195,7 @@ class Session implements Utils\ClearableState
     /**
      * Set the configuration we should use.
      *
-     * @param Configuration $config
+     * @param \SimpleSAML\Configuration $config
      */
     public function setConfiguration(Configuration $config): void
     {
@@ -219,7 +224,7 @@ class Session implements Utils\ClearableState
      *
      * @param array $serialized The serialized representation of a session that we want to restore.
      */
-    public function __unserialize($serialized): void
+    public function __unserialize(array $serialized): void
     {
         foreach ($serialized as $k => $v) {
             $this->$k = $v;
@@ -246,7 +251,7 @@ class Session implements Utils\ClearableState
     /**
      * Retrieves the current session. Creates a new session if there's not one.
      *
-     * @return Session The current session.
+     * @return \SimpleSAML\Session The current session.
      * @throws \Exception When session couldn't be initialized and the session fallback is disabled by configuration.
      */
     public static function getSessionFromRequest(): Session
@@ -370,7 +375,11 @@ class Session implements Utils\ClearableState
 
             // run session check function if defined
             $checkFunction = $globalConfig->getOptionalValue('session.check_function', null);
-            if (is_callable($checkFunction)) {
+            if ($checkFunction) {
+                Assert::isCallable(
+                    $checkFunction,
+                    'Configuration error: session.check_function is not callable',
+                );
                 $check = call_user_func($checkFunction, $session);
                 if ($check !== true) {
                     Logger::warning('Session did not pass check function.');
@@ -490,7 +499,6 @@ class Session implements Utils\ClearableState
      * Mark this session as dirty.
      *
      * This method will register a callback to save the session right before any output is sent to the browser.
-     *
      */
     public function markDirty(): void
     {
@@ -590,7 +598,7 @@ class Session implements Utils\ClearableState
      * @param string     $authority The authority the user logged in with.
      * @param array      $data The authentication data for this authority.
      *
-     * @throws Error\CannotSetCookie If the authentication token cannot be set for some reason.
+     * @throws \SimpleSAML\Error\CannotSetCookie If the authentication token cannot be set for some reason.
      */
     public function doLogin(string $authority, array $data = []): void
     {
@@ -804,8 +812,18 @@ class Session implements Utils\ClearableState
     {
         $this->markDirty();
 
-        if ($expire === null) {
-            $expire = time() + self::$config->getOptionalInteger('session.duration', 8 * 60 * 60);
+        $maxSessionExpire = time() + self::$config->getOptionalInteger('session.duration', 8 * 60 * 60);
+
+        if ($expire) {
+            // Convert from seconds in future to absolute time
+            $expire = time() + $expire;
+        } else {
+            $expire = $maxSessionExpire;
+        }
+
+        // Always clamp the provided value.
+        if ($expire > $maxSessionExpire) {
+            $expire = $maxSessionExpire;
         }
 
         $this->authData[$authority]['Expire'] = $expire;

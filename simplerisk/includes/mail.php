@@ -7,6 +7,7 @@
 // Include required configuration files
 require_once(realpath(__DIR__ . '/bootstrap.php'));
 require_once(realpath(__DIR__ . '/queues.php'));
+require_once(realpath(__DIR__ . '/functions.php'));
 
 // Require the composer autoload file
 // This loads the PHPMailer library
@@ -315,7 +316,7 @@ function update_mail_settings($transport, $from_email, $from_name, $replyto_emai
  * FUNCTION: SEND EMAIL          *
  * Will queue emails for sending *
  *********************************/
-function send_email(PDO $db, $name, $email, $subject, $body): bool
+function send_email(PDO $db, $name, $email, $subject, $body, ?int $sender_uid = null): bool
 {
     $queue_task_payload = [
         'triggered_at'    => time(),
@@ -325,6 +326,16 @@ function send_email(PDO $db, $name, $email, $subject, $body): bool
         'body'            => $body
     ];
 
+    // Optionally record who triggered the send so that a later delivery
+    // failure can be surfaced to that user rather than only to all admins.
+    // The caller passes this explicitly (e.g. $_SESSION['uid'] in a browser
+    // context) — never read from the session here, because this function is
+    // also called from the session-less cron worker, where the session uid
+    // would not identify the real sender.
+    if ($sender_uid !== null) {
+        $queue_task_payload['sender_uid'] = $sender_uid;
+    }
+
     $queued = queue_task($db, 'core_email_send', $queue_task_payload, 100, 5, 3600);
 
     if (!$queued) {
@@ -332,6 +343,383 @@ function send_email(PDO $db, $name, $email, $subject, $body): bool
     }
 
     return $queued;
+}
+
+// The retention window applied to every email-failure notification, in days.
+// Admin-tunable at Settings -> Mail; the value below is the fallback when the
+// setting has never been saved.
+//
+// Every one of these rows MUST carry an expires_at: the purge only sweeps
+// recipient rows that are read or trashed, plus notifications whose expires_at
+// has passed, so an unread, non-expiring failure notification would live in the
+// table forever. That is why the retention is a floor-of-1-day setting rather
+// than an on/off one — there is no valid "never expire" value.
+//
+// Seven days is long enough that an admin who is away for a few days still sees
+// the alert, and short enough that a resolved outage's alerts age out on their
+// own. On the pre-enqueue guard path the expiry doubles as a re-arm: that guard
+// re-runs on every cron tick for a contact that is still broken, so once the
+// row is reclaimed the next tick recreates it, turning a one-shot alert into a
+// self-refreshing "this is still broken" reminder.
+const EMAIL_FAILURE_NOTIFICATION_TTL_DAYS_DEFAULT = 7;
+
+// The accepted range, single-sourced: the settings form renders these as the
+// input's min/max, the submitted value is validated against them, and a stored
+// value is clamped to them on read. A lower bound of one day is a hard floor
+// rather than a preference — anything below it writes an expiry the purge can
+// reclaim before the notification has been seen. A year is far past any useful
+// "someone should have looked at this by now" window, and the ceiling keeps a
+// fat-fingered or hand-edited settings row from parking un-purgeable rows in
+// the notifications table for a decade.
+const EMAIL_FAILURE_NOTIFICATION_TTL_DAYS_MIN = 1;
+const EMAIL_FAILURE_NOTIFICATION_TTL_DAYS_MAX = 365;
+
+/**
+ * Coerce a stored retention value into a usable number of days.
+ *
+ * Settings are TEXT, so this can be handed anything: an empty string (never
+ * saved), a hand-edited 'abc', a negative, or a float-ish '7.9'. Anything that
+ * is not a positive integer-ish value falls back to the default rather than
+ * producing an expires_at in the past — which would make the notification
+ * purgeable the moment it was written, i.e. an alert nobody ever sees.
+ *
+ * Pure.
+ *
+ * @param mixed $raw the raw setting value
+ * @return int a day count between 1 and EMAIL_FAILURE_NOTIFICATION_TTL_DAYS_MAX
+ */
+function normalize_email_failure_ttl_days($raw): int
+{
+    if (!is_numeric($raw)) {
+        return EMAIL_FAILURE_NOTIFICATION_TTL_DAYS_DEFAULT;
+    }
+
+    $days = (int)$raw;
+
+    if ($days < EMAIL_FAILURE_NOTIFICATION_TTL_DAYS_MIN) {
+        return EMAIL_FAILURE_NOTIFICATION_TTL_DAYS_DEFAULT;
+    }
+
+    return min($days, EMAIL_FAILURE_NOTIFICATION_TTL_DAYS_MAX);
+}
+
+/**
+ * An admin-submitted retention value, validated, or null when it falls outside
+ * the accepted range.
+ *
+ * Deliberately stricter than normalize_email_failure_ttl_days(). A *stored*
+ * value that has gone bad is silently replaced with the default, because a
+ * notification with a conservative expiry beats one with a broken expiry. A
+ * value someone just typed into the form is rejected and reported instead —
+ * saving something other than what the admin entered, with no indication that
+ * it happened, is its own bug.
+ *
+ * Pure.
+ *
+ * @param mixed $raw the submitted value
+ * @return ?int the accepted day count, or null when the input is unusable
+ */
+function email_failure_ttl_days_from_input($raw): ?int
+{
+    if (!is_numeric($raw)) {
+        return null;
+    }
+
+    // Refuse a fraction rather than truncating it. The form's number input
+    // rejects '7.9' client-side, but a direct POST reaches here, and casting it
+    // to 7 would save a value the admin never typed without saying so — the one
+    // thing this function exists to avoid.
+    if ((float)$raw !== floor((float)$raw)) {
+        return null;
+    }
+
+    $days = (int)$raw;
+
+    if ($days < EMAIL_FAILURE_NOTIFICATION_TTL_DAYS_MIN || $days > EMAIL_FAILURE_NOTIFICATION_TTL_DAYS_MAX) {
+        return null;
+    }
+
+    return $days;
+}
+
+/**
+ * Pure rate-limit decision for the Settings > Mail "send test email" throttle.
+ *
+ * Drops send timestamps older than $period seconds and reports whether another
+ * send is permitted (fewer than $limit sends remain inside the window). Kept
+ * side-effect-free — no session, no clock, no I/O — so the throttle decision can
+ * be unit-tested directly (see tests/unit/TestMailThrottleTest.php); the caller
+ * owns the session read/write and the actual send. `$now` is passed in for the
+ * same reason email_failure_dedup_bucket() takes the hour: to make the window
+ * boundary directly expressible in a test.
+ *
+ * @param array $sent_times prior send unix timestamps (non-numeric entries are ignored)
+ * @param int   $now        current unix timestamp
+ * @param int   $limit      maximum sends allowed within the window
+ * @param int   $period     window length in seconds
+ * @return array{recent: int[], allowed: bool} the surviving in-window timestamps
+ *         (re-indexed, cast to int) and whether one more send is allowed
+ */
+function test_mail_throttle_evaluate(array $sent_times, int $now, int $limit, int $period): array
+{
+    $recent = array_values(array_map('intval', array_filter($sent_times, function ($sent_time) use ($now, $period) {
+        return is_numeric($sent_time) && ($now - (int)$sent_time <= $period);
+    })));
+
+    return ['recent' => $recent, 'allowed' => count($recent) < $limit];
+}
+
+/**
+ * The configured email-failure notification retention, in days.
+ *
+ * Takes the caller's PDO handle so the queue worker reuses its connection
+ * instead of opening another one per failed task.
+ *
+ * @param ?PDO $db an open connection, or null to let get_setting() open one
+ * @return int a day count between 1 and EMAIL_FAILURE_NOTIFICATION_TTL_DAYS_MAX
+ */
+function email_failure_notification_ttl_days(?PDO $db = null): int
+{
+    return normalize_email_failure_ttl_days(
+        get_setting(
+            'email_failure_notification_ttl_days',
+            EMAIL_FAILURE_NOTIFICATION_TTL_DAYS_DEFAULT,
+            db: $db
+        )
+    );
+}
+
+/**
+ * Whether an email-failure notification is aimed at one known sender rather
+ * than broadcast to all admins.
+ *
+ * Extracted so the routing decision in create_email_failure_notification() and
+ * the dedup-bucket key in email_failure_dedup_bucket() can never disagree about
+ * what "has a sender" means — if they did, a notification would be bucketed
+ * against one target and delivered to another, and the dedup would silently
+ * stop working. 0 counts as "no sender": a cron-context send has no session, so
+ * $_SESSION['uid'] is unset or 0, and there is no user 0 to notify.
+ *
+ * Pure.
+ */
+function is_email_failure_sender_targeted(?int $sender_uid): bool
+{
+    return $sender_uid !== null && $sender_uid > 0;
+}
+
+/**
+ * The dedup key for a queued-delivery failure: one bucket per (target, hour).
+ *
+ * The task id used to be the key, which meant one notification row per failed
+ * task. That is fine for one broken address and pathological for a systemic
+ * fault: with SMTP down, a bulk send of 200 messages produces 200 doomed tasks,
+ * each of which reaches terminal failure and mints its own never-expiring row —
+ * fanned out to a recipient row per admin on the all-admin path. Bucketing by
+ * the hour instead collapses that to one row per target per hour, so the volume
+ * is bounded by elapsed time rather than by message count, and a week-long
+ * outage cannot grow without limit.
+ *
+ * The trade-off this forces is in the wording, not here: because INSERT IGNORE
+ * keeps the FIRST row inserted in a bucket, the surviving row cannot name a
+ * single recipient without implying the others were delivered. Hence the
+ * recipient-free body that points at the Queue Monitor, where every failed
+ * task's payload — recipient address included — is listed individually.
+ *
+ * $hour is injectable so the bucketing is testable without waiting on the
+ * clock; production callers omit it. Pure when $hour is supplied.
+ */
+function email_failure_dedup_bucket(?int $sender_uid, ?string $hour = null): string
+{
+    $hour   = $hour ?? date('Y-m-d-H');
+    $target = is_email_failure_sender_targeted($sender_uid) ? "u{$sender_uid}" : 'all';
+
+    return "{$target}:{$hour}";
+}
+
+/**
+ * The absolute Queue Monitor URL to deep-link from a delivery-failure
+ * notification, or null when one cannot be built safely.
+ *
+ * Deliberately takes the base URL as an argument instead of calling
+ * get_base_url() / build_url(): those fall back to reconstructing the base from
+ * $_SERVER when the simplerisk_base_url setting is empty, and this code path
+ * runs inside the CLI queue worker where SERVER_NAME and DOCUMENT_ROOT do not
+ * exist. That fallback would build a garbage URL AND persist it via
+ * add_setting('simplerisk_base_url', ...), poisoning every URL the application
+ * builds afterwards. So the caller passes the stored setting and this helper
+ * refuses anything that is not already a usable absolute URL.
+ *
+ * Returning null (rather than a relative path) matters: create_notification*()
+ * rejects the whole notification when is_safe_notification_link() fails, so a
+ * bad link would not degrade the notification — it would delete it.
+ *
+ * Deterministic — same input, same output, no state of its own — but not pure
+ * in the strict sense: the first call lazy-loads notifications.php for
+ * is_safe_notification_link(). notifications.php is not globally loaded, and
+ * this is the house pattern for reaching it (licensing.php and the notification
+ * jobs require it the same way). Each entry point declares the require itself
+ * rather than relying on a sibling having run first; require_once makes the
+ * repeat a no-op.
+ */
+function queue_monitor_url_from_base(?string $base_url): ?string
+{
+    require_once(realpath(__DIR__ . '/notifications.php'));
+
+    if ($base_url === null || trim($base_url) === '') {
+        return null;
+    }
+
+    $url = rtrim(trim($base_url), '/') . '/admin/queue_monitor.php';
+
+    // Same rule create_notification*() will apply, checked here so the caller
+    // can fall back to no link instead of losing the notification.
+    return is_safe_notification_link($url) ? $url : null;
+}
+
+/**
+ * Surface a queued-email delivery failure through the in-app notification
+ * center so it is not silent in the server log.
+ *
+ * Safe to call from the session-less cron worker: create_notification*() read
+ * no $_SESSION, take created_by explicitly, and manage their own DB lifecycle.
+ *
+ * Called from the core_email_send job's on_terminal_failure hook, i.e. only
+ * once the worker has exhausted its retries — NOT per attempt.
+ *
+ * Takes no recipient address and no task id on purpose. One notification stands
+ * for every delivery failure aimed at the same target in the same hour (see
+ * email_failure_dedup_bucket()), so naming one address would misrepresent the
+ * rest; the per-task detail lives in the Queue Monitor and the server log,
+ * which the body cites.
+ *
+ * A producer reporting something other than a queued delivery failure should
+ * call create_email_failure_notification() below with its own wording instead
+ * of reusing this one.
+ *
+ * @param ?PDO $db an open connection to reuse, or null to let
+ *                 create_notification*() open and close its own (used by
+ *                 pre-enqueue callers that hold no connection)
+ * @param ?int $sender_uid the user to notify, or null/0 to notify all admins
+ */
+function notify_email_send_failure(?PDO $db, ?int $sender_uid): void
+{
+    // The escaping rule differs per field because the notification center renders
+    // title and body through different client paths (notifications.js):
+    //   - title is rendered with escapeHtml(item.title) only — no decode step —
+    //     so the stored title must be RAW: _lang_raw().
+    //   - body is rendered through stripHtml(item.body), whose innerHTML round-trip
+    //     DECODES HTML entities once before display, and whose contract (see the
+    //     "server-side purify_html() is the sanitization layer" note in
+    //     notifications.js) is that the server has already made the body safe. So
+    //     the stored body must be HTML-ESCAPED at source: _lang() escapes its
+    //     params.
+    // Neither string interpolates user data any more — the recipient address is
+    // gone from the body — so there is nothing here for an attacker to reach the
+    // innerHTML parse with. _lang() is still the correct call for the body: it
+    // keeps the escape-at-source contract in force if a param is ever added.
+    $title = _lang_raw('EmailSendFailedNotificationTitle');
+    $body  = _lang('EmailSendFailedNotificationBody');
+
+    // Deep-link the Queue Monitor, which lists each failed task and its payload
+    // (recipient address included) — the detail this notification deliberately
+    // no longer carries. Read the stored setting directly rather than through
+    // get_base_url(); see queue_monitor_url_from_base() for why that matters on
+    // this code path. get_setting() yields false when the row is missing or the
+    // read errors, so normalize to null; a null link simply means no deep link.
+    $base_url = get_setting('simplerisk_base_url', null, db: $db);
+    $link     = queue_monitor_url_from_base(is_string($base_url) ? $base_url : null);
+
+    create_email_failure_notification(
+        $db,
+        $sender_uid,
+        $title,
+        $body,
+        email_failure_dedup_bucket($sender_uid),
+        $link
+    );
+}
+
+/**
+ * The delivery mechanism behind notify_email_send_failure() and any other
+ * producer that needs to surface an email problem through the notification
+ * center.
+ *
+ * Exists separately because "a queued email could not be delivered" is not the
+ * only such event. A pre-enqueue guard that refuses an unusable recipient never
+ * queued anything and the mail transport is fine — telling that admin to "check
+ * your mail settings" points them at the wrong remediation. Callers that are
+ * not reporting a queued-delivery failure pass their own title and body here
+ * instead of borrowing that wording.
+ *
+ * @param ?PDO $db an open connection to reuse, or null to let
+ *                 create_notification*() open and close its own
+ * @param ?int $sender_uid the user to notify, or null/0 to notify all admins
+ * @param string $title MUST be raw — the notification center renders the title
+ *                      through escapeHtml() with no decode step, so a
+ *                      pre-escaped title shows literal entities
+ * @param string $body MUST already be HTML-escaped by the caller, via _lang(),
+ *                     which escapes its params. The body is rendered through
+ *                     stripHtml(), whose innerHTML round-trip decodes entities
+ *                     once, so an unescaped user-controlled value here is
+ *                     stored XSS
+ * @param ?string $dedup_token collapses repeat notifications for the same
+ *                             target onto one row; no token means no dedup
+ * @param ?string $link optional deep link for the notification
+ */
+function create_email_failure_notification(?PDO $db, ?int $sender_uid, string $title, string $body, ?string $dedup_token = null, ?string $link = null): void
+{
+    // notifications.php is not globally loaded; require it here (the sibling
+    // notification jobs use the same lazy require). queue_monitor_url_from_base()
+    // above declares the same require — deliberately, so neither function
+    // depends on the other having run first. require_once makes the second a
+    // no-op.
+    require_once(realpath(__DIR__ . '/notifications.php'));
+
+    // De-dupe repeated failure notifications for the same target into one row
+    // via the UNIQUE external_guid. Queued-delivery failures bucket by (target,
+    // hour) so a systemic fault cannot mint a row per message — see
+    // email_failure_dedup_bucket(). A pre-enqueue guard whose recipient never
+    // becomes valid is re-hit on every cron tick and passes a stable
+    // per-recipient key instead, so one broken contact stays one row rather than
+    // one row per hour. No token => no guid => no dedup.
+    $guid = $dedup_token !== null ? "email_fail:{$dedup_token}" : null;
+
+    // Always expire. Without this the row is unreclaimable: the retention purge
+    // sweeps read or trashed recipient rows and notifications whose expires_at
+    // has passed, and an unread failure notification is none of those.
+    $expires_at = date('Y-m-d H:i:s', time() + (email_failure_notification_ttl_days($db) * 24 * 60 * 60));
+
+    try {
+        if (is_email_failure_sender_targeted($sender_uid)) {
+            create_notification_for_user_ids(
+                source:        'workflow',
+                title:         $title,
+                body:          $body,
+                link:          $link,
+                user_ids:      [$sender_uid],
+                created_by:    null,
+                expires_at:    $expires_at,
+                external_guid: $guid,
+                db:            $db
+            );
+        } else {
+            create_notification(
+                source:        'workflow',
+                title:         $title,
+                body:          $body,
+                link:          $link,
+                audience_type: 'all_admin',
+                audience_id:   null,
+                created_by:    null,
+                expires_at:    $expires_at,
+                external_guid: $guid,
+                db:            $db
+            );
+        }
+    } catch (\Throwable $e) {
+        // Never let notification failure mask the original send failure.
+        write_debug_log("create_email_failure_notification: could not create notification: " . $e->getMessage(), 'error');
+    }
 }
 
 /**********************************
@@ -354,8 +742,11 @@ function send_email_immediate($name, $email, $subject, $body)
     $encryption = $mail_settings['phpmailer_smtpsecure'] ?? '';
     $port = $mail_settings['phpmailer_port'] ?? 25;
 
-    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-        write_debug_log("Invalid email: $email", "error");
+    if (!is_sendable_email_address($email)) {
+        // A rejected/malformed address is a recoverable validation condition, not
+        // a system error — warning, matching the pre-send guards that gate on the
+        // same is_sendable_email_address() check.
+        write_debug_log("Invalid email: $email", "warning");
         return false;
     }
 

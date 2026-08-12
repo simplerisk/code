@@ -6,11 +6,13 @@ namespace SimpleSAML\XMLSecurity\XML\ds;
 
 use DOMElement;
 use SimpleSAML\Assert\Assert;
-use SimpleSAML\XML\Exception\InvalidDOMElementException;
-use SimpleSAML\XML\Exception\SchemaViolationException;
-use SimpleSAML\XML\Exception\TooManyElementsException;
 use SimpleSAML\XML\SchemaValidatableElementInterface;
 use SimpleSAML\XML\SchemaValidatableElementTrait;
+use SimpleSAML\XMLSchema\Exception\InvalidDOMElementException;
+use SimpleSAML\XMLSchema\Exception\TooManyElementsException;
+use SimpleSAML\XMLSchema\Type\AnyURIValue;
+
+use function strval;
 
 /**
  * Class representing a ds:RetrievalMethod element.
@@ -21,20 +23,19 @@ final class RetrievalMethod extends AbstractDsElement implements SchemaValidatab
 {
     use SchemaValidatableElementTrait;
 
+
     /**
      * Initialize a ds:RetrievalMethod
      *
      * @param \SimpleSAML\XMLSecurity\XML\ds\Transforms|null $transforms
-     * @param string $URI
-     * @param string|null $Type
+     * @param \SimpleSAML\XMLSchema\Type\AnyURIValue $URI
+     * @param \SimpleSAML\XMLSchema\Type\AnyURIValue|null $Type
      */
     final public function __construct(
         protected ?Transforms $transforms,
-        protected string $URI,
-        protected ?string $Type = null,
+        protected AnyURIValue $URI,
+        protected ?AnyURIValue $Type = null,
     ) {
-        Assert::validURI($URI, SchemaViolationException::class); // Covers the empty string
-        Assert::nullOrValidURI($Type, SchemaViolationException::class); // Covers the empty string
     }
 
 
@@ -48,18 +49,18 @@ final class RetrievalMethod extends AbstractDsElement implements SchemaValidatab
 
 
     /**
-     * @return string
+     * @return \SimpleSAML\XMLSchema\Type\AnyURIValue
      */
-    public function getURI(): string
+    public function getURI(): AnyURIValue
     {
         return $this->URI;
     }
 
 
     /**
-     * @return string|null
+     * @return \SimpleSAML\XMLSchema\Type\AnyURIValue|null
      */
-    public function getType(): ?string
+    public function getType(): ?AnyURIValue
     {
         return $this->Type;
     }
@@ -69,9 +70,8 @@ final class RetrievalMethod extends AbstractDsElement implements SchemaValidatab
      * Convert XML into a RetrievalMethod element
      *
      * @param \DOMElement $xml The XML element we should load
-     * @return static
      *
-     * @throws \SimpleSAML\XML\Exception\InvalidDOMElementException
+     * @throws \SimpleSAML\XMLSchema\Exception\InvalidDOMElementException
      *   If the qualified name of the supplied element is wrong
      */
     public static function fromXML(DOMElement $xml): static
@@ -79,8 +79,8 @@ final class RetrievalMethod extends AbstractDsElement implements SchemaValidatab
         Assert::same($xml->localName, 'RetrievalMethod', InvalidDOMElementException::class);
         Assert::same($xml->namespaceURI, RetrievalMethod::NS, InvalidDOMElementException::class);
 
-        $URI = self::getAttribute($xml, 'URI');
-        $Type = self::getOptionalAttribute($xml, 'Type', null);
+        $URI = self::getAttribute($xml, 'URI', AnyURIValue::class);
+        $Type = self::getOptionalAttribute($xml, 'Type', AnyURIValue::class, null);
 
         $transforms = Transforms::getChildrenOfClass($xml);
         Assert::maxCount(
@@ -102,15 +102,14 @@ final class RetrievalMethod extends AbstractDsElement implements SchemaValidatab
      * Convert this RetrievalMethod element to XML.
      *
      * @param \DOMElement|null $parent The element we should append this RetrievalMethod element to.
-     * @return \DOMElement
      */
     public function toXML(?DOMElement $parent = null): DOMElement
     {
         $e = $this->instantiateParentElement($parent);
-        $e->setAttribute('URI', $this->getURI());
+        $e->setAttribute('URI', strval($this->getURI()));
 
         if ($this->getType() !== null) {
-            $e->setAttribute('Type', $this->getType());
+            $e->setAttribute('Type', strval($this->getType()));
         }
 
         $this->getTransforms()?->toXML($e);

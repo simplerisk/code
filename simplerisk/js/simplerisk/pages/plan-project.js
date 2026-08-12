@@ -390,7 +390,6 @@ $(function() {
 function init_projects_datatable(table_el) {   
     $(table_el).DataTable({
         ajax: BASE_URL + '/api/v2/admin/risk_catalog/datatable',
-        bSort: true,
         paging: false,
         ordering: false,
         columns: [
@@ -458,7 +457,6 @@ function init_projects_datatable(table_el) {
             // make the tbody-elements sortable and disable selection in table
             $(table_el).sortable({
                 items: "tbody",
-                placeholder: "tbody-placeholder",
                 handle: '.group-header > td:first-child',
                 forcePlaceholderSize: true,
                 opacity: 0.75,

@@ -148,6 +148,10 @@
 <!-- MODAL WINDOW FOR UPDATING TEST -->
 <?php
     display_update_test_modal('audit_initiation');
+
+    // The Control Name field's faceted picker, shared by the Add and Edit test
+    // modals on this page (renders once; see display_control_picker_modal()).
+    display_control_picker_modal();
 ?>
 
 <!-- MODEL WINDOW FOR ADD TAGS TO TEST -->

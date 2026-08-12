@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace SimpleSAML\XMLSecurity\XML\xenc11;
 
-use SimpleSAML\XML\StringElementTrait;
+use SimpleSAML\XML\TypedTextContentTrait;
+use SimpleSAML\XMLSchema\Type\StringValue;
 
 /**
  * Class representing a xenc11:DerivedKeyName element.
@@ -13,14 +14,8 @@ use SimpleSAML\XML\StringElementTrait;
  */
 final class DerivedKeyName extends AbstractXenc11Element
 {
-    use StringElementTrait;
+    use TypedTextContentTrait;
 
 
-    /**
-     * @param string $content
-     */
-    public function __construct(string $content)
-    {
-        $this->setContent($content);
-    }
+    public const string TEXTCONTENT_TYPE = StringValue::class;
 }

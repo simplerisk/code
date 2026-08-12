@@ -206,7 +206,7 @@
 
         echo "
             <div>" . 
-                _lang($localizationKey, array('risk_name' => $risk_name, 'risk_value' => $risk_value, 'color_select' => $color_select), false) . "
+                _lang_raw($localizationKey, array('risk_name' => $risk_name, 'risk_value' => $risk_value, 'color_select' => $color_select)) . "
             </div>
         ";
     }

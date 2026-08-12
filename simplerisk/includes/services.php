@@ -78,7 +78,7 @@ function download_extra($name, $streamed_response = false) {
         $expected_sha256 = get_download_sha256_for_extra($name);
         if (!extra_download_is_intact($expected_sha256, $body)) {
             write_debug_log("download_extra: SHA-256 mismatch for '{$name}' — refusing to install", 'error');
-            return ['error' => 'integrity', 'extra_name' => $name, 'reason' => _lang('ExtraIntegrityCheckFailed', array(), false), 'retry_after_seconds' => null, 'http_status' => $code];
+            return ['error' => 'integrity', 'extra_name' => $name, 'reason' => _lang_raw('ExtraIntegrityCheckFailed', array()), 'retry_after_seconds' => null, 'http_status' => $code];
         }
 
         // Install the verified package to simplerisk/extras/<name>/. download_extra()'s
@@ -94,7 +94,7 @@ function download_extra($name, $streamed_response = false) {
         }
         if ($extras_dir === false || !is_writeable($extras_dir)) {
             write_debug_log("download_extra: extras directory not writeable; cannot install '{$name}'", 'error');
-            return ['error' => 'install_failed', 'extra_name' => $name, 'reason' => _lang('ExtraInstallWriteFailed', array(), false), 'retry_after_seconds' => null, 'http_status' => $code];
+            return ['error' => 'install_failed', 'extra_name' => $name, 'reason' => _lang_raw('ExtraInstallWriteFailed', array()), 'retry_after_seconds' => null, 'http_status' => $code];
         }
 
         // Use a private, unpredictable per-invocation working directory (0700) instead of
@@ -147,7 +147,7 @@ function download_extra($name, $streamed_response = false) {
             if (!$copied) {
                 delete_dir($dest);
             }
-            return ['error' => 'install_failed', 'extra_name' => $name, 'reason' => _lang('ExtraInstallExtractFailed', array(), false), 'retry_after_seconds' => null, 'http_status' => $code];
+            return ['error' => 'install_failed', 'extra_name' => $name, 'reason' => _lang_raw('ExtraInstallExtractFailed', array()), 'retry_after_seconds' => null, 'http_status' => $code];
         }
 
         // Clean up the temp artifacts; the Extra is now on disk.
@@ -155,7 +155,7 @@ function download_extra($name, $streamed_response = false) {
 
         if (!is_dir($extras_dir . '/' . $name)) {
             write_debug_log("download_extra: '{$name}' did not land on disk after extract", 'error');
-            return ['error' => 'install_failed', 'extra_name' => $name, 'reason' => _lang('ExtraInstallExtractFailed', array(), false), 'retry_after_seconds' => null, 'http_status' => $code];
+            return ['error' => 'install_failed', 'extra_name' => $name, 'reason' => _lang_raw('ExtraInstallExtractFailed', array()), 'retry_after_seconds' => null, 'http_status' => $code];
         }
 
         // Success: return the bytes per the existing "string == installed" contract.

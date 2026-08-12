@@ -646,7 +646,7 @@ $lang = array(
     'ControlPhase' => 'Ellenőrzési szakasz',
     'ControlPriority' => 'Vezérlő prioritása',
     'ControlFamily' => 'Ellenőrzési család',
-    'AllFrameworks'=>'Összes keretrendszer',
+    'AllFrameworks'=>'Minden keretrendszer',
     'NewControlName' => 'Új vezérlőelem neve',
     'NewControlDescription' => 'Új ellenőrzési Leírás',
     'AreYouSureYouWantToDeleteThisControl' => 'Biztosan törli ezt a vezérlőt?',
@@ -1345,7 +1345,6 @@ $lang = array(
     'UpdateAssetGroupTooltip' => 'Tárgyieszköz-csoport frissítése',
     'DeleteAssetGroupTooltip' => 'Tárgyieszköz-csoport törlése',
     'RemoveAssetTooltip' => 'Eszköz eltávolítása az eszközcsoportból',
-    'ControlShortNameFieldRequired' => 'A rövid name mező vezérlése kötelező.',
     'AffectedAssetsWidgetPlaceholder' => 'Eszköz vagy tárgyieszköz-csoport kiválasztása',
     'AffectedAssetsWidgetNoDropdownPlaceholder' => 'Eszköznév hozzáadása',
     'AffectedAssetsWidgetInstructions' => 'Válasszon ki egy eszközt vagy tárgyieszköz-csoportot. Új eszközt úgy hozhat létre, hogy hozzáadja a nevét a listához.',
@@ -2341,7 +2340,7 @@ $lang = array(
     'Advanced_Search_no_results_1' => 'Úgy tűnik, nincs találat a lekérdezésére.',
     'Advanced_Search_no_results_2' => 'Ellenőrizze még egyszer a keresést, hogy nincs-e elírás, helyesírási hiba, vagy próbálkozzon másik keresési kifejezéssel.',
     'IncidentsPerDay' => 'Incidensek naponta',
-    'CurrentVsDesiredMaturity' => 'Jelenlegi vs. kívánt érettség a kontrollcsalád szerint',
+    'CurrentVsDesiredMaturity' => 'Érettség kontrollcsalád szerint',
     'RiskDistribution' => 'Kockázat eloszlás',
     'RiskDistributionDescription'=>'A fenti kördiagramok segítenek bemutatni a kockázatok megoszlását a különböző kockázati szintek között mind az eredendő, mind a fennmaradó kockázatok esetében. Ezt a két tortát felhasználhatjuk a kockázatcsökkentési erőfeszítéseink előrehaladásának bemutatására. Ha a Residual Risk torta nagy szeleteket mutat nagyon magas vagy magas kockázatokról, az annak jele lehet, hogy szervezete túl sok kockázatot vállal, és további mérséklési erőfeszítésekre van szükség.',
     'EnableTabs' => 'Lapok engedélyezése',
@@ -2413,7 +2412,7 @@ $lang = array(
     'EditModeInformation' => 'Kapcsolja be a Szerkesztés módot, szerkessze az elrendezést. A kikapcsolása nem menti automatikusan az elrendezést.',
     'InvalidLayout' => 'Érvénytelen elrendezés!',
     'InvalidLayoutOnlyCustomAllowedAsDefault' => 'Érvénytelen elrendezés! Csak az egyéni elrendezések menthetők alapértelmezettként.',
-    'LayoutSaved' => 'Elrendezés mentve!',
+    'LayoutSaved' => 'Az irányítópult elrendezése mentésre került.',
     'DefaultLayout' => 'Alapértelmezett elrendezés',
     'DefaultLayoutInformation' => 'Ezt az elrendezést állítja be alapértelmezettként, amelyet a SimpleRisk által biztosított elrendezés helyett kell használni azon felhasználók számára, akiknek nincs beállítva egyéni elrendezés. Csak egy mentett, nem üres egyéni elrendezést állíthat be alapértelmezettként. Ha egy alapértelmezettként megjelölt elrendezés visszaáll az alapértelmezett elrendezésre, akkor visszaállítja azt a SimpleRisk által biztosított alapértelmezettre.',
     'LayoutDefaultStatusUpdated' => 'Az elrendezés alapértelmezett állapota frissült.',
@@ -2422,7 +2421,7 @@ $lang = array(
     'DefaultLayoutRestored' => 'Az alapértelmezett elrendezés visszaállítása sikeresen megtörtént!',
     'SavedLayoutRestored' => 'A mentett elrendezést sikeresen visszaállítottuk!',
     'ConfirmRestoreLayout' => 'Biztos vagy benne? Az ezen az elrendezésen végzett módosítások elvesznek.',
-    'ConfirmDisableEditModeWithPendingChanges' => 'Vannak nem mentett módosításai, amelyek elvesznek az oldal elhagyásakor. Biztos benne, hogy ki akarja kapcsolni a "Szerkesztési módot", és esetleg elfelejti elmenteni a változtatásokat?',
+    'ConfirmDisableEditModeWithPendingChanges' => 'Nem mentett módosításai vannak ezen az irányítópulton. Elveti őket és leállítja a szerkesztést?',
     'ConfirmSave' => 'A módosítások mentése felülírja a korábban mentett elrendezést. Biztosan folytatja?',
     'ConfirmSaveAdminDefault' => 'Ez az elrendezés az alapértelmezett ehhez az elrendezéstípushoz. A módosítások elmentésével minden olyan felhasználó elrendezése megváltozik, akinek nincs egyéni elrendezése beállítva ehhez az elrendezéstípushoz. Biztosan folytatja?',
     'RisksByMonth' => 'Kockázatok hónaponként',
@@ -3111,6 +3110,1523 @@ $lang = array(
     'ResendAssessmentDescription' => 'Az értékelés automatikus újbóli kiadása ismétlődő ütemben.',
     'ResendEveryDays' => 'Újraküldés {$day} naponta',
     'QuestionnaireSaveBarHint' => 'A „Mentés és küldés” opció azonnal kiküldi a kérdőívet a kapcsolattartóknak.',
+    // Home dashboard — KPI tile labels
+    'NewSelfAssessment' => 'Új önértékelés',
+    'SelfAssessmentPrereqIntro' => 'Az önértékelések lehetővé teszik, hogy szervezetét egy biztonságos ellenőrzési keretrendszer alapján értékelje, és automatikusan kockázatokat generáljon a hibás ellenőrzésekből. Először két beállítási lépés szükséges:',
+    'RegisterYourInstance' => 'Regisztrálja a példányát',
+    'RegisterYourInstanceHelp' => 'A regisztráció összekapcsolja ezt a példányt a SimpleRisk licencelési szolgáltatásával, így ingyenes extrák (beleértve az SCF-et is) tölthetők le.',
+    'InstallTheSCF' => 'Telepítse a Secure Controls Frameworköt',
+    'InstallTheSCFHelp' => 'Az SCF egy ingyenes extra, amely biztosítja a funkció értékeléséhez szükséges keretrendszereket, ellenőrző kérdéseket és kockázati térképeket. A telepítés a háttérben fut, és eltarthat néhány percig.',
+    'GoToRegistration' => 'Ugrás a regisztrációhoz',
+    'GoToSCF' => 'Ugrás a Biztonságos ellenőrzések keretrendszerére',
+    'SelfAssessmentEnableTip' => 'Opcionális: az Irányítás > Keretrendszerek alatt engedélyezheti az egyes SCF keretrendszerek esetében, hogy egy rövid, kurátorált listát lássanak az értékelés megkezdésekor. A teljes SCF katalógusban található bármely keretrendszer alapján is értékelhet anélkül, hogy engedélyezné azt.',
+    'ChooseAFramework' => 'Válasszon egy keretrendszert az értékeléshez',
+    'EnabledFrameworks' => 'Engedélyezett keretrendszerek',
+    'AllScfFrameworks' => 'Minden SCF keretrendszer',
+    'Start' => 'Indítás',
+    'Resume' => 'Folytatás',
+    'ControlQuestion' => 'Ellenőrző kérdés',
+    'NotApplicable' => 'Nem alkalmazható',
+    'SaveProgress' => 'Haladás mentése',
+    'MarkComplete' => 'Megjelölés befejezettként',
+    'AnsweredOfTotal' => 'válaszolt',
+    'FailedSoFar' => 'eddig nem sikerült',
+    'StartedBy' => 'Indította',
+    'FailedControls' => 'Hibás kontrollok',
+    'PushToRisk' => 'Áthelyezés kockázatba',
+    'ConfirmDeleteSelfAssessment' => 'Törli ezt az önértékelést? Ez nem vonható vissza.',
+    'ConfirmCompleteSelfAssessment' => 'Befejezettként jelöli ezt az értékelést? A hibás ellenőrzésekből kockázatok keletkeznek.',
+    'NoSelfAssessmentsYet' => 'Még nincsenek önértékelések. Kezdésként indítson el egyet.',
+    'RequestFailed' => 'A kérés nem teljesíthető. Kérjük, próbálja újra.',
+    'NoPendingRisks' => 'Nincsenek függőben lévő kockázatok. Végezzen el egy értékelést a sikertelen kontrollokból eredő kockázatok generálására.',
+    'NoFailedControls' => 'Nincsenek megjeleníthető vezérlőelemek ehhez a szűrőhöz.',
+    'ControlResultsTruncated' => 'A legfrissebb 2000 találat megjelenítése. Szűkítse a szűrőt a továbbiak megtekintéséhez.',
+    'GeneratedFromSelfAssessment' => 'Önértékelésből generálva',
+    'SelfAssessmentMitigationSolution' => 'A kockázat csökkentése érdekében alkalmazza az alább linkelt, az önértékelés során hiányosnak ítélt ellenőrzéseket.',
+    'NSelected' => '{n} kiválasztva',
+    'FilterByControl' => 'Szűrés vezérlőelemek szerint',
+    'Pushing' => 'Áthelyezés folyamatban…',
+    'Deleting' => 'Törlés…',
+    'ConfirmPushSelectedPendingRisks' => 'Áthelyezi a {n} kiválasztott függőben lévő kockázat(oka)t a kockázatok közé?',
+    'ConfirmDeleteSelectedPendingRisks' => 'Törli a {n} kiválasztott függőben lévő kockázat(oka)t? Ez a művelet nem vonható vissza.',
+    'ConfirmDeleteSelectedSelfAssessments' => 'Törli a {n} kiválasztott önértékelés(eke)t? Ez nem vonható vissza.',
+    'BulkPartialFailure' => '{n} / {total} elemből sikeresen végrehajtva; a többi sikertelen. Frissítsen az aktuális állapot megtekintéséhez.',
+
+    // Workflows Extra - deactivation confirm ('Deactivate' at line 480 is reused as-is)
+    'WorkflowsExtraDeactivateConfirm' => 'Kikapcsolja a Munkafolyamatok Extrát? Minden felhasználó által létrehozott munkafolyamat-definíció véglegesen törlődik. A rendszer munkafolyamatai megmaradnak.',
+    'HomeKpiOpenRisks' => 'Nyitott kockázatok',
+    'HomeKpiNeedsReview' => 'Szükséges felülvizsgálat',
+    'HomeKpiUnmitigated' => 'Nem csökkentett',
+    'HomeKpiClosedRisks' => 'Zárt kockázatok',
+    'HomeKpiControlPassRate' => 'Ellenőrzési sikerességi arány',
+    'HomeKpiFailingControls' => 'Hibás vezérlők',
+    'HomeKpiOpenAudits' => 'Nyílt auditok',
+    'HomeKpiTestsDueSoon' => 'Hamarosan esedékes tesztek',
+    'HomeKpiActiveFrameworks' => 'Aktív keretrendszerek',
+    'HomeKpiTotalControls' => 'Összes kontroll',
+    // Home dashboard — What's Next feed
+    'WhatsNext' => 'Mi a következő lépés?',
+    'WhatsNextAllCaughtUp' => 'Mindennel fel vagy készülve.',
+    'WhatsNextRegisterInstance' => 'Regisztrálja SimpleRisk példányát',
+    'WhatsNextSubmitFirstRisk' => 'Küldd el az első kockázatodat',
+    'WhatsNextLoadFramework' => 'Vezérlőkeretrendszer betöltése',
+    'WhatsNextUnreviewedRisks' => 'Felülvizsgálandó kockázatok',
+    'WhatsNextUnmitigatedRisks' => 'Enyhítendő kockázatok',
+    'WhatsNextInitiateAudits' => 'Auditok kezdeményezése',
+    // Home dashboard — widget picker type labels
+    'WidgetType_kpi' => 'KPI-csempe',
+    'WidgetType_whats_next' => 'Lista',
+    // Home dashboard — hub catalog entry
+    'HomeDashboard' => 'Kezdőlap',
+    'HomeDashboardDesc' => 'Kiindulópont – a legfontosabb mutatók és a következő lépések áttekintése.',
+    'HomeChartRiskByLevel' => 'Kockázat szint szerint',
+    'HomeKpiThisMonth' => 'ebben a hónapban',
+    'HomeKpiNoChange' => 'Nincs változás',
+    'EditLayout' => 'Elrendezés szerkesztése',
+    'ListHighestRisks' => 'Legnagyobb kockázataim',
+    'ListPastDueReviews' => 'Lejárt határidős felülvizsgálatok',
+    'ListUpcomingTests' => 'Közelgő tesztek',
+    'ListRecentFailures' => 'Legutóbbi hibák',
+    'ListPoliciesReview' => 'Felülvizsgálatra váró dokumentumok',
+    'ListExpiringExceptions' => 'Lejáró kivételek',
+    'ImKpiOpenIncidents' => 'Teljes nyitott',
+    'ImKpiOverdue' => 'Lejárt',
+    'ImKpiMttr30' => 'Átlagos megoldási idő',
+    'ImKpiMttrQuarter' => 'Átlagos megoldás (90 nap)',
+    'ImKpiMttrYear' => 'Átlagos megoldás (1 év)',
+    'ImKpiMttrAll' => 'Átl. megoldás (összes)',
+    'ImKpiResolved30' => 'Megoldva',
+    'ImChartBySeverity' => 'Súlyosság szerint',
+    'ImChartByStatus' => 'Állapot szerint',
+    'ImListRecent' => 'Legutóbbi események',
+    'ImListUnassigned' => 'Hozzá nem rendelt incidensek',
+    'HomeKpiOpenExceptions' => 'Nyílt kivételek',
+    'HomeKpiPolicies' => 'Szabályzatok',
+    'ResolutionTargets' => 'Megoldási célok (nap)',
+    'ResolutionTargetsHelp' => 'Azon napok száma, ahány napig egy incidens nyitva maradhat, mielőtt lejártnak minősül.',
+    'DefaultTarget' => 'Alapértelmezett',
+    'PerSeverityOverrideHelp' => 'Opcionálisan felülírhatja az alapértelmezett értéket bizonyos súlyosságok esetén (az alapértelmezett érték használatához hagyja üresen):',
+    'ResolutionTargetUsesDefault' => 'Alapértelmezett (%d)',
+    'SeverityColors' => 'Súlyossági színek',
+    'SeverityColorsHelp' => 'Az egyes súlyosságokhoz tartozó szín, amely az incidens irányítópultján és az incidens részletei oldalon látható.',
+    'Editing' => 'Szerkesztés',
+    'SetAsDefaultForEveryone' => 'Beállítás alapértelmezettként mindenkinek',
+    'EditLayoutHint' => 'Húzzon egy csempét az áthelyezéshez · húzzon egy élt az átméretezéshez · ✕ az eltávolításhoz',
+    'RemoveWidget' => 'Widget eltávolítása',
+    'AddWidget' => 'Widget hozzáadása',
+    'AddToDashboard' => 'Hozzáadás az irányítópulthoz',
+    'AllWidgetsAdded' => 'Minden elérhető widget megtalálható ezen az irányítópulton.',
+    'AddText' => 'Szöveg hozzáadása',
+    'GettingStarted' => 'Első lépések',
+    'GettingStartedTitle' => 'Üdvözöljük a SimpleRisknél',
+    'GettingStartedSubtitle' => 'Néhány gyors lépés, hogy a legtöbbet hozhassa ki a SimpleRiskből.',
+    'GSProgressCount' => '{done} / {total} teljes',
+    'GSNextUp' => 'Következő lépés',
+    'GSArea_setup' => 'Beállítás',
+    'GSArea_risk' => 'Kockázat',
+    'GSArea_assessment' => 'Értékelés',
+    'GSArea_compliance' => 'Megfelelőség',
+    'GSArea_assets' => 'Eszközök',
+    'GSArea_ai' => 'Beállítás',
+    'GSHide' => 'Első lépések elrejtése',
+    'GSDismissStep' => 'Lépés elvetése',
+    'GSAllSet' => 'Készen állsz – szép munka!',
+    'GSWalkthrough' => '30 perces bemutató',
+    'Explore' => 'Felfedezés',
+    'Learn' => 'Tanulás',
+    'AdminGuide' => 'Adminisztrátori útmutató',
+    'LearnMore' => 'Tudj meg többet',
+    'GSRegisterTitle' => 'Regisztrálja a példányát',
+    'GSRegisterDesc' => 'Aktiválja a támogatást és a frissítéseket a licenckulcsával.',
+    'GSRegisterCta' => 'Regisztráljon',
+    'GSScfTitle' => 'Telepítse a Secure Controls Frameworköt',
+    'GSScfDesc' => 'Telepítsd az SCF-et – a szabványokon átívelő vezérlőkönyvtáradat.',
+    'GSScfCta' => 'SCF telepítése',
+    'GSInviteTitle' => 'Hívd meg a csapatodat',
+    'GSInviteDesc' => 'Adj hozzá kollégákat, hogy a munkákat kioszthasd és áttekinthesd.',
+    'GSInviteCta' => 'Felhasználók hozzáadása',
+    'GSAiTitle' => 'MI konfigurálása',
+    'GSAiDesc' => 'Fokozza SimpleRisk élményét mesterséges intelligenciával.',
+    'GSAiCta' => 'Mesterséges intelligencia beállítása',
+    'GSSubmitRiskTitle' => 'Küldd el az első kockázatodat',
+    'GSSubmitRiskDesc' => 'Rögzítsen egy kockázatot, amellyel szervezete szembesül.',
+    'GSSubmitRiskCta' => 'Kockázat beküldése',
+    'GSMitigateTitle' => 'Tervezzen meg egy mérséklést',
+    'GSMitigateDesc' => 'Adjon hozzá egy kockázatcsökkentési tervet egy nyitott kockázathoz.',
+    'GSMitigateCta' => 'Kockázatcsökkentés tervezése',
+    'GSReviewTitle' => 'Végezzen kockázatértékelést',
+    'GSReviewDesc' => 'Tekintsd át a kockázatot, és döntsd el a következő lépést.',
+    'GSReviewCta' => 'Felülvizsgálat elvégzése',
+    'GSDefineTestTitle' => 'Definiáljon egy vezérlőtesztet',
+    'GSDefineTestDesc' => 'Állítsa be a vezérlőelemek tesztelésének módját.',
+    'GSDefineTestCta' => 'Teszt definiálása',
+    'GSInitiateAuditTitle' => 'Ellenőrzés indítása',
+    'GSInitiateAuditDesc' => 'Indítson el egy teszt- vagy auditciklust.',
+    'GSInitiateAuditCta' => 'Ellenőrzés indítása',
+    'GSAssetTitle' => 'Eszközök hozzáadása',
+    'GSAssetDesc' => 'Készítsen leltárt a védett eszközökről.',
+    'GSAssetCta' => 'Eszközök hozzáadása',
+    'GSInvalidStep' => 'Érvénytelen kezdési lépés.',
+    'GSPagerLabel' => '{from}–{to} a {total}-ból',
+    'GSPrevCards' => 'Előző lépések megjelenítése',
+    'GSNextCards' => 'Következő lépések megjelenítése',
+    'WhatsNextInstallSCF' => 'Telepítse a Secure Controls Frameworköt',
+    'GSActivateScfTitle' => 'A Biztonságos Ellenőrzési Keretrendszer aktiválása',
+    'GSActivateScfDesc' => 'Kapcsold be a telepített SCF-et, hogy a vezérlői betöltsd a könyvtáradba.',
+    'GSActivateScfCta' => 'SCF aktiválása',
+    'WhatsNextActivateSCF' => 'A Biztonságos Ellenőrzési Keretrendszer aktiválása',
+    'GSEnableFrameworksTitle' => 'Alkalmazható keretrendszerek engedélyezése',
+    'GSEnableFrameworksDesc' => 'Kapcsolja be a szervezetére vonatkozó SCF keretrendszereket.',
+    'GSEnableFrameworksCta' => 'Keretrendszerek engedélyezése',
+    'WhatsNextEnableFrameworks' => 'Alkalmazható keretrendszerek engedélyezése',
+    'GSSelfAssessTitle' => 'Végezzen önértékelést',
+    'GSSelfAssessDesc' => 'Értékelje szervezetét több mint 250 keretrendszer alapján, és generáljon kockázatokat a hibás kontrollokból.',
+    'GSSelfAssessCta' => 'Értékelés indítása',
+    'WhatsNextTakeSelfAssessment' => 'Végezzen önértékelést',
+    'WhatsNextConfigureAI' => 'MI konfigurálása',
+    'ListUnreviewedRisks' => 'Felül nem vizsgált kockázatok',
+    'ControlsByDomain' => 'Tartományonkénti vezérlők',
+    'ControlsByClass' => 'Osztályok szerinti vezérlők',
+    'ControlsByPhase' => 'Fázisonkénti vezérlés',
+    'ControlsByPriority' => 'Prioritás szerinti vezérlők',
+    'ControlsByCurrentMaturity' => 'Kontrollok jelenlegi érettség szerint',
+    'ControlStatusOverTime' => 'Kontroll állapota idővel',
+    'ComplianceTotalControls' => 'Összes kontroll',
+    'HomeKpiOverdueTests' => 'Lejárt tesztek',
+    'Total' => 'Teljes',
+    'StartTheTest' => 'Indítsa el a tesztet',
+    'TestStartsAutomatically' => 'A teszt automatikusan elindul',
+    'GoToTest' => 'Menj a teszthez',
+    'NotTested' => 'Nem tesztelt',
+    'PassingPercent' => 'Sikeres arány (%)',
+    'ListFailingControls' => 'Hibás vezérlők',
+    'Exceptions' => 'Kivételek',
+    'Documents' => 'Dokumentumok',
+    'ControlsBelowMaturity' => 'Érettségi szint alatti ellenőrzések',
+    'ControlsAtMaturity' => 'Kontrollok az érettségi szinten',
+    'ControlsAboveMaturity' => 'Érettségi szint feletti ellenőrzések',
+    'Maturity' => 'Érettség',
+    'AllTime' => 'Minden idők',
+    'Last7Days' => 'Utolsó 7 nap',
+    'Last30Days' => 'Utolsó 30 nap',
+    'Last90Days' => 'Utolsó 90 nap',
+    'YearToDate' => 'Év elejétől a mai napig',
+    'CustomRange' => 'Egyéni tartomány',
+    'Age' => 'Kor',
+    'ImOpenIncidents' => 'Nyílt incidensek',
+    'ImClosedIncidents' => 'Lezárt incidensek',
+    'ImByAttackVector' => 'Támadásvektorral megnyitva',
+    'ImBySource' => 'Forrás szerint nyitott',
+    'AverageDaysToDetect' => 'Átlagos észlelési napok száma',
+    'ImKpiAvgTtd' => 'Átlagos észlelés',
+    'Days' => 'Napok',
+    'ImKpiCriticalOpen' => 'Kritikus nyitott',
+    'ImKpiResolvedInSla' => 'SLA-ban megoldva',
+    'Events' => 'Események',
+    'ImEventsIncidents' => 'Események és incidensek',
+    'ImSourceBreakdown' => 'Forrás kategória szerint',
+    'ImClosureSummary' => 'Lezárás összefoglalása',
+    'ImSignalQuality' => 'Jelminőség',
+    'ImSignalLowSample' => 'Nincs elég elbírált lezárás a megbízható értékeléshez',
+    'ImportExportExportPdf' => 'PDF exportálása',
+    'ImportExportExporting' => 'PDF előkészítése…',
+    'ImportExportExportFailed' => 'Nem sikerült létrehozni a PDF-et. Próbáld újra.',
+    'ImportExportGeneratedOn' => 'Generált',
+    'ImportExportPage' => 'Oldal',
+    'ImportExportPageOf' => 'a',
+    'ResolutionTargetsUpdated' => 'A súlyosságonkénti megoldási célok frissültek.',
+    'SeverityColorsUpdated' => 'A súlyossági színek frissültek.',
+    // AI Capabilities Catalog + AI settings hub (unified AI settings)
+    'AICapGrcRecommendations' => 'GRC keretrendszer-ajánlások',
+    'AICapGrcRecommendationsDesc' => 'Mesterséges intelligencia által generált keretrendszer-ajánlások és egy vezetői összefoglaló, a szervezet kontextusához igazítva.',
+    'AICapRiskRecommendations' => 'Kockázati ajánlások',
+    'AICapRiskRecommendationsDesc' => 'Kockázatonkénti javaslatok a kockázat részleteire és enyhítésére, amelyek a kockázatból, annak enyhítéséből és áttekintéséből származnak.',
+    'AICapFairAnalysis' => 'FAIR kvantitatív elemzés',
+    'AICapFairAnalysisDesc' => 'A mesterséges intelligencia becsli a Beta-PERT veszteségparamétereit; a SimpleRisk egy 10 000 iterációjú Monte Carlo-próbát futtat a kockázat dollárban kifejezett számszerűsítésére.',
+    'AICapDocumentCustomization' => 'Dokumentum testreszabása',
+    'AICapDocumentCustomizationDesc' => 'Kitölti a helyőrzőket és kiüríti a szabályzat szövegét a dokumentumsablonokban, hogy a sablonszabályzat a sajátodként olvasható legyen.',
+    'AICapDocumentControlMatching' => 'Dokumentum ↔ Ellenőrzés egyeztetése',
+    'AICapDocumentControlMatchingDesc' => 'Automatikusan leképezi a vezérlőket a szabályzatdokumentumokhoz, egy megbízhatósági pontszámmal és az áttekinthető indoklással.',
+    'AICapDocumentTemplates' => 'Dokumentumsablon-tár',
+    'AICapDocumentTemplatesDesc' => 'Telepítsen válogatott szabályzat-, irányelv- és eljárássablonokat a SimpleRisk könyvtárból.',
+    'AICapControlReferenceEnhancement' => 'Vezérlőreferencia-bővítés',
+    'AICapControlReferenceEnhancementDesc' => 'Szó szerinti ellenőrző szöveget kutat webes kereséssel a vezérlőhivatkozások gazdagítása érdekében.',
+    'AICapAiChat' => 'Csevegési asszisztens',
+    'AICapAiChatDesc' => 'Egy GRC asszisztens, amely a SimpleRisk bármely pontján kontextusban válaszol a kérdésekre.',
+    'AICapSurfacedRecommendations' => 'Mesterséges Intelligencia oldal',
+    'AICapSurfacedRiskView' => 'Kockázatnézet – Részletek és kockázatcsökkentés',
+    'AICapSurfacedFairTab' => 'Kockázatnézet — FAIR fül',
+    'AICapSurfacedDocuments' => 'Irányítás — Dokumentumok',
+    'AICapSurfacedControls' => 'Megfelelőség – Ellenőrzések',
+    'AICapSurfacedEveryPage' => 'Minden oldal — lebegő asszisztens',
+    'AICapabilitiesCatalog' => 'Képességek',
+    'AICapSearchPlaceholder' => 'AI-képességek keresése…',
+    'AICapFilterDomain' => 'Domain',
+    'AICapFilterTier' => 'Szint',
+    'AICapFilterState' => 'Állapot',
+    'AICapTierExtra' => 'AI Extra',
+    'AICapStateLocked' => 'Zárolt',
+    'AICapIncludedInExtra' => 'Az AI Extra tartalmazza',
+    'AICapPurchaseExtra' => 'Vásárold meg az AI Extrát',
+    'AICapNeedsProvider' => 'Szolgáltatói beállítást igényel',
+    'AICapNoMatch' => 'Nincsenek egyező képességek',
+    'AICapNoMatchHint' => 'Próbáljon ki egy másik domaint, szintet vagy keresési kifejezést.',
+    'AICapCountSingular' => 'képesség',
+    'AICapCountPlural' => 'képességek',
+    'DomainAssistant' => 'Asszisztens',
+    'AICapLoadError' => 'Nem sikerült betölteni a mesterséges intelligencia képességeit. Próbáld újra.',
+    'AIProviderConfigSubtitle' => 'Csatlakoztassa a SimpleRisk-et egy MI-szolgáltatóhoz a MI-képességek működtetése érdekében.',
+    'AIHowToGetAPIKeyFor' => 'Hogyan szerezzünk API kulcsot a következőhöz:',
+    'AIExtraNotActivated' => 'Nincs aktiválva',
+    'AIExtraValueProp' => 'Továbbfejlesztett mesterséges intelligencia – FAIR kockázatszámítás, dokumentum- és kontrolltámogatás, valamint mesterséges intelligencia által vezérelt csevegőasszisztens.',
+    'AICtxOrgName' => 'Mi a szervezeted neve?',
+    'AICtxOrgSizeEmployees' => 'Hány alkalmazottja van a szervezetének?',
+    'AICtxOrgSizeRevenue' => 'Mennyi a szervezetük éves bevétele?',
+    'AICtxOrgObjective' => 'Melyek a szervezet elsődleges üzleti céljai és stratégiai céljai?',
+    'AICtxOrgIndustry' => 'Mi a szervezet elsődleges iparága vagy szektora?',
+    'AICtxOrgLocation' => 'Mely országokban vagy régiókban működik a szervezete?',
+    'AICtxOrgType' => 'Milyen típusú szervezet Ön?',
+    'AICtxDataTypes' => 'Milyen típusú adatokat gyűjt, dolgoz fel vagy tárol a szervezete (pl. személyes adatok, pénzügyi adatok, egészségügyi információk)?',
+    'AICtxDataCustomers' => 'Kik az elsődleges ügyfelei vagy érdekelt felei (pl. fogyasztók, vállalkozások, kormányzati szervek)?',
+    'AICtxDataRegulatory' => 'Vannak-e Önre vonatkozó különleges szabályozási követelmények az iparágában?',
+    'AICtxDataThirdParties' => 'Vannak-e olyan harmadik féllel fennálló kapcsolataik vagy kiszervezett szolgáltatásaik, amelyek megfelelőségi felügyeletet igényelnek?',
+    'AICtxMaturityIssues' => 'Tapasztalt-e jelentős megfelelőségi problémákat, biztonsági incidenseket vagy kockázati eseményeket az elmúlt 3-5 évben?',
+    'AICtxMaturityConcerns' => 'Vannak-e olyan konkrét aggályos vagy fejlesztendő területek, amelyeket a jelenlegi GRC-folyamataiban azonosított?',
+    'AICtxMaturityAppetite' => 'Mekkora a szervezet kockázattűrő képessége és kockázatvállalási hajlandósága?',
+    'AICtxMaturityLevel' => 'Milyen a jelenlegi érettségi szintjük az irányítás, a kockázatkezelés és a megfelelőségi gyakorlatok tekintetében?',
+    'AICtxImplementationChanges' => 'Vannak-e a közeljövőben olyan változások az üzleti modelljében, a technológiai infrastruktúrájában vagy a piacában, amelyek befolyásolhatják a megfelelőségi igényeit?',
+    'AICtxImplementationResourcesBudget' => 'Milyen költségvetési források állnak rendelkezésre a megfelelőségi keretrendszerek bevezetésére és fenntartására?',
+    'AICtxImplementationResourcesPersonnel' => 'Milyen személyzeti erőforrások állnak rendelkezésre a megfelelőségi keretrendszerek bevezetéséhez és fenntartásához?',
+    'AICtxImplementationResourcesTechnology' => 'Milyen technológiai infrastrukturális erőforrások állnak rendelkezésre a megfelelőségi keretrendszerek bevezetéséhez és fenntartásához?',
+    'AICtxImplementationResourcesTraining' => 'Milyen képzési és fejlesztési erőforrások állnak rendelkezésre a megfelelőségi keretrendszerek bevezetéséhez és fenntartásához?',
+    'AICtxImplementationResourcesExternal' => 'Milyen külső támogató források állnak rendelkezésre a megfelelőségi keretrendszerek bevezetéséhez és fenntartásához?',
+    'AIAPIKeySecurityNote' => 'A kulcsod szerveroldalon tárolódik, és soha nem kerül vissza a böngészőbe. A szolgáltató URL-jeit a config.php fájlban konfigurálható SSRF engedélyezőlista alapján ellenőrzik.',
+    'AIContextEgressWarning' => 'A válaszaidat elküldjük a beállított MI-szolgáltatódnak, hogy megalapozzák az ajánlásait. Ne adj meg semmi olyat, amit nem osztanál meg velük.',
+    'Provider' => 'Szolgáltató',
+    'AIProviderURLHostNotAllowed' => 'A(z) "%s" hoszt nincs az AI-szolgáltatók engedélyezőlistáján. Adja hozzá a $ai_allowed_provider_hosts -hoz a config.php fájlban, majd mentse el. (Az ismert AI-szolgáltatók és a 127.0.0.1 loopback címek mindig engedélyezettek.)',
+    'AIContextLastSaved' => 'Utolsó mentés',
+    'AIContextNeverSaved' => 'Még nincs mentve',
+    'AICtxCardSubtitle' => '21 kérdés négy területen. Minél többre válaszolsz, annál élesebb lesz minden ajánlás.',
+    'AICtxAnswered' => '%1$d / %2$d megválaszolva',
+    'AICtxAllOptional' => 'Választható',
+    'AIContextSaving' => 'Mentés…',
+    'AIContextSaveFailed' => 'Nem sikerült menteni a módosításokat. Próbáld újra.',
+    'AISettingsSavedNotReachable' => 'A mesterséges intelligencia beállításai mentve, de a szolgáltató nem érhető el. Győződjön meg arról, hogy fut, és az URL helyes.',
+    'AISettingsSavedKeyRequired' => 'A mesterséges intelligencia beállításai mentve, de a szolgáltatónak API-kulcsra van szüksége a funkciók használatához.',
+    'TestAndSave' => 'Tesztelés és mentés',
+    'AICapEnableAll' => 'Összes engedélyezése',
+    'AICapDisableAll' => 'Összes letiltása',
+    'AISettingsSavedConnected' => 'MI-beállítások mentése – sikeres kapcsolódás.',
+    'AISettingsSavedNotConnected' => 'A mesterséges intelligencia beállításai mentve, de a csatlakozási teszt sikertelen. Ellenőrizze a modellt, a kulcsot és az URL-t.',
+    'AIProviderURLNotOnAllowlist' => 'Ez a host nincs az AI-szolgáltató SSRF engedélyezőlistáján. Mentés előtt add hozzá a $ai_allowed_provider_hosts zónához a config.php fájlban.',
+    'Connected' => 'Csatlakoztatva',
+    'NotConnected' => 'Nincs csatlakoztatva',
+    'AICapBulkError' => 'Néhány funkció frissítése nem sikerült. Próbáld újra.',
+    'QuestionnaireAlreadyCompleted' => 'Ez a kérdőív már kitöltött.',
+    'QuestionnaireDraftError' => 'Hiba a vázlat mentése során. Részletekért lásd a konzolt.',
+
+    // Audit cadence scheduling - Define Test modal (Interval/Calendar schedule redesign)
+    // 'Overdue' duplicates the English of 'ImKpiOverdue' on purpose: that key is
+    // an Incident Management KPI label, and a compliance status pill reusing an
+    // IM-scoped key would couple the two domains for a translator (and break the
+    // moment either wording moves). This is the generic, cross-domain one.
+    'Overdue' => 'Lejárt',
+    // Deliberate: the only other key rendering 'Manual' is 'ManualValuation',
+    // an asset-valuation label. Pointing a schedule mode at it would couple two
+    // unrelated domains for translators and break the moment either reworded.
+    'ScheduleManual' => 'Kézi',
+    'ScheduleInterval' => 'Intervallum',
+    'ScheduleCalendar' => 'Naptár',
+    'Cadence' => 'Ütem',
+    'CadenceBiweekly' => 'Kéthetente',
+    'CadenceSemiAnnually' => 'Félévente',
+    'AnchorDate' => 'Horgony dátuma',
+    'UpcomingOccurrences' => 'Közelgő események',
+    'AuditLeadInDays' => 'Audit bevezető napok',
+    'SkipOccurrence' => 'Kihagyás',
+    'OverrideDate' => 'Felülírás dátuma',
+    'Week' => 'Hét',
+    'NoUpcomingOccurrences' => 'Nincsenek közelgő események ebben az ablakban.',
+    'FailedToLoadUpcomingOccurrences' => 'Nem sikerült betölteni a közelgő események előnézetét.',
+    'AnchorDateMustBeTodayOrLater' => 'A horgony dátumának a mai vagy későbbi dátumnak kell lennie. Múltbeli dátum ütemezéséhez hozzon létre egy manuális tesztet.',
+    'InvalidScheduleType' => 'Érvénytelen ütemezési típus. Megengedett értékek: Manuális, Intervallum, Naptár.',
+    'Weeks' => 'Hetek',
+    'Months' => 'Hónapok',
+    'Years' => 'Évek',
+    'ScheduleSummaryEvery' => 'Minden {$interval} {$unit}',
+
+    // Define Tests redesign - client-rendered grid (Phase 1, Task 6)
+    'LastResult' => 'Utolsó eredmény',
+    'NextDue' => 'Következő esedékesség',
+    'DueSoon' => 'Hamarosan esedékes',
+    'Retired' => 'Kivont',
+    'MyTests' => 'Tesztjeim',
+    'Failing' => 'Sikertelen',
+    'Untested' => 'Nem tesztelt',
+    'ShowRetired' => 'Kivont elemek megjelenítése',
+    'Tests' => 'Tesztek',
+    'NoTestsForThisControl' => 'Ehhez a kontrollhoz még nincsenek tesztek.',
+    'NoControlsDefinedYet' => 'Még nincsenek definiált vezérlők',
+    'NoControlsDefinedYetBody' => 'A tesztek hozzáadása előtt definiáld a vezérlőket az Irányítás részben.',
+    'NoTestsMatchFilters' => 'Egyik teszt sem felel meg a szűrőknek',
+    'NoTestsMatchFiltersBody' => 'Próbáld meg módosítani a keresést vagy a szűrőket.',
+    'CouldNotLoadTests' => 'Nem sikerült betölteni a teszteket',
+    'CouldNotLoadTestsBody' => 'Valami hiba történt. Az adatai biztonságban vannak – próbálja meg frissíteni az oldalt.',
+    'ShowingXToYOfZ' => '{$start}–{$end} / {$total} megjelenítése',
+    // Define Tests grid -- SCF-mapping + read-only procedure expand (Phase 1, Task 7)
+    'Reference' => 'Referencia',
+    'NoFrameworksMapped' => 'Nincsenek keretrendszerek ehhez a vezérlőhöz rendelve.',
+    // Define Tests grid -- batch select + retire/delete + quick filters (Phase 1, Task 8)
+    'Retire' => 'Kivon',
+    'ReassignTester' => 'Tesztelő átrendelése',
+    'SetSchedule' => 'Ütemezés beállítása',
+    'ConfirmRetireSelectedTests' => 'Visszavonja a {n} kiválasztott tesztet/teszteket?',
+    'ConfirmDeleteSelectedTests' => 'Törli a {n} kiválasztott tesztet/teszteket? Ez a művelet nem vonható vissza.',
+    // Define Tests grid -- Coverage toolbar select (Issue 4)
+    'Coverage' => 'Lefedettség',
+    'CoverageWithTests' => 'Kontrollok tesztekkel',
+    'CoverageAllControls' => 'Minden vezérlőelem',
+    'CoverageGaps' => 'Rések',
+    // Define Tests insights band (Phase 2, Task 4) -- KPI tile labels + subtitles.
+    // 'Overdue', 'DueSoon', and 'Failing' are reused from the grid's quick-filter
+    // chips above (identical text) rather than duplicated here.
+    'DtTotalTests' => 'Összes teszt',
+    'DtCoverageGaps' => 'Lefedettségi hiányosságok',
+    'DtAcrossNControls' => '{$n} vezérlők között',
+    'DtControlsWithNoTest' => 'Teszt nélküli kontrollok',
+    'DtNeedInitiationNow' => 'Azonnali indítás szükséges',
+    'DtWithinLeadInWindow' => 'A bevezető ablakon belül',
+    'DtLastResultFailed' => 'Az utolsó találat sikertelen',
+    'InvalidTestMethod' => 'A vizsgálati módszernek a következők egyikének kell lennie: lekérdezés, megfigyelés, ellenőrzés vagy ismételt végrehajtás!',
+    'TesterCannotBeApprover' => 'A tesztelő nem szerepelhet jóváhagyóként ennél a tesztnél.',
+    'ApproverNotEligible' => 'Egy vagy több kiválasztott jóváhagyónak nincs „Tesztek jóváhagyása” jogköre.',
+    'TestMethod' => 'Vizsgálati módszer',
+    'TestMethodInquiry' => 'Vizsgálat',
+    'TestMethodObservation' => 'Megfigyelés',
+    'TestMethodInspection' => 'Ellenőrzés',
+    'TestMethodReperformance' => 'Újrateljesítmény',
+    'Sample' => 'Minta',
+    'RequiredEvidence' => 'Szükséges bizonyítékok',
+    'Approvers' => 'Jóváhagyók',
+    'AuditLog_TestAuditApproved' => 'A(z) „{$test_audit_name}„(ID: {$test_audit_id}) auditot a(z) „{$user_name} ” felhasználó jóváhagyta.',
+    'AuditLog_TestAuditRejected' => 'A(z) „{$test_audit_name}„(ID: {$test_audit_id}) auditot a(z) „{$user_name}” felhasználó elutasította a következő megjegyzéssel: „{$comment}”.',
+    'AuditLog_TestAuditAwaitingApproval' => 'A(z) „{$test_audit_name}„(ID: {$test_audit_id}) auditot a „{$user_name}” felhasználó lezárásra küldte, és jóváhagyásra vár. Változtatások: {$changes}.',
+    'AuditApproved' => 'Az auditot sikeresen jóváhagyták.',
+    'AuditRejected' => 'Az auditot sikeresen elutasították.',
+    'RejectCommentRequired' => 'Az audit elutasításához megjegyzés szükséges.',
+    'NotAnApproverOfThisAudit' => 'Ön nem konfigurált jóváhagyó ehhez az audithoz.',
+    'ApproverCannotBeTester' => 'A jóváhagyó nem lehet egyben az audit tesztelője is.',
+    'AuditNotAwaitingApproval' => 'Ez az audit jelenleg nem vár jóváhagyásra.',
+    'NotificationAuditAwaitingApprovalTitle' => 'Jóváhagyásra váró audit',
+    'NotificationAuditAwaitingApprovalBody' => 'A(z) "{$test_audit_name}" audit lezárásra került, és az Ön jóváhagyására vár.',
+    'NotificationAuditRejectedTitle' => 'Ellenőrzés elutasítva',
+    'NotificationAuditRejectedBody' => 'A(z) "{$test_audit_name}" ellenőrzést a következő megjegyzéssel utasították el: "{$comment}"',
+    'AwaitingApproval' => 'Jóváhagyásra vár',
+    'AwaitingApprovalBannerText' => 'Ez az audit lezárásra lett benyújtva, és egy konfigurált jóváhagyó jóváhagyására vár, mielőtt lezárható lenne.',
+    'ReturnedForRework' => 'Átdolgozásra visszaküldve',
+    'ReturnedForReworkBannerText' => 'Ezt az auditot elutasították és visszaküldték átdolgozásra.',
+    'RejectReason' => 'Elutasítás oka',
+    'AreYouSureYouWantToApproveThisAudit' => 'Biztosan jóváhagyja ezt az auditot?',
+    'AtLeastOneControlRequired' => 'Legalább egy vezérlőelem szükséges.',
+    'DtNCommonAcrossNControls' => '{$common} közös · {$n} vezérlők',
+    'DtUntestedControls' => 'Nem tesztelt vezérlők',
+    'DtControlsInScopeNoCoverage' => 'Nincs lefedettség',
+    'Passing' => 'Sikeres',
+    'DtLastResultPassed' => 'Utolsó eredmény elfogadva',
+    'AllFamilies' => 'Minden család',
+    'SearchTestsPlaceholder' => 'Tesztek, vezérlők és keretrendszerek keresése',
+    'AnySchedule' => 'Bármely ütemterv',
+    'AnyTag' => 'Bármely címke',
+    'AuditAutoClosedTestRetired' => 'Automatikusan lezárva nem egyértelműként, mivel a tesztet visszavonták.',
+    'Common' => 'Közös',
+    'ValidatesAcrossMappedFrameworks' => 'Validálja a leképezett keretrendszereket',
+    'EditTest' => 'Teszt szerkesztése',
+    'ControlHasNoTestCoverage' => 'Ennek a hatókörön belüli ellenőrzésnek még nincs tesztlefedettsége.',
+    'AddTheFirstTest' => 'Első teszt hozzáadása',
+    'ApplyCommonTestHint' => 'Alkalmazzon egy vagy több meglévő tesztet erre a vezérlőelemre. Minden teszt megtartja az aktuális vezérlőelemeit, és egy közös tesztté válik, amely ezt a vezérlőelemet is lefedi.',
+    'CommonTestApplied' => 'Teszt alkalmazva erre a vezérlőre.',
+    'CouldNotApplyCommonTest' => 'A tesztet nem sikerült alkalmazni erre a vezérlőre.',
+    'SelectOneOrMoreTests' => 'Válasszon ki egy vagy több tesztet',
+    'CommonTestsApplied' => '{n} tesztet alkalmaztak erre a vezérlőre.',
+    'ApplyCommonTests' => 'Gyakori tesztek alkalmazása…',
+    'History' => 'Előzmények',
+    'Result' => 'Eredmény',
+    'Approval' => 'Jóváhagyás',
+    'ThisTestHasNotBeenRunYet' => 'Ezt a tesztet még nem futtatták le.',
+    'CouldNotLoadTestHistory' => 'Nem sikerült betölteni a teszt előzményeit.',
+    'Identity' => 'Identitás',
+    'IdentitySectionHint' => 'Név, tesztelő és az általa validált vezérlők',
+    'WhenTheAuditInitiates' => 'Amikor az audit megkezdődik',
+    'ProcedureAndEvidence' => 'Eljárás és bizonyítékok',
+    'CommonTestControlsHint' => 'Egyetlen teszt számos vezérlőelemet validálhat – egy közös teszt. Ha ezt egy vezérlőelem „+ Teszt hozzáadása” gombjával nyitjuk meg, akkor az itt előre kijelölődik.',
+    'SeparationOfDutiesNote' => 'Feladatok szétválasztása – a jóváhagyó nem lehet egyben a tesztelő is.',
+    'CommonTestEditScopeHint' => 'A változások mindenhol érvényesek, ahol ezt a közös tesztet használják.',
+    'Mode' => 'Mód',
+    'AddOrRemove' => '… hozzáadása vagy eltávolítása',
+    'AddOrSearchTags' => 'Címkék hozzáadása vagy keresése…',
+    'CreateTagX' => 'Létrehozza a következőt: „{tag}”',
+    'Archived' => 'Archivált',
+    'ShowAllTests' => 'Minden teszt',
+    'ShowActiveTests' => 'Aktív tesztek',
+    'ShowRetiredTests' => 'Kivont tesztek',
+    'UntestedControls' => 'Nem tesztelt vezérlők',
+    'OverdueByXDays' => 'Lejárt · {n} nap',
+    'OverdueByOneDay' => 'Lejárt · 1 nap',
+    'DueInXDays' => 'Esedékes {n} nap múlva',
+    'DueTomorrow' => 'Holnap esedékes',
+    'DueToday' => 'Ma esedékes',
+    'ScheduledForX' => 'Ütemezett · {date}',
+    'AllTesters' => 'Minden tesztelő',
+    'AllStatuses' => 'Minden állapot',
+    'OnTrack' => 'Jó úton halad',
+    'NextTestDateDerivedHint' => 'Az utolsó tesztdátum és a tesztgyakoriság alapján számítva. Állítson be egy gyakoriságot az automatikus ütemezéshez, vagy hagyja üresen a gyakoriságot, ha saját maga szeretné beállítani a dátumot.',
+    'DueStatus' => 'Esedékesség állapota',
+    'AllResults' => 'Minden eredmény',
+    // Remove a test from one control (Define Tests grid unlink row action)
+    'RemoveFromThisControl' => 'Eltávolítás erről a vezérlőről',
+    'RemoveTestFromControl' => 'Teszt eltávolítása a kontrollcsoportból',
+    'RemoveTestFromControlConfirm' => 'Eltávolítod a "{test_name}"-t a {control_name}-ból?',
+    'RemoveTestFromControlStays' => 'A teszt a {n} többi vezérlőelemén marad. Semmi sem törlődik.',
+    'RemoveTestFromControlStaysOne' => 'A teszt az 1 másik kontrollon marad. Semmi sem törlődik.',
+    'CannotRemoveTestsOnlyControl' => 'Egy tesztnek legalább egy vezérlőhöz kell tartoznia. Ehelyett vonultassa vissza vagy törölje a tesztet.',
+    'TestRemovedFromControl' => 'A tesztet eltávolították a kontrollcsoportból.',
+    'CouldNotRemoveTestFromControl' => 'A tesztet nem lehetett eltávolítani a kontrollból.',
+    'TestRemovedFromControlAuditLogMessage' => 'A(z) „{$test_name}” tesztet (ID: {$test_id}) a „{$user} ” felhasználó eltávolította a(z) „ kontroll” csoportból (ID: {$control_id}).',
+    'DeleteTestUsedByNControls' => 'A {n} vezérlőelemek használják, és mindegyikről el lesz távolítva.',
+    'BulkDeleteSharedTestsNote' => 'Ezek közül {n} más vezérlőelemek által használt, és azokból is eltávolításra kerül.',
+    'BulkRetireSharedTestsNote' => 'Ezek közül {n} elemet más vezérlők használnak, és ott is kivonásra kerülnek.',
+    'BulkDeleteOneSharedTestNote' => 'Ezek közül az egyiket más vezérlők használják, és azokból is eltávolításra kerül.',
+    'BulkRetireOneSharedTestNote' => 'Ezek közül az egyiket más vezérlők használják, és ott is kivezetésre kerül.',
+    'CouldNotLoadTest' => 'Nem sikerült betölteni ezt a tesztet.',
+    'Expand' => 'Kibontás',
+    'SearchMappings' => 'Keretrendszerek és referenciák keresése',
+    'NoMatchingMappings' => 'Nincsenek találatok a keresésnek megfelelő leképezések.',
+    'Insights' => 'Betekintések',
+    'ShowInsights' => 'A betekintési csempék megjelenítése',
+    'HideInsights' => 'Az elemzési csempék összecsukása egy összefoglaló sorrá',
+    'ChooseControls' => 'Vezérlők kiválasztása',
+    'UseTheseControls' => 'Használja ezeket a vezérlőket',
+    'SearchControlsPlaceholder' => 'Keresés szám vagy név alapján',
+    'PickerKeyboardHint' => 'Fel/le mozgatáshoz, Enter kijelöléshez, Esc visszavonáshoz',
+    'NoControlsMatchFilters' => 'Nincs találat. Szélesítse ki a bal oldali lépést, vagy törölje a keresést.',
+    'NoControlsSelectedYet' => 'Még semmi sincs kiválasztva.',
+    'AllControls' => 'Minden vezérlőelem',
+    'AddOrRemoveControls' => 'Vezérlők hozzáadása vagy eltávolítása…',
+    'LastTested' => 'Utolsó tesztelés',
+    'LastTestDateAnchorHint' => 'Horgonyok intervallum ütemezése (ez a dátum plusz a gyakoriság). Miután a teszt rögzítette az eredményeket, a rács a legújabb eredmény dátumát mutatja.',
+    'Filters' => 'Szűrők',
+    'ShowFilters' => 'Szűrők megjelenítése',
+    'HideFilters' => 'Szűrők elrejtése',
+
+    // App shell — collapsing sidebar / new base design (SR app-shell redesign)
+    'AI' => 'MI',
+    'CollapseSidebar' => 'Oldalsáv összecsukása',
+    'FooterCopyright' => '© %s SimpleRisk. Minden jog fenntartva.',
+    'ExpandSidebar' => 'Oldalsáv kibontása',
+    'WorkflowsCloneConfirm' => 'Munkafolyamat klónozása: \'{$name}\'?',
+    'WorkflowsDeleteConfirm' => 'Törli a(z) \'{$name}\' munkafolyamatot? Ez a művelet nem vonható vissza.',
+    'WorkflowActionFailed' => 'Sikertelen művelet: {$msg}',
+    'ClickToDisable' => 'Kattintson a letiltáshoz',
+    'ClickToEnable' => 'Kattintson az engedélyezéshez',
+    'ENABLED' => 'ENGEDÉLYEZVE',
+    'DISABLED' => 'LETILTVA',
+    'BackToWorkflows' => 'Vissza a munkafolyamatokhoz',
+    'BackToHistory' => 'Vissza az előzményekhez',
+    'NewWorkflow' => 'Új munkafolyamat',
+    'ViewSteps' => 'Lépések megtekintése',
+    'SaveWorkflow' => 'Munkafolyamat mentése',
+    'WorkflowSavedSuccessfully' => 'A munkafolyamat sikeresen mentve.',
+    'WorkflowNotFound' => 'Munkafolyamat nem található.',
+    'EditWorkflow' => 'Szerkesztési munkafolyamat: {$name}',
+    'OrganizationContextProfile' => 'Szervezeti kontextusprofil',
+    'AICtxAutoAcceptThreshold' => 'Mi a szervezet automatikus elfogadási küszöbértéke a kockázatra vonatkozóan (dollárösszeg vagy az ALE százaléka)?',
+    'AICtxGrcBudget' => 'Mi az éves GRC/biztonsági költségvetésük?',
+    'AICtxAuditorPerspective' => 'Kinek a szemszögéből történik az ellenőrzés elsősorban?',
+    'AICtxUnitCurrency' => 'Valuta ($)',
+    'AICtxUnitPercentOfAle' => 'ALE százalékos aránya (%)',
+    'AICtxFrameworksInUse' => 'Jelenleg használt keretrendszerek',
+    'AICtxNoFrameworksInUse' => 'Még nem találhatók aktív keretrendszerek. Keretrendszerek hozzáadása az Irányítás > Keretrendszer-hozzárendelés menüpont alatt.',
+    'AICtxFromYourData' => 'Az adataidból',
+    'AICtxAuthoritative' => 'Irányadó',
+    'AICtxAppetiteNotSet' => 'Nincs beállítva',
+    'AICtxAppetiteManageLink' => 'Kezelés a kockázatkonfigurációban',
+    'AICapControlTestGeneration' => 'Kontrollteszt-generálás',
+    'AICapControlTestGenerationDesc' => 'Ellenőrzésre tervezi a kontrollteszteket, felhasználva a kontroll keretrendszer-leképezését, a meglévő teszteket és az önértékelés eredményeit – semmi sem jön létre, amíg Ön jóvá nem hagyja.',
+    'AICapSurfacedControlTestGeneration' => 'Megfelelőség – Tesztek meghatározása',
+    'AIControlTestGenUnavailable' => 'SZOLGÁLTATÁS NEM ELÉRHETŐ: Egy rendszergazdának engedélyeznie kell ezt a funkciót a mesterséges intelligencia beállításaiban.',
+    'AIControlTestGenInvalidId' => 'HIBÁS KÉRÉS: Pozitív vezérlőazonosító szükséges.',
+    'AIControlTestGenNotFound' => 'NOT FOUND: A megadott vezérlő nem található.',
+    'AIControlTestGenConflict' => 'ÜTKÖZÉS: A generálás már várólistára került ehhez a vezérlőhöz.',
+    'AIControlTestGenQueued' => 'ELFOGADVA: A vezérlőteszt generálása várólistára került.',
+    'AIControlTestGenFailed' => 'BELSŐ SZERVERHIBA: Nem sikerült a várólista-vezérlő teszt generálása.',
+    'AIControlTestGenCheckFailed' => 'HIBA: Nem sikerült ellenőrizni a vezérlőt a sorba állítás előtt.',
+    'GenerateTestsWithAI' => 'Tesztek generálása mesterséges intelligenciával',
+    'ShowAiSuggestedTests' => 'MI által javasolt tesztek',
+    'AiSuggested' => 'MI javasolta',
+    'ReviewAndEdit' => 'Ellenőrzés és szerkesztés',
+    'CreateSelected' => 'Kijelölt létrehozása',
+    'TestCreatedFromSuggestion' => 'Teszt létrehozva a javaslat alapján.',
+    'SuggestionDismissed' => 'Javaslat elvetve.',
+    'TestGenerationQueued' => 'A tesztgenerálás várólistára került.',
+    'Generating' => '… generálása',
+    'SuggestionDismissFailed' => 'A teszt létrejött, de a hozzá tartozó mesterséges intelligencia általi javaslatot nem lehetett elvetni. Ha továbbra is fennáll, vesse el manuálisan.',
+    'AICtxAuditorBig4' => 'Nagy 4 (külső)',
+    'AICtxAuditorBoutique' => 'Butik / regionális (külső)',
+    'AICtxAuditorInternal' => 'Csak belső ellenőrzés',
+    'AICtxAuditorSelfAssessed' => 'Önértékelő',
+    'AICtxAuditorNotSure' => 'Nem vagyok biztos benne',
+    'AICtxAppetiteCautious' => 'Óvatos',
+    'AICtxAppetiteBalanced' => 'Kiegyensúlyozott',
+    'AICtxAppetiteAggressive' => 'Agresszív',
+    'TestGenerationComplete' => 'A mesterséges intelligencia által tervezett kontrolltesztek készen állnak az áttekintésre.',
+    'TestGenerationStillRunning' => 'A tesztgenerálás még fut; a vázlatok hamarosan megjelennek.',
+    'TestGenerationNoNew' => 'A generáció befejeződött — nincsenek új tesztek, amelyek erre a kontrollra vonatkozóan javasolnának.',
+    'SearchEntities' => 'Entitások keresése',
+    'SearchEntitiesPlaceholder' => 'Kockázatok, ellenőrzések, szabályzatok, kivételek keresése…',
+    'ShowTypes' => 'Típusok megjelenítése',
+    'Depth' => 'Mélység',
+    'Inspector' => 'Ellenőr',
+    'Connections' => 'Kapcsolatok',
+    'NoConnectionsFound' => 'Nem található kapcsolat a kiválasztott entitáshoz.',
+    'CouldNotLoadGraph' => 'Nem sikerült betölteni a csatlakozási grafikont.',
+    'CouldNotSearchEntities' => 'Nem sikerült entitásokat keresni.',
+    'ShowingTopNOfM' => 'A felső {0} megjelenítése a {1}-ból',
+    'RankedByMaturityGap' => 'Érettségi különbség szerinti rangsorolás',
+    'RankedByRiskScore' => 'Kockázati pontszám szerint rangsorolva',
+    'RankedByRecentFailure' => 'Legutóbbi kudarc szerint rangsorolva',
+    'RankedByReviewDate' => 'A következő értékelés dátuma szerint rangsorolva',
+    'RankedBySeverity' => 'Súlyosság szerint rangsorolva',
+    'RankedByName' => 'Név szerint rangsorolva',
+    'NodeTypeSelfAssessmentResult' => 'Önértékelés eredménye',
+    'Relationship' => 'Kapcsolat',
+    'Exception' => 'Kivétel',
+    'DesiredMaturity' => 'Kívánt érettség',
+    'ApprovalState' => 'Jóváhagyási állapot',
+    'RelationshipOfType' => '{0} a {1}-ból',
+    // Connectivity Explorer Inspector: labels for enrichment field keys
+    // (ai_context_enrich_fetch(), ai_context_enrich_vulnerabilities()) that
+    // fieldLabel() in connectivity-visualizer.js did not yet cover.
+    'LastDate' => 'Utolsó dátum',
+    'LastResultDate' => 'Utolsó eredmény dátuma',
+    'PercentComplete' => 'Készült százalék',
+    'AssessmentDate' => 'Értékelés dátuma',
+    'NextDate' => 'Következő dátum',
+    'Number' => 'Szám',
+    'Grouping' => 'Csoportosítás',
+    'Hidden' => 'Rejtett',
+    'FirstFound' => 'Első találat',
+    'LastFound' => 'Utolsó találat',
+    'Patchable' => 'Javítható',
+    'Solution' => 'Megoldás',
+    'Breadcrumb' => 'Navigációs morzsa',
+    'SelectANodeToInspect' => 'Válasszon ki egy csomópontot a részleteinek megtekintéséhez.',
+    'HiddenUnreachableNodes' => '{0} rejtett csomópont(ok): a rejtett típus(ok) nélkül már nem csatlakoztatható.',
+    // Connectivity Explorer canvas launchpad (Level-1 type tiles / Level-2
+    // browsable entity list) -- docs/superpowers/specs/2026-07-27-
+    // connectivity-explorer-launchpad.md
+    'BrowsableEntityTypes' => 'Böngészhető entitástípusok',
+    'CountFloor' => '{0}+',
+    'NoBrowsableTypes' => 'Nincs jogosultsága semmilyen entitástípus böngészésére.',
+    'AllTypes' => 'Minden típus',
+    'FilterEntitiesPlaceholder' => 'Szűrő…',
+    'NoMatchingEntities' => 'Egyik entitás sem felel meg a szűrőnek.',
+    'LoadMore' => 'Továbbiak betöltése',
+    'Loading' => '… betöltése',
+    'CouldNotLoadEntityCounts' => 'Nem sikerült betölteni az entitások számát.',
+    'CouldNotLoadEntities' => 'Nem sikerült betölteni az entitásokat.',
+    'ClearGraph' => 'Grafikon törlése',
+    // Connectivity Explorer node-type chip label for the 'audit' type. Not
+    // reused from 'TeamType_audit' (same English text, "Audit") -- that key
+    // is scoped to the Team Separation team-type picker, a different feature
+    // whose wording should be free to diverge from this one's.
+    'Audit' => 'Ellenőrzés',
+    // Queued email send-failure notifications
+    'EmailSendFailedNotificationTitle' => 'E-mail kézbesítés sikertelen',
+    'EmailSendFailedNotificationBody' => 'Egy vagy több várólistán lévő e-mail kézbesítése sikertelen volt. Ellenőrizze a levelezési beállításait, majd a részletekért tekintse meg a Várólista-figyelőt és a szervernaplót.',
+    'QuestionnaireShareInvalidEmailAddress' => 'A kérdőív eredményei nem oszthatók meg olyan kapcsolattartóval, akinek nincs érvényes e-mail címe.',
+    'AssessmentSendInvalidEmailAddress' => 'Az értékelés nem küldhető érvénytelen e-mail címre.',
+    'AssessmentSentTo' => 'Az értékelést elküldtük a következő címre: "{$email}".',
+    'AssessmentNotSentNoValidRecipients' => 'Az értékelés nem lett elküldve – nem adott meg érvényes e-mail címet.',
+    'AssessmentContactUnusableEmailNotificationTitle' => 'Kérdőív nem került elküldésre',
+    'AssessmentContactUnusableEmailNotificationBody' => 'A(z) "{$questionnaire}" kérdőívet nem sikerült elküldeni a(z) "{$contact}" címzettnek, mert az adott kapcsolattartónak nincs érvényes e-mail címe. A küldés folytatásához frissítse a kapcsolattartó adatait.',
+    'EmailFailureNotificationRetention' => 'E-mail kézbesítési hiba értesítésének megőrzése',
+    'EmailFailureNotificationRetentionOutOfRange' => 'Az e-mail kézbesítési hiba értesítésének megőrzési idejének {$min} és {$max} nap között kell lennie.',
+    'MailSettingsUpdatedSuccessfully' => 'A levelezési beállítások frissítése sikeresen megtörtént.',
+    // Questionnaire audit-trail entries for the API submit/draft paths (SR-1714).
+    // The token form credits the contact; an API caller is an authenticated
+    // SimpleRisk user acting on that contact's questionnaire, so both the
+    // contact and the acting user are named.
+    'QuestionnaireCompletedAuditLogViaApi' => 'Questionnaire "{$questionnaire_name}" for contact "{$contact_name}" was completed via the API by user "{$user_name}".',
+    'QuestionnaireDraftAuditLogViaApi' => 'A(z) „{$questionnaire_name}” típusú kérdőívet a(z) „{$contact_name}” címre a(z) „{$user_name} ” felhasználó API-n keresztül vázlatként mentette.',
+    // Bad-input response for the questionnaire risk-list endpoints, which
+    // previously reported a malformed questionnaire_id as a permission denial.
+    // Mirrors the existing 'MissingOrInvalidTrackingID'.
+    'MissingOrInvalidQuestionnaireID' => 'Hiányzó vagy érvénytelen kérdőív-azonosító.',
+    // POST /api/v2/assessments/questionnaire/result/file response messages.
+    // The `id` path deliberately returns QuestionIdCannotAcceptFile for every
+    // question-level rejection so a sequential tracking id cannot be used to
+    // probe questionnaire structure; the token path returns the specific reason.
+    'QuestionnaireResultNotFoundForTokenOrId' => 'NOT FOUND: Nem található kérdőíves eredmény a megadott tokennel vagy azonosítóval.',
+    'QuestionIdCannotAcceptFile' => 'HIBÁS KÉRÉS: a question_id {$question_id} nem fogad el fájlt ezen a kérdőív eredményén',
+    'QuestionIdNotFoundInQuestionnaire' => 'HIBÁS KÉRÉS: a question_id {$question_id} nem található ebben a kérdőívben',
+    'QuestionIdInMultipleTemplates' => 'HIBÁS KÉRÉS: a question_id {$question_id} több sablonban is szerepel ennél a kérdőívnél',
+    'QuestionIdDoesNotAcceptFileUploads' => 'ROSSZ KÉRÉS: a question_id {$question_id} nem fogad el fájlfeltöltéseket',
+    // The Statement of Applicability's two UNVERIFIED implementation states.
+    //
+    // They exist because "we have not checked" is not "it does not work", and an
+    // SoA is ATTESTED — printing "No" for an unverified control is a false
+    // statement against yourself, exactly as printing "Yes" without evidence is
+    // a false statement the other way. Before these keys existed both states
+    // fell through to 'No', which on a framework where most controls carry no
+    // test meant the whole document read "not implemented".
+    //
+    // They are two states rather than one because they are different findings
+    // with different owners: no test defined is a GOVERNANCE gap (nobody decided
+    // how to verify this control), never run is an OPERATIONAL one (somebody
+    // decided, and it was not done).
+    //
+    // WORDING. Both must be unmistakably distinct from the bare 'No' in the same
+    // column. 'Tests never run' rather than 'Never run': in a column headed
+    // "Implemented", the bare phrase reads for a moment as though the CONTROL
+    // was never run, when the subject is its tests.
+    //
+    // BOTH ARE PLURAL, and that is not only style. English takes the plural
+    // after "no" when the expected quantity could exceed one ("no results
+    // found"), and a control normally carries several tests — the singular
+    // implies only ever one was expected. 'Tests never run' is the stronger
+    // case: soa_implemented_for() returns `never_run` only when NOT ONE of the
+    // control's tests has produced a verdict, so the state is inherently about
+    // the whole set. With four tests defined and none run, the singular reads as
+    // one omission rather than a wholesale one.
+    'SoaImplementedNoTestDefined' => 'Nincsenek meghatározott tesztek',
+    'SoaImplementedNeverRun' => 'A tesztek soha nem futnak le',
+
+    // The Implemented column's fallback for a token neither sink recognizes.
+    //
+    // DELIBERATELY NOT A VERDICT, and the reason this key exists at all. Both
+    // sinks previously ended in a fallthrough to 'No', so adding a state without
+    // adding its label printed a confident, wrong answer into a compliance
+    // document. Falling through to 'Yes' would be worse. The only safe failure
+    // mode is a value that states nothing about the control — a visible bug
+    // instead of a silent misstatement.
+    'SoaImplementedUnknown' => 'Állapot nem elérhető',
+    // How an APPLICABLE control's stored inclusion reason(s) join to its own
+    // freeform justification when it recorded both (spec §4). Reached ONLY when
+    // both halves exist — reasons alone print as the reason list, prose alone
+    // prints verbatim — so this string is punctuation and word order, not prose.
+    // It is a language key rather than a hardcoded separator because a locale
+    // that joins clauses with a colon, a full stop, or right-to-left ordering
+    // must be able to say so; both placeholders have to survive translation.
+    'SoaJustifiedByInclusionReasons' => '{reasons} — {narrative}',
+    // The Set applicability modal's reason field, which became a MULTI-select
+    // when reasons moved to a join table: a control is commonly included (or
+    // excluded) for more than one reason, and the singular 'Reason' the field
+    // used to reuse now under-describes it. 'Reason' is left alone rather than
+    // repointed -- the row drawer and the SoA still print exactly one joined
+    // value under it, and redefining a key changes every surface that reads it.
+    'ApplicabilityReasons' => 'Okok',
+    // Said once, above a group of checkboxes, rather than implied by the widget.
+    // The old single <select> answered "how many may I pick?" by construction;
+    // a checkbox group does not, and a user who ticks one and stops has made the
+    // SoA less truthful than the one they meant to write.
+    'ApplicabilityReasonsHint' => 'Válassza ki az összes megfelelő okot.',
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // THE STATEMENT OF APPLICABILITY'S MARKERS AND ITS LEGEND (spec §1, §3).
+    // ─────────────────────────────────────────────────────────────────────────
+
+    // THE EVIDENCE COLUMN'S TWO ABSENCES, which are OPPOSITES.
+    //
+    // 'No evidence linked' is a FINDING: the control is in scope, is possibly
+    // claimed implemented, and nothing substantiates it. The em dash below is
+    // the other answer -- the control is excluded, so no evidence is expected
+    // and the absence is correct. Rendering both as an empty cell hides the
+    // first, which is the one an auditor circles.
+    'SoaNoEvidenceLinked' => 'Nincs kapcsolódó bizonyíték',
+    // PUNCTUATION, NOT PROSE -- the glyph the Evidence cell prints when nothing
+    // is expected. A language key rather than a hardcoded character for the same
+    // reason 'SoaJustifiedByInclusionReasons' is one: a locale that marks "not
+    // applicable" with a different dash, or with a word, must be able to say so.
+    'SoaEvidenceNotExpected' => '—',
+    // Whether the evidence a test DECLARED it requires actually arrived with the
+    // result. A stronger claim than a pass/fail alone, and few SoA tools make it.
+
+    // THE REMEDIATION BLOCK -- what is being done about a control that reads
+    // Partial or No. The SoA points AT the risk treatment plan (clause 6.1.3(e))
+    // rather than becoming one.
+    'SoaRemediation' => 'Elhárítás',
+    // THE MOST SERIOUS THING THAT BLOCK CAN FIND: the test failed and it is
+    // linked to no risk, so no treatment plan traces back to it. Dropping such a
+    // row for want of a risk to join to would render it as a blank cell, which
+    // reads as "nothing to report".
+    'SoaRemediationUnplanned' => 'Nincs kapcsolódó kockázat',
+
+    // THE LEGEND. Required in both variants and every export format, because six
+    // implementation states plus three markers is more nuanced than the
+    // Yes/No/Partial an auditor expects, and an undefined vocabulary invites the
+    // reader to guess unfavourably.
+    'SoaLegendTitle' => 'Hogyan kell olvasni ezt a kijelentést',
+    'SoaLegendYes' => 'Az ehhez a vezérlőhöz definiált összes teszt sikeresen lefutott az utolsó futtatáskor.',
+    'SoaLegendPartial' => 'A kontrollcsoport tesztjei eltérőek: legalább egy sikeres volt, és legalább egy sikertelen, vagy nem hozott eredményt.',
+    'SoaLegendNo' => 'A vezérlő egyetlen tesztje sem sikerült a legutóbbi futtatásakor, és legalább egy sikertelen volt.',
+    // The two unverified states are DIFFERENT FINDINGS WITH DIFFERENT OWNERS,
+    // and the labels alone do not quite carry that -- so the legend spells it
+    // out. This is the distinction the whole six-state set exists for.
+    'SoaLegendNoTestDefined' => 'Ehhez a kontrollhoz nem definiáltak tesztet, így a működését soha nem ellenőrizték. Ez nem azt jelenti, hogy a kontroll hiányzik, vagy hogy hibás – csak azt, hogy ez az állítás nem bizonyítja ezt. Irányítási hiányosság: senki sem döntött még arról, hogyan ellenőrzik ezt a kontrollt.',
+    'SoaLegendNeverRun' => 'Léteznek tesztek erre a szabályozásra, de egyiket sem futtatták le soha, így a működését itt nem mutatjuk be. Ez nem azt jelenti, hogy a szabályozás hiányzik, vagy hogy nem működik. Működési hiányosság: az ellenőrzéseket elhatározták, de még nem végezték el.',
+    'SoaLegendNotApplicable' => 'A vezérlés ki van zárva a keretrendszer hatóköréből, így nincs megvalósítási állapota.',
+    // The one most in need of explaining: with nothing to define it, this reads
+    // as an admission about the control rather than as what it is.
+    'SoaLegendUnknown' => 'A SimpleRisk nem tudta címkézni a rögzített állapotot, ezért a megvalósítást itt nem mutatjuk be. Ez egy szoftverhiba, és semmit sem mond a vezérlésről – sem azt, hogy működik, sem azt, hogy nem.',
+    'SoaLegendOverdue' => 'A bemutatott eredmény továbbra is érvényes, de a mögötte álló tesztek közül legalább az egyik már túl van a következő tesztdátumán. A bizonyítékok elavultak.',
+    'SoaLegendNoEvidence' => 'Az ellenőrzés a hatáskörébe tartozik, és semmi sem támasztja alá: nincs megerősített dokumentum, és nincs eredményt adó teszt.',
+    'SoaLegendEvidenceNotExpected' => 'Nem várható bizonyíték, mivel a kontroll ki van zárva a hatókörből.',
+    'SoaLegendUnplanned' => 'Egy sikertelen teszt, amelyhez nincs kockázat, így nincs rá visszavezethető kezelési terv.',
+
+    // THE TWO VARIANTS, chosen on the launcher before the document is generated
+    // and PRINTED ON ITS COVER. A Statement of Applicability is a controlled
+    // document: two of them for the same framework that show different things,
+    // with nothing on either to say which is which, is a document nobody can
+    // file.
+
+    // THE THREE DETAILED-ONLY COLUMNS.
+    // What those three columns say instead of nothing. A blank cell in an audit
+    // document reads as a formatting artefact; "Not recorded" is a fact the
+    // reader can act on.
+
+    // THE BROWSER PRINT ROUTE. Beside the two downloads on the launcher, and the
+    // only PDF route for a framework too large for the server-side writer.
+    // Shown in place of "Download as PDF" when the chosen framework is above
+    // SOA_EXPORT_PDF_MAX_CONTROLS. The affordance is absent rather than
+    // disabled, so this sentence is what tells the reader the absence is
+    // deliberate and what to do instead.
+    // The footer of every printed page. {page} and {pages} are substituted with
+    // the browser's own page counters, so the two tokens must both survive
+    // translation -- but their ORDER and the words around them are the
+    // translator's, which is why this is one string and not "Page" + "of".
+    'SoaPrintPageNumber' => '{pages} oldalból a {page} oldal',
+
+    // THE ONE PDF AFFORDANCE on the statement-of-applicability launcher, beside
+    // 'DownloadAsXLSX'. It replaces the pair that used to sit there --
+    // 'SoaPrintToPdf' and 'DownloadAsPDF' -- because a Statement of Applicability
+    // is a controlled document and two PDF buttons let two people hand an auditor
+    // two different-looking PDFs of the same statement.
+    //
+    // JUST "PDF", AND DELIBERATELY SO. Below SOA_EXPORT_PDF_MAX_CONTROLS the
+    // button downloads a server-rendered file and above it the browser writes
+    // one, but that is a mechanism and not a choice the reader has to make. A
+    // label that named the mechanism ("Print to PDF" / "Download as PDF") would
+    // put the difference back in front of them.
+    //
+    // 'SoaPrintToPdf' and 'SoaPdfTooLargeHint' above are LEFT IN PLACE with no
+    // caller: 39 locales carry them, and this file is append-only precisely so a
+    // customer running a custom lang.<locale>.php can reconcile it with a tail
+    // diff.
+    'SoaPdf' => 'PDF',
+
+    // THE OTHER TWO ACTIONS IN THAT SAME ROW, shortened to match it.
+    //
+    // The row read "Open in browser" / "Download as XLSX" / "PDF", which put a
+    // verb on two of three actions and made the odd one out look like an
+    // abbreviation of something longer. The row's own context supplies the
+    // verbs -- these are the things you can DO with the framework you just
+    // chose -- so they carried no information and cost the reader a comparison.
+    // 'SoaPdf' is short because naming its mechanism would be dishonest (above
+    // SOA_EXPORT_PDF_MAX_CONTROLS it opens a print view rather than downloading
+    // a file), and the shortest of the three is the one that has to be right.
+    //
+    // NOT the generic 'Open' at line ~1021: that key lives among 'Mitigated' /
+    // 'Reviewed' and is the risk-status ADJECTIVE -- fr "Ouvert", de "Offen" --
+    // so reusing it would label a button with a state rather than an action in
+    // most of the 39 locales.
+    //
+    // 'SoaOpenInBrowser' above is LEFT IN PLACE with no caller, for the same
+    // reason 'SoaPrintToPdf' is: the locales carry it and this file is
+    // append-only so a customer's custom lang.<locale>.php reconciles with a
+    // tail diff. 'DownloadAsXLSX' keeps a caller either way -- the Assessments
+    // Extra's questionnaire results still use it.
+    'SoaOpen' => 'Nyit',
+    'SoaXlsx' => 'XLSX',
+    // ---- The locked-affordance treatment -------------------------------------
+    // SHARED COPY, not chooser copy. SimpleRisk now SHOWS what's possible and
+    // MARKS what's out of reach because it isn't licensed, rather than hiding
+    // it -- so these strings appear both as a menu row's explanation (Define
+    // Control Frameworks' "+ Add framework" chooser) and beside a disabled
+    // toolbar button (the Statement of Applicability's PDF/XLSX exports). Each
+    // one is worded to read correctly in BOTH places, which is why none of them
+    // starts with "This route" or "This button".
+    //
+    // 'LockedAffordanceBadge' duplicates the English of 'AICapStateLocked'
+    // rather than reusing it: that key sits in the AI Capabilities Catalog's
+    // block and is scoped to a capability's state, and translators work from
+    // the key's neighbourhood as much as from its value.
+    'LockedAffordanceBadge' => 'Zárolt',
+    // The two SCF steps before it can be switched on. admin/register.php serves
+    // both -- it is the registration form AND where the per-Extra download
+    // buttons render -- so these differ in what they say, not where they go.
+    'UnlockRegisterInstanceNote' => 'Regisztrálja ezt a példányt a Secure Controls Framework beszerzéséhez.',
+    'UnlockRegisterInstanceLink' => 'Regisztráljon SimpleRisk',
+    'UnlockDownloadScfNote' => 'Ez a példány regisztrálva van. Töltse le a Secure Controls Framework alkalmazást a használatához.',
+    'UnlockDownloadScfLink' => 'Töltsd le',
+    'UnlockActivateScfNote' => 'A Secure Controls Framework le van töltve, de nincs bekapcsolva.',
+    'UnlockActivateScfLink' => 'Kapcsold be',
+    // Import-Export is a paid Extra, so "not installed" is an upsell rather
+    // than a registration prompt. Deliberately a bare capability sentence: it
+    // has to sit under a menu row and next to an export button equally well.
+    'RequiresImportExportExtra' => 'Import-Export Extra szükséges.',
+    'UnlockImportExportLink' => 'Nézd meg, mit ad hozzá',
+    'UnlockActivateImportExportNote' => 'Az Import-Export Extra telepítve van, de nincs bekapcsolva.',
+    'UnlockActivateImportExportLink' => 'Kapcsold be',
+    // Shown instead of any of the above to a user who is not an administrator:
+    // every unlock step lives on a check_admin page, so they get the half that
+    // is useful to them -- that the capability exists, and who to ask -- and no
+    // link that would only bounce them.
+    'UnlockNeedsAdministrator' => 'Ezt egy rendszergazda beállíthatja.',
+    // API date parsing. {$field} is the request field name (next_date, last_date,
+    // test_date); {$format} is this instance's configured display date format.
+    'InvalidSubmittedDate' => 'A {$field} érték nem érvényes dátum. Küldje el ÉÉÉÉ-HH-NN formátumban, vagy az adott példány dátumformátumában ({$format}).',
+    // Companion to InvalidSubmittedDate, for a value that matches the expected
+    // shape but names a day that does not exist (February 31st, month 13).
+    // Saying "submit it as MM/DD/YYYY" there would repeat what the caller did.
+    // {$value} is the submitted value, echoed back truncated.
+    'ImpossibleSubmittedDate' => 'A {$field} érték "{$value}" nem valós naptári dátum. Ellenőrizze a napot és a hónapot — ebben a példányban a dátumok {$format} formában olvashatók.',
+    // The Statement of Applicability's merged verification column. Replaces three
+    // separate headings (Implemented / Evidence / Review Cadence) with the one
+    // question all three answer: how do we know this control is working?
+    // The two appendices printed after the register. Justifications are truncated
+    // in the row and given in full here; remediation plans live here rather than
+    // in the table because ISO 27001 keeps the SoA (6.1.3(d)) and the risk
+    // treatment plan (6.1.3(e)) as separate artifacts.
+    'SoaAppendixJustifications' => 'A. függelék – Indoklások',
+    'SoaAppendixRemediation' => 'R. függelék – Elhárítási tervek',
+    // Appendix E carries the WORDING of each test's evidence requirement. The row
+    // keeps only whether that evidence arrived, which is the finding; the wording
+    // is reference material and was the bulkiest thing in the Verification cell.
+    'SoaRequiredEvidenceSupplied' => 'szükséges bizonyítékok benyújtása',
+    'SoaRequiredEvidenceNotSupplied' => 'a szükséges bizonyítékokat nem nyújtották be',
+    // The one scheduling fact the SoA prints: the soonest date any of a control's
+    // tests is next due. Replaces a per-test "Manual — Next Test Date: ..." line,
+    // whose schedule type belongs on Define Tests and whose date is now on each
+    // test's own evidence bullet.
+    // The two dates on a test's evidence bullet. LABELLED, because two bare dates
+    // side by side are ambiguous in a way one is not.
+    // SINGULAR document-type labels for one piece of design evidence. SimpleRisk's
+    // existing keys are the plural tab names, which would read "Access Control
+    // Standard (Standards)".
+    'SoaEvidencePolicy' => 'Szabályzat',
+    'SoaEvidenceStandard' => 'Standard',
+    'SoaEvidenceProcedure' => 'Eljárás',
+    'SoaEvidenceGuideline' => 'Irányelv',
+    // ── The legend, grouped by column (SOA_LEGEND_GROUPS, includes/soa.php) ──
+    // The Applicability column's three values. These were never in the legend,
+    // so an auditor met "Inherited" -- a word with no meaning outside SimpleRisk
+    // -- with nothing to look it up in.
+    'SoaLegendApplicable' => 'A kontroll e keretrendszer hatókörébe tartozik, és a szervezet felelős annak működtetéséért.',
+    // DISTINCT from 'SoaLegendNotApplicable', which defines the "N/A" that appears
+    // in the Implementation Status column. This one is the DECISION to exclude;
+    // that one is the consequence for the status.
+    'SoaLegendApplicabilityNotApplicable' => 'A kontrollt kizárták a keretrendszer hatóköréből. Az indoklás oszlopban szerepel, hogy miért, és ki döntött így.',
+    'SoaLegendInherited' => 'A felügyeleti mechanizmus a hatókörön belül van, de azt egy harmadik fél – egy felhőszolgáltató, egy anyavállalat, egy kiszervezett funkció – üzemelteti, nem pedig ez a szervezet. A szolgáltató neve az indoklás mellett szerepel.',
+    // The Evidence column's four bullet glyphs. Load-bearing since the visible
+    // result word was dropped from pass and fail bullets, and until now defined
+    // nowhere at all.
+    'SoaLegendEvidencePass' => 'A vezérlőelem tesztje a legutóbbi futtatásakor sikeres eredményt rögzített. A mellette lévő dátum a futtatás dátumát jelzi.',
+    'SoaLegendEvidenceFail' => 'A vezérlőegység tesztje a legutóbbi futtatásakor hibát jelzett. Az R. függelék tartalmazza a kezelési tervet, amennyiben létezik ilyen.',
+    'SoaLegendEvidenceInconclusive' => 'A vezérlőelem tesztje lefutott, de nem hozott eredményt. Ugyanezt a jelölést használják egy olyan eredményhez, amelyet ez a dokumentum nem ismer fel, és ebben az esetben maga az eredmény is mellette jelenik meg.',
+    // The TERM beside the § glyph. Not a document type -- the four types
+    // (Policy, Standard, Procedure, Guideline) are printed per item; this names
+    // the CATEGORY of evidence a document is.
+    'SoaEvidenceDesignDocument' => 'Tervezési dokumentum',
+    'SoaLegendEvidenceDocument' => 'Egy irányítási dokumentum, amelyet bizonyítékként igazoltak erre a kontrollra – inkább annak kialakítására, mint működésére. A dokumentum nem tartalmaz ítéletet, ezért nincs pipával jelölve.',
+    // The XLSX export's first worksheet tab. The workbook's other four tabs reuse
+    // headings that already exist ('How to read this statement', 'Statement of
+    // Applicability', and the two appendix headings); the cover had no name of its
+    // own because it used to be the top of a single sheet.
+    //
+    // KEEP IT SHORT. Excel caps a worksheet name at 31 characters and
+    // soa_export_sheet_name() truncates rather than failing the export, so a long
+    // translation loses its tail on the tab.
+    'SoaSheetCover' => 'Borító',
+
+    'SearchFrameworks' => 'Keretrendszerek keresése',
+    'SearchControls' => 'Vezérlők keresése',
+    'AddFramework' => 'Keretrendszer hozzáadása',
+    'Applicability' => 'Alkalmazhatóság',
+    'AnyFamily' => 'Bármely család',
+    'AnyOwner' => 'Bármely tulajdonos',
+    'AnyClass' => 'Bármely osztály',
+    'AnyPhase' => 'Bármely fázis',
+    'AnyPriority' => 'Bármely prioritás',
+    'AnyType' => 'Bármilyen típus',
+    'AnyStatus' => 'Bármilyen állapot',
+    'SelectAllN' => 'Összes kijelölése {n}',
+    'Classification' => 'Osztályozás',
+    'Placement' => 'Elhelyezés',
+    'OwnershipAndMaturity' => 'Tulajdonjog és érettség',
+    'MappingsAndGuidance' => 'Térképezések és útmutatás',
+    'DeleteFrameworkTitle' => 'Törölje a(z) \'{$name} \' keretrendszert?',
+    'DeleteControlTitle' => 'Törölje a(z) \'{$name} \' vezérlőt?',
+    'DeleteControlsTitle' => 'Törölni a {$n} vezérlőket?',
+    'DeleteCannotBeUndone' => 'Ez nem vonható vissza.',
+    'DeleteFrameworkConsequence' => 'Ez eltávolítja a keretrendszert és az összes vezérlőleképezését.',
+    'DeleteControlConsequence' => 'Ez eltávolítja a vezérlőt minden olyan keretrendszerből, amelyhez leképezték.',
+    'DeleteControlsConsequence' => 'Ez eltávolítja az összes kiválasztott vezérlőt minden olyan keretrendszerből, amelyhez leképezték.',
+    // Task 9: empty states (design-system.md §10) -- the four intents on
+    // Define Control Frameworks. Reuses existing keys where the copy already
+    // fits exactly (AddControl, AddFramework, ClearFilters, Retry,
+    // NoControlsDefinedYet, NoTestsMatchFiltersBody, CouldNotLoadTestsBody,
+    // RegisterYourInstance, GoToSCF, ImportExportExtra) -- only the strings
+    // with no existing match are added below.
+    'NoControlsMatch' => 'Egyik vezérlő sem felel meg a szűrőknek',
+    'CouldNotLoadControls' => 'Nem sikerült betölteni a vezérlőket',
+    'ControlsYouAddWillAppearHere' => 'A hozzáadott vezérlők itt jelennek meg.',
+    'NoFrameworksYet' => 'Még nincsenek keretrendszerek',
+    'FrameworksYouAddWillAppearHere' => 'A hozzáadott vagy importált keretrendszerek itt jelennek meg.',
+    'CouldNotLoadFrameworks' => 'Nem sikerült betölteni a keretrendszereket',
+    // Task 9 review fix: the framework rail's own "no results" intent, shown
+    // when the user has explicitly switched the status dropdown away from
+    // Active and that status has nothing (distinct from "No frameworks yet",
+    // which is reserved for the default Active status where the endpoint
+    // can't yet tell "no frameworks at all" from "none active").
+    'NoFrameworksMatchFilter' => 'Egyetlen keretrendszer sem felel meg ennek az állapotnak',
+    'ViewActiveFrameworks' => 'Aktív keretrendszerek megtekintése',
+    // Task 10: Define Control Frameworks insights band (governance/index.php)
+    // -- KPI tile labels/subtitles. 'Controls', 'Pass', 'Fail', 'NotTested'
+    // already exist and are reused as label keys for their tiles.
+    'BelowTarget' => 'A cél alatt',
+    'Excluded' => 'Kizárva',
+    'FwInScope' => 'Hatályon belül',
+    'FwLastTestPassed' => 'Utolsó teszt sikeresen teljesítve',
+    'FwLastTestFailed' => 'Az utolsó teszt sikertelen volt',
+    'FwNoEvidence' => 'Alkalmazható, nincs bizonyíték',
+    'FwMaturityUnderDesired' => 'A kívánt érettség alatt',
+    'FwScopeAFramework' => 'Egy keretrendszer meghatározása',
+    'FwNotApplicableOrInherited' => 'Nem alkalmazható vagy örökölt',
+    // Task 22: framework rail search (governance/index.php's #sr-fw-search,
+    // wired client-side in governance-frameworks.js). Reuses the shipped
+    // "no results" empty-state tile (#sr-fw-filtered, Task 9) rather than
+    // inventing a fourth rail empty state -- only the title and action swap
+    // depending on whether a status filter or a search narrowed the list to
+    // nothing; NoTestsMatchFiltersBody already covers both as body copy.
+    'NoFrameworksMatchSearch' => 'Nincsenek a keresésnek megfelelő keretrendszerek',
+    'ClearSearch' => 'Keresés törlése',
+    // Task 24: Clone control pre-fills the Add Control modal from the source
+    // control (governance-frameworks.js's openControlForClone()) rather than
+    // creating a duplicate outright, so the modal needs to say plainly which
+    // control it was cloned from -- the reviewer's core complaint about an
+    // earlier one-click version of this feature was not knowing what was
+    // cloned. {$name} follows the same client-side formatTemplate()
+    // substitution ShowingXToYOfZ/NSelected already use on this page.
+    'ClonedFromControlNotice' => 'Klónozva a következőből: "{$name}". Tekintse át az alábbi mezőket, majd mentse el.',
+    // Task 24 review follow-up: the banner alone left the modal titled "New
+    // Control" over pre-populated fields -- "it doesn't prompt or anything
+    // so the user doesn't know what was cloned" (Josh) -- which reads as a
+    // bug, not a feature. Retitling #control--add-title to this (governance-
+    // frameworks.js's show.bs.modal delegate for #control--add) makes the
+    // clone unambiguous at a glance; NewControl is restored for a plain add.
+    'CloneOfControlTitle' => 'A "{$name} " klónja',
+    // Task 27: the framework rail's SCF-origin chip (governance-frameworks.js's
+    // railRow()) -- shown only for frameworks created via the ComplianceForge
+    // SCF Extra's authoritative-source import (get_scf_origin_framework_ids(),
+    // includes/governance.php). SCF is the badge text itself; ScfOriginHint is
+    // its title/tooltip.
+    'SCF' => 'SCF',
+    'ScfOriginHint' => 'A Biztonságos Ellenőrzési Keretrendszerből (SCF)',
+    // Task 34: the Maturity filter facet's placeholder on the Define Control
+    // Frameworks filter sheet (governance-frameworks.js's ensureFilterSheet()),
+    // matching the AnyFamily/AnyOwner/AnyClass/... set above. The facet's three
+    // OPTIONS reuse the existing BelowMaturity/AtMaturity/AboveMaturity keys --
+    // the same labels the governance dashboard's maturity-gap widgets already
+    // carry -- and the column chip renders those same three strings, so the
+    // filter and the cell can never read differently.
+    'AnyMaturity' => 'Bármely lejárat',
+    // Task 46: accessible name for the control table's pager landmark
+    // (governance-frameworks.js's renderPager()). The pager's own buttons
+    // reuse the existing Previous/Next keys Define Tests' pager already
+    // carries; only the <nav> label is new, and it names WHICH table's pager
+    // it is because the Define Control Frameworks page has two lists on it.
+    'ControlsPagination' => 'Lapozásvezérlés',
+    // Task 14: the Applicability column's state chip (governance-frameworks.js's
+    // renderApplicability()), the matching filter facet (its three option labels
+    // reuse these same three keys) and its "Any applicability" placeholder.
+    //
+    // The three states are PREFIXED rather than named 'Applicable'/
+    // 'NotApplicable'/'Inherited' because 'NotApplicable' already exists above
+    // as the ABBREVIATION 'N/A' -- the self-assessment answer chip and three
+    // reporting charts render it -- and redefining that key to the spelled-out
+    // phrase this column needs would silently change all four of those
+    // surfaces. The prefix also keeps the trio recognisable as one family.
+    //
+    // The column HEADER and the facet's accessible name reuse the existing
+    // 'Applicability' key, and the drawer's record reuses 'Reason', 'Provider'
+    // and 'Justification' -- all four already carry exactly the right string.
+    'ApplicabilityApplicable' => 'Alkalmazható',
+    'ApplicabilityNotApplicable' => 'Nem alkalmazható',
+    'ApplicabilityInherited' => 'Örökölt',
+    'AnyApplicability' => 'Bármilyen alkalmazhatóság',
+    // The drawer's applicability record: who recorded the decision and when.
+    // Both are attribution for an audited decision a customer may have to
+    // defend years later, which is why the drawer names them at all.
+    'ApplicabilityDecidedBy' => 'Döntést hozó',
+    'ApplicabilityDecidedOn' => 'Döntés dátuma',
+    // The framework-level Statement of Applicability card in the Add/Edit
+    // framework modals (display_framework_soa_card(), includes/governance.php).
+    // These two fields are what ISO/IEC 27001:2022 clause 6.1.3(d) needs on an
+    // SoA cover: the scope the framework is certified against, and how inclusion
+    // was determined for the controls that are simply applicable.
+    //
+    // 'IsmsScopeStatement' rather than a bare 'ScopeStatement' because "scope"
+    // is already overloaded across SimpleRisk (assessment scope, audit scope,
+    // risk scope); the ISMS prefix is what an ISO practitioner calls this exact
+    // field and keeps it from being reused for an unrelated one.
+    'StatementOfApplicability' => 'Alkalmazhatósági nyilatkozat',
+    'IsmsScopeStatement' => 'Hatálynyilatkozat',
+    'IsmsScopeStatementHint' => 'A keretrendszer tanúsított hatóköre. Megjelenik a SoA címlapján.',
+    'DefaultInclusionJustification' => 'Alapértelmezett belefoglalási indoklás',
+    'DefaultInclusionJustificationHint' => 'Alkalmazható, kockázatoktól mentes kontrollokhoz használatos. Nevezd meg a mozgatórugót, ne a keretrendszert.',
+    // THE DEFAULT SENTENCE, in all three of its roles: the create form seeds the
+    // textarea with it, the Edit form shows it as a placeholder, and
+    // soa_framework_default_justification() (includes/soa.php) substitutes it at
+    // read time for a framework that has none. One key, because a reader must not
+    // be able to tell a stored default from a fallen-back one, and because three
+    // keys holding the same sentence is three chances for a translator to make
+    // them disagree. The name predates the seeding decision (Task 67) and is kept
+    // rather than churned through Crowdin for 39 locales.
+    //
+    // It names the DRIVER (the risk assessment) rather than the framework:
+    // "included because it is part of this framework" is circular, and ISO 6.1.3
+    // derives controls from risk treatment, using Annex A afterwards only as a
+    // completeness cross-check.
+    //
+    // It was a placeholder ONLY until Task 67, so that an unreviewed sentence
+    // could not reach a customer's SoA by inaction. Measured, that produced the
+    // opposite failure: 19 of 20 frameworks left the field NULL and the SoA's
+    // Justification column came out BLANK for every applicable control with no
+    // linked risks -- the finding an SoA is most often failed on, and one a
+    // boilerplate sentence does not attract.
+    'DefaultInclusionJustificationPlaceholder' => 'A szervezet információbiztonsági kockázatértékelése határozza meg, és szükséges kontrollként tartja fenn.',
+    // Task 15: bulk-setting applicability from the control table's selection bar
+    // (#applicability--set, governance/index.php + governance-frameworks.js).
+    //
+    // The action's own label and the modal's one section. 'Applicability',
+    // 'Reason', 'Provider', 'Justification', 'Save' and 'Cancel' already exist
+    // and are reused; only the strings with no existing home are added here.
+    'SetApplicability' => 'Alkalmazhatóság beállítása',
+    'ApplicabilityDecision' => 'Döntés',
+    // The amber scope note, in two sentences the page assembles separately
+    // because they answer two different questions: WHICH framework the decision
+    // is scoped to, and WHICH controls are about to receive it. The second one
+    // has two spellings, because the header checkbox selects the current PAGE
+    // while "Select all N" escalates to the whole filtered result set -- the two
+    // genuinely differ once the table pages, and a note that blurred them would
+    // let the user write 1,535 decisions believing they had written 25.
+    'ApplicabilityScopeNote' => 'Ez a döntés csak a "{$framework}" keretrendszeren belül érvényes. Ugyanez a vezérlőelem egy másik keretrendszerben is alkalmazható maradhat.',
+    'ApplicabilityAppliesToSelected' => 'Az ezen az oldalon kiválasztott {$n} vezérlőelem(ek)hez lesz rögzítve.',
+    'ApplicabilityAppliesToAllFiltered' => 'Ez az összes {$n} vezérlőelemhez lesz rögzítve, amelyek megfelelnek az aktuális szűrőknek, beleértve a többi oldalon találhatóakat is.',
+    // Per-state hints under the segmented control. The "applicable" one is the
+    // load-bearing sentence of the whole modal, and the SoA audit-readiness work
+    // rewrote it: an applicable control MAY now carry its own reasons and
+    // justification (ISO/IEC 27001 clause 6.1.3(d) asks for one per control, for
+    // inclusion as much as for exclusion), and leaving both empty is what falls
+    // back to the framework's default inclusion justification. The old sentence
+    // -- "this removes any recorded decision. No justification is needed." --
+    // is now false in both halves.
+    'ApplicabilityApplicableHint' => 'A keretrendszer hatókörébe tartozik. Az ok és az indoklás megadása opcionális; mindkettő üresen hagyása a keretrendszer alapértelmezett belefoglalási indoklását használja.',
+    'ApplicabilityNotApplicableHint' => 'Kontroll kizárása a keretrendszer hatóköréből. Indoklás és írásos indoklás is szükséges.',
+    'ApplicabilityInheritedHint' => 'Valaki más végzi el ezt az ellenőrzést a nevedben. Nevezd meg, és mondd el, mit csinál.',
+    'ApplicabilityNarrativeHint' => 'Megjelenik az Alkalmazhatósági Nyilatkozatban. Írja le, hogy mire lenne szüksége egy könyvvizsgálónak a döntés elfogadásához.',
+    'ApplicabilityProviderHint' => 'Az irányítást végző szervezet: felhőszolgáltató, felügyelt szolgáltatás, anyavállalat.',
+    'ChooseAReason' => 'Válasszon egy okot',
+    'ApplicabilityNoReason' => 'Nincs ok',
+    // Result toasts. Both interpolate a COUNT taken from the API response and
+    // nothing else -- no submitted text is ever reflected into a toast, which
+    // toastr renders as HTML.
+    'ApplicabilitySetResult' => 'Alkalmazhatóság frissítve a {$n} vezérlő(k)re.',
+    'ApplicabilityClearResult' => 'Az alkalmazhatóság visszaállítva az {$n} vezérlő(k)re vonatkozó érvényes értékre.',
+    // Bulk control delete (Task 54, corrected Task 55). Deleting a control is
+    // final either way the delete engine implements it: a control with test
+    // history is soft-deleted (framework_controls.deleted = 1) to keep test
+    // history intact, a control with no tests is removed outright -- but
+    // nothing anywhere flips that flag back, so from the user's side there is
+    // no "kept" case, only "deleted, and its test history survives for audit
+    // purposes." Every sentence therefore leads with the same irreversible
+    // warning; the only thing that varies is whether an audit-history clause
+    // is appended, and that clause is omitted entirely rather than printed
+    // with a count of zero -- "0 are retained for audit history" reads as a
+    // warning about something that is not going to happen, and on a delete
+    // confirmation that is exactly the kind of noise that trains people to
+    // stop reading. Every {$...} is a count from the API response; no user
+    // text is ever interpolated, which matters because toastr renders HTML.
+    'DeleteControlsPreviewChecking' => 'Ellenőrzése, hogy mi kerül törlésre...',
+    'DeleteControlsPreviewSplit' => '{$n} vezérlőelem törlődik. Ez nem vonható vissza. {$m} teszteredményei megmaradnak az audit előzmények számára.',
+    'DeleteControlsPreviewKeptOnly' => 'Minden {$n} vezérlőelem törlődik. Ez nem vonható vissza. A teszteredmények megmaradnak az audit előzményeihez.',
+    'DeleteControlsPreviewRemovedOnly' => '{$n} vezérlőelem(ek) törlésre kerülnek. Ez a művelet nem vonható vissza.',
+    'DeleteControlsPreviewNone' => 'Nincs mit törölni: a kiválasztott vezérlő(k) már nem léteznek.',
+    'ControlsDeletedResult' => '{$n} vezérlő(k) törölve.',
+
+    // The Add/Edit framework modal's Status field. The label reuses the existing
+    // 'Status' key -- the same word the rail's Active/Inactive/All filter already
+    // uses -- so only the explanatory hint is new. It says the two things a user
+    // cannot see from the control itself: that Inactive is the NON-destructive way
+    // to retire a framework (unlike Delete, which cannot be undone), and that the
+    // change cascades through the hierarchy, which is what update_framework_status()
+    // has always done and is genuinely surprising when a parent is deactivated.
+    'FrameworkStatusHint' => 'Az inaktív keretrendszerek megtartják az összes vezérlőjüket és leképezésüket, de rejtve maradnak az alapértelmezett keretrendszer-listában, és nem jelennek meg az irányítási irányítópulton. Egy keretrendszer inaktiválása az alatta lévő összes keretrendszert is deaktiválja; egy aktiválása a szülőkereteket is aktiválja.',
+
+    // Task 60: the same #applicability--set modal, opened from ONE control's row
+    // action instead of the selection bulk bar. The button's own label reuses
+    // 'SetApplicability'; these two exist because the modal now has to say which
+    // of the two it is acting on, and both spellings must be unambiguous.
+    //
+    // The title names the specific object (design-system.md §8) and the note
+    // says "only", because the dangerous reading is the silent one: with rows
+    // ticked -- or with "Select all N filtered" in force -- a modal that said
+    // nothing would let a click the user believed applied to one row be read as
+    // applying to every control in the framework. Naming the control in both
+    // places is what makes the narrower scope visible rather than assumed.
+    // Corrected in Task 63. This spelling used to end "...only, whatever else is
+    // selected", which was printed on every row-action open whether or not
+    // anything else WAS selected -- a dangling absolute with no antecedent, so
+    // it read as a sentence that had been cut off. It is now the plain form, and
+    // the reassurance about a competing selection moved to
+    // 'ApplicabilityAppliesToControlNotSelection' below, which is printed only
+    // when there is a competing selection to reassure anyone about.
+    'SetApplicabilityForControl' => 'Alkalmazhatóság beállítása: {$name}',
+    'ApplicabilityAppliesToControl' => 'Csak a "{$name}" karakterrel lesz rögzítve.',
+
+    // Task 17: the Statement of Applicability report itself
+    // (reports/statement_of_applicability.php + pages/statement-of-applicability.js),
+    // the document ISO/IEC 27001:2022 clause 6.1.3(d) asks for and the one every
+    // applicability decision recorded on the Define Control Frameworks page
+    // exists to produce.
+    //
+    // 'StatementOfApplicability' already exists above (the framework modal's SoA
+    // card) and is reused for the report's own title, as are 'IsmsScopeStatement',
+    // 'DefaultInclusionJustification', the three 'Applicability*' state labels,
+    // 'ApplicabilityDecidedBy'/'DecidedOn', and the plain 'Framework',
+    // 'ControlNumber', 'ControlName', 'Justification', 'Evidence', 'Reason',
+    // 'Provider', 'Total', 'Controls' and 'Export' keys. Only strings with no
+    // existing home are added here.
+    'StatementOfApplicabilityDesc' => 'Egyetlen keretrendszerhez: minden kontroll, hogy alkalmazható-e, miért lett belefoglalva vagy kizárva, és hogy implementálva van-e.',
+    // The header button on Define Control Frameworks. The verb is "generate"
+    // rather than "view" because the document is assembled at the moment it is
+    // asked for -- there is no stored SoA that could be out of date.
+    'GenerateStatementOfApplicability' => 'Alkalmazhatósági nyilatkozat létrehozása',
+
+    // The Justification column's SECOND resolution step, and the reason an SoA
+    // built here beats the spreadsheet it replaces: the risks that drove the
+    // control are already recorded against it, so nobody retypes them and they
+    // cannot go stale. {risks} is substituted with the displayed risk ids.
+    //
+    // Phrased to match clause 6.1.3, which derives controls from risk treatment
+    // and uses Annex A afterwards only as a completeness cross-check -- the same
+    // reasoning behind 'DefaultInclusionJustificationPlaceholder' above.
+    'SoaJustifiedByRiskAssessment' => 'A szervezet információbiztonsági kockázatértékelése határozza meg. Kapcsolódó kockázatok: {risks}.',
+
+    // The Implemented column. DERIVED from maturity and the last test result on
+    // every read, never stored, so it cannot drift out of sync with the control.
+    // 'Yes' and 'No' already exist and are reused; only the middle value and the
+    // header need keys of their own. An excluded control's cell reuses the
+    // existing 'NotApplicable' ('N/A'), which is exactly the right abbreviation
+    // in a dense table.
+    'SoaImplemented' => 'Megvalósítva',
+    'SoaImplementedPartial' => 'Részleges',
+
+    // The cover block.
+    'SoaGeneratedOn' => 'Létrehozva:',
+    'SoaExcludedCount' => 'Kizárva',
+
+    // The prompt shown when the framework has never been given the two cover
+    // fields. It PROMPTS rather than silently printing a blank cover: an SoA
+    // whose scope is empty is the one defect an auditor spots first, and the
+    // moment somebody opens the report is the only moment those fields matter.
+    // Both spellings of empty (never set, and deliberately cleared) prompt --
+    // from a reader's point of view there is nothing to print either way.
+    //
+    // The inclusion-justification line states a WEAKER consequence than it used
+    // to, because Task 67 made the stronger one untrue: the column no longer goes
+    // blank when the field is empty -- soa_framework_default_justification()
+    // substitutes the generic default sentence. The prompt survives because a
+    // generic sentence is not the organization's own, and an auditor reading 1,500
+    // identical rows of boilerplate is entitled to ask whose risk assessment it
+    // refers to.
+    'SoaMissingFieldsTitle' => 'Ennek a nyilatkozatnak hiányoznak a borító részletei',
+    'SoaMissingScopeStatement' => 'Ehhez a keretrendszerhez nem került rögzítésre hatókör-meghatározás. A megbízhatósági nyilatkozatnak (SOA) meg kell jelölnie azt a hatókört, amelyre vonatkozik.',
+    'SoaMissingInclusionJustification' => 'Nincs rögzített alapértelmezett belefoglalási indoklás. Az alkalmazható, kockázattal nem rendelkező kontrollok egy általános állításra hivatkoznak a sajátod helyett.',
+    'SoaEditFrameworkToAdd' => 'Add hozzá őket a keretrendszerhez',
+
+    // Opened from the Reporting Hub, which cannot supply a framework. A picker,
+    // not an error: an SoA is a per-framework document by definition -- the same
+    // control excluded from ISO 27001 is not thereby excluded from PCI DSS --
+    // and there is no cross-framework roll-up to offer instead.
+    'SoaChooseFramework' => 'Válasszon egy keretrendszert',
+    'SoaChooseFrameworkHint' => 'Az alkalmazhatósági nyilatkozatot egyszerre egy keretrendszerről írjuk.',
+    // The picker has a roster but nothing in it. Distinct from "this framework
+    // has no controls": there is no framework to write a statement about at all,
+    // and the fix is on a different page, so it says which one.
+    // The launcher's affordance row. "Open in browser" rather than "View"
+    // because it names what actually happens -- the document opens in a new tab,
+    // chrome-free -- and because Task 18 adds "Download as PDF" and "Download as
+    // XLSX" beside it, where "open" vs "download" is the distinction that
+    // matters.
+    // The document has no sidebar, so it needs its own way back for anyone who
+    // arrives from a bookmark or a shared link. Screen only; never printed.
+    'SoaBackToSelector' => 'Vissza az alkalmazhatósági nyilatkozathoz',
+    'SoaNoFrameworks' => 'Nincsenek aktív keretrendszerek',
+    'SoaNoFrameworksHint' => 'Telepítsen vagy aktiváljon egy keretrendszert az Irányítás > Ellenőrzési keretrendszerek meghatározása menüpont alatt, és itt lesz elérhető.',
+
+    // The two refusals. Both explain rather than just failing, because the user
+    // arrived here deliberately.
+    'SoaFrameworkInactiveTitle' => 'Ez a keretrendszer inaktív',
+    'SoaFrameworkInactiveBody' => 'Az alkalmazhatósági nyilatkozat leírja a szervezet jelenlegi működési körét. Aktiválja újra a keretrendszert egy új létrehozásához.',
+    'SoaFrameworkNotFoundBody' => 'Ez a keretrendszer már nem létezik.',
+
+    // A framework with no controls mapped into it. Not an error -- it is a real
+    // and recoverable state, and saying so beats an empty table.
+    'SoaNoControls' => 'Ennek a keretrendszernek nincsenek vezérlői',
+    'SoaNoControlsHint' => 'A vezérlőelemek keretrendszerbe való leképezése és az alkalmazhatósági nyilatkozat felsorolja azokat.',
+
+    // The second half of the statement-of-applicability launcher's affordance
+    // row, beside "Open in browser" and the existing 'DownloadAsXLSX'. Rendered
+    // only where the Import/Export Extra is active, which is what supplies the
+    // export. "Download as" rather than "Export to" so the pair reads as one
+    // choice of format, and so it matches the XLSX label already in this file.
+    'DownloadAsPDF' => 'Letöltés PDF-ként',
+
+    // The fourth column of the control modal's "Mapped Control Frameworks"
+    // widget, between the reference code and the reference text. The
+    // FRAMEWORK's own title for the control it is citing -- what a Statement of
+    // Applicability prints beside the clause number. Distinct from the existing
+    // 'ReferenceText', which holds the framework's full control statement, and
+    // from the SimpleRisk control's own name.
+    'ReferenceSubject' => 'Referencia tárgy',
+    // Placeholder/help text under that field, and the reason it is worth
+    // filling in: without it the Statement of Applicability has nothing to
+    // print but the source catalogue's name for its own control.
+    'ReferenceSubjectHint' => "A keretrendszer saját címe ehhez a vezérlőhöz.",
+
+    // Task 63: the row-scoped population sentence in the Set applicability
+    // modal, in the one situation where the plain
+    // 'ApplicabilityAppliesToControl' above leaves a real question unanswered --
+    // the user has controls ticked, or a standing "Select all N filtered", and
+    // has just opened the modal from ONE row's own action.
+    //
+    // It states the guarantee rather than implying it. A user whose escalated
+    // selection covers an entire framework needs to know that this click is not
+    // about to overwrite it, and {$n} is the count of the OTHER selected
+    // controls -- the target is excluded, because it is very often ticked too
+    // and a promise that included it would be false.
+    'ApplicabilityAppliesToControlNotSelection' => 'Csak a "{$name}" elemhez lesz rögzítve — a kiválasztott {$n} vezérlő(ke)t ez nem érinti.',
+
+    // Task 65: the VISIBLE label on the controls toolbar's SoA button. The full
+    // sentence ('GenerateStatementOfApplicability' above) stays as the button's
+    // title and aria-label, and is still what the SoA page itself is called;
+    // this is the short form for a toolbar row it shares with the page's one
+    // primary action. At full length the secondary button measured more than
+    // twice the primary's width and became the largest element in the row.
+    //
+    // "SoA" is safe to abbreviate HERE and only here: the button appears solely
+    // when a single framework is scoped, beside an Applicability column, and it
+    // expands on hover.
+    'GenerateSoa' => 'SoA generálása',
+
+    // ===== Clone framework (Task 64) =======================================
+    // The framework half of Clone control's framing (CloneOfControlTitle /
+    // ClonedFromControlNotice above), and for the same reason: the clone
+    // pre-fills the Add Framework modal rather than creating anything, so the
+    // modal has to say what was carried over before the user saves it.
+    //
+    // Separate keys from the control pair rather than one shared "Clone of
+    // {$name}" -- the two banners do not say the same thing. A cloned control
+    // simply asks to be reviewed; a cloned FRAMEWORK has to explain two things
+    // its fields cannot: that the source's control mappings come with it, and
+    // that the empty scope statement is deliberate. The blank field is the
+    // whole reason the banner is longer than the control's -- a scope statement
+    // left blank with no explanation reads as a field that failed to populate,
+    // and the one thing a clone exists to be given is a NEW scope (Josh: "you
+    // might want to use the same controls as one framework, but scope it
+    // differently"). {$name} and {$n} follow the same client-side
+    // formatTemplate() substitution the rest of this page's templates use.
+    'CloneOfFrameworkTitle' => 'A "{$name} " klónja',
+    // {$n} is the count the rail is SHOWING for the source row -- its controls,
+    // not its raw mapping rows. Those differ (a framework can cite one control
+    // under two clause numbers, and the rail excludes deleted controls), and the
+    // number to promise is the one the user is looking at when they click and
+    // the one the clone's own rail row will show afterwards.
+    'ClonedFromFrameworkNotice' => 'Klónozva a következőből: "{$name}". A benne található {$n} vezérlők átmásolódnak az új keretrendszerbe, és mindegyikük kezdettől fogva alkalmazható lesz – az alkalmazhatósági döntések egyike sem kerül át a rendszerbe. A hatókör utasítás szándékosan üres: az Alkalmazhatósági Nyilatkozat létrehozása előtt adja meg a keretrendszer által lefedett hatókört.',
+    // Seeds the name field so the clone can be saved without a rename --
+    // framework names are unique, so a verbatim copy is refused on save.
+    'CloneOfFrameworkName' => '{$name} (Klón)',
+    'CloneFramework' => 'Keretrendszer klónozása',
+    // Extras version independently of Core, so an updated Import/Export Extra
+    // can end up calling a Core function the installed Core does not have. The
+    // export refuses with this rather than fataling -- see
+    // soa_export_refuse_if_core_too_old(), extras/import-export/includes/soa_export.php.
+    'SoaExportRequiresNewerCore' => 'Ehhez az exportáláshoz a SimpleRisk Core telepített verziójánál újabb verzióra van szükség. Frissítse a SimpleRisk programot, majd próbálja újra az exportálást.',
+    // The framework ACQUISITION chooser (Task 26): "+ Add framework" asks how you
+    // want to get one, rather than assuming you want to type it in. Each option is
+    // rendered only when the route behind it actually exists for this user, so the
+    // hint text may state plainly what the route does -- it is never shown to
+    // someone who cannot take it.
+    'HowDoYouWantToAddAFramework' => 'Hogyan szeretnél keretrendszert hozzáadni?',
+    'CreateFrameworkManually' => 'Hozzon létre egyet manuálisan',
+    'CreateFrameworkManuallyHint' => 'Nevezd el a keretrendszert magad, majd add hozzá vagy képezd le a vezérlőit.',
+    // Named for the framework rather than for its vendor. The hint was reworded
+    // at the same time: it used to end "...load its Secure Controls Framework
+    // controls", which read as a stutter once the label carried those words.
+    'GetFrameworkFromScf' => 'Szerezzen be egyet a Secure Controls Framework-től',
+    'GetFrameworkFromScfHint' => 'Válasszon ki egy közzétett keretrendszert, és töltse be a hozzárendelt vezérlőit egyetlen lépésben.',
+    'ImportFrameworkFromCatalog' => 'Importáljon egyet',
+    'ImportFrameworkFromCatalogHint' => 'Telepítsen egy keretrendszert és annak vezérlőit a SimpleRisk tartalomkatalógusból.',
+
+    // The framework acquisition chooser's third route, which now offers the
+    // Import-Export Extra's CONTROL import (a spreadsheet naming a framework
+    // that does not exist yet creates it) rather than the GitHub catalogue the
+    // two keys above described. Those two are left in place, unreferenced, so a
+    // customer maintaining a custom lang.<locale>.php still reconciles by tail
+    // diff.
+    'ImportFrameworkFromSpreadsheet' => 'Importáljon egyet egy táblázatból',
+    'ImportFrameworkFromSpreadsheetHint' => 'Tölts fel egy táblázatot a vezérlőkről, amely elnevezi a keretrendszert, és mindkettő létrejön.',
+
+    // The Define Control Frameworks rail's second synthetic scope: the controls
+    // mapped to no framework at all. Its first, "All controls", reuses the
+    // existing AllControls key rather than adding a second string with the same
+    // English -- it replaced 'AllFrameworks' on that row, which named a union of
+    // frameworks while scoping to every control, mapped or not. 'AllFrameworks'
+    // is left in place and unreferenced by that page: other surfaces still use
+    // it, and every locale carries it.
+    'UnassignedControls' => 'Nem hozzárendelt vezérlők',
+    // APPLICABILITY VALIDATION FAILURES. These reach the user: the v2 endpoint
+    // returns the exception's message as the API status message and the page
+    // renders it in a toast, so a hardcoded English literal here would be
+    // permanently English for every locale.
+    //
+    // NOTHING THE CALLER TYPED IS EVER INTERPOLATED INTO THESE. The parameters
+    // are validated enum values, integer ids and byte limits the server itself
+    // owns -- naming the ALLOWED values rather than echoing the rejected one is
+    // deliberate (it is both safe and more useful than repeating a typo).
+    'ApplicabilityErrUnknownState' => 'Ismeretlen alkalmazhatósági állapot. A következők egyikét várta a rendszer: {$states}.',
+    'ApplicabilityErrNarrativeRequired' => 'A \'{$state} \' karakterhez narratíva szükséges.',
+    'ApplicabilityErrNarrativeTooLong' => 'A narratíva hosszabb, mint {$bytes} bájt.',
+    'ApplicabilityErrReasonRequired' => 'Kizárási ok megadása szükséges egy vezérlőelem nem alkalmazhatóként való megjelöléséhez.',
+    'ApplicabilityErrProviderRequired' => 'Egy szolgáltatónak örököltként kell megjelölnie egy vezérlőt.',
+    'ApplicabilityErrProviderTooLong' => 'A szolgáltató neve hosszabb, mint {$bytes} bájt.',
+    'ApplicabilityErrReasonsNotFound' => 'Ezek az alkalmazhatósági okok nem léteznek: {$ids}.',
+    'ApplicabilityErrReasonsNotOffered' => 'Ezek az alkalmazhatósági okok nem állnak rendelkezésre ehhez az állapothoz: {$ids}.',
+    'ApplicabilityErrFrameworkNotFound' => 'A {$framework} keretrendszer nem létezik.',
+    'ApplicabilityErrControlsNotFound' => 'Ezek a vezérlőazonosítók nem léteznek: {$ids}.',
+    // Controls/Risks import result messages (validation gate, individual bad-row
+    // alerts, and the batched submitted/created/updated summaries)
+    'ControlIdOrShortNameFieldRequired' => 'Vagy a Vezérlőazonosító, vagy a Vezérlő rövid neve mezőt kell leképezni -- egy sor nem azonosítható ezek nélkül.',
+    'RiskImportSubjectNull' => 'Kockázatazonosító {$risk_id}: Nem frissült, mert a Tárgy mező üres vagy hiányzik.',
+    'RiskImportSummary' => 'Benyújtott {$submitted} kockázat(ok) és frissített {$updated} kockázat(ok).',
+    'ControlImportSummary' => 'Létrehoztam {$created} vezérlő(ke)t és frissítettem {$updated} vezérlő(ke)t.',
+    'ImportAdditionalIssuesSuppressed' => '{$count} további sor(ok)ban olyan problémák merültek fel, amelyek itt egyenként nem láthatók.',
+    'EncryptionPipelineStalledTask' => 'Egy titkosítási folyamat ( #{$id}, {$type}feladat) leálltnak tűnik — szokatlanul hosszú ideje {$status} nincs folyamatban. Ez általában azt jelenti, hogy a háttérben futó várólista-feldolgozó nem fut; ellenőrizze, hogy ütemezve van-e, majd próbálja újra, miután feldolgozta a leállt feladatot.',
+    'EncryptionPipelineStalledState' => 'Egy titkosítási folyamat leálltnak tűnik – szokatlanul hosszú ideje folyamatban lévőként van megjelölve, és nincs megfelelő háttérfeladat, amire mutathatna. Ez általában azt jelenti, hogy a várólista-feldolgozó nem fut, vagy egy korábbi folyamat fejeződött be anélkül, hogy ezt megfelelően frissítette volna. Ellenőrizze a hibakeresési naplót, mielőtt újra próbálkozna.',
+    // DEMO_MODE — shown when a visitor to a shared demo instance attempts one
+    // of the operations that would spoil the demo for the next visitor
+    'ActionDisabledOnDemoInstance' => 'Ez a művelet le van tiltva a SimpleRisk demópéldányon.',
+
+    // The one-click upgrade progress window: the step an upgrade is on, and
+    // the line shown once it finishes
+    // Shown when an upgrade's progress record has not been touched for long
+    // enough that the process running it is presumed gone
+    'UpgradeJobStalled' => 'A frissítés nem válaszol. Újrapróbálkozás előtt ellenőrizze a szervernaplót.',
+    // Shown when an upgrade replaced the instance's configuration file and could
+    // not put the original back
+    // Shown when the database was brought up to date but the application files
+    // could not be replaced, so the instance has NOT moved to the new release
+    'UpdateAppFailed' => 'Az alkalmazásfájlok nem lettek frissítve, így ez a példány továbbra is az előző kiadását futtatja. Ellenőrizze a SimpleRisk naplóját az ok okáért, majd futtassa újra a frissítést.',
+    // The one-click upgrade progress screen
+    'UpgradeInProgress' => 'Folyamatban van',
+    'UpgradeStepNotNeeded' => 'Nem szükséges',
+    // Recovering an Upgrade Extra whose files are damaged
+    'UpgradeExtraDamagedReinstalling' => 'A telepített Upgrade Extra sérült. Friss másolat letöltése folyamatban.',
+    'UpgradeExtraDamagedRepaired' => 'Az Upgrade Extrát egy működő példányra cserélték.',
+    'UpgradeExtraDamagedFailed' => 'A Frissítési Extra sérült, és nem cserélhető automatikusan. Telepítse újra az Extrák oldalról, vagy állítsa vissza a simplerisk/extras/upgrade/ fájlt egy biztonsági mentésből, majd próbálja újra.',
+    'UpgradeAlreadyCurrent' => 'Ez a példány már a {version}verziónál van, ami a legújabb kiadás. Semmi frissítésre nem volt szükség.',
+    'UpgradeShowWhatItDid' => 'Mutasd meg, mit csinált',
+    'UpgradeBackupsListed' => 'Ezek a biztonsági mentések a Konfigurálás > Biztonsági mentések alatt találhatók.',
+    'UpgradingTo' => 'Frissítés erre: {version}',
+    'UpgradeSafeToClose' => 'Biztonságosan bezárhatja ezt az ablakot. A frissítés folytatódik a szerveren, és ez az oldal újra csatlakozik.',
+    'UpgradeDownloadLog' => 'Napló letöltése',
+    'UpgradeStatementsApplied' => 'Elindítva {started} · {count} utasítás alkalmazva',
+    // The Upgrade Extra's pre-upgrade check of the instance it is sitting on
+    'UpgradeCheckingInstance' => 'Ennek a példánynak az ellenőrzése',
+    'UpgradeInstanceChecked' => 'A példány ellenőrizve, nincs szükség javításra.',
+    'UpgradeBlockedByCorrections' => 'A frissítés leállt, mert ehhez a példányhoz egy olyan javítás szükséges, amelyet nem lehetett automatikusan alkalmazni. Kövesse a fenti utasításokat, majd futtassa újra a frissítést. Semmi más nem változott.',
+    // Shown when an upgrade replaced the instance's configuration file and could not put the original back
+    'ConfigRestoreFailed' => 'A frissítés nem tudta visszaállítani a példány konfigurációs fájlját. A folytatás előtt állítsa vissza a simplerisk/includes/config.php fájlt a biztonsági mentésből.',
+    'UpgradeDidNotAdvance' => 'A(z) "{$version}" verzió frissítési függvénye nem hajtotta végre az adatbázis verzióváltását; leállt, így nem fut újra.',
+    'BackupDatabaseNative' => 'Adatbázis biztonsági mentése (külső eszközök nem szükségesek)...',
+    'UpgradeAlreadyRunning' => 'Egy frissítés már fut ezen a példányon.',
+    'UpgradeStatusUnreachable' => 'Megszakadt a kapcsolat a szerverrel a frissítés futása közben. Ellenőrizze a SimpleRisk naplót; lehet, hogy a frissítés még folyamatban van.',
+    'UpgradeJobUnwritable' => 'A frissítés nem indult el, mert a folyamatban lévő rekordja nem írható. Ellenőrizze, hogy a rendszer ideiglenes könyvtára írható-e a webfelhasználó számára.',
+    'UpgradeStepCheckingVersions' => 'Verziók ellenőrzése',
+    'UpgradeStepUpgradingDatabase' => 'Az adatbázis séma frissítése',
+    'UpgradeStepFinalising' => 'A frissítés utáni konverziók alkalmazása',
+    'UpgradeDatabaseHeading' => 'Az adatbázis frissítése',
+    'UpgradeDatabaseComplete' => 'Az adatbázis frissítése befejeződött.',
+    'UpgradeHideWhatItDid' => 'Elrejti, mit tett',
+    'UpgradeStateRunning' => 'Futás',
+    'UpgradeSessionExpired' => 'A munkameneted lejárt. Jelentkezz be újra a frissítés megtekintéséhez.',
+    'UpgradeLostContact' => 'Megszakadt a kapcsolat a szerverrel. Töltse be újra ezt az oldalt a frissítéshez való újbóli csatlakozáshoz.',
+    'UpgradeDatabaseAlreadyCurrent' => 'Az adatbázis már szerepel az alkalmazás verziójában.',
+    'UpgradeConversionsApplied' => 'Motor- és karakterkészlet-konverziók alkalmazva.',
+    'UpgradeStoppedShort' => 'A frissítés {reached} ponton megállt {app}elérése nélkül. Lásd a szervernaplót.',
+    'UpgradeStepBackingUp' => 'Biztonsági mentés',
+    'UpgradeStepUpgradingFiles' => 'Alkalmazásfájlok frissítése',
+    'UpgradeStepUpgradingExtras' => 'Telepített extrák frissítése',
+    'UpgradeStepUpdatingUpgradeExtra' => 'Az Upgrade Extra frissítése',
+    // The Upgrade Extra's pre-chain corrections: what is wrong, and what to do
+    // about it. These are the highest-stakes messages the upgrade produces --
+    // an operator reads them to unstick an instance that cannot upgrade.
+    'UpgradeCorrectionUnknownVersionTitle' => 'A rögzített adatbázis verzió nem nevez meg valós kiadást',
+    'UpgradeCorrectionNoRecordedVersion' => 'Az adatbázisnak nincs rögzített verziója.',
+    'UpgradeCorrectionUnknownVersionFinding' => 'Az adatbázis a következő verziót jelenti: \'{$version}\', amely nem nevez meg SimpleRisk kiadást. A frissítés nem választhat kiindulópontot ebből.',
+    'UpgradeCorrectionUnknownVersionGuidance' => 'Állítsd a db_version beállítást arra a kiadásra, amelynek a sémája az adatbázis ténylegesen megtalálható, majd futtasd újra a frissítést: UPDATE settings SET value=\'<release>\' WHERE name=\'db_version\'. Ha az érték egy helyőrző, például 2026XXXX-001, akkor a helyes érték szinte mindig a frissítés futtatása előtt telepített legújabb valódi kiadás.',
+    'UpgradeCorrectionLegacySessionsTitle' => 'A munkamenetek táblája nem éli túl a frissítés karakterkészlet-konverzióját.',
+    'UpgradeCorrectionLegacySessionsFinding' => 'A `sessions`.`id` változó VARCHAR({$width}) egy MyISAM táblában. Ha utf8mb4-re konvertálnánk (ami a 20230106-001-es és újabb kiadásokban már lehetséges), az meghaladná a MyISAM 1000 bájtos indexkorlátját, és a frissítés sikertelen lenne.',
+    'UpgradeCorrectionLegacySessionsGuidance' => 'Egy vagy több aktív munkamenet 128 karakternél hosszabb azonosítót használ. Az oszlop szűkítése most kijelentkeztetné ezeket a felhasználókat, ezért ezt a részt nem állítottuk be. Próbálja meg újra a frissítést, ha ezek a munkamenetek lejártak.',
+    'UpgradeCorrectionApplied' => 'Javítva.',
+    'UpgradeCorrectionFailed' => 'Ez a javítás nem alkalmazható. Az okot a SimpleRisk naplójában találja.',
+    'UpgradeCorrectionAppliedLine' => 'Javítva: {$title} {$message}',
+    'UpgradeCorrectionNotAppliedLine' => 'NINCS javítva: {$title} {$message}',
+    'UpgradeCorrectionsNeeded' => 'Javítások szükségesek a példány frissítése előtt: {$count}',
+    'UpgradeCorrectionsNeededShort' => 'Szükséges javítások: {$count}',
+    'UpdateDatabase' => 'Adatbázis frissítése...',
+    // Authentication screens (index.php, reset.php, reset_password.php)
+    'EnterTheCredentialsForYourAccount' => 'Add meg a fiókodhoz tartozó hitelesítő adatokat.',
+    'TroubleSigningIn' => 'Problémája van a bejelentkezéssel? Lépjen kapcsolatba a SimpleRisk rendszergazdájával.',
+    'BackToLogin' => 'Vissza a bejelentkezéshez',
+    'Or' => 'vagy',
+    'WeWillEmailAResetTokenToYourAccount' => 'Egy visszaállítási tokent küldünk e-mailben a fiókodban megadott címre.',
+    'EnterTheResetTokenFromYourEmail' => 'Add meg az e-mailben kapott visszaállító tokent az új jelszavaddal együtt.',
+    'ChooseANewPasswordToContinue' => 'Válasszon új jelszót a folytatáshoz.',
+    'FromZeroToGRCInMinutes' => 'NULLA állapottól a GRC-ig percek alatt.',
+    'OrganizationLogo' => 'Szervezeti logó',
+    'LoginScreenBranding' => 'Bejelentkezési képernyő arculata',
+    'CustomLogo' => 'Egyedi logó',
+    'CustomLogoHint' => 'PNG, JPG, GIF vagy WebP, maximum 1 MB méretben és 2000x2000 képpontos méretben. Maximum 260x64 méretben jelenik meg, ezért nagy sűrűségű képernyőkhöz körülbelül 520x128 képpontos méretet adjon meg. A felső sáv és a bejelentkezési panel sötét, ezért töltsön fel egy sötét háttér előtt olvasható logót. Távolítsa el a logót, hogy visszatérhessen a SimpleRisk logóhoz.',
+    'CurrentLogo' => 'Jelenlegi logó',
+    'RemoveLogo' => 'Távolítsa el a logót',
+    'LoginTagline' => 'Bejelentkezési szlogen',
+    'LoginTaglineHint' => 'Lecseréli a SimpleRisk szlogent a bejelentkezési képernyőn. Egy rövid sor a legmegfelelőbb. Hagyd üresen, ha meg szeretnéd tartani a SimpleRisk szlogent.',
+    'LoginNotice' => 'Rendszerhasználati értesítés',
+    'LoginNoticeHint' => 'Megjelenik a bejelentkezési képernyőn, mielőtt bárki bejelentkezne. Használja elfogadható használatra vagy rendszerhasználatra vonatkozó értesítésként. Hagyja üresen, ha nem jelenít meg értesítést. Linkek és képek nem engedélyezettek.',
+    'BrandingRequiresCustomization' => 'A bejelentkezési képernyő arculata a Testreszabási Extra része.',
+    'LogoMustBeAnImage' => 'A logónak PNG, JPG, GIF vagy WebP képnek kell lennie.',
+    'LogoTooLarge' => 'A logó mérete nem haladhatja meg az 1 MB-ot.',
+    'LogoDimensionsTooLarge' => 'A logó mérete nem haladhatja meg a 2000x2000 képpontot.',
+    'LogoDimensionsTooSmall' => 'A logó leghosszabb élének legalább 32 képpontosnak kell lennie.',
+    'LogoUploadFailed' => 'A logó feltöltése sikertelen. Kérjük, próbálja újra.',
+    'LogoUpdated' => 'A logót frissítették.',
+    'LogoRemoved' => 'A logót eltávolították.',
+    'NoSystemUseNoticeSet' => 'Nincs beállítva rendszerhasználati értesítés.',
+    'NoticeSizeSmall' => 'Kicsi',
+    'NoticeSizeNormal' => 'Normál',
+    'NoticeSizeLarge' => 'Nagy',
     '' => '',
 );
 ?>

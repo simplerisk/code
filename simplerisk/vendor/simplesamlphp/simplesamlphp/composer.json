@@ -25,6 +25,7 @@
             "SimpleSAML\\Module\\admin\\": "modules/admin/src",
             "SimpleSAML\\Module\\core\\": "modules/core/src",
             "SimpleSAML\\Module\\cron\\": "modules/cron/src",
+            "SimpleSAML\\Module\\debugsp\\": "modules/debugsp/src",
             "SimpleSAML\\Module\\exampleauth\\": "modules/exampleauth/src",
             "SimpleSAML\\Module\\multiauth\\": "modules/multiauth/src",
             "SimpleSAML\\Module\\saml\\": "modules/saml/src"
@@ -37,6 +38,7 @@
             "SimpleSAML\\Test\\Module\\admin\\": ["tests//modules/admin/src"],
             "SimpleSAML\\Test\\Module\\core\\": ["tests/modules/core/src"],
             "SimpleSAML\\Test\\Module\\cron\\": ["tests/modules/cron/src"],
+            "SimpleSAML\\Test\\Module\\debugsp\\": ["tests/modules/debugsp/src"],
             "SimpleSAML\\Test\\Module\\exampleauth\\": ["tests/modules/exampleauth/src"],
             "SimpleSAML\\Test\\Module\\multiauth\\": ["tests/modules/multiauth/src"],
             "SimpleSAML\\Test\\Module\\saml\\": ["tests/modules/saml/src"]
@@ -44,11 +46,14 @@
         "files": ["tests/_autoload_modules.php"]
     },
     "require": {
-        "php": "^8.1",
+        "php": "^8.3",
         "ext-date": "*",
         "ext-dom": "*",
+        "ext-fileinfo": "*",
+        "ext-filter": "*",
         "ext-hash": "*",
         "ext-json": "*",
+        "ext-libxml": "*",
         "ext-mbstring": "*",
         "ext-openssl": "*",
         "ext-pcre": "*",
@@ -57,45 +62,53 @@
         "ext-SPL": "*",
         "ext-zlib": "*",
 
-        "gettext/gettext": "^5.7",
-        "gettext/translator": "^1.1",
-        "phpmailer/phpmailer": "^6.8",
-        "psr/log": "^3.0",
-        "simplesamlphp/assert": "^1.1",
-        "simplesamlphp/composer-module-installer": "^1.3",
-        "simplesamlphp/saml2": "^5.0.0",
-        "simplesamlphp/saml2-legacy": "^4.18.1",
-        "simplesamlphp/simplesamlphp-assets-base": "~2.3.0",
-        "simplesamlphp/xml-security": "^1.7",
-        "symfony/cache": "^6.4",
-        "symfony/config": "^6.4",
-        "symfony/console": "^6.4",
-        "symfony/dependency-injection": "^6.4",
-        "symfony/filesystem": "^6.4",
-        "symfony/finder": "^6.4",
-        "symfony/framework-bundle": "^6.4",
-        "symfony/http-foundation": "^6.4",
-        "symfony/http-kernel": "^6.4",
-        "symfony/intl": "^6.4",
-        "symfony/password-hasher": "^6.4",
-        "symfony/polyfill-intl-icu": "^1.28",
-        "symfony/routing": "^6.4",
-        "symfony/translation-contracts": "^3.0",
-        "symfony/twig-bridge": "^6.4",
-        "symfony/var-exporter": "^6.4",
-        "symfony/yaml": "^6.4",
-        "twig/intl-extra": "^3.7",
-        "twig/twig": "^3.14.0"
+        "composer-runtime-api": "^2.2",
+        "gettext/gettext": "~5.7",
+        "gettext/php-scanner": "^2.0",
+        "gettext/translator": "~1.2",
+        "phpmailer/phpmailer": "~7.0",
+        "psr/event-dispatcher": "~1.0",
+        "psr/log": "~3.0",
+        "robrichards/xmlseclibs": "^3.1.5",
+        "simplesamlphp/assert": "~2.0",
+        "simplesamlphp/composer-module-installer": "~1.7",
+        "simplesamlphp/saml2": "~6.1",
+        "simplesamlphp/saml2-legacy": "~4.20",
+        "simplesamlphp/simplesamlphp-assets-base": "~2.5.0",
+        "simplesamlphp/xml-common": "~2.7",
+        "simplesamlphp/xml-security": "~2.3",
+        "symfony/cache": "~7.4",
+        "symfony/config": "~7.4",
+        "symfony/console": "~7.4",
+        "symfony/dependency-injection": "~7.4",
+        "symfony/event-dispatcher": "~7.4",
+        "symfony/expression-language": "~7.4",
+        "symfony/filesystem": "~7.4",
+        "symfony/finder": "~7.4",
+        "symfony/framework-bundle": "~7.4",
+        "symfony/http-client": "~7.4",
+        "symfony/http-client-contracts": "~3.5",
+        "symfony/http-foundation": "~7.4",
+        "symfony/http-kernel": "~7.4",
+        "symfony/intl": "~7.4",
+        "symfony/password-hasher": "~7.4",
+        "symfony/polyfill-intl-icu": "~1.33",
+        "symfony/routing": "~7.4",
+        "symfony/translation": "~7.4",
+        "symfony/translation-contracts": "~3.6",
+        "symfony/twig-bridge": "~7.4",
+        "symfony/var-exporter": "~7.4",
+        "symfony/yaml": "~7.4",
+        "twig/intl-extra": "~3.21",
+        "twig/twig": "~3.21"
     },
     "require-dev": {
         "ext-curl": "*",
         "ext-pdo_sqlite": "*",
 
-        "gettext/php-scanner": "1.3.1",
         "mikey179/vfsstream": "~1.6",
-        "predis/predis": "^2.2",
-        "simplesamlphp/simplesamlphp-test-framework": "^1.9.2",
-        "symfony/translation": "^6.4"
+        "predis/predis": "~3.3",
+        "simplesamlphp/simplesamlphp-test-framework": "~1.11.6 || dev-master"
     },
     "suggest": {
         "predis/predis": "Needed if a Redis server is used to store session information",
@@ -123,7 +136,10 @@
     },
     "extra": {
         "branch-alias": {
-            "dev-master": "2.5.0.x-dev"
+            "dev-master": "2.5.x-dev",
+            "dev-simplesamlphp-2.5": "2.5.x-dev",
+            "dev-simplesamlphp-2.6": "2.6.x-dev",
+            "dev-simplesamlphp-3.0": "3.0.x-dev"
         }
     },
     "scripts": {
@@ -140,5 +156,5 @@
             "echo 'Post-install tasks completed!'"
         ]
     },
-    "version": "v2.4.2"
+    "version": "v2.5.2"
 }

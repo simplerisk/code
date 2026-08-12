@@ -27,8 +27,7 @@ class MetaDataStorageHandler implements ClearableState
      *
      * @var \SimpleSAML\Metadata\MetaDataStorageHandler|null
      */
-    private static ?MetadataStorageHandler $metadataHandler = null;
-
+    private static ?MetaDataStorageHandler $metadataHandler = null;
 
     /**
      * This is a list of all the metadata sources we have in our metadata
@@ -44,7 +43,7 @@ class MetaDataStorageHandler implements ClearableState
      * The metadata handler will be instantiated if this is the first call
      * to this function.
      *
-     * @return MetaDataStorageHandler The current metadata handler instance.
+     * @return \SimpleSAML\Metadata\MetaDataStorageHandler The current metadata handler instance.
      */
     public static function getMetadataHandler(): MetaDataStorageHandler
     {
@@ -302,6 +301,7 @@ class MetaDataStorageHandler implements ClearableState
         return $result;
     }
 
+
     /**
      * This function looks up the metadata for the given entity id in the given set. It will throw an
      * exception if it is unable to locate the metadata.
@@ -330,6 +330,20 @@ class MetaDataStorageHandler implements ClearableState
                             'Metadata for the entity [' . $entityId . '] expired ' .
                             (time() - $metadata['expire']) . ' seconds ago.',
                         );
+                    }
+                }
+
+                if (!array_key_exists('metadata.sign.enable', $metadata)) {
+                    // The admin needs to set the .enable setting to make these
+                    // specific keys be used.
+                    if (
+                        array_key_exists('metadata.sign.privatekey', $metadata)
+                        || array_key_exists('metadata.sign.certificate', $metadata)
+                    ) {
+                        Logger::error("SIGNING: Please set metadata.sign.enable=true when"
+                                    . " you wish to specify the privatekey and certificate"
+                                     . " in the metadata file."
+                                    . " See entity $entityId");
                     }
                 }
 

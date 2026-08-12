@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace SimpleSAML\XMLSecurity\XML\xenc;
 
-use SimpleSAML\XML\Base64ElementTrait;
+use SimpleSAML\XML\TypedTextContentTrait;
+use SimpleSAML\XMLSecurity\Type\CryptoBinaryValue;
 
 /**
  * Class representing a xenc:Generator element.
@@ -13,14 +14,8 @@ use SimpleSAML\XML\Base64ElementTrait;
  */
 final class Generator extends AbstractXencElement
 {
-    use Base64ElementTrait;
+    use TypedTextContentTrait;
 
 
-    /**
-     * @param string $content
-     */
-    public function __construct(string $content)
-    {
-        $this->setContent($content);
-    }
+    public const string TEXTCONTENT_TYPE = CryptoBinaryValue::class;
 }

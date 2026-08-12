@@ -6,14 +6,15 @@ namespace SimpleSAML\XMLSecurity\XML\xenc;
 
 use DOMElement;
 use SimpleSAML\Assert\Assert;
-use SimpleSAML\XML\Exception\InvalidDOMElementException;
-use SimpleSAML\XML\Exception\MissingElementException;
-use SimpleSAML\XML\Exception\TooManyElementsException;
 use SimpleSAML\XML\SchemaValidatableElementInterface;
 use SimpleSAML\XML\SchemaValidatableElementTrait;
+use SimpleSAML\XMLSchema\Exception\InvalidDOMElementException;
+use SimpleSAML\XMLSchema\Exception\MissingElementException;
+use SimpleSAML\XMLSchema\Exception\TooManyElementsException;
+use SimpleSAML\XMLSchema\Type\AnyURIValue;
+use SimpleSAML\XMLSchema\Type\IDValue;
+use SimpleSAML\XMLSchema\Type\StringValue;
 use SimpleSAML\XMLSecurity\XML\ds\KeyInfo;
-use SimpleSAML\XMLSecurity\XML\xenc\CipherData;
-use SimpleSAML\XMLSecurity\XML\xenc\EncryptionMethod;
 
 use function array_pop;
 
@@ -28,14 +29,15 @@ final class EncryptedData extends AbstractEncryptedType implements SchemaValidat
 {
     use SchemaValidatableElementTrait;
 
+
     /**
      * @inheritDoc
      *
-     * @throws \SimpleSAML\XML\Exception\InvalidDOMElementException
+     * @throws \SimpleSAML\XMLSchema\Exception\InvalidDOMElementException
      *   If the qualified name of the supplied element is wrong
-     * @throws \SimpleSAML\XML\Exception\MissingElementException
+     * @throws \SimpleSAML\XMLSchema\Exception\MissingElementException
      *   If one of the mandatory child-elements is missing
-     * @throws \SimpleSAML\XML\Exception\TooManyElementsException
+     * @throws \SimpleSAML\XMLSchema\Exception\TooManyElementsException
      *   If too many child-elements of a type are specified
      */
     final public static function fromXML(DOMElement $xml): static
@@ -75,10 +77,10 @@ final class EncryptedData extends AbstractEncryptedType implements SchemaValidat
 
         return new static(
             $cipherData[0],
-            self::getOptionalAttribute($xml, 'Id', null),
-            self::getOptionalAttribute($xml, 'Type', null),
-            self::getOptionalAttribute($xml, 'MimeType', null),
-            self::getOptionalAttribute($xml, 'Encoding', null),
+            self::getOptionalAttribute($xml, 'Id', IDValue::class, null),
+            self::getOptionalAttribute($xml, 'Type', AnyURIValue::class, null),
+            self::getOptionalAttribute($xml, 'MimeType', StringValue::class, null),
+            self::getOptionalAttribute($xml, 'Encoding', AnyURIValue::class, null),
             array_pop($encryptionMethod),
             array_pop($keyInfo),
         );

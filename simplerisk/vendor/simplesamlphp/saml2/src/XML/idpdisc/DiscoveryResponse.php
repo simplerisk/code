@@ -4,12 +4,15 @@ declare(strict_types=1);
 
 namespace SimpleSAML\SAML2\XML\idpdisc;
 
-use SimpleSAML\Assert\Assert;
+use SimpleSAML\SAML2\Assert\Assert;
 use SimpleSAML\SAML2\Constants as C;
 use SimpleSAML\SAML2\Exception\ProtocolViolationException;
+use SimpleSAML\SAML2\Type\SAMLAnyURIValue;
 use SimpleSAML\SAML2\XML\md\AbstractIndexedEndpointType;
 use SimpleSAML\XML\SchemaValidatableElementInterface;
 use SimpleSAML\XML\SchemaValidatableElementTrait;
+use SimpleSAML\XMLSchema\Type\BooleanValue;
+use SimpleSAML\XMLSchema\Type\UnsignedShortValue;
 
 /**
  * Abstract class to be implemented by all the classes in this namespace
@@ -22,44 +25,43 @@ final class DiscoveryResponse extends AbstractIndexedEndpointType implements Sch
 {
     use SchemaValidatableElementTrait;
 
-    /** @var string */
-    public const NS = C::NS_IDPDISC;
 
-    /** @var string */
-    public const NS_PREFIX = 'idpdisc';
+    public const string NS = C::NS_IDPDISC;
 
-    /** @var string */
-    public const SCHEMA = 'resources/schemas/sstc-saml-idp-discovery.xsd';
+    public const string NS_PREFIX = 'idpdisc';
+
+    public const string SCHEMA = 'resources/schemas/sstc-saml-idp-discovery.xsd';
+
 
     /**
      * DiscoveryResponse constructor.
      *
      * This is an endpoint with one restriction: it cannot contain a ResponseLocation.
      *
-     * @param int $index
-     * @param string $binding
-     * @param string $location
-     * @param bool|null $isDefault
-     * @param string|null $unused
+     * @param \SimpleSAML\XMLSchema\Type\UnsignedShortValue $index
+     * @param \SimpleSAML\SAML2\Type\SAMLAnyURIValue $binding
+     * @param \SimpleSAML\SAML2\Type\SAMLAnyURIValue $location
+     * @param \SimpleSAML\XMLSchema\Type\BooleanValue|null $isDefault
+     * @param \SimpleSAML\SAML2\Type\SAMLAnyURIValue|null $responseLocation
      * @param array<\SimpleSAML\XML\SerializableElementInterface> $children
      * @param array<\SimpleSAML\XML\Attribute> $attributes
      *
      * @throws \SimpleSAML\Assert\AssertionFailedException
      */
     public function __construct(
-        int $index,
-        string $binding,
-        string $location,
-        ?bool $isDefault = null,
-        ?string $unused = null,
+        UnsignedShortValue $index,
+        SAMLAnyURIValue $binding,
+        SAMLAnyURIValue $location,
+        ?BooleanValue $isDefault = null,
+        ?SAMLAnyURIValue $responseLocation = null, // unused
         array $children = [],
         array $attributes = [],
     ) {
-        Assert::same($binding, C::BINDING_IDPDISC, ProtocolViolationException::class);
+        Assert::same($binding->getValue(), C::BINDING_IDPDISC, ProtocolViolationException::class);
         Assert::null(
-            $unused,
+            $responseLocation,
             'The \'ResponseLocation\' attribute must be omitted for idpdisc:DiscoveryResponse.',
         );
-        parent::__construct($index, C::BINDING_IDPDISC, $location, $isDefault, null, $children, $attributes);
+        parent::__construct($index, $binding, $location, $isDefault, null, $children, $attributes);
     }
 }

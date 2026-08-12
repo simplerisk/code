@@ -11,6 +11,5 @@ namespace SimpleSAML\XMLSecurity\XML\xenc11;
  */
 final class PBKDF2params extends AbstractPBKDF2ParameterType
 {
-    /** @var string */
-    public const LOCALNAME = 'PBKDF2-params';
+    public const string LOCALNAME = 'PBKDF2-params';
 }

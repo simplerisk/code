@@ -1,0 +1,81 @@
+<?php
+
+/**
+ * Model Context Protocol SDK for PHP
+ *
+ * (c) 2024 Logiscape LLC <https://logiscape.com>
+ *
+ * Based on the Python SDK for the Model Context Protocol
+ * https://github.com/modelcontextprotocol/python-sdk
+ *
+ * PHP conversion developed by:
+ * - Josh Abbott
+ * - Claude 3.5 Sonnet (Anthropic AI model)
+ * - ChatGPT o1 pro mode
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ *
+ * @package    logiscape/mcp-sdk-php
+ * @author     Josh Abbott <https://joshabbott.com>
+ * @copyright  Logiscape LLC
+ * @license    MIT License
+ * @link       https://github.com/logiscape/mcp-sdk-php
+ *
+ * Filename: Types/Root.php
+ */
+
+declare(strict_types=1);
+
+namespace Mcp\Types;
+
+/**
+ * @deprecated Deprecated as of protocol version 2026-07-28 (SEP-2577). The
+ *             Roots feature remains in the specification (and this SDK) for
+ *             at least twelve months; migrate to passing directories or files
+ *             via tool parameters, resource URIs, or server configuration.
+ *             See the deprecated features registry.
+ */
+class Root implements McpModel {
+    use ExtraFieldsTrait;
+
+    public function __construct(
+        public readonly string $uri,
+        public ?string $name = null,
+    ) {}
+
+    /**
+     * @param array<string, mixed> $data
+     */
+    public static function fromArray(array $data): self {
+        $uri = $data['uri'] ?? '';
+        $name = $data['name'] ?? null;
+        unset($data['uri'], $data['name']);
+
+        $obj = new self($uri, $name);
+
+        foreach ($data as $k => $v) {
+            $obj->$k = $v;
+        }
+
+        $obj->validate();
+        return $obj;
+    }
+
+    public function validate(): void {
+        if (empty($this->uri)) {
+            throw new \InvalidArgumentException('Root URI cannot be empty');
+        }
+        if (!str_starts_with($this->uri, 'file://')) {
+            throw new \InvalidArgumentException('Root URI must be a file:// URI per the MCP specification');
+        }
+    }
+
+    public function jsonSerialize(): mixed {
+        $data = ['uri' => $this->uri];
+        if ($this->name !== null) {
+            $data['name'] = $this->name;
+        }
+        return array_merge($data, $this->extraFields);
+    }
+}

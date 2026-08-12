@@ -19,7 +19,6 @@ use function hash_hmac;
  */
 final class HMAC implements SignatureBackend
 {
-    /** @var string */
     protected string $digest;
 
 

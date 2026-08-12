@@ -6,11 +6,11 @@ namespace SimpleSAML\XMLSecurity\XML\ds;
 
 use DOMElement;
 use SimpleSAML\Assert\Assert;
-use SimpleSAML\XML\Exception\InvalidDOMElementException;
-use SimpleSAML\XML\Exception\MissingElementException;
-use SimpleSAML\XML\Exception\TooManyElementsException;
 use SimpleSAML\XML\SchemaValidatableElementInterface;
 use SimpleSAML\XML\SchemaValidatableElementTrait;
+use SimpleSAML\XMLSchema\Exception\InvalidDOMElementException;
+use SimpleSAML\XMLSchema\Exception\MissingElementException;
+use SimpleSAML\XMLSchema\Exception\TooManyElementsException;
 
 /**
  * Class representing a ds:RSAKeyValue element.
@@ -20,6 +20,7 @@ use SimpleSAML\XML\SchemaValidatableElementTrait;
 final class RSAKeyValue extends AbstractDsElement implements SchemaValidatableElementInterface
 {
     use SchemaValidatableElementTrait;
+
 
     /**
      * Initialize an RSAKeyValue.
@@ -60,9 +61,8 @@ final class RSAKeyValue extends AbstractDsElement implements SchemaValidatableEl
      * Convert XML into a RSAKeyValue
      *
      * @param \DOMElement $xml The XML element we should load
-     * @return static
      *
-     * @throws \SimpleSAML\XML\Exception\InvalidDOMElementException
+     * @throws \SimpleSAML\XMLSchema\Exception\InvalidDOMElementException
      *   If the qualified name of the supplied element is wrong
      */
     public static function fromXML(DOMElement $xml): static
@@ -106,7 +106,6 @@ final class RSAKeyValue extends AbstractDsElement implements SchemaValidatableEl
      * Convert this RSAKeyValue element to XML.
      *
      * @param \DOMElement|null $parent The element we should append this RSAKeyValue element to.
-     * @return \DOMElement
      */
     public function toXML(?DOMElement $parent = null): DOMElement
     {

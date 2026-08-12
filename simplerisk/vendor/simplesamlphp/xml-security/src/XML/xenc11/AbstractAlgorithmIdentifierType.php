@@ -5,8 +5,9 @@ declare(strict_types=1);
 namespace SimpleSAML\XMLSecurity\XML\xenc11;
 
 use DOMElement;
-use SimpleSAML\Assert\Assert;
-use SimpleSAML\XML\Exception\SchemaViolationException;
+use SimpleSAML\XMLSchema\Type\AnyURIValue;
+
+use function strval;
 
 /**
  * Class representing <xenc11:AlgorithmIdentifierType>.
@@ -18,23 +19,22 @@ abstract class AbstractAlgorithmIdentifierType extends AbstractXenc11Element
     /**
      * AlgorithmIdentifierType constructor.
      *
-     * @param string $Algorithm
+     * @param \SimpleSAML\XMLSchema\Type\AnyURIValue $Algorithm
      * @param \SimpleSAML\XMLSecurity\XML\xenc11\Parameters|null $parameters
      */
     public function __construct(
-        protected string $Algorithm,
+        protected AnyURIValue $Algorithm,
         protected ?Parameters $parameters = null,
     ) {
-        Assert::validURI($Algorithm, SchemaViolationException::class);
     }
 
 
     /**
      * Get the value of the $Algorithm property.
      *
-     * @return string
+     * @return \SimpleSAML\XMLSchema\Type\AnyURIValue
      */
-    public function getAlgorithm(): string
+    public function getAlgorithm(): AnyURIValue
     {
         return $this->Algorithm;
     }
@@ -57,7 +57,7 @@ abstract class AbstractAlgorithmIdentifierType extends AbstractXenc11Element
     public function toXML(?DOMElement $parent = null): DOMElement
     {
         $e = $this->instantiateParentElement($parent);
-        $e->setAttribute('Algorithm', $this->getAlgorithm());
+        $e->setAttribute('Algorithm', strval($this->getAlgorithm()));
 
         if ($this->getParameters() !== null) {
             if (!$this->getParameters()->isEmptyElement()) {

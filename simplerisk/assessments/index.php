@@ -5,41 +5,30 @@
 
     // Render the header and sidebar
     require_once(realpath(__DIR__ . '/../includes/renderutils.php'));
-    render_header_and_sidebar(['blockUI', 'selectize', 'datatables', 'cve_lookup', 'WYSIWYG', 'multiselect', 'tabs:logic', 'CUSTOM:common.js', 'CUSTOM:pages/assessment.js', 'datetimerangepicker'], ['check_assessments' => true], '');
+    require_once(realpath(__DIR__ . '/../includes/self_assessments.php'));
+    require_once(realpath(__DIR__ . '/../includes/permissions.php'));
+    render_header_and_sidebar(
+        ['blockUI', 'selectize', 'datatables', 'CUSTOM:pages/assessment.js', 'CUSTOM:pages/self-assessment.js'],
+        ['check_assessments' => true],
+        active_sidebar_menu: 'RiskManagement',
+        required_localization_keys: [
+            'SelfAssessments','NewSelfAssessment','PendingRisks','ChooseAFramework','EnabledFrameworks',
+            'AllScfFrameworks','Questions','Start','InProgress','Completed','Resume','View','Delete',
+            'ControlQuestion','Pass','Fail','NotApplicable','SaveProgress','MarkComplete',
+            'AnsweredOfTotal','FailedSoFar','StartedBy','FailedControls','PushToRisk',
+            'ConfirmDeleteSelfAssessment','ConfirmCompleteSelfAssessment','NoSelfAssessmentsYet','Back','Next',
+            'Status','Search','Subject','Score',
+            'Yes','No','Cancel','RequestFailed','ConfirmDeletePendingRisk','NoPendingRisks','Date','Assessments','Framework',
+            'ControlID','Answer','ControlStatus','NoFailedControls','All','Control','Question',
+            'ControlResultsTruncated','SelectAll','Select','NSelected','FilterByControl','Pushing','Deleting',
+            'ConfirmPushSelectedPendingRisks','ConfirmDeleteSelectedPendingRisks','ConfirmDeleteSelectedSelfAssessments',
+            'BulkPartialFailure',
+        ]
+    );
 
     // Include required functions file
     require_once(realpath(__DIR__ . '/../includes/assessments.php'));
     require_once(realpath(__DIR__ . '/../includes/extras.php'));
-
-    // Check if we should add a pending risk
-    if (isset($_POST['add'])) {
-
-        // Push the pending risk to a real risk
-        push_pending_risk();
-
-    }
-
-    // Check if we should delete a pending risk
-    if (isset($_POST['delete'])) {
-
-        // Get the risk id to delete
-        $pending_risk_id = (int)$_POST['pending_risk_id'];
-
-        // Delete the pending risk
-        delete_pending_risk($pending_risk_id);
-
-        // Set the alert message
-        set_alert(true, "good", "The pending risk was deleted successfully.");
-
-    }
-
-    // If an assessment was posted
-    if (isset($_POST['action']) && $_POST['action'] == "submit") {
-
-        // Process the assessment
-        process_assessment();
-
-    }
 
     // If an assessment was sent
     if (isset($_POST['send_assessment'])) {
@@ -139,8 +128,14 @@
             );
 
         } else {
-                // Display the available assessments
-        display_self_assessments();
+            // Default view: SCF-based self-assessment.
+            $ready = self_assessment_is_registered() && self_assessment_scf_installed();
+            if (!$ready) {
+                render_self_assessment_prereq_panel(self_assessment_is_registered(), self_assessment_scf_installed());
+            } else {
+                $can_gov = check_permission('governance') ? '1' : '0';
+                echo "<div id='self-assessment-app' class='self-assessment' data-can-governance='{$can_gov}'></div>";
+            }
         }
         
     ?>

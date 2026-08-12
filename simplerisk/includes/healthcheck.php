@@ -691,16 +691,19 @@ function check_custom_authentication_php_extensions()
 	}
 
 	// Extensions and the Custom Authentication capability each one supports.
-	// Validated against SimpleSAMLphp v2.4.2 (composer.json ext-* requires plus
+	// Validated against SimpleSAMLphp v2.5.2 (composer.json ext-* requires plus
 	// the Symfony routing tokenizer dependency) — re-verify on SimpleSAMLphp upgrades.
+	// v2.5.x added ext-fileinfo and ext-libxml as hard requirements over v2.4.x.
 	$extensions = array(
 		"ldap"      => "LDAP and Active Directory authentication",
 		"tokenizer" => "SAML authentication (SimpleSAMLphp routing)",
 		"openssl"   => "SAML authentication (signature and encryption operations)",
 		"simplexml" => "SAML authentication (metadata and assertion parsing)",
+		"libxml"    => "SAML authentication (XML metadata and assertion parsing)",
 		"session"   => "SAML authentication (SimpleSAMLphp session handling)",
 		"ctype"     => "SAML authentication (SimpleSAMLphp input validation)",
 		"filter"    => "SAML authentication (SimpleSAMLphp input validation)",
+		"fileinfo"  => "SAML authentication (SimpleSAMLphp file MIME-type detection)",
 	);
 
 	// Create an empty array
@@ -1303,6 +1306,21 @@ function check_simplerisk_base_url_dns()
  * FUNCTION: UNABLE TO COMMUNICATE WITH DATABASE *
  *************************************************/
 function unable_to_communicate_with_database() {
+
+    // Re-entrancy guard. This page is rendered from inside db_open()'s own
+    // catch block, so anything on it that touches the database re-enters here
+    // and recurses until PHP runs out of memory -- the page's terminating
+    // exit() below is never reached. get_custom_logo_src() already refuses to
+    // read a setting without a live connection; this is the second lock, so a
+    // future addition to this page cannot reintroduce the loop.
+    static $rendering = false;
+
+    if ($rendering) {
+        return;
+    }
+
+    $rendering = true;
+
 	
     $nocache_token = generate_token(5);
 ?>
@@ -1333,9 +1351,7 @@ function unable_to_communicate_with_database() {
             <header class="topbar" data-navbarbg="skin5">
                 <nav class="navbar top-navbar navbar-expand-md navbar-dark">
                     <div class="navbar-header">
-                        <a class="navbar-brand" href="https://www.simplerisk.com">
-                            <img src="../images/logo@2x.png" alt="homepage" class="logo"/>
-                        </a>
+<?php display_brand_logo('../'); ?>
                     </div>
               		<div class="navbar-collapse collapse show" id="navbarSupportedContent" data-navbarbg="skin5">
                         <!-- Right side toggle and nav items -->

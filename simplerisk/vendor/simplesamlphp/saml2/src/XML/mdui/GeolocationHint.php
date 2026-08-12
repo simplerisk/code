@@ -4,77 +4,94 @@ declare(strict_types=1);
 
 namespace SimpleSAML\SAML2\XML\mdui;
 
-use SimpleSAML\Assert\Assert;
-use SimpleSAML\SAML2\Assert\Assert as SAMLAssert;
-use SimpleSAML\SAML2\Exception\ProtocolViolationException;
-use SimpleSAML\SAML2\XML\StringElementTrait;
+use SimpleSAML\SAML2\Assert\Assert;
+use SimpleSAML\SAML2\Exception\ArrayValidationException;
+use SimpleSAML\SAML2\Type\GeolocationValue;
+use SimpleSAML\XML\ArrayizableElementInterface;
 use SimpleSAML\XML\SchemaValidatableElementInterface;
 use SimpleSAML\XML\SchemaValidatableElementTrait;
+use SimpleSAML\XML\TypedTextContentTrait;
+
+use function array_change_key_case;
+use function array_keys;
 
 /**
  * Class implementing GeolocationHint.
  *
  * @package simplesamlphp/saml2
  */
-final class GeolocationHint extends AbstractMduiElement implements SchemaValidatableElementInterface
+final class GeolocationHint extends AbstractMduiElement implements
+    ArrayizableElementInterface,
+    SchemaValidatableElementInterface
 {
     use SchemaValidatableElementTrait;
-    use StringElementTrait;
+    use TypedTextContentTrait;
+
+
+    public const string TEXTCONTENT_TYPE = GeolocationValue::class;
 
 
     /**
-     * @param string $content
+     * Create a class from an array
+     *
+     * @param array{
+     *   'url': string,
+     * } $data
      */
-    public function __construct(string $content)
+    public static function fromArray(array $data): static
     {
-        $this->setContent($content);
+        $data = self::processArrayContents($data);
+
+        return new static(
+            GeolocationValue::fromString($data['hint']),
+        );
     }
 
 
     /**
-     * Set the content of the element.
+     * Validates an array representation of this object and returns the same array with
+     * rationalized keys (casing) and parsed sub-elements.
      *
-     * @param string $content  The value to go in the XML textContent
+     * @param array{
+     *   'hint': string,
+     * } $data
+     * @return array{
+     *   'hint': string,
+     * }
      */
-    protected function setContent(string $content): void
+    private static function processArrayContents(array $data): array
     {
-        $sanitized = $this->sanitizeContent($content);
-        $this->validateContent($sanitized);
+        $data = array_change_key_case($data, CASE_LOWER);
 
-        // Store the email address with any whitespace removed
-        $this->content = $sanitized;
+        // Make sure the array keys are known for this kind of object
+        Assert::allOneOf(
+            array_keys($data),
+            [
+                'hint',
+            ],
+            ArrayValidationException::class,
+        );
+
+        Assert::keyExists($data, 'hint', ArrayValidationException::class);
+        Assert::string($data['hint'], ArrayValidationException::class);
+
+        return [
+            'hint' => $data['hint'],
+        ];
     }
 
 
     /**
-     * Sanitize the content of the element.
+     * Create an array from this class
      *
-     * @param string $content  The unsanitized textContent
-     * @throws \Exception on failure
-     * @return string
+     * @return array{
+     *   'hint': string,
+     * }
      */
-    protected function sanitizeContent(string $content): string
+    public function toArray(): array
     {
-        return preg_replace('/\s+/', '', $content);
-    }
-
-
-    /**
-     * Validate the content of the element.
-     *
-     * @param string $content  The value to go in the XML textContent
-     * @throws \Exception on failure
-     * @return void
-     */
-    protected function validateContent(string $content): void
-    {
-        Assert::notWhitespaceOnly($content, ProtocolViolationException::class);
-        // Assert::regex(
-        //     $content,
-        //     '/^geo:([-+]?\d+(?:\.\d+)?),([-+]?\d+(?:\.\d+)?)(?:\?z=(\d{1,2}))?$/',
-        //     'Content is not a valid geolocation:  %s'
-        // );
-        // The regex above is incomplete, so for now we only test for a valid URI
-        SAMLAssert::validURI($content);
+        return [
+            'hint' => $this->getContent()->getValue(),
+        ];
     }
 }

@@ -6,9 +6,8 @@ namespace SAML2\XML\ds;
 
 use DOMElement;
 use RobRichards\XMLSecLibs\XMLSecurityDSig;
+use SimpleSAML\XML\Chunk;
 use Webmozart\Assert\Assert;
-
-use SAML2\XML\Chunk;
 
 /**
  * Class representing a ds:KeyInfo element.
@@ -28,9 +27,9 @@ class KeyInfo
      * The various key information elements.
      *
      * Array with various elements describing this key.
-     * Unknown elements will be represented by \SAML2\XML\Chunk.
+     * Unknown elements will be represented by \SimpleSAML\XML\Chunk.
      *
-     * @var (\SAML2\XML\Chunk|\SAML2\XML\ds\KeyName|\SAML2\XML\ds\X509Data)[]
+     * @var (\SimpleSAML\XML\Chunk|\SAML2\XML\ds\KeyName|\SAML2\XML\ds\X509Data)[]
      */
     private $info = [];
 
@@ -76,10 +75,8 @@ class KeyInfo
 
     /**
      * Collect the value of the Id-property
-     *
-     * @return string|null
      */
-    public function getId() : ?string
+    public function getId(): ?string
     {
         return $this->Id;
     }
@@ -87,11 +84,8 @@ class KeyInfo
 
     /**
      * Set the value of the Id-property
-     *
-     * @param string|null $id
-     * @return void
      */
-    public function setId(?string $id = null) : void
+    public function setId(?string $id = null): void
     {
         $this->Id = $id;
     }
@@ -102,7 +96,7 @@ class KeyInfo
      *
      * @return array
      */
-    public function getInfo() : array
+    public function getInfo(): array
     {
         return $this->info;
     }
@@ -112,9 +106,8 @@ class KeyInfo
      * Set the value of the info-property
      *
      * @param array $info
-     * @return void
      */
-    public function setInfo(array $info) : void
+    public function setInfo(array $info): void
     {
         $this->info = $info;
     }
@@ -123,11 +116,10 @@ class KeyInfo
     /**
      * Add the value to the info-property
      *
-     * @param \SAML2\XML\Chunk|\SAML2\XML\ds\KeyName|\SAML2\XML\ds\X509Data $info
+     * @param \SimpleSAML\XML\Chunk|\SAML2\XML\ds\KeyName|\SAML2\XML\ds\X509Data $info
      * @throws \Exception
-     * @return void
      */
-    public function addInfo($info) : void
+    public function addInfo($info): void
     {
         Assert::isInstanceOfAny(
             $info,
@@ -142,9 +134,8 @@ class KeyInfo
      * Convert this KeyInfo to XML.
      *
      * @param \DOMElement $parent The element we should append this KeyInfo to.
-     * @return \DOMElement
      */
-    public function toXML(DOMElement $parent) : DOMElement
+    public function toXML(DOMElement $parent): DOMElement
     {
         $doc = $parent->ownerDocument;
 

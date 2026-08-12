@@ -1,0 +1,180 @@
+/*--------------------------------------------------------------
+ ## sr-select — a select that can show a count chip per option
+ --------------------------------------------------------------
+
+ A native <option> renders as plain text: no markup, so no chip. This
+ component draws its own listbox over a real <select>, which stays in the
+ DOM as the source of truth — every existing change handler, .val() call
+ and URL-sync path keeps working untouched, and if the JS never runs the
+ native control is still there and usable.
+
+ The chip exists to stop the count reading as part of the label: "Overdue"
+ and "4" are different kinds of thing, and a middle dot between them left
+ the number blending into the words.
+*/
+
+.sr-select {
+    position: relative;
+    display: inline-block;
+}
+
+// The native control still holds the value; the custom button replaces it
+// visually. Kept out of the tab order (the button takes its place) rather
+// than display:none, so it still participates in the form.
+// !important because the toolbar's own `.sr-qf-selects .form-select { width:
+// auto }` is more specific and otherwise leaves a 130px-wide, 1px-tall sliver
+// of the hidden native control in the layout.
+.sr-select-native {
+    position: absolute;
+    // width AND min-width: the toolbar sizes its filters with
+    // `.sr-qf-selects .form-select { min-width: 130px }`, and a min-width beats
+    // a smaller width outright -- so clamping width alone still left a 130px
+    // hole in the layout next to every enhanced control.
+    width: 1px !important;
+    min-width: 0 !important;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    // clip-path, not the deprecated `clip` property. Same visually-hidden
+    // effect, and it keeps a 1px box in the layout -- which is deliberate:
+    // Playwright treats a zero-size element as invisible, and the e2e specs
+    // drive these native selects (still the source of truth under sr-select)
+    // with selectOption().
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border: 0;
+}
+
+.sr-select-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    padding: 6px 10px;
+    background: $sr-body;
+    border: 1px solid $gray-400;
+    border-radius: 6px;
+    font-size: 13px;
+    color: $sr-primary;
+    cursor: pointer;
+    text-align: left;
+
+    &:hover {
+        border-color: $gray-500;
+    }
+
+    &:focus-visible {
+        outline: 2px solid $sr-important;
+        outline-offset: 1px;
+    }
+
+    .sr-select-caret {
+        margin-left: auto;
+        flex: none;
+        font-size: 10px;
+        color: $gray-500;
+    }
+}
+
+.sr-select-value {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.sr-select-menu {
+    position: absolute;
+    z-index: 1000;
+    top: calc(100% + 4px);
+    left: 0;
+    min-width: 100%;
+    max-width: min(360px, 90vw);
+    max-height: 320px;
+    overflow-y: auto;
+    padding: 4px;
+    background: $sr-body;
+    border: 1px solid $gray-300;
+    border-radius: 6px;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, .12);
+
+    &[hidden] {
+        display: none;
+    }
+}
+
+.sr-select-option {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 6px 8px;
+    border: 0;
+    border-radius: 5px;
+    background: none;
+    font-size: 13px;
+    color: $sr-primary;
+    text-align: left;
+    cursor: pointer;
+
+    &:hover,
+    &.is-active {
+        background: $gray-100;
+    }
+
+    &[aria-selected="true"] {
+        font-weight: 700;
+    }
+
+    // A zero-count option: visibly present (the absence is information) but
+    // not choosable.
+    &:disabled {
+        color: $gray-500;
+        cursor: default;
+
+        &:hover {
+            background: none;
+        }
+    }
+}
+
+// Multi-select tick. The empty state keeps the row's text aligned with the
+// ticked ones rather than shifting when you select.
+.sr-select-tick {
+    flex: none;
+    width: 12px;
+    font-size: 11px;
+    color: $sr-important;
+
+    &.is-empty {
+        visibility: hidden;
+    }
+}
+
+.sr-select-text {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+// The count itself: a chip, so it reads as a quantity rather than as more
+// label. Tabular numerals keep the digits aligned down the list.
+.sr-count-chip {
+    margin-left: auto;
+    flex: none;
+    min-width: 26px;
+    padding: 1px 7px;
+    background: $gray-100;
+    border: 1px solid $gray-300;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    text-align: center;
+    color: $gray-600;
+}
+
+.sr-select-option:disabled .sr-count-chip {
+    color: $gray-500;
+    background: $sr-body;
+}

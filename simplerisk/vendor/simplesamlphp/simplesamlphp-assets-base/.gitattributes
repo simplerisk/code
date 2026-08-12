@@ -4,7 +4,7 @@
 package.json export-ignore
 package-lock.json export-ignore
 /css/.gitkeep export-ignore
-/fonts/.gitkeep export-ignore
+/webfonts/.gitkeep export-ignore
 /icons/.gitkeep export-ignore
 /js/.gitkeep export-ignore
 /js/postSubmit.js export-ignore

@@ -14,7 +14,7 @@ repository](simplesamlphp-install-repo).
 ## Prerequisites
 
 * A web server capable of executing PHP scripts.
-* PHP version >= 8.1.0.
+* PHP version >= 8.3.0.
 * Support for the following PHP extensions:
   * Always required: `date`, `dom`, `fileinfo`, `filter`, `hash`, `json`, `libxml`, `mbstring`, `openssl`,
                      `pcre`, `session`, `simplexml`, `sodium`, `SPL` and `zlib`
@@ -229,9 +229,12 @@ There are a few steps that you should complete in the main configuration file, `
 'auth.adminpassword' => 'setnewpasswordhere',
 ```
 
-* Set a secret salt. This should be a random string. Some parts of the SimpleSAMLphp needs this salt to generate
+* Set a secret salt and assets.salt.
+  These should be random strings. Some parts of the SimpleSAMLphp needs this salt to generate
   cryptographically secure hashes. SimpleSAMLphp will give an error if the salt is not changed from the default value.
   The command below can help you to generated a random string on (some) unix systems:
+
+  The assets.salt is separate to the main secretsalt because assets.salt is used on many assets with known values.
 
 ```bash
 tr -c -d '0123456789abcdefghijklmnopqrstuvwxyz' </dev/urandom | dd bs=32 count=1 2>/dev/null;echo
@@ -275,6 +278,13 @@ Here is an example of the configuration option:
 ```
 
 You can see [a list of Supported Timezones at php.net](http://php.net/manual/en/timezones.php).
+
+You might consider setting showerrors to `false` to hide error
+descriptions and backtraces from the browser.
+
+```php
+'showerrors' => false,
+```
 
 ## Configuring PHP
 
@@ -397,7 +407,7 @@ As an example, let's see how you can install SimpleSAMLphp in your home director
    just created in your `public_html` directory. For example, if your home directory is reachable in
    `https://host.example/~myaccount/`, set the base URL path accordingly:
 
-   ```bash
+   ```php
    'baseurlpath' => 'https://host.example/~myaccount/simplesaml/',
    ```
 
@@ -427,13 +437,13 @@ Now, we need to make a few configuration changes. First, let's edit `~/public_ht
 Change the two lines from:
 
 ```php
-require_once(dirname(_FILE__, 2) . '/lib/_autoload.php');
+require_once(dirname(_FILE__, 2) . '/src/_autoload.php');
 ```
 
 to something like:
 
 ```php
-require_once(dirname(__FILE__, 3) . '/lib/_autoload.php');
+require_once(dirname(__FILE__, 3) . '/src/_autoload.php');
 ```
 
 **Warning**: note that this will make upgrading SimpleSAMLphp much more difficult, since you will need to move the

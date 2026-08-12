@@ -16,16 +16,14 @@ class SubjectConfirmationNotBefore implements
     /**
      * @param SubjectConfirmation $subjectConfirmation
      * @param Result $result
-     * @return void
      */
     public function validate(
         SubjectConfirmation $subjectConfirmation,
         Result $result
-    ) : void {
+    ): void {
         $data = $subjectConfirmation->getSubjectConfirmationData();
         Assert::notNull($data);
 
-        /** @psalm-suppress PossiblyNullReference */
         $notBefore = $data->getNotBefore();
         if ($notBefore && $notBefore > Temporal::getTime() + 60) {
             $result->addError('NotBefore in SubjectConfirmationData is in the future');

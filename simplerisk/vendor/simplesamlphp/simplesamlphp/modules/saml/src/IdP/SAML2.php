@@ -11,7 +11,6 @@ use SAML2\Assertion;
 use SAML2\AuthnRequest;
 use SAML2\Binding;
 use SAML2\Constants;
-use SAML2\DOMDocumentFactory;
 use SAML2\EncryptedAssertion;
 use SAML2\Exception\Protocol\UnsupportedBindingException;
 use SAML2\HTTPRedirect;
@@ -37,6 +36,7 @@ use SimpleSAML\Module;
 use SimpleSAML\Module\saml\Message;
 use SimpleSAML\Stats;
 use SimpleSAML\Utils;
+use SimpleSAML\XML\DOMDocumentFactory;
 
 /**
  * IdP implementation for SAML 2.0 protocol.
@@ -399,6 +399,10 @@ class SAML2
 
             if (isset($_REQUEST['username'])) {
                 $username = (string) $_REQUEST['username'];
+            } elseif (isset($_REQUEST['login_hint'])) {
+                $username = (string) $_REQUEST['login_hint'];
+            } elseif (isset($_REQUEST['LoginHint'])) {
+                $username = (string) $_REQUEST['LoginHint'];
             }
 
             $issuer = $request->getIssuer();
@@ -702,7 +706,7 @@ class SAML2
      *
      * @param \SimpleSAML\IdP $idp The IdP we are sending a logout request from.
      * @param array           $association The association that should be terminated.
-     * @param string|NULL $relayState An id that should be carried across the logout.
+     * @param string|null $relayState An id that should be carried across the logout.
      *
      * @return string The logout URL.
      */
@@ -761,7 +765,7 @@ class SAML2
      * Retrieve the metadata of a hosted SAML 2 IdP.
      *
      * @param string $entityid The entity ID of the hosted SAML 2 IdP whose metadata we want.
-     * @param MetaDataStorageHandler|null $handler Optionally the metadata storage to use,
+     * @param \SimpleSAML\Metadata\MetaDataStorageHandler|null $handler Optionally the metadata storage to use,
      *        if omitted the configured handler will be used.
      *
      * @return array
@@ -959,6 +963,11 @@ class SAML2
 
         if ($config->hasValue('RegistrationInfo')) {
             $metadata['RegistrationInfo'] = $config->getArray('RegistrationInfo');
+        }
+
+        // Override errorURL if set
+        if ($config->hasValue('errorURL')) {
+            $metadata['errorURL'] = $config->getString('errorURL');
         }
 
         // configure signature options
@@ -1262,6 +1271,7 @@ class SAML2
         return $a;
     }
 
+
     /**
      * Helper for buildAssertion to decide on an NameID to set
      */
@@ -1322,6 +1332,7 @@ class SAML2
 
         return $nameId;
     }
+
 
     /**
      * Encrypt an assertion.

@@ -39,21 +39,14 @@ use function var_export;
 class Configuration implements Utils\ClearableState
 {
     /**
-     * The release version of this package
-     */
-    public const VERSION = '2.4.2';
-
-    /**
      * A default value which means that the given option is required.
-     *
-     * @var string
      */
-    public const REQUIRED_OPTION = '___REQUIRED_OPTION___';
+    public const string REQUIRED_OPTION = '___REQUIRED_OPTION___';
 
     /**
      * The default security-headers to be sent on responses.
      */
-    public const DEFAULT_SECURITY_HEADERS = [
+    public const array DEFAULT_SECURITY_HEADERS = [
         'Content-Security-Policy' =>
             "default-src 'none'; " .
             "frame-ancestors 'self'; " .
@@ -69,6 +62,7 @@ class Configuration implements Utils\ClearableState
         'X-Content-Type-Options' => 'nosniff',
         'Referrer-Policy' => 'origin-when-cross-origin',
     ];
+
 
     /**
      * Associative array with mappings from instance-names to configuration objects.
@@ -116,6 +110,7 @@ class Configuration implements Utils\ClearableState
      * @var string|null
      */
     private ?string $filename = null;
+
 
     /**
      * Initializes a configuration from the given array.
@@ -363,7 +358,6 @@ class Configuration implements Utils\ClearableState
         if (array_key_exists($instancename, self::$instance)) {
             return self::$instance[$instancename];
         }
-
         if ($instancename === 'simplesaml') {
             try {
                 return self::getConfig();
@@ -385,7 +379,14 @@ class Configuration implements Utils\ClearableState
      */
     public function getVersion(): string
     {
-        return self::VERSION;
+        $version = \Composer\InstalledVersions::getPrettyVersion('simplesamlphp/simplesamlphp');
+        // If the returned version is in format `vX.Y.Z`, remove leading
+        // `v` to keep the compatibility with the previously used
+        // format `X.Y.Z`.
+        if (preg_match('/^v\d+\.\d+\.\d+/', $version)) {
+            return substr($version, 1);
+        }
+        return $version;
     }
 
 
@@ -1011,7 +1012,7 @@ class Configuration implements Utils\ClearableState
      * @return array|null The option with the given name.
      * @psalm-return      ($default is null ? array|null : array)
      */
-    public function getOptionalArrayize(string $name, $default): ?array
+    public function getOptionalArrayize(string $name, ?array $default): ?array
     {
         $ret = $this->getOptionalValue($name, $default);
 
@@ -1069,7 +1070,7 @@ class Configuration implements Utils\ClearableState
     {
         $ret = $this->getOptionalArrayize($name, $default);
 
-        Assert::nullOrAllString(
+        Assert::allNullOrString(
             $ret,
             sprintf(
                 '%s: The option %s must be null, a string or an array of strings.',
@@ -1101,7 +1102,6 @@ class Configuration implements Utils\ClearableState
 
         return self::loadFromArray($ret, $this->location . '[' . var_export($name, true) . ']');
     }
-
 
 
     /**
@@ -1188,6 +1188,7 @@ class Configuration implements Utils\ClearableState
                 throw new Exception('Missing default binding for ' . $endpointType . ' in ' . $set);
         }
     }
+
 
     /**
      * Helper function for dealing with metadata endpoints.
@@ -1343,7 +1344,6 @@ class Configuration implements Utils\ClearableState
      * The default language returned is always 'en'.
      *
      * @param string $name The name of the option.
-     * @param array  $default The default value.
      *
      * @return array Associative array with language => string pairs.
      *

@@ -5,6 +5,92 @@
 This document lists the changes between versions of SimpleSAMLphp.
 See the [upgrade notes](https://simplesamlphp.org/docs/stable/simplesamlphp-upgrade-notes.html) for specific information about upgrading.
 
+## Version 2.5.3
+
+Released TBD
+
+## Version 2.5.2
+
+Released 2026-06-01
+
+* Fixed an issue that made it impossible to install any modules
+
+## Version 2.5.1
+
+Released 2026-05-29
+
+* Fix missing trackid error in debugsp-module
+* Fix Accept header for MDQ-requests (#2639)
+* Have getServerHTTPS() honor https baseurlpath when $_SERVER['HTTPS'] is absent (#2638)
+* Fix attributemap fox Entra ID (#2633)
+* Expand support range for PHPmailer (#2627)
+* Restore functionality to specify email from of outgoing messages. (#2625)
+* Fix HTTP-client when using a proxy (#2622)
+* Make FilterScopes handling of non-scoped values configurable (#2615)
+
+`admin`
+
+* Allow admin menu to wrap (#2623)
+
+`metarefresh`
+
+* Fix compatibility with SSP 2.5 (v1.3.1)
+
+`saml2`
+
+* Possible DoS via XPath Transform (CVE-2026-49289)
+* HTTP-Artifact TLS validator confusion allows cross-IdP authentication bypass (CVE-2026-49283 )
+
+## Version 2.5.0
+
+Released 2026-03-14
+
+* Add ProfileAuth authsource (#2499)
+* Ukrainian translation for simplesamlphp (#2501)
+* Use PSR-14 events to replace hook infrastructure (#2560)
+* Add regular expression support to AttributeValueMap authproc filter (#2558)
+* Replaced several uses of guzzlehttp and curl with Symfony's HTTP-client (#2574)
+* Many small improvements to code and documentation
+
+`authorize`
+
+* Add entityID based filtering (simplesamlphp/simplesamlphp-module-authorize#30) (v1.7.0)
+
+`discopower`
+
+* Add Italian translations (simplesamlphp/simplesamlphp-module-discopower#22) (v1.5.0)
+* Make tab-names case-insensitive (v1.5.1)
+
+`ldap`
+
+* Verify attribute value is a string before calling strlen (simplesamlphp/simplesamlphp-module-ldap#64) (v2.5.2)
+
+`radius`
+
+* Always set the NAS identifier; if not set fall back to the hostname (simplesamlphp/simplesamlphp-module-radius#28) (v2.1.1)
+
+## Version 2.4.3
+
+Released 2025-10-06
+
+* Update and improve Indonesian translations (#2462)
+* Update and improve Thai translations (#2464)
+* Update and improve Vietnamese translations (#2465)
+* Fix various errors and warnings detected in VS Code (#2468)
+* Remove information in simplesamlphp-advancedfeatures.md about
+  possible fallback from metadata.sign.privatekey to privatekey in IdP
+  and SP metadata files (#2470)
+* Fix auth state AuthnInstant (#2478)
+* Allow "Secure" cookie attribute via HTTP on localhost (#2483)
+* Fix override over errorURL
+* Introduced a new assets.salt to allow cache busting without leaking version information (#2490)
+* If session.check_function is set and can not be called an error is raised (#2498)
+* Add 'login_hint' and 'LoginHint' as additional supported username hints from SPs in HTTP parameters (#2609)
+
+`authorize`
+
+* Remove reauthentication-button when reauthentication is disabled (simplesamlphp/simplesamlphp-module-authorize#24) (v1.6.2)
+
 ## Version 2.4.2
 
 Released 2025-06-04
@@ -84,7 +170,7 @@ Released 2025-04-16
 
 ## Version 2.3.7
 
-Released TBD
+Released 2025-03-11
 
 * Fixed loading translations for themes where there is no explicit X-Domain set in the po file.
 
@@ -164,6 +250,48 @@ Released 2024-08-20
 
 * Add username_regex option - run regular expression over username before querying the
   database (simplesamlphp/simplesamlphp-module-sqlauth#11) (v1.3.0)
+
+## Version 2.2.6
+
+Released 2025-08-20
+
+* Fix auth state AuthnInstant (#2478)
+
+`cron`
+
+* Fixed a security-issue where cron-jobs could be executed using the default key,
+  even if a different one was set (#2453)
+
+`metarefresh`
+
+* Fixed parsing of large metadata files (v1.2.4)
+
+## Version 2.2.5
+
+Released 2025-03-11
+
+* Fixed PHP 8.4 deprecation notices
+* Fixed infinite recursion (#2367)
+* Fixed "Undefined array key" warning in RequestedAuthnContextSelector if no RAC is present in the request
+* Bumped vulnerable saml2-library to v4.17.0
+
+## Version 2.2.4
+
+Released 2024-12-02
+
+`Security`
+
+* A security bug was patched in the `saml2-library` that allowed for XXE during the parsing
+  of SAML2-messages (CVE-2024-52596)
+
+`Other fixes`
+
+* Run ob_end_clean() on configuration file parsing error (#2219)
+* Fix typo that caused the metadata file-upload to be hidden (#2271)
+
+`admin`
+
+* Fix metadata-viewer to output a valid PHP array
 
 ## Version 2.2.3
 
@@ -357,9 +485,6 @@ Released 2023-10-30
 * Changed the UNIQUE constraint for the SP LogoutStore database to PRIMARY KEY to
   prevent confusing warnings in Drupal (#1862)
 * Add Accept HTTP headers to MDQ queries (#1865)
-
-### Chores
-
 * The custom error- and exception handlers were moved to their very own classes (#1858)
 
 ## Version 2.0.8

@@ -1,6 +1,6 @@
-<xenc:EncryptedKey xmlns:xenc="http://www.w3.org/2001/04/xmlenc#" Id="Encrypted_KEY_ID" Type="http://www.w3.org/2001/04/xmlenc#Element" MimeType="text/plain" Encoding="urn:x-simplesamlphp:encoding" Recipient="some_ENTITY_ID">
+<xenc:EncryptedKey xmlns:xenc="http://www.w3.org/2001/04/xmlenc#" xmlns:ds="http://www.w3.org/2000/09/xmldsig#" Id="Encrypted_KEY_ID" Type="http://www.w3.org/2001/04/xmlenc#Element" MimeType="text/plain" Encoding="urn:x-simplesamlphp:encoding" Recipient="some_ENTITY_ID">
   <xenc:EncryptionMethod Algorithm="http://www.w3.org/2001/04/xmlenc#rsa-1_5"/>
-  <ds:KeyInfo xmlns:ds="http://www.w3.org/2000/09/xmldsig#">
+  <ds:KeyInfo>
     <xenc:EncryptedKey>
       <xenc:EncryptionMethod Algorithm="http://www.w3.org/2001/04/xmldsig-more#rsa-sha256"/>
       <xenc:CipherData>

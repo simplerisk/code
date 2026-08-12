@@ -1,0 +1,1173 @@
+// Statement of Applicability report (reports/statement_of_applicability.php,
+// rendered by js/simplerisk/pages/statement-of-applicability.js).
+//
+// A DOCUMENT, not a dashboard. Everything below serves one goal: the page an
+// auditor is shown on screen should read like the artefact they will be handed,
+// so the cover is a cover, the table is dense and quiet, and nothing competes
+// with the two things being asserted -- what the scope is, and what each
+// control's status is.
+//
+// Almost nothing here is new component work. The table, its scroll surface, the
+// empty states and the three applicability state pills are the SHIPPED
+// .sr-table-card / .sr-table-* / .sr-state-pill components from _tables.scss --
+// the same ones the controls page uses, deliberately, so a control reads
+// identically on the grid and in the document produced from it. This partial
+// adds the cover block, the missing-fields prompt, and the column proportions
+// the six-column document needs.
+
+// --- The two grounds ------------------------------------------------------
+// This page renders two states with genuinely different jobs, so they get
+// different grounds. The PHP wrapper deliberately carries neither (it dropped
+// the legacy `bg-white` that the 36 older reports in reports/ still use); the
+// client stamps a modifier on #sr-soa for whichever state it is about to draw.
+//
+// SELECTOR — an ordinary app screen. Nothing is painted, so `.page-wrapper`'s
+// canvas grey (#E8E9EB / $sr-default, measured live) shows through and the
+// picker reads as a card on the same canvas every other redesigned page on this
+// branch uses, governance/index.php included. Painting white here is what made
+// it look wrong.
+//
+// DOCUMENT — a printable artefact, and white on purpose. `.content`'s own white
+// slab IS the sheet; the state adds no ground of its own, and the cover and the
+// table give up their card chrome inside it (see the end of this file) so it
+// reads as one continuous document rather than a stack of cards. An SoA is the
+// thing an auditor is handed, and card gutters running through it would read as
+// a dashboard.
+//
+// `.content` is that white bordered slab by default, which is what was painting
+// over the canvas on the selector. This is the SAME `:has()` opt-out
+// `_questionnaire.scss` (`.sr-qform`) and `_ai_catalog.scss` (`.sr-aihub`)
+// already use, for the same stated reason -- "so the cards float on the page
+// ground instead of a white bordered slab" -- rather than a third mechanism
+// invented here. !important because the slab's own rule carries it.
+//
+// Scoped to the SELECTOR modifier only, so the document keeps the slab.
+.content:has(> .row > .col-12 > .sr-soa--selector) {
+    background-color: transparent !important;
+    border-color: transparent !important;
+}
+
+// --- The chrome-free document page ----------------------------------------
+// Served without the app shell (reports/statement_of_applicability.php's
+// document branch), so there is no .page-wrapper, no .content slab and no
+// sidebar -- this body IS the page, and it has to supply the frame the shell
+// used to. Second of 47 pages in reports/ to do this; print_by_group.php is the
+// other.
+body.sr-soa-standalone {
+    background: $sr-body;
+    margin: 0;
+    padding: 24px 20px 48px;
+
+    // A readable measure with room for the six columns. The document is meant
+    // to be read and printed, not to fill a 4K monitor edge to edge.
+    .sr-soa {
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+}
+
+.sr-soa {
+
+    // The organisation the statement belongs to. First line of the cover,
+    // because on a chrome-free page it is the only thing identifying whose
+    // document this is.
+    .sr-soa-org {
+        margin: 0 0 2px;
+        font-size: 12px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: $gray-600;
+        overflow-wrap: anywhere;
+    }
+
+    // --- Cover -----------------------------------------------------------
+    // Generous, centred, and quiet. It is the only part of the page that is
+    // allowed to be large.
+    .sr-soa-cover {
+        padding: 32px 24px 24px;
+        margin-bottom: 16px;
+        background: $sr-body;
+        border: 1px solid $gray-300;
+        border-radius: 12px;
+        text-align: center;
+    }
+
+    .sr-soa-title {
+        margin: 0;
+        font-size: 22px;
+        font-weight: 800;
+        color: $sr-primary;
+        letter-spacing: -0.01em;
+    }
+
+    // The framework the statement is ABOUT -- the single most important string
+    // on the page after the title, so it is the one thing given emphasis.
+    .sr-soa-framework {
+        margin: 6px 0 0;
+        font-size: 17px;
+        font-weight: 700;
+        color: $gray-800;
+        // A framework name is customer-authored and can be long; wrap rather
+        // than overflow the cover.
+        overflow-wrap: anywhere;
+    }
+
+    // The generation date. The framework and the organisation are above it.
+    .sr-soa-meta {
+        margin-top: 4px;
+        font-size: 12px;
+        color: $gray-600;
+    }
+
+    // --- Cover statistics -------------------------------------------------
+    // The numbers an auditor reconciles first. They come from the API's cover
+    // block, which counts the rows the table below prints -- so these tiles and
+    // that table cannot disagree (soa_count_by_state(), includes/soa.php).
+    .sr-soa-stats {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 12px;
+        margin: 20px 0 4px;
+    }
+
+    .sr-soa-stat {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        min-width: 104px;
+        padding: 10px 16px;
+        background: $gray-100;
+        border-radius: 10px;
+    }
+
+    .sr-soa-stat-n {
+        font-size: 20px;
+        font-weight: 800;
+        line-height: 1.1;
+        color: $gray-900;
+        // Tabular figures so the row of tiles reads as a set of numbers rather
+        // than five differently-spaced strings.
+        font-variant-numeric: tabular-nums;
+    }
+
+    .sr-soa-stat-l {
+        margin-top: 2px;
+        font-size: 11px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        color: $gray-600;
+    }
+
+    // --- The two cover statements ----------------------------------------
+    // Left-aligned inside the centred cover: they are prose, and centred prose
+    // is unreadable past one line.
+    .sr-soa-statement {
+        max-width: 760px;
+        margin: 20px auto 0;
+        text-align: left;
+
+        h2 {
+            margin: 0 0 4px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            color: $gray-600;
+        }
+
+        // The scope statement is RICH TEXT (HugeRTE) and is inserted as HTML, so
+        // this block holds the author's own <p> / <ul> / <ol> rather than one
+        // run of text. That is why there is no `white-space: pre-wrap` here any
+        // more: the line breaks are real elements now, and pre-wrap on top of
+        // them would print the newlines BETWEEN tags as blank lines.
+        //
+        // `overflow-wrap` stays on the body rather than on <p> alone, because a
+        // long unbroken token (a system name, a URL) can land in a list item
+        // just as easily as in a paragraph.
+        .sr-soa-statement-body {
+            font-size: 13px;
+            line-height: 1.55;
+            color: $gray-800;
+            overflow-wrap: anywhere;
+
+            p {
+                margin: 0 0 8px;
+
+                &:last-child {
+                    margin-bottom: 0;
+                }
+            }
+
+            ul,
+            ol {
+                margin: 0 0 8px;
+                padding-left: 20px;
+
+                &:last-child {
+                    margin-bottom: 0;
+                }
+            }
+
+            li {
+                margin: 0 0 2px;
+            }
+        }
+    }
+
+    // --- Missing cover fields prompt --------------------------------------
+    // Amber caution, matching the modal shell's .sr-qnote intent -- but with its
+    // own classes, because that block is scoped inside .sr-qform / .sr-modal and
+    // would render unstyled out here.
+    //
+    // It sits ABOVE the table and does not replace it: the document is still
+    // worth reading without a scope statement, and hiding the rows would
+    // withhold the very thing the user came for.
+    .sr-soa-prompt {
+        display: flex;
+        gap: 10px;
+        padding: 12px 14px;
+        margin-bottom: 16px;
+        font-size: 13px;
+        background: rgba($state-warning, 0.12);
+        border: 1px solid rgba($state-warning, 0.45);
+        border-radius: 10px;
+        color: $gray-800;
+    }
+
+    .sr-soa-prompt-ico {
+        flex: none;
+        margin-top: 1px;
+        color: $state-warning;
+    }
+
+    .sr-soa-prompt-body {
+        strong { display: block; margin-bottom: 4px; }
+        p { margin: 0 0 4px; line-height: 1.5; }
+    }
+
+    .sr-soa-fix {
+        display: inline-block;
+        margin-top: 2px;
+        font-weight: 600;
+        color: $sr-primary;
+    }
+
+    // --- The document table -----------------------------------------------
+    .sr-soa-table {
+
+        // A reference is a short code ("A.5.1", "AC-2(3)") that must never wrap
+        // mid-token -- it is what a reader scans the document by. A single code
+        // therefore keeps nowrap on the cell, exactly as this column always had.
+        .sr-soa-ref {
+            white-space: nowrap;
+            font-variant-numeric: tabular-nums;
+            font-weight: 600;
+        }
+
+        // But a control carries as many references as this framework cites it by
+        // (ISO 27002 cites one SCF control by seven clauses), and seven codes
+        // nowrap would run off the table. So a MULTI-reference cell relaxes and
+        // puts nowrap on each token instead: it breaks between references, never
+        // inside one.
+        .sr-soa-ref--multi { white-space: normal; }
+
+        .sr-soa-refitem { white-space: nowrap; }
+
+        .sr-soa-appl { white-space: nowrap; }
+
+        // The widest column by design: it carries the justification prose plus
+        // the attribution lines beneath it. Everything else is short.
+        .sr-soa-just {
+            min-width: 280px;
+            line-height: 1.5;
+            white-space: pre-wrap;
+            overflow-wrap: anywhere;
+        }
+
+        // Who recorded the decision, when, the reason and the provider -- the
+        // attribution that turns a justification into a record. Secondary to the
+        // justification itself, so quieter and on their own lines.
+        .sr-soa-attrib {
+            display: block;
+            margin-top: 3px;
+            font-size: 11px;
+            color: $gray-600;
+            white-space: normal;
+        }
+
+        // --- The Implementation Status cell -------------------------------
+        // A state pill, the same shipped component the Applicability column
+        // beside it uses, so the two columns read as one system -- and so the
+        // overdue mark below has something quiet to be loud against. As plain
+        // text the marker's only contrast was the marker itself.
+        //
+        // `nowrap` because the cell holds a pill, which cannot break anyway, and
+        // the narrowest column on the page should not try. The print block
+        // overrides it to `normal` -- on paper the column is pinned and the nowrap
+        // is what would overflow it.
+        .sr-soa-impl {
+            white-space: nowrap;
+
+            // The verdict, plus whatever qualifies it: the overdue mark on its own
+            // line beneath, and the Appendix R marker inline. `display: block` so
+            // the overdue mark is never read as part of the verdict.
+            .sr-soa-impl-status {
+                display: block;
+            }
+        }
+
+        // --- THE OVERDUE MARK ---------------------------------------------
+        // The requirement here is unusually strict, and it is the reason this is
+        // not a superscript or a muted glyph: an auditor skimming a column of
+        // "Implemented: Yes" must not be able to overlook that the evidence
+        // behind one of them is years stale. A mark that is easy to skip past
+        // looks like disclosure while functioning as concealment.
+        //
+        // FOUR REDUNDANT CHANNELS, so no single failure hides it:
+        //   words (legible with no key, and searchable),
+        //   a filled and ruled block on its OWN line (never truncated by the
+        //     column, never read as part of the verdict above it),
+        //   a glyph (survives a monochrome printout, and this document is
+        //     printed), and
+        //   a rail down the whole row (see .sr-soa-row--overdue) -- which is the
+        //     one that works while SKIMMING rather than while reading.
+        //
+        // THE ONE PLACE THIS DOCUMENT RAISES ITS VOICE. Filled rather than the
+        // soft tint .sr-state-danger uses, which is a deliberate departure from
+        // "state pills never go solid" -- that rule reserves solid fill for the
+        // single primary action, and this document HAS no action: it is a
+        // printed artefact whose only other control is a "back" link. Nothing
+        // competes, so the strongest mark on the page is spent on the one fact
+        // the reader must not miss.
+        .sr-soa-overdue {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            margin-top: 5px;
+            padding: 3px 8px;
+            font-size: 11px;
+            font-weight: 800;
+            line-height: 1.2;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            white-space: nowrap;
+            border-radius: 4px;
+            background: rgba($state-danger, 0.12);
+            border: 1px solid $state-danger;
+            // Darkened well past the tint behind it: measured 7.9:1 against the
+            // cell, which the e2e asserts rather than trusts.
+            color: darken($state-danger, 25%);
+        }
+
+        // --- The Evidence cell --------------------------------------------
+        .sr-soa-ev {
+            line-height: 1.45;
+            overflow-wrap: anywhere;
+        }
+
+        // --- The `.sr-soa-evline` STACK IS GONE ---------------------------
+        // The Evidence cell was a stack of `.sr-soa-evline` spans, with
+        // `--req` / `--reqitem` modifiers setting the required-evidence
+        // declaration and the artifacts it named a step quieter and indented.
+        //
+        // TWO CHANGES REMOVED ALL OF IT. The cell became a real `<ul>` of
+        // `.sr-soa-evitem` bullets (below), so the list is a list to a screen
+        // reader and to a reader counting items; and the required-evidence verdict
+        // was withdrawn from every rendering, which took `--req` and `--reqitem`
+        // with it. Nothing builds any of the three.
+        //
+        // WORTH KEEPING FROM THE OLD BLOCK'S REASONING: the cell stacks several
+        // KINDS of fact and they are not peers. That is now carried by the
+        // `--kind-*` modifier and the quieter `.sr-soa-evmeta`, rather than by four
+        // weights of the same span.
+
+
+        // THE GAP. The control is in scope, is possibly claimed implemented, and
+        // NOTHING substantiates it -- the first thing an auditor circles, and
+        // invisible if it renders as an empty cell. Warning rather than danger:
+        // it is a serious finding about the RECORD, not a statement that the
+        // control fails, and the two must stay tellable apart at a glance.
+        .sr-soa-gap {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 3px 8px;
+            font-size: 11px;
+            font-weight: 800;
+            line-height: 1.2;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            border-radius: 4px;
+            background: rgba($state-warning, 0.18);
+            border: 1px solid darken($state-warning, 12%);
+            color: darken($state-warning, 38%);
+        }
+
+        // ITS OPPOSITE: the control is excluded, so no evidence is EXPECTED and
+        // the absence is correct. Quiet on purpose -- the whole point is that it
+        // does not look like the block above.
+        .sr-soa-nil {
+            color: $gray-500;
+            font-size: 15px;
+            line-height: 1;
+        }
+
+        // --- The remediation sub-row IS GONE ------------------------------
+        // `.sr-soa-rem-row > td`, `.sr-soa-rem-h` and `.sr-soa-rem-l` styled a
+        // full-width row beneath each failing control. The plans are Appendix R now
+        // (`.sr-soa-appendix--rem` below), which keeps every body row a control --
+        // the count the cover and the grid are reconciled against -- and matches how
+        // ISO 27001 separates the SoA (6.1.3(d)) from the risk treatment plan
+        // (6.1.3(e)). Nothing builds any of the three classes.
+        //
+        // The unplanned emphasis they carried survives on `.sr-soa-appendix-l`:
+        // "the control failed and NOTHING is planned about it" is the most serious
+        // thing that block can report and still gets weight of its own.
+
+        // --- The Evidence cell --------------------------------------------
+        // Implemented, Review Cadence and Evidence were briefly ONE merged
+        // "Verification" cell (`.sr-soa-ver`, with `--status` / `--cadence` /
+        // `--ev` lines inside it). Cadence leaving for the per-test bullets stands;
+        // the other two are two columns again -- see renderTable() for the three
+        // reasons, the load-bearing one being that document evidence feeds no part
+        // of the status, so stacking them implied a derivation that does not exist.
+        //
+        // The 87px measurement that drove the merge was a NINE-column measurement.
+        // At six this column gets 19% (~183px), which is what makes the split
+        // affordable again.
+        .sr-soa-ev {
+            // The evidence absences keep their own marks (gapMark / nilMark);
+            // this only gives them a line of their own.
+            .sr-soa-ev-none {
+                display: block;
+            }
+
+            // --- The evidence bullets -------------------------------------
+            // A real <ul>, so the list is a list to a screen reader and to a
+            // reader counting items, not a stack of styled spans.
+            //
+            // The MARKER IS DRAWN BY ::before rather than by list-style, for two
+            // reasons: list-style-type cannot vary per item without a class per
+            // item anyway, and a glyph in content survives the `print-color-adjust`
+            // problem that would otherwise flatten a coloured bullet to grey on
+            // paper. The glyph is a SECOND channel -- the result word is printed
+            // beside every one of them -- so losing its colour costs nothing.
+            .sr-soa-evlist {
+                margin: 4px 0 0;
+                padding: 0;
+                list-style: none;
+            }
+
+            .sr-soa-evitem {
+                position: relative;
+                padding-left: 14px;
+                font-size: 12px;
+                line-height: 1.45;
+                color: $gray-700;
+                overflow-wrap: anywhere;
+
+                + .sr-soa-evitem {
+                    margin-top: 3px;
+                }
+
+                &::before {
+                    position: absolute;
+                    left: 0;
+                    // Aligns the glyph with the first line's baseline rather than
+                    // with the box, so a two-line item does not float its marker.
+                    top: 0;
+                    font-weight: 700;
+                }
+
+                // PASS. Green, but the tick carries it even without the colour.
+                &.sr-soa-evitem--pass::before {
+                    content: '\2713';
+                    color: $state-success;
+                }
+
+                // FAIL. The one bullet in this list that is bad news about the
+                // control, so it is the one that gets the accentless danger tone.
+                &.sr-soa-evitem--fail::before {
+                    content: '\2717';
+                    color: $state-danger;
+                }
+
+                // `--warn` (an amber '!') USED TO BE HERE, for a requirement that
+                // went unmet. That was the required-evidence marker, withdrawn from
+                // every rendering because it re-judged a verdict the tester had
+                // already recorded using a file-attachment check with no bearing on
+                // pass/fail -- and it fired on 44 of 60 evidence items. Nothing
+                // sets the class; testResultGlyph() can only return pass, fail or
+                // unknown, and a document item is always 'doc'.
+
+                // DESIGN EVIDENCE. A document has no verdict, so it gets a
+                // neutral mark rather than a tick it has not earned.
+                &.sr-soa-evitem--doc::before {
+                    content: '\00A7';
+                    color: $gray-500;
+                }
+
+                // Inconclusive, and any result vocabulary this build does not
+                // recognise. Neutral ON PURPOSE -- see testResultGlyph().
+                &.sr-soa-evitem--unknown::before {
+                    content: '\2022';
+                    color: $gray-500;
+                }
+            }
+
+            // The name is the thing being scanned; the qualifier is not.
+            .sr-soa-evmeta {
+                display: block;
+                font-size: 11px;
+                color: $gray-600;
+            }
+
+            // A .sr-soa-evreq rule set lived here for a "required evidence not
+            // supplied" note nested under each test bullet. Both are gone: the
+            // note re-judged a verdict the tester had already recorded, using a
+            // file-attachment check with no bearing on pass or fail, and it fired
+            // on 44 of 60 evidence items. See the block comment in
+            // pages/statement-of-applicability.js where requiredEvidenceMarker()
+            // used to be. The '!' bullet modifier below is retained -- nothing
+            // renders it today, but it is the vocabulary's warning glyph and
+            // costs one rule.
+        }
+
+        // --- The appendix marker ------------------------------------------
+        // A pointer, not an annotation: it must be findable when scanning a
+        // column of them and must not compete with the sentence it follows.
+        // Tabular numerals so a column of [A1]..[A51] aligns.
+        .sr-soa-note-ref {
+            margin-left: 4px;
+            font-size: 11px;
+            font-weight: 700;
+            font-variant-numeric: tabular-nums;
+            color: $gray-600;
+            white-space: nowrap;
+        }
+    }
+
+    // --- THE TWO APPENDICES ------------------------------------------------
+    // Outside .sr-soa-table on purpose: these are full-width prose blocks and
+    // nothing about them should scroll sideways with a wide table.
+    //
+    // Appendix A carries every control's justification in full, because the row
+    // prints only an opening -- on the ISO 27001 framework 51 controls carry 27
+    // distinct justifications and one 375-character paragraph appears 25 times,
+    // so printing them in the widest column of the register cost a great deal of
+    // width to say the same thing repeatedly.
+    //
+    // Appendix R carries the remediation plans that used to be full-width
+    // sub-rows inside the table. Moving them out restores one-row-per-control --
+    // the control count is the number this document is reconciled by -- and
+    // matches ISO 27001 keeping the SoA (6.1.3(d)) and the risk treatment plan
+    // (6.1.3(e)) as separate artifacts.
+    .sr-soa-appendix {
+        margin-top: 28px;
+        padding-top: 18px;
+        border-top: 1px solid $gray-200;
+    }
+
+    .sr-soa-appendix-h {
+        margin: 0 0 12px;
+        font-size: 15px;
+        font-weight: 700;
+        color: $gray-800;
+    }
+
+    .sr-soa-appendix-entry {
+        margin-bottom: 12px;
+        // Reads as prose, not as a table cell: a measure this long needs a cap
+        // or the eye loses the line returning to the left edge.
+        max-width: 900px;
+
+        &:last-child {
+            margin-bottom: 0;
+        }
+    }
+
+    // Which control this entry belongs to. A reader arriving from "[A17]" has to
+    // confirm they landed on the right control before reading the paragraph, so
+    // the marker and the control are one line and the marker leads it.
+    .sr-soa-appendix-ref {
+        display: block;
+        font-size: 12px;
+        font-weight: 700;
+        font-variant-numeric: tabular-nums;
+        color: $gray-700;
+    }
+
+    .sr-soa-appendix-l {
+        display: block;
+        font-size: 12px;
+        line-height: 1.5;
+        color: $gray-700;
+        overflow-wrap: anywhere;
+
+        // Same weight the sub-row gave it: the control failed and NOTHING is
+        // planned about it is the finding, not one more line of a plan.
+        &.is-unplanned {
+            font-weight: 700;
+            color: darken($state-danger, 20%);
+        }
+    }
+
+    // --- The overdue rail -------------------------------------------------
+    // A solid bar down the whole row, outside .sr-soa-table so it also applies
+    // to the legend's example row. This is the channel that works while
+    // SKIMMING: a reader running an eye down 1,500 rows sees which ones are
+    // affected before reading a single cell, which no in-cell mark can do.
+    .sr-soa-row--overdue > td:first-child {
+        border-left: 4px solid $state-danger;
+    }
+
+    // --- THE LEGEND -------------------------------------------------------
+    // Required, not decorative. Six implementation states plus three markers is
+    // more vocabulary than an auditor expects to meet in an SoA, and an
+    // undefined vocabulary invites the reader to guess -- unfavourably.
+    //
+    // ABOVE THE TABLE, because a key that trails 1,534 rows is a key nobody
+    // scrolls back to; and the term column renders the MARK ITSELF rather than a
+    // description of it, so the reader matches graphics to graphics.
+    .sr-soa-legend {
+        margin-bottom: 16px;
+        padding: 14px 16px;
+        background: $sr-body;
+        border: 1px solid $gray-300;
+        border-radius: 10px;
+
+        h2 {
+            margin: 0 0 8px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            color: $gray-600;
+        }
+
+        // --- One group per column ----------------------------------------
+        // The legend is grouped by the column each value appears in, and the
+        // heading is the COLUMN'S own heading -- so a reader matching the key to
+        // the table matches two identical words. A step quieter than the legend's
+        // own title, and ruled, because the groups are what the reader navigates
+        // by once they know which column they are asking about.
+        .sr-soa-legend-h {
+            margin: 12px 0 6px;
+            font-size: 11px;
+            font-weight: 700;
+            color: $gray-700;
+            border-bottom: 1px solid $gray-200;
+            padding-bottom: 3px;
+
+            // The first group sits directly under the title, which already has
+            // its own bottom margin.
+            &:first-of-type {
+                margin-top: 0;
+            }
+        }
+    }
+
+    .sr-soa-legend-list {
+        display: grid;
+        // Two columns where there is room, one where there is not. A group is
+        // between one and eight entries, so this keeps the short groups from
+        // becoming a column of one-line rows with a page of whitespace beside them.
+        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+        gap: 6px 20px;
+        margin: 0;
+    }
+
+    .sr-soa-legend-row {
+        display: grid;
+        // A fixed term column so the definitions line up as a readable measure
+        // rather than starting at eleven different left edges.
+        grid-template-columns: 150px 1fr;
+        gap: 10px;
+        align-items: start;
+    }
+
+    .sr-soa-legend-term {
+        margin: 0;
+        min-width: 0;
+    }
+
+    // --- A bullet glyph, as the legend's own term ------------------------
+    // The four Evidence glyphs (SOA_EVIDENCE_GLYPHS, includes/soa.php) shown as
+    // themselves, then the word each stands for. The glyph character is in the DOM
+    // here rather than drawn by `::before` the way the real bullets draw it,
+    // because there is nothing per-entry to hang a pseudo-element off -- and this
+    // is the one place the reader is being told what the symbol IS, so it has to
+    // be the symbol.
+    //
+    // THE COLOUR COMES FROM THE `.sr-soa-evitem--*` MODIFIER the element also
+    // carries, so the legend's tick is provably the same green as the table's. The
+    // `::before` those classes define is suppressed here -- the glyph is already
+    // the element's text, and the modifier would otherwise draw it twice.
+    .sr-soa-legend-glyph {
+        display: inline-block;
+        min-width: 14px;
+        font-weight: 700;
+        // Monospace so the four glyphs occupy the same box and the words beside
+        // them line up down the group.
+        font-family: $font-family-monospace;
+
+        &::before {
+            content: none !important;
+        }
+    }
+
+    .sr-soa-legend-glyph-l {
+        font-size: 12px;
+        font-weight: 700;
+        color: $gray-800;
+    }
+
+    .sr-soa-legend-def {
+        margin: 0;
+        font-size: 12px;
+        line-height: 1.45;
+        color: $gray-700;
+    }
+
+    // --- Framework picker (the Reporting Hub route) -----------------------
+    // Reached when the page is opened with no ?framework=. One card on the
+    // canvas grey holding one control: a searchable single-select whose options
+    // carry the per-framework control count as an sr-select chip.
+    //
+    // A DROPDOWN, not the faceted sr-picker. Design-system §5 decides on roster
+    // SIZE -- tens of rows is a menu, hundreds+ is a picker -- and this is
+    // twenty frameworks.
+    .sr-soa-picker {
+        max-width: 560px;
+        margin: 32px auto;
+        padding: 28px 28px 32px;
+        text-align: center;
+
+        .sr-soa-pick-label {
+            margin: 20px 0 0;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            color: $gray-600;
+        }
+
+        .sr-soa-pick-hint {
+            margin: 6px 0 14px;
+            font-size: 13px;
+            color: $gray-600;
+        }
+
+        // The enhanced control is a block so the menu lines up under it, and
+        // left-aligned inside a centred card because its options are text.
+        .sr-select {
+            display: block;
+            text-align: left;
+        }
+
+        .sr-select-button {
+            width: 100%;
+        }
+
+        .sr-select-menu {
+            width: 100%;
+            // Twenty frameworks fit; an SCF-derived install with nested trees
+            // will not, and the search is what makes that tractable.
+            max-height: 320px;
+            overflow-y: auto;
+        }
+    }
+
+    // --- The launcher's affordance row ------------------------------------
+    // Appears only once a framework is chosen, and is a ROW because Task 18
+    // slots "Download as PDF" and "Download as XLSX" in beside "Open in
+    // browser". Wraps rather than overflowing when all three are present at a
+    // narrow width.
+    .sr-soa-actions {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 8px;
+        margin-top: 20px;
+        padding-top: 20px;
+        border-top: 1px solid $gray-200;
+    }
+
+    // WHY "Download as PDF" IS NOT IN THE ROW. Shown only when the chosen
+    // framework is above SOA_EXPORT_PDF_MAX_CONTROLS, where the server-side
+    // writer is not offered at all. An absent affordance with no explanation is
+    // indistinguishable from a broken page, so the absence gets a sentence --
+    // and the sentence names the route that does work, which is the "Print to
+    // PDF" button sitting immediately above it.
+    .sr-soa-actions-note {
+        max-width: 640px;
+        margin: 10px auto 0;
+        font-size: 12px;
+        line-height: 1.5;
+        text-align: center;
+        color: $gray-600;
+    }
+
+    // --- Back to the launcher ---------------------------------------------
+    // The chrome-free document's only navigation. Quiet: it is a way out, not
+    // an action the page is about.
+    .sr-soa-back-row {
+        margin-top: 20px;
+        text-align: center;
+    }
+
+    .sr-soa-back {
+        font-size: 13px;
+        font-weight: 600;
+        color: $gray-600;
+
+        &:hover { color: $sr-primary; }
+    }
+
+    // The search field sr-select does not ship. Scoped to this page rather than
+    // added to _sr-select.scss: ~10 other surfaces use that component and none
+    // of them asked for a search, so the blast radius of getting this wrong
+    // stays at one page. Promoting it into the shared component is a decision
+    // to make on evidence later, not a change to make in passing.
+    //
+    // Sticky so it stays reachable while the list scrolls under it -- a search
+    // box that scrolls away is worse than none once the list is long enough to
+    // need one.
+    .sr-select-search {
+        position: sticky;
+        top: 0;
+        z-index: 1;
+        margin-bottom: 4px;
+        border: none;
+        border-bottom: 1px solid $gray-200;
+        border-radius: 0;
+        font-size: 13px;
+
+        &:focus {
+            box-shadow: none;
+            border-bottom-color: $sr-primary;
+        }
+    }
+}
+
+// --- Document state: shed the inner card chrome ---------------------------
+// AFTER the `.sr-soa` block on purpose. These selectors are (0,2,0), exactly
+// the same weight as the `.sr-soa .sr-soa-cover` rules they override, so the
+// cascade is decided by SOURCE ORDER and nothing else -- placed before that
+// block (where they started) they lost the tie silently and the cover kept its
+// border, which is a box drawn inside the sheet.
+.sr-soa--document {
+
+    // The cover is the document's masthead, not a card on it: a rule beneath it
+    // separates it from the table, which is all the separation a sheet needs.
+    .sr-soa-cover {
+        border: none;
+        border-radius: 0;
+        padding-inline: 0;
+        border-bottom: 1px solid $gray-200;
+    }
+
+    // .sr-soa-table is a real .sr-table-card -- that is what gives it the
+    // shipped table styling -- so only its card SHELL is dropped, not the class.
+    .sr-soa-table {
+        border: none;
+        border-radius: 0;
+        box-shadow: none;
+        background: transparent;
+    }
+}
+
+// --- Print ----------------------------------------------------------------
+// The document is meant to be printable, and the screen chrome is not.
+//
+// The grey CANVAS is the thing to watch: `.page-wrapper` paints #E8E9EB, and a
+// browser told to print backgrounds would put that on paper as a grey slab
+// behind a white sheet. The canvas is forced white for print, and the document
+// gives up its own border, radius and padding so it prints as the page rather
+// than as a card photographed on a desk.
+@media print {
+
+    // The chrome-free page has no .page-wrapper; this only matters for a
+    // document printed from the shelled route (which no longer exists) and is
+    // kept as a cheap guarantee that the canvas grey can never reach paper.
+    .page-wrapper {
+        background: #fff !important;
+    }
+
+    // The standalone page's own padding is screen framing, not page margin --
+    // the printer supplies that.
+    body.sr-soa-standalone {
+        padding: 0;
+    }
+
+    // Furniture. A "back to" link on a printed artefact is noise, and the
+    // launcher's affordances cannot be used on paper at all.
+    //
+    // .sr-soa-prompt IS FURNITURE TOO, and leaving it in was a real defect.
+    // It is the amber "This statement is missing its cover details -- add them
+    // on the framework" nag, with a link into the app. Measured: it appears in
+    // every browser-printed copy of a framework with no scope statement and in
+    // NO Dompdf export, so the two routes disagreed about what the filed
+    // document says. An "add them on the framework" call to action printed on a
+    // controlled record reads as an unfinished document to whoever is handed it.
+    //
+    // Hidden, not suppressed at the source: on SCREEN the prompt is the whole
+    // point -- it is what tells the author the cover is incomplete.
+    .sr-soa .sr-soa-back-row,
+    .sr-soa .sr-soa-actions,
+    .sr-soa .sr-soa-actions-note,
+    .sr-soa .sr-soa-prompt {
+        display: none !important;
+    }
+
+    // The white slab loses its chrome so the document prints as the page
+    // rather than as a card photographed on a desk.
+    .content {
+        background: #fff !important;
+        border: none !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
+    // EVERY `page-break-*` BELOW IS PAIRED WITH ITS MODERN `break-*` EQUIVALENT,
+    // deliberately. `property-no-deprecated` flags the legacy half, but dropping
+    // it would silently lose pagination control on older engines while the rule
+    // is only telling us the name is superseded -- a deprecation nag, not a bug,
+    // which is the same class this config already switches off for
+    // `declaration-property-value-keyword-no-deprecated`. The pair stays; the
+    // rule is off for the block that needs it, not repo-wide.
+    //
+    // Dompdf is unaffected either way: the PDF is rendered from the inline
+    // stylesheet built in soa_export.php, never from this bundle, and that one
+    // uses `page-break-inside` alone because Dompdf does not implement `break-*`.
+    // stylelint-disable property-no-deprecated
+
+    // Rows must not be split down the middle across a page break -- a control
+    // whose justification continues overleaf without its reference is unreadable
+    // in the one format this document exists to be read in.
+    .sr-soa .sr-soa-table tr {
+        page-break-inside: avoid;
+        break-inside: avoid;
+    }
+
+    // The cover introduces the table; keep them together where they fit.
+    .sr-soa .sr-soa-cover {
+        page-break-after: avoid;
+        break-after: avoid;
+    }
+
+    // The key is read as one thing; splitting it across a page break leaves the
+    // reader holding half a vocabulary.
+    .sr-soa .sr-soa-legend {
+        page-break-inside: avoid;
+        break-inside: avoid;
+    }
+
+    // An overdue row must not be split across a page break, and neither must an
+    // appendix ENTRY -- a marker's title has to stay with the paragraph it
+    // introduces or a reader arriving from "[A17]" lands on prose with no heading.
+    //
+    // THE ENTRY, NOT THE SECTION: an appendix runs to pages, and telling the
+    // renderer not to break it would push the whole thing onto one impossible page.
+    // (`.sr-soa-rem-row` was here, for the treatment-plan sub-row that is now
+    // Appendix R.)
+    .sr-soa .sr-soa-row--overdue,
+    .sr-soa .sr-soa-appendix-entry {
+        page-break-inside: avoid;
+        break-inside: avoid;
+    }
+    // stylelint-enable property-no-deprecated
+
+    // THE TWO MARKS KEEP THEIR FILL ON PAPER. Browsers drop backgrounds when
+    // printing, and the whole argument for the overdue mark is that it cannot be
+    // skimmed past -- so it is opted back in explicitly. The words, the rule and
+    // the row rail survive regardless, which is why the fill is a fourth channel
+    // and not the only one.
+    //
+    // THE STATE PILLS ARE ON THIS LIST NOW. Measured with Chrome's "Background
+    // graphics" unchecked -- which is the DEFAULT -- the Applicability and
+    // Implemented pills lost their fills and printed as outlines while the
+    // overdue mark beside them kept everything. Legible either way (the words
+    // are the primary channel), but the asymmetry was an accident of which
+    // selectors happened to carry the property rather than a decision, and the
+    // two columns are supposed to read as one system.
+    .sr-soa .sr-soa-overdue,
+    .sr-soa .sr-soa-gap,
+    .sr-soa .sr-state-pill {
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+
+    // =========================================================================
+    // THE TABLE ON PAPER — FIXED COLUMNS, BECAUSE THE ALTERNATIVE IS SILENT
+    // DATA LOSS.
+    // =========================================================================
+    // MEASURED, on letter landscape with the 12mm margins the document's own
+    // @page rule pins (reports/statement_of_applicability.php -- it is emitted
+    // there and not here, because @page is document-global and would rotate
+    // every printed page in the application if it lived in the shared bundle):
+    //
+    //     printable width          965 px
+    //     six columns    963 px natural   -- fits
+    //     nine columns 1,321 px natural   -- 356 px, 27%, off the edge
+    //
+    // And Chromium does not scale that overflow down or scroll it. It CLIPS THE
+    // GLYPHS at the page boundary, with nothing on the page to say it did.
+    // Verified on one control (VPM-02, ISO 27002 at nine columns): the last
+    // cell reading `Manual — Next Test Date: 2026-06-09` in the Dompdf export
+    // printed as `Manual — N` / `Test Date: 2` in the browser. The Review Cadence
+    // column was effectively gone and Control Owner sat on the edge.
+    //
+    // A compliance document that drops a column without saying so is worse than
+    // one that fails loudly, so the columns are pinned rather than left to the
+    // width solver.
+    //
+    // KEYED ON A CLASS THE TABLE CARRIES (`--single`, set unconditionally by
+    // renderTable(), pages/statement-of-applicability.js) rather than on a
+    // container attribute. It used to be two classes for two variants, chosen from
+    // the payload's cover -- what was BUILT -- rather than from the container's
+    // a container attribute. The per-column percentages are below.
+    .sr-soa .sr-soa-table {
+
+        // The screen's horizontal scroller is meaningless on paper, and worse
+        // than meaningless: `overflow-x: auto` computes overflow-y to `auto`
+        // with it, so the scroller is a clipping box in print too.
+        .sr-table-scroll {
+            overflow: visible;
+        }
+
+        table.sr-table {
+            // WITHOUT THIS THE PERCENTAGES ARE ONLY SUGGESTIONS. `table-layout:
+            // auto` treats a width as a hint and lets content push a column
+            // wider; `fixed` makes the first row's widths binding for the whole
+            // table, which is the entire point.
+            table-layout: fixed;
+            width: 100%;
+
+            // THE SAME TYPE SIZE DOMPDF USES -- 8pt body, 7.5pt headings, 4pt
+            // cells (soa_export_html(), extras/import-export/includes/
+            // soa_export.php). Not a preference: the screen's 13.5px is sized
+            // for a table that may scroll sideways, and nine fixed columns of
+            // 13.5px prose on 965px of paper break ordinary words like
+            // "recorded" across lines. Matching Dompdf's scale is also what
+            // makes the two PDF routes recognisably the same document, and it
+            // is what brings the page count back down: measured on ISO 27002
+            // ISO 27002, 72 pages at screen size against 43 here (Dompdf: 51).
+            font-size: 8pt;
+        }
+
+        th, td {
+            padding: 4pt;
+        }
+
+        thead th {
+            // The shipped table header is `white-space: nowrap` and sticky.
+            // Under fixed layout a nowrap heading cannot shrink to its column
+            // and overflows it, which is the same clipping by another route --
+            // and `position: sticky` has no meaning on paper.
+            position: static;
+            white-space: normal;
+            overflow-wrap: break-word;
+            font-size: 7.5pt;
+        }
+
+        // The secondary lines inside a cell. (`.sr-soa-detline` and
+        // `.sr-soa-evline` were listed here too, and nothing builds either.)
+        .sr-soa-attrib,
+        .sr-soa-evmeta {
+            font-size: 7pt;
+        }
+
+        // Long unbroken content -- a URL in an evidence name, a control code
+        // nobody spaced -- must break inside a pinned column rather than push
+        // past it. `.sr-soa-ref` and `.sr-soa-appl` set nowrap for the screen;
+        // on paper the column is fixed and the nowrap is what would overflow it.
+        //
+        // `break-word`, NOT `anywhere`. `anywhere` breaks at any character the
+        // moment a line is tight, which is how "Not recorded" printed as
+        // "Not recorde / d" in the first fitted draft. `break-word` breaks only
+        // a word that cannot fit its column on a line of its own -- so a URL
+        // still breaks and ordinary prose still does not.
+        td {
+            overflow-wrap: break-word;
+        }
+
+        .sr-soa-ref,
+        .sr-soa-appl,
+        .sr-soa-impl {
+            white-space: normal;
+        }
+
+        // The screen's min-width on the justification column is a floor that
+        // fixed layout must not have to fight.
+        .sr-soa-just {
+            min-width: 0;
+        }
+    }
+
+    // SIX COLUMNS, ONE DOCUMENT.
+    //
+    //     Reference 11 · Control Name 20 · Applicability 14 ·
+    //     Justification 20 · Implementation Status 16 · Evidence 19
+    //
+    // ─────────────────────────────────────────────────────────────────────────
+    // TWO COLUMNS ARE SIZED FOR A PILL, NOT FOR PROSE, AND THEY ARE THE ONLY
+    // MEASUREMENTS HERE THAT HAVE TO CLEAR A FIXED INTRINSIC WIDTH.
+    // ─────────────────────────────────────────────────────────────────────────
+    // Every other column holds text `overflow-wrap: break-word` can reflow.
+    // Applicability and Implementation Status each hold a `.sr-state-pill` -- an
+    // inline-flex with `width: fit-content`, `padding: 3px 11px`, a 6px dot, a 6px
+    // gap and `white-space: nowrap` (_tables.scss). It cannot break ANYWHERE. Give
+    // it less than its intrinsic width and it overflows its column, and on paper
+    // that is a clip with nothing on the page to say it happened.
+    //
+    // MEASURED at 8pt on the 965px landscape printable width: "Applicable" needs
+    // 107px and "Not applicable" needs 128px. Those two points fix the pill's cost
+    // at roughly
+    //
+    //     width(chars) ≈ 54.5px + 5.25px × chars
+    //
+    // where the 54.5px is the padding, the dot and the gap. Against the longest
+    // label each column can actually print:
+    //
+    //     Applicability          "Not applicable"     14 ch   128px   14% = 135px
+    //     Implementation Status  "Status unavailable"  18 ch   149px   16% = 154px
+    //
+    // IMPLEMENTATION STATUS IS THE WIDER OF THE TWO, which is not obvious and is
+    // why it is written down: the column an auditor scans holds this document's
+    // LONGEST pill. "Status unavailable" reports a software defect, "No tests
+    // defined" (16 ch, 138px) and "Tests never run" (15 ch, 133px) report
+    // unverified controls -- and all three are longer than every actual verdict
+    // ("Yes", "No", "Partial"). Sizing this column against "Partial" would clip
+    // exactly the three states a reader most needs to be able to read.
+    //
+    // 14% FOR APPLICABILITY MUST NOT BE REDUCED. 8% and 10% were both tried --
+    // 77px and 96px -- and both clipped "Applicable" AND "Not applicable" in every
+    // row. Earlier fixed-width work missed it because it measured the TABLE against
+    // the page rather than each cell against its column.
+    //
+    // THE REMAINING 70% goes to the four prose columns: Control Name and
+    // Justification 20 each, Evidence 19, Reference 11. Justification gives up the
+    // width it once had because the row now prints a ~90-character opening with
+    // the complete text in Appendix A; Evidence at 19% is ~183px, against the 87px
+    // it resolved to at nine columns, which is what made merging it into the status
+    // cell look necessary in the first place.
+    //
+    // THE WIDTHS MIRROR SOA_EXPORT_PDF_COLUMN_WIDTHS
+    // (extras/import-export/includes/soa_export.php), which is what Dompdf uses
+    // for the same six columns. Same document, same route to the same paper: a
+    // reader laying the two PDFs side by side gets the same columns in the same
+    // proportions. If that constant changes, change these to match --
+    // SoaPdfThresholdTest asserts the two lists agree.
+    .sr-soa .sr-soa-table--single table.sr-table {
+        thead th:nth-child(1) { width: 11%; }
+        thead th:nth-child(2) { width: 20%; }
+        thead th:nth-child(3) { width: 14%; }
+        thead th:nth-child(4) { width: 20%; }
+        thead th:nth-child(5) { width: 16%; }
+        thead th:nth-child(6) { width: 19%; }
+    }
+}

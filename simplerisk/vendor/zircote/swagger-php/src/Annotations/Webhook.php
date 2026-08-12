@@ -6,10 +6,12 @@
 
 namespace OpenApi\Annotations;
 
-use OpenApi\Generator;
+use OpenApi\Undefined;
 
 /**
  * Acts like a <code>PathItem</code> with the main difference being that it requires <code>webhook</code> instead of <code>path</code>.
+ *
+ * @since OpenAPI 3.1.0
  *
  * @Annotation
  */
@@ -20,7 +22,7 @@ class Webhook extends PathItem
      *
      * @var string
      */
-    public $webhook = Generator::UNDEFINED;
+    public $webhook = Undefined::UNDEFINED;
 
     /**
      * @inheritdoc

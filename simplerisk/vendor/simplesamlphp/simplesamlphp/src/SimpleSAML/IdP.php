@@ -161,7 +161,7 @@ class IdP
     /**
      * Retrieve the configuration for this IdP.
      *
-     * @return Configuration The configuration object.
+     * @return \SimpleSAML\Configuration The configuration object.
      */
     public function getConfig(): Configuration
     {
@@ -437,7 +437,6 @@ class IdP
                 throw new Error\Exception('Unknown logout handler: ' . var_export($logouttype, true));
         }
 
-        /** @var \SimpleSAML\IdP\LogoutHandlerInterface */
         return new $handler($this);
     }
 
@@ -542,8 +541,8 @@ class IdP
      *
      * This function never returns.
      *
-     * @param IdP      $idp Deprecated. Will be removed.
-     * @param array    &$state The logout state from doLogoutRedirect().
+     * @param \SimpleSAML\IdP $idp Deprecated. Will be removed.
+     * @param array &$state The logout state from doLogoutRedirect().
      */
     public static function finishLogoutRedirect(IdP $idp, array $state): void
     {

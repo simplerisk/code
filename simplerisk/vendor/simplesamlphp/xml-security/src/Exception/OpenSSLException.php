@@ -14,7 +14,6 @@ namespace SimpleSAML\XMLSecurity\Exception;
 class OpenSSLException extends RuntimeException
 {
     /**
-     * @param string $message
      */
     public function __construct(string $message = 'Generic OpenSSL exception')
     {

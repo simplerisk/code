@@ -6,8 +6,10 @@ namespace SimpleSAML\XMLSecurity\XML\ds;
 
 use DOMElement;
 use SimpleSAML\Assert\Assert;
-use SimpleSAML\XML\Exception\InvalidDOMElementException;
-use SimpleSAML\XML\{SchemaValidatableElementInterface, SchemaValidatableElementTrait};
+use SimpleSAML\XML\SchemaValidatableElementInterface;
+use SimpleSAML\XML\SchemaValidatableElementTrait;
+use SimpleSAML\XMLSchema\Exception\InvalidDOMElementException;
+use SimpleSAML\XMLSchema\Type\IDValue;
 use SimpleSAML\XMLSecurity\XML\dsig11\DEREncodedKeyValue;
 
 use function array_merge;
@@ -21,13 +23,13 @@ final class KeyInfo extends AbstractKeyInfoType implements SchemaValidatableElem
 {
     use SchemaValidatableElementTrait;
 
+
     /**
      * Convert XML into a KeyInfo
      *
      * @param \DOMElement $xml The XML element we should load
-     * @return static
      *
-     * @throws \SimpleSAML\XML\Exception\InvalidDOMElementException
+     * @throws \SimpleSAML\XMLSchema\Exception\InvalidDOMElementException
      *   If the qualified name of the supplied element is wrong
      */
     public static function fromXML(DOMElement $xml): static
@@ -35,7 +37,7 @@ final class KeyInfo extends AbstractKeyInfoType implements SchemaValidatableElem
         Assert::same($xml->localName, 'KeyInfo', InvalidDOMElementException::class);
         Assert::same($xml->namespaceURI, KeyInfo::NS, InvalidDOMElementException::class);
 
-        $Id = self::getOptionalAttribute($xml, 'Id', null);
+        $Id = self::getOptionalAttribute($xml, 'Id', IDValue::class, null);
 
         $keyName = KeyName::getChildrenOfClass($xml);
         $keyValue = KeyValue::getChildrenOfClass($xml);

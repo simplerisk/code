@@ -59,13 +59,10 @@ Example:
     // Create Issuer
     $issuer = new \SimpleSAML\SAML2\XML\saml\Issuer('https://sp.example.edu');
 
-    // Instantiate XML Random utils
-    $randomUtils = new \SimpleSAML\XML\Utils\Random();
-
     // Set up an AuthnRequest
     $request = new \SimpleSAML\SAML2\XML\samlp\AuthnRequest(
         $issuer,
-        $randomUtils->generateId(),
+        IDValue::generateId(),
         null,
         'https://idp.example.edu'
     );

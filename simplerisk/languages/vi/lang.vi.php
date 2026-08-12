@@ -646,7 +646,7 @@ $lang = array(
     'ControlPhase' => 'Giai đoạn kiểm soát',
     'ControlPriority' => 'Kiểm soát ưu tiên',
     'ControlFamily' => 'Kiểm soát gia đình',
-    'AllFrameworks'=>'Tất cả khung',
+    'AllFrameworks'=>'Tất cả các khung',
     'NewControlName' => 'Tên điều khiển mới',
     'NewControlDescription' => 'Mô tả kiểm soát mới',
     'AreYouSureYouWantToDeleteThisControl' => 'Bạn có chắc bạn muốn xóa bỏ các điều khiển này?',
@@ -1345,7 +1345,6 @@ $lang = array(
     'UpdateAssetGroupTooltip' => 'Cập Nhật nhóm nội dung',
     'DeleteAssetGroupTooltip' => 'Xóa nhóm nội dung',
     'RemoveAssetTooltip' => 'Xoá nội dung khỏi nhóm nội dung',
-    'ControlShortNameFieldRequired' => 'Kiểm soát trường tên ngắn là bắt buộc.',
     'AffectedAssetsWidgetPlaceholder' => 'Chọn một tài sản hoặc nhóm nội dung',
     'AffectedAssetsWidgetNoDropdownPlaceholder' => 'Thêm tên nội dung',
     'AffectedAssetsWidgetInstructions' => 'Chọn một tài sản hoặc nhóm nội dung. Bạn có thể tạo nội dung mới bằng cách thêm tên của tài sản đó vào danh sách.',
@@ -2341,7 +2340,7 @@ $lang = array(
     'Advanced_Search_no_results_1' => 'Có vẻ như không có kết quả nào cho truy vấn của bạn.',
     'Advanced_Search_no_results_2' => 'Kiểm tra lại tìm kiếm của bạn xem có lỗi đánh máy, lỗi chính tả nào không hoặc thử một thuật ngữ tìm kiếm khác.',
     'IncidentsPerDay' => 'Sự cố mỗi ngày',
-    'CurrentVsDesiredMaturity' => 'Độ trưởng thành hiện tại so với độ trưởng thành mong muốn theo nhóm đối chứng',
+    'CurrentVsDesiredMaturity' => 'Sự trưởng thành theo nhóm đối chứng',
     'RiskDistribution' => 'Phân phối rủi ro',
     'RiskDistributionDescription'=>'Biểu đồ hình tròn ở trên giúp thể hiện sự phân bổ rủi ro giữa các mức rủi ro khác nhau đối với cả rủi ro vốn có và rủi ro còn lại. Chúng ta có thể sử dụng hai hình tròn này để thể hiện tiến độ trong các nỗ lực giảm thiểu rủi ro của mình. Nếu hình tròn Rủi ro còn lại cho thấy các phần lớn rủi ro rất cao hoặc cao thì đó có thể là dấu hiệu cho thấy tổ chức của bạn đang chịu quá nhiều rủi ro và cần phải có thêm các nỗ lực giảm thiểu.',
     'EnableTabs' => 'Bật Tab',
@@ -2413,7 +2412,7 @@ $lang = array(
     'EditModeInformation' => 'Bật Chế độ chỉnh sửa để chỉnh sửa bố cục. Tắt chế độ này sẽ không tự động lưu bố cục.',
     'InvalidLayout' => 'Bố cục không hợp lệ!',
     'InvalidLayoutOnlyCustomAllowedAsDefault' => 'Bố cục không hợp lệ! Chỉ có thể lưu bố cục tùy chỉnh làm mặc định.',
-    'LayoutSaved' => 'Đã lưu bố cục!',
+    'LayoutSaved' => 'Bố cục bảng điều khiển của bạn đã được lưu.',
     'DefaultLayout' => 'Bố cục mặc định',
     'DefaultLayoutInformation' => 'Đặt bố cục này làm mặc định, để sử dụng thay cho bố cục do SimpleRisk cung cấp cho người dùng không có bố cục tùy chỉnh. Bạn chỉ có thể đặt bố cục tùy chỉnh không trống đã lưu làm mặc định. Nếu bố cục được đánh dấu là mặc định được khôi phục về bố cục mặc định, nó sẽ khôi phục về mặc định do SimpleRisk cung cấp.',
     'LayoutDefaultStatusUpdated' => 'Trạng thái mặc định của bố cục đã được cập nhật.',
@@ -2422,7 +2421,7 @@ $lang = array(
     'DefaultLayoutRestored' => 'Bố cục mặc định đã được khôi phục thành công!',
     'SavedLayoutRestored' => 'Bố cục đã lưu đã được khôi phục thành công!',
     'ConfirmRestoreLayout' => 'Bạn có chắc chắn không? Bạn sẽ mất những thay đổi đã thực hiện trên bố cục này.',
-    'ConfirmDisableEditModeWithPendingChanges' => 'Bạn có những thay đổi chưa lưu mà bạn sẽ mất khi rời khỏi trang. Bạn có chắc chắn muốn tắt \'Chế độ chỉnh sửa\' và có khả năng quên lưu thay đổi của mình không?',
+    'ConfirmDisableEditModeWithPendingChanges' => 'Bạn có những thay đổi chưa được lưu trên bảng điều khiển này. Hãy hủy bỏ chúng và ngừng chỉnh sửa nhé?',
     'ConfirmSave' => 'Việc lưu những thay đổi này sẽ ghi đè lên bố cục đã lưu trước đó của bạn. Bạn có chắc chắn muốn tiếp tục không?',
     'ConfirmSaveAdminDefault' => 'Bố cục này được đặt làm mặc định cho loại bố cục này. Việc lưu những thay đổi này sẽ thay đổi bố cục cho tất cả người dùng không có bố cục tùy chỉnh được đặt cho loại bố cục này. Bạn có chắc chắn muốn tiếp tục không?',
     'RisksByMonth' => 'Rủi ro theo tháng',
@@ -3111,6 +3110,1523 @@ $lang = array(
     'ResendAssessmentDescription' => 'Tự động phát hành lại bài đánh giá theo định kỳ.',
     'ResendEveryDays' => 'Gửi lại sau mỗi {$day} ngày',
     'QuestionnaireSaveBarHint' => '“Lưu & Gửi” sẽ phát hành bảng câu hỏi tới các liên hệ của nó ngay lập tức.',
+    // Home dashboard — KPI tile labels
+    'NewSelfAssessment' => 'Tự đánh giá mới',
+    'SelfAssessmentPrereqIntro' => 'Tự đánh giá cho phép bạn đánh giá tổ chức của mình dựa trên Khung Kiểm soát An ninh và tự động tạo ra các rủi ro từ các biện pháp kiểm soát không đạt yêu cầu. Cần thực hiện hai bước thiết lập trước:',
+    'RegisterYourInstance' => 'Đăng ký phiên bản của bạn',
+    'RegisterYourInstanceHelp' => 'Việc đăng ký này sẽ liên kết với dịch vụ cấp phép của SimpleRisk, cho phép tải xuống các tiện ích bổ sung miễn phí (bao gồm cả SCF).',
+    'InstallTheSCF' => 'Cài đặt Khung Kiểm soát Bảo mật',
+    'InstallTheSCFHelp' => 'SCF là một tiện ích bổ sung miễn phí cung cấp các khung phân tích, câu hỏi kiểm soát và bản đồ rủi ro mà tính năng này sử dụng để đánh giá. Quá trình cài đặt diễn ra ngầm và có thể mất vài phút.',
+    'GoToRegistration' => 'Đi đến trang đăng ký',
+    'GoToSCF' => 'Truy cập Khung kiểm soát bảo mật',
+    'SelfAssessmentEnableTip' => 'Tùy chọn: trong mục Quản trị > Khung đánh giá, bạn có thể bật các khung đánh giá SCF cụ thể để xem danh sách rút gọn khi bắt đầu đánh giá. Bạn cũng có thể đánh giá dựa trên bất kỳ khung đánh giá nào trong danh mục đầy đủ của SCF mà không cần bật khung đó.',
+    'ChooseAFramework' => 'Chọn một khuôn khổ để đánh giá.',
+    'EnabledFrameworks' => 'Các khung được kích hoạt',
+    'AllScfFrameworks' => 'Tất cả các khung SCF',
+    'Start' => 'Bắt đầu',
+    'Resume' => 'Bản tóm tắt',
+    'ControlQuestion' => 'Câu hỏi kiểm soát',
+    'NotApplicable' => 'Không áp dụng',
+    'SaveProgress' => 'Lưu tiến trình',
+    'MarkComplete' => 'Đánh dấu hoàn thành',
+    'AnsweredOfTotal' => 'đã trả lời',
+    'FailedSoFar' => 'Cho đến nay vẫn chưa thành công.',
+    'StartedBy' => 'Được bắt đầu bởi',
+    'FailedControls' => 'Kiểm soát thất bại',
+    'PushToRisk' => 'Thúc đẩy rủi ro',
+    'ConfirmDeleteSelfAssessment' => 'Xóa bản tự đánh giá này? Không thể hoàn tác.',
+    'ConfirmCompleteSelfAssessment' => 'Đánh dấu là đã hoàn thành bài đánh giá này? Rủi ro sẽ phát sinh từ các biện pháp kiểm soát không thành công.',
+    'NoSelfAssessmentsYet' => 'Chưa có bài tự đánh giá nào. Hãy bắt đầu làm một bài để bắt đầu.',
+    'RequestFailed' => 'Yêu cầu không thể hoàn tất. Vui lòng thử lại.',
+    'NoPendingRisks' => 'Không có rủi ro nào đang chờ xử lý. Hoàn thành đánh giá để xác định rủi ro từ các biện pháp kiểm soát không thành công.',
+    'NoFailedControls' => 'Không có kết quả kiểm soát nào được hiển thị cho bộ lọc này.',
+    'ControlResultsTruncated' => 'Hiển thị 2000 kết quả gần đây nhất. Thu hẹp bộ lọc để xem thêm.',
+    'GeneratedFromSelfAssessment' => 'Được tạo ra từ kết quả tự đánh giá',
+    'SelfAssessmentMitigationSolution' => 'Hãy thực hiện các biện pháp kiểm soát được liên kết bên dưới, những biện pháp đã được xác định là không hiệu quả trong quá trình tự đánh giá này, để giảm thiểu rủi ro.',
+    'NSelected' => '{n} đã chọn',
+    'FilterByControl' => 'Lọc theo điều khiển',
+    'Pushing' => 'Đẩy…',
+    'Deleting' => 'Đang xóa…',
+    'ConfirmPushSelectedPendingRisks' => 'Đẩy {n} rủi ro đang chờ xử lý đã chọn vào mục rủi ro?',
+    'ConfirmDeleteSelectedPendingRisks' => 'Xóa {n} rủi ro đang chờ xử lý đã chọn? Thao tác này không thể hoàn tác.',
+    'ConfirmDeleteSelectedSelfAssessments' => 'Xóa {n} bài tự đánh giá đã chọn? Thao tác này không thể hoàn tác.',
+    'BulkPartialFailure' => '{n} trong số {total} mục đã thành công; các mục còn lại thất bại. Làm mới trang để xem trạng thái hiện tại.',
+
+    // Workflows Extra - deactivation confirm ('Deactivate' at line 480 is reused as-is)
+    'WorkflowsExtraDeactivateConfirm' => 'Vô hiệu hóa tiện ích Workflows Extra? Tất cả các định nghĩa quy trình công việc do người dùng tạo sẽ bị xóa vĩnh viễn. Các quy trình công việc của hệ thống sẽ được giữ nguyên.',
+    'HomeKpiOpenRisks' => 'Mở Hiểm',
+    'HomeKpiNeedsReview' => 'Cần xem xét lại',
+    'HomeKpiUnmitigated' => 'Không giảm bớt',
+    'HomeKpiClosedRisks' => 'Đóng Cửa Hiểm',
+    'HomeKpiControlPassRate' => 'Tỷ lệ đạt kiểm soát',
+    'HomeKpiFailingControls' => 'Hệ thống điều khiển bị lỗi',
+    'HomeKpiOpenAudits' => 'Kiểm toán công khai',
+    'HomeKpiTestsDueSoon' => 'Các bài kiểm tra sắp đến hạn',
+    'HomeKpiActiveFrameworks' => 'Khuôn khổ hoạt động',
+    'HomeKpiTotalControls' => 'Kiểm soát toàn diện',
+    // Home dashboard — What's Next feed
+    'WhatsNext' => 'Bước tiếp theo là gì?',
+    'WhatsNextAllCaughtUp' => 'Bạn đã nắm bắt được hết mọi thứ rồi.',
+    'WhatsNextRegisterInstance' => 'Đăng ký phiên bản SimpleRisk của bạn',
+    'WhatsNextSubmitFirstRisk' => 'Hãy gửi rủi ro đầu tiên của bạn',
+    'WhatsNextLoadFramework' => 'Tải khung điều khiển',
+    'WhatsNextUnreviewedRisks' => 'Các rủi ro cần xem xét',
+    'WhatsNextUnmitigatedRisks' => 'Các rủi ro cần giảm thiểu',
+    'WhatsNextInitiateAudits' => 'Kiểm toán để bắt đầu',
+    // Home dashboard — widget picker type labels
+    'WidgetType_kpi' => 'Ô KPI',
+    'WidgetType_whats_next' => 'Danh sách',
+    // Home dashboard — hub catalog entry
+    'HomeDashboard' => 'Về nhà',
+    'HomeDashboardDesc' => 'Điểm xuất phát của bạn — các chỉ số chính và những việc cần làm tiếp theo, tóm tắt nhanh chóng.',
+    'HomeChartRiskByLevel' => 'Rủi ro theo cấp độ',
+    'HomeKpiThisMonth' => 'tháng này',
+    'HomeKpiNoChange' => 'Không thay đổi',
+    'EditLayout' => 'Chỉnh sửa bố cục',
+    'ListHighestRisks' => 'Những rủi ro cao nhất của tôi',
+    'ListPastDueReviews' => 'Đánh giá quá hạn',
+    'ListUpcomingTests' => 'Các bài kiểm tra sắp tới',
+    'ListRecentFailures' => 'Những thất bại gần đây',
+    'ListPoliciesReview' => 'Các tài liệu đang chờ xem xét',
+    'ListExpiringExceptions' => 'Các trường hợp ngoại lệ sắp hết hạn',
+    'ImKpiOpenIncidents' => 'Mở hoàn toàn',
+    'ImKpiOverdue' => 'Quá hạn',
+    'ImKpiMttr30' => 'Độ phân giải trung bình',
+    'ImKpiMttrQuarter' => 'Độ phân giải trung bình (90 ngày)',
+    'ImKpiMttrYear' => 'Độ phân giải trung bình (1 năm)',
+    'ImKpiMttrAll' => 'Độ phân giải trung bình (Tất cả)',
+    'ImKpiResolved30' => 'Đã giải quyết',
+    'ImChartBySeverity' => 'Theo mức độ nghiêm trọng',
+    'ImChartByStatus' => 'Theo trạng thái',
+    'ImListRecent' => 'Các sự kiện gần đây',
+    'ImListUnassigned' => 'Sự cố chưa được phân công',
+    'HomeKpiOpenExceptions' => 'Các trường hợp ngoại lệ chưa được giải quyết',
+    'HomeKpiPolicies' => 'Chính sách',
+    'ResolutionTargets' => 'Mục tiêu giải quyết (Ngày)',
+    'ResolutionTargetsHelp' => 'Số ngày mà một sự cố có thể vẫn chưa được giải quyết trước khi được tính là quá hạn.',
+    'DefaultTarget' => 'Mặc định',
+    'PerSeverityOverrideHelp' => 'Tùy chọn ghi đè giá trị mặc định cho các mức độ nghiêm trọng cụ thể (để trống để sử dụng giá trị mặc định):',
+    'ResolutionTargetUsesDefault' => 'Mặc định (%d)',
+    'SeverityColors' => 'Màu sắc mức độ nghiêm trọng',
+    'SeverityColorsHelp' => 'Màu sắc thể hiện mức độ nghiêm trọng của từng sự cố, được hiển thị trên bảng điều khiển Sự cố và trang chi tiết sự cố.',
+    'Editing' => 'Chỉnh sửa',
+    'SetAsDefaultForEveryone' => 'Đặt làm mặc định cho mọi người',
+    'EditLayoutHint' => 'Kéo một ô để di chuyển · Kéo cạnh để thay đổi kích thước · ✕ để xóa',
+    'RemoveWidget' => 'Xóa tiện ích',
+    'AddWidget' => 'Thêm tiện ích',
+    'AddToDashboard' => 'Thêm vào bảng điều khiển',
+    'AllWidgetsAdded' => 'Tất cả các tiện ích có sẵn đều được hiển thị trên bảng điều khiển này.',
+    'AddText' => 'Thêm văn bản',
+    'GettingStarted' => 'Bắt đầu',
+    'GettingStartedTitle' => 'Chào mừng bạn đến với SimpleRisk',
+    'GettingStartedSubtitle' => 'Một vài bước đơn giản để tận dụng tối đa SimpleRisk.',
+    'GSProgressCount' => '{done} trong số {total} hoàn tất',
+    'GSNextUp' => 'Tiếp theo',
+    'GSArea_setup' => 'Cài đặt',
+    'GSArea_risk' => 'Nguy hiểm',
+    'GSArea_assessment' => 'Đánh giá',
+    'GSArea_compliance' => 'Tuân thủ',
+    'GSArea_assets' => 'Tài sản',
+    'GSArea_ai' => 'Cài đặt',
+    'GSHide' => 'Ẩn phần Bắt đầu',
+    'GSDismissStep' => 'Bỏ qua bước này',
+    'GSAllSet' => 'Xong rồi — tuyệt vời!',
+    'GSWalkthrough' => 'Hướng dẫn chi tiết trong 30 phút',
+    'Explore' => 'Khám phá',
+    'Learn' => 'Học hỏi',
+    'AdminGuide' => 'Hướng dẫn quản trị viên',
+    'LearnMore' => 'Tìm hiểu thêm',
+    'GSRegisterTitle' => 'Đăng ký phiên bản của bạn',
+    'GSRegisterDesc' => 'Kích hoạt hỗ trợ và cập nhật bằng khóa bản quyền của bạn.',
+    'GSRegisterCta' => 'Giấy đăng ký',
+    'GSScfTitle' => 'Cài đặt Khung Kiểm soát Bảo mật',
+    'GSScfDesc' => 'Cài đặt SCF — thư viện điều khiển của bạn trên nhiều tiêu chuẩn.',
+    'GSScfCta' => 'Cài đặt SCF',
+    'GSInviteTitle' => 'Mời đội của bạn',
+    'GSInviteDesc' => 'Thêm đồng nghiệp để có thể phân công và xem xét công việc.',
+    'GSInviteCta' => 'Thêm người dùng',
+    'GSAiTitle' => 'Cấu hình AI',
+    'GSAiDesc' => 'Nâng cao trải nghiệm SimpleRisk của bạn với Trí tuệ Nhân tạo.',
+    'GSAiCta' => 'Thiết lập AI',
+    'GSSubmitRiskTitle' => 'Hãy gửi rủi ro đầu tiên của bạn',
+    'GSSubmitRiskDesc' => 'Hãy xác định rủi ro mà tổ chức của bạn đang phải đối mặt.',
+    'GSSubmitRiskCta' => 'Gửi rủi ro',
+    'GSMitigateTitle' => 'Lập kế hoạch giảm thiểu rủi ro',
+    'GSMitigateDesc' => 'Thêm kế hoạch giảm thiểu rủi ro vào rủi ro đang mở.',
+    'GSMitigateCta' => 'Kế hoạch giảm thiểu',
+    'GSReviewTitle' => 'Tiến hành đánh giá rủi ro',
+    'GSReviewDesc' => 'Xem xét rủi ro và quyết định bước tiếp theo.',
+    'GSReviewCta' => 'Thực hiện đánh giá',
+    'GSDefineTestTitle' => 'Định nghĩa một bài kiểm tra kiểm soát',
+    'GSDefineTestDesc' => 'Thiết lập quy trình kiểm tra đối chứng.',
+    'GSDefineTestCta' => 'Xác định bài kiểm tra',
+    'GSInitiateAuditTitle' => 'Bắt đầu một cuộc kiểm toán',
+    'GSInitiateAuditDesc' => 'Khởi động chu kỳ thử nghiệm hoặc kiểm toán.',
+    'GSInitiateAuditCta' => 'Bắt đầu kiểm toán',
+    'GSAssetTitle' => 'Thêm tài sản của bạn',
+    'GSAssetDesc' => 'Lập danh sách các tài sản mà bạn đang bảo vệ.',
+    'GSAssetCta' => 'Thêm tài sản',
+    'GSInvalidStep' => 'Bước bắt đầu không hợp lệ.',
+    'GSPagerLabel' => '{from}–{to} của {total}',
+    'GSPrevCards' => 'Hiển thị các bước trước đó',
+    'GSNextCards' => 'Hiển thị các bước tiếp theo',
+    'WhatsNextInstallSCF' => 'Cài đặt Khung Kiểm soát Bảo mật',
+    'GSActivateScfTitle' => 'Kích hoạt Khung Kiểm soát Bảo mật',
+    'GSActivateScfDesc' => 'Bật SCF đã cài đặt để tải các thành phần điều khiển của nó vào thư viện của bạn.',
+    'GSActivateScfCta' => 'Kích hoạt SCF',
+    'WhatsNextActivateSCF' => 'Kích hoạt Khung Kiểm soát Bảo mật',
+    'GSEnableFrameworksTitle' => 'Kích hoạt các khuôn khổ phù hợp',
+    'GSEnableFrameworksDesc' => 'Hãy bật các khung SCF phù hợp với tổ chức của bạn.',
+    'GSEnableFrameworksCta' => 'Kích hoạt các khung',
+    'WhatsNextEnableFrameworks' => 'Kích hoạt các khuôn khổ phù hợp',
+    'GSSelfAssessTitle' => 'Hãy tự đánh giá bản thân.',
+    'GSSelfAssessDesc' => 'Đánh giá tổ chức của bạn dựa trên hơn 250 khuôn khổ và xác định rủi ro từ các khâu kiểm soát không thành công.',
+    'GSSelfAssessCta' => 'Bắt đầu đánh giá',
+    'WhatsNextTakeSelfAssessment' => 'Hãy tự đánh giá bản thân.',
+    'WhatsNextConfigureAI' => 'Cấu hình AI',
+    'ListUnreviewedRisks' => 'Rủi ro chưa được xem xét',
+    'ControlsByDomain' => 'Kiểm soát theo miền',
+    'ControlsByClass' => 'Kiểm soát theo lớp',
+    'ControlsByPhase' => 'Điều khiển theo giai đoạn',
+    'ControlsByPriority' => 'Kiểm soát theo mức độ ưu tiên',
+    'ControlsByCurrentMaturity' => 'Kiểm soát theo mức độ trưởng thành hiện tại',
+    'ControlStatusOverTime' => 'Kiểm soát trạng thái theo thời gian',
+    'ComplianceTotalControls' => 'Kiểm soát toàn diện',
+    'HomeKpiOverdueTests' => 'Các bài kiểm tra quá hạn',
+    'Total' => 'Tổng cộng',
+    'StartTheTest' => 'Bắt đầu bài kiểm tra',
+    'TestStartsAutomatically' => 'Bài kiểm tra bắt đầu tự động',
+    'GoToTest' => 'Đi đến bài kiểm tra',
+    'NotTested' => 'Chưa được kiểm tra',
+    'PassingPercent' => 'Tỷ lệ đậu %',
+    'ListFailingControls' => 'Hệ thống điều khiển bị lỗi',
+    'Exceptions' => 'Ngoại lệ',
+    'Documents' => 'Tài liệu',
+    'ControlsBelowMaturity' => 'Kiểm soát dưới mức độ trưởng thành',
+    'ControlsAtMaturity' => 'Kiểm soát khi đạt đến độ chín muồi',
+    'ControlsAboveMaturity' => 'Kiểm soát trên mức trưởng thành',
+    'Maturity' => 'Sự trưởng thành',
+    'AllTime' => 'Mọi thời đại',
+    'Last7Days' => '7 ngày qua',
+    'Last30Days' => '30 ngày cuối cùng',
+    'Last90Days' => '90 ngày cuối cùng',
+    'YearToDate' => 'Tính đến thời điểm hiện tại trong năm',
+    'CustomRange' => 'Phạm vi tùy chỉnh',
+    'Age' => 'Tuổi',
+    'ImOpenIncidents' => 'Các sự cố chưa được giải quyết',
+    'ImClosedIncidents' => 'Các sự cố đã kết thúc',
+    'ImByAttackVector' => 'Mở bằng Vector tấn công',
+    'ImBySource' => 'Mã nguồn mở',
+    'AverageDaysToDetect' => 'Số ngày trung bình để phát hiện',
+    'ImKpiAvgTtd' => 'Phát hiện trung bình',
+    'Days' => 'Ngày',
+    'ImKpiCriticalOpen' => 'Mở quan trọng',
+    'ImKpiResolvedInSla' => 'Đã được giải quyết trong SLA',
+    'Events' => 'Sự kiện',
+    'ImEventsIncidents' => 'Sự kiện & Sự cố',
+    'ImSourceBreakdown' => 'Nguồn theo danh mục',
+    'ImClosureSummary' => 'Tóm tắt kết thúc',
+    'ImSignalQuality' => 'Chất lượng tín hiệu',
+    'ImSignalLowSample' => 'Không có đủ số vụ đóng cửa đã được thẩm định để đánh giá một cách đáng tin cậy.',
+    'ImportExportExportPdf' => 'Xuất PDF',
+    'ImportExportExporting' => 'Đang chuẩn bị PDF…',
+    'ImportExportExportFailed' => 'Không thể tạo tệp PDF. Vui lòng thử lại.',
+    'ImportExportGeneratedOn' => 'Được tạo ra',
+    'ImportExportPage' => 'Trang',
+    'ImportExportPageOf' => 'của',
+    'ResolutionTargetsUpdated' => 'Các mục tiêu về độ phân giải theo từng mức độ nghiêm trọng đã được cập nhật.',
+    'SeverityColorsUpdated' => 'Màu sắc thể hiện mức độ nghiêm trọng đã được cập nhật.',
+    // AI Capabilities Catalog + AI settings hub (unified AI settings)
+    'AICapGrcRecommendations' => 'Các khuyến nghị về Khung GRC',
+    'AICapGrcRecommendationsDesc' => 'Các đề xuất khung lý thuyết do AI tạo ra và bản tóm tắt dành cho ban lãnh đạo, được điều chỉnh phù hợp với bối cảnh của tổ chức bạn.',
+    'AICapRiskRecommendations' => 'Khuyến nghị về rủi ro',
+    'AICapRiskRecommendationsDesc' => 'Các đề xuất chi tiết và biện pháp giảm thiểu rủi ro được đưa ra dựa trên bản thân rủi ro, biện pháp giảm thiểu và đánh giá rủi ro.',
+    'AICapFairAnalysis' => 'Phân tích định lượng FAIR',
+    'AICapFairAnalysisDesc' => 'Trí tuệ nhân tạo (AI) ước tính các tham số tổn thất Beta-PERT; SimpleRisk chạy thuật toán Monte Carlo 10.000 lần lặp để định lượng rủi ro bằng đô la.',
+    'AICapDocumentCustomization' => 'Tùy chỉnh tài liệu',
+    'AICapDocumentCustomizationDesc' => 'Công cụ này tự động điền các chỗ trống và làm sạch văn bản chính sách trong các mẫu tài liệu của bạn, giúp chính sách mẫu trở nên giống với văn bản của bạn hơn.',
+    'AICapDocumentControlMatching' => 'Tài liệu ↔ Đối sánh điều khiển',
+    'AICapDocumentControlMatchingDesc' => 'Tự động ánh xạ các điều khiển vào các tài liệu chính sách với điểm tin cậy và lý do mà bạn có thể xem xét.',
+    'AICapDocumentTemplates' => 'Thư viện mẫu tài liệu',
+    'AICapDocumentTemplatesDesc' => 'Cài đặt các mẫu chính sách, hướng dẫn và quy trình được tuyển chọn từ thư viện SimpleRisk.',
+    'AICapControlReferenceEnhancement' => 'Tăng cường tham chiếu điều khiển',
+    'AICapControlReferenceEnhancementDesc' => 'Tìm kiếm văn bản kiểm soát nguyên văn thông qua tìm kiếm trên web để làm phong phú thêm các tài liệu tham khảo kiểm soát của bạn.',
+    'AICapAiChat' => 'Trợ lý trò chuyện',
+    'AICapAiChatDesc' => 'Một trợ lý GRC trả lời các câu hỏi trong ngữ cảnh ở bất kỳ đâu trong SimpleRisk.',
+    'AICapSurfacedRecommendations' => 'Trang Trí tuệ Nhân tạo',
+    'AICapSurfacedRiskView' => 'Đánh giá rủi ro — Chi tiết & Biện pháp giảm thiểu',
+    'AICapSurfacedFairTab' => 'Góc nhìn rủi ro — tab FAIR',
+    'AICapSurfacedDocuments' => 'Quản trị — Tài liệu',
+    'AICapSurfacedControls' => 'Tuân thủ — Các biện pháp kiểm soát',
+    'AICapSurfacedEveryPage' => 'Mỗi trang — trợ lý ảo',
+    'AICapabilitiesCatalog' => 'Khả năng',
+    'AICapSearchPlaceholder' => 'Khả năng tìm kiếm AI…',
+    'AICapFilterDomain' => 'Lãnh địa',
+    'AICapFilterTier' => 'Cấp độ',
+    'AICapFilterState' => 'Tình trạng',
+    'AICapTierExtra' => 'AI bổ sung',
+    'AICapStateLocked' => 'Đã khóa',
+    'AICapIncludedInExtra' => 'Bao gồm trong gói AI Extra',
+    'AICapPurchaseExtra' => 'Mua thêm gói AI',
+    'AICapNeedsProvider' => 'Yêu cầu thiết lập nhà cung cấp',
+    'AICapNoMatch' => 'Không có khả năng nào phù hợp',
+    'AICapNoMatchHint' => 'Hãy thử một tên miền, cấp độ hoặc cụm từ tìm kiếm khác.',
+    'AICapCountSingular' => 'khả năng',
+    'AICapCountPlural' => 'khả năng',
+    'DomainAssistant' => 'Trợ lý',
+    'AICapLoadError' => 'Không thể tải các chức năng AI. Vui lòng thử lại.',
+    'AIProviderConfigSubtitle' => 'Kết nối SimpleRisk với nhà cung cấp AI để tận dụng tối đa khả năng AI.',
+    'AIHowToGetAPIKeyFor' => 'Cách lấy khóa API cho',
+    'AIExtraNotActivated' => 'Chưa được kích hoạt',
+    'AIExtraValueProp' => 'Trí tuệ nhân tạo nâng cao — Định lượng rủi ro FAIR, hỗ trợ lập tài liệu và kiểm soát, cùng trợ lý trò chuyện AI.',
+    'AICtxOrgName' => 'Tên tổ chức của bạn là gì?',
+    'AICtxOrgSizeEmployees' => 'Tổ chức của bạn có bao nhiêu nhân viên?',
+    'AICtxOrgSizeRevenue' => 'Doanh thu hàng năm của tổ chức bạn là bao nhiêu?',
+    'AICtxOrgObjective' => 'Các mục tiêu kinh doanh chính và chiến lược trọng tâm của tổ chức bạn là gì?',
+    'AICtxOrgIndustry' => 'Ngành nghề hoặc lĩnh vực chính của tổ chức bạn là gì?',
+    'AICtxOrgLocation' => 'Tổ chức của bạn hoạt động tại những quốc gia hoặc khu vực nào?',
+    'AICtxOrgType' => 'Tổ chức của bạn thuộc loại hình nào?',
+    'AICtxDataTypes' => 'Tổ chức của bạn thu thập, xử lý hoặc lưu trữ những loại dữ liệu nào (ví dụ: dữ liệu cá nhân, dữ liệu tài chính, thông tin sức khỏe)?',
+    'AICtxDataCustomers' => 'Khách hàng hoặc các bên liên quan chính của bạn là ai (ví dụ: người tiêu dùng, doanh nghiệp, cơ quan chính phủ)?',
+    'AICtxDataRegulatory' => 'Ngành nghề của bạn có yêu cầu tuân thủ quy định cụ thể nào không?',
+    'AICtxDataThirdParties' => 'Bạn có mối quan hệ với bên thứ ba hoặc dịch vụ thuê ngoài nào cần được giám sát tuân thủ không?',
+    'AICtxMaturityIssues' => 'Trong 3-5 năm qua, bạn có gặp phải bất kỳ vấn đề tuân thủ quy định, vi phạm an ninh hoặc sự kiện rủi ro nghiêm trọng nào không?',
+    'AICtxMaturityConcerns' => 'Bạn có xác định được bất kỳ vấn đề cụ thể nào cần quan tâm hoặc cải tiến trong quy trình GRC hiện tại của mình không?',
+    'AICtxMaturityAppetite' => 'Mức độ chấp nhận và khả năng chịu đựng rủi ro của tổ chức bạn là như thế nào?',
+    'AICtxMaturityLevel' => 'Mức độ trưởng thành hiện tại của bạn về quản trị, quản lý rủi ro và thực tiễn tuân thủ là như thế nào?',
+    'AICtxImplementationChanges' => 'Liệu có bất kỳ thay đổi nào sắp tới trong mô hình kinh doanh, cơ sở hạ tầng công nghệ hoặc thị trường của bạn có thể ảnh hưởng đến các yêu cầu tuân thủ của bạn không?',
+    'AICtxImplementationResourcesBudget' => 'Ngân sách và nguồn lực bạn có sẵn để triển khai và duy trì các khuôn khổ tuân thủ?',
+    'AICtxImplementationResourcesPersonnel' => 'Công ty có những nguồn nhân lực nào sẵn có để triển khai và duy trì các khuôn khổ tuân thủ?',
+    'AICtxImplementationResourcesTechnology' => 'Bạn có những nguồn lực cơ sở hạ tầng công nghệ nào sẵn có để triển khai và duy trì các khuôn khổ tuân thủ?',
+    'AICtxImplementationResourcesTraining' => 'Bạn có những nguồn lực đào tạo và phát triển nào sẵn có để triển khai và duy trì các khuôn khổ tuân thủ?',
+    'AICtxImplementationResourcesExternal' => 'Bạn có những nguồn hỗ trợ bên ngoài nào sẵn có để triển khai và duy trì các khuôn khổ tuân thủ?',
+    'AIAPIKeySecurityNote' => 'Khóa của bạn được lưu trữ ở phía máy chủ và không bao giờ được trả về trình duyệt. URL của nhà cung cấp được xác thực dựa trên danh sách cho phép SSRF có thể cấu hình trong tệp config.php.',
+    'AIContextEgressWarning' => 'Câu trả lời của bạn sẽ được gửi đến nhà cung cấp AI mà bạn đã cấu hình để họ đưa ra các đề xuất. Vui lòng không bao gồm bất cứ điều gì mà bạn không muốn chia sẻ với họ.',
+    'Provider' => 'Nhà cung cấp',
+    'AIProviderURLHostNotAllowed' => 'Máy chủ "%s" không có trong danh sách cho phép của nhà cung cấp AI. Hãy thêm nó vào $ai_allowed_provider_hosts trong config.php, sau đó lưu lại. (Các nhà cung cấp AI đã biết và địa chỉ loopback 127.0.0.1 luôn được cho phép.)',
+    'AIContextLastSaved' => 'Lần lưu cuối cùng',
+    'AIContextNeverSaved' => 'Chưa được lưu',
+    'AICtxCardSubtitle' => '21 câu hỏi thuộc bốn lĩnh vực. Bạn trả lời càng nhiều, mỗi lời khuyên càng chính xác hơn.',
+    'AICtxAnswered' => '%1$d trong số %2$d đã trả lời',
+    'AICtxAllOptional' => 'Tùy chọn',
+    'AIContextSaving' => 'Đang lưu…',
+    'AIContextSaveFailed' => 'Không thể lưu các thay đổi của bạn. Vui lòng thử lại.',
+    'AISettingsSavedNotReachable' => 'Cài đặt AI đã được lưu, nhưng không thể kết nối với nhà cung cấp. Hãy đảm bảo rằng nó đang chạy và URL chính xác.',
+    'AISettingsSavedKeyRequired' => 'Các cài đặt AI đã được lưu, nhưng nhà cung cấp này yêu cầu khóa API trước khi có thể sử dụng các tính năng của nó.',
+    'TestAndSave' => 'Thử nghiệm và lưu',
+    'AICapEnableAll' => 'Bật tất cả',
+    'AICapDisableAll' => 'Vô hiệu hóa tất cả',
+    'AISettingsSavedConnected' => 'Cài đặt AI đã được lưu — kết nối thành công.',
+    'AISettingsSavedNotConnected' => 'Cài đặt AI đã được lưu, nhưng kiểm tra kết nối thất bại. Vui lòng kiểm tra lại mô hình, khóa và URL.',
+    'AIProviderURLNotOnAllowlist' => 'Máy chủ này không có trong danh sách cho phép SSRF của nhà cung cấp AI. Hãy thêm nó vào $ai_allowed_provider_hosts trong config.php trước khi có thể lưu.',
+    'Connected' => 'Đã kết nối',
+    'NotConnected' => 'Không kết nối',
+    'AICapBulkError' => 'Một số chức năng không thể được cập nhật. Vui lòng thử lại.',
+    'QuestionnaireAlreadyCompleted' => 'Bản câu hỏi này đã được hoàn thành.',
+    'QuestionnaireDraftError' => 'Lỗi khi lưu bản nháp. Xem bảng điều khiển để biết chi tiết.',
+
+    // Audit cadence scheduling - Define Test modal (Interval/Calendar schedule redesign)
+    // 'Overdue' duplicates the English of 'ImKpiOverdue' on purpose: that key is
+    // an Incident Management KPI label, and a compliance status pill reusing an
+    // IM-scoped key would couple the two domains for a translator (and break the
+    // moment either wording moves). This is the generic, cross-domain one.
+    'Overdue' => 'Quá hạn',
+    // Deliberate: the only other key rendering 'Manual' is 'ManualValuation',
+    // an asset-valuation label. Pointing a schedule mode at it would couple two
+    // unrelated domains for translators and break the moment either reworded.
+    'ScheduleManual' => 'Thủ công',
+    'ScheduleInterval' => 'Khoảng thời gian',
+    'ScheduleCalendar' => 'Lịch',
+    'Cadence' => 'Nhịp điệu',
+    'CadenceBiweekly' => 'Hai tuần một lần',
+    'CadenceSemiAnnually' => 'Nửa năm một lần',
+    'AnchorDate' => 'Ngày neo',
+    'UpcomingOccurrences' => 'Các sự kiện sắp tới',
+    'AuditLeadInDays' => 'Ngày chuẩn bị cho kiểm toán',
+    'SkipOccurrence' => 'Nhảy',
+    'OverrideDate' => 'Ngày ghi đè',
+    'Week' => 'Tuần',
+    'NoUpcomingOccurrences' => 'Không có sự kiện nào sắp diễn ra trong khung giờ này.',
+    'FailedToLoadUpcomingOccurrences' => 'Không thể tải bản xem trước các sự kiện sắp tới.',
+    'AnchorDateMustBeTodayOrLater' => 'Ngày neo phải là ngày hôm nay hoặc muộn hơn. Để lên lịch cho một ngày trong quá khứ, hãy tạo một bài kiểm tra thủ công thay thế.',
+    'InvalidScheduleType' => 'Loại lịch trình không hợp lệ. Các giá trị được cho phép: Thủ công, Khoảng thời gian, Lịch.',
+    'Weeks' => 'Tuần',
+    'Months' => 'Tháng',
+    'Years' => 'Năm',
+    'ScheduleSummaryEvery' => 'Mỗi {$interval} {$unit}',
+
+    // Define Tests redesign - client-rendered grid (Phase 1, Task 6)
+    'LastResult' => 'Kết quả cuối cùng',
+    'NextDue' => 'Ngày đến hạn tiếp theo',
+    'DueSoon' => 'Sắp đến',
+    'Retired' => 'Đã nghỉ hưu',
+    'MyTests' => 'Bài kiểm tra của tôi',
+    'Failing' => 'Thất bại',
+    'Untested' => 'Chưa được kiểm thử',
+    'ShowRetired' => 'Hiển thị Đã ngừng hoạt động',
+    'Tests' => 'Các bài kiểm tra',
+    'NoTestsForThisControl' => 'Hiện chưa có thử nghiệm nào cho nhóm đối chứng này.',
+    'NoControlsDefinedYet' => 'Chưa có cơ chế điều khiển nào được định nghĩa.',
+    'NoControlsDefinedYetBody' => 'Xác định các biện pháp kiểm soát trong phần Quản trị trước khi thêm các bài kiểm thử.',
+    'NoTestsMatchFilters' => 'Không có bài kiểm tra nào phù hợp với bộ lọc của bạn.',
+    'NoTestsMatchFiltersBody' => 'Hãy thử điều chỉnh tìm kiếm hoặc bộ lọc của bạn.',
+    'CouldNotLoadTests' => 'Không thể tải các bài kiểm tra',
+    'CouldNotLoadTestsBody' => 'Đã xảy ra lỗi. Dữ liệu của bạn an toàn — hãy thử làm mới trang.',
+    'ShowingXToYOfZ' => 'Hiển thị {$start}–{$end} trong số {$total}',
+    // Define Tests grid -- SCF-mapping + read-only procedure expand (Phase 1, Task 7)
+    'Reference' => 'Thẩm quyền giải quyết',
+    'NoFrameworksMapped' => 'Không có framework nào được liên kết với control này.',
+    // Define Tests grid -- batch select + retire/delete + quick filters (Phase 1, Task 8)
+    'Retire' => 'Về hưu',
+    'ReassignTester' => 'Phân công lại người kiểm thử',
+    'SetSchedule' => 'Lịch trình đã định',
+    'ConfirmRetireSelectedTests' => 'Loại bỏ {n} bài kiểm tra đã chọn?',
+    'ConfirmDeleteSelectedTests' => 'Xóa {n} bài kiểm tra đã chọn? Thao tác này không thể hoàn tác.',
+    // Define Tests grid -- Coverage toolbar select (Issue 4)
+    'Coverage' => 'Phạm vi phủ sóng',
+    'CoverageWithTests' => 'Kiểm soát bằng các xét nghiệm',
+    'CoverageAllControls' => 'Tất cả các điều khiển',
+    'CoverageGaps' => 'Khoảng trống',
+    // Define Tests insights band (Phase 2, Task 4) -- KPI tile labels + subtitles.
+    // 'Overdue', 'DueSoon', and 'Failing' are reused from the grid's quick-filter
+    // chips above (identical text) rather than duplicated here.
+    'DtTotalTests' => 'Tổng số bài kiểm tra',
+    'DtCoverageGaps' => 'Khoảng trống bảo hiểm',
+    'DtAcrossNControls' => 'Trên khắp {$n} điều khiển',
+    'DtControlsWithNoTest' => 'Nhóm đối chứng không tiến hành thử nghiệm',
+    'DtNeedInitiationNow' => 'Cần khởi động ngay bây giờ',
+    'DtWithinLeadInWindow' => 'Trong cửa sổ dẫn vào',
+    'DtLastResultFailed' => 'Kết quả cuối cùng không thành công',
+    'InvalidTestMethod' => 'Phương pháp thử nghiệm phải là một trong các phương pháp sau: Điều tra, Quan sát, Kiểm tra hoặc Thực hiện lại!',
+    'TesterCannotBeApprover' => 'Người kiểm thử không thể đồng thời là người phê duyệt cho bài kiểm thử này.',
+    'ApproverNotEligible' => 'Một hoặc nhiều người được chọn để phê duyệt không có trách nhiệm "Phê duyệt các bài kiểm tra".',
+    'TestMethod' => 'Phương pháp thử nghiệm',
+    'TestMethodInquiry' => 'Cuộc điều tra',
+    'TestMethodObservation' => 'Quan sát',
+    'TestMethodInspection' => 'Điều tra',
+    'TestMethodReperformance' => 'Tái trình diễn',
+    'Sample' => 'Vật mẫu',
+    'RequiredEvidence' => 'Bằng chứng cần thiết',
+    'Approvers' => 'Người phê duyệt',
+    'AuditLog_TestAuditApproved' => 'Kiểm toán "{$test_audit_name}"(ID: {$test_audit_id}) đã được người dùng "{$user_name} " phê duyệt.',
+    'AuditLog_TestAuditRejected' => 'Kiểm toán "{$test_audit_name}"(ID: {$test_audit_id}) đã bị người dùng "{$user_name}" từ chối với bình luận "{$comment}".',
+    'AuditLog_TestAuditAwaitingApproval' => 'Kiểm toán "{$test_audit_name}"(ID: {$test_audit_id}) đã được người dùng "{$user_name}" gửi để đóng và đang chờ phê duyệt. Thay đổi: {$changes}.',
+    'AuditApproved' => 'Cuộc kiểm toán đã được phê duyệt thành công.',
+    'AuditRejected' => 'Cuộc kiểm toán đã bị bác bỏ thành công.',
+    'RejectCommentRequired' => 'Để từ chối một cuộc kiểm toán, cần phải có ý kiến nhận xét.',
+    'NotAnApproverOfThisAudit' => 'Bạn không phải là người phê duyệt được cấu hình cho cuộc kiểm toán này.',
+    'ApproverCannotBeTester' => 'Người phê duyệt không thể đồng thời là người kiểm tra cuộc kiểm toán này.',
+    'AuditNotAwaitingApproval' => 'Cuộc kiểm toán này hiện không chờ phê duyệt.',
+    'NotificationAuditAwaitingApprovalTitle' => 'Kiểm toán đang chờ sự phê duyệt của bạn.',
+    'NotificationAuditAwaitingApprovalBody' => 'Báo cáo kiểm toán "{$test_audit_name}" đã được gửi để hoàn tất và đang chờ sự phê duyệt của bạn.',
+    'NotificationAuditRejectedTitle' => 'Kiểm toán bị bác bỏ',
+    'NotificationAuditRejectedBody' => 'Cuộc kiểm toán "{$test_audit_name}" đã bị từ chối với lời bình luận: "{$comment}"',
+    'AwaitingApproval' => 'Đang chờ phê duyệt',
+    'AwaitingApprovalBannerText' => 'Báo cáo kiểm toán này đã được gửi để hoàn tất và đang chờ sự phê duyệt từ người phê duyệt được chỉ định trước khi có thể đóng lại.',
+    'ReturnedForRework' => 'Đã được trả lại để chỉnh sửa',
+    'ReturnedForReworkBannerText' => 'Bản kiểm toán này đã bị từ chối và trả lại để làm lại.',
+    'RejectReason' => 'Bác bỏ lý do',
+    'AreYouSureYouWantToApproveThisAudit' => 'Bạn có chắc chắn muốn phê duyệt cuộc kiểm toán này không?',
+    'AtLeastOneControlRequired' => 'Cần ít nhất một nhóm đối chứng.',
+    'DtNCommonAcrossNControls' => '{$common} thông thường · {$n} điều khiển',
+    'DtUntestedControls' => 'Các biện pháp kiểm soát chưa được thử nghiệm',
+    'DtControlsInScopeNoCoverage' => 'Không có bảo hiểm',
+    'Passing' => 'Đi qua',
+    'DtLastResultPassed' => 'Kết quả cuối cùng đã được thông qua.',
+    'AllFamilies' => 'Tất cả các gia đình',
+    'SearchTestsPlaceholder' => 'Tìm kiếm các bài kiểm tra, kiểm soát và khung',
+    'AnySchedule' => 'Bất kỳ lịch trình nào',
+    'AnyTag' => 'Bất kỳ thẻ nào',
+    'AuditAutoClosedTestRetired' => 'Tự động đóng với trạng thái Không kết luận do bài kiểm tra đã bị dừng.',
+    'Common' => 'Chung',
+    'ValidatesAcrossMappedFrameworks' => 'Xác thực trên các khung được ánh xạ',
+    'EditTest' => 'Chỉnh sửa bài kiểm tra',
+    'ControlHasNoTestCoverage' => 'Điều khiển nằm trong phạm vi này hiện chưa có bài kiểm tra nào.',
+    'AddTheFirstTest' => 'Thêm bài kiểm tra đầu tiên',
+    'ApplyCommonTestHint' => 'Áp dụng một hoặc nhiều bài kiểm tra hiện có cho nhóm đối chứng này. Mỗi bài kiểm tra giữ nguyên các nhóm đối chứng hiện tại và trở thành một bài kiểm tra chung bao gồm cả nhóm đối chứng này.',
+    'CommonTestApplied' => 'Thử nghiệm được áp dụng cho mẫu đối chứng này.',
+    'CouldNotApplyCommonTest' => 'Không thể áp dụng thử nghiệm cho nhóm đối chứng này.',
+    'SelectOneOrMoreTests' => 'Chọn một hoặc nhiều bài kiểm tra',
+    'CommonTestsApplied' => '{n} bài kiểm tra được áp dụng cho nhóm đối chứng này.',
+    'ApplyCommonTests' => 'Áp dụng các bài kiểm tra thông thường…',
+    'History' => 'Lịch sử',
+    'Result' => 'Kết quả',
+    'Approval' => 'Sự chấp thuận',
+    'ThisTestHasNotBeenRunYet' => 'Bài kiểm tra này chưa được thực hiện.',
+    'CouldNotLoadTestHistory' => 'Không thể tải lịch sử của bài kiểm tra này.',
+    'Identity' => 'Danh tính',
+    'IdentitySectionHint' => 'Tên, người kiểm thử và các điều khiển mà người kiểm thử xác nhận',
+    'WhenTheAuditInitiates' => 'Khi cuộc kiểm toán bắt đầu',
+    'ProcedureAndEvidence' => 'Quy trình và bằng chứng',
+    'CommonTestControlsHint' => 'Một bài kiểm tra có thể xác thực nhiều điều khiển — một bài kiểm tra phổ biến. Mở bài kiểm tra này từ nút "+ Thêm bài kiểm tra" của một điều khiển sẽ tự động chọn bài kiểm tra đó ở đây.',
+    'SeparationOfDutiesNote' => 'Phân tách nhiệm vụ — người phê duyệt không thể đồng thời là người kiểm thử.',
+    'CommonTestEditScopeHint' => 'Những thay đổi này áp dụng ở mọi nơi bài kiểm tra chung này được sử dụng.',
+    'Mode' => 'Cách thức',
+    'AddOrRemove' => 'Thêm hoặc xóa…',
+    'AddOrSearchTags' => 'Thêm hoặc tìm kiếm thẻ…',
+    'CreateTagX' => 'Tạo “{tag}”',
+    'Archived' => 'Đã lưu trữ',
+    'ShowAllTests' => 'Tất cả các bài kiểm tra',
+    'ShowActiveTests' => 'Các bài kiểm tra chủ động',
+    'ShowRetiredTests' => 'Các bài kiểm tra đã ngừng hoạt động',
+    'UntestedControls' => 'Các biện pháp kiểm soát chưa được thử nghiệm',
+    'OverdueByXDays' => 'Quá hạn · {n} ngày',
+    'OverdueByOneDay' => 'Quá hạn · 1 ngày',
+    'DueInXDays' => 'Dự kiến hoàn thành trong {n} ngày',
+    'DueTomorrow' => 'Hạn chót ngày mai',
+    'DueToday' => 'Đến hạn hôm nay',
+    'ScheduledForX' => 'Đã lên lịch · {date}',
+    'AllTesters' => 'Tất cả người thử nghiệm',
+    'AllStatuses' => 'Tất cả trạng thái',
+    'OnTrack' => 'Đúng hướng',
+    'NextTestDateDerivedHint' => 'Ngày này được tính toán dựa trên ngày kiểm tra gần nhất cộng với tần suất kiểm tra. Hãy thiết lập tần suất để lên lịch tự động, hoặc để trống trường tần suất để tự đặt ngày này.',
+    'DueStatus' => 'Tình trạng đến hạn',
+    'AllResults' => 'Tất cả kết quả',
+    // Remove a test from one control (Define Tests grid unlink row action)
+    'RemoveFromThisControl' => 'Loại bỏ khỏi điều khiển này',
+    'RemoveTestFromControl' => 'Loại bỏ mẫu thử khỏi nhóm đối chứng',
+    'RemoveTestFromControlConfirm' => 'Xóa "{test_name}" khỏi {control_name}?',
+    'RemoveTestFromControlStays' => 'The test stays on its {n} other controls. Nothing is deleted.',
+    'RemoveTestFromControlStaysOne' => 'Bài kiểm tra vẫn giữ nguyên với một nhóm đối chứng khác. Không có gì bị xóa.',
+    'CannotRemoveTestsOnlyControl' => 'Một bài kiểm tra phải thuộc về ít nhất một nhóm đối chứng. Thay vào đó, hãy loại bỏ hoặc xóa bài kiểm tra đó.',
+    'TestRemovedFromControl' => 'Mẫu thử nghiệm đã được tách khỏi nhóm đối chứng.',
+    'CouldNotRemoveTestFromControl' => 'Không thể tách mẫu thử ra khỏi nhóm đối chứng.',
+    'TestRemovedFromControlAuditLogMessage' => 'Test "{$test_name}"(ID: {$test_id}) was removed from control (ID: {$control_id}) by user "{$user}".',
+    'DeleteTestUsedByNControls' => 'Nó được sử dụng bởi các điều khiển {n} và sẽ bị xóa khỏi tất cả chúng.',
+    'BulkDeleteSharedTestsNote' => '{n} trong số này được các điều khiển khác sử dụng và cũng sẽ bị xóa khỏi các điều khiển đó.',
+    'BulkRetireSharedTestsNote' => '{n} trong số này được các điều khiển khác sử dụng và cũng sẽ bị loại bỏ ở đó.',
+    'BulkDeleteOneSharedTestNote' => 'Một trong số này được các cơ chế điều khiển khác sử dụng và cũng sẽ bị loại bỏ khỏi các cơ chế đó.',
+    'BulkRetireOneSharedTestNote' => 'Một trong số đó được các bộ điều khiển khác sử dụng và cũng sẽ được loại bỏ ở đó.',
+    'CouldNotLoadTest' => 'Không thể tải bài kiểm tra này.',
+    'Expand' => 'Mở rộng',
+    'SearchMappings' => 'Khung tìm kiếm & tài liệu tham khảo',
+    'NoMatchingMappings' => 'Không có kết quả nào khớp với tìm kiếm đó.',
+    'Insights' => 'Thông tin chi tiết',
+    'ShowInsights' => 'Hiển thị các ô thông tin chi tiết',
+    'HideInsights' => 'Thu gọn các ô thông tin chi tiết thành một dòng tóm tắt.',
+    'ChooseControls' => 'Chọn điều khiển',
+    'UseTheseControls' => 'Sử dụng các điều khiển này',
+    'SearchControlsPlaceholder' => 'Tìm kiếm theo số hoặc tên',
+    'PickerKeyboardHint' => 'Phím mũi tên lên/xuống để di chuyển, phím Enter để chọn, phím Esc để hủy.',
+    'NoControlsMatchFilters' => 'Không có kết quả nào phù hợp ở đây. Hãy nới rộng một bước ở bên trái hoặc xóa kết quả tìm kiếm.',
+    'NoControlsSelectedYet' => 'Chưa có gì được chọn.',
+    'AllControls' => 'Tất cả các điều khiển',
+    'AddOrRemoveControls' => 'Thêm hoặc xóa các điều khiển…',
+    'LastTested' => 'Lần kiểm tra cuối cùng',
+    'LastTestDateAnchorHint' => 'Lịch trình được thiết lập theo khoảng thời gian (ngày này cộng với tần suất). Sau khi bài kiểm tra ghi lại kết quả, lưới sẽ hiển thị ngày của kết quả mới nhất.',
+    'Filters' => 'Bộ lọc',
+    'ShowFilters' => 'Hiển thị bộ lọc',
+    'HideFilters' => 'Ẩn bộ lọc',
+
+    // App shell — collapsing sidebar / new base design (SR app-shell redesign)
+    'AI' => 'Trí tuệ nhân tạo',
+    'CollapseSidebar' => 'Thu gọn thanh bên',
+    'FooterCopyright' => '© %s SimpleRisk. Bảo lưu mọi quyền.',
+    'ExpandSidebar' => 'Mở rộng thanh bên',
+    'WorkflowsCloneConfirm' => 'Sao chép quy trình làm việc \'{$name}\'?',
+    'WorkflowsDeleteConfirm' => 'Xóa quy trình làm việc \'{$name}\'? Thao tác này không thể hoàn tác.',
+    'WorkflowActionFailed' => 'Thao tác thất bại: {$msg}',
+    'ClickToDisable' => 'Nhấp chuột để vô hiệu hóa',
+    'ClickToEnable' => 'Nhấp vào để bật',
+    'ENABLED' => 'ĐÃ KÍCH HOẠT',
+    'DISABLED' => 'TÀN TẬT',
+    'BackToWorkflows' => 'Quay lại Quy trình làm việc',
+    'BackToHistory' => 'Trở lại lịch sử',
+    'NewWorkflow' => 'Quy trình làm việc mới',
+    'ViewSteps' => 'Xem các bước',
+    'SaveWorkflow' => 'Lưu quy trình làm việc',
+    'WorkflowSavedSuccessfully' => 'Quy trình làm việc đã được lưu thành công.',
+    'WorkflowNotFound' => 'Không tìm thấy quy trình làm việc.',
+    'EditWorkflow' => 'Chỉnh sửa quy trình làm việc: {$name}',
+    'OrganizationContextProfile' => 'Hồ sơ bối cảnh tổ chức',
+    'AICtxAutoAcceptThreshold' => 'Ngưỡng chấp nhận rủi ro tự động của tổ chức bạn là bao nhiêu (số tiền cụ thể hay tỷ lệ phần trăm của ALE)?',
+    'AICtxGrcBudget' => 'Ngân sách hàng năm của bạn dành cho GRC/an ninh là bao nhiêu?',
+    'AICtxAuditorPerspective' => 'Bạn chủ yếu được kiểm toán từ góc nhìn của ai?',
+    'AICtxUnitCurrency' => 'Đơn vị tiền tệ ($)',
+    'AICtxUnitPercentOfAle' => 'Phần trăm ALE (%)',
+    'AICtxFrameworksInUse' => 'Các khung phần mềm hiện đang được sử dụng',
+    'AICtxNoFrameworksInUse' => 'Chưa tìm thấy framework nào đang hoạt động. Thêm framework trong mục Quản trị > Ánh xạ Framework.',
+    'AICtxFromYourData' => 'Từ dữ liệu của bạn',
+    'AICtxAuthoritative' => 'Có thẩm quyền',
+    'AICtxAppetiteNotSet' => 'Chưa được thiết lập',
+    'AICtxAppetiteManageLink' => 'Quản lý trong cấu hình rủi ro',
+    'AICapControlTestGeneration' => 'Tạo bài kiểm tra điều khiển',
+    'AICapControlTestGenerationDesc' => 'Bản nháp kiểm soát các bài kiểm tra để xem xét, sử dụng sơ đồ khung kiểm soát, các bài kiểm tra hiện có và kết quả tự đánh giá — không có gì được tạo ra cho đến khi bạn phê duyệt.',
+    'AICapSurfacedControlTestGeneration' => 'Tuân thủ — Xác định các bài kiểm tra',
+    'AIControlTestGenUnavailable' => 'DỊCH VỤ KHÔNG KHẢ DỤNG: Quản trị viên phải kích hoạt chức năng này trong cài đặt AI.',
+    'AIControlTestGenInvalidId' => 'YÊU CẦU KHÔNG HỢP LỆ: Cần có mã định danh kiểm soát dương tính.',
+    'AIControlTestGenNotFound' => 'KHÔNG TÌM THẤY: Không tìm thấy điều khiển được chỉ định.',
+    'AIControlTestGenConflict' => 'XUNG ĐỘT: Quá trình tạo dữ liệu cho điều khiển này đã được xếp vào hàng chờ.',
+    'AIControlTestGenQueued' => 'ĐÃ CHẤP NHẬN: Việc tạo kiểm thử điều khiển đã được đưa vào hàng đợi.',
+    'AIControlTestGenFailed' => 'LỖI MÁY CHỦ NỘI BỘ: Không thể xếp hàng tạo kiểm thử điều khiển.',
+    'AIControlTestGenCheckFailed' => 'LỖI: Không thể xác minh quyền điều khiển trước khi xếp hàng.',
+    'GenerateTestsWithAI' => 'Tạo bài kiểm tra bằng AI',
+    'ShowAiSuggestedTests' => 'AI đề xuất các bài kiểm tra',
+    'AiSuggested' => 'AI đề xuất',
+    'ReviewAndEdit' => 'Xem xét và chỉnh sửa',
+    'CreateSelected' => 'Tạo mục đã chọn',
+    'TestCreatedFromSuggestion' => 'Bài kiểm tra được tạo ra dựa trên đề xuất.',
+    'SuggestionDismissed' => 'Đề xuất này bị bác bỏ.',
+    'TestGenerationQueued' => 'Quá trình tạo kiểm thử đã được xếp vào hàng chờ.',
+    'Generating' => 'Tạo…',
+    'SuggestionDismissFailed' => 'Bài kiểm tra đã được tạo, nhưng đề xuất của AI không thể bị loại bỏ. Hãy loại bỏ thủ công nếu nó vẫn còn.',
+    'AICtxAuditorBig4' => 'Big 4 (bên ngoài)',
+    'AICtxAuditorBoutique' => 'Cửa hàng nhỏ/khu vực (bên ngoài)',
+    'AICtxAuditorInternal' => 'Chỉ dành cho kiểm toán nội bộ',
+    'AICtxAuditorSelfAssessed' => 'Tự đánh giá',
+    'AICtxAuditorNotSure' => 'Không chắc chắn',
+    'AICtxAppetiteCautious' => 'Thận trọng',
+    'AICtxAppetiteBalanced' => 'Cân bằng',
+    'AICtxAppetiteAggressive' => 'Hung dữ',
+    'TestGenerationComplete' => 'Các bài kiểm tra đối chứng do AI soạn thảo đã sẵn sàng để xem xét.',
+    'TestGenerationStillRunning' => 'Quá trình tạo bản thử nghiệm vẫn đang diễn ra; các bản nháp sẽ sớm được công bố.',
+    'TestGenerationNoNew' => 'Quá trình tạo mã đã hoàn tất — không có thử nghiệm mới nào để đề xuất cho nhóm đối chứng này.',
+    'SearchEntities' => 'Tìm kiếm thực thể',
+    'SearchEntitiesPlaceholder' => 'Tìm kiếm rủi ro, kiểm soát, chính sách, ngoại lệ…',
+    'ShowTypes' => 'Hiển thị các loại',
+    'Depth' => 'Độ sâu',
+    'Inspector' => 'Thanh tra',
+    'Connections' => 'Kết nối',
+    'NoConnectionsFound' => 'Không tìm thấy kết nối nào cho thực thể đã chọn.',
+    'CouldNotLoadGraph' => 'Không thể tải biểu đồ kết nối.',
+    'CouldNotSearchEntities' => 'Không thể tìm kiếm thực thể.',
+    'ShowingTopNOfM' => 'Hiển thị đầu trang {0} của {1}',
+    'RankedByMaturityGap' => 'Xếp hạng theo khoảng cách trưởng thành',
+    'RankedByRiskScore' => 'Xếp hạng theo điểm rủi ro',
+    'RankedByRecentFailure' => 'Xếp hạng theo lần thất bại gần đây nhất',
+    'RankedByReviewDate' => 'Xếp hạng theo ngày đánh giá tiếp theo',
+    'RankedBySeverity' => 'Xếp hạng theo mức độ nghiêm trọng',
+    'RankedByName' => 'Xếp hạng theo tên',
+    'NodeTypeSelfAssessmentResult' => 'Kết quả tự đánh giá',
+    'Relationship' => 'Mối quan hệ',
+    'Exception' => 'Ngoại lệ',
+    'DesiredMaturity' => 'Mức độ trưởng thành mong muốn',
+    'ApprovalState' => 'Trạng thái phê duyệt',
+    'RelationshipOfType' => '{0} của {1}',
+    // Connectivity Explorer Inspector: labels for enrichment field keys
+    // (ai_context_enrich_fetch(), ai_context_enrich_vulnerabilities()) that
+    // fieldLabel() in connectivity-visualizer.js did not yet cover.
+    'LastDate' => 'Ngày cuối cùng',
+    'LastResultDate' => 'Ngày công bố kết quả cuối cùng',
+    'PercentComplete' => 'Phần trăm hoàn thành',
+    'AssessmentDate' => 'Ngày đánh giá',
+    'NextDate' => 'Ngày tiếp theo',
+    'Number' => 'Con số',
+    'Grouping' => 'Phân nhóm',
+    'Hidden' => 'Ẩn giấu',
+    'FirstFound' => 'Được tìm thấy lần đầu',
+    'LastFound' => 'Lần tìm thấy gần nhất',
+    'Patchable' => 'Có thể vá',
+    'Solution' => 'Giải pháp',
+    'Breadcrumb' => 'Vụn bánh mì',
+    'SelectANodeToInspect' => 'Chọn một nút để xem chi tiết của nó.',
+    'HiddenUnreachableNodes' => '{0} nút bị ẩn: không còn được kết nối nếu không có loại ẩn.',
+    // Connectivity Explorer canvas launchpad (Level-1 type tiles / Level-2
+    // browsable entity list) -- docs/superpowers/specs/2026-07-27-
+    // connectivity-explorer-launchpad.md
+    'BrowsableEntityTypes' => 'Các loại thực thể có thể duyệt',
+    'CountFloor' => '{0}+',
+    'NoBrowsableTypes' => 'Bạn không có quyền duyệt bất kỳ loại thực thể nào.',
+    'AllTypes' => 'Tất cả các loại',
+    'FilterEntitiesPlaceholder' => 'Bộ lọc…',
+    'NoMatchingEntities' => 'Không có thực thể nào khớp với bộ lọc của bạn.',
+    'LoadMore' => 'Tải thêm',
+    'Loading' => 'Đang tải…',
+    'CouldNotLoadEntityCounts' => 'Không thể tải số lượng thực thể.',
+    'CouldNotLoadEntities' => 'Không thể tải các thực thể.',
+    'ClearGraph' => 'Biểu đồ rõ ràng',
+    // Connectivity Explorer node-type chip label for the 'audit' type. Not
+    // reused from 'TeamType_audit' (same English text, "Audit") -- that key
+    // is scoped to the Team Separation team-type picker, a different feature
+    // whose wording should be free to diverge from this one's.
+    'Audit' => 'Kiểm tra',
+    // Queued email send-failure notifications
+    'EmailSendFailedNotificationTitle' => 'Gửi email thất bại',
+    'EmailSendFailedNotificationBody' => 'Một hoặc nhiều email đang chờ xử lý không thể được gửi đi. Vui lòng kiểm tra cài đặt email của bạn, sau đó xem Trình giám sát hàng đợi và nhật ký máy chủ để biết chi tiết.',
+    'QuestionnaireShareInvalidEmailAddress' => 'Không thể chia sẻ kết quả khảo sát với người liên hệ không có địa chỉ email hợp lệ.',
+    'AssessmentSendInvalidEmailAddress' => 'Không thể gửi bài đánh giá đến địa chỉ email không hợp lệ.',
+    'AssessmentSentTo' => 'Đánh giá đã được gửi đến "{$email}".',
+    'AssessmentNotSentNoValidRecipients' => 'Bài đánh giá không được gửi đi — không cung cấp địa chỉ email hợp lệ.',
+    'AssessmentContactUnusableEmailNotificationTitle' => 'Phiếu khảo sát chưa được gửi',
+    'AssessmentContactUnusableEmailNotificationBody' => 'Không thể gửi bảng câu hỏi "{$questionnaire}" đến "{$contact}" vì người liên hệ đó không có địa chỉ email hợp lệ trong hồ sơ. Vui lòng cập nhật thông tin liên hệ để tiếp tục gửi.',
+    'EmailFailureNotificationRetention' => 'Lưu giữ thông báo lỗi gửi email',
+    'EmailFailureNotificationRetentionOutOfRange' => 'Thời gian lưu giữ thông báo lỗi gửi email phải nằm trong khoảng từ {$min} đến {$max} ngày.',
+    'MailSettingsUpdatedSuccessfully' => 'Cài đặt email đã được cập nhật thành công.',
+    // Questionnaire audit-trail entries for the API submit/draft paths (SR-1714).
+    // The token form credits the contact; an API caller is an authenticated
+    // SimpleRisk user acting on that contact's questionnaire, so both the
+    // contact and the acting user are named.
+    'QuestionnaireCompletedAuditLogViaApi' => 'Bảng câu hỏi "{$questionnaire_name}" dành cho người liên hệ "{$contact_name}" đã được người dùng "{$user_name} " hoàn thành thông qua API.',
+    'QuestionnaireDraftAuditLogViaApi' => 'Bản câu hỏi "{$questionnaire_name}" để liên hệ với người dùng "{$contact_name}" đã được người dùng "{$user_name} " lưu dưới dạng bản nháp thông qua API.',
+    // Bad-input response for the questionnaire risk-list endpoints, which
+    // previously reported a malformed questionnaire_id as a permission denial.
+    // Mirrors the existing 'MissingOrInvalidTrackingID'.
+    'MissingOrInvalidQuestionnaireID' => 'Mã số phiếu khảo sát bị thiếu hoặc không hợp lệ.',
+    // POST /api/v2/assessments/questionnaire/result/file response messages.
+    // The `id` path deliberately returns QuestionIdCannotAcceptFile for every
+    // question-level rejection so a sequential tracking id cannot be used to
+    // probe questionnaire structure; the token path returns the specific reason.
+    'QuestionnaireResultNotFoundForTokenOrId' => 'KHÔNG TÌM THẤY: Không thể tìm thấy kết quả khảo sát với mã thông báo hoặc ID đã chỉ định.',
+    'QuestionIdCannotAcceptFile' => 'YÊU CẦU KHÔNG HỢP LỆ: question_id {$question_id} không thể chấp nhận tệp trên kết quả khảo sát này',
+    'QuestionIdNotFoundInQuestionnaire' => 'YÊU CẦU KHÔNG HỢP LỆ: question_id {$question_id} không được tìm thấy trong bảng câu hỏi này',
+    'QuestionIdInMultipleTemplates' => 'YÊU CẦU KHÔNG HỢP LỆ: question_id {$question_id} xuất hiện trong nhiều mẫu cho bảng câu hỏi này',
+    'QuestionIdDoesNotAcceptFileUploads' => 'YÊU CẦU KHÔNG HỢP LỆ: question_id {$question_id} không chấp nhận tải lên tệp',
+    // The Statement of Applicability's two UNVERIFIED implementation states.
+    //
+    // They exist because "we have not checked" is not "it does not work", and an
+    // SoA is ATTESTED — printing "No" for an unverified control is a false
+    // statement against yourself, exactly as printing "Yes" without evidence is
+    // a false statement the other way. Before these keys existed both states
+    // fell through to 'No', which on a framework where most controls carry no
+    // test meant the whole document read "not implemented".
+    //
+    // They are two states rather than one because they are different findings
+    // with different owners: no test defined is a GOVERNANCE gap (nobody decided
+    // how to verify this control), never run is an OPERATIONAL one (somebody
+    // decided, and it was not done).
+    //
+    // WORDING. Both must be unmistakably distinct from the bare 'No' in the same
+    // column. 'Tests never run' rather than 'Never run': in a column headed
+    // "Implemented", the bare phrase reads for a moment as though the CONTROL
+    // was never run, when the subject is its tests.
+    //
+    // BOTH ARE PLURAL, and that is not only style. English takes the plural
+    // after "no" when the expected quantity could exceed one ("no results
+    // found"), and a control normally carries several tests — the singular
+    // implies only ever one was expected. 'Tests never run' is the stronger
+    // case: soa_implemented_for() returns `never_run` only when NOT ONE of the
+    // control's tests has produced a verdict, so the state is inherently about
+    // the whole set. With four tests defined and none run, the singular reads as
+    // one omission rather than a wholesale one.
+    'SoaImplementedNoTestDefined' => 'Không có bài kiểm tra nào được định nghĩa.',
+    'SoaImplementedNeverRun' => 'Các bài kiểm tra không bao giờ được thực hiện.',
+
+    // The Implemented column's fallback for a token neither sink recognizes.
+    //
+    // DELIBERATELY NOT A VERDICT, and the reason this key exists at all. Both
+    // sinks previously ended in a fallthrough to 'No', so adding a state without
+    // adding its label printed a confident, wrong answer into a compliance
+    // document. Falling through to 'Yes' would be worse. The only safe failure
+    // mode is a value that states nothing about the control — a visible bug
+    // instead of a silent misstatement.
+    'SoaImplementedUnknown' => 'Trạng thái không khả dụng',
+    // How an APPLICABLE control's stored inclusion reason(s) join to its own
+    // freeform justification when it recorded both (spec §4). Reached ONLY when
+    // both halves exist — reasons alone print as the reason list, prose alone
+    // prints verbatim — so this string is punctuation and word order, not prose.
+    // It is a language key rather than a hardcoded separator because a locale
+    // that joins clauses with a colon, a full stop, or right-to-left ordering
+    // must be able to say so; both placeholders have to survive translation.
+    'SoaJustifiedByInclusionReasons' => '{reasons} — {narrative}',
+    // The Set applicability modal's reason field, which became a MULTI-select
+    // when reasons moved to a join table: a control is commonly included (or
+    // excluded) for more than one reason, and the singular 'Reason' the field
+    // used to reuse now under-describes it. 'Reason' is left alone rather than
+    // repointed -- the row drawer and the SoA still print exactly one joined
+    // value under it, and redefining a key changes every surface that reads it.
+    'ApplicabilityReasons' => 'Lý do',
+    // Said once, above a group of checkboxes, rather than implied by the widget.
+    // The old single <select> answered "how many may I pick?" by construction;
+    // a checkbox group does not, and a user who ticks one and stops has made the
+    // SoA less truthful than the one they meant to write.
+    'ApplicabilityReasonsHint' => 'Hãy chọn tất cả những lý do phù hợp.',
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // THE STATEMENT OF APPLICABILITY'S MARKERS AND ITS LEGEND (spec §1, §3).
+    // ─────────────────────────────────────────────────────────────────────────
+
+    // THE EVIDENCE COLUMN'S TWO ABSENCES, which are OPPOSITES.
+    //
+    // 'No evidence linked' is a FINDING: the control is in scope, is possibly
+    // claimed implemented, and nothing substantiates it. The em dash below is
+    // the other answer -- the control is excluded, so no evidence is expected
+    // and the absence is correct. Rendering both as an empty cell hides the
+    // first, which is the one an auditor circles.
+    'SoaNoEvidenceLinked' => 'Không có bằng chứng nào liên quan',
+    // PUNCTUATION, NOT PROSE -- the glyph the Evidence cell prints when nothing
+    // is expected. A language key rather than a hardcoded character for the same
+    // reason 'SoaJustifiedByInclusionReasons' is one: a locale that marks "not
+    // applicable" with a different dash, or with a word, must be able to say so.
+    'SoaEvidenceNotExpected' => '—',
+    // Whether the evidence a test DECLARED it requires actually arrived with the
+    // result. A stronger claim than a pass/fail alone, and few SoA tools make it.
+
+    // THE REMEDIATION BLOCK -- what is being done about a control that reads
+    // Partial or No. The SoA points AT the risk treatment plan (clause 6.1.3(e))
+    // rather than becoming one.
+    'SoaRemediation' => 'Khắc phục hậu quả',
+    // THE MOST SERIOUS THING THAT BLOCK CAN FIND: the test failed and it is
+    // linked to no risk, so no treatment plan traces back to it. Dropping such a
+    // row for want of a risk to join to would render it as a blank cell, which
+    // reads as "nothing to report".
+    'SoaRemediationUnplanned' => 'Không có rủi ro nào liên quan',
+
+    // THE LEGEND. Required in both variants and every export format, because six
+    // implementation states plus three markers is more nuanced than the
+    // Yes/No/Partial an auditor expects, and an undefined vocabulary invites the
+    // reader to guess unfavourably.
+    'SoaLegendTitle' => 'Cách đọc câu phát biểu này',
+    'SoaLegendYes' => 'Mọi bài kiểm tra được định nghĩa cho nhóm điều khiển này đều đã vượt qua trong lần chạy gần nhất.',
+    'SoaLegendPartial' => 'Các kết quả thử nghiệm nhóm đối chứng lại không nhất quán: ít nhất một thử nghiệm đạt, và ít nhất một thử nghiệm thất bại hoặc không đưa ra kết luận nào.',
+    'SoaLegendNo' => 'Lần chạy thử gần nhất, không có bài kiểm tra nào của nhóm đối chứng này đạt kết quả tốt, và ít nhất một bài đã thất bại.',
+    // The two unverified states are DIFFERENT FINDINGS WITH DIFFERENT OWNERS,
+    // and the labels alone do not quite carry that -- so the legend spells it
+    // out. This is the distinction the whole six-state set exists for.
+    'SoaLegendNoTestDefined' => 'Chưa có bài kiểm tra nào được định nghĩa cho biện pháp kiểm soát này, do đó hoạt động của nó chưa bao giờ được xác minh. Điều này không có nghĩa là biện pháp kiểm soát này bị thiếu hoặc bị lỗi - mà chỉ là tuyên bố này không chứng minh được điều đó. Một lỗ hổng trong quản trị: chưa ai quyết định cách thức kiểm tra biện pháp kiểm soát này.',
+    'SoaLegendNeverRun' => 'Các bài kiểm tra cho chức năng kiểm soát này tồn tại, nhưng chưa bài nào được thực hiện, vì vậy hoạt động của nó không được thể hiện ở đây. Điều này không có nghĩa là chức năng kiểm soát bị thiếu hoặc bị lỗi. Đây chỉ là một lỗ hổng trong hoạt động: các bước kiểm tra đã được quyết định nhưng chưa được thực hiện.',
+    'SoaLegendNotApplicable' => 'Chức năng điều khiển này nằm ngoài phạm vi của khuôn khổ này, do đó nó không có trạng thái triển khai.',
+    // The one most in need of explaining: with nothing to define it, this reads
+    // as an admission about the control rather than as what it is.
+    'SoaLegendUnknown' => 'SimpleRisk không thể gắn nhãn trạng thái đã ghi lại, do đó việc triển khai không được thể hiện ở đây. Đây là một lỗi trong phần mềm và không nói lên điều gì về chức năng điều khiển - cả việc nó hoạt động hay không hoạt động.',
+    'SoaLegendOverdue' => 'Kết quả hiển thị vẫn đúng, nhưng ít nhất một trong những xét nghiệm đằng sau đó đã quá hạn kiểm định lần tiếp theo. Bằng chứng đã lỗi thời.',
+    'SoaLegendNoEvidence' => 'Việc kiểm soát nằm trong phạm vi nghiên cứu nhưng chưa có bằng chứng nào được đưa ra để chứng thực: không có tài liệu nào được xác nhận và không có thử nghiệm nào cho ra kết quả.',
+    'SoaLegendEvidenceNotExpected' => 'Không có bằng chứng nào được ghi nhận, vì nhóm đối chứng đã bị loại trừ khỏi phạm vi nghiên cứu.',
+    'SoaLegendUnplanned' => 'Một kết quả xét nghiệm không đạt yêu cầu nhưng không liên quan đến bất kỳ rủi ro nào, do đó không có kế hoạch điều trị nào bắt nguồn từ đó.',
+
+    // THE TWO VARIANTS, chosen on the launcher before the document is generated
+    // and PRINTED ON ITS COVER. A Statement of Applicability is a controlled
+    // document: two of them for the same framework that show different things,
+    // with nothing on either to say which is which, is a document nobody can
+    // file.
+
+    // THE THREE DETAILED-ONLY COLUMNS.
+    // What those three columns say instead of nothing. A blank cell in an audit
+    // document reads as a formatting artefact; "Not recorded" is a fact the
+    // reader can act on.
+
+    // THE BROWSER PRINT ROUTE. Beside the two downloads on the launcher, and the
+    // only PDF route for a framework too large for the server-side writer.
+    // Shown in place of "Download as PDF" when the chosen framework is above
+    // SOA_EXPORT_PDF_MAX_CONTROLS. The affordance is absent rather than
+    // disabled, so this sentence is what tells the reader the absence is
+    // deliberate and what to do instead.
+    // The footer of every printed page. {page} and {pages} are substituted with
+    // the browser's own page counters, so the two tokens must both survive
+    // translation -- but their ORDER and the words around them are the
+    // translator's, which is why this is one string and not "Page" + "of".
+    'SoaPrintPageNumber' => 'Trang {page} trên {pages}',
+
+    // THE ONE PDF AFFORDANCE on the statement-of-applicability launcher, beside
+    // 'DownloadAsXLSX'. It replaces the pair that used to sit there --
+    // 'SoaPrintToPdf' and 'DownloadAsPDF' -- because a Statement of Applicability
+    // is a controlled document and two PDF buttons let two people hand an auditor
+    // two different-looking PDFs of the same statement.
+    //
+    // JUST "PDF", AND DELIBERATELY SO. Below SOA_EXPORT_PDF_MAX_CONTROLS the
+    // button downloads a server-rendered file and above it the browser writes
+    // one, but that is a mechanism and not a choice the reader has to make. A
+    // label that named the mechanism ("Print to PDF" / "Download as PDF") would
+    // put the difference back in front of them.
+    //
+    // 'SoaPrintToPdf' and 'SoaPdfTooLargeHint' above are LEFT IN PLACE with no
+    // caller: 39 locales carry them, and this file is append-only precisely so a
+    // customer running a custom lang.<locale>.php can reconcile it with a tail
+    // diff.
+    'SoaPdf' => 'PDF',
+
+    // THE OTHER TWO ACTIONS IN THAT SAME ROW, shortened to match it.
+    //
+    // The row read "Open in browser" / "Download as XLSX" / "PDF", which put a
+    // verb on two of three actions and made the odd one out look like an
+    // abbreviation of something longer. The row's own context supplies the
+    // verbs -- these are the things you can DO with the framework you just
+    // chose -- so they carried no information and cost the reader a comparison.
+    // 'SoaPdf' is short because naming its mechanism would be dishonest (above
+    // SOA_EXPORT_PDF_MAX_CONTROLS it opens a print view rather than downloading
+    // a file), and the shortest of the three is the one that has to be right.
+    //
+    // NOT the generic 'Open' at line ~1021: that key lives among 'Mitigated' /
+    // 'Reviewed' and is the risk-status ADJECTIVE -- fr "Ouvert", de "Offen" --
+    // so reusing it would label a button with a state rather than an action in
+    // most of the 39 locales.
+    //
+    // 'SoaOpenInBrowser' above is LEFT IN PLACE with no caller, for the same
+    // reason 'SoaPrintToPdf' is: the locales carry it and this file is
+    // append-only so a customer's custom lang.<locale>.php reconciles with a
+    // tail diff. 'DownloadAsXLSX' keeps a caller either way -- the Assessments
+    // Extra's questionnaire results still use it.
+    'SoaOpen' => 'Mở',
+    'SoaXlsx' => 'XLSX',
+    // ---- The locked-affordance treatment -------------------------------------
+    // SHARED COPY, not chooser copy. SimpleRisk now SHOWS what's possible and
+    // MARKS what's out of reach because it isn't licensed, rather than hiding
+    // it -- so these strings appear both as a menu row's explanation (Define
+    // Control Frameworks' "+ Add framework" chooser) and beside a disabled
+    // toolbar button (the Statement of Applicability's PDF/XLSX exports). Each
+    // one is worded to read correctly in BOTH places, which is why none of them
+    // starts with "This route" or "This button".
+    //
+    // 'LockedAffordanceBadge' duplicates the English of 'AICapStateLocked'
+    // rather than reusing it: that key sits in the AI Capabilities Catalog's
+    // block and is scoped to a capability's state, and translators work from
+    // the key's neighbourhood as much as from its value.
+    'LockedAffordanceBadge' => 'Đã khóa',
+    // The two SCF steps before it can be switched on. admin/register.php serves
+    // both -- it is the registration form AND where the per-Extra download
+    // buttons render -- so these differ in what they say, not where they go.
+    'UnlockRegisterInstanceNote' => 'Đăng ký phiên bản này để nhận được Khung Kiểm soát An toàn.',
+    'UnlockRegisterInstanceLink' => 'Giấy Đăng Ký SimpleRisk',
+    'UnlockDownloadScfNote' => 'Phiên bản này đã được đăng ký. Hãy tải xuống Khung Kiểm soát Bảo mật để sử dụng.',
+    'UnlockDownloadScfLink' => 'Tải xuống',
+    'UnlockActivateScfNote' => 'Khung kiểm soát bảo mật đã được tải xuống nhưng chưa được kích hoạt.',
+    'UnlockActivateScfLink' => 'Bật nó lên',
+    // Import-Export is a paid Extra, so "not installed" is an upsell rather
+    // than a registration prompt. Deliberately a bare capability sentence: it
+    // has to sit under a menu row and next to an export button equally well.
+    'RequiresImportExportExtra' => 'Cần có gói dịch vụ Nhập khẩu-Xuất khẩu bổ sung.',
+    'UnlockImportExportLink' => 'Hãy xem nó bổ sung thêm gì.',
+    'UnlockActivateImportExportNote' => 'Tiện ích Nhập-Xuất bổ sung đã được cài đặt nhưng chưa được kích hoạt.',
+    'UnlockActivateImportExportLink' => 'Bật nó lên',
+    // Shown instead of any of the above to a user who is not an administrator:
+    // every unlock step lives on a check_admin page, so they get the half that
+    // is useful to them -- that the capability exists, and who to ask -- and no
+    // link that would only bounce them.
+    'UnlockNeedsAdministrator' => 'Quản trị viên có thể thiết lập điều này.',
+    // API date parsing. {$field} is the request field name (next_date, last_date,
+    // test_date); {$format} is this instance's configured display date format.
+    'InvalidSubmittedDate' => 'Giá trị {$field} không phải là ngày hợp lệ. Hãy nhập nó dưới dạng YYYY-MM-DD hoặc theo định dạng ngày của ví dụ này ({$format}).',
+    // Companion to InvalidSubmittedDate, for a value that matches the expected
+    // shape but names a day that does not exist (February 31st, month 13).
+    // Saying "submit it as MM/DD/YYYY" there would repeat what the caller did.
+    // {$value} is the submitted value, echoed back truncated.
+    'ImpossibleSubmittedDate' => 'Giá trị {$field} "{$value}" không phải là ngày tháng thực sự. Hãy kiểm tra ngày và tháng — trường hợp này đọc ngày tháng là {$format}.',
+    // The Statement of Applicability's merged verification column. Replaces three
+    // separate headings (Implemented / Evidence / Review Cadence) with the one
+    // question all three answer: how do we know this control is working?
+    // The two appendices printed after the register. Justifications are truncated
+    // in the row and given in full here; remediation plans live here rather than
+    // in the table because ISO 27001 keeps the SoA (6.1.3(d)) and the risk
+    // treatment plan (6.1.3(e)) as separate artifacts.
+    'SoaAppendixJustifications' => 'Phụ lục A — Lý do',
+    'SoaAppendixRemediation' => 'Phụ lục R — Kế hoạch khắc phục',
+    // Appendix E carries the WORDING of each test's evidence requirement. The row
+    // keeps only whether that evidence arrived, which is the finding; the wording
+    // is reference material and was the bulkiest thing in the Verification cell.
+    'SoaRequiredEvidenceSupplied' => 'bằng chứng cần thiết đã được cung cấp',
+    'SoaRequiredEvidenceNotSupplied' => 'Không cung cấp được bằng chứng cần thiết.',
+    // The one scheduling fact the SoA prints: the soonest date any of a control's
+    // tests is next due. Replaces a per-test "Manual — Next Test Date: ..." line,
+    // whose schedule type belongs on Define Tests and whose date is now on each
+    // test's own evidence bullet.
+    // The two dates on a test's evidence bullet. LABELLED, because two bare dates
+    // side by side are ambiguous in a way one is not.
+    // SINGULAR document-type labels for one piece of design evidence. SimpleRisk's
+    // existing keys are the plural tab names, which would read "Access Control
+    // Standard (Standards)".
+    'SoaEvidencePolicy' => 'Chính sách',
+    'SoaEvidenceStandard' => 'Tiêu chuẩn',
+    'SoaEvidenceProcedure' => 'Thủ tục',
+    'SoaEvidenceGuideline' => 'Hướng dẫn',
+    // ── The legend, grouped by column (SOA_LEGEND_GROUPS, includes/soa.php) ──
+    // The Applicability column's three values. These were never in the legend,
+    // so an auditor met "Inherited" -- a word with no meaning outside SimpleRisk
+    // -- with nothing to look it up in.
+    'SoaLegendApplicable' => 'Việc kiểm soát nằm trong phạm vi của khuôn khổ này và tổ chức chịu trách nhiệm vận hành nó.',
+    // DISTINCT from 'SoaLegendNotApplicable', which defines the "N/A" that appears
+    // in the Implementation Status column. This one is the DECISION to exclude;
+    // that one is the consequence for the status.
+    'SoaLegendApplicabilityNotApplicable' => 'Biện pháp kiểm soát này đã bị loại trừ khỏi phạm vi của khuôn khổ này. Cột lý do ghi lại lý do và người đưa ra quyết định.',
+    'SoaLegendInherited' => 'Việc kiểm soát nằm trong phạm vi điều chỉnh, nhưng nó được vận hành bởi bên thứ ba - một nhà cung cấp dịch vụ đám mây, một công ty mẹ, một bộ phận được thuê ngoài - chứ không phải bởi chính tổ chức này. Tên của nhà cung cấp được nêu bên cạnh phần giải thích.',
+    // The Evidence column's four bullet glyphs. Load-bearing since the visible
+    // result word was dropped from pass and fail bullets, and until now defined
+    // nowhere at all.
+    'SoaLegendEvidencePass' => 'Lần chạy thử nghiệm gần nhất, kết quả cho thấy hệ thống điều khiển này hoạt động tốt. Ngày tháng ghi nhận kết quả là thời điểm chạy thử.',
+    'SoaLegendEvidenceFail' => 'Lần thử nghiệm hệ thống kiểm soát này đã ghi nhận kết quả thất bại trong lần chạy cuối cùng. Phụ lục R chứa kế hoạch điều trị, nếu có.',
+    'SoaLegendEvidenceInconclusive' => 'Một thử nghiệm kiểm soát đã được tiến hành và không đưa ra kết luận nào. Ký hiệu tương tự được sử dụng cho kết quả mà tài liệu này không nhận ra, và trong trường hợp đó, chính kết quả sẽ được in bên cạnh.',
+    // The TERM beside the § glyph. Not a document type -- the four types
+    // (Policy, Standard, Procedure, Guideline) are printed per item; this names
+    // the CATEGORY of evidence a document is.
+    'SoaEvidenceDesignDocument' => 'Tài liệu thiết kế',
+    'SoaLegendEvidenceDocument' => 'Một tài liệu quản trị được xác nhận là bằng chứng cho sự kiểm soát này – về mặt thiết kế chứ không phải hoạt động thực tế. Tài liệu không mang tính phán quyết, đó là lý do tại sao nó không được đánh dấu tích.',
+    // The XLSX export's first worksheet tab. The workbook's other four tabs reuse
+    // headings that already exist ('How to read this statement', 'Statement of
+    // Applicability', and the two appendix headings); the cover had no name of its
+    // own because it used to be the top of a single sheet.
+    //
+    // KEEP IT SHORT. Excel caps a worksheet name at 31 characters and
+    // soa_export_sheet_name() truncates rather than failing the export, so a long
+    // translation loses its tail on the tab.
+    'SoaSheetCover' => 'Che phủ',
+
+    'SearchFrameworks' => 'Khung tìm kiếm',
+    'SearchControls' => 'Kiểm soát tìm kiếm',
+    'AddFramework' => 'Thêm khung',
+    'Applicability' => 'Khả năng áp dụng',
+    'AnyFamily' => 'Bất kỳ gia đình nào',
+    'AnyOwner' => 'Bất kỳ chủ sở hữu nào',
+    'AnyClass' => 'Bất kỳ lớp nào',
+    'AnyPhase' => 'Bất kỳ giai đoạn nào',
+    'AnyPriority' => 'Bất kỳ ưu tiên nào',
+    'AnyType' => 'Bất kỳ loại nào',
+    'AnyStatus' => 'Bất kỳ trạng thái nào',
+    'SelectAllN' => 'Chọn tất cả {n}',
+    'Classification' => 'Phân loại',
+    'Placement' => 'Vị trí',
+    'OwnershipAndMaturity' => 'Quyền sở hữu & sự trưởng thành',
+    'MappingsAndGuidance' => 'Bản đồ & hướng dẫn',
+    'DeleteFrameworkTitle' => 'Xóa khung \'{$name}\'?',
+    'DeleteControlTitle' => 'Xóa điều khiển \'{$name}\'?',
+    'DeleteControlsTitle' => 'Xóa các điều khiển {$n}?',
+    'DeleteCannotBeUndone' => 'Việc này không thể đảo ngược được nữa.',
+    'DeleteFrameworkConsequence' => 'Thao tác này loại bỏ khung cấu trúc và tất cả các ánh xạ điều khiển của nó.',
+    'DeleteControlConsequence' => 'Điều này loại bỏ quyền kiểm soát khỏi mọi framework mà nó được ánh xạ tới.',
+    'DeleteControlsConsequence' => 'Thao tác này loại bỏ từng điều khiển đã chọn khỏi mọi khung cấu trúc mà nó được ánh xạ tới.',
+    // Task 9: empty states (design-system.md §10) -- the four intents on
+    // Define Control Frameworks. Reuses existing keys where the copy already
+    // fits exactly (AddControl, AddFramework, ClearFilters, Retry,
+    // NoControlsDefinedYet, NoTestsMatchFiltersBody, CouldNotLoadTestsBody,
+    // RegisterYourInstance, GoToSCF, ImportExportExtra) -- only the strings
+    // with no existing match are added below.
+    'NoControlsMatch' => 'Không có tùy chọn điều khiển nào phù hợp với bộ lọc của bạn.',
+    'CouldNotLoadControls' => 'Không thể tải điều khiển',
+    'ControlsYouAddWillAppearHere' => 'Các điều khiển bạn thêm vào sẽ xuất hiện ở đây.',
+    'NoFrameworksYet' => 'Chưa có khung phần mềm nào.',
+    'FrameworksYouAddWillAppearHere' => 'Các framework bạn thêm hoặc nhập sẽ xuất hiện ở đây.',
+    'CouldNotLoadFrameworks' => 'Không thể tải các framework',
+    // Task 9 review fix: the framework rail's own "no results" intent, shown
+    // when the user has explicitly switched the status dropdown away from
+    // Active and that status has nothing (distinct from "No frameworks yet",
+    // which is reserved for the default Active status where the endpoint
+    // can't yet tell "no frameworks at all" from "none active").
+    'NoFrameworksMatchFilter' => 'Không có khung phần mềm nào phù hợp với trạng thái này.',
+    'ViewActiveFrameworks' => 'Xem các khung công nghệ đang hoạt động',
+    // Task 10: Define Control Frameworks insights band (governance/index.php)
+    // -- KPI tile labels/subtitles. 'Controls', 'Pass', 'Fail', 'NotTested'
+    // already exist and are reused as label keys for their tiles.
+    'BelowTarget' => 'Dưới mục tiêu',
+    'Excluded' => 'Bị loại trừ',
+    'FwInScope' => 'Trong phạm vi',
+    'FwLastTestPassed' => 'Bài kiểm tra cuối cùng đã vượt qua.',
+    'FwLastTestFailed' => 'Bài kiểm tra cuối cùng đã thất bại',
+    'FwNoEvidence' => 'Có thể áp dụng, không có bằng chứng.',
+    'FwMaturityUnderDesired' => 'Thời gian trưởng thành theo điều kiện mong muốn',
+    'FwScopeAFramework' => 'Xác định phạm vi và khuôn khổ để quyết định.',
+    'FwNotApplicableOrInherited' => 'Không áp dụng hoặc không được thừa kế',
+    // Task 22: framework rail search (governance/index.php's #sr-fw-search,
+    // wired client-side in governance-frameworks.js). Reuses the shipped
+    // "no results" empty-state tile (#sr-fw-filtered, Task 9) rather than
+    // inventing a fourth rail empty state -- only the title and action swap
+    // depending on whether a status filter or a search narrowed the list to
+    // nothing; NoTestsMatchFiltersBody already covers both as body copy.
+    'NoFrameworksMatchSearch' => 'Không có framework nào phù hợp với tìm kiếm của bạn.',
+    'ClearSearch' => 'Xóa tìm kiếm',
+    // Task 24: Clone control pre-fills the Add Control modal from the source
+    // control (governance-frameworks.js's openControlForClone()) rather than
+    // creating a duplicate outright, so the modal needs to say plainly which
+    // control it was cloned from -- the reviewer's core complaint about an
+    // earlier one-click version of this feature was not knowing what was
+    // cloned. {$name} follows the same client-side formatTemplate()
+    // substitution ShowingXToYOfZ/NSelected already use on this page.
+    'ClonedFromControlNotice' => 'Được sao chép từ "{$name}". Xem lại các trường bên dưới, sau đó Lưu.',
+    // Task 24 review follow-up: the banner alone left the modal titled "New
+    // Control" over pre-populated fields -- "it doesn't prompt or anything
+    // so the user doesn't know what was cloned" (Josh) -- which reads as a
+    // bug, not a feature. Retitling #control--add-title to this (governance-
+    // frameworks.js's show.bs.modal delegate for #control--add) makes the
+    // clone unambiguous at a glance; NewControl is restored for a plain add.
+    'CloneOfControlTitle' => 'Bản sao của "{$name}"',
+    // Task 27: the framework rail's SCF-origin chip (governance-frameworks.js's
+    // railRow()) -- shown only for frameworks created via the ComplianceForge
+    // SCF Extra's authoritative-source import (get_scf_origin_framework_ids(),
+    // includes/governance.php). SCF is the badge text itself; ScfOriginHint is
+    // its title/tooltip.
+    'SCF' => 'SCF',
+    'ScfOriginHint' => 'Từ Khung Kiểm soát An toàn (SCF)',
+    // Task 34: the Maturity filter facet's placeholder on the Define Control
+    // Frameworks filter sheet (governance-frameworks.js's ensureFilterSheet()),
+    // matching the AnyFamily/AnyOwner/AnyClass/... set above. The facet's three
+    // OPTIONS reuse the existing BelowMaturity/AtMaturity/AboveMaturity keys --
+    // the same labels the governance dashboard's maturity-gap widgets already
+    // carry -- and the column chip renders those same three strings, so the
+    // filter and the cell can never read differently.
+    'AnyMaturity' => 'Bất kỳ sự trưởng thành nào',
+    // Task 46: accessible name for the control table's pager landmark
+    // (governance-frameworks.js's renderPager()). The pager's own buttons
+    // reuse the existing Previous/Next keys Define Tests' pager already
+    // carries; only the <nav> label is new, and it names WHICH table's pager
+    // it is because the Define Control Frameworks page has two lists on it.
+    'ControlsPagination' => 'Điều khiển phân trang',
+    // Task 14: the Applicability column's state chip (governance-frameworks.js's
+    // renderApplicability()), the matching filter facet (its three option labels
+    // reuse these same three keys) and its "Any applicability" placeholder.
+    //
+    // The three states are PREFIXED rather than named 'Applicable'/
+    // 'NotApplicable'/'Inherited' because 'NotApplicable' already exists above
+    // as the ABBREVIATION 'N/A' -- the self-assessment answer chip and three
+    // reporting charts render it -- and redefining that key to the spelled-out
+    // phrase this column needs would silently change all four of those
+    // surfaces. The prefix also keeps the trio recognisable as one family.
+    //
+    // The column HEADER and the facet's accessible name reuse the existing
+    // 'Applicability' key, and the drawer's record reuses 'Reason', 'Provider'
+    // and 'Justification' -- all four already carry exactly the right string.
+    'ApplicabilityApplicable' => 'Áp dụng',
+    'ApplicabilityNotApplicable' => 'Không áp dụng',
+    'ApplicabilityInherited' => 'Được thừa kế',
+    'AnyApplicability' => 'Bất kỳ sự áp dụng nào',
+    // The drawer's applicability record: who recorded the decision and when.
+    // Both are attribution for an audited decision a customer may have to
+    // defend years later, which is why the drawer names them at all.
+    'ApplicabilityDecidedBy' => 'Được quyết định bởi',
+    'ApplicabilityDecidedOn' => 'Đã quyết định',
+    // The framework-level Statement of Applicability card in the Add/Edit
+    // framework modals (display_framework_soa_card(), includes/governance.php).
+    // These two fields are what ISO/IEC 27001:2022 clause 6.1.3(d) needs on an
+    // SoA cover: the scope the framework is certified against, and how inclusion
+    // was determined for the controls that are simply applicable.
+    //
+    // 'IsmsScopeStatement' rather than a bare 'ScopeStatement' because "scope"
+    // is already overloaded across SimpleRisk (assessment scope, audit scope,
+    // risk scope); the ISMS prefix is what an ISO practitioner calls this exact
+    // field and keeps it from being reused for an unrelated one.
+    'StatementOfApplicability' => 'Tuyên bố về phạm vi áp dụng',
+    'IsmsScopeStatement' => 'Tuyên bố phạm vi',
+    'IsmsScopeStatementHint' => 'Phạm vi mà khung này được chứng nhận. Được hiển thị trên trang bìa của SoA.',
+    'DefaultInclusionJustification' => 'Lý do bao gồm mặc định',
+    'DefaultInclusionJustificationHint' => 'Được sử dụng cho các biện pháp kiểm soát phù hợp mà không có rủi ro liên quan. Hãy nêu tên yếu tố gây ra sự cố, chứ không phải khung pháp lý.',
+    // THE DEFAULT SENTENCE, in all three of its roles: the create form seeds the
+    // textarea with it, the Edit form shows it as a placeholder, and
+    // soa_framework_default_justification() (includes/soa.php) substitutes it at
+    // read time for a framework that has none. One key, because a reader must not
+    // be able to tell a stored default from a fallen-back one, and because three
+    // keys holding the same sentence is three chances for a translator to make
+    // them disagree. The name predates the seeding decision (Task 67) and is kept
+    // rather than churned through Crowdin for 39 locales.
+    //
+    // It names the DRIVER (the risk assessment) rather than the framework:
+    // "included because it is part of this framework" is circular, and ISO 6.1.3
+    // derives controls from risk treatment, using Annex A afterwards only as a
+    // completeness cross-check.
+    //
+    // It was a placeholder ONLY until Task 67, so that an unreviewed sentence
+    // could not reach a customer's SoA by inaction. Measured, that produced the
+    // opposite failure: 19 of 20 frameworks left the field NULL and the SoA's
+    // Justification column came out BLANK for every applicable control with no
+    // linked risks -- the finding an SoA is most often failed on, and one a
+    // boilerplate sentence does not attract.
+    'DefaultInclusionJustificationPlaceholder' => 'Được xác định dựa trên đánh giá rủi ro an ninh thông tin của tổ chức và được duy trì như một biện pháp kiểm soát cần thiết.',
+    // Task 15: bulk-setting applicability from the control table's selection bar
+    // (#applicability--set, governance/index.php + governance-frameworks.js).
+    //
+    // The action's own label and the modal's one section. 'Applicability',
+    // 'Reason', 'Provider', 'Justification', 'Save' and 'Cancel' already exist
+    // and are reused; only the strings with no existing home are added here.
+    'SetApplicability' => 'Thiết lập phạm vi áp dụng',
+    'ApplicabilityDecision' => 'Phán quyết',
+    // The amber scope note, in two sentences the page assembles separately
+    // because they answer two different questions: WHICH framework the decision
+    // is scoped to, and WHICH controls are about to receive it. The second one
+    // has two spellings, because the header checkbox selects the current PAGE
+    // while "Select all N" escalates to the whole filtered result set -- the two
+    // genuinely differ once the table pages, and a note that blurred them would
+    // let the user write 1,535 decisions believing they had written 25.
+    'ApplicabilityScopeNote' => 'Quyết định này chỉ áp dụng trong phạm vi "{$framework}". Sự kiểm soát tương tự vẫn có thể áp dụng trong một khuôn khổ khác.',
+    'ApplicabilityAppliesToSelected' => 'Nó sẽ được ghi lại dựa trên (các) điều khiển {$n} được chọn trên trang này.',
+    'ApplicabilityAppliesToAllFiltered' => 'Nó sẽ được ghi lại đối với tất cả các điều khiển {$n} phù hợp với các bộ lọc hiện tại, bao gồm cả những điều khiển trên các trang khác.',
+    // Per-state hints under the segmented control. The "applicable" one is the
+    // load-bearing sentence of the whole modal, and the SoA audit-readiness work
+    // rewrote it: an applicable control MAY now carry its own reasons and
+    // justification (ISO/IEC 27001 clause 6.1.3(d) asks for one per control, for
+    // inclusion as much as for exclusion), and leaving both empty is what falls
+    // back to the framework's default inclusion justification. The old sentence
+    // -- "this removes any recorded decision. No justification is needed." --
+    // is now false in both halves.
+    'ApplicabilityApplicableHint' => 'Nằm trong phạm vi của khuôn khổ này. Lý do và lời giải thích là tùy chọn; nếu để trống cả hai, khuôn khổ sẽ sử dụng lời giải thích mặc định.',
+    'ApplicabilityNotApplicableHint' => 'Loại trừ một biện pháp kiểm soát khỏi phạm vi của khuôn khổ này. Cần phải có lý do và văn bản giải thích.',
+    'ApplicabilityInheritedHint' => 'Có người khác thực hiện việc kiểm soát này thay mặt bạn. Hãy nêu tên người đó và cho biết họ làm gì.',
+    'ApplicabilityNarrativeHint' => 'Nội dung này xuất hiện trong Tuyên bố về tính áp dụng. Hãy viết rõ những gì mà kiểm toán viên cần để chấp nhận quyết định.',
+    'ApplicabilityProviderHint' => 'Tổ chức thực hiện việc kiểm soát: nhà cung cấp dịch vụ đám mây, dịch vụ quản lý, công ty mẹ.',
+    'ChooseAReason' => 'Chọn một lý do',
+    'ApplicabilityNoReason' => 'Không có lý do',
+    // Result toasts. Both interpolate a COUNT taken from the API response and
+    // nothing else -- no submitted text is ever reflected into a toast, which
+    // toastr renders as HTML.
+    'ApplicabilitySetResult' => 'Tính khả dụng đã được cập nhật cho {$n} điều khiển.',
+    'ApplicabilityClearResult' => 'Khả năng áp dụng được đặt lại thành áp dụng cho {$n} điều khiển.',
+    // Bulk control delete (Task 54, corrected Task 55). Deleting a control is
+    // final either way the delete engine implements it: a control with test
+    // history is soft-deleted (framework_controls.deleted = 1) to keep test
+    // history intact, a control with no tests is removed outright -- but
+    // nothing anywhere flips that flag back, so from the user's side there is
+    // no "kept" case, only "deleted, and its test history survives for audit
+    // purposes." Every sentence therefore leads with the same irreversible
+    // warning; the only thing that varies is whether an audit-history clause
+    // is appended, and that clause is omitted entirely rather than printed
+    // with a count of zero -- "0 are retained for audit history" reads as a
+    // warning about something that is not going to happen, and on a delete
+    // confirmation that is exactly the kind of noise that trains people to
+    // stop reading. Every {$...} is a count from the API response; no user
+    // text is ever interpolated, which matters because toastr renders HTML.
+    'DeleteControlsPreviewChecking' => 'Kiểm tra những gì sẽ bị xóa...',
+    'DeleteControlsPreviewSplit' => '{$n} điều khiển sẽ bị xóa. Thao tác này không thể hoàn tác. Kết quả kiểm thử cho {$m} điều khiển trong số đó được lưu giữ để làm lịch sử kiểm toán.',
+    'DeleteControlsPreviewKeptOnly' => 'Tất cả các điều khiển {$n} sẽ bị xóa. Thao tác này không thể hoàn tác. Kết quả kiểm tra được lưu giữ để làm lịch sử kiểm toán.',
+    'DeleteControlsPreviewRemovedOnly' => '{$n} điều khiển sẽ bị xóa. Thao tác này không thể hoàn tác.',
+    'DeleteControlsPreviewNone' => 'Không có gì để xóa: (các) điều khiển đã chọn không còn tồn tại nữa.',
+    'ControlsDeletedResult' => '{$n} điều khiển đã bị xóa.',
+
+    // The Add/Edit framework modal's Status field. The label reuses the existing
+    // 'Status' key -- the same word the rail's Active/Inactive/All filter already
+    // uses -- so only the explanatory hint is new. It says the two things a user
+    // cannot see from the control itself: that Inactive is the NON-destructive way
+    // to retire a framework (unlike Delete, which cannot be undone), and that the
+    // change cascades through the hierarchy, which is what update_framework_status()
+    // has always done and is genuinely surprising when a parent is deactivated.
+    'FrameworkStatusHint' => 'Các framework không hoạt động vẫn giữ nguyên tất cả các điều khiển và ánh xạ của chúng, nhưng bị ẩn khỏi danh sách framework mặc định và không hiển thị trên bảng điều khiển quản trị. Vô hiệu hóa một framework cũng đồng nghĩa với việc vô hiệu hóa mọi framework con của nó; kích hoạt một framework cũng đồng nghĩa với việc kích hoạt các framework cha của nó.',
+
+    // Task 60: the same #applicability--set modal, opened from ONE control's row
+    // action instead of the selection bulk bar. The button's own label reuses
+    // 'SetApplicability'; these two exist because the modal now has to say which
+    // of the two it is acting on, and both spellings must be unambiguous.
+    //
+    // The title names the specific object (design-system.md §8) and the note
+    // says "only", because the dangerous reading is the silent one: with rows
+    // ticked -- or with "Select all N filtered" in force -- a modal that said
+    // nothing would let a click the user believed applied to one row be read as
+    // applying to every control in the framework. Naming the control in both
+    // places is what makes the narrower scope visible rather than assumed.
+    // Corrected in Task 63. This spelling used to end "...only, whatever else is
+    // selected", which was printed on every row-action open whether or not
+    // anything else WAS selected -- a dangling absolute with no antecedent, so
+    // it read as a sentence that had been cut off. It is now the plain form, and
+    // the reassurance about a competing selection moved to
+    // 'ApplicabilityAppliesToControlNotSelection' below, which is printed only
+    // when there is a competing selection to reassure anyone about.
+    'SetApplicabilityForControl' => 'Thiết lập phạm vi áp dụng: {$name}',
+    'ApplicabilityAppliesToControl' => 'Nó sẽ chỉ được ghi lại với tiêu đề "{$name}".',
+
+    // Task 17: the Statement of Applicability report itself
+    // (reports/statement_of_applicability.php + pages/statement-of-applicability.js),
+    // the document ISO/IEC 27001:2022 clause 6.1.3(d) asks for and the one every
+    // applicability decision recorded on the Define Control Frameworks page
+    // exists to produce.
+    //
+    // 'StatementOfApplicability' already exists above (the framework modal's SoA
+    // card) and is reused for the report's own title, as are 'IsmsScopeStatement',
+    // 'DefaultInclusionJustification', the three 'Applicability*' state labels,
+    // 'ApplicabilityDecidedBy'/'DecidedOn', and the plain 'Framework',
+    // 'ControlNumber', 'ControlName', 'Justification', 'Evidence', 'Reason',
+    // 'Provider', 'Total', 'Controls' and 'Export' keys. Only strings with no
+    // existing home are added here.
+    'StatementOfApplicabilityDesc' => 'Trong một khuôn khổ cụ thể: mọi biện pháp kiểm soát, liệu chúng có áp dụng được hay không, lý do tại sao chúng được đưa vào hoặc loại bỏ, và liệu chúng có được thực hiện hay không.',
+    // The header button on Define Control Frameworks. The verb is "generate"
+    // rather than "view" because the document is assembled at the moment it is
+    // asked for -- there is no stored SoA that could be out of date.
+    'GenerateStatementOfApplicability' => 'Tạo bản tuyên bố về khả năng áp dụng',
+
+    // The Justification column's SECOND resolution step, and the reason an SoA
+    // built here beats the spreadsheet it replaces: the risks that drove the
+    // control are already recorded against it, so nobody retypes them and they
+    // cannot go stale. {risks} is substituted with the displayed risk ids.
+    //
+    // Phrased to match clause 6.1.3, which derives controls from risk treatment
+    // and uses Annex A afterwards only as a completeness cross-check -- the same
+    // reasoning behind 'DefaultInclusionJustificationPlaceholder' above.
+    'SoaJustifiedByRiskAssessment' => 'Được xác định bởi đánh giá rủi ro an ninh thông tin của tổ chức. Các rủi ro liên quan: {risks}.',
+
+    // The Implemented column. DERIVED from maturity and the last test result on
+    // every read, never stored, so it cannot drift out of sync with the control.
+    // 'Yes' and 'No' already exist and are reused; only the middle value and the
+    // header need keys of their own. An excluded control's cell reuses the
+    // existing 'NotApplicable' ('N/A'), which is exactly the right abbreviation
+    // in a dense table.
+    'SoaImplemented' => 'Đã triển khai',
+    'SoaImplementedPartial' => 'Một phần',
+
+    // The cover block.
+    'SoaGeneratedOn' => 'Được tạo vào',
+    'SoaExcludedCount' => 'Bị loại trừ',
+
+    // The prompt shown when the framework has never been given the two cover
+    // fields. It PROMPTS rather than silently printing a blank cover: an SoA
+    // whose scope is empty is the one defect an auditor spots first, and the
+    // moment somebody opens the report is the only moment those fields matter.
+    // Both spellings of empty (never set, and deliberately cleared) prompt --
+    // from a reader's point of view there is nothing to print either way.
+    //
+    // The inclusion-justification line states a WEAKER consequence than it used
+    // to, because Task 67 made the stronger one untrue: the column no longer goes
+    // blank when the field is empty -- soa_framework_default_justification()
+    // substitutes the generic default sentence. The prompt survives because a
+    // generic sentence is not the organization's own, and an auditor reading 1,500
+    // identical rows of boilerplate is entitled to ask whose risk assessment it
+    // refers to.
+    'SoaMissingFieldsTitle' => 'Thông báo này thiếu thông tin chi tiết trên trang bìa.',
+    'SoaMissingScopeStatement' => 'Chưa có tuyên bố phạm vi nào được ghi lại cho khung này. Một tuyên bố về kiến trúc hướng đối tượng (SoA) cần nêu rõ phạm vi mà nó được xây dựng.',
+    'SoaMissingInclusionJustification' => 'Không có lý do chính đáng nào được ghi nhận để đưa vào mặc định. Các biện pháp kiểm soát áp dụng mà không có rủi ro liên quan sẽ sử dụng tuyên bố chung thay vì tuyên bố của riêng bạn.',
+    'SoaEditFrameworkToAdd' => 'Thêm chúng vào khung',
+
+    // Opened from the Reporting Hub, which cannot supply a framework. A picker,
+    // not an error: an SoA is a per-framework document by definition -- the same
+    // control excluded from ISO 27001 is not thereby excluded from PCI DSS --
+    // and there is no cross-framework roll-up to offer instead.
+    'SoaChooseFramework' => 'Chọn một khung',
+    'SoaChooseFrameworkHint' => 'Bản tuyên bố về tính áp dụng được viết riêng cho từng khuôn khổ một.',
+    // The picker has a roster but nothing in it. Distinct from "this framework
+    // has no controls": there is no framework to write a statement about at all,
+    // and the fix is on a different page, so it says which one.
+    // The launcher's affordance row. "Open in browser" rather than "View"
+    // because it names what actually happens -- the document opens in a new tab,
+    // chrome-free -- and because Task 18 adds "Download as PDF" and "Download as
+    // XLSX" beside it, where "open" vs "download" is the distinction that
+    // matters.
+    // The document has no sidebar, so it needs its own way back for anyone who
+    // arrives from a bookmark or a shared link. Screen only; never printed.
+    'SoaBackToSelector' => 'Trở lại phần tuyên bố về phạm vi áp dụng',
+    'SoaNoFrameworks' => 'Không có framework nào đang hoạt động.',
+    'SoaNoFrameworksHint' => 'Cài đặt hoặc kích hoạt một framework trong mục Quản trị > Định nghĩa Framework kiểm soát, và framework đó sẽ có sẵn ở đây.',
+
+    // The two refusals. Both explain rather than just failing, because the user
+    // arrived here deliberately.
+    'SoaFrameworkInactiveTitle' => 'Khung này hiện không hoạt động.',
+    'SoaFrameworkInactiveBody' => 'Bản tuyên bố về phạm vi áp dụng mô tả phạm vi hoạt động hiện tại của tổ chức. Kích hoạt lại khung để tạo ra bản tuyên bố này.',
+    'SoaFrameworkNotFoundBody' => 'Khuôn khổ đó hiện không còn tồn tại.',
+
+    // A framework with no controls mapped into it. Not an error -- it is a real
+    // and recoverable state, and saying so beats an empty table.
+    'SoaNoControls' => 'Khung này không có cơ chế kiểm soát.',
+    'SoaNoControlsHint' => 'Hãy ánh xạ các điều khiển vào khuôn khổ và liệt kê chúng trong tuyên bố về tính áp dụng của khuôn khổ đó.',
+
+    // The second half of the statement-of-applicability launcher's affordance
+    // row, beside "Open in browser" and the existing 'DownloadAsXLSX'. Rendered
+    // only where the Import/Export Extra is active, which is what supplies the
+    // export. "Download as" rather than "Export to" so the pair reads as one
+    // choice of format, and so it matches the XLSX label already in this file.
+    'DownloadAsPDF' => 'Tải xuống dưới dạng PDF',
+
+    // The fourth column of the control modal's "Mapped Control Frameworks"
+    // widget, between the reference code and the reference text. The
+    // FRAMEWORK's own title for the control it is citing -- what a Statement of
+    // Applicability prints beside the clause number. Distinct from the existing
+    // 'ReferenceText', which holds the framework's full control statement, and
+    // from the SimpleRisk control's own name.
+    'ReferenceSubject' => 'Chủ đề tham khảo',
+    // Placeholder/help text under that field, and the reason it is worth
+    // filling in: without it the Statement of Applicability has nothing to
+    // print but the source catalogue's name for its own control.
+    'ReferenceSubjectHint' => "Đây là tiêu đề riêng của khung phần mềm dành cho điều khiển này.",
+
+    // Task 63: the row-scoped population sentence in the Set applicability
+    // modal, in the one situation where the plain
+    // 'ApplicabilityAppliesToControl' above leaves a real question unanswered --
+    // the user has controls ticked, or a standing "Select all N filtered", and
+    // has just opened the modal from ONE row's own action.
+    //
+    // It states the guarantee rather than implying it. A user whose escalated
+    // selection covers an entire framework needs to know that this click is not
+    // about to overwrite it, and {$n} is the count of the OTHER selected
+    // controls -- the target is excluded, because it is very often ticked too
+    // and a promise that included it would be false.
+    'ApplicabilityAppliesToControlNotSelection' => 'Nó sẽ chỉ được ghi lại đối với "{$name}" — các điều khiển {$n} mà bạn đã chọn sẽ không bị ảnh hưởng.',
+
+    // Task 65: the VISIBLE label on the controls toolbar's SoA button. The full
+    // sentence ('GenerateStatementOfApplicability' above) stays as the button's
+    // title and aria-label, and is still what the SoA page itself is called;
+    // this is the short form for a toolbar row it shares with the page's one
+    // primary action. At full length the secondary button measured more than
+    // twice the primary's width and became the largest element in the row.
+    //
+    // "SoA" is safe to abbreviate HERE and only here: the button appears solely
+    // when a single framework is scoped, beside an Applicability column, and it
+    // expands on hover.
+    'GenerateSoa' => 'Tạo SoA',
+
+    // ===== Clone framework (Task 64) =======================================
+    // The framework half of Clone control's framing (CloneOfControlTitle /
+    // ClonedFromControlNotice above), and for the same reason: the clone
+    // pre-fills the Add Framework modal rather than creating anything, so the
+    // modal has to say what was carried over before the user saves it.
+    //
+    // Separate keys from the control pair rather than one shared "Clone of
+    // {$name}" -- the two banners do not say the same thing. A cloned control
+    // simply asks to be reviewed; a cloned FRAMEWORK has to explain two things
+    // its fields cannot: that the source's control mappings come with it, and
+    // that the empty scope statement is deliberate. The blank field is the
+    // whole reason the banner is longer than the control's -- a scope statement
+    // left blank with no explanation reads as a field that failed to populate,
+    // and the one thing a clone exists to be given is a NEW scope (Josh: "you
+    // might want to use the same controls as one framework, but scope it
+    // differently"). {$name} and {$n} follow the same client-side
+    // formatTemplate() substitution the rest of this page's templates use.
+    'CloneOfFrameworkTitle' => 'Bản sao của "{$name}"',
+    // {$n} is the count the rail is SHOWING for the source row -- its controls,
+    // not its raw mapping rows. Those differ (a framework can cite one control
+    // under two clause numbers, and the rail excludes deleted controls), and the
+    // number to promise is the one the user is looking at when they click and
+    // the one the clone's own rail row will show afterwards.
+    'ClonedFromFrameworkNotice' => 'Được sao chép từ "{$name}". Các điều khiển {$n} của nó sẽ được sao chép vào khung mới, với tất cả chúng đều có thể áp dụng ngay từ đầu — không có quyết định nào về khả năng áp dụng được chuyển sang. Câu lệnh phạm vi được cố ý để trống: hãy nêu rõ phạm vi mà khung này bao phủ trước khi tạo Câu lệnh về Khả năng Áp dụng của nó.',
+    // Seeds the name field so the clone can be saved without a rename --
+    // framework names are unique, so a verbatim copy is refused on save.
+    'CloneOfFrameworkName' => '{$name} (Bản sao)',
+    'CloneFramework' => 'Khung sao chép',
+    // Extras version independently of Core, so an updated Import/Export Extra
+    // can end up calling a Core function the installed Core does not have. The
+    // export refuses with this rather than fataling -- see
+    // soa_export_refuse_if_core_too_old(), extras/import-export/includes/soa_export.php.
+    'SoaExportRequiresNewerCore' => 'Việc xuất dữ liệu này yêu cầu phiên bản SimpleRisk Core mới hơn phiên bản hiện đang được cài đặt. Hãy cập nhật SimpleRisk, sau đó thử xuất dữ liệu lại.',
+    // The framework ACQUISITION chooser (Task 26): "+ Add framework" asks how you
+    // want to get one, rather than assuming you want to type it in. Each option is
+    // rendered only when the route behind it actually exists for this user, so the
+    // hint text may state plainly what the route does -- it is never shown to
+    // someone who cannot take it.
+    'HowDoYouWantToAddAFramework' => 'Bạn muốn thêm khung sườn như thế nào?',
+    'CreateFrameworkManually' => 'Tạo thủ công',
+    'CreateFrameworkManuallyHint' => 'Bạn tự đặt tên cho framework, sau đó thêm hoặc ánh xạ các thành phần điều khiển của nó.',
+    // Named for the framework rather than for its vendor. The hint was reworded
+    // at the same time: it used to end "...load its Secure Controls Framework
+    // controls", which read as a stutter once the label carried those words.
+    'GetFrameworkFromScf' => 'Hãy lấy một cái từ Khung Kiểm soát An toàn (Secure Controls Framework).',
+    'GetFrameworkFromScfHint' => 'Chọn một framework đã được công bố và tải các thành phần điều khiển được ánh xạ của nó chỉ trong một bước.',
+    'ImportFrameworkFromCatalog' => 'Nhập khẩu một',
+    'ImportFrameworkFromCatalogHint' => 'Cài đặt khung phần mềm và các thành phần điều khiển của nó từ danh mục nội dung SimpleRisk.',
+
+    // The framework acquisition chooser's third route, which now offers the
+    // Import-Export Extra's CONTROL import (a spreadsheet naming a framework
+    // that does not exist yet creates it) rather than the GitHub catalogue the
+    // two keys above described. Those two are left in place, unreferenced, so a
+    // customer maintaining a custom lang.<locale>.php still reconciles by tail
+    // diff.
+    'ImportFrameworkFromSpreadsheet' => 'Nhập một mục từ bảng tính',
+    'ImportFrameworkFromSpreadsheetHint' => 'Tải lên một bảng tính chứa các điều khiển có ghi tên khung, và cả hai sẽ được tạo.',
+
+    // The Define Control Frameworks rail's second synthetic scope: the controls
+    // mapped to no framework at all. Its first, "All controls", reuses the
+    // existing AllControls key rather than adding a second string with the same
+    // English -- it replaced 'AllFrameworks' on that row, which named a union of
+    // frameworks while scoping to every control, mapped or not. 'AllFrameworks'
+    // is left in place and unreferenced by that page: other surfaces still use
+    // it, and every locale carries it.
+    'UnassignedControls' => 'Các điều khiển chưa được gán',
+    // APPLICABILITY VALIDATION FAILURES. These reach the user: the v2 endpoint
+    // returns the exception's message as the API status message and the page
+    // renders it in a toast, so a hardcoded English literal here would be
+    // permanently English for every locale.
+    //
+    // NOTHING THE CALLER TYPED IS EVER INTERPOLATED INTO THESE. The parameters
+    // are validated enum values, integer ids and byte limits the server itself
+    // owns -- naming the ALLOWED values rather than echoing the rejected one is
+    // deliberate (it is both safe and more useful than repeating a typo).
+    'ApplicabilityErrUnknownState' => 'Trạng thái áp dụng không xác định. Dự kiến một trong các trạng thái sau: {$states}.',
+    'ApplicabilityErrNarrativeRequired' => 'Cần có phần tường thuật cho \'{$state}\'.',
+    'ApplicabilityErrNarrativeTooLong' => 'Câu chuyện dài hơn {$bytes} byte.',
+    'ApplicabilityErrReasonRequired' => 'Cần phải có lý do loại trừ để đánh dấu một biện pháp kiểm soát là không áp dụng được.',
+    'ApplicabilityErrProviderRequired' => 'Nhà cung cấp cần phải đánh dấu một quyền kiểm soát được kế thừa.',
+    'ApplicabilityErrProviderTooLong' => 'Tên nhà cung cấp dài hơn {$bytes} byte.',
+    'ApplicabilityErrReasonsNotFound' => 'Những lý do áp dụng này không tồn tại: {$ids}.',
+    'ApplicabilityErrReasonsNotOffered' => 'Những lý do áp dụng này không được đưa ra cho tiểu bang này: {$ids}.',
+    'ApplicabilityErrFrameworkNotFound' => 'Khung {$framework} không tồn tại.',
+    'ApplicabilityErrControlsNotFound' => 'Các ID điều khiển này không tồn tại: {$ids}.',
+    // Controls/Risks import result messages (validation gate, individual bad-row
+    // alerts, and the batched submitted/created/updated summaries)
+    'ControlIdOrShortNameFieldRequired' => 'Một trong hai trường ID điều khiển hoặc Tên viết tắt điều khiển phải được ánh xạ — không thể xác định một hàng nếu thiếu một trong hai trường này.',
+    'RiskImportSubjectNull' => 'Mã rủi ro {$risk_id}: Không được cập nhật vì trường Chủ đề trống hoặc thiếu.',
+    'RiskImportSummary' => 'Đã gửi {$submitted} rủi ro và cập nhật {$updated} rủi ro.',
+    'ControlImportSummary' => 'Đã tạo {$created} điều khiển và cập nhật {$updated} điều khiển.',
+    'ImportAdditionalIssuesSuppressed' => '{$count} hàng bổ sung có vấn đề không được hiển thị riêng lẻ ở đây.',
+    'EncryptionPipelineStalledTask' => 'Một quy trình mã hóa (tác vụ #{$id}, {$type}) dường như bị kẹt — nó đã {$status} trong một khoảng thời gian dài bất thường mà không có tiến triển. Điều này thường có nghĩa là trình xử lý hàng đợi nền không chạy; hãy kiểm tra xem nó đã được lên lịch chưa, sau đó thử lại sau khi nó đã xử lý tác vụ bị kẹt.',
+    'EncryptionPipelineStalledState' => 'Quá trình mã hóa dường như bị kẹt — nó được đánh dấu là đang tiến hành trong một khoảng thời gian dài bất thường mà không có tác vụ nền nào tương ứng để trỏ đến. Điều này thường có nghĩa là trình xử lý hàng đợi không chạy, hoặc một quá trình trước đó đã kết thúc mà không cập nhật chính xác thông tin này. Hãy kiểm tra nhật ký gỡ lỗi trước khi thử lại.',
+    // DEMO_MODE — shown when a visitor to a shared demo instance attempts one
+    // of the operations that would spoil the demo for the next visitor
+    'ActionDisabledOnDemoInstance' => 'Chức năng này đã bị vô hiệu hóa trên phiên bản demo của SimpleRisk.',
+
+    // The one-click upgrade progress window: the step an upgrade is on, and
+    // the line shown once it finishes
+    // Shown when an upgrade's progress record has not been touched for long
+    // enough that the process running it is presumed gone
+    'UpgradeJobStalled' => 'Quá trình nâng cấp đã dừng lại. Vui lòng kiểm tra nhật ký máy chủ trước khi thử lại.',
+    // Shown when an upgrade replaced the instance's configuration file and could
+    // not put the original back
+    // Shown when the database was brought up to date but the application files
+    // could not be replaced, so the instance has NOT moved to the new release
+    'UpdateAppFailed' => 'Các tệp ứng dụng chưa được nâng cấp, vì vậy phiên bản này vẫn đang chạy phiên bản cũ. Hãy kiểm tra nhật ký SimpleRisk để tìm lý do, sau đó chạy lại quá trình nâng cấp.',
+    // The one-click upgrade progress screen
+    'UpgradeInProgress' => 'Đang tiến hành',
+    'UpgradeStepNotNeeded' => 'Không cần thiết',
+    // Recovering an Upgrade Extra whose files are damaged
+    'UpgradeExtraDamagedReinstalling' => 'Gói nâng cấp bổ sung đã cài đặt bị hỏng. Đang tải xuống bản sao mới.',
+    'UpgradeExtraDamagedRepaired' => 'Bản nâng cấp bổ sung đã được thay thế bằng một bản sao hoạt động tốt.',
+    'UpgradeExtraDamagedFailed' => 'Gói nâng cấp bổ sung bị hỏng và không thể được thay thế tự động. Hãy cài đặt lại từ trang Gói bổ sung, hoặc khôi phục simplerisk/extras/upgrade/ từ bản sao lưu, rồi thử lại.',
+    'UpgradeAlreadyCurrent' => 'Phiên bản này hiện đã ở {version}, đây là phiên bản mới nhất. Không cần nâng cấp gì cả.',
+    'UpgradeShowWhatItDid' => 'Hãy cho thấy nó đã làm gì.',
+    'UpgradeBackupsListed' => 'Các bản sao lưu này được liệt kê trong mục Cấu hình > Sao lưu.',
+    'UpgradingTo' => 'Nâng cấp lên {version}',
+    'UpgradeSafeToClose' => 'Bạn có thể đóng cửa sổ này một cách an toàn. Quá trình nâng cấp vẫn đang tiếp diễn trên máy chủ và trang này sẽ được tải lại.',
+    'UpgradeDownloadLog' => 'Tải xuống nhật ký',
+    'UpgradeStatementsApplied' => 'Đã bắt đầu {started} · {count} câu lệnh đã được áp dụng',
+    // The Upgrade Extra's pre-upgrade check of the instance it is sitting on
+    'UpgradeCheckingInstance' => 'Kiểm tra trường hợp này',
+    'UpgradeInstanceChecked' => 'Đã kiểm tra, không cần chỉnh sửa gì.',
+    'UpgradeBlockedByCorrections' => 'Quá trình nâng cấp đã dừng lại vì phiên bản này cần một bản vá lỗi mà không thể áp dụng tự động. Hãy làm theo hướng dẫn ở trên, sau đó chạy lại quá trình nâng cấp. Không có gì khác được thay đổi.',
+    // Shown when an upgrade replaced the instance's configuration file and could not put the original back
+    'ConfigRestoreFailed' => 'Quá trình nâng cấp không thể khôi phục tệp cấu hình của phiên bản này. Hãy khôi phục simplerisk/includes/config.php từ bản sao lưu trước khi tiếp tục.',
+    'UpgradeDidNotAdvance' => 'Chức năng nâng cấp cho phiên bản "{$version}" không cập nhật phiên bản cơ sở dữ liệu; dừng lại nên không chạy lại.',
+    'BackupDatabaseNative' => 'Sao lưu cơ sở dữ liệu (không cần công cụ bên ngoài)...',
+    'UpgradeAlreadyRunning' => 'Quá trình nâng cấp hiện đang được thực hiện trên máy chủ này.',
+    'UpgradeStatusUnreachable' => 'Đã mất kết nối với máy chủ trong khi quá trình nâng cấp đang diễn ra. Vui lòng kiểm tra nhật ký SimpleRisk; quá trình nâng cấp có thể vẫn đang tiếp tục.',
+    'UpgradeJobUnwritable' => 'Quá trình nâng cấp không thể bắt đầu vì không thể ghi lại nhật ký tiến trình. Hãy kiểm tra xem thư mục tạm thời của hệ thống có thể ghi được bởi người dùng web hay không.',
+    'UpgradeStepCheckingVersions' => 'Kiểm tra phiên bản',
+    'UpgradeStepUpgradingDatabase' => 'Nâng cấp lược đồ cơ sở dữ liệu',
+    'UpgradeStepFinalising' => 'Áp dụng các chuyển đổi sau khi nâng cấp',
+    'UpgradeDatabaseHeading' => 'Nâng cấp cơ sở dữ liệu',
+    'UpgradeDatabaseComplete' => 'Quá trình nâng cấp cơ sở dữ liệu đã hoàn tất.',
+    'UpgradeHideWhatItDid' => 'Che giấu những gì nó đã làm',
+    'UpgradeStateRunning' => 'Đang chạy',
+    'UpgradeSessionExpired' => 'Phiên đăng nhập của bạn đã hết hạn. Vui lòng đăng nhập lại để xem bản nâng cấp.',
+    'UpgradeLostContact' => 'Đã mất kết nối với máy chủ. Vui lòng tải lại trang này để kết nối lại với quá trình nâng cấp.',
+    'UpgradeDatabaseAlreadyCurrent' => 'Cơ sở dữ liệu đã có sẵn trên phiên bản ứng dụng.',
+    'UpgradeConversionsApplied' => 'Đã áp dụng các chuyển đổi về công cụ và bộ ký tự.',
+    'UpgradeStoppedShort' => 'Quá trình nâng cấp đã dừng lại ở {reached} mà không đạt đến {app}. Vui lòng xem nhật ký máy chủ.',
+    'UpgradeStepBackingUp' => 'Sao lưu',
+    'UpgradeStepUpgradingFiles' => 'Nâng cấp tệp ứng dụng',
+    'UpgradeStepUpgradingExtras' => 'Nâng cấp các tiện ích bổ sung đã cài đặt',
+    'UpgradeStepUpdatingUpgradeExtra' => 'Cập nhật phần nâng cấp bổ sung',
+    // The Upgrade Extra's pre-chain corrections: what is wrong, and what to do
+    // about it. These are the highest-stakes messages the upgrade produces --
+    // an operator reads them to unstick an instance that cannot upgrade.
+    'UpgradeCorrectionUnknownVersionTitle' => 'Phiên bản cơ sở dữ liệu được ghi lại không phải là phiên bản phát hành thực tế.',
+    'UpgradeCorrectionNoRecordedVersion' => 'Cơ sở dữ liệu không có phiên bản ghi lại nào.',
+    'UpgradeCorrectionUnknownVersionFinding' => 'Cơ sở dữ liệu báo cáo phiên bản \'{$version}\', không chỉ định phiên bản SimpleRisk nào. Quá trình nâng cấp không thể chọn điểm bắt đầu từ đó.',
+    'UpgradeCorrectionUnknownVersionGuidance' => 'Đặt giá trị db_version thành phiên bản mà cơ sở dữ liệu này thực sự có lược đồ, sau đó chạy lại quá trình nâng cấp: UPDATE settings SET value=\'<release>\' WHERE name=\'db_version\'. Nếu giá trị là một giá trị giữ chỗ như 2026XXXX-001, thì giá trị chính xác hầu như luôn là phiên bản thực tế mới nhất đã được cài đặt trước khi quá trình nâng cấp chạy.',
+    'UpgradeCorrectionLegacySessionsTitle' => 'Bảng phiên không thể duy trì quá trình chuyển đổi bảng mã ký tự trong quá trình nâng cấp.',
+    'UpgradeCorrectionLegacySessionsFinding' => '`sessions`.`id` là VARCHAR({$width}) trên bảng MyISAM. Việc chuyển đổi nó sang utf8mb4, mà phiên bản 20230106-001 trở đi thực hiện, sẽ vượt quá giới hạn chỉ mục 1000 byte của MyISAM và khiến quá trình nâng cấp thất bại.',
+    'UpgradeCorrectionLegacySessionsGuidance' => 'Một hoặc nhiều phiên hoạt động đang sử dụng ID dài hơn 128 ký tự. Việc thu hẹp cột này hiện tại sẽ đăng xuất những người dùng đó, vì vậy nó được giữ nguyên. Hãy thử lại quá trình nâng cấp khi các phiên đó đã hết hạn.',
+    'UpgradeCorrectionApplied' => 'Đã sửa.',
+    'UpgradeCorrectionFailed' => 'Không thể áp dụng bản sửa lỗi này. Vui lòng xem nhật ký SimpleRisk để biết lý do.',
+    'UpgradeCorrectionAppliedLine' => 'Đã sửa: {$title} {$message}',
+    'UpgradeCorrectionNotAppliedLine' => 'CHƯA được sửa: {$title} {$message}',
+    'UpgradeCorrectionsNeeded' => 'Cần sửa lỗi trước khi có thể nâng cấp phiên bản này: {$count}',
+    'UpgradeCorrectionsNeededShort' => 'Cần sửa đổi: {$count}',
+    'UpdateDatabase' => 'Đang nâng cấp cơ sở dữ liệu...',
+    // Authentication screens (index.php, reset.php, reset_password.php)
+    'EnterTheCredentialsForYourAccount' => 'Nhập thông tin đăng nhập tài khoản của bạn.',
+    'TroubleSigningIn' => 'Gặp sự cố khi đăng nhập? Vui lòng liên hệ với quản trị viên SimpleRisk của bạn.',
+    'BackToLogin' => 'Quay lại trang đăng nhập',
+    'Or' => 'hoặc',
+    'WeWillEmailAResetTokenToYourAccount' => 'Chúng tôi sẽ gửi mã đặt lại mật khẩu qua email đến địa chỉ email đã đăng ký trong tài khoản của bạn.',
+    'EnterTheResetTokenFromYourEmail' => 'Nhập mã đặt lại mật khẩu từ email của bạn cùng với mật khẩu mới.',
+    'ChooseANewPasswordToContinue' => 'Chọn mật khẩu mới để tiếp tục.',
+    'FromZeroToGRCInMinutes' => 'Từ con số 0 đến GRC chỉ trong vài phút.',
+    'OrganizationLogo' => 'Logo tổ chức',
+    'LoginScreenBranding' => 'Thiết kế giao diện màn hình đăng nhập',
+    'CustomLogo' => 'Logo tùy chỉnh',
+    'CustomLogoHint' => 'Định dạng ảnh PNG, JPG, GIF hoặc WebP, dung lượng tối đa 1 MB và độ phân giải 2000x2000. Hiển thị ở độ phân giải tối đa 260x64, vì vậy hãy cung cấp ảnh có độ phân giải khoảng 520x128 cho màn hình có mật độ điểm ảnh cao. Thanh trên cùng và bảng đăng nhập có màu tối, vì vậy hãy tải lên logo có thể đọc được trên nền tối. Xóa logo để quay lại logo SimpleRisk mặc định.',
+    'CurrentLogo' => 'Logo hiện tại',
+    'RemoveLogo' => 'Xóa logo',
+    'LoginTagline' => 'Khẩu hiệu đăng nhập',
+    'LoginTaglineHint' => 'Thay thế khẩu hiệu SimpleRisk trên màn hình đăng nhập. Một dòng ngắn gọn là tốt nhất. Để trống phần này để giữ nguyên khẩu hiệu SimpleRisk.',
+    'LoginNotice' => 'Thông báo sử dụng hệ thống',
+    'LoginNoticeHint' => 'Hiển thị trên màn hình đăng nhập trước khi bất kỳ ai đăng nhập. Sử dụng nó để thông báo về việc sử dụng hợp lệ hoặc sử dụng hệ thống. Để trống nếu muốn không hiển thị thông báo nào. Không được phép chèn liên kết và hình ảnh.',
+    'BrandingRequiresCustomization' => 'Việc tùy chỉnh thương hiệu màn hình đăng nhập là một phần của gói Tùy chỉnh bổ sung.',
+    'LogoMustBeAnImage' => 'Logo phải là ảnh định dạng PNG, JPG, GIF hoặc WebP.',
+    'LogoTooLarge' => 'Logo không được lớn hơn 1 MB.',
+    'LogoDimensionsTooLarge' => 'Logo không được lớn hơn 2000x2000 pixel.',
+    'LogoDimensionsTooSmall' => 'Logo phải có kích thước tối thiểu 32 pixel ở cạnh dài nhất.',
+    'LogoUploadFailed' => 'Không thể tải lên logo. Vui lòng thử lại.',
+    'LogoUpdated' => 'Logo đã được cập nhật.',
+    'LogoRemoved' => 'Logo đã bị gỡ bỏ.',
+    'NoSystemUseNoticeSet' => 'Không có thông báo sử dụng hệ thống nào được thiết lập.',
+    'NoticeSizeSmall' => 'Bé nhỏ',
+    'NoticeSizeNormal' => 'Bình thường',
+    'NoticeSizeLarge' => 'Lớn',
     '' => '',
 );
 ?>

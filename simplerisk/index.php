@@ -11,6 +11,7 @@
 require_once(realpath(__DIR__ . "/includes/bootstrap.php"));
 
 // Include required functions file
+require_once realpath(__DIR__ . "/includes/config_check.php");
 require_once realpath(__DIR__ . "/includes/functions.php");
 require_once realpath(__DIR__ . "/includes/authenticate.php");
 require_once realpath(__DIR__ . "/includes/display.php");
@@ -58,6 +59,20 @@ if (!isset($_SESSION)) {
 if (!isset($_SESSION['login_csrf_token'])) {
     $_SESSION['login_csrf_token'] = bin2hex(random_bytes(32));
 }
+
+// Whether to honor the ?user=/?pass= login prefill-and-autosubmit below.
+//
+// That feature exists for one reason: to let the public demo instance hand a
+// visitor a single link that drops them straight into the application. It is
+// not a login convenience worth having anywhere else — credentials in a query
+// string are written to web-server and proxy access logs, kept in browser
+// history, and forwarded in the Referer header of the next request. So it is
+// gated to DEMO_MODE, and on every ordinary install the parameters are ignored
+// and the login form renders empty.
+//
+// Resolved once, unconditionally, because both the prefill (inside the
+// not-yet-authenticated branch) and the autosubmit script (after it) read it.
+$demo_login_prefill = demo_mode();
 
 // Include the language file
 require_once(language_file());
@@ -137,8 +152,26 @@ else {
             $_SESSION['user'] = $array['username'];
 
             // If the user needs to change their password upon login
-            // @phan-suppress-next-line PhanTypeInvalidDimOffset
-            if($array['change_password'])
+            //
+            // Skipped entirely on a demo instance, and it has to be. DEMO_MODE
+            // refuses every password change at the update_password()
+            // chokepoint, so an account carrying change_password=1 would be
+            // redirected to reset_password.php, refused there, and redirected
+            // straight back here on the next attempt — permanently unable to
+            // reach an authenticated session, with no way for a visitor or the
+            // operator to clear the flag through the UI. The demo account's
+            // password cannot change anyway, so the forced change has nothing
+            // left to accomplish.
+            //
+            // Both DimOffset variants are suppressed: $array is `row|false` and
+            // 'change_password' is an optional key in the inferred shape, so
+            // Phan reports the plain issue for the bare fetch and the Possibly
+            // variant once the fetch is one operand of a compound condition.
+            // Neither is reachable — is_valid_user() has just passed, so
+            // get_user_by_id() returned the row. Same reasoning as the
+            // suppression on the $array['username'] fetch above.
+            // @phan-suppress-next-line PhanTypeInvalidDimOffset,PhanTypePossiblyInvalidDimOffset
+            if($array['change_password'] && !demo_mode())
             {
                 $_SESSION['first_login_uid'] = $uid;
 
@@ -334,132 +367,109 @@ $current_app_version = current_version("app");
     <script src="vendor/node_modules/bootstrap/dist/js/bootstrap.bundle.min.js" defer></script>
 
 </head>
-<body>
+<body class="sr-auth-page">
     <div class="preloader">
         <div class="lds-ripple">
             <div class="lds-pos"></div>
             <div class="lds-pos"></div>
         </div>
     </div>
-    <div id="main-wrapper" data-layout="vertical" data-navbarbg="skin5" data-sidebartype="none" data-sidebar-position="absolute" data-header-position="absolute" data-boxed-layout="full" data-function="login">
-        <header class="topbar" data-navbarbg="skin5">
-            <nav class="navbar top-navbar navbar-expand-md navbar-dark">
-                <div class="navbar-header">
-                    <a class="navbar-brand" href="https://www.simplerisk.com">
-                        <img src="images/logo@2x.png" alt="homepage" class="logo"/>
-                    </a>
-                </div>
-            </nav>
-        </header>
-        <!-- ============================================================== -->
-        <!-- Page wrapper  -->
-        <div class="page-wrapper">
-        	<div class="scroll-content">
-        		<div class="content-wrapper">
-                    <!-- container - It's the direct container of all the -->
-                    <div class="content container-fluid">
-<?php 
+    <div class="sr-auth">
+<?php display_auth_brand_panel(); ?>
+        <main class="sr-auth-main">
+<?php
 // If the user has authenticated and now we need to authenticate with mfa
 if (isset($_SESSION["access"]) && $_SESSION["access"] == "mfa") {
 ?>
-                        <div class="container login-form">
-                            <div class="row">
-                                <div class="col-md-3"></div>
-                                <div class="col-md-6">
-                            	    <form name='mfa' method='post' action=''>
-                            	        <input type="hidden" name="csrf_token" value="<?= $escaper->escapeHtmlAttr($_SESSION['login_csrf_token']) ?>">
+            <div class="sr-auth-col">
+                <div class="sr-auth-card">
+                    <div class="sr-auth-card-head">
+                        <h2><?= $escaper->escapeHtml($lang['YourSimpleRiskAccountIsProtected']);?></h2>
+                        <p><?= $escaper->escapeHtml($lang['VerifyItsYou']);?></p>
+                    </div>
+                    <form name='mfa' method='post' action=''>
+                        <input type="hidden" name="csrf_token" value="<?= $escaper->escapeHtmlAttr($_SESSION['login_csrf_token']) ?>">
+                        <div class="sr-auth-card-body">
 <?php
-                                        display_mfa_authentication_page();
+                            display_mfa_authentication_page();
 ?>
-                            	    </form> 
-                                </div>
-                                <div class="col-md-3"></div>
-                            </div>
                         </div>
+                    </form>
+                </div>
+            </div>
 <?php
 // If the user needs to verify the new MFA
 } else if(isset($_SESSION["access"]) && $_SESSION["access"] == "mfa_verify") {
 ?>
-                        <div class="container login-form">
-                            <div class="row">
-                                <div class="col-md-12">
-                        		    <form name='mfa' method='post' action=''>
-                                        <input type="hidden" name="csrf_token" value="<?= $escaper->escapeHtmlAttr($_SESSION['login_csrf_token']) ?>">
-                                        <div class='card' style='margin-top: 43.8px;'>
-                                            <div class='card-body'>
+            <!-- Wider column: the enrolment step puts a QR code beside its input.
+                 display_mfa_verification_page() is shared with account/mfa.php, so
+                 its markup is hosted as-is and only restyled via .sr-auth-mfa. -->
+            <div class="sr-auth-col sr-auth-col--wide">
+                <div class="sr-auth-card">
+                    <form name='mfa' method='post' action=''>
+                        <input type="hidden" name="csrf_token" value="<?= $escaper->escapeHtmlAttr($_SESSION['login_csrf_token']) ?>">
+                        <div class="sr-auth-card-body sr-auth-mfa">
 <?php
-                                                // Display the MFA verification page
-                                                display_mfa_verification_page();
+                            // Display the MFA verification page
+                            display_mfa_verification_page();
 ?>
-                        		            </div>
-                                        </div>
-                                    </form> 
-                                </div>
-                            </div>
                         </div>
+                    </form>
+                </div>
+            </div>
 <?php
 // If the user has not authenticated
 } else if (!isset($_SESSION["access"]) || $_SESSION["access"] != "1") {
 ?>
-                        <div class="container login-form">
-                            <div class="row">
-                                <div class="col-md-3"></div>
-                                <div class="col-md-6">
-                                    <h3>Enterprise Risk Management Simplified...</h3>
-                                    <div class="card">
-                                        <form class="loginForm" action="" method="post" name="authenticate">
-                                            <input type="hidden" name="csrf_token" value="<?= $escaper->escapeHtmlAttr($_SESSION['login_csrf_token']) ?>">
-                                            <div class="card-body">
-                                                <h4 class="card-title"><?= $escaper->escapeHtml($lang['LogInHere']);?>:</h4>
-                                                <div class="form-group">
-                                                    <label><?= $escaper->escapeHtml($lang['Username']);?></label>
-                                                    <input type="text" class="form-control user" id="user" name="user" value="<?= isset($_GET['user']) ? $escaper->escapeHtmlAttr($_GET['user']) : '' ?>" required />
-                                                </div>
-                                                <div class="form-group">
-                                                    <label><?= $escaper->escapeHtml($lang['Password']);?></label>
-                                                    <div class="password-container">
-                                                        <input type="password" class="form-control pass" id="pass" name="pass" value="<?= isset($_GET['pass']) ? $escaper->escapeHtmlAttr($_GET['pass']) : '' ?>" required />
-                                                        <span id="eye-icon"><i class="fa fa-eye"></i></span>
-                                                    </div>
-                                                </div>
+            <div class="sr-auth-col">
+                <div class="sr-auth-card">
+                    <div class="sr-auth-card-head">
+                        <h2><?= $escaper->escapeHtml($lang['LogInHere']);?></h2>
+                        <p><?= $escaper->escapeHtml($lang['EnterTheCredentialsForYourAccount']);?></p>
+                    </div>
+                    <form class="loginForm" action="" method="post" name="authenticate">
+                        <input type="hidden" name="csrf_token" value="<?= $escaper->escapeHtmlAttr($_SESSION['login_csrf_token']) ?>">
+                        <div class="sr-auth-card-body">
+                            <div class="sr-auth-field">
+                                <label for="user"><?= $escaper->escapeHtml($lang['Username']);?></label>
+                                <input type="text" class="form-control user" id="user" name="user" autocomplete="username" value="<?= $demo_login_prefill && isset($_GET['user']) ? $escaper->escapeHtmlAttr($_GET['user']) : '' ?>" required />
+                            </div>
+                            <div class="sr-auth-field">
+                                <label for="pass"><?= $escaper->escapeHtml($lang['Password']);?></label>
+                                <div class="sr-auth-pass">
+                                    <input type="password" class="form-control pass" id="pass" name="pass" autocomplete="current-password" value="<?= $demo_login_prefill && isset($_GET['pass']) ? $escaper->escapeHtmlAttr($_GET['pass']) : '' ?>" required />
+                                    <span id="eye-icon"><i class="fa fa-eye"></i></span>
+                                </div>
+                            </div>
+                            <div class="sr-auth-linkrow">
+                                <a class="sr-auth-link" href="reset.php"><?= $escaper->escapeHtml($lang['ForgotYourPassword']);?></a>
+                            </div>
+                            <div class="sr-auth-actions">
+                                <button type="reset" class="btn btn-dark"><?= $escaper->escapeHtml($lang['Reset']);?></button>
+                                <button type="submit" class="btn btn-submit" name="submit" value="submit"><?= $escaper->escapeHtml($lang['Login']);?></button>
+                            </div>
 <?php
     // If the custom authentication extra is enabled
     if (custom_authentication_extra()) {
         // If SSO Login is enabled or not set yet
         if (get_setting("GO_TO_SSO_LOGIN") === false || get_setting("GO_TO_SSO_LOGIN") === "1") {
-                                                // Display the SSO login link
-?>                                                
-													<p><a href="extras/authentication/login.php"><?= $escaper->escapeHtml($lang["GoToSSOLoginPage"]);?></a></p>
+                            // Display the SSO login link
+?>
+                            <div class="sr-auth-divider"><?= $escaper->escapeHtml($lang['Or']);?></div>
+                            <a class="sr-auth-sso" href="extras/authentication/login.php"><?= $escaper->escapeHtml($lang["GoToSSOLoginPage"]);?></a>
 <?php
         }
     }
 ?>
-                                                <div class="form-group">
-                                                    <p class='m-b-0'><a href="reset.php"><?= $escaper->escapeHtml($lang['ForgotYourPassword']);?></a></p>
-                                                    <div>
-                                                        <button type="reset" class="btn btn-dark"><?= $escaper->escapeHtml($lang['Reset']);?></button>
-                                                        <button type="submit" class="btn btn-submit" name="submit" value="submit"><?= $escaper->escapeHtml($lang['Login']);?></button>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </form>
-                                    </div>
-                                </div>
-                                <div class="col-md-3"></div>
-                            </div>
                         </div>
-
+                    </form>
+                </div>
+                <p class="sr-auth-help"><?= $escaper->escapeHtml($lang['TroubleSigningIn']);?></p>
+            </div>
 <?php
 }
 ?>
-                    </div>
-                    <!-- End of content -->
-            	</div>
-            	<!-- End of content-wrapper -->
-    		</div>
-    		<!-- End of scroll-content -->
-      	</div>
-      <!-- End Page wrapper  -->
+        </main>
     </div>
     <!-- End Wrapper -->
 <?php
@@ -470,7 +480,8 @@ setup_alert_requirements("");
         $(function() {
 
             // Click submit (not form.submit()) so the button's name="submit" reaches $_POST and to avoid named-element shadowing.
-            <?php if (!empty($_GET['user']) && !empty($_GET['pass'])): ?>
+            // Demo instances only — see the $demo_login_prefill comment above.
+            <?php if ($demo_login_prefill && !empty($_GET['user']) && !empty($_GET['pass'])): ?>
             document.querySelector('.loginForm button[type="submit"]').click();
             <?php endif; ?>
 

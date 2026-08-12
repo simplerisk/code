@@ -8,7 +8,7 @@ use Exception;
 use Nyholm\Psr7\Response;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
-use SimpleSAML\Assert\Assert;
+use SimpleSAML\SAML2\Assert\Assert;
 use SimpleSAML\SAML2\Binding;
 use SimpleSAML\SAML2\Binding\RelayStateTrait;
 use SimpleSAML\SAML2\Exception\ProtocolViolationException;
@@ -31,6 +31,7 @@ class HTTPPost extends Binding implements AsynchronousBindingInterface, RelaySta
 {
     use RelayStateTrait;
 
+
     /**
      * Send a SAML 2 message using the HTTP-POST binding.
      *
@@ -40,7 +41,7 @@ class HTTPPost extends Binding implements AsynchronousBindingInterface, RelaySta
     public function send(AbstractMessage $message): ResponseInterface
     {
         if ($this->destination === null) {
-            $destination = $message->getDestination();
+            $destination = $message->getDestination()?->getValue();
             if ($destination === null) {
                 throw new Exception('Cannot send message, no destination set.');
             }
@@ -81,6 +82,7 @@ class HTTPPost extends Binding implements AsynchronousBindingInterface, RelaySta
      *
      * @param \Psr\Http\Message\ServerRequestInterface $request
      * @return \SimpleSAML\SAML2\XML\samlp\AbstractMessage The received message.
+     *
      * @throws \Exception
      */
     public function receive(ServerRequestInterface $request): AbstractMessage

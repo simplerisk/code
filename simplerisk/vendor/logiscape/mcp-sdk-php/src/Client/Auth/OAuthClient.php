@@ -1,0 +1,1677 @@
+<?php
+
+/**
+ * Model Context Protocol SDK for PHP
+ *
+ * (c) 2026 Logiscape LLC <https://logiscape.com>
+ *
+ * Developed by:
+ * - Josh Abbott
+ * - Claude Opus 4.5 (Anthropic AI model)
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ *
+ * @package    logiscape/mcp-sdk-php
+ * @author     Josh Abbott <https://joshabbott.com>
+ * @copyright  Logiscape LLC
+ * @license    MIT License
+ * @link       https://github.com/logiscape/mcp-sdk-php
+ *
+ * Filename: Client/Auth/OAuthClient.php
+ */
+
+declare(strict_types=1);
+
+namespace Mcp\Client\Auth;
+
+use Mcp\Client\Auth\Callback\AuthorizationCallbackInterface;
+use Mcp\Client\Auth\Callback\AuthorizationCallbackResult;
+use Mcp\Client\Auth\Callback\LoopbackCallbackHandler;
+use Mcp\Client\Auth\Discovery\AuthorizationServerMetadata;
+use Mcp\Client\Auth\Discovery\MetadataDiscovery;
+use Mcp\Client\Auth\Discovery\ProtectedResourceMetadata;
+use Mcp\Client\Auth\Exception\AuthorizationRedirectException;
+use Mcp\Client\Auth\Jwt\ClientAssertionJwt;
+use Mcp\Client\Auth\Pkce\PkceGenerator;
+use Mcp\Client\Auth\Registration\ClientCredentials;
+use Mcp\Client\Auth\Registration\DynamicClientRegistration;
+use Mcp\Client\Auth\Token\TokenSet;
+use Psr\Log\LoggerInterface;
+use Psr\Log\NullLogger;
+
+/**
+ * OAuth 2.0 client implementation for MCP.
+ *
+ * Handles the complete OAuth flow including:
+ * - Protected Resource Metadata discovery (RFC9728)
+ * - Authorization Server Metadata discovery (RFC8414/OIDC)
+ * - PKCE with S256 (RFC7636)
+ * - Resource Indicators (RFC8707)
+ * - Client registration (pre-registered, CIMD, or DCR)
+ * - Token management and refresh
+ */
+class OAuthClient implements OAuthClientInterface
+{
+    private OAuthConfiguration $config;
+    private LoggerInterface $logger;
+    private MetadataDiscovery $discovery;
+    private PkceGenerator $pkce;
+    private DynamicClientRegistration $dcr;
+
+    /**
+     * Cached metadata for resource URLs.
+     * @var array<string, ProtectedResourceMetadata>
+     */
+    private array $resourceMetadataCache = [];
+
+    /**
+     * Cached metadata for authorization servers.
+     * @var array<string, AuthorizationServerMetadata>
+     */
+    private array $authServerMetadataCache = [];
+
+    /**
+     * Cached client credentials per authorization server.
+     * @var array<string, ClientCredentials>
+     */
+    private array $clientCredentialsCache = [];
+
+    /**
+     * Issuer the UNBOUND pre-registered credentials are pinned to.
+     *
+     * The spec's Authorization Server Binding rule requires pre-registered
+     * credentials to be keyed by issuer (ClientCredentials::$issuer). When
+     * the operator did not supply that binding, the credentials are pinned
+     * here to the first issuer they are validated against — either the
+     * first authorization server they are used with, or the issuer
+     * recorded on stored tokens when a migration is detected — so this
+     * instance can never silently present them to a different issuer.
+     * Bound credentials ignore this; their configured issuer is durable
+     * across processes and is enforced instead.
+     */
+    private ?string $pinnedPreRegisteredIssuer = null;
+
+    /**
+     * Set of authorization server URLs that were derived via the MCP 2025-03-26
+     * legacy fallback (base URL stripped from the MCP server URL). Only these
+     * URLs get relaxed issuer validation and legacy endpoint synthesis; AS URLs
+     * that came from PRM or from OAuthConfiguration::authorizationServerUrl are
+     * always validated strictly per RFC 8414.
+     *
+     * @var array<string, true>
+     */
+    private array $legacyDerivedAuthServers = [];
+
+    /**
+     * @param OAuthConfiguration $config OAuth configuration
+     * @param LoggerInterface|null $logger PSR-3 logger
+     */
+    public function __construct(
+        OAuthConfiguration $config,
+        ?LoggerInterface $logger = null
+    ) {
+        $this->config = $config;
+        $this->logger = $logger ?? new NullLogger();
+        $this->discovery = new MetadataDiscovery(
+            $config->getTimeout(),
+            $config->isVerifyTlsEnabled(),
+            $this->logger
+        );
+        $this->pkce = new PkceGenerator();
+        $this->dcr = new DynamicClientRegistration(
+            $config->getTimeout(),
+            $config->isVerifyTlsEnabled(),
+            $this->logger
+        );
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function handleUnauthorized(string $resourceUrl, array $wwwAuthHeader): TokenSet
+    {
+        $this->logger->info('Handling 401 Unauthorized', ['resource' => $resourceUrl]);
+
+        // SEP-2352: when a 401 arrives while we already hold tokens for this
+        // resource, the server may have migrated to a different authorization
+        // server. Re-fetch the Protected Resource Metadata instead of trusting
+        // the in-memory cache so an authorization_servers change is observed.
+        $storedTokens = $this->config->getTokenStorage()->retrieve($resourceUrl);
+        if ($storedTokens !== null) {
+            unset($this->resourceMetadataCache[$resourceUrl]);
+        }
+
+        // Step 1: Discover Protected Resource Metadata
+        $resourceMetadataUrl = $wwwAuthHeader['resource_metadata'] ?? null;
+        $resourceMetadata = $this->discoverResourceMetadata($resourceUrl, $resourceMetadataUrl);
+
+        // Step 2: Select authorization server
+        $authServerUrl = $this->resolveAuthorizationServer($resourceMetadata);
+
+        // Step 3: Discover Authorization Server Metadata
+        $authServerMetadata = $this->discoverAuthorizationServerMetadata($authServerUrl);
+
+        // SEP-2352: detect an authorization server migration. Tokens and
+        // client credentials are bound to the issuer that produced them and
+        // MUST NOT be presented to a different authorization server. (The
+        // issuer binding on pre-registered credentials is enforced
+        // independently in getClientCredentials(), so a migration is caught
+        // even when no stored tokens witness the previous issuer.)
+        if ($storedTokens !== null) {
+            $this->handleIssuerChangeIfAny($resourceUrl, $storedTokens, $authServerMetadata);
+        }
+
+        // Step 4: Determine scopes to request (per MCP spec)
+        $scopes = $this->determineScopes($wwwAuthHeader, $resourceMetadata);
+
+        // Step 5: Perform the configured grant flow
+        $tokens = $this->performGrantFlow(
+            $resourceUrl,
+            $resourceMetadata,
+            $authServerMetadata,
+            $scopes
+        );
+
+        // Step 6: Store tokens
+        $this->config->getTokenStorage()->store($resourceUrl, $tokens);
+
+        return $tokens;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function handleInsufficientScope(
+        string $resourceUrl,
+        array $wwwAuthHeader,
+        TokenSet $current
+    ): TokenSet {
+        $this->logger->info('Handling 403 insufficient_scope', ['resource' => $resourceUrl]);
+
+        // Get required scopes from WWW-Authenticate header
+        $requiredScope = $wwwAuthHeader['scope'] ?? null;
+        if ($requiredScope === null) {
+            throw new OAuthException(
+                'No scope information in WWW-Authenticate header for insufficient_scope error'
+            );
+        }
+
+        $requiredScopes = explode(' ', $requiredScope);
+
+        // Merge with current scopes
+        $newScopes = array_unique(array_merge($current->scope, $requiredScopes));
+
+        // SEP-2352: an authorization server migration must be observable on
+        // this path too. Bypass the PRM cache exactly like the 401 path so an
+        // authorization_servers change (or a hostile resource server pointing
+        // resource_metadata at a different AS) is detected before any grant
+        // flow — and any credentials — reach the new issuer.
+        unset($this->resourceMetadataCache[$resourceUrl]);
+
+        $resourceMetadataUrl = $wwwAuthHeader['resource_metadata'] ?? null;
+        $resourceMetadata = $this->discoverResourceMetadata($resourceUrl, $resourceMetadataUrl);
+
+        $authServerUrl = $this->resolveAuthorizationServer($resourceMetadata);
+
+        $authServerMetadata = $this->discoverAuthorizationServerMetadata($authServerUrl);
+
+        // SEP-2352: same migration guard as the 401 path — the tokens that
+        // just drew insufficient_scope carry the issuer that produced them.
+        $this->handleIssuerChangeIfAny($resourceUrl, $current, $authServerMetadata);
+
+        // Perform new authorization with expanded scopes
+        $tokens = $this->performGrantFlow(
+            $resourceUrl,
+            $resourceMetadata,
+            $authServerMetadata,
+            $newScopes
+        );
+
+        // Store new tokens
+        $this->config->getTokenStorage()->store($resourceUrl, $tokens);
+
+        return $tokens;
+    }
+
+    /**
+     * Handle an authorization server migration per SEP-2352.
+     *
+     * Compares the issuer recorded on the stored tokens against the issuer of
+     * the freshly discovered authorization server. When they differ:
+     *
+     *   - Stored tokens are discarded immediately (they are bound to the old
+     *     AS and must not continue to be presented after migration is known).
+     *   - Pre-registered credentials bound to the NEW issuer mean the
+     *     operator has already remediated: the flow proceeds at the new AS
+     *     with its own credentials.
+     *   - Pre-registered credentials bound to any other issuer — explicitly,
+     *     by an earlier pin, or by the token evidence for unbound
+     *     credentials (which get pinned to the previous issuer here) — raise
+     *     a clear error instead of being presented to the new server.
+     *   - Cached dynamic client credentials remain keyed by the OLD issuer,
+     *     so the new issuer naturally triggers a fresh registration — the old
+     *     client_id is never presented to the new authorization server.
+     *
+     * @param string $resourceUrl The protected resource URL
+     * @param TokenSet $storedTokens Tokens held when the 401 arrived
+     * @param AuthorizationServerMetadata $authServerMetadata Freshly discovered AS metadata
+     * @throws OAuthException If pre-registered credentials block automatic migration
+     */
+    private function handleIssuerChangeIfAny(
+        string $resourceUrl,
+        TokenSet $storedTokens,
+        AuthorizationServerMetadata $authServerMetadata
+    ): void {
+        $previousIssuer = $storedTokens->issuer;
+        if ($previousIssuer === null || $this->urlsMatch($previousIssuer, $authServerMetadata->issuer)) {
+            return;
+        }
+
+        $this->logger->warning('Authorization server migration detected', [
+            'resource' => $resourceUrl,
+            'previousIssuer' => $previousIssuer,
+            'newIssuer' => $authServerMetadata->issuer,
+        ]);
+
+        // Tokens bound to the previous issuer must not remain available after
+        // migration is known, including on the pre-registered error path.
+        $this->config->getTokenStorage()->remove($resourceUrl);
+
+        // Pre-registered credentials are bound to the AS they were registered
+        // with (spec, Authorization Server Binding: credentials MUST be keyed
+        // by issuer and MUST NOT be reused across authorization servers).
+        $credentials = $this->config->getClientCredentials();
+        if ($credentials === null) {
+            return;
+        }
+        $boundIssuer = $credentials->issuer ?? $this->pinnedPreRegisteredIssuer;
+        if ($boundIssuer === $authServerMetadata->issuer) {
+            // The configured credentials already belong to the new issuer
+            // (compared without normalization, RFC 8414) — the operator
+            // remediated the migration. The old tokens are gone; the grant
+            // flow proceeds at the new AS with its own credentials.
+            return;
+        }
+        if ($credentials->issuer === null && $this->pinnedPreRegisteredIssuer === null) {
+            // Unbound credentials: the stored tokens are the only witness of
+            // the issuer they were used with. Pin them to it so retries in
+            // this instance stay blocked after the tokens are deleted.
+            $this->pinnedPreRegisteredIssuer = $previousIssuer;
+        }
+        $this->throwMigrationBlocked($resourceUrl, $boundIssuer ?? $previousIssuer, $authServerMetadata->issuer);
+    }
+
+    /**
+     * @throws OAuthException
+     */
+    private function throwMigrationBlocked(
+        string $resourceUrl,
+        string $previousIssuer,
+        string $newIssuer
+    ): never {
+        throw OAuthException::authServerMigrationBlocked(
+            "The authorization server for {$resourceUrl} changed from "
+            . "{$previousIssuer} to {$newIssuer}, but the pre-registered "
+            . 'client credentials are bound to the previous server. Obtain '
+            . 'credentials registered with the new authorization server and '
+            . "configure them with issuer '{$newIssuer}'."
+        );
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function refreshToken(TokenSet $tokens): TokenSet
+    {
+        if (!$tokens->canRefresh()) {
+            throw OAuthException::tokenRefreshFailed('No refresh token available');
+        }
+
+        $issuer = $tokens->issuer;
+        if ($issuer === null) {
+            throw OAuthException::tokenRefreshFailed('Token issuer unknown');
+        }
+
+        $this->logger->debug('Refreshing token', ['issuer' => $issuer]);
+
+        // Get cached AS metadata
+        $authServerMetadata = $this->discoverAuthorizationServerMetadataForRefresh($tokens);
+
+        // Get client credentials
+        $credentials = $this->getClientCredentials($issuer, $authServerMetadata);
+
+        // Build refresh request
+        $params = array_merge(
+            [
+                'grant_type' => 'refresh_token',
+                'refresh_token' => $tokens->refreshToken,
+                // RFC8707: Include resource in token request
+                'resource' => $tokens->resource,
+            ],
+            $credentials->getTokenRequestParams()
+        );
+
+        // Execute token request
+        $response = $this->executeTokenRequest(
+            $authServerMetadata->tokenEndpoint,
+            $params,
+            $credentials
+        );
+
+        $newTokens = TokenSet::fromTokenResponse(
+            $response,
+            $tokens->resourceUrl,
+            $issuer,
+            $tokens->scope,  // Preserve original scopes per RFC 6749 Section 6
+            $tokens->resource
+        );
+
+        // If no new refresh token was issued, keep the old one
+        if ($newTokens->refreshToken === null && $tokens->refreshToken !== null) {
+            $newTokens = new TokenSet(
+                accessToken: $newTokens->accessToken,
+                refreshToken: $tokens->refreshToken,
+                expiresAt: $newTokens->expiresAt,
+                tokenType: $newTokens->tokenType,
+                scope: $newTokens->scope,
+                resourceUrl: $newTokens->resourceUrl,
+                issuer: $newTokens->issuer,
+                resource: $newTokens->resource
+            );
+        }
+
+        // Update storage
+        if ($tokens->resourceUrl !== null) {
+            $this->config->getTokenStorage()->store($tokens->resourceUrl, $newTokens);
+        }
+
+        $this->logger->info('Token refreshed successfully');
+
+        return $newTokens;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getTokens(string $resourceUrl): ?TokenSet
+    {
+        return $this->config->getTokenStorage()->retrieve($resourceUrl);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function hasValidToken(string $resourceUrl): bool
+    {
+        $tokens = $this->getTokens($resourceUrl);
+        return $tokens !== null && !$tokens->isExpired();
+    }
+
+    /**
+     * Check if tokens should be proactively refreshed.
+     *
+     * @param string $resourceUrl The protected resource URL
+     * @return bool True if tokens should be refreshed
+     */
+    public function shouldRefreshToken(string $resourceUrl): bool
+    {
+        if (!$this->config->isAutoRefreshEnabled()) {
+            return false;
+        }
+
+        $tokens = $this->getTokens($resourceUrl);
+        if ($tokens === null || !$tokens->canRefresh()) {
+            return false;
+        }
+
+        return $tokens->willExpireSoon($this->config->getRefreshBuffer());
+    }
+
+    /**
+     * Proactively refresh tokens if needed.
+     *
+     * @param string $resourceUrl The protected resource URL
+     * @return TokenSet|null Refreshed tokens, or null if refresh not needed/possible
+     */
+    public function proactiveRefresh(string $resourceUrl): ?TokenSet
+    {
+        if (!$this->shouldRefreshToken($resourceUrl)) {
+            return null;
+        }
+
+        $tokens = $this->getTokens($resourceUrl);
+        if ($tokens === null) {
+            return null;
+        }
+
+        try {
+            return $this->refreshToken($tokens);
+        } catch (OAuthException $e) {
+            $this->logger->warning('Proactive token refresh failed', [
+                'error' => $e->getMessage(),
+            ]);
+            return null;
+        }
+    }
+
+    /**
+     * Initiate a web-based OAuth authorization flow.
+     *
+     * This method is designed for web hosting environments where the OAuth flow
+     * cannot be completed synchronously. It performs metadata discovery, client
+     * registration (if needed), and returns an AuthorizationRequest containing
+     * all data needed to complete the flow after the browser redirect.
+     *
+     * @param string $resourceUrl The protected resource URL
+     * @param array<string, string|null> $wwwAuthHeader Parsed WWW-Authenticate header (may include resource_metadata, scope)
+     * @return AuthorizationRequest All data needed to complete the OAuth flow
+     * @throws OAuthException If metadata discovery or client registration fails
+     */
+    public function initiateWebAuthorization(
+        string $resourceUrl,
+        array $wwwAuthHeader = []
+    ): AuthorizationRequest {
+        $this->logger->info('Initiating web OAuth authorization', ['resource' => $resourceUrl]);
+
+        // Step 1: Discover Protected Resource Metadata
+        // Use resource_metadata URL from WWW-Authenticate header if provided (per MCP spec)
+        $resourceMetadataUrl = $wwwAuthHeader['resource_metadata'] ?? null;
+        $resourceMetadata = $this->discoverResourceMetadata($resourceUrl, $resourceMetadataUrl);
+
+        // Step 2: Select authorization server
+        $authServerUrl = $this->resolveAuthorizationServer($resourceMetadata);
+
+        // Step 3: Discover Authorization Server Metadata
+        $authServerMetadata = $this->discoverAuthorizationServerMetadata($authServerUrl);
+
+        // Step 4: Get or register client credentials
+        $credentials = $this->getClientCredentials($authServerMetadata->issuer, $authServerMetadata);
+
+        // Step 5: Determine scopes (per MCP spec: WWW-Authenticate header has priority)
+        $scopes = $this->determineScopes($wwwAuthHeader, $resourceMetadata);
+        $scopes = $this->filterUnsupportedOfflineAccess($scopes, $authServerMetadata);
+
+        // Step 6: Generate PKCE pair
+        $pkce = $this->pkce->generate();
+
+        // Step 7: Generate state for CSRF protection
+        $state = bin2hex(random_bytes(16));
+
+        // Step 8: Determine redirect URI
+        $callback = $this->getAuthCallback();
+        $redirectUri = $this->config->getRedirectUri();
+        if ($redirectUri === null) {
+            $redirectUri = $callback->getRedirectUri();
+        }
+
+        // Step 9: Build authorization URL
+        $authParams = [
+            'response_type' => 'code',
+            'client_id' => $credentials->clientId,
+            'redirect_uri' => $redirectUri,
+            'state' => $state,
+            'code_challenge' => $pkce['challenge'],
+            'code_challenge_method' => $pkce['method'],
+            // RFC8707: Resource Indicators
+            'resource' => $resourceMetadata->resource,
+        ];
+
+        if (!empty($scopes)) {
+            $authParams['scope'] = implode(' ', $scopes);
+        }
+
+        $authUrl = $authServerMetadata->authorizationEndpoint . '?' . http_build_query($authParams);
+
+        $this->logger->debug('Built authorization URL for web flow', [
+            'authorization_endpoint' => $authServerMetadata->authorizationEndpoint,
+            'scopes' => $scopes,
+        ]);
+
+        // Return AuthorizationRequest with all data needed for token exchange
+        return new AuthorizationRequest(
+            authorizationUrl: $authUrl,
+            state: $state,
+            codeVerifier: $pkce['verifier'],
+            redirectUri: $redirectUri,
+            resourceUrl: $resourceUrl,
+            resource: $resourceMetadata->resource,
+            tokenEndpoint: $authServerMetadata->tokenEndpoint,
+            issuer: $authServerMetadata->issuer,
+            clientId: $credentials->clientId,
+            clientSecret: $credentials->clientSecret,
+            tokenEndpointAuthMethod: $credentials->tokenEndpointAuthMethod,
+            resourceMetadataUrl: $resourceMetadataUrl,
+            issParameterSupported: $authServerMetadata->authorizationResponseIssParameterSupported
+        );
+    }
+
+    /**
+     * Exchange an authorization code for tokens.
+     *
+     * This method is designed for web hosting environments where the OAuth flow
+     * is completed in two phases. It uses the data from an AuthorizationRequest
+     * to exchange the authorization code for tokens.
+     *
+     * Per SEP-2468 (RFC 9207), callers SHOULD pass the iss parameter received
+     * in the authorization callback. It is validated byte-for-byte against the
+     * issuer recorded on the AuthorizationRequest BEFORE the token request is
+     * sent; when the authorization server advertised
+     * authorization_response_iss_parameter_supported, a missing iss aborts the
+     * exchange.
+     *
+     * @param AuthorizationRequest $request The authorization request data
+     * @param string $code The authorization code received from the callback
+     * @param string|null $iss The iss parameter from the authorization callback,
+     *        form-urldecoded (e.g. $_GET['iss']), or null if absent
+     * @return TokenSet The obtained tokens
+     * @throws OAuthException If iss validation or token exchange fails
+     */
+    public function exchangeCodeForTokens(
+        AuthorizationRequest $request,
+        string $code,
+        ?string $iss = null
+    ): TokenSet {
+        $this->logger->info('Exchanging authorization code for tokens', [
+            'resource' => $request->resourceUrl,
+        ]);
+
+        // SEP-2468: validate the authorization response issuer before any
+        // token request. Comparison is byte-for-byte, no URL normalization.
+        if ($iss !== null) {
+            if ($iss !== $request->issuer) {
+                throw OAuthException::issValidationFailed(
+                    "iss parameter \"{$iss}\" does not match expected issuer \"{$request->issuer}\""
+                );
+            }
+        } elseif ($request->issParameterSupported === true) {
+            throw OAuthException::issValidationFailed(
+                'authorization server advertised authorization_response_iss_parameter_supported '
+                . 'but the authorization response contained no iss parameter'
+            );
+        }
+
+        // Build credentials from AuthorizationRequest
+        $credentials = new ClientCredentials(
+            clientId: $request->clientId,
+            clientSecret: $request->clientSecret,
+            tokenEndpointAuthMethod: $request->tokenEndpointAuthMethod,
+            issuer: $request->issuer
+        );
+
+        // Build token request parameters
+        $tokenParams = array_merge(
+            [
+                'grant_type' => 'authorization_code',
+                'code' => $code,
+                'redirect_uri' => $request->redirectUri,
+                'code_verifier' => $request->codeVerifier,
+                // RFC8707: Include resource in token request
+                'resource' => $request->resource,
+            ],
+            $credentials->getTokenRequestParams()
+        );
+
+        // Execute token request (handles client_secret_post vs client_secret_basic)
+        $tokenResponse = $this->executeTokenRequest(
+            $request->tokenEndpoint,
+            $tokenParams,
+            $credentials
+        );
+
+        // Create TokenSet from response
+        $tokens = TokenSet::fromTokenResponse(
+            $tokenResponse,
+            $request->resourceUrl,
+            $request->issuer,
+            resource: $request->resource
+        );
+
+        // Store tokens
+        $this->config->getTokenStorage()->store($request->resourceUrl, $tokens);
+
+        $this->logger->info('Token exchange completed successfully');
+
+        return $tokens;
+    }
+
+    /**
+     * Discover Protected Resource Metadata.
+     *
+     * @param string $resourceUrl The protected resource URL
+     * @param string|null $metadataUrl Optional metadata URL from header
+     * @return ProtectedResourceMetadata
+     */
+    private function discoverResourceMetadata(
+        string $resourceUrl,
+        ?string $metadataUrl
+    ): ProtectedResourceMetadata {
+        $cacheKey = $resourceUrl;
+
+        if (isset($this->resourceMetadataCache[$cacheKey])) {
+            return $this->resourceMetadataCache[$cacheKey];
+        }
+
+        try {
+            $metadata = $this->discovery->discoverResourceMetadata($resourceUrl, $metadataUrl);
+            $this->resourceMetadataCache[$cacheKey] = $metadata;
+            // Real PRM success supersedes any prior legacy derivation for the AS
+            // URLs it advertises. Drop stale legacy markers and cached metadata
+            // so subsequent AS discovery re-validates strictly per RFC 8414.
+            foreach ($metadata->authorizationServers as $asUrl) {
+                unset(
+                    $this->legacyDerivedAuthServers[$asUrl],
+                    $this->authServerMetadataCache[$asUrl]
+                );
+            }
+            return $metadata;
+        } catch (OAuthException $e) {
+            if ($this->config->hasAuthorizationServer()) {
+                $this->logger->info('Resource metadata discovery failed, using configured authorization server', [
+                    'resource' => $resourceUrl,
+                    'authorizationServer' => $this->config->getAuthorizationServerUrl(),
+                ]);
+                // Return synthetic metadata without caching so that discovery
+                // is retried on subsequent requests (the failure may be transient).
+                return new ProtectedResourceMetadata(
+                    resource: $resourceUrl,
+                    authorizationServers: [$this->config->getAuthorizationServerUrl()],
+                );
+            }
+            // MCP 2025-03-26 fallback: derive AS base from the MCP server URL.
+            // The explicit authorizationServerUrl config above takes precedence.
+            // Mark the derived URL as legacy-derived so ONLY that URL gets
+            // relaxed issuer validation / endpoint synthesis downstream —
+            // PRM-sourced and config-sourced AS URLs still enforce RFC 8414.
+            if ($this->config->isLegacyOAuthFallbackEnabled()) {
+                $legacyAsUrl = $this->deriveLegacyAuthorizationServerBase($resourceUrl);
+                $this->legacyDerivedAuthServers[$legacyAsUrl] = true;
+                $this->logger->info(
+                    'Resource metadata discovery failed; using legacy 2025-03-26 fallback',
+                    [
+                        'resource' => $resourceUrl,
+                        'derivedAuthorizationServer' => $legacyAsUrl,
+                    ]
+                );
+                return new ProtectedResourceMetadata(
+                    resource: $resourceUrl,
+                    authorizationServers: [$legacyAsUrl],
+                );
+            }
+            throw $e;
+        }
+    }
+
+    /**
+     * Resolve the authorization server URL from resource metadata,
+     * falling back to the configured authorizationServerUrl if the
+     * metadata has no authorization_servers entries.
+     *
+     * Selection among multiple advertised authorization servers lies with
+     * the client (RFC 9728 §7.6): when the pre-registered credentials are
+     * bound (or pinned) to an issuer that appears in the list, that entry
+     * is selected — the spec's "use pre-registered client information if
+     * available" priority — instead of the first entry, which the binding
+     * guard would otherwise have to reject.
+     *
+     * @param ProtectedResourceMetadata $resourceMetadata Discovered or synthetic resource metadata
+     * @return string The authorization server URL
+     * @throws OAuthException If no authorization server is available from any source
+     */
+    private function resolveAuthorizationServer(
+        ProtectedResourceMetadata $resourceMetadata
+    ): string {
+        $boundIssuer = $this->config->getClientCredentials()?->issuer
+            ?? $this->pinnedPreRegisteredIssuer;
+        if ($boundIssuer !== null
+            && $this->config->hasClientCredentials()
+            && in_array($boundIssuer, $resourceMetadata->authorizationServers, true)
+        ) {
+            $this->logger->debug('Selected the authorization server the pre-registered credentials are bound to', [
+                'issuer' => $boundIssuer,
+            ]);
+            return $boundIssuer;
+        }
+
+        $authServerUrl = $resourceMetadata->getPrimaryAuthorizationServer();
+
+        if ($authServerUrl !== null) {
+            return $authServerUrl;
+        }
+
+        if ($this->config->hasAuthorizationServer()) {
+            $this->logger->info('Resource metadata has no authorization servers, using configured fallback', [
+                'resource' => $resourceMetadata->resource,
+                'authorizationServer' => $this->config->getAuthorizationServerUrl(),
+            ]);
+            return $this->config->getAuthorizationServerUrl();
+        }
+
+        throw new OAuthException(
+            'No authorization server found in Protected Resource Metadata'
+        );
+    }
+
+    /**
+     * Discover Authorization Server Metadata.
+     *
+     * @param string $authServerUrl The authorization server URL
+     * @return AuthorizationServerMetadata
+     */
+    private function discoverAuthorizationServerMetadata(
+        string $authServerUrl
+    ): AuthorizationServerMetadata {
+        if (isset($this->authServerMetadataCache[$authServerUrl])) {
+            return $this->authServerMetadataCache[$authServerUrl];
+        }
+
+        // Only URLs that came from the MCP 2025-03-26 legacy derivation path
+        // get relaxed issuer validation and endpoint synthesis. URLs from PRM
+        // or from the configured authorizationServerUrl are always validated
+        // strictly per RFC 8414, even when enableLegacyOAuthFallback is set.
+        $isLegacyDerived = isset($this->legacyDerivedAuthServers[$authServerUrl]);
+        try {
+            $metadata = $isLegacyDerived
+                ? $this->discovery->discoverAuthorizationServerMetadataWithoutIssuerMatch($authServerUrl)
+                : $this->discovery->discoverAuthorizationServerMetadata($authServerUrl);
+        } catch (OAuthException $e) {
+            if (!$isLegacyDerived) {
+                throw $e;
+            }
+            if (!$e->isDiscoveryUnavailable()) {
+                throw $e;
+            }
+            $this->logger->info(
+                'Authorization server metadata discovery failed; using legacy 2025-03-26 default endpoints',
+                [
+                    'authorizationServer' => $authServerUrl,
+                    'error' => $e->getMessage(),
+                ]
+            );
+            $metadata = $this->synthesizeLegacyAuthorizationServerMetadata($authServerUrl);
+        }
+
+        // Cache under the URL we searched AND under the metadata's issuer.
+        // In the standard flow these are identical; in legacy mode they can
+        // differ and refreshToken() looks up by the token's issuer.
+        $this->authServerMetadataCache[$authServerUrl] = $metadata;
+        $this->authServerMetadataCache[$metadata->issuer] = $metadata;
+
+        return $metadata;
+    }
+
+    /**
+     * Resolve Authorization Server Metadata for refresh-token flows.
+     *
+     * A fresh OAuthClient may not have the in-memory marker saying an AS URL was
+     * derived through the MCP 2025-03-26 legacy path. Reconstruct it from the
+     * token's resource URL so persisted tokens can still refresh against legacy
+     * servers when the caller explicitly enabled the fallback.
+     */
+    private function discoverAuthorizationServerMetadataForRefresh(
+        TokenSet $tokens
+    ): AuthorizationServerMetadata {
+        $issuer = $tokens->issuer;
+        if ($issuer === null) {
+            throw OAuthException::tokenRefreshFailed('Token issuer unknown');
+        }
+
+        if (isset($this->authServerMetadataCache[$issuer])) {
+            return $this->authServerMetadataCache[$issuer];
+        }
+
+        if ($this->config->isLegacyOAuthFallbackEnabled()) {
+            $resourceUrl = $tokens->resourceUrl ?? $tokens->resource;
+            if ($resourceUrl !== null) {
+                $legacyAsUrl = $this->deriveLegacyAuthorizationServerBase($resourceUrl);
+
+                if ($this->isIssuerWithinLegacyBase($issuer, $legacyAsUrl)) {
+                    $this->legacyDerivedAuthServers[$legacyAsUrl] = true;
+                    $metadata = $this->discoverAuthorizationServerMetadata($legacyAsUrl);
+
+                    if ($this->urlsMatch($metadata->issuer, $issuer)) {
+                        return $metadata;
+                    }
+
+                    throw OAuthException::tokenRefreshFailed(
+                        "Legacy authorization server metadata issuer {$metadata->issuer} does not match token issuer {$issuer}"
+                    );
+                }
+            }
+        }
+
+        return $this->discoverAuthorizationServerMetadata($issuer);
+    }
+
+    /**
+     * Derive the legacy authorization server base URL from an MCP resource URL
+     * by discarding any existing path component.
+     *
+     * Per the MCP 2025-03-26 authorization spec: "The authorization base URL MUST
+     * be determined from the MCP server URL by discarding any existing path
+     * component." Callers must only reach this method when
+     * OAuthConfiguration::enableLegacyOAuthFallback is set; 2025-06-18+ servers
+     * are required to publish RFC 9728 PRM.
+     *
+     * @param string $resourceUrl The MCP server URL
+     * @return string The base URL with path stripped
+     */
+    private function deriveLegacyAuthorizationServerBase(string $resourceUrl): string
+    {
+        $parsed = parse_url($resourceUrl);
+        if ($parsed === false || !isset($parsed['host'])) {
+            throw new OAuthException(
+                "Cannot derive legacy authorization server base from resource URL: {$resourceUrl}"
+            );
+        }
+        $scheme = $parsed['scheme'] ?? 'https';
+        $host = $parsed['host'];
+        // Bracket bare IPv6 hosts so the reassembled URL is valid.
+        if (strpos($host, ':') !== false && $host[0] !== '[') {
+            $host = "[{$host}]";
+        }
+        $port = isset($parsed['port']) ? ":{$parsed['port']}" : '';
+
+        return "{$scheme}://{$host}{$port}";
+    }
+
+    private function isIssuerWithinLegacyBase(string $issuer, string $legacyAsUrl): bool
+    {
+        $normalizedIssuer = $this->normalizeUrlForComparison($issuer);
+        $normalizedBase = $this->normalizeUrlForComparison($legacyAsUrl);
+
+        return $normalizedIssuer === $normalizedBase
+            || str_starts_with($normalizedIssuer, "{$normalizedBase}/");
+    }
+
+    private function urlsMatch(string $left, string $right): bool
+    {
+        return $this->normalizeUrlForComparison($left) === $this->normalizeUrlForComparison($right);
+    }
+
+    private function normalizeUrlForComparison(string $url): string
+    {
+        $parsed = parse_url($url);
+        if ($parsed === false) {
+            return rtrim($url, '/');
+        }
+
+        $scheme = strtolower($parsed['scheme'] ?? 'https');
+        $host = strtolower($parsed['host'] ?? '');
+        $port = $parsed['port'] ?? null;
+        $path = $parsed['path'] ?? '';
+
+        if (($scheme === 'https' && $port === 443) || ($scheme === 'http' && $port === 80)) {
+            $port = null;
+        }
+
+        $normalized = "{$scheme}://{$host}";
+        if ($port !== null) {
+            $normalized .= ":{$port}";
+        }
+
+        return rtrim($normalized . $path, '/');
+    }
+
+    /**
+     * Synthesize an AuthorizationServerMetadata using the MCP 2025-03-26 default
+     * endpoints at the given base URL.
+     *
+     * S256 is included in code_challenge_methods_supported so the SDK's PKCE gate
+     * passes. client_id_metadata_document_supported is left at its default (false)
+     * so CIMD is not advertised by synthesized metadata.
+     *
+     * @param string $baseUrl The AS base URL (already stripped of any path)
+     */
+    private function synthesizeLegacyAuthorizationServerMetadata(
+        string $baseUrl
+    ): AuthorizationServerMetadata {
+        $base = rtrim($baseUrl, '/');
+
+        return new AuthorizationServerMetadata(
+            issuer: $base,
+            authorizationEndpoint: "{$base}/authorize",
+            tokenEndpoint: "{$base}/token",
+            registrationEndpoint: "{$base}/register",
+            codeChallengeMethodsSupported: ['S256'],
+            grantTypesSupported: ['authorization_code', 'refresh_token'],
+            tokenEndpointAuthMethodsSupported: ['none', 'client_secret_post', 'client_secret_basic'],
+        );
+    }
+
+    /**
+     * Determine scopes to request per MCP spec.
+     *
+     * Priority:
+     * 1. scope from WWW-Authenticate header
+     * 2. scopes_supported from Protected Resource Metadata
+     * 3. Omit scope parameter if neither available
+     *
+     * @param array<string, string|null> $wwwAuthHeader Parsed WWW-Authenticate header
+     * @param ProtectedResourceMetadata $resourceMetadata Resource metadata
+     * @return array<int, string> Scopes to request
+     */
+    private function determineScopes(
+        array $wwwAuthHeader,
+        ProtectedResourceMetadata $resourceMetadata
+    ): array {
+        // Add any additional scopes from configuration
+        $additionalScopes = $this->config->getAdditionalScopes();
+
+        // Priority 1: scope from WWW-Authenticate header
+        if (isset($wwwAuthHeader['scope'])) {
+            $scopes = explode(' ', $wwwAuthHeader['scope']);
+            return array_unique(array_merge($scopes, $additionalScopes));
+        }
+
+        // Priority 2: scopes_supported from resource metadata
+        if ($resourceMetadata->scopesSupported !== null) {
+            return array_unique(array_merge($resourceMetadata->scopesSupported, $additionalScopes));
+        }
+
+        // Priority 3: only additional scopes (or empty)
+        return $additionalScopes;
+    }
+
+    /**
+     * Get or create client credentials for an authorization server.
+     *
+     * @param string $issuer The authorization server issuer
+     * @param AuthorizationServerMetadata $asMetadata AS metadata
+     * @return ClientCredentials
+     */
+    private function getClientCredentials(
+        string $issuer,
+        AuthorizationServerMetadata $asMetadata
+    ): ClientCredentials {
+        // Check cache
+        if (isset($this->clientCredentialsCache[$issuer])) {
+            return $this->clientCredentialsCache[$issuer];
+        }
+
+        // Priority 1: Pre-registered credentials
+        if ($this->config->hasClientCredentials()) {
+            $credentials = $this->config->getClientCredentials();
+
+            // Authorization Server Binding (spec MUST): pre-registered
+            // credentials are keyed by issuer and never presented to a
+            // different authorization server. Enforced here — after issuer
+            // validation, before any authorization or token request — so it
+            // covers every grant flow.
+            $this->assertPreRegisteredCredentialsMatchIssuer($credentials, $issuer);
+
+            // When the caller explicitly opted into auto-discovery of the auth
+            // method (AUTH_METHOD_AUTO), resolve it from AS metadata.
+            if ($credentials->tokenEndpointAuthMethod === ClientCredentials::AUTH_METHOD_AUTO) {
+                $resolved = $this->resolveAuthMethodFromMetadata($credentials, $asMetadata);
+                $this->clientCredentialsCache[$issuer] = $resolved;
+                return $resolved;
+            }
+
+            $this->clientCredentialsCache[$issuer] = $credentials;
+            return $credentials;
+        }
+
+        // Priority 2: CIMD (Client ID Metadata Document)
+        if ($this->config->hasCimd() && $asMetadata->supportsCimd()) {
+            $this->logger->debug('Using CIMD for client identification');
+            $credentials = new ClientCredentials(
+                clientId: $this->config->getCimdUrl(),
+                clientSecret: null,
+                tokenEndpointAuthMethod: 'none'
+            );
+            $this->clientCredentialsCache[$issuer] = $credentials;
+            return $credentials;
+        }
+
+        // Priority 3: Dynamic Client Registration
+        if ($this->config->isDynamicRegistrationEnabled() && $asMetadata->supportsDynamicRegistration()) {
+            $this->logger->debug('Registering client dynamically');
+
+            $callback = $this->getAuthCallback();
+            $redirectUri = $callback->getRedirectUri();
+
+            // For auto-port loopback handler, we need to register with actual redirect URIs.
+            // Per RFC 8252, authorization servers SHOULD allow any port on loopback interfaces.
+            // We register both localhost and 127.0.0.1 variants to maximize compatibility.
+            $redirectUris = [$redirectUri];
+            if ($callback instanceof LoopbackCallbackHandler && strpos($redirectUri, '{PORT}') !== false) {
+                // Register with common loopback URIs - AS should accept any port per RFC 8252
+                $redirectUris = [
+                    'http://127.0.0.1/callback',
+                    'http://localhost/callback',
+                ];
+            }
+
+            $metadata = DynamicClientRegistration::buildMetadata(
+                clientName: 'MCP PHP Client',
+                redirectUris: $redirectUris
+            );
+
+            $credentials = $this->dcr->register($asMetadata, $metadata);
+            $this->clientCredentialsCache[$issuer] = $credentials;
+            return $credentials;
+        }
+
+        throw new OAuthException(
+            'No client credentials available. Configure pre-registered credentials, CIMD, or enable DCR.'
+        );
+    }
+
+    /**
+     * Enforce the Authorization Server Binding rule on pre-registered
+     * credentials: they belong to exactly one issuer and are never presented
+     * to another.
+     *
+     * Bound credentials (ClientCredentials::$issuer set) are checked against
+     * the validated issuer discovery selected — the binding lives in
+     * configuration, so it holds across PHP processes. Unbound credentials
+     * are rejected by default (the binding rule is a spec MUST and cannot be
+     * enforced without an issuer); with the explicit
+     * OAuthConfiguration::$allowUnboundClientCredentials legacy opt-in they
+     * are instead pinned to the first validated issuer they are used with
+     * in this instance — the published 2025-11-25 behavior, which cannot
+     * outlive the process.
+     *
+     * @param ClientCredentials $credentials The configured pre-registered credentials
+     * @param string $issuer The validated issuer about to receive them
+     * @throws OAuthException When the credentials are bound to a different issuer,
+     *         or are unbound without the legacy opt-in
+     */
+    private function assertPreRegisteredCredentialsMatchIssuer(
+        ClientCredentials $credentials,
+        string $issuer
+    ): void {
+        // Strict mode keys off the credentials' own issuer, never the pin:
+        // a pin derived from stored-token evidence must not let unbound
+        // credentials through when the configuration requires a binding.
+        if ($credentials->issuer === null && !$this->config->allowsUnboundClientCredentials()) {
+            throw OAuthException::unboundClientCredentials($issuer);
+        }
+
+        $boundIssuer = $credentials->issuer ?? $this->pinnedPreRegisteredIssuer;
+        if ($boundIssuer === null) {
+            $this->pinnedPreRegisteredIssuer = $issuer;
+            $this->logger->warning(
+                'Pre-registered credentials have no configured issuer; pinned to the first '
+                . 'validated issuer for this process only. Set ClientCredentials::$issuer '
+                . 'to enforce the binding across requests.',
+                ['issuer' => $issuer]
+            );
+            return;
+        }
+        // Issuer identifiers are compared without normalization (RFC 8414):
+        // a binding that differs even by a default port or trailing slash
+        // names a different issuer.
+        if ($boundIssuer !== $issuer) {
+            throw OAuthException::authServerMigrationBlocked(
+                "Pre-registered client credentials are bound to authorization server "
+                . "{$boundIssuer}, but discovery selected {$issuer}. Credentials must "
+                . 'not be reused across authorization servers; obtain credentials '
+                . "registered with {$issuer} and configure them with that issuer."
+            );
+        }
+    }
+
+    /**
+     * Resolve the token endpoint auth method from AS metadata for
+     * credentials that opted into auto-discovery (AUTH_METHOD_AUTO).
+     *
+     * @param ClientCredentials $credentials The credentials with auth method set to 'auto'
+     * @param AuthorizationServerMetadata $asMetadata Authorization server metadata
+     * @return ClientCredentials Credentials with the resolved auth method
+     * @throws OAuthException If no compatible auth method is found
+     */
+    private function resolveAuthMethodFromMetadata(
+        ClientCredentials $credentials,
+        AuthorizationServerMetadata $asMetadata
+    ): ClientCredentials {
+        $supported = $asMetadata->tokenEndpointAuthMethodsSupported;
+        $hasSecret = $credentials->clientSecret !== null;
+
+        // When the client has a secret, prefer secret-based methods first.
+        // Only fall back to 'none' if no secret-based method is available.
+        // This prevents confidential clients from silently dropping their
+        // credentials when the AS happens to advertise 'none'.
+        if ($hasSecret) {
+            foreach ($supported as $method) {
+                if (in_array($method, [
+                    ClientCredentials::AUTH_METHOD_CLIENT_SECRET_BASIC,
+                    ClientCredentials::AUTH_METHOD_CLIENT_SECRET_POST,
+                ], true)) {
+                    return new ClientCredentials(
+                        $credentials->clientId,
+                        $credentials->clientSecret,
+                        $method,
+                        issuer: $credentials->issuer
+                    );
+                }
+            }
+        }
+
+        // Public client or no secret-based method available
+        if (in_array(ClientCredentials::AUTH_METHOD_NONE, $supported, true)) {
+            return new ClientCredentials(
+                $credentials->clientId,
+                $credentials->clientSecret,
+                ClientCredentials::AUTH_METHOD_NONE,
+                issuer: $credentials->issuer
+            );
+        }
+
+        throw new OAuthException(
+            'No compatible token endpoint auth method found in AS metadata. '
+            . 'Supported: ' . implode(', ', $supported)
+        );
+    }
+
+    /**
+     * Get the authorization callback handler.
+     *
+     * @return AuthorizationCallbackInterface
+     */
+    private function getAuthCallback(): AuthorizationCallbackInterface
+    {
+        $callback = $this->config->getAuthCallback();
+        if ($callback === null) {
+            // Default to loopback handler
+            $callback = new LoopbackCallbackHandler(0, 120, true, $this->logger);
+        }
+        return $callback;
+    }
+
+    /**
+     * Perform the configured grant flow to obtain tokens.
+     *
+     * Applies the SEP-2207 offline_access guard, then dispatches to the
+     * client_credentials grant, the SEP-990 cross-app access flow, or the
+     * interactive authorization code flow depending on configuration.
+     *
+     * @param string $resourceUrl The protected resource URL
+     * @param ProtectedResourceMetadata $resourceMetadata Resource metadata
+     * @param AuthorizationServerMetadata $asMetadata AS metadata
+     * @param array<int, string> $scopes Scopes to request
+     * @return TokenSet
+     */
+    private function performGrantFlow(
+        string $resourceUrl,
+        ProtectedResourceMetadata $resourceMetadata,
+        AuthorizationServerMetadata $asMetadata,
+        array $scopes
+    ): TokenSet {
+        $scopes = $this->filterUnsupportedOfflineAccess($scopes, $asMetadata);
+
+        if ($this->config->isClientCredentialsGrantEnabled()) {
+            return $this->performClientCredentialsFlow(
+                $resourceUrl,
+                $resourceMetadata,
+                $asMetadata,
+                $scopes
+            );
+        }
+
+        if ($this->config->getCrossAppAccess() !== null) {
+            return $this->performCrossAppAccessFlow(
+                $resourceUrl,
+                $resourceMetadata,
+                $asMetadata,
+                $scopes
+            );
+        }
+
+        return $this->performAuthorizationFlow(
+            $resourceUrl,
+            $resourceMetadata,
+            $asMetadata,
+            $scopes
+        );
+    }
+
+    /**
+     * SEP-2207 guard: never request the offline_access scope from an
+     * authorization server whose metadata does not list it in
+     * scopes_supported.
+     *
+     * @param array<int, string> $scopes Scopes to request
+     * @param AuthorizationServerMetadata $asMetadata AS metadata
+     * @return array<int, string> Scopes with offline_access removed if unsupported
+     */
+    private function filterUnsupportedOfflineAccess(
+        array $scopes,
+        AuthorizationServerMetadata $asMetadata
+    ): array {
+        if (!in_array('offline_access', $scopes, true)) {
+            return $scopes;
+        }
+
+        $supported = $asMetadata->scopesSupported;
+        if ($supported !== null && in_array('offline_access', $supported, true)) {
+            return $scopes;
+        }
+
+        $this->logger->debug(
+            'Removing offline_access scope: authorization server does not advertise it in scopes_supported'
+        );
+
+        return array_values(array_diff($scopes, ['offline_access']));
+    }
+
+    /**
+     * Perform the OAuth client_credentials grant (no browser, PKCE, or redirect).
+     *
+     * Client authentication uses the configured pre-registered credentials:
+     *   - private_key_jwt: an RFC 7523 JWT client assertion signed with the
+     *     configured private key, audienced at the AS issuer identifier
+     *   - client_secret_basic: HTTP Basic authentication (via executeTokenRequest)
+     *   - client_secret_post: client_secret in the request body
+     *
+     * @param string $resourceUrl The protected resource URL
+     * @param ProtectedResourceMetadata $resourceMetadata Resource metadata
+     * @param AuthorizationServerMetadata $asMetadata AS metadata
+     * @param array<int, string> $scopes Scopes to request
+     * @return TokenSet
+     * @throws OAuthException If credentials are missing or the request fails
+     */
+    private function performClientCredentialsFlow(
+        string $resourceUrl,
+        ProtectedResourceMetadata $resourceMetadata,
+        AuthorizationServerMetadata $asMetadata,
+        array $scopes
+    ): TokenSet {
+        $credentials = $this->getClientCredentials($asMetadata->issuer, $asMetadata);
+
+        $this->logger->info('Performing client_credentials grant', [
+            'token_endpoint' => $asMetadata->tokenEndpoint,
+            'auth_method' => $credentials->tokenEndpointAuthMethod,
+        ]);
+
+        $params = [
+            'grant_type' => 'client_credentials',
+            // RFC8707: Resource Indicators
+            'resource' => $resourceMetadata->resource,
+        ];
+
+        if (!empty($scopes)) {
+            $params['scope'] = implode(' ', $scopes);
+        }
+
+        if ($credentials->tokenEndpointAuthMethod === ClientCredentials::AUTH_METHOD_PRIVATE_KEY_JWT) {
+            if ($credentials->privateKeyPem === null) {
+                throw new OAuthException(
+                    'private_key_jwt client authentication requires a private key '
+                    . '(ClientCredentials::$privateKeyPem)'
+                );
+            }
+            // RFC 7523: the assertion audience is the AS issuer identifier.
+            $params['client_assertion_type'] = ClientAssertionJwt::ASSERTION_TYPE;
+            $params['client_assertion'] = ClientAssertionJwt::create(
+                clientId: $credentials->clientId,
+                audience: $asMetadata->issuer,
+                privateKeyPem: $credentials->privateKeyPem,
+                algorithm: $credentials->signingAlgorithm ?? 'ES256'
+            );
+            $params['client_id'] = $credentials->clientId;
+        } else {
+            $params = array_merge($params, $credentials->getTokenRequestParams());
+        }
+
+        $response = $this->executeTokenRequest(
+            $asMetadata->tokenEndpoint,
+            $params,
+            $credentials
+        );
+
+        return TokenSet::fromTokenResponse(
+            $response,
+            $resourceUrl,
+            $asMetadata->issuer,
+            resource: $resourceMetadata->resource
+        );
+    }
+
+    /**
+     * Perform the SEP-990 cross-app access flow.
+     *
+     * Step 1 — RFC 8693 token exchange at the IdP token endpoint: the
+     * configured IdP ID token is exchanged for an identity assertion JWT
+     * authorization grant (ID-JAG) audienced at this authorization server.
+     *
+     * Step 2 — RFC 7523 jwt-bearer grant at the AS token endpoint: the ID-JAG
+     * is presented as the assertion, with the client authenticating using its
+     * registered credentials.
+     *
+     * @param string $resourceUrl The protected resource URL
+     * @param ProtectedResourceMetadata $resourceMetadata Resource metadata
+     * @param AuthorizationServerMetadata $asMetadata AS metadata
+     * @param array<int, string> $scopes Scopes to request
+     * @return TokenSet
+     * @throws OAuthException If configuration is incomplete or a request fails
+     */
+    private function performCrossAppAccessFlow(
+        string $resourceUrl,
+        ProtectedResourceMetadata $resourceMetadata,
+        AuthorizationServerMetadata $asMetadata,
+        array $scopes
+    ): TokenSet {
+        $crossApp = $this->config->getCrossAppAccess();
+        if ($crossApp === null) {
+            throw new OAuthException('Cross-app access flow invoked without configuration');
+        }
+
+        $credentials = $this->getClientCredentials($asMetadata->issuer, $asMetadata);
+
+        $this->logger->info('Performing cross-app access flow', [
+            'idp_token_endpoint' => $crossApp->idpTokenEndpoint,
+            'as_token_endpoint' => $asMetadata->tokenEndpoint,
+        ]);
+
+        // Step 1: RFC 8693 token exchange at the IdP for an ID-JAG.
+        $idpCredentials = new ClientCredentials(
+            clientId: $crossApp->idpClientId,
+            clientSecret: null,
+            tokenEndpointAuthMethod: ClientCredentials::AUTH_METHOD_NONE
+        );
+
+        $exchangeResponse = $this->executeTokenRequest(
+            $crossApp->idpTokenEndpoint,
+            [
+                'grant_type' => 'urn:ietf:params:oauth:grant-type:token-exchange',
+                'subject_token' => $crossApp->idpIdToken,
+                'subject_token_type' => 'urn:ietf:params:oauth:token-type:id_token',
+                'requested_token_type' => 'urn:ietf:params:oauth:token-type:id-jag',
+                'audience' => $asMetadata->issuer,
+                'resource' => $resourceMetadata->resource,
+                'client_id' => $crossApp->idpClientId,
+            ],
+            $idpCredentials
+        );
+
+        $assertion = $exchangeResponse['access_token'];
+        if (!is_string($assertion) || $assertion === '') {
+            throw new OAuthException('IdP token exchange returned no identity assertion');
+        }
+
+        $this->logger->debug('Obtained ID-JAG from IdP token exchange');
+
+        // Step 2: RFC 7523 jwt-bearer grant at the AS using the ID-JAG.
+        $params = array_merge(
+            [
+                'grant_type' => 'urn:ietf:params:oauth:grant-type:jwt-bearer',
+                'assertion' => $assertion,
+                'resource' => $resourceMetadata->resource,
+            ],
+            $credentials->getTokenRequestParams()
+        );
+
+        if (!empty($scopes)) {
+            $params['scope'] = implode(' ', $scopes);
+        }
+
+        $response = $this->executeTokenRequest(
+            $asMetadata->tokenEndpoint,
+            $params,
+            $credentials
+        );
+
+        return TokenSet::fromTokenResponse(
+            $response,
+            $resourceUrl,
+            $asMetadata->issuer,
+            resource: $resourceMetadata->resource
+        );
+    }
+
+    /**
+     * Validate the RFC 9207 / SEP-2468 authorization response iss parameter.
+     *
+     * Rules:
+     *   - AS advertised support and iss present: must match the validated AS
+     *     metadata issuer byte-for-byte (no URL normalization of any kind).
+     *   - AS advertised support and iss absent: abort.
+     *   - Support not advertised but iss present: still compare (MCP extension
+     *     of RFC 9207); mismatch aborts.
+     *   - Support not advertised and iss absent: proceed.
+     *
+     * @param string|null $iss The iss parameter from the callback (form-urldecoded)
+     * @param AuthorizationServerMetadata $asMetadata The validated AS metadata
+     * @throws OAuthException If validation fails
+     */
+    private function validateAuthorizationResponseIssuer(
+        ?string $iss,
+        AuthorizationServerMetadata $asMetadata
+    ): void {
+        if ($iss === null) {
+            if ($asMetadata->authorizationResponseIssParameterSupported === true) {
+                throw OAuthException::issValidationFailed(
+                    'authorization server advertised authorization_response_iss_parameter_supported '
+                    . 'but the authorization response contained no iss parameter'
+                );
+            }
+            return;
+        }
+
+        // Byte-for-byte comparison per RFC 9207 Section 2.4 — deliberately no
+        // scheme/host case folding, default-port elision, trailing-slash or
+        // percent-encoding normalization.
+        if ($iss !== $asMetadata->issuer) {
+            throw OAuthException::issValidationFailed(
+                "iss parameter \"{$iss}\" does not match expected issuer \"{$asMetadata->issuer}\""
+            );
+        }
+    }
+
+    /**
+     * Perform the OAuth authorization code flow.
+     *
+     * @param string $resourceUrl The protected resource URL
+     * @param ProtectedResourceMetadata $resourceMetadata Resource metadata
+     * @param AuthorizationServerMetadata $asMetadata AS metadata
+     * @param array<int, string> $scopes Scopes to request
+     * @return TokenSet
+     */
+    private function performAuthorizationFlow(
+        string $resourceUrl,
+        ProtectedResourceMetadata $resourceMetadata,
+        AuthorizationServerMetadata $asMetadata,
+        array $scopes
+    ): TokenSet {
+        $callback = $this->getAuthCallback();
+        $credentials = $this->getClientCredentials($asMetadata->issuer, $asMetadata);
+
+        // Generate PKCE pair
+        $pkce = $this->pkce->generate();
+
+        // Generate state for CSRF protection
+        $state = bin2hex(random_bytes(16));
+
+        // Determine redirect URI
+        $redirectUri = $this->config->getRedirectUri();
+        if ($redirectUri === null) {
+            $redirectUri = $callback->getRedirectUri();
+        }
+
+        // Build authorization URL
+        $authParams = [
+            'response_type' => 'code',
+            'client_id' => $credentials->clientId,
+            'redirect_uri' => $redirectUri,
+            'state' => $state,
+            'code_challenge' => $pkce['challenge'],
+            'code_challenge_method' => $pkce['method'],
+            // RFC8707: Resource Indicators
+            'resource' => $resourceMetadata->resource,
+        ];
+
+        if (!empty($scopes)) {
+            $authParams['scope'] = implode(' ', $scopes);
+        }
+
+        $authUrl = $asMetadata->authorizationEndpoint . '?' . http_build_query($authParams);
+
+        $this->logger->debug('Starting authorization flow', [
+            'authorization_endpoint' => $asMetadata->authorizationEndpoint,
+            'scopes' => $scopes,
+        ]);
+
+        // Execute authorization flow via callback handler
+        // Note: For LoopbackCallbackHandler with auto-port, the handler will replace
+        // the {PORT} placeholder in the auth URL with the actual port
+        try {
+            $callbackResult = $callback->authorize($authUrl, $state);
+        } catch (AuthorizationRedirectException $e) {
+            // Enrich the exception with an AuthorizationRequest so callers
+            // have everything needed to complete the OAuth flow later.
+            // Use the exception's values (what the callback actually used)
+            // to ensure consistency between the redirect and token exchange.
+            throw new AuthorizationRedirectException(
+                authorizationUrl: $e->getAuthorizationUrl(),
+                state: $e->getState(),
+                redirectUri: $e->getRedirectUri(),
+                message: $e->getMessage(),
+                authorizationRequest: new AuthorizationRequest(
+                    authorizationUrl: $e->getAuthorizationUrl(),
+                    state: $e->getState(),
+                    codeVerifier: $pkce['verifier'],
+                    redirectUri: $e->getRedirectUri(),
+                    resourceUrl: $resourceUrl,
+                    resource: $resourceMetadata->resource,
+                    tokenEndpoint: $asMetadata->tokenEndpoint,
+                    issuer: $asMetadata->issuer,
+                    clientId: $credentials->clientId,
+                    clientSecret: $credentials->clientSecret,
+                    tokenEndpointAuthMethod: $credentials->tokenEndpointAuthMethod,
+                    resourceMetadataUrl: null,
+                    issParameterSupported: $asMetadata->authorizationResponseIssParameterSupported
+                )
+            );
+        }
+
+        // Legacy string returns from third-party handlers are treated as a
+        // bare code with no iss parameter and no error content.
+        if (is_string($callbackResult)) {
+            $callbackResult = new AuthorizationCallbackResult(code: $callbackResult);
+        }
+
+        // SEP-2468: validate the authorization response issuer BEFORE acting
+        // on anything else in the response — including error parameters. A
+        // response whose iss fails validation must not have its error content
+        // surfaced or its code exchanged.
+        $this->validateAuthorizationResponseIssuer($callbackResult->iss, $asMetadata);
+
+        if ($callbackResult->hasError()) {
+            throw OAuthException::fromOAuthError($callbackResult->params);
+        }
+
+        $code = $callbackResult->code;
+        if ($code === null) {
+            throw OAuthException::authorizationFailed(
+                'Authorization code not found in callback'
+            );
+        }
+
+        // Get the actual redirect URI used (important for auto-port loopback handler)
+        // After authorize() completes, the handler knows the actual port that was used
+        if ($callback instanceof LoopbackCallbackHandler) {
+            $redirectUri = $callback->getActualRedirectUri();
+        }
+
+        // Exchange code for tokens
+        $tokenParams = array_merge(
+            [
+                'grant_type' => 'authorization_code',
+                'code' => $code,
+                'redirect_uri' => $redirectUri,
+                'code_verifier' => $pkce['verifier'],
+                // RFC8707: Include resource in token request
+                'resource' => $resourceMetadata->resource,
+            ],
+            $credentials->getTokenRequestParams()
+        );
+
+        $tokenResponse = $this->executeTokenRequest(
+            $asMetadata->tokenEndpoint,
+            $tokenParams,
+            $credentials
+        );
+
+        return TokenSet::fromTokenResponse(
+            $tokenResponse,
+            $resourceUrl,
+            $asMetadata->issuer,
+            resource: $resourceMetadata->resource
+        );
+    }
+
+    /**
+     * Execute a token endpoint request.
+     *
+     * @param string $tokenEndpoint The token endpoint URL
+     * @param array<string, string> $params Request parameters
+     * @param ClientCredentials $credentials Client credentials
+     * @return array<string, mixed> Token response
+     */
+    private function executeTokenRequest(
+        string $tokenEndpoint,
+        array $params,
+        ClientCredentials $credentials
+    ): array {
+        $ch = curl_init($tokenEndpoint);
+        if ($ch === false) {
+            throw new OAuthException('Failed to initialize cURL for token request');
+        }
+
+        $headers = [
+            'Content-Type: application/x-www-form-urlencoded',
+            'Accept: application/json',
+        ];
+
+        // Add Basic auth header if needed
+        $authHeader = $credentials->getAuthorizationHeader();
+        if ($authHeader !== null) {
+            $headers[] = "Authorization: {$authHeader}";
+        }
+
+        curl_setopt_array($ch, [
+            CURLOPT_POST => true,
+            CURLOPT_POSTFIELDS => http_build_query($params),
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_TIMEOUT => (int) $this->config->getTimeout(),
+            CURLOPT_HTTPHEADER => $headers,
+            CURLOPT_SSL_VERIFYPEER => $this->config->isVerifyTlsEnabled(),
+            CURLOPT_SSL_VERIFYHOST => $this->config->isVerifyTlsEnabled() ? 2 : 0,
+        ]);
+
+        $response = curl_exec($ch);
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $error = curl_error($ch);
+        curl_close($ch);
+
+        if ($response === false) {
+            throw new OAuthException("Token request failed: {$error}");
+        }
+
+        $data = json_decode($response, true);
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            throw new OAuthException(
+                'Invalid JSON response from token endpoint: ' . json_last_error_msg()
+            );
+        }
+
+        // Check for error response
+        if (isset($data['error'])) {
+            throw OAuthException::fromOAuthError($data);
+        }
+
+        if ($httpCode !== 200) {
+            throw new OAuthException("Token request failed with HTTP {$httpCode}");
+        }
+
+        if (!isset($data['access_token'])) {
+            throw new OAuthException('Token response missing access_token');
+        }
+
+        $this->logger->info('Received access token');
+
+        return $data;
+    }
+}

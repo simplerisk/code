@@ -62,7 +62,7 @@ enum AnsiColorMode
 
         return match ($this) {
             self::Ansi4 => (string) $this->convertFromRGB($r, $g, $b),
-            self::Ansi8 => '8;5;'.((string) $this->convertFromRGB($r, $g, $b)),
+            self::Ansi8 => '8;5;'.$this->convertFromRGB($r, $g, $b),
             self::Ansi24 => \sprintf('8;2;%d;%d;%d', $r, $g, $b),
         };
     }
@@ -99,8 +99,8 @@ enum AnsiColorMode
         }
 
         return 16 +
-                (36 * (int) round($r / 255 * 5)) +
-                (6 * (int) round($g / 255 * 5)) +
-                (int) round($b / 255 * 5);
+            (36 * (int) round($r / 255 * 5)) +
+            (6 * (int) round($g / 255 * 5)) +
+            (int) round($b / 255 * 5);
     }
 }

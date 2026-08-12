@@ -1,14 +1,22 @@
+:root {
+  --dtrr-move_outline-color: rgb(10, 89, 203);
+  --dtrr-move_outline-width: 2px;
+  --dtrr-move_opacity: 0.8;
+  --dtrr-moved_outline-color: #888;
+  --dtrr-moved_outline-width: 2px;
+}
+
 div.dt-rowReorder-float-parent {
   table-layout: fixed;
-  outline: 2px solid #0d6efd;
+  outline: var(--dtrr-move_outline-width) solid var(--dtrr-move_outline-color);
   z-index: 2001;
   position: absolute !important;
   overflow: hidden;
   border-radius: 3px;
 }
 div.dt-rowReorder-float-parent table.dt-rowReorder-float {
-  opacity: 0.9;
-  background-color: white;
+  opacity: var(--dtrr-move_opacity);
+  background-color: var(--dt-html_background);
   margin: 0 !important;
 }
 
@@ -17,8 +25,8 @@ div.dt-rowReorder-float-parent.drop-not-allowed {
 }
 
 tr.dt-rowReorder-moving {
-  outline: 2px solid #888;
-  outline-offset: -2px;
+  outline: var(--dtrr-moved_outline-width) solid var(--dtrr-moved_outline-color);
+  outline-offset: calc(var(--dtrr-moved_outline-width) * -1);
 }
 
 body.dt-rowReorder-noOverflow {
@@ -30,16 +38,9 @@ table.dataTable td.reorder {
   cursor: move;
 }
 
-html.dark div.dt-rowReorder-float-parent {
-  outline-color: rgb(110, 168, 254);
+:root {
+  --dtrr-move_outline-color: #0d6efd;
 }
-html.dark div.dt-rowReorder-float-parent table.dt-rowReorder-float {
-  background-color: var(--dt-html-background);
-}
-html.dark tr.dt-rowReorder-moving {
-  outline-color: #aaa;
-}
-
-html[data-bs-theme=dark] div.dt-rowReorder-float-parent {
-  outline-color: rgb(13, 110, 253);
+:root[data-bs-theme=dark] {
+  --dtrr-move_outline-color: rgb(13, 110, 253);
 }

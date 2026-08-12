@@ -10,11 +10,9 @@ $(function () {
   // Theme options
   // ==============================================================
 
-  // this is for close icon when navigation open in mobile view
-  $(".nav-toggler").on("click", function () {
-    $("#main-wrapper").toggleClass("show-sidebar");
-    $(".nav-toggler i").toggleClass("ti-menu");
-  });
+  // NOTE: the legacy `.nav-toggler` / `.sidebartoggler` collapse handlers were
+  // removed with the app-shell redesign (PR #2029) — their markup no longer
+  // exists; the three-state collapse now lives in theme/app-shell.js.
   $(".nav-lock").on("click", function () {
     $("body").toggleClass("lock-nav");
     $(".nav-lock i").toggleClass("mdi-toggle-switch-off");
@@ -97,24 +95,6 @@ $(function () {
     if ($.fn.treegrid) {
         $('table.datagrid-f').each(function() {setTimeout(() => {$(this).treegrid("resize");}, 1);});
     }
-  });
-
-  //****************************
-  /* This is for sidebartoggler*/
-  //****************************
-  $(".sidebartoggler").on("click", function () {
-	
-    $("#main-wrapper").toggleClass("no-sidebar");
-    if ($("#main-wrapper").hasClass("no-sidebar")) {
-      $(".sidebartoggler").prop("checked", !0);
-      $("#main-wrapper").attr("data-sidebartype", "no-sidebar");
-    } else {
-      $(".sidebartoggler").prop("checked", !1);
-      $("#main-wrapper").attr("data-sidebartype", "full");
-    }
-
-    // Trigger Simplerisk's own logic related to the resize of the content part of the page
-    $(document).trigger('simplerisk.content.resize');
   });
 
   // Trigger Simplerisk's own logic related to the resize of the content part of the page

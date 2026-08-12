@@ -27,7 +27,7 @@ class DocBlockAnnotationFactory implements AnnotationFactoryInterface
         return DocBlockParser::isEnabled();
     }
 
-    public function setGenerator(Generator $generator): self
+    public function setGenerator(Generator $generator): static
     {
         $this->generator = $generator;
 
@@ -38,19 +38,19 @@ class DocBlockAnnotationFactory implements AnnotationFactoryInterface
 
     public function build(\Reflector $reflector, Context $context): array
     {
-        $aliases = $this->generator ? $this->generator->getAliases() : [];
+        $aliases = $this->generator instanceof Generator ? $this->generator->getAliases() : [];
 
         if (method_exists($reflector, 'getShortName') && method_exists($reflector, 'getName')) {
-            $aliases[strtolower($reflector->getShortName())] = $reflector->getName();
+            $aliases[strtolower((string) $reflector->getShortName())] = $reflector->getName();
         }
 
-        if ($context->with('scanned')) {
+        if ($context->with('scanned') instanceof Context) {
             $details = $context->scanned;
             foreach ($details['uses'] as $alias => $name) {
-                $aliasKey = strtolower($alias);
+                $aliasKey = strtolower((string) $alias);
                 if ($name != $alias && !array_key_exists($aliasKey, $aliases)) {
                     // real aliases only
-                    $aliases[strtolower($alias)] = $name;
+                    $aliases[strtolower((string) $alias)] = $name;
                 }
             }
         }

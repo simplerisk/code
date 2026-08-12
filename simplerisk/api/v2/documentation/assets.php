@@ -74,6 +74,7 @@ class OpenApiCreateAsset {}
  * @OA\Patch(
  *     path="/assets/{id}",
  *     summary="Update an existing asset",
+ *     description="Partial update: any field omitted from the request keeps its stored value, including `tags[]` and `associated_risks[]`. To clear a field, send it explicitly with an empty value (e.g. `associated_risks[]=`) — omitting it preserves rather than clears.",
  *     operationId="updateAssetById",
  *     tags={"asset_crud"},
  *     security={{"ApiKeyAuth":{}}},

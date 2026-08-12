@@ -75,9 +75,13 @@ function display($display = "")
 </div>
 <script>
     $(function() {
-        //To make the IM menu items draw immediately after activating/deactivating vulnerability management extra, 
-        //we should use ajax to change vulnerability management extra value and reload the page.
-        $("form").on("submit", function(e) {
+        // Hijack only the activate / deactivate forms so we can flip the
+        // Extra state via the API and reload the page (drawing the VM menu
+        // items immediately). The VM Configure forms inlined onto this page
+        // (platform select, connectivity, sites, settings, schedule, triage)
+        // must POST normally so their handlers in
+        // extras/vulnmgmt/includes/processor.php run server-side before render.
+        $("form[name='activate'], form[name='deactivate']").on("submit", function(e) {
             //Prevent the form from being submitted in the default way.
             e.preventDefault();
 

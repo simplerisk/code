@@ -25,25 +25,34 @@ use function trim;
 class PEM
 {
     // well-known PEM types
-    public const TYPE_CERTIFICATE = 'CERTIFICATE';
-    public const TYPE_CRL = 'X509 CRL';
-    public const TYPE_CERTIFICATE_REQUEST = 'CERTIFICATE REQUEST';
-    public const TYPE_ATTRIBUTE_CERTIFICATE = 'ATTRIBUTE CERTIFICATE';
-    public const TYPE_PRIVATE_KEY = 'PRIVATE KEY';
-    public const TYPE_PUBLIC_KEY = 'PUBLIC KEY';
-    public const TYPE_ENCRYPTED_PRIVATE_KEY = 'ENCRYPTED PRIVATE KEY';
-    public const TYPE_RSA_PRIVATE_KEY = 'RSA PRIVATE KEY';
-    public const TYPE_RSA_PUBLIC_KEY = 'RSA PUBLIC KEY';
-    public const TYPE_EC_PRIVATE_KEY = 'EC PRIVATE KEY';
-    public const TYPE_PKCS7 = 'PKCS7';
-    public const TYPE_CMS = 'CMS';
+    public const string TYPE_CERTIFICATE = 'CERTIFICATE';
+
+    public const string TYPE_CRL = 'X509 CRL';
+
+    public const string TYPE_CERTIFICATE_REQUEST = 'CERTIFICATE REQUEST';
+
+    public const string TYPE_ATTRIBUTE_CERTIFICATE = 'ATTRIBUTE CERTIFICATE';
+
+    public const string TYPE_PRIVATE_KEY = 'PRIVATE KEY';
+
+    public const string TYPE_PUBLIC_KEY = 'PUBLIC KEY';
+
+    public const string TYPE_ENCRYPTED_PRIVATE_KEY = 'ENCRYPTED PRIVATE KEY';
+
+    public const string TYPE_RSA_PRIVATE_KEY = 'RSA PRIVATE KEY';
+
+    public const string TYPE_RSA_PUBLIC_KEY = 'RSA PUBLIC KEY';
+
+    public const string TYPE_EC_PRIVATE_KEY = 'EC PRIVATE KEY';
+
+    public const string TYPE_PKCS7 = 'PKCS7';
+
+    public const string TYPE_CMS = 'CMS';
 
     /**
      * Regular expression to match PEM block.
-     *
-     * @var string
      */
-    public const PEM_REGEX =
+    public const string PEM_REGEX =
         '/' .
         '(?:^|[\r\n])' .                 // line start
         '-----BEGIN (.+?)-----[\r\n]+' . // header
@@ -66,7 +75,6 @@ class PEM
 
 
     /**
-     * @return string
      */
     public function __toString(): string
     {
@@ -77,11 +85,7 @@ class PEM
     /**
      * Initialize from a PEM-formatted string.
      *
-     * @param string $str
-     *
      * @throws \UnexpectedValueException If string is not valid PEM
-     *
-     * @return self
      */
     public static function fromString(string $str): self
     {
@@ -105,8 +109,6 @@ class PEM
      * @param string $filename Path to file
      *
      * @throws \RuntimeException If file reading fails
-     *
-     * @return self
      */
     public static function fromFile(string $filename): self
     {
@@ -125,8 +127,6 @@ class PEM
 
     /**
      * Get content type.
-     *
-     * @return string
      */
     public function type(): string
     {
@@ -136,8 +136,6 @@ class PEM
 
     /**
      * Get payload.
-     *
-     * @return string
      */
     public function data(): string
     {
@@ -147,8 +145,6 @@ class PEM
 
     /**
      * Encode to PEM string.
-     *
-     * @return string
      */
     public function string(): string
     {

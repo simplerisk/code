@@ -1,0 +1,626 @@
+<?php
+
+/**
+ * Model Context Protocol SDK for PHP
+ *
+ * (c) 2024 Logiscape LLC <https://logiscape.com>
+ *
+ * Based on the Python SDK for the Model Context Protocol
+ * https://github.com/modelcontextprotocol/python-sdk
+ *
+ * PHP conversion developed by:
+ * - Josh Abbott
+ * - Claude 3.5 Sonnet (Anthropic AI model)
+ * - ChatGPT o1 pro mode
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ *
+ * @package    logiscape/mcp-sdk-php 
+ * @author     Josh Abbott <https://joshabbott.com>
+ * @copyright  Logiscape LLC
+ * @license    MIT License
+ * @link       https://github.com/logiscape/mcp-sdk-php
+ *
+ * Filename: Client/Client.php
+ */
+
+declare(strict_types=1);
+
+namespace Mcp\Client;
+
+use Mcp\Client\Auth\Exception\AuthorizationRedirectException;
+use Mcp\Client\Auth\OAuthConfiguration;
+use Mcp\Client\Transport\StdioServerParameters;
+use Mcp\Client\Transport\StdioTransport;
+use Mcp\Client\Transport\StreamableHttpTransport;
+use Mcp\Client\Transport\HttpConfiguration;
+use Mcp\Client\Transport\HttpSessionManager;
+use Mcp\Client\ClientSession;
+use Mcp\Shared\MemoryStream;
+use Mcp\Types\InitializeResult;
+use Mcp\Types\JsonRpcMessage;
+use Psr\Log\LoggerInterface;
+use Psr\Log\NullLogger;
+use RuntimeException;
+use InvalidArgumentException;
+
+/**
+ * Class Client
+ *
+ * Main client class for MCP communication.
+ *
+ * The client can connect to a server via STDIO or HTTP, initialize a session,
+ * and start a receive loop to process incoming messages.
+ */
+class Client {
+    /** @var ClientSession|null */
+    private ?ClientSession $session = null;
+
+    /** @var StdioTransport|StreamableHttpTransport|null */
+    private $transport = null;
+
+    /** @var LoggerInterface */
+    private LoggerInterface $logger;
+
+    /** @var callable|null Pending elicitation handler to register before initialize(). */
+    private $pendingElicitationHandler = null;
+
+    /** @var bool Whether the pending elicitation handler opted into applyDefaults. */
+    private bool $pendingElicitationApplyDefaults = false;
+
+    /** @var bool Whether the pending elicitation handler opted into URL-mode advertisement. */
+    private bool $pendingElicitationSupportsUrlMode = false;
+
+    /** @var callable|null Pending roots/list handler to register before initialize(). */
+    private $pendingRootsHandler = null;
+
+    /** @var bool Whether the pending roots handler advertises listChanged. */
+    private bool $pendingRootsListChanged = true;
+
+    /** @var callable|null Pending sampling handler to register before initialize(). */
+    private $pendingSamplingHandler = null;
+
+    /**
+     * Client constructor.
+     *
+     * @param LoggerInterface|null $logger PSR-3 compliant logger.
+     */
+    public function __construct(?LoggerInterface $logger = null) {
+        $this->logger = $logger ?? new NullLogger();
+    }
+
+    /**
+     * Register a handler for server-initiated `elicitation/create` requests.
+     *
+     * Must be called before {@see connect()} so the elicitation capability
+     * (and optional `applyDefaults` flag, per SEP-1034) is advertised in the
+     * initialization handshake. The handler is applied to the session that
+     * connect() creates.
+     *
+     * Set $supportsUrlMode to true to advertise the `url` sub-capability
+     * (MCP 2025-11-25) in addition to `form`. When false (the default),
+     * spec-compliant servers will only send form-mode requests.
+     *
+     * @param callable(\Mcp\Types\ElicitationCreateRequest): \Mcp\Types\ElicitationCreateResult $handler
+     */
+    public function onElicit(callable $handler, bool $applyDefaults = false, bool $supportsUrlMode = false): void {
+        if ($this->session !== null) {
+            throw new RuntimeException('onElicit() must be called before connect()');
+        }
+        $this->pendingElicitationHandler = $handler;
+        $this->pendingElicitationApplyDefaults = $applyDefaults;
+        $this->pendingElicitationSupportsUrlMode = $supportsUrlMode;
+    }
+
+    /**
+     * Register a handler for server-initiated `roots/list` requests.
+     *
+     * Must be called before {@see connect()} so the `roots` capability is
+     * advertised in the initialization handshake. Per the MCP spec a client
+     * that supports roots MUST declare the capability; otherwise a
+     * spec-compliant server will never call `roots/list`. The handler is
+     * applied to the session that connect() creates.
+     *
+     * When $listChanged is true (the default) the client advertises
+     * `roots: { listChanged: true }`, signalling it may emit
+     * `notifications/roots/list_changed` via
+     * {@see ClientSession::sendRootsListChanged()}.
+     *
+     * @param callable(): \Mcp\Types\ListRootsResult $handler
+     *
+     * @deprecated The Roots feature is deprecated as of protocol revision
+     *             2026-07-28 (SEP-2577); it keeps working for at least the
+     *             twelve-month deprecation window. Migration: pass directories
+     *             or files via tool parameters, resource URIs, or server
+     *             configuration. See the deprecated features registry.
+     */
+    public function onListRoots(callable $handler, bool $listChanged = true): void {
+        if ($this->session !== null) {
+            throw new RuntimeException('onListRoots() must be called before connect()');
+        }
+        $this->pendingRootsHandler = $handler;
+        $this->pendingRootsListChanged = $listChanged;
+    }
+
+    /**
+     * Register a handler for server-initiated `sampling/createMessage`
+     * requests.
+     *
+     * Must be called before {@see connect()} so the `sampling` capability is
+     * advertised in the initialization handshake (per the MCP spec a client
+     * that supports sampling MUST declare the capability). The handler is
+     * applied to the session that connect() creates, and also services
+     * `sampling/createMessage` entries in SEP-2322 `input_required` results
+     * on the modern (`2026-07-28`) path.
+     *
+     * @param callable(\Mcp\Types\CreateMessageRequest): \Mcp\Types\CreateMessageResult $handler
+     *
+     * @deprecated The Sampling feature is deprecated as of protocol revision
+     *             2026-07-28 (SEP-2577); it keeps working for at least the
+     *             twelve-month deprecation window. Migration: integrate
+     *             directly with LLM provider APIs. See the deprecated
+     *             features registry.
+     */
+    public function onSampling(callable $handler): void {
+        if ($this->session !== null) {
+            throw new RuntimeException('onSampling() must be called before connect()');
+        }
+        $this->pendingSamplingHandler = $handler;
+    }
+
+    /**
+     * Connect to an MCP server using either STDIO or HTTP/HTTPS.
+     *
+     * If commandOrUrl is an HTTP(S) URL, it uses the StreamableHttpTransport.
+     * Otherwise, it assumes it's a command and uses STDIO transport.
+     *
+     * @param string                       $commandOrUrl The command to execute or the HTTP(S) URL.
+     * @param array<int|string, string>    $args         Arguments for the command (if using STDIO transport)
+     *                                                   or HTTP headers (if using HTTP transport).
+     * @param array<string, mixed>|null    $env          Environment variables for the command (if using STDIO transport)
+     *                                                   or HTTP configuration options (if using HTTP transport).
+     * @param float|null                   $readTimeout  Timeout for reading messages.
+     * @param string                       $protocolMode Era negotiation mode (SEP-2575): 'auto' probes
+     *                                                   `server/discover` first and falls back to the legacy
+     *                                                   initialize handshake when the server is legacy;
+     *                                                   'legacy' skips the probe (for servers known to
+     *                                                   predate 2026-07-28, or fragile ones that mishandle
+     *                                                   unknown pre-initialize requests); 'modern' skips the
+     *                                                   probe and enters the stateless modern era directly
+     *                                                   with the preferred wire version (for servers known
+     *                                                   to speak 2026-07-28 — including ones that reject
+     *                                                   both server/discover and initialize). For HTTP, may
+     *                                                   also be supplied as $env['protocolMode'], which
+     *                                                   takes precedence; $env['protocolVersion'] optionally
+     *                                                   overrides the preferred modern wire identifier.
+     * @param float|null                   $probeTimeout Seconds to wait for the discover probe before
+     *                                                   concluding the server is a silent legacy server
+     *                                                   (defaults to $readTimeout, or 10s when unset). For
+     *                                                   HTTP, may also be supplied as $env['probeTimeout'].
+     *
+     * @throws InvalidArgumentException If the command or URL is invalid.
+     * @throws RuntimeException         If the connection fails.
+     *
+     * @return ClientSession The initialized client session.
+     */
+    public function connect(
+        string $commandOrUrl,
+        array $args = [],
+        ?array $env = null,
+        ?float $readTimeout = null,
+        string $protocolMode = 'auto',
+        ?float $probeTimeout = null
+    ): ClientSession {
+        $urlParts = parse_url($commandOrUrl);
+
+        try {
+            if (isset($urlParts['scheme']) && in_array(strtolower($urlParts['scheme']), ['http', 'https'], true)) {
+                // Use HTTP transport for HTTP(S) URLs
+                $this->logger->info("Connecting to HTTP endpoint: {$commandOrUrl}");
+                
+                // Process HTTP-specific options
+                $headers = $args; // For HTTP, args are used as headers
+                $httpOptions = $env ?? []; // For HTTP, env is used for HTTP options
+                
+                // Extract OAuth configuration if provided
+                $oauthConfig = null;
+                if (isset($httpOptions['oauth']) && $httpOptions['oauth'] instanceof OAuthConfiguration) {
+                    $oauthConfig = $httpOptions['oauth'];
+                }
+
+                // Create HTTP configuration
+                $httpConfig = new HttpConfiguration(
+                    endpoint: $commandOrUrl,
+                    headers: $headers,
+                    connectionTimeout: $httpOptions['connectionTimeout'] ?? 30.0,
+                    readTimeout: $httpOptions['readTimeout'] ?? 60.0,
+                    sseIdleTimeout: $httpOptions['sseIdleTimeout'] ?? 300.0,
+                    enableSse: $httpOptions['enableSse'] ?? true,
+                    maxRetries: $httpOptions['maxRetries'] ?? 3,
+                    retryDelay: $httpOptions['retryDelay'] ?? 0.5,
+                    verifyTls: $httpOptions['verifyTls'] ?? true,
+                    caFile: $httpOptions['caFile'] ?? null,
+                    curlOptions: $httpOptions['curlOptions'] ?? [],
+                    oauthConfig: $oauthConfig,
+                    sseDefaultRetryDelay: $httpOptions['sseDefaultRetryDelay'] ?? 1.0,
+                    sseReconnectBudget: $httpOptions['sseReconnectBudget'] ?? 60.0
+                );
+                
+                // Create the HTTP transport
+                $transport = new StreamableHttpTransport(
+                    config: $httpConfig,
+                    autoSse: $httpOptions['autoSse'] ?? true,
+                    logger: $this->logger
+                );
+                
+                $this->transport = $transport;
+            } else {
+                // Use STDIO transport for commands
+                $this->logger->info("Starting process: {$commandOrUrl}");
+                $params = new StdioServerParameters($commandOrUrl, $args, $env);
+                $transport = new StdioTransport($params, $this->logger);
+                $this->transport = $transport;
+            }
+
+            // Establish connection and retrieve read/write streams
+            [$readStream, $writeStream] = $transport->connect();
+
+            // Initialize the client session with the obtained streams
+            $this->session = new ClientSession(
+                readStream: $readStream,
+                writeStream: $writeStream,
+                readTimeout: $readTimeout,
+                logger: $this->logger
+            );
+
+            // Wire the HTTP transport to dispatch server-initiated requests
+            // and notifications through the session synchronously, so that a
+            // server interleaving sampling/createMessage or
+            // elicitation/create on a POST SSE response stream can be
+            // serviced before the server's own response arrives. Must be
+            // set BEFORE initialize() so any handshake-time interleaving is
+            // also handled.
+            if ($this->transport instanceof StreamableHttpTransport) {
+                $session = $this->session;
+                $this->transport->setMessageDispatcher(
+                    static function (JsonRpcMessage $msg) use ($session): void {
+                        $session->dispatchIncomingMessage($msg);
+                    }
+                );
+
+                // SEP-2243: header mirroring and x-mcp-header annotation
+                // validation apply to HTTP clients only — the stdio
+                // transport has no headers and must keep tools/list
+                // results unfiltered.
+                $this->session->setHttpTransportMode(true);
+            }
+
+            // Apply any elicitation handler registered via onElicit() before
+            // connect(). Must happen before initialize() so the elicitation
+            // capability is advertised in the handshake.
+            if ($this->pendingElicitationHandler !== null) {
+                $this->session->onElicit(
+                    $this->pendingElicitationHandler,
+                    $this->pendingElicitationApplyDefaults,
+                    $this->pendingElicitationSupportsUrlMode
+                );
+            }
+
+            // Apply any roots handler registered via onListRoots() before
+            // connect(). Must happen before initialize() so the roots
+            // capability is advertised in the handshake.
+            if ($this->pendingRootsHandler !== null) {
+                $this->session->onListRoots(
+                    $this->pendingRootsHandler,
+                    $this->pendingRootsListChanged
+                );
+            }
+
+            // Apply any sampling handler registered via onSampling() before
+            // connect(). Must happen before initialize() so the sampling
+            // capability is advertised in the handshake.
+            if ($this->pendingSamplingHandler !== null) {
+                $this->session->onSampling($this->pendingSamplingHandler);
+            }
+
+            // Negotiate the protocol era (SEP-2575): probe server/discover
+            // first and fall back to the legacy initialize handshake when
+            // the server is legacy, honoring the requested protocol mode.
+            // HTTP options may override the mode/timeout parameters.
+            //
+            // On HTTP the probe timeout must also bound the transport: a
+            // synchronous POST blocks in cURL for the transport's full read
+            // timeout, so a server that never answers the probe would
+            // otherwise stall negotiation far past the configured probe
+            // timeout. The bound applies only to requests carrying the
+            // modern _meta envelope (the probes), so the legacy fallback
+            // initialize keeps the normal timeout; a timed-out probe throws
+            // HttpRequestTimeoutException, which negotiate() classifies as
+            // a silent legacy server.
+            $preferredVersion = null;
+            if ($this->transport instanceof StreamableHttpTransport) {
+                $httpOptions = $env ?? [];
+                $protocolMode = $httpOptions['protocolMode'] ?? $protocolMode;
+                $probeTimeout = $httpOptions['probeTimeout'] ?? $probeTimeout;
+                // Preferred modern wire identifier (SEP-2575): the first
+                // probe version for mode 'auto', the session's wire
+                // version for mode 'modern'. Defaults to the latest
+                // supported revision when unset.
+                $preferredVersion = $httpOptions['protocolVersion'] ?? null;
+                if ($protocolMode === 'auto') {
+                    $this->transport->setProbeTimeout(
+                        $probeTimeout ?? $readTimeout ?? ClientSession::DEFAULT_PROBE_TIMEOUT
+                    );
+                }
+            }
+            try {
+                $era = $this->session->negotiate($protocolMode, $probeTimeout, $preferredVersion);
+            } finally {
+                if ($this->transport instanceof StreamableHttpTransport) {
+                    $this->transport->setProbeTimeout(null);
+                }
+            }
+            $this->logger->info("Session negotiated successfully (era: {$era})");
+
+            // For HTTP transports on the LEGACY era, feed the negotiated
+            // protocol version back to the session manager so it's included
+            // in subsequent request headers, and open the standalone GET SSE
+            // stream. On the modern era neither applies: the
+            // MCP-Protocol-Version header is mirrored per-request from the
+            // _meta envelope by the transport, there is no session id, and
+            // the standalone GET stream does not exist on the 2026-07-28
+            // path (its replacement is subscriptions/listen).
+            if ($this->transport instanceof StreamableHttpTransport && $era === 'legacy') {
+                $this->transport->getSessionManager()->setProtocolVersion(
+                    $this->session->getNegotiatedProtocolVersion()
+                );
+
+                // Open the standalone GET SSE stream described by the MCP
+                // Streamable HTTP spec. Must happen after setProtocolVersion
+                // so the GET carries the negotiated MCP-Protocol-Version
+                // header alongside Mcp-Session-Id. The transport handles
+                // the 405 case gracefully, so servers that decline the
+                // stream do not cause connect() to fail.
+                $this->transport->startStandaloneSseStream();
+            }
+
+            return $this->session;
+        } catch (AuthorizationRedirectException $e) {
+            throw $e;
+        } catch (\Exception $e) {
+            $this->logger->error("Connection failed: {$e->getMessage()}");
+            throw new RuntimeException("Connection failed: {$e->getMessage()}", 0, $e);
+        }
+    }
+
+    /**
+     * Close the client connection gracefully.
+     *
+     * @return void
+     */
+    public function close(): void {
+        if ($this->session) {
+            $this->session->close();
+            $this->logger->info('Session closed successfully');
+            $this->session = null;
+        }
+        if ($this->transport) {
+            $this->transport->close();
+            $this->logger->info('Transport closed successfully');
+            $this->transport = null;
+        }
+    }
+
+    /**
+     * Resume an existing HTTP session without performing initialization handshake.
+     *
+     * Reconstructs the transport with restored session state and creates a
+     * ClientSession that is immediately ready for operations.
+     *
+     * Modern-era (2026-07-28) sessions are sessionless (SEP-2567): there is no
+     * Mcp-Session-Id to restore, and the resumed session re-enters modern mode
+     * (via $modernWireVersion or auto-detection from the negotiated version)
+     * so every request carries the SEP-2575 `_meta` envelope again. The
+     * legacy-only steps — feeding the negotiated version into the session
+     * manager's request headers and opening the standalone GET SSE stream —
+     * are skipped on the modern era, mirroring connect().
+     *
+     * @param string                    $url                      The HTTP(S) URL of the MCP server
+     * @param array<string, mixed>      $sessionManagerState      Session manager state from toArray()
+     * @param array<string, mixed>      $initResultData           InitializeResult data (serialized)
+     * @param string                    $negotiatedProtocolVersion The negotiated protocol version
+     * @param int                       $nextRequestId            The next request ID counter value
+     * @param array<string, string>     $headers                  HTTP headers
+     * @param array<string, mixed>      $httpOptions              HTTP configuration options
+     * @param string|null               $modernWireVersion        Wire identifier the original
+     *        modern-era session stamped into its `_meta` envelopes (pass the
+     *        original session's getModernWireVersion() to preserve it);
+     *        null for legacy sessions or to auto-detect from
+     *        $negotiatedProtocolVersion
+     * @return ClientSession The restored client session ready for operations
+     */
+    public function resumeHttpSession(
+        string $url,
+        array $sessionManagerState,
+        array $initResultData,
+        string $negotiatedProtocolVersion,
+        int $nextRequestId,
+        array $headers = [],
+        array $httpOptions = [],
+        ?string $modernWireVersion = null
+    ): ClientSession {
+        try {
+            // Restore session manager from persisted state
+            $sessionManager = HttpSessionManager::fromArray($sessionManagerState, $this->logger);
+
+            // Extract OAuth configuration if provided
+            $oauthConfig = null;
+            if (isset($httpOptions['oauth']) && $httpOptions['oauth'] instanceof OAuthConfiguration) {
+                $oauthConfig = $httpOptions['oauth'];
+            }
+
+            // Create HTTP configuration
+            $httpConfig = new HttpConfiguration(
+                endpoint: $url,
+                headers: $headers,
+                connectionTimeout: $httpOptions['connectionTimeout'] ?? 30.0,
+                readTimeout: $httpOptions['readTimeout'] ?? 60.0,
+                sseIdleTimeout: $httpOptions['sseIdleTimeout'] ?? 300.0,
+                enableSse: $httpOptions['enableSse'] ?? true,
+                maxRetries: $httpOptions['maxRetries'] ?? 3,
+                retryDelay: $httpOptions['retryDelay'] ?? 0.5,
+                verifyTls: $httpOptions['verifyTls'] ?? true,
+                caFile: $httpOptions['caFile'] ?? null,
+                curlOptions: $httpOptions['curlOptions'] ?? [],
+                oauthConfig: $oauthConfig,
+                sseDefaultRetryDelay: $httpOptions['sseDefaultRetryDelay'] ?? 1.0,
+                sseReconnectBudget: $httpOptions['sseReconnectBudget'] ?? 60.0
+            );
+
+            // Create transport with restored session manager
+            $transport = new StreamableHttpTransport(
+                config: $httpConfig,
+                autoSse: $httpOptions['autoSse'] ?? true,
+                logger: $this->logger,
+                sessionManager: $sessionManager
+            );
+            $this->transport = $transport;
+
+            // Connect transport to get read/write streams
+            [$readStream, $writeStream] = $transport->connect();
+
+            // Restore InitializeResult from serialized data
+            $initResult = InitializeResult::fromResponseData($initResultData);
+
+            // Create restored session (no handshake)
+            $this->session = ClientSession::createRestored(
+                readStream: $readStream,
+                writeStream: $writeStream,
+                initResult: $initResult,
+                negotiatedProtocolVersion: $negotiatedProtocolVersion,
+                nextRequestId: $nextRequestId,
+                readTimeout: $httpOptions['readTimeout'] ?? null,
+                logger: $this->logger,
+                modernWireVersion: $modernWireVersion
+            );
+
+            // Legacy era only: feed the negotiated version back into the
+            // session manager so it rides subsequent request headers. On the
+            // modern era the MCP-Protocol-Version header is mirrored
+            // per-request from the _meta envelope by the transport instead
+            // (see connect()).
+            if (!$this->session->isModernMode()) {
+                $sessionManager->setProtocolVersion($negotiatedProtocolVersion);
+            }
+
+            // Wire dispatch path so interleaved server-initiated messages on
+            // subsequent POST SSE responses are serviced synchronously.
+            $session = $this->session;
+            $transport->setMessageDispatcher(
+                static function (JsonRpcMessage $msg) use ($session): void {
+                    $session->dispatchIncomingMessage($msg);
+                }
+            );
+
+            // Resumed sessions ride the HTTP transport by definition.
+            $this->session->setHttpTransportMode(true);
+
+            // Apply any elicitation handler registered via onElicit() before
+            // resumeHttpSession(). The original session advertised the
+            // elicitation capability at its handshake, so the server may still
+            // send elicitation/create on the resumed connection; without this,
+            // those requests would arrive with no registered handler.
+            if ($this->pendingElicitationHandler !== null) {
+                $this->session->onElicit(
+                    $this->pendingElicitationHandler,
+                    $this->pendingElicitationApplyDefaults,
+                    $this->pendingElicitationSupportsUrlMode
+                );
+            }
+
+            // Apply any roots handler registered via onListRoots() before
+            // resumeHttpSession(). The original session advertised the roots
+            // capability at its handshake, so the server may still send
+            // roots/list on the resumed connection; without this, those
+            // requests would arrive with no registered handler.
+            if ($this->pendingRootsHandler !== null) {
+                $this->session->onListRoots(
+                    $this->pendingRootsHandler,
+                    $this->pendingRootsListChanged
+                );
+            }
+
+            // Apply any sampling handler registered via onSampling() before
+            // resumeHttpSession(), for the same reason as the elicitation
+            // and roots handlers above.
+            if ($this->pendingSamplingHandler !== null) {
+                $this->session->onSampling($this->pendingSamplingHandler);
+            }
+
+            // Re-open the standalone GET SSE stream for the resumed session.
+            // The persisted standaloneLastEventId (restored by
+            // HttpSessionManager::fromArray) is sent as Last-Event-ID so the
+            // server can replay anything that would have been delivered to
+            // the previous process after it detached. The standalone GET
+            // stream does not exist on the 2026-07-28 path (no session id to
+            // attach it to), so modern resumes skip it — mirroring connect().
+            if (!$this->session->isModernMode()) {
+                $transport->startStandaloneSseStream();
+            }
+
+            $this->logger->info('HTTP session resumed successfully', [
+                'sessionId' => $sessionManager->getSessionId(),
+            ]);
+
+            return $this->session;
+        } catch (\Exception $e) {
+            $this->logger->error("Session resume failed: {$e->getMessage()}");
+            throw new RuntimeException("Session resume failed: {$e->getMessage()}", 0, $e);
+        }
+    }
+
+    /**
+     * Detach from the transport without terminating the server-side session.
+     *
+     * Unlike close(), this preserves the server-side session for later resumption.
+     * Only works with HTTP transports.
+     *
+     * @return void
+     */
+    public function detach(): void {
+        if ($this->session) {
+            $this->session->close();
+            $this->logger->info('Session detached');
+            $this->session = null;
+        }
+        if ($this->transport instanceof StreamableHttpTransport) {
+            $this->transport->detach();
+            $this->logger->info('Transport detached (server session preserved)');
+            $this->transport = null;
+        } elseif ($this->transport) {
+            // Non-HTTP transports fall back to close
+            $this->transport->close();
+            $this->logger->info('Transport closed (non-HTTP)');
+            $this->transport = null;
+        }
+    }
+
+    /**
+     * Get the current transport instance.
+     *
+     * @return StdioTransport|StreamableHttpTransport|null
+     */
+    public function getTransport() {
+        return $this->transport;
+    }
+
+    /**
+     * Get the current session instance.
+     *
+     * @return ClientSession|null
+     */
+    public function getSession(): ?ClientSession {
+        return $this->session;
+    }
+}

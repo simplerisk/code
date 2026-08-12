@@ -363,7 +363,6 @@ input.editable {
 input.editable:focus {
 	color: var(--bs-body-color);
 	background-color: var(--bs-body-bg);
-	border-color: rgba(0, 0, 0, .25);
 	outline: 0;
 	border: var(--bs-border-width) solid var(--sr-default);
 	border-radius: var(--bs-border-radius);
@@ -459,7 +458,6 @@ input#dollarsign {
 .download-btn {
     width: 40px;
     height: 40px;
-    display: inline-block;
     border: 2px solid $excel-green;
     border-radius: 100px;
     display: flex;
@@ -713,10 +711,14 @@ select[readonly].form-control {
 	border-width: inherit;
 }
 
-// LOGIN, RESET, RESET_PASSWORD PAGE
-div#main-wrapper[data-function="login"],
-div#main-wrapper[data-function="reset"],
-div#main-wrapper[data-function="reset_password"] {
+// ADMIN UPGRADE PAGE -- legacy dark login card
+//
+// This was the shared style for index.php, reset.php and reset_password.php.
+// Those three moved to the `.sr-auth` split-panel surface (modules/_auth.scss)
+// and no longer emit `data-function`, so only admin/upgrade.php still matches.
+// Kept as-is rather than folded into the new partial because that page renders
+// its form through display_login_form() and is being reworked separately.
+div#main-wrapper[data-function="login"] {
 
 	.page-wrapper {
 		background-color: var(--sr-dark);
@@ -725,9 +727,7 @@ div#main-wrapper[data-function="reset_password"] {
 
 			background-color: inherit;
 
-			.container.login-form,
-			.container.reset-form,
-			.container.reset-password-form {
+			.container.login-form {
 
 				--bs-heading-color: var(--sr-light);
 
@@ -774,24 +774,6 @@ div#main-wrapper[data-function="reset_password"] {
 				}
 			}
 
-			.container.login-form {
-				.password-container {
-					position: relative;
-
-					#pass {
-						padding-right: 30px;
-					}
-
-					#eye-icon {
-						position: absolute;
-						right: 10px;
-						top: 18px;
-						transform: translateY(-50%);
-						cursor: pointer;
-						color: var(--bs-body-color);
-					}
-				}
-			}
 		}
 	}
 }
@@ -1223,8 +1205,32 @@ a.open-in-new-tab {
 @import "modules/assessment";
 @import "modules/questionnaire";
 @import "modules/reporting";
+@import "modules/connectivity-visualizer";
 @import "modules/hub";
+@import "modules/home";
+@import "modules/app-shell";
 @import "modules/configure";
+@import "modules/tables";
+// Imported after core/modals so the design-system shell wins the
+// specificity tie against that file's legacy dark header bar.
+@import "modules/sr-modal";
+@import "modules/sr-select";
+// The shared "show what's possible, mark what's locked" component. Imported
+// BEFORE its consumers (governance-frameworks, statement-of-applicability) so
+// each of them can override a rule of it on equal specificity without needing
+// to escalate.
+@import "modules/locked-affordance";
+@import "modules/governance-frameworks";
+// Imported after governance-frameworks: the SoA report reuses that page's
+// .sr-fw-list / .sr-fw-item rail vocabulary for its framework picker, and
+// this partial's scoped overrides need to win the tie.
+@import "modules/statement-of-applicability";
+@import "modules/ai_catalog";
+@import "modules/upgrade-progress";
+// The unauthenticated sign-in surface (login, password reset, forced password
+// change). Scoped entirely to `.sr-auth`, so it never reaches the legacy
+// `[data-function="login"]` block above that admin/upgrade.php still uses.
+@import "modules/auth";
 //@import "modules/_tabs";
 
 

@@ -7,8 +7,8 @@
 namespace OpenApi\Processors;
 
 use OpenApi\Analysis;
-use OpenApi\Annotations as OA;
-use OpenApi\Generator;
+use OpenApi\Annotations\Schema;
+use OpenApi\Undefined;
 
 /**
  * Iterate over the chain of ancestors of a schema and:
@@ -23,17 +23,16 @@ class ExpandClasses
 
     public function __invoke(Analysis $analysis): void
     {
-        /** @var OA\Schema[] $schemas */
-        $schemas = $analysis->getAnnotationsOfType(OA\Schema::class, true);
+        $schemas = $analysis->getAnnotationsOfType(Schema::class, true);
 
         foreach ($schemas as $schema) {
             if ($schema->_context->is('class')) {
                 $ancestors = $analysis->getSuperClasses($schema->_context->fullyQualifiedName($schema->_context->class));
                 $existing = [];
                 foreach ($ancestors as $ancestor) {
-                    $ancestorSchema = $analysis->getSchemaForSource($ancestor['context']->fullyQualifiedName($ancestor['class']));
-                    if ($ancestorSchema) {
-                        $refPath = Generator::isDefault($ancestorSchema->schema) ? $ancestor['class'] : $ancestorSchema->schema;
+                    $ancestorSchema = $analysis->getAnnotationForSource($ancestor['context']->fullyQualifiedName($ancestor['class']));
+                    if ($ancestorSchema instanceof Schema) {
+                        $refPath = Undefined::isDefault($ancestorSchema->schema) ? $ancestor['class'] : $ancestorSchema->schema;
                         $this->inheritFrom($analysis, $schema, $ancestorSchema, $refPath, $ancestor['context']);
 
                         // one ancestor is enough

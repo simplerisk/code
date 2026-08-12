@@ -7,9 +7,9 @@ namespace SimpleSAML\XMLSecurity\XML\ds;
 use DOMElement;
 use SimpleSAML\Assert\Assert;
 use SimpleSAML\XML\Constants as C;
-use SimpleSAML\XML\Exception\InvalidDOMElementException;
 use SimpleSAML\XML\SchemaValidatableElementInterface;
 use SimpleSAML\XML\SchemaValidatableElementTrait;
+use SimpleSAML\XMLSchema\Exception\InvalidDOMElementException;
 use SimpleSAML\XMLSecurity\Exception\InvalidArgumentException;
 
 /**
@@ -20,6 +20,7 @@ use SimpleSAML\XMLSecurity\Exception\InvalidArgumentException;
 final class Transforms extends AbstractDsElement implements SchemaValidatableElementInterface
 {
     use SchemaValidatableElementTrait;
+
 
     /**
      * Initialize a ds:Transforms
@@ -45,8 +46,6 @@ final class Transforms extends AbstractDsElement implements SchemaValidatableEle
 
     /**
      * Test if an object, at the state it's in, would produce an empty XML-element
-     *
-     * @return bool
      */
     public function isEmptyElement(): bool
     {
@@ -58,9 +57,8 @@ final class Transforms extends AbstractDsElement implements SchemaValidatableEle
      * Convert XML into a Transforms element
      *
      * @param \DOMElement $xml The XML element we should load
-     * @return static
      *
-     * @throws \SimpleSAML\XML\Exception\InvalidDOMElementException
+     * @throws \SimpleSAML\XMLSchema\Exception\InvalidDOMElementException
      *   If the qualified name of the supplied element is wrong
      */
     public static function fromXML(DOMElement $xml): static
@@ -78,7 +76,6 @@ final class Transforms extends AbstractDsElement implements SchemaValidatableEle
      * Convert this Transforms element to XML.
      *
      * @param \DOMElement|null $parent The element we should append this Transforms element to.
-     * @return \DOMElement
      */
     public function toXML(?DOMElement $parent = null): DOMElement
     {

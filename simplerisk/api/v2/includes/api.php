@@ -249,9 +249,7 @@ function api_get_ui_widget() {
     }
 
     $widget_html = '';
-    if ($layout_name == 'overview') {
-        $widget_html = get_ui_widget_overview($widget_name);
-    } else if ($layout_name == 'dashboard_open') {
+    if ($layout_name == 'dashboard_open') {
         $widget_html = get_ui_widget_dashboard_open($widget_name);
     } else if ($layout_name == 'dashboard_close') {
         $widget_html = get_ui_widget_dashboard_close($widget_name);
@@ -274,6 +272,16 @@ function api_update_default_status() {
     global $lang, $ui_layout_config;
 
     $layout_name = $_POST['layout_name'];
+
+    // Setting the org-wide default layout is an ADMIN-only action. Everyone with
+    // the dashboard permission can edit their OWN layout (api_save_ui_layout,
+    // scoped to the session user), but promoting a layout to the default for all
+    // users is privileged — enforce it here, not just in the UI, so a non-admin
+    // can't reach this endpoint directly.
+    if (!is_admin()) {
+        set_alert(true, "bad", $lang['NoPermissionForThisAction']);
+        api_v2_json_result(400, get_alert(true), null);
+    }
 
     // Check the user's permissions
     if (($ui_layout_config[$layout_name]['required_permission'] && !check_permission($ui_layout_config[$layout_name]['required_permission']))) {
@@ -301,9 +309,70 @@ function api_update_default_status() {
     api_v2_json_result(200, get_alert(true), null);
 }
 
-function get_ui_widget_overview($widget_name) {
+/**
+ * Validate a Getting Started step key against the catalog allowlist. Returns the
+ * key on success; emits a 400 and exits otherwise. Guards every dismissal write
+ * so a caller can never target an arbitrary key.
+ */
+function api_getting_started_validate_step($step_key) {
+    global $lang;
+    require_once(realpath(__DIR__ . '/../../../includes/reporting.php'));
+    if (empty($step_key) || !array_key_exists($step_key, getting_started_catalog())) {
+        set_alert(true, "bad", $lang['GSInvalidStep']);
+        api_v2_json_result(400, get_alert(true), null);
+    }
+    return $step_key;
+}
+
+/**
+ * Used for 'PUT' API call '/ui/getting_started/dismissals/{step_key}'
+ * Dismiss a Getting Started step for the current user (idempotent).
+ */
+function api_getting_started_dismiss($step_key = null) {
+    $step_key = api_getting_started_validate_step($step_key);
+    $db = db_open();
+    // user is always the session user — never from the request (no IDOR).
+    getting_started_dismiss($db, $_SESSION['uid'], $step_key);
+    db_close($db);
+    api_v2_json_result(200, null, null);
+}
+
+/**
+ * Used for 'DELETE' API call '/ui/getting_started/dismissals/{step_key}'
+ * Restore (un-dismiss) a Getting Started step for the current user.
+ */
+function api_getting_started_restore($step_key = null) {
+    $step_key = api_getting_started_validate_step($step_key);
+    $db = db_open();
+    getting_started_restore($db, $_SESSION['uid'], $step_key);
+    db_close($db);
+    api_v2_json_result(200, null, null);
+}
+
+/**
+ * Used for 'GET' API call '/ui/getting_started/dismissals'
+ * List the current user's dismissed Getting Started step keys (for the Settings
+ * "reset onboarding" UI).
+ */
+function api_getting_started_dismissals() {
+    require_once(realpath(__DIR__ . '/../../../includes/reporting.php'));
+    $db = db_open();
+    $keys = getting_started_dismissed_keys($db, $_SESSION['uid']);
+    db_close($db);
+    api_v2_json_result(200, null, $keys);
+}
+
+function get_ui_widget_risk_dashboard($widget_name) {
 
     global $lang;
+
+    // Shared widgets (KPI tiles, Risk-by-Level, What's Next) render via the
+    // common renderer; risk-dashboard-specific widgets fall through below.
+    // What's Next is scoped to risk items only on this dashboard.
+    $common = get_ui_widget_common($widget_name, 'risk');
+    if ($common !== null) {
+        return $common;
+    }
 
     // It's setup this way so we can generate the widget's html on the server side
     // it means we're able to use the UI layout widget for every kind of content
@@ -461,9 +530,284 @@ function get_ui_widget_dashboard_close($widget_name) {
 
     $widget_html = ob_get_contents();
     ob_end_clean();
-    
+
     return $widget_html;
 
+}
+
+// Shared widget renderer. The KPI tiles, the Risk-by-Level chart, and the
+// What's Next feed render identically on any dashboard, so they live here and
+// every dashboard dispatcher falls back to this. Returns the widget HTML, or
+// null when $widget_name isn't a shared widget (so the caller can try its own
+// layout-specific widgets next). Home and the domain dashboards all live in
+// /reports/, so the ../ cta_urls resolve correctly from every one of them.
+// Per-widget permission gating still happens in api_get_ui_widget() before this
+// is reached, so a dashboard that lists a KPI it shouldn't expose is still safe.
+function get_ui_widget_common($widget_name, $domain = null) {
+
+    global $lang;
+
+    // Ensure the render + count helpers are reachable regardless of which
+    // earlier dispatcher happened to load them (function-reachability rule).
+    require_once(realpath(__DIR__ . '/../../../includes/reporting.php'));
+    require_once(realpath(__DIR__ . '/../../../includes/compliance.php'));
+    require_once(realpath(__DIR__ . '/../../../includes/governance.php'));
+
+    // KPI snapshots (for the date-less KPI deltas) are recorded daily by the
+    // core_kpi_snapshot queue job, not on page load.
+
+    ob_start();
+    $handled = true;
+
+    switch ($widget_name) {
+        // ---- Risk KPIs ----
+        case 'kpi_open_risks':
+            // Sparkline: 30-day open-risk trend, team-scoped; fewer open risks is good.
+            render_kpi_tile((string)get_open_risks(), 'HomeKpiOpenRisks', '../reports/dynamic_risk_report.php?status=0&group=0&sort=0', home_risk_kpi_delta('open'), 'Risk', kpi_sparkline_for('open_risks', false));
+            break;
+        case 'kpi_needs_review':
+            // Sparkline: 30-day unreviewed-open-risk trend, team-scoped; fewer is good.
+            render_kpi_tile((string)get_unreviewed_open_risk_count(), 'HomeKpiNeedsReview', '../management/management_review.php', home_risk_kpi_delta('unreviewed'), 'Risk', kpi_sparkline_for('needs_review', false));
+            break;
+        case 'kpi_unmitigated':
+            // Series reconstructed live (team-scoped); rising unmitigated is bad (red).
+            $unmit_series = kpi_series_unmitigated();
+            render_kpi_tile((string)get_unmitigated_open_risk_count(), 'HomeKpiUnmitigated', '../management/plan_mitigations.php', home_series_delta($unmit_series, false), 'Risk', render_kpi_sparkline_svg($unmit_series, false));
+            break;
+        case 'kpi_closed_risks':
+            // Series reconstructed live (team-scoped); rising closures is good (green).
+            $closed_series = kpi_series_closed_risks();
+            render_kpi_tile((string)get_closed_risks(), 'HomeKpiClosedRisks', '../reports/dynamic_risk_report.php?status=1&group=0&sort=0', home_series_delta($closed_series, true), 'Risk', render_kpi_sparkline_svg($closed_series, true));
+            break;
+
+        // ---- Risk chart ----
+        case 'home_risk_by_level':
+            render_home_risk_by_level_chart();
+            break;
+
+        // ---- Compliance KPIs ----
+        case 'kpi_control_pass_rate':
+            $counts = get_framework_controls_test_status_counts(compliance_dashboard_framework_filter());
+            $pass = 0; $fail = 0;
+            if (is_array($counts)) {
+                foreach ($counts as $row) {
+                    $pass += (int)($row['passing_controls'] ?? 0);
+                    $fail += (int)($row['failing_controls'] ?? 0);
+                }
+            }
+            $total = $pass + $fail;
+            $rate = $total > 0 ? round(($pass / $total) * 100) . '%' : '—';
+            // Sparkline: 30-day pass-rate trend (global); a higher pass rate is good.
+            render_kpi_tile($rate, 'HomeKpiControlPassRate', '../compliance/past_audits.php', home_pass_rate_delta(), 'Compliance', kpi_sparkline_for('pass_rate', true));
+            break;
+        case 'kpi_failing_controls':
+            $counts = get_framework_controls_test_status_counts(compliance_dashboard_framework_filter());
+            $fail = 0;
+            if (is_array($counts)) {
+                foreach ($counts as $row) { $fail += (int)($row['failing_controls'] ?? 0); }
+            }
+            // Series reconstructed live from control test-result dates; rising failing is bad (red).
+            $fail_series = kpi_series_failing_controls();
+            render_kpi_tile((string)$fail, 'HomeKpiFailingControls', '../reports/compliance_dashboard.php', home_series_delta($fail_series, false), 'Compliance', render_kpi_sparkline_svg($fail_series, false));
+            break;
+        case 'kpi_compliance_total_controls':
+            // Distinct controls across the selected framework (or all frameworks).
+            render_kpi_tile((string)get_compliance_total_controls(compliance_dashboard_framework_filter()), 'ComplianceTotalControls', '../governance/index.php', null, 'Compliance');
+            break;
+        case 'kpi_open_audits':
+            // Scoped to the selected framework's controls (no-op on home / All Frameworks).
+            $audits = compliance_scope_rows_by_control(get_framework_control_test_audits(true));
+            render_kpi_tile((string)(is_array($audits) ? count($audits) : 0), 'HomeKpiOpenAudits', '../compliance/index.php', null, 'Compliance');
+            break;
+        case 'kpi_tests_due_soon':
+            $due = compliance_scope_rows_by_control(get_tests_to_auto_initiate());
+            render_kpi_tile((string)(is_array($due) ? count($due) : 0), 'HomeKpiTestsDueSoon', '../compliance/index.php', null, 'Compliance');
+            break;
+        case 'kpi_overdue_tests':
+            // Control test audits past their next scheduled date — the actionable
+            // "these assessments are late" number, framework-scoped.
+            render_kpi_tile((string)get_compliance_overdue_tests_count(compliance_dashboard_framework_filter()), 'HomeKpiOverdueTests', '../compliance/index.php', null, 'Compliance');
+            break;
+
+        // ---- Governance KPIs ----
+        // On the governance dashboard ($domain === 'governance') these four
+        // render as plain framework-scoped numbers — no delta, no sparkline —
+        // per the governance dashboard redesign. The home dashboard can still
+        // add kpi_total_controls / kpi_open_exceptions / kpi_policies from its
+        // widget picker (they're in home's available_widgets even though not
+        // on its default layout, and get_ui_widget_home() calls this function
+        // with $domain left null), so home keeps the original daily-snapshot
+        // delta / sparkline behavior for those.
+        case 'kpi_active_frameworks':
+            if ($domain === 'governance') {
+                // Governance dashboard: "Frameworks" reflects the current selection —
+                // 1 when a single framework is selected, all active frameworks under
+                // "All Frameworks". Plain number, no delta/sparkline.
+                $gov_fw = governance_dashboard_framework_filter();
+                $fw_count = ($gov_fw === null) ? get_frameworks_count(1) : count($gov_fw);
+                render_kpi_tile((string)$fw_count, 'Frameworks', '../governance/index.php', null, 'Governance');
+            } else {
+                // Home dashboard: full active-framework count with day-over-day trend.
+                // Sparkline: daily-snapshot history (fills in over time); more is good.
+                $af = get_frameworks_count(1);
+                render_kpi_tile((string)$af, 'HomeKpiActiveFrameworks', '../governance/index.php', home_snapshot_delta('active_frameworks', $af, true), 'Governance', kpi_sparkline_for('active_frameworks', true));
+            }
+            break;
+        case 'kpi_total_controls':
+            if ($domain === 'governance') {
+                // Framework-scoped plain number (governance dashboard filter).
+                render_kpi_tile((string)get_governance_total_controls(governance_dashboard_framework_filter()), 'Controls', '../governance/index.php', null, 'Governance');
+            } else {
+                $tc = get_framework_controls_count(false);
+                render_kpi_tile((string)$tc, 'HomeKpiTotalControls', '../governance/index.php', home_snapshot_delta('total_controls', $tc, true), 'Governance');
+            }
+            break;
+        case 'kpi_open_exceptions':
+            if ($domain === 'governance') {
+                // Framework-scoped plain number (governance dashboard filter).
+                $oe = get_open_exceptions_count(governance_dashboard_framework_filter());
+                render_kpi_tile((string)$oe, 'Exceptions', '../governance/index.php', null, 'Governance');
+            } else {
+                $oe = get_open_exceptions_count();
+                render_kpi_tile((string)$oe, 'HomeKpiOpenExceptions', '../governance/index.php', home_snapshot_delta('open_exceptions', $oe, false), 'Governance');
+            }
+            break;
+        case 'kpi_policies':
+            if ($domain === 'governance') {
+                // Governance dashboard: "Documents" — all document types,
+                // framework-scoped, plain number (matches the Documents for Review
+                // list beside it). Home keeps its policies-only "Policies" tile.
+                $docs = get_documents_count(governance_dashboard_framework_filter());
+                render_kpi_tile((string)$docs, 'Documents', '../governance/index.php', null, 'Governance');
+            } else {
+                $pol = get_policies_count();
+                render_kpi_tile((string)$pol, 'HomeKpiPolicies', '../governance/index.php', home_snapshot_delta('policies', $pol, true), 'Governance');
+            }
+            break;
+        case 'kpi_passing_percent':
+            // Governance-dashboard-only KPI: framework-scoped Passing % of
+            // controls, plain number (no delta/sparkline).
+            render_kpi_tile((string)get_governance_passing_percent(governance_dashboard_framework_filter()) . '%', 'PassingPercent', '../governance/index.php', null, 'Governance');
+            break;
+        case 'kpi_governance_failing_controls':
+            // Governance-dashboard-only KPI: framework-scoped count of controls
+            // whose status is Fail (control_status = 0), plain number.
+            $gov_failing = get_governance_control_status_totals(governance_dashboard_framework_filter())['failing'];
+            render_kpi_tile((string)$gov_failing, 'FailingControls', '../governance/index.php', null, 'Governance');
+            break;
+        // ---- What's Next feed ----
+        case 'whats_next':
+            render_whats_next_widget($domain);
+            break;
+
+        // ---- Risk list widgets ----
+        case 'list_highest_risks':
+            render_list_widget($lang['ListHighestRisks'], 'Risk', get_home_highest_risks_items(), $lang['NoDataAvailable']);
+            break;
+        case 'list_pastdue_reviews':
+            render_list_widget($lang['ListPastDueReviews'], 'Risk', get_home_pastdue_reviews_items(), $lang['WhatsNextAllCaughtUp']);
+            break;
+        case 'list_unreviewed':
+            render_list_widget($lang['ListUnreviewedRisks'], 'Risk', get_home_unreviewed_items(), $lang['WhatsNextAllCaughtUp']);
+            break;
+
+        // ---- Compliance list widgets ----
+        case 'list_upcoming_tests':
+            render_list_widget($lang['ListUpcomingTests'], 'Compliance', get_home_upcoming_tests_items(6, compliance_dashboard_framework_filter()), $lang['WhatsNextAllCaughtUp']);
+            break;
+        case 'list_recent_failures':
+            render_list_widget($lang['ListRecentFailures'], 'Compliance', get_home_recent_failures_items(6, compliance_dashboard_framework_filter()), $lang['WhatsNextAllCaughtUp']);
+            break;
+
+        // ---- Governance list widgets ----
+        case 'list_policies_review':
+            render_list_widget($lang['ListPoliciesReview'], 'Governance', get_home_policies_review_items(6, governance_dashboard_framework_filter()), $lang['WhatsNextAllCaughtUp']);
+            break;
+        case 'list_expiring_exceptions':
+            render_list_widget($lang['ListExpiringExceptions'], 'Governance', get_home_expiring_exceptions_items(6, governance_dashboard_framework_filter()), $lang['WhatsNextAllCaughtUp']);
+            break;
+        case 'list_failing_controls':
+            render_list_widget($lang['ListFailingControls'], 'Governance', get_governance_failing_controls_items(6, governance_dashboard_framework_filter()), $lang['WhatsNextAllCaughtUp']);
+            break;
+
+        default:
+            $handled = false;
+    }
+
+    $widget_html = ob_get_contents();
+    ob_end_clean();
+
+    return $handled ? $widget_html : null;
+}
+
+function get_ui_widget_home($widget_name) {
+    // The Getting Started onboarding widget is home-only (handled before the
+    // shared renderer so it never leaks onto the other dashboards).
+    if ($widget_name === 'getting_started') {
+        require_once(realpath(__DIR__ . '/../../../includes/reporting.php'));
+        ob_start();
+        render_getting_started_widget();
+        $widget_html = ob_get_contents();
+        ob_end_clean();
+        return $widget_html;
+    }
+    // Universal dashboard: home can render any widget from any dashboard. Try the
+    // shared renderer first (KPIs, lists, What's Next, Risk-by-Level), then each
+    // domain dashboard's renderer for its charts, returning the first non-empty
+    // result. Each domain renderer falls through to the shared one internally, so
+    // ordering is safe. The Incident renderer exists only when the IM Extra is
+    // active. Permission enforcement already happened in api_get_ui_widget() via
+    // the widget's required_permission, so a widget only reaches here if allowed.
+    $handlers = [
+        'get_ui_widget_common',
+        'get_ui_widget_risk_dashboard',
+        'get_ui_widget_compliance_dashboard',
+        'get_ui_widget_governance_dashboard',
+        'get_ui_widget_incident_dashboard',
+    ];
+    foreach ($handlers as $handler) {
+        if (!function_exists($handler)) {
+            continue;
+        }
+        $html = $handler($widget_name);
+        if ($html !== null && $html !== '') {
+            return $html;
+        }
+    }
+    return '';
+}
+
+/*******************************************************************************
+ * Wrap a chart's canvas in the standard .sr-widget frame — a styled header with
+ * the title and a domain tag (e.g. "Compliance", "Governance") — so the chart
+ * widgets read like the KPI / list widgets. The chart itself suppresses its
+ * in-canvas Chart.js title (keyed on its element id in create_chartjs_*_code),
+ * so the header is the only title. The grid cell goes transparent for any cell
+ * containing a .sr-widget (see _home.scss), so this does not double-frame.
+ * $domain_key is a $lang key (e.g. 'Compliance', 'Governance').
+ *******************************************************************************/
+function render_framed_chart($title_key, $domain_key, callable $render) {
+    global $lang, $escaper;
+
+    ob_start();
+    $render();
+    $chart = ob_get_clean();
+
+    $title  = $escaper->escapeHtml($lang[$title_key] ?? $title_key);
+    $domain = isset($lang[$domain_key])
+        ? "<span class='sr-domain sr-widget__domain'>" . $escaper->escapeHtml($lang[$domain_key]) . "</span>"
+        : '';
+
+    echo "<div class='sr-widget sr-widget--chart'>"
+       . "<div class='sr-widget__head'><span class='sr-widget__title'>{$title}</span>{$domain}</div>"
+       . "<div class='sr-widget__body sr-widget__body--chart'>{$chart}</div>"
+       . "</div>";
+}
+
+// Thin compliance-specific sibling — keeps the existing compliance dashboard
+// call sites unchanged while sharing the generalized frame body above.
+function render_framed_compliance_chart($title_key, callable $render) {
+    render_framed_chart($title_key, 'Compliance', $render);
 }
 
 /*******************************************************************************
@@ -471,17 +815,42 @@ function get_ui_widget_dashboard_close($widget_name) {
  *******************************************************************************/
 function get_ui_widget_compliance_dashboard($widget_name) {
 
+    // Shared widgets (KPI tiles, What's Next, etc.) render via the common
+    // renderer; compliance-specific charts fall through below. What's Next is
+    // scoped to compliance items only on this dashboard.
+    $common = get_ui_widget_common($widget_name, 'compliance');
+    if ($common !== null) {
+        return $common;
+    }
+
     ob_start();
-    
+
     switch ($widget_name) {
-        case 'compliance_controls_by_framework_bar_chart':
-            compliance_controls_by_framework_bar_chart();
+        // Control pass/fail broken down by a control attribute — horizontal stacked
+        // bars, framework-scoped by the dashboard's single-select.
+        case 'compliance_controls_by_domain':
+            render_framed_compliance_chart('ControlsByDomain', fn() => compliance_controls_pass_fail_by_chart('family', 'compliance_controls_by_domain', 'ControlsByDomain'));
             break;
-        case 'compliance_pass_rate_trend_line_chart': 
+        case 'compliance_controls_by_class':
+            render_framed_compliance_chart('ControlsByClass', fn() => compliance_controls_pass_fail_by_chart('control_class', 'compliance_controls_by_class', 'ControlsByClass'));
+            break;
+        case 'compliance_controls_by_phase':
+            render_framed_compliance_chart('ControlsByPhase', fn() => compliance_controls_pass_fail_by_chart('control_phase', 'compliance_controls_by_phase', 'ControlsByPhase'));
+            break;
+        case 'compliance_controls_by_priority':
+            render_framed_compliance_chart('ControlsByPriority', fn() => compliance_controls_pass_fail_by_chart('control_priority', 'compliance_controls_by_priority', 'ControlsByPriority'));
+            break;
+        case 'compliance_controls_by_maturity':
+            render_framed_compliance_chart('ControlsByCurrentMaturity', fn() => compliance_controls_pass_fail_by_chart('control_maturity', 'compliance_controls_by_maturity', 'ControlsByCurrentMaturity'));
+            break;
+        case 'compliance_control_status_over_time':
+            render_framed_compliance_chart('ControlStatusOverTime', fn() => compliance_control_status_over_time_chart());
+            break;
+        case 'compliance_pass_rate_trend_line_chart':
             compliance_pass_rate_trend_line_chart();
             break;
         case 'compliance_pass_fail_pie_chart':
-            compliance_pass_fail_pie_chart();
+            render_framed_compliance_chart('ControlStatus', fn() => compliance_pass_fail_pie_chart());
             break;
     }
 
@@ -492,19 +861,256 @@ function get_ui_widget_compliance_dashboard($widget_name) {
 
 }
 
+/*******************************************************************************************
+ * This function is used to get the Define Tests insights band widget's html content.       *
+ * Counts are TEST-level (not control-level like the compliance_dashboard KPIs above) — the  *
+ * Overdue/Due soon/Failing tiles count individual active tests, so a tile's number can       *
+ * exceed the grid's control-group count when a control has more than one active test.        *
+ *******************************************************************************************/
+function get_ui_widget_define_tests_insights($widget_name) {
+
+    require_once(realpath(__DIR__ . '/../../../includes/compliance_grid.php'));
+    require_once(realpath(__DIR__ . '/../../../includes/reporting.php'));
+
+    global $lang;
+
+    ob_start();
+
+    switch ($widget_name) {
+        case 'kpi_dt_total_tests':
+            // Common-test count (Phase 4a) unlocks the "M common · across N
+            // controls" subtitle; compute both counts once and only prepend
+            // the common-test clause when there's at least one to report, so
+            // a fresh/pre-Phase-4a install still reads "Across N controls".
+            $controls_with_tests = count_controls_with_tests();
+            $common_tests = count_common_tests();
+            $subtitle = $common_tests > 0
+                ? _lang_raw('DtNCommonAcrossNControls', ['common' => $common_tests, 'n' => $controls_with_tests])
+                : _lang_raw('DtAcrossNControls', ['n' => $controls_with_tests]);
+            render_kpi_tile((string)count_active_tests(), 'DtTotalTests', 'index.php', null, 'Compliance', '', '', $subtitle);
+            break;
+        // Tiles link STRAIGHT to the grid's own filter URLs now that those are
+        // addressable. They used to link to ?insight=<key>, which meant the page
+        // loaded unfiltered, then JS applied the filter and rewrote the URL --
+        // one wasted fetch and a visible flicker through a URL the user never
+        // asked for. A direct link lands filtered on the first render, and the
+        // address bar is immediately the shareable one.
+        // (compliance-define-tests.js still honours ?insight= for older links.)
+        case 'kpi_dt_coverage_gaps':
+            render_kpi_tile((string)count_coverage_gap_controls(), 'DtUntestedControls', 'index.php?coverage=gaps', null, 'Compliance', '', '', $lang['DtControlsInScopeNoCoverage'], 'danger');
+            break;
+        // The two TIME tiles also carry a sort: their drill-through is a work
+        // queue ("what needs initiating"), and a queue's first question is what
+        // to do first. Ascending next-due answers it -- most overdue first,
+        // soonest first -- where the default grouping is by control, which says
+        // nothing about urgency. The result/coverage tiles get no sort: every
+        // row in a Failing drill-through shares the same result, so sorting on
+        // it orders nothing.
+        case 'kpi_dt_overdue':
+            render_kpi_tile((string)count_overdue_tests(), 'Overdue', 'index.php?status=overdue&sort=next_due', null, 'Compliance', '', '', $lang['DtNeedInitiationNow'], 'danger');
+            break;
+        case 'kpi_dt_due_soon':
+            render_kpi_tile((string)count_due_soon_tests(), 'DueSoon', 'index.php?status=due_soon&sort=next_due', null, 'Compliance', '', '', $lang['DtWithinLeadInWindow']);
+            break;
+        case 'kpi_dt_failing':
+            render_kpi_tile((string)count_failing_tests(), 'Failing', 'index.php?result=failing', null, 'Compliance', '', '', $lang['DtLastResultFailed'], 'danger');
+            break;
+        case 'kpi_dt_passing':
+            render_kpi_tile((string)count_passing_tests(), 'Passing', 'index.php?result=passing', null, 'Compliance', '', '', $lang['DtLastResultPassed'], 'success');
+            break;
+    }
+
+    $widget_html = ob_get_contents();
+    ob_end_clean();
+
+    return $widget_html;
+
+}
+
+/**
+ * Insights band above the Define Control Frameworks master-detail page
+ * (governance/index.php). Unlike every other UI-layout band, this one has a
+ * RAIL above it (the framework list) -- so unlike get_ui_widget_define_tests_insights()
+ * above (always global), every tile here is scoped to whichever scope the rail
+ * currently has selected. Absent ?framework= means the rail's "All controls"
+ * row; ?framework=-1 means its "Unassigned controls" row (controls mapped to no
+ * framework at all -- the "Unassigned" sentinel every id facet on that page
+ * speaks, spelled `m.control_id is NULL` by control_framework_scope_sql()).
+ *
+ * Tiles link straight to the controls table's own filter URLs
+ * (index.php?status=/?maturity=/?applicability=), carrying the current
+ * framework scope along via $qs -- never a ?insight=<key> indirection (see
+ * get_ui_widget_define_tests_insights()'s own comment for why that was
+ * abandoned: it loads the page unfiltered, then applies the filter and
+ * rewrites the URL -- one wasted fetch and a visible flicker through a URL
+ * the user never asked for).
+ */
+function get_ui_widget_define_frameworks_insights($widget_name) {
+    require_once(realpath(__DIR__ . '/../../../includes/governance.php'));
+    require_once(realpath(__DIR__ . '/../../../includes/reporting.php'));
+    global $lang;
+
+    // Scope follows the rail. Absent = the rail's "All controls" row, and
+    // "all" means all -- every tile here now scopes to the rail selection
+    // exactly as the controls table beneath it and that table's own filter
+    // facets do, via control_framework_scope_sql().
+    //
+    // That took two passes. Every tile used to add `frameworks.status = 1` on
+    // top of the framework filter and reach controls through an INNER JOIN on
+    // framework_control_mappings, so controls under an inactive framework and
+    // controls mapped to no framework at all were listed in the table and
+    // missing from the tiles above it: 670 against 671 on Below target
+    // (Task 37), 1536 against 1547 rows on Controls (Task 40). Both are fixed
+    // by delegating to the aggregate the matching filter facet already reads,
+    // so tile and chip are one number computed once -- get_control_scope_totals()
+    // and count_controls_below_target(), both in includes/governance.php.
+    $fw  = get_param("GET", "framework", null);
+    $ids = ($fw === null || $fw === '') ? null : [(int)$fw];
+    // Appended to a URL that already has a '?' (every tile below carries at
+    // least its own filter param); kpi_fw_controls has no filter param of its
+    // own, so it builds its own '?'-or-'' prefix instead of reusing $qs.
+    $qs  = $ids === null ? '' : ('&framework=' . (int)$fw);
+    $fw_qs = $ids === null ? '' : ('framework=' . (int)$fw);
+
+    $totals = get_control_scope_totals($ids);
+
+    ob_start();
+    switch ($widget_name) {
+        case 'kpi_fw_controls':
+            $controls_url = 'index.php' . ($fw_qs === '' ? '' : ('?' . $fw_qs));
+            render_kpi_tile((string)$totals['total'], 'Controls',
+                $controls_url, null, 'Governance', '', '', $lang['FwInScope']);
+            break;
+        case 'kpi_fw_passing':
+            render_kpi_tile((string)$totals['passing'], 'Pass',
+                'index.php?status=pass' . $qs, null, 'Governance', '', '', $lang['FwLastTestPassed'], 'success');
+            break;
+        case 'kpi_fw_untested':
+            // Currently unfindable in the product otherwise, and precisely the
+            // Statement-of-Applicability gap this band exists to surface.
+            // No $value_tone -- render_kpi_tile() only defines 'danger'/
+            // 'success' (design-system.md's "App Red spent once" rule); a
+            // 'warning' tone doesn't exist, and mislabeling Not Tested as
+            // 'danger' would visually conflate it with the Failing tile.
+            render_kpi_tile((string)$totals['not_tested'], 'NotTested',
+                'index.php?status=not_tested' . $qs, null, 'Governance', '', '', $lang['FwNoEvidence']);
+            break;
+        case 'kpi_fw_failing':
+            render_kpi_tile((string)$totals['failing'], 'Fail',
+                'index.php?status=fail' . $qs, null, 'Governance', '', '', $lang['FwLastTestFailed'], 'danger');
+            break;
+        case 'kpi_fw_below_target':
+            // ?maturity=below, not the older ?maturity=below_target: Task 34
+            // turned Maturity into a real filter facet whose tokens are
+            // control_maturity_bucket_tokens() ('below'/'at'/'above' -- the
+            // same vocabulary governance_maturity_gap_table() already uses),
+            // and a tile that deep-linked with a token the facet doesn't
+            // offer would land the user on a filter they can't see in the
+            // sheet. The endpoint still ALIASES below_target onto below
+            // (CONTROLS_TABLE_MATURITY_ALIASES) so URLs already bookmarked
+            // keep selecting the identical rows.
+            render_kpi_tile((string)count_controls_below_target($ids), 'BelowTarget',
+                'index.php?maturity=below' . $qs, null, 'Governance', '', '', $lang['FwMaturityUnderDesired']);
+            break;
+        case 'kpi_fw_excluded':
+            // Applicability is per-framework (Task 12+); there is no honest
+            // total to show across "All controls", so the tile says so
+            // instead of printing a number that can't mean anything yet.
+            //
+            // The rail's OTHER synthetic scope -- "Unassigned controls",
+            // ?framework=-1 -- is the same case for a stronger reason: those
+            // controls are in no framework at all, so there is provably no
+            // framework for an applicability decision to have been made in.
+            // count_excluded_controls() already drops the sentinel and would
+            // return a truthful 0, but 0 is a claim ("nothing is excluded here")
+            // where the em dash is the accurate one ("this question does not
+            // apply here") -- and it is the same answer the controls table
+            // gives right below, where the Applicability column and its filter
+            // facet are both withheld under that scope.
+            if ($ids === null || (int)$fw <= 0) {
+                render_kpi_tile('—', 'Excluded', 'index.php', null, 'Governance', '', '', $lang['FwScopeAFramework']);
+            } else {
+                // ?applicability=not_applicable,inherited, not the older
+                // ?applicability=excluded: Task 14 turned Applicability into a
+                // real filter facet whose tokens are the three states the
+                // domain layer defines (applicability_requestable_states(),
+                // includes/applicability.php), and a tile that deep-linked with
+                // a token the facet doesn't offer would land the user on a
+                // filter they can't see in the sheet. Both deviations, because
+                // that is exactly what this tile counts -- its own subtitle
+                // says so ("Not applicable or inherited"). The endpoint still
+                // ALIASES `excluded` onto the same pair
+                // (CONTROLS_TABLE_APPLICABILITY_ALIASES) so URLs already
+                // bookmarked keep selecting the identical rows.
+                render_kpi_tile((string)count_excluded_controls($ids), 'Excluded',
+                    'index.php?applicability=not_applicable,inherited' . $qs, null, 'Governance', '', '', $lang['FwNotApplicableOrInherited']);
+            }
+            break;
+    }
+    $widget_html = ob_get_contents();
+    ob_end_clean();
+
+    return $widget_html;
+}
+
 /*******************************************************************************
  * This function is used to get the governance dashboard widget's html content *
  *******************************************************************************/
 function get_ui_widget_governance_dashboard($widget_name) {
 
+    // Shared widgets (KPI tiles, What's Next, etc.) render via the common
+    // renderer; governance-specific charts fall through below. What's Next is
+    // scoped to governance items only on this dashboard.
+    $common = get_ui_widget_common($widget_name, 'governance');
+    if ($common !== null) {
+        return $common;
+    }
+
     ob_start();
 
     switch ($widget_name) {
+        // Overall pass/fail/not-tested control status, framework-scoped.
+        case 'governance_control_status_pie_chart':
+            render_framed_chart('ControlStatus', 'Governance', fn() => governance_control_status_pie_chart());
+            break;
+        // Control status broken down by a control attribute — horizontal
+        // stacked bars, framework-scoped by the dashboard's single-select.
+        case 'governance_controls_by_domain':
+            render_framed_chart('ControlsByDomain', 'Governance', fn() => governance_controls_status_by_chart('family', 'governance_controls_by_domain', 'ControlsByDomain'));
+            break;
+        case 'governance_controls_by_class':
+            render_framed_chart('ControlsByClass', 'Governance', fn() => governance_controls_status_by_chart('control_class', 'governance_controls_by_class', 'ControlsByClass'));
+            break;
+        case 'governance_controls_by_phase':
+            render_framed_chart('ControlsByPhase', 'Governance', fn() => governance_controls_status_by_chart('control_phase', 'governance_controls_by_phase', 'ControlsByPhase'));
+            break;
+        case 'governance_controls_by_priority':
+            render_framed_chart('ControlsByPriority', 'Governance', fn() => governance_controls_status_by_chart('control_priority', 'governance_controls_by_priority', 'ControlsByPriority'));
+            break;
+        case 'governance_controls_by_maturity':
+            render_framed_chart('ControlsByCurrentMaturity', 'Governance', fn() => governance_controls_status_by_chart('control_maturity', 'governance_controls_by_maturity', 'ControlsByCurrentMaturity'));
+            break;
         case 'governance_current_control_maturity_pie_chart':
-            governance_current_control_maturity_pie_chart();
+            render_framed_chart('CurrentControlMaturity', 'Governance', fn() => governance_current_control_maturity_pie_chart());
             break;
         case 'governance_framework_maturity_stacked_bar_chart':
-            governance_framework_maturity_stacked_bar_chart();
+            render_framed_chart('GovernanceControlsByFrameworkMaturityStacked', 'Governance', fn() => governance_framework_maturity_stacked_bar_chart());
+            break;
+        // Current vs desired control maturity radar (averaged by control family),
+        // framework-scoped; mirrors the Control Gap Analysis report's spider chart.
+        case 'governance_control_maturity_gap_radar_chart':
+            render_framed_chart('CurrentVsDesiredMaturity', 'Governance', fn() => governance_control_maturity_gap_radar_chart());
+            break;
+        // Maturity-gap tables — controls below / at / above their desired maturity,
+        // framework-scoped, each row deep-links to the control editor.
+        case 'governance_controls_below_maturity':
+            render_framed_chart('ControlsBelowMaturity', 'Governance', fn() => governance_maturity_gap_table('below'));
+            break;
+        case 'governance_controls_at_maturity':
+            render_framed_chart('ControlsAtMaturity', 'Governance', fn() => governance_maturity_gap_table('at'));
+            break;
+        case 'governance_controls_above_maturity':
+            render_framed_chart('ControlsAboveMaturity', 'Governance', fn() => governance_maturity_gap_table('above'));
             break;
     }
 

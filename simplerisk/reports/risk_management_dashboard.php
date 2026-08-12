@@ -10,8 +10,8 @@
     // Include other required files
     require_once(realpath(__DIR__ . '/../includes/reporting.php'));
 
-    // Render the 'overview' layout
-    (new \includes\Widgets\UILayout('overview'))->render();
+    // Render the 'risk_dashboard' layout
+    (new \includes\Widgets\UILayout('risk_dashboard'))->render();
 
     // Render the footer of the page. Please don't put code after this part.
     render_footer();

@@ -35,6 +35,15 @@ function reports_catalog(): array
         // Dashboards (kind='dashboard')
         // -----------------------------------------------------------------
 
+        'home' => [
+            'label_key'   => 'HomeDashboard',
+            'desc_key'    => 'HomeDashboardDesc',
+            'path'        => 'reports/home.php',
+            'kind'        => 'dashboard',
+            'tags'        => ['riskmanagement', 'compliance', 'governance'],
+            'permissions' => ['mode' => 'any', 'require' => ['riskmanagement', 'compliance', 'governance']],
+        ],
+
         'risk_management_dashboard' => [
             'label_key'   => 'RiskManagementDashboard',
             'desc_key'    => 'RiskManagementDashboardDesc',
@@ -362,6 +371,25 @@ function reports_catalog(): array
             'permissions' => ['mode' => 'all', 'require' => ['governance']],
         ],
 
+        // The report is CORE -- `governance` and nothing more, the same gate the
+        // controls page it draws from already uses. Only its EXPORT is gated on
+        // the Import/Export Extra, which is decided inside the report rather than
+        // here: an Extra-gated catalog entry would hide the whole document from
+        // every customer who has not bought an Extra they do not need to read it.
+        //
+        // It takes a ?framework= parameter, which the Hub cannot supply. Opening
+        // it from the Hub therefore lands on a framework picker rather than an
+        // error -- an SoA is a per-framework document and there is no
+        // cross-framework roll-up to show instead.
+        'statement_of_applicability' => [
+            'label_key'   => 'StatementOfApplicability',
+            'desc_key'    => 'StatementOfApplicabilityDesc',
+            'path'        => 'reports/statement_of_applicability.php',
+            'kind'        => 'report',
+            'tags'        => ['governance'],
+            'permissions' => ['mode' => 'all', 'require' => ['governance']],
+        ],
+
         'document_program_report' => [
             'label_key'   => 'DocumentProgramReport',
             'desc_key'    => 'DocumentProgramReportDesc',
@@ -389,8 +417,16 @@ function reports_catalog(): array
             'desc_key'    => 'ConnectivityVisualizerDesc',
             'path'        => 'reports/connectivity_visualizer.php',
             'kind'        => 'report',
+            // 'tags' stays the 4-domain category taxonomy the Reports Hub
+            // filter uses (design intent, not a permission list) --
+            // view_exception has no corresponding category chip. Keep
+            // 'permissions.require' in sync with connectivity_visualizer.php's
+            // render_header_and_sidebar() check_any_of list instead: both
+            // gate the SAME page, and drifting apart either hides the tile
+            // from someone who can open the page (this bug, pre-fix) or
+            // shows a tile that 403s.
             'tags'        => ['riskmanagement', 'asset', 'governance', 'compliance'],
-            'permissions' => ['mode' => 'any', 'require' => ['riskmanagement', 'asset', 'governance', 'compliance']],
+            'permissions' => ['mode' => 'any', 'require' => ['riskmanagement', 'asset', 'governance', 'compliance', 'view_exception']],
         ],
 
         'risks_and_assets' => [
@@ -438,7 +474,65 @@ function reports_catalog(): array
     if (function_exists('incident_management_extra') && incident_management_extra()) {
         require_once(realpath(__DIR__ . '/../extras/incident_management/includes/reports_catalog.php'));
         $catalog += incident_management_reports_catalog_entries();
+
+        // Home is the universal dashboard — it can host incident widgets, so
+        // surface it under the Incident Management chip too, but ONLY when the IM
+        // Extra is installed (mirroring how the chip and the IM catalog entries
+        // are gated). The DB-backed gate is here; the pure tag/permission edit is
+        // factored into augment_home_catalog_for_incident_management() below so it
+        // can be unit-tested without the DB.
+        $catalog = augment_home_catalog_for_incident_management($catalog);
     }
+
+    return $catalog;
+}
+
+/**********************************************************
+ * FUNCTION: AUGMENT HOME CATALOG FOR INCIDENT MANAGEMENT *
+ **********************************************************/
+/**
+ * When the Incident Management Extra is active, Home (the universal dashboard)
+ * should also appear under the Incident Management chip on the Dashboards hub,
+ * because it can host incident widgets (themselves im_reporting-guarded). Adds
+ * the 'incident_management' tag and the 'im_reporting' permission to the 'home'
+ * entry so IM-permitted users see Home under the IM chip and an im_reporting-only
+ * user can reach it (Home's permission mode is 'any').
+ *
+ * Pure (no DB/session): the DB-backed incident_management_extra() gate lives at
+ * the single call site in reports_catalog(). Idempotent — the in_array guards
+ * mean calling it more than once never duplicates the tag/permission. A no-op
+ * when there is no 'home' entry.
+ *
+ * @param array $catalog the catalog to augment
+ * @return array the catalog with Home augmented (unchanged if no 'home' entry)
+ */
+function augment_home_catalog_for_incident_management(array $catalog): array
+{
+    if (!isset($catalog['home']) || !is_array($catalog['home'])) {
+        return $catalog;
+    }
+
+    $home = $catalog['home'];
+
+    // Read both slices into their own locals BEFORE mutating $home. Appending to
+    // $home['tags'] in place would narrow Phan's inferred shape of $home to just
+    // {tags:...}, making a subsequent ['permissions'] read look like an invalid
+    // offset — so pull both out first, mutate the locals, then reassign whole.
+    $tags        = (isset($home['tags']) && is_array($home['tags'])) ? $home['tags'] : null;
+    $permissions = (isset($home['permissions']) && is_array($home['permissions'])) ? $home['permissions'] : null;
+
+    if (is_array($tags) && !in_array('incident_management', $tags, true)) {
+        $tags[] = 'incident_management';
+        $home['tags'] = $tags;
+    }
+
+    if (is_array($permissions) && isset($permissions['require']) && is_array($permissions['require'])
+        && !in_array('im_reporting', $permissions['require'], true)) {
+        $permissions['require'][] = 'im_reporting';
+        $home['permissions'] = $permissions;
+    }
+
+    $catalog['home'] = $home;
 
     return $catalog;
 }

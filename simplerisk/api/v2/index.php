@@ -8,14 +8,19 @@ require_once(realpath(__DIR__ . '/includes/api.php'));
 require_once(realpath(__DIR__ . '/includes/simplerisk.php'));
 require_once(realpath(__DIR__ . '/includes/assets.php'));
 require_once(realpath(__DIR__ . '/includes/governance.php'));
+require_once(realpath(__DIR__ . '/includes/governance_controls.php'));
+require_once(realpath(__DIR__ . '/includes/applicability.php'));
+require_once(realpath(__DIR__ . '/includes/soa.php'));
 require_once(realpath(__DIR__ . '/includes/risks.php'));
 require_once(realpath(__DIR__ . '/includes/compliance.php'));
 require_once(realpath(__DIR__ . '/includes/artificial_intelligence.php'));
 require_once(realpath(__DIR__ . '/includes/reporting.php'));
+require_once(realpath(__DIR__ . '/includes/self_assessments.php'));
 require_once(realpath(__DIR__ . '/../../includes/functions.php'));
 require_once(realpath(__DIR__ . '/../../includes/authenticate.php'));
 require_once(realpath(__DIR__ . '/../../includes/governance.php'));
 require_once(realpath(__DIR__ . '/../../includes/compliance.php'));
+require_once(realpath(__DIR__ . '/../../includes/compliance_grid.php'));
 require_once(realpath(__DIR__ . '/../../includes/reporting.php'));
 require_once(realpath(__DIR__ . '/../../includes/api.php'));
 require_once(realpath(__DIR__ . '/../../includes/services.php'));
@@ -92,11 +97,29 @@ if (api_v2_is_authenticated())
 
     app()->get('/governance/frameworks', 'api_v2_governance_frameworks');
     app()->get('/governance/frameworks/treegrid', 'api_v2_governance_frameworks_treegrid');
+    // Client-rendered framework rail (Define Control Frameworks redesign, Task 22).
+    // Returns value/name/depth/control_count -- not the treegrid's easyui shape --
+    // and must stay a literal path registered before the /governance/frameworks/{id}
+    // CRUD wildcard below, matching the /governance/controls/table convention above.
+    app()->get('/governance/frameworks/rail', 'api_v2_governance_frameworks_rail');
     app()->get('/governance/frameworks/associations', 'api_v2_governance_frameworks_associations');
     app()->get('/governance/controls', 'api_v2_governance_controls');
+    // Client-rendered controls table (Define Control Frameworks redesign). Returns
+    // shaped row data, not HTML -- see api/v2/includes/governance_controls.php.
+    // Registered as a literal path before the /governance/controls/{id} CRUD
+    // wildcard below, matching the /assets/options ordering convention above.
+    app()->get('/governance/controls/table', 'api_v2_governance_controls_table');
     app()->get('/governance/controls/mapped-frameworks', 'api_v2_get_control_mapped_frameworks');
     app()->get('/governance/controls/mapped-frameworks/count', 'api_v2_get_control_mapped_frameworks_count');
     app()->get('/governance/controls/associations', 'api_v2_governance_controls_associations');
+    // Bulk control delete (Task 54). POST rather than DELETE because the request
+    // names either a list of ids or a FILTER the server resolves -- there is no
+    // addressable resource, and a nested filter map cannot ride in a DELETE body.
+    // Literal path, registered before the /governance/controls/{id} wildcards
+    // below, matching the /governance/controls/table convention above. The
+    // `confirm` flag in the body is the interlock: without it the endpoint
+    // resolves the set and reports the soft/hard split without writing anything.
+    app()->post('/governance/controls/bulk-delete', 'api_v2_governance_controls_bulk_delete');
     // /governance/documents is the v2-native flat-list endpoint. The legacy
     // treegrid view (used by the Document Hierarchy tab) lives at
     // /governance/documents/treegrid further down in this file — the two
@@ -108,6 +131,36 @@ if (api_v2_is_authenticated())
     app()->post('/governance/documents/controls', 'getDocumentsToControlsDatatableResponse');
     app()->get('/governance/documents/associations', 'api_v2_governance_documents_associations');
     app()->get('/governance/documents/terms', 'api_v2_governance_documents_significant_terms');
+    // Control applicability -- the Statement of Applicability's one new fact
+    // (spec section 5). Reads are gated on `governance`, the write on
+    // `modify_frameworks`: scoping a control out of a framework is a
+    // framework-scoping decision (spec D10).
+    //
+    // /reasons is a literal path registered before the collection routes,
+    // matching the /governance/controls/table and /assets/options ordering
+    // convention above -- Leaf matches in registration order.
+    app()->get('/governance/applicability/reasons', 'api_v2_governance_applicability_reasons');
+    app()->get('/governance/applicability', 'api_v2_governance_applicability_get');
+    // POST rather than PATCH/DELETE: one call sets a whole SELECTION, and the
+    // same call inserts, updates, or -- for state 'applicable', which is the
+    // default and is never stored -- deletes rows. There is no addressable
+    // /applicability/{id} for a bulk decision to PATCH.
+    app()->post('/governance/applicability', 'api_v2_governance_applicability_set');
+    // The Statement of Applicability itself -- the document every applicability
+    // decision above exists to produce (ISO/IEC 27001:2022 clause 6.1.3(d)).
+    // Gated on `governance` only: the REPORT is Core, and only its export is
+    // Extra-gated. Per-framework by definition, so a request naming no framework
+    // is a 400 rather than a cross-framework roll-up that the data model cannot
+    // honestly answer.
+    //
+    // The /export sibling is the SAME document as a file, and is registered
+    // FIRST -- the literal-before-general ordering this file uses throughout,
+    // because Leaf matches in registration order. It refuses the same
+    // frameworks for the same reasons, and adds the ONE thing the report does
+    // not have: an Import/Export Extra check, enforced HERE rather than only by
+    // the page declining to render a button.
+    app()->get('/governance/soa/export', 'api_v2_governance_soa_export');
+    app()->get('/governance/soa', 'api_v2_governance_soa');
     app()->get('/governance/keywords', 'api_v2_governance_keywords');
     app()->post('/governance/save_custom_documents_to_controls_display_settings', 'saveCustomDocumentsToControlsDisplaySettingsAPI');
 
@@ -122,6 +175,22 @@ if (api_v2_is_authenticated())
     app()->delete('/governance/controls/{id}', 'deleteControlById');
     /************************* END GOVERNANCE CRUD API ****************************/
 
+    /************************** SELF-ASSESSMENTS API (core, SCF-based) ************/
+    // Literal paths registered before the /self-assessments/{id} wildcard so
+    // Leaf's registration-order matching doesn't swallow them as an id value.
+    app()->get('/self-assessments/frameworks', 'api_v2_self_assessment_frameworks');
+    app()->get('/self-assessments/control-results', 'api_v2_self_assessment_control_results');
+    app()->get('/self-assessments/pending-risks', 'api_v2_self_assessment_pending_risks');
+    app()->post('/self-assessments/pending-risks/{id}/push', 'api_v2_self_assessment_push_risk');
+    app()->delete('/self-assessments/pending-risks/{id}', 'api_v2_self_assessment_delete_pending_risk');
+    app()->get('/self-assessments', 'api_v2_self_assessments_list');
+    app()->post('/self-assessments', 'api_v2_self_assessment_create');
+    app()->get('/self-assessments/{id}', 'api_v2_self_assessment_get');
+    app()->patch('/self-assessments/{id}/responses', 'api_v2_self_assessment_save_responses');
+    app()->post('/self-assessments/{id}/complete', 'api_v2_self_assessment_complete');
+    app()->delete('/self-assessments/{id}', 'api_v2_self_assessment_delete');
+    /************************ END SELF-ASSESSMENTS API *****************************/
+
     // SimpleRisk Risk Routes
     app()->get('/risks', 'api_v2_risks');
     app()->get('/risks/associations', 'api_v2_risks_associations');
@@ -134,19 +203,64 @@ if (api_v2_is_authenticated())
     app()->get('/compliance/tests/tags', 'api_v2_compliance_tests_tags_get');
     app()->get('/compliance/audits/tags', 'api_v2_compliance_audits_tags_get');
 
+    // Define Tests redesign (Phase 1, Task 4) -- grid data feed + control-mappings lookup
+    app()->post('/compliance/tests_grid', 'api_v2_compliance_tests_grid');
+    app()->get('/compliance/control_mappings', 'api_v2_compliance_control_mappings');
+    // Define Tests redesign -- lightweight control roster (id/control_number/short_name
+    // only, no test/last-result/tag enrichment) for the Add-Test modal's control <select>,
+    // so populating it no longer requires a full tests_grid(length=-1) fetch of every control.
+    app()->get('/compliance/control_roster', 'api_v2_compliance_control_roster');
+
     /************************** COMPLIANCE CRUD API *******************************/
     app()->get('/compliance/tests/{id}', 'getTestById');
     app()->post('/compliance/tests', 'createTest');
     app()->patch('/compliance/tests/{id}', 'updateTestById');
     app()->delete('/compliance/tests/{id}', 'deleteTestById');
+    // Define Tests redesign (Phase 1, Task 8) -- retire/restore lifecycle actions,
+    // gated by can_retire_tests() (edit_tests OR delete_tests) rather than a single
+    // fixed permission, since either grants the softer "hide it" action.
+    app()->post('/compliance/tests/{id}/retire', 'retireTestById');
+    app()->post('/compliance/tests/{id}/restore', 'restoreTestById');
+    // The test's audit history (every run, newest first) -- the Define Tests
+    // grid's History row action. Read-only, so it's gated on compliance
+    // permission + the same per-test access check the write routes use, not on
+    // any of the edit/delete permissions.
+    app()->get('/compliance/tests/{id}/audits', 'getTestAuditHistoryById');
+    // Remove ONE (test, control) pairing -- the grid's unlink row action. The
+    // test itself survives on its other controls; removing the last one is
+    // refused (409) rather than orphaning it.
+    app()->delete('/compliance/tests/{id}/controls/{control_id}', 'detachTestFromControl');
     app()->get('/compliance/audits/{id}', 'getAuditById');
     app()->post('/compliance/audits', 'createAudit');
     app()->patch('/compliance/audits/{id}', 'updateAuditById');
     app()->delete('/compliance/audits/{id}', 'deleteAuditById');
+    // Define Tests redesign (Phase 3b, Task 5) -- approver sign-off actions on a
+    // closed-but-pending audit, gated by approve_tests + user_is_approver_of_audit()
+    // + segregation-of-duties (approver cannot be the audit's own tester).
+    app()->post('/compliance/audits/{id}/approve', 'approveAuditById');
+    app()->post('/compliance/audits/{id}/reject', 'rejectAuditById');
     /************************* END COMPLIANCE CRUD API ****************************/
 
     // SimpleRisk Artificial Intelligence Routes
     app()->get('/ai/recommendations', 'api_v2_ai_recommendations');
+    app()->get('/ai/capabilities', 'api_v2_ai_capabilities_get');
+    app()->patch('/ai/capabilities/{id}', 'api_v2_ai_capability_patch');
+    app()->get('/ai/provider-url-check', 'api_v2_ai_provider_url_check');
+    app()->patch('/ai/context', 'api_v2_ai_context_patch');
+    app()->get('/ai/context', 'api_v2_ai_context_questions_get');
+    // Registered ABOVE /ai/context/{type}/{id}: 'search' is one literal
+    // segment where the {type}/{id} pattern needs two, so there is no true
+    // routing collision today -- but the ordering makes the intent explicit
+    // so a future router change can't silently swallow 'search' as a {type}.
+    app()->get('/ai/context/search', 'api_v2_ai_context_search_get');
+    // Same "registered above the {type}/{id} pattern" convention as
+    // 'search' above: the canvas launchpad's tile-counts and entity-list
+    // endpoints (Task 23).
+    app()->get('/ai/context/entity-counts', 'api_v2_ai_context_entity_counts_get');
+    app()->get('/ai/context/entities', 'api_v2_ai_context_entities_get');
+    app()->get('/ai/context/{type}/{id}', 'api_v2_ai_context_get');
+    app()->get('/ai/proposals', 'api_v2_ai_proposals_get');
+    app()->patch('/ai/proposals/{id}', 'api_v2_ai_proposal_patch');
 
     // SimpleRisk Reports Routes
     app()->get('/reports/risk/average', 'api_v2_reports_risk_average');
@@ -311,6 +425,8 @@ if (api_v2_is_authenticated())
     app()->post('/compliance/define_tests', 'getDefineTestsResponse');
     app()->post('/compliance/update_test', 'updateTestResponse');
     app()->get('/compliance/test', 'getTestResponse');
+    app()->get('/compliance/approver_roster', 'get_compliance_approver_roster');
+    app()->post('/compliance/schedule_preview', 'getSchedulePreviewResponse');
     app()->get('/compliance/initiate_audits', 'getInitiateTestAuditsResponse');
     app()->post('/compliance/active_audits', 'getActiveTestAuditsResponse');
     app()->post('/compliance/save_audit_comment', 'saveTestAuditCommentResponse');
@@ -471,6 +587,11 @@ if (api_v2_is_authenticated())
     app()->get('/ui/widget', 'api_get_ui_widget');
     app()->post('/ui/default_layout', 'api_update_default_status');
     app()->post('/ui/column_settings', 'saveColumnSelectionSettingsAPI');
+    // Getting Started widget — per-user step dismissals (dismissal is a resource,
+    // so CRUD: PUT create / DELETE restore / GET list).
+    app()->put('/ui/getting_started/dismissals/{step_key}', 'api_getting_started_dismiss');
+    app()->delete('/ui/getting_started/dismissals/{step_key}', 'api_getting_started_restore');
+    app()->get('/ui/getting_started/dismissals', 'api_getting_started_dismissals');
     /*************************** UI API END ********************************/
 
     /************************** SIMPLERISK EXTRAS APIS ************************************/

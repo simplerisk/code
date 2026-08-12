@@ -1,0 +1,148 @@
+// ===========================================================================
+// LOCKED AFFORDANCE
+// ===========================================================================
+//
+// The shared presentation for "SHOW WHAT'S POSSIBLE, AND MARK WHAT'S OUT OF
+// REACH BECAUSE IT ISN'T LICENSED."
+//
+// SimpleRisk used to render an affordance for an Extra the customer does not
+// have as ABSENT -- not greyed, not a teaser. That hides the product from the
+// person most likely to want it: burying a feature cannot create a sell
+// opportunity. The rule is now the opposite, and it is GENERAL rather than
+// per-surface, so its presentation belongs in one place rather than being
+// re-invented per page.
+//
+// Consumers today:
+//   * Define Control Frameworks -- the "+ Add framework" acquisition chooser's
+//     Secure Controls Framework and Import-Export rows
+//     (display_framework_acquisition_chooser(), includes/governance.php)
+//   * Statement of Applicability -- the Import-Export-backed PDF / XLSX export
+//     buttons
+//
+// The matching DECISION lives in resolve_extra_affordance()
+// (includes/settings_catalog.php), deliberately separate from this file so a
+// dropdown row and a toolbar button can reach the same answer without sharing
+// markup.
+//
+// WHAT THIS HAS TO READ AS, and the reason every rule below is the way it is:
+// UNAVAILABLE-BUT-EXPLAINED. Not broken, and not a failed load. Three things
+// carry that:
+//   1. the affordance is muted but still fully legible -- $gray-500, not a
+//      washed-out opacity that makes text look like it failed to render;
+//   2. a neutral "Locked" badge, so the state is NAMED rather than inferred
+//      from a colour (which is also what makes it survive a colour-blind
+//      reader and a screenshot);
+//   3. one sentence saying what is missing, and the single next step that would
+//      fix it, as a real link.
+//
+// THE ACCENT IS NOT SPENT HERE. $sr-important belongs to the one live action on
+// the surface (design-system.md §4.2) -- on the chooser that is "create one
+// manually", not the row you cannot use. The unlock link earns its
+// clickability from an underline and a weight bump at rest, and only borrows
+// the accent on hover/focus, where nothing else is competing for attention.
+//
+// STRUCTURAL RULE FOR CONSUMERS: put .sr-locked on the affordance itself, and
+// do NOT also mark it disabled via Bootstrap's .disabled / [disabled] on a
+// container -- `.dropdown-item.disabled` sets `pointer-events: none`, which
+// would make the unlock link inside the row unclickable, i.e. would turn the
+// one thing the row exists to offer into decoration. Use a non-interactive
+// element (a <div>, or a <span> beside a genuinely disabled <button>) and let
+// the nested .sr-locked-link be the only interactive descendant.
+
+// The affordance itself: present, legible, and plainly not actionable.
+.sr-locked {
+    cursor: default;
+
+    // Nothing inside a locked affordance may claim a pointer -- except the one
+    // thing that can actually be acted on, restored below.
+    * {
+        cursor: default;
+    }
+
+    .sr-locked-link {
+        cursor: pointer;
+    }
+}
+
+// Button-shaped affordances (the SoA's export buttons). Kept as a modifier
+// rather than folded into .sr-locked because a menu row must NOT lose its
+// border/background treatment, and a button must.
+.sr-locked.sr-locked--btn,
+.sr-locked .sr-locked--btn {
+    border-color: $gray-300;
+    background: $gray-100;
+    color: $gray-500;
+    box-shadow: none;
+
+    &:hover,
+    &:focus {
+        border-color: $gray-300;
+        background: $gray-100;
+        color: $gray-500;
+        box-shadow: none;
+    }
+}
+
+// The state, NAMED. A quiet neutral pill rather than a warning colour: not
+// having bought an Extra is not an error condition, and colouring it like one
+// would make the whole treatment read as a fault the customer has to fix.
+.sr-locked-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    margin-left: 6px;
+    padding: 1px 6px;
+    border-radius: 10px;
+    background: $gray-200;
+    color: $gray-600;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+    // The badge sits inside a bold label; it must not inherit that weight's
+    // visual pull, and it must not stretch the label's line box.
+    line-height: 1.4;
+    vertical-align: middle;
+    white-space: nowrap;
+
+    .fa {
+        font-size: 9px;
+    }
+}
+
+// What is missing, and what to do about it. Always present on a locked
+// affordance -- a greyed control with nothing to say reads as a failed load
+// rather than as an unmet prerequisite, which is the exact misreading this
+// treatment exists to prevent.
+.sr-locked-note {
+    display: block;
+    margin-top: 4px;
+    color: $gray-600;
+    font-size: 12px;
+    font-weight: 400;
+    line-height: 1.35;
+    overflow-wrap: break-word;
+}
+
+// The one next step. Underlined and weighted at rest so it reads as a link
+// without spending the surface's single accent; the accent arrives only on
+// hover/focus. focus-visible gets a real ring because on a locked row this is
+// the ONLY tab stop, so a keyboard user must be able to see where they are.
+.sr-locked-link {
+    color: $gray-700;
+    font-weight: 600;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+
+    &:hover,
+    &:focus {
+        color: $sr-important;
+        text-decoration: underline;
+    }
+
+    &:focus-visible {
+        outline: 2px solid $sr-important;
+        outline-offset: 2px;
+        border-radius: 2px;
+    }
+}

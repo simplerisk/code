@@ -536,3 +536,67 @@ function activate_tab(tab_id) {
     }
 }
 
+
+/**
+ * SR-1921 questionnaire draft file-state reconciliation (assessment-specific).
+ * These run on the questionnaire fill page (which loads this module) and are
+ * invoked from the inline autosave handler. The reconciliation logic is
+ * assessment-specific so it lives here; the reusable saved-file <li> renderer it
+ * calls (renderSavedFileLi) is in the shared common.js file-uploader engine.
+ */
+
+/**
+ * Reconcile the file UI with the server after a successful draft save.
+ *  - removes the committed <input type=file>s that were just persisted
+ *  - re-renders each .file-uploader's .exist-files from the returned list,
+ *    routed by template/question/parent id (questionnaire-level = 0_0_0)
+ *  - rebuilds the pending .file-list + counters from remaining inputs
+ * @param savedFiles       server file list from the draft-save response
+ * @param committedInputs  the file inputs included in this request
+ * @param pendingDeletions unique_names the contact removed but has not yet saved
+ *                         (passed in from the inline script's state)
+ */
+function applyDraftFileState(savedFiles, committedInputs, pendingDeletions) {
+    var pending = pendingDeletions || [];
+
+    // 1. Drop the inputs we just uploaded.
+    (committedInputs || []).forEach(function(inp) { $(inp).remove(); });
+
+    // 2. Group returned files by uploader key "t_q_p".
+    var byKey = {};
+    (savedFiles || []).forEach(function(f) {
+        if (pending.indexOf(f.unique_name) !== -1) { return; } // pending removal — don't resurrect
+        var key = (f.template_id || 0) + '_' + (f.question_id || 0) + '_' + (f.parent_question_id || 0);
+        (byKey[key] = byKey[key] || []).push(f);
+    });
+
+    // 3. Re-render every uploader currently in the DOM.
+    $('form[name=questionnaire_response_form] .file-uploader').each(function() {
+        var $up = $(this);
+        var key = uploaderKey($up);
+        var files = byKey[key] || [];
+
+        var $exist = $up.find('.exist-files').first();
+        if ($exist.length) {
+            $exist.empty();
+            files.forEach(function(f) { $exist.append(renderSavedFileLi(f, 'assessments/download.php')); });
+        }
+
+        // Rebuild the pending "to be uploaded" list + count from the inputs that remain.
+        refreshFilelist($up);
+    });
+}
+
+/**
+ * Derive an uploader's "t_q_p" key. Per-question uploaders carry a hidden
+ * .file_name input with data-file="question_file[t_q_p]"; the questionnaire-level
+ * uploader has none and maps to "0_0_0".
+ */
+function uploaderKey($up) {
+    var df = $up.find('.file_name').data('file');
+    if (df) {
+        var m = /question_file\[(.+?)\]/.exec(df);
+        if (m) { return m[1]; }
+    }
+    return '0_0_0';
+}

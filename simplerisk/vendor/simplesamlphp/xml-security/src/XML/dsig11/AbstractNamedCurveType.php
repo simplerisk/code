@@ -5,8 +5,9 @@ declare(strict_types=1);
 namespace SimpleSAML\XMLSecurity\XML\dsig11;
 
 use DOMElement;
-use SimpleSAML\Assert\Assert;
-use SimpleSAML\XML\Exception\SchemaViolationException;
+use SimpleSAML\XMLSchema\Type\AnyURIValue;
+
+use function strval;
 
 /**
  * Abstract class representing a dsig11:NamedCurveType
@@ -18,21 +19,20 @@ abstract class AbstractNamedCurveType extends AbstractDsig11Element
     /**
      * Initialize a NamedCurveType element.
      *
-     * @param string $URI
+     * @param \SimpleSAML\XMLSchema\Type\AnyURIValue $URI
      */
     public function __construct(
-        protected string $URI,
+        protected AnyURIValue $URI,
     ) {
-        Assert::validURI($URI, SchemaViolationException::class);
     }
 
 
     /**
      * Collect the value of the URI-property
      *
-     * @return string
+     * @return \SimpleSAML\XMLSchema\Type\AnyURIValue
      */
-    public function getURI(): string
+    public function getURI(): AnyURIValue
     {
         return $this->URI;
     }
@@ -42,12 +42,11 @@ abstract class AbstractNamedCurveType extends AbstractDsig11Element
      * Convert this NamedCurveType element to XML.
      *
      * @param \DOMElement|null $parent The element we should append this NamedCurveType element to.
-     * @return \DOMElement
      */
     public function toXML(?DOMElement $parent = null): DOMElement
     {
         $e = $this->instantiateParentElement($parent);
-        $e->setAttribute('URI', $this->getURI());
+        $e->setAttribute('URI', strval($this->getURI()));
 
         return $e;
     }

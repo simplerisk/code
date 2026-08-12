@@ -6,13 +6,14 @@ namespace SimpleSAML\XMLSecurity\XML\xenc;
 
 use DOMElement;
 use SimpleSAML\Assert\Assert;
-use SimpleSAML\XML\Exception\InvalidDOMElementException;
-use SimpleSAML\XML\Exception\SchemaViolationException;
-use SimpleSAML\XML\Exception\TooManyElementsException;
 use SimpleSAML\XML\ExtendableElementTrait;
-use SimpleSAML\XML\XsNamespace as NS;
+use SimpleSAML\XMLSchema\Exception\InvalidDOMElementException;
+use SimpleSAML\XMLSchema\Exception\TooManyElementsException;
+use SimpleSAML\XMLSchema\Type\AnyURIValue;
+use SimpleSAML\XMLSchema\XML\Constants\NS;
 
 use function array_pop;
+use function strval;
 
 /**
  * A class implementing the xenc:AbstractEncryptionMethod element.
@@ -23,26 +24,25 @@ abstract class AbstractEncryptionMethod extends AbstractXencElement
 {
     use ExtendableElementTrait;
 
+
     /** The namespace-attribute for the xs:any element */
-    public const XS_ANY_ELT_NAMESPACE = NS::OTHER;
+    public const string XS_ANY_ELT_NAMESPACE = NS::OTHER;
 
 
     /**
      * EncryptionMethod constructor.
      *
-     * @param string $algorithm
+     * @param \SimpleSAML\XMLSchema\Type\AnyURIValue $algorithm
      * @param \SimpleSAML\XMLSecurity\XML\xenc\KeySize|null $keySize
      * @param \SimpleSAML\XMLSecurity\XML\xenc\OAEPparams|null $oaepParams
      * @param list<\SimpleSAML\XML\SerializableElementInterface> $children
      */
     final public function __construct(
-        protected string $algorithm,
+        protected AnyURIValue $algorithm,
         protected ?KeySize $keySize = null,
         protected ?OAEPparams $oaepParams = null,
-        protected array $children = [],
+        array $children = [],
     ) {
-        Assert::validURI($algorithm, SchemaViolationException::class); // Covers the empty string
-
         $this->setElements($children);
     }
 
@@ -50,9 +50,9 @@ abstract class AbstractEncryptionMethod extends AbstractXencElement
     /**
      * Get the URI identifying the algorithm used by this encryption method.
      *
-     * @return string
+     * @return \SimpleSAML\XMLSchema\Type\AnyURIValue
      */
-    public function getAlgorithm(): string
+    public function getAlgorithm(): AnyURIValue
     {
         return $this->algorithm;
     }
@@ -84,13 +84,12 @@ abstract class AbstractEncryptionMethod extends AbstractXencElement
      * Initialize an EncryptionMethod object from an existing XML.
      *
      * @param \DOMElement $xml
-     * @return static
      *
-     * @throws \SimpleSAML\XML\Exception\InvalidDOMElementException
+     * @throws \SimpleSAML\XMLSchema\Exception\InvalidDOMElementException
      *   if the qualified name of the supplied element is wrong
-     * @throws \SimpleSAML\XML\Exception\MissingAttributeException
+     * @throws \SimpleSAML\XMLSchema\Exception\MissingAttributeException
      *   if the supplied element is missing one of the mandatory attributes
-     * @throws \SimpleSAML\XML\Exception\TooManyElementsException
+     * @throws \SimpleSAML\XMLSchema\Exception\TooManyElementsException
      *   if too many child-elements of a type are specified
      */
     public static function fromXML(DOMElement $xml): static
@@ -98,17 +97,18 @@ abstract class AbstractEncryptionMethod extends AbstractXencElement
         Assert::same($xml->localName, 'EncryptionMethod', InvalidDOMElementException::class);
         Assert::same($xml->namespaceURI, static::NS, InvalidDOMElementException::class);
 
-        $algorithm = self::getAttribute($xml, 'Algorithm');
-
         $keySize = KeySize::getChildrenOfClass($xml);
         Assert::maxCount($keySize, 1, TooManyElementsException::class);
 
         $oaepParams = OAEPparams::getChildrenOfClass($xml);
         Assert::maxCount($oaepParams, 1, TooManyElementsException::class);
 
-        $children = self::getChildElementsFromXML($xml);
-
-        return new static($algorithm, array_pop($keySize), array_pop($oaepParams), $children);
+        return new static(
+            self::getAttribute($xml, 'Algorithm', AnyURIValue::class),
+            array_pop($keySize),
+            array_pop($oaepParams),
+            self::getChildElementsFromXML($xml),
+        );
     }
 
 
@@ -116,12 +116,11 @@ abstract class AbstractEncryptionMethod extends AbstractXencElement
      * Convert this EncryptionMethod object to XML.
      *
      * @param \DOMElement|null $parent The element we should append this EncryptionMethod to.
-     * @return \DOMElement
      */
     public function toXML(?DOMElement $parent = null): DOMElement
     {
         $e = $this->instantiateParentElement($parent);
-        $e->setAttribute('Algorithm', $this->getAlgorithm());
+        $e->setAttribute('Algorithm', strval($this->getAlgorithm()));
 
         $this->getKeySize()?->toXML($e);
         $this->getOAEPparams()?->toXML($e);

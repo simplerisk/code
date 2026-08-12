@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace SimpleSAML\XMLSecurity\XML;
 
+use SimpleSAML\XMLSchema\Type\IDValue;
 use SimpleSAML\XMLSecurity\Alg\Signature\SignatureAlgorithmInterface;
 use SimpleSAML\XMLSecurity\XML\ds\KeyInfo;
 
@@ -19,9 +20,9 @@ interface SignableElementInterface extends CanonicalizableElementInterface
      *
      * When this method returns null, the signature created for this object will reference the entire document.
      *
-     * @return string|null The ID of this element, or null if we don't have one.
+     * @return \SimpleSAML\XML\Type\IDValue|null The ID of this element, or null if we don't have one.
      */
-    public function getId(): ?string;
+    public function getId(): ?IDValue;
 
 
     /**

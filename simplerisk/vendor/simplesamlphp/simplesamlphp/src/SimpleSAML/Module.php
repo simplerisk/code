@@ -102,6 +102,7 @@ class Module
      */
     public static array $core_modules = [
         'core' => true,
+        'admin' => true,
         'saml' => true,
     ];
 
@@ -156,11 +157,16 @@ class Module
      * configuration and the actual request, it will run a PHP script and exit, or return a Response produced either
      * by another controller or by a static file.
      *
-     * @param \Symfony\Component\HttpFoundation\Request|null $request The request to process. Defaults to the current one.
+     * @param \Symfony\Component\HttpFoundation\Request|null $request
+     *   The request to process. Defaults to the current one.
+     * @return (
+     *   \Symfony\Component\HttpFoundation\Response|
+     *   \Symfony\Component\HttpFoundation\BinaryFileResponse
+     * ) Returns a Response object that can be sent to the browser.
      *
-     * @return Response|BinaryFileResponse Returns a Response object that can be sent to the browser.
-     * @throws Error\BadRequest In case the request URI is malformed.
-     * @throws Error\NotFound In case the request URI is invalid or the resource it points to cannot be found.
+     * @throws \SimpleSAML\Error\BadRequest In case the request URI is malformed.
+     * @throws \SimpleSAML\Error\NotFound
+     *   In case the request URI is invalid or the resource it points to cannot be found.
      */
     public static function process(?Request $request = null): Response
     {
@@ -480,10 +486,10 @@ class Module
     /**
      * Create an object of a class returned by resolveNonModuleClass() or resolveClass().
      *
-     * @param string The classname.
+     * @param string $className The classname.
      * @param string|null $subclass The class should be a subclass of this class. Optional.
      *
-     * @return the new object
+     * @return object The new object
      */
     public static function createObject(string $className, ?string $subclass = null): object
     {
@@ -498,6 +504,7 @@ class Module
         }
         return $obj;
     }
+
 
     /**
      * Get absolute URL to a specified module resource.
@@ -569,7 +576,7 @@ class Module
     public static function callHooks(string $hook, mixed &$data = null): void
     {
         $modules = self::getModules();
-        $config = Configuration::getOptionalConfig()->getOptionalArray('module.enable', []);
+        $config = Configuration::getOptionalConfig()->getOptionalArray('module.enable', self::$core_modules);
         sort($modules);
         foreach ($modules as $module) {
             if (!self::isModuleEnabledWithConf($module, $config)) {
@@ -604,9 +611,9 @@ class Module
      *
      * This method add the trailing slash and redirects to the resulting URL.
      *
-     * @param Request $request The request to process by this controller method.
-     *
-     * @return RedirectResponse A redirection to the URI specified in the request, but with a trailing slash.
+     * @param \Symfony\Component\HttpFoundation\Request $request The request to process by this controller method.
+     * @return \Symfony\Component\HttpFoundation\RedirectResponse
+     *   A redirection to the URI specified in the request, but with a trailing slash.
      */
     public static function addTrailingSlash(Request $request): RedirectResponse
     {

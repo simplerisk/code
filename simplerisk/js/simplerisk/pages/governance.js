@@ -337,7 +337,15 @@ jQuery(document).ready(function($){
                             url: BASE_URL + '/api/v2/governance/selected_parent_frameworks_dropdown?child_id=' + framework_id,
                             type: 'GET',
                             success : function (res){
-                                $("#framework--update .parent_frameworks_container").html(res.data.html)
+                                // The container carries the id its injected
+                                // <select> is to be given (data-sr-field-id,
+                                // display_framework_parent_edit() in
+                                // includes/governance.php) -- the endpoint's
+                                // HTML cannot, since its response shape is a
+                                // published v1+v2 contract.
+                                var $container = $("#framework--update .parent_frameworks_container");
+                                $container.html(res.data.html)
+                                    .find('select[name="parent"]').attr('id', $container.data('sr-field-id'));
                             }
                         });
                         $("#framework--update [name=framework_id]").val(framework_id);
@@ -398,14 +406,12 @@ jQuery(document).ready(function($){
             $(modal).modal('show');
         });
 
-          // Event handler when clicking
-          // the edit control button on Governance > Define Framework Controls page and 
-          // the control name link on the Compliance > Initiate Audits page
-          $(document).on('click', '.control-block--edit, .control-name', function(event) {
-
-            event.preventDefault();
+          // Fetch a control's definition and open the "update control" modal populated
+          // with it. Shared by the edit-control / control-name click handlers and the
+          // ?control_id= deep-link (e.g. the governance dashboard's Failing Controls
+          // list). The endpoint enforces governance permission on the control itself.
+          function openControlForEdit(control_id) {
             resetForm('#control--update form');
-            var control_id  = $(this).attr('data-id');
             $.ajax({
                 url: BASE_URL + '/api/v2/governance/control?control_id=' + control_id,
                 type: 'GET',
@@ -413,14 +419,14 @@ jQuery(document).ready(function($){
                 success : function (res){
                     var data = res.data;
                     var control = data.control;
-                    
+
                     var modal = $('#control--update');
                     $('.control_id', modal).val(control_id);
                     $('[name=short_name]', modal).val(control.short_name);
                     $('[name=long_name]', modal).val(control.long_name);
                     $('[name=description]', modal).val(control.description);
                     $('[name=supplemental_guidance]', modal).val(control.supplemental_guidance);
-                    
+
                     $("#frameworks").multiselect('deselectAll', false);
                     $.each(control.framework_ids.split(","), function(i,e){
                         $("#frameworks option[value='" + e + "']").prop("selected", true);
@@ -429,7 +435,7 @@ jQuery(document).ready(function($){
 
                     if(control.control_type_ids != null) control_type_ids = control.control_type_ids;
                     else control_type_ids = "";
-                    
+
                     $('[name=control_class]', modal).val(Number(control.control_class) ? control.control_class : "");
                     $('[name=control_phase]', modal).val(Number(control.control_phase) ? control.control_phase : "");
                     $('[name=control_owner]', modal).val(Number(control.control_owner) ? control.control_owner : "");
@@ -483,6 +489,41 @@ jQuery(document).ready(function($){
                     $(modal).modal('show');
                 }
             });
+          }
+
+          // Event handler when clicking
+          // the edit control button on Governance > Define Framework Controls page and
+          // the control name link on the Compliance > Initiate Audits page
+          $(document).on('click', '.control-block--edit, .control-name', function(event) {
+            event.preventDefault();
+            openControlForEdit($(this).attr('data-id'));
+          });
+
+          // Deep-link: open a specific control's edit modal on load — e.g. the
+          // governance dashboard's Failing Controls list (governance/index.php?control_id=N).
+          // No-op on pages without the update-control modal; the endpoint enforces access
+          // on its own.
+          $(function() {
+              if (!$('#control--update').length) return;
+              var deepControlId = new URLSearchParams(window.location.search).get('control_id');
+              if (!(deepControlId && /^\d+$/.test(deepControlId))) return;
+
+              // The update modal's WYSIWYG editors initialise asynchronously; opening
+              // before they're ready makes setEditorContent() throw so the modal never
+              // shows. Poll until the editors are live, then open (bounded fallback).
+              var tries = 0;
+              (function waitAndOpen() {
+                  var ready = ['update_control_description', 'update_supplemental_guidance'].every(function(id) {
+                      var ed = (typeof hugerte !== 'undefined') && hugerte.get(id);
+                      try { return !!(ed && ed.getBody && ed.getBody()); } catch (e) { return false; }
+                  });
+                  if (ready || tries >= 50) {
+                      openControlForEdit(deepControlId);
+                  } else {
+                      tries++;
+                      setTimeout(waitAndOpen, 100);
+                  }
+              })();
           });
           
           $(document).on('click', '.control-block--clone', function(event) {
@@ -659,7 +700,7 @@ jQuery(document).ready(function($){
     if ($.fn.DataTable && $("#active-controls").length) {
         controlDatatable = $("#active-controls").DataTable({
             scrollX: true,
-            bSort: true,
+            ordering: true,
             ajax: {
                 url: BASE_URL + '/api/v2/datatable/framework_controls',
                 type: "POST",
@@ -1125,77 +1166,14 @@ function fixTreeGridCollapsableColumn() {
     });
 }
 
+// Thin wrapper over the shared implementation in js/simplerisk/common.js.
+// The selectize configuration used to be duplicated here and in
+// js/simplerisk/pages/risk.js; both now delegate so the Define Control
+// Frameworks redesign could adopt it instead of adding a third copy.
+// The name and signature are unchanged -- this is still the global
+// compliance/audit_initiation.php and this file's own control modals call.
 function setupAssetsAssetGroupsWidget(select_tag, control_id, control_maturity) {
-
-    if (!select_tag.length)
-        return;
-    
-    var select = select_tag.selectize({
-        sortField: 'text',
-        plugins: ['optgroup_columns', 'remove_button', 'restore_on_backspace'],
-        delimiter: ',',
-        create: function (input){
-            return { id:'new_asset_' + input, name:input };
-        },
-        persist: false,
-        valueField: 'id',
-        labelField: 'name',
-        searchField: 'name',
-        sortField: 'name',
-        optgroups: [
-            {class: 'asset', name: 'Standard Assets'},
-            {class: 'group', name: 'Asset Groups'}
-        ],
-        optgroupField: 'class',
-        optgroupLabelField: 'name',
-        optgroupValueField: 'class',
-        preload: true,
-        render: {
-            item: function(item, escape) {
-                return '<div class="' + item.class + '">' + escape(item.name) + '</div>';
-            }
-        },
-        onInitialize: function() {
-            select_tag.parent().find('.selectize-control div').block({message:'<i class="fa fa-spinner fa-spin" style="font-size:24px"></i>'});
-        },
-        load: function(query, callback) {
-            if (query.length) return callback();
-            $.ajax({
-                url: BASE_URL + '/api/v2/asset-group/options_by_control' ,
-                data: { 
-                        "control_id": control_id, 
-                        "control_maturity": control_maturity, 
-                    },
-                type: 'GET',
-                dataType: 'json',
-                error: function() {
-                    callback();
-                },
-                success: function(res) {
-                    var data = res.data;
-                    var control = select[0].selectize;
-                    var selected_ids = [];
-                    // Have to do it this way, because addition with simple addOption() will
-                    // bug out when we deselect an option(it wouldn't be added back to the
-                    // list of selectable items)
-                    len = data.length;
-                    for (var i = 0; i < len; i++) {
-                        var item = data[i];
-                        item.id += '_' + item.class;
-                        control.registerOption(item);
-                        if (item.selected == '1') {
-                            selected_ids.push(item.id);
-                        }
-                    }
-                    if (selected_ids.length)
-                        control.setValue(selected_ids);
-                },
-                complete: function() {
-                    select_tag.parent().find('.selectize-control div').unblock({message:null});
-                }
-            });
-        }
-    });        
+    return setupAssetsAssetGroupsWidgetForControl(select_tag, control_id, control_maturity);
 }
 
 /*****************************************************

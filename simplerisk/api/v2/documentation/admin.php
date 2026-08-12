@@ -91,7 +91,7 @@ class OpenApiAdminVersionDB {}
  *
  *      @OA\RequestBody(
  *          required=false,
- *          description="Upgrade the SimpleRisk database. If no version is provided, the latest available release will be used.",
+ *          description="Upgrade the SimpleRisk database. With no version, the full upgrade chain runs from the database's current version.",
  *          @OA\MediaType(
  *              mediaType="application/x-www-form-urlencoded",
  *              @OA\Schema(
@@ -99,8 +99,8 @@ class OpenApiAdminVersionDB {}
  *                  @OA\Property(
  *                      property="version",
  *                      type="string",
- *                      description="Optional target database version for the upgrade (format: YYYYMMDD-XXX). If omitted, the most recent release is used.",
- *                      example="20260709-001",
+ *                      description="Optional. When given, applies exactly that one release's migration -- a single hop, for targeting one migration during development. When OMITTED, the full chain runs from wherever the database actually is, finishing with the migration for the release currently in development if there is one; that is the mode to use for testing a release that has no version number yet.",
+ *                      example="20260811-001",
  *                      pattern="^\\d{8}-\\d{3}$"
  *                  )
  *              )
@@ -109,15 +109,23 @@ class OpenApiAdminVersionDB {}
  *
  *      @OA\Response(
  *          response=200,
- *          description="Upgrade successful"
+ *          description="Upgrade successful. Also returned when the requested release is the newest one this code knows about and its migration deliberately does not advance the database version, because that release has not been cut yet; the status message says so."
  *      ),
  *      @OA\Response(
  *          response=400,
- *          description="BAD REQUEST: Invalid version format or version not found."
+ *          description="BAD REQUEST: Invalid version format, version not found, or no upgrade function exists for that release."
  *      ),
  *      @OA\Response(
  *          response=403,
  *          description="FORBIDDEN: The user does not have the required permission to perform this action."
+ *      ),
+ *      @OA\Response(
+ *          response=409,
+ *          description="CONFLICT: another upgrade channel currently holds the instance-wide upgrade lock. Nothing was changed — retry once it completes. Distinct from 500 on purpose: this is an expected, self-clearing condition that hosted automation should retry rather than alert on."
+ *      ),
+ *      @OA\Response(
+ *          response=500,
+ *          description="The upgrade did not complete: the database user is missing required privileges, the migration raised an error, or it finished without advancing the database version. Detail is written to the server log rather than returned, since it can contain schema and path information."
  *      )
  * )
  */

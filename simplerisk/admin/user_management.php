@@ -995,7 +995,7 @@
 
         var reportDatatable = $this.DataTable({
             scrollX: true,
-            bSort: true,
+            ordering: true,
             bSortCellsTop: true,
             order: [[0, "asc"]],
             columnDefs : [{

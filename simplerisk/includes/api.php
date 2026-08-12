@@ -4,16 +4,28 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 // Include required functions file
+require_once(realpath(__DIR__ . '/config_check.php'));
 require_once(realpath(__DIR__ . '/functions.php'));
 require_once(realpath(__DIR__ . '/display.php'));
 require_once(realpath(__DIR__ . '/services.php'));
 require_once(realpath(__DIR__ . '/reporting.php'));
+// get_risk_connectivity_for_asset() (getAssetRiskAssociations, below). It moved
+// out of reporting.php into entity_graph.php, and is reachable here only
+// because reporting.php happens to require entity_graph.php itself -- declared
+// directly rather than relying on that, per the CLAUDE.md reachability rule.
+require_once(realpath(__DIR__ . '/entity_graph.php'));
 require_once(realpath(__DIR__ . '/assets.php'));
 require_once(realpath(__DIR__ . '/compliance.php'));
+// get_test_audit_history() -- declared directly here rather than relying on
+// api/v2/index.php's own require, per the CLAUDE.md reachability rule.
+require_once(realpath(__DIR__ . '/compliance_grid.php'));
+require_once(realpath(__DIR__ . '/audit_schedule.php'));
 require_once(realpath(__DIR__ . '/governance.php'));
 require_once(realpath(__DIR__ . '/permissions.php'));
 require_once(realpath(__DIR__ . '/datefix.php'));
 require_once(realpath(__DIR__ . '/extras.php'));
+require_once(realpath(__DIR__ . '/artificial_intelligence.php'));
+require_once(realpath(__DIR__ . '/notifications.php'));
 require_once(realpath(__DIR__ . '/../vendor/autoload.php'));
 
 // Include the language file
@@ -3261,10 +3273,11 @@ function residualScoringHistory($id = null)
 function updateRisk($id = null){
     global $lang, $escaper;
 
-    // PHP only auto-populates $_POST for POST requests; parse the body for PATCH
-    if (empty($_POST)) {
-        parse_str(file_get_contents('php://input'), $_POST);
-    }
+    // PHP only auto-populates $_POST for POST requests; parse the body for PATCH.
+    // Never gate this on empty($_POST) -- csrf-magic leaves the CSRF token in
+    // $_POST on any session-authenticated call, which makes that guard false and
+    // silently drops the entire body while still answering 200.
+    parse_non_post_body_into_post();
 
     // If the id is not sent
     if ($id === null && get_param("POST", 'id', false) === false)
@@ -3294,7 +3307,24 @@ function updateRisk($id = null){
     }
 
     $new_subject = get_param("POST", 'subject', false);
-    if(($new_subject !== false && $new_subject == "") || !trim($new_subject)){
+
+    // Only a subject the caller ACTUALLY SENT can be rejected for being blank.
+    // An absent one means "leave it alone" -- the same PATCH convention the
+    // junction-table handling below follows, and the reason the assignment
+    // above defaults to false rather than ''.
+    //
+    // The previous condition carried a second clause, `|| !trim($new_subject)`,
+    // which defeated that sentinel outright: trim(false) is '', so !trim(false)
+    // is TRUE and an OMITTED subject 400'd with "The subject of a risk cannot be
+    // empty". Every partial update therefore had to resend the subject it was
+    // not changing -- and since the column is encrypted at rest, a caller doing
+    // GET-then-PATCH had to round-trip a decrypted value purely to satisfy a
+    // validation rule. addRisk()'s bare !trim($subject) is NOT the same bug:
+    // creating a risk genuinely does require a subject.
+    //
+    // A sent-but-blank subject (''  or '   ') is still refused, which is the
+    // rule this check exists to enforce.
+    if ($new_subject !== false && trim($new_subject) === "") {
         $status = "400";
         $status_message = $escaper->escapeHtml($lang['SubjectRiskCannotBeEmpty']);
         // Return a JSON response
@@ -3590,10 +3620,11 @@ function addRisk(){
 function saveMitigation($id = null){
     global $lang, $escaper;
 
-    // PHP only auto-populates $_POST for POST requests; parse the body for PATCH
-    if (empty($_POST)) {
-        parse_str(file_get_contents('php://input'), $_POST);
-    }
+    // PHP only auto-populates $_POST for POST requests; parse the body for PATCH.
+    // Never gate this on empty($_POST) -- csrf-magic leaves the CSRF token in
+    // $_POST on any session-authenticated call, which makes that guard false and
+    // silently drops the entire body while still answering 200.
+    parse_non_post_body_into_post();
 
     $data = array();
     $id = $id ?? get_param("POST", "id", false);
@@ -3628,32 +3659,54 @@ function saveMitigation($id = null){
     // If the user has access to the risk
     elseif($access){
         $mitigation_id = $risk[0]['mitigation_id'];
-        // Submit mitigation and get the mitigation date back
-        $post = array(
-            'planning_strategy'         => get_param("POST", "planning_strategy", 0),
-            'mitigation_effort'         => get_param("POST", "mitigation_effort", 0),
-            'mitigation_cost'           => get_param("POST", "mitigation_cost", 0),
-            'mitigation_owner'          => get_param("POST", "mitigation_owner", 0),
-            'mitigation_team'           => get_param("POST", "mitigation_team", []),
-            'current_solution'          => get_param("POST", "current_solution"),
-            'security_requirements'     => get_param("POST", "security_requirements"),
-            'security_recommendations'  => get_param("POST", "security_recommendations"),
-            'planning_date'             => get_param("POST", "planning_date"),
-            'mitigation_percent'        => get_param("POST", "mitigation_percent"),
+
+        // Build $post from the fields the caller ACTUALLY sent, rather than
+        // materialising every key with a zero default.
+        //
+        // This is what makes the update below a partial update. Every default
+        // here is a destructive value (0 selects "none" for the strategy,
+        // effort, cost and owner; "" blanks the free text; [] drops the team
+        // junction), and update_mitigation() used to bind all of them
+        // unconditionally -- so a PATCH naming one field reset the whole
+        // mitigation. Omitting the unsent keys lets update_mitigation()'s
+        // $is_api filter leave those columns out of the UPDATE entirely.
+        //
+        // An explicitly-sent empty value still lands in $post and still clears
+        // the field: the rule is absence-preserves, not emptiness-preserves.
+        $mitigation_fields = array(
+            'planning_strategy',
+            'mitigation_effort',
+            'mitigation_cost',
+            'mitigation_owner',
+            'mitigation_team',
+            'current_solution',
+            'security_requirements',
+            'security_recommendations',
+            'planning_date',
+            'mitigation_percent',
         );
+
+        $post = array();
+        foreach ($mitigation_fields as $mitigation_field) {
+            if (param_was_sent($mitigation_field)) {
+                $post[$mitigation_field] = get_param("POST", $mitigation_field);
+            }
+        }
 
         // If we don't yet have a mitigation
         if (!$mitigation_id)
         {
             $status = "Mitigation Planned";
 
-
+            // A create legitimately falls back to the defaults for anything the
+            // caller left out -- there is no stored value to preserve.
             $mitigation_date = submit_mitigation($id, $status, $post);
         }
         else
         {
-            // Update mitigation and get the mitigation date back
-            $mitigation_date = update_mitigation($id, $post);
+            // Update mitigation and get the mitigation date back. $is_api = true
+            // selects partial-update semantics.
+            $mitigation_date = update_mitigation($id, $post, true);
         }
         $status = 200;
         $status_message = $escaper->escapeHtml($lang['Success']);
@@ -3829,6 +3882,17 @@ function setCustomAuditsColumn(){
 function deleteMapping(){
     global $lang;
 
+    // This handler had only the route's authentication wrapper and an
+    // Extra-activation check — activation is not a permission, so any logged-in
+    // user could delete an import/export field mapping. Import/export mapping
+    // management lives on admin/importexport.php, which renders behind
+    // check_admin, so admin is the permission the UI itself enforces.
+    if (!is_admin())
+    {
+        unauthorized_access();
+        return;
+    }
+
     $status = null;
     $status_message = null;
 
@@ -3865,6 +3929,18 @@ function deleteMapping(){
  *****************************************************/
 function updateAssessment(){
     global $lang, $escaper;
+
+    // This handler had only the route's authentication wrapper and no
+    // permission gate at all, so any logged-in user could overwrite an
+    // assessment's questions, answers and scoring. assessments is the module
+    // permission its own caller runs behind — assessments/assessment.php, which
+    // loads pages/assessment.js (the only caller of this endpoint), renders
+    // behind check_assessments → enforce_permission('assessments').
+    if (!check_permission('assessments'))
+    {
+        unauthorized_access();
+        return;
+    }
 
     $rows = json_decode($_POST['assessments'], true);
     $assessment_id = (int)$_GET["assessment_id"];
@@ -4360,7 +4436,7 @@ function getMitigationControlsDatatable(){
                 ";
 
                 if(strpos($control_status_names, "Enterprise") !== false) {
-                    $control_status = array("1" => $escaper->escapeHtml($lang["Pass"]), "0" => $escaper->escapeHtml($lang["Fail"]));
+                    $control_status = array("1" => $escaper->escapeHtml($lang["Pass"]), "0" => $escaper->escapeHtml($lang["Fail"]), "2" => $escaper->escapeHtml($lang["NotTested"]));
                     
                     $html .= "
                                             <div class='row mb-2'>
@@ -4428,7 +4504,7 @@ function getMitigationControlsDatatable(){
                 ";
               
                 if(strpos($control_status_names, "Enterprise") !== false) {
-                    $control_status = array("1" => $escaper->escapeHtml($lang["Pass"]), "0" => $escaper->escapeHtml($lang["Fail"]));
+                    $control_status = array("1" => $escaper->escapeHtml($lang["Pass"]), "0" => $escaper->escapeHtml($lang["Fail"]), "2" => $escaper->escapeHtml($lang["NotTested"]));
                 
                     $html .= "
                                 <div class='row mb-2'>
@@ -4563,7 +4639,7 @@ function addControlResponse()
         'control_desired_maturity' => isset($_POST['control_desired_maturity']) ? $_POST['control_desired_maturity'] : 0,
         'control_priority' => isset($_POST['control_priority']) ? (int)$_POST['control_priority'] : 0,
         'control_type' => isset($_POST['control_type']) ? $_POST['control_type'] : [],
-        'control_status' => isset($_POST['control_status']) ? (int)$_POST['control_status'] : 1,
+        'control_status' => isset($_POST['control_status']) ? (int)$_POST['control_status'] : 2,
         'family' => isset($_POST['family']) ? (int)$_POST['family'] : 0,
         'mitigation_percent' => (isset($_POST['mitigation_percent']) && $_POST['mitigation_percent'] >= 0 && $_POST['mitigation_percent'] <= 100) ? (int)$_POST['mitigation_percent'] : 0
     );
@@ -4573,7 +4649,12 @@ function addControlResponse()
     $map_frameworks = array();
     foreach($map_framework_ids as $index=>$frameworks){
         $reference_name = isset($reference_names[$index])?$reference_names[$index]:"";
-        $reference_text = isset($reference_texts[$index])?$reference_texts[$index]:"";
+        // NULL, not "", when the request said NOTHING about this row's clause
+        // text -- see updateControlResponse() below for why. Harmless on this
+        // create path (there is no stored text a new control could lose), but
+        // both handlers build the same row shape for the same function and a
+        // divergence between them is the next person's trap.
+        $reference_text = isset($reference_texts[$index])?$reference_texts[$index]:null;
         $map_frameworks[] = array($frameworks,$reference_name,$reference_text);
     }
     $control["map_frameworks"] = $map_frameworks;
@@ -4648,8 +4729,18 @@ function updateControlResponse()
             'control_current_maturity' => isset($_POST['control_current_maturity']) ? (int)$_POST['control_current_maturity'] : 0,
             'control_desired_maturity' => isset($_POST['control_desired_maturity']) ? (int)$_POST['control_desired_maturity'] : 0,
             'control_priority' => isset($_POST['control_priority']) ? (int)$_POST['control_priority'] : 0,
-            'control_type' => isset($_POST['control_type']) ? $_POST['control_type'] : [],
-            'control_status' => isset($_POST['control_status']) ? (int)$_POST['control_status'] : 1,
+            // Set UNCONDITIONALLY, even to [], and that is correct HERE -- unlike
+            // updateControlById() further down this file, which omits the key
+            // unless the request proves it carried a submission. This is the
+            // legacy whole-form POST: it is only ever reached from a page that
+            // rendered the complete Edit Control form, so an absent
+            // control_type[] genuinely means "the user deselected every type",
+            // not "this request said nothing about types". Same reasoning
+            // delete_control_to_frameworks_except() is deliberately not called
+            // from update_framework_control() -- see its docblock in
+            // includes/governance.php.
+            'control_type' => isset($_POST['control_type']) ? (array)$_POST['control_type'] : [],
+            'control_status' => isset($_POST['control_status']) ? (int)$_POST['control_status'] : 2,
             'family' => isset($_POST['family']) ? (int)$_POST['family'] : 0,
             'mitigation_percent' => (isset($_POST['mitigation_percent']) && $_POST['mitigation_percent'] >= 0 && $_POST['mitigation_percent'] <= 100) ? (int)$_POST['mitigation_percent'] : 0
         );
@@ -4658,8 +4749,20 @@ function updateControlResponse()
         $reference_texts = isset($_POST['reference_text'])?$_POST['reference_text']:array();
         $map_frameworks = array();
         foreach($map_framework_ids as $index=>$frameworks){
+            // reference_name STAYS "": the column is varchar(255) NOT NULL and part
+            // of framework_control_mappings' only UNIQUE key, so there is no null to
+            // mean "unsaid" with. A missing element here is a malformed request (the
+            // input is `required` on the form that posts this), and it produces a
+            // junk row rather than destroying one -- noted, not fixed here.
             $reference_name = isset($reference_names[$index])?$reference_names[$index]:"";
-            $reference_text = isset($reference_texts[$index])?$reference_texts[$index]:"";
+            // NULL, not "", when the request said NOTHING about this row's clause
+            // text. This is an UPDATE, so "" was an instruction that landed: an API
+            // client sending map_framework_id[] with three entries and a
+            // reference_text[] with one -- or none at all, which the OpenAPI shape
+            // permits -- blanked the stored clause text on the rows past the end of
+            // the array. save_control_to_frameworks() now COALESCEs, so NULL means
+            // preserve; "" still clears, which is what an emptied <textarea> sends.
+            $reference_text = isset($reference_texts[$index])?$reference_texts[$index]:null;
             $map_frameworks[] = array($frameworks,$reference_name,$reference_text);
         }
         $control["map_frameworks"] = $map_frameworks;
@@ -4891,11 +4994,55 @@ function getControlFiltersByFrameworksResponse()
     {
         $control_framework = isset($_POST['control_framework']) ? $_POST['control_framework'] : [];
 
-        $classList  = getAvailableControlClassList($control_framework);
-        $phaseList  = getAvailableControlPhaseList($control_framework);
-        $familyList  = getAvailableControlFamilyList($control_framework);
-        $ownerList  = getAvailableControlOwnerList($control_framework);
-        $priorityList  = getAvailableControlPriorityList($control_framework);
+        // $with_counts=true (the 2nd arg) opts into the COUNT(DISTINCT t1.id)
+        // column each *List() function can now return -- see
+        // getAvailableControlClassList() (includes/governance.php) for why this
+        // is opt-in rather than the default: getFrameworkControlsDatatable()'s
+        // OWN 5 calls to these same functions stay at the 1-arg default so its
+        // response shape is untouched.
+        $classList  = getAvailableControlClassList($control_framework, true);
+        $phaseList  = getAvailableControlPhaseList($control_framework, true);
+        $familyList  = getAvailableControlFamilyList($control_framework, true);
+        $ownerList  = getAvailableControlOwnerList($control_framework, true);
+        $priorityList  = getAvailableControlPriorityList($control_framework, true);
+        // Added for the Define Control Frameworks filter sheet's Type facet
+        // (governance-frameworks.js) -- getAvailableControlTypeList() used to
+        // be an empty-query stub, so this key was never populated before.
+        // No opt-in flag needed here: nothing consumed this function's output
+        // before (it always returned []), so there is no prior shape to preserve.
+        $typeList  = getAvailableControlTypeList($control_framework);
+
+        // Two aggregates no option LIST can carry (Task 29):
+        //
+        //  - unassignedCounts: every *List() query above ends its WHERE with
+        //    "t2.value is not null", which discards exactly the controls that
+        //    have no family/owner/class/phase/priority/type -- so the
+        //    Unassigned(-1) option the client prepends could never have had a
+        //    count. get_control_facet_unassigned_counts() counts that bucket
+        //    with get_framework_controls_by_filter()'s OWN unassigned
+        //    predicate, so the chip and the filter agree by construction.
+        //
+        //  - statusCounts: Status has no lookup table to build a list from
+        //    (three computed tokens), so there was no aggregate to report at
+        //    all. Derived from control_status_token_map(), the same map
+        //    controls_table_status_to_db() filters with.
+        //
+        //  - maturityCounts (Task 34): Maturity is the same shape of facet as
+        //    Status -- three computed buckets, no lookup table. Bucketed by
+        //    control_maturity_bucket(), the same function the table's own
+        //    maturity filter (controls_table_apply_maturity_applicability(),
+        //    api/v2/includes/governance_controls.php) compares with, so the
+        //    chip equals what filtering by it returns.
+        //
+        // All three are framework-scoped by control_framework_scope_sql(), the
+        // same single definition the six lists above scope with -- an option
+        // list and its chip must never be scoped differently.
+        //
+        // These are NEW keys alongside the existing six lists; nothing about
+        // the lists' own shape changes, so existing consumers are unaffected.
+        $unassignedCounts = get_control_facet_unassigned_counts($control_framework);
+        $statusCounts = get_control_status_counts($control_framework);
+        $maturityCounts = get_control_maturity_counts($control_framework);
 
         $result = array(
             'classList' => $classList ,
@@ -4903,6 +5050,10 @@ function getControlFiltersByFrameworksResponse()
             'familyList' => $familyList ,
             'ownerList' => $ownerList ,
             'priorityList' => $priorityList ,
+            'typeList' => $typeList ,
+            'unassignedCounts' => $unassignedCounts ,
+            'statusCounts' => $statusCounts ,
+            'maturityCounts' => $maturityCounts ,
         );
         
         json_response(200, "Get framework control IDs by framework ids", $result);
@@ -4965,7 +5116,8 @@ function initiateFrameworkControlTestsResponse()
         $type   = $_POST['type'];
         $tags   = empty($_POST['tags']) ? [] : $_POST['tags'];
 
-        if($name = initiate_framework_control_tests($type, $id, $tags))
+        $new_audit_id = null;
+        if($name = initiate_framework_control_tests($type, $id, $tags, $new_audit_id))
         {
             if($type == 'framework'){
                 set_alert(true, "good", $escaper->escapeHtml(_lang('InitiatedAllTestsUnderFramework', ['framework' => $name])));
@@ -4974,7 +5126,9 @@ function initiateFrameworkControlTestsResponse()
             }elseif($type == 'test'){
                 set_alert(true, "good", $escaper->escapeHtml(_lang('InitiatedTest', ['test' => $name])));
             }
-            json_response(200, get_alert(true), []);
+            // For a single test, return the new audit id so the caller can jump
+            // straight to it (null for framework/control, which create many).
+            json_response(200, get_alert(true), ['audit_id' => $new_audit_id]);
         }
         else
         {
@@ -5105,8 +5259,19 @@ function getControlResponse()
         $frameworks_html = "";
         foreach ($mapped_frameworks as $framework){
             $frameworks_html .= "<tr>\n";
-                $frameworks_html .= "<td>".create_dropdown('frameworks', $framework['framework'],'map_framework_id[]', true, false, true, 'required')."</td>\n";
+                // id: false -- one of these is emitted PER MAPPING ROW, and the
+                // #add_mapping_row template (display_add_mapping_row(),
+                // includes/governance.php) renders the same field again, so a
+                // derived id is duplicated by construction. Nothing addresses
+                // these by id: `[]` makes the id unusable as a `#` selector, and
+                // every reader scopes by name within the row's own table.
+                $frameworks_html .= "<td>".create_dropdown('frameworks', $framework['framework'],'map_framework_id[]', true, false, true, 'required', id: false)."</td>\n";
                 $frameworks_html .= "<td><input type='text' name='reference_name[]' value='".$escaper->escapeHtml($framework['reference_name'])."' class='form-control' maxlength='100' required></td>\n";
+                // The framework's own title for the control it cites -- the
+                // Statement of Applicability's Name column. Nullable, and NULL
+                // on every row that predates the column, so it is coalesced
+                // rather than escaped straight out of the array.
+                $frameworks_html .= "<td><input type='text' name='reference_subject[]' value='".$escaper->escapeHtml($framework['reference_subject'] ?? '')."' class='form-control' maxlength='1000' title='".$escaper->escapeHtml($lang['ReferenceSubjectHint'])."' placeholder='".$escaper->escapeHtml($lang['ReferenceSubject'])."'></td>\n";
                 $frameworks_html .= "<td><textarea rows='3' cols='50' name='reference_text[]' class='form-control'>".$escaper->escapeHtml($framework['reference_text'])."</textarea>\n";
                 $frameworks_html .= "<td class='text-center'><a href='javascript:void(0);' class='control-block--delete-mapping' title='".$escaper->escapeHtml($lang["Delete"])."'><i class='fa fa-trash'></i></a></td>\n";
             $frameworks_html .= "</tr>\n";
@@ -5115,7 +5280,9 @@ function getControlResponse()
         $assets_html = "";
         foreach ($mapped_assets as $assets){
             $assets_html .= "<tr>\n";
-                $assets_html .= "<td>".create_dropdown("control_maturity", $assets['control_maturity'], "asset_maturity[]", false, false, true, "required")."</td>\n";
+                // id: false -- per-row, same reasoning as the framework <select>
+                // above.
+                $assets_html .= "<td>".create_dropdown("control_maturity", $assets['control_maturity'], "asset_maturity[]", false, false, true, "required", id: false)."</td>\n";
                 $assets_html .= "<td><select class='assets-asset-groups-select' name='assets_asset_groups[]' multiple placeholder='".$escaper->escapeHtml($lang['AffectedAssetsWidgetPlaceholder'])."'' required></select></td>\n";
                 $assets_html .= "<td class='text-center'><a href='javascript:void(0);' class='control-block--delete-asset' title='".$escaper->escapeHtml($lang["Delete"])."'><i class='fa fa-trash'></i></a></td>\n";
             $assets_html .= "</tr>\n";
@@ -5339,7 +5506,7 @@ function getDefineTestsResponse()
                                         <td class='text-center'>{$edit_row}{$delete_row}</td>
                                     </tr>
                 ";
-                
+
             }
 
             $html .= "
@@ -5406,8 +5573,73 @@ function updateTestResponse() {
         $teams = isset($_POST['team']) ? array_filter($_POST['team'], 'ctype_digit') : [];
         $additional_stakeholders = empty($_POST['additional_stakeholders']) ? "" : implode(",", $_POST['additional_stakeholders']);
         $test_frequency = (int)$_POST['test_frequency'];
-        $last_date = get_standard_date_from_default_format($_POST['last_date']);
-        $next_date = get_standard_date_from_default_format($_POST['next_date']);
+        // DATES. Both fields used to be converted with
+        // get_standard_date_from_default_format(), which understands the instance's
+        // DISPLAY format and nothing else. Three separate silent failures followed
+        // from that, every one of them behind a 200:
+        //
+        //   ISO ('2026-06-19' on an m/d/Y instance) -> '' -> read as "nothing
+        //       submitted", so a machine caller's date was discarded. Every other
+        //       compliance date handler accepts ISO (8bbb8d40c2) and getTestById()
+        //       (GET /compliance/tests/{id}) answers in raw ISO, so a read-modify-write
+        //       round trip through it dropped the field. Note the OTHER read endpoint,
+        //       getTestResponse() (GET /compliance/test), answers display-formatted --
+        //       it runs the dates through format_date() for the modal's datepickers --
+        //       so the two reads disagree and only the ISO one round-trips. Accepting
+        //       both formats on the write side is what makes either read usable.
+        //   Garbage ('banana')                      -> '' -> discarded the same way,
+        //       with nothing to distinguish a stored date from a dropped one.
+        //   An impossible date ('02/31/2026')       -> silently ROLLED FORWARD to
+        //       2026-03-03 and stored. Worse than dropping it: this persists a
+        //       compliance date the caller never asked for.
+        //
+        // parse_submitted_api_date() (includes/audit_schedule.php) accepts ISO *and*
+        // the configured display format, parses strictly (a rolled-over date is an
+        // error, not a result), and separates "blank" (false) from "not a date"
+        // (null) so the last two cases can be refused. submitted_date_error_message()
+        // builds the 400 body and tells a malformed value apart from an impossible
+        // one, so '02/31/2026' gets "not a real calendar date" rather than format
+        // advice the caller already followed.
+        $date_format = get_default_date_format();
+        $human_date_format = get_setting('default_date_format');
+
+        // isset(), not `?? ''` -- the two are NOT equivalent here, and the difference
+        // was a live data-loss bug of its own. `?? ''` fed an OMITTED field through
+        // the converter, which answers a blank with the *truthy* string '0000-00-00';
+        // that reached update_framework_control_test() as an explicit clear, so an API
+        // caller who never mentioned last_date wiped the stored one. (The comment
+        // replaced here asserted the empty string normalized to false. It never did.)
+        // Splitting on isset() restores the intended contract, matching updateTestById():
+        //     omitted         -> false        -> keep the stored value
+        //     submitted blank -> '0000-00-00' -> an explicit clear, which is what the
+        //                                        edit form posts for an emptied field
+        $last_date = false;
+        if (isset($_POST['last_date'])) {
+            $last_date = parse_submitted_api_date($_POST['last_date'], $date_format);
+            if ($last_date === null) {
+                json_response(400, submitted_date_error_message($_POST['last_date'], $lang['LastTestDate'] . ' (last_date)', $date_format, $human_date_format), NULL);
+                return;
+            }
+            if ($last_date === false) $last_date = '0000-00-00';
+        }
+
+        // next_date deliberately does NOT get the '0000-00-00' treatment last_date
+        // gets: a blank stays false. A Calendar-schedule update submits no next_date
+        // at all, and '0000-00-00' is truthy, so every `if (!$next_date)` guard below
+        // missed it and the order check compared the last test date against the year
+        // 1899 -- which is what made switching a test that HAS a Last Test Date into
+        // Calendar mode fail with "Next Test Date can't be before Last Test Date!".
+        // false is also what resolve_interval_next_date() returns for a blank
+        // submission, so an omitted field and a cleared one behave identically and the
+        // interval path is unchanged.
+        $next_date = false;
+        if (isset($_POST['next_date'])) {
+            $next_date = parse_submitted_api_date($_POST['next_date'], $date_format);
+            if ($next_date === null) {
+                json_response(400, submitted_date_error_message($_POST['next_date'], $lang['NextTestDate'] . ' (next_date)', $date_format, $human_date_format), NULL);
+                return;
+            }
+        }
         $name = !empty($_POST['name']) ? trim($_POST['name']) : "";
         $objective = $_POST['objective'];
         $test_steps = $_POST['test_steps'];
@@ -5415,11 +5647,135 @@ function updateTestResponse() {
         $expected_results = $_POST['expected_results'];
         $tags = empty($_POST['tags']) ? [] : $_POST['tags'];
 
-        
-        // There's no separate fields for marking auto audit initiation enabled and another for the offset.
-        // Simply setting `audit_initiation_offset` to null means it's disabled
-        $auto_audit_initiation = (int)$_POST['auto_audit_initiation'];
-        $audit_initiation_offset = isset($_POST['audit_initiation_offset']) ? $_POST['audit_initiation_offset'] : null;
+        // Phase 3a test-definition fields (Define Tests redesign). test_method/sample/
+        // required_evidence are plain scalars, read the same way objective/test_steps
+        // are above. approvers is a junction (framework_control_test_approvers) -- the
+        // edit form always submits the full multi-select, so (unlike updateTestById's
+        // CRUD PATCH path) there's no partial-update "preserve existing" case here.
+        $test_method        = isset($_POST['test_method']) ? $_POST['test_method'] : "";
+        $sample             = isset($_POST['sample']) ? $_POST['sample'] : "";
+        $required_evidence  = isset($_POST['required_evidence']) ? $_POST['required_evidence'] : "";
+        // Coerce to an array: a client may submit `approvers=5` (scalar) instead of
+        // `approvers[]=5`; test_tester_conflicts_with_approvers() type-hints array,
+        // so guard here to return a clean 400 rather than a TypeError/500.
+        $approvers          = is_array($_POST['approvers'] ?? null) ? $_POST['approvers'] : [];
+
+        // Phase 4a (common tests): controls is a junction (test_control_map).
+        // Unlike approvers above, the edit modal does not yet always submit the full
+        // set (Task 5, net-new), so mirror updateTestById's fetch-and-passthrough:
+        // an omitted/non-array `controls` falls back to the currently-persisted set
+        // ($existing_test, fetched below for the schedule fields) rather than wiping
+        // it. $existing_test may be non-array if $test_id doesn't resolve to a row --
+        // guarded the same way the schedule effective-value fallbacks below are.
+        $controls_submitted = isset($_POST['controls']) && is_array($_POST['controls']);
+
+        // The lead-in offset is no longer gated behind a separate Yes/No toggle: it's
+        // simply shown (and optional) for Interval and Calendar schedules, and forced to
+        // null (no automatic initiation) for Manual. schedule_type may be omitted (means
+        // "keep the existing value" per update_framework_control_test()'s null contract),
+        // so fall back to the persisted value on the row to decide validation/next_date
+        // behavior for *this* request.
+        $existing_test = get_framework_control_test_by_id($test_id);
+
+        // controls: freshly-submitted array wins, otherwise fall back to the
+        // currently-persisted set (empty array if $existing_test didn't resolve --
+        // update_framework_control_test() treats an empty $controls as "keep
+        // existing" anyway, so this never wipes on a bad/missing test_id).
+        $controls = $controls_submitted
+            ? $_POST['controls']
+            : (is_array($existing_test) ? ($existing_test['controls'] ?? []) : []);
+
+        $audit_initiation_offset_raw = isset($_POST['audit_initiation_offset']) ? trim((string)$_POST['audit_initiation_offset']) : '';
+        $audit_initiation_offset = null;
+
+        // schedule_exceptions may arrive as a JSON-encoded string (a single
+        // form field) or as a native nested array (form-array encoding).
+        // A non-array/non-decodable value is treated as "not supplied" by
+        // parse_test_schedule_fields(), which preserves update_framework_control_test()'s
+        // null-means-leave-existing-exceptions-untouched contract.
+        $schedule_exceptions_raw = $_POST['schedule_exceptions'] ?? null;
+        if (is_string($schedule_exceptions_raw)) {
+            $decoded = json_decode($schedule_exceptions_raw, true);
+            $schedule_exceptions_raw = is_array($decoded) ? $decoded : null;
+        }
+        // The anchor date arrives display-formatted from the modal (cadence_anchor_date
+        // is a datepicker like last_date/next_date) — convert to canonical ISO before
+        // validating/persisting it; the DB and cadence engine are ISO-canonical.
+        //
+        // Parsed the same way as last_date/next_date above, and for the same reason:
+        // the display-format-only converter turned an ISO anchor into null, which
+        // parse_test_schedule_fields() reads as "not supplied". On a test that is
+        // ALREADY on a calendar schedule that null falls back to the persisted anchor,
+        // so rescheduling one via ISO kept the old anchor and still answered 200.
+        // false (blank or the zero date) keeps meaning "not supplied" — the null
+        // parse_test_schedule_fields() expects — so only a genuinely unparseable value
+        // is refused.
+        $cadence_anchor_date_iso = null;
+        if (!empty($_POST['cadence_anchor_date'])) {
+            $cadence_anchor_date_iso = parse_submitted_api_date($_POST['cadence_anchor_date'], $date_format);
+            if ($cadence_anchor_date_iso === null) {
+                json_response(400, submitted_date_error_message($_POST['cadence_anchor_date'], $lang['AnchorDate'] . ' (cadence_anchor_date)', $date_format, $human_date_format), NULL);
+                return;
+            }
+            if ($cadence_anchor_date_iso === false) $cadence_anchor_date_iso = null;
+        }
+
+        $schedule_fields = parse_test_schedule_fields([
+            'schedule_type'        => $_POST['schedule_type'] ?? null,
+            'cadence_unit'         => $_POST['cadence_unit'] ?? null,
+            'cadence_interval'     => $_POST['cadence_interval'] ?? null,
+            'cadence_anchor_date'  => $cadence_anchor_date_iso,
+            'schedule_exceptions'  => $schedule_exceptions_raw,
+        ]);
+
+        // The schedule_type this request is effectively saving: the submitted value, or
+        // (when omitted) whatever is already persisted on the row.
+        $effective_schedule_type = $schedule_fields['schedule_type'] ?? (is_array($existing_test) ? ($existing_test['schedule_type'] ?? null) : null);
+
+        // The effective (submitted-or-persisted) cadence values -- a field omitted from
+        // this request means "keep the existing persisted value" (parse_test_schedule_fields()'s
+        // null contract, same as update_framework_control_test() itself). Used both for the
+        // calendar-completeness validation below and for the update_framework_control_test()
+        // call further down.
+        $effective_cadence_unit = $schedule_fields['cadence_unit'] ?? (is_array($existing_test) ? ($existing_test['cadence_unit'] ?? null) : null);
+        $effective_cadence_interval = $schedule_fields['cadence_interval'] ?? (is_array($existing_test) ? ($existing_test['cadence_interval'] ?? null) : null);
+        $effective_cadence_anchor_date = $schedule_fields['cadence_anchor_date'] ?? (is_array($existing_test) ? ($existing_test['cadence_anchor_date'] ?? null) : null);
+
+        // Shared with createTest() -- schedule_type allow-list, calendar cadence
+        // completeness, past-anchor-date rejection, and audit lead-in offset bounds
+        // (includes/compliance.php's validate_test_schedule_fields()). The add path
+        // silently defaults an invalid schedule_type to 'calendar' (there's no
+        // persisted row yet to fall back to); on update there IS a persisted row, so
+        // an invalid submitted value is rejected outright rather than silently
+        // overwriting a valid persisted schedule_type with garbage -- that's why the
+        // allow-list check below validates the *raw* submitted schedule_type, while
+        // the calendar-completeness/offset checks validate the *effective*
+        // (submitted-or-persisted) values. The past-anchor check only re-validates a
+        // freshly *submitted* anchor (cadence_anchor_date_submitted) -- an anchor that
+        // fell back to an already-persisted value isn't re-checked, otherwise an
+        // update that never touches the anchor could start failing on a schedule that
+        // was valid when it was saved.
+        $schedule_validation_error = validate_test_schedule_fields([
+            'raw_schedule_type'             => $schedule_fields['schedule_type'],
+            'effective_schedule_type'       => $effective_schedule_type,
+            'cadence_unit'                  => $effective_cadence_unit,
+            'cadence_interval'              => $effective_cadence_interval,
+            'cadence_anchor_date'           => $effective_cadence_anchor_date,
+            'cadence_anchor_date_submitted' => $schedule_fields['cadence_anchor_date'] !== null,
+            'test_frequency'                => $test_frequency,
+            'audit_initiation_offset_raw'   => $audit_initiation_offset_raw,
+        ]);
+
+        if ($schedule_validation_error !== null) {
+            $error = true;
+            $error_msg = $schedule_validation_error;
+        } elseif ($effective_schedule_type !== 'manual' && $audit_initiation_offset_raw !== '') {
+            // validate_test_schedule_fields() already confirmed the raw offset is a
+            // valid non-negative value in bounds -- just cast. (Manual schedules leave
+            // $audit_initiation_offset at its null default, same as before -- the offset
+            // is ignored entirely for Manual.)
+            $audit_initiation_offset = (int)$audit_initiation_offset_raw;
+        }
 
         if (!$name) {
 
@@ -5428,7 +5784,10 @@ function updateTestResponse() {
 
         }
 
-        if (!$tester) {
+        // Same rule as create (test_tester_valid(), includes/compliance.php):
+        // a real, enabled user. This used to be a bare truthiness check, which
+        // accepted a stale or invented id as readily as it rejected 0.
+        if (!test_tester_valid($tester)) {
 
             $error = true;
             $error_msg = _lang('FieldRequired', array("field"=>$lang['Tester']));
@@ -5440,26 +5799,37 @@ function updateTestResponse() {
             $error_msg = $lang['InvalidTestFrequency'];
         }
 
-        if ($auto_audit_initiation == 1) {
-            if ($audit_initiation_offset === "") {
-                $error = true;
-                $error_msg = _lang('FieldRequired', array("field"=>$lang['AuditInitiationOffset']));
-            } else if ((int)$audit_initiation_offset < 0) {
-                $error = true;
-                $error_msg = $lang['AuditInitiationOffsetMustBeANonNegativeValue'];
-            } else if ($test_frequency > 0 && (int)$audit_initiation_offset > $test_frequency) {
-                $error = true;
-                $error_msg = $lang['AuditInitiationOffsetMustBeLessThanOrEqualToTestFrequency'];
-            } else {
-                $audit_initiation_offset = (int)$audit_initiation_offset;
-            }
-        } else {
-            $audit_initiation_offset = null;
-        }
+        // Offset bounds already validated (and $audit_initiation_offset already cast)
+        // above via validate_test_schedule_fields() -- see the comment there.
 
         if ($approximate_time < 0) {
             $error = true;
             $error_msg = $lang['InvalidApproximateTime'];
+        }
+
+        if (!is_valid_test_method($test_method)) {
+            $error = true;
+            $error_msg = $lang['InvalidTestMethod'];
+        }
+
+        // Segregation-of-duties guard: the tester cannot also be an approver of their
+        // own test. Validated against the effective (possibly just-submitted) tester.
+        if (test_tester_conflicts_with_approvers($tester, $approvers)) {
+            $error = true;
+            $error_msg = $lang['TesterCannotBeApprover'];
+        }
+        // Roster gate (server-side): every submitted approver must hold approve_tests.
+        elseif (!approvers_all_hold_approve_tests($approvers)) {
+            $error = true;
+            $error_msg = $lang['ApproverNotEligible'];
+        }
+
+        // ≥1 control gate, only when controls was FRESHLY submitted this request --
+        // mirrors the approvers roster gate's submitted-only re-validation above. A
+        // passthrough of already-persisted controls is not re-validated.
+        if ($controls_submitted && !test_controls_valid($controls)) {
+            $error = true;
+            $error_msg = $lang['AtLeastOneControlRequired'];
         }
 
         if (!$last_date) {
@@ -5487,24 +5857,32 @@ function updateTestResponse() {
 
         }
         
-        if (!$last_date || $last_date === "0000-00-00") {
-            if (!$next_date || $next_date === "0000-00-00" || strtotime($next_date) < $today_dt) {
-                $next_date = date("Y-m-d");
-            }
+        // Calendar-scheduled tests get their next_date from the cadence engine (anchor +
+        // cadence + exceptions), not the interval-style last_date/test_frequency math below
+        // — passing false lets update_framework_control_test() compute it via
+        // compute_calendar_next_date().
+        if ($effective_schedule_type === 'calendar') {
+            $next_date = false;
         } else {
-            $calc_next_date = date("Y-m-d", strtotime($last_date) + $test_frequency*24*60*60);
-            if($calc_next_date < date("Y-m-d")){
-                $next_date = date("Y-m-d");
-            } else {
-                $next_date = $calc_next_date;
-            }
+            // last_date + frequency, NOT clamped to today -- see
+            // resolve_interval_next_date() (includes/audit_schedule.php) for why
+            // the old clamp was erasing overdue state on unrelated saves.
+            $next_date = resolve_interval_next_date($last_date, $test_frequency, $next_date);
         }
 
         if ($error !== true) {
 
             // Update a framework control test
-            update_framework_control_test($test_id, $tester, $test_frequency, $name, $objective, $test_steps, $approximate_time, $expected_results, $last_date, $next_date, false, $additional_stakeholders, $teams, $tags, $audit_initiation_offset);
-            
+            update_framework_control_test(
+                $test_id, $tester, $test_frequency, $name, $objective, $test_steps, $approximate_time,
+                $expected_results, $last_date, $next_date, false, $additional_stakeholders, $teams, $tags,
+                $audit_initiation_offset,
+                $schedule_fields['schedule_type'], $schedule_fields['cadence_unit'],
+                $schedule_fields['cadence_interval'], $schedule_fields['cadence_anchor_date'],
+                $schedule_fields['schedule_exceptions'],
+                $test_method, $sample, $required_evidence, $approvers, $controls
+            );
+
             // display an alert
             set_alert(true, "good", $lang['TestSuccessUpdated']);
             json_response(200, get_alert(true), null);
@@ -5547,12 +5925,37 @@ function getTestResponse()
 
             $test['last_date'] = format_date($test['last_date']);
             $test['next_date'] = format_date($test['next_date']);
+            // cadence_anchor_date feeds the Edit modal's datepicker input (like
+            // last_date/next_date above), so format it the same way; empty/unset stays "".
+            $test['cadence_anchor_date'] = format_date($test['cadence_anchor_date'] ?? '');
 
             // Purify the rich-text fields at this output boundary — they feed the
             // test edit form, which renders them raw into the WYSIWYG editor.
             $test['objective'] = purify_rich_text_output($test['objective'] ?? '');
             $test['test_steps'] = purify_rich_text_output($test['test_steps'] ?? '');
             $test['expected_results'] = purify_rich_text_output($test['expected_results'] ?? '');
+            // Phase 3a fields (Define Tests redesign): sample/required_evidence are
+            // rich-text like objective/test_steps/expected_results above, so purify the
+            // same way. test_method is a plain enum scalar and approvers is already a
+            // plain int-id array (from get_framework_control_test_by_id()) -- both pass
+            // through as-is.
+            $test['sample'] = purify_rich_text_output($test['sample'] ?? '');
+            $test['required_evidence'] = purify_rich_text_output($test['required_evidence'] ?? '');
+
+            // Resolve approver user IDs to display names (id => name), the same
+            // get_name_by_value('user', ...) lookup used elsewhere for a single
+            // submitted_by/updated_by id. Needed by the procedure-expand UI so it
+            // doesn't have to round-trip through the roster for names it already has ids for.
+            $test['approver_names'] = [];
+            foreach ($test['approvers'] as $approver_id) {
+                $test['approver_names'][$approver_id] = get_name_by_value('user', (int)$approver_id);
+            }
+
+            // Schedule fields (schedule_type, cadence_unit, cadence_interval,
+            // cadence_anchor_date) are already present via `t1`.* in
+            // get_framework_control_test_by_id(). Add the persisted
+            // per-occurrence exceptions so the edit modal can repopulate them.
+            $test['schedule_exceptions'] = get_test_schedule_exceptions($id);
 
             json_response(200, "success", $test);
         }else{
@@ -5564,6 +5967,63 @@ function getTestResponse()
         json_response(400, $escaper->escapeHtml($lang['NoPermissionForCompliance']), NULL);
     }
 
+}
+
+/****************************************************************
+ * FUNCTION: GET COMPLIANCE APPROVER ROSTER                      *
+ * Lightweight roster (value/name) of every user holding the     *
+ * approve_tests permission -- backs the Phase 3a test-definition *
+ * form's approver multi-select. Gated on define_tests (same      *
+ * permission that gates createTest/the Define Tests page), not   *
+ * approve_tests itself -- the caller building the test doesn't    *
+ * need to be an approver to see who the eligible approvers are.  *
+ ****************************************************************/
+function get_compliance_approver_roster() {
+    global $lang, $escaper;
+
+    if (!check_permission('define_tests')) {
+        json_response(403, $escaper->escapeHtml($lang['NoPermissionForCompliance']), NULL);
+        return;
+    }
+
+    $roster = array_map(fn($u) => ['value' => $u['value'], 'name' => $u['name']], get_users_with_permission('approve_tests'));
+
+    json_response(200, 'success', $roster);
+}
+
+/****************************************************************
+ * FUNCTION: PREVIEW A CALENDAR AUDIT CADENCE SCHEDULE           *
+ * Computes occurrence dates for a candidate schedule (cadence   *
+ * unit/interval/anchor + per-occurrence exceptions) without     *
+ * persisting anything. Backs the schedule editor's live preview.*
+ ****************************************************************/
+function getSchedulePreviewResponse() {
+    global $lang, $escaper;
+
+    // Same permission the schedule fields are gated behind on the sibling
+    // compliance test endpoints (getTestResponse/updateTestResponse).
+    if (!check_permission("compliance")) {
+        json_response(400, $escaper->escapeHtml($lang['NoPermissionForCompliance']), null);
+        return;
+    }
+
+    $body = json_decode(file_get_contents('php://input'), true);
+    if (!is_array($body)) {
+        $body = $_POST;
+    }
+
+    $parsed = parse_schedule_preview_request($body);
+
+    $occurrences = audit_schedule_occurrences(
+        $parsed['cadence_anchor_date'],
+        $parsed['cadence_unit'],
+        $parsed['cadence_interval'],
+        $parsed['start'],
+        $parsed['end'],
+        $parsed['exceptions']
+    );
+
+    json_response(200, "success", ['occurrences' => $occurrences]);
 }
 
 /*******************************************************
@@ -5776,7 +6236,10 @@ function getInitiateTestAuditsResponse() {
                 }
 
                 $results[] = [
-                    'id'              => "test_{$framework_and_control}_{$framework_control_test['id']}",
+                    // Rebuild the node id from the integer-cast control id (framework is 0 here),
+                    // never from the raw request string -- reflecting $_GET['id'] verbatim was a
+                    // reflected-XSS sink when this response is rendered as a document.
+                    'id'              => "test_0_{$control_id}_{$framework_control_test['id']}",
                     'state'           => 'open',
                     'name'            => "<a class='test-name text-info' data-id='{$framework_control_test['id']}' href='" . build_url() . "/' title='" . $escaper->escapeHtml($lang['Test']) . "'>" . $escaper->escapeHtml($framework_control_test['name']) . "</a>",
                     'test_frequency'  => $escaper->escapeHtml($framework_control_test['test_frequency']),
@@ -5819,7 +6282,10 @@ function getInitiateTestAuditsResponse() {
                 }
 
                 $results[] = array(
-                    'id' => "test_".$framework_and_control."_".$framework_control_test['id'],
+                    // Rebuild the node id from the integer-cast framework/control ids, never from
+                    // the raw request string -- reflecting $_GET['id'] verbatim was a reflected-XSS
+                    // sink when this response is rendered as a document.
+                    'id' => "test_".$framework_id."_".$control_id."_".$framework_control_test['id'],
                     'state' => 'open',
                     'name' => "<a class='test-name text-info' data-id='{$framework_control_test['id']}' href='".build_url()."/' title='".$escaper->escapeHtml($lang['Test'])."'>".$escaper->escapeHtml($framework_control_test['name'])."</a>",
                     'test_frequency' => $escaper->escapeHtml($framework_control_test['test_frequency']),
@@ -5832,6 +6298,10 @@ function getInitiateTestAuditsResponse() {
             }
         }
 
+        // Serve as JSON so the response is never sniffed/rendered as HTML. With the correct
+        // Content-Type (plus the X-Content-Type-Options: nosniff set by add_security_headers),
+        // any reflected markup is inert even before the per-field escaping above.
+        header("Content-Type: application/json");
         // @phan-suppress-next-line SecurityCheck-XSS -- json_encode() output; all fields individually escaped
         echo json_encode($results);
 
@@ -8448,7 +8918,9 @@ function getTagOptionsOfTypes() {
 
         $options = [];
         foreach(getTagsOfTypes($types) as $tag) {
-            $options[] = array('label' => $tag['tag'], 'value' => (int)$tag['id']);
+            // usage_count lets a picker order by how reused a tag is (the test
+            // tag field does); callers that don't care can ignore it.
+            $options[] = array('label' => $tag['tag'], 'value' => (int)$tag['id'], 'usage_count' => (int)($tag['usage_count'] ?? 0));
         }
         
         json_response(200, null, $options);
@@ -8684,7 +9156,7 @@ function get_exception_for_display_api()
     $exception["type_text"] = $escaper->escapeHtml($lang[ucfirst($type)]);
     $exception['document_exceptions_status'] = $escaper->escapeHtml($exception['document_exceptions_status']);
     $exception['owner'] = $escaper->escapeHtml($exception['owner']);
-    $exception['additional_stakeholders'] = get_stakeholder_names($exception['additional_stakeholders'], 4, true);
+    $exception['additional_stakeholders'] = $escaper->escapeHtml(get_stakeholder_names($exception['additional_stakeholders'], 4));
     $exception['associated_risks'] = get_risk_subjects_by_ids($exception['associated_risks'], 4, true);
     $exception['creation_date'] = format_date($exception['creation_date']);
     $exception['next_review_date'] = format_date($exception['next_review_date']);
@@ -10592,8 +11064,62 @@ function one_click_upgrade() {
     
     // If the upgrade extra exists
     if (file_exists(realpath(__DIR__ . '/../extras/upgrade/index.php'))) {
+
+        // Check that it PARSES before requiring it, and replace it if it does
+        // not.
+        //
+        // This endpoint is the recovery path for a broken instance, and it used
+        // to require the Upgrade Extra as its first act. A syntax error in that
+        // file is an uncatchable fatal -- require cannot be wrapped in
+        // try/catch for a parse error -- so a damaged extra killed the one
+        // endpoint capable of downloading a replacement. The extra was
+        // unrepairable by the mechanism whose entire job is repairing things.
+        //
+        // token_get_all() with TOKEN_PARSE throws a catchable ParseError, which
+        // is the difference between detecting this and dying on it, and core's
+        // own download_extra() reinstalls without needing the extra loaded.
+        $upgrade_extra_path = realpath(__DIR__ . '/../extras/upgrade/index.php');
+        $upgrade_extra_parses = true;
+        try {
+            $upgrade_extra_source = @file_get_contents($upgrade_extra_path);
+            if ($upgrade_extra_source === false) {
+                $upgrade_extra_parses = false;
+            } else {
+                token_get_all($upgrade_extra_source, TOKEN_PARSE);
+            }
+        } catch (\ParseError $e) {
+            $upgrade_extra_parses = false;
+            write_debug_log('one_click_upgrade: the installed Upgrade Extra does not parse (' . $e->getMessage() . '); attempting to reinstall it.', 'error');
+        }
+
+        if (!$upgrade_extra_parses) {
+            echo $escaper->escapeHtml($lang['UpgradeExtraDamagedReinstalling'] ?? 'The installed Upgrade Extra is damaged. Downloading a fresh copy.') . "<br />\n";
+
+            $reinstall = download_extra('upgrade');
+
+            // download_extra()'s contract is "a string return means installed".
+            $reinstalled = is_string($reinstall);
+            if ($reinstalled) {
+                // Only trust it if the replacement actually parses.
+                try {
+                    $replacement = @file_get_contents($upgrade_extra_path);
+                    token_get_all($replacement === false ? '' : $replacement, TOKEN_PARSE);
+                } catch (\ParseError $e) {
+                    $reinstalled = false;
+                }
+            }
+
+            if (!$reinstalled) {
+                write_debug_log('one_click_upgrade: could not reinstall the damaged Upgrade Extra.', 'error');
+                echo $escaper->escapeHtml($lang['UpgradeExtraDamagedFailed'] ?? 'The Upgrade Extra is damaged and could not be replaced automatically. Reinstall it from the Extras page, or restore simplerisk/extras/upgrade/ from a backup, then try again.') . "<br />\n";
+                return;
+            }
+
+            echo $escaper->escapeHtml($lang['UpgradeExtraDamagedRepaired'] ?? 'The Upgrade Extra was replaced with a working copy.') . "<br />\n";
+        }
+
         // Require the upgrade extra file
-        require_once(realpath(__DIR__ . '/../extras/upgrade/index.php'));
+        require_once($upgrade_extra_path);
 
         // Checking if the Upgrade extra is already at a version that supports upgrade through its API
         $is_upgrade_mode_extra = function_exists('upgrade_download_extra');
@@ -10682,19 +11208,27 @@ function one_click_upgrade() {
 
         stream_write($lang['UpdateVersionCheckDone']);
 
-        if (!($need_update_app || $need_update_db || $need_update_extras)) {
-            stream_write($lang['UpdateNoUpdateRequired']);
-            return;
-        }
-
         // Two-phase upgrade: the JavaScript calls this endpoint once with
         // step=update_extra to download the latest upgrade extra (so the next
         // request loads new code from disk), then makes a direct POST to
         // /extras/upgrade/ for the backup and upgrade steps — eliminating the
         // dependency on this old core's call_extra_api_functionality for
         // long-running operations that can trigger nginx proxy timeouts.
+        //
+        // Handled BEFORE the "nothing to update" return below, and the download
+        // is deliberately NOT gated on the extra being out of date.
+        //
+        // The reason is recovery. The Upgrade Extra is how a broken instance is
+        // repaired, so it has to be repairable itself — and the way that has
+        // always been done is to publish a new copy and let the instance pull
+        // it. Only downloading when the installed version compares older breaks
+        // that in the one case it is needed most: an instance sitting on the
+        // current version with a damaged copy of it would refuse to refresh,
+        // and the mechanism meant to un-strand it is the thing that is stranded.
+        // Re-fetching a copy it already has costs one small download; not being
+        // able to costs the recovery path.
         if (isset($_POST['step']) && $_POST['step'] === 'update_extra') {
-            if ($is_upgrade_mode_extra && $need_update_extras && in_array("upgrade", $extra_upgrades)) {
+            if ($is_upgrade_mode_extra) {
                 stream_write(_lang('UpdateExtrasExtraUpdateStarted', array('extra' => 'upgrade')));
                 list($status, $result) = call_extra_api_functionality('upgrade', 'upgrade', 'app');
                 if ($status !== 200) {
@@ -10706,6 +11240,11 @@ function one_click_upgrade() {
             }
             // Phase 1 done — return so the JavaScript can call /extras/upgrade/
             // directly for backup and upgrade (phase 2).
+            return;
+        }
+
+        if (!($need_update_app || $need_update_db || $need_update_extras)) {
+            stream_write($lang['UpdateNoUpdateRequired']);
             return;
         }
 
@@ -10821,11 +11360,14 @@ function one_click_upgrade() {
                 // Upgrade the database
                 upgrade_database();
 
-                // Convert tables to InnoDB
-                convert_tables_to_innodb();
-
-                // Convert tables to utf8mb4_general_ci
-                convert_tables_to_utf8();
+                // The post-chain conversions run inside upgrade_database(),
+                // after the chain returns -- not here, and no longer in the
+                // base case of its recursion, which was unreachable at the end
+                // of a real upgrade. Its gate deliberately also accepts
+                // "the database is on the newest known release", because
+                // APP_VERSION is stale on THIS path: upgrade_application()
+                // swapped the files earlier in this same request and a constant
+                // cannot be redefined.
             }
         }
 
@@ -12184,6 +12726,22 @@ function uploadFileToFixFileEncodingIssue() {
 
         global $lang, $escaper;
 
+        // Refused outright on a demo instance, and this one destroys data if it
+        // isn't. Each branch below replaces an existing attachment by uploading
+        // the fixed copy and then deleting the old row — but under DEMO_MODE the
+        // upload helpers accept the file and store nothing while still reporting
+        // success, so the delete would run against a replacement that was never
+        // written. The original file would be gone for good.
+        //
+        // This is an admin-only maintenance tool, so a demo visitor cannot reach
+        // it (demo accounts are not administrators) — but the operator signing in
+        // to their own demo can, which is exactly when losing the demo's files
+        // would hurt.
+        if (demo_mode()) {
+            set_alert(true, "bad", $lang['ActionDisabledOnDemoInstance']);
+            json_response(400, get_alert(true), NULL);
+        }
+
         $type = isset($_POST['type']) && in_array($_POST['type'], ['risk', 'compliance', 'questionnaire']) ? $_POST['type'] : false;
 
         if (!$type) {
@@ -13526,10 +14084,11 @@ function updateAssetById($id = null)
         return;
     }
 
-    // PHP only auto-populates $_POST for POST requests; parse the body for PATCH
-    if (empty($_POST)) {
-        parse_str(file_get_contents('php://input'), $_POST);
-    }
+    // PHP only auto-populates $_POST for POST requests; parse the body for PATCH.
+    // Never gate this on empty($_POST) -- csrf-magic leaves the CSRF token in
+    // $_POST on any session-authenticated call, which makes that guard false and
+    // silently drops the entire body while still answering 200.
+    parse_non_post_body_into_post();
 
     $id = (int)($id ?? get_param("POST", "id", 0));
     if (!$id) {
@@ -13555,7 +14114,13 @@ function updateAssetById($id = null)
     $details          = get_param("POST", "details", null) ?: null;
     $tags             = isset($_POST['tags']) ? $_POST['tags'] : null;
     $verified         = isset($_POST['verified']) ? (bool)$_POST['verified'] : null;
-    $associated_risks = isset($_POST['associated_risks']) ? $_POST['associated_risks'] : [];
+    // null, not [] -- every other field here already uses null to mean "the
+    // caller did not name this, leave it alone", and update_asset() skips nulls.
+    // [] does NOT mean the same thing: update_asset_risks_associations() deletes
+    // every risks_to_assets row for the asset before it looks at the incoming
+    // list, so the old [] default silently dropped an asset's entire risk
+    // association set on any PATCH that did not re-send it.
+    $associated_risks = isset($_POST['associated_risks']) ? $_POST['associated_risks'] : null;
 
     $control_maturity = $_POST['control_maturity'] ?? [];
     $control_id       = $_POST['control_id'] ?? [];
@@ -13680,6 +14245,29 @@ function getTestById($id = null)
         return;
     }
 
+    // Purify the rich-text fields at this output boundary, the same way
+    // getTestResponse() does for the edit form. This endpoint feeds the
+    // read-only View modal, which renders them as HTML to keep the author's
+    // formatting -- so unpurified stored markup here would be a stored-XSS
+    // sink. Everything else the modal shows goes out through .text().
+    foreach (['objective', 'test_steps', 'expected_results', 'sample', 'required_evidence'] as $__rich) {
+        $test[$__rich] = purify_rich_text_output($test[$__rich] ?? '');
+    }
+
+    // Resolve ids to display names for the read-only View modal. Done at this
+    // boundary rather than inside get_framework_control_test_by_id(), whose
+    // other callers (the edit form, the schedule engine) want the ids.
+    // $escape=false: these go out as JSON and the client renders them with
+    // .text(), so escaping here would show literal entities for a team called
+    // "Risk & Compliance".
+    $test['team_names'] = get_names_by_values('team', $test['teams'] ?? [], 0, false);
+    $test['approver_names'] = get_names_by_values('user', $test['approvers'] ?? [], 0, false);
+    $test['additional_stakeholder_names'] = get_names_by_values('user', $test['additional_stakeholders'] ?? [], 0, false);
+
+    // The same plain-language cadence line the grid row shows, so the modal and
+    // the row can't disagree about what the schedule is.
+    $test['schedule_summary'] = format_test_schedule_summary($test);
+
     json_response(200, "Test retrieved successfully.", ['test' => $test]);
 }
 
@@ -13705,8 +14293,28 @@ function createTest()
         return;
     }
 
-    if (!$framework_control_id) {
-        json_response(400, "A framework_control_id is required.", NULL);
+    // The form marks Tester required and defaults it to the current user, so
+    // this only ever fires for a caller that bypassed the form -- which is the
+    // point: without it, a create with no tester stored 0, and update has
+    // always refused the same value. See test_tester_valid()
+    // (includes/compliance.php).
+    if (!test_tester_valid($tester)) {
+        json_response(400, $escaper->escapeHtml(_lang('FieldRequired', array("field" => $lang['Tester']))), NULL);
+        return;
+    }
+
+    // Phase 4a (common tests): controls is a junction (test_control_map) -- a test
+    // maps to N controls. Coerce to an array the same way approvers is below (a
+    // scalar `controls=5` would otherwise flow into test_controls_valid()'s
+    // sanitize_int_array() oddly rather than cleanly). A lone framework_control_id
+    // with no controls[] submitted is accepted as a back-compat single-element set.
+    $controls = is_array($_POST['controls'] ?? null) ? $_POST['controls'] : [];
+    if (empty($controls) && $framework_control_id) {
+        $controls = [$framework_control_id];
+    }
+
+    if (!test_controls_valid($controls)) {
+        json_response(400, $escaper->escapeHtml($lang['AtLeastOneControlRequired']), NULL);
         return;
     }
 
@@ -13715,17 +14323,176 @@ function createTest()
     $approximate_time         = (int)get_param("POST", "approximate_time", 0);
     $expected_results         = get_param("POST", "expected_results", "");
     $additional_stakeholders  = get_param("POST", "additional_stakeholders", "");
-    $last_date                = get_param("POST", "last_date", "0000-00-00");
-    $next_date                = get_param("POST", "next_date", false) ?: false;
+    // last_date/next_date used to be bound VERBATIM into DATE columns, so the
+    // app's own display format ('06/19/2026') stored '0000-00-00' while this
+    // endpoint still answered 201 with a real id -- a test created with no
+    // schedule at all, and nothing in the response saying so. Note this handler
+    // already converted cadence_anchor_date (below), so it was inconsistent
+    // about date parsing WITHIN ITSELF.
+    //
+    // parse_submitted_api_date() (includes/audit_schedule.php) accepts ISO *and*
+    // the configured display format and reports garbage separately from blank.
+    // A blank/omitted field keeps this handler's existing defaults: the zero
+    // date for last_date (which add_framework_control_test() writes as "never
+    // tested"), and false for next_date (which resolve_interval_next_date()
+    // reads as "nothing submitted").
+    $date_format              = get_default_date_format();
+
+    $human_date_format        = get_setting('default_date_format');
+
+    $raw_last_date = get_param("POST", "last_date", "");
+    $last_date = parse_submitted_api_date($raw_last_date, $date_format);
+    if ($last_date === null) {
+        json_response(400, submitted_date_error_message($raw_last_date, $lang['LastTestDate'] . ' (last_date)', $date_format, $human_date_format), NULL);
+        return;
+    }
+    if ($last_date === false) $last_date = "0000-00-00";
+
+    $raw_next_date = get_param("POST", "next_date", "");
+    $next_date = parse_submitted_api_date($raw_next_date, $date_format);
+    if ($next_date === null) {
+        json_response(400, submitted_date_error_message($raw_next_date, $lang['NextTestDate'] . ' (next_date)', $date_format, $human_date_format), NULL);
+        return;
+    }
+
     $teams                    = isset($_POST['teams']) ? $_POST['teams'] : [];
     $tags                     = isset($_POST['tags']) ? $_POST['tags'] : [];
-    $audit_initiation_offset  = isset($_POST['audit_initiation_offset']) ? (int)$_POST['audit_initiation_offset'] : null;
+
+    // Cadence schedule fields (Define Tests redesign, Issue 6) -- reuses the
+    // same parse_test_schedule_fields()/validation shape updateTestResponse()
+    // (POST /compliance/update_test, includes/api.php) applies, so create and
+    // update never drift on what "a complete calendar schedule" or "today-or-
+    // later anchor" mean. Unlike update, create has no persisted row to fall
+    // back on: an *omitted* schedule_type stays null, preserving the existing
+    // no-schedule-fields API-caller contract (ComplianceCrudTest /
+    // ComplianceTestScheduleTest create tests without ever mentioning
+    // schedule_type, and must keep working with no cadence validation at all).
+    // An explicitly-submitted invalid value is rejected outright -- parity
+    // with updateTestResponse()'s persisted-row case -- rather than silently
+    // coerced to 'calendar' the way the legacy compliance/index.php add path
+    // does (that path has no "omitted means leave it alone" caller to protect).
+    $schedule_exceptions_raw = $_POST['schedule_exceptions'] ?? null;
+    if (is_string($schedule_exceptions_raw)) {
+        $decoded = json_decode($schedule_exceptions_raw, true);
+        $schedule_exceptions_raw = is_array($decoded) ? $decoded : null;
+    }
+
+    // cadence_anchor_date arrives display-formatted (the Add Test modal's
+    // datepicker), same convention as update_test/the legacy add path --
+    // convert to canonical ISO before validating/persisting.
+    //
+    // Parsed with parse_submitted_api_date() like last_date/next_date above. The
+    // anchor was the one date field 8bbb8d40c2 missed on this handler, so it kept
+    // the display-format-only converter and its silent failures: an ISO anchor
+    // became null, which parse_test_schedule_fields() reads as "not supplied", and
+    // an impossible one ('02/31/2026') was rolled forward and anchored a whole
+    // recurring schedule to a date nobody chose. false (blank or the zero date)
+    // still means "not supplied".
+    $cadence_anchor_date_iso = null;
+    if (!empty($_POST['cadence_anchor_date'])) {
+        $cadence_anchor_date_iso = parse_submitted_api_date($_POST['cadence_anchor_date'], $date_format);
+        if ($cadence_anchor_date_iso === null) {
+            json_response(400, submitted_date_error_message($_POST['cadence_anchor_date'], $lang['AnchorDate'] . ' (cadence_anchor_date)', $date_format, $human_date_format), NULL);
+            return;
+        }
+        if ($cadence_anchor_date_iso === false) $cadence_anchor_date_iso = null;
+    }
+
+    $schedule_fields = parse_test_schedule_fields([
+        'schedule_type'        => $_POST['schedule_type'] ?? null,
+        'cadence_unit'         => $_POST['cadence_unit'] ?? null,
+        'cadence_interval'     => $_POST['cadence_interval'] ?? null,
+        'cadence_anchor_date'  => $cadence_anchor_date_iso,
+        'schedule_exceptions'  => $schedule_exceptions_raw,
+    ]);
+
+    $schedule_type = $schedule_fields['schedule_type'];
+
+    if ($test_frequency < 0) {
+        json_response(400, $escaper->escapeHtml($lang['InvalidTestFrequency']), NULL);
+        return;
+    }
+
+    $audit_initiation_offset_raw = isset($_POST['audit_initiation_offset']) ? trim((string)$_POST['audit_initiation_offset']) : '';
+
+    // Shared with updateTestResponse() -- schedule_type allow-list, calendar
+    // cadence completeness, past-anchor-date rejection, and audit lead-in
+    // offset bounds (includes/compliance.php's validate_test_schedule_fields()).
+    // Create has no persisted row to fall back on, so the "raw" and
+    // "effective" schedule_type are the same value, and a calendar schedule's
+    // anchor date is always freshly submitted (never falling back to a
+    // persisted value the way update's can).
+    $schedule_validation_error = validate_test_schedule_fields([
+        'raw_schedule_type'             => $schedule_type,
+        'effective_schedule_type'       => $schedule_type,
+        'cadence_unit'                  => $schedule_fields['cadence_unit'],
+        'cadence_interval'              => $schedule_fields['cadence_interval'],
+        'cadence_anchor_date'           => $schedule_fields['cadence_anchor_date'],
+        'cadence_anchor_date_submitted' => true,
+        'test_frequency'                => $test_frequency,
+        'audit_initiation_offset_raw'   => $audit_initiation_offset_raw,
+    ]);
+
+    if ($schedule_validation_error !== null) {
+        json_response(400, $escaper->escapeHtml($schedule_validation_error), NULL);
+        return;
+    }
+
+    // Manual schedules never auto-initiate, so the audit lead-in offset is forced
+    // to null regardless of what was submitted -- matching updateTestResponse() and
+    // the pre-refactor add_framework_control_test() path. validate_test_schedule_fields()
+    // deliberately skips offset bounds-checking for Manual, so without this guard a
+    // Manual-schedule create could persist an unchecked raw offset (e.g. negative),
+    // which get_framework_control_test_by_id() would then read as auto-initiation configured.
+    $audit_initiation_offset = ($schedule_type !== 'manual' && $audit_initiation_offset_raw !== '') ? (int)$audit_initiation_offset_raw : null;
+
+    if ($approximate_time < 0) {
+        json_response(400, $escaper->escapeHtml($lang['InvalidApproximateTime']), NULL);
+        return;
+    }
+
+    // No persisted row yet to "leave untouched" -- an omitted schedule_exceptions
+    // normalizes to "no exceptions" rather than parse_test_schedule_fields()'s
+    // null ("leave existing untouched") contract, which only makes sense on update.
+    $schedule_exceptions = $schedule_fields['schedule_exceptions'] ?? [];
+
+    // Phase 3a test-definition fields (Define Tests redesign). test_method/sample/
+    // required_evidence are plain scalars, threaded the same way objective/test_steps
+    // are above. approvers is a junction (framework_control_test_approvers), threaded
+    // the same way teams/tags are.
+    $test_method        = get_param("POST", "test_method", "");
+    $sample             = get_param("POST", "sample", "");
+    $required_evidence  = get_param("POST", "required_evidence", "");
+    // Coerce to an array (a scalar `approvers=5` would otherwise hit the array
+    // type hint on test_tester_conflicts_with_approvers() and 500 instead of 400).
+    $approvers          = is_array($_POST['approvers'] ?? null) ? $_POST['approvers'] : [];
+
+    if (!is_valid_test_method($test_method)) {
+        json_response(400, $escaper->escapeHtml($lang['InvalidTestMethod']), NULL);
+        return;
+    }
+
+    // Segregation-of-duties guard: the tester cannot also be an approver of their
+    // own test.
+    if (test_tester_conflicts_with_approvers($tester, $approvers)) {
+        json_response(400, $escaper->escapeHtml($lang['TesterCannotBeApprover']), NULL);
+        return;
+    }
+    // Roster gate (server-side, not just the UI): every submitted approver must
+    // currently hold the approve_tests responsibility.
+    if (!approvers_all_hold_approve_tests($approvers)) {
+        json_response(400, $escaper->escapeHtml($lang['ApproverNotEligible']), NULL);
+        return;
+    }
 
     $test_id = add_framework_control_test(
         $tester, $test_frequency, $name, $objective, $test_steps,
         $approximate_time, $expected_results, $framework_control_id,
         $additional_stakeholders, $last_date, $next_date, $teams, $tags,
-        $audit_initiation_offset
+        $audit_initiation_offset, $schedule_type,
+        $schedule_fields['cadence_unit'], $schedule_fields['cadence_interval'],
+        $schedule_fields['cadence_anchor_date'], $schedule_exceptions,
+        $test_method, $sample, $required_evidence, $approvers, $controls
     );
 
     if ($test_id) {
@@ -13742,10 +14509,14 @@ function updateTestById($id = null)
 {
     global $escaper, $lang;
 
-    // PHP only auto-populates $_POST for POST requests; parse the body for PATCH
-    if (empty($_POST)) {
-        parse_str(file_get_contents('php://input'), $_POST);
-    }
+    // PHP only auto-populates $_POST for POST requests, so a PATCH body has to be
+    // parsed by hand. See parse_non_post_body_into_post() for why this must never
+    // be gated on empty($_POST): csrf-magic leaves the CSRF token in $_POST on any
+    // session-authenticated call, the guard is already false, the body is never
+    // parsed, and every submitted field falls back to its persisted value while
+    // the endpoint still answers 200. This logic used to be inlined here, which is
+    // exactly why the fix never reached the sibling handlers -- keep it shared.
+    parse_non_post_body_into_post();
 
     if (!check_permission("edit_tests")) {
         json_response(403, $escaper->escapeHtml($lang['NoPermissionForCompliance']), NULL);
@@ -13777,19 +14548,121 @@ function updateTestById($id = null)
     $test_steps               = isset($_POST['test_steps'])               ? $_POST['test_steps']                   : false;
     $approximate_time         = isset($_POST['approximate_time'])         ? (int)$_POST['approximate_time']        : false;
     $expected_results         = isset($_POST['expected_results'])         ? $_POST['expected_results']             : false;
-    $last_date                = isset($_POST['last_date'])                ? $_POST['last_date']                    : false;
-    $next_date                = isset($_POST['next_date'])                ? $_POST['next_date']                    : false;
     $framework_control_id     = isset($_POST['framework_control_id'])     ? (int)$_POST['framework_control_id']   : false;
     $additional_stakeholders  = isset($_POST['additional_stakeholders'])  ? $_POST['additional_stakeholders']     : false;
     $teams                    = isset($_POST['teams'])                    ? $_POST['teams']                        : false;
     $tags                     = isset($_POST['tags'])                     ? $_POST['tags']                         : [];
     $audit_initiation_offset  = isset($_POST['audit_initiation_offset'])  ? (int)$_POST['audit_initiation_offset'] : false;
 
+    // last_date/next_date used to be bound VERBATIM into DATE columns, so the
+    // app's own display format -- '06/19/2026', what the datepickers show and
+    // what getTestResponse() answers with -- stored '0000-00-00' while this
+    // endpoint answered 200. parse_submitted_api_date()
+    // (includes/audit_schedule.php) accepts ISO *and* the configured display
+    // format, and separates "blank" from "not a date" so garbage can be refused
+    // rather than silently flattened. The sibling POST /compliance/update_test
+    // handler has converted all along; create and update finally agree.
+    //
+    // The `false` sentinel is preserved in both directions:
+    //   omitted          -> false -> update_framework_control_test() keeps the
+    //                       stored value (or, for next_date, recomputes it from
+    //                       a calendar schedule).
+    //   submitted blank  -> '0000-00-00', an explicit clear -- which is what
+    //                       binding the empty string already did.
+    $date_format = get_default_date_format();
+
+    $human_date_format = get_setting('default_date_format');
+
+    $last_date = false;
+    if (isset($_POST['last_date'])) {
+        $last_date = parse_submitted_api_date($_POST['last_date'], $date_format);
+        if ($last_date === null) {
+            json_response(400, submitted_date_error_message($_POST['last_date'], $lang['LastTestDate'] . ' (last_date)', $date_format, $human_date_format), NULL);
+            return;
+        }
+        if ($last_date === false) $last_date = '0000-00-00';
+    }
+
+    $next_date = false;
+    if (isset($_POST['next_date'])) {
+        $next_date = parse_submitted_api_date($_POST['next_date'], $date_format);
+        if ($next_date === null) {
+            json_response(400, submitted_date_error_message($_POST['next_date'], $lang['NextTestDate'] . ' (next_date)', $date_format, $human_date_format), NULL);
+            return;
+        }
+        if ($next_date === false) $next_date = '0000-00-00';
+    }
+
+    // Phase 3a test-definition fields (Define Tests redesign). test_method/sample/
+    // required_evidence follow the same false-means-keep-existing idiom as the fields
+    // above -- update_framework_control_test() already has a false-sentinel fallback
+    // for each of them.
+    $test_method_submitted    = isset($_POST['test_method']);
+    $test_method              = $test_method_submitted            ? $_POST['test_method']                  : false;
+    $sample                   = isset($_POST['sample'])            ? $_POST['sample']                       : false;
+    $required_evidence        = isset($_POST['required_evidence']) ? $_POST['required_evidence']            : false;
+
+    if ($test_method_submitted && !is_valid_test_method($test_method)) {
+        json_response(400, $escaper->escapeHtml($lang['InvalidTestMethod']), NULL);
+        return;
+    }
+
+    // approvers is a junction table (framework_control_test_approvers) that
+    // update_framework_control_test() ALWAYS overwrites -- unlike the fields above,
+    // it has no false-means-keep-existing sentinel. A partial PATCH that omits
+    // `approvers` must not silently wipe the SoD approver roster, so fall back to
+    // the test's currently-persisted approvers (already fetched above) when the
+    // field wasn't submitted in this request. A submitted-but-scalar `approvers`
+    // (not `approvers[]`) coerces to the persisted list rather than hitting the
+    // array type hint on test_tester_conflicts_with_approvers() (clean, fails safe).
+    $approvers = (isset($_POST['approvers']) && is_array($_POST['approvers'])) ? $_POST['approvers'] : $test['approvers'];
+
+    // Segregation-of-duties guard: the tester cannot also be an approver of their
+    // own test. Validated against the effective tester -- the just-submitted value
+    // if this request is changing it, otherwise the currently-persisted tester.
+    $effective_tester = ($tester !== false) ? $tester : $test['tester'];
+
+    if (test_tester_conflicts_with_approvers($effective_tester, $approvers)) {
+        json_response(400, $escaper->escapeHtml($lang['TesterCannotBeApprover']), NULL);
+        return;
+    }
+    // Roster gate (server-side): only validate eligibility when approvers were
+    // FRESHLY submitted in this PATCH -- a passthrough of already-persisted
+    // approvers must not be re-checked (an approver whose role later lost
+    // approve_tests would otherwise block an unrelated partial update).
+    if (isset($_POST['approvers']) && !approvers_all_hold_approve_tests($approvers)) {
+        json_response(400, $escaper->escapeHtml($lang['ApproverNotEligible']), NULL);
+        return;
+    }
+
+    // Phase 4a (common tests): controls is a junction (test_control_map) that
+    // update_framework_control_test() ALWAYS overwrites when non-empty -- like
+    // approvers above, a partial PATCH that omits `controls` must not silently
+    // wipe the persisted control set, so fall back to the test's currently-
+    // persisted controls (already fetched above) when the field wasn't submitted.
+    // A submitted-but-scalar `controls` (not `controls[]`) coerces to the
+    // persisted list rather than hitting sanitize_int_array()'s expectations
+    // (clean, fails safe).
+    $controls = (isset($_POST['controls']) && is_array($_POST['controls'])) ? $_POST['controls'] : $test['controls'];
+
+    // ≥1 control gate, only when controls was FRESHLY submitted this request --
+    // mirrors the approvers roster gate's submitted-only re-validation above.
+    if (isset($_POST['controls']) && !test_controls_valid($controls)) {
+        json_response(400, $escaper->escapeHtml($lang['AtLeastOneControlRequired']), NULL);
+        return;
+    }
+
     update_framework_control_test(
         $id, $tester, $test_frequency, $name, $objective, $test_steps,
         $approximate_time, $expected_results, $last_date, $next_date,
         $framework_control_id, $additional_stakeholders, $teams, $tags,
-        $audit_initiation_offset
+        $audit_initiation_offset,
+        // Schedule fields (schedule_type/cadence_unit/cadence_interval/cadence_anchor_date/
+        // schedule_exceptions) are not yet wired to this CRUD PATCH endpoint -- null
+        // preserves each field's existing persisted value, same as before this call
+        // passed no arguments for these positions at all.
+        null, null, null, null, null,
+        $test_method, $sample, $required_evidence, $approvers, $controls
     );
 
     json_response(200, "Test updated successfully.", NULL);
@@ -13826,6 +14699,238 @@ function deleteTestById($id = null)
 
     delete_framework_control_test($id);
     json_response(200, "Test deleted successfully.", NULL);
+}
+
+/***********************************************
+ * FUNCTION: COMPLIANCE - RETIRE TEST          *
+ * Gated by can_retire_tests() (edit_tests OR  *
+ * delete_tests) -- Phase 1 Task 8 of the      *
+ * Define Tests redesign.                      *
+ ***********************************************/
+/***********************************************************************
+ * FUNCTION: DETACH A TEST FROM ONE CONTROL                             *
+ * Removes a single (test, control) pairing -- the row the Define Tests *
+ * grid actually renders -- without touching the test itself. A test    *
+ * shared across several controls stays on the others.                  *
+ *                                                                      *
+ * Modelled as DELETE on a collection member rather than an RPC verb:   *
+ * the thing being removed is a membership, and the id pair names it    *
+ * exactly, so a caller never has to send (or recompute) the whole      *
+ * controls list. The handler holds up its end of that below by         *
+ * deleting the single row under a lock, rather than replacing the      *
+ * list -- see the comment there.                                       *
+ *                                                                      *
+ * Refuses to remove the LAST control: test_controls_valid() requires   *
+ * at least one, and a test mapped to none would exist but be           *
+ * unreachable from a grid that groups by control. Retire or delete is  *
+ * the honest action there, so the refusal says so.                     *
+ ***********************************************************************/
+function detachTestFromControl($id = null, $control_id = null)
+{
+    global $escaper, $lang;
+
+    if (!check_permission("edit_tests")) {
+        json_response(403, $escaper->escapeHtml($lang['NoPermissionForCompliance']), NULL);
+        return;
+    }
+
+    $id = (int)($id ?? 0);
+    $control_id = (int)($control_id ?? 0);
+    if (!$id || !$control_id) {
+        json_response(400, $escaper->escapeHtml($lang['YouNeedToSpecifyAnIdParameter']), NULL);
+        return;
+    }
+
+    if (!check_access_for_test($id)) {
+        json_response(403, $escaper->escapeHtml($lang['NoPermissionForThisTest']), NULL);
+        return;
+    }
+
+    $test = get_framework_control_test_by_id($id);
+    if (empty($test['id'])) {
+        json_response(404, "NOT FOUND: Unable to find a test with the specified id.", NULL);
+        return;
+    }
+
+    // Re-read the mapping under a row lock and delete just the one row, inside a
+    // transaction. The obvious implementation -- diff the controls list and hand
+    // the remainder to save_junction_values() -- looks like it removes one
+    // mapping but actually DELETEs every row for the test and re-INSERTs the
+    // survivors, i.e. a read-modify-write of the whole list. Two admins
+    // detaching different controls at once would then each write a list computed
+    // before the other landed, and one detach would silently come back.
+    //
+    // Locking the rows also makes the at-least-one-control rule airtight rather
+    // than advisory: without it, two concurrent calls can each read two mappings,
+    // each conclude one will remain, and both delete.
+    $db = db_open();
+
+    try {
+        $db->beginTransaction();
+
+        $stmt = $db->prepare("SELECT `framework_control_id` FROM `test_control_map` WHERE `test_id` = :test_id FOR UPDATE");
+        $stmt->bindParam(":test_id", $id, PDO::PARAM_INT);
+        $stmt->execute();
+        $controls = array_map('intval', $stmt->fetchAll(PDO::FETCH_COLUMN, 0));
+
+        if (!in_array($control_id, $controls, true)) {
+            $db->rollBack();
+            db_close($db);
+            json_response(404, "NOT FOUND: That test is not mapped to the specified control.", NULL);
+            return;
+        }
+
+        if (!test_controls_valid(array_values(array_diff($controls, [$control_id])))) {
+            $db->rollBack();
+            db_close($db);
+            json_response(409, $escaper->escapeHtml($lang['CannotRemoveTestsOnlyControl']), NULL);
+            return;
+        }
+
+        $stmt = $db->prepare("DELETE FROM `test_control_map` WHERE `test_id` = :test_id AND `framework_control_id` = :control_id");
+        $stmt->bindParam(":test_id", $id, PDO::PARAM_INT);
+        $stmt->bindParam(":control_id", $control_id, PDO::PARAM_INT);
+        $stmt->execute();
+
+        $db->commit();
+    } catch (Exception $e) {
+        if ($db->inTransaction()) {
+            $db->rollBack();
+        }
+        db_close($db);
+        write_debug_log("detachTestFromControl failed for test {$id} / control {$control_id}: " . $e->getMessage(), "error");
+        json_response(500, "INTERNAL SERVER ERROR: Unable to remove the test from the control.", NULL);
+        return;
+    }
+
+    db_close($db);
+
+    // _lang_raw, not _lang: audit messages are STORED raw and escaped once at
+    // render (get_audit_trail_html() / get_audit_logs_api() both escape the whole
+    // message). Escaping here too would double-encode a test name containing
+    // & or a quote -- the exact mojibake the _lang/_lang_raw split exists to stop.
+    $message = _lang_raw('TestRemovedFromControlAuditLogMessage', array(
+        'test_name' => $test['name'],
+        'test_id' => $id,
+        'control_id' => $control_id,
+        'user' => $_SESSION['user'],
+    ));
+    write_log((int)$id + 1000, $_SESSION['uid'] ?? 0, $message, "test");
+
+    json_response(200, "Test removed from the control successfully.", NULL);
+}
+
+function retireTestById($id = null)
+{
+    global $escaper, $lang;
+
+    if (!can_retire_tests()) {
+        json_response(403, $escaper->escapeHtml($lang['NoPermissionForCompliance']), NULL);
+        return;
+    }
+
+    $id = (int)($id ?? $_GET['id'] ?? 0);
+    if (!$id) {
+        json_response(400, $escaper->escapeHtml($lang['YouNeedToSpecifyAnIdParameter']), NULL);
+        return;
+    }
+
+    if (!check_access_for_test($id)) {
+        json_response(403, $escaper->escapeHtml($lang['NoPermissionForThisTest']), NULL);
+        return;
+    }
+
+    $test = get_framework_control_test_by_id($id);
+    if (empty($test['id'])) {
+        json_response(404, "NOT FOUND: Unable to find a test with the specified id.", NULL);
+        return;
+    }
+
+    retire_framework_control_test($id);
+    json_response(200, "Test retired successfully.", NULL);
+}
+
+/***********************************************
+ * FUNCTION: COMPLIANCE - RESTORE TEST         *
+ * Gated by can_retire_tests() (edit_tests OR  *
+ * delete_tests) -- Phase 1 Task 8 of the      *
+ * Define Tests redesign.                      *
+ ***********************************************/
+function restoreTestById($id = null)
+{
+    global $escaper, $lang;
+
+    if (!can_retire_tests()) {
+        json_response(403, $escaper->escapeHtml($lang['NoPermissionForCompliance']), NULL);
+        return;
+    }
+
+    $id = (int)($id ?? $_GET['id'] ?? 0);
+    if (!$id) {
+        json_response(400, $escaper->escapeHtml($lang['YouNeedToSpecifyAnIdParameter']), NULL);
+        return;
+    }
+
+    if (!check_access_for_test($id)) {
+        json_response(403, $escaper->escapeHtml($lang['NoPermissionForThisTest']), NULL);
+        return;
+    }
+
+    $test = get_framework_control_test_by_id($id);
+    if (empty($test['id'])) {
+        json_response(404, "NOT FOUND: Unable to find a test with the specified id.", NULL);
+        return;
+    }
+
+    restore_framework_control_test($id);
+    json_response(200, "Test restored successfully.", NULL);
+}
+
+/***********************************************
+ * FUNCTION: COMPLIANCE - TEST AUDIT HISTORY   *
+ * Every audit ever run for one test, newest    *
+ * first -- the Define Tests grid's History     *
+ * row action.                                  *
+ *                                              *
+ * Read-only, so it needs no more privilege     *
+ * than viewing the test itself: compliance     *
+ * permission + the same per-test team access   *
+ * check createAudit() uses. A test the caller  *
+ * can't reach returns 403 BEFORE the           *
+ * existence check, so the response can't be    *
+ * used to probe which test ids exist.          *
+ ***********************************************/
+function getTestAuditHistoryById($id = null)
+{
+    global $escaper, $lang;
+
+    if (!check_permission("compliance")) {
+        json_response(403, $escaper->escapeHtml($lang['NoPermissionForCompliance']), NULL);
+        return;
+    }
+
+    $id = (int)($id ?? $_GET['id'] ?? 0);
+    if (!$id) {
+        json_response(400, $escaper->escapeHtml($lang['YouNeedToSpecifyAnIdParameter']), NULL);
+        return;
+    }
+
+    if (!check_access_for_test($id)) {
+        json_response(403, $escaper->escapeHtml($lang['NoPermissionForThisTest']), NULL);
+        return;
+    }
+
+    $test = get_framework_control_test_by_id($id);
+    if (empty($test['id'])) {
+        json_response(404, "NOT FOUND: Unable to find a test with the specified id.", NULL);
+        return;
+    }
+
+    json_response(200, "Test audit history retrieved successfully.", [
+        'test_id' => $id,
+        'test_name' => $test['name'] ?? '',
+        'audits' => get_test_audit_history($id),
+    ]);
 }
 
 /***********************************************
@@ -13894,15 +14999,33 @@ function createAudit()
     // Use the configured initiated_audit_status setting, cast to int to prevent injection
     $initiated_audit_status = (int)(get_setting("initiated_audit_status") ?: 0);
 
-    $name = initiate_test_audit($test_id, $initiated_audit_status, $tags);
+    // Phase 4b: initiate_test_audit() hands back the audit id it acted on via
+    // $audit_id -- either a freshly-inserted row, or (window-dedup guard hit)
+    // the id of the already-open audit for this test's current due-window.
+    // Prefer that over a fresh "ORDER BY id DESC" re-select: a bare re-select
+    // can't distinguish "I just created this" from "someone else's audit for
+    // this test happens to have a higher id" and, on the no-op path, would
+    // grab whatever audit is newest rather than the one the guard actually
+    // matched (a phantom id). Only fall back to the re-select if the guard
+    // somehow left $audit_id unset (defensive -- initiate_test_audit() always
+    // sets it on both the insert and no-op paths).
+    $audit_id = null;
+    $name = initiate_test_audit($test_id, $initiated_audit_status, $tags, true, $audit_id);
+    $audit_id = (int)$audit_id;
 
-    // Retrieve the ID of the newly created audit
-    $db = db_open();
-    $stmt = $db->prepare("SELECT id FROM `framework_control_test_audits` WHERE test_id = :test_id ORDER BY id DESC LIMIT 1");
-    $stmt->bindParam(":test_id", $test_id, PDO::PARAM_INT);
-    $stmt->execute();
-    $audit_id = (int)$stmt->fetchColumn();
-    db_close($db);
+    if (!$audit_id) {
+        $db = db_open();
+        $stmt = $db->prepare("SELECT id FROM `framework_control_test_audits` WHERE test_id = :test_id ORDER BY id DESC LIMIT 1");
+        $stmt->bindParam(":test_id", $test_id, PDO::PARAM_INT);
+        $stmt->execute();
+        $audit_id = (int)$stmt->fetchColumn();
+        db_close($db);
+    }
+
+    if (!$audit_id) {
+        json_response(500, "Unable to determine the initiated audit id.", NULL);
+        return;
+    }
 
     json_response(201, "Audit initiated successfully.", ['id' => $audit_id, 'test_name' => $name]);
 }
@@ -13914,10 +15037,12 @@ function updateAuditById($id = null)
 {
     global $escaper, $lang;
 
-    // PHP only auto-populates $_POST for POST requests; parse the body for PATCH
-    if (empty($_POST)) {
-        parse_str(file_get_contents('php://input'), $_POST);
-    }
+    // PHP only auto-populates $_POST for POST requests; parse the body for PATCH.
+    // Never gate this on empty($_POST) -- csrf-magic leaves the CSRF token in
+    // $_POST on any session-authenticated call, which makes that guard false and
+    // silently drops the entire body (test_result, status, ...) while still
+    // answering 200 "Audit updated successfully".
+    parse_non_post_body_into_post();
 
     if (!check_permission("modify_audits")) {
         json_response(403, $escaper->escapeHtml($lang['NoPermissionForCompliance']), NULL);
@@ -13944,10 +15069,37 @@ function updateAuditById($id = null)
     $status      = isset($_POST['status'])      ? (int)$_POST['status']      : (int)$audit['status'];
     $test_result = isset($_POST['test_result'])  ? (string)$_POST['test_result'] : ($audit['test_result'] ?? '');
     $tester      = isset($_POST['tester'])       ? (int)$_POST['tester']      : (int)$audit['tester'];
-    $test_date   = isset($_POST['test_date'])    ? $_POST['test_date']        : ($audit['test_date'] ?? date('Y-m-d'));
     $summary     = isset($_POST['summary'])      ? $_POST['summary']          : ($audit['summary'] ?? '');
     $teams       = isset($_POST['teams'])        ? $_POST['teams']            : ($audit['teams'] ?? []);
     $tags        = isset($_POST['tags'])         ? $_POST['tags']             : [];
+
+    // test_date used to be bound VERBATIM into a DATE column, so the app's own
+    // display format -- '06/19/2026', what the UI shows and therefore what a
+    // caller naturally sends -- stored '0000-00-00' while this endpoint still
+    // answered 200. Same silent-success shape as the dropped-PATCH-body bug one
+    // field over. parse_submitted_api_date() (includes/audit_schedule.php)
+    // accepts ISO *and* the display format and reports garbage separately from
+    // blank, so an unparseable value is refused instead of flattened.
+    //
+    // Only a SUBMITTED value is parsed. The omitted-field fallback re-uses the
+    // stored column value, which is already canonical -- including the
+    // '0000-00-00' an initiated-but-never-performed audit carries, which must
+    // keep flowing through unchanged rather than 400 every re-save.
+    if (isset($_POST['test_date'])) {
+        $test_date_format = get_default_date_format();
+        $test_date = parse_submitted_api_date($_POST['test_date'], $test_date_format);
+        if ($test_date === null) {
+            json_response(400, submitted_date_error_message($_POST['test_date'], $lang['TestDate'] . ' (test_date)', $test_date_format, get_setting('default_date_format')), NULL);
+            return;
+        }
+        // false === submitted blank: an explicit "no test date", stored as the
+        // zero date the DATE NOT NULL column uses for exactly that.
+        if ($test_date === false) {
+            $test_date = '0000-00-00';
+        }
+    } else {
+        $test_date = $audit['test_date'] ?? date('Y-m-d');
+    }
 
     if (!is_valid_test_result_name($test_result)) {
         json_response(400, "Invalid test_result. Allowed values: Pass, Inconclusive, Fail.", NULL);
@@ -13956,6 +15108,161 @@ function updateAuditById($id = null)
 
     save_test_result($id, $status, $test_result, $tester, $test_date, $teams, $summary, $tags);
     json_response(200, "Audit updated successfully.", NULL);
+}
+
+/*******************************************************************
+ * FUNCTION: COMPLIANCE - APPROVE AUDIT (Phase 3b Task 5)            *
+ * POST /compliance/audits/{id}/approve                              *
+ *                                                                     *
+ * Full gate stack (a missing gate here is a security hole, so all    *
+ * five run in order and each short-circuits on failure):             *
+ *   1. check_permission('approve_tests')       -- 403                *
+ *   2. id present                              -- 400                *
+ *   3. check_access_for_audit($id)             -- 403 (team sep)     *
+ *   4. audit exists                            -- 404                *
+ *   5. user_is_approver_of_audit($id, uid)     -- 403                *
+ *   6. uid !== audit's tester                  -- 403 (SoD)          *
+ *   7. get_audit_approval_state($id)==='pending' -- 409               *
+ * approve_audit() itself re-checks 'pending' under an atomic          *
+ * UPDATE...WHERE approval_state='pending' guard, so a concurrent      *
+ * double-approve can still only win once even though gate 7 above     *
+ * is a plain read (TOCTOU-safe by construction in approve_audit()).   *
+ *******************************************************************/
+function approveAuditById($id = null)
+{
+    global $escaper, $lang;
+
+    if (!check_permission("approve_tests")) {
+        json_response(403, $escaper->escapeHtml($lang['NoPermissionForCompliance']), NULL);
+        return;
+    }
+
+    $id = (int)($id ?? $_GET['id'] ?? 0);
+    if (!$id) {
+        json_response(400, $escaper->escapeHtml($lang['YouNeedToSpecifyAnIdParameter']), NULL);
+        return;
+    }
+
+    if (!check_access_for_audit($id)) {
+        json_response(403, $escaper->escapeHtml($lang['NoPermissionForThisAudit']), NULL);
+        return;
+    }
+
+    $audit = get_framework_control_test_audit_by_id($id);
+    if (empty($audit['id'])) {
+        json_response(404, "NOT FOUND: Unable to find an audit with the specified id.", NULL);
+        return;
+    }
+
+    $uid = (int)($_SESSION['uid'] ?? 0);
+
+    if (!user_is_approver_of_audit($id, $uid)) {
+        json_response(403, $escaper->escapeHtml($lang['NotAnApproverOfThisAudit']), NULL);
+        return;
+    }
+
+    if ($uid === (int)$audit['tester']) {
+        json_response(403, $escaper->escapeHtml($lang['ApproverCannotBeTester']), NULL);
+        return;
+    }
+
+    if (!audit_is_awaiting_approval($id)) {
+        json_response(409, $escaper->escapeHtml($lang['AuditNotAwaitingApproval']), NULL);
+        return;
+    }
+
+    if (approve_audit($id, $uid)) {
+        json_response(200, $escaper->escapeHtml($lang['AuditApproved']), NULL);
+    } else {
+        // Lost a race against a concurrent approve/reject -- the audit is no
+        // longer in 'pending' by the time approve_audit()'s atomic UPDATE ran.
+        json_response(409, $escaper->escapeHtml($lang['AuditNotAwaitingApproval']), NULL);
+    }
+}
+
+/*******************************************************************
+ * FUNCTION: COMPLIANCE - REJECT AUDIT (Phase 3b Task 5)             *
+ * POST /compliance/audits/{id}/reject                               *
+ * Body: comment (required, non-empty)                                *
+ *                                                                     *
+ * Same gate stack as approveAuditById() (see above) plus a required   *
+ * `comment` body field. On success, notifies the audit's tester       *
+ * in-app (source='workflow') that the close was rejected, linking     *
+ * back to the audit's testing page.                                   *
+ *******************************************************************/
+function rejectAuditById($id = null)
+{
+    global $escaper, $lang;
+
+    if (!check_permission("approve_tests")) {
+        json_response(403, $escaper->escapeHtml($lang['NoPermissionForCompliance']), NULL);
+        return;
+    }
+
+    $id = (int)($id ?? $_GET['id'] ?? 0);
+    if (!$id) {
+        json_response(400, $escaper->escapeHtml($lang['YouNeedToSpecifyAnIdParameter']), NULL);
+        return;
+    }
+
+    if (!check_access_for_audit($id)) {
+        json_response(403, $escaper->escapeHtml($lang['NoPermissionForThisAudit']), NULL);
+        return;
+    }
+
+    $audit = get_framework_control_test_audit_by_id($id);
+    if (empty($audit['id'])) {
+        json_response(404, "NOT FOUND: Unable to find an audit with the specified id.", NULL);
+        return;
+    }
+
+    $uid = (int)($_SESSION['uid'] ?? 0);
+
+    if (!user_is_approver_of_audit($id, $uid)) {
+        json_response(403, $escaper->escapeHtml($lang['NotAnApproverOfThisAudit']), NULL);
+        return;
+    }
+
+    if ($uid === (int)$audit['tester']) {
+        json_response(403, $escaper->escapeHtml($lang['ApproverCannotBeTester']), NULL);
+        return;
+    }
+
+    if (!audit_is_awaiting_approval($id)) {
+        json_response(409, $escaper->escapeHtml($lang['AuditNotAwaitingApproval']), NULL);
+        return;
+    }
+
+    $comment = trim((string)get_param("POST", "comment", ""));
+    if ($comment === '') {
+        json_response(400, $escaper->escapeHtml($lang['RejectCommentRequired']), NULL);
+        return;
+    }
+
+    if (!reject_audit($id, $uid, $comment)) {
+        // Lost a race against a concurrent approve/reject.
+        json_response(409, $escaper->escapeHtml($lang['AuditNotAwaitingApproval']), NULL);
+        return;
+    }
+
+    // Notify the tester their submitted close was rejected. source='workflow'
+    // is the only NOTIFICATION_SOURCES value available to Core runtime code;
+    // link points back at the audit's testing page (build_url() base-URL-safe
+    // for subpath installs, same idiom used throughout compliance.php/api.php).
+    $tester_id = (int)$audit['tester'];
+    if ($tester_id > 0) {
+        create_notification_for_user_ids(
+            source:     'workflow',
+            title:      _lang_raw('NotificationAuditRejectedTitle', ['test_audit_name' => $audit['name']]),
+            body:       _lang_raw('NotificationAuditRejectedBody', ['test_audit_name' => $audit['name'], 'comment' => $comment]),
+            link:       build_url("compliance/testing.php?id=" . $id),
+            user_ids:   [$tester_id],
+            created_by: $uid,
+            expires_at: null
+        );
+    }
+
+    json_response(200, $escaper->escapeHtml($lang['AuditRejected']), NULL);
 }
 
 /***********************************************
@@ -14033,7 +15340,50 @@ function createFrameworkCrud()
     $name        = get_param("POST", "name", "");
     $description = get_param("POST", "description", "");
     $parent      = (int)get_param("POST", "parent", 0);
+
+    // Active (1) / Inactive (2), defaulting to Active. Whitelisted for the same
+    // reason updateFrameworkById() whitelists it: `frameworks`.`status` only ever
+    // means those two things, and add_framework() would happily INSERT any other
+    // integer -- producing a row that no status filter in the product can reach.
     $status      = (int)get_param("POST", "status", 1);
+    if ($status !== 1 && $status !== 2) {
+        json_response(400, "The framework status must be 1 (active) or 2 (inactive).", NULL);
+        return;
+    }
+
+    // The two Statement of Applicability fields (spec §5.4a). Absent means "not
+    // supplied", not "empty": both are optional at creation time, and the SoA
+    // export prompts for whichever is still missing when it is run.
+    $scope_statement = isset($_POST['scope_statement']) ? (string)$_POST['scope_statement'] : false;
+    $inclusion       = isset($_POST['default_inclusion_justification'])
+        ? (string)$_POST['default_inclusion_justification']
+        : false;
+
+    // CLONE (Task 64). An optional source framework whose control mappings the
+    // new framework is to be given. Everything else about a clone -- the name,
+    // the description, the parent, the status, the default inclusion
+    // justification -- arrives as ordinary create params, because a clone IS a
+    // create: the Define Control Frameworks page pre-fills the Add Framework
+    // modal from the source and the user reviews and submits it through this
+    // endpoint, exactly the way Clone control pre-fills the Add Control modal
+    // (Task 24). The only thing the client cannot carry in the form is the
+    // mapping set, so that -- and only that -- is what this parameter names.
+    //
+    // The permission checked is the one already checked above: cloning creates a
+    // framework, so `add_new_frameworks` is the grant. Reading the source's
+    // mappings needs nothing further -- `governance`, which every caller of this
+    // endpoint already holds, is what the controls table itself is gated on.
+    $clone_from = (int)get_param("POST", "clone_from", 0);
+    if ($clone_from < 0) {
+        $clone_from = 0;
+    }
+    if ($clone_from && !get_framework($clone_from)) {
+        // Refused BEFORE the framework is created: answering 404 after the
+        // insert would leave a framework behind that the caller was told did
+        // not get made.
+        json_response(404, "NOT FOUND: Unable to find a framework with the specified clone_from id.", NULL);
+        return;
+    }
 
     if (!$name) {
         json_response(400, "The framework name cannot be empty.", NULL);
@@ -14046,20 +15396,118 @@ function createFrameworkCrud()
         return;
     }
 
-    json_response(201, "Framework created successfully.", ['id' => (int)$framework_id]);
+    // Written after the insert rather than through add_framework(): that function
+    // has nine call sites across Core and three Extras (the SCF importer among
+    // them), none of which have an SoA to state, so its signature stays as it is.
+    if ($scope_statement !== false || $inclusion !== false) {
+        try {
+            update_framework_soa_fields((int)$framework_id, $scope_statement, $inclusion);
+        } catch (InvalidArgumentException $e) {
+            // The framework itself was created; only the over-long SoA field was
+            // refused. Say so explicitly rather than reporting a bare 201, so the
+            // caller does not assume a value landed that did not.
+            json_response(400, $escaper->escapeHtml($e->getMessage()), ['id' => (int)$framework_id]);
+            return;
+        }
+    }
+
+    // The mapping copy is one transactional INSERT ... SELECT, so it either
+    // copies the whole set or copies nothing -- there is no half-cloned state to
+    // report. What there IS is the case where the framework was created and the
+    // copy then failed, and that has to be said out loud with the id attached:
+    // the alternative is a caller told "created" who finds an empty framework,
+    // or told "failed" who finds a real one. Deleting the framework to undo it
+    // would be worse -- delete_frameworks() detaches documents, exceptions and
+    // audits, which is a great deal of collateral for a failure whose cause is
+    // unknown at this point.
+    $mappings_copied = 0;
+    if ($clone_from) {
+        try {
+            $mappings_copied = clone_framework_control_mappings($clone_from, (int)$framework_id);
+        } catch (Throwable $e) {
+            write_debug_log(
+                "Cloning framework {$clone_from} into {$framework_id}: the mapping copy failed -- " . $e->getMessage(),
+                'error'
+            );
+            json_response(
+                500,
+                "The framework was created, but its control mappings could not be copied.",
+                ['id' => (int)$framework_id, 'mappings_copied' => 0]
+            );
+            return;
+        }
+    }
+
+    json_response(201, "Framework created successfully.", [
+        'id' => (int)$framework_id,
+        'mappings_copied' => $mappings_copied,
+    ]);
 }
 
 /***************************************************
  * FUNCTION: GOVERNANCE CRUD - UPDATE FRAMEWORK    *
  ***************************************************/
+/*****************************************************************
+ * FUNCTION: PARSE A NON-POST BODY (PATCH/DELETE) INTO $_POST    *
+ *****************************************************************
+ * PHP only auto-populates $_POST for POST requests, so a PATCH body has to
+ * be parsed by hand.
+ *
+ * This must NOT be gated on empty($_POST) -- that was updateTestById()'s
+ * original bug (see reference_patch_body_parse_bug in project memory,
+ * fixed 2026-07-19): csrf_startup() (includes/functions.php) unconditionally
+ * copies the CSRF-TOKEN header into $_POST[$name] regardless of HTTP verb,
+ * so by the time a PATCH handler runs, $_POST already has one key -- an
+ * empty($_POST) guard reads false, the body is never parsed, and EVERY
+ * submitted field then falls back to its persisted value (or, for the two
+ * callers below, the update is refused outright with "No updatable fields
+ * were provided" even though real fields were sent) -- discovered here
+ * while wiring Task 8's Edit framework/Edit control modals, which always
+ * send that header (design-system.md §8's CSRF rule).
+ *
+ * Parses whenever the verb isn't POST and MERGES the result into $_POST
+ * (array_merge($_POST, $parsed_body)), so submitted values win for the keys
+ * they define. This does NOT protect the existing CSRF token key from being
+ * overwritten if the body happens to define the same key -- the merge lets
+ * the body win there too. That has no security effect today: csrf_check()
+ * (vendor/simplerisk/csrf-magic) only validates a token for POST requests
+ * and returns true unconditionally for PATCH/DELETE, and it runs before
+ * this helper ever does, so nothing downstream re-checks whatever ends up
+ * in $_POST[$name] for these verbs. If a future PATCH/DELETE endpoint ever
+ * needs the CSRF key to survive a same-named body field, protect it
+ * explicitly at that call site rather than assuming this helper does it.
+ * Supports both encodings for the same reason updateTestById() does:
+ * answering success to a body we silently misunderstood is the same bug
+ * reached a different way.
+ */
+function parse_non_post_body_into_post() {
+    if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
+        return;
+    }
+    $raw_body = file_get_contents('php://input');
+    if (!is_string($raw_body) || $raw_body === '') {
+        return;
+    }
+    $parsed_body = null;
+    if (str_starts_with(ltrim($raw_body), '{')) {
+        $decoded = json_decode($raw_body, true);
+        if (is_array($decoded)) {
+            $parsed_body = $decoded;
+        }
+    }
+    if ($parsed_body === null) {
+        parse_str($raw_body, $parsed_body);
+    }
+    if (is_array($parsed_body)) {
+        $_POST = array_merge($_POST, $parsed_body);
+    }
+}
+
 function updateFrameworkById($id = null)
 {
     global $escaper, $lang;
 
-    // PHP only auto-populates $_POST for POST requests; parse the body for PATCH
-    if (empty($_POST)) {
-        parse_str(file_get_contents('php://input'), $_POST);
-    }
+    parse_non_post_body_into_post();
 
     if (!check_permission("modify_frameworks")) {
         json_response(403, $escaper->escapeHtml($lang['NoModifyFrameworkPermission']), NULL);
@@ -14082,16 +15530,77 @@ function updateFrameworkById($id = null)
     $description = isset($_POST['description']) ? $_POST['description']        : false;
     $parent      = isset($_POST['parent'])      ? (int)$_POST['parent']        : false;
 
-    if ($name === false && $description === false && $parent === false) {
+    // Statement of Applicability fields (spec §5.4a). An absent key leaves the
+    // stored value alone; an empty string is a deliberate clear. That distinction
+    // is what lets a caller PATCH only the name without blanking a scope
+    // statement it never sent.
+    $scope_statement = isset($_POST['scope_statement']) ? (string)$_POST['scope_statement'] : false;
+    $inclusion       = isset($_POST['default_inclusion_justification'])
+        ? (string)$_POST['default_inclusion_justification']
+        : false;
+
+    // Active (1) / Inactive (2) -- the SAME two values `frameworks`.`status` has
+    // always held, and the same two POST /governance/frameworks already accepts.
+    // Deactivating is how a framework is retired WITHOUT deleting it, and deleting
+    // is irreversible (nothing ever sets `framework_controls`.`deleted` back to 0),
+    // so leaving this off PATCH left the destructive route as the only one the
+    // Define Control Frameworks page could reach.
+    //
+    // Whitelisted to exactly {1, 2} rather than cast-and-store: update_framework_status()
+    // branches on those two values and silently does NOTHING for any other integer
+    // while still writing an audit-log line, so a stray 0 or 3 would be reported as a
+    // successful update that changed nothing.
+    $status = false;
+    if (isset($_POST['status'])) {
+        $status = (int)$_POST['status'];
+        if ($status !== 1 && $status !== 2) {
+            json_response(400, "The framework status must be 1 (active) or 2 (inactive).", NULL);
+            return;
+        }
+    }
+
+    if ($name === false && $description === false && $parent === false
+        && $scope_statement === false && $inclusion === false && $status === false) {
         json_response(400, "No updatable fields were provided.", NULL);
         return;
     }
 
-    if (update_framework($id, $name !== false ? $name : $framework['name'], $description, $parent)) {
-        json_response(200, "Framework updated successfully.", NULL);
-    } else {
-        json_response(500, "Failed to update the framework.", NULL);
+    // Validate the SoA fields BEFORE update_framework() runs, so an over-long
+    // scope statement cannot leave the name half-updated behind a 400.
+    if ($scope_statement !== false || $inclusion !== false) {
+        try {
+            update_framework_soa_fields($id, $scope_statement, $inclusion);
+        } catch (InvalidArgumentException $e) {
+            json_response(400, $escaper->escapeHtml($e->getMessage()), NULL);
+            return;
+        }
     }
+
+    // The name/description/parent update is skipped entirely when the request only
+    // carried SoA fields: update_framework() requires a name, and passing the
+    // stored one back through it would re-encrypt and rewrite the row for nothing.
+    if ($name !== false || $description !== false || $parent !== false) {
+        if (!update_framework($id, $name !== false ? $name : $framework['name'], $description, $parent)) {
+            json_response(500, "Failed to update the framework.", NULL);
+            return;
+        }
+    }
+
+    // Applied LAST, and through update_framework_status() rather than a plain
+    // UPDATE, so this behaves exactly like the drag-between-tabs gesture the
+    // redesign removed: deactivating cascades to the whole subtree, activating
+    // walks the ancestor chain back on. Running it after update_framework() means
+    // a request that changes parent AND status re-parents first, so the ancestor
+    // walk follows the parent the caller just asked for, not the one it replaced.
+    //
+    // Only when the value actually changes: update_framework_status() writes an
+    // "activated by"/"deactivated by" audit-trail entry unconditionally, and an
+    // unrelated rename must not manufacture a status-change record.
+    if ($status !== false && (int)$framework['status'] !== $status) {
+        update_framework_status($status, $id);
+    }
+
+    json_response(200, "Framework updated successfully.", NULL);
 }
 
 /***************************************************
@@ -14180,11 +15689,23 @@ function createControlCrud()
         'control_desired_maturity' => (int)get_param("POST", "control_desired_maturity", 0),
         'control_priority'         => (int)get_param("POST", "control_priority", 0),
         'control_type'             => isset($_POST['control_type']) ? $_POST['control_type'] : [],
-        'control_status'           => (int)get_param("POST", "control_status", 1),
+        'control_status'           => (int)get_param("POST", "control_status", 2),
         'family'                   => (int)get_param("POST", "family", 0),
         'mitigation_percent'       => (int)get_param("POST", "mitigation_percent", 0),
-        'map_frameworks'           => [],
-        'mapped_assets'            => [],
+        // Previously hardcoded to [] regardless of what the Add Control
+        // modal's mapping tables submitted (Task 20's known gap) -- now
+        // parsed from the request via the same pure helpers
+        // CreateControlMappingsTest exercises directly. Safe to persist
+        // unconditionally here (unlike updateControlById() below in this
+        // file, which deliberately OMITS these keys instead of parsing them
+        // -- add_framework_control() only calls save_control_to_assets()
+        // when 'mapped_assets' is non-empty, so there is no prior mapping
+        // state a create could ever wipe; an update, on the other hand,
+        // would delete-then-reinsert against a control that already has
+        // rows, so parsing an update's mapping submission is a materially
+        // different, NOT-yet-done change deliberately left alone here).
+        'map_frameworks'           => parse_control_map_frameworks_request($_POST),
+        'mapped_assets'            => parse_control_mapped_assets_request($_POST),
     ];
 
     $control_id = add_framework_control($control);
@@ -14202,10 +15723,9 @@ function updateControlById($id = null)
 {
     global $escaper, $lang;
 
-    // PHP only auto-populates $_POST for POST requests; parse the body for PATCH
-    if (empty($_POST)) {
-        parse_str(file_get_contents('php://input'), $_POST);
-    }
+    // See parse_non_post_body_into_post()'s docblock above (updateFrameworkById) --
+    // same empty($_POST)-guard bug, same fix.
+    parse_non_post_body_into_post();
 
     if (!check_permission("modify_controls")) {
         json_response(403, $escaper->escapeHtml($lang['NoModifyControlPermission']), NULL);
@@ -14236,19 +15756,104 @@ function updateControlById($id = null)
         'control_current_maturity' => isset($_POST['control_current_maturity']) ? (int)$_POST['control_current_maturity'] : (int)($existing['control_current_maturity'] ?? 0),
         'control_desired_maturity' => isset($_POST['control_desired_maturity']) ? (int)$_POST['control_desired_maturity'] : (int)($existing['control_desired_maturity'] ?? 0),
         'control_priority'         => isset($_POST['control_priority'])         ? (int)$_POST['control_priority']          : (int)$existing['control_priority'],
-        'control_type'             => isset($_POST['control_type'])             ? $_POST['control_type']                   : [],
         'control_status'           => isset($_POST['control_status'])           ? (int)$_POST['control_status']            : (int)$existing['control_status'],
         'family'                   => isset($_POST['family'])                   ? (int)$_POST['family']                    : (int)$existing['family'],
         'mitigation_percent'       => isset($_POST['mitigation_percent'])       ? (int)$_POST['mitigation_percent']        : (int)$existing['mitigation_percent'],
-        'map_frameworks'           => [],
-        'mapped_assets'            => [],
+        // 'control_type', 'map_frameworks' and 'mapped_assets' are set BELOW,
+        // and only when the request actually carried a submission for them.
+        // They must not appear in this literal at all -- see the block after it.
     ];
 
-    if (update_framework_control($id, $control)) {
-        json_response(200, "Control updated successfully.", NULL);
-    } else {
-        json_response(500, "Failed to update the control.", NULL);
+    // ---- Mapping changes: omission means PRESERVE, an explicit marker means
+    // ---- REPLACE (including with nothing).
+    //
+    // These two keys used to be omitted unconditionally, for a real reason:
+    // update_framework_control() (includes/governance.php) gates on
+    // isset($control['mapped_assets']) before calling save_control_to_assets(),
+    // isset([]) is TRUE in PHP, and that function is delete-then-insert. A
+    // hardcoded [] therefore did not skip the call -- it WIPED every asset and
+    // asset-group mapping the control had, on every PATCH, including one that
+    // only touched short_name. tests/api/GovernanceControlAssetMappingTest.php
+    // is the guard for that and still passes: a request that says nothing about
+    // mappings still says nothing about them here.
+    //
+    // But omission-means-preserve is only safe while no caller can legitimately
+    // clear a mapping, and that stopped being true when the Edit Control modal
+    // started collecting mapping changes. A user could open a control, change
+    // its Mapped Control Frameworks, save, and have the change silently
+    // discarded -- the same defect as the create path's hardcoded [], one verb
+    // over. So "none" now needs a representation that is distinguishable from
+    // "not mentioned", and a form cannot provide one on its own: an empty table
+    // and an absent widget serialize identically.
+    //
+    // The marker inputs are what distinguish them. display_mapping_framework_edit()
+    // / display_mapping_asset_edit() emit them next to the tables they describe,
+    // and only when the field is actually rendered -- so a Customization-Extra
+    // layout that drops the widget, or any API client that simply does not send
+    // the marker, keeps preserve-by-omission untouched.
+    // Control types are the THIRD mapping table on this path and were missed
+    // when the other two were fixed, with a worse failure mode: their rewrite in
+    // update_framework_control() is inline rather than behind an isset()-gated
+    // save_* call, so the DELETE ran unconditionally and the empty default here
+    // meant every PATCH that did not mention control_type wiped the control's
+    // types outright. Both halves are fixed -- the domain function now preserves
+    // when the key is absent, and the key is only set here when the request
+    // actually carried types or the marker.
+    //
+    // isset($_POST['control_type']) alone is enough for the ADD direction (a
+    // multiselect with a selection submits it), but not for the CLEAR direction:
+    // a multiselect with nothing selected submits nothing at all, which is
+    // byte-identical to an API client that never mentioned control types. The
+    // control_type_submitted marker display_control_type_edit() emits is what
+    // separates them, exactly as the two mapping-table markers do.
+    $frameworks_submitted  = !empty($_POST['map_frameworks_submitted']);
+    $assets_submitted      = !empty($_POST['mapped_assets_submitted']);
+    $control_type_submitted = isset($_POST['control_type']) || !empty($_POST['control_type_submitted']);
+
+    if ($control_type_submitted) {
+        $control['control_type'] = isset($_POST['control_type']) ? (array)$_POST['control_type'] : [];
     }
+
+    // PARSED ONCE, INTO A LOCAL. The prune below needs this same set, and reading
+    // it back off $control there left the two uses correlated only through
+    // $frameworks_submitted -- which Phan cannot follow across two separate `if`
+    // blocks, so it saw a possibly-absent 'map_frameworks' offset. A local also
+    // rules out the far worse repair of writing `$control['map_frameworks'] ?? []`
+    // at the prune: an empty set there means "the user cleared every mapping" and
+    // would delete them all.
+    $submitted_frameworks = $frameworks_submitted ? parse_control_map_frameworks_request($_POST) : null;
+
+    if ($submitted_frameworks !== null) {
+        $control['map_frameworks'] = $submitted_frameworks;
+    }
+    if ($assets_submitted) {
+        $control['mapped_assets'] = parse_control_mapped_assets_request($_POST);
+    }
+
+    if (!update_framework_control($id, $control)) {
+        json_response(500, "Failed to update the control.", NULL);
+        return;
+    }
+
+    // save_control_to_frameworks() is INSERT ... ON DUPLICATE KEY UPDATE with
+    // no DELETE, so on its own it can only ever ADD a framework mapping -- a
+    // row the user deleted in the modal would come back. The removal half is
+    // done here rather than inside update_framework_control() on purpose: the
+    // other caller of that function (updateControlResponse(), the legacy
+    // add/update_control endpoints) sets map_frameworks unconditionally, even
+    // to [], so making the prune unconditional there would recreate the exact
+    // isset([]) wipe the guard above exists to prevent -- on the framework side
+    // instead of the asset side. Only a request that carried the marker has
+    // proven its submission is the complete set.
+    //
+    // Assets need no equivalent: save_control_to_assets() is already
+    // delete-then-insert, which is why passing it an empty set was dangerous in
+    // the first place and is exactly right now that the empty set is explicit.
+    if ($submitted_frameworks !== null) {
+        delete_control_to_frameworks_except($id, $submitted_frameworks);
+    }
+
+    json_response(200, "Control updated successfully.", NULL);
 }
 
 /***********************************************
@@ -14475,6 +16080,53 @@ function datatable_response_for_view($view) {
 /**********************************************
  * FUNCTION: ACTIVATE OR DEACTIVATE EXTRA API *
  **********************************************/
+/**
+ * Shared by both branches of activateDeactivateExtraApi() -- prevents the
+ * 2x2 source/stale dispatch from drifting between the activate and
+ * deactivate copies.
+ *
+ * @return array{0: int, 1: string, 2: ?array}
+ */
+function encryption_pipeline_in_flight_response(array $inflight, string $action): array
+{
+    global $lang, $escaper;
+
+    $stale = $inflight['stale'] ?? false;
+
+    if ($inflight['source'] === 'state') {
+        if ($stale) {
+            write_debug_log("Encryption Extra {$action} refused — encryption_activation_state has been 'in_progress' for an unusually long time with no matching queue_tasks row; the background queue worker may not be running.", 'warning');
+            return [409, $lang['EncryptionPipelineStalledState'], null];
+        }
+        write_debug_log("Encryption Extra {$action} refused — encryption_activation_state is 'in_progress'.", 'notice');
+        return [409, $lang['EncryptionPipelineInProgress'], null];
+    }
+
+    if ($stale) {
+        write_debug_log("Encryption Extra {$action} refused — task #{$inflight['id']} ({$inflight['task_type']}) has been {$inflight['status']} since {$inflight['created_at']} without progressing; the background queue worker may not be running.", 'warning');
+        return [409, _lang('EncryptionPipelineStalledTask', ['id' => $inflight['id'], 'type' => $inflight['task_type'], 'status' => $inflight['status']]), null];
+    }
+
+    write_debug_log("Encryption Extra {$action} refused — task #{$inflight['id']} ({$inflight['task_type']}) is currently {$inflight['status']}.", 'notice');
+    // EncryptionPipelineInProgressTask predates this fix and is already
+    // translated into ~35 locales using the bare {id}/{type} placeholder
+    // convention (a real, separate convention this file also uses for
+    // client-side JS templating -- see EncryptionStageProgress). _lang()
+    // only substitutes {$param}/${param}/$param, never bare {param}, so
+    // rewriting the English string to the $-prefixed form would fix
+    // English while leaving every translation's bare placeholders
+    // substituting nothing -- and Translation-type changes to those
+    // locale files are gated to the Crowdin service account, not this
+    // PR. Substituting the bare tokens directly fixes the real value for
+    // every locale, English included, without touching any lang file.
+    $message = str_replace(
+        ['{id}', '{type}'],
+        [$escaper->escapeHtml((string)$inflight['id']), $escaper->escapeHtml((string)$inflight['task_type'])],
+        $lang['EncryptionPipelineInProgressTask']
+    );
+    return [409, $message, null];
+}
+
 function activateDeactivateExtraApi() {
     global $escaper, $lang;
 
@@ -14580,12 +16232,8 @@ function activateDeactivateExtraApi() {
             db_close($db_priv);
 
             if ($inflight !== null) {
-                if ($inflight['source'] === 'state') {
-                    write_debug_log("Encryption Extra activation refused — encryption_activation_state is 'in_progress'.", 'notice');
-                    return json_response(409, $lang['EncryptionPipelineInProgress'], null);
-                }
-                write_debug_log("Encryption Extra activation refused — task #{$inflight['id']} ({$inflight['task_type']}) is currently {$inflight['status']}.", 'notice');
-                return json_response(409, _lang('EncryptionPipelineInProgressTask', ['id' => $inflight['id'], 'type' => $inflight['task_type']], false), null);
+                [$status_code, $message, $data] = encryption_pipeline_in_flight_response($inflight, 'activation');
+                return json_response($status_code, $message, $data);
             }
         }
 
@@ -14650,12 +16298,8 @@ function activateDeactivateExtraApi() {
             db_close($db_deact_check);
 
             if ($inflight !== null) {
-                if ($inflight['source'] === 'state') {
-                    write_debug_log("Encryption Extra deactivation refused — encryption_activation_state is 'in_progress'.", 'notice');
-                    return json_response(409, $lang['EncryptionPipelineInProgress'], null);
-                }
-                write_debug_log("Encryption Extra deactivation refused — task #{$inflight['id']} ({$inflight['task_type']}) is currently {$inflight['status']}.", 'notice');
-                return json_response(409, _lang('EncryptionPipelineInProgressTask', ['id' => $inflight['id'], 'type' => $inflight['task_type']], false), null);
+                [$status_code, $message, $data] = encryption_pipeline_in_flight_response($inflight, 'deactivation');
+                return json_response($status_code, $message, $data);
             }
         }
 

@@ -18,30 +18,45 @@ use function trim;
  */
 class PEMCertificatesMock
 {
-    public const CERTS_DIR = 'resources/certificates';
-    public const KEYS_DIR = 'resources/keys';
-    public const PASSPHRASE = '1234';
+    public const string CERTS_DIR = 'resources/certificates';
 
-    public const CERTIFICATE = 'signed.simplesamlphp.org.crt';
-    public const PUBLIC_KEY = 'signed.simplesamlphp.org.pub';
-    public const PRIVATE_KEY = 'signed.simplesamlphp.org.key';
-    public const OTHER_CERTIFICATE = 'other.simplesamlphp.org.crt';
-    public const OTHER_PUBLIC_KEY = 'other.simplesamlphp.org.pub';
-    public const OTHER_PRIVATE_KEY = 'other.simplesamlphp.org.key';
-    public const SELFSIGNED_CERTIFICATE = 'selfsigned.simplesamlphp.org.crt';
-    public const SELFSIGNED_PUBLIC_KEY = 'selfsigned.simplesamlphp.org.pub';
-    public const SELFSIGNED_PRIVATE_KEY = 'selfsigned.simplesamlphp.org.key';
-    public const BROKEN_CERTIFICATE = 'broken.simplesamlphp.org.crt';
-    public const BROKEN_PUBLIC_KEY = 'broken.simplesamlphp.org.pub';
-    public const BROKEN_PRIVATE_KEY = 'broken.simplesamlphp.org.key';
-    public const CORRUPTED_CERTIFICATE = 'corrupted.simplesamlphp.org.crt';
-    public const CORRUPTED_PUBLIC_KEY = 'corrupted.simplesamlphp.org.pub';
-    public const CORRUPTED_PRIVATE_KEY = 'corrupted.simplesamlphp.org.key';
+    public const string KEYS_DIR = 'resources/keys';
+
+    public const string PASSPHRASE = '1234';
+
+    public const string CERTIFICATE = 'signed.simplesamlphp.org.crt';
+
+    public const string PUBLIC_KEY = 'signed.simplesamlphp.org.pub';
+
+    public const string PRIVATE_KEY = 'signed.simplesamlphp.org.key';
+
+    public const string OTHER_CERTIFICATE = 'other.simplesamlphp.org.crt';
+
+    public const string OTHER_PUBLIC_KEY = 'other.simplesamlphp.org.pub';
+
+    public const string OTHER_PRIVATE_KEY = 'other.simplesamlphp.org.key';
+
+    public const string SELFSIGNED_CERTIFICATE = 'selfsigned.simplesamlphp.org.crt';
+
+    public const string SELFSIGNED_PUBLIC_KEY = 'selfsigned.simplesamlphp.org.pub';
+
+    public const string SELFSIGNED_PRIVATE_KEY = 'selfsigned.simplesamlphp.org.key';
+
+    public const string BROKEN_CERTIFICATE = 'broken.simplesamlphp.org.crt';
+
+    public const string BROKEN_PUBLIC_KEY = 'broken.simplesamlphp.org.pub';
+
+    public const string BROKEN_PRIVATE_KEY = 'broken.simplesamlphp.org.key';
+
+    public const string CORRUPTED_CERTIFICATE = 'corrupted.simplesamlphp.org.crt';
+
+    public const string CORRUPTED_PUBLIC_KEY = 'corrupted.simplesamlphp.org.pub';
+
+    public const string CORRUPTED_PRIVATE_KEY = 'corrupted.simplesamlphp.org.key';
 
 
     /**
      * @param string $file The file to use
-     * @return string
      */
     public static function buildKeysPath(string $file): string
     {
@@ -52,7 +67,6 @@ class PEMCertificatesMock
 
     /**
      * @param string $file The file to use
-     * @return string
      */
     public static function buildCertsPath(string $file): string
     {
@@ -117,7 +131,6 @@ class PEMCertificatesMock
 
     /**
      * @param string $file The file to use
-     * @return string
      */
     public static function getPlainCertificate(
         string $file = self::CERTIFICATE,
@@ -128,7 +141,6 @@ class PEMCertificatesMock
 
     /**
      * @param string $file The file to use
-     * @return string
      */
     public static function getPlainPublicKey(
         string $file = self::PUBLIC_KEY,
@@ -139,7 +151,6 @@ class PEMCertificatesMock
 
     /**
      * @param string $file The file to use
-     * @return string
      */
     public static function getPlainPrivateKey(
         string $file = self::PRIVATE_KEY,
@@ -150,7 +161,6 @@ class PEMCertificatesMock
 
     /**
      * @param string $file The file to use
-     * @return string
      */
     public static function getPlainCertificateContents(
         string $file = self::CERTIFICATE,
@@ -164,7 +174,6 @@ class PEMCertificatesMock
 
     /**
      * @param string $file The file to use
-     * @return string
      */
     public static function getPlainPublicKeyContents(
         string $file = self::PUBLIC_KEY,
@@ -178,7 +187,6 @@ class PEMCertificatesMock
 
     /**
      * @param string $file The file to use
-     * @return string
      */
     public static function getPlainPrivateKeyContents(
         string $file = self::PRIVATE_KEY,

@@ -6,8 +6,20 @@
 
 // Include required configuration files
 require_once(realpath(__DIR__ . '/functions.php'));
+// audit_history_link_page() -- the shared audit deep-link rule used by
+// get_home_recent_failures_items(). Declared directly rather than relied on
+// transitively: a caller must load the file defining the helper it calls.
+require_once(realpath(__DIR__ . '/compliance_grid.php'));
 require_once(language_file());
 require_once(realpath(__DIR__ . '/../vendor/autoload.php'));
+// get_*_connectivity_for_*() moved out of this file into entity_graph.php.
+// No function in that file is called from HERE any more -- this require is
+// a deliberate compatibility shim for any out-of-tree caller that still
+// reaches those walkers transitively through reporting.php (which is
+// broadly included) rather than declaring entity_graph.php directly. Every
+// in-tree consumer found during this move declares its own require_once
+// per CLAUDE.md's function-reachability rule and does not depend on this.
+require_once(realpath(__DIR__ . '/entity_graph.php'));
 
 // Include Laminas Escaper for HTML Output Encoding
 $escaper = new simpleriskEscaper();
@@ -93,6 +105,48 @@ function create_chartjs_pie_code($title = "", $element_id = "", $array = [], $wi
             $height = "height: {$height};";
         }
 
+        // The good/bad binary pies (a self-evident two-slice red/green split) hide
+        // the legend — each slice's label + value is already in the hover tooltip,
+        // so the legend above the chart just wastes vertical space. Other pies keep
+        // theirs (their many categories need the color key).
+        $no_legend_pies = ['open_closed_pie', 'open_review_pie', 'open_mitigation_pie', 'compliance_pass_fail_pie_chart', 'governance_control_status_pie_chart', 'governance_current_control_maturity_pie_chart', 'im_by_severity', 'im_by_status', 'im_by_attack_vector', 'im_by_source'];
+        $legend_display = in_array($element_id, $no_legend_pies, true) ? 'false' : 'true';
+
+        // Pies framed by a dashboard widget show their title in the widget header,
+        // so they suppress the duplicate in-canvas Chart.js title.
+        $framed_pies = ['compliance_pass_fail_pie_chart', 'governance_control_status_pie_chart', 'governance_current_control_maturity_pie_chart', 'im_by_severity', 'im_by_status', 'im_by_attack_vector', 'im_by_source'];
+        $pie_title_display = in_array($element_id, $framed_pies, true) ? 'false' : 'true';
+
+        // Some pies read best as a full breakdown — hovering ANY slice should show
+        // every category (e.g. Passing / Failing / N/A, or each maturity level) with
+        // its count plus a Total footer, not just the one slice under the cursor.
+        // Override the tooltip to list all slices in one popup.
+        $all_status_tooltip_pies = ['compliance_pass_fail_pie_chart', 'governance_control_status_pie_chart', 'governance_current_control_maturity_pie_chart', 'im_by_severity', 'im_by_status', 'im_by_attack_vector', 'im_by_source'];
+        $total_label_json = json_encode((($GLOBALS['lang']['Total'] ?? 'Total')) . ': ');
+        $tooltip_config = in_array($element_id, $all_status_tooltip_pies, true) ? "
+                                tooltip: {
+                                    displayColors: false,
+                                    callbacks: {
+                                        title: function() { return {$title_json}; },
+                                        label: function(context) {
+                                            var d = context.chart.data;
+                                            var active = context.dataIndex;
+                                            // Mark the hovered slice's row with a ▶ so it's obvious
+                                            // which slice the tooltip is anchored on; pad the others
+                                            // to keep the values aligned.
+                                            return d.labels.map(function(l, i) {
+                                                var line = l + ': ' + d.datasets[0].data[i];
+                                                return (i === active ? '▶ ' : '   ') + line;
+                                            });
+                                        },
+                                        footer: function(items) {
+                                            var d = items[0].chart.data.datasets[0].data;
+                                            var sum = d.reduce(function(a, b) { return a + (Number(b) || 0); }, 0);
+                                            return {$total_label_json} + sum;
+                                        }
+                                    }
+                                }," : "";
+
         echo "
             <canvas id='{$element_id}'></canvas>
             <div class='save_as_image'>
@@ -105,6 +159,11 @@ function create_chartjs_pie_code($title = "", $element_id = "", $array = [], $wi
                         datasets: [{
                             data: {$data_json},
                             {$backgroundColor}
+                            // Hovered slice lifts out and separates with a white
+                            // gap, so the one under the cursor clearly stands out.
+                            hoverOffset: 14,
+                            hoverBorderColor: '#ffffff',
+                            hoverBorderWidth: 2,
                         }],
                     };
                     config = {
@@ -112,14 +171,18 @@ function create_chartjs_pie_code($title = "", $element_id = "", $array = [], $wi
                         data: data,
                         options: {
                             plugins: {
+                                legend: {
+                                    display: {$legend_display},
+                                },
                                 title: {
-                                    display: true,
+                                    display: {$pie_title_display},
                                     text: {$title_json},
                                 },
+                                {$tooltip_config}
                             },
                         },
                     };
-    
+
                     ctx = document.getElementById('{$element_id}').getContext('2d');
     
                     {$element_id}_chart = new Chart(ctx, config);
@@ -505,7 +568,7 @@ function create_chartjs_line_code($title = "", $element_id = "", $labels = [], $
  * $width - The width of the created canvas                                     *
  * $height - The height of the created canvas                                   *
  ********************************************************************************/
-function create_chartjs_bar_code($title = "", $element_id = "", $labels = [], $datasets = [], $x_axis_title = null, $y_axis_title = null, $width = null, $height = null, $stacked = false)
+function create_chartjs_bar_code($title = "", $element_id = "", $labels = [], $datasets = [], $x_axis_title = null, $y_axis_title = null, $width = null, $height = null, $stacked = false, $horizontal = false, $scrollable = false, $show_legend = true, $total_tooltip = false, $hide_gridlines = false)
 {
 
     global $lang, $escaper;
@@ -518,6 +581,59 @@ function create_chartjs_bar_code($title = "", $element_id = "", $labels = [], $d
 
     $x_stacked = $stacked ? "\n stacked: true," : "";
     $y_stacked = $stacked ? "\n stacked: true," : "";
+    // Horizontal bars (indexAxis 'y'): categories run down the Y axis, values along X.
+    $index_axis = $horizontal ? "indexAxis: 'y'," : "";
+    // The 'index' interaction mode measures cursor distance along ONE axis to pick
+    // the nearest category. That axis must match the CATEGORY axis: y for
+    // horizontal bars, x for vertical. Without this it defaults to x, so on a
+    // horizontal chart every hover collapses to the first bar (all bars share x=0).
+    $interaction_axis = $horizontal ? "axis: 'y'," : "axis: 'x',";
+
+    // Dashboard chart widgets show their title in the widget header (the .sr-widget
+    // frame), so those suppress the duplicate in-canvas Chart.js title.
+    $framed_charts = ['compliance_controls_by_domain', 'compliance_controls_by_class',
+        'compliance_controls_by_phase', 'compliance_controls_by_priority',
+        'compliance_controls_by_maturity', 'compliance_control_status_over_time_chart',
+        'governance_controls_by_domain', 'governance_controls_by_class',
+        'governance_controls_by_phase', 'governance_controls_by_priority',
+        'governance_controls_by_maturity', 'governance_framework_maturity_stacked_bar_chart',
+        'im_ttd_team_chart', 'im_ttd_source_chart', 'im_ttd_attack_vector_chart'];
+    $is_framed = in_array($element_id, $framed_charts, true);
+    $title_display = $is_framed ? 'false' : 'true';
+
+    // maintainAspectRatio must be OFF (canvas fills its container height) for both:
+    //   - scrollable charts (many categories → tall sizer wrapper), and
+    //   - framed charts (they fill the header-shortened widget body).
+    // Otherwise a fixed aspect ratio would over/underflow the body.
+    $maintain_aspect = ($scrollable || $is_framed) ? "maintainAspectRatio: false," : "";
+
+    // Optional legend suppression (the series colours are self-evident and also
+    // appear in the tooltip, so the legend is just wasted space on some charts).
+    $legend_line = $show_legend ? "" : "legend: { display: false },";
+
+    // Optional gridline suppression, per axis: pass true to hide both, 'x' to hide
+    // only the x-axis grid (vertical lines), or 'y' to hide only the y-axis grid
+    // (horizontal lines) — cleaner look on narrow/scrollable charts.
+    $hide_x_grid = ($hide_gridlines === true || $hide_gridlines === 'x');
+    $hide_y_grid = ($hide_gridlines === true || $hide_gridlines === 'y');
+    $x_grid_line = $hide_x_grid ? "grid: { display: false }," : "";
+    $y_grid_line = $hide_y_grid ? "grid: { display: false }," : "";
+
+    // Optional tooltip footer showing the stacked total for the hovered category
+    // (interaction mode is 'index', so every dataset's slice is in the tooltip).
+    // The value lives on the value axis: x for horizontal bars, y for vertical.
+    $val_key = $horizontal ? 'x' : 'y';
+    $total_label_json = json_encode(($lang['Total'] ?? 'Total') . ': ');
+    $tooltip_line = $total_tooltip ? "
+                                tooltip: {
+                                    callbacks: {
+                                        footer: function(items) {
+                                            var sum = 0;
+                                            items.forEach(function(i) { sum += (i.parsed && typeof i.parsed.{$val_key} === 'number') ? i.parsed.{$val_key} : 0; });
+                                            return {$total_label_json} + sum;
+                                        }
+                                    }
+                                }," : "";
 
     // If the labels and datasets are not empty
     if (!empty($labels) && !empty($datasets))
@@ -536,8 +652,17 @@ function create_chartjs_bar_code($title = "", $element_id = "", $labels = [], $d
         }
         else $height = "height: {$height};";
 
+        // For scrollable horizontal charts, size the canvas to the category count
+        // (~26px/row + room for title & axis) inside a vertical-scroll wrapper.
+        if ($scrollable) {
+            $sizer_height = (count($labels) * 26) + 70;
+            $canvas_html = "<div class='sr-chart-vscroll'><div class='sr-chart-vscroll__sizer' style='height:{$sizer_height}px;'><canvas id='{$element_id}'></canvas></div></div>";
+        } else {
+            $canvas_html = "<canvas id='{$element_id}'></canvas>";
+        }
+
         echo "
-            <canvas id='{$element_id}'></canvas>
+            {$canvas_html}
             <div class='save_as_image'>
                 <i class='far fa-save' id='{$element_id}_save'></i>
             </div>
@@ -597,19 +722,26 @@ function create_chartjs_bar_code($title = "", $element_id = "", $labels = [], $d
                         data: data,
                         options: {
                             responsive: true,
+                            {$maintain_aspect}
+                            {$index_axis}
                             plugins: {
                                 title: {
-                                    display: true,
+                                    display: {$title_display},
                                     text: {$title_json},
                                 },
+                                {$legend_line}
+                                {$tooltip_line}
                             },
                             interaction: {
                                 mode: 'index',
-                                intersect: false
+                                intersect: false,
+                                {$interaction_axis}
                             },
                             scales: {
                                 x: {
                                     display: true,{$x_stacked}
+                                    beginAtZero: true,
+                                    {$x_grid_line}
                                     title: {
                                         display: true,
                                         text: {$x_axis_title_json}
@@ -617,6 +749,7 @@ function create_chartjs_bar_code($title = "", $element_id = "", $labels = [], $d
                                 },
                                 y: {
                                     display: true,{$y_stacked}
+                                    {$y_grid_line}
                                     title: {
                                         display: true,
                                         text: {$y_axis_title_json}
@@ -1287,6 +1420,82 @@ function get_closed_risks($teams = false)
     }
 
     return count($array);
+}
+
+/*********************************************
+ * FUNCTION: HOME RISK SEPARATION SQL         *
+ *********************************************/
+// Returns [FROM-join fragment, WHERE-AND fragment] that scope a `risks rsk`
+// query to the current user's teams when the Team Separation Extra is active
+// (empty strings otherwise). Mirrors the separation handling in
+// get_risk_count_of_risk_level() so the home risk widgets never count risks the
+// user isn't permitted to see.
+function home_risk_separation_sql()
+{
+    if (!team_separation_extra()) {
+        return ['', ''];
+    }
+
+    // Include the team separation extra
+    require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
+
+    $from = "
+        LEFT JOIN `risk_to_team` rtt ON `rsk`.`id` = `rtt`.`risk_id`
+        LEFT JOIN `risk_to_additional_stakeholder` rtas ON `rsk`.`id` = `rtas`.`risk_id`
+    ";
+    $where = " AND " . get_user_teams_query("rsk");
+
+    return [$from, $where];
+}
+
+/**********************************************
+ * FUNCTION: GET UNMITIGATED OPEN RISK COUNT  *
+ **********************************************/
+// Open risks with no planned mitigation. Mirrors the 'Unplanned' branch of
+// open_mitigation_pie() (mitigation_id = 0). Scoped to the user's teams when
+// Team Separation is active.
+function get_unmitigated_open_risk_count()
+{
+    [$sep_from, $sep_where] = home_risk_separation_sql();
+
+    $db = db_open();
+    $stmt = $db->prepare("
+        SELECT COUNT(DISTINCT `rsk`.`id`)
+        FROM `risks` rsk
+        {$sep_from}
+        WHERE `rsk`.`status` != 'Closed'
+        AND `rsk`.`mitigation_id` = 0
+        {$sep_where};
+    ");
+    $stmt->execute();
+    $count = (int)$stmt->fetchColumn();
+    db_close($db);
+    return $count;
+}
+
+/*********************************************
+ * FUNCTION: GET UNREVIEWED OPEN RISK COUNT  *
+ *********************************************/
+// Open risks with no management review. Mirrors the 'Unreviewed' branch of
+// open_review_pie() (mgmt_review = 0). Scoped to the user's teams when Team
+// Separation is active.
+function get_unreviewed_open_risk_count()
+{
+    [$sep_from, $sep_where] = home_risk_separation_sql();
+
+    $db = db_open();
+    $stmt = $db->prepare("
+        SELECT COUNT(DISTINCT `rsk`.`id`)
+        FROM `risks` rsk
+        {$sep_from}
+        WHERE `rsk`.`status` != 'Closed'
+        AND `rsk`.`mgmt_review` = 0
+        {$sep_where};
+    ");
+    $stmt->execute();
+    $count = (int)$stmt->fetchColumn();
+    db_close($db);
+    return $count;
 }
 
 /********************************************************************************************
@@ -2277,11 +2486,11 @@ function open_mitigation_pie($title = null) {
         switch($row['label']) {
 
             case "Planned":
-                $array[$index]['color'] = '#66CC00';
+                $array[$index]['color'] = '#51A351';
                 $array[$index]['url'] = 'dynamic_risk_report.php?status=2&group=2&sort=0';
                 break;
             case "Unplanned":
-                $array[$index]['color'] = '#FF0000';
+                $array[$index]['color'] = '#ed3139';
                 $array[$index]['url'] = 'dynamic_risk_report.php?status=2&group=2&sort=0';
                 break;
             default:
@@ -2388,11 +2597,11 @@ function open_review_pie($title = null) {
         switch($row['label']) {
 
             case "Reviewed":
-                $array[$index]['color'] = '#66CC00';
+                $array[$index]['color'] = '#51A351';
                 $array[$index]['url'] = 'dynamic_risk_report.php?status=2&group=2&sort=0';
                 break;
             case "Unreviewed":
-                $array[$index]['color'] = '#FF0000';
+                $array[$index]['color'] = '#ed3139';
                 $array[$index]['url'] = 'dynamic_risk_report.php?status=2&group=2&sort=0';
                 break;
             default:
@@ -2495,11 +2704,11 @@ function open_closed_pie($title = null) {
         // Add the color and url to the labels
         switch($row['label']) {
             case "Open":
-                $array[$index]['color'] = '#FF0000';
+                $array[$index]['color'] = '#ed3139';
                 $array[$index]['url'] = 'dynamic_risk_report.php?status=2&group=2&sort=0';
                 break;
             case "Closed":
-                $array[$index]['color'] = '#66CC00';
+                $array[$index]['color'] = '#51A351';
                 $array[$index]['url'] = 'dynamic_risk_report.php?status=2&group=2&sort=0';
                 break;
             default:
@@ -2563,7 +2772,7 @@ function get_my_open_table() {
                     });
                 });
                 var riskTable = $('#my-risk-datatable').DataTable( {
-                    bSort: true,
+                    ordering: true,
                     orderCellsTop: true,
                     ajax: {
                         url: BASE_URL + '/api/v2/reports/my_open_risk',
@@ -2766,7 +2975,7 @@ function get_high_risk_report_table()
                     } );
                 } );
                 var datatableInstance = $('#high-risk-datatable').DataTable({
-                    bSort: true,
+                    ordering: true,
                     orderCellsTop: true,
                     createdRow: function(row, data, index){
                         var background = $('.background-class', $(row)).data('background');
@@ -2839,7 +3048,7 @@ function get_recent_commented_table() {
                     });
                 });
                 var riskTable = $('#risk-datatable').DataTable( {
-                    bSort: true,
+                    ordering: true,
                     orderCellsTop: true,
                     ajax: {
                         url: BASE_URL + '/api/v2/reports/recent_commented_risk',
@@ -4320,21 +4529,28 @@ function risks_by_month_table() {
     $total = [];
     $total_open_risks = [];
 
+    // Wrap the 14-column table so it scrolls (both axes) inside the widget
+    // instead of overflowing the frame: horizontally on narrower tiles, and
+    // vertically when the tile is shorter than the 5-row table. max-height:100%
+    // bounds it to the widget body height so it never spills past the border.
     echo "
-        <table class='table table-hover border-bottom border-top mb-0'>
+        <div class='table-responsive' style='max-height:100%;overflow:auto;'>
+        <table class='sr-riskmonth'>
             <thead>
-                <tr bgcolor='white'>
-                    <th>&nbsp;</th>
+                <tr>
+                    <th class='sr-riskmonth__corner'></th>
     ";
 
     // For each of the past 12 months
     for ($i = 12; $i >= 0; $i--) {
 
-        // Get the month
-        $month = date('Y M', strtotime("first day of -$i month"));
+        // Stack the year over the month so each column is only as wide as the
+        // month abbreviation — condenses 13 columns to fit without scrolling.
+        $mon = date('M', strtotime("first day of -$i month"));
+        $yr  = date('Y', strtotime("first day of -$i month"));
 
         echo "
-                    <th align='center' width='50px'>{$escaper->escapeHtml($month)}</th>
+                    <th><span class='sr-riskmonth__yr'>{$escaper->escapeHtml($yr)}</span><span class='sr-riskmonth__mon'>{$escaper->escapeHtml($mon)}</span></th>
         ";
 
     }
@@ -4343,8 +4559,8 @@ function risks_by_month_table() {
                 </tr>
             </thead>
             <tbody>
-                <tr bgcolor='white'>
-                    <td align='center'>{$escaper->escapeHtml($lang['OpenedRisks'])}</td>
+                <tr>
+                    <th scope='row'>{$escaper->escapeHtml($lang['OpenedRisks'])}</th>
     ";
 
     // For each of the past 12 months
@@ -4370,14 +4586,14 @@ function risks_by_month_table() {
         }
 
         echo "
-                    <td align='center' width='50px'>{$escaper->escapeHtml($open[$i])}</td>
+                    <td>{$escaper->escapeHtml($open[$i])}</td>
         ";
     }
 
     echo "
                 </tr>
-                <tr bgcolor='white'>
-                    <td align='center'>{$escaper->escapeHtml($lang['ClosedRisks'])}</td>
+                <tr>
+                    <th scope='row'>{$escaper->escapeHtml($lang['ClosedRisks'])}</th>
     ";
 
     // For each of the past 12 months
@@ -4403,15 +4619,15 @@ function risks_by_month_table() {
         }
 
         echo "
-                    <td align='center' width='50px'>{$escaper->escapeHtml($close[$i])}</td>
+                    <td>{$escaper->escapeHtml($close[$i])}</td>
         ";
 
     }
 
     echo "
                 </tr>
-                <tr bgcolor='white'>
-                    <td align='center'>{$escaper->escapeHtml($lang['RiskTrend'])}</td>
+                <tr>
+                    <th scope='row'>{$escaper->escapeHtml($lang['RiskTrend'])}</th>
     ";
 
     // For each of the past 12 months
@@ -4424,14 +4640,14 @@ function risks_by_month_table() {
         // If the total is positive
         if ($total[$i] > 0) {
 
-            // Display it in red
-            $total_string = "<font color='red'>+{$total[$i]}</font>";
+            // A net rise in open risks this month is bad — colour it red.
+            $total_string = "<span class='sr-riskmonth__delta sr-riskmonth__delta--up'>+{$total[$i]}</span>";
 
         // If the total is negative
         } else if ($total[$i] < 0) {
 
-            // Display it in green
-            $total_string = "<font color='green'>{$total[$i]}</font>";
+            // A net decrease is good — colour it green.
+            $total_string = "<span class='sr-riskmonth__delta sr-riskmonth__delta--down'>{$total[$i]}</span>";
 
         // Otherwise the total is 0
         } else {
@@ -4439,7 +4655,7 @@ function risks_by_month_table() {
         }
 
         echo "
-                    <td align='center' width='50px'>{$total_string}</td>
+                    <td>{$total_string}</td>
         ";
     }
 
@@ -4464,8 +4680,8 @@ function risks_by_month_table() {
     
     echo "
                 </tr>
-                <tr bgcolor='white'>
-                    <td align='center'>{$escaper->escapeHtml($lang['TotalOpenRisks'])}</td>
+                <tr class='sr-riskmonth__total-row'>
+                    <th scope='row'>{$escaper->escapeHtml($lang['TotalOpenRisks'])}</th>
     ";
 
     // For each of the past 12 months
@@ -4475,7 +4691,7 @@ function risks_by_month_table() {
         $total = $total_open_risks[$i];
 
         echo "
-                    <td align='center' width='50px'>{$escaper->escapeHtml($total)}</td>
+                    <td>{$escaper->escapeHtml($total)}</td>
         ";
 
     }
@@ -4484,6 +4700,7 @@ function risks_by_month_table() {
                 </tr>
             </tbody>
         </table>
+        </div>
     ";
 
 }
@@ -7799,7 +8016,7 @@ function display_appetite_datatable_script() {
                 var appetite_type = raw_table.data('type');
                 var riskDatatable = raw_table.DataTable({
                     scrollX: true,
-                    bSort: true,
+                    ordering: true,
                     orderCellsTop: true,
                     ajax: {
                         url: BASE_URL + '/api/v2/reports/appetite?type=' + appetite_type,
@@ -8210,1459 +8427,6 @@ function get_user_management_reports_report_data($type, $mode = 'normal', $start
         // Return the raw result array
         return $data;
     }
-}
-
-/*****************************************
- * FUNCTION: GET CONNECTIVITY VISUALIZER *
- *****************************************/
-function get_connectivity_visualizer() {
-
-    global $lang, $escaper;
-
-    $array = [];
-    $type = '';
-    $selected = 0;
-
-    echo "
-        <div class='card-body my-2 border'>
-    ";
-
-    // Begin the filter by form
-    echo "
-            <form name='filter' method='post' action=''>
-    ";
-
-    // Create a filter by
-    echo "
-                <label>" . $escaper->escapeHtml($lang['FilterBy']) . " :</label>
-    ";
-    // If no filter was posted
-    if (!isset($_POST['filter'])) {
-        // Set the filter option to None Selected
-        $filter = 0;
-    } else {
-        $filter = (int)$_POST['filter'];
-    }
-
-    // If no selected was posted
-    if (!isset($_POST['selected'])) {
-        // Set the selected option to None Selected
-        $selected = 0;
-    } else {
-        $selected = (int)$_POST['selected'];
-    }
-
-    // Build the dropdown with options scoped to the user's permissions:
-    //   Risk     -> riskmanagement
-    //   Asset    -> asset
-    //   Test     -> compliance
-    //   Framework, Control, Document -> governance
-    // If the user lacks the permission for an entity type, that option is
-    // not emitted, so they cannot start a graph from a domain they cannot see.
-    $can_risk       = check_permission('riskmanagement');
-    $can_asset      = check_permission('asset');
-    $can_governance = check_permission('governance');
-    $can_compliance = check_permission('compliance');
-
-    echo "
-                <select name='filter' onchange='javascript: submit()' class='form-select'>
-                    <option value='0'" . ($filter == 0 ? " selected" : "") . ">" . $escaper->escapeHtml($lang['NoneSelected']) . "</option>
-    ";
-    if ($can_risk) {
-        echo "      <option value='1'" . ($filter == 1 ? " selected" : "") . ">" . $escaper->escapeHtml($lang['Risk']) . "</option>";
-    }
-    if ($can_asset) {
-        echo "      <option value='2'" . ($filter == 2 ? " selected" : "") . ">" . $escaper->escapeHtml($lang['Asset']) . "</option>";
-    }
-    if ($can_governance) {
-        echo "      <option value='3'" . ($filter == 3 ? " selected" : "") . ">" . $escaper->escapeHtml($lang['Framework']) . "</option>";
-        echo "      <option value='4'" . ($filter == 4 ? " selected" : "") . ">" . $escaper->escapeHtml($lang['Control']) . "</option>";
-    }
-    if ($can_compliance) {
-        echo "      <option value='5'" . ($filter == 5 ? " selected" : "") . ">" . $escaper->escapeHtml($lang['Test']) . "</option>";
-    }
-    if ($can_governance) {
-        echo "      <option value='6'" . ($filter == 6 ? " selected" : "") . ">" . $escaper->escapeHtml($lang['Document']) . "</option>";
-    }
-    echo "      </select>
-    ";
-
-    // Defense in depth: if the user posted a filter value they lack permission
-    // for (e.g. by hand-editing the form), drop it back to the unselected state
-    // so the case branches below don't query an entity type they shouldn't see.
-    $allowed_filters = [0 => true];
-    if ($can_risk)       $allowed_filters[1] = true;
-    if ($can_asset)      $allowed_filters[2] = true;
-    if ($can_governance) { $allowed_filters[3] = true; $allowed_filters[4] = true; $allowed_filters[6] = true; }
-    if ($can_compliance) $allowed_filters[5] = true;
-    if (!isset($allowed_filters[$filter])) {
-        $filter = 0;
-        $selected = 0;
-    }
-
-    // If the filter is not zero
-    if ($filter != 0) {
-
-        // Create an empty array
-        $array = [];
-
-        // Script to make dropdown searchable
-        echo "
-                <script>
-                    $(document).ready(function() {
-                        $('.searchable-single-select-dropdown').select2();
-                    });
-                </script>
-                
-                <label class='mt-3'>" . $escaper->escapeHtml($lang['Selected']) . " :</label>
-        ";
-
-        // Create the dropdown
-        echo "
-                <select style='height: 235px;' class='searchable-single-select-dropdown form-select' name='selected' onchange='javascript: submit()'>
-                    <option value='0'" . ($selected == 0 ? " selected" : "") . ">" . $escaper->escapeHtml($lang['NoneSelected']) . "</option>
-        ";
-
-        // Get the query based on the filter
-        switch ($filter) {
-
-            // If the filter is risks
-            case 1:
-                // Get the risks
-                $type = "risk";
-                $endpoint = "/api/v2/risks";
-                $risks = call_simplerisk_api_endpoint($endpoint);
-                $risks = $risks['risks'];
-
-                // For each of the risks
-                foreach ($risks as $risk) {
-
-                    // Get the risk id and calculated risk score
-                    $risk_id = $risk['id'];
-                    $calculated_risk = $risk['calculated_risk'];
-                    $color = get_risk_color($calculated_risk);
-                    echo "
-                    <option value='" . $escaper->escapeHtml($risk_id) . "'" . ($selected == $risk_id ? " selected" : "") . ">[" . $escaper->escapeHtml($risk_id) . "] " . $escaper->escapeHtml($risk['subject']) . "</option>
-                    ";
-                    $array[] = [
-                        "id" => $escaper->escapeHtml($risk_id),
-                        "node_id" => "risk_id_" . $escaper->escapeHtml(convert_risk_id_to_id($risk['id'])),
-                        "node_name" => "[" . $risk_id . "] " . $risk['subject'],
-                        "color" => $color,
-                    ];
-                }
-                break;
-            case 2:
-                // Get the verified assets
-                $type = "asset";
-                $endpoint = "/api/v2/assets?verified=true";
-                $assets = call_simplerisk_api_endpoint($endpoint);
-                $assets = $assets['assets'];
-
-                // For each of the assets
-                foreach ($assets as $asset) {
-                    echo "
-                    <option value='" . $escaper->escapeHtml($asset['id']) . "'" . ($selected == $asset['id'] ? " selected" : "") . ">" . $escaper->escapeHtml($asset['name']) . "</option>
-                    ";
-                    $array[] = [
-                        "id" => $escaper->escapeHtml($asset['id']),
-                        "node_id" => "asset_id_" . $escaper->escapeHtml($asset['id']),
-                        "node_name" => $asset['name'],
-                        "color" => "#f7dc6f",
-                    ];
-                }
-                break;
-            case 3:
-                // Get the frameworks
-                $type = "framework";
-                $endpoint = "/api/v2/governance/frameworks";
-                $frameworks = call_simplerisk_api_endpoint($endpoint);
-                $frameworks = $frameworks['frameworks'];
-
-                // For each of the frameworks
-                foreach ($frameworks as $framework) {
-                    echo "
-                    <option value='" . $escaper->escapeHtml($framework['value']) . "'" . ($selected == $framework['value'] ? " selected" : "") . ">" . $escaper->escapeHtml($framework['name']) . "</option>
-                    ";
-                    $array[] = [
-                        "id" => $escaper->escapeHtml($framework['value']),
-                        "node_id" => "framework_id_" . $escaper->escapeHtml($framework['value']),
-                        "node_name" => $framework['name'],
-                        "color" => "#4a235a",
-                    ];
-                }
-                break;
-            case 4:
-                // Get the controls
-                $type = "control";
-                $endpoint = "/api/v2/governance/controls";
-                $controls = call_simplerisk_api_endpoint($endpoint);
-                $controls = $controls['controls'];
-
-                // For each of the controls
-                foreach ($controls as $control) {
-                    echo "
-                    <option value='" . $escaper->escapeHtml($control['id']) . "'" . ($selected == $control['id'] ? " selected" : "") . ">" . $escaper->escapeHtml($control['long_name']) . "</option>
-                    ";
-                    $array[] = [
-                        "id" => $escaper->escapeHtml($control['id']),
-                        "node_id" => "control_id_" . $escaper->escapeHtml($control['id']),
-                        "node_name" => $control['long_name'],
-                        "color" => "#154360",
-                    ];
-                }
-                break;
-            case 5:
-                // Get the tests
-                $type = "test";
-                $endpoint = "/api/v2/compliance/tests";
-                $tests = call_simplerisk_api_endpoint($endpoint);
-                $tests = $tests['tests'];
-
-                // For each of the tests
-                foreach ($tests as $test) {
-                    echo "
-                    <option value='" . $escaper->escapeHtml($test['id']) . "'" . ($selected == $test['id'] ? " selected" : "") . ">" . $escaper->escapeHtml($test['name']) . "</option>
-                    ";
-                    $array[] = [
-                        "id" => $escaper->escapeHtml($test['id']),
-                        "node_id" => "test_id_" . $escaper->escapeHtml($test['id']),
-                        "node_name" => $test['name'],
-                        "color" => "#2e86c1",
-                    ];
-                }
-                break;
-            case 6:
-                // Get the documents
-                $type = "document";
-                $endpoint = "/api/v2/governance/documents";
-                $documents = call_simplerisk_api_endpoint($endpoint);
-                $documents = $documents['documents'];
-
-                // For each of the documents
-                foreach ($documents as $document) {
-                    echo "
-                    <option value='" . $escaper->escapeHtml($document['id']) . "'" . ($selected == $document['id'] ? " selected" : "") . ">" . $escaper->escapeHtml($document['document_name']) . "</option>
-                    ";
-                    $array[] = [
-                        "id" => $escaper->escapeHtml($document['id']),
-                        "node_id" => "document_id_" . $escaper->escapeHtml($document['id']),
-                        "node_name" => $document['document_name'],
-                        "color" => "#a2d9ce",
-                    ];
-                }
-                break;
-            default:
-                $type = "unknown";
-                $selected = 0;
-                break;
-        }
-    }
-    echo "
-                </select>
-            </form>
-        </div>
-    ";
-    if ($filter != 0) {
-        // Display the connectivity information
-        connectivity_visualizer($type, $selected, $array);
-    }
-}
-
-/*************************************
- * FUNCTION: CONNECTIVITY VISUALIZER *
- *************************************/
-function connectivity_visualizer($type, $id, $array) {
-
-    global $escaper, $lang;
-
-    // If the id provided is not 0 (None Selected)
-    if ($id != 0) {
-
-        // Get the associations based on the type
-        switch ($type) {
-            case "risk":
-                $associations = connectivity_visualizer_associations_risk($id);
-                $found = (!empty($associations['frameworks']) || !empty($associations['controls']) || !empty($associations['documents']) || !empty($associations['tests']) || !empty($associations['test_results']) || !empty($associations['assets']));
-                break;
-            case "asset":
-                $associations = connectivity_visualizer_associations_asset($id);
-                $found = (!empty($associations['frameworks']) || !empty($associations['controls']) || !empty($associations['documents']) || !empty($associations['tests']) || !empty($associations['test_results']) || !empty($associations['risks']));
-                break;
-            case "framework":
-                $associations = connectivity_visualizer_associations_framework($id);
-                $found = (!empty($associations['risks']) || !empty($associations['controls']) || !empty($associations['documents']) || !empty($associations['tests']) || !empty($associations['test_results']) || !empty($associations['assets']));
-                break;
-            case "control":
-                $associations = connectivity_visualizer_associations_control($id);
-                $found = (!empty($associations['frameworks']) || !empty($associations['risks']) || !empty($associations['documents']) || !empty($associations['tests']) || !empty($associations['test_results']) || !empty($associations['assets']));
-                break;
-            case "test":
-                $associations = connectivity_visualizer_associations_test($id);
-                $found = (!empty($associations['frameworks']) || !empty($associations['controls']) || !empty($associations['documents']) || !empty($associations['risks']) || !empty($associations['test_results']) || !empty($associations['assets']));
-                break;
-            case "document":
-                $associations = connectivity_visualizer_associations_document($id);
-                $found = (!empty($associations['frameworks']) || !empty($associations['controls']) || !empty($associations['risks']) || !empty($associations['tests']) || !empty($associations['test_results']) || !empty($associations['assets']));
-                break;
-            default:
-                $associations = [];
-                $found = false;
-                break;
-        }
-
-        // Drop association buckets the calling user lacks permission for, so
-        // the graph never renders nodes/edges into a domain they cannot see.
-        // Mapping mirrors the dropdown above:
-        //   risks                   -> riskmanagement
-        //   assets                  -> asset
-        //   frameworks/controls/documents -> governance
-        //   tests/test_results      -> compliance
-        $bucket_to_perm = [
-            'risks'        => 'riskmanagement',
-            'assets'       => 'asset',
-            'frameworks'   => 'governance',
-            'controls'     => 'governance',
-            'documents'    => 'governance',
-            'tests'        => 'compliance',
-            'test_results' => 'compliance',
-        ];
-        foreach ($bucket_to_perm as $bucket => $required_perm) {
-            if (isset($associations[$bucket]) && !check_permission($required_perm)) {
-                unset($associations[$bucket]);
-            }
-        }
-        // Recompute $found over the filtered set so the "no connections" message
-        // fires when filtering leaves nothing visible.
-        $found = false;
-        foreach ($associations as $bucket) {
-            if (!empty($bucket)) { $found = true; break; }
-        }
-
-        // If we found associations
-        if ($found) {
-            // Get the array values that goes with the id
-            $key = array_search($id, array_column($array, "id"));
-            $selected_array = $array[$key];
-
-            // Display the connectivity visualizer
-            connectivity_visualizer_display($type, $id, $selected_array, $associations);
-            
-        // If no associations were found
-        } else {
-            echo "
-                <div class='card-body my-2 border'>
-                    <font style='font-weight: bold; color: red;'>" . $escaper->escapeHtml($lang['ThereAreNoConnectionsAssociatedWithTheSelectedValue']) . "</font>
-                </div>
-            ";
-        }
-    }
-}
-
-/*********************************************
- * FUNCTION: CONNECTIVITY VISUALIZER DISPLAY *
- *********************************************/
-function connectivity_visualizer_display($type, $id, $selected_array, $associations) {
-
-    global $escaper, $lang;
-
-    // Create an array of nodes and edges we have already added to prevent duplicates
-    $added_nodes = [];
-    $added_edges = [];
-
-    // Add the primary node to the graph
-    $node_id = $selected_array['node_id'];
-    $node_name = $selected_array['node_name'];
-    $color = $selected_array['color'];
-
-    // If the name is longer than 50 characters, truncate to 50. Use the
-    // multibyte-aware functions so the cut is by character rather than by
-    // byte -- node_name now carries raw UTF-8 (the source-level escape was
-    // moved to the sinks), and a byte-based substr could split a multi-byte
-    // character in half and emit malformed UTF-8 that json_encode at the JS
-    // sink rejects.
-    if (mb_strlen($node_name) > 50) {
-        $node_name = mb_substr($node_name, 0, 50) . "...";
-    }
-
-    $added_nodes[] = [
-        "node_id" => $node_id,
-        "node_name" => $node_name,
-        "size" => 20,
-        "color" => $color,
-    ];
-
-    // Create an accordion div
-    echo "
-        <div class='accordion my-2'>
-            <div class='accordion-item' id='filter-selections-container'>
-                <h2 class='accordion-header'>
-                    <button type='button' class='accordion-button collapsed' data-bs-toggle='collapse' data-bs-target='#filter-selections-accordion-body'>
-                        " . $escaper->escapeHtml($lang['ShowAssociationData']) . "
-                    </button>
-                </h2>
-                <div id='filter-selections-accordion-body' class='accordion-collapse collapse'>
-                    <div class='accordion-body card-body'>
-                        <div class='row'>
-                            <div class='col-4'><h6>" . $escaper->escapeHtml($lang['Type']) . "</h6></div>
-                            <div class='col-4'><h6>" . $escaper->escapeHtml($lang['Name']) . "</h6></div>
-                            <div class='col-4'><h6>" . $escaper->escapeHtml($lang['Association']) . "</h6></div>
-                        </div>
-    ";
-
-    // Iterate through the associations
-    foreach ($associations as $key => $association) {
-        // Iterate through the nodes to add the nodes
-        foreach ($association as $node) {
-            // Get the node details
-            $node_id = $node['node_id'];
-            $node_name = $node['node_name'];
-            $connected_node_id = $node['connected_node_id'];
-            $color = $node['color'];
-
-            // If we haven't already created this node
-            if (!in_array($node_id, array_column($added_nodes, "node_id"))) {
-                // Add the node to the graph
-                $added_nodes[] = [
-                    "node_id" => $node_id,
-                    "node_name" => $node_name,
-                    "size" => 10,
-                    "color" => $color,
-                ];
-
-                // Add the node to the table. node_name carries raw user-
-                // supplied text from connectivity helpers (asset / risk
-                // subject / control name / etc.) — escape at the HTML
-                // sink. $key is the associations array key (always a
-                // hardcoded literal like 'frameworks' / 'controls' / etc.
-                // from connectivity_visualizer_associations_*) but the
-                // SAST taint tracker can't know that, so escape it too.
-                // $node_id / $connected_node_id are prefixed string ids
-                // produced by the helpers (e.g. "asset_id_5",
-                // "risk_id_3") so the graphology graph can distinguish
-                // nodes of different types — they are not numeric and
-                // must not be int-cast. Escape at the HTML sink.
-                echo "
-                        <div class='row'>
-                            <div class='col-4'>" . $escaper->escapeHtml($key) . "</div>
-                            <div class='col-4'>" . $escaper->escapeHtml($node_name) . "</div>
-                            <div class='col-4'>" . $escaper->escapeHtml($node_id) . " => " . $escaper->escapeHtml($connected_node_id) . "</div>
-                        </div>
-                ";
-            }
-
-            // If the current edge does not overlap with an existing edge
-            $edge1 = in_array($connected_node_id, array_column($added_edges, $node_id));
-            $edge2 = in_array($node_id, array_column($added_edges, $connected_node_id));
-            if (!$edge1 && !$edge2) {
-                // Add the edge to the added_edges array
-                $added_edges[] = [
-                    "node_id" => $node_id,
-                    "connected_node_id" => $connected_node_id,
-                ];
-            }
-        }
-    }
-    
-    echo "
-                    </div>
-                </div>
-            </div>
-        </div>
-    ";
-
-    // Display the graphology graph
-    echo "
-        <div class='card-body my-2 border'>
-            <div id='connectivity_visualizer' style='height: 500px;'></div>
-            <script type='module'>
-                import {circular} from 'https://cdn.jsdelivr.net/npm/graphology-layout@0.6.1/+esm';
-
-                // Create a graphology graph
-                const graph = new graphology.Graph();
-    ";
-
-    // For each of the added nodes
-    foreach ($added_nodes as $node) {
-        // Display the node. JS-context sanitization at every sink:
-        //   - $node_id is a prefixed string id ("asset_id_5", "risk_id_3",
-        //     etc.) — the prefix is what lets graphology distinguish nodes
-        //     of different types, so it must NOT be int-cast. json_encode
-        //     it so the resulting JS string literal is safe against
-        //     backslashes, embedded quotes, and `</script>`.
-        //   - $node_name is raw user-supplied text. Use json_encode so the
-        //     resulting JS string literal is safe against backslashes,
-        //     embedded quotes, line separators (U+2028/U+2029 are escaped
-        //     to \uXXXX by default), and `</script>` (the default escaping
-        //     of `/` to `\/` keeps the byte sequence from appearing inside
-        //     the <script> block and prematurely closing it). Sigma renders
-        //     the label via canvas fillText, so the resulting JS string
-        //     content is drawn as text glyphs, never reinterpreted as HTML.
-        //   - $size is a hardcoded literal (10 or 20) set above; cast to
-        //     int for defense in depth.
-        //   - $color flows from the connectivity helpers as a string;
-        //     json_encode it so a non-color-name value can't break out of
-        //     the JS string literal.
-        $node_id   = $node['node_id'];
-        $node_name = $node['node_name'];
-        $size      = (int)$node['size'];
-        $color     = $node['color'];
-        echo "
-                graph.addNode(" . json_encode((string)$node_id) . ", { label: " . json_encode((string)$node_name) . ", x: Math.random(), y: Math.random(), size: {$size}, color: " . json_encode((string)$color) . " });
-        ";
-    }
-
-    // For each of the added edges. Both ids are prefixed string ids
-    // (e.g. "asset_id_5", "risk_id_3"); json_encode them so the JS
-    // string literals are well-formed against backslashes, embedded
-    // quotes, and `</script>`.
-    foreach ($added_edges as $edge) {
-        $node_id           = $edge['node_id'];
-        $connected_node_id = $edge['connected_node_id'];
-        echo "
-                graph.addEdge(" . json_encode((string)$node_id) . ", " . json_encode((string)$connected_node_id) . ", { size: 1, color: \"black\" });
-        ";
-    }
-
-    echo "              
-                // Set a circular layout of the graph
-                circular.assign(graph);
-                
-                // Instantiate sigma.js and render the graph
-                const sigmaInstance = new Sigma(graph, document.getElementById(\"connectivity_visualizer\"));
-                
-            </script>
-        </div>
-    ";
-}
-
-/*******************************************************
- * FUNCTION: CONNECTIVITY VISUALIZER ASSOCIATIONS RISK *
- *******************************************************/
-function connectivity_visualizer_associations_risk($id)
-{
-    // Create the default empty arrays
-    $asset_associations = [];
-    $control_associations = [];
-    $framework_associations = [];
-    $test_associations = [];
-    $document_associations = [];
-    $test_result_associations = [];
-
-    // If a value has been selected
-    if (!is_null($id))
-    {
-        $asset_associations = get_asset_connectivity_for_risk($id);
-        $control_associations = get_control_connectivity_for_risk($id);
-    }
-
-    // For each control association
-    foreach ($control_associations as $value)
-    {
-        $control_id = $value['control_id'];
-        $framework_associations = array_merge($framework_associations, get_framework_connectivity_for_control($control_id));
-        $test_associations = array_merge($test_associations, get_test_connectivity_for_control($control_id));
-        $document_associations = array_merge($document_associations, get_document_connectivity_for_control($control_id));
-    }
-
-    // For each test association
-    foreach ($test_associations as $value)
-    {
-        $test_id = $value['test_id'];
-        $test_result_associations = array_merge($test_result_associations, get_results_connectivity_for_test($test_id));
-    }
-
-    // Merge the association arrays
-    $associations = [
-        "assets" => $asset_associations,
-        "controls" => $control_associations,
-        "frameworks" => $framework_associations,
-        "tests" => $test_associations,
-        "documents" => $document_associations,
-        "test_results" => $test_result_associations,
-    ];
-
-    // Return the associations
-    return $associations;
-}
-
-/********************************************************
- * FUNCTION: CONNECTIVITY VISUALIZER ASSOCIATIONS ASSET *
- ********************************************************/
-function connectivity_visualizer_associations_asset($id)
-{
-    // Create the default empty arrays
-    $risk_associations = [];
-    $control_associations = [];
-    $framework_associations = [];
-    $test_associations = [];
-    $document_associations = [];
-    $test_result_associations = [];
-
-    // If a value has been selected
-    if (!is_null($id))
-    {
-        $risk_associations = get_risk_connectivity_for_asset($id);
-    }
-
-    // For each risk association
-    foreach ($risk_associations as $value)
-    {
-        $risk_id = $value['risk_id'];
-        $control_associations = array_merge($control_associations, get_control_connectivity_for_risk($risk_id));
-    }
-
-    // For each control association
-    foreach ($control_associations as $value)
-    {
-        $control_id = $value['control_id'];
-        $framework_associations = array_merge($framework_associations, get_framework_connectivity_for_control($control_id));
-        $test_associations = array_merge($test_associations, get_test_connectivity_for_control($control_id));
-        $document_associations = array_merge($document_associations, get_document_connectivity_for_control($control_id));
-    }
-
-    // For each test association
-    foreach ($test_associations as $value)
-    {
-        $test_id = $value['test_id'];
-        $test_result_associations = array_merge($test_result_associations, get_results_connectivity_for_test($test_id));
-    }
-
-    // Merge the association arrays
-    $associations = [
-        "risks" => $risk_associations,
-        "controls" => $control_associations,
-        "frameworks" => $framework_associations,
-        "tests" => $test_associations,
-        "documents" => $document_associations,
-        "test_results" => $test_result_associations,
-    ];
-
-    // Return the associations
-    return $associations;
-}
-
-/************************************************************
- * FUNCTION: CONNECTIVITY VISUALIZER ASSOCIATIONS FRAMEWORK *
- ************************************************************/
-function connectivity_visualizer_associations_framework($id)
-{
-    // Create the default empty arrays
-    $control_associations = [];
-    $test_associations = [];
-    $document_associations = [];
-    $risk_associations = [];
-    $test_result_associations = [];
-    $asset_associations = [];
-
-    // If a value has been selected
-    if (!is_null($id))
-    {
-        $control_associations = get_control_connectivity_for_framework($id);
-    }
-
-    // For each control association
-    foreach ($control_associations as $value)
-    {
-        $control_id = $value['control_id'];
-        $test_associations = array_merge($test_associations, get_test_connectivity_for_control($control_id));
-        $document_associations = array_merge($document_associations, get_document_connectivity_for_control($control_id));
-        $risk_associations = array_merge($risk_associations, get_risk_connectivity_for_control($control_id));
-    }
-
-    // For each test association
-    foreach ($test_associations as $value)
-    {
-        $test_id = $value['test_id'];
-        $test_result_associations = array_merge($test_result_associations, get_results_connectivity_for_test($test_id));
-    }
-
-    // For each risk association
-    foreach ($risk_associations as $value)
-    {
-        $risk_id = $value['risk_id'];
-        $asset_associations = array_merge($asset_associations, get_asset_connectivity_for_risk($risk_id));
-    }
-
-    // Merge the association arrays
-    $associations = [
-        "assets" => $asset_associations,
-        "controls" => $control_associations,
-        "tests" => $test_associations,
-        "documents" => $document_associations,
-        "test_results" => $test_result_associations,
-        "risks" => $risk_associations,
-    ];
-
-    // Return the associations
-    return $associations;
-}
-
-/**********************************************************
- * FUNCTION: CONNECTIVITY VISUALIZER ASSOCIATIONS CONTROL *
- **********************************************************/
-function connectivity_visualizer_associations_control($id)
-{
-    // Create the default empty arrays
-    $framework_associations = [];
-    $test_associations = [];
-    $document_associations = [];
-    $risk_associations = [];
-    $test_result_associations = [];
-    $asset_associations = [];
-
-    // If a value has been selected
-    if (!is_null($id))
-    {
-        $framework_associations = get_framework_connectivity_for_control($id);
-        $test_associations = get_test_connectivity_for_control($id);
-        $document_associations = get_document_connectivity_for_control($id);
-        $risk_associations = get_risk_connectivity_for_control($id);
-    }
-
-    // For each test association
-    foreach ($test_associations as $value)
-    {
-        $test_id = $value['test_id'];
-        $test_result_associations = array_merge($test_result_associations, get_results_connectivity_for_test($test_id));
-    }
-
-    // For each risk association
-    foreach ($risk_associations as $value)
-    {
-        $risk_id = $value['risk_id'];
-        $asset_associations = array_merge($asset_associations, get_asset_connectivity_for_risk($risk_id));
-    }
-
-    // Merge the association arrays
-    $associations = [
-        "assets" => $asset_associations,
-        "frameworks" => $framework_associations,
-        "tests" => $test_associations,
-        "documents" => $document_associations,
-        "test_results" => $test_result_associations,
-        "risks" => $risk_associations,
-    ];
-
-    // Return the associations
-    return $associations;
-}
-
-/*******************************************************
- * FUNCTION: CONNECTIVITY VISUALIZER ASSOCIATIONS TEST *
- *******************************************************/
-function connectivity_visualizer_associations_test($id)
-{
-    // Create the default empty arrays
-    $framework_associations = [];
-    $control_associations = [];
-    $document_associations = [];
-    $risk_associations = [];
-    $test_result_associations = [];
-    $asset_associations = [];
-
-    // If a value has been selected
-    if (!is_null($id))
-    {
-        $test_result_associations = get_results_connectivity_for_test($id);
-        $control_associations = get_control_connectivity_for_test($id);
-    }
-
-    // For each control association
-    foreach ($control_associations as $value)
-    {
-        $control_id = $value['control_id'];
-        $framework_associations = array_merge($framework_associations, get_framework_connectivity_for_control($control_id));
-        $document_associations = array_merge($document_associations, get_document_connectivity_for_control($control_id));
-        $risk_associations = array_merge($risk_associations, get_risk_connectivity_for_control($control_id));
-    }
-
-    // For each risk association
-    foreach ($risk_associations as $value)
-    {
-        $risk_id = $value['risk_id'];
-        $asset_associations = array_merge($asset_associations, get_asset_connectivity_for_risk($risk_id));
-    }
-
-    // Merge the association arrays
-    $associations = [
-        "assets" => $asset_associations,
-        "frameworks" => $framework_associations,
-        "test_results" => $test_result_associations,
-        "documents" => $document_associations,
-        "controls" => $control_associations,
-        "risks" => $risk_associations,
-    ];
-
-    // Return the associations
-    return $associations;
-}
-
-/***********************************************************
- * FUNCTION: CONNECTIVITY VISUALIZER ASSOCIATIONS DOCUMENT *
- ***********************************************************/
-function connectivity_visualizer_associations_document($id)
-{
-    // Create the default empty arrays
-    $framework_associations = [];
-    $control_associations = [];
-    $test_associations = [];
-    $risk_associations = [];
-    $test_result_associations = [];
-    $asset_associations = [];
-
-    // If a value has been selected
-    if (!is_null($id))
-    {
-        $control_associations = get_control_connectivity_for_document($id);
-    }
-
-    // For each control association
-    foreach ($control_associations as $value)
-    {
-        $control_id = $value['control_id'];
-        $framework_associations = array_merge($framework_associations, get_framework_connectivity_for_control($control_id));
-        $test_associations = array_merge($test_associations, get_test_connectivity_for_control($control_id));
-        $risk_associations = array_merge($risk_associations, get_risk_connectivity_for_control($control_id));
-    }
-
-    // For each risk association
-    foreach ($risk_associations as $value)
-    {
-        $risk_id = $value['risk_id'];
-        $asset_associations = array_merge($asset_associations, get_asset_connectivity_for_risk($risk_id));
-    }
-
-    // For each test association
-    foreach ($test_associations as $value)
-    {
-        $test_id = $value['test_id'];
-        $test_result_associations = array_merge($test_result_associations, get_results_connectivity_for_test($test_id));
-    }
-
-    // Merge the association arrays
-    $associations = [
-        "assets" => $asset_associations,
-        "frameworks" => $framework_associations,
-        "test_results" => $test_result_associations,
-        "tests" => $test_associations,
-        "controls" => $control_associations,
-        "risks" => $risk_associations,
-    ];
-
-    // Return the associations
-    return $associations;
-}
-
-/*********************************************
- * FUNCTION: GET ASSET CONNECTIVITY FOR RISK *
- *********************************************/
-function get_asset_connectivity_for_risk($risk_id)
-{
-    global $lang, $escaper;
-
-    // Get the id
-    $id = $risk_id - 1000;
-
-    // Open the database connection
-    $db = db_open();
-
-    // Create empty arrays
-    $associations = [];
-    $assets_added = [];
-
-    // Get the assets
-    $stmt = $db->prepare("SELECT DISTINCT id, name FROM assets a LEFT JOIN risks_to_assets rta ON a.id = rta.asset_id WHERE rta.risk_id = :risk_id AND verified=1;");
-    $stmt->bindParam(":risk_id", $id, PDO::PARAM_INT);
-    $stmt->execute();
-
-    // Store the list in the array
-    $array = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-    // For each item in the array
-    foreach ($array as $value)
-    {
-        // Get the asset name and id
-        $asset_id = $value['id'];
-        $asset_name = try_decrypt($value['name']);
-
-        // Create the asset to risk association
-        $associations[] =[
-            "risk_id" => $id,
-            "asset_id" => $asset_id,
-            "asset_name" => $asset_name,
-            "node_id" => "asset_id_{$asset_id}",
-            "node_name" => $asset_name,
-            "connected_node_id" => "risk_id_{$id}",
-            "color" => "#f7dc6f",
-        ];
-
-        // Track the added asset id
-        $assets_added[] = $asset_id;
-    }
-
-    // Get the asset groups
-    $stmt = $db->prepare("SELECT DISTINCT a.id, a.name FROM risks_to_asset_groups rtag LEFT JOIN risks r ON rtag.risk_id = r.id LEFT JOIN assets_asset_groups aag ON aag.asset_group_id = rtag.asset_group_id LEFT JOIN assets a ON a.id = aag.asset_id WHERE rtag.risk_id = :risk_id;");
-    $stmt->bindParam(":risk_id", $id, PDO::PARAM_INT);
-    $stmt->execute();
-
-    // Store the list in the array
-    $array = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-    // For each item in the array
-    foreach ($array as $value)
-    {
-        // Get the asset name and id
-        $asset_id = $value['id'];
-        $asset_name = try_decrypt($value['name']);
-
-        // If the asset name is not empty or null
-        if ($asset_name != null && $asset_name != '')
-        {
-            // If the asset has not already been added
-            if (!in_array($asset_id, $assets_added))
-            {
-                // Add the association
-                $associations[] = [
-                    "risk_id" => $id,
-                    "asset_id" => $asset_id,
-                    "asset_name" => $asset_name,
-                    "node_id" => "asset_id_{$asset_id}",
-                    "node_name" => $asset_name,
-                    "connected_node_id" => "risk_id_{$id}",
-                    "color" => "#f7dc6f",
-                ];
-
-                // Track the added asset id
-                $assets_added[] = $asset_id;
-            }
-        }
-    }
-
-    // Close the database connection
-    db_close($db);
-
-    // Return the associations
-    return $associations ?? [];
-}
-
-/***********************************************
- * FUNCTION: GET CONTROL CONNECTIVITY FOR RISK *
- ***********************************************/
-function get_control_connectivity_for_risk($risk_id)
-{
-    global $lang, $escaper;
-
-    // Get the id
-    $id = $risk_id - 1000;
-
-    // Open the database connection
-    $db = db_open();
-
-    $associations = [];
-
-    // Query the database
-    $stmt = $db->prepare("SELECT DISTINCT fc.id, fc.short_name FROM mitigations m LEFT JOIN mitigation_to_controls mtc ON m.id = mtc.mitigation_id LEFT JOIN framework_controls fc ON mtc.control_id = fc.id WHERE m.risk_id = :risk_id;");
-    $stmt->bindParam(":risk_id", $id, PDO::PARAM_INT);
-    $stmt->execute();
-
-    // Store the list in the array
-    $array = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-    // For each item in the array
-    foreach ($array as $value)
-    {
-        // Get the control name and id
-        $control_name = $value['short_name'];
-        $control_id = $value['id'];
-
-        // If the control name is not empty or null
-        if ($control_name != null && $control_name != '')
-        {
-            $associations[] = [
-                "risk_id" => $risk_id,
-                "control_id" => $control_id,
-                "control_name" => $control_name,
-                "node_id" => "control_id_{$control_id}",
-                "node_name" => $control_name,
-                "connected_node_id" => "risk_id_{$id}",
-                "color" => "#154360",
-            ];
-        }
-    }
-
-    // Close the database connection
-    db_close($db);
-
-    // Return the associations
-    return $associations ?? [];
-}
-
-/*********************************************
- * FUNCTION: GET RISK CONNECTIVITY FOR ASSET *
- *********************************************/
-function get_risk_connectivity_for_asset($asset_id)
-{
-    global $lang, $escaper;
-
-    // Open the database connection
-    $db = db_open();
-
-    $associations = [];
-
-    // Get the assets
-    $stmt = $db->prepare("SELECT DISTINCT r.id, r.subject, rs.calculated_risk FROM risks r LEFT JOIN risk_scoring rs ON r.id = rs.id LEFT JOIN risks_to_assets rta ON r.id = rta.risk_id WHERE rta.asset_id = :asset_id;");
-    $stmt->bindParam(":asset_id", $asset_id, PDO::PARAM_INT);
-    $stmt->execute();
-
-    // Store the list in the array
-    $array = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-    // If team separation is enabled
-    if (team_separation_extra())
-    {
-        //Include the team separation extra
-        require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
-
-        // Strip risks that the user shouldn't have access to
-        $array = strip_no_access_risks($array, null, "id");
-    }
-
-    // For each item in the array
-    foreach ($array as $value)
-    {
-        // Get the risk id and subject
-        $risk_id = $value['id']+1000;
-        $subject = try_decrypt($value['subject']);
-        $color = get_risk_color($value['calculated_risk']);
-
-        // If the subject is more than 50 characters
-        if (strlen($subject) > 50)
-        {
-            // Truncate the selected subject to 50 characters
-            $subject = "[" . $risk_id . "] " . substr($subject, 0, 50) . "...";
-        }
-        else $subject = "[" . $risk_id . "] " . $subject;
-
-        // Create the risk to asset association
-        $associations[] = [
-            "asset_id" => $asset_id,
-            "risk_id" => $risk_id,
-            "risk_name" => $subject,
-            "node_id" => "risk_id_{$value['id']}",
-            "node_name" => $subject,
-            "connected_node_id" => "asset_id_{$asset_id}",
-            "color" => $color,
-        ];
-    }
-
-    // Close the database connection
-    db_close($db);
-
-    // Return the associations
-    return $associations ?? [];
-}
-
-/****************************************************
- * FUNCTION: GET FRAMEWORK CONNECTIVITY FOR CONTROL *
- ****************************************************/
-function get_framework_connectivity_for_control($control_id)
-{
-    global $lang, $escaper;
-
-    // Open the database connection
-    $db = db_open();
-
-    $associations = [];
-
-    // Get the frameworks for this control
-    $stmt = $db->prepare("SELECT DISTINCT f.value, f.name FROM framework_control_mappings fcm LEFT JOIN frameworks f ON f.value = fcm.framework WHERE fcm.control_id = :control_id;");
-    $stmt->bindParam(":control_id", $control_id, PDO::PARAM_INT);
-    $stmt->execute();
-
-    // Store the list in the array
-    $frameworks = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-    // For each framework
-    foreach ($frameworks as $value)
-    {
-        // Get the framework name and id
-        $framework_id = $value['value'];
-        $framework_name = try_decrypt($value['name']);
-
-        // Display the connectivity to frameworks
-        $associations[] = [
-            "control_id" => $control_id,
-            "framework_id" => $framework_id,
-            "framework_name" => $framework_name,
-            "node_id" => "framework_id_{$framework_id}",
-            "node_name" => $framework_name,
-            "connected_node_id" => "control_id_{$control_id}",
-            "color" => "#4a235a",
-        ];
-    }
-
-    // Close the database connection
-    db_close($db);
-
-    // Return the associations
-    return $associations ?? [];
-}
-
-/***********************************************
- * FUNCTION: GET RISK CONNECTIVITY FOR CONTROL *
- ***********************************************/
-function get_risk_connectivity_for_control($control_id)
-{
-    global $lang, $escaper;
-
-    // Open the database connection
-    $db = db_open();
-
-    $associations = [];
-
-    // Get the risks for this control
-    $stmt = $db->prepare("SELECT DISTINCT r.id, r.subject, rs.calculated_risk FROM risks r LEFT JOIN risk_scoring rs ON r.id = rs.id LEFT JOIN mitigations m ON r.id = m.risk_id LEFT JOIN mitigation_to_controls mtc ON m.id = mtc.mitigation_id WHERE mtc.control_id = :control_id;");
-    $stmt->bindParam(":control_id", $control_id, PDO::PARAM_INT);
-    $stmt->execute();
-
-    // Store the list in the array
-    $risks = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-    // If team separation is enabled
-    if (team_separation_extra())
-    {
-        //Include the team separation extra
-        require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
-
-        // Strip risks that the user shouldn't have access to
-        $risks = strip_no_access_risks($risks, null, "id");
-    }
-
-    // For each risk
-    foreach ($risks as $value)
-    {
-        // Get the risk id and subject
-        $risk_id = $value['id']+1000;
-        $subject = try_decrypt($value['subject']);
-        $color = get_risk_color($value['calculated_risk']);
-
-        // If the subject is more than 50 characters
-        if (strlen($subject) > 50)
-        {
-            // Truncate the selected subject to 50 characters
-            $subject = "[" . $risk_id . "] " . substr($subject, 0, 50) . "...";
-        }
-        else $subject = "[" . $risk_id . "] " . $subject;
-
-        // Display the connectivity to risks
-        $associations[] = [
-            "control_id" => $control_id,
-            "risk_id" => $risk_id,
-            "risk_name" => $subject,
-            "node_id" => "risk_id_{$value['id']}",
-            "node_name" => $subject,
-            "connected_node_id" => "control_id_{$control_id}",
-            "color" => $color,
-        ];
-    }
-
-    // Close the database connection
-    db_close($db);
-
-    // Return the associations
-    return $associations ?? [];
-}
-
-/***********************************************
- * FUNCTION: GET TEST CONNECTIVITY FOR CONTROL *
- ***********************************************/
-function get_test_connectivity_for_control($control_id)
-{
-    global $lang, $escaper;
-
-    // Open the database connection
-    $db = db_open();
-
-    $associations = [];
-
-    // Get the tests for this control
-    $stmt = $db->prepare("SELECT DISTINCT fct.id, fct.name FROM framework_control_tests fct WHERE fct.framework_control_id = :control_id;");
-    $stmt->bindParam(":control_id", $control_id, PDO::PARAM_INT);
-    $stmt->execute();
-
-    // Store the list in the array
-    $tests = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-    // For each test
-    foreach ($tests as $value)
-    {
-        // Get the test name and id
-        $test_id = $value['id'];
-        $test_name = $value['name'];
-
-        // Display the connectivity to tests
-        $associations[] = [
-            "control_id" => $control_id,
-            "test_id" => $test_id,
-            "test_name" => $test_name,
-            "node_id" => "test_id_{$test_id}",
-            "node_name" => $test_name,
-            "connected_node_id" => "control_id_{$control_id}",
-            "color" => "#2e86c1",
-        ];
-    }
-
-    // Close the database connection
-    db_close($db);
-
-    // Return the associations
-    return $associations ?? [];
-}
-
-/****************************************************
- * FUNCTION: GET CONTROL CONNECTIVITY FOR FRAMEWORK *
- ****************************************************/
-function get_control_connectivity_for_framework($framework_id)
-{
-    global $lang, $escaper;
-
-    // Open the database connection
-    $db = db_open();
-
-    $associations = [];
-
-    // Get the controls for this framework
-    $stmt = $db->prepare("SELECT DISTINCT fc.id, fc.short_name FROM framework_controls fc LEFT JOIN framework_control_mappings fcm ON fc.id = fcm.control_id WHERE fcm.framework = :framework_id;");
-    $stmt->bindParam(":framework_id", $framework_id, PDO::PARAM_INT);
-    $stmt->execute();
-
-    // Store the list in the array
-    $controls = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-    // For each control
-    foreach ($controls as $value)
-    {
-        // Get the control name and id
-        $control_id = $value['id'];
-        $control_name = $value['short_name'];
-
-        // Display the connectivity to frameworks
-        $associations[] = [
-            "framework_id" => $framework_id,
-            "control_id" => $control_id,
-            "control_name" => $control_name,
-            "node_id" => "control_id_{$control_id}",
-            "node_name" => $control_name,
-            "connected_node_id" => "framework_id_{$framework_id}",
-            "color" => "#154360",
-        ];
-    }
-
-    // Close the database connection
-    db_close($db);
-
-    // Return the associations
-    return $associations ?? [];
-}
-
-/***********************************************
- * FUNCTION: GET CONTROL CONNECTIVITY FOR TEST *
- ***********************************************/
-function get_control_connectivity_for_test($test_id)
-{
-    global $lang, $escaper;
-
-    // Open the database connection
-    $db = db_open();
-
-    $associations = [];
-
-    // Get the controls for this framework
-    $stmt = $db->prepare("SELECT DISTINCT fc.id, fc.short_name FROM framework_controls fc LEFT JOIN framework_control_tests fct ON fc.id = fct.framework_control_id WHERE fct.id = :test_id;");
-    $stmt->bindParam(":test_id", $test_id, PDO::PARAM_INT);
-    $stmt->execute();
-
-    // Store the list in the array
-    $controls = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-    // For each control
-    foreach ($controls as $value)
-    {
-        // Get the control name and id
-        $control_id = $value['id'];
-        $control_name = $value['short_name'];
-
-        // Display the connectivity to tests
-        $associations[] = [
-            "test_id" => $test_id,
-            "control_id" => $control_id,
-            "control_name" => $control_name,
-            "node_id" => "control_id_{$control_id}",
-            "node_name" => $control_name,
-            "connected_node_id" => "test_id_{$test_id}",
-            "color" => "#154360",
-        ];
-    }
-
-    // Close the database connection
-    db_close($db);
-
-    // Return the associations
-    return $associations ?? [];
-}
-
-/***************************************************
- * FUNCTION: GET CONTROL CONNECTIVITY FOR DOCUMENT *
- ***************************************************/
-function get_control_connectivity_for_document($document_id)
-{
-    global $lang, $escaper;
-
-    // Open the database connection
-    $db = db_open();
-
-    $associations = [];
-
-    // Get the controls for this document via the junction table
-    $stmt = $db->prepare("SELECT DISTINCT fc.id, fc.short_name FROM framework_controls fc JOIN document_control_mappings dcm ON fc.id = dcm.control_id WHERE dcm.document_id = :document_id AND dcm.selected = 1;");
-    $stmt->bindParam(":document_id", $document_id, PDO::PARAM_INT);
-    $stmt->execute();
-
-    // Store the list in the array
-    $controls = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-    // For each control
-    foreach ($controls as $value)
-    {
-        // Get the control name and id
-        $control_id = $value['id'];
-        $control_name = $value['short_name'];
-
-        // Display the connectivity to documents
-        $associations[] = [
-            "document_id" => $document_id,
-            "control_id" => $control_id,
-            "control_name" => $control_name,
-            "node_id" => "control_id_{$control_id}",
-            "node_name" => $control_name,
-            "connected_node_id" => "document_id_{$document_id}",
-            "color" => "#154360",
-        ];
-    }
-
-    // Close the database connection
-    db_close($db);
-
-    // Return the associations
-    return $associations ?? [];
-}
-
-/***************************************************
- * FUNCTION: GET DOCUMENT CONNECTIVITY FOR CONTROL *
- ***************************************************/
-function get_document_connectivity_for_control($control_id)
-{
-    global $lang, $escaper;
-
-    // Open the database connection
-    $db = db_open();
-
-    $associations = [];
-
-    // Get the list of documents with this control id via the junction table
-    $stmt = $db->prepare("SELECT DISTINCT d.id, d.document_name FROM documents d JOIN document_control_mappings dcm ON d.id = dcm.document_id WHERE dcm.control_id = :control_id AND dcm.selected = 1;");
-    $stmt->bindParam(":control_id", $control_id, PDO::PARAM_INT);
-    $stmt->execute();
-
-    // Store the list in the array
-    $documents = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-    // For each document
-    foreach ($documents as $value)
-    {
-        // Get the document name and id
-        $document_id = $value['id'];
-        $document_name = $value['document_name'];
-
-        // Display the connectivity to documents
-        $associations[] = [
-            "control_id" => $control_id,
-            "document_id" => $document_id,
-            "document_name" => $document_name,
-            "node_id" => "document_id_{$document_id}",
-            "node_name" => $document_name,
-            "connected_node_id" => "control_id_{$control_id}",
-            "color" => "#a2d9ce",
-        ];
-    }
-
-    // Close the database connection
-    db_close($db);
-
-    // Return the associations
-    return $associations ?? [];
-}
-
-/***********************************************
- * FUNCTION: GET RESULTS CONNECTIVITY FOR TEST *
- ***********************************************/
-function get_results_connectivity_for_test($test_id)
-{
-    global $lang, $escaper;
-
-    // Open the database connection
-    $db = db_open();
-
-    $associations = [];
-
-    // Get the controls for this framework
-    $stmt = $db->prepare("SELECT DISTINCT fctr.id, fctr.test_result, fctr.test_date FROM framework_control_test_results fctr LEFT JOIN framework_control_test_audits fcta ON fctr.test_audit_id = fcta.id LEFT JOIN framework_control_tests fct ON fct.id = fcta.test_id WHERE fct.id = :test_id;");
-    $stmt->bindParam(":test_id", $test_id, PDO::PARAM_INT);
-    $stmt->execute();
-
-    // Store the list in the array
-    $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-    // For each test result
-    foreach ($results as $value)
-    {
-        // Get the result name and id
-        $result_id = $value['id'];
-        $result_name = $value['test_result'];
-        $result_date = $value['test_date'];
-
-        // Get the color based on the test result
-        switch ($result_name)
-        {
-            case "Pass":
-                $color = "#66CC00";
-                break;
-            case "Fail":
-                $color = "#FF0000";
-                break;
-            default:
-                $color = "#D3D3D3";
-                break;
-        }
-
-        // Display the connectivity to results
-        $associations[] = [
-            "test_id" => $test_id,
-            "test_result_id" => $result_id,
-            "test_result_name" => $result_date . " [" . $result_name . "]",
-            "node_id" => "test_result_id_{$result_id}",
-            "node_name" => $result_date . " [" . $result_name . "]",
-            "connected_node_id" => "test_id_{$test_id}",
-            "color" => $color,
-        ];
-    }
-
-    // Close the database connection
-    db_close($db);
-
-    // Return the associations
-    return $associations ?? [];
 }
 
 /***************************************************
@@ -10916,13 +9680,13 @@ function open_risk_sla_status($teams = false, $title = null) {
                             {
                                 label: '{$within_label}',
                                 data: {$within_json},
-                                backgroundColor: '#66CC00',
+                                backgroundColor: '#27a9e3',
                                 stack: 'sla',
                             },
                             {
                                 label: '{$breach_label}',
                                 data: {$breach_json},
-                                backgroundColor: '#FF0000',
+                                backgroundColor: '#ed3139',
                                 stack: 'sla',
                             }
                         ]
@@ -10974,6 +9738,171 @@ function open_risk_sla_status($teams = false, $title = null) {
 /********************************************************
  * FUNCTION: COMPLIANCE CONTROLS BY FRAMEWORK BAR CHART *
  ********************************************************/
+// Resolve the compliance dashboard's single-select framework filter from the
+// request: no / empty / non-numeric 'frameworks' => null (All Frameworks); a
+// numeric id => [id]. Shared by every compliance dashboard widget so the one
+// selection drives them all consistently.
+function compliance_dashboard_framework_filter() {
+    return (isset($_GET['frameworks']) && ctype_digit((string)$_GET['frameworks'])) ? [(int)$_GET['frameworks']] : null;
+}
+
+// Governance dashboard single-select framework scope (mirrors the compliance
+// helper): null = All Frameworks, [id] = that one framework.
+function governance_dashboard_framework_filter() {
+    return (isset($_GET['frameworks']) && ctype_digit((string)$_GET['frameworks'])) ? [(int)$_GET['frameworks']] : null;
+}
+
+// Control IDs mapped to the compliance dashboard's selected framework, or null
+// when All Frameworks (no scoping needed). Used to scope KPIs whose source
+// functions don't take a framework argument (Open Audits / Tests Due Soon), so
+// the whole compliance KPI row honors the single-select consistently.
+function compliance_dashboard_framework_control_ids() {
+    $fw = compliance_dashboard_framework_filter();
+    if (empty($fw)) { return null; }
+    $db = db_open();
+    $stmt = $db->prepare("SELECT DISTINCT `control_id` FROM `framework_control_mappings` WHERE `framework` = :f");
+    $stmt->bindValue(':f', (int)$fw[0], PDO::PARAM_INT);
+    $stmt->execute();
+    $ids = $stmt->fetchAll(PDO::FETCH_COLUMN);
+    db_close($db);
+    return array_map('intval', $ids);
+}
+
+// Filter a list of rows (each carrying `framework_control_id`) down to the
+// compliance dashboard's selected framework. No-op (returns the rows unchanged)
+// when All Frameworks is selected.
+function compliance_scope_rows_by_control($rows) {
+    $ids = compliance_dashboard_framework_control_ids();
+    if ($ids === null || !is_array($rows)) { return $rows; }
+    $set = array_flip($ids);
+    return array_values(array_filter($rows, fn($r) => isset($set[(int)($r['framework_control_id'] ?? -1)])));
+}
+
+// Render a horizontal stacked "controls pass/fail by <attribute>" bar chart — one
+// bar per attribute group (domain/family, class, phase, priority, maturity), each
+// a green-passing / red-failing stack. Framework-scoped via the dashboard's
+// single-select. $title_key is a $lang key.
+function compliance_controls_pass_fail_by_chart($attribute, $element_id, $title_key) {
+    global $lang;
+
+    $rows = get_control_pass_fail_counts_by_attribute($attribute, compliance_dashboard_framework_filter());
+
+    $labels = $passing = $failing = $na = [];
+    foreach ($rows as $r) {
+        $p = (int) $r['passing_controls'];
+        $f = (int) $r['failing_controls'];
+        // Controls in this group whose latest status isn't Pass or Fail
+        // (never tested, inconclusive, or blank) — shown so the bar totals
+        // reflect every control, not just the assessed ones.
+        $n = (int) ($r['na_controls'] ?? 0);
+        // For the domain (family) breakdown, omit domains that contain no controls
+        // at all — they'd only add empty bars to the (scrollable) chart. Other
+        // attributes (e.g. maturity) keep every defined level.
+        if ($attribute === 'family' && ($p + $f + $n) === 0) {
+            continue;
+        }
+        $labels[]  = $r['group_name'];
+        $passing[] = $p;
+        $failing[] = $f;
+        $na[]      = $n;
+    }
+    $datasets = [
+        ['label' => $lang['PassingControls'], 'data' => $passing, 'backgroundColor' => '#51A351'],
+        ['label' => $lang['FailingControls'], 'data' => $failing, 'backgroundColor' => '#ed3139'],
+        ['label' => $lang['NotApplicable'], 'data' => $na, 'backgroundColor' => '#b0b7be'],
+    ];
+    // Horizontal (indexAxis 'y') + stacked: pass/fail/na stacked in one bar per
+    // group. Only scroll when there are enough bars to need it (e.g. ~33 domains);
+    // shorter attributes (class/phase/priority/maturity) fill the widget body and
+    // centre cleanly with no scrollbar gutter. Legend suppressed (colours are
+    // self-evident + in the tooltip); the tooltip footer shows the group total.
+    $scrollable = count($labels) > 12;
+    create_chartjs_bar_code($lang[$title_key] ?? $title_key, $element_id, $labels, $datasets,
+        $lang['NumberOfControls'] ?? 'Number of Controls', '', null, null, true, true, $scrollable, false, true, 'y');
+}
+
+// Render a vertical stacked bar of passing vs failing control counts per month
+// over the last $months, framework-scoped via the dashboard's single-select. Each
+// month reflects the latest Pass/Fail result per control as of that month's end
+// (reconstructed live from test-result dates — no snapshot warm-up).
+function compliance_control_status_over_time_chart($months = 12) {
+    global $lang;
+
+    $filter_ids = compliance_dashboard_framework_filter();
+    $fw_clause = '';
+    $params = [];
+    if (!empty($filter_ids)) {
+        $ph = implode(',', array_fill(0, count($filter_ids), '?'));
+        $fw_clause = "AND f.value IN ({$ph})";
+        $params = array_values($filter_ids);
+    }
+
+    // Total controls in scope — the constant denominator each month is drawn
+    // against, so the N/A (not-yet-assessed) band fills the gap up to the full
+    // control count and every stacked bar reaches the same height.
+    $total_controls = get_compliance_total_controls($filter_ids);
+
+    $db = db_open();
+    $stmt = $db->prepare("
+        SELECT fc.id AS control, DATE(tr.submission_date) AS d,
+               CASE WHEN tr.test_result = 'Pass' THEN 1 ELSE 0 END AS pass
+        FROM framework_controls fc
+        INNER JOIN framework_control_mappings fcm ON fc.id = fcm.control_id
+        INNER JOIN frameworks f ON fcm.framework = f.value AND f.status = 1 {$fw_clause}
+        INNER JOIN audit_control_map acm ON acm.framework_control_id = fc.id
+        INNER JOIN framework_control_test_audits ta ON ta.id = acm.audit_id
+        INNER JOIN framework_control_test_results tr ON tr.test_audit_id = ta.id
+        WHERE fc.deleted = 0 AND tr.test_result IN ('Pass', 'Fail')
+        ORDER BY tr.submission_date, tr.id;
+    ");
+    $stmt->execute($params);
+    $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    db_close($db);
+
+    // Month-end axis (oldest -> newest).
+    $labels = [];
+    $month_ends = [];
+    for ($i = $months - 1; $i >= 0; $i--) {
+        $ts = strtotime("first day of -{$i} month");
+        $labels[]     = date('M Y', $ts);
+        $month_ends[] = date('Y-m-t', $ts);
+    }
+
+    $passing = [];
+    $failing = [];
+    $na = [];
+    foreach ($month_ends as $end) {
+        $latest = [];
+        foreach ($rows as $r) {
+            if ($r['d'] <= $end) {
+                $c = $r['control'];
+                if (!isset($latest[$c]) || $r['d'] >= $latest[$c]['d']) {
+                    $latest[$c] = $r;
+                }
+            }
+        }
+        $p = 0; $fl = 0;
+        foreach ($latest as $l) { if ($l['pass']) { $p++; } else { $fl++; } }
+        $passing[] = $p;
+        $failing[] = $fl;
+        // Everything not yet assessed as of this month-end fills up to the
+        // total control count (clamped at 0 in case of mid-window control churn).
+        $na[]      = max(0, $total_controls - $p - $fl);
+    }
+
+    $datasets = [
+        ['label' => $lang['PassingControls'], 'data' => $passing, 'backgroundColor' => '#51A351'],
+        ['label' => $lang['FailingControls'], 'data' => $failing, 'backgroundColor' => '#ed3139'],
+        ['label' => $lang['NotApplicable'], 'data' => $na, 'backgroundColor' => '#b0b7be'],
+    ];
+    // Vertical stacked bar: months across, pass/fail/na stacked. Legend
+    // suppressed to match the other status charts (colours are self-evident and
+    // in the tooltip); tooltip footer shows the month's total control count.
+    create_chartjs_bar_code($lang['ControlStatusOverTime'] ?? 'Control Status Over Time',
+        'compliance_control_status_over_time_chart', $labels, $datasets,
+        $lang['Month'] ?? 'Month', $lang['NumberOfControls'] ?? 'Number of Controls', null, null, true, false, false, false, true, 'x');
+}
+
 function compliance_controls_by_framework_bar_chart() {
     global $escaper, $lang;
 
@@ -11009,12 +9938,12 @@ function compliance_controls_by_framework_bar_chart() {
         [
             'label'           => $escaper->escapeHtml($lang['PassingControls']),
             'data'            => $passing_data,
-            'backgroundColor' => '#66CC00',
+            'backgroundColor' => '#27a9e3',
         ],
         [
             'label'           => $escaper->escapeHtml($lang['FailingControls']),
             'data'            => $failing_data,
-            'backgroundColor' => '#FF0000',
+            'backgroundColor' => '#ed3139',
         ],
     ];
     create_chartjs_bar_code(
@@ -11059,7 +9988,7 @@ function compliance_pass_rate_trend_line_chart() {
 
     $trend_labels = array_map(fn($m) => date('M Y', strtotime($m . '-01')), $all_months);
 
-    $palette = ['#4472C4', '#ED7D31', '#A9D18E', '#FFC000', '#5B9BD5', '#70AD47', '#FF0000', '#7030A0'];
+    $palette = ['#4472C4', '#ED7D31', '#A9D18E', '#FFC000', '#5B9BD5', '#70AD47', '#ed3139', '#7030A0'];
     $trend_datasets = [];
     $ci = 0;
     foreach ($trend_by_framework as $fw_name => $fw_months) {
@@ -11093,50 +10022,41 @@ function compliance_pass_rate_trend_line_chart() {
 function compliance_pass_fail_pie_chart() {
     global $escaper, $lang;
 
-    // Get all active frameworks for the filter dropdown
-    $all_frameworks = array_values(get_frameworks(1));
+    // Single-select framework scope (null = All Frameworks, [id] = one framework).
+    // Uses the shared helper so an empty 'frameworks=' (All Frameworks) is read as
+    // null, not as "deselected all" — the old multiselect parse turned the empty
+    // value into [] and left this pie blank on All Frameworks.
+    $filter_ids = compliance_dashboard_framework_filter();
 
-    // Resolve selected framework IDs from GET param.
-    // - No 'frameworks' key in URL (first load): default to all (null = no filter)
-    // - Key present with IDs: filter to those IDs
-    // - Key present but empty (user deselected all): return empty results
-    if (!isset($_GET['frameworks'])) {
-        // First load — select all in the multiselect, pass null to data functions
-        $selected_fw_ids = array_column($all_frameworks, 'value');
-        $filter_ids      = null;
-    } else {
-        $selected_fw_ids = array_values(array_filter(explode(',', $_GET['frameworks']), 'ctype_digit'));
-        $selected_fw_ids = array_map('intval', $selected_fw_ids);
-        $filter_ids      = $selected_fw_ids; // may be [] if user deselected all
-    }
+    // --- Overall pass/fail/na counts across the scoped frameworks ---
+    // DISTINCT-control aggregate (passing+failing+na == total controls in scope),
+    // so the pie reconciles exactly with the Total Controls KPI and doesn't
+    // double-count controls shared across frameworks under "All Frameworks".
+    $totals = get_compliance_pass_fail_na_totals($filter_ids);
+    $total_passing = $totals['passing'];
+    $total_failing = $totals['failing'];
+    $total_na      = $totals['na'];
 
-    // --- Snapshot bar chart data ---
-    $framework_data = get_framework_controls_test_status_counts($filter_ids);
-
-    $passing_data = [];
-    $failing_data = [];
-    foreach ($framework_data as $framework) {
-        $passing_data[] = (int)$framework['passing_controls'];
-        $failing_data[] = (int)$framework['failing_controls'];
-    }
-
-    $total_passing = array_sum($passing_data);
-    $total_failing = array_sum($failing_data);
     $overall_pass_fail_data = [
         [
             'label' => $lang['PassingControls'],
             'data' => $total_passing,
-            'color' => '#66CC00',
+            'color' => '#51A351',
         ],
         [
             'label' => $lang['FailingControls'],
             'data' => $total_failing,
-            'color' => '#FF0000',
+            'color' => '#ed3139',
+        ],
+        [
+            'label' => $lang['NotApplicable'],
+            'data' => $total_na,
+            'color' => '#b0b7be',
         ],
     ];
 
     create_chartjs_pie_code(
-        $lang['ControlPassFailStatus'],
+        $lang['ControlStatus'],
         'compliance_pass_fail_pie_chart',
         $overall_pass_fail_data
     );
@@ -11148,16 +10068,32 @@ function compliance_pass_fail_pie_chart() {
 function governance_current_control_maturity_pie_chart() {
     global $escaper, $lang;
 
-    $control_maturity_data = get_control_current_maturity_counts();
-    $suggested_colors = suggested_colors_array();
-    $current_maturity_pie_data = [];
+    $control_maturity_data = get_control_current_maturity_counts(governance_dashboard_framework_filter());
 
-    foreach ($control_maturity_data as $index => $maturity) {
-        $maturity_name = $maturity['maturity_name'];
-        $color = ($maturity['maturity_name'] === 'Unassigned' || $maturity['maturity_name'] === 'Not Performed') ? '#808080' : $suggested_colors[$index % count($suggested_colors)];
+    // Maturity is an ORDERED scale, so it earns a sequential ramp, not random
+    // categorical colors — and it's the same $info cyan family as the maturity
+    // pills and radar: light cyan = low maturity → dark cyan = high maturity, so
+    // the color encodes progress. Levels 0–5 map by value; "Unassigned" (outside
+    // the scale) stays neutral gray.
+    $maturity_ramp = [
+        0 => '#dceffb', // Not Performed — lightest
+        1 => '#a9dcf3',
+        2 => '#6ec6ec',
+        3 => '#27a9e3', // $info cyan (mid)
+        4 => '#1c85b6',
+        5 => '#12617f', // Optimizing — darkest
+    ];
+    $unassigned_color = '#b0b7be';
+
+    $current_maturity_pie_data = [];
+    foreach ($control_maturity_data as $maturity) {
+        $value = $maturity['maturity_value'];
+        $color = ($value !== null && isset($maturity_ramp[(int)$value]))
+            ? $maturity_ramp[(int)$value]
+            : $unassigned_color;
 
         $current_maturity_pie_data[] = [
-            'label' => $maturity_name,
+            'label' => $maturity['maturity_name'],
             'data' => (int)$maturity['control_count'],
             'color' => $color,
         ];
@@ -11170,13 +10106,231 @@ function governance_current_control_maturity_pie_chart() {
     );
 }
 
+/*************************************************************************
+ * FUNCTION: GOVERNANCE CURRENT-VS-DESIRED MATURITY RADAR (by family)   *
+ *************************************************************************/
+// Governance dashboard radar of average current vs desired control maturity per
+// control family, framework-scoped by the dashboard's single-select (aggregates
+// across all controls under "All Frameworks"). Mirrors the Control Gap Analysis
+// report's spider chart. The framing widget supplies the header title, so the
+// chart itself carries none.
+function governance_control_maturity_gap_radar_chart() {
+    global $lang, $escaper;
+
+    $rows = get_governance_maturity_gap_by_family(governance_dashboard_framework_filter());
+
+    if (empty($rows)) {
+        echo "<div class='sr-whatsnext sr-whatsnext--empty'>"
+           . "<span class='sr-whatsnext__empty-title'>" . $escaper->escapeHtml($lang['NoDataAvailable']) . "</span>"
+           . "</div>";
+        return;
+    }
+
+    $labels = $current = $desired = [];
+    foreach ($rows as $r) {
+        $labels[]  = $r['family'];
+        $current[] = $r['current'];
+        $desired[] = $r['desired'];
+    }
+
+    $labels_json   = json_encode(array_values($labels));
+    $current_json  = json_encode(array_values($current));
+    $desired_json  = json_encode(array_values($desired));
+    $current_label = json_encode($lang['CurrentControlMaturity']);
+    $desired_label = json_encode($lang['DesiredControlMaturity']);
+    $element_id    = 'governance_control_maturity_gap_radar_chart';
+
+    // Maturity is a progress metric → one hue, $info cyan (#27a9e3), deliberately
+    // distinct from the pass/fail green/red elsewhere on this dashboard and clear
+    // of the red accent. Current = solid filled area; Desired = dashed outline
+    // (the "target envelope"). No legend — the two lines are self-evident and the
+    // framed widget header supplies the title. Scale fixed to the 0–5 maturity range.
+    echo "
+        <div class='sr-chart-fill'><canvas id='{$element_id}'></canvas></div>
+        <script>
+            $(function() {
+                var ctx = document.getElementById('{$element_id}').getContext('2d');
+                new Chart(ctx, {
+                    type: 'radar',
+                    data: {
+                        labels: {$labels_json},
+                        datasets: [
+                            // Desired = the target reference, a filled neutral-gray
+                            // area drawn underneath (clearer than the old dashed line).
+                            {
+                                label: {$desired_label},
+                                data: {$desired_json},
+                                backgroundColor: 'rgba(108, 117, 125, 0.28)',
+                                borderColor: '#6c757d',
+                                borderWidth: 2,
+                                pointBackgroundColor: '#6c757d',
+                                pointRadius: 3,
+                                fill: true
+                            },
+                            // Current = the achievement, saturated cyan drawn on top.
+                            {
+                                label: {$current_label},
+                                data: {$current_json},
+                                backgroundColor: 'rgba(39, 169, 227, 0.35)',
+                                borderColor: '#27a9e3',
+                                borderWidth: 2.5,
+                                pointBackgroundColor: '#27a9e3',
+                                pointRadius: 3,
+                                fill: true
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        // Hover anywhere: 'nearest' finds the closest point, which
+                        // tells us the family (spoke) under the cursor; the tooltip
+                        // callback then shows BOTH current and desired for that spoke.
+                        // ('index' can't be used here — it mis-anchors by cursor
+                        // x-position on a radial chart.)
+                        interaction: { mode: 'nearest', intersect: false },
+                        scales: {
+                            r: { min: 0, max: 5, ticks: { stepSize: 1 } }
+                        },
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: {
+                                mode: 'nearest',
+                                intersect: false,
+                                displayColors: false,
+                                callbacks: {
+                                    title: function(items) { return items.length ? items[0].label : ''; },
+                                    label: function(context) {
+                                        var d = context.chart.data;
+                                        var i = context.dataIndex;
+                                        // datasets[1] = current (cyan), datasets[0] = desired (gray).
+                                        return [
+                                            d.datasets[1].label + ': ' + d.datasets[1].data[i],
+                                            d.datasets[0].label + ': ' + d.datasets[0].data[i]
+                                        ];
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            });
+        </script>
+    ";
+}
+
+/*******************************************************
+ * FUNCTION: MATURITY PILL CLASS (level -> CSS class) *
+ *******************************************************/
+// Map a maturity level onto its .sr-maturity-pill--<level> shade modifier. The
+// ramp itself lives in SCSS ($sr-maturity-ramp, scss/modules/_home.scss) rather
+// than being built here as an inline style=, so the governance dashboard's
+// maturity-gap tables (this file) and the Define Control Frameworks controls
+// table (js/simplerisk/pages/governance-frameworks.js, which builds the same
+// class name client-side) share one definition of what each level looks like.
+//
+// The scale is a fixed 0–5 (admin/custom_names.php only renames control_maturity
+// rows, it cannot add one), so --na is defensive rather than a live case.
+//
+// Pure: no DB, no globals, no output. The return value is attribute-safe by
+// construction: $value is int-cast and range-checked to 0–5 before it reaches
+// the class template, so the result is always one of seven fixed strings — the
+// caller does not need to escape it.
+function maturity_pill_class($value) {
+    // A non-numeric value is NOT level 0 -- a blanket (int) cast would turn
+    // null / '' / garbage into the lightest shade and claim "Not Performed",
+    // and it would also diverge from the JS mirror, where parseInt() yields
+    // NaN for all three. Guard first, then cast.
+    if (!is_numeric($value)) {
+        return 'sr-maturity-pill--na';
+    }
+    $value = (int) $value;
+    return ($value >= 0 && $value <= 5) ? "sr-maturity-pill--{$value}" : 'sr-maturity-pill--na';
+}
+
+// Render one maturity-level pill for the gap tables. Filled with the level's
+// shade from the sequential cyan ramp — which MUST match the pie ramp in
+// governance_current_control_maturity_pie_chart() so color means the same level
+// everywhere. Charcoal text on the lighter shades, white on the darkest two.
+// Both the fill and that text colour now come from the level's SCSS modifier
+// class (see maturity_pill_class()); this used to inline them via
+// escapeCssColor(), which existed only because escapeCss() mangles a hex literal
+// (`#` -> `\23`). With no colour in the markup there is nothing left to escape.
+function maturity_gap_pill_html($escaper, $value, $name) {
+    $class = maturity_pill_class($value);
+    return "<span class='sr-maturity-pill {$class}'>" . $escaper->escapeHtml($name) . "</span>";
+}
+
+/*************************************************************************
+ * FUNCTION: GOVERNANCE MATURITY-GAP TABLE (below/at/above desired)     *
+ *************************************************************************/
+// Governance dashboard compact table of controls in a maturity-gap bucket
+// (below/at/above their desired maturity), framework-scoped. Each row deep-links
+// to the control editor (../governance/index.php?control_id=N — the same target
+// as the Failing Controls list). $bucket: 'below' | 'at' | 'above'.
+function governance_maturity_gap_table($bucket) {
+    global $lang, $escaper;
+
+    $rows = get_governance_maturity_gap_items($bucket, governance_dashboard_framework_filter());
+
+    if (empty($rows)) {
+        echo "<div class='sr-whatsnext sr-whatsnext--empty'>"
+           . "<span class='sr-whatsnext__empty-title'>" . $escaper->escapeHtml($lang['NoDataAvailable']) . "</span>"
+           . "</div>";
+        return;
+    }
+
+    $html = "<div class='sr-gap-table-scroll'>"
+          . "<table class='sr-gap-table'>"
+          . "<thead><tr>"
+          . "<th>" . $escaper->escapeHtml($lang['Control']) . "</th>"
+          . "<th>" . $escaper->escapeHtml($lang['Maturity']) . "</th>"
+          . "</tr></thead><tbody>";
+
+    foreach ($rows as $r) {
+        $href_attr = $escaper->escapeHtmlAttr('../governance/index.php?control_id=' . (int) $r['id']);
+
+        // Control cell renders as two lines: the control ID on top, the short name
+        // below. SCF-style short_names embed the number ("AAT-26.1: …"), so strip
+        // that prefix off the name to avoid repeating the ID; when there's no
+        // explicit number but the name has a "CODE: rest" shape, split it out.
+        $num  = trim((string) ($r['control_number'] ?? ''));
+        $name = trim((string) ($r['short_name'] ?? ''));
+        if ($num !== '' && stripos($name, $num) === 0) {
+            $name = ltrim(ltrim(substr($name, strlen($num))), ": \t");
+        } elseif ($num === '' && preg_match('/^(\S+):\s*(.+)$/', $name, $m)) {
+            $num  = $m[1];
+            $name = $m[2];
+        }
+        $id_html   = $num !== '' ? "<span class='sr-gap-id'>" . $escaper->escapeHtml($num) . "</span>" : '';
+        $name_html = "<span class='sr-gap-name'>" . $escaper->escapeHtml($name) . "</span>";
+
+        // Maturity pills carry the SAME sequential cyan ramp as the maturity pie —
+        // light = low level, dark = high — so color encodes the level. Both pills
+        // are filled by their level's shade; current → desired reads by position +
+        // arrow. So Below-maturity pairs run light→dark, At-maturity is two equal
+        // shades, Above-maturity runs dark→light.
+        $cur_pill = maturity_gap_pill_html($escaper, (int) $r['current_maturity'], (string) ($r['current_maturity_name'] ?? $r['current_maturity']));
+        $des_pill = maturity_gap_pill_html($escaper, (int) $r['desired_maturity'], (string) ($r['desired_maturity_name'] ?? $r['desired_maturity']));
+
+        $html .= "<tr>"
+               . "<td class='sr-gap-control'><a class='sr-gap-link' href='{$href_attr}'>{$id_html}{$name_html}</a></td>"
+               . "<td class='sr-gap-maturity'>{$cur_pill}"
+               . "<span class='sr-maturity-arrow' aria-hidden='true'>&rarr;</span>{$des_pill}</td>"
+               . "</tr>";
+    }
+
+    $html .= "</tbody></table></div>";
+    echo $html;
+}
+
 /***********************************************************
  * FUNCTION: GOVERNANCE DESIRED CONTROL MATURITY PIE CHART *
  ***********************************************************/
 function governance_framework_maturity_stacked_bar_chart() {
     global $escaper, $lang;
 
-    $stacked_chart_data = get_framework_controls_maturity_stacked_chart_data();
+    $stacked_chart_data = get_framework_controls_maturity_stacked_chart_data(governance_dashboard_framework_filter());
     $suggested_colors = suggested_colors_array();
     $framework_maturity_bar_labels = $stacked_chart_data['labels'];
     $framework_maturity_bar_datasets = [];
@@ -11200,6 +10354,64 @@ function governance_framework_maturity_stacked_bar_chart() {
         null,
         true
     );
+}
+
+/****************************************************
+ * FUNCTION: GOVERNANCE CONTROL STATUS PIE CHART     *
+ * Overall pass/fail/not-tested distinct-control     *
+ * counts across the scoped frameworks. Mirrors      *
+ * compliance_pass_fail_pie_chart().                 *
+ ****************************************************/
+function governance_control_status_pie_chart() {
+    global $lang;
+
+    $totals = get_governance_control_status_totals(governance_dashboard_framework_filter());
+
+    $data = [
+        ['label' => $lang['Pass'],      'data' => $totals['passing'],    'color' => '#51A351'],
+        ['label' => $lang['Fail'],      'data' => $totals['failing'],    'color' => '#ed3139'],
+        ['label' => $lang['NotTested'], 'data' => $totals['not_tested'], 'color' => '#b0b7be'],
+    ];
+
+    create_chartjs_pie_code($lang['ControlStatus'], 'governance_control_status_pie_chart', $data);
+}
+
+// Render a horizontal stacked "controls pass/fail/not-tested by <attribute>" bar
+// chart — one bar per attribute group (domain/family, class, phase, priority,
+// maturity), each a green-passing / red-failing / gray-not-tested stack.
+// Framework-scoped via the governance dashboard's single-select. Mirrors
+// compliance_controls_pass_fail_by_chart(). $title_key is a $lang key.
+function governance_controls_status_by_chart($attribute, $element_id, $title_key) {
+    global $lang;
+
+    $rows = get_control_status_counts_by_attribute($attribute, governance_dashboard_framework_filter());
+
+    $labels = $passing = $failing = $not_tested = [];
+    foreach ($rows as $r) {
+        $p  = (int) $r['passing'];
+        $f  = (int) $r['failing'];
+        $nt = (int) ($r['not_tested'] ?? 0);
+        // For the domain (family) breakdown, omit domains that contain no controls
+        // at all — they'd only add empty bars to the (scrollable) chart. Other
+        // attributes (e.g. maturity) keep every defined level.
+        if ($attribute === 'family' && ($p + $f + $nt) === 0) {
+            continue;
+        }
+        $labels[]     = $r['group_name'];
+        $passing[]    = $p;
+        $failing[]    = $f;
+        $not_tested[] = $nt;
+    }
+    $datasets = [
+        ['label' => $lang['Pass'],      'data' => $passing,    'backgroundColor' => '#51A351'],
+        ['label' => $lang['Fail'],      'data' => $failing,    'backgroundColor' => '#ed3139'],
+        ['label' => $lang['NotTested'], 'data' => $not_tested, 'backgroundColor' => '#b0b7be'],
+    ];
+    // Horizontal (indexAxis 'y') + stacked; scroll only when there are enough
+    // bars to need it (matches the compliance by-attribute bar behavior).
+    $scrollable = count($labels) > 12;
+    create_chartjs_bar_code($lang[$title_key] ?? $title_key, $element_id, $labels, $datasets,
+        $lang['NumberOfControls'] ?? 'Number of Controls', '', null, null, true, true, $scrollable, false, true, 'y');
 }
 
 /*******************************************
@@ -11303,6 +10515,1894 @@ function display_document_program_report() {
             </script>
         ";
     }
+}
+
+/****************************
+ * FUNCTION: RENDER KPI TILE *
+ ****************************/
+// Echo a single Home KPI stat-tile. $value is pre-formatted (caller casts int
+// or builds a "%"). $label_key / $cta_url are trusted internal values; escape
+// on output regardless.
+// Real "this month" delta for a home risk KPI, computed from existing data (no
+// snapshot needed). Returns a delta array for render_kpi_tile(), or null when
+// there is nothing to show. More open / unreviewed risks is bad — the value
+// stays charcoal and the delta reads red. $which: 'open' | 'unreviewed'.
+function home_risk_kpi_delta($which)
+{
+    global $lang;
+
+    // Scope to the user's teams when Team Separation is active — the delta must
+    // never count risks the user can't see (same guard as the tile's value).
+    [$sep_from, $sep_where] = home_risk_separation_sql();
+
+    $review_clause = ($which === 'unreviewed') ? "AND `rsk`.`mgmt_review` = 0" : "";
+
+    $db = db_open();
+    $stmt = $db->prepare("
+        SELECT COUNT(DISTINCT `rsk`.`id`)
+        FROM `risks` rsk
+        {$sep_from}
+        WHERE `rsk`.`status` != 'Closed'
+        {$review_clause}
+        AND `rsk`.`submission_date` >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+        {$sep_where};
+    ");
+    $stmt->execute();
+    $n = (int) $stmt->fetchColumn();
+    db_close($db);
+
+    if ($n <= 0) {
+        return null;
+    }
+
+    return [
+        'label'    => "\u{25B2} " . $n,   // ▲ N  (more = worse)
+        'context'  => $lang['HomeKpiThisMonth'],
+        'goodness' => 'bad',
+    ];
+}
+
+// Control pass rate (%), computed the same way the compliance dashboard does —
+// the latest Pass/Fail result per control across active frameworks. When $prior
+// is true it reconstructs the rate "as of 30 days ago" by only considering
+// results submitted on/before that cutoff. Returns null when there are no
+// tested controls (no baseline to compare).
+function home_control_pass_rate_percent($prior = false)
+{
+    $db = db_open();
+
+    $cut  = $prior ? "AND tr1.submission_date <= DATE_SUB(NOW(), INTERVAL 30 DAY)" : "";
+    $cut2 = $prior ? "AND tr2.submission_date <= DATE_SUB(NOW(), INTERVAL 30 DAY)" : "";
+
+    $stmt = $db->prepare("
+        SELECT
+            SUM(CASE WHEN latest.test_result = 'Pass' THEN 1 ELSE 0 END) AS pass_count,
+            SUM(CASE WHEN latest.test_result = 'Fail' THEN 1 ELSE 0 END) AS fail_count
+        FROM framework_controls fc
+        INNER JOIN framework_control_mappings fcm ON fc.id = fcm.control_id
+        INNER JOIN frameworks f ON fcm.framework = f.value AND f.status = 1
+        INNER JOIN (
+            SELECT acm1.framework_control_id, tr1.test_result
+            FROM audit_control_map acm1
+            INNER JOIN framework_control_test_audits ta1 ON ta1.id = acm1.audit_id
+            INNER JOIN framework_control_test_results tr1 ON ta1.id = tr1.test_audit_id
+            WHERE tr1.test_result IN ('Pass', 'Fail') {$cut}
+            AND tr1.submission_date = (
+                SELECT MAX(tr2.submission_date)
+                FROM audit_control_map acm2
+                INNER JOIN framework_control_test_audits ta2 ON ta2.id = acm2.audit_id
+                INNER JOIN framework_control_test_results tr2 ON ta2.id = tr2.test_audit_id
+                WHERE acm2.framework_control_id = acm1.framework_control_id
+                AND tr2.test_result IN ('Pass', 'Fail') {$cut2}
+            )
+        ) latest ON fc.id = latest.framework_control_id
+        WHERE fc.deleted = 0
+    ");
+    $stmt->execute();
+    $row = $stmt->fetch(PDO::FETCH_ASSOC);
+    db_close($db);
+
+    $pass  = (int) ($row['pass_count'] ?? 0);
+    $fail  = (int) ($row['fail_count'] ?? 0);
+    $total = $pass + $fail;
+
+    return $total > 0 ? (int) round(($pass / $total) * 100) : null;
+}
+
+// Real "this month" delta for the control pass-rate KPI: current rate vs. the
+// rate as it stood 30 days ago. Up is good (higher pass rate). Null when there's
+// no 30-day-ago baseline or no change.
+function home_pass_rate_delta()
+{
+    global $lang;
+
+    $now   = home_control_pass_rate_percent(false);
+    $prior = home_control_pass_rate_percent(true);
+    if ($now === null || $prior === null) {
+        return null;
+    }
+
+    $diff = $now - $prior;
+    if ($diff === 0) {
+        // Baseline exists and the rate held steady — show an explicit neutral
+        // "no change" marker. This is distinct from the no-baseline case above
+        // (prior === null), which stays blank because there's nothing to
+        // compare against and claiming "no change" would be a guess.
+        return [
+            'label'    => $lang['HomeKpiNoChange'],
+            'context'  => $lang['HomeKpiThisMonth'],
+            'goodness' => 'flat',
+        ];
+    }
+
+    return [
+        'label'    => ($diff > 0 ? "\u{25B2}" : "\u{25BC}") . ' ' . abs($diff) . '%',
+        'context'  => $lang['HomeKpiThisMonth'],
+        'goodness' => $diff > 0 ? 'good' : 'bad',   // a higher pass rate is good
+    ];
+}
+
+// Count of open (status = 1) exceptions — the governance "Open Exceptions" KPI.
+// $framework_ids: null = All Frameworks (unscoped, includes exceptions linked
+// to no framework), [] = none selected (short-circuits to 0 before any DB
+// call), [id,...] = only exceptions linked to one of those frameworks via any
+// of the three exception→framework paths (direct framework_id, control-linked
+// control_framework_id via framework_control_mappings, or policy-linked
+// policy_document_id via document_framework_mappings). COUNT(DISTINCT de.value)
+// so an exception matching multiple paths isn't double-counted (`value` is
+// document_exceptions' primary key — the table has no `id` column).
+function get_open_exceptions_count($framework_ids = null)
+{
+    if ($framework_ids !== null && empty($framework_ids)) { return 0; }
+    $db = db_open();
+    $fw_clause = '';
+    $params = [];
+    if (!empty($framework_ids)) {
+        $ph = implode(',', array_fill(0, count($framework_ids), '?'));
+        $fw_clause = "AND (
+            de.framework_id IN ({$ph})
+            OR EXISTS (SELECT 1 FROM framework_control_mappings fcm WHERE fcm.control_id = de.control_framework_id AND fcm.framework IN ({$ph}))
+            OR EXISTS (SELECT 1 FROM document_framework_mappings dfm WHERE dfm.document_id = de.policy_document_id AND dfm.framework_id IN ({$ph}))
+        )";
+        $params = array_merge(array_values($framework_ids), array_values($framework_ids), array_values($framework_ids));
+    }
+    $stmt = $db->prepare("SELECT COUNT(DISTINCT de.value) FROM `document_exceptions` de WHERE de.status = 1 {$fw_clause}");
+    $stmt->execute($params);
+    $n = (int) $stmt->fetchColumn();
+    db_close($db);
+    return $n;
+}
+
+// Count of policy documents — the governance "Policies" KPI. $framework_ids:
+// null = All Frameworks (unscoped, includes policies with no framework link),
+// [] = none selected (short-circuits to 0 before any DB call), [id,...] =
+// only policies linked to one of those frameworks via
+// document_framework_mappings (COUNT(DISTINCT ...) so a policy mapped to
+// multiple selected frameworks isn't double-counted).
+function get_policies_count($framework_ids = null)
+{
+    if ($framework_ids !== null && empty($framework_ids)) { return 0; }
+    $db = db_open();
+    $fw_join = '';
+    if (!empty($framework_ids)) {
+        $ph = implode(',', array_fill(0, count($framework_ids), '?'));
+        $fw_join = "INNER JOIN `document_framework_mappings` dfm ON dfm.document_id = documents.id AND dfm.framework_id IN ({$ph})";
+    }
+    $stmt = $db->prepare("SELECT COUNT(DISTINCT documents.id) FROM `documents` {$fw_join} WHERE documents.`document_type` = 'policies'");
+    if (!empty($framework_ids)) { $stmt->execute(array_values($framework_ids)); } else { $stmt->execute(); }
+    $n = (int) $stmt->fetchColumn();
+    db_close($db);
+    return $n;
+}
+
+// Count of ALL governance documents (every document_type — policies, standards,
+// procedures, guidelines, ...), framework-scoped like get_policies_count().
+// Backs the governance dashboard's "Documents" KPI, which sits beside the
+// Documents for Review list (also all types). $framework_ids: null = All
+// (unscoped), [] = none (returns 0 before any DB call), [id,...] = only
+// documents mapped to one of those frameworks via document_framework_mappings.
+function get_documents_count($framework_ids = null)
+{
+    if ($framework_ids !== null && empty($framework_ids)) { return 0; }
+    $db = db_open();
+    $fw_join = '';
+    if (!empty($framework_ids)) {
+        $ph = implode(',', array_fill(0, count($framework_ids), '?'));
+        $fw_join = "INNER JOIN `document_framework_mappings` dfm ON dfm.document_id = documents.id AND dfm.framework_id IN ({$ph})";
+    }
+    $stmt = $db->prepare("SELECT COUNT(DISTINCT documents.id) FROM `documents` {$fw_join}");
+    if (!empty($framework_ids)) { $stmt->execute(array_values($framework_ids)); } else { $stmt->execute(); }
+    $n = (int) $stmt->fetchColumn();
+    db_close($db);
+    return $n;
+}
+
+/*******************************************************************************
+ * KPI SNAPSHOTS — period-over-period deltas for date-less metrics             *
+ *******************************************************************************/
+// Metrics snapshotted daily so KPIs whose value has no date column of their own
+// (Active Frameworks, Total Controls, Open Exceptions, Policies) can still show
+// a real ~30-day delta.
+function home_kpi_snapshot_metrics()
+{
+    return [
+        'active_frameworks' => (float) get_frameworks_count(1),
+        'total_controls'    => (float) get_framework_controls_count(false),
+        'open_exceptions'   => (float) get_open_exceptions_count(),
+        'policies'          => (float) get_policies_count(),
+    ];
+}
+
+// Upsert today's KPI snapshot (one row per metric per day). Driven by the
+// core_kpi_snapshot queue job (daily cadence gated there); the UNIQUE
+// (metric_key, snapshot_date) makes it safe to repeat. No-op until the table
+// exists. Accepts the worker's $db, or opens its own.
+function record_kpi_snapshots($db = null)
+{
+    if (!table_exists('kpi_snapshots')) {
+        return;
+    }
+
+    $metrics = home_kpi_snapshot_metrics(); // each opens/closes its own connection
+
+    $own = false;
+    if ($db === null) {
+        $db = db_open();
+        $own = true;
+    }
+
+    $stmt = $db->prepare("
+        INSERT INTO `kpi_snapshots` (`metric_key`, `value`, `snapshot_date`)
+        VALUES (:k, :v, CURDATE())
+        ON DUPLICATE KEY UPDATE `value` = VALUES(`value`);
+    ");
+    foreach ($metrics as $k => $v) {
+        $stmt->bindValue(':k', $k);
+        $stmt->bindValue(':v', $v);
+        $stmt->execute();
+    }
+
+    if ($own) {
+        db_close($db);
+    }
+}
+
+// Delta for a snapshotted KPI: current value vs the snapshot closest to (and on
+// or before) 30 days ago. $up_is_good flips the good/bad colouring per metric.
+// Null when there's no ~30-day baseline yet; a neutral "no change" when flat.
+function home_snapshot_delta($metric_key, $current_value, $up_is_good = true)
+{
+    global $lang;
+
+    if (!table_exists('kpi_snapshots')) {
+        return null;
+    }
+
+    $db = db_open();
+    $stmt = $db->prepare("
+        SELECT `value` FROM `kpi_snapshots`
+        WHERE `metric_key` = :k AND `snapshot_date` <= DATE_SUB(CURDATE(), INTERVAL 30 DAY)
+        ORDER BY `snapshot_date` DESC LIMIT 1;
+    ");
+    $stmt->bindValue(':k', $metric_key);
+    $stmt->execute();
+    $prior = $stmt->fetchColumn();
+    db_close($db);
+
+    if ($prior === false) {
+        return null;
+    }
+
+    $diff = (float) $current_value - (float) $prior;
+    if (abs($diff) < 0.005) {
+        return ['label' => $lang['HomeKpiNoChange'], 'context' => $lang['HomeKpiThisMonth'], 'goodness' => 'flat'];
+    }
+
+    $mag = abs($diff);
+    $n = ($mag == floor($mag)) ? (string) (int) $mag : (string) round($mag, 1);
+    return [
+        'label'    => ($diff > 0 ? "\u{25B2}" : "\u{25BC}") . ' ' . $n,
+        'context'  => $lang['HomeKpiThisMonth'],
+        'goodness' => (($diff > 0) === $up_is_good) ? 'good' : 'bad',
+    ];
+}
+
+// Period-over-period delta derived from a live KPI series (first day vs last day)
+// instead of the kpi_snapshots table — for the risk KPIs that reconstruct their
+// own history (they have no snapshot warm-up). Same output shape/semantics as
+// home_snapshot_delta: null when there's no series, a neutral "no change" when
+// flat, and good/bad coloured by whether the direction is good FOR THIS METRIC.
+function home_series_delta(array $series, $up_is_good = true)
+{
+    global $lang;
+
+    if (count($series) < 2) {
+        return null;
+    }
+
+    $prior   = (float) ($series[0]['value'] ?? 0);              // ~30 days ago
+    $current = (float) ($series[count($series) - 1]['value'] ?? 0); // today
+    $diff    = $current - $prior;
+
+    if (abs($diff) < 0.005) {
+        return ['label' => $lang['HomeKpiNoChange'], 'context' => $lang['HomeKpiThisMonth'], 'goodness' => 'flat'];
+    }
+
+    $mag = abs($diff);
+    $n   = ($mag == floor($mag)) ? (string) (int) $mag : (string) round($mag, 1);
+    return [
+        'label'    => ($diff > 0 ? "\u{25B2}" : "\u{25BC}") . ' ' . $n,
+        'context'  => $lang['HomeKpiThisMonth'],
+        'goodness' => (($diff > 0) === $up_is_good) ? 'good' : 'bad',
+    ];
+}
+
+/*******************************************************************************
+ * KPI SPARKLINES — a ~30-day trend line drawn in the KPI tile's bottom-right   *
+ *******************************************************************************/
+// The tile's single value + delta only tell you "now" and "vs a month ago". The
+// sparkline fills the tile's empty bottom-right quadrant with the shape of the
+// last N days so the trend reads at a glance. Data comes from real history, per
+// metric: the two risk KPIs are reconstructed live from risk lifecycle dates
+// (team-scoped, so they never leak risks the user can't see — and they work
+// retroactively, no snapshot warm-up), the pass-rate is reconstructed from test
+// result dates, and metrics with no date column of their own (Active Frameworks)
+// read the daily kpi_snapshots history.
+
+// Build a chronological axis of the last $days calendar days as 'Y-m-d' strings,
+// ending today. $today is injectable so the pure series builders below are
+// deterministic under test.
+function kpi_build_day_axis($days = 30, $today = null)
+{
+    $end = ($today !== null) ? strtotime($today) : strtotime(date('Y-m-d'));
+    $axis = [];
+    for ($i = $days - 1; $i >= 0; $i--) {
+        $axis[] = date('Y-m-d', $end - $i * 86400);
+    }
+    return $axis;
+}
+
+// Pure: given risk lifecycle rows [['start_date'=>'Y-m-d','end_date'=>'Y-m-d'|null], ...]
+// count how many were open on each day of $axis. A risk is open on day D if it
+// was submitted on/before D and either never closed or closed strictly after D.
+// 'Y-m-d' strings compare correctly with <= / >.
+function kpi_compute_open_series(array $rows, array $axis)
+{
+    $series = [];
+    foreach ($axis as $d) {
+        $count = 0;
+        foreach ($rows as $r) {
+            $start = $r['start_date'] ?? null;
+            $end   = $r['end_date'] ?? null;
+            if ($start !== null && $start <= $d && ($end === null || $end > $d)) {
+                $count++;
+            }
+        }
+        $series[] = ['date' => $d, 'value' => $count];
+    }
+    return $series;
+}
+
+// Pure: like kpi_compute_open_series, but also requires the risk to have had no
+// management review yet as of day D. $rows carry an extra 'first_review' ('Y-m-d'
+// or null). "Needs review on D" = open on D AND (never reviewed OR first review
+// happened after D).
+function kpi_compute_needs_review_series(array $rows, array $axis)
+{
+    $series = [];
+    foreach ($axis as $d) {
+        $count = 0;
+        foreach ($rows as $r) {
+            $start  = $r['start_date'] ?? null;
+            $end    = $r['end_date'] ?? null;
+            $review = $r['first_review'] ?? null;
+            $open   = ($start !== null && $start <= $d && ($end === null || $end > $d));
+            if ($open && ($review === null || $review > $d)) {
+                $count++;
+            }
+        }
+        $series[] = ['date' => $d, 'value' => $count];
+    }
+    return $series;
+}
+
+// Pure: given all Pass/Fail control test results [['control'=>id,'date'=>'Y-m-d','pass'=>1|0], ...]
+// (ordered oldest-first), compute the pass-rate % on each day of $axis using the
+// latest result per control as of that day. A day with no results yet yields a
+// null value (rendered as a gap / dropped from the spark).
+function kpi_compute_pass_rate_series(array $results, array $axis)
+{
+    $series = [];
+    foreach ($axis as $d) {
+        $latest = []; // control_id => ['date'=>, 'pass'=>]
+        foreach ($results as $r) {
+            if ($r['date'] <= $d) {
+                $c = $r['control'];
+                if (!isset($latest[$c]) || $r['date'] >= $latest[$c]['date']) {
+                    $latest[$c] = $r;
+                }
+            }
+        }
+        $tested = count($latest);
+        if ($tested === 0) {
+            $series[] = ['date' => $d, 'value' => null];
+            continue;
+        }
+        $pass = 0;
+        foreach ($latest as $l) {
+            if (!empty($l['pass'])) { $pass++; }
+        }
+        $series[] = ['date' => $d, 'value' => (int) round(($pass / $tested) * 100)];
+    }
+    return $series;
+}
+
+// DB: failing-control count per day for the last $days — a control counts as
+// failing on day D when its most recent Pass/Fail result as of D is 'Fail'.
+// Reuses the same result set as the pass-rate series (active frameworks, global).
+function kpi_series_failing_controls($days = 30)
+{
+    $db = db_open();
+    $stmt = $db->prepare("
+        SELECT
+            fc.id AS control,
+            DATE(tr.submission_date) AS d,
+            CASE WHEN tr.test_result = 'Pass' THEN 1 ELSE 0 END AS pass
+        FROM framework_controls fc
+        INNER JOIN framework_control_mappings fcm ON fc.id = fcm.control_id
+        INNER JOIN frameworks f ON fcm.framework = f.value AND f.status = 1
+        INNER JOIN audit_control_map acm ON acm.framework_control_id = fc.id
+        INNER JOIN framework_control_test_audits ta ON ta.id = acm.audit_id
+        INNER JOIN framework_control_test_results tr ON tr.test_audit_id = ta.id
+        WHERE fc.deleted = 0 AND tr.test_result IN ('Pass', 'Fail')
+        ORDER BY tr.submission_date, tr.id;
+    ");
+    $stmt->execute();
+    $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    db_close($db);
+
+    $results = [];
+    foreach ($rows as $r) {
+        $results[] = ['control' => $r['control'], 'date' => $r['d'], 'pass' => (int) $r['pass']];
+    }
+    return kpi_compute_failing_count_series($results, kpi_build_day_axis($days));
+}
+
+// Pure: given Pass/Fail control results [['control'=>id,'date'=>'Y-m-d','pass'=>1|0], ...]
+// count the controls whose latest result as of each day of $axis is a Fail.
+function kpi_compute_failing_count_series(array $results, array $axis)
+{
+    $series = [];
+    foreach ($axis as $d) {
+        $latest = []; // control_id => ['date'=>, 'pass'=>]
+        foreach ($results as $r) {
+            if ($r['date'] <= $d) {
+                $c = $r['control'];
+                if (!isset($latest[$c]) || $r['date'] >= $latest[$c]['date']) {
+                    $latest[$c] = $r;
+                }
+            }
+        }
+        $fail = 0;
+        foreach ($latest as $l) {
+            if (empty($l['pass'])) { $fail++; }
+        }
+        $series[] = ['date' => $d, 'value' => $fail];
+    }
+    return $series;
+}
+
+// DB: open-risk count per day for the last $days, scoped to the user's teams
+// when Team Separation is active (same guard as the tile's value/delta).
+function kpi_series_open_risks($days = 30)
+{
+    [$sep_from, $sep_where] = home_risk_separation_sql();
+
+    $db = db_open();
+    $stmt = $db->prepare("
+        SELECT DISTINCT
+            `rsk`.`id` AS id,
+            DATE(`rsk`.`submission_date`) AS start_date,
+            CASE WHEN `rsk`.`status` = 'Closed' THEN DATE(`c`.`closure_date`) ELSE NULL END AS end_date
+        FROM `risks` rsk
+        LEFT JOIN `closures` c ON `rsk`.`close_id` = `c`.`id`
+        {$sep_from}
+        WHERE 1 = 1 {$sep_where};
+    ");
+    $stmt->execute();
+    $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    db_close($db);
+
+    return kpi_compute_open_series($rows, kpi_build_day_axis($days));
+}
+
+// DB: unreviewed-open-risk count per day for the last $days, team-scoped.
+function kpi_series_needs_review($days = 30)
+{
+    [$sep_from, $sep_where] = home_risk_separation_sql();
+
+    $db = db_open();
+    $stmt = $db->prepare("
+        SELECT DISTINCT
+            `rsk`.`id` AS id,
+            DATE(`rsk`.`submission_date`) AS start_date,
+            CASE WHEN `rsk`.`status` = 'Closed' THEN DATE(`c`.`closure_date`) ELSE NULL END AS end_date,
+            (SELECT DATE(MIN(`mr`.`submission_date`)) FROM `mgmt_reviews` mr WHERE `mr`.`risk_id` = `rsk`.`id`) AS first_review
+        FROM `risks` rsk
+        LEFT JOIN `closures` c ON `rsk`.`close_id` = `c`.`id`
+        {$sep_from}
+        WHERE 1 = 1 {$sep_where};
+    ");
+    $stmt->execute();
+    $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    db_close($db);
+
+    return kpi_compute_needs_review_series($rows, kpi_build_day_axis($days));
+}
+
+// DB: unmitigated-open-risk count per day for the last $days, team-scoped.
+// "Unmitigated" mirrors get_unmitigated_open_risk_count() (open + mitigation_id 0);
+// the "became mitigated" date is the risk's mitigation submission_date. Shares the
+// needs-review compute by aliasing that date as 'first_review' (same shape: open on
+// D AND (no mitigation OR mitigation started after D)).
+function kpi_series_unmitigated($days = 30)
+{
+    [$sep_from, $sep_where] = home_risk_separation_sql();
+
+    $db = db_open();
+    $stmt = $db->prepare("
+        SELECT DISTINCT
+            `rsk`.`id` AS id,
+            DATE(`rsk`.`submission_date`) AS start_date,
+            CASE WHEN `rsk`.`status` = 'Closed' THEN DATE(`c`.`closure_date`) ELSE NULL END AS end_date,
+            CASE WHEN `rsk`.`mitigation_id` <> 0 THEN DATE(`mit`.`submission_date`) ELSE NULL END AS first_review
+        FROM `risks` rsk
+        LEFT JOIN `closures` c ON `rsk`.`close_id` = `c`.`id`
+        LEFT JOIN `mitigations` mit ON `rsk`.`mitigation_id` = `mit`.`id`
+        {$sep_from}
+        WHERE 1 = 1 {$sep_where};
+    ");
+    $stmt->execute();
+    $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    db_close($db);
+
+    return kpi_compute_needs_review_series($rows, kpi_build_day_axis($days));
+}
+
+// DB: cumulative closed-risk count per day for the last $days, team-scoped — a
+// risk counts on day D once its closure_date is on/before D. A risk can be
+// closed, reopened, and closed again (multiple `closures` rows), so this keys on
+// the LAST closure date per unique risk (MAX(closure_date)), matching the current
+// "currently closed" cohort that get_closed_risks() counts.
+function kpi_series_closed_risks($days = 30)
+{
+    [$sep_from, $sep_where] = home_risk_separation_sql();
+
+    $db = db_open();
+    $stmt = $db->prepare("
+        SELECT DISTINCT
+            `rsk`.`id` AS id,
+            (SELECT DATE(MAX(`cc`.`closure_date`)) FROM `closures` cc WHERE `cc`.`risk_id` = `rsk`.`id`) AS closed_date
+        FROM `risks` rsk
+        {$sep_from}
+        WHERE `rsk`.`status` = 'Closed' {$sep_where};
+    ");
+    $stmt->execute();
+    $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    db_close($db);
+
+    return kpi_compute_closed_series($rows, kpi_build_day_axis($days));
+}
+
+// Pure: given closed-risk rows [['closed_date'=>'Y-m-d'|null], ...], count how
+// many were closed on/before each day of $axis (a monotonic, cumulative series).
+function kpi_compute_closed_series(array $rows, array $axis)
+{
+    $series = [];
+    foreach ($axis as $d) {
+        $count = 0;
+        foreach ($rows as $r) {
+            $cd = $r['closed_date'] ?? null;
+            if ($cd !== null && $cd <= $d) {
+                $count++;
+            }
+        }
+        $series[] = ['date' => $d, 'value' => $count];
+    }
+    return $series;
+}
+
+// DB: control pass-rate % per day for the last $days. Global (compliance-wide;
+// not team-scoped). Mirrors the joins in home_control_pass_rate_percent().
+function kpi_series_pass_rate($days = 30)
+{
+    $db = db_open();
+    $stmt = $db->prepare("
+        SELECT
+            fc.id AS control,
+            DATE(tr.submission_date) AS d,
+            CASE WHEN tr.test_result = 'Pass' THEN 1 ELSE 0 END AS pass
+        FROM framework_controls fc
+        INNER JOIN framework_control_mappings fcm ON fc.id = fcm.control_id
+        INNER JOIN frameworks f ON fcm.framework = f.value AND f.status = 1
+        INNER JOIN audit_control_map acm ON acm.framework_control_id = fc.id
+        INNER JOIN framework_control_test_audits ta ON ta.id = acm.audit_id
+        INNER JOIN framework_control_test_results tr ON tr.test_audit_id = ta.id
+        WHERE fc.deleted = 0 AND tr.test_result IN ('Pass', 'Fail')
+        ORDER BY tr.submission_date, tr.id;
+    ");
+    $stmt->execute();
+    $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    db_close($db);
+
+    $results = [];
+    foreach ($rows as $r) {
+        $results[] = ['control' => $r['control'], 'date' => $r['d'], 'pass' => (int) $r['pass']];
+    }
+    return kpi_compute_pass_rate_series($results, kpi_build_day_axis($days));
+}
+
+// DB: read a snapshotted metric's last $days of daily values from kpi_snapshots.
+// Used for metrics with no date column of their own (Active Frameworks). Sparse
+// by nature — only days the snapshot job ran are present. Empty until the table
+// exists / accumulates history.
+function kpi_series_snapshot($metric_key, $days = 30)
+{
+    if (!table_exists('kpi_snapshots')) {
+        return [];
+    }
+    $db = db_open();
+    $stmt = $db->prepare("
+        SELECT `snapshot_date` AS date, `value`
+        FROM `kpi_snapshots`
+        WHERE `metric_key` = :k AND `snapshot_date` >= DATE_SUB(CURDATE(), INTERVAL :d DAY)
+        ORDER BY `snapshot_date` ASC;
+    ");
+    $stmt->bindValue(':k', $metric_key);
+    $stmt->bindValue(':d', (int) $days, PDO::PARAM_INT);
+    $stmt->execute();
+    $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    db_close($db);
+
+    $series = [];
+    foreach ($rows as $r) {
+        $series[] = ['date' => $r['date'], 'value' => (float) $r['value']];
+    }
+    return $series;
+}
+
+// Build the inline-SVG sparkline for a $series of ['value'=>…] points. The whole
+// trend carries the state colour: a line + a faint area wash both tinted by the
+// window's goodness (green when the N-day move is good FOR THIS metric, red when
+// bad, neutral when flat — $up_is_good sets the polarity). The goodness lands as
+// a modifier class on the <svg>; the actual colours live in SCSS tokens (see
+// .sr-kpi__spark--good/--bad/--flat). Returns '' when there aren't at least two
+// real points to draw. All coordinates are generated numerically, so no user
+// input reaches the markup.
+function render_kpi_sparkline_svg(array $series, $up_is_good = true)
+{
+    // Drop gap points (null values) — need ≥2 real points to draw a line.
+    $pts = [];
+    foreach ($series as $p) {
+        if (isset($p['value']) && $p['value'] !== null) {
+            $pts[] = (float) $p['value'];
+        }
+    }
+    $n = count($pts);
+    if ($n < 2) {
+        return '';
+    }
+
+    $min = min($pts);
+    $max = max($pts);
+    $range = ($max - $min) ?: 1.0;
+
+    $W = 76; $H = 30; $padX = 1; $padY = 3;
+    $innerW = $W - 2 * $padX;
+    $innerH = $H - 2 * $padY;
+    $baseline = $H - $padY;
+
+    $coords = [];
+    foreach ($pts as $i => $v) {
+        $x = $padX + ($i / ($n - 1)) * $innerW;
+        $y = ($max === $min)
+            ? $padY + $innerH / 2                       // flat series → centre line
+            : $padY + (1 - ($v - $min) / $range) * $innerH;
+        $coords[] = [round($x, 2), round($y, 2)];
+    }
+
+    // Trend goodness: net move across the window, in this metric's polarity.
+    $diff = $pts[$n - 1] - $pts[0];
+    $goodness = (abs($diff) < 0.0001)
+        ? 'flat'
+        : ((($diff > 0) === (bool) $up_is_good) ? 'good' : 'bad');
+
+    // Line vertices, then close the area down to the baseline for the fill wash.
+    $line = implode(' ', array_map(fn($c) => $c[0] . ',' . $c[1], $coords));
+    $area = $line . ' ' . $coords[$n - 1][0] . ',' . $baseline
+                  . ' ' . $coords[0][0] . ',' . $baseline;
+
+    return "<svg class='sr-kpi__spark sr-kpi__spark--{$goodness}' viewBox='0 0 {$W} {$H}' preserveAspectRatio='none' aria-hidden='true' focusable='false'>"
+        . "<polygon class='sr-kpi__spark-area' points='{$area}'/>"
+        . "<polyline class='sr-kpi__spark-line' points='{$line}'/>"
+        . "</svg>";
+}
+
+// Convenience: resolve a metric key to its series source and render the spark.
+// $up_is_good sets the endpoint-dot polarity for the trend. Any unknown key
+// falls through to the daily-snapshot history.
+function kpi_sparkline_for($metric, $up_is_good = true, $days = 30)
+{
+    switch ($metric) {
+        case 'open_risks':   $series = kpi_series_open_risks($days);   break;
+        case 'needs_review': $series = kpi_series_needs_review($days); break;
+        case 'unmitigated':  $series = kpi_series_unmitigated($days);  break;
+        case 'closed_risks': $series = kpi_series_closed_risks($days); break;
+        case 'pass_rate':    $series = kpi_series_pass_rate($days);    break;
+        default:             $series = kpi_series_snapshot($metric, $days); break;
+    }
+    return render_kpi_sparkline_svg($series, $up_is_good);
+}
+
+// Renders a home KPI stat-tile: an eyebrow label, a large charcoal value, an
+// optional delta vs. the prior period, and an optional trend sparkline. $delta
+// (when supplied) is ['label' => '+12 this month', 'goodness' => 'good'|'bad'] —
+// the value stays charcoal and only the delta is coloured, by whether the change
+// is good or bad FOR THIS METRIC (never by arrow direction). Callers pass a delta
+// only when a prior-period value exists; omit it otherwise rather than show a
+// mis-coloured one. $sparkline is a pre-rendered SVG string (from
+// kpi_sparkline_for()) or '' for none; it sits bottom-right, sharing the foot row
+// with the delta. $value_tone is an optional trailing flag ('danger', 'success',
+// or '') that colours the NUMBER itself: 'danger' = App Red for tiles that signal
+// "needs attention" (the Define Tests band's Overdue/Failing/Untested Controls
+// tiles); 'success' = the $success green for a "good" counterpart (the Passing
+// tile). A deliberate, scoped spend confined to the value, not the whole tile
+// (see .sr-kpi__value--danger / --success in _home.scss). Trailing + defaulted to
+// '' so every existing caller is unaffected.
+function render_kpi_tile($value, $label_key, $cta_url, $delta = null, $domain_key = null, $sparkline = '', $unit_key = '', $subtitle = '', $value_tone = '')
+{
+    global $lang, $escaper;
+
+    $label = isset($lang[$label_key]) ? $lang[$label_key] : $label_key;
+
+    // Optional unit qualifier rendered beneath the number (e.g. "incidents",
+    // "days"). Keeps the value itself short — a bare "42.3" instead of "42.3d" —
+    // so the number + sparkline fit the narrow KPI tiles without the value
+    // crowding the spark.
+    $unit_html = '';
+    if ($unit_key !== '') {
+        $unit_label = isset($lang[$unit_key]) ? $lang[$unit_key] : $unit_key;
+        $unit_html = "<span class='sr-kpi__unit'>" . $escaper->escapeHtml($unit_label) . "</span>";
+    }
+
+    // Provenance tag (top-right): which module this metric belongs to. Home is a
+    // cross-domain digest, so the tag tells the reader at a glance whether a tile
+    // is a Risk / Compliance / Governance metric.
+    $domain_html = '';
+    if ($domain_key !== null && isset($lang[$domain_key])) {
+        $domain_html = "<span class='sr-domain sr-kpi__domain'>" . $escaper->escapeHtml($lang[$domain_key]) . "</span>";
+    }
+
+    $delta_html = '';
+    if (is_array($delta) && isset($delta['label']) && $delta['label'] !== '') {
+        // good = green, bad = red, flat = neutral grey ("no change"); anything
+        // else falls back to bad so an unlabelled delta can't render un-styled.
+        $goodness = in_array($delta['goodness'] ?? '', ['good', 'bad', 'flat'], true)
+            ? $delta['goodness'] : 'bad';
+        $context  = (isset($delta['context']) && $delta['context'] !== '')
+            ? "<span class='sr-kpi__delta-context'>" . $escaper->escapeHtml($delta['context']) . "</span>"
+            : '';
+        $delta_html = "<span class='sr-kpi__delta sr-kpi__delta--" . $goodness . "'>"
+            . $escaper->escapeHtml($delta['label']) . $context . "</span>";
+    }
+
+    // Optional descriptive subtitle (Define Tests insights band). Renders in the
+    // foot slot in place of a period-over-period delta; muted, single line.
+    $sub_html = '';
+    if (is_string($subtitle) && $subtitle !== '') {
+        $sub_html = "<span class='sr-kpi__sub'>" . $escaper->escapeHtml($subtitle) . "</span>";
+    }
+
+    // The sparkline always sits beside the value (bottom-aligned to it), and the
+    // delta — when present — drops to its own foot row below. This keeps the
+    // spark's bottom lined up with the number to its left and gives the delta the
+    // full tile width (so a longer delta never has to fight the spark for room).
+    $spark_html = is_string($sparkline) ? $sparkline : '';
+
+    $foot_html = '';
+    if ($delta_html !== '' || $sub_html !== '') {
+        $foot_html = "<span class='sr-kpi__foot'>" . $delta_html . $sub_html . "</span>";
+    }
+
+    // App-Red-spent-once: only the numeric value gets the danger class, never
+    // the tile/label -- $value_tone is a fixed internal 'danger'|'' flag, not
+    // user input, so no escaping is needed for the class list itself.
+    $value_class = 'sr-kpi__value';
+    if ($value_tone === 'danger') {
+        $value_class .= ' sr-kpi__value--danger';
+    } elseif ($value_tone === 'success') {
+        $value_class .= ' sr-kpi__value--success';
+    }
+
+    echo "
+        <a class='sr-kpi' href='" . $escaper->escapeHtmlAttr($cta_url) . "'>
+            <span class='sr-kpi__top'>
+                <span class='sr-kpi__label'>" . $escaper->escapeHtml($label) . "</span>
+                " . $domain_html . "
+            </span>
+            <span class='sr-kpi__value-row'>
+                <span class='sr-kpi__value-block'>
+                    <span class='" . $value_class . "'>" . $escaper->escapeHtml($value) . "</span>
+                    " . $unit_html . "
+                </span>
+                " . $spark_html . "
+            </span>
+            " . $foot_html . "
+        </a>
+    ";
+}
+
+/*************************************
+ * FUNCTION: RENDER WHATS NEXT WIDGET *
+ *************************************/
+// Echo the "What's Next?" action feed. Items come pre-sorted from
+// get_whats_next_items(); an empty feed renders a warm "all caught up" state.
+function render_whats_next_widget($domain = null)
+{
+    global $lang, $escaper;
+
+    $items = get_whats_next_items($domain);
+
+    // The widget frame — header + body — is rendered whether or not there are
+    // items, so the tile always reads as a framed widget (matches the KPI tiles).
+    echo "<div class='sr-widget'>";
+    echo   "<div class='sr-widget__head'><span class='sr-widget__title'>"
+         . $escaper->escapeHtml($lang['WhatsNext']) . "</span></div>";
+    echo   "<div class='sr-widget__body'>";
+
+    if (empty($items)) {
+        echo "<div class='sr-whatsnext sr-whatsnext--empty'>"
+           . "<span class='sr-whatsnext__empty-title'>" . $escaper->escapeHtml($lang['WhatsNextAllCaughtUp']) . "</span>"
+           . "</div>";
+    } else {
+        echo "<ul class='sr-whatsnext'>";
+        foreach ($items as $item) {
+            $label = isset($lang[$item['label_key']]) ? $lang[$item['label_key']] : $item['label_key'];
+            // Right-hand soft state pill: urgency by band. Work items show the
+            // count; one-time setup items show a "Set up" tag.
+            switch ($item['band']) {
+                case 'overdue': $pill_mod = 'danger'; $pill_text = (string)(int)$item['count']; break;
+                case 'setup':   $pill_mod = 'info';   $pill_text = $lang['Setup'];              break;
+                default:        $pill_mod = 'warn';   $pill_text = (string)(int)$item['count']; break; // due_soon
+            }
+            echo "
+                <li class='sr-whatsnext__item'>
+                    <a href='" . $escaper->escapeHtmlAttr($item['cta_url']) . "'>
+                        <span class='sr-whatsnext__text'>" . $escaper->escapeHtml($label) . "</span>
+                        <span class='sr-wn-pill sr-wn-pill--" . $pill_mod . "'><span class='sr-wn-pill__dot'></span>"
+                        . $escaper->escapeHtml($pill_text) . "</span>
+                    </a>
+                </li>
+            ";
+        }
+        echo "</ul>";
+    }
+
+    echo   "</div>";
+    echo "</div>";
+}
+
+/*******************************************************************************
+ * FUNCTION: RENDER LIST WIDGET                                                 *
+ *******************************************************************************/
+// Generic framed list widget (design-system .sr-widget + .sr-whatsnext): a
+// header (title + optional domain tag) over a short list of name + pill rows.
+// Powers the dashboard list widgets (My Highest Risks, Past-Due Reviews,
+// Upcoming Tests, Recent Failures, Policies Up for Review, Expiring Exceptions).
+//
+// $items: array of [
+//   'name'  => string,          // row label
+//   'href'  => string,          // row link
+//   'pill'  => string,          // pill text
+//   'band'  => 'warn'|'danger'|'info'|'level',
+//   'color' => hex,             // only when band === 'level' (solid severity pill)
+// ]
+function render_list_widget($title, $domain_key, $items, $empty_text = null)
+{
+    global $lang, $escaper;
+
+    $domain_html = ($domain_key !== null && isset($lang[$domain_key]))
+        ? "<span class='sr-domain sr-widget__domain'>" . $escaper->escapeHtml($lang[$domain_key]) . "</span>"
+        : '';
+
+    echo "<div class='sr-widget'>";
+    echo   "<div class='sr-widget__head'>"
+         . "<span class='sr-widget__title'>" . $escaper->escapeHtml($title) . "</span>"
+         . $domain_html
+         . "</div>";
+    echo   "<div class='sr-widget__body'>";
+
+    if (empty($items)) {
+        $empty = $empty_text !== null ? $empty_text : $lang['WhatsNextAllCaughtUp'];
+        echo "<div class='sr-whatsnext sr-whatsnext--empty'>"
+           . "<span class='sr-whatsnext__empty-title'>" . $escaper->escapeHtml($empty) . "</span>"
+           . "</div>";
+    } else {
+        echo "<ul class='sr-whatsnext'>";
+        foreach ($items as $item) {
+            $name = (string)($item['name'] ?? '');
+            $href = (string)($item['href'] ?? '#');
+            $band = (string)($item['band'] ?? 'warn');
+            $pill = (string)($item['pill'] ?? '');
+
+            if ($band === 'level') {
+                // Solid severity pill in the configured level colour (allow-listed).
+                $color = $escaper->escapeCssColor($item['color'] ?? 'transparent');
+                $pill_html = "<span class='sr-wn-level' style='background-color:" . $color . "'>"
+                    . $escaper->escapeHtml($pill) . "</span>";
+            } else {
+                $mod = in_array($band, ['warn', 'danger', 'info'], true) ? $band : 'warn';
+                $pill_html = "<span class='sr-wn-pill sr-wn-pill--" . $mod . "'><span class='sr-wn-pill__dot'></span>"
+                    . $escaper->escapeHtml($pill) . "</span>";
+            }
+
+            // Optional second pill (e.g. a severity pill alongside a status pill),
+            // rendered to the right of the first inside the row link.
+            $pill2_html = '';
+            if (!empty($item['pill2'])) {
+                $band2 = (string)($item['band2'] ?? 'warn');
+                $pill2 = (string)$item['pill2'];
+                if ($band2 === 'level') {
+                    $color2 = $escaper->escapeCssColor($item['color2'] ?? 'transparent');
+                    $pill2_html = "<span class='sr-wn-level' style='background-color:" . $color2 . "'>"
+                        . $escaper->escapeHtml($pill2) . "</span>";
+                } else {
+                    $mod2 = in_array($band2, ['warn', 'danger', 'info'], true) ? $band2 : 'warn';
+                    $pill2_html = "<span class='sr-wn-pill sr-wn-pill--" . $mod2 . "'><span class='sr-wn-pill__dot'></span>"
+                        . $escaper->escapeHtml($pill2) . "</span>";
+                }
+            }
+
+            // Trailing action icon, rendered OUTSIDE the row link and in a slot
+            // that is ALWAYS present (even when empty) so the day chips line up in
+            // a fixed column across every row:
+            //   - 'run' + audit_id → green "Go to Test": navigates to the existing
+            //     open audit (never starts a duplicate).
+            //   - 'run' + test_id  → "Start the Test": creates a new audit record
+            //     + opens it.
+            //   - 'auto'           → non-clickable "Test Starts Automatically" icon.
+            $action_inner = '';
+            $action = $item['action'] ?? null;
+            if (is_array($action)) {
+                $atype     = $action['type'] ?? '';
+                $title_attr = $escaper->escapeHtmlAttr((string) ($action['title'] ?? ''));
+                $title_txt  = $escaper->escapeHtml((string) ($action['title'] ?? ''));
+                if ($atype === 'run') {
+                    // Existing audit → green "goto" variant with a go-to (arrow)
+                    // icon; otherwise the neutral initiate variant with a play icon.
+                    $is_goto   = isset($action['audit_id']);
+                    $run_class = 'sr-wn-run' . ($is_goto ? ' sr-wn-run--goto' : '');
+                    $run_icon  = $is_goto ? 'fa-arrow-right' : 'fa-play';
+                    $data_attr = $is_goto
+                        ? " data-audit-id='" . (int) $action['audit_id'] . "'"
+                        : (isset($action['test_id']) ? " data-test-id='" . (int) $action['test_id'] . "'" : '');
+                    $action_inner = "<button type='button' class='{$run_class}' title='{$title_attr}'{$data_attr}>"
+                        . "<i class='fas {$run_icon}' aria-hidden='true'></i>"
+                        . "<span class='visually-hidden'>{$title_txt}</span></button>";
+                } elseif ($atype === 'auto') {
+                    $action_inner = "<span class='sr-wn-auto' title='{$title_attr}'>"
+                        . "<i class='fas fa-robot' aria-hidden='true'></i>"
+                        . "<span class='visually-hidden'>{$title_txt}</span></span>";
+                }
+            }
+
+            // Optional muted control sub-label under the name (e.g. which control a
+            // test covers). Falls back to a plain single-line name when absent.
+            if (!empty($item['context'])) {
+                $name_html = "<span class='sr-whatsnext__namewrap'>"
+                    . "<span class='sr-whatsnext__text'>" . $escaper->escapeHtml($name) . "</span>"
+                    . "<span class='sr-whatsnext__context'>" . $escaper->escapeHtml((string) $item['context']) . "</span>"
+                    . "</span>";
+            } else {
+                $name_html = "<span class='sr-whatsnext__text'>" . $escaper->escapeHtml($name) . "</span>";
+            }
+
+            echo "
+                <li class='sr-whatsnext__item'>
+                    <a href='" . $escaper->escapeHtmlAttr($href) . "'>
+                        " . $name_html . "
+                        " . $pill_html . "
+                        " . $pill2_html . "
+                    </a>
+                    <span class='sr-wn-action'>" . $action_inner . "</span>
+                </li>
+            ";
+        }
+        echo "</ul>";
+    }
+
+    echo   "</div>";
+    echo "</div>";
+}
+
+/*******************************************************************************
+ * GETTING STARTED WIDGET (home dashboard onboarding)                           *
+ * One card per granular permission the user holds; completion derived live;    *
+ * only dismissals persisted (getting_started_dismissed). Distinct from What's  *
+ * Next (running work) — this teaches first actions and gets out of the way.    *
+ * Spec: docs/superpowers/specs/2026-07-13-getting-started-widget.md            *
+ *******************************************************************************/
+
+// Ordering buckets, most-onboarding-first.
+function getting_started_area_order() {
+    // 'ai' is its own bucket at the end so "Configure AI" is always the last step
+    // (after Register / Load SCF / Invite and all the practitioner actions).
+    return ['setup', 'risk', 'compliance', 'assets', 'ai'];
+}
+
+// The step catalog — the server-side source of truth. Adding a step here is all
+// it takes; the client never invents steps. 'gate' is the granular permission
+// the step needs; 'cta' is relative to /reports/ (where home renders).
+function getting_started_catalog() {
+    // Each card's "Learn more" is routed through simplerisk.com/support/<topic> so
+    // the targets can be redirected later without an app change.
+    return [
+        'register'         => ['area'=>'setup',      'gate'=>'admin',            'cta'=>'../admin/register.php',                       'title'=>'GSRegisterTitle',      'desc'=>'GSRegisterDesc',      'cta_label'=>'GSRegisterCta',      'doc'=>'https://www.simplerisk.com/support/admin-guide/register'],
+        // SCF is a two-step onboarding pipeline: first Install (download the extra
+        // files from the Register/Upgrade page), then Activate (turn it on from the
+        // SCF admin page). Each step's visibility gate opens only in its window.
+        'install_scf'      => ['area'=>'setup',      'gate'=>'admin',            'cta'=>'../admin/register.php',                       'title'=>'GSScfTitle',           'desc'=>'GSScfDesc',           'cta_label'=>'GSScfCta',           'doc'=>'https://www.simplerisk.com/support/scf'],
+        'activate_scf'     => ['area'=>'setup',      'gate'=>'admin',            'cta'=>'../admin/securecontrolsframework.php',        'title'=>'GSActivateScfTitle',   'desc'=>'GSActivateScfDesc',   'cta_label'=>'GSActivateScfCta',   'doc'=>'https://www.simplerisk.com/support/scf'],
+        // Final SCF step: with the extra active, enable the frameworks that apply.
+        'enable_frameworks'=> ['area'=>'setup',      'gate'=>'admin',            'cta'=>'../admin/securecontrolsframework.php',        'title'=>'GSEnableFrameworksTitle','desc'=>'GSEnableFrameworksDesc','cta_label'=>'GSEnableFrameworksCta','doc'=>'https://www.simplerisk.com/support/scf'],
+        // With the SCF active, take a self-assessment against a framework (generates
+        // risks from failed controls). Gated on the 'assessments' permission.
+        'self_assessment'  => ['area'=>'setup',      'gate'=>'assessments',      'cta'=>'../assessments/index.php',                    'title'=>'GSSelfAssessTitle',    'desc'=>'GSSelfAssessDesc',    'cta_label'=>'GSSelfAssessCta',    'doc'=>'https://www.simplerisk.com/support/self-assessment'],
+        'invite'           => ['area'=>'setup',      'gate'=>'admin',            'cta'=>'../admin/user_management.php',                 'title'=>'GSInviteTitle',        'desc'=>'GSInviteDesc',        'cta_label'=>'GSInviteCta',        'doc'=>'https://www.simplerisk.com/support/users'],
+        'submit_risks'     => ['area'=>'risk',       'gate'=>'submit_risks',     'cta'=>'../management/index.php',                     'title'=>'GSSubmitRiskTitle',    'desc'=>'GSSubmitRiskDesc',    'cta_label'=>'GSSubmitRiskCta',    'doc'=>'https://www.simplerisk.com/support/risk'],
+        'plan_mitigations' => ['area'=>'risk',       'gate'=>'plan_mitigations', 'cta'=>'../management/plan_mitigations.php',          'title'=>'GSMitigateTitle',      'desc'=>'GSMitigateDesc',      'cta_label'=>'GSMitigateCta',      'doc'=>'https://www.simplerisk.com/support/mitigation'],
+        'risk_review'      => ['area'=>'risk',       'gate'=>'review_any',       'cta'=>'../management/management_review.php',         'title'=>'GSReviewTitle',        'desc'=>'GSReviewDesc',        'cta_label'=>'GSReviewCta',        'doc'=>'https://www.simplerisk.com/support/review'],
+        'define_tests'     => ['area'=>'compliance', 'gate'=>'define_tests',     'cta'=>'../compliance/index.php',                     'title'=>'GSDefineTestTitle',    'desc'=>'GSDefineTestDesc',    'cta_label'=>'GSDefineTestCta',    'doc'=>'https://www.simplerisk.com/support/test'],
+        'initiate_audits'  => ['area'=>'compliance', 'gate'=>'initiate_audits',  'cta'=>'../compliance/audit_initiation.php',          'title'=>'GSInitiateAuditTitle', 'desc'=>'GSInitiateAuditDesc', 'cta_label'=>'GSInitiateAuditCta', 'doc'=>'https://www.simplerisk.com/support/audit'],
+        'asset'            => ['area'=>'assets',     'gate'=>'asset',            'cta'=>'../assets/index.php',                         'title'=>'GSAssetTitle',         'desc'=>'GSAssetDesc',         'cta_label'=>'GSAssetCta',         'doc'=>'https://www.simplerisk.com/support/assets'],
+        // Configure AI is intentionally last (its own 'ai' area, ordered after
+        // everything else).
+        'ai'               => ['area'=>'ai',         'gate'=>'admin',            'cta'=>'../admin/artificial_intelligence_core.php',   'title'=>'GSAiTitle',            'desc'=>'GSAiDesc',            'cta_label'=>'GSAiCta',            'doc'=>'https://www.simplerisk.com/support/ai'],
+    ];
+}
+
+// Does the current user hold the permission a step requires?
+function getting_started_step_gated($gate) {
+    if ($gate === 'admin') return is_admin();
+    if ($gate === 'review_any') {
+        foreach (['review_veryhigh','review_high','review_medium','review_low','review_insignificant'] as $p) {
+            if (check_permission($p)) return true;
+        }
+        return false;
+    }
+    return check_permission($gate);
+}
+
+// Guarded COUNT(*) — returns 0 if the table is absent, so a missing core/extra
+// table degrades to "not done" rather than fataling.
+function getting_started_count($db, $table, $sql, $params = []) {
+    if (!table_exists($table)) return 0;
+    $stmt = $db->prepare($sql);
+    $stmt->execute($params);
+    return (int)$stmt->fetchColumn();
+}
+
+// Derived completion — computed live from existing data, never stored. Per-user
+// where a creator column exists (risks.submitted_by, mgmt_reviews.reviewer);
+// instance-wide "any exist" otherwise (spec decision 2).
+function getting_started_step_complete($key, $db, $uid) {
+    switch ($key) {
+        case 'register':         return get_setting('registration_registered') == 1;
+        // Install = the SCF extra's code files are present (downloaded from the
+        // Register/Upgrade page). is_extra_installed() checks exactly that.
+        case 'install_scf':      return is_extra_installed('complianceforgescf');
+        // Activate = the installed extra has been turned on. complianceforge_scf_extra()
+        // is the activation predicate (the SCF admin page's Activate button sets it).
+        case 'activate_scf':     return function_exists('complianceforge_scf_extra') && complianceforge_scf_extra();
+        // Enable frameworks = at least one framework is active (status = 1).
+        case 'enable_frameworks': return getting_started_count($db, 'frameworks', "SELECT COUNT(*) FROM `frameworks` WHERE `status` = 1") > 0;
+        // Self-assessment = the user has started at least one self-assessment.
+        case 'self_assessment':  return getting_started_count($db, 'self_assessments', "SELECT COUNT(*) FROM `self_assessments` WHERE `started_by` = :uid", [':uid'=>$uid]) > 0;
+        case 'invite':           return getting_started_count($db, 'user', "SELECT COUNT(*) FROM `user` WHERE `enabled` = 1") > 1;
+        case 'ai':               return !empty(get_setting('ai_context_last_saved'));
+        case 'submit_risks':     return getting_started_count($db, 'risks', "SELECT COUNT(*) FROM `risks` WHERE `submitted_by` = :uid", [':uid'=>$uid]) > 0;
+        case 'plan_mitigations': return getting_started_count($db, 'mitigations', "SELECT COUNT(*) FROM `mitigations`") > 0;
+        case 'risk_review':      return getting_started_count($db, 'mgmt_reviews', "SELECT COUNT(*) FROM `mgmt_reviews` WHERE `reviewer` = :uid", [':uid'=>$uid]) > 0;
+        case 'define_tests':     return getting_started_count($db, 'framework_control_tests', "SELECT COUNT(*) FROM `framework_control_tests`") > 0;
+        case 'initiate_audits':  return getting_started_count($db, 'framework_control_test_audits', "SELECT COUNT(*) FROM `framework_control_test_audits`") > 0;
+        case 'asset':            return getting_started_count($db, 'assets', "SELECT COUNT(*) FROM `assets`") > 0;
+        default:                 return false;
+    }
+}
+
+// Extra "is there work for this step right now" gate. Only risk_review uses it:
+// show the teach-once review card only while an open risk actually awaits review
+// (team-scoped). v1 approximates "a reviewable risk exists" with the team-scoped
+// unreviewed-open count; an exact per-level match is a documented fast-follow.
+function getting_started_step_visible($key, $db, $uid) {
+    // Install the SCF: only downloadable once the instance is registered, and
+    // only worth showing until the extra's files are present.
+    if ($key === 'install_scf') return get_setting('registration_registered') == 1 && !is_extra_installed('complianceforgescf');
+    // Activate the SCF: only shows once the extra is installed but not yet active.
+    if ($key === 'activate_scf') return is_extra_installed('complianceforgescf') && !(function_exists('complianceforge_scf_extra') && complianceforge_scf_extra());
+    // Enable applicable frameworks: only worth showing once the SCF is active.
+    if ($key === 'enable_frameworks') return function_exists('complianceforge_scf_extra') && complianceforge_scf_extra();
+    // Take a self-assessment: only once the SCF is active and its control data is
+    // present (the same prerequisite the Self-Assessments page enforces).
+    if ($key === 'self_assessment') return get_setting('registration_registered') == 1
+        && function_exists('complianceforge_scf_extra') && complianceforge_scf_extra()
+        && table_exists('scf_controls') && table_exists('scf_frameworks');
+    // Show the teach-once review card only while an open risk actually awaits review.
+    if ($key === 'risk_review') return get_unreviewed_open_risk_count() > 0;
+    return true;
+}
+
+// The current user's dismissed step keys (empty if the table isn't present yet,
+// so the widget works before the migration runs).
+function getting_started_dismissed_keys($db, $uid) {
+    if (!table_exists('getting_started_dismissed')) return [];
+    $stmt = $db->prepare("SELECT `step_key` FROM `getting_started_dismissed` WHERE `user_id` = :uid");
+    $stmt->execute([':uid'=>$uid]);
+    return $stmt->fetchAll(PDO::FETCH_COLUMN) ?: [];
+}
+
+// Dismiss a step for a user (idempotent; the PK makes a repeat a no-op refresh).
+function getting_started_dismiss($db, $uid, $step_key) {
+    if (!table_exists('getting_started_dismissed')) return;
+    $stmt = $db->prepare("
+        INSERT INTO `getting_started_dismissed` (`user_id`, `step_key`)
+        VALUES (:uid, :key)
+        ON DUPLICATE KEY UPDATE `dismissed` = CURRENT_TIMESTAMP
+    ");
+    $stmt->execute([':uid'=>$uid, ':key'=>$step_key]);
+}
+
+// Restore (un-dismiss) a step for a user; a no-op if it wasn't dismissed.
+function getting_started_restore($db, $uid, $step_key) {
+    if (!table_exists('getting_started_dismissed')) return;
+    $stmt = $db->prepare("DELETE FROM `getting_started_dismissed` WHERE `user_id` = :uid AND `step_key` = :key");
+    $stmt->execute([':uid'=>$uid, ':key'=>$step_key]);
+}
+
+// Assemble the widget state for the current user: the open (actionable) steps in
+// area order, plus done/held counts for the progress bar. Filter order is
+// gate → dismiss → visibility → completion; done steps fall off (counted, not shown).
+function get_getting_started_state($uid = null) {
+    $db = db_open();
+    $uid = $uid ?? ($_SESSION['uid'] ?? 0);
+
+    $dismissed = getting_started_dismissed_keys($db, $uid);
+    $order = array_flip(getting_started_area_order());
+
+    $open = [];
+    $held = 0; $done = 0;
+    foreach (getting_started_catalog() as $key => $def) {
+        if (!getting_started_step_gated($def['gate'])) continue;                        // permission
+        if (in_array($key, $dismissed, true)) continue;                                 // dismissed
+        $is_done = getting_started_step_complete($key, $db, $uid);
+        if (!$is_done && !getting_started_step_visible($key, $db, $uid)) continue;       // no work yet
+        $held++;
+        if ($is_done) { $done++; continue; }                                            // done → falls off
+        $open[] = ['key'=>$key] + $def;
+    }
+    db_close($db);
+
+    usort($open, function($a, $b) use ($order) {
+        return ($order[$a['area']] ?? 99) <=> ($order[$b['area']] ?? 99);
+    });
+
+    return ['open'=>$open, 'held'=>$held, 'done'=>$done];
+}
+
+// Permission-aware "Explore" section links (icon chips) for the widget footer.
+function getting_started_explore_links() {
+    $links = [];
+    if (check_permission('riskmanagement')) $links[] = ['label'=>'RiskManagement',  'url'=>'../management/index.php',  'icon'=>'fa-solid fa-triangle-exclamation'];
+    if (check_permission('compliance'))     $links[] = ['label'=>'Compliance',      'url'=>'../compliance/index.php',  'icon'=>'fa-solid fa-clipboard-check'];
+    if (check_permission('governance'))     $links[] = ['label'=>'Governance',      'url'=>'../governance/index.php',  'icon'=>'fa-solid fa-scale-balanced'];
+    if (check_permission('asset'))          $links[] = ['label'=>'AssetManagement', 'url'=>'../assets/index.php',      'icon'=>'fa-solid fa-server'];
+    return $links;
+}
+
+// Render the Getting Started widget HTML (echoed, matching the other widgets).
+// The server renders every open card; the client caps the display to 3 with a
+// "Show more" toggle and rotates the next card in when one is dismissed.
+function render_getting_started_widget() {
+    global $lang, $escaper;
+    $L = function($k) use ($lang) { return $lang[$k] ?? $k; };
+
+    $state = get_getting_started_state();
+    $open = $state['open']; $held = $state['held']; $done = $state['done'];
+
+    // All applicable steps complete → tell the client to remove + persist (decision 4).
+    $complete_flag = ($held > 0 && empty($open)) ? " data-gs-complete='1'" : "";
+
+    echo "<div class='sr-widget sr-gs' data-gs-widget" . $complete_flag . ">";
+
+    // No standalone hide control: the widget is removed like any other tile via
+    // Edit Layout (and re-added from the picker's "General" group), so there's a
+    // single, recoverable removal path. It also self-removes once every applicable
+    // step is complete.
+
+    echo "<div class='sr-gs__head'>";
+    echo   "<span class='sr-gs__ico'><i class='fa-solid fa-rocket'></i></span>";
+    echo   "<span class='sr-gs__htext'>"
+         . "<span class='sr-gs__title'>" . $escaper->escapeHtml($L('GettingStartedTitle')) . "</span>"
+         . "<span class='sr-gs__sub'>" . $escaper->escapeHtml($L('GettingStartedSubtitle')) . "</span>"
+         . "</span>";
+    if ($held > 0) {
+        $pct = (int)round($done / $held * 100);
+        $count_txt = str_replace(['{done}', '{total}'], [$done, $held], $L('GSProgressCount'));
+        echo "<span class='sr-gs__progress'>"
+           . "<span class='sr-gs__count'>" . $escaper->escapeHtml($count_txt) . "</span>"
+           . "<span class='sr-gs__bar'><i style='width:" . $pct . "%'></i></span>"
+           . "</span>";
+    }
+    echo "</div>";
+
+    if (!empty($open)) {
+        echo "<div class='sr-gs__cards'>";
+        $i = 0;
+        foreach ($open as $card) {
+            $is_next   = ($i === 0);
+            $state_cls = $is_next ? ' sr-gs__card--next' : '';
+            $eyebrow   = $is_next ? $L('GSNextUp') : $L('GSArea_' . $card['area']);
+            $cta_cls   = $is_next ? 'sr-gs__cta--primary' : 'sr-gs__cta--ghost';
+            echo "<div class='sr-gs__card" . $state_cls . "'>";
+            echo   "<button type='button' class='sr-gs__x' data-gs-dismiss='" . $escaper->escapeHtmlAttr($card['key']) . "' title='" . $escaper->escapeHtmlAttr($L('GSDismissStep')) . "' aria-label='" . $escaper->escapeHtmlAttr($L('GSDismissStep')) . "'>&#10005;</button>";
+            echo   "<div class='sr-gs__card-top'><span class='sr-gs__mark'></span><span class='sr-gs__eyebrow'>" . $escaper->escapeHtml($eyebrow) . "</span></div>";
+            echo   "<div class='sr-gs__card-title'>" . $escaper->escapeHtml($L($card['title'])) . "</div>";
+            echo   "<div class='sr-gs__card-desc'>" . $escaper->escapeHtml($L($card['desc'])) . "</div>";
+            echo   "<div class='sr-gs__actions'>";
+            echo     "<a class='sr-gs__cta " . $cta_cls . "' href='" . $escaper->escapeHtmlAttr($card['cta']) . "'>" . $escaper->escapeHtml($L($card['cta_label'])) . "</a>";
+            echo     "<a class='sr-gs__doc' href='" . $escaper->escapeHtmlAttr($card['doc']) . "' target='_blank' rel='noopener'>" . $escaper->escapeHtml($L('LearnMore')) . " &#8599;</a>";
+            echo   "</div>";
+            echo "</div>";
+            $i++;
+        }
+        echo "</div>";
+        echo "<div class='sr-gs__more' data-gs-more></div>";
+    } elseif ($held > 0) {
+        echo "<div class='sr-gs__done'>" . $escaper->escapeHtml($L('GSAllSet')) . "</div>";
+    }
+
+    // A small link-chip: icon + label. $icon is a constant FontAwesome class,
+    // $external adds new-tab attrs.
+    $chip = function($url, $icon, $label, $external = false) use ($escaper) {
+        $attrs = $external ? " target='_blank' rel='noopener'" : "";
+        return "<a class='sr-gs__link' href='" . $escaper->escapeHtmlAttr($url) . "'" . $attrs . ">"
+             . "<i class='" . $escaper->escapeHtmlAttr($icon) . "'></i>" . $escaper->escapeHtml($label) . "</a>";
+    };
+
+    echo "<div class='sr-gs__foot'>";
+    $explore = getting_started_explore_links();
+    if (!empty($explore)) {
+        echo "<div class='sr-gs__foot-group'>";
+        echo   "<span class='sr-gs__foot-label'>" . $escaper->escapeHtml($L('Explore')) . "</span>";
+        echo   "<div class='sr-gs__foot-chips'>";
+        foreach ($explore as $x) {
+            echo $chip($x['url'], $x['icon'], $L($x['label']));
+        }
+        echo   "</div>";
+        echo "</div>";
+    }
+    echo "<div class='sr-gs__foot-group'>";
+    echo   "<span class='sr-gs__foot-label'>" . $escaper->escapeHtml($L('Learn')) . "</span>";
+    echo   "<div class='sr-gs__foot-chips'>";
+    echo     $chip('https://www.simplerisk.com/support/user-guide', 'fa-solid fa-book', $L('UserGuide'), true);
+    if (is_admin()) {
+        echo $chip('https://www.simplerisk.com/support/admin-guide', 'fa-solid fa-screwdriver-wrench', $L('AdminGuide'), true);
+    }
+    echo     $chip('https://www.simplerisk.com/support/video-walkthrough', 'fa-solid fa-circle-play', $L('GSWalkthrough'), true);
+    echo   "</div>";
+    echo "</div>";
+    echo "</div>";
+
+    echo "</div>";
+}
+
+// Top open risks by inherent score (team-separation aware) → list items with the
+// risk's configured level as a solid severity pill.
+function get_home_highest_risks_items($limit = 6)
+{
+    [$sep_from, $sep_where] = home_risk_separation_sql();
+
+    $db = db_open();
+    $stmt = $db->prepare("
+        SELECT rsk.id, rsk.subject, scoring.calculated_risk
+        FROM risks rsk
+        INNER JOIN risk_scoring scoring ON rsk.id = scoring.id
+        {$sep_from}
+        WHERE rsk.status != 'Closed'
+        {$sep_where}
+        GROUP BY rsk.id
+        ORDER BY scoring.calculated_risk DESC
+        LIMIT " . (int) $limit . "
+    ");
+    $stmt->execute();
+    $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    db_close($db);
+
+    // Configured level display name + colour.
+    $levels = [];
+    foreach (get_risk_levels() as $rl) {
+        $levels[$rl['name']] = ['display' => $rl['display_name'], 'color' => $rl['color']];
+    }
+
+    $items = [];
+    foreach ($rows as $r) {
+        $level_name = get_risk_level_name($r['calculated_risk']);
+        $has_level  = ($level_name !== '' && isset($levels[$level_name]));
+        $items[] = [
+            'name'  => $r['subject'],
+            'href'  => '../management/view.php?id=' . convert_to_risk_id($r['id']),
+            'pill'  => $has_level ? $levels[$level_name]['display'] : ($level_name !== '' ? $level_name : '—'),
+            'band'  => 'level',
+            'color' => $has_level && $levels[$level_name]['color'] !== '' ? $levels[$level_name]['color'] : '#a1aab2',
+        ];
+    }
+    return $items;
+}
+
+// Open risks whose latest management review is past its next-review date
+// (team-separation aware) → list items with a days-overdue danger pill.
+function get_home_pastdue_reviews_items($limit = 6)
+{
+    [$sep_from, $sep_where] = home_risk_separation_sql();
+
+    $db = db_open();
+    $stmt = $db->prepare("
+        SELECT rsk.id, rsk.subject, mr.next_review
+        FROM risks rsk
+        INNER JOIN mgmt_reviews mr ON mr.id = (
+            SELECT MAX(mr2.id) FROM mgmt_reviews mr2 WHERE mr2.risk_id = rsk.id
+        )
+        {$sep_from}
+        WHERE rsk.status != 'Closed'
+        AND mr.next_review IS NOT NULL
+        AND mr.next_review != '0000-00-00'
+        AND mr.next_review < CURDATE()
+        {$sep_where}
+        ORDER BY mr.next_review ASC
+        LIMIT " . (int) $limit . "
+    ");
+    $stmt->execute();
+    $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    db_close($db);
+
+    $items = [];
+    foreach ($rows as $r) {
+        $days = (int) floor((time() - strtotime($r['next_review'] . ' 00:00:00')) / 86400);
+        $items[] = [
+            'name' => $r['subject'],
+            'href' => '../management/view.php?id=' . convert_to_risk_id($r['id']) . '&type=2&action=editreview#review',
+            'pill' => $days . 'd',
+            'band' => 'danger',
+        ];
+    }
+    return $items;
+}
+
+// Open risks with no management review yet → list items with an age (days since
+// submission) warn pill, oldest first (longest-waiting). Team-scoped. Mirrors the
+// "unreviewed" definition in get_unreviewed_open_risk_count() (mgmt_review = 0).
+// Sibling of get_home_pastdue_reviews_items(): past-due = overdue reviews (red),
+// unreviewed = never-reviewed (amber).
+function get_home_unreviewed_items($limit = 6)
+{
+    [$sep_from, $sep_where] = home_risk_separation_sql();
+
+    $db = db_open();
+    $stmt = $db->prepare("
+        SELECT DISTINCT rsk.id, rsk.subject, rsk.submission_date
+        FROM risks rsk
+        {$sep_from}
+        WHERE rsk.status != 'Closed'
+        AND rsk.mgmt_review = 0
+        {$sep_where}
+        ORDER BY rsk.submission_date ASC
+        LIMIT " . (int) $limit . "
+    ");
+    $stmt->execute();
+    $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    db_close($db);
+
+    $items = [];
+    foreach ($rows as $r) {
+        $days = (int) floor((time() - strtotime($r['submission_date'])) / 86400);
+        $items[] = [
+            'name' => $r['subject'],
+            'href' => '../management/view.php?id=' . convert_to_risk_id($r['id']) . '&type=2&action=editreview#review',
+            'pill' => $days . 'd',
+            'band' => 'warn',
+        ];
+    }
+    return $items;
+}
+
+// Upcoming/overdue control TESTS (definitions), soonest first, with their
+// initiation state so each row is actionable:
+//   - an audit is already open for the test  → link to it (go perform it)
+//   - the test auto-initiates                → an "Auto" badge (the cron starts it)
+//   - manual, not started, user may initiate → a one-click "Start" action
+//     (initiates the audit and opens it; gated on the initiate_audits permission)
+// Overdue definitions get a red "days late" pill; upcoming ones an amber pill.
+// Framework-scoped; team-scoped to the tests the user may access when the Team
+// Separation extra is active.
+function get_home_upcoming_tests_items($limit = 6, $framework_ids = null)
+{
+    global $lang;
+
+    // [] = explicit empty framework selection → nothing in scope.
+    if ($framework_ids !== null && empty($framework_ids)) {
+        return [];
+    }
+
+    // Optional framework scope: only tests whose control maps to one of the
+    // selected frameworks. Null (e.g. the Home dashboard, no selector) = all.
+    $fw_join = $fw_clause = '';
+    $params = [];
+    if (!empty($framework_ids)) {
+        $ph = implode(',', array_fill(0, count($framework_ids), '?'));
+        $fw_join = "INNER JOIN framework_control_mappings fcm ON fcm.control_id = fc.id
+                    INNER JOIN frameworks f ON fcm.framework = f.value AND f.status = 1";
+        $fw_clause = "AND f.value IN ({$ph})";
+        $params = array_values($framework_ids);
+    }
+
+    // Team Separation (optional): restrict to the tests the user may access.
+    $team_clause = '';
+    if (team_separation_extra()) {
+        require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
+        if (!should_skip_test_and_audit_permission_check()) {
+            $access = get_compliance_separation_access_info();
+            $accessible = $access['framework_control_tests'] ?? [];
+            if (empty($accessible)) {
+                return [];
+            }
+            $tph = implode(',', array_fill(0, count($accessible), '?'));
+            $team_clause = "AND t.id IN ({$tph})";
+            $params = array_merge($params, array_map('intval', $accessible));
+        }
+    }
+
+    // A control test status matching this setting means the audit is closed; any
+    // other status is an in-progress ("open") audit. Cast to int — it's a trusted
+    // config value inlined into the correlated subquery.
+    $closed_status = (int) get_setting('closed_audit_status');
+
+    $db = db_open();
+    // No CURDATE() lower bound — include overdue tests. ORDER BY next_date ASC
+    // puts the most overdue first, so the urgent ones win the limited slots.
+    $stmt = $db->prepare("
+        SELECT DISTINCT t.id AS test_id, t.name, t.next_date,
+               fc.short_name AS control_short_name,
+               (t.audit_initiation_offset IS NOT NULL) AS auto_initiate,
+               (SELECT ta.id FROM framework_control_test_audits ta
+                  WHERE ta.test_id = t.id AND ta.status <> {$closed_status}
+                  ORDER BY ta.id DESC LIMIT 1) AS open_audit_id
+        FROM framework_control_tests t
+        INNER JOIN framework_controls fc ON t.framework_control_id = fc.id AND fc.deleted = 0
+        {$fw_join}
+        WHERE t.next_date IS NOT NULL
+        AND t.next_date != '0000-00-00'
+        {$fw_clause}
+        {$team_clause}
+        ORDER BY t.next_date ASC
+        LIMIT " . (int) $limit . "
+    ");
+    $stmt->execute($params);
+    $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    db_close($db);
+
+    // The one-click Start action is only offered to users who may initiate audits.
+    $can_initiate = (($_SESSION['initiate_audits'] ?? 0) == 1);
+
+    $items = [];
+    foreach ($rows as $r) {
+        $days = (int) floor((strtotime($r['next_date'] . ' 00:00:00') - time()) / 86400);
+        $item = [
+            'name' => (string) ($r['name'] ?? ''),
+            // The control the test belongs to, shown as a muted sub-label so the
+            // row says which control (e.g. "CRY-05: …") the test covers.
+            'context' => (string) ($r['control_short_name'] ?? ''),
+            'pill' => ($days < 0 ? abs($days) : $days) . 'd',
+            'band' => $days < 0 ? 'danger' : 'warn',
+            // The name always links to the Define Tests page to edit the test entry
+            // itself (e.g. to set it to auto-initiate). The action icon handles
+            // running the test / going to its audit, so these never collide. The
+            // test_id is carried now for forward compatibility: Define Tests
+            // currently ignores it, but is slated to focus/open that test by id.
+            'href' => '../compliance/index.php?test_id=' . (int) $r['test_id'],
+        ];
+
+        if (!empty($r['open_audit_id'])) {
+            // An audit already exists — the icon goes straight to it (never starts
+            // a duplicate). Green "Go to Test"; viewing needs no initiate permission.
+            $item['action'] = [
+                'type'     => 'run',
+                'audit_id' => (int) $r['open_audit_id'],
+                'title'    => $lang['GoToTest'] ?? 'Go to Test',
+            ];
+        } elseif (!empty($r['auto_initiate'])) {
+            // The cron initiates this automatically near its due date — an
+            // informational (non-clickable) icon, no manual action.
+            $item['action'] = [
+                'type'  => 'auto',
+                'title' => $lang['TestStartsAutomatically'] ?? 'Test Starts Automatically',
+            ];
+        } elseif ($can_initiate) {
+            // Manual and not yet started — one-click run icon (initiate + open),
+            // only for users who may initiate audits.
+            $item['action'] = [
+                'type'    => 'run',
+                'test_id' => (int) $r['test_id'],
+                'title'   => $lang['StartTheTest'] ?? 'Start the Test',
+            ];
+        }
+        $items[] = $item;
+    }
+    return $items;
+}
+
+// Controls whose most recent test result is a failure → list items with a Fail
+// danger pill.
+function get_home_recent_failures_items($limit = 6, $framework_ids = null)
+{
+    global $lang;
+
+    // [] = explicit empty framework selection → nothing in scope.
+    if ($framework_ids !== null && empty($framework_ids)) {
+        return [];
+    }
+
+    // Optional framework scope: only controls mapped to one of the selected
+    // frameworks. Null (e.g. the Home dashboard, no selector) = all.
+    $fw_join = $fw_clause = '';
+    $params = [];
+    if (!empty($framework_ids)) {
+        $ph = implode(',', array_fill(0, count($framework_ids), '?'));
+        $fw_join = "INNER JOIN framework_control_mappings fcm ON fcm.control_id = fc.id
+                    INNER JOIN frameworks f ON fcm.framework = f.value AND f.status = 1";
+        $fw_clause = "AND f.value IN ({$ph})";
+        $params = array_values($framework_ids);
+    }
+
+    // Team Separation (optional): only audits the user is allowed to access. When
+    // active we over-fetch and filter in PHP so the ACL doesn't shrink the list
+    // below the requested count. Mirrors home_risk_separation_sql()'s load pattern.
+    $separation = team_separation_extra();
+    $skip_separation = true;
+    if ($separation) {
+        require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
+        $skip_separation = should_skip_test_and_audit_permission_check();
+    }
+    $fetch_limit = ($separation && !$skip_separation) ? max(100, (int) $limit) : (int) $limit;
+
+    $db = db_open();
+    // Carry the audit id + status of the latest failing result so we can deep-link
+    // to that specific audit (view_test.php when closed, testing.php when open).
+    $stmt = $db->prepare("
+        SELECT fc.id, fc.short_name, latest.submission_date, latest.audit_id, latest.audit_status, latest.audit_approval_state
+        FROM framework_controls fc
+        INNER JOIN (
+            SELECT acm.framework_control_id, ta.id AS audit_id, ta.status AS audit_status,
+                   ta.approval_state AS audit_approval_state, tr.test_result, tr.submission_date
+            FROM audit_control_map acm
+            INNER JOIN framework_control_test_audits ta ON ta.id = acm.audit_id
+            INNER JOIN framework_control_test_results tr ON ta.id = tr.test_audit_id
+            WHERE tr.submission_date = (
+                SELECT MAX(tr2.submission_date)
+                FROM audit_control_map acm2
+                INNER JOIN framework_control_test_audits ta2 ON ta2.id = acm2.audit_id
+                INNER JOIN framework_control_test_results tr2 ON ta2.id = tr2.test_audit_id
+                WHERE acm2.framework_control_id = acm.framework_control_id
+            )
+        ) latest ON fc.id = latest.framework_control_id
+        {$fw_join}
+        WHERE fc.deleted = 0 AND latest.test_result = 'Fail'
+        {$fw_clause}
+        GROUP BY fc.id
+        ORDER BY latest.submission_date DESC
+        LIMIT " . $fetch_limit . "
+    ");
+    $stmt->execute($params);
+    $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    db_close($db);
+
+    // A closed audit is one whose status matches the configured closed-audit
+    // status; those open in the read-only past view, active ones in the editor.
+    $closed_status = (string) get_setting('closed_audit_status');
+    $uid = (int) ($_SESSION['uid'] ?? 0);
+
+    $items = [];
+    foreach ($rows as $r) {
+        $audit_id = (int) $r['audit_id'];
+
+        // Hide audits the user isn't allowed to see (the deep-link target would
+        // redirect them anyway, but don't leak the control name/failure either).
+        if ($separation && !$skip_separation && !is_user_allowed_to_access($uid, $audit_id, 'audit')) {
+            continue;
+        }
+
+        // Which page an audit deep-links to -- read-only view_test.php only when
+        // it is BOTH closed and settled -- is one rule with three call sites, so
+        // it lives in one pure function rather than being restated here.
+        $page = audit_history_link_page($r['audit_status'], $r['audit_approval_state'] ?? 'none', $closed_status);
+        $items[] = [
+            'name' => $r['short_name'] ?? '',
+            'href' => '../compliance/' . $page . '?id=' . $audit_id,
+            'pill' => $lang['Fail'] ?? 'Fail',
+            'band' => 'danger',
+        ];
+
+        if (count($items) >= (int) $limit) {
+            break;
+        }
+    }
+    return $items;
+}
+
+// Controls currently failing (framework_controls.control_status = 0) → deep-linked
+// list items straight to the control in Governance. Note: unlike
+// get_home_recent_failures_items() above, controls are NOT team-scoped —
+// is_user_allowed_to_access() only supports 'test'/'audit' $type values, so
+// there is no per-row Team Separation filter here; the list reflects all
+// failing controls in the (optional) framework scope.
+function get_governance_failing_controls_items($limit = 6, $framework_ids = null)
+{
+    global $lang;
+
+    // [] = explicit empty framework selection → nothing in scope.
+    if ($framework_ids !== null && empty($framework_ids)) {
+        return [];
+    }
+
+    // Optional framework scope: only controls mapped to one of the selected
+    // frameworks. Null = all.
+    $fw_join = $fw_clause = '';
+    $params = [];
+    if (!empty($framework_ids)) {
+        $ph = implode(',', array_fill(0, count($framework_ids), '?'));
+        $fw_join = "INNER JOIN framework_control_mappings fcm ON fcm.control_id = fc.id
+                    INNER JOIN frameworks f ON fcm.framework = f.value AND f.status = 1";
+        $fw_clause = "AND f.value IN ({$ph})";
+        $params = array_values($framework_ids);
+    }
+
+    $db = db_open();
+    $stmt = $db->prepare("
+        SELECT DISTINCT fc.id, fc.short_name
+        FROM framework_controls fc
+        {$fw_join}
+        WHERE fc.deleted = 0 AND fc.control_status = 0
+        {$fw_clause}
+        ORDER BY fc.short_name ASC
+        LIMIT " . (int) $limit . "
+    ");
+    $stmt->execute($params);
+    $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    db_close($db);
+
+    $items = [];
+    foreach ($rows as $r) {
+        $cid = (int) $r['id'];
+        $items[] = [
+            'name' => $r['short_name'] ?? '',
+            'href' => '../governance/index.php?control_id=' . $cid,
+            'pill' => $lang['Fail'] ?? 'Fail',
+            'band' => 'danger',
+        ];
+    }
+    return $items;
+}
+
+// Documents whose next review date is overdue or approaching → list items with a
+// days pill (danger when overdue or within a week, warn otherwise).
+// $framework_ids: null = All Frameworks (unscoped, includes policies with no
+// framework link), [] = none selected (short-circuits to [] before any DB
+// call), [id,...] = only policies linked to one of those frameworks via
+// document_framework_mappings.
+function get_home_policies_review_items($limit = 6, $framework_ids = null)
+{
+    if ($framework_ids !== null && empty($framework_ids)) { return []; }
+    $db = db_open();
+    $fw_join = '';
+    $params = [];
+    if (!empty($framework_ids)) {
+        $ph = implode(',', array_fill(0, count($framework_ids), '?'));
+        $fw_join = "INNER JOIN `document_framework_mappings` dfm ON dfm.document_id = documents.id AND dfm.framework_id IN ({$ph})";
+        $params = array_values($framework_ids);
+    }
+    $stmt = $db->prepare("
+        SELECT DISTINCT documents.id, documents.document_name, documents.next_review_date
+        FROM documents
+        {$fw_join}
+        WHERE documents.next_review_date IS NOT NULL
+        AND documents.next_review_date != '0000-00-00'
+        AND documents.next_review_date <= DATE_ADD(CURDATE(), INTERVAL 60 DAY)
+        ORDER BY documents.next_review_date ASC
+        LIMIT " . (int) $limit . "
+    ");
+    $stmt->execute($params);
+    $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    db_close($db);
+
+    $items = [];
+    foreach ($rows as $r) {
+        $days = (int) floor((strtotime($r['next_review_date'] . ' 00:00:00') - time()) / 86400);
+        $items[] = [
+            'name' => $r['document_name'],
+            'href' => '../governance/documentation.php?document_id=' . (int) $r['id'],
+            'pill' => abs($days) . 'd',
+            'band' => $days <= 7 ? 'danger' : 'warn',
+        ];
+    }
+    return $items;
+}
+
+// Exceptions whose next review (expiry) date is overdue or approaching → list
+// items with a days pill (danger when overdue or within a week, warn otherwise).
+// $framework_ids: null = All Frameworks (unscoped, includes exceptions linked
+// to no framework), [] = none selected (short-circuits to [] before any DB
+// call), [id,...] = only exceptions linked to one of those frameworks via any
+// of the three exception→framework paths (see get_open_exceptions_count()).
+function get_home_expiring_exceptions_items($limit = 6, $framework_ids = null)
+{
+    if ($framework_ids !== null && empty($framework_ids)) { return []; }
+    $db = db_open();
+    $fw_clause = '';
+    $params = [];
+    if (!empty($framework_ids)) {
+        $ph = implode(',', array_fill(0, count($framework_ids), '?'));
+        $fw_clause = "AND (
+            de.framework_id IN ({$ph})
+            OR EXISTS (SELECT 1 FROM framework_control_mappings fcm WHERE fcm.control_id = de.control_framework_id AND fcm.framework IN ({$ph}))
+            OR EXISTS (SELECT 1 FROM document_framework_mappings dfm WHERE dfm.document_id = de.policy_document_id AND dfm.framework_id IN ({$ph}))
+        )";
+        $params = array_merge(array_values($framework_ids), array_values($framework_ids), array_values($framework_ids));
+    }
+    $stmt = $db->prepare("
+        SELECT DISTINCT de.value, de.name, de.next_review_date
+        FROM document_exceptions de
+        WHERE de.next_review_date IS NOT NULL
+        AND de.next_review_date != '0000-00-00'
+        AND de.next_review_date <= DATE_ADD(CURDATE(), INTERVAL 60 DAY)
+        {$fw_clause}
+        ORDER BY de.next_review_date ASC
+        LIMIT " . (int) $limit . "
+    ");
+    $stmt->execute($params);
+    $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    db_close($db);
+
+    $items = [];
+    foreach ($rows as $r) {
+        $days = (int) floor((strtotime($r['next_review_date'] . ' 00:00:00') - time()) / 86400);
+        $items[] = [
+            'name' => $r['name'],
+            'href' => '../governance/document_exceptions.php?exception_id=' . (int) $r['value'],
+            'pill' => abs($days) . 'd',
+            'band' => $days <= 7 ? 'danger' : 'warn',
+        ];
+    }
+    return $items;
+}
+
+/*****************************************
+ * FUNCTION: RENDER HOME RISK-BY-LEVEL   *
+ *****************************************/
+// Home dashboard widget: open (non-Closed) risks grouped by risk level as a bar
+// chart, each bar in that level's configured colour (risk_levels.color).
+// "Insignificant" — the implicit bucket below the Low threshold — has no
+// risk_levels row, so it gets a green default. Wrapped in the .sr-widget frame,
+// like the What's-Next widget.
+function render_home_risk_by_level_chart()
+{
+    global $lang, $escaper;
+
+    // Most-severe first. Names MUST match get_risk_count_of_risk_level()'s cases.
+    $levels = ['Very High', 'High', 'Medium', 'Low', 'Insignificant'];
+
+    // Configured display name + colour per level (risk_levels); Insignificant absent.
+    $configured = [];
+    foreach (get_risk_levels() as $rl) {
+        $configured[$rl['name']] = ['display' => $rl['display_name'], 'color' => $rl['color']];
+    }
+    // Fallbacks (design-system severity scale) when a level isn't configured.
+    $fallback_color = [
+        'Very High' => '#c0392b', 'High' => '#ed3139', 'Medium' => '#fb8c00',
+        'Low' => '#f0c419', 'Insignificant' => '#51A351',
+    ];
+
+    $labels = [];
+    $counts = [];
+    $colors = [];
+    $total  = 0;
+    foreach ($levels as $name) {
+        $labels[] = $configured[$name]['display'] ?? ($lang[str_replace(' ', '', $name)] ?? $name);
+        $count    = (int) get_risk_count_of_risk_level($name);
+        $counts[] = $count;
+        $total   += $count;
+        // escapeCssColor allow-lists hex / CSS keyword, else 'transparent'
+        $colors[] = $escaper->escapeCssColor($configured[$name]['color'] ?? $fallback_color[$name]);
+    }
+
+    echo "<div class='sr-widget'>";
+    echo   "<div class='sr-widget__head'>"
+         . "<span class='sr-widget__title'>" . $escaper->escapeHtml($lang['HomeChartRiskByLevel']) . "</span>"
+         . "<span class='sr-domain sr-widget__domain'>" . $escaper->escapeHtml($lang['Risk']) . "</span>"
+         . "</div>";
+    echo   "<div class='sr-widget__body sr-widget__body--chart'>";
+
+    if ($total === 0) {
+        echo "<div class='sr-whatsnext sr-whatsnext--empty'>"
+           . "<span class='sr-whatsnext__empty-title'>" . $escaper->escapeHtml($lang['NoDataAvailable']) . "</span>"
+           . "</div></div></div>";
+        return;
+    }
+
+    echo "<canvas id='home_risk_by_level'></canvas>";
+    echo   "</div>";
+    echo "</div>";
+
+    // Data is server-encoded via json_encode (safe JS embedding); colours are
+    // already allow-listed by escapeCssColor above.
+    $labels_json = json_encode(array_values($labels));
+    $counts_json = json_encode($counts); // already a sequential list (built via $counts[] = …)
+    $colors_json = json_encode(array_values($colors));
+
+    echo "
+        <script>
+            $(function() {
+                var el = document.getElementById('home_risk_by_level');
+                if (!el || typeof Chart === 'undefined') return;
+                new Chart(el.getContext('2d'), {
+                    type: 'bar',
+                    data: {
+                        labels: {$labels_json},
+                        datasets: [{
+                            data: {$counts_json},
+                            backgroundColor: {$colors_json},
+                            borderRadius: 4,
+                            maxBarThickness: 48
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: {
+                                displayColors: false,
+                                padding: 10,
+                                backgroundColor: 'rgba(58,58,58,.92)',
+                                titleFont: { family: 'Nunito Sans', weight: '700' },
+                                bodyFont: { family: 'Nunito Sans' }
+                            }
+                        },
+                        scales: {
+                            x: {
+                                grid: { display: false },
+                                ticks: { color: '#6c757d', font: { family: 'Nunito Sans', size: 12, weight: '600' } }
+                            },
+                            y: {
+                                beginAtZero: true,
+                                border: { display: false },
+                                ticks: { precision: 0, color: '#a1aab2', font: { family: 'Nunito Sans', size: 11 } },
+                                grid: { color: 'rgba(0,0,0,.05)' }
+                            }
+                        }
+                    }
+                });
+            });
+        </script>
+    ";
 }
 
 ?>

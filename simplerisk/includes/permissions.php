@@ -218,6 +218,7 @@ function get_possible_permissions() {
             'define_tests',
             'edit_tests',
             'delete_tests',
+            'approve_tests',
             'initiate_audits',
             'modify_audits',
             'reopen_audits',
@@ -361,22 +362,20 @@ function update_permissions($user_id, $permissions) {
             
             $permission_changes = [];
             if ($permissions_to_add) {
-                $permission_changes[] = _lang('PermissionUpdateAuditLogAdded', array('permissions_added' => get_names_by_multi_values('permissions', $permissions_to_add, false, ', ', true)), false);
+                $permission_changes[] = _lang_raw('PermissionUpdateAuditLogAdded', array('permissions_added' => get_names_by_multi_values('permissions', $permissions_to_add, false, ', ', true)));
             }
             if ($permissions_to_remove) {
-                $permission_changes[] = _lang('PermissionUpdateAuditLogRemoved', array('permissions_removed' => get_names_by_multi_values('permissions', $permissions_to_remove, false, ', ', true)), false);
+                $permission_changes[] = _lang_raw('PermissionUpdateAuditLogRemoved', array('permissions_removed' => get_names_by_multi_values('permissions', $permissions_to_remove, false, ', ', true)));
             }
             
-            $message = _lang('UserPermissionUpdateAuditLog',
+            $message = _lang_raw('UserPermissionUpdateAuditLog',
                 array(
                     'user' => isset($_SESSION['user']) ? $_SESSION['user'] : '', // because it can happen that this function is used by the custom authentication logic when there's no session yet
                     'username' => get_name_by_value("user", $user_id),
                     'permissions_from' => get_names_by_multi_values('permissions', $current_permissions, false, ', ', true),
                     'permissions_to' => get_names_by_multi_values('permissions', $permissions, false, ', ', true),
                     'permission_changes' => implode(", ", $permission_changes)
-                ),
-                false
-                );
+                ));
             
             write_log((int)$user_id + 1000, isset($_SESSION['uid']) ? $_SESSION['uid'] : 0, $message, 'user');
         }

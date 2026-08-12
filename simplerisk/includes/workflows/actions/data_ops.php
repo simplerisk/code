@@ -53,8 +53,8 @@ function workflow_action_http_request(array $inputs, array $context): array
     if ($target === null) {
         write_debug_log("WORKFLOW: http_request blocked a disallowed URL: {$url}", 'warning');
         // The error is rendered (escaped) in the workflow execution log, so store it
-        // raw via _lang(..., false) to avoid double-encoding at the display sink.
-        return ['status' => 'failed', 'output' => [], 'error' => _lang('WorkflowHttpRequestDisallowedURL', ['url' => $url], false)];
+        // raw via _lang_raw() to avoid double-encoding at the display sink.
+        return ['status' => 'failed', 'output' => [], 'error' => _lang_raw('WorkflowHttpRequestDisallowedURL', ['url' => $url])];
     }
 
     if ($dry_run)

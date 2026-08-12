@@ -14,12 +14,9 @@ use SimpleSAML\XMLSecurity\Constants as C;
  */
 abstract class AbstractXencElement extends AbstractElement
 {
-    /** @var string */
-    public const NS = C::NS_XENC;
+    public const string NS = C::NS_XENC;
 
-    /** @var string */
-    public const NS_PREFIX = 'xenc';
+    public const string NS_PREFIX = 'xenc';
 
-    /** @var string */
-    public const SCHEMA = 'resources/schemas/xenc-schema.xsd';
+    public const string SCHEMA = 'resources/schemas/xenc-schema.xsd';
 }

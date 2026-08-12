@@ -1,5 +1,6 @@
-<?php  
+<?php
 require_once(realpath(__DIR__ .'/header.php'));
+require_once(realpath(__DIR__ . '/includes/artificial_intelligence.php'));
 ?>
 <aside class="left-sidebar" data-sidebarbg="skin5">
     <!-- Sidebar scroll-->
@@ -13,6 +14,7 @@ require_once(realpath(__DIR__ .'/header.php'));
         if (check_permission("governance")){ 
     ?>
                     <a class="sidebar-link has-arrow waves-effect waves-dark <?= ($active_sidebar_menu =="Governance")?'active':''?>" href="javascript:void(0)" aria-expanded="false">
+                        <span class="sr-nav-ico"><i class="fas fa-landmark"></i></span>
                         <span class="hide-menu"><?=  $escaper->escapeHtml($lang['Governance']);?></span>
                     </a>
     <?php
@@ -42,6 +44,7 @@ require_once(realpath(__DIR__ .'/header.php'));
         if (check_permission("riskmanagement")){ 
     ?>
                     <a class="sidebar-link has-arrow waves-effect waves-dark <?= ($active_sidebar_menu =="RiskManagement")?'active':''?>" href="javascript:void(0)" aria-expanded="false">
+                        <span class="sr-nav-ico"><i class="fas fa-triangle-exclamation"></i></span>
                         <span class="hide-menu"><?= $escaper->escapeHtml($lang['RiskManagement']);?></span>
                     </a>
     <?php
@@ -86,6 +89,7 @@ require_once(realpath(__DIR__ .'/header.php'));
         // If the user has compliance permissions
         if (check_permission("compliance")){ ?>
                     <a class="sidebar-link has-arrow waves-effect waves-dark <?= ($active_sidebar_menu =="Compliance")?'active':''?>" href="javascript:void(0)" aria-expanded="false">
+                        <span class="sr-nav-ico"><i class="fas fa-clipboard-check"></i></span>
                         <span class="hide-menu"><?= $escaper->escapeHtml($lang['Compliance']);?></span>
                     </a>
     <?php
@@ -120,6 +124,7 @@ require_once(realpath(__DIR__ .'/header.php'));
         if(isset($_SESSION["asset"]) && $_SESSION["asset"] == "1") { 
     ?>
                     <a class="sidebar-link has-arrow waves-effect waves-dark" href="javascript:void(0)" aria-expanded="false">
+                        <span class="sr-nav-ico"><i class="fas fa-server"></i></span>
                         <span class="hide-menu"><?= $escaper->escapeHtml($lang['AssetManagement']);?></span>
                     </a>
     <?php
@@ -149,7 +154,8 @@ require_once(realpath(__DIR__ .'/header.php'));
     ?>
                 <li class="sidebar-item <?= ($active_sidebar_menu =="vm_vulnerabilities")?'selected':''; ?>">
                     <a class="sidebar-link has-arrow waves-effect waves-dark <?= ($active_sidebar_menu =="vm_vulnerabilities")?'active':''?>" href="javascript:void(0)" aria-expanded="false">
-                        <span class="hide-menu"><?= $escaper->escapeHtml($lang['VulnerabilityManagement']);?></span>
+                        <span class="sr-nav-ico"><i class="fas fa-bug"></i></span>
+                        <span class="hide-menu"><?= $escaper->escapeHtml($lang['Vulnerabilities']);?></span>
                     </a>
                     
                     <ul aria-expanded="false" class="collapse first-level <?= ($active_sidebar_menu =='vm_vulnerabilities')?'in':''; ?>">
@@ -177,7 +183,8 @@ require_once(realpath(__DIR__ .'/header.php'));
     ?>
                 <li class="sidebar-item <?= ($active_sidebar_menu =="IncidentManagement")?'selected':''; ?>">
                     <a class="sidebar-link has-arrow waves-effect waves-dark <?= ($active_sidebar_menu =="IncidentManagement")?'active':''?>" href="javascript:void(0)" aria-expanded="false">
-                        <span class="hide-menu"><?= $escaper->escapeHtml($lang['IncidentManagement']);?></span>
+                        <span class="sr-nav-ico"><i class="fas fa-fire"></i></span>
+                        <span class="hide-menu"><?= $escaper->escapeHtml($lang['Incidents']);?></span>
                     </a>
                     <ul aria-expanded="false" class="collapse first-level <?= ($active_sidebar_menu =='IncidentManagement')?'in':''; ?>">
     <?php
@@ -221,25 +228,44 @@ require_once(realpath(__DIR__ .'/header.php'));
     <?php
         }
         if (check_permission("ai_access")) {
+            // Build the visible AI submenus from capability state.
+            $ai_submenus = [];
+            if (ai_capability_enabled('grc_recommendations')) {
+                $ai_submenus[] = [
+                    'submenu' => 'Recommendations', 'href' => '../artificial_intelligence/index.php',
+                    'label' => $lang['Recommendations'],
+                ];
+            }
+            if (ai_capability_enabled('document_templates')) {
+                $ai_submenus[] = [
+                    'submenu' => 'DocumentInstallation', 'href' => '../artificial_intelligence/documentation.php',
+                    'label' => $lang['DocumentInstallation'],
+                ];
+            }
+            // Only render the top-level menu when it has at least one submenu.
+            if (!empty($ai_submenus)) {
     ?>
-                <li class="sidebar-item <?= ($active_sidebar_menu =="ArtificialIntelligence")?'selected':''; ?>">
-                    <a class="sidebar-link has-arrow waves-effect waves-dark <?= ($active_sidebar_menu =='ArtificialIntelligence')?'active':''; ?>" href="javascript:void(0)" aria-expanded="false">
-                        <span class="hide-menu"><?= $escaper->escapeHtml($lang['ArtificialIntelligence']);?></span>
+                <li class="sidebar-item <?= ($active_sidebar_menu == "ArtificialIntelligence") ? 'selected' : ''; ?>">
+                    <a class="sidebar-link has-arrow waves-effect waves-dark <?= ($active_sidebar_menu == 'ArtificialIntelligence') ? 'active' : ''; ?>" href="javascript:void(0)" aria-expanded="false">
+                        <span class="sr-nav-ico"><i class="fas fa-robot"></i></span>
+                        <span class="hide-menu"><?= $escaper->escapeHtml($lang['AI']); ?></span>
                     </a>
-                    <ul aria-expanded="false" class="collapse first-level <?= ($active_sidebar_menu =='Recommendations')?'in':''; ?>">
-                        <li class="sidebar-item <?= ($active_sidebar_submenu =='Recommendations')?'active':''; ?>">
-                            <a href="../artificial_intelligence/index.php" class="sidebar-link">
-                                <span class="hide-menu"><?= $escaper->escapeHtml($lang['Recommendations']);?></span>
+                    <ul aria-expanded="false" class="collapse first-level <?= in_array($active_sidebar_submenu, ['Recommendations', 'DocumentInstallation']) ? 'in' : ''; ?>">
+    <?php
+                foreach ($ai_submenus as $sm) {
+    ?>
+                        <li class="sidebar-item <?= ($active_sidebar_submenu == $sm['submenu']) ? 'active' : ''; ?>">
+                            <a href="<?= $escaper->escapeHtmlAttr($sm['href']); ?>" class="sidebar-link">
+                                <span class="hide-menu"><?= $escaper->escapeHtml($sm['label']); ?></span>
                             </a>
                         </li>
-                        <li class="sidebar-item <?= ($active_sidebar_submenu =='DocumentInstallation')?'active':''; ?>">
-                            <a href="../artificial_intelligence/documentation.php" class="sidebar-link">
-                                <span class="hide-menu"><?= $escaper->escapeHtml($lang['DocumentInstallation']);?></span>
-                            </a>
-                        </li>
+    <?php
+                }
+    ?>
                     </ul>
                 </li>
     <?php
+            }
         }
     ?>
                 <li class="sidebar-item <?= ($active_sidebar_menu =="Assessments")?'selected':''; ?>">
@@ -248,6 +274,7 @@ require_once(realpath(__DIR__ .'/header.php'));
         if (isset($_SESSION["assessments"]) && $_SESSION["assessments"] == "1") {
     ?>
                     <a class="sidebar-link has-arrow waves-effect waves-dark <?= ($active_sidebar_menu =='Assessments')?'active':''; ?>" href="javascript:void(0)" aria-expanded="false">
+                        <span class="sr-nav-ico"><i class="fas fa-list-check"></i></span>
                         <span class="hide-menu"><?= $escaper->escapeHtml($lang['Assessments']);?></span>
                     </a>
     <?php
@@ -313,23 +340,32 @@ require_once(realpath(__DIR__ .'/header.php'));
     // module permissions. The two leaf links go to the Reports and
     // Dashboards hubs which fetch the per-user-filtered catalog via
     // GET /api/v2/reports/catalog and render tiles client-side.
+    //
+    // view_exception is included alongside the four: reports/index.php's own
+    // hub_required gate (kept in lockstep with this condition) now accepts
+    // it too, because the connectivity_visualizer catalog tile is reachable
+    // by a view_exception-only caller. Without it here, that caller would
+    // never see this menu at all and so could never navigate to the tile
+    // they are entitled to see.
     if (!empty($_SESSION['riskmanagement']) || !empty($_SESSION['compliance']) ||
         !empty($_SESSION['governance']) || !empty($_SESSION['asset']) ||
+        !empty($_SESSION['view_exception']) ||
         (incident_management_extra() && !empty($_SESSION['im_reporting']))) {
 ?>
                 <li class="sidebar-item <?= ($active_sidebar_menu == 'Reporting') ? 'selected' : ''; ?>">
                     <a class="sidebar-link has-arrow waves-effect waves-dark <?= ($active_sidebar_menu == 'Reporting') ? 'active' : ''; ?>" href="javascript:void(0)" aria-expanded="false">
+                        <span class="sr-nav-ico"><i class="fas fa-chart-column"></i></span>
                         <span class="hide-menu"><?= $escaper->escapeHtml($lang['Reporting']);?></span>
                     </a>
                     <ul aria-expanded="false" class="collapse first-level <?= ($active_sidebar_menu == 'Reporting') ? 'in' : ''; ?>">
-                        <li class="sidebar-item <?= ($active_sidebar_submenu == 'Reporting_Reports') ? 'active' : ''; ?>">
-                            <a href="../reports/index.php" class="sidebar-link">
-                                <span class="hide-menu"><?= $escaper->escapeHtml($lang['Reports']);?></span>
-                            </a>
-                        </li>
                         <li class="sidebar-item <?= ($active_sidebar_submenu == 'Reporting_Dashboards') ? 'active' : ''; ?>">
                             <a href="../reports/dashboards.php" class="sidebar-link">
                                 <span class="hide-menu"><?= $escaper->escapeHtml($lang['Dashboards']);?></span>
+                            </a>
+                        </li>
+                        <li class="sidebar-item <?= ($active_sidebar_submenu == 'Reporting_Reports') ? 'active' : ''; ?>">
+                            <a href="../reports/index.php" class="sidebar-link">
+                                <span class="hide-menu"><?= $escaper->escapeHtml($lang['Reports']);?></span>
                             </a>
                         </li>
                     </ul>
@@ -342,6 +378,12 @@ require_once(realpath(__DIR__ .'/header.php'));
         <!-- End Sidebar navigation -->
     </div>
     <!-- End Sidebar scroll-->
+    <!-- App footer (copyright) pinned to the bottom of the sidebar (charcoal).
+         Hidden outright in the rail and hidden states, and auto-hidden when the nav
+         would otherwise collide with it (see updateFooterFit() in app-shell.js). -->
+    <div class="sr-sidebar-footer">
+        <div class="sr-sf-copy"><?= $escaper->escapeHtml(sprintf($lang['FooterCopyright'], date('Y'))) ?></div>
+    </div>
 </aside>
 <!-- End Left Sidebar - style you can find in sidebar.scss  -->
 
@@ -372,7 +414,8 @@ require_once(realpath(__DIR__ .'/header.php'));
         <div class="content-wrapper">
             <div class="page-breadcrumb">
                 <div class="row">
-                    <div class="col-12 d-flex no-block align-items-center">
+                    <div class="col-12">
+                        <div class="page-head d-flex align-items-center">
                         <h4 class="page-title">
     <?php
         if (!empty($breadcrumb_title_key)) {
@@ -393,15 +436,21 @@ require_once(realpath(__DIR__ .'/header.php'));
         }
     ?>
                         </h4>
+                        <!-- Right-aligned slot for a page-level primary action; the dashboard
+                             "Edit layout" control hoists itself here on load. Empty otherwise. -->
+                        <div class="page-actions ms-auto"></div>
+                        </div><!-- /.page-head -->
     <?php
         if (!empty($breadcrumb_title_key)) {
+    ?>
+                        <div class="page-subtitle">
+    <?php
             if ($hub_breadcrumb !== null) {
                 // Configure Hub destination — render "Settings > [Sub-hub heading >] Tile Name".
                 // The first segment always links to /admin/index.php; for IM sub-hub
                 // destinations, the middle segment links to the bookmarkable
                 // ?section=incident_management URL.
     ?>
-                        <div class="ms-auto text-end">
                             <nav aria-label="breadcrumb">
                                 <ol class="breadcrumb">
                                     <li class="breadcrumb-item">
@@ -419,23 +468,34 @@ require_once(realpath(__DIR__ .'/header.php'));
                                     </li>
                                 </ol>
                             </nav>
-                        </div>
     <?php
             } elseif (!empty($active_sidebar_menu) && !empty($active_sidebar_submenu)) {
     ?>
-                        <div class="ms-auto text-end">
                             <nav aria-label="breadcrumb">
                                 <ol class="breadcrumb">
                                     <li class="breadcrumb-item menu"></li>
                                     <li class="breadcrumb-item submenu"><a href="#"></a></li>
                                     <li class="breadcrumb-item thirdmenu d-none"><a href="#"></a></li>
+    <?php
+        // Render the final title crumb ONLY when it adds a level beyond the
+        // submenu. A section-landing page (e.g. Compliance > Define Tests, or the
+        // Incident Management list views) sets $breadcrumb_title_key equal to
+        // $active_sidebar_submenu because the submenu IS the current page -- in
+        // that case the submenu crumb above is already the leaf, so appending the
+        // title here would duplicate it ("... > Define Tests > Define Tests").
+        // Leaf pages set a distinct title (submenu "PastAudits" > title "ViewTest")
+        // and still render the third crumb as before.
+        if ($active_sidebar_submenu !== $breadcrumb_title_key) {
+    ?>
                                     <li class="breadcrumb-item">
                                         <!-- according to the existence of '$lang[$breadcrumb_title_key]'. -->
                                         <?=$escaper->escapeHtml($lang[$breadcrumb_title_key] ?? $breadcrumb_title_key)?>
                                     </li>
+    <?php
+        }
+    ?>
                                 </ol>
                             </nav>
-                        </div>
 <script>
     // Run this script after the Sidebar's script is loaded
     $('#script_sidebarmenu').on('load', function () {
@@ -487,6 +547,9 @@ require_once(realpath(__DIR__ .'/header.php'));
 </script>
     <?php
             }
+    ?>
+                        </div><!-- /.page-subtitle -->
+    <?php
         }
     ?>
                     </div>

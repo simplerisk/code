@@ -9,6 +9,14 @@ require_once(realpath(__DIR__ . '/../includes/functions.php'));
 require_once(realpath(__DIR__ . '/../includes/artificial_intelligence.php'));
 render_header_and_sidebar(permissions:['check_ai' => true]);
 
+// If the GRC Recommendations capability is disabled, deny access to this page
+if (!ai_capability_enabled('grc_recommendations')) {
+
+    header("Location: ../index.php");
+    exit(0);
+
+}
+
 ?>
 <div class="row bg-white">
     <div class="col-12">
@@ -28,11 +36,9 @@ render_header_and_sidebar(permissions:['check_ai' => true]);
             // If content was not returned
             else
             {
-                // Check to see if we have an AI API key already
-                $ai_api_key = get_setting('ai_api_key', false, false);
-
-                // If the AI API key doesn't exist
-                if (!$ai_api_key)
+                // If no AI provider is configured (a key, or a keyless-local
+                // provider such as Ollama — SR-1931)
+                if (!ai_provider_is_configured())
                 {
                     // Display a message on how to configure the AI provider
                     echo "

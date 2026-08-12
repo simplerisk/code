@@ -26,9 +26,7 @@ function enable_mfa_for_all_users()
         // Get the user ID
         $uid = $user['value'];
 
-        // Create an entry in the user_mfa table for the user
-        verify_mfa_for_uid($uid);
-        user_mfa_verified($uid);
+        provision_mfa_row_for_uid($uid);
     }
 
     // Set all users to MFA enabled
@@ -37,6 +35,35 @@ function enable_mfa_for_all_users()
 
     // Close the database connection
     db_close($db);
+}
+
+/**********************************************
+ * FUNCTION: PROVISION MFA ROW FOR UID        *
+ **********************************************
+ * Ensures a user has a user_mfa row, created unverified.
+ *
+ * This is the per-user body of enable_mfa_for_all_users(), extracted so the
+ * behaviour that caused the lockout can be tested directly. The whole-table
+ * function rewrites multi_factor for every account, so it cannot be exercised
+ * against a real database without destroying state; this can.
+ *
+ * It must NEVER mark the user verified. "Verified" means the user enrolled an
+ * authenticator and proved a token, and the login router reads it to choose
+ * between the enrolment page (which shows a QR) and the authentication page
+ * (token entry only). Marking someone verified who never enrolled sends them to
+ * a prompt for a code they cannot generate, with no route to the QR — the
+ * lockout this change fixes, admins included.
+ *
+ * Safe to call repeatedly: the row is only created when absent, and an existing
+ * row — including its verified flag and enrolment stamp — is left untouched.
+ */
+function provision_mfa_row_for_uid($uid)
+{
+    if (!user_mfa_exists_for_uid($uid))
+    {
+        // Creates the row with verified = 0 and no enrolment stamp.
+        get_mfa_secret_for_uid($uid);
+    }
 }
 
 /**********************************************
@@ -106,6 +133,27 @@ function get_mfa_by_userid($uid)
     return $user_mfa;
 }
 
+/*****************************************************
+ * FUNCTION: IS MFA ENROLMENT TRACKING AVAILABLE     *
+ *****************************************************
+ * Whether user_mfa.enrolled_at exists yet.
+ *
+ * The column arrives in upgrade_from_20260709001(), and SimpleRisk keeps serving
+ * logins while an instance is deployed but not yet upgraded. Every site that
+ * touches the column checks here first so that window behaves consistently:
+ * reads skip the enrolment guard (leaving users verified rather than downgrading
+ * all of them at once) and writes fall back to column-less SQL rather than
+ * throwing "Unknown column" and fataling the enrolment page.
+ *
+ * Deliberately not memoised in a static: the upgrade itself adds the column
+ * mid-request, and a cached "false" would then break every write for the rest of
+ * that request. This is one information_schema lookup on the login path.
+ */
+function mfa_enrolment_tracking_available()
+{
+    return (bool)field_exists_in_table('enrolled_at', 'user_mfa');
+}
+
 /*************************************
  * FUNCTION: IS MFA VERIFIED FOR UID *
  *************************************/
@@ -135,6 +183,34 @@ function is_mfa_verified_for_uid($uid = null)
     {
         // Get the verified value
         $verified = $results['verified'];
+
+        // Defence in depth: a verified row must also carry an enrolment stamp.
+        //
+        // enrolled_at is written by verify_mfa_for_uid(), the only function that
+        // sets verified = 1, and upgrade_from_20260709001() backfilled it for
+        // every row that was already verified. So after that upgrade the pair
+        // (verified = 1, enrolled_at IS NULL) is unreachable through any normal
+        // path — it can only appear if something sets the verified flag in bulk
+        // without going through verify_mfa_for_uid(), which is exactly the class
+        // of bug that stranded users behind a token prompt they could not
+        // satisfy. Treating it as unverified routes those users to enrolment
+        // instead of locking them out.
+        //
+        // Deliberately NOT inferred from last_mfa_token being NULL: that column
+        // was added by upgrade_from_20240205001() with no backfill, so every
+        // user who enrolled before 20240315-001 and has not completed an MFA
+        // login since has a NULL there while being genuinely enrolled. Treating
+        // those users as unverified would route them to the enrolment page,
+        // which renders a QR of their EXISTING secret to anyone holding just the
+        // password — turning a lockout fix into an MFA downgrade.
+        //
+        // array_key_exists (not isset, and not a bare index) so that an instance
+        // running this code before the migration has added the column keeps
+        // every user verified rather than downgrading all of them at once.
+        if ($verified && array_key_exists('enrolled_at', $results) && $results['enrolled_at'] === null)
+        {
+            $verified = false;
+        }
     }
     // If we do not already have an entry in the user_mfa table
     else
@@ -330,8 +406,21 @@ function verify_mfa_for_uid($uid)
     // Open the database connection
     $db = db_open();
 
-    // Set this uid to verified
-    $stmt = $db->prepare("UPDATE `user_mfa` SET `verified` = 1 WHERE uid = :uid;");
+    // Set this uid to verified, stamping when the enrolment was confirmed.
+    //
+    // This is the only place verified is set to 1, which is what lets
+    // is_mfa_verified_for_uid() treat a verified row with no enrolled_at as an
+    // anomaly rather than a legitimate state. COALESCE keeps the original stamp
+    // if the user re-verifies later, so the column stays a record of first
+    // enrolment rather than last login.
+    //
+    // Falls back to column-less SQL before the migration has run, so enrolment
+    // still works on a deployed-but-not-yet-upgraded instance.
+    $sql = mfa_enrolment_tracking_available()
+        ? "UPDATE `user_mfa` SET `verified` = 1, `enrolled_at` = COALESCE(`enrolled_at`, NOW()) WHERE uid = :uid;"
+        : "UPDATE `user_mfa` SET `verified` = 1 WHERE uid = :uid;";
+
+    $stmt = $db->prepare($sql);
     $stmt->bindParam(":uid", $uid, PDO::PARAM_INT);
     $stmt->execute();
 
@@ -347,8 +436,20 @@ function unverify_mfa_for_uid($uid)
     // Open the database connection
     $db = db_open();
 
-    // Set this uid to verified
-    $stmt = $db->prepare("UPDATE `user_mfa` SET `verified` = 0 WHERE uid = :uid;");
+    // Clear the verified flag and the enrolment stamp together.
+    //
+    // enrolled_at must be non-NULL exactly when the row carries a confirmed
+    // enrolment — that is what lets is_mfa_verified_for_uid() treat a verified
+    // row with no stamp as an anomaly. Clearing verified while leaving the stamp
+    // behind would break that, and COALESCE in verify_mfa_for_uid() would then
+    // resurrect the stale date on the next enrolment. The two per-user reset
+    // paths (mfa_delete_userid, disable_mfa_for_uid) drop the whole row, so this
+    // is the only place the pair could drift apart.
+    $sql = mfa_enrolment_tracking_available()
+        ? "UPDATE `user_mfa` SET `verified` = 0, `enrolled_at` = NULL WHERE uid = :uid;"
+        : "UPDATE `user_mfa` SET `verified` = 0 WHERE uid = :uid;";
+
+    $stmt = $db->prepare($sql);
     $stmt->bindParam(":uid", $uid, PDO::PARAM_INT);
     $stmt->execute();
 
@@ -419,6 +520,30 @@ function update_mfa_for_uid($uid, $timestamp, $token)
 
     // Close the database connection
     db_close($db);
+}
+
+/*****************************************
+ * FUNCTION: IS MFA TOKEN A REPLAY *
+ *****************************************
+ * Returns true when the supplied token is the same one already recorded as the
+ * last successfully-used token for this user, which is how we stop a captured
+ * token being replayed inside its own 30-second window.
+ *
+ * $stored_hash is user_mfa.last_mfa_token, which is NULL until the user's first
+ * successful verification. A NULL means "no token has been used yet", so nothing
+ * can be a replay of it — return false rather than handing the NULL to
+ * password_verify(), which raises a deprecation notice on PHP 8.1+ for a null
+ * $hash and would otherwise fire on every fresh enrollment.
+ */
+function is_mfa_token_replay($token, $stored_hash)
+{
+    // No previously-used token recorded, so this one cannot be a replay
+    if ($stored_hash === null || $stored_hash === '')
+    {
+        return false;
+    }
+
+    return password_verify($token, $stored_hash);
 }
 
 /***************************************
@@ -494,8 +619,15 @@ function get_mfa_qr_code_image($uid)
     // Construct the TOTP URI
     $data = "otpauth://totp/SimpleRisk:" . $username . "?" . $totp_parameters;
 
-    // Generate the QR code
-    echo '<img src="'.(new \chillerlan\QRCode\QRCode)->render($data).'" alt="QR Code" width="300px" height="300px" />';
+    // Generate the QR code.
+    //
+    // RETURNS the markup rather than echoing it. Its one caller,
+    // display_mfa_verification_page(), interpolates this into a string it
+    // echoes afterwards -- so while this echoed, PHP evaluated the call first
+    // and the QR was emitted ABOVE the whole block, leaving the `col-6` meant
+    // to hold it empty. That has been the behaviour on both index.php and
+    // account/mfa.php since the QR was moved in-process (2f6bf5c6b1).
+    return '<img src="'.(new \chillerlan\QRCode\QRCode)->render($data).'" alt="QR Code" width="300px" height="300px" />';
 }
 
 /********************************
@@ -536,7 +668,7 @@ function process_mfa_verify($uid = null)
     $timestamp = $google2fa->verifyKeyNewer($secret, $verify_secret, $user_timestamp);
 
     // If we have a valid MFA token and it is not the last one used
-    if ($timestamp !== false && !password_verify($verify_secret, $user_mfa_token_hash))
+    if ($timestamp !== false && !is_mfa_token_replay($verify_secret, $user_mfa_token_hash))
     {
         // Update the MFA timestamp and token for this UID to prevent replay
         update_mfa_for_uid($uid, $timestamp, $verify_secret);
@@ -590,7 +722,7 @@ function process_mfa_disable($uid = null)
     $timestamp = $google2fa->verifyKeyNewer($user_secret, $mfa_token, $user_timestamp);
 
     // If we have a valid MFA token and it is not the last one used
-    if ($timestamp !== false && !password_verify($mfa_token, $user_mfa_token_hash))
+    if ($timestamp !== false && !is_mfa_token_replay($mfa_token, $user_mfa_token_hash))
     {
         // Update the MFA timestamp and token for this UID
         update_mfa_for_uid($uid, $timestamp, $mfa_token);
@@ -660,7 +792,7 @@ function does_mfa_token_match($mfa_token = null, $uid = null)
         $timestamp = $google2fa->verifyKeyNewer($user_secret, $mfa_token, $user_timestamp);
 
         // If we have a valid MFA token
-        if ($timestamp !== false && !password_verify($mfa_token, $user_mfa_token_hash))
+        if ($timestamp !== false && !is_mfa_token_replay($mfa_token, $user_mfa_token_hash))
         {
             // Update the MFA timestamp and token for this UID
             update_mfa_for_uid($uid, $timestamp, $mfa_token);
@@ -808,19 +940,113 @@ function display_mfa_authentication_page()
 
     global $lang, $escaper;
 
+    // Emits the token field only. index.php is the sole caller and now supplies
+    // the surrounding card, its heading (YourSimpleRiskAccountIsProtected) and
+    // its subtitle (VerifyItsYou), so repeating them here would double them up.
     echo "
-        <div class='card' style='margin-top: 43.8px;'>
-            <div class='card-body'>
-                <h4 class='m-b-30'>" . $escaper->escapeHtml($lang['YourSimpleRiskAccountIsProtected']) . "</h4>
-                <h5 class='m-b-20'>" . $escaper->escapeHtml($lang['VerifyItsYou']) . "</h5>
-                <div class='d-flex align-items-center m-b-20'>
-                    <label style='width: 100px; min-width: 100px;'>" . $escaper->escapeHtml($lang['MFAToken']) . ":</label>
-                    <input name='mfa_token' type='number' minlength='6' maxlength='6' autofocus='autofocus' class='form-control m-r-20'/>
-                    <input type='submit' class='btn btn-submit' name='authenticate' value='" . $escaper->escapeHtml($lang['Verify']) . "' />
-                </div>
-            </div>
+        <div class='sr-auth-field'>
+            <label for='mfa_token'>" . $escaper->escapeHtml($lang['MFAToken']) . "</label>
+            <input id='mfa_token' name='mfa_token' type='number' minlength='6' maxlength='6' autofocus='autofocus' class='form-control' inputmode='numeric' autocomplete='one-time-code'/>
+        </div>
+        <div class='sr-auth-actions'>
+            <input type='submit' class='btn btn-submit' name='authenticate' value='" . $escaper->escapeHtml($lang['Verify']) . "' />
         </div>
     ";
+}
+
+/******************************************************************
+ * The user_mfa enrolment-tracking migration used by the          *
+ * 20260709-001 database upgrade. It lives here rather than in    *
+ * upgrade.php so upgrade.php holds only the release functions    *
+ * and the upgrade harness; upgrade.php require_once's this file. *
+ ******************************************************************/
+/**********************************************************
+ * FUNCTION: MIGRATE USER MFA ENROLMENT TRACKING          *
+ **********************************************************
+ * Adds and populates user_mfa.enrolled_at.
+ *
+ * Extracted from upgrade_from_20260709001() so the migration can be exercised
+ * directly by tests rather than by a copy of its SQL — a copy would keep passing
+ * if this were changed or deleted.
+ *
+ * ORDERING IS LOAD-BEARING. The login path treats (verified = 1, enrolled_at
+ * IS NULL) as an anomaly and routes that user to the enrolment page, which
+ * renders a QR of their existing TOTP secret. MySQL DDL is not transactional, so
+ * adding a nullable column first and backfilling second would leave every
+ * enrolled user in exactly that state for the gap between the two statements —
+ * and permanently if the upgrade aborts in between, since logins are still
+ * served while the DB version is behind.
+ *
+ * So the column is added already stamped for every row (NOT NULL DEFAULT
+ * CURRENT_TIMESTAMP), then relaxed to nullable, and only then cleared for the
+ * rows that never enrolled. Every intermediate state reads as "enrolled", which
+ * is the fail-safe direction: at worst a user is asked for a token, never handed
+ * their own secret.
+ *
+ * Idempotent, including after a partial run. Each step is guarded by the
+ * condition it establishes rather than all of them sharing one existence check:
+ * an upgrade that died between the ADD and the MODIFY would otherwise leave the
+ * column permanently NOT NULL, because the re-run would see the column present
+ * and skip the MODIFY forever — and unverify_mfa_for_uid() writes NULL to that
+ * column at runtime.
+ */
+function migrate_user_mfa_enrolment_tracking($db) {
+
+    $column_comment = 'When MFA enrolment was confirmed. Backfilled at the 20260709-001 upgrade for rows already verified.';
+
+    // Step 1 — add the column, stamped for every existing row, so no row is ever
+    // readable as verified-without-stamp. Guarded on the column's absence.
+    if (!field_exists_in_table('enrolled_at', 'user_mfa')) {
+        $db->query("
+            ALTER TABLE `user_mfa`
+            ADD `enrolled_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+            COMMENT '{$column_comment}';
+        ");
+        echo "Added user_mfa.enrolled_at to record when MFA enrolment was confirmed.<br />\n";
+    }
+
+    // Step 2 — relax to nullable so rows that never enrolled can carry NULL.
+    // Guarded on the column still being NOT NULL, which is the condition this
+    // step removes, so an upgrade interrupted after step 1 still converges.
+    $is_nullable = $db->query("
+        SELECT `IS_NULLABLE`
+        FROM `information_schema`.`COLUMNS`
+        WHERE `TABLE_SCHEMA` = DATABASE()
+            AND `TABLE_NAME` = 'user_mfa'
+            AND `COLUMN_NAME` = 'enrolled_at';
+    ")->fetchColumn();
+
+    if ($is_nullable === 'NO') {
+        $db->query("
+            ALTER TABLE `user_mfa`
+            MODIFY `enrolled_at` DATETIME NULL DEFAULT NULL
+            COMMENT '{$column_comment}';
+        ");
+        echo "Made user_mfa.enrolled_at nullable so unenrolled users carry no stamp.<br />\n";
+    }
+
+    // Self-heal: stamp any verified row still missing one (a prior partial run).
+    $stamped = $db->exec("
+        UPDATE `user_mfa`
+        SET `enrolled_at` = NOW()
+        WHERE `verified` = 1
+            AND `enrolled_at` IS NULL;
+    ");
+    if ($stamped > 0) {
+        echo "Recorded an enrolment stamp on " . (int)$stamped . " already-verified MFA record(s).<br />\n";
+    }
+
+    // A row that is not verified has no confirmed enrolment, so it must not
+    // carry a stamp — including the default one the ADD above applied.
+    $cleared = $db->exec("
+        UPDATE `user_mfa`
+        SET `enrolled_at` = NULL
+        WHERE `verified` = 0
+            AND `enrolled_at` IS NOT NULL;
+    ");
+    if ($cleared > 0) {
+        echo "Cleared the enrolment stamp from " . (int)$cleared . " unverified MFA record(s).<br />\n";
+    }
 }
 
 ?>
