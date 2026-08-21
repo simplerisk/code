@@ -4,8 +4,12 @@ name: Propagate release bundle
 # sync_code_repo.yml in code-development right after it publishes a release
 # here), download the release asset simplerisk-<version>.tgz and propagate
 # those exact bytes to the legacy distribution channels:
-#   1. simplerisk/bundles (master) - via the Git Data API, never a clone
-#      (the repo is 3.4 GB; even a depth-1 clone fetches every tarball)
+#   1. simplerisk/bundles (master) - via a real git push from a BLOBLESS,
+#      UNCHECKED-OUT clone (--filter=blob:none --no-checkout). The repo is
+#      ~3.4 GB of historical tarballs, so a plain or depth-1 clone fetches every
+#      one of them; --no-checkout is what makes the filter hold, since without it
+#      materialising the working tree lazily fetches them anyway. This replaced a
+#      git/blobs POST that could no longer carry the bundle - see the step below.
 #   2. s3://<DOWNLOADS_BUCKET>/public/bundles/ - unconditional overwrite;
 #      a re-release means the old object is stale by definition
 # Both converge on re-runs; heal anything by re-dispatching. The prod
@@ -79,10 +83,24 @@ jobs:
           gh release download "$VERSION" -R simplerisk/code \
             --pattern "simplerisk-$VERSION.tgz" --output "simplerisk-$VERSION.tgz"
           SIZE=$(wc -c < "simplerisk-$VERSION.tgz" | tr -d ' ')
-          # The Git Data blob API and git itself both cap files at 100 MB;
-          # refuse early with a clear error when we get close (95 MB).
-          if [ "$SIZE" -ge 99614720 ]; then
-            echo "::error::bundle is $SIZE bytes (>= 95 MiB) - too close to the 100 MB API/git limit"; exit 1
+          SIZE_MB=$((SIZE / 1048576))
+          # 100 MB is the PUSH limit. It is NOT the git/blobs API limit, which is
+          # far lower and undocumented: a 60.2 MiB bundle POSTed fine for
+          # 20260811-001 and 61.2 MiB failed with HTTP 422 "your input was too
+          # large to process" for 20260820-001. This guard used to refuse at 95 MiB
+          # "too close to the 100 MB API/git limit" while the write path below
+          # POSTed a blob -- so it waved through every size that actually fails.
+          # The write path now pushes, which is what makes 100 MB the real ceiling
+          # and this guard meaningful. Thresholds match publish-bundle.yml's RC
+          # guard in code-development deliberately: the two bundles writers
+          # diverging invisibly is what produced the incident.
+          echo "bundle size: ${SIZE_MB} MB (push limit 100 MB, hard guard 90 MB)" >> "$GITHUB_STEP_SUMMARY"
+          if [ "$SIZE" -gt 94371840 ]; then
+            echo "::error::bundle is ${SIZE_MB} MB — above the 90 MB guard. GitHub hard-rejects a pushed file over 100 MB, so the bundles@master archive is about to become impossible. Shrink the bundle or move the archive off git."
+            exit 1
+          elif [ "$SIZE" -gt 73400320 ]; then
+            REMAINING_MB=$((90 - SIZE_MB))
+            echo "::warning::bundle is ${SIZE_MB} MB — past 70 MB, and ${REMAINING_MB} MB under the 90 MB hard guard (~${REMAINING_MB} releases at the observed ~1 MB/release). Plan the shrink or the move off git now."
           fi
           MD5=$(md5sum "simplerisk-$VERSION.tgz" | cut -d' ' -f1)
           SHA256=$(sha256sum "simplerisk-$VERSION.tgz" | cut -d' ' -f1)
@@ -127,34 +145,59 @@ jobs:
             exit 0
           fi
 
-          # Git Data API write path: blob -> tree -> commit -> ref. The blob
-          # endpoint is the documented route for files up to 100 MB; the
-          # base64 payload (~1.33x file size) goes via --input, never argv.
-          python3 -c '
-          import base64, json, sys
-          with open(sys.argv[1], "rb") as f:
-              content = base64.b64encode(f.read()).decode()
-          json.dump({"content": content, "encoding": "base64"}, open("/tmp/blob.json", "w"))
-          ' "$FILE"
-          BLOB_SHA=$(gh api -X POST repos/simplerisk/bundles/git/blobs \
-            --input /tmp/blob.json --jq .sha)
-          rm -f /tmp/blob.json
-
-          HEAD_SHA=$(gh api repos/simplerisk/bundles/git/ref/heads/master --jq .object.sha)
-          BASE_TREE=$(gh api "repos/simplerisk/bundles/commits/$HEAD_SHA" --jq .commit.tree.sha)
-          # jq-built payloads: gh api's repeated-key array syntax has
-          # unreliable object grouping for arrays of objects.
-          jq -n --arg base "$BASE_TREE" --arg path "$FILE" --arg sha "$BLOB_SHA" \
-            '{base_tree: $base, tree: [{path: $path, mode: "100644", type: "blob", sha: $sha}]}' \
-            > /tmp/tree.json
-          TREE_SHA=$(gh api -X POST repos/simplerisk/bundles/git/trees --input /tmp/tree.json --jq .sha)
-          jq -n --arg msg "SimpleRisk $VERSION Release" --arg tree "$TREE_SHA" --arg parent "$HEAD_SHA" \
-            '{message: $msg, tree: $tree, parents: [$parent],
-              author: {name: "SimpleRisk Updater", email: "support@simplerisk.com"}}' \
-            > /tmp/commit.json
-          COMMIT_SHA=$(gh api -X POST repos/simplerisk/bundles/git/commits --input /tmp/commit.json --jq .sha)
-          gh api -X PATCH repos/simplerisk/bundles/git/refs/heads/master \
-            -f sha="$COMMIT_SHA" >/dev/null
+          # A real git push from a BLOBLESS, UNCHECKED-OUT partial clone -- NOT the
+          # git/blobs API.
+          #
+          # This step used to POST the tarball to git/blobs, whose request-body
+          # ceiling is far below the 100 MB per-file PUSH limit its own comment
+          # cited. code-development's RC archive hit that ceiling on 20260820-001
+          # (61.2 MiB -> HTTP 422) after 60.2 MiB had worked the release before, and
+          # this workflow writes the SAME artifact to bundles@master, so it was
+          # guaranteed to fail identically at GA. Fixed here the same way.
+          #
+          # --filter=blob:none alone is not enough: without --no-checkout,
+          # materialising the working tree lazily fetches every blob at HEAD -- 2.09 GB
+          # across 110 tarballs. With it nothing is materialised, the index is read
+          # straight from the commit tree (read-tree needs blob SHAs, not content),
+          # and the push sends only the new blob, tree and commit.
+          #
+          # Not --depth 1: pushing from a shallow clone is unreliable, and blobless
+          # history here is metadata only.
+          BUNDLE_ABS="$(pwd)/$FILE"
+          rm -rf /tmp/bundles-ga
+          # The clone URL embeds the App token and git persists it in .git/config.
+          # Under `set -euo pipefail` any later failure would skip a trailing
+          # cleanup, so removal is a trap rather than a last line.
+          trap 'rm -rf /tmp/bundles-ga' EXIT
+          git clone --filter=blob:none --no-checkout --single-branch --branch master \
+            "https://x-access-token:${GH_TOKEN}@github.com/simplerisk/bundles.git" \
+            /tmp/bundles-ga
+          cd /tmp/bundles-ga
+          git config user.name "SimpleRisk Updater"
+          git config user.email "support@simplerisk.com"
+          # Assert the filter held. DIAGNOSTIC, not preventive: it runs after the
+          # clone, so it detects a silent fallback to a full fetch rather than
+          # preventing one. Blobless is tens of MB; a full fetch is ~2.09 GB.
+          GIT_MB=$(du -sm .git | cut -f1)
+          echo "blobless clone of bundles@master: ${GIT_MB} MB" >> "$GITHUB_STEP_SUMMARY"
+          if [ "$GIT_MB" -gt 500 ]; then
+            echo "::error::blobless clone came to ${GIT_MB} MB — the blob filter is not holding (expected tens of MB). Historical tarballs are being fetched; do not let this land."
+            exit 1
+          fi
+          # Index from the tree, replace/add the one blob, commit, push. No checkout.
+          # Unlike the RC archive (idempotent on PATH), GA is idempotent on CONTENT
+          # and overwrites in place, so update-index --add is correct for both the
+          # first write and a re-release.
+          git read-tree HEAD
+          BLOB_SHA=$(git hash-object -w -- "$BUNDLE_ABS")
+          git update-index --add --cacheinfo "100644,$BLOB_SHA,$FILE"
+          TREE_SHA=$(git write-tree)
+          COMMIT_SHA=$(git commit-tree "$TREE_SHA" -p HEAD -m "SimpleRisk $VERSION Release")
+          git update-ref refs/heads/master "$COMMIT_SHA"
+          # Non-force: a concurrent write is rejected as a non-fast-forward rather
+          # than clobbered, so the worst case is a job that needs re-running.
+          git push origin refs/heads/master:refs/heads/master
+          cd - >/dev/null
 
           if [ -n "$EXISTING_SHA" ]; then
             echo "action=replaced" >> "$GITHUB_OUTPUT"
