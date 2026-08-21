@@ -58,6 +58,11 @@ concurrency:
 
 jobs:
   propagate:
+    # The CORE_SYNC App credentials are environment secrets on `release`,
+    # whose deployment-branch policy pins it to master -- the ref both real
+    # triggers already use (repository_dispatch always runs on the default
+    # branch, and the workflow_dispatch heal reads a release asset from it).
+    environment: release
     runs-on: ubuntu-latest
     steps:
       - name: Resolve and validate version
