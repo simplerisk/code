@@ -11,7 +11,7 @@ namespace OpenApi\Spec;
  *
  * @see [Request Body Object](https://spec.openapis.org/oas/v3.1.1.html#request-body-object)
  */
-#[\Attribute(\Attribute::TARGET_CLASS | \Attribute::TARGET_METHOD | \Attribute::IS_REPEATABLE)]
+#[\Attribute(\Attribute::TARGET_CLASS | \Attribute::TARGET_METHOD | \Attribute::TARGET_PROPERTY | \Attribute::TARGET_PARAMETER | \Attribute::IS_REPEATABLE)]
 class RequestBody extends AbstractAttribute
 {
     /** @var list<MediaType>|null */
@@ -30,7 +30,7 @@ class RequestBody extends AbstractAttribute
         public ?string $request = null,
         public ?string $description = null,
         public ?bool $required = null,
-        public ?string $ref = null,
+        public string|Schema\Ref|null $ref = null,
         MediaType|array|null $content = null,
         ?array $x = null,
         ?array $attachables = null,
@@ -46,7 +46,10 @@ class RequestBody extends AbstractAttribute
 
     public function merge(): array
     {
-        return [Operation::class => 'requestBody'];
+        return [
+            Components::class => 'requestBodies[]',
+            Operation::class => 'requestBody',
+        ];
     }
 
     public function contains(): array

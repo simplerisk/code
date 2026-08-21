@@ -3627,15 +3627,15 @@ function get_document_hierarchy_tabs($type="")
     echo "
         <table class='document-table' id='document-hierarchy-table'>
             <thead >
-                <th data-options=\"field:'document_name'\" width='25%'>{$escaper->escapeHtml($lang['DocumentName'])}</th>
-                <th data-options=\"field:'document_type'\" width='10%'>{$escaper->escapeHtml($lang['DocumentType'])}</th>
-                <th data-options=\"field:'framework_names'\" width='20%'>{$escaper->escapeHtml($lang['ControlFrameworks'])}</th>
-                <th data-options=\"field:'control_names'\" width='20%'>{$escaper->escapeHtml($lang['Controls'])}</th>
-                <th data-options=\"field:'submitted_by'\" width='10%'>{$escaper->escapeHtml($lang['Submitter'])}</th>
-                <th data-options=\"field:'updated_by'\" width='10%'>{$escaper->escapeHtml($lang['UpdatedBy'])}</th>
-                <th data-options=\"field:'creation_date'\" width='9%'>{$escaper->escapeHtml($lang['CreationDate'])}</th>
-                <th data-options=\"field:'approval_date'\" width='9%'>{$escaper->escapeHtml($lang['ApprovalDate'])}</th>
-                <th data-options=\"field:'status'\" width='7%'>{$escaper->escapeHtml($lang['Status'])}</th>
+                <th data-options=\"field:'document_name'\" width='22%'>{$escaper->escapeHtml($lang['DocumentName'])}</th>
+                <th data-options=\"field:'document_type'\" width='8%'>{$escaper->escapeHtml($lang['DocumentType'])}</th>
+                <th data-options=\"field:'framework_names'\" width='15%'>{$escaper->escapeHtml($lang['ControlFrameworks'])}</th>
+                <th data-options=\"field:'control_names'\" width='15%'>{$escaper->escapeHtml($lang['Controls'])}</th>
+                <th data-options=\"field:'submitted_by'\" width='9%'>{$escaper->escapeHtml($lang['Submitter'])}</th>
+                <th data-options=\"field:'updated_by'\" width='9%'>{$escaper->escapeHtml($lang['UpdatedBy'])}</th>
+                <th data-options=\"field:'creation_date'\" width='8%'>{$escaper->escapeHtml($lang['CreationDate'])}</th>
+                <th data-options=\"field:'approval_date'\" width='8%'>{$escaper->escapeHtml($lang['ApprovalDate'])}</th>
+                <th data-options=\"field:'status'\" width='6%'>{$escaper->escapeHtml($lang['Status'])}</th>
             </thead>
         </table>
     ";
@@ -3652,16 +3652,16 @@ function get_document_tabular_tabs($type, $document_id=0)
     echo "
         <table class='document-table' id='{$type}-table'>
             <thead>
-                <th data-options=\"field:'document_name'\" width='23%'>{$escaper->escapeHtml($lang['DocumentName'])}</th>
-                <th data-options=\"field:'document_type'\" width='10%'>{$escaper->escapeHtml($lang['DocumentType'])}</th>
-                <th data-options=\"field:'framework_names'\" width='18%'>{$escaper->escapeHtml($lang['ControlFrameworks'])}</th>
-                <th data-options=\"field:'control_names'\" width='18%'>{$escaper->escapeHtml($lang['Controls'])}</th>
+                <th data-options=\"field:'document_name'\" width='20%'>{$escaper->escapeHtml($lang['DocumentName'])}</th>
+                <th data-options=\"field:'document_type'\" width='8%'>{$escaper->escapeHtml($lang['DocumentType'])}</th>
+                <th data-options=\"field:'framework_names'\" width='14%'>{$escaper->escapeHtml($lang['ControlFrameworks'])}</th>
+                <th data-options=\"field:'control_names'\" width='14%'>{$escaper->escapeHtml($lang['Controls'])}</th>
                 <th data-options=\"field:'submitted_by'\" width='8%'>{$escaper->escapeHtml($lang['Submitter'])}</th>
                 <th data-options=\"field:'updated_by'\" width='8%'>{$escaper->escapeHtml($lang['UpdatedBy'])}</th>
-                <th data-options=\"field:'creation_date'\" width='9%'>{$escaper->escapeHtml($lang['CreationDate'])}</th>
-                <th data-options=\"field:'approval_date'\" width='9%'>{$escaper->escapeHtml($lang['ApprovalDate'])}</th>
+                <th data-options=\"field:'creation_date'\" width='8%'>{$escaper->escapeHtml($lang['CreationDate'])}</th>
+                <th data-options=\"field:'approval_date'\" width='8%'>{$escaper->escapeHtml($lang['ApprovalDate'])}</th>
                 <th data-options=\"field:'status'\" width='6%'>{$escaper->escapeHtml($lang['Status'])}</th>
-                <th data-options=\"field:'actions'\" width='7%'>{$escaper->escapeHtml($lang['Actions'])}</th>
+                <th data-options=\"field:'actions'\" width='6%'>{$escaper->escapeHtml($lang['Actions'])}</th>
             </thead>
         </table>
     ";
@@ -5901,7 +5901,7 @@ function display_detail_framework_fields_add($fields, $id_prefix = '') {
                 'customization_extra',
                 __DIR__ . '/../extras/customization/index.php',
                 'display_custom_field_edit',
-                [$field, [], "label"]
+                [$field, [], "label", false, "", $id_prefix]
             );
         }
     }
@@ -6352,7 +6352,7 @@ function display_detail_control_fields_add($fields, $id_prefix = '') {
                 'customization_extra',
                 __DIR__ . '/../extras/customization/index.php',
                 'display_custom_field_edit',
-                [$field, [], "label"]
+                [$field, [], "label", false, "", $id_prefix]
             );
         }
     }

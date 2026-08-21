@@ -201,7 +201,15 @@ else
 		if (!is_string($result)) {
 			$err = is_array($result) ? ($result['reason'] ?? $result['error'] ?? 'unknown') : 'unknown';
 			write_debug_log("Failed to download '{$extra_name_to_download}' Extra from register page: {$err}", 'warning');
-			set_alert(true, "bad", $lang['FailedToDownloadExtra']);
+			// Show the specific reason when download_extra() supplied one -- the
+			// Core-version refusal and the licensing failures ("Not Purchased",
+			// "Invalid Instance or Key") are all actionable, and the generic
+			// fallback told the operator nothing about what to do next. Not
+			// escaped here: get_alert() escapes at read time.
+			$reason = is_array($result) && is_string($result['reason'] ?? null) && $result['reason'] !== ''
+				? $result['reason']
+				: $lang['FailedToDownloadExtra'];
+			set_alert(true, "bad", $reason);
 		}
 	}
 }

@@ -4353,6 +4353,150 @@
         return out;
     }
 
+    // ---- Customization Extra: custom field values ---------------------------
+    //
+    // The Customization Extra lets an admin add arbitrary fields to the
+    // Framework and Control forms (admin/customization.php?fgroup=framework and
+    // ?fgroup=control). display_add_framework() / display_add_control()
+    // (includes/governance.php) render them into ALL FOUR modals on this page as
+    // `custom_field[<id>]` inputs, and add_framework() / update_framework() /
+    // add_framework_control() / update_framework_control() persist whatever
+    // arrives under that key through save_custom_field_values() (the Extra).
+    //
+    // Both halves of that round trip have to be done HERE, because this page
+    // submits over AJAX instead of doing the full-page form POST the
+    // pre-redesign page did (js/simplerisk/pages/governance.js, still loaded by
+    // Compliance -> Initiate Audits, does both of these for its copies of these
+    // same two modals):
+    //
+    //   WRITE  frameworkFormPayload() names every key it sends, one by one, so
+    //          custom fields were never in a framework create or update body at
+    //          all. The value was typed, the save reported success, and nothing
+    //          was stored.
+    //   READ   the Edit modals prefill field by field, and custom fields were in
+    //          nobody's list. That is not merely cosmetic on the CONTROL form:
+    //          it submits with $form.serialize(), so the blank inputs WERE sent,
+    //          and save_custom_field_values() wrote '' over every stored value.
+    //          Renaming a control erased its custom fields.
+    //
+    // save_custom_field_values() iterates over what it RECEIVES and leaves
+    // anything absent alone -- which is why an empty <select multiple> (a
+    // multiselect with nothing chosen submits no key at all) survived that wipe
+    // while an empty text box did not, and why prefilling is a real fix rather
+    // than a cosmetic one.
+    //
+    // The `]` in the prefix selector is load-bearing: '[name^="custom_field[9]"]'
+    // must not match custom_field[96].
+    var CUSTOM_FIELD_SELECTOR = '[name^="custom_field["]';
+
+    function customFieldSelector(fieldId) {
+        return '[name^="custom_field[' + fieldId + ']"]';
+    }
+
+    // bootstrap-multiselect shadows its <select> with its own button and menu,
+    // so changing the underlying element's selection is invisible until the
+    // widget re-reads it. governance/index.php's ready handler initialises every
+    // multi-valued custom field (select.multiselect[name^='custom_field[']), and
+    // resetForm() (js/simplerisk/common.js) already calls 'refresh' on exactly
+    // this class unguarded.
+    //
+    // That selector keys off the NAME, not the id, and has to: the Add and
+    // Update modals render the same field group, so the id carries the modal's
+    // $id_prefix ('add_' / 'update_') to keep it unique per document. The name
+    // is deliberately left un-prefixed -- it is what the form submits under and
+    // what every consumer selects on.
+    //
+    // Guarded here anyway, on .data('multiselect') -- the instance the plugin
+    // parks on the element, and the same test compliance.js uses before driving
+    // one. A plain <select multiple> that was never wrapped, or a page whose
+    // multiselect bundle failed to load, would otherwise throw mid-prefill and
+    // abandon the REMAINING fields, leaving the previously opened row's values
+    // in them: a missing widget would become a data-loss bug.
+    function refreshMultiselect($el) {
+        if (typeof $el.multiselect !== 'function' || !$el.data('multiselect')) { return; }
+        $el.multiselect('refresh');
+    }
+
+    function clearCustomFields($scope) {
+        $scope.find(CUSTOM_FIELD_SELECTOR).each(function () {
+            var $el = $(this);
+            if ($el.prop('multiple')) {
+                $el.val([]);
+                refreshMultiselect($el);
+            } else {
+                $el.val('');
+            }
+        });
+    }
+
+    // Prefill a modal's custom fields from an API response's `custom_values`
+    // (get_custom_value_by_row_id(), attached by get_framework() and
+    // get_framework_control()).
+    //
+    // Clears FIRST, unconditionally: one pair of modals serves every framework
+    // and every control on the page, so a value left over from the previously
+    // opened row would otherwise be shown as -- and then saved onto -- the next
+    // one. That is the same rule the SoA pair and the status select above are
+    // set unconditionally for.
+    function applyCustomFieldValues($scope, customValues) {
+
+        clearCustomFields($scope);
+
+        if (!customValues || !customValues.length) { return; }
+
+        customValues.forEach(function (cv) {
+            var $el = $scope.find(customFieldSelector(cv.field_id));
+            if (!$el.length) { return; }
+
+            // display_value is the stored value put through the field's own
+            // input-element transformation (custom_field_display_value(), the
+            // Customization Extra): a date in the instance's configured format
+            // rather than the column's Y-m-d, and the plaintext of an encrypted
+            // field rather than its ciphertext. Both matter on the way back OUT
+            // as well -- save_custom_field_values() parses dates with
+            // get_standard_date_from_default_format() and re-encrypts what it is
+            // handed -- so prefilling the raw column value would save a
+            // 0000-00-00 date and a doubly-encrypted string.
+            //
+            // Falls back to `value` so a Core running against an older
+            // Customization Extra, whose response carries no display_value,
+            // still prefills everything except those two transformations.
+            var value = (cv.display_value === null || typeof cv.display_value === 'undefined')
+                ? cv.value
+                : cv.display_value;
+            value = (value === null || typeof value === 'undefined') ? '' : String(value);
+
+            if ($el.prop('multiple')) {
+                // Stored as a comma-separated list of option ids. filter(Boolean)
+                // drops the empty string ''.split(',') yields, which would
+                // otherwise ask the widget to select an option with no value.
+                $el.val(value.split(',').filter(Boolean));
+                refreshMultiselect($el);
+            } else {
+                $el.val(value);
+            }
+        });
+    }
+
+    // The custom fields of a form as name/value pairs, for a request body built
+    // by hand. serializeArray() rather than an object because a multi-valued
+    // field submits its name more than once (custom_field[7][]=a&custom_field[7][]=b)
+    // and an object would keep only the last one.
+    function customFieldPairs($form) {
+        return $form.find(CUSTOM_FIELD_SELECTOR).serializeArray();
+    }
+
+    // A framework request body: the named payload keys plus whatever custom
+    // fields the form is carrying. $.param() accepts the {name, value} pair
+    // array serializeArray() produces, so the two halves concatenate cleanly and
+    // the bracketed custom_field keys are encoded exactly as a plain form POST
+    // would encode them.
+    function frameworkRequestBody($form, payload) {
+        var pairs = [];
+        $.each(payload, function (name, value) { pairs.push({ name: name, value: value }); });
+        return $.param(pairs.concat(customFieldPairs($form)));
+    }
+
     function frameworkFormPayload($form, loaded) {
         var payload = $.extend({
             name: $form.find('[name=framework_name]').val(),
@@ -4465,6 +4609,13 @@
                 // only when the response genuinely carries no status, which the
                 // NOT NULL DEFAULT 1 column makes impossible for a real row.
                 $modal.find('[name=status]').val(String(fw.status || 1));
+
+                // Customization Extra fields. Unlike the control modal below,
+                // this one is never resetForm()'d, so applyCustomFieldValues()'s
+                // own clear is the only thing standing between the previously
+                // edited framework's values and this one.
+                applyCustomFieldValues($modal, fw.custom_values);
+
                 $.ajax({
                     type: 'GET',
                     url: BASE_URL + '/api/v2/governance/selected_parent_frameworks_dropdown?child_id=' + id,
@@ -4591,6 +4742,13 @@
                     : fw.default_inclusion_justification;
                 $form.find('[name=default_inclusion_justification]').val(justification === null ? '' : justification);
 
+                // Customization Extra fields carry over, like every other
+                // ordinary field on this form: a clone is a pre-filled CREATE
+                // that the user reviews, so what it shows has to be what the
+                // source framework holds. resetForm() above has already blanked
+                // them, so a source with no custom values leaves them blank.
+                applyCustomFieldValues($form, fw.custom_values);
+
                 pendingCloneFramework = {
                     id: id,
                     name: fw.name || name || '',
@@ -4643,7 +4801,10 @@
         $.ajax({
             type: 'POST',
             url: BASE_URL + '/api/v2/governance/frameworks',
-            data: payload,
+            // The named keys above PLUS the form's custom fields -- see
+            // frameworkRequestBody(). add_framework() persists those through
+            // save_custom_field_values(), which reads them straight off $_POST.
+            data: frameworkRequestBody($form, payload),
             headers: csrfHeaders()
         }).done(function (res) {
             setBusy($btn, false);
@@ -4661,6 +4822,12 @@
                 $form.find('[name=framework_name]').val()
             );
             $form[0].reset();
+            // A native reset() restores the markup defaults of the custom field
+            // inputs (blank -- display_add_framework() renders the create form
+            // with no values), but it cannot tell a bootstrap-multiselect to
+            // re-read its <select>, so a multi-valued custom field would keep
+            // showing the just-saved picks. clearCustomFields() does both.
+            clearCustomFields($form);
             if (typeof setEditorContent === 'function') { setEditorContent('add_framework_description', ''); }
             // The SoA scope statement is a WYSIWYG field too, and a native
             // reset() puts the <textarea> back without touching the editor that
@@ -4686,7 +4853,9 @@
             // What openFrameworkForEdit() loaded, so an SoA field the user never
             // touched is omitted rather than re-sent -- which is what keeps a
             // rename from converting a NULL scope statement into an empty one.
-            data: frameworkFormPayload($form, $modal.data('srSoaLoaded')),
+            // Custom fields ride along on the same body (frameworkRequestBody);
+            // update_framework() hands them to save_custom_field_values().
+            data: frameworkRequestBody($form, frameworkFormPayload($form, $modal.data('srSoaLoaded'))),
             headers: csrfHeaders()
         }).done(function (res) {
             setBusy($btn, false);
@@ -4951,6 +5120,12 @@
                     .toggleClass('d-none', $modal.find('.mapping_framework_table tbody tr').length === 0);
                 fillAssetRows($modal, data.mapped_assets, id, control.mapped_maturity);
 
+                // Customization Extra fields. Prefilling them is what stops this
+                // form's $form.serialize() submission from writing '' over every
+                // stored custom value on an edit that only touched the name --
+                // see the CUSTOM_FIELD_SELECTOR block for the full story.
+                applyCustomFieldValues($modal, control.custom_values);
+
                 if (typeof setEditorContent === 'function') {
                     setEditorContent('update_control_description', control.description || '');
                     setEditorContent('update_supplemental_guidance', control.supplemental_guidance || '');
@@ -5071,6 +5246,11 @@
                 // itself has no id yet; the picks ride along in the POST body
                 // and createControlCrud() persists them against the new row.
                 fillAssetRows($modal, data.mapped_assets, id, control.mapped_maturity);
+
+                // Customization Extra fields carry over too -- same reasoning as
+                // every other pre-filled field here: a clone is a create the
+                // user reviews, so it has to show what the source control holds.
+                applyCustomFieldValues($modal, control.custom_values);
 
                 if (typeof setEditorContent === 'function') {
                     setEditorContent('add_control_description', control.description || '');

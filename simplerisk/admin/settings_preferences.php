@@ -12,6 +12,13 @@
     // consumer requires the file defining the helper rather than relying on a
     // transitive include.
     require_once(realpath(__DIR__ . '/../includes/functions.php'));
+    // The Asset Management tab consumes assets.php directly --
+    // apply_asset_valuation_rows(), update_asset_values(),
+    // update_asset_values_exponential() and display_asset_valuation_table().
+    // It has only ever arrived transitively (display.php pulls it in during
+    // render_header_and_sidebar()), which is exactly the fragile chain
+    // CLAUDE.md's reachability rule says a direct consumer must not rely on.
+    require_once(realpath(__DIR__ . '/../includes/assets.php'));
     // The WYSIWYG bundle is ~460KB (HugeRTE + its skin) and is only ever
     // attached to the system-use-notice field, which exists only when the
     // Customization Extra is active. Loading it unconditionally made every
@@ -33,15 +40,28 @@
         // Set the error to false
         $error = false;
 
-        // Update the default language setting
+        // Did this submit change anything at all?
+        //
+        // All five tabs live inside a single <form>, so clicking Update posts
+        // every field on the page whether or not the admin touched one. The
+        // page used to announce a save regardless, which told admins their
+        // settings had been written when nothing had. update_setting() returns
+        // true only when the stored value really changed, so capturing its
+        // return is all it takes to tell a real save from a no-op.
+        $changed = false;
+
+        // Update the default language setting.
+        //
+        // The page has to be re-rendered for a new language to take effect,
+        // but that redirect is deferred to the END of this handler. Firing it
+        // here abandoned every other field in the same submit, so an admin who
+        // changed the language and the timezone together silently lost the
+        // timezone.
         $default_language = get_name_by_value("languages", (int)$_POST['languages']);
         $current_default_language = get_setting("default_language");
-        if ($default_language != $current_default_language) {
-            update_setting("default_language", $default_language);
-
-            // refresh the page to update the language for the user interface
-            header("Location: settings_preferences.php");
-            exit();
+        $language_changed = ($default_language != $current_default_language);
+        if ($language_changed) {
+            $changed = update_setting("default_language", $default_language) || $changed;
         }
 
         // Update the default timezone setting
@@ -55,11 +75,11 @@
             // If the selected timezone is not valid
             if (!array_key_exists($default_timezone, $timezones)) {
                 // Display an alert
-                set_alert(true, "bad", $escaper->escapeHtml($lang['PleaseEnterAValidTimezone']));
+                set_alert(true, "bad", $lang['PleaseEnterAValidTimezone']);
                 $error = true;
             // If the selected timezone is valid
             } else {
-                update_setting("default_timezone", $default_timezone);
+                $changed = update_setting("default_timezone", $default_timezone) || $changed;
             }
         }
 
@@ -67,7 +87,7 @@
         $default_date_format = $_POST['default_date_format'];
         $current_default_date_format = get_setting("default_date_format");
         if ($default_date_format != $current_default_date_format) {
-            update_setting("default_date_format", $default_date_format);
+            $changed = update_setting("default_date_format", $default_date_format) || $changed;
         }
 
         // Update the default risk score setting
@@ -76,7 +96,7 @@
         if ($default_risk_score != $current_default_risk_score) {
             // If the default risk score is a numeric value between 0 and 10
             if (is_numeric($default_risk_score) && ($default_risk_score >= 0) && ($default_risk_score <= 10)) {
-                update_setting("default_risk_score", $default_risk_score);
+                $changed = update_setting("default_risk_score", $default_risk_score) || $changed;
             }
         }
 
@@ -86,7 +106,7 @@
         if ($maximum_risk_subject_length != $current_maximum_risk_subject_length) {
             // If the maximum_risk_subject_length is a numeric value between 0 and 1000
             if (is_numeric($maximum_risk_subject_length) && ($maximum_risk_subject_length > 0) && ($maximum_risk_subject_length <= 1000)) {
-                update_setting("maximum_risk_subject_length", $maximum_risk_subject_length);
+                $changed = update_setting("maximum_risk_subject_length", $maximum_risk_subject_length) || $changed;
             }
         }
 
@@ -96,10 +116,10 @@
         if ($default_closed_audit_status != $current_default_closed_audit_status) {
             // If the default closed audit status is empty
             if (empty($default_closed_audit_status)) {
-                set_alert(true, "bad", $escaper->escapeHtml($lang['ClosedAuditStatusIsRequired']));
+                set_alert(true, "bad", $lang['ClosedAuditStatusIsRequired']);
                 $error = true;
             } else {
-                update_setting("closed_audit_status", $default_closed_audit_status);
+                $changed = update_setting("closed_audit_status", $default_closed_audit_status) || $changed;
             }
         }
 
@@ -107,7 +127,7 @@
         $default_initiated_audit_status = (int)$_POST['initiated_audit_status'];
         $current_default_initiated_audit_status = get_setting("initiated_audit_status");
         if ($default_initiated_audit_status != $current_default_initiated_audit_status) {
-            update_setting("initiated_audit_status", $default_initiated_audit_status);
+            $changed = update_setting("initiated_audit_status", $default_initiated_audit_status) || $changed;
         }
 
         // Update the default currency setting
@@ -119,7 +139,7 @@
                 // If the default currency value is less than or equal to six characters long
                 if (strlen($default_currency) <= 6) {
                     // Update the currency
-                    update_setting("currency", $default_currency);
+                    $changed = update_setting("currency", $default_currency) || $changed;
                 }
             }
         }
@@ -133,7 +153,7 @@
                 // If the default asset valuation is between 1 and 10
                 if ($default_asset_valuation >= 1 && $default_asset_valuation <= 10) {
                     // Update the default asset valuation
-                    update_setting("default_asset_valuation", $default_asset_valuation);
+                    $changed = update_setting("default_asset_valuation", $default_asset_valuation) || $changed;
                 }
             }
         }
@@ -142,8 +162,11 @@
         $default_user_role = (int)$_POST['default_user_role'];
         $current_default_user_role = get_default_role_id();
         if ($default_user_role != $current_default_user_role) {
-            // Update the default user role
+            // Update the default user role. This one lives in the `role` table
+            // rather than in `settings`, so there is no update_setting() return
+            // to read -- the guard above is the change test.
             set_default_role($default_user_role);
+            $changed = true;
         }
 
         // Update the default current maturity setting
@@ -151,7 +174,7 @@
         $current_default_current_maturity = get_setting("default_current_maturity");
         if ($default_current_maturity != $current_default_current_maturity) {
             // Update the default current maturity
-            update_setting("default_current_maturity", $default_current_maturity);
+            $changed = update_setting("default_current_maturity", $default_current_maturity) || $changed;
         }
 
         // Update the default desired maturity setting
@@ -159,46 +182,46 @@
         $current_default_desired_maturity = get_setting("default_desired_maturity");
         if ($default_desired_maturity != $current_default_desired_maturity) {
             // Update the default desired maturity
-            update_setting("default_desired_maturity", $default_desired_maturity);
+            $changed = update_setting("default_desired_maturity", $default_desired_maturity) || $changed;
         }
 
         // Update the next review date setting
         $next_review_date_uses = $_POST['next_review_date_uses'];
         $current_next_review_date_uses = get_setting("next_review_date_uses");
         if ($next_review_date_uses != $current_next_review_date_uses) {
-            update_setting("next_review_date_uses", $next_review_date_uses);
+            $changed = update_setting("next_review_date_uses", $next_review_date_uses) || $changed;
         }
 
         // Update the 'Show all risks for plan projects' setting (Risk Management)
         $plan_projects_show_all = (isset($_POST['plan_projects_show_all'])) ? 1 : 0;
         $current_plan_projects_show_all = get_setting("plan_projects_show_all");
         if ($plan_projects_show_all != $current_plan_projects_show_all) {
-            update_setting("plan_projects_show_all", $plan_projects_show_all);
+            $changed = update_setting("plan_projects_show_all", $plan_projects_show_all) || $changed;
         }
 
         // Update the 'Require a Risk Mapping for all risks' setting (Risk Management)
         $risk_mapping_required = (isset($_POST['risk_mapping_required'])) ? 1 : 0;
         if ($risk_mapping_required != get_setting("risk_mapping_required")) {
-            update_setting("risk_mapping_required", $risk_mapping_required);
+            $changed = update_setting("risk_mapping_required", $risk_mapping_required) || $changed;
         }
 
         // Update the 'Automatically verify new assets' setting (Asset Management)
         $auto_verify_new_assets = (isset($_POST['auto_verify_new_assets'])) ? 1 : 0;
         $current_auto_verify_new_assets = get_setting("auto_verify_new_assets");
         if ($auto_verify_new_assets != $current_auto_verify_new_assets) {
-            update_setting("auto_verify_new_assets", $auto_verify_new_assets);
+            $changed = update_setting("auto_verify_new_assets", $auto_verify_new_assets) || $changed;
         }
 
         // Update the 'Document Exception update resets its approval' setting (Governance)
         $exception_update_resets_approval = (isset($_POST['exception_update_resets_approval'])) ? 1 : 0;
         if ($exception_update_resets_approval != get_setting("exception_update_resets_approval")) {
-            update_setting("exception_update_resets_approval", $exception_update_resets_approval);
+            $changed = update_setting("exception_update_resets_approval", $exception_update_resets_approval) || $changed;
         }
 
         // Update the alert timeout setting (System)
         $alert_timeout = $_POST['alert_timeout'];
         if ($alert_timeout != get_setting("alert_timeout")) {
-            update_setting("alert_timeout", $alert_timeout);
+            $changed = update_setting("alert_timeout", $alert_timeout) || $changed;
         }
 
         // ---- Login screen branding (System) --------------------------------
@@ -232,7 +255,7 @@
                     $login_tagline = mb_substr($login_tagline, 0, 120);
                 }
                 if ($login_tagline != get_setting('login_tagline')) {
-                    update_setting('login_tagline', $login_tagline);
+                    $changed = update_setting('login_tagline', $login_tagline) || $changed;
                 }
             }
 
@@ -242,7 +265,7 @@
             if (isset($_POST['login_notice'])) {
                 $login_notice = purify_html_login_notice(trim($_POST['login_notice']));
                 if ($login_notice != get_setting('login_notice')) {
-                    update_setting('login_notice', $login_notice);
+                    $changed = update_setting('login_notice', $login_notice) || $changed;
                 }
             }
 
@@ -255,6 +278,9 @@
                 db_close($db);
                 update_setting('custom_logo', '');
                 update_setting('custom_logo_version', '');
+                // The row is gone whatever the settings said, so this is a
+                // change even if both settings were already empty.
+                $changed = true;
                 set_alert(true, "good", $lang['LogoRemoved']);
             }
 
@@ -322,6 +348,10 @@
                         // produced an identical ?v= and the endpoint's 24h
                         // Cache-Control served the old one for a day.
                         update_setting('custom_logo_version', substr(md5($logo_bytes), 0, 8));
+                        // The image bytes were replaced whatever the settings
+                        // said, so this is a change even when re-uploading the
+                        // identical file under the identical name.
+                        $changed = true;
                         set_alert(true, "good", $lang['LogoUpdated']);
                     }
                 }
@@ -338,8 +368,18 @@
             ? $_POST['asset_valuation_mode']
             : 'manual';
         if ($selected_mode !== get_setting('asset_valuation_mode')) {
-            update_setting('asset_valuation_mode', $selected_mode);
+            $changed = update_setting('asset_valuation_mode', $selected_mode) || $changed;
         }
+
+        // Every branch below builds the ten rows it WANTS and hands them to
+        // apply_asset_valuation_rows(), which writes only the ones that differ
+        // from what is stored and reports how many that was. Nothing here
+        // writes unconditionally any more: the previous code rewrote all ten
+        // rows on every submit and raised a success toast per row, so a single
+        // Update -- from any tab, since all five share one form -- produced ten
+        // identical "asset valuation settings were updated" toasts describing
+        // writes that changed nothing.
+        $valuation_rows_written = 0;
 
         if ($selected_mode === 'linear' && isset($_POST['min_value']) && isset($_POST['max_value'])) {
 
@@ -347,38 +387,23 @@
             $max_value = $_POST['max_value'];
 
             // If the minimum value is an integer >= 0
-            if (is_numeric($min_value) && $min_value >= 0) {
+            if (!is_numeric($min_value) || $min_value < 0) {
 
-                // If the maximum value is an integer
-                if (is_numeric($max_value)) {
+                // Display an alert
+                set_alert(true, "bad", $lang['PleaseSpecifyAnIntegerGreaterThanOrEqualToZeroForTheMinimumValue']);
+                $error = true;
 
-                    // Update the asset values (linear distribution)
-                    $success = update_asset_values($min_value, $max_value);
+            // If the maximum value is an integer
+            } elseif (!is_numeric($max_value)) {
 
-                    // If the update was successful
-                    if ($success) {
-
-                        // Display an alert
-                        set_alert(true, "good", "The asset valuation settings were updated successfully.");
-
-                    } else {
-
-                        // Display an alert
-                        set_alert(true, "bad", "There was an issue updating the asset valuation settings.");
-
-                    }
-
-                } else {
-
-                    // Display an alert
-                    set_alert(true, "bad", "Please specify an integer for the maximum value.");
-
-                }
+                // Display an alert
+                set_alert(true, "bad", $lang['PleaseSpecifyAnIntegerForTheMaximumValue']);
+                $error = true;
 
             } else {
 
-                // Display an alert
-                set_alert(true, "bad", "Please specify an integer greater than or equal to zero for the minimum value.");
+                // Update the asset values (linear distribution)
+                $valuation_rows_written = update_asset_values($min_value, $max_value);
 
             }
         }
@@ -391,19 +416,16 @@
             // natural "0-10, 11-100, ..." sequence anchored on the 10th
             // root of max); max must be a number strictly greater than min.
             if (!is_numeric($min_value) || $min_value < 0) {
-                set_alert(true, "bad", $escaper->escapeHtml($lang['AssetValuationMinMustBeNonNegative']));
+                set_alert(true, "bad", $lang['AssetValuationMinMustBeNonNegative']);
+                $error = true;
             } elseif (!is_numeric($max_value) || $max_value <= $min_value) {
-                set_alert(true, "bad", "Please specify a maximum value greater than the minimum.");
+                set_alert(true, "bad", $lang['PleaseSpecifyAMaximumValueGreaterThanTheMinimum']);
+                $error = true;
             } else {
 
                 // Update the asset values (exponential distribution)
-                $success = update_asset_values_exponential($min_value, $max_value);
+                $valuation_rows_written = update_asset_values_exponential($min_value, $max_value);
 
-                if ($success) {
-                    set_alert(true, "good", "The asset valuation settings were updated successfully.");
-                } else {
-                    set_alert(true, "bad", "There was an issue updating the asset valuation settings.");
-                }
             }
         }
         elseif ($selected_mode === 'manual' && isset($_POST['valuation_level_name_1'])) {
@@ -421,40 +443,53 @@
                 }
             }
 
+            // Collect the ten rows the admin submitted, skipping any whose
+            // boundaries are not numeric -- exactly the rows the old loop
+            // skipped, for the same reason.
+            $posted_valuation_rows = [];
+
             // For each value range
             for ($i=1; $i<=10; $i++) {
 
-                $id = $i;
                 $min_value = $_POST["min_value_" . $i];
                 $max_value = $_POST["max_value_" . $i];
-                $valuation_level_name = $_POST["valuation_level_name_" . $i];
 
                 // If the min_value and max_value are numeric
                 if (is_numeric($min_value) && is_numeric($max_value)) {
 
-                    // Update the asset value
-                    $success = update_asset_value($id, $min_value, $max_value, $valuation_level_name);
-
-                    // If the update was successful
-                    if ($success) {
-
-                        // Display an alert
-                        set_alert(true, "good", "The asset valuation settings were updated successfully.");
-
-                    } else {
-
-                        // Display an alert
-                        set_alert(true, "bad", "There was an issue updating the asset valuation settings.");
-
-                    }
+                    $posted_valuation_rows[$i] = [
+                        'min_value' => $min_value,
+                        'max_value' => $max_value,
+                        'valuation_level_name' => $_POST["valuation_level_name_" . $i],
+                    ];
                 }
             }
+
+            // Update only the value ranges the admin actually altered
+            $valuation_rows_written = apply_asset_valuation_rows($posted_valuation_rows);
         }
 
-        // If all setting values were saved successfully
+        // Rewritten value ranges count towards the one summary alert below.
+        // They used to raise their own toast, one per row, on top of it.
+        if ($valuation_rows_written > 0) {
+            $changed = true;
+        }
+
+        // Report what actually happened. A submit that wrote nothing says so
+        // rather than claiming a save -- staying silent instead would read as
+        // a broken button. Anything that already raised its own error has
+        // said its piece and is not summarised again.
         if (!$error) {
             // Display an alert
-            set_alert(true, "good", "The settings were updated successfully.");
+            set_alert(true, "good", $changed ? $lang['TheSettingsWereUpdatedSuccessfully'] : $lang['NoChangesWereMade']);
+        }
+
+        // Now that every other field has been processed, re-render the page so
+        // the interface picks up the new language. The alert above is held in
+        // the session, so it survives the redirect and shows on arrival.
+        if ($language_changed) {
+            header("Location: settings_preferences.php");
+            exit();
         }
     }
 

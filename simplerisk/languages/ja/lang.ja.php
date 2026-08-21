@@ -4627,6 +4627,16 @@ $lang = array(
     'NoticeSizeSmall' => '小さい',
     'NoticeSizeNormal' => '普通',
     'NoticeSizeLarge' => '大きい',
+    // Preferences page save feedback
+    'TheSettingsWereUpdatedSuccessfully' => '設定は正常に更新されました。',
+    'NoChangesWereMade' => '変更は行われませんでした。',
+    'PleaseSpecifyAnIntegerGreaterThanOrEqualToZeroForTheMinimumValue' => '最小値には、0以上の整数を指定してください。',
+    'PleaseSpecifyAnIntegerForTheMaximumValue' => '最大値には整数を指定してください。',
+    'PleaseSpecifyAMaximumValueGreaterThanTheMinimum' => '最小値よりも大きい最大値を指定してください。',
+    // Extra download version compatibility
+    'ExtraVersionIncompatibleWithApplication' => 'ダウンロードした「{$extra}」Extra（バージョン {$extra_version}）はSimpleRisk {$app_version} と互換性がないため、インストールされませんでした。まずSimpleRiskを最新バージョンにアップグレードしてください。',
+    'ExtraCompatibilityDataUnavailable' => 'SimpleRiskは、このリリースでサポートされているExtraのバージョンを確認できなかったため、Extraはインストールされませんでした。しばらくしてからもう一度お試しください。',
+    'ExtraVersionCouldNotBeVerified' => 'ダウンロードした追加コンテンツのバージョンを特定できなかったため、インストールされませんでした。',
     '' => '',
 );
 ?>

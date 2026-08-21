@@ -58,7 +58,7 @@
 	<?php 
 		if (customization_extra()) {
 	?>
-    	$("select[id^='custom_field'].multiselect").multiselect({buttonWidth: '100%', enableFiltering: true, enableCaseInsensitiveFiltering: true});
+    	$("select.multiselect[name^='custom_field[']").multiselect({buttonWidth: '100%', enableFiltering: true, enableCaseInsensitiveFiltering: true});
 	<?php 
 		}
 	?>

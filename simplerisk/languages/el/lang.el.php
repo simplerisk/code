@@ -4627,6 +4627,16 @@ $lang = array(
     'NoticeSizeSmall' => 'Μικρό',
     'NoticeSizeNormal' => 'Κανονικός',
     'NoticeSizeLarge' => 'Μεγάλο',
+    // Preferences page save feedback
+    'TheSettingsWereUpdatedSuccessfully' => 'Οι ρυθμίσεις ενημερώθηκαν με επιτυχία.',
+    'NoChangesWereMade' => 'Δεν έγιναν αλλαγές.',
+    'PleaseSpecifyAnIntegerGreaterThanOrEqualToZeroForTheMinimumValue' => 'Παρακαλώ καθορίστε έναν ακέραιο αριθμό μεγαλύτερο ή ίσο με μηδέν για την ελάχιστη τιμή.',
+    'PleaseSpecifyAnIntegerForTheMaximumValue' => 'Παρακαλώ καθορίστε έναν ακέραιο αριθμό για τη μέγιστη τιμή.',
+    'PleaseSpecifyAMaximumValueGreaterThanTheMinimum' => 'Παρακαλώ καθορίστε μια μέγιστη τιμή μεγαλύτερη από την ελάχιστη.',
+    // Extra download version compatibility
+    'ExtraVersionIncompatibleWithApplication' => 'Το "{$extra}" Extra (έκδοση {$extra_version}) που λάβατε δεν είναι συμβατό με το SimpleRisk {$app_version} και δεν εγκαταστάθηκε. Αναβαθμίστε πρώτα το SimpleRisk στην πιο πρόσφατη έκδοση.',
+    'ExtraCompatibilityDataUnavailable' => 'Το SimpleRisk δεν μπόρεσε να επιβεβαιώσει ποιες εκδόσεις Extra υποστηρίζει αυτή η έκδοση, επομένως το Extra δεν εγκαταστάθηκε. Δοκιμάστε ξανά αργότερα.',
+    'ExtraVersionCouldNotBeVerified' => 'Δεν ήταν δυνατός ο προσδιορισμός της έκδοσης του Extra που λάβατε, επομένως δεν εγκαταστάθηκε.',
     '' => '',
 );
 ?>

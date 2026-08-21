@@ -4627,6 +4627,16 @@ $lang = array(
     'NoticeSizeSmall' => 'කුඩා',
     'NoticeSizeNormal' => 'සාමාන්‍ය',
     'NoticeSizeLarge' => 'විශාල',
+    // Preferences page save feedback
+    'TheSettingsWereUpdatedSuccessfully' => 'සැකසුම් සාර්ථකව යාවත්කාලීන කරන ලදී.',
+    'NoChangesWereMade' => 'කිසිදු වෙනසක් සිදු කර නොමැත.',
+    'PleaseSpecifyAnIntegerGreaterThanOrEqualToZeroForTheMinimumValue' => 'අවම අගය සඳහා ශුන්‍යයට වඩා වැඩි හෝ සමාන පූර්ණ සංඛ්‍යාවක් සඳහන් කරන්න.',
+    'PleaseSpecifyAnIntegerForTheMaximumValue' => 'උපරිම අගය සඳහා පූර්ණ සංඛ්‍යාවක් සඳහන් කරන්න.',
+    'PleaseSpecifyAMaximumValueGreaterThanTheMinimum' => 'කරුණාකර අවම අගයට වඩා වැඩි උපරිම අගයක් සඳහන් කරන්න.',
+    // Extra download version compatibility
+    'ExtraVersionIncompatibleWithApplication' => 'බාගත කළ "{$extra}" අමතර (අනුවාදය {$extra_version}) SimpleRisk {$app_version} සමඟ අනුකූල නොවන අතර ස්ථාපනය කර නොමැත. පළමුව SimpleRisk නවතම අනුවාදයට උත්ශ්‍රේණි කරන්න.',
+    'ExtraCompatibilityDataUnavailable' => 'මෙම නිකුතුව සහාය දක්වන අමතර අනුවාදයන් මොනවාදැයි SimpleRisk හට තහවුරු කළ නොහැකි විය, එබැවින් අමතර ස්ථාපනය කර නොමැත. කරුණාකර පසුව නැවත උත්සාහ කරන්න.',
+    'ExtraVersionCouldNotBeVerified' => 'බාගත කළ අමතර අනුවාදය තීරණය කළ නොහැකි විය, එබැවින් එය ස්ථාපනය කර නොමැත.',
     '' => '',
 );
 ?>

@@ -7,6 +7,9 @@
 // run_timestamped_queue_check() — no-op when loaded via the worker, which
 // requires queues.php before loading job definitions.
 require_once(realpath(__DIR__ . '/../queues.php'));
+// latest_versions() and extra_compatibility_versions() live in functions.php.
+// queues.php requires it too, but a direct consumer declares its own.
+require_once(realpath(__DIR__ . '/../functions.php'));
 
 return [
     'type' => 'core_version_check',
@@ -65,21 +68,16 @@ return [
      * is owned by run_timestamped_queue_check() and the worker.
      ************************************************************/
     'queue_check' => function(array $task, PDO $db) {
+        // The work itself lives in run_version_check_fetches() (functions.php) so
+        // the combining rule -- BOTH feeds must land, and the compatibility fetch
+        // is never skipped when the release feed fails -- is reachable by a test.
+        // Inside this closure it could only be exercised by two real outbound
+        // requests. The Extra compatibility cache it writes is what keeps a
+        // transient feed outage from refusing every Extra install, since
+        // download_extra() consults it on an operator's click and fails CLOSED
+        // when it is absent.
         return run_timestamped_queue_check($task, $db, 'queue_timestamp_last_version_check', 'Version Check', function() use ($db) {
-            write_debug_log("Version Check: Fetching latest version data...", "info");
-
-            // Force a fresh network fetch by bypassing all caches
-            $latest_versions = latest_versions(true);
-
-            if ($latest_versions !== 0 && !empty($latest_versions))
-            {
-                update_or_insert_setting('latest_version_data', json_encode($latest_versions), db: $db);
-                write_debug_log("Version Check: Successfully updated latest version data.", "info");
-                return true;
-            }
-
-            write_debug_log("Version Check: Failed to fetch latest version data from remote.", "error");
-            return false;
+            return run_version_check_fetches($db);
         });
     }
 ];

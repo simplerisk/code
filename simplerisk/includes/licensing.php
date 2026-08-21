@@ -5,16 +5,27 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 /**
- * SimpleRisk licensing client.
+ * SimpleRisk licensing client, and the single home for "may this Extra be
+ * installed here" logic regardless of which upstream supplies the data.
  *
  * Talks to the SimpleRisk licensing service (default
  * https://licensing.simplerisk.com) via four endpoints:
  *   POST /register, POST /instance/update,
  *   POST /license/check, POST /download-extra
  *
- * Define LICENSING_URL in config.php to point at a non-production
- * licensing service (test deploys do this via
- * scripts/bundles-test-installation.sh).
+ * It also resolves the UPDATES service base URL (updates_url(), mirroring
+ * licensing_url()) and owns the Extra/Core version-compatibility vocabulary and
+ * decisions built on that service's extra_compatibility.xml — the eligibility
+ * question spans both services, so both halves live together rather than being
+ * split by which host answered.
+ *
+ * What does NOT belong here: transport policy. This module is shared widely --
+ * admin/register.php, includes/extras.php, the license-check job, and the v2 API
+ * itself all load it for the decisions above -- so which HTTP status a particular
+ * endpoint returns lives with that endpoint, not here.
+ *
+ * Define LICENSING_URL / UPDATES_URL in config.php to point at non-production
+ * services (test deploys do this via scripts/bundles-test-installation.sh).
  */
 
 /**
@@ -259,6 +270,246 @@ function get_download_sha256_for_extra(string $extra_name): ?string
 }
 
 /**
+ * The version of $extra_name the licensing service says it will serve, from the
+ * cached /license/check response, or null when the server did not tell us.
+ *
+ * Knowing this BEFORE the download lets the pre-download gate ask the precise
+ * question ("is the build I would receive compatible with my release?") rather
+ * than the coarse proxy ("is my release the newest?").
+ *
+ * DO NOT read this as a way to obtain an older build. The licensing service
+ * serves only the newest build of an Extra: /download-extra takes instance_id,
+ * services_api_key and extra_name, with no version field, so there is no way to
+ * request a specific version and nothing here tries to. This value informs a
+ * yes/no decision about the one build on offer, and that is all.
+ *
+ * Nor is the precise form currently more permissive. It would only differ from
+ * the coarse proxy if an Extra's newest build mapped to an older release, and for
+ * all 18 published Extras the newest build maps to the newest release — so today
+ * the two arms agree on every case. What the precise form buys is an accurate
+ * refusal (it can name the build that was actually going to be sent) and correct
+ * behaviour if serving ever changes. It is not an unlock, and a Core behind the
+ * newest release should still expect to upgrade first.
+ *
+ * The /license/check body IS the cache and entries[] are persisted verbatim, so
+ * a field the server adds arrives here with no parser change. Several key names
+ * are accepted because the client must not break if the server names it
+ * differently than expected, and an unrecognised shape degrades to null, which
+ * every caller treats as "fall back to the coarse check" rather than as an error.
+ *
+ * Only a well-formed release identifier is returned: this value is compared
+ * against feed data and reaches log lines and user-facing messages.
+ */
+function get_download_version_for_extra(string $extra_name): ?string
+{
+    return select_download_version_from_entries(get_cached_license_entries(), $extra_name);
+}
+
+/**
+ * Is $value a SimpleRisk release identifier (YYYYMMDD-NNN)? Pure.
+ *
+ * The single format gate for every version that arrives from the licensing or
+ * updates services. Those values are compared against feed data and reach log
+ * lines, alerts and API responses, so a malformed or hostile one must be rejected
+ * at the boundary rather than sanitized at each use.
+ *
+ * @param mixed $value
+ */
+function is_release_identifier($value): bool
+{
+    // \z, not $. PCRE's $ also matches immediately BEFORE a trailing newline, so
+    // /^\d{8}-\d{3}$/ accepts "20260811-001\n" — and these values arrive from an
+    // HTTP response header and from server-supplied JSON, then get interpolated
+    // into log lines. A newline that survives the gate forges a log entry. \z
+    // anchors at the true end of the subject.
+    return is_string($value) && preg_match('/^\d{8}-\d{3}\z/', $value) === 1;
+}
+
+/**
+ * Pick the version of $extra_name out of a /license/check entries[] array. Pure,
+ * so the entry-matching and key-fallback behaviour is testable without a DB.
+ *
+ * Stops at the first entry matching $extra_name — the server sends one entry per
+ * Extra — and returns null if that entry carries no usable version, rather than
+ * continuing on to a later entry for a different Extra.
+ *
+ * Three key names are accepted so the client does not break if the server names
+ * the field differently than expected; an unrecognised shape yields null, which
+ * every caller treats as "fall back to the coarse check" rather than an error.
+ *
+ * @param array<int, mixed> $entries
+ */
+function select_download_version_from_entries(array $entries, string $extra_name): ?string
+{
+    foreach ($entries as $entry) {
+        if (!is_array($entry) || ($entry['extra_name'] ?? null) !== $extra_name) {
+            continue;
+        }
+        foreach (['download_version', 'extra_version', 'version'] as $key) {
+            if (is_release_identifier($entry[$key] ?? null)) {
+                return (string)$entry[$key];
+            }
+        }
+        return null;
+    }
+    return null;
+}
+
+/**
+ * Is this Extra the recovery mechanism?
+ *
+ * The Upgrade Extra is exempt from every compatibility judgement, at every
+ * stage. It is what a customer uses to get back to a supported state, so
+ * refusing it on compatibility grounds strands exactly the instance that most
+ * needs it.
+ *
+ * This exists because the rule was spelled as a bare string literal in three
+ * independent decisions and one of them was simply missing it -- the
+ * post-extract check -- which shipped a real defect: the licensing service
+ * serves ONE build per Extra, the served Upgrade build routinely predates the
+ * Core it lands on, and the feed then judged it incompatible. The three
+ * decisions stay separate (they run at genuinely different, independently
+ * reachable stages), but the one fact that varies now has a single home.
+ */
+function extra_is_recovery_mechanism(string $name): bool
+{
+    return $name === 'upgrade';
+}
+
+/**
+ * The verdict on a build we have been handed, given what the package declares,
+ * what the response header claimed, and what the compatibility feed knows. Pure.
+ *
+ * Returns one of:
+ *   'allow'                    — the feed confirms this build supports this release
+ *   'extra_version_unreadable' — the package declares no readable version
+ *   'version_mismatch'         — package and header disagree
+ *   'compatibility_unknown'    — no feed data at all
+ *   'compatibility_stale'      — feed has data but no entry for this build
+ *   'version_incompatible'     — the feed says this build does not support this release
+ *
+ * 'compatibility_stale' is deliberately distinct from 'compatibility_unknown' and
+ * from 'version_incompatible'. Its usual cause is a cache older than the build we
+ * were just sent, so the caller can refresh the feed once and ask again instead of
+ * refusing a newly published build until the 24h job catches up. Keeping the
+ * retry decision in the caller keeps this function pure and the retry testable.
+ *
+ * Order matters: an unreadable version cannot be compared to anything, and a
+ * package/header disagreement means the response did not describe its own payload,
+ * so neither value is trustworthy enough to judge compatibility with.
+ *
+ * @param array<string, array<string, list<string>>>|null $compat
+ */
+function extra_download_verdict(
+    ?string $package_version,
+    ?string $header_version,
+    ?array $compat,
+    string $extra,
+    string $app_version
+): string {
+    if (!is_release_identifier($package_version)) {
+        return 'extra_version_unreadable';
+    }
+
+    if ($header_version !== null && $header_version !== $package_version) {
+        return 'version_mismatch';
+    }
+
+    // The recovery mechanism always goes through -- the same carve-out the
+    // PRE-download gate makes, and for the same reason. It was missing here, and
+    // that is not a theoretical gap: the licensing service serves ONE build of
+    // each Extra, and the Upgrade Extra's build routinely predates the Core it is
+    // being installed onto (an in-development or freshly-cut release is newer
+    // than the last published Upgrade build). The compatibility feed then judges
+    // it incompatible and the post-extract check refused it -- stranding the
+    // customer, because the Upgrade Extra is precisely what they would use to get
+    // back to a supported state.
+    //
+    // Only the COMPATIBILITY judgement is waived. The integrity checks above
+    // still apply: an unreadable version, or a package whose version disagrees
+    // with the X-Extra-Version header, is a corrupt download -- and installing a
+    // corrupt recovery mechanism is worse than refusing it. The X-SHA256 body
+    // check is separate and lives in download_extra(); it runs unconditionally,
+    // for every Extra including this one.
+    if (extra_is_recovery_mechanism($extra)) {
+        return 'allow';
+    }
+
+    if ($compat === null) {
+        return 'compatibility_unknown';
+    }
+
+    $supported = extra_version_supported_by_app($compat, $extra, $package_version, $app_version);
+
+    if ($supported === true) {
+        return 'allow';
+    }
+    if ($supported === null) {
+        return 'compatibility_stale';
+    }
+    return 'version_incompatible';
+}
+
+/**
+ * The single decision for "may this Extra be downloaded onto this Core?",
+ * covering both the precise and the coarse path. Pure.
+ *
+ * Returns one of:
+ *   'allow'                    — proceed with the download
+ *   'pending_migration'        — the schema has not caught up with the files
+ *   'version_incompatible'     — the build we would receive does not support this release
+ *   'core_out_of_date'         — coarse answer: this release is not the newest
+ *
+ * Order matters. The Upgrade Extra is exempt from everything because it is what
+ * makes an out-of-date instance current. A pending migration blocks regardless
+ * of which build we would receive, because the newest Extra expects the newest
+ * schema. Only then is the version question asked, preferring the precise form
+ * when the licensing service told us what it will serve AND the feed can judge
+ * it; anything less definite falls back to the coarse comparison, which fails
+ * open when the release feed is unknown.
+ *
+ * @param array<string, array<string, list<string>>>|null $compat         Feed data, or null when unavailable.
+ * @param string|null                                     $served_version Version the service will send, or null when unknown.
+ */
+function extra_install_decision(
+    string $name,
+    string $app_version,
+    string $db_version,
+    string $latest_app_version,
+    ?string $served_version = null,
+    ?array $compat = null
+): string {
+    if (extra_is_recovery_mechanism($name)) {
+        return 'allow';
+    }
+
+    if ($app_version !== $db_version) {
+        return 'pending_migration';
+    }
+
+    // Precise: we know the build and the feed can judge it. This is the arm that
+    // lets a release behind the newest still install an Extra whose current
+    // build supports it (a mid-release respin belongs to the earlier release).
+    if ($served_version !== null && $compat !== null) {
+        $supported = extra_version_supported_by_app($compat, $name, $served_version, $app_version);
+        if ($supported === true) {
+            return 'allow';
+        }
+        if ($supported === false) {
+            return 'version_incompatible';
+        }
+        // null — the feed has no entry for that build. Not definite, so fall
+        // through to the coarse check rather than refusing on missing data;
+        // the post-extract verification fails closed on this case anyway.
+    }
+
+    // Coarse: reuse the published helper so the two cannot drift.
+    return extra_install_blocked_by_core_version($name, $app_version, $db_version, $latest_app_version)
+        ? 'core_out_of_date'
+        : 'allow';
+}
+
+/**
  * Map a license end date to the single currently-due expiration notification
  * event: '90','60','45','30','15','10','7','3','2','1', 'expired', or null
  * (91 or more days remaining, or an unparseable date). Pure helper.
@@ -387,6 +638,63 @@ function extra_download_is_intact(?string $expected_sha256, string $bytes): bool
     // server-advertised uppercase/mixed-case SHA-256 verifies identically here and in
     // the Upgrade Extra's twin (upgrade_download_is_intact), which already lowercases.
     return hash_equals(strtolower($expected_sha256), hash('sha256', $bytes));
+}
+
+/**
+ * Decide the integrity outcome for a downloaded Extra given the two hashes we
+ * may hold for it. Pure.
+ *
+ * Returns 'ok', 'source_conflict', 'corrupt', or 'unverified'.
+ *
+ * THE TWO SOURCES ARE NOT INTERCHANGEABLE, and this is the important part:
+ *
+ * - $cached_sha256 comes from a PREVIOUS, SEPARATE /license/check request. That
+ *   independence is what makes it a real integrity check: whoever can alter the
+ *   download body cannot retroactively alter a hash we already hold.
+ * - $header_sha256 is the X-SHA256 header of the SAME response that carried the
+ *   body. Anything able to rewrite the body can rewrite its header too, so this
+ *   detects TRUNCATION AND CORRUPTION but provides no guarantee against a
+ *   tampered response.
+ *
+ * So the header is a strict improvement on the previous behaviour -- an unknown
+ * cached hash meant skipping verification entirely -- but it is NOT a substitute
+ * for the cached one. Do not "simplify" this by dropping the cached hash because
+ * the header is always present; that would quietly convert an integrity check
+ * into a corruption check.
+ *
+ * When both are present they must agree. A disagreement means the response does
+ * not describe the package the licensing service recorded, which is refused
+ * rather than resolved by preferring one.
+ */
+function extra_download_hash_verdict(?string $cached_sha256, ?string $header_sha256, string $bytes): string
+{
+    $normalize = static function (?string $h): ?string {
+        if (!is_string($h)) {
+            return null;
+        }
+        $h = strtolower(trim($h));
+        // \z, not $ — see is_release_identifier(): $ would also accept a trailing
+        // newline, and this value comes off the wire in the X-SHA256 header.
+        return preg_match('/^[0-9a-f]{64}\z/', $h) === 1 ? $h : null;
+    };
+
+    $cached = $normalize($cached_sha256);
+    $header = $normalize($header_sha256);
+    $actual = hash('sha256', $bytes);
+
+    if ($cached !== null && $header !== null && !hash_equals($cached, $header)) {
+        return 'source_conflict';
+    }
+
+    // Prefer the independent hash; fall back to the header only to catch
+    // corruption when we have nothing better.
+    $expected = $cached ?? $header;
+
+    if ($expected === null) {
+        return 'unverified';
+    }
+
+    return hash_equals($expected, $actual) ? 'ok' : 'corrupt';
 }
 
 /**
@@ -619,6 +927,300 @@ function parse_download_extra_error(int $http_status, string $body): array
         $out['retry_after_seconds'] = (int)$decoded['retry_after_seconds'];
     }
     return $out;
+}
+
+/**
+ * Decide whether an Extra download must be refused because Core is not on the
+ * latest release. Pure — no DB, no network, no globals.
+ *
+ * "Core first, then Extras" is a real constraint, not a preference. The
+ * licensing service always ships the NEWEST build of an Extra: POST
+ * /download-extra carries instance_id, services_api_key and extra_name only,
+ * with no version field, so the server cannot tailor the package to an older
+ * Core. When an Extra starts calling Core code — a new class, a new helper —
+ * that Core predates, the result is a fatal on every page that renders the
+ * affected feature. This function is the only place that constraint is
+ * enforced.
+ *
+ * The gate existed before the /download-extra rewrite (e4259b7736) and was
+ * dropped along with the legacy XML parser it sat next to.
+ *
+ * Three deliberate decisions:
+ *
+ * 1. The Upgrade Extra is NEVER blocked. It is the mechanism that brings Core
+ *    to the latest release, so refusing it would leave an out-of-date instance
+ *    permanently unable to become up to date, and it is the recovery path when
+ *    the installed copy is damaged.
+ *
+ * 2. A pending schema migration (app != db) blocks on its own, with no
+ *    reference to the feed. The newest Extra expects the newest schema.
+ *
+ * 3. $latest_app_version === '' means the releases feed was unreachable or
+ *    unparseable, and the remote half of the check then fails OPEN. Refusing
+ *    every install because our own network call failed would take a working
+ *    feature offline on every customer behind a broken egress path. The
+ *    consequence is that this is a policy control, not a guarantee: an Extra
+ *    that begins calling new Core code still needs its own guard for the case
+ *    where the feed was down when the operator pressed Install.
+ *
+ * 4. Only a Core strictly BEHIND the newest release is blocked, never one merely
+ *    different from it. An in-development or pre-release build is AHEAD of the
+ *    published feed — this repository's APP_VERSION was 20260811-001 while
+ *    releases.xml still advertised 20260519-001 — and an equality test would
+ *    have refused every Extra install on every dev, CI and RC instance. The
+ *    check this restores had the same property for a different reason: it asked
+ *    upgrade_path.xml for the next hop FROM the running version, and an
+ *    unpublished version has no entry, so it too failed open. Release
+ *    identifiers are fixed-width YYYYMMDD-NNN, so string comparison is
+ *    chronological.
+ *
+ * @param string $name               Extra short name.
+ * @param string $app_version        APP_VERSION of the running files.
+ * @param string $db_version         db_version recorded in the settings table.
+ * @param string $latest_app_version Newest published release; '' when unknown.
+ *
+ * @return bool True when the download must be refused.
+ */
+function extra_install_blocked_by_core_version(
+    string $name,
+    string $app_version,
+    string $db_version,
+    string $latest_app_version
+): bool {
+    // (1) The recovery mechanism always goes through.
+    if (extra_is_recovery_mechanism($name)) {
+        return false;
+    }
+
+    // (2) Local, feed-independent: the schema has not caught up with the files.
+    if ($app_version !== $db_version) {
+        return true;
+    }
+
+    // (3) Feed unknown — nothing further can be decided, so allow.
+    if ($latest_app_version === '') {
+        return false;
+    }
+
+    // (4) Strictly behind only. Never block a build that is ahead of the feed.
+    return strcmp($app_version, $latest_app_version) < 0;
+}
+
+/**
+ * Resolve a URL on the updates service, mirroring licensing_url().
+ *
+ * UPDATES_URL is an OVERRIDE, defined only by scripts/bundles-test-installation.sh
+ * so a test deploy can point at updates-test. A production instance never has it,
+ * which makes the default the LIVE path — and that default must be the service we
+ * operate. It was raw.githubusercontent.com, a host we do not control and which
+ * rate-limits (429/503), for every feed on every production instance, including
+ * the releases.xml that authorises a release bundle.
+ *
+ * NOT usable at five of the eight feed-reading sites, and the reason matters:
+ *
+ *  - simplerisk/extras/upgrade/index.php (x2) and extras/management/index.php
+ *    are Extras. The Upgrade Extra is downloaded FIRST and runs against a Core
+ *    OLDER than itself, so a bare call to a Core helper that release does not
+ *    define is a fatal mid-upgrade, for the population least able to recover
+ *    from one. They keep their own literals on purpose.
+ *  - simplerisk/includes/install.php (x2) is the pre-install bootstrap, which
+ *    runs before functions.php can be loaded at all (the same constraint behind
+ *    its installer_log() carve-out).
+ *
+ * So do not "fix the inconsistency" by routing those five through here.
+ */
+function updates_url(string $path = ''): string
+{
+    $base = defined('UPDATES_URL') ? UPDATES_URL : 'https://updates.simplerisk.com';
+    return rtrim($base, '/') . '/' . ltrim($path, '/');
+}
+
+/**
+ * The refusal codes that mean "this instance is not in a state to accept the
+ * build on offer", as opposed to "something went wrong fetching it".
+ *
+ * Defined here, beside the two functions that produce them
+ * (extra_install_decision() and extra_download_verdict()), so the classification
+ * cannot drift from the codes themselves. The v2 install endpoint consults this
+ * rather than restating the list.
+ *
+ * @return list<string>
+ */
+function extra_install_precondition_errors(): array
+{
+    return [
+        'core_out_of_date',         // this release is not the newest
+        'pending_migration',        // the schema has not caught up with the files
+        'version_incompatible',     // the build does not support this release
+        'compatibility_unknown',    // no compatibility data to judge it with
+        'extra_version_unreadable', // the package declares no readable version
+    ];
+}
+
+/*
+ * The HTTP-status mapping for these codes lives with the endpoint that uses it,
+ * in api/v2/includes/api.php beside api_v2_admin_extras_install(). This module is
+ * a service client loaded by non-API callers (register.php, extras.php, the
+ * license-check job); which status code a JSON API returns is transport policy
+ * and does not belong here. The vocabulary above stays, so the classification
+ * still cannot drift from the codes themselves.
+ */
+
+
+/**
+ * Parse the updates service's extra_compatibility.xml into
+ *   [extra_short_name => [extra_version => [compatible app version, ...]]]
+ *
+ * Pure. Returns null for any body that cannot be used, matching
+ * parse_releases_feed(): a 200 does not guarantee a usable string (a
+ * mid-transfer timeout can yield an empty body), so every unusable input must
+ * degrade rather than throw.
+ *
+ * The feed is the reverse index of releases.xml's per-release <extras> list.
+ * One release maps to many versions of the same Extra -- a mid-release respin
+ * gets a later version number while still belonging to the earlier release
+ * (assessments 20231110-001 belongs to app 20231103-001, and there are 83 such
+ * entries) -- while each Extra version maps to exactly one release. That
+ * asymmetry is the whole reason this feed is required: "is the Extra version
+ * newer than APP_VERSION" would reject every one of those legitimate respins,
+ * so compatibility cannot be inferred from the version numbers alone.
+ *
+ * The feed shape is:
+ *   <extras>
+ *     <api>
+ *       <extra version="20260811-001"><appversion>20260811-001</appversion></extra>
+ *
+ * Multiple <appversion> children are accepted even though the published feed
+ * currently has none, so a future many-to-many does not need a parser change.
+ *
+ * @param mixed $body Raw response body.
+ *
+ * @return array<string, array<string, list<string>>>|null
+ */
+function parse_extra_compatibility_feed($body): ?array
+{
+    if (!is_string($body) || $body === '') {
+        return null;
+    }
+    $xml = @simplexml_load_string($body);
+    if ($xml === false) {
+        return null;
+    }
+
+    $out = [];
+    foreach ($xml as $extra_name => $extra_node) {
+        $name = (string)$extra_name;
+        if ($name === '') {
+            continue;
+        }
+        foreach ($extra_node->extra as $entry) {
+            $version = isset($entry['version']) ? (string)$entry['version'] : '';
+            if ($version === '') {
+                continue;
+            }
+            $apps = [];
+            foreach ($entry->appversion as $app) {
+                $app = trim((string)$app);
+                if ($app !== '') {
+                    $apps[] = $app;
+                }
+            }
+            if ($apps === []) {
+                continue;
+            }
+            // Later duplicates merge rather than overwrite; the feed is
+            // generated, but a repeated entry must not silently drop versions.
+            $existing = $out[$name][$version] ?? [];
+            $out[$name][$version] = array_values(array_unique(array_merge($existing, $apps)));
+        }
+    }
+
+    // An empty map means the body parsed but carried nothing we can use. Treat
+    // it as unusable so callers apply their no-data policy instead of reading it
+    // as "this Extra is not compatible with anything".
+    return $out === [] ? null : $out;
+}
+
+/**
+ * Read an Extra's version out of its index.php source.
+ *
+ * Pure -- takes the source text, not a path. The caller reads the file, because
+ * the file must NEVER be included to get this value: a freshly downloaded Extra
+ * redeclares every function the live copy already defined, which is an
+ * unrecoverable fatal in the middle of an install. The constant is also not
+ * derivable from the short name (import-export defines
+ * IMPORTEXPORT_EXTRA_VERSION and complianceforgescf defines
+ * COMPLIANCEFORGE_SCF_EXTRA_VERSION), so this matches whatever *_EXTRA_VERSION
+ * the file declares rather than constructing the name.
+ *
+ * The value is required to look like a release identifier. That rejects a
+ * malformed or hostile package before its version string reaches a log line, an
+ * alert or an API response, and catches a truncated download that happens to
+ * still contain the define.
+ *
+ * @param mixed $source Contents of the Extra's index.php.
+ *
+ * @return string|null The version, or null when absent or malformed.
+ */
+function parse_extra_version_from_source($source): ?string
+{
+    if (!is_string($source) || $source === '') {
+        return null;
+    }
+    if (!preg_match(
+        "/define\s*\(\s*'[A-Z0-9_]*_EXTRA_VERSION'\s*,\s*'(\d{8}-\d{3})'\s*\)/",
+        $source,
+        $m
+    )) {
+        return null;
+    }
+    return $m[1];
+}
+
+/**
+ * Is $extra_version of $extra compatible with the running $app_version?
+ *
+ * Pure. Returns null for "the feed has no entry for this Extra at this
+ * version", which is a genuinely different answer from false and must stay
+ * distinguishable: the caller's no-data policy decides what to do, and
+ * collapsing unknown into incompatible here would hide that decision.
+ *
+ * @param array<string, array<string, list<string>>> $compat From parse_extra_compatibility_feed().
+ *
+ * @return bool|null
+ */
+function extra_version_supported_by_app(
+    array $compat,
+    string $extra,
+    string $extra_version,
+    string $app_version
+): ?bool {
+    if (!isset($compat[$extra][$extra_version])) {
+        return null;
+    }
+    return in_array($app_version, $compat[$extra][$extra_version], true);
+}
+
+/**
+ * Every version of $extra the feed says works with $app_version, newest first.
+ *
+ * Pure. Used to tell the operator which version their release actually supports
+ * instead of only that the one they were sent does not.
+ *
+ * @param array<string, array<string, list<string>>> $compat From parse_extra_compatibility_feed().
+ *
+ * @return list<string>
+ */
+function extra_versions_for_app(array $compat, string $extra, string $app_version): array
+{
+    $versions = [];
+    foreach ($compat[$extra] ?? [] as $version => $apps) {
+        if (in_array($app_version, $apps, true)) {
+            $versions[] = (string)$version;
+        }
+    }
+    rsort($versions, SORT_STRING);
+    return $versions;
 }
 
 /**

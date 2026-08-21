@@ -24,19 +24,24 @@ class Refs implements PipeInterface, LoggerAwareInterface
 {
     use LoggerAwareTrait;
 
-    public function group(): string|\BackedEnum
-    {
-        return Group::Resolve;
-    }
-
     public function __invoke(mixed $payload): mixed
     {
+        foreach ($payload->schemas as $schema) {
+            $reflector = $schema->getClassReflector();
+            if ($reflector === null) {
+                continue;
+            }
+            $this->mergeAllOf($schema);
+            $this->dedupAllOfRefs($schema);
+        }
+
         $refMap = $this->buildRefMap($payload);
 
         if ($refMap === []) {
             return null;
         }
 
+        $this->resolveRefRefs($payload);
         $this->resolveFQCNRefs($payload, $refMap);
         $this->resolveDiscriminatorMappings($payload, $refMap);
         $this->resolveAllOfPropertyRefs($payload);
@@ -44,7 +49,21 @@ class Refs implements PipeInterface, LoggerAwareInterface
         return null;
     }
 
-    protected function resolveFQCNRefs(Specification $specification, array &$refMap): array
+    public function group(): string|\BackedEnum
+    {
+        return Group::Resolve;
+    }
+
+    protected function resolveRefRefs(Specification $specification): void
+    {
+        $specification->getWalker()->eachRef(function (OA\AbstractAttribute $attribute): void {
+            if ($attribute->ref instanceof OA\Schema\Ref) {
+                $attribute->ref = $attribute->ref->ref;
+            }
+        });
+    }
+
+    protected function resolveFQCNRefs(Specification $specification, array $refMap): void
     {
         $unresolved = [];
 
@@ -60,12 +79,8 @@ class Refs implements PipeInterface, LoggerAwareInterface
         });
 
         foreach (array_keys($unresolved) as $ref) {
-            $this->logger?->warning('Ref: unresolved reference "{ref}" — no matching component found', [
-                'ref' => $ref,
-            ]);
+            $this->logger?->warning("Ref: unresolved reference '{$ref}' — no matching component found");
         }
-
-        return $refMap;
     }
 
     /**
@@ -77,13 +92,13 @@ class Refs implements PipeInterface, LoggerAwareInterface
     {
         $map = [];
 
-        foreach ($specification->schemas as $schema) {
+        $specification->getWalker()->eachSchema(function (OA\Schema $schema) use (&$map): void {
             $name = $schema->schema ?? $schema->title;
             $fqcn = $schema->getClassName();
             if ($name !== null && $fqcn !== null) {
                 $map[$fqcn] = '#/components/schemas/' . $name;
             }
-        }
+        });
 
         foreach ($specification->responses as $response) {
             $name = $response->response;
@@ -152,8 +167,9 @@ class Refs implements PipeInterface, LoggerAwareInterface
             if ($schema->allOf !== null && $schema->properties === null) {
                 foreach ($schema->allOf as $index => $allOf) {
                     if ($allOf instanceof OA\Schema && $allOf->properties !== null) {
-                        $name = $schema->schema ?? $schema->title;
-                        $candidates[$name] = $index;
+                        if ($schema->schema !== null) {
+                            $candidates[$schema->schema] = $index;
+                        }
                     }
                 }
             }
@@ -173,5 +189,39 @@ class Refs implements PipeInterface, LoggerAwareInterface
                 $attribute->ref = "#/components/schemas/{$name}/allOf/{$index}/{$path}";
             }
         });
+    }
+
+    /**
+     * When allOf refs were added but the schema also has own properties, wrap them
+     * in a dedicated allOf entry so the final output is a pure allOf composition.
+     */
+    protected function mergeAllOf(OA\Schema $schema): void
+    {
+        if ($schema->allOf === null || $schema->properties === null) {
+            return;
+        }
+
+        $schema->allOf[] = new OA\Schema(type: 'object', properties: $schema->properties);
+        $schema->properties = null;
+    }
+
+    protected function dedupAllOfRefs(OA\Schema $schema): void
+    {
+        if ($schema->allOf === null || $schema->allOf === []) {
+            return;
+        }
+
+        $unique = [];
+        foreach ($schema->allOf as $ii => $allOf) {
+            if ($allOf->ref !== null) {
+                if (isset($unique[$allOf->ref])) {
+                    continue;
+                }
+                $unique[$allOf->ref] = $allOf;
+            } else {
+                $unique[$ii] = $allOf;
+            }
+        }
+        $schema->allOf = array_values($unique);
     }
 }

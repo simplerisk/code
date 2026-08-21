@@ -79,9 +79,9 @@ class Schema extends AbstractAttribute
      * @param int|null                                                                $minContains           Minimum number of items matching contains
      * @param int|null                                                                $maxContains           Maximum number of items matching contains
      * @param Schema|bool|null                                                        $unevaluatedItems      Schema for items not covered by other keywords
-     * @param list<Property|Schema>|null                                              $properties            Object property definitions
+     * @param list<Property>|null                                                     $properties            Object property definitions
      * @param list<string>|null                                                       $required              List of required property names
-     * @param Schema|bool|null                                                        $additionalProperties  Schema or boolean for additional properties
+     * @param Schema|Schema\AdditionalProperties|bool|null                            $additionalProperties  Schema or boolean for additional properties
      * @param array<string,Schema>|null                                               $patternProperties     Schemas for properties matching regex patterns
      * @param int|null                                                                $minProperties         Minimum number of properties
      * @param int|null                                                                $maxProperties         Maximum number of properties
@@ -117,7 +117,7 @@ class Schema extends AbstractAttribute
         public ?string $description = Undefined::UNDEFINED,
 
         // Reference
-        public ?string $ref = null,
+        public string|Schema\Ref|null $ref = null,
 
         // Core type
         public string|array|null $type = null,
@@ -152,7 +152,7 @@ class Schema extends AbstractAttribute
         // Object constraints
         public ?array $properties = null,
         public ?array $required = null,
-        public Schema|bool|null $additionalProperties = null,
+        public Schema|Schema\AdditionalProperties|bool|null $additionalProperties = null,
         public ?array $patternProperties = null,
         public ?int $minProperties = null,
         public ?int $maxProperties = null,
@@ -204,6 +204,7 @@ class Schema extends AbstractAttribute
     public function merge(): array
     {
         return [
+            Components::class => 'schemas[]',
             Property::class => 'schema',
             Parameter::class => 'schema',
             Header::class => 'schema',

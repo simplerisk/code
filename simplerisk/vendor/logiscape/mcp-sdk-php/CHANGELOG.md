@@ -16,6 +16,60 @@ This file was introduced during the v1.7.x series. Structured entries below cove
 
 ## [Unreleased]
 
+## [2.0.1]
+
+### Changed
+
+- Draft conformance tool pin bumped `0.2.0-alpha.10` → `0.2.0-alpha.11`
+  (published 2026-08-07) and the draft baseline re-curated from real
+  runs. alpha.11 validates every JSON-RPC message against the
+  per-version core spec JSON schema (upstream #399/#421); that validator
+  has no branch for the Tasks extension's `CreateTaskResult`, so eight
+  SEP-2663 scenarios each gain exactly one expected `wire-schema-valid`
+  failure while all substantive Tasks checks keep passing — tracked
+  upstream as modelcontextprotocol/conformance#424, and the entries
+  retire when a release ships the `resultType:"task"` branch. The
+  `--suite draft` legs are otherwise clean on alpha.11 (server 103/103,
+  client 167/167 including the reworked session-teardown behavior of
+  upstream #316), and `auth/pre-registration` keeps its unchanged,
+  documented root cause (our approved upstream PR #423 is not in
+  alpha.11). No SDK code change; the stable pin stays `0.1.16`.
+
+### Added
+
+- Conformance harness: the `json_schema_2020_12_tool` fixture in
+  `conformance/everything-server.php` now declares the full schema the
+  `json-schema-2020-12` scenario documents — `$anchor` inside `$defs`,
+  `allOf`/`anyOf` composition, and `if`/`then`/`else` conditionals — so
+  the scenario's SEP-2106 checks, which are only scored on the
+  `2026-07-28` wire, pass 8/8 there (they are SKIPPED on legacy wires,
+  which had masked the fixture gap). Verified the SDK itself preserves
+  every keyword end-to-end via `ToolInputSchema`'s extra-fields
+  passthrough; no SDK code change.
+- Conformance harness: `conformance/everything-client.php` implements the
+  upstream `json-schema-2020-12-preservation` client scenario by
+  round-tripping the focal tool's parsed `inputSchema` through the mock's
+  echo tool — demonstrating that the client preserves the full JSON Schema
+  2020-12 vocabulary (SEP-1613/SEP-2106).
+- **Per-tool pre-task input mode for the Tasks extension** — a new
+  `taskInputMode:` argument on `McpServer::tool()` (constants in
+  `Mcp\Server\TaskInputMode`) lets a task-capable tool choose how it
+  composes with SEP-2322 multi-round-trip input:
+  - `IN_TASK` (default, unchanged behavior): the task handle is minted
+    first and input is gathered in-task via `tasks/get` `inputRequests`
+    answered through `tasks/update`.
+  - `PRE_TASK`: input is resolved through plain `input_required` rounds
+    while **no task record exists**; the final round mints the task —
+    already terminal — and returns the `CreateTaskResult`. This is the
+    composition the ext-tasks specification recommends ("resolve all
+    MRTR exchanges synchronously before responding with a
+    CreateTaskResult") and clears the `tasks-mrtr-composition`
+    conformance scenario (draft baseline down to one entry). A protocol
+    error during a pre-task round surfaces as a JSON-RPC error rather
+    than a `failed` task, and `TaskContext::defer()` remains unavailable
+    until the task exists — deferring tools should keep the in-task
+    default. See [docs/tasks.md](docs/tasks.md).
+
 ## [2.0.0]
 
 The v2 release of the SDK, adding day-one support for the

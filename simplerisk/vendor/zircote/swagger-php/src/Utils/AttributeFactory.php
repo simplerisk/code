@@ -10,7 +10,6 @@ use OpenApi\Assembler\DefaultAttributeTranslator;
 use OpenApi\AttributeInterface;
 use OpenApi\AttributeTranslatorInterface;
 use OpenApi\OpenApiException;
-use OpenApi\Spec as OA;
 
 /**
  * Creates spec attribute instances from PHP reflectors.
@@ -98,17 +97,30 @@ class AttributeFactory
                 array_push($inner, ...$this->resolveNesting($this->readAttributes($parameter)));
             }
 
-            return $this->resolveHierarchy($outer, $inner);
+            $resolved = $this->resolveHierarchy($outer, $inner);
+
+            if ($outer !== []) {
+                foreach ($resolved as $attribute) {
+                    if (!$attribute->isRoot() && !in_array($attribute, $outer, true)) {
+                        throw OpenApiException::fromSource(
+                            sprintf('Orphan attribute: %s has no valid container at enclosing level', $attribute::class),
+                            $attribute->getSourceLocation(),
+                        );
+                    }
+                }
+            }
+
+            return $resolved;
         }
 
         return $this->resolveNesting($this->readAttributes($reflector));
     }
 
     /**
-     * Read and resolve attributes from a class's own members (properties, constructor params, constants).
+     * Read and resolve attributes from all class members (properties, constants, methods).
      *
-     * Does NOT include the class-level attributes themselves or methods.
-     * Returns inner attributes suitable for hierarchical absorption into a class-level container.
+     * Each member is fully resolved internally (merge + parameter absorption for methods),
+     * then all results are returned for hierarchical absorption into class-level containers.
      *
      * @return list<AttributeInterface>
      */
@@ -145,6 +157,31 @@ class AttributeFactory
             array_push($inner, ...$this->resolveNesting($this->readAttributes($constant)));
         }
 
+        foreach ($this->getDirectMethods($class) as $method) {
+            array_push($inner, ...$this->fromReflector($method));
+        }
+
+        return $inner;
+    }
+
+    /**
+     * Check whether a reflector has any `AttributeInterface` attributes.
+     */
+    public function hasAttributes(\ReflectionClass|\ReflectionMethod|\ReflectionProperty|\ReflectionParameter|\ReflectionClassConstant $reflector): bool
+    {
+        return $this->readAttributes($reflector) !== [];
+    }
+
+    /**
+     * Get methods directly implemented by a class (not inherited from parents).
+     *
+     * @return list<\ReflectionMethod>
+     */
+    public function getDirectMethods(\ReflectionClass $class): array
+    {
+        $scannerDetails = $this->tokenScanner->detailsFor($class);
+
+        $methods = [];
         foreach ($class->getMethods(\ReflectionMethod::IS_PUBLIC) as $method) {
             if ($method->isConstructor()
                 || $method->getDeclaringClass()->getName() !== $class->getName()
@@ -153,42 +190,96 @@ class AttributeFactory
                 continue;
             }
 
-            $resolved = $this->resolveNesting($this->readAttributes($method));
-            foreach ($resolved as $attribute) {
-                if ($attribute instanceof OA\Property) {
-                    $inner[] = $attribute;
+            $methods[] = $method;
+        }
+
+        return $methods;
+    }
+
+    /**
+     * Get interfaces directly implemented by a class (not inherited from parents).
+     *
+     * @return list<\ReflectionClass>
+     */
+    public function getDirectInterfaces(\ReflectionClass $class): array
+    {
+        $interfaces = $class->getInterfaces();
+
+        $parent = $class->getParentClass();
+        if ($parent !== false) {
+            $parentInterfaceNames = array_map(
+                fn (\ReflectionClass $i): string => $i->getName(),
+                $parent->getInterfaces(),
+            );
+            $interfaces = array_filter(
+                $interfaces,
+                fn (\ReflectionClass $i): bool => !in_array($i->getName(), $parentInterfaceNames, true),
+            );
+        }
+
+        return array_values($interfaces);
+    }
+
+    /**
+     * Get traits directly used by the given class (excludes inherited trait-uses).
+     *
+     * PHP's ReflectionClass::getTraits() flattens the entire trait tree, so we
+     * must exclude traits that come from a parent class or from another trait's use.
+     *
+     * @return list<\ReflectionClass>
+     */
+    public function getDirectTraits(\ReflectionClass $class): array
+    {
+        $scannerDetails = $this->tokenScanner->detailsFor($class);
+
+        if ($scannerDetails !== null) {
+            return array_filter(
+                array_map(
+                    fn (string $name): ?\ReflectionClass => class_exists($name) || trait_exists($name) ? new \ReflectionClass($name) : null,
+                    $scannerDetails['traits'],
+                ),
+            );
+        }
+
+        return [];
+    }
+
+    /**
+     * Hierarchical absorb: outer-level attributes absorb inner-level attributes using contains().
+     *
+     * Inner attributes that match a container's contains() are nested into it (first match wins).
+     * Inner attributes that find no container pass through alongside outer.
+     *
+     * @param  list<AttributeInterface> $outer
+     * @param  list<AttributeInterface> $inner
+     * @return list<AttributeInterface>
+     */
+    public function resolveHierarchy(array $outer, array $inner): array
+    {
+        foreach ($inner as $innerAttribute) {
+            $absorbed = false;
+
+            foreach ($outer as $outerAttribute) {
+                $containsTypes = $outerAttribute->contains();
+                if ($containsTypes === []) {
+                    continue;
+                }
+
+                foreach ($containsTypes as $childClass => $slot) {
+                    if ($innerAttribute instanceof $childClass) {
+                        $this->nestChild($outerAttribute, $innerAttribute, $slot);
+                        $absorbed = true;
+                        break 2;
+                    }
                 }
             }
-        }
 
-        return $inner;
-    }
-
-    /**
-     * Check whether a reflector has any OpenAPI attributes.
-     */
-    public function hasAttributes(\ReflectionClass|\ReflectionMethod|\ReflectionProperty|\ReflectionParameter|\ReflectionClassConstant $reflector): bool
-    {
-        return $this->readAttributes($reflector) !== [];
-    }
-
-    /**
-     * Check whether a method only produces Property attributes (no operations).
-     */
-    public function hasOnlyProperties(\ReflectionMethod $method): bool
-    {
-        $attributes = $this->readAttributes($method);
-        if ($attributes === []) {
-            return false;
-        }
-
-        foreach ($attributes as $attribute) {
-            if (!$attribute instanceof OA\Property && !$attribute instanceof OA\Schema) {
-                return false;
+            if (!$absorbed) {
+                $outer[] = $innerAttribute;
             }
         }
 
-        return true;
+        return $outer;
     }
 
     /**
@@ -247,67 +338,6 @@ class AttributeFactory
         }
 
         return $roots;
-    }
-
-    /**
-     * Hierarchical absorb: outer-level attributes absorb inner-level attributes using contains().
-     *
-     * @param  list<AttributeInterface> $outer
-     * @param  list<AttributeInterface> $inner
-     * @return list<AttributeInterface>
-     */
-    public function resolveHierarchy(array $outer, array $inner): array
-    {
-        foreach ($inner as $innerAttribute) {
-            $matchingContainer = null;
-            $matchingSlot = null;
-
-            foreach ($outer as $outerAttribute) {
-                $containsTypes = $outerAttribute->contains();
-                if ($containsTypes === []) {
-                    continue;
-                }
-
-                foreach ($containsTypes as $childClass => $slot) {
-                    if ($innerAttribute instanceof $childClass) {
-                        if ($matchingContainer instanceof AttributeInterface) {
-                            throw OpenApiException::fromSource(
-                                sprintf(
-                                    'Ambiguous hierarchy: %s matches multiple containers (%s and %s)',
-                                    $innerAttribute::class,
-                                    $matchingContainer::class,
-                                    $outerAttribute::class,
-                                ),
-                                $innerAttribute->getSourceLocation(),
-                            );
-                        }
-                        $matchingContainer = $outerAttribute;
-                        $matchingSlot = $slot;
-                        break;
-                    }
-                }
-            }
-
-            if ($matchingContainer === null) {
-                throw OpenApiException::fromSource(
-                    sprintf('Orphan attribute: %s has no valid container at enclosing level', $innerAttribute::class),
-                    $innerAttribute->getSourceLocation(),
-                );
-            }
-
-            $this->nestChild($matchingContainer, $innerAttribute, $matchingSlot);
-        }
-
-        foreach ($outer as $attribute) {
-            if (!$attribute->isRoot()) {
-                throw OpenApiException::fromSource(
-                    sprintf('Non-root attribute %s remains after resolution — it should have been absorbed by a container', $attribute::class),
-                    $attribute->getSourceLocation(),
-                );
-            }
-        }
-
-        return $outer;
     }
 
     protected function nestChild(AttributeInterface $parent, AttributeInterface $child, string $slot): void
@@ -374,6 +404,13 @@ class AttributeFactory
             $attributes = $translator->translate($attributes, $current, $reflector);
         }
 
-        return array_values(array_filter($attributes, static fn (object $item): bool => $item instanceof AttributeInterface));
+        // final pass in case translators didn't set reflector
+        foreach ($attributes as $item) {
+            if ($item instanceof AttributeInterface && !$item->getReflector() instanceof \Reflector) {
+                $item->setReflector($reflector);
+            }
+        }
+
+        return array_values(array_filter($attributes, static fn (object|null $item): bool => $item instanceof AttributeInterface));
     }
 }

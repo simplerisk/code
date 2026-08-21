@@ -4627,6 +4627,16 @@ $lang = array(
     'NoticeSizeSmall' => 'Мали',
     'NoticeSizeNormal' => 'Нормално',
     'NoticeSizeLarge' => 'Велико',
+    // Preferences page save feedback
+    'TheSettingsWereUpdatedSuccessfully' => 'Подешавања су успешно ажурирана.',
+    'NoChangesWereMade' => 'Нису направљене никакве промене.',
+    'PleaseSpecifyAnIntegerGreaterThanOrEqualToZeroForTheMinimumValue' => 'Молимо вас да за минималну вредност наведете цео број већи или једнак нули.',
+    'PleaseSpecifyAnIntegerForTheMaximumValue' => 'Молимо вас да наведете цео број за максималну вредност.',
+    'PleaseSpecifyAMaximumValueGreaterThanTheMinimum' => 'Молимо вас да наведете максималну вредност већу од минималне.',
+    // Extra download version compatibility
+    'ExtraVersionIncompatibleWithApplication' => 'Преузета додатна датотека „{$extra}“ (верзија {$extra_version}) није компатибилна са SimpleRisk-ом {$app_version} и није инсталирана. Прво надоградите SimpleRisk на најновију верзију.',
+    'ExtraCompatibilityDataUnavailable' => 'SimpleRisk није могао да потврди које Extra верзије ово издање подржава, тако да Extra није инсталиран. Молимо покушајте поново касније.',
+    'ExtraVersionCouldNotBeVerified' => 'Верзија преузете додатне апликације није могла бити утврђена, тако да није инсталирана.',
     '' => '',
 );
 ?>

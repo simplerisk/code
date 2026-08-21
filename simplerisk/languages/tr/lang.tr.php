@@ -4627,6 +4627,16 @@ $lang = array(
     'NoticeSizeSmall' => 'Küçük',
     'NoticeSizeNormal' => 'Normal',
     'NoticeSizeLarge' => 'Büyük',
+    // Preferences page save feedback
+    'TheSettingsWereUpdatedSuccessfully' => 'Ayarlar başarıyla güncellendi.',
+    'NoChangesWereMade' => 'Hiçbir değişiklik yapılmadı.',
+    'PleaseSpecifyAnIntegerGreaterThanOrEqualToZeroForTheMinimumValue' => 'Lütfen minimum değer için sıfırdan büyük veya sıfıra eşit bir tamsayı belirtin.',
+    'PleaseSpecifyAnIntegerForTheMaximumValue' => 'Lütfen maksimum değer için bir tamsayı belirtin.',
+    'PleaseSpecifyAMaximumValueGreaterThanTheMinimum' => 'Lütfen minimum değerden daha büyük bir maksimum değer belirtin.',
+    // Extra download version compatibility
+    'ExtraVersionIncompatibleWithApplication' => 'İndirilen "{$extra}" Ekstrası (sürüm {$extra_version}), SimpleRisk {$app_version} ile uyumlu değil ve yüklenmedi. Öncelikle SimpleRisk\'i en son sürüme yükseltin.',
+    'ExtraCompatibilityDataUnavailable' => 'SimpleRisk, bu sürümün hangi Extra sürümlerini desteklediğini doğrulayamadığı için Extra yüklenmedi. Lütfen daha sonra tekrar deneyin.',
+    'ExtraVersionCouldNotBeVerified' => 'İndirilen Extra\'nın sürümü belirlenemediği için yüklenmedi.',
     '' => '',
 );
 ?>

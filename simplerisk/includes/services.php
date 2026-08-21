@@ -11,6 +11,203 @@ require_once(realpath(__DIR__ . '/extras.php'));
 require_once(realpath(__DIR__ . '/connectivity.php'));
 require_once(realpath(__DIR__ . '/../vendor/autoload.php'));
 
+/*******************************************
+ * FUNCTION: EXTRA INSTALL CORE VERSION REFUSAL *
+ *******************************************/
+/**
+ * Version-gate for an Extra download. Returns null when the download may
+ * proceed, or a download_extra() error envelope when Core is too old to receive
+ * the newest build of the Extra.
+ *
+ * The decision itself is pure and lives in extra_install_blocked_by_core_version()
+ * in licensing.php, which documents why the rule exists and why it fails open;
+ * this wrapper only supplies the three versions it compares.
+ *
+ * latest_version() is called with $force_refresh = false so the Install button
+ * reads the value the version-check job already cached in the
+ * latest_version_data setting instead of adding a releases.xml round-trip to
+ * every click. It returns '' when nothing is cached and the fetch fails, which
+ * the pure helper treats as "unknown".
+ *
+ * @param string $name Extra short name.
+ *
+ * @return array|null Error envelope when refused, null when allowed.
+ */
+function extra_install_core_version_refusal($name) {
+    require_once(realpath(__DIR__ . '/licensing.php'));
+
+    $latest      = latest_version('app', false);
+    $app_version = (string)current_version('app');
+
+    // The version the licensing service says it will serve, from the cached
+    // /license/check response. When present, this turns the coarse "is my
+    // release the newest" proxy into the precise "does the build I would receive
+    // support my release" — which is a different, and less restrictive, answer.
+    // Only fetch the feed when it can actually change the outcome.
+    $served_version = get_download_version_for_extra((string)$name);
+    $compatibility  = ($served_version !== null) ? extra_compatibility_versions() : null;
+
+    $decision = extra_install_decision(
+        (string)$name,
+        $app_version,
+        (string)current_version('db'),
+        is_string($latest) ? $latest : '',
+        $served_version,
+        $compatibility
+    );
+
+    if ($decision === 'allow') {
+        return null;
+    }
+
+    if ($decision === 'version_incompatible') {
+        return build_extra_error_envelope($decision, $name, _lang_raw('ExtraVersionIncompatibleWithApplication', array(
+            'extra'         => $name,
+            'extra_version' => (string)$served_version,
+            'app_version'   => $app_version,
+        )));
+    }
+
+    // 'core_out_of_date' and 'pending_migration' share the message: from the
+    // operator's side both mean "bring SimpleRisk fully up to date first", and
+    // the existing key already says exactly that in every locale.
+    return build_extra_error_envelope($decision, $name, _lang_raw('ApplicationNeedsToBeUpgradeToLatestVersionToUpgradeExtras', array()));
+}
+
+/**************************************************
+ * FUNCTION: EXTRA DOWNLOAD VERSION REFUSAL       *
+ **************************************************/
+/**
+ * Post-extract verification. Given the directory a downloaded Extra was
+ * extracted to, decide whether the build it contains may be installed on this
+ * Core. Returns null to proceed, or a download_extra() error envelope.
+ *
+ * This is the check that does not rely on a prediction. The pre-download gate
+ * reasons about which build the server *would* send; this reads the version out
+ * of the package the server *did* send and asks the compatibility feed whether
+ * this release supports it.
+ *
+ * It fails CLOSED. An unreadable version, absent compatibility data, or a
+ * version the feed does not recognise all refuse the install. That is the
+ * opposite of the pre-download gate's fail-open, and the asymmetry is
+ * deliberate: failing open before the download only risks a wasted request,
+ * while failing open here installs code that may fatal on every page rendering
+ * the feature. extra_compatibility_versions() caches into a setting refreshed
+ * every 24h by core_version_check, so "no data at all" is rare enough for
+ * closed to be the affordable default.
+ *
+ * @param string        $name            Extra short name.
+ * @param string        $source_dir      Directory the package was extracted to.
+ * @param int           $http_status     Status of the download, for the envelope.
+ * @param string|null   $header_version  X-Extra-Version from the download response,
+ *                                       when the service supplied one.
+ * @param callable|null $compat_provider Test seam: fn(bool $force): ?array returning
+ *                                       the compatibility map. Production callers pass
+ *                                       null and get extra_compatibility_versions().
+ *                                       Mirrors licensing_register_with_retry()'s
+ *                                       $transport seam — without it the
+ *                                       refresh-once-then-re-decide path below can only
+ *                                       be exercised against the live updates service,
+ *                                       which is exactly the branch most worth testing.
+ *
+ * @return array|null Error envelope when refused, null when allowed.
+ */
+function extra_download_version_refusal($name, $source_dir, $http_status = 0, $header_version = null, ?callable $compat_provider = null) {
+    require_once(realpath(__DIR__ . '/licensing.php'));
+
+    if ($compat_provider === null) {
+        $compat_provider = function (bool $force) {
+            return extra_compatibility_versions($force);
+        };
+    }
+
+    // Read the version from the source text. Never include the file: it
+    // redeclares every function the live Extra already defined, which is an
+    // unrecoverable fatal mid-install.
+    $index_file = rtrim($source_dir, '/') . '/index.php';
+    $version    = is_readable($index_file)
+        ? parse_extra_version_from_source(@file_get_contents($index_file))
+        : null;
+
+    $app_version   = (string)current_version('app');
+    $compatibility = $compat_provider(false);
+
+    $verdict = extra_download_verdict($version, $header_version, $compatibility, (string)$name, $app_version);
+
+    // 'compatibility_stale' means the feed has data but no entry for this build.
+    // The usual cause is a cache older than what we were just sent, so refresh
+    // once and re-ask rather than refusing a newly published build until the 24h
+    // job catches up. Only this genuinely ambiguous case pays a network call.
+    if ($verdict === 'compatibility_stale') {
+        write_debug_log("download_extra: '{$name}' {$version} is absent from the cached compatibility data; refreshing the feed", 'info');
+        $compatibility = $compat_provider(true);
+        $verdict = extra_download_verdict($version, $header_version, $compatibility, (string)$name, $app_version);
+        // Still stale after a fresh fetch: the feed genuinely does not know this
+        // build. Fail closed, reported as unknown rather than incompatible --
+        // we have no basis for the stronger claim.
+        if ($verdict === 'compatibility_stale') {
+            $verdict = 'compatibility_unknown';
+        }
+    }
+
+    if ($verdict === 'allow') {
+        return null;
+    }
+
+    if ($verdict === 'extra_version_unreadable') {
+        write_debug_log("download_extra: could not read a version from the downloaded '{$name}' Extra — refusing to install", 'error');
+        return build_extra_error_envelope($verdict, $name, _lang_raw('ExtraVersionCouldNotBeVerified', array()), $http_status);
+    }
+
+    if ($verdict === 'version_mismatch') {
+        write_debug_log("download_extra: '{$name}' package declares {$version} but X-Extra-Version said {$header_version} — refusing to install", 'error');
+        return build_extra_error_envelope($verdict, $name, _lang_raw('ExtraVersionCouldNotBeVerified', array()), $http_status);
+    }
+
+    if ($verdict === 'compatibility_unknown') {
+        write_debug_log("download_extra: no usable Extra compatibility data — refusing to install '{$name}' {$version}", 'warning');
+        return build_extra_error_envelope($verdict, $name, _lang_raw('ExtraCompatibilityDataUnavailable', array()), $http_status);
+    }
+
+    // version_incompatible. Log which versions this release does support, so a
+    // support conversation can tell "wrong build" from "no build exists". This is
+    // diagnostic only -- it is NOT in the operator-facing message, because the
+    // service serves only the newest build and naming another version would imply
+    // it can be requested.
+    $usable = extra_versions_for_app(is_array($compatibility) ? $compatibility : [], $name, $app_version);
+    $newest = $usable[0] ?? '';
+
+    write_debug_log(
+        "download_extra: '{$name}' {$version} is not compatible with SimpleRisk {$app_version} — refusing to install"
+        . ($newest !== '' ? " (this release supports {$newest})" : ''),
+        'notice'
+    );
+
+    return build_extra_error_envelope($verdict, $name, _lang_raw('ExtraVersionIncompatibleWithApplication', array(
+        'extra'         => $name,
+        'extra_version' => (string)$version,
+        'app_version'   => $app_version,
+    )), $http_status);
+}
+
+/**
+ * Build a download_extra() error envelope. One shape, one place.
+ *
+ * Every caller MUST distinguish success from failure with is_string($result): the
+ * envelope is a non-empty array and therefore truthy, so a boolean check is broken.
+ *
+ * @return array{error: string, extra_name: string, reason: ?string, retry_after_seconds: ?int, http_status: int}
+ */
+function build_extra_error_envelope($error, $name, $reason = null, $http_status = 0, $retry_after_seconds = null) {
+    return [
+        'error'               => $error,
+        'extra_name'          => $name,
+        'reason'              => $reason,
+        'retry_after_seconds' => $retry_after_seconds,
+        'http_status'         => $http_status,
+    ];
+}
+
 /****************************
  * FUNCTION: DOWNLOAD EXTRA *
  ****************************/
@@ -21,6 +218,11 @@ require_once(realpath(__DIR__ . '/../vendor/autoload.php'));
  * @param bool   $streamed_response  When true, fetches via stream transport (used by the
  *                                   one-click upgrade path that writes output to the browser
  *                                   in real time); false uses curl (default).
+ * @param bool   $skip_version_check When true, bypasses the Core-version gate. ONLY for
+ *                                   callers running inside an upgrade that has already
+ *                                   swapped the application files in this same request —
+ *                                   see the gate below. Never set this on an
+ *                                   operator-initiated install.
  *
  * @return string|array Raw tgz bytes (string) on HTTP 200. On any error, an
  *                      associative array {error, extra_name, reason,
@@ -29,7 +231,7 @@ require_once(realpath(__DIR__ . '/../vendor/autoload.php'));
  *                      A boolean truthy check is broken since the error array
  *                      is non-empty and therefore truthy.
  */
-function download_extra($name, $streamed_response = false) {
+function download_extra($name, $streamed_response = false, $skip_version_check = false) {
     require_once(realpath(__DIR__ . '/licensing.php'));
 
     $instance_id      = get_setting('instance_id');
@@ -41,6 +243,26 @@ function download_extra($name, $streamed_response = false) {
         return ['error' => 'invalid_extra_name', 'extra_name' => $name, 'reason' => null, 'retry_after_seconds' => null, 'http_status' => 0];
     }
 
+    // "Core first, then Extras". The licensing service always ships the newest
+    // build of an Extra and has no version field to tailor it with, so this is
+    // the only place the ordering can be enforced — see
+    // extra_install_blocked_by_core_version() in licensing.php.
+    //
+    // $skip_version_check exists for one caller: the Core-driven one-click
+    // upgrade (core_upgrade_extras(), reached from one_click_upgrade() in
+    // includes/api.php). It runs in the SAME request that already extracted the
+    // new bundle, and APP_VERSION is a constant that cannot be redefined, so
+    // current_version('app') still reads the pre-upgrade release and this gate
+    // would refuse every Extra the step exists to upgrade. That is exactly the
+    // trap the Upgrade Extra documents at extras/upgrade/index.php's Step 5.
+    if (!$skip_version_check) {
+        $refusal = extra_install_core_version_refusal($name);
+        if ($refusal !== null) {
+            write_debug_log("download_extra: refusing '{$name}' — Core is not on the latest release", 'notice');
+            return $refusal;
+        }
+    }
+
     $parameters = [
         'instance_id'      => $instance_id,
         'services_api_key' => $services_api_key,
@@ -50,6 +272,12 @@ function download_extra($name, $streamed_response = false) {
     $http_options = [
         'method' => 'POST',
         'header' => ['Content-Type: application/x-www-form-urlencoded'],
+        // The licensing service describes the package it is sending in X-SHA256
+        // and X-Extra-Version. Reading them lets us reject a bad or incompatible
+        // download before a byte reaches the filesystem. Opt-in, so no other
+        // caller's return shape changes; curl only, which is the transport every
+        // path that verifies uses (see below).
+        'capture_headers' => true,
     ];
 
     // SSL validation is on by default; only disabled when the setting is explicitly '0'.
@@ -69,16 +297,73 @@ function download_extra($name, $streamed_response = false) {
     $code = (int)($response['return_code'] ?? 0);
     $body = (string)($response['response'] ?? '');
 
+    // Response headers are present only on the curl transport (the stream
+    // transport does not capture them). That is sufficient: the stream transport
+    // is used by the one-click path, which passes $skip_version_check and is
+    // covered by the bundle's own verification instead.
+    $headers        = is_array($response['headers'] ?? null) ? $response['headers'] : [];
+    $header_sha256  = isset($headers['x-sha256']) ? (string)$headers['x-sha256'] : null;
+    // One format gate, shared with every other version this code trusts, rather
+    // than a second copy of the pattern here.
+    $candidate      = isset($headers['x-extra-version']) ? trim((string)$headers['x-extra-version']) : '';
+    $header_version = is_release_identifier($candidate) ? $candidate : null;
+
     if ($code === 200) {
-        // Integrity check before install: verify the downloaded bytes hash to
-        // the SHA-256 the licensing service advertised for this Extra (cached
-        // from /license/check). A tampered or truncated package must never reach
-        // a caller that would extract/install it. When no expected hash is known
-        // (forward-compat / older server), skip rather than block.
+        // Integrity check before install. A tampered or truncated package must
+        // never reach a caller that would extract/install it.
+        //
+        // Two hashes, deliberately not interchangeable: the one cached from a
+        // previous /license/check is independent of this response and is the real
+        // integrity check, while X-SHA256 rides along with the body and can only
+        // catch corruption. extra_download_hash_verdict() prefers the former,
+        // falls back to the latter (better than the previous behaviour of
+        // skipping verification entirely on an unknown hash), and refuses when
+        // the two disagree.
         $expected_sha256 = get_download_sha256_for_extra($name);
-        if (!extra_download_is_intact($expected_sha256, $body)) {
+        $hash_verdict    = extra_download_hash_verdict($expected_sha256, $header_sha256, $body);
+
+        if ($hash_verdict === 'source_conflict') {
+            write_debug_log("download_extra: X-SHA256 disagrees with the licensed hash for '{$name}' — refusing to install", 'error');
+            return ['error' => 'integrity', 'extra_name' => $name, 'reason' => _lang_raw('ExtraIntegrityCheckFailed', array()), 'retry_after_seconds' => null, 'http_status' => $code];
+        }
+
+        if ($hash_verdict === 'unverified') {
+            write_debug_log("download_extra: no SHA-256 available for '{$name}' from either the license cache or X-SHA256; integrity unverified", 'warning');
+        }
+
+        if ($hash_verdict === 'corrupt') {
             write_debug_log("download_extra: SHA-256 mismatch for '{$name}' — refusing to install", 'error');
             return ['error' => 'integrity', 'extra_name' => $name, 'reason' => _lang_raw('ExtraIntegrityCheckFailed', array()), 'retry_after_seconds' => null, 'http_status' => $code];
+        }
+
+        // Earliest possible compatibility refusal: X-Extra-Version tells us what
+        // the service sent, so an incompatible build is rejected here, before any
+        // temp file, gunzip or extraction happens. The authoritative check is
+        // still the one on the extracted package below -- this header is what the
+        // server claims, not what will run -- but when they agree there is no
+        // reason to touch the filesystem at all.
+        if (!$skip_version_check && $header_version !== null) {
+            $app_version = (string)current_version('app');
+            // Same shared verdict the post-extract check uses, so the two layers
+            // cannot drift. The header stands in for the package version here
+            // because the package does not exist on disk yet; passing null as the
+            // header avoids comparing the value to itself.
+            $header_verdict = extra_download_verdict(
+                $header_version, null, extra_compatibility_versions(), (string)$name, $app_version
+            );
+
+            // ONLY a definite incompatibility refuses here. Every other verdict
+            // (unknown or stale feed) falls through to the post-extract check,
+            // which fails closed -- this layer exists to save filesystem work on a
+            // clear no, not to become a second closed gate on missing data.
+            if ($header_verdict === 'version_incompatible') {
+                write_debug_log("download_extra: X-Extra-Version {$header_version} for '{$name}' is not compatible with SimpleRisk {$app_version} — refusing before extraction", 'notice');
+                return build_extra_error_envelope('version_incompatible', $name, _lang_raw('ExtraVersionIncompatibleWithApplication', array(
+                    'extra'         => $name,
+                    'extra_version' => $header_version,
+                    'app_version'   => $app_version,
+                )), $code);
+            }
         }
 
         // Install the verified package to simplerisk/extras/<name>/. download_extra()'s
@@ -106,6 +391,10 @@ function download_extra($name, $streamed_response = false) {
         $source = $work . '/' . $name;
         $dest   = $extras_dir . '/' . $name;
         $copied = false;
+        // Whether recurse_copy() was reached at all. Distinct from $copied, which
+        // means it also SUCCEEDED. The catch needs the difference: only a copy
+        // that started can have left $dest half-written.
+        $copy_started = false;
         try {
             if (!mkdir($work, 0700, true)) {
                 throw new \RuntimeException('could not create work dir');
@@ -136,6 +425,29 @@ function download_extra($name, $streamed_response = false) {
 
             $phar = new PharData($tar);
             $phar->extractTo($work, null, true);
+
+            // Verify what the server actually SENT, not what we predicted it
+            // would send. The pre-download gate reasons about versions; this
+            // reads the version out of the extracted package and checks it
+            // against the compatibility feed, which is the only check that
+            // catches a build this Core cannot run whatever the prediction was.
+            //
+            // Deliberately BEFORE recurse_copy(): a rejected package leaves the
+            // installed Extra completely untouched, so there is no rollback to
+            // get wrong. And deliberately a `return`, not a `throw` -- the catch
+            // below calls delete_dir($dest) when the copy has not happened, and
+            // at this point $dest is the customer's working Extra.
+            if (!$skip_version_check) {
+                $version_refusal = extra_download_version_refusal($name, $source, $code, $header_version);
+                if ($version_refusal !== null) {
+                    delete_dir($work);
+                    return $version_refusal;
+                }
+            }
+
+            // From here on $dest may be partially overwritten, which is what the
+            // catch below needs to know. Set BEFORE the call, not after.
+            $copy_started = true;
             if (!recurse_copy($source, $dest)) {
                 throw new \RuntimeException('copy into extras directory failed');
             }
@@ -143,8 +455,17 @@ function download_extra($name, $streamed_response = false) {
         } catch (\Throwable $e) {
             write_debug_log("download_extra: install of '{$name}' failed: " . normalize_log_value($e->getMessage()), 'error');
             delete_dir($work);
-            // Remove a half-written Extra so a partial copy isn't later mistaken for installed.
-            if (!$copied) {
+            // Remove a half-written Extra so a partial copy isn't later mistaken
+            // for installed -- but ONLY when the copy actually began.
+            //
+            // This used to key on !$copied alone, which is true for every failure
+            // in this block, including the ones that happen before $dest is
+            // touched at all (mkdir, writing the tgz, gunzip, extractTo). Since
+            // download_extra() is also the REINSTALL path, $dest is usually the
+            // customer's working Extra: a failed download therefore deleted a
+            // perfectly functioning install and left them with nothing. Now a
+            // failure that never reached the copy leaves $dest exactly as it was.
+            if ($copy_started && !$copied) {
                 delete_dir($dest);
             }
             return ['error' => 'install_failed', 'extra_name' => $name, 'reason' => _lang_raw('ExtraInstallExtractFailed', array()), 'retry_after_seconds' => null, 'http_status' => $code];

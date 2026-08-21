@@ -6383,7 +6383,7 @@ function create_numeric_dropdown($name, $selected = NULL, $blank = true)
 /****************************************
  * FUNCTION: CREATE MULTIUSERS DROPDOWN *
  ****************************************/
-function create_multiusers_dropdown($name, $selected = "", $custom_html = "", $returnHtml = false, $rename = NULL){
+function create_multiusers_dropdown($name, $selected = "", $custom_html = "", $returnHtml = false, $rename = NULL, $id = null){
     global $escaper;
 
     // Make selected to array
@@ -6393,13 +6393,12 @@ function create_multiusers_dropdown($name, $selected = "", $custom_html = "", $r
     }
 
     $options = get_options_from_table("enabled_users");
-    if ($rename != NULL)
-    {
-        $str = "<select id=\"{$rename}\" {$custom_html} name=\"{$rename}[]\" multiple class=\"form-field form-control multiselect\" style=\"width:auto;\">\n";
-    }
-    else {
-        $str = "<select id=\"{$name}\" {$custom_html} name=\"{$name}[]\" multiple class=\"form-field form-control multiselect\" style=\"width:auto;\">\n";
-    }
+    // The NAME is what every consumer selects on, so $rename keeps owning it.
+    // $id overrides only the id attribute, for callers that render the same
+    // field into two modals on one page and would otherwise emit it twice.
+    $field_name = ($rename != NULL) ? $rename : $name;
+    $element_id = ($id !== null && $id !== "") ? $id : $field_name;
+    $str = "<select id=\"{$escaper->escapeHtml($element_id)}\" {$custom_html} name=\"{$field_name}[]\" multiple class=\"form-field form-control multiselect\" style=\"width:auto;\">\n";
     // For each option
     foreach ($options as $option)
     {
@@ -16860,11 +16859,8 @@ function latest_versions($force_refresh = true) {
     }
 
     // Url for SimpleRisk current versions
-    if (defined('UPDATES_URL'))
-    {   
-        $url = UPDATES_URL . '/releases.xml';
-    }
-    else $url = 'https://raw.githubusercontent.com/simplerisk/updates.simplerisk.com/updates.simplerisk.com/releases.xml';
+    require_once(realpath(__DIR__ . '/licensing.php'));
+    $url = updates_url('/releases.xml');
     write_debug_log("Checking latest versions at " . $url, 'info');
 
     // Set the HTTP options
@@ -16978,6 +16974,181 @@ function latest_versions($force_refresh = true) {
         $GLOBALS['latest_versions_cached'] = $latest_versions;
         return $GLOBALS['latest_versions_cached'];
     }
+}
+
+/*****************************************************************
+ * FUNCTION: EXTRA COMPATIBILITY VERSIONS                        *
+ * Which Extra versions the updates service says work with which *
+ * application release. Cache-first; see extra_compatibility.xml. *
+ *****************************************************************/
+/**
+ * Returns [extra_short_name => [extra_version => [app version, ...]]], or null
+ * when no compatibility data can be obtained at all.
+ *
+ * Cache-first by design, in three tiers, because the Extra install path calls
+ * this on an operator's click and must not pay a network round-trip per click:
+ *
+ *   1. an in-request memo (including a memoized failure, so one broken fetch
+ *      does not retry on every call in the same request),
+ *   2. the extra_compatibility_data setting, written by the core_version_check
+ *      job every 24h,
+ *   3. the network.
+ *
+ * Tier 2 is what makes "the feed is unreachable" mean *stale* rather than
+ * *absent* for the callers that fail closed on absent data. Without it, one
+ * outage would refuse every Extra install.
+ *
+ * @param bool          $force_refresh Skip tiers 1 and 2 and fetch. The version-check
+ *                                     job passes true; install-path callers must not.
+ * @param callable|null $fetcher       Test seam: fn(string $url): mixed standing in for
+ *                                     the HTTP call. Production passes null.
+ *
+ * @return array<string, array<string, list<string>>>|null
+ */
+function extra_compatibility_versions($force_refresh = false, ?callable $fetcher = null) {
+
+    require_once(realpath(__DIR__ . '/licensing.php'));
+
+    // Tier 1: in-request memo. array_key_exists, not isset, so a memoized null
+    // (failed fetch) is honoured instead of re-fetching on every call.
+    if (!$force_refresh && array_key_exists('extra_compatibility_cached', $GLOBALS)) {
+        return $GLOBALS['extra_compatibility_cached'];
+    }
+
+    // Tier 2: the setting written by the core_version_check job.
+    if (!$force_refresh)
+    {
+        $cached_data = get_setting('extra_compatibility_data', false, false);
+        if ($cached_data)
+        {
+            $decoded = json_decode($cached_data, true);
+            if (is_array($decoded) && !empty($decoded))
+            {
+                $GLOBALS['extra_compatibility_cached'] = $decoded;
+                return $GLOBALS['extra_compatibility_cached'];
+            }
+        }
+    }
+
+    // Tier 3: the network.
+    //
+    // UPDATES_URL is an OVERRIDE, not the normal source: it is defined only by
+    // scripts/bundles-test-installation.sh, so a production instance never has
+    // it and always falls through to the default. The default is therefore the
+    // live production path and must be the service we operate --
+    // updates.simplerisk.com -- not raw.githubusercontent.com, which is rate
+    // limited and returns 429/503 under load.
+    $url = updates_url('/extra_compatibility.xml');
+
+    $http_options = [
+        'method' => 'GET',
+        'header' => [
+            "Content-Type: application/x-www-form-urlencoded",
+        ],
+        'timeout' => 5,
+    ];
+
+    $validate_ssl = ssl_external_verify_enabled();
+
+    // Test seam: without it, any tier-2 miss falls through to a live request, so a
+    // test of the tier-2 guard silently depended on reaching updates.simplerisk.com.
+    $response = ($fetcher !== null)
+        ? $fetcher($url)
+        : fetch_url_content("curl", $http_options, $validate_ssl, $url);
+
+    if (!is_array($response) || (int)($response['return_code'] ?? 0) !== 200)
+    {
+        write_debug_log("SimpleRisk was unable to fetch Extra compatibility data from " . $url, 'warning');
+        $GLOBALS['extra_compatibility_cached'] = null;
+        return null;
+    }
+
+    // parse_extra_compatibility_feed() returns null for every unusable body,
+    // including a 200 with an empty or truncated payload.
+    $compatibility = parse_extra_compatibility_feed($response['response']);
+
+    if ($compatibility === null)
+    {
+        write_debug_log("SimpleRisk received an empty or unparseable Extra compatibility response from " . $url, 'warning');
+        $GLOBALS['extra_compatibility_cached'] = null;
+        return null;
+    }
+
+    $GLOBALS['extra_compatibility_cached'] = $compatibility;
+    return $GLOBALS['extra_compatibility_cached'];
+}
+
+/*********************************************************
+ * FUNCTION: RUN VERSION CHECK FETCHES                   *
+ * The body of the core_version_check queue job's work.  *
+ *********************************************************/
+/**
+ * Fetch both feeds, persist each one that succeeded, and report whether BOTH
+ * landed.
+ *
+ * Lifted out of the job's queue_check closure so the combining rule is
+ * reachable by a test. Inside the closure it could only be exercised by making
+ * two real outbound requests, which is why it previously had no behavioural
+ * coverage at all — and the rule matters: if the AND collapsed to an OR, a
+ * half-fetched cache would report success, the worker would stop retrying, and
+ * extra_compatibility_data would stay permanently stale while the post-extract
+ * compatibility check fails closed against it.
+ *
+ * The compatibility fetch is deliberately UNCONDITIONAL — a release-feed failure
+ * must not skip it, or a stale compatibility cache never refreshes.
+ *
+ * Returning false is the whole of this function's failure handling: the
+ * run_timestamped_queue_check() wrapper has already stamped the cadence gate, so
+ * there is no requeue storm, and the worker owns the backoff retries and the
+ * final 'failed' status. Never set a task status here.
+ *
+ * @param PDO           $db
+ * Both feeds are injectable rather than reached through their own functions'
+ * seams, and that is deliberate: latest_versions() has no seam at all, and going
+ * through extra_compatibility_versions()'s $fetcher would mean asserting this
+ * function's AND rule through another function's cache tiers and XML parsing.
+ * Injecting here lets the four success/failure combinations be expressed as plain
+ * return values, which is the rule actually under test.
+ *
+ * @param callable|null $versions_provider Test seam: fn(): mixed, defaults to latest_versions(true).
+ * @param callable|null $compat_provider   Test seam: fn(): ?array, defaults to extra_compatibility_versions(true).
+ *
+ * @return bool True only when both feeds were fetched and persisted.
+ */
+function run_version_check_fetches($db, ?callable $versions_provider = null, ?callable $compat_provider = null) {
+
+    write_debug_log("Version Check: Fetching latest version data...", "info");
+
+    $latest_versions = ($versions_provider !== null)
+        ? $versions_provider()
+        : latest_versions(true);
+
+    // latest_versions() answers 0 (not null, not []) when it cannot connect.
+    $versions_ok = ($latest_versions !== 0 && !empty($latest_versions));
+
+    if ($versions_ok) {
+        update_or_insert_setting('latest_version_data', json_encode($latest_versions), db: $db);
+        write_debug_log("Version Check: Successfully updated latest version data.", "info");
+    } else {
+        write_debug_log("Version Check: Failed to fetch latest version data from remote.", "error");
+    }
+
+    write_debug_log("Version Check: Fetching Extra compatibility data...", "info");
+
+    $compatibility = ($compat_provider !== null)
+        ? $compat_provider()
+        : extra_compatibility_versions(true);
+
+    $compatibility_ok = !empty($compatibility);
+
+    if ($compatibility_ok) {
+        update_or_insert_setting('extra_compatibility_data', json_encode($compatibility), db: $db);
+        write_debug_log("Version Check: Successfully updated Extra compatibility data.", "info");
+    } else {
+        write_debug_log("Version Check: Failed to fetch Extra compatibility data from remote.", "error");
+    }
+
+    return $versions_ok && $compatibility_ok;
 }
 
 /*****************************
@@ -17123,11 +17294,8 @@ function get_announcements()
 
     $announcements = "<ul>\n";
 
-    if (defined('UPDATES_URL'))
-    {   
-        $announcement_file = file(UPDATES_URL . '/announcements.xml');
-    }
-    else $announcement_file = file('https://raw.githubusercontent.com/simplerisk/updates.simplerisk.com/updates.simplerisk.com/announcements.xml');
+    require_once(realpath(__DIR__ . '/licensing.php'));
+    $announcement_file = file(updates_url('/announcements.xml'));
 
     $regex_pattern = "/<announcement>(.*)<\/announcement>/";
 
@@ -24723,42 +24891,49 @@ function is_extra_installed($extra) {
     return file_exists(realpath(__DIR__ . "/../extras/$extra/index.php"));
 }
 
-//if (!function_exists('check_latest_version')) {
-    /*************************************************
-     * FUNCTION: CHECK IF THIS APP IS LATEST VERSION *
-     *************************************************/
-    function check_app_latest_version()
-    {
-        $current_app_version = current_version("app");
-        $next_app_version = next_version($current_app_version);
-        $db_version = current_version("db");
+/*************************************************
+ * FUNCTION: CHECK IF THIS APP IS LATEST VERSION *
+ *************************************************/
+/**
+ * True when the application files and the database schema are both on the
+ * newest published release.
+ *
+ * Core has no caller of its own — the Core-version gate on Extra downloads goes
+ * through extra_install_core_version_refusal() in services.php, which needs the
+ * Extra's name for the Upgrade Extra carve-out. This is kept because published
+ * Upgrade Extras call it, and an Extra always runs against a Core that may be
+ * older or newer than itself: deleting it would fatal an existing customer's
+ * Extra on their next upgrade.
+ *
+ * It used to call next_version(), which is defined ONLY in
+ * simplerisk/extras/upgrade/index.php. Core never defines it, so this function
+ * was a "Call to undefined function" from any context that had not already
+ * loaded the Upgrade Extra — which is why its one former caller had to
+ * file_exists()-and-require the Extra before it could ask the question, and why
+ * the check silently did not apply on instances without that Extra. It now uses
+ * Core's own latest_version(), so it works everywhere and needs no Extra.
+ *
+ * next_version() is deliberately NOT reimplemented here: the Extra defines it
+ * unguarded, so a Core definition would be a fatal redeclare for every customer
+ * whose installed Extra predates a guard.
+ */
+function check_app_latest_version()
+{
+    require_once(realpath(__DIR__ . '/licensing.php'));
 
-        $need_update_app = false;
-        $need_update_db = false;
-        
-        // If the current version is not the latest
-        if ($next_app_version != "") {
-            $need_update_app = true;
-        }
-        
-        // If the app version is not the same as the database version
-        if ($current_app_version != $db_version) {
-            $need_update_db = true;
-        } elseif ($need_update_app && $next_app_version != $db_version) {
-            $need_update_db = true;
-        }
-        
-        // Check if there are update app or db version
-        if($need_update_app || $need_update_db)
-        {
-            return false;
-        }
-        else
-        {
-            return true;
-        }
-    }
-//}
+    $latest = latest_version('app', false);
+
+    // Reuse the single decision helper rather than restating the comparison.
+    // The empty name opts out of the Upgrade Extra carve-out, which is correct
+    // here: this function answers "is Core current", not "may this Extra be
+    // installed".
+    return !extra_install_blocked_by_core_version(
+        '',
+        (string)current_version('app'),
+        (string)current_version('db'),
+        is_string($latest) ? $latest : ''
+    );
+}
 
 /*******************************************************************************
  * FUNCTION: SET PROXY STREAM CONTEXT                                          *

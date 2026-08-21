@@ -4627,6 +4627,16 @@ $lang = array(
     'NoticeSizeSmall' => '작은',
     'NoticeSizeNormal' => '정상',
     'NoticeSizeLarge' => '크기가 큰',
+    // Preferences page save feedback
+    'TheSettingsWereUpdatedSuccessfully' => '설정이 성공적으로 업데이트되었습니다.',
+    'NoChangesWereMade' => '변경 사항은 없습니다.',
+    'PleaseSpecifyAnIntegerGreaterThanOrEqualToZeroForTheMinimumValue' => '최소값으로 0보다 크거나 같은 정수를 입력해 주세요.',
+    'PleaseSpecifyAnIntegerForTheMaximumValue' => '최댓값을 정수로 입력해 주세요.',
+    'PleaseSpecifyAMaximumValueGreaterThanTheMinimum' => '최소값보다 큰 최대값을 지정해 주세요.',
+    // Extra download version compatibility
+    'ExtraVersionIncompatibleWithApplication' => '다운로드한 "{$extra}" Extra(버전 {$extra_version})는 SimpleRisk {$app_version} 와 호환되지 않아 설치되지 않았습니다. 먼저 SimpleRisk를 최신 버전으로 업그레이드하십시오.',
+    'ExtraCompatibilityDataUnavailable' => 'SimpleRisk는 이 릴리스에서 지원하는 Extra 버전을 확인할 수 없어 Extra를 설치하지 않았습니다. 나중에 다시 시도해 주세요.',
+    'ExtraVersionCouldNotBeVerified' => '다운로드한 Extra의 버전을 확인할 수 없어서 설치하지 않았습니다.',
     '' => '',
 );
 ?>

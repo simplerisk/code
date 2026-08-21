@@ -5,9 +5,22 @@
 This document lists the changes between versions of SimpleSAMLphp.
 See the [upgrade notes](https://simplesamlphp.org/docs/stable/simplesamlphp-upgrade-notes.html) for specific information about upgrading.
 
-## Version 2.5.3
+## Version 2.5.4
 
 Released TBD
+
+## Version 2.5.3
+
+Released 2026-08-09
+
+* Added `SimpleSAML\Database::readPrimary()`, for reads that must not be served by a possibly lagging secondary
+* Fix method return-type that broke the Single Logout flow
+* Fix for setting a proxy (#2662)
+* Fix multiauth not delegating when num srcs is 1 (#2663)
+* Don't delegate to preselect on discovery if it is not saved in the state (#2658)
+* Fix variable name typo in `src/SimpleSAML/Metadata/MetaDataStorageHandlerXML.php` which
+  caused raising PHP Type Error even when XML was successfully fetched from given URI.
+* Incomplete fix for CVE-2024-52596
 
 ## Version 2.5.2
 
@@ -368,7 +381,7 @@ to an incorrect error message.
 
 ## Version 2.2.1
 
-Released 2014-03-17
+Released 2024-03-17
 
 * Fix regression in bin/initMDSPdo.php (was #1892)
 * Fix regression in translations, causing a fallback to English (#2009 + #2010)

@@ -30,7 +30,7 @@ class Response extends AbstractAttribute
     public function __construct(
         public string|int|null $response = null,
         public ?string $description = null,
-        public ?string $ref = null,
+        public string|Schema\Ref|null $ref = null,
         public ?array $headers = null,
         MediaType|array|null $content = null,
         public ?array $links = null,
@@ -48,7 +48,11 @@ class Response extends AbstractAttribute
 
     public function merge(): array
     {
-        return [Operation::class => 'responses[]', PathItem::class => 'responses[]'];
+        return [
+            Components::class => 'responses[]',
+            Operation::class => 'responses[]',
+            PathItem::class => 'responses[]',
+        ];
     }
 
     public function contains(): array

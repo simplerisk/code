@@ -4627,6 +4627,16 @@ $lang = array(
     'NoticeSizeSmall' => 'Malý',
     'NoticeSizeNormal' => 'Normální',
     'NoticeSizeLarge' => 'Velký',
+    // Preferences page save feedback
+    'TheSettingsWereUpdatedSuccessfully' => 'Nastavení byla úspěšně aktualizována.',
+    'NoChangesWereMade' => 'Nebyly provedeny žádné změny.',
+    'PleaseSpecifyAnIntegerGreaterThanOrEqualToZeroForTheMinimumValue' => 'Pro minimální hodnotu prosím zadejte celé číslo větší nebo rovné nule.',
+    'PleaseSpecifyAnIntegerForTheMaximumValue' => 'Zadejte prosím celé číslo pro maximální hodnotu.',
+    'PleaseSpecifyAMaximumValueGreaterThanTheMinimum' => 'Zadejte prosím maximální hodnotu větší než minimální.',
+    // Extra download version compatibility
+    'ExtraVersionIncompatibleWithApplication' => 'Stažený program „{$extra}“ Extra (verze {$extra_version}) není kompatibilní se SimpleRisk {$app_version} a nebyl nainstalován. Nejprve aktualizujte SimpleRisk na nejnovější verzi.',
+    'ExtraCompatibilityDataUnavailable' => 'SimpleRisk nemohl potvrdit, které verze doplňků tato verze podporuje, takže doplňky nebyly nainstalovány. Zkuste to prosím znovu později.',
+    'ExtraVersionCouldNotBeVerified' => 'Verzi staženého doplňku se nepodařilo určit, takže nebyl nainstalován.',
     '' => '',
 );
 ?>

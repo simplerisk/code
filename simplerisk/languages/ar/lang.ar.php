@@ -4627,6 +4627,16 @@ $lang = array(
     'NoticeSizeSmall' => 'صغير',
     'NoticeSizeNormal' => 'طبيعي',
     'NoticeSizeLarge' => 'كبير',
+    // Preferences page save feedback
+    'TheSettingsWereUpdatedSuccessfully' => 'تم تحديث الإعدادات بنجاح.',
+    'NoChangesWereMade' => 'لم يتم إجراء أي تغييرات.',
+    'PleaseSpecifyAnIntegerGreaterThanOrEqualToZeroForTheMinimumValue' => 'يرجى تحديد عدد صحيح أكبر من أو يساوي الصفر كقيمة دنيا.',
+    'PleaseSpecifyAnIntegerForTheMaximumValue' => 'يرجى تحديد عدد صحيح للقيمة القصوى.',
+    'PleaseSpecifyAMaximumValueGreaterThanTheMinimum' => 'يرجى تحديد قيمة قصوى أكبر من القيمة الدنيا.',
+    // Extra download version compatibility
+    'ExtraVersionIncompatibleWithApplication' => 'الملف الإضافي "{$extra}" الذي تم تنزيله (الإصدار {$extra_version}) غير متوافق مع SimpleRisk {$app_version} ولم يتم تثبيته. يرجى ترقية SimpleRisk إلى أحدث إصدار أولاً.',
+    'ExtraCompatibilityDataUnavailable' => 'لم يتمكن SimpleRisk من تحديد إصدارات الإضافات التي يدعمها هذا الإصدار، لذا لم يتم تثبيت الإضافات. يرجى المحاولة مرة أخرى لاحقًا.',
+    'ExtraVersionCouldNotBeVerified' => 'لم يتم تحديد إصدار البرنامج الإضافي الذي تم تنزيله، لذلك لم يتم تثبيته.',
     '' => '',
 );
 ?>

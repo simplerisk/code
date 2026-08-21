@@ -27,6 +27,7 @@ declare(strict_types=1);
 require __DIR__ . '/../vendor/autoload.php';
 
 use Mcp\Server\McpServer;
+use Mcp\Server\TaskInputMode;
 use Mcp\Server\TaskSupport;
 use Mcp\Types\CallToolResult;
 use Mcp\Types\TextContent;
@@ -86,7 +87,11 @@ $server->tool('test_simple_text', 'Returns a simple text response', function ():
     return 'Hello from the conformance test server!';
 });
 
-// JSON Schema 2020-12 tool — exercises $schema, $defs, $ref, additionalProperties
+// JSON Schema 2020-12 tool — exercises the SEP-1613 keywords ($schema,
+// $defs, $ref, additionalProperties) plus the broader SEP-2106 vocabulary
+// the scenario scores on the 2026-07-28 wire ($anchor inside $defs, the
+// allOf/anyOf composition keywords, and if/then/else conditionals). The
+// schema mirrors the json-schema-2020-12 scenario's documented fixture.
 $server->tool(
     name: 'json_schema_2020_12_tool',
     description: 'Tool with JSON Schema 2020-12 keywords for conformance testing',
@@ -96,23 +101,36 @@ $server->tool(
     inputSchema: [
         '$schema' => 'https://json-schema.org/draft/2020-12/schema',
         'type' => 'object',
-        'properties' => [
-            'address' => ['$ref' => '#/$defs/address'],
-            'name' => ['type' => 'string'],
-        ],
-        'required' => ['address', 'name'],
-        'additionalProperties' => false,
         '$defs' => [
             'address' => [
+                '$anchor' => 'addressDef',
                 'type' => 'object',
                 'properties' => [
                     'street' => ['type' => 'string'],
                     'city' => ['type' => 'string'],
                 ],
-                'required' => ['street', 'city'],
-                'additionalProperties' => false,
             ],
         ],
+        'properties' => [
+            'name' => ['type' => 'string'],
+            'address' => ['$ref' => '#/$defs/address'],
+            'contactMethod' => ['type' => 'string', 'enum' => ['phone', 'email']],
+            'phone' => ['type' => 'string'],
+            'email' => ['type' => 'string'],
+        ],
+        'allOf' => [
+            ['anyOf' => [
+                ['required' => ['phone']],
+                ['required' => ['email']],
+            ]],
+        ],
+        'if' => [
+            'properties' => ['contactMethod' => ['const' => 'phone']],
+            'required' => ['contactMethod'],
+        ],
+        'then' => ['required' => ['phone']],
+        'else' => ['required' => ['email']],
+        'additionalProperties' => false,
     ],
 );
 
@@ -525,9 +543,12 @@ $server->tool('test_input_required_result_capabilities', 'Requests only input ty
 // tasks/get | tasks/update | tasks/cancel (tasks/list and tasks/result are
 // intentionally absent -> -32601). A tool opts into task augmentation via
 // taskSupport; the SDK runs the body synchronously (the shared-hosting model)
-// and records the outcome for tasks/get to surface. These fixtures back the
-// tool's `pending`-suite SEP-2663 scenarios (see conformance-draft-baseline.yml
-// for the scenarios whose expectations the synchronous model cannot meet).
+// and records the outcome for tasks/get to surface. Input composes with the
+// task surface in either spec-permitted sequence, chosen per tool via
+// taskInputMode: IN_TASK (default — handle first, input via tasks/get +
+// tasks/update) or PRE_TASK (plain multi-round-trip rounds with no record;
+// the task is minted terminal on the final round). These fixtures back the
+// tool's `pending`-suite SEP-2663 scenarios.
 // ---------------------------------------------------------------------------
 $server->enableTasks(null, 60000, 250);
 
@@ -592,7 +613,10 @@ $server->tool(
     taskSupport: TaskSupport::OPTIONAL
 );
 
-// Required task that gathers a name then completes.
+// Required task that gathers a name then completes, using the PRE_TASK
+// composition (tasks-mrtr-composition): the name is gathered through plain
+// SEP-2322 rounds — no task record exists — and the final round mints the
+// task already completed.
 $server->tool(
     'test_tool_with_task',
     'Asks a name then completes as a task',
@@ -606,7 +630,8 @@ $server->tool(
         $name = is_array($content) ? ($content['name'] ?? null) : (is_object($content) ? ($content->name ?? null) : null);
         return 'Hello, ' . (is_string($name) ? $name : 'unknown');
     },
-    taskSupport: TaskSupport::REQUIRED
+    taskSupport: TaskSupport::REQUIRED,
+    taskInputMode: TaskInputMode::PRE_TASK
 );
 
 // ---------------------------------------------------------------------------

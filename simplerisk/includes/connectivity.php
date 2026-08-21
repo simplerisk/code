@@ -120,6 +120,46 @@ function resolve_request_body($http_options, $parameters)
     return $parameters;
 }
 
+/**
+ * Fold one raw response-header line into an accumulating name => value map.
+ * Pure — no curl handle, no I/O — so the parsing is unit-testable while the
+ * CURLOPT_HEADERFUNCTION closure that feeds it stays trivial.
+ *
+ * Names are lowercased so callers can look up a header without guessing the
+ * casing the server used (HTTP header names are case-insensitive).
+ *
+ * A status line resets the map. CURLOPT_FOLLOWLOCATION is on by default and every
+ * redirect hop emits its own header block, so without the reset a header present
+ * only on an intermediate 302 would survive into the final response's headers.
+ *
+ * @param array<string, string> $headers Accumulated headers so far.
+ * @param string                $line    One raw header line, CRLF included.
+ *
+ * @return array<string, string>
+ */
+function parse_curl_header_line(array $headers, string $line): array
+{
+    if (stripos($line, 'HTTP/') === 0) {
+        return [];
+    }
+
+    // limit 2 splits on the FIRST colon only, so a value that itself contains a
+    // colon (a URL, a timestamp) is preserved intact.
+    $parts = explode(':', $line, 2);
+    if (count($parts) !== 2) {
+        // The blank CRLF that terminates the block, or a malformed line.
+        return $headers;
+    }
+
+    $name = strtolower(trim($parts[0]));
+    if ($name === '') {
+        return $headers;
+    }
+
+    $headers[$name] = trim($parts[1]);
+    return $headers;
+}
+
 function fetch_url_content_via_curl($http_options, $validate_ssl, $url, $parameters, $max_retries = 3)
 {
     $request_method = $http_options['method'] ?? 'GET';
@@ -130,8 +170,31 @@ function fetch_url_content_via_curl($http_options, $validate_ssl, $url, $paramet
     $attempt = 0;
     $return_code = false;
 
+    // Opt-in response-header capture. Off by default so every existing caller's
+    // return shape is unchanged: the 'headers' key appears only when asked for.
+    // Used by download_extra() to read the licensing service's X-SHA256 and
+    // X-Extra-Version before it writes a byte to disk.
+    $capture_headers = !empty($http_options['capture_headers']);
+    $captured_headers = [];
+
     while ($attempt < $max_retries && $response === false) {
         $ch = curl_init();
+
+        // Collect response headers into a lowercased name => value map. Reset per
+        // attempt so a retry does not inherit a failed attempt's headers, and
+        // cleared on a redirect so only the final response's headers survive
+        // (CURLOPT_FOLLOWLOCATION is on by default, and each hop emits a block).
+        if ($capture_headers) {
+            $captured_headers = [];
+            // The closure stays thin on purpose: it can only run inside a live
+            // transfer, so the parsing it would otherwise contain lives in
+            // parse_curl_header_line(), which is pure and unit-tested. curl
+            // requires the byte count back, which is the only work left here.
+            curl_setopt($ch, CURLOPT_HEADERFUNCTION, function ($ch, $line) use (&$captured_headers) {
+                $captured_headers = parse_curl_header_line($captured_headers, $line);
+                return strlen($line);
+            });
+        }
 
         // Common curl options
         curl_setopt($ch, CURLOPT_HTTPHEADER, $header);
@@ -213,10 +276,16 @@ function fetch_url_content_via_curl($http_options, $validate_ssl, $url, $paramet
     write_debug_log("CONNECTIVITY: FUNCTION[fetch_url_content_via_curl]: Return code: {$return_code}", "debug");
     write_debug_log("CONNECTIVITY: FUNCTION[fetch_url_content_via_curl]: Response: " . (is_array($response) ? '[]' : $response), "debug");
 
-    return [
+    $result = [
         'return_code' => $return_code,
         'response' => $response,
     ];
+
+    if ($capture_headers) {
+        $result['headers'] = $captured_headers;
+    }
+
+    return $result;
 }
 
 function fetch_url_content_via_stream($http_options, $validate_ssl, $url, $parameters, $max_retries = 3)

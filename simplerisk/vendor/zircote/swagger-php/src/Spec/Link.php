@@ -33,7 +33,7 @@ class Link extends AbstractAttribute
         public ?array $parameters = null,
         public mixed $requestBody = null,
         public ?string $description = null,
-        public ?string $ref = null,
+        public string|Schema\Ref|null $ref = null,
         public ?Server $server = null,
         ?array $x = null,
         ?array $attachables = null,
@@ -48,6 +48,9 @@ class Link extends AbstractAttribute
 
     public function merge(): array
     {
-        return [Response::class => 'links[]'];
+        return [
+            Components::class => 'links[]',
+            Response::class => 'links[]',
+        ];
     }
 }

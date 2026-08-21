@@ -730,7 +730,15 @@ function core_upgrade_extras($extras_to_upgrade = false) {
     stream_write($lang['UpdateExtrasStarted']);
     foreach($extras_to_upgrade as $extra) {
         stream_write(_lang('UpdateExtrasExtraUpdateStarted', array('extra' => $extra)));
-        $result = download_extra($extra, true);
+        // $skip_version_check = true. This function is Step 5 of the one-click
+        // upgrade: the application files were replaced earlier in this same
+        // request, and APP_VERSION is a constant that cannot be redefined, so
+        // download_extra()'s Core-version gate would still see the pre-upgrade
+        // release and refuse every Extra this step exists to upgrade. Ordering
+        // is what makes the bypass safe -- Core and its schema are already on
+        // the newest release by the time we get here, which is precisely the
+        // condition the gate checks for.
+        $result = download_extra($extra, true, true);
         if (!is_string($result)) {
             $err_message = $result['reason'] ?? $result['error'] ?? null;
             if ($err_message !== null) {
@@ -746,111 +754,88 @@ function core_upgrade_extras($extras_to_upgrade = false) {
 
 /*********************************************************
  * FUNCTION: EXTRA SIMPLERISK VERSION COMPATIBILE        *
- * Checks to see if the Extra is compatible with the     *
- * running version of SimpleRisk                         *
+ * Checks to see if the INSTALLED Extra is compatible    *
+ * with the running version of SimpleRisk                *
  *********************************************************/
-function extra_simplerisk_version_compatible($extra)
+/**
+ * True when the version of $extra currently installed is one the running
+ * release supports, per the updates service's extra_compatibility.xml.
+ *
+ * This answers a different question from the checks in download_extra(): those
+ * judge a build being installed, this judges the build already on disk, and
+ * healthcheck.php surfaces the answer as an operator warning.
+ *
+ * Rewritten to share extra_compatibility_versions() +
+ * extra_version_supported_by_app() with the download path. It previously fetched
+ * and parsed the feed itself, which meant: a second uncached network call per
+ * Extra on every healthcheck render; an unchecked simplexml_load_string() plus
+ * an unchecked $array[$extra]['extra'] index (the same TypeError shape that
+ * parse_releases_feed() was introduced to fix, papered over with a Phan
+ * suppression); and a second place for the feed's shape to be understood
+ * differently from the first. One reader, one parser, one cache.
+ *
+ * Returns false when compatibility cannot be determined, preserving the previous
+ * behaviour for its only caller -- healthcheck.php treats false as "warn".
+ *
+ * @param string        $extra            Extra short name.
+ * @param callable|null $version_provider Test seam: fn(string $extra): string returning
+ *                                        the installed version. Production passes null
+ *                                        and gets core_extra_current_version().
+ *
+ * The seam exists because core_extra_current_version() require_once's the Extra's
+ * own index.php to read its version constant. That is correct at runtime, but those
+ * files carry substantial top-level control flow (7-31 statements in the ones
+ * sampled), so pulling one into a unit-test process to exercise this wrapper would
+ * execute Extra bootstrap code and risk redeclaring against Core. Injecting the
+ * version keeps the test to the branching that actually lives here.
+ */
+function extra_simplerisk_version_compatible($extra, ?callable $version_provider = null)
 {
-	write_debug_log("Checking version comptability for the \"" . $extra . "\" extra.", 'info');
+	// Declared here rather than relied on transitively. extra_version_supported_by_app()
+	// lives in licensing.php, and without this the call only resolves because the
+	// extra_compatibility_versions() call below happens to require licensing.php
+	// first -- a chain that depends on statement ORDER inside this function, not
+	// even on the include graph. An early return or a reorder would turn it into a
+	// fatal "Call to undefined function" in healthcheck.php, and Phan cannot see it.
+	require_once(realpath(__DIR__ . '/licensing.php'));
 
-	// Get the list of available extra names
-	$available_extras = available_extra_short_names();
+	write_debug_log("Checking version compatibility for the \"" . $extra . "\" extra.", 'info');
 
 	// If the provided extra name is not in the list of available extras
-	if (!in_array($extra, $available_extras))
+	if (!in_array($extra, available_extra_short_names()))
 	{
-		// Return false
 		return false;
 	}
-	// The provided extra name is in the list of available extras
-	else
+
+	$simplerisk_version = (string)current_version("app");
+	$extra_version      = ($version_provider !== null)
+		? (string)$version_provider($extra)
+		: (string)core_extra_current_version($extra);
+
+	// core_extra_current_version() answers "N/A" for an Extra it cannot read.
+	if ($extra_version === '' || $extra_version === 'N/A')
 	{
-		// URL for extra compatibility checks
-		if (defined('UPDATES_URL'))
-		{   
-			$url = UPDATES_URL . '/extra_compatibility.xml';
-		}
-		else $url = 'https://raw.githubusercontent.com/simplerisk/updates.simplerisk.com/updates.simplerisk.com/extra_compatibility.xml';
-
-		// Get the current version of SimpleRisk
-		$simplerisk_version = current_version("app");
-		write_debug_log("The current version of SimpleRisk is " . $simplerisk_version, 'info');
-
-		// Get the current version of the extra
-		$extra_version = core_extra_current_version($extra);
-		write_debug_log("Current version of this extra is " . $extra_version, 'info');
-
-        // Set the HTTP options
-        $http_options = [
-            'method' => 'GET',
-            'header' => [
-                "Content-Type: application/x-www-form-urlencoded",
-            ],
-        ];
-
-        // If SSL certificate checks are enabled for the SimpleRisk API
-        if (ssl_external_verify_enabled())
-        {
-            // Verify the SSL host and peer
-            $validate_ssl = true;
-        }
-        else $validate_ssl = false;
-
-		write_debug_log("Fetching content from the extra compatibility page.", 'info');
-
-		// Set the default socket timeout to 5 seconds
-		ini_set('default_socket_timeout', 5);
-
-        // Make the services call
-        $response = fetch_url_content("stream", $http_options, $validate_ssl, $url);
-        if (!is_array($response))
-        {
-            write_debug_log("Unable to connect to " . $url, 'warning');
-            return false;
-        }
-        $return_code = $response['return_code'];
-
-		// If we were unable to connect to the URL
-        if ($return_code !== 200)
-		{
-			write_debug_log("Unable to connect to " . $url, 'warning');
-			return false;
-		}
-		// We were able to connect to the URL
-		else
-		{
-			// Get the content of the extra compatibility page
-			$extra_compatibility_page = $response['response'];
-
-			// Parse the XML
-			$ob = simplexml_load_string($extra_compatibility_page);
-
-			// Encode the XML as JSON
-			$json = json_encode($ob);
-
-			// Decode the JSON as an array
-			$array = json_decode($json, true);
-
-			// For each extra entry in the array
-			// @phan-suppress-next-line PhanTypeArraySuspiciousNullable -- json_decode result from valid XML→JSON; xml validity confirmed by simplexml_load_string success
-			foreach($array[$extra]['extra'] as $key => $value)
-			{
-				$array_extra_version = $value['@attributes']['version'];
-				$array_simplerisk_version = $value['appversion'];
-
-				// If we have a match
-				if ($simplerisk_version == $array_simplerisk_version && $extra_version == $array_extra_version)
-				{
-					write_debug_log("The current version of SimpleRisk is compatible with this Extra.", 'info');
-					return true;
-				}
-			}
-
-			// If we never found our match
-			write_debug_log("The current version of SimpleRisk is not compatible with this Extra.", 'warning');
-			return false;
-		}
+		write_debug_log("No installed version found for the \"" . $extra . "\" extra.", 'info');
+		return false;
 	}
+
+	$compatibility = extra_compatibility_versions();
+
+	if ($compatibility === null)
+	{
+		write_debug_log("No Extra compatibility data available; cannot verify the \"" . $extra . "\" extra.", 'warning');
+		return false;
+	}
+
+	// null (no entry for this version) is not a match, same as false.
+	if (extra_version_supported_by_app($compatibility, $extra, $extra_version, $simplerisk_version) === true)
+	{
+		write_debug_log("The current version of SimpleRisk is compatible with this Extra.", 'info');
+		return true;
+	}
+
+	write_debug_log("The current version of SimpleRisk is not compatible with this Extra.", 'warning');
+	return false;
 }
 
 /**************************************

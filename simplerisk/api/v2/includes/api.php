@@ -1480,6 +1480,42 @@ function api_v2_admin_license_refresh()
  * FUNCTION: API V2 ADMIN EXTRAS INSTALL                        *
  ****************************************************************/
 /**
+ * Map a download_extra() refusal to an HTTP status for the v2 install endpoint.
+ * Pure.
+ *
+ * Kept beside its one caller, matching api_v2_collect_licensed_extras(). It was
+ * extracted from the handler because the routing is a decision, and inline in
+ * the handler the only available test was a string search for the code literals
+ * — which cannot fail: inverting the membership test would map every
+ * precondition to 500 and everything else to 412 while leaving every literal in
+ * place.
+ *
+ * - 412 for a precondition: the request is well-formed and authorized, the
+ *   instance simply cannot take this build. These carry http_status 0 when
+ *   refused before any request was made, which would otherwise fall through to
+ *   500 and report an understood policy decision as a server fault.
+ * - 403 for a licensing/auth refusal from the service.
+ * - 500 for transport and anything unrecognised, including integrity failures,
+ *   which describe a bad response rather than a bad instance state.
+ *
+ * @param string|null $error       The envelope's error code.
+ * @param int         $http_status The status of the upstream download, if any.
+ */
+function api_v2_extras_install_response_code(?string $error, int $http_status): int
+{
+    // extra_install_precondition_errors() lives in licensing.php. Declared here
+    // rather than relied on via the caller — matching api_v2_collect_licensed_extras(),
+    // which declares its own require_once for the same reason.
+    require_once(realpath(__DIR__ . '/../../../includes/licensing.php'));
+
+    if ($error !== null && in_array($error, extra_install_precondition_errors(), true)) {
+        return 412;
+    }
+
+    return ($http_status === 401 || $http_status === 403 || $http_status === 404) ? 403 : 500;
+}
+
+/**
  * Install a SimpleRisk Extra by name. Wraps download_extra() from
  * services.php — that function fetches the Extra package, unzips it
  * into simplerisk/extras/<name>/, and updates the on-disk tree.
@@ -1581,8 +1617,13 @@ function api_v2_admin_extras_install()
         $message = (is_string($alert) && $alert !== '')
             ? $alert
             : ($err_message ?? ($lang['InstallExtraError'] ?? 'Install failed.'));
-        // Use 403 for license/auth failures, 500 for transport or unknown errors
-        $response_code = ($http_status === 401 || $http_status === 403 || $http_status === 404) ? 403 : 500;
+        // The routing is a pure decision and lives in licensing.php beside the
+        // functions that produce these codes, so the classification cannot drift
+        // from the codes themselves and can be tested without an HTTP round trip.
+        $response_code = api_v2_extras_install_response_code(
+            isset($result['error']) ? (string)$result['error'] : null,
+            (int)$http_status
+        );
         api_v2_json_result($response_code, $message, null);
         return;
     }

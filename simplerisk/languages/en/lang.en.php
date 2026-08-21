@@ -4627,6 +4627,16 @@ $lang = array(
     'NoticeSizeSmall' => 'Small',
     'NoticeSizeNormal' => 'Normal',
     'NoticeSizeLarge' => 'Large',
+    // Preferences page save feedback
+    'TheSettingsWereUpdatedSuccessfully' => 'The settings were updated successfully.',
+    'NoChangesWereMade' => 'No changes were made.',
+    'PleaseSpecifyAnIntegerGreaterThanOrEqualToZeroForTheMinimumValue' => 'Please specify an integer greater than or equal to zero for the minimum value.',
+    'PleaseSpecifyAnIntegerForTheMaximumValue' => 'Please specify an integer for the maximum value.',
+    'PleaseSpecifyAMaximumValueGreaterThanTheMinimum' => 'Please specify a maximum value greater than the minimum.',
+    // Extra download version compatibility
+    'ExtraVersionIncompatibleWithApplication' => 'The downloaded "{$extra}" Extra (version {$extra_version}) is not compatible with SimpleRisk {$app_version} and was not installed. Upgrade SimpleRisk to the latest version first.',
+    'ExtraCompatibilityDataUnavailable' => 'SimpleRisk could not confirm which Extra versions this release supports, so the Extra was not installed. Please try again later.',
+    'ExtraVersionCouldNotBeVerified' => 'The version of the downloaded Extra could not be determined, so it was not installed.',
     '' => '',
 );
 ?>

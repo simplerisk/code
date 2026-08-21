@@ -135,6 +135,7 @@ $releases = [
     "20260519-001",
     "20260709-001",
     "20260811-001",
+    "20260820-001",
 ];
 
 /*************************
@@ -4611,43 +4612,16 @@ function upgrade_from_20200401001($db)
     $stmt = $db->prepare("CREATE TABLE IF NOT EXISTS `risk_catalog` ( `id` INT NOT NULL AUTO_INCREMENT, `number` varchar(20) NOT NULL, `grouping` INT NOT NULL, `name` varchar(1000) NOT NULL, `description` text NOT NULL, `function` INT NOT NULL, `order` INT NOT NULL, PRIMARY KEY (`id`)) ENGINE=InnoDB DEFAULT CHARSET=utf8;");
     $stmt->execute();
 
-    // Add new rows to risk catalog table
-    echo "Add new rows to risk catalog table.<br />\n";
-    $stmt = $db->prepare("INSERT IGNORE INTO `risk_catalog` (`id`, `number`, `grouping`, `name`, `description`, `function`, `order`) VALUES
-        (1, 'R-AC-1', 1, 'Inability to maintain individual accountability', 'There is a failure to maintain asset ownership and it is not possible to have non-repudiation of actions or inactions.', 2, 1),
-        (2, 'R-AC-2', 1, 'Improper assignment of privileged functions', 'There is a failure to implement lease privileges.', 2, 2),
-        (3, 'R-AC-3', 1, 'Privilege escalation', 'Access to privileged functions cannot be controlled.', 2, 3),
-        (4, 'R-AC-4', 1, 'Unauthorized access', 'Access is granted to unauthorized individuals or services.', 2, 4),
-        (5, 'R-AM-1', 2, 'Lost, damaged or stolen asset(s)', 'Asset(s) are lost, damaged or stolen.', 2, 5),
-        (6, 'R-AM-2', 2, 'Loss of integrity through unauthorized changes ', 'Unauthorized changes damage the integrity of the system / application / service.', 2, 6),
-        (7, 'R-BC-1', 3, 'Business interruption ', 'There is increased latency or a service outage.', 5, 7),
-        (8, 'R-BC-2', 3, 'Data loss / corruption ', 'There is a failure to maintain the confidentiality of the data (compromise) or data is corrupted (loss).', 5, 8),
-        (9, 'R-BC-3', 3, 'Improper response to incidents ', 'Response actions fail to act appropriately in a timely manner to properly address the incident.', 4, 9),
-        (10, 'R-BC-4', 3, 'Inability to investigate / prosecute incidents', 'Response actions either corrupt evidence or impede the ability to prosecute incidents.', 4, 10),
-        (11, 'R-BC-5', 3, 'Expense associated with managing a loss event', 'There are financial reprocussions from responding to an incident or loss.', 4, 11),
-        (12, 'R-BC-6', 3, 'Reduction in productivity', 'Productivity is negatively affected by the incident.', 2, 12),
-        (13, 'R-EX-1', 4, 'Loss of revenue ', 'A financial loss occures from either a loss of clients or inability to generate future revenue.', 5, 13),
-        (14, 'R-EX-2', 4, 'Cancelled contract', 'A contract is cancelled due to a violation of a contract clause.', 5, 14),
-        (15, 'R-EX-3', 4, 'Diminished competitive advantage', 'The competitive advantage of the organization is jeapordized.', 5, 15),
-        (16, 'R-EX-4', 4, 'Diminished reputation ', 'Negative publicity tarnishes the organization\'s reputation.', 5, 16),
-        (17, 'R-EX-5', 4, 'Fines and judgements', 'There are legal and/or financial damages resulting from statutory / regulatory / contractual non-compliance.', 5, 17),
-        (18, 'R-EX-6', 4, 'Unmitigated vulnerabilities', 'Thre are unmitigated technical vulnerabilities that exist without compensating controls or other mitigation actions.', 2, 18),
-        (19, 'R-EX-7', 4, 'System compromise', 'Malicious software infects the system(s) that affects its confidentiality, integrity and availability.', 2, 19),
-        (20, 'R-EX-8', 4, 'Information loss / compromise due to technical attack', 'Users fall for phishing, or other technical attacks, that compromise data, systems, applications or services.', 2, 20),
-        (21, 'R-EX-9', 4, 'Information loss / compromise due to non-technical attack', 'Users fall for a social engineering attack, that compromise data, systems, applications or services.', 2, 21),
-        (22, 'R-GV-1', 5, 'Inability to support business processes / missions', 'Security /privacy are unable to support the organization\'s mission requirements for secure technologies & processes.', 2, 22),
-        (23, 'R-GV-2', 5, 'Ineffective remediation actions', 'There is no oversight to ensure remediation actions are correct and/or effective.', 2, 23),
-        (24, 'R-GV-3', 5, 'Improper internal security / privacy practices', 'Internal procedures do not exist or are improper. Procedures fail to meet \"reasonable practices\" expected by industry standards.', 2, 24),
-        (25, 'R-GV-4', 5, 'Improper third-party security / privacy practices', 'Third-party procedures do not exist or are improper. Procedures fail to meet \"reasonable practices\" expected by industry standards.', 2, 25),
-        (26, 'R-GV-5', 5, 'Lack of accountability for security / privacy roles & responsibilities', 'There is a failure to govern security / privacy roles & responsibilities.', 1, 26),
-        (27, 'R-GV-6', 5, 'Gap or lapse in security / privacy controls coverage', 'There is improper scoping of control environment, which leads to a potential gap or lapse in security / privacy controls coverage.', 1, 27),
-        (28, 'R-GV-7', 5, 'Abusive content or action', 'There is harmful speech / violence threats / illegal content that negatively affect business operations.', 1, 28),
-        (29, 'R-SA-1', 6, 'Inability to maintain situational awareness', 'There is an inability to detect incidents.', 3, 29),
-        (30, 'R-SA-2', 6, 'Lack of a security-minded workforce', 'The workforce lacks user-level understanding about security & privacy principles.', 2, 30),
-        (31, 'R-SA-3', 6, 'Lack of oversight of internal security / privacy controls', 'There is a lack of due diligence / due care in overseeing the organization\'s internal security / privacy controls.', 1, 31),
-        (32, 'R-SA-4', 6, 'Lack of oversight of third-party security / privacy controls ', 'There is a lack of due diligence / due care in overseeing security / privacy controls operated by third-party service providers.', 1, 32);
-    ");
-    $stmt->execute();
+    // The default risk_catalog seed that used to sit here was removed: the SCF
+    // import now populates this catalog, and the shipped installer SQL has long
+    // carried no catalog rows, so seeding only on the upgrade path made a fresh
+    // install and an upgraded instance disagree. The table is still created here
+    // because later releases and runtime code depend on it existing.
+    //
+    // Removed from this already-released function rather than deleted by the
+    // current one on purpose: a customer past this version keeps whatever rows
+    // they have, and a DELETE in a newer function would destroy catalog entries
+    // they may have edited or mapped risks to.
 
     // Add new setting for risk mapping required
     echo "Add new setting for risk mapping required.<br />\n";
@@ -5281,19 +5255,11 @@ function upgrade_from_20200711001($db)
 	('Incident Response');");
     $stmt->execute();
 
-    // Get the id of the Incident Response group
-    $incident_response_group_id = $db->lastInsertId();
-
-    // Add new rows to risk catalog table
-    echo "Add new rows to risk catalog table.<br />\n";
-    $stmt = $db->prepare("INSERT IGNORE INTO `risk_catalog` (`number`, `grouping`, `name`, `description`, `function`, `order`) VALUES
-        ('R-IR-1', :incident_response_group_id, 'Inability to investigate / prosecute incidents', 'Response actions either corrupt evidence or impede the ability to prosecute incidents.', 4, 1),
-	('R-IR-2', :incident_response_group_id, 'Improper response to incidents', 'Response actions fail to act appropriately in a timely manner to properly address the incident.', 4, 2),
-	('R-IR-3', :incident_response_group_id, 'Ineffective remediation actions', 'There is no oversight to ensure remediation actions are correct and/or effective.', 2, 3),
-	('R-IR-4', :incident_response_group_id, 'Expense associated with managing a loss event', 'There are financial repercussions from responding to an incident or loss.', 4, 4);
-    ");
-    $stmt->bindParam(":incident_response_group_id", $incident_response_group_id, PDO::PARAM_INT);
-    $stmt->execute();
+    // The R-IR-* risk_catalog rows that used to be added under this grouping were
+    // removed with the rest of the default catalog seed. The grouping itself is
+    // deliberately kept: the shipped installer SQL seeds risk_grouping (including
+    // 'Incident Response') while seeding no catalog rows, so keeping it is what
+    // makes an upgraded instance match a fresh install rather than diverge from it.
 
     // To make sure page loads won't fail after the upgrade
     // as this session variable is not set by the previous version of the login logic
@@ -5465,8 +5431,33 @@ function upgrade_from_20210121001($db)
         $stmt->execute();
     }
 
-    // Update complianceforge risk catalog
+    // Update complianceforge risk catalog.
+    //
+    // Gated on the DEFAULT SEED still being present, not merely on the table
+    // existing. Every statement in this block matches on the mutable `number`
+    // column ("DELETE FROM risk_catalog WHERE number = 'R-BC-3'", and a 'TMP'
+    // sentinel used for a two-step renumber), which was safe while the seed
+    // guaranteed those rows were ours. The seed is no longer created, so on a
+    // database that never received it the only rows that can match are ones the
+    // customer wrote themselves — and the paired remap that should have moved
+    // their risk mappings first silently matches nothing, because its target
+    // (R-IR-*) was never seeded either. Without this gate a customer who happens
+    // to number an entry 'R-BC-3' or 'TMP' loses it, and any risk mapped to it is
+    // left pointing at a deleted id.
+    //
+    // The probe is the first seeded row's full identity triple. id 1 alone is not
+    // enough (an auto-increment can hand id 1 to a customer's first entry), and
+    // number alone is not enough (that is the collision being guarded against);
+    // all three together are not something a customer reproduces by accident.
+    $seed_present = false;
     if (table_exists('risk_catalog'))
+    {
+        $stmt = $db->prepare("SELECT COUNT(*) FROM `risk_catalog` WHERE `id` = 1 AND `number` = 'R-AC-1' AND `name` = 'Inability to maintain individual accountability';");
+        $stmt->execute();
+        $seed_present = ((int)$stmt->fetchColumn() === 1);
+    }
+
+    if ($seed_present)
     {
         echo "Updating the risk catalog values to match with ComplianceForge.<br />\n";
         // R-BC-3 => R-IR-2
@@ -5558,32 +5549,9 @@ WHERE number = 'R-GV-5';");
         $stmt = $db->prepare("CREATE TABLE IF NOT EXISTS `threat_catalog` ( `id` INT NOT NULL AUTO_INCREMENT, `number` varchar(20) NOT NULL, `grouping` INT NOT NULL, `name` varchar(1000) NOT NULL, `description` text NOT NULL, `order` INT NOT NULL, PRIMARY KEY (`id`)) ENGINE=InnoDB DEFAULT CHARSET=utf8;");
         $stmt->execute();
 
-        // Add new rows to threat catalog table
-        echo "Add new rows to threat catalog table.<br />\n";
-        $stmt = $db->prepare("INSERT IGNORE INTO `threat_catalog` (`id`, `number`, `grouping`, `name`, `description`, `order`) VALUES
-            (1, 'NT-1', 1, 'Drought & Water Shortage', 'Regardless of geographic location, periods of reduced rainfall are expected. For non-agricultural industries, drought may not be impactful to operations until it reaches the extent of water rationing.', 1),
-            (2, 'NT-2', 1, 'Earthquakes', 'Earthquakes are sudden rolling or shaking events caused by movement under the earth’s surface. Although earthquakes usually last less than one minute, the scope of devastation can be widespread and have long-lasting impact.', 2),
-            (3, 'NT-3', 1, 'Fire & Wildfires', 'Regardless of geographic location or even building material, fire is a concern for every business. When thinking of a fire in a building, envision a total loss to all technology hardware, including backup tapes, and all paper files being consumed in the fire.', 3),
-            (4, 'NT-4', 1, 'Floods', 'Flooding is the most common of natural hazards and requires an understanding of the local environment, including floodplains and the frequency of flooding events. Location of critical technologies should be considered (e.g., server room is in the basement or first floor of the facility).', 4),
-            (5, 'NT-5', 1, 'Hurricanes & Tropical Storms', 'Hurricanes and tropical storms are among the most powerful natural disasters because of their size and destructive potential. In addition to high winds, regional flooding and infrastructure damage should be considered when assessing hurricanes and tropical storms.', 5),
-            (6, 'NT-6', 1, 'Landslides & Debris Flow', 'Landslides occur throughout the world and can be caused by a variety of factors including earthquakes, storms, volcanic eruptions, fire, and by human modification of land. Landslides can occur quickly, often with little notice. Location of critical technologies should be considered (e.g., server room is in the basement or first floor of the facility).', 6),
-            (7, 'NT-7', 1, 'Pandemic (Disease) Outbreaks', 'Due to the wide variety of possible scenarios, consideration should be given both to the magnitude of what can reasonably happen during a pandemic outbreak (e.g., COVID-19, Influenza, SARS, Ebola, etc.) and what actions the business can be taken to help lessen the impact of a  pandemic on operations.', 7),
-            (8, 'NT-8', 1, 'Severe Weather', 'Severe weather is a broad category of meteorological events that include events that range from damaging winds to hail.', 8),
-            (9, 'NT-9', 1, 'Space Weather', 'Space weather includes natural events in space that can affect the near-earth environment and satellites. Most commonly, this is associated with solar flares from the Sun, so an understanding of how solar flares may impact the business is of critical importance in assessing this threat.', 9),
-            (10, 'NT-10', 1, 'Thunderstorms & Lightning', 'Thunderstorms are most prevalent in the spring and summer months and generally occur during the afternoon and evening hours, but they can occur year-round and at all hours. Many hazardous weather events are associated with thunderstorms. Under the right conditions, rainfall from thunderstorms causes flash flooding and lightning is responsible for equipment damage, fires and fatalities.', 10),
-            (11, 'NT-11', 1, 'Tornadoes', 'Tornadoes occur in many parts of the world, including the US, Australia, Europe, Africa, Asia, and South America. Tornadoes can happen at any time of year and occur at any time of day or night, but most tornadoes occur between 4–9 p.m. Tornadoes (with winds up to about 300 mph) can destroy all but the best-built man-made structures.', 11),
-            (12, 'NT-12', 1, 'Tsunamis', 'All tsunamis are potentially dangerous, even though they may not damage every coastline they strike. A tsunami can strike anywhere along most of the US coastline. The most destructive tsunamis have occurred along the coasts of California, Oregon, Washington, Alaska and Hawaii.', 12),
-            (13, 'NT-13', 1, 'Volcanoes', 'While volcanoes are geographically fixed objects, volcanic fallout can have significant downwind impacts for thousands of miles. Far outside of the blast zone, volcanoes can significantly damage or degrade transportation systems and also cause electrical grids to fail.', 13),
-            (14, 'NT-14', 1, 'Winter Storms & Extreme Cold', 'Winter storms is a broad category of meteorological events that include events that range from ice storms, to heavy snowfall, to unseasonably (e.g., record breaking) cold temperatures. Winter storms can significantly impact business operations and transportation systems over a wide geographic region.', 14),
-            (15, 'MT-1', 2, 'Civil or Political Unrest', 'Civil or political unrest can be singular or wide-spread events that can be unexpected and unpredictable. These events can occur anywhere, at any time.', 15),
-            (16, 'MT-2', 2, 'Hacking & Other Cybersecurity Crimes', 'Unlike physical threats that prompt immediate action (e.g., \"stop, drop, and roll\" in the event of a fire), cyber incidents are often difficult to identify as the incident is occurring. Detection generally occurs after the incident has occurred, with the exception of \"denial of service\" attacks. The spectrum of cybersecurity risks is limitless and threats can have wide-ranging effects on the individual, organizational, geographic, and national levels.', 16),
-            (17, 'MT-3', 2, 'Hazardous Materials Emergencies', 'Hazardous materials emergencies are focused on accidental disasters that occur in industrialized nations. These incidents can range from industrial chemical spills to groundwater contamination.', 17),
-            (18, 'MT-4', 2, 'Nuclear, Biological and Chemical (NBC) Weapons', 'The use of NBC weapons are in the possible arsenals of international terrorists and it must be a consideration. Terrorist use of a “dirty bomb” — is considered far more likely than use of a traditional nuclear explosive device. This may be a combination a conventional explosive device with radioactive / chemical / biological material and be designed to scatter lethal and sub-lethal amounts of material over a wide area.', 18),
-            (19, 'MT-5', 2, 'Physical Crime', 'Physical crime includes \"traditional\" crimes of opportunity. These incidents can range from theft, to vandalism, riots, looting, arson and other forms of criminal activities.', 19),
-            (20, 'MT-6', 2, 'Terrorism & Armed Attacks', 'Armed attacks, regardless of the motivation of the attacker, can impact a businesses. Scenarios can range from single actors (e.g., \"disgruntled\" employee) all the way to a coordinated terrorist attack by multiple assailants. These incidents can range from the use of blade weapons (e.g., knives), blunt objects (e.g., clubs), to firearms and explosives.', 20),
-            (21, 'MT-7', 2, 'Utility Service Disruption', 'Utility service disruptions are focused on the sustained loss of electricity, Internet, natural gas, water, and/or sanitation services. These incidents can have a variety of causes but  directly impact the fulfillment of utility services that your business needs to operate.', 21);
-        ");
-        $stmt->execute();
+        // The default NT-*/MT-* seed that used to follow was removed for the same
+        // reason as the risk catalog above: SCF populates this now, and the
+        // installer SQL ships it empty. Table creation stays.
     }
 
     // Set default custom_display_settings value to user table.
@@ -8137,6 +8105,14 @@ function upgrade_from_20250411001($db) {
             $stmt->execute();
         }
 
+        // This join resolves risks.risk_catalog_mapping (a CSV of catalog ids)
+        // against the rows that exist now, and the column is dropped afterwards —
+        // so anything it fails to match is lost for good. Removing the default
+        // catalog seed does not put that at risk: risks.risk_catalog_mapping is
+        // created by the same release that used to seed the catalog, defaulting to
+        // NULL, so an instance that never received the seed has no mapping data to
+        // resolve. Any instance that does hold mappings necessarily still holds the
+        // rows they point at, because it received both from the older code.
         echo "Migrating risk_catalog_mapping field in risks table to new table.<br />\n";
         $stmt = $db->prepare("
             SELECT DISTINCT t1.id risk_id, t2.id risk_catalog_id FROM `risks` t1, `risk_catalog` t2 WHERE FIND_IN_SET(t2.id, t1.risk_catalog_mapping);
@@ -11336,6 +11312,29 @@ function upgrade_from_20260709001($db) {
     // Update the database version last, so a failure in any of the
     // migration operations above leaves the row at the old version and
     // the upgrade runner re-attempts this function on the next pass.
+    update_database_version($db, $version_to_upgrade, $version_upgrading_to);
+    echo "Finished SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
+}
+
+/***************************************
+ * FUNCTION: UPGRADE FROM 20260811-001 *
+ ***************************************/
+function upgrade_from_20260811001($db) {
+    // Database version to upgrade
+    $version_to_upgrade = '20260811-001';
+
+    // Database version upgrading to
+    $version_upgrading_to = '20260820-001';
+
+    echo "Beginning SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
+
+    // This release carries no schema or seed-data change. The function still has
+    // to exist: the chain driver looks up upgrade_from_<db_version> for every
+    // release in $releases, and a missing one is decided as 'no_upgrade_function'
+    // and fails the upgrade rather than being skipped. So it advances the version
+    // and nothing else.
+
+    // Update the database version
     update_database_version($db, $version_to_upgrade, $version_upgrading_to);
     echo "Finished SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
 }

@@ -4627,6 +4627,16 @@ $lang = array(
     'NoticeSizeSmall' => 'Kicsi',
     'NoticeSizeNormal' => 'Normál',
     'NoticeSizeLarge' => 'Nagy',
+    // Preferences page save feedback
+    'TheSettingsWereUpdatedSuccessfully' => 'A beállítások frissítése sikeresen megtörtént.',
+    'NoChangesWereMade' => 'Nem történt változtatás.',
+    'PleaseSpecifyAnIntegerGreaterThanOrEqualToZeroForTheMinimumValue' => 'Kérjük, adjon meg egy nullánál nagyobb vagy azzal egyenlő egész számot minimális értékként.',
+    'PleaseSpecifyAnIntegerForTheMaximumValue' => 'Kérjük, adjon meg egy egész számot a maximális értékhez.',
+    'PleaseSpecifyAMaximumValueGreaterThanTheMinimum' => 'Kérjük, adjon meg egy maximális értéket, amely nagyobb a minimális értéknél.',
+    // Extra download version compatibility
+    'ExtraVersionIncompatibleWithApplication' => 'A letöltött "{$extra}" Extra ({$extra_version} verzió) nem kompatibilis a SimpleRisk {$app_version} verziójával, és nem lett telepítve. Először frissítse a SimpleRisk legújabb verziójára.',
+    'ExtraCompatibilityDataUnavailable' => 'A SimpleRisk nem tudta megerősíteni, hogy ez a kiadás mely Extra verziókat támogatja, ezért az Extra nem lett telepítve. Kérjük, próbálja meg később.',
+    'ExtraVersionCouldNotBeVerified' => 'A letöltött Extra verzióját nem lehetett meghatározni, ezért nem lett telepítve.',
     '' => '',
 );
 ?>

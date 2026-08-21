@@ -4627,6 +4627,16 @@ $lang = array(
     'NoticeSizeSmall' => 'Малий',
     'NoticeSizeNormal' => 'Звичайний',
     'NoticeSizeLarge' => 'Великий',
+    // Preferences page save feedback
+    'TheSettingsWereUpdatedSuccessfully' => 'Налаштування успішно оновлено.',
+    'NoChangesWereMade' => 'Жодних змін не було внесено.',
+    'PleaseSpecifyAnIntegerGreaterThanOrEqualToZeroForTheMinimumValue' => 'Будь ласка, вкажіть ціле число, більше або рівне нулю, для мінімального значення.',
+    'PleaseSpecifyAnIntegerForTheMaximumValue' => 'Будь ласка, вкажіть ціле число для максимального значення.',
+    'PleaseSpecifyAMaximumValueGreaterThanTheMinimum' => 'Будь ласка, вкажіть максимальне значення, більше за мінімальне.',
+    // Extra download version compatibility
+    'ExtraVersionIncompatibleWithApplication' => 'Завантажений додатковий пакет "{$extra}" (версія {$extra_version}) не сумісний із SimpleRisk {$app_version} і не був встановлений. Спочатку оновіть SimpleRisk до останньої версії.',
+    'ExtraCompatibilityDataUnavailable' => 'SimpleRisk не зміг підтвердити, які версії Extra підтримує цей випуск, тому Extra не було встановлено. Будь ласка, спробуйте пізніше.',
+    'ExtraVersionCouldNotBeVerified' => 'Версію завантаженого додаткового доповнення не вдалося визначити, тому його не було встановлено.',
     '' => '',
 );
 ?>

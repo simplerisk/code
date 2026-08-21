@@ -1475,79 +1475,97 @@ function update_asset_value($id, $min_value, $max_value, $valuation_level_name =
     return true;
 }
 
-/*********************************
- * FUNCTION: UPDATE ASSET VALUES *
- *********************************/
-function update_asset_values($min_value, $max_value)
+/*************************************************
+ * FUNCTION: ASSET VALUATION LINEAR ROWS         *
+ *************************************************/
+/**
+ * PURE. The ten `asset_values` rows a LINEAR distribution over
+ * [$min_value, $max_value] produces, as [id => ['min_value', 'max_value']]
+ * for ids 1..10.
+ *
+ * Splitting the arithmetic out from the write is what lets the Preferences
+ * page ask "would this submit change anything?" before touching the table.
+ * Every level is one wider-or-equal step of ($max - $min) / 10; level 1 opens
+ * on $min_value, each later level opens one above its predecessor's ceiling,
+ * and level 10 is forced onto $max_value so the rounding drift accumulated
+ * across the previous nine buckets is absorbed rather than left as a gap.
+ *
+ * No range validation: an inverted or degenerate range simply produces a
+ * degenerate distribution, exactly as this arithmetic always has. Callers
+ * validate before calling.
+ */
+function asset_valuation_linear_rows($min_value, $max_value): array
 {
-        // Open the database connection
-        $db = db_open();
+    $min_value = (int)$min_value;
+    $max_value = (int)$max_value;
 
     // Get the increment
-    $increment = round(($max_value - $min_value)/10);
+    $increment = (int)round(($max_value - $min_value) / 10);
 
     // Set the value for level 1
     $value = $min_value + $increment;
-    update_asset_value(1, $min_value, $value);
+    $rows = [1 => ['min_value' => $min_value, 'max_value' => $value]];
 
     // For each value from 2 to 10
-    for ($i=2; $i<=10; $i++)
-    {
+    for ($i = 2; $i <= 10; $i++) {
+
         // The minimum value is the current value + 1
-        $min_value = $value + 1;
+        $level_min = $value + 1;
 
         // If this is not level 10
-        if ($i != 10)
-        {
+        if ($i != 10) {
             // The new value is the current value + the increment
             $value = $value + $increment;
+        } else {
+            $value = $max_value;
         }
-        else $value = $max_value;
 
-        // Set the value for the other levels
-        update_asset_value($i, $min_value, $value);
+        $rows[$i] = ['min_value' => $level_min, 'max_value' => $value];
     }
 
-        // Close the database connection
-        db_close($db);
-
-    // Return success
-    return true;
+    return $rows;
 }
 
-/*********************************************
- * FUNCTION: UPDATE ASSET VALUES EXPONENTIAL *
- *********************************************/
+/*************************************************
+ * FUNCTION: ASSET VALUATION EXPONENTIAL ROWS    *
+ *************************************************/
 /**
- * Distribute the 10 asset-valuation buckets geometrically (exponential
- * progression) between $min_value and $max_value. Each bucket's upper
- * boundary is computed as $min_value * r^i where
- * r = ($max_value / $min_value)^(1/10) and i runs 1..10. Mirrors the
- * per-row idiom of update_asset_values() (level 1's lower bound is
- * $min_value; each subsequent level's lower bound is the previous
- * level's upper bound + 1; level 10's upper bound is forced to
- * $max_value to absorb any rounding drift).
+ * PURE. The ten `asset_values` rows an EXPONENTIAL (geometric) distribution
+ * over [$min_value, $max_value] produces, as [id => ['min_value', 'max_value']]
+ * for ids 1..10.
  *
- * Requires $min_value > 0 (geometric progression cannot start at zero).
- * Callers are expected to validate before calling; safety net here
- * returns false when min <= 0 or max <= min so no rows are updated.
+ * Each bucket's upper boundary is $min_value * r^i where
+ * r = ($max_value / $min_value)^(1/10) and i runs 1..10. Level 1's lower bound
+ * is $min_value; each later level's lower bound is the previous level's upper
+ * bound + 1; level 10's upper bound is forced to $max_value to absorb rounding
+ * drift.
+ *
+ * $min_value may be zero -- a geometric progression cannot start at zero, so
+ * that case anchors on max^(1/10) (the 10th root of max) instead, which
+ * produces the natural "0-10, 11-100, 101-1000, ..." sequence when max is a
+ * power of ten.
+ *
+ * Returns an EMPTY ARRAY for a range the progression cannot express (a
+ * negative minimum, or a maximum that does not exceed the minimum). Callers
+ * are expected to validate and report the refusal themselves; returning no
+ * rows means no rows are written.
  */
-function update_asset_values_exponential($min_value, $max_value)
+function asset_valuation_exponential_rows($min_value, $max_value): array
 {
     $min_value = (float)$min_value;
     $max_value = (float)$max_value;
 
     // Range must actually be a range, and max must be positive (so the
     // geometric progression has somewhere to terminate). min can be
-    // zero — that's the natural starting point for an exponential range
+    // zero -- that's the natural starting point for an exponential range
     // (e.g. 0-10, 11-100, 101-1000, ...).
     if ($min_value < 0 || $max_value <= $min_value || $max_value <= 0) {
-        return false;
+        return [];
     }
 
     // Compute the geometric step r and level 1's upper bound. min=0 needs
     // a special anchor (geometric needs a non-zero start), so we anchor on
-    // max^(1/10) — i.e. the 10th root of max — which produces the natural
+    // max^(1/10) -- i.e. the 10th root of max -- which produces the natural
     // "0-10, 11-100, 101-1000, ..." sequence when max is a power of 10.
     // min>0 uses the standard (max/min)^(1/10) ratio with level 1's upper
     // bound = min*r.
@@ -1561,44 +1579,158 @@ function update_asset_values_exponential($min_value, $max_value)
         $level_1_upper = (int)round($min_value * $r);
     }
 
-    // Open the database connection
-    $db = db_open();
-
     // Set the value for level 1
-    update_asset_value(1, $level_1_lower, $level_1_upper);
+    $rows = [1 => ['min_value' => $level_1_lower, 'max_value' => $level_1_upper]];
     $value = $level_1_upper;
 
     // For each level from 2 to 10
-    for ($i = 2; $i <= 10; $i++)
-    {
+    for ($i = 2; $i <= 10; $i++) {
+
         // The minimum value is the previous level's upper bound + 1
         $level_min = $value + 1;
 
         // If this is not level 10, compute the upper bound
-        if ($i != 10)
-        {
+        if ($i != 10) {
             // anchor is max^(1/10) when min=0, else min
             $value = ($min_value == 0.0)
                 ? (int)round(pow($r, $i))
                 : (int)round($min_value * pow($r, $i));
-        }
-        else
-        {
+        } else {
             // Force the last bucket to land exactly on $max_value so any
             // rounding drift across the previous buckets doesn't leave a
             // gap at the top of the range.
             $value = (int)round($max_value);
         }
 
-        // Set the value for the other levels
-        update_asset_value($i, $level_min, $value);
+        $rows[$i] = ['min_value' => $level_min, 'max_value' => $value];
     }
 
-    // Close the database connection
-    db_close($db);
+    return $rows;
+}
 
-    // Return success
-    return true;
+/*************************************************
+ * FUNCTION: ASSET VALUATION ROWS TO UPDATE      *
+ *************************************************/
+/**
+ * PURE. Which of $desired actually differs from what is already stored.
+ *
+ * $desired is [id => ['min_value' => ..., 'max_value' => ..., and optionally
+ * 'valuation_level_name' => ...]]; $current is the row set
+ * get_asset_valuation_array() returns. The return is the SUBSET OF $desired,
+ * keyed by the same ids, that would change something if written.
+ *
+ * Both comparisons are deliberately loose about type, because both sides
+ * arrive in different shapes and a strict comparison would report every row
+ * changed on every submit:
+ *
+ *   min_value / max_value  -- posted as strings by <input type="number">,
+ *                             returned as ints by the INT columns.
+ *   valuation_level_name   -- '' when the admin left the box empty, NULL in
+ *                             the database when the level was never named.
+ *
+ * A level name is only compared when $desired carries one. The Linear and
+ * Exponential modes rebuild the boundaries without touching the names, so for
+ * them an existing name is not a difference.
+ *
+ * An id with no stored counterpart is reported as work: it cannot be shown to
+ * be unchanged, so it is not claimed to be.
+ */
+function asset_valuation_rows_to_update(array $desired, array $current): array
+{
+    // Index the stored rows by id. PDO's default fetch mode gives each row
+    // both string and numeric keys; only the string keys are read here.
+    $stored = [];
+    foreach ($current as $row) {
+        if (isset($row['id'])) {
+            $stored[(int)$row['id']] = $row;
+        }
+    }
+
+    $to_update = [];
+
+    foreach ($desired as $id => $row) {
+
+        $existing = $stored[(int)$id] ?? null;
+
+        if ($existing === null) {
+            $to_update[$id] = $row;
+            continue;
+        }
+
+        if ((int)$row['min_value'] !== (int)($existing['min_value'] ?? 0)
+            || (int)$row['max_value'] !== (int)($existing['max_value'] ?? 0)) {
+            $to_update[$id] = $row;
+            continue;
+        }
+
+        if (array_key_exists('valuation_level_name', $row)
+            && (string)$row['valuation_level_name'] !== (string)($existing['valuation_level_name'] ?? '')) {
+            $to_update[$id] = $row;
+        }
+    }
+
+    return $to_update;
+}
+
+/*************************************************
+ * FUNCTION: APPLY ASSET VALUATION ROWS          *
+ *************************************************/
+/**
+ * Write $rows (in the shape asset_valuation_rows_to_update() consumes) to
+ * `asset_values`, SKIPPING every row that already holds those values.
+ *
+ * Returns the number of rows actually written, so a caller can tell an admin
+ * what really happened instead of announcing a save on every click. All five
+ * Preferences tabs share one <form>, so this function is reached on every
+ * Update regardless of which tab the admin was looking at -- returning 0 is
+ * the common case, not the exceptional one.
+ */
+function apply_asset_valuation_rows(array $rows): int
+{
+    $to_update = asset_valuation_rows_to_update($rows, get_asset_valuation_array());
+
+    foreach ($to_update as $id => $row) {
+        update_asset_value(
+            $id,
+            $row['min_value'],
+            $row['max_value'],
+            array_key_exists('valuation_level_name', $row) ? $row['valuation_level_name'] : false
+        );
+    }
+
+    return count($to_update);
+}
+
+/*********************************
+ * FUNCTION: UPDATE ASSET VALUES *
+ *********************************/
+/**
+ * Rebuild the ten asset valuation levels as a LINEAR distribution over
+ * [$min_value, $max_value], writing only the levels that actually change.
+ *
+ * Returns the number of rows written -- 0 when the stored levels already match
+ * the distribution, which is what an untouched form re-submitted from another
+ * tab produces.
+ */
+function update_asset_values($min_value, $max_value): int
+{
+    return apply_asset_valuation_rows(asset_valuation_linear_rows($min_value, $max_value));
+}
+
+/*********************************************
+ * FUNCTION: UPDATE ASSET VALUES EXPONENTIAL *
+ *********************************************/
+/**
+ * Rebuild the ten asset valuation levels as an EXPONENTIAL distribution over
+ * [$min_value, $max_value], writing only the levels that actually change.
+ *
+ * Returns the number of rows written. A range the progression cannot express
+ * yields no rows and therefore writes nothing and returns 0; callers validate
+ * the range and report the refusal themselves rather than relying on this.
+ */
+function update_asset_values_exponential($min_value, $max_value): int
+{
+    return apply_asset_valuation_rows(asset_valuation_exponential_rows($min_value, $max_value));
 }
 
 /*******************************************
@@ -1998,7 +2130,7 @@ function display_add_asset()
         echo "
             <script>
                 $(function() {
-                    $(\"#add-asset-container select[id^='custom_field'].multiselect\").multiselect({buttonWidth: '300px', enableFiltering: true, enableCaseInsensitiveFiltering: true});
+                    $(\"#add-asset-container select.multiselect[name^='custom_field[']\").multiselect({buttonWidth: '300px', enableFiltering: true, enableCaseInsensitiveFiltering: true});
                 });
             </script>
         ";

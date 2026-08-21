@@ -100,7 +100,7 @@ class OpenApiAdminVersionDB {}
  *                      property="version",
  *                      type="string",
  *                      description="Optional. When given, applies exactly that one release's migration -- a single hop, for targeting one migration during development. When OMITTED, the full chain runs from wherever the database actually is, finishing with the migration for the release currently in development if there is one; that is the mode to use for testing a release that has no version number yet.",
- *                      example="20260811-001",
+ *                      example="20260820-001",
  *                      pattern="^\\d{8}-\\d{3}$"
  *                  )
  *              )
@@ -1462,6 +1462,7 @@ class OpenApiAdminSettingsFavoriteRemove {}
  *     @OA\Response(response=400, description="Missing or unknown name"),
  *     @OA\Response(response=401, description="Not authenticated"),
  *     @OA\Response(response=403, description="Forbidden: not admin, or installation is disabled by the current license enforcement state, or the download was rejected for licensing/auth reasons."),
+ *     @OA\Response(response=412, description="Precondition failed: this instance cannot accept the Extra build on offer. The licensing service serves only the newest build of an Extra, so an instance behind the newest release must upgrade SimpleRisk first. Returned when SimpleRisk is not on the latest release, a database migration is still pending, the build offered is not compatible with this release, its version could not be verified, or no compatibility data was available to judge it. Nothing is installed and any existing copy of the Extra is left untouched; status_message carries the specific reason."),
  *     @OA\Response(response=503, description="License state is unknown (cold cache or transient failure); retry shortly."),
  *     @OA\Response(response=500, description="Download or unpack failed")
  * )

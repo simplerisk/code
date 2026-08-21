@@ -4627,6 +4627,16 @@ $lang = array(
     'NoticeSizeSmall' => 'เล็ก',
     'NoticeSizeNormal' => 'ปกติ',
     'NoticeSizeLarge' => 'ใหญ่',
+    // Preferences page save feedback
+    'TheSettingsWereUpdatedSuccessfully' => 'การตั้งค่าได้รับการอัปเดตเรียบร้อยแล้ว',
+    'NoChangesWereMade' => 'ไม่มีการเปลี่ยนแปลงใดๆ เกิดขึ้น',
+    'PleaseSpecifyAnIntegerGreaterThanOrEqualToZeroForTheMinimumValue' => 'โปรดระบุจำนวนเต็มที่มากกว่าหรือเท่ากับศูนย์สำหรับค่าต่ำสุด',
+    'PleaseSpecifyAnIntegerForTheMaximumValue' => 'โปรดระบุจำนวนเต็มสำหรับค่าสูงสุด',
+    'PleaseSpecifyAMaximumValueGreaterThanTheMinimum' => 'โปรดระบุค่าสูงสุดที่มากกว่าค่าต่ำสุด',
+    // Extra download version compatibility
+    'ExtraVersionIncompatibleWithApplication' => 'โปรแกรมเสริม "{$extra}" (เวอร์ชัน {$extra_version}) ที่ดาวน์โหลดมานั้นไม่สามารถใช้งานร่วมกับ SimpleRisk {$app_version} ได้ และไม่สามารถติดตั้งได้ โปรดอัปเกรด SimpleRisk เป็นเวอร์ชันล่าสุดก่อน',
+    'ExtraCompatibilityDataUnavailable' => 'SimpleRisk ไม่สามารถยืนยันได้ว่าเวอร์ชันรีลีส์นี้รองรับ Extra เวอร์ชันใดบ้าง ดังนั้นจึงไม่ได้ติดตั้ง Extra โปรดลองอีกครั้งในภายหลัง',
+    'ExtraVersionCouldNotBeVerified' => 'ไม่สามารถระบุเวอร์ชันของส่วนเสริมที่ดาวน์โหลดมาได้ จึงไม่ได้ทำการติดตั้ง',
     '' => '',
 );
 ?>

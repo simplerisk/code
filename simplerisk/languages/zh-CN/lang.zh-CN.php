@@ -4627,6 +4627,16 @@ $lang = array(
     'NoticeSizeSmall' => '小的',
     'NoticeSizeNormal' => '普通的',
     'NoticeSizeLarge' => '大的',
+    // Preferences page save feedback
+    'TheSettingsWereUpdatedSuccessfully' => '设置已成功更新。',
+    'NoChangesWereMade' => '未做任何更改。',
+    'PleaseSpecifyAnIntegerGreaterThanOrEqualToZeroForTheMinimumValue' => '请指定一个大于或等于零的整数作为最小值。',
+    'PleaseSpecifyAnIntegerForTheMaximumValue' => '请指定一个整数作为最大值。',
+    'PleaseSpecifyAMaximumValueGreaterThanTheMinimum' => '请指定一个大于最小值的最大值。',
+    // Extra download version compatibility
+    'ExtraVersionIncompatibleWithApplication' => '下载的“{$extra}”附加组件（版本 {$extra_version}）与 SimpleRisk {$app_version} 不兼容，因此未安装。请先将 SimpleRisk 升级到最新版本。',
+    'ExtraCompatibilityDataUnavailable' => 'SimpleRisk 无法确认此版本支持哪些 Extra 版本，因此 Extra 未安装。请稍后重试。',
+    'ExtraVersionCouldNotBeVerified' => '无法确定下载的 Extra 版本，因此未进行安装。',
     '' => '',
 );
 ?>

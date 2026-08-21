@@ -28,7 +28,7 @@
         if (customization_extra()) {
     ?>
         $('.datepicker').initAsDatePicker();
-        $("select[id^='custom_field'].multiselect").multiselect({buttonWidth: '300px', enableFiltering: true, enableCaseInsensitiveFiltering: true});
+        $("select.multiselect[name^='custom_field[']").multiselect({buttonWidth: '300px', enableFiltering: true, enableCaseInsensitiveFiltering: true});
     <?php 
         }
     ?>

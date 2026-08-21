@@ -28,6 +28,37 @@ class Types implements PipeInterface
     ) {
     }
 
+    public function __invoke(mixed $payload): mixed
+    {
+        $payload->getWalker()->eachSchema(function (OA\Schema $schema): void {
+            $this->inferSchemaType($schema);
+            $this->walkSchema($schema);
+        });
+
+        foreach ($payload->operations as $operation) {
+            $this->augmentOperationParameters($operation);
+            $this->walkOperationSchemas($operation);
+        }
+
+        foreach ($payload->parameters as $parameter) {
+            $this->augmentParameter($parameter);
+        }
+
+        foreach ($payload->requestBodies as $requestBody) {
+            $this->augmentRequestBody($requestBody);
+        }
+
+        foreach ($payload->responses as $response) {
+            $this->walkMediaTypes($response->content);
+        }
+
+        foreach ($payload->headers as $header) {
+            $this->walkSchema($header->schema);
+        }
+
+        return null;
+    }
+
     /**
      * Override the type resolver used to infer schema types from PHP type declarations.
      */
@@ -41,37 +72,6 @@ class Types implements PipeInterface
     public function group(): string|\BackedEnum
     {
         return Group::Resolve;
-    }
-
-    public function __invoke(mixed $payload): mixed
-    {
-        foreach ($payload->schemas as $schema) {
-            $this->inferSchemaType($schema);
-            $this->walkSchema($schema);
-        }
-
-        foreach ($payload->operations as $operation) {
-            $this->augmentOperationParameters($operation);
-            $this->walkOperationSchemas($operation);
-        }
-
-        foreach ($payload->parameters as $parameter) {
-            $this->augmentParameter($parameter);
-        }
-
-        foreach ($payload->requestBodies as $requestBody) {
-            $this->walkMediaTypes($requestBody->content);
-        }
-
-        foreach ($payload->responses as $response) {
-            $this->walkMediaTypes($response->content);
-        }
-
-        foreach ($payload->headers as $header) {
-            $this->walkSchema($header->schema);
-        }
-
-        return null;
     }
 
     protected function inferSchemaType(OA\Schema $schema): void
@@ -130,7 +130,27 @@ class Types implements PipeInterface
         }
 
         if ($operation->requestBody instanceof OA\RequestBody) {
-            $this->walkMediaTypes($operation->requestBody->content);
+            $this->augmentRequestBody($operation->requestBody);
+        }
+    }
+
+    protected function augmentRequestBody(OA\RequestBody $requestBody): void
+    {
+        $this->walkMediaTypes($requestBody->content);
+
+        $reflector = $requestBody->getReflector();
+        if ($reflector instanceof \ReflectionParameter) {
+            $resolved = $this->typeResolver->resolve($reflector);
+
+            if ($resolved instanceof SchemaType) {
+                if ($resolved->type !== null && $resolved->isRef()) {
+                    $requestBody->ref = $resolved->type;
+                }
+
+                if ($resolved->nullable !== null && $requestBody->required === null) {
+                    $requestBody->required = !$resolved->nullable;
+                }
+            }
         }
     }
 
@@ -285,6 +305,10 @@ class Types implements PipeInterface
         if ($schema->type === null && $schema->oneOf === null && $schema->allOf === null && $schema->anyOf === null) {
             $this->applySchemaType($schema, $schemaType);
         }
+
+        if ($schema->nullable === null) {
+            $schema->nullable = $schemaType->nullable;
+        }
     }
 
     protected function applySchemaType(OA\Schema $schema, SchemaType $schemaType): void
@@ -301,15 +325,15 @@ class Types implements PipeInterface
             }
         }
 
-        if ($schemaType->format !== null && $schema->format === null) {
+        if ($schema->format === null) {
             $schema->format = $schemaType->format;
         }
 
-        if ($schemaType->minimum !== null && $schema->minimum === null) {
+        if ($schema->minimum === null) {
             $schema->minimum = $schemaType->minimum;
         }
 
-        if ($schemaType->maximum !== null && $schema->maximum === null) {
+        if ($schema->maximum === null) {
             $schema->maximum = $schemaType->maximum;
         }
 

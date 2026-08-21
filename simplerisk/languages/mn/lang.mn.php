@@ -4627,6 +4627,16 @@ $lang = array(
     'NoticeSizeSmall' => 'Жижиг',
     'NoticeSizeNormal' => 'Хэвийн',
     'NoticeSizeLarge' => 'Том',
+    // Preferences page save feedback
+    'TheSettingsWereUpdatedSuccessfully' => 'Тохиргоог амжилттай шинэчиллээ.',
+    'NoChangesWereMade' => 'Ямар ч өөрчлөлт хийгээгүй.',
+    'PleaseSpecifyAnIntegerGreaterThanOrEqualToZeroForTheMinimumValue' => 'Хамгийн бага утгын хувьд тэгээс их буюу тэнцүү бүхэл тоог заана уу.',
+    'PleaseSpecifyAnIntegerForTheMaximumValue' => 'Хамгийн их утгын хувьд бүхэл тоог заана уу.',
+    'PleaseSpecifyAMaximumValueGreaterThanTheMinimum' => 'Хамгийн бага утгаас их хамгийн их утгыг заана уу.',
+    // Extra download version compatibility
+    'ExtraVersionIncompatibleWithApplication' => 'Татаж авсан "{$extra}" Extra (хувилбар {$extra_version}) нь SimpleRisk {$app_version} -тай нийцэхгүй бөгөөд суулгаагүй байна. Эхлээд SimpleRisk-ийг хамгийн сүүлийн хувилбар луу шинэчилнэ үү.',
+    'ExtraCompatibilityDataUnavailable' => 'SimpleRisk энэ хувилбар ямар Extra хувилбаруудыг дэмжиж байгааг баталгаажуулж чадаагүй тул Extra суулгаагүй байна. Дараа дахин оролдоно уу.',
+    'ExtraVersionCouldNotBeVerified' => 'Татаж авсан Extra-н хувилбарыг тодорхойлж чадаагүй тул суулгаагүй байна.',
     '' => '',
 );
 ?>

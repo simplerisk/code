@@ -291,17 +291,19 @@ class OpenApi31Compiler implements CompilerInterface
         ], $parameter);
     }
 
-    protected function compileRequestBody(OA\RequestBody $body): array
+    protected function compileRequestBody(OA\RequestBody $body): array|\stdClass
     {
         if ($body->ref !== null) {
             return ['$ref' => $body->ref];
         }
 
-        return $this->filter([
+        $result = $this->filter([
             'description' => $body->description,
             'content' => $this->compileMediaTypes($body->content ?? []),
             'required' => $body->required,
         ], $body);
+
+        return $result ?: new \stdClass();
     }
 
     /**
@@ -399,6 +401,18 @@ class OpenApi31Compiler implements CompilerInterface
         }
 
         if ($schema->ref !== null) {
+            if ($schema->nullable === true) {
+                return $this->filter([
+                    'oneOf' => [
+                        $this->filter([
+                            '$ref' => $schema->ref,
+                            'description' => Undefined::isDefault($schema->description) ? null : $schema->description,
+                        ]),
+                        ['type' => 'null'],
+                    ],
+                ], $schema);
+            }
+
             return $this->filter([
                 '$ref' => $schema->ref,
                 'description' => $schema->description,
@@ -411,6 +425,9 @@ class OpenApi31Compiler implements CompilerInterface
             if (!in_array('null', $type, true)) {
                 $type[] = 'null';
             }
+        }
+        if (is_array($type) && count($type) === 1) {
+            $type = reset($type);
         }
 
         $result = $this->filter([
@@ -428,10 +445,10 @@ class OpenApi31Compiler implements CompilerInterface
             'contentEncoding' => $schema->contentEncoding,
 
             // Numeric
-            'minimum' => $schema->minimum,
-            'maximum' => $schema->maximum,
-            'exclusiveMinimum' => $schema->exclusiveMinimum,
-            'exclusiveMaximum' => $schema->exclusiveMaximum,
+            'minimum' => $this->compileMinimum($schema),
+            'maximum' => $this->compileMaximum($schema),
+            'exclusiveMinimum' => $this->compileExclusiveMinimum($schema),
+            'exclusiveMaximum' => $this->compileExclusiveMaximum($schema),
             'multipleOf' => $schema->multipleOf,
 
             // Array
@@ -496,7 +513,7 @@ class OpenApi31Compiler implements CompilerInterface
     }
 
     /**
-     * @param  list<OA\Property|OA\Schema> $properties
+     * @param  list<OA\Property>   $properties
      * @return array<string,mixed>
      */
     protected function compileProperties(array $properties): array
@@ -504,15 +521,9 @@ class OpenApi31Compiler implements CompilerInterface
         $result = [];
 
         foreach ($properties as $property) {
-            if ($property instanceof OA\Property) {
-                $name = $property->property ?? 'unknown';
-                $result[$name] = $property->schema instanceof OA\Schema
-                    ? $this->compileSchema($property->schema)
-                    : new \stdClass();
-            } elseif ($property instanceof OA\Schema) {
-                $name = $property->schema ?? $property->title ?? 'unknown';
-                $result[$name] = $this->compileSchema($property);
-            }
+            $result[$property->property] = $property->schema instanceof OA\Schema
+                ? $this->compileSchema($property->schema)
+                : new \stdClass();
         }
 
         return $result;
@@ -669,14 +680,58 @@ class OpenApi31Compiler implements CompilerInterface
         return $result;
     }
 
+    protected function compileMinimum(OA\Schema $schema): int|float|null
+    {
+        if ($schema->exclusiveMinimum === true) {
+            return null;
+        }
+
+        return $schema->minimum;
+    }
+
+    protected function compileMaximum(OA\Schema $schema): int|float|null
+    {
+        if ($schema->exclusiveMaximum === true) {
+            return null;
+        }
+
+        return $schema->maximum;
+    }
+
+    protected function compileExclusiveMinimum(OA\Schema $schema): int|float|null
+    {
+        if ($schema->exclusiveMinimum === true) {
+            return $schema->minimum;
+        }
+
+        if (is_numeric($schema->exclusiveMinimum)) {
+            return $schema->exclusiveMinimum;
+        }
+
+        return null;
+    }
+
+    protected function compileExclusiveMaximum(OA\Schema $schema): int|float|null
+    {
+        if ($schema->exclusiveMaximum === true) {
+            return $schema->maximum;
+        }
+
+        if (is_numeric($schema->exclusiveMaximum)) {
+            return $schema->exclusiveMaximum;
+        }
+
+        return null;
+    }
+
     /**
      * Remove null entries and apply x- extensions.
      */
-    protected function filter(array $result, OA\AbstractAttribute $attribute): array
+    protected function filter(array $result, OA\AbstractAttribute|null $attribute = null): array
     {
         $result = array_filter($result, fn ($value): bool => !in_array($value, [null, Undefined::UNDEFINED, []], true));
 
-        if ($attribute->x !== null) {
+        if ($attribute?->x !== null) {
             foreach ($attribute->x as $key => $value) {
                 $result['x-' . $key] = $value;
             }

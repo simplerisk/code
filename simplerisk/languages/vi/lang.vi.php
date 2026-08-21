@@ -4627,6 +4627,16 @@ $lang = array(
     'NoticeSizeSmall' => 'Bé nhỏ',
     'NoticeSizeNormal' => 'Bình thường',
     'NoticeSizeLarge' => 'Lớn',
+    // Preferences page save feedback
+    'TheSettingsWereUpdatedSuccessfully' => 'Các cài đặt đã được cập nhật thành công.',
+    'NoChangesWereMade' => 'Không có thay đổi nào được thực hiện.',
+    'PleaseSpecifyAnIntegerGreaterThanOrEqualToZeroForTheMinimumValue' => 'Vui lòng chỉ định một số nguyên lớn hơn hoặc bằng không cho giá trị tối thiểu.',
+    'PleaseSpecifyAnIntegerForTheMaximumValue' => 'Vui lòng nhập một số nguyên cho giá trị tối đa.',
+    'PleaseSpecifyAMaximumValueGreaterThanTheMinimum' => 'Vui lòng chỉ định giá trị tối đa lớn hơn giá trị tối thiểu.',
+    // Extra download version compatibility
+    'ExtraVersionIncompatibleWithApplication' => 'Gói "{$extra}" Extra (phiên bản {$extra_version}) đã tải xuống không tương thích với SimpleRisk {$app_version} và không được cài đặt. Vui lòng nâng cấp SimpleRisk lên phiên bản mới nhất trước.',
+    'ExtraCompatibilityDataUnavailable' => 'SimpleRisk không thể xác nhận phiên bản Extra nào được phiên bản phát hành này hỗ trợ, vì vậy Extra không được cài đặt. Vui lòng thử lại sau.',
+    'ExtraVersionCouldNotBeVerified' => 'Không thể xác định phiên bản của phần bổ sung đã tải xuống, vì vậy nó không được cài đặt.',
     '' => '',
 );
 ?>

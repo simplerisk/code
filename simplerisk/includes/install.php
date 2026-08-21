@@ -1609,7 +1609,7 @@ function installer_get_latest_version()
     {
         $url = UPDATES_URL . '/releases.xml';
     }
-    else $url = 'https://raw.githubusercontent.com/simplerisk/updates.simplerisk.com/updates.simplerisk.com/releases.xml';
+    else $url = 'https://updates.simplerisk.com/releases.xml';
 
     // Set the default socket timeout to 5 seconds
     ini_set('default_socket_timeout', 5);
@@ -1630,7 +1630,7 @@ function installer_get_latest_version()
         {
             $version_page = file_get_contents(UPDATES_URL . '/releases.xml');
         }
-        else $version_page = file_get_contents('https://raw.githubusercontent.com/simplerisk/updates.simplerisk.com/updates.simplerisk.com/releases.xml');
+        else $version_page = file_get_contents('https://updates.simplerisk.com/releases.xml');
 
         // Convert it to be an array
         $releases_array = json_decode(json_encode(new SimpleXMLElement($version_page)), true);

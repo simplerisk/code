@@ -4627,6 +4627,16 @@ $lang = array(
     'NoticeSizeSmall' => 'קָטָן',
     'NoticeSizeNormal' => 'נוֹרמָלִי',
     'NoticeSizeLarge' => 'גָדוֹל',
+    // Preferences page save feedback
+    'TheSettingsWereUpdatedSuccessfully' => 'ההגדרות עודכנו בהצלחה.',
+    'NoChangesWereMade' => 'לא בוצעו שינויים.',
+    'PleaseSpecifyAnIntegerGreaterThanOrEqualToZeroForTheMinimumValue' => 'אנא ציין מספר שלם גדול או שווה לאפס עבור הערך המינימלי.',
+    'PleaseSpecifyAnIntegerForTheMaximumValue' => 'אנא ציין מספר שלם עבור הערך המקסימלי.',
+    'PleaseSpecifyAMaximumValueGreaterThanTheMinimum' => 'אנא ציין ערך מקסימלי גדול מהמינימום.',
+    // Extra download version compatibility
+    'ExtraVersionIncompatibleWithApplication' => 'הגרסה "{$extra}" Extra שהורדת (גרסה {$extra_version}) אינה תואמת ל-SimpleRisk {$app_version} ולא הותקנה. שדרגו את SimpleRisk לגרסה העדכנית ביותר תחילה.',
+    'ExtraCompatibilityDataUnavailable' => 'SimpleRisk לא הצליחה לאשר אילו גרסאות Extra תומכת גרסה זו, ולכן ה-Extra לא הותקן. אנא נסה שוב מאוחר יותר.',
+    'ExtraVersionCouldNotBeVerified' => 'לא ניתן היה לקבוע את גרסת התוספת שהורדת, ולכן היא לא הותקנה.',
     '' => '',
 );
 ?>
