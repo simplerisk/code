@@ -6,17 +6,19 @@ namespace SimpleSAML\XMLSecurity\XML\ds;
 
 use DOMElement;
 use SimpleSAML\XML\Constants as C;
-use SimpleSAML\XML\Exception\InvalidDOMElementException;
-use SimpleSAML\XML\Exception\MissingElementException;
-use SimpleSAML\XML\Exception\TooManyElementsException;
 use SimpleSAML\XML\SchemaValidatableElementInterface;
 use SimpleSAML\XML\SchemaValidatableElementTrait;
+use SimpleSAML\XMLSchema\Exception\InvalidDOMElementException;
+use SimpleSAML\XMLSchema\Exception\MissingElementException;
+use SimpleSAML\XMLSchema\Exception\TooManyElementsException;
+use SimpleSAML\XMLSchema\Type\IDValue;
 use SimpleSAML\XMLSecurity\Assert\Assert;
 use SimpleSAML\XMLSecurity\Exception\InvalidArgumentException;
 use SimpleSAML\XMLSecurity\XML\CanonicalizableElementInterface;
 use SimpleSAML\XMLSecurity\XML\CanonicalizableElementTrait;
 
 use function array_pop;
+use function strval;
 
 /**
  * Class representing a ds:SignedInfo element.
@@ -30,9 +32,7 @@ final class SignedInfo extends AbstractDsElement implements
     use CanonicalizableElementTrait;
     use SchemaValidatableElementTrait;
 
-    /*
-     * @var DOMElement
-     */
+
     protected ?DOMElement $xml = null;
 
 
@@ -42,17 +42,16 @@ final class SignedInfo extends AbstractDsElement implements
      * @param \SimpleSAML\XMLSecurity\XML\ds\CanonicalizationMethod $canonicalizationMethod
      * @param \SimpleSAML\XMLSecurity\XML\ds\SignatureMethod $signatureMethod
      * @param \SimpleSAML\XMLSecurity\XML\ds\Reference[] $references
-     * @param string|null $Id
+     * @param \SimpleSAML\XMLSchema\Type\IDValue|null $Id
      */
     public function __construct(
         protected CanonicalizationMethod $canonicalizationMethod,
         protected SignatureMethod $signatureMethod,
         protected array $references,
-        protected ?string $Id = null,
+        protected ?IDValue $Id = null,
     ) {
         Assert::maxCount($references, C::UNBOUNDED_LIMIT);
         Assert::allIsInstanceOf($references, Reference::class, InvalidArgumentException::class);
-        Assert::nullOrValidNCName($Id);
     }
 
 
@@ -92,9 +91,9 @@ final class SignedInfo extends AbstractDsElement implements
     /**
      * Collect the value of the Id-property
      *
-     * @return string|null
+     * @return \SimpleSAML\XMLSchema\Type\IDValue|null
      */
-    public function getId(): ?string
+    public function getId(): ?IDValue
     {
         return $this->Id;
     }
@@ -117,17 +116,14 @@ final class SignedInfo extends AbstractDsElement implements
      * Convert XML into a SignedInfo instance
      *
      * @param \DOMElement $xml The XML element we should load
-     * @return static
      *
-     * @throws \SimpleSAML\XML\Exception\InvalidDOMElementException
+     * @throws \SimpleSAML\XMLSchema\Exception\InvalidDOMElementException
      *   If the qualified name of the supplied element is wrong
      */
     public static function fromXML(DOMElement $xml): static
     {
         Assert::same($xml->localName, 'SignedInfo', InvalidDOMElementException::class);
         Assert::same($xml->namespaceURI, SignedInfo::NS, InvalidDOMElementException::class);
-
-        $Id = self::getOptionalAttribute($xml, 'Id', null);
 
         $canonicalizationMethod = CanonicalizationMethod::getChildrenOfClass($xml);
         Assert::minCount(
@@ -165,7 +161,13 @@ final class SignedInfo extends AbstractDsElement implements
             MissingElementException::class,
         );
 
-        $signedInfo = new static(array_pop($canonicalizationMethod), array_pop($signatureMethod), $references, $Id);
+        $signedInfo = new static(
+            array_pop($canonicalizationMethod),
+            array_pop($signatureMethod),
+            $references,
+            self::getOptionalAttribute($xml, 'Id', IDValue::class, null),
+        );
+
         $signedInfo->xml = $xml;
         return $signedInfo;
     }
@@ -175,14 +177,13 @@ final class SignedInfo extends AbstractDsElement implements
      * Convert this SignedInfo element to XML.
      *
      * @param \DOMElement|null $parent The element we should append this SignedInfo element to.
-     * @return \DOMElement
      */
     public function toXML(?DOMElement $parent = null): DOMElement
     {
         $e = $this->instantiateParentElement($parent);
 
         if ($this->getId() !== null) {
-            $e->setAttribute('Id', $this->getId());
+            $e->setAttribute('Id', strval($this->getId()));
         }
 
         $this->getCanonicalizationMethod()->toXML($e);

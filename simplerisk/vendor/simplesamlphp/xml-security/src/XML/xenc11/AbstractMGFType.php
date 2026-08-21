@@ -6,6 +6,7 @@ namespace SimpleSAML\XMLSecurity\XML\xenc11;
 
 use SimpleSAML\XML\SchemaValidatableElementInterface;
 use SimpleSAML\XML\SchemaValidatableElementTrait;
+use SimpleSAML\XMLSchema\Type\AnyURIValue;
 
 /**
  * Class representing <xenc11:AbstractMGFType>.
@@ -17,13 +18,14 @@ abstract class AbstractMGFType extends AbstractAlgorithmIdentifierType implement
 {
     use SchemaValidatableElementTrait;
 
+
     /**
      * MGFType constructor.
      *
-     * @param string $Algorithm
+     * @param \SimpleSAML\XMLSchema\Type\AnyURIValue $Algorithm
      */
     public function __construct(
-        string $Algorithm,
+        AnyURIValue $Algorithm,
     ) {
         parent::__construct($Algorithm, null);
     }

@@ -336,7 +336,7 @@ div.mce-footnotes li > a.mce-footnotes-backlink {
   position: relative;
 }
 .mce-content-body[data-mce-placeholder]:not(.mce-visualblocks)::before {
-  color: rgba(34, 47, 62, 0.7);
+  color: rgba(255, 255, 255, 0.5);
   content: attr(data-mce-placeholder);
   position: absolute;
 }

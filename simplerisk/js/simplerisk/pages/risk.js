@@ -249,78 +249,15 @@ function addRisk($this){
     }
     
     
+    // Thin wrapper over the shared implementation in
+    // js/simplerisk/common.js. The selectize configuration used to be
+    // duplicated here and in js/simplerisk/pages/governance.js; both now
+    // delegate so the Define Control Frameworks redesign could adopt it
+    // instead of adding a third copy. Every page that loads this file also
+    // loads CUSTOM:common.js (management/index.php, management/view.php,
+    // compliance/testing.php, compliance/view_test.php).
     function setupAssetsAssetGroupsWidget(select_tag, risk_id) {
-
-        // Giving a default value here because IE can't handle
-        // function parameter default values...
-        risk_id = risk_id || 0;
-        
-        if (!select_tag.length)
-            return;
-
-        var select = select_tag.selectize({
-            sortField: 'text',
-            plugins: ['optgroup_columns', 'remove_button', 'restore_on_backspace'],
-            delimiter: ',',
-            create: function (input){
-                return { id:'new_asset_' + input, name:input };
-            },
-            persist: false,
-            valueField: 'id',
-            labelField: 'name',
-            searchField: 'name',
-            sortField: 'name',
-            optgroups: [
-                {class: 'asset', name: 'Standard Assets'},
-                {class: 'group', name: 'Asset Groups'}
-            ],
-            optgroupField: 'class',
-            optgroupLabelField: 'name',
-            optgroupValueField: 'class',
-            preload: true,
-            render: {
-                item: function(item, escape) {
-                    return '<div class="' + item.class + '">' + escape(item.name) + '</div>';
-                }
-            },
-            onInitialize: function() {
-                select_tag.parent().find('.selectize-control div').block({message:'<i class="fa fa-spinner fa-spin" style="font-size:24px"></i>'});
-            },
-            load: function(query, callback) {
-                if (query.length) return callback();
-                $.ajax({
-                    url: BASE_URL + '/api/v2/asset-group/options',
-                    type: 'GET',
-                    dataType: 'json',
-                    data: {id: risk_id, type: 'risk'},
-                    error: function() {
-                        callback();
-                    },
-                    success: function(res) {
-                        var data = res.data;
-                        var control = select[0].selectize;
-                        var selected_ids = [];
-                        // Have to do it this way, because addition with simple addOption() will
-                        // bug out when we deselect an option(it wouldn't be added back to the
-                        // list of selectable items)
-                        len = data.length;
-                        for (var i = 0; i < len; i++) {
-                            var item = data[i];
-                            item.id += '_' + item.class;
-                            control.registerOption(item);
-                            if (item.selected == '1') {
-                                selected_ids.push(item.id);
-                            }
-                        }
-                        if (selected_ids.length)
-                            control.setValue(selected_ids);
-                    },
-                    complete: function() {
-                        select_tag.parent().find('.selectize-control div').unblock({message:null});
-                    }
-                });
-            }
-        });        
+        return setupAssetsAssetGroupsWidgetForRisk(select_tag, risk_id);
     }
     
     

@@ -4,6 +4,9 @@
      * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 $active_sidebar_menu = "Admin";
 $active_sidebar_submenu ="UserManagement";
+// Use the shared breadcrumb (below) instead of rolling our own — the trail
+// populates from the menu/submenu above via the standard sidebar.php logic.
+$breadcrumb_title_key = 'ProfileDetails';
 $title = 'SimpleRisk: Enterprise Risk Management Simplified';
 require_once(realpath(__DIR__ . '/../sidebar.php'));
 
@@ -45,25 +48,31 @@ if (isset($_POST['change_password']))
                 // Get user old data
                 $old_data = get_salt_and_password_by_user_id($_SESSION['uid']);
 
-                // Update the password
-                update_password($team, $hash);
+                // Update the password. A false return means the change was
+                // refused and the reason has already been shown to the user
+                // (DEMO_MODE). Everything below is success bookkeeping and must
+                // not run in that case — kill_other_sessions_of_current_user()
+                // in particular, since on a demo every visitor is signed in as
+                // this same user and "other sessions" means all of them.
+                if (update_password($team, $hash))
+                {
+                    // Add the old data to the pass_history table
+                    add_last_password_history($_SESSION["uid"], $old_data["salt"], $old_data["password"]);
 
-                // Add the old data to the pass_history table
-                add_last_password_history($_SESSION["uid"], $old_data["salt"], $old_data["password"]);
+                    // Clean up other sessions of the user and roll the current session's id
+                    kill_other_sessions_of_current_user();
 
-                // Clean up other sessions of the user and roll the current session's id
-                kill_other_sessions_of_current_user();
+                    // Expire any active password reset tokens for this user
+                    $user_info = get_user_by_id($_SESSION["uid"]);
+                    $username = $user_info['username'];
+                    expire_reset_token_for_username($username);
 
-                // Expire any active password reset tokens for this user
-                $user_info = get_user_by_id($_SESSION["uid"]);
-                $username = $user_info['username'];
-                expire_reset_token_for_username($username);
+                    // Display an alert
+                    set_alert(true, "good", $lang['PasswordUpdated']);
 
-                // Display an alert
-                set_alert(true, "good", $lang['PasswordUpdated']);
-
-                // Redirect to the reports page
-                header("Location: ../reports");
+                    // Redirect to the reports page
+                    header("Location: ../reports");
+                }
             }
             else
             {
@@ -91,20 +100,6 @@ if (isset($_POST['change_password']))
         max-width: 50% !important;
     }
     </style>
-    <div class="page-breadcrumb">
-      <div class="row">
-        <div class="col-12 d-flex no-block align-items-center">
-          <h4 class="page-title"><?= $escaper->escapeHtml($lang['ProfileDetails']); ?></h4>
-          <div class="ms-auto text-end">
-            <nav aria-label="breadcrumb">
-              <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="../account/profile.php">Overview</a></li>
-              </ol>
-            </nav>
-          </div>
-        </div>
-      </div>
-    </div>
     <div class="container-fluid">
         <div class="row">
             <div class="col-lg-12">

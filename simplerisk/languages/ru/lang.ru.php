@@ -8,9 +8,9 @@
 ini_set('default_charset', 'utf-8');
 
 $lang = array(
-    'Home'=>'Дома',
+    'Home'=>'Главная',
     'RiskManagement'=>'Управление Рисками',
-    'Reporting'=>'Отчетности',
+    'Reporting'=>'Отчёты',
     'Configure'=>'Настроить',
     'MyProfile'=>'Мой Профиль',
     'Logout'=>'Выход',
@@ -28,15 +28,13 @@ $lang = array(
     'RepeatPassword'=>'Повторите Пароль',
     'Submit'=>'Подать',
     'ProfileDetails'=>'Профиль Детали',
-    'LastLogin'=>'Послед',
+    'LastLogin'=>'Последний вход',
     'ChangePassword'=>'Смена Пароля',
     'CurrentPassword'=>'Текущий Пароль',
     'NewPassword'=>'Новый Пароль',
     'ConfirmPassword'=>'Подтверждение Пароля',
-    'RiskConfiguration'=>'Конфигурация рисков',
-    'ReviewSettings'=>'Просмотреть настройки',
     'AddAndRemoveValues'=>'Добавление и удаление значений',
-    'UserManagement'=>'Руководство Пользователя',
+    'UserManagement'=>'Управление пользователями',
     'RedefineNamingConventions'=>'Пересмотреть Соглашения Об Именовании',
     'AuditTrail'=>'Аудит',
     'Extras'=>'Приложения',
@@ -49,11 +47,11 @@ $lang = array(
     'to'=>'чтобы',
     'AddANewUser'=>'Добавить нового пользователя',
     'Type'=>'Тип',
-    'FullName'=>'Полное Название',
+    'FullName'=>'Полное имя',
     'EmailAddress'=>'Адрес электронной почты',
     'Teams'=>'Команду(ы)',
     'ALL'=>'Все',
-    'NONE'=>'Никто',
+    'NONE'=>'Ничего',
     'UserResponsibilities'=>'Обязанности Пользователя',
     'AbleToSubmitNewRisks'=>'Возможность представлять новые риски',
     'AbleToModifyExistingRisks'=>'Возможность изменять детали рисков',
@@ -64,7 +62,7 @@ $lang = array(
     'AbleToReviewHighRisks'=>'Сможете ознакомиться высоких рисков',
     'AllowAccessToConfigureMenu'=>'Разрешить доступ к "Настройка" меню',
     'MultiFactorAuthentication'=>'Многофакторная Проверка Подлинности',
-    'None'=>'Никто',
+    'None'=>'Ничего',
     'Add'=>'Добавить',
     'ViewDetailsForUser'=>'Просмотреть подробности для пользователя',
     'DetailsForUser'=>'Реквизиты для пользователя',
@@ -80,8 +78,6 @@ $lang = array(
     'Delete'=>'Удалить',
     'SendPasswordResetEmailForUser'=>'Отправить сброс пароля электронной почты для пользователя',
     'Category'=>'Категория',
-    'Cards'=>'Карты',
-    'List'=>'Список',
     'AddNewCategoryNamed'=>'Добавление новой категории имени',
     'DeleteCurrentCategoryNamed'=>'Удалить текущую категорию имени',
     'Team'=>'Команда',
@@ -99,7 +95,7 @@ $lang = array(
     'RiskPlanningStrategy'=>'Стратегии Планирования Рисков',
     'AddNewRiskPlanningStrategyNamed'=>'Добавить новые стратегии планирования рисков по имени',
     'DeleteCurrentRiskPlanningStrategyNamed'=>'Удаление текущей стратегии планирования рисков по имени',
-    'CloseReason'=>'Рядом Причин',
+    'CloseReason'=>'Причина закрытия',
     'AddNewCloseReasonNamed'=>'Добавить новый рядом причин назвал',
     'DeleteCurrentCloseReasonNamed'=>'Удалить текущую рядом причин назвал',
     'IWantToReviewHighRiskEvery'=>'Я хочу, чтобы каждый отзыв высокий риск',
@@ -132,7 +128,7 @@ $lang = array(
     'CurrentImpact'=>'Текущее Влияние',
     'RiskAssessment'=>'Оценка Рисков',
     'AdditionalNotes'=>'Дополнительные Примечания',
-    'UNREVIEWED'=>'НЕРАССМОТРЕННЫХ',
+    'UNREVIEWED'=>'НЕ РАССМОТРЕНО',
     'PASTDUE'=>'ПРОСРОЧЕННЫЕ',
     'ID'=>'Идентификатор',
     'Status'=>'Статус',
@@ -141,15 +137,15 @@ $lang = array(
     'CalculatedRisk'=>'Просчитанный Риск',
     'SubmittedBy'=>'Представленный',
     'NextReviewDate'=>'Следующая Дата Рассмотрения',
-    'CVSSRiskScoring'=>'Риск CVSS забил',
-    'DREADRiskScoring'=>'Страх оценки рисков',
-    'OWASPRiskScoring'=>'Риск owasp это забил',
+    'CVSSRiskScoring'=>'Оценка риска CVSS',
+    'DREADRiskScoring'=>'Оценка рисков DREAD',
+    'OWASPRiskScoring'=>'Оценка риска OWASP',
     'CustomRiskScoring'=>'Пользовательские Оценки Риска',
     'MitigationPlanningHelp'=>'Ниже приведен список поданных риски, которые требуют планирования смягчения',
     'ManagementReviewHelp'=>'Ниже приведен список поданных риски, которые требуют пересмотра управления',
     'Submitted'=>'Представленный',
     'MitigationPlanned'=>'Смягчение Планируемых',
-    'ManagementReview'=>'Комментарий Управления',
+    'ManagementReview'=>'Обзор менеджмента',
     'No'=>'Нет',
     'Yes'=>'Да',
     'AddAndRemoveProjects'=>'Добавлять и удалять проекты',
@@ -182,17 +178,17 @@ $lang = array(
     'SecurityRequirements'=>'Требования Безопасности',
     'SecurityRecommendations'=>'Рекомендации По Безопасности',
     'EditMitigation'=>'Редактировать Смягчения',
-    'LastReview'=>'Последний Комментарий',
+    'LastReview'=>'Последний Обзор',
     'ReviewDate'=>'Дата Проверки',
     'Reviewer'=>'Рецензент',
-    'Review'=>'Комментарий',
+    'Review'=>'Проверка',
     'NextStep'=>'Следующий Шаг',
     'Comments'=>'Комментарии',
     'ViewAllReviews'=>'Посмотреть Все Отзывы',
     'ReviewHistory'=>'История Обзор',
     'Comment'=>'Комментарий',
     'ClassicRiskScoring'=>'Классический Подсчет Рисков',
-    'RiskScoringActions'=>'Забив Действия Риска',
+    'RiskScoringActions'=>'Действия по оценке риска',
     'UpdateClassicScore'=>'Обновление Классический Результат',
     'ScoreBy'=>'Счет',
     'RISKClassicExp1'=>'Риск = ( вероятность х влияние + 2(удар) )',
@@ -216,7 +212,7 @@ $lang = array(
     'SubmittedRisksByDate'=>'Представленный Риски По Дате',
     'MitigationsByDate'=>'Исправления По Дате',
     'ManagementReviewsByDate'=>'Управление Комментарии По Дате',
-    'ProjectsAndRisksAssigned'=>'Проекты и риски назначен',
+    'ProjectsAndRisksAssigned'=>'Проекты и риски назначены',
     'OpenRisks'=>'Открытые Риски',
     'ClosedRisks'=>'Закрытые Риски',
     'ReportMyOpenHelp'=>'Этот отчет показывает все открытые риски, что у текущего пользователя в качестве владельца или управляющего, связанные с риском упорядоченных по уровню риска',
@@ -267,25 +263,25 @@ $lang = array(
     'AttackVector'=>'Вектор Атаки',
     'AttackComplexity'=>'Сложность Атаки',
     'Authentication'=>'Проверка подлинности',
-    'ConfidentialityImpact'=>'Влияние Конфиденциальность',
-    'IntegrityImpact'=>'Влияние Целостности',
-    'AvailabilityImpact'=>'Доступность',
+    'ConfidentialityImpact'=>'Влияние на Конфиденциальность',
+    'IntegrityImpact'=>'Влияние на Целостность',
+    'AvailabilityImpact'=>'Влияние на Доступность',
     'TemporalScoreMetrics'=>'Временные Показатели Результат',
-    'Exploitability'=>'Исчерпаемости',
+    'Exploitability'=>'Возможность эксплуатации',
     'RemediationLevel'=>'Уровень Восстановления',
     'ReportConfidence'=>'Уверенность Доклад',
     'EnvironmentalScoreMetrics'=>'Показатели Экологическая Оценка',
     'CollateralDamagePotential'=>'Обеспечения Потенциального Ущерба',
-    'TargetDistribution'=>'Целераспределение',
+    'TargetDistribution'=>'Целевое Распределение',
     'ConfidentialityRequirement'=>'Требование Конфиденциальности',
     'IntegrityRequirement'=>'Требование Целостности',
     'AvailabilityRequirement'=>'Требование Наличия',
-    'UpdateDREADScore'=>'Боюсь обновлять результат',
+    'UpdateDREADScore'=>'Обновить оценку DREAD',
     'DamagePotential'=>'Потенциального Ущерба',
     'Reproducibility'=>'Воспроизводимость',
     'AffectedUsers'=>'Пострадавшие Пользователи',
     'Discoverability'=>'Обнаруживаемость',
-    'UpdateOWASPScore'=>'Обновить список owasp результат',
+    'UpdateOWASPScore'=>'Обновить оценку OWASP',
     'ThreatAgentFactors'=>'Опасным Факторы Агент',
     'SkillLevel'=>'Уровень Квалификации',
     'Motive'=>'Мотив',
@@ -300,18 +296,18 @@ $lang = array(
     'LossOfConfidentiality'=>'Потеря конфиденциальности',
     'LossOfIntegrity'=>'Потеря целостности',
     'LossOfAvailability'=>'Потери доступности',
-    'LossOfAccountability'=>'Убытки в отчетности',
+    'LossOfAccountability'=>'Потеря подотчётности',
     'BusinessImpact'=>'Влияние На Бизнес',
     'FinancialDamage'=>'Финансовый Ущерб',
     'ReputationDamage'=>'Ущерб Репутации',
     'NonCompliance'=>'Несоблюдение',
     'PrivacyViolation'=>'Нарушение Конфиденциальности',
     'UpdateCustomScore'=>'Обновление Пользовательских Результат',
-    'ManuallyEnteredValue'=>'Введенное Значение',
+    'ManuallyEnteredValue'=>'Введённое Вручную Значение',
     'ScoreByClassic'=>'Результат классический',
     'ScoreByCVSS'=>'Результат по CVSS',
     'ScoreByDREAD'=>'Результат страх',
-    'ScoreByOWASP'=>'Счет фонд',
+    'ScoreByOWASP'=>'Оценка по OWASP',
     'ScoreByCustom'=>'Результат пользовательских',
     'BaseVector'=>'Базовый Вектор',
     'TemporalVector'=>'Временной Вектор',
@@ -357,8 +353,6 @@ $lang = array(
     'Activate'=>'Активировать',
     'DeleteRisks'=>'Удалить Риски',
     'DeletedRisksCannotBeRecovered'=>'Исключить Риски Не Могут Быть Восстановлены',
-    'DeletedAssessmentsCannotBeRecovered'=>'Удаленные оценки восстановить невозможно.',
-    'TheAssessmentsWereDeletedSuccessfully'=>'Оценка(и) были успешно удалены.',
     'RisksDeletedSuccessfully'=>'Риск(ы) успешно удален',
     'ThereWasAProblemDeletingTheRisk'=>'Возникла проблема удаления риска(ов)',
     'Activated'=>'Активированный',
@@ -417,11 +411,6 @@ $lang = array(
     'EditAssets'=>'Изменение Активов',
     'AutomaticAssetValuation'=>'Автоматическая Оценка Стоимости Активов',
     'ManualAssetValuation'=>'Руководство По Оценке Активов',
-    'AssetValuationMode'=>'Режим оценки активов',
-    'AutomaticLinearRange'=>'Автоматический линейный диапазон',
-    'AutomaticExponentialRange'=>'Автоматический экспоненциальный диапазон',
-    'ManualValuation'=>'Руководство',
-    'AssetValuationMinMustBeNonNegative'=>'Для автоматического экспоненциального изменения диапазона минимальная оценочная стоимость актива должна быть равна нулю или превышать это значение.',
     'MinimumValue'=>'Минимальное Значение',
     'MaximumValue'=>'Максимальное Значение',
     'ValueRange'=>'Диапазон Значений',
@@ -463,7 +452,7 @@ $lang = array(
     'FromEmail'=>'Из Электронной Почты',
     'ReplyToName'=>'Имя Отправителя',
     'ReplyToEmail'=>'Адреса Электронной Почты',
-    'Host'=>'Хозяин',
+    'Host'=>'Хост',
     'SMTPAuthentication'=>'Проверку подлинности SMTP',
     'Encryption'=>'Шифрование',
     'Port'=>'Порт',
@@ -471,7 +460,7 @@ $lang = array(
     'NewAssessmentQuestion'=>'Новый Вопрос Оценки',
     'Question'=>'Вопрос',
     'RiskScore'=>'Оценка Риска',
-    'SubmitRisk'=>'Представлять Опасность',
+    'SubmitRisk'=>'Отправить риск',
     'Answer'=>'Ответ',
     'AddQuestion'=>'Добавить Вопрос',
     'SaveAssessment'=>'Сохранить Оценки',
@@ -482,16 +471,16 @@ $lang = array(
     'ActiveAssessments'=>'Активный Оценок',
     'SentTo'=>'Отправлено',
     'From'=>'Из',
-    'Key'=>'Ключ',
+    'Key'=>'Код',
     'GoToSSOLoginPage'=>'Перейти на страницу системы единого входа',
     'APIKey'=>'Ключ API',
     'GenerateAPIKey'=>'Сгенерировать ключ API',
-    'RotateAPIKey'=>'Ключ повернуть по API',
-    'InvalidateAPIKey'=>'Ключевые недействительным по API',
+    'RotateAPIKey'=>'Ротировать ключ API',
+    'InvalidateAPIKey'=>'Аннулировать ключ API',
     'Deactivate'=>'Отключить',
-    'ImportExportExtra'=>'Импорт-Экспорт',
+    'ImportExportExtra'=>'Импорт-Экспорт Экстра',
     'SaveDetails'=>'Сохранить Детали',
-    'ClearForm'=>'Четкие Формы',
+    'ClearForm'=>'Очистить форму',
     'SaveMitigation'=>'Сохранить Смягчения',
     'Cancel'=>'Отменить',
     'SubmitReview'=>'Отправить Отзыв',
@@ -535,7 +524,7 @@ $lang = array(
     'ReviewRegularlyHelp' => 'Ниже представлен список всех рисков, отсортированный по рукописи, просроченные, и следующая Дата проверки',
     'RiskScoringHistory' => 'История Оценки Рисков',
     'RiskAddPermissionMessage' => 'У вас нет разрешения на отправку новых рисков. Любые риски, которые вы попытаетесь отправить, не будут зарегистрированы. Пожалуйста, свяжитесь с администратором, если вы считаете, что получили это сообщение по ошибке.',
-    'SubjectRiskCannotBeEmpty' => 'Предметом риска может быть пустым',
+    'SubjectRiskCannotBeEmpty' => 'Тема риска не может быть пустой',
     'InvalidRiskID' => 'Недопустимый идентификатор риск',
     'Success' => 'Успех',
     'RiskUpdatePermissionMessage' => 'У вас нет разрешения на изменение рисков. Любые попытки изменения рисков не будут зафиксированы. Если вы считаете, что получили это сообщение по ошибке, пожалуйста, свяжитесь с администратором.',
@@ -548,7 +537,7 @@ $lang = array(
     'YouNeedToSpecifyAnIdParameter' => 'Необходимо указать параметр id.',
     'NoMitigation' => 'Существует не указанный по смягчению последствий.',
     'NoReview' => 'Существует нет указанного обзора.',
-    'MysqldumpPathWasSavedSuccessfully' => 'ТуздЫшпр путь был успешно сохранен.',
+    'MysqldumpPathWasSavedSuccessfully' => 'Путь Mysqldump был успешно сохранён.',
     'UnavailableMysqldumpService' => 'Существует не avaiable «туздЫшпр» служба на сервере. Пожалуйста, установите путь службы абсолютной mysqldump.',
     'AllOpenRisksByTeamByLevel' => 'Все открытые риски командой, уровень риска',
     'Unknown' => 'Неизвестно',
@@ -564,7 +553,7 @@ $lang = array(
     'RememberTheLast' => 'Запомнить последний',
     'Passwords' => 'Пароли',
     'NoOwner' => 'Нет владельца',
-    'NoOwnersManager' => 'Менеджер не владельцев',
+    'NoOwnersManager' => 'Нет менеджера владельцев',
     'RiskAverageOverTime' => 'Средний риск со временем',
     'AverageRiskScore' => 'Средняя оценка риска',
     'Year' => 'Год',
@@ -603,7 +592,6 @@ $lang = array(
     'SpecifiedTime' => 'Указанное время',
     'Governance' => 'Управления',
     'Compliance' => 'Соблюдения',
-    'CrossDomain' => 'Междоменный',
     'AllowAccessToRiskManagementMenu' => 'Разрешить доступ к меню "Управление рисками"',
     'CheckAllGovernance' => 'Проверка всех методов управления',
     'CheckAllCompliance' => 'Проверить все соответствия',
@@ -611,12 +599,12 @@ $lang = array(
     'AllowAccessToComplianceMenu' => 'Разрешить доступ к меню "соответствие"',
     'DefineControlFrameworks' => 'Определение рамок управления',
     'NewFramework' => 'Новые рамки',
-    'EditFramework' => 'Переделать рамки',
+    'EditFramework' => 'Редактировать фреймворк',
     'CurrentProjects' => 'Текущие проекты',
     'Frameworks' => 'Рамок',
     'Controls' => 'Управления',
     'NewControl' => 'Новый контроль',
-    'EditControl' => 'Управление отсвазание',
+    'EditControl' => 'Редактировать контроль',
     'CanceledProjects' => 'Отмененные проекты',
     'Priority' => 'Приоритет',
     'ProjectName' => 'Название проекта',
@@ -651,9 +639,9 @@ $lang = array(
     'ControlLongName' => 'Управление длинным именем',
     'ControlDescription' => 'Описание элемента управления',
     'SupplementalGuidance' => 'Дополнительное руководство',
-    'ControlFramework' => 'Система управления',
-    'ControlFrameworks' => 'Системы управления',
-    'ControlOwner' => 'Владелец элемента управления',
+    'ControlFramework' => 'Система контроля',
+    'ControlFrameworks' => 'Контрольные рамки',
+    'ControlOwner' => 'Владелец контроля',
     'ControlClass' => 'Класс элемента управления',
     'ControlPhase' => 'Фаза управления',
     'ControlPriority' => 'Приоритет управления',
@@ -695,7 +683,7 @@ $lang = array(
     'AssessmentContactUpdated' => 'Обновлен контакт по оценке',
     'InvalidInformations' => 'Неверные сведения',
     'AreYouSureYouWantToDeleteThisContact' => 'Вы действительно хотите удалить этот контакт?',
-    'ImportAssessmentContacts' => 'Контакты по оценке импорта',
+    'ImportAssessmentContacts' => 'Импортировать контакты оценки',
     'ImportCsvXlsFile' => 'Импортируйте следующий CSV или xls файл в симплериск',
     'AssessmentContactsImported' => 'Контакты по оценке, импортированные',
     'DefineTests' => 'Определение тестов',
@@ -719,7 +707,7 @@ $lang = array(
     'InvalidQuestionOrAnswers' => 'Неверный вопрос или ответы.',
     'SuccessTestDeleted'=>'Тест удален успешно',
     'AreYouSureYouWantToDeleteThisTest'=>'Вы действительно хотите удалить этот тест?',
-    'ImportAssessmentQuestionnaireQuestions'=>'Вопросы анкеты по оценке импорта',
+    'ImportAssessmentQuestionnaireQuestions'=>'Импортировать вопросы анкеты оценки',
     'QuestionAndAnswersRquired'=>'Вопросы и ответы являются обязательными.',
     'AssessmentQuestionnaireQuestionsAndAnwersImported'=>'Вопросы и ответы по оценочной анкете импортируются успешно.',
     'QuestionnaireTemplates'=>'Шаблоны анкет',
@@ -735,11 +723,11 @@ $lang = array(
     'NextAuditDate'=>'Следующая дата аудита',
     'DesiredFrequency'=>'Желаемая частота',
     'Framework'=>'Рамках',
-    'Control'=>'Управления',
+    'Control'=>'Контроль',
     'Test'=>'Тест',
-    'Active'=>'Active',
+    'Active'=>'Активный',
     'Inactive'=>'Неактивные',
-    'InitiateFrameworkAudit'=>'Инициировать аудит инфраструктуры',
+    'InitiateFrameworkAudit'=>'Инициировать аудит фреймворка',
     'InitiateControlAudit'=>'Инициировать контрольный аудит',
     'InitiateTest'=>'Инициировать тест',
     'Questionnaires'=>'Вопросники',
@@ -779,7 +767,6 @@ $lang = array(
     'TestDate'=>'Дата теста',
     'Attachment'=>'Вложения',
     'InvalidParams'=>'Неверные params',
-    'ClearForm'=>'Четкие Формы',
     'QuestionnaireDraftSuccess'=>'Ваши ответы были успешно сохранены.',
     'QuestionnaireCompletedSuccess'=>'Вы успешно заполнили анкету.',
     'EmailTemplateCompleteQuestionnaire' => '
@@ -790,7 +777,7 @@ $lang = array(
         </body></html>',
     'QuestionnaireResults'=>'Результаты анкетирования',
     'DateSent'=>'Дата отправки',
-    'Contact'=>'С',
+    'Contact'=>'Контакт',
     'PercentCompleted'=>'Процент завершения',
     'Incomplete'=>'Неполной',
     'Completed'=>'Завершена',
@@ -808,7 +795,7 @@ $lang = array(
     'ResidualRisk'=>'Остаточный риск',
     'PastAudits'=>'Прошлые аудиты',
     'AuditDate'=>'Дата аудита',
-    'Reopen'=>'Открыть',
+    'Reopen'=>'Открыть снова',
     'CreatedDate'=>'Дата создания',
     'QuestionnaireAuditTrail'=>'Опросный лист аудита',
     'SelectYourControlFrameworks'=>'Выбор рамок управления',
@@ -822,7 +809,6 @@ $lang = array(
     'HasFile' => 'Имеет файл',
     'ClosedAuditStatus' => 'Статус закрытого аудита',
     'ClosedAuditStatusIsRequired' => 'Статус закрытого аудита обязателен',
-    'Preferences' => 'Настройки',
     'DefaultLanguage' => 'Язык по умолчанию',
     'DefaultTimezone' => 'Часовой пояс по умолчанию',
     'UserSessions' => 'Сеансы пользователей',
@@ -835,8 +821,8 @@ $lang = array(
     'StartDate' => 'Дата начала',
     'EndDate' => 'Дата окончания',
     'DefaultClosedAuditStatus' => 'Состояние закрытого аудита по умолчанию',
-    'AutomatedNotificationsOfUnreviewedPastDueRisks' => 'Автоматические уведомления о непросмотренных/прошлых должностях',
-    'SimpleRiskActionNotifications' => 'Уведомления о действиях симплериск',
+    'AutomatedNotificationsOfUnreviewedPastDueRisks' => 'Автоматические уведомления о непросмотренных/просроченных рисках',
+    'SimpleRiskActionNotifications' => 'Уведомления о действиях SimpleRisk',
     'WhenToNotify' => 'Когда следует уведомлять',
     'WhoToNotify' => 'Кто уведомить',
     'HowToNotify' => 'Как уведомить',
@@ -852,14 +838,12 @@ $lang = array(
     'NotifyOwnersManager' => 'Уведомить менеджера владельца',
     'NotifyTeam' => 'Уведомить группу',
     'NotifyAdditionalStakeholders' => 'Уведомить дополнительных заинтересованных лиц',
-    'SpecificUser' => 'Конкретный пользователь',
-    'SpecificUsers' => 'Конкретные пользователи',
     'NotifyReviewers' => 'Уведомить рецензентов',
     'NotifyTester' => 'Уведомить тестера',
-    'SimpleRiskURL' => 'Симплериск URL',
+    'SimpleRiskURL' => 'SimpleRisk URL',
     'Period' => 'Период',
     'PlaceTheFollowingInYourCrontabToRunAutomatically' => 'Поместите следующие в crontab для автоматического запуска',
-    'SimpleRiskScheduledNotifications' => 'Симплериск запланированные уведомления',
+    'SimpleRiskScheduledNotifications' => 'SimpleRisk запланированные уведомления',
     'AutomatedNotificationsOfAudits' => 'Автоматические уведомления о ревизии',
     'SendAnEmail' => 'Отправить по электронной почте',
     'SendAnEmailEvery' => 'Отправить по электронной почте каждый',
@@ -879,12 +863,11 @@ $lang = array(
     'AuditsDueToday' => 'Аудиты, причитающиеся сегодня',
     'AuditsPastDue' => 'Аудиты за истекший срок',
     'AuditsDueSoon' => 'Аудиты должны быть скоро',
-    'DateDue' => 'Дата подсчета',
+    'DateDue' => 'Дата истечения',
     'ShowAllRisksForPlanProjects' => 'Показать все риски для планируемых проектов, а не только те, которые рассматриваются как "рассмотреть для проекта"',
     'Edit' => 'Редактировать',
     'Clone' => 'Клон',
     'SubQuestions' => 'Подвопросы',
-    'Ordering' => 'Заказа',
     'EncryptionKeyNoExist' => 'Файл ключа шифрования не существует. Пожалуйста, свяжитесь с администратором.',
     'ResidualRiskScore' => 'Оценка остаточного риска',
     'DefaultInitiatedAuditStatus' => 'Состояние аудита, инициированное по умолчанию',
@@ -910,7 +893,7 @@ $lang = array(
     'GoToSSOLogin' => 'Показать ссылку "перейти на вход в систему SSO" на главной странице входа',
     'SSOLoginDisabled' => 'Вход SSO был отключен, так что вы не можете использовать эту аутентификацию.',
     'QuestionID' => 'Идентификатор вопроса',
-    'QuestionOrdering' => 'Заказ вопроса',
+    'QuestionOrdering' => 'Порядок вопросов',
     'DefaultUserRole' => 'Роль пользователя по умолчанию',
     'AbleToAcceptMitigations' => 'Возможность принимать меры по смягчению последствий',
     'AcceptMitigation' => 'Принять меры по смягчению',
@@ -947,8 +930,8 @@ $lang = array(
     'NoAddControlPermission' => 'У вас нет разрешения на добавление элементов управления.',
     'NoModifyControlPermission' => 'У вас нет разрешения на изменение элементов управления.',
     'NoDeleteControlPermission' => 'У вас нет разрешения на удаление элементов управления.',
-    'WarnPHPUploadSize' => 'Предупреждение: текущий предел размера файла больше, чем PHP позволяет загружаться. Проверьте значения уплоад_макс_филесизе, пост_макс_сизе и мемори_лимит в файле PHP. ini.',
-    'WarnMySQLUploadSize' => 'Предупреждение: текущий размер файла больше, чем MySQL настроен для загрузки.  Проверьте значения макс_алловед_паккет и иннодб_лог_филе_сизе в файле my. cnf.',
+    'WarnPHPUploadSize' => 'Предупреждение: текущий предел размера файла больше, чем PHP позволяет загружаться. Проверьте значения upload_max_filesize, post_max_size и memory_limit в файле php.ini.',
+    'WarnMySQLUploadSize' => 'Предупреждение: текущий предел размера файла больше, чем MySQL настроен для загрузки.  Проверьте значения max_allowed_packet и innodb_log_file_size в файле my.cnf.',
     'Restore' => 'Восстановить',
     'MitigationSupportingDocumentation' => 'Вспомогательная документация по смягчению последствий',
     'SetNextReviewDate' => 'Установить следующую дату обзора',
@@ -968,7 +951,7 @@ $lang = array(
     'FailAddingLikelihood' => 'Неспособность добавить вероятность',
     'FailDeletingLikelihood' => 'Ошибка удаления вероятности',
     'SubjectRequired' => 'Тема обязательна. Пожалуйста, выберите поле.',
-    'Spreadsheet' => 'Электронной таблицы',
+    'Spreadsheet' => 'Электронная таблица',
     'SuccessUpdatingImpactName' => 'Имя влияния было успешно обновлено.',
     'FailUpdatingImpactName' => 'Сбой при обновлении имени влияния.',
     'SuccessUpdatingLikelihoodName' => 'Имя вероятности было успешно обновлено.',
@@ -1020,11 +1003,9 @@ $lang = array(
     'RisksByControl' =>'Риски по контролю',
     'ViewControlDetails' => 'Просмотр сведений о элементе управления',
     'HideControlDetails' => 'Скрыть сведения о элементе управления',
-    'YouNeedToUpgradeYourSimpleRiskSubscription' => 'Вам нужно обновить вашу симплериск подписаться, чтобы включить использование этого Extra.',
+    'YouNeedToUpgradeYourSimpleRiskSubscription' => 'Вам нужно обновить вашу подписку SimpleRisk, чтобы включить использование этого Extra.',
     'AutomaticallyAddNewlyAuthenticatedUsersWithDefaultRole' => 'Автоматическое добавление новых пользователей, прошедших проверку подлинности, с ролью по умолчанию',
     'Disabled' => 'Отключен',
-    'Help' => 'Помощь',
-    'Profile' => 'Профиль',
     'AbleToCommentRiskManagement' => 'Возможность комментировать управление рисками',
     'AbleToCommentCompliance' => 'Возможность комментировать соответствие',
     'LanguageUpdated' => 'Ваш язык был успешно обновлен.',
@@ -1037,14 +1018,14 @@ $lang = array(
     'ChooseFile' => 'Выберите файл',
     'FileAdded' => 'Файл добавлен',
     'IPFormatNotRecognized' => 'IP не был в узнаваемом формате.',
-    'Open' => 'Открыть',
-    'Mitigated' => 'Смягчить',
-    'Unmitigated' => 'Абсолютным',
-    'Reviewed' => 'Отзывы',
+    'Open' => 'Открытый',
+    'Mitigated' => 'Смягчено',
+    'Unmitigated' => 'Несмягчённый',
+    'Reviewed' => 'Проверено',
     'Unreviewed' => 'Unreviewed',
     'NewRiskInstruction' => 'Заполните форму выше, чтобы документировать риск для рассмотрения в процессе управления рисками',
-    'New' => 'Новые функции',
-    'ManagementReviewed' => 'Обзор',
+    'New' => 'Новый',
+    'ManagementReviewed' => 'Рассмотрено руководством',
     'Reopened' => 'Вновь открыт',
     'Treated' => 'Обработаны',
     'Untreated' => 'Необработанной',
@@ -1057,7 +1038,7 @@ $lang = array(
     'LdapGroup' => 'Группа LDAP',
     'SuccessDeleteLdapGroup' => 'Успешно удалена Группа LDAP',
     'LDAPGroupNameExists' => 'Имя группы LDAP уже существует',
-    'SetTeams' => 'Набор команд',
+    'SetTeams' => 'Настроить команды',
     'MappedControls' => 'СоПоставленные элементы управления',
     'WithExtension' => 'с расширением',
     'DeleteCurrentExtensionOf' => 'Удалить текущее расширение',
@@ -1067,7 +1048,6 @@ $lang = array(
     'FailedToUploadFile' => 'Не удалось загрузить файл',
     'NewPasswordDoesNotMatchPolicy' => 'Указанный новый пароль не придерживается настроенной политики паролей.',
     'RiskLevels' => 'Уровни риска',
-    'Scoring' => 'Подсчет очков',
     'ClassicRiskFormula' => 'Классическая формула риска',
     'ContributingRiskFormula' => 'Формула, способствующая риску',
     'ImpactHasMaxChars' => 'Удар должен иметь Макс $length Символов.',
@@ -1079,15 +1059,15 @@ $lang = array(
     'ScoreUsingContributingRisk' => 'Оценка с помощью вклада риск',
     'ContributingRiskCalendarDescription' => 'На этой странице представлен калькулятор для создания оценок степени серьезности риска, влияющих на риск.',
     'SimpleriskContributingRiskCalculator' => 'Симплериск вклада калькулятор риска',
-    'ContributingRiskScore' => 'Оценка риска',
-    'OverallContributingRiskScore' => 'Общая оценка риска',
-    'ContributingRisk' => 'Вклад в риск',
+    'ContributingRiskScore' => 'Оценка участвующего риска',
+    'OverallContributingRiskScore' => 'Общий показник участвующего риска',
+    'ContributingRisk' => 'Составляющий риск',
     'Weight' => 'Вес',
     'AllowAllUsersToSeeRisksNotAssignedToTeam' => 'Разрешить всем пользователям видеть риски, не назначенные группе',
-    'ContributingLikelihood' => 'Вероятность участия',
+    'ContributingLikelihood' => 'Вероятность вклада',
     'ContributingSubjectsImpacts' => 'СоДействующие субъекты и последствия',
     'ScoreByContributingRisk' => 'Оценка по вкладу риска',
-    'ContributingRiskScoring' => 'Подсчет рисков',
+    'ContributingRiskScoring' => 'Оценка участвующего риска',
     'UpdateContributingRiskScore' => 'Обновление вклада Оценка риска',
     'MaxImpact' => 'Максимальное воздействие',
     'MaxLikelihood' => 'Максимальная вероятность',
@@ -1096,12 +1076,10 @@ $lang = array(
     'Convert' => 'Конвертировать',
     'OpensslWarning' => '"Openssl" расширение должно быть установлено для шифрования Extra для правильной работы.  Пожалуйста, установите его, чтобы продолжить.',
     'MapSuccessTeamAndGroup' => 'Успешно сопоставленная команда и Группа LDAP.',
-    'MappingTeamAndLDAPGroupRequired' => 'Команда и Группа LDAP для сопоставления не требуется.',
+    'MappingTeamAndLDAPGroupRequired' => 'Команда и группа LDAP для сопоставления обязательны.',
     'ExistingMappings' => 'Существующие сопоставления',
-    'TeamGroup' => '( <-->Группа команд)</-->',
+    'TeamGroup' => '(Команда <--> Группа)',
     'ExistingMappingsRequired' => 'Необходимо выбрать существующие сопоставления.',
-    'EncryptionBackupFileExists' => 'В рамках процесса шифрования была создана незашифрованная резервная копия базы данных Симплериск.  Как только вы проверили все зашифровано правильно, переместите его в безопасное место или нажмите кнопку, чтобы удалить его.',
-    'BackupLocation' => 'Расположение резервной копии',
     'FileDeletedSuccessfully' => 'Файл был успешно удален.',
     'ErrorDeletingFile' => 'Ошибка при удалении файла.  Проверьте разрешения для файлов и повторите попытку.',
     'MapToLDAPGroup' => 'Сопоставление с группой LDAP',
@@ -1128,7 +1106,7 @@ $lang = array(
     'FailControl' => 'Управление сбоями',
     'Instructions' => 'Инструкции',
     'UserInstructions' => 'Инструкции пользователя',
-    'Verified' => 'Проверить',
+    'Verified' => 'Проверено',
     'UnverifiedAssets' => 'Непроверенные активы',
     'VerifyAll' => 'Проверить все',
     'NoPermissionForAsset' => 'У вас нет разрешения на управление активами.',
@@ -1152,10 +1130,9 @@ $lang = array(
     'NoOperationRequiredOnAsset' => 'Операция не требуется для ресурса с именем "{$asset_name}", как это уже в базе данных.',
     'ImportAssetUpdateSucceeded' => 'Обновление{$verified_or_unverified}"активы под названием"{$asset_name}"с IP"{$asset_ip}"и значение"{$asset_value}".',
     'ImportAssetUpdateFailed' => 'Не удалось обновить "{$verified_or_unverified}"активы под названием"{$asset_name}"с IP"{$asset_ip}"и значение"{$asset_value}".',
-    'Unverified' => 'Непроверенных',
+    'Unverified' => 'Непроверено',
     'ExportAssets' => 'Экспорт активов',
     'ExportToCSVByClickingBelow' => 'Экспортируйте в CSV-файл, нажав ниже',
-    'RevertToUnencryptedBackup' => 'Возврат к незашифрованному резервному копированию',
     'SuccessfullyRevertedToUnencryptedBackup' => 'Успешно восстановлено в незашифрованном резервном копировании',
     'FailedToRevertToUnencryptedBackup' => 'Не удалось вернуться к незашифрованному резервному копированию. Пожалуйста, проверьте журналы сервера для получения дополнительной информации.',
     'AddNewItemNamed' => 'Добавить новый элемент с именем',
@@ -1177,7 +1154,7 @@ $lang = array(
     'ImportExport' => 'Импорт/экспорт',
     'Dropdown' => 'Раскрывающемся',
     'MultiDropdown' => 'Мульти расКрывающийся список',
-    'UserMultiDropdown' => 'Пользователь мульти расКрывающийся список',
+    'UserMultiDropdown' => 'Пользователь мульти раскрывающийся список',
     'ShortText' => 'Короткий текст',
     'LongText' => 'Длинный текст',
     'DateSelector' => 'Селектор дат',
@@ -1187,14 +1164,14 @@ $lang = array(
     'Integrations' => 'Интеграции',
     'FieldGroup' => 'Группа полей',
     'Asset' => 'Активов',
-    'FailedToRegisterInstance' => 'Не удалось зарегистрировать экземпляр Симплериск. Пожалуйста, свяжитесь с support@simplerisk.com для получения помощи.',
-    'FailedToUpdateInstance' => 'Не удалось обновить регистрацию Симплериск. Пожалуйста, свяжитесь с support@simplerisk.com для получения помощи.',
+    'FailedToRegisterInstance' => 'Не удалось зарегистрировать ваш экземпляр SimpleRisk. Пожалуйста, свяжитесь с support@simplerisk.com для получения помощи.',
+    'FailedToUpdateInstance' => 'Не удалось обновить регистрацию SimpleRisk. Пожалуйста, свяжитесь с support@simplerisk.com для получения помощи.',
     'FailedToDownloadExtra' => 'Не удалось загрузить запрошенный дополнительный. Пожалуйста, свяжитесь с support@simplerisk.com для получения помощи.',
     'RequestedExtraIsNotPurchased' => 'Запрашиваемая дополнительная плата еще не приобретена. Пожалуйста, свяжитесь с support@simplerisk.com для получения помощи.',
     'RequestedExtraDoesNotExist' => 'Запрошенный дополнительный не существует. Пожалуйста, свяжитесь с support@simplerisk.com для получения помощи.',
-    'InstanceWasRegisteredWithDifferentIp' => 'Ваш экземпляр Симплериск был зарегистрирован с другим IP-адресом. Пожалуйста, свяжитесь с support@simplerisk.com для получения помощи.',
-    'InstanceIsDisabled' => 'Ваш экземпляр Симплериск отключен. Пожалуйста, свяжитесь с support@simplerisk.com для получения помощи.',
-    'InvalidInstanceIdOrKey' => 'Недопустимый экземпляр или ключ Симплериск. Пожалуйста, свяжитесь с support@simplerisk.com для получения помощи.',
+    'InstanceWasRegisteredWithDifferentIp' => 'Ваш экземпляр SimpleRisk был зарегистрирован с другим IP-адресом. Пожалуйста, свяжитесь с support@simplerisk.com для получения помощи.',
+    'InstanceIsDisabled' => 'Ваш экземпляр SimpleRisk отключён. Пожалуйста, свяжитесь с support@simplerisk.com для получения помощи.',
+    'InvalidInstanceIdOrKey' => 'Экземпляр или ключ SimpleRisk недопустимы. Пожалуйста, свяжитесь с support@simplerisk.com для получения помощи.',
     'ExtraInstalledSuccessfully' => 'Extra успешно установлен.',
     'ImportVulnerabilities' => 'Уязвимости импорта',
     'ExtraIsAlreadyEnabled' => 'Extra уже включен.',
@@ -1211,7 +1188,7 @@ $lang = array(
     'NextReviewDateFixDisclaimer' => 'Мы обнаружили возможную проблему с форматами дат, хранящимися в вашей базе данных Симплериск.  В приведенной ниже таблице вы увидите, какие риски имеют неверный формат даты и должны быть исправлены. Пожалуйста, Взгляните на подозрительный формат даты, подтвердите, что это правильно, и нажмите кнопку "подтвердить", чтобы он обновился в базе данных.',
     'NextReviewMassUpdateSuccess' => 'Успешно Обновлено {$mass_fixed} Обзор дат',
     'NextReviewTypeUpdateSuccess' => 'Успешно исправлены все вопросы, связанные с датой обзора!',
-    'NextReviewTypeUpdateFailed' => 'Даты проверки фиксированы, но не удалось изменить столбец \' некст_ревиев \' на тип даты!',
+    'NextReviewTypeUpdateFailed' => 'Даты проверки исправлены, но не удалось изменить столбец \'next_review\' до типа даты!',
     'SimpleriskBaseUrl' => 'Базовый URL-адрес Симплериск',
     'PassworResetEmailSent' => 'Если пользователь существует в системе, то электронная почта сброса пароля должна быть на своем пути.',
     'PassworResetRequestFailed' => 'Возникла проблема с запросом на сброс пароля. Пожалуйста, повторите попытку.',
@@ -1221,7 +1198,7 @@ $lang = array(
     'StayUntilClicked' => 'Оставайтесь до щелчка',
     'Pass' => 'Пройти',
     'Inconclusive' => 'Безрезультатно',
-    'Fail' => 'Не',
+    'Fail' => 'Неудача',
     'Tags' => 'Теги',
     'NoTagAssigned' => 'Еще не назначен тег',
     'AssetNameIsRequired' => 'Требуется имя ресурса',
@@ -1257,7 +1234,7 @@ $lang = array(
     'ShowMore' => 'Показать еще...',
     'ShowXMore' => 'Показать {$x} Больше...',
     'ShowLess' => 'Показать меньше...',
-    'RiskAppetite' => 'Риску',
+    'RiskAppetite' => 'Склонность к риску',
     'FailedToCleanupExtraFiles' => 'Не удалось очистить остаточные дополнительные файлы, таким образом предотвращая установку/обновление для продолжения',
     'DocumentExceptions' => 'Определение исключений',
     'PolicyExceptions' => 'Исключения политики',
@@ -1294,7 +1271,6 @@ $lang = array(
     'Approve' => 'Утвердить',
     'ExceptionType' => 'Тип исключения',
     'PolicyName' => 'Имя политики',
-    'ControlName' => 'Имя элемента управления',
     'AreYouSureYouWantToDeleteTheseExceptions' => 'Вы действительно хотите удалить эти исключения?',
     'ExceptionsWereDeletedSuccessfully_policy' => 'Исключения политики были успешно удалены.',
     'ExceptionsWereDeletedSuccessfully_control' => 'Исключения элемента управления были успешно удалены.',
@@ -1321,7 +1297,6 @@ $lang = array(
     'AssetsWereVerifiedSuccessfully'=>'Активы были успешно проверены.',
     'ThereWasAProblemVerifyingTheAssets'=>'Возникла проблема с проверкой активов.',
     'ThereWasAProblemWithAddingTheProject' => 'Возникла проблема с добавлением проекта',
-    'ProjectName' => 'Название проекта',
     'SuccessSetProject' => 'Успешно добавлен риск для проекта.',
     'SuccessCreateProject' => 'Успешно создан новый проект.',
     'ReviewProjectSelectionInstructions' => 'Выберите проект или введите имя нового проекта.',
@@ -1339,7 +1314,7 @@ $lang = array(
     'YouCantDownloadBecauseImportExportExtraDisabled' => 'Вы не можете скачать, потому что импорт/экспорт Extra отключен.',
     'AuditTrailReport' => 'Отчет по журналу аудита',
     'QuestionnaireAuditTrailReport' => 'Отчет о проверке анкеты',
-    'ExeptionAuditTrailReport' => 'Отчет об аудите',
+    'ExeptionAuditTrailReport' => 'Отчет об аудиторском следе исключений',
     'ManageAssetGroups' => 'Управление группами активов',
     'AssetGroups' => 'Группы активов',
     'AssetGroupName' => 'Название группы активов',
@@ -1347,7 +1322,7 @@ $lang = array(
     'SelectedAssets' => 'Избранные активы',
     'AvailableAssets' => 'Доступные активы',
     'AssetGroupCreate' => 'Создание новой группы активов',
-    'AssetGroupUpdate' => 'Обновить актив Груп',
+    'AssetGroupUpdate' => 'Обновить группу активов',
     'AssetGroupCreateAuditLog' => 'Пользователя{$user}"созданная группа активов"{$group_name}"(ID:{$id}) с первоначальных активов "{$assets_to}".',
     'AssetGroupUpdateAuditLog' => 'Пользователя{$user}"обновленные активы группы активов"{$group_name}"(ID:{$id}от{$assets_from}чтобы{$assets_to}" ({$asset_changes}).',
     'AssetGroupDeleteAuditLog' => 'Пользователя{$user}"Удаленные активы группы"{$group_name}"(ID:{$id}).',
@@ -1355,7 +1330,7 @@ $lang = array(
     'AssetGroupUpdateAuditLogAdded' => 'Добавил{$assets_added}"',
     'AssetGroupRemoveAssetAuditLog' => 'Пользователя{$user}"удален актив"{$asset_name}"(ID:{$asset_id}) из группы активов "{$group_name}"(ID:{$group_id}).',
     'AssetGroupCreatedSuccessfully' => 'Успешно создана новая группа активов.',
-    'AssetGroupUpdatedSuccessfully' => 'Успешно обновляемый актив Груп.',
+    'AssetGroupUpdatedSuccessfully' => 'Группа активов успешно обновлена.',
     'AssetGroupDeletedSuccessfully' => 'Успешно удалена группа активов.',
     'AssetRemovedFromAssetGroupSuccessfully' => 'Успешно удалил актив из своей группы активов.',
     'ThereWasAProblemGettingTheAssetGroup' => 'Была проблема с получением группы активов.',
@@ -1367,16 +1342,15 @@ $lang = array(
     'AreYouSureYouWantToRemoveThisAsset' => 'Вы уверены, что хотите удалить этот актив из своей группы активов?',
     'AssetGroupNameAlreadyInUse' => 'Это имя группы активов уже используется.',
     'TreegridMissingRequiredParameters' => 'Запрос на трегрид не хватает требуемых параметров',
-    'UpdateAssetGroupTooltip' => 'Обновить актив Груп',
+    'UpdateAssetGroupTooltip' => 'Обновить группу активов',
     'DeleteAssetGroupTooltip' => 'Удаление группы активов',
     'RemoveAssetTooltip' => 'Удаление актива из группы активов',
-    'ControlShortNameFieldRequired' => 'Поле "короткое имя управления" является обязательным.',
     'AffectedAssetsWidgetPlaceholder' => 'Выберите группу активов или активов',
     'AffectedAssetsWidgetNoDropdownPlaceholder' => 'Добавление имени актива',
     'AffectedAssetsWidgetInstructions' => 'Выберите группу активов или активов. Вы можете создать новый актив, добавив его имя в список.',
     'ImportAssetGroups' => 'Группы импортных активов',
     'ExportAssetGroups' => 'Группы экспортных активов',
-    'Assets' => 'Активов',
+    'Assets' => 'Активы',
     'ImportAssetGroupAddSucceeded' => 'Добавленная группа активов под названием "{$asset_group_name}".',
     'ImportAssetGroupAddFailed' => 'Не удалось добавить Asset Group под названием "{$asset_group_name}".',
     'ImportAssetGroupAddNameTaken' => 'Не удалось добавить Asset Group под названием "{$asset_group_name}" как имя уже используется.',
@@ -1387,13 +1361,13 @@ $lang = array(
     'GroupMaximumQuantitativeLoss' => 'Максимальная количественная потеря группы',
     'AssetGroupRisk' => 'Риск группы активов',
     'NonMitigationNotificationEamilDescription' => 'Вы получаете это сообщение, потому что вы являетесь отправителем, владельцем, менеджером владельца, принадлежите к команде или являетесь дополнительным акционером, связанным со следующими рисками без смягчения последствий.  Вы будете получать напоминания по электронной почте до тех пор, пока не будет запланировано смягчение последствий.',
-    'Manager' => 'Диспетчер',
+    'Manager' => 'Менеджер',
     'ErrorAssetAlreadyExistsAsVerified' => 'Актив "{$asset_name}" уже существует, но еще не проверено. Пожалуйста, проверьте страницу управления активами или свяжитесь с админ.',
     'NoPermissionForAssetAssetGroupList' => 'Чтобы увидеть список доступных активов, необходимо получить разрешения на управление рисками, активами или оценками.',
     'NoPermissionForClosingRisks'=>'У вас нет разрешения на закрытие рисков.',
     'QuestionnaireHasNoTemplates' => 'Этот вопросник не может быть отправлен, так как в ней нет шаблонов, связанных',
     'TestAuditWasDeletedSuccessfully' => 'Успешно удален тестовый аудит.',
-    'TestAuditDeleteAuditTrailMessage' => 'Тестовый аудит (ID) {$test_audit_id}) был удален пользователем "{$user}".',
+    'TestAuditDeleteAuditTrailMessage' => 'Тестовый аудит (ID {$test_audit_id}) был удален пользователем "{$user}".',
     'CacheClearWarning' => 'Часто новые релизы SimpleRisk будут предоставлять обновления для таблиц стилей, изображений и JavaScript, которые, возможно, были кэшированы вашего веб-браузера.  Пожалуйста, очистите кэш браузера, чтобы убедиться, что SimpleRisk выглядит так, как следует после обновления.',
     'TestAddHeader' => 'Добавление нового теста',
     'TestEditHeader' => 'Тест обновления',
@@ -1407,7 +1381,7 @@ $lang = array(
     'ItemUpdateAuditLogRemoved' => 'Удалено "{$items_removed}"',
     'ItemUpdateAuditLogAdded' => 'Добавлено "{$items_added}"',
     'TeamType_test' => 'Тест',
-    'TeamType_audit' => 'Аудита',
+    'TeamType_audit' => 'Аудит',
     'TestCreatedAuditLogMessage' => 'Тест "{$test_name}"(ID: {$test_id}) был создан пользователем "{$user}".',
     'TestUpdatedAuditLogMessage' => 'Тест "{$test_name}"(ID: {$test_id}) был обновлен пользователем "{$user}".',
     'TestDeletedAuditLogMessage' => 'Тест "{$test_name}"(ID: {$test_id}) был удален пользователем "{$user}".',
@@ -1426,11 +1400,11 @@ $lang = array(
     'ImportControlCreated' => 'Созданный контроль "{$short_name}".',
     'ImportControlUpdated' => 'Обновленный элемент управления "{$short_name}"(ID: {$control_id}).',
     'SelectForControls' => 'Выберите для элементов управления',
-    'DeleteControls' => 'Элементы управления удалением',
+    'DeleteControls' => 'Удалить элементы управления',
     'SelectControlsToDelete' => 'Пожалуйста, выберите элементы управления для удаления.',
     'AreYouSureYouWantToDeleteControls' => 'Вы уверены, что хотите удалить выбранные элементы управления?',
-    'FirstName' => 'Имя и фамилия',
-    'LastName' => 'Последнее имя',
+    'FirstName' => 'Имя',
+    'LastName' => 'Фамилия',
     'AdvancedSearch' => 'Расширенный поиск',
     'AdvancedSearchExtra' => 'Расширенный поиск Дополнительные',
     'ExtraToggledOn' => 'Дополнительные "{$extra_name}" был переключен на пользователем "{$user}".',
@@ -1458,21 +1432,21 @@ $lang = array(
     'SavedSelections' => 'Сохранено',
     'SaveSelections' => 'Сохранить выбор',
     'Private' => 'Частная',
-    'Public' => 'Общественного',
+    'Public' => 'Публичный',
     'TheNameAlreadyExists' => 'Имя уже существует. Пожалуйста, попробуйте другое имя.',
     'NoPermissionForSelection' => 'У вас нет разрешения на доступ к выбору',
     'RiskAppetiteReport' => 'Отчет о риске аппетита',
     'WithinAppetite' => 'В пределах Аппетит',
     'OutsideAppetite' => 'Вне Аппетит',
     'UpdateCustomField' => 'Обновление пользовательского поля',
-    'TheNameFieldIsRequired' => 'Поле имени не требуется.',
+    'TheNameFieldIsRequired' => 'Поле имени обязательно для заполнения.',
     'SuccessfullyUpdatedCustomField' => 'Успешно обновил и это пользовательское поле.',
     'All' => 'Все',
     'UpdateStart' => 'Обновление началось.',
     'UpdateFailed' => 'Обновление не удалось. Пожалуйста, свяжитесь с Администратором.',
     'UpdateSuccessful' => 'Обновление Успешное. Приложение, база данных и все ваши установленные дополнительные услуги обновлены.',
     'UpdateVersionCheck' => 'Проверка версий...',
-    'UpdateVersionCheckDone' => 'Версия проверки сделано.',
+    'UpdateVersionCheckDone' => 'Проверка версии выполнена.',
     'UpdateApplicationFilesOutOfDate' => 'Файлы приложений устарели. Текущая версия: "{$current}", Последняя версия: "{$latest}"',
     'UpdateApplicationFilesUpToDate' => 'Файлы приложений обновлены.',
     'UpdateDatabaseOutOfDate' => 'Версия базы данных не соответствует версии приложения. Версия приложения: "{$app_version}", Версия базы данных: "{$db_version}"',
@@ -1491,28 +1465,25 @@ $lang = array(
     'BackupStart' => 'Запущено резервное копирование.',
     'BackupFailed' => 'Резервное копирование не удалось. Пожалуйста, свяжитесь с Администратором.',
     'BackupSuccessful' => 'Резервное копирование Успешное. Приложение, база данных и все установленные дополнительные услуги резервируются.',
+    'BackupLocation' => 'Расположение резервной копии',
     'BackupCheckingPreRequisites' => 'Проверка разрешений, настройка каталогов.',
     'BackupCheckingPreRequisitesDone' => 'Проверки разрешений прошли, необходимые каталоги успешно созданы.',
-    'BackupApplicationFiles' => 'Запущена резервная капотом приложений.',
+    'BackupApplicationFiles' => 'Запущено резервное копирование файлов приложения.',
     'BackupApplicationFilesDone' => 'Файлы приложений успешно резервное копирование',
     'BackupDatabase' => 'Началась резервная база данных.',
-    'BackupDatabaseDone' => 'База данных успешно резервное копирование.',
-    'BackupDatabaseFailed' => 'Резервное копирование базы данных не удалось. Подробности см. в журнале SimpleRisk.',
-    'WindowsNotSupported' => 'Начиная с версии 20260421-001, SimpleRisk больше не поддерживает Windows. Пожалуйста, перейдите на сервер под управлением Linux.',
-    'WindowsUpgradeHalted' => 'Данная операция не может быть выполнена на сервере под управлением Windows. SimpleRisk больше не поддерживает Windows, начиная с версии 20260421-001. Пожалуйста, перейдите на сервер под управлением Linux.',
+    'BackupDatabaseDone' => 'Резервная копия базы данных успешно создана.',
     'BackupDirectoryNotWriteable' => '"{$location}" каталог не записывается веб-пользователем.',
     'BackupFailedToCreateDirectories' => 'Невозможно создать требуемую структуру каталога на "{$location}".',
     'AreYouSureYouWantToDeleteSelction' => 'Вы уверены, что хотите удалить выделение?',
     'FieldIsRequired' => 'Требуется поле «XXX»',
     'NoPermissionForAssessments' => 'У вас нет разрешения на оценку.',
-    'MissingOrInvalidTrackingID' => 'Отсутствует или недействителен идентификатор отслеживания.',
     'Encrypted' => 'Зашифрованные',
     'AreYouSureYouWantToApproveThisResult' => 'Вы уверены, что хотите одобрить этот результат?',
     'AreYouSureYouWantToRejectThisResult' => 'Вы уверены, что хотите отклонить этот результат?',
     'Reject' => 'Отклонить',
     'RejectComment' => 'Отклонить комментарий (необязательно)',
     'QuestionnaireResultApprovedMessage' => 'Пересмотрено и одобрено {$user} На {$timestamp}.',
-    'QuestionnaireResultApprovedSuccessfully' => 'Результат ы анкеты успешно утвержден.',
+    'QuestionnaireResultApprovedSuccessfully' => 'Результаты анкеты успешно утверждены.',
     'QuestionnaireResultRejectedSuccessfully' => 'Результат анкеты успешно отклонен. Уведомление электронной почты отправляется контакту.',
     'EmailTemplateRejectedQuestionnaireResult' => '
         <html><body>
@@ -1524,7 +1495,7 @@ $lang = array(
         </body></html>',
     'QuestionnaireResultApprovedAuditLog' => 'Анкета "{$questionnaire_name}"(отправлено связаться с "{$contact_name}" на "{$date}") результат был одобрен пользователем "{$user_name}".',
     'QuestionnaireResultRejectedAuditLog' => 'Анкета "{$questionnaire_name}" результат был отклонен и отправлен обратно в контакт "{$contact_name}" для переоценки пользователем "{$user_name}" с комментарием "{$reject_comment}".',
-    'PrePopulateWithAnswersFromLastAssessment' => 'Предварительно заселиться с ответами из последней оценки?',
+    'PrePopulateWithAnswersFromLastAssessment' => 'Предварительно заполнить ответами из последней оценки?',
     'QuestionnaireResultCommentAuditLog' => 'Пользователь "{$user_name}" добавил комментарий для анкеты "{$questionnaire_name}" (отправлено на контакт "{$contact_name}" на "{$date}") результат.',
     'QuestionnaireSentAuditLog' => 'Анкета "{$questionnaire_name}" был отправлен на контакт "{$contact_name}" пользователем "{$user_name}".',
     'PendingRiskCreationAuditLog' => 'Анкета "{$questionnaire_name}"завершение привело к созданию в ожидании риска"{$subject}".',
@@ -1539,9 +1510,8 @@ $lang = array(
     'FilterBy' => 'Фильтр по',
     'AddNewQuestion' => 'Добавить новый вопрос',
     'ControlAudit' => 'Контрольный аудит',
-    'AssociatedControls' => 'Связанные элементы управления',
-    'AssociatedFrameworks' => 'Связанные платформы',
-    'Analysis' => 'Анализа',
+    'AssociatedControls' => 'Связанные средства контроля',
+    'Analysis' => 'Анализ',
     'TotalNumber' => 'Общее число',
     'CumulativeScore' => 'Совокупный балл',
     'AverageScore' => 'Средний балл',
@@ -1552,7 +1522,7 @@ $lang = array(
     'AllAddedRisksFromQuestionnaires' => 'Все добавленные риски из вопросников',
     'AllPendingRisksFromQuestionnaires' => 'Все ожидаемые риски от вопросников',
     'AddedRisk' => 'Добавленный риск',
-    'PendingRisk' => 'Ожидаемый риск',
+    'PendingRisk' => 'Ожидающий рассмотрения риск',
     'Undefined' => 'Неопределенный',
     'SendingRequestPleaseWait' => 'Отправка запроса. Подождите.',
     'ApplicationNeedsToBeUpgradeToLatestVersionToUpgradeExtras' => 'Приложение должно быть обновлено до последней версии для обновления дополнительных услуг.',
@@ -1564,7 +1534,6 @@ $lang = array(
     'ChangedTo' => 'Изменено на',
 
     'Jira' => 'Jira',
-    'JiraIntegrationExtra' => 'Дополнительная интеграция с Jira',
 
     'JiraWebhookAuthTokenIsInvalid' => 'Предоставлено Jira Webhook Auth Токен ("{$token}") является недействительным!',
     'JiraWebhookNoBodyPosted' => 'Jira webhook не размещать тела! Пожалуйста, свяжитесь с support@simplerisk.com',
@@ -1576,13 +1545,13 @@ $lang = array(
     'JiraUserEmail' => 'Электронная почта пользователя Jira',
     'JiraUserAPIKey' => 'API-ключ пользователя Jira',
     'JiraInvalidCredentials' => 'Недействительные учетные данные! Не устоичивайте к экземпляру jira с указанным ключом электронной почты и API.',
-    'JiraInstanceURLIsRequired' => 'Jira Instance URL не требуется!',
-    'JiraUserEmailIsRequired' => 'Jira Пользователь электронной почты не требуется!',
+    'JiraInstanceURLIsRequired' => 'Jira Instance URL обязателен!',
+    'JiraUserEmailIsRequired' => 'Электронная почта пользователя Jira обязательна!',
     'JiraUserAPIKeyIsRequired' => 'API-ключ пользователя Jira необходим!',
     'JiraInstanceURLIsInvalid' => 'Недействительным Jira Instance URL или Jira Instance не работает!',
     'JiraServerInfoNotAccessible' => 'Конечная точка информации о сервере экземпляра Jira недоступна, не может определить, поддерживает ли сервер веб-крючки.',
     'JiraServerInfoInvalidOrMissingBuildNumber' => 'Номер сборки экземпляра Jira либо недействителен, либо отсутствует, не может определить, поддерживает ли сервер веб-крючки.',
-    'JiraWebhookNotSupported' => 'Настроенный экземпляр Jira не поддерживает веб-крючки. Минимальная версия, поддерживающая веб-крючки, составляет 5,2 (Build Number 810).',
+    'JiraWebhookNotSupported' => 'Настроенный экземпляр Jira не поддерживает веб-крючки. Минимальная версия, поддерживающая веб-крючки, составляет 5.2 (Build Number 810+).',
     'JiraWebhookNotSupportedOnHttp' => 'Вы должны запустить ваш экземпляр SimpleRisk на https, чтобы иметь возможность использовать этот дополнительный.',
     'JiraConnectionSettingsWarning' => 'Настройки соединения недействительны. Синхронизация и доступ к настройкам синхронизации отключены.',
     'JiraConnectionSettingsSuccess' => 'Настройки соединения действительны. Синхронизация включена.',
@@ -1594,21 +1563,21 @@ $lang = array(
     'JiraFailedGetStatuses' => 'Не удалось получить доступные статусы! Пожалуйста, свяжитесь с Администратором.',
     'JiraCreateIssueOnNewRisk' => 'Разрешить SimpleRisk создавать новые проблемы Jira при создании риска.',
     'JiraProjectKeyForNewIssue' => 'Ключ проекта',
-    'JiraProjectKeyForNewIssueIsRequired' => 'Ключевой ключ проекта не требуется!',
+    'JiraProjectKeyForNewIssueIsRequired' => 'Ключ проекта обязателен!',
     'JiraProjectKeyForNewIssueIsInvalid' => 'Ни один проект не может быть найден с указанным ключом!',
     'JiraProjectKeyForNewIssueIsMalformed' => 'Указанный ключ проекта содержит недействительные символы.',
-    'JiraIssueTypeForNewIssue' => 'Тип выпуска',
+    'JiraIssueTypeForNewIssue' => 'Тип задачи',
     'JiraIssueTypeForNewIssueInstructions' => 'Пожалуйста, выберите "Задача"! Этот шаг необходим, так как мы не можем определить тип проблемы «Task» со 100% уверенностью на основе данных, которые предоставляет экземпляр Jira. Если для вашего случая использования вам понадобится поддержка для других типов проблем, пожалуйста, свяжитесь с support@simplerisk.com.',
     
     'JiraCreateRiskOnNewIssue' => 'Разрешить SimpleRisk создавать новый риск при обнаружении новой проблемы Jira.',
     'JiraScanProjectsForNewIssues' => 'Проекты сканирования',
-    'JiraScanProjectsForNewIssuesInstructions' => 'SimpleRisk проверит эти проекты на наличие новых выпусков.',
+    'JiraScanProjectsForNewIssuesInstructions' => 'SimpleRisk проверит эти проекты на наличие новых проблем.',
     'JiraImportExistingIssues' => 'Импорт уже существующих проблем.',
     'JiraImportExistingIssuesInstructions' => 'Импорт будет выполнен при следующем запуске запланированной синхронизации.',
 
     'JiraGeneralSynchronizationSettings' => 'Общие настройки синхронизации',
     
-    'JiraSynchronizationConflict' => 'Конфликта',
+    'JiraSynchronizationConflict' => 'Конфликт',
     'JiraSynchronizationConflictDescription' => 'Выберите, что на конфликтующих значениях поля следует использовать версию Риска или выпуска Jira. Та же логика применима и к первой синхронизации после того, как проблема Jira присваивается риску.',
     'JiraUseRiskValueOnConflict' => 'Используйте значение риска (по умолчанию)',
     'JiraUseIssueValueOnConflict' => 'Используйте значение выпуска Jira',
@@ -1634,7 +1603,7 @@ $lang = array(
     'JiraAllowWebhookManagementInstructions' => 'Пользователь Jira должен иметь разрешение на управление веб-крючками для работы этой опции.',
     'JiraUseScheduledSyncOnly' => 'Используйте только запланированную синхронизацию (изменения могут занять до нескольких минут, чтобы появиться в другой системе)',
 
-    'JiraIssueKey' => 'Джира Вопрос ключ',
+    'JiraIssueKey' => 'Ключ задачи Jira',
     'JiraIssueKeyIsMalformed' => 'Недействительный формат Джира Выпуск Ключ.',
     'JiraIssueKeyIsInvalid' => 'Проблема не существует или у вас нет разрешения на ее просмотреть.',
     'JiraIssueKeyIsAlreadyInUse' => 'Указанный ключ выпуска Jira уже присваивается «Риску» (ID: {$risk_id}).',
@@ -1660,14 +1629,14 @@ $lang = array(
     'Proxy' => 'Прокси',
     'ProxyWebRequests' => 'Прокси-запросы на веб',
     'VerifySSLCertificate' => 'Проверка сертификата SSL',
-    'ProxyHostname' => 'Прокси-хостимя / IP',
+    'ProxyHostname' => 'Прокси-имя хоста / IP',
     'ProxyPort' => 'Прокси-порт',
     'AuthenticatedProxy' => 'Аутентифицированный прокси',
     'ProxyUsername' => 'Имя прокси-пользователя',
     'ProxyPassword' => 'Прокси-пароль',
     'SimpleRiskExtras' => 'SimpleRisk Экстры',
     'ColumnSelections' => 'Выбор колонн',
-    'GroupAndFilteringSelections' => 'Выбор группи и фильтрации',
+    'GroupAndFilteringSelections' => 'Выбор группы и фильтрации',
     'Hyperlink' => 'Гиперссылки',
     'URL' => 'Url',
     'AssetTeams'=>'Команда активов (ы)',
@@ -1679,7 +1648,7 @@ $lang = array(
     'AlphabeticalOrder'=>'Алфавитный порядок',
     'UserReports'=>'Отчеты пользователей',
     'UsersHeader'=>'Пользователей',
-    'Usernames'=>'Имена',
+    'Usernames'=>'Имена пользователей',
     'TeamsHeader'=>'Команды',
     'TeamNames'=>'Названия команд',
     'YouNeedTeamSeparationEnabled' => 'Для этой функциональности необходимо дополнительное включено разделение команды.',
@@ -1691,7 +1660,7 @@ $lang = array(
     'AbleToAddProjects' => 'Возможность добавления проектов',
     'AbleToDeleteProjects' => 'Возможность удаления проектов',
     'AbleToManageProjects' => 'Возможность управления проектами',
-    'MitigationPlannedVsUnplanned' => 'Смягчение запланировано против незапланированных',
+    'MitigationPlannedVsUnplanned' => 'Запланированное смягчение vs незапланированное',
     'Scheduled' => 'Запланированные',
     'AbleToDefineTests' => 'Возможность определения тестов',
     'AbleToEditTests' => 'Возможность редактировать тесты',
@@ -1715,8 +1684,6 @@ $lang = array(
     'CustomFieldUpdateFailed' => 'Не удалось обновить пользовательское поле.',
     'IncidentManagement' => 'Управление инцидентами',
     'IncidentManagementExtra' => 'Управление инцидентами Дополнительно',
-    'IncidentManagementNotifications' => 'Уведомления об инцидентах',
-    'NotificationSettingsUpdated' => 'Настройки уведомлений обновлены.',
     'Incident' => 'Инцидента',
     'NewIncident' => 'Новый инцидент',
     'Preparation' => 'Подготовка',
@@ -1770,7 +1737,6 @@ $lang = array(
     'DeleteBusinessUnitTooltip' => 'Удалить бизнес-подразделение',
     'RemoveTeamTooltip' => 'Удалите команду из бизнес-подразделения',
     'YouNeedToSpecifyATeamParameter' => 'Необходимо указать параметр команды.',
-    'OrganizationalHierarchyExtra' => 'Организационная иерархия Дополнительная',
     'Source' => 'Источник',
     'SourceType' => 'Тип источника',
     'DetectedBy' => 'Обнаружено',
@@ -1781,14 +1747,14 @@ $lang = array(
     'InformationImpact' => 'Информационное воздействие',
     'Information' => 'Информация',
     'Locations' => 'Местах',
-    'Region' => 'Регионе',
-    'Regions' => 'Регионах',
-    'Country' => 'Страны',
-    'Countries' => 'Стран',
-    'City' => 'Города',
+    'Region' => 'Регион',
+    'Regions' => 'Регионы',
+    'Country' => 'Страна',
+    'Countries' => 'Страны',
+    'City' => 'Город',
     'Cities' => 'Городах',
     'Communications' => 'Коммуникаций',
-    'Facilities' => 'Номера / удобства',
+    'Facilities' => 'Объекты',
     'Hardware' => 'Оборудования',
     'Software' => 'Программного обеспечения',
     'Resources' => 'Ресурсы',
@@ -1812,8 +1778,8 @@ $lang = array(
     'CollectedOn' => 'Собрано на',
     'CollectedBy' => 'Собрано по',
     'AreYourSureYouWantToDeleteThisEvidence' => 'Вы уверены, что хотите удалить эти доказательства?',
-    'DetectedOn' => 'Обнаружено на',
-    'BeganOn' => 'Начал на',
+    'DetectedOn' => 'Обнаружено',
+    'BeganOn' => 'Начало',
     'ReportedBy' => 'Сообщено',
     'OwnedBy' => 'Принадлежит',
     'NoneSelected' => 'Ни один избранный',
@@ -1855,19 +1821,19 @@ $lang = array(
     'PermissionUpdateAuditLogAdded' => 'Добавлено "{$permissions_added}"',
     'Admin' => 'Администратора',
     'AdminRoleDescription' => 'Это разрешение предоставляет доступ к конфигурациям SimpleRisk. Пользователь с таким разрешением фактически является административным пользователем системы. Они могут вносить изменения во все меню, найденные в меню "Configure". Это также позволит активации и деактивации дополнительных услуг и изменения их конфигураций. Это разрешение должно быть дано только тем, кто в нем абсолютно нуждается. Как только пользователь получит доступ к этому разрешению, он сможет редактировать и другие учетные записи пользователей.',
-    'GrantAdmin' => 'Грант Администратор',
+    'GrantAdmin' => 'Назначить администратора',
     'RemoveAdmin' => 'Удалить администратора',
     'WouldYouLikeSimpleRiskToAutomaticallyGenerate' => 'Хотите, чтобы SimpleRisk автоматически генерирует шаблон анкеты на основе выбранных фреймворка и элементов управления?',
     'GenerateStandardQuestionnaireTemplate' => 'Создание стандартного шаблона анкеты',
     'GenerateMaturityQuestionnaireTemplate' => 'Создание шаблона вопросника зрелости',
     'CantDeleteComplianceForgeSCFFramework' => 'Вы не можете удалить платформу Secure Controls Framework (SCF).',
-    'CantDeleteUnassignedFramework' => 'Вы не можете удалить неподписанными рамками.',
+    'CantDeleteUnassignedFramework' => 'Вы не можете удалить неназначенный фреймворк.',
     'LicenseCheckFailed' => 'Один или несколько ваших SimpleRisk Extras не удалось проверить лицензию и могут быть отключены или удалены в течение ближайших 30 дней. Пожалуйста, немедленно свяжитесь с поддержкой, чтобы продлить лицензию.',
-    'JiraProjectForNewIssue' => 'Проект Джира',
+    'JiraProjectForNewIssue' => 'Проект Jira',
     'JiraProjectForNewIssueIsRequired' => 'Проект необходим!',
     'JiraScanProjectsForNewIssuesIsInvalid' => 'Ни один проект не может быть найден с указанным ключом ("{$key}")!',
     'JiraProjectForNewIssueIsInvalid' => 'Ни один проект не может быть найден с указанным идентификатором!',
-    'JiraIssueTypeForNewIssueIsRequired' => 'Jira Тип выпуска не требуется!',
+    'JiraIssueTypeForNewIssueIsRequired' => 'Jira Тип задачи обязателен!',
     'JiraFailedGetProjects' => 'Не удалось получить доступные проекты! Пожалуйста, свяжитесь с Администратором.',
     'JiraProjectOrIssueTypeForNewIssueIsNotValid' => 'Предоставленный проект Jira или тип выпуска не действителен.',
     'JiraSuccessfullyCreatedIssue' => 'Успешно создан jira Issue ({$key}).',
@@ -1879,7 +1845,7 @@ $lang = array(
     'SCFMappings' => 'Карты СКФ',
     'ActivatingSCFMappingMessage' => 'Установка карты SCF от Github. Это может занять несколько минут.',
     'DeactivatingSCFMappingMessage' => 'Неустановка карт SCF.',
-    'Dismiss' => 'Уволить',
+    'Dismiss' => 'Закрыть',
     'NewLessonLearned' => 'Новый извлеченный урок',
     'CurrentLessonsLearned' => 'Текущие извлеченные уроки',
     'AnswersDynamicallyCreated' => 'Ответы на этот вопрос будут динамически созданы.',
@@ -1894,7 +1860,7 @@ $lang = array(
     'JiraScanProjectsForNewIssuesIsRequired' => 'Поле "Scan Projects" требуется при включении фильтрации!',
     'JiraCreateRiskAs' => 'Создание риска как',
     'JiraCreateRiskAsInstructions' => 'Выберите, какой пользователь будет отправителем созданных рисков',
-    'JiraCreateIssueAsIsRequired' => '"Создать риск, как" поле не требуется!',
+    'JiraCreateIssueAsIsRequired' => '"Создать риск как" поле обязательно!',
     'FixFileEncodingIssues' => 'Исправление проблем с кодированием файлов',
     'FixFileEncodingIssuesDisclaimer' => 'Мы обнаружили возможную проблему с файлами, хранящимися в вашей базе данных SimpleRisk. В таблице ниже будет покажем вам, какие элементы имеют поврежденный файл (ы) и должны быть исправлены. Пожалуйста, взгляните на перечисленные элементы и пере загрузили затронутые файлы.',
     'AttachmentType' => 'Тип приложения',
@@ -1903,7 +1869,7 @@ $lang = array(
     'YouHaveToSelectAFileToUpload' => 'Вы должны выбрать файл для загрузки.',
     'InvalidUniqueName' => 'Файл Уникальное имя при условии, является недействительным!',
     'ref_type_exceptions' => 'Исключение документов',
-    'ref_type_documents' => 'Документа',
+    'ref_type_documents' => 'Документ',
     'ref_type_test_audit' => 'Тестовый аудит',
     'SessionAbsoluteTimeout' => 'Абсолютный тайм-аут сессии',
     'TagsWidgetPlaceholder' => 'Выбрать / добавить тег',
@@ -1952,7 +1918,6 @@ $lang = array(
     'ConnectivityVisualizer' => 'Визуализатор подключения',
     'ThereAreNoConnectionsAssociatedWithTheSelectedValue' => 'Нет связей, связанных с выбранным значением',
     'InvalidSimpleriskBaseUrl' => 'Недействительный базовый URL SimpleRisk!',
-    'Questionnaire' => 'Вопросник',
     'FileEncodingFixHeader_risk' => 'Управление Рисками',
     'FileEncodingFixHeader_compliance' => 'Управление и соответствие',
     'FileEncodingFixHeader_questionnaire' => 'Оценок',
@@ -1961,13 +1926,13 @@ $lang = array(
     'SendAnEmailWhenTheReviewIsDue' => 'Отправьте электронное письмо, когда наступит срок проверки',
     'ReviewsDueToday' => 'Обзоры, сданные сегодня',
     'ReviewsPastDue' => 'Просроченные обзоры',
-    'ReviewsDueSoon' => 'Обзоры скоро {$DueDate} через {$DueDate} дней',
+    'ReviewsDueSoon' => 'Обзоры с истекающим сроком — через {$DueDate} дней',
     'Submitter' => 'Отправитель',
     'ControlMaturity' => 'Контрольная зрелость',
     'CurrentControlMaturity' => 'Текущая контрольная зрелость',
     'DesiredControlMaturity' => 'Желаемая контрольная зрелость',
     'ControlGapAnalysis' => 'Анализ недостатков контроля',
-    'BelowMaturity' => 'Ниже срока погашения',
+    'BelowMaturity' => 'Ниже уровня зрелости',
     'AtMaturity' => 'В зрелости',
     'AboveMaturity' => 'Выше зрелости',
     'NoAddProjectPermission' => 'У вас нет разрешения на добавление проекта.',
@@ -2011,8 +1976,6 @@ $lang = array(
     'TemplateAssignment' => 'Назначение шаблона',
     'PleaseSelectUser' => 'Пожалуйста, выберите пользователя.',
     'AboutThisPage' => 'Об этой странице',
-    'UserGuide' => 'Руководство пользователя',
-    'AdministratorGuide' => 'Руководство администратора',
     'ProjectStatus' => 'Статус проекта',
     'SupportPortal' => 'Портал поддержки',
     'WebSupport' => 'Веб-поддержка',
@@ -2023,7 +1986,7 @@ $lang = array(
     'YouNeedToSpecifyTheTemplateNameParameter' => 'Необходимо указать параметр имени шаблона!',
     'QuestionsLackingAubjectEdited' => 'Вопросы, в которых отсутствовала тема, были отредактированы, чтобы исключить попытку заполнить поле «Тема риска» пустым.',
     'AdminSelfEditWarning' => 'Администраторы не могут удалить свои собственные права администратора или заблокировать себе доступ.',
-    'Value' => 'Ценить',
+    'Value' => 'Значение',
     'ControlDetails' => 'Подробности управления',
     'CannotDeleteLastItem' => 'Невозможно удалить последний элемент.',
     'FieldChangeTemplate' => '`{$field_name}` (`{$before}` => `{$after}`)',
@@ -2040,8 +2003,8 @@ $lang = array(
     'AccessVector' => 'Вектор доступа',
     'AccessComplexity' => 'Сложность доступа',
     'MaturityAudit' => 'Аудит зрелости',
-    'DefaultCurrentMaturity' => 'Текущий срок погашения по умолчанию',
-    'DefaultDesiredMaturity' => 'Желаемый срок погашения по умолчанию',
+    'DefaultCurrentMaturity' => 'Текущий уровень зрелости по умолчанию',
+    'DefaultDesiredMaturity' => 'Желаемый уровень зрелости по умолчанию',
     'ComplianceAssessment' => 'Оценка соответствия',
     'MaturityAssessment' => 'Оценка зрелости',
     'FileAttachment' => 'Вложение файла',
@@ -2067,7 +2030,7 @@ $lang = array(
     'Backups' => 'Резервные копии',
     'AutomaticallyBackupThisSimpleRiskInstance' => 'Создать автоматическое резервное копирование этого экземпляра simplerisk.',
     'BackupSchedule' => 'График резервного копирования',
-    'Hourly' => 'Почасовая оплата',
+    'Hourly' => 'Ежечасно',
     'RemoveBackupsAfter' => 'Удалите резервные копии после',
     'AnswerOrdering' => 'Порядок ответов',
     'BackupDate' => 'Дата резервной копии',
@@ -2093,7 +2056,7 @@ $lang = array(
     'AssociatedRisks' => 'Сопутствующие риски',
     'ThreatMapping' => 'Картирование угроз',
     'jQueryDeliveryMethod' => 'Метод доставки jQuery',
-    'AuditLog_DocumentUpdates' => 'Документ "{$document_name}" (ID: {$document_id}) был обновлен на "{$user_name}". Изменения: {$changes}.',
+    'AuditLog_DocumentUpdates' => 'Документ "{$document_name}" (ID: {$document_id}) был обновлён пользователем "{$user_name}". Изменения: {$changes}.',
     'DocumentStatus' => 'Статус документа',
     'UnassignedColumns' => 'Неназначенные столбцы',
     'RiskMappingColumns' => 'Столбцы сопоставления рисков',
@@ -2101,7 +2064,7 @@ $lang = array(
     'ControlRisk' => 'Контрольный риск',
     'VulnerabilityManagementExtra' => 'Дополнительное управление уязвимостями',
     'VulnerabilityManagement' => 'Управление уязвимостями',
-    'Setup' => 'Настраивать',
+    'Setup' => 'Настройка',
     'Triage' => 'сортировка',
     'AutomaticallyUpdateVMDetails' => 'Автоматическое обновление с платформ виртуальных машин',
     'SaveAndRunNow' => 'Сохранить и запустить сейчас',
@@ -2117,8 +2080,8 @@ $lang = array(
     'UpdateProjectName' => 'Обновить название проекта',
     'UpdatedSuccess' => 'Обновлено успешно',
     'Vulnerabilities' => 'Уязвимости',
-    'TriageVulnerabilities' => 'Уязвимости сортировки',
-    'DueDate' => 'Срок оплаты',
+    'TriageVulnerabilities' => 'Сортировка уязвимостей',
+    'DueDate' => 'Срок выполнения',
     'Consultant' => 'Консультант',
     'BusinessOwner' => 'Владелец бизнеса',
     'DataClassification' => 'Классификация данных',
@@ -2134,7 +2097,7 @@ $lang = array(
     'SAMLTeamMapping' => 'Сопоставление команды SAML',
     'RemoteSAMLRolePlaceholder' => 'Выберите удаленную роль или добавьте новую',
     'RemoteSAMLTeamPlaceholder' => 'Выберите удаленную команду или добавьте новую',
-    'MappingSuccessfullyUpdated' => 'Карта успешно обновлена!',
+    'MappingSuccessfullyUpdated' => 'Сопоставление успешно обновлено!',
     'BusinessUnit' => 'Бизнес-единица',
     'UserUpdatedAuditLog' => 'Пользователь "{$username}" был обновлен на "{$updater}". Изменения: {$changes}.',
     'UserUpdatedFromidPDataAuditLog' => 'Пользователь «{$username}» был обновлен новыми данными, полученными от idP. Изменения: {$changes}.',
@@ -2186,8 +2149,7 @@ $lang = array(
     'GraphicalRiskAnalysis' => 'Графический анализ рисков',
     'ResetMitigations' => 'Сбросить меры по смягчению последствий',
     'ResetReviews' => 'Сбросить отзывы',
-	'EnableEncryptionDebugLogging' => 'Включить дополнительное ведение журнала отладки для зашифрованной базы данных',
-    'Log' => 'Бревно',
+    'Log' => 'Журнал',
     'Date' => 'Дата',
     'Platform' => 'Платформа',
     'NotifyOnNewDocument' => 'Уведомлять о новом документе',
@@ -2250,7 +2212,7 @@ $lang = array(
     'IncidentManagementNotification_EmailSubject_new' => 'Сообщается о новом инциденте',
     'IncidentManagementNotification_EmailSubject_status_changed' => 'Статус инцидента изменен',
     'IncidentManagementNotification_EmailSubject_summary_changed' => 'Сводка инцидента изменена',
-    'IncidentManagementNotification_EmailSubject_playbook_changed' => 'Схема инцидента изменена',
+    'IncidentManagementNotification_EmailSubject_playbook_changed' => 'Плейбук инцидента изменён',
     'IncidentManagementNotification_EmailSubject_details_changed' => 'Детали инцидента изменены',
     'IncidentManagementNotification_EmailSubject_all_containment_steps_completed' => 'Все этапы локализации инцидента выполнены',
     'IncidentManagementNotification_EmailSubject_all_eradication_steps_completed' => 'Выполнены все шаги по устранению инцидента',
@@ -2262,7 +2224,7 @@ $lang = array(
     'IncidentSummaryUpdateFailed_empty' => 'Сводка инцидента не может быть пустой.',
     'IncidentSummaryUpdateSuccessful' => 'Сводка успешно обновлена.',
     'ImportSuccessful' => 'Импорт выполнен успешно!',
-    'Document' => 'Документа',
+    'Document' => 'Документ',
     'SelfAssessments' => 'Самооценка',
     'AssetId'=>'Идентификатор объекта',
     'ExportTemplateGroups' => 'Экспорт групп шаблонов',
@@ -2278,8 +2240,6 @@ $lang = array(
     'SSLSecurityCheckWarning' => 'ПРЕДУПРЕЖДЕНИЕ. SSL предотвращает атаки MITM, и отключение следующих параметров является проблемой безопасности.',
     'EnableSSLCertificateCheckSimpleRisk' => 'Включить проверку SSL-сертификата для запросов API SimpleRisk',
     'EnableSSLCertificateCheckExternal' => 'Включить проверку SSL-сертификата для внешних веб-сайтов',
-    'EnableAPIv1Endpoints' => 'Включить конечные точки API v1 (устаревшая функция)',
-    'EnableAPIv1EndpointsHelp' => 'API v1 устарел. Оставьте его отключенным, если только ваша интеграция его не требует. /api/v2/ не затрагивается этой настройкой и всегда доступен.',
     'EnableSSLCertificateCheckVM' => 'Включить проверку SSL-сертификата для управления уязвимостями',
     'DuoToopherRemoved' => 'Duo больше не поддерживается SimpleRisk напрямую. Вместо этого мы перешли на общий аутентификатор TOTP. Пожалуйста, настройте новый аутентификатор ниже.',
     'ProtectYourSimpleRiskAccount' => 'Защитите свою учетную запись SimpleRisk',
@@ -2288,7 +2248,7 @@ $lang = array(
     '2FAStep2' => 'Шаг 2. Введите код из приложения 2FA ниже, чтобы подтвердить',
     'YourSimpleRiskAccountIsProtected' => 'Ваша учетная запись SimpleRisk защищена с помощью MFA.',
     'ToDisableMFA' => 'Чтобы отключить MFA, подтвердите свой текущий токен MFA и нажмите кнопку «Отключить».',
-    'MFAToken' => "Токен МИД",
+    'MFAToken' => "Токен MFA",
     'RequireMFAForAllUsers' => 'Требовать MFA для всех пользователей',
     'MFARequiredForAllusers' => 'MFA требуется для всех пользователей и может быть отключена только администратором.',
     'MFADisabledSuccessfully' => 'Многофакторная аутентификация успешно отключена в вашей учетной записи.',
@@ -2300,9 +2260,9 @@ $lang = array(
     'SelectionSaveSuccessful' => 'Выбор успешно сохранен',
     'AssetVerifiedLog' => 'Актив "{$name}" проверен пользователем "{$user}".',
     'AssetDeletedLog' => 'Актив "{$name}" был удален пользователем "{$user}".',
-    'AssetDiscardedLog' => 'Актив "{$name}" был удален пользователем "{$user}".',
+    'AssetDiscardedLog' => 'Актив "{$name}" был отклонён пользователем "{$user}".',
     'ConfirmVerifyAllAssets' => 'Вы уверены, что хотите проверить все непроверенные активы?',
-    'ConfirmDiscardAllAssets' => 'Вы уверены, что хотите удалить все непроверенные активы?',
+    'ConfirmDiscardAllAssets' => 'Вы уверены, что хотите отклонить все непроверенные активы?',
     'ConfirmDeleteAllAssets' => 'Вы уверены, что хотите удалить все подтвержденные активы?',
     'EditFailed_NoPermission' => 'Не удалось изменить, нет разрешения.',
     'EditFailed_FieldMustBeUnique' => 'Ошибка редактирования, значение поля "{$field}" должно быть уникальным.',
@@ -2318,9 +2278,9 @@ $lang = array(
     'Abort' => 'Прервать',
     'EnablingSelectedSCFMessage' => 'Включение выбранных фреймворков Secure Controls Framework (SCF). Это может занять несколько секунд.',
     'DisablingSelectedSCFMessage' => 'Отключение выбранных фреймворков Secure Controls Framework (SCF).',
-    'AssetAssetGroupWidgetPlaceholder' => 'Выберите группу активов или активов',
+    'AssetAssetGroupWidgetPlaceholder' => 'Выберите актив или группу активов',
     'AssetAssetGroupWidgetOnlyNewPlaceholder' => 'Добавление имени актива',
-    'AssetAssetGroupWidgetInstructions' => 'Выберите группу активов или активов. Вы можете создать новый актив, добавив его имя в список.',
+    'AssetAssetGroupWidgetInstructions' => 'Выберите актив или группу активов. Вы можете создать новый актив, добавив его имя в список.',
     'UpdateComplianceForgeSCF' => 'Обновление платформы Secure Controls Framework (SCF)',
     'MappedAssets' => 'Сопоставленные активы',
     'AddControl' => 'Добавить элемент управления',
@@ -2335,7 +2295,7 @@ $lang = array(
     'AllClosedRisksFromQuestionnaires' => 'Все закрытые риски из анкет',
     'AllDeletedRisksFromQuestionnaires' => 'Все удаленные риски из анкет',
     'MultipleChoice_SingleSelect' => 'Множественный выбор (одиночный выбор)',
-    'MultipleChoice_MultiSelect' => 'Множественный выбор (Multi-Select)',
+    'MultipleChoice_MultiSelect' => 'Множественный выбор (множественный выбор)',
     'APIDocumentation' => 'Документация API',
     'ReviewedBy' => 'Рассмотрено',
     'LimitedTestmailMessage' => 'Недавно было отправлено тестовое письмо. Вам придется подождать 5 минут, прежде чем будет отправлено еще одно тестовое письмо.',
@@ -2376,11 +2336,11 @@ $lang = array(
     'AddMapping' => 'Добавить сопоставление',
     'CreateSuccess_asset' => 'Актив «{$name}» был успешно создан пользователем «{$user}».',
     'AreYouSureYouWantToDeleteTheSelectedControls' => 'Вы уверены, что хотите удалить выбранные элементы управления?',
-    'ControlMappedToDifferentMaturitiesOnAsset' =>'Элемент управления сопоставляется с разными сроками погашения одного и того же актива.',
+    'ControlMappedToDifferentMaturitiesOnAsset' =>'Элемент управления сопоставляется с разными уровнями зрелости одного и того же актива.',
     'Advanced_Search_no_results_1' => 'Кажется, по вашему запросу нет результатов.',
     'Advanced_Search_no_results_2' => 'Дважды проверьте свой поиск на наличие опечаток и орфографических ошибок или попробуйте другой поисковый запрос.',
     'IncidentsPerDay' => 'Инцидентов в день',
-    'CurrentVsDesiredMaturity' => 'Текущая и желаемая зрелость по контрольной семье',
+    'CurrentVsDesiredMaturity' => 'Степень зрелости по контрольной семье',
     'RiskDistribution' => 'Распределение рисков',
     'RiskDistributionDescription'=>'Приведенные выше круговые диаграммы помогают показать распределение рисков между различными уровнями риска как для неотъемлемого, так и для остаточного риска. Мы можем использовать эти две диаграммы, чтобы продемонстрировать прогресс в наших усилиях по снижению рисков. Если на диаграмме остаточного риска показаны большие доли очень высоких или высоких рисков, это может быть признаком того, что ваша организация берет на себя слишком большой риск и необходимы дальнейшие усилия по снижению риска.',
     'EnableTabs' => 'Включить вкладки',
@@ -2392,7 +2352,7 @@ $lang = array(
     'ConfirmDeleteTab' => 'Вы уверены, что хотите удалить эту вкладку со всеми вопросами на ней?',
     'GenericDeleteItemConfirmation' => 'Вы уверены, что хотите удалить выбранные элементы?',
     'ConfirmDeletePendingRisk' => 'Вы уверены, что хотите удалить выбранные элементы?',
-    'Display' => 'Отображать',
+    'Display' => 'Отображение',
     'ShowAssociationData' => 'Показать данные ассоциации',
     'Association' => 'Ассоциация',
     'InstanceDetails' => 'Подробности об экземпляре',
@@ -2413,7 +2373,7 @@ $lang = array(
     'LastComment' => 'Последний комментарий',
     'MFAReset' => 'Сброс многофакторной аутентификации (MFA)',
     'PerformMFAResetForUser' => 'Выполните сброс MFA для пользователя',
-    'ResetMFA' => 'Сбросить МИД',
+    'ResetMFA' => 'Сбросить MFA',
     'MFANotEnabledForUser' => 'MFA не включен для выбранного пользователя',
     'MFAResetSuccessful' => 'Сброс MFA прошел успешно',
     'First' => 'Первый',
@@ -2422,10 +2382,6 @@ $lang = array(
     'AnthropicConnectionWarning' => 'Неверные учетные данные! Невозможно подключиться к Anthropic с помощью ключа API.',
     'ResetAPIKey' => 'Сбросить ключ API',
     'ArtificialIntelligence' => 'Искусственный интеллект',
-    'ArtificialIntelligenceDesc' => 'Настройте подключение к поставщику ИИ и контекстные вопросы, определяющие ответы ИИ для этого экземпляра SimpleRisk.',
-    'ProviderConfiguration' => 'Конфигурация поставщика',
-    'ContextQuestions' => 'Вопросы контекста',
-    'AIProviderNotConfiguredWarning' => 'Поставщик ИИ не настроен. Невозможно получить результаты в режиме реального времени, пока вы не укажете поставщика и ключ API на вкладке «Конфигурация поставщика».',
     'ArtificialIntelligenceAdditionalContext' => 'Дополнительный контекст искусственного интеллекта',
     'ArtificialIntelligenceAdditionalContextDescription' => 'Приведенная ниже информация является необязательной, но предоставит ИИ необходимый контекст для получения более значимых результатов. Вся информация, введенная ниже, БУДЕТ ОТПРАВЛЕНА ВАШЕМУ НАСТРОЕННОМУ ПОСТАВЩИКУ ИИ для анализа с целью адаптации ответов к потребностям вашей организации.',
     'OrganizationContext' => 'Контекст организации',
@@ -2456,7 +2412,7 @@ $lang = array(
     'EditModeInformation' => 'Включите режим редактирования, чтобы отредактировать макет. Отключение режима не приведет к автоматическому сохранению макета.',
     'InvalidLayout' => 'Неверный макет!',
     'InvalidLayoutOnlyCustomAllowedAsDefault' => 'Неверный макет! Только пользовательские макеты могут быть сохранены как макеты по умолчанию.',
-    'LayoutSaved' => 'Макет сохранен!',
+    'LayoutSaved' => 'Макет вашей панели управления сохранен.',
     'DefaultLayout' => 'Макет по умолчанию',
     'DefaultLayoutInformation' => 'Устанавливает этот макет как макет по умолчанию, который будет использоваться вместо предоставленного SimpleRisk для пользователей, у которых нет набора пользовательских макетов. Вы можете установить только сохраненный непустой пользовательский макет как макет по умолчанию. Если макет, помеченный как макет по умолчанию, будет восстановлен до макета по умолчанию, он восстановит его до макета по умолчанию, предоставленного SimpleRisk.',
     'LayoutDefaultStatusUpdated' => 'Статус макета по умолчанию был обновлен.',
@@ -2465,12 +2421,12 @@ $lang = array(
     'DefaultLayoutRestored' => 'Макет по умолчанию успешно восстановлен!',
     'SavedLayoutRestored' => 'Сохраненный макет успешно восстановлен!',
     'ConfirmRestoreLayout' => 'Вы уверены? Вы потеряете изменения, внесенные в этот макет.',
-    'ConfirmDisableEditModeWithPendingChanges' => 'У вас есть несохраненные изменения, которые вы потеряете, покинув страницу. Вы уверены, что хотите отключить «Режим редактирования» и потенциально забыть о сохранении изменений?',
+    'ConfirmDisableEditModeWithPendingChanges' => 'У вас есть несохраненные изменения на этой панели мониторинга. Отмените их и прекратите редактирование?',
     'ConfirmSave' => 'Сохранение этих изменений перезапишет ваш ранее сохраненный макет. Вы уверены, что хотите продолжить?',
     'ConfirmSaveAdminDefault' => 'Этот макет установлен как макет по умолчанию для этого типа макета. Сохранение этих изменений изменит макет для всех пользователей, у которых не установлен пользовательский макет для этого типа макета. Вы уверены, что хотите продолжить?',
     'RisksByMonth' => 'Риски по месяцам',
     'WidgetType_chart' => 'Диаграмма',
-    'WidgetType_table' => 'Стол',
+    'WidgetType_table' => 'Таблица',
     'WidgetType_WYSIWYG' => 'WYSIWYG',
     'EnableAIAssistanceForRiskData' => 'Внедрить поддержку искусственного интеллекта для анализа данных о рисках.',
     'ArtificialIntelligenceAssistant' => 'Помощник искусственного интеллекта',
@@ -2481,13 +2437,13 @@ $lang = array(
     'InvalidDataPleaseContactAdministrator' => 'Неверные данные! Обратитесь к администратору.',
     'EditWidgetText' => 'Редактировать текст виджета',
     'UnauthorizedAccessInAPI' => 'Несанкционированный доступ. У аутентифицированного пользователя нет соответствующих разрешений.',
-    'FAIRRiskAssessment' => 'СПРАВЕДЛИВАЯ оценка риска',
+    'FAIRRiskAssessment' => 'Оценка риска FAIR',
     'RiskScenario' => 'Сценарий риска',
     'Assumptions' => 'Предположения',
     'MonteCarloSimulation' => 'Моделирование Монте-Карло',
     'ContactFrequency' => 'Частота контактов',
     'ProbabilityOfAction' => 'Вероятность действия',
-    'ThreatCapability' => 'Угроза Потенциал',
+    'ThreatCapability' => 'Потенциал угрозы',
     'ResistanceStrength' => 'Сила сопротивления',
     'ThreatEventFrequency' => 'Частота событий угрозы',
     'Vulnerability' => 'Уязвимость',
@@ -2496,7 +2452,6 @@ $lang = array(
     'SecondaryLossEventFrequency' => 'Частота событий вторичной потери',
     'SecondaryLossMagnitude' => 'Величина вторичных потерь',
     'Productivity' => 'Производительность',
-    'Response' => 'Ответ',
     'Replacement' => 'Замена',
     'CompetitiveAdvantage' => 'Конкурентное преимущество',
     'FinesAndJudgements' => 'Штрафы и судебные решения',
@@ -2524,7 +2479,7 @@ $lang = array(
     'IncidentWasDismissedFromLessonsLearned' => 'Инцидент был исключен из извлеченных уроков',
     'NewEvidenceWasAddedSuccessfully' => 'Новые доказательства были успешно добавлены.',
     'ANewPlaybookWasAddedSuccessfully' => 'Новый сборник сценариев был успешно добавлен.',
-    'PlaybookNameExists'=>'Название книги пьес уже существует.',
+    'PlaybookNameExists'=>'Название плейбука уже существует.',
     'TheNameOfThePlaybookActionAlreadyExists' => 'Название действия в книге уже существует.',
     'UsernameCannotBeEmpty' => 'Имя пользователя не может быть пустым.',
     'UsernameContainsSpecialCharacters' => 'Имя пользователя содержит специальные символы. Используйте только {$special_characters}.',
@@ -2590,7 +2545,6 @@ $lang = array(
     'NotAMatch' => 'Не совпадение',
     'ReviewManually' => 'Просмотреть вручную',
     'ResponsesToQuestionsWithLinkedControlsWillUpdateTheControlTypeTo' => 'Ответы на вопросы со связанными элементами управления обновят тип элемента управления на',
-    'DueDate' => 'Срок оплаты',
     'AuditLog_IncidentUpdated' => 'Инцидент "{$incident_summary}"(ID: {$incident_id}) обновлен пользователем "{$user_name}". Изменения: {$changes}.',
     'AnswersWillBeAutoSavedOnAssessments' => 'Ответы будут автоматически сохранены при оценке',
     'SecondsAssessmentsAreAutoSaved' => 'Секундные оценки сохраняются автоматически',
@@ -2598,7 +2552,6 @@ $lang = array(
     'NotifyAuditInitiateSubject' => 'Аудит инициирован',
     'BypassPendingRisksAndCreateRisksImmediatelyAfterAssessmentCompletion' => 'Обойти «Ожидаемые риски» и создать риски сразу после завершения оценки',
     'AssociatedExceptions' => 'Связанные исключения',
-    'Required' => 'Необходимый',
     'EmailInstructions' => 'Инструкции по электронной почте',
     'ApproveSelectedVulnerabilities' => 'Одобрить выбранные уязвимости',
     'RejectSelectedVulnerabilities' => 'Отклонить выбранные уязвимости',
@@ -2648,68 +2601,9 @@ $lang = array(
     'PleaseEnterAValidTimezone' => 'Пожалуйста, введите действительный часовой пояс.',
     'TFIDFMatch' => 'Матч TF-IDF',
     'CompletionDate' => 'Дата завершения',
-    'AutoProcessSCFUpdates' => 'Автоматическая обработка новых версий Secure Controls Framework (SCF).',
-    'AddNewControls' => 'Добавить новые элементы управления SCF',
-    'UpdateExistingControls' => 'Обновите существующие элементы управления SCF.',
-    'DeleteRemovedControls' => 'Удалите удаленные элементы управления SCF.',
-    'CreateEvidenceRequests' => 'Создание запросов на предоставление подтверждающих документов для контроля SCF.',
-    'SelectSCFFrameworks' => 'Выберите SCF-фреймворки',
-    'SCFReleaseProcessing' => 'Обработка выпуска SCF',
-    'NotFrameworkDescription' => 'Приведённый ниже виджет отображает все заголовки, содержащиеся в электронной таблице Secure Controls Framework (SCF). Используйте его, чтобы выбрать столбцы, содержащие данные о фреймворках, и столбцы, не относящиеся к ним.',
-    'Note' => 'Примечание',
-    'AISettingsNote' => 'Включение функции помощи ИИ позволит отправлять данные в Anthropic для анализа в их LLM-системе, используя ваш API-ключ Anthropic, чтобы предоставлять вам персонализированные результаты.',
-    'EnableAIAssistanceForControlData' => 'Включите поддержку ИИ для обработки управляющих данных.',
-    'ReferenceText' => 'Справочный текст',
-    'FrameworkSelection' => 'Выбор структуры',
-    'Show' => 'Показывать',
-    'InProgress' => 'В ходе выполнения',
-    'Canceled' => 'Отменено',
-    'Failed' => 'Неуспешный',
-    'LegacyFrameworks' => 'Устаревшие фреймворки',
-    'Archive' => 'Архив',
-    'FailedToFetchCVEInformation' => 'Не удалось получить информацию о CVE. Пожалуйста, проверьте идентификатор CVE и повторите попытку.',
-    'ComplianceDashboard' => 'Панель мониторинга соответствия требованиям',
-    'DynamicAuditReportHelp' => 'В этом отчете представлены все проведенные проверки и их статус.',
-    'ComplianceDashboardDescription' => 'На этом графике показано количество контрольных проверок в каждой системе, при этом успешно прошедшие проверку отмечены зеленым цветом, а не прошедшие — красным.',
-    'PassingControls' => 'Контроль обгона',
-    'FailingControls' => 'Неэффективные средства контроля',
-    'ControlsByFramework' => 'Управление по фреймворку',
-    'NumberOfControls' => 'Количество контрольных точек',
     'AssetsAndControls' => 'Активы и контроль',
     'AssetsByControl' => 'Активы под контролем',
     'ControlsByAsset' => 'Контроль по активам',
-    'PasswordResetTokenExpirationPeriod' => 'Срок действия токена сброса пароля',
-    'APasswordResetTokenExpirationPeriodShouldBeMoreThan5Minutes' => 'Срок действия токена для сброса пароля должен составлять более 5 минут.',
-    'MeanTimeToRemediate' => 'Среднее время на устранение последствий',
-    'ByTeam' => 'По команде',
-    'ByCategory' => 'По категориям',
-    'ByRiskLevel' => 'По уровню риска',
-    'MeanTimeToRemediateDescription' => 'Среднее количество дней, необходимых для закрытия рисков, сгруппированное по команде, категории и уровню риска. Включены только закрытые риски.',
-    'AverageDaysToClose' => 'Среднее количество дней до закрытия сделки',
-    'ControlPassRateTrend' => 'Тенденция успешности прохождения контроля',
-    'ControlPassRateTrendDescription' => 'Процент успешной сдачи экзаменов (%) по каждой системе за последние 12 месяцев. Показаны только системы, по которым за этот период был получен хотя бы один результат экзамена.',
-    'PassRatePercent' => 'Процент сдавших экзамен (%)',
-    'ExposureByTeam' => 'Риск, которому подвергается команда',
-    'ExposureByCategory' => 'Риск по категориям',
-    'ExposureByLocation' => 'Риск воздействия в зависимости от местоположения',
-    'TotalRiskScore' => 'Общий балл риска',
-    'SLABreachStatus' => 'Статус нарушения соглашения об уровне обслуживания (SLA)',
-    'SLABreachDescription' => 'Открытые риски, находящиеся в пределах или за пределами порогового значения SLA, в зависимости от уровня риска. Пороговые значения по умолчанию: Очень высокий = 30 дней, Высокий = 60 дней, Средний = 90 дней, Низкий = 180 дней.',
-    'WithinSLA' => 'В рамках SLA',
-    'SLABreached' => 'Нарушение соглашения об уровне обслуживания (SLA)',
-    'NumberOfRisks' => 'Количество рисков',
-    'AllFrameworks' => 'Все фреймворки',
-    'ExposureByBusinessUnit' => 'Риски, подверженные воздействию бизнес-подразделений',
-    'BusinessUnit' => 'Бизнес-единица',
-    'BUChartCrossUnitNote' => 'Примечание: риски, отнесенные к командам, охватывающим несколько бизнес-подразделений, учитываются в каждом из них.',
-    'SLAThresholds' => 'Пороговые значения SLA',
-    'SLAThresholdsDescription' => 'Максимальное количество дней, в течение которых открытый риск может оставаться нерешенным, прежде чем он будет считаться просроченным, для каждого уровня риска.',
-    'SLAThresholdMustBeBetween1And3650' => 'Пороговые значения SLA должны находиться в диапазоне от 1 до 3650 дней.',
-    'SLAThresholdsUpdatedSuccessfully' => 'Пороговые значения SLA были успешно обновлены.',
-    'TimeToDetect' => 'Время обнаружения',
-    'TimeToDetectDescription' => 'Среднее количество дней с момента начала инцидента (Began On) до его обнаружения (Detected On), сгруппированное по команде и типу происшествия. Включены только инциденты, для которых зафиксированы обе даты.',
-    'ByOccurrenceType' => 'По типу события',
-    'OccurrenceType' => 'Тип возникновения',
     'NoIncidentDetectionDataAvailable' => 'Не зафиксировано ни одного случая, когда одновременно были бы зафиксированы даты начала и обнаружения.',
     'IncidentDashboard' => 'Панель мониторинга инцидентов',
     'TimeToDetectByTeam' => 'Время обнаружения командой',
@@ -2734,8 +2628,8 @@ $lang = array(
     'ControlPassFailStatus' => 'Статус прохождения/непрохождения контроля',
     'GovernanceDashboard' => 'Панель управления',
     'GovernanceDashboardDescription' => 'На этом графике показан текущий уровень зрелости всех средств контроля.',
-    'GovernanceControlsByFrameworkMaturityStacked' => 'Контроль со стороны фреймворка и текущего уровня зрелости',
-    'Custom' => 'Обычай',
+    'GovernanceControlsByFrameworkMaturityStacked' => 'Контроли по фреймворку и текущему уровню зрелости',
+    'Custom' => 'Настраиваемый',
     'SimpleRiskCustomScheduledNotifications' => 'Настраиваемые уведомления по расписанию SimpleRisk',
     'AddCustomScheduledNotification' => 'Добавить пользовательское запланированное уведомление',
     'ReportName' => 'Название отчета',
@@ -2802,7 +2696,7 @@ $lang = array(
     'SubmittedRisksByDateDesc'                => 'Представленные данные о рисках сгруппированы по диапазону дат с указанием динамики частоты их поступления.',
     'MitigationsByDateDesc'                   => 'Меры по смягчению последствий зафиксированы с течением времени, по статусу и команде.',
     'ManagementReviewsByDateDesc'             => 'Действия по анализу со стороны руководства, зафиксированные за определенный период времени.',
-    'ClosedRisksByDateDesc'                   => 'Закрытые сделки в указанный период времени, с указанием причин закрытия.',
+    'ClosedRisksByDateDesc'                   => 'Закрытые риски за указанный период времени, с указанием причин закрытия.',
     'CurrentRiskCommentsDesc'                 => 'Последние комментарии о рисках в рамках программы, начиная с самых новых.',
     'AllClosedRisksByRiskLevelDesc'                              => 'Все закрытые риски, отсортированные по уровню присущего риска.',
     'AllOpenRisksAcceptedUntilNextReviewByRiskLevelDesc'         => 'Риски приняты, но ожидается повторная оценка в следующую дату пересмотра, отсортированы по уровням.',
@@ -2850,16 +2744,15 @@ $lang = array(
     'SettingsSecurityDesc'                => 'Настройки аутентификации, сессии, политики паролей, базового URL-адреса и безопасности API.',
     'SettingsLoggingDesc'                 => 'Настройка отладочного и аудиторского журналирования: уровни ведения журналов, срок хранения и расположение файлов журналов.',
     'HealthCheckDesc'                     => 'Диагностика состояния системы: версия PHP, расширения, права доступа к файлам, подключение к базе данных, расписание cron и дополнительные активации.',
-    'AboutDesc'                           => 'Ознакомьтесь с версией SimpleRisk, информацией о лицензии и благодарностями.',
     'AnnouncementsDesc'                   => 'Создавайте и управляйте баннерными объявлениями, видимыми всем пользователям.',
     'RegisterAndUpgradeDesc'              => 'Зарегистрируйте свою установку SimpleRisk, введите или продлите ключ подписки и запустите обновления Core/Extra одним щелчком мыши.',
     'QueueMonitorDesc'                    => 'Проверьте очередь фоновых заданий: ожидающие, выполняющиеся и завершившиеся с ошибкой задания.',
     'ExtrasDesc'                          => 'Активируйте, деактивируйте и настройте SimpleRisk Extras (платные дополнения).',
-    'ArtificialIntelligenceExtraDesc'     => 'Обеспечивает поддержку с помощью искусственного интеллекта во всей системе SimpleRisk.',
-    'CustomizationExtraDesc'              => 'Позволяет добавлять и удалять поля различных типов, а также динамически создавать шаблоны страниц.',
-    'NotificationExtraDesc'               => 'Отправляет уведомления по электронной почте при подаче, обновлении, устранении или проверке рисков, а также может запускаться по расписанию для уведомления пользователей о рисках, находящихся в состоянии «Не проверено» или «Просрочено».',
-    'VulnerabilityManagementExtraDesc'    => 'Обеспечивает интеграцию SimpleRisk с Rapid7 Nexpose, InsightVM, Qualys и Tenable.io.',
-    'IncidentManagementExtraDesc'         => 'Предоставляет возможности управления инцидентами непосредственно в системе SimpleRisk.',
+    'ArtificialIntelligenceExtraDesc'     => 'Дополнительная функция искусственного интеллекта обеспечивает расширенный анализ рисков (включая оценку соответствия принципам FAIR) и создание персонализированной документации.',
+    'CustomizationExtraDesc'              => 'Дополнительный модуль «Настройка» позволяет добавлять и удалять различные типы полей, а также динамически создавать пользовательские шаблоны страниц.',
+    'NotificationExtraDesc'               => 'Дополнительная функция «Уведомления по электронной почте» позволяет SimpleRisk отправлять уведомления по электронной почте при подаче, изменении или ином обращении с рисками. Эту функцию также можно добавить в качестве запланированного скрипта для отправки регулярных напоминаний о готовности рисков к рассмотрению руководством. В базовом продукте SimpleRisk без этой функции уведомления не отправляются за пределы самого инструмента.',
+    'VulnerabilityManagementExtraDesc'    => 'Дополнительное приложение для управления уязвимостями позволяет клиентам интегрировать свой экземпляр SimpleRisk с Qualys, Tenable.io или Rapid7 Nexpose/InsightVM и импортировать данные об активах и уязвимостях в SimpleRisk. После этого можно выбрать, какие сайты необходимо охватить, определить, какие оценки уязвимостей следует импортировать, и определить, какие уязвимости следует преобразовать в риски для отслеживания.',
+    'IncidentManagementExtraDesc'         => 'Дополнительное средство управления инцидентами основано на руководстве NIST 800-61 по обработке инцидентов в области компьютерной безопасности и предоставляет возможности управления инцидентами непосредственно в системе SimpleRisk.',
 
     // Configure Hub - tile descriptions (customization category)
     'RedefineNamingConventionsDesc'       => 'Переименуйте термины SimpleRisk (Риск, Актив, Структура и т. д.) во всем пользовательском интерфейсе.',
@@ -2872,26 +2765,25 @@ $lang = array(
     'UserManagementDesc'                  => 'Добавление, редактирование, отключение и сброс учетных записей пользователей; управление политикой паролей.',
     'RoleManagementDesc'                  => 'Определите роли и права доступа, предоставляемые каждой ролью.',
     'TeamManagementDesc'                  => 'Создавайте и управляйте командами, используемыми для фильтрации видимости записей.',
-    'SeparationExtraDesc'                 => 'Ограничение доступа к информации о рисках только для членов команды, к которым классифицируется риск.',
-    'CustomAuthenticationExtraDesc'       => 'Обеспечивает поддержку Active Directory или SAML/единого входа для аутентификации и авторизации.',
-    'EncryptionExtraDesc'                 => 'Шифрование конфиденциальных текстовых полей в базе данных.',
-    'OrganizationManagementDesc'          => 'Над командами можно определить несколько бизнес-подразделений. Затем пользователей можно назначать в одну или несколько команд в рамках различных бизнес-подразделений. Это влияет на их возможность видеть и использовать команды, пользователей и ресурсы, к которым они не привязаны.',
+    'SeparationExtraDesc'                 => 'Функция «Разделение по командам» ограничивает просмотр рисков только пользователями, входящими в команду, к которой этот риск назначен. В базовом продукте SimpleRisk без этой функции каждый пользователь может видеть все риски.',
+    'CustomAuthenticationExtraDesc'       => 'Дополнительный модуль пользовательской аутентификации обеспечивает поддержку аутентификации Active Directory и SAML. В базовом продукте SimpleRisk без этого модуля единственным вариантом является создание новых пользователей в репозитории идентификационных данных SimpleRisk.',
+    'EncryptionExtraDesc'                 => 'Дополнительная функция «Зашифрованная база данных» генерирует случайный 256-битный ключ шифрования AES, а затем использует его для шифрования конфиденциального текста перед его добавлением в базу данных SimpleRisk. Это предотвращает просмотр или изменение данных кем-либо без непосредственного использования приложения SimpleRisk.',
+    'OrganizationManagementDesc'          => "Функция «Организационная иерархия» позволяет определять несколько бизнес-единиц, которые могут включать любое количество команд. Затем пользователи могут быть назначены в одну или несколько команд в рамках различных бизнес-единиц. Это влияет на возможность пользователя видеть и использовать команды, пользователей и ресурсы, к которым он не привязан.",
 
     // Configure Hub - tile descriptions (data category)
-    'DeleteRisksDesc'                     => 'Массовое удаление сопряжено с рисками. Используйте с осторожностью — удаление будет безвозвратным.',
+    'DeleteRisksDesc'                     => 'Массовое удаление рисков. Используйте с осторожностью — удаление будет безвозвратным.',
     'AuditTrailDesc'                      => 'Найдите и экспортируйте журнал аудита системы, содержащий информацию о действиях пользователей.',
-    'ImportExportExtraDesc'               => 'Позволяет импортировать и экспортировать CSV-файлы, содержащие информацию о рисках.',
-    'JiraExtraDesc'                       => 'Обеспечивает интеграцию с вашей системой JIRA. Позволяет связывать риски с задачами Jira, синхронизировать их данные, статус и комментарии.',
-    'APIExtraDesc'                        => 'Предоставляет API для интеграции SimpleRisk с другими инструментами и задачами автоматизации.',
-    'AdvancedSearchExtraDesc'             => "Расширяет функциональность поля поиска в верхней панели, позволяя находить риски путем текстового поиска в данных о рисках.",
-    'AssessmentsExtraDesc'                => 'Позволяет создавать пользовательские формы оценки рисков и отправлять их пользователям.',
+    'ImportExportExtraDesc'               => 'Функция «Импорт-экспорт» позволяет импортировать данные в SimpleRisk путем сопоставления полей в CSV-файле с полями в базе данных SimpleRisk. Ее можно использовать для импорта результатов аудита из сторонних электронных таблиц, результатов сканирования уязвимостей из другого инструмента, активов из вашей CMDB и многого другого. Функция также позволяет экспортировать CSV-файлы из SimpleRisk, содержащие информацию о рисках, мерах по их смягчению, обзорах или комбинированный отчет по всем трем параметрам.',
+    'JiraExtraDesc'                       => 'Дополнительный модуль интеграции с Jira предоставляет пользователям возможность двусторонней интеграции с экземпляром Jira. Он позволяет связывать риски с задачами Jira, а также синхронизировать их данные, статус и комментарии.',
+    'APIExtraDesc'                        => 'API Extra позволяет клиентам использовать RESTful API для создания скриптовых взаимодействий с другими приложениями, что обеспечивает расширенную автоматизацию и позволяет эффективно использовать существующую инфраструктуру.',
+    'AdvancedSearchExtraDesc'             => "Расширенный поиск (Advanced Search Extra) расширяет функциональность поисковой строки в верхней панели, позволяя находить риски путем текстового поиска в данных о рисках.",
+    'AssessmentsExtraDesc'                => 'Дополнительное приложение «Оценка рисков» предоставляет пользователям возможность определять контактные лица, создавать вопросы (включая логику), объединять несколько вопросов с помощью шаблона анкеты, создавать анкеты и отправлять их контактным лицам, просматривать результаты анкетирования, добавлять риски на основе этих результатов и сравнивать результаты во времени, импортировать и экспортировать оценки, созданные внешними разработчиками, а также просматривать журнал аудита оценки рисков.',
     'ActiveAssessmentsDesc'               => 'Просматривайте и управляйте текущими оценками.',
-    'WorkflowsExtraDesc'                  => 'Позволяет создать визуальный, управляемый событиями механизм рабочих процессов для автоматизации действий по управлению рисками, запускаемых событиями в SimpleRisk.',
+    'WorkflowsExtraDesc'                  => 'Дополнительный модуль «Рабочие процессы» предоставляет визуальный, управляемый событиями механизм рабочих процессов, который автоматизирует действия по управлению рисками в ответ на события в SimpleRisk. Вы можете создавать рабочие процессы, которые запускаются при изменениях — например, при подаче, обновлении или проверке риска — для маршрутизации согласований, назначения задач и поддержания непрерывности процесса без ручного вмешательства.',
 
     // Configure Hub - tile descriptions (frameworks category)
-    'UCFExtraDesc'                        => 'Обеспечивает интеграцию элементов управления и тестов Unified Control Framework (UCF) с SimpleRisk.',
-    'SCFExtraDesc'                        => 'Добавляет элементы управления из Secure Controls Framework (SCF) в SimpleRisk для использования с нашими функциями управления.',
-    'ComplianceForgeExtraDesc'            => 'Добавляет элементы управления из программы цифровой безопасности ComplianceForge (DSP) в SimpleRisk для использования с нашими функциями управления.',
+    'UCFExtraDesc'                        => 'Unified Compliance Framework (UCF) Extra — это интеграция на уровне API между Unified Compliance Framework и SimpleRisk. Ее включение позволяет импортировать выбранные структуры и сопоставления элементов управления непосредственно из UCF.',
+    'SCFExtraDesc'                        => "Secure Controls Framework (SCF) Extra — это прямая интеграция между Secure Controls Framework и SimpleRisk. Она импортирует каталог элементов управления SCF и их сопоставления с широким спектром нормативных требований и систем кибербезопасности в функциональность управления SimpleRisk, позволяя вам внедрять необходимые системы и управлять их элементами управления без необходимости создавать их вручную.",
 
     // Configure Hub - tile descriptions (maintenance category)
     'FixReviewDatesDesc'                  => 'Перевод устаревших столбцов типа varchar с датами проверки на столбцы с правильным типом данных даты. Отображается только при необходимости.',
@@ -2909,7 +2801,6 @@ $lang = array(
     'WorkflowsExtra'                      => 'Дополнительные рабочие процессы',
     'UCFExtra'                            => 'Дополнительная информация о единой системе обеспечения соответствия (UCF)',
     'SCFExtra'                            => 'Дополнительная платформа безопасного контроля',
-    'ComplianceForgeExtra'                => 'ComplianceForge Extra',
     'DatabaseUpgrade'                     => 'Обновление базы данных',
 
     // Configure Hub - Extra tile state badges
@@ -2925,6 +2816,12 @@ $lang = array(
     'ActivateExtraBody'                   => 'Активировать {name} Дополнительно? Это немедленно включит его функциональность. Вы можете деактивировать его позже с того же места.',
     'ActivateExtraError'                  => 'Не удалось активировать дополнительную услугу. Пожалуйста, проверьте страницу «Проверка состояния» для получения диагностической информации.',
 
+    // Configure Hub - Deactivation modal (Encryption Extra)
+    // 'Deactivate' (line 491) and 'Cancel' (line 489) are reused as-is.
+    'DeactivateExtraTitle'                => 'Отключить дополнительные функции',
+    'DeactivateExtraBody'                 => 'Отключить {name} Дополнительно? Ваша база данных SimpleRisk будет расшифрована на месте. Резервная копия зашифрованного состояния сохраняется, поэтому при необходимости вы можете выполнить откат.',
+    'DeactivateExtraError'                => 'Не удалось деактивировать дополнительную услугу. Пожалуйста, проверьте страницу «Проверка состояния» для получения диагностической информации.',
+
     // Configure Hub - Async license enrichment notice (Phase 4)
     // 'Retry' (line 2764) is reused. The existing 'LicenseCheckFailed' key
     // (line 1851) refers to the 30-day-disable warning shown elsewhere in
@@ -2933,11 +2830,16 @@ $lang = array(
 
     // Configure Hub - Install modal (Phase 5)
     // 'Install' (line 403) and 'Cancel' (line 489) are reused as-is.
-    'InstallExtraTitle'                   => 'Установить дополнительно',
-    'InstallExtraBody'                    => 'Установить {name} Extra? Это загрузит пакет с SimpleRisk и распакует его в вашу установку. Активация — это отдельный шаг, который вы можете выполнить на плитке после завершения установки.',
-    'InstallExtraError'                   => 'Не удалось установить дополнительное приложение. Пожалуйста, проверьте страницу проверки состояния для получения диагностической информации.',
-    'MissingExtraName'                    => 'Отсутствует дополнительное имя.',
-    'UnknownExtra'                        => 'Неизвестное дополнительное имя.',
+    'InstallExtraTitle'                          => 'Установить дополнительно',
+    'InstallExtraBody'                           => 'Установить {name} Extra? Это загрузит пакет с SimpleRisk и распакует его в вашу установку. Активация — это отдельный шаг, который вы можете выполнить на плитке после завершения установки.',
+    'InstallExtraError'                          => 'Не удалось установить дополнительное приложение. Пожалуйста, проверьте страницу проверки состояния для получения диагностической информации.',
+    'MissingExtraName'                           => 'Отсутствует дополнительное имя.',
+    'UnknownExtra'                               => 'Неизвестное дополнительное имя.',
+
+    // License state banner messages (display_license_check() in display.php)
+    // Shown as a header banner when $_SESSION['license_check'] is a non-passing state.
+    // 'LicenseCheckFailed' (line ~1868) is the legacy 30-day-disable warning used
+    // by the old enforcement path; these keys cover the new enforcement states.
 
     // Configure Hub - Purchase modal (Phase 6)
     // 'Cancel' (line 489) is reused as-is.
@@ -2945,6 +2847,1796 @@ $lang = array(
     'PurchaseExtraBody'                   => 'Дополнительный пакет {name} не входит в вашу текущую лицензию SimpleRisk. Для получения дополнительной информации или приобретения лицензии посетите страницу дополнительных пакетов SimpleRisk.',
     'ViewExtras'                          => 'Посмотреть дополнительные материалы',
 
+    // In-app notifications bell UI
+    // Note: 'Notifications' (line 2234), 'SelectAll' (line 816), 'Restore' (line 952),
+    // 'All' (line 1470), and 'Delete' (line 80) are reused as-is — do not duplicate.
+    'MarkRead'                             => 'Отметить как прочитанное',
+    'NoNotifications'                      => 'Нет уведомлений',
+    // Time-unit abbreviations for the relative-time display in the bell panel.
+    // 'TimeDays' is already used for the column header "Time (Days)"; TimeDayUnit covers the 'd' abbrev.
+    'TimeSeconds'                          => 'с',
+    'TimeMinutes'                          => 'м',
+    'TimeHours'                            => 'час',
+    'TimeDayUnit'                          => 'д',
+    'NothingInTrash'                       => 'В корзине ничего нет.',
+    'Promo'                                => 'Промоакция',
+    'Trash'                                => 'Мусор',
+    'Unread'                               => 'Непрочитано',
+    'View'                                 => 'Вид',
+
+    // Workflow "Send In-App Notification" action — audience picker hints.
+    // 'NoneSelected' (line 1878) is reused as-is for the multi-select button.
+    'NotificationSentToAllAdmins'          => 'Это уведомление будет отправлено всем администраторам.',
+    'NotificationSentToAllUsers'           => 'Это уведомление будет отправлено всем пользователям.',
+    'SelectAnAudienceAbove'                => 'Выберите целевую аудиторию выше.',
+    'RiskConfiguration' => 'Конфигурация рисков',
+    'ReviewSettings' => 'Просмотреть настройки',
+    'Cards' => 'Карточки',
+    'List' => 'Список',
+    'DeletedAssessmentsCannotBeRecovered' => 'Удаленные оценки восстановить невозможно.',
+    'TheAssessmentsWereDeletedSuccessfully' => 'Оценка(и) были успешно удалены.',
+    'AssetValuationMode' => 'Режим оценки активов',
+    'AutomaticLinearRange' => 'Автоматический линейный диапазон',
+    'AutomaticExponentialRange' => 'Автоматический экспоненциальный диапазон',
+    'ManualValuation' => 'Ручной',
+    'AssetValuationMinMustBeNonNegative' => 'Для автоматического экспоненциального изменения диапазона минимальная оценочная стоимость актива должна быть равна нулю или превышать это значение.',
+    'CrossDomain' => 'Междоменный',
+    'Preferences' => 'Настройки',
+    'SpecificUser' => 'Конкретный пользователь',
+    'SpecificUsers' => 'Конкретные пользователи',
+    'Help' => 'Помощь',
+    'Profile' => 'Профиль',
+    'Scoring' => 'Подсчет очков',
+    'EncryptionMissingLockTablesPrivilege'   => 'У пользователя базы данных SimpleRisk отсутствует привилегия LOCK TABLES, необходимая для безопасного шифрования базы данных. Попросите администратора базы данных выполнить оператор GRANT, полученный в ответе, и повторите попытку.',
+    'EncryptionMissingLockTablesPrivilegeUi' => 'У пользователя базы данных SimpleRisk нет привилегии LOCK TABLES, необходимой для шифрования. Администратору базы данных необходимо выполнить команду: GRANT LOCK TABLES ON {$db}.* TO {$user}; затем повторить попытку.',
+    'EncryptionRequiredGrantLabel' => 'Обязательный оператор GRANT:',
+    'EncryptionActivationAlreadyRunning' => 'Процесс активации шифрования уже запущен. Дождитесь его завершения или воспользуйтесь функцией восстановления из резервной копии для восстановления данных.',
+    'EncryptionActivationEnqueued'           => 'Активация функции Encryption Extra поставлена в очередь. Административный интерфейс будет отслеживать ход выполнения во время шифрования базы данных.',
+    'EncryptionActivationEnqueueFailed'      => 'Не удалось поставить в очередь задачу активации шифрования. Подробности см. в журнале отладки.',
+    'EncryptionDeactivationEnqueued'         => 'Деактивация функции Encryption Extra поставлена в очередь. Административный интерфейс будет отслеживать ход процесса расшифровки базы данных.',
+    'EncryptionDeactivationEnqueueFailed'    => 'Не удалось поставить в очередь задачу деактивации шифрования. Подробности см. в журнале отладки.',
+    'EncryptionPipelineInProgress'           => 'В данный момент выполняется процесс шифрования (активация, деактивация или восстановление). Дождитесь его завершения, прежде чем повторять попытку.',
+    'EncryptionPipelineInProgressTask'       => 'В данный момент выполняется конвейер шифрования (задача #{id}, {type}). Дождитесь его завершения, прежде чем повторять попытку.',
+    'EncryptionInFlightTitle'            => 'Операция шифрования в процессе.',
+    'EncryptionInFlightBody'             => 'В данный момент выполняется процесс активации, деактивации или восстановления шифрования. Дождитесь его завершения — после окончания операции страница автоматически обновится — прежде чем повторять попытку.',
+    'OK'                                 => 'ХОРОШО',
+    'ActivationGuardFailed'                 => 'Не удалось начать активацию. Подробности см. в предупреждении в заголовке страницы.',
+    'EncryptionStageStarting'               => 'Начало…',
+    'EncryptionStageProgress'               => 'Этап {current} из {total}: {name}',
+    'EncryptionStageAllDone'                => 'Все этапы завершены.',
+    'EncryptionStageEncryptTable'           => 'Зашифровать таблицу: {table}',
+    'EncryptionStageDecryptTable'           => 'Таблица расшифровки: {table}',
+    'EncryptionActivationInProgress'        => 'Шифрование вашей базы данных SimpleRisk. Пожалуйста, не закрывайте эту страницу.',
+    'EncryptionActivationFailedTitle'       => 'Активация шифрования не удалась',
+    'EncryptionActivationFailedBody'        => 'Активация не может быть завершена, и база данных может находиться в несогласованном состоянии. Резервная копия, созданная до активации, сохранена — воспользуйтесь функцией «Восстановить из резервной копии» для восстановления или обратитесь в службу поддержки SimpleRisk.',
+    'EncryptionDeactivationInProgress'      => 'Расшифровка вашей базы данных SimpleRisk. Пожалуйста, не закрывайте эту страницу.',
+    'EncryptionDeactivationFailedTitle'     => 'Отключение шифрования не удалось.',
+    'EncryptionDeactivationFailedBody'      => 'Деактивация не может быть завершена, и база данных может находиться в несогласованном состоянии. Резервная копия в зашифрованном состоянии сохранена — используйте функцию «Восстановить из резервной копии», чтобы вернуться к зашифрованному состоянию, или обратитесь в службу поддержки SimpleRisk.',
+    'RestoreFromBackup'                     => 'Восстановить из резервной копии',
+    'RestoreFromBackupNotYetAvailable'      => 'В этой сборке функция восстановления из резервной копии пока недоступна. Для восстановления обратитесь в службу поддержки SimpleRisk.',
+    'EncryptionRestoreInProgress'           => 'Восстановление базы данных SimpleRisk из резервной копии. Это может занять несколько минут.',
+    'EncryptionRestoreEnqueueFailed'        => 'Не удалось запустить восстановление. Проверьте журналы SimpleRisk и повторите попытку.',
+    'EncryptionStatusActive'                => 'Дополнительная опция «Зашифрованная база данных» активирована.',
+    'EncryptionStatusVersion'               => 'Версия',
+    'EncryptionDeactivateCta'               => 'Отключите дополнительную функцию «Зашифрованная база данных».',
+    'EncryptionDeactivateCtaHelp'           => 'Расшифровать каждый зашифрованный столбец обратно в открытый текст. На заполненной базе данных это занимает минуты.',
+    'EncryptionBackupPanelHeading'          => 'Резервное копирование перед активацией',
+    'EncryptionBackupCreatedAt'             => 'Созданный',
+    'EncryptionBackupSize'                  => 'Размер',
+    'EncryptionBackupOriginalFilename'      => 'Файл',
+    'EncryptionBackupDownloadTooltip'       => 'Нажмите, чтобы загрузить копию этого резервного файла для автономного хранения.',
+    'EncryptionBackupStateRestoring'        => 'В данный момент ведётся восстановление.',
+    'EncryptionNoBackupAvailable'           => 'В настоящее время резервная копия, созданная до активации, не хранится. Резервная копия создается в начале каждой активации и перезаписывается при любой последующей активации или деактивации.',
+    'EncryptionRestoreCtaHelp'              => 'Выберите этот вариант, если проверка выявила проблемы и вам необходимо вернуться к состоянию, предшествующему шифрованию.',
+    'EncryptionRestoreTitle'                => 'Восстановить из резервной копии?',
+    'EncryptionRestoreBodyWhy'              => 'Откат к состоянию до шифрования, зафиксированному в начале последней активации. Выберите этот вариант, если проверка после активации выявила проблемы и вам необходимо отказаться от шифрования.',
+    'EncryptionRestoreBodyWhat'             => 'Все строки, записанные в базу данных после создания резервной копии, будут безвозвратно утеряны, включая риски, меры по их смягчению, записи журнала аудита и любые другие изменения, внесенные после активации. В процессе восстановления будет деактивирована функция «Зашифрованная база данных».',
+    'EncryptionDeleteBackupCta'             => 'Удалите резервную копию, созданную до шифрования.',
+    'EncryptionDeleteBackupCtaHelp'         => 'Выберите этот параметр после завершения проверки после шифрования. Удаление незашифрованного снимка — это то, что делает шифрование действительно защитным.',
+    'EncryptionDeleteBackupTitle'           => 'Удалить резервную копию, созданную до шифрования?',
+    'EncryptionDeleteBackupBodyWhy'         => 'Удаление незашифрованного снимка ваших данных, сделанного в начале последней активации. Его хранение в течение неопределённого времени лишает шифрование смысла — любой, кто имеет доступ к базе данных, может прочитать копию до шифрования.',
+    'EncryptionDeleteBackupBodyWhat'        => 'Резервная копия базы данных удаляется немедленно. Вы больше не сможете использовать функцию «Восстановить из резервной копии» для возврата базы данных в состояние до шифрования. Если позже вы обнаружите проблемы с шифрованием, единственным способом восстановления будет восстановление базы данных из ваших оперативных резервных копий.',
+    'EncryptionDeleteBackupError'           => 'Не удалось удалить резервную копию. Проверьте журнал отладки и повторите попытку.',
+    'EncryptionModalWhyLabel'               => 'Зачем это использовать:',
+    'EncryptionModalWhatHappensLabel'       => 'Что произойдет дальше:',
+    'EncryptionFieldsPanelHeading'          => 'Зашифрованные поля базы данных',
+    'EncryptionFieldsHelp'                  => 'Каждый столбец, указанный здесь, хранится в зашифрованном виде. Подсказка под значком замка отображает используемый криптографический алгоритм.',
+    'EncryptionFieldsTableColumn'           => 'Таблица базы данных',
+    'EncryptionFieldsFieldColumn'           => 'Поле базы данных',
+    'EncryptionFieldsEncryptedColumn'       => 'Зашифрованные',
+    'EncryptionFieldsNoneFound'             => 'В настоящее время зашифрованные поля не зарегистрированы. В активной установке этого не должно происходить — проверьте таблицу encrypted_fields для получения начальных данных.',
+    'EncryptionFieldsLockTooltipPrefix'     => 'Зашифровано с помощью',
+    'EncryptionInactiveRedirect'            => 'Дополнительная опция «Зашифрованная база данных» не активна. Активируйте её в Центре настройки.',
+    'ContactSupport'                        => 'Связаться со службой поддержки',
+    'BackupDatabaseFailed' => 'Резервное копирование базы данных не удалось. Подробности см. в журнале SimpleRisk.',
+    'WindowsNotSupported' => 'Начиная с версии 20260421-001, SimpleRisk больше не поддерживает Windows. Пожалуйста, перейдите на сервер под управлением Linux.',
+    'WindowsUpgradeHalted' => 'Данная операция не может быть выполнена на сервере под управлением Windows. SimpleRisk больше не поддерживает Windows, начиная с версии 20260421-001. Пожалуйста, перейдите на сервер под управлением Linux.',
+    'BundleIntegrityVerificationFailed' => 'Загруженный пакет SimpleRisk не прошел проверку целостности. Обновление было прервано, и никакие файлы не были изменены.',
+    'BundleDownloadFailed' => 'Не удалось загрузить пакет SimpleRisk. Обновление было прервано, и никакие файлы не были изменены.',
+    'MissingOrInvalidTrackingID' => 'Отсутствует или недействителен идентификатор отслеживания.',
+    'JiraIntegrationExtra' => 'Дополнительная интеграция с Jira',
+    'IncidentManagementNotifications' => 'Уведомления об инцидентах',
+    'NotificationSettingsUpdated' => 'Настройки уведомлений обновлены.',
+    'DefaultBusinessUnit' => 'Подразделение по умолчанию',
+    'TheDefaultBusinessUnitEncompasses' => 'Бизнес-подразделение по умолчанию, включающее все команды.',
+    'UserGuide' => 'Руководство пользователя',
+    'AdministratorGuide' => 'Руководство администратора',
+    'DecryptionFailureToast' => 'Одно или несколько зашифрованных полей не удалось расшифровать. Они отображаются как пустые. Подробности смотрите в системных журналах.',
+    'EncryptionFailureToast' => 'Не удалось зашифровать поле, и оно не было сохранено. Подробности см. в системных журналах.',
+    'EnableAPIv1Endpoints' => 'Включить конечные точки API v1 (устаревшая функция)',
+    'EnableAPIv1EndpointsHelp' => 'API v1 устарел. Оставьте его отключенным, если только ваша интеграция его не требует. /api/v2/ не затрагивается этой настройкой и всегда доступен.',
+    'AllowAPIKeyInURL' => 'Разрешите указывать ключ API в URL-адресе или теле POST-запроса.',
+    'AllowAPIKeyInURLHelp' => 'В целях безопасности ключи API следует отправлять в заголовке запроса X-API-KEY. Если эта функция отключена, ключи, отправленные в строке запроса URL (?key=) или теле POST-запроса (key=), отклоняются, поскольку эти места легче обнаружить в журналах прокси-сервера и истории браузера. Заголовок X-API-KEY всегда принимается. Оставьте его отключенным, если у вас нет интеграции, которая не может отправлять этот заголовок.',
+    'ArtificialIntelligenceDesc' => 'Настройте подключение к поставщику ИИ и контекстные вопросы, определяющие ответы ИИ для этого экземпляра SimpleRisk.',
+    'ProviderConfiguration' => 'Конфигурация поставщика',
+    'ContextQuestions' => 'Вопросы контекста',
+    'AIProviderNotConfiguredWarning' => 'Поставщик ИИ не настроен. Невозможно получить результаты в режиме реального времени, пока вы не укажете поставщика и ключ API на вкладке «Конфигурация поставщика».',
+    'AutoProcessSCFUpdates' => 'Автоматическая обработка новых версий Secure Controls Framework (SCF).',
+    'AddNewControls' => 'Добавить новые элементы управления SCF',
+    'UpdateExistingControls' => 'Обновите существующие элементы управления SCF.',
+    'DeleteRemovedControls' => 'Удалите удаленные элементы управления SCF.',
+    'CreateEvidenceRequests' => 'Создание запросов на предоставление подтверждающих документов для контроля SCF.',
+    'SelectSCFFrameworks' => 'Выберите SCF-фреймворки',
+    'SCFReleaseProcessing' => 'Обработка выпуска SCF',
+    'NotFrameworkDescription' => 'Приведённый ниже виджет отображает все заголовки, содержащиеся в электронной таблице Secure Controls Framework (SCF). Используйте его, чтобы выбрать столбцы, содержащие данные о фреймворках, и столбцы, не относящиеся к ним.',
+    'Note' => 'Примечание',
+    'AISettingsNote' => 'Включение функции помощи ИИ позволит отправлять данные в Anthropic для анализа в их LLM-системе, используя ваш API-ключ Anthropic, чтобы предоставлять вам персонализированные результаты.',
+    'EnableAIAssistanceForControlData' => 'Включите поддержку ИИ для обработки управляющих данных.',
+    'ReferenceText' => 'Справочный текст',
+    'FrameworkSelection' => 'Выбор структуры',
+    'Show' => 'Показывать',
+    'InProgress' => 'В ходе выполнения',
+    'Canceled' => 'Отменено',
+    'Failed' => 'Неуспешный',
+    'LegacyFrameworks' => 'Устаревшие фреймворки',
+    'Archive' => 'Архив',
+    'FailedToFetchCVEInformation' => 'Не удалось получить информацию о CVE. Пожалуйста, проверьте идентификатор CVE и повторите попытку.',
+    'ComplianceDashboard' => 'Панель мониторинга соответствия требованиям',
+    'DynamicAuditReportHelp' => 'В этом отчете представлены все проведенные проверки и их статус.',
+    'ComplianceDashboardDescription' => 'На этом графике показано количество контрольных проверок в каждой системе, при этом успешно прошедшие проверку отмечены зеленым цветом, а не прошедшие — красным.',
+    'PassingControls' => 'Выполненные средства контроля',
+    'FailingControls' => 'Неэффективные средства контроля',
+    'ControlsByFramework' => 'Управление по фреймворку',
+    'NumberOfControls' => 'Количество контрольных точек',
+    'PasswordResetTokenExpirationPeriod' => 'Срок действия токена сброса пароля',
+    'APasswordResetTokenExpirationPeriodShouldBeMoreThan5Minutes' => 'Срок действия токена для сброса пароля должен составлять более 5 минут.',
+    'MeanTimeToRemediate' => 'Среднее время на устранение последствий',
+    'ByTeam' => 'По команде',
+    'ByCategory' => 'По категориям',
+    'ByRiskLevel' => 'По уровню риска',
+    'MeanTimeToRemediateDescription' => 'Среднее количество дней, необходимых для закрытия рисков, сгруппированное по команде, категории и уровню риска. Включены только закрытые риски.',
+    'AverageDaysToClose' => 'Среднее количество дней до закрытия',
+    'ControlPassRateTrend' => 'Тенденция успешности прохождения контроля',
+    'ControlPassRateTrendDescription' => 'Ежемесячный процент прохождения проверок (%) по каждому фреймворку за последние 12 месяцев. Отображаются только фреймворки, по которым за этот период был получен хотя бы один результат проверки.',
+    'PassRatePercent' => 'Процент прохождения (%)',
+    'ExposureByTeam' => 'Риск, которому подвергается команда',
+    'ExposureByCategory' => 'Риск по категориям',
+    'ExposureByLocation' => 'Риск воздействия в зависимости от местоположения',
+    'TotalRiskScore' => 'Общий балл риска',
+    'SLABreachStatus' => 'Статус нарушения соглашения об уровне обслуживания (SLA)',
+    'SLABreachDescription' => 'Открытые риски, находящиеся в пределах или за пределами порогового значения SLA, в зависимости от уровня риска. Пороговые значения по умолчанию: Очень высокий = 30 дней, Высокий = 60 дней, Средний = 90 дней, Низкий = 180 дней.',
+    'WithinSLA' => 'В рамках SLA',
+    'SLABreached' => 'Нарушение соглашения об уровне обслуживания (SLA)',
+    'NumberOfRisks' => 'Количество рисков',
+    'ExposureByBusinessUnit' => 'Подверженность рискам по бизнес-подразделениям',
+    'BUChartCrossUnitNote' => 'Примечание: риски, отнесенные к командам, охватывающим несколько бизнес-подразделений, учитываются в каждом из них.',
+    'SLAThresholds' => 'Пороговые значения SLA',
+    'SLAThresholdsDescription' => 'Максимальное количество дней, в течение которых открытый риск может оставаться нерешенным, прежде чем он будет считаться просроченным, для каждого уровня риска.',
+    'SLAThresholdMustBeBetween1And3650' => 'Пороговые значения SLA должны находиться в диапазоне от 1 до 3650 дней.',
+    'SLAThresholdsUpdatedSuccessfully' => 'Пороговые значения SLA были успешно обновлены.',
+    'TimeToDetect' => 'Время обнаружения',
+    'TimeToDetectDescription' => 'Среднее количество дней с момента начала инцидента (Began On) до его обнаружения (Detected On), сгруппированное по команде и типу происшествия. Включены только инциденты, для которых зафиксированы обе даты.',
+    'ByOccurrenceType' => 'По типу события',
+    'ApplicationVersion' => 'Версия приложения',
+    'DatabaseVersion' => 'Версия базы данных',
+    'InstanceID' => 'Идентификатор экземпляра',
+    'LatestIsVersion' => 'Последняя версия: {$version}',
+    'UpToDate' => 'Актуально',
+    'UpdateAvailable' => 'Доступно обновление',
+    'RegistrationSuccessful' => 'Регистрация прошла успешно.',
+    'LocalRegistrationStateCleared' => 'Состояние локальной регистрации очищено. Для получения нового instance_id необходимо повторно зарегистрироваться по адресу /admin/register.php.',
+    'InstanceInformationUpdated' => 'Информация об экземпляре обновлена.',
+    'UpgradeExtraDesc' => 'Пакет Upgrade Extra поддерживает актуальность вашей системы SimpleRisk, загружая и применяя обновления приложений и баз данных, а также устанавливая и обновляя другие дополнительные компоненты — всё это доступно на странице «Регистрация и обновление». Он поставляется в комплекте с SimpleRisk бесплатно, поэтому вы можете оставаться на последней версии без ручного управления файлами.',
+    'ExtraInstallDisabledByEnforcement' => 'В настоящее время дополнительная установка отключена в соответствии с условиями вашей лицензии. Обратитесь к администратору или в службу поддержки SimpleRisk.',
+    'LicenseStateUnknownRetryShortly' => 'Информация о лицензии пока недоступна. Пожалуйста, попробуйте еще раз через несколько минут.',
+    'LicenseExpiringSoonTitle' => 'Срок действия лицензии скоро истекает: {$extra}',
+    'LicenseExpiringSoonBody' => 'Срок действия вашей лицензии {$extra} истекает через {$date} (осталось{$days} дней). Продлите её через раздел «Регистрация и обновление», чтобы не потерять доступ.',
+    'LicenseExpiredTitle' => 'Срок действия лицензии истек: {$extra}',
+    'LicenseExpiredBody' => 'Срок действия вашей лицензии {$extra} истек {$date}. Продлите ее через раздел «Регистрация и обновление», чтобы восстановить доступ.',
+    'Licenses' => 'Лицензии',
+    'LicensesDesc' => 'Просмотрите статус лицензирования каждого компонента SimpleRisk Extra.',
+    'RefreshLicenses' => 'Обновить лицензии',
+    'LoadingLicenseData' => 'Загрузка данных лицензии...',
+    'Licensed' => 'Лицензированный',
+    'Unlicensed' => 'Нелицензированный',
+    'Expired' => 'Истекший',
+    'Free' => 'Бесплатно',
+    'License' => 'Лицензия',
+    'NoLicensedExtras' => 'Дополнительные услуги по лицензии не предоставляются.',
+    'NoExpiredExtras' => 'Дополнительные услуги не просрочены.',
+    'NoUnlicensedExtras' => 'Нет нелицензированных дополнений.',
+    'Unlimited' => 'Без ограничений',
+    'LicenseStateLockMessage' => 'В настоящее время дополнительные действия по установке и обновлению отключены в соответствии с условиями вашей лицензии. Существующие установленные дополнительные компоненты продолжают работать.',
+    'LicenseStateFailMessage' => 'Срок действия вашей лицензии SimpleRisk истек или она деактивирована. Пожалуйста, свяжитесь со службой поддержки SimpleRisk для восстановления доступа к сервису.',
+    'LicenseStateAnonymousMessage' => 'Данный экземпляр SimpleRisk не зарегистрирован. Доступны только бесплатные дополнительные функции. Для доступа к платным дополнительным функциям зарегистрируйтесь в меню «Настройка».',
+    'LicenseStateUnknownMessage' => 'SimpleRisk не удалось подключиться к службе лицензирования. Состояние лицензии будет автоматически обновлено при следующей проверке.',
+    'ExtraIntegrityCheckFailed' => 'Загруженный пакет не прошёл проверку целостности и не был установлен.',
+    'ExtraInstallWriteFailed' => 'Не удалось установить Extra, поскольку каталог extras недоступен для записи.',
+    'ExtraInstallExtractFailed' => 'Дополнительный пакет был загружен, но не удалось его распаковать и установить. Проверьте журналы приложения.',
+    'EncryptionPreflightFailed' => 'Предварительная операция DDL завершилась с ошибкой — подробности см. в журнале отладки.',
+    'EncryptionActivationFailed' => 'Активация шифрования завершилась ошибкой во время предварительной настройки. Проверьте журналы приложения.',
+    'QuestionnaireSentSchedulingOnly' => 'Данная анкета отправлена. Изменить можно только указанные ниже параметры планирования.',
+    'AreYouSureYouWantToReopenThisResult' => 'Вы уверены, что хотите повторно открыть этот результат для проверки?',
+    'QuestionnaireResultReopenedSuccessfully' => 'Результат анкетирования успешно повторно открыт для проверки.',
+    'QuestionnaireResultReopenedAuditLog' => 'Результаты анкетирования "{$questionnaire_name}" (отправленные контактом "{$contact_name}") были повторно открыты для проверки пользователем "{$user_name}".',
+    'QuestionnaireDraftNoChanges' => 'Изменений для сохранения нет.',
+    'SendQuestionnaireIdRequired' => 'Параметр id является обязательным и должен быть числовым.',
+    'RiskIdMustBeNumeric' => 'Параметр risk_id должен быть числовым.',
+    'AssessmentsExtraNotEnabled' => 'Модуль Assessments Extra не включён.',
+    'QuestionnaireSchedulingUpdatedAuditLog' => 'Настройки планирования для анкеты с именем "{$name}" были обновлены пользователем с именем "{$user}".',
+    'QuestionnaireResultNotReopenable' => 'Результат анкетирования не может быть повторно открыт, поскольку он не находится в состоянии «отклонён» или «не одобрен».',
+    'QuestionnaireTrackingNotFoundAfterUpdate' => 'После обновления отслеживание анкеты не найдено.',
+    'QuestionnaireResultAlreadyDecided' => 'Результат анкетирования уже определён (одобрен, отклонён или не одобрен). Сначала воспользуйтесь действием «Открыть повторно».',
+    'QuestionnaireNoControlsForApproval' => 'Для данного опросника не найдено средств контроля.',
+    'QuestionnaireNoResponsesForApproval' => 'Не найдено ответов на анкету для обработки обновлений уровня зрелости.',
+    'ResultMessageUnavailable' => 'Сообщение с результатом недоступно.',
+    'AIProviderURLNotAllowed' => 'Этот URL-адрес API недопустим. Используйте известного поставщика ИИ или адрес петли обратной связи (127.0.0.1) для самостоятельного размещения.',
+    'AIReenterKeyForNewURL' => 'Повторно введите ключ API, чтобы протестировать другой URL-адрес поставщика.',
+    'WorkflowHttpRequestDisallowedURL' => 'http_request: URL {$url} приводит к запрещенному внутреннему или зарезервированному адресу.',
+    'BehaviorAndScheduling' => 'Поведение и планирование',
+    'PrepopulateAcrossContacts' => 'Предварительно заполните новые ответы предыдущими ответами другого контакта для этой оценки.',
+    'PrepopulateAcrossContactsHelp' => 'Заполните форму нового респондента заранее, используя самые последние ответы от всех предыдущих контактов — это полезно для обеспечения преемственности при смене ответственных лиц.',
+    'PrepopulateAcrossContactsCaution' => 'По умолчанию отключено. В этом случае контакт видит только свои собственные ответы. Включайте эту функцию только в том случае, если респонденты являются внутренними или доверенными лицами — это может привести к тому, что ответы одного контакта станут доступны другому (например, один поставщик увидит ответы другого).',
+    'AddTemplateAndContacts' => 'Добавить шаблон и контакты',
+    'QuestionnaireGeneralSubtitle' => 'Назовите анкету и укажите, кому она принадлежит.',
+    'QuestionnaireInstructionsSubtitle' => 'Инструкции, предоставленные участникам опроса, а также информация, содержащаяся в пригласительном электронном письме.',
+    'QuestionnaireBehaviorSubtitle' => 'Как ведет себя анкета после отправки и заполнения',
+    'QuestionnaireRiskDetailsSubtitle' => 'К рискам, создаваемым данной оценкой, применяются необязательные значения по умолчанию.',
+    'QuestionnaireTemplatesSubtitle' => 'Сопоставьте каждый шаблон вопроса с контактами, которые его получат.',
+    'BypassPendingRisksLabel' => 'Обойти ожидающие риски',
+    'BypassPendingRisksDescription' => 'Создавайте риски сразу после завершения оценки, вместо того чтобы откладывать их рассмотрение.',
+    'AutomaticallySendResultsLabel' => 'Автоматическая отправка результатов',
+    'AutomaticallySendResultsDescription' => 'После завершения оценки отправьте результаты всем контактным лицам, участвовавшим в ней.',
+    'QuestionnaireMultiselectPlaceholder' => 'Выберите или выполните поиск…',
+    'QuestionnaireNamePlaceholder' => 'например, Обзор безопасности поставщиков 2026 года',
+    'AddTeamPlaceholder' => 'Добавить команду…',
+    'AddStakeholderPlaceholder' => 'Добавить заинтересованную сторону…',
+    'AddControlTypePlaceholder' => 'Добавить тип контроля…',
+    'AddLocationPlaceholder' => 'Добавить местоположение…',
+    'NotifyWhenNotCompleteLabel' => 'Уведомить о незавершенной работе',
+    'NotifyWhenNotCompleteDescription' => 'Напомните тем, кто еще не завершил оценку.',
+    'RemindEveryDays' => 'Напоминать каждые {$day} дней',
+    'ResendAssessmentLabel' => 'Повторная отправка оценки',
+    'ResendAssessmentDescription' => 'Автоматически повторно выпускать оценку с заданной периодичностью.',
+    'ResendEveryDays' => 'Повторная отправка каждые {$day} дней',
+    'QuestionnaireSaveBarHint' => '«Сохранить и отправить» немедленно рассылает анкету своим контактам.',
+    // Home dashboard — KPI tile labels
+    'NewSelfAssessment' => 'Новая самооценка',
+    'SelfAssessmentPrereqIntro' => 'Самооценка позволяет оценить вашу организацию на соответствие системе безопасного контроля и автоматически выявить риски, возникающие в результате сбоя контроля. Для начала необходимо выполнить два шага настройки:',
+    'RegisterYourInstance' => 'Зарегистрируйте свой экземпляр',
+    'RegisterYourInstanceHelp' => 'Регистрация связывает этот экземпляр с лицензионной службой SimpleRisk, что позволяет загружать бесплатные дополнительные компоненты (включая SCF).',
+    'InstallTheSCF' => 'Установите Secure Controls Framework.',
+    'InstallTheSCFHelp' => 'SCF — это бесплатный дополнительный модуль, предоставляющий структуры, контрольные вопросы и карты рисков, которые используются в рамках данной функции. Установка выполняется в фоновом режиме и может занять несколько минут.',
+    'GoToRegistration' => 'Перейдите в раздел «Регистрация».',
+    'GoToSCF' => 'Перейдите в раздел «Структура безопасного контроля».',
+    'SelfAssessmentEnableTip' => 'Дополнительно: в разделе «Управление» > «Фреймворки» вы можете включить определенные фреймворки SCF, чтобы при начале оценки отображался краткий, тщательно отобранный список. Вы также можете проводить оценку по любому фреймворку из полного каталога SCF, не включая его.',
+    'ChooseAFramework' => 'Выберите систему критериев для оценки.',
+    'EnabledFrameworks' => 'Включенные фреймворки',
+    'AllScfFrameworks' => 'Все фреймворки SCF',
+    'Start' => 'Начинать',
+    'Resume' => 'Продолжить',
+    'ControlQuestion' => 'Контрольный вопрос',
+    'NotApplicable' => 'Н/Д',
+    'SaveProgress' => 'Сохранить прогресс',
+    'MarkComplete' => 'Отметить как завершенное',
+    'AnsweredOfTotal' => 'ответил',
+    'FailedSoFar' => 'Пока что провал.',
+    'StartedBy' => 'Начал с',
+    'FailedControls' => 'Сбои в работе элементов управления',
+    'PushToRisk' => 'Стремление к риску',
+    'ConfirmDeleteSelfAssessment' => 'Удалить эту самооценку? Это невозможно отменить.',
+    'ConfirmCompleteSelfAssessment' => 'Отметьте эту оценку как завершенную? Неисправности средств контроля приведут к возникновению рисков.',
+    'NoSelfAssessmentsYet' => 'Пока нет самопроверок. Начните одну, чтобы начать.',
+    'RequestFailed' => 'Запрос не удалось выполнить. Пожалуйста, попробуйте еще раз.',
+    'NoPendingRisks' => 'Риски отсутствуют. Проведите оценку для выявления рисков, связанных с неэффективными мерами контроля.',
+    'NoFailedControls' => 'Результаты контроля для этого фильтра отсутствуют.',
+    'ControlResultsTruncated' => 'Показаны последние 2000 результатов. Сузьте фильтр, чтобы увидеть больше.',
+    'GeneratedFromSelfAssessment' => 'Сгенерировано на основе самооценки',
+    'SelfAssessmentMitigationSolution' => 'Внедрите указанные ниже меры контроля, которые были выявлены как неэффективные в ходе данной самооценки, чтобы снизить этот риск.',
+    'NSelected' => '{n} выбрано',
+    'FilterByControl' => 'Фильтрация по элементу управления',
+    'Pushing' => 'Нажимая…',
+    'Deleting' => 'Удаление…',
+    'ConfirmPushSelectedPendingRisks' => 'Переместить выбранные {n} ожидающие риски в категорию рисков?',
+    'ConfirmDeleteSelectedPendingRisks' => 'Удалить {n} выбранные ожидающие риски? Это действие необратимо.',
+    'ConfirmDeleteSelectedSelfAssessments' => 'Delete the {n} selected self-assessment(s)? This cannot be undone.',
+    'BulkPartialFailure' => '{n} из {total} элементов успешно прошли проверку; остальные не прошли. Обновите страницу, чтобы увидеть текущее состояние.',
+
+    // Workflows Extra - deactivation confirm ('Deactivate' at line 480 is reused as-is)
+    'WorkflowsExtraDeactivateConfirm' => 'Отключить функцию «Дополнительные рабочие процессы»? Все созданные пользователями определения рабочих процессов будут безвозвратно удалены. Системные рабочие процессы будут сохранены.',
+    'HomeKpiOpenRisks' => 'Открытые Риски',
+    'HomeKpiNeedsReview' => 'Необходимо провести анализ потребностей',
+    'HomeKpiUnmitigated' => 'Несмягчённый',
+    'HomeKpiClosedRisks' => 'Закрытые Риски',
+    'HomeKpiControlPassRate' => 'Контрольная скорость прохождения',
+    'HomeKpiFailingControls' => 'Неэффективные средства контроля',
+    'HomeKpiOpenAudits' => 'Открытые аудиты',
+    'HomeKpiTestsDueSoon' => 'Тесты начнутся в ближайшее время.',
+    'HomeKpiActiveFrameworks' => 'Активные платформы',
+    'HomeKpiTotalControls' => 'Полный контроль',
+    // Home dashboard — What's Next feed
+    'WhatsNext' => 'Что дальше?',
+    'WhatsNextAllCaughtUp' => 'Вы всё в курсе.',
+    'WhatsNextRegisterInstance' => 'Зарегистрируйте свой экземпляр SimpleRisk',
+    'WhatsNextSubmitFirstRisk' => 'Отправьте свой первый риск',
+    'WhatsNextLoadFramework' => 'Загрузите управляющую структуру.',
+    'WhatsNextUnreviewedRisks' => 'Риски, требующие рассмотрения',
+    'WhatsNextUnmitigatedRisks' => 'Риски, которые необходимо снизить',
+    'WhatsNextInitiateAudits' => 'Аудиты для начала',
+    // Home dashboard — widget picker type labels
+    'WidgetType_kpi' => 'KPI Tile',
+    'WidgetType_whats_next' => 'Список',
+    // Home dashboard — hub catalog entry
+    'HomeDashboard' => 'Главная',
+    'HomeDashboardDesc' => 'Ваша отправная точка — ключевые показатели и краткий обзор дальнейших действий.',
+    'HomeChartRiskByLevel' => 'Риск по уровню',
+    'HomeKpiThisMonth' => 'в этом месяце',
+    'HomeKpiNoChange' => 'Без изменений',
+    'EditLayout' => 'Редактировать макет',
+    'ListHighestRisks' => 'Мои самые высокие риски',
+    'ListPastDueReviews' => 'Просроченные обзоры',
+    'ListUpcomingTests' => 'Предстоящие тесты',
+    'ListRecentFailures' => 'Недавние неудачи',
+    'ListPoliciesReview' => 'Документы, подлежащие рассмотрению',
+    'ListExpiringExceptions' => 'Исключения, срок действия которых истекает',
+    'ImKpiOpenIncidents' => 'Всего открытых',
+    'ImKpiOverdue' => 'Просрочено',
+    'ImKpiMttr30' => 'Среднее разрешение',
+    'ImKpiMttrQuarter' => 'Средняя решимость (90 дней)',
+    'ImKpiMttrYear' => 'Средний уровень решимости (1 год)',
+    'ImKpiMttrAll' => 'Среднее разрешение (всех)',
+    'ImKpiResolved30' => 'Решено',
+    'ImChartBySeverity' => 'По степени тяжести',
+    'ImChartByStatus' => 'По статусу',
+    'ImListRecent' => 'Недавние инциденты',
+    'ImListUnassigned' => 'Неназначенные инциденты',
+    'HomeKpiOpenExceptions' => 'Открытые исключения',
+    'HomeKpiPolicies' => 'Политики',
+    'ResolutionTargets' => 'Целевые сроки разрешения (дни)',
+    'ResolutionTargetsHelp' => 'Количество дней, в течение которых инцидент может оставаться открытым, прежде чем он будет считаться просроченным.',
+    'DefaultTarget' => 'По умолчанию',
+    'PerSeverityOverrideHelp' => 'При желании можно изменить значение по умолчанию для определенных уровней серьезности (оставьте поле пустым, чтобы использовать значение по умолчанию):',
+    'ResolutionTargetUsesDefault' => 'По умолчанию (%d)',
+    'SeverityColors' => 'Цвета интенсивности',
+    'SeverityColorsHelp' => 'Цвет соответствует степени серьезности инцидента и отображается на панели мониторинга инцидентов и на странице с подробной информацией об инциденте.',
+    'Editing' => 'Редактирование',
+    'SetAsDefaultForEveryone' => 'Установить как значение по умолчанию для всех',
+    'EditLayoutHint' => 'Перетащите плитку, чтобы переместить её; перетащите край, чтобы изменить размер; ✕, чтобы удалить.',
+    'RemoveWidget' => 'Удалить виджет',
+    'AddWidget' => 'Добавить виджет',
+    'AddToDashboard' => 'Добавить на панель управления',
+    'AllWidgetsAdded' => 'Все доступные виджеты находятся на этой панели управления.',
+    'AddText' => 'Добавить текст',
+    'GettingStarted' => 'Начиная',
+    'GettingStartedTitle' => 'Добро пожаловать в SimpleRisk!',
+    'GettingStartedSubtitle' => 'Несколько простых шагов, чтобы максимально эффективно использовать SimpleRisk.',
+    'GSProgressCount' => '{done} из {total} завершено',
+    'GSNextUp' => 'Далее',
+    'GSArea_setup' => 'Настройка',
+    'GSArea_risk' => 'Риск',
+    'GSArea_assessment' => 'Оценка',
+    'GSArea_compliance' => 'Соблюдения',
+    'GSArea_assets' => 'Активы',
+    'GSArea_ai' => 'Настройка',
+    'GSHide' => 'Скрыть раздел «Начало работы»',
+    'GSDismissStep' => 'Отклонить этот шаг',
+    'GSAllSet' => 'Всё в порядке — отличная работа!',
+    'GSWalkthrough' => '30-минутная экскурсия',
+    'Explore' => 'Исследовать',
+    'Learn' => 'Учиться',
+    'AdminGuide' => 'Руководство администратора',
+    'LearnMore' => 'Узнать больше',
+    'GSRegisterTitle' => 'Зарегистрируйте свой экземпляр',
+    'GSRegisterDesc' => 'Активируйте поддержку и обновления с помощью лицензионного ключа.',
+    'GSRegisterCta' => 'Зарегистрироваться',
+    'GSScfTitle' => 'Установите Secure Controls Framework.',
+    'GSScfDesc' => 'Установите SCF — вашу библиотеку элементов управления, работающую со стандартами.',
+    'GSScfCta' => 'Установите SCF',
+    'GSInviteTitle' => 'Пригласите свою команду',
+    'GSInviteDesc' => 'Добавьте коллег, чтобы можно было назначать и проверять задания.',
+    'GSInviteCta' => 'Добавить пользователей',
+    'GSAiTitle' => 'Настройка ИИ',
+    'GSAiDesc' => 'Улучшите взаимодействие с SimpleRisk с помощью искусственного интеллекта.',
+    'GSAiCta' => 'Настройка ИИ',
+    'GSSubmitRiskTitle' => 'Отправьте свой первый риск',
+    'GSSubmitRiskDesc' => 'Выявите риск, с которым сталкивается ваша организация.',
+    'GSSubmitRiskCta' => 'Предъявите риск',
+    'GSMitigateTitle' => 'Разработайте план смягчения последствий.',
+    'GSMitigateDesc' => 'Добавьте план смягчения последствий к открытому риску.',
+    'GSMitigateCta' => 'План смягчения последствий',
+    'GSReviewTitle' => 'Проведите анализ рисков.',
+    'GSReviewDesc' => 'Проанализируйте риск и определите дальнейшие действия.',
+    'GSReviewCta' => 'Провести проверку',
+    'GSDefineTestTitle' => 'Определите контрольный тест',
+    'GSDefineTestDesc' => 'Настройте порядок тестирования элемента управления.',
+    'GSDefineTestCta' => 'Определить тест',
+    'GSInitiateAuditTitle' => 'Инициировать аудит',
+    'GSInitiateAuditDesc' => 'Запустите цикл тестирования или аудита.',
+    'GSInitiateAuditCta' => 'Инициировать аудит',
+    'GSAssetTitle' => 'Добавьте свои активы',
+    'GSAssetDesc' => 'Проведите инвентаризацию активов, которые вы защищаете.',
+    'GSAssetCta' => 'Добавить активы',
+    'GSInvalidStep' => 'Неверный шаг при начале работы.',
+    'GSPagerLabel' => '{from}–{to} из {total}',
+    'GSPrevCards' => 'Показать предыдущие шаги',
+    'GSNextCards' => 'Показать следующие шаги',
+    'WhatsNextInstallSCF' => 'Установите Secure Controls Framework.',
+    'GSActivateScfTitle' => 'Активируйте систему безопасного контроля.',
+    'GSActivateScfDesc' => 'Включите установленную программу SCF, чтобы загрузить её элементы управления в вашу библиотеку.',
+    'GSActivateScfCta' => 'Активировать SCF',
+    'WhatsNextActivateSCF' => 'Активируйте систему безопасного контроля.',
+    'GSEnableFrameworksTitle' => 'Включите применимые фреймворки',
+    'GSEnableFrameworksDesc' => 'Включите те фреймворки SCF, которые подходят для вашей организации.',
+    'GSEnableFrameworksCta' => 'Включить фреймворки',
+    'WhatsNextEnableFrameworks' => 'Включите применимые фреймворки',
+    'GSSelfAssessTitle' => 'Пройдите самооценку',
+    'GSSelfAssessDesc' => 'Проведите оценку вашей организации в соответствии с более чем 250 стандартами и выявите риски, возникающие из-за сбоев в системе контроля.',
+    'GSSelfAssessCta' => 'Начало оценки',
+    'WhatsNextTakeSelfAssessment' => 'Пройдите самооценку',
+    'WhatsNextConfigureAI' => 'Настройка ИИ',
+    'ListUnreviewedRisks' => 'Непроверенные риски',
+    'ControlsByDomain' => 'Управление по домену',
+    'ControlsByClass' => 'Управление по классам',
+    'ControlsByPhase' => 'Управление по фазам',
+    'ControlsByPriority' => 'Управление по приоритетам',
+    'ControlsByCurrentMaturity' => 'Управление на основе текущего уровня зрелости',
+    'ControlStatusOverTime' => 'Состояние контроля с течением времени',
+    'ComplianceTotalControls' => 'Полный контроль',
+    'HomeKpiOverdueTests' => 'Просроченные тесты',
+    'Total' => 'Общий',
+    'StartTheTest' => 'Начать тест',
+    'TestStartsAutomatically' => 'Тест запускается автоматически.',
+    'GoToTest' => 'Перейти к тесту',
+    'NotTested' => 'Не тестировалось',
+    'PassingPercent' => 'Процент сдачи экзамена',
+    'ListFailingControls' => 'Неэффективные средства контроля',
+    'Exceptions' => 'Исключения',
+    'Documents' => 'Документы',
+    'ControlsBelowMaturity' => 'Контроль ниже зрелости',
+    'ControlsAtMaturity' => 'Контроль на стадии зрелости',
+    'ControlsAboveMaturity' => 'Контроль выше зрелости',
+    'Maturity' => 'Зрелость',
+    'AllTime' => 'За все время',
+    'Last7Days' => 'Последние 7 дней',
+    'Last30Days' => 'Последние 30 дней',
+    'Last90Days' => 'Последние 90 дней',
+    'YearToDate' => 'С начала года',
+    'CustomRange' => 'Индивидуальный ассортимент',
+    'Age' => 'Возраст',
+    'ImOpenIncidents' => 'Открытые инциденты',
+    'ImClosedIncidents' => 'Закрытые инциденты',
+    'ImByAttackVector' => 'Открыто вектором атаки',
+    'ImBySource' => 'Открыто по исходному коду',
+    'AverageDaysToDetect' => 'Среднее количество дней для обнаружения',
+    'ImKpiAvgTtd' => 'Среднее обнаружение',
+    'Days' => 'Дни',
+    'ImKpiCriticalOpen' => 'Критический открытый',
+    'ImKpiResolvedInSla' => 'Проблема решена в рамках соглашения об уровне обслуживания (SLA).',
+    'Events' => 'События',
+    'ImEventsIncidents' => 'События и инциденты',
+    'ImSourceBreakdown' => 'Источник по категории',
+    'ImClosureSummary' => 'Сводка по закрытию',
+    'ImSignalQuality' => 'Точность оповещений',
+    'ImSignalLowSample' => 'Недостаточно подтвержденных случаев закрытия предприятий для надежной оценки.',
+    'ImportExportExportPdf' => 'Экспорт в PDF',
+    'ImportExportExporting' => 'Подготовка PDF…',
+    'ImportExportExportFailed' => 'Не удалось сгенерировать PDF-файл. Пожалуйста, попробуйте еще раз.',
+    'ImportExportGeneratedOn' => 'Сгенерировано',
+    'ImportExportPage' => 'Страница',
+    'ImportExportPageOf' => 'из',
+    'ResolutionTargetsUpdated' => 'Были обновлены целевые показатели разрешения для каждого уровня тяжести заболевания.',
+    'SeverityColorsUpdated' => 'Цветовая гамма индикаторов серьезности была обновлена.',
+    // AI Capabilities Catalog + AI settings hub (unified AI settings)
+    'AICapGrcRecommendations' => 'Рекомендации по структуре GRC',
+    'AICapGrcRecommendationsDesc' => 'Сгенерированные искусственным интеллектом рекомендации по структуре и краткое изложение для руководства, адаптированные к контексту вашей организации.',
+    'AICapRiskRecommendations' => 'Рекомендации по управлению рисками',
+    'AICapRiskRecommendationsDesc' => 'Предложения по каждому риску, содержащие подробную информацию о риске и мерах по его смягчению, формируются на основе самого риска, мер по его смягчению и анализа.',
+    'AICapFairAnalysis' => 'СПРАВЕДЛИВЫЙ количественный анализ',
+    'AICapFairAnalysisDesc' => 'Искусственный интеллект оценивает параметры потерь Beta-PERT; SimpleRisk запускает алгоритм Монте-Карло с 10 000 итерациями для количественной оценки риска в долларах.',
+    'AICapDocumentCustomization' => 'Настройка документа',
+    'AICapDocumentCustomizationDesc' => 'Заполняет заполнители и очищает текст политики в ваших шаблонах документов, чтобы стандартная политика выглядела как ваша.',
+    'AICapDocumentControlMatching' => 'Документ ↔ Контрольное сопоставление',
+    'AICapDocumentControlMatchingDesc' => 'Автоматически сопоставляет элементы управления с нормативными документами, присваивая им оценку достоверности и приводя обоснование, которое вы можете проверить.',
+    'AICapDocumentTemplates' => 'Библиотека шаблонов документов',
+    'AICapDocumentTemplatesDesc' => 'Установите подобранные шаблоны политик, руководств и процедур из библиотеки SimpleRisk.',
+    'AICapControlReferenceEnhancement' => 'Улучшение контрольной ссылки',
+    'AICapControlReferenceEnhancementDesc' => 'Проводит поиск по дословному контрольному тексту в интернете для обогащения ваших контрольных ссылок.',
+    'AICapAiChat' => 'Помощник в чате',
+    'AICapAiChatDesc' => 'Ассистент GRC, который отвечает на вопросы в контексте в любой точке SimpleRisk.',
+    'AICapSurfacedRecommendations' => 'Страница об искусственном интеллекте',
+    'AICapSurfacedRiskView' => 'Анализ рисков — Подробности и меры по их смягчению',
+    'AICapSurfacedFairTab' => 'Просмотр рисков — вкладка FAIR',
+    'AICapSurfacedDocuments' => 'Управление — Документы',
+    'AICapSurfacedControls' => 'Контроль за соблюдением нормативных требований',
+    'AICapSurfacedEveryPage' => 'Каждая страница — плавающий помощник',
+    'AICapabilitiesCatalog' => 'Возможности',
+    'AICapSearchPlaceholder' => 'Возможности поиска с помощью ИИ…',
+    'AICapFilterDomain' => 'Область',
+    'AICapFilterTier' => 'Уровень',
+    'AICapFilterState' => 'Состояние',
+    'AICapTierExtra' => 'ИИ Экстра',
+    'AICapStateLocked' => 'Заблокировано',
+    'AICapIncludedInExtra' => 'Входит в пакет AI Extra',
+    'AICapPurchaseExtra' => 'Приобретите AI Extra',
+    'AICapNeedsProvider' => 'Требуется настройка поставщика услуг.',
+    'AICapNoMatch' => 'Нет соответствия по возможностям.',
+    'AICapNoMatchHint' => 'Попробуйте другой домен, уровень доступа или поисковый запрос.',
+    'AICapCountSingular' => 'возможность',
+    'AICapCountPlural' => 'возможности',
+    'DomainAssistant' => 'Помощник',
+    'AICapLoadError' => 'Не удалось загрузить возможности ИИ. Пожалуйста, повторите попытку.',
+    'AIProviderConfigSubtitle' => 'Подключите SimpleRisk к поставщику услуг искусственного интеллекта, чтобы использовать возможности ИИ.',
+    'AIHowToGetAPIKeyFor' => 'Как получить ключ API для',
+    'AIExtraNotActivated' => 'Не активировано',
+    'AIExtraValueProp' => 'Усовершенствованный ИИ — количественная оценка рисков в рамках принципа FAIR, помощь в работе с документами и контролем, а также чат-помощник на основе ИИ.',
+    'AICtxOrgName' => 'Как называется ваша организация?',
+    'AICtxOrgSizeEmployees' => 'Сколько сотрудников работает в вашей организации?',
+    'AICtxOrgSizeRevenue' => 'Каков годовой доход вашей организации?',
+    'AICtxOrgObjective' => 'Каковы основные бизнес-цели и стратегические задачи вашей организации?',
+    'AICtxOrgIndustry' => 'Какова основная отрасль или сектор деятельности вашей организации?',
+    'AICtxOrgLocation' => 'В каких странах или регионах работает ваша организация?',
+    'AICtxOrgType' => 'К какому типу организаций вы относитесь?',
+    'AICtxDataTypes' => 'Какие типы данных собирает, обрабатывает или хранит ваша организация (например, персональные данные, финансовые данные, информация о состоянии здоровья)?',
+    'AICtxDataCustomers' => 'Кто ваши основные клиенты или заинтересованные стороны (например, потребители, предприятия, государственные органы)?',
+    'AICtxDataRegulatory' => 'Подпадают ли ваши интересы под действие каких-либо специфических нормативных требований в вашей отрасли?',
+    'AICtxDataThirdParties' => 'У вас есть какие-либо партнерские отношения с третьими сторонами или услуги, предоставляемые сторонними организациями, которые требуют контроля за соблюдением нормативных требований?',
+    'AICtxMaturityIssues' => 'Сталкивались ли вы с какими-либо серьезными проблемами, связанными с соблюдением нормативных требований, нарушениями безопасности или рисковыми событиями за последние 3-5 лет?',
+    'AICtxMaturityConcerns' => 'Вы выявили какие-либо конкретные проблемные области или области, требующие улучшения, в ваших текущих процессах GRC?',
+    'AICtxMaturityAppetite' => 'Каков уровень допустимого риска и готовности к нему в вашей организации?',
+    'AICtxMaturityLevel' => 'Каков ваш текущий уровень зрелости в области корпоративного управления, управления рисками и соблюдения нормативных требований?',
+    'AICtxImplementationChanges' => 'Планируются ли какие-либо изменения в вашей бизнес-модели, технологической инфраструктуре или на рынке, которые могут повлиять на ваши потребности в соблюдении нормативных требований?',
+    'AICtxImplementationResourcesBudget' => 'Какие бюджетные средства у вас имеются в распоряжении для внедрения и поддержания систем обеспечения соответствия нормативным требованиям?',
+    'AICtxImplementationResourcesPersonnel' => 'Какие кадровые ресурсы у вас имеются в распоряжении для внедрения и поддержания систем обеспечения соответствия нормативным требованиям?',
+    'AICtxImplementationResourcesTechnology' => 'Какие ресурсы технологической инфраструктуры у вас есть в распоряжении для внедрения и поддержания систем обеспечения соответствия нормативным требованиям?',
+    'AICtxImplementationResourcesTraining' => 'Какие ресурсы для обучения и повышения квалификации вы предоставляете для внедрения и поддержания систем обеспечения соответствия нормативным требованиям?',
+    'AICtxImplementationResourcesExternal' => 'Какие внешние ресурсы поддержки у вас есть для внедрения и поддержания систем обеспечения соответствия нормативным требованиям?',
+    'AIAPIKeySecurityNote' => 'Ваш ключ хранится на стороне сервера и никогда не возвращается в браузер. URL-адреса провайдеров проверяются на соответствие списку разрешенных SSRF-атак, который можно настроить в файле config.php.',
+    'AIContextEgressWarning' => 'Ваши ответы отправляются настроенному вами поставщику ИИ для обоснования его рекомендаций. Не включайте ничего, чем бы вы не поделились с ним.',
+    'Provider' => 'Поставщик',
+    'AIProviderURLHostNotAllowed' => 'Хост "%s" отсутствует в списке разрешенных поставщиков ИИ. Добавьте его в $ai_allowed_provider_hosts в файле config.php, затем сохраните. (Известные поставщики ИИ и адреса обратной связи 127.0.0.1 всегда разрешены.)',
+    'AIContextLastSaved' => 'Последнее сохранение',
+    'AIContextNeverSaved' => 'Ещё не сохранено',
+    'AICtxCardSubtitle' => '21 вопрос по четырем областям. Чем больше вы ответите, тем точнее будет каждая рекомендация.',
+    'AICtxAnswered' => '%1$d из %2$d ответил',
+    'AICtxAllOptional' => 'Необязательно',
+    'AIContextSaving' => 'Сохранение…',
+    'AIContextSaveFailed' => 'Не удалось сохранить изменения. Пожалуйста, попробуйте еще раз.',
+    'AISettingsSavedNotReachable' => 'Настройки ИИ сохранены, но поставщик недоступен. Убедитесь, что он запущен и URL-адрес указан правильно.',
+    'AISettingsSavedKeyRequired' => 'Настройки ИИ сохранены, но для использования функций этого провайдера требуется ключ API.',
+    'TestAndSave' => 'Тестирование и сохранение',
+    'AICapEnableAll' => 'Включить все',
+    'AICapDisableAll' => 'Отключить все',
+    'AISettingsSavedConnected' => 'Настройки ИИ сохранены — соединение успешно установлено.',
+    'AISettingsSavedNotConnected' => 'Настройки ИИ сохранены, но проверка соединения не удалась. Проверьте модель, ключ и URL.',
+    'AIProviderURLNotOnAllowlist' => 'Этот хост отсутствует в списке разрешенных SSRF-атак провайдера AI. Добавьте его в $ai_allowed_provider_hosts в файле config.php, прежде чем он сможет быть сохранен.',
+    'Connected' => 'Подключено',
+    'NotConnected' => 'Не подключено',
+    'AICapBulkError' => 'Некоторые функции не удалось обновить. Пожалуйста, попробуйте еще раз.',
+    'QuestionnaireAlreadyCompleted' => 'Данная анкета уже заполнена.',
+    'QuestionnaireDraftError' => 'Ошибка сохранения черновика. Подробности см. в консоли.',
+
+    // Audit cadence scheduling - Define Test modal (Interval/Calendar schedule redesign)
+    // 'Overdue' duplicates the English of 'ImKpiOverdue' on purpose: that key is
+    // an Incident Management KPI label, and a compliance status pill reusing an
+    // IM-scoped key would couple the two domains for a translator (and break the
+    // moment either wording moves). This is the generic, cross-domain one.
+    'Overdue' => 'Просрочено',
+    // Deliberate: the only other key rendering 'Manual' is 'ManualValuation',
+    // an asset-valuation label. Pointing a schedule mode at it would couple two
+    // unrelated domains for translators and break the moment either reworded.
+    'ScheduleManual' => 'Ручной',
+    'ScheduleInterval' => 'Интервал',
+    'ScheduleCalendar' => 'Календарь',
+    'Cadence' => 'Периодичность',
+    'CadenceBiweekly' => 'Раз в две недели',
+    'CadenceSemiAnnually' => 'Раз в полгода',
+    'AnchorDate' => 'Якорная дата',
+    'UpcomingOccurrences' => 'Предстоящие события',
+    'AuditLeadInDays' => 'Дни подготовки к аудиту',
+    'SkipOccurrence' => 'Пропускать',
+    'OverrideDate' => 'Дата переопределения',
+    'Week' => 'Неделя',
+    'NoUpcomingOccurrences' => 'В этом временном окне нет запланированных событий.',
+    'FailedToLoadUpcomingOccurrences' => 'Не удалось загрузить предварительный просмотр предстоящих событий.',
+    'AnchorDateMustBeTodayOrLater' => 'В качестве опорной даты необходимо указать сегодня или более позднюю дату. Чтобы запланировать дату в прошлом, создайте тест вручную.',
+    'InvalidScheduleType' => 'Недопустимый тип расписания. Допустимые значения: Ручной, Интервальный, Календарный.',
+    'Weeks' => 'Недели',
+    'Months' => 'Месяцы',
+    'Years' => 'Годы',
+    'ScheduleSummaryEvery' => 'Каждый {$interval} {$unit}',
+
+    // Define Tests redesign - client-rendered grid (Phase 1, Task 6)
+    'LastResult' => 'Последний результат',
+    'NextDue' => 'Следующий срок',
+    'DueSoon' => 'Скоро в продаже',
+    'Retired' => 'Архивирован',
+    'MyTests' => 'Мои тесты',
+    'Failing' => 'Неудача',
+    'Untested' => 'Непроверенный',
+    'ShowRetired' => 'Показать архивные',
+    'Tests' => 'Тесты',
+    'NoTestsForThisControl' => 'Тестирование этого контрольного образца пока не проводилось.',
+    'NoControlsDefinedYet' => 'Пока не определены никакие элементы управления.',
+    'NoControlsDefinedYetBody' => 'Перед добавлением тестов определите элементы управления в разделе «Управление».',
+    'NoTestsMatchFilters' => 'Ни один тест не соответствует вашим фильтрам.',
+    'NoTestsMatchFiltersBody' => 'Попробуйте изменить параметры поиска или фильтры.',
+    'CouldNotLoadTests' => 'Не удалось загрузить тесты.',
+    'CouldNotLoadTestsBody' => 'Что-то пошло не так. Ваши данные в безопасности — попробуйте обновить страницу.',
+    'ShowingXToYOfZ' => 'Отображается {$start}–{$end} из {$total}',
+    // Define Tests grid -- SCF-mapping + read-only procedure expand (Phase 1, Task 7)
+    'Reference' => 'Ссылка',
+    'NoFrameworksMapped' => 'К этому элементу управления не привязаны никакие фреймворки.',
+    // Define Tests grid -- batch select + retire/delete + quick filters (Phase 1, Task 8)
+    'Retire' => 'Архивировать',
+    'ReassignTester' => 'Переназначить тестировщика',
+    'SetSchedule' => 'Установить расписание',
+    'ConfirmRetireSelectedTests' => 'Удалить выбранные тесты {n}?',
+    'ConfirmDeleteSelectedTests' => 'Удалить выбранные тесты {n} ? Это действие необратимо.',
+    // Define Tests grid -- Coverage toolbar select (Issue 4)
+    'Coverage' => 'Покрытие',
+    'CoverageWithTests' => 'Контроль с помощью тестов',
+    'CoverageAllControls' => 'Все элементы управления',
+    'CoverageGaps' => 'Пробелы',
+    // Define Tests insights band (Phase 2, Task 4) -- KPI tile labels + subtitles.
+    // 'Overdue', 'DueSoon', and 'Failing' are reused from the grid's quick-filter
+    // chips above (identical text) rather than duplicated here.
+    'DtTotalTests' => 'Всего тестов',
+    'DtCoverageGaps' => 'Пробелы в покрытии',
+    'DtAcrossNControls' => 'По {$n} элементам управления',
+    'DtControlsWithNoTest' => 'Контрольная группа без тестирования',
+    'DtNeedInitiationNow' => 'Необходимо начать прямо сейчас.',
+    'DtWithinLeadInWindow' => 'В течение подготовительного периода',
+    'DtLastResultFailed' => 'Последний результат не удался',
+    'InvalidTestMethod' => 'Метод испытания должен представлять собой один из следующих способов: исследование, наблюдение, проверка или повторное выполнение!',
+    'TesterCannotBeApprover' => 'Тестировщик не может быть также указан в качестве утверждающего лица для данного теста.',
+    'ApproverNotEligible' => 'Один или несколько выбранных утверждающих лиц не несут ответственности за "Утверждение тестов".',
+    'TestMethod' => 'Метод испытания',
+    'TestMethodInquiry' => 'Расследование',
+    'TestMethodObservation' => 'Наблюдение',
+    'TestMethodInspection' => 'Проверка',
+    'TestMethodReperformance' => 'Реперформанс',
+    'Sample' => 'Образец',
+    'RequiredEvidence' => 'Необходимые доказательства',
+    'Approvers' => 'Утверждающие',
+    'AuditLog_TestAuditApproved' => 'Аудит "{$test_audit_name}"(ID: {$test_audit_id}) был одобрен пользователем "{$user_name}".',
+    'AuditLog_TestAuditRejected' => 'Аудит "{$test_audit_name}"(ID: {$test_audit_id}) был отклонен пользователем "{$user_name}" с комментарием "{$comment}".',
+    'AuditLog_TestAuditAwaitingApproval' => 'Аудит "{$test_audit_name}"(ID: {$test_audit_id}) был отправлен на закрытие пользователем "{$user_name}" и ожидает одобрения. Изменения: {$changes}.',
+    'AuditApproved' => 'Аудит был успешно пройден.',
+    'AuditRejected' => 'Результаты аудита были успешно отклонены.',
+    'RejectCommentRequired' => 'Для отклонения результатов аудита необходимо оставить комментарий.',
+    'NotAnApproverOfThisAudit' => 'Вы не являетесь назначенным утверждающим лицом для этой проверки.',
+    'ApproverCannotBeTester' => 'Лицо, утверждающее данные данные данные, не может одновременно являться и проверяющим результаты аудита.',
+    'AuditNotAwaitingApproval' => 'Данный аудит в настоящее время не ожидает утверждения.',
+    'NotificationAuditAwaitingApprovalTitle' => 'Аудит ожидает вашего утверждения.',
+    'NotificationAuditAwaitingApprovalBody' => 'Аудит "{$test_audit_name}" отправлен на закрытие и ожидает вашего одобрения.',
+    'NotificationAuditRejectedTitle' => 'Результаты аудита отклонены.',
+    'NotificationAuditRejectedBody' => 'Аудит "{$test_audit_name}" был отклонен с комментарием: "{$comment}"',
+    'AwaitingApproval' => 'Ожидается одобрение',
+    'AwaitingApprovalBannerText' => 'Данная проверка отправлена на закрытие и ожидает утверждения назначенным ответственным лицом.',
+    'ReturnedForRework' => 'Возвращено на доработку',
+    'ReturnedForReworkBannerText' => 'Данный аудит был отклонен и возвращен на доработку.',
+    'RejectReason' => 'Причина отказа',
+    'AreYouSureYouWantToApproveThisAudit' => 'Вы уверены, что хотите одобрить эту проверку?',
+    'AtLeastOneControlRequired' => 'Требуется как минимум один контрольный пункт.',
+    'DtNCommonAcrossNControls' => '{$common} общие · {$n} элементы управления',
+    'DtUntestedControls' => 'Непроверенные контрольные образцы',
+    'DtControlsInScopeNoCoverage' => 'Нет покрытия',
+    'Passing' => 'Пройдено',
+    'DtLastResultPassed' => 'Последний результат пройден',
+    'AllFamilies' => 'Все семейства',
+    'SearchTestsPlaceholder' => 'Поиск тестов, средств контроля и фреймворков',
+    'AnySchedule' => 'Любое расписание',
+    'AnyTag' => 'Любой тег',
+    'AuditAutoClosedTestRetired' => 'Автоматически закрыто как "Неопределенный результат", поскольку тест был отменен.',
+    'Common' => 'Общий',
+    'ValidatesAcrossMappedFrameworks' => 'Проверяет соответствие между сопоставленными фреймворками.',
+    'EditTest' => 'Редактировать тест',
+    'ControlHasNoTestCoverage' => 'Данный элемент управления, входящий в область действия, пока не имеет тестового покрытия.',
+    'AddTheFirstTest' => 'Добавьте первый тест',
+    'ApplyCommonTestHint' => 'Примените к этому элементу управления один или несколько существующих тестов. Каждый тест сохранит свои текущие элементы управления и станет общим тестом, охватывающим и этот элемент.',
+    'CommonTestApplied' => 'К данному контрольному образцу был применен тест.',
+    'CouldNotApplyCommonTest' => 'Не удалось применить тест к данному контрольному образцу.',
+    'SelectOneOrMoreTests' => 'Выберите один или несколько тестов',
+    'CommonTestsApplied' => '{n} тестов, примененных к этому элементу управления.',
+    'ApplyCommonTests' => 'Примените общие тесты…',
+    'History' => 'История',
+    'Result' => 'Результат',
+    'Approval' => 'Одобрение',
+    'ThisTestHasNotBeenRunYet' => 'Данный тест еще не проводился.',
+    'CouldNotLoadTestHistory' => 'Не удалось загрузить историю этого теста.',
+    'Identity' => 'Общие сведения',
+    'IdentitySectionHint' => 'Имя, тестировщик и проверяемые элементы управления.',
+    'WhenTheAuditInitiates' => 'Когда начинается аудит',
+    'ProcedureAndEvidence' => 'Процедура и доказательства',
+    'CommonTestControlsHint' => 'Один тест может проверить работоспособность множества элементов управления — это распространенный тест. Открытие этого списка из кнопки "+ Добавить тест" элемента управления автоматически выделяет его здесь.',
+    'SeparationOfDutiesNote' => 'Разделение обязанностей — лицо, утверждающее документ, не может одновременно быть и тестировщиком.',
+    'CommonTestEditScopeHint' => 'Изменения вступают в силу везде, где используется этот общий тест.',
+    'Mode' => 'Режим',
+    'AddOrRemove' => 'Добавить или удалить…',
+    'AddOrSearchTags' => 'Добавить или выполнить поиск по тегам…',
+    'CreateTagX' => 'Создайте “{tag}”',
+    'Archived' => 'Архив',
+    'ShowAllTests' => 'Все тесты',
+    'ShowActiveTests' => 'Активные тесты',
+    'ShowRetiredTests' => 'Ушедшие в прошлое тесты',
+    'UntestedControls' => 'Непроверенные контрольные образцы',
+    'OverdueByXDays' => 'Просрочено · {n} дней',
+    'OverdueByOneDay' => 'Просрочено · 1 день',
+    'DueInXDays' => 'Срок оплаты: {n} дней',
+    'DueTomorrow' => 'Срок сдачи — завтра.',
+    'DueToday' => 'Срок оплаты: сегодня',
+    'ScheduledForX' => 'Запланировано · {date}',
+    'AllTesters' => 'Все тестировщики',
+    'AllStatuses' => 'Все статусы',
+    'OnTrack' => 'На верном пути',
+    'NextTestDateDerivedHint' => 'Расчет производится на основе даты последнего тестирования плюс периодичность тестирования. Установите периодичность для автоматического планирования или оставьте поле «Периодичность» пустым, чтобы установить эту дату самостоятельно.',
+    'DueStatus' => 'Статус выполнения',
+    'AllResults' => 'Все результаты',
+    // Remove a test from one control (Define Tests grid unlink row action)
+    'RemoveFromThisControl' => 'Удалить из этого управления',
+    'RemoveTestFromControl' => 'Удалить тест из контроля',
+    'RemoveTestFromControlConfirm' => 'Удалить "{test_name}" из {control_name}?',
+    'RemoveTestFromControlStays' => 'Тест остается на своих {n} других элементах управления. Ничего не удаляется.',
+    'RemoveTestFromControlStaysOne' => 'Тест остается на своем единственном контрольном элементе. Ничего не удаляется.',
+    'CannotRemoveTestsOnlyControl' => 'Тест должен относиться как минимум к одному контрольному элементу. Вместо этого следует удалить или отменить тест.',
+    'TestRemovedFromControl' => 'Тест был исключен из контроля.',
+    'CouldNotRemoveTestFromControl' => 'Тест не удалось исключить из контроля.',
+    'TestRemovedFromControlAuditLogMessage' => 'Тест "{$test_name}"(ID: {$test_id}) был удален из контрольной группы (ID: {$control_id}) пользователем "{$user}".',
+    'DeleteTestUsedByNControls' => 'Он используется элементами управления {n} и будет удален из всех них.',
+    'BulkDeleteSharedTestsNote' => '{n} из них используются другими элементами управления и будут удалены и из них.',
+    'BulkRetireSharedTestsNote' => '{n} из них используются другими элементами управления и будут удалены и там тоже.',
+    'BulkDeleteOneSharedTestNote' => 'Один из этих элементов используется другими элементами управления и будет удален и из них.',
+    'BulkRetireOneSharedTestNote' => 'Один из них используется другими элементами управления и также будет выведен из эксплуатации там.',
+    'CouldNotLoadTest' => 'Не удалось загрузить этот тест.',
+    'Expand' => 'Расширять',
+    'SearchMappings' => 'Методы поиска и справочные материалы',
+    'NoMatchingMappings' => 'Поиск не дал результатов, соответствующих этому запросу.',
+    'Insights' => 'Аналитические выводы',
+    'ShowInsights' => 'Показать блоки с аналитическими данными',
+    'HideInsights' => 'Сверните блоки с аналитическими данными в сводную строку.',
+    'ChooseControls' => 'Выберите элементы управления',
+    'UseTheseControls' => 'Используйте эти элементы управления.',
+    'SearchControlsPlaceholder' => 'Поиск по номеру или имени',
+    'PickerKeyboardHint' => 'Для перемещения нажмите вверх/вниз, для выбора нажмите Enter, для отмены нажмите Esc.',
+    'NoControlsMatchFilters' => 'Здесь ничего не совпадает. Увеличьте шаг влево или очистите область поиска.',
+    'NoControlsSelectedYet' => 'Пока ничего не выбрано.',
+    'AllControls' => 'Все элементы управления',
+    'AddOrRemoveControls' => 'Добавить или удалить элементы управления…',
+    'LastTested' => 'Последнее тестирование',
+    'LastTestDateAnchorHint' => 'Задание выполняется с интервалом (эта дата плюс частота). После того, как результаты теста будут зарегистрированы, в таблице отображается дата последнего результата.',
+    'Filters' => 'Фильтры',
+    'ShowFilters' => 'Показать фильтры',
+    'HideFilters' => 'Скрыть фильтры',
+
+    // App shell — collapsing sidebar / new base design (SR app-shell redesign)
+    'AI' => 'ИИ',
+    'CollapseSidebar' => 'Свернуть боковую панель',
+    'FooterCopyright' => '© %s SimpleRisk. Все права защищены.',
+    'ExpandSidebar' => 'Развернуть боковую панель',
+    'WorkflowsCloneConfirm' => 'Рабочий процесс клонирования \'{$name}\'?',
+    'WorkflowsDeleteConfirm' => 'Удалить рабочий процесс \'{$name}\'? Это действие необратимо.',
+    'WorkflowActionFailed' => 'Действие не удалось: {$msg}',
+    'ClickToDisable' => 'Нажмите, чтобы отключить',
+    'ClickToEnable' => 'Нажмите, чтобы включить',
+    'ENABLED' => 'ВКЛЮЧЕНО',
+    'DISABLED' => 'НЕПОЛНОЦЕННЫЙ',
+    'BackToWorkflows' => 'Вернуться к рабочим процессам',
+    'BackToHistory' => 'Назад к истории',
+    'NewWorkflow' => 'Новый рабочий процесс',
+    'ViewSteps' => 'Посмотреть шаги',
+    'SaveWorkflow' => 'Сохранить рабочий процесс',
+    'WorkflowSavedSuccessfully' => 'Рабочий процесс успешно сохранён.',
+    'WorkflowNotFound' => 'Рабочий процесс не найден.',
+    'EditWorkflow' => 'Процесс редактирования: {$name}',
+    'OrganizationContextProfile' => 'Контекстный профиль организации',
+    'AICtxAutoAcceptThreshold' => 'Каков порог автоматического принятия риска в вашей организации (сумма в долларах или процент от среднегодового числа работающих сотрудников)?',
+    'AICtxGrcBudget' => 'Каков ваш годовой бюджет на GRC/безопасность?',
+    'AICtxAuditorPerspective' => 'С чьей точки зрения вас в первую очередь проверяют?',
+    'AICtxUnitCurrency' => 'Валюта ($)',
+    'AICtxUnitPercentOfAle' => 'Процент от ALE (%)',
+    'AICtxFrameworksInUse' => 'Используемые в настоящее время фреймворки',
+    'AICtxNoFrameworksInUse' => 'Активных фреймворков пока не найдено. Добавьте фреймворки в разделе «Управление» > «Сопоставление фреймворков».',
+    'AICtxFromYourData' => 'На основе ваших данных',
+    'AICtxAuthoritative' => 'Авторитетный',
+    'AICtxAppetiteNotSet' => 'Не задано',
+    'AICtxAppetiteManageLink' => 'Управление в конфигурации рисков',
+    'AICapControlTestGeneration' => 'Генерация контрольных тестов',
+    'AICapControlTestGenerationDesc' => 'Черновики контрольных тестов для проверки, с использованием сопоставления структуры контроля, существующих тестов и результатов самооценки — ничего не создается, пока вы это не утвердите.',
+    'AICapSurfacedControlTestGeneration' => 'Соответствие требованиям — Определение тестов',
+    'AIControlTestGenUnavailable' => 'СЕРВИС НЕДОСТУПЕН: Администратор должен включить эту функцию в настройках ИИ.',
+    'AIControlTestGenInvalidId' => 'НЕПРАВИЛЬНЫЙ ЗАПРОС: Требуется идентификатор положительного контрольного образца.',
+    'AIControlTestGenNotFound' => 'НЕ НАЙДЕНО: Указанный элемент управления не найден.',
+    'AIControlTestGenConflict' => 'КОНФЛИКТ: Генерация для этого элемента управления уже поставлена в очередь.',
+    'AIControlTestGenQueued' => 'ПРИНЯТО: Генерация контрольных тестов поставлена в очередь.',
+    'AIControlTestGenFailed' => 'ВНУТРЕННЯЯ ОШИБКА СЕРВЕРА: Не удалось поставить в очередь генерацию тестов управления.',
+    'AIControlTestGenCheckFailed' => 'ОШИБКА: Не удалось проверить элемент управления перед постановкой в очередь.',
+    'GenerateTestsWithAI' => 'Создание тестов с помощью ИИ',
+    'ShowAiSuggestedTests' => 'Тесты, предложенные ИИ',
+    'AiSuggested' => 'ИИ предложил',
+    'ReviewAndEdit' => 'Проверка и редактирование',
+    'CreateSelected' => 'Создать выбранное',
+    'TestCreatedFromSuggestion' => 'Тест создан на основе предложенного варианта.',
+    'SuggestionDismissed' => 'Предложение отклонено.',
+    'TestGenerationQueued' => 'Генерация тестов поставлена в очередь.',
+    'Generating' => 'Генерация…',
+    'SuggestionDismissFailed' => 'Тест был создан, но предложенное ИИ решение не удалось отклонить. Отклоните его вручную, если оно останется.',
+    'AICtxAuditorBig4' => '«Большая четверка» (внешние)',
+    'AICtxAuditorBoutique' => 'Бутиковый / региональный (внешний)',
+    'AICtxAuditorInternal' => 'Только для внутреннего аудита',
+    'AICtxAuditorSelfAssessed' => 'Самооценка',
+    'AICtxAuditorNotSure' => 'Не уверен',
+    'AICtxAppetiteCautious' => 'Осторожный',
+    'AICtxAppetiteBalanced' => 'Сбалансированный',
+    'AICtxAppetiteAggressive' => 'Агрессивный',
+    'TestGenerationComplete' => 'Разработанные с помощью ИИ контрольные тесты готовы к проверке.',
+    'TestGenerationStillRunning' => 'Процесс генерации тестов продолжается; черновики появятся в ближайшее время.',
+    'TestGenerationNoNew' => 'Генерация завершена — новых тестов для этого контрольного образца не требуется.',
+    'SearchEntities' => 'Поиск объектов',
+    'SearchEntitiesPlaceholder' => 'Поиск рисков, средств контроля, политик, исключений…',
+    'ShowTypes' => 'Показать типы',
+    'Depth' => 'Глубина',
+    'Inspector' => 'Инспектор',
+    'Connections' => 'Связи',
+    'NoConnectionsFound' => 'Для выбранного объекта не найдено ни одного соединения.',
+    'CouldNotLoadGraph' => 'Не удалось загрузить граф связности.',
+    'CouldNotSearchEntities' => 'Поиск объектов не удался.',
+    'ShowingTopNOfM' => 'Отображается верхняя часть {0} из {1}',
+    'RankedByMaturityGap' => 'Ранжировано по разнице в зрелости',
+    'RankedByRiskScore' => 'Ранжировано по показателю риска',
+    'RankedByRecentFailure' => 'Ранжировано по дате последнего провала',
+    'RankedByReviewDate' => 'Ранжировано по дате следующего обзора',
+    'RankedBySeverity' => 'Ранжированы по степени тяжести',
+    'RankedByName' => 'Ранжировано по имени',
+    'NodeTypeSelfAssessmentResult' => 'Результаты самооценки',
+    'Relationship' => 'Связь',
+    'Exception' => 'Исключение',
+    'DesiredMaturity' => 'Желаемый срок зрелости',
+    'ApprovalState' => 'Состояние одобрения',
+    'RelationshipOfType' => '{0} из {1}',
+    // Connectivity Explorer Inspector: labels for enrichment field keys
+    // (ai_context_enrich_fetch(), ai_context_enrich_vulnerabilities()) that
+    // fieldLabel() in connectivity-visualizer.js did not yet cover.
+    'LastDate' => 'Последняя дата',
+    'LastResultDate' => 'Дата последнего результата',
+    'PercentComplete' => 'Процент выполнения',
+    'AssessmentDate' => 'Дата оценки',
+    'NextDate' => 'Следующая дата',
+    'Number' => 'Число',
+    'Grouping' => 'Группировка',
+    'Hidden' => 'Скрытый',
+    'FirstFound' => 'Первое обнаружение',
+    'LastFound' => 'Последнее найденное',
+    'Patchable' => 'Исправлено',
+    'Solution' => 'Решение',
+    'Breadcrumb' => 'Хлебные крошки',
+    'SelectANodeToInspect' => 'Выберите узел, чтобы просмотреть его подробные сведения.',
+    'HiddenUnreachableNodes' => '{0} Скрытый(е) узел(ы): больше не соединен(ы) без скрытого(ых) типа(ов).',
+    // Connectivity Explorer canvas launchpad (Level-1 type tiles / Level-2
+    // browsable entity list) -- docs/superpowers/specs/2026-07-27-
+    // connectivity-explorer-launchpad.md
+    'BrowsableEntityTypes' => 'Типы сущностей, доступные для просмотра',
+    'CountFloor' => '{0}+',
+    'NoBrowsableTypes' => 'У вас нет разрешения на просмотр каких-либо типов сущностей.',
+    'AllTypes' => 'Все типы',
+    'FilterEntitiesPlaceholder' => 'Фильтр…',
+    'NoMatchingEntities' => 'Объекты, соответствующие вашему фильтру, отсутствуют.',
+    'LoadMore' => 'Загрузить ещё',
+    'Loading' => 'Загрузка…',
+    'CouldNotLoadEntityCounts' => 'Не удалось загрузить количество сущностей.',
+    'CouldNotLoadEntities' => 'Не удалось загрузить объекты.',
+    'ClearGraph' => 'Очистить график',
+    // Connectivity Explorer node-type chip label for the 'audit' type. Not
+    // reused from 'TeamType_audit' (same English text, "Audit") -- that key
+    // is scoped to the Team Separation team-type picker, a different feature
+    // whose wording should be free to diverge from this one's.
+    'Audit' => 'Аудит',
+    // Queued email send-failure notifications
+    'EmailSendFailedNotificationTitle' => 'Доставка электронного письма не удалась.',
+    'EmailSendFailedNotificationBody' => 'Одно или несколько писем из очереди не удалось доставить. Проверьте настройки почты, затем просмотрите монитор очереди и журнал сервера для получения подробной информации.',
+    'QuestionnaireShareInvalidEmailAddress' => 'Невозможно поделиться результатами анкетирования с контактом, у которого нет действующего адреса электронной почты.',
+    'AssessmentSendInvalidEmailAddress' => 'Невозможно отправить тест на недействительный адрес электронной почты.',
+    'AssessmentSentTo' => 'Оценка была отправлена на адрес "{$email}.',
+    'AssessmentNotSentNoValidRecipients' => 'Заявка на оценку не была отправлена — не был указан действительный адрес электронной почты.',
+    'AssessmentContactUnusableEmailNotificationTitle' => 'Анкета не отправлена',
+    'AssessmentContactUnusableEmailNotificationBody' => 'Анкета "{$questionnaire}" не может быть отправлена на "{$contact}", поскольку у этого контакта нет действующего адреса электронной почты. Обновите запись контакта, чтобы возобновить отправку.',
+    'EmailFailureNotificationRetention' => 'Сохранение уведомлений о сбоях доставки электронных писем',
+    'EmailFailureNotificationRetentionOutOfRange' => 'Срок хранения уведомлений о сбое доставки электронной почты должен составлять от {$min} до {$max} дней.',
+    'MailSettingsUpdatedSuccessfully' => 'Настройки почты успешно обновлены.',
+    // Questionnaire audit-trail entries for the API submit/draft paths (SR-1714).
+    // The token form credits the contact; an API caller is an authenticated
+    // SimpleRisk user acting on that contact's questionnaire, so both the
+    // contact and the acting user are named.
+    'QuestionnaireCompletedAuditLogViaApi' => 'Анкета "{$questionnaire_name}" для связи с "{$contact_name}" была заполнена через API пользователем "{$user_name}".',
+    'QuestionnaireDraftAuditLogViaApi' => 'Анкета "{$questionnaire_name}" для связи "{$contact_name}" была сохранена как черновик через API пользователем "{$user_name}".',
+    // Bad-input response for the questionnaire risk-list endpoints, which
+    // previously reported a malformed questionnaire_id as a permission denial.
+    // Mirrors the existing 'MissingOrInvalidTrackingID'.
+    'MissingOrInvalidQuestionnaireID' => 'Отсутствует или недействителен идентификатор анкеты.',
+    // POST /api/v2/assessments/questionnaire/result/file response messages.
+    // The `id` path deliberately returns QuestionIdCannotAcceptFile for every
+    // question-level rejection so a sequential tracking id cannot be used to
+    // probe questionnaire structure; the token path returns the specific reason.
+    'QuestionnaireResultNotFoundForTokenOrId' => 'НЕ НАЙДЕНО: Не удалось найти результат анкетирования с указанным токеном или идентификатором.',
+    'QuestionIdCannotAcceptFile' => 'НЕПРАВИЛЬНЫЙ ЗАПРОС: question_id {$question_id} не может принять файл с результатами этого опросника.',
+    'QuestionIdNotFoundInQuestionnaire' => 'НЕВЕРНЫЙ ЗАПРОС: question_id {$question_id} не найден в этом опроснике.',
+    'QuestionIdInMultipleTemplates' => 'НЕПРАВИЛЬНЫЙ ЗАПРОС: question_id {$question_id} встречается в нескольких шаблонах для этой анкеты.',
+    'QuestionIdDoesNotAcceptFileUploads' => 'НЕПРАВИЛЬНЫЙ ЗАПРОС: question_id {$question_id} не принимает загрузку файлов.',
+    // The Statement of Applicability's two UNVERIFIED implementation states.
+    //
+    // They exist because "we have not checked" is not "it does not work", and an
+    // SoA is ATTESTED — printing "No" for an unverified control is a false
+    // statement against yourself, exactly as printing "Yes" without evidence is
+    // a false statement the other way. Before these keys existed both states
+    // fell through to 'No', which on a framework where most controls carry no
+    // test meant the whole document read "not implemented".
+    //
+    // They are two states rather than one because they are different findings
+    // with different owners: no test defined is a GOVERNANCE gap (nobody decided
+    // how to verify this control), never run is an OPERATIONAL one (somebody
+    // decided, and it was not done).
+    //
+    // WORDING. Both must be unmistakably distinct from the bare 'No' in the same
+    // column. 'Tests never run' rather than 'Never run': in a column headed
+    // "Implemented", the bare phrase reads for a moment as though the CONTROL
+    // was never run, when the subject is its tests.
+    //
+    // BOTH ARE PLURAL, and that is not only style. English takes the plural
+    // after "no" when the expected quantity could exceed one ("no results
+    // found"), and a control normally carries several tests — the singular
+    // implies only ever one was expected. 'Tests never run' is the stronger
+    // case: soa_implemented_for() returns `never_run` only when NOT ONE of the
+    // control's tests has produced a verdict, so the state is inherently about
+    // the whole set. With four tests defined and none run, the singular reads as
+    // one omission rather than a wholesale one.
+    'SoaImplementedNoTestDefined' => 'Тесты не определены',
+    'SoaImplementedNeverRun' => 'Тесты никогда не проводятся',
+
+    // The Implemented column's fallback for a token neither sink recognizes.
+    //
+    // DELIBERATELY NOT A VERDICT, and the reason this key exists at all. Both
+    // sinks previously ended in a fallthrough to 'No', so adding a state without
+    // adding its label printed a confident, wrong answer into a compliance
+    // document. Falling through to 'Yes' would be worse. The only safe failure
+    // mode is a value that states nothing about the control — a visible bug
+    // instead of a silent misstatement.
+    'SoaImplementedUnknown' => 'Статус недоступен',
+    // How an APPLICABLE control's stored inclusion reason(s) join to its own
+    // freeform justification when it recorded both (spec §4). Reached ONLY when
+    // both halves exist — reasons alone print as the reason list, prose alone
+    // prints verbatim — so this string is punctuation and word order, not prose.
+    // It is a language key rather than a hardcoded separator because a locale
+    // that joins clauses with a colon, a full stop, or right-to-left ordering
+    // must be able to say so; both placeholders have to survive translation.
+    'SoaJustifiedByInclusionReasons' => '{reasons} — {narrative}',
+    // The Set applicability modal's reason field, which became a MULTI-select
+    // when reasons moved to a join table: a control is commonly included (or
+    // excluded) for more than one reason, and the singular 'Reason' the field
+    // used to reuse now under-describes it. 'Reason' is left alone rather than
+    // repointed -- the row drawer and the SoA still print exactly one joined
+    // value under it, and redefining a key changes every surface that reads it.
+    'ApplicabilityReasons' => 'Причины',
+    // Said once, above a group of checkboxes, rather than implied by the widget.
+    // The old single <select> answered "how many may I pick?" by construction;
+    // a checkbox group does not, and a user who ticks one and stops has made the
+    // SoA less truthful than the one they meant to write.
+    'ApplicabilityReasonsHint' => 'Выберите все подходящие причины.',
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // THE STATEMENT OF APPLICABILITY'S MARKERS AND ITS LEGEND (spec §1, §3).
+    // ─────────────────────────────────────────────────────────────────────────
+
+    // THE EVIDENCE COLUMN'S TWO ABSENCES, which are OPPOSITES.
+    //
+    // 'No evidence linked' is a FINDING: the control is in scope, is possibly
+    // claimed implemented, and nothing substantiates it. The em dash below is
+    // the other answer -- the control is excluded, so no evidence is expected
+    // and the absence is correct. Rendering both as an empty cell hides the
+    // first, which is the one an auditor circles.
+    'SoaNoEvidenceLinked' => 'Доказательств не обнаружено',
+    // PUNCTUATION, NOT PROSE -- the glyph the Evidence cell prints when nothing
+    // is expected. A language key rather than a hardcoded character for the same
+    // reason 'SoaJustifiedByInclusionReasons' is one: a locale that marks "not
+    // applicable" with a different dash, or with a word, must be able to say so.
+    'SoaEvidenceNotExpected' => '—',
+    // Whether the evidence a test DECLARED it requires actually arrived with the
+    // result. A stronger claim than a pass/fail alone, and few SoA tools make it.
+
+    // THE REMEDIATION BLOCK -- what is being done about a control that reads
+    // Partial or No. The SoA points AT the risk treatment plan (clause 6.1.3(e))
+    // rather than becoming one.
+    'SoaRemediation' => 'Очистка',
+    // THE MOST SERIOUS THING THAT BLOCK CAN FIND: the test failed and it is
+    // linked to no risk, so no treatment plan traces back to it. Dropping such a
+    // row for want of a risk to join to would render it as a blank cell, which
+    // reads as "nothing to report".
+    'SoaRemediationUnplanned' => 'Риск отсутствует',
+
+    // THE LEGEND. Required in both variants and every export format, because six
+    // implementation states plus three markers is more nuanced than the
+    // Yes/No/Partial an auditor expects, and an undefined vocabulary invites the
+    // reader to guess unfavourably.
+    'SoaLegendTitle' => 'Как читать это утверждение',
+    'SoaLegendYes' => 'Все тесты, определенные для этого элемента управления, прошли успешно при последнем запуске.',
+    'SoaLegendPartial' => 'Результаты контрольных тестов расходятся: по крайней мере один тест прошёл успешно, а по крайней мере один не прошёл или не дал никакого результата.',
+    'SoaLegendNo' => 'При последнем запуске ни один из тестов этого элемента управления не прошёл проверку, и как минимум один тест провалился.',
+    // The two unverified states are DIFFERENT FINDINGS WITH DIFFERENT OWNERS,
+    // and the labels alone do not quite carry that -- so the legend spells it
+    // out. This is the distinction the whole six-state set exists for.
+    'SoaLegendNoTestDefined' => 'Для этого элемента управления не разработаны никакие тесты, поэтому его работа никогда не проверялась. Это не означает, что элемент управления отсутствует или не работает — это лишь означает, что данное утверждение не подтверждает это. Пробел в управлении: никто не решил, как именно проверяется этот элемент управления.',
+    'SoaLegendNeverRun' => 'Существуют тесты для этого элемента управления, но ни один из них никогда не проводился, поэтому его работа здесь не демонстрируется. Это не означает, что элемент управления отсутствует или неисправен. Это оперативный пробел: проверки были запланированы, но не были проведены.',
+    'SoaLegendNotApplicable' => 'Данный элемент управления исключен из области применения данной структуры, поэтому он не имеет статуса реализации.',
+    // The one most in need of explaining: with nothing to define it, this reads
+    // as an admission about the control rather than as what it is.
+    'SoaLegendUnknown' => 'SimpleRisk не смог присвоить метку зарегистрированному статусу, поэтому демонстрация реализации здесь не приводится. Это дефект программного обеспечения, который ничего не говорит о работе системы управления — ни о её работоспособности, ни о неработоспособности.',
+    'SoaLegendOverdue' => 'Представленный результат по-прежнему актуален, но, по крайней мере, срок действия одного из проведенных тестов уже истёк. Данные устарели.',
+    'SoaLegendNoEvidence' => 'Контроль проводится в рамках установленных процедур, но никаких подтверждающих документов не найдено: нет ни одного документа, подтверждающего результаты, и нет ни одного теста, дающего результат.',
+    'SoaLegendEvidenceNotExpected' => 'Никаких доказательств не требуется, поскольку контрольная группа исключена из области исследования.',
+    'SoaLegendUnplanned' => 'Неудачный тест, не связанный с каким-либо риском, поэтому план лечения не может быть с ним связан.',
+
+    // THE TWO VARIANTS, chosen on the launcher before the document is generated
+    // and PRINTED ON ITS COVER. A Statement of Applicability is a controlled
+    // document: two of them for the same framework that show different things,
+    // with nothing on either to say which is which, is a document nobody can
+    // file.
+
+    // THE THREE DETAILED-ONLY COLUMNS.
+    // What those three columns say instead of nothing. A blank cell in an audit
+    // document reads as a formatting artefact; "Not recorded" is a fact the
+    // reader can act on.
+
+    // THE BROWSER PRINT ROUTE. Beside the two downloads on the launcher, and the
+    // only PDF route for a framework too large for the server-side writer.
+    // Shown in place of "Download as PDF" when the chosen framework is above
+    // SOA_EXPORT_PDF_MAX_CONTROLS. The affordance is absent rather than
+    // disabled, so this sentence is what tells the reader the absence is
+    // deliberate and what to do instead.
+    // The footer of every printed page. {page} and {pages} are substituted with
+    // the browser's own page counters, so the two tokens must both survive
+    // translation -- but their ORDER and the words around them are the
+    // translator's, which is why this is one string and not "Page" + "of".
+    'SoaPrintPageNumber' => 'Страница {page} из {pages}',
+
+    // THE ONE PDF AFFORDANCE on the statement-of-applicability launcher, beside
+    // 'DownloadAsXLSX'. It replaces the pair that used to sit there --
+    // 'SoaPrintToPdf' and 'DownloadAsPDF' -- because a Statement of Applicability
+    // is a controlled document and two PDF buttons let two people hand an auditor
+    // two different-looking PDFs of the same statement.
+    //
+    // JUST "PDF", AND DELIBERATELY SO. Below SOA_EXPORT_PDF_MAX_CONTROLS the
+    // button downloads a server-rendered file and above it the browser writes
+    // one, but that is a mechanism and not a choice the reader has to make. A
+    // label that named the mechanism ("Print to PDF" / "Download as PDF") would
+    // put the difference back in front of them.
+    //
+    // 'SoaPrintToPdf' and 'SoaPdfTooLargeHint' above are LEFT IN PLACE with no
+    // caller: 39 locales carry them, and this file is append-only precisely so a
+    // customer running a custom lang.<locale>.php can reconcile it with a tail
+    // diff.
+    'SoaPdf' => 'PDF',
+
+    // THE OTHER TWO ACTIONS IN THAT SAME ROW, shortened to match it.
+    //
+    // The row read "Open in browser" / "Download as XLSX" / "PDF", which put a
+    // verb on two of three actions and made the odd one out look like an
+    // abbreviation of something longer. The row's own context supplies the
+    // verbs -- these are the things you can DO with the framework you just
+    // chose -- so they carried no information and cost the reader a comparison.
+    // 'SoaPdf' is short because naming its mechanism would be dishonest (above
+    // SOA_EXPORT_PDF_MAX_CONTROLS it opens a print view rather than downloading
+    // a file), and the shortest of the three is the one that has to be right.
+    //
+    // NOT the generic 'Open' at line ~1021: that key lives among 'Mitigated' /
+    // 'Reviewed' and is the risk-status ADJECTIVE -- fr "Ouvert", de "Offen" --
+    // so reusing it would label a button with a state rather than an action in
+    // most of the 39 locales.
+    //
+    // 'SoaOpenInBrowser' above is LEFT IN PLACE with no caller, for the same
+    // reason 'SoaPrintToPdf' is: the locales carry it and this file is
+    // append-only so a customer's custom lang.<locale>.php reconciles with a
+    // tail diff. 'DownloadAsXLSX' keeps a caller either way -- the Assessments
+    // Extra's questionnaire results still use it.
+    'SoaOpen' => 'Открытый',
+    'SoaXlsx' => 'XLSX',
+    // ---- The locked-affordance treatment -------------------------------------
+    // SHARED COPY, not chooser copy. SimpleRisk now SHOWS what's possible and
+    // MARKS what's out of reach because it isn't licensed, rather than hiding
+    // it -- so these strings appear both as a menu row's explanation (Define
+    // Control Frameworks' "+ Add framework" chooser) and beside a disabled
+    // toolbar button (the Statement of Applicability's PDF/XLSX exports). Each
+    // one is worded to read correctly in BOTH places, which is why none of them
+    // starts with "This route" or "This button".
+    //
+    // 'LockedAffordanceBadge' duplicates the English of 'AICapStateLocked'
+    // rather than reusing it: that key sits in the AI Capabilities Catalog's
+    // block and is scoped to a capability's state, and translators work from
+    // the key's neighbourhood as much as from its value.
+    'LockedAffordanceBadge' => 'Заблокировано',
+    // The two SCF steps before it can be switched on. admin/register.php serves
+    // both -- it is the registration form AND where the per-Extra download
+    // buttons render -- so these differ in what they say, not where they go.
+    'UnlockRegisterInstanceNote' => 'Зарегистрируйте этот экземпляр, чтобы получить доступ к платформе безопасного управления.',
+    'UnlockRegisterInstanceLink' => 'Зарегистрировать SimpleRisk',
+    'UnlockDownloadScfNote' => 'Данный экземпляр зарегистрирован. Для его использования загрузите Secure Controls Framework.',
+    'UnlockDownloadScfLink' => 'Скачайте его',
+    'UnlockActivateScfNote' => 'Платформа Secure Controls Framework загружена, но не активирована.',
+    'UnlockActivateScfLink' => 'Включите его',
+    // Import-Export is a paid Extra, so "not installed" is an upsell rather
+    // than a registration prompt. Deliberately a bare capability sentence: it
+    // has to sit under a menu row and next to an export button equally well.
+    'RequiresImportExportExtra' => 'Требуется дополнительная опция «Импорт-Экспорт».',
+    'UnlockImportExportLink' => 'Посмотрите, что это добавит.',
+    'UnlockActivateImportExportNote' => 'Программа Import-Export Extra установлена, но не активирована.',
+    'UnlockActivateImportExportLink' => 'Включите его',
+    // Shown instead of any of the above to a user who is not an administrator:
+    // every unlock step lives on a check_admin page, so they get the half that
+    // is useful to them -- that the capability exists, and who to ask -- and no
+    // link that would only bounce them.
+    'UnlockNeedsAdministrator' => 'Настроить это может администратор.',
+    // API date parsing. {$field} is the request field name (next_date, last_date,
+    // test_date); {$format} is this instance's configured display date format.
+    'InvalidSubmittedDate' => 'Значение {$field} не является допустимой датой. Введите его в формате ГГГГ-ММ-ДД или в формате даты, используемом в данном случае ({$format}).',
+    // Companion to InvalidSubmittedDate, for a value that matches the expected
+    // shape but names a day that does not exist (February 31st, month 13).
+    // Saying "submit it as MM/DD/YYYY" there would repeat what the caller did.
+    // {$value} is the submitted value, echoed back truncated.
+    'ImpossibleSubmittedDate' => 'Значение {$field} "{$value}" не является настоящей календарной датой. Проверьте день и месяц — в этом случае даты считываются как {$format}.',
+    // The Statement of Applicability's merged verification column. Replaces three
+    // separate headings (Implemented / Evidence / Review Cadence) with the one
+    // question all three answer: how do we know this control is working?
+    // The two appendices printed after the register. Justifications are truncated
+    // in the row and given in full here; remediation plans live here rather than
+    // in the table because ISO 27001 keeps the SoA (6.1.3(d)) and the risk
+    // treatment plan (6.1.3(e)) as separate artifacts.
+    'SoaAppendixJustifications' => 'Приложение А — Обоснования',
+    'SoaAppendixRemediation' => 'Приложение R — Планы по рекультивации',
+    // Appendix E carries the WORDING of each test's evidence requirement. The row
+    // keeps only whether that evidence arrived, which is the finding; the wording
+    // is reference material and was the bulkiest thing in the Verification cell.
+    'SoaRequiredEvidenceSupplied' => 'предоставлены необходимые доказательства',
+    'SoaRequiredEvidenceNotSupplied' => 'Необходимые доказательства не предоставлены',
+    // The one scheduling fact the SoA prints: the soonest date any of a control's
+    // tests is next due. Replaces a per-test "Manual — Next Test Date: ..." line,
+    // whose schedule type belongs on Define Tests and whose date is now on each
+    // test's own evidence bullet.
+    // The two dates on a test's evidence bullet. LABELLED, because two bare dates
+    // side by side are ambiguous in a way one is not.
+    // SINGULAR document-type labels for one piece of design evidence. SimpleRisk's
+    // existing keys are the plural tab names, which would read "Access Control
+    // Standard (Standards)".
+    'SoaEvidencePolicy' => 'Политики',
+    'SoaEvidenceStandard' => 'Стандарт',
+    'SoaEvidenceProcedure' => 'Процедура',
+    'SoaEvidenceGuideline' => 'Руководство',
+    // ── The legend, grouped by column (SOA_LEGEND_GROUPS, includes/soa.php) ──
+    // The Applicability column's three values. These were never in the legend,
+    // so an auditor met "Inherited" -- a word with no meaning outside SimpleRisk
+    // -- with nothing to look it up in.
+    'SoaLegendApplicable' => 'Контроль осуществляется в рамках данной системы, и организация несет ответственность за ее функционирование.',
+    // DISTINCT from 'SoaLegendNotApplicable', which defines the "N/A" that appears
+    // in the Implementation Status column. This one is the DECISION to exclude;
+    // that one is the consequence for the status.
+    'SoaLegendApplicabilityNotApplicable' => 'Данный метод контроля исключен из сферы действия данной системы. В столбце «Обоснование» указано, почему и кто принял это решение.',
+    'SoaLegendInherited' => 'Контроль осуществляется в рамках данной области, но выполняется третьей стороной — поставщиком облачных услуг, головной организацией, аутсорсинговой функцией — а не данной организацией. Название поставщика указано рядом с обоснованием.',
+    // The Evidence column's four bullet glyphs. Load-bearing since the visible
+    // result word was dropped from pass and fail bullets, and until now defined
+    // nowhere at all.
+    'SoaLegendEvidencePass' => 'В ходе последнего запуска теста этого элемента управления был зафиксирован успешный результат. Дата рядом с ним указывает на дату запуска.',
+    'SoaLegendEvidenceFail' => 'В ходе последнего тестирования этого контрольного образца был зафиксирован сбой. В Приложении R приведен план лечения, если таковой имеется.',
+    'SoaLegendEvidenceInconclusive' => 'Проверка этого контрольного образца была проведена и не дала результата. Та же метка используется для результата, который в этом документе не распознается, и в этом случае сам результат печатается рядом с ним.',
+    // The TERM beside the § glyph. Not a document type -- the four types
+    // (Policy, Standard, Procedure, Guideline) are printed per item; this names
+    // the CATEGORY of evidence a document is.
+    'SoaEvidenceDesignDocument' => 'Проектная документация',
+    'SoaLegendEvidenceDocument' => 'Документ, подтверждающий наличие контроля, — документ, определяющий его структуру, а не принцип действия. Документ не содержит окончательного решения, поэтому он не отмечен галочкой.',
+    // The XLSX export's first worksheet tab. The workbook's other four tabs reuse
+    // headings that already exist ('How to read this statement', 'Statement of
+    // Applicability', and the two appendix headings); the cover had no name of its
+    // own because it used to be the top of a single sheet.
+    //
+    // KEEP IT SHORT. Excel caps a worksheet name at 31 characters and
+    // soa_export_sheet_name() truncates rather than failing the export, so a long
+    // translation loses its tail on the tab.
+    'SoaSheetCover' => 'Обложка',
+
+    'SearchFrameworks' => 'Поисковые системы',
+    'SearchControls' => 'Поиск по мерам контроля',
+    'AddFramework' => 'Добавить фреймворк',
+    'Applicability' => 'Применимость',
+    'AnyFamily' => 'Любое семейство',
+    'AnyOwner' => 'Любой владелец',
+    'AnyClass' => 'Любой класс',
+    'AnyPhase' => 'Любая фаза',
+    'AnyPriority' => 'Любой приоритет',
+    'AnyType' => 'Любой тип',
+    'AnyStatus' => 'Любой статус',
+    'SelectAllN' => 'Выбрать все {n}',
+    'Classification' => 'Классификация',
+    'Placement' => 'Расположение',
+    'OwnershipAndMaturity' => 'Право собственности и зрелость',
+    'MappingsAndGuidance' => 'Карты и навигация',
+    'DeleteFrameworkTitle' => 'Удалить фреймворк \'{$name}\'?',
+    'DeleteControlTitle' => 'Удалить элемент управления \'{$name}\'?',
+    'DeleteControlsTitle' => 'Удалить элементы управления {$n}?',
+    'DeleteCannotBeUndone' => 'Этого уже не избежать.',
+    'DeleteFrameworkConsequence' => 'Это удаляет саму структуру и все её сопоставления элементов управления.',
+    'DeleteControlConsequence' => 'Это лишает контроля над ним все платформы, к которым он привязан.',
+    'DeleteControlsConsequence' => 'Это удаляет каждый выбранный элемент управления из всех фреймворков, к которым он привязан.',
+    // Task 9: empty states (design-system.md §10) -- the four intents on
+    // Define Control Frameworks. Reuses existing keys where the copy already
+    // fits exactly (AddControl, AddFramework, ClearFilters, Retry,
+    // NoControlsDefinedYet, NoTestsMatchFiltersBody, CouldNotLoadTestsBody,
+    // RegisterYourInstance, GoToSCF, ImportExportExtra) -- only the strings
+    // with no existing match are added below.
+    'NoControlsMatch' => 'Ни один элемент управления не соответствует вашим фильтрам.',
+    'CouldNotLoadControls' => 'Не удалось загрузить элементы управления.',
+    'ControlsYouAddWillAppearHere' => 'Добавленные вами элементы управления будут отображаться здесь.',
+    'NoFrameworksYet' => 'Фреймворков пока нет.',
+    'FrameworksYouAddWillAppearHere' => 'Здесь будут отображаться добавляемые или импортируемые вами фреймворки.',
+    'CouldNotLoadFrameworks' => 'Не удалось загрузить фреймворки.',
+    // Task 9 review fix: the framework rail's own "no results" intent, shown
+    // when the user has explicitly switched the status dropdown away from
+    // Active and that status has nothing (distinct from "No frameworks yet",
+    // which is reserved for the default Active status where the endpoint
+    // can't yet tell "no frameworks at all" from "none active").
+    'NoFrameworksMatchFilter' => 'Ни одна платформа не соответствует этому статусу.',
+    'ViewActiveFrameworks' => 'Просмотреть активные фреймворки',
+    // Task 10: Define Control Frameworks insights band (governance/index.php)
+    // -- KPI tile labels/subtitles. 'Controls', 'Pass', 'Fail', 'NotTested'
+    // already exist and are reused as label keys for their tiles.
+    'BelowTarget' => 'Ниже целевого уровня',
+    'Excluded' => 'Исключено',
+    'FwInScope' => 'В рамках',
+    'FwLastTestPassed' => 'Последний тест пройден',
+    'FwLastTestFailed' => 'Последний тест провалился',
+    'FwNoEvidence' => 'Применимо, доказательств нет.',
+    'FwMaturityUnderDesired' => 'Срок погашения при желаемом сроке',
+    'FwScopeAFramework' => 'Разработайте структуру для принятия решения.',
+    'FwNotApplicableOrInherited' => 'Неприменимо или унаследовано',
+    // Task 22: framework rail search (governance/index.php's #sr-fw-search,
+    // wired client-side in governance-frameworks.js). Reuses the shipped
+    // "no results" empty-state tile (#sr-fw-filtered, Task 9) rather than
+    // inventing a fourth rail empty state -- only the title and action swap
+    // depending on whether a status filter or a search narrowed the list to
+    // nothing; NoTestsMatchFiltersBody already covers both as body copy.
+    'NoFrameworksMatchSearch' => 'По вашему запросу не найдено ни одного фреймворка.',
+    'ClearSearch' => 'Очистить поиск',
+    // Task 24: Clone control pre-fills the Add Control modal from the source
+    // control (governance-frameworks.js's openControlForClone()) rather than
+    // creating a duplicate outright, so the modal needs to say plainly which
+    // control it was cloned from -- the reviewer's core complaint about an
+    // earlier one-click version of this feature was not knowing what was
+    // cloned. {$name} follows the same client-side formatTemplate()
+    // substitution ShowingXToYOfZ/NSelected already use on this page.
+    'ClonedFromControlNotice' => 'Скопировано из "{$name}. Проверьте поля ниже, затем сохраните.',
+    // Task 24 review follow-up: the banner alone left the modal titled "New
+    // Control" over pre-populated fields -- "it doesn't prompt or anything
+    // so the user doesn't know what was cloned" (Josh) -- which reads as a
+    // bug, not a feature. Retitling #control--add-title to this (governance-
+    // frameworks.js's show.bs.modal delegate for #control--add) makes the
+    // clone unambiguous at a glance; NewControl is restored for a plain add.
+    'CloneOfControlTitle' => 'Клон "{$name}"',
+    // Task 27: the framework rail's SCF-origin chip (governance-frameworks.js's
+    // railRow()) -- shown only for frameworks created via the ComplianceForge
+    // SCF Extra's authoritative-source import (get_scf_origin_framework_ids(),
+    // includes/governance.php). SCF is the badge text itself; ScfOriginHint is
+    // its title/tooltip.
+    'SCF' => 'SCF',
+    'ScfOriginHint' => 'Из системы безопасного контроля (SCF)',
+    // Task 34: the Maturity filter facet's placeholder on the Define Control
+    // Frameworks filter sheet (governance-frameworks.js's ensureFilterSheet()),
+    // matching the AnyFamily/AnyOwner/AnyClass/... set above. The facet's three
+    // OPTIONS reuse the existing BelowMaturity/AtMaturity/AboveMaturity keys --
+    // the same labels the governance dashboard's maturity-gap widgets already
+    // carry -- and the column chip renders those same three strings, so the
+    // filter and the cell can never read differently.
+    'AnyMaturity' => 'Любой зрелости',
+    // Task 46: accessible name for the control table's pager landmark
+    // (governance-frameworks.js's renderPager()). The pager's own buttons
+    // reuse the existing Previous/Next keys Define Tests' pager already
+    // carries; only the <nav> label is new, and it names WHICH table's pager
+    // it is because the Define Control Frameworks page has two lists on it.
+    'ControlsPagination' => 'Управление постраничной навигацией',
+    // Task 14: the Applicability column's state chip (governance-frameworks.js's
+    // renderApplicability()), the matching filter facet (its three option labels
+    // reuse these same three keys) and its "Any applicability" placeholder.
+    //
+    // The three states are PREFIXED rather than named 'Applicable'/
+    // 'NotApplicable'/'Inherited' because 'NotApplicable' already exists above
+    // as the ABBREVIATION 'N/A' -- the self-assessment answer chip and three
+    // reporting charts render it -- and redefining that key to the spelled-out
+    // phrase this column needs would silently change all four of those
+    // surfaces. The prefix also keeps the trio recognisable as one family.
+    //
+    // The column HEADER and the facet's accessible name reuse the existing
+    // 'Applicability' key, and the drawer's record reuses 'Reason', 'Provider'
+    // and 'Justification' -- all four already carry exactly the right string.
+    'ApplicabilityApplicable' => 'Применимый',
+    'ApplicabilityNotApplicable' => 'Непригодный',
+    'ApplicabilityInherited' => 'Наследственный',
+    'AnyApplicability' => 'Любая применимость',
+    // The drawer's applicability record: who recorded the decision and when.
+    // Both are attribution for an audited decision a customer may have to
+    // defend years later, which is why the drawer names them at all.
+    'ApplicabilityDecidedBy' => 'Решение принято',
+    'ApplicabilityDecidedOn' => 'Приняли решение о',
+    // The framework-level Statement of Applicability card in the Add/Edit
+    // framework modals (display_framework_soa_card(), includes/governance.php).
+    // These two fields are what ISO/IEC 27001:2022 clause 6.1.3(d) needs on an
+    // SoA cover: the scope the framework is certified against, and how inclusion
+    // was determined for the controls that are simply applicable.
+    //
+    // 'IsmsScopeStatement' rather than a bare 'ScopeStatement' because "scope"
+    // is already overloaded across SimpleRisk (assessment scope, audit scope,
+    // risk scope); the ISMS prefix is what an ISO practitioner calls this exact
+    // field and keeps it from being reused for an unrelated one.
+    'StatementOfApplicability' => 'Заявление о применимости',
+    'IsmsScopeStatement' => 'Заявление об объеме деятельности',
+    'IsmsScopeStatementHint' => 'Область применения, в соответствии с которой сертифицирована данная платформа. Указано на титульной странице SoA.',
+    'DefaultInclusionJustification' => 'Обоснование включения по умолчанию',
+    'DefaultInclusionJustificationHint' => 'Используется для применимых мер контроля, не связанных с ними рисками. Укажите движущую силу, а не структуру.',
+    // THE DEFAULT SENTENCE, in all three of its roles: the create form seeds the
+    // textarea with it, the Edit form shows it as a placeholder, and
+    // soa_framework_default_justification() (includes/soa.php) substitutes it at
+    // read time for a framework that has none. One key, because a reader must not
+    // be able to tell a stored default from a fallen-back one, and because three
+    // keys holding the same sentence is three chances for a translator to make
+    // them disagree. The name predates the seeding decision (Task 67) and is kept
+    // rather than churned through Crowdin for 39 locales.
+    //
+    // It names the DRIVER (the risk assessment) rather than the framework:
+    // "included because it is part of this framework" is circular, and ISO 6.1.3
+    // derives controls from risk treatment, using Annex A afterwards only as a
+    // completeness cross-check.
+    //
+    // It was a placeholder ONLY until Task 67, so that an unreviewed sentence
+    // could not reach a customer's SoA by inaction. Measured, that produced the
+    // opposite failure: 19 of 20 frameworks left the field NULL and the SoA's
+    // Justification column came out BLANK for every applicable control with no
+    // linked risks -- the finding an SoA is most often failed on, and one a
+    // boilerplate sentence does not attract.
+    'DefaultInclusionJustificationPlaceholder' => 'Определяется на основе оценки рисков информационной безопасности организации и сохраняется в качестве необходимого средства контроля.',
+    // Task 15: bulk-setting applicability from the control table's selection bar
+    // (#applicability--set, governance/index.php + governance-frameworks.js).
+    //
+    // The action's own label and the modal's one section. 'Applicability',
+    // 'Reason', 'Provider', 'Justification', 'Save' and 'Cancel' already exist
+    // and are reused; only the strings with no existing home are added here.
+    'SetApplicability' => 'Установить применимость',
+    'ApplicabilityDecision' => 'Решение',
+    // The amber scope note, in two sentences the page assembles separately
+    // because they answer two different questions: WHICH framework the decision
+    // is scoped to, and WHICH controls are about to receive it. The second one
+    // has two spellings, because the header checkbox selects the current PAGE
+    // while "Select all N" escalates to the whole filtered result set -- the two
+    // genuinely differ once the table pages, and a note that blurred them would
+    // let the user write 1,535 decisions believing they had written 25.
+    'ApplicabilityScopeNote' => 'Это решение применяется только в рамках "{$framework}. Тот же самый контроль может оставаться применимым и в другой среде.',
+    'ApplicabilityAppliesToSelected' => 'Это будет зафиксировано в отношении элемента(ов) управления {$n} , выбранного(ых) на этой странице.',
+    'ApplicabilityAppliesToAllFiltered' => 'Это будет зафиксировано для всех элементов управления {$n} , соответствующих текущим фильтрам, включая те, что находятся на других страницах.',
+    // Per-state hints under the segmented control. The "applicable" one is the
+    // load-bearing sentence of the whole modal, and the SoA audit-readiness work
+    // rewrote it: an applicable control MAY now carry its own reasons and
+    // justification (ISO/IEC 27001 clause 6.1.3(d) asks for one per control, for
+    // inclusion as much as for exclusion), and leaving both empty is what falls
+    // back to the framework's default inclusion justification. The old sentence
+    // -- "this removes any recorded decision. No justification is needed." --
+    // is now false in both halves.
+    'ApplicabilityApplicableHint' => 'В рамках данной структуры. Указание причины и обоснования необязательны; если оставить оба поля пустыми, будет использоваться обоснование включения по умолчанию, предусмотренное в структуре.',
+    'ApplicabilityNotApplicableHint' => 'Исключение какого-либо элемента контроля из сферы действия данной системы. Требуется как обоснование, так и письменное подтверждение.',
+    'ApplicabilityInheritedHint' => 'Эту операцию от вашего имени выполняет другой человек. Назовите его имя и укажите, чем он занимается.',
+    'ApplicabilityNarrativeHint' => 'Указывается в заявлении о применимости. Напишите, что потребуется аудитору для принятия этого решения.',
+    'ApplicabilityProviderHint' => 'Организация, осуществляющая контроль: поставщик облачных услуг, компания, предоставляющая управляемые услуги, материнская компания.',
+    'ChooseAReason' => 'Выберите причину',
+    'ApplicabilityNoReason' => 'Нет причин',
+    // Result toasts. Both interpolate a COUNT taken from the API response and
+    // nothing else -- no submitted text is ever reflected into a toast, which
+    // toastr renders as HTML.
+    'ApplicabilitySetResult' => 'Обновлена применимость для {$n} элементов управления.',
+    'ApplicabilityClearResult' => 'Сброс применимости: теперь применимо для {$n} элементов управления.',
+    // Bulk control delete (Task 54, corrected Task 55). Deleting a control is
+    // final either way the delete engine implements it: a control with test
+    // history is soft-deleted (framework_controls.deleted = 1) to keep test
+    // history intact, a control with no tests is removed outright -- but
+    // nothing anywhere flips that flag back, so from the user's side there is
+    // no "kept" case, only "deleted, and its test history survives for audit
+    // purposes." Every sentence therefore leads with the same irreversible
+    // warning; the only thing that varies is whether an audit-history clause
+    // is appended, and that clause is omitted entirely rather than printed
+    // with a count of zero -- "0 are retained for audit history" reads as a
+    // warning about something that is not going to happen, and on a delete
+    // confirmation that is exactly the kind of noise that trains people to
+    // stop reading. Every {$...} is a count from the API response; no user
+    // text is ever interpolated, which matters because toastr renders HTML.
+    'DeleteControlsPreviewChecking' => 'Проверка того, что будет удалено...',
+    'DeleteControlsPreviewSplit' => 'Элементы управления {$n} будут удалены. Это действие необратимо. Результаты проверки для {$m} из них сохраняются в истории аудита.',
+    'DeleteControlsPreviewKeptOnly' => 'Все элементы управления {$n} будут удалены. Это действие необратимо. Результаты тестирования сохраняются для истории аудита.',
+    'DeleteControlsPreviewRemovedOnly' => 'Элементы управления {$n} будут удалены. Это действие необратимо.',
+    'DeleteControlsPreviewNone' => 'Удалять нечего: выбранные элементы управления больше не существуют.',
+    'ControlsDeletedResult' => '{$n} элементы управления удалены.',
+
+    // The Add/Edit framework modal's Status field. The label reuses the existing
+    // 'Status' key -- the same word the rail's Active/Inactive/All filter already
+    // uses -- so only the explanatory hint is new. It says the two things a user
+    // cannot see from the control itself: that Inactive is the NON-destructive way
+    // to retire a framework (unlike Delete, which cannot be undone), and that the
+    // change cascades through the hierarchy, which is what update_framework_status()
+    // has always done and is genuinely surprising when a parent is deactivated.
+    'FrameworkStatusHint' => 'Неактивные фреймворки сохраняют все свои элементы управления и сопоставления, но скрыты из списка фреймворков по умолчанию и не отображаются на панели управления. Деактивация фреймворка также деактивирует все фреймворки, находящиеся под ним; активация одного фреймворка активирует и его родительские фреймворки.',
+
+    // Task 60: the same #applicability--set modal, opened from ONE control's row
+    // action instead of the selection bulk bar. The button's own label reuses
+    // 'SetApplicability'; these two exist because the modal now has to say which
+    // of the two it is acting on, and both spellings must be unambiguous.
+    //
+    // The title names the specific object (design-system.md §8) and the note
+    // says "only", because the dangerous reading is the silent one: with rows
+    // ticked -- or with "Select all N filtered" in force -- a modal that said
+    // nothing would let a click the user believed applied to one row be read as
+    // applying to every control in the framework. Naming the control in both
+    // places is what makes the narrower scope visible rather than assumed.
+    // Corrected in Task 63. This spelling used to end "...only, whatever else is
+    // selected", which was printed on every row-action open whether or not
+    // anything else WAS selected -- a dangling absolute with no antecedent, so
+    // it read as a sentence that had been cut off. It is now the plain form, and
+    // the reassurance about a competing selection moved to
+    // 'ApplicabilityAppliesToControlNotSelection' below, which is printed only
+    // when there is a competing selection to reassure anyone about.
+    'SetApplicabilityForControl' => 'Установить область применения: {$name}',
+    'ApplicabilityAppliesToControl' => 'Это будет зафиксировано только для "{$name}".',
+
+    // Task 17: the Statement of Applicability report itself
+    // (reports/statement_of_applicability.php + pages/statement-of-applicability.js),
+    // the document ISO/IEC 27001:2022 clause 6.1.3(d) asks for and the one every
+    // applicability decision recorded on the Define Control Frameworks page
+    // exists to produce.
+    //
+    // 'StatementOfApplicability' already exists above (the framework modal's SoA
+    // card) and is reused for the report's own title, as are 'IsmsScopeStatement',
+    // 'DefaultInclusionJustification', the three 'Applicability*' state labels,
+    // 'ApplicabilityDecidedBy'/'DecidedOn', and the plain 'Framework',
+    // 'ControlNumber', 'ControlName', 'Justification', 'Evidence', 'Reason',
+    // 'Provider', 'Total', 'Controls' and 'Export' keys. Only strings with no
+    // existing home are added here.
+    'StatementOfApplicabilityDesc' => 'В рамках одной системы: каждый элемент управления, применим ли он, почему он был включен или исключен, и реализован ли он.',
+    // The header button on Define Control Frameworks. The verb is "generate"
+    // rather than "view" because the document is assembled at the moment it is
+    // asked for -- there is no stored SoA that could be out of date.
+    'GenerateStatementOfApplicability' => 'Сгенерировать заявление о применимости',
+
+    // The Justification column's SECOND resolution step, and the reason an SoA
+    // built here beats the spreadsheet it replaces: the risks that drove the
+    // control are already recorded against it, so nobody retypes them and they
+    // cannot go stale. {risks} is substituted with the displayed risk ids.
+    //
+    // Phrased to match clause 6.1.3, which derives controls from risk treatment
+    // and uses Annex A afterwards only as a completeness cross-check -- the same
+    // reasoning behind 'DefaultInclusionJustificationPlaceholder' above.
+    'SoaJustifiedByRiskAssessment' => 'Определяется на основе оценки рисков информационной безопасности организации. Связанные риски: {risks}.',
+
+    // The Implemented column. DERIVED from maturity and the last test result on
+    // every read, never stored, so it cannot drift out of sync with the control.
+    // 'Yes' and 'No' already exist and are reused; only the middle value and the
+    // header need keys of their own. An excluded control's cell reuses the
+    // existing 'NotApplicable' ('N/A'), which is exactly the right abbreviation
+    // in a dense table.
+    'SoaImplemented' => 'Реализовано',
+    'SoaImplementedPartial' => 'Частичный',
+
+    // The cover block.
+    'SoaGeneratedOn' => 'Сгенерировано на',
+    'SoaExcludedCount' => 'Исключено',
+
+    // The prompt shown when the framework has never been given the two cover
+    // fields. It PROMPTS rather than silently printing a blank cover: an SoA
+    // whose scope is empty is the one defect an auditor spots first, and the
+    // moment somebody opens the report is the only moment those fields matter.
+    // Both spellings of empty (never set, and deliberately cleared) prompt --
+    // from a reader's point of view there is nothing to print either way.
+    //
+    // The inclusion-justification line states a WEAKER consequence than it used
+    // to, because Task 67 made the stronger one untrue: the column no longer goes
+    // blank when the field is empty -- soa_framework_default_justification()
+    // substitutes the generic default sentence. The prompt survives because a
+    // generic sentence is not the organization's own, and an auditor reading 1,500
+    // identical rows of boilerplate is entitled to ask whose risk assessment it
+    // refers to.
+    'SoaMissingFieldsTitle' => 'В этом заявлении отсутствуют сопроводительные данные.',
+    'SoaMissingScopeStatement' => 'Для данной структуры не зарегистрировано описание области применения. В описании структуры данных должно быть указано, в рамках какой области оно создано.',
+    'SoaMissingInclusionJustification' => 'Обоснование включения по умолчанию не указано. Применимые меры контроля, не связанные с рисками, будут использовать общее утверждение, а не ваше собственное.',
+    'SoaEditFrameworkToAdd' => 'Добавьте их в структуру.',
+
+    // Opened from the Reporting Hub, which cannot supply a framework. A picker,
+    // not an error: an SoA is a per-framework document by definition -- the same
+    // control excluded from ISO 27001 is not thereby excluded from PCI DSS --
+    // and there is no cross-framework roll-up to offer instead.
+    'SoaChooseFramework' => 'Выберите фреймворк',
+    'SoaChooseFrameworkHint' => 'Заявление о применимости составляется для каждой конкретной модели отдельно.',
+    // The picker has a roster but nothing in it. Distinct from "this framework
+    // has no controls": there is no framework to write a statement about at all,
+    // and the fix is on a different page, so it says which one.
+    // The launcher's affordance row. "Open in browser" rather than "View"
+    // because it names what actually happens -- the document opens in a new tab,
+    // chrome-free -- and because Task 18 adds "Download as PDF" and "Download as
+    // XLSX" beside it, where "open" vs "download" is the distinction that
+    // matters.
+    // The document has no sidebar, so it needs its own way back for anyone who
+    // arrives from a bookmark or a shared link. Screen only; never printed.
+    'SoaBackToSelector' => 'Вернуться к заявлению о применимости',
+    'SoaNoFrameworks' => 'Нет активных фреймворков',
+    'SoaNoFrameworksHint' => 'Установите или активируйте структуру в разделе «Управление» > «Определение структур контроля», и она станет доступна здесь.',
+
+    // The two refusals. Both explain rather than just failing, because the user
+    // arrived here deliberately.
+    'SoaFrameworkInactiveTitle' => 'Данная платформа неактивна.',
+    'SoaFrameworkInactiveBody' => 'В заявлении о применимости описывается сфера деятельности организации на данный момент. Активируйте структуру, чтобы создать такое заявление.',
+    'SoaFrameworkNotFoundBody' => 'Эта структура больше не существует.',
+
+    // A framework with no controls mapped into it. Not an error -- it is a real
+    // and recoverable state, and saying so beats an empty table.
+    'SoaNoControls' => 'Данная структура не имеет элементов управления.',
+    'SoaNoControlsHint' => 'В рамках структуры и в соответствующем документе будет перечислен весь перечень элементов управления.',
+
+    // The second half of the statement-of-applicability launcher's affordance
+    // row, beside "Open in browser" and the existing 'DownloadAsXLSX'. Rendered
+    // only where the Import/Export Extra is active, which is what supplies the
+    // export. "Download as" rather than "Export to" so the pair reads as one
+    // choice of format, and so it matches the XLSX label already in this file.
+    'DownloadAsPDF' => 'Скачать в формате PDF',
+
+    // The fourth column of the control modal's "Mapped Control Frameworks"
+    // widget, between the reference code and the reference text. The
+    // FRAMEWORK's own title for the control it is citing -- what a Statement of
+    // Applicability prints beside the clause number. Distinct from the existing
+    // 'ReferenceText', which holds the framework's full control statement, and
+    // from the SimpleRisk control's own name.
+    'ReferenceSubject' => 'Наименование по стандарту',
+    // Placeholder/help text under that field, and the reason it is worth
+    // filling in: without it the Statement of Applicability has nothing to
+    // print but the source catalogue's name for its own control.
+    'ReferenceSubjectHint' => "Название этого элемента управления, данное в рамках данной структуры программного обеспечения.",
+
+    // Task 63: the row-scoped population sentence in the Set applicability
+    // modal, in the one situation where the plain
+    // 'ApplicabilityAppliesToControl' above leaves a real question unanswered --
+    // the user has controls ticked, or a standing "Select all N filtered", and
+    // has just opened the modal from ONE row's own action.
+    //
+    // It states the guarantee rather than implying it. A user whose escalated
+    // selection covers an entire framework needs to know that this click is not
+    // about to overwrite it, and {$n} is the count of the OTHER selected
+    // controls -- the target is excluded, because it is very often ticked too
+    // and a promise that included it would be false.
+    'ApplicabilityAppliesToControlNotSelection' => 'Это будет зафиксировано только для элемента управления "{$name}" — выбранные вами элементы управления {$n} останутся без изменений.',
+
+    // Task 65: the VISIBLE label on the controls toolbar's SoA button. The full
+    // sentence ('GenerateStatementOfApplicability' above) stays as the button's
+    // title and aria-label, and is still what the SoA page itself is called;
+    // this is the short form for a toolbar row it shares with the page's one
+    // primary action. At full length the secondary button measured more than
+    // twice the primary's width and became the largest element in the row.
+    //
+    // "SoA" is safe to abbreviate HERE and only here: the button appears solely
+    // when a single framework is scoped, beside an Applicability column, and it
+    // expands on hover.
+    'GenerateSoa' => 'Сгенерировать SoA',
+
+    // ===== Clone framework (Task 64) =======================================
+    // The framework half of Clone control's framing (CloneOfControlTitle /
+    // ClonedFromControlNotice above), and for the same reason: the clone
+    // pre-fills the Add Framework modal rather than creating anything, so the
+    // modal has to say what was carried over before the user saves it.
+    //
+    // Separate keys from the control pair rather than one shared "Clone of
+    // {$name}" -- the two banners do not say the same thing. A cloned control
+    // simply asks to be reviewed; a cloned FRAMEWORK has to explain two things
+    // its fields cannot: that the source's control mappings come with it, and
+    // that the empty scope statement is deliberate. The blank field is the
+    // whole reason the banner is longer than the control's -- a scope statement
+    // left blank with no explanation reads as a field that failed to populate,
+    // and the one thing a clone exists to be given is a NEW scope (Josh: "you
+    // might want to use the same controls as one framework, but scope it
+    // differently"). {$name} and {$n} follow the same client-side
+    // formatTemplate() substitution the rest of this page's templates use.
+    'CloneOfFrameworkTitle' => 'Клон "{$name}"',
+    // {$n} is the count the rail is SHOWING for the source row -- its controls,
+    // not its raw mapping rows. Those differ (a framework can cite one control
+    // under two clause numbers, and the rail excludes deleted controls), and the
+    // number to promise is the one the user is looking at when they click and
+    // the one the clone's own rail row will show afterwards.
+    'ClonedFromFrameworkNotice' => 'Создано на основе "{$name}". Его элементы управления {$n} будут скопированы в новую структуру, при этом все они будут применимы с самого начала — никакие решения о применимости не переносятся. Указание области применения намеренно оставлено пустым: укажите область применения, которую охватывает эта структура, прежде чем генерировать ее описание применимости.',
+    // Seeds the name field so the clone can be saved without a rename --
+    // framework names are unique, so a verbatim copy is refused on save.
+    'CloneOfFrameworkName' => '{$name} (Клон)',
+    'CloneFramework' => 'Клонирование фреймворка',
+    // Extras version independently of Core, so an updated Import/Export Extra
+    // can end up calling a Core function the installed Core does not have. The
+    // export refuses with this rather than fataling -- see
+    // soa_export_refuse_if_core_too_old(), extras/import-export/includes/soa_export.php.
+    'SoaExportRequiresNewerCore' => 'Для этого экспорта требуется более новая версия SimpleRisk Core, чем та, что установлена. Обновите SimpleRisk, а затем повторите попытку экспорта.',
+    // The framework ACQUISITION chooser (Task 26): "+ Add framework" asks how you
+    // want to get one, rather than assuming you want to type it in. Each option is
+    // rendered only when the route behind it actually exists for this user, so the
+    // hint text may state plainly what the route does -- it is never shown to
+    // someone who cannot take it.
+    'HowDoYouWantToAddAFramework' => 'Как вы хотите добавить фреймворк?',
+    'CreateFrameworkManually' => 'Создать вручную',
+    'CreateFrameworkManuallyHint' => 'Присвойте фреймворку собственное имя, а затем добавьте или сопоставьте его элементы управления.',
+    // Named for the framework rather than for its vendor. The hint was reworded
+    // at the same time: it used to end "...load its Secure Controls Framework
+    // controls", which read as a stutter once the label carried those words.
+    'GetFrameworkFromScf' => 'Получите его из системы безопасного контроля (Secure Controls Framework).',
+    'GetFrameworkFromScfHint' => 'Выберите опубликованную платформу и загрузите соответствующие ей элементы управления за один шаг.',
+    'ImportFrameworkFromCatalog' => 'Импортировать один',
+    'ImportFrameworkFromCatalogHint' => 'Установите фреймворк и его элементы управления из каталога контента SimpleRisk.',
+
+    // The framework acquisition chooser's third route, which now offers the
+    // Import-Export Extra's CONTROL import (a spreadsheet naming a framework
+    // that does not exist yet creates it) rather than the GitHub catalogue the
+    // two keys above described. Those two are left in place, unreferenced, so a
+    // customer maintaining a custom lang.<locale>.php still reconciles by tail
+    // diff.
+    'ImportFrameworkFromSpreadsheet' => 'Импортируйте из электронной таблицы.',
+    'ImportFrameworkFromSpreadsheetHint' => 'Загрузите электронную таблицу с элементами управления, в которой указано название фреймворка, и будут созданы оба элемента.',
+
+    // The Define Control Frameworks rail's second synthetic scope: the controls
+    // mapped to no framework at all. Its first, "All controls", reuses the
+    // existing AllControls key rather than adding a second string with the same
+    // English -- it replaced 'AllFrameworks' on that row, which named a union of
+    // frameworks while scoping to every control, mapped or not. 'AllFrameworks'
+    // is left in place and unreferenced by that page: other surfaces still use
+    // it, and every locale carries it.
+    'UnassignedControls' => 'Неназначенные элементы управления',
+    // APPLICABILITY VALIDATION FAILURES. These reach the user: the v2 endpoint
+    // returns the exception's message as the API status message and the page
+    // renders it in a toast, so a hardcoded English literal here would be
+    // permanently English for every locale.
+    //
+    // NOTHING THE CALLER TYPED IS EVER INTERPOLATED INTO THESE. The parameters
+    // are validated enum values, integer ids and byte limits the server itself
+    // owns -- naming the ALLOWED values rather than echoing the rejected one is
+    // deliberate (it is both safe and more useful than repeating a typo).
+    'ApplicabilityErrUnknownState' => 'Неизвестное состояние применимости. Ожидалось одно из следующих: {$states}.',
+    'ApplicabilityErrNarrativeRequired' => 'Для \'{$state} \' требуется повествование.',
+    'ApplicabilityErrNarrativeTooLong' => 'Длина повествования превышает {$bytes} байт.',
+    'ApplicabilityErrReasonRequired' => 'Для того чтобы отметить контроль как неприменимый, необходимо указать причину исключения.',
+    'ApplicabilityErrProviderRequired' => 'Поставщик услуг обязан пометить унаследованный элемент управления.',
+    'ApplicabilityErrProviderTooLong' => 'Длина имени поставщика превышает {$bytes} байт.',
+    'ApplicabilityErrReasonsNotFound' => 'Эти причины применимости отсутствуют: {$ids}.',
+    'ApplicabilityErrReasonsNotOffered' => 'Для данного состояния следующие причины применимости не приводятся: {$ids}.',
+    'ApplicabilityErrFrameworkNotFound' => 'Фреймворк {$framework} не существует.',
+    'ApplicabilityErrControlsNotFound' => 'Эти идентификаторы элементов управления не существуют: {$ids}.',
+    // Controls/Risks import result messages (validation gate, individual bad-row
+    // alerts, and the batched submitted/created/updated summaries)
+    'ControlIdOrShortNameFieldRequired' => 'Необходимо сопоставить либо поле «Идентификатор элемента управления», либо поле «Краткое имя элемента управления» — без одного из них строку невозможно идентифицировать.',
+    'RiskImportSubjectNull' => 'Идентификатор риска {$risk_id}: Не был обновлен, поскольку поле «Тема» пустое или отсутствует.',
+    'RiskImportSummary' => 'Представлены {$submitted} риски и обновлены {$updated} риски.',
+    'ControlImportSummary' => 'Созданы элементы управления {$created} и обновлены элементы управления {$updated}.',
+    'ImportAdditionalIssuesSuppressed' => '{$count} Дополнительные строки имели проблемы, которые здесь не показаны по отдельности.',
+    'EncryptionPipelineStalledTask' => 'Конвейер шифрования (задача #{$id}, {$type}) завис — он находится в состоянии {$status} необычно долгое время, не продвигаясь вперед. Обычно это означает, что фоновый обработчик очереди не запущен; проверьте, запланирован ли он, а затем повторите попытку после того, как он обработает зависшую задачу.',
+    'EncryptionPipelineStalledState' => 'Конвейер шифрования, похоже, завис — он помечен как выполняющийся необычно долгое время, и нет соответствующей фоновой задачи, на которую можно было бы указать. Обычно это означает, что обработчик очереди не запущен или предыдущий конвейер завершился, не обновив эту информацию должным образом. Перед повторной попыткой проверьте журнал отладки.',
+    // DEMO_MODE — shown when a visitor to a shared demo instance attempts one
+    // of the operations that would spoil the demo for the next visitor
+    'ActionDisabledOnDemoInstance' => 'Эта функция отключена в демонстрационном экземпляре SimpleRisk.',
+
+    // The one-click upgrade progress window: the step an upgrade is on, and
+    // the line shown once it finishes
+    // Shown when an upgrade's progress record has not been touched for long
+    // enough that the process running it is presumed gone
+    'UpgradeJobStalled' => 'Обновление перестало отвечать. Перед повторной попыткой проверьте журнал сервера.',
+    // Shown when an upgrade replaced the instance's configuration file and could
+    // not put the original back
+    // Shown when the database was brought up to date but the application files
+    // could not be replaced, so the instance has NOT moved to the new release
+    'UpdateAppFailed' => 'Файлы приложения не были обновлены, поэтому в этом экземпляре по-прежнему работает предыдущая версия. Проверьте журнал SimpleRisk, чтобы узнать причину, а затем запустите обновление снова.',
+    // The one-click upgrade progress screen
+    'UpgradeInProgress' => 'В ходе выполнения',
+    'UpgradeStepNotNeeded' => 'Не требуется',
+    // Recovering an Upgrade Extra whose files are damaged
+    'UpgradeExtraDamagedReinstalling' => 'Установленное обновление Upgrade Extra повреждено. Загружается новая копия.',
+    'UpgradeExtraDamagedRepaired' => 'Дополнительный пакет обновления был заменен рабочей копией.',
+    'UpgradeExtraDamagedFailed' => 'Дополнительный пакет обновления поврежден и не может быть автоматически заменен. Переустановите его со страницы «Дополнительные пакеты» или восстановите папку simplerisk/extras/upgrade/ из резервной копии, а затем повторите попытку.',
+    'UpgradeAlreadyCurrent' => 'Данный экземпляр уже имеет версию {version}, которая является самой последней. Ничего не требовалось обновлять.',
+    'UpgradeShowWhatItDid' => 'Покажите, что это сделало.',
+    'UpgradeBackupsListed' => 'Эти резервные копии отображаются в разделе «Настройка» > «Резервное копирование».',
+    'UpgradingTo' => 'Обновление до {version}',
+    'UpgradeSafeToClose' => 'Можно закрыть это окно. Обновление на сервере продолжается, и эта страница будет подключена заново.',
+    'UpgradeDownloadLog' => 'Скачать журнал',
+    'UpgradeStatementsApplied' => 'Начало работы {started} · Применены операторы {count}',
+    // The Upgrade Extra's pre-upgrade check of the instance it is sitting on
+    'UpgradeCheckingInstance' => 'Проверка данного экземпляра',
+    'UpgradeInstanceChecked' => 'Проверка экземпляра пройдена, исправления не требуются.',
+    'UpgradeBlockedByCorrections' => 'Обновление было остановлено, поскольку для этого экземпляра требовалось исправление, которое не удалось применить автоматически. Следуйте приведенным выше инструкциям, а затем запустите обновление снова. Ничего больше не изменилось.',
+    // Shown when an upgrade replaced the instance's configuration file and could not put the original back
+    'ConfigRestoreFailed' => 'В процессе обновления не удалось восстановить конфигурационный файл этого экземпляра. Перед продолжением восстановите файл simplerisk/includes/config.php из резервной копии.',
+    'UpgradeDidNotAdvance' => 'Функция обновления для версии "{$version}" не обновила версию базы данных; запуск приостановлен, чтобы предотвратить повторный запуск.',
+    'BackupDatabaseNative' => 'Создание резервной копии базы данных (без использования внешних инструментов)...',
+    'UpgradeAlreadyRunning' => 'На этом экземпляре уже выполняется обновление.',
+    'UpgradeStatusUnreachable' => 'Во время обновления произошла потеря связи с сервером. Проверьте журнал SimpleRisk; обновление может еще продолжаться.',
+    'UpgradeJobUnwritable' => 'Обновление не удалось начать, поскольку не удалось записать запись о ходе его выполнения. Убедитесь, что временный каталог системы доступен для записи веб-пользователем.',
+    'UpgradeStepCheckingVersions' => 'Проверка версий',
+    'UpgradeStepUpgradingDatabase' => 'Обновление схемы базы данных',
+    'UpgradeStepFinalising' => 'Применение преобразований после обновления',
+    'UpgradeDatabaseHeading' => 'Обновление базы данных',
+    'UpgradeDatabaseComplete' => 'Обновление базы данных завершено.',
+    'UpgradeHideWhatItDid' => 'Скрыть, что это сделало.',
+    'UpgradeStateRunning' => 'Выполняется',
+    'UpgradeSessionExpired' => 'Срок действия вашей сессии истек. Войдите снова, чтобы увидеть обновление.',
+    'UpgradeLostContact' => 'Потеряно соединение с сервером. Перезагрузите эту страницу, чтобы повторно подключиться к обновлению.',
+    'UpgradeDatabaseAlreadyCurrent' => 'База данных уже включена в версию приложения.',
+    'UpgradeConversionsApplied' => 'Произведено преобразование движка и набора символов.',
+    'UpgradeStoppedShort' => 'Обновление остановилось на {reached} , не достигнув {app}. См. журнал сервера.',
+    'UpgradeStepBackingUp' => 'Резервное копирование',
+    'UpgradeStepUpgradingFiles' => 'Обновление файлов приложения',
+    'UpgradeStepUpgradingExtras' => 'Обновление установленных дополнительных компонентов',
+    'UpgradeStepUpdatingUpgradeExtra' => 'Обновление дополнительных опций.',
+    // The Upgrade Extra's pre-chain corrections: what is wrong, and what to do
+    // about it. These are the highest-stakes messages the upgrade produces --
+    // an operator reads them to unstick an instance that cannot upgrade.
+    'UpgradeCorrectionUnknownVersionTitle' => 'В записанной версии базы данных не указан реальный релиз.',
+    'UpgradeCorrectionNoRecordedVersion' => 'В базе данных нет зарегистрированной версии.',
+    'UpgradeCorrectionUnknownVersionFinding' => 'В базе данных указана версия \'{$version}\', которая не содержит названия какой-либо версии SimpleRisk. Обновление не может выбрать начальную точку из этой версии.',
+    'UpgradeCorrectionUnknownVersionGuidance' => 'Установите параметр db_version на версию, схему которой фактически использует эта база данных, затем снова запустите обновление: UPDATE settings SET value=\'<release>\' WHERE name=\'db_version\'. Если значение является заполнителем, например, 2026XXXX-001, то правильное значение почти всегда будет самой последней реальной версией, установленной до запуска обновления.',
+    'UpgradeCorrectionLegacySessionsTitle' => 'Таблица сессий не сохранится после преобразования кодировки в процессе обновления.',
+    'UpgradeCorrectionLegacySessionsFinding' => '`sessions`.`id` имеет тип VARCHAR({$width}) в таблице MyISAM. Преобразование его в utf8mb4, которое выполняется начиная с версии 20230106-001, превысит лимит индекса MyISAM в 1000 байт и приведет к сбою обновления.',
+    'UpgradeCorrectionLegacySessionsGuidance' => 'Одна или несколько активных сессий используют идентификатор длиннее 128 символов. Сужение этого столбца привело бы к выходу этих пользователей из системы, поэтому его оставили без изменений. Повторите обновление, когда срок действия этих сессий истечет.',
+    'UpgradeCorrectionApplied' => 'Исправлено.',
+    'UpgradeCorrectionFailed' => 'Данная поправка не может быть применена. Причина указана в журнале SimpleRisk.',
+    'UpgradeCorrectionAppliedLine' => 'Исправлено: {$title} {$message}',
+    'UpgradeCorrectionNotAppliedLine' => 'НЕ исправлено: {$title} {$message}',
+    'UpgradeCorrectionsNeeded' => 'Перед обновлением этого экземпляра необходимы следующие исправления: {$count}',
+    'UpgradeCorrectionsNeededShort' => 'Необходимы исправления: {$count}',
+    'UpdateDatabase' => 'Обновление базы данных...',
+    // Authentication screens (index.php, reset.php, reset_password.php)
+    'EnterTheCredentialsForYourAccount' => 'Введите учетные данные своей учетной записи.',
+    'TroubleSigningIn' => 'Возникли проблемы со входом в систему? Обратитесь к администратору SimpleRisk.',
+    'BackToLogin' => 'Вернуться к входу',
+    'Or' => 'или',
+    'WeWillEmailAResetTokenToYourAccount' => 'Мы вышлем токен для сброса на адрес электронной почты, указанный в вашей учетной записи.',
+    'EnterTheResetTokenFromYourEmail' => 'Введите токен для сброса пароля из электронного письма вместе с новым паролем.',
+    'ChooseANewPasswordToContinue' => 'Выберите новый пароль для продолжения.',
+    'FromZeroToGRCInMinutes' => 'От нуля до GRC за считанные минуты.',
+    'OrganizationLogo' => 'Логотип организации',
+    'LoginScreenBranding' => 'брендирование экрана входа в систему',
+    'CustomLogo' => 'Логотип на заказ',
+    'CustomLogoHint' => 'PNG, JPG, GIF или WebP, до 1 МБ и 2000x2000. Отображается с разрешением до 260x64, поэтому для экранов с высокой плотностью пикселей укажите примерно 520x128. Верхняя панель и панель входа в систему темные, поэтому загрузите логотип, который будет хорошо виден на темном фоне. Удалите логотип, чтобы вернуться к логотипу SimpleRisk.',
+    'CurrentLogo' => 'Текущий логотип',
+    'RemoveLogo' => 'Удалить логотип',
+    'LoginTagline' => 'Слоган для входа',
+    'LoginTaglineHint' => 'Заменяет слоган SimpleRisk на экране входа в систему. Лучше всего подходит одна короткая строка. Оставьте это поле пустым, чтобы сохранить слоган SimpleRisk.',
+    'LoginNotice' => 'Уведомление об использовании системы',
+    'LoginNoticeHint' => 'Отображается на экране входа в систему перед авторизацией. Используйте его для уведомления о допустимом использовании или использовании системы. Оставьте поле пустым, чтобы не отображать уведомление. Ссылки и изображения не допускаются.',
+    'BrandingRequiresCustomization' => 'Оформление экрана входа в систему входит в дополнительные возможности персонализации.',
+    'LogoMustBeAnImage' => 'Логотип должен представлять собой изображение в формате PNG, JPG, GIF или WebP.',
+    'LogoTooLarge' => 'Размер логотипа не должен превышать 1 МБ.',
+    'LogoDimensionsTooLarge' => 'Размер логотипа не должен превышать 2000x2000 пикселей.',
+    'LogoDimensionsTooSmall' => 'По самой длинной стороне логотипа должно быть не менее 32 пикселей.',
+    'LogoUploadFailed' => 'Логотип не удалось загрузить. Пожалуйста, попробуйте еще раз.',
+    'LogoUpdated' => 'Логотип был обновлён.',
+    'LogoRemoved' => 'Логотип был удален.',
+    'NoSystemUseNoticeSet' => 'Уведомление об использовании системы не установлено.',
+    'NoticeSizeSmall' => 'Маленький',
+    'NoticeSizeNormal' => 'Нормальный',
+    'NoticeSizeLarge' => 'Большой',
+    // Preferences page save feedback
+    'TheSettingsWereUpdatedSuccessfully' => 'Настройки успешно обновлены.',
+    'NoChangesWereMade' => 'Никаких изменений внесено не было.',
+    'PleaseSpecifyAnIntegerGreaterThanOrEqualToZeroForTheMinimumValue' => 'Пожалуйста, укажите целое число, большее или равное нулю, в качестве минимального значения.',
+    'PleaseSpecifyAnIntegerForTheMaximumValue' => 'Пожалуйста, укажите целое число для максимального значения.',
+    'PleaseSpecifyAMaximumValueGreaterThanTheMinimum' => 'Пожалуйста, укажите максимальное значение, превышающее минимальное.',
+    // Extra download version compatibility
+    'ExtraVersionIncompatibleWithApplication' => 'Загруженный файл "{$extra}" Extra (версия {$extra_version}) несовместим с SimpleRisk {$app_version} и не был установлен. Сначала обновите SimpleRisk до последней версии.',
+    'ExtraCompatibilityDataUnavailable' => 'SimpleRisk не смог подтвердить, какие версии Extra поддерживаются в этом релизе, поэтому Extra не был установлен. Пожалуйста, попробуйте позже.',
+    'ExtraVersionCouldNotBeVerified' => 'Не удалось определить версию загруженного дополнения, поэтому оно не было установлено.',
     '' => '',
 );
 ?>

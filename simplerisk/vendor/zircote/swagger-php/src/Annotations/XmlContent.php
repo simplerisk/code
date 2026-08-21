@@ -7,7 +7,7 @@
 namespace OpenApi\Annotations;
 
 use OpenApi\Annotations as OA;
-use OpenApi\Generator;
+use OpenApi\Undefined;
 
 /**
  * Shorthand for a xml response.
@@ -21,9 +21,9 @@ class XmlContent extends Schema
     /**
      * A map between a property name and its encoding information.
      *
-     * @var Encoding[]
+     * @var list<Encoding>
      */
-    public $encoding = Generator::UNDEFINED;
+    public $encoding = Undefined::UNDEFINED;
 
     /**
      * @inheritdoc

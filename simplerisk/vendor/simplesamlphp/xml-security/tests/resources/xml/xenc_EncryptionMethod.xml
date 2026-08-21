@@ -1,5 +1,5 @@
-<xenc:EncryptionMethod xmlns:xenc="http://www.w3.org/2001/04/xmlenc#" Algorithm="http://www.w3.org/2001/04/xmlenc#rsa-oaep-mgf1p">
+<xenc:EncryptionMethod xmlns:xenc="http://www.w3.org/2001/04/xmlenc#" xmlns:other="urn:other:enc" Algorithm="http://www.w3.org/2001/04/xmlenc#rsa-oaep-mgf1p">
   <xenc:KeySize>10</xenc:KeySize>
   <xenc:OAEPparams>9lWu3Q==</xenc:OAEPparams>
-  <other:Element xmlns:other="urn:other:enc">Value</other:Element>
+  <other:Element>Value</other:Element>
 </xenc:EncryptionMethod>

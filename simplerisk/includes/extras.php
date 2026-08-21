@@ -67,7 +67,7 @@ function available_extras()
         array("short_name" => "artificial_intelligence", "long_name" => "Artificial Intelligence Extra"),
         array("short_name" => "assessments", "long_name" => "Risk Assessment Extra"),
         array("short_name" => "authentication", "long_name" => "Custom Authentication Extra"),
-        array("short_name" => "complianceforgescf", "long_name" => "ComplianceForge SCF Extra"),
+        array("short_name" => "complianceforgescf", "long_name" => "Secure Controls Framework (SCF) Extra"),
         array("short_name" => "customization", "long_name" => "Customization Extra"),
         array("short_name" => "encryption", "long_name" => "Encrypted Database Extra"),
         array("short_name" => "import-export", "long_name" => "Import-Export Extra"),
@@ -84,6 +84,36 @@ function available_extras()
 
     // Return the array of available Extras
     return $extras;
+}
+
+/**********************************************************
+ * FUNCTION: EXTRA DESCRIPTION KEYS                       *
+ * Maps each Extra short_name to its description language *
+ * key (lang.en.php). Any Extra omitted here falls back   *
+ * to its long_name for display.                          *
+ **********************************************************/
+function extra_description_keys(): array
+{
+    return [
+        'advanced_search'          => 'AdvancedSearchExtraDesc',
+        'api'                      => 'APIExtraDesc',
+        'artificial_intelligence'  => 'ArtificialIntelligenceExtraDesc',
+        'assessments'              => 'AssessmentsExtraDesc',
+        'authentication'           => 'CustomAuthenticationExtraDesc',
+        'complianceforgescf'       => 'SCFExtraDesc',
+        'customization'            => 'CustomizationExtraDesc',
+        'encryption'               => 'EncryptionExtraDesc',
+        'import-export'            => 'ImportExportExtraDesc',
+        'incident_management'      => 'IncidentManagementExtraDesc',
+        'jira'                     => 'JiraExtraDesc',
+        'notification'             => 'NotificationExtraDesc',
+        'organizational_hierarchy' => 'OrganizationManagementDesc',
+        'separation'               => 'SeparationExtraDesc',
+        'ucf'                      => 'UCFExtraDesc',
+        'upgrade'                  => 'UpgradeExtraDesc',
+        'vulnmgmt'                 => 'VulnerabilityManagementExtraDesc',
+        'workflows'                => 'WorkflowsExtraDesc',
+    ];
 }
 
 /**********************************************************
@@ -286,7 +316,11 @@ function core_display_upgrade_extras()
 	global $escaper;
 	global $lang;
 
-	// Check all purchases in one web service call
+	// Reachable: get_current_version_for_extra() lives in licensing.php.
+	require_once(realpath(__DIR__ . '/licensing.php'));
+
+	// Read purchase state from the local license cache.
+	// Returns [short_name => bool]; always an array, never false.
 	$purchases = core_check_all_purchases();
 
 	// Get the list of available extras
@@ -300,7 +334,6 @@ function core_display_upgrade_extras()
                 <tr>
                     <th>Extra Name</th>
                     <th>Purchased</th>
-                    <th>Expires</th>
                     <th>Installed</th>
                     <th>Activated</th>
                     <th>Version</th>
@@ -310,100 +343,50 @@ function core_display_upgrade_extras()
             </thead>
             <tbody>";
 
-    // If we were able to obtain the purchases
-    if ($purchases != false)
-    {
-		// For each available extra
-		foreach ($available_extras as $extra)
-		{
-			// If this is the Upgrade or ComplianceForge SCF Extra
-			if ($extra['short_name'] == "upgrade" || $extra['short_name'] == "complianceforgescf")
-			{
-				// Set purchased to true
-				$purchased = true;
-				$expires = "Unlimited";
-			}
-			else
-			{
-				$extras_xml = $purchases->{"extras"};
-				$extra_xml = $extras_xml->{$extra['short_name']};
+	// Free Extras per the licensing cache (server-authoritative; bundled
+	// fallback on a cold cache). Resolved once, not per row.
+	$free_extras = free_extra_short_names();
 
-				// If the extra is not yet known to the SimpleRisk licensing server
-				if (empty($extra_xml) || !isset($extra_xml->{"purchased"}))
-				{
-					$purchased = false;
-					$disabled = false;
-					$deleted = false;
-					$expires = "N/A";
-				}
-				else
-				{
-					$purchased = (bool)json_decode(strtolower($extra_xml->{"purchased"}->__toString()));
-					$disabled = (bool)json_decode(strtolower($extra_xml->{"disabled"}->__toString()));
-					$deleted = (bool)json_decode(strtolower($extra_xml->{"deleted"}->__toString()));
+	// For each available extra
+	foreach ($available_extras as $extra)
+	{
+		$short_name = $extra['short_name'];
+		$purchased = $purchases[$short_name] ?? false;
 
-					// If the extra was purchased
-					if ($purchased)
-					{
-						// Get the expiration date
-						$expires = $extra_xml->{"expires"}->__toString();
+		// Free Extras read as purchased regardless of paid-license state.
+		if (in_array($short_name, $free_extras, true)) {
+			$purchased = true;
+		}
 
-						// If the exipration date is not set
-						if ($expires == "0000-00-00 00:00:00")
-						{
-							$expires = $escaper->escapeHtml("N/A");
-						}
-						// If the expiration date has passed
-						else if ($expires < date('Y-m-d h:i:s'))
-						{
-							$expires = "<font color='red'><b>Expired</b></font>";
-						}
-						else $expires = "<font color='green'><b>" . $escaper->escapeHtml(substr($expires, 0, 10)) . "</b></font>";
-					}
-					else $expires = "N/A";
-				}
-			}
+		// Check if the extra is installed
+		$installed = core_is_installed($short_name);
 
-			// Check if the extra is installed
-			$installed = core_is_installed($extra['short_name']);
+		// Check if the extra is activated
+		$activated = core_extra_activated($short_name);
 
-			// Check if the extra is activated
-			$activated = core_extra_activated($extra['short_name']);
+		// If the extra is purchased and activated
+		$activated_link = ($purchased && $activated) ? core_extra_activated_link($short_name) : "";
 
-			// If the extra is purchased and activated
-			if ($purchased && $activated)
-			{
-				$activated_link = core_extra_activated_link($extra['short_name']);
-			}
-			else $activated_link = "";
+		// Get the version information. Prefer the current version the licensing
+		// service cached for this Extra (licensed/free entries carry it); fall
+		// back to the releases.xml fetch for Extras with no cache entry
+		// (e.g. unlicensed), which return null here.
+		$version = core_extra_current_version($short_name);
+		$latest_version = get_current_version_for_extra($short_name) ?? latest_version($short_name);
 
-			// Get the version information
-			$version = core_extra_current_version($extra['short_name']);
-			$latest_version = latest_version($extra['short_name']);
+		// Get the action button
+		$action_button = core_get_action_button($short_name, $purchased, $installed, $activated, $version, $latest_version);
 
-			// Get the action button
-			$action_button = core_get_action_button($extra['short_name'], $purchased, $installed, $activated, $version, $latest_version);
-
-			// Display the table row
-			echo "
+		// Display the table row
+		echo "
                 <tr>
                     <td>{$escaper->escapeHtml($extra['long_name'])}</td>
                     <td><input class='form-check-input' type='checkbox'" . ($purchased ? " checked" : "") . " /></td>
-                    <td>{$expires}</td>
                     <td><input class='form-check-input' type='checkbox'" . ($installed ? " checked" : "") . " /></td>
                     <td><input class='form-check-input' type='checkbox'" . ($activated ? " checked" : "") . " />{$activated_link}</td>
                     <td><b>{$escaper->escapeHtml($version)}</b></td>
                     <td><b>{$escaper->escapeHtml($latest_version)}</b></td>
                     <td><b>{$action_button}</b></td>
-                </tr>";
-		}
-	}
-	// We were unable to obtain the purchases from the server
-	else
-	{
-		// Display the table row
-		echo "  <tr>
-                    <td colspan='8'><b>{$escaper->escapeHtml($lang['UnableToCommunicateWithTheSimpleRiskServer'])}</b></td>
                 </tr>";
 	}
 
@@ -474,141 +457,105 @@ function extra_handler_slug(string $dir_name): string
 
 /***************************************************************
  * FUNCTION: IS PURCHASED                                      *
- * Displays whether the extra name provided has been purchased *
+ * Returns true iff the licensing service's last-seen response *
+ * marks this Extra as effective for this instance. Reads      *
+ * from the local cache (settings.license_check_response);     *
+ * never hits the network. The cache is refreshed daily by     *
+ * license_check_daily().                                      *
  ***************************************************************/
 function core_is_purchased($extra)
 {
-    //They're purchased by default
-    if (in_array($extra, ['upgrade', 'complianceforgescf']))
-        return true;
-
-    if (!empty($GLOBALS['purchased_extras'])) {
-        if (in_array($extra, $GLOBALS['purchased_extras'])) {
-            return true;
-        }
-    } else {
-        $GLOBALS['purchased_extras'] = [];
-    }
-
-    // Get the instance identifier
-    $instance_id = get_setting("instance_id");
-
-    // Get the services API key
-    $services_api_key = get_setting("services_api_key");
-
-    // Create the data to send
-    $parameters = array(
-        'action' => 'check_purchase',
-        'instance_id' => $instance_id,
-        'api_key' => $services_api_key,
-        'extra_name' => $extra,
-    );
-
-    write_debug_log("Checking for purchase of " . $extra . " for instance ID " . $instance_id, 'info');
-
-    // Ask the service if the extra is purchased
-    $response = simplerisk_service_call($parameters);
-    $return_code = $response['return_code'];
-
-    // If the SimpleRisk service call returned false
-    if ($return_code !== 200)
-    {
-        write_debug_log("Unable to communicate with the SimpleRisk services API", 'warning');
-
-        // Return false
-        return false;
-    }
-    // If we have valid results from the service call
-    else
-    {
-        $results = $response['response'];
-        $results = array($results);
-        $regex_pattern = "/<result>1<\/result>/";
-
-        foreach ($results as $line)
-        {
-            // If the service returned a success
-            if (preg_match($regex_pattern, $line, $matches))
-            {
-                $GLOBALS['purchased_extras'][] = $extra;
-                return true;
-            }
-            else return false;
-        }
-    }
+    require_once(realpath(__DIR__ . '/licensing.php'));
+    return get_effective_for_extra((string)$extra);
 }
 
 /***************************************************************
  * FUNCTION: CHECK ALL PURCHASES                               *
- * Calls the services API to get all purchases at once         *
+ * Returns an associative array of [short_name => bool]        *
+ * where bool is the cached 'effective' flag for that Extra.   *
+ * Reads from the local cache (settings.license_check_response)*
+ * populated daily by license_check_daily(). Never hits the network.   *
  ***************************************************************/
 function core_check_all_purchases()
 {
-    // Get the instance identifier
-    $instance_id = get_setting("instance_id");
+    require_once(realpath(__DIR__ . '/licensing.php'));
 
-    // Get the services API key
-    $services_api_key = get_setting("services_api_key");
-
-    // Create the parameters to send
-    $parameters = array(
-        'action' => 'check_all_purchases',
-        'instance_id' => $instance_id,
-        'api_key' => $services_api_key,
-    );
-
-    write_debug_log("Checking for all purchases for instance ID " . $instance_id, 'info');
-
-    // Configuration for the SimpleRisk service call
-    if (defined('SERVICES_URL'))
-    {
-        $url = SERVICES_URL . "/index.php";
-    } 
-    else $url = "https://services.simplerisk.com/index.php";
-
-    // Set the HTTP options
-    $http_options = [
-        'method' => 'POST',
-        'header' => [
-            "Content-Type: application/x-www-form-urlencoded",
-        ],
-    ];
-
-    // If SSL certificate checks are enabled for external requests
-    if (get_setting('ssl_certificate_check_external') == 1)
-    {
-        // Verify the SSL host and peer
-        $validate_ssl = true;
+    // Read the cached entries ONCE and build a short_name => effective lookup.
+    // Calling get_effective_for_extra() per Extra would re-read the (now
+    // uncached) settings.license_check_response row N times — one DB query per
+    // available Extra. get_cached_license_entries() already filters to known
+    // short-names, so this map only contains recognized Extras.
+    $effective = [];
+    foreach (get_cached_license_entries() as $entry) {
+        if (isset($entry['extra_name'])) {
+            $effective[$entry['extra_name']] = (bool)($entry['effective'] ?? false);
+        }
     }
-    else $validate_ssl = false;
 
-    // Make the services call
-    $response = fetch_url_content("stream", $http_options, $validate_ssl, $url, $parameters);
-    if (!is_array($response))
-    {
-        write_debug_log("SimpleRisk was unable to connect to " . $url, 'warning');
-        return false;
+    $out = [];
+    foreach (available_extra_short_names() as $name) {
+        $out[$name] = $effective[$name] ?? false;
     }
-    $return_code = $response['return_code'];
-    $result = $response['response'];
+    return $out;
+}
 
-    // If we were unable to connect to the URL
-    if($return_code !== 200)
-    {
-        write_debug_log("SimpleRisk was unable to connect to " . $url, 'warning');
+/*************************************************************
+ * FUNCTION: FREE EXTRA SHORT NAMES                          *
+ *************************************************************/
+// The set of Extra short-names that are free (never subject to the licensing
+// enforcement gate). Single source of truth so the free-Extra set can't drift
+// across the call sites that gate display/install on it.
+//
+// The Upgrade and SCF Extras are bundled-free with the product — they are ALWAYS
+// free, regardless of cache state. This must hold even when the license cache is
+// warm but does not flag them is_free (e.g. before the server populates the
+// flag, or a partial cache), otherwise the Upgrade Extra — the upgrade mechanism
+// itself — could be blocked from installing. The licensing cache's is_free flags
+// are then unioned in, so the server stays authoritative for any ADDITIONAL free
+// Extras beyond the bundled set.
+function free_extra_short_names(): array
+{
+    require_once(realpath(__DIR__ . '/licensing.php'));
 
-	    // Return false
-	    return false;
+    $free = ['upgrade', 'complianceforgescf'];
+
+    foreach (get_cached_license_entries() as $entry) {
+        if (!empty($entry['is_free'])
+            && isset($entry['extra_name'])
+            && !in_array($entry['extra_name'], $free, true)) {
+            $free[] = $entry['extra_name'];
+        }
     }
-    // We were able to connect to the URL
-    else
-    {
-        write_debug_log("SimpleRisk successfully connected to " . $url, 'info');
+    return $free;
+}
 
-	    // Return the XML results
-	    $xml = simplexml_load_string($result);
-	    return $xml;
+/*************************************************************
+ * FUNCTION: HAS PAID EXTRA                                  *
+ *************************************************************/
+// True iff the instance currently has at least one PAID Extra — an Extra the
+// licensing cache marks 'effective' (a currently-valid license) that is not in
+// the free set (Upgrade, SCF, and any server-flagged is_free Extra). Reads the
+// local cache (settings.license_check_response) only; never hits the network.
+//
+// This is the entitlement behind the Phone Support menu item: standard support
+// (portal/web/email) is included for everyone, but phone support is reserved
+// for paying customers. Excluding free_extra_short_names() keeps the bundled
+// free Extras from counting as a paid purchase.
+function has_paid_extra(): bool
+{
+    require_once(realpath(__DIR__ . '/licensing.php'));
+
+    $free = free_extra_short_names();
+
+    foreach (get_cached_license_entries() as $entry) {
+        $name = $entry['extra_name'] ?? '';
+        if ($name !== ''
+            && !empty($entry['effective'])
+            && !in_array($name, $free, true)) {
+            return true;
+        }
     }
+    return false;
 }
 
 /*************************************************************
@@ -630,10 +577,6 @@ function core_get_action_button($extra_name, $purchased, $installed, $activated,
     {
         case "upgrade":
             $button_name = "get_upgrade_extra";
-            break;
-        case "complianceforge":
-            $button_name = "get_complianceforge_extra";
-            $action_link = "complianceforge.php";
             break;
         case "complianceforgescf":
             $button_name = "get_complianceforge_scf_extra";
@@ -666,10 +609,6 @@ function core_get_action_button($extra_name, $purchased, $installed, $activated,
         case "assessments":
             $button_name = "get_assessments_extra";
             $action_link = "assessments.php";
-            break;
-        case "governance":
-            $button_name = "get_governance_extra";
-            $action_link = "governance.php";
             break;
         case "api":
             $button_name = "get_api_extra";
@@ -755,18 +694,24 @@ function core_get_action_button($extra_name, $purchased, $installed, $activated,
  *******************************************************/
 function core_gather_extra_upgrades() {
 
+    // Reachable: get_current_version_for_extra() lives in licensing.php.
+    require_once(realpath(__DIR__ . '/licensing.php'));
+
     $available_extras = available_extra_short_names();
 
     $upgradeable = [];
     foreach($available_extras as $extra) {
+        // Prefer the licensing service's cached current version; fall back to
+        // the releases.xml fetch for Extras with no cache entry.
+        $latest = get_current_version_for_extra($extra) ?? latest_version($extra);
         if (core_is_purchased($extra) &&
             core_is_installed($extra) &&
-            core_extra_current_version($extra) < latest_version($extra)) {
-            // Have to be upgraded    
+            core_extra_current_version($extra) < $latest) {
+            // Have to be upgraded
             $upgradeable[] = $extra;
         }
     }
-    
+
     return $upgradeable;
 }
 
@@ -785,7 +730,20 @@ function core_upgrade_extras($extras_to_upgrade = false) {
     stream_write($lang['UpdateExtrasStarted']);
     foreach($extras_to_upgrade as $extra) {
         stream_write(_lang('UpdateExtrasExtraUpdateStarted', array('extra' => $extra)));
-        if (!download_extra($extra, true)) {
+        // $skip_version_check = true. This function is Step 5 of the one-click
+        // upgrade: the application files were replaced earlier in this same
+        // request, and APP_VERSION is a constant that cannot be redefined, so
+        // download_extra()'s Core-version gate would still see the pre-upgrade
+        // release and refuse every Extra this step exists to upgrade. Ordering
+        // is what makes the bypass safe -- Core and its schema are already on
+        // the newest release by the time we get here, which is precisely the
+        // condition the gate checks for.
+        $result = download_extra($extra, true, true);
+        if (!is_string($result)) {
+            $err_message = $result['reason'] ?? $result['error'] ?? null;
+            if ($err_message !== null) {
+                write_debug_log("download_extra failed for '{$extra}': {$err_message}", 'warning');
+            }
             stream_write_error(_lang('UpdateExtrasUpdateExtraFailed', array('extra' => $extra)));
             return 0;
         }
@@ -796,111 +754,88 @@ function core_upgrade_extras($extras_to_upgrade = false) {
 
 /*********************************************************
  * FUNCTION: EXTRA SIMPLERISK VERSION COMPATIBILE        *
- * Checks to see if the Extra is compatible with the     *
- * running version of SimpleRisk                         *
+ * Checks to see if the INSTALLED Extra is compatible    *
+ * with the running version of SimpleRisk                *
  *********************************************************/
-function extra_simplerisk_version_compatible($extra)
+/**
+ * True when the version of $extra currently installed is one the running
+ * release supports, per the updates service's extra_compatibility.xml.
+ *
+ * This answers a different question from the checks in download_extra(): those
+ * judge a build being installed, this judges the build already on disk, and
+ * healthcheck.php surfaces the answer as an operator warning.
+ *
+ * Rewritten to share extra_compatibility_versions() +
+ * extra_version_supported_by_app() with the download path. It previously fetched
+ * and parsed the feed itself, which meant: a second uncached network call per
+ * Extra on every healthcheck render; an unchecked simplexml_load_string() plus
+ * an unchecked $array[$extra]['extra'] index (the same TypeError shape that
+ * parse_releases_feed() was introduced to fix, papered over with a Phan
+ * suppression); and a second place for the feed's shape to be understood
+ * differently from the first. One reader, one parser, one cache.
+ *
+ * Returns false when compatibility cannot be determined, preserving the previous
+ * behaviour for its only caller -- healthcheck.php treats false as "warn".
+ *
+ * @param string        $extra            Extra short name.
+ * @param callable|null $version_provider Test seam: fn(string $extra): string returning
+ *                                        the installed version. Production passes null
+ *                                        and gets core_extra_current_version().
+ *
+ * The seam exists because core_extra_current_version() require_once's the Extra's
+ * own index.php to read its version constant. That is correct at runtime, but those
+ * files carry substantial top-level control flow (7-31 statements in the ones
+ * sampled), so pulling one into a unit-test process to exercise this wrapper would
+ * execute Extra bootstrap code and risk redeclaring against Core. Injecting the
+ * version keeps the test to the branching that actually lives here.
+ */
+function extra_simplerisk_version_compatible($extra, ?callable $version_provider = null)
 {
-	write_debug_log("Checking version comptability for the \"" . $extra . "\" extra.", 'info');
+	// Declared here rather than relied on transitively. extra_version_supported_by_app()
+	// lives in licensing.php, and without this the call only resolves because the
+	// extra_compatibility_versions() call below happens to require licensing.php
+	// first -- a chain that depends on statement ORDER inside this function, not
+	// even on the include graph. An early return or a reorder would turn it into a
+	// fatal "Call to undefined function" in healthcheck.php, and Phan cannot see it.
+	require_once(realpath(__DIR__ . '/licensing.php'));
 
-	// Get the list of available extra names
-	$available_extras = available_extra_short_names();
+	write_debug_log("Checking version compatibility for the \"" . $extra . "\" extra.", 'info');
 
 	// If the provided extra name is not in the list of available extras
-	if (!in_array($extra, $available_extras))
+	if (!in_array($extra, available_extra_short_names()))
 	{
-		// Return false
 		return false;
 	}
-	// The provided extra name is in the list of available extras
-	else
+
+	$simplerisk_version = (string)current_version("app");
+	$extra_version      = ($version_provider !== null)
+		? (string)$version_provider($extra)
+		: (string)core_extra_current_version($extra);
+
+	// core_extra_current_version() answers "N/A" for an Extra it cannot read.
+	if ($extra_version === '' || $extra_version === 'N/A')
 	{
-		// URL for extra compatibility checks
-		if (defined('UPDATES_URL'))
-		{   
-			$url = UPDATES_URL . '/extra_compatibility.xml';
-		}
-		else $url = 'https://raw.githubusercontent.com/simplerisk/updates.simplerisk.com/updates.simplerisk.com/extra_compatibility.xml';
-
-		// Get the current version of SimpleRisk
-		$simplerisk_version = current_version("app");
-		write_debug_log("The current version of SimpleRisk is " . $simplerisk_version, 'info');
-
-		// Get the current version of the extra
-		$extra_version = core_extra_current_version($extra);
-		write_debug_log("Current version of this extra is " . $extra_version, 'info');
-
-        // Set the HTTP options
-        $http_options = [
-            'method' => 'GET',
-            'header' => [
-                "Content-Type: application/x-www-form-urlencoded",
-            ],
-        ];
-
-        // If SSL certificate checks are enabled for the SimpleRisk API
-        if (get_setting('ssl_certificate_check_external') == 1)
-        {
-            // Verify the SSL host and peer
-            $validate_ssl = true;
-        }
-        else $validate_ssl = false;
-
-		write_debug_log("Fetching content from the extra compatibility page.", 'info');
-
-		// Set the default socket timeout to 5 seconds
-		ini_set('default_socket_timeout', 5);
-
-        // Make the services call
-        $response = fetch_url_content("stream", $http_options, $validate_ssl, $url);
-        if (!is_array($response))
-        {
-            write_debug_log("Unable to connect to " . $url, 'warning');
-            return false;
-        }
-        $return_code = $response['return_code'];
-
-		// If we were unable to connect to the URL
-        if ($return_code !== 200)
-		{
-			write_debug_log("Unable to connect to " . $url, 'warning');
-			return false;
-		}
-		// We were able to connect to the URL
-		else
-		{
-			// Get the content of the extra compatibility page
-			$extra_compatibility_page = $response['response'];
-
-			// Parse the XML
-			$ob = simplexml_load_string($extra_compatibility_page);
-
-			// Encode the XML as JSON
-			$json = json_encode($ob);
-
-			// Decode the JSON as an array
-			$array = json_decode($json, true);
-
-			// For each extra entry in the array
-			// @phan-suppress-next-line PhanTypeArraySuspiciousNullable -- json_decode result from valid XML→JSON; xml validity confirmed by simplexml_load_string success
-			foreach($array[$extra]['extra'] as $key => $value)
-			{
-				$array_extra_version = $value['@attributes']['version'];
-				$array_simplerisk_version = $value['appversion'];
-
-				// If we have a match
-				if ($simplerisk_version == $array_simplerisk_version && $extra_version == $array_extra_version)
-				{
-					write_debug_log("The current version of SimpleRisk is compatible with this Extra.", 'info');
-					return true;
-				}
-			}
-
-			// If we never found our match
-			write_debug_log("The current version of SimpleRisk is not compatible with this Extra.", 'warning');
-			return false;
-		}
+		write_debug_log("No installed version found for the \"" . $extra . "\" extra.", 'info');
+		return false;
 	}
+
+	$compatibility = extra_compatibility_versions();
+
+	if ($compatibility === null)
+	{
+		write_debug_log("No Extra compatibility data available; cannot verify the \"" . $extra . "\" extra.", 'warning');
+		return false;
+	}
+
+	// null (no entry for this version) is not a match, same as false.
+	if (extra_version_supported_by_app($compatibility, $extra, $extra_version, $simplerisk_version) === true)
+	{
+		write_debug_log("The current version of SimpleRisk is compatible with this Extra.", 'info');
+		return true;
+	}
+
+	write_debug_log("The current version of SimpleRisk is not compatible with this Extra.", 'warning');
+	return false;
 }
 
 /**************************************
@@ -908,180 +843,55 @@ function extra_simplerisk_version_compatible($extra)
  **************************************/
 function simplerisk_license_check()
 {
-	write_debug_log("Running license check.", 'info');
+	write_debug_log("Applying cached license state.", 'info');
 
-	// Get if the instance is registered
-	$registration_registered = get_setting('registration_registered');
-
-	// If the registration is registered
-	if ($registration_registered == 1)
-	{
-		write_debug_log("The instance is registered.", 'info');
-
-        	// Get the hosting tier setting
-        	$hosting_tier = get_setting('hosting_tier');
-
-        	// If the hosting tier is not set then this is an on-premise instance
-        	if (!$hosting_tier)
-        	{
-			write_debug_log("The instance is on-premise.", 'info');
-
-			// Check the license against what is installed
-			simplerisk_license_check_purchases();
-
-			// Set the last checked date to now
-			$now = time();
-			update_setting("license_check_date", $now);
-        	}
-	}
+	// Apply the cached enforcement_level to the session so existing UI that
+	// reads $_SESSION['license_check'] reflects the current licensing policy.
+	// Server-authoritative — no client-side grace.
+	//
+	// This is a pure read of the local cache (settings.license_check_response).
+	// It does NOT call the licensing service: the cache is refreshed out-of-band
+	// by the core_license_check queue job (scheduled by cron_queue_loader,
+	// executed by cron_queue_worker, at most once per 24h), and once more
+	// synchronously by register.php right after a fresh registration so a new
+	// instance bootstraps its entitlements immediately. Keeping the login path
+	// network-free makes sign-in fast and removes the licensing service from
+	// the critical auth path entirely.
+	require_once(realpath(__DIR__ . '/licensing.php'));
+	apply_enforcement_level();
 }
 
-/************************************************
- * FUNCTION: SIMPLERISK LICENSE CHECK PURCHASES *
- * Check that Extras align with licenses        *
- ************************************************/
+/**
+ * Refresh the local licensing cache by firing one /license/check against
+ * the licensing service. Returns whatever license_check_daily() returns (the
+ * parsed /license/check response — see parse_license_check_response()).
+ *
+ * Callers that need per-Extra effective state should call
+ * core_is_purchased() / get_effective_for_extra() instead — those read
+ * from the cache this function populates.
+ *
+ * NOTE: The legacy implementation of this function also managed several
+ * enforcement side effects: setting $_SESSION['license_check'] pass/fail,
+ * setting $_SESSION['support'], tracking license_check_fail_date_* settings,
+ * and auto-deactivating/deleting Extras after 30 days of license failure.
+ * Those behaviors are intentionally dropped here; they belong in a dedicated
+ * enforcement layer that reads from the cache via get_effective_for_extra().
+ */
+function simplerisk_refresh_license_cache()
+{
+    require_once(realpath(__DIR__ . '/licensing.php'));
+    return license_check_daily();
+}
+
+/**
+ * @deprecated Use simplerisk_refresh_license_cache(). Renamed during the
+ * licensing refactor because this function no longer just "checks
+ * purchases" — it triggers a fresh /license/check which uploads
+ * metadata and retrieves the full entitlements + enforcement state.
+ */
 function simplerisk_license_check_purchases()
 {
-	// Set a session value for the license check
-	$_SESSION['license_check'] = "pass";
-
-	// Check the purchases
-	$purchases = core_check_all_purchases();
-
-	// If we were able to obtain the purchases
-	if ($purchases != false)
-	{
-		// Get the support information
-		$support_xml = $purchases->{"support"};
-		$support_purchased = (bool)json_decode(strtolower($support_xml->{"purchased"}->__toString()));
-
-		// If support is purchased
-		if ($support_purchased == "true")
-		{
-			// Add the support license to the session
-			$_SESSION['support'] = "true";
-		}
-		else $_SESSION['support'] = "false";
-
-		// Get the list of available SimpleRisk Extras
-		$extras = available_extras();
-
-		// For each available Extra
-		foreach ($extras as $extra)
-		{
-			// If this is not the Upgrade or ComplianceForge SCF Extra
-			if ($extra['short_name'] != "upgrade" && $extra['short_name'] != "complianceforgescf")
-			{
-				// Get the license information
-				$extras_xml = $purchases->{"extras"};
-				$extra_xml = $extras_xml->{$extra['short_name']};
-
-				// Skip extras not yet known to the SimpleRisk licensing server
-				if (empty($extra_xml) || !isset($extra_xml->{"purchased"}))
-				{
-					continue;
-				}
-
-				$purchased = (bool)json_decode(strtolower($extra_xml->{"purchased"}->__toString()));
-				$expires = $extra_xml->{"expires"}->__toString();
-				$disabled = (bool)json_decode(strtolower($extra_xml->{"disabled"}->__toString()));
-				$deleted = (bool)json_decode(strtolower($extra_xml->{"deleted"}->__toString()));
-
-				// Check if the extra is installed
-				$installed = core_is_installed($extra['short_name']);
-
-				// Check if the extra is activated
-				$activated = core_extra_activated($extra['short_name']);
-
-				// If the Extra is activated and should be disabled
-				if ($activated && $disabled)
-				{
-					write_debug_log("SimpleRisk says this Extra should be disabled: " . $extra['short_name'], 'warning');
-
-					// Deactivate the Extra
-					core_deactivate_extra($extra['short_name']);
-				}
-
-				// If the Extra is installed and should be deleted
-				if ($installed && $deleted)
-				{
-					write_debug_log("SimpleRisk says this Extra should be deleted: " . $extra['short_name'], 'warning');
-
-					// Delete the Extra
-					core_delete_extra($extra['short_name']);
-				}
-
-				// If the Extra is installed and activated
-				if ($installed && $activated)
-				{
-					// If the expiration date is set
-					if ($expires != "0000-00-00 00:00:00")
-					{
-						// If the expiration date has passed
-						if ($expires < date('Y-m-d h:i:s'))
-						{
-							// Set the license to expired
-							$expired = true;
-						}
-						else $expired = false;					
-					}
-					else $expired = false;
-
-					// Get the name of the setting to check for a license failure
-					$license_check_fail_date_name = "license_check_fail_date_" . $extra['short_name'];
-
-					// Get the current date and time
-					$now = time();
-				
-					// If the Extra is not purchased or has expired
-					if (!$purchased || $expired)
-					{
-						write_debug_log("Extra not purchased or expired: " . $extra['short_name'], 'warning');
-
-						// Set the session value for the license check to failed
-						$_SESSION['license_check'] = "fail";
-
-						// Check if we already have a license failed date
-						$license_check_fail_date = get_setting($license_check_fail_date_name);
-
-						// If we do not have a license failed date
-						if (!$license_check_fail_date)
-						{
-							// Set a license failed date
-							update_setting($license_check_fail_date_name, $now);
-						}
-						// We do have a license failed date
-						else
-						{
-        	                			// Get the number of days since the license failure
-        	                			$difference = $now - $license_check_fail_date;
-        	                			$days = round($difference / (60 * 60 * 24));
-
-        	                			// If it has been 30 or more days since the license check failure
-        	                			if ($days >= 30)
-							{
-								write_debug_log("Deactivating and deleting Extra: " . $extra['short_name'], 'warning');
-
-								// Deactivate the Extra
-								core_deactivate_extra($extra['short_name']);
-
-								// Delete the Extra
-								core_delete_extra($extra['short_name']);
-							}
-						}
-					}
-					// If the Extra is purchased and has not expired
-					else if ($purchased && !$expired)
-					{
-						write_debug_log("Removing license check failure for Extra: " . $extra['short_name'], 'info');
-
-						// Delete the setting for a failed license date
-						delete_setting($license_check_fail_date_name);
-					}
-				}
-			}
-		}
-	}
+    return simplerisk_refresh_license_cache();
 }
 
 /*********************************

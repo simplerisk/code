@@ -35,6 +35,11 @@ select the correct configuration. One entry in the metadata-list can
 have the host `__DEFAULT__`. This entry will be used when no other
 entry matches.
 
+Directives that relate to signing of metadata start with the
+`metadata.sign` prefix. The signing directives are documented in their
+[own section](simplesamlphp-advancedfeatures.html#metadata-signing).
+in the advanced features page.
+
 ## Common options
 
 `auth`
@@ -76,9 +81,13 @@ entry matches.
         'surName'           => 'Doe',
         'telephoneNumber'   => '+31(0)12345678',
         'company'           => 'Example Inc.',
-        'attributes'        => [
-            'xmlns:remd'        => 'http://refeds.org/metadata',
-            'remd:contactType'  => 'http://refeds.org/metadata/contactType/security',
+        'attributes' => [
+            [
+                'namespaceURI' => 'http://refeds.org/metadata',
+                'namespacePrefix' => 'remd',
+                'attrName' => 'contactType',
+                'attrValue' => 'http://refeds.org/metadata/contactType/security',
+            ],
         ],
     ],
 ],
@@ -201,7 +210,7 @@ The following SAML 2.0 options are available:
 :   The RSA encryption algorithm with PKCS#1 v1.5 padding is blacklisted by default for security reasons. Any assertions
     encrypted with this algorithm will therefore fail to decrypt. You can override this limitation by defining an empty
     array in this option (or blacklisting any other algorithms not including that one). However, it is strongly
-    discouraged to do so. For your own safety, please include the string 'http://www.w3.org/2001/04/xmlenc#rsa-1_5' if
+    discouraged to do so. For your own safety, please include the string `http://www.w3.org/2001/04/xmlenc#rsa-1_5` if
     you make use of this option.
 
 `https.certificate`
@@ -394,7 +403,7 @@ See the documentation for those extensions for more details:
 For other metadata extensions, you can use the `saml:Extensions` option:
 
 `saml:Extensions`
-:   An array of `\SAML2\XML\Chunk`s to include in the IdP metadata extensions, at the same level as `EntityAttributes`.
+:   An array of `\SimpleSAML\XML\Chunk`s to include in the IdP metadata extensions, at the same level as `EntityAttributes`.
 
 `Examples`:
 
@@ -429,11 +438,11 @@ $metadata['https://example.org/saml-idp'] = [
 ```php
 <?php
 
-$dom = \SAML2\DOMDocumentFactory::create();
+$dom = \SimpleSAML\XML\DOMDocumentFactory::create();
 $republishRequest = $dom->createElementNS('http://eduid.cz/schema/metadata/1.0', 'eduidmd:RepublishRequest');
 $republishTarget = $dom->createElementNS('http://eduid.cz/schema/metadata/1.0', 'eduidmd:RepublishTarget', 'http://edugain.org/');
 $republishRequest->appendChild($republishTarget);
-$ext = [new \SAML2\XML\Chunk($republishRequest)];
+$ext = [new \SimpleSAML\XML\Chunk($republishRequest)];
 
 $metadata['https://example.org/saml-idp'] = [
     'host' => '__DEFAULT__',

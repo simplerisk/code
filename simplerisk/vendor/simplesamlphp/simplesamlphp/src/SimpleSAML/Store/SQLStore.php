@@ -8,7 +8,9 @@ use Exception;
 use PDO;
 use PDOException;
 use SimpleSAML\Assert\Assert;
-use SimpleSAML\{Configuration, Logger, Utils};
+use SimpleSAML\Configuration;
+use SimpleSAML\Logger;
+use SimpleSAML\Utils;
 
 use function array_keys;
 use function count;
@@ -17,12 +19,12 @@ use function implode;
 use function in_array;
 use function intval;
 use function rand;
+use function rawurlencode;
 use function serialize;
 use function sha1;
 use function strlen;
 use function unserialize;
 use function urldecode;
-use function rawurlencode;
 
 /**
  * A data store using a RDBMS to keep the data.
@@ -78,6 +80,7 @@ class SQLStore implements StoreInterface
             throw new Exception("Database error: " . $e->getMessage());
         }
         $this->pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+        $this->pdo->setAttribute(PDO::ATTR_EMULATE_PREPARES, false);
 
         $this->driver = $this->pdo->getAttribute(PDO::ATTR_DRIVER_NAME);
 
@@ -159,7 +162,7 @@ class SQLStore implements StoreInterface
                      */
                     $update = [
                         'CREATE TABLE ' . $this->prefix .
-                          '_tableVersion (_name VARCHAR(30) PRIMARY KEY NOT NULL, _version INTEGER NOT NULL)',
+                          '_tableVersion_new (_name VARCHAR(30) PRIMARY KEY NOT NULL, _version INTEGER NOT NULL)',
                         'INSERT INTO ' . $this->prefix . '_tableVersion_new SELECT * FROM ' .
                           $this->prefix . '_tableVersion',
                         'DROP TABLE ' . $this->prefix . '_tableVersion',
@@ -195,6 +198,7 @@ class SQLStore implements StoreInterface
             return;
         }
     }
+
 
     /**
      * Initialize key-value table.

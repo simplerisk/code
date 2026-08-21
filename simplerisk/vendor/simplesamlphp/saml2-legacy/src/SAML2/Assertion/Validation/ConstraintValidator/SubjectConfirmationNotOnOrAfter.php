@@ -16,16 +16,14 @@ class SubjectConfirmationNotOnOrAfter implements
     /**
      * @param SubjectConfirmation $subjectConfirmation
      * @param Result $result
-     * @return void
      */
     public function validate(
         SubjectConfirmation $subjectConfirmation,
         Result $result
-    ) : void {
+    ): void {
         $data = $subjectConfirmation->getSubjectConfirmationData();
         Assert::notNull($data);
 
-        /** @psalm-suppress PossiblyNullReference */
         $notOnOrAfter = $data->getNotOnOrAfter();
         if ($notOnOrAfter && $notOnOrAfter <= Temporal::getTime() - 60) {
             $result->addError('NotOnOrAfter in SubjectConfirmationData is in the past');

@@ -6,11 +6,12 @@ namespace SimpleSAML\XMLSecurity\XML\dsig11;
 
 use DOMElement;
 use SimpleSAML\Assert\Assert;
-use SimpleSAML\XML\Exception\InvalidDOMElementException;
-use SimpleSAML\XML\Exception\MissingElementException;
-use SimpleSAML\XML\Exception\TooManyElementsException;
 use SimpleSAML\XML\SchemaValidatableElementInterface;
 use SimpleSAML\XML\SchemaValidatableElementTrait;
+use SimpleSAML\XMLSchema\Exception\InvalidDOMElementException;
+use SimpleSAML\XMLSchema\Exception\MissingElementException;
+use SimpleSAML\XMLSchema\Exception\TooManyElementsException;
+use SimpleSAML\XMLSchema\Type\IDValue;
 
 use function array_pop;
 
@@ -23,13 +24,13 @@ final class ECKeyValue extends AbstractECKeyValueType implements SchemaValidatab
 {
     use SchemaValidatableElementTrait;
 
+
     /**
      * Convert XML into a ECKeyValue element
      *
      * @param \DOMElement $xml The XML element we should load
-     * @return static
      *
-     * @throws \SimpleSAML\XML\Exception\InvalidDOMElementException
+     * @throws \SimpleSAML\XMLSchema\Exception\InvalidDOMElementException
      *   If the qualified name of the supplied element is wrong
      */
     public static function fromXML(DOMElement $xml): static
@@ -49,7 +50,7 @@ final class ECKeyValue extends AbstractECKeyValueType implements SchemaValidatab
 
         return new static(
             array_pop($publicKey),
-            self::getOptionalAttribute($xml, 'Id', null),
+            self::getOptionalAttribute($xml, 'Id', IDValue::class, null),
             array_pop($ecParameters),
             array_pop($namedCurve),
         );

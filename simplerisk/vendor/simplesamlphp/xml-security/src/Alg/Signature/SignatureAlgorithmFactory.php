@@ -21,6 +21,29 @@ use function sprintf;
 final class SignatureAlgorithmFactory
 {
     /**
+     * An array of blacklisted algorithms.
+     *
+     * Defaults to RSA-SHA1 & HMAC-SHA1 due to the weakness of SHA1.
+     *
+     * @var string[]
+     */
+    public const array DEFAULT_BLACKLIST = [
+        C::SIG_RSA_SHA1,
+        C::SIG_HMAC_SHA1,
+    ];
+
+    /**
+     * An array of default algorithms that can be used.
+     *
+     * @var class-string[]
+     */
+    private const array SUPPORTED_DEFAULTS = [
+        RSA::class,
+        HMAC::class,
+    ];
+
+
+    /**
      * A cache of algorithm implementations indexed by algorithm ID.
      *
      * @var array<string, \SimpleSAML\XMLSecurity\Alg\Signature\SignatureAlgorithmInterface>
@@ -29,33 +52,8 @@ final class SignatureAlgorithmFactory
 
     /**
      * Whether the factory has been initialized or not.
-     *
-     * @var bool
      */
     protected static bool $initialized = false;
-
-    /**
-     * An array of blacklisted algorithms.
-     *
-     * Defaults to RSA-SHA1 & HMAC-SHA1 due to the weakness of SHA1.
-     *
-     * @var string[]
-     */
-    public const DEFAULT_BLACKLIST = [
-        C::SIG_RSA_SHA1,
-        C::SIG_HMAC_SHA1,
-    ];
-
-
-    /**
-     * An array of default algorithms that can be used.
-     *
-     * @var class-string[]
-     */
-    private const SUPPORTED_DEFAULTS = [
-        RSA::class,
-        HMAC::class,
-    ];
 
 
     /**

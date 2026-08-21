@@ -1,0 +1,202 @@
+// ===========================================================================
+// UPGRADE PROGRESS
+// ===========================================================================
+// The one-click upgrade screen: named steps with state, the statements each
+// step is producing nested underneath it, and a footer that says the work
+// survives a closed tab.
+//
+// Composed from the design system rather than invented: the shell is a
+// `.sr-qcard` on the gray ground (§4/§5), the run status is a soft state pill
+// from the shipped `.sr-state-*` families (§7), and every colour is a token.
+// The only genuinely new parts are the step row and the statement list, which
+// no existing surface covers -- a progress/process view is not in the coverage
+// map.
+//
+// Deliberately NOT a log tail. The old window streamed timestamped lines, which
+// told an operator that something was happening but never what. Steps carry the
+// meaning; the statements are the evidence underneath the step producing them.
+// ===========================================================================
+
+.sr-upgrade {
+
+    // Steps ------------------------------------------------------------------
+
+    &-steps {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+    }
+
+    &-step {
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        padding: 12px 0;
+        border-bottom: 1px solid $gray-300;
+
+        &:last-child {
+            border-bottom: 0;
+        }
+
+        // A step not yet reached is present but recessive: an operator can see
+        // what is still coming without it competing with what is happening now.
+        &.is-todo {
+            color: $gray-600;
+        }
+
+        // Settled, but there was nothing to do -- an instance already on the
+        // current release swaps no files and upgrades no schema. Recessive like
+        // todo, because it needs no attention, but its dash and its "Not
+        // needed" say it finished rather than that it is still waiting.
+        &.is-skipped {
+            color: $gray-600;
+        }
+    }
+
+    // The state mark. Fixed width so every label starts on the same x, which is
+    // what lets the column be scanned rather than read.
+    &-mark {
+        flex: none;
+        width: 18px;
+        height: 18px;
+        margin-top: 1px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 12px;
+        line-height: 1;
+
+        .is-done & {
+            color: $success;
+        }
+
+        .is-running & {
+            color: $sr-important;
+        }
+
+        .is-todo &,
+        .is-skipped & {
+            color: $gray-500;
+        }
+    }
+
+    &-body {
+        flex: 1 1 auto;
+        min-width: 0;
+    }
+
+    &-label {
+        font-size: 13.5px;
+        font-weight: 700;
+        color: $sr-primary;
+
+        .is-todo &,
+        .is-skipped & {
+            font-weight: 400;
+            color: $gray-600;
+        }
+    }
+
+    &-detail {
+        font-size: 12px;
+        color: $gray-600;
+        margin-top: 2px;
+    }
+
+    // The right-hand value: a size, a duration, "release 2 of 2". Answers "how
+    // much" opposite a label that answers "what", so the two never fight for
+    // the same space.
+    &-meta {
+        flex: none;
+        font-size: 12px;
+        color: $gray-600;
+        font-variant-numeric: tabular-nums;
+        white-space: nowrap;
+        padding-top: 1px;
+    }
+
+    // Statements -------------------------------------------------------------
+    // What the upgrade functions are actually saying, under the step saying it.
+    // Capped in height and scrolled so a chatty release cannot push the rest of
+    // the screen out of view.
+    &-statements {
+        list-style: none;
+        margin: 8px 0 0;
+        padding: 8px 0 0 0;
+        border-top: 1px dashed $gray-300;
+        max-height: 168px;
+        overflow-y: auto;
+        font-size: 12px;
+        color: $gray-600;
+
+        li {
+            padding: 2px 0;
+            word-break: break-word;
+        }
+    }
+
+    // The outcome, in words -------------------------------------------------
+    // What the run concluded. A successful upgrade that changed nothing needs
+    // this as much as a failure does: ticks over a row of dashes do not say
+    // "you were already current".
+    &-outcome {
+        margin: 14px 0 0;
+        padding: 10px 12px;
+        border-radius: 6px;
+        font-size: 12.5px;
+        background: $gray-100;
+        border: 1px solid $gray-300;
+        color: $sr-primary;
+
+        // Soft, never solid -- the same rule the state pills follow, so a
+        // failure notice never competes with the primary action.
+        &.is-failure {
+            background: rgba($danger, .1);
+            border-color: rgba($danger, .35);
+            color: darken($danger, 15%);
+        }
+    }
+
+    // The fold-away output of a finished step -------------------------------
+    &-toggle {
+        margin-top: 8px;
+        padding: 0;
+        border: 0;
+        background: none;
+        font-size: 12px;
+        font-weight: 700;
+        color: $gray-600;
+
+        &:hover {
+            color: $sr-important;
+        }
+    }
+
+    // Footer -----------------------------------------------------------------
+
+    &-foot {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        flex-wrap: wrap;
+        margin-top: 16px;
+        padding-top: 14px;
+        border-top: 1px solid $gray-300;
+        font-size: 12px;
+        color: $gray-600;
+    }
+
+    &-counts {
+        font-variant-numeric: tabular-nums;
+    }
+
+    // The reassurance line. The whole point of the job-and-poll design is that
+    // the page is a viewer, not the process -- an operator has to be told that,
+    // or they will sit and watch a screen they are free to close.
+    &-reattach {
+        margin-top: 12px;
+        font-size: 12px;
+        color: $gray-600;
+    }
+}

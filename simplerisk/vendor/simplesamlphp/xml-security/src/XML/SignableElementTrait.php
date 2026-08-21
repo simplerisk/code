@@ -7,11 +7,14 @@ namespace SimpleSAML\XMLSecurity\XML;
 use DOMElement;
 use SimpleSAML\Assert\Assert;
 use SimpleSAML\XML\DOMDocumentFactory;
+use SimpleSAML\XMLSchema\Type\AnyURIValue;
+use SimpleSAML\XMLSchema\Type\Base64BinaryValue;
+use SimpleSAML\XMLSchema\Type\IDValue;
 use SimpleSAML\XMLSecurity\Alg\Signature\SignatureAlgorithmInterface;
 use SimpleSAML\XMLSecurity\Constants as C;
 use SimpleSAML\XMLSecurity\Exception\RuntimeException;
 use SimpleSAML\XMLSecurity\Exception\UnsupportedAlgorithmException;
-use SimpleSAML\XMLSecurity\Utils\XML;
+use SimpleSAML\XMLSecurity\Type\DigestValue as DigestValueType;
 use SimpleSAML\XMLSecurity\XML\ds\CanonicalizationMethod;
 use SimpleSAML\XMLSecurity\XML\ds\DigestMethod;
 use SimpleSAML\XMLSecurity\XML\ds\DigestValue;
@@ -32,15 +35,13 @@ use function in_array;
  * Trait SignableElementTrait
  *
  * @package simplesamlphp/xml-security
+ * @phpstan-ignore trait.unused
  */
 trait SignableElementTrait
 {
-    use CanonicalizableElementTrait;
-
     /** @var \SimpleSAML\XMLSecurity\XML\ds\Signature|null */
     protected ?Signature $signature = null;
 
-    /** @var string */
     private string $c14nAlg = C::C14N_EXCLUSIVE_WITHOUT_COMMENTS;
 
     /** @var \SimpleSAML\XMLSecurity\XML\ds\KeyInfo|null */
@@ -55,9 +56,9 @@ trait SignableElementTrait
      *
      * When this method returns null, the signature created for this object will reference the entire document.
      *
-     * @return string|null The ID of this element, or null if we don't have one.
+     * @return \SimpleSAML\XML\Type\IDValue|null The ID of this element, or null if we don't have one.
      */
-    abstract public function getId(): ?string;
+    abstract public function getId(): ?IDValue;
 
 
     /**
@@ -98,6 +99,7 @@ trait SignableElementTrait
      * @param string $digestAlg The digest algorithm to use.
      * @param \SimpleSAML\XMLSecurity\XML\ds\Transforms $transforms The transforms to apply to the object.
      */
+    #[\NoDiscard]
     private function getReference(
         string $digestAlg,
         Transforms $transforms,
@@ -129,12 +131,18 @@ trait SignableElementTrait
         }
 
         return new Reference(
-            new DigestMethod($digestAlg),
-            new DigestValue(base64_encode(hash(C::$DIGEST_ALGORITHMS[$digestAlg], $canonicalDocument, true))),
+            new DigestMethod(
+                AnyURIValue::fromString($digestAlg),
+            ),
+            new DigestValue(
+                DigestValueType::fromString(
+                    base64_encode(hash(C::$DIGEST_ALGORITHMS[$digestAlg], $canonicalDocument, true)),
+                ),
+            ),
             $transforms,
             null,
             null,
-            $uri,
+            ($uri !== null) ? AnyURIValue::fromString($uri) : null,
         );
     }
 
@@ -155,6 +163,7 @@ trait SignableElementTrait
      * @param \DOMElement $xml The element to sign.
      * @return \DOMElement The signed element, without the signature attached to it just yet.
      */
+    #[\NoDiscard]
     protected function doSign(DOMElement $xml): DOMElement
     {
         Assert::notNull(
@@ -167,24 +176,41 @@ trait SignableElementTrait
         $digest = $this->signer->getDigest();
 
         $transforms = new Transforms([
-            new Transform(C::XMLDSIG_ENVELOPED),
-            new Transform($this->c14nAlg),
+            new Transform(
+                AnyURIValue::fromString(C::XMLDSIG_ENVELOPED),
+            ),
+            new Transform(
+                AnyURIValue::fromString($this->c14nAlg),
+            ),
         ]);
 
-        $canonicalDocument = XML::processTransforms($transforms, $xml);
+        $canonicalDocument = $this->processTransforms($transforms, $xml);
 
         $signedInfo = new SignedInfo(
-            new CanonicalizationMethod($this->c14nAlg),
-            new SignatureMethod($algorithm),
+            new CanonicalizationMethod(
+                AnyURIValue::fromString($this->c14nAlg),
+            ),
+            new SignatureMethod(
+                AnyURIValue::fromString($algorithm),
+            ),
             [$this->getReference($digest, $transforms, $xml, $canonicalDocument)],
         );
 
         $signingData = $signedInfo->canonicalize($this->c14nAlg);
         $signedData = base64_encode($this->signer->sign($signingData));
 
-        $this->setSignature(new Signature($signedInfo, new SignatureValue($signedData), $this->keyInfo));
+        $this->setSignature(
+            new Signature(
+                $signedInfo,
+                new SignatureValue(
+                    Base64BinaryValue::fromString($signedData),
+                ),
+                $this->keyInfo,
+            ),
+        );
         return DOMDocumentFactory::fromString($canonicalDocument)->documentElement;
     }
+
 
     /**
      * Get the list of algorithms that are blacklisted for any signing operation.

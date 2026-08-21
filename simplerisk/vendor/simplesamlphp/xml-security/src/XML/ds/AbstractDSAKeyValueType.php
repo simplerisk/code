@@ -6,12 +6,12 @@ namespace SimpleSAML\XMLSecurity\XML\ds;
 
 use DOMElement;
 use SimpleSAML\Assert\Assert;
-use SimpleSAML\XML\Exception\InvalidDOMElementException;
-use SimpleSAML\XML\Exception\MissingElementException;
-use SimpleSAML\XML\Exception\SchemaViolationException;
-use SimpleSAML\XML\Exception\TooManyElementsException;
 use SimpleSAML\XML\SchemaValidatableElementInterface;
 use SimpleSAML\XML\SchemaValidatableElementTrait;
+use SimpleSAML\XMLSchema\Exception\InvalidDOMElementException;
+use SimpleSAML\XMLSchema\Exception\MissingElementException;
+use SimpleSAML\XMLSchema\Exception\SchemaViolationException;
+use SimpleSAML\XMLSchema\Exception\TooManyElementsException;
 
 use function array_pop;
 
@@ -23,6 +23,7 @@ use function array_pop;
 abstract class AbstractDSAKeyValueType extends AbstractDsElement implements SchemaValidatableElementInterface
 {
     use SchemaValidatableElementTrait;
+
 
     /**
      * DSAKeyValueType constructor.
@@ -141,11 +142,11 @@ abstract class AbstractDSAKeyValueType extends AbstractDsElement implements Sche
      * @param \DOMElement $xml
      * @return static
      *
-     * @throws \SimpleSAML\XML\Exception\InvalidDOMElementException
+     * @throws \SimpleSAML\XMLSchema\Exception\InvalidDOMElementException
      *   if the qualified name of the supplied element is wrong
-     * @throws \SimpleSAML\XML\Exception\MissingAttributeException
+     * @throws \SimpleSAML\XMLSchema\Exception\MissingAttributeException
      *   if the supplied element is missing one of the mandatory attributes
-     * @throws \SimpleSAML\XML\Exception\TooManyElementsException
+     * @throws \SimpleSAML\XMLSchema\Exception\TooManyElementsException
      *   if too many child-elements of a type are specified
      */
     public static function fromXML(DOMElement $xml): static
@@ -191,7 +192,6 @@ abstract class AbstractDSAKeyValueType extends AbstractDsElement implements Sche
      * Convert this DSAKeyValue object to XML.
      *
      * @param \DOMElement|null $parent The element we should append this DSAKeyValue to.
-     * @return \DOMElement
      */
     public function toXML(?DOMElement $parent = null): DOMElement
     {

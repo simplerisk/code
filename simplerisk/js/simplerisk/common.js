@@ -58,6 +58,45 @@ function escapeHtml(text) {
 }
 
 /**
+ * Build the DOM for a saved file in a .file-uploader's .exist-files list
+ * (download link + remove button + hidden unique_names[] input), matching the
+ * server-side render, so persisted files stay visible after an AJAX save and
+ * their unique_name is in the DOM for a reconcile-on-submit.
+ *
+ * Lives here in common.js (not a page module) so any feature using the shared
+ * .file-uploader engine can re-render its .exist-files without duplicating this.
+ * Kept feature-agnostic: unique_names[] is the app-wide hidden-input convention
+ * (see includes/functions.php + includes/compliance.php); the download endpoint
+ * differs per feature, so the caller passes downloadPath (relative to BASE_URL).
+ *
+ * @param file {name, unique_name}
+ * @param downloadPath endpoint path relative to BASE_URL, no leading slash
+ *                     (e.g. 'assessments/download.php')
+ * @returns jQuery <li>
+ */
+function renderSavedFileLi(file, downloadPath) {
+    var $li = $('<li>', { id: file.unique_name, 'class': 'd-flex align-items-center' });
+
+    var $nameDiv = $('<div>', { 'class': 'file-name float-start me-2' });
+    $('<a>', {
+        'class': 'text-info text-decoration-underline',
+        href: BASE_URL + '/' + downloadPath + '?id=' + encodeURIComponent(file.unique_name),
+        target: '_blank',
+        text: file.name
+    }).appendTo($nameDiv);
+    $li.append($nameDiv);
+
+    $('<a>', { href: '#', 'class': 'remove-file', 'data-id': file.unique_name })
+        .append($('<i>', { 'class': 'fa fa-times' }))
+        .appendTo($li);
+
+    $('<input>', { type: 'hidden', name: 'unique_names[]', value: file.unique_name })
+        .appendTo($li);
+
+    return $li;
+}
+
+/**
 * popup when click "Score Using DREAD"
 * 
 */
@@ -293,15 +332,17 @@ function resetForm(formEL, multiselect = true, selectize = false) {
 */
 function confirm(message, callback) {
 
-	// Create the modal window
-	let myModal = new bootstrap.Modal(
-		$(`
+	// Build the modal window. The message is inserted via .text() (NOT
+	// interpolated into the template HTML), so a caller passing untrusted or
+	// unescaped text cannot inject markup — confirm() is safe-by-default for
+	// every call site. Callers therefore pass the raw message; do not pre-escape.
+	let $modal = $(`
 			<div class="modal fade" tabindex="-1" role="dialog">
 		        <div class="modal-dialog modal-md modal-dialog-centered modal-dark">
 		            <div class="modal-content">
 		                <div class="modal-body">
 		                    <div class="form-group text-center message-container">
-		                        <label class="message">${message}</label>
+		                        <label class="message"></label>
 		                    </div>
 		                    <div class="form-group text-center">
 		                        <button class="btn btn-secondary" data-bs-dismiss="modal">${_lang['Cancel']}</button>
@@ -310,8 +351,10 @@ function confirm(message, callback) {
 		                </div>
 		            </div>
 		        </div>
-		    </div>`
-		),
+		    </div>`);
+	$modal.find('.message').text(message);
+	let myModal = new bootstrap.Modal(
+		$modal,
 		{/* Could add configuration here to change how the modal popup behaves. For more information check https://getbootstrap.com/docs/5.3/components/modal/ */}
 	);
 
@@ -356,4 +399,155 @@ function sanitizeHTML(str) {
     }
 
     return div.innerHTML;
+}
+
+/**
+ * Assets + Asset Groups selectize widget -- the ONE implementation.
+ *
+ * Every "affected assets" / "Mapped Assets" field in the product is the same
+ * <select class="assets-asset-groups-select" multiple> driven by the same
+ * selectize configuration; only the endpoint that supplies (and pre-selects)
+ * the options differs -- risk-scoped vs control-scoped. That configuration
+ * used to be copy-pasted per page: js/simplerisk/pages/governance.js had one
+ * copy, js/simplerisk/pages/risk.js a second, and the Define Control
+ * Frameworks redesign (js/simplerisk/pages/governance-frameworks.js) shipped
+ * with NEITHER -- its control modal rendered the "Mapped Assets" label with
+ * an inert <select> under it, so a user could not map an asset to a control
+ * from that page at all, and Clone silently dropped a control's asset
+ * mappings. Rather than add a third copy, the two existing copies now
+ * delegate here and the redesigned page calls it directly.
+ *
+ * `request` is the only thing a caller varies:
+ *   { url: <absolute options endpoint>, data: <query params> }
+ * Use the setupAssetsAssetGroupsWidgetFor* wrappers below rather than passing
+ * a hand-built request -- the endpoint choice carries a permission difference
+ * (/asset-group/options accepts asset|assessments|riskmanagement|im_incidents,
+ * /asset-group/options_by_control accepts asset|governance), so pointing a
+ * risk form at the control endpoint 400s for a risk-only user.
+ *
+ * @param {jQuery} select_tag the <select> to enhance; a no-op when empty
+ * @param {{url: string, data: Object}} request options-endpoint call
+ * @returns {jQuery|undefined} the selectized element, or undefined for a no-op
+ */
+function setupAssetsAssetGroupsSelectize(select_tag, request) {
+
+    if (!select_tag || !select_tag.length) {
+        return;
+    }
+
+    // Idempotence guard. The callers below re-run over "every
+    // .assets-asset-groups-select in this form" whenever a row is added or
+    // removed (rows have to be re-indexed for the assets_asset_groups[N][]
+    // POST names), so an already-enhanced select gets visited again on every
+    // subsequent row change. selectize() on an already-selectized element
+    // builds a SECOND control next to the first; without this, adding three
+    // asset rows leaves the first row showing three stacked pickers.
+    if (select_tag[0].selectize) {
+        return select_tag;
+    }
+
+    var select = select_tag.selectize({
+        plugins: ['optgroup_columns', 'remove_button', 'restore_on_backspace'],
+        delimiter: ',',
+        create: function (input) {
+            return { id: 'new_asset_' + input, name: input };
+        },
+        persist: false,
+        valueField: 'id',
+        labelField: 'name',
+        searchField: 'name',
+        sortField: 'name',
+        optgroups: [
+            { class: 'asset', name: 'Standard Assets' },
+            { class: 'group', name: 'Asset Groups' }
+        ],
+        optgroupField: 'class',
+        optgroupLabelField: 'name',
+        optgroupValueField: 'class',
+        preload: true,
+        render: {
+            item: function (item, escape) {
+                return '<div class="' + item.class + '">' + escape(item.name) + '</div>';
+            }
+        },
+        onInitialize: function () {
+            select_tag.parent().find('.selectize-control div').block({ message: '<i class="fa fa-spinner fa-spin" style="font-size:24px"></i>' });
+        },
+        load: function (query, callback) {
+            if (query.length) return callback();
+            $.ajax({
+                url: request.url,
+                data: request.data,
+                type: 'GET',
+                dataType: 'json',
+                error: function () {
+                    callback();
+                },
+                success: function (res) {
+                    var data = res.data;
+                    var control = select[0].selectize;
+                    var selected_ids = [];
+                    // Have to do it this way, because addition with simple addOption() will
+                    // bug out when we deselect an option(it wouldn't be added back to the
+                    // list of selectable items)
+                    var len = data.length;
+                    for (var i = 0; i < len; i++) {
+                        var item = data[i];
+                        item.id += '_' + item.class;
+                        control.registerOption(item);
+                        if (item.selected == '1') {
+                            selected_ids.push(item.id);
+                        }
+                    }
+                    if (selected_ids.length)
+                        control.setValue(selected_ids);
+                },
+                complete: function () {
+                    select_tag.parent().find('.selectize-control div').unblock({ message: null });
+                }
+            });
+        }
+    });
+
+    return select;
+}
+
+/**
+ * Control-scoped variant: the "Mapped Assets" rows inside the add/update
+ * control modal. `control_maturity` is the maturity level of the ROW being
+ * built -- get_assets_and_asset_groups_by_control_for_dropdown() uses the
+ * (control, maturity) pair to decide which assets are already mapped to THAT
+ * row, so passing the wrong one pre-selects another row's assets.
+ *
+ * @param {jQuery} select_tag
+ * @param {number|string} control_id 0/undefined for a control that does not exist yet
+ * @param {number|string} control_maturity the row's maturity level
+ */
+function setupAssetsAssetGroupsWidgetForControl(select_tag, control_id, control_maturity) {
+    return setupAssetsAssetGroupsSelectize(select_tag, {
+        url: BASE_URL + '/api/v2/asset-group/options_by_control',
+        data: {
+            control_id: control_id,
+            control_maturity: control_maturity
+        }
+    });
+}
+
+/**
+ * Risk-scoped variant: the "Affected Assets" field on the add/edit risk form
+ * and the risk form embedded in the compliance test views.
+ *
+ * @param {jQuery} select_tag
+ * @param {number|string} risk_id 0 for a risk that does not exist yet
+ */
+function setupAssetsAssetGroupsWidgetForRisk(select_tag, risk_id) {
+    return setupAssetsAssetGroupsSelectize(select_tag, {
+        url: BASE_URL + '/api/v2/asset-group/options',
+        data: {
+            // Giving a default value here because IE can't handle
+            // function parameter default values...
+            id: risk_id || 0,
+            type: 'risk'
+        }
+    });
 }

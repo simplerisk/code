@@ -28,3 +28,23 @@
     overflow: hidden;
   }
 }
+
+// Comment bodies are free text and are often multi-line (a header followed by
+// indented bullets). HTML collapses whitespace runs, so an author's newlines
+// rendered as single spaces and the whole comment came out on one line (SR-1713).
+//
+// Scoped to the comment body, NOT to .comment-block: every caller pretty-prints
+// the block's inner markup with 16-20 spaces of indentation, so pre-wrap on the
+// block itself would render that source indentation as a leading indent and a
+// trailing blank line.
+//
+// Named .comment-body, NOT .comment-text (above): that class is on the
+// comment-entry <textarea> in Assessments, Compliance and Management, and
+// risk.js plus inline handlers select it via
+// $('.comment-text', container).val()/.focus(). Sharing the class would add
+// these rendered spans to that selector's result set inside the same container
+// and break reading the new-comment field — and the p{max-height:65px;overflow:hidden}
+// rule above would clip long comments.
+.comment-body {
+  white-space: pre-wrap;
+}

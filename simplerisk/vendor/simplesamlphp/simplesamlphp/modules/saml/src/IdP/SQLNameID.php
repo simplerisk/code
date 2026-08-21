@@ -22,9 +22,11 @@ use SimpleSAML\Store\StoreFactory;
  */
 class SQLNameID
 {
-    public const TABLE_VERSION = 1;
-    public const DEFAULT_TABLE_PREFIX = '';
-    public const TABLE_SUFFIX = '_saml_PersistentNameID';
+    public const int TABLE_VERSION = 1;
+
+    public const string DEFAULT_TABLE_PREFIX = '';
+
+    public const string TABLE_SUFFIX = '_saml_PersistentNameID';
 
 
     /**
@@ -53,7 +55,7 @@ class SQLNameID
      * @param array $config
      * @return int|false The number of rows affected by the query or false on error.
      */
-    private static function write(string $query, array $params = [], array $config = [])
+    private static function write(string $query, array $params = [], array $config = []): int|false
     {
         if (!empty($config)) {
             $database = Database::getInstance(Configuration::loadFromArray($config));
@@ -81,6 +83,7 @@ class SQLNameID
         $table = $prefix . self::TABLE_SUFFIX;
         return $table;
     }
+
 
     /**
      * @param array $config
@@ -121,7 +124,7 @@ class SQLNameID
      * @param array $config
      * @return int|false The number of rows affected by the query or false on error.
      */
-    private static function createAndWrite(string $query, array $params = [], array $config = [])
+    private static function createAndWrite(string $query, array $params = [], array $config = []): int|false
     {
         self::create($config);
         return self::write($query, $params, $config);

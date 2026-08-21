@@ -5,18 +5,19 @@ declare(strict_types=1);
 namespace SimpleSAML\SAML2\XML\mdrpi;
 
 use DOMElement;
-use SimpleSAML\Assert\Assert;
+use SimpleSAML\SAML2\Assert\Assert;
 use SimpleSAML\SAML2\Exception\ArrayValidationException;
 use SimpleSAML\XML\ArrayizableElementInterface;
 use SimpleSAML\XML\Constants as C;
-use SimpleSAML\XML\Exception\InvalidDOMElementException;
 use SimpleSAML\XML\SchemaValidatableElementInterface;
 use SimpleSAML\XML\SchemaValidatableElementTrait;
+use SimpleSAML\XMLSchema\Exception\InvalidDOMElementException;
 
 /**
  * Class for handling the mdrpi:PublicationPath element.
  *
  * @link: http://docs.oasis-open.org/security/saml/Post2.0/saml-metadata-rpi/v1.0/saml-metadata-rpi-v1.0.pdf
+ *
  * @package simplesamlphp/saml2
  */
 final class PublicationPath extends AbstractMdrpiElement implements
@@ -24,6 +25,7 @@ final class PublicationPath extends AbstractMdrpiElement implements
     SchemaValidatableElementInterface
 {
     use SchemaValidatableElementTrait;
+
 
     /**
      * Create/parse a mdrpi:PublicationPath element.
@@ -51,8 +53,6 @@ final class PublicationPath extends AbstractMdrpiElement implements
 
     /**
      * Test if an object, at the state it's in, would produce an empty XML-element
-     *
-     * @return bool
      */
     public function isEmptyElement(): bool
     {
@@ -66,9 +66,9 @@ final class PublicationPath extends AbstractMdrpiElement implements
      * @param \DOMElement $xml The XML element we should load
      * @return static
      *
-     * @throws \SimpleSAML\XML\Exception\InvalidDOMElementException
+     * @throws \SimpleSAML\XMLSchema\Exception\InvalidDOMElementException
      *   if the qualified name of the supplied element is wrong
-     * @throws \SimpleSAML\XML\Exception\MissingAttributeException
+     * @throws \SimpleSAML\XMLSchema\Exception\MissingAttributeException
      *   if the supplied element is missing one of the mandatory attributes
      */
     public static function fromXML(DOMElement $xml): static
@@ -84,9 +84,6 @@ final class PublicationPath extends AbstractMdrpiElement implements
 
     /**
      * Convert this element to XML.
-     *
-     * @param \DOMElement|null $parent The element we should append to.
-     * @return \DOMElement
      */
     public function toXML(?DOMElement $parent = null): DOMElement
     {
@@ -103,8 +100,7 @@ final class PublicationPath extends AbstractMdrpiElement implements
     /**
      * Create a class from an array
      *
-     * @param array $data
-     * @return static
+     * @param array{array} $data
      */
     public static function fromArray(array $data): static
     {
@@ -122,7 +118,7 @@ final class PublicationPath extends AbstractMdrpiElement implements
     /**
      * Create an array from this class
      *
-     * @return array
+     * @return array{array}
      */
     public function toArray(): array
     {

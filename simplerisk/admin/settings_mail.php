@@ -30,8 +30,39 @@
         // Update the mail settings
         update_mail_settings($transport, $from_email, $from_name, $replyto_email, $replyto_name, $host, $smtpautotls, $smtpauth, $username, $password, $encryption, $port, $prepend);
 
+        // Update the email delivery failure notification retention. This one is
+        // deliberately not a phpmailer_* setting — it is a notification
+        // retention window, not a transport value — so it is written here
+        // rather than through update_mail_settings()/get_mail_settings(), which
+        // only handle the phpmailer_% rows.
+        //
+        // Only touched when the field is actually present: a POST that omits it
+        // is not a request to reset the retention, and defaulting here would
+        // silently overwrite a tuned value.
+        $error = false;
+
+        if (isset($_POST['email_failure_notification_ttl_days'])) {
+            // Range lives in email_failure_ttl_days_from_input() so the form,
+            // the validation and the read-time clamp cannot drift apart.
+            $ttl_days = email_failure_ttl_days_from_input($_POST['email_failure_notification_ttl_days']);
+
+            if ($ttl_days !== null) {
+                update_setting("email_failure_notification_ttl_days", $ttl_days);
+            } else {
+                $error = true;
+                // _lang_raw(), not _lang(): get_alert(true) escapes every
+                // message at read time, so a pre-escaped one is encoded twice.
+                set_alert(true, "bad", _lang_raw('EmailFailureNotificationRetentionOutOfRange', [
+                    'min' => EMAIL_FAILURE_NOTIFICATION_TTL_DAYS_MIN,
+                    'max' => EMAIL_FAILURE_NOTIFICATION_TTL_DAYS_MAX,
+                ]));
+            }
+        }
+
         // Display an alert
-        set_alert(true, "good", "Mail settings were updated successfully.");
+        if (!$error) {
+            set_alert(true, "good", $lang['MailSettingsUpdatedSuccessfully']);
+        }
     }
 
     // Check if the mail test was submitted
@@ -48,7 +79,7 @@
         if (empty($email)) {
 
             // Display an alert
-            set_alert(true, "bad", $escaper->escapeHtml($lang['PleaseEnterAnEmailAddressBeforeSendingATestEmail']));
+            set_alert(true, "bad", $lang['PleaseEnterAnEmailAddressBeforeSendingATestEmail']);
             header("Location: settings_mail.php");
             exit();
 
@@ -58,34 +89,44 @@
         $test_mail_rate_limit = 5;
         $test_mail_period = 3600;
 
-        // Get the test mail sent times from the session, ensuring it's an array
-        if (isset($_SESSION['test_mail_sent_times'])) {
-            $test_mail_sent_times = is_array($_SESSION['test_mail_sent_times']) ? $_SESSION['test_mail_sent_times'] : [];
-        } else {
-            $test_mail_sent_times = [];
-        }
+        // Decide and record the throttle atomically inside the session lock.
+        // head.php has already called session_write_close() by the time this
+        // page runs, so BOTH the read of the prior send times and the counter
+        // update must happen inside with_alert_session() (which re-acquires the
+        // lock and re-reads the latest stored state) -- reading the count
+        // outside the lock and only writing inside it would let two concurrent
+        // test-mail POSTs from the one admin session each observe a stale count,
+        // both pass the cap, and last-writer-wins undercount the sends. The SMTP
+        // send is deliberately kept OUTSIDE the lock so a slow relay can't
+        // re-introduce the SR-1691 whole-request session contention; the counter
+        // is incremented before the send, so a failed send still counts against
+        // the cap (fail toward throttling, not away from it).
+        $send_test_mail = false;
+        with_alert_session(function () use (&$send_test_mail, $now, $test_mail_rate_limit, $test_mail_period) {
+            $stored = (isset($_SESSION['test_mail_sent_times']) && is_array($_SESSION['test_mail_sent_times']))
+                ? $_SESSION['test_mail_sent_times']
+                : [];
 
-        if (empty($test_mail_sent_times) && isset($_SESSION['test_mail_sent']) && is_numeric($_SESSION['test_mail_sent'])) {
-            $test_mail_sent_times[] = intval($_SESSION['test_mail_sent']);
-        }
+            // Fold the legacy single-timestamp key into the array form.
+            if (empty($stored) && isset($_SESSION['test_mail_sent']) && is_numeric($_SESSION['test_mail_sent'])) {
+                $stored[] = intval($_SESSION['test_mail_sent']);
+            }
 
-        // Drop entries older than the period.
-        $test_mail_sent_times = array_values(array_filter($test_mail_sent_times, function ($sent_time) use ($now, $test_mail_period) {
-            return is_numeric($sent_time) && ($now - intval($sent_time) <= $test_mail_period);
-        }));
+            $throttle = test_mail_throttle_evaluate($stored, $now, $test_mail_rate_limit, $test_mail_period);
+            if ($throttle['allowed']) {
+                $throttle['recent'][] = $now;
+                $_SESSION['test_mail_sent_times'] = $throttle['recent'];
+                $_SESSION['test_mail_sent'] = $now;
+                $send_test_mail = true;
+            }
+        });
 
-        if (count($test_mail_sent_times) < $test_mail_rate_limit) {
-            // Send the e-mail
+        if ($send_test_mail) {
+            // Send the e-mail (outside the session lock).
             send_email_immediate($name, $email, $subject, $full_message);
-
-            $test_mail_sent_times[] = $now;
-            $_SESSION['test_mail_sent_times'] = $test_mail_sent_times;
-            $_SESSION['test_mail_sent'] = $now;
-
-            // Display an alert
-            set_alert(true, "good", $escaper->escapeHtml($lang['ATestEmailHasBeenSentUsingTheCurrentSettings']));
+            set_alert(true, "good", $lang['ATestEmailHasBeenSentUsingTheCurrentSettings']);
         } else {
-            set_alert(true, "bad", $escaper->escapeHtml($lang['LimitedPeriodTestmailMessage']));
+            set_alert(true, "bad", $lang['LimitedPeriodTestmailMessage']);
         }
     }
 
@@ -106,6 +147,12 @@
     $password = $mail['phpmailer_password'];
     $encryption = $mail['phpmailer_smtpsecure'];
     $port = $mail['phpmailer_port'];
+
+    // Not part of get_mail_settings() (that reads the phpmailer_% rows only).
+    // Read through the same accessor the notification path uses so the field
+    // shows the value that will actually be applied, including the fallback
+    // when the setting has never been saved.
+    $email_failure_notification_ttl_days = email_failure_notification_ttl_days();
 ?>
 <div class="row">
     <div class="col-12">
@@ -207,6 +254,14 @@
                                 <option value="tls"<?= ($encryption=="tls") ? " selected" : ""; ?>>TLS</option>
                                 <option value="ssl"<?= ($encryption=="ssl") ? " selected" : ""; ?>>SSL</option>
                             </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-6">
+                        <div class="form-group">
+                            <label><?= $escaper->escapeHtml($lang['EmailFailureNotificationRetention']) . " (" . $escaper->escapeHtml($lang['days']) . ")"; ?> :</label>
+                            <input type="number" name="email_failure_notification_ttl_days" id="email_failure_notification_ttl_days" min="<?= $escaper->escapeHtml(EMAIL_FAILURE_NOTIFICATION_TTL_DAYS_MIN); ?>" max="<?= $escaper->escapeHtml(EMAIL_FAILURE_NOTIFICATION_TTL_DAYS_MAX); ?>" size="20px" value="<?= $escaper->escapeHtml($email_failure_notification_ttl_days); ?>" class="form-control"/>
                         </div>
                     </div>
                 </div>

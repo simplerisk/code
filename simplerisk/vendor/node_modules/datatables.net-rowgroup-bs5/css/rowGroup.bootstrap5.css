@@ -1,72 +1,67 @@
+:root {
+  --dtrg-group-level-0_background: rgba(0, 0, 0, 0.1);
+  --dtrg-group-level-0_font-size: 1em;
+  --dtrg-group-level-1_background: rgba(0, 0, 0, 0.05);
+  --dtrg-group-level-1_font-size: 0.9em;
+  --dtrg-group-level-1_padding: 0.25em 0.25em 0.25em 2em;
+  --dtrg-group-level-2_background: rgba(0, 0, 0, 0.05);
+  --dtrg-group-level-2_font-size: 0.9em;
+  --dtrg-group-level-2_padding: 0.25em 0.25em 0.25em 2.5em;
+  --dtrg-group-level-3_background: rgba(0, 0, 0, 0.05);
+  --dtrg-group-level-3_font-size: 0.9em;
+  --dtrg-group-level-3_padding: 0.25em 0.25em 0.25em 3em;
+  --dtrg-group-level-4_background: rgba(0, 0, 0, 0.05);
+  --dtrg-group-level-4_font-size: 0.9em;
+  --dtrg-group-level-4_padding: 0.25em 0.25em 0.25em 3.5em;
+  --dtrg-group-level-5_background: rgba(0, 0, 0, 0.05);
+  --dtrg-group-level-5_font-size: 0.9em;
+  --dtrg-group-level-5_padding: 0.25em 0.25em 0.25em 4em;
+}
+
 table.dataTable tr.dtrg-group th {
-  background-color: rgba(0, 0, 0, 0.1);
   text-align: left;
 }
 
 table.dataTable tr.dtrg-group.dtrg-level-0 th {
+  background-color: var(--dtrg-group-level-0_background);
   font-weight: bold;
 }
 
-table.dataTable tr.dtrg-group.dtrg-level-1 th,
-table.dataTable tr.dtrg-group.dtrg-level-2 th,
-table.dataTable tr.dtrg-group.dtrg-level-3 th,
-table.dataTable tr.dtrg-group.dtrg-level-4 th,
-table.dataTable tr.dtrg-group.dtrg-level-5 th {
-  background-color: rgba(0, 0, 0, 0.05);
-  padding-top: 0.25em;
-  padding-bottom: 0.25em;
-  padding-left: 2em;
-  font-size: 0.9em;
+table.dataTable tr.dtrg-group.dtrg-level-1 th {
+  background-color: var(--dtrg-group-level-1_background);
+  font-size: var(--dtrg-group-level-1_font-size);
+  padding: var(--dtrg-group-level-1_padding);
 }
 
 table.dataTable tr.dtrg-group.dtrg-level-2 th {
-  background-color: rgba(0, 0, 0, 0.01);
-  padding-left: 2.5em;
+  background-color: var(--dtrg-group-level-1_background);
+  font-size: var(--dtrg-group-level-1_font-size);
+  padding: var(--dtrg-group-level-1_padding);
 }
 
 table.dataTable tr.dtrg-group.dtrg-level-3 th {
-  background-color: rgba(0, 0, 0, 0.01);
-  padding-left: 3em;
+  background-color: var(--dtrg-group-level-1_background);
+  font-size: var(--dtrg-group-level-1_font-size);
+  padding: var(--dtrg-group-level-1_padding);
 }
 
 table.dataTable tr.dtrg-group.dtrg-level-4 th {
-  background-color: rgba(0, 0, 0, 0.01);
-  padding-left: 3.5em;
+  background-color: var(--dtrg-group-level-1_background);
+  font-size: var(--dtrg-group-level-1_font-size);
+  padding: var(--dtrg-group-level-1_padding);
 }
 
 table.dataTable tr.dtrg-group.dtrg-level-5 th {
-  background-color: rgba(0, 0, 0, 0.01);
-  padding-left: 4em;
+  background-color: var(--dtrg-group-level-1_background);
+  font-size: var(--dtrg-group-level-1_font-size);
+  padding: var(--dtrg-group-level-1_padding);
 }
 
-html.dark table.dataTable tr.dtrg-group th {
-  background-color: rgba(255, 255, 255, 0.1);
-}
-html.dark table.dataTable tr.dtrg-group.dtrg-level-1 th {
-  background-color: rgba(255, 255, 255, 0.05);
-}
-html.dark table.dataTable tr.dtrg-group.dtrg-level-2 th,
-html.dark table.dataTable tr.dtrg-group.dtrg-level-3 th,
-html.dark table.dataTable tr.dtrg-group.dtrg-level-4 th,
-html.dark table.dataTable tr.dtrg-group.dtrg-level-5 th {
-  background-color: rgba(255, 255, 255, 0.01);
-}
-
-table.dataTable.table-striped tr.dtrg-level-0 {
-  background-color: rgba(0, 0, 0, 0.1);
-}
-table.dataTable.table-striped tr.dtrg-level-1 {
-  background-color: rgba(0, 0, 0, 0.05);
-}
-table.dataTable.table-striped tr.dtrg-level-2,
-table.dataTable.table-striped tr.dtrg-level-3,
-table.dataTable.table-striped tr.dtrg-level-4,
-table.dataTable.table-striped tr.dtrg-level-5 {
-  background-color: rgba(0, 0, 0, 0.01);
-}
-table.dataTable.table-striped tr.dtrg-level-1 tr.dtrg-level-2 th,
-table.dataTable.table-striped tr.dtrg-level-3 th,
-table.dataTable.table-striped tr.dtrg-level-4 th,
-table.dataTable.table-striped tr.dtrg-level-5 th {
-  background-color: transparent;
+:root[data-bs-theme=dark] {
+  --dtrg-group-level-0_background: rgba(255, 255, 255, 0.1);
+  --dtrg-group-level-1_background: rgba(255, 255, 255, 0.05);
+  --dtrg-group-level-2_background: rgba(255, 255, 255, 0.05);
+  --dtrg-group-level-3_background: rgba(255, 255, 255, 0.05);
+  --dtrg-group-level-4_background: rgba(255, 255, 255, 0.05);
+  --dtrg-group-level-5_background: rgba(255, 255, 255, 0.05);
 }

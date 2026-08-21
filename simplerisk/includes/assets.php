@@ -337,7 +337,7 @@ function add_asset($ip, $name, $value=5, $location="", $teams="", $details = "",
         );
 
         $message = "Asset '{$name}' was added by user '{$_SESSION['user']}'.";
-        write_log($asset_id , $_SESSION['uid'], $message, "asset");
+        write_log($asset_id , $_SESSION['uid'] ?? 0, $message, "asset");
 
         trigger_workflow_event('asset.created', [
             'asset_id' => $asset_id,
@@ -400,31 +400,39 @@ function update_asset($asset_id, $ip, $name, $value=null, $location=null, $teams
         "verified"              => $verified,
     );
 
-    $sql = "UPDATE assets SET ";
+    $set_clauses = array();
     foreach($data as $key => $val){
         if(!is_null($val))
-            $sql .= " {$key}=:{$key}, ";
+            $set_clauses[] = " {$key}=:{$key} ";
     }
-    $sql = trim($sql, ", ");
-    $sql .= " WHERE id = :id ";
 
-    // Open the database connection
-    $db = db_open();
+    // Only run the UPDATE when at least one column actually changes. A caller
+    // that names none of these columns -- e.g. PATCH /assets/{id} carrying only
+    // `associated_risks` or `tags`, both of which are handled below rather than
+    // in the assets row -- would otherwise produce
+    // `UPDATE assets SET  WHERE id = :id` and fail with a SQL syntax error
+    // (SQLSTATE 42000) instead of updating the associations it was asked to.
+    if ($set_clauses) {
+        $sql = "UPDATE assets SET " . implode(",", $set_clauses) . " WHERE id = :id ";
 
-    // Update the risk
-    $stmt = $db->prepare($sql);
-    $stmt->bindParam(":id", $asset_id, PDO::PARAM_INT);
-    foreach($data as $key => $val){
-        if(!is_null($val)){
-            $stmt->bindParam(":{$key}", $data[$key]);
+        // Open the database connection
+        $db = db_open();
+
+        // Update the risk
+        $stmt = $db->prepare($sql);
+        $stmt->bindParam(":id", $asset_id, PDO::PARAM_INT);
+        foreach($data as $key => $val){
+            if(!is_null($val)){
+                $stmt->bindParam(":{$key}", $data[$key]);
+            }
+            unset($val);
         }
-        unset($val);
+
+        $stmt->execute();
+
+        // Close the database connection
+        db_close($db);
     }
-
-    $stmt->execute();
-
-    // Close the database connection
-    db_close($db);
 
     if(!is_null($mapped_controls)) {
         save_asset_to_controls($asset_id, $mapped_controls);
@@ -435,7 +443,13 @@ function update_asset($asset_id, $ip, $name, $value=null, $location=null, $teams
     // Storing the current list of associated risks, so we can calculate the list of risk changes for the risk update notification
     $associated_risks_original = get_associated_risks_for_asset($asset_id);
 
-    if (!array_equal($associated_risks, $associated_risks_original)) {
+    // null means "the caller did not name this field" -- same convention the
+    // scalar columns above already use. Without this guard a null would fall
+    // through array_equal() (which is false for a non-array) into
+    // update_asset_risks_associations(), which deletes every association and
+    // then fatals on `foreach (null)`. An explicitly-sent empty array is a
+    // different thing and still clears the associations.
+    if (!is_null($associated_risks) && !array_equal($associated_risks, $associated_risks_original)) {
         update_asset_risks_associations($asset_id, $associated_risks);
 
         if ($notification_extra) {
@@ -461,7 +475,7 @@ function update_asset($asset_id, $ip, $name, $value=null, $location=null, $teams
 
 
     $message = "Asset \"" . $name . "\" was modified by user \"" . $_SESSION['user'] . "\".";
-    write_log($asset_id, $_SESSION['uid'], $message, "asset");
+    write_log($asset_id, $_SESSION['uid'] ?? 0, $message, "asset");
 
     trigger_workflow_event('asset.updated', [
         'asset_id' => $asset_id,
@@ -852,7 +866,7 @@ function delete_all_assets($verified = false) {
                 'name' => try_decrypt($asset['name']),
                 'user' => $_SESSION['user']
             ]);
-            write_log($asset['id'], $_SESSION['uid'], $message, "asset");
+            write_log($asset['id'], $_SESSION['uid'] ?? 0, $message, "asset");
         }
         return true;
     } catch (Exception $e) {
@@ -896,7 +910,7 @@ function delete_asset($asset_id) {
         'user' => $_SESSION['user']
     ]);
 
-    write_log($asset_id, $_SESSION['uid'], $message, "asset");
+    write_log($asset_id, $_SESSION['uid'] ?? 0, $message, "asset");
 
     trigger_workflow_event('asset.deleted', [
         'asset_id' => $asset_id,
@@ -938,7 +952,7 @@ function verify_all_assets() {
                 'name' => try_decrypt($asset['name']),
                 'user' => $_SESSION['user']
             ]);
-            write_log($asset['id'], $_SESSION['uid'], $message, "asset");
+            write_log($asset['id'], $_SESSION['uid'] ?? 0, $message, "asset");
         }
 
         return true;
@@ -969,7 +983,7 @@ function verify_asset($asset_id)
         'user' => $_SESSION['user']
     ]);
 
-    write_log($asset_id, $_SESSION['uid'], $message, "asset");
+    write_log($asset_id, $_SESSION['uid'] ?? 0, $message, "asset");
 
     // Return success or failure
     return $return;
@@ -1310,7 +1324,7 @@ function update_asset_field_value_by_field_name($id, $fieldName, $fieldValue)
 
     $name = get_name_by_value('assets', $id, "", true);
     $message = "Asset '{$name}' was modified by user '{$_SESSION['user']}'.";
-    write_log($id, $_SESSION['uid'], $message, "asset");
+    write_log($id, $_SESSION['uid'] ?? 0, $message, "asset");
     
     // Close the database connection
     db_close($db);
@@ -1374,7 +1388,7 @@ function import_asset($ip, $name, $value, $location, $teams, $details, $tags, $v
     // Check if we have updated the asset
     if (!$exact) {
         $message = "An asset named \"" . $name . "\" was modified by username \"" . $_SESSION['user'] . "\".";
-        write_log($asset_id, $_SESSION['uid'], $message, "asset");
+        write_log($asset_id, $_SESSION['uid'] ?? 0, $message, "asset");
 
         return $asset_id;
     }
@@ -1461,79 +1475,97 @@ function update_asset_value($id, $min_value, $max_value, $valuation_level_name =
     return true;
 }
 
-/*********************************
- * FUNCTION: UPDATE ASSET VALUES *
- *********************************/
-function update_asset_values($min_value, $max_value)
+/*************************************************
+ * FUNCTION: ASSET VALUATION LINEAR ROWS         *
+ *************************************************/
+/**
+ * PURE. The ten `asset_values` rows a LINEAR distribution over
+ * [$min_value, $max_value] produces, as [id => ['min_value', 'max_value']]
+ * for ids 1..10.
+ *
+ * Splitting the arithmetic out from the write is what lets the Preferences
+ * page ask "would this submit change anything?" before touching the table.
+ * Every level is one wider-or-equal step of ($max - $min) / 10; level 1 opens
+ * on $min_value, each later level opens one above its predecessor's ceiling,
+ * and level 10 is forced onto $max_value so the rounding drift accumulated
+ * across the previous nine buckets is absorbed rather than left as a gap.
+ *
+ * No range validation: an inverted or degenerate range simply produces a
+ * degenerate distribution, exactly as this arithmetic always has. Callers
+ * validate before calling.
+ */
+function asset_valuation_linear_rows($min_value, $max_value): array
 {
-        // Open the database connection
-        $db = db_open();
+    $min_value = (int)$min_value;
+    $max_value = (int)$max_value;
 
     // Get the increment
-    $increment = round(($max_value - $min_value)/10);
+    $increment = (int)round(($max_value - $min_value) / 10);
 
     // Set the value for level 1
     $value = $min_value + $increment;
-    update_asset_value(1, $min_value, $value);
+    $rows = [1 => ['min_value' => $min_value, 'max_value' => $value]];
 
     // For each value from 2 to 10
-    for ($i=2; $i<=10; $i++)
-    {
+    for ($i = 2; $i <= 10; $i++) {
+
         // The minimum value is the current value + 1
-        $min_value = $value + 1;
+        $level_min = $value + 1;
 
         // If this is not level 10
-        if ($i != 10)
-        {
+        if ($i != 10) {
             // The new value is the current value + the increment
             $value = $value + $increment;
+        } else {
+            $value = $max_value;
         }
-        else $value = $max_value;
 
-        // Set the value for the other levels
-        update_asset_value($i, $min_value, $value);
+        $rows[$i] = ['min_value' => $level_min, 'max_value' => $value];
     }
 
-        // Close the database connection
-        db_close($db);
-
-    // Return success
-    return true;
+    return $rows;
 }
 
-/*********************************************
- * FUNCTION: UPDATE ASSET VALUES EXPONENTIAL *
- *********************************************/
+/*************************************************
+ * FUNCTION: ASSET VALUATION EXPONENTIAL ROWS    *
+ *************************************************/
 /**
- * Distribute the 10 asset-valuation buckets geometrically (exponential
- * progression) between $min_value and $max_value. Each bucket's upper
- * boundary is computed as $min_value * r^i where
- * r = ($max_value / $min_value)^(1/10) and i runs 1..10. Mirrors the
- * per-row idiom of update_asset_values() (level 1's lower bound is
- * $min_value; each subsequent level's lower bound is the previous
- * level's upper bound + 1; level 10's upper bound is forced to
- * $max_value to absorb any rounding drift).
+ * PURE. The ten `asset_values` rows an EXPONENTIAL (geometric) distribution
+ * over [$min_value, $max_value] produces, as [id => ['min_value', 'max_value']]
+ * for ids 1..10.
  *
- * Requires $min_value > 0 (geometric progression cannot start at zero).
- * Callers are expected to validate before calling; safety net here
- * returns false when min <= 0 or max <= min so no rows are updated.
+ * Each bucket's upper boundary is $min_value * r^i where
+ * r = ($max_value / $min_value)^(1/10) and i runs 1..10. Level 1's lower bound
+ * is $min_value; each later level's lower bound is the previous level's upper
+ * bound + 1; level 10's upper bound is forced to $max_value to absorb rounding
+ * drift.
+ *
+ * $min_value may be zero -- a geometric progression cannot start at zero, so
+ * that case anchors on max^(1/10) (the 10th root of max) instead, which
+ * produces the natural "0-10, 11-100, 101-1000, ..." sequence when max is a
+ * power of ten.
+ *
+ * Returns an EMPTY ARRAY for a range the progression cannot express (a
+ * negative minimum, or a maximum that does not exceed the minimum). Callers
+ * are expected to validate and report the refusal themselves; returning no
+ * rows means no rows are written.
  */
-function update_asset_values_exponential($min_value, $max_value)
+function asset_valuation_exponential_rows($min_value, $max_value): array
 {
     $min_value = (float)$min_value;
     $max_value = (float)$max_value;
 
     // Range must actually be a range, and max must be positive (so the
     // geometric progression has somewhere to terminate). min can be
-    // zero — that's the natural starting point for an exponential range
+    // zero -- that's the natural starting point for an exponential range
     // (e.g. 0-10, 11-100, 101-1000, ...).
     if ($min_value < 0 || $max_value <= $min_value || $max_value <= 0) {
-        return false;
+        return [];
     }
 
     // Compute the geometric step r and level 1's upper bound. min=0 needs
     // a special anchor (geometric needs a non-zero start), so we anchor on
-    // max^(1/10) — i.e. the 10th root of max — which produces the natural
+    // max^(1/10) -- i.e. the 10th root of max -- which produces the natural
     // "0-10, 11-100, 101-1000, ..." sequence when max is a power of 10.
     // min>0 uses the standard (max/min)^(1/10) ratio with level 1's upper
     // bound = min*r.
@@ -1547,44 +1579,158 @@ function update_asset_values_exponential($min_value, $max_value)
         $level_1_upper = (int)round($min_value * $r);
     }
 
-    // Open the database connection
-    $db = db_open();
-
     // Set the value for level 1
-    update_asset_value(1, $level_1_lower, $level_1_upper);
+    $rows = [1 => ['min_value' => $level_1_lower, 'max_value' => $level_1_upper]];
     $value = $level_1_upper;
 
     // For each level from 2 to 10
-    for ($i = 2; $i <= 10; $i++)
-    {
+    for ($i = 2; $i <= 10; $i++) {
+
         // The minimum value is the previous level's upper bound + 1
         $level_min = $value + 1;
 
         // If this is not level 10, compute the upper bound
-        if ($i != 10)
-        {
+        if ($i != 10) {
             // anchor is max^(1/10) when min=0, else min
             $value = ($min_value == 0.0)
                 ? (int)round(pow($r, $i))
                 : (int)round($min_value * pow($r, $i));
-        }
-        else
-        {
+        } else {
             // Force the last bucket to land exactly on $max_value so any
             // rounding drift across the previous buckets doesn't leave a
             // gap at the top of the range.
             $value = (int)round($max_value);
         }
 
-        // Set the value for the other levels
-        update_asset_value($i, $level_min, $value);
+        $rows[$i] = ['min_value' => $level_min, 'max_value' => $value];
     }
 
-    // Close the database connection
-    db_close($db);
+    return $rows;
+}
 
-    // Return success
-    return true;
+/*************************************************
+ * FUNCTION: ASSET VALUATION ROWS TO UPDATE      *
+ *************************************************/
+/**
+ * PURE. Which of $desired actually differs from what is already stored.
+ *
+ * $desired is [id => ['min_value' => ..., 'max_value' => ..., and optionally
+ * 'valuation_level_name' => ...]]; $current is the row set
+ * get_asset_valuation_array() returns. The return is the SUBSET OF $desired,
+ * keyed by the same ids, that would change something if written.
+ *
+ * Both comparisons are deliberately loose about type, because both sides
+ * arrive in different shapes and a strict comparison would report every row
+ * changed on every submit:
+ *
+ *   min_value / max_value  -- posted as strings by <input type="number">,
+ *                             returned as ints by the INT columns.
+ *   valuation_level_name   -- '' when the admin left the box empty, NULL in
+ *                             the database when the level was never named.
+ *
+ * A level name is only compared when $desired carries one. The Linear and
+ * Exponential modes rebuild the boundaries without touching the names, so for
+ * them an existing name is not a difference.
+ *
+ * An id with no stored counterpart is reported as work: it cannot be shown to
+ * be unchanged, so it is not claimed to be.
+ */
+function asset_valuation_rows_to_update(array $desired, array $current): array
+{
+    // Index the stored rows by id. PDO's default fetch mode gives each row
+    // both string and numeric keys; only the string keys are read here.
+    $stored = [];
+    foreach ($current as $row) {
+        if (isset($row['id'])) {
+            $stored[(int)$row['id']] = $row;
+        }
+    }
+
+    $to_update = [];
+
+    foreach ($desired as $id => $row) {
+
+        $existing = $stored[(int)$id] ?? null;
+
+        if ($existing === null) {
+            $to_update[$id] = $row;
+            continue;
+        }
+
+        if ((int)$row['min_value'] !== (int)($existing['min_value'] ?? 0)
+            || (int)$row['max_value'] !== (int)($existing['max_value'] ?? 0)) {
+            $to_update[$id] = $row;
+            continue;
+        }
+
+        if (array_key_exists('valuation_level_name', $row)
+            && (string)$row['valuation_level_name'] !== (string)($existing['valuation_level_name'] ?? '')) {
+            $to_update[$id] = $row;
+        }
+    }
+
+    return $to_update;
+}
+
+/*************************************************
+ * FUNCTION: APPLY ASSET VALUATION ROWS          *
+ *************************************************/
+/**
+ * Write $rows (in the shape asset_valuation_rows_to_update() consumes) to
+ * `asset_values`, SKIPPING every row that already holds those values.
+ *
+ * Returns the number of rows actually written, so a caller can tell an admin
+ * what really happened instead of announcing a save on every click. All five
+ * Preferences tabs share one <form>, so this function is reached on every
+ * Update regardless of which tab the admin was looking at -- returning 0 is
+ * the common case, not the exceptional one.
+ */
+function apply_asset_valuation_rows(array $rows): int
+{
+    $to_update = asset_valuation_rows_to_update($rows, get_asset_valuation_array());
+
+    foreach ($to_update as $id => $row) {
+        update_asset_value(
+            $id,
+            $row['min_value'],
+            $row['max_value'],
+            array_key_exists('valuation_level_name', $row) ? $row['valuation_level_name'] : false
+        );
+    }
+
+    return count($to_update);
+}
+
+/*********************************
+ * FUNCTION: UPDATE ASSET VALUES *
+ *********************************/
+/**
+ * Rebuild the ten asset valuation levels as a LINEAR distribution over
+ * [$min_value, $max_value], writing only the levels that actually change.
+ *
+ * Returns the number of rows written -- 0 when the stored levels already match
+ * the distribution, which is what an untouched form re-submitted from another
+ * tab produces.
+ */
+function update_asset_values($min_value, $max_value): int
+{
+    return apply_asset_valuation_rows(asset_valuation_linear_rows($min_value, $max_value));
+}
+
+/*********************************************
+ * FUNCTION: UPDATE ASSET VALUES EXPONENTIAL *
+ *********************************************/
+/**
+ * Rebuild the ten asset valuation levels as an EXPONENTIAL distribution over
+ * [$min_value, $max_value], writing only the levels that actually change.
+ *
+ * Returns the number of rows written. A range the progression cannot express
+ * yields no rows and therefore writes nothing and returns 0; callers validate
+ * the range and report the refusal themselves rather than relying on this.
+ */
+function update_asset_values_exponential($min_value, $max_value): int
+{
+    return apply_asset_valuation_rows(asset_valuation_exponential_rows($min_value, $max_value));
 }
 
 /*******************************************
@@ -1984,7 +2130,7 @@ function display_add_asset()
         echo "
             <script>
                 $(function() {
-                    $(\"#add-asset-container select[id^='custom_field'].multiselect\").multiselect({buttonWidth: '300px', enableFiltering: true, enableCaseInsensitiveFiltering: true});
+                    $(\"#add-asset-container select.multiselect[name^='custom_field[']\").multiselect({buttonWidth: '300px', enableFiltering: true, enableCaseInsensitiveFiltering: true});
                 });
             </script>
         ";
@@ -2095,14 +2241,13 @@ function delete_asset_group($asset_group_id) {
     // Delete leftover junction entries
     cleanup_after_delete('asset_groups');
     
-    $message = _lang('AssetGroupDeleteAuditLog', array(
+    $message = _lang_raw('AssetGroupDeleteAuditLog', array(
             'user' => $_SESSION['user'],
             'group_name' => $name,
             'id' => $asset_group_id
-        ), false
-    );
+        ));
 
-    write_log($asset_group_id + 1000, $_SESSION['uid'], $message, 'asset_group');
+    write_log($asset_group_id + 1000, $_SESSION['uid'] ?? 0, $message, 'asset_group');
 
     return true;
 }
@@ -2138,16 +2283,15 @@ function remove_asset_from_asset_group($asset_id, $asset_group_id) {
 
     db_close($db);
 
-    $message = _lang('AssetGroupRemoveAssetAuditLog', array(
+    $message = _lang_raw('AssetGroupRemoveAssetAuditLog', array(
             'user' => $_SESSION['user'],
             'asset_name' => $asset_name,
             'asset_id' => $asset_id,
             'group_name' => $asset_group_name,
             'group_id' => $asset_group_id
-        ), false
-    );
+        ));
 
-    write_log($asset_group_id + 1000, $_SESSION['uid'], $message, 'asset_group');
+    write_log($asset_group_id + 1000, $_SESSION['uid'] ?? 0, $message, 'asset_group');
 
     return true;
 }
@@ -2365,35 +2509,33 @@ function update_assets_of_asset_group($assets, $asset_group_id, $asset_group_nam
         $assets_to_add = get_names_by_values('assets', $assets_to_add, false, false, true);
 
         if ($assets_to_add)
-            $asset_changes[] = _lang('AssetGroupUpdateAuditLogAdded', array('assets_added' => $assets_to_add), false);
+            $asset_changes[] = _lang_raw('AssetGroupUpdateAuditLogAdded', array('assets_added' => $assets_to_add));
 
         if (!$create) {
             $assets_to_remove = get_names_by_values('assets', $assets_to_remove, false, false, true);
             if ($assets_to_remove)
-                $asset_changes[] = _lang('AssetGroupUpdateAuditLogRemoved', array('assets_removed' => $assets_to_remove), false);
+                $asset_changes[] = _lang_raw('AssetGroupUpdateAuditLogRemoved', array('assets_removed' => $assets_to_remove));
 
             $assets_current = get_names_by_values('assets', $assets_current, false, false, true);
 
-            $message = _lang('AssetGroupUpdateAuditLog', array(
+            $message = _lang_raw('AssetGroupUpdateAuditLog', array(
                     'user' => $_SESSION['user'],
                     'group_name' => $asset_group_name,
                     'id' => $asset_group_id,
                     'assets_from' => $assets_current,
                     'assets_to' => $assets,
                     'asset_changes' => implode(", ", $asset_changes)
-                ), false
-            );
+                ));
         } else {
-            $message = _lang('AssetGroupCreateAuditLog', array(
+            $message = _lang_raw('AssetGroupCreateAuditLog', array(
                     'user' => $_SESSION['user'],
                     'group_name' => $asset_group_name,
                     'id' => $asset_group_id,
                     'assets_to' => $assets
-                ), false
-            );
+                ));
         }
 
-        write_log($asset_group_id + 1000, $_SESSION['uid'], $message, 'asset_group');
+        write_log($asset_group_id + 1000, $_SESSION['uid'] ?? 0, $message, 'asset_group');
     }
 }
 
@@ -3107,6 +3249,24 @@ function get_assets_and_asset_groups_by_control_for_dropdown($control_id = false
         $team_based_separation_where_condition = '';
     }
 
+    // ONE flag drives both the SQL and the bind, because they used to be able
+    // to disagree. The `:control_maturity` token is only ever emitted inside
+    // the `$control_id ? ... : ""` branches below -- there is no maturity
+    // filter to apply without a control to filter against -- but the bind at
+    // the bottom was guarded on `$control_maturity !== false` alone. Any
+    // caller that sent a maturity WITHOUT a control therefore bound a
+    // parameter the prepared statement had no token for and got
+    // "SQLSTATE[HY093] ... number of bound variables does not match number of
+    // tokens" back as a 500 instead of the asset list.
+    //
+    // That is not a hypothetical caller: it is every freshly added "Mapped
+    // Assets" row in the control modal. The widget sends both values for a
+    // row that has no control yet, and jQuery serializes an undefined value
+    // as an empty string -- so the endpoint reads control_id='' (falsy, no
+    // token emitted) but control_maturity='' -> (int)'' -> 0, which is
+    // !== false and bound anyway.
+    $filter_by_maturity = $control_id && $control_maturity !== false;
+
     $sql = "
         SELECT
             *
@@ -3119,7 +3279,7 @@ function get_assets_and_asset_groups_by_control_for_dropdown($control_id = false
     ($control_id ? ",`cta`.`asset_id` IS NOT NULL as selected" : "") . "
             FROM
                 `assets` a " .
-    ($control_id ? "LEFT OUTER JOIN `control_to_assets` cta ON `cta`.`asset_id` = `a`.`id` and `cta`.`control_id` = :control_id" . ($control_maturity !== false ? " and cta.control_maturity = :control_maturity " : "") : "") . "
+    ($control_id ? "LEFT OUTER JOIN `control_to_assets` cta ON `cta`.`asset_id` = `a`.`id` and `cta`.`control_id` = :control_id" . ($filter_by_maturity ? " and cta.control_maturity = :control_maturity " : "") : "") . "
             WHERE
                 `a`.`verified` = 1" . ($control_id ? " or `cta`.`asset_id` IS NOT NULL" : "") . " {$team_based_separation_where_condition}
         UNION ALL
@@ -3131,7 +3291,7 @@ function get_assets_and_asset_groups_by_control_for_dropdown($control_id = false
     ($control_id ? ",`ctag`.`asset_group_id` IS NOT NULL as selected" : "") . "
             FROM
                 `asset_groups` ag " .
-    ($control_id ? "LEFT OUTER JOIN `control_to_asset_groups` ctag ON `ctag`.`asset_group_id` = `ag`.`id` and `ctag`.`control_id` = :control_id " . ($control_maturity !== false ? " and ctag.control_maturity = :control_maturity " : "") : "") . 
+    ($control_id ? "LEFT OUTER JOIN `control_to_asset_groups` ctag ON `ctag`.`asset_group_id` = `ag`.`id` and `ctag`.`control_id` = :control_id " . ($filter_by_maturity ? " and ctag.control_maturity = :control_maturity " : "") : "") . 
     (encryption_extra() ? "JOIN (SELECT @rownum := 0) rn" : "") . "
         ) u
         ORDER BY
@@ -3148,7 +3308,7 @@ function get_assets_and_asset_groups_by_control_for_dropdown($control_id = false
 
     if ($control_id)
         $stmt->bindParam(":control_id", $control_id, PDO::PARAM_INT);
-    if ($control_maturity !== false)
+    if ($filter_by_maturity)
         $stmt->bindParam(":control_maturity", $control_maturity, PDO::PARAM_INT);
 
     $stmt->execute();
@@ -3530,7 +3690,10 @@ function get_assets_data_for_view_v2($view, $selected_fields, $verified = null, 
                                 }
                                 
                                 sort($mapped_controls);
-                                $value = implode(', ', $mapped_controls);
+                                // Escape each control name — the value is rendered raw
+                                // by the datatable column (no client renderer). Mirrors
+                                // the associated_risks case below.
+                                $value = implode(', ', array_map(fn($n) => $escaper->escapeHtml($n), $mapped_controls));
                             } else {
                                 $value = '';
                             }
@@ -3739,7 +3902,7 @@ function update_asset_field_API_v2($view, $fieldName) {
         }
         
         $message = _lang("FieldUpdated_{$view_type}", ['fieldName' => $fieldName, 'name' => get_name_by_value('assets', $id, "", true), 'user' => $_SESSION['user']]);
-        write_log($id, $_SESSION['uid'], $message, "asset");
+        write_log($id, $_SESSION['uid'] ?? 0, $message, "asset");
     }
     
     /* Properly implement this part when finishing inline edits
@@ -3770,7 +3933,7 @@ function update_asset_API_v2($view) {
     // If the asset name is alread taken, but not on this asset
     $asset_id_tmp = asset_exists($_POST['name']);
     if (!empty($_POST['name']) && $asset_id_tmp &&  $id !== $asset_id_tmp) {
-        set_alert(true, "bad", _lang('EditFailed_FieldMustBeUnique', ['field' => 'name'], false));
+        set_alert(true, "bad", _lang_raw('EditFailed_FieldMustBeUnique', ['field' => 'name']));
         api_v2_json_result(400, get_alert(true), NULL);
     }
     
@@ -3939,7 +4102,7 @@ function update_asset_API_v2($view) {
     $changes = get_changes_in_asset($original, $updated);
 
     if (!empty($changes)) {
-        write_log($id, $_SESSION['uid'], _lang('AssetAuditLogUpdate', array('asset_name' => $asset_name, 'user' => $_SESSION['user'], 'changes' => implode(', ', $changes)), false), 'asset');
+        write_log($id, $_SESSION['uid'] ?? 0, _lang_raw('AssetAuditLogUpdate', array('asset_name' => $asset_name, 'user' => $_SESSION['user'], 'changes' => implode(', ', $changes))), 'asset');
 
         trigger_workflow_event('asset.updated', [
             'asset_id' => $id,
@@ -3962,7 +4125,7 @@ function create_asset_API_v2($view) {
     
     // If the asset name is alread taken, but not on this asset
     if (!empty($_POST['name']) && asset_exists($_POST['name'])) {
-        set_alert(true, "bad", _lang('EditFailed_FieldMustBeUnique', ['field' => 'name'], false));
+        set_alert(true, "bad", _lang_raw('EditFailed_FieldMustBeUnique', ['field' => 'name']));
         api_v2_json_result(400, get_alert(true), NULL);
     }
     
@@ -4121,7 +4284,7 @@ function create_asset_API_v2($view) {
     }
 
     $message = _lang("CreateSuccess_{$view_type}", ['name' => $asset_name, 'user' => $_SESSION['user']]);
-    write_log($id, $_SESSION['uid'], $message, "asset");
+    write_log($id, $_SESSION['uid'] ?? 0, $message, "asset");
 
     trigger_workflow_event('asset.created', [
         'asset_id' => $id,
@@ -4331,7 +4494,16 @@ function get_changes_in_asset($original, $updated) {
             $updated[$key] = json_encode($updated[$key] ?? []);
         }
         if ($original[$key] !== $updated[$key]) {
-            $changes[] = _lang('AssetAuditLogUpdateChange', array('key' => $key, 'value' => $original[$key], 'new_value' => $updated[$key]), false);
+            $value = $original[$key];
+            $new_value = $updated[$key];
+            // The asset "details" field is WYSIWYG (rich-text); emit it as plain
+            // text so the audit message doesn't carry literal "<p>"/"&nbsp;".
+            // The comparison above ran on the raw values.
+            if ($key === 'details') {
+                $value = html_to_plain_text($value);
+                $new_value = html_to_plain_text($new_value);
+            }
+            $changes[] = _lang_raw('AssetAuditLogUpdateChange', array('key' => $key, 'value' => $value, 'new_value' => $new_value));
         }
     }
     return $changes;

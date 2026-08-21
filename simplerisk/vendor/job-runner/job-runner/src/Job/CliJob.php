@@ -10,8 +10,8 @@ use function array_key_exists;
 
 class CliJob implements Job
 {
-    private const TTL_DEFAULT_VALUE          = 300;
-    private const AUTO_RELEASE_DEFAULT_VALUE = true;
+    private const int TTL_DEFAULT_VALUE           = 300;
+    private const true AUTO_RELEASE_DEFAULT_VALUE = true;
 
     public function __construct(
         private readonly string $command,

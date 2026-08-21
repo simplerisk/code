@@ -109,20 +109,20 @@
             // Display an alert
             set_alert(true, "good", "The settings were updated successfully.");
 
-            $message = _lang('BackupSettingsUpdated', ['user_name' => $_SESSION['name']], false);
-            write_log(0, $_SESSION['uid'], $message, 'backup');
+            $message = _lang_raw('BackupSettingsUpdated', ['user_name' => $_SESSION['name']]);
+            write_log(0, $_SESSION['uid'] ?? 0, $message, 'backup');
 
             // If we should also do a backup
             if (isset($_POST['submit_and_backup_now'])) {
 
-                $message = _lang('BackupInitiatedByUser', ['user_name' => $_SESSION['name']], false);
+                $message = _lang_raw('BackupInitiatedByUser', ['user_name' => $_SESSION['name']]);
                 write_debug_log($message, 'notice');
-                write_log(0, $_SESSION['uid'], $message, 'backup');
+                write_log(0, $_SESSION['uid'] ?? 0, $message, 'backup');
 
                 // Increasing the time for timeout
                 set_time_limit(600);
 
-                require_once(realpath(__DIR__ . '/../cron/cron_backup.php'));
+                require_once(realpath(__DIR__ . '/../includes/backups.php'));
                 do_backup(true);
             }
         }

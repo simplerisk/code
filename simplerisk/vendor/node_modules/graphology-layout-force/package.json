@@ -1,0 +1,51 @@
+{
+  "name": "graphology-layout-force",
+  "version": "0.2.4",
+  "description": "Simple force-directed layout algorithm for graphology.",
+  "main": "index.js",
+  "types": "index.d.ts",
+  "files": [
+    "*.d.ts",
+    "defaults.js",
+    "helpers.js",
+    "index.js",
+    "iterate.js",
+    "worker.js"
+  ],
+  "scripts": {
+    "prepublishOnly": "npm test",
+    "test": "mocha test.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/graphology/graphology.git"
+  },
+  "keywords": [
+    "graph",
+    "graphology",
+    "layout",
+    "force",
+    "force vector"
+  ],
+  "contributors": [
+    {
+      "name": "Alexis Jacomy",
+      "url": "http://github.com/jacomyal"
+    },
+    {
+      "name": "Guillaume Plique",
+      "url": "http://github.com/Yomguithereal"
+    }
+  ],
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/graphology/graphology/issues"
+  },
+  "homepage": "https://github.com/graphology/graphology#readme",
+  "peerDependencies": {
+    "graphology-types": ">=0.19.0"
+  },
+  "dependencies": {
+    "graphology-utils": "^2.4.2"
+  }
+}

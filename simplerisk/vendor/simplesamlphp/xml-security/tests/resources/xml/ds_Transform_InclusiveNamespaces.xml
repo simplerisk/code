@@ -1,4 +1,3 @@
-<ds:Transform xmlns:ds="http://www.w3.org/2000/09/xmldsig#" Algorithm="http://www.w3.org/2001/10/xml-exc-c14n#">
-  <ec:InclusiveNamespaces PrefixList="dsig soap"
-    xmlns:ec="http://www.w3.org/2001/10/xml-exc-c14n#"/>
+<ds:Transform xmlns:ds="http://www.w3.org/2000/09/xmldsig#" xmlns:ec="http://www.w3.org/2001/10/xml-exc-c14n#" Algorithm="http://www.w3.org/2001/10/xml-exc-c14n#">
+  <ec:InclusiveNamespaces PrefixList="dsig soap"/>
 </ds:Transform>

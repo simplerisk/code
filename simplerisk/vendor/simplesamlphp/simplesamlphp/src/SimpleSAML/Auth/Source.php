@@ -39,6 +39,7 @@ abstract class Source
      *
      * @param array $info Information about this authentication source.
      * @param array &$config Configuration for this authentication source.
+     * @phpstan-ignore constructor.unusedParameter
      */
     public function __construct(array $info, array &$config)
     {
@@ -53,7 +54,7 @@ abstract class Source
      *
      * @param string $type The type of the authentication source.
      *
-     * @return Source[]  Array of \SimpleSAML\Auth\Source objects of the specified type.
+     * @return \SimpleSAML\Auth\Source[]  Array of \SimpleSAML\Auth\Source objects of the specified type.
      * @throws \Exception If the authentication source is invalid.
      */
     public static function getSourcesOfType(string $type): array
@@ -305,7 +306,7 @@ abstract class Source
                 '\SimpleSAML\Auth\SourceFactory',
             );
 
-            /** @var SourceFactory $factory */
+            /** @var \SimpleSAML\Auth\SourceFactory $factory */
             $factory = new $factoryClass();
             $authSource = $factory->create($info, $config);
         } catch (\Exception $e) {

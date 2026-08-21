@@ -2,7 +2,7 @@
 
 ![Build Status](https://github.com/simplesamlphp/xml-security/actions/workflows/php.yml/badge.svg)
 [![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/simplesamlphp/xml-security/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/simplesamlphp/xml-security/?branch=master)
-[![Coverage Status](https://codecov.io/gh/simplesamlphp/xml-security/branch/master/graph/badge.svg)](https://codecov.io/gh/simplesamlphp/xml-security)
+[![Coverage Status](https://codecov.io/gh/simplesamlphp/xml-security/graph/badge.svg?token=sFE0AQsCUI)](https://codecov.io/gh/simplesamlphp/xml-security)
 [![PHPStan Enabled](https://img.shields.io/badge/PHPStan-enabled-brightgreen.svg?style=flat)](https://github.com/simplesamlphp/xml-security)
 
 This library implements XML signatures and encryption. It provides an extensible

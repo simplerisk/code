@@ -284,9 +284,11 @@
         app()->get('/complianceforgescf/disable', 'api_complianceforgescf_disable');
         app()->get('/complianceforgescf/status', 'api_complianceforgescf_status');
 
-    /************************** DATATABLE API BEGIN *******************************/
-        app()->post('/get/datatable', 'getDatatableAPI');
-    /*************************** DATATABLE API END ********************************/
+    // SR-1721: the generic POST /get/datatable route was removed from v1 entirely.
+    // It enforced only session auth, exposing any module's datatable data to any
+    // authenticated user regardless of module permissions. v2 replaced it with
+    // resource-scoped, permission-gated routes; v1 is frozen/deprecated, must be
+    // explicitly enabled, and had no caller, so the route is simply removed.
 
 	/************************** SIMPLERISK EXTRAS APIS ************************************/
 

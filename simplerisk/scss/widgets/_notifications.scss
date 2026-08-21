@@ -1,0 +1,225 @@
+// =============================================================================
+// In-app notifications - bell badge + dropdown panel + rows + modals
+// All colors via SCSS variables; no hardcoded hex per the editing-stylesheets
+// skill rules.
+// =============================================================================
+
+.notifications-toggle {
+  position: relative;
+
+  .notifications-badge {
+    position: absolute;
+    top: 10px;
+    right: 6px;
+    background: $sr-important;
+    color: $white;
+    font-size: 10px;
+    font-weight: 700;
+    line-height: 1;
+    border-radius: 10px;
+    padding: 3px 5px;
+    min-width: 18px;
+    text-align: center;
+    border: 2px solid $sr-primary;
+
+    &[hidden] {
+      display: none !important;
+    }
+  }
+}
+
+.notifications-panel {
+  position: absolute;
+  top: $topbar-height;
+  right: 16px;
+  width: 380px;
+  max-width: calc(100vw - 32px);
+  background: $white;
+  border: 1px solid darken($sr-default, 5%);
+  border-radius: 4px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+  z-index: 1050;
+  font-size: 13px;
+  color: lighten($sr-dark, 5%);
+
+  &[hidden] { display: none; }
+
+  &__header {
+    padding: 12px 14px;
+    background: $sr-primary;
+    color: $white;
+    border-radius: 4px 4px 0 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-weight: 500;
+    font-size: 14px;
+
+    &-icon {
+      margin-right: 6px;
+      font-size: 12px;
+    }
+  }
+
+  &__close {
+    color: lighten($sr-secondary, 20%);
+    cursor: pointer;
+
+    &:hover { color: $white; }
+  }
+
+  &__tabs {
+    display: flex;
+    border-bottom: 1px solid darken($sr-default, 5%);
+  }
+
+  &__tab {
+    flex: 1;
+    padding: 10px 6px;
+    text-align: center;
+    cursor: pointer;
+    color: $sr-secondary;
+    font-weight: 500;
+    border-bottom: 2px solid transparent;
+    background: none;
+    border-left: 0; border-right: 0; border-top: 0;
+
+    .count {
+      color: lighten($sr-secondary, 15%);
+      font-size: 11px;
+      margin-left: 4px;
+      font-weight: 400;
+    }
+
+    &.active {
+      color: $sr-important;
+      border-bottom-color: $sr-important;
+      .count { color: $sr-important; }
+    }
+  }
+
+  &__toolbar {
+    padding: 8px 14px;
+    background: lighten($sr-default, 2%);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border-bottom: 1px solid darken($sr-default, 5%);
+    font-size: 12px;
+    color: $sr-secondary;
+
+    &--bulk {
+      background: $sr-row-selected;
+      color: $sr-dark;
+      font-weight: 600;
+    }
+
+    .bulk-actions {
+      margin-left: auto;
+      display: flex;
+      gap: 6px;
+
+      .btn {
+        background: $sr-primary;
+        color: $white;
+        padding: 4px 10px;
+        border-radius: 3px;
+        font-size: 12px;
+        font-weight: 500;
+        border: 0;
+        cursor: pointer;
+
+        i { margin-right: 4px; font-size: 11px; }
+
+        &.danger { background: $sr-important; }
+      }
+    }
+  }
+
+  &__row {
+    padding: 10px 14px 10px 30px;
+    border-bottom: 1px solid lighten($sr-default, 2%);
+    position: relative;
+    cursor: pointer;
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+
+    &:hover { background: lighten($sr-default, 3%); }
+    &.selected { background: $sr-row-selected; }
+
+    .unread-dot {
+      position: absolute;
+      left: 12px;
+      top: 17px;
+      width: 8px;
+      height: 8px;
+      border-radius: 4px;
+      background: $sr-important;
+    }
+
+    .row-body { flex: 1; min-width: 0; }
+
+    .title-line {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 8px;
+    }
+
+    .title {
+      font-weight: 600;
+      color: lighten($sr-dark, 5%);
+      font-size: 13px;
+    }
+    &.read .title { font-weight: 400; color: $sr-secondary; }
+
+    .timestamp {
+      font-size: 11px;
+      color: $sr-secondary;
+      flex-shrink: 0;
+    }
+
+    .preview {
+      font-size: 12px;
+      color: $sr-secondary;
+      margin-top: 2px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .promo-tag {
+      display: inline-block;
+      font-size: 10px;
+      color: $sr-important;
+      border: 1px solid $sr-important;
+      border-radius: 2px;
+      padding: 0 4px;
+      margin-left: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      vertical-align: 1px;
+    }
+
+  }
+
+  &__empty {
+    padding: 36px 14px;
+    text-align: center;
+    color: $sr-secondary;
+    font-size: 13px;
+
+    i {
+      font-size: 32px;
+      color: lighten($sr-secondary, 20%);
+      margin-bottom: 8px;
+      display: block;
+    }
+  }
+}
+
+.modal-notification-timestamp {
+  font-size: 12px;
+}
+

@@ -10,35 +10,33 @@ use OpenApi\Analysers\AnalyserInterface;
 use OpenApi\Analysers\AttributeAnnotationFactory;
 use OpenApi\Analysers\DocBlockAnnotationFactory;
 use OpenApi\Analysers\ReflectionAnalyser;
-use OpenApi\Annotations as OA;
+use OpenApi\Annotations\OpenApi;
 use OpenApi\Loggers\DefaultLogger;
-use OpenApi\Type\LegacyTypeResolver;
 use OpenApi\Type\TypeInfoTypeResolver;
+use OpenApi\Utils\Pipeline;
+use OpenApi\Utils\SourceScanner;
 use Psr\Log\LoggerInterface;
-use Radebatz\TypeInfoExtras\TypeResolver\StringTypeResolver;
 
 /**
  * OpenApi spec generator.
  *
  * Scans PHP source code and generates OpenApi specifications from the found OpenApi annotations.
- *
- * This is an object-oriented alternative to using the now deprecated <code>\OpenApi\scan()</code> function and
- * static class properties of the <code>Analyzer</code> and <code>Analysis</code> classes.
  */
 class Generator
 {
+    /** @deprecated Use {@see Undefined::UNDEFINED} instead. */
+    public const UNDEFINED = Undefined::UNDEFINED;
+
+    /** @var array<string,string> */
+    public const DEFAULT_ALIASES = ['oa' => 'OpenApi\\Annotations'];
+
+    /** @var list<string> */
+    public const DEFAULT_NAMESPACES = ['OpenApi\\Annotations\\'];
+
     /**
      * Allows Annotation classes to know the context of the annotation that is being processed.
      */
     public static ?Context $context = null;
-
-    /** @var string Magic value to differentiate between null and undefined. */
-    public const UNDEFINED = '@OA\Generator::UNDEFINED🙈';
-
-    /** @var array<string,string> */
-    public const DEFAULT_ALIASES = ['oa' => 'OpenApi\\Annotations'];
-    /** @var array<string> */
-    public const DEFAULT_NAMESPACES = ['OpenApi\\Annotations\\'];
 
     /** @var array<string,string> Map of namespace aliases to be supported by doctrine. */
     protected array $aliases;
@@ -75,19 +73,16 @@ class Generator
         $this->setNamespaces(self::DEFAULT_NAMESPACES);
     }
 
+    /**
+     * @deprecated use {@see Undefined::isDefault()} instead
+     */
     public static function isDefault(...$value): bool
     {
-        foreach ($value as $v) {
-            if ($v !== Generator::UNDEFINED) {
-                return false;
-            }
-        }
-
-        return true;
+        return Undefined::isDefault(...$value);
     }
 
     /**
-     * @return array<string>
+     * @return array<string, string>
      */
     public function getAliases(): array
     {
@@ -109,7 +104,7 @@ class Generator
     }
 
     /**
-     * @return array<string>|null
+     * @return list<string>|null
      */
     public function getNamespaces(): ?array
     {
@@ -156,6 +151,26 @@ class Generator
             'generator' => [
                 'ignoreOtherAttributes' => false,
             ],
+            'mergeIntoOpenApi' => [
+                'mergeComponents' => false,
+            ],
+            'expandEnums' => [
+                'enumNames' => null,
+            ],
+            'augmentParameters' => [
+                'augmentOperationParameters' => true,
+            ],
+            'pathFilter' => [
+                'tags' => [],
+                'paths' => [],
+            ],
+            'cleanUnusedComponents' => [
+                'enabled' => false,
+            ],
+            'augmentTags' => [
+                'whitelist' => [],
+                'withDescription' => true,
+            ],
             'operationId' => [
                 'hash' => true,
             ],
@@ -165,46 +180,6 @@ class Generator
     public function getConfig(): array
     {
         return $this->config + $this->getDefaultConfig();
-    }
-
-    protected function normaliseConfig(array $config): array
-    {
-        $normalised = [];
-        foreach ($config as $key => $value) {
-            if (is_numeric($key)) {
-                $token = explode('=', $value);
-                if (2 === count($token)) {
-                    // 'operationId.hash=false'
-                    [$key, $value] = $token;
-                }
-            }
-
-            if (in_array($value, ['true', 'false'])) {
-                $value = 'true' == $value;
-            }
-
-            if ($isList = ('[]' === substr($key, -2))) {
-                $key = substr($key, 0, -2);
-            }
-            $token = explode('.', $key);
-            if (2 === count($token)) {
-                // 'operationId.hash' => false
-                // namespaced / processor
-                if ($isList) {
-                    $normalised[$token[0]][$token[1]][] = $value;
-                } else {
-                    $normalised[$token[0]][$token[1]] = $value;
-                }
-            } else {
-                if ($isList) {
-                    $normalised[$key][] = $value;
-                } else {
-                    $normalised[$key] = $value;
-                }
-            }
-        }
-
-        return $normalised;
     }
 
     /**
@@ -237,6 +212,7 @@ class Generator
                 new Processors\BuildPaths(),
                 new Processors\AugmentParameters(),
                 new Processors\AugmentRefs(),
+                new Processors\AugmentItems(),
                 new Processors\MergeJsonContent(),
                 new Processors\MergeXmlContent(),
                 new Processors\AugmentMediaType(),
@@ -281,7 +257,7 @@ class Generator
             }
         };
 
-        if ($this->processorPipeline) {
+        if ($this->processorPipeline instanceof Pipeline) {
             $this->processorPipeline->walk($walker);
         }
 
@@ -300,14 +276,6 @@ class Generator
         return $this;
     }
 
-    /**
-     * @deprecated use `withProcessorPipeline()` instead
-     */
-    public function withProcessor(callable $with): Generator
-    {
-        return $this->withProcessorPipeline($with);
-    }
-
     public function setTypeResolver(?TypeResolverInterface $typeResolver): Generator
     {
         $this->typeResolver = $typeResolver;
@@ -317,9 +285,7 @@ class Generator
 
     public function getTypeResolver(): TypeResolverInterface
     {
-        $this->typeResolver ??= class_exists(StringTypeResolver::class)
-                    ? new TypeInfoTypeResolver()
-                    : new LegacyTypeResolver();
+        $this->typeResolver ??= new TypeInfoTypeResolver();
 
         return $this->typeResolver;
     }
@@ -341,38 +307,6 @@ class Generator
         $this->version = $version;
 
         return $this;
-    }
-
-    /**
-     * @deprecated use non-static `generate()` instead
-     */
-    public static function scan(iterable $sources, array $options = []): ?OA\OpenApi
-    {
-        // merge with defaults
-        $config = $options + [
-                'aliases' => self::DEFAULT_ALIASES,
-                'namespaces' => self::DEFAULT_NAMESPACES,
-                'analyser' => null,
-                'analysis' => null,
-                'processor' => null,
-                'processors' => null,
-                'config' => [],
-                'logger' => null,
-                'validate' => true,
-                'version' => null,
-            ];
-
-        $processorPipeline = $config['processor'] ??
-            ($config['processors'] ? new Pipeline($config['processors']) : null);
-
-        return (new Generator($config['logger']))
-            ->setVersion($config['version'])
-            ->setAliases($config['aliases'])
-            ->setNamespaces($config['namespaces'])
-            ->setAnalyser($config['analyser'])
-            ->setProcessorPipeline($processorPipeline)
-            ->setConfig($config['config'])
-            ->generate($sources, $config['analysis'], $config['validate']);
     }
 
     /**
@@ -405,7 +339,7 @@ class Generator
      * @param null|Analysis $analysis custom analysis instance
      * @param bool          $validate flag to enable/disable validation of the returned spec
      */
-    public function generate(iterable $sources, ?Analysis $analysis = null, bool $validate = true): ?OA\OpenApi
+    public function generate(iterable $sources, ?Analysis $analysis = null, bool $validate = true): ?OpenApi
     {
         $rootContext = new Context([
             'version' => $this->getVersion(),
@@ -420,7 +354,7 @@ class Generator
         // post-processing
         $this->getProcessorPipeline()->process($analysis);
 
-        if ($analysis->openapi) {
+        if ($analysis->openapi instanceof OpenApi) {
             // overwrite default/annotated version
             $analysis->openapi->openapi = $this->getVersion() ?: $analysis->openapi->openapi;
             // update context to provide the same to validation/serialisation code
@@ -435,26 +369,54 @@ class Generator
         return $analysis->openapi;
     }
 
+    protected function normaliseConfig(array $config): array
+    {
+        $normalised = [];
+        foreach ($config as $key => $value) {
+            if (is_numeric($key)) {
+                $token = explode('=', (string) $value);
+                if (2 === count($token)) {
+                    // 'operationId.hash=false'
+                    [$key, $value] = $token;
+                }
+            }
+
+            if (in_array($value, ['true', 'false'])) {
+                $value = 'true' == $value;
+            }
+
+            if ($isList = (str_ends_with((string) $key, '[]'))) {
+                $key = substr((string) $key, 0, -2);
+            }
+            $token = explode('.', (string) $key);
+            if (2 === count($token)) {
+                // 'operationId.hash' => false
+                // namespaced / processor
+                if ($isList) {
+                    $normalised[$token[0]][$token[1]][] = $value;
+                } else {
+                    $normalised[$token[0]][$token[1]] = $value;
+                }
+            } else {
+                if ($isList) {
+                    $normalised[$key][] = $value;
+                } else {
+                    $normalised[$key] = $value;
+                }
+            }
+        }
+
+        return $normalised;
+    }
+
     protected function scanSources(iterable $sources, Analysis $analysis, Context $rootContext): void
     {
         $analyser = $this->getAnalyser();
+        $scanner = new SourceScanner($rootContext->logger);
 
-        foreach ($sources as $source) {
-            if (is_iterable($source)) {
-                $this->scanSources($source, $analysis, $rootContext);
-            } else {
-                $resolvedSource = $source instanceof \SplFileInfo ? $source->getPathname() : realpath($source);
-                if (!$resolvedSource) {
-                    $rootContext->logger->warning(sprintf('Skipping invalid source: %s', $source));
-                    continue;
-                }
-                if (is_dir($resolvedSource)) {
-                    $this->scanSources(Util::finder($resolvedSource), $analysis, $rootContext);
-                } else {
-                    $rootContext->logger->debug(sprintf('Analysing source: %s', $resolvedSource));
-                    $analysis->addAnalysis($analyser->fromFile($resolvedSource, $rootContext));
-                }
-            }
+        foreach ($scanner->scan($sources) as $file) {
+            $rootContext->logger->debug(sprintf('Analysing source: %s', $file));
+            $analysis->addAnalysis($analyser->fromFile($file, $rootContext));
         }
     }
 }

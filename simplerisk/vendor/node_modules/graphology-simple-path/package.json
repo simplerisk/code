@@ -1,0 +1,42 @@
+{
+  "name": "graphology-simple-path",
+  "version": "0.2.0",
+  "description": "Simple path related functions for graphology.",
+  "main": "index.js",
+  "files": [
+    "*.d.ts",
+    "index.js"
+  ],
+  "types": "./index.d.ts",
+  "scripts": {
+    "prepublishOnly": "npm test",
+    "test": "mocha test.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/graphology/graphology.git"
+  },
+  "keywords": [
+    "graph",
+    "graphology",
+    "simple path"
+  ],
+  "contributors": [
+    {
+      "name": "Guillaume Plique",
+      "url": "http://github.com/Yomguithereal"
+    }
+  ],
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/graphology/graphology/issues"
+  },
+  "homepage": "https://github.com/graphology/graphology#readme",
+  "peerDependencies": {
+    "graphology-types": ">=0.20.0"
+  },
+  "dependencies": {
+    "graphology-utils": "^1.8.0",
+    "mnemonist": "^0.39.0"
+  }
+}

@@ -19,9 +19,10 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        php-version: ['8.1', '8.2', '8.3', '8.4']
+        php-version: ['8.3', '8.4', '8.5']
 
-    uses: simplesamlphp/simplesamlphp-test-framework/.github/workflows/reusable_phplinter.yml@v1.9.2
+    uses: simplesamlphp/simplesamlphp-test-framework/.github/workflows/reusable_phplinter.yml@v1
+    secrets: inherit
     with:
       php-version: ${{ matrix.php-version }}
 
@@ -30,7 +31,8 @@ jobs:
     strategy:
       fail-fast: false
 
-    uses: simplesamlphp/simplesamlphp-test-framework/.github/workflows/reusable_linter.yml@v1.9.2
+    uses: simplesamlphp/simplesamlphp-test-framework/.github/workflows/reusable_linter.yml@v1
+    secrets: inherit
     with:
       enable_eslinter: false
       enable_jsonlinter: true
@@ -45,7 +47,7 @@ jobs:
       fail-fast: false
       matrix:
         operating-system: [ubuntu-latest]
-        php-versions: ['8.1', '8.2', '8.3', '8.4']
+        php-versions: ['8.3', '8.4', '8.5']
 
     steps:
       - name: Setup PHP, with composer and extensions
@@ -53,7 +55,7 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php-versions }}
-          extensions: ctype, date, dom, filter, hash, intl, mbstring, openssl, pcre, soap, spl, xml
+          extensions: ctype, date, dom, filter, hash, intl, mbstring, openssl, pcre, soap, spl, sodium, xml
           tools: composer
           ini-values: error_reporting=E_ALL
           coverage: pcov
@@ -69,32 +71,41 @@ jobs:
           git config --global core.autocrlf false
           git config --global core.eol lf
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Get composer cache directory
         run: echo COMPOSER_CACHE="$(composer config cache-files-dir)" >> "$GITHUB_ENV"
 
+      - name: Get COMPOSER_ROOT_VERSION from composer.json branch alias
+        run: |
+            ROOT_VERSION=$(composer config extra.branch-alias.dev-master)
+            if [ -z "$ROOT_VERSION" ]; then
+              echo "Could not read extra.branch-alias.dev-master from composer.json" >&2
+              exit 1
+            fi
+            echo "COMPOSER_ROOT_VERSION=$ROOT_VERSION" >> "$GITHUB_ENV"
+
       - name: Cache composer dependencies
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
-          path: $COMPOSER_CACHE
-          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+          path: ${{ env.COMPOSER_CACHE }}
+          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.json') }}
           restore-keys: ${{ runner.os }}-composer-
 
       - name: Install Composer dependencies
         run: composer install --no-progress --prefer-dist --optimize-autoloader
 
       - name: Run unit tests with coverage
-        if: ${{ matrix.php-versions == '8.4' }}
+        if: ${{ matrix.php-versions == '8.5' }}
         run: vendor/bin/phpunit
 
       - name: Run unit tests (no coverage)
-        if: ${{ matrix.php-versions != '8.4' }}
+        if: ${{ matrix.php-versions != '8.5' }}
         run: vendor/bin/phpunit --no-coverage
 
       - name: Save coverage data
-        if: ${{ matrix.php-versions == '8.4' }}
-        uses: actions/upload-artifact@v4
+        if: ${{ matrix.php-versions == '8.5' }}
+        uses: actions/upload-artifact@v7
         with:
           name: coverage-data
           path: ${{ github.workspace }}/build
@@ -107,7 +118,7 @@ jobs:
       fail-fast: true
       matrix:
         operating-system: [windows-latest]
-        php-versions: ['8.1', '8.2', '8.3', '8.4']
+        php-versions: ['8.3', '8.4', '8.5']
 
     steps:
       - name: Setup PHP, with composer and extensions
@@ -115,7 +126,8 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php-versions }}
-          extensions: ctype, date, dom, filter, hash, intl, mbstring, openssl, pcre, soap, spl, xml
+          extensions: ctype, date, dom, fileinfo, filter, hash, intl, mbstring, openssl, pcre,\
+            soap, sodium, spl, xml, zip
           tools: composer
           ini-values: error_reporting=E_ALL
           coverage: none
@@ -131,16 +143,26 @@ jobs:
           git config --global core.autocrlf false
           git config --global core.eol lf
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Get composer cache directory
         run: echo COMPOSER_CACHE="$(composer config cache-files-dir)" >> "$env:GITHUB_ENV"
 
+      - name: Get COMPOSER_ROOT_VERSION from composer.json branch alias
+        shell: bash
+        run: |
+            ROOT_VERSION=$(composer config extra.branch-alias.dev-master)
+            if [ -z "$ROOT_VERSION" ]; then
+              echo "Could not read extra.branch-alias.dev-master from composer.json" >&2
+              exit 1
+            fi
+            echo "COMPOSER_ROOT_VERSION=$ROOT_VERSION" >> "$GITHUB_ENV"
+
       - name: Cache composer dependencies
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
-          path: $COMPOSER_CACHE
-          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+          path: ${{ env.COMPOSER_CACHE }}
+          key: ${{ runner.os }}-composer-${{ hashFiles('**\composer.json') }}
           restore-keys: ${{ runner.os }}-composer-
 
       - name: Install Composer dependencies
@@ -151,6 +173,7 @@ jobs:
 
   quality:
     name: Quality control
+    needs: [unit-tests-linux]
     runs-on: [ubuntu-latest]
 
     steps:
@@ -160,24 +183,33 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           # Should be the higest supported version, so we can use the newest tools
-          php-version: '8.3'
-          tools: composer, composer-require-checker, composer-unused:0.9.2, phpcs
-          extensions: ctype, date, dom, filter, hash, mbstring, openssl, pcre, soap, spl, xml
+          php-version: '8.5'
+          tools: composer, composer-require-checker, composer-unused
+          extensions: ctype, date, dom, filter, hash, intl, mbstring, openssl, pcre, soap, sodium, spl, xml
           coverage: none
 
       - name: Setup problem matchers for PHP
         run: echo "::add-matcher::${{ runner.tool_cache }}/php.json"
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Get composer cache directory
         run: echo COMPOSER_CACHE="$(composer config cache-files-dir)" >> "$GITHUB_ENV"
 
+      - name: Get COMPOSER_ROOT_VERSION from composer.json branch alias
+        run: |
+            ROOT_VERSION=$(composer config extra.branch-alias.dev-master)
+            if [ -z "$ROOT_VERSION" ]; then
+              echo "Could not read extra.branch-alias.dev-master from composer.json" >&2
+              exit 1
+            fi
+            echo "COMPOSER_ROOT_VERSION=$ROOT_VERSION" >> "$GITHUB_ENV"
+
       - name: Cache composer dependencies
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
-          path: $COMPOSER_CACHE
-          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+          path: ${{ env.COMPOSER_CACHE }}
+          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.json') }}
           restore-keys: ${{ runner.os }}-composer-
 
       - name: Validate composer.json and composer.lock
@@ -187,14 +219,13 @@ jobs:
         run: composer install --no-progress --prefer-dist --optimize-autoloader
 
       - name: Check code for hard dependencies missing in composer.json
-        continue-on-error: true
         run: composer-require-checker check --config-file=tools/composer-require-checker.json composer.json
 
       - name: Check code for unused dependencies in composer.json
         run: composer-unused
 
       - name: PHP Code Sniffer
-        run: phpcs
+        run: vendor/bin/phpcs
 
       - name: PHPStan
         run: |
@@ -206,31 +237,42 @@ jobs:
 
   security:
     name: Security checks
+    needs: [unit-tests-linux]
     runs-on: [ubuntu-latest]
+
     steps:
       - name: Setup PHP, with composer and extensions
         # https://github.com/shivammathur/setup-php
         uses: shivammathur/setup-php@v2
         with:
           # Should be the lowest supported version
-          php-version: '8.1'
-          extensions: ctype, date, dom, filter, hash, mbstring, openssl, pcre, soap, spl, xml
+          php-version: '8.3'
+          extensions: ctype, date, dom, filter, hash, intl, mbstring, openssl, pcre, soap, sodium, spl, xml
           tools: composer
           coverage: none
 
       - name: Setup problem matchers for PHP
         run: echo "::add-matcher::${{ runner.tool_cache }}/php.json"
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Get composer cache directory
         run: echo COMPOSER_CACHE="$(composer config cache-files-dir)" >> "$GITHUB_ENV"
 
+      - name: Get COMPOSER_ROOT_VERSION from composer.json branch alias
+        run: |
+            ROOT_VERSION=$(composer config extra.branch-alias.dev-master)
+            if [ -z "$ROOT_VERSION" ]; then
+              echo "Could not read extra.branch-alias.dev-master from composer.json" >&2
+              exit 1
+            fi
+            echo "COMPOSER_ROOT_VERSION=$ROOT_VERSION" >> "$GITHUB_ENV"
+
       - name: Cache composer dependencies
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
-          path: $COMPOSER_CACHE
-          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+          path: ${{ env.COMPOSER_CACHE }}
+          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.json') }}
           restore-keys: ${{ runner.os }}-composer-
 
       - name: Install Composer dependencies
@@ -250,15 +292,15 @@ jobs:
     runs-on: [ubuntu-latest]
     needs: [unit-tests-linux]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           name: coverage-data
           path: ${{ github.workspace }}/build
 
       - name: Codecov
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@v7
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           fail_ci_if_error: true
@@ -274,6 +316,6 @@ jobs:
       (needs.unit-tests-linux.result == 'success' && needs.coverage.result == 'skipped')
 
     steps:
-      - uses: geekyeggo/delete-artifact@v5
+      - uses: geekyeggo/delete-artifact@v6
         with:
           name: coverage-data

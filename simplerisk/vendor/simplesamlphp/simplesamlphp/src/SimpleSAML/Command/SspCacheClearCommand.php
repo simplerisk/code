@@ -7,6 +7,7 @@ namespace SimpleSAML\Command;
 use SimpleSAML\Configuration;
 use SimpleSAML\Error\CriticalConfigurationError;
 use SimpleSAML\Kernel;
+use Symfony\Component\Config\Loader\LoaderInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Exception\RuntimeException;
@@ -20,6 +21,8 @@ use Symfony\Component\Filesystem\Exception\IOException;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\HttpKernel\CacheClearer\CacheClearerInterface;
+use Symfony\Component\HttpKernel\Kernel as BaseKernel;
+use Symfony\Component\HttpKernel\KernelInterface;
 use Symfony\Component\HttpKernel\RebootableInterface;
 
 #[AsCommand(
@@ -28,19 +31,50 @@ use Symfony\Component\HttpKernel\RebootableInterface;
 )]
 class SspCacheClearCommand extends Command
 {
-    private CacheClearerInterface $cacheClearer;
+    /** @var \Symfony\Component\Filesystem\Filesystem */
     private Filesystem $filesystem;
 
+    /** @var array */
     private array $enabledModules;
 
-    public function __construct(CacheClearerInterface $cacheClearer, ?Filesystem $filesystem = null)
-    {
-        parent::__construct();
+    /** @var \Symfony\Component\HttpKernel\KernelInterface */
+    private KernelInterface $temporaryKernel;
 
-        $this->cacheClearer = $cacheClearer;
+
+    /**
+     * @param \Symfony\Component\HttpKernel\CacheClearer\CacheClearerInterface $cacheClearer
+     * @param \Symfony\Component\Filesystem\Filesystem $filesystem
+     */
+    public function __construct(
+        private CacheClearerInterface $cacheClearer,
+        ?Filesystem $filesystem = null,
+    ) {
+        parent::__construct();
         $this->filesystem = $filesystem ?? new Filesystem();
+
+        $this->temporaryKernel = new class ('test', true) extends BaseKernel {
+            public function registerBundles(): iterable
+            {
+                return [];
+            }
+
+
+            public function registerContainerConfiguration(LoaderInterface $loader): void
+            {
+            }
+
+
+            public function getContainerClass(): string
+            {
+                return parent::getContainerClass();
+            }
+        };
     }
 
+
+    /**
+     * @return void
+     */
     protected function configure(): void
     {
         $this
@@ -58,8 +92,12 @@ and debug mode:
 EOF,);
     }
 
+
     /**
-     * @throws ExceptionInterface
+     * @param \Symfony\Component\Console\Input\InputInterface $input
+     * @param \Symfony\Component\Console\Output\OutputInterface $output
+     *
+     * @throws \Symfony\Component\Console\Exception\ExceptionInterface
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
@@ -238,6 +276,10 @@ EOF,);
         return Command::SUCCESS;
     }
 
+
+    /**
+     * @param string $dir
+     */
     private function isNfs(string $dir): bool
     {
         static $mounts = null;
@@ -266,10 +308,15 @@ EOF,);
         return false;
     }
 
+
+    /**
+     * @param string $warmupDir
+     * @param string $realBuildDir
+     */
     private function warmup(string $warmupDir, string $realBuildDir): void
     {
         // create a temporary kernel
-        $kernel = $this->getApplication()->getKernel();
+        $kernel = $this->temporaryKernel;
         if (!$kernel instanceof RebootableInterface) {
             $throwMessage = 'Calling "cache:clear" with a kernel that does not implement '
             . '"Symfony\Component\HttpKernel\RebootableInterface" is not supported.';
@@ -278,9 +325,15 @@ EOF,);
         $kernel->reboot($warmupDir);
     }
 
+
+    /**
+     * @param string $cacheDir
+     * @param string $warmupDir
+     * @param \Symfony\Component\Console\Style\SymfonyStyle $io
+     */
     private function warmupOptionals(string $cacheDir, string $warmupDir, SymfonyStyle $io): void
     {
-        $kernel = $this->getApplication()->getKernel();
+        $kernel = $this->temporaryKernel;
         $warmer = $kernel->getContainer()->get('cache_warmer');
         // non optional warmers already ran during container compilation
         $warmer->enableOnlyOptionalWarmers();

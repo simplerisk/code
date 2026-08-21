@@ -104,7 +104,6 @@ abstract class AbstractECParametersType extends AbstractDsig11Element
      * Convert this ECParametersType element to XML.
      *
      * @param \DOMElement|null $parent The element we should append this ECParametersType element to.
-     * @return \DOMElement
      */
     public function toXML(?DOMElement $parent = null): DOMElement
     {

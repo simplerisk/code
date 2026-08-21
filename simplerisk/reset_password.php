@@ -17,7 +17,7 @@
 
         // Session handler is database
         if (use_database_for_sessions()) {
-            session_set_save_handler(new SimpleRiskSessionHandler());
+            SimpleRiskSessionHandler::register();
         }
 
         // Start session
@@ -81,7 +81,30 @@
         unset($_SESSION['first_login_pass']);
 
         // If a password reset was submitted
-        reset_password($user_id, $current_password, $new_password, $confirm_password);
+        if (reset_password($user_id, $current_password, $new_password, $confirm_password)) {
+
+            // Belt and braces. reset_password() has already cleared
+            // first_login_uid — deliberately, because on the no-MFA branch
+            // login() can exit(0) inside registration_redirect() and never
+            // return here at all. This repeats it for the paths that DO return,
+            // so the guard at the top of this file cannot be left holding a
+            // marker for a change that is already done.
+            unset($_SESSION['first_login_uid']);
+
+            // Hand off to index.php rather than picking a destination here.
+            // reset_password() ends by calling login(), which sets
+            // $_SESSION['access'] and — ONLY on the no-MFA branch — issues its
+            // own redirect. With MFA enabled it just sets the access value and
+            // returns, so before this we fell through and re-rendered this very
+            // form: the password had been changed, the success alert was shown,
+            // and the visitor was handed back the change-password page with no
+            // way forward. index.php already routes on $_SESSION['access'] to
+            // MFA enrolment, MFA verification, or the landing page, which is
+            // exactly what an ordinary login does in-request.
+            header('Location: index.php');
+            exit;
+
+        }
 
     }
 
@@ -110,86 +133,64 @@
         <script src="vendor/node_modules/bootstrap/dist/js/bootstrap.bundle.min.js" defer></script> 
 
     </head>
-    <body>
+    <body class="sr-auth-page">
         <div class="preloader">
             <div class="lds-ripple">
                 <div class="lds-pos"></div>
                 <div class="lds-pos"></div>
             </div>
         </div>
-        <div id="main-wrapper" data-layout="vertical" data-navbarbg="skin5" data-sidebartype="none" data-sidebar-position="absolute" data-header-position="absolute" data-boxed-layout="full" data-function="reset_password">
-            <header class="topbar" data-navbarbg="skin5">
-                <nav class="navbar top-navbar navbar-expand-md navbar-dark">
-                    <div class="navbar-header">
-                        <a class="navbar-brand" href="https://www.simplerisk.com">
-                            <img src="images/logo@2x.png" alt="homepage" class="logo"/>
-                        </a>
-                    </div>
-                </nav>
-            </header>
-            <!-- ============================================================== -->
-            <!-- Page wrapper  -->
-            <div class="page-wrapper">
-            	<div class="scroll-content">
-            		<div class="content-wrapper">
-                        <!-- container - It's the direct container of all the -->
-                        <div class="content container-fluid">
-                            <div class="container reset-password-form">
-                                <div class="row">
-                                    <div class="col-md-3"></div>
-                                    <div class="col-md-6">
-                                        <h3>Enterprise Risk Management Simplified...</h3>
-                                        <div class="card">
-                                            <form name="password_reset" method="post" autocomplete="off" action="" class="password_reset">
-                                                <input type="hidden" name="csrf_token" value="<?= $escaper->escapeHtmlAttr($_SESSION['reset_pwd_csrf_token']) ?>">
-                                                <div class="card-body">
-                                                    <h4 class="card-title"><?= $escaper->escapeHtml($lang['PasswordChangeRequired']);?></h4>
+        <div class="sr-auth">
+<?php display_auth_brand_panel(); ?>
+            <main class="sr-auth-main">
+                <div class="sr-auth-col">
+                    <div class="sr-auth-card">
+                        <div class="sr-auth-card-head">
+                            <h2><?= $escaper->escapeHtml($lang['PasswordChangeRequired']);?></h2>
+                            <p><?= $escaper->escapeHtml($lang['ChooseANewPasswordToContinue']);?></p>
+                        </div>
+                        <form name="password_reset" method="post" autocomplete="off" action="" class="password_reset">
+                            <input type="hidden" name="csrf_token" value="<?= $escaper->escapeHtmlAttr($_SESSION['reset_pwd_csrf_token']) ?>">
+                            <div class="sr-auth-card-body">
     <?php
         $resetRequestMessages = getPasswordReqeustMessages();
         if(count($resetRequestMessages)) {
+            // Each message already came back from _lang(), which escapes its
+            // params -- so they are emitted as-is rather than escaped a second
+            // time (see the double-escaping rule in CLAUDE.md).
             echo "
-                                                    <p class='mb-2'><b>Password should have the following requirements.</b></p>
-                                                    <ul>
+                                <div class='sr-auth-requirements'>
+                                    <p>" . $escaper->escapeHtml($lang['PasswordRequirements']) . "</p>
+                                    <ul>
             ";
             foreach($resetRequestMessages as $resetRequestMessage) {
                 echo "
-                                                        <li>{$resetRequestMessage}</li>
+                                        <li>{$resetRequestMessage}</li>
                 ";
             }
             echo "
-                                                    </ul>
+                                    </ul>
+                                </div>
             ";
         }
     ?>
-                                                    <div class="form-group">
-                                                        <label><?= $escaper->escapeHtml($lang['NewPassword']);?></label>
-                                                        <input class="form-control" name="new_password" id="new_password" type="password" maxlength="50" autocomplete="off" />
-                                                    </div>
-                                                    <div class="form-group">
-                                                        <label><?= $escaper->escapeHtml($lang['ConfirmPassword']);?></label>
-                                                        <input class="form-control" name="confirm_password" id="confirm_password" type="password" maxlength="50" autocomplete="off" />
-                                                    </div>
-                                                    <div class="form-group justify-content-end">
-                                                        <div>
-                                                            <button type="reset" class="btn btn-dark"><?= $escaper->escapeHtml($lang['Reset']);?></button>
-                                                            <button type="submit" class="btn btn-submit" name="password_reset"><?= $escaper->escapeHtml($lang['Submit']);?></button>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </form>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-3"></div>
+                                <div class="sr-auth-field">
+                                    <label for="new_password"><?= $escaper->escapeHtml($lang['NewPassword']);?></label>
+                                    <input class="form-control" name="new_password" id="new_password" type="password" maxlength="50" autocomplete="off" />
+                                </div>
+                                <div class="sr-auth-field">
+                                    <label for="confirm_password"><?= $escaper->escapeHtml($lang['ConfirmPassword']);?></label>
+                                    <input class="form-control" name="confirm_password" id="confirm_password" type="password" maxlength="50" autocomplete="off" />
+                                </div>
+                                <div class="sr-auth-actions">
+                                    <button type="reset" class="btn btn-dark"><?= $escaper->escapeHtml($lang['Reset']);?></button>
+                                    <button type="submit" class="btn btn-submit" name="password_reset"><?= $escaper->escapeHtml($lang['Submit']);?></button>
                                 </div>
                             </div>
-                        </div>
-                        <!-- End of content -->
-                	</div>
-                	<!-- End of content-wrapper -->
-        		</div>
-        		<!-- End of scroll-content -->
-          	</div>
-            <!-- End Page wrapper  -->
+                        </form>
+                    </div>
+                </div>
+            </main>
         </div>
         <!-- End Wrapper -->
     <?php

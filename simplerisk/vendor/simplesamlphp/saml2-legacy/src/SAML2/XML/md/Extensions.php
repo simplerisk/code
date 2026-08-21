@@ -5,13 +5,11 @@ declare(strict_types=1);
 namespace SAML2\XML\md;
 
 use DOMElement;
-
 use SAML2\Constants;
 use SAML2\Utils;
 use SAML2\XML\alg\Common as ALG;
 use SAML2\XML\alg\DigestMethod;
 use SAML2\XML\alg\SigningMethod;
-use SAML2\XML\Chunk;
 use SAML2\XML\idpdisc\DiscoveryResponse;
 use SAML2\XML\mdattr\EntityAttributes;
 use SAML2\XML\mdrpi\Common as MDRPI;
@@ -21,6 +19,7 @@ use SAML2\XML\mdui\Common as MDUI;
 use SAML2\XML\mdui\DiscoHints;
 use SAML2\XML\mdui\UIInfo;
 use SAML2\XML\shibmd\Scope;
+use SimpleSAML\XML\Chunk;
 
 /**
  * Class for handling SAML2 metadata extensions.
@@ -41,9 +40,9 @@ class Extensions
      *          \SAML2\XML\mdui\DiscoHints|
      *          \SAML2\XML\alg\DigestMethod|
      *          \SAML2\XML\alg\SigningMethod|
-     *          \SAML2\XML\Chunk)[]  Array of extensions.
+     *          \SimpleSAML\XML\Chunk)[]  Array of extensions.
      */
-    public static function getList(DOMElement $parent) : array
+    public static function getList(DOMElement $parent): array
     {
         $ret = [];
         $supported = [
@@ -72,8 +71,10 @@ class Extensions
 
         /** @var \DOMElement $node */
         foreach (Utils::xpQuery($parent, './saml_metadata:Extensions/*') as $node) {
-            if (!is_null($node->namespaceURI) && array_key_exists($node->namespaceURI, $supported) &&
-                array_key_exists($node->localName, $supported[$node->namespaceURI])
+            if (
+                !is_null($node->namespaceURI)
+                && array_key_exists($node->namespaceURI, $supported)
+                && array_key_exists($node->localName, $supported[$node->namespaceURI])
             ) {
                 $ret[] = new $supported[$node->namespaceURI][$node->localName]($node);
             } else {
@@ -89,10 +90,9 @@ class Extensions
      * Add a list of Extensions to the given element.
      *
      * @param \DOMElement $parent The element we should add the extensions to.
-     * @param \SAML2\XML\Chunk[] $extensions List of extension objects.
-     * @return void
+     * @param \SimpleSAML\XML\Chunk[] $extensions List of extension objects.
      */
-    public static function addList(DOMElement $parent, array $extensions) : void
+    public static function addList(DOMElement $parent, array $extensions): void
     {
         if (empty($extensions)) {
             return;

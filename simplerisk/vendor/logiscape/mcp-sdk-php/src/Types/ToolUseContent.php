@@ -1,0 +1,67 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Mcp\Types;
+
+/**
+ * Tool use content in sampling messages.
+ *
+ * @deprecated Deprecated as of protocol version 2026-07-28 (SEP-2577). The
+ *             Sampling feature remains in the specification (and this SDK)
+ *             for at least twelve months; migrate to direct LLM provider API
+ *             integration. See the deprecated features registry.
+ */
+class ToolUseContent extends Content {
+    /**
+     * @param array<string, mixed> $input
+     */
+    public function __construct(
+        public readonly string $id,
+        public readonly string $name,
+        public readonly array $input,
+        ?Annotations $annotations = null,
+    ) {
+        parent::__construct('tool_use', $annotations);
+    }
+
+    /**
+     * @param array<string, mixed> $data
+     */
+    public static function fromArray(array $data): self {
+        $id = $data['id'] ?? '';
+        $name = $data['name'] ?? '';
+        $input = $data['input'] ?? [];
+        unset($data['type'], $data['id'], $data['name'], $data['input']);
+
+        $annotations = null;
+        if (isset($data['annotations']) && is_array($data['annotations'])) {
+            $annotations = Annotations::fromArray($data['annotations']);
+            unset($data['annotations']);
+        }
+
+        $obj = new self($id, $name, $input, $annotations);
+        $obj->validate();
+        return $obj;
+    }
+
+    public function validate(): void {
+        if (empty($this->id)) {
+            throw new \InvalidArgumentException('ToolUseContent id cannot be empty');
+        }
+        if (empty($this->name)) {
+            throw new \InvalidArgumentException('ToolUseContent name cannot be empty');
+        }
+        if ($this->annotations !== null) {
+            $this->annotations->validate();
+        }
+    }
+
+    public function jsonSerialize(): mixed {
+        $data = parent::jsonSerialize();
+        $data['id'] = $this->id;
+        $data['name'] = $this->name;
+        $data['input'] = $this->input;
+        return $data;
+    }
+}

@@ -1,7 +1,7 @@
 /**
- * HugeRTE version 1.0.10 (2026-02-16)
+ * HugeRTE version 1.0.12 (2026-06-29)
  * Copyright (c) 2022 Ephox Corporation DBA Tiny Technologies, Inc.
- * Copyright (c) 2024 HugeRTE contributors
+ * Copyright (c) 2026 HugeRTE contributors
  * Licensed under the MIT license (https://github.com/hugerte/hugerte/blob/main/LICENSE.TXT)
  */
 
@@ -753,7 +753,7 @@
     const parseJson = text => {
       try {
         return Optional.some(JSON.parse(text));
-      } catch (err) {
+      } catch (_err) {
         return Optional.none();
       }
     };

@@ -16,52 +16,91 @@ use function array_merge;
  */
 class ErrorCodes
 {
+    final public const string ACSPARAMS = 'ACSPARAMS';
+
+    final public const string ADMINNOTHASHED = 'ADMINNOTHASHED';
+
+    final public const string ARSPARAMS = 'ARSPARAMS';
+
+    final public const string AUTHSOURCEERROR = 'AUTHSOURCEERROR';
+
+    final public const string BADREQUEST = 'BADREQUEST';
+
+    final public const string CASERROR = 'CASERROR';
+
+    final public const string CONFIG = 'CONFIG';
+
+    final public const string CREATEREQUEST = 'CREATEREQUEST';
+
+    final public const string DISCOPARAMS = 'DISCOPARAMS';
+
+    final public const string GENERATEAUTHNRESPONSE = 'GENERATEAUTHNRESPONSE';
+
+    final public const string INVALIDCERT = 'INVALIDCERT';
+
+    final public const string LDAPERROR = 'LDAPERROR';
+
+    final public const string LOGOUTINFOLOST = 'LOGOUTINFOLOST';
+
+    final public const string LOGOUTREQUEST = 'LOGOUTREQUEST';
+
+    final public const string MEMCACHEDOWN = 'MEMCACHEDOWN';
+
+    final public const string METADATA = 'METADATA';
+
+    final public const string METADATANOTFOUND = 'METADATANOTFOUND';
+
+    final public const string METHODNOTALLOWED = 'METHODNOTALLOWED';
+
+    final public const string NOACCESS = 'NOACCESS';
+
+    final public const string NOCERT = 'NOCERT';
+
+    final public const string NORELAYSTATE = 'NORELAYSTATE';
+
+    final public const string NOSTATE = 'NOSTATE';
+
+    final public const string NOTFOUND = 'NOTFOUND';
+
+    final public const string NOTFOUNDREASON = 'NOTFOUNDREASON';
+
+    final public const string NOTSET = 'NOTSET';
+
+    final public const string NOTVALIDCERT = 'NOTVALIDCERT';
+
+    final public const string NOTVALIDCERTSIGNATURE = 'NOTVALIDCERTSIGNATURE';
+
+    final public const string PROCESSASSERTION = 'PROCESSASSERTION';
+
+    final public const string PROCESSAUTHNREQUEST = 'PROCESSAUTHNREQUEST';
+
+    final public const string RESPONSESTATUSNOSUCCESS = 'RESPONSESTATUSNOSUCCESS';
+
+    final public const string SLOSERVICEPARAMS = 'SLOSERVICEPARAMS';
+
+    final public const string SSOPARAMS = 'SSOPARAMS';
+
+    final public const string UNHANDLEDEXCEPTION = 'UNHANDLEDEXCEPTION';
+
+    final public const string UNKNOWNCERT = 'UNKNOWNCERT';
+
+    final public const string USERABORTED = 'USERABORTED';
+
+    final public const string WRONGUSERPASS = 'WRONGUSERPASS';
+
+    final public const string KEY_TITLE = 'title';
+
+    final public const string KEY_DESCRIPTION = 'descr';
+
+
+    /**
+     */
     public function __construct()
     {
         // Automatically register instances of subclasses with Login to allow
         // custom ErrorCodes to work in a redirect environment
         Login::registerErrorCodeClass($this);
     }
-
-    // TODO PHPv8.1 - Consider moving to final consts for these default error codes to prevent overrides.
-    public const ACSPARAMS = 'ACSPARAMS';
-    public const ARSPARAMS = 'ARSPARAMS';
-    public const AUTHSOURCEERROR = 'AUTHSOURCEERROR';
-    public const BADREQUEST = 'BADREQUEST';
-    public const CASERROR = 'CASERROR';
-    public const CONFIG = 'CONFIG';
-    public const CREATEREQUEST = 'CREATEREQUEST';
-    public const DISCOPARAMS = 'DISCOPARAMS';
-    public const GENERATEAUTHNRESPONSE = 'GENERATEAUTHNRESPONSE';
-    public const INVALIDCERT = 'INVALIDCERT';
-    public const LDAPERROR = 'LDAPERROR';
-    public const LOGOUTINFOLOST = 'LOGOUTINFOLOST';
-    public const LOGOUTREQUEST = 'LOGOUTREQUEST';
-    public const MEMCACHEDOWN = 'MEMCACHEDOWN';
-    public const METADATA = 'METADATA';
-    public const METADATANOTFOUND = 'METADATANOTFOUND';
-    public const METHODNOTALLOWED = 'METHODNOTALLOWED';
-    public const NOACCESS = 'NOACCESS';
-    public const NOCERT = 'NOCERT';
-    public const NORELAYSTATE = 'NORELAYSTATE';
-    public const NOSTATE = 'NOSTATE';
-    public const NOTFOUND = 'NOTFOUND';
-    public const NOTFOUNDREASON = 'NOTFOUNDREASON';
-    public const NOTSET = 'NOTSET';
-    public const ADMINNOTHASHED = 'ADMINNOTHASHED';
-    public const NOTVALIDCERT = 'NOTVALIDCERT';
-    public const PROCESSASSERTION = 'PROCESSASSERTION';
-    public const PROCESSAUTHNREQUEST = 'PROCESSAUTHNREQUEST';
-    public const RESPONSESTATUSNOSUCCESS = 'RESPONSESTATUSNOSUCCESS';
-    public const SLOSERVICEPARAMS = 'SLOSERVICEPARAMS';
-    public const SSOPARAMS = 'SSOPARAMS';
-    public const UNHANDLEDEXCEPTION = 'UNHANDLEDEXCEPTION';
-    public const UNKNOWNCERT = 'UNKNOWNCERT';
-    public const USERABORTED = 'USERABORTED';
-    public const WRONGUSERPASS = 'WRONGUSERPASS';
-
-    public const KEY_TITLE = 'title';
-    public const KEY_DESCRIPTION = 'descr';
 
 
     /**
@@ -77,6 +116,7 @@ class ErrorCodes
     {
         return [
             self::ACSPARAMS => Translate::noop('No SAML response provided'),
+            self::ADMINNOTHASHED => Translate::noop('Admin password not set to a hashed value'),
             self::ARSPARAMS => Translate::noop('No SAML message provided'),
             self::AUTHSOURCEERROR => Translate::noop('Authentication source error'),
             self::BADREQUEST => Translate::noop('Bad request received'),
@@ -100,8 +140,8 @@ class ErrorCodes
             self::NOTFOUND => Translate::noop('Page not found'),
             self::NOTFOUNDREASON => Translate::noop('Page not found'),
             self::NOTSET => Translate::noop('Password not set'),
-            self::ADMINNOTHASHED => Translate::noop('Admin password not set to a hashed value'),
             self::NOTVALIDCERT => Translate::noop('Invalid certificate'),
+            self::NOTVALIDCERTSIGNATURE => Translate::noop('Invalid certificate signature'),
             self::PROCESSASSERTION => Translate::noop('Error processing response from Identity Provider'),
             self::PROCESSAUTHNREQUEST => Translate::noop('Error processing request from Service Provider'),
             self::RESPONSESTATUSNOSUCCESS => Translate::noop('Error received from Identity Provider'),
@@ -114,6 +154,7 @@ class ErrorCodes
         ];
     }
 
+
     /**
      * Fetch all default translation strings for error code titles.
      *
@@ -124,6 +165,7 @@ class ErrorCodes
         // TODO NextMajorRelease Move content from self::defaultGetAllErrorCodeTitles() to this method.
         return self::defaultGetAllErrorCodeTitles();
     }
+
 
     /**
      * Fetch all title translation strings for custom error codes.
@@ -140,6 +182,7 @@ class ErrorCodes
     {
         return [];
     }
+
 
     /**
      * Fetch all title translation strings for custom error codes.
@@ -167,6 +210,7 @@ class ErrorCodes
     {
         return array_merge(self::defaultGetAllErrorCodeTitles(), static::getCustomErrorCodeTitles());
     }
+
 
     /**
      * Fetch all translation strings for error code titles.
@@ -201,7 +245,8 @@ class ErrorCodes
                 " not intended to be accessed directly."),
             self::AUTHSOURCEERROR => Translate::noop("" .
                 'Authentication error in source %AUTHSOURCE%. The reason was: %REASON%'),
-            self::BADREQUEST => Translate::noop('There is an error in the request to this page. The reason was: %REASON%'),
+            self::BADREQUEST =>
+                Translate::noop('There is an error in the request to this page. The reason was: %REASON%'),
             self::CASERROR => Translate::noop('Error when communicating with the CAS server.'),
             self::CONFIG => Translate::noop('SimpleSAMLphp appears to be misconfigured.'),
             self::CREATEREQUEST => Translate::noop("An error occurred when trying to create the SAML request."),
@@ -258,7 +303,9 @@ class ErrorCodes
                 "admin-page-with-and-error-message-admin-password-" .
                 "not-set-to-a-hashed-value"),
             self::NOTVALIDCERT => Translate::noop('You did not present a valid certificate.'),
-            self::PROCESSASSERTION => Translate::noop('We did not accept the response sent from the Identity Provider.'),
+            self::NOTVALIDCERTSIGNATURE => Translate::noop('Unable to validate certificate signature.'),
+            self::PROCESSASSERTION =>
+                Translate::noop('We did not accept the response sent from the Identity Provider.'),
             self::PROCESSAUTHNREQUEST => Translate::noop("" .
                 "This Identity Provider received an Authentication Request from a Service " .
                 "Provider, but an error occurred when trying to process the request."),
@@ -282,6 +329,7 @@ class ErrorCodes
         ];
     }
 
+
     /**
      * Fetch all default translation strings for error code descriptions.
      *
@@ -292,6 +340,7 @@ class ErrorCodes
         // TODO NextMajorRelease Move content from self::defaultGetAllErrorCodeDescriptions() to this method.
         return self::defaultGetAllErrorCodeDescriptions();
     }
+
 
     /**
      * Fetch all description translation strings for custom error codes.
@@ -309,6 +358,7 @@ class ErrorCodes
         return [];
     }
 
+
     /**
      * Fetch all description translation strings for custom error codes.
      *
@@ -320,6 +370,7 @@ class ErrorCodes
     {
         return [];
     }
+
 
     /**
      * Fetch all translation strings for error code descriptions.
@@ -335,6 +386,10 @@ class ErrorCodes
         return array_merge(self::defaultGetAllErrorCodeDescriptions(), static::getCustomErrorCodeDescriptions());
     }
 
+
+    /**
+     * @return array
+     */
     public function getAllDescriptions(): array
     {
         return array_merge($this->getDefaultDescriptions(), $this->getCustomDescriptions());
@@ -358,6 +413,7 @@ class ErrorCodes
             self::KEY_DESCRIPTION => self::getAllErrorCodeDescriptions(),
         ];
     }
+
 
     /**
      * Get a map of both errorcode titles and descriptions
@@ -396,6 +452,7 @@ class ErrorCodes
         }
     }
 
+
     /**
      * Fetch a translation string for a title for a given error code.
      *
@@ -407,6 +464,7 @@ class ErrorCodes
     {
         return (string)($this->getAllTitles()[$errorCode] ?? Translate::addTagPrefix($errorCode, 'title_'));
     }
+
 
     /**
      * Fetch a translation string for a description for a given error code.
@@ -429,6 +487,7 @@ class ErrorCodes
         }
     }
 
+
     /**
      * Fetch a translation string for a description for a given error code.
      *
@@ -440,6 +499,7 @@ class ErrorCodes
     {
         return (string)($this->getAllDescriptions()[$errorCode] ?? Translate::addTagPrefix($errorCode, 'descr_'));
     }
+
 
     /**
      * Get both title and description for a specific error code
@@ -461,6 +521,7 @@ class ErrorCodes
             self::KEY_DESCRIPTION => self::getErrorCodeDescription($errorCode),
         ];
     }
+
 
     /**
      * Get both title and description for a specific error code

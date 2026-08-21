@@ -21,17 +21,16 @@ use Symfony\Component\Security\Core\User\UserInterface;
  */
 class TestBrowserToken extends AbstractToken
 {
-    private string $firewallName;
-
-    public function __construct(array $roles = [], ?UserInterface $user = null, string $firewallName = 'main')
-    {
+    public function __construct(
+        array $roles = [],
+        ?UserInterface $user = null,
+        private string $firewallName = 'main',
+    ) {
         parent::__construct($roles);
 
         if (null !== $user) {
             $this->setUser($user);
         }
-
-        $this->firewallName = $firewallName;
     }
 
     public function getFirewallName(): string
@@ -51,6 +50,10 @@ class TestBrowserToken extends AbstractToken
 
     public function __unserialize(array $data): void
     {
+        if (($data[0] ?? null) instanceof \Stringable) {
+            throw new \BadMethodCallException('Cannot unserialize '.self::class);
+        }
+
         [$this->firewallName, $parentData] = $data;
 
         parent::__unserialize($parentData);

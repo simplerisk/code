@@ -1,0 +1,460 @@
+<?php
+
+/**
+ * Model Context Protocol SDK for PHP
+ *
+ * (c) 2024 Logiscape LLC <https://logiscape.com>
+ *
+ * Based on the Python SDK for the Model Context Protocol
+ * https://github.com/modelcontextprotocol/python-sdk
+ *
+ * PHP conversion developed by:
+ * - Josh Abbott
+ * - Claude 3.5 Sonnet (Anthropic AI model)
+ * - ChatGPT o1 pro mode
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ *
+ * @package    logiscape/mcp-sdk-php
+ * @author     Josh Abbott <https://joshabbott.com>
+ * @copyright  Logiscape LLC
+ * @license    MIT License
+ * @link       https://github.com/logiscape/mcp-sdk-php
+ *
+ * Filename: Types/ClientRequest.php
+ */
+
+declare(strict_types=1);
+
+namespace Mcp\Types;
+
+/**
+ * Union type for client requests:
+ * type ClientRequest =
+ *   | InitializeRequest
+ *   | PingRequest
+ *   | ListResourcesRequest
+ *   | ReadResourceRequest
+ *   | SubscribeRequest
+ *   | UnsubscribeRequest
+ *   | ListPromptsRequest
+ *   | GetPromptRequest
+ *   | ListToolsRequest
+ *   | CallToolRequest
+ *   | SetLevelRequest
+ *   | CompleteRequest
+ *
+ * This acts as a root model for that union and provides a factory method
+ * to construct the correct request variant based on the method name and params.
+ */
+final class ClientRequest implements RequestWrapperInterface {
+    use ExtraFieldsTrait;
+
+    private Request $request;
+
+    /**
+     * Construct a ClientRequest by passing a fully-instantiated Request subclass.
+     */
+    public function __construct(Request $request) {
+        if (!(
+            $request instanceof InitializeRequest ||
+            $request instanceof PingRequest ||
+            $request instanceof ListResourcesRequest ||
+            $request instanceof ReadResourceRequest ||
+            $request instanceof SubscribeRequest ||
+            $request instanceof UnsubscribeRequest ||
+            $request instanceof ListPromptsRequest ||
+            $request instanceof GetPromptRequest ||
+            $request instanceof ListToolsRequest ||
+            $request instanceof CallToolRequest ||
+            $request instanceof SetLevelRequest ||
+            $request instanceof CompleteRequest ||
+            $request instanceof ListTemplatesRequest ||
+            $request instanceof TaskGetRequest ||
+            $request instanceof TaskUpdateRequest ||
+            $request instanceof TaskCancelRequest ||
+            $request instanceof DiscoverRequest ||
+            $request instanceof SubscriptionsListenRequest
+        )) {
+            throw new \InvalidArgumentException('Invalid client request type');
+        }
+        $this->request = $request;
+    }
+
+    /**
+     * Factory method to create a ClientRequest from a method string and parameters array.
+     *
+     * @param string $method The RPC method name
+     * @param array<string, mixed>|null $params The request parameters from the JSON-RPC message
+     */
+    public static function fromMethodAndParams(string $method, ?array $params): static {
+        $params = $params ?? [];
+
+        return match ($method) {
+            'initialize' => self::createInitializeRequest($params),
+            'server/discover' => self::createDiscoverRequest($params),
+            'subscriptions/listen' => self::createSubscriptionsListenRequest($params),
+            'ping' => new self(new PingRequest()),
+            'completion/complete' => self::createCompleteRequest($params),
+            'logging/setLevel' => self::createSetLevelRequest($params),
+            'prompts/get' => self::createGetPromptRequest($params),
+            'prompts/list' => self::createListPromptsRequest($params),
+            'resources/list' => self::createListResourcesRequest($params),
+            'resources/read' => self::createReadResourceRequest($params),
+            'resources/subscribe' => self::createSubscribeRequest($params),
+            'resources/unsubscribe' => self::createUnsubscribeRequest($params),
+            'resources/templates/list' => self::createListTemplatesRequest($params),
+            'tools/call' => self::createCallToolRequest($params),
+            'tools/list' => self::createListToolsRequest($params),
+            'tasks/get' => self::createTaskGetRequest($params),
+            'tasks/update' => self::createTaskUpdateRequest($params),
+            'tasks/cancel' => self::createTaskCancelRequest($params),
+            default => throw new \Mcp\Shared\UnknownMethodException("Unknown client request method: $method")
+        };
+    }
+
+    /** @param array<string, mixed> $params */
+    private static function createInitializeRequest(array $params): self {
+        // Handle capabilities
+        $capParams = $params['capabilities'] ?? [];
+
+        // ExperimentalCapabilities
+        $experimental = null;
+        if (isset($capParams['experimental'])) {
+            $experimental = new ExperimentalCapabilities();
+            foreach ($capParams['experimental'] as $k => $v) {
+                $experimental->$k = $v;
+            }
+        }
+
+        // ClientRootsCapability
+        $roots = null;
+        if (isset($capParams['roots'])) {
+            $rootsData = $capParams['roots'];
+            $listChanged = $rootsData['listChanged'] ?? null;
+            unset($rootsData['listChanged']);
+            $roots = new ClientRootsCapability($listChanged);
+            foreach ($rootsData as $k => $v) {
+                $roots->$k = $v;
+            }
+        }
+
+        // SamplingCapability
+        $sampling = null;
+        if (isset($capParams['sampling'])) {
+            $samplingData = $capParams['sampling'];
+            $sampling = new SamplingCapability();
+            foreach ($samplingData as $k => $v) {
+                $sampling->$k = $v;
+            }
+        }
+
+        // ElicitationCapability
+        $elicitation = null;
+        if (isset($capParams['elicitation'])) {
+            $elicitationData = $capParams['elicitation'];
+            $elicitation = new ElicitationCapability(
+                form: isset($elicitationData['form']) ? true : null,
+                url: isset($elicitationData['url']) ? true : null,
+            );
+        }
+
+        // SEP-2133 extensions map (carried on modern requests; legacy
+        // initialize rarely includes it but it round-trips if present).
+        $extensions = ServerCapabilities::parseExtensions($capParams);
+
+        $capabilities = new ClientCapabilities(
+            roots: $roots,
+            sampling: $sampling,
+            experimental: $experimental,
+            elicitation: $elicitation,
+            extensions: $extensions,
+        );
+
+        // Implementation
+        if (!isset($params['clientInfo']['name'], $params['clientInfo']['version'])) {
+            throw new \InvalidArgumentException('clientInfo must have name and version.');
+        }
+        $clientInfo = new Implementation(
+            name: $params['clientInfo']['name'],
+            version: $params['clientInfo']['version']
+        );
+
+        if (empty($params['protocolVersion'])) {
+            throw new \InvalidArgumentException('protocolVersion is required for initialize.');
+        }
+
+        // Wire `_meta` arrives as a decoded array — convert it like every
+        // other request family does. An initialize may legitimately carry
+        // `_meta` (SEP-414 trace context on any request; a modern-enveloped
+        // probe hitting the removed method), and passing the raw array to
+        // the typed ?Meta parameter used to crash with a TypeError instead
+        // of letting the session answer per era.
+        $initializeParams = new InitializeRequestParams(
+            protocolVersion: $params['protocolVersion'],
+            capabilities: $capabilities,
+            clientInfo: $clientInfo,
+            _meta: self::extractMeta($params)
+        );
+
+        return new self(new InitializeRequest($initializeParams));
+    }
+
+    /**
+     * Build a server/discover request (SEP-2575).
+     *
+     * The params (notably the `_meta` envelope carrying the protocol version,
+     * client info, and client capabilities) are preserved as-is; envelope
+     * validation is deliberately left to the server session so a malformed
+     * request gets the spec's -32602 JSON-RPC error instead of a parse failure.
+     *
+     * @param array<string, mixed> $params
+     */
+    private static function createDiscoverRequest(array $params): self {
+        $meta = self::extractMeta($params);
+        unset($params['_meta']);
+
+        $requestParams = new RequestParams($meta);
+        foreach ($params as $k => $v) {
+            $requestParams->$k = $v;
+        }
+
+        return new self(new DiscoverRequest($requestParams));
+    }
+
+    /** @param array<string, mixed> $params */
+    private static function createSubscriptionsListenRequest(array $params): self {
+        $meta = self::extractMeta($params);
+        unset($params['_meta']);
+
+        $requestParams = new RequestParams($meta);
+        foreach ($params as $k => $v) {
+            // The required `notifications` SubscriptionFilter (and any
+            // forward-compatible extras) ride as dynamic fields; the
+            // session validates the filter shape at dispatch.
+            $requestParams->$k = $v;
+        }
+
+        return new self(new SubscriptionsListenRequest($requestParams));
+    }
+
+    /** @param array<string, mixed> $params */
+    private static function createCompleteRequest(array $params): self {
+        $argumentData = $params['argument'] ?? [];
+        if (empty($argumentData['name']) || !isset($argumentData['value'])) {
+            throw new \InvalidArgumentException('CompleteRequest argument must have "name" and "value"');
+        }
+
+        $argument = new CompletionArgument($argumentData['name'], $argumentData['value']);
+
+        $refData = $params['ref'] ?? [];
+        if (!isset($refData['type'])) {
+            throw new \InvalidArgumentException('CompleteRequest ref must have a "type"');
+        }
+
+        $ref = match ($refData['type']) {
+            'ref/prompt' => new PromptReference($refData['name'] ?? ''),
+            'ref/resource' => new ResourceReference($refData['uri'] ?? ''),
+            default => throw new \InvalidArgumentException("Unknown ref type: {$refData['type']}")
+        };
+
+        // Optional completion context (already-resolved argument values).
+        $contextData = $params['context'] ?? null;
+        $context = is_array($contextData) ? CompletionContext::fromArray($contextData) : null;
+
+        // Construct the new CompleteRequestParams, preserving _meta so the
+        // modern envelope and trace-context keys survive (SEP-2575/SEP-414)
+        $reqParams = new CompleteRequestParams($argument, $ref, self::extractMeta($params), $context);
+
+        // Now pass that to CompleteRequest
+        return new self(new CompleteRequest($reqParams));
+    }
+
+    /** @param array<string, mixed> $params */
+    private static function createSetLevelRequest(array $params): self {
+        if (!isset($params['level'])) {
+            throw new \InvalidArgumentException('SetLevelRequest "params" must include "level"');
+        }
+        $level = LoggingLevel::from($params['level']);
+        $meta = self::extractMeta($params);
+        return new self(new SetLevelRequest($level, $meta));
+    }
+
+    /** @param array<string, mixed> $params */
+    private static function createGetPromptRequest(array $params): self {
+        if (empty($params['name'])) {
+            throw new \InvalidArgumentException('GetPromptRequest requires "name"');
+        }
+
+        $arguments = null;
+        if (isset($params['arguments'])) {
+            $arguments = new PromptArguments($params['arguments']);
+        }
+
+        $getParams = new GetPromptRequestParams(
+            name: $params['name'],
+            arguments: $arguments,
+            _meta: self::extractMeta($params)
+        );
+
+        $request = new GetPromptRequest($getParams);
+        self::attachInputResponseFields($request, $params);
+        return new self($request);
+    }
+
+    /** @param array<string, mixed> $params */
+    private static function createListPromptsRequest(array $params): self {
+        $cursor = $params['cursor'] ?? null;
+        return new self(new ListPromptsRequest($cursor, self::extractMeta($params)));
+    }
+
+    /** @param array<string, mixed> $params */
+    private static function createListResourcesRequest(array $params): self {
+        $cursor = $params['cursor'] ?? null;
+        return new self(new ListResourcesRequest($cursor, self::extractMeta($params)));
+    }
+
+    /** @param array<string, mixed> $params */
+    private static function createReadResourceRequest(array $params): self {
+        if (empty($params['uri'])) {
+            throw new \InvalidArgumentException('ReadResourceRequest requires "uri"');
+        }
+        $request = new ReadResourceRequest(uri: $params['uri'], _meta: self::extractMeta($params));
+        self::attachInputResponseFields($request, $params);
+        return new self($request);
+    }
+
+    /** @param array<string, mixed> $params */
+    private static function createSubscribeRequest(array $params): self {
+        if (empty($params['uri'])) {
+            throw new \InvalidArgumentException('SubscribeRequest requires "uri"');
+        }
+        $meta = self::extractMeta($params);
+        return new self(new SubscribeRequest(uri: $params['uri'], _meta: $meta));
+    }
+
+    /** @param array<string, mixed> $params */
+    private static function createUnsubscribeRequest(array $params): self {
+        if (empty($params['uri'])) {
+            throw new \InvalidArgumentException('UnsubscribeRequest requires "uri"');
+        }
+        $meta = self::extractMeta($params);
+        return new self(new UnsubscribeRequest(uri: $params['uri'], _meta: $meta));
+    }
+
+    /** @param array<string, mixed> $params */
+    private static function createCallToolRequest(array $params): self {
+        if (empty($params['name'])) {
+            throw new \InvalidArgumentException('CallToolRequest requires "name"');
+        }
+
+        $arguments = $params['arguments'] ?? null;
+        if ($arguments !== null && !is_array($arguments)) {
+            throw new \InvalidArgumentException('"arguments" must be an associative array if provided.');
+        }
+
+        $task = null;
+        if (isset($params['task']) && is_array($params['task'])) {
+            $task = TaskRequestParams::fromArray($params['task']);
+        }
+
+        $meta = null;
+        if (isset($params['_meta']) && is_array($params['_meta'])) {
+            $meta = new Meta();
+            foreach ($params['_meta'] as $k => $v) {
+                $meta->$k = $v;
+            }
+        }
+
+        $request = new CallToolRequest($params['name'], $arguments, $task, $meta);
+        self::attachInputResponseFields($request, $params);
+        return new self($request);
+    }
+
+    /**
+     * SEP-2322 (revision 2026-07-28): tools/call, prompts/get, and
+     * resources/read params extend InputResponseRequestParams — a retry of
+     * a request that answered InputRequiredResult carries `inputResponses`
+     * and the echoed `requestState` alongside the original params. They
+     * ride as dynamic fields so dispatch (McpServer) can read them.
+     *
+     * @param array<string, mixed> $params
+     */
+    private static function attachInputResponseFields(Request $request, array $params): void {
+        if ($request->params === null) {
+            return;
+        }
+        if (isset($params['inputResponses']) && is_array($params['inputResponses'])) {
+            $request->params->__set('inputResponses', $params['inputResponses']);
+        }
+        if (isset($params['requestState']) && is_string($params['requestState'])) {
+            $request->params->__set('requestState', $params['requestState']);
+        }
+    }
+
+    /** @param array<string, mixed> $params */
+    private static function createListTemplatesRequest(array $params): self {
+        $cursor = $params['cursor'] ?? null;
+        return new self(new ListTemplatesRequest($cursor, self::extractMeta($params)));
+    }
+
+    /** @param array<string, mixed> $params */
+    private static function createListToolsRequest(array $params): self {
+        $cursor = $params['cursor'] ?? null;
+        return new self(new ListToolsRequest($cursor, self::extractMeta($params)));
+    }
+
+    /** @param array<string, mixed> $params */
+    private static function createTaskGetRequest(array $params): self {
+        if (empty($params['taskId'])) {
+            throw new \InvalidArgumentException('TaskGetRequest requires "taskId"');
+        }
+        return new self(new TaskGetRequest($params['taskId']));
+    }
+
+    /** @param array<string, mixed> $params */
+    private static function createTaskUpdateRequest(array $params): self {
+        if (empty($params['taskId'])) {
+            throw new \InvalidArgumentException('TaskUpdateRequest requires "taskId"');
+        }
+        $inputResponses = [];
+        if (isset($params['inputResponses']) && is_array($params['inputResponses'])) {
+            $inputResponses = $params['inputResponses'];
+        }
+        return new self(new TaskUpdateRequest($params['taskId'], $inputResponses));
+    }
+
+    /** @param array<string, mixed> $params */
+    private static function createTaskCancelRequest(array $params): self {
+        if (empty($params['taskId'])) {
+            throw new \InvalidArgumentException('TaskCancelRequest requires "taskId"');
+        }
+        return new self(new TaskCancelRequest($params['taskId']));
+    }
+
+    /** @param array<string, mixed> $params */
+    private static function extractMeta(array $params): ?Meta {
+        if (!isset($params['_meta']) || !is_array($params['_meta'])) {
+            return null;
+        }
+        $meta = new Meta();
+        foreach ($params['_meta'] as $k => $v) {
+            $meta->$k = $v;
+        }
+        return $meta;
+    }
+
+    public function validate(): void {
+        $this->request->validate();
+    }
+
+    public function getRequest(): Request {
+        return $this->request;
+    }
+
+    public function jsonSerialize(): mixed {
+        $data = $this->request->jsonSerialize();
+        return array_merge((array)$data, $this->extraFields);
+    }
+}

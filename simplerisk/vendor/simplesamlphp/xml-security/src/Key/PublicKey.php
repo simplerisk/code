@@ -21,23 +21,17 @@ use function sprintf;
  */
 class PublicKey extends AsymmetricKey
 {
-    /** @var int */
-    public const ASN1_TYPE_INTEGER = 0x02; // 2
+    public const int ASN1_TYPE_INTEGER = 0x02; // 2
 
-    /** @var int */
-    public const ASN1_TYPE_BIT_STRING = 0x03; // 3
+    public const int ASN1_TYPE_BIT_STRING = 0x03; // 3
 
-    /** @var int */
-    public const ASN1_TYPE_SEQUENCE = 0x30; // 16
+    public const int ASN1_TYPE_SEQUENCE = 0x30; // 16
 
-    /** @var int */
-    public const ASN1_SIZE_128 = 0x80; // 128
+    public const int ASN1_SIZE_128 = 0x80; // 128
 
-    /** @var int */
-    public const ASN1_SIZE_256 = 0x0100; // 256
+    public const int ASN1_SIZE_256 = 0x0100; // 256
 
-    /** @var int */
-    public const ASN1_SIZE_65535 = 0x010000; // 65535
+    public const int ASN1_SIZE_65535 = 0x010000; // 65535
 
 
     /**
@@ -71,7 +65,7 @@ class PublicKey extends AsymmetricKey
     {
         switch ($type) {
             case self::ASN1_TYPE_INTEGER:
-                if (ord($string) > self::ASN1_SIZE_128 - 1) {
+                if (ord($string[0]) > self::ASN1_SIZE_128 - 1) {
                     $string = chr(0) . $string;
                 }
                 break;

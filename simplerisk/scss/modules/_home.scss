@@ -1,0 +1,1350 @@
+// Home dashboard — KPI stat-tiles and the What's Next widget.
+// Reuses the card look from the questionnaire/hub system (tokens only).
+
+// Float the home tiles on the page-wrapper gray ($sr-default) rather than a
+// white content slab — the section-card-on-gray look from the design system.
+// Scoped to the home dashboard via :has() on a KPI tile so other pages that use
+// the shared .content wrapper are unaffected.
+// The core white on .content comes from the high-specificity chain
+// `.page-wrapper .scroll-content .content-wrapper .content` (and Gridstack's cell
+// CSS), so the override needs !important — same reason the .sr-qform rule does.
+.content:has(.sr-kpi) {
+    background-color: transparent !important;
+}
+
+// On a dashboard (any page whose content holds a KPI tile) every grid cell reads
+// as a card on the gray page. Two cases:
+//   1. Widgets that bring their OWN card (.sr-kpi / .sr-widget) — the cell goes
+//      transparent so the inner card is the only surface.
+//   2. Legacy widgets with no inner card (the pie/bar/line charts) — the cell
+//      itself becomes the card frame, so a mixed board still looks consistent.
+.content:has(.sr-kpi) .grid-stack-item-content {
+    background: $white;
+    border: 1px solid $gray-300;
+    border-radius: 8px;
+    box-shadow: $shadow;
+    padding: 12px 14px;
+}
+.content:has(.sr-kpi) .grid-stack-item-content:has(.sr-kpi),
+.content:has(.sr-kpi) .grid-stack-item-content:has(.sr-widget) {
+    background: transparent !important;
+    border: 0;
+    box-shadow: none;
+    padding: 0;
+}
+
+// Home only: align the widget grid to the page-header edges — the leftmost tile
+// with the title, the rightmost tile with the Edit-layout button. The tiles were
+// inset by the shared section padding, the layout panel's p-1, and Gridstack's
+// per-cell left margin, none of which lined up with the header. Drop the side
+// padding (rightmost tile reaches the header's right edge) and pull the section
+// left past the content container's padding + the 10px cell margin so the first
+// tile reaches the header's left edge. Scoped by :has(.sr-kpi) so other
+// dashboards keep their padding.
+section.gridstack:has(.sr-kpi) {
+    padding: 0;
+    // Cancel the content container's padding + Gridstack's 10px cell margin on
+    // each side so the OUTER tiles reach the header edges: leftmost tile to the
+    // title, rightmost tile to the Edit-layout button. Left needs -20 (10px
+    // container pad + 10px cell margin); right needs -10 because the button
+    // already sits one breadcrumb-padding in from the container's right edge.
+    margin-left: -20px !important;   // beats .mx-auto
+    margin-right: -10px !important;
+    // Pull the grid up under the breadcrumb — cancels most of the content
+    // container's top padding + Gridstack's 10px top cell-margin so the tiles sit
+    // close under the subtitle instead of floating ~30px below it.
+    margin-top: -16px;
+
+    .layout_panel {
+        padding: 0 !important;   // beats Bootstrap's .p-1 (spacing utils are !important)
+        // The grid canvas sits on the page-wrapper gray so the white widget cards
+        // pop with gray gutters. Some dashboard pages (Incident Management,
+        // Compliance, Governance, Risk) wrap the grid in a `.row bg-white`, which
+        // would otherwise make the canvas white and blend the cards into it —
+        // paint the panel gray here so every KPI dashboard matches Home.
+        background: $page-wrapper-bg;
+    }
+}
+
+// Define Tests band ↔ grid-card left-edge alignment (band-ux-punchlist item
+// 1). The -20px pull above (10px .content padding + 10px Gridstack cell
+// margin) is tuned to reach a PAGE HEADER title on the KPI-only dashboards
+// (home, compliance_dashboard, governance_dashboard, ...) where the band
+// tiles are the entire grid. The Define Tests page (compliance/index.php)
+// is the odd one out: its band is immediately followed by the `.sr-table-
+// card` grid, a plain Bootstrap `.row`/`.col-12` whose negative row margin
+// and column padding cancel exactly, landing its left edge flush with
+// `.content`'s own edge (no extra pull). Reaching for the page header
+// there over-shoots that edge by 10px (the Gridstack cell margin the
+// header-alignment pull doesn't need to cancel here), so the tiles read as
+// jutting left of the card beneath them. Detect this page specifically via
+// its DOM shape -- a `.sr-kpi` band with a `.sr-table-card` grid in a LATER
+// sibling row -- so only Define Tests is affected; the Home dashboard and
+// every other KPI-only dashboard (no such sibling) keep the full -20px
+// header-aligning pull untouched. Use the general-sibling combinator (`~`),
+// not adjacent (`+`): Gridstack emits its init `<script>` tags immediately
+// after the `<section>`, so the `.row` is never the *immediate* next sibling
+// (that made the old `+ .row` selector silently miss and the -20px base win,
+// leaving the tiles jutting 10px left of the card -- measured on the live
+// dev instance).
+section.gridstack:has(.sr-kpi):has(~ .row .sr-table-card) {
+    margin-left: -10px !important;   // cancel only the .content padding, not the cell margin
+}
+
+// Align the whole Define Tests content column (the insights band + the grid
+// card) with the page title + breadcrumb. `.content` (container-fluid) carries
+// margin-left:10px ON TOP of its padding-left:10px, so its children start 10px
+// to the right of the `.page-breadcrumb`/`.page-title` header (which only has
+// the padding) -- the band + grid sat at x=270 while the title sat at x=260.
+// Drop that extra 10px left margin so the content column starts at the header's
+// left edge. Scoped by DOM shape to the Define Tests page only (the one .content
+// that holds BOTH a `.sr-kpi` band and a `.sr-table-card`); every other page
+// keeps `.content`'s default inset. The band's -10 pull above and the grid's
+// row/col offset both resolve to the same x=260 once this lands.
+// !important + the DOM-shape scope mirror the existing
+// `.content:has(> .row > .col-12 > .self-assessment)` override pattern: the
+// theme's `.page-wrapper .scroll-content .content-wrapper .content` rule is
+// specificity 0,4,0, so a plain `.content:has(...)` (0,3,0) loses to it.
+.content:has(.sr-kpi):has(.sr-table-card) {
+    margin-left: 0 !important;
+}
+
+// ---- Dashboard filter (e.g. the Compliance framework filter) ----
+// A compact global dashboard filter (design-system §13) that the page hoists up
+// into the breadcrumb row, right-aligned under the "Edit layout" button, so it
+// stays out of the widget grid entirely — the gridstack then reads as clean
+// cards-on-gray like the other dashboards.
+.sr-dashfilter {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+
+    // Eyebrow label — quiet uppercase micro-label, same treatment as the KPI
+    // eyebrow so the filter reads as part of the dashboard system.
+    &__label {
+        margin: 0;
+        font-size: 10.5px;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: .04em;
+        color: $gray-600;
+        white-space: nowrap;
+    }
+
+    // Constrains the bootstrap-multiselect button (rendered at 100% width) to a
+    // sensible control size rather than stretching.
+    &__control {
+        min-width: 190px;
+        max-width: 300px;
+    }
+
+    // Carries only the hidden GET field — keep it out of the flex flow so it
+    // doesn't add a phantom gap.
+    &__form { display: contents; }
+
+    // Restyle the bootstrap-multiselect button to the design-system control:
+    // white surface, quiet $gray-400 border, 6px radius, charcoal text, and the
+    // App-Red accent only on hover/focus (spent once). The dropdown chrome is
+    // bootstrap-multiselect's own; we only tame the trigger button + caret.
+    .btn-group { width: 100%; }
+
+    button.multiselect {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        background: $white;
+        border: 1px solid $gray-400;
+        border-radius: 6px;
+        padding: 6px 12px;
+        font-size: 13px;
+        font-weight: 600;
+        color: $sr-primary;
+        box-shadow: none;
+
+        &:hover,
+        &:focus,
+        &:active,
+        &.active {
+            background: $white;
+            border-color: $sr-important;
+            color: $sr-primary;
+            box-shadow: none;
+        }
+
+        .multiselect-selected-text {
+            flex: 1 1 auto;
+            min-width: 0;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            text-align: left;
+        }
+
+        .caret { flex: none; margin-left: auto; }
+    }
+}
+
+// Custom from–to date inputs, revealed when "Custom Range" is chosen in the
+// incident dashboard's date-range filter. Sits inline beside the preset select.
+.sr-dashfilter__custom {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+
+    input[type="date"] {
+        width: auto;
+        background: $white;
+        border: 1px solid $gray-400;
+        border-radius: 6px;
+        padding: 5px 8px;
+        font-size: 13px;
+        color: $sr-primary;
+    }
+}
+
+.sr-dashfilter__dash { color: $gray-500; }
+
+// When the compliance filter is hoisted into it, the breadcrumb subtitle row
+// becomes a flex line: the breadcrumb trail on the left, the filter pushed to
+// the right (under the Edit-layout button). Scoped to the modifier the hoist JS
+// adds, so no other page's .page-subtitle is affected.
+.page-subtitle--with-action {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+
+    > nav { margin-bottom: 0; }
+    .sr-dashfilter { margin-left: auto; }
+}
+
+// A dashboard grid embedded inside another page's wrapper (the Incident
+// dashboard renders inside the incident reporting page's shared `.row` tab
+// wrapper, not a standalone `.content` page). Drop the white slab and neutralize
+// the Home-tuned gridstack negative margins so the grid floats on the gray page
+// ground and stays within its wrapper — otherwise the pulled-up/left grid and
+// its gray panel bleed over the red edit bar and the white slab shows underneath.
+.sr-dash-embed {
+    background: transparent !important;
+
+    section.gridstack:has(.sr-kpi) {
+        // Keep the top/right pulls neutralized — those are what poked the grid up
+        // and over the red edit bar in this nested wrapper. But KEEP the base -20px
+        // LEFT pull so the leftmost tile still lines up with the page title /
+        // breadcrumb (that side sits over the gray page ground, so it can't bleed).
+        margin-top: 0 !important;
+        margin-right: 0 !important;
+    }
+}
+
+// Domain provenance tag — a quiet uppercase micro-label ("RISK", "COMPLIANCE",
+// "GOVERNANCE") marking which module a Home widget belongs to. Categorical, so
+// it stays quiet (muted grey, never the accent) per the design system.
+.sr-domain {
+    font-size: 8px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    color: $gray-500;
+    white-space: nowrap;
+}
+
+.sr-kpi {
+    // Establish a size-query container so the tile's own width can drive what
+    // fits inside it (see the domain-tag rule below).
+    container-type: inline-size;
+    display: flex;
+    flex-direction: column;
+    text-align: left;   // the gridstack cell centres text; the tile reads left
+    // Content starts at the top; the delta (when present) is pushed to the
+    // bottom so the tile fills purposefully instead of floating in the middle.
+    justify-content: flex-start;
+    align-items: flex-start;
+    gap: 5px;
+    height: 100%;
+    // Fill the grid cell — the cell content box is a flex container, so without
+    // an explicit width the card shrinks to its text and floats narrow/uneven.
+    width: 100%;
+    // 14px matches the dashboard design system's .dtile padding.
+    padding: 14px 16px;
+    background: $white;
+    border: 1px solid $gray-300;
+    border-radius: 8px;
+    box-shadow: $shadow;
+    text-decoration: none;
+    color: $sr-primary;
+    transition: border-color .12s;
+
+    // Neutral hover — App Red is reserved for the single primary action, not
+    // every tile in the grid.
+    &:hover {
+        border-color: $gray-500;
+        color: $sr-primary;
+    }
+
+    // Top row: eyebrow label (left, flexes) + domain tag (right). A flex row
+    // guarantees the tag always keeps its space with a real gap, and the label
+    // ellipsizes only if it genuinely can't fit — no manual width reservation,
+    // no overlap.
+    &__top {
+        display: flex;
+        align-items: baseline;
+        gap: 10px;
+        width: 100%;
+    }
+
+    &__domain {
+        flex: none;
+        margin-left: auto;   // pin to the right when the label is short
+    }
+
+    // On narrow tiles (≈ w2 on the 12-col grid — Total Controls, Open Audits,
+    // Tests Due Soon) the provenance tag steals width from the label and
+    // truncates it ("TESTS D…"). The label is the priority, so drop the tag
+    // below the width where both fit; wider tiles keep it.
+    @container (max-width: 200px) {
+        .sr-kpi__domain { display: none; }
+    }
+
+    // A tile is a fixed 120px cell, and a label that wraps to two lines spends
+    // 13px of it. The subtitles were shortened so the common case fits outright
+    // ("No coverage", not "In scope, no coverage"); this is the backstop for the
+    // genuinely tiny tiles a custom layout can still produce, where the value
+    // gives back a few pixels rather than the subtitle falling out of the tile.
+    @container (max-width: 150px) {
+
+        .sr-kpi__value {
+            font-size: 26px;
+        }
+
+        .sr-kpi__sub {
+            font-size: 11.5px;
+            line-height: 1.15;
+        }
+    }
+
+    // Eyebrow label, above the value.
+    //
+    // Wraps rather than ellipsizes. A truncated LABEL is a different kind of
+    // loss from a truncated value: "TOT…" doesn't say what the number counts,
+    // and these labels are one to three short words, so a second line costs a
+    // few pixels and rescues the meaning. Capped at two lines so a long
+    // customer-renamed metric can't push the value out of the tile.
+    &__label {
+        flex: 1 1 auto;
+        min-width: 0;                 // still allows the flex item to shrink
+        font-size: 10px;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: .02em;
+        line-height: 1.3;             // deterministic box height (no collapse)
+        color: $gray-600;
+        overflow: hidden;
+        display: -webkit-box;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 2;
+        overflow-wrap: anywhere;      // a single long word breaks rather than clips
+    }
+
+    // The value, optionally paired with a sparkline on its right (used when the
+    // tile has no delta — see render_kpi_tile). Bottom-aligned so the spark's
+    // baseline sits level with the number to its left.
+    &__value-row {
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        gap: 10px;
+        width: 100%;
+    }
+
+    // The number and its unit qualifier stack on the left of the value row. The
+    // block keeps its intrinsic width (flex: none) so the number never shrinks —
+    // it's the sparkline to its right that gives way when space is tight.
+    &__value-block {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        flex: none;
+        min-width: 0;
+    }
+
+    &__value {
+        font-size: 30px;
+        font-weight: 900;
+        line-height: 1.1;
+        font-variant-numeric: tabular-nums;
+
+        // App-Red-spent-once (designing-ui): the design system reserves App Red
+        // for a single primary action per surface. The Define Tests band has no
+        // competing primary-action button, so this is a deliberate, approved
+        // spend confined to the attention tiles' NUMERIC VALUE only (Overdue,
+        // Failing, Untested Controls) — never the whole tile or its label — to
+        // signal "needs attention" (band-ux-punchlist item 3/4).
+        &--danger {
+            color: $sr-important;
+        }
+
+        // The positive counterpart: the Passing tile's value in the $success
+        // green (the same green the KPI "good" delta indicator uses), so the
+        // adjacent Passing/Failing pair reads as a conventional green/red
+        // pass-fail set. Scoped to the value only, like --danger above.
+        &--success {
+            color: darken($success, 15%);
+        }
+    }
+
+    // Unit qualifier under the number ("incidents", "days") — small, uppercased,
+    // muted, so it reads as a label without competing with the value.
+    &__unit {
+        margin-top: 1px;
+        font-size: 10px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: .02em;
+        line-height: 1.2;
+        color: $gray-500;
+    }
+
+    // Foot row pinned to the tile bottom — holds the delta (the sparkline lives
+    // up beside the value now, so the delta gets the full width and never wraps).
+    &__foot {
+        margin-top: auto;   // push the delta to the bottom of the tile
+        display: flex;
+        align-items: flex-end;
+        width: 100%;
+    }
+
+    // Optional descriptive subtitle (e.g. "across 96 controls"), rendered in the
+    // foot slot in place of — or alongside — a period-over-period delta. Muted,
+    // single line.
+    &__sub {
+        font-size: 12px;
+        color: $gray-500;
+        line-height: 1.2;
+    }
+
+    // Optional delta vs the prior period. The value stays charcoal; only the
+    // delta carries colour — green when the change is good FOR THIS METRIC,
+    // red when bad (never by arrow direction). Rendered only when a prior
+    // value is supplied (see render_kpi_tile()).
+    &__delta {
+        white-space: nowrap;
+        display: inline-flex;
+        align-items: baseline;
+        gap: 5px;
+        font-size: 12px;
+        font-weight: 800;
+        font-variant-numeric: tabular-nums;
+
+        &--good { color: darken($success, 15%); }
+        &--bad  { color: darken($danger, 8%); }
+        // Steady — the metric has a baseline and it didn't move. Neutral grey,
+        // no up/down colour (matches the muted context tone).
+        &--flat { color: $gray-500; }
+
+        // Muted "this month" context after the coloured number.
+        &-context {
+            color: $gray-500;
+            font-weight: 600;
+        }
+    }
+
+    // Sparkline — a 30-day trend line filling the tile's bottom-right. The whole
+    // trend carries the state colour (line + a faint area wash of the same hue),
+    // matching the delta's good/bad semantics — this is sanctioned "state" colour,
+    // not the App Red accent. The goodness modifier sets two custom properties the
+    // line + area read, so the colour is chosen once in SCSS tokens.
+    &__spark {
+        margin-left: auto;   // pin to the right of the value in the value row
+        // Prefer 76px but give way when the value is wide, so the spark can never
+        // push past the tile border on a narrow (w2) tile. Never shrinks below a
+        // readable trend width.
+        flex: 0 1 76px;
+        min-width: 44px;
+        height: 30px;
+        overflow: hidden;
+        align-self: flex-end;   // bottom-align with the value to its left
+
+        // Trend colour + area-wash tint, chosen once per goodness. Line uses the
+        // same darkened tone as the matching delta; the wash is the base hue at
+        // low opacity for depth without shouting.
+        &--good { --spark-stroke: #{darken($success, 15%)}; --spark-fill: #{rgba($success, .12)}; }
+        &--bad  { --spark-stroke: #{darken($danger, 8%)};   --spark-fill: #{rgba($danger, .09)}; }
+        &--flat { --spark-stroke: #{$gray-500};             --spark-fill: #{rgba($gray-500, .16)}; }
+    }
+
+    &__spark-line {
+        fill: none;
+        stroke: var(--spark-stroke);
+        stroke-width: 2;
+        stroke-linejoin: round;
+        stroke-linecap: round;
+        vector-effect: non-scaling-stroke;
+    }
+
+    &__spark-area {
+        fill: var(--spark-fill);
+        stroke: none;
+    }
+}
+
+// What's Next — a framed list widget: header + a scrollable body of action rows.
+.sr-widget {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    width: 100%;   // fill the grid cell (flex parent won't stretch it otherwise)
+    text-align: left;   // the gridstack cell centres text; the widget reads left
+    background: $white;
+    border: 1px solid $gray-300;
+    border-radius: 8px;
+    box-shadow: $shadow;
+    overflow: hidden;
+
+    &__head {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 12px 16px 6px;
+        // No divider under the header — matches the artifact's .dt-head. The
+        // list rows keep their own separators (.sr-whatsnext__item).
+    }
+
+    &__title {
+        font-size: 14px;
+        font-weight: 800;
+        color: $sr-primary;
+    }
+
+    // Domain tag sits at the far right of the widget header.
+    &__domain {
+        margin-left: auto;
+    }
+
+    &__body {
+        flex: 1;
+        min-height: 0;
+        overflow-y: auto;
+        padding: 2px 16px;
+    }
+
+    // Chart widgets fill the body; Chart.js sizes the canvas to the flex body
+    // (maintainAspectRatio:false). Centre the chart content so a square chart
+    // (the pie) sits centred, and fill-charts still stretch (their scroll wrapper
+    // is flex:1 / align-self:stretch).
+    &__body--chart {
+        overflow: hidden;
+        position: relative;
+        padding: 12px 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+}
+
+// Vertical-scroll wrapper for horizontal bar charts with many categories
+// (e.g. Controls by Domain, ~33 rows). Fills the chart cell and scrolls; the
+// inner sizer is given an explicit per-row height inline so every bar stays
+// readable instead of Chart.js compressing them and auto-skipping labels.
+.sr-chart-vscroll {
+    // The chart cell is a centered flex row; without this the wrapper would
+    // shrink to its content and the chart would use only part of the width
+    // (which also starves the y-axis labels and clips long category names).
+    flex: 1 1 auto;
+    align-self: stretch;
+    width: 100%;
+    height: 100%;
+    overflow-y: auto;
+    overflow-x: hidden;
+
+    &__sizer {
+        // Inline height = rows * ~26px + header room. min-height keeps a small
+        // chart filling the cell rather than floating short at the top.
+        min-height: 100%;
+        position: relative;
+    }
+}
+
+// Full-bleed wrapper for a non-scrolling chart (e.g. the maturity radar) that
+// should fill the whole widget body. Without it, a maintainAspectRatio:false
+// canvas has no sized parent in the centered flex body and renders tiny.
+.sr-chart-fill {
+    flex: 1 1 auto;
+    align-self: stretch;
+    width: 100%;
+    height: 100%;
+    position: relative;
+}
+
+.sr-whatsnext {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+
+    &__item {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        border-bottom: 1px solid $gray-300;
+
+        &:last-child { border-bottom: 0; }
+
+        a {
+            flex: 1;                // the row link grows; trailing actions keep their size
+            min-width: 0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            padding: 7px 2px;
+            font-size: 12.5px;
+            font-weight: 600;
+            color: $sr-primary;
+            text-decoration: none;
+        }
+
+        // Neutral hover — the accent is not spent per-row.
+        a:hover { color: $sr-primary; background: $gray-100; }
+    }
+
+    // Fixed-width trailing action slot — ALWAYS present (even when empty) so the
+    // day chips in the link above line up in the same column on every row.
+    &__item .sr-wn-action {
+        flex: none;
+        width: 22px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+
+        // "Start the Test" — clickable play icon. Neutral grey (not yet handled),
+        // greening on hover: green is the family's "handled/positive" colour, so
+        // running a test reads as a good action (not a destructive red one).
+        .sr-wn-run {
+            border: 0;
+            padding: 2px;
+            background: transparent;
+            color: $gray-500;
+            font-size: 13px;
+            line-height: 1;
+            cursor: pointer;
+            transition: color .12s;
+
+            &:hover { color: $success; }
+            &.is-busy { opacity: .5; cursor: default; }
+
+            // A test that already has an open audit — green "Go to Test" (it
+            // navigates to the existing audit rather than starting a new one).
+            &--goto {
+                color: $success;
+                &:hover { color: darken($success, 12%); }
+            }
+        }
+
+        // "Test Starts Automatically" — informational only, no pointer affordance.
+        // Green like the other "handled" states (the system will run it for you).
+        .sr-wn-auto {
+            color: $success;
+            font-size: 12px;
+            line-height: 1;
+            cursor: default;
+        }
+    }
+
+    // The action name takes the row; the state pill sits at the right.
+    &__text {
+        flex: 1;
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    // Name + a muted sub-label (e.g. the control a test covers), stacked.
+    &__namewrap {
+        flex: 1;
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 1px;
+        overflow: hidden;
+
+        .sr-whatsnext__text { flex: none; }   // don't stretch vertically in the column
+    }
+
+    &__context {
+        font-size: 10px;
+        font-weight: 600;
+        color: $gray-500;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    // "All caught up" — a warm, centred empty state inside the widget body.
+    &--empty {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        height: 100%;
+        padding: 24px;
+        text-align: center;
+    }
+
+    &__empty-title {
+        font-size: 13.5px;
+        font-weight: 700;
+        color: $gray-600;
+    }
+}
+
+// Soft state pill for a What's Next row — the design-system §7 "state" pill:
+// tinted fill + dot + count, coloured by urgency band (never solid, never red-accent).
+.sr-wn-pill {
+    flex: none;
+    // Uniform width so the day chips ("5d", "42d", "89d") are the same size and
+    // line up in a column down the list.
+    min-width: 46px;
+    box-sizing: border-box;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    font-size: 10.5px;
+    font-weight: 700;
+    border-radius: 20px;
+    padding: 2px 8px;
+    border: 1px solid transparent;
+    font-variant-numeric: tabular-nums;
+
+    &__dot { flex: none; width: 5px; height: 5px; border-radius: 50%; }
+
+    // Soft band tints matching the design-system §7 state pill (.spill). Warn
+    // uses the amber $warning fill with an $orange dot (per the artifact).
+    &--warn   { background: rgba($warning, .18); color: darken($warning, 35%); border-color: rgba($warning, .5); }
+    &--warn   .sr-wn-pill__dot { background: $orange; }
+    &--danger { background: rgba($danger, .10);  color: darken($danger, 12%);  border-color: rgba($danger, .35); }
+    &--danger .sr-wn-pill__dot { background: $danger; }
+    &--info   { background: rgba($info, .12);    color: darken($info, 24%);    border-color: rgba($info, .35); }
+    &--info   .sr-wn-pill__dot { background: $info; }
+}
+
+// Unassigned incidents: the workflow-status pills ("Containment", "Eradication")
+// carry longer labels than the short day chips elsewhere, so widen their min-width
+// so they line up uniformly down the column.
+[data-widget-name="im_list_unassigned"] .sr-wn-pill {
+    min-width: 104px;
+}
+
+// Age day-chip pill — uniform width so ages line up in a column. Standalone (not
+// .sr-wn-pill) so a widget-scoped status-pill min-width can't stretch it.
+.sr-age-pill {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    min-width: 56px;
+    box-sizing: border-box;
+    padding: 2px 8px;
+    border-radius: 20px;
+    font-size: 10.5px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    background: rgba($warning, .18);
+    color: darken($warning, 35%);
+    border: 1px solid rgba($warning, .5);
+
+    &__dot { flex: none; width: 5px; height: 5px; border-radius: 50%; background: $orange; }
+}
+
+// Solid severity pill for a list row (e.g. My Highest Risks) — the design-system
+// severity scale: solid configured level colour + white text. Distinct from the
+// soft state pills (.sr-wn-pill) so an ordered severity never looks categorical.
+.sr-wn-level {
+    flex: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 62px;
+    padding: 2px 8px;
+    font-size: 9px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: .03em;
+    border-radius: 4px;
+    color: $white;
+    white-space: nowrap;
+}
+
+// ============================================================================
+// Getting Started onboarding widget (.sr-gs) — full-width home card. Inherits
+// the .sr-widget card frame; this styles the internal head / cards / footer.
+// One accent (App Red) on the single "next" step's CTA; completion is success
+// green; everything else stays neutral.
+// ============================================================================
+.sr-gs {
+    position: relative;
+    padding: 18px 20px 12px;
+
+    &__dismiss {
+        position: absolute;
+        top: 12px;
+        right: 12px;
+        width: 26px;
+        height: 26px;
+        border: 1px solid transparent;
+        background: transparent;
+        color: $gray-500;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 15px;
+        line-height: 1;
+        display: grid;
+        place-items: center;
+
+        &:hover { background: $gray-100; color: $gray-700; }
+    }
+
+    &__head {
+        display: flex;
+        align-items: flex-start;
+        gap: 13px;
+        padding-right: 30px;
+    }
+
+    &__ico {
+        flex: 0 0 auto;
+        width: 40px;
+        height: 40px;
+        border-radius: 7px;
+        background: rgba($sr-important, .08);
+        color: $sr-important;
+        display: grid;
+        place-items: center;
+        font-size: 18px;
+    }
+
+    &__htext { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; }
+    &__title { font-size: 16px; font-weight: 800; color: $sr-primary; }
+    &__sub { font-size: 12.5px; color: $gray-600; margin-top: 2px; }
+
+    &__progress { flex: 0 0 auto; text-align: right; padding-top: 2px; }
+    &__count { font-size: 11px; font-weight: 700; color: $gray-600; font-variant-numeric: tabular-nums; white-space: nowrap; }
+    &__bar {
+        margin-top: 6px;
+        margin-left: auto;
+        width: 132px;
+        height: 6px;
+        border-radius: 999px;
+        background: $gray-100;
+        overflow: hidden;
+
+        > i { display: block; height: 100%; background: $success; border-radius: 999px; transition: width .35s ease; }
+    }
+
+    // ---- the step cards ----
+    &__cards {
+        margin-top: 10px;
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 12px;
+
+        @media (max-width: 900px) { grid-template-columns: repeat(2, 1fr); }
+        @media (max-width: 600px) { grid-template-columns: 1fr; }
+    }
+
+    // Client caps the display to 3 open cards; extras get this class until "Show more".
+    &__card.sr-gs__card--hidden { display: none; }
+
+    &__card {
+        position: relative;
+        border: 1px solid $gray-300;
+        border-radius: 6px;
+        background: $white;
+        padding: 12px 28px 12px 12px;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        min-width: 0;
+        // Static height: a longer title/description can never grow the card past
+        // the tile and push the footer out of view. The title and description are
+        // line-clamped (below) so the text stays readable within this budget, and
+        // the actions row is pinned to the bottom.
+        height: 150px;
+        overflow: hidden;
+
+        &--next { border-color: rgba($sr-important, .35); }
+    }
+
+    &__x {
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        width: 20px;
+        height: 20px;
+        border: 0;
+        background: transparent;
+        color: $gray-400;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 12px;
+        line-height: 1;
+        display: grid;
+        place-items: center;
+
+        &:hover { background: $gray-100; color: $gray-600; }
+    }
+
+    &__card-top { display: flex; align-items: center; gap: 8px; padding-right: 16px; }
+
+    // Clean status ring — no glyph inside.
+    &__mark {
+        flex: 0 0 auto;
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        background: $white;
+        border: 2px solid $gray-400;
+    }
+    &__card--next &__mark { border-color: $sr-important; }
+
+    &__eyebrow { font-size: 10.5px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: $gray-500; }
+    &__card--next &__eyebrow { color: $sr-important; }
+
+    &__card-title {
+        font-size: 13px;
+        font-weight: 700;
+        color: $sr-primary;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+    &__card-desc {
+        font-size: 11.5px;
+        color: $gray-600;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    // margin-top:auto pins the actions to the bottom of the static-height card.
+    &__actions { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-top: auto; }
+
+    &__cta {
+        font-size: 12px;
+        font-weight: 700;
+        text-decoration: none;
+        border-radius: 6px;
+        padding: 6px 12px;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+
+        &--primary { background: $sr-important; color: $white; border: 1px solid $sr-important; &:hover { background: darken($sr-important, 8%); color: $white; } }
+        &--ghost { background: transparent; color: $gray-700; border: 1px solid $gray-400; &:hover { color: $sr-important; border-color: $sr-important; } }
+    }
+
+    &__doc {
+        font-size: 11.5px;
+        font-weight: 700;
+        color: $gray-500;
+        text-decoration: none;
+        white-space: nowrap;
+
+        &:hover { color: $sr-important; }
+    }
+
+    // ---- pager (prev/next through the cards, 3 at a time) + all-set ----
+    &__more { margin-top: 8px; }   // client mounts the pager here
+    &__more:empty { margin-top: 0; }
+
+    &__pager {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 10px;
+    }
+
+    &__pager-btn {
+        width: 24px;
+        height: 24px;
+        border: 1px solid $gray-300;
+        background: $white;
+        color: $gray-700;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 15px;
+        line-height: 1;
+        display: grid;
+        place-items: center;
+
+        &:hover:not(:disabled) { color: $sr-important; border-color: $sr-important; }
+        &:disabled { color: $gray-400; opacity: .6; cursor: default; }
+    }
+
+    &__pager-label { font-size: 11.5px; font-weight: 700; color: $gray-600; font-variant-numeric: tabular-nums; }
+
+    &__done { margin-top: 20px; font-size: 12.5px; font-weight: 700; color: $success; }
+
+    // ---- footer ----
+    // Two sections (Explore, Learn) side by side, each with its header on top of
+    // its chips; a divider between them. Wraps to stacked on narrow widths.
+    &__foot {
+        margin-top: 8px;
+        padding-top: 10px;
+        border-top: 1px solid $gray-300;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 14px 28px;
+    }
+
+    &__foot-group {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+
+        // Divider before the second section (removed when it wraps to its own row).
+        & + & { padding-left: 28px; border-left: 1px solid $gray-300; }
+    }
+    &__foot-chips { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    &__foot-label { font-size: 10.5px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: $gray-500; }
+
+    // Footer items as small icon-chips (mini-cards).
+    &__link {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 12px;
+        font-weight: 700;
+        color: $gray-700;
+        text-decoration: none;
+        padding: 5px 10px;
+        border: 1px solid $gray-300;
+        border-radius: 6px;
+        background: $gray-100;
+        white-space: nowrap;
+
+        i { font-size: .9em; color: $gray-500; }
+
+        &:hover {
+            color: $sr-important;
+            border-color: $sr-important;
+            background: $white;
+
+            i { color: $sr-important; }
+        }
+    }
+}
+
+// ---- Risks-by-Month matrix (Risk dashboard widget) ----
+// A compact, static month-by-metric grid — not a DataTables list (so not the
+// .sr-table-card pattern); a bespoke summary matrix styled from the design tokens:
+// a quiet gray header, tabular figures, sticky header + row labels for the scroll,
+// and semantic trend colours.
+.sr-riskmonth {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+    font-variant-numeric: tabular-nums;
+    color: $sr-primary;
+    background: $white;
+
+    th, td {
+        padding: 7px 11px;
+        text-align: center;
+        white-space: nowrap;
+        border-bottom: 1px solid $gray-300;
+    }
+
+    // Month header row — quiet gray, uppercase; sticky for the vertical scroll.
+    // Year is stacked over the month so each column is only as wide as "2025".
+    thead th {
+        position: sticky;
+        top: 0;
+        z-index: 1;
+        padding: 5px 8px;
+        background: $gray-100;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: .03em;
+        line-height: 1.2;
+    }
+    &__yr {
+        display: block;
+        font-size: 9px;
+        font-weight: 600;
+        color: $gray-500;   // quiet context line on top
+    }
+    &__mon {
+        display: block;
+        font-size: 11px;
+        color: $gray-700;   // the prominent line
+    }
+
+    // Row labels (first column) — left-aligned and sticky, so they stay in view
+    // while the months scroll horizontally.
+    tbody th {
+        position: sticky;
+        left: 0;
+        z-index: 1;
+        background: $white;
+        text-align: left;
+        font-weight: 700;
+        color: $sr-primary;
+        box-shadow: 1px 0 0 $gray-300;   // divider on the sticky column
+    }
+
+    // Top-left corner sits above both sticky axes.
+    &__corner {
+        position: sticky;
+        left: 0;
+        top: 0;
+        z-index: 2;
+        background: $gray-100;
+    }
+
+    tbody tr:hover th,
+    tbody tr:hover td { background: $gray-100; }
+
+    // The running total is the headline row — emphasise it.
+    &__total-row th,
+    &__total-row td { font-weight: 800; }
+
+    // Net monthly change: a rise in open risks is bad (red), a fall is good (green).
+    &__delta {
+        font-weight: 700;
+
+        &--up   { color: $danger; }
+        &--down { color: $success; }
+    }
+}
+
+// ---------------------------------------------------------------------------
+// Governance maturity-gap tables (Below / At / Above Maturity widgets)
+// Compact "Control | Maturity" list. Maturity is a progress metric, so it uses
+// ONE hue ($info cyan) — distinct from the pass/fail green/red elsewhere on the
+// dashboard and clear of the red accent: current = solid pill (achieved),
+// desired = outline pill (target). Same language as the radar (solid line vs
+// dashed target envelope).
+// ---------------------------------------------------------------------------
+.sr-gap-table-scroll {
+    max-height: 100%;
+    overflow-y: auto;
+}
+
+.sr-gap-table {
+    width: 100%;
+    margin: 0;
+    font-size: 12px;
+    border-collapse: collapse;
+
+    thead th {
+        position: sticky;
+        top: 0;
+        z-index: 1;
+        background: $gray-100;
+        padding: 6px 8px;
+        font-size: 10.5px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: .04em;
+        color: $gray-600;
+        text-align: left;
+    }
+
+    tbody td {
+        padding: 5px 8px;
+        border-top: 1px solid $gray-300;
+        vertical-align: middle;
+    }
+
+    tbody tr:hover td { background: $gray-100; }
+
+    // Totals footer row (e.g. Closure Summary): a grounded light bar that
+    // bookends the header — same neutral family, a crisp top rule, and bold dark
+    // numerals — pinned to the bottom so it stays visible while the body scrolls.
+    tfoot tr.sr-gap-table__total td {
+        position: sticky;
+        bottom: 0;
+        z-index: 1;
+        background: $gray-200;
+        color: $gray-900;
+        border-top: 2px solid $gray-400;
+        padding: 7px 8px;
+        font-weight: 700;
+        font-variant-numeric: tabular-nums;
+    }
+    // The "Total" label echoes the header caps treatment so the two rails match.
+    tfoot tr.sr-gap-table__total td:first-child {
+        text-transform: uppercase;
+        font-size: 10.5px;
+        letter-spacing: .04em;
+        color: $gray-600;
+    }
+
+    // Sortable headers: click to re-sort, with a quiet affordance that sharpens
+    // into a direction arrow on the active column.
+    &--sortable thead th[data-sortable] {
+        cursor: pointer;
+        user-select: none;
+        white-space: nowrap;
+
+        &::after {
+            content: '\2195';   // up-down arrow — "sortable"
+            margin-left: 4px;
+            font-size: 9px;
+            opacity: .3;
+        }
+        &[data-sort-dir='asc']::after  { content: '\25b2'; opacity: .8; }
+        &[data-sort-dir='desc']::after { content: '\25bc'; opacity: .8; }
+    }
+
+    .sr-gap-control  { width: 60%; }
+    .sr-gap-maturity { white-space: nowrap; }
+
+    // Column hierarchy (Closure Summary): the lower-priority "other close type"
+    // columns are dimmed so the primary verdict cluster (Signal / TP / FP / Total)
+    // reads as foreground, and a divider brackets the boundary between them.
+    th.sr-gap-dim,
+    tbody td.sr-gap-dim { color: $gray-500; font-weight: 500; }
+
+    th.sr-gap-sep,
+    td.sr-gap-sep { border-left: 2px solid $gray-300; }
+}
+
+// Signal-quality cell (Closure Summary): icon + percent + mini data-bar, tiered
+// by source precision. The bar fill inherits the tier colour via currentColor,
+// and the icon + number keep the meaning legible in grayscale.
+.sr-signal {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-weight: 700;
+    font-size: 11px;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+
+    &__icon { font-size: 9px; line-height: 1; }
+    &__pct  { min-width: 32px; text-align: right; }
+
+    &--high  { color: $success; }
+    &--mid   { color: $orange; }
+    &--low   { color: $danger; }
+    &--muted { color: $gray-500; font-weight: 600; }
+}
+
+.sr-signal-bar {
+    display: inline-block;
+    width: 44px;
+    height: 6px;
+    border-radius: 3px;
+    background: $gray-200;
+    overflow: hidden;
+
+    &__fill {
+        display: block;
+        height: 100%;
+        border-radius: 3px;
+        background: currentColor;   // takes the tier colour from the parent .sr-signal
+    }
+}
+
+// Control cell: two stacked lines — ID on top, short name below.
+.sr-gap-link {
+    display: block;
+    text-decoration: none;
+
+    &:hover .sr-gap-id,
+    &:hover .sr-gap-name { color: $sr-important; }
+}
+
+.sr-gap-id {
+    display: block;
+    font-weight: 700;
+    font-size: 11px;
+    font-variant-numeric: tabular-nums;
+    color: $sr-primary;
+}
+
+.sr-gap-name {
+    display: block;
+    font-size: 11.5px;
+    color: $gray-600;
+}
+
+// Sequential cyan ramp for the maturity level pills — light = low level, dark
+// = high, so colour encodes progress. MUST stay in step with the pie ramp in
+// governance_current_control_maturity_pie_chart() (includes/reporting.php), a
+// Chart.js dataset that can only take literal colours, so that one copy stays
+// in PHP; every DOM consumer reads these.
+//
+// Relocated here (Task 30) from maturity_gap_pill_html() (includes/reporting.php),
+// which built the same six shades as an inline `style=` attribute. Two surfaces
+// now render this pill — the governance dashboard's Below/At/Above maturity
+// widgets (PHP) and the Define Control Frameworks controls table
+// (js/simplerisk/pages/governance-frameworks.js) — and both add
+// `.sr-maturity-pill--<level>` instead, so the ramp has exactly one definition
+// that either can drift from.
+//
+// File-local rather than promoted to variable.scss: this is one domain ramp
+// with a single consumer (the @each below), not a brand token
+// (editing-stylesheets/references/adding-a-variable.md, item 3). Level 3 is the
+// palette's $cyan; the other five are shades of it that no palette entry names.
+$sr-maturity-ramp: (
+    0: #dceffb,   // Not Performed — lightest
+    1: #a9dcf3,
+    2: #6ec6ec,
+    3: $cyan,     // #27a9e3 — mid
+    4: #1c85b6,
+    5: #12617f,   // Optimizing — darkest
+);
+$sr-maturity-ramp-na: #b0b7be;   // outside the 0–5 scale (same neutral the pie uses)
+$sr-maturity-ink: #3a3a3a;       // charcoal label on the four lighter shades
+
+// Maturity level pills — both solid, each filled by its own level's shade, so
+// the pair reads current → desired by position. The level label is always
+// shown, so meaning survives grayscale / color-blindness.
+// Fixed min-width + centered text so the two pills (and the Maturity column)
+// line up across every row.
+.sr-maturity-pill {
+    display: inline-block;
+    min-width: 104px;   // fits the longest level ("Not Performed") under border-box
+    padding: 1px 8px;
+    border: 1px solid transparent;   // fill/border colour set by the --<level> modifier
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 1.6;
+    text-align: center;
+    white-space: nowrap;
+}
+
+// Level modifiers. White label from level 4 up, charcoal below — the crossover
+// is where the ramp gets dark enough that charcoal loses contrast.
+@each $level, $shade in $sr-maturity-ramp {
+    .sr-maturity-pill--#{$level} {
+        background-color: $shade;
+        border-color: $shade;
+        color: if($level >= 4, $white, $sr-maturity-ink);
+    }
+}
+
+// Out-of-range fallback. The control_maturity lookup is a fixed 0–5 scale
+// (admin/custom_names.php only RENAMES its rows, it cannot add one), so this is
+// defensive: a value outside the scale gets the neutral grey rather than no fill
+// at all. Charcoal label — the pre-Task-30 inline style picked white here for
+// any value >= 4, which on this grey is a ~2.2:1 contrast; charcoal is ~4.6:1.
+.sr-maturity-pill--na {
+    background-color: $sr-maturity-ramp-na;
+    border-color: $sr-maturity-ramp-na;
+    color: $sr-maturity-ink;
+}
+
+.sr-maturity-arrow {
+    margin: 0 5px;
+    color: $gray-500;
+    font-size: 11px;
+}

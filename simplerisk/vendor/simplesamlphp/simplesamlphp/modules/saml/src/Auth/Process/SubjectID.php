@@ -4,18 +4,20 @@ declare(strict_types=1);
 
 namespace SimpleSAML\Module\saml\Auth\Process;
 
-use SAML2\Constants;
-use SAML2\Exception\ProtocolViolationException;
-use SimpleSAML\{Auth, Logger, Utils};
 use SimpleSAML\Assert\Assert;
+use SimpleSAML\Auth;
+use SimpleSAML\Logger;
+use SimpleSAML\SAML2\Constants;
+use SimpleSAML\SAML2\Exception\ProtocolViolationException;
+use SimpleSAML\Utils;
 
 use function array_key_exists;
 use function explode;
 use function hash_hmac;
 use function preg_match;
+use function sprintf;
 use function strpos;
 use function strtolower;
-use function sprintf;
 
 /**
  * Filter to generate the subject ID attribute.
@@ -47,28 +49,26 @@ class SubjectID extends Auth\ProcessingFilter
     /**
      * The name for this class
      */
-    public const NAME = 'SubjectID';
+    public const string NAME = 'SubjectID';
 
     /**
      * The regular expression to match the scope
      *
-     * @var string
      */
-    public const SCOPE_PATTERN = '/^[a-z0-9][a-z0-9.-]{0,126}$/Di';
+    public const string SCOPE_PATTERN = '/^[a-z0-9][a-z0-9.-]{0,126}$/Di';
 
     /**
      * The regular expression to match the specifications
      *
-     * @var string
      */
-    public const SPEC_PATTERN = '/^[a-z0-9][a-z0-9=-]{0,126}@[a-z0-9][a-z0-9.-]{0,126}$/Di';
+    public const string SPEC_PATTERN = '/^[a-z0-9][a-z0-9=-]{0,126}@[a-z0-9][a-z0-9.-]{0,126}$/Di';
 
     /**
      * The regular expression to match worrisome identifiers that need to raise a warning
      *
-     * @var string
      */
-    public const WARN_PATTERN = '/^[a-z0-9][a-z0-9=-]{3,}@[a-z0-9][a-z0-9.-]+\.[a-z]{2,}$/Di';
+    public const string WARN_PATTERN = '/^[a-z0-9][a-z0-9=-]{3,}@[a-z0-9][a-z0-9.-]+\.[a-z]{2,}$/Di';
+
 
     /**
      * The attribute we should generate the subject id from.

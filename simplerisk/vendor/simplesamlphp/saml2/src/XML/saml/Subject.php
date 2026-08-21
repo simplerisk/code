@@ -5,13 +5,13 @@ declare(strict_types=1);
 namespace SimpleSAML\SAML2\XML\saml;
 
 use DOMElement;
-use SimpleSAML\Assert\Assert;
+use SimpleSAML\SAML2\Assert\Assert;
 use SimpleSAML\SAML2\XML\IdentifierTrait;
 use SimpleSAML\XML\Constants as C;
-use SimpleSAML\XML\Exception\InvalidDOMElementException;
-use SimpleSAML\XML\Exception\TooManyElementsException;
 use SimpleSAML\XML\SchemaValidatableElementInterface;
 use SimpleSAML\XML\SchemaValidatableElementTrait;
+use SimpleSAML\XMLSchema\Exception\InvalidDOMElementException;
+use SimpleSAML\XMLSchema\Exception\TooManyElementsException;
 
 /**
  * Class representing SAML 2 Subject element.
@@ -22,6 +22,7 @@ final class Subject extends AbstractSamlElement implements SchemaValidatableElem
 {
     use IdentifierTrait;
     use SchemaValidatableElementTrait;
+
 
     /**
      * Initialize a Subject element.
@@ -61,10 +62,7 @@ final class Subject extends AbstractSamlElement implements SchemaValidatableElem
     /**
      * Convert XML into a Subject
      *
-     * @param \DOMElement $xml The XML element we should load
-     * @return static
-     *
-     * @throws \SimpleSAML\XML\Exception\InvalidDOMElementException
+     * @throws \SimpleSAML\XMLSchema\Exception\InvalidDOMElementException
      *   if the qualified name of the supplied element is wrong
      */
     public static function fromXML(DOMElement $xml): static
@@ -93,17 +91,12 @@ final class Subject extends AbstractSamlElement implements SchemaValidatableElem
 
     /**
      * Convert this element to XML.
-     *
-     * @param  \DOMElement|null $parent The parent element we should append this element to.
-     * @return \DOMElement This element, as XML.
      */
     public function toXML(?DOMElement $parent = null): DOMElement
     {
         $e = $this->instantiateParentElement($parent);
 
-        /** @var \SimpleSAML\XML\SerializableElementInterface|null $identifier */
-        $identifier = $this->getIdentifier();
-        $identifier?->toXML($e);
+        $this->getIdentifier()?->toXML($e);
 
         foreach ($this->getSubjectConfirmation() as $sc) {
             $sc->toXML($e);

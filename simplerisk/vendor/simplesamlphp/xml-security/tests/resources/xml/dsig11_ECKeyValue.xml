@@ -1,5 +1,5 @@
 <dsig11:ECKeyValue xmlns:dsig11="http://www.w3.org/2009/xmldsig11#" Id="phpunit">
-  <dsig11:ECParameters xmlns:dsig11="http://www.w3.org/2009/xmldsig11#">
+  <dsig11:ECParameters>
     <dsig11:FieldID>
       <dsig11:PnB>
         <dsig11:M>1024</dsig11:M>
@@ -19,5 +19,5 @@
       <dsig11:seed>6tN39Q9d6IevlAWLeM7lQGazUnVlJOe1wCk3sro2rfE=</dsig11:seed>
     </dsig11:ValidationData>
   </dsig11:ECParameters>
-  <dsig11:PublicKey xmlns:dsig11="http://www.w3.org/2009/xmldsig11#">6tN39Q9d6IevlAWLeM7lQGazUnVlJOe1wCk3sro2rfE=</dsig11:PublicKey>
+  <dsig11:PublicKey>6tN39Q9d6IevlAWLeM7lQGazUnVlJOe1wCk3sro2rfE=</dsig11:PublicKey>
 </dsig11:ECKeyValue>

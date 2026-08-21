@@ -16,6 +16,8 @@ require_once(language_file());
  * ***************************************/
 function api_v2_reports_risk_average()
 {
+    global $lang;
+
     // Check that this user has the ability to view risks
     api_v2_check_permission("riskmanagement");
 
@@ -56,8 +58,15 @@ function api_v2_reports_risk_average()
     // If we received a risk id
     if ($risk_id !== null)
     {
+        // Reject non-numeric risk_id with 400 — prevents TypeError on PHP 8 arithmetic (SR-1838)
+        if (!is_numeric($risk_id))
+        {
+            api_v2_json_result(400, $lang['RiskIdMustBeNumeric'], null);
+            return;
+        }
+
         // Subtract 1000 to get the id from the provided risk id
-        $id = $risk_id - 1000;
+        $id = (int)$risk_id - 1000;
 
         // Check whether we want inherent or residual risk
         switch ($type)

@@ -24,6 +24,18 @@
     <head>
         <meta charset="UTF-8">
         <title>SimpleRisk API Documentation</title>
+        <?php
+            // Server-render the CSRF token globals. csrf-magic normally injects
+            // these via its output-buffer rewrite, but that rewrite is disabled
+            // for /api/* URLs (see include_csrf_magic()) so JSON responses aren't
+            // corrupted. This page is HTML served under /api/, so we define the
+            // globals here directly. json_encode with JSON_HEX_TAG keeps the
+            // values safe inside the <script> context.
+        ?>
+        <script>
+            var csrfMagicToken = <?= json_encode(csrf_get_tokens(), JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) ?>;
+            var csrfMagicName = <?= json_encode($GLOBALS['csrf']['input-name'], JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) ?>;
+        </script>
         <?php // @phan-suppress-next-line SecurityCheck-XSS -- build_url() uses hardcoded paths; base URL from $_SERVER is server-controlled and sanitized ?>
         <link rel="stylesheet" type="text/css" href="<?= build_url("vendor/swagger-api/swagger-ui/dist/swagger-ui.css") ?>"/>
         <?php // @phan-suppress-next-line SecurityCheck-XSS -- build_url() uses hardcoded paths; base URL from $_SERVER is server-controlled and sanitized ?>
@@ -39,7 +51,7 @@
               		requestInterceptor: function(request) {
                         // Add the CSRF token to all POST requests via header (csrf-magic checks CSRF-TOKEN header)
                         if (request.method && request.method.toUpperCase() === 'POST') {
-                            request.headers['CSRF-TOKEN'] = csrfMagicToken;
+                            request.headers['CSRF-TOKEN'] = (typeof csrfMagicToken !== 'undefined') ? csrfMagicToken : '';
                         }
                         return request;
            	  		},

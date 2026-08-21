@@ -9,6 +9,7 @@ use SAML2\Constants as C;
 use SimpleSAML\Assert\Assert;
 use SimpleSAML\Auth;
 use SimpleSAML\Configuration;
+use SimpleSAML\Event\Dispatcher\ModuleEventDispatcherFactory;
 use SimpleSAML\Locale\Translate;
 use SimpleSAML\Logger;
 use SimpleSAML\Metadata\MetaDataStorageHandler;
@@ -17,6 +18,7 @@ use SimpleSAML\Metadata\SAMLParser;
 use SimpleSAML\Metadata\Signer;
 use SimpleSAML\Module;
 use SimpleSAML\Module\adfs\IdP\ADFS as ADFS_IdP;
+use SimpleSAML\Module\admin\Event\FederationPageEvent;
 use SimpleSAML\Module\saml\IdP\SAML2 as SAML2_IdP;
 use SimpleSAML\Utils;
 use SimpleSAML\XHTML\Template;
@@ -181,6 +183,11 @@ class Federation
             'logouturl' => $this->authUtils->getAdminLogoutURL(),
         ];
 
+        $eventDispatcher = ModuleEventDispatcherFactory::getInstance();
+        /** @var \SimpleSAML\Module\admin\Event\FederationPageEvent $event */
+        $event = $eventDispatcher->dispatch(new FederationPageEvent($t));
+        $t = $event->getTemplate();
+
         Module::callHooks('federationpage', $t);
         Assert::isInstanceOf($t, Template::class);
 
@@ -211,7 +218,11 @@ class Federation
                     $selfHost = $httpUtils->getSelfHostWithPath();
                     foreach ($idps as $index => $idp) {
                         if (isset($idp['host']) && $idp['host'] !== '__DEFAULT__') {
-                            $mdHostBase = str_replace('://' . $selfHost . '/', '://' . $idp['host'] . '/', $metadataBase);
+                            $mdHostBase = str_replace(
+                                '://' . $selfHost . '/',
+                                '://' . $idp['host'] . '/',
+                                $metadataBase,
+                            );
                         } else {
                             $mdHostBase = $metadataBase;
                         }

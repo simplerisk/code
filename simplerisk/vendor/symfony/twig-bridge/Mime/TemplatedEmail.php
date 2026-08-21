@@ -100,7 +100,7 @@ class TemplatedEmail extends Email
      */
     public function __serialize(): array
     {
-        return [$this->htmlTemplate, $this->textTemplate, $this->context, parent::__serialize(),  $this->locale];
+        return [$this->htmlTemplate, $this->textTemplate, $this->context, parent::__serialize(), $this->locale];
     }
 
     /**
@@ -108,6 +108,13 @@ class TemplatedEmail extends Email
      */
     public function __unserialize(array $data): void
     {
+        if (($data[0] ?? null) instanceof \Stringable
+            || ($data[1] ?? null) instanceof \Stringable
+            || ($data[4] ?? null) instanceof \Stringable
+        ) {
+            throw new \BadMethodCallException('Cannot unserialize '.self::class);
+        }
+
         [$this->htmlTemplate, $this->textTemplate, $this->context, $parentData] = $data;
         $this->locale = $data[4] ?? null;
 

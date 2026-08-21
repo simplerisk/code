@@ -21,27 +21,13 @@ use function sprintf;
 final class EncryptionAlgorithmFactory
 {
     /**
-     * A cache of algorithm implementations indexed by algorithm ID.
-     *
-     * @var array<string, \SimpleSAML\XMLSecurity\Alg\Encryption\EncryptionAlgorithmInterface>
-     */
-    protected static array $cache = [];
-
-    /**
-     * Whether the factory has been initialized or not.
-     *
-     * @var bool
-     */
-    protected static bool $initialized = false;
-
-    /**
      * An array of blacklisted algorithms.
      *
      * Defaults to 3DES.
      *
      * @var string[]
      */
-    public const DEFAULT_BLACKLIST = [
+    public const array DEFAULT_BLACKLIST = [
         C::BLOCK_ENC_3DES,
     ];
 
@@ -50,10 +36,23 @@ final class EncryptionAlgorithmFactory
      *
      * @var class-string[]
      */
-    private const SUPPORTED_DEFAULTS = [
+    private const array SUPPORTED_DEFAULTS = [
         TripleDES::class,
         AES::class,
     ];
+
+
+    /**
+     * A cache of algorithm implementations indexed by algorithm ID.
+     *
+     * @var array<string, \SimpleSAML\XMLSecurity\Alg\Encryption\EncryptionAlgorithmInterface>
+     */
+    protected static array $cache = [];
+
+    /**
+     * Whether the factory has been initialized or not.
+     */
+    protected static bool $initialized = false;
 
 
     /**

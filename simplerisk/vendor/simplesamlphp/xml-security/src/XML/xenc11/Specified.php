@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace SimpleSAML\XMLSecurity\XML\xenc11;
 
-use SimpleSAML\XML\Base64ElementTrait;
+use SimpleSAML\XML\TypedTextContentTrait;
+use SimpleSAML\XMLSchema\Type\Base64BinaryValue;
 
 /**
  * Class representing a xenc11:Specified element.
@@ -13,14 +14,8 @@ use SimpleSAML\XML\Base64ElementTrait;
  */
 final class Specified extends AbstractXenc11Element
 {
-    use Base64ElementTrait;
+    use TypedTextContentTrait;
 
 
-    /**
-     * @param string $content
-     */
-    public function __construct(string $content)
-    {
-        $this->setContent($content);
-    }
+    public const string TEXTCONTENT_TYPE = Base64BinaryValue::class;
 }

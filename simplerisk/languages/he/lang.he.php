@@ -8,7 +8,7 @@
 ini_set('default_charset', 'utf-8');
 
 $lang = array(
-    'Home'=>'בבית',
+    'Home'=>'דף הבית',
     'RiskManagement'=>'ניהול סיכונים',
     'Reporting'=>'דיווח',
     'Configure'=>'להגדיר',
@@ -17,7 +17,7 @@ $lang = array(
     'LogInHere'=>'כניסה SimpleRisk',
     'Username'=>'שם משתמש',
     'Password'=>'הסיסמה',
-    'ForgotYourPassword'=>'שכחתי את הסיסמה שלך',
+    'ForgotYourPassword'=>'שכחת את הסיסמה שלך',
     'Login'=>'כניסה',
     'Reset'=>'איפוס',
     'Send'=>'שלח',
@@ -33,8 +33,6 @@ $lang = array(
     'CurrentPassword'=>'הסיסמה הנוכחית',
     'NewPassword'=>'הסיסמה החדשה',
     'ConfirmPassword'=>'אישור סיסמה',
-    'RiskConfiguration'=>'תצורת סיכון',
-    'ReviewSettings'=>'סקירת הגדרות',
     'AddAndRemoveValues'=>'הוספה והסרה של ערכים',
     'UserManagement'=>'ניהול משתמשים',
     'RedefineNamingConventions'=>'להגדיר מחדש מוסכמות למתן שמות',
@@ -80,8 +78,6 @@ $lang = array(
     'Delete'=>'למחוק',
     'SendPasswordResetEmailForUser'=>'לשלוח את הדוא " ל לאיפוס הסיסמה עבור המשתמש',
     'Category'=>'קטגוריה',
-    'Cards'=>'כרטיסים',
-    'List'=>'רְשִׁימָה',
     'AddNewCategoryNamed'=>'להוסיף קטגוריה חדשה בשם',
     'DeleteCurrentCategoryNamed'=>'מחיקת הנוכחי קטגוריה בשם',
     'Team'=>'צוות',
@@ -99,7 +95,7 @@ $lang = array(
     'RiskPlanningStrategy'=>'הסיכון תכנון אסטרטגיה',
     'AddNewRiskPlanningStrategyNamed'=>'הוסף הסיכון תכנון אסטרטגיה בשם',
     'DeleteCurrentRiskPlanningStrategyNamed'=>'מחיקת הנוכחי הסיכון תכנון אסטרטגיה בשם',
-    'CloseReason'=>'קרוב סיבה',
+    'CloseReason'=>'סיבת סגירה',
     'AddNewCloseReasonNamed'=>'הוסף קרוב סיבה בשם',
     'DeleteCurrentCloseReasonNamed'=>'מחיקת הנוכחי קרוב סיבה בשם',
     'IWantToReviewHighRiskEvery'=>'אני רוצה לבחון את סיכון גבוה כל',
@@ -125,24 +121,24 @@ $lang = array(
     'Subject'=>'הנושא',
     'ExternalReferenceId'=>'הפניה חיצונית ID',
     'ControlNumber'=>'מספר בקרה',
-    'Owner'=>'הבעלים',
+    'Owner'=>'בעל',
     'OwnersManager'=>'המנהל של הבעלים',
     'RiskScoringMethod'=>'הסיכון שיטת ניקוד',
     'CurrentLikelihood'=>'הנוכחי הסבירות',
     'CurrentImpact'=>'הנוכחי את ההשפעה.',
     'RiskAssessment'=>'הערכת סיכונים',
     'AdditionalNotes'=>'הערות נוספות',
-    'UNREVIEWED'=>'UNREVIEWED',
+    'UNREVIEWED'=>'לא נבדק',
     'PASTDUE'=>'בשל העבר',
     'ID'=>'מזהה',
     'Status'=>'סטטוס',
-    'Risk'=>'הסיכון',
+    'Risk'=>'סיכון',
     'DaysOpen'=>'ימים פתוחים',
     'CalculatedRisk'=>'סיכון מחושב',
     'SubmittedBy'=>'שהוגש על ידי',
     'NextReviewDate'=>'הסקירה הבאה תאריך',
     'CVSSRiskScoring'=>'CVSS הסיכון ניקוד',
-    'DREADRiskScoring'=>'חרדה הסיכון ניקוד',
+    'DREADRiskScoring'=>'DREAD הסיכון ניקוד',
     'OWASPRiskScoring'=>'OWASP הסיכון ניקוד',
     'CustomRiskScoring'=>'מותאם אישית הסיכון ניקוד',
     'MitigationPlanningHelp'=>'להלן רשימת שהוגשו סיכונים הדורשים תכנון מיתון',
@@ -240,7 +236,7 @@ $lang = array(
     'ReportClosedByDateHelp'=>'דו " ח זה מציג את כל הסיכונים הורה על ידי סגר תאריך',
     'AllOpenRisksByTeam'=>'כל פתח סיכונים על ידי צוות',
     'ReportRiskTeamsHelp'=>'דו " ח זה מציג את כל הקבוצות ואת הסיכונים שהוקצו לכל אחד',
-    'Unassigned'=>'ב',
+    'Unassigned'=>'לא מוקצה',
     'AllOpenRisksByTechnology'=>'כל פתח סיכונים על ידי טכנולוגיה.',
     'ReportRiskTechnologiesHelp'=>'דו " ח זה מציג את כל הטכנולוגיות ואת המוקצה לכל הסיכונים',
     'RiskLevel'=>'רמת הסיכון',
@@ -343,7 +339,7 @@ $lang = array(
     'IPAddress'=>'כתובת ה-IP',
     'AssetWasAddedSuccessfully'=>'נכס נוסף בהצלחה.',
     'AssetWasDeletedSuccessfully'=>'הנכס היה נמחק בהצלחה.',
-    'ThereWasAProblemAddingTheAsset'=>'אין בעיה להוסיף את הנכס.',
+    'ThereWasAProblemAddingTheAsset'=>'הייתה בעיה בהוספת הנכס.',
     'ThereWasAProblemDeletingTheAsset'=>'יש בעיה למחוק את הנכס.',
     'ComingSoon'=>'בקרוב',
     'ExportRisks'=>'יצוא סיכונים',
@@ -356,9 +352,7 @@ $lang = array(
     'AffectedAssets'=>'מושפעים הנכסים',
     'Activate'=>'הפעל',
     'DeleteRisks'=>'למחוק סיכונים',
-    'DeletedRisksCannotBeRecovered'=>'נמחק סיכונים יכולים להיות התאושש',
-    'DeletedAssessmentsCannotBeRecovered'=>'לא ניתן לשחזר הערכות שנמחקו',
-    'TheAssessmentsWereDeletedSuccessfully'=>'ההערכות נמחקו בהצלחה.',
+    'DeletedRisksCannotBeRecovered'=>'סיכונים שנמחקו לא ניתן לשחזר',
     'RisksDeletedSuccessfully'=>'הסיכון(s) נמחק בהצלחה',
     'ThereWasAProblemDeletingTheRisk'=>'יש בעיה למחוק את הסיכון(s)',
     'Activated'=>'מופעל',
@@ -369,8 +363,8 @@ $lang = array(
     'VeryHigh'=>'גבוהה מאוד',
     'VeryHighRisk'=>'סיכון גבוה מאוד',
     'IWantToReviewVeryHighRiskEvery'=> 'אני רוצה לבחון את סיכון גבוה מאוד בכל',
-    'AbleToReviewVeryHighRisks'=>'מסוגל לבחון סיכונים גבוהים',
-    'AbleToReviewInsignificantRisks'=>'תוכל לסקור את חשיבות סיכונים',
+    'AbleToReviewVeryHighRisks'=>'מסוגל לבחון סיכונים גבוהים מאוד',
+    'AbleToReviewInsignificantRisks'=>'מסוגל לבחון סיכונים לא משמעותיים',
     'AllTeams'=>'כל הצוותים.',
     'FileUploadSettings'=>'העלאת קובץ הגדרות',
     'AllowedFileTypes'=>'מותר סוגי קבצים',
@@ -417,18 +411,13 @@ $lang = array(
     'EditAssets'=>'עריכה נכסים',
     'AutomaticAssetValuation'=>'אוטומטי הערכת שווי נכס',
     'ManualAssetValuation'=>'מדריך הערכת שווי נכס',
-    'AssetValuationMode'=>'מצב הערכת נכסים',
-    'AutomaticLinearRange'=>'טווח ליניארי אוטומטי',
-    'AutomaticExponentialRange'=>'טווח אקספוננציאלי אוטומטי',
-    'ManualValuation'=>'יָדָנִי',
-    'AssetValuationMinMustBeNonNegative'=>'המינימום של הערכת שווי נכס חייב להיות אפס או גדול יותר עבור טווח אקספוננציאלי אוטומטי.',
     'MinimumValue'=>'הערך המינימלי',
     'MaximumValue'=>'הערך המרבי',
     'ValueRange'=>'טווח הערכים',
     'DefaultAssetValuation'=>'ברירת מחדל של הערכת שווי נכס',
     'Default'=>'ברירת המחדל',
     'RisksAndAssets'=>'סיכונים ונכסים',
-    'Report'=>'דו " ח',
+    'Report'=>'דוח',
     'RisksByAsset'=>'סיכונים על ידי נכס',
     'AssetsByRisk'=>'נכסים ע " י סיכון',
     'MaximumQuantitativeLoss'=>'מרבית כמותית אובדן',
@@ -466,7 +455,7 @@ $lang = array(
     'Host'=>'המארח',
     'SMTPAuthentication'=>'אימות SMTP',
     'Encryption'=>'הצפנה',
-    'Port'=>'נמל',
+    'Port'=>'פורט',
     'Next'=>'הבא',
     'NewAssessmentQuestion'=>'חדש הערכת שאלה',
     'Question'=>'שאלה',
@@ -486,7 +475,7 @@ $lang = array(
     'GoToSSOLoginPage'=>'לעבור לדף ההתחברות SSO',
     'APIKey'=>'API מפתח',
     'GenerateAPIKey'=>'יצירת API מפתח',
-    'RotateAPIKey'=>'סיבוב המפתח של',
+    'RotateAPIKey'=>'סובב את מפתח ה-API',
     'InvalidateAPIKey'=>'לפסול API מפתח',
     'Deactivate'=>'לבטל',
     'ImportExportExtra'=>'ייבוא-ייצוא נוסף',
@@ -512,7 +501,7 @@ $lang = array(
     'minute' => 'דקה',
     'AccountLockedOut' => 'חשבון נעול',
     'AccountLockoutPolicy' => 'מדיניות נעילת חשבון',
-    'ImportExportIsDeactivated' => 'ייבוא-ייצוא מבוטלת',
+    'ImportExportIsDeactivated' => 'ייבוא-ייצוא מבוטל',
     'PurchaseTheExtra' => 'הרכישה הנוספת',
     'ExpandAll' => 'הרחבת כל',
     'ConditionMessageForMinChar' => 'הסיסמה צריכה להכיל המינימום של הדמויות $min_chars.',
@@ -522,11 +511,11 @@ $lang = array(
     'ConditionMessageForDigit' => 'הסיסמה צריכה להכיל ספרה.',
     'ConditionMessageForSpecialchar' => 'הסיסמה צריכה להכיל תו מיוחד.',
     'ConditionMessageForMinPasswordAge' => 'הסיסמה ניתן לעדכן מ עודכן זמן המינימום של $min_password_age ימים מאוחר יותר.',
-    'TrustedDomains' => 'קבוצות מחשבים מהימנות',
+    'TrustedDomains' => 'דומיינים מהימנים',
     'SimpleRiskColumnMapping' => 'מיפוי העמודה SimpleRisk',
     'Mapping' => 'מיפוי',
     'Optional' => 'אופציונלי',
-    'SaveMappingAs' => 'להציל את מיפוי כמו',
+    'SaveMappingAs' => 'שמור מיפוי בשם',
     'EncryptionLevel' => 'רמת ההצפנה',
     'Level' => 'רמת',
     'Description' => 'תיאור',
@@ -551,7 +540,7 @@ $lang = array(
     'MysqldumpPathWasSavedSuccessfully' => 'נתיב Mysqldump נשמרה בהצלחה.',
     'UnavailableMysqldumpService' => 'שאין שירות \'mysqldump\' והמשאב בשרת. נא הגדר נתיב השירות mysqldump מוחלטת.',
     'AllOpenRisksByTeamByLevel' => 'סיכונים הפתוחים על ידי צוות לפי רמת הסיכון',
-    'Unknown' => 'ידוע',
+    'Unknown' => 'לא ידוע',
     'AllOwners' =>'כל הבעלים',
     'AllOwnersManagers' => 'המנהלים של כל הבעלים',
     'AddNewReviewNamed' => 'הוסף ביקורת חדשה בשם',
@@ -561,7 +550,7 @@ $lang = array(
     'Settings' => 'הגדרות',
     'EnablePopupWindowsForTextBoxes' => 'לאפשר חלונות קופצים עבור תיבות טקסט',
     'PasswordNoLongerUse' => 'היסטוריית הסיסמאות מופעלת והיא כבר נעשה שימוש בסיסמה זו. אנא נסה סיסמה אחרת.',
-    'RememberTheLast' => 'זוכר את הפעם האחרונה',
+    'RememberTheLast' => 'זכור את האחרון',
     'Passwords' => 'סיסמאות',
     'NoOwner' => 'אין בעלים',
     'NoOwnersManager' => 'אף מנהל בעלי',
@@ -603,7 +592,6 @@ $lang = array(
     'SpecifiedTime' => 'זמן שצוין',
     'Governance' => 'ממשל תאגידי',
     'Compliance' => 'תאימות',
-    'CrossDomain' => 'דומיינים מרובים',
     'AllowAccessToRiskManagementMenu' => 'לאפשר גישה לתפריט "ניהול סיכונים"',
     'CheckAllGovernance' => 'בדוק כל ממשל',
     'CheckAllCompliance' => 'בדוק את תאימות לכל',
@@ -620,15 +608,15 @@ $lang = array(
     'CanceledProjects' => 'הפרויקטים שבוטלו',
     'Priority' => 'עדיפות',
     'ProjectName' => 'שם הפרויקט',
-    'ActiveFrameworks' => 'מסגרות פעיל',
-    'InactiveFrameworks' => 'מסגרות לא פעיל',
+    'ActiveFrameworks' => 'מסגרות פעילות',
+    'InactiveFrameworks' => 'מסגרות לא פעילות',
     'NewProjectName' => 'שם פרוייקט חדש',
     'NewFrameworkName' => 'שם מסגרת חדש',
     'NewFrameworkDescription' => 'תיאור מסגרת חדש',
     'AreYouSureYouWantToDeleteThisProject' => 'האם אתה בטוח שברצונך למחוק את הפרויקט הזה?',
     'AreYouSureYouWantToDeleteThisFramework' => 'האם אתה בטוח שברצונך למחוק מסגרת זו?',
     'ViewRisks' => 'תצוגת סיכונים',
-    'ViewRisk' => 'הסיכון תצוגה',
+    'ViewRisk' => 'הצג סיכון',
     'FrameworkName' => 'מסגרת שם',
     'FrameworkDescription' => 'מסגרת תיאור',
     'ImportAssessments' => 'ייבוא הערכות',
@@ -645,7 +633,7 @@ $lang = array(
     'FieldType' => 'סוג השדה',
     'CustomFieldNameNotEmpty' => 'השם של שדה מותאם אישית אינו יכול להיות ריק.',
     'DeletedSuccess' => 'מחק בהצלחה',
-    'ActiveControls' => 'פקד פעיל',
+    'ActiveControls' => 'פקדים פעילים',
     'ControlName' => 'שם הפקד',
     'ControlShortName' => 'שם קצר שליטה',
     'ControlLongName' => 'שם רב פקד',
@@ -658,7 +646,7 @@ $lang = array(
     'ControlPhase' => 'שלב הבקרה',
     'ControlPriority' => 'עדיפות שליטה',
     'ControlFamily' => 'שליטה המשפחה',
-    'AllFrameworks'=>'כל מסגרות',
+    'AllFrameworks'=>'כל המסגרות',
     'NewControlName' => 'שם פקד חדש',
     'NewControlDescription' => 'תיאור פקד חדש',
     'AreYouSureYouWantToDeleteThisControl' => 'האם אתה בטוח שברצונך למחוק פקד זה?',
@@ -735,7 +723,7 @@ $lang = array(
     'NextAuditDate'=>'תאריך ביקורת הבא',
     'DesiredFrequency'=>'התדירות הרצויה',
     'Framework'=>'מסגרת',
-    'Control'=>'שליטה',
+    'Control'=>'בקרה',
     'Test'=>'מבחן',
     'Active'=>'פעיל',
     'Inactive'=>'לא פעיל',
@@ -762,8 +750,8 @@ $lang = array(
     'RequiredTokenForQuestionnaire'=>'אתה צריך לשלוח אות כדי להציג את השאלון.',
     'NoPermissionForQuestionnaire'=>'אין לך הרשאה שאלון זה.',
     'NoPermissionForTemplate'=>'אין לך הרשאה תבנית זו.',
-    'RunNow'=>'לרוץ עכשיו',
-    'ActiveAudits'=>'ביקורת פעיל',
+    'RunNow'=>'הפעל עכשיו',
+    'ActiveAudits'=>'ביקורות פעילות',
     'Questionnaire'=>'שאלון',
     'Draft'=>'טיוטה',
     'Complete'=>'להשלים',
@@ -776,10 +764,9 @@ $lang = array(
     'Closed'=>'סגור',
     'TestResult'=>'תוצאת בדיקה',
     'Summary'=>'סיכום',
-    'TestDate'=>'ותאריך הבחינה',
+    'TestDate'=>'תאריך הבחינה',
     'Attachment'=>'קובץ מצורף',
     'InvalidParams'=>'Params לא חוקי',
-    'ClearForm'=>'נקה טופס',
     'QuestionnaireDraftSuccess'=>'התשובות שלך נשמרו בהצלחה.',
     'QuestionnaireCompletedSuccess'=>'לך להשלים את השאלון הזה בהצלחה.',
     'EmailTemplateCompleteQuestionnaire' => '
@@ -822,7 +809,6 @@ $lang = array(
     'HasFile' => 'יש קובץ',
     'ClosedAuditStatus' => 'מצב ביקורת סגור',
     'ClosedAuditStatusIsRequired' => 'מצב ביקורת סגור נדרשת',
-    'Preferences' => 'העדפות',
     'DefaultLanguage' => 'שפת ברירת המחדל',
     'DefaultTimezone' => 'אזור זמן המוגדר כברירת מחדל',
     'UserSessions' => 'הפעלות משתמש',
@@ -835,7 +821,7 @@ $lang = array(
     'StartDate' => 'תאריך התחלה',
     'EndDate' => 'תאריך סיום',
     'DefaultClosedAuditStatus' => 'ברירת מחדל מצב ביקורת סגור',
-    'AutomatedNotificationsOfUnreviewedPastDueRisks' => 'אוטומטית הודעות על Unreviewed / עבר בשל סיכונים',
+    'AutomatedNotificationsOfUnreviewedPastDueRisks' => 'התראות אוטומטיות על סיכונים שלא נסקרו / שחלף מועדם',
     'SimpleRiskActionNotifications' => 'SimpleRisk פעולה הודעות',
     'WhenToNotify' => 'מתי להודיע',
     'WhoToNotify' => 'למי להודיע',
@@ -852,8 +838,6 @@ $lang = array(
     'NotifyOwnersManager' => 'הודע למנהל של הבעלים',
     'NotifyTeam' => 'תודיע לצוות המוביל',
     'NotifyAdditionalStakeholders' => 'הודע בעלי עניין נוספים',
-    'SpecificUser' => 'משתמש ספציפי',
-    'SpecificUsers' => 'משתמשים ספציפיים',
     'NotifyReviewers' => 'הודע סוקרים',
     'NotifyTester' => 'הודע לבודק',
     'SimpleRiskURL' => 'כתובת URL SimpleRisk',
@@ -884,7 +868,6 @@ $lang = array(
     'Edit' => 'ערוך',
     'Clone' => 'שיבוט',
     'SubQuestions' => 'שאלות משנה',
-    'Ordering' => 'זמנת',
     'EncryptionKeyNoExist' => 'קובץ מפתח ההצפנה אינו קיים. נא ליצור קשר עם admin.',
     'ResidualRiskScore' => 'תוצאת סיכון שיורית',
     'DefaultInitiatedAuditStatus' => 'מצב ביקורת שאותחל ברירת מחדל',
@@ -915,7 +898,7 @@ $lang = array(
     'AbleToAcceptMitigations' => 'יכולת לקבל הקלות',
     'AcceptMitigation' => 'קבל הקלה',
     'RejectMitigation' => 'דחה הקלה',
-    'MitigationAcceptedByUserOnTime' => 'ההחלטה התקבלה על ידי {$name} בתאריך {$date} בשעה {$time}',
+    'MitigationAcceptedByUserOnTime' => 'הפחתת הסיכון התקבלה על ידי {$name} בתאריך {$date} בשעה {$time}',
     'TestMailSettings' => 'בדיקת הגדרות דואר',
     'OptionName' => 'שם האפשרות',
     'OptionNameNotEmpty' => 'שם האפשרות המותאמת אישית אינו יכול להיות ריק.',
@@ -980,10 +963,10 @@ $lang = array(
     'DuplicatedOptionName' => 'שם אפשרות כפולה.',
     'DocumentHierarchy' => 'הירארכיית מסמכים',
     'Policies' => 'מדיניות',
-    'Guidelines' => 'נחיות',
+    'Guidelines' => 'הנחיות',
     'Standards' => 'סטנדרטים',
     'Procedures' => 'נהלים',
-    'General' => 'גנרל',
+    'General' => 'כללי',
     'FileUpload' => 'העלאת קובץ',
     'Mail' => 'דואר',
     'DocumentType' => 'סוג המסמך',
@@ -1004,7 +987,7 @@ $lang = array(
     'DaysBeforeTheMitigationIsDue' => 'ימים לפני הפחתת ההקלה',
     'DaysAfterTheMitigationIsDue' => 'ימים לאחר ההקלה נובע',
     'SendAnEmailWhenTheMitigationIsDue' => 'שלח דוא ל כאשר ההקלה היא בשל',
-    'NotifyMitigationOwner' => 'הודע לבעל הסיכון',
+    'NotifyMitigationOwner' => 'הודע לבעל ההפחתה',
     'NotifyMitigationTeam' => 'הודע לצוות הפחתת הסיכון',
     'NotifyRiskSubmitter' => 'הודע לשולח סיכונים',
     'NotifyRiskOwner' => 'הודע לבעל הסיכון',
@@ -1023,8 +1006,6 @@ $lang = array(
     'YouNeedToUpgradeYourSimpleRiskSubscription' => 'עליך לשדרג את המנוי SimpleRisk כדי לאפשר שימוש בתוספת זו.',
     'AutomaticallyAddNewlyAuthenticatedUsersWithDefaultRole' => 'הוסף אוטומטית משתמשים שאומתו לאחרונה עם תפקיד ברירת המחדל',
     'Disabled' => 'וגבלויות',
-    'Help' => 'עֶזרָה',
-    'Profile' => 'פּרוֹפִיל',
     'AbleToCommentRiskManagement' => 'מסוגל להגיב ניהול סיכונים',
     'AbleToCommentCompliance' => 'יכולת להגיב על ציות',
     'LanguageUpdated' => 'השפה שלך עודכנה בהצלחה.',
@@ -1041,13 +1022,13 @@ $lang = array(
     'Mitigated' => 'מוקלים',
     'Unmitigated' => 'וחלט',
     'Reviewed' => 'נסקרו',
-    'Unreviewed' => 'לא נסקור',
+    'Unreviewed' => 'לא נסקר',
     'NewRiskInstruction' => 'השלם את הטופס שלעיל כדי לתעד סיכון בתהליך ניהול סיכונים',
     'New' => 'חדש',
-    'ManagementReviewed' => 'Mgmt',
+    'ManagementReviewed' => 'אושר ע"י הנהלה',
     'Reopened' => 'נפתח',
     'Treated' => 'טופלו',
-    'Untreated' => 'טופל',
+    'Untreated' => 'לא טופל',
     'passwords' => [
         'user' => 'משתמש לא ידוע'
     ],
@@ -1063,11 +1044,10 @@ $lang = array(
     'DeleteCurrentExtensionOf' => 'מחק הרחבה נוכחית של',
     'FailedInitiate' => 'האתחול נכשל.',
     'NoPermissionForCompliance' => 'אין לך הרשאה להציג תאימות.',
-    'NoPermissionForGovernance' => 'אין לך הרשאה להציג. את הממשל',
+    'NoPermissionForGovernance' => 'אין לך הרשאה להציג את הממשל.',
     'FailedToUploadFile' => 'טעינת הקובץ נכשלה',
     'NewPasswordDoesNotMatchPolicy' => 'הסיסמה החדשה שצוינה אינה תואמת למדיניות הסיסמה שהוגדרה.',
     'RiskLevels' => 'רמות הסיכון',
-    'Scoring' => 'מְנִיָה',
     'ClassicRiskFormula' => 'נוסחת סיכון קלאסית',
     'ContributingRiskFormula' => 'נוסחה לתרומת סיכונים',
     'ImpactHasMaxChars' => 'ההשפעה צריכה להיות מקס $length תווים.',
@@ -1098,10 +1078,8 @@ $lang = array(
     'MapSuccessTeamAndGroup' => 'קבוצה של צוות וLDAP שמופו בהצלחה.',
     'MappingTeamAndLDAPGroupRequired' => 'נדרשת קבוצת קבוצות ו-LDAP עבור מיפוי.',
     'ExistingMappings' => 'מיפויים קיימים',
-    'TeamGroup' => '( <-->קבוצת צוות)</-->',
+    'TeamGroup' => '(צוות <--> קבוצה)',
     'ExistingMappingsRequired' => 'יש לבחור מיפויים קיימים.',
-    'EncryptionBackupFileExists' => 'כחלק מתהליך ההצפנה, נוצר עותק גיבוי לא מוצפן של מסד הנתונים SimpleRisk.  לאחר שווידאת שהכל הוצפן כראוי, העבר אותו למיקום מאובטח או לחץ על הלחצן כדי למחוק אותו.',
-    'BackupLocation' => 'מיקום הגיבוי',
     'FileDeletedSuccessfully' => 'הקובץ נמחק בהצלחה.',
     'ErrorDeletingFile' => 'אירעה שגיאה במחיקת הקובץ.  נא בדוק את הרשאות הקובץ ונסה שוב.',
     'MapToLDAPGroup' => 'מיפוי לקבוצת LDAP',
@@ -1131,7 +1109,7 @@ $lang = array(
     'Verified' => 'מאומת',
     'UnverifiedAssets' => 'לא מאומתת נכסים',
     'VerifyAll' => 'אמת את כל',
-    'NoPermissionForAsset' => 'אתה לא צריך אישור על ניהול נכסים.',
+    'NoPermissionForAsset' => 'אין לך הרשאה לניהול נכסים.',
     'AssetWasVerifiedSuccessfully'=>'הנכס היה מאומת בהצלחה.',
     'ThereWasAProblemVerifyingTheAsset'=>'יש בעיה באימות. הנכס.',
     'AutomaticallyVerifyNewAssets' => 'אמת אוטומטית נכסים חדשים שנוצרו באמצעות הווידג\'ט של בורר הנכסים',
@@ -1148,14 +1126,13 @@ $lang = array(
     'AssetWasUpdatedSuccessfully' => 'הנכס עודכן בהצלחה.',
     'ThereWasAProblemUpdatingTheAsset' => 'אירעה בעיה בעדכון הנכס.',
     'ImportAssetAddSucceeded' => 'וסיף{$verified_or_unverified}"נכס בשם"{$asset_name}"עם IP"{$asset_ip}"וערך"{$asset_value}".',
-    'ImportAssetAddFailed' => 'הוספת "{$verified_or_unverified}"רכוש בשם"{$asset_name}"עם IP"{$asset_ip}"וערך"{$asset_value}".',
+    'ImportAssetAddFailed' => 'נכשלה ההוספה של "{$verified_or_unverified}" רכוש בשם "{$asset_name}" עם IP "{$asset_ip}" וערך "{$asset_value}".',
     'NoOperationRequiredOnAsset' => 'לא נדרשת פעולה ברכוש בשם "{$asset_name}. כפי שהוא כבר נמצא במאגר הנתונים',
     'ImportAssetUpdateSucceeded' => 'מעודכן{$verified_or_unverified}"נכס בשם"{$asset_name}"עם IP"{$asset_ip}"וערך"{$asset_value}".',
     'ImportAssetUpdateFailed' => 'העדכון נכשל "{$verified_or_unverified}"נכס בשם"{$asset_name}"עם IP"{$asset_ip}"וערך"{$asset_value}".',
     'Unverified' => 'אומתים',
     'ExportAssets' => 'ייצוא נכסים',
     'ExportToCSVByClickingBelow' => 'ייצוא לקובץ CSV על-ידי לחיצה מתחת',
-    'RevertToUnencryptedBackup' => 'חזרה לגיבוי לא מוצפן',
     'SuccessfullyRevertedToUnencryptedBackup' => 'החזרה בהצלחה לגיבוי לא מוצפן',
     'FailedToRevertToUnencryptedBackup' => 'לא היתה אפשרות לחזור לגיבוי לא מוצפן. נא בדוק את יומני הרישום של השרת לקבלת מידע נוסף.',
     'AddNewItemNamed' => 'הוסף פריט חדש בשם',
@@ -1271,7 +1248,7 @@ $lang = array(
     'Approver' => 'מאשר',
     'ApprovalDate' => 'תאריך אישור',
     'ReviewFrequency' => 'סקירת תדר',
-    'Justification' => 'צדקה',
+    'Justification' => 'הצדקה',
     'AreYouSureYouWantToDeleteThisException' => 'האם אתה בטוח שברצונך למחוק חריג זה?',
     'YouNeedToSpecifyTheOwnerParameter' => 'עליך לציין את פרמטר הבעלים.',
     'ChooseAPolicyOrControl' => 'בחירת מדיניות או פקד',
@@ -1290,11 +1267,10 @@ $lang = array(
     'ControlExceptionName' => 'שליטה/שם חריג',
     'UnapprovedExceptionName' => 'מדיניות/פקד/שם חריג',
     'Ok' => 'אוקיי',
-    'Close' => 'קרוב',
+    'Close' => 'סגור',
     'Approve' => 'אשר',
     'ExceptionType' => 'סוג חריג',
     'PolicyName' => 'שם מדיניות',
-    'ControlName' => 'שם הפקד',
     'AreYouSureYouWantToDeleteTheseExceptions' => 'האם אתה בטוח שברצונך למחוק חריגים אלה?',
     'ExceptionsWereDeletedSuccessfully_policy' => 'חריגים של מדיניות נמחקו בהצלחה.',
     'ExceptionsWereDeletedSuccessfully_control' => 'חריגים של פקד נמחקו בהצלחה.',
@@ -1314,31 +1290,30 @@ $lang = array(
     'ExceptionAuditLogUpdateChange' => 'ערך "{$key}"השתנה מ"{$value}כדי{$new_value}"',
     'ExceptionAuditLogDelete' => 'חריג{$exception_name}"נמחק על-ידי המשתמש"{$user}".',
     'ExceptionAuditLogApprove' => 'חריג{$exception_name}"אושרה על ידי המשתמש"{$user}".',
-    'AssetsWereDiscardedSuccessfully' => 'הנכסים נמחקו בהצלחה.',
+    'AssetsWereDiscardedSuccessfully' => 'הנכסים הוסרו בהצלחה.',
     'ThereWasAProblemDiscardingTheAssets' => '. הייתה בעיה בחיקת הנכסים',
     'AssetsWereDeletedSuccessfully'=>'הנכסים נמחקו בהצלחה.',
     'ThereWasAProblemDeletingTheAssets'=>'היתה בעיה במחיקת הרכוש.',
     'AssetsWereVerifiedSuccessfully'=>'הנכסים אומתו בהצלחה.',
     'ThereWasAProblemVerifyingTheAssets'=>'. הייתה בעיה באימות הנכסים',
     'ThereWasAProblemWithAddingTheProject' => 'אירעה בעיה בהוספת הפרוייקט',
-    'ProjectName' => 'שם הפרויקט',
     'SuccessSetProject' => 'סיכון שנוסף בהצלחה לפרוייקט.',
     'SuccessCreateProject' => 'פרוייקט חדש שנוצר בהצלחה.',
     'ReviewProjectSelectionInstructions' => 'בחר פרוייקט או הקלד שם של אחד חדש.',
     'ReviewProjectSelectionPlaceholder' => 'בחירת פרוייקט או הקלדה של שם חדש',
     'RiskProjectAssociationAuditLog' => 'סיכון (מזהה:{$risk_id}) הוקצה לפרוייקט "{$project_name}"על ידי המשתמש"{$user}".',
     'ValuationLevelName' => 'שם רמת הערכה',
-    'ValuationLevelNameSizeError' => 'שם רמת הערכה "{$valuation_level_name}. זה ארוך מדי',
+    'ValuationLevelNameSizeError' => 'שם רמת ההערכה "{$valuation_level_name}" ארוך מדי.',
     'SetUsersOfTeamAuditLog' => 'משתמשי צוות "{$team_name}"הוגדר כ-"{$user_names}"על ידי המשתמש"{$username}".',
     'AddUsersToTeamAuditLog' => 'משתמשים{$user_names}"נוספו לצוות"{$team_name}"על ידי המשתמש"{$username}".',
     'RemoveUsersFromTeamAuditLog' => 'משתמשים{$user_names}"הוסרו מהקבוצה"{$team_name}"על ידי המשתמש"{$username}".',
     'AddUserToTeamsAuditLog' => 'משתמש{$user_name}"נוספה לצוותים"{$team_names}"על ידי המשתמש"{$username}".',
     'RemoveUserFromTeamsAuditLog' => 'משתמש{$user_name}"הוסר מצוותים"{$team_names}"על ידי המשתמש"{$username}".',
     'LogType' => 'סוג יומן רישום',
-    'Message' => 'ודעה',
+    'Message' => 'הודעה',
     'YouCantDownloadBecauseImportExportExtraDisabled' => 'לא ניתן להוריד מכיוון שייבוא/ייצוא נוסף אינו זמין.',
     'AuditTrailReport' => 'דוח שובל ביקורת',
-    'QuestionnaireAuditTrailReport' => 'הדוח \' נתיב ביקורת שאלון \'',
+    'QuestionnaireAuditTrailReport' => 'דוח נתיב ביקורת שאלון',
     'ExeptionAuditTrailReport' => 'דוח שביל ביקורת לפיסטור',
     'ManageAssetGroups' => 'ניהול קבוצות רכוש',
     'AssetGroups' => 'קבוצות רכוש',
@@ -1370,7 +1345,6 @@ $lang = array(
     'UpdateAssetGroupTooltip' => 'עדכן קבוצת רכוש',
     'DeleteAssetGroupTooltip' => 'מחק קבוצת רכוש',
     'RemoveAssetTooltip' => 'הסר נכס מקבוצת רכוש',
-    'ControlShortNameFieldRequired' => 'שדה \' שם קצר של שליטה \' נדרש.',
     'AffectedAssetsWidgetPlaceholder' => 'בחר נכס או קבוצת רכוש',
     'AffectedAssetsWidgetNoDropdownPlaceholder' => 'הוסף שם נכס',
     'AffectedAssetsWidgetInstructions' => 'בחר נכס או קבוצת רכוש. באפשרותך ליצור נכס חדש על-ידי הוספת שמו לרשימה.',
@@ -1382,19 +1356,19 @@ $lang = array(
     'ImportAssetGroupAddNameTaken' => 'נכשלה הוספת קבוצת הרכוש בשם "{$asset_group_name}"כפי שהשם כבר נמצא בשימוש.',
     'ImportAssetGroupNoop' => 'לא נדרש פעולה בקבוצת הרכוש בשם "{$asset_group_name}. כפי שהוא כבר נמצא במאגר הנתונים',
     'ImportAssetGroupUpdateSucceeded' => 'קבוצת רכוש מעודכנת בשם "{$asset_group_name}".',
-    'ImportAssetGroupUpdateFailed' => 'עדכון קבוצת הרכוש שנקראה "{$asset_group_name}".',
-    'ImportAssetGroupUpdateNameTaken' => 'עדכון קבוצת הרכוש שנקראה "{$asset_group_name}"כפי שהשם כבר נמצא בשימוש.',
+    'ImportAssetGroupUpdateFailed' => 'נכשל עדכון קבוצת הרכוש שנקראה "{$asset_group_name}".',
+    'ImportAssetGroupUpdateNameTaken' => 'נכשל עדכון קבוצת הרכוש שנקראה "{$asset_group_name}" כפי שהשם כבר נמצא בשימוש.',
     'GroupMaximumQuantitativeLoss' => 'הפסד כמותי מרבי של הקבוצה',
     'AssetGroupRisk' => 'הסיכון של קבוצת נכסים',
     'NonMitigationNotificationEamilDescription' => 'אתה מקבל הודעה זו מכיוון שאתה השולח, הבעלים, המנהל של הבעלים, שייך לצוות, או שהוא בעל עניין נוסף המשויך לסיכונים הבאים ללא הקלה.  תמשיך לקבל תזכורות בדואר אלקטרוני עד לתכנון הפחתת הסיכון.',
-    'Manager' => 'נהל',
+    'Manager' => 'מנהל',
     'ErrorAssetAlreadyExistsAsVerified' => 'הנכס "{$asset_name}"קיים כבר, אך עדיין לא אומת. נא בדוק את דף ניהול הנכסים שלך או פנה למנהל.',
     'NoPermissionForAssetAssetGroupList' => 'כדי לראות את רשימת המשאבים הזמינים, דרושות לך הרשאות לניהול סיכונים, נכסים או הערכות.',
-    'NoPermissionForClosingRisks'=>'אין לך את ההרשאה. לסגור סיכונים',
+    'NoPermissionForClosingRisks'=>'אין לך את ההרשאה לסגור סיכונים.',
     'QuestionnaireHasNoTemplates' => 'אין אפשרות לשלוח שאלון זה מאחר שאין לו תבניות משויכות',
     'TestAuditWasDeletedSuccessfully' => 'ביקורת בדיקה נמחקה בהצלחה.',
     'TestAuditDeleteAuditTrailMessage' => 'ביקורת בדיקה (מזהה {$test_audit_id}) נמחק על ידי המשתמש "{$user}".',
-    'CacheClearWarning' => 'לעתים קרובות המהדורות החדשות של סימפליאיסלנדית יספקו עדכונים לגיליונות סגנונות, תמונות ו-javascript שייתכן שאוחסנו במטמון על-ידי דפדפן האינטרנט שלך.  נא נקה את מטמון הדפדפן כדי לוודא שסימפאראיסלנדית נראית כמו שצריך לאחר השדרוג.',
+    'CacheClearWarning' => 'לעתים קרובות המהדורות החדשות של SimpleRisk יספקו עדכונים לגיליונות סגנונות, תמונות ו-javascript שייתכן שאוחסנו במטמון על-ידי דפדפן האינטרנט שלך.  נא נקה את מטמון הדפדפן כדי לוודא ש-SimpleRisk נראית כמו שצריך לאחר השדרוג.',
     'TestAddHeader' => 'הוסף בדיקה חדשה',
     'TestEditHeader' => 'עדכון מבחן',
     'ControlEditHeader' => 'עדכן בקרה',
@@ -1432,9 +1406,9 @@ $lang = array(
     'FirstName' => 'שם פרטי',
     'LastName' => 'שם משפחה',
     'AdvancedSearch' => 'חיפוש מתקדם',
-    'AdvancedSearchExtra' => 'מתקדם החיפוש המיותר',
+    'AdvancedSearchExtra' => 'חיפוש מתקדם תוספת',
     'ExtraToggledOn' => 'התוספת "{$extra_name}"הייתה מטותחת על ידי המשתמש"{$user}".',
-    'ExtraToggledOff' => 'התוספת "{$extra_name}"הייתה מטותחת על ידי המשתמש"{$user}".',
+    'ExtraToggledOff' => 'התוספת "{$extra_name}" כובתה על ידי המשתמש "{$user}".',
     'RiskSearch' => 'חיפוש סיכונים',
     'SearchResults' => 'תוצאות חיפוש',
     'NoSearchResults' => 'לא נמצאו תוצאות עבור השאילתה.',
@@ -1472,13 +1446,13 @@ $lang = array(
     'UpdateFailed' => 'העדכון נכשל. נא פנה אל מנהל מערכת.',
     'UpdateSuccessful' => 'העדכון הצליח. היישום, מסד הנתונים וכל התוספות המותקנות שלך מעודכנות.',
     'UpdateVersionCheck' => 'בדיקת גירסאות...',
-    'UpdateVersionCheckDone' => 'בדיקת גירסאות מתבצעת.',
+    'UpdateVersionCheckDone' => 'בדיקת גרסאות הושלמה.',
     'UpdateApplicationFilesOutOfDate' => 'קבצי יישומים אינם מעודכנים. גירסה נוכחית: "{$current}", הגירסה העדכנית ביותר:"{$latest}"',
     'UpdateApplicationFilesUpToDate' => 'קבצי יישומים מעודכנים.',
     'UpdateDatabaseOutOfDate' => 'גירסת מסד הנתונים אינה תואמת לגירסת היישום. גירסת יישום: "{$app_version}", גירסת מסד הנתונים:"{$db_version}"',
     'UpdateDatabaseMustFollowAppVersion' => 'היישום יעודכן וגירסת מסד הנתונים חייבת לפעול בהמשך. גירסת היישום העדכנית ביותר: "{$app_version}", גירסת מסד הנתונים:"{$db_version}"',
     'UpdateDatabaseUpToDate' => 'גירסת מסד הנתונים תואמת את גירסת היישום, אין צורך בעדכון.',
-    'UpdateInstalledExtrasOutOfDate' => 'תוספת (s) מעודכנת. יש לעדכן את התוספות הבאות: "{$extrasToUpdate}"',
+    'UpdateInstalledExtrasOutOfDate' => 'תוספות לא מעודכנות. יש לעדכן את התוספות הבאות: "{$extrasToUpdate}"',
     'UpdateInstalledExtrasUpToDate' => 'התוספות מעודכנות.',
     'UpdateNoUpdateRequired' => '. הכל מעודכן אין צורך בעדכון.',
     'UpdateExtraInvalidName' => 'שם נוסף לא חוקי "{$name}".',
@@ -1491,21 +1465,18 @@ $lang = array(
     'BackupStart' => 'התחלת הגיבוי.',
     'BackupFailed' => 'הגיבוי נכשל. נא פנה אל מנהל מערכת.',
     'BackupSuccessful' => 'הגיבוי הצליח. היישום, מסד הנתונים וכל התוספות המותקנות שלך מגובים.',
+    'BackupLocation' => 'מיקום הגיבוי',
     'BackupCheckingPreRequisites' => 'בדיקת הרשאות, הגדרת ספריות.',
     'BackupCheckingPreRequisitesDone' => 'בדיקות הרשאות שהועברו, הספריות הנדרשות נוצרו בהצלחה.',
     'BackupApplicationFiles' => 'גיבוי קבצי היישומים הופעל.',
     'BackupApplicationFilesDone' => 'קבצי היישום גובו בהצלחה',
     'BackupDatabase' => 'גיבוי מסד הנתונים הופעל.',
     'BackupDatabaseDone' => 'מסד הנתונים גובו בהצלחה.',
-    'BackupDatabaseFailed' => 'גיבוי מסד הנתונים נכשל. אנא בדוק את יומן SimpleRisk לקבלת פרטים.',
-    'WindowsNotSupported' => 'SimpleRisk אינו תומך עוד ב-Windows נכון לגרסה 20260421-001. אנא העבר לשרת מבוסס לינוקס.',
-    'WindowsUpgradeHalted' => 'פעולה זו אינה יכולה לפעול בשרת Windows. SimpleRisk אינו תומך עוד ב-Windows נכון לגרסה 20260421-001. אנא העבר לשרת מבוסס לינוקס.',
     'BackupDirectoryNotWriteable' => 'את{$location}"ספרייה אינה ניתנת לכתיבה על-ידי משתמש האינטרנט.',
     'BackupFailedToCreateDirectories' => 'אין אפשרות ליצור את מבנה הספריות הדרוש ב-"{$location}".',
     'AreYouSureYouWantToDeleteSelction' => 'האם אתה בטוח שברצונך למחוק את הבחירה?',
     'FieldIsRequired' => 'שדה _XXX_ נדרש',
     'NoPermissionForAssessments' => '. אין לך אישור להערכות',
-    'MissingOrInvalidTrackingID' => 'מזהה מעקב חסר או לא תקין.',
     'Encrypted' => 'מוצפנים',
     'AreYouSureYouWantToApproveThisResult' => 'האם אתה בטוח שברצונך לאשר תוצאה זו?',
     'AreYouSureYouWantToRejectThisResult' => 'האם אתה בטוח שברצונך לדחות תוצאה זו?',
@@ -1540,7 +1511,6 @@ $lang = array(
     'AddNewQuestion' => 'הוסף שאלה חדשה',
     'ControlAudit' => 'ביקורת בקרה',
     'AssociatedControls' => 'פקדים משויכים',
-    'AssociatedFrameworks' => 'מסגרות משויכות',
     'Analysis' => 'ניתוח',
     'TotalNumber' => 'מספר כולל',
     'CumulativeScore' => 'ציון מצטבר',
@@ -1563,8 +1533,7 @@ $lang = array(
     'ChangedFrom' => 'השתנה מ-',
     'ChangedTo' => 'השתנה ל',
 
-    'Jira' => 'כניסה',
-    'JiraIntegrationExtra' => 'אינטגרציית ג\'ירה אקסטרה',
+    'Jira' => 'Jira',
 
     'JiraWebhookAuthTokenIsInvalid' => 'אסימון האימות של הרשת Jira שסופקו ("{$token}") אינו חוקי!',
     'JiraWebhookNoBodyPosted' => 'האינטרנט של כניסה לא הודעה על הגופה! אנא צרו קשר עם support@simplerisk.com',
@@ -1597,7 +1566,7 @@ $lang = array(
     'JiraProjectKeyForNewIssueIsRequired' => 'מפתח מפתח פרוייקט נדרש!',
     'JiraProjectKeyForNewIssueIsInvalid' => 'לא ניתן למצוא פרוייקט עם המפתח שצוין!',
     'JiraProjectKeyForNewIssueIsMalformed' => 'מפתח הפרוייקט שצוין מכיל תווים לא חוקיים.',
-    'JiraIssueTypeForNewIssue' => 'סוג ניפוק',
+    'JiraIssueTypeForNewIssue' => 'סוג בעיה',
     'JiraIssueTypeForNewIssueInstructions' => 'בחר באפשרות "משימה"! שלב זה נדרש כפי שאנחנו לא יכולים לזהות את "משימה" סוג בעיה עם 100% ודאות מבוסס על הנתונים מופע Jira מספק. אם עבור השימוש שלך-במקרה אתה צריך תמיכה עבור סוגי בעיות אחרות גם, נא ליצור קשר עם support@simplerisk.com.',
     
     'JiraCreateRiskOnNewIssue' => 'אפשר סימפלאיסלנדית ליצור סיכון חדש כאשר בעיה חדשה Jira מזוהה.',
@@ -1639,10 +1608,10 @@ $lang = array(
     'JiraIssueKeyIsInvalid' => 'הבעיה אינה קיימת או שאין לך הרשאה לראותו.',
     'JiraIssueKeyIsAlreadyInUse' => 'מפתח הניפוק שצוין Jira כבר מוקצה לסיכון (ID: {$risk_id}).',
 
-    'JiraFailedToSynchronizeRiskWithIssue' => 'סנכרון הסיכון (מזהה: {$risk_id}) עם בעיה Jira (מפתח: {$issue_key}).',
+    'JiraFailedToSynchronizeRiskWithIssue' => 'כשל בסנכרון הסיכון (מזהה: {$risk_id}) עם בעיה Jira (מפתח: {$issue_key}).',
     'JiraRiskUpdatedFromJiraAuditLog' => 'סיכון (מזהה: {$risk_id}) מעודכן בנושא Jira (מפתח: {$issue_key}). שדה{$field}"השתנה מתוך"{$from}כדי{$to}".',
     
-    'IDNumber' => 'זהה #',
+    'IDNumber' => 'מזהה #',
     'UCFAPIKeyIsRequired' => 'המפתח החוקי UCF API נדרש!',
     'UCFConnectionSettingsSuccess' => 'הגדרות החיבור שלך חוקיות והתחברנו בהצלחה לשרת UCF.',
     'UCFConnectionSettingsWarning' => 'הגדרות החיבור שלך אינן חוקיות ואין באפשרותנו לקיים תקשורת עם שרת UCF',
@@ -1650,7 +1619,7 @@ $lang = array(
     'ViewActiveAudits'=>'הצג ביקורות פעילים',
     'ViewPastAudits'=>'הצג ביקורות קודמות',
     'Uninstall' => 'הסיר',
-    'SimpleriskUsers' => 'סימפראיסלנדית משתמשים',
+    'SimpleriskUsers' => 'משתמשי Simplerisk',
     'QuestionnaireCompletedAuditLogByUser' => 'שאלון{$questionnaire_name}"הושלם על ידי המשתמש"{$contact_name}".',
     'QuestionnaireDraftAuditLogByUser' => 'שאלון{$questionnaire_name}"נשמרה כטיוטה על-ידי המשתמש"{$contact_name}".',
     'Internal' => 'פנימי',
@@ -1665,10 +1634,10 @@ $lang = array(
     'AuthenticatedProxy' => 'פרוקסי מאומת',
     'ProxyUsername' => 'שם משתמש פרוקסי',
     'ProxyPassword' => 'סיסמה פרוקסי',
-    'SimpleRiskExtras' => 'תוספות סימפראיסלנדי',
+    'SimpleRiskExtras' => 'SimpleRisk תוספות',
     'ColumnSelections' => 'בחירות עמודה',
     'GroupAndFilteringSelections' => 'בחירות קבוצתיות וסינון',
-    'Hyperlink' => 'יפר-קישור',
+    'Hyperlink' => 'היפר-קישור',
     'URL' => 'URL',
     'AssetTeams'=>'צוות הנכס (ים)',
     'AssetSiteLocation'=>'אתר נכס/מיקום',
@@ -1679,7 +1648,7 @@ $lang = array(
     'AlphabeticalOrder'=>'סדר אלפביתי',
     'UserReports'=>'דוחות משתמשים',
     'UsersHeader'=>'משתמשים',
-    'Usernames'=>'שמות',
+    'Usernames'=>'שמות משתמש',
     'TeamsHeader'=>'צוותים',
     'TeamNames'=>'שמות קבוצות',
     'YouNeedTeamSeparationEnabled' => 'עליך להפעיל את הפרדת הצוות בנוסף עבור פונקציונליות זו.',
@@ -1715,14 +1684,12 @@ $lang = array(
     'CustomFieldUpdateFailed' => 'עדכון שדה מותאם אישית נכשל.',
     'IncidentManagement' => 'ניהול אירועים',
     'IncidentManagementExtra' => 'ניהול אירועים אקסטרה',
-    'IncidentManagementNotifications' => 'הודעות ניהול אירועים',
-    'NotificationSettingsUpdated' => 'הגדרות ההתראות עודכנו.',
     'Incident' => 'תקרית',
     'NewIncident' => 'תקרית חדשה',
-    'Preparation' => 'כנה',
+    'Preparation' => 'הכנה',
     'Identification' => 'זיהוי',
     'Response' => 'תגובה',
-    'Containment' => 'לימה',
+    'Containment' => 'הכלה',
     'Eradication' => 'מיגור',
     'Recovery' => 'שחזור',
     'LessonsLearned' => 'שיעורים שנלמדו',
@@ -1743,14 +1710,14 @@ $lang = array(
     'BusinessUnits' => 'יחידות עסקיות',
     'CreateNewBusinessUnit' => 'צור יחידה עסקית חדשה',
     'Create' => 'יצור',
-    'SelectedTeams' => 'נבחרות נבחרות',
+    'SelectedTeams' => 'צוותים נבחרים',
     'AvailableTeams' => 'הצוותים הזמינים',
     'BusinessUnitUpdate' => 'עדכן יחידה עסקית',
     'BusinessUnitCreateAuditLog' => 'משתמש{$user}"היחידה העסקית שנוצרה"{$business_unit_name}"(מזהה:{$id}) עם צוותים ראשוניים של "{$teams_to}".',
     'BusinessUnitUpdateAuditLog' => 'משתמש{$user}"צוותים מעודכנים של יחידה עסקית"{$business_unit_name}"(מזהה:{$id}מן{$teams_from}כדי{$teams_to}" ({$team_changes}).',
     'BusinessUnitDeleteAuditLog' => 'משתמש{$user}"היחידה העסקית שנמחקה"{$business_unit_name}"(מזהה:{$id}).',
-    'BusinessUnitUpdateAuditLogRemoved' => 'וסר{$teams_removed}"',
-    'BusinessUnitUpdateAuditLogAdded' => 'וסיף{$teams_added}"',
+    'BusinessUnitUpdateAuditLogRemoved' => 'הוסר "{$teams_removed}"',
+    'BusinessUnitUpdateAuditLogAdded' => 'נוסף "{$teams_added}"',
     'BusinessUnitRemoveTeamAuditLog' => 'משתמש{$user}"הוסר צוות"{$team_name}"(מזהה:{$team_id}) מהיחידה העסקית{$business_unit_name}"(מזהה:{$business_unit_id}).',
     'BusinessUnitCreatedSuccessfully' => 'נוצרה בהצלחה יחידה עסקית חדשה.',
     'BusinessUnitUpdatedSuccessfully' => 'היחידה העסקית שעודכנה בהצלחה.',
@@ -1770,12 +1737,11 @@ $lang = array(
     'DeleteBusinessUnitTooltip' => 'מחק יחידה עסקית',
     'RemoveTeamTooltip' => 'הסרת צוות מהיחידה העסקית',
     'YouNeedToSpecifyATeamParameter' => 'עליך לציין פרמטר \' צוות \'.',
-    'OrganizationalHierarchyExtra' => 'הירארכיה ארגונית נוספת',
     'Source' => 'מקור',
     'SourceType' => 'סוג מקור',
     'DetectedBy' => 'זוהתה על-ידי',
     'Direction' => 'כיוון',
-    'Reporter' => 'כתב',
+    'Reporter' => 'מדווח',
     'FunctionalImpact' => 'השפעה פונקציונלית',
     'Functional' => 'פונקציונלי',
     'InformationImpact' => 'השפעת מידע',
@@ -1807,7 +1773,7 @@ $lang = array(
     'NewEvidence' => 'ראיות חדשות',
     'DeleteEvidence' => 'מחיקת ראיות',
     'EditEvidence' => 'עריכת ראיות',
-    'EvidenceLabel' => 'חברת ראיות',
+    'EvidenceLabel' => 'תווית ראיות',
     'IdentifyingInformation' => 'מידע מזהה',
     'CollectedOn' => 'נאסף ב',
     'CollectedBy' => 'נאסף על-ידי',
@@ -1893,7 +1859,7 @@ $lang = array(
     'JiraCopyDescriptionToInstructions' => 'בחר באיזה שדה יש להעתיק את תיאור סוגיית Jira.',
     'JiraScanProjectsForNewIssuesIsRequired' => 'השדה "פרוייקטי סריקה" נדרש בעת פעולה של סינון!',
     'JiraCreateRiskAs' => 'צור סיכון כ',
-    'JiraCreateRiskAsInstructions' => 'בחר איזה משתמש יהיה השולש של הסיכונים שנוצרו',
+    'JiraCreateRiskAsInstructions' => 'בחר איזה משתמש יהיה המגיש של הסיכונים שנוצרו',
     'JiraCreateIssueAsIsRequired' => 'נדרש שדה "צור סיכון בשם"!',
     'FixFileEncodingIssues' => 'פתרון בעיות בקידוד קבצים',
     'FixFileEncodingIssuesDisclaimer' => 'זיהינו בעיה אפשרית עם קבצים המאוחסנים במסד הנתונים SimpleRisk שלך. הטבלה שלהלן תהראה לך אילו פריטים יש קבצים פגומים ויש לתקן ם. נא הבדוק את הפריטים המפורטים והעלה מחדש את הקבצים המושפעים.',
@@ -1923,7 +1889,7 @@ $lang = array(
     'DateRange' => 'טווח תאריכים',
     'Average' => 'ממוצע',
     'ResolutionTarget' => 'יעד רזולוציה (ימים)',
-    'Playbooks' => 'ספרי משחקים',
+    'Playbooks' => 'פלייבוקים',
     'AddNewPlaybook' => 'הוסף ספר מהלכים חדש',
     'SelectAnExistingPlaybook' => 'בחר ספר מהלכים קיים',
     'AreYouSureYouWantToDeleteThisPlaybook' => 'האם אתה בטוח שברצונך למחוק ספר מהלכים זה?',
@@ -1936,9 +1902,9 @@ $lang = array(
     'AreYouSureYouWantToDeleteThisPlaybookAction' => 'האם אתה בטוח שברצונך למחוק את פעולת פליי-פליי זו?',
     'PlaybookAction' => 'משחק פלייבוק',
     'PlaybookCategory' => 'קטגוריית ספר פליי',
-    'ContainmentPlaybookCategories' => 'קטגוריות קטגוריות פליימר',
+    'ContainmentPlaybookCategories' => 'קטגוריות ספר המשחקים להכלה',
     'EradicationPlaybookCategories' => 'קטגוריות של חוברות השמדה',
-    'RecoveryPlaybookCategories' => 'קטגוריות משחקי השחזור',
+    'RecoveryPlaybookCategories' => 'קטגוריות ספר המשחקים לשחזור',
     'Forbidden' => 'אסור',
     'LastTestResult' => 'תוצאת המבחן האחרונה',
     'Selected' => 'נבחר',
@@ -1952,7 +1918,6 @@ $lang = array(
     'ConnectivityVisualizer' => 'Visualizer קישוריות',
     'ThereAreNoConnectionsAssociatedWithTheSelectedValue' => 'אין קשרים המשויכים לערך שנבחר',
     'InvalidSimpleriskBaseUrl' => 'כתובת אתר בסיסית לא חוקית של SimpleRisk!',
-    'Questionnaire' => 'שאלון',
     'FileEncodingFixHeader_risk' => 'ניהול סיכונים',
     'FileEncodingFixHeader_compliance' => 'ממשל ותאימות',
     'FileEncodingFixHeader_questionnaire' => 'הערכות',
@@ -1973,7 +1938,7 @@ $lang = array(
     'NoAddProjectPermission' => 'אין לך הרשאה להוסיף פרויקט.',
     'ImportUsers' => 'ייבא משתמשים',
     'ExportUsers' => 'ייצא משתמשים',
-    'Lockout' => 'הַשׁבָּתָה',
+    'Lockout' => 'נעילה',
     'DynamicRiskReportDisplay' => 'תצוגת דוח סיכונים דינמי',
     'PlanMitigationDisplay' => 'תוכנית תצוגת הקלה',
     'PerformReviewsDisplay' => 'בצע תצוגת ביקורות',
@@ -2011,8 +1976,6 @@ $lang = array(
     'TemplateAssignment' => 'הקצאת תבנית',
     'PleaseSelectUser' => 'אנא בחר משתמש',
     'AboutThisPage' => 'אודות דף זה',
-    'UserGuide' => 'מדריך למשתמש',
-    'AdministratorGuide' => 'מדריך למנהל',
     'ProjectStatus' => 'סטטוס הפרויקט',
     'SupportPortal' => 'פורטל תמיכה',
     'WebSupport' => 'תמיכה באינטרנט',
@@ -2040,7 +2003,7 @@ $lang = array(
     'AccessVector' => 'וקטור גישה',
     'AccessComplexity' => 'מורכבות גישה',
     'MaturityAudit' => 'ביקורת בגרות',
-    'DefaultCurrentMaturity' => 'פירעון נוכחי ברירת מחדל',
+    'DefaultCurrentMaturity' => 'בגרות נוכחית כברירת מחדל',
     'DefaultDesiredMaturity' => 'מועד ברירת מחדל לפדיון רצוי',
     'ComplianceAssessment' => 'הערכת תאימות',
     'MaturityAssessment' => 'הערכת בגרות',
@@ -2107,7 +2070,7 @@ $lang = array(
     'SaveAndRunNow' => 'שמור והפעל עכשיו',
     'ImportVulnerabilitiesByScore' => 'ייבא אוטומטית נקודות תורפה עם ציון גדול או שווה ל',
     'TriageVulnerabilitiesByScore' => 'בדוק אוטומטית פגיעויות עם ציון גדול או שווה לו',
-    'UploadArtifact' => 'העלה Artifact',
+    'UploadArtifact' => 'העלה ארטיפקט',
     'ControlType' => 'סוג בקרה',
     'ControlStatus' => 'סטטוס בקרה',
     'HighestInherentRisk' => 'הסיכון הגלום הגבוה ביותר',
@@ -2186,8 +2149,7 @@ $lang = array(
     'GraphicalRiskAnalysis' => 'ניתוח סיכונים גרפי',
     'ResetMitigations' => 'אפס את הצמצום',
     'ResetReviews' => 'אפס ביקורות',
-	'EnableEncryptionDebugLogging' => 'אפשר רישום באגים נוסף של מסד נתונים מוצפן',
-    'Log' => 'עֵץ',
+    'Log' => 'יומן',
     'Date' => 'תַאֲרִיך',
     'Platform' => 'פּלַטפוֹרמָה',
     'NotifyOnNewDocument' => 'הודע על מסמך חדש',
@@ -2246,7 +2208,7 @@ $lang = array(
     'IncidentManagementNotification_Notify_reporter' => 'הודע לכתב',
     'IncidentManagementNotification_Notify_owner' => 'הודע הבעלים',
     'IncidentManagementNotification_Notify_additional_stakeholders' => 'הודע בעלי עניין נוספים',
-    'IncidentManagementNotification_Notify_team' => 'תודיע לצוות המוביל',
+    'IncidentManagementNotification_Notify_team' => 'הודע לצוות',
     'IncidentManagementNotification_EmailSubject_new' => 'אירוע חדש דווח',
     'IncidentManagementNotification_EmailSubject_status_changed' => 'סטטוס האירוע השתנה',
     'IncidentManagementNotification_EmailSubject_summary_changed' => 'סיכום האירוע השתנה',
@@ -2278,10 +2240,8 @@ $lang = array(
     'SSLSecurityCheckWarning' => 'אזהרה: SSL מונע התקפות MITM והשבתת האפשרויות הבאות היא דאגת אבטחה',
     'EnableSSLCertificateCheckSimpleRisk' => 'אפשר בדיקות אישורי SSL עבור בקשות API של SimpleRisk',
     'EnableSSLCertificateCheckExternal' => 'אפשר בדיקות אישורי SSL עבור אתרים חיצוניים',
-    'EnableAPIv1Endpoints' => 'הפעלת נקודות קצה של API v1 (הוצא משימוש)',
-    'EnableAPIv1EndpointsHelp' => 'גרסה 1 של ה-API הוצא משימוש. השאר את האפשרות מושבתת אלא אם כן יש לך אינטגרציה הדורשת זאת. /api/v2/ אינו מושפע מהגדרה זו והוא זמין תמיד.',
     'EnableSSLCertificateCheckVM' => 'אפשר בדיקת אישורי SSL לניהול פגיעות',
-    'DuoToopherRemoved' => 'Duo נתמך זמן רב יותר על ידי SimpleRisk ישירות. במקום זאת, עברנו למאמת TOTP גנרי. אנא הגדר את המאמת החדש שלך למטה.',
+    'DuoToopherRemoved' => 'Duo אינו נתמך עוד ישירות על ידי SimpleRisk. במקום זאת, עברנו למאמת TOTP גנרי. אנא הגדר את המאמת החדש שלך למטה.',
     'ProtectYourSimpleRiskAccount' => 'הגן על חשבון SimpleRisk שלך',
     '2FADescription' => 'אימות דו-גורמי משפר את האבטחה של חשבונך על ידי שימוש במכשיר משני כדי לאמת את זהותך. זה מונע מאף אחד מלבדך לגשת לחשבון שלך, גם אם הם יודעים את הסיסמה שלך.',
     '2FAStep1' => 'שלב 1 - סרוק את הקוד למטה עם אפליקציית 2FA כגון Google Authenticator',
@@ -2300,9 +2260,9 @@ $lang = array(
     'SelectionSaveSuccessful' => 'הבחירה נשמרה בהצלחה',
     'AssetVerifiedLog' => 'הנכס "{$name}" אומת על ידי המשתמש "{$user}".',
     'AssetDeletedLog' => 'הנכס "{$name}" נמחק על ידי המשתמש "{$user}".',
-    'AssetDiscardedLog' => 'הנכס "{$name}" נמחק על ידי המשתמש "{$user}".',
+    'AssetDiscardedLog' => 'הנכס "{$name}" נדחה על ידי המשתמש "{$user}".',
     'ConfirmVerifyAllAssets' => 'האם אתה בטוח שברצונך לאמת כל נכס לא מאומת?',
-    'ConfirmDiscardAllAssets' => 'האם אתה בטוח שברצונך למחוק כל נכס לא מאומת?',
+    'ConfirmDiscardAllAssets' => 'האם אתה בטוח שברצונך לדחות כל נכס לא מאומת?',
     'ConfirmDeleteAllAssets' => 'האם אתה בטוח שברצונך למחוק כל נכס מאומת?',
     'EditFailed_NoPermission' => 'העריכה נכשלה, אין הרשאה.',
     'EditFailed_FieldMustBeUnique' => 'העריכה נכשלה, הערך של השדה "{$field}" חייב להיות ייחודי.',
@@ -2342,7 +2302,7 @@ $lang = array(
     'AutomaticallySendAssessmentResults' => 'שלח אוטומטית תוצאות הערכה לכל אנשי הקשר להערכה עם השלמתה.',
     'ResendAssessment' => 'תזמן ושלח הערכה זו כל {$day} ימים.',
     'NotifyNotCompleteAssessment' => 'הודע לאנשי קשר להערכה כל {$day} ימים עד להשלמתו.',
-    'QuestionnaireNotCompleteEmailTemplate' => 'תבנית דוא"ל לא הושלמה שאלון',
+    'QuestionnaireNotCompleteEmailTemplate' => 'תבנית אימייל לשאלון שלא הושלם',
     'RiskAssessmentQuestionnaireNotCompleted' => 'שאלון הערכת סיכונים לא הושלם',
     'SaveAndSend' => 'שמור ושלח',
     'NoPermissionForAddAssessmentContacts' => 'אין לך הרשאה להוסיף אנשי קשר להערכה',
@@ -2376,11 +2336,11 @@ $lang = array(
     'AddMapping' => 'הוסף מיפוי',
     'CreateSuccess_asset' => 'הנכס "{$name}" נוצר בהצלחה על ידי המשתמש "{$user}".',
     'AreYouSureYouWantToDeleteTheSelectedControls' => 'האם אתה בטוח שברצונך למחוק את הפקדים שנבחרו?',
-    'ControlMappedToDifferentMaturitiesOnAsset' =>'שליטה ממופה לפירעויות שונות על אותו נכס',
+    'ControlMappedToDifferentMaturitiesOnAsset' =>'בקרה ממופה לרמות בגרות שונות על אותו נכס',
     'Advanced_Search_no_results_1' => 'נראה שאין תוצאות עבור השאילתה שלך.',
     'Advanced_Search_no_results_2' => 'בדוק שוב את החיפוש שלך אם יש שגיאות הקלדה, שגיאות כתיב או נסה מונח חיפוש אחר.',
     'IncidentsPerDay' => 'תקריות ליום',
-    'CurrentVsDesiredMaturity' => 'בגרות נוכחית לעומת רצויה על ידי משפחת בקרה',
+    'CurrentVsDesiredMaturity' => 'בגרות לפי משפחת בקרה',
     'RiskDistribution' => 'חלוקת סיכונים',
     'RiskDistributionDescription'=>'תרשימי העוגה שלעיל מסייעים להראות את התפלגות הסיכונים בין רמות הסיכון השונות עבור הסיכון המובנה והשיורי כאחד. אנחנו יכולים להשתמש בשתי העוגות האלה כדי להראות התקדמות במאמצי הפחתת הסיכונים שלנו. אם עוגת הסיכון השיורי מציגה פרוסות גדולות של סיכונים גבוהים מאוד או גבוהים, זה יכול להיות סימן לכך שהארגון שלך לוקח על עצמו יותר מדי סיכונים ונדרשים מאמצי הפחתה נוספים.',
     'EnableTabs' => 'אפשר כרטיסיות',
@@ -2422,10 +2382,6 @@ $lang = array(
     'AnthropicConnectionWarning' => 'אישורים לא חוקיים! לא ניתן להתחבר לאנתרופיק עם מפתח ה-API.',
     'ResetAPIKey' => 'אפס מפתח API',
     'ArtificialIntelligence' => 'בינה מלאכותית',
-    'ArtificialIntelligenceDesc' => 'הגדר את חיבור ספק הבינה המלאכותית ואת שאלות ההקשר המבססות תגובות של בינה מלאכותית עבור מופע SimpleRisk זה.',
-    'ProviderConfiguration' => 'תצורת ספק',
-    'ContextQuestions' => 'שאלות הקשר',
-    'AIProviderNotConfiguredWarning' => 'ספק הבינה המלאכותית אינו מוגדר. לא ניתן לייצר תוצאות בזמן אמת עד שתגדיר את הספק ומפתח ה-API בכרטיסייה תצורת ספק.',
     'ArtificialIntelligenceAdditionalContext' => 'הקשר נוסף של בינה מלאכותית',
     'ArtificialIntelligenceAdditionalContextDescription' => 'המידע הבא הוא אופציונלי, אך יספק לבינה המלאכותית את ההקשר הנוסף הדרוש לה כדי לייצר תוצאות משמעותיות יותר. כל המידע המוזן להלן יישלח לספק הבינה המלאכותית שתצורתו נקבעה לצורך ניתוח על מנת להתאים את התגובות לארגון שלך.',
     'OrganizationContext' => 'הקשר ארגון',
@@ -2456,7 +2412,7 @@ $lang = array(
     'EditModeInformation' => 'הפעל את מצב עריכה ערוך את הפריסה. כיבוי זה לא ישמור אוטומטית את הפריסה.',
     'InvalidLayout' => 'פריסה לא חוקית!',
     'InvalidLayoutOnlyCustomAllowedAsDefault' => 'פריסה לא חוקית! ניתן לשמור רק פריסות מותאמות אישית כברירת מחדל.',
-    'LayoutSaved' => 'הפריסה נשמרה!',
+    'LayoutSaved' => 'פריסת לוח המחוונים שלך נשמרה.',
     'DefaultLayout' => 'פריסת ברירת מחדל',
     'DefaultLayoutInformation' => 'מגדיר פריסה זו כברירת מחדל, לשימוש במקום זו שמספקת SimpleRisk עבור משתמשים שאין להם ערכת פריסה מותאמת אישית. אתה יכול להגדיר רק פריסה מותאמת אישית שמורה ולא ריקה כברירת מחדל. אם פריסה המסומנת כברירת מחדל תשוחזר לפריסת ברירת המחדל, היא תשחזר אותה לברירת המחדל שסיפקה SimpleRisk.',
     'LayoutDefaultStatusUpdated' => 'סטטוס ברירת המחדל של הפריסה עודכן.',
@@ -2465,7 +2421,7 @@ $lang = array(
     'DefaultLayoutRestored' => 'פריסת ברירת המחדל שוחזרה בהצלחה!',
     'SavedLayoutRestored' => 'פריסה שמורה שוחזרה בהצלחה!',
     'ConfirmRestoreLayout' => 'אתה בטוח? תאבד את השינויים שבוצעו בפריסה זו.',
-    'ConfirmDisableEditModeWithPendingChanges' => 'יש לך שינויים שלא נשמרו שתאבד ביציאה מהדף. האם אתה בטוח שברצונך להשבית את \'מצב עריכה\' ואולי לשכוח את שמירת השינויים שלך?',
+    'ConfirmDisableEditModeWithPendingChanges' => 'יש לך שינויים שלא נשמרו בלוח המחוונים הזה. האם למחוק אותם ולהפסיק את העריכה?',
     'ConfirmSave' => 'שמירת שינויים אלה תחליף את הפריסה שנשמרה בעבר. האם אתה בטוח שאתה רוצה להמשיך?',
     'ConfirmSaveAdminDefault' => 'פריסה זו מוגדרת כברירת מחדל עבור סוג פריסה זה. שמירת שינויים אלה תשנה את הפריסה עבור כל המשתמשים שאין להם פריסה מותאמת אישית עבור סוג פריסה זה. האם אתה בטוח שאתה רוצה להמשיך?',
     'RisksByMonth' => 'סיכונים לפי חודש',
@@ -2481,7 +2437,7 @@ $lang = array(
     'InvalidDataPleaseContactAdministrator' => 'נתונים לא חוקיים! אנא צור קשר עם מנהל מערכת.',
     'EditWidgetText' => 'עריכת טקסט הווידג\'ט',
     'UnauthorizedAccessInAPI' => 'גישה לא מורשית. למשתמש המאומת אין הרשאות מתאימות.',
-    'FAIRRiskAssessment' => 'הערכת סיכונים הוגנת',
+    'FAIRRiskAssessment' => 'הערכת סיכונים FAIR',
     'RiskScenario' => 'תרחיש סיכון',
     'Assumptions' => 'הנחות',
     'MonteCarloSimulation' => 'סימולציית מונטה קרלו',
@@ -2496,7 +2452,6 @@ $lang = array(
     'SecondaryLossEventFrequency' => 'תדירות אירועי אובדן משניים',
     'SecondaryLossMagnitude' => 'גודל הפסד משני',
     'Productivity' => 'פִּריוֹן',
-    'Response' => 'תגובה',
     'Replacement' => 'תַחֲלִיף',
     'CompetitiveAdvantage' => 'יתרון תחרותי',
     'FinesAndJudgements' => 'קנסות ופסקי דין',
@@ -2568,7 +2523,7 @@ $lang = array(
     'DocumentControlMappingHelp'=>'דוח זה מציג את כל המיפויים בין מסמכים לבקרות',
     'DocumentID' => 'מזהה מסמך',
     'Score' => 'צִיוּן',
-    'TFIDFSimilarity' => 'דמיון בין TF לצה"ל',
+    'TFIDFSimilarity' => 'דמיון TF-IDF',
     'MatchingKeywords' => 'מילות מפתח תואמות',
     'AIMatch' => 'התאמת בינה מלאכותית',
     'AIConfidence' => 'אמון בבינה מלאכותית',
@@ -2590,7 +2545,6 @@ $lang = array(
     'NotAMatch' => 'לא התאמה',
     'ReviewManually' => 'סקירה ידנית',
     'ResponsesToQuestionsWithLinkedControlsWillUpdateTheControlTypeTo' => 'תשובות לשאלות עם פקדים מקושרים יעדכנו את סוג הפקד ל-',
-    'DueDate' => 'תאריך יעד',
     'AuditLog_IncidentUpdated' => 'התקרית "{$incident_summary}"(מזהה: {$incident_id}) עודכנה על ידי המשתמש "{$user_name}". שינויים: {$changes}.',
     'AnswersWillBeAutoSavedOnAssessments' => 'התשובות יישמרו אוטומטית בהערכות',
     'SecondsAssessmentsAreAutoSaved' => 'הערכות של שניות נשמרות אוטומטית',
@@ -2598,7 +2552,6 @@ $lang = array(
     'NotifyAuditInitiateSubject' => 'ביקורת החלה',
     'BypassPendingRisksAndCreateRisksImmediatelyAfterAssessmentCompletion' => 'עקיפת \'סיכונים ממתינים\' ויצירת סיכונים מיד לאחר השלמת ההערכה',
     'AssociatedExceptions' => 'חריגים קשורים',
-    'Required' => 'דָרוּשׁ',
     'EmailInstructions' => 'הוראות בדוא"ל',
     'ApproveSelectedVulnerabilities' => 'אשר פגיעויות שנבחרו',
     'RejectSelectedVulnerabilities' => 'דחה פגיעויות שנבחרו',
@@ -2646,70 +2599,11 @@ $lang = array(
     'EnableLoggingDebug' => 'ניפוי באגים: מידע אבחוני מפורט למפתחים.',
     'QueueMonitor' => 'ניטור תור',
     'PleaseEnterAValidTimezone' => 'אנא הזן אזור זמן תקין.',
-    'TFIDFMatch' => 'קרב TF-צה"ל',
+    'TFIDFMatch' => 'התאמת TF-IDF',
     'CompletionDate' => 'תאריך השלמה',
-    'AutoProcessSCFUpdates' => 'עבד באופן אוטומטי מהדורות חדשות של Secure Controls Framework (SCF)',
-    'AddNewControls' => 'הוסף פקדי SCF חדשים',
-    'UpdateExistingControls' => 'עדכון בקרות SCF קיימות',
-    'DeleteRemovedControls' => 'מחיקת פקדי SCF שהוסרו',
-    'CreateEvidenceRequests' => 'צור בקשות ראיות עבור בקרות SCF',
-    'SelectSCFFrameworks' => 'בחר מסגרות SCF',
-    'SCFReleaseProcessing' => 'עיבוד שחרור SCF',
-    'NotFrameworkDescription' => 'הווידג\'ט למטה מציג את כל הכותרות שנמצאו בגיליון האלקטרוני של Secure Controls Framework (SCF). השתמש בו כדי לבחור אילו עמודות מכילות נתונים של frameworks לעומת נתונים שאינם של frameworks.',
-    'Note' => 'פֶּתֶק',
-    'AISettingsNote' => 'הפעלת סיוע בבינה מלאכותית תשלח נתונים ל-Anthropic לניתוח בתוכנית ה-LLM שלהם, באמצעות מפתח ה-API של Anthropic, על מנת לספק לכם תוצאות מותאמות אישית.',
-    'EnableAIAssistanceForControlData' => 'הפעלת סיוע של בינה מלאכותית עבור נתוני בקרה',
-    'ReferenceText' => 'טקסט הפניה',
-    'FrameworkSelection' => 'בחירת מסגרת',
-    'Show' => 'לְהַצִיג',
-    'InProgress' => 'בתהליך',
-    'Canceled' => 'בּוּטלָה',
-    'Failed' => 'נִכשָׁל',
-    'LegacyFrameworks' => 'מסגרות מדור קודם',
-    'Archive' => 'ארכיון',
-    'FailedToFetchCVEInformation' => 'נכשלה אחזור מידע ה-CVE. אנא בדוק את מזהה ה-CVE ונסה שוב.',
-    'ComplianceDashboard' => 'לוח מחוונים לתאימות',
-    'DynamicAuditReportHelp' => 'דוח זה מציג את כל הביקורות ואת הסטטוס שלהן.',
-    'ComplianceDashboardDescription' => 'תרשים זה מציג את מספר הבקרות בכל מסגרת, כאשר בקרות שעברו את הבדיקה הן בירוק והן בקרות נכשלות הן באדום.',
-    'PassingControls' => 'מעבר בקרות',
-    'FailingControls' => 'בקרות כושלות',
-    'ControlsByFramework' => 'בקרות לפי מסגרת',
-    'NumberOfControls' => 'מספר פקדים',
     'AssetsAndControls' => 'נכסים ובקרות',
     'AssetsByControl' => 'נכסים לפי שליטה',
     'ControlsByAsset' => 'בקרות לפי נכס',
-    'PasswordResetTokenExpirationPeriod' => 'תקופת תפוגת אסימון איפוס סיסמה',
-    'APasswordResetTokenExpirationPeriodShouldBeMoreThan5Minutes' => 'תקופת התפוגה של אסימון איפוס סיסמה צריכה להיות יותר מ-5 דקות.',
-    'MeanTimeToRemediate' => 'זמן ממוצע לתיקון',
-    'ByTeam' => 'לפי צוות',
-    'ByCategory' => 'לפי קטגוריה',
-    'ByRiskLevel' => 'לפי רמת סיכון',
-    'MeanTimeToRemediateDescription' => 'מספר הימים הממוצע לסגירת סיכונים, מקובץ לפי צוות, קטגוריה ורמת סיכון. רק סיכונים שנסגרו כלולים.',
-    'AverageDaysToClose' => 'ממוצע ימים לסגירה',
-    'ControlPassRateTrend' => 'מגמת שיעור מעבר בקרה',
-    'ControlPassRateTrendDescription' => 'שיעור מעבר חודשי (%) לכל מסגרת ב-12 החודשים האחרונים. מוצגות רק מסגרות עם תוצאת מבחן אחת לפחות בתקופה.',
-    'PassRatePercent' => 'שיעור מעבר (%)',
-    'ExposureByTeam' => 'חשיפה לסיכון לפי צוות',
-    'ExposureByCategory' => 'חשיפה לסיכון לפי קטגוריה',
-    'ExposureByLocation' => 'חשיפה לסיכון לפי מיקום',
-    'TotalRiskScore' => 'ציון סיכון כולל',
-    'SLABreachStatus' => 'סטטוס הפרת הסכם רמת שירות',
-    'SLABreachDescription' => 'סיכונים פתוחים נמצאים בתוך או מעבר לסף ה-SLA שלהם לפי רמת סיכון. ספי ברירת מחדל: גבוה מאוד=30 יום, גבוה=60 יום, בינוני=90 יום, נמוך=180 יום.',
-    'WithinSLA' => 'בתוך הסכם רמת השירות',
-    'SLABreached' => 'הפרת הסכם רמת שירות',
-    'NumberOfRisks' => 'מספר הסיכונים',
-    'AllFrameworks' => 'כל מסגרות',
-    'ExposureByBusinessUnit' => 'חשיפה לסיכונים לפי יחידה עסקית',
-    'BusinessUnit' => 'יחידה עסקית',
-    'BUChartCrossUnitNote' => 'הערה: סיכונים שהוקצו לצוותים המשתרעים על פני מספר יחידות BU נספרים בכל אחת מהן.',
-    'SLAThresholds' => 'ספי SLA',
-    'SLAThresholdsDescription' => 'מספר הימים המרבי בו סיכון פתוח יכול להישאר בלתי פתור לפני שהוא נחשב איחור, לפי רמת סיכון.',
-    'SLAThresholdMustBeBetween1And3650' => 'ערכי סף של SLA חייבים להיות בין יום אחד ל-3650 ימים.',
-    'SLAThresholdsUpdatedSuccessfully' => 'ספי ה-SLA עודכנו בהצלחה.',
-    'TimeToDetect' => 'זמן לגילוי',
-    'TimeToDetectDescription' => 'מספר הימים הממוצע מתחילת האירוע (החל בתאריך) ועד לגילוי (זוהה בתאריך), מקובץ לפי צוות וסוג האירוע. רק אירועים שתועדו בשני התאריכים נכללים.',
-    'ByOccurrenceType' => 'לפי סוג אירוע',
-    'OccurrenceType' => 'סוג מופע',
     'NoIncidentDetectionDataAvailable' => 'לא תועדו אירועים עם תאריכי "התחיל בתאריך" ו"זוהה בתאריך".',
     'IncidentDashboard' => 'לוח מחוונים לאירועים',
     'TimeToDetectByTeam' => 'זמן לגילוי על ידי הצוות',
@@ -2724,7 +2618,7 @@ $lang = array(
     'DragAndDropToReorder' => 'גרור ושחרר כדי לסדר מחדש עמודות.',
     'NoColumnsSelected' => 'לא נבחרו עמודות. בחר עמודות בכרטיסייה הראשונה.',
     'Remove' => 'לְהַסִיר',
-    'Apply' => 'לִפְנוֹת',
+    'Apply' => 'החל',
     'RiskScoring' => 'ניקוד סיכונים',
     'AreYouSureYouWantToDeleteThisUser' => 'האם אתה בטוח שאתה רוצה למחוק את המשתמש הזה?',
     'NoPermissionAddSavedRiskReports' => 'אין לך הרשאה להוסיף דוחות סיכון שנשמרו.',
@@ -2735,7 +2629,7 @@ $lang = array(
     'GovernanceDashboard' => 'לוח מחוונים לממשל',
     'GovernanceDashboardDescription' => 'תרשים זה מציג את רמת הבשלות הנוכחית של כל הבקרות.',
     'GovernanceControlsByFrameworkMaturityStacked' => 'בקרות לפי מסגרת ובגרות נוכחית',
-    'Custom' => 'מִנְהָג',
+    'Custom' => 'מותאם אישית',
     'SimpleRiskCustomScheduledNotifications' => 'התראות מתוזמנות מותאמות אישית של SimpleRisk',
     'AddCustomScheduledNotification' => 'הוסף התראה מתוזמנת מותאמת אישית',
     'ReportName' => 'שם הדוח',
@@ -2850,16 +2744,15 @@ $lang = array(
     'SettingsSecurityDesc'                => 'אימות, הפעלה, מדיניות סיסמאות, כתובת URL בסיסית והגדרות אבטחה של API.',
     'SettingsLoggingDesc'                 => 'תצורת רישום באגים וביקורת: רמות יומן, שמירה ומיקום קבצי יומן.',
     'HealthCheckDesc'                     => 'אבחון מצב המערכת: גרסת PHP, סיומות, הרשאות קבצים, קישוריות מסד נתונים, לוח זמנים של cron והפעלות נוספות.',
-    'AboutDesc'                           => 'צפה בגרסת SimpleRisk, פרטי הרישיון והקרדיטים.',
     'AnnouncementsDesc'                   => 'כתוב ונהל הודעות באנר הגלויות לכל המשתמשים.',
     'RegisterAndUpgradeDesc'              => 'רשום את התקנת SimpleRisk שלך, הזן או חדש מפתח מנוי והפעל שדרוגי Core/Extra בלחיצה אחת.',
     'QueueMonitorDesc'                    => 'בדוק את תור עבודות הרקע: עבודות ממתינות, עבודות בתהליך ומשימות שנכשלו.',
     'ExtrasDesc'                          => 'הפעלה, בטל והגדרה של SimpleRisk Extras (תוספים בתשלום).',
-    'ArtificialIntelligenceExtraDesc'     => 'מאפשר סיוע בבינה מלאכותית ברחבי SimpleRisk.',
-    'CustomizationExtraDesc'              => 'מאפשר את היכולת להוסיף ולהסיר סוגים שונים של שדות וליצור תבניות דפים באופן דינמי.',
-    'NotificationExtraDesc'               => 'שולח התראות דוא"ל כאשר סיכונים מוגשים, מעודכנים, מופחתים או נבדקים, וייתכן שיפעל לפי לוח זמנים כדי להודיע למשתמשים על סיכונים במצב לא נבדק או עבר את מועד היעד.',
-    'VulnerabilityManagementExtraDesc'    => 'מאפשר שילוב של SimpleRisk עם Rapid7 Nexpose, InsightVM, Qualys ו-Tenable.io.',
-    'IncidentManagementExtraDesc'         => 'מספק יכולות ניהול אירועים מתוך מערכת SimpleRisk.',
+    'ArtificialIntelligenceExtraDesc'     => 'הבינה המלאכותית הנוספת מספקת ניתוח סיכונים משופר (כולל הערכות FAIR) ותיעוד מותאם אישית.',
+    'CustomizationExtraDesc'              => 'תוספת ההתאמה האישית מאפשרת להוסיף ולהסיר סוגים שונים של שדות וליצור באופן דינמי תבניות דפים מותאמות אישית.',
+    'NotificationExtraDesc'               => 'תוספת התראות דוא"ל מאפשרת ל-SimpleRisk לשלוח התראות דוא"ל כאשר סיכונים מוגשים, משתנים או כאשר מתבצעת פעולה אחרת. ניתן להוסיף תוספת זו גם כסקריפט מתוזמן לשליחת תזכורות שגרתיות כאשר סיכונים מוכנים לסקירת ניהול. במוצר SimpleRisk Core, ללא תוספת זו, לא מועברות התראות מחוץ לכלי עצמו.',
+    'VulnerabilityManagementExtraDesc'    => 'ניהול הפגיעויות הנוסף מספק ללקוחות את היכולת לשלב את מופע SimpleRisk שלהם עם Qualys, Tenable.io או Rapid7 Nexpose/InsightVM ולייבא נתוני נכסים ופגיעויות ל-SimpleRisk. משם, תוכלו לבחור אילו אתרים תרצו לכסות, לקבוע אילו ציוני פגיעויות יש לייבא ולמיין אילו פגיעויות הופכות לסיכונים כדי לעקוב אחריהן.',
+    'IncidentManagementExtraDesc'         => 'תוספת ניהול אירועים מבוססת על מדריך טיפול באירועי אבטחת מחשב NIST 800-61 ומספקת יכולות ניהול אירועים מתוך מערכת SimpleRisk.',
 
     // Configure Hub - tile descriptions (customization category)
     'RedefineNamingConventionsDesc'       => 'שינוי שם של טרמינולוגיה של SimpleRisk (סיכון, נכס, מסגרת וכו\') בממשק המשתמש.',
@@ -2872,26 +2765,25 @@ $lang = array(
     'UserManagementDesc'                  => 'הוספה, עריכה, השבתה ואיפוס משתמשים; ניהול מדיניות סיסמאות.',
     'RoleManagementDesc'                  => 'הגדירו תפקידים וההרשאות שכל תפקיד מעניק.',
     'TeamManagementDesc'                  => 'צור ונהל צוותים המשמשים לסינון נראות רשומות.',
-    'SeparationExtraDesc'                 => 'הגבלת צפייה בסיכונים לחברי הצוות, הסיכון מסווג כ-.',
-    'CustomAuthenticationExtraDesc'       => 'מספק תמיכה ב-Active Directory או SAML/Single Sign-On לאימות והרשאה.',
-    'EncryptionExtraDesc'                 => 'הצפנת שדות טקסט רגישים במסד הנתונים.',
-    'OrganizationManagementDesc'          => 'ניתן להגדיר מספר יחידות עסקיות מעל צוותים. לאחר מכן ניתן להקצות משתמשים לצוות אחד או יותר תחת יחידות עסקיות שונות. הדבר משפיע על יכולתם לראות ולהשתמש בצוותים, במשתמשים ובנכסים שאינם משויכים אליהם.',
+    'SeparationExtraDesc'                 => 'תוספת ההפרדה מבוססת הצוות מגבילה את צפייה בסיכונים רק למשתמשים שהם חברים בצוות שאליו מוקצה הסיכון. במוצר SimpleRisk Core, ללא תוספת זו, כל משתמש יכול לראות כל סיכון.',
+    'CustomAuthenticationExtraDesc'       => 'תוספת האימות המותאמת אישית מספקת תמיכה באימות Active Directory ו-SAML. במוצר SimpleRisk Core, ללא תוספת זו, האפשרות היחידה היא ליצור משתמשים חדשים במאגר הזהויות של SimpleRisk.',
+    'EncryptionExtraDesc'                 => 'תוספת מסד הנתונים המוצפן מייצרת מפתח הצפנה אקראי של AES-256 סיביות ולאחר מכן משתמשת בו כדי להצפין טקסט רגיש לפני שהוא מוכנס למסד הנתונים של SimpleRisk. זה מונע מכל אחד את היכולת לצפות או לשנות את הנתונים מבלי להשתמש ישירות באפליקציית SimpleRisk.',
+    'OrganizationManagementDesc'          => "התוספת היררכיה ארגונית מאפשרת את היכולת להגדיר יחידות עסקיות מרובות שיכולות לכלול מספר רב של צוותים. לאחר מכן ניתן להקצות משתמשים לצוות אחד או יותר תחת יחידות עסקיות שונות. זה משפיע על יכולתו של משתמש לראות ולהשתמש בצוותים, משתמשים ונכסים שאליהם הוא אינו משויך.",
 
     // Configure Hub - tile descriptions (data category)
-    'DeleteRisksDesc'                     => 'סיכוני מחיקה בכמות גדולה. יש להשתמש במשורה - מחיקות הן לצמיתות.',
+    'DeleteRisksDesc'                     => 'מחיקת סיכונים בכמות גדולה. יש להשתמש במשורה - מחיקות הן לצמיתות.',
     'AuditTrailDesc'                      => 'חפש וייצוא של יומן ביקורת המערכת של פעולות המשתמש.',
-    'ImportExportExtraDesc'               => 'מאפשר ייבוא וייצוא של קבצי CSV המכילים מידע על סיכונים.',
-    'JiraExtraDesc'                       => 'מאפשר אינטגרציה עם מופע ה-JIRA שלך. מאפשר חיבור סיכונים לבעיות ב-Jira, סנכרון הנתונים, הסטטוס וההערות שלהם.',
-    'APIExtraDesc'                        => 'מאפשר API לשילוב של SimpleRisk עם כלים ומשימות אוטומציה אחרות.',
-    'AdvancedSearchExtraDesc'             => "מרחיב את הפונקציונליות של תיבת החיפוש בסרגל העליון כדי שתוכל למצוא סיכונים על ידי ביצוע חיפוש טקסטואלי בנתוני סיכונים.",
-    'AssessmentsExtraDesc'                => 'מאפשר יצירת טפסי הערכת סיכונים מותאמים אישית ושליחתם למשתמשים.',
+    'ImportExportExtraDesc'               => 'ייבוא-ייצוא נוסף מספק את היכולת לייבא נתונים ל-SimpleRisk על ידי מיפוי שדות בקובץ CSV לשדות במסד הנתונים של SimpleRisk. ניתן להשתמש בו כדי לייבא תוצאות ביקורת מגיליון אלקטרוני של צד שלישי, תוצאות סריקת פגיעויות מכלי אחר, נכסים מ-CMDB שלך ועוד. היישום הנוסף מספק גם את היכולת לייצא קבצי CSV מ-SimpleRisk המכילים סיכונים, פעולות הקלה, ביקורות או דוח משולב של שלושתם.',
+    'JiraExtraDesc'                       => 'Jira Integration Extra מספק למשתמשים את היכולת לשלב באופן דו-כיווני עם מופע של Jira. הוא מאפשר לחבר סיכונים לבעיות Jira, כמו גם לסנכרן את הנתונים, הסטטוס וההערות שלהם.',
+    'APIExtraDesc'                        => 'ה-API Extra מאפשר ללקוחות להשתמש ב-API RESTful כדי ליצור אינטראקציות מבוססות סקריפטים עם יישומים אחרים כדי להשיג אוטומציה מתקדמת ולמנף תשתית קיימת.',
+    'AdvancedSearchExtraDesc'             => "תוספת החיפוש המתקדמת מרחיבה את הפונקציונליות של תיבת החיפוש בסרגל העליון כדי שתוכל למצוא סיכונים על ידי ביצוע חיפוש טקסטואלי בנתוני סיכונים.",
+    'AssessmentsExtraDesc'                => 'הערכת הסיכונים הנוספת מספקת למשתמשים את היכולת להגדיר אנשי קשר, ליצור שאלות (כולל לוגיקה), להרכיב מספר שאלות באמצעות תבנית שאלון, ליצור שאלונים ולשלוח אותם לאנשי קשר, לצפות בתוצאות השאלון, להוסיף סיכונים על סמך תוצאות אלו ולהשוות את התוצאות לאורך זמן, לייבא ולייצא הערכות מותאמות אישית חיצונית ולסקור את נתיב הביקורת של הערכת הסיכונים.',
     'ActiveAssessmentsDesc'               => 'הצג ונהל הערכות הנמצאות כעת בתהליך עיבוד.',
-    'WorkflowsExtraDesc'                  => 'מאפשר למנוע זרימת עבודה חזותית, מונחה אירועים, לאוטומציה של פעולות ניהול סיכונים המופעלות על ידי אירועים בתוך SimpleRisk.',
+    'WorkflowsExtraDesc'                  => 'Workflows Extra מספק מנוע זרימת עבודה ויזואלי, מונחה אירועים, אשר הופך פעולות ניהול סיכונים לאוטומטיות בתגובה לאירועים בתוך SimpleRisk. ניתן לעצב זרימות עבודה המופעלות בעקבות שינויים - כגון הגשת סיכון, עדכון או סקירה - כדי לנתב אישורים, להקצות עבודה ולשמור על התהליך בתנועה ללא התערבות ידנית.',
 
     // Configure Hub - tile descriptions (frameworks category)
-    'UCFExtraDesc'                        => 'מאפשר שילוב של בקרות ובדיקות של מסגרת הבקרה המאוחדת (UCF) עם SimpleRisk.',
-    'SCFExtraDesc'                        => 'מוסיף את הבקרות ממסגרת הבקרה המאובטחת (SCF) ל-SimpleRisk לשימוש עם פונקציונליות הממשל שלנו.',
-    'ComplianceForgeExtraDesc'            => 'מוסיף את הבקרות מתוכנית האבטחה הדיגיטלית (DSP) של ComplianceForge לתוך SimpleRisk לשימוש עם פונקציונליות הממשל שלנו.',
+    'UCFExtraDesc'                        => '‏Unified Compliance Framework (UCF) Extra היא אינטגרציה ברמת API בין Unified Compliance Framework לבין SimpleRisk. הפעלתה מאפשרת לך לייבא מסגרות נבחרות ומיפויי בקרה ישירות מ-UCF.',
+    'SCFExtraDesc'                        => "מסגרת הבקרה המאובטחת (SCF) Extra היא אינטגרציה ישירה בין מסגרת הבקרה המאובטחת לבין SimpleRisk. היא מייבאת את קטלוג הבקרות של SCF ואת המיפוי שלהן על פני מגוון רחב של מסגרות תאימות ואבטחת סייבר לתוך פונקציונליות הממשל של SimpleRisk, כך שתוכלו לאמץ את המסגרות הדרושות לכם ולנהל את הבקרות שלהן מבלי לבנות אותן ידנית.",
 
     // Configure Hub - tile descriptions (maintenance category)
     'FixReviewDatesDesc'                  => 'העבר עמודות varchar review-date מדור קודם לסוגי תאריך מתאימים. גלוי רק בעת הצורך.',
@@ -2909,7 +2801,6 @@ $lang = array(
     'WorkflowsExtra'                      => 'זרימות עבודה נוספות',
     'UCFExtra'                            => 'מסגרת תאימות מאוחדת (UCF) אקסטרה',
     'SCFExtra'                            => 'מסגרת בקרות מאובטחות תוספת',
-    'ComplianceForgeExtra'                => 'אקסטרה של ComplianceForge',
     'DatabaseUpgrade'                     => 'שדרוג מסד הנתונים',
 
     // Configure Hub - Extra tile state badges
@@ -2925,6 +2816,12 @@ $lang = array(
     'ActivateExtraBody'                   => 'להפעיל את התוספת {name} ? פעולה זו תפעיל את הפונקציונליות שלה באופן מיידי. ניתן לבטל אותה שוב מאוחר יותר מאותו משבצת.',
     'ActivateExtraError'                  => 'הפעלת התוספת נכשלה. אנא בדוק את דף בדיקת התקינות לקבלת אבחון.',
 
+    // Configure Hub - Deactivation modal (Encryption Extra)
+    // 'Deactivate' (line 491) and 'Cancel' (line 489) are reused as-is.
+    'DeactivateExtraTitle'                => 'בטל את האפשרויות הנוספות',
+    'DeactivateExtraBody'                 => 'האם לבטל את {name} Extra? מסד הנתונים של SimpleRisk שלך יפוענח במקום. גיבוי של המצב המוצפן נשמר כך שתוכל לחזור למצב הקודם במידת הצורך.',
+    'DeactivateExtraError'                => 'נכשלה ביטול ההפעלה של התוספת. אנא בדוק את דף בדיקת התקינות לקבלת אבחון.',
+
     // Configure Hub - Async license enrichment notice (Phase 4)
     // 'Retry' (line 2764) is reused. The existing 'LicenseCheckFailed' key
     // (line 1851) refers to the 30-day-disable warning shown elsewhere in
@@ -2933,11 +2830,16 @@ $lang = array(
 
     // Configure Hub - Install modal (Phase 5)
     // 'Install' (line 403) and 'Cancel' (line 489) are reused as-is.
-    'InstallExtraTitle'                   => 'התקן תוספת',
-    'InstallExtraBody'                    => 'האם להתקין את {name} Extra? פעולה זו תוריד את החבילה מ-SimpleRisk ותפרק אותה לתוך ההתקנה שלך. ההפעלה היא שלב נפרד שתוכל לבצע מהמשבצת לאחר השלמת ההתקנה.',
-    'InstallExtraError'                   => 'התקנת התוסף נכשלה. אנא בדוק את דף בדיקת התקינות לקבלת אבחון.',
-    'MissingExtraName'                    => 'חסר שם נוסף.',
-    'UnknownExtra'                        => 'שם נוסף לא ידוע.',
+    'InstallExtraTitle'                          => 'התקן תוספת',
+    'InstallExtraBody'                           => 'האם להתקין את {name} Extra? פעולה זו תוריד את החבילה מ-SimpleRisk ותפרק אותה לתוך ההתקנה שלך. ההפעלה היא שלב נפרד שתוכל לבצע מהמשבצת לאחר השלמת ההתקנה.',
+    'InstallExtraError'                          => 'התקנת התוסף נכשלה. אנא בדוק את דף בדיקת התקינות לקבלת אבחון.',
+    'MissingExtraName'                           => 'חסר שם נוסף.',
+    'UnknownExtra'                               => 'שם נוסף לא ידוע.',
+
+    // License state banner messages (display_license_check() in display.php)
+    // Shown as a header banner when $_SESSION['license_check'] is a non-passing state.
+    // 'LicenseCheckFailed' (line ~1868) is the legacy 30-day-disable warning used
+    // by the old enforcement path; these keys cover the new enforcement states.
 
     // Configure Hub - Purchase modal (Phase 6)
     // 'Cancel' (line 489) is reused as-is.
@@ -2945,6 +2847,1796 @@ $lang = array(
     'PurchaseExtraBody'                   => 'התוסף {name} אינו כלול ברישיון SimpleRisk הנוכחי שלך. בקר בדף התוספות של SimpleRisk כדי ללמוד עוד או לרכוש רישיון.',
     'ViewExtras'                          => 'הצג תוספות',
 
+    // In-app notifications bell UI
+    // Note: 'Notifications' (line 2234), 'SelectAll' (line 816), 'Restore' (line 952),
+    // 'All' (line 1470), and 'Delete' (line 80) are reused as-is — do not duplicate.
+    'MarkRead'                             => 'סמן קריאה',
+    'NoNotifications'                      => 'אין התראות',
+    // Time-unit abbreviations for the relative-time display in the bell panel.
+    // 'TimeDays' is already used for the column header "Time (Days)"; TimeDayUnit covers the 'd' abbrev.
+    'TimeSeconds'                          => 'ש',
+    'TimeMinutes'                          => 'מ\'',
+    'TimeHours'                            => 'ח',
+    'TimeDayUnit'                          => 'ד',
+    'NothingInTrash'                       => 'שום דבר בפח',
+    'Promo'                                => 'קידום מכירות',
+    'Trash'                                => 'אַשׁפָּה',
+    'Unread'                               => 'לא נקרא',
+    'View'                                 => 'הצג',
+
+    // Workflow "Send In-App Notification" action — audience picker hints.
+    // 'NoneSelected' (line 1878) is reused as-is for the multi-select button.
+    'NotificationSentToAllAdmins'          => 'הודעה זו תישלח לכל המנהלים.',
+    'NotificationSentToAllUsers'           => 'הודעה זו תישלח לכל המשתמשים.',
+    'SelectAnAudienceAbove'                => 'בחר קהל למעלה.',
+    'RiskConfiguration' => 'תצורת סיכון',
+    'ReviewSettings' => 'סקירת הגדרות',
+    'Cards' => 'כרטיסים',
+    'List' => 'רְשִׁימָה',
+    'DeletedAssessmentsCannotBeRecovered' => 'לא ניתן לשחזר הערכות שנמחקו',
+    'TheAssessmentsWereDeletedSuccessfully' => 'ההערכות נמחקו בהצלחה.',
+    'AssetValuationMode' => 'מצב הערכת נכסים',
+    'AutomaticLinearRange' => 'טווח ליניארי אוטומטי',
+    'AutomaticExponentialRange' => 'טווח אקספוננציאלי אוטומטי',
+    'ManualValuation' => 'יָדָנִי',
+    'AssetValuationMinMustBeNonNegative' => 'המינימום של הערכת שווי נכס חייב להיות אפס או גדול יותר עבור טווח אקספוננציאלי אוטומטי.',
+    'CrossDomain' => 'דומיינים מרובים',
+    'Preferences' => 'העדפות',
+    'SpecificUser' => 'משתמש ספציפי',
+    'SpecificUsers' => 'משתמשים ספציפיים',
+    'Help' => 'עֶזרָה',
+    'Profile' => 'פּרוֹפִיל',
+    'Scoring' => 'מְנִיָה',
+    'EncryptionMissingLockTablesPrivilege'   => 'למשתמש מסד הנתונים SimpleRisk אין את ההרשאה LOCK TABLES, הנדרשת להצפנת מסד הנתונים בצורה בטוחה. בקש ממנהל מסד הנתונים להריץ את משפט GRANT המוחזר בתגובה ונסה שוב.',
+    'EncryptionMissingLockTablesPrivilegeUi' => 'למשתמש מסד הנתונים של SimpleRisk אין את הרשאת LOCK TABLES הנדרשת להצפנה. מנהל מסד נתונים חייב להפעיל: GRANT LOCK TABLES ON {$db}.* TO {$user}; לאחר מכן נסה שוב.',
+    'EncryptionRequiredGrantLabel' => 'הצהרת GRANT נדרשת:',
+    'EncryptionActivationAlreadyRunning' => 'הפעלת הצפנה כבר מתבצעת. המתן להשלמתה או השתמש בפונקציית שחזור מגיבוי כדי לשחזר.',
+    'EncryptionActivationEnqueued'           => 'הפעלת Encryption Extra הועברה לתור. ממשק המשתמש של המנהל יעקוב אחר ההתקדמות בזמן שמסד הנתונים מוצפן.',
+    'EncryptionActivationEnqueueFailed'      => 'נכשלה ההכנסה לתור של משימת הפעלת ההצפנה. בדוק את יומן ניפוי השגיאות לקבלת פרטים.',
+    'EncryptionDeactivationEnqueued'         => 'ביטול ההפעלה של Encryption Extra הועבר לתור. ממשק המשתמש של המנהל יעקוב אחר ההתקדמות בזמן פענוח מסד הנתונים.',
+    'EncryptionDeactivationEnqueueFailed'    => 'נכשלה ההכנסה לתור של משימת ביטול ההצפנה. בדוק את יומן ניפוי השגיאות לקבלת פרטים.',
+    'EncryptionPipelineInProgress'           => 'תהליך הצפנה (הפעלה, ביטול או שחזור) נמצא כעת בתהליך. יש להמתין לסיום התהליך לפני שתנסה שוב.',
+    'EncryptionPipelineInProgressTask'       => 'פרויקט הצפנה נמצא כעת בתהליך (משימה #{id}, {type}). המתן לסיום התהליך לפני שתנסה שוב.',
+    'EncryptionInFlightTitle'            => 'פעולת הצפנה מתבצעת',
+    'EncryptionInFlightBody'             => 'צינור להפעלה, ביטול או שחזור של הצפנה פועל כעת. המתן לסיום - הדף יתעדכן אוטומטית לאחר השלמת הפעולה - לפני שתנסה שוב.',
+    'OK'                                 => 'בְּסֵדֶר',
+    'ActivationGuardFailed'                 => 'לא ניתן היה להתחיל את ההפעלה. ראה את ההתראה בכותרת העמוד לקבלת פרטים.',
+    'EncryptionStageStarting'               => 'מתחיל…',
+    'EncryptionStageProgress'               => 'שלב {current} של {total}: {name}',
+    'EncryptionStageAllDone'                => 'כל השלבים הושלמו.',
+    'EncryptionStageEncryptTable'           => 'הצפנת טבלה: {table}',
+    'EncryptionStageDecryptTable'           => 'פענוח טבלה: {table}',
+    'EncryptionActivationInProgress'        => 'מצפין את מסד הנתונים של SimpleRisk שלך. אנא אל תסגור דף זה.',
+    'EncryptionActivationFailedTitle'       => 'הפעלת ההצפנה נכשלה',
+    'EncryptionActivationFailedBody'        => 'ההפעלה לא הושלמה וייתכן שמסד הנתונים נמצא במצב לא עקבי. הגיבוי שלפני ההפעלה נשמר - השתמש באפשרות "שחזור מגיבוי" כדי לשחזר, או צור קשר עם התמיכה של SimpleRisk.',
+    'EncryptionDeactivationInProgress'      => 'מפענח את מסד הנתונים של SimpleRisk שלך. אנא אל תסגור דף זה.',
+    'EncryptionDeactivationFailedTitle'     => 'ביטול ההצפנה נכשל',
+    'EncryptionDeactivationFailedBody'      => 'לא ניתן היה להשלים את הביטול וייתכן שמסד הנתונים נמצא במצב לא עקבי. הגיבוי המוצפן נשמר - השתמש באפשרות "שחזור מגיבוי" כדי לחזור למצב המוצפן, או צור קשר עם התמיכה של SimpleRisk.',
+    'RestoreFromBackup'                     => 'שחזור מגיבוי',
+    'RestoreFromBackupNotYetAvailable'      => 'שחזור מגיבוי אינו זמין עדיין בגרסה זו. אנא צור קשר עם התמיכה של SimpleRisk כדי לשחזר.',
+    'EncryptionRestoreInProgress'           => 'שחזור מסד הנתונים של SimpleRisk מגיבוי. פעולה זו עשויה להימשך מספר דקות.',
+    'EncryptionRestoreEnqueueFailed'        => 'נכשלה הפעלת השחזור. בדוק את יומני SimpleRisk ונסה שוב.',
+    'EncryptionStatusActive'                => 'תוספת מסד הנתונים המוצפן פעילה.',
+    'EncryptionStatusVersion'               => 'גִרְסָה',
+    'EncryptionDeactivateCta'               => 'בטל את תוספת מסד הנתונים המוצפן',
+    'EncryptionDeactivateCtaHelp'           => 'פענח כל עמודה מוצפנת בחזרה לטקסט רגיל. זה לוקח דקות במסד נתונים מאוכלס.',
+    'EncryptionBackupPanelHeading'          => 'גיבוי טרום הפעלה',
+    'EncryptionBackupCreatedAt'             => 'נוצר',
+    'EncryptionBackupSize'                  => 'גודל',
+    'EncryptionBackupOriginalFilename'      => 'קובץ',
+    'EncryptionBackupDownloadTooltip'       => 'לחץ כדי להוריד עותק של קובץ גיבוי זה לאחסון במצב לא מקוון.',
+    'EncryptionBackupStateRestoring'        => 'שחזור מתבצע כעת.',
+    'EncryptionNoBackupAvailable'           => 'לא מאוחסן כרגע גיבוי טרום-הפעלה. הגיבוי נוצר בתחילת כל הפעלה ומוחלף על ידי כל הפעלה או ביטול הפעלה לאחר מכן.',
+    'EncryptionRestoreCtaHelp'              => 'בחר באפשרות זו אם האימות מצא בעיות ועליך לחזור למצב שלפני ההצפנה.',
+    'EncryptionRestoreTitle'                => 'לשחזר מגיבוי?',
+    'EncryptionRestoreBodyWhy'              => 'חזרה לתמונת המצב שלפני ההצפנה שצולמה בתחילת ההפעלה האחרונה. בחר באפשרות זו אם האימות שלאחר ההפעלה מצא בעיות ועליך לנטוש את ההצפנה.',
+    'EncryptionRestoreBodyWhat'             => 'כל שורה שנכתבת למסד הנתונים לאחר יצירת הגיבוי תאבד לצמיתות - כולל סיכונים, אמצעי הפחתה, רשומות יומן ביקורת וכל שינוי אחר שבוצע מאז ההפעלה. Encrypted Database Extra יושבת כחלק מהשחזור.',
+    'EncryptionDeleteBackupCta'             => 'מחק את הגיבוי שלפני ההצפנה',
+    'EncryptionDeleteBackupCtaHelp'         => 'בחר באפשרות זו לאחר השלמת אימות ההצפנה. הסרת תמונת המצב הלא מוצפנת היא מה שהופך את ההצפנה למגנה בפועל.',
+    'EncryptionDeleteBackupTitle'           => 'למחוק את הגיבוי שלפני ההצפנה?',
+    'EncryptionDeleteBackupBodyWhy'         => 'הסרת תמונת המצב הלא מוצפנת של הנתונים שלך, אשר צולמה בתחילת ההפעלה האחרונה. שמירתה ללא הגבלת זמן, מבטלת את מטרת ההצפנה - כל מי שיש לו גישה למסד הנתונים יכול לקרוא את העותק שלפני ההצפנה.',
+    'EncryptionDeleteBackupBodyWhat'        => 'הגיבוי שבמסד הנתונים נמחק באופן מיידי. לא תוכל עוד להשתמש באפשרות "שחזור מגיבוי" כדי להחזיר את מסד הנתונים למצב שלפני ההצפנה. אם בהמשך תמצא בעיות בהצפנה, נתיב השחזור היחיד שלך יהיה שחזור מסד נתונים חדש מהגיבויים התפעוליים שלך.',
+    'EncryptionDeleteBackupError'           => 'מחיקת הגיבוי נכשלה. בדוק את יומן ניפוי השגיאות ונסה שוב.',
+    'EncryptionModalWhyLabel'               => 'למה להשתמש בזה:',
+    'EncryptionModalWhatHappensLabel'       => 'מה קורה אחר כך:',
+    'EncryptionFieldsPanelHeading'          => 'שדות מסד נתונים מוצפנים',
+    'EncryptionFieldsHelp'                  => 'כל עמודה המופיעה כאן מאוחסנת מוצפנת במנוחה. תיאור הכלי של סמל המנעול מציג את אלגוריתם הקריפטוגרפי בו נעשה שימוש.',
+    'EncryptionFieldsTableColumn'           => 'טבלת מסד נתונים',
+    'EncryptionFieldsFieldColumn'           => 'שדה מסד נתונים',
+    'EncryptionFieldsEncryptedColumn'       => 'מוצפנים',
+    'EncryptionFieldsNoneFound'             => 'אין שדות מוצפנים רשומים כרגע. זה לא אמור לקרות בהתקנה פעילה - בדוק את טבלת encrypted_fields עבור נתוני זרע.',
+    'EncryptionFieldsLockTooltipPrefix'     => 'מוצפן עם',
+    'EncryptionInactiveRedirect'            => 'תוספת מסד הנתונים המוצפן אינה פעילה. הפעל אותה ממרכז ההגדרות.',
+    'ContactSupport'                        => 'צור קשר עם התמיכה',
+    'BackupDatabaseFailed' => 'גיבוי מסד הנתונים נכשל. אנא בדוק את יומן SimpleRisk לקבלת פרטים.',
+    'WindowsNotSupported' => 'SimpleRisk אינו תומך עוד ב-Windows נכון לגרסה 20260421-001. אנא העבר לשרת מבוסס לינוקס.',
+    'WindowsUpgradeHalted' => 'פעולה זו אינה יכולה לפעול בשרת Windows. SimpleRisk אינו תומך עוד ב-Windows נכון לגרסה 20260421-001. אנא העבר לשרת מבוסס לינוקס.',
+    'BundleIntegrityVerificationFailed' => 'חבילת SimpleRisk שהורדה נכשלה באימות השלמות. השדרוג בוטל ולא שונו קבצים.',
+    'BundleDownloadFailed' => 'לא ניתן היה להוריד את חבילת SimpleRisk. השדרוג בוטל ולא שונו קבצים.',
+    'MissingOrInvalidTrackingID' => 'מזהה מעקב חסר או לא תקין.',
+    'JiraIntegrationExtra' => 'אינטגרציית ג\'ירה אקסטרה',
+    'IncidentManagementNotifications' => 'הודעות ניהול אירועים',
+    'NotificationSettingsUpdated' => 'הגדרות ההתראות עודכנו.',
+    'DefaultBusinessUnit' => 'יחידת עסקים ברירת מחדל',
+    'TheDefaultBusinessUnitEncompasses' => 'יחידת העסקים המוגדרת כברירת מחדל הכוללת את כל הצוותים.',
+    'UserGuide' => 'מדריך למשתמש',
+    'AdministratorGuide' => 'מדריך למנהל',
+    'DecryptionFailureToast' => 'לא ניתן היה לפענח שדה מוצפן אחד או יותר. הם מוצגים כרקים. בדוק את יומני המערכת לקבלת פרטים.',
+    'EncryptionFailureToast' => 'לא ניתן היה להצפין שדה ולא אוחסן. בדוק את יומני המערכת לקבלת פרטים.',
+    'EnableAPIv1Endpoints' => 'הפעלת נקודות קצה של API v1 (הוצא משימוש)',
+    'EnableAPIv1EndpointsHelp' => 'גרסה 1 של ה-API הוצא משימוש. השאר את האפשרות מושבתת אלא אם כן יש לך אינטגרציה הדורשת זאת. /api/v2/ אינו מושפע מהגדרה זו והוא זמין תמיד.',
+    'AllowAPIKeyInURL' => 'אפשר מפתח API בכתובת URL או בגוף POST',
+    'AllowAPIKeyInURLHelp' => 'מטעמי אבטחה, יש לשלוח מפתחות API בכותרת הבקשה X-API-KEY. כאשר האפשרות הזו מושבתת, מפתחות הנשלחים במחרוזת שאילתת ה-URL (?key=) או בגוף ה-POST (key=) נדחים, מכיוון שמיקומים אלה נחשפים ביתר קלות ביומני פרוקסי ובהיסטוריית הדפדפן. כותרת ה-X-API-KEY תמיד מתקבלת. יש להשאיר את האפשרות הזו מושבתת אלא אם כן יש לך אינטגרציה שלא יכולה לשלוח את הכותרת.',
+    'ArtificialIntelligenceDesc' => 'הגדר את חיבור ספק הבינה המלאכותית ואת שאלות ההקשר המבססות תגובות של בינה מלאכותית עבור מופע SimpleRisk זה.',
+    'ProviderConfiguration' => 'תצורת ספק',
+    'ContextQuestions' => 'שאלות הקשר',
+    'AIProviderNotConfiguredWarning' => 'ספק הבינה המלאכותית אינו מוגדר. לא ניתן לייצר תוצאות בזמן אמת עד שתגדיר את הספק ומפתח ה-API בכרטיסייה תצורת ספק.',
+    'AutoProcessSCFUpdates' => 'עבד באופן אוטומטי מהדורות חדשות של Secure Controls Framework (SCF)',
+    'AddNewControls' => 'הוסף פקדי SCF חדשים',
+    'UpdateExistingControls' => 'עדכון בקרות SCF קיימות',
+    'DeleteRemovedControls' => 'מחיקת פקדי SCF שהוסרו',
+    'CreateEvidenceRequests' => 'צור בקשות ראיות עבור בקרות SCF',
+    'SelectSCFFrameworks' => 'בחר מסגרות SCF',
+    'SCFReleaseProcessing' => 'עיבוד שחרור SCF',
+    'NotFrameworkDescription' => 'הווידג\'ט למטה מציג את כל הכותרות שנמצאו בגיליון האלקטרוני של Secure Controls Framework (SCF). השתמש בו כדי לבחור אילו עמודות מכילות נתונים של frameworks לעומת נתונים שאינם של frameworks.',
+    'Note' => 'פֶּתֶק',
+    'AISettingsNote' => 'הפעלת סיוע בבינה מלאכותית תשלח נתונים ל-Anthropic לניתוח בתוכנית ה-LLM שלהם, באמצעות מפתח ה-API של Anthropic, על מנת לספק לכם תוצאות מותאמות אישית.',
+    'EnableAIAssistanceForControlData' => 'הפעלת סיוע של בינה מלאכותית עבור נתוני בקרה',
+    'ReferenceText' => 'טקסט הפניה',
+    'FrameworkSelection' => 'בחירת מסגרת',
+    'Show' => 'לְהַצִיג',
+    'InProgress' => 'בתהליך',
+    'Canceled' => 'בּוּטלָה',
+    'Failed' => 'נִכשָׁל',
+    'LegacyFrameworks' => 'מסגרות מדור קודם',
+    'Archive' => 'ארכיון',
+    'FailedToFetchCVEInformation' => 'נכשלה אחזור מידע ה-CVE. אנא בדוק את מזהה ה-CVE ונסה שוב.',
+    'ComplianceDashboard' => 'לוח מחוונים לתאימות',
+    'DynamicAuditReportHelp' => 'דוח זה מציג את כל הביקורות ואת הסטטוס שלהן.',
+    'ComplianceDashboardDescription' => 'תרשים זה מציג את מספר הבקרות בכל מסגרת, כאשר בקרות שעברו את הבדיקה הן בירוק והן בקרות נכשלות הן באדום.',
+    'PassingControls' => 'בקרות עוברות',
+    'FailingControls' => 'בקרות כושלות',
+    'ControlsByFramework' => 'בקרות לפי מסגרת',
+    'NumberOfControls' => 'מספר פקדים',
+    'PasswordResetTokenExpirationPeriod' => 'תקופת תפוגת אסימון איפוס סיסמה',
+    'APasswordResetTokenExpirationPeriodShouldBeMoreThan5Minutes' => 'תקופת התפוגה של אסימון איפוס סיסמה צריכה להיות יותר מ-5 דקות.',
+    'MeanTimeToRemediate' => 'זמן ממוצע לתיקון',
+    'ByTeam' => 'לפי צוות',
+    'ByCategory' => 'לפי קטגוריה',
+    'ByRiskLevel' => 'לפי רמת סיכון',
+    'MeanTimeToRemediateDescription' => 'מספר הימים הממוצע לסגירת סיכונים, מקובץ לפי צוות, קטגוריה ורמת סיכון. רק סיכונים שנסגרו כלולים.',
+    'AverageDaysToClose' => 'ממוצע ימים לסגירה',
+    'ControlPassRateTrend' => 'מגמת שיעור מעבר בקרה',
+    'ControlPassRateTrendDescription' => 'שיעור מעבר חודשי (%) לכל מסגרת ב-12 החודשים האחרונים. מוצגות רק מסגרות עם תוצאת מבחן אחת לפחות בתקופה.',
+    'PassRatePercent' => 'שיעור מעבר (%)',
+    'ExposureByTeam' => 'חשיפה לסיכון לפי צוות',
+    'ExposureByCategory' => 'חשיפה לסיכון לפי קטגוריה',
+    'ExposureByLocation' => 'חשיפה לסיכון לפי מיקום',
+    'TotalRiskScore' => 'ציון סיכון כולל',
+    'SLABreachStatus' => 'סטטוס הפרת הסכם רמת שירות',
+    'SLABreachDescription' => 'סיכונים פתוחים נמצאים בתוך או מעבר לסף ה-SLA שלהם לפי רמת סיכון. ספי ברירת מחדל: גבוה מאוד=30 יום, גבוה=60 יום, בינוני=90 יום, נמוך=180 יום.',
+    'WithinSLA' => 'בתוך הסכם רמת השירות',
+    'SLABreached' => 'הפרת הסכם רמת שירות',
+    'NumberOfRisks' => 'מספר הסיכונים',
+    'ExposureByBusinessUnit' => 'חשיפה לסיכונים לפי יחידה עסקית',
+    'BUChartCrossUnitNote' => 'הערה: סיכונים שהוקצו לצוותים המשתרעים על פני מספר יחידות BU נספרים בכל אחת מהן.',
+    'SLAThresholds' => 'ספי SLA',
+    'SLAThresholdsDescription' => 'מספר הימים המרבי בו סיכון פתוח יכול להישאר בלתי פתור לפני שהוא נחשב איחור, לפי רמת סיכון.',
+    'SLAThresholdMustBeBetween1And3650' => 'ערכי סף של SLA חייבים להיות בין יום אחד ל-3650 ימים.',
+    'SLAThresholdsUpdatedSuccessfully' => 'ספי ה-SLA עודכנו בהצלחה.',
+    'TimeToDetect' => 'זמן לגילוי',
+    'TimeToDetectDescription' => 'מספר הימים הממוצע מתחילת האירוע (החל בתאריך) ועד לגילוי (זוהה בתאריך), מקובץ לפי צוות וסוג האירוע. רק אירועים שתועדו בשני התאריכים נכללים.',
+    'ByOccurrenceType' => 'לפי סוג אירוע',
+    'ApplicationVersion' => 'גרסת האפליקציה',
+    'DatabaseVersion' => 'גרסת מסד הנתונים',
+    'InstanceID' => 'מזהה מופע',
+    'LatestIsVersion' => 'האחרון הוא {$version}',
+    'UpToDate' => 'מעודכן',
+    'UpdateAvailable' => 'עדכון זמין',
+    'RegistrationSuccessful' => 'ההרשמה בוצעה בהצלחה.',
+    'LocalRegistrationStateCleared' => 'מצב הרישום המקומי נוקה. יש להירשם מחדש ב-/admin/register.php כדי לקבל instance_id חדש.',
+    'InstanceInformationUpdated' => 'מידע על המופע עודכן.',
+    'UpgradeExtraDesc' => 'תוספת השדרוג שומרת על מופע SimpleRisk שלך מעודכן על ידי הורדה ויישום של שדרוגי יישומים ומסדי נתונים, ועל ידי התקנה ועדכון של תוספות אחרות, הכל מדף הרישום והשדרוג. היא מגיעה עם SimpleRisk ללא עלות, כך שתוכל להישאר עם הגרסה האחרונה ללא ניהול קבצים ידני.',
+    'ExtraInstallDisabledByEnforcement' => 'התקנה נוספת מושבתת כעת עקב מצב הרישיון שלך. צור קשר עם מנהל המערכת או עם תמיכת SimpleRisk.',
+    'LicenseStateUnknownRetryShortly' => 'פרטי הרישיון אינם זמינים עדיין. אנא נסה שוב בעוד מספר רגעים.',
+    'LicenseExpiringSoonTitle' => 'רישיון עומד לפוג בקרוב: {$extra}',
+    'LicenseExpiringSoonBody' => 'תוקף הרישיון שלך {$extra} יפוג בעוד {$date} (נותרו{$days} ימים). חדש אותו דרך הרשמה ושדרוג כדי למנוע אובדן גישה.',
+    'LicenseExpiredTitle' => 'פג תוקף הרישיון: {$extra}',
+    'LicenseExpiredBody' => 'תוקף הרישיון שלך {$extra} פג בתאריך {$date}. חדש אותו דרך "הרשמה ושדרוג" כדי לשחזר את הגישה.',
+    'Licenses' => 'רישיונות',
+    'LicensesDesc' => 'צפה בסטטוס הרישוי עבור כל תוספת של SimpleRisk.',
+    'RefreshLicenses' => 'רענון רישיונות',
+    'LoadingLicenseData' => 'טוען נתוני רישיון...',
+    'Licensed' => 'בעל רישיון',
+    'Unlicensed' => 'ללא רישיון',
+    'Expired' => 'פג תוקף',
+    'Free' => 'חינם',
+    'License' => 'רִשָׁיוֹן',
+    'NoLicensedExtras' => 'אין תוספות מורשות.',
+    'NoExpiredExtras' => 'אין תוספות שפג תוקפן.',
+    'NoUnlicensedExtras' => 'אין תוספות ללא רישיון.',
+    'Unlimited' => 'בִּלתִי מוּגבָּל',
+    'LicenseStateLockMessage' => 'פעולות התקנה ושדרוג נוספות מושבתות כעת על ידי מצב הרישיון שלך. תוספות קיימות המותקנות ממשיכות לפעול.',
+    'LicenseStateFailMessage' => 'רישיון SimpleRisk שלך פג תוקף או הושבת. אנא צור קשר עם תמיכת SimpleRisk כדי לשחזר את השירות.',
+    'LicenseStateAnonymousMessage' => 'מופע SimpleRisk זה אינו רשום. רק תוספות בחינם זמינות. הירשם בתפריט הגדרות כדי לגשת לתוספות בתשלום.',
+    'LicenseStateUnknownMessage' => 'SimpleRisk לא הצליח להגיע לשירות הרישוי. מצב הרישיון יתעדכן אוטומטית בבדיקה הבאה.',
+    'ExtraIntegrityCheckFailed' => 'החבילה שהורדה נכשלה בבדיקת שלמותה ולא הותקנה.',
+    'ExtraInstallWriteFailed' => 'לא ניתן היה להתקין את ה-Extra מכיוון שתיקיית ה-extras אינה ניתנת לכתיבה.',
+    'ExtraInstallExtractFailed' => 'התוספת הורדה אך לא ניתן היה לחלץ אותה ולהתקינה. בדוק את יומני האפליקציה.',
+    'EncryptionPreflightFailed' => 'DDL ראשוני נכשל - עיין ביומן ניפוי השגיאות לקבלת פרטים.',
+    'EncryptionActivationFailed' => 'הפעלת ההצפנה נכשלה במהלך ההגדרה המקדימה. בדוק את יומני היישום.',
+    'QuestionnaireSentSchedulingOnly' => 'שאלון זה נשלח. ניתן לשנות רק את הגדרות התזמון שלהלן.',
+    'AreYouSureYouWantToReopenThisResult' => 'האם אתה בטוח שברצונך לפתוח מחדש את התוצאה הזו לבדיקה?',
+    'QuestionnaireResultReopenedSuccessfully' => 'תוצאת השאלון נפתחה מחדש בהצלחה לבדיקה.',
+    'QuestionnaireResultReopenedAuditLog' => 'תוצאת השאלון "{$questionnaire_name}" (נשלחה על ידי איש הקשר "{$contact_name}") נפתחה מחדש לבדיקה על ידי המשתמש "{$user_name}".',
+    'QuestionnaireDraftNoChanges' => 'אין שינויים לשמירה.',
+    'SendQuestionnaireIdRequired' => 'הפרמטר id נדרש וחייב להיות מספרי.',
+    'RiskIdMustBeNumeric' => 'הפרמטר risk_id חייב להיות מספרי.',
+    'AssessmentsExtraNotEnabled' => 'Assessments Extra אינו מופעל.',
+    'QuestionnaireSchedulingUpdatedAuditLog' => 'הגדרות התזמון עבור שאלון בשם "{$name}" עודכנו על ידי שם המשתמש "{$user}".',
+    'QuestionnaireResultNotReopenable' => 'לא ניתן לפתוח מחדש את תוצאת השאלון מכיוון שהיא אינה במצב נדחה או לא אושר.',
+    'QuestionnaireTrackingNotFoundAfterUpdate' => 'מעקב אחר שאלונים לא נמצא לאחר העדכון.',
+    'QuestionnaireResultAlreadyDecided' => 'תוצאת השאלון כבר נקבעה (אושרה, נדחתה או לא אושרה). השתמש תחילה בפעולת פתיחה מחדש.',
+    'QuestionnaireNoControlsForApproval' => 'לא נמצאו בקרות עבור שאלון זה.',
+    'QuestionnaireNoResponsesForApproval' => 'לא נמצאו תשובות לשאלונים לעיבוד עדכוני בגרות.',
+    'ResultMessageUnavailable' => 'הודעת התוצאה אינה זמינה.',
+    'AIProviderURLNotAllowed' => 'כתובת ה-API הזו אינה מותרת. יש להשתמש בספק בינה מלאכותית ידוע או בכתובת אירוח עצמית מסוג loopback (127.0.0.1).',
+    'AIReenterKeyForNewURL' => 'הזן מחדש את מפתח ה-API כדי לבדוק כתובת URL של ספק אחר.',
+    'WorkflowHttpRequestDisallowedURL' => 'http_request: כתובת ה-URL {$url} מתורגמת לכתובת פנימית או שמורה שאינה מותרת.',
+    'BehaviorAndScheduling' => 'התנהגות ותזמון',
+    'PrepopulateAcrossContacts' => 'מלאו מראש תשובות חדשות עם תשובות קודמות של איש קשר אחר עבור הערכה זו',
+    'PrepopulateAcrossContactsHelp' => 'מלאו מראש טופס של משיב חדש עם התשובות הקודמות האחרונות מכל איש קשר - שימושי להמשכיות כאשר האחריות עוברת ידיים.',
+    'PrepopulateAcrossContactsCaution' => 'כבוי כברירת מחדל. כאשר האפשרות כבויה, איש קשר רואה רק את התשובות הקודמות שלו. הפעל אפשרות זו רק כאשר המשיבים פנימיים או מהימנים - היא עלולה לחשוף את התשובות של איש קשר אחד לאחר (לדוגמה, ספק אחד רואה את התשובות של אחר).',
+    'AddTemplateAndContacts' => 'הוסף תבנית ואנשי קשר',
+    'QuestionnaireGeneralSubtitle' => 'תן שם לשאלון וקבע למי הוא הבעלים',
+    'QuestionnaireInstructionsSubtitle' => 'ההנחיות המוצגות למשיבים ובמייל ההזמנה',
+    'QuestionnaireBehaviorSubtitle' => 'כיצד השאלון מתנהג לאחר שליחתו ומילויו',
+    'QuestionnaireRiskDetailsSubtitle' => 'ברירות מחדל אופציונליות שהוחלו על סיכונים שהערכה זו יוצרת',
+    'QuestionnaireTemplatesSubtitle' => 'התאם כל תבנית שאלה לאנשי הקשר שמקבלים אותה',
+    'BypassPendingRisksLabel' => 'עקיפת סיכונים ממתינים',
+    'BypassPendingRisksDescription' => 'צור סיכונים מיד לאחר השלמת ההערכה במקום להמתין לבדיקה.',
+    'AutomaticallySendResultsLabel' => 'שליחה אוטומטית של תוצאות',
+    'AutomaticallySendResultsDescription' => 'שליחת תוצאות ההערכה לכל אנשי הקשר של ההערכה לאחר השלמתה.',
+    'QuestionnaireMultiselectPlaceholder' => 'בחר או חפש…',
+    'QuestionnaireNamePlaceholder' => 'לדוגמה, סקירת אבטחת ספקים 2026',
+    'AddTeamPlaceholder' => 'הוסף צוות…',
+    'AddStakeholderPlaceholder' => 'הוסף בעל עניין…',
+    'AddControlTypePlaceholder' => 'הוסף סוג בקרה…',
+    'AddLocationPlaceholder' => 'הוסף מיקום…',
+    'NotifyWhenNotCompleteLabel' => 'הודע כאשר לא הושלם',
+    'NotifyWhenNotCompleteDescription' => 'הזכירו לאנשי קשר שלא סיימו את ההערכה.',
+    'RemindEveryDays' => 'תזכורת כל {$day} ימים',
+    'ResendAssessmentLabel' => 'שלח שוב את ההערכה',
+    'ResendAssessmentDescription' => 'הנפקה מחדש אוטומטית של ההערכה בקצב חוזר.',
+    'ResendEveryDays' => 'שלח שוב כל {$day} ימים',
+    'QuestionnaireSaveBarHint' => '"שמור ושלח" שולח את השאלון לאנשי הקשר שלו באופן מיידי.',
+    // Home dashboard — KPI tile labels
+    'NewSelfAssessment' => 'הערכה עצמית חדשה',
+    'SelfAssessmentPrereqIntro' => 'הערכות עצמיות מאפשרות לך להעריך את הארגון שלך מול מסגרת בקרות מאובטחות וליצור באופן אוטומטי סיכונים מהבקרות שנכשלות. נדרשים שני שלבי הגדרה תחילה:',
+    'RegisterYourInstance' => 'רשום את המופע שלך',
+    'RegisterYourInstanceHelp' => 'רישום מקשר מופע זה לשירות הרישוי של SimpleRisk כך שניתן יהיה להוריד תוספות בחינם (כולל SCF).',
+    'InstallTheSCF' => 'התקן את מסגרת הבקרה המאובטחת',
+    'InstallTheSCFHelp' => 'ה-SCF הוא תוספת חינמית המספקת את המסגרות, שאלות הבקרה ומיפויי הסיכונים שתכונה זו מעריכה על פיהם. ההתקנה פועלת ברקע ועשויה להימשך מספר דקות.',
+    'GoToRegistration' => 'עבור אל רישום',
+    'GoToSCF' => 'עבור אל מסגרת בקרות מאובטחות',
+    'SelfAssessmentEnableTip' => 'אופציונלי: תחת ממשל > מסגרות ניתן לאפשר למסגרות SCF ספציפיות לראות רשימה קצרה ומאוגדת בעת התחלת הערכה. ניתן גם להעריך מול כל מסגרת בקטלוג SCF המלא מבלי להפעיל אותה.',
+    'ChooseAFramework' => 'בחירת מסגרת להערכה מולה',
+    'EnabledFrameworks' => 'מסגרות מופעלות',
+    'AllScfFrameworks' => 'כל מסגרות ה-SCF',
+    'Start' => 'הַתחֵל',
+    'Resume' => 'המשך',
+    'ControlQuestion' => 'שאלת בקרה',
+    'NotApplicable' => 'לא רלוונטי',
+    'SaveProgress' => 'שמירת התקדמות',
+    'MarkComplete' => 'סמן הושלם',
+    'AnsweredOfTotal' => 'ענה',
+    'FailedSoFar' => 'נכשל עד כה',
+    'StartedBy' => 'התחיל על ידי',
+    'FailedControls' => 'בקרות כושלות',
+    'PushToRisk' => 'דחיפה לסיכון',
+    'ConfirmDeleteSelfAssessment' => 'למחוק את ההערכה העצמית הזו? לא ניתן לבטל פעולה זו.',
+    'ConfirmCompleteSelfAssessment' => 'לסמן הערכה זו כהשלמה? סיכונים ייווצרו כתוצאה מבקרות כושלות.',
+    'NoSelfAssessmentsYet' => 'אין עדיין הערכות עצמיות. התחל אחת כדי להתחיל.',
+    'RequestFailed' => 'לא ניתן היה להשלים את הבקשה. אנא נסה שוב.',
+    'NoPendingRisks' => 'אין סיכונים ממתינים. השלם הערכה כדי ליצור סיכונים מבקרות כושלות.',
+    'NoFailedControls' => 'אין תוצאות בקרה להצגה עבור מסנן זה.',
+    'ControlResultsTruncated' => 'מציג את 2000 התוצאות האחרונות. צמצם את המסנן כדי לראות עוד.',
+    'GeneratedFromSelfAssessment' => 'נוצר מהערכה עצמית',
+    'SelfAssessmentMitigationSolution' => 'יש ליישם את הבקרות המקושרות להלן, אשר זוהו ככושלות במהלך הערכה עצמית זו, כדי לצמצם סיכון זה.',
+    'NSelected' => '{n} נבחר',
+    'FilterByControl' => 'סנן לפי בקרה',
+    'Pushing' => 'דוחף…',
+    'Deleting' => 'מחיקת…',
+    'ConfirmPushSelectedPendingRisks' => 'לדחוף את הסיכון/ים הממתינים שנבחרו {n} אל סיכונים?',
+    'ConfirmDeleteSelectedPendingRisks' => 'למחוק את הסיכון/סיכונים הממתינים שנבחרו {n} ? לא ניתן לבטל פעולה זו.',
+    'ConfirmDeleteSelectedSelfAssessments' => 'למחוק את הערכת/ות העצמית {n} שנבחרה/ות? לא ניתן לבטל פעולה זו.',
+    'BulkPartialFailure' => '{n} מתוך {total} פריטים הצליחו; השאר נכשלו. רענן כדי לראות את המצב הנוכחי.',
+
+    // Workflows Extra - deactivation confirm ('Deactivate' at line 480 is reused as-is)
+    'WorkflowsExtraDeactivateConfirm' => 'להשבית את זרימות העבודה הנוספות? כל הגדרות זרימות העבודה שנוצרו על ידי המשתמש יימחקו לצמיתות. זרימות העבודה של המערכת יישמרו.',
+    'HomeKpiOpenRisks' => 'פתח סיכונים',
+    'HomeKpiNeedsReview' => 'צריך סקירה',
+    'HomeKpiUnmitigated' => 'לא מופחת',
+    'HomeKpiClosedRisks' => 'סגור סיכונים',
+    'HomeKpiControlPassRate' => 'שיעור מעבר בקרה',
+    'HomeKpiFailingControls' => 'בקרות כושלות',
+    'HomeKpiOpenAudits' => 'ביקורות פתוחות',
+    'HomeKpiTestsDueSoon' => 'בדיקות בקרוב',
+    'HomeKpiActiveFrameworks' => 'מסגרות פעילות',
+    'HomeKpiTotalControls' => 'בקרות מלאות',
+    // Home dashboard — What's Next feed
+    'WhatsNext' => 'מה הלאה?',
+    'WhatsNextAllCaughtUp' => 'סיימתם את כל העניינים.',
+    'WhatsNextRegisterInstance' => 'רשום את מופע SimpleRisk שלך',
+    'WhatsNextSubmitFirstRisk' => 'הגש את הסיכון הראשון שלך',
+    'WhatsNextLoadFramework' => 'טעינת מסגרת בקרה',
+    'WhatsNextUnreviewedRisks' => 'סיכונים לבדיקה',
+    'WhatsNextUnmitigatedRisks' => 'סיכונים שיש לצמצם',
+    'WhatsNextInitiateAudits' => 'ביקורות ליזום',
+    // Home dashboard — widget picker type labels
+    'WidgetType_kpi' => 'אריח KPI',
+    'WidgetType_whats_next' => 'רְשִׁימָה',
+    // Home dashboard — hub catalog entry
+    'HomeDashboard' => 'דף הבית',
+    'HomeDashboardDesc' => 'נקודת ההתחלה שלך - מדדים מרכזיים ומה לעשות הלאה, במבט חטוף.',
+    'HomeChartRiskByLevel' => 'סיכון לפי רמה',
+    'HomeKpiThisMonth' => 'החודש הזה',
+    'HomeKpiNoChange' => 'אין שינוי',
+    'EditLayout' => 'עריכת פריסה',
+    'ListHighestRisks' => 'הסיכונים הגבוהים ביותר שלי',
+    'ListPastDueReviews' => 'ביקורות שעברו את מועד התפוגה',
+    'ListUpcomingTests' => 'מבחנים קרובים',
+    'ListRecentFailures' => 'כשלים אחרונים',
+    'ListPoliciesReview' => 'מסמכים לבדיקה',
+    'ListExpiringExceptions' => 'חריגים שפג תוקפם',
+    'ImKpiOpenIncidents' => 'סך כל הפתיחה',
+    'ImKpiOverdue' => 'איחור במועד',
+    'ImKpiMttr30' => 'רזולוציה ממוצעת',
+    'ImKpiMttrQuarter' => 'רזולוציה ממוצעת (90 ימים)',
+    'ImKpiMttrYear' => 'רזולוציה ממוצעת (שנה אחת)',
+    'ImKpiMttrAll' => 'ממוצע פתרון (הכל)',
+    'ImKpiResolved30' => 'נפתר',
+    'ImChartBySeverity' => 'לפי חומרה',
+    'ImChartByStatus' => 'לפי סטטוס',
+    'ImListRecent' => 'אירועים אחרונים',
+    'ImListUnassigned' => 'אירועים שלא הוקצו',
+    'HomeKpiOpenExceptions' => 'חריגים פתוחים',
+    'HomeKpiPolicies' => 'מדיניות',
+    'ResolutionTargets' => 'יעדי פתרון (ימים)',
+    'ResolutionTargetsHelp' => 'מספר הימים שאירוע עשוי להישאר פתוח לפני שהוא נחשב כאירוע איחור.',
+    'DefaultTarget' => 'ברירת המחדל',
+    'PerSeverityOverrideHelp' => 'ניתן לעקוף את ברירת המחדל עבור דרגות חומרה ספציפיות (השאר ריק כדי להשתמש בברירת המחדל):',
+    'ResolutionTargetUsesDefault' => 'ברירת מחדל (%d)',
+    'SeverityColors' => 'צבעי חומרה',
+    'SeverityColorsHelp' => 'הצבע עבור כל חומרה, המוצג בלוח המחוונים של האירוע ובדף פרטי האירוע.',
+    'Editing' => 'עֲרִיכָה',
+    'SetAsDefaultForEveryone' => 'הגדר כברירת מחדל עבור כולם',
+    'EditLayoutHint' => 'גרור אריח כדי להזיז · גרור קצה כדי לשנות גודל · ✕ כדי להסיר',
+    'RemoveWidget' => 'הסר ווידג\'ט',
+    'AddWidget' => 'הוסף ווידג\'ט',
+    'AddToDashboard' => 'הוסף ללוח המחוונים',
+    'AllWidgetsAdded' => 'כל הווידג\'טים הזמינים נמצאים בלוח המחוונים הזה.',
+    'AddText' => 'הוסף טקסט',
+    'GettingStarted' => 'תחילת העבודה',
+    'GettingStartedTitle' => 'ברוכים הבאים ל-SimpleRisk',
+    'GettingStartedSubtitle' => 'כמה צעדים מהירים כדי להפיק את המרב מ-SimpleRisk.',
+    'GSProgressCount' => '{done} מתוך {total} הושלם',
+    'GSNextUp' => 'הבא בתור',
+    'GSArea_setup' => 'הגדרה',
+    'GSArea_risk' => 'סיכון',
+    'GSArea_assessment' => 'הַעֲרָכָה',
+    'GSArea_compliance' => 'תאימות',
+    'GSArea_assets' => 'נכסים',
+    'GSArea_ai' => 'הגדרה',
+    'GSHide' => 'הסתר את תחילת העבודה',
+    'GSDismissStep' => 'סגור שלב זה',
+    'GSAllSet' => 'הכל מוכן - עבודה יפה!',
+    'GSWalkthrough' => 'סיור של 30 דקות',
+    'Explore' => 'חקור',
+    'Learn' => 'למד',
+    'AdminGuide' => 'מדריך למנהל',
+    'LearnMore' => 'למידע נוסף',
+    'GSRegisterTitle' => 'רשום את המופע שלך',
+    'GSRegisterDesc' => 'הפעל תמיכה ועדכונים באמצעות מפתח הרישיון שלך.',
+    'GSRegisterCta' => 'הרשמה',
+    'GSScfTitle' => 'התקן את מסגרת הבקרה המאובטחת',
+    'GSScfDesc' => 'התקן את SCF - ספריית הבקרה שלך במגוון סטנדרטים.',
+    'GSScfCta' => 'התקנת SCF',
+    'GSInviteTitle' => 'הזמינו את הצוות שלכם',
+    'GSInviteDesc' => 'הוסף עמיתים כדי שניתן יהיה להקצות ולסקור את העבודה.',
+    'GSInviteCta' => 'הוסף משתמשים',
+    'GSAiTitle' => 'הגדרת בינה מלאכותית',
+    'GSAiDesc' => 'שפרו את חוויית SimpleRisk שלכם בעזרת בינה מלאכותית.',
+    'GSAiCta' => 'הגדר בינה מלאכותית',
+    'GSSubmitRiskTitle' => 'הגש את הסיכון הראשון שלך',
+    'GSSubmitRiskDesc' => 'לכידת הסיכון שעומד בפני הארגון שלך.',
+    'GSSubmitRiskCta' => 'שלח סיכון',
+    'GSMitigateTitle' => 'לתכנן הפחתה',
+    'GSMitigateDesc' => 'הוסף תוכנית הפחתה לסיכון פתוח.',
+    'GSMitigateCta' => 'תוכנית הפחתה',
+    'GSReviewTitle' => 'ביצוע סקירת סיכונים',
+    'GSReviewDesc' => 'סקור סיכון והחלט על הצעד הבא שלו.',
+    'GSReviewCta' => 'בצע סקירה',
+    'GSDefineTestTitle' => 'הגדר מבחן בקרה',
+    'GSDefineTestDesc' => 'הגדר כיצד בקרה נבדקת.',
+    'GSDefineTestCta' => 'הגדר בדיקה',
+    'GSInitiateAuditTitle' => 'התחלת ביקורת',
+    'GSInitiateAuditDesc' => 'התחל מחזור בדיקות או ביקורת.',
+    'GSInitiateAuditCta' => 'התחלת ביקורת',
+    'GSAssetTitle' => 'הוסף את הנכסים שלך',
+    'GSAssetDesc' => 'ערכו מלאי של הנכסים שאתם מגינים עליהם.',
+    'GSAssetCta' => 'הוסף נכסים',
+    'GSInvalidStep' => 'שלב התחלה לא חוקי.',
+    'GSPagerLabel' => '{from}–{to} מתוך {total}',
+    'GSPrevCards' => 'הצג את השלבים הקודמים',
+    'GSNextCards' => 'הצג את השלבים הבאים',
+    'WhatsNextInstallSCF' => 'התקן את מסגרת הבקרה המאובטחת',
+    'GSActivateScfTitle' => 'הפעל את מסגרת הבקרה המאובטחת',
+    'GSActivateScfDesc' => 'הפעל את SCF המותקן כדי לטעון את הבקרות שלו לספרייה שלך.',
+    'GSActivateScfCta' => 'הפעלת SCF',
+    'WhatsNextActivateSCF' => 'הפעל את מסגרת הבקרה המאובטחת',
+    'GSEnableFrameworksTitle' => 'הפעלת מסגרות רלוונטיות',
+    'GSEnableFrameworksDesc' => 'הפעל את מסגרות SCF הרלוונטיות לארגון שלך.',
+    'GSEnableFrameworksCta' => 'הפעלת מסגרות',
+    'WhatsNextEnableFrameworks' => 'הפעלת מסגרות רלוונטיות',
+    'GSSelfAssessTitle' => 'בצע הערכה עצמית',
+    'GSSelfAssessDesc' => 'הערך את הארגון שלך מול למעלה מ-250 מסגרות עבודה וצור סיכונים כתוצאה מבקרות כושלות.',
+    'GSSelfAssessCta' => 'התחלת הערכה',
+    'WhatsNextTakeSelfAssessment' => 'בצע הערכה עצמית',
+    'WhatsNextConfigureAI' => 'הגדרת בינה מלאכותית',
+    'ListUnreviewedRisks' => 'סיכונים שלא נבדקו',
+    'ControlsByDomain' => 'בקרות לפי דומיין',
+    'ControlsByClass' => 'בקרות לפי מחלקה',
+    'ControlsByPhase' => 'בקרות לפי שלב',
+    'ControlsByPriority' => 'בקרות לפי עדיפות',
+    'ControlsByCurrentMaturity' => 'בקרות לפי רמת הבגרות הנוכחית',
+    'ControlStatusOverTime' => 'סטטוס בקרה לאורך זמן',
+    'ComplianceTotalControls' => 'בקרות מלאות',
+    'HomeKpiOverdueTests' => 'בדיקות שאיחרו',
+    'Total' => 'סַך הַכֹּל',
+    'StartTheTest' => 'התחל את המבחן',
+    'TestStartsAutomatically' => 'הבדיקה מתחילה אוטומטית',
+    'GoToTest' => 'עבור אל מבחן',
+    'NotTested' => 'לא נבדק',
+    'PassingPercent' => 'אחוז עובר',
+    'ListFailingControls' => 'בקרות כושלות',
+    'Exceptions' => 'יוצאים מן הכלל',
+    'Documents' => 'מסמכים',
+    'ControlsBelowMaturity' => 'בקרות מתחת לרמת הבגרות',
+    'ControlsAtMaturity' => 'בקרות ברמת הבגרות',
+    'ControlsAboveMaturity' => 'בקרות מעל לרמת הבגרות',
+    'Maturity' => 'בַּגרוּת',
+    'AllTime' => 'כל הזמנים',
+    'Last7Days' => '7 הימים האחרונים',
+    'Last30Days' => '30 הימים האחרונים',
+    'Last90Days' => '90 הימים האחרונים',
+    'YearToDate' => 'מתחילת השנה',
+    'CustomRange' => 'טווח מותאם אישית',
+    'Age' => 'גִיל',
+    'ImOpenIncidents' => 'אירועים פתוחים',
+    'ImClosedIncidents' => 'אירועים סגורים',
+    'ImByAttackVector' => 'פתיחה על ידי וקטור התקפה',
+    'ImBySource' => 'פתוח לפי מקור',
+    'AverageDaysToDetect' => 'ממוצע ימים לגילוי',
+    'ImKpiAvgTtd' => 'זיהוי ממוצע',
+    'Days' => 'ימים',
+    'ImKpiCriticalOpen' => 'פתיחה קריטית',
+    'ImKpiResolvedInSla' => 'נפתר בהסכם רמת שירות',
+    'Events' => 'אירועים',
+    'ImEventsIncidents' => 'אירועים ותקריות',
+    'ImSourceBreakdown' => 'מקור לפי קטגוריה',
+    'ImClosureSummary' => 'סיכום סגירה',
+    'ImSignalQuality' => 'איכות האות',
+    'ImSignalLowSample' => 'אין מספיק סגירות מסוכמות כדי לדרג באופן אמין',
+    'ImportExportExportPdf' => 'ייצוא PDF',
+    'ImportExportExporting' => 'מכין PDF…',
+    'ImportExportExportFailed' => 'לא ניתן היה ליצור את קובץ ה-PDF. אנא נסה שוב.',
+    'ImportExportGeneratedOn' => 'נוצר',
+    'ImportExportPage' => 'עַמוּד',
+    'ImportExportPageOf' => 'שֶׁל',
+    'ResolutionTargetsUpdated' => 'יעדי הפתרון לפי דרגת חומרה עודכנו.',
+    'SeverityColorsUpdated' => 'צבעי החומרה עודכנו.',
+    // AI Capabilities Catalog + AI settings hub (unified AI settings)
+    'AICapGrcRecommendations' => 'המלצות למסגרת GRC',
+    'AICapGrcRecommendationsDesc' => 'המלצות למסגרת שנוצרה על ידי בינה מלאכותית וסיכום מנהלים, המותאמים להקשר של הארגון שלכם.',
+    'AICapRiskRecommendations' => 'המלצות סיכון',
+    'AICapRiskRecommendationsDesc' => 'הצעות לכל סיכון לפרטי סיכון ולהפחתתו, שנוצרו מהסיכון, מהפחתתו ומהסקירה שלו.',
+    'AICapFairAnalysis' => 'ניתוח כמותי של FAIR',
+    'AICapFairAnalysisDesc' => 'בינה מלאכותית מעריכה פרמטרי הפסד של Beta-PERT; SimpleRisk מריצה בדיקת מונטה קרלו בת 10,000 איטרציות כדי לכמת את הסיכון בדולרים.',
+    'AICapDocumentCustomization' => 'התאמה אישית של מסמכים',
+    'AICapDocumentCustomizationDesc' => 'ממלא מיקום ומנקה טקסט מדיניות בתבניות המסמכים שלך כך שמדיניות סטנדרטית תיקרא כשלך.',
+    'AICapDocumentControlMatching' => 'התאמת מסמך ↔ בקרה',
+    'AICapDocumentControlMatchingDesc' => 'ממפה אוטומטית בקרות למסמכי מדיניות עם ציון ביטחון ונימוקים שניתן לעיין בהם.',
+    'AICapDocumentTemplates' => 'ספריית תבניות מסמכים',
+    'AICapDocumentTemplatesDesc' => 'התקן תבניות מדיניות, הנחיות ונהלים שנבחרו מספריית SimpleRisk.',
+    'AICapControlReferenceEnhancement' => 'שיפור ייחוס בקרה',
+    'AICapControlReferenceEnhancementDesc' => 'חוקר טקסט בקרה מילה במילה באמצעות חיפוש באינטרנט כדי להעשיר את הפניות הבקרה שלך.',
+    'AICapAiChat' => 'עוזר צ\'אט',
+    'AICapAiChatDesc' => 'עוזר GRC שעונה על שאלות בהקשר בכל מקום ב-SimpleRisk.',
+    'AICapSurfacedRecommendations' => 'דף בינה מלאכותית',
+    'AICapSurfacedRiskView' => 'תצוגת סיכונים - פרטים והפחתת אמצעים',
+    'AICapSurfacedFairTab' => 'תצוגת סיכון - כרטיסיית FAIR',
+    'AICapSurfacedDocuments' => 'ממשל - מסמכים',
+    'AICapSurfacedControls' => 'תאימות - בקרות',
+    'AICapSurfacedEveryPage' => 'כל עמוד - עוזר צף',
+    'AICapabilitiesCatalog' => 'יכולות',
+    'AICapSearchPlaceholder' => 'חיפוש יכולות בינה מלאכותית…',
+    'AICapFilterDomain' => 'תְחוּם',
+    'AICapFilterTier' => 'נִדבָּך',
+    'AICapFilterState' => 'מצב',
+    'AICapTierExtra' => 'בינה מלאכותית אקסטרה',
+    'AICapStateLocked' => 'נָעוּל',
+    'AICapIncludedInExtra' => 'כלול בתוספת הבינה המלאכותית',
+    'AICapPurchaseExtra' => 'רכישת תוספת הבינה המלאכותית',
+    'AICapNeedsProvider' => 'דורש הגדרת ספק',
+    'AICapNoMatch' => 'אין יכולות תואמות',
+    'AICapNoMatchHint' => 'נסה דומיין, רמה או מונח חיפוש אחר.',
+    'AICapCountSingular' => 'יְכוֹלֶת',
+    'AICapCountPlural' => 'יכולות',
+    'DomainAssistant' => 'עוֹזֵר',
+    'AICapLoadError' => 'לא ניתן היה לטעון את יכולות הבינה המלאכותית. אנא נסה שוב.',
+    'AIProviderConfigSubtitle' => 'חבר את SimpleRisk לספק בינה מלאכותית כדי להפעיל את יכולות הבינה המלאכותית.',
+    'AIHowToGetAPIKeyFor' => 'כיצד להשיג מפתח API עבור',
+    'AIExtraNotActivated' => 'לא הופעל',
+    'AIExtraValueProp' => 'בינה מלאכותית משופרת - כימות סיכונים FAIR, סיוע במסמכים ובבקרה, ועוזר צ\'אט של בינה מלאכותית.',
+    'AICtxOrgName' => 'מה שם הארגון שלך?',
+    'AICtxOrgSizeEmployees' => 'כמה עובדים יש בארגון שלך?',
+    'AICtxOrgSizeRevenue' => 'מהי ההכנסה השנתית של הארגון שלך?',
+    'AICtxOrgObjective' => 'מהם היעדים העסקיים העיקריים והיעדים האסטרטגיים של הארגון שלך?',
+    'AICtxOrgIndustry' => 'מהו התעשייה או המגזר העיקרי של הארגון שלך?',
+    'AICtxOrgLocation' => 'באילו מדינות או אזורים הארגון שלך פועל?',
+    'AICtxOrgType' => 'איזה סוג של ארגון אתם?',
+    'AICtxDataTypes' => 'אילו סוגי נתונים הארגון שלך אוסף, מעבד או מאחסן (למשל, נתונים אישיים, נתונים פיננסיים, מידע בריאותי)?',
+    'AICtxDataCustomers' => 'מי הם הלקוחות או בעלי העניין העיקריים שלך (למשל, צרכנים, עסקים, גופים ממשלתיים)?',
+    'AICtxDataRegulatory' => 'האם אתם כפופים לדרישות רגולטוריות ספציפיות בתעשייה שלכם?',
+    'AICtxDataThirdParties' => 'האם יש לכם קשרים עם צד שלישי או שירותים במיקור חוץ הדורשים פיקוח על תאימות?',
+    'AICtxMaturityIssues' => 'האם חוויתם בעיות תאימות משמעותיות, פרצות אבטחה או אירועי סיכון ב-3-5 השנים האחרונות?',
+    'AICtxMaturityConcerns' => 'האם יש תחומים ספציפיים לדאגה או לשיפור שזיהיתם בתהליכי ה-GRC הנוכחיים שלכם?',
+    'AICtxMaturityAppetite' => 'מהו התיאבון והסבילות לסיכון של הארגון שלך?',
+    'AICtxMaturityLevel' => 'מהי רמת הבגרות הנוכחית שלך מבחינת ממשל תאגידי, ניהול סיכונים ונהלי תאימות?',
+    'AICtxImplementationChanges' => 'האם ישנם שינויים עתידיים במודל העסקי שלכם, בתשתית הטכנולוגית או בשוק שעשויים להשפיע על צרכי התאימות שלכם?',
+    'AICtxImplementationResourcesBudget' => 'אילו משאבי תקציב עומדים לרשותך ליישום ותחזוקה של מסגרות תאימות?',
+    'AICtxImplementationResourcesPersonnel' => 'אילו משאבי כוח אדם עומדים לרשותך ליישום ותחזוקה של מסגרות תאימות?',
+    'AICtxImplementationResourcesTechnology' => 'אילו משאבי תשתית טכנולוגית עומדים לרשותכם ליישום ותחזוקה של מסגרות תאימות?',
+    'AICtxImplementationResourcesTraining' => 'אילו משאבי הדרכה ופיתוח עומדים לרשותכם ליישום ותחזוקה של מסגרות תאימות?',
+    'AICtxImplementationResourcesExternal' => 'אילו משאבי תמיכה חיצוניים עומדים לרשותך ליישום ותחזוקה של מסגרות תאימות?',
+    'AIAPIKeySecurityNote' => 'המפתח שלך מאוחסן בצד השרת ולא מוחזר לעולם לדפדפן. כתובות URL של ספקים מאומתות מול רשימת היתרים SSRF הניתנת להגדרה בקובץ config.php.',
+    'AIContextEgressWarning' => 'התשובות שלך נשלחות לספק הבינה המלאכותית שתצורתו מוגדרת כדי לבסס את המלצותיו. אל תכלול שום דבר שלא היית משתף איתו.',
+    'Provider' => 'ספק',
+    'AIProviderURLHostNotAllowed' => 'המארח "%s" אינו ברשימת ההיתרים של ספקי בינה מלאכותית. הוסף אותו ל- $ai_allowed_provider_hosts בקובץ config.php, ולאחר מכן שמור. (ספקי בינה מלאכותית ידועים וכתובות לולאה חוזרת 127.0.0.1 תמיד מותרים.)',
+    'AIContextLastSaved' => 'נשמר לאחרונה',
+    'AIContextNeverSaved' => 'עדיין לא נשמר',
+    'AICtxCardSubtitle' => '21 שאלות בארבעה תחומים. ככל שתענו על יותר שאלות, כך כל המלצה תהיה חדה יותר.',
+    'AICtxAnswered' => '%1$d מתוך %2$d ענו',
+    'AICtxAllOptional' => 'אופציונלי',
+    'AIContextSaving' => 'שומר…',
+    'AIContextSaveFailed' => 'לא ניתן היה לשמור את השינויים שלך. אנא נסה שוב.',
+    'AISettingsSavedNotReachable' => 'הגדרות הבינה המלאכותית נשמרו, אך לא ניתן היה ליצור קשר עם הספק. ודא שהוא פועל ושהכתובת-URL נכונה.',
+    'AISettingsSavedKeyRequired' => 'הגדרות הבינה המלאכותית נשמרו, אך ספק זה דורש מפתח API לפני שניתן יהיה להשתמש בתכונות שלו.',
+    'TestAndSave' => 'בדיקה ושמירה',
+    'AICapEnableAll' => 'הפעל הכל',
+    'AICapDisableAll' => 'השבת הכל',
+    'AISettingsSavedConnected' => 'הגדרות הבינה המלאכותית נשמרו - החיבור הצליח.',
+    'AISettingsSavedNotConnected' => 'הגדרות הבינה המלאכותית נשמרו, אך בדיקת החיבור נכשלה. בדוק את המודל, המפתח וכתובת האתר.',
+    'AIProviderURLNotOnAllowlist' => 'מארח זה אינו ברשימת ההיתרים של ספק הבינה המלאכותית (SSRF). יש להוסיף אותו ל- $ai_allowed_provider_hosts בקובץ config.php לפני שניתן יהיה לשמור אותו.',
+    'Connected' => 'מְחוּבָּר',
+    'NotConnected' => 'לא מחובר',
+    'AICapBulkError' => 'לא ניתן היה לעדכן חלק מהיכולות. אנא נסה שוב.',
+    'QuestionnaireAlreadyCompleted' => 'שאלון זה כבר הושלם.',
+    'QuestionnaireDraftError' => 'שגיאה בשמירת הטיוטה. ראה פרטים נוספים בקונסולה.',
+
+    // Audit cadence scheduling - Define Test modal (Interval/Calendar schedule redesign)
+    // 'Overdue' duplicates the English of 'ImKpiOverdue' on purpose: that key is
+    // an Incident Management KPI label, and a compliance status pill reusing an
+    // IM-scoped key would couple the two domains for a translator (and break the
+    // moment either wording moves). This is the generic, cross-domain one.
+    'Overdue' => 'איחור במועד',
+    // Deliberate: the only other key rendering 'Manual' is 'ManualValuation',
+    // an asset-valuation label. Pointing a schedule mode at it would couple two
+    // unrelated domains for translators and break the moment either reworded.
+    'ScheduleManual' => 'יָדָנִי',
+    'ScheduleInterval' => 'מרווח',
+    'ScheduleCalendar' => 'לוּחַ שָׁנָה',
+    'Cadence' => 'קצב',
+    'CadenceBiweekly' => 'דו-שבועי',
+    'CadenceSemiAnnually' => 'חצי שנתי',
+    'AnchorDate' => 'תאריך עוגן',
+    'UpcomingOccurrences' => 'אירועים קרובים',
+    'AuditLeadInDays' => 'ימי הכנה לביקורת',
+    'SkipOccurrence' => 'דַּלֵּג',
+    'OverrideDate' => 'תאריך עקיפה',
+    'Week' => 'שָׁבוּעַ',
+    'NoUpcomingOccurrences' => 'אין אירועים קרובים בחלון זה.',
+    'FailedToLoadUpcomingOccurrences' => 'טעינת התצוגה המקדימה של האירועים הקרובים נכשלה.',
+    'AnchorDateMustBeTodayOrLater' => 'תאריך העוגן חייב להיות היום או מאוחר יותר. כדי לתזמן תאריך עבר, צור בדיקה ידנית במקום זאת.',
+    'InvalidScheduleType' => 'סוג לוח זמנים לא חוקי. ערכים מותרים: ידני, מרווח, לוח שנה.',
+    'Weeks' => 'שבועות',
+    'Months' => 'חודשים',
+    'Years' => 'שנים',
+    'ScheduleSummaryEvery' => 'כל {$interval} {$unit}',
+
+    // Define Tests redesign - client-rendered grid (Phase 1, Task 6)
+    'LastResult' => 'תוצאה אחרונה',
+    'NextDue' => 'מועד אחרון',
+    'DueSoon' => 'בקרוב',
+    'Retired' => 'בְּדִימוּס',
+    'MyTests' => 'הבדיקות שלי',
+    'Failing' => 'כָּשֵׁל',
+    'Untested' => 'לא נבדק',
+    'ShowRetired' => 'הצג פרש',
+    'Tests' => 'בדיקות',
+    'NoTestsForThisControl' => 'עדיין אין בדיקות עבור בקרה זו.',
+    'NoControlsDefinedYet' => 'עדיין לא הוגדרו בקרות',
+    'NoControlsDefinedYetBody' => 'הגדר בקרות ב-Governance לפני הוספת בדיקות.',
+    'NoTestsMatchFilters' => 'אין בדיקות התואמות את המסננים שלך',
+    'NoTestsMatchFiltersBody' => 'נסה להתאים את החיפוש או את המסננים שלך.',
+    'CouldNotLoadTests' => 'לא ניתן היה לטעון את הבדיקות',
+    'CouldNotLoadTestsBody' => 'משהו השתבש. הנתונים שלך בטוחים - נסה לרענן.',
+    'ShowingXToYOfZ' => 'מציג {$start}–{$end} מתוך {$total}',
+    // Define Tests grid -- SCF-mapping + read-only procedure expand (Phase 1, Task 7)
+    'Reference' => 'הַפנָיָה',
+    'NoFrameworksMapped' => 'אין מסגרות ממופות לבקרה זו.',
+    // Define Tests grid -- batch select + retire/delete + quick filters (Phase 1, Task 8)
+    'Retire' => 'הוצא משימוש',
+    'ReassignTester' => 'הקצאה מחדש של בודק',
+    'SetSchedule' => 'קבע לוח זמנים',
+    'ConfirmRetireSelectedTests' => 'האם להפסיק את הבדיקה/ות {n} שנבחרה/ו?',
+    'ConfirmDeleteSelectedTests' => 'למחוק את הבדיקה/ות {n} שנבחרה/ות? לא ניתן לבטל פעולה זו.',
+    // Define Tests grid -- Coverage toolbar select (Issue 4)
+    'Coverage' => 'כיסוי',
+    'CoverageWithTests' => 'בקרות עם בדיקות',
+    'CoverageAllControls' => 'כל הבקרות',
+    'CoverageGaps' => 'פערים',
+    // Define Tests insights band (Phase 2, Task 4) -- KPI tile labels + subtitles.
+    // 'Overdue', 'DueSoon', and 'Failing' are reused from the grid's quick-filter
+    // chips above (identical text) rather than duplicated here.
+    'DtTotalTests' => 'סך כל הבדיקות',
+    'DtCoverageGaps' => 'פערים בכיסוי',
+    'DtAcrossNControls' => 'על פני {$n} בקרות',
+    'DtControlsWithNoTest' => 'בקרות ללא בדיקה',
+    'DtNeedInitiationNow' => 'צריך ייזום עכשיו',
+    'DtWithinLeadInWindow' => 'בתוך חלון ההכנה',
+    'DtLastResultFailed' => 'התוצאה האחרונה נכשלה',
+    'InvalidTestMethod' => 'שיטת הבדיקה חייבת להיות אחת מהאפשרויות הבאות: חקירה, תצפית, בדיקה או ביצוע חוזר!',
+    'TesterCannotBeApprover' => 'הבוחן לא יכול להיות רשום גם כמאשר עבור בדיקה זו.',
+    'ApproverNotEligible' => 'לאחד או יותר ממאשרים שנבחרו אין את האחריות "אישור בדיקות".',
+    'TestMethod' => 'שיטת בדיקה',
+    'TestMethodInquiry' => 'חֲקִירָה',
+    'TestMethodObservation' => 'תַצְפִּית',
+    'TestMethodInspection' => 'בְּדִיקָה',
+    'TestMethodReperformance' => 'ביצוע חוזר',
+    'Sample' => 'מדגם',
+    'RequiredEvidence' => 'ראיות נדרשות',
+    'Approvers' => 'מאשרים',
+    'AuditLog_TestAuditApproved' => 'הביקורת "{$test_audit_name}" (מזהה: {$test_audit_id}אושרה על ידי המשתמש "{$user_name}".',
+    'AuditLog_TestAuditRejected' => 'הביקורת "{$test_audit_name}" (מזהה: {$test_audit_id}) נדחתה על ידי המשתמש "{$user_name}" עם התגובה "{$comment}".',
+    'AuditLog_TestAuditAwaitingApproval' => 'הביקורת "{$test_audit_name}" (מזהה: {$test_audit_id}) הוגשה לסגירה על ידי המשתמש "{$user_name}" וממתינה לאישור. שינויים: {$changes}.',
+    'AuditApproved' => 'הביקורת אושרה בהצלחה.',
+    'AuditRejected' => 'הביקורת נדחתה בהצלחה.',
+    'RejectCommentRequired' => 'נדרשת הערה כדי לדחות ביקורת.',
+    'NotAnApproverOfThisAudit' => 'אינך מאשר מוגדר עבור ביקורת זו.',
+    'ApproverCannotBeTester' => 'המאשר לא יכול להיות גם הבוחן של ביקורת זו.',
+    'AuditNotAwaitingApproval' => 'ביקורת זו אינה ממתינה כעת לאישור.',
+    'NotificationAuditAwaitingApprovalTitle' => 'הביקורת ממתינה לאישורך',
+    'NotificationAuditAwaitingApprovalBody' => 'הביקורת "{$test_audit_name}" הוגשה לסגירה וממתינה לאישורך.',
+    'NotificationAuditRejectedTitle' => 'ביקורת נדחתה',
+    'NotificationAuditRejectedBody' => 'הביקורת "{$test_audit_name}" נדחתה עם ההערה: "{$comment}"',
+    'AwaitingApproval' => 'ממתין לאישור',
+    'AwaitingApprovalBannerText' => 'ביקורת זו הוגשה לסגירה וממתינה לאישור מגורם מאשר שהוגדר לפני שניתן יהיה להיסגר.',
+    'ReturnedForRework' => 'הוחזר לעבודה חוזרת',
+    'ReturnedForReworkBannerText' => 'ביקורת זו נדחתה והוחזרה לעיבוד חוזר.',
+    'RejectReason' => 'סיבת דחייה',
+    'AreYouSureYouWantToApproveThisAudit' => 'האם אתה בטוח שאתה רוצה לאשר את הביקורת הזו?',
+    'AtLeastOneControlRequired' => 'נדרשת לפחות בקרה אחת.',
+    'DtNCommonAcrossNControls' => '{$common} נפוץ · {$n} בקרות',
+    'DtUntestedControls' => 'בקרות שלא נבדקו',
+    'DtControlsInScopeNoCoverage' => 'אין כיסוי',
+    'Passing' => 'חוֹלֵף',
+    'DtLastResultPassed' => 'התוצאה האחרונה עברה',
+    'AllFamilies' => 'כל המשפחות',
+    'SearchTestsPlaceholder' => 'בדיקות חיפוש, בקרות ומסגרות',
+    'AnySchedule' => 'כל לוח זמנים',
+    'AnyTag' => 'כל תג',
+    'AuditAutoClosedTestRetired' => 'נסגר אוטומטית כלא חד משמעי מכיוון שהבדיקה הוצאה משימוש.',
+    'Common' => 'מְשׁוּתָף',
+    'ValidatesAcrossMappedFrameworks' => 'מאמת על פני מסגרות ממופות',
+    'EditTest' => 'עריכת בדיקה',
+    'ControlHasNoTestCoverage' => 'לבקרה הנכללת בהיקף זו עדיין אין כיסוי בדיקה.',
+    'AddTheFirstTest' => 'הוסף את הבדיקה הראשונה',
+    'ApplyCommonTestHint' => 'החל בדיקה קיימת אחת או יותר על בקרה זו. כל בדיקה שומרת על הבקרות הנוכחיות שלה והופכת לבדיקה משותפת המכסה גם את הבדיקה הזו.',
+    'CommonTestApplied' => 'בדיקה הוחלת על בקרה זו.',
+    'CouldNotApplyCommonTest' => 'לא ניתן היה להחיל את הבדיקה על פקד זה.',
+    'SelectOneOrMoreTests' => 'בחר בדיקה אחת או יותר',
+    'CommonTestsApplied' => 'בדיקות {n} הוחלו על פקד זה.',
+    'ApplyCommonTests' => 'החל בדיקות נפוצות…',
+    'History' => 'הִיסטוֹרִיָה',
+    'Result' => 'תוֹצָאָה',
+    'Approval' => 'הַסכָּמָה',
+    'ThisTestHasNotBeenRunYet' => 'בדיקה זו טרם בוצעה.',
+    'CouldNotLoadTestHistory' => 'לא ניתן היה לטעון את היסטוריית הבדיקה הזו.',
+    'Identity' => 'זֶהוּת',
+    'IdentitySectionHint' => 'שם, בודק ובקרות שהוא מאמת',
+    'WhenTheAuditInitiates' => 'כאשר הביקורת מתחילה',
+    'ProcedureAndEvidence' => 'הליך וראיות',
+    'CommonTestControlsHint' => 'בדיקה אחת יכולה לאמת בקרות רבות - בדיקה נפוצה. פתיחת בדיקה זו מתוך "+ הוסף בדיקה" של פקד תסמן אותו מראש כאן.',
+    'SeparationOfDutiesNote' => 'הפרדת תפקידים - מאשר לא יכול להיות גם הבוחן.',
+    'CommonTestEditScopeHint' => 'שינויים חלים בכל מקום בו נעשה שימוש במבחן נפוץ זה.',
+    'Mode' => 'מצב',
+    'AddOrRemove' => 'הוסף או הסרה של…',
+    'AddOrSearchTags' => 'הוסף או חפש תגיות…',
+    'CreateTagX' => 'צור "{tag}"',
+    'Archived' => 'הועבר לארכיון',
+    'ShowAllTests' => 'כל הבדיקות',
+    'ShowActiveTests' => 'בדיקות פעילות',
+    'ShowRetiredTests' => 'בדיקות שהוצאו מהשימוש',
+    'UntestedControls' => 'בקרות שלא נבדקו',
+    'OverdueByXDays' => 'איחור במועד · {n} ימים',
+    'OverdueByOneDay' => 'איחור במועד · יום אחד',
+    'DueInXDays' => 'מועד אחרון לשיווק תוך {n} ימים',
+    'DueTomorrow' => 'מועד אחרון למחר',
+    'DueToday' => 'מועד אחרון להיום',
+    'ScheduledForX' => 'מתוזמן · {date}',
+    'AllTesters' => 'כל הבודקים',
+    'AllStatuses' => 'כל הסטטוסים',
+    'OnTrack' => 'בדרך הנכונה',
+    'NextTestDateDerivedHint' => 'מחושב מתאריך הבדיקה האחרון בתוספת תדירות הבדיקה. הגדר תדירות לתזמון אוטומטי, או השאר את התדירות ריקה כדי להגדיר תאריך זה בעצמך.',
+    'DueStatus' => 'סטטוס מועד אחרון',
+    'AllResults' => 'כל התוצאות',
+    // Remove a test from one control (Define Tests grid unlink row action)
+    'RemoveFromThisControl' => 'הסר מפקד זה',
+    'RemoveTestFromControl' => 'הסר את הבדיקה מהבקרה',
+    'RemoveTestFromControlConfirm' => 'להסיר את "{test_name}" מתוך {control_name}?',
+    'RemoveTestFromControlStays' => 'הבדיקה נשארת על הפקדים האחרים שלה {n} . שום דבר לא נמחק.',
+    'RemoveTestFromControlStaysOne' => 'הבדיקה נשארת בבקרה השנייה שלה. שום דבר לא נמחק.',
+    'CannotRemoveTestsOnlyControl' => 'בדיקה חייבת להשתייך לפחות לפקד אחד. הסר או מחק את הבדיקה במקום זאת.',
+    'TestRemovedFromControl' => 'הבדיקה הוסרה מהבקרה.',
+    'CouldNotRemoveTestFromControl' => 'לא ניתן היה להסיר את הבדיקה מהבקרה.',
+    'TestRemovedFromControlAuditLogMessage' => 'הבדיקה "{$test_name}" (מזהה: {$test_id}) הוסרה מהבקרה (מזהה: {$control_id}) על ידי המשתמש "{$user}".',
+    'DeleteTestUsedByNControls' => 'הוא משמש את פקדי {n} ויוסר מכולם.',
+    'BulkDeleteSharedTestsNote' => '{n} מתוכם משמשים פקדים אחרים ויוסרו גם מהם.',
+    'BulkRetireSharedTestsNote' => '{n} מתוכם משמשים פקדים אחרים ויוצאו משימוש גם שם.',
+    'BulkDeleteOneSharedTestNote' => 'אחד מהם משמש פקדים אחרים ויוסר גם מהם.',
+    'BulkRetireOneSharedTestNote' => 'אחד מהם משמש פקדים אחרים ויצא משימוש גם שם.',
+    'CouldNotLoadTest' => 'לא ניתן היה לטעון את הבדיקה הזו.',
+    'Expand' => 'לְהַרְחִיב',
+    'SearchMappings' => 'חיפוש מסגרות עבודה והפניות',
+    'NoMatchingMappings' => 'אין מיפויים התואמים לחיפוש זה.',
+    'Insights' => 'תובנות',
+    'ShowInsights' => 'הצג את אריחי התובנות',
+    'HideInsights' => 'כיווץ אריחי התובנות לשורת סיכום',
+    'ChooseControls' => 'בחירת פקדים',
+    'UseTheseControls' => 'השתמש בפקדים אלה',
+    'SearchControlsPlaceholder' => 'חיפוש לפי מספר או שם',
+    'PickerKeyboardHint' => 'למעלה/למטה כדי לנוע, Enter לבחירה, Esc לביטול',
+    'NoControlsMatchFilters' => 'שום דבר כאן לא תואם. הרחב שלב משמאל, או נקה את החיפוש.',
+    'NoControlsSelectedYet' => 'עדיין לא נבחר כלום.',
+    'AllControls' => 'כל הפקדים',
+    'AddOrRemoveControls' => 'הוספה או הסרה של פקדים…',
+    'LastTested' => 'נבדק לאחרונה',
+    'LastTestDateAnchorHint' => 'תזמון מרווחי זמן של עוגנים (תאריך זה בתוספת התדירות). לאחר שהבדיקה תיעדה את תוצאותיה, הרשת מציגה את תאריך התוצאה החדשה ביותר.',
+    'Filters' => 'מסננים',
+    'ShowFilters' => 'הצג מסננים',
+    'HideFilters' => 'הסתר מסננים',
+
+    // App shell — collapsing sidebar / new base design (SR app-shell redesign)
+    'AI' => 'בינה מלאכותית',
+    'CollapseSidebar' => 'כווץ את סרגל הצד',
+    'FooterCopyright' => '© %s SimpleRisk. כל הזכויות שמורות.',
+    'ExpandSidebar' => 'הרחב את הצד',
+    'WorkflowsCloneConfirm' => 'שכפול תהליך עבודה \'{$name}\'?',
+    'WorkflowsDeleteConfirm' => 'מחיקת תהליך העבודה \'{$name}\'? לא ניתן לבטל פעולה זו.',
+    'WorkflowActionFailed' => 'הפעולה נכשלה: {$msg}',
+    'ClickToDisable' => 'לחץ כדי להשבית',
+    'ClickToEnable' => 'לחץ כדי להפעיל',
+    'ENABLED' => 'מופעל',
+    'DISABLED' => 'נָכֶה',
+    'BackToWorkflows' => 'חזרה לתהליכי עבודה',
+    'BackToHistory' => 'חזרה להיסטוריה',
+    'NewWorkflow' => 'זרימת עבודה חדשה',
+    'ViewSteps' => 'הצג צעדים',
+    'SaveWorkflow' => 'שמירת תהליך עבודה',
+    'WorkflowSavedSuccessfully' => 'תהליך העבודה נשמר בהצלחה.',
+    'WorkflowNotFound' => 'זרימת עבודה לא נמצאה.',
+    'EditWorkflow' => 'עריכת תהליך עבודה: {$name}',
+    'OrganizationContextProfile' => 'פרופיל ההקשר הארגוני',
+    'AICtxAutoAcceptThreshold' => 'מהו סף הקבלה האוטומטית של הארגון שלך לסיכון (סכום דולר או אחוז מ-ALE)?',
+    'AICtxGrcBudget' => 'מהו תקציב ה-GRC/אבטחה השנתי שלך?',
+    'AICtxAuditorPerspective' => 'מנקודת מבט של מי אתם מבוקרים בעיקר?',
+    'AICtxUnitCurrency' => 'מטבע ($)',
+    'AICtxUnitPercentOfAle' => 'אחוז ALE (%)',
+    'AICtxFrameworksInUse' => 'מסגרות הנמצאות כעת בשימוש',
+    'AICtxNoFrameworksInUse' => 'לא נמצאו עדיין מסגרות פעילות. הוסף מסגרות תחת ממשל > מיפוי מסגרות.',
+    'AICtxFromYourData' => 'מהנתונים שלך',
+    'AICtxAuthoritative' => 'מוּסמָך',
+    'AICtxAppetiteNotSet' => 'לא מוגדר',
+    'AICtxAppetiteManageLink' => 'ניהול בתצורת סיכונים',
+    'AICapControlTestGeneration' => 'יצירת מבחן בקרה',
+    'AICapControlTestGenerationDesc' => 'טיוטות של מבחני בקרה לסקירה, תוך שימוש במיפוי מסגרת הבקרה, מבחנים קיימים ותוצאות הערכה עצמית - שום דבר לא נוצר עד שתאשר אותו.',
+    'AICapSurfacedControlTestGeneration' => 'תאימות - הגדרת בדיקות',
+    'AIControlTestGenUnavailable' => 'השירות אינו זמין: מנהל מערכת חייב להפעיל פונקציונליות זו בהגדרות הבינה המלאכותית.',
+    'AIControlTestGenInvalidId' => 'בקשה שגויה: נדרש מזהה בקרה חיובי.',
+    'AIControlTestGenNotFound' => 'לא נמצא: לא ניתן היה למצוא את הפקד שצוין.',
+    'AIControlTestGenConflict' => 'התנגשות: יצירת האובייקט כבר נמצאת בתור עבור פקד זה.',
+    'AIControlTestGenQueued' => 'התקבל: יצירת בדיקת בקרה הועברה לתור.',
+    'AIControlTestGenFailed' => 'שגיאת שרת פנימית: יצירת בדיקת בקרת תור נכשלה.',
+    'AIControlTestGenCheckFailed' => 'שגיאה: לא ניתן לאמת את הפקד לפני יצירת התור.',
+    'GenerateTestsWithAI' => 'צור בדיקות בעזרת בינה מלאכותית',
+    'ShowAiSuggestedTests' => 'בדיקות מוצעות של בינה מלאכותית',
+    'AiSuggested' => 'בינה מלאכותית מוצעת',
+    'ReviewAndEdit' => 'סקירה ועריכה',
+    'CreateSelected' => 'צור נבחר',
+    'TestCreatedFromSuggestion' => 'בדיקה נוצרה מההצעה.',
+    'SuggestionDismissed' => 'ההצעה נדחתה.',
+    'TestGenerationQueued' => 'יצירת בדיקות בתור.',
+    'Generating' => 'יצירת…',
+    'SuggestionDismissFailed' => 'הבדיקה נוצרה, אך לא ניתן היה לסגור את הצעת הבינה המלאכותית שלה. סגור אותה ידנית אם היא נשארת.',
+    'AICtxAuditorBig4' => 'ארבעת הגדולים (חיצוני)',
+    'AICtxAuditorBoutique' => 'בוטיק / אזורי (חיצוני)',
+    'AICtxAuditorInternal' => 'ביקורת פנימית בלבד',
+    'AICtxAuditorSelfAssessed' => 'הערכה עצמית',
+    'AICtxAuditorNotSure' => 'לא בטוח',
+    'AICtxAppetiteCautious' => 'זָהִיר',
+    'AICtxAppetiteBalanced' => 'מְאוּזָן',
+    'AICtxAppetiteAggressive' => 'תוֹקפָּנִי',
+    'TestGenerationComplete' => 'מבחני בקרה שנוסחו על ידי בינה מלאכותית מוכנים לסקירה.',
+    'TestGenerationStillRunning' => 'יצירת הבדיקות עדיין פועלת; הטיוטות יופיעו בקרוב.',
+    'TestGenerationNoNew' => 'הדור הסתיים - אין בדיקות חדשות להציע עבור בקרה זו.',
+    'SearchEntities' => 'חיפוש ישויות',
+    'SearchEntitiesPlaceholder' => 'סיכוני חיפוש, בקרות, מדיניות, חריגים…',
+    'ShowTypes' => 'הצג סוגים',
+    'Depth' => 'עוֹמֶק',
+    'Inspector' => 'מְפַקֵחַ',
+    'Connections' => 'חיבורים',
+    'NoConnectionsFound' => 'לא נמצאו קשרים עבור הישות שנבחרה.',
+    'CouldNotLoadGraph' => 'לא ניתן היה לטעון את גרף הקישוריות.',
+    'CouldNotSearchEntities' => 'לא ניתן היה לחפש ישויות.',
+    'ShowingTopNOfM' => 'מציג את החלק העליון של {0} מתוך {1}',
+    'RankedByMaturityGap' => 'מדורג לפי פער בגרות',
+    'RankedByRiskScore' => 'מדורג לפי ציון סיכון',
+    'RankedByRecentFailure' => 'מדורג לפי הכישלון האחרון',
+    'RankedByReviewDate' => 'מדורג לפי תאריך הסקירה הבא',
+    'RankedBySeverity' => 'מדורגת לפי חומרה',
+    'RankedByName' => 'מדורג לפי שם',
+    'NodeTypeSelfAssessmentResult' => 'תוצאת הערכה עצמית',
+    'Relationship' => 'קֶשֶׁר',
+    'Exception' => 'חֲרִיגָה',
+    'DesiredMaturity' => 'בגרות רצויה',
+    'ApprovalState' => 'מצב אישור',
+    'RelationshipOfType' => '{0} מתוך {1}',
+    // Connectivity Explorer Inspector: labels for enrichment field keys
+    // (ai_context_enrich_fetch(), ai_context_enrich_vulnerabilities()) that
+    // fieldLabel() in connectivity-visualizer.js did not yet cover.
+    'LastDate' => 'תאריך אחרון',
+    'LastResultDate' => 'תאריך התוצאה האחרונה',
+    'PercentComplete' => 'אחוז השלמה',
+    'AssessmentDate' => 'תאריך הערכה',
+    'NextDate' => 'תאריך הבא',
+    'Number' => 'מִספָּר',
+    'Grouping' => 'הַקבָּצָה',
+    'Hidden' => 'מוּסתָר',
+    'FirstFound' => 'נמצא לראשונה',
+    'LastFound' => 'נמצא לאחרונה',
+    'Patchable' => 'ניתן לתיקון',
+    'Solution' => 'פִּתָרוֹן',
+    'Breadcrumb' => 'פירורי לחם',
+    'SelectANodeToInspect' => 'בחר צומת כדי להציג את פרטיו.',
+    'HiddenUnreachableNodes' => 'צומת(ים) {0} מוסתר(ים): אינו מחובר עוד ללא הסוג(ים) המוסתרים.',
+    // Connectivity Explorer canvas launchpad (Level-1 type tiles / Level-2
+    // browsable entity list) -- docs/superpowers/specs/2026-07-27-
+    // connectivity-explorer-launchpad.md
+    'BrowsableEntityTypes' => 'סוגי ישויות הניתנים לעיון',
+    'CountFloor' => '{0}+',
+    'NoBrowsableTypes' => 'אין לך הרשאה לעיין בסוגי ישויות כלשהם.',
+    'AllTypes' => 'כל הסוגים',
+    'FilterEntitiesPlaceholder' => 'סנן…',
+    'NoMatchingEntities' => 'אין ישויות התואמות את המסנן שלך.',
+    'LoadMore' => 'טען עוד',
+    'Loading' => 'טוען…',
+    'CouldNotLoadEntityCounts' => 'לא ניתן היה לטעון ספירות ישויות.',
+    'CouldNotLoadEntities' => 'לא ניתן היה לטעון ישויות.',
+    'ClearGraph' => 'נקה גרף',
+    // Connectivity Explorer node-type chip label for the 'audit' type. Not
+    // reused from 'TeamType_audit' (same English text, "Audit") -- that key
+    // is scoped to the Team Separation team-type picker, a different feature
+    // whose wording should be free to diverge from this one's.
+    'Audit' => 'ביקורת',
+    // Queued email send-failure notifications
+    'EmailSendFailedNotificationTitle' => 'מסירת הדוא"ל נכשלה',
+    'EmailSendFailedNotificationBody' => 'לא ניתן היה לשלוח אימייל אחד או יותר בתור. בדוק את הגדרות הדואר שלך, ולאחר מכן עיין ב\'צג התור\' וביומן השרת לקבלת פרטים.',
+    'QuestionnaireShareInvalidEmailAddress' => 'לא ניתן לשתף תוצאות שאלון עם איש קשר שאין לו כתובת דוא"ל תקפה.',
+    'AssessmentSendInvalidEmailAddress' => 'לא ניתן לשלוח את ההערכה לכתובת דוא"ל לא חוקית.',
+    'AssessmentSentTo' => 'ההערכה נשלחה אל "{$email}".',
+    'AssessmentNotSentNoValidRecipients' => 'ההערכה לא נשלחה - לא סופקה כתובת דוא"ל תקפה.',
+    'AssessmentContactUnusableEmailNotificationTitle' => 'השאלון לא נשלח',
+    'AssessmentContactUnusableEmailNotificationBody' => 'לא ניתן היה לשלוח את השאלון "{$questionnaire}" אל "{$contact}" מכיוון שאין לאיש הקשר כתובת דוא"ל תקפה. יש לעדכן את רשומת איש הקשר כדי לחדש את השליחה.',
+    'EmailFailureNotificationRetention' => 'שמירת הודעות על כשל במסירת דוא"ל',
+    'EmailFailureNotificationRetentionOutOfRange' => 'שמירת התראות על כשל במסירת דוא"ל חייבת להיות בין {$min} ל- {$max} ימים.',
+    'MailSettingsUpdatedSuccessfully' => 'הגדרות הדואר עודכנו בהצלחה.',
+    // Questionnaire audit-trail entries for the API submit/draft paths (SR-1714).
+    // The token form credits the contact; an API caller is an authenticated
+    // SimpleRisk user acting on that contact's questionnaire, so both the
+    // contact and the acting user are named.
+    'QuestionnaireCompletedAuditLogViaApi' => 'השאלון "{$questionnaire_name}" עבור איש הקשר "{$contact_name}" הושלם דרך ה-API על ידי המשתמש "{$user_name}".',
+    'QuestionnaireDraftAuditLogViaApi' => 'השאלון "{$questionnaire_name}" עבור איש הקשר "{$contact_name}" נשמר כטיוטה דרך ה-API על ידי המשתמש "{$user_name}".',
+    // Bad-input response for the questionnaire risk-list endpoints, which
+    // previously reported a malformed questionnaire_id as a permission denial.
+    // Mirrors the existing 'MissingOrInvalidTrackingID'.
+    'MissingOrInvalidQuestionnaireID' => 'מזהה שאלון חסר או לא תקין.',
+    // POST /api/v2/assessments/questionnaire/result/file response messages.
+    // The `id` path deliberately returns QuestionIdCannotAcceptFile for every
+    // question-level rejection so a sequential tracking id cannot be used to
+    // probe questionnaire structure; the token path returns the specific reason.
+    'QuestionnaireResultNotFoundForTokenOrId' => 'לא נמצא: לא ניתן למצוא תוצאת שאלון עם האסימון או המזהה שצוינו',
+    'QuestionIdCannotAcceptFile' => 'בקשה שגויה: question_id {$question_id} אינו יכול לקבל קובץ על תוצאת שאלון זו',
+    'QuestionIdNotFoundInQuestionnaire' => 'בקשה שגויה: question_id {$question_id} לא נמצא בשאלון זה',
+    'QuestionIdInMultipleTemplates' => 'בקשה שגויה: question_id {$question_id} מופיע במספר תבניות עבור שאלון זה',
+    'QuestionIdDoesNotAcceptFileUploads' => 'בקשה שגויה: question_id {$question_id} אינו מקבל העלאות קבצים',
+    // The Statement of Applicability's two UNVERIFIED implementation states.
+    //
+    // They exist because "we have not checked" is not "it does not work", and an
+    // SoA is ATTESTED — printing "No" for an unverified control is a false
+    // statement against yourself, exactly as printing "Yes" without evidence is
+    // a false statement the other way. Before these keys existed both states
+    // fell through to 'No', which on a framework where most controls carry no
+    // test meant the whole document read "not implemented".
+    //
+    // They are two states rather than one because they are different findings
+    // with different owners: no test defined is a GOVERNANCE gap (nobody decided
+    // how to verify this control), never run is an OPERATIONAL one (somebody
+    // decided, and it was not done).
+    //
+    // WORDING. Both must be unmistakably distinct from the bare 'No' in the same
+    // column. 'Tests never run' rather than 'Never run': in a column headed
+    // "Implemented", the bare phrase reads for a moment as though the CONTROL
+    // was never run, when the subject is its tests.
+    //
+    // BOTH ARE PLURAL, and that is not only style. English takes the plural
+    // after "no" when the expected quantity could exceed one ("no results
+    // found"), and a control normally carries several tests — the singular
+    // implies only ever one was expected. 'Tests never run' is the stronger
+    // case: soa_implemented_for() returns `never_run` only when NOT ONE of the
+    // control's tests has produced a verdict, so the state is inherently about
+    // the whole set. With four tests defined and none run, the singular reads as
+    // one omission rather than a wholesale one.
+    'SoaImplementedNoTestDefined' => 'לא הוגדרו בדיקות',
+    'SoaImplementedNeverRun' => 'בדיקות אף פעם לא רצות',
+
+    // The Implemented column's fallback for a token neither sink recognizes.
+    //
+    // DELIBERATELY NOT A VERDICT, and the reason this key exists at all. Both
+    // sinks previously ended in a fallthrough to 'No', so adding a state without
+    // adding its label printed a confident, wrong answer into a compliance
+    // document. Falling through to 'Yes' would be worse. The only safe failure
+    // mode is a value that states nothing about the control — a visible bug
+    // instead of a silent misstatement.
+    'SoaImplementedUnknown' => 'הסטטוס לא זמין',
+    // How an APPLICABLE control's stored inclusion reason(s) join to its own
+    // freeform justification when it recorded both (spec §4). Reached ONLY when
+    // both halves exist — reasons alone print as the reason list, prose alone
+    // prints verbatim — so this string is punctuation and word order, not prose.
+    // It is a language key rather than a hardcoded separator because a locale
+    // that joins clauses with a colon, a full stop, or right-to-left ordering
+    // must be able to say so; both placeholders have to survive translation.
+    'SoaJustifiedByInclusionReasons' => '{reasons} — {narrative}',
+    // The Set applicability modal's reason field, which became a MULTI-select
+    // when reasons moved to a join table: a control is commonly included (or
+    // excluded) for more than one reason, and the singular 'Reason' the field
+    // used to reuse now under-describes it. 'Reason' is left alone rather than
+    // repointed -- the row drawer and the SoA still print exactly one joined
+    // value under it, and redefining a key changes every surface that reads it.
+    'ApplicabilityReasons' => 'סיבות',
+    // Said once, above a group of checkboxes, rather than implied by the widget.
+    // The old single <select> answered "how many may I pick?" by construction;
+    // a checkbox group does not, and a user who ticks one and stops has made the
+    // SoA less truthful than the one they meant to write.
+    'ApplicabilityReasonsHint' => 'בחר כל סיבה שרלוונטית.',
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // THE STATEMENT OF APPLICABILITY'S MARKERS AND ITS LEGEND (spec §1, §3).
+    // ─────────────────────────────────────────────────────────────────────────
+
+    // THE EVIDENCE COLUMN'S TWO ABSENCES, which are OPPOSITES.
+    //
+    // 'No evidence linked' is a FINDING: the control is in scope, is possibly
+    // claimed implemented, and nothing substantiates it. The em dash below is
+    // the other answer -- the control is excluded, so no evidence is expected
+    // and the absence is correct. Rendering both as an empty cell hides the
+    // first, which is the one an auditor circles.
+    'SoaNoEvidenceLinked' => 'אין קשר לראיות',
+    // PUNCTUATION, NOT PROSE -- the glyph the Evidence cell prints when nothing
+    // is expected. A language key rather than a hardcoded character for the same
+    // reason 'SoaJustifiedByInclusionReasons' is one: a locale that marks "not
+    // applicable" with a different dash, or with a word, must be able to say so.
+    'SoaEvidenceNotExpected' => '—',
+    // Whether the evidence a test DECLARED it requires actually arrived with the
+    // result. A stronger claim than a pass/fail alone, and few SoA tools make it.
+
+    // THE REMEDIATION BLOCK -- what is being done about a control that reads
+    // Partial or No. The SoA points AT the risk treatment plan (clause 6.1.3(e))
+    // rather than becoming one.
+    'SoaRemediation' => 'תיקון',
+    // THE MOST SERIOUS THING THAT BLOCK CAN FIND: the test failed and it is
+    // linked to no risk, so no treatment plan traces back to it. Dropping such a
+    // row for want of a risk to join to would render it as a blank cell, which
+    // reads as "nothing to report".
+    'SoaRemediationUnplanned' => 'אין סיכון קשור',
+
+    // THE LEGEND. Required in both variants and every export format, because six
+    // implementation states plus three markers is more nuanced than the
+    // Yes/No/Partial an auditor expects, and an undefined vocabulary invites the
+    // reader to guess unfavourably.
+    'SoaLegendTitle' => 'איך לקרוא את ההצהרה הזו',
+    'SoaLegendYes' => 'כל בדיקה שהוגדרה עבור פקד זה עברה את הפעולה האחרונה שלה.',
+    'SoaLegendPartial' => 'מבחני הבקרה אינם מסכימים: לפחות אחד עבר, ולפחות אחד נכשל או לא הניב תוצאה.',
+    'SoaLegendNo' => 'אף בדיקה של בקרה זו לא עברה את הרצה האחרונה שלה, ולפחות אחת נכשלה.',
+    // The two unverified states are DIFFERENT FINDINGS WITH DIFFERENT OWNERS,
+    // and the labels alone do not quite carry that -- so the legend spells it
+    // out. This is the distinction the whole six-state set exists for.
+    'SoaLegendNoTestDefined' => 'לא הוגדרה בדיקה עבור בקרה זו, כך שפעולתה מעולם לא אומתה. אין מדובר בהצהרה שהבקרה חסרה או שהיא נכשלת - רק שהצהרה זו אינה מדגימה זאת. פער ממשלתי: איש לא החליט כיצד בקרה זו נבדקת.',
+    'SoaLegendNeverRun' => 'קיימות בדיקות לבקרה זו, אך אף אחת מהן לא בוצעה מעולם, כך שפעולתה אינה מוצגת כאן. אין מדובר בהצהרה שהבקרה חסרה או שהיא נכשלת. פער תפעולי: הוחלט על הבדיקות ולא בוצעו.',
+    'SoaLegendNotApplicable' => 'הבקרה אינה חלק מתחום מסגרת זו, ולכן אין לה סטטוס יישום.',
+    // The one most in need of explaining: with nothing to define it, this reads
+    // as an admission about the control rather than as what it is.
+    'SoaLegendUnknown' => 'SimpleRisk לא הצליחה לתייג את הסטטוס המוקלט, ולכן היישום לא מודגם כאן. זהו פגם בתוכנה ואינו אומר דבר על הבקרה - לא שהיא עובדת וגם לא שהיא לא עובדת.',
+    'SoaLegendOverdue' => 'התוצאה המוצגת עדיין עומדת, אך לפחות אחת הבדיקות שמאחוריה עברה את תאריך הבדיקה הבא שלה. הראיות אינן מעודכנות.',
+    'SoaLegendNoEvidence' => 'הבקרה נמצאת בהיקף ולא נקשר דבר כדי לאשש אותה: אין מסמך שאושר, ואין בדיקה שהניבה תוצאה.',
+    'SoaLegendEvidenceNotExpected' => 'לא צפויות ראיות, משום שהבקרה אינה חלק מהתחום.',
+    'SoaLegendUnplanned' => 'בדיקה כושלת שאינה מקושרת לסיכון, ולכן אין תוכנית טיפול המקשרת אליה.',
+
+    // THE TWO VARIANTS, chosen on the launcher before the document is generated
+    // and PRINTED ON ITS COVER. A Statement of Applicability is a controlled
+    // document: two of them for the same framework that show different things,
+    // with nothing on either to say which is which, is a document nobody can
+    // file.
+
+    // THE THREE DETAILED-ONLY COLUMNS.
+    // What those three columns say instead of nothing. A blank cell in an audit
+    // document reads as a formatting artefact; "Not recorded" is a fact the
+    // reader can act on.
+
+    // THE BROWSER PRINT ROUTE. Beside the two downloads on the launcher, and the
+    // only PDF route for a framework too large for the server-side writer.
+    // Shown in place of "Download as PDF" when the chosen framework is above
+    // SOA_EXPORT_PDF_MAX_CONTROLS. The affordance is absent rather than
+    // disabled, so this sentence is what tells the reader the absence is
+    // deliberate and what to do instead.
+    // The footer of every printed page. {page} and {pages} are substituted with
+    // the browser's own page counters, so the two tokens must both survive
+    // translation -- but their ORDER and the words around them are the
+    // translator's, which is why this is one string and not "Page" + "of".
+    'SoaPrintPageNumber' => 'עמוד {page} מתוך {pages}',
+
+    // THE ONE PDF AFFORDANCE on the statement-of-applicability launcher, beside
+    // 'DownloadAsXLSX'. It replaces the pair that used to sit there --
+    // 'SoaPrintToPdf' and 'DownloadAsPDF' -- because a Statement of Applicability
+    // is a controlled document and two PDF buttons let two people hand an auditor
+    // two different-looking PDFs of the same statement.
+    //
+    // JUST "PDF", AND DELIBERATELY SO. Below SOA_EXPORT_PDF_MAX_CONTROLS the
+    // button downloads a server-rendered file and above it the browser writes
+    // one, but that is a mechanism and not a choice the reader has to make. A
+    // label that named the mechanism ("Print to PDF" / "Download as PDF") would
+    // put the difference back in front of them.
+    //
+    // 'SoaPrintToPdf' and 'SoaPdfTooLargeHint' above are LEFT IN PLACE with no
+    // caller: 39 locales carry them, and this file is append-only precisely so a
+    // customer running a custom lang.<locale>.php can reconcile it with a tail
+    // diff.
+    'SoaPdf' => 'קובץ PDF',
+
+    // THE OTHER TWO ACTIONS IN THAT SAME ROW, shortened to match it.
+    //
+    // The row read "Open in browser" / "Download as XLSX" / "PDF", which put a
+    // verb on two of three actions and made the odd one out look like an
+    // abbreviation of something longer. The row's own context supplies the
+    // verbs -- these are the things you can DO with the framework you just
+    // chose -- so they carried no information and cost the reader a comparison.
+    // 'SoaPdf' is short because naming its mechanism would be dishonest (above
+    // SOA_EXPORT_PDF_MAX_CONTROLS it opens a print view rather than downloading
+    // a file), and the shortest of the three is the one that has to be right.
+    //
+    // NOT the generic 'Open' at line ~1021: that key lives among 'Mitigated' /
+    // 'Reviewed' and is the risk-status ADJECTIVE -- fr "Ouvert", de "Offen" --
+    // so reusing it would label a button with a state rather than an action in
+    // most of the 39 locales.
+    //
+    // 'SoaOpenInBrowser' above is LEFT IN PLACE with no caller, for the same
+    // reason 'SoaPrintToPdf' is: the locales carry it and this file is
+    // append-only so a customer's custom lang.<locale>.php reconciles with a
+    // tail diff. 'DownloadAsXLSX' keeps a caller either way -- the Assessments
+    // Extra's questionnaire results still use it.
+    'SoaOpen' => 'פתוח',
+    'SoaXlsx' => 'XLSX',
+    // ---- The locked-affordance treatment -------------------------------------
+    // SHARED COPY, not chooser copy. SimpleRisk now SHOWS what's possible and
+    // MARKS what's out of reach because it isn't licensed, rather than hiding
+    // it -- so these strings appear both as a menu row's explanation (Define
+    // Control Frameworks' "+ Add framework" chooser) and beside a disabled
+    // toolbar button (the Statement of Applicability's PDF/XLSX exports). Each
+    // one is worded to read correctly in BOTH places, which is why none of them
+    // starts with "This route" or "This button".
+    //
+    // 'LockedAffordanceBadge' duplicates the English of 'AICapStateLocked'
+    // rather than reusing it: that key sits in the AI Capabilities Catalog's
+    // block and is scoped to a capability's state, and translators work from
+    // the key's neighbourhood as much as from its value.
+    'LockedAffordanceBadge' => 'נָעוּל',
+    // The two SCF steps before it can be switched on. admin/register.php serves
+    // both -- it is the registration form AND where the per-Extra download
+    // buttons render -- so these differ in what they say, not where they go.
+    'UnlockRegisterInstanceNote' => 'רשום מופע זה כדי לקבל את מסגרת הבקרה המאובטחת.',
+    'UnlockRegisterInstanceLink' => 'הרשמה SimpleRisk',
+    'UnlockDownloadScfNote' => 'מופע זה רשום. הורד את Secure Controls Framework כדי להשתמש בו.',
+    'UnlockDownloadScfLink' => 'הורד את זה',
+    'UnlockActivateScfNote' => 'מסגרת הבקרה המאובטחת הורדה אך אינה מופעלת.',
+    'UnlockActivateScfLink' => 'הפעל אותו',
+    // Import-Export is a paid Extra, so "not installed" is an upsell rather
+    // than a registration prompt. Deliberately a bare capability sentence: it
+    // has to sit under a menu row and next to an export button equally well.
+    'RequiresImportExportExtra' => 'דורש את תוספת הייבוא-ייצוא.',
+    'UnlockImportExportLink' => 'תראה מה זה מוסיף',
+    'UnlockActivateImportExportNote' => 'תוספת הייבוא-ייצוא מותקנת אך אינה מופעלת.',
+    'UnlockActivateImportExportLink' => 'הפעל אותו',
+    // Shown instead of any of the above to a user who is not an administrator:
+    // every unlock step lives on a check_admin page, so they get the half that
+    // is useful to them -- that the capability exists, and who to ask -- and no
+    // link that would only bounce them.
+    'UnlockNeedsAdministrator' => 'מנהל יכול להגדיר זאת.',
+    // API date parsing. {$field} is the request field name (next_date, last_date,
+    // test_date); {$format} is this instance's configured display date format.
+    'InvalidSubmittedDate' => 'הערך {$field} אינו תאריך חוקי. יש לשלוח אותו כתאריך YYYY-MM-DD או במקרה זה בפורמט התאריך ({$format}).',
+    // Companion to InvalidSubmittedDate, for a value that matches the expected
+    // shape but names a day that does not exist (February 31st, month 13).
+    // Saying "submit it as MM/DD/YYYY" there would repeat what the caller did.
+    // {$value} is the submitted value, echoed back truncated.
+    'ImpossibleSubmittedDate' => 'הערך {$field} "{$value}" אינו תאריך אמיתי בלוח שנה. בדוק את היום והחודש - מופע זה קורא תאריכים כ- {$format}.',
+    // The Statement of Applicability's merged verification column. Replaces three
+    // separate headings (Implemented / Evidence / Review Cadence) with the one
+    // question all three answer: how do we know this control is working?
+    // The two appendices printed after the register. Justifications are truncated
+    // in the row and given in full here; remediation plans live here rather than
+    // in the table because ISO 27001 keeps the SoA (6.1.3(d)) and the risk
+    // treatment plan (6.1.3(e)) as separate artifacts.
+    'SoaAppendixJustifications' => 'נספח א\' - נימוקים',
+    'SoaAppendixRemediation' => 'נספח ר\' - תוכניות שיקום',
+    // Appendix E carries the WORDING of each test's evidence requirement. The row
+    // keeps only whether that evidence arrived, which is the finding; the wording
+    // is reference material and was the bulkiest thing in the Verification cell.
+    'SoaRequiredEvidenceSupplied' => 'הראיות הנדרשות שסופקו',
+    'SoaRequiredEvidenceNotSupplied' => 'ראיות נדרשות לא סופקו',
+    // The one scheduling fact the SoA prints: the soonest date any of a control's
+    // tests is next due. Replaces a per-test "Manual — Next Test Date: ..." line,
+    // whose schedule type belongs on Define Tests and whose date is now on each
+    // test's own evidence bullet.
+    // The two dates on a test's evidence bullet. LABELLED, because two bare dates
+    // side by side are ambiguous in a way one is not.
+    // SINGULAR document-type labels for one piece of design evidence. SimpleRisk's
+    // existing keys are the plural tab names, which would read "Access Control
+    // Standard (Standards)".
+    'SoaEvidencePolicy' => 'מדיניות',
+    'SoaEvidenceStandard' => 'תֶקֶן',
+    'SoaEvidenceProcedure' => 'נוֹהָל',
+    'SoaEvidenceGuideline' => 'קַו מַנחֶה',
+    // ── The legend, grouped by column (SOA_LEGEND_GROUPS, includes/soa.php) ──
+    // The Applicability column's three values. These were never in the legend,
+    // so an auditor met "Inherited" -- a word with no meaning outside SimpleRisk
+    // -- with nothing to look it up in.
+    'SoaLegendApplicable' => 'הבקרה נמצאת במסגרת מסגרת זו והארגון אחראי על הפעלתה.',
+    // DISTINCT from 'SoaLegendNotApplicable', which defines the "N/A" that appears
+    // in the Implementation Status column. This one is the DECISION to exclude;
+    // that one is the consequence for the status.
+    'SoaLegendApplicabilityNotApplicable' => 'הבקרה הוצאה מתחום המסגרת הזו. עמודת ההצדקה מתעדת מדוע ומי החליט.',
+    'SoaLegendInherited' => 'הבקרה נמצאת במסגרת התוכנית, אך היא מופעלת על ידי צד שלישי - ספק ענן, ארגון אם, פונקציה במיקור חוץ - ולא על ידי ארגון זה. שם הספק מופיע ליד ההצדקה.',
+    // The Evidence column's four bullet glyphs. Load-bearing since the visible
+    // result word was dropped from pass and fail bullets, and until now defined
+    // nowhere at all.
+    'SoaLegendEvidencePass' => 'בדיקה של בקרה זו רשמה תוצאה שעברה את פעולתה האחרונה. התאריך שלידה מציין את מועד פעולתה.',
+    'SoaLegendEvidenceFail' => 'בדיקה של בקרה זו רשמה כשל בפעם האחרונה שהיא פעלה. נספח R מכיל את תוכנית הטיפול, במידה וקיימת.',
+    'SoaLegendEvidenceInconclusive' => 'בוצעה בדיקה של בקרה זו ולא הגיעה להחלטה. אותו סימן משמש עבור תוצאה שמסמך זה אינו מזהה, ובמקרה כזה התוצאה עצמה מודפסת לצידה.',
+    // The TERM beside the § glyph. Not a document type -- the four types
+    // (Policy, Standard, Procedure, Guideline) are printed per item; this names
+    // the CATEGORY of evidence a document is.
+    'SoaEvidenceDesignDocument' => 'מסמך עיצוב',
+    'SoaLegendEvidenceDocument' => 'מסמך ממשל שאושר כראיה לבקרה זו -- העיצוב שלה ולא הפעלתה. מסמך אינו נושא פסק דין, ולכן הוא אינו מסומן בווי.',
+    // The XLSX export's first worksheet tab. The workbook's other four tabs reuse
+    // headings that already exist ('How to read this statement', 'Statement of
+    // Applicability', and the two appendix headings); the cover had no name of its
+    // own because it used to be the top of a single sheet.
+    //
+    // KEEP IT SHORT. Excel caps a worksheet name at 31 characters and
+    // soa_export_sheet_name() truncates rather than failing the export, so a long
+    // translation loses its tail on the tab.
+    'SoaSheetCover' => 'לְכַסוֹת',
+
+    'SearchFrameworks' => 'מסגרות חיפוש',
+    'SearchControls' => 'פקדי חיפוש',
+    'AddFramework' => 'הוסף מסגרת',
+    'Applicability' => 'יָשִׂימוּת',
+    'AnyFamily' => 'כל משפחה',
+    'AnyOwner' => 'כל בעלים',
+    'AnyClass' => 'כל כיתה',
+    'AnyPhase' => 'כל שלב',
+    'AnyPriority' => 'כל עדיפות',
+    'AnyType' => 'כל סוג',
+    'AnyStatus' => 'כל סטטוס',
+    'SelectAllN' => 'בחר הכל {n}',
+    'Classification' => 'מִיוּן',
+    'Placement' => 'מיקום',
+    'OwnershipAndMaturity' => 'בעלות ובגרות',
+    'MappingsAndGuidance' => 'מיפויים והדרכה',
+    'DeleteFrameworkTitle' => 'למחוק את המסגרת \'{$name}\'?',
+    'DeleteControlTitle' => 'למחוק את הפקד \'{$name}\'?',
+    'DeleteControlsTitle' => 'למחוק את הפקדים {$n}?',
+    'DeleteCannotBeUndone' => 'לא ניתן לבטל את זה.',
+    'DeleteFrameworkConsequence' => 'פעולה זו מסירה את המסגרת ואת כל מיפויי הבקרה שלה.',
+    'DeleteControlConsequence' => 'זה מסיר את השליטה מכל מסגרת שאליה היא ממופה.',
+    'DeleteControlsConsequence' => 'פעולה זו מסירה כל פקד שנבחר מכל מסגרת שאליה הוא ממופה.',
+    // Task 9: empty states (design-system.md §10) -- the four intents on
+    // Define Control Frameworks. Reuses existing keys where the copy already
+    // fits exactly (AddControl, AddFramework, ClearFilters, Retry,
+    // NoControlsDefinedYet, NoTestsMatchFiltersBody, CouldNotLoadTestsBody,
+    // RegisterYourInstance, GoToSCF, ImportExportExtra) -- only the strings
+    // with no existing match are added below.
+    'NoControlsMatch' => 'אין פקדים התואמים את המסננים שלך',
+    'CouldNotLoadControls' => 'לא ניתן היה לטעון את הפקדים',
+    'ControlsYouAddWillAppearHere' => 'פקדים שתוסיף יופיעו כאן.',
+    'NoFrameworksYet' => 'עדיין אין מסגרות',
+    'FrameworksYouAddWillAppearHere' => 'מסגרות שתוסיף או תייבא יופיעו כאן.',
+    'CouldNotLoadFrameworks' => 'לא ניתן היה לטעון את המסגרות',
+    // Task 9 review fix: the framework rail's own "no results" intent, shown
+    // when the user has explicitly switched the status dropdown away from
+    // Active and that status has nothing (distinct from "No frameworks yet",
+    // which is reserved for the default Active status where the endpoint
+    // can't yet tell "no frameworks at all" from "none active").
+    'NoFrameworksMatchFilter' => 'אין מסגרות התואמות לסטטוס זה',
+    'ViewActiveFrameworks' => 'הצג מסגרות פעילות',
+    // Task 10: Define Control Frameworks insights band (governance/index.php)
+    // -- KPI tile labels/subtitles. 'Controls', 'Pass', 'Fail', 'NotTested'
+    // already exist and are reused as label keys for their tiles.
+    'BelowTarget' => 'מתחת ליעד',
+    'Excluded' => 'לא נכלל',
+    'FwInScope' => 'בהיקף',
+    'FwLastTestPassed' => 'המבחן האחרון עבר',
+    'FwLastTestFailed' => 'הבדיקה האחרונה נכשלה',
+    'FwNoEvidence' => 'ישים, אין ראיות',
+    'FwMaturityUnderDesired' => 'בגרות מתחת לרצוי',
+    'FwScopeAFramework' => 'הגדרת מסגרת כדי להחליט',
+    'FwNotApplicableOrInherited' => 'לא רלוונטי או תורשתי',
+    // Task 22: framework rail search (governance/index.php's #sr-fw-search,
+    // wired client-side in governance-frameworks.js). Reuses the shipped
+    // "no results" empty-state tile (#sr-fw-filtered, Task 9) rather than
+    // inventing a fourth rail empty state -- only the title and action swap
+    // depending on whether a status filter or a search narrowed the list to
+    // nothing; NoTestsMatchFiltersBody already covers both as body copy.
+    'NoFrameworksMatchSearch' => 'אין מסגרות התואמות את החיפוש שלך',
+    'ClearSearch' => 'נקה חיפוש',
+    // Task 24: Clone control pre-fills the Add Control modal from the source
+    // control (governance-frameworks.js's openControlForClone()) rather than
+    // creating a duplicate outright, so the modal needs to say plainly which
+    // control it was cloned from -- the reviewer's core complaint about an
+    // earlier one-click version of this feature was not knowing what was
+    // cloned. {$name} follows the same client-side formatTemplate()
+    // substitution ShowingXToYOfZ/NSelected already use on this page.
+    'ClonedFromControlNotice' => 'משוכפל מ-"{$name}". בדוק את השדות למטה ולאחר מכן שמור.',
+    // Task 24 review follow-up: the banner alone left the modal titled "New
+    // Control" over pre-populated fields -- "it doesn't prompt or anything
+    // so the user doesn't know what was cloned" (Josh) -- which reads as a
+    // bug, not a feature. Retitling #control--add-title to this (governance-
+    // frameworks.js's show.bs.modal delegate for #control--add) makes the
+    // clone unambiguous at a glance; NewControl is restored for a plain add.
+    'CloneOfControlTitle' => 'שיבוט של "{$name}"',
+    // Task 27: the framework rail's SCF-origin chip (governance-frameworks.js's
+    // railRow()) -- shown only for frameworks created via the ComplianceForge
+    // SCF Extra's authoritative-source import (get_scf_origin_framework_ids(),
+    // includes/governance.php). SCF is the badge text itself; ScfOriginHint is
+    // its title/tooltip.
+    'SCF' => 'SCF',
+    'ScfOriginHint' => 'מתוך מסגרת הבקרה המאובטחת (SCF)',
+    // Task 34: the Maturity filter facet's placeholder on the Define Control
+    // Frameworks filter sheet (governance-frameworks.js's ensureFilterSheet()),
+    // matching the AnyFamily/AnyOwner/AnyClass/... set above. The facet's three
+    // OPTIONS reuse the existing BelowMaturity/AtMaturity/AboveMaturity keys --
+    // the same labels the governance dashboard's maturity-gap widgets already
+    // carry -- and the column chip renders those same three strings, so the
+    // filter and the cell can never read differently.
+    'AnyMaturity' => 'כל בגרות',
+    // Task 46: accessible name for the control table's pager landmark
+    // (governance-frameworks.js's renderPager()). The pager's own buttons
+    // reuse the existing Previous/Next keys Define Tests' pager already
+    // carries; only the <nav> label is new, and it names WHICH table's pager
+    // it is because the Define Control Frameworks page has two lists on it.
+    'ControlsPagination' => 'שולט בעמודים',
+    // Task 14: the Applicability column's state chip (governance-frameworks.js's
+    // renderApplicability()), the matching filter facet (its three option labels
+    // reuse these same three keys) and its "Any applicability" placeholder.
+    //
+    // The three states are PREFIXED rather than named 'Applicable'/
+    // 'NotApplicable'/'Inherited' because 'NotApplicable' already exists above
+    // as the ABBREVIATION 'N/A' -- the self-assessment answer chip and three
+    // reporting charts render it -- and redefining that key to the spelled-out
+    // phrase this column needs would silently change all four of those
+    // surfaces. The prefix also keeps the trio recognisable as one family.
+    //
+    // The column HEADER and the facet's accessible name reuse the existing
+    // 'Applicability' key, and the drawer's record reuses 'Reason', 'Provider'
+    // and 'Justification' -- all four already carry exactly the right string.
+    'ApplicabilityApplicable' => 'יָשִׂים',
+    'ApplicabilityNotApplicable' => 'לא רלוונטי',
+    'ApplicabilityInherited' => 'עבר בירושה',
+    'AnyApplicability' => 'כל תחולה',
+    // The drawer's applicability record: who recorded the decision and when.
+    // Both are attribution for an audited decision a customer may have to
+    // defend years later, which is why the drawer names them at all.
+    'ApplicabilityDecidedBy' => 'הוחלט על ידי',
+    'ApplicabilityDecidedOn' => 'החליטו על',
+    // The framework-level Statement of Applicability card in the Add/Edit
+    // framework modals (display_framework_soa_card(), includes/governance.php).
+    // These two fields are what ISO/IEC 27001:2022 clause 6.1.3(d) needs on an
+    // SoA cover: the scope the framework is certified against, and how inclusion
+    // was determined for the controls that are simply applicable.
+    //
+    // 'IsmsScopeStatement' rather than a bare 'ScopeStatement' because "scope"
+    // is already overloaded across SimpleRisk (assessment scope, audit scope,
+    // risk scope); the ISMS prefix is what an ISO practitioner calls this exact
+    // field and keeps it from being reused for an unrelated one.
+    'StatementOfApplicability' => 'הצהרת תחולה',
+    'IsmsScopeStatement' => 'הצהרת היקף',
+    'IsmsScopeStatementHint' => 'ההיקף שלפיו מסגרת זו מוסמכת. מופיע בעמוד השער של SoA.',
+    'DefaultInclusionJustification' => 'נימוק ברירת מחדל להכללה',
+    'DefaultInclusionJustificationHint' => 'משמש לבקרות רלוונטיות ללא סיכונים קשורים. יש לציין את המניע, לא את המסגרת.',
+    // THE DEFAULT SENTENCE, in all three of its roles: the create form seeds the
+    // textarea with it, the Edit form shows it as a placeholder, and
+    // soa_framework_default_justification() (includes/soa.php) substitutes it at
+    // read time for a framework that has none. One key, because a reader must not
+    // be able to tell a stored default from a fallen-back one, and because three
+    // keys holding the same sentence is three chances for a translator to make
+    // them disagree. The name predates the seeding decision (Task 67) and is kept
+    // rather than churned through Crowdin for 39 locales.
+    //
+    // It names the DRIVER (the risk assessment) rather than the framework:
+    // "included because it is part of this framework" is circular, and ISO 6.1.3
+    // derives controls from risk treatment, using Annex A afterwards only as a
+    // completeness cross-check.
+    //
+    // It was a placeholder ONLY until Task 67, so that an unreviewed sentence
+    // could not reach a customer's SoA by inaction. Measured, that produced the
+    // opposite failure: 19 of 20 frameworks left the field NULL and the SoA's
+    // Justification column came out BLANK for every applicable control with no
+    // linked risks -- the finding an SoA is most often failed on, and one a
+    // boilerplate sentence does not attract.
+    'DefaultInclusionJustificationPlaceholder' => 'נקבע על ידי הערכת סיכוני אבטחת המידע של הארגון ונשמר כבקרה הכרחית.',
+    // Task 15: bulk-setting applicability from the control table's selection bar
+    // (#applicability--set, governance/index.php + governance-frameworks.js).
+    //
+    // The action's own label and the modal's one section. 'Applicability',
+    // 'Reason', 'Provider', 'Justification', 'Save' and 'Cancel' already exist
+    // and are reused; only the strings with no existing home are added here.
+    'SetApplicability' => 'הגדר תחולת',
+    'ApplicabilityDecision' => 'הַחְלָטָה',
+    // The amber scope note, in two sentences the page assembles separately
+    // because they answer two different questions: WHICH framework the decision
+    // is scoped to, and WHICH controls are about to receive it. The second one
+    // has two spellings, because the header checkbox selects the current PAGE
+    // while "Select all N" escalates to the whole filtered result set -- the two
+    // genuinely differ once the table pages, and a note that blurred them would
+    // let the user write 1,535 decisions believing they had written 25.
+    'ApplicabilityScopeNote' => 'החלטה זו חלה רק בתוך "{$framework}". אותה פקד יכולה להישאר רלוונטי גם במסגרת אחרת.',
+    'ApplicabilityAppliesToSelected' => 'זה יירשם כנגד הפקד/ים {$n} שנבחרו בדף זה.',
+    'ApplicabilityAppliesToAllFiltered' => 'הוא יירשם כנגד כל הפקדים {$n} התואמים למסננים הנוכחיים, כולל אלו שבדפים אחרים.',
+    // Per-state hints under the segmented control. The "applicable" one is the
+    // load-bearing sentence of the whole modal, and the SoA audit-readiness work
+    // rewrote it: an applicable control MAY now carry its own reasons and
+    // justification (ISO/IEC 27001 clause 6.1.3(d) asks for one per control, for
+    // inclusion as much as for exclusion), and leaving both empty is what falls
+    // back to the framework's default inclusion justification. The old sentence
+    // -- "this removes any recorded decision. No justification is needed." --
+    // is now false in both halves.
+    'ApplicabilityApplicableHint' => 'במסגרת זו. סיבה ונימוק הם אופציונליים; השארת שתיהן ריקות תשתמש בנימוק ההכללה המוגדר כברירת מחדל במסגרת.',
+    'ApplicabilityNotApplicableHint' => 'אי הכללת בקרה מתחום מסגרת זו. נדרשים גם נימוק וגם הצדקה בכתב.',
+    'ApplicabilityInheritedHint' => 'מישהו אחר מבצע את הבקרה הזו בשמך. ציין את שמו וציין מה הוא עושה.',
+    'ApplicabilityNarrativeHint' => 'מופיע בהצהרת הישימות. כתוב מה רואה חשבון יידרש כדי לקבל את ההחלטה.',
+    'ApplicabilityProviderHint' => 'הארגון שמבצע את הבקרה: ספק ענן, שירות מנוהל, חברת אם.',
+    'ChooseAReason' => 'בחר סיבה',
+    'ApplicabilityNoReason' => 'אין סיבה',
+    // Result toasts. Both interpolate a COUNT taken from the API response and
+    // nothing else -- no submitted text is ever reflected into a toast, which
+    // toastr renders as HTML.
+    'ApplicabilitySetResult' => 'עודכנה תחולת השליטה עבור {$n}.',
+    'ApplicabilityClearResult' => 'תחולת הפעולה אופסה ל"ישימה" עבור פקדים {$n}.',
+    // Bulk control delete (Task 54, corrected Task 55). Deleting a control is
+    // final either way the delete engine implements it: a control with test
+    // history is soft-deleted (framework_controls.deleted = 1) to keep test
+    // history intact, a control with no tests is removed outright -- but
+    // nothing anywhere flips that flag back, so from the user's side there is
+    // no "kept" case, only "deleted, and its test history survives for audit
+    // purposes." Every sentence therefore leads with the same irreversible
+    // warning; the only thing that varies is whether an audit-history clause
+    // is appended, and that clause is omitted entirely rather than printed
+    // with a count of zero -- "0 are retained for audit history" reads as a
+    // warning about something that is not going to happen, and on a delete
+    // confirmation that is exactly the kind of noise that trains people to
+    // stop reading. Every {$...} is a count from the API response; no user
+    // text is ever interpolated, which matters because toastr renders HTML.
+    'DeleteControlsPreviewChecking' => 'בודק מה יימחק...',
+    'DeleteControlsPreviewSplit' => 'פקדים {$n} יימחקו. לא ניתן לבטל פעולה זו. תוצאות הבדיקה עבור {$m} מהן נשמרות לצורך היסטוריית הביקורת.',
+    'DeleteControlsPreviewKeptOnly' => 'כל הפקדים {$n} יימחקו. לא ניתן לבטל פעולה זו. תוצאות הבדיקה נשמרות לצורך היסטוריית הביקורת.',
+    'DeleteControlsPreviewRemovedOnly' => 'פקדים {$n} יימחקו. לא ניתן לבטל פעולה זו.',
+    'DeleteControlsPreviewNone' => 'אין מה למחוק: הפקד/ים שנבחרו אינם קיימים עוד.',
+    'ControlsDeletedResult' => 'פקדים {$n} נמחקו.',
+
+    // The Add/Edit framework modal's Status field. The label reuses the existing
+    // 'Status' key -- the same word the rail's Active/Inactive/All filter already
+    // uses -- so only the explanatory hint is new. It says the two things a user
+    // cannot see from the control itself: that Inactive is the NON-destructive way
+    // to retire a framework (unlike Delete, which cannot be undone), and that the
+    // change cascades through the hierarchy, which is what update_framework_status()
+    // has always done and is genuinely surprising when a parent is deactivated.
+    'FrameworkStatusHint' => 'מסגרות לא פעילות שומרות על כל הפקדים והמיפויים שלהן, אך הן מוסתרות מרשימת המסגרות המוגדרת כברירת מחדל ונשארות מחוץ ללוח המחוונים של הממשל. ביטול הפעלה של מסגרות גם מבטל כל מסגרות שמתחתיה; הפעלת מסגרות אחת מפעילה גם את המסגרות ההורות שלהן.',
+
+    // Task 60: the same #applicability--set modal, opened from ONE control's row
+    // action instead of the selection bulk bar. The button's own label reuses
+    // 'SetApplicability'; these two exist because the modal now has to say which
+    // of the two it is acting on, and both spellings must be unambiguous.
+    //
+    // The title names the specific object (design-system.md §8) and the note
+    // says "only", because the dangerous reading is the silent one: with rows
+    // ticked -- or with "Select all N filtered" in force -- a modal that said
+    // nothing would let a click the user believed applied to one row be read as
+    // applying to every control in the framework. Naming the control in both
+    // places is what makes the narrower scope visible rather than assumed.
+    // Corrected in Task 63. This spelling used to end "...only, whatever else is
+    // selected", which was printed on every row-action open whether or not
+    // anything else WAS selected -- a dangling absolute with no antecedent, so
+    // it read as a sentence that had been cut off. It is now the plain form, and
+    // the reassurance about a competing selection moved to
+    // 'ApplicabilityAppliesToControlNotSelection' below, which is printed only
+    // when there is a competing selection to reassure anyone about.
+    'SetApplicabilityForControl' => 'הגדר תחולת: {$name}',
+    'ApplicabilityAppliesToControl' => 'זה יירשם כנגד "{$name}" בלבד.',
+
+    // Task 17: the Statement of Applicability report itself
+    // (reports/statement_of_applicability.php + pages/statement-of-applicability.js),
+    // the document ISO/IEC 27001:2022 clause 6.1.3(d) asks for and the one every
+    // applicability decision recorded on the Define Control Frameworks page
+    // exists to produce.
+    //
+    // 'StatementOfApplicability' already exists above (the framework modal's SoA
+    // card) and is reused for the report's own title, as are 'IsmsScopeStatement',
+    // 'DefaultInclusionJustification', the three 'Applicability*' state labels,
+    // 'ApplicabilityDecidedBy'/'DecidedOn', and the plain 'Framework',
+    // 'ControlNumber', 'ControlName', 'Justification', 'Evidence', 'Reason',
+    // 'Provider', 'Total', 'Controls' and 'Export' keys. Only strings with no
+    // existing home are added here.
+    'StatementOfApplicabilityDesc' => 'עבור מסגרת אחת: כל בקרה, האם היא ישימה, מדוע היא נכללה או הוחרגה, והאם היא מיושמת.',
+    // The header button on Define Control Frameworks. The verb is "generate"
+    // rather than "view" because the document is assembled at the moment it is
+    // asked for -- there is no stored SoA that could be out of date.
+    'GenerateStatementOfApplicability' => 'צור הצהרת תחולה',
+
+    // The Justification column's SECOND resolution step, and the reason an SoA
+    // built here beats the spreadsheet it replaces: the risks that drove the
+    // control are already recorded against it, so nobody retypes them and they
+    // cannot go stale. {risks} is substituted with the displayed risk ids.
+    //
+    // Phrased to match clause 6.1.3, which derives controls from risk treatment
+    // and uses Annex A afterwards only as a completeness cross-check -- the same
+    // reasoning behind 'DefaultInclusionJustificationPlaceholder' above.
+    'SoaJustifiedByRiskAssessment' => 'נקבע על ידי הערכת סיכוני אבטחת המידע של הארגון. סיכונים קשורים: {risks}.',
+
+    // The Implemented column. DERIVED from maturity and the last test result on
+    // every read, never stored, so it cannot drift out of sync with the control.
+    // 'Yes' and 'No' already exist and are reused; only the middle value and the
+    // header need keys of their own. An excluded control's cell reuses the
+    // existing 'NotApplicable' ('N/A'), which is exactly the right abbreviation
+    // in a dense table.
+    'SoaImplemented' => 'יושם',
+    'SoaImplementedPartial' => 'חֶלקִי',
+
+    // The cover block.
+    'SoaGeneratedOn' => 'נוצר בתאריך',
+    'SoaExcludedCount' => 'לא נכלל',
+
+    // The prompt shown when the framework has never been given the two cover
+    // fields. It PROMPTS rather than silently printing a blank cover: an SoA
+    // whose scope is empty is the one defect an auditor spots first, and the
+    // moment somebody opens the report is the only moment those fields matter.
+    // Both spellings of empty (never set, and deliberately cleared) prompt --
+    // from a reader's point of view there is nothing to print either way.
+    //
+    // The inclusion-justification line states a WEAKER consequence than it used
+    // to, because Task 67 made the stronger one untrue: the column no longer goes
+    // blank when the field is empty -- soa_framework_default_justification()
+    // substitutes the generic default sentence. The prompt survives because a
+    // generic sentence is not the organization's own, and an auditor reading 1,500
+    // identical rows of boilerplate is entitled to ask whose risk assessment it
+    // refers to.
+    'SoaMissingFieldsTitle' => 'להצהרה זו חסרים פרטי כיסוי',
+    'SoaMissingScopeStatement' => 'לא נרשמה הצהרת היקף עבור מסגרת זו. הודעה על תנאי שימוש (SoA) צריכה לציין את ההיקף שלגביו היא מתבצעת.',
+    'SoaMissingInclusionJustification' => 'לא נרשמה הצדקת ברירת מחדל להכללה. בקרות רלוונטיות ללא סיכונים קשורים יחזרו להצהרה כללית ולא שלך.',
+    'SoaEditFrameworkToAdd' => 'הוסף אותם על המסגרת',
+
+    // Opened from the Reporting Hub, which cannot supply a framework. A picker,
+    // not an error: an SoA is a per-framework document by definition -- the same
+    // control excluded from ISO 27001 is not thereby excluded from PCI DSS --
+    // and there is no cross-framework roll-up to offer instead.
+    'SoaChooseFramework' => 'בחר מסגרת',
+    'SoaChooseFrameworkHint' => 'הצהרת תחולה נכתבת על מסגרת אחת בכל פעם.',
+    // The picker has a roster but nothing in it. Distinct from "this framework
+    // has no controls": there is no framework to write a statement about at all,
+    // and the fix is on a different page, so it says which one.
+    // The launcher's affordance row. "Open in browser" rather than "View"
+    // because it names what actually happens -- the document opens in a new tab,
+    // chrome-free -- and because Task 18 adds "Download as PDF" and "Download as
+    // XLSX" beside it, where "open" vs "download" is the distinction that
+    // matters.
+    // The document has no sidebar, so it needs its own way back for anyone who
+    // arrives from a bookmark or a shared link. Screen only; never printed.
+    'SoaBackToSelector' => 'חזרה להצהרת תחולת',
+    'SoaNoFrameworks' => 'אין מסגרות פעילות',
+    'SoaNoFrameworksHint' => 'התקן או הפעל מסגרת תחת ממשל > הגדרת מסגרות בקרה, והיא תהיה זמינה כאן.',
+
+    // The two refusals. Both explain rather than just failing, because the user
+    // arrived here deliberately.
+    'SoaFrameworkInactiveTitle' => 'מסגרת זו אינה פעילה',
+    'SoaFrameworkInactiveBody' => 'הצהרת תחולה מתארת את ההיקף שבו ארגון פועל כעת. יש להפעיל מחדש את המסגרת כדי ליצור אחת כזו.',
+    'SoaFrameworkNotFoundBody' => 'המסגרת הזו כבר לא קיימת.',
+
+    // A framework with no controls mapped into it. Not an error -- it is a real
+    // and recoverable state, and saying so beats an empty table.
+    'SoaNoControls' => 'למסגרת הזו אין בקרה',
+    'SoaNoControlsHint' => 'מיפוי פקדים לתוך המסגרת והצהרת הישימות שלה תפרט אותם.',
+
+    // The second half of the statement-of-applicability launcher's affordance
+    // row, beside "Open in browser" and the existing 'DownloadAsXLSX'. Rendered
+    // only where the Import/Export Extra is active, which is what supplies the
+    // export. "Download as" rather than "Export to" so the pair reads as one
+    // choice of format, and so it matches the XLSX label already in this file.
+    'DownloadAsPDF' => 'הורד כקובץ PDF',
+
+    // The fourth column of the control modal's "Mapped Control Frameworks"
+    // widget, between the reference code and the reference text. The
+    // FRAMEWORK's own title for the control it is citing -- what a Statement of
+    // Applicability prints beside the clause number. Distinct from the existing
+    // 'ReferenceText', which holds the framework's full control statement, and
+    // from the SimpleRisk control's own name.
+    'ReferenceSubject' => 'נושא ההתייחסות',
+    // Placeholder/help text under that field, and the reason it is worth
+    // filling in: without it the Statement of Applicability has nothing to
+    // print but the source catalogue's name for its own control.
+    'ReferenceSubjectHint' => "הכותרת של המסגרת עצמה עבור פקד זה.",
+
+    // Task 63: the row-scoped population sentence in the Set applicability
+    // modal, in the one situation where the plain
+    // 'ApplicabilityAppliesToControl' above leaves a real question unanswered --
+    // the user has controls ticked, or a standing "Select all N filtered", and
+    // has just opened the modal from ONE row's own action.
+    //
+    // It states the guarantee rather than implying it. A user whose escalated
+    // selection covers an entire framework needs to know that this click is not
+    // about to overwrite it, and {$n} is the count of the OTHER selected
+    // controls -- the target is excluded, because it is very often ticked too
+    // and a promise that included it would be false.
+    'ApplicabilityAppliesToControlNotSelection' => 'הוא יירשם כנגד "{$name}" בלבד - הפקדים {$n} שבחרת לא יושפעו.',
+
+    // Task 65: the VISIBLE label on the controls toolbar's SoA button. The full
+    // sentence ('GenerateStatementOfApplicability' above) stays as the button's
+    // title and aria-label, and is still what the SoA page itself is called;
+    // this is the short form for a toolbar row it shares with the page's one
+    // primary action. At full length the secondary button measured more than
+    // twice the primary's width and became the largest element in the row.
+    //
+    // "SoA" is safe to abbreviate HERE and only here: the button appears solely
+    // when a single framework is scoped, beside an Applicability column, and it
+    // expands on hover.
+    'GenerateSoa' => 'צור את נושא הקריאה (SoA)',
+
+    // ===== Clone framework (Task 64) =======================================
+    // The framework half of Clone control's framing (CloneOfControlTitle /
+    // ClonedFromControlNotice above), and for the same reason: the clone
+    // pre-fills the Add Framework modal rather than creating anything, so the
+    // modal has to say what was carried over before the user saves it.
+    //
+    // Separate keys from the control pair rather than one shared "Clone of
+    // {$name}" -- the two banners do not say the same thing. A cloned control
+    // simply asks to be reviewed; a cloned FRAMEWORK has to explain two things
+    // its fields cannot: that the source's control mappings come with it, and
+    // that the empty scope statement is deliberate. The blank field is the
+    // whole reason the banner is longer than the control's -- a scope statement
+    // left blank with no explanation reads as a field that failed to populate,
+    // and the one thing a clone exists to be given is a NEW scope (Josh: "you
+    // might want to use the same controls as one framework, but scope it
+    // differently"). {$name} and {$n} follow the same client-side
+    // formatTemplate() substitution the rest of this page's templates use.
+    'CloneOfFrameworkTitle' => 'שיבוט של "{$name}"',
+    // {$n} is the count the rail is SHOWING for the source row -- its controls,
+    // not its raw mapping rows. Those differ (a framework can cite one control
+    // under two clause numbers, and the rail excludes deleted controls), and the
+    // number to promise is the one the user is looking at when they click and
+    // the one the clone's own rail row will show afterwards.
+    'ClonedFromFrameworkNotice' => 'משוכפל מ-"{$name}". פקדי {$n} שלו יועתקו למסגרת החדשה, כאשר כל אחד מהם רלוונטי מלכתחילה - אף אחת מהחלטות הישימות שלו לא תעבור הלאה. הצהרת ההיקף ריקה במכוון: ציין את ההיקף שמסגרת זו מכסה לפני יצירת הצהרת הישימות שלה.',
+    // Seeds the name field so the clone can be saved without a rename --
+    // framework names are unique, so a verbatim copy is refused on save.
+    'CloneOfFrameworkName' => '{$name} (שיבוט)',
+    'CloneFramework' => 'מסגרת שיבוט',
+    // Extras version independently of Core, so an updated Import/Export Extra
+    // can end up calling a Core function the installed Core does not have. The
+    // export refuses with this rather than fataling -- see
+    // soa_export_refuse_if_core_too_old(), extras/import-export/includes/soa_export.php.
+    'SoaExportRequiresNewerCore' => 'ייצוא זה דורש גרסה חדשה יותר של SimpleRisk Core מזו המותקנת. עדכן את SimpleRisk ולאחר מכן נסה לבצע את הייצוא שוב.',
+    // The framework ACQUISITION chooser (Task 26): "+ Add framework" asks how you
+    // want to get one, rather than assuming you want to type it in. Each option is
+    // rendered only when the route behind it actually exists for this user, so the
+    // hint text may state plainly what the route does -- it is never shown to
+    // someone who cannot take it.
+    'HowDoYouWantToAddAFramework' => 'איך אתה רוצה להוסיף מסגרת?',
+    'CreateFrameworkManually' => 'צור אחד באופן ידני',
+    'CreateFrameworkManuallyHint' => 'תן שם למסגרת בעצמך, לאחר מכן הוסף או מפה את הפקדים שלה.',
+    // Named for the framework rather than for its vendor. The hint was reworded
+    // at the same time: it used to end "...load its Secure Controls Framework
+    // controls", which read as a stutter once the label carried those words.
+    'GetFrameworkFromScf' => 'קבל אחד ממסגרת הבקרה המאובטחת',
+    'GetFrameworkFromScfHint' => 'בחר מסגרת שפורסמה וטען את הפקדים הממופים שלה בשלב אחד.',
+    'ImportFrameworkFromCatalog' => 'ייבא אחד',
+    'ImportFrameworkFromCatalogHint' => 'התקן מסגרת ובקרותיה מקטלוג התוכן של SimpleRisk.',
+
+    // The framework acquisition chooser's third route, which now offers the
+    // Import-Export Extra's CONTROL import (a spreadsheet naming a framework
+    // that does not exist yet creates it) rather than the GitHub catalogue the
+    // two keys above described. Those two are left in place, unreferenced, so a
+    // customer maintaining a custom lang.<locale>.php still reconciles by tail
+    // diff.
+    'ImportFrameworkFromSpreadsheet' => 'ייבא אחד מגיליון אלקטרוני',
+    'ImportFrameworkFromSpreadsheetHint' => 'העלה גיליון אלקטרוני של פקדים שמעניק שם למסגרת, ושניהם נוצרים.',
+
+    // The Define Control Frameworks rail's second synthetic scope: the controls
+    // mapped to no framework at all. Its first, "All controls", reuses the
+    // existing AllControls key rather than adding a second string with the same
+    // English -- it replaced 'AllFrameworks' on that row, which named a union of
+    // frameworks while scoping to every control, mapped or not. 'AllFrameworks'
+    // is left in place and unreferenced by that page: other surfaces still use
+    // it, and every locale carries it.
+    'UnassignedControls' => 'פקדים שלא הוקצו',
+    // APPLICABILITY VALIDATION FAILURES. These reach the user: the v2 endpoint
+    // returns the exception's message as the API status message and the page
+    // renders it in a toast, so a hardcoded English literal here would be
+    // permanently English for every locale.
+    //
+    // NOTHING THE CALLER TYPED IS EVER INTERPOLATED INTO THESE. The parameters
+    // are validated enum values, integer ids and byte limits the server itself
+    // owns -- naming the ALLOWED values rather than echoing the rejected one is
+    // deliberate (it is both safe and more useful than repeating a typo).
+    'ApplicabilityErrUnknownState' => 'מצב תחולה לא ידוע. צפוי אחד מהבאים הבאים: {$states}.',
+    'ApplicabilityErrNarrativeRequired' => 'נדרש תיאור עבור \'{$state}\'.',
+    'ApplicabilityErrNarrativeTooLong' => 'הנרטיב ארוך יותר מ- {$bytes} בייט.',
+    'ApplicabilityErrReasonRequired' => 'נדרשת סיבת אי הכללה כדי לסמן בקרה כלא רלוונטית.',
+    'ApplicabilityErrProviderRequired' => 'ספק נדרש לסמן בקרה כמורשת.',
+    'ApplicabilityErrProviderTooLong' => 'שם הספק ארוך מ- {$bytes} בייט.',
+    'ApplicabilityErrReasonsNotFound' => 'סיבות הישימות הבאות אינן קיימות: {$ids}.',
+    'ApplicabilityErrReasonsNotOffered' => 'סיבות הישימות הבאות אינן מוצעות עבור מצב זה: {$ids}.',
+    'ApplicabilityErrFrameworkNotFound' => 'המסגרת {$framework} אינה קיימת.',
+    'ApplicabilityErrControlsNotFound' => 'מזהי הבקרה הבאים אינם קיימים: {$ids}.',
+    // Controls/Risks import result messages (validation gate, individual bad-row
+    // alerts, and the batched submitted/created/updated summaries)
+    'ControlIdOrShortNameFieldRequired' => 'יש למפות את השדה מזהה הבקרה או את השדה שם הבקרה המקוצר - לא ניתן לזהות שורה ללא אחד מהם.',
+    'RiskImportSubjectNull' => 'מזהה סיכון {$risk_id}: לא עודכן מכיוון ששדה הנושא ריק או חסר.',
+    'RiskImportSummary' => 'סיכון/י {$submitted} הוגשו ועדכנו סיכון/י {$updated}.',
+    'ControlImportSummary' => 'נוצר/י פקד/ות {$created} ועדכן/י פקד/ות {$updated}.',
+    'ImportAdditionalIssuesSuppressed' => 'ב-{$count} שורה/ות נוספות היו בעיות שלא מוצגות כאן בנפרד.',
+    'EncryptionPipelineStalledTask' => 'נראה כי צינור הצפנה (משימה #{$id}, {$type}) תקועה - היא הייתה {$status} במשך זמן רב באופן חריג ללא התקדמות. משמעות הדבר בדרך כלל היא שעובד תור הרקע אינו פועל; בדוק שהוא מתוזמן, ולאחר מכן נסה שוב לאחר שיעבד את המשימה התקועה.',
+    'EncryptionPipelineStalledState' => 'נראה כי צינור הצפנה תקוע - הוא סומן כמתבצע במשך זמן רב באופן חריג ללא משימת רקע תואמת להצביע אליה. משמעות הדבר בדרך כלל היא שעובד התור אינו פועל, או שצינור קודם הסתיים מבלי לעדכן אותו כהלכה. בדוק את יומן ניפוי השגיאות לפני שתנסה שוב.',
+    // DEMO_MODE — shown when a visitor to a shared demo instance attempts one
+    // of the operations that would spoil the demo for the next visitor
+    'ActionDisabledOnDemoInstance' => 'פעולה זו מושבתת במופע ההדגמה של SimpleRisk.',
+
+    // The one-click upgrade progress window: the step an upgrade is on, and
+    // the line shown once it finishes
+    // Shown when an upgrade's progress record has not been touched for long
+    // enough that the process running it is presumed gone
+    'UpgradeJobStalled' => 'השדרוג הפסיק להגיב. בדוק את יומן השרת לפני שתנסה שוב.',
+    // Shown when an upgrade replaced the instance's configuration file and could
+    // not put the original back
+    // Shown when the database was brought up to date but the application files
+    // could not be replaced, so the instance has NOT moved to the new release
+    'UpdateAppFailed' => 'קבצי האפליקציה לא שודרגו, כך שמופע זה עדיין מריץ את הגרסה הקודמת שלו. בדוק את יומן SimpleRisk כדי למצוא את הסיבה, ולאחר מכן הפעל את השדרוג שוב.',
+    // The one-click upgrade progress screen
+    'UpgradeInProgress' => 'בתהליך',
+    'UpgradeStepNotNeeded' => 'לא נחוץ',
+    // Recovering an Upgrade Extra whose files are damaged
+    'UpgradeExtraDamagedReinstalling' => 'הגרסה המותקנת של Upgrade Extra פגומה. מורידה עותק חדש.',
+    'UpgradeExtraDamagedRepaired' => 'ה-Upgrade Extra הוחלף בעותק עובד.',
+    'UpgradeExtraDamagedFailed' => 'תוספות השדרוג פגומות ולא ניתן היה להחלפן באופן אוטומטי. התקן אותן מחדש מדף התוספות, או שחזר את simplerisk/extras/upgrade/ מגיבוי, ולאחר מכן נסה שוב.',
+    'UpgradeAlreadyCurrent' => 'מופע זה כבר נמצא ב- {version}, שהוא הגרסה האחרונה. לא היה צורך לשדרג דבר.',
+    'UpgradeShowWhatItDid' => 'הראה מה זה עשה',
+    'UpgradeBackupsListed' => 'גיבויים אלה מופיעים תחת הגדרות > גיבויים.',
+    'UpgradingTo' => 'משדרג ל- {version}',
+    'UpgradeSafeToClose' => 'ניתן לסגור חלון זה בבטחה. השדרוג ממשיך בשרת ודף זה יתחבר מחדש.',
+    'UpgradeDownloadLog' => 'הורדת יומן',
+    'UpgradeStatementsApplied' => 'הוחלו משפטי {started} · הוחלו משפטי {count}',
+    // The Upgrade Extra's pre-upgrade check of the instance it is sitting on
+    'UpgradeCheckingInstance' => 'בודק את המופע הזה',
+    'UpgradeInstanceChecked' => 'המופע נבדק, אין צורך בתיקונים.',
+    'UpgradeBlockedByCorrections' => 'השדרוג הופסק מכיוון שלמקרה זה נדרש תיקון שלא ניתן היה להחיל אותו באופן אוטומטי. פעל לפי ההוראות לעיל, ולאחר מכן הפעל את השדרוג שוב. לא השתנה דבר נוסף.',
+    // Shown when an upgrade replaced the instance's configuration file and could not put the original back
+    'ConfigRestoreFailed' => 'השדרוג לא הצליח לשחזר את קובץ התצורה של מופע זה. שחזר את simplerisk/includes/config.php מהגיבוי לפני שתמשיך.',
+    'UpgradeDidNotAdvance' => 'פונקציית השדרוג עבור גרסה "{$version}" לא קידמה את גרסת מסד הנתונים; היא נעצרת כדי שלא תפעל שוב.',
+    'BackupDatabaseNative' => 'גיבוי מסד הנתונים (אין צורך בכלים חיצוניים)...',
+    'UpgradeAlreadyRunning' => 'שדרוג כבר פועל במופע זה.',
+    'UpgradeStatusUnreachable' => 'אבד קשר עם השרת בזמן שהשדרוג התבצע. בדוק את יומן SimpleRisk; ייתכן שהשדרוג עדיין מתבצע.',
+    'UpgradeJobUnwritable' => 'לא ניתן היה להתחיל את השדרוג מכיוון שלא ניתן היה לכתוב את רשומת ההתקדמות שלו. ודא שמשתמש האינטרנט יכול לכתוב את ספריית המערכת הזמנית.',
+    'UpgradeStepCheckingVersions' => 'בדיקת גירסאות',
+    'UpgradeStepUpgradingDatabase' => 'שדרוג סכימת מסד הנתונים',
+    'UpgradeStepFinalising' => 'החלת ההמרות לאחר השדרוג',
+    'UpgradeDatabaseHeading' => 'שדרוג מסד הנתונים',
+    'UpgradeDatabaseComplete' => 'שדרוג מסד הנתונים הושלם.',
+    'UpgradeHideWhatItDid' => 'הסתר את מה שזה עשה',
+    'UpgradeStateRunning' => 'רִיצָה',
+    'UpgradeSessionExpired' => 'פג תוקף הסשן שלך. היכנס שוב כדי לראות את השדרוג.',
+    'UpgradeLostContact' => 'אבד קשר עם השרת. טען מחדש דף זה כדי להתחבר מחדש לשדרוג.',
+    'UpgradeDatabaseAlreadyCurrent' => 'מסד הנתונים כבר נמצא בגרסת האפליקציה.',
+    'UpgradeConversionsApplied' => 'המרות של מנוע וסט תווים יושמו.',
+    'UpgradeStoppedShort' => 'השדרוג נעצר ב- {reached} מבלי להגיע ל- {app}. עיין ביומן השרת.',
+    'UpgradeStepBackingUp' => 'גיבוי',
+    'UpgradeStepUpgradingFiles' => 'שדרוג קבצי אפליקציה',
+    'UpgradeStepUpgradingExtras' => 'שדרוג תוספות מותקנות',
+    'UpgradeStepUpdatingUpgradeExtra' => 'עדכון תוספת השדרוג',
+    // The Upgrade Extra's pre-chain corrections: what is wrong, and what to do
+    // about it. These are the highest-stakes messages the upgrade produces --
+    // an operator reads them to unstick an instance that cannot upgrade.
+    'UpgradeCorrectionUnknownVersionTitle' => 'גרסת מסד הנתונים המוקלטת אינה מציינת גרסה אמיתית',
+    'UpgradeCorrectionNoRecordedVersion' => 'למסד הנתונים אין גרסה מתועדת.',
+    'UpgradeCorrectionUnknownVersionFinding' => 'מסד הנתונים מדווח על גרסה \'{$version}\', שאינה מציינת גרסת SimpleRisk. השדרוג אינו יכול לבחור נקודת התחלה ממנה.',
+    'UpgradeCorrectionUnknownVersionGuidance' => 'הגדירו את ההגדרה db_version למהדורה שהסכימה שלה נמצאת בפועל במסד נתונים זה, ולאחר מכן הפעילו את השדרוג שוב: UPDATE settings SET value=\'<release>\' WHERE name=\'db_version\'. אם הערך הוא מציין מיקום כגון 2026XXXX-001, הערך הנכון הוא כמעט תמיד המהדורה האמיתית האחרונה שהותקנה לפני שהשדרוג בוצע.',
+    'UpgradeCorrectionLegacySessionsTitle' => 'טבלת ה-sessions לא יכולה לשרוד את המרת ערכת התווים של השדרוג',
+    'UpgradeCorrectionLegacySessionsFinding' => '`sessions`.`id` הוא VARCHAR({$width}) בטבלת MyISAM. המרתו ל- utf8mb4, שעושה זאת מגרסה 20230106-001 ואילך, תחרוג ממגבלת האינדקס של 1000 בייט של MyISAM ותיכשל השדרוג.',
+    'UpgradeCorrectionLegacySessionsGuidance' => 'סשן פעיל אחד או יותר משתמשים במזהה ארוך מ-128 תווים. צמצום העמודה כעת יגרום לניתוק משתמשים אלה, כך שהיא נותרה ללא שינוי. נסה שוב את השדרוג לאחר שפג תוקפם של סשנים אלה.',
+    'UpgradeCorrectionApplied' => 'מְתוּקָן.',
+    'UpgradeCorrectionFailed' => 'לא ניתן היה להחיל תיקון זה. עיין ביומן SimpleRisk לקבלת הסיבה.',
+    'UpgradeCorrectionAppliedLine' => 'תוקן: {$title} {$message}',
+    'UpgradeCorrectionNotAppliedLine' => 'לא תוקן: {$title} {$message}',
+    'UpgradeCorrectionsNeeded' => 'תיקונים נדרשים לפני שניתן יהיה לשדרג את המופע הזה: {$count}',
+    'UpgradeCorrectionsNeededShort' => 'תיקונים נדרשים: {$count}',
+    'UpdateDatabase' => 'שדרוג מסד נתונים...',
+    // Authentication screens (index.php, reset.php, reset_password.php)
+    'EnterTheCredentialsForYourAccount' => 'הזן את פרטי הגישה של החשבון שלך.',
+    'TroubleSigningIn' => 'בעיות בכניסה? צור קשר עם מנהל SimpleRisk שלך.',
+    'BackToLogin' => 'חזרה לכניסה',
+    'Or' => 'אוֹ',
+    'WeWillEmailAResetTokenToYourAccount' => 'נשלח אסימון איפוס בדוא"ל לכתובת המופיעה בחשבונך.',
+    'EnterTheResetTokenFromYourEmail' => 'הזן את קוד האיפוס מהאימייל שלך יחד עם הסיסמה החדשה שלך.',
+    'ChooseANewPasswordToContinue' => 'בחר סיסמה חדשה כדי להמשיך.',
+    'FromZeroToGRCInMinutes' => 'מאפס ל-GRC תוך דקות.',
+    'OrganizationLogo' => 'לוגו הארגון',
+    'LoginScreenBranding' => 'מיתוג מסך הכניסה',
+    'CustomLogo' => 'לוגו מותאם אישית',
+    'CustomLogoHint' => 'PNG, JPG, GIF או WebP, עד 1 מגה-בייט ו-2000x2000. מוצג בגודל של עד 260x64, לכן יש לספק כ-520x128 עבור מסכים בצפיפות גבוהה. הסרגל העליון ולוח ההתחברות כהים, לכן יש להעלות לוגו שנקרא על רקע כהה. הסר את הלוגו כדי לחזור לגרסה של SimpleRisk.',
+    'CurrentLogo' => 'הלוגו הנוכחי',
+    'RemoveLogo' => 'הסר את הלוגו',
+    'LoginTagline' => 'שורת התחברות',
+    'LoginTaglineHint' => 'מחליף את שורת הסלוגן של SimpleRisk במסך הכניסה. שורה קצרה אחת קריא בצורה הטובה ביותר. השאר אותה ריקה כדי לשמור את שורת הסלוגן של SimpleRisk.',
+    'LoginNotice' => 'הודעת שימוש במערכת',
+    'LoginNoticeHint' => 'מוצג במסך ההתחברות לפני שמישהו נכנס. השתמש בו עבור התראה על שימוש מקובל או שימוש במערכת. השאר אותו ריק כדי לא להציג הודעה. קישורים ותמונות אינם מורשים.',
+    'BrandingRequiresCustomization' => 'מיתוג מסך הכניסה הוא חלק מתוספת ההתאמה האישית.',
+    'LogoMustBeAnImage' => 'הלוגו חייב להיות בפורמט PNG, JPG, GIF או WebP.',
+    'LogoTooLarge' => 'גודל הלוגו אינו יכול לעלות על 1 מגה-בייט.',
+    'LogoDimensionsTooLarge' => 'הלוגו חייב להיות בגודל של לא יותר מ-2000x2000 פיקסלים.',
+    'LogoDimensionsTooSmall' => 'הלוגו חייב להיות באורך של לפחות 32 פיקסלים בקצהו הארוך ביותר.',
+    'LogoUploadFailed' => 'לא ניתן היה להעלות את הלוגו. אנא נסה שוב.',
+    'LogoUpdated' => 'הלוגו עודכן.',
+    'LogoRemoved' => 'הלוגו הוסר.',
+    'NoSystemUseNoticeSet' => 'לא הוגדרה הודעת שימוש במערכת.',
+    'NoticeSizeSmall' => 'קָטָן',
+    'NoticeSizeNormal' => 'נוֹרמָלִי',
+    'NoticeSizeLarge' => 'גָדוֹל',
+    // Preferences page save feedback
+    'TheSettingsWereUpdatedSuccessfully' => 'ההגדרות עודכנו בהצלחה.',
+    'NoChangesWereMade' => 'לא בוצעו שינויים.',
+    'PleaseSpecifyAnIntegerGreaterThanOrEqualToZeroForTheMinimumValue' => 'אנא ציין מספר שלם גדול או שווה לאפס עבור הערך המינימלי.',
+    'PleaseSpecifyAnIntegerForTheMaximumValue' => 'אנא ציין מספר שלם עבור הערך המקסימלי.',
+    'PleaseSpecifyAMaximumValueGreaterThanTheMinimum' => 'אנא ציין ערך מקסימלי גדול מהמינימום.',
+    // Extra download version compatibility
+    'ExtraVersionIncompatibleWithApplication' => 'הגרסה "{$extra}" Extra שהורדת (גרסה {$extra_version}) אינה תואמת ל-SimpleRisk {$app_version} ולא הותקנה. שדרגו את SimpleRisk לגרסה העדכנית ביותר תחילה.',
+    'ExtraCompatibilityDataUnavailable' => 'SimpleRisk לא הצליחה לאשר אילו גרסאות Extra תומכת גרסה זו, ולכן ה-Extra לא הותקן. אנא נסה שוב מאוחר יותר.',
+    'ExtraVersionCouldNotBeVerified' => 'לא ניתן היה לקבוע את גרסת התוספת שהורדת, ולכן היא לא הותקנה.',
     '' => '',
 );
 ?>

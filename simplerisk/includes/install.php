@@ -212,9 +212,13 @@ function display_install_header()
     <header class="topbar" data-navbarbg="skin5">
         <nav class="navbar top-navbar navbar-expand-md navbar-dark">
             <div class="navbar-header">
-                <a class="navbar-brand" href="https://www.simplerisk.com">
-                    <img src="images/logo@2x.png" alt="homepage" class="logo"/>
-                </a>
+                <!-- The wordmark, not display_brand_logo(): this page runs before
+                     config.php exists, so there is no database to read a custom
+                     logo setting from. The markup and its CSS need neither. -->
+                <span class="navbar-brand sr-wordmark">
+                    <img class="sr-brand-logo" src="images/simplerisk-logo-icon.png" alt="SimpleRisk" />
+                    <span class="sr-brand-text"><span class="s">Simple</span><span class="r">Risk</span></span>
+                </span>
             </div>
             <div class="navbar-collapse collapse show" id="navbarSupportedContent" data-navbarbg="skin5">
                 <!-- Right side toggle and nav items -->
@@ -924,7 +928,7 @@ function step_6_simplerisk_installation()
         if (is_valid_sr_host($host)) {
             $sr_pass_quoted = $db->quote($sr_pass);
             $db->exec("CREATE USER '{$sr_user_safe}'@'{$host}' IDENTIFIED BY {$sr_pass_quoted}");
-            $db->exec("GRANT SELECT,INSERT,UPDATE,ALTER,DELETE,CREATE,DROP,INDEX,REFERENCES ON {$sr_db_q}.* TO '{$sr_user_safe}'@'{$host}'");
+            $db->exec("GRANT SELECT,INSERT,UPDATE,ALTER,DELETE,CREATE,DROP,INDEX,REFERENCES,LOCK TABLES ON {$sr_db_q}.* TO '{$sr_user_safe}'@'{$host}'");
         }
     }
 
@@ -984,12 +988,21 @@ function step_6_simplerisk_installation()
         curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, true);
         $json_result = curl_exec($curl);
         $json_array = json_decode($json_result, true);
-        curl_close($curl);
 
         $ssl_ok = ($json_result && ($json_array['status'] ?? 0) === 200) ? '1' : '0';
         $stmt = $db->prepare("INSERT INTO settings (name,value) VALUES ('ssl_certificate_check_simplerisk', ?) ON DUPLICATE KEY UPDATE value=VALUES(value)");
         $stmt->execute([$ssl_ok]);
     }
+
+    // Verify TLS certificates on outbound calls to external services by default.
+    // ssl_certificate_check_simplerisk (above) governs calls to this instance's
+    // own URL; ssl_certificate_check_external governs calls to external services
+    // (licensing.simplerisk.com, the version feed, Extra integrations). Seed it
+    // here so a fresh install is secure by default — the upgrade migration that
+    // adds it does not run on a fresh install. Admins can disable it on the
+    // Security settings page.
+    $stmt = $db->prepare("INSERT INTO settings (name,value) VALUES ('ssl_certificate_check_external', '1') ON DUPLICATE KEY UPDATE value=VALUES(value)");
+    $stmt->execute();
 
     $stmt = $db->prepare("UPDATE settings SET value=? WHERE name='default_language'");
     $stmt->execute([$default_language]);
@@ -1004,7 +1017,7 @@ function step_6_simplerisk_installation()
     $stmt = $db->prepare("INSERT INTO settings (name,value) VALUES ('schedule_cron_ping', ?) ON DUPLICATE KEY UPDATE value=VALUES(value)");
     $stmt->execute([$schedule]);
 
-    installer_instance_registration($instance_id, $full_name, $email, $mailing_list);
+    installer_instance_registration($db, $instance_id, $full_name, $email, $mailing_list);
 
     if (create_config_file($db_host, $db_port, $sr_user, $sr_pass, $sr_db, $db_sessions, $db_ssl_cert_path)) {
         echo "Configuration file has been created successfully.<br><br>";
@@ -1443,6 +1456,18 @@ function load_file($db_host, $db_port, $db_user, $db_pass, $sr_db, $memory_file)
     // Connect to the simplerisk database
     $db = installer_db_open($db_host, $db_port, $db_user, $db_pass, $sr_db);
 
+    // Disable foreign-key checks for the duration of the load. mysqldump emits
+    // CREATE TABLE statements in alphabetical order, so a child table can be
+    // created before the parent it references (e.g. `notification_recipients`
+    // has a foreign key to `notifications`, but sorts first). The dump guards
+    // against this with a `/*!40014 ... FOREIGN_KEY_CHECKS=0 */` directive, but
+    // the comment-stripping below removes that directive along with every other
+    // block comment — so we set it explicitly here. Without this, the
+    // out-of-order child CREATE fails with MySQL error 1824 ("Failed to open
+    // the referenced table"), the schema load aborts partway, and the installer
+    // never reaches its completion screen.
+    $db->exec("SET FOREIGN_KEY_CHECKS=0");
+
     // Get the data from the memory file
     $content = stream_get_contents($memory_file);
 
@@ -1475,6 +1500,9 @@ function load_file($db_host, $db_port, $db_user, $db_pass, $sr_db, $memory_file)
         }
     }
 
+    // Re-enable foreign-key checks now that every table exists.
+    $db->exec("SET FOREIGN_KEY_CHECKS=1");
+
     // Close the simplerisk database
     installer_db_close($db);
 
@@ -1486,36 +1514,79 @@ function load_file($db_host, $db_port, $db_user, $db_pass, $sr_db, $memory_file)
 /*********************************************
  * FUNCTION: INSTALLER INSTANCE REGISTRATION *
  *********************************************/
-function installer_instance_registration($instance_id, $full_name, $email, $mailing_list)
+function installer_instance_registration($db, $instance_id, $full_name, $email, $mailing_list)
 {
-    // Create the data to send
-    $data = array(
-        'action' => 'installer_registration',
-        'instance_id' => $instance_id,
-        'name' => $full_name,
-        'email' => $email,
-        'mailing_list' => $mailing_list,
-    );
+    // Resolve the licensing service URL.
+    // licensing.php cannot be required here because its include chain pulls
+    // in extras.php, which requires functions.php, which requires config.php
+    // — and config.php does not yet exist during installation.
+    // Mirror the licensing_url() logic inline instead.
+    $base_url = defined('LICENSING_URL') ? LICENSING_URL : 'https://licensing.simplerisk.com';
+    $url = rtrim($base_url, '/') . '/register';
 
-    // Build the HTTP query for the POST data
-    $http_query = http_build_query($data);
-
-    // Configuration for the SimpleRisk service call
-    if (defined('SERVICES_URL'))
-    {
-        $url = SERVICES_URL . "/index.php";
+    // Split full name into fname/lname like the runtime register flow.
+    // Conservative split: the last whitespace-separated token is the
+    // lname; everything before is the fname. Single-word names become
+    // fname-only with an empty lname.
+    $trimmed_name = trim((string)$full_name);
+    $parts = preg_split('/\s+/', $trimmed_name, -1, PREG_SPLIT_NO_EMPTY) ?: [];
+    $fname = $parts ? implode(' ', array_slice($parts, 0, -1)) : '';
+    $lname = $parts ? end($parts) : '';
+    if (!$fname && $lname) {
+        // Single-word name — treat the whole thing as fname.
+        $fname = $lname;
+        $lname = '';
     }
-    else $url = "https://services.simplerisk.com/index.php";
 
-    // Make the curl request
+    // Build the JSON payload
+    $payload = json_encode([
+        'instance_id'  => $instance_id,
+        'fname'        => $fname,
+        'lname'        => $lname,
+        'email'        => $email,
+        'mailing_list' => ($mailing_list === 'true'),
+    ]);
+
+    // POST JSON to the licensing service
     $ch = curl_init();
     curl_setopt($ch, CURLOPT_URL, $url);
-    curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/x-www-form-urlencoded'));
-    curl_setopt($ch, CURLOPT_POST, count($data));
-    curl_setopt($ch, CURLOPT_POSTFIELDS, $http_query);
+    // SSL verification — peer + host. Required for MITM resistance during
+    // install, the highest-risk moment for credential interception (host has
+    // no prior trust anchor). Bundle the project's pinned CA roots via
+    // composer/ca-bundle, which vendor/autoload.php has already loaded by
+    // the time this code runs.
+    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
+    curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 2);
+    $ca = \Composer\CaBundle\CaBundle::getSystemCaRootBundlePath();
+    if ($ca) {
+        curl_setopt($ch, CURLOPT_CAINFO, $ca);
+    }
+    curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
+    curl_setopt($ch, CURLOPT_POST, true);
+    curl_setopt($ch, CURLOPT_POSTFIELDS, $payload);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    $response  = curl_exec($ch);
-    curl_close($ch);
+    curl_setopt($ch, CURLOPT_TIMEOUT, 5);
+    $response_body = curl_exec($ch);
+    $http_code = (int) curl_getinfo($ch, CURLINFO_HTTP_CODE);
+
+    // Persist the keys returned by the licensing service
+    if ($http_code === 200 && $response_body !== false) {
+        $body = json_decode($response_body, true);
+        if (is_array($body) && isset($body['services_api_key'])) {
+            $stmt = $db->prepare("INSERT INTO settings (name,value) VALUES ('services_api_key', ?) ON DUPLICATE KEY UPDATE value=VALUES(value)");
+            $stmt->execute([$body['services_api_key']]);
+        } else {
+            // Record the gap so a silent registration failure is diagnosable from the
+            // install transcript (config.php may be absent here, so write_debug_log is
+            // unavailable — installer_log is the sanctioned pre-install logger).
+            installer_log("Instance registration returned HTTP 200 but no services_api_key; instance left unregistered.", 'warning');
+        }
+    } else {
+        installer_log("Instance registration with the licensing service failed (HTTP {$http_code}); instance left unregistered.", 'warning');
+    }
+    // 409 collision-retry is handled by the runtime register page
+    // (admin/register.php), not the installer.  A freshly-generated
+    // instance_id makes installer collisions vanishingly improbable.
 }
 
 /*******************************************
@@ -1538,7 +1609,7 @@ function installer_get_latest_version()
     {
         $url = UPDATES_URL . '/releases.xml';
     }
-    else $url = 'https://raw.githubusercontent.com/simplerisk/updates.simplerisk.com/updates.simplerisk.com/releases.xml';
+    else $url = 'https://updates.simplerisk.com/releases.xml';
 
     // Set the default socket timeout to 5 seconds
     ini_set('default_socket_timeout', 5);
@@ -1559,7 +1630,7 @@ function installer_get_latest_version()
         {
             $version_page = file_get_contents(UPDATES_URL . '/releases.xml');
         }
-        else $version_page = file_get_contents('https://raw.githubusercontent.com/simplerisk/updates.simplerisk.com/updates.simplerisk.com/releases.xml');
+        else $version_page = file_get_contents('https://updates.simplerisk.com/releases.xml');
 
         // Convert it to be an array
         $releases_array = json_decode(json_encode(new SimpleXMLElement($version_page)), true);
@@ -1597,7 +1668,7 @@ function installer_check_app_version($current_app_version, $latest_app_version)
 function installer_check_web_connectivity()
 {
     // URLs to check
-    $urls = array("https://register.simplerisk.com", "https://services.simplerisk.com", "https://services.nvd.nist.gov", "https://github.com", "https://raw.githubusercontent.com", "https://simplerisk-downloads.s3.amazonaws.com");
+    $urls = array("https://licensing.simplerisk.com/healthz", "https://services.nvd.nist.gov", "https://github.com", "https://raw.githubusercontent.com", "https://simplerisk-downloads.s3.amazonaws.com");
 
     // Create an empty array
     $array = array();

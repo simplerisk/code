@@ -1,0 +1,354 @@
+<?php
+
+/**
+ * Model Context Protocol SDK for PHP
+ *
+ * (c) 2024 Logiscape LLC <https://logiscape.com>
+ *
+ * Based on the Python SDK for the Model Context Protocol
+ * https://github.com/modelcontextprotocol/python-sdk
+ *
+ * PHP conversion developed by:
+ * - Josh Abbott
+ * - Claude 3.5 Sonnet (Anthropic AI model)
+ * - ChatGPT o1 pro mode
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ *
+ * @package    logiscape/mcp-sdk-php
+ * @author     Josh Abbott <https://joshabbott.com>
+ * @copyright  Logiscape LLC
+ * @license    MIT License
+ * @link       https://github.com/logiscape/mcp-sdk-php
+ *
+ * Filename: Types/ServerRequest.php
+ */
+
+declare(strict_types=1);
+
+namespace Mcp\Types;
+
+/**
+ * Union type for server requests:
+ * type ServerRequest =
+ *   | PingRequest
+ *   | CreateMessageRequest
+ *   | ListRootsRequest
+ */
+final class ServerRequest implements RequestWrapperInterface {
+    use ExtraFieldsTrait;
+
+    private Request $request;
+
+    public function __construct(Request $request) {
+        if (!(
+            $request instanceof PingRequest ||
+            $request instanceof CreateMessageRequest ||
+            $request instanceof ListRootsRequest ||
+            $request instanceof ElicitationCreateRequest
+        )) {
+            throw new \InvalidArgumentException('Invalid server request type');
+        }
+        $this->request = $request;
+    }
+
+    /**
+     * Factory method to create a ServerRequest from method and params.
+     *
+     * @param string $method
+     * @param array<string, mixed>|null $params
+     */
+    public static function fromMethodAndParams(string $method, ?array $params): static {
+        $params = $params ?? [];
+
+        return match ($method) {
+            'ping' => new self(new PingRequest()),
+            'sampling/createMessage' => self::createCreateMessageRequest($params),
+            'roots/list' => new self(new ListRootsRequest()),
+            'elicitation/create' => self::createElicitationRequest($params),
+            default => throw new \InvalidArgumentException("Unknown server request method: $method")
+        };
+    }
+
+    /** @param array<string, mixed> $params */
+    private static function createElicitationRequest(array $params): self {
+        if (empty($params['message'])) {
+            throw new \InvalidArgumentException('ElicitationCreateRequest requires "message"');
+        }
+
+        // Parse _meta (2025-11-25 task-augmented)
+        $_meta = null;
+        if (isset($params['_meta'])) {
+            $_meta = new Meta();
+            foreach ($params['_meta'] as $k => $v) {
+                $_meta->$k = $v;
+            }
+        }
+
+        // Parse task (2025-11-25 task-augmented)
+        $task = null;
+        if (isset($params['task']) && is_array($params['task'])) {
+            $task = TaskRequestParams::fromArray($params['task']);
+        }
+
+        return new self(new ElicitationCreateRequest(
+            message: $params['message'],
+            mode: $params['mode'] ?? null,
+            requestedSchema: $params['requestedSchema'] ?? null,
+            url: $params['url'] ?? null,
+            elicitationId: $params['elicitationId'] ?? null,
+            _meta: $_meta,
+            task: $task,
+        ));
+    }
+
+    /** @param array<string, mixed> $params */
+    private static function createCreateMessageRequest(array $params): self {
+        if (!isset($params['messages']) || !is_array($params['messages'])) {
+            throw new \InvalidArgumentException('CreateMessageRequest requires "messages" array');
+        }
+        if (!isset($params['maxTokens']) || !is_numeric($params['maxTokens'])) {
+            throw new \InvalidArgumentException('CreateMessageRequest requires "maxTokens" as a number');
+        }
+
+        $messages = [];
+        foreach ($params['messages'] as $m) {
+            $messages[] = self::createSamplingMessage($m);
+        }
+
+        $maxTokens = (int)$params['maxTokens'];
+        $stopSequences = $params['stopSequences'] ?? null;
+        if ($stopSequences !== null && !is_array($stopSequences)) {
+            throw new \InvalidArgumentException('stopSequences must be an array of strings if provided');
+        }
+
+        $systemPrompt = $params['systemPrompt'] ?? null;
+        $temperature = isset($params['temperature']) ? (float)$params['temperature'] : null;
+
+        $metadata = null;
+        if (isset($params['metadata'])) {
+            $metadata = new Meta();
+            foreach ($params['metadata'] as $k => $v) {
+                $metadata->$k = $v;
+            }
+        }
+
+        $modelPreferences = null;
+        if (isset($params['modelPreferences'])) {
+            $modelPreferences = self::createModelPreferences($params['modelPreferences']);
+        }
+
+        $includeContext = $params['includeContext'] ?? null;
+
+        // Parse tools (2025-11-25)
+        $tools = null;
+        if (isset($params['tools']) && is_array($params['tools'])) {
+            $tools = [];
+            foreach ($params['tools'] as $toolData) {
+                $tools[] = Tool::fromArray($toolData);
+            }
+        }
+
+        // Parse toolChoice (2025-11-25)
+        $toolChoice = null;
+        if (isset($params['toolChoice']) && is_array($params['toolChoice'])) {
+            $toolChoice = ToolChoice::fromArray($params['toolChoice']);
+        }
+
+        // Parse task (2025-11-25)
+        $task = null;
+        if (isset($params['task']) && is_array($params['task'])) {
+            $task = TaskRequestParams::fromArray($params['task']);
+        }
+
+        return new self(new CreateMessageRequest(
+            messages: $messages,
+            maxTokens: $maxTokens,
+            stopSequences: $stopSequences,
+            systemPrompt: $systemPrompt,
+            temperature: $temperature,
+            metadata: $metadata,
+            modelPreferences: $modelPreferences,
+            includeContext: $includeContext,
+            tools: $tools,
+            toolChoice: $toolChoice,
+            task: $task,
+        ));
+    }
+
+    /** @param array<string, mixed> $m */
+    private static function createSamplingMessage(array $m): SamplingMessage {
+        if (!isset($m['role']) || !in_array($m['role'], ['user', 'assistant'], true)) {
+            throw new \InvalidArgumentException('SamplingMessage requires a valid role');
+        }
+        if (!isset($m['content'])) {
+            throw new \InvalidArgumentException('SamplingMessage requires a content field');
+        }
+
+        $content = self::parseSamplingContent($m['content']);
+        $role = Role::from($m['role']);
+        return new SamplingMessage(role: $role, content: $content);
+    }
+
+    /**
+     * Parse content which may be a single block or an array of blocks.
+     *
+     * @param array<string|int, mixed> $c
+     * @return TextContent|ImageContent|AudioContent|ToolUseContent|ToolResultContent|list<TextContent|ImageContent|AudioContent|ToolUseContent|ToolResultContent>
+     */
+    private static function parseSamplingContent(array $c): TextContent|ImageContent|AudioContent|ToolUseContent|ToolResultContent|array {
+        // Single content block (has a 'type' key)
+        if (isset($c['type'])) {
+            return self::createSamplingContentBlock($c);
+        }
+
+        // Array of content blocks
+        if (array_is_list($c)) {
+            $blocks = [];
+            foreach ($c as $item) {
+                if (!is_array($item) || !isset($item['type'])) {
+                    throw new \InvalidArgumentException('Each content block must have a type');
+                }
+                $blocks[] = self::createSamplingContentBlock($item);
+            }
+            return $blocks;
+        }
+
+        throw new \InvalidArgumentException('SamplingMessage content requires a type');
+    }
+
+    /** @param array<string, mixed> $c */
+    private static function createSamplingContentBlock(array $c): TextContent|ImageContent|AudioContent|ToolUseContent|ToolResultContent {
+        return match ($c['type']) {
+            'text' => self::createTextContent($c),
+            'image' => self::createImageContent($c),
+            'audio' => self::createAudioContent($c),
+            'tool_use' => self::createToolUseContent($c),
+            'tool_result' => self::createToolResultContent($c),
+            default => throw new \InvalidArgumentException("Unknown content type: {$c['type']}")
+        };
+    }
+
+    /** @param array<string, mixed> $c */
+    private static function createTextContent(array $c): TextContent {
+        if (!isset($c['text'])) {
+            throw new \InvalidArgumentException('TextContent requires text field');
+        }
+        $text = $c['text'];
+        $textContent = new TextContent($text);
+
+        // If there are extra fields like annotations, set them
+        foreach ($c as $k => $v) {
+            if ($k !== 'type' && $k !== 'text') {
+                $textContent->$k = $v;
+            }
+        }
+
+        return $textContent;
+    }
+
+    /** @param array<string, mixed> $c */
+    private static function createImageContent(array $c): ImageContent {
+        if (!isset($c['data']) || !isset($c['mimeType'])) {
+            throw new \InvalidArgumentException('ImageContent requires data and mimeType');
+        }
+        $imageContent = new ImageContent(data: $c['data'], mimeType: $c['mimeType']);
+
+        // Extra fields
+        foreach ($c as $k => $v) {
+            if (!in_array($k, ['type', 'data', 'mimeType'], true)) {
+                $imageContent->$k = $v;
+            }
+        }
+
+        return $imageContent;
+    }
+
+    /** @param array<string, mixed> $c */
+    private static function createAudioContent(array $c): AudioContent {
+        if (!isset($c['data']) || !isset($c['mimeType'])) {
+            throw new \InvalidArgumentException('AudioContent requires data and mimeType');
+        }
+        $content = new AudioContent(data: $c['data'], mimeType: $c['mimeType']);
+        foreach ($c as $k => $v) {
+            if (!in_array($k, ['type', 'data', 'mimeType'], true)) {
+                $content->$k = $v;
+            }
+        }
+        return $content;
+    }
+
+    /** @param array<string, mixed> $c */
+    private static function createToolUseContent(array $c): ToolUseContent {
+        if (!isset($c['id']) || !isset($c['name']) || !isset($c['input'])) {
+            throw new \InvalidArgumentException('ToolUseContent requires id, name, and input');
+        }
+        return new ToolUseContent(id: $c['id'], name: $c['name'], input: $c['input']);
+    }
+
+    /** @param array<string, mixed> $c */
+    private static function createToolResultContent(array $c): ToolResultContent {
+        if (!isset($c['toolUseId'])) {
+            throw new \InvalidArgumentException('ToolResultContent requires toolUseId');
+        }
+        $content = [];
+        if (isset($c['content']) && is_array($c['content'])) {
+            foreach ($c['content'] as $item) {
+                if (is_array($item) && isset($item['type'])) {
+                    $content[] = match ($item['type']) {
+                        'text' => self::createTextContent($item),
+                        'image' => self::createImageContent($item),
+                        'audio' => self::createAudioContent($item),
+                        default => throw new \InvalidArgumentException("Unknown tool result content type: {$item['type']}")
+                    };
+                }
+            }
+        }
+        return new ToolResultContent(
+            toolUseId: $c['toolUseId'],
+            content: $content,
+            isError: $c['isError'] ?? null,
+        );
+    }
+
+    /** @param array<string, mixed> $mp */
+    private static function createModelPreferences(array $mp): ModelPreferences {
+        $modelPreferences = new ModelPreferences(
+            costPriority: $mp['costPriority'] ?? null,
+            speedPriority: $mp['speedPriority'] ?? null,
+            intelligencePriority: $mp['intelligencePriority'] ?? null
+        );
+
+        if (isset($mp['hints']) && is_array($mp['hints'])) {
+            foreach ($mp['hints'] as $hintData) {
+                $modelHint = new ModelHint(
+                    name: $hintData['name'] ?? null
+                );
+                $modelPreferences->addHint($modelHint);
+            }
+        }
+
+        // If ModelPreferences supports extra fields:
+        foreach ($mp as $k => $v) {
+            if (!in_array($k, ['costPriority', 'speedPriority', 'intelligencePriority', 'hints'], true)) {
+                $modelPreferences->$k = $v;
+            }
+        }
+
+        return $modelPreferences;
+    }
+
+    public function validate(): void {
+        $this->request->validate();
+    }
+
+    public function getRequest(): Request {
+        return $this->request;
+    }
+
+    public function jsonSerialize(): mixed {
+        $data = $this->request->jsonSerialize();
+        return array_merge((array)$data, $this->extraFields);
+    }
+}

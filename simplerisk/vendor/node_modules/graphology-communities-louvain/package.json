@@ -1,0 +1,51 @@
+{
+  "name": "graphology-communities-louvain",
+  "version": "2.0.2",
+  "description": "Louvain community detection for graphology.",
+  "main": "index.js",
+  "types": "index.d.ts",
+  "files": [
+    "*.d.ts",
+    "index.js",
+    "experimental"
+  ],
+  "scripts": {
+    "prepublishOnly": "npm test",
+    "test": "mocha test"
+  },
+  "keywords": [
+    "community",
+    "detection",
+    "graph",
+    "graphology",
+    "louvain"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/graphology/graphology.git"
+  },
+  "contributors": [
+    {
+      "name": "Guillaume Plique",
+      "url": "http://github.com/Yomguithereal"
+    },
+    {
+      "name": "Tanguy Lucci",
+      "url": "https://github.com/luccitan"
+    }
+  ],
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/graphology/graphology/issues"
+  },
+  "homepage": "https://github.com/graphology/graphology#readme",
+  "peerDependencies": {
+    "graphology-types": ">=0.19.0"
+  },
+  "dependencies": {
+    "graphology-indices": "^0.17.0",
+    "graphology-utils": "^2.4.4",
+    "mnemonist": "^0.39.0",
+    "pandemonium": "^2.4.1"
+  }
+}

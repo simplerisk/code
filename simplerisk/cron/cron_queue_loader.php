@@ -86,11 +86,19 @@ foreach ($jobs as $job) {
         break;
     }
 
+    // SIGHUP means "recycle with fresh code". An in-process reload is
+    // impossible (require_once is a no-op once a file is loaded), so stop
+    // the pass gracefully and let cron rerun the loader with the new code.
     if (worker_should_reload()) {
-        write_debug_log("Reload requested, resetting worker metrics...", "info");
-        worker_metric_set($workerName, 'last_queued_tasks', 0);
-        reset_worker_metrics($workerName);
-        worker_clear_reload_flag();
+        record_worker_restart($workerName, 'reload_signal');
+        break;
+    }
+
+    // A deploy landed mid-pass: stop queueing tasks off the stale in-memory
+    // job map. The next cron tick reruns the loader with fresh code.
+    if (worker_restart_requested_since($startTime, worker_restart_flag_timestamp())) {
+        record_worker_restart($workerName, 'restart_requested');
+        break;
     }
 
     // === METRICS: memory usage ===

@@ -1,0 +1,702 @@
+// =============================================================================
+// AUTHENTICATION SCREENS  --  index.php, reset.php, reset_password.php
+// =============================================================================
+//
+// The split-panel sign-in surface: a charcoal brand panel carrying the wordmark
+// and a one-line tagline, beside a light form column holding a white card.
+//
+// The panel deliberately holds a brand SIGNATURE and not a product pitch. The
+// value-proposition paragraph this screen used to show was written to persuade
+// someone choosing a GRC tool, and everyone who reaches this screen has already
+// chosen, installed and configured one. A single line under the wordmark reads
+// as part of the lockup instead of as an argument -- and it doubles as the
+// visible hint that the slot is configurable, since the Customization Extra
+// replaces the mark and the tagline with the customer's own.
+//
+// SCOPED TO `.sr-auth`, DELIBERATELY. The legacy block in custom.scss keys off
+// `div#main-wrapper[data-function="login"]`, and `admin/upgrade.php` still
+// renders with that attribute, so restyling the attribute selector would drag
+// an unrelated admin page into this redesign. The three auth pages opt in by
+// class instead and no longer carry `data-function`; the legacy block keeps
+// serving upgrade.php untouched.
+//
+// The panel photograph is images/login--bg.jpg -- the slackline walker, the
+// same figure as the logo mark. It sits under a charcoal scrim at low opacity
+// so it reads as texture behind the type, never as a picture competing with it.
+
+$sr-auth-panel-width: 44%;
+$sr-auth-col-width: 432px;
+$sr-auth-col-width-wide: 620px;
+$sr-auth-control-radius: 6px;
+$sr-auth-card-radius: 8px;
+
+// The three sizes the notice editor offers, and the ONLY classes
+// purify_html_login_notice() lets through. Defined once here and shared by the
+// live panel and the settings preview via the mixin below.
+//
+// js/WYSIWYG/editor.js carries a fourth copy in its `content_style`, which it
+// cannot avoid: the editor renders in an iframe that cannot reach the compiled
+// stylesheet. That copy is commented to point back here.
+$sr-notice-size-sm: 11.5px;
+$sr-notice-size-md: 13px;
+$sr-notice-size-lg: 15.5px;
+
+// The body-copy treatment shared by .sr-auth-notice (the live panel) and
+// .sr-notice-preview (the read-only settings preview). They must not drift:
+// the preview exists so an admin can see what visitors see.
+@mixin sr-notice-typography {
+    font-size: $sr-notice-size-md;
+    line-height: 1.55;
+    font-weight: 400;
+    letter-spacing: 0;
+
+    // Operator text can contain anything, including an unbroken URL.
+    overflow-wrap: anywhere;
+
+    p {
+        margin: 0 0 8px;
+
+        &:last-child { margin-bottom: 0; }
+    }
+
+    ul,
+    ol {
+        margin: 0 0 8px;
+        padding-left: 20px;
+    }
+
+    li { margin-bottom: 3px; }
+
+    b,
+    strong {
+        font-weight: 700;
+        color: $sr-sidebar-text;
+    }
+
+    .sr-notice-sm { font-size: $sr-notice-size-sm; }
+    .sr-notice-md { font-size: $sr-notice-size-md; }
+    .sr-notice-lg { font-size: $sr-notice-size-lg; }
+}
+
+.sr-auth-page {
+    margin: 0;
+    background-color: $sr-default;
+}
+
+.sr-auth {
+    display: flex;
+    align-items: stretch;
+    min-height: 100vh;
+    min-height: 100dvh;
+    background-color: $sr-default;
+}
+
+// ---- Brand panel -----------------------------------------------------------
+
+.sr-auth-brand {
+    position: relative;
+    flex: 0 0 $sr-auth-panel-width;
+    max-width: $sr-auth-panel-width;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 44px 52px;
+    overflow: hidden;
+    background-color: $sr-primary;
+    color: $sr-sidebar-text;
+}
+
+// These carry two class selectors so they outrank the `> *` stacking rule
+// below. At equal specificity the later rule wins, which would put the
+// backdrop layers back in flow and push the panel content down the column.
+.sr-auth .sr-auth-brand-media,
+.sr-auth .sr-auth-brand-scrim {
+    position: absolute;
+    inset: 0;
+}
+
+.sr-auth-brand-media {
+    background-image: url("../images/login--bg.jpg");
+    background-size: cover;
+    background-position: 52% 50%;
+    filter: grayscale(1) contrast(1.12);
+    opacity: .42;
+}
+
+.sr-auth-brand-scrim {
+    background: linear-gradient(
+        155deg,
+        rgba(58, 58, 58, .72) 0%,
+        rgba(43, 43, 43, .88) 58%,
+        rgba(37, 37, 37, .96) 100%
+    );
+}
+
+.sr-auth-brand > * {
+    position: relative;
+    z-index: 2;
+}
+
+// Mirrors the authenticated shell's `.sr-wordmark` (modules/_app-shell.scss):
+// two-tone text at desktop, the logo mark alone below `sm`. Never both -- that
+// would be a brand lockup this product uses nowhere else.
+//
+// Rendered as a <span>, not a link. These pages are unauthenticated, and
+// sending someone mid-sign-in out to simplerisk.com is the wrong affordance --
+// more so once the mark is the CUSTOMER's, where linking their logo to the
+// vendor's website is simply incorrect.
+.sr-auth-brandmark {
+    display: inline-flex;
+    align-items: center;
+    gap: 11px;
+    text-decoration: none;
+    font-weight: 900;
+    font-size: 28px;
+    letter-spacing: -.02em;
+    line-height: 1;
+
+    .sr-auth-brandlogo {
+        display: none;
+        width: 38px;
+        height: 38px;
+    }
+
+    .s { color: $sr-sidebar-text; }
+    .r { color: $sr-important; }
+
+}
+
+// A customer logo replaces the wordmark entirely. The box is CAPPED rather
+// than sized to the file: the upload is arbitrary operator input, and a
+// 2000px-wide asset would otherwise set the panel's width and push the whole
+// layout apart. `object-fit: contain` keeps whatever they give us in
+// proportion inside that cap, so a tall crest and a wide lockup both work.
+.sr-auth-brandmark--custom {
+    display: block;
+}
+
+.sr-auth-customlogo {
+    display: block;
+    max-width: 260px;
+    max-height: 64px;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+}
+
+// The brand signature, vertically centred in whatever space is left between
+// the wordmark and the copyright line. `flex: 1` claims that space and the
+// inner centring does the rest, so the line sits on the panel's optical middle
+// at any panel height rather than wherever `space-between` happened to drop it.
+//
+// SIZE IS SET BY A BUCKET CLASS, not by CSS alone. Nothing in CSS can size text
+// to fit a box based on how much text there is -- clamp() and container queries
+// scale with the VIEWPORT, not with content length -- so the bucket is chosen
+// from the string's length in display_auth_brand_panel() and applied here. That
+// keeps it deterministic and free of a measure-and-reflow pass on the page that
+// has to load fastest.
+//
+// The buckets absorb a reasonable range; they are not a licence to paste an
+// essay. The Customization tagline field caps its own length, and long-form
+// text belongs in the separate system-use notice with its own type scale.
+.sr-auth-tagline {
+    flex: 1 1 auto;
+    display: flex;
+    align-items: center;
+    margin: 0;
+    max-width: 20ch;
+    line-height: 1.15;
+    font-weight: 900;
+    letter-spacing: -.02em;
+    color: $sr-sidebar-text;
+
+    // Long unbroken strings (a URL, a German compound) would otherwise push the
+    // panel wider than its column and force the whole page to scroll sideways.
+    overflow-wrap: anywhere;
+}
+
+// With a notice present the tagline stops claiming the middle on its own --
+// the two centre as a GROUP (auto margins above and below), so the notice sits
+// directly under the line it qualifies instead of being pushed to the bottom
+// of the panel by the tagline's flex growth.
+.sr-auth-brand:has(.sr-auth-notice) {
+    .sr-auth-tagline {
+        flex: 0 0 auto;
+        margin-top: auto;
+    }
+
+    .sr-auth-notice {
+        margin-bottom: auto;
+    }
+}
+
+.sr-auth-tagline--lg { font-size: 30px; }
+.sr-auth-tagline--md { font-size: 23px; max-width: 26ch; }
+.sr-auth-tagline--sm { font-size: 18px; max-width: 34ch; letter-spacing: -.01em; }
+
+// The operator-supplied system use notice (AC-8 and equivalents).
+//
+// Body copy, NOT the tagline's 900-weight display scale. A legal notice set in
+// heavy display type reads as a headline shouting at the user; at body weight
+// it reads as what it is. This is why the notice is a separate field from the
+// tagline rather than a longer value in the same one.
+//
+// The height cap is the guard that makes arbitrary operator text safe to place
+// here: no quantity of notice can push the copyright line off the panel or
+// spill past the fold. Past the cap it scrolls within its own box, so the
+// panel's layout is fixed regardless of what is typed.
+.sr-auth-notice {
+    @include sr-notice-typography;
+
+    max-height: 34vh;
+    overflow-y: auto;
+    margin-top: 22px;
+    padding-right: 6px;
+    color: rgba(255, 255, 255, .82);
+
+    // A faint track, so the scrollable case looks deliberate rather than clipped.
+    &::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    &::-webkit-scrollbar-thumb {
+        border-radius: 3px;
+        background-color: rgba(255, 255, 255, .22);
+    }
+}
+
+// Read-only preview of the notice on Settings > Preferences > System, shown
+// when Customization is locked. It deliberately mirrors the live panel --
+// same dark ground, same type scale -- because the question an admin has in
+// that state is "what are visitors seeing right now?", which a textarea full
+// of tags cannot answer.
+.sr-notice-preview {
+    @include sr-notice-typography;
+
+    max-height: 220px;
+    overflow-y: auto;
+    padding: 12px 14px;
+    border: 1px solid $gray-400;
+    border-radius: $sr-auth-control-radius;
+    background-color: $sr-primary;
+    color: rgba(255, 255, 255, .82);
+}
+
+.sr-notice-preview--empty {
+    background-color: $gray-100;
+    color: $gray-600;
+    font-style: italic;
+}
+
+.sr-auth-legal {
+    margin: 0;
+    font-size: 12px;
+    color: rgba(255, 255, 255, .45);
+}
+
+// ---- Form column -----------------------------------------------------------
+
+.sr-auth-main {
+    flex: 1 1 auto;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+}
+
+.sr-auth-col {
+    width: 100%;
+    max-width: $sr-auth-col-width;
+}
+
+// The MFA enrolment step puts a QR code beside its input, so it needs more
+// room than a two-field credential form.
+.sr-auth-col--wide {
+    max-width: $sr-auth-col-width-wide;
+}
+
+.sr-auth-card {
+    overflow: hidden;
+    border: 1px solid $gray-300;
+    border-radius: $sr-auth-card-radius;
+    background-color: $sr-body;
+    box-shadow: $shadow;
+}
+
+.sr-auth-card-head {
+    padding: 26px 32px 0;
+
+    h2 {
+        margin: 0 0 5px;
+        font-size: 21px;
+        font-weight: 800;
+        letter-spacing: -.01em;
+        color: $sr-primary;
+    }
+
+    p {
+        margin: 0;
+        font-size: 13.5px;
+        color: $gray-600;
+    }
+}
+
+.sr-auth-card-body {
+    display: flex;
+    flex-direction: column;
+    gap: 17px;
+    padding: 22px 32px 28px;
+}
+
+// ---- Fields ----------------------------------------------------------------
+
+.sr-auth-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+
+    label {
+        margin: 0;
+        font-size: 12.5px;
+        font-weight: 700;
+        color: $sr-primary;
+    }
+
+    .form-control {
+        height: 42px;
+        padding: 0 13px;
+        border: 1px solid $gray-400;
+        border-radius: $sr-auth-control-radius;
+        font-size: 14px;
+        color: $sr-primary;
+        background-color: $sr-body;
+
+        &:focus {
+            border-color: $sr-primary;
+            box-shadow: 0 0 0 3px rgba(58, 58, 58, .12);
+        }
+
+        &::placeholder {
+            color: $gray-500;
+        }
+    }
+
+    // The token and username inputs arrive pre-filled and read-only when the
+    // user followed a reset link from their email.
+    input[readonly].form-control {
+        background-color: $gray-100;
+        border-color: $gray-300;
+        color: $gray-600;
+    }
+}
+
+.sr-auth-pass {
+    position: relative;
+
+    .form-control {
+        width: 100%;
+        padding-right: 40px;
+    }
+
+    #eye-icon {
+        position: absolute;
+        top: 50%;
+        right: 13px;
+        transform: translateY(-50%);
+        display: flex;
+        align-items: center;
+        cursor: pointer;
+        color: $gray-600;
+
+        &:hover {
+            color: $sr-primary;
+        }
+    }
+}
+
+// ---- Actions ---------------------------------------------------------------
+
+.sr-auth-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 9px;
+
+    .btn {
+        height: 42px;
+        padding: 0 22px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: $sr-auth-control-radius;
+        font-size: 14.5px;
+        font-weight: 700;
+        white-space: nowrap;
+    }
+
+    // Ghost: the lowest of the three weights. Reset is a form-reset control,
+    // not a destination -- it should never read louder than the submit.
+    .btn-dark,
+    .btn-secondary {
+        border: 1px solid $gray-400;
+        background-color: transparent;
+        color: $gray-600;
+
+        &:hover,
+        &:focus {
+            border-color: $gray-600;
+            background-color: $gray-100;
+            color: $sr-primary;
+        }
+    }
+
+    .btn-submit {
+        border: 1px solid transparent;
+        background-color: $sr-important;
+        color: $sr-sidebar-text;
+        box-shadow: 0 1px 2px rgba(237, 49, 57, .35);
+
+        &:hover,
+        &:focus {
+            background-color: darken($sr-important, 7%);
+            color: $sr-sidebar-text;
+        }
+    }
+}
+
+.sr-auth-link {
+    font-size: 13.5px;
+    font-weight: 600;
+    color: $sr-primary;
+    text-decoration: none;
+    border-bottom: 1px solid rgba(58, 58, 58, .3);
+    padding-bottom: 1px;
+
+    &:hover,
+    &:focus {
+        color: $sr-important;
+        border-bottom-color: $sr-important;
+        text-decoration: none;
+    }
+}
+
+.sr-auth-linkrow {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+}
+
+.sr-auth-linkrow--center {
+    justify-content: center;
+}
+
+// ---- SSO ------------------------------------------------------------------
+
+.sr-auth-divider {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: $gray-600;
+
+    &::before,
+    &::after {
+        content: "";
+        flex: 1 1 auto;
+        height: 1px;
+        background-color: $gray-300;
+    }
+}
+
+.sr-auth-sso {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 42px;
+    border: 1px solid $gray-400;
+    border-radius: $sr-auth-control-radius;
+    background-color: $gray-100;
+    font-size: 14px;
+    font-weight: 700;
+    color: $sr-primary;
+    text-decoration: none;
+
+    &:hover,
+    &:focus {
+        border-color: $sr-primary;
+        color: $sr-primary;
+        text-decoration: none;
+    }
+}
+
+.sr-auth-help {
+    margin: 18px 0 0;
+    text-align: center;
+    font-size: 12.5px;
+    color: $gray-600;
+}
+
+// ---- Password-requirements list (forced change) ----------------------------
+
+.sr-auth-requirements {
+    margin: 0;
+    padding: 14px 16px;
+    border: 1px solid $gray-300;
+    border-radius: $sr-auth-control-radius;
+    background-color: $gray-100;
+
+    p {
+        margin: 0 0 6px;
+        font-size: 12.5px;
+        font-weight: 700;
+        color: $sr-primary;
+    }
+
+    ul {
+        margin: 0;
+        padding-left: 18px;
+    }
+
+    li {
+        font-size: 12.5px;
+        line-height: 1.55;
+        color: $gray-600;
+    }
+}
+
+// ---- Hosted MFA markup -----------------------------------------------------
+//
+// display_mfa_verification_page() (includes/mfa.php) is shared with
+// account/mfa.php, so its markup is left alone and simply hosted here. These
+// rules only tame the headings it emits so they sit in the card's type scale.
+
+.sr-auth-mfa {
+    h4 {
+        margin: 0 0 6px;
+        font-size: 21px;
+        font-weight: 800;
+        letter-spacing: -.01em;
+        color: $sr-primary;
+    }
+
+    h5 {
+        margin: 0 0 14px;
+        font-size: 13.5px;
+        font-weight: 400;
+        line-height: 1.55;
+        color: $gray-600;
+    }
+
+    img {
+        max-width: 100%;
+        height: auto;
+    }
+
+    .form-control {
+        height: 42px;
+        border: 1px solid $gray-400;
+        border-radius: $sr-auth-control-radius;
+    }
+
+    .btn-submit {
+        height: 42px;
+        padding: 0 22px;
+        border-radius: $sr-auth-control-radius;
+        font-weight: 700;
+        background-color: $sr-important;
+        color: $sr-sidebar-text;
+
+        &:hover,
+        &:focus {
+            background-color: darken($sr-important, 7%);
+            color: $sr-sidebar-text;
+        }
+    }
+}
+
+// ---- Narrow widths ---------------------------------------------------------
+//
+// Below lg the panel stops being a column and becomes a short hero, so the
+// form keeps the fold to itself. The photograph and the promise survive; only
+// the supporting paragraph and the legal line are dropped, because neither
+// earns vertical space above a credential form on a phone.
+
+@include media-breakpoint-down(lg) {
+    .sr-auth {
+        flex-direction: column;
+        min-height: 100vh;
+        min-height: 100dvh;
+    }
+
+    .sr-auth-brand {
+        flex: 0 0 auto;
+        max-width: none;
+        padding: 30px 26px 28px;
+    }
+
+    // The hero keeps the tagline but tightens it; the copyright line is what
+    // gets dropped, because it earns no vertical space above a login form.
+    // The bucket classes are overridden wholesale here -- the hero is a fixed
+    // short band, so it wants one size regardless of which bucket the text fell
+    // into on the desktop panel.
+    .sr-auth-tagline,
+    .sr-auth-tagline--lg,
+    .sr-auth-tagline--md,
+    .sr-auth-tagline--sm {
+        flex: 0 0 auto;
+        max-width: none;
+        margin-top: 16px;
+        font-size: 20px;
+    }
+
+    .sr-auth-legal {
+        display: none;
+    }
+
+    .sr-auth-main {
+        justify-content: flex-start;
+        padding: 26px;
+    }
+
+    .sr-auth-col,
+    .sr-auth-col--wide {
+        max-width: 480px;
+    }
+}
+
+@include media-breakpoint-down(sm) {
+    // Same swap the authenticated shell makes at this breakpoint.
+    .sr-auth-brandmark {
+        .sr-auth-brandlogo { display: block; }
+        .sr-auth-brandtext { display: none; }
+    }
+
+    // A customer logo keeps its aspect ratio but gets less room on a phone.
+    .sr-auth-customlogo {
+        max-width: 190px;
+        max-height: 46px;
+    }
+
+    .sr-auth-card-head {
+        padding: 22px 22px 0;
+    }
+
+    .sr-auth-card-body {
+        padding: 18px 22px 24px;
+    }
+
+    // One full-width action, and the form-reset control drops below it rather
+    // than sitting beside the submit competing for the same thumb.
+    .sr-auth-actions {
+        flex-direction: column-reverse;
+
+        .btn {
+            width: 100%;
+        }
+    }
+}

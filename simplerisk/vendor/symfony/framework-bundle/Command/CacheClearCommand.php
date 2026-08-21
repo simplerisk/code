@@ -37,14 +37,14 @@ use Symfony\Component\HttpKernel\RebootableInterface;
 #[AsCommand(name: 'cache:clear', description: 'Clear the cache')]
 class CacheClearCommand extends Command
 {
-    private CacheClearerInterface $cacheClearer;
     private Filesystem $filesystem;
 
-    public function __construct(CacheClearerInterface $cacheClearer, ?Filesystem $filesystem = null)
-    {
+    public function __construct(
+        private CacheClearerInterface $cacheClearer,
+        ?Filesystem $filesystem = null,
+    ) {
         parent::__construct();
 
-        $this->cacheClearer = $cacheClearer;
         $this->filesystem = $filesystem ?? new Filesystem();
     }
 
@@ -151,7 +151,7 @@ class CacheClearCommand extends Command
                 $search = [$warmupDir, str_replace('/', '\\/', $warmupDir), str_replace('\\', '\\\\', $warmupDir)];
                 $replace = str_replace('\\', '/', $realBuildDir);
                 foreach (Finder::create()->files()->in($warmupDir) as $file) {
-                    $content = str_replace($search, $replace, file_get_contents($file), $count);
+                    $content = str_replace($search, $replace, $this->filesystem->readFile($file), $count);
                     if ($count) {
                         file_put_contents($file, $content);
                     }
@@ -169,6 +169,11 @@ class CacheClearCommand extends Command
             } else {
                 $fs->rename($realBuildDir, $oldBuildDir);
             }
+
+            // Under load, a concurrent request can boot the kernel and rebuild the cache
+            // in $realBuildDir while it is moved aside above. Drop that partial rebuild,
+            // the warmed-up directory supersedes it.
+            $fs->remove($realBuildDir);
 
             $fs->rename($warmupDir, $realBuildDir);
 
@@ -213,7 +218,7 @@ class CacheClearCommand extends Command
             if ('/' === \DIRECTORY_SEPARATOR && @is_readable('/proc/mounts') && $files = @file('/proc/mounts')) {
                 foreach ($files as $mount) {
                     $mount = \array_slice(explode(' ', $mount), 1, -3);
-                    if (!\in_array(array_pop($mount), ['vboxsf', 'nfs'])) {
+                    if (!\in_array(array_pop($mount), ['vboxsf', 'nfs'], true)) {
                         continue;
                     }
                     $mounts[] = implode(' ', $mount).'/';

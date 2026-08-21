@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace SimpleSAML\Module\core\Auth\Source;
 
-use SimpleSAML\{Error, Logger};
 use SimpleSAML\Assert\Assert;
-use Symfony\Component\HttpFoundation\{IpUtils, Request};
+use SimpleSAML\Error;
+use SimpleSAML\Logger;
+use Symfony\Component\HttpFoundation\IpUtils;
+use Symfony\Component\HttpFoundation\Request;
 
 use function array_key_exists;
 use function sprintf;
@@ -22,17 +24,18 @@ class SourceIPSelector extends AbstractSourceSelector
     /**
      * The key of the AuthId field in the state.
      */
-    public const AUTHID = '\SimpleSAML\Module\core\Auth\Source\SourceIPSelector.AuthId';
+    public const string AUTHID = '\SimpleSAML\Module\core\Auth\Source\SourceIPSelector.AuthId';
 
     /**
      * The string used to identify our states.
      */
-    public const STAGEID = '\SimpleSAML\Module\core\Auth\Source\SourceIPSelector.StageId';
+    public const string STAGEID = '\SimpleSAML\Module\core\Auth\Source\SourceIPSelector.StageId';
 
     /**
      * The key where the sources is saved in the state.
      */
-    public const SOURCESID = '\SimpleSAML\Module\core\Auth\Source\SourceIPSelector.SourceId';
+    public const string SOURCESID = '\SimpleSAML\Module\core\Auth\Source\SourceIPSelector.SourceId';
+
 
     /**
      * @param string|null  The default authentication source to use when none of the zones match

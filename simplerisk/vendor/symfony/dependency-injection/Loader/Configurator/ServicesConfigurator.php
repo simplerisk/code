@@ -27,20 +27,19 @@ class ServicesConfigurator extends AbstractConfigurator
     public const FACTORY = 'services';
 
     private Definition $defaults;
-    private ContainerBuilder $container;
-    private PhpFileLoader $loader;
     private array $instanceof;
-    private ?string $path;
     private string $anonymousHash;
     private int $anonymousCount;
 
-    public function __construct(ContainerBuilder $container, PhpFileLoader $loader, array &$instanceof, ?string $path = null, int &$anonymousCount = 0)
-    {
+    public function __construct(
+        private ContainerBuilder $container,
+        private PhpFileLoader $loader,
+        array &$instanceof,
+        private ?string $path = null,
+        int &$anonymousCount = 0,
+    ) {
         $this->defaults = new Definition();
-        $this->container = $container;
-        $this->loader = $loader;
         $this->instanceof = &$instanceof;
-        $this->path = $path;
         $this->anonymousHash = ContainerBuilder::hash($path ?: mt_rand());
         $this->anonymousCount = &$anonymousCount;
         $instanceof = [];
@@ -81,14 +80,14 @@ class ServicesConfigurator extends AbstractConfigurator
             }
 
             $id = \sprintf('.%d_%s', ++$this->anonymousCount, preg_replace('/^.*\\\\/', '', $class).'~'.$this->anonymousHash);
-        } elseif (!$defaults->isPublic() || !$defaults->isPrivate()) {
-            $definition->setPublic($defaults->isPublic() && !$defaults->isPrivate());
+        } else {
+            $definition->setPublic($defaults->isPublic());
         }
 
         $definition->setAutowired($defaults->isAutowired());
         $definition->setAutoconfigured($defaults->isAutoconfigured());
         // deep clone, to avoid multiple process of the same instance in the passes
-        $definition->setBindings(unserialize(serialize($defaults->getBindings())));
+        $definition->setBindings(unserialize(serialize($defaults->getBindings()), ['allowed_classes' => true]));
         $definition->setChanges([]);
 
         $configurator = new ServiceConfigurator($this->container, $this->instanceof, true, $this, $definition, $id, $defaults->getTags(), $this->path);
@@ -116,9 +115,7 @@ class ServicesConfigurator extends AbstractConfigurator
     {
         $ref = static::processValue($referencedId, true);
         $alias = new Alias((string) $ref);
-        if (!$this->defaults->isPublic() || !$this->defaults->isPrivate()) {
-            $alias->setPublic($this->defaults->isPublic());
-        }
+        $alias->setPublic($this->defaults->isPublic());
         $this->container->setAlias($id, $alias);
 
         return new AliasConfigurator($this, $alias);

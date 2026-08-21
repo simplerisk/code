@@ -25,6 +25,17 @@ class FilterScopes extends ProcessingFilter
     ];
 
     /**
+     * Whether to allow values without a scope.
+     *
+     * - true  = keep non-scoped values (backwards-compatible default)
+     * - false = remove non-scoped values
+     *
+     * @var bool
+     */
+    private bool $allowNonScoped = true;
+
+
+    /**
      * Constructor for the processing filter.
      *
      * @param array &$config Configuration for this filter.
@@ -37,7 +48,12 @@ class FilterScopes extends ProcessingFilter
         if (array_key_exists('attributes', $config) && !empty($config['attributes'])) {
             $this->scopedAttributes = $config['attributes'];
         }
+
+        if (\array_key_exists('allowNonScoped', $config) && \is_bool($config['allowNonScoped'])) {
+            $this->allowNonScoped = $config['allowNonScoped'];
+        }
     }
+
 
     /**
      * This method applies the filter, removing any values
@@ -67,8 +83,10 @@ class FilterScopes extends ProcessingFilter
             foreach ($values as $value) {
                 @list(, $scope) = explode('@', $value, 2);
                 if ($scope === null) {
-                    $newValues[] = $value;
-                    continue; // there's no scope
+                    if ($this->allowNonScoped) {
+                        $newValues[] = $value; // there's no scope, but keep as-is
+                    }
+                    continue;
                 }
 
                 if (in_array($scope, $validScopes, true)) {

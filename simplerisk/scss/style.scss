@@ -7,6 +7,11 @@ File: scss
 //(Required file)
 @import "variable";
 
+// Nunito Sans, self-hosted. EXACTLY ONCE -- see the note at the top of the
+// partial for why it is not in variable.scss (that file is imported three
+// times) and for the two measured reasons the Google Fonts @import was dropped.
+@import "fonts";
+
 // Import Bootstrap source files (Required file)
 @import "../vendor/node_modules/bootstrap/scss/bootstrap";
 

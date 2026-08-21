@@ -4,6 +4,11 @@ This authentication source is used to authenticate against SAML 2 IdPs.
 
 ## Metadata
 
+Directives that relate to signing of metadata start with the
+`metadata.sign` prefix. The signing directives are documented in their
+[own section](simplesamlphp-advancedfeatures.html#metadata-signing).
+in the advanced features page.
+
 The metadata for your SP will be available from the federation page on your SimpleSAMLphp installation.
 
 SimpleSAMLphp supports generating metadata with the MDUI and MDRPI metadata extensions
@@ -154,7 +159,7 @@ The following attributes are available:
 
 `authproc`
 :   Processing filters that should be run after SP authentication.
-    See the [authentication processing filter manual](simplesamlphp-authproc).
+    See the [authentication processing filter manual](../simplesamlphp-authproc).
 
 `certData`
 :   Base64 encoded certificate data. Can be used instead of the `certificate` option.
@@ -474,9 +479,9 @@ Here we will list some examples for this authentication source.
 
 ### Using samlp:Extensions
 
-    $dom = \SAML2\DOMDocumentFactory::create();
+    $dom = \SimpleSAML\XML\DOMDocumentFactory::create();
     $ce = $dom->createElementNS('http://www.example.com/XFoo', 'xfoo:test', 'Test data!');
-    $ext[] = new \SAML2\XML\Chunk($ce);
+    $ext[] = new \SimpleSAML\XML\Chunk($ce);
 
     $auth = new \SimpleSAML\Auth\Simple('default-sp');
     $auth->login([

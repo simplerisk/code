@@ -9,7 +9,7 @@ namespace OpenApi\Processors;
 use OpenApi\Analysis;
 use OpenApi\Annotations as OA;
 use OpenApi\Context;
-use OpenApi\Generator;
+use OpenApi\Undefined;
 
 /**
  * Use the Schema context to extract useful information and inject that into the annotation.
@@ -20,7 +20,6 @@ class AugmentSchemas
 {
     public function __invoke(Analysis $analysis): void
     {
-        /** @var OA\Schema[] $schemas */
         $schemas = $analysis->getAnnotationsOfType(OA\Schema::class);
 
         $this->augmentSchema($schemas);
@@ -38,7 +37,7 @@ class AugmentSchemas
             if (!$schema->isRoot(OA\Schema::class)) {
                 continue;
             }
-            if (Generator::isDefault($schema->schema)) {
+            if (Undefined::isDefault($schema->schema)) {
                 if ($schema->_context->is('class')) {
                     $schema->schema = $schema->_context->class;
                 } elseif ($schema->_context->is('interface')) {
@@ -76,7 +75,7 @@ class AugmentSchemas
                             continue;
                         }
 
-                        $annotation->merge([$property], true);
+                        $analysis->mergeAnnotations($annotation, [$property], true);
                         break;
                     }
                 }
@@ -92,21 +91,23 @@ class AugmentSchemas
     protected function augmentType(Analysis $analysis, array $schemas): void
     {
         foreach ($schemas as $schema) {
-            if (Generator::isDefault($schema->type)) {
+            if (Undefined::isDefault($schema->type)) {
                 if (is_array($schema->properties) && $schema->properties !== []) {
                     $schema->type = 'object';
                 } elseif (is_array($schema->additionalProperties) && $schema->additionalProperties !== []) {
                     $schema->type = 'object';
                 } elseif (is_array($schema->patternProperties) && $schema->patternProperties !== []) {
                     $schema->type = 'object';
+                } elseif (is_array($schema->unevaluatedProperties) && $schema->unevaluatedProperties !== []) {
+                    $schema->type = 'object';
                 } elseif (is_array($schema->propertyNames) && $schema->propertyNames !== []) {
                     $schema->type = 'object';
                 }
             } else {
-                if (is_string($schema->type) && $typeSchema = $analysis->getSchemaForSource($schema->type)) {
-                    if (Generator::isDefault($schema->format)) {
+                if (is_string($schema->type) && $typeSchema = $analysis->getAnnotationForSource($schema->type)) {
+                    if (Undefined::isDefault($schema->format)) {
                         $schema->ref = OA\Components::ref($typeSchema);
-                        $schema->type = Generator::UNDEFINED;
+                        $schema->type = Undefined::UNDEFINED;
                     }
                 }
             }
@@ -121,10 +122,10 @@ class AugmentSchemas
     protected function mergeAllOf(Analysis $analysis, array $schemas): void
     {
         foreach ($schemas as $schema) {
-            if (!Generator::isDefault($schema->properties) && !Generator::isDefault($schema->allOf)) {
+            if (!Undefined::isDefault($schema->properties) && !Undefined::isDefault($schema->allOf)) {
                 $allOfPropertiesSchema = null;
                 foreach ($schema->allOf as $allOfSchema) {
-                    if (!Generator::isDefault($allOfSchema->properties)) {
+                    if (!Undefined::isDefault($allOfSchema->properties)) {
                         $allOfPropertiesSchema = $allOfSchema;
                         break;
                     }
@@ -139,7 +140,8 @@ class AugmentSchemas
                     $schema->allOf[] = $allOfPropertiesSchema;
                 }
                 $allOfPropertiesSchema->properties = array_merge($allOfPropertiesSchema->properties, $schema->properties);
-                $schema->properties = Generator::UNDEFINED;
+                /* @phpstan-ignore assign.propertyType */
+                $schema->properties = Undefined::UNDEFINED;
             }
         }
     }

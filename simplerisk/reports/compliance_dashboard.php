@@ -5,7 +5,7 @@
 
     // Render the header and sidebar
     require_once(realpath(__DIR__ . '/../includes/renderutils.php'));
-    render_header_and_sidebar(['chart.js', 'UILayoutWidget', 'multiselect'], ['check_compliance' => true], active_sidebar_submenu: 'Reporting_Dashboards', active_sidebar_menu: 'Reporting', breadcrumb_title_key: 'ComplianceDashboard');
+    render_header_and_sidebar(['chart.js', 'UILayoutWidget'], ['check_compliance' => true], active_sidebar_submenu: 'Reporting_Dashboards', active_sidebar_menu: 'Reporting', breadcrumb_title_key: 'ComplianceDashboard');
 
     // Include required functions file
     require_once(realpath(__DIR__ . '/../includes/reporting.php'));
@@ -15,63 +15,70 @@
     // Get all active frameworks for the filter dropdown
     $all_frameworks = array_values(get_frameworks(1));
 
-    // Resolve selected framework IDs from GET param.
-    // - No 'frameworks' key in URL (first load): default to all (null = no filter)
-    // - Key present with IDs: filter to those IDs
-    // - Key present but empty (user deselected all): return empty results
-    if (!isset($_GET['frameworks'])) {
-        // First load — select all in the multiselect, pass null to data functions
-        $selected_fw_ids = array_column($all_frameworks, 'value');
-        $filter_ids      = null;
-    } else {
-        $selected_fw_ids = array_values(array_filter(explode(',', $_GET['frameworks']), 'ctype_digit'));
-        $selected_fw_ids = array_map('intval', $selected_fw_ids);
-        $filter_ids      = $selected_fw_ids; // may be [] if user deselected all
+    // Single-select framework filter. The whole dashboard is either "All Frameworks"
+    // (the aggregate, default) or drilled into exactly one framework — never a
+    // partial multi-select, which is what made the per-framework charts unreadable.
+    //   - no / empty / non-numeric 'frameworks'  => All Frameworks (null filter)
+    //   - a numeric id                            => that one framework
+    $selected_fw_id = (isset($_GET['frameworks']) && ctype_digit((string)$_GET['frameworks'])) ? (int)$_GET['frameworks'] : null;
+
+    // Resolve the selected framework's display name for the dynamic dashboard title.
+    $framework_label = $lang['AllFrameworks'] ?? 'All Frameworks';
+    if ($selected_fw_id !== null) {
+        foreach ($all_frameworks as $fw) {
+            if ((int)$fw['value'] === $selected_fw_id) {
+                $framework_label = $fw['name'];
+                break;
+            }
+        }
     }
-
-    // Current filter value for the hidden form field (comma-separated)
-    $current_filter_value = implode(',', $selected_fw_ids);
+    // e.g. "Compliance Dashboard: All Frameworks" or "Compliance Dashboard: ISO 27002 (2022)".
+    // Colon-separated (not wrapped in parens) so a framework name that already
+    // contains parens — "ISO 27002 (2022)" — doesn't produce nested "(( ))".
+    $dashboard_title = ($lang['ComplianceDashboard'] ?? 'Compliance Dashboard') . ': ' . $framework_label;
 ?>
-<div class="row bg-white">
-    <div class="col-12">
-        <div class="card-body border my-2">
-
-            <!-- Framework filter -->
-            <div class="row mb-3">
-                <div class="col-4">
-                    <label><strong><?= $escaper->escapeHtml($lang['Framework']); ?> :</strong></label>
-                    <?php create_multiple_dropdown('frameworks_select', $selected_fw_ids, 'frameworks_select', $all_frameworks); ?>
-                    <form id="compliance_filter_form" method="GET">
-                        <input type="hidden" name="frameworks" id="framework_options" value="<?= $escaper->escapeHtml($current_filter_value); ?>">
-                    </form>
-                </div>
-            </div>
-    <?php
-            (new \includes\Widgets\UILayout('compliance_dashboard'))->render();
-    ?>
-        </div>
+<!-- Global framework filter — a dashboard toolbar control that sits ABOVE the
+     widget grid, not a card inside it (hoisted into the breadcrumb row below). -->
+<div class="sr-dashfilter">
+    <label class="sr-dashfilter__label" for="frameworks_select"><?= $escaper->escapeHtml($lang['Framework']); ?></label>
+    <div class="sr-dashfilter__control">
+        <select id="frameworks_select" class="form-select form-select-sm">
+            <option value=""<?= $selected_fw_id === null ? ' selected' : '' ?>><?= $escaper->escapeHtml($lang['AllFrameworks'] ?? 'All Frameworks') ?></option>
+<?php foreach ($all_frameworks as $fw): ?>
+            <option value="<?= (int)$fw['value'] ?>"<?= $selected_fw_id === (int)$fw['value'] ? ' selected' : '' ?>><?= $escaper->escapeHtml($fw['name']) ?></option>
+<?php endforeach; ?>
+        </select>
     </div>
+    <form id="compliance_filter_form" method="GET" class="sr-dashfilter__form">
+        <input type="hidden" name="frameworks" id="framework_options" value="<?= $selected_fw_id !== null ? (int)$selected_fw_id : '' ?>">
+    </form>
 </div>
+<?php
+    (new \includes\Widgets\UILayout('compliance_dashboard'))->render();
+?>
 <script>
 $(function() {
-    $('#frameworks_select').multiselect({
-        allSelectedText: '<?= js_string_escape($lang['AllFrameworks'] ?? 'All Frameworks'); ?>',
-        buttonWidth: '100%',
-        includeSelectAllOption: true,
-        enableCaseInsensitiveFiltering: true,
-        onChange: submitFrameworkFilter,
-        onSelectAll: submitFrameworkFilter,
-        onDeselectAll: submitFrameworkFilter,
-    });
-
-    function submitFrameworkFilter() {
-        var selected = [];
-        $('#frameworks_select option:selected').each(function() {
-            selected.push($(this).val());
-        });
-        $('#framework_options').val(selected.join(','));
-        $('#compliance_filter_form').submit();
+    // Hoist the framework filter up into the shared page header's breadcrumb row,
+    // right-aligned so it sits directly under the "Edit layout" button (which the
+    // dashboard hoists into the title row). Mirrors UILayout's edit-layout hoist.
+    var $sub = $('.page-breadcrumb .page-subtitle').first();
+    var $filter = $('.sr-dashfilter').first();
+    if ($sub.length && $filter.length) {
+        $sub.addClass('page-subtitle--with-action');
+        $sub.append($filter);
     }
+
+    // Reflect the selected framework in the dashboard title. .text() sets text
+    // content (never HTML) and the value is JSON-encoded server-side, so the
+    // framework name can't inject markup.
+    $('.page-breadcrumb .page-title').text(<?= json_encode($dashboard_title) ?>);
+
+    // Single-select: submitting on change re-runs every widget with the one
+    // selection (empty value = All Frameworks).
+    $('#frameworks_select').on('change', function() {
+        $('#framework_options').val($(this).val());
+        $('#compliance_filter_form').submit();
+    });
 });
 </script>
 <?php

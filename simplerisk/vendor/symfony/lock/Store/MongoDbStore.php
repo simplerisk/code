@@ -60,7 +60,6 @@ class MongoDbStore implements PersistingStoreInterface
     private string $namespace;
     private string $uri;
     private array $options;
-    private float $initialTtl;
 
     /**
      * @param Collection|Database|Client|Manager|string $mongo      An instance of a Collection or Client or URI @see https://docs.mongodb.com/manual/reference/connection-string/
@@ -96,15 +95,11 @@ class MongoDbStore implements PersistingStoreInterface
      * readPreference is primary for all read queries.
      * @see https://docs.mongodb.com/manual/applications/replication/
      */
-    public function __construct(Collection|Database|Client|Manager|string $mongo, array $options = [], float $initialTtl = 300.0)
-    {
-        if (isset($options['gcProbablity'])) {
-            trigger_deprecation('symfony/lock', '6.3', 'The "gcProbablity" option (notice the typo in its name) is deprecated in "%s"; use the "gcProbability" option instead.', __CLASS__);
-
-            $options['gcProbability'] = $options['gcProbablity'];
-            unset($options['gcProbablity']);
-        }
-
+    public function __construct(
+        Collection|Database|Client|Manager|string $mongo,
+        array $options = [],
+        private float $initialTtl = 300.0,
+    ) {
         $this->options = array_merge([
             'gcProbability' => 0.001,
             'database' => null,
@@ -112,8 +107,6 @@ class MongoDbStore implements PersistingStoreInterface
             'uriOptions' => [],
             'driverOptions' => [],
         ], $options);
-
-        $this->initialTtl = $initialTtl;
 
         if ($mongo instanceof Collection) {
             $this->options['database'] ??= $mongo->getDatabaseName();
@@ -150,7 +143,7 @@ class MongoDbStore implements PersistingStoreInterface
     /**
      * Extract default database and collection from given connection URI and remove collection querystring.
      *
-     * Non-standard parameters are removed from the URI to improve libmongoc's re-use of connections.
+     * Non-standard parameters are removed from the URI to improve libmongoc's reuse of connections.
      *
      * @see https://php.net/mongodb.connection-handling
      */
@@ -205,13 +198,11 @@ class MongoDbStore implements PersistingStoreInterface
      *
      * @see http://docs.mongodb.org/manual/tutorial/expire-data/
      *
-     * @return void
-     *
      * @throws UnsupportedException          if options are not supported by the selected server
      * @throws MongoInvalidArgumentException for parameter/option parsing errors
      * @throws DriverRuntimeException        for other driver errors (e.g. connection errors)
      */
-    public function createTtlIndex(int $expireAfterSeconds = 0)
+    public function createTtlIndex(int $expireAfterSeconds = 0): void
     {
         $server = $this->getManager()->selectServer();
         $server->executeCommand($this->options['database'], new Command([
@@ -229,11 +220,9 @@ class MongoDbStore implements PersistingStoreInterface
     }
 
     /**
-     * @return void
-     *
      * @throws LockExpiredException when save is called on an expired lock
      */
-    public function save(Key $key)
+    public function save(Key $key): void
     {
         $key->reduceLifetime($this->initialTtl);
 
@@ -254,12 +243,10 @@ class MongoDbStore implements PersistingStoreInterface
     }
 
     /**
-     * @return void
-     *
      * @throws LockStorageException
      * @throws LockExpiredException
      */
-    public function putOffExpiration(Key $key, float $ttl)
+    public function putOffExpiration(Key $key, float $ttl): void
     {
         $key->reduceLifetime($ttl);
 
@@ -275,10 +262,7 @@ class MongoDbStore implements PersistingStoreInterface
         $this->checkNotExpired($key);
     }
 
-    /**
-     * @return void
-     */
-    public function delete(Key $key)
+    public function delete(Key $key): void
     {
         $write = new BulkWrite();
         $write->delete(

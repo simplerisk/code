@@ -9,10 +9,10 @@ namespace OpenApi\Processors;
 use OpenApi\Analysis;
 use OpenApi\Annotations as OA;
 use OpenApi\Context;
-use OpenApi\Generator;
 use OpenApi\GeneratorAwareInterface;
 use OpenApi\GeneratorAwareTrait;
 use OpenApi\Processors\Concerns\DocblockTrait;
+use OpenApi\Undefined;
 
 /**
  * Augments shared and operations parameters from docblock comments.
@@ -20,6 +20,7 @@ use OpenApi\Processors\Concerns\DocblockTrait;
 class AugmentParameters implements GeneratorAwareInterface
 {
     use DocblockTrait;
+
     use GeneratorAwareTrait;
 
     protected bool $augmentOperationParameters;
@@ -27,6 +28,15 @@ class AugmentParameters implements GeneratorAwareInterface
     public function __construct(bool $augmentOperationParameters = true)
     {
         $this->augmentOperationParameters = $augmentOperationParameters;
+    }
+
+    public function __invoke(Analysis $analysis): void
+    {
+        $this->augmentParameters($analysis);
+        $this->augmentSharedParameters($analysis);
+        if ($this->augmentOperationParameters) {
+            $this->augmentOperationParameters($analysis);
+        }
     }
 
     public function isAugmentOperationParameters(): bool
@@ -44,15 +54,6 @@ class AugmentParameters implements GeneratorAwareInterface
         return $this;
     }
 
-    public function __invoke(Analysis $analysis): void
-    {
-        $this->augmentParameters($analysis);
-        $this->augmentSharedParameters($analysis);
-        if ($this->augmentOperationParameters) {
-            $this->augmentOperationParameters($analysis);
-        }
-    }
-
     protected function augmentParameters(Analysis $analysis): void
     {
         $parameters = $analysis->getAnnotationsOfType(OA\Parameter::class);
@@ -60,27 +61,43 @@ class AugmentParameters implements GeneratorAwareInterface
         foreach ($parameters as $parameter) {
             $context = $parameter->_context;
 
-            if (Generator::isDefault($parameter->name) && null !== $context->reflector && method_exists($context->reflector, 'getName')) {
+            if (Undefined::isDefault($parameter->name) && null !== $context->reflector && method_exists($context->reflector, 'getName')) {
                 $parameter->name = $context->reflector->getName();
             }
 
             if ($context->reflector instanceof \ReflectionParameter) {
-                $schema = new OA\Schema(['_context' => new Context(['reflector' => $context->reflector], $context)]);
+                $schema = Undefined::isDefault($parameter->schema)
+                    ? new OA\Schema([
+                        '_context' => new Context([
+                            'generated' => true,
+                            'reflector' => $context->reflector,
+                        ], $context),
+                    ])
+                    : $parameter->schema;
+
                 $this->generator->getTypeResolver()->augmentSchemaType($analysis, $schema);
 
-                $parameter->merge([new OA\Schema([
+                $analysis->mergeAnnotations($parameter, [new OA\Schema([
                     'type' => $schema->type,
                     'format' => $schema->format,
+                    'items' => $schema->items,
+                    'oneOf' => $schema->oneOf,
+                    'allOf' => $schema->allOf,
+                    'anyOf' => $schema->anyOf,
                     'ref' => $schema->ref,
-                    '_context' => new Context(['nested' => $this, 'comment' => null, 'reflector' => $context->reflector], $context)]),
+                    '_context' => new Context([
+                        'nested' => null,
+                        'comment' => null,
+                        'reflector' => $context->reflector,
+                    ], $context)]),
                 ]);
 
-                if (Generator::isDefault($parameter->required)) {
+                if (Undefined::isDefault($parameter->required)) {
                     $parameter->required = !$schema->isNullable();
                 }
             }
 
-            if (!Generator::isDefault($parameter->schema)) {
+            if (!Undefined::isDefault($parameter->schema)) {
                 $this->generator->getTypeResolver()->mapNativeType($parameter->schema, $parameter->schema->type);
             }
         }
@@ -92,18 +109,18 @@ class AugmentParameters implements GeneratorAwareInterface
      */
     protected function augmentSharedParameters(Analysis $analysis): void
     {
-        if (!Generator::isDefault($analysis->openapi->components) && !Generator::isDefault($analysis->openapi->components->parameters)) {
+        if (!Undefined::isDefault($analysis->openapi->components) && !Undefined::isDefault($analysis->openapi->components->parameters)) {
             $keys = [];
             $parametersWithoutKey = [];
             foreach ($analysis->openapi->components->parameters as $parameter) {
-                if (!Generator::isDefault($parameter->parameter)) {
+                if (!Undefined::isDefault($parameter->parameter) && $parameter->parameter !== null) {
                     $keys[$parameter->parameter] = $parameter;
                 } else {
                     $parametersWithoutKey[] = $parameter;
                 }
             }
             foreach ($parametersWithoutKey as $parameter) {
-                if (!Generator::isDefault($parameter->name) && empty($keys[$parameter->name])) {
+                if (!Undefined::isDefault($parameter->name) && $parameter->name !== null && empty($keys[$parameter->name])) {
                     $parameter->parameter = $parameter->name;
                     $keys[$parameter->parameter] = $parameter;
                 }
@@ -113,23 +130,31 @@ class AugmentParameters implements GeneratorAwareInterface
 
     protected function augmentOperationParameters(Analysis $analysis): void
     {
-        /** @var OA\Operation[] $operations */
         $operations = $analysis->getAnnotationsOfType(OA\Operation::class);
 
         foreach ($operations as $operation) {
-            if (!Generator::isDefault($operation->parameters)) {
+            if (!Undefined::isDefault($operation->parameters)) {
                 $tags = [];
                 $this->parseDocblock($operation->_context->comment, $tags);
-                $docblockParams = $tags['param'] ?? [];
+                $operationDocblockParams = $tags['param'] ?? [];
 
                 foreach ($operation->parameters as $parameter) {
-                    if (Generator::isDefault($parameter->description)) {
-                        if (array_key_exists($parameter->name, $docblockParams)) {
-                            $details = $docblockParams[$parameter->name];
+                    if (Undefined::isDefault($parameter->description)) {
+                        $typeAndDescription = $this->parseVarLine((string) $parameter->_context->comment);
+                        if ($typeAndDescription['description']) {
+                            $parameter->description = trim($typeAndDescription['description']);
+                        }
+                    }
+
+                    if (Undefined::isDefault($parameter->description)) {
+                        if (array_key_exists($parameter->name, $operationDocblockParams)) {
+                            $details = $operationDocblockParams[$parameter->name];
                             if ($details['description']) {
                                 $parameter->description = $details['description'];
                             }
                         }
+                    } elseif (null === $parameter->description) {
+                        $parameter->description = Undefined::UNDEFINED;
                     }
                 }
             }

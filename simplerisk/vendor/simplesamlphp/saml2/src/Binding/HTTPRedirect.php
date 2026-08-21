@@ -8,7 +8,7 @@ use Exception;
 use Nyholm\Psr7\Response;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
-use SimpleSAML\Assert\Assert;
+use SimpleSAML\SAML2\Assert\Assert;
 use SimpleSAML\SAML2\Binding;
 use SimpleSAML\SAML2\Binding\RelayStateTrait;
 use SimpleSAML\SAML2\Compat\ContainerSingleton;
@@ -42,6 +42,7 @@ class HTTPRedirect extends Binding implements AsynchronousBindingInterface, Rela
 {
     use RelayStateTrait;
 
+
     /**
      * Create the redirect URL for a message.
      *
@@ -54,6 +55,8 @@ class HTTPRedirect extends Binding implements AsynchronousBindingInterface, Rela
             $destination = $message->getDestination();
             if ($destination === null) {
                 throw new Exception('Cannot build a redirect URL, no destination set.');
+            } else {
+                $destination = $destination->getValue();
             }
         } else {
             $destination = $this->destination;
@@ -83,8 +86,11 @@ class HTTPRedirect extends Binding implements AsynchronousBindingInterface, Rela
 
         $signature = $message->getSignature();
         if ($signature !== null) { // add the signature
-            $msg .= '&SigAlg=' . urlencode($signature->getSignedInfo()->getSignatureMethod()->getAlgorithm());
-            $msg .= '&Signature=' . urlencode($signature->getSignatureValue()->getContent());
+            $signatureMethod = $signature->getSignedInfo()->getSignatureMethod();
+            $signatureValue = $signature->getSignatureValue();
+
+            $msg .= '&SigAlg=' . urlencode($signatureMethod->getAlgorithm()->getValue());
+            $msg .= '&Signature=' . urlencode($signatureValue->getValue()->getValue());
         }
 
         if (str_contains($destination, '?')) {
@@ -120,6 +126,7 @@ class HTTPRedirect extends Binding implements AsynchronousBindingInterface, Rela
      *
      * @param \Psr\Http\Message\ServerRequestInterface $request
      * @return \SimpleSAML\SAML2\XML\samlp\AbstractMessage The received message.
+     *
      * @throws \Exception
      *
      * NPath is currently too high but solving that just moves code around.

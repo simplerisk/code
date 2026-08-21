@@ -6,10 +6,12 @@ namespace SimpleSAML\XMLSecurity\XML\xenc;
 
 use DOMElement;
 use SimpleSAML\Assert\Assert;
-use SimpleSAML\XML\Exception\InvalidDOMElementException;
-use SimpleSAML\XML\Exception\SchemaViolationException;
 use SimpleSAML\XML\ExtendableElementTrait;
-use SimpleSAML\XML\XsNamespace as NS;
+use SimpleSAML\XMLSchema\Exception\InvalidDOMElementException;
+use SimpleSAML\XMLSchema\Type\AnyURIValue;
+use SimpleSAML\XMLSchema\XML\Constants\NS;
+
+use function strval;
 
 /**
  * Abstract class representing references. No custom elements are allowed.
@@ -20,22 +22,21 @@ abstract class AbstractReference extends AbstractXencElement
 {
     use ExtendableElementTrait;
 
+
     /** The namespace-attribute for the xs:any element */
-    public const XS_ANY_ELT_NAMESPACE = NS::OTHER;
+    public const string XS_ANY_ELT_NAMESPACE = NS::OTHER;
 
 
     /**
      * AbstractReference constructor.
      *
-     * @param string $uri
+     * @param \SimpleSAML\XMLSchema\Type\AnyURIValue $uri
      * @param \SimpleSAML\XML\SerializableElementInterface[] $elements
      */
     final public function __construct(
-        protected string $uri,
+        protected AnyURIValue $uri,
         array $elements = [],
     ) {
-        Assert::validURI($uri, SchemaViolationException::class); // Covers the empty string
-
         $this->setElements($elements);
     }
 
@@ -43,9 +44,9 @@ abstract class AbstractReference extends AbstractXencElement
     /**
      * Get the value of the URI attribute of this reference.
      *
-     * @return string
+     * @return \SimpleSAML\XMLSchema\Type\AnyURIValue
      */
-    public function getURI(): string
+    public function getURI(): AnyURIValue
     {
         return $this->uri;
     }
@@ -54,9 +55,9 @@ abstract class AbstractReference extends AbstractXencElement
     /**
      * @inheritDoc
      *
-     * @throws \SimpleSAML\XML\Exception\InvalidDOMElementException
+     * @throws \SimpleSAML\XMLSchema\Exception\InvalidDOMElementException
      *   if the qualified name of the supplied element is wrong
-     * @throws \SimpleSAML\XML\Exception\MissingAttributeException
+     * @throws \SimpleSAML\XMLSchema\Exception\MissingAttributeException
      *   if the supplied element is missing one of the mandatory attributes
      */
     public static function fromXML(DOMElement $xml): static
@@ -64,10 +65,10 @@ abstract class AbstractReference extends AbstractXencElement
         Assert::same($xml->localName, static::getClassName(static::class), InvalidDOMElementException::class);
         Assert::same($xml->namespaceURI, static::NS, InvalidDOMElementException::class);
 
-        $URI = self::getAttribute($xml, 'URI');
-        $elements = self::getChildElementsFromXML($xml);
-
-        return new static($URI, $elements);
+        return new static(
+            self::getAttribute($xml, 'URI', AnyURIValue::class),
+            self::getChildElementsFromXML($xml),
+        );
     }
 
 
@@ -77,7 +78,7 @@ abstract class AbstractReference extends AbstractXencElement
     public function toXML(?DOMElement $parent = null): DOMElement
     {
         $e = $this->instantiateParentElement($parent);
-        $e->setAttribute('URI', $this->getUri());
+        $e->setAttribute('URI', strval($this->getUri()));
 
         foreach ($this->getElements() as $elt) {
             $elt->toXML($e);

@@ -20,7 +20,7 @@ use OpenApi\Annotations as OA;
  *             mediaType="application/x-www-form-urlencoded",
  *             @OA\Schema(
  *                 required={"layout_name"},
- *                 @OA\Property(property="layout_name", type="string", enum={"overview", "dashboard_open", "dashboard_close", "compliance_dashboard"}, description="The name of the layout to save."),
+ *                 @OA\Property(property="layout_name", type="string", enum={"risk_dashboard", "dashboard_open", "dashboard_close", "compliance_dashboard"}, description="The name of the layout to save."),
  *                 @OA\Property(
  *                     property="layout",
  *                     type="array",
@@ -58,7 +58,7 @@ class OpenApiSaveUiLayout {}
  *         in="query",
  *         required=true,
  *         description="The name of the layout to retrieve.",
- *         @OA\Schema(type="string", enum={"overview", "dashboard_open", "dashboard_close", "compliance_dashboard"})
+ *         @OA\Schema(type="string", enum={"risk_dashboard", "dashboard_open", "dashboard_close", "compliance_dashboard"})
  *     ),
  *     @OA\Parameter(
  *         name="type",
@@ -95,13 +95,13 @@ class OpenApiGetUiLayout {}
  *         in="query",
  *         required=true,
  *         description="The name of the layout the widget belongs to.",
- *         @OA\Schema(type="string", enum={"overview", "dashboard_open", "dashboard_close", "compliance_dashboard"})
+ *         @OA\Schema(type="string", enum={"risk_dashboard", "dashboard_open", "dashboard_close", "compliance_dashboard"})
  *     ),
  *     @OA\Parameter(
  *         name="widget_name",
  *         in="query",
  *         required=true,
- *         description="The widget to render. Available widgets depend on the chosen layout_name: 'overview' supports chart_open_vs_closed, chart_mitigation_planned_vs_unplanned, chart_reviewed_vs_unreviewed, table_risks_by_month, WYSIWYG; 'dashboard_open' supports open_risk_level, open_status, open_site_location, open_risk_source, open_category, open_team, open_technology, open_owner, open_owners_manager, open_risk_scoring_method, WYSIWYG; 'dashboard_close' supports close_reason, WYSIWYG; 'compliance_dashboard' supports compliance_controls_by_framework_bar_chart, compliance_pass_fail_pie_chart.",
+ *         description="The widget to render. Available widgets depend on the chosen layout_name: 'risk_dashboard' supports chart_open_vs_closed, chart_mitigation_planned_vs_unplanned, chart_reviewed_vs_unreviewed, table_risks_by_month, WYSIWYG; 'dashboard_open' supports open_risk_level, open_status, open_site_location, open_risk_source, open_category, open_team, open_technology, open_owner, open_owners_manager, open_risk_scoring_method, WYSIWYG; 'dashboard_close' supports close_reason, WYSIWYG; 'compliance_dashboard' supports compliance_controls_by_framework_bar_chart, compliance_pass_fail_pie_chart.",
  *         @OA\Schema(type="string", enum={"chart_open_vs_closed", "chart_mitigation_planned_vs_unplanned", "chart_reviewed_vs_unreviewed", "table_risks_by_month", "open_risk_level", "open_status", "open_site_location", "open_risk_source", "open_category", "open_team", "open_technology", "open_owner", "open_owners_manager", "open_risk_scoring_method", "close_reason", "WYSIWYG", "compliance_controls_by_framework_bar_chart", "compliance_pass_fail_pie_chart"})
  *     ),
  *     @OA\Response(
@@ -133,7 +133,7 @@ class OpenApiGetUiWidget {}
  *             mediaType="application/x-www-form-urlencoded",
  *             @OA\Schema(
  *                 required={"layout_name", "default"},
- *                 @OA\Property(property="layout_name", type="string", enum={"overview", "dashboard_open", "dashboard_close", "compliance_dashboard"}, description="The name of the layout to update."),
+ *                 @OA\Property(property="layout_name", type="string", enum={"risk_dashboard", "dashboard_open", "dashboard_close", "compliance_dashboard"}, description="The name of the layout to update."),
  *                 @OA\Property(property="default", type="boolean", description="Whether to set (true) or unset (false) the layout as the user's default.")
  *             )
  *         )
@@ -354,5 +354,72 @@ class OpenApiReportsFavoritesAdd {}
  * )
  */
 class OpenApiReportsFavoritesDelete {}
+
+/**
+ * @OA\Put(
+ *     path="/ui/getting_started/dismissals/{step_key}",
+ *     summary="Dismiss a Getting Started step for the current user",
+ *     operationId="gettingStartedDismiss",
+ *     tags={"ui"},
+ *     security={{"ApiKeyAuth":{}}},
+ *     @OA\Parameter(
+ *         name="step_key",
+ *         in="path",
+ *         required=true,
+ *         description="The Getting Started catalog step key to dismiss (e.g. submit_risks). Must be a known catalog key. Idempotent — dismissing an already-dismissed step is a safe no-op. Scoped to the session user.",
+ *         @OA\Schema(type="string", maxLength=50)
+ *     ),
+ *     @OA\Response(response=200, description="Step dismissed for the current user (or was already dismissed)."),
+ *     @OA\Response(response=400, description="BAD REQUEST: step_key is empty or not a known Getting Started catalog key."),
+ *     @OA\Response(response=401, description="UNAUTHORIZED: request is not authenticated or session has no user."),
+ * )
+ */
+class OpenApiGettingStartedDismiss {}
+
+/**
+ * @OA\Delete(
+ *     path="/ui/getting_started/dismissals/{step_key}",
+ *     summary="Restore (un-dismiss) a Getting Started step for the current user",
+ *     operationId="gettingStartedRestore",
+ *     tags={"ui"},
+ *     security={{"ApiKeyAuth":{}}},
+ *     @OA\Parameter(
+ *         name="step_key",
+ *         in="path",
+ *         required=true,
+ *         description="The Getting Started catalog step key to restore. Must be a known catalog key. Idempotent — restoring a step that was never dismissed is a safe no-op. Scoped to the session user.",
+ *         @OA\Schema(type="string", maxLength=50)
+ *     ),
+ *     @OA\Response(response=200, description="Step restored (or was not dismissed)."),
+ *     @OA\Response(response=400, description="BAD REQUEST: step_key is empty or not a known Getting Started catalog key."),
+ *     @OA\Response(response=401, description="UNAUTHORIZED: request is not authenticated or session has no user."),
+ * )
+ */
+class OpenApiGettingStartedRestore {}
+
+/**
+ * @OA\Get(
+ *     path="/ui/getting_started/dismissals",
+ *     summary="List the current user's dismissed Getting Started step keys",
+ *     operationId="gettingStartedDismissals",
+ *     tags={"ui"},
+ *     security={{"ApiKeyAuth":{}}},
+ *     @OA\Response(
+ *         response=200,
+ *         description="The step keys the current user has dismissed.",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(
+ *                 property="data",
+ *                 type="array",
+ *                 @OA\Items(type="string"),
+ *                 description="Getting Started catalog step keys the user has dismissed."
+ *             )
+ *         )
+ *     ),
+ *     @OA\Response(response=401, description="UNAUTHORIZED: request is not authenticated or session has no user."),
+ * )
+ */
+class OpenApiGettingStartedDismissals {}
 
 ?>

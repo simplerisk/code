@@ -95,6 +95,16 @@ function autoloader(string $name)
     {
         require_once realpath(__DIR__ . '/ui.php');
     }
+
+    if (file_exists(realpath(__DIR__ . '/notifications.php')))
+    {
+        require_once realpath(__DIR__ . '/notifications.php');
+    }
+
+    if (file_exists(realpath(__DIR__ . '/self_assessments.php')))
+    {
+        require_once realpath(__DIR__ . '/self_assessments.php');
+    }
 }
 
 // Include required functions file
@@ -114,6 +124,8 @@ $scan_directories = [
     realpath(__DIR__ . '/documents.php'),
     realpath(__DIR__ . '/exceptions.php'),
     realpath(__DIR__ . '/ui.php'),
+    realpath(__DIR__ . '/notifications.php'),
+    realpath(__DIR__ . '/self_assessments.php'),
 ];
 
 // If the Secure Controls Framework (SCF) Extra is installed
@@ -168,6 +180,21 @@ if (workflows_extra())
         // Add the workflows extra API documentation
         require_once realpath(__DIR__ . '/../../../extras/workflows/includes/api_documentation.php');
         $scan_directories[] = realpath(__DIR__ . '/../../../extras/workflows/includes/api_documentation.php');
+    }
+}
+
+// If the Encryption Extra directory is present, register its API docs. The
+// gate is `is_dir()` rather than `encryption_extra()` because the three
+// endpoints (status, restore, algorithm-check/trigger) are reachable even when the
+// Extra is in a failed or partially-activated state — the docs need to be
+// renderable in lockstep with route availability.
+if (is_dir(realpath(__DIR__ . '/../../../extras/encryption')))
+{
+    if (file_exists(realpath(__DIR__ . '/../../../extras/encryption/includes/api_documentation.php')))
+    {
+        // Add the Encryption Extra API documentation
+        require_once realpath(__DIR__ . '/../../../extras/encryption/includes/api_documentation.php');
+        $scan_directories[] = realpath(__DIR__ . '/../../../extras/encryption/includes/api_documentation.php');
     }
 }
 

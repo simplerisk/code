@@ -1,0 +1,31 @@
+{
+    "name": "datatables.net",
+    "description": "DataTables - The Javascript table library",
+    "main": "js/dataTables.js",
+    "module": "js/dataTables.mjs",
+    "types": "./types/types.d.ts",
+    "version": "3.0.2",
+    "files": [
+        "js/**/*.js",
+        "js/**/*.mjs",
+        "types/**/*.d.ts"
+    ],
+    "keywords": [
+        "Datatables",
+        "table",
+        "filter",
+        "sort"
+    ],
+    "author": {
+        "name": "SpryMedia Ltd",
+        "url": "http://datatables.net"
+    },
+    "homepage": "https://datatables.net",
+    "bugs": "https://datatables.net/forums",
+    "license": "MIT",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/DataTables/DataTablesSrc.git"
+    },
+    "dependencies": null
+}

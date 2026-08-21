@@ -85,3 +85,371 @@
         margin-left: 10px;
     }
 }
+
+// ===== Redesigned questionnaire add/edit form (SR-1791) =====
+.sr-qform {
+    // Bottom padding gives the sticky action bar scroll room to float above the
+    // form content (position:sticky is constrained by this form's box).
+    padding-bottom: 72px;
+
+    .sr-qcard {
+        background: $sr-body;
+        border: 1px solid $gray-300;
+        border-radius: 8px;
+        box-shadow: $shadow;
+        margin-bottom: 16px;
+        // NOTE: no overflow:hidden — it clipped the selectize dropdowns so
+        // multi-selects could not be opened/picked.
+    }
+
+    .sr-qcard-head {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 13px 18px;
+        background: $gray-100;
+        border-bottom: 1px solid $gray-300;
+        border-top-left-radius: 8px;
+        border-top-right-radius: 8px;
+
+        .sr-qcard-ico {
+            flex: none;
+            width: 30px;
+            height: 30px;
+            border-radius: 7px;
+            background: $sr-body;
+            border: 1px solid $gray-300;
+            display: grid;
+            place-items: center;
+            color: $sr-primary;
+
+            svg { width: 17px; height: 17px; }
+        }
+
+        .sr-qcard-htext {
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+            flex: 1;
+
+            h2 {
+                margin: 0;
+                font-size: 15px;
+                font-weight: 800;
+                color: $sr-primary;
+            }
+
+            .sr-qcard-hsub {
+                font-size: 12px;
+                color: $gray-600;
+            }
+        }
+    }
+
+    .sr-qcard-body { padding: 18px; }
+
+    // Round the form controls to match the rounded cards (SimpleRisk squares inputs globally)
+    .form-control, .form-select {
+        border-radius: 6px;
+    }
+    // selectize control box — SimpleRisk's global selectize CSS squares it (radius ~1px),
+    // so force the rounded corners.
+    .selectize-control .selectize-input {
+        border-radius: 6px !important;
+    }
+    // Persistent "Add …" hint after chips. selectize clears the input placeholder
+    // (and narrows the trailing input) once items exist, so drive the hint from a
+    // data-sr-hint attribute set in JS. Hidden while the field is focused/typing.
+    .selectize-input.has-items::after {
+        content: attr(data-sr-hint);
+        align-self: center;
+        color: $gray-500;
+        font-size: 12.5px;
+        padding-left: 2px;
+        pointer-events: none;
+    }
+    .selectize-control.focus .selectize-input.has-items::after {
+        content: none;
+    }
+
+    // Chip pills (selectize items) — neutral chip look from the artifact.
+    // !important because SimpleRisk's global selectize CSS squares the .item
+    // (radius ~1px) and sets a grey background that would otherwise win.
+    .selectize-input .item {
+        background: $gray-100 !important;
+        color: $sr-primary !important;
+        border: 1px solid $gray-300 !important;
+        border-radius: 6px !important;
+        padding: 1px 4px 1px 8px;
+        margin: 2px 4px 2px 0;
+        font-size: 12.5px;
+        font-weight: 600;
+
+        .remove {
+            color: $gray-600;
+            border-left-color: $gray-300;
+            padding-left: 4px;
+
+            &:hover { color: $sr-important; background: transparent; }
+        }
+    }
+
+    .sr-qgrid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 15px 16px;
+
+        .sr-qfield {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            min-width: 0;
+
+            &.sr-col-2 { grid-column: 1 / -1; }
+        }
+    }
+
+    .sr-qfield-mb { margin-bottom: 16px; }
+
+    .sr-qlabel {
+        font-size: 12.5px;
+        font-weight: 700;
+        color: $sr-primary;
+        margin: 0;
+
+        .required { color: $sr-important; font-weight: 800; }
+    }
+
+    // Toggle-switch rows
+    .sr-qswitches { display: flex; flex-direction: column; }
+
+    .sr-qswitch-row {
+        display: flex;
+        align-items: flex-start;
+        gap: 13px;
+        padding: 14px 2px;
+        border-top: 1px solid $gray-300;
+
+        .sr-qswitch {
+            flex: none;
+            margin: 0;
+            padding-left: 0;
+            min-height: auto;
+
+            .form-check-input {
+                margin: 1px 0 0;
+                width: 2.4em;
+                height: 1.25em;
+                border-radius: 2em; // pill — SimpleRisk squares inputs globally; restore the switch shape
+                cursor: pointer;
+
+                &:checked { background-color: $sr-important; border-color: $sr-important; }
+                &:focus { border-color: $sr-important; box-shadow: 0 0 0 0.2rem rgba($sr-important, 0.25); }
+            }
+        }
+
+        .sr-qswitch-text {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            min-width: 0;
+            flex: 1;
+
+            .sr-qswitch-title {
+                font-size: 13.5px;
+                font-weight: 700;
+                color: $sr-primary;
+                margin: 0;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                flex-wrap: wrap;
+            }
+
+            .sr-qswitch-desc {
+                font-size: 12px;
+                color: $gray-600;
+                line-height: 1.45;
+            }
+
+            .sr-qswitch-num {
+                display: flex;
+                align-items: center;
+                flex-wrap: wrap;
+                margin-top: 6px;
+                font-size: 12.5px;
+                color: $sr-primary;
+            }
+
+            &.sr-qswitch-inline {
+                flex-direction: row;
+                align-items: center;
+                flex-wrap: wrap;
+                font-size: 13px;
+                color: $sr-primary;
+            }
+        }
+    }
+
+    // Risk Details accordion header, styled as a card head
+    .sr-qaccordion .sr-qacc-head.accordion-button {
+        background: $gray-100;
+        color: $sr-primary;
+        box-shadow: none;
+        border-bottom: none;
+        border-top-left-radius: 8px;
+        border-top-right-radius: 8px;
+
+        &.collapsed {
+            border-bottom-left-radius: 8px;
+            border-bottom-right-radius: 8px;
+        }
+
+        &:not(.collapsed) {
+            background: $gray-100;
+            color: $sr-primary;
+            box-shadow: none;
+            border-bottom: 1px solid $gray-300;
+        }
+        &:focus { box-shadow: none; border-color: transparent; }
+        &::after { margin-left: 8px; }
+
+        .sr-qoptional {
+            margin-left: auto;
+            font-size: 10.5px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            color: $gray-600;
+            background: $sr-body;
+            border: 1px solid $gray-300;
+            border-radius: 4px;
+            padding: 1px 7px;
+        }
+    }
+
+    // Template rows + add button
+    .sr-qaddrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        margin-top: 6px;
+        font-size: 13px;
+        font-weight: 700;
+        color: $sr-primary;
+        background: $gray-100;
+        border: 1px dashed $gray-400;
+        border-radius: 6px;
+        padding: 9px 14px;
+        text-decoration: none;
+
+        .sr-qaddicon { flex: none; }
+
+        &:hover { border-color: $sr-important; color: $sr-important; }
+    }
+
+    // Each template + contacts pairing as a bordered row-card
+    .sr-qtemplates .template-contact-row {
+        margin: 0 0 10px 0;
+        padding: 12px;
+        border: 1px solid $gray-300;
+        border-radius: 6px;
+        background: $gray-100;
+    }
+
+    // Row remove (×) button
+    .delete-row {
+        display: inline-grid;
+        place-items: center;
+        width: 30px;
+        height: 30px;
+        border-radius: 6px;
+        border: 1px solid $gray-300;
+        color: $gray-600;
+        text-decoration: none;
+
+        &:hover { border-color: $sr-important; color: $sr-important; }
+    }
+
+    // Amber security caution (e.g. pre-populate-across-contacts)
+    .sr-qnote {
+        display: flex;
+        gap: 8px;
+        margin-top: 10px;
+        padding: 9px 11px;
+        background: rgba($orange, 0.1);
+        border: 1px solid rgba($orange, 0.4);
+        border-radius: 6px;
+        font-size: 12px;
+        color: $sr-primary;
+        line-height: 1.45;
+
+        .sr-qnote-ico { flex: none; color: $orange; margin-top: 1px; }
+    }
+
+    // Sticky action bar
+    .sr-qactions {
+        position: sticky;
+        bottom: 12px;
+        z-index: 5;
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 10px;
+        margin-top: 4px;
+        padding: 13px 18px;
+        background: $sr-body;
+        border: 1px solid $gray-300;
+        border-radius: 8px;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+
+        .btn { border-radius: 6px; }
+
+        .sr-qactions-hint {
+            margin-right: auto;
+            font-size: 12px;
+            color: $gray-600;
+        }
+
+        // Cancel — ghost
+        .sr-qcancel {
+            background: transparent;
+            color: $gray-600;
+            border: 1px solid $gray-300;
+
+            &:hover { color: $sr-primary; border-color: $gray-500; }
+        }
+
+        // Save — outline (red on hover)
+        .sr-qsave {
+            background: $sr-body;
+            color: $sr-primary;
+            border: 1px solid $gray-300;
+
+            &:hover { color: $sr-important; border-color: $sr-important; }
+        }
+
+        // Save & Send — red primary
+        .sr-qsend {
+            background: $sr-important;
+            color: $white;
+            border: 1px solid $sr-important;
+
+            &:hover { background: darken($sr-important, 8%); border-color: darken($sr-important, 8%); }
+        }
+    }
+}
+
+// Let the questionnaire form's cards sit on the page-wrapper gray rather than a
+// white bordered slab (matches the card-on-gray look; cards stay white).
+// .bg-white is a Bootstrap !important utility, so this override needs !important.
+.content:has(> .row > .col-12 > .sr-qform) {
+    background-color: transparent !important;
+    border-color: transparent !important;
+    margin: 0 !important;   // drop the extra outer margin (keep padding) so the form
+                            // aligns with the "Add a new questionnaire" page title
+}
+.bg-white:has(> .col-12 > .sr-qform) {
+    background-color: transparent !important;
+    border-color: transparent !important;
+}

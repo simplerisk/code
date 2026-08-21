@@ -8,7 +8,7 @@
 ini_set('default_charset', 'utf-8');
 
 $lang = array(
-    'Home'=>'回家的',
+    'Home'=>'首页',
     'RiskManagement'=>'风险管理',
     'Reporting'=>'报告',
     'Configure'=>'配置',
@@ -20,31 +20,29 @@ $lang = array(
     'ForgotYourPassword'=>'忘了你的密码',
     'Login'=>'登陆',
     'Reset'=>'重新设置',
-    'Send'=>'送',
-    'Update'=>'最新情况',
-    'SendPasswordResetEmail'=>'把密码重置电子邮件',
+    'Send'=>'发送',
+    'Update'=>'更新',
+    'SendPasswordResetEmail'=>'发送密码重置电子邮件',
     'PasswordReset'=>'密码重置',
-    'ResetToken'=>'重的象征',
+    'ResetToken'=>'重置令牌',
     'RepeatPassword'=>'重复密码',
     'Submit'=>'提交',
-    'ProfileDetails'=>'简介的详细情况',
+    'ProfileDetails'=>'个人资料详情',
     'LastLogin'=>'上次登陆',
     'ChangePassword'=>'改变密码',
     'CurrentPassword'=>'目前的密码',
     'NewPassword'=>'新密码',
     'ConfirmPassword'=>'确认密码',
-    'RiskConfiguration'=>'风险配置',
-    'ReviewSettings'=>'查看设置',
-    'AddAndRemoveValues'=>'增加和删除的价值观',
+    'AddAndRemoveValues'=>'添加和删除值',
     'UserManagement'=>'用户的管理',
-    'RedefineNamingConventions'=>'重新命名约定',
+    'RedefineNamingConventions'=>'重新定义命名约定',
     'AuditTrail'=>'审计线索',
-    'Extras'=>'临时演员',
+    'Extras'=>'扩展',
     'Announcements'=>'通告',
     'About'=>'关于',
     'Impact'=>'影响',
-    'Likelihood'=>'有可能',
-    'MitigationEffort'=>'减轻气候变化影响努力的前列',
+    'Likelihood'=>'可能性',
+    'MitigationEffort'=>'缓解工作量',
     'Change'=>'变化',
     'to'=>'去',
     'AddANewUser'=>'增加一个新的用户',
@@ -57,8 +55,8 @@ $lang = array(
     'UserResponsibilities'=>'用户的责任',
     'AbleToSubmitNewRisks'=>'能够提出新的风险',
     'AbleToModifyExistingRisks'=>'能够修改风险详情',
-    'AbleToCloseRisks'=>'能够密切的风险',
-    'AbleToPlanMitigations'=>'能够在计划的缓解',
+    'AbleToCloseRisks'=>'能够关闭风险',
+    'AbleToPlanMitigations'=>'能够规划缓解措施',
     'AbleToReviewLowRisks'=>'审查了低风险',
     'AbleToReviewMediumRisks'=>'能够审查中的风险',
     'AbleToReviewHighRisks'=>'能够审查的高风险',
@@ -66,10 +64,10 @@ $lang = array(
     'MultiFactorAuthentication'=>'多因素的认证',
     'None'=>'都没有',
     'Add'=>'增加',
-    'ViewDetailsForUser'=>'为了详细的用户',
-    'DetailsForUser'=>'详细的用户',
+    'ViewDetailsForUser'=>'查看用户详情',
+    'DetailsForUser'=>'用户详情',
     'Select'=>'选择',
-    'EnableAndDisableUsers'=>'使破坏者',
+    'EnableAndDisableUsers'=>'启用和禁用用户',
     'EnableAndDisableUsersHelp'=>'使用这一特点使或关闭用户logins同时保持审计线索的用户活动',
     'DisableUser'=>'关闭用户',
     'Disable'=>'解除',
@@ -80,8 +78,6 @@ $lang = array(
     'Delete'=>'删除',
     'SendPasswordResetEmailForUser'=>'把密码重置电子邮件用户',
     'Category'=>'职类',
-    'Cards'=>'牌',
-    'List'=>'列表',
     'AddNewCategoryNamed'=>'增加新的类别叫',
     'DeleteCurrentCategoryNamed'=>'删除目前的类别叫',
     'Team'=>'小组',
@@ -120,37 +116,37 @@ $lang = array(
     'PerformManagementReviews'=>'执行点评',
     'PrioritizeForProjectPlanning'=>'计划项目',
     'ReviewRisksRegularly'=>'定期检讨',
-    'DocumentANewRisk'=>'文件a的新的风险',
+    'DocumentANewRisk'=>'记录新风险',
     'UseThisFormHelp'=>'使用这一形式，以便在文件a的新的风险考虑的风险管理进程',
-    'Subject'=>'受',
-    'ExternalReferenceId'=>'外部提及的身份证',
-    'ControlNumber'=>'控制数目',
-    'Owner'=>'所有人',
+    'Subject'=>'主题',
+    'ExternalReferenceId'=>'外部参考 ID',
+    'ControlNumber'=>'控制编号',
+    'Owner'=>'负责人',
     'OwnersManager'=>'所有者的经理',
     'RiskScoringMethod'=>'风险评分方法',
-    'CurrentLikelihood'=>'目前有可能',
+    'CurrentLikelihood'=>'目前可能性',
     'CurrentImpact'=>'当前的影响',
     'RiskAssessment'=>'风险评估',
     'AdditionalNotes'=>'附注',
-    'UNREVIEWED'=>'审阅',
-    'PASTDUE'=>'过去的原因',
-    'ID'=>'身份证',
-    'Status'=>'地位',
+    'UNREVIEWED'=>'未审阅',
+    'PASTDUE'=>'逾期',
+    'ID'=>'编号',
+    'Status'=>'状态',
     'Risk'=>'风险',
-    'DaysOpen'=>'天开',
+    'DaysOpen'=>'开放天数',
     'CalculatedRisk'=>'计算风险',
-    'SubmittedBy'=>'提交',
+    'SubmittedBy'=>'提交者',
     'NextReviewDate'=>'下一个审查日期',
     'CVSSRiskScoring'=>'CVSS风险评分',
-    'DREADRiskScoring'=>'可怕的风险评分',
+    'DREADRiskScoring'=>'DREAD风险评分',
     'OWASPRiskScoring'=>'OWASP风险评分',
-    'CustomRiskScoring'=>'习惯了风险评分',
+    'CustomRiskScoring'=>'自定义风险评分',
     'MitigationPlanningHelp'=>'下文的清单提交了风险，需要缓解规划',
     'ManagementReviewHelp'=>'下文的清单提交了风险，需要一个管理审查',
     'Submitted'=>'提交',
     'MitigationPlanned'=>'缓解计划',
     'ManagementReview'=>'管理审查',
-    'No'=>'不是的',
+    'No'=>'否',
     'Yes'=>'是的',
     'AddAndRemoveProjects'=>'增加和删除项目',
     'AddAndRemoveProjectsHelp'=>'增加和删除的项目，以便协理多重风险，优先次序',
@@ -160,17 +156,17 @@ $lang = array(
     'AddUnassignedRisksToProjectsHelp'=>'拖放未分配的风险，标志着为审议作为一个项目的适当项目账上',
     'PrioritizeProjects'=>'优先项目',
     'PrioritizeProjectsHelp'=>'动项目和变革的顺序确定优先次序。 一旦完成，不要忘了新闻发布的"最新"的按钮就可以拯救你的变化',
-    'SaveRisksToProjects'=>'救风险项目',
-    'RiskId'=>'冒险的身份证',
+    'SaveRisksToProjects'=>'保存风险到项目',
+    'RiskId'=>'风险ID',
     'RiskActions'=>'行动',
-    'ReopenRisk'=>'重新开放风险',
-    'CloseRisk'=>'密切的风险',
+    'ReopenRisk'=>'重新打开风险',
+    'CloseRisk'=>'关闭风险',
     'EditRisk'=>'编辑风险',
     'PlanAMitigation'=>'计划的一个减缓',
     'PerformAReview'=>'进行审查',
     'AddAComment'=>'增加一个评论',
     'ShowRiskScoringDetails'=>'查看风险评分详细信息',
-    'HideRiskScoringDetails'=>'藏起来了风险评分细节',
+    'HideRiskScoringDetails'=>'隐藏风险评分详情',
     'Details'=>'详细情况',
     'SubmissionDate'=>'提交日期',
     'DateSubmitted'=>'迄今提交',
@@ -188,7 +184,7 @@ $lang = array(
     'Review'=>'审查',
     'NextStep'=>'下一个步骤',
     'Comments'=>'评论意见',
-    'ViewAllReviews'=>'认为所有的审查',
+    'ViewAllReviews'=>'查看所有审查',
     'ReviewHistory'=>'审查历史',
     'Comment'=>'评论',
     'ClassicRiskScoring'=>'典型的风险评分',
@@ -200,12 +196,12 @@ $lang = array(
     'RISKClassicExp3'=>'风险=(有可能是x的影响)',
     'RISKClassicExp4'=>'风险=(有可能是x的影响+可能性)',
     'RISKClassicExp5'=>'风险=(有可能是x的影响+2(可能性))',
-    'Reason'=>'因',
-    'CloseOutInformation'=>'亲密的信息',
+    'Reason'=>'原因',
+    'CloseOutInformation'=>'结案信息',
     'SubmitManagementReview'=>'提交管理审查',
     'SubmitRiskMitigation'=>'提出减轻风险',
-    'RiskDashboard'=>'危险的跟踪仪表板',
-    'RiskTrend'=>'危险的趋势',
+    'RiskDashboard'=>'风险仪表板',
+    'RiskTrend'=>'风险趋势',
     'AllOpenRisksAssignedToMeByRiskLevel'=>'分配给我的所有打开风险',
     'AllOpenRisksByRiskLevel'=>'所有开风险的风险水平',
     'AllOpenRisksConsideredForProjectsByRiskLevel'=>'所有公开的危险考虑对于项目的风险水平',
@@ -214,11 +210,11 @@ $lang = array(
     'AllOpenRisksByScoringMethod'=>'所有公开的风险评分方法',
     'AllClosedRisksByRiskLevel'=>'所有关闭风险的风险水平',
     'SubmittedRisksByDate'=>'提交风险的日期',
-    'MitigationsByDate'=>'缓解的约会',
+    'MitigationsByDate'=>'按日期排列的缓解措施',
     'ManagementReviewsByDate'=>'管理审查的日期',
     'ProjectsAndRisksAssigned'=>'项目和风险的分配',
     'OpenRisks'=>'开放的风险',
-    'ClosedRisks'=>'关闭的危险',
+    'ClosedRisks'=>'已关闭的风险',
     'ReportMyOpenHelp'=>'本报告表明的所有公开的危险，当前用户以所有人或管理人有关的危险命令的风险水平',
     'ReportOpenHelp'=>'本报告表明的所有公开的危险命令的风险水平',
     'ReportProjectsHelp'=>'本报告表明的所有公开的危险考虑的项目下令的风险水平',
@@ -230,13 +226,13 @@ $lang = array(
     'ReportMitigationsByDateHelp'=>'这份报告显示所有的缓解计划的命令受缓解日',
     'ReportMgmtReviewsByDateHelp'=>'本报告表明的所有管理审查，下令审查日期',
     'ReportProjectsAndRisksHelp'=>'本报告表明的所有项目和风险分配给他们的',
-    'Language'=>'的语言',
+    'Language'=>'语言',
     'AllOpenRisksNeedingReview'=>'所有公开的危险需要一个审查',
     'ReportReviewNeededHelp'=>'本报告表明的所有公开的危险需要一个管理审查',
-    'CustomValue'=>'风俗的价值',
+    'CustomValue'=>'自定义值',
     'ClosedRisksByDate'=>'关闭风险的日期',
     'DateClosed'=>'日关闭',
-    'ClosedBy'=>'闭的',
+    'ClosedBy'=>'关闭人',
     'ReportClosedByDateHelp'=>'本报告表明的所有风险下令关闭的日期',
     'AllOpenRisksByTeam'=>'所有开风险的小组',
     'ReportRiskTeamsHelp'=>'这份报告显示所有的小队和风险分配给每个',
@@ -250,7 +246,7 @@ $lang = array(
     'AllRiskScoresAreAdjusted'=>'所有风险的分数进行调整以适用于0至10的规模。',
     'DetermineProjectStatus'=>'确定的项目状况',
     'ProjectStatusHelp'=>'地方项目变成一桶根据目前的状况。',
-    'ActiveProjects'=>'积极的项目',
+    'ActiveProjects'=>'活跃项目',
     'OnHoldProjects'=>'搁置的项目',
     'CompletedProjects'=>'已完成的项目',
     'CancelledProjects'=>'取消的项目',
@@ -263,23 +259,23 @@ $lang = array(
     'RiskScoreUsing'=>'风险评分 使用：',
     'HighRiskReport_ScoreWarning' => '请注意，即使报告使用"{$score_used}"分数，因为"{$next_review_date_uses_name}设置我们正在计算{$management_review_header}"列的值使用{$next_review_date_uses_value}"分数。',
     'UpdateCVSSScore'=>'更新CVSS分',
-    'BaseScoreMetrics'=>'基地分的衡量标准',
+    'BaseScoreMetrics'=>'基础分数指标',
     'AttackVector'=>'攻击向量',
     'AttackComplexity'=>'攻击复杂性',
     'Authentication'=>'认证',
     'ConfidentialityImpact'=>'保密的影响',
     'IntegrityImpact'=>'完整的影响',
-    'AvailabilityImpact'=>'供应的影响',
+    'AvailabilityImpact'=>'可用性影响',
     'TemporalScoreMetrics'=>'时间分的衡量标准',
-    'Exploitability'=>'开采范围',
+    'Exploitability'=>'可利用性',
     'RemediationLevel'=>'补救级',
     'ReportConfidence'=>'报告的建立信任',
     'EnvironmentalScoreMetrics'=>'环境分的衡量标准',
     'CollateralDamagePotential'=>'附带损害的可能',
     'TargetDistribution'=>'目标分配',
     'ConfidentialityRequirement'=>'保密要求',
-    'IntegrityRequirement'=>'完整的要求',
-    'AvailabilityRequirement'=>'是否要求',
+    'IntegrityRequirement'=>'完整性要求',
+    'AvailabilityRequirement'=>'可用性要求',
     'UpdateDREADScore'=>'更新恐怖分',
     'DamagePotential'=>'潜在破坏力',
     'Reproducibility'=>'重现性',
@@ -288,46 +284,46 @@ $lang = array(
     'UpdateOWASPScore'=>'更新OWASP分',
     'ThreatAgentFactors'=>'威胁因素的探员',
     'SkillLevel'=>'技能水平',
-    'Motive'=>'的动机',
+    'Motive'=>'动机',
     'Opportunity'=>'机会',
     'Size'=>'规模',
     'VulnerabilityFactors'=>'脆弱性因素',
     'EaseOfDiscovery'=>'容易的发现',
     'EaseOfExploit'=>'便于利用',
-    'Awareness'=>'提高认识',
+    'Awareness'=>'意识',
     'IntrusionDetection'=>'入侵探测',
     'TechnicalImpact'=>'技术的影响',
     'LossOfConfidentiality'=>'损失的保密',
     'LossOfIntegrity'=>'损失的完整性',
-    'LossOfAvailability'=>'丧失供应',
+    'LossOfAvailability'=>'可用性的丧失',
     'LossOfAccountability'=>'损失的问责制',
     'BusinessImpact'=>'业务影响',
     'FinancialDamage'=>'财务损失',
     'ReputationDamage'=>'声誉损失',
     'NonCompliance'=>'不遵守情事',
     'PrivacyViolation'=>'隐私的侵犯',
-    'UpdateCustomScore'=>'更新的习俗分',
+    'UpdateCustomScore'=>'更新自定义分数',
     'ManuallyEnteredValue'=>'用手工输的价值',
     'ScoreByClassic'=>'分的经典',
     'ScoreByCVSS'=>'分的CVSS',
     'ScoreByDREAD'=>'分的恐惧',
     'ScoreByOWASP'=>'分的OWASP',
     'ScoreByCustom'=>'分的习俗',
-    'BaseVector'=>'基地媒',
-    'TemporalVector'=>'病媒的时空',
-    'EnvironmentalVector'=>'环境媒介',
+    'BaseVector'=>'基本向量',
+    'TemporalVector'=>'时间向量',
+    'EnvironmentalVector'=>'环境向量',
     'SupportingDocumentation'=>'辅助文件',
     'Import'=>'进口',
-    'Export'=>'出口',
+    'Export'=>'导出',
     'ActivateTheImportExportExtra'=>'启动的进口/出口额外',
-    'PrintableView'=>'可打印的认为',
-    'GroupBy'=>'小组由',
-    'IncludedColumns'=>'包括专栏',
+    'PrintableView'=>'可打印的视图',
+    'GroupBy'=>'分组依据',
+    'IncludedColumns'=>'包含的列',
     'AllRisks'=>'所有风险',
-    'DynamicRiskReport'=>'充满活力的风险报告',
+    'DynamicRiskReport'=>'动态风险报告',
     'ObsoleteReports'=>'过时的报告',
     'Project'=>'项目',
-    'SortBy'=>'之类的',
+    'SortBy'=>'排序方式',
     'MonthSubmitted'=>'一个月提交',
     'AssetManagement'=>'资产管理',
     'AutomatedDiscovery'=>'自动发现',
@@ -337,7 +333,7 @@ $lang = array(
     'AllowAccessToAssetManagementMenu'=>'请允许获得"资产的管理"的菜单',
     'AutomatedDiscoveryHelp'=>'发现生活的IP地址在进入IP范围。 生活的IP地址将增加的资产清单。 可以接受的形式：',
     'IPRange'=>'IP范围',
-    'Search'=>'搜查',
+    'Search'=>'搜索',
     'AddANewAsset'=>'增加新的资产',
     'AssetName'=>'资产的名字',
     'IPAddress'=>'IP地址',
@@ -357,8 +353,6 @@ $lang = array(
     'Activate'=>'激活',
     'DeleteRisks'=>'删除的危险',
     'DeletedRisksCannotBeRecovered'=>'删除风险无法收回的',
-    'DeletedAssessmentsCannotBeRecovered'=>'已删除的评估无法恢复',
-    'TheAssessmentsWereDeletedSuccessfully'=>'评估结果已成功删除。',
     'RisksDeletedSuccessfully'=>'风险(s)删除成功',
     'ThereWasAProblemDeletingTheRisk'=>'有一个问题删的风险（s)',
     'Activated'=>'启动了',
@@ -372,7 +366,7 @@ $lang = array(
     'AbleToReviewVeryHighRisks'=>'审查了非常高的风险',
     'AbleToReviewInsignificantRisks'=>'审查了微不足道的风险',
     'AllTeams'=>'所有小队',
-    'FileUploadSettings'=>'文件上传环境',
+    'FileUploadSettings'=>'文件上传设置',
     'AllowedFileTypes'=>'允许的档案的类型',
     'AddNewFileTypeOf'=>'增加新的档案的类型',
     'DeleteCurrentFileTypeOf'=>'删除目前的档案的类型',
@@ -380,55 +374,50 @@ $lang = array(
     'Bytes'=>'字节',
     'CheckAll'=>'检查所有',
     'CheckAllRiskMgmt'=>'检查所有风险管理',
-    'CheckAllAssetMgmt'=>'看看所有的资产管理',
+    'CheckAllAssetMgmt'=>'勾选所有资产管理',
     'CheckAllConfigure'=>'检查所有设置',
     'MitigationTeam'=>'缓减小组',
-    'ImportRisks'=>'进口危险',
-    'ImportAssets'=>'进口的资产',
+    'ImportRisks'=>'导入风险',
+    'ImportAssets'=>'导入资产',
     'AssetValue'=>'资产的价值',
-    'Register'=>'登记册',
-    'RegisterSimpleRisk'=>'登记册SimpleRisk',
+    'Register'=>'注册',
+    'RegisterSimpleRisk'=>'注册 SimpleRisk',
     'RegistrationText'=>'已注册的 SimpleRisk 实例会立即获得升级和安全控制框架 (SCF) Extras 的访问权限。 Upgrade Extra 提供了通过单击按钮来备份和升级您的 SimpleRisk 实例的能力。安全控制框架 (SCF) Extra 提供了一个集成到 SimpleRisk 治理功能中的通用控制框架。注册 SimpleRisk 后，您的注册信息将发送到 SimpleRisk 托管的服务器。所提供的注册信息将由 SimpleRisk 用于通知客户新版本和安全更新。注册 SimpleRisk 的行为将使您选择加入我们的营销通讯，但您可以随时使用这些通讯中的退订链接选择退出。 SimpleRisk 尊重我们客户的隐私，通过 SimpleRisk 注册过程提供给我们的信息绝不会出售给第三方。',
     'RegistrationInformation'=>'登记资料',
     'Company'=>'公司',
-    'JobTitle'=>'工作权',
+    'JobTitle'=>'职称',
     'Phone'=>'电话',
-    'UpgradeSimpleRisk'=>'提高SimpleRisk',
+    'UpgradeSimpleRisk'=>'升级 SimpleRisk',
     'UpgradeInstructions'=>'本节所使用的升级的额外的。 确保你们有没有最新版本的选择"的最新情况"，重新登记和重新装弹页。',
     'NoUpgradeNeeded'=>'没有升级是必要的。',
     'BackupDatabaseButton'=>'备份数据库',
-    'UpgradeApplication'=>'升级的适用',
-    'UpgradeDatabase'=>'更新的数据库',
-    'CustomExtras'=>'习俗的临时演员',
+    'UpgradeApplication'=>'升级应用程序',
+    'UpgradeDatabase'=>'升级数据库',
+    'CustomExtras'=>'自定义扩展',
     'CustomExtrasText'=>'那将是太棒了如果一切都是免费的，对吧？ 希望的核心SimpleRisk纲要》能够成你所有的风险管理的需要。 但如果你发现自己仍有希望得到更多的功能，我们已经制定了一系列的"额外"，将做到这一点。',
     'Upgrade'=>'升级',
     'Install'=>'安装',
     'Purchase'=>'购买',
     'PasswordPolicy'=>'密码政策',
-    'MinimumNumberOfCharacters'=>'最低数量的角色',
-    'RequireAlphaCharacter'=>'需要烷的角色',
-    'RequireUpperCaseCharacter'=>'要求员会第十二届会议的主席总结性',
-    'RequireLowerCaseCharacter'=>'需要较低的案件的性质',
-    'RequireNumericCharacter'=>'需要的数字的角色',
+    'MinimumNumberOfCharacters'=>'最少字符数',
+    'RequireAlphaCharacter'=>'需要字母字符',
+    'RequireUpperCaseCharacter'=>'需要大写字母字符',
+    'RequireLowerCaseCharacter'=>'需要小写字母字符',
+    'RequireNumericCharacter'=>'需要数字字符',
     'RequireSpecialCharacter'=>'需要特别性质',
-    'Enabled'=>'使',
+    'Enabled'=>'已启用',
     'RiskAdvice'=>'风险意见',
     'AddDeleteAssets'=>'增加&删除的资产',
     'EditAssets'=>'编辑的资产',
     'AutomaticAssetValuation'=>'自动的资产的估值',
-    'ManualAssetValuation'=>'手册的资产的估值',
-    'AssetValuationMode'=>'资产估值模式',
-    'AutomaticLinearRange'=>'自动线性范围',
-    'AutomaticExponentialRange'=>'自动指数范围',
-    'ManualValuation'=>'手动的',
-    'AssetValuationMinMustBeNonNegative'=>'对于自动指数范围，资产估值最低值必须为零或大于零。',
+    'ManualAssetValuation'=>'手动资产估值',
     'MinimumValue'=>'最低限度的价值',
     'MaximumValue'=>'最大价值',
     'ValueRange'=>'价值范围',
-    'DefaultAssetValuation'=>'违约的资产的估值',
-    'Default'=>'违约',
+    'DefaultAssetValuation'=>'默认资产估值',
+    'Default'=>'默认',
     'RisksAndAssets'=>'风险和资产',
-    'Report'=>'的报告',
+    'Report'=>'报告',
     'RisksByAsset'=>'风险的资产',
     'AssetsByRisk'=>'资产的风险',
     'MaximumQuantitativeLoss'=>'最大数量的损失',
@@ -438,56 +427,56 @@ $lang = array(
     'MitigationColumns'=>'减轻的专栏',
     'ReviewColumns'=>'审查的专栏',
     'ChangeStatus'=>'改变现状',
-    'SetRiskStatusTo'=>'确定风险的地位',
-    'AddNewStatusNamed'=>'增加新的地位叫',
-    'DeleteStatusNamed' =>'删去地位叫',
-    'DefaultCurrencySymbol'=>'违货币的象征',
-    'DefaultValues'=>'违约后的价值观',
-    'RiskSource'=>'风险资料来源',
+    'SetRiskStatusTo'=>'将风险状态设置为',
+    'AddNewStatusNamed'=>'添加名为...的新状态',
+    'DeleteStatusNamed' =>'删除名为...的状态',
+    'DefaultCurrencySymbol'=>'默认货币符号',
+    'DefaultValues'=>'默认值',
+    'RiskSource'=>'风险来源',
     'AddNewSourceNamed'=>'增加新的资料来源叫',
     'DeleteSourceNamed'=>'删除来源叫',
     'CheckAllAssessments'=>'检查所有的评估',
     'AllowAccessToAssessmentsMenu'=>'允许接触不在"评估"菜单',
     'Assessments'=>'评估',
-    'PendingRisks'=>'等待危险',
+    'PendingRisks'=>'待处理风险',
     'CreateAssessment'=>'建立评估',
     'EditAssessment'=>'编辑的评估',
     'Overview'=>'概览',
     'OpenVsClosed'=>'公开与非公开',
-    'MitigatedVsUnmitigated'=>'减少与不减缓的话',
-    'ReviewedVsUnreviewed'=>'审查诉Unreviewed',
+    'MitigatedVsUnmitigated'=>'已缓解与未缓解',
+    'ReviewedVsUnreviewed'=>'已审查与未审查',
     'OpenedRisks'=>'开放的风险',
-    'MailSettings'=>'邮件环境下',
-    'TransportAgent'=>'运输探员',
+    'MailSettings'=>'邮件设置',
+    'TransportAgent'=>'传输代理',
     'FromName'=>'从名字',
     'FromEmail'=>'从电子邮件',
     'ReplyToName'=>'ReplyTo的名字',
     'ReplyToEmail'=>'ReplyTo电子邮件',
-    'Host'=>'东道国',
+    'Host'=>'主机',
     'SMTPAuthentication'=>'SMTP认证',
-    'Encryption'=>'加密的',
-    'Port'=>'港口',
+    'Encryption'=>'加密',
+    'Port'=>'端口',
     'Next'=>'下',
     'NewAssessmentQuestion'=>'新的评估问题',
-    'Question'=>'的问题',
+    'Question'=>'问题',
     'RiskScore'=>'风险分',
     'SubmitRisk'=>'提交风险',
     'Answer'=>'答案',
     'AddQuestion'=>'增加的问题',
-    'SaveAssessment'=>'拯救的评估',
-    'SendAssessment'=>'派遣的评估',
+    'SaveAssessment'=>'保存评估',
+    'SendAssessment'=>'发送评估',
     'DeleteAssessment'=>'删除的评估',
     'AssessmentName'=>'评估的名字',
-    'SendTo'=>'派对',
+    'SendTo'=>'发送至',
     'ActiveAssessments'=>'积极的评估',
     'SentTo'=>'送到',
     'From'=>'从',
-    'Key'=>'关键',
+    'Key'=>'密钥',
     'GoToSSOLoginPage'=>'转到 SSO 登录页',
     'APIKey'=>'API 密钥',
-    'GenerateAPIKey'=>'生成的 API 密钥',
-    'RotateAPIKey'=>'旋转的 API 密钥',
-    'InvalidateAPIKey'=>'导致对 API 密钥无效',
+    'GenerateAPIKey'=>'生成 API 密钥',
+    'RotateAPIKey'=>'轮换 API 密钥',
+    'InvalidateAPIKey'=>'使 API 密钥失效',
     'Deactivate'=>'停用',
     'ImportExportExtra'=>'导入导出额外',
     'SaveDetails'=>'保存详细信息',
@@ -549,7 +538,7 @@ $lang = array(
     'NoMitigation' => '没有指定的缓解。',
     'NoReview' => '没有指定的审查。',
     'MysqldumpPathWasSavedSuccessfully' => '成功保存了 Mysqldump 路径。',
-    'UnavailableMysqldumpService' => '服务器上没有缴费 \'了 mysqldump\' 服务。请设置绝对了 mysqldump 服务路径。',
+    'UnavailableMysqldumpService' => '服务器上没有可用的 `mysqldump` 服务。请设置 mysqldump 服务的绝对路径。',
     'AllOpenRisksByTeamByLevel' => '所有打开的团队由风险水平风险',
     'Unknown' => '未知',
     'AllOwners' =>'所有所有者',
@@ -567,9 +556,9 @@ $lang = array(
     'NoOwnersManager' => '没有业主经理',
     'RiskAverageOverTime' => '随着时间的推移风险平均',
     'AverageRiskScore' => '平均风险评分',
-    'Year' => '一年',
-    'Month' => '个月',
-    'Day' => '一天',
+    'Year' => '年',
+    'Month' => '月',
+    'Day' => '天',
     'FilterByAffectedAsset' => '受影响的资产按筛选',
     'RisksOpened' => '打开的风险',
     'RisksClosed' => '关闭的风险',
@@ -581,7 +570,7 @@ $lang = array(
     'MitigationPermissionMessage' => '您没有权限制定缓解措施。您尝试提交的任何缓解措施都不会被记录。如果您认为您错误地收到了此消息，请联系管理员。',
     'ResetCustomDisplaySettings' => '重置自定义显示设置',
     'CustomResetSuccessMessage' => '您的自定义显示设置已成功重置',
-    'DefaultRiskScore' => '违约风险评分',
+    'DefaultRiskScore' => '默认风险评分',
     'AdditionalStakeholders' => '其他利益相关者',
     'AllStakeholders' => '所有利益相关者',
     'RiskIdDoesNotExist' => '风险 ID 不存在',
@@ -603,7 +592,6 @@ $lang = array(
     'SpecifiedTime' => '指定时间',
     'Governance' => '治理',
     'Compliance' => '遵守',
-    'CrossDomain' => '跨域',
     'AllowAccessToRiskManagementMenu' => '允许访问 "风险管理" 菜单',
     'CheckAllGovernance' => '检查所有治理',
     'CheckAllCompliance' => '检查所有法规遵从性',
@@ -614,7 +602,7 @@ $lang = array(
     'EditFramework' => '编辑框架',
     'CurrentProjects' => '当前项目',
     'Frameworks' => '框架',
-    'Controls' => '控件',
+    'Controls' => '控制措施',
     'NewControl' => '新控件',
     'EditControl' => '编辑控件',
     'CanceledProjects' => '已取消项目',
@@ -631,8 +619,8 @@ $lang = array(
     'ViewRisk' => '查看风险',
     'FrameworkName' => '框架名称',
     'FrameworkDescription' => '框架描述',
-    'ImportAssessments' => '进口评估',
-    'ExportAssessment' => '出口评估',
+    'ImportAssessments' => '导入评估',
+    'ExportAssessment' => '导出评估',
     'AssessmentSuccessImport' => '成功导入评估',
     'AssessmentFileRequired' => '评估 CSV 文件是必需的',
     'FrameworkUpdated' => '已成功更新框架。',
@@ -653,8 +641,8 @@ $lang = array(
     'SupplementalGuidance' => '补充指南',
     'ControlFramework' => '控制框架',
     'ControlFrameworks' => '控制框架',
-    'ControlOwner' => '控件所有者',
-    'ControlClass' => '控件类',
+    'ControlOwner' => '控制所有者',
+    'ControlClass' => '控制类',
     'ControlPhase' => '控制阶段',
     'ControlPriority' => '控制优先级',
     'ControlFamily' => '控制系列',
@@ -662,8 +650,8 @@ $lang = array(
     'NewControlName' => '新控件名称',
     'NewControlDescription' => '新控件说明',
     'AreYouSureYouWantToDeleteThisControl' => '确实要删除此控件吗？',
-    'AddNewControlClassNamed' => '添加名为',
-    'DeleteCurrentControlClassNamed' => '删除名为',
+    'AddNewControlClassNamed' => '添加名为的新控件类',
+    'DeleteCurrentControlClassNamed' => '删除名为的当前控件类',
     'AddNewControlPhaseNamed' => '添加新的控件阶段名为',
     'DeleteCurrentControlPhaseNamed' => '删除指定的当前控件阶段',
     'AddNewControlPriorityNamed' => '添加新控件优先级命名',
@@ -695,7 +683,7 @@ $lang = array(
     'AssessmentContactUpdated' => '评估联系人已更新',
     'InvalidInformations' => '无效信息',
     'AreYouSureYouWantToDeleteThisContact' => '是否确实要删除此联系人？',
-    'ImportAssessmentContacts' => '进口评估联系人',
+    'ImportAssessmentContacts' => '导入评估联系人',
     'ImportCsvXlsFile' => '将以下 CSV 或 XLS 文件导入 SimpleRisk',
     'AssessmentContactsImported' => '导入的评估联系人',
     'DefineTests' => '定义测试',
@@ -708,7 +696,7 @@ $lang = array(
     'NextTestDate' => '下一个测试日期',
     'ApproximateTime' => '近似时间',
     'ExpectedResults' => '预期结果',
-    'ControlID' => '控件 ID',
+    'ControlID' => '控制 ID',
     'TestSuccessCreated' => '已成功创建测试。',
     'TestSuccessUpdated' => '测试已成功更新。',
     'QuestionnaireQuestions' => '问卷问题',
@@ -719,7 +707,7 @@ $lang = array(
     'InvalidQuestionOrAnswers' => '无效的问题或答案。',
     'SuccessTestDeleted'=>'测试已成功删除',
     'AreYouSureYouWantToDeleteThisTest'=>'确实要删除此测试吗？',
-    'ImportAssessmentQuestionnaireQuestions'=>'进口评估问卷问题',
+    'ImportAssessmentQuestionnaireQuestions'=>'导入评估问卷问题',
     'QuestionAndAnswersRquired'=>'问题和答案都是必需的。',
     'AssessmentQuestionnaireQuestionsAndAnwersImported'=>'成功导入评估问卷问题和答案。',
     'QuestionnaireTemplates'=>'调查表模板',
@@ -738,7 +726,7 @@ $lang = array(
     'Control'=>'控制',
     'Test'=>'测试',
     'Active'=>'活动',
-    'Inactive'=>'活动',
+    'Inactive'=>'不活动',
     'InitiateFrameworkAudit'=>'启动框架审核',
     'InitiateControlAudit'=>'启动控制审核',
     'InitiateTest'=>'启动测试',
@@ -768,7 +756,7 @@ $lang = array(
     'Draft'=>'草案',
     'Complete'=>'完成',
     'AdditionalInformation'=>'其他信息',
-    'Clear'=>'明确',
+    'Clear'=>'清除',
     'PendingEvidenceFromControlOwner'=>'来自控制所有者的未决证据',
     'EvidenceSubmittedPendingReview'=>'提交的证据/待定审查',
     'PassedInternalQA'=>'通过内部 QA',
@@ -779,7 +767,6 @@ $lang = array(
     'TestDate'=>'测试日期',
     'Attachment'=>'附件',
     'InvalidParams'=>'参数无效',
-    'ClearForm'=>'清除表单',
     'QuestionnaireDraftSuccess'=>'您的答案已成功保存。',
     'QuestionnaireCompletedSuccess'=>'您已成功完成此调查表。',
     'EmailTemplateCompleteQuestionnaire' => '
@@ -792,7 +779,7 @@ $lang = array(
     'DateSent'=>'发送日期',
     'Contact'=>'联系',
     'PercentCompleted'=>'完成百分比',
-    'Incomplete'=>'不',
+    'Incomplete'=>'不完整',
     'Completed'=>'完成',
     'QuestionnaireName'=>'调查表名称',
     'QuestionnaireHasNoContacts'=>'此调查表没有联系人, 因此无法发送。',
@@ -808,7 +795,7 @@ $lang = array(
     'ResidualRisk'=>'剩余风险',
     'PastAudits'=>'过去审计',
     'AuditDate'=>'审核日期',
-    'Reopen'=>'重新',
+    'Reopen'=>'重新打开',
     'CreatedDate'=>'创建日期',
     'QuestionnaireAuditTrail'=>'调查表审核跟踪',
     'SelectYourControlFrameworks'=>'选择您的控制框架',
@@ -822,7 +809,6 @@ $lang = array(
     'HasFile' => '有文件',
     'ClosedAuditStatus' => '关闭的审核状态',
     'ClosedAuditStatusIsRequired' => '需要关闭审核状态',
-    'Preferences' => '偏好',
     'DefaultLanguage' => '默认语言',
     'DefaultTimezone' => '默认时区',
     'UserSessions' => '用户会话',
@@ -852,8 +838,6 @@ $lang = array(
     'NotifyOwnersManager' => '通知所有者经理',
     'NotifyTeam' => '通知团队',
     'NotifyAdditionalStakeholders' => '通知其他利益干系人',
-    'SpecificUser' => '特定用户',
-    'SpecificUsers' => '特定用户',
     'NotifyReviewers' => '通知审阅者',
     'NotifyTester' => '通知测试人员',
     'SimpleRiskURL' => 'SimpleRisk 网址',
@@ -867,7 +851,7 @@ $lang = array(
     'DaysAfterTheAuditIsDue' => '审核到期后的天数',
     'SendAnEmailWhenTheAuditIsDue' => '当审核到期时发送电子邮件',
     'PendingRiskDeleted' => '已成功删除挂起的风险',
-    'RunAt' => '跑在',
+    'RunAt' => '执行于',
     'ImportControls' => '导入控件',
     'RiskIDNoEXitFailedToUpdate' => '风险 ID $risk_id 不存在, 因此它尚未导入或更新',
     'CreatedRisksFromPendingRisks' => '从未决风险中创建了所有风险。',
@@ -877,14 +861,13 @@ $lang = array(
     'QuestionnaireTemplateName' => '调查表模板名称',
     'Ordering' => '订购',
     'AuditsDueToday' => '今天到期的审计',
-    'AuditsPastDue' => '审核通过到期',
+    'AuditsPastDue' => '逾期审计',
     'AuditsDueSoon' => '即将到期的审计',
     'DateDue' => '到期日期',
     'ShowAllRisksForPlanProjects' => '显示计划项目的所有风险, 而不是仅查看 "考虑项目"',
     'Edit' => '编辑',
     'Clone' => '克隆',
     'SubQuestions' => '子问题',
-    'Ordering' => '订购',
     'EncryptionKeyNoExist' => '加密密钥文件不存在。请与管理员联系。',
     'ResidualRiskScore' => '剩余风险评分',
     'DefaultInitiatedAuditStatus' => '默认启动的审核状态',
@@ -901,7 +884,7 @@ $lang = array(
     'TemplatesAreRequired' => '必须定义模板',
     'AssetRisk' => '资产风险',
     'DefaultDateFormat' => '默认日期格式',
-    'Role' => '作用',
+    'Role' => '角色',
     'RoleManagement' => '角色管理',
     'AddNewRole' => '添加新角色',
     'RoleName' => '角色名称',
@@ -910,12 +893,12 @@ $lang = array(
     'GoToSSOLogin' => '在主登录页上显示 "转到 SSO 登录页" 链接',
     'SSOLoginDisabled' => '已禁用 SSO 登录, 因此不能使用此身份验证。',
     'QuestionID' => '问题 ID',
-    'QuestionOrdering' => '问题订购',
+    'QuestionOrdering' => '问题排序',
     'DefaultUserRole' => '默认用户角色',
     'AbleToAcceptMitigations' => '能够接受缓解',
     'AcceptMitigation' => '接受缓解',
     'RejectMitigation' => '拒绝缓解',
-    'MitigationAcceptedByUserOnTime' => 'Mitigation accepted by {$name} on {$date} at {$time}',
+    'MitigationAcceptedByUserOnTime' => '{$name} 于 {$date} {$time} 接受了缓解措施',
     'TestMailSettings' => '测试邮件设置',
     'OptionName' => '选项名称',
     'OptionNameNotEmpty' => '自定义选项的名称不能为空。',
@@ -925,7 +908,7 @@ $lang = array(
     'SelectOptionsToDelete' => '请选择要删除的选项。',
     'CustomFieldDeletedSuccess' => '已成功删除自定义字段。',
     'CustomFieldDeletedFailed' => '无法删除自定义字段。',
-    'RiskSubmitSuccess' => '风险{$subject}"已成功提交。',
+    'RiskSubmitSuccess' => '风险"{$subject}"已成功提交。',
     'Accepting' => '接受。。。',
     'Rejecting' => '拒绝。。。',
     'CustomizationExtra' => '自定义额外',
@@ -968,7 +951,7 @@ $lang = array(
     'FailAddingLikelihood' => '未能添加可能性',
     'FailDeletingLikelihood' => '未能删除可能性',
     'SubjectRequired' => '主题是必需的。请选择该字段。',
-    'Spreadsheet' => '电子 表格',
+    'Spreadsheet' => '电子表格',
     'SuccessUpdatingImpactName' => '影响名称已成功更新。',
     'FailUpdatingImpactName' => '未能更新影响名称。',
     'SuccessUpdatingLikelihoodName' => '成功更新了可能性名称。',
@@ -1017,14 +1000,12 @@ $lang = array(
     'MitigationsNotificationEmailTitle' => '您正在收到此邮件, 因为您是提交人、所有者、所有者的经理, 属于该团队, 或者是与以下风险相关的附加利益干系人。 您将继续接收电子邮件提醒, 直到风险已关闭或缓解日期已更新。',
     'RisksAndControls'=>'风险和控制',
     'ControlsByRisk' =>'按风险控制',
-    'RisksByControl' =>'风险控制',
+    'RisksByControl' =>'按控制分类的风险',
     'ViewControlDetails' => '查看控件详细信息',
     'HideControlDetails' => '隐藏控件详细信息',
     'YouNeedToUpgradeYourSimpleRiskSubscription' => '您需要升级您的 SimpleRisk 订阅, 以启用此额外的使用。',
     'AutomaticallyAddNewlyAuthenticatedUsersWithDefaultRole' => '自动添加具有默认角色的新身份验证的用户',
     'Disabled' => '禁用',
-    'Help' => '帮助',
-    'Profile' => '轮廓',
     'AbleToCommentRiskManagement' => '能够评论风险管理',
     'AbleToCommentCompliance' => '能够对法规遵从性进行评论',
     'LanguageUpdated' => '您的语言已成功更新。',
@@ -1039,15 +1020,15 @@ $lang = array(
     'IPFormatNotRecognized' => 'IP 不是以可识别的格式。',
     'Open' => '打开',
     'Mitigated' => '减轻',
-    'Unmitigated' => '不折不扣',
-    'Reviewed' => '检讨',
-    'Unreviewed' => '一同',
+    'Unmitigated' => '未缓解',
+    'Reviewed' => '已审查',
+    'Unreviewed' => '未审查',
     'NewRiskInstruction' => '完成上面的表格, 以记录风险管理过程中考虑的风险',
-    'New' => '新增功能',
+    'New' => '新',
     'ManagementReviewed' => '管理审阅',
     'Reopened' => '重新',
-    'Treated' => '治疗',
-    'Untreated' => '治疗',
+    'Treated' => '已处理',
+    'Untreated' => '未处理',
     'passwords' => [
         'user' => '未知用户'
     ],
@@ -1067,13 +1048,12 @@ $lang = array(
     'FailedToUploadFile' => '未能上载文件',
     'NewPasswordDoesNotMatchPolicy' => '指定的新密码不遵守配置的密码策略。',
     'RiskLevels' => '风险级别',
-    'Scoring' => '得分',
     'ClassicRiskFormula' => '经典风险公式',
     'ContributingRiskFormula' => '贡献风险公式',
     'ImpactHasMaxChars' => '影响应具有最大值 $length 字符。',
     'LikelihoodHasMaxChars' => '可能性应该有 max $length 字符。',
     'MapTeamAndGroup' => '地图团队和组',
-    'ContributionWeight' => '贡献重量',
+    'ContributionWeight' => '贡献权重',
     'TotalContributingWeightsShouldBe1' => '贡献权重总额应等于1。',
     'SuccessSaveContributingRisks' => '成功地挽救了造成的风险。',
     'ScoreUsingContributingRisk' => '利用贡献风险打分',
@@ -1090,7 +1070,7 @@ $lang = array(
     'ContributingRiskScoring' => '贡献风险评分',
     'UpdateContributingRiskScore' => '更新贡献风险得分',
     'MaxImpact' => '最大影响',
-    'MaxLikelihood' => '最大似然',
+    'MaxLikelihood' => '最大可能性',
     'ExtraName' => '额外名称',
     'McryptIsBeingRetired' => 'mcrypt 扩展已弃用, 将在 php 7.2 中删除。 选择下面的按钮, 改为转换为使用 opensl。',
     'Convert' => '转换',
@@ -1098,13 +1078,11 @@ $lang = array(
     'MapSuccessTeamAndGroup' => '成功映射团队和 ldap 组。',
     'MappingTeamAndLDAPGroupRequired' => '需要团队和 ldap 组进行映射。',
     'ExistingMappings' => '现有映射',
-    'TeamGroup' => '(团队<-->组)</-->',
+    'TeamGroup' => '(团队 <--> 组)',
     'ExistingMappingsRequired' => '应选择现有映射。',
-    'EncryptionBackupFileExists' => '作为加密过程的一部分, 已创建了简单风险数据库的未加密备份副本。 一旦您验证了所有内容都已正确加密, 请将其移动到安全位置或单击按钮将其删除。',
-    'BackupLocation' => '备份位置',
     'FileDeletedSuccessfully' => '该文件已成功删除。',
     'ErrorDeletingFile' => '删除该文件时出错。 请检查文件权限, 然后重试。',
-    'MapToLDAPGroup' => '地图到 ldap 集团',
+    'MapToLDAPGroup' => '映射到 LDAP 组',
     'SelectMappingTeam' => '请选择团队进行映射',
     'UploadingFileTypeNoSupport' => '上传文件的文件类型 ("{$file_type}") 不受支持。',
     'UploadingFileTooBig' => '上传的文件太大。',
@@ -1120,7 +1098,7 @@ $lang = array(
     'ViewTest' => '查看测试',
     'NotifyAuditStatusChangeSubject' => '测试状态已更改',
     'NotifyAuditStatusChangeStatement' => '审核测试 (id) #{$test_audit_id}) 状态已更改 {$name}. 您收到此消息是因为您被列为测试人员或与测试关联的团队的一部分。',
-    'OldValue' => '旧价值',
+    'OldValue' => '旧值',
     'NewValue' => '新值',
     'Actions' => '行动',
     'Templates' => '模板',
@@ -1147,15 +1125,14 @@ $lang = array(
     'FileIsTooBigToUpload' => '该文件太大, 无法上传。',
     'AssetWasUpdatedSuccessfully' => '资产已成功更新。',
     'ThereWasAProblemUpdatingTheAsset' => '更新资产时出现问题。',
-    'ImportAssetAddSucceeded' => '增加了 "{$verified_or_unverified}"名为资产"{$asset_name}"与 ip"{$asset_ip}"物超所值"{$asset_value}".',
+    'ImportAssetAddSucceeded' => '已添加 "{$verified_or_unverified}" 资产，名称为 "{$asset_name}"，IP 为 "{$asset_ip}"，值为 "{$asset_value}"。',
     'ImportAssetAddFailed' => '无法添加"{$verified_or_unverified}"名为"的资产"{$asset_name}" 与 IP "{$asset_ip}"和值"{$asset_value}".',
     'NoOperationRequiredOnAsset' => '不需要对命名为 "的资产进行操作{$asset_name}"因为它已经在数据库中了"',
-    'ImportAssetUpdateSucceeded' => '已更新 "{$verified_or_unverified}"名为资产"{$asset_name}"与 ip"{$asset_ip}"物超所值"{$asset_value}".',
-    'ImportAssetUpdateFailed' => '更新失败 "{$verified_or_unverified}"名为资产"{$asset_name}"与 ip"{$asset_ip}"物超所值"{$asset_value}".',
+    'ImportAssetUpdateSucceeded' => '已更新 "{$verified_or_unverified}" 资产，名称为 "{$asset_name}"，IP 为 "{$asset_ip}"，值为 "{$asset_value}"。',
+    'ImportAssetUpdateFailed' => '更新失败 "{$verified_or_unverified}" 资产，名称为 "{$asset_name}"，IP 为 "{$asset_ip}"，值为 "{$asset_value}"。',
     'Unverified' => '未经验证',
-    'ExportAssets' => '出口资产',
+    'ExportAssets' => '导出资产',
     'ExportToCSVByClickingBelow' => '通过单击下面的导出到 csv 文件',
-    'RevertToUnencryptedBackup' => '恢复到未加密的备份',
     'SuccessfullyRevertedToUnencryptedBackup' => '已成功还原到未加密的备份',
     'FailedToRevertToUnencryptedBackup' => '无法还原到未加密的备份。有关详细信息, 请检查服务器日志。',
     'AddNewItemNamed' => '添加名为',
@@ -1172,10 +1149,10 @@ $lang = array(
     'CantDeleteTeamItsInUseByARisk' => '无法删除此团队, 因为当前存在正在使用它的风险。',
     'UpgradeCustomExtras' => '升级自定义附加功能',
     'DocumentUpdated'=>'新文档已成功更新。',
-    'VerifyOrDiscard' => '瑞菲/放弃',
+    'VerifyOrDiscard' => '验证/放弃',
     'RegisterAndUpgrade' => '注册和升级',
     'ImportExport' => '进出口',
-    'Dropdown' => '拉',
+    'Dropdown' => '下拉列表',
     'MultiDropdown' => '多下拉式',
     'UserMultiDropdown' => '用户多下拉菜单',
     'ShortText' => '短文本',
@@ -1185,16 +1162,16 @@ $lang = array(
     'PathToPhpExecutable' => '<PATH_TO_YOUR_PHP_EXECUTABLE>',
     'ConfirmDeleteCustomField' => '确实要删除此自定义字段吗？',
     'Integrations' => '集成',
-    'FieldGroup' => '现场小组',
+    'FieldGroup' => '字段组',
     'Asset' => '资产',
-    'FailedToRegisterInstance' => '注册您的简单风险实例失败。请联系 support@simplerisk.com 寻求帮助。',
-    'FailedToUpdateInstance' => '未能更新您的简单风险注册。请联系 support@simplerisk.com 寻求帮助。',
+    'FailedToRegisterInstance' => '注册您的 SimpleRisk 实例失败。请联系 support@simplerisk.com 寻求帮助。',
+    'FailedToUpdateInstance' => '未能更新您的 SimpleRisk 注册。请联系 support@simplerisk.com 寻求帮助。',
     'FailedToDownloadExtra' => '未能下载所需的额外内容。请联系 support@simplerisk.com 寻求帮助。',
     'RequestedExtraIsNotPurchased' => '所要求的额外费用尚未购买。请联系 support@simplerisk.com 寻求帮助。',
     'RequestedExtraDoesNotExist' => '请求的额外项不存在。请联系 support@simplerisk.com 寻求帮助。',
-    'InstanceWasRegisteredWithDifferentIp' => '您的简单风险实例已注册为不同的 ip 地址。请联系 support@simplerisk.com 寻求帮助。',
-    'InstanceIsDisabled' => '您的简单风险实例已禁用。请联系 support@simplerisk.com 寻求帮助。',
-    'InvalidInstanceIdOrKey' => '您的简单风险实例或密钥无效。请联系 support@simplerisk.com 寻求帮助。',
+    'InstanceWasRegisteredWithDifferentIp' => '您的 SimpleRisk 实例已使用不同的 IP 地址注册。请联系 support@simplerisk.com 寻求帮助。',
+    'InstanceIsDisabled' => '您的 SimpleRisk 实例已被禁用。请联系 support@simplerisk.com 寻求帮助。',
+    'InvalidInstanceIdOrKey' => '您的 SimpleRisk 实例或密钥无效。请联系 support@simplerisk.com 寻求帮助。',
     'ExtraInstalledSuccessfully' => '额外安装成功。',
     'ImportVulnerabilities' => '导入漏洞',
     'ExtraIsAlreadyEnabled' => '额外已启用。',
@@ -1212,15 +1189,15 @@ $lang = array(
     'NextReviewMassUpdateSuccess' => '已成功更新 {$mass_fixed} 审核日期',
     'NextReviewTypeUpdateSuccess' => '已成功修复所有审核日期问题!',
     'NextReviewTypeUpdateFailed' => '审阅日期是固定的, 但未能将 "下一次审阅" 列更改为日期类型!',
-    'SimpleriskBaseUrl' => '简单风险基础 url',
+    'SimpleriskBaseUrl' => 'SimpleRisk 基础 URL',
     'PassworResetEmailSent' => '如果系统中存在该用户, 则密码重置电子邮件应在其途中。',
     'PassworResetRequestFailed' => '您的密码重置请求有问题。请再试一次。',
     'PassworResetSuccessfulRedirectIn5Secs' => '您的密码已成功重置。您将在5秒内被重定向到登录页面。',
     'AlertTimeout' => '警报超时',
     'TimeoutXSeconds' => '{$timeout} 秒',
-    'StayUntilClicked' => '一直保留至点击次数',
+    'StayUntilClicked' => '一直保留至点击',
     'Pass' => '通过',
-    'Inconclusive' => '定论',
+    'Inconclusive' => '无定论',
     'Fail' => '失败',
     'Tags' => '标签',
     'NoTagAssigned' => '尚未分配标记',
@@ -1231,7 +1208,7 @@ $lang = array(
     'TagType_risk' => '风险',
     'TagType_asset' => '资产',
     'YouNeedToSpecifyATypeParameter' => '您需要指定类型参数。',
-    'Prepend' => '准备工作',
+    'Prepend' => '前置',
     'InvalidLastTestDate' => '上次测试日期无效!要么是畸形的, 要么是未来的。',
     'InvalidNextTestDate' => '下一个测试日期无效!要么是畸形的, 要么是过去的。',
     'InvalidTestFrequency' => '测试频率必须是正值!',
@@ -1239,7 +1216,7 @@ $lang = array(
     'InvalidNextTestDateLastTestDateOrder' => '下一个测试日期不能在最后一次测试日期之前!',
     'HowToVideos' => '操作方法视频',
     'FAQs' => '常见问题 解答',
-    'WhatsNew' => '什么是新功能',
+    'WhatsNew' => '最新动态',
     'Roadmap' => '路线 图',
     'CommentRiskRequired' => '您的评论不会添加到风险中。请填写注释字段。',
     'NoCommentRiskPermission' => '您没有向风险添加注释的权限。',
@@ -1251,11 +1228,11 @@ $lang = array(
     'RiskLevelNonNumericValueParameter' => '输入的值是非数值。',
     'RiskLevelTooLongValueParameter' => '输入的值太长。',
     'RiskLevelInvalidColorParameter' => '无效颜色',
-    'RiskLevelAuditLog' => '的 "。{$field}"风险水平"{$name}"已从"{$originalValue}"到"{$value}"按用户"{$user}".',
+    'RiskLevelAuditLog' => '风险级别 "{$name}" 的 "{$field}" 已由用户 "{$user}" 从 "{$originalValue}" 修改为 "{$value}"。',
     'RiskLevelSuccessfullyUpdated' => '配置已成功更新。',
     'RiskLevelInvalidValueOrder' => '您的低风险需要低于您的中度风险, 而您的高风险必须低于您的超高风险。',
     'ShowMore' => '显示更多..。',
-    'ShowXMore' => '显示 {$x} 更。。。',
+    'ShowXMore' => '显示 {$x} 更多...',
     'ShowLess' => '显示更少..。',
     'RiskAppetite' => '风险偏好',
     'FailedToCleanupExtraFiles' => '无法清理剩余的额外文件, 从而阻止安装更新继续进行',
@@ -1270,7 +1247,7 @@ $lang = array(
     'ExceptionOwner' => '异常所有者',
     'Approver' => '审批者',
     'ApprovalDate' => '批准日期',
-    'ReviewFrequency' => '查看频率',
+    'ReviewFrequency' => '审查频率',
     'Justification' => '理由',
     'AreYouSureYouWantToDeleteThisException' => '确实要删除此异常吗？',
     'YouNeedToSpecifyTheOwnerParameter' => '您需要指定所有者参数。',
@@ -1286,15 +1263,14 @@ $lang = array(
     'ThereWasAProblemUpdatingTheException' => '更新文档异常时出现问题。',
     'ExceptionWasDeletedSuccessfully' => '已成功删除文档异常。',
     'ExceptionWasApprovedSuccessfully' => '已成功批准文档异常。',
-    'PolicyExceptionName' => '异常名称',
-    'ControlExceptionName' => '异常名称',
-    'UnapprovedExceptionName' => '异常名称',
-    'Ok' => '还行',
+    'PolicyExceptionName' => '策略/异常名称',
+    'ControlExceptionName' => '控制/异常名称',
+    'UnapprovedExceptionName' => '策略/控制/异常名称',
+    'Ok' => '确定',
     'Close' => '关闭',
     'Approve' => '批准',
     'ExceptionType' => '异常类型',
     'PolicyName' => '策略名称',
-    'ControlName' => '控件名称',
     'AreYouSureYouWantToDeleteTheseExceptions' => '确实要删除这些异常吗？',
     'ExceptionsWereDeletedSuccessfully_policy' => '策略的异常已成功删除。',
     'ExceptionsWereDeletedSuccessfully_control' => '已成功删除控件的异常。',
@@ -1321,7 +1297,6 @@ $lang = array(
     'AssetsWereVerifiedSuccessfully'=>'已成功验证资产。',
     'ThereWasAProblemVerifyingTheAssets'=>'在核实资产时出现问题。',
     'ThereWasAProblemWithAddingTheProject' => '添加项目时出现了问题',
-    'ProjectName' => '项目名称',
     'SuccessSetProject' => '已成功为项目增加风险。',
     'SuccessCreateProject' => '已成功创建新项目。',
     'ReviewProjectSelectionInstructions' => '选择一个项目或键入一个新项目的名称。',
@@ -1336,10 +1311,10 @@ $lang = array(
     'RemoveUserFromTeamsAuditLog' => '用户 "{$user_name}"被从团队中删除"{$team_names}"按用户"{$username}".',
     'LogType' => '日志类型',
     'Message' => '消息',
-    'YouCantDownloadBecauseImportExportExtraDisabled' => '您无法下载, 因为 "导入" 额外内容已禁用。',
+    'YouCantDownloadBecauseImportExportExtraDisabled' => '您无法下载，因为导入/导出扩展功能已禁用。',
     'AuditTrailReport' => '审计跟踪报告',
     'QuestionnaireAuditTrailReport' => '问卷审核跟踪报告',
-    'ExeptionAuditTrailReport' => '排外审核跟踪报告',
+    'ExeptionAuditTrailReport' => '例外审核跟踪报告',
     'ManageAssetGroups' => '管理资产组',
     'AssetGroups' => '资产组',
     'AssetGroupName' => '资产组名称',
@@ -1370,20 +1345,19 @@ $lang = array(
     'UpdateAssetGroupTooltip' => '更新资产组',
     'DeleteAssetGroupTooltip' => '删除资产组',
     'RemoveAssetTooltip' => '从资产组中删除资产',
-    'ControlShortNameFieldRequired' => '"控制短名称" 字段是必需的。',
     'AffectedAssetsWidgetPlaceholder' => '选择资产或资产组',
     'AffectedAssetsWidgetNoDropdownPlaceholder' => '添加资产名称',
     'AffectedAssetsWidgetInstructions' => '选择资产或资产组。您可以通过将新资产的名称添加到列表中来创建新的资产。',
     'ImportAssetGroups' => '导入资产组',
     'ExportAssetGroups' => '导出资产组',
     'Assets' => '资产',
-    'ImportAssetGroupAddSucceeded' => '已添加名为"的资产组"{$asset_group_name}".',
-    'ImportAssetGroupAddFailed' => '无法添加名为"的资产组"{$asset_group_name}".',
-    'ImportAssetGroupAddNameTaken' => '无法添加名为"的资产组"{$asset_group_name}" 因为名称已在使用中。',
-    'ImportAssetGroupNoop' => '对名为"的资产组"无需操作{$asset_group_name}",因为它已经在数据库中。',
+    'ImportAssetGroupAddSucceeded' => '已添加名为"{$asset_group_name}"的资产组。',
+    'ImportAssetGroupAddFailed' => '无法添加名为"{$asset_group_name}"的资产组。',
+    'ImportAssetGroupAddNameTaken' => '无法添加名为"{$asset_group_name}"的资产组，因为名称已在使用中。',
+    'ImportAssetGroupNoop' => '名为"{$asset_group_name}"的资产组无需操作，因为它已经在数据库中。',
     'ImportAssetGroupUpdateSucceeded' => '已更新的资产组名为"{$asset_group_name}".',
-    'ImportAssetGroupUpdateFailed' => '无法更新名为"的资产组"{$asset_group_name}".',
-    'ImportAssetGroupUpdateNameTaken' => '无法更新名为"的资产组"{$asset_group_name}" 因为名称已在使用中。',
+    'ImportAssetGroupUpdateFailed' => '无法更新名为"{$asset_group_name}"的资产组。',
+    'ImportAssetGroupUpdateNameTaken' => '无法更新名为"{$asset_group_name}"的资产组，因为名称已在使用中。',
     'GroupMaximumQuantitativeLoss' => '集团最大定量损失',
     'AssetGroupRisk' => '资产集团风险',
     'NonMitigationNotificationEamilDescription' => '您收到此消息是因为您是提交者、所有者、所有者的经理、属于团队,或者是与以下风险相关联的其他利益干系人,而无法缓解。 在计划缓解之前,您将继续收到电子邮件提醒。',
@@ -1393,7 +1367,7 @@ $lang = array(
     'NoPermissionForClosingRisks'=>'您没有关闭风险的权限。',
     'QuestionnaireHasNoTemplates' => '无法发送此调查表,因为它没有任何关联的模板',
     'TestAuditWasDeletedSuccessfully' => '已成功删除测试审核。',
-    'TestAuditDeleteAuditTrailMessage' => '测试审核(ID) {$test_audit_id}) 被用户删除"{$user}".',
+    'TestAuditDeleteAuditTrailMessage' => '测试审核(ID {$test_audit_id}) 被用户删除"{$user}".',
     'CacheClearWarning' => '通常,新的 SimpleRisk 版本会为可能由 Web 浏览器缓存的样式表、图像和 javascript 提供更新。 请清除浏览器缓存,以确保 SimpleRisk 在升级后看起来应该如此。',
     'TestAddHeader' => '添加新测试',
     'TestEditHeader' => '更新测试',
@@ -1440,7 +1414,7 @@ $lang = array(
     'NoSearchResults' => '未找到查询的结果。',
     'FitlerForGroup' => '组筛选器',
     'ErrorInSearchQuery' => '搜索查询中的错误',
-    'ManagerAttribute' => '管理器属性',
+    'ManagerAttribute' => '管理者属性',
     'AutomaticallyAddNewUserForManagerIfTheyNoExist' => '如果经理不存在，则自动添加新用户帐户',
     'UPGRADECOMPLETED' => '升级完成',
     'NotifyPolicyOwner' => '通知策略所有者',
@@ -1491,26 +1465,23 @@ $lang = array(
     'BackupStart' => '备份已启动。',
     'BackupFailed' => '备份失败。请与管理员联系。',
     'BackupSuccessful' => '备份成功。将备份应用程序、数据库和所有已安装的附加设备。',
+    'BackupLocation' => '备份位置',
     'BackupCheckingPreRequisites' => '检查权限，设置目录。',
     'BackupCheckingPreRequisitesDone' => '权限检查通过，所需目录已成功创建。',
     'BackupApplicationFiles' => '应用程序文件备份已启动。',
     'BackupApplicationFilesDone' => '已成功备份应用程序文件',
     'BackupDatabase' => '数据库备份已启动。',
     'BackupDatabaseDone' => '数据库已成功备份。',
-    'BackupDatabaseFailed' => '数据库备份失败。请查看 SimpleRisk 日志了解详情。',
-    'WindowsNotSupported' => '自版本 20260421-001 起，SimpleRisk 已不再支持 Windows 系统。请迁移到基于 Linux 的服务器。',
-    'WindowsUpgradeHalted' => '此操作无法在 Windows 服务器上运行。自 20260421-001 版本起，SimpleRisk 已不再支持 Windows 系统。请迁移到基于 Linux 的服务器。',
     'BackupDirectoryNotWriteable' => '"{$location}"目录不能由 Web 用户写入。',
     'BackupFailedToCreateDirectories' => '无法在 " 中创建所需的目录结构"{$location}".',
     'AreYouSureYouWantToDeleteSelction' => '您确实要删除所选内容吗？',
     'FieldIsRequired' => '[XXX] 字段为必填字段',
     'NoPermissionForAssessments' => '您没有评估权限。',
-    'MissingOrInvalidTrackingID' => '缺少或无效的跟踪 ID。',
     'Encrypted' => '加密',
     'AreYouSureYouWantToApproveThisResult' => '是否确实要批准此结果？',
     'AreYouSureYouWantToRejectThisResult' => '是否确实要拒绝此结果？',
     'Reject' => '拒绝',
-    'RejectComment' => '拒绝注释（可选）',
+    'RejectComment' => '拒绝评论（可选）',
     'QuestionnaireResultApprovedMessage' => '审核和批准者 {$user} 上 {$timestamp}.',
     'QuestionnaireResultApprovedSuccessfully' => '已成功批准调查表结果。',
     'QuestionnaireResultRejectedSuccessfully' => '调查表结果已成功拒绝。通知电子邮件将发送给联系人。',
@@ -1526,7 +1497,7 @@ $lang = array(
     'QuestionnaireResultRejectedAuditLog' => '问卷"{$questionnaire_name}结果被拒绝并发送回联系人"{$contact_name}" 供用户重新评估"{$user_name}"评论"{$reject_comment}".',
     'PrePopulateWithAnswersFromLastAssessment' => '预填充上次评估的答案？',
     'QuestionnaireResultCommentAuditLog' => '用户"{$user_name}"为调查表添加了注释"{$questionnaire_name}" （发送联系"{$contact_name}"上"{$date}"） 结果。',
-    'QuestionnaireSentAuditLog' => '问卷"{$questionnaire_name}"被发送到联系人"{$contact_name}"按用户""{$user_name}".',
+    'QuestionnaireSentAuditLog' => '问卷"{$questionnaire_name}"被发送到联系人"{$contact_name}"，由用户"{$user_name}"发送。',
     'PendingRiskCreationAuditLog' => '问卷"{$questionnaire_name}完成导致创建挂起的风险{$subject}".',
     'PendingRiskAddAuditLog' => '待定风险"{$subject}"问卷"{$questionnaire_name}"（发送给联系人"{$contact_name}" 上 "{$date}"） 被添加为风险（ID： {$risk_id}） 按用户"{$user_name}".',
     'PendingRiskDeleteAuditLog' => '待定风险"{$subject}"问卷"{$questionnaire_name}"（发送给联系人"{$contact_name}" 上 "{$date}"） 已由用户删除"{$user_name}".',
@@ -1536,11 +1507,10 @@ $lang = array(
     'QuestionnaireResultAuditTrailReport' => '调查问卷结果审核跟踪报告',
     'SubTemplate' => '子模板',
     'MitigationAccepted' => '已接受缓解',
-    'FilterBy' => '筛选者',
+    'FilterBy' => '筛选依据',
     'AddNewQuestion' => '添加新问题',
     'ControlAudit' => '控制审核',
     'AssociatedControls' => '关联控件',
-    'AssociatedFrameworks' => '关联的框架',
     'Analysis' => '分析',
     'TotalNumber' => '总数',
     'CumulativeScore' => '累计分数',
@@ -1553,7 +1523,7 @@ $lang = array(
     'AllPendingRisksFromQuestionnaires' => '问卷中的所有待处理风险',
     'AddedRisk' => '增加的风险',
     'PendingRisk' => '待定风险',
-    'Undefined' => '定义',
+    'Undefined' => '未定义',
     'SendingRequestPleaseWait' => '发送请求。请稍候。',
     'ApplicationNeedsToBeUpgradeToLatestVersionToUpgradeExtras' => '应用程序需要升级到最新版本才能升级附加功能。',
     'FilteredRiskReport' => '过滤风险报告',    
@@ -1563,12 +1533,11 @@ $lang = array(
     'ChangedFrom' => '更改自',
     'ChangedTo' => '更改为',
 
-    'Jira' => '吉拉',
-    'JiraIntegrationExtra' => 'Jira 集成额外功能',
+    'Jira' => 'Jira',
 
     'JiraWebhookAuthTokenIsInvalid' => '提供的吉拉网络钩身份验证令牌（"{$token}"） 无效！',
-    'JiraWebhookNoBodyPosted' => 'jira网钩没有张贴一具尸体！请联系support@simplerisk.com',
-    'JiraWebhookBodyPostedIsInvalid' => 'jira webhook 提供的身体无效！',
+    'JiraWebhookNoBodyPosted' => 'jira webhook 未发布请求正文！请联系 support@simplerisk.com',
+    'JiraWebhookBodyPostedIsInvalid' => 'jira webhook 提供的请求正文无效！',
 
     'JiraConnectionSettings' => '连接设置',    
     'JiraInstanceURL' => '吉拉实例 URL',
@@ -1593,7 +1562,7 @@ $lang = array(
     'JiraFailedGetIssueTypes' => '无法获取问题类型！请与管理员联系。',
     'JiraFailedGetStatuses' => '无法获取可用状态！请与管理员联系。',
     'JiraCreateIssueOnNewRisk' => '允许简单风险在创建风险时创建新的 Jira 问题。',
-    'JiraProjectKeyForNewIssue' => '项目密钥',
+    'JiraProjectKeyForNewIssue' => '项目键',
     'JiraProjectKeyForNewIssueIsRequired' => '项目密钥是必需的！',
     'JiraProjectKeyForNewIssueIsInvalid' => '找不到具有指定键的项目！',
     'JiraProjectKeyForNewIssueIsMalformed' => '指定的项目密钥包含无效字符。',
@@ -1602,7 +1571,7 @@ $lang = array(
     
     'JiraCreateRiskOnNewIssue' => '当检测到新的 Jira 问题时，允许 SimpleRisk 创建新风险。',
     'JiraScanProjectsForNewIssues' => '扫描项目',
-    'JiraScanProjectsForNewIssuesInstructions' => 'SimpleRisk 将检查这些项目的新产品。',
+    'JiraScanProjectsForNewIssuesInstructions' => 'SimpleRisk 将检查这些项目的新问题。',
     'JiraImportExistingIssues' => '导入已存在的问题。',
     'JiraImportExistingIssuesInstructions' => '导入将在计划同步的下一次运行时完成。',
 
@@ -1613,19 +1582,19 @@ $lang = array(
     'JiraUseRiskValueOnConflict' => '使用风险值（默认值）',
     'JiraUseIssueValueOnConflict' => '使用吉拉问题的值',
 
-    'JiraSynchronizationFields' => '领域',
+    'JiraSynchronizationFields' => '字段',
     'JiraSynchronizeStatus' => '启用"状态"同步',
     'JiraSynchronizeStatusSelectionInstructions' => '请选择一个状态，该状态可从项目工作流中使用的任何状态自由转换为，并且可用于所有项目。',
     'JiraSynchronizeStatusInstructions' => '决定在特定状态转换中应发生的情况',
     'JiraSynchronizeStatus_RiskClose' => '关闭关联的 Jira 问题时关闭风险',
     'JiraSynchronizeStatus_IssueClose' => '关闭关联风险时关闭吉拉问题',
     'JiraSynchronizeStatus_IssueClose_SetStatus' => '将吉拉问题的状态设置为',
-    'JiraSynchronizeStatus_RiskReopen' => '重新打开关联的 Jira 问题时的风险',
+    'JiraSynchronizeStatus_RiskReopen' => '重新打开关联的 Jira 问题时重新打开风险',
     'JiraSynchronizeStatus_RiskReopen_SetStatus' => '将风险状态设置为',
     'JiraSynchronizeStatus_IssueReopen' => '重新打开关联风险时重新打开 Jira 问题',
     'JiraSynchronizeStatus_IssueReopen_SetStatus' => '将吉拉问题的状态设置为',
     'JiraSynchronizeDescription' => '启用"描述"的同步',
-    'JiraSynchronizeDescriptionWith' => '与',
+    'JiraSynchronizeDescriptionWith' => '与…同步',
     'JiraSynchronizeDescriptionWithInstructions' => '选择要同步 jira 问题"描述"的字段。',
     'JiraSynchronizeSummary' => '启用风险字段"主题"与 jira 问题的"摘要"同步',
 
@@ -1675,7 +1644,7 @@ $lang = array(
     'ActivatingSCFMessage' => '正在安装安全控制框架 (SCF)。\n\n此过程可能需要长达一小时才能完成，具体取决于系统性能和所选框架的数量。\n\n安装过程中，您可以离开此页面。',
     'DeactivatingSCFMessage' => '正在卸载安全控制框架 (SCF)。\n\n此过程可能需要长达一小时才能完成，具体取决于系统性能和所选框架的数量。\n\n您可以离开此页面，该过程将在后台进行。',
     'UpdatingSCFMessage' => '正在更新安全控制框架 (SCF)。\n\n此过程可能需要长达一小时才能完成，具体取决于系统性能和所选框架的数量。\n\n您可以在后台处理期间离开此页面。',
-    'Processing' => '处理。。。',
+    'Processing' => '处理...',
     'AlphabeticalOrder'=>'字母顺序',
     'UserReports'=>'用户报告',
     'UsersHeader'=>'用户',
@@ -1715,11 +1684,9 @@ $lang = array(
     'CustomFieldUpdateFailed' => '无法更新自定义字段。',
     'IncidentManagement' => '事件管理',
     'IncidentManagementExtra' => '事件管理额外',
-    'IncidentManagementNotifications' => '事件管理通知',
-    'NotificationSettingsUpdated' => '通知设置已更新。',
     'Incident' => '事件',
     'NewIncident' => '新事件',
-    'Preparation' => '制备',
+    'Preparation' => '准备',
     'Identification' => '识别',
     'Response' => '响应',
     'Containment' => '遏制',
@@ -1731,7 +1698,7 @@ $lang = array(
     'Incidents' => '事件',
     'Detection' => '检测',
     'Assignment' => '分配',
-    'Prioritization' => '优先 级',
+    'Prioritization' => '优先级',
     'Associations' => '协会',
     'Location' => '位置',
     'DetectionDate' => '检测日期',
@@ -1747,11 +1714,11 @@ $lang = array(
     'AvailableTeams' => '可用团队',
     'BusinessUnitUpdate' => '更新业务部门',
     'BusinessUnitCreateAuditLog' => '用户"{$user}" 创建的业务部门 "{$business_unit_name}"（ID：{$id}） 与初始团队 "{$teams_to}".',
-    'BusinessUnitUpdateAuditLog' => '用户"{$user}" 业务单位更新团队 "{$business_unit_name}"（ID：{$id}） 从 "{$teams_from}[ 到 "{$teams_to}" ({$team_changes}).',
+    'BusinessUnitUpdateAuditLog' => '用户"{$user}" 业务单位更新团队 "{$business_unit_name}"（ID：{$id}） 从 "{$teams_from}" 到 "{$teams_to}" ({$team_changes}).',
     'BusinessUnitDeleteAuditLog' => '用户"{$user}" 已删除的业务部门"{$business_unit_name}"（ID：{$id}).',
     'BusinessUnitUpdateAuditLogRemoved' => '已删除"{$teams_removed}"',
     'BusinessUnitUpdateAuditLogAdded' => '已添加"{$teams_added}"',
-    'BusinessUnitRemoveTeamAuditLog' => '用户"{$user}[ 已删除团队]{$team_name}"（ID：{$team_id}） 来自业务部门 "{$business_unit_name}"（ID：{$business_unit_id}).',
+    'BusinessUnitRemoveTeamAuditLog' => '用户"{$user}" 已删除团队 "{$team_name}"（ID：{$team_id}） 来自业务部门 "{$business_unit_name}"（ID：{$business_unit_id}).',
     'BusinessUnitCreatedSuccessfully' => '成功创建了新的业务部门。',
     'BusinessUnitUpdatedSuccessfully' => '已成功更新业务部门。',
     'BusinessUnitDeletedSuccessfully' => '已成功删除业务部门。',
@@ -1764,13 +1731,12 @@ $lang = array(
     'ThereWasAProblemSelectingTheBusinessUnit' => '选择业务部门时出现问题。',
     'ThereWasAProblemRemovingTheTeamFromBusinessUnit' => '将团队从业务部门中删除时出现问题。',
     'AreYouSureYouWantToDeleteThisBusinessUnit' => '是否确实要删除此业务部门？',
-    'AreYouSureYouWantToRemoveThisTeam' => '是否确实要将其团队从业务部门中删除？',
+    'AreYouSureYouWantToRemoveThisTeam' => '是否确实要将此团队从业务部门中删除？',
     'BusinessUnitNameAlreadyInUse' => '此业务部门名称已在使用中。',
     'UpdateBusinessUnitTooltip' => '更新业务部门',
     'DeleteBusinessUnitTooltip' => '删除业务部门',
     'RemoveTeamTooltip' => '从业务部门中删除团队',
     'YouNeedToSpecifyATeamParameter' => '您需要指定一个团队参数。',
-    'OrganizationalHierarchyExtra' => '组织层次结构额外',
     'Source' => '源',
     'SourceType' => '源类型',
     'DetectedBy' => '检测者',
@@ -1812,12 +1778,12 @@ $lang = array(
     'CollectedOn' => '收集于',
     'CollectedBy' => '收集者',
     'AreYourSureYouWantToDeleteThisEvidence' => '是否确实要删除此证据？',
-    'DetectedOn' => '检测到打开',
-    'BeganOn' => '开始打开',
+    'DetectedOn' => '检测日期',
+    'BeganOn' => '开始日期',
     'ReportedBy' => '报告人',
     'OwnedBy' => '拥有者',
     'NoneSelected' => '未选择',
-    'Playbook' => '剧本',
+    'Playbook' => '手册',
     'NoLocationInformationSpecified' => '未为此事件指定位置信息',
     'NoAssociationInformationSpecified' => '未为此事件指定关联信息',
     'IncidentDoesNotExistOrPermissionDenied' => '指定的事件 ID 不存在，或者您没有查看它的权限。',
@@ -1838,7 +1804,7 @@ $lang = array(
     'AreYouSureYouWantToDeleteThisRiskCatalog' => '您确定要删除此风险目录项吗？',
     'RequireRiskMappingForAllRisks' => '要求所有风险的风险映射',
     'RiskMapping' => '风险映射',
-    'ActiveRisks' => '主动风险',
+    'ActiveRisks' => '活跃风险',
     'AreYouSureYouWantToDeleteThisIncident' => '是否确实要删除此事件？',
     'AreYouSureYouWantToDeleteThisNote' => '是否确实要删除此注释？',
     'IncidentWasDeletedSuccessfully' => '已成功删除事件',
@@ -1863,7 +1829,7 @@ $lang = array(
     'CantDeleteComplianceForgeSCFFramework' => '您不能删除安全控制框架 (SCF) 框架。',
     'CantDeleteUnassignedFramework' => '无法删除未分配框架。',
     'LicenseCheckFailed' => '您的一个或多个简单风险额外操作未通过许可证检查，并可能在未来 30 天内被禁用或删除。请立即联系支持人员以续订您的许可证。',
-    'JiraProjectForNewIssue' => '吉拉项目',
+    'JiraProjectForNewIssue' => 'Jira 项目',
     'JiraProjectForNewIssueIsRequired' => '项目是必需的！',
     'JiraScanProjectsForNewIssuesIsInvalid' => '找不到具有指定键的项目（"{$key}")!',
     'JiraProjectForNewIssueIsInvalid' => '找不到具有指定 ID 的项目！',
@@ -1872,7 +1838,7 @@ $lang = array(
     'JiraProjectOrIssueTypeForNewIssueIsNotValid' => '提供的 Jira 项目或问题类型无效。',
     'JiraSuccessfullyCreatedIssue' => '成功创建了吉拉问题（{$key}）。',
     'JiraFailedToCreateIssue' => '无法创建 Jira 问题！请联系管理员。',
-    'JiraPopulateDescriptionWith' => '使用',
+    'JiraPopulateDescriptionWith' => '填充描述内容为',
     'JiraPopulateDescriptionWithInstructions' => '选择要填充 jira 问题说明的风险字段。',
     'JiraUserEmailInstructions' => '对于 Jira 核心实例，您必须指定 Jira 用户名',
     'JiraUserAPIKeyInstructions' => '对于 Jira Core 实例，您必须指定 Jira 用户的密码',
@@ -1887,7 +1853,7 @@ $lang = array(
     'MaxTagLengthWarning' => '标记的最大长度为 255 个字符。',
     'RiskTagTruncatedWarning' => '风险 {$risk_id}标签 [{$tag}] 被截断， 因为它比允许的最大标签长度 （255 个字符） 长',
     'AssetTagTruncatedWarning' => '标记 [{$tag}] 资产 [{$name}] 被截断， 因为它比允许的最大标签长度 （255 个字符） 长',
-    'JiraFilterProjectsForNewIssues' => '筛选新项目。',
+    'JiraFilterProjectsForNewIssues' => '筛选新问题的项目。',
     'JiraFilterProjectsForNewIssuesInstructions' => '禁用以创建所有新 Jira 问题的风险',
     'JiraCopyDescriptionTo' => '将描述复制到',
     'JiraCopyDescriptionToInstructions' => '选择 Jira 问题描述应复制到哪个字段。',
@@ -1922,7 +1888,7 @@ $lang = array(
     'IncidentTrend' => '事件趋势',
     'DateRange' => '日期范围',
     'Average' => '平均',
-    'ResolutionTarget' => '分辨率目标（天）',
+    'ResolutionTarget' => '解决目标（天）',
     'Playbooks' => '剧本',
     'AddNewPlaybook' => '添加新行动手册',
     'SelectAnExistingPlaybook' => '选择现有行动手册',
@@ -1942,7 +1908,7 @@ $lang = array(
     'Forbidden' => '禁止的',
     'LastTestResult' => '上次测试结果',
     'Selected' => '已选',
-    'Risks' => '风险性',
+    'Risks' => '风险',
     'CurrentRiskComments' => '当前风险评论',
     'CommentDate' => '评论日期',
     'ReportRecentCommentedHelp'=>'该报告显示了所有风险及其最新评论',
@@ -1952,7 +1918,6 @@ $lang = array(
     'ConnectivityVisualizer' => '连接可视化工具',
     'ThereAreNoConnectionsAssociatedWithTheSelectedValue' => '没有与所选值关联的连接',
     'InvalidSimpleriskBaseUrl' => '无效的SimpleRisk基本URL！',
-    'Questionnaire' => '问卷',
     'FileEncodingFixHeader_risk' => '风险管理',
     'FileEncodingFixHeader_compliance' => '治理与合规',
     'FileEncodingFixHeader_questionnaire' => '评估',
@@ -1964,7 +1929,7 @@ $lang = array(
     'ReviewsDueSoon' => '评论将在 {$DueDate} 天内到期',
     'Submitter' => '提交者',
     'ControlMaturity' => '控制成熟度',
-    'CurrentControlMaturity' => '电流控制成熟度',
+    'CurrentControlMaturity' => '当前控制成熟度',
     'DesiredControlMaturity' => '期望的控制成熟度',
     'ControlGapAnalysis' => '控制间隙分析',
     'BelowMaturity' => '低于成熟度',
@@ -1991,7 +1956,7 @@ $lang = array(
     'AreYouSureYouWantToDeleteThisThreatCatalogItem' => '您确定要删除此威胁目录项吗？',
     'Back' => '后退',
     'UnableToCommunicateWithTheSimpleRiskServer' => '无法与SimpleRisk服务器通信',
-    'Fields' => '领域',
+    'Fields' => '字段',
     'TemplateGroup' => '模板组',
     'AddTemplateGroup' => '添加模板组',
     'UpdateTemplateGroup' => '更新模板组',
@@ -2011,8 +1976,6 @@ $lang = array(
     'TemplateAssignment' => '模板分配',
     'PleaseSelectUser' => '请选择用户',
     'AboutThisPage' => '关于本页',
-    'UserGuide' => '用户指南',
-    'AdministratorGuide' => '管理员指南',
     'ProjectStatus' => '项目状态',
     'SupportPortal' => '支持门户',
     'WebSupport' => '网站支持',
@@ -2040,8 +2003,8 @@ $lang = array(
     'AccessVector' => '访问向量',
     'AccessComplexity' => '访问复杂性',
     'MaturityAudit' => '成熟度审计',
-    'DefaultCurrentMaturity' => '默认当前到期日',
-    'DefaultDesiredMaturity' => '默认预期到期日',
+    'DefaultCurrentMaturity' => '默认当前成熟度',
+    'DefaultDesiredMaturity' => '默认预期成熟度',
     'ComplianceAssessment' => '合规性评估',
     'MaturityAssessment' => '成熟度评估',
     'FileAttachment' => '文件附件',
@@ -2052,7 +2015,7 @@ $lang = array(
     'ShareResults' => '分享结果',
     'StopSharingResults' => '停止分享',
     'AreYouSureYouWantToStopSharingThisResult' => '你确定要停止分享这个结果吗？',
-    'ShareResultsWith' => '分享结果',
+    'ShareResultsWith' => '与...分享结果',
     'QuestionnaireResultShareContactsRequired' => '必须分享联系人信息！',
     'QuestionnaireResultShareGetContactFailed' => '获取联系信息失败！',
     'QuestionnaireResultShareSuccessful' => '问卷调查结果已成功分享给选定的联系人。',
@@ -2066,9 +2029,9 @@ $lang = array(
     'PasswordResetRequestsExceeded' => '该用户已申请过密码重置。请等待 10 分钟后再申请密码重置。',
     'Backups' => '备份',
     'AutomaticallyBackupThisSimpleRiskInstance' => '自动备份此 SimpleRisk 实例',
-    'BackupSchedule' => '备用计划',
+    'BackupSchedule' => '备份计划',
     'Hourly' => '按小时',
-    'RemoveBackupsAfter' => '删除备份',
+    'RemoveBackupsAfter' => '在此之后删除备份',
     'AnswerOrdering' => '答案排序',
     'BackupDate' => '备份日期',
     'ApplicationBackup' => '应用程序备份',
@@ -2091,7 +2054,7 @@ $lang = array(
     'AllowAllUsersToSeeAllDocuments' => '允许所有用户查看所有文档',
     'AllowAllUsersToSeeAssetsNotAssignedToTeam' => '允许所有用户查看未分配给任何团队的资产',
     'AssociatedRisks' => '相关风险',
-    'ThreatMapping' => '威胁地图',
+    'ThreatMapping' => '威胁映射',
     'jQueryDeliveryMethod' => 'jQuery 交付方法',
     'AuditLog_DocumentUpdates' => '文档“{$document_name}”（ID： {$document_id}）由“{$user_name}”更新。更改： {$changes}。',
     'DocumentStatus' => '文档状态',
@@ -2123,7 +2086,7 @@ $lang = array(
     'BusinessOwner' => '业主',
     'DataClassification' => '数据分类',
     'NewProject' => '新项目',
-    'EditProject' => '編輯項目',
+    'EditProject' => '编辑项目',
     'ExistingRisk' => '现有风险',
     'AvailableRisks' => '可用风险',
     'WouldYouLikeToAssociateThisFailedTestResultWithARisk' => '您想将此失败的测试结果与风险联系起来吗？',
@@ -2167,7 +2130,7 @@ $lang = array(
     'QuestionPlaceholder' => '添加问题',
     'NoFileAttached' => '没有附加文件',
     'NoDataToUpdate' => '没有可更新的数据',
-    'SelectedQuestions' => '精选问题',
+    'SelectedQuestions' => '已选问题',
     'CreateTabs' => '创建标签',
     'Previous' => '以前的',
     'DisableTabs' => '禁用标签',
@@ -2185,8 +2148,7 @@ $lang = array(
     'UserDropdownPlaceholder' => '选择用户或开始输入以进行搜索',
     'GraphicalRiskAnalysis' => '图形风险分析',
     'ResetMitigations' => '重置缓解措施',
-    'ResetReviews' => '重置评论',
-	'EnableEncryptionDebugLogging' => '启用加密数据库额外调试日志',
+    'ResetReviews' => '重置审查',
     'Log' => '日志',
     'Date' => '日期',
     'Platform' => '平台',
@@ -2205,7 +2167,7 @@ $lang = array(
     'Visualization' => '可视化',
     'AreaRange' => '区域范围',
     'Line' => '线',
-    'Bar' => '酒吧',
+    'Bar' => '条形',
     'Title' => '标题',
     'Y-Axis' => 'Y 轴',
     'Y-AxisValue' => 'Y 轴值',
@@ -2216,7 +2178,7 @@ $lang = array(
     'Count' => '数数',
     'CountTotal' => '总数',
     'Max' => '最大限度',
-    'Min' => '分钟',
+    'Min' => '最小',
     'TimeDays' => '时间（天）',
     'TimeWeeks' => '时间（周）',
     'TimeMonths' => '时间（月）',
@@ -2242,8 +2204,8 @@ $lang = array(
     'IncidentManagementNotification_SectionHeader_all_recovery_steps_completed' => '所有恢复步骤完成后通知',
     'IncidentManagementNotification_SectionHeader_evidence_attached' => '附上证据后通知',
     'IncidentManagementNotification_SectionHeader_notes_added' => '添加注释时通知',
-    'IncidentManagementNotification_SectionHeader_lesson_learned_added' => '已添加“经验教训通知”',
-    'IncidentManagementNotification_Notify_reporter' => '通知举报人',
+    'IncidentManagementNotification_SectionHeader_lesson_learned_added' => '添加经验教训时通知',
+    'IncidentManagementNotification_Notify_reporter' => '通知报告人',
     'IncidentManagementNotification_Notify_owner' => '通知所有者',
     'IncidentManagementNotification_Notify_additional_stakeholders' => '通知其他利益干系人',
     'IncidentManagementNotification_Notify_team' => '通知团队',
@@ -2278,8 +2240,6 @@ $lang = array(
     'SSLSecurityCheckWarning' => '警告：SSL 可防止 MITM 攻击，禁用以下选项存在安全隐患',
     'EnableSSLCertificateCheckSimpleRisk' => '为 SimpleRisk API 请求启用 SSL 证书检查',
     'EnableSSLCertificateCheckExternal' => '为外部网站启用 SSL 证书检查',
-    'EnableAPIv1Endpoints' => '启用 API v1 端点（已弃用）',
-    'EnableAPIv1EndpointsHelp' => 'API v1 已弃用。除非您的集成需要它，否则请保持禁用状态。/api/v2/ 不受此设置影响，始终可用。',
     'EnableSSLCertificateCheckVM' => '启用 SSL 证书检查以进行漏洞管理',
     'DuoToopherRemoved' => 'Duo 不再直接由 SimpleRisk 提供支持。相反，我们已迁移到通用 TOTP 身份验证器。请在下面设置您的新身份验证器。',
     'ProtectYourSimpleRiskAccount' => '保护您的 SimpleRisk 帐户',
@@ -2326,12 +2286,12 @@ $lang = array(
     'AddControl' => '添加控件',
     'CurrentMaturity' => '当前成熟度',
     'AddDocument' => '添加文档',
-    'EditDocument' => '編輯文檔',
+    'EditDocument' => '编辑文档',
     'EncodingIssueCountUpdated' => '类型“{$type}”的编码问题计数已更新： {$old_count} -> {$count}。',
     'EncodingIssueCleanedUp' => '针对类型“{$type}”的编码问题已清理。',
     'RejectedRisk' => '拒绝风险',
     'DeletedRisk' => '已删除风险',
-    'ClosedRisk' => '封闭式风险',
+    'ClosedRisk' => '已关闭风险',
     'AllClosedRisksFromQuestionnaires' => '问卷调查中所有已关闭的风险',
     'AllDeletedRisksFromQuestionnaires' => '调查问卷中删除的所有风险',
     'MultipleChoice_SingleSelect' => '多项选择（单选）',
@@ -2361,7 +2321,7 @@ $lang = array(
     'datatables_ShowAll' => '显示全部',
     'datatables_ShowLess' => '显示较少',
     'Confirmation' => '确认',
-    'MissingUser' => '失踪用户',
+    'MissingUser' => '缺失用户',
     'UserResponsibilitiesCannotBeEditedWhenUserIsAnAdmin' => '当用户是管理员时，无法编辑用户职责。',
     'UserResponsibilitiesCannotBeEditedWhenUserIsGoingToBeAnAdmin' => '当用户成为管理员时，无法编辑用户职责。',
     'EditRole' => '編輯角色',
@@ -2372,21 +2332,21 @@ $lang = array(
     'FileAndDirectoryPermissions' => '文件和目录权限',
     'SimpleRiskCore' => 'SimpleRisk 核心',
     'DeleteSelectedControls' => '删除选定控件',
-    'CreateControl' => '创建控件',
+    'CreateControl' => '创建控制措施',
     'AddMapping' => '添加映射',
     'CreateSuccess_asset' => '资产“{$name}”已由用户“{$user}”成功创建。',
     'AreYouSureYouWantToDeleteTheSelectedControls' => '您确实要删除选定的控件吗？',
-    'ControlMappedToDifferentMaturitiesOnAsset' =>'控制映射到同一资产的不同期限',
+    'ControlMappedToDifferentMaturitiesOnAsset' =>'控制映射到同一资产的不同成熟度级别',
     'Advanced_Search_no_results_1' => '您的查询似乎没有结果。',
     'Advanced_Search_no_results_2' => '仔细检查您的搜索是否有任何错别字、拼写错误，或者尝试不同的搜索词。',
     'IncidentsPerDay' => '每日事故数',
-    'CurrentVsDesiredMaturity' => '控制家族的当前成熟度与预期成熟度',
+    'CurrentVsDesiredMaturity' => '按控制家族划分的成熟度',
     'RiskDistribution' => '风险分布',
     'RiskDistributionDescription'=>'上面的饼图有助于显示固有风险和残留风险在不同风险等级之间的分布情况。我们可以使用这两个饼图来显示风险缓解工作的进展。如果残留风险饼图显示大量非常高或高风险，则可能表明您的组织承担了过多的风险，需要进一步采取缓解措施。',
     'EnableTabs' => '启用标签',
     'NewTab' => '新标签页',
     'SearchForFramework' => '搜索框架',
-    'SearchForControl' => '寻找控制权',
+    'SearchForControl' => '搜索控制项',
     'SelectedOnAnotherTab' => '在另一个选项卡上选择',
     'ConfirmDisableTabbedExperience' => '您即将禁用此模板的选项卡式体验。这会将所有问题从选项卡移至单个列表。您确定要继续吗？',
     'ConfirmDeleteTab' => '您确定要删除此选项卡及其上的所有问题吗？',
@@ -2401,7 +2361,7 @@ $lang = array(
     'Rejected' => '已拒绝',
     'NotApproved' => '未批准',
     'AreYouSureYouWantToSetThisResultToNotApproved' => '您确定要将此结果设置为“未批准”吗？',
-    'QuestionnaireResultNotApprovedAuditLog' => '问卷“{$questionnaire_name}”（发送至“{$date}”上的联系人“{$contact_name}”）的结果被用户“{$user_name}”标记为未批准。',
+    'QuestionnaireResultNotApprovedAuditLog' => '问卷"{$questionnaire_name}"（已于"{$date}"发送至联系人"{$contact_name}"）的结果被用户"{$user_name}"标记为未批准。',
     'QuestionnaireResultNotApprovedSuccessfully' => '问卷结果成功标记为未批准。',
     'QuestionnaireResultRejectedMessage' => '被 {$user} 在 {$timestamp}上拒绝。',
     'QuestionnaireResultNotApprovedMessage' => '已于 {$timestamp}被 {$user} 标记为未批准。',
@@ -2422,10 +2382,6 @@ $lang = array(
     'AnthropicConnectionWarning' => '凭证无效！无法使用 API 密钥连接到 Anthropic。',
     'ResetAPIKey' => '重置 API 密钥',
     'ArtificialIntelligence' => '人工智能',
-    'ArtificialIntelligenceDesc' => '为该 SimpleRisk 实例配置 AI 提供商连接和 AI 响应的上下文问题。',
-    'ProviderConfiguration' => '提供商配置',
-    'ContextQuestions' => '背景问题',
-    'AIProviderNotConfiguredWarning' => 'AI 提供商尚未配置。在“提供商配置”选项卡中设置提供商和 API 密钥之前，无法生成实时结果。',
     'ArtificialIntelligenceAdditionalContext' => '人工智能附加背景',
     'ArtificialIntelligenceAdditionalContextDescription' => '以下信息为可选信息，但能为人工智能提供所需的额外背景信息，从而生成更有意义的结果。您在下方输入的所有信息都将发送给您配置的人工智能服务提供商进行分析，以便根据贵组织的具体情况定制响应。',
     'OrganizationContext' => '组织背景',
@@ -2448,15 +2404,15 @@ $lang = array(
     'TheNameOfAPlaybookActionCannotBeEmpty' => '剧本动作的名称不能为空。',
     'InvalidWidgetName' => '小部件名称无效',
     'EditMode' => '编辑模式',
-    'On' => '在',
-    'Off' => '离开',
+    'On' => '开启',
+    'Off' => '关闭',
     'SelectWidgetToAdd' => '选择要添加的小部件',
     'DragToAddSelectedWidget' => '拖动以添加选定的小部件！',
     'DropHereToRemoveWidget' => '拖放至此处即可删除小部件！',
     'EditModeInformation' => '打开编辑模式编辑布局。关闭它不会自动保存布局。',
     'InvalidLayout' => '布局无效！',
     'InvalidLayoutOnlyCustomAllowedAsDefault' => '布局无效！只有自定义布局才可以保存为默认布局。',
-    'LayoutSaved' => '布局已保存！',
+    'LayoutSaved' => '您的仪表盘布局已保存。',
     'DefaultLayout' => '默认布局',
     'DefaultLayoutInformation' => '将此布局设置为默认布局，用于替代 SimpleRisk 为未设置自定义布局的用户提供的布局。您只能将已保存的非空自定义布局设置为默认布局。如果标记为默认的布局恢复为默认布局，它将恢复为 SimpleRisk 提供的默认布局。',
     'LayoutDefaultStatusUpdated' => '布局的默认状态已更新。',
@@ -2465,7 +2421,7 @@ $lang = array(
     'DefaultLayoutRestored' => '默认布局已成功恢复！',
     'SavedLayoutRestored' => '保存的布局已成功恢复！',
     'ConfirmRestoreLayout' => '您确定吗？您将丢失对此布局所做的更改。',
-    'ConfirmDisableEditModeWithPendingChanges' => '您有未保存的更改，离开页面后这些更改将会丢失。您确定要禁用“编辑模式”并可能忘记保存更改吗？',
+    'ConfirmDisableEditModeWithPendingChanges' => '您对此仪表板有未保存的更改。放弃这些更改并停止编辑吗？',
     'ConfirmSave' => '保存这些更改将覆盖您之前保存的布局。您确定要继续吗？',
     'ConfirmSaveAdminDefault' => '此布局已设置为此布局类型的默认布局。保存这些更改将更改所有未为此布局类型设置自定义布局的用户的布局。您确定要继续吗？',
     'RisksByMonth' => '按月划分的风险',
@@ -2481,7 +2437,7 @@ $lang = array(
     'InvalidDataPleaseContactAdministrator' => '数据无效！请联系管理员。',
     'EditWidgetText' => '编辑小部件文本',
     'UnauthorizedAccessInAPI' => '未经授权的访问。经过身份验证的用户没有适当的权限。',
-    'FAIRRiskAssessment' => '公平风险评估',
+    'FAIRRiskAssessment' => 'FAIR 风险评估',
     'RiskScenario' => '风险情景',
     'Assumptions' => '假设',
     'MonteCarloSimulation' => '蒙特卡罗模拟',
@@ -2496,7 +2452,6 @@ $lang = array(
     'SecondaryLossEventFrequency' => '二次损失事件频率',
     'SecondaryLossMagnitude' => '二次损耗幅度',
     'Productivity' => '生产率',
-    'Response' => '响应',
     'Replacement' => '替代品',
     'CompetitiveAdvantage' => '竞争优势',
     'FinesAndJudgements' => '罚款和判决',
@@ -2519,9 +2474,9 @@ $lang = array(
     'AnExistingRiskCatalogItemWasDeletedSuccessfully' => '已成功删除现有风险目录项',
     'AnExistingThreatCatalogItemWasDeletedSuccessfully' => '已成功删除现有威胁目录项',
     'NewAsset' => '新资产',
-    'NewAssetGroup' => '新资产集团',
+    'NewAssetGroup' => '新资产组',
     'PleaseSelectAtLeastOneColumn' => '请选择至少一列',
-    'IncidentWasDismissedFromLessonsLearned' => '事件被驳回，吸取教训',
+    'IncidentWasDismissedFromLessonsLearned' => '事件已从经验教训中移除',
     'NewEvidenceWasAddedSuccessfully' => '新证据已成功添加。',
     'ANewPlaybookWasAddedSuccessfully' => '新的剧本已成功添加。',
     'PlaybookNameExists'=>'剧本名称已存在。',
@@ -2570,11 +2525,11 @@ $lang = array(
     'Score' => '分数',
     'TFIDFSimilarity' => 'TF-IDF相似度',
     'MatchingKeywords' => '匹配关键字',
-    'AIMatch' => '人工智能比赛',
+    'AIMatch' => '人工智能匹配',
     'AIConfidence' => '人工智能信心',
     'AIReasoning' => '人工智能推理',
     'DocumentColumns' => '文档列',
-    'ControlColumns' => '控制柱',
+    'ControlColumns' => '控制列',
     'MatchingColumns' => '匹配列',
     'ToBeDetermined' => '待定',
     'Matching' => '匹配',
@@ -2590,7 +2545,6 @@ $lang = array(
     'NotAMatch' => '不匹配',
     'ReviewManually' => '手动审核',
     'ResponsesToQuestionsWithLinkedControlsWillUpdateTheControlTypeTo' => '对带有链接控件的问题的回答将更新控件类型为',
-    'DueDate' => '到期日',
     'AuditLog_IncidentUpdated' => '事件“{$incident_summary}”（ID： {$incident_id}）由用户“{$user_name}”更新。更改： {$changes}。',
     'AnswersWillBeAutoSavedOnAssessments' => '答案将在评估中自动保存',
     'SecondsAssessmentsAreAutoSaved' => '秒评估会自动保存',
@@ -2598,7 +2552,6 @@ $lang = array(
     'NotifyAuditInitiateSubject' => '审计已启动',
     'BypassPendingRisksAndCreateRisksImmediatelyAfterAssessmentCompletion' => '绕过“待决风险”并在评估完成后立即创建风险',
     'AssociatedExceptions' => '相关异常',
-    'Required' => '必需的',
     'EmailInstructions' => '电子邮件说明',
     'ApproveSelectedVulnerabilities' => '批准选定的漏洞',
     'RejectSelectedVulnerabilities' => '拒绝选定的漏洞',
@@ -2619,7 +2572,7 @@ $lang = array(
     'TabOrdering' => 'Tab 键排序',
     'AutoInitiateAudit' => '自动启动审计',
     'AuditInitiationOffset' => '审计启动抵消',
-    'AuditInitiationOffset_explanation' => '距预产期天数',
+    'AuditInitiationOffset_explanation' => '距截止日期天数',
     'AuditInitiationOffsetMustBeANonNegativeValue' => '审计启动偏移量必须是非负值。',
     'AuditInitiationOffsetMustBeLessThanOrEqualToTestFrequency' => '审计启动偏移必须小于或等于测试频率。',
     'BaseScore' => '基础分数',
@@ -2648,68 +2601,9 @@ $lang = array(
     'PleaseEnterAValidTimezone' => '请输入有效的时区。',
     'TFIDFMatch' => 'TF-IDF匹配',
     'CompletionDate' => '完成日期',
-    'AutoProcessSCFUpdates' => '自动处理新的安全控制框架 (SCF) 版本',
-    'AddNewControls' => '添加新的 SCF 控制',
-    'UpdateExistingControls' => '更新现有供应链财务控制',
-    'DeleteRemovedControls' => '删除已移除的 SCF 控件',
-    'CreateEvidenceRequests' => '创建 SCF 控制的证据请求',
-    'SelectSCFFrameworks' => '选择SCF框架',
-    'SCFReleaseProcessing' => 'SCF 释放处理',
-    'NotFrameworkDescription' => '下方的小部件显示了安全控制框架 (SCF) 电子表格中的所有标题。您可以使用它来选择哪些列包含框架数据，哪些列包含非框架数据。',
-    'Note' => '笔记',
-    'AISettingsNote' => '启用 AI 辅助功能后，系统会使用您的 Anthropic API 密钥将数据发送到 Anthropic，以便在其 LLM 中进行分析，从而为您提供量身定制的结果。',
-    'EnableAIAssistanceForControlData' => '启用人工智能辅助控制数据',
-    'ReferenceText' => '参考文本',
-    'FrameworkSelection' => '框架选择',
-    'Show' => '展示',
-    'InProgress' => '进行中',
-    'Canceled' => '取消',
-    'Failed' => '失败的',
-    'LegacyFrameworks' => '遗留框架',
-    'Archive' => '档案',
-    'FailedToFetchCVEInformation' => '获取 CVE 信息失败。请检查 CVE ID 并重试。',
-    'ComplianceDashboard' => '合规性仪表盘',
-    'DynamicAuditReportHelp' => '本报告显示所有审计及其状态。',
-    'ComplianceDashboardDescription' => '此图表显示了每个框架中的控件数量，绿色表示通过的控件，红色表示未通过的控件。',
-    'PassingControls' => '传递控制权',
-    'FailingControls' => '控制失效',
-    'ControlsByFramework' => '框架控制',
-    'NumberOfControls' => '控制数量',
     'AssetsAndControls' => '资产与控制',
     'AssetsByControl' => '按控制权划分的资产',
     'ControlsByAsset' => '按资产进行控制',
-    'PasswordResetTokenExpirationPeriod' => '密码重置令牌过期时间',
-    'APasswordResetTokenExpirationPeriodShouldBeMoreThan5Minutes' => '密码重置令牌的有效期应超过 5 分钟。',
-    'MeanTimeToRemediate' => '平均修复时间',
-    'ByTeam' => '团队',
-    'ByCategory' => '按类别',
-    'ByRiskLevel' => '按风险等级',
-    'MeanTimeToRemediateDescription' => '按团队、类别和风险级别分组，列出关闭风险的平均天数。仅包含已关闭的风险。',
-    'AverageDaysToClose' => '平均成交天数',
-    'ControlPassRateTrend' => '控制通过率趋势',
-    'ControlPassRateTrendDescription' => '过去 12 个月内各框架的月度通过率（%）。仅显示在此期间至少有一次测试结果的框架。',
-    'PassRatePercent' => '通过率（%）',
-    'ExposureByTeam' => '团队风险敞口',
-    'ExposureByCategory' => '按类别划分的风险暴露',
-    'ExposureByLocation' => '按地点划分的风险暴露',
-    'TotalRiskScore' => '总风险评分',
-    'SLABreachStatus' => '服务水平协议违约状态',
-    'SLABreachDescription' => '未解决的风险是否在其服务水平协议 (SLA) 阈值范围内，按风险等级划分。默认阈值：极高=30天，高=60天，中=90天，低=180天。',
-    'WithinSLA' => '在服务水平协议 (SLA) 范围内',
-    'SLABreached' => '服务水平协议违约',
-    'NumberOfRisks' => '风险数量',
-    'AllFrameworks' => '所有框架',
-    'ExposureByBusinessUnit' => '各业务部门的风险敞口',
-    'BusinessUnit' => '业务部门',
-    'BUChartCrossUnitNote' => '注意：分配给跨多个业务部门团队的风险将在每个业务部门中计算。',
-    'SLAThresholds' => '服务水平协议阈值',
-    'SLAThresholdsDescription' => '根据风险等级，未解决的风险在被视为逾期之前可以保持最长天数。',
-    'SLAThresholdMustBeBetween1And3650' => '服务水平协议 (SLA) 阈值必须介于 1 天和 3650 天之间。',
-    'SLAThresholdsUpdatedSuccessfully' => '服务水平协议阈值已成功更新。',
-    'TimeToDetect' => '检测时间',
-    'TimeToDetectDescription' => '按团队和事件类型分组，统计从事件开始（Began On）到检测到（Detected On）的平均天数。仅包含记录了这两个日期的事件。',
-    'ByOccurrenceType' => '按发生类型',
-    'OccurrenceType' => '事件类型',
     'NoIncidentDetectionDataAvailable' => '没有记录到同时具有“开始日期”和“检测到日期”的事件。',
     'IncidentDashboard' => '事件仪表盘',
     'TimeToDetectByTeam' => '团队检测时间',
@@ -2724,7 +2618,7 @@ $lang = array(
     'DragAndDropToReorder' => '拖放即可重新排列列顺序。',
     'NoColumnsSelected' => '未选择任何列。请在第一个标签页中选择列。',
     'Remove' => '消除',
-    'Apply' => '申请',
+    'Apply' => '应用',
     'RiskScoring' => '风险评分',
     'AreYouSureYouWantToDeleteThisUser' => '您确定要删除此用户吗？',
     'NoPermissionAddSavedRiskReports' => '您没有权限添加已保存的风险报告。',
@@ -2735,7 +2629,7 @@ $lang = array(
     'GovernanceDashboard' => '治理仪表盘',
     'GovernanceDashboardDescription' => '此图表显示了所有控制措施的当前成熟度。',
     'GovernanceControlsByFrameworkMaturityStacked' => '按框架和当前成熟度进行控制',
-    'Custom' => '风俗',
+    'Custom' => '自定义',
     'SimpleRiskCustomScheduledNotifications' => 'SimpleRisk 自定义定时通知',
     'AddCustomScheduledNotification' => '添加自定义定时通知',
     'ReportName' => '报告名称',
@@ -2749,7 +2643,7 @@ $lang = array(
     'CustomScheduledNotificationWasDuplicatedSuccessfully' => '自定义定时通知已成功复制。',
     'CustomScheduledNotificationWasDeletedSuccessfully' => '自定义定时通知已成功删除。',
     'CustomScheduledNotificationWasSentSuccessfully' => '自定义定时通知已成功发送。',
-    'day' => '一天',
+    'day' => '天',
     'DocumentProgramReport' => '文件程序报告',
     'ExceptionReport' => '异常报告',
     'ParentName' => '父母姓名',
@@ -2760,7 +2654,7 @@ $lang = array(
     'AvailableUsers'=>'可用用户',
     'TeamMembers'=>'团队成员',
     'TheTeamMembersWereUpdatedSuccessfully' => '团队成员信息已成功更新。',
-    'PleaseSelectATeam'=>'请选择一支队伍',
+    'PleaseSelectATeam'=>'请选择一个团队',
     'ActivatedExtra' => '已激活： {$extra_type}',
     'DeactivatedExtra' => '已停用： {$extra_type}',
 
@@ -2812,7 +2706,7 @@ $lang = array(
     'ProjectsAndRisksAssignedDesc'                               => '每个项目及其当前面临的风险。',
     'AllOpenRisksByScoringMethodDesc'                            => '未决风险按用于计算其得分的评分方法进行分组。',
     'AllOpenRisksByTeamDesc'                                     => '未解决的风险按其所属团队分组。',
-    'AllOpenRisksByTechnologyDesc'                               => '按技术标签分组的未解决问题。',
+    'AllOpenRisksByTechnologyDesc'                               => '按技术标签分组的未解决风险。',
     'DynamicAuditReportDesc'                  => '可配置的审计进度报告，带有框架和控制筛选器。',
     'AuditTimelineDesc'                       => '按时间顺序查看审计活动、状态变化和发现。',
     'AuditRemediationCycleTimeDesc'           => '按框架划分，从审计发现到整改的平均时间。',
@@ -2850,16 +2744,15 @@ $lang = array(
     'SettingsSecurityDesc'                => '身份验证、会话、密码策略、基本 URL 和 API 安全设置。',
     'SettingsLoggingDesc'                 => '调试和审计日志配置：日志级别、保留期限和日志文件位置。',
     'HealthCheckDesc'                     => '诊断系统状态：PHP 版本、扩展、文件权限、数据库连接、cron 计划和额外激活。',
-    'AboutDesc'                           => '查看 SimpleRisk 版本、许可信息和鸣谢。',
     'AnnouncementsDesc'                   => '撰写和管理所有用户可见的横幅公告。',
     'RegisterAndUpgradeDesc'              => '注册您的 SimpleRisk 安装，输入或续订订阅密钥，并触发一键 Core/Extra 升级。',
     'QueueMonitorDesc'                    => '检查后台作业队列：待处理作业、正在执行的作业和失败的作业。',
     'ExtrasDesc'                          => '激活、停用和配置 SimpleRisk Extras（付费插件）。',
-    'ArtificialIntelligenceExtraDesc'     => '在 SimpleRisk 中启用人工智能辅助功能。',
-    'CustomizationExtraDesc'              => '能够添加和删除不同类型的字段，并动态创建页面模板。',
-    'NotificationExtraDesc'               => '当风险被提交、更新、缓解或审查时，发送电子邮件通知；并且可以按计划运行，以通知用户处于“未审查”或“逾期”状态的风险。',
-    'VulnerabilityManagementExtraDesc'    => '支持将 SimpleRisk 与 Rapid7 Nexpose、InsightVM、Qualys 和 Tenable.io 集成。',
-    'IncidentManagementExtraDesc'         => '在 SimpleRisk 系统内部提供事件管理功能。',
+    'ArtificialIntelligenceExtraDesc'     => '人工智能附加功能提供增强的风险分析（包括 FAIR 评估）和定制文档。',
+    'CustomizationExtraDesc'              => '自定义附加功能允许添加和删除不同类型的字段，并动态创建自定义页面模板。',
+    'NotificationExtraDesc'               => '邮件通知扩展功能使 SimpleRisk 能够在风险提交、修改或进行其他操作时发送电子邮件通知。该扩展功能还可以添加为定时脚本，以便在风险准备好进行管理层审核时发送例行提醒。在 SimpleRisk Core 产品中，如果没有此扩展功能，则不会向工具外部发送任何通知。',
+    'VulnerabilityManagementExtraDesc'    => '漏洞管理附加功能使客户能够将 SimpleRisk 实例与 Qualys、Tenable.io 或 Rapid7 Nexpose/InsightVM 集成，并将资产和漏洞数据导入 SimpleRisk。之后，您可以选择要覆盖的站点，确定要导入的漏洞评分，并对哪些漏洞进行分类以进行风险跟踪。',
+    'IncidentManagementExtraDesc'         => '事件管理附加功能基于 NIST 800-61 计算机安全事件处理指南，并提供来自 SimpleRisk 系统的事件管理功能。',
 
     // Configure Hub - tile descriptions (customization category)
     'RedefineNamingConventionsDesc'       => '重命名用户界面中 SimpleRisk 的术语（风险、资产、框架等）。',
@@ -2872,26 +2765,25 @@ $lang = array(
     'UserManagementDesc'                  => '添加、编辑、禁用和重置用户；管理密码策略。',
     'RoleManagementDesc'                  => '定义角色以及每个角色所拥有的权限。',
     'TeamManagementDesc'                  => '创建和管理用于记录可见性筛选的团队。',
-    'SeparationExtraDesc'                 => '限制团队成员查看风险，风险被归类为：',
-    'CustomAuthenticationExtraDesc'       => '提供对 Active Directory 或 SAML/单点登录的身份验证和授权支持。',
-    'EncryptionExtraDesc'                 => '对数据库中的敏感文本字段进行加密。',
-    'OrganizationManagementDesc'          => '可以在团队之上定义多个业务单元。用户可以被分配到不同业务单元下的一个或多个团队中。这会影响他们查看和使用未与其关联的团队、用户和资产的能力。',
+    'SeparationExtraDesc'                 => '“基于团队的隔离”附加功能将风险查看权限限制为仅限风险所属团队的成员。在 SimpleRisk Core 产品中，如果没有此附加功能，则所有用户都可以查看所有风险。',
+    'CustomAuthenticationExtraDesc'       => '自定义身份验证扩展模块提供对 Active Directory 和 SAML 身份验证的支持。在 SimpleRisk Core 产品中，如果没有此扩展模块，则只能在 SimpleRisk 身份存储库中创建新用户。',
+    'EncryptionExtraDesc'                 => '加密数据库附加功能会生成一个随机的 AES-256 位加密密钥，并使用该密钥对敏感文本进行加密，然后再将其插入 SimpleRisk 数据库。这样可以防止任何人在未直接使用 SimpleRisk 应用程序的情况下查看或修改数据。',
+    'OrganizationManagementDesc'          => "组织层级扩展功能允许定义多个业务单元，每个业务单元可以包含任意数量的团队。用户可以被分配到不同业务单元下的一个或多个团队中。这会影响用户查看和使用与其无关的团队、用户和资产的能力。",
 
     // Configure Hub - tile descriptions (data category)
-    'DeleteRisksDesc'                     => '批量删除存在风险。请谨慎使用——删除操作是永久性的。',
+    'DeleteRisksDesc'                     => '批量删除风险。请谨慎使用——删除操作是永久性的。',
     'AuditTrailDesc'                      => '搜索并导出用户操作的系统审计日志。',
-    'ImportExportExtraDesc'               => '支持导入和导出包含风险信息的 CSV 文件。',
-    'JiraExtraDesc'                       => '支持与您的 JIRA 实例集成。可将风险关联到 Jira 问题，并同步其数据、状态和评论。',
-    'APIExtraDesc'                        => '提供 API，用于将 SimpleRisk 与其他工具和自动化任务集成。',
-    'AdvancedSearchExtraDesc'             => "扩展了顶部栏搜索框的功能，使其能够通过在风险数据中进行文本搜索来查找风险。",
-    'AssessmentsExtraDesc'                => '能够创建自定义风险评估表并将其发送给用户。',
+    'ImportExportExtraDesc'               => '导入导出扩展功能允许您通过将 CSV 文件中的字段映射到 SimpleRisk 数据库中的字段，将数据导入 SimpleRisk。它可用于导入第三方电子表格的审计结果、其他工具的漏洞扫描结果、CMDB 中的资产等等。此外，该扩展功能还允许您从 SimpleRisk 导出包含风险、缓解措施、审查或三者组合报告的 CSV 文件。',
+    'JiraExtraDesc'                       => 'Jira Integration Extra 为用户提供与 Jira 实例进行双向集成的功能。它支持将风险与 Jira 问题关联起来，并同步它们的数据、状态和评论。',
+    'APIExtraDesc'                        => 'API Extra 允许客户使用 RESTful API 与其他应用程序创建脚本交互，从而获得高级自动化并利用现有基础设施。',
+    'AdvancedSearchExtraDesc'             => "高级搜索扩展功能增强了顶部栏搜索框的功能，使其能够通过在风险数据中进行文本搜索来查找风险。",
+    'AssessmentsExtraDesc'                => '风险评估附加功能使用户能够定义联系人、创建问题（包括逻辑）、使用问卷模板组装多个问题、创建问卷并将其发送给联系人、查看问卷结果、根据这些结果添加风险、比较一段时间内的结果、导入和导出外部定制的评估以及查看风险评估审计跟踪。',
     'ActiveAssessmentsDesc'               => '查看和管理当前正在进行的评估。',
-    'WorkflowsExtraDesc'                  => '启用可视化、事件驱动的工作流引擎，以自动执行由 SimpleRisk 中的事件触发的风险管理操作。',
+    'WorkflowsExtraDesc'                  => 'Workflows Extra 提供了一个可视化的事件驱动型工作流引擎，可根据 SimpleRisk 中的事件自动执行风险管理操作。您可以设计在风险提交、更新或审核等变更发生时触发的工作流，从而自动路由审批、分配工作，并确保流程持续运行，无需人工干预。',
 
     // Configure Hub - tile descriptions (frameworks category)
-    'UCFExtraDesc'                        => '支持将统一控制框架 (UCF) 控制和测试与 SimpleRisk 集成。',
-    'SCFExtraDesc'                        => '将安全控制框架 (SCF) 中的控制措施添加到 SimpleRisk 中，以便与我们的治理功能一起使用。',
-    'ComplianceForgeExtraDesc'            => '将 ComplianceForge 数字安全计划 (DSP) 中的控制功能添加到 SimpleRisk 中，以便与我们的治理功能一起使用。',
+    'UCFExtraDesc'                        => '统一合规框架 (UCF) Extra 是统一合规框架与 SimpleRisk 之间的 API 级集成。启用此功能后，您可以直接从 UCF 导入选定的框架和控制映射。',
+    'SCFExtraDesc'                        => "安全控制框架 (SCF) Extra 是安全控制框架与 SimpleRisk 之间的直接集成。它将 SCF 的控制目录及其在各种合规性和网络安全框架中的映射关系导入 SimpleRisk 的治理功能，因此您可以采用所需的框架并管理其控制，而无需手动构建。",
 
     // Configure Hub - tile descriptions (maintenance category)
     'FixReviewDatesDesc'                  => '将原有的 varchar 类型的 review-date 列迁移为正确的日期类型。仅在需要时显示。',
@@ -2909,7 +2801,6 @@ $lang = array(
     'WorkflowsExtra'                      => '工作流程补充',
     'UCFExtra'                            => '统一合规框架 (UCF) 额外',
     'SCFExtra'                            => '安全控制框架附加组件',
-    'ComplianceForgeExtra'                => 'ComplianceForge Extra',
     'DatabaseUpgrade'                     => '数据库升级',
 
     // Configure Hub - Extra tile state badges
@@ -2925,19 +2816,30 @@ $lang = array(
     'ActivateExtraBody'                   => '激活 {name} 额外功能？这将立即启用其功能。您可以稍后从同一图块再次将其停用。',
     'ActivateExtraError'                  => '激活附加功能失败。请查看“健康检查”页面以获取诊断信息。',
 
+    // Configure Hub - Deactivation modal (Encryption Extra)
+    // 'Deactivate' (line 491) and 'Cancel' (line 489) are reused as-is.
+    'DeactivateExtraTitle'                => '停用额外功能',
+    'DeactivateExtraBody'                 => '停用 {name} Extra 功能？您的 SimpleRisk 数据库将被就地解密。加密状态的备份将被保留，以便您在需要时回滚。',
+    'DeactivateExtraError'                => '停用附加功能失败。请查看“健康检查”页面以获取诊断信息。',
+
     // Configure Hub - Async license enrichment notice (Phase 4)
     // 'Retry' (line 2764) is reused. The existing 'LicenseCheckFailed' key
     // (line 1851) refers to the 30-day-disable warning shown elsewhere in
     // SimpleRisk and means something different; this is a distinct message.
-    'CouldNotReachServicesApi'            => "无法连接到 SimpleRisk 服务 API。已安装插件的许可证状态不可用。",
+    'CouldNotReachServicesApi'            => "无法连接到 SimpleRisk 服务 API。未安装的附加功能的许可证状态不可用。",
 
     // Configure Hub - Install modal (Phase 5)
     // 'Install' (line 403) and 'Cancel' (line 489) are reused as-is.
-    'InstallExtraTitle'                   => '安装额外功能',
-    'InstallExtraBody'                    => '安装 {name} Extra？此操作会从 SimpleRisk 下载软件包并将其解压到您的安装目录中。激活是单独的步骤，您可以在安装完成后从该图标中完成激活。',
-    'InstallExtraError'                   => '附加组件安装失败。请查看“健康检查”页面以获取诊断信息。',
-    'MissingExtraName'                    => '缺少额外名称。',
-    'UnknownExtra'                        => '未知额外名称。',
+    'InstallExtraTitle'                          => '安装额外功能',
+    'InstallExtraBody'                           => '安装 {name} Extra？此操作会从 SimpleRisk 下载软件包并将其解压到您的安装目录中。激活是单独的步骤，您可以在安装完成后从该图标中完成激活。',
+    'InstallExtraError'                          => '附加组件安装失败。请查看“健康检查”页面以获取诊断信息。',
+    'MissingExtraName'                           => '缺少额外名称。',
+    'UnknownExtra'                               => '未知额外名称。',
+
+    // License state banner messages (display_license_check() in display.php)
+    // Shown as a header banner when $_SESSION['license_check'] is a non-passing state.
+    // 'LicenseCheckFailed' (line ~1868) is the legacy 30-day-disable warning used
+    // by the old enforcement path; these keys cover the new enforcement states.
 
     // Configure Hub - Purchase modal (Phase 6)
     // 'Cancel' (line 489) is reused as-is.
@@ -2945,6 +2847,1796 @@ $lang = array(
     'PurchaseExtraBody'                   => '{name} 附加功能不包含在您当前的 SimpleRisk 许可证中。请访问 SimpleRisk 附加功能页面了解更多信息或购买许可证。',
     'ViewExtras'                          => '查看附加功能',
 
+    // In-app notifications bell UI
+    // Note: 'Notifications' (line 2234), 'SelectAll' (line 816), 'Restore' (line 952),
+    // 'All' (line 1470), and 'Delete' (line 80) are reused as-is — do not duplicate.
+    'MarkRead'                             => '标记为已读',
+    'NoNotifications'                      => '无通知',
+    // Time-unit abbreviations for the relative-time display in the bell panel.
+    // 'TimeDays' is already used for the column header "Time (Days)"; TimeDayUnit covers the 'd' abbrev.
+    'TimeSeconds'                          => 's',
+    'TimeMinutes'                          => '分',
+    'TimeHours'                            => 'h',
+    'TimeDayUnit'                          => 'd',
+    'NothingInTrash'                       => '垃圾桶里什么也没有',
+    'Promo'                                => '促销',
+    'Trash'                                => '垃圾',
+    'Unread'                               => '未读',
+    'View'                                 => '查看',
+
+    // Workflow "Send In-App Notification" action — audience picker hints.
+    // 'NoneSelected' (line 1878) is reused as-is for the multi-select button.
+    'NotificationSentToAllAdmins'          => '此通知将发送给所有管理员。',
+    'NotificationSentToAllUsers'           => '此通知将发送给所有用户。',
+    'SelectAnAudienceAbove'                => '请在上方选择受众群体。',
+    'RiskConfiguration' => '风险配置',
+    'ReviewSettings' => '查看设置',
+    'Cards' => '卡片',
+    'List' => '列表',
+    'DeletedAssessmentsCannotBeRecovered' => '已删除的评估无法恢复',
+    'TheAssessmentsWereDeletedSuccessfully' => '评估结果已成功删除。',
+    'AssetValuationMode' => '资产估值模式',
+    'AutomaticLinearRange' => '自动线性范围',
+    'AutomaticExponentialRange' => '自动指数范围',
+    'ManualValuation' => '手动的',
+    'AssetValuationMinMustBeNonNegative' => '对于自动指数范围，资产估值最低值必须为零或大于零。',
+    'CrossDomain' => '跨域',
+    'Preferences' => '偏好',
+    'SpecificUser' => '特定用户',
+    'SpecificUsers' => '特定用户',
+    'Help' => '帮助',
+    'Profile' => '个人资料',
+    'Scoring' => '得分',
+    'EncryptionMissingLockTablesPrivilege'   => 'SimpleRisk 数据库用户没有 LOCK TABLES 权限，而安全加密数据库需要此权限。请数据库管理员运行响应中返回的 GRANT 语句，然后重试。',
+    'EncryptionMissingLockTablesPrivilegeUi' => 'SimpleRisk 数据库用户没有加密所需的 LOCK TABLES 权限。数据库管理员必须运行：GRANT LOCK TABLES ON {$db}.* TO {$user}; 然后重试。',
+    'EncryptionRequiredGrantLabel' => '必需的 GRANT 语句：',
+    'EncryptionActivationAlreadyRunning' => '加密激活正在进行中。请等待激活完成，或使用备份恢复功能进行恢复。',
+    'EncryptionActivationEnqueued'           => '加密增强功能已加入队列。数据库加密期间，管理员界面将跟踪进度。',
+    'EncryptionActivationEnqueueFailed'      => '加密激活任务入队失败。请查看调试日志了解详情。',
+    'EncryptionDeactivationEnqueued'         => '加密增强功能的停用已加入队列。数据库解密期间，管理员界面将显示进度。',
+    'EncryptionDeactivationEnqueueFailed'    => '加密停用任务未能成功加入队列。请查看调试日志了解详情。',
+    'EncryptionPipelineInProgress'           => '加密流程（激活、停用或恢复）正在进行中。请等待其完成再试。',
+    'EncryptionPipelineInProgressTask'       => '加密流程目前正在进行中（任务 #{id}， {type}）。请等待其完成再试。',
+    'EncryptionInFlightTitle'            => '加密操作进行中',
+    'EncryptionInFlightBody'             => '加密激活、停用或恢复流程当前正在运行。请等待其完成（操作完成后页面将自动刷新），然后再试一次。',
+    'OK'                                 => '好的',
+    'ActivationGuardFailed'                 => '激活失败。请查看页面顶部的提示信息了解详情。',
+    'EncryptionStageStarting'               => '从… 开始',
+    'EncryptionStageProgress'               => '阶段 {current} 的 {total}： {name}',
+    'EncryptionStageAllDone'                => '所有阶段完成。',
+    'EncryptionStageEncryptTable'           => '加密表： {table}',
+    'EncryptionStageDecryptTable'           => '解密表： {table}',
+    'EncryptionActivationInProgress'        => '正在加密您的 SimpleRisk 数据库。请勿关闭此页面。',
+    'EncryptionActivationFailedTitle'       => '加密激活失败',
+    'EncryptionActivationFailedBody'        => '激活失败，数据库可能处于不一致状态。激活前的备份已保留——请使用“从备份恢复”功能进行恢复，或联系 SimpleRisk 支持。',
+    'EncryptionDeactivationInProgress'      => '正在解密您的 SimpleRisk 数据库。请勿关闭此页面。',
+    'EncryptionDeactivationFailedTitle'     => '加密停用失败',
+    'EncryptionDeactivationFailedBody'      => '停用操作未能完成，数据库可能处于不一致状态。加密状态备份已保留——请使用“从备份恢复”功能回滚到加密状态，或联系 SimpleRisk 支持。',
+    'RestoreFromBackup'                     => '从备份恢复',
+    'RestoreFromBackupNotYetAvailable'      => '此版本暂不支持从备份恢复。请联系 SimpleRisk 技术支持进行恢复。',
+    'EncryptionRestoreInProgress'           => '正在从备份恢复您的 SimpleRisk 数据库。这可能需要几分钟时间。',
+    'EncryptionRestoreEnqueueFailed'        => '恢复操作失败。请检查 SimpleRisk 日志并重试。',
+    'EncryptionStatusActive'                => '加密数据库附加功能已启用。',
+    'EncryptionStatusVersion'               => '版本',
+    'EncryptionDeactivateCta'               => '停用加密数据库附加功能',
+    'EncryptionDeactivateCtaHelp'           => '将每个加密列解密回明文。对于已填充数据的数据库，这需要几分钟时间。',
+    'EncryptionBackupPanelHeading'          => '预激活备份',
+    'EncryptionBackupCreatedAt'             => '创建',
+    'EncryptionBackupSize'                  => '大小',
+    'EncryptionBackupOriginalFilename'      => '文件',
+    'EncryptionBackupDownloadTooltip'       => '点击下载此备份文件的副本，以便离线存储。',
+    'EncryptionBackupStateRestoring'        => '系统正在恢复过程中。',
+    'EncryptionNoBackupAvailable'           => '目前未存储激活前备份。备份会在每次激活时创建，并会被任何后续的激活或停用操作覆盖。',
+    'EncryptionRestoreCtaHelp'              => '如果验证发现问题，需要回滚到加密前的状态，请选择此项。',
+    'EncryptionRestoreTitle'                => '从备份恢复？',
+    'EncryptionRestoreBodyWhy'              => '回滚到最近一次激活开始时捕获的加密前快照。如果激活后验证发现问题且您需要放弃加密，请选择此选项。',
+    'EncryptionRestoreBodyWhat'             => '备份创建后写入数据库的每一行数据都将永久丢失，包括风险、缓解措施、审计日志条目以及激活后所做的任何其他更改。加密数据库附加功能将在恢复过程中停用。',
+    'EncryptionDeleteBackupCta'             => '删除加密前的备份',
+    'EncryptionDeleteBackupCtaHelp'         => '加密后验证完成后，请选择此选项。删除未加密的快照才是加密真正发挥保护作用的关键。',
+    'EncryptionDeleteBackupTitle'           => '删除加密前的备份？',
+    'EncryptionDeleteBackupBodyWhy'         => '删除最近一次激活开始时捕获的未加密数据快照。无限期地保留该快照会违背加密的初衷——任何拥有数据库访问权限的人都可以读取加密前的副本。',
+    'EncryptionDeleteBackupBodyWhat'        => '数据库内备份将被立即删除。您将无法再使用“从备份还原”功能将数据库回滚到加密前的状态。如果之后发现加密问题，您唯一的恢复途径是从运行备份中全新还原数据库。',
+    'EncryptionDeleteBackupError'           => '备份删除失败。请查看调试日志并重试。',
+    'EncryptionModalWhyLabel'               => '为什么要使用这个：',
+    'EncryptionModalWhatHappensLabel'       => '接下来会发生什么：',
+    'EncryptionFieldsPanelHeading'          => '加密数据库字段',
+    'EncryptionFieldsHelp'                  => '此处列出的每一列数据在静态存储时都经过加密处理。锁形图标的工具提示显示了所使用的加密算法。',
+    'EncryptionFieldsTableColumn'           => '数据库表',
+    'EncryptionFieldsFieldColumn'           => '数据库字段',
+    'EncryptionFieldsEncryptedColumn'       => '加密',
+    'EncryptionFieldsNoneFound'             => '当前未注册任何加密字段。这不应该发生在已运行的安装中——请检查 encrypted_fields 表中的种子数据。',
+    'EncryptionFieldsLockTooltipPrefix'     => '加密方式：',
+    'EncryptionInactiveRedirect'            => '加密数据库附加功能未激活。请从配置中心激活它。',
+    'ContactSupport'                        => '联系客服',
+    'BackupDatabaseFailed' => '数据库备份失败。请查看 SimpleRisk 日志了解详情。',
+    'WindowsNotSupported' => '自版本 20260421-001 起，SimpleRisk 已不再支持 Windows 系统。请迁移到基于 Linux 的服务器。',
+    'WindowsUpgradeHalted' => '此操作无法在 Windows 服务器上运行。自 20260421-001 版本起，SimpleRisk 已不再支持 Windows 系统。请迁移到基于 Linux 的服务器。',
+    'BundleIntegrityVerificationFailed' => '下载的 SimpleRisk 软件包完整性验证失败。升级已中止，未修改任何文件。',
+    'BundleDownloadFailed' => 'SimpleRisk软件包下载失败。升级已中止，未修改任何文件。',
+    'MissingOrInvalidTrackingID' => '缺少或无效的跟踪 ID。',
+    'JiraIntegrationExtra' => 'Jira 集成额外功能',
+    'IncidentManagementNotifications' => '事件管理通知',
+    'NotificationSettingsUpdated' => '通知设置已更新。',
+    'DefaultBusinessUnit' => '默认业务单元',
+    'TheDefaultBusinessUnitEncompasses' => '默认业务单元，涵盖所有团队。',
+    'UserGuide' => '用户指南',
+    'AdministratorGuide' => '管理员指南',
+    'DecryptionFailureToast' => '一个或多个加密字段无法解密，显示为空。请查看系统日志了解详情。',
+    'EncryptionFailureToast' => '某个字段无法加密，因此未存储。请查看系统日志了解详情。',
+    'EnableAPIv1Endpoints' => '启用 API v1 端点（已弃用）',
+    'EnableAPIv1EndpointsHelp' => 'API v1 已弃用。除非您的集成需要它，否则请保持禁用状态。/api/v2/ 不受此设置影响，始终可用。',
+    'AllowAPIKeyInURL' => '允许在 URL 或 POST 请求体中使用 API 密钥',
+    'AllowAPIKeyInURLHelp' => '出于安全考虑，API 密钥应通过 X-API-KEY 请求头发送。如果禁用此功能，则 URL 查询字符串 (?key=) 或 POST 请求体 (key=) 中发送的密钥将被拒绝，因为这些位置更容易在代理日志和浏览器历史记录中暴露。X-API-KEY 请求头始终会被接受。除非您的集成无法发送此请求头，否则请保持禁用状态。',
+    'ArtificialIntelligenceDesc' => '为该 SimpleRisk 实例配置 AI 提供商连接和 AI 响应的上下文问题。',
+    'ProviderConfiguration' => '提供商配置',
+    'ContextQuestions' => '背景问题',
+    'AIProviderNotConfiguredWarning' => 'AI 提供商尚未配置。在“提供商配置”选项卡中设置提供商和 API 密钥之前，无法生成实时结果。',
+    'AutoProcessSCFUpdates' => '自动处理新的安全控制框架 (SCF) 版本',
+    'AddNewControls' => '添加新的 SCF 控制',
+    'UpdateExistingControls' => '更新现有 SCF 控制',
+    'DeleteRemovedControls' => '删除已移除的 SCF 控件',
+    'CreateEvidenceRequests' => '创建 SCF 控制的证据请求',
+    'SelectSCFFrameworks' => '选择SCF框架',
+    'SCFReleaseProcessing' => 'SCF 版本处理',
+    'NotFrameworkDescription' => '下方的小部件显示了安全控制框架 (SCF) 电子表格中的所有标题。您可以使用它来选择哪些列包含框架数据，哪些列包含非框架数据。',
+    'Note' => '备注',
+    'AISettingsNote' => '启用 AI 辅助功能后，系统会使用您的 Anthropic API 密钥将数据发送到 Anthropic，以便在其 LLM 中进行分析，从而为您提供量身定制的结果。',
+    'EnableAIAssistanceForControlData' => '启用人工智能辅助控制数据',
+    'ReferenceText' => '参考文本',
+    'FrameworkSelection' => '框架选择',
+    'Show' => '展示',
+    'InProgress' => '进行中',
+    'Canceled' => '取消',
+    'Failed' => '失败的',
+    'LegacyFrameworks' => '遗留框架',
+    'Archive' => '档案',
+    'FailedToFetchCVEInformation' => '获取 CVE 信息失败。请检查 CVE ID 并重试。',
+    'ComplianceDashboard' => '合规性仪表盘',
+    'DynamicAuditReportHelp' => '本报告显示所有审计及其状态。',
+    'ComplianceDashboardDescription' => '此图表显示了每个框架中的控件数量，绿色表示通过的控件，红色表示未通过的控件。',
+    'PassingControls' => '通过的控制项',
+    'FailingControls' => '控制失效',
+    'ControlsByFramework' => '框架控制',
+    'NumberOfControls' => '控制数量',
+    'PasswordResetTokenExpirationPeriod' => '密码重置令牌过期时间',
+    'APasswordResetTokenExpirationPeriodShouldBeMoreThan5Minutes' => '密码重置令牌的有效期应超过 5 分钟。',
+    'MeanTimeToRemediate' => '平均修复时间',
+    'ByTeam' => '团队',
+    'ByCategory' => '按类别',
+    'ByRiskLevel' => '按风险等级',
+    'MeanTimeToRemediateDescription' => '按团队、类别和风险级别分组，列出关闭风险的平均天数。仅包含已关闭的风险。',
+    'AverageDaysToClose' => '平均关闭天数',
+    'ControlPassRateTrend' => '控制通过率趋势',
+    'ControlPassRateTrendDescription' => '过去 12 个月内各框架的月度通过率（%）。仅显示在此期间至少有一次测试结果的框架。',
+    'PassRatePercent' => '通过率（%）',
+    'ExposureByTeam' => '团队风险敞口',
+    'ExposureByCategory' => '按类别划分的风险暴露',
+    'ExposureByLocation' => '按地点划分的风险暴露',
+    'TotalRiskScore' => '总风险评分',
+    'SLABreachStatus' => '服务水平协议违约状态',
+    'SLABreachDescription' => '未解决的风险是否在其服务水平协议 (SLA) 阈值范围内，按风险等级划分。默认阈值：极高=30天，高=60天，中=90天，低=180天。',
+    'WithinSLA' => '在服务水平协议 (SLA) 范围内',
+    'SLABreached' => '服务水平协议违约',
+    'NumberOfRisks' => '风险数量',
+    'ExposureByBusinessUnit' => '各业务部门的风险敞口',
+    'BUChartCrossUnitNote' => '注意：分配给跨多个业务部门团队的风险将在每个业务部门中计算。',
+    'SLAThresholds' => '服务水平协议阈值',
+    'SLAThresholdsDescription' => '根据风险等级，未解决的风险在被视为逾期之前可以保持最长天数。',
+    'SLAThresholdMustBeBetween1And3650' => '服务水平协议 (SLA) 阈值必须介于 1 天和 3650 天之间。',
+    'SLAThresholdsUpdatedSuccessfully' => '服务水平协议阈值已成功更新。',
+    'TimeToDetect' => '检测时间',
+    'TimeToDetectDescription' => '按团队和事件类型分组，统计从事件开始（Began On）到检测到（Detected On）的平均天数。仅包含记录了这两个日期的事件。',
+    'ByOccurrenceType' => '按发生类型',
+    'ApplicationVersion' => '应用程序版本',
+    'DatabaseVersion' => '数据库版本',
+    'InstanceID' => '实例 ID',
+    'LatestIsVersion' => '最新版本是 {$version}',
+    'UpToDate' => '最新',
+    'UpdateAvailable' => '更新可用',
+    'RegistrationSuccessful' => '注册成功。',
+    'LocalRegistrationStateCleared' => '本地注册状态已清除。请到 /admin/register.php 重新注册以获取新的 instance_id。',
+    'InstanceInformationUpdated' => '实例信息已更新。',
+    'UpgradeExtraDesc' => '升级插件可确保您的 SimpleRisk 实例始终保持最新状态，它通过下载并应用应用程序和数据库升级，以及安装和更新其他插件，所有操作均可在“注册和升级”页面完成。该插件与 SimpleRisk 捆绑销售，无需额外付费，因此您可以始终使用最新版本，无需手动管理文件。',
+    'ExtraInstallDisabledByEnforcement' => '您的许可证状态目前禁用额外安装。请联系您的管理员或 SimpleRisk 支持团队。',
+    'LicenseStateUnknownRetryShortly' => '许可证信息暂不可用。请稍后再试。',
+    'LicenseExpiringSoonTitle' => '许可证即将到期： {$extra}',
+    'LicenseExpiringSoonBody' => '您的 {$extra} 许可证将于 {$date} 到期（剩余{$days} 天）。请通过“注册并升级”进行续订，以免失去访问权限。',
+    'LicenseExpiredTitle' => '许可证已过期： {$extra}',
+    'LicenseExpiredBody' => '您的 {$extra} 许可证已于 {$date}到期。请通过“注册和升级”进行续订以恢复访问权限。',
+    'Licenses' => '许可证',
+    'LicensesDesc' => '查看每项 SimpleRisk Extra 的许可状态。',
+    'RefreshLicenses' => '更新许可证',
+    'LoadingLicenseData' => '正在加载许可证数据...',
+    'Licensed' => '持牌',
+    'Unlicensed' => '无证',
+    'Expired' => '已到期',
+    'Free' => '免费',
+    'License' => '执照',
+    'NoLicensedExtras' => '无授权额外内容。',
+    'NoExpiredExtras' => '没有过期的附加服务。',
+    'NoUnlicensedExtras' => '没有未经授权的额外功能。',
+    'Unlimited' => '无限',
+    'LicenseStateLockMessage' => '您的许可证状态目前已禁用额外的安装和升级操作。已安装的附加组件将继续正常工作。',
+    'LicenseStateFailMessage' => '您的 SimpleRisk 许可证已过期或已被停用。请联系 SimpleRisk 技术支持以恢复服务。',
+    'LicenseStateAnonymousMessage' => '此 SimpleRisk 实例尚未注册。仅提供免费附加功能。请在“配置”菜单中注册以访问付费附加功能。',
+    'LicenseStateUnknownMessage' => 'SimpleRisk 无法连接到许可服务。许可状态将在下次检查时自动刷新。',
+    'ExtraIntegrityCheckFailed' => '下载的软件包未通过完整性检查，因此未安装。',
+    'ExtraInstallWriteFailed' => '由于 extras 目录不可写，因此无法安装该附加组件。',
+    'ExtraInstallExtractFailed' => 'Extra 已下载，但无法解压和安装。请查看应用程序日志。',
+    'EncryptionPreflightFailed' => '初步 DDL 失败——详情请查看调试日志。',
+    'EncryptionActivationFailed' => '加密激活在初步设置期间失败。请检查应用程序日志。',
+    'QuestionnaireSentSchedulingOnly' => '问卷已发送。仅以下日程安排设置可以修改。',
+    'AreYouSureYouWantToReopenThisResult' => '您确定要重新打开此结果进行审核吗？',
+    'QuestionnaireResultReopenedSuccessfully' => '问卷调查结果已成功重新开放供审核。',
+    'QuestionnaireResultReopenedAuditLog' => '问卷“{$questionnaire_name}”结果（由联系人“{$contact_name}”提交）已重新开放，供用户“{$user_name}”审核。',
+    'QuestionnaireDraftNoChanges' => '无需保存任何更改。',
+    'SendQuestionnaireIdRequired' => 'id 参数为必填项，且必须为数字。',
+    'RiskIdMustBeNumeric' => 'risk_id 参数必须为数值型。',
+    'AssessmentsExtraNotEnabled' => 'Assessments Extra 未启用。',
+    'QuestionnaireSchedulingUpdatedAuditLog' => '名为“{$name}”的问卷的日程安排设置已由用户名“{$user}”更新。',
+    'QuestionnaireResultNotReopenable' => '由于问卷结果既不处于被拒绝的状态，也不处于不被批准的状态，因此无法重新打开。',
+    'QuestionnaireTrackingNotFoundAfterUpdate' => '更新后未找到问卷跟踪信息。',
+    'QuestionnaireResultAlreadyDecided' => '问卷结果已确定（批准、拒绝或不批准）。请先使用“重新打开”操作。',
+    'QuestionnaireNoControlsForApproval' => '此问卷未找到任何控制措施。',
+    'QuestionnaireNoResponsesForApproval' => '未找到用于处理成熟度更新的问卷回复。',
+    'ResultMessageUnavailable' => '结果信息不可用。',
+    'AIProviderURLNotAllowed' => '该 API URL 不被允许。请使用已知的 AI 提供商或回环地址 (127.0.0.1) 自托管地址。',
+    'AIReenterKeyForNewURL' => '重新输入 API 密钥以测试不同的提供商 URL。',
+    'WorkflowHttpRequestDisallowedURL' => 'http_request：URL {$url} 解析到不允许的内部地址或保留地址。',
+    'BehaviorAndScheduling' => '行为与日程安排',
+    'PrepopulateAcrossContacts' => '预先填充新回复，使用其他联系人之前针对此评估的回答。',
+    'PrepopulateAcrossContactsHelp' => '使用任何联系人最近的先前答案预先填写新受访者的表格——这有助于在责任交接时保持工作的连续性。',
+    'PrepopulateAcrossContactsCaution' => '默认关闭。关闭后，联系人只能看到自己之前的回答。仅当受访者是内部人员或受信任人员时才启用此功能——否则可能会将一个联系人的回答暴露给其他联系人（例如，一个供应商可以看到另一个供应商的回答）。',
+    'AddTemplateAndContacts' => '添加模板和联系人',
+    'QuestionnaireGeneralSubtitle' => '给问卷命名并指定所有者。',
+    'QuestionnaireInstructionsSubtitle' => '向受访者展示的指导以及邀请邮件中的内容。',
+    'QuestionnaireBehaviorSubtitle' => '问卷发送和填写后的表现',
+    'QuestionnaireRiskDetailsSubtitle' => '此评估产生的风险可应用可选默认值。',
+    'QuestionnaireTemplatesSubtitle' => '将每个问题模板与接收该模板的联系人进行匹配。',
+    'BypassPendingRisksLabel' => '跳过待处理风险',
+    'BypassPendingRisksDescription' => '评估完成后立即创建风险，而不是保留等待审查。',
+    'AutomaticallySendResultsLabel' => '自动发送结果',
+    'AutomaticallySendResultsDescription' => '评估完成后，请将评估结果发送给所有评估联系人。',
+    'QuestionnaireMultiselectPlaceholder' => '选择或搜索…',
+    'QuestionnaireNamePlaceholder' => '例如，2026 年供应商安全审查',
+    'AddTeamPlaceholder' => '添加团队…',
+    'AddStakeholderPlaceholder' => '添加利益相关者…',
+    'AddControlTypePlaceholder' => '添加控制类型…',
+    'AddLocationPlaceholder' => '添加位置…',
+    'NotifyWhenNotCompleteLabel' => '未完成时通知',
+    'NotifyWhenNotCompleteDescription' => '提醒尚未完成评估的联系人。',
+    'RemindEveryDays' => '每隔 {$day} 天提醒',
+    'ResendAssessmentLabel' => '重新发送评估',
+    'ResendAssessmentDescription' => '按周期自动重新发布评估。',
+    'ResendEveryDays' => '每隔 {$day} 天重新发送',
+    'QuestionnaireSaveBarHint' => '“保存并发送”功能会立即向联系人发送调查问卷。',
+    // Home dashboard — KPI tile labels
+    'NewSelfAssessment' => '新的自我评估',
+    'SelfAssessmentPrereqIntro' => '自我评估功能可帮助您根据安全控制框架评估您的组织，并自动生成失效控制措施带来的风险。首先需要完成两个设置步骤：',
+    'RegisterYourInstance' => '注册您的实例',
+    'RegisterYourInstanceHelp' => '注册后，此实例将与 SimpleRisk 的许可服务关联，以便可以下载免费的附加功能（包括 SCF）。',
+    'InstallTheSCF' => '安装安全控制框架',
+    'InstallTheSCFHelp' => 'SCF 是一个免费的附加组件，它提供了此功能评估所依据的框架、控制问题和风险映射。安装过程在后台运行，可能需要几分钟时间。',
+    'GoToRegistration' => '前往注册',
+    'GoToSCF' => '前往安全控制框架',
+    'SelfAssessmentEnableTip' => '可选：在“治理”>“框架”下，您可以启用特定的 SCF 框架，以便在开始评估时看到一个精选的框架列表。您也可以在不启用框架的情况下，使用 SCF 完整目录中的任何框架进行评估。',
+    'ChooseAFramework' => '选择一个评估框架',
+    'EnabledFrameworks' => '已启用框架',
+    'AllScfFrameworks' => '所有SCF框架',
+    'Start' => '开始',
+    'Resume' => '恢复',
+    'ControlQuestion' => '控制问题',
+    'NotApplicable' => '不适用',
+    'SaveProgress' => '保存进度',
+    'MarkComplete' => '标记完成',
+    'AnsweredOfTotal' => '回答',
+    'FailedSoFar' => '目前为止失败了',
+    'StartedBy' => '由……发起',
+    'FailedControls' => '控制失败',
+    'PushToRisk' => '推动风险',
+    'ConfirmDeleteSelfAssessment' => '删除这份自我评估报告？无法撤销。',
+    'ConfirmCompleteSelfAssessment' => '这项评估完成了吗？失效的控制措施会产生风险。',
+    'NoSelfAssessmentsYet' => '目前还没有人进行自我评估。不妨先开始一次。',
+    'RequestFailed' => '请求未能完成，请重试。',
+    'NoPendingRisks' => '无潜在风险。完成评估，以识别失效控制措施带来的风险。',
+    'NoFailedControls' => '此筛选条件没有可显示的对照结果。',
+    'ControlResultsTruncated' => '显示最近 2000 条结果。缩小筛选范围以查看更多结果。',
+    'GeneratedFromSelfAssessment' => '由自我评估生成',
+    'SelfAssessmentMitigationSolution' => '实施以下链接中的控制措施（这些措施在本次自我评估中被认定为存在缺陷），以降低此风险。',
+    'NSelected' => '{n} 已选择',
+    'FilterByControl' => '按控件筛选',
+    'Pushing' => '推送…',
+    'Deleting' => '删除…',
+    'ConfirmPushSelectedPendingRisks' => '将选定的待处理风险 {n} 推送到风险？',
+    'ConfirmDeleteSelectedPendingRisks' => '删除已选定的待处理风险（ {n} ）？此操作无法撤销。',
+    'ConfirmDeleteSelectedSelfAssessments' => '删除已选择的 {n} 项自我评估？此操作无法撤销。',
+    'BulkPartialFailure' => '{n} 个项目成功，共 {total} 个项目失败。请刷新页面查看当前状态。',
+
+    // Workflows Extra - deactivation confirm ('Deactivate' at line 480 is reused as-is)
+    'WorkflowsExtraDeactivateConfirm' => '停用 Workflows Extra 功能？所有用户创建的工作流定义都将被永久删除。系统工作流将保留。',
+    'HomeKpiOpenRisks' => '开放的风险',
+    'HomeKpiNeedsReview' => '需要审查',
+    'HomeKpiUnmitigated' => '未缓解',
+    'HomeKpiClosedRisks' => '已关闭的风险',
+    'HomeKpiControlPassRate' => '控制通过率',
+    'HomeKpiFailingControls' => '控制失效',
+    'HomeKpiOpenAudits' => '公开审计',
+    'HomeKpiTestsDueSoon' => '考试即将到来',
+    'HomeKpiActiveFrameworks' => '活动框架',
+    'HomeKpiTotalControls' => '完全控制',
+    // Home dashboard — What's Next feed
+    'WhatsNext' => '接下来是什么？',
+    'WhatsNextAllCaughtUp' => '你已经全部跟上了。',
+    'WhatsNextRegisterInstance' => '注册您的 SimpleRisk 实例',
+    'WhatsNextSubmitFirstRisk' => '提交您的第一个风险',
+    'WhatsNextLoadFramework' => '加载控制框架',
+    'WhatsNextUnreviewedRisks' => '需审查的风险',
+    'WhatsNextUnmitigatedRisks' => '需降低的风险',
+    'WhatsNextInitiateAudits' => '启动审计',
+    // Home dashboard — widget picker type labels
+    'WidgetType_kpi' => 'KPI 瓷砖',
+    'WidgetType_whats_next' => '列表',
+    // Home dashboard — hub catalog entry
+    'HomeDashboard' => '首页',
+    'HomeDashboardDesc' => '您的起点——关键指标和下一步行动一目了然。',
+    'HomeChartRiskByLevel' => '按级别划分的风险',
+    'HomeKpiThisMonth' => '本月',
+    'HomeKpiNoChange' => '无变化',
+    'EditLayout' => '编辑布局',
+    'ListHighestRisks' => '我面临的最大风险',
+    'ListPastDueReviews' => '逾期审查',
+    'ListUpcomingTests' => '即将进行的测试',
+    'ListRecentFailures' => '近期失败案例',
+    'ListPoliciesReview' => '待审核文件',
+    'ListExpiringExceptions' => '即将失效的例外情况',
+    'ImKpiOpenIncidents' => '总开盘价',
+    'ImKpiOverdue' => '逾期',
+    'ImKpiMttr30' => '平均分辨率',
+    'ImKpiMttrQuarter' => '平均分辨率（90天）',
+    'ImKpiMttrYear' => '平均分辨率（1年）',
+    'ImKpiMttrAll' => '平均分辨率（全部）',
+    'ImKpiResolved30' => '已解决',
+    'ImChartBySeverity' => '按严重程度',
+    'ImChartByStatus' => '按状态',
+    'ImListRecent' => '近期事件',
+    'ImListUnassigned' => '未分配事件',
+    'HomeKpiOpenExceptions' => '未解决的例外情况',
+    'HomeKpiPolicies' => '政策',
+    'ResolutionTargets' => '解决目标（天）',
+    'ResolutionTargetsHelp' => '事件在被计为逾期之前可以保持开放状态的天数。',
+    'DefaultTarget' => '默认',
+    'PerSeverityOverrideHelp' => '（可选）针对特定严重程度覆盖默认值（留空则使用默认值）：',
+    'ResolutionTargetUsesDefault' => '默认值（%d）',
+    'SeverityColors' => '严重程度颜色',
+    'SeverityColorsHelp' => '事件仪表板和事件详情页面上会显示每种严重程度对应的颜色。',
+    'Editing' => '编辑',
+    'SetAsDefaultForEveryone' => '设置为所有人的默认值',
+    'EditLayoutHint' => '拖动图块移动 · 拖动边缘调整大小 · ✕ 移除',
+    'RemoveWidget' => '移除小部件',
+    'AddWidget' => '添加小部件',
+    'AddToDashboard' => '添加到仪表板',
+    'AllWidgetsAdded' => '所有可用的组件都在此仪表板上。',
+    'AddText' => '添加文本',
+    'GettingStarted' => '入门',
+    'GettingStartedTitle' => '欢迎来到 SimpleRisk',
+    'GettingStartedSubtitle' => '几个简单的步骤即可充分利用 SimpleRisk。',
+    'GSProgressCount' => '{done} 的 {total} 已完成',
+    'GSNextUp' => '接下来',
+    'GSArea_setup' => '设置',
+    'GSArea_risk' => '风险',
+    'GSArea_assessment' => '评估',
+    'GSArea_compliance' => '遵守',
+    'GSArea_assets' => '资产',
+    'GSArea_ai' => '设置',
+    'GSHide' => '隐藏入门指南',
+    'GSDismissStep' => '忽略此步骤',
+    'GSAllSet' => '一切就绪——干得漂亮！',
+    'GSWalkthrough' => '30分钟参观',
+    'Explore' => '探索',
+    'Learn' => '学习',
+    'AdminGuide' => '管理员指南',
+    'LearnMore' => '了解更多',
+    'GSRegisterTitle' => '注册您的实例',
+    'GSRegisterDesc' => '使用您的许可证密钥激活支持和更新。',
+    'GSRegisterCta' => '注册',
+    'GSScfTitle' => '安装安全控制框架',
+    'GSScfDesc' => '安装 SCF——您的跨标准控制库。',
+    'GSScfCta' => '安装 SCF',
+    'GSInviteTitle' => '邀请您的团队',
+    'GSInviteDesc' => '添加同事，以便分配和审核工作。',
+    'GSInviteCta' => '添加用户',
+    'GSAiTitle' => '配置人工智能',
+    'GSAiDesc' => '利用人工智能提升您的 SimpleRisk 使用体验。',
+    'GSAiCta' => '建立人工智能',
+    'GSSubmitRiskTitle' => '提交您的第一个风险',
+    'GSSubmitRiskDesc' => '找出贵组织面临的风险。',
+    'GSSubmitRiskCta' => '提交风险',
+    'GSMitigateTitle' => '制定缓解措施',
+    'GSMitigateDesc' => '为未解决的风险添加缓解计划。',
+    'GSMitigateCta' => '制定缓解措施',
+    'GSReviewTitle' => '进行风险评估',
+    'GSReviewDesc' => '评估风险并决定下一步措施。',
+    'GSReviewCta' => '执行审查',
+    'GSDefineTestTitle' => '定义一个控制测试',
+    'GSDefineTestDesc' => '设置如何测试控件。',
+    'GSDefineTestCta' => '定义测试',
+    'GSInitiateAuditTitle' => '启动审计',
+    'GSInitiateAuditDesc' => '启动测试或审核周期。',
+    'GSInitiateAuditCta' => '启动审计',
+    'GSAssetTitle' => '添加您的资产',
+    'GSAssetDesc' => '清点您正在保护的资产。',
+    'GSAssetCta' => '添加资产',
+    'GSInvalidStep' => '入门步骤无效。',
+    'GSPagerLabel' => '{from}–{to} 的 {total}',
+    'GSPrevCards' => '显示之前的步骤',
+    'GSNextCards' => '显示后续步骤',
+    'WhatsNextInstallSCF' => '安装安全控制框架',
+    'GSActivateScfTitle' => '激活安全控制框架',
+    'GSActivateScfDesc' => '启用已安装的 SCF，将其控件加载到您的库中。',
+    'GSActivateScfCta' => '激活SCF',
+    'WhatsNextActivateSCF' => '激活安全控制框架',
+    'GSEnableFrameworksTitle' => '启用适用的框架',
+    'GSEnableFrameworksDesc' => '启用适用于贵组织的 SCF 框架。',
+    'GSEnableFrameworksCta' => '启用框架',
+    'WhatsNextEnableFrameworks' => '启用适用的框架',
+    'GSSelfAssessTitle' => '进行自我评估',
+    'GSSelfAssessDesc' => '对照 250 多个框架评估您的组织，并找出控制措施失效带来的风险。',
+    'GSSelfAssessCta' => '开始评估',
+    'WhatsNextTakeSelfAssessment' => '进行自我评估',
+    'WhatsNextConfigureAI' => '配置人工智能',
+    'ListUnreviewedRisks' => '未经评估的风险',
+    'ControlsByDomain' => '按域控制',
+    'ControlsByClass' => '按类控制',
+    'ControlsByPhase' => '相位控制',
+    'ControlsByPriority' => '按优先级控制',
+    'ControlsByCurrentMaturity' => '按当前成熟度进行控制',
+    'ControlStatusOverTime' => '控制状态随时间变化',
+    'ComplianceTotalControls' => '完全控制',
+    'HomeKpiOverdueTests' => '逾期测试',
+    'Total' => '全部的',
+    'StartTheTest' => '开始测试',
+    'TestStartsAutomatically' => '测试自动开始',
+    'GoToTest' => '前往测试',
+    'NotTested' => '未经测试',
+    'PassingPercent' => '及格率',
+    'ListFailingControls' => '控制失效',
+    'Exceptions' => '例外情况',
+    'Documents' => '文件',
+    'ControlsBelowMaturity' => '成熟度以下的控制',
+    'ControlsAtMaturity' => '成熟期的控制',
+    'ControlsAboveMaturity' => '成熟度以上的控制',
+    'Maturity' => '成熟度',
+    'AllTime' => '所有时间',
+    'Last7Days' => '过去7天',
+    'Last30Days' => '过去30天',
+    'Last90Days' => '过去90天',
+    'YearToDate' => '今年迄今为止',
+    'CustomRange' => '定制系列',
+    'Age' => '存续时间',
+    'ImOpenIncidents' => '未决事件',
+    'ImClosedIncidents' => '已结案事件',
+    'ImByAttackVector' => '通过攻击向量打开',
+    'ImBySource' => '开源',
+    'AverageDaysToDetect' => '平均检测天数',
+    'ImKpiAvgTtd' => '平均检测',
+    'Days' => '天',
+    'ImKpiCriticalOpen' => '关键开放',
+    'ImKpiResolvedInSla' => '已在服务级别协议 (SLA) 中解决',
+    'Events' => '活动',
+    'ImEventsIncidents' => '事件与事故',
+    'ImSourceBreakdown' => '按类别来源',
+    'ImClosureSummary' => '结案总结',
+    'ImSignalQuality' => '告警信号质量',
+    'ImSignalLowSample' => '经裁决的结案案例数量不足，无法进行可靠评级。',
+    'ImportExportExportPdf' => '导出PDF',
+    'ImportExportExporting' => '准备 PDF…',
+    'ImportExportExportFailed' => '无法生成PDF文件，请重试。',
+    'ImportExportGeneratedOn' => '生成',
+    'ImportExportPage' => '页',
+    'ImportExportPageOf' => '的',
+    'ResolutionTargetsUpdated' => '针对不同严重程度的解决目标已更新。',
+    'SeverityColorsUpdated' => '严重程度颜色已更新。',
+    // AI Capabilities Catalog + AI settings hub (unified AI settings)
+    'AICapGrcRecommendations' => 'GRC框架建议',
+    'AICapGrcRecommendationsDesc' => '根据贵组织的实际情况，提供人工智能生成的框架建议和执行摘要。',
+    'AICapRiskRecommendations' => '风险建议',
+    'AICapRiskRecommendationsDesc' => '根据风险、其缓解措施和审查结果，针对每个风险提出风险详情和缓解措施的建议。',
+    'AICapFairAnalysis' => '公平定量分析',
+    'AICapFairAnalysisDesc' => 'AI 估算 Beta-PERT 损失参数；SimpleRisk 运行 10,000 次迭代的蒙特卡罗模拟来量化风险（以美元计）。',
+    'AICapDocumentCustomization' => '文档定制',
+    'AICapDocumentCustomizationDesc' => '填充文档模板中的占位符并清理政策文本，使模板政策读起来就像是您自己的政策。',
+    'AICapDocumentControlMatching' => '文档↔控制匹配',
+    'AICapDocumentControlMatchingDesc' => '自动将控制措施映射到政策文件，并提供置信度评分和理由供您查看。',
+    'AICapDocumentTemplates' => '文档模板库',
+    'AICapDocumentTemplatesDesc' => '从 SimpleRisk 库安装精选的政策、指南和程序模板。',
+    'AICapControlReferenceEnhancement' => '控制参考增强',
+    'AICapControlReferenceEnhancementDesc' => '通过网络搜索查找逐字对照文本，以丰富您的对照参考文献。',
+    'AICapAiChat' => '聊天助手',
+    'AICapAiChatDesc' => 'SimpleRisk 中的 GRC 助手，可在任何上下文中回答相关问题。',
+    'AICapSurfacedRecommendations' => '人工智能页面',
+    'AICapSurfacedRiskView' => '风险评估——详情及缓解措施',
+    'AICapSurfacedFairTab' => '风险视图 — FAIR 标签页',
+    'AICapSurfacedDocuments' => '治理——文件',
+    'AICapSurfacedControls' => '合规性——控制',
+    'AICapSurfacedEveryPage' => '每页——浮动助手',
+    'AICapabilitiesCatalog' => '能力',
+    'AICapSearchPlaceholder' => '搜索 AI 功能…',
+    'AICapFilterDomain' => '领域',
+    'AICapFilterTier' => '层级',
+    'AICapFilterState' => '状态',
+    'AICapTierExtra' => 'AI 额外',
+    'AICapStateLocked' => '已锁定',
+    'AICapIncludedInExtra' => '包含在 AI Extra 中',
+    'AICapPurchaseExtra' => '购买 AI Extra',
+    'AICapNeedsProvider' => '需要提供商设置',
+    'AICapNoMatch' => '没有匹配的功能',
+    'AICapNoMatchHint' => '尝试使用不同的域名、层级或搜索词。',
+    'AICapCountSingular' => '能力',
+    'AICapCountPlural' => '能力',
+    'DomainAssistant' => '助手',
+    'AICapLoadError' => 'AI功能加载失败，请重试。',
+    'AIProviderConfigSubtitle' => '将 SimpleRisk 与 AI 提供商连接，以支持 AI 功能。',
+    'AIHowToGetAPIKeyFor' => '如何获取 API 密钥',
+    'AIExtraNotActivated' => '未激活',
+    'AIExtraValueProp' => '增强型人工智能——FAIR风险量化、文档和控制协助以及人工智能聊天助手。',
+    'AICtxOrgName' => '贵组织的名称是什么？',
+    'AICtxOrgSizeEmployees' => '贵公司有多少名员工？',
+    'AICtxOrgSizeRevenue' => '贵公司年收入是多少？',
+    'AICtxOrgObjective' => '贵组织的主要业务目标和战略目标是什么？',
+    'AICtxOrgIndustry' => '贵公司的主要行业或领域是什么？',
+    'AICtxOrgLocation' => '贵公司在哪些国家或地区开展业务？',
+    'AICtxOrgType' => '你们是哪种类型的组织？',
+    'AICtxDataTypes' => '贵组织收集、处理或存储哪些类型的数据（例如，个人数据、财务数据、健康信息）？',
+    'AICtxDataCustomers' => '您的主要客户或利益相关者是谁（例如，消费者、企业、政府机构）？',
+    'AICtxDataRegulatory' => '您所在的行业是否受到任何特定的监管要求约束？',
+    'AICtxDataThirdParties' => '贵公司是否有任何需要合规监管的第三方合作关系或外包服务？',
+    'AICtxMaturityIssues' => '过去 3-5 年内，您是否遇到过任何重大的合规问题、安全漏洞或风险事件？',
+    'AICtxMaturityConcerns' => '您在当前的 GRC 流程中是否发现了任何需要关注或改进的具体领域？',
+    'AICtxMaturityAppetite' => '贵组织的风险偏好和风险承受能力如何？',
+    'AICtxMaturityLevel' => '您在公司治理、风险管理和合规实践方面的成熟度目前如何？',
+    'AICtxImplementationChanges' => '您的业务模式、技术基础设施或市场是否有任何即将发生的变化可能会影响您的合规需求？',
+    'AICtxImplementationResourcesBudget' => '您有哪些预算拨款资源可用于实施和维护合规框架？',
+    'AICtxImplementationResourcesPersonnel' => '您有哪些人力资源可用于实施和维护合规框架？',
+    'AICtxImplementationResourcesTechnology' => '您有哪些技术基础设施资源可用于实施和维护合规框架？',
+    'AICtxImplementationResourcesTraining' => '你们有哪些培训和发展资源可用于实施和维护合规框架？',
+    'AICtxImplementationResourcesExternal' => '为了实施和维护合规框架，您有哪些外部支持资源可用？',
+    'AIAPIKeySecurityNote' => '您的密钥存储在服务器端，绝不会返回给浏览器。提供商 URL 会根据 config.php 文件中配置的 SSRF 允许列表进行验证。',
+    'AIContextEgressWarning' => '您的答案将发送给您配置的 AI 服务提供商，以用于提供推荐依据。请勿包含任何您不愿与他们分享的信息。',
+    'Provider' => '提供者',
+    'AIProviderURLHostNotAllowed' => '主机“%s”不在AI提供商的允许列表中。请将其添加到config.php文件中的 $ai_allowed_provider_hosts ，然后保存。（已知的AI提供商和127.0.0.1回环地址始终允许访问。）',
+    'AIContextLastSaved' => '上次保存',
+    'AIContextNeverSaved' => '尚未保存',
+    'AICtxCardSubtitle' => '涵盖四个领域的21个问题。回答的问题越多，给出的建议就越精准。',
+    'AICtxAnswered' => '%1$d 中的 %2$d 回答',
+    'AICtxAllOptional' => '可选',
+    'AIContextSaving' => '正在保存…',
+    'AIContextSaveFailed' => '无法保存更改，请重试。',
+    'AISettingsSavedNotReachable' => 'AI 设置已保存，但无法连接到服务提供商。请确保服务提供商正在运行且 URL 正确。',
+    'AISettingsSavedKeyRequired' => 'AI 设置已保存，但该提供商需要 API 密钥才能使用其功能。',
+    'TestAndSave' => '测试并保存',
+    'AICapEnableAll' => '全部启用',
+    'AICapDisableAll' => '全部禁用',
+    'AISettingsSavedConnected' => 'AI设置已保存——连接成功。',
+    'AISettingsSavedNotConnected' => 'AI设置已保存，但连接测试失败。请检查模型、密钥和URL。',
+    'AIProviderURLNotOnAllowlist' => '此主机不在 AI 提供商的 SSRF 允许列表中。请先将其添加到 config.php 文件中的 $ai_allowed_provider_hosts 中，然后才能保存。',
+    'Connected' => '已连接',
+    'NotConnected' => '未连接',
+    'AICapBulkError' => '部分功能更新失败，请稍后重试。',
+    'QuestionnaireAlreadyCompleted' => '这份问卷已经填写完毕。',
+    'QuestionnaireDraftError' => '保存草稿时出错。请查看控制台了解详情。',
+
+    // Audit cadence scheduling - Define Test modal (Interval/Calendar schedule redesign)
+    // 'Overdue' duplicates the English of 'ImKpiOverdue' on purpose: that key is
+    // an Incident Management KPI label, and a compliance status pill reusing an
+    // IM-scoped key would couple the two domains for a translator (and break the
+    // moment either wording moves). This is the generic, cross-domain one.
+    'Overdue' => '逾期',
+    // Deliberate: the only other key rendering 'Manual' is 'ManualValuation',
+    // an asset-valuation label. Pointing a schedule mode at it would couple two
+    // unrelated domains for translators and break the moment either reworded.
+    'ScheduleManual' => '手动的',
+    'ScheduleInterval' => '间隔',
+    'ScheduleCalendar' => '日历',
+    'Cadence' => '频率',
+    'CadenceBiweekly' => '双周',
+    'CadenceSemiAnnually' => '每半年',
+    'AnchorDate' => '锚定日期',
+    'UpcomingOccurrences' => '即将发生的事件',
+    'AuditLeadInDays' => '审计准备日',
+    'SkipOccurrence' => '跳过',
+    'OverrideDate' => '覆盖日期',
+    'Week' => '星期',
+    'NoUpcomingOccurrences' => '此时间段内没有即将发生的事件。',
+    'FailedToLoadUpcomingOccurrences' => '无法加载即将发生的事件预览。',
+    'AnchorDateMustBeTodayOrLater' => '锚定日期必须为今天或之后。要安排过去的日期，请创建手动测试。',
+    'InvalidScheduleType' => '无效的日程类型。允许的值：手动、间隔、日历。',
+    'Weeks' => '周',
+    'Months' => '月份',
+    'Years' => '年',
+    'ScheduleSummaryEvery' => '每 {$interval} {$unit}',
+
+    // Define Tests redesign - client-rendered grid (Phase 1, Task 6)
+    'LastResult' => '最新结果',
+    'NextDue' => '下一个到期日',
+    'DueSoon' => '即将到来',
+    'Retired' => '已停用',
+    'MyTests' => '我的测试',
+    'Failing' => '失败',
+    'Untested' => '未经测试',
+    'ShowRetired' => '显示已停用项',
+    'Tests' => '测试',
+    'NoTestsForThisControl' => '该对照组尚未进行任何测试。',
+    'NoControlsDefinedYet' => '尚未定义任何控制变量',
+    'NoControlsDefinedYetBody' => '在添加测试之前，先在治理中定义控制措施。',
+    'NoTestsMatchFilters' => '没有符合您筛选条件的测试。',
+    'NoTestsMatchFiltersBody' => '请尝试调整搜索条件或筛选条件。',
+    'CouldNotLoadTests' => '无法加载测试',
+    'CouldNotLoadTestsBody' => '出错了。您的数据安全无虞——请尝试刷新页面。',
+    'ShowingXToYOfZ' => '显示 {$start}–{$end} 共 {$total} 个',
+    // Define Tests grid -- SCF-mapping + read-only procedure expand (Phase 1, Task 7)
+    'Reference' => '参考',
+    'NoFrameworksMapped' => '没有框架映射到此控件。',
+    // Define Tests grid -- batch select + retire/delete + quick filters (Phase 1, Task 8)
+    'Retire' => '停用',
+    'ReassignTester' => '重新分配测试员',
+    'SetSchedule' => '设定时间表',
+    'ConfirmRetireSelectedTests' => '放弃选定的 {n} 个测试？',
+    'ConfirmDeleteSelectedTests' => '删除选定的测试（ {n} ）？此操作无法撤销。',
+    // Define Tests grid -- Coverage toolbar select (Issue 4)
+    'Coverage' => '覆盖范围',
+    'CoverageWithTests' => '对照试验',
+    'CoverageAllControls' => '所有控件',
+    'CoverageGaps' => '差距',
+    // Define Tests insights band (Phase 2, Task 4) -- KPI tile labels + subtitles.
+    // 'Overdue', 'DueSoon', and 'Failing' are reused from the grid's quick-filter
+    // chips above (identical text) rather than duplicated here.
+    'DtTotalTests' => '总测试次数',
+    'DtCoverageGaps' => '覆盖范围缺口',
+    'DtAcrossNControls' => '跨越 {$n} 控件',
+    'DtControlsWithNoTest' => '未进行测试的对照组',
+    'DtNeedInitiationNow' => '现在需要启动',
+    'DtWithinLeadInWindow' => '在导入窗口内',
+    'DtLastResultFailed' => '上次结果失败',
+    'InvalidTestMethod' => '测试方法必须是询问、观察、检验或复测之一！',
+    'TesterCannotBeApprover' => '测试人员不能同时被列为该测试的审批人。',
+    'ApproverNotEligible' => '一个或多个选定的审批人没有“批准测试”的职责。',
+    'TestMethod' => '测试方法',
+    'TestMethodInquiry' => '询问',
+    'TestMethodObservation' => '观察',
+    'TestMethodInspection' => '检查',
+    'TestMethodReperformance' => '再表演',
+    'Sample' => '样本',
+    'RequiredEvidence' => '所需证据',
+    'Approvers' => '审批人',
+    'AuditLog_TestAuditApproved' => '审计“{$test_audit_name}”（ID： {$test_audit_id}）已由用户“{$user_name}”批准。',
+    'AuditLog_TestAuditRejected' => '审核“{$test_audit_name}”（ID： {$test_audit_id}）被用户“{$user_name}”拒绝，并附有评论“{$comment}”。',
+    'AuditLog_TestAuditAwaitingApproval' => '用户“{$user_name}”提交了审计“{$test_audit_name}”（ID： {$test_audit_id}）以待关闭，目前正在等待批准。变更： {$changes}。',
+    'AuditApproved' => '审计工作已顺利通过。',
+    'AuditRejected' => '审计被成功驳回。',
+    'RejectCommentRequired' => '拒绝审计报告需要提出意见。',
+    'NotAnApproverOfThisAudit' => '您不是本次审核的指定审批人。',
+    'ApproverCannotBeTester' => '审批人不能同时担任本次审计的测试人员。',
+    'AuditNotAwaitingApproval' => '本次审计目前无需等待批准。',
+    'NotificationAuditAwaitingApprovalTitle' => '审计待您批准',
+    'NotificationAuditAwaitingApprovalBody' => '审计“{$test_audit_name}”已提交结案，等待您的批准。',
+    'NotificationAuditRejectedTitle' => '审计拒绝',
+    'NotificationAuditRejectedBody' => '审计“{$test_audit_name}”被拒绝，并附有评论：“{$comment}”',
+    'AwaitingApproval' => '等待批准',
+    'AwaitingApprovalBannerText' => '该审计已提交结案，正在等待指定审批人的批准才能结案。',
+    'ReturnedForRework' => '退回重做',
+    'ReturnedForReworkBannerText' => '该审计报告被驳回并退回重做。',
+    'RejectReason' => '拒绝理由',
+    'AreYouSureYouWantToApproveThisAudit' => '您确定要批准这项审计吗？',
+    'AtLeastOneControlRequired' => '至少需要一个控制变量。',
+    'DtNCommonAcrossNControls' => '{$common} 通用 · {$n} 控件',
+    'DtUntestedControls' => '未经测试的控制',
+    'DtControlsInScopeNoCoverage' => '无保障',
+    'Passing' => '通过',
+    'DtLastResultPassed' => '最后结果通过',
+    'AllFamilies' => '所有控制族',
+    'SearchTestsPlaceholder' => '搜索测试、控制和框架',
+    'AnySchedule' => '任何日程安排',
+    'AnyTag' => '任何标签',
+    'AuditAutoClosedTestRetired' => '由于测试已终止，因此自动关闭，结果为“结论不明确”。',
+    'Common' => '常见的',
+    'ValidatesAcrossMappedFrameworks' => '跨映射框架进行验证',
+    'EditTest' => '编辑测试',
+    'ControlHasNoTestCoverage' => '该范围内的控制项目前还没有测试覆盖率。',
+    'AddTheFirstTest' => '添加第一个测试',
+    'ApplyCommonTestHint' => '将一个或多个现有测试应用于此控件。每个测试保留其当前控件，并成为一个涵盖此控件的通用测试。',
+    'CommonTestApplied' => '对该对照组进行了测试。',
+    'CouldNotApplyCommonTest' => '无法将此测试应用于此对照组。',
+    'SelectOneOrMoreTests' => '选择一项或多项测试',
+    'CommonTestsApplied' => '{n} 测试应用于此控件。',
+    'ApplyCommonTests' => '应用通用测试…',
+    'History' => '历史',
+    'Result' => '结果',
+    'Approval' => '赞同',
+    'ThisTestHasNotBeenRunYet' => '该测试尚未运行。',
+    'CouldNotLoadTestHistory' => '无法加载此测试的历史记录。',
+    'Identity' => '基本信息',
+    'IdentitySectionHint' => '名称、测试人员及其验证的控件',
+    'WhenTheAuditInitiates' => '审计开始时',
+    'ProcedureAndEvidence' => '程序与证据',
+    'CommonTestControlsHint' => '一个测试可以验证多个控件——这是一个通用测试。从控件的“+ 添加测试”打开此测试，即可预先选中它。',
+    'SeparationOfDutiesNote' => '职责分离——审批人不能同时担任测试人。',
+    'CommonTestEditScopeHint' => '凡是使用此通用测试的地方，均适用以下变更。',
+    'Mode' => '模式',
+    'AddOrRemove' => '添加或删除…',
+    'AddOrSearchTags' => '添加或搜索标签…',
+    'CreateTagX' => '创建“{tag}”',
+    'Archived' => '已存档',
+    'ShowAllTests' => '所有测试',
+    'ShowActiveTests' => '主动测试',
+    'ShowRetiredTests' => '已停用的测试',
+    'UntestedControls' => '未经测试的对照',
+    'OverdueByXDays' => '逾期 · {n} 天',
+    'OverdueByOneDay' => '逾期 · 1 天',
+    'DueInXDays' => '预计在 {n} 天内到期',
+    'DueTomorrow' => '明天到期',
+    'DueToday' => '今天到期',
+    'ScheduledForX' => '已安排 · {date}',
+    'AllTesters' => '所有测试人员',
+    'AllStatuses' => '所有状态',
+    'OnTrack' => '一切顺利',
+    'NextTestDateDerivedHint' => '根据上次测试日期加上测试频率计算得出。设置测试频率可自动安排测试，或将频率留空以手动设置测试日期。',
+    'DueStatus' => '到期状态',
+    'AllResults' => '所有结果',
+    // Remove a test from one control (Define Tests grid unlink row action)
+    'RemoveFromThisControl' => '从此控件中移除',
+    'RemoveTestFromControl' => '从对照组中移除测试',
+    'RemoveTestFromControlConfirm' => '从 {control_name} 中移除“{test_name}”？',
+    'RemoveTestFromControlStays' => '测试结果保留在其 {n} 其他控件上。不会删除任何内容。',
+    'RemoveTestFromControlStaysOne' => '测试仍保留在其第一个对照组上。没有任何数据被删除。',
+    'CannotRemoveTestsOnlyControl' => '一个测试必须至少属于一个对照组。如果不符合条件，请将该测试移除或删除。',
+    'TestRemovedFromControl' => '该测试已从对照组中移除。',
+    'CouldNotRemoveTestFromControl' => '该测试无法从对照组中移除。',
+    'TestRemovedFromControlAuditLogMessage' => '测试“{$test_name}”（ID： {$test_id}）被用户“{$user}”从控制（ID： {$control_id}）中移除。',
+    'DeleteTestUsedByNControls' => '它被 {n} 控件使用，并将从所有这些控件中移除。',
+    'BulkDeleteSharedTestsNote' => '{n} 中的一些控件被其他控件使用，也将从这些控件中移除。',
+    'BulkRetireSharedTestsNote' => '{n} 这些控件被其他控件使用，也将在那里停用。',
+    'BulkDeleteOneSharedTestNote' => '其中一个控件被其他控件使用，也将从这些控件中移除。',
+    'BulkRetireOneSharedTestNote' => '其中 1 个被其他控件使用，也将在那里停用。',
+    'CouldNotLoadTest' => '无法加载此测试。',
+    'Expand' => '扩张',
+    'SearchMappings' => '搜索框架和参考资料',
+    'NoMatchingMappings' => '没有找到符合该搜索条件的映射。',
+    'Insights' => '洞察',
+    'ShowInsights' => '显示洞察图块',
+    'HideInsights' => '将洞察图块折叠成摘要行',
+    'ChooseControls' => '选择控件',
+    'UseTheseControls' => '使用这些控件',
+    'SearchControlsPlaceholder' => '按号码或名称搜索',
+    'PickerKeyboardHint' => '上下移动，回车键选择，Esc键取消',
+    'NoControlsMatchFilters' => '这里没有匹配项。请将左侧的选项加宽一些，或清除搜索条件。',
+    'NoControlsSelectedYet' => '尚未选择任何内容。',
+    'AllControls' => '所有控件',
+    'AddOrRemoveControls' => '添加或移除控件…',
+    'LastTested' => '上次测试',
+    'LastTestDateAnchorHint' => '锚定间隔排程（此日期加上频率）。测试记录结果后，表格将显示最新结果的日期。',
+    'Filters' => '过滤器',
+    'ShowFilters' => '显示筛选器',
+    'HideFilters' => '隐藏筛选器',
+
+    // App shell — collapsing sidebar / new base design (SR app-shell redesign)
+    'AI' => '人工智能',
+    'CollapseSidebar' => '折叠侧边栏',
+    'FooterCopyright' => '© %s SimpleRisk。版权所有。',
+    'ExpandSidebar' => '展开侧边栏',
+    'WorkflowsCloneConfirm' => '克隆工作流“{$name}”？',
+    'WorkflowsDeleteConfirm' => '删除工作流“{$name}”？此操作无法撤销。',
+    'WorkflowActionFailed' => '操作失败： {$msg}',
+    'ClickToDisable' => '点击禁用',
+    'ClickToEnable' => '点击启用',
+    'ENABLED' => '已启用',
+    'DISABLED' => '已禁用',
+    'BackToWorkflows' => '返回工作流程',
+    'BackToHistory' => '返回历史记录',
+    'NewWorkflow' => '新工作流程',
+    'ViewSteps' => '查看步骤',
+    'SaveWorkflow' => '保存工作流程',
+    'WorkflowSavedSuccessfully' => '工作流已成功保存。',
+    'WorkflowNotFound' => '未找到工作流。',
+    'EditWorkflow' => '编辑工作流程： {$name}',
+    'OrganizationContextProfile' => '组织背景概况',
+    'AICtxAutoAcceptThreshold' => '贵组织的风险自动接受阈值是多少（以美元金额或 ALE 的百分比表示）？',
+    'AICtxGrcBudget' => '贵公司年度GRC/安全预算是多少？',
+    'AICtxAuditorPerspective' => '你主要接受谁的审计？',
+    'AICtxUnitCurrency' => '货币（美元）',
+    'AICtxUnitPercentOfAle' => 'ALE百分比（%）',
+    'AICtxFrameworksInUse' => '当前使用的框架',
+    'AICtxNoFrameworksInUse' => '尚未找到任何已激活的框架。请在“治理”>“框架映射”下添加框架。',
+    'AICtxFromYourData' => '根据您的数据',
+    'AICtxAuthoritative' => '权威性',
+    'AICtxAppetiteNotSet' => '未设置',
+    'AICtxAppetiteManageLink' => '风险管理配置',
+    'AICapControlTestGeneration' => '控制测试生成',
+    'AICapControlTestGenerationDesc' => '使用控制框架映射、现有测试和自我评估结果，起草控制测试以供审查——在您批准之前，不会创建任何东西。',
+    'AICapSurfacedControlTestGeneration' => '合规性——定义测试。',
+    'AIControlTestGenUnavailable' => '服务不可用：管理员必须在 AI 设置中启用此功能。',
+    'AIControlTestGenInvalidId' => '错误请求：需要提供阳性对照 ID。',
+    'AIControlTestGenNotFound' => '未找到：找不到指定的控件。',
+    'AIControlTestGenConflict' => '冲突：此控件的生成操作已排队。',
+    'AIControlTestGenQueued' => '已接受：控制测试生成已排队。',
+    'AIControlTestGenFailed' => '内部服务器错误：控制测试生成排队失败。',
+    'AIControlTestGenCheckFailed' => '错误：排队前无法验证控件。',
+    'GenerateTestsWithAI' => '利用人工智能生成测试',
+    'ShowAiSuggestedTests' => '人工智能建议的测试',
+    'AiSuggested' => '人工智能建议',
+    'ReviewAndEdit' => '审阅和编辑',
+    'CreateSelected' => '创建选定项',
+    'TestCreatedFromSuggestion' => '根据建议创建了测试用例。',
+    'SuggestionDismissed' => '建议被驳回。',
+    'TestGenerationQueued' => '测试生成已排队。',
+    'Generating' => '正在生成…',
+    'SuggestionDismissFailed' => '测试已创建，但其 AI 建议无法关闭。如果仍然存在，请手动关闭。',
+    'AICtxAuditorBig4' => '四大（外部）',
+    'AICtxAuditorBoutique' => '精品/区域（外部）',
+    'AICtxAuditorInternal' => '仅限内部审计',
+    'AICtxAuditorSelfAssessed' => '自我评估',
+    'AICtxAuditorNotSure' => '没有把握',
+    'AICtxAppetiteCautious' => '谨慎',
+    'AICtxAppetiteBalanced' => '均衡',
+    'AICtxAppetiteAggressive' => '挑衅的',
+    'TestGenerationComplete' => '人工智能生成的控制测试已准备好接受审核。',
+    'TestGenerationStillRunning' => '测试生成仍在进行中；草案很快就会发布。',
+    'TestGenerationNoNew' => '世代结束——没有新的测试建议用于此对照组。',
+    'SearchEntities' => '搜索实体',
+    'SearchEntitiesPlaceholder' => '搜索风险、控制措施、政策、例外情况…',
+    'ShowTypes' => '显示类型',
+    'Depth' => '深度',
+    'Inspector' => '检查器',
+    'Connections' => '连接',
+    'NoConnectionsFound' => '未找到与所选实体的任何连接。',
+    'CouldNotLoadGraph' => '无法加载连接图。',
+    'CouldNotSearchEntities' => '无法搜索实体。',
+    'ShowingTopNOfM' => '显示前 {0} 个，共 {1} 个',
+    'RankedByMaturityGap' => '按成熟度差距排名',
+    'RankedByRiskScore' => '按风险评分排名',
+    'RankedByRecentFailure' => '按最近一次失败次数排名',
+    'RankedByReviewDate' => '按下次审核日期排名',
+    'RankedBySeverity' => '按严重程度排名',
+    'RankedByName' => '按名称排名',
+    'NodeTypeSelfAssessmentResult' => '自我评估结果',
+    'Relationship' => '关系',
+    'Exception' => '例外',
+    'DesiredMaturity' => '期望的成熟度',
+    'ApprovalState' => '批准状态',
+    'RelationshipOfType' => '{0} 的 {1}',
+    // Connectivity Explorer Inspector: labels for enrichment field keys
+    // (ai_context_enrich_fetch(), ai_context_enrich_vulnerabilities()) that
+    // fieldLabel() in connectivity-visualizer.js did not yet cover.
+    'LastDate' => '上次日期',
+    'LastResultDate' => '最后结果日期',
+    'PercentComplete' => '完成百分比',
+    'AssessmentDate' => '评估日期',
+    'NextDate' => '下次日期',
+    'Number' => '数字',
+    'Grouping' => '分组',
+    'Hidden' => '隐',
+    'FirstFound' => '首次发现',
+    'LastFound' => '最后找到',
+    'Patchable' => '可修补的',
+    'Solution' => '解决方案',
+    'Breadcrumb' => '面包屑',
+    'SelectANodeToInspect' => '选择一个节点以查看其详细信息。',
+    'HiddenUnreachableNodes' => '{0} 节点已隐藏：不再连接，且类型已隐藏。',
+    // Connectivity Explorer canvas launchpad (Level-1 type tiles / Level-2
+    // browsable entity list) -- docs/superpowers/specs/2026-07-27-
+    // connectivity-explorer-launchpad.md
+    'BrowsableEntityTypes' => '可浏览的实体类型',
+    'CountFloor' => '{0}+',
+    'NoBrowsableTypes' => '您没有浏览任何实体类型的权限。',
+    'AllTypes' => '所有类型',
+    'FilterEntitiesPlaceholder' => '筛选…',
+    'NoMatchingEntities' => '没有实体符合您的筛选条件。',
+    'LoadMore' => '加载更多',
+    'Loading' => '加载中…',
+    'CouldNotLoadEntityCounts' => '无法加载实体计数。',
+    'CouldNotLoadEntities' => '无法加载实体。',
+    'ClearGraph' => '清除图表',
+    // Connectivity Explorer node-type chip label for the 'audit' type. Not
+    // reused from 'TeamType_audit' (same English text, "Audit") -- that key
+    // is scoped to the Team Separation team-type picker, a different feature
+    // whose wording should be free to diverge from this one's.
+    'Audit' => '审计',
+    // Queued email send-failure notifications
+    'EmailSendFailedNotificationTitle' => '邮件发送失败',
+    'EmailSendFailedNotificationBody' => '一封或多封已排队的邮件未能成功投递。请检查您的邮件设置，然后查看队列监视器和服务器日志以获取详细信息。',
+    'QuestionnaireShareInvalidEmailAddress' => '无法与没有有效电子邮件地址的联系人分享问卷调查结果。',
+    'AssessmentSendInvalidEmailAddress' => '无法将评估结果发送到无效的电子邮件地址。',
+    'AssessmentSentTo' => '评估结果已发送至“{$email}”。',
+    'AssessmentNotSentNoValidRecipients' => '评估报告未发送——未提供有效的电子邮件地址。',
+    'AssessmentContactUnusableEmailNotificationTitle' => '问卷未发送',
+    'AssessmentContactUnusableEmailNotificationBody' => '问卷“{$questionnaire}”无法发送至“{$contact}”，因为该联系人没有有效的电子邮件地址。请更新联系人记录以恢复发送。',
+    'EmailFailureNotificationRetention' => '电子邮件投递失败通知保留',
+    'EmailFailureNotificationRetentionOutOfRange' => '电子邮件投递失败通知的保留期限必须在 {$min} 天到 {$max} 天之间。',
+    'MailSettingsUpdatedSuccessfully' => '邮件设置已成功更新。',
+    // Questionnaire audit-trail entries for the API submit/draft paths (SR-1714).
+    // The token form credits the contact; an API caller is an authenticated
+    // SimpleRisk user acting on that contact's questionnaire, so both the
+    // contact and the acting user are named.
+    'QuestionnaireCompletedAuditLogViaApi' => '用户“{$user_name}”通过 API 完成了联系“{$contact_name}”的问卷“{$questionnaire_name}”。',
+    'QuestionnaireDraftAuditLogViaApi' => '问卷“{$questionnaire_name}”用于联系“{$contact_name}”，已由用户“{$user_name}”通过 API 保存为草稿。',
+    // Bad-input response for the questionnaire risk-list endpoints, which
+    // previously reported a malformed questionnaire_id as a permission denial.
+    // Mirrors the existing 'MissingOrInvalidTrackingID'.
+    'MissingOrInvalidQuestionnaireID' => '问卷编号缺失或无效。',
+    // POST /api/v2/assessments/questionnaire/result/file response messages.
+    // The `id` path deliberately returns QuestionIdCannotAcceptFile for every
+    // question-level rejection so a sequential tracking id cannot be used to
+    // probe questionnaire structure; the token path returns the specific reason.
+    'QuestionnaireResultNotFoundForTokenOrId' => '未找到：无法找到具有指定令牌或 ID 的问卷调查结果',
+    'QuestionIdCannotAcceptFile' => '错误请求：question_id {$question_id} 无法接受此问卷结果中的文件',
+    'QuestionIdNotFoundInQuestionnaire' => '错误请求：问卷中未找到问题 ID {$question_id}',
+    'QuestionIdInMultipleTemplates' => '错误请求：此问卷的 question_id {$question_id} 出现在多个模板中',
+    'QuestionIdDoesNotAcceptFileUploads' => '错误请求：question_id {$question_id} 不接受文件上传。',
+    // The Statement of Applicability's two UNVERIFIED implementation states.
+    //
+    // They exist because "we have not checked" is not "it does not work", and an
+    // SoA is ATTESTED — printing "No" for an unverified control is a false
+    // statement against yourself, exactly as printing "Yes" without evidence is
+    // a false statement the other way. Before these keys existed both states
+    // fell through to 'No', which on a framework where most controls carry no
+    // test meant the whole document read "not implemented".
+    //
+    // They are two states rather than one because they are different findings
+    // with different owners: no test defined is a GOVERNANCE gap (nobody decided
+    // how to verify this control), never run is an OPERATIONAL one (somebody
+    // decided, and it was not done).
+    //
+    // WORDING. Both must be unmistakably distinct from the bare 'No' in the same
+    // column. 'Tests never run' rather than 'Never run': in a column headed
+    // "Implemented", the bare phrase reads for a moment as though the CONTROL
+    // was never run, when the subject is its tests.
+    //
+    // BOTH ARE PLURAL, and that is not only style. English takes the plural
+    // after "no" when the expected quantity could exceed one ("no results
+    // found"), and a control normally carries several tests — the singular
+    // implies only ever one was expected. 'Tests never run' is the stronger
+    // case: soa_implemented_for() returns `never_run` only when NOT ONE of the
+    // control's tests has produced a verdict, so the state is inherently about
+    // the whole set. With four tests defined and none run, the singular reads as
+    // one omission rather than a wholesale one.
+    'SoaImplementedNoTestDefined' => '未定义测试',
+    'SoaImplementedNeverRun' => '测试从未运行',
+
+    // The Implemented column's fallback for a token neither sink recognizes.
+    //
+    // DELIBERATELY NOT A VERDICT, and the reason this key exists at all. Both
+    // sinks previously ended in a fallthrough to 'No', so adding a state without
+    // adding its label printed a confident, wrong answer into a compliance
+    // document. Falling through to 'Yes' would be worse. The only safe failure
+    // mode is a value that states nothing about the control — a visible bug
+    // instead of a silent misstatement.
+    'SoaImplementedUnknown' => '状态不可用',
+    // How an APPLICABLE control's stored inclusion reason(s) join to its own
+    // freeform justification when it recorded both (spec §4). Reached ONLY when
+    // both halves exist — reasons alone print as the reason list, prose alone
+    // prints verbatim — so this string is punctuation and word order, not prose.
+    // It is a language key rather than a hardcoded separator because a locale
+    // that joins clauses with a colon, a full stop, or right-to-left ordering
+    // must be able to say so; both placeholders have to survive translation.
+    'SoaJustifiedByInclusionReasons' => '{reasons} — {narrative}',
+    // The Set applicability modal's reason field, which became a MULTI-select
+    // when reasons moved to a join table: a control is commonly included (or
+    // excluded) for more than one reason, and the singular 'Reason' the field
+    // used to reuse now under-describes it. 'Reason' is left alone rather than
+    // repointed -- the row drawer and the SoA still print exactly one joined
+    // value under it, and redefining a key changes every surface that reads it.
+    'ApplicabilityReasons' => '原因',
+    // Said once, above a group of checkboxes, rather than implied by the widget.
+    // The old single <select> answered "how many may I pick?" by construction;
+    // a checkbox group does not, and a user who ticks one and stops has made the
+    // SoA less truthful than the one they meant to write.
+    'ApplicabilityReasonsHint' => '请选择所有适用的理由。',
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // THE STATEMENT OF APPLICABILITY'S MARKERS AND ITS LEGEND (spec §1, §3).
+    // ─────────────────────────────────────────────────────────────────────────
+
+    // THE EVIDENCE COLUMN'S TWO ABSENCES, which are OPPOSITES.
+    //
+    // 'No evidence linked' is a FINDING: the control is in scope, is possibly
+    // claimed implemented, and nothing substantiates it. The em dash below is
+    // the other answer -- the control is excluded, so no evidence is expected
+    // and the absence is correct. Rendering both as an empty cell hides the
+    // first, which is the one an auditor circles.
+    'SoaNoEvidenceLinked' => '没有证据表明与此有关',
+    // PUNCTUATION, NOT PROSE -- the glyph the Evidence cell prints when nothing
+    // is expected. A language key rather than a hardcoded character for the same
+    // reason 'SoaJustifiedByInclusionReasons' is one: a locale that marks "not
+    // applicable" with a different dash, or with a word, must be able to say so.
+    'SoaEvidenceNotExpected' => '—',
+    // Whether the evidence a test DECLARED it requires actually arrived with the
+    // result. A stronger claim than a pass/fail alone, and few SoA tools make it.
+
+    // THE REMEDIATION BLOCK -- what is being done about a control that reads
+    // Partial or No. The SoA points AT the risk treatment plan (clause 6.1.3(e))
+    // rather than becoming one.
+    'SoaRemediation' => '补救措施',
+    // THE MOST SERIOUS THING THAT BLOCK CAN FIND: the test failed and it is
+    // linked to no risk, so no treatment plan traces back to it. Dropping such a
+    // row for want of a risk to join to would render it as a blank cell, which
+    // reads as "nothing to report".
+    'SoaRemediationUnplanned' => '无风险关联',
+
+    // THE LEGEND. Required in both variants and every export format, because six
+    // implementation states plus three markers is more nuanced than the
+    // Yes/No/Partial an auditor expects, and an undefined vocabulary invites the
+    // reader to guess unfavourably.
+    'SoaLegendTitle' => '如何解读这份声明',
+    'SoaLegendYes' => '该控件定义的所有测试在上次运行时均通过。',
+    'SoaLegendPartial' => '对照组的测试结果不一致：至少有一项测试通过，至少有一项测试失败或没有得出任何结果。',
+    'SoaLegendNo' => '上次运行此控件时，所有测试均未通过，至少有一项测试失败。',
+    // The two unverified states are DIFFERENT FINDINGS WITH DIFFERENT OWNERS,
+    // and the labels alone do not quite carry that -- so the legend spells it
+    // out. This is the distinction the whole six-state set exists for.
+    'SoaLegendNoTestDefined' => '由于没有针对此控制项定义测试，因此其运行从未得到验证。这并非意味着该控制项缺失或失效，而只是说明该控制项本身并未体现这一点。治理漏洞在于：目前尚无人决定如何检查此控制项。',
+    'SoaLegendNeverRun' => '针对此控制措施存在测试用例，但从未执行过，因此此处不演示其运行情况。这并非意味着该控制措施缺失或失效。这只是一个运行上的漏洞：检查方案已制定但尚未执行。',
+    'SoaLegendNotApplicable' => '该控件不属于此框架的范围，因此它没有实现状态。',
+    // The one most in need of explaining: with nothing to define it, this reads
+    // as an admission about the control rather than as what it is.
+    'SoaLegendUnknown' => 'SimpleRisk 无法标记记录的状态，因此此处未演示具体实现。这是软件缺陷，与控制功能本身无关——既不能说明其有效，也不能说明其无效。',
+    'SoaLegendOverdue' => '所示结果仍然有效，但至少其中一项检测已过了下次检测日期。证据已过时。',
+    'SoaLegendNoEvidence' => '该控制措施在范围内，但没有任何证据支持：没有已确认的文件，也没有产生结果的测试。',
+    'SoaLegendEvidenceNotExpected' => '预计不会有证据，因为该控制措施不在研究范围内。',
+    'SoaLegendUnplanned' => '一项与风险无关的失败测试，因此没有治疗方案可以追溯到它。',
+
+    // THE TWO VARIANTS, chosen on the launcher before the document is generated
+    // and PRINTED ON ITS COVER. A Statement of Applicability is a controlled
+    // document: two of them for the same framework that show different things,
+    // with nothing on either to say which is which, is a document nobody can
+    // file.
+
+    // THE THREE DETAILED-ONLY COLUMNS.
+    // What those three columns say instead of nothing. A blank cell in an audit
+    // document reads as a formatting artefact; "Not recorded" is a fact the
+    // reader can act on.
+
+    // THE BROWSER PRINT ROUTE. Beside the two downloads on the launcher, and the
+    // only PDF route for a framework too large for the server-side writer.
+    // Shown in place of "Download as PDF" when the chosen framework is above
+    // SOA_EXPORT_PDF_MAX_CONTROLS. The affordance is absent rather than
+    // disabled, so this sentence is what tells the reader the absence is
+    // deliberate and what to do instead.
+    // The footer of every printed page. {page} and {pages} are substituted with
+    // the browser's own page counters, so the two tokens must both survive
+    // translation -- but their ORDER and the words around them are the
+    // translator's, which is why this is one string and not "Page" + "of".
+    'SoaPrintPageNumber' => '第 {page} 页，共 {pages} 页',
+
+    // THE ONE PDF AFFORDANCE on the statement-of-applicability launcher, beside
+    // 'DownloadAsXLSX'. It replaces the pair that used to sit there --
+    // 'SoaPrintToPdf' and 'DownloadAsPDF' -- because a Statement of Applicability
+    // is a controlled document and two PDF buttons let two people hand an auditor
+    // two different-looking PDFs of the same statement.
+    //
+    // JUST "PDF", AND DELIBERATELY SO. Below SOA_EXPORT_PDF_MAX_CONTROLS the
+    // button downloads a server-rendered file and above it the browser writes
+    // one, but that is a mechanism and not a choice the reader has to make. A
+    // label that named the mechanism ("Print to PDF" / "Download as PDF") would
+    // put the difference back in front of them.
+    //
+    // 'SoaPrintToPdf' and 'SoaPdfTooLargeHint' above are LEFT IN PLACE with no
+    // caller: 39 locales carry them, and this file is append-only precisely so a
+    // customer running a custom lang.<locale>.php can reconcile it with a tail
+    // diff.
+    'SoaPdf' => 'PDF',
+
+    // THE OTHER TWO ACTIONS IN THAT SAME ROW, shortened to match it.
+    //
+    // The row read "Open in browser" / "Download as XLSX" / "PDF", which put a
+    // verb on two of three actions and made the odd one out look like an
+    // abbreviation of something longer. The row's own context supplies the
+    // verbs -- these are the things you can DO with the framework you just
+    // chose -- so they carried no information and cost the reader a comparison.
+    // 'SoaPdf' is short because naming its mechanism would be dishonest (above
+    // SOA_EXPORT_PDF_MAX_CONTROLS it opens a print view rather than downloading
+    // a file), and the shortest of the three is the one that has to be right.
+    //
+    // NOT the generic 'Open' at line ~1021: that key lives among 'Mitigated' /
+    // 'Reviewed' and is the risk-status ADJECTIVE -- fr "Ouvert", de "Offen" --
+    // so reusing it would label a button with a state rather than an action in
+    // most of the 39 locales.
+    //
+    // 'SoaOpenInBrowser' above is LEFT IN PLACE with no caller, for the same
+    // reason 'SoaPrintToPdf' is: the locales carry it and this file is
+    // append-only so a customer's custom lang.<locale>.php reconciles with a
+    // tail diff. 'DownloadAsXLSX' keeps a caller either way -- the Assessments
+    // Extra's questionnaire results still use it.
+    'SoaOpen' => '打开',
+    'SoaXlsx' => 'XLSX',
+    // ---- The locked-affordance treatment -------------------------------------
+    // SHARED COPY, not chooser copy. SimpleRisk now SHOWS what's possible and
+    // MARKS what's out of reach because it isn't licensed, rather than hiding
+    // it -- so these strings appear both as a menu row's explanation (Define
+    // Control Frameworks' "+ Add framework" chooser) and beside a disabled
+    // toolbar button (the Statement of Applicability's PDF/XLSX exports). Each
+    // one is worded to read correctly in BOTH places, which is why none of them
+    // starts with "This route" or "This button".
+    //
+    // 'LockedAffordanceBadge' duplicates the English of 'AICapStateLocked'
+    // rather than reusing it: that key sits in the AI Capabilities Catalog's
+    // block and is scoped to a capability's state, and translators work from
+    // the key's neighbourhood as much as from its value.
+    'LockedAffordanceBadge' => '已锁定',
+    // The two SCF steps before it can be switched on. admin/register.php serves
+    // both -- it is the registration form AND where the per-Extra download
+    // buttons render -- so these differ in what they say, not where they go.
+    'UnlockRegisterInstanceNote' => '注册此实例即可获取安全控制框架。',
+    'UnlockRegisterInstanceLink' => '注册 SimpleRisk',
+    'UnlockDownloadScfNote' => '此实例已注册。请下载安全控制框架以使用它。',
+    'UnlockDownloadScfLink' => '下载它',
+    'UnlockActivateScfNote' => '安全控制框架已下载但未启用。',
+    'UnlockActivateScfLink' => '打开它',
+    // Import-Export is a paid Extra, so "not installed" is an upsell rather
+    // than a registration prompt. Deliberately a bare capability sentence: it
+    // has to sit under a menu row and next to an export button equally well.
+    'RequiresImportExportExtra' => '需要导入导出附加组件。',
+    'UnlockImportExportLink' => '看看它能带来什么好处',
+    'UnlockActivateImportExportNote' => '已安装进出口扩展程序，但未启用。',
+    'UnlockActivateImportExportLink' => '打开它',
+    // Shown instead of any of the above to a user who is not an administrator:
+    // every unlock step lives on a check_admin page, so they get the half that
+    // is useful to them -- that the capability exists, and who to ask -- and no
+    // link that would only bounce them.
+    'UnlockNeedsAdministrator' => '管理员可以进行设置。',
+    // API date parsing. {$field} is the request field name (next_date, last_date,
+    // test_date); {$format} is this instance's configured display date format.
+    'InvalidSubmittedDate' => '{$field} 值不是有效日期。请以 YYYY-MM-DD 格式提交，或以本例中的日期格式 ({$format}) 提交。',
+    // Companion to InvalidSubmittedDate, for a value that matches the expected
+    // shape but names a day that does not exist (February 31st, month 13).
+    // Saying "submit it as MM/DD/YYYY" there would repeat what the caller did.
+    // {$value} is the submitted value, echoed back truncated.
+    'ImpossibleSubmittedDate' => '{$field} 值“{$value}”不是实际的日历日期。请检查日期和月份——此实例将日期读取为 {$format}。',
+    // The Statement of Applicability's merged verification column. Replaces three
+    // separate headings (Implemented / Evidence / Review Cadence) with the one
+    // question all three answer: how do we know this control is working?
+    // The two appendices printed after the register. Justifications are truncated
+    // in the row and given in full here; remediation plans live here rather than
+    // in the table because ISO 27001 keeps the SoA (6.1.3(d)) and the risk
+    // treatment plan (6.1.3(e)) as separate artifacts.
+    'SoaAppendixJustifications' => '附录A——理由',
+    'SoaAppendixRemediation' => '附录 R — 补救计划',
+    // Appendix E carries the WORDING of each test's evidence requirement. The row
+    // keeps only whether that evidence arrived, which is the finding; the wording
+    // is reference material and was the bulkiest thing in the Verification cell.
+    'SoaRequiredEvidenceSupplied' => '所需证据已提供',
+    'SoaRequiredEvidenceNotSupplied' => '未提供所需证据',
+    // The one scheduling fact the SoA prints: the soonest date any of a control's
+    // tests is next due. Replaces a per-test "Manual — Next Test Date: ..." line,
+    // whose schedule type belongs on Define Tests and whose date is now on each
+    // test's own evidence bullet.
+    // The two dates on a test's evidence bullet. LABELLED, because two bare dates
+    // side by side are ambiguous in a way one is not.
+    // SINGULAR document-type labels for one piece of design evidence. SimpleRisk's
+    // existing keys are the plural tab names, which would read "Access Control
+    // Standard (Standards)".
+    'SoaEvidencePolicy' => '政策',
+    'SoaEvidenceStandard' => '标准',
+    'SoaEvidenceProcedure' => '程序',
+    'SoaEvidenceGuideline' => '指南',
+    // ── The legend, grouped by column (SOA_LEGEND_GROUPS, includes/soa.php) ──
+    // The Applicability column's three values. These were never in the legend,
+    // so an auditor met "Inherited" -- a word with no meaning outside SimpleRisk
+    // -- with nothing to look it up in.
+    'SoaLegendApplicable' => '该控制措施属于本框架的适用范围，组织负责实施该措施。',
+    // DISTINCT from 'SoaLegendNotApplicable', which defines the "N/A" that appears
+    // in the Implementation Status column. This one is the DECISION to exclude;
+    // that one is the consequence for the status.
+    'SoaLegendApplicabilityNotApplicable' => '该控制项已排除在本框架的适用范围之外。“理由”栏记录了原因以及做出决定的人员。',
+    'SoaLegendInherited' => '该控制权在控制范围内，但由第三方（云服务提供商、母公司或外包部门）而非本组织运营。提供商名称已在理由说明旁列出。',
+    // The Evidence column's four bullet glyphs. Load-bearing since the visible
+    // result word was dropped from pass and fail bullets, and until now defined
+    // nowhere at all.
+    'SoaLegendEvidencePass' => '该控件的测试结果显示，上次运行通过。旁边的日期是运行日期。',
+    'SoaLegendEvidenceFail' => '该控制措施的测试上次运行结果为失败。附录 R 载有处理方案（如有）。',
+    'SoaLegendEvidenceInconclusive' => '对该控件的测试已运行，但未得出任何结果。对于本文档无法识别的结果，也使用相同的标记，在这种情况下，结果本身会打印在标记旁边。',
+    // The TERM beside the § glyph. Not a document type -- the four types
+    // (Policy, Standard, Procedure, Guideline) are printed per item; this names
+    // the CATEGORY of evidence a document is.
+    'SoaEvidenceDesignDocument' => '设计文件',
+    'SoaLegendEvidenceDocument' => '一份治理文件被证实为这种控制措施的证据——是其设计而非运作方式。文件本身并不代表最终结论，因此不会被勾选。',
+    // The XLSX export's first worksheet tab. The workbook's other four tabs reuse
+    // headings that already exist ('How to read this statement', 'Statement of
+    // Applicability', and the two appendix headings); the cover had no name of its
+    // own because it used to be the top of a single sheet.
+    //
+    // KEEP IT SHORT. Excel caps a worksheet name at 31 characters and
+    // soa_export_sheet_name() truncates rather than failing the export, so a long
+    // translation loses its tail on the tab.
+    'SoaSheetCover' => '封面',
+
+    'SearchFrameworks' => '搜索框架',
+    'SearchControls' => '搜索控制措施',
+    'AddFramework' => '添加框架',
+    'Applicability' => '适用性',
+    'AnyFamily' => '任何控制族',
+    'AnyOwner' => '任何所有者',
+    'AnyClass' => '任何类别',
+    'AnyPhase' => '任何阶段',
+    'AnyPriority' => '任何优先级',
+    'AnyType' => '任何类型的',
+    'AnyStatus' => '任何状态',
+    'SelectAllN' => '全选 {n}',
+    'Classification' => '分类',
+    'Placement' => '放置',
+    'OwnershipAndMaturity' => '所有权与成熟度',
+    'MappingsAndGuidance' => '地图和指南',
+    'DeleteFrameworkTitle' => '删除框架“{$name}”？',
+    'DeleteControlTitle' => '删除控件“{$name}”？',
+    'DeleteControlsTitle' => '删除 {$n} 控件？',
+    'DeleteCannotBeUndone' => '这已经无法挽回了。',
+    'DeleteFrameworkConsequence' => '这将移除框架及其所有控制映射。',
+    'DeleteControlConsequence' => '这会移除它所映射到的每个框架的控制权。',
+    'DeleteControlsConsequence' => '这将从每个与其映射的框架中移除每个选定的控件。',
+    // Task 9: empty states (design-system.md §10) -- the four intents on
+    // Define Control Frameworks. Reuses existing keys where the copy already
+    // fits exactly (AddControl, AddFramework, ClearFilters, Retry,
+    // NoControlsDefinedYet, NoTestsMatchFiltersBody, CouldNotLoadTestsBody,
+    // RegisterYourInstance, GoToSCF, ImportExportExtra) -- only the strings
+    // with no existing match are added below.
+    'NoControlsMatch' => '没有与您的筛选条件匹配的控件',
+    'CouldNotLoadControls' => '无法加载控件',
+    'ControlsYouAddWillAppearHere' => '您添加的控件将显示在此处。',
+    'NoFrameworksYet' => '尚无框架',
+    'FrameworksYouAddWillAppearHere' => '您添加或导入的框架将显示在此处。',
+    'CouldNotLoadFrameworks' => '无法加载框架',
+    // Task 9 review fix: the framework rail's own "no results" intent, shown
+    // when the user has explicitly switched the status dropdown away from
+    // Active and that status has nothing (distinct from "No frameworks yet",
+    // which is reserved for the default Active status where the endpoint
+    // can't yet tell "no frameworks at all" from "none active").
+    'NoFrameworksMatchFilter' => '没有框架符合此状态',
+    'ViewActiveFrameworks' => '查看活跃框架',
+    // Task 10: Define Control Frameworks insights band (governance/index.php)
+    // -- KPI tile labels/subtitles. 'Controls', 'Pass', 'Fail', 'NotTested'
+    // already exist and are reused as label keys for their tiles.
+    'BelowTarget' => '低于目标',
+    'Excluded' => '已排除',
+    'FwInScope' => '范围',
+    'FwLastTestPassed' => '上次测试通过',
+    'FwLastTestFailed' => '上次测试失败',
+    'FwNoEvidence' => '适用，无证据',
+    'FwMaturityUnderDesired' => '预期成熟度',
+    'FwScopeAFramework' => '制定一个框架来决定',
+    'FwNotApplicableOrInherited' => '不适用或继承',
+    // Task 22: framework rail search (governance/index.php's #sr-fw-search,
+    // wired client-side in governance-frameworks.js). Reuses the shipped
+    // "no results" empty-state tile (#sr-fw-filtered, Task 9) rather than
+    // inventing a fourth rail empty state -- only the title and action swap
+    // depending on whether a status filter or a search narrowed the list to
+    // nothing; NoTestsMatchFiltersBody already covers both as body copy.
+    'NoFrameworksMatchSearch' => '没有框架符合您的搜索条件',
+    'ClearSearch' => '清除搜索',
+    // Task 24: Clone control pre-fills the Add Control modal from the source
+    // control (governance-frameworks.js's openControlForClone()) rather than
+    // creating a duplicate outright, so the modal needs to say plainly which
+    // control it was cloned from -- the reviewer's core complaint about an
+    // earlier one-click version of this feature was not knowing what was
+    // cloned. {$name} follows the same client-side formatTemplate()
+    // substitution ShowingXToYOfZ/NSelected already use on this page.
+    'ClonedFromControlNotice' => '克隆自“{$name}”。请查看以下字段，然后保存。',
+    // Task 24 review follow-up: the banner alone left the modal titled "New
+    // Control" over pre-populated fields -- "it doesn't prompt or anything
+    // so the user doesn't know what was cloned" (Josh) -- which reads as a
+    // bug, not a feature. Retitling #control--add-title to this (governance-
+    // frameworks.js's show.bs.modal delegate for #control--add) makes the
+    // clone unambiguous at a glance; NewControl is restored for a plain add.
+    'CloneOfControlTitle' => '克隆“{$name}”',
+    // Task 27: the framework rail's SCF-origin chip (governance-frameworks.js's
+    // railRow()) -- shown only for frameworks created via the ComplianceForge
+    // SCF Extra's authoritative-source import (get_scf_origin_framework_ids(),
+    // includes/governance.php). SCF is the badge text itself; ScfOriginHint is
+    // its title/tooltip.
+    'SCF' => '超级临界流体',
+    'ScfOriginHint' => '来自安全控制框架（SCF）',
+    // Task 34: the Maturity filter facet's placeholder on the Define Control
+    // Frameworks filter sheet (governance-frameworks.js's ensureFilterSheet()),
+    // matching the AnyFamily/AnyOwner/AnyClass/... set above. The facet's three
+    // OPTIONS reuse the existing BelowMaturity/AtMaturity/AboveMaturity keys --
+    // the same labels the governance dashboard's maturity-gap widgets already
+    // carry -- and the column chip renders those same three strings, so the
+    // filter and the cell can never read differently.
+    'AnyMaturity' => '任何成熟度',
+    // Task 46: accessible name for the control table's pager landmark
+    // (governance-frameworks.js's renderPager()). The pager's own buttons
+    // reuse the existing Previous/Next keys Define Tests' pager already
+    // carries; only the <nav> label is new, and it names WHICH table's pager
+    // it is because the Define Control Frameworks page has two lists on it.
+    'ControlsPagination' => '控制分页',
+    // Task 14: the Applicability column's state chip (governance-frameworks.js's
+    // renderApplicability()), the matching filter facet (its three option labels
+    // reuse these same three keys) and its "Any applicability" placeholder.
+    //
+    // The three states are PREFIXED rather than named 'Applicable'/
+    // 'NotApplicable'/'Inherited' because 'NotApplicable' already exists above
+    // as the ABBREVIATION 'N/A' -- the self-assessment answer chip and three
+    // reporting charts render it -- and redefining that key to the spelled-out
+    // phrase this column needs would silently change all four of those
+    // surfaces. The prefix also keeps the trio recognisable as one family.
+    //
+    // The column HEADER and the facet's accessible name reuse the existing
+    // 'Applicability' key, and the drawer's record reuses 'Reason', 'Provider'
+    // and 'Justification' -- all four already carry exactly the right string.
+    'ApplicabilityApplicable' => '适用的',
+    'ApplicabilityNotApplicable' => '不适用',
+    'ApplicabilityInherited' => '遗传',
+    'AnyApplicability' => '任何适用性',
+    // The drawer's applicability record: who recorded the decision and when.
+    // Both are attribution for an audited decision a customer may have to
+    // defend years later, which is why the drawer names them at all.
+    'ApplicabilityDecidedBy' => '由……决定',
+    'ApplicabilityDecidedOn' => '已决定',
+    // The framework-level Statement of Applicability card in the Add/Edit
+    // framework modals (display_framework_soa_card(), includes/governance.php).
+    // These two fields are what ISO/IEC 27001:2022 clause 6.1.3(d) needs on an
+    // SoA cover: the scope the framework is certified against, and how inclusion
+    // was determined for the controls that are simply applicable.
+    //
+    // 'IsmsScopeStatement' rather than a bare 'ScopeStatement' because "scope"
+    // is already overloaded across SimpleRisk (assessment scope, audit scope,
+    // risk scope); the ISMS prefix is what an ISO practitioner calls this exact
+    // field and keeps it from being reused for an unrelated one.
+    'StatementOfApplicability' => '适用性声明',
+    'IsmsScopeStatement' => '范围说明',
+    'IsmsScopeStatementHint' => '本框架的认证范围已在SoA封面页上列出。',
+    'DefaultInclusionJustification' => '默认包含理由',
+    'DefaultInclusionJustificationHint' => '用于适用且无关联风险的控制措施。请指明驱动因素，而非框架。',
+    // THE DEFAULT SENTENCE, in all three of its roles: the create form seeds the
+    // textarea with it, the Edit form shows it as a placeholder, and
+    // soa_framework_default_justification() (includes/soa.php) substitutes it at
+    // read time for a framework that has none. One key, because a reader must not
+    // be able to tell a stored default from a fallen-back one, and because three
+    // keys holding the same sentence is three chances for a translator to make
+    // them disagree. The name predates the seeding decision (Task 67) and is kept
+    // rather than churned through Crowdin for 39 locales.
+    //
+    // It names the DRIVER (the risk assessment) rather than the framework:
+    // "included because it is part of this framework" is circular, and ISO 6.1.3
+    // derives controls from risk treatment, using Annex A afterwards only as a
+    // completeness cross-check.
+    //
+    // It was a placeholder ONLY until Task 67, so that an unreviewed sentence
+    // could not reach a customer's SoA by inaction. Measured, that produced the
+    // opposite failure: 19 of 20 frameworks left the field NULL and the SoA's
+    // Justification column came out BLANK for every applicable control with no
+    // linked risks -- the finding an SoA is most often failed on, and one a
+    // boilerplate sentence does not attract.
+    'DefaultInclusionJustificationPlaceholder' => '根据组织的信息安全风险评估确定，并作为必要的控制措施保留。',
+    // Task 15: bulk-setting applicability from the control table's selection bar
+    // (#applicability--set, governance/index.php + governance-frameworks.js).
+    //
+    // The action's own label and the modal's one section. 'Applicability',
+    // 'Reason', 'Provider', 'Justification', 'Save' and 'Cancel' already exist
+    // and are reused; only the strings with no existing home are added here.
+    'SetApplicability' => '设置适用性',
+    'ApplicabilityDecision' => '决定',
+    // The amber scope note, in two sentences the page assembles separately
+    // because they answer two different questions: WHICH framework the decision
+    // is scoped to, and WHICH controls are about to receive it. The second one
+    // has two spellings, because the header checkbox selects the current PAGE
+    // while "Select all N" escalates to the whole filtered result set -- the two
+    // genuinely differ once the table pages, and a note that blurred them would
+    // let the user write 1,535 decisions believing they had written 25.
+    'ApplicabilityScopeNote' => '此决定仅适用于“{$framework}”框架。同一控制项在其他框架中仍然适用。',
+    'ApplicabilityAppliesToSelected' => '它将被记录到此页面上选定的 {$n} 控件中。',
+    'ApplicabilityAppliesToAllFiltered' => '它将针对所有与当前筛选条件匹配的 {$n} 控件进行记录，包括其他页面上的控件。',
+    // Per-state hints under the segmented control. The "applicable" one is the
+    // load-bearing sentence of the whole modal, and the SoA audit-readiness work
+    // rewrote it: an applicable control MAY now carry its own reasons and
+    // justification (ISO/IEC 27001 clause 6.1.3(d) asks for one per control, for
+    // inclusion as much as for exclusion), and leaving both empty is what falls
+    // back to the framework's default inclusion justification. The old sentence
+    // -- "this removes any recorded decision. No justification is needed." --
+    // is now false in both halves.
+    'ApplicabilityApplicableHint' => '本框架适用。理由和论证是可选的；如果两者都留空，则使用框架的默认纳入理由。',
+    'ApplicabilityNotApplicableHint' => '将某项控制措施排除在本框架的适用范围之外。需要提供理由和书面说明。',
+    'ApplicabilityInheritedHint' => '有人代表你执行此控制操作。请说出他们的名字，并说明他们执行的操作。',
+    'ApplicabilityNarrativeHint' => '该决定出现在适用性声明中。请写出审计师需要哪些条件才能接受该决定。',
+    'ApplicabilityProviderHint' => '执行控制的组织：云提供商、托管服务提供商、母公司。',
+    'ChooseAReason' => '选择一个理由',
+    'ApplicabilityNoReason' => '没有理由',
+    // Result toasts. Both interpolate a COUNT taken from the API response and
+    // nothing else -- no submitted text is ever reflected into a toast, which
+    // toastr renders as HTML.
+    'ApplicabilitySetResult' => '已更新对 {$n} 控件的适用性。',
+    'ApplicabilityClearResult' => '适用性重置为适用于 {$n} 控件。',
+    // Bulk control delete (Task 54, corrected Task 55). Deleting a control is
+    // final either way the delete engine implements it: a control with test
+    // history is soft-deleted (framework_controls.deleted = 1) to keep test
+    // history intact, a control with no tests is removed outright -- but
+    // nothing anywhere flips that flag back, so from the user's side there is
+    // no "kept" case, only "deleted, and its test history survives for audit
+    // purposes." Every sentence therefore leads with the same irreversible
+    // warning; the only thing that varies is whether an audit-history clause
+    // is appended, and that clause is omitted entirely rather than printed
+    // with a count of zero -- "0 are retained for audit history" reads as a
+    // warning about something that is not going to happen, and on a delete
+    // confirmation that is exactly the kind of noise that trains people to
+    // stop reading. Every {$...} is a count from the API response; no user
+    // text is ever interpolated, which matters because toastr renders HTML.
+    'DeleteControlsPreviewChecking' => '正在检查哪些内容将被删除……',
+    'DeleteControlsPreviewSplit' => '{$n} 个控件将被删除。此操作无法撤销。其中 {$m} 个控件的测试结果将保留以供审计历史记录。',
+    'DeleteControlsPreviewKeptOnly' => '所有 {$n} 控件将被删除。此操作无法撤销。测试结果将保留以供审计历史记录。',
+    'DeleteControlsPreviewRemovedOnly' => '{$n} 控件将被删除。此操作无法撤销。',
+    'DeleteControlsPreviewNone' => '无需删除：所选控件已不存在。',
+    'ControlsDeletedResult' => '{$n} 控件已删除。',
+
+    // The Add/Edit framework modal's Status field. The label reuses the existing
+    // 'Status' key -- the same word the rail's Active/Inactive/All filter already
+    // uses -- so only the explanatory hint is new. It says the two things a user
+    // cannot see from the control itself: that Inactive is the NON-destructive way
+    // to retire a framework (unlike Delete, which cannot be undone), and that the
+    // change cascades through the hierarchy, which is what update_framework_status()
+    // has always done and is genuinely surprising when a parent is deactivated.
+    'FrameworkStatusHint' => '未激活的框架保留所有控件和映射，但会从默认框架列表中隐藏，并且不会显示在治理仪表板中。停用一个框架也会停用其下的所有框架；激活一个框架也会激活其父框架。',
+
+    // Task 60: the same #applicability--set modal, opened from ONE control's row
+    // action instead of the selection bulk bar. The button's own label reuses
+    // 'SetApplicability'; these two exist because the modal now has to say which
+    // of the two it is acting on, and both spellings must be unambiguous.
+    //
+    // The title names the specific object (design-system.md §8) and the note
+    // says "only", because the dangerous reading is the silent one: with rows
+    // ticked -- or with "Select all N filtered" in force -- a modal that said
+    // nothing would let a click the user believed applied to one row be read as
+    // applying to every control in the framework. Naming the control in both
+    // places is what makes the narrower scope visible rather than assumed.
+    // Corrected in Task 63. This spelling used to end "...only, whatever else is
+    // selected", which was printed on every row-action open whether or not
+    // anything else WAS selected -- a dangling absolute with no antecedent, so
+    // it read as a sentence that had been cut off. It is now the plain form, and
+    // the reassurance about a competing selection moved to
+    // 'ApplicabilityAppliesToControlNotSelection' below, which is printed only
+    // when there is a competing selection to reassure anyone about.
+    'SetApplicabilityForControl' => '设置适用范围： {$name}',
+    'ApplicabilityAppliesToControl' => '它将仅记录在“{$name}”下。',
+
+    // Task 17: the Statement of Applicability report itself
+    // (reports/statement_of_applicability.php + pages/statement-of-applicability.js),
+    // the document ISO/IEC 27001:2022 clause 6.1.3(d) asks for and the one every
+    // applicability decision recorded on the Define Control Frameworks page
+    // exists to produce.
+    //
+    // 'StatementOfApplicability' already exists above (the framework modal's SoA
+    // card) and is reused for the report's own title, as are 'IsmsScopeStatement',
+    // 'DefaultInclusionJustification', the three 'Applicability*' state labels,
+    // 'ApplicabilityDecidedBy'/'DecidedOn', and the plain 'Framework',
+    // 'ControlNumber', 'ControlName', 'Justification', 'Evidence', 'Reason',
+    // 'Provider', 'Total', 'Controls' and 'Export' keys. Only strings with no
+    // existing home are added here.
+    'StatementOfApplicabilityDesc' => '对于一个框架：每个控制项，它是否适用，为什么被包含或排除，以及它是否被实施。',
+    // The header button on Define Control Frameworks. The verb is "generate"
+    // rather than "view" because the document is assembled at the moment it is
+    // asked for -- there is no stored SoA that could be out of date.
+    'GenerateStatementOfApplicability' => '生成适用性声明',
+
+    // The Justification column's SECOND resolution step, and the reason an SoA
+    // built here beats the spreadsheet it replaces: the risks that drove the
+    // control are already recorded against it, so nobody retypes them and they
+    // cannot go stale. {risks} is substituted with the displayed risk ids.
+    //
+    // Phrased to match clause 6.1.3, which derives controls from risk treatment
+    // and uses Annex A afterwards only as a completeness cross-check -- the same
+    // reasoning behind 'DefaultInclusionJustificationPlaceholder' above.
+    'SoaJustifiedByRiskAssessment' => '由组织的信息安全风险评估确定。关联风险： {risks}。',
+
+    // The Implemented column. DERIVED from maturity and the last test result on
+    // every read, never stored, so it cannot drift out of sync with the control.
+    // 'Yes' and 'No' already exist and are reused; only the middle value and the
+    // header need keys of their own. An excluded control's cell reuses the
+    // existing 'NotApplicable' ('N/A'), which is exactly the right abbreviation
+    // in a dense table.
+    'SoaImplemented' => '实施的',
+    'SoaImplementedPartial' => '部分的',
+
+    // The cover block.
+    'SoaGeneratedOn' => '生成于',
+    'SoaExcludedCount' => '已排除',
+
+    // The prompt shown when the framework has never been given the two cover
+    // fields. It PROMPTS rather than silently printing a blank cover: an SoA
+    // whose scope is empty is the one defect an auditor spots first, and the
+    // moment somebody opens the report is the only moment those fields matter.
+    // Both spellings of empty (never set, and deliberately cleared) prompt --
+    // from a reader's point of view there is nothing to print either way.
+    //
+    // The inclusion-justification line states a WEAKER consequence than it used
+    // to, because Task 67 made the stronger one untrue: the column no longer goes
+    // blank when the field is empty -- soa_framework_default_justification()
+    // substitutes the generic default sentence. The prompt survives because a
+    // generic sentence is not the organization's own, and an auditor reading 1,500
+    // identical rows of boilerplate is entitled to ask whose risk assessment it
+    // refers to.
+    'SoaMissingFieldsTitle' => '此声明缺少封面详情',
+    'SoaMissingScopeStatement' => '该框架尚未记录范围声明。范围声明应明确其适用范围。',
+    'SoaMissingInclusionJustification' => '未记录任何默认纳入理由。对于不涉及任何关联风险的适用控制措施，将采用通用声明，而非您自己的声明。',
+    'SoaEditFrameworkToAdd' => '将它们添加到框架中',
+
+    // Opened from the Reporting Hub, which cannot supply a framework. A picker,
+    // not an error: an SoA is a per-framework document by definition -- the same
+    // control excluded from ISO 27001 is not thereby excluded from PCI DSS --
+    // and there is no cross-framework roll-up to offer instead.
+    'SoaChooseFramework' => '选择一个框架',
+    'SoaChooseFrameworkHint' => '适用性声明是针对单个框架编写的。',
+    // The picker has a roster but nothing in it. Distinct from "this framework
+    // has no controls": there is no framework to write a statement about at all,
+    // and the fix is on a different page, so it says which one.
+    // The launcher's affordance row. "Open in browser" rather than "View"
+    // because it names what actually happens -- the document opens in a new tab,
+    // chrome-free -- and because Task 18 adds "Download as PDF" and "Download as
+    // XLSX" beside it, where "open" vs "download" is the distinction that
+    // matters.
+    // The document has no sidebar, so it needs its own way back for anyone who
+    // arrives from a bookmark or a shared link. Screen only; never printed.
+    'SoaBackToSelector' => '返回适用性声明',
+    'SoaNoFrameworks' => '没有活跃的框架',
+    'SoaNoFrameworksHint' => '在“治理”>“定义控制框架”下安装或激活框架，即可在此处使用。',
+
+    // The two refusals. Both explain rather than just failing, because the user
+    // arrived here deliberately.
+    'SoaFrameworkInactiveTitle' => '此框架已失效',
+    'SoaFrameworkInactiveBody' => '适用性声明描述了组织当前运营的范围。重新激活框架即可生成一份适用性声明。',
+    'SoaFrameworkNotFoundBody' => '那个框架已经不存在了。',
+
+    // A framework with no controls mapped into it. Not an error -- it is a real
+    // and recoverable state, and saying so beats an empty table.
+    'SoaNoControls' => '该框架没有控制功能',
+    'SoaNoControlsHint' => '将控件映射到框架中，其适用性声明将列出这些控件。',
+
+    // The second half of the statement-of-applicability launcher's affordance
+    // row, beside "Open in browser" and the existing 'DownloadAsXLSX'. Rendered
+    // only where the Import/Export Extra is active, which is what supplies the
+    // export. "Download as" rather than "Export to" so the pair reads as one
+    // choice of format, and so it matches the XLSX label already in this file.
+    'DownloadAsPDF' => '下载为PDF',
+
+    // The fourth column of the control modal's "Mapped Control Frameworks"
+    // widget, between the reference code and the reference text. The
+    // FRAMEWORK's own title for the control it is citing -- what a Statement of
+    // Applicability prints beside the clause number. Distinct from the existing
+    // 'ReferenceText', which holds the framework's full control statement, and
+    // from the SimpleRisk control's own name.
+    'ReferenceSubject' => '参考主题',
+    // Placeholder/help text under that field, and the reason it is worth
+    // filling in: without it the Statement of Applicability has nothing to
+    // print but the source catalogue's name for its own control.
+    'ReferenceSubjectHint' => "框架中该控件的自身名称。",
+
+    // Task 63: the row-scoped population sentence in the Set applicability
+    // modal, in the one situation where the plain
+    // 'ApplicabilityAppliesToControl' above leaves a real question unanswered --
+    // the user has controls ticked, or a standing "Select all N filtered", and
+    // has just opened the modal from ONE row's own action.
+    //
+    // It states the guarantee rather than implying it. A user whose escalated
+    // selection covers an entire framework needs to know that this click is not
+    // about to overwrite it, and {$n} is the count of the OTHER selected
+    // controls -- the target is excluded, because it is very often ticked too
+    // and a promise that included it would be false.
+    'ApplicabilityAppliesToControlNotSelection' => '它只会记录在“{$name}”下——您选择的 {$n} 控件不受影响。',
+
+    // Task 65: the VISIBLE label on the controls toolbar's SoA button. The full
+    // sentence ('GenerateStatementOfApplicability' above) stays as the button's
+    // title and aria-label, and is still what the SoA page itself is called;
+    // this is the short form for a toolbar row it shares with the page's one
+    // primary action. At full length the secondary button measured more than
+    // twice the primary's width and became the largest element in the row.
+    //
+    // "SoA" is safe to abbreviate HERE and only here: the button appears solely
+    // when a single framework is scoped, beside an Applicability column, and it
+    // expands on hover.
+    'GenerateSoa' => '生成 SoA',
+
+    // ===== Clone framework (Task 64) =======================================
+    // The framework half of Clone control's framing (CloneOfControlTitle /
+    // ClonedFromControlNotice above), and for the same reason: the clone
+    // pre-fills the Add Framework modal rather than creating anything, so the
+    // modal has to say what was carried over before the user saves it.
+    //
+    // Separate keys from the control pair rather than one shared "Clone of
+    // {$name}" -- the two banners do not say the same thing. A cloned control
+    // simply asks to be reviewed; a cloned FRAMEWORK has to explain two things
+    // its fields cannot: that the source's control mappings come with it, and
+    // that the empty scope statement is deliberate. The blank field is the
+    // whole reason the banner is longer than the control's -- a scope statement
+    // left blank with no explanation reads as a field that failed to populate,
+    // and the one thing a clone exists to be given is a NEW scope (Josh: "you
+    // might want to use the same controls as one framework, but scope it
+    // differently"). {$name} and {$n} follow the same client-side
+    // formatTemplate() substitution the rest of this page's templates use.
+    'CloneOfFrameworkTitle' => '克隆“{$name}”',
+    // {$n} is the count the rail is SHOWING for the source row -- its controls,
+    // not its raw mapping rows. Those differ (a framework can cite one control
+    // under two clause numbers, and the rail excludes deleted controls), and the
+    // number to promise is the one the user is looking at when they click and
+    // the one the clone's own rail row will show afterwards.
+    'ClonedFromFrameworkNotice' => '此框架克隆自“{$name}”。其“ {$n} ”控件将被复制到新框架，所有控件均会立即生效——其任何适用性决策均不会继承。范围声明特意留空：请在生成适用性声明之前，声明此框架涵盖的范围。',
+    // Seeds the name field so the clone can be saved without a rename --
+    // framework names are unique, so a verbatim copy is refused on save.
+    'CloneOfFrameworkName' => '{$name} （克隆）',
+    'CloneFramework' => '克隆框架',
+    // Extras version independently of Core, so an updated Import/Export Extra
+    // can end up calling a Core function the installed Core does not have. The
+    // export refuses with this rather than fataling -- see
+    // soa_export_refuse_if_core_too_old(), extras/import-export/includes/soa_export.php.
+    'SoaExportRequiresNewerCore' => '此导出功能需要比当前安装版本更新的 SimpleRisk Core 版本。请更新 SimpleRisk，然后重试导出。',
+    // The framework ACQUISITION chooser (Task 26): "+ Add framework" asks how you
+    // want to get one, rather than assuming you want to type it in. Each option is
+    // rendered only when the route behind it actually exists for this user, so the
+    // hint text may state plainly what the route does -- it is never shown to
+    // someone who cannot take it.
+    'HowDoYouWantToAddAFramework' => '你想如何添加框架？',
+    'CreateFrameworkManually' => '手动创建一个',
+    'CreateFrameworkManuallyHint' => '自行命名框架，然后添加或映射其控件。',
+    // Named for the framework rather than for its vendor. The hint was reworded
+    // at the same time: it used to end "...load its Secure Controls Framework
+    // controls", which read as a stutter once the label carried those words.
+    'GetFrameworkFromScf' => '从安全控制框架中获取一个',
+    'GetFrameworkFromScfHint' => '选择一个已发布的框架，然后一步加载其映射的控件。',
+    'ImportFrameworkFromCatalog' => '进口一个',
+    'ImportFrameworkFromCatalogHint' => '从 SimpleRisk 内容目录安装框架及其控件。',
+
+    // The framework acquisition chooser's third route, which now offers the
+    // Import-Export Extra's CONTROL import (a spreadsheet naming a framework
+    // that does not exist yet creates it) rather than the GitHub catalogue the
+    // two keys above described. Those two are left in place, unreferenced, so a
+    // customer maintaining a custom lang.<locale>.php still reconciles by tail
+    // diff.
+    'ImportFrameworkFromSpreadsheet' => '从电子表格导入一个',
+    'ImportFrameworkFromSpreadsheetHint' => '上传一个包含控件名称的电子表格（用于命名框架），两者即被创建。',
+
+    // The Define Control Frameworks rail's second synthetic scope: the controls
+    // mapped to no framework at all. Its first, "All controls", reuses the
+    // existing AllControls key rather than adding a second string with the same
+    // English -- it replaced 'AllFrameworks' on that row, which named a union of
+    // frameworks while scoping to every control, mapped or not. 'AllFrameworks'
+    // is left in place and unreferenced by that page: other surfaces still use
+    // it, and every locale carries it.
+    'UnassignedControls' => '未分配的控制项',
+    // APPLICABILITY VALIDATION FAILURES. These reach the user: the v2 endpoint
+    // returns the exception's message as the API status message and the page
+    // renders it in a toast, so a hardcoded English literal here would be
+    // permanently English for every locale.
+    //
+    // NOTHING THE CALLER TYPED IS EVER INTERPOLATED INTO THESE. The parameters
+    // are validated enum values, integer ids and byte limits the server itself
+    // owns -- naming the ALLOWED values rather than echoing the rejected one is
+    // deliberate (it is both safe and more useful than repeating a typo).
+    'ApplicabilityErrUnknownState' => '适用状态未知。预期值为： {$states}。',
+    'ApplicabilityErrNarrativeRequired' => '\'{$state}\'需要叙述。',
+    'ApplicabilityErrNarrativeTooLong' => '这段文字的长度超过 {$bytes} 字节。',
+    'ApplicabilityErrReasonRequired' => '要将某个控制项标记为不适用，必须提供排除理由。',
+    'ApplicabilityErrProviderRequired' => '提供者需要将控件标记为已继承。',
+    'ApplicabilityErrProviderTooLong' => '提供商名称长度超过 {$bytes} 字节。',
+    'ApplicabilityErrReasonsNotFound' => '这些适用性理由并不存在： {$ids}。',
+    'ApplicabilityErrReasonsNotOffered' => '本状态不提供这些适用性理由： {$ids}。',
+    'ApplicabilityErrFrameworkNotFound' => '框架 {$framework} 不存在。',
+    'ApplicabilityErrControlsNotFound' => '这些控件 ID 不存在： {$ids}。',
+    // Controls/Risks import result messages (validation gate, individual bad-row
+    // alerts, and the batched submitted/created/updated summaries)
+    'ControlIdOrShortNameFieldRequired' => '控件 ID 或控件简称字段必须进行映射——缺少其中之一，则无法识别行。',
+    'RiskImportSubjectNull' => '风险 ID {$risk_id}：由于主题字段为空或缺失，因此未更新。',
+    'RiskImportSummary' => '已提交 {$submitted} 项风险，并已更新 {$updated} 项风险。',
+    'ControlImportSummary' => '创建了 {$created} 个控件并更新了 {$updated} 个控件。',
+    'ImportAdditionalIssuesSuppressed' => '{$count} 额外的行存在问题，此处未单独显示。',
+    'EncryptionPipelineStalledTask' => '加密管道（任务 #{$id}， {$type}）似乎已停滞——它已经 {$status} 很长时间没有进展。这通常意味着后台队列工作进程没有运行；请检查它是否已调度，并在它处理完停滞的任务后重试。',
+    'EncryptionPipelineStalledState' => '加密管道似乎已停止运行——它被标记为正在进行中的时间异常长，但没有匹配的后台任务可以指向它。这通常意味着队列工作进程未运行，或者之前的管道已完成但未正确更新此状态。请检查调试日志后再试一次。',
+    // DEMO_MODE — shown when a visitor to a shared demo instance attempts one
+    // of the operations that would spoil the demo for the next visitor
+    'ActionDisabledOnDemoInstance' => '此操作在 SimpleRisk 演示实例中已禁用。',
+
+    // The one-click upgrade progress window: the step an upgrade is on, and
+    // the line shown once it finishes
+    // Shown when an upgrade's progress record has not been touched for long
+    // enough that the process running it is presumed gone
+    'UpgradeJobStalled' => '升级过程停止响应。请先查看服务器日志再重试。',
+    // Shown when an upgrade replaced the instance's configuration file and could
+    // not put the original back
+    // Shown when the database was brought up to date but the application files
+    // could not be replaced, so the instance has NOT moved to the new release
+    'UpdateAppFailed' => '应用程序文件未升级，因此此实例仍在运行之前的版本。请查看 SimpleRisk 日志以了解原因，然后再次运行升级。',
+    // The one-click upgrade progress screen
+    'UpgradeInProgress' => '进行中',
+    'UpgradeStepNotNeeded' => '不需要',
+    // Recovering an Upgrade Extra whose files are damaged
+    'UpgradeExtraDamagedReinstalling' => '已安装的升级附加组件已损坏。正在下载全新副本。',
+    'UpgradeExtraDamagedRepaired' => '升级附加包已替换为可用副本。',
+    'UpgradeExtraDamagedFailed' => '升级插件已损坏，无法自动替换。请从“插件”页面重新安装，或从备份恢复 simplerisk/extras/upgrade/ 目录，然后重试。',
+    'UpgradeAlreadyCurrent' => '此实例已是最新版本 {version}，无需升级。',
+    'UpgradeShowWhatItDid' => '展示它做了什么',
+    'UpgradeBackupsListed' => '这些备份文件列在“配置”>“备份”下。',
+    'UpgradingTo' => '升级到 {version}',
+    'UpgradeSafeToClose' => '可以安全关闭此窗口。服务器将继续升级，此页面将重新打开。',
+    'UpgradeDownloadLog' => '下载日志',
+    'UpgradeStatementsApplied' => '已应用 {started} · {count} 条语句',
+    // The Upgrade Extra's pre-upgrade check of the instance it is sitting on
+    'UpgradeCheckingInstance' => '正在检查此实例',
+    'UpgradeInstanceChecked' => '实例已检查，无需更正。',
+    'UpgradeBlockedByCorrections' => '升级已停止，因为此实例需要进行无法自动应用的更正。请按照上述说明操作，然后再次运行升级。其他任何设置均未更改。',
+    // Shown when an upgrade replaced the instance's configuration file and could not put the original back
+    'ConfigRestoreFailed' => '升级无法恢复此实例的配置文件。请先从备份中恢复 simplerisk/includes/config.php 文件，然后再继续。',
+    'UpgradeDidNotAdvance' => '版本“{$version}”的升级功能未能提升数据库版本；已停止，因此不会再次运行。',
+    'BackupDatabaseNative' => '正在备份数据库（无需外部工具）……',
+    'UpgradeAlreadyRunning' => '此实例上正在运行升级。',
+    'UpgradeStatusUnreachable' => '升级过程中与服务器失去连接。请查看 SimpleRisk 日志；升级可能仍在进行中。',
+    'UpgradeJobUnwritable' => '升级无法启动，因为无法写入进度记录。请检查系统临时目录是否对 Web 用户具有写入权限。',
+    'UpgradeStepCheckingVersions' => '正在检查版本',
+    'UpgradeStepUpgradingDatabase' => '升级数据库模式',
+    'UpgradeStepFinalising' => '应用升级后转换',
+    'UpgradeDatabaseHeading' => '数据库升级',
+    'UpgradeDatabaseComplete' => '数据库升级完成。',
+    'UpgradeHideWhatItDid' => '掩盖它所做的事情',
+    'UpgradeStateRunning' => '运行中',
+    'UpgradeSessionExpired' => '您的会话已过期。请重新登录以查看升级内容。',
+    'UpgradeLostContact' => '与服务器失去连接。请重新加载此页面以重新连接到升级。',
+    'UpgradeDatabaseAlreadyCurrent' => '数据库已存在于应用程序版本中。',
+    'UpgradeConversionsApplied' => '已应用引擎和字符集转换。',
+    'UpgradeStoppedShort' => '升级过程在 {reached} 处停止，未到达 {app}。请查看服务器日志。',
+    'UpgradeStepBackingUp' => '备份',
+    'UpgradeStepUpgradingFiles' => '升级应用程序文件',
+    'UpgradeStepUpgradingExtras' => '升级已安装的附加组件',
+    'UpgradeStepUpdatingUpgradeExtra' => '更新升级附加功能',
+    // The Upgrade Extra's pre-chain corrections: what is wrong, and what to do
+    // about it. These are the highest-stakes messages the upgrade produces --
+    // an operator reads them to unstick an instance that cannot upgrade.
+    'UpgradeCorrectionUnknownVersionTitle' => '数据库中记录的版本号并非实际版本。',
+    'UpgradeCorrectionNoRecordedVersion' => '数据库中没有已记录的版本。',
+    'UpgradeCorrectionUnknownVersionFinding' => '数据库报告的版本为“{$version}”，其中并未指定任何 SimpleRisk 版本。升级程序无法从中选择起始版本。',
+    'UpgradeCorrectionUnknownVersionGuidance' => '将 db_version 设置设为此数据库实际使用的架构对应的版本，然后再次运行升级：UPDATE settings SET value=\'<release>\' WHERE name=\'db_version\'。如果该值为占位符（例如 2026XXXX-001），则正确的值几乎总是升级运行之前安装的最新实际版本。',
+    'UpgradeCorrectionLegacySessionsTitle' => '会话表无法在升级过程中进行字符集转换。',
+    'UpgradeCorrectionLegacySessionsFinding' => 'MyISAM 表中的 `sessions`.`id` 类型为 VARCHAR({$width})。从 20230106-001 版本开始，将其转换为 utf8mb4 类型，会超出 MyISAM 的 1000 字节索引限制，导致升级失败。',
+    'UpgradeCorrectionLegacySessionsGuidance' => '一个或多个活动会话的 ID 长度超过 128 个字符。此时缩小此列的宽度会导致这些用户被注销，因此暂不进行此操作。待这些会话过期后，请重试升级。',
+    'UpgradeCorrectionApplied' => '已更正。',
+    'UpgradeCorrectionFailed' => '此更正未能成功应用。请查看 SimpleRisk 日志了解原因。',
+    'UpgradeCorrectionAppliedLine' => '已更正： {$title} {$message}',
+    'UpgradeCorrectionNotAppliedLine' => '未更正： {$title} {$message}',
+    'UpgradeCorrectionsNeeded' => '升级此实例前需要进行以下更正： {$count}',
+    'UpgradeCorrectionsNeededShort' => '需要更正： {$count}',
+    'UpdateDatabase' => '数据库正在升级……',
+    // Authentication screens (index.php, reset.php, reset_password.php)
+    'EnterTheCredentialsForYourAccount' => '请输入您的账户凭据。',
+    'TroubleSigningIn' => '登录遇到问题？请联系您的 SimpleRisk 管理员。',
+    'BackToLogin' => '返回登录',
+    'Or' => '或者',
+    'WeWillEmailAResetTokenToYourAccount' => '我们将向您账户上的邮箱地址发送重置令牌。',
+    'EnterTheResetTokenFromYourEmail' => '请输入您邮箱中的重置令牌以及您的新密码。',
+    'ChooseANewPasswordToContinue' => '请选择新密码继续。',
+    'FromZeroToGRCInMinutes' => '几分钟内从零基础到GRC。',
+    'OrganizationLogo' => '组织标志',
+    'LoginScreenBranding' => '登录界面品牌设计',
+    'CustomLogo' => '自定义徽标',
+    'CustomLogoHint' => '图片格式为 PNG、JPG、GIF 或 WebP，最大 1 MB，分辨率为 2000x2000。显示分辨率最高为 260x64，因此对于高密度屏幕，请提供 520x128 左右的图片。顶部栏和登录面板为深色背景，因此请上传一个适合深色背景的 logo。移除此 logo 即可恢复 SimpleRisk 默认 logo。',
+    'CurrentLogo' => '当前标志',
+    'RemoveLogo' => '移除标志',
+    'LoginTagline' => '登录标语',
+    'LoginTaglineHint' => '替换登录界面上的 SimpleRisk 标语。一行简短的文字效果最佳。如果留空，则保留 SimpleRisk 标语。',
+    'LoginNotice' => '系统使用通知',
+    'LoginNoticeHint' => '在用户登录前显示在登录界面。可用于发布合理使用规则或系统使用通知。留空则不显示任何通知。禁止添加链接和图片。',
+    'BrandingRequiresCustomization' => '登录界面品牌化是定制服务的一部分。',
+    'LogoMustBeAnImage' => '徽标必须为 PNG、JPG、GIF 或 WebP 格式的图像。',
+    'LogoTooLarge' => '徽标大小不得超过 1 MB。',
+    'LogoDimensionsTooLarge' => '标志尺寸不得超过 2000x2000 像素。',
+    'LogoDimensionsTooSmall' => '标志最长边必须至少为 32 像素。',
+    'LogoUploadFailed' => '徽标上传失败，请重试。',
+    'LogoUpdated' => '标志已更新。',
+    'LogoRemoved' => '标志已被移除。',
+    'NoSystemUseNoticeSet' => '未设置系统使用通知。',
+    'NoticeSizeSmall' => '小的',
+    'NoticeSizeNormal' => '普通的',
+    'NoticeSizeLarge' => '大的',
+    // Preferences page save feedback
+    'TheSettingsWereUpdatedSuccessfully' => '设置已成功更新。',
+    'NoChangesWereMade' => '未做任何更改。',
+    'PleaseSpecifyAnIntegerGreaterThanOrEqualToZeroForTheMinimumValue' => '请指定一个大于或等于零的整数作为最小值。',
+    'PleaseSpecifyAnIntegerForTheMaximumValue' => '请指定一个整数作为最大值。',
+    'PleaseSpecifyAMaximumValueGreaterThanTheMinimum' => '请指定一个大于最小值的最大值。',
+    // Extra download version compatibility
+    'ExtraVersionIncompatibleWithApplication' => '下载的“{$extra}”附加组件（版本 {$extra_version}）与 SimpleRisk {$app_version} 不兼容，因此未安装。请先将 SimpleRisk 升级到最新版本。',
+    'ExtraCompatibilityDataUnavailable' => 'SimpleRisk 无法确认此版本支持哪些 Extra 版本，因此 Extra 未安装。请稍后重试。',
+    'ExtraVersionCouldNotBeVerified' => '无法确定下载的 Extra 版本，因此未进行安装。',
     '' => '',
 );
 ?>

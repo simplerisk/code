@@ -6,11 +6,16 @@
 
 return [
     'core_ai_context_update' => true,
+    'core_audit_initiate' => true,
     'core_control_update' => true,
     'core_countries_update' => true,
     'core_document_update' => true,
     'core_email_send' => true,
-    'core_server_ping' => true,
+    'core_kpi_snapshot' => true,
+    'core_license_check' => true,
+    'core_notifications_purge' => true,
+    'core_notifications_remote_feed' => true,
+    'core_promises_purge' => true,
     'core_version_check' => true,
     'core_workflow_action_execute' => true,
     'core_workflow_execute' => true,

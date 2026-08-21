@@ -1,0 +1,100 @@
+/*******************************************************************************
+ * NUNITO SANS, SELF-HOSTED.
+ *
+ * This file replaces
+ *
+ *     @import url("https://fonts.googleapis.com/css?family=Nunito+Sans:300,400,600,700,800");
+ *
+ * which lived at the top of variable.scss. Two measured problems came with it,
+ * and both are about documents rather than about page load.
+ *
+ * 1. IT SILENTLY FALLS BACK TO HELVETICA WHEN GOOGLE IS UNREACHABLE. Verified by
+ *    blocking fonts.googleapis.com / fonts.gstatic.com and re-rendering the
+ *    Statement of Applicability: same page count, different typeface, no error.
+ *    Air-gapped and egress-filtered GRC deployments are ordinary, and a
+ *    controlled document whose typeface depends on whether the instance could
+ *    reach a third party is not a controlled document.
+ *
+ * 2. IT MAKES BROWSER-PRINTED PDFs 5-10x LARGER AND WEAKER ARCHIVALLY. Google
+ *    now serves Nunito Sans as a VARIABLE font (every face in that response
+ *    carries `font-stretch: 100%`), and Skia converts a variable instance to a
+ *    `Type 3` embedded font with `Custom` encoding when it writes a PDF.
+ *    Measured on the 1,534-control SCF Statement of Applicability: 5.09 MB from
+ *    the browser against 0.68 MB from Dompdf, and Type 3 is rejected by some
+ *    PDF/A conformance levels and has patchier screen-reader support. The static
+ *    per-weight files below embed as ordinary TrueType.
+ *
+ * WHY A DEDICATED PARTIAL AND NOT variable.scss. That file is `@import`ed three
+ * times (style.scss, pages/dashboards/dashboard1.scss, widgets/gal-card.scss),
+ * which is why the Google `@import` appears three times in the compiled bundle.
+ * A duplicated `@import` line is harmless; seventy-five duplicated `@font-face`
+ * blocks are not. This partial is imported exactly once, from style.scss.
+ *
+ * ─────────────────────────────────────────────────────────────────────────────
+ * WHAT IS GENERATED, AND WHY IT IS EXACTLY THIS SET
+ * ─────────────────────────────────────────────────────────────────────────────
+ * FIVE WEIGHTS x FIVE SUBSETS = 25 faces, which is precisely what the Google
+ * response contained -- checked against it rather than chosen. Dropping a subset
+ * would silently regress a locale: SimpleRisk ships 39+ languages, and Cyrillic,
+ * Cyrillic-Ext and Vietnamese are all among them.
+ *
+ * THE `unicode-range` VALUES ARE THE PACKAGE'S OWN (@fontsource/nunito-sans's
+ * `unicode.json`, which matches Google's byte for byte). They are what stops a
+ * Latin-only page from downloading the Cyrillic file: the browser fetches a face
+ * only when the page actually uses a codepoint in its range, so the whole set
+ * costs a Latin user the same two files the Google import did.
+ *
+ * `font-display: swap` matches @fontsource's own CSS and the behaviour the
+ * Google-hosted faces had.
+ *
+ * WOFF2 ONLY. Every browser this product supports has had WOFF2 since 2016, and
+ * the `.woff` fallback in the package's own CSS exists for IE11/Android 4. The
+ * package ships both; only the first is referenced.
+ *
+ * PATHS ARE RELATIVE TO THE COMPILED BUNDLE (simplerisk/css/style.min.css), not
+ * to this file. Dart Sass does not rebase `url()`, so what is written here is
+ * what ships. `simplerisk/vendor/.htaccess` allow-lists this directory --
+ * without that entry the fonts 403 and the page falls back to a system face
+ * exactly as it did when Google was unreachable. Edit `scripts/.htaccess`, the
+ * SOURCE that composer copies over it.
+ ******************************************************************************/
+
+$sr-nunito-path: "../vendor/node_modules/@fontsource/nunito-sans/files";
+
+// The weights the product actually declares (variable.scss's
+// $font-family-sans-serif plus every `font-weight` in the partials). Adding one
+// here without adding the matching files to the package is a face the browser
+// will synthesise -- a faux bold, which prints differently from a real one.
+$sr-nunito-weights: 300, 400, 600, 700, 800;
+
+// Subset name -> the codepoints that subset covers. Straight from the package's
+// unicode.json; do not hand-edit these.
+//
+// STYLELINT IS DISABLED FOR THE MAP, and it has to be. `scss/operator-no-unspaced`
+// reads the `+` in a `U+XXXX` codepoint as an arithmetic operator and demands
+// spaces around it -- which would corrupt every range into `U + 0460-052F`. The
+// alternative, quoting each range and interpolating it at the `unicode-range`
+// declaration, means hand-editing values this comment exists to say we don't
+// hand-edit. Disabling the rule over the data leaves the data verbatim.
+// stylelint-disable scss/operator-no-unspaced
+$sr-nunito-subsets: (
+    "cyrillic-ext": (U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F),
+    "cyrillic":     (U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116),
+    "vietnamese":   (U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB),
+    "latin-ext":    (U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF),
+    "latin":        (U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD),
+);
+// stylelint-enable scss/operator-no-unspaced
+
+@each $sr-weight in $sr-nunito-weights {
+    @each $sr-subset, $sr-range in $sr-nunito-subsets {
+        @font-face {
+            font-family: "Nunito Sans";
+            font-style: normal;
+            font-weight: $sr-weight;
+            font-display: swap;
+            src: url("#{$sr-nunito-path}/nunito-sans-#{$sr-subset}-#{$sr-weight}-normal.woff2") format("woff2");
+            unicode-range: $sr-range;
+        }
+    }
+}

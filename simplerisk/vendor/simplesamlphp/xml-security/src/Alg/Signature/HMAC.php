@@ -15,8 +15,7 @@ use SimpleSAML\XMLSecurity\Key\SymmetricKey;
  */
 final class HMAC extends AbstractSigner implements SignatureAlgorithmInterface
 {
-    /** @var string */
-    protected const DEFAULT_BACKEND = Backend\HMAC::class;
+    protected const string DEFAULT_BACKEND = Backend\HMAC::class;
 
 
     /**

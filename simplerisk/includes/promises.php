@@ -91,6 +91,84 @@ function create_stage_promise(
     }
 }
 
+/***********************************************************************
+ * FUNCTION: PROMISE CHAIN EXISTS                                      *
+ * True if a live (non-terminal) promise chain already exists for the  *
+ * given queue task. Multi-stage jobs' queue_check must call this and   *
+ * skip chain creation when it returns true, otherwise the queue        *
+ * worker's stuck-task recovery (which flips a long-running task back   *
+ * to 'pending' and re-invokes queue_check) re-creates the entire stage *
+ * chain on every recovery — the re-chaining runaway that exploded the  *
+ * promises table on a production instance (~7,000x duplication).       *
+ *                                                                      *
+ * Liveness checks BOTH `state` and `status`: the promise worker drives *
+ * `state`, but cancellation (cancel_control_task) only writes          *
+ * `status='canceled'`, so a promise can be terminal on one column and  *
+ * stale on the other. A promise counts as live only when NEITHER       *
+ * column holds a terminal value.                                       *
+ ***********************************************************************/
+function promise_chain_exists(PDO $db, int $queue_task_id, string $promise_type): bool
+{
+    $stmt = $db->prepare("
+        SELECT 1 FROM promises
+        WHERE queue_task_id = :task_id
+          AND promise_type = :promise_type
+          AND state  NOT IN ('completed','fulfilled','failed','canceled')
+          AND status NOT IN ('completed','fulfilled','failed','canceled')
+        LIMIT 1
+    ");
+    $stmt->execute([
+        ':task_id'      => $queue_task_id,
+        ':promise_type' => $promise_type,
+    ]);
+
+    return (bool) $stmt->fetchColumn();
+}
+
+/***********************************************************************
+ * FUNCTION: PURGE TERMINAL PROMISES                                   *
+ * Deletes terminal-state promise rows older than the retention        *
+ * window, in a single bounded batch. The promises table is otherwise  *
+ * append-only and grows unbounded (a production instance reached an    *
+ * auto-increment id of ~10M); only rows that are done — completed,     *
+ * fulfilled, failed, or canceled — are eligible. A promise is terminal *
+ * when EITHER `state` or `status` holds a terminal value (cancellation *
+ * writes only `status`). Live chains are never touched.               *
+ *                                                                      *
+ * Returns the number of rows deleted. $batch_limit caps a single run   *
+ * so the daily sweep never issues an unbounded DELETE; draining a      *
+ * large pre-existing backlog is an operational task, not this job's.   *
+ ***********************************************************************/
+function purge_terminal_promises(PDO $db, int $retention_days = 7, int $batch_limit = 50000): int
+{
+    $retention_days = max(1, $retention_days);
+    $batch_limit    = max(1, $batch_limit);
+
+    // Perf note: the dominant `state IN (terminal)` branch is served by the
+    // existing idx_promises_state_updated (state, updated_at); the `status`
+    // branch (only the cancel-divergence remainder) falls back to
+    // idx_promises_status. A standalone updated_at index is deliberately NOT
+    // added — updated_at changes on every stage transition, so indexing it would
+    // add write amplification to this high-churn table for every customer to
+    // speed up a daily maintenance DELETE that is only slow on an already-
+    // degenerate backlog (an operational one-time cleanup, not this job's).
+
+    // $batch_limit is an internal int (typed param, clamped above), safe to
+    // inline — PDO can't bind a LIMIT placeholder under emulated prepares.
+    $stmt = $db->prepare("
+        DELETE FROM promises
+        WHERE updated_at < NOW() - INTERVAL :days DAY
+          AND (
+               state  IN ('completed','fulfilled','failed','canceled')
+            OR status IN ('completed','fulfilled','failed','canceled')
+          )
+        LIMIT " . $batch_limit . "
+    ");
+    $stmt->execute([':days' => $retention_days]);
+
+    return $stmt->rowCount();
+}
+
 /*******************************************************
  * FUNCTION: UPDATE PROMISE STAGE                      *
  * Updates promise state and triggers completion logic *
@@ -439,9 +517,16 @@ function process_promise(array $promise, array $jobDef, PDO $db, int $maxRetryAt
         handle_promise_failure($db, $promise, $msg, 1, 0, 0);
         return 1;
     } catch (\Throwable $t) {
-        $msg = "Stage '{$stageName}' threw error: {$t->getMessage()} in {$t->getFile()}:{$t->getLine()}";
-        write_debug_log($msg, "error");
-        handle_promise_failure($db, $promise, $msg, $maxRetryAttempts, $baseRetryDelay, $maxRetryDelay);
+        // Two-message split: full message with server-side path/line goes
+        // to the debug log (operator inspecting a file on disk); the
+        // message persisted to settings + returned to admin API consumers
+        // strips the path/line to avoid disclosing filesystem layout to
+        // anyone holding an admin API key. CIA: low-impact information
+        // disclosure, defense-in-depth.
+        $fullMsg     = "Stage '{$stageName}' threw error: {$t->getMessage()} in {$t->getFile()}:{$t->getLine()}";
+        $sanitizedMsg = "Stage '{$stageName}' threw error: {$t->getMessage()}";
+        write_debug_log($fullMsg, "error");
+        handle_promise_failure($db, $promise, $sanitizedMsg, $maxRetryAttempts, $baseRetryDelay, $maxRetryDelay);
         return 1;
     }
 

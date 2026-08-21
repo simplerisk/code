@@ -2,7 +2,6 @@
 
 namespace PhpOffice\PhpSpreadsheet\Reader;
 
-use Closure;
 use Composer\Pcre\Preg;
 use DateTime;
 use DateTimeZone;
@@ -282,6 +281,7 @@ class Ods extends BaseReader
      *      textRotation?: int,
      *      vertical?: string,
      *      wrapText?: bool,
+     *      indent?: int,
      *    },
      *    protection?:array{
      *      locked?: string,
@@ -851,7 +851,7 @@ class Ods extends BaseReader
             // repeated range passes the read filter. If not, skip the entire group.
             // If some columns pass, we need to fall through to the processing block
             // which will handle per-column filtering.
-            if (!$this->getReadFilter()->readCell($columnID, $rowID, $worksheetName)) {
+            if (!$this->readFilter->readCell($columnID, $rowID, $worksheetName)) {
                 if ($colRepeats <= 1) {
                     StringHelper::stringIncrement($columnID);
 
@@ -865,7 +865,7 @@ class Ods extends BaseReader
                     if ($i > 0) {
                         StringHelper::stringIncrement($tempCol);
                     }
-                    if ($this->getReadFilter()->readCell($tempCol, $rowID, $worksheetName)) {
+                    if ($this->readFilter->readCell($tempCol, $rowID, $worksheetName)) {
                         $anyColumnPasses = true;
 
                         break;
@@ -1143,7 +1143,7 @@ class Ods extends BaseReader
                     StringHelper::stringIncrement($columnID);
                 }
 
-                if (!$this->getReadFilter()->readCell($columnID, $rowID, $worksheetName)) {
+                if (!$this->readFilter->readCell($columnID, $rowID, $worksheetName)) {
                     continue;
                 }
 
@@ -1511,11 +1511,11 @@ class Ods extends BaseReader
         }
     }
 
-    /** @var null|Closure(string, string):string */
-    private ?Closure $formatCallback = null;
+    /** @var null|callable(string, string):string format callback routine */
+    private $formatCallback;
 
-    /** @param Closure(string, string):string $formatCallback */
-    public function setFormatCallback(Closure $formatCallback): void
+    /** @param callable(string, string):string $formatCallback format callback routine */
+    public function setFormatCallback(callable $formatCallback): void
     {
         $this->formatCallback = $formatCallback;
     }
@@ -1650,6 +1650,7 @@ class Ods extends BaseReader
     /** @return array{
      *   horizontal?: string,
      *   readOrder?: int,
+     *   indent?: int,
      * }
      */
     protected function getAlignment2Styles(DOMElement $paragraphProperties, string $styleNs, string $fontNs): array

@@ -46,8 +46,10 @@ require_once(language_file());
 
         // Same team-separation gate compliance/download.php applies. Without
         // this guard, governance/download.php served any compliance_file by
-        // id even with the team separation extra enabled, since
-        // download_compliance_file() itself has no authorization logic.
+        // id even with the team separation extra enabled. download_compliance_file()
+        // enforces the per-ref_type granular permission at the sink (e.g.
+        // view_exception for exception attachments, SR-1694) but not team
+        // separation, so this entry-point check remains necessary.
         if (team_separation_extra()) {
 
             require_once(realpath(__DIR__ . '/../extras/separation/index.php'));

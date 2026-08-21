@@ -4,13 +4,18 @@ declare(strict_types=1);
 
 namespace SimpleSAML\Module\core\Controller;
 
-use SimpleSAML\{Auth, Configuration, Error, Module, Utils};
-use SimpleSAML\Module\core\Auth\{UserPassBase, UserPassOrgBase};
+use SimpleSAML\Auth;
+use SimpleSAML\Configuration;
+use SimpleSAML\Error;
+use SimpleSAML\Error\ErrorCodes;
+use SimpleSAML\Module;
+use SimpleSAML\Module\core\Auth\UserPassBase;
+use SimpleSAML\Module\core\Auth\UserPassOrgBase;
+use SimpleSAML\Utils;
 use SimpleSAML\XHTML\Template;
 use Symfony\Component\HttpFoundation\Cookie;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use SimpleSAML\Error\ErrorCodes;
 
 use function array_key_exists;
 use function substr;
@@ -44,13 +49,12 @@ class Login
     protected static array $registeredErrorCodeClasses = [];
 
 
-
     /**
      * Controller constructor.
      *
      * It initializes the global configuration for the controllers implemented here.
      *
-     * @param \SimpleSAML\Configuration              $config The configuration to use by the controllers.
+     * @param \SimpleSAML\Configuration $config The configuration to use by the controllers.
      *
      * @throws \Exception
      */
@@ -136,6 +140,7 @@ class Login
         }
     }
 
+
     /**
      * This method handles the generic part for both loginuserpass and loginuserpassorg
      *
@@ -150,7 +155,7 @@ class Login
 
         $organizations = $organization = null;
         if ($source instanceof UserPassOrgBase) {
-            $organizations = UserPassOrgBase::listOrganizations($authStateId);
+            $organizations = $source::listOrganizations($authStateId);
             $organization = $this->getOrganizationFromRequest($request, $source, $state);
         }
 
@@ -204,7 +209,7 @@ class Login
                 if (($source instanceof UserPassBase) && $source->isRememberMeEnabled()) {
                     if ($request->request->has('remember_me') && ($request->request->get('remember_me') === 'Yes')) {
                         $state['RememberMe'] = true;
-                        $authStateId = Auth\State::saveState($state, UserPassBase::STAGEID);
+                        $authStateId = Auth\State::saveState($state, $source::STAGEID);
                     }
                 }
 
@@ -233,9 +238,9 @@ class Login
 
                 try {
                     if ($source instanceof UserPassOrgBase) {
-                        UserPassOrgBase::handleLogin($authStateId, $username, $password, $organization);
+                        $source::handleLogin($authStateId, $username, $password, $organization);
                     } else {
-                        UserPassBase::handleLogin($authStateId, $username, $password);
+                        $source::handleLogin($authStateId, $username, $password);
                     }
                 } catch (Error\Error $e) {
                     // Login failed. Extract error code and parameters, to display the error
@@ -500,7 +505,7 @@ class Login
     /**
      * This clears the user's IdP discovery choices.
      *
-     * @param Request $request The request that lead to this login operation.
+     * @param \Symfony\Component\HttpFoundation\Request $request The request that lead to this login operation.
      */
     public function cleardiscochoices(Request $request): void
     {

@@ -33,8 +33,6 @@ $lang = array(
     'CurrentPassword'=>'වත්මන් මුරපදය',
     'NewPassword'=>'නව මුරපදය',
     'ConfirmPassword'=>'මුරපදය තහවුරු කරන්න',
-    'RiskConfiguration'=>'අවදානම් වින්‍යාසය',
-    'ReviewSettings'=>'සැකසීම් සමාලෝචනය කරන්න',
     'AddAndRemoveValues'=>'එකතු සහ ඉවත් වටිනාකම්',
     'UserManagement'=>'පරිශීලක කළමනාකරණය',
     'RedefineNamingConventions'=>'සුවිශාල දායකත්වයක් සම්මුතීන් නම්',
@@ -80,8 +78,6 @@ $lang = array(
     'Delete'=>'මකා',
     'SendPasswordResetEmailForUser'=>'යැවීමට මුරපදය නැවත සකසන්න සඳහා ඊ-තැපැල් පරිශීලක',
     'Category'=>'ප්රවර්ගය',
-    'Cards'=>'කාඩ්පත්',
-    'List'=>'ලැයිස්තුව',
     'AddNewCategoryNamed'=>'එකතු නව ප්රවර්ගය නම්',
     'DeleteCurrentCategoryNamed'=>'මකා වත්මන් ප්රවර්ගය නම්',
     'Team'=>'කණ්ඩායම',
@@ -357,8 +353,6 @@ $lang = array(
     'Activate'=>'සක්‍රිය කරන්න',
     'DeleteRisks'=>'අවදානම් මකන්න',
     'DeletedRisksCannotBeRecovered'=>'මකා දැමූ අවදානම් නැවත ලබා ගත නොහැක',
-    'DeletedAssessmentsCannotBeRecovered'=>'මකා දැමූ තක්සේරු කිරීම් නැවත ලබා ගත නොහැක.',
-    'TheAssessmentsWereDeletedSuccessfully'=>'තක්සේරුව(ය) සාර්ථකව මකා දමන ලදී.',
     'RisksDeletedSuccessfully'=>'අවදානම් මකාදමා ඇත',
     'ThereWasAProblemDeletingTheRisk'=>'අවදානම මකාදැමීමේ ගැටලුවක් තිබුණි',
     'Activated'=>'ක්‍රියාත්මක විය',
@@ -417,11 +411,6 @@ $lang = array(
     'EditAssets'=>'වත්කම් සංස්කරණය කරන්න',
     'AutomaticAssetValuation'=>'ස්වයංක්‍රීය වත්කම් තක්සේරු කිරීම',
     'ManualAssetValuation'=>'අත්පොත වත්කම් තක්සේරු කිරීම',
-    'AssetValuationMode'=>'වත්කම් තක්සේරුකරණ මාදිලිය',
-    'AutomaticLinearRange'=>'ස්වයංක්‍රීය රේඛීය පරාසය',
-    'AutomaticExponentialRange'=>'ස්වයංක්‍රීය ඝාතීය පරාසය',
-    'ManualValuation'=>'අත්පොත',
-    'AssetValuationMinMustBeNonNegative'=>'ස්වයංක්‍රීය ඝාතීය පරාසය සඳහා වත්කම් තක්සේරු කිරීමේ අවම අගය ශුන්‍ය හෝ ඊට වැඩි විය යුතුය.',
     'MinimumValue'=>'අවම අගය',
     'MaximumValue'=>'උපරිම අගය',
     'ValueRange'=>'අගය පරාසය',
@@ -603,7 +592,6 @@ $lang = array(
     'SpecifiedTime' => 'නියම කළ කාලය',
     'Governance' => 'පාලනය',
     'Compliance' => 'අනුකූල',
-    'CrossDomain' => 'හරස්-වසම්',
     'AllowAccessToRiskManagementMenu' => '"අවදානම් කළමනාකරණ" මෙනුවට ප්‍රවේශ වීමට ඉඩ දෙන්න',
     'CheckAllGovernance' => 'සියලු පාලනය පරීක්ෂා කරන්න',
     'CheckAllCompliance' => 'සියලු අනුකූලතා පරීක්ෂා කරන්න',
@@ -779,7 +767,6 @@ $lang = array(
     'TestDate'=>'පරීක්ෂණ දිනය',
     'Attachment'=>'ඇමුණුම',
     'InvalidParams'=>'පරාමිති වලංගු නොවේ',
-    'ClearForm'=>'පෝරමය හිස් කරන්න',
     'QuestionnaireDraftSuccess'=>'ඔබගේ පිළිතුරු සාර්ථකව සුරකින ලදි.',
     'QuestionnaireCompletedSuccess'=>'ඔබ මෙම ප්‍රශ්නාවලිය සාර්ථකව සම්පූර්ණ කළා.',
     'EmailTemplateCompleteQuestionnaire' => '
@@ -822,7 +809,6 @@ $lang = array(
     'HasFile' => 'ගොනුවක් ඇත',
     'ClosedAuditStatus' => 'සංවෘත විගණන තත්ත්වය',
     'ClosedAuditStatusIsRequired' => 'සංවෘත විගණන තත්ත්වය අවශ්‍ය වේ',
-    'Preferences' => 'මනාපයන්',
     'DefaultLanguage' => 'පෙරනිමි භාෂාව',
     'DefaultTimezone' => 'පෙරනිමි කාල කලාපය',
     'UserSessions' => 'පරිශීලක සැසි',
@@ -852,8 +838,6 @@ $lang = array(
     'NotifyOwnersManager' => 'අයිතිකරුගේ කළමනාකරුට දන්වන්න',
     'NotifyTeam' => 'කණ්ඩායමට දැනුම් දෙන්න',
     'NotifyAdditionalStakeholders' => 'අතිරේක පාර්ශවකරුවන්ට දැනුම් දෙන්න',
-    'SpecificUser' => 'නිශ්චිත පරිශීලකයා',
-    'SpecificUsers' => 'නිශ්චිත පරිශීලකයින්',
     'NotifyReviewers' => 'සමාලෝචකයින්ට දැනුම් දෙන්න',
     'NotifyTester' => 'පරීක්ෂක වෙත දැනුම් දෙන්න',
     'SimpleRiskURL' => 'සරල අවදානම් URL',
@@ -884,7 +868,6 @@ $lang = array(
     'Edit' => 'සංස්කරණය කරන්න',
     'Clone' => 'ක්ලෝන්',
     'SubQuestions' => 'උප ප්‍රශ්න',
-    'Ordering' => 'ඇණවුම් කිරීම',
     'EncryptionKeyNoExist' => 'සංකේතාංකන යතුරු ගොනුව නොපවතී. කරුණාකර පරිපාලක අමතන්න.',
     'ResidualRiskScore' => 'අවශේෂ අවදානම් ලකුණු',
     'DefaultInitiatedAuditStatus' => 'පෙරනිමි ආරම්භක විගණන තත්ත්වය',
@@ -1023,8 +1006,6 @@ $lang = array(
     'YouNeedToUpgradeYourSimpleRiskSubscription' => 'මෙම අමතර භාවිතය සක්‍රීය කිරීම සඳහා ඔබේ සරල අවදානම් දායකත්වය යාවත්කාලීන කළ යුතුය.',
     'AutomaticallyAddNewlyAuthenticatedUsersWithDefaultRole' => 'පෙරනිමි භූමිකාව සමඟ අලුතින් සත්‍යාපනය කළ පරිශීලකයින් ස්වයංක්‍රීයව එක් කරන්න',
     'Disabled' => 'ආබාධිතයි',
-    'Help' => 'උදව්',
-    'Profile' => 'පැතිකඩ',
     'AbleToCommentRiskManagement' => 'අවදානම් කළමනාකරණයට අදහස් දැක්වීමට හැකියාව ඇත',
     'AbleToCommentCompliance' => 'අදහස් දැක්වීමට හැකියාව ඇත',
     'LanguageUpdated' => 'ඔබගේ භාෂාව සාර්ථකව යාවත්කාලීන කරන ලදි.',
@@ -1067,7 +1048,6 @@ $lang = array(
     'FailedToUploadFile' => 'ගොනුව උඩුගත කිරීමට අපොහොසත් විය',
     'NewPasswordDoesNotMatchPolicy' => 'නිශ්චිතව දක්වා ඇති නව මුරපදය වින්‍යාසගත මුරපද ප්‍රතිපත්තියට අනුකූල නොවේ.',
     'RiskLevels' => 'අවදානම් මට්ටම්',
-    'Scoring' => 'ලකුණු ලබා ගැනීම',
     'ClassicRiskFormula' => 'ක්ලැසික් අවදානම් සූත්‍රය',
     'ContributingRiskFormula' => 'අවදානම් සූත්‍රයට දායක වීම',
     'ImpactHasMaxChars' => 'බලපෑමට උපරිම අක්ෂර $length ක් තිබිය යුතුය.',
@@ -1100,8 +1080,6 @@ $lang = array(
     'ExistingMappings' => 'පවතින සිතියම්',
     'TeamGroup' => '(කණ්ඩායම <--> කණ්ඩායම)',
     'ExistingMappingsRequired' => 'පවතින සිතියම් තෝරා ගත යුතුය.',
-    'EncryptionBackupFileExists' => 'සංකේතාංකන ක්‍රියාවලියේ කොටසක් ලෙස, ඔබේ සරල අවදානම් දත්ත ගබඩාවේ සංකේතාංකනය නොකළ උපස්ථ පිටපතක් නිර්මාණය කර ඇත. සෑම දෙයක්ම නිසියාකාරව සංකේතනය කර ඇති බව තහවුරු කරගත් පසු, එය ආරක්ෂිත ස්ථානයකට ගෙන යන්න හෝ මකා දැමීමට බොත්තම ක්ලික් කරන්න.',
-    'BackupLocation' => 'උපස්ථ ස්ථානය',
     'FileDeletedSuccessfully' => 'ගොනුව සාර්ථකව මකා දමා ඇත.',
     'ErrorDeletingFile' => 'ගොනුව මකා දැමීමේ දෝෂයක් ඇතිවිය. කරුණාකර ගොනු අවසරයන් පරීක්ෂා කර නැවත උත්සාහ කරන්න.',
     'MapToLDAPGroup' => 'LDAP සමූහයට සිතියම',
@@ -1155,7 +1133,6 @@ $lang = array(
     'Unverified' => 'තහවුරු කර නොමැත',
     'ExportAssets' => 'අපනයන වත්කම්',
     'ExportToCSVByClickingBelow' => 'පහත ක්ලික් කිරීමෙන් CSV ගොනුවකට අපනයනය කරන්න',
-    'RevertToUnencryptedBackup' => 'සංකේතාංකනය නොකළ උපස්ථයට ආපසු යන්න',
     'SuccessfullyRevertedToUnencryptedBackup' => 'සංකේතාංකනය නොකළ උපස්ථයකට සාර්ථකව ආපසු හරවන ලදි',
     'FailedToRevertToUnencryptedBackup' => 'සංකේතාංකනය නොකළ උපස්ථයකට ආපසු යාමට අපොහොසත් විය. වැඩි විස්තර සඳහා කරුණාකර සේවාදායක ලොග් පරීක්ෂා කරන්න.',
     'AddNewItemNamed' => 'නම් කළ නව අයිතමයක් එක් කරන්න',
@@ -1294,7 +1271,6 @@ $lang = array(
     'Approve' => 'අනුමත කරන්න',
     'ExceptionType' => 'ව්‍යතිරේක වර්ගය',
     'PolicyName' => 'ප්‍රතිපත්ති නාමය',
-    'ControlName' => 'පාලන නම',
     'AreYouSureYouWantToDeleteTheseExceptions' => 'ඔබට මෙම ව්‍යතිරේක මකා දැමීමට අවශ්‍ය බව ඔබට විශ්වාසද?',
     'ExceptionsWereDeletedSuccessfully_policy' => 'ප්‍රතිපත්තියේ ව්‍යතිරේක සාර්ථකව මකා දමන ලදි.',
     'ExceptionsWereDeletedSuccessfully_control' => 'පාලනයේ ව්‍යතිරේක සාර්ථකව මකා දමන ලදි.',
@@ -1321,7 +1297,6 @@ $lang = array(
     'AssetsWereVerifiedSuccessfully'=>'වත්කම් සාර්ථකව සත්‍යාපනය විය.',
     'ThereWasAProblemVerifyingTheAssets'=>'වත්කම් සත්‍යාපනය කිරීමේ ගැටලුවක් විය.',
     'ThereWasAProblemWithAddingTheProject' => 'ව්යාපෘතිය එකතු කිරීමේදී ගැටළුවක් විය',
-    'ProjectName' => 'ව්යාපෘතියේ නම',
     'SuccessSetProject' => 'ව්යාපෘතියට අවදානම් එකතු කිරීම.',
     'SuccessCreateProject' => 'නව ව්‍යාපෘතියක් සාර්ථකව නිර්මාණය කරන ලදි.',
     'ReviewProjectSelectionInstructions' => 'ව්‍යාපෘතියක් තෝරන්න හෝ නව එකක නම ටයිප් කරන්න.',
@@ -1370,7 +1345,6 @@ $lang = array(
     'UpdateAssetGroupTooltip' => 'වත්කම් සමූහය යාවත්කාලීන කරන්න',
     'DeleteAssetGroupTooltip' => 'වත්කම් කණ්ඩායම මකන්න',
     'RemoveAssetTooltip' => 'වත්කම් සමූහයෙන් වත්කම් ඉවත් කරන්න',
-    'ControlShortNameFieldRequired' => 'කෙටි නාම ක්ෂේත්‍රය පාලනය කිරීම අවශ්‍ය වේ.',
     'AffectedAssetsWidgetPlaceholder' => 'වත්කම් හෝ වත්කම් කණ්ඩායමක් තෝරන්න',
     'AffectedAssetsWidgetNoDropdownPlaceholder' => 'වත්කම් නාමයක් එක් කරන්න',
     'AffectedAssetsWidgetInstructions' => 'වත්කම් හෝ වත්කම් කණ්ඩායමක් තෝරන්න. ලැයිස්තුවට එහි නම එකතු කිරීමෙන් ඔබට නව වත්කමක් නිර්මාණය කළ හැකිය.',
@@ -1491,21 +1465,18 @@ $lang = array(
     'BackupStart' => 'උපස්ථය ආරම්භ විය.',
     'BackupFailed' => 'උපස්ථය අසාර්ථක විය. කරුණාකර පරිපාලකයෙකු අමතන්න.',
     'BackupSuccessful' => 'උපස්ථය සාර්ථකයි. යෙදුම, දත්ත සමුදාය සහ ඔබ විසින් ස්ථාපනය කරන ලද අමතර සියල්ල උපස්ථ කර ඇත.',
+    'BackupLocation' => 'උපස්ථ ස්ථානය',
     'BackupCheckingPreRequisites' => 'අවසර පරීක්ෂා කිරීම, නාමාවලි සැකසීම.',
     'BackupCheckingPreRequisitesDone' => 'අවසර චෙක්පත් සම්මත කර, අවශ්‍ය නාමාවලි සාර්ථකව නිර්මාණය කරන ලදි.',
     'BackupApplicationFiles' => 'යෙදුම් ගොනු උපස්ථය ආරම්භ විය.',
     'BackupApplicationFilesDone' => 'යෙදුම් ගොනු සාර්ථකව උපස්ථ කර ඇත',
     'BackupDatabase' => 'දත්ත සමුදා උපස්ථය ආරම්භ විය.',
     'BackupDatabaseDone' => 'දත්ත සමුදාය සාර්ථකව උපස්ථ කර ඇත.',
-    'BackupDatabaseFailed' => 'දත්ත සමුදාය උපස්ථ කිරීම අසාර්ථක විය. විස්තර සඳහා කරුණාකර SimpleRisk ලොගය පරීක්ෂා කරන්න.',
-    'WindowsNotSupported' => '20260421-001 නිකුතුවෙන් පසු SimpleRisk තවදුරටත් Windows සඳහා සහය නොදක්වයි. කරුණාකර Linux-පාදක සේවාදායකයකට සංක්‍රමණය වන්න.',
-    'WindowsUpgradeHalted' => 'මෙම මෙහෙයුම Windows සේවාදායකයක් මත ක්‍රියාත්මක විය නොහැක. 20260421-001 නිකුතුවෙන් පසු SimpleRisk තවදුරටත් Windows සඳහා සහය නොදක්වයි. කරුණාකර Linux-පාදක සේවාදායකයකට සංක්‍රමණය වන්න.',
     'BackupDirectoryNotWriteable' => '"{$location}" නාමාවලිය වෙබ් පරිශීලකයාට ලිවිය නොහැක.',
     'BackupFailedToCreateDirectories' => '"{$location}" හි අවශ්‍ය නාමාවලි ව්‍යුහය නිර්මාණය කළ නොහැක.',
     'AreYouSureYouWantToDeleteSelction' => 'ඔබට තේරීම මැකීමට අවශ්‍ය බව විශ්වාසද?',
     'FieldIsRequired' => '_XXX_ ක්ෂේත්‍රය අවශ්‍ය වේ',
     'NoPermissionForAssessments' => 'ඇගයීම් සඳහා ඔබට අවසර නැත.',
-    'MissingOrInvalidTrackingID' => 'ලුහුබැඳීමේ හැඳුනුම්පත අතුරුදහන් හෝ අවලංගුයි.',
     'Encrypted' => 'සංකේතනය කර ඇත',
     'AreYouSureYouWantToApproveThisResult' => 'මෙම ප්‍රති result ලය අනුමත කිරීමට ඔබට අවශ්‍ය යැයි ඔබට විශ්වාසද?',
     'AreYouSureYouWantToRejectThisResult' => 'මෙම ප්‍රති result ලය ප්‍රතික්ෂේප කිරීමට ඔබට අවශ්‍ය යැයි ඔබට විශ්වාසද?',
@@ -1540,7 +1511,6 @@ $lang = array(
     'AddNewQuestion' => 'නව ප්‍රශ්නයක් එක් කරන්න',
     'ControlAudit' => 'විගණනය පාලනය කරන්න',
     'AssociatedControls' => 'ආශ්‍රිත පාලනයන්',
-    'AssociatedFrameworks' => 'ආශ්‍රිත රාමු',
     'Analysis' => 'විශ්ලේෂණය',
     'TotalNumber' => 'මුළු අංකය',
     'CumulativeScore' => 'සමුච්චිත ලකුණු',
@@ -1564,7 +1534,6 @@ $lang = array(
     'ChangedTo' => 'වෙත වෙනස් කරන ලදි',
 
     'Jira' => 'ජිරා',
-    'JiraIntegrationExtra' => 'ජිරා ඒකාබද්ධතා අමතර',
 
     'JiraWebhookAuthTokenIsInvalid' => 'සපයා ඇති ජිරා වෙබ්හුක් Auth ටෝකන් ("{$token}") අවලංගුයි!',
     'JiraWebhookNoBodyPosted' => 'ජිරා වෙබ්හුක් ශරීරයක් පළ කළේ නැත! කරුණාකර support@simplerisk.com හා සම්බන්ධ වන්න',
@@ -1715,8 +1684,6 @@ $lang = array(
     'CustomFieldUpdateFailed' => 'අභිරුචි ක්ෂේත්‍රය යාවත්කාලීන කිරීමට අපොහොසත් විය.',
     'IncidentManagement' => 'සිදුවීම් කළමනාකරණය',
     'IncidentManagementExtra' => 'සිදුවීම් කළමනාකරණය අමතර',
-    'IncidentManagementNotifications' => 'සිදුවීම් කළමනාකරණ දැනුම්දීම්',
-    'NotificationSettingsUpdated' => 'දැනුම්දීම් සැකසුම් යාවත්කාලීන කරන ලදී.',
     'Incident' => 'සිද්ධිය',
     'NewIncident' => 'නව සිදුවීමක්',
     'Preparation' => 'සකස් කිරීම',
@@ -1770,7 +1737,6 @@ $lang = array(
     'DeleteBusinessUnitTooltip' => 'ව්‍යාපාර ඒකකය මකන්න',
     'RemoveTeamTooltip' => 'ව්‍යාපාර ඒකකයෙන් කණ්ඩායම ඉවත් කරන්න',
     'YouNeedToSpecifyATeamParameter' => 'ඔබ කණ්ඩායම් පරාමිතියක් නියම කළ යුතුය.',
-    'OrganizationalHierarchyExtra' => 'ආයතනික ධූරාවලිය අමතර',
     'Source' => 'මූලාශ්රය',
     'SourceType' => 'ප්‍රභව වර්ගය',
     'DetectedBy' => 'විසින් අනාවරණය කරන ලදී',
@@ -1952,7 +1918,6 @@ $lang = array(
     'ConnectivityVisualizer' => 'සම්බන්ධතා දෘශ්‍යකරණය',
     'ThereAreNoConnectionsAssociatedWithTheSelectedValue' => 'තෝරාගත් අගය හා සම්බන්ධිත සම්බන්ධතා නොමැත',
     'InvalidSimpleriskBaseUrl' => 'අවලංගු සරල අවදානම් පදනම් URL!',
-    'Questionnaire' => 'ප්‍රශ්නාවලිය',
     'FileEncodingFixHeader_risk' => 'අවදානම් කළමනාකරණය',
     'FileEncodingFixHeader_compliance' => 'පාලනය සහ අනුකූලතාවය',
     'FileEncodingFixHeader_questionnaire' => 'වරිපනම්',
@@ -2011,8 +1976,6 @@ $lang = array(
     'TemplateAssignment' => 'සැකිලි පැවරුම',
     'PleaseSelectUser' => 'කරුණාකර පරිශීලකයා තෝරන්න',
     'AboutThisPage' => 'මෙම පිටුව ගැන',
-    'UserGuide' => 'පරිශීලක මාර්ගෝපදේශය',
-    'AdministratorGuide' => 'පරිපාලක මාර්ගෝපදේශය',
     'ProjectStatus' => 'ව්‍යාපෘති තත්ත්වය',
     'SupportPortal' => 'සහාය ද්වාරය',
     'WebSupport' => 'වියමන සහාය',
@@ -2186,7 +2149,6 @@ $lang = array(
     'GraphicalRiskAnalysis' => 'චිත්රක අවදානම් විශ්ලේෂණය',
     'ResetMitigations' => 'අවම කිරීම් නැවත සකසන්න',
     'ResetReviews' => 'සමාලෝචන යළි පිහිටුවන්න',
-	'EnableEncryptionDebugLogging' => 'එන්ක්‍රිප්ටඩ් ඩේටාබේස් එක්ස්ට්‍රා ඩිබග් ලොග් වීම සබල කරන්න',
     'Log' => 'ලඝු',
     'Date' => 'දිනය',
     'Platform' => 'වේදිකාව',
@@ -2263,7 +2225,7 @@ $lang = array(
     'IncidentSummaryUpdateSuccessful' => 'සාරාංශය සාර්ථකව යාවත්කාලීන කරන ලදී.',
     'ImportSuccessful' => 'ආනයනය සාර්ථකයි!',
     'Document' => 'ලේඛනය',
-    'SelfAssessments' => 'ස්වයං ඇගයීම්',
+    'SelfAssessments' => 'ස්වයං තක්සේරු කිරීම්',
     'AssetId'=>'වත්කම් හැඳුනුම්පත',
     'ExportTemplateGroups' => 'ආකෘති කණ්ඩායම් අපනයනය කරන්න',
     'ImportTemplateGroups' => 'ආකෘති කණ්ඩායම් ආයාත කරන්න',
@@ -2278,8 +2240,6 @@ $lang = array(
     'SSLSecurityCheckWarning' => 'අවවාදයයි: SSL විසින් MITM ප්‍රහාර වළක්වන අතර පහත විකල්ප අක්‍රිය කිරීම ආරක්‍ෂක සැලකිල්ලකි',
     'EnableSSLCertificateCheckSimpleRisk' => 'SimpleRisk API ඉල්ලීම් සඳහා SSL සහතික චෙක්පත් සබල කරන්න',
     'EnableSSLCertificateCheckExternal' => 'බාහිර වෙබ් අඩවි සඳහා SSL සහතික චෙක්පත් සබල කරන්න',
-    'EnableAPIv1Endpoints' => 'API v1 අන්ත ලක්ෂ්‍ය සබල කරන්න (අත්හරින ලදී)',
-    'EnableAPIv1EndpointsHelp' => 'API v1 අතහැර දමා ඇත. ඔබට අවශ්‍ය ඒකාබද්ධ කිරීමක් නොමැති නම් අක්‍රිය කර තබන්න. /api/v2/ මෙම සැකසුමෙන් බලපෑමට ලක් නොවන අතර සැමවිටම ලබා ගත හැකිය.',
     'EnableSSLCertificateCheckVM' => 'අවදානම් කළමනාකරණය සඳහා SSL සහතික චෙක්පත් සබල කරන්න',
     'DuoToopherRemoved' => 'Duo හට තවදුරටත් SimpleRisk සෘජුවම සහාය දක්වයි. ඒ වෙනුවට, අපි සාමාන්‍ය TOTP සත්‍යාපකයක් වෙත සංක්‍රමණය වී ඇත. කරුණාකර ඔබගේ නව සත්‍යාපකය පහතින් පිහිටුවන්න.',
     'ProtectYourSimpleRiskAccount' => 'ඔබගේ සරල අවදානම් ගිණුම ආරක්ෂා කරන්න',
@@ -2380,7 +2340,7 @@ $lang = array(
     'Advanced_Search_no_results_1' => 'ඔබගේ විමසුම සඳහා ප්‍රතිඵල නොමැති බව පෙනේ.',
     'Advanced_Search_no_results_2' => 'කිසියම් අක්ෂර වින්‍යාසයක්, අක්ෂර වින්‍යාස දෝෂ සඳහා ඔබේ සෙවීම දෙවරක් පරීක්ෂා කරන්න හෝ වෙනත් සෙවුම් පදයක් උත්සාහ කරන්න.',
     'IncidentsPerDay' => 'දිනකට සිදුවීම්',
-    'CurrentVsDesiredMaturity' => 'පාලන පවුල විසින් වත්මන් එදිරිව අපේක්ෂිත පරිණතභාවය',
+    'CurrentVsDesiredMaturity' => 'පාලන පවුල විසින් පරිණතභාවය',
     'RiskDistribution' => 'අවදානම් බෙදා හැරීම',
     'RiskDistributionDescription'=>'නෛසර්ගික සහ අවශේෂ අවදානම් සඳහා විවිධ අවදානම් මට්ටම් අතර අවදානම් බෙදා හැරීම පෙන්වීමට ඉහත ප්‍රස්ථාර උපකාරී වේ. අපගේ අවදානම් අවම කිරීමේ ප්‍රයත්නවල ප්‍රගතිය පෙන්වීමට අපට මෙම පයි දෙක භාවිතා කළ හැකිය. අවශේෂ අවදානම් පයි ඉතා ඉහළ හෝ ඉහළ අවදානම් සහිත විශාල පෙති පෙන්නුම් කරන්නේ නම්, එය ඔබේ සංවිධානය ඕනෑවට වඩා අවදානමක් ගන්නා බවට ලකුණක් විය හැකි අතර තවදුරටත් අවම කිරීමේ උත්සාහයන් අවශ්‍ය වේ.',
     'EnableTabs' => 'ටැබ් සබල කරන්න',
@@ -2422,10 +2382,6 @@ $lang = array(
     'AnthropicConnectionWarning' => 'වලංගු නොවන අක්තපත්‍ර! API යතුර සමඟ Anthropic වෙත සම්බන්ධ විය නොහැක.',
     'ResetAPIKey' => 'API යතුර යළි පිහිටුවන්න',
     'ArtificialIntelligence' => 'කෘතිම බුද්ධිය',
-    'ArtificialIntelligenceDesc' => 'මෙම SimpleRisk අවස්ථාව සඳහා AI ප්‍රතිචාර පදනම් කර ගන්නා AI සැපයුම්කරු සම්බන්ධතාවය සහ සන්දර්භ ප්‍රශ්න වින්‍යාස කරන්න.',
-    'ProviderConfiguration' => 'සැපයුම්කරු වින්‍යාසය',
-    'ContextQuestions' => 'සන්දර්භ ප්‍රශ්න',
-    'AIProviderNotConfiguredWarning' => 'AI සැපයුම්කරු වින්‍යාස කර නොමැත. ඔබ සැපයුම්කරු වින්‍යාස පටිත්තෙහි සැපයුම්කරු සහ API යතුර සකසන තුරු සජීවී ප්‍රතිඵල නිපදවීමට නොහැකිය.',
     'ArtificialIntelligenceAdditionalContext' => 'කෘතිම බුද්ධිය අතිරේක සන්දර්භය',
     'ArtificialIntelligenceAdditionalContextDescription' => 'පහත තොරතුරු විකල්පමය වේ, නමුත් වඩාත් අර්ථවත් ප්‍රතිඵල ලබා ගැනීමට අවශ්‍ය අමතර සන්දර්භය AI වෙත සපයනු ඇත. පහත ඇතුළත් කර ඇති සියලුම තොරතුරු ඔබේ සංවිධානයට ප්‍රතිචාර සකස් කිරීම සඳහා විශ්ලේෂණය සඳහා ඔබේ වින්‍යාසගත AI සැපයුම්කරු වෙත යවනු ලැබේ.',
     'OrganizationContext' => 'සංවිධානයේ සන්දර්භය',
@@ -2456,7 +2412,7 @@ $lang = array(
     'EditModeInformation' => 'සංස්කරණ ප්‍රකාරය සක්‍රිය කර පිරිසැලසුම සංස්කරණය කරන්න. එය අක්‍රිය කිරීමෙන් පිරිසැලසුම ස්වයංක්‍රීයව සුරැකෙන්නේ නැත.',
     'InvalidLayout' => 'වලංගු නොවන පිරිසැලසුම!',
     'InvalidLayoutOnlyCustomAllowedAsDefault' => 'අවලංගු පිරිසැලසුමක්! පෙරනිමිය ලෙස සුරැකිය හැක්කේ අභිරුචි පිරිසැලසුම් පමණි.',
-    'LayoutSaved' => 'පිරිසැලසුම සුරකින ලදී!',
+    'LayoutSaved' => 'ඔබගේ උපකරණ පුවරු පිරිසැලසුම සුරකින ලදී.',
     'DefaultLayout' => 'පෙරනිමි පිරිසැලසුම',
     'DefaultLayoutInformation' => 'අභිරුචි පිරිසැලසුම් කට්ටලයක් නොමැති පරිශීලකයින් සඳහා SimpleRisk විසින් සපයන ලද එක වෙනුවට භාවිතා කිරීමට මෙම පිරිසැලසුම පෙරනිමිය ලෙස සකසයි. ඔබට සුරකින ලද හිස් නොවන අභිරුචි පිරිසැලසුමක් පමණක් පෙරනිමිය ලෙස සැකසිය හැකිය. පෙරනිමිය ලෙස සලකුණු කරන ලද පිරිසැලසුමක් පෙරනිමි පිරිසැලසුමට ප්‍රතිසාධනය කළහොත්, එය SimpleRisk විසින් සපයන ලද පෙරනිමියට ප්‍රතිසාධනය කරනු ඇත.',
     'LayoutDefaultStatusUpdated' => 'පිරිසැලසුමෙහි පෙරනිමි තත්ත්වය යාවත්කාලීන කර ඇත.',
@@ -2465,7 +2421,7 @@ $lang = array(
     'DefaultLayoutRestored' => 'පෙරනිමි පිරිසැලසුම සාර්ථකව ප්‍රතිසාධනය කර ඇත!',
     'SavedLayoutRestored' => 'සුරකින ලද පිරිසැලසුම සාර්ථකව ප්‍රතිසාධනය කරන ලදී!',
     'ConfirmRestoreLayout' => 'ඔබට විශ්වාසද? මෙම පිරිසැලසුමට ඔබ කළ වෙනස්කම් ඔබට අහිමි වනු ඇත.',
-    'ConfirmDisableEditModeWithPendingChanges' => 'පිටුවෙන් ඉවත් වීමේදී ඔබට අහිමි වන සුරැකි නොකළ වෙනස්කම් ඔබ සතුව ඇත. ඔබට \'සංස්කරණ ප්‍රකාරය\' අක්‍රිය කිරීමට අවශ්‍ය බවත් ඔබේ වෙනස්කම් සුරැකීම අමතක විය හැකි බවත් ඔබට විශ්වාසද?',
+    'ConfirmDisableEditModeWithPendingChanges' => 'මෙම උපකරණ පුවරුවේ ඔබට සුරැක නැති වෙනස්කම් තිබේ. ඒවා ඉවත දමා සංස්කරණය කිරීම නවත්වන්නද?',
     'ConfirmSave' => 'මෙම වෙනස්කම් සුරැකීමෙන් ඔබගේ පෙර සුරකින ලද පිරිසැලසුම උඩින් ලියනු ඇත. ඔබට ඉදිරියට යාමට අවශ්‍ය බව විශ්වාසද?',
     'ConfirmSaveAdminDefault' => 'මෙම පිරිසැලසුම මෙම පිරිසැලසුම් වර්ගය සඳහා පෙරනිමිය ලෙස සකසා ඇත. මෙම වෙනස්කම් සුරැකීමෙන් මෙම පිරිසැලසුම් වර්ගය සඳහා අභිරුචි පිරිසැලසුමක් සකසා නොමැති සියලුම පරිශීලකයින් සඳහා පිරිසැලසුම වෙනස් වේ. ඔබට ඉදිරියට යාමට අවශ්‍ය බව ඔබට විශ්වාසද?',
     'RisksByMonth' => 'මාසය අනුව අවදානම්',
@@ -2496,7 +2452,6 @@ $lang = array(
     'SecondaryLossEventFrequency' => 'ද්විතියික පාඩු සිදුවීම් සංඛ්‍යාතය',
     'SecondaryLossMagnitude' => 'ද්විතියික අලාභ විශාලත්වය',
     'Productivity' => 'ඵලදායිතාව',
-    'Response' => 'ප්‍රතිචාර',
     'Replacement' => 'ආදේශ කිරීම',
     'CompetitiveAdvantage' => 'තරඟකාරී වාසිය',
     'FinesAndJudgements' => 'දඩ සහ විනිශ්චයන්',
@@ -2590,7 +2545,6 @@ $lang = array(
     'NotAMatch' => 'ගැළපීමක් නොවේ',
     'ReviewManually' => 'අතින් සමාලෝචනය කරන්න',
     'ResponsesToQuestionsWithLinkedControlsWillUpdateTheControlTypeTo' => 'සම්බන්ධිත පාලන සහිත ප්‍රශ්නවලට ප්‍රතිචාර දැක්වීමෙන් පාලන වර්ගය යාවත්කාලීන වේ',
-    'DueDate' => 'ගෙවිය යුතු දිනය',
     'AuditLog_IncidentUpdated' => '"{$incident_summary}"(ID: {$incident_id}) සිදුවීම "{$user_name}" පරිශීලකයා විසින් යාවත්කාලීන කරන ලදී. වෙනස්කම්: {$changes}.',
     'AnswersWillBeAutoSavedOnAssessments' => 'ඇගයීම් වලදී පිළිතුරු ස්වයංක්‍රීයව සුරැකෙනු ඇත.',
     'SecondsAssessmentsAreAutoSaved' => 'තත්පර තක්සේරු කිරීම් ස්වයංක්‍රීයව සුරකිනු ලැබේ',
@@ -2598,7 +2552,6 @@ $lang = array(
     'NotifyAuditInitiateSubject' => 'විගණනය ආරම්භ කරන ලදී',
     'BypassPendingRisksAndCreateRisksImmediatelyAfterAssessmentCompletion' => 'තක්සේරුව අවසන් වූ වහාම \'අපේක්ෂිත අවදානම්\' මඟ හැර අවදානම් නිර්මාණය කරන්න.',
     'AssociatedExceptions' => 'ආශ්‍රිත ව්‍යතිරේක',
-    'Required' => 'අවශ්‍යයි',
     'EmailInstructions' => 'ඊමේල් උපදෙස්',
     'ApproveSelectedVulnerabilities' => 'තෝරාගත් අවදානම් අනුමත කරන්න',
     'RejectSelectedVulnerabilities' => 'තෝරාගත් අවදානම් ප්‍රතික්ෂේප කරන්න',
@@ -2648,68 +2601,9 @@ $lang = array(
     'PleaseEnterAValidTimezone' => 'කරුණාකර වලංගු වේලා කලාපයක් ඇතුළත් කරන්න.',
     'TFIDFMatch' => 'TF-IDF තරගය',
     'CompletionDate' => 'සම්පූර්ණ කරන දිනය',
-    'AutoProcessSCFUpdates' => 'නව ආරක්ෂිත පාලන රාමුව (SCF) නිකුතු ස්වයංක්‍රීයව සකසන්න',
-    'AddNewControls' => 'නව SCF පාලන එක් කරන්න',
-    'UpdateExistingControls' => 'පවතින SCF පාලන යාවත්කාලීන කරන්න',
-    'DeleteRemovedControls' => 'ඉවත් කළ SCF පාලන මකන්න',
-    'CreateEvidenceRequests' => 'SCF පාලනයන් සඳහා සාක්ෂි ඉල්ලීම් සාදන්න',
-    'SelectSCFFrameworks' => 'SCF රාමු තෝරන්න',
-    'SCFReleaseProcessing' => 'SCF නිකුතු සැකසීම',
-    'NotFrameworkDescription' => 'පහත විජට් එක Secure Controls Framework (SCF) පැතුරුම්පතෙහි ඇති සියලුම ශීර්ෂයන් පෙන්වයි. රාමු නොවන දත්ත අඩංගු තීරු මොනවාද යන්න තෝරා ගැනීමට එය භාවිතා කරන්න.',
-    'Note' => 'සටහන',
-    'AISettingsNote' => 'AI සහාය සක්‍රීය කිරීමෙන්, ඔබට ගැලපෙන ප්‍රතිඵල ලබා දීම සඳහා, ඔබේ Anthropic API යතුර භාවිතයෙන්, ඔවුන්ගේ LLM හි විශ්ලේෂණය සඳහා Anthropic වෙත දත්ත යවනු ලැබේ.',
-    'EnableAIAssistanceForControlData' => 'පාලන දත්ත සඳහා AI සහාය සබල කරන්න',
-    'ReferenceText' => 'යොමු පෙළ',
-    'FrameworkSelection' => 'රාමු තේරීම',
-    'Show' => 'පෙන්වන්න',
-    'InProgress' => 'ප්රගතියේ',
-    'Canceled' => 'අවලංගු කරන ලදී',
-    'Failed' => 'අසාර්ථක විය',
-    'LegacyFrameworks' => 'උරුම රාමු',
-    'Archive' => 'ලේඛනාගාරය',
-    'FailedToFetchCVEInformation' => 'CVE තොරතුරු ලබා ගැනීමට අපොහොසත් විය. කරුණාකර CVE ID පරීක්ෂා කර නැවත උත්සාහ කරන්න.',
-    'ComplianceDashboard' => 'අනුකූලතා උපකරණ පුවරුව',
-    'DynamicAuditReportHelp' => 'මෙම වාර්තාවේ සියලුම විගණන සහ ඒවායේ තත්ත්වයන් පෙන්වයි.',
-    'ComplianceDashboardDescription' => 'මෙම ප්‍රස්ථාරයේ එක් එක් රාමුවේ ඇති පාලන ගණන කොළ පැහැයෙන් ද අසාර්ථක පාලන රතු පැහැයෙන් ද දැක්වේ.',
-    'PassingControls' => 'සමත් පාලන',
-    'FailingControls' => 'අසාර්ථක පාලන',
-    'ControlsByFramework' => 'රාමුව අනුව පාලනයන්',
-    'NumberOfControls' => 'පාලන ගණන',
     'AssetsAndControls' => 'වත්කම් සහ පාලනයන්',
     'AssetsByControl' => 'පාලනය අනුව වත්කම්',
     'ControlsByAsset' => 'වත්කම් අනුව පාලනයන්',
-    'PasswordResetTokenExpirationPeriod' => 'මුරපද යළි පිහිටුවීමේ ටෝකනය කල් ඉකුත් වීමේ කාලය',
-    'APasswordResetTokenExpirationPeriodShouldBeMoreThan5Minutes' => 'මුරපද යළි පිහිටුවීමේ ටෝකනයක කල් ඉකුත් වීමේ කාලය මිනිත්තු 5කට වඩා වැඩි විය යුතුය.',
-    'MeanTimeToRemediate' => 'ප්‍රතිසංස්කරණය කිරීමට ගතවන කාලය',
-    'ByTeam' => 'කණ්ඩායම අනුව',
-    'ByCategory' => 'කාණ්ඩය අනුව',
-    'ByRiskLevel' => 'අවදානම් මට්ටම අනුව',
-    'MeanTimeToRemediateDescription' => 'කණ්ඩායම, කාණ්ඩය සහ අවදානම් මට්ටම අනුව කාණ්ඩගත කර ඇති අවදානම් වසා දැමීමට ගතවන සාමාන්‍ය දින ගණන. සංවෘත අවදානම් පමණක් ඇතුළත් වේ.',
-    'AverageDaysToClose' => 'වසා දැමීමට සාමාන්‍ය දින',
-    'ControlPassRateTrend' => 'සමත් අනුපාත ප්‍රවණතාවය පාලනය කරන්න',
-    'ControlPassRateTrendDescription' => 'පසුගිය මාස 12 තුළ රාමුවකට මාසික සමත් අනුපාතය (%). කාල සීමාව තුළ අවම වශයෙන් එක් පරීක්ෂණ ප්‍රතිඵලයක් සහිත රාමු පමණක් පෙන්වනු ලැබේ.',
-    'PassRatePercent' => 'සමත් අනුපාතය (%)',
-    'ExposureByTeam' => 'කණ්ඩායම විසින් අවදානම් නිරාවරණය',
-    'ExposureByCategory' => 'කාණ්ඩය අනුව අවදානම් නිරාවරණය',
-    'ExposureByLocation' => 'ස්ථානය අනුව අවදානම් නිරාවරණය',
-    'TotalRiskScore' => 'මුළු අවදානම් ලකුණු',
-    'SLABreachStatus' => 'SLA කඩ කිරීමේ තත්ත්වය',
-    'SLABreachDescription' => 'අවදානම් මට්ටම අනුව ඒවායේ SLA සීමාව තුළ හෝ ඉන් ඔබ්බට විවෘත අවදානම්. පෙරනිමි සීමාවන්: ඉතා ඉහළ=30d, ඉහළ=60d, මධ්‍යම=90d, අඩු=180d.',
-    'WithinSLA' => 'ශ්‍රී ලංකා ගුවන් හමුදාව තුළ',
-    'SLABreached' => 'SLA උල්ලංඝනය විය',
-    'NumberOfRisks' => 'අවදානම් ගණන',
-    'AllFrameworks' => 'සියලුම රාමු',
-    'ExposureByBusinessUnit' => 'ව්‍යාපාර ඒකකය මගින් අවදානම් නිරාවරණය',
-    'BusinessUnit' => 'ව්යාපාර ඒකකය',
-    'BUChartCrossUnitNote' => 'සටහන: බහු BUs දක්වා විහිදෙන කණ්ඩායම් සඳහා පවරා ඇති අවදානම් එක් එක් කාණ්ඩයේ ගණනය කෙරේ.',
-    'SLAThresholds' => 'SLA සීමාවන්',
-    'SLAThresholdsDescription' => 'අවදානම් මට්ටම අනුව, ප්‍රමාද වූ ලෙස සැලකීමට පෙර විවෘත අවදානමක් විසඳා නොගෙන පැවතිය හැකි උපරිම දින ගණන.',
-    'SLAThresholdMustBeBetween1And3650' => 'SLA සීමාවේ අගයන් දින 1 ත් 3650 ත් අතර විය යුතුය.',
-    'SLAThresholdsUpdatedSuccessfully' => 'SLA සීමාවන් සාර්ථකව යාවත්කාලීන කරන ලදී.',
-    'TimeToDetect' => 'හඳුනා ගැනීමට කාලයයි',
-    'TimeToDetectDescription' => 'සිදුවීම් ආරම්භයේ (ආරම්භ වූ) සිට අනාවරණය (අනාවරණය වූ) දක්වා සාමාන්‍ය දින ගණන, කණ්ඩායම සහ සිදුවීම් වර්ගය අනුව කාණ්ඩ කර ඇත. දින දෙකම වාර්තා කර ඇති සිදුවීම් පමණක් ඇතුළත් වේ.',
-    'ByOccurrenceType' => 'සිදුවීම් වර්ගය අනුව',
-    'OccurrenceType' => 'සිදුවීම් වර්ගය',
     'NoIncidentDetectionDataAvailable' => 'ආරම්භ වූ සහ අනාවරණය වූ දින දෙකෙහිම කිසිදු සිදුවීමක් වාර්තා වී නොමැත.',
     'IncidentDashboard' => 'සිදුවීම් උපකරණ පුවරුව',
     'TimeToDetectByTeam' => 'කණ්ඩායම විසින් අනාවරණය කර ගැනීමට කාලයයි',
@@ -2850,16 +2744,15 @@ $lang = array(
     'SettingsSecurityDesc'                => 'සත්‍යාපනය, සැසිය, මුරපද ප්‍රතිපත්තිය, මූලික URL, සහ API ආරක්ෂක සැකසුම්.',
     'SettingsLoggingDesc'                 => 'නිදොස්කරණය සහ විගණන ලොග් කිරීමේ වින්‍යාසය: ලොග් මට්ටම්, රඳවා තබා ගැනීම සහ ලොග් ගොනු පිහිටීම.',
     'HealthCheckDesc'                     => 'පද්ධති තත්ත්වය හඳුනා ගන්න: PHP අනුවාදය, දිගු, ගොනු අවසර, දත්ත සමුදා සම්බන්ධතාවය, ක්‍රෝන් කාලසටහන සහ අමතර සක්‍රිය කිරීම්.',
-    'AboutDesc'                           => 'SimpleRisk අනුවාදය, බලපත්‍ර තොරතුරු සහ ණය බලන්න.',
     'AnnouncementsDesc'                   => 'සියලුම පරිශීලකයින්ට දෘශ්‍යමාන වන බැනර් නිවේදන රචනා කර කළමනාකරණය කරන්න.',
     'RegisterAndUpgradeDesc'              => 'ඔබගේ SimpleRisk ස්ථාපනය ලියාපදිංචි කරන්න, දායකත්ව යතුරක් ඇතුළත් කරන්න හෝ අලුත් කරන්න, සහ එක්-ක්ලික් Core/Extra උත්ශ්‍රේණි කිරීම් ක්‍රියාත්මක කරන්න.',
     'QueueMonitorDesc'                    => 'පසුබිම් රැකියා පෝලිම පරීක්ෂා කරන්න: අපේක්ෂිත, ගුවන් ගමනේ සහ අසාර්ථක රැකියා.',
     'ExtrasDesc'                          => 'SimpleRisk Extras (ගෙවූ ඇඩෝන) සක්‍රිය කරන්න, අක්‍රිය කරන්න සහ වින්‍යාස කරන්න.',
-    'ArtificialIntelligenceExtraDesc'     => 'SimpleRisk පුරා කෘත්‍රිම බුද්ධි සහාය සක්‍රීය කරයි.',
-    'CustomizationExtraDesc'              => 'විවිධ වර්ගයේ ක්ෂේත්‍ර එකතු කිරීමේ සහ ඉවත් කිරීමේ හැකියාව සහ ගතිකව පිටු සැකිලි නිර්මාණය කිරීමේ හැකියාව සක්‍රීය කරයි.',
-    'NotificationExtraDesc'               => 'අවදානම් ඉදිරිපත් කරන විට, යාවත්කාලීන කරන විට, අවම කරන විට හෝ සමාලෝචනය කරන විට විද්‍යුත් තැපැල් දැනුම්දීම් යවන අතර සමාලෝචනය නොකළ හෝ කල් ඉකුත් වූ තත්වයේ සිටින පරිශීලකයින්ට අවදානම් පිළිබඳව දැනුම් දීම සඳහා කාලසටහනකට අනුව ක්‍රියාත්මක විය හැකිය.',
-    'VulnerabilityManagementExtraDesc'    => 'SimpleRisk, Rapid7 Nexpose, InsightVM, Qualys සහ Tenable.io සමඟ ඒකාබද්ධ කිරීම සක්‍රීය කරයි.',
-    'IncidentManagementExtraDesc'         => 'SimpleRisk පද්ධතිය තුළ සිට සිදුවීම් කළමනාකරණ හැකියාවන් සපයයි.',
+    'ArtificialIntelligenceExtraDesc'     => 'කෘත්‍රිම බුද්ධි අමතර තොරතුරු මඟින් වැඩිදියුණු කළ අවදානම් විශ්ලේෂණය (FAIR තක්සේරු කිරීම් ඇතුළුව) සහ අභිරුචිකරණය කළ ලියකියවිලි සපයයි.',
+    'CustomizationExtraDesc'              => 'අභිරුචිකරණ අමතර විශේෂාංගය මඟින් විවිධ වර්ගයේ ක්ෂේත්‍ර එකතු කිරීමට සහ ඉවත් කිරීමට සහ ගතිකව අභිරුචි පිටු සැකිලි නිර්මාණය කිරීමට හැකියාව ලැබේ.',
+    'NotificationExtraDesc'               => 'අවදානම් ඉදිරිපත් කරන විට, වෙනස් කරන විට හෝ වෙනත් ආකාරයකින් ක්‍රියා කරන විට SimpleRisk හට විද්‍යුත් තැපැල් දැනුම්දීම් යැවීමට විද්‍යුත් තැපැල් දැනුම්දීම් අමතර සේවාව මඟින් හැකියාව ලැබේ. කළමනාකරණ සමාලෝචනයක් සඳහා අවදානම් සූදානම් වන විට සාමාන්‍ය මතක් කිරීම් යැවීමට මෙම අමතර වැඩසටහන කාලසටහන්ගත ස්ක්‍රිප්ට් එකක් ලෙසද එක් කළ හැක. SimpleRisk Core නිෂ්පාදනයේ, මෙම අමතර සේවාව නොමැතිව, මෙවලමෙන් පිටත කිසිදු දැනුම්දීමක් සන්නිවේදනය නොකෙරේ.',
+    'VulnerabilityManagementExtraDesc'    => 'අවදානම් කළමනාකරණ අමතර සේවාව මඟින් පාරිභෝගිකයින්ට ඔවුන්ගේ SimpleRisk අවස්ථාව Qualys, Tenable.io හෝ Rapid7 Nexpose/InsightVM සමඟ ඒකාබද්ධ කිරීමට සහ වත්කම් සහ අවදානම් දත්ත දෙකම SimpleRisk වෙත ආයාත කිරීමට හැකියාව ලබා දේ. එතැන් සිට, ඔබට ආවරණය කිරීමට අවශ්‍ය අඩවි තෝරා ගැනීමට, කුමන අවදානම් ලකුණු ආනයනය කළ යුතුද යන්න තීරණය කිරීමට සහ ඒවා නිරීක්ෂණය කිරීම සඳහා අවදානම් බවට පත් කර ඇති අවදානම් තක්සේරු කිරීමට හැකිය.',
+    'IncidentManagementExtraDesc'         => 'සිදුවීම් කළමනාකරණ අමතර තොරතුරු NIST 800-61 පරිගණක ආරක්ෂණ සිදුවීම් හැසිරවීමේ මාර්ගෝපදේශය මත පදනම් වන අතර SimpleRisk පද්ධතිය තුළ සිට සිදුවීම් කළමනාකරණ හැකියාවන් සපයයි.',
 
     // Configure Hub - tile descriptions (customization category)
     'RedefineNamingConventionsDesc'       => 'UI හරහා SimpleRisk පාරිභාෂිතය (අවදානම, වත්කම, රාමුව, ආදිය) නැවත නම් කරන්න.',
@@ -2872,26 +2765,25 @@ $lang = array(
     'UserManagementDesc'                  => 'පරිශීලකයින් එකතු කරන්න, සංස්කරණය කරන්න, අබල කරන්න සහ නැවත සකසන්න; මුරපද ප්‍රතිපත්තිය කළමනාකරණය කරන්න.',
     'RoleManagementDesc'                  => 'භූමිකාවන් සහ එක් එක් භූමිකාව ලබා දෙන අවසරයන් නිර්වචනය කරන්න.',
     'TeamManagementDesc'                  => 'වාර්තා දෘශ්‍යතා පෙරහන් කිරීම සඳහා භාවිතා කරන කණ්ඩායම් නිර්මාණය කර කළමනාකරණය කරන්න.',
-    'SeparationExtraDesc'                 => 'කණ්ඩායම් සාමාජිකයින්ට අවදානම් නැරඹීම සීමා කිරීම අවදානම වර්ගීකරණය කර ඇත්තේ...',
-    'CustomAuthenticationExtraDesc'       => 'සත්‍යාපනය සහ අවසරය සඳහා Active Directory හෝ SAML/Single Sign-On සඳහා සහය සපයයි.',
-    'EncryptionExtraDesc'                 => 'දත්ත සමුදායේ සංවේදී පෙළ ක්ෂේත්‍ර සංකේතනය කිරීම.',
-    'OrganizationManagementDesc'          => 'කණ්ඩායම් වලට ඉහළින් බහු ව්‍යාපාර ඒකක අර්ථ දැක්විය හැක. ඉන්පසු පරිශීලකයින් විවිධ ව්‍යාපාර ඒකක යටතේ කණ්ඩායම් එකක් හෝ කිහිපයක් හරහා පවරනු ලැබිය හැක. මෙය ඔවුන් සම්බන්ධ නොවන කණ්ඩායම්, පරිශීලකයින් සහ වත්කම් දැකීමට සහ භාවිතා කිරීමට ඇති හැකියාවට බලපායි.',
+    'SeparationExtraDesc'                 => 'කණ්ඩායම් පාදක වෙන් කිරීමේ අමතර වැඩසටහන මඟින් අවදානම් බැලීම සීමා කරනු ලබන්නේ අවදානම පවරා ඇති කණ්ඩායමේ සාමාජිකයින් වන පරිශීලකයින්ට පමණි. SimpleRisk Core නිෂ්පාදනයේ, මෙම අමතර වැඩසටහන නොමැතිව, සෑම පරිශීලකයෙකුටම සෑම අවදානමක්ම දැකිය හැකිය.',
+    'CustomAuthenticationExtraDesc'       => 'අභිරුචි සත්‍යාපන අමතර මෘදුකාංගය Active Directory සහ SAML සත්‍යාපනය සඳහා සහය සපයයි. SimpleRisk Core නිෂ්පාදනයේ, මෙම අමතර මෘදුකාංගය නොමැතිව, එකම විකල්පය වන්නේ SimpleRisk අනන්‍යතා ගබඩාවේ නව පරිශීලකයින් නිර්මාණය කිරීමයි.',
+    'EncryptionExtraDesc'                 => 'සංකේතනය කළ දත්ත සමුදාය අමතර එක අහඹු AES-256 බිට් සංකේතාංකන යතුරක් ජනනය කරන අතර පසුව එය SimpleRisk දත්ත සමුදායට ඇතුළු කිරීමට පෙර සංවේදී පෙළ සංකේතනය කිරීමට භාවිතා කරයි. මෙය SimpleRisk යෙදුම සෘජුවම භාවිතා නොකර ඕනෑම කෙනෙකුට දත්ත බැලීමට හෝ වෙනස් කිරීමට නොහැකි වීම වළක්වයි.',
+    'OrganizationManagementDesc'          => "සංවිධානාත්මක ධූරාවලියේ අමතර කොටස මඟින් කණ්ඩායම් කිහිපයක් ඇතුළත් කළ හැකි බහු ව්‍යාපාර ඒකක අර්ථ දැක්වීමේ හැකියාව ලබා දේ. ඉන්පසු පරිශීලකයින් විවිධ ව්‍යාපාර ඒකක යටතේ කණ්ඩායම් එකක් හෝ කිහිපයක් හරහා පැවරිය හැක. මෙය පරිශීලකයෙකුට ඔවුන් සම්බන්ධ නොවන කණ්ඩායම්, පරිශීලකයින් සහ වත්කම් දැකීමට සහ භාවිතා කිරීමට ඇති හැකියාවට බලපායි.",
 
     // Configure Hub - tile descriptions (data category)
     'DeleteRisksDesc'                     => 'තොග වශයෙන් මකා දැමීමේ අවදානම්. අරපිරිමැස්මෙන් භාවිතා කරන්න - මකාදැමීම් ස්ථිරයි.',
     'AuditTrailDesc'                      => 'පරිශීලක ක්‍රියාවන්හි පද්ධති විගණන ලොගය සොයන්න සහ අපනයනය කරන්න.',
-    'ImportExportExtraDesc'               => 'අවදානම් තොරතුරු අඩංගු CSV ගොනු ආයාත කිරීම සහ අපනයනය කිරීම සක්‍රීය කරයි.',
-    'JiraExtraDesc'                       => 'ඔබගේ JIRA අවස්ථාව සමඟ ඒකාබද්ධ වීමට ඉඩ සලසයි. Jira ගැටළු වලට අවදානම් සම්බන්ධ කිරීම, ඒවායේ දත්ත, තත්ත්වය සහ අදහස් සමමුහුර්ත කිරීම සක්‍රීය කරයි.',
-    'APIExtraDesc'                        => 'අනෙකුත් මෙවලම් සහ ස්වයංක්‍රීයකරණ කාර්යයන් සමඟ SimpleRisk ඒකාබද්ධ කිරීම සඳහා API එකක් සක්‍රීය කරයි.',
-    'AdvancedSearchExtraDesc'             => "අවදානම් දත්තවල පෙළ සෙවීමක් කිරීමෙන් අවදානම් සොයා ගැනීමට හැකි වන පරිදි ඉහළ තීරුවේ සෙවුම් කොටුවේ ක්‍රියාකාරිත්වය පුළුල් කරයි.",
-    'AssessmentsExtraDesc'                => 'අභිරුචි අවදානම් තක්සේරු ආකෘති නිර්මාණය කර ඒවා පරිශීලකයින්ට යැවීමේ හැකියාව සක්‍රීය කරයි.',
+    'ImportExportExtraDesc'               => 'Import-Export Extra මඟින් CSV ගොනුවක ඇති ක්ෂේත්‍ර SimpleRisk දත්ත සමුදායේ ක්ෂේත්‍ර වෙත සිතියම්ගත කිරීමෙන් SimpleRisk වෙත දත්ත ආයාත කිරීමේ හැකියාව ලබා දේ. එය තෙවන පාර්ශවීය පැතුරුම්පතකින් විගණන ප්‍රතිඵල, වෙනත් මෙවලමකින් අවදානම් ස්කෑන් ප්‍රතිඵල, ඔබේ CMDB වෙතින් වත්කම් සහ තවත් දේ ආයාත කිරීමට භාවිතා කළ හැක. අවදානම්, අවම කිරීම්, සමාලෝචන හෝ තුනේම ඒකාබද්ධ වාර්තාවක් අඩංගු SimpleRisk වෙතින් CSV ගොනු අපනයනය කිරීමේ හැකියාව ද ලබා දේ.',
+    'JiraExtraDesc'                       => 'ජිරා ඒකාබද්ධ කිරීමේ අමතර ක්‍රමය මඟින් පරිශීලකයින්ට ජිරා අවස්ථාවක් සමඟ ද්වි-දිශානුගතව ඒකාබද්ධ වීමේ හැකියාව ලබා දේ. එය ජිරා ගැටළු වලට අවදානම් සම්බන්ධ කිරීමට මෙන්ම ඔවුන්ගේ දත්ත, තත්ත්වය සහ අදහස් සමමුහුර්ත කිරීමට හැකියාව ලබා දෙයි.',
+    'APIExtraDesc'                        => 'API අමතර සේවාව මඟින් පාරිභෝගිකයින්ට RESTful API එකක් භාවිතා කර අනෙකුත් යෙදුම් සමඟ ස්ක්‍රිප්ට් කළ අන්තර්ක්‍රියා නිර්මාණය කිරීමට සහ පවතින යටිතල පහසුකම් උපයෝගී කර ගැනීමට ඉඩ සලසයි.',
+    'AdvancedSearchExtraDesc'             => "උසස් සෙවුම් අමතර කොටස ඉහළ තීරුවේ සෙවුම් කොටුවේ ක්‍රියාකාරිත්වය පුළුල් කරන අතර එමඟින් අවදානම් දත්තවල පෙළ සෙවීමක් කිරීමෙන් අවදානම් සොයා ගැනීමට හැකි වේ.",
+    'AssessmentsExtraDesc'                => 'අවදානම් තක්සේරු අතිරේකය මඟින් පරිශීලකයින්ට සම්බන්ධතා නිර්වචනය කිරීමට, ප්‍රශ්න (තර්කනය ඇතුළුව) නිර්මාණය කිරීමට, ප්‍රශ්නාවලියක් සහිත සැකිල්ලක් සමඟ බහු ප්‍රශ්න එකලස් කිරීමට, ප්‍රශ්නාවලියක් නිර්මාණය කර ඒවා සම්බන්ධතා වෙත යැවීමට, ප්‍රශ්නාවලියේ ප්‍රතිඵල බැලීමට, එම ප්‍රතිඵල මත පදනම්ව අවදානම් එකතු කිරීමට සහ කාලයත් සමඟ ප්‍රතිඵල සංසන්දනය කිරීමට, බාහිරව අභිරුචිකරණය කළ තක්සේරු ආනයනය සහ අපනයනය කිරීමට සහ අවදානම් තක්සේරු විගණන මංපෙත සමාලෝචනය කිරීමට හැකියාව ලබා දේ.',
     'ActiveAssessmentsDesc'               => 'දැනට පියාසර කරන තක්සේරු බලන්න සහ කළමනාකරණය කරන්න.',
-    'WorkflowsExtraDesc'                  => 'SimpleRisk තුළ සිදුවීම් මගින් අවුලුවන අවදානම් කළමනාකරණ ක්‍රියා ස්වයංක්‍රීය කිරීමට දෘශ්‍ය, සිදුවීම් මත පදනම් වූ වැඩ ප්‍රවාහ එන්ජිමක් සක්‍රීය කරයි.',
+    'WorkflowsExtraDesc'                  => 'Workflows Extra මඟින් SimpleRisk තුළ සිදුවීම් වලට ප්‍රතිචාර වශයෙන් අවදානම් කළමනාකරණ ක්‍රියා ස්වයංක්‍රීය කරන දෘශ්‍ය, සිදුවීම්-ධාවනය කරන ලද වැඩ ප්‍රවාහ එන්ජිමක් සපයයි. ඔබට වෙනස්කම් අවුලුවන වැඩ ප්‍රවාහ සැලසුම් කළ හැකිය - අවදානමක් ඉදිරිපත් කිරීම, යාවත්කාලීන කිරීම හෝ සමාලෝචනය කිරීම වැනි - අනුමැතීන් මෙහෙයවීම, වැඩ පැවරීම සහ අතින් මැදිහත්වීමකින් තොරව ඔබේ ක්‍රියාවලිය ඉදිරියට ගෙන යාම.',
 
     // Configure Hub - tile descriptions (frameworks category)
-    'UCFExtraDesc'                        => 'ඒකාබද්ධ පාලන රාමුව (UCF) පාලන සහ පරීක්ෂණ SimpleRisk සමඟ ඒකාබද්ධ කිරීම සක්‍රීය කරයි.',
-    'SCFExtraDesc'                        => 'අපගේ පාලන ක්‍රියාකාරිත්වය සමඟ භාවිතා කිරීම සඳහා Secure Controls Framework (SCF) වෙතින් පාලන SimpleRisk වෙත එක් කරයි.',
-    'ComplianceForgeExtraDesc'            => 'අපගේ පාලන ක්‍රියාකාරිත්වය සමඟ භාවිතා කිරීම සඳහා ComplianceForge ඩිජිටල් ආරක්ෂක වැඩසටහනේ (DSP) පාලන SimpleRisk වෙත එක් කරයි.',
+    'UCFExtraDesc'                        => 'ඒකාබද්ධ අනුකූලතා රාමුව (UCF) අමතර යනු ඒකාබද්ධ අනුකූලතා රාමුව සහ SimpleRisk අතර API මට්ටමේ ඒකාබද්ධ කිරීමකි. එය සක්‍රීය කිරීමෙන් ඔබට තෝරාගත් රාමු ආයාත කිරීමට සහ UCF වෙතින් සෘජුවම සිතියම්ගත කිරීම් පාලනය කිරීමට ඉඩ සලසයි.',
+    'SCFExtraDesc'                        => "Secure Controls Framework (SCF) Extra යනු Secure Controls Framework සහ SimpleRisk අතර සෘජු ඒකාබද්ධතාවයකි. එය SCF හි පාලන නාමාවලිය සහ අනුකූලතා සහ සයිබර් ආරක්ෂණ රාමු පුළුල් පරාසයක් හරහා ඒවායේ සිතියම්ගත කිරීම් SimpleRisk හි පාලන ක්‍රියාකාරිත්වයට ආයාත කරයි, එබැවින් ඔබට අවශ්‍ය රාමු අනුගමනය කර අතින් ගොඩනඟා නොගෙන ඒවායේ පාලනයන් කළමනාකරණය කළ හැකිය.",
 
     // Configure Hub - tile descriptions (maintenance category)
     'FixReviewDatesDesc'                  => 'උරුම varchar සමාලෝචන-දින තීරු නිසි දින වර්ග වෙත සංක්‍රමණය කරන්න. අවශ්‍ය විටදී පමණක් දෘශ්‍යමාන වේ.',
@@ -2909,7 +2801,6 @@ $lang = array(
     'WorkflowsExtra'                      => 'වැඩ ප්‍රවාහ අමතර',
     'UCFExtra'                            => 'ඒකාබද්ධ අනුකූලතා රාමුව (UCF) අමතර',
     'SCFExtra'                            => 'ආරක්ෂිත පාලන රාමුව අමතර',
-    'ComplianceForgeExtra'                => 'අනුකූලතා ෆෝර්ජ් අමතර',
     'DatabaseUpgrade'                     => 'දත්ත සමුදාය උත්ශ්‍රේණි කිරීම',
 
     // Configure Hub - Extra tile state badges
@@ -2925,6 +2816,12 @@ $lang = array(
     'ActivateExtraBody'                   => '{name} අමතර එක සක්‍රිය කරන්නද? මෙය එහි ක්‍රියාකාරීත්වය වහාම සක්‍රීය කරයි. ඔබට පසුව එම ටයිල් එකෙන්ම එය නැවත අක්‍රිය කළ හැක.',
     'ActivateExtraError'                  => 'අමතර සක්‍රිය කිරීමට අසමත් විය. රෝග විනිශ්චය සඳහා සෞඛ්‍ය පරීක්ෂණ පිටුව පරීක්ෂා කරන්න.',
 
+    // Configure Hub - Deactivation modal (Encryption Extra)
+    // 'Deactivate' (line 491) and 'Cancel' (line 489) are reused as-is.
+    'DeactivateExtraTitle'                => 'අමතර අක්‍රිය කරන්න',
+    'DeactivateExtraBody'                 => '{name} අමතර එක අක්‍රිය කරන්නද? ඔබේ SimpleRisk දත්ත සමුදාය එම ස්ථානයේදීම විකේතනය කෙරේ. අවශ්‍ය නම් ඔබට ආපසු හැරවිය හැකි වන පරිදි සංකේතනය කළ තත්වයේ උපස්ථයක් රඳවා ගනු ලැබේ.',
+    'DeactivateExtraError'                => 'අමතර අක්‍රිය කිරීමට අසමත් විය. රෝග විනිශ්චය සඳහා සෞඛ්‍ය පරීක්ෂණ පිටුව පරීක්ෂා කරන්න.',
+
     // Configure Hub - Async license enrichment notice (Phase 4)
     // 'Retry' (line 2764) is reused. The existing 'LicenseCheckFailed' key
     // (line 1851) refers to the 30-day-disable warning shown elsewhere in
@@ -2933,11 +2830,16 @@ $lang = array(
 
     // Configure Hub - Install modal (Phase 5)
     // 'Install' (line 403) and 'Cancel' (line 489) are reused as-is.
-    'InstallExtraTitle'                   => 'අමතර ස්ථාපනය කරන්න',
-    'InstallExtraBody'                    => '{name} අමතර ස්ථාපනය කරන්නද? මෙය SimpleRisk වෙතින් පැකේජය බාගත කර එය ඔබගේ ස්ථාපනයට අසුරයි. සක්‍රිය කිරීම යනු ස්ථාපනය අවසන් වූ පසු ටයිල් එකෙන් ඔබට කළ හැකි වෙනම පියවරකි.',
-    'InstallExtraError'                   => 'අමතර ස්ථාපනය කිරීමට අපොහොසත් විය. රෝග විනිශ්චය සඳහා සෞඛ්‍ය පරීක්ෂා පිටුව පරීක්ෂා කරන්න.',
-    'MissingExtraName'                    => 'අමතර නමක් නොමැත.',
-    'UnknownExtra'                        => 'නොදන්නා අමතර නම.',
+    'InstallExtraTitle'                          => 'අමතර ස්ථාපනය කරන්න',
+    'InstallExtraBody'                           => '{name} අමතර ස්ථාපනය කරන්නද? මෙය SimpleRisk වෙතින් පැකේජය බාගත කර එය ඔබගේ ස්ථාපනයට අසුරයි. සක්‍රිය කිරීම යනු ස්ථාපනය අවසන් වූ පසු ටයිල් එකෙන් ඔබට කළ හැකි වෙනම පියවරකි.',
+    'InstallExtraError'                          => 'අමතර ස්ථාපනය කිරීමට අපොහොසත් විය. රෝග විනිශ්චය සඳහා සෞඛ්‍ය පරීක්ෂා පිටුව පරීක්ෂා කරන්න.',
+    'MissingExtraName'                           => 'අමතර නමක් නොමැත.',
+    'UnknownExtra'                               => 'නොදන්නා අමතර නම.',
+
+    // License state banner messages (display_license_check() in display.php)
+    // Shown as a header banner when $_SESSION['license_check'] is a non-passing state.
+    // 'LicenseCheckFailed' (line ~1868) is the legacy 30-day-disable warning used
+    // by the old enforcement path; these keys cover the new enforcement states.
 
     // Configure Hub - Purchase modal (Phase 6)
     // 'Cancel' (line 489) is reused as-is.
@@ -2945,6 +2847,1796 @@ $lang = array(
     'PurchaseExtraBody'                   => '{name} අමතර කොටස ඔබගේ වත්මන් SimpleRisk බලපත්‍රයේ ඇතුළත් නොවේ. වැඩිදුර දැන ගැනීමට හෝ බලපත්‍රයක් මිලදී ගැනීමට SimpleRisk අමතර පිටුවට පිවිසෙන්න.',
     'ViewExtras'                          => 'අමතර දේවල් බලන්න',
 
+    // In-app notifications bell UI
+    // Note: 'Notifications' (line 2234), 'SelectAll' (line 816), 'Restore' (line 952),
+    // 'All' (line 1470), and 'Delete' (line 80) are reused as-is — do not duplicate.
+    'MarkRead'                             => 'කියවූ ලෙස සලකුණු කරන්න',
+    'NoNotifications'                      => 'දැනුම්දීම් නැත',
+    // Time-unit abbreviations for the relative-time display in the bell panel.
+    // 'TimeDays' is already used for the column header "Time (Days)"; TimeDayUnit covers the 'd' abbrev.
+    'TimeSeconds'                          => 'එස්',
+    'TimeMinutes'                          => 'එම්',
+    'TimeHours'                            => 'එච්',
+    'TimeDayUnit'                          => 'ඈ',
+    'NothingInTrash'                       => 'කුණු කූඩයේ කිසිවක් නැත',
+    'Promo'                                => 'ප්‍රවර්ධන',
+    'Trash'                                => 'කුණු කූඩය',
+    'Unread'                               => 'නොකියවූ',
+    'View'                                 => 'දැක්ම',
+
+    // Workflow "Send In-App Notification" action — audience picker hints.
+    // 'NoneSelected' (line 1878) is reused as-is for the multi-select button.
+    'NotificationSentToAllAdmins'          => 'මෙම දැනුම්දීම සියලුම පරිපාලකයින් වෙත යවනු ලැබේ.',
+    'NotificationSentToAllUsers'           => 'මෙම දැනුම්දීම සියලුම පරිශීලකයින් වෙත යවනු ලැබේ.',
+    'SelectAnAudienceAbove'                => 'ඉහත ප්‍රේක්ෂක පිරිසක් තෝරන්න.',
+    'RiskConfiguration' => 'අවදානම් වින්‍යාසය',
+    'ReviewSettings' => 'සැකසීම් සමාලෝචනය කරන්න',
+    'Cards' => 'කාඩ්පත්',
+    'List' => 'ලැයිස්තුව',
+    'DeletedAssessmentsCannotBeRecovered' => 'මකා දැමූ තක්සේරු කිරීම් නැවත ලබා ගත නොහැක.',
+    'TheAssessmentsWereDeletedSuccessfully' => 'තක්සේරුව(ය) සාර්ථකව මකා දමන ලදී.',
+    'AssetValuationMode' => 'වත්කම් තක්සේරුකරණ මාදිලිය',
+    'AutomaticLinearRange' => 'ස්වයංක්‍රීය රේඛීය පරාසය',
+    'AutomaticExponentialRange' => 'ස්වයංක්‍රීය ඝාතීය පරාසය',
+    'ManualValuation' => 'අත්පොත',
+    'AssetValuationMinMustBeNonNegative' => 'ස්වයංක්‍රීය ඝාතීය පරාසය සඳහා වත්කම් තක්සේරු කිරීමේ අවම අගය ශුන්‍ය හෝ ඊට වැඩි විය යුතුය.',
+    'CrossDomain' => 'හරස්-වසම්',
+    'Preferences' => 'මනාපයන්',
+    'SpecificUser' => 'නිශ්චිත පරිශීලකයා',
+    'SpecificUsers' => 'නිශ්චිත පරිශීලකයින්',
+    'Help' => 'උදව්',
+    'Profile' => 'පැතිකඩ',
+    'Scoring' => 'ලකුණු ලබා ගැනීම',
+    'EncryptionMissingLockTablesPrivilege'   => 'SimpleRisk දත්ත සමුදා පරිශීලකයාට දත්ත සමුදාය ආරක්ෂිතව සංකේතනය කිරීමට අවශ්‍ය වන LOCK TABLES වරප්‍රසාදය නොමැත. දත්ත සමුදා පරිපාලකයෙකුගෙන් ප්‍රතිචාරයෙන් ලබා දුන් GRANT ප්‍රකාශය ක්‍රියාත්මක කර නැවත උත්සාහ කරන්න.',
+    'EncryptionMissingLockTablesPrivilegeUi' => 'SimpleRisk දත්ත සමුදා පරිශීලකයාට සංකේතනය සඳහා අවශ්‍ය LOCK TABLES වරප්‍රසාදය නොමැත. දත්ත සමුදා පරිපාලකයෙකු ධාවනය කළ යුත්තේ: LOCK TABLES ON {$db}.* TO {$user}; ඉන්පසු නැවත උත්සාහ කරන්න.',
+    'EncryptionRequiredGrantLabel' => 'අවශ්‍ය GRANT ප්‍රකාශය:',
+    'EncryptionActivationAlreadyRunning' => 'සංකේතන සක්‍රිය කිරීමක් දැනටමත් සිදුවෙමින් පවතී. එය සම්පූර්ණ වන තෙක් රැඳී සිටින්න නැතහොත් ප්‍රතිසාධනය කිරීමට උපස්ථයෙන් ප්‍රතිසාධනය භාවිතා කරන්න.',
+    'EncryptionActivationEnqueued'           => 'සංකේතනය අමතර සක්‍රිය කිරීම පෝලිම්ගත කර ඇත. දත්ත සමුදාය සංකේතනය කර ඇති අතරතුර පරිපාලක UI ප්‍රගතිය නිරීක්ෂණය කරනු ඇත.',
+    'EncryptionActivationEnqueueFailed'      => 'සංකේතන සක්‍රිය කිරීමේ කාර්යය පෝලිමේ තැබීමට අසමත් විය. විස්තර සඳහා නිදොස් කිරීමේ ලොගය පරීක්ෂා කරන්න.',
+    'EncryptionDeactivationEnqueued'         => 'සංකේතනය අමතර අක්‍රිය කිරීම පෝලිම්ගත කර ඇත. දත්ත සමුදාය විකේතනය කරන අතරතුර පරිපාලක UI ප්‍රගතිය නිරීක්ෂණය කරනු ඇත.',
+    'EncryptionDeactivationEnqueueFailed'    => 'සංකේතන අක්‍රිය කිරීමේ කාර්යය පෝලිමේ තැබීමට අසමත් විය. විස්තර සඳහා නිදොස් කිරීමේ ලොගය පරීක්ෂා කරන්න.',
+    'EncryptionPipelineInProgress'           => 'සංකේතන නල මාර්ගයක් (සක්‍රිය කිරීම, අක්‍රිය කිරීම හෝ ප්‍රතිසාධනය කිරීම) දැනට ක්‍රියාත්මක වෙමින් පවතී. නැවත උත්සාහ කිරීමට පෙර එය අවසන් වන තෙක් රැඳී සිටින්න.',
+    'EncryptionPipelineInProgressTask'       => 'සංකේතන නල මාර්ගයක් දැනට ක්‍රියාත්මක වෙමින් පවතී (කාර්යය #{id}, {type}). නැවත උත්සාහ කිරීමට පෙර එය අවසන් වන තෙක් රැඳී සිටින්න.',
+    'EncryptionInFlightTitle'            => 'සංකේතන ක්‍රියාවලිය සිදුවෙමින් පවතී',
+    'EncryptionInFlightBody'             => 'සංකේතන සක්‍රිය, අක්‍රිය හෝ ප්‍රතිසාධන නල මාර්ගයක් දැනට ක්‍රියාත්මක වේ. එය අවසන් වන තෙක් රැඳී සිටින්න - මෙහෙයුම අවසන් වූ විට පිටුව ස්වයංක්‍රීයව නැවුම් වනු ඇත - නැවත උත්සාහ කිරීමට පෙර.',
+    'OK'                                 => 'හරි',
+    'ActivationGuardFailed'                 => 'සක්‍රිය කිරීම ආරම්භ කළ නොහැකි විය. විස්තර සඳහා පිටු ශීර්ෂයේ ඇඟවීම බලන්න.',
+    'EncryptionStageStarting'               => '… ආරම්භ කරමින්',
+    'EncryptionStageProgress'               => '{current} හි {total}අදියර: {name}',
+    'EncryptionStageAllDone'                => 'සියලුම අදියර සම්පූර්ණයි.',
+    'EncryptionStageEncryptTable'           => 'වගුව සංකේතනය කරන්න: {table}',
+    'EncryptionStageDecryptTable'           => 'වගුව විකේතනය කරන්න: {table}',
+    'EncryptionActivationInProgress'        => 'ඔබගේ SimpleRisk දත්ත සමුදාය සංකේතනය කරමින්. කරුණාකර මෙම පිටුව වසා නොදමන්න.',
+    'EncryptionActivationFailedTitle'       => 'සංකේතන සක්‍රිය කිරීම අසාර්ථක විය',
+    'EncryptionActivationFailedBody'        => 'සක්‍රිය කිරීම සම්පූර්ණ කළ නොහැකි වූ අතර දත්ත සමුදාය අස්ථායී තත්ත්වයක තිබිය හැකිය. පූර්ව-සක්‍රිය කිරීමේ උපස්ථය රඳවා තබා ඇත — ප්‍රතිසාධනය කිරීමට උපස්ථයෙන් ප්‍රතිසාධනය භාවිතා කරන්න, නැතහොත් SimpleRisk සහාය අමතන්න.',
+    'EncryptionDeactivationInProgress'      => 'ඔබගේ SimpleRisk දත්ත සමුදාය විකේතනය කරමින් පවතී. කරුණාකර මෙම පිටුව වසා නොදමන්න.',
+    'EncryptionDeactivationFailedTitle'     => 'සංකේතනය අක්‍රිය කිරීම අසාර්ථක විය',
+    'EncryptionDeactivationFailedBody'      => 'අක්‍රිය කිරීම සම්පූර්ණ කළ නොහැකි වූ අතර දත්ත සමුදාය අස්ථායි තත්ත්වයක තිබිය හැකිය. සංකේතාත්මක-තත්ව උපස්ථය රඳවා තබා ඇත — සංකේතාත්මක තත්ත්වයට ආපසු යාමට උපස්ථයෙන් ප්‍රතිසාධනය භාවිතා කරන්න, නැතහොත් SimpleRisk සහාය අමතන්න.',
+    'RestoreFromBackup'                     => 'උපස්ථයෙන් ප්‍රතිසාධනය කරන්න',
+    'RestoreFromBackupNotYetAvailable'      => 'මෙම ගොඩනැගීම තුළ උපස්ථයෙන් ප්‍රතිසාධනය තවමත් ලබා ගත නොහැක. ප්‍රතිසාධනය කිරීමට කරුණාකර SimpleRisk සහාය අමතන්න.',
+    'EncryptionRestoreInProgress'           => 'ඔබගේ SimpleRisk දත්ත සමුදාය උපස්ථයෙන් ප්‍රතිසාධනය කරමින්. මෙයට මිනිත්තු කිහිපයක් ගත විය හැක.',
+    'EncryptionRestoreEnqueueFailed'        => 'ප්‍රතිසාධනය ආරම්භ කිරීමට අසමත් විය. SimpleRisk ලොග් පරීක්ෂා කර නැවත උත්සාහ කරන්න.',
+    'EncryptionStatusActive'                => 'සංකේතාත්මක දත්ත සමුදා අමතර කොටස සක්‍රීයයි.',
+    'EncryptionStatusVersion'               => 'පිටපත',
+    'EncryptionDeactivateCta'               => 'සංකේතාත්මක දත්ත සමුදා අතිරේකය අක්‍රිය කරන්න',
+    'EncryptionDeactivateCtaHelp'           => 'සංකේතනය කළ සෑම තීරුවක්ම සාමාන්‍ය පෙළට නැවත විකේතනය කරන්න. ජනාකීර්ණ දත්ත සමුදායක මෙය මිනිත්තු කිහිපයක් ගතවේ.',
+    'EncryptionBackupPanelHeading'          => 'පූර්ව-සක්‍රිය කිරීමේ උපස්ථය',
+    'EncryptionBackupCreatedAt'             => 'නිර්මාණය කරන ලදී',
+    'EncryptionBackupSize'                  => 'ප්‍රමාණය',
+    'EncryptionBackupOriginalFilename'      => 'ගොනුව',
+    'EncryptionBackupDownloadTooltip'       => 'නොබැඳි ආචයනය සඳහා මෙම උපස්ථ ගොනුවේ පිටපතක් බාගැනීමට ක්ලික් කරන්න.',
+    'EncryptionBackupStateRestoring'        => 'දැනට ප්‍රතිසාධනයක් සිදුවෙමින් පවතී.',
+    'EncryptionNoBackupAvailable'           => 'පූර්ව-සක්‍රිය කිරීමේ උපස්ථයක් දැනට ගබඩා කර නොමැත. සෑම සක්‍රිය කිරීමකම ආරම්භයේදීම උපස්ථය නිර්මාණය වන අතර පසුව සිදුවන ඕනෑම සක්‍රිය කිරීමකින් හෝ අක්‍රිය කිරීමකින් එය උඩින් ලියනු ලැබේ.',
+    'EncryptionRestoreCtaHelp'              => 'වලංගුකරණයේදී ගැටළු හමු වුවහොත් සහ ඔබට පෙර-සංකේතන තත්ත්වයට ආපසු යාමට අවශ්‍ය නම් මෙය තෝරන්න.',
+    'EncryptionRestoreTitle'                => 'උපස්ථයෙන් ප්‍රතිසාධනය කරන්නද?',
+    'EncryptionRestoreBodyWhy'              => 'මෑත කාලීන සක්‍රිය කිරීම ආරම්භයේදී ග්‍රහණය කරගත් පූර්ව-සංකේතන සැණරුව වෙත ආපසු යාම. ඔබගේ පසු-සක්‍රිය කිරීමේ වලංගුකරණය ගැටළු සොයා ගත්තේ නම් සහ ඔබට සංකේතනය අත්හැරීමට අවශ්‍ය නම් මෙය තෝරන්න.',
+    'EncryptionRestoreBodyWhat'             => 'උපස්ථය නිර්මාණය කිරීමෙන් පසු දත්ත සමුදායට ලියන සෑම පේළියක්ම ස්ථිරවම නැති වී යනු ඇත - අවදානම්, අවම කිරීම්, විගණන-ලොග් ඇතුළත් කිරීම් සහ සක්‍රිය කිරීමෙන් පසු සිදු කරන ලද වෙනත් වෙනස්කම් ඇතුළුව. සංකේතාත්මක දත්ත සමුදා අමතර ප්‍රතිසාධනයේ කොටසක් ලෙස අක්‍රිය කරනු ලැබේ.',
+    'EncryptionDeleteBackupCta'             => 'පූර්ව සංකේතාංකන උපස්ථය මකන්න',
+    'EncryptionDeleteBackupCtaHelp'         => 'ඔබගේ පශ්චාත්-සංකේතන වලංගුකරණය සම්පූර්ණ වූ පසු මෙය තෝරන්න. සංකේතනය නොකළ ස්නැප්ෂොට් ඉවත් කිරීම සංකේතනය සැබවින්ම ආරක්ෂිත කරයි.',
+    'EncryptionDeleteBackupTitle'           => 'පූර්ව සංකේතාංකන උපස්ථය මකන්නද?',
+    'EncryptionDeleteBackupBodyWhy'         => 'මෑත කාලීන සක්‍රිය කිරීම ආරම්භයේදී ග්‍රහණය කරගත් ඔබගේ දත්තවල සංකේතනය නොකළ ස්නැප්ෂොට් එක ඉවත් කිරීම. එය දින නියමයක් නොමැතිව තබා ගැනීම සංකේතනයේ අරමුණ පරාජය කරයි - දත්ත සමුදා ප්‍රවේශය ඇති ඕනෑම කෙනෙකුට පූර්ව සංකේතාංකන පිටපත කියවිය හැකිය.',
+    'EncryptionDeleteBackupBodyWhat'        => 'දත්ත සමුදාය තුළ ඇති උපස්ථය වහාම මකා දමනු ලැබේ. දත්ත සමුදාය පෙර-සංකේතන තත්ත්වයට පෙරළීමට ඔබට තවදුරටත් උපස්ථයෙන් ප්‍රතිසාධනය භාවිතා කිරීමට නොහැකි වනු ඇත. පසුව සංකේතනය සමඟ ගැටළු ඇති වුවහොත්, ඔබේ එකම ප්‍රතිසාධන මාර්ගය වනුයේ ඔබේ මෙහෙයුම් උපස්ථ වලින් නැවුම් දත්ත සමුදා ප්‍රතිසාධනයකි.',
+    'EncryptionDeleteBackupError'           => 'උපස්ථය මැකීමට අසමත් විය. නිදොස් කිරීමේ ලොගය පරීක්ෂා කර නැවත උත්සාහ කරන්න.',
+    'EncryptionModalWhyLabel'               => 'මෙය භාවිතා කරන්නේ ඇයි:',
+    'EncryptionModalWhatHappensLabel'       => 'ඊළඟට මොකද වෙන්නේ:',
+    'EncryptionFieldsPanelHeading'          => 'සංකේතනය කළ දත්ත සමුදා ක්ෂේත්‍ර',
+    'EncryptionFieldsHelp'                  => 'මෙහි ලැයිස්තුගත කර ඇති සෑම තීරුවක්ම නිශ්චලව සංකේතනය කර ගබඩා කර ඇත. අගුළු නිරූපකයේ මෙවලම් ඉඟිය භාවිතා කරන ලද ගුප්ත ලේඛන ඇල්ගොරිතම පෙන්වයි.',
+    'EncryptionFieldsTableColumn'           => 'දත්ත සමුදා වගුව',
+    'EncryptionFieldsFieldColumn'           => 'දත්ත සමුදා ක්ෂේත්‍රය',
+    'EncryptionFieldsEncryptedColumn'       => 'සංකේතනය කර ඇත',
+    'EncryptionFieldsNoneFound'             => 'සංකේතනය කළ ක්ෂේත්‍ර කිසිවක් දැනට ලියාපදිංචි කර නොමැත. මෙය සක්‍රිය ස්ථාපනයකදී සිදු නොවිය යුතුය — බීජ දත්ත සඳහා encrypted_fields වගුව පරීක්ෂා කරන්න.',
+    'EncryptionFieldsLockTooltipPrefix'     => 'සංකේතනය කර ඇත',
+    'EncryptionInactiveRedirect'            => 'සංකේතාත්මක දත්ත සමුදාය අමතර ක්‍රියාකාරී නොවේ. එය වින්‍යාස මධ්‍යස්ථානයෙන් සක්‍රිය කරන්න.',
+    'ContactSupport'                        => 'සහාය අමතන්න',
+    'BackupDatabaseFailed' => 'දත්ත සමුදාය උපස්ථ කිරීම අසාර්ථක විය. විස්තර සඳහා කරුණාකර SimpleRisk ලොගය පරීක්ෂා කරන්න.',
+    'WindowsNotSupported' => '20260421-001 නිකුතුවෙන් පසු SimpleRisk තවදුරටත් Windows සඳහා සහය නොදක්වයි. කරුණාකර Linux-පාදක සේවාදායකයකට සංක්‍රමණය වන්න.',
+    'WindowsUpgradeHalted' => 'මෙම මෙහෙයුම Windows සේවාදායකයක් මත ක්‍රියාත්මක විය නොහැක. 20260421-001 නිකුතුවෙන් පසු SimpleRisk තවදුරටත් Windows සඳහා සහය නොදක්වයි. කරුණාකර Linux-පාදක සේවාදායකයකට සංක්‍රමණය වන්න.',
+    'BundleIntegrityVerificationFailed' => 'බාගත කළ SimpleRisk බණ්ඩලය අඛණ්ඩතාව සත්‍යාපනය අසාර්ථක විය. උත්ශ්‍රේණි කිරීම නවතා දමා ඇති අතර කිසිදු ගොනුවක් වෙනස් කර නොමැත.',
+    'BundleDownloadFailed' => 'SimpleRisk බණ්ඩලය බාගත කළ නොහැකි විය. උත්ශ්‍රේණි කිරීම නවතා දමා ඇති අතර කිසිදු ගොනුවක් වෙනස් කර නොමැත.',
+    'MissingOrInvalidTrackingID' => 'ලුහුබැඳීමේ හැඳුනුම්පත අතුරුදහන් හෝ අවලංගුයි.',
+    'JiraIntegrationExtra' => 'ජිරා ඒකාබද්ධතා අමතර',
+    'IncidentManagementNotifications' => 'සිදුවීම් කළමනාකරණ දැනුම්දීම්',
+    'NotificationSettingsUpdated' => 'දැනුම්දීම් සැකසුම් යාවත්කාලීන කරන ලදී.',
+    'DefaultBusinessUnit' => 'පෙරනිමි ව්‍යාපාර ඒකකය',
+    'TheDefaultBusinessUnitEncompasses' => 'සියලුම කණ්ඩායම් ඇතුළත් වන පෙරනිමි ව්‍යාපාර ඒකකය.',
+    'UserGuide' => 'පරිශීලක මාර්ගෝපදේශය',
+    'AdministratorGuide' => 'පරිපාලක මාර්ගෝපදේශය',
+    'DecryptionFailureToast' => 'සංකේතනය කළ ක්ෂේත්‍ර එකක් හෝ කිහිපයක් විකේතනය කළ නොහැකි විය. ඒවා හිස් ලෙස දැක්වේ. විස්තර සඳහා පද්ධති ලොග් පරීක්ෂා කරන්න.',
+    'EncryptionFailureToast' => 'ක්ෂේත්‍රයක් සංකේතනය කළ නොහැකි වූ අතර ගබඩා කර නොමැත. විස්තර සඳහා පද්ධති ලොග් පරීක්ෂා කරන්න.',
+    'EnableAPIv1Endpoints' => 'API v1 අන්ත ලක්ෂ්‍ය සබල කරන්න (අත්හරින ලදී)',
+    'EnableAPIv1EndpointsHelp' => 'API v1 අතහැර දමා ඇත. ඔබට අවශ්‍ය ඒකාබද්ධ කිරීමක් නොමැති නම් අක්‍රිය කර තබන්න. /api/v2/ මෙම සැකසුමෙන් බලපෑමට ලක් නොවන අතර සැමවිටම ලබා ගත හැකිය.',
+    'AllowAPIKeyInURL' => 'URL හෝ POST අන්තර්ගතය තුළ API යතුර ඉඩ දෙන්න',
+    'AllowAPIKeyInURLHelp' => 'ආරක්ෂාව සඳහා, API යතුරු X-API-KEY ඉල්ලීම් ශීර්ෂය තුළ යැවිය යුතුය. අක්‍රිය කළ විට, URL විමසුම් නූලෙහි (?key=) හෝ POST ශරීරයෙහි (key=) යවන ලද යතුරු ප්‍රතික්ෂේප කරනු ලැබේ, මන්ද එම ස්ථාන ප්‍රොක්සි ලොග් සහ බ්‍රව්සර් ඉතිහාසයේ වඩාත් පහසුවෙන් නිරාවරණය වේ. X-API-KEY ශීර්ෂය සැමවිටම පිළිගනු ලැබේ. ශීර්ෂය යැවිය නොහැකි ඒකාබද්ධ කිරීමක් නොමැති නම් අක්‍රිය කර තබන්න.',
+    'ArtificialIntelligenceDesc' => 'මෙම SimpleRisk අවස්ථාව සඳහා AI ප්‍රතිචාර පදනම් කර ගන්නා AI සැපයුම්කරු සම්බන්ධතාවය සහ සන්දර්භ ප්‍රශ්න වින්‍යාස කරන්න.',
+    'ProviderConfiguration' => 'සැපයුම්කරු වින්‍යාසය',
+    'ContextQuestions' => 'සන්දර්භ ප්‍රශ්න',
+    'AIProviderNotConfiguredWarning' => 'AI සැපයුම්කරු වින්‍යාස කර නොමැත. ඔබ සැපයුම්කරු වින්‍යාස පටිත්තෙහි සැපයුම්කරු සහ API යතුර සකසන තුරු සජීවී ප්‍රතිඵල නිපදවීමට නොහැකිය.',
+    'AutoProcessSCFUpdates' => 'නව ආරක්ෂිත පාලන රාමුව (SCF) නිකුතු ස්වයංක්‍රීයව සකසන්න',
+    'AddNewControls' => 'නව SCF පාලන එක් කරන්න',
+    'UpdateExistingControls' => 'පවතින SCF පාලන යාවත්කාලීන කරන්න',
+    'DeleteRemovedControls' => 'ඉවත් කළ SCF පාලන මකන්න',
+    'CreateEvidenceRequests' => 'SCF පාලනයන් සඳහා සාක්ෂි ඉල්ලීම් සාදන්න',
+    'SelectSCFFrameworks' => 'SCF රාමු තෝරන්න',
+    'SCFReleaseProcessing' => 'SCF නිකුතු සැකසීම',
+    'NotFrameworkDescription' => 'පහත විජට් එක Secure Controls Framework (SCF) පැතුරුම්පතෙහි ඇති සියලුම ශීර්ෂයන් පෙන්වයි. රාමු නොවන දත්ත අඩංගු තීරු මොනවාද යන්න තෝරා ගැනීමට එය භාවිතා කරන්න.',
+    'Note' => 'සටහන',
+    'AISettingsNote' => 'AI සහාය සක්‍රීය කිරීමෙන්, ඔබට ගැලපෙන ප්‍රතිඵල ලබා දීම සඳහා, ඔබේ Anthropic API යතුර භාවිතයෙන්, ඔවුන්ගේ LLM හි විශ්ලේෂණය සඳහා Anthropic වෙත දත්ත යවනු ලැබේ.',
+    'EnableAIAssistanceForControlData' => 'පාලන දත්ත සඳහා AI සහාය සබල කරන්න',
+    'ReferenceText' => 'යොමු පෙළ',
+    'FrameworkSelection' => 'රාමු තේරීම',
+    'Show' => 'පෙන්වන්න',
+    'InProgress' => 'ප්රගතියේ',
+    'Canceled' => 'අවලංගු කරන ලදී',
+    'Failed' => 'අසාර්ථක විය',
+    'LegacyFrameworks' => 'උරුම රාමු',
+    'Archive' => 'ලේඛනාගාරය',
+    'FailedToFetchCVEInformation' => 'CVE තොරතුරු ලබා ගැනීමට අපොහොසත් විය. කරුණාකර CVE ID පරීක්ෂා කර නැවත උත්සාහ කරන්න.',
+    'ComplianceDashboard' => 'අනුකූලතා උපකරණ පුවරුව',
+    'DynamicAuditReportHelp' => 'මෙම වාර්තාවේ සියලුම විගණන සහ ඒවායේ තත්ත්වයන් පෙන්වයි.',
+    'ComplianceDashboardDescription' => 'මෙම ප්‍රස්ථාරයේ එක් එක් රාමුවේ ඇති පාලන ගණන කොළ පැහැයෙන් ද අසාර්ථක පාලන රතු පැහැයෙන් ද දැක්වේ.',
+    'PassingControls' => 'සමත් පාලන',
+    'FailingControls' => 'අසාර්ථක පාලන',
+    'ControlsByFramework' => 'රාමුව අනුව පාලනයන්',
+    'NumberOfControls' => 'පාලන ගණන',
+    'PasswordResetTokenExpirationPeriod' => 'මුරපද යළි පිහිටුවීමේ ටෝකනය කල් ඉකුත් වීමේ කාලය',
+    'APasswordResetTokenExpirationPeriodShouldBeMoreThan5Minutes' => 'මුරපද යළි පිහිටුවීමේ ටෝකනයක කල් ඉකුත් වීමේ කාලය මිනිත්තු 5කට වඩා වැඩි විය යුතුය.',
+    'MeanTimeToRemediate' => 'ප්‍රතිසංස්කරණය කිරීමට ගතවන කාලය',
+    'ByTeam' => 'කණ්ඩායම අනුව',
+    'ByCategory' => 'කාණ්ඩය අනුව',
+    'ByRiskLevel' => 'අවදානම් මට්ටම අනුව',
+    'MeanTimeToRemediateDescription' => 'කණ්ඩායම, කාණ්ඩය සහ අවදානම් මට්ටම අනුව කාණ්ඩගත කර ඇති අවදානම් වසා දැමීමට ගතවන සාමාන්‍ය දින ගණන. සංවෘත අවදානම් පමණක් ඇතුළත් වේ.',
+    'AverageDaysToClose' => 'වසා දැමීමට සාමාන්‍ය දින',
+    'ControlPassRateTrend' => 'සමත් අනුපාත ප්‍රවණතාවය පාලනය කරන්න',
+    'ControlPassRateTrendDescription' => 'පසුගිය මාස 12 තුළ රාමුවකට මාසික සමත් අනුපාතය (%). කාල සීමාව තුළ අවම වශයෙන් එක් පරීක්ෂණ ප්‍රතිඵලයක් සහිත රාමු පමණක් පෙන්වනු ලැබේ.',
+    'PassRatePercent' => 'සමත් අනුපාතය (%)',
+    'ExposureByTeam' => 'කණ්ඩායම විසින් අවදානම් නිරාවරණය',
+    'ExposureByCategory' => 'කාණ්ඩය අනුව අවදානම් නිරාවරණය',
+    'ExposureByLocation' => 'ස්ථානය අනුව අවදානම් නිරාවරණය',
+    'TotalRiskScore' => 'මුළු අවදානම් ලකුණු',
+    'SLABreachStatus' => 'SLA කඩ කිරීමේ තත්ත්වය',
+    'SLABreachDescription' => 'අවදානම් මට්ටම අනුව ඒවායේ SLA සීමාව තුළ හෝ ඉන් ඔබ්බට විවෘත අවදානම්. පෙරනිමි සීමාවන්: ඉතා ඉහළ=30d, ඉහළ=60d, මධ්‍යම=90d, අඩු=180d.',
+    'WithinSLA' => 'ශ්‍රී ලංකා ගුවන් හමුදාව තුළ',
+    'SLABreached' => 'SLA උල්ලංඝනය විය',
+    'NumberOfRisks' => 'අවදානම් ගණන',
+    'ExposureByBusinessUnit' => 'ව්‍යාපාර ඒකකය මගින් අවදානම් නිරාවරණය',
+    'BUChartCrossUnitNote' => 'සටහන: බහු BUs දක්වා විහිදෙන කණ්ඩායම් සඳහා පවරා ඇති අවදානම් එක් එක් කාණ්ඩයේ ගණනය කෙරේ.',
+    'SLAThresholds' => 'SLA සීමාවන්',
+    'SLAThresholdsDescription' => 'අවදානම් මට්ටම අනුව, ප්‍රමාද වූ ලෙස සැලකීමට පෙර විවෘත අවදානමක් විසඳා නොගෙන පැවතිය හැකි උපරිම දින ගණන.',
+    'SLAThresholdMustBeBetween1And3650' => 'SLA සීමාවේ අගයන් දින 1 ත් 3650 ත් අතර විය යුතුය.',
+    'SLAThresholdsUpdatedSuccessfully' => 'SLA සීමාවන් සාර්ථකව යාවත්කාලීන කරන ලදී.',
+    'TimeToDetect' => 'හඳුනා ගැනීමට කාලයයි',
+    'TimeToDetectDescription' => 'සිදුවීම් ආරම්භයේ (ආරම්භ වූ) සිට අනාවරණය (අනාවරණය වූ) දක්වා සාමාන්‍ය දින ගණන, කණ්ඩායම සහ සිදුවීම් වර්ගය අනුව කාණ්ඩ කර ඇත. දින දෙකම වාර්තා කර ඇති සිදුවීම් පමණක් ඇතුළත් වේ.',
+    'ByOccurrenceType' => 'සිදුවීම් වර්ගය අනුව',
+    'ApplicationVersion' => 'යෙදුම් අනුවාදය',
+    'DatabaseVersion' => 'දත්ත සමුදා අනුවාදය',
+    'InstanceID' => 'අවස්ථා හැඳුනුම්පත',
+    'LatestIsVersion' => 'නවතම එක {$version}',
+    'UpToDate' => 'යාවත්කාලීනව',
+    'UpdateAvailable' => 'යාවත්කාලීනය තිබේ',
+    'RegistrationSuccessful' => 'ලියාපදිංචිය සාර්ථකයි.',
+    'LocalRegistrationStateCleared' => 'දේශීය ලියාපදිංචි තත්ත්වය හිස් කර ඇත. නව instance_id එකක් ලබා ගැනීමට /admin/register.php හි නැවත ලියාපදිංචි වන්න.',
+    'InstanceInformationUpdated' => 'අවස්ථා තොරතුරු යාවත්කාලීන කරන ලදී.',
+    'UpgradeExtraDesc' => 'Upgrade Extra මඟින් ඔබගේ SimpleRisk අවස්ථාව යාවත්කාලීනව තබා ගැනීමට, යෙදුම් සහ දත්ත සමුදා උත්ශ්‍රේණි කිරීම් බාගත කර යෙදීමෙන් සහ ඔබගේ අනෙකුත් අමතර දේ ස්ථාපනය කර යාවත්කාලීන කිරීමෙන්, සියල්ල Register & Upgrade පිටුවෙන් ලබා ගත හැකිය. එය කිසිදු වියදමකින් තොරව SimpleRisk සමඟ බණ්ඩල් කර ඇති බැවින් ඔබට අතින් ගොනු කළමනාකරණයකින් තොරව නවතම නිකුතුවේ රැඳී සිටිය හැකිය.',
+    'ExtraInstallDisabledByEnforcement' => 'ඔබගේ බලපත්‍ර තත්ත්වය මගින් අමතර ස්ථාපනය දැනට අබල කර ඇත. ඔබගේ පරිපාලක හෝ SimpleRisk සහාය අමතන්න.',
+    'LicenseStateUnknownRetryShortly' => 'බලපත්‍ර තොරතුරු තවමත් ලබා ගත නොහැක. කරුණාකර සුළු මොහොතකින් නැවත උත්සාහ කරන්න.',
+    'LicenseExpiringSoonTitle' => 'බලපත්‍රය ඉක්මනින් කල් ඉකුත් වේ: {$extra}',
+    'LicenseExpiringSoonBody' => 'ඔබගේ {$extra} බලපත්‍රය {$date} ({$days} දින ඉතිරිව ඇති) දිනයේදී කල් ඉකුත් වේ. ප්‍රවේශය අහිමි වීම වළක්වා ගැනීම සඳහා ලියාපදිංචි වී උත්ශ්‍රේණි කිරීමෙන් එය අලුත් කරන්න.',
+    'LicenseExpiredTitle' => 'බලපත්‍රය කල් ඉකුත් විය: {$extra}',
+    'LicenseExpiredBody' => 'ඔබගේ {$extra} බලපත්‍රය {$date}දින කල් ඉකුත් විය. ප්‍රවේශය ප්‍රතිසාධනය කිරීමට ලියාපදිංචි වී උත්ශ්‍රේණි කිරීමෙන් එය අලුත් කරන්න.',
+    'Licenses' => 'බලපත්‍ර',
+    'LicensesDesc' => 'එක් එක් SimpleRisk අමතර සඳහා බලපත්‍ර තත්ත්වය බලන්න.',
+    'RefreshLicenses' => 'බලපත්‍ර නැවුම් කරන්න',
+    'LoadingLicenseData' => 'බලපත්‍ර දත්ත පූරණය වෙමින්...',
+    'Licensed' => 'බලපත්‍රලාභී',
+    'Unlicensed' => 'බලපත්‍ර රහිත',
+    'Expired' => 'කල් ඉකුත් විය',
+    'Free' => 'නොමිලේ',
+    'License' => 'බලපත්‍රය',
+    'NoLicensedExtras' => 'බලපත්‍රලාභී අමතර කිසිවක් නැත.',
+    'NoExpiredExtras' => 'කල් ඉකුත් වූ අමතර දීමනා නැත.',
+    'NoUnlicensedExtras' => 'බලපත්‍ර රහිත අමතර දේවල් නැත.',
+    'Unlimited' => 'අසීමිත',
+    'LicenseStateLockMessage' => 'ඔබගේ බලපත්‍ර තත්ත්වය අනුව අමතර ස්ථාපනය සහ උත්ශ්‍රේණි කිරීමේ ක්‍රියා දැනට අබල කර ඇත. පවතින ස්ථාපිත අමතර ඒවා දිගටම ක්‍රියා කරයි.',
+    'LicenseStateFailMessage' => 'ඔබගේ SimpleRisk බලපත්‍රය කල් ඉකුත් වී හෝ අක්‍රිය කර ඇත. සේවාව ප්‍රතිසාධනය කිරීමට කරුණාකර SimpleRisk සහාය අමතන්න.',
+    'LicenseStateAnonymousMessage' => 'මෙම SimpleRisk අවස්ථාව ලියාපදිංචි කර නොමැත. නොමිලේ අමතර දේවල් පමණක් ලබා ගත හැකිය. ගෙවන ලද අමතර දේවල් වෙත ප්‍රවේශ වීමට Configure මෙනුවෙහි ලියාපදිංචි වන්න.',
+    'LicenseStateUnknownMessage' => 'SimpleRisk හට බලපත්‍ර සේවාව වෙත ළඟා වීමට නොහැකි විය. ඊළඟ පරීක්ෂාවේදී බලපත්‍ර තත්ත්වය ස්වයංක්‍රීයව නැවුම් වනු ඇත.',
+    'ExtraIntegrityCheckFailed' => 'බාගත කළ පැකේජය එහි අඛණ්ඩතා පරීක්ෂාව අසමත් වූ අතර ස්ථාපනය කර නොමැත.',
+    'ExtraInstallWriteFailed' => 'අමතර නාමාවලිය ලිවිය නොහැකි නිසා අමතර ස්ථාපනය කළ නොහැකි විය.',
+    'ExtraInstallExtractFailed' => 'අමතර ගොනුව බාගත කළ නමුත් එය උපුටා ගෙන ස්ථාපනය කිරීමට නොහැකි විය. යෙදුම් ලොග් පරීක්ෂා කරන්න.',
+    'EncryptionPreflightFailed' => 'මූලික DDL අසාර්ථක විය — විස්තර සඳහා නිදොස් කිරීමේ ලොගය බලන්න.',
+    'EncryptionActivationFailed' => 'පූර්ව සැකසීමේදී සංකේතාංකන සක්‍රිය කිරීම අසාර්ථක විය. යෙදුම් ලොග පරීක්ෂා කරන්න.',
+    'QuestionnaireSentSchedulingOnly' => 'මෙම ප්‍රශ්නාවලිය යවා ඇත. පහත කාලසටහන් සැකසීම් පමණක් වෙනස් කළ හැක.',
+    'AreYouSureYouWantToReopenThisResult' => 'සමාලෝචනය සඳහා මෙම ප්‍රතිඵලය නැවත විවෘත කිරීමට ඔබට අවශ්‍ය බව ඔබට විශ්වාසද?',
+    'QuestionnaireResultReopenedSuccessfully' => 'ප්‍රශ්නාවලියේ ප්‍රතිඵලය සමාලෝචනය සඳහා සාර්ථකව නැවත විවෘත කරන ලදී.',
+    'QuestionnaireResultReopenedAuditLog' => '"{$questionnaire_name}" ප්‍රශ්නාවලියේ ප්‍රතිඵලය ("{$contact_name}" සම්බන්ධතාව විසින් ඉදිරිපත් කරන ලදී) "{$user_name}" පරිශීලකයා විසින් සමාලෝචනය සඳහා නැවත විවෘත කරන ලදී.',
+    'QuestionnaireDraftNoChanges' => 'සුරැකීමට වෙනස්කම් නොමැත.',
+    'SendQuestionnaireIdRequired' => 'id පරාමිතිය අවශ්‍ය වන අතර එය සංඛ්‍යාත්මක විය යුතුය.',
+    'RiskIdMustBeNumeric' => 'risk_id පරාමිතිය සංඛ්‍යාත්මක විය යුතුය.',
+    'AssessmentsExtraNotEnabled' => 'Assessments Extra සක්‍රීය කර නොමැත.',
+    'QuestionnaireSchedulingUpdatedAuditLog' => '"{$name}" ලෙස නම් කර ඇති ප්‍රශ්නාවලිය සඳහා කාලසටහන් සැකසීම් "{$user}" යන පරිශීලක නාමයෙන් යාවත්කාලීන කරන ලදී.',
+    'QuestionnaireResultNotReopenable' => 'ප්‍රශ්නාවලියේ ප්‍රතිඵලය ප්‍රතික්ෂේප කළ හෝ අනුමත නොකළ තත්ත්වයක නොමැති නිසා එය නැවත විවෘත කළ නොහැක.',
+    'QuestionnaireTrackingNotFoundAfterUpdate' => 'යාවත්කාලීන කිරීමෙන් පසු ප්‍රශ්නාවලිය ලුහුබැඳීම හමු නොවීය.',
+    'QuestionnaireResultAlreadyDecided' => 'ප්‍රශ්නාවලියේ ප්‍රතිඵලය දැනටමත් තීරණය කර ඇත (අනුමත, ප්‍රතික්ෂේප කළ හෝ අනුමත නොකළ). පළමුව නැවත විවෘත කිරීමේ ක්‍රියාව භාවිතා කරන්න.',
+    'QuestionnaireNoControlsForApproval' => 'මෙම ප්‍රශ්නාවලිය සඳහා කිසිදු පාලනයක් හමු නොවීය.',
+    'QuestionnaireNoResponsesForApproval' => 'පරිණත යාවත්කාලීන කිරීම් සැකසීමට ප්‍රශ්නාවලියේ ප්‍රතිචාර හමු නොවීය.',
+    'ResultMessageUnavailable' => 'ප්‍රතිඵල පණිවිඩය නොමැත.',
+    'AIProviderURLNotAllowed' => 'එම API URL එකට අවසර නැත. දන්නා AI සැපයුම්කරුවෙකු හෝ ලූප්බැක් (127.0.0.1) ස්වයං-සත්කාරක ලිපිනයක් භාවිතා කරන්න.',
+    'AIReenterKeyForNewURL' => 'වෙනස් සැපයුම්කරු URL එකක් පරීක්ෂා කිරීමට API යතුර නැවත ඇතුළත් කරන්න.',
+    'WorkflowHttpRequestDisallowedURL' => 'http_request: {$url} URL එක අවසර නොලත් අභ්‍යන්තර හෝ වෙන් කළ ලිපිනයකට විසඳයි.',
+    'BehaviorAndScheduling' => 'හැසිරීම සහ කාලසටහන්ගත කිරීම',
+    'PrepopulateAcrossContacts' => 'මෙම තක්සේරුව සඳහා වෙනත් සම්බන්ධතාවක පෙර පිළිතුරු සමඟ නව ප්‍රතිචාර පූර්ව-පිරවීම.',
+    'PrepopulateAcrossContactsHelp' => 'නව ප්‍රතිචාර දක්වන්නෙකුගේ පෝරමය, ඕනෑම සම්බන්ධතාවයකින් ලබාගත් මෑත කාලීන පිළිතුරු සමඟ පූර්ව-පුරවන්න - වගකීම අත මාරු වන විට අඛණ්ඩතාව සඳහා ප්‍රයෝජනවත් වේ.',
+    'PrepopulateAcrossContactsCaution' => 'පෙරනිමියෙන් අක්‍රියයි. අක්‍රිය කළ විට, සම්බන්ධතාවයක් දකින්නේ තමන්ගේම පෙර පිළිතුරු පමණි. ප්‍රතිචාර දක්වන්නන් අභ්‍යන්තර හෝ විශ්වාසදායක වූ විට පමණක් මෙය සක්‍රිය කරන්න - එයට එක් සම්බන්ධතාවයක පිළිතුරු තවත් සම්බන්ධතාවයකට නිරාවරණය කළ හැකිය (උදා: එක් වෙළෙන්දෙකු තවත් කෙනෙකුගේ පිළිතුරු දකින විට).',
+    'AddTemplateAndContacts' => 'අච්චුව සහ සම්බන්ධතා එක් කරන්න',
+    'QuestionnaireGeneralSubtitle' => 'ප්‍රශ්නාවලිය නම් කර එය අයිති කාටද යන්න සකසන්න.',
+    'QuestionnaireInstructionsSubtitle' => 'ප්‍රතිචාර දක්වන්නන්ට සහ ආරාධනා විද්‍යුත් තැපෑලෙහි පෙන්වන මාර්ගෝපදේශ',
+    'QuestionnaireBehaviorSubtitle' => 'ප්‍රශ්නාවලිය යවා සම්පූර්ණ කළ පසු එය හැසිරෙන ආකාරය',
+    'QuestionnaireRiskDetailsSubtitle' => 'මෙම තක්සේරුව නිර්මාණය කරන අවදානම් සඳහා යොදන විකල්ප පෙරනිමි',
+    'QuestionnaireTemplatesSubtitle' => 'සෑම ප්‍රශ්න අච්චුවක්ම එය ලබන සම්බන්ධතා සමඟ යුගල කරන්න',
+    'BypassPendingRisksLabel' => 'බලා සිටින අවදානම් මඟ හරින්න',
+    'BypassPendingRisksDescription' => 'තක්සේරුව අවසන් වූ වහාම අවදානම් නිර්මාණය කර ඒවා සමාලෝචනය සඳහා තබා ගැනීම වෙනුවට.',
+    'AutomaticallySendResultsLabel' => 'ස්වයංක්‍රීයව ප්‍රතිඵල යවන්න',
+    'AutomaticallySendResultsDescription' => 'තක්සේරු ප්‍රතිඵල සම්පූර්ණ වූ පසු සියලුම තක්සේරු සම්බන්ධතා වෙත යවන්න.',
+    'QuestionnaireMultiselectPlaceholder' => '… තෝරන්න හෝ සොයන්න',
+    'QuestionnaireNamePlaceholder' => 'උදා: විකුණුම්කරුවන්ගේ ආරක්ෂක සමාලෝචනය 2026',
+    'AddTeamPlaceholder' => 'කණ්ඩායම එක් කරන්න…',
+    'AddStakeholderPlaceholder' => 'කොටස්කරු එකතු කරන්න…',
+    'AddControlTypePlaceholder' => 'පාලන වර්ගය එක් කරන්න…',
+    'AddLocationPlaceholder' => 'ස්ථානය එක් කරන්න…',
+    'NotifyWhenNotCompleteLabel' => 'සම්පූර්ණ නොවූ විට දැනුම් දෙන්න',
+    'NotifyWhenNotCompleteDescription' => 'තක්සේරුව අවසන් නොකළ සම්බන්ධතා වලට මතක් කරන්න.',
+    'RemindEveryDays' => 'සෑම {$day} දිනයක් මතක් කරන්න',
+    'ResendAssessmentLabel' => 'තක්සේරුව නැවත යවන්න',
+    'ResendAssessmentDescription' => 'නිශ්චිත කාල පරතරයක් මත ස්වයංක්‍රීයව තක්සේරුව නැවත නිකුත් කරන්න.',
+    'ResendEveryDays' => 'සෑම {$day} දින ගණනක් නැවත යවන්න',
+    'QuestionnaireSaveBarHint' => '"සුරකින්න සහ යවන්න" තම සම්බන්ධතා වෙත ප්‍රශ්නාවලිය වහාම නිකුත් කරයි.',
+    // Home dashboard — KPI tile labels
+    'NewSelfAssessment' => 'නව ස්වයං තක්සේරුව',
+    'SelfAssessmentPrereqIntro' => 'ස්වයං-ඇගයීම් මඟින් ඔබේ සංවිධානය ආරක්ෂිත පාලන රාමුවකට එරෙහිව ඇගයීමට සහ අසාර්ථක වන පාලන වලින් ස්වයංක්‍රීයව අවදානම් ජනනය කිරීමට ඔබට ඉඩ සලසයි. පළමුව සැකසුම් පියවර දෙකක් අවශ්‍ය වේ:',
+    'RegisterYourInstance' => 'ඔබේ අවස්ථාව ලියාපදිංචි කරන්න',
+    'RegisterYourInstanceHelp' => 'ලියාපදිංචිය මෙම අවස්ථාව SimpleRisk හි බලපත්‍ර සේවාවට සම්බන්ධ කරයි, එබැවින් නොමිලේ අමතර (SCF ඇතුළුව) බාගත කළ හැකිය.',
+    'InstallTheSCF' => 'ආරක්ෂිත පාලන රාමුව ස්ථාපනය කරන්න',
+    'InstallTheSCFHelp' => 'SCF යනු මෙම විශේෂාංගය තක්සේරු කරන රාමු, පාලන ප්‍රශ්න සහ අවදානම් සිතියම්ගත කිරීම් සපයන නොමිලේ අමතර මෘදුකාංගයකි. ස්ථාපනය පසුබිමේ ක්‍රියාත්මක වන අතර මිනිත්තු කිහිපයක් ගත විය හැකිය.',
+    'GoToRegistration' => 'ලියාපදිංචිය වෙත යන්න',
+    'GoToSCF' => 'ආරක්ෂිත පාලන රාමුව වෙත යන්න.',
+    'SelfAssessmentEnableTip' => 'විකල්ප: Governance > Frameworks යටතේ, තක්සේරුවක් ආරම්භ කරන විට, ඔබට නිශ්චිත SCF රාමු කෙටි ලැයිස්තුවක් දැකීමට සබල කළ හැක. ඔබට සම්පූර්ණ SCF නාමාවලියෙහි ඕනෑම රාමුවකට එරෙහිව එය සබල නොකර තක්සේරු කළ හැක.',
+    'ChooseAFramework' => 'තක්සේරු කිරීමට රාමුවක් තෝරන්න',
+    'EnabledFrameworks' => 'සක්‍රීය රාමු',
+    'AllScfFrameworks' => 'සියලුම SCF රාමු',
+    'Start' => 'ආරම්භ කරන්න',
+    'Resume' => 'අරඹන්න',
+    'ControlQuestion' => 'පාලන ප්‍රශ්නය',
+    'NotApplicable' => 'අදාළ නොවේ',
+    'SaveProgress' => 'ප්‍රගතිය සුරකින්න',
+    'MarkComplete' => 'සම්පූර්ණ ලෙස සලකුණු කරන්න',
+    'AnsweredOfTotal' => 'පිළිතුරු දුන්නා',
+    'FailedSoFar' => 'මෙතෙක් අසාර්ථකයි',
+    'StartedBy' => 'ආරම්භ කළේ',
+    'FailedControls' => 'අසාර්ථක වූ පාලන',
+    'PushToRisk' => 'අවදානමට තල්ලු කරන්න',
+    'ConfirmDeleteSelfAssessment' => 'මෙම ස්වයං තක්සේරුව මකන්නද? මෙය අහෝසි කළ නොහැක.',
+    'ConfirmCompleteSelfAssessment' => 'මෙම තක්සේරුව සම්පූර්ණ බව සලකුණු කරන්න? අසාර්ථක පාලනයන්ගෙන් අවදානම් ජනනය වේ.',
+    'NoSelfAssessmentsYet' => 'තවම ස්වයං තක්සේරුවක් නැහැ. ආරම්භ කිරීමට එකක් ආරම්භ කරන්න.',
+    'RequestFailed' => 'ඉල්ලීම සම්පූර්ණ කළ නොහැකි විය. කරුණාකර නැවත උත්සාහ කරන්න.',
+    'NoPendingRisks' => 'අපේක්ෂිත අවදානම් නොමැත. අසාර්ථක පාලනයන්ගෙන් අවදානම් ජනනය කිරීම සඳහා තක්සේරුවක් සම්පූර්ණ කරන්න.',
+    'NoFailedControls' => 'මෙම පෙරහන සඳහා පෙන්වීමට පාලන ප්‍රතිඵල නොමැත.',
+    'ControlResultsTruncated' => 'මෑත කාලීන 2000 ප්‍රතිඵල පෙන්වමින්. තවත් බැලීමට පෙරහන පටු කරන්න.',
+    'GeneratedFromSelfAssessment' => 'ස්වයං තක්සේරුවකින් ජනනය කරන ලදී',
+    'SelfAssessmentMitigationSolution' => 'මෙම අවදානම අවම කිරීම සඳහා, මෙම ස්වයං තක්සේරුවේදී අසාර්ථක වූ බවට හඳුනාගත් පහත සබැඳි කර ඇති පාලනයන් ක්‍රියාත්මක කරන්න.',
+    'NSelected' => '{n} තෝරා ගන්නා ලදී',
+    'FilterByControl' => 'පාලනය අනුව පෙරහන් කරන්න',
+    'Pushing' => '… තල්ලු කිරීම',
+    'Deleting' => '… මකා දමමින්',
+    'ConfirmPushSelectedPendingRisks' => '{n} තෝරාගත් අපේක්ෂිත අවදානම්(ය) අවදානම් වෙත තල්ලු කරන්නද?',
+    'ConfirmDeleteSelectedPendingRisks' => '{n} තෝරාගත් පොරොත්තු අවදානම්(ය) මකන්නද? මෙය අහෝසි කළ නොහැක.',
+    'ConfirmDeleteSelectedSelfAssessments' => '{n} තෝරාගත් ස්වයං තක්සේරුව(ය) මකන්නද? මෙය අහෝසි කළ නොහැක.',
+    'BulkPartialFailure' => '{n} {total} අයිතම සාර්ථක විය; ඉතිරිය අසාර්ථක විය. වත්මන් තත්ත්වය බැලීමට නැවුම් කරන්න.',
+
+    // Workflows Extra - deactivation confirm ('Deactivate' at line 480 is reused as-is)
+    'WorkflowsExtraDeactivateConfirm' => 'Workflows Extra අක්‍රිය කරන්නද? පරිශීලකයා විසින් සාදන ලද සියලුම Workflow නිර්වචන ස්ථිරවම මකා දැමෙනු ඇත. පද්ධති Workflows සංරක්ෂණය කරනු ලැබේ.',
+    'HomeKpiOpenRisks' => 'විවෘත අවදානම්',
+    'HomeKpiNeedsReview' => 'සමාලෝචනයක් අවශ්‍යයි',
+    'HomeKpiUnmitigated' => 'අනුමත නොකළ',
+    'HomeKpiClosedRisks' => 'සංවෘත අවදානම්',
+    'HomeKpiControlPassRate' => 'සමත් අනුපාතය පාලනය කරන්න',
+    'HomeKpiFailingControls' => 'අසාර්ථක පාලන',
+    'HomeKpiOpenAudits' => 'විවෘත විගණන',
+    'HomeKpiTestsDueSoon' => 'පරීක්ෂණ ඉක්මනින් අවසන් වේ',
+    'HomeKpiActiveFrameworks' => 'ක්‍රියාකාරී රාමු',
+    'HomeKpiTotalControls' => 'මුළු පාලනයන්',
+    // Home dashboard — What's Next feed
+    'WhatsNext' => 'ඊළඟට කුමක්ද?',
+    'WhatsNextAllCaughtUp' => 'ඔයා ඔක්කොම ඉවරයි.',
+    'WhatsNextRegisterInstance' => 'ඔබේ SimpleRisk අවස්ථාව ලියාපදිංචි කරන්න',
+    'WhatsNextSubmitFirstRisk' => 'ඔබේ පළමු අවදානම ඉදිරිපත් කරන්න.',
+    'WhatsNextLoadFramework' => 'පාලන රාමුවක් පූරණය කරන්න',
+    'WhatsNextUnreviewedRisks' => 'සමාලෝචනය කිරීමට අවදානම්',
+    'WhatsNextUnmitigatedRisks' => 'අවම කිරීම සඳහා අවදානම්',
+    'WhatsNextInitiateAudits' => 'ආරම්භ කිරීමට විගණන',
+    // Home dashboard — widget picker type labels
+    'WidgetType_kpi' => 'KPI ටයිල්',
+    'WidgetType_whats_next' => 'ලැයිස්තුව',
+    // Home dashboard — hub catalog entry
+    'HomeDashboard' => 'මුල් පිටුව',
+    'HomeDashboardDesc' => 'ඔබේ ආරම්භක ලක්ෂ්‍යය — ප්‍රධාන මිනුම් සහ ඊළඟට කළ යුතු දේ, එක බැල්මකින්.',
+    'HomeChartRiskByLevel' => 'මට්ටම අනුව අවදානම',
+    'HomeKpiThisMonth' => 'මේ මාසයේ',
+    'HomeKpiNoChange' => 'වෙනසක් නැත',
+    'EditLayout' => 'පිරිසැලසුම සංස්කරණය කරන්න',
+    'ListHighestRisks' => 'මගේ ඉහළම අවදානම්',
+    'ListPastDueReviews' => 'කල් ඉකුත් වූ සමාලෝචන',
+    'ListUpcomingTests' => 'ඉදිරි පරීක්ෂණ',
+    'ListRecentFailures' => 'මෑත අසාර්ථක වීම්',
+    'ListPoliciesReview' => 'සමාලෝචනය සඳහා ලේඛන',
+    'ListExpiringExceptions' => 'කල් ඉකුත් වන ව්‍යතිරේක',
+    'ImKpiOpenIncidents' => 'මුළු විවෘත',
+    'ImKpiOverdue' => 'කල් ඉකුත් වූ',
+    'ImKpiMttr30' => 'සාමාන්‍ය විභේදනය',
+    'ImKpiMttrQuarter' => 'සාමාන්‍ය විසඳුම (90d)',
+    'ImKpiMttrYear' => 'සාමාන්‍ය විසඳුම (1y)',
+    'ImKpiMttrAll' => 'සාමාන්‍යය විසඳීම (සියල්ල)',
+    'ImKpiResolved30' => 'විසඳා ඇත',
+    'ImChartBySeverity' => 'බරපතලකම අනුව',
+    'ImChartByStatus' => 'තත්ත්වය අනුව',
+    'ImListRecent' => 'මෑත සිදුවීම්',
+    'ImListUnassigned' => 'පවරා නොදුන් සිදුවීම්',
+    'HomeKpiOpenExceptions' => 'ව්‍යතිරේක විවෘත කරන්න',
+    'HomeKpiPolicies' => 'පිලිවෙත්',
+    'ResolutionTargets' => 'විභේදන ඉලක්ක (දින)',
+    'ResolutionTargetsHelp' => 'සිදුවීමක් කල් ඉකුත් වූවක් ලෙස ගණන් ගැනීමට පෙර විවෘතව පැවතිය හැකි දින ගණන.',
+    'DefaultTarget' => 'පෙරනිමිය',
+    'PerSeverityOverrideHelp' => 'නිශ්චිත බරපතලකම් සඳහා පෙරනිමිය විකල්ප වශයෙන් අභිබවා යන්න (පෙරනිමිය භාවිතා කිරීමට හිස්ව තබන්න):',
+    'ResolutionTargetUsesDefault' => 'පෙරනිමිය (%d)',
+    'SeverityColors' => 'බරපතලකම වර්ණ',
+    'SeverityColorsHelp' => 'සිදුවීම් උපකරණ පුවරුවේ සහ සිදුවීම් විස්තර පිටුවේ දක්වා ඇති එක් එක් බරපතලකම සඳහා වර්ණය.',
+    'Editing' => 'සංස්කරණය කිරීම',
+    'SetAsDefaultForEveryone' => 'සියලු දෙනාටම පෙරනිමිය ලෙස සකසන්න',
+    'EditLayoutHint' => 'චලනය කිරීමට ටයිල් එකක් අදින්න · ප්‍රමාණය වෙනස් කිරීමට දාරයක් අදින්න · ඉවත් කිරීමට ✕',
+    'RemoveWidget' => 'විජට් ඉවත් කරන්න',
+    'AddWidget' => 'විජට් එකක් එක් කරන්න',
+    'AddToDashboard' => 'උපකරණ පුවරුවට එක් කරන්න',
+    'AllWidgetsAdded' => 'ලබා ගත හැකි සියලුම විජට් මෙම උපකරණ පුවරුවේ ඇත.',
+    'AddText' => 'පෙළ එක් කරන්න',
+    'GettingStarted' => 'ඇරඹේ',
+    'GettingStartedTitle' => 'SimpleRisk වෙත සාදරයෙන් පිළිගනිමු',
+    'GettingStartedSubtitle' => 'SimpleRisk වලින් උපරිම ප්‍රයෝජන ගැනීමට ඉක්මන් පියවර කිහිපයක්.',
+    'GSProgressCount' => '{done} න් {total} සම්පූර්ණයි',
+    'GSNextUp' => 'ඊළඟට',
+    'GSArea_setup' => 'සැලසුම',
+    'GSArea_risk' => 'අවදානම්',
+    'GSArea_assessment' => 'තක්සේරුව',
+    'GSArea_compliance' => 'අනුකූල',
+    'GSArea_assets' => 'වත්කම්',
+    'GSArea_ai' => 'සැලසුම',
+    'GSHide' => 'ආරම්භ කිරීම සඟවන්න',
+    'GSDismissStep' => 'මෙම පියවර ඉවතලන්න',
+    'GSAllSet' => 'ඔයා ඔක්කොම සූදානම් — හොඳ වැඩක්!',
+    'GSWalkthrough' => 'මිනිත්තු 30 ක ඇවිදීමේ මාර්ගය',
+    'Explore' => 'ගවේෂණය කරන්න',
+    'Learn' => 'ඉගෙන ගන්න',
+    'AdminGuide' => 'පරිපාලන මාර්ගෝපදේශය',
+    'LearnMore' => 'තවත් හදාරන්න',
+    'GSRegisterTitle' => 'ඔබේ අවස්ථාව ලියාපදිංචි කරන්න',
+    'GSRegisterDesc' => 'ඔබගේ බලපත්‍ර යතුර සමඟ සහාය සහ යාවත්කාලීන කිරීම් සක්‍රිය කරන්න.',
+    'GSRegisterCta' => 'ලියාපදිංචි වන්න',
+    'GSScfTitle' => 'ආරක්ෂිත පාලන රාමුව ස්ථාපනය කරන්න',
+    'GSScfDesc' => 'SCF ස්ථාපනය කරන්න — ප්‍රමිතීන් හරහා ඔබේ පාලන පුස්තකාලය.',
+    'GSScfCta' => 'SCF ස්ථාපනය කරන්න',
+    'GSInviteTitle' => 'ඔබේ කණ්ඩායමට ආරාධනා කරන්න',
+    'GSInviteDesc' => 'වැඩ පැවරීමට සහ සමාලෝචනය කිරීමට හැකි වන පරිදි සගයන් එක් කරන්න.',
+    'GSInviteCta' => 'පරිශීලකයින් එක් කරන්න',
+    'GSAiTitle' => 'AI වින්‍යාස කරන්න',
+    'GSAiDesc' => 'කෘත්‍රිම බුද්ධිය සමඟින් ඔබේ සරල අවදානම් අත්දැකීම වැඩි දියුණු කරගන්න.',
+    'GSAiCta' => 'AI සකසන්න',
+    'GSSubmitRiskTitle' => 'ඔබේ පළමු අවදානම ඉදිරිපත් කරන්න.',
+    'GSSubmitRiskDesc' => 'ඔබේ සංවිධානය මුහුණ දෙන අවදානමක් ග්‍රහණය කරගන්න.',
+    'GSSubmitRiskCta' => 'අවදානම ඉදිරිපත් කරන්න',
+    'GSMitigateTitle' => 'අවම කිරීමක් සැලසුම් කරන්න',
+    'GSMitigateDesc' => 'විවෘත අවදානමකට අවම කිරීමේ සැලැස්මක් එක් කරන්න.',
+    'GSMitigateCta' => 'සැලසුම් අවම කිරීම',
+    'GSReviewTitle' => 'අවදානම් සමාලෝචනයක් සිදු කරන්න',
+    'GSReviewDesc' => 'අවදානමක් සමාලෝචනය කර එහි ඊළඟ පියවර තීරණය කරන්න.',
+    'GSReviewCta' => 'සමාලෝචනය සිදු කරන්න',
+    'GSDefineTestTitle' => 'පාලන පරීක්ෂණයක් නිර්වචනය කරන්න',
+    'GSDefineTestDesc' => 'පාලකයක් පරීක්ෂා කරන ආකාරය සකසන්න.',
+    'GSDefineTestCta' => 'පරීක්ෂණය නිර්වචනය කරන්න',
+    'GSInitiateAuditTitle' => 'විගණනයක් ආරම්භ කරන්න',
+    'GSInitiateAuditDesc' => 'පරීක්ෂණ හෝ විගණන චක්‍රයක් ආරම්භ කරන්න.',
+    'GSInitiateAuditCta' => 'විගණනය ආරම්භ කරන්න',
+    'GSAssetTitle' => 'ඔබේ වත්කම් එකතු කරන්න',
+    'GSAssetDesc' => 'ඔබ ආරක්ෂා කරන වත්කම් ඉන්වෙන්ටරි කරන්න.',
+    'GSAssetCta' => 'වත්කම් එකතු කරන්න',
+    'GSInvalidStep' => 'වලංගු නොවන ආරම්භක පියවර.',
+    'GSPagerLabel' => '{from}–{to} න් {total}',
+    'GSPrevCards' => 'පෙර පියවර පෙන්වන්න',
+    'GSNextCards' => 'ඊළඟ පියවර පෙන්වන්න',
+    'WhatsNextInstallSCF' => 'ආරක්ෂිත පාලන රාමුව ස්ථාපනය කරන්න',
+    'GSActivateScfTitle' => 'ආරක්ෂිත පාලන රාමුව සක්‍රිය කරන්න',
+    'GSActivateScfDesc' => 'ස්ථාපිත SCF ක්‍රියාත්මක කර එහි පාලන ඔබේ පුස්තකාලයට පූරණය කරන්න.',
+    'GSActivateScfCta' => 'SCF සක්‍රිය කරන්න',
+    'WhatsNextActivateSCF' => 'ආරක්ෂිත පාලන රාමුව සක්‍රිය කරන්න',
+    'GSEnableFrameworksTitle' => 'අදාළ රාමු සක්‍රීය කරන්න',
+    'GSEnableFrameworksDesc' => 'ඔබේ සංවිධානයට අදාළ වන SCF රාමු ක්‍රියාත්මක කරන්න.',
+    'GSEnableFrameworksCta' => 'රාමු සක්‍රීය කරන්න',
+    'WhatsNextEnableFrameworks' => 'අදාළ රාමු සක්‍රීය කරන්න',
+    'GSSelfAssessTitle' => 'ස්වයං තක්සේරුවක් කරන්න',
+    'GSSelfAssessDesc' => '250+ රාමු වලට එරෙහිව ඔබේ සංවිධානය ඇගයීමට ලක් කර අසාර්ථක පාලනයන්ගෙන් අවදානම් ජනනය කරන්න.',
+    'GSSelfAssessCta' => 'තක්සේරුව ආරම්භ කරන්න',
+    'WhatsNextTakeSelfAssessment' => 'ස්වයං තක්සේරුවක් කරන්න',
+    'WhatsNextConfigureAI' => 'AI වින්‍යාස කරන්න',
+    'ListUnreviewedRisks' => 'සමාලෝචනය නොකළ අවදානම්',
+    'ControlsByDomain' => 'වසම අනුව පාලනයන්',
+    'ControlsByClass' => 'පන්තිය අනුව පාලනයන්',
+    'ControlsByPhase' => 'අදියර අනුව පාලනයන්',
+    'ControlsByPriority' => 'ප්‍රමුඛතාවය අනුව පාලනයන්',
+    'ControlsByCurrentMaturity' => 'වත්මන් පරිණතභාවය අනුව පාලනයන්',
+    'ControlStatusOverTime' => 'කාලයත් සමඟ පාලන තත්ත්වය',
+    'ComplianceTotalControls' => 'මුළු පාලනයන්',
+    'HomeKpiOverdueTests' => 'කල් ඉකුත් වූ පරීක්ෂණ',
+    'Total' => 'සමස්ත',
+    'StartTheTest' => 'පරීක්ෂණය ආරම්භ කරන්න',
+    'TestStartsAutomatically' => 'පරීක්ෂණය ස්වයංක්‍රීයව ආරම්භ වේ',
+    'GoToTest' => 'පරීක්ෂණයට යන්න',
+    'NotTested' => 'පරීක්ෂා කර නැත',
+    'PassingPercent' => 'සමත් %',
+    'ListFailingControls' => 'අසාර්ථක පාලන',
+    'Exceptions' => 'ව්‍යතිරේක',
+    'Documents' => 'ලේඛන',
+    'ControlsBelowMaturity' => 'පරිණතභාවයට වඩා අඩු පාලනයන්',
+    'ControlsAtMaturity' => 'පරිණතභාවයේ දී පාලනයන්',
+    'ControlsAboveMaturity' => 'පරිණතභාවයට වඩා ඉහළ පාලන',
+    'Maturity' => 'පරිණතභාවය',
+    'AllTime' => 'සියලු කාලය',
+    'Last7Days' => 'පසුගිය දින 7',
+    'Last30Days' => 'පසුගිය දින 30',
+    'Last90Days' => 'පසුගිය දින 90',
+    'YearToDate' => 'ඉයර් ටු ඩේට්',
+    'CustomRange' => 'අභිරුචි පරාසය',
+    'Age' => 'වයස',
+    'ImOpenIncidents' => 'විවෘත සිදුවීම්',
+    'ImClosedIncidents' => 'වසා දැමූ සිදුවීම්',
+    'ImByAttackVector' => 'Attack Vector මගින් විවෘත කරන්න',
+    'ImBySource' => 'මූලාශ්‍රය අනුව විවෘත කරන්න',
+    'AverageDaysToDetect' => 'හඳුනා ගැනීමට සාමාන්‍ය දින',
+    'ImKpiAvgTtd' => 'සාමාන්‍ය අනාවරණය',
+    'Days' => 'දින',
+    'ImKpiCriticalOpen' => 'තීරණාත්මක විවෘත',
+    'ImKpiResolvedInSla' => 'SLA හි විසඳා ඇත',
+    'Events' => 'සිදුවීම්',
+    'ImEventsIncidents' => 'සිදුවීම් සහ සිදුවීම්',
+    'ImSourceBreakdown' => 'ප්‍රවර්ගය අනුව මූලාශ්‍රය',
+    'ImClosureSummary' => 'වසා දැමීමේ සාරාංශය',
+    'ImSignalQuality' => 'සංඥා ගුණාත්මකභාවය',
+    'ImSignalLowSample' => 'විශ්වාසදායක ලෙස ශ්‍රේණිගත කිරීමට ප්‍රමාණවත් තරම් විනිශ්චය කරන ලද වසා දැමීම් නොමැත.',
+    'ImportExportExportPdf' => 'PDF අපනයනය කරන්න',
+    'ImportExportExporting' => 'PDF… සකස් කරමින්',
+    'ImportExportExportFailed' => 'PDF ජනනය කිරීමට නොහැකි විය. කරුණාකර නැවත උත්සාහ කරන්න.',
+    'ImportExportGeneratedOn' => 'ජනනය කරන ලදී',
+    'ImportExportPage' => 'පිටුව',
+    'ImportExportPageOf' => 'වල',
+    'ResolutionTargetsUpdated' => 'දැඩි උත්සාහය විසඳීමේ ඉලක්ක යාවත්කාලීන කරන ලදී.',
+    'SeverityColorsUpdated' => 'බරපතලකමේ වර්ණ යාවත්කාලීන කරන ලදී.',
+    // AI Capabilities Catalog + AI settings hub (unified AI settings)
+    'AICapGrcRecommendations' => 'GRC රාමු නිර්දේශ',
+    'AICapGrcRecommendationsDesc' => 'AI-ජනනය කරන ලද රාමු නිර්දේශ සහ ඔබේ සංවිධානයේ සන්දර්භයට ගැලපෙන විධායක සාරාංශයක්.',
+    'AICapRiskRecommendations' => 'අවදානම් නිර්දේශ',
+    'AICapRiskRecommendationsDesc' => 'අවදානම, එහි අවම කිරීම සහ සමාලෝචනයෙන් ජනනය වන අවදානම් විස්තර සහ අවම කිරීම සඳහා එක් එක් අවදානම් යෝජනා.',
+    'AICapFairAnalysis' => 'FAIR ප්‍රමාණාත්මක විශ්ලේෂණය',
+    'AICapFairAnalysisDesc' => 'AI බීටා-PERT අලාභ පරාමිතීන් ඇස්තමේන්තු කරයි; සිම්පල් රිස්ක් ඩොලර් වලින් අවදානම ප්‍රමාණනය කිරීම සඳහා 10,000-පුනරාවර්තන මොන්ටේ කාලෝ ක්‍රියාත්මක කරයි.',
+    'AICapDocumentCustomization' => 'ලේඛන අභිරුචිකරණය',
+    'AICapDocumentCustomizationDesc' => 'බොයිලර්ප්ලේට් ප්‍රතිපත්තියක් ඔබගේ ලෙස කියවෙන පරිදි ඔබේ ලේඛන සැකිලිවල ස්ථාන දරන්නන් පුරවා ප්‍රතිපත්ති පෙළ පිරිසිදු කරයි.',
+    'AICapDocumentControlMatching' => 'ලේඛනය ↔ ගැලපීම පාලනය කරන්න',
+    'AICapDocumentControlMatchingDesc' => 'විශ්වාසනීය ලකුණු සහ ඔබට සමාලෝචනය කළ හැකි තර්කනය සමඟ ප්‍රතිපත්ති ලේඛනවලට පාලන ස්වයංක්‍රීයව සිතියම්ගත කරයි.',
+    'AICapDocumentTemplates' => 'ලේඛන සැකිලි පුස්තකාලය',
+    'AICapDocumentTemplatesDesc' => 'SimpleRisk පුස්තකාලයෙන් තෝරාගත් ප්‍රතිපත්ති, මාර්ගෝපදේශ සහ ක්‍රියා පටිපාටි සැකිලි ස්ථාපනය කරන්න.',
+    'AICapControlReferenceEnhancement' => 'පාලන යොමු වැඩිදියුණු කිරීම',
+    'AICapControlReferenceEnhancementDesc' => 'ඔබගේ පාලන යොමු පොහොසත් කිරීම සඳහා වෙබ් සෙවුම හරහා වාචික පාලන පෙළ පර්යේෂණ කරයි.',
+    'AICapAiChat' => 'කතාබස් සහායක',
+    'AICapAiChatDesc' => 'SimpleRisk හි ඕනෑම තැනක සන්දර්භය තුළ ප්‍රශ්නවලට පිළිතුරු සපයන GRC සහායකයෙක්.',
+    'AICapSurfacedRecommendations' => 'කෘත්‍රිම බුද්ධි පිටුව',
+    'AICapSurfacedRiskView' => 'අවදානම් දැක්ම — විස්තර සහ අවම කිරීම',
+    'AICapSurfacedFairTab' => 'අවදානම් දසුන — FAIR ටැබය',
+    'AICapSurfacedDocuments' => 'පාලනය — ලේඛන',
+    'AICapSurfacedControls' => 'අනුකූලතාව — පාලනයන්',
+    'AICapSurfacedEveryPage' => 'සෑම පිටුවක්ම — පාවෙන සහායක',
+    'AICapabilitiesCatalog' => 'හැකියාවන්',
+    'AICapSearchPlaceholder' => 'AI හැකියාවන් සොයන්න…',
+    'AICapFilterDomain' => 'වසම',
+    'AICapFilterTier' => 'ස්ථරය',
+    'AICapFilterState' => 'රජයේ',
+    'AICapTierExtra' => 'AI අමතර',
+    'AICapStateLocked' => 'අගුළු දමා ඇත',
+    'AICapIncludedInExtra' => 'AI අමතර කොටසට ඇතුළත් කර ඇත',
+    'AICapPurchaseExtra' => 'AI අමතර මිලදී ගන්න',
+    'AICapNeedsProvider' => 'සැපයුම්කරු සැකසුම අවශ්‍යයි',
+    'AICapNoMatch' => 'කිසිදු හැකියාවක් ගැලපෙන්නේ නැත',
+    'AICapNoMatchHint' => 'වෙනස් වසමක්, ස්ථරයක් හෝ සෙවුම් පදයක් උත්සාහ කරන්න.',
+    'AICapCountSingular' => 'හැකියාව',
+    'AICapCountPlural' => 'හැකියාවන්',
+    'DomainAssistant' => 'සහකාර',
+    'AICapLoadError' => 'AI හැකියාවන් පූරණය කළ නොහැකි විය. කරුණාකර නැවත උත්සාහ කරන්න.',
+    'AIProviderConfigSubtitle' => 'AI හැකියාවන් බල ගැන්වීම සඳහා SimpleRisk AI සැපයුම්කරුවෙකු සමඟ සම්බන්ධ කරන්න.',
+    'AIHowToGetAPIKeyFor' => 'API යතුරක් ලබා ගන්නේ කෙසේද?',
+    'AIExtraNotActivated' => 'සක්‍රිය කර නැත',
+    'AIExtraValueProp' => 'වැඩිදියුණු කළ AI — FAIR අවදානම් ප්‍රමාණනය, ලේඛන සහ පාලන සහාය, සහ AI කතාබස් සහායක.',
+    'AICtxOrgName' => 'ඔබේ සංවිධානයේ නම කුමක්ද?',
+    'AICtxOrgSizeEmployees' => 'ඔබේ සංවිධානයේ සේවකයින් කී දෙනෙක් සිටීද?',
+    'AICtxOrgSizeRevenue' => 'ඔබේ සංවිධානයේ වාර්ෂික ආදායම කොපමණද?',
+    'AICtxOrgObjective' => 'ඔබේ සංවිධානයේ ප්‍රාථමික ව්‍යාපාරික අරමුණු සහ උපායමාර්ගික ඉලක්ක මොනවාද?',
+    'AICtxOrgIndustry' => 'ඔබේ සංවිධානයේ ප්‍රාථමික කර්මාන්තය හෝ අංශය කුමක්ද?',
+    'AICtxOrgLocation' => 'ඔබේ සංවිධානය ක්‍රියාත්මක වන්නේ කුමන රටවල හෝ කලාපවලද?',
+    'AICtxOrgType' => 'ඔබ කුමන ආකාරයේ සංවිධානයක්ද?',
+    'AICtxDataTypes' => 'ඔබේ සංවිධානය රැස් කරන්නේ, සකසන්නේ හෝ ගබඩා කරන්නේ කුමන ආකාරයේ දත්තද (උදා: පුද්ගලික දත්ත, මූල්‍ය දත්ත, සෞඛ්‍ය තොරතුරු)?',
+    'AICtxDataCustomers' => 'ඔබේ ප්‍රාථමික ගනුදෙනුකරුවන් හෝ කොටස්කරුවන් කවුද (උදා: පාරිභෝගිකයින්, ව්‍යාපාර, රජයේ ආයතන)?',
+    'AICtxDataRegulatory' => 'ඔබේ කර්මාන්තයේ කිසියම් නිශ්චිත නියාමන අවශ්‍යතාවයන්ට ඔබ යටත්ද?',
+    'AICtxDataThirdParties' => 'අනුකූලතා අධීක්ෂණය අවශ්‍ය කරන තෙවන පාර්ශවීය සම්බන්ධතා හෝ බාහිරින් ලබාගත් සේවාවන් ඔබට තිබේද?',
+    'AICtxMaturityIssues' => 'පසුගිය වසර 3-5 තුළ ඔබට කිසියම් සැලකිය යුතු අනුකූලතා ගැටළු, ආරක්ෂක කඩකිරීම් හෝ අවදානම් සිදුවීම් අත්විඳ තිබේද?',
+    'AICtxMaturityConcerns' => 'ඔබගේ වත්මන් සහන යෝජනා ක්‍රම ක්‍රියාවලීන් තුළ ඔබ හඳුනාගෙන ඇති කිසියම් විශේෂිත සැලකිලිමත් විය යුතු හෝ වැඩිදියුණු කළ යුතු ක්ෂේත්‍ර තිබේද?',
+    'AICtxMaturityAppetite' => 'ඔබේ සංවිධානයේ අවදානම් රුචිය සහ ඉවසීමේ හැකියාව කුමක්ද?',
+    'AICtxMaturityLevel' => 'පාලනය, අවදානම් කළමනාකරණය සහ අනුකූලතා පිළිවෙත් අනුව ඔබේ වර්තමාන පරිණත මට්ටම කුමක්ද?',
+    'AICtxImplementationChanges' => 'ඔබේ ව්‍යාපාර ආකෘතියේ, තාක්ෂණ යටිතල පහසුකම්වල හෝ වෙළඳපොළේ ඉදිරියේදී සිදුවීමට නියමිත වෙනස්කම් මොනවාද, ඒවා ඔබේ අනුකූලතා අවශ්‍යතාවලට බලපෑ හැකිද?',
+    'AICtxImplementationResourcesBudget' => 'අනුකූලතා රාමු ක්‍රියාත්මක කිරීම සහ පවත්වාගෙන යාම සඳහා ඔබ සතුව ඇති අයවැය ප්‍රතිපාදන සම්පත් මොනවාද?',
+    'AICtxImplementationResourcesPersonnel' => 'අනුකූලතා රාමු ක්‍රියාත්මක කිරීම සහ පවත්වාගෙන යාම සඳහා ඔබ සතුව ඇති පිරිස් සම්පත් මොනවාද?',
+    'AICtxImplementationResourcesTechnology' => 'අනුකූලතා රාමු ක්‍රියාත්මක කිරීම සහ පවත්වාගෙන යාම සඳහා ඔබ සතුව ඇති තාක්ෂණික යටිතල පහසුකම් සම්පත් මොනවාද?',
+    'AICtxImplementationResourcesTraining' => 'අනුකූලතා රාමු ක්‍රියාත්මක කිරීම සහ පවත්වාගෙන යාම සඳහා ඔබ සතුව ඇති පුහුණු සහ සංවර්ධන සම්පත් මොනවාද?',
+    'AICtxImplementationResourcesExternal' => 'අනුකූලතා රාමු ක්‍රියාත්මක කිරීම සහ පවත්වාගෙන යාම සඳහා ඔබට ඇති බාහිර සහාය සම්පත් මොනවාද?',
+    'AIAPIKeySecurityNote' => 'ඔබගේ යතුර සේවාදායක පැත්තේ ගබඩා කර ඇති අතර කිසි විටෙකත් බ්‍රව්සරයට ආපසු නොඑනු ඇත. සැපයුම්කරු URL, config.php ගොනුවේ වින්‍යාසගත කළ හැකි SSRF අවසර ලැයිස්තුවකට එරෙහිව වලංගු වේ.',
+    'AIContextEgressWarning' => 'ඔබේ පිළිතුරු ඔබේ වින්‍යාස කරන ලද AI සැපයුම්කරු වෙත යවනු ලබන්නේ එහි නිර්දේශ පදනම් කර ගැනීම සඳහා ය. ඔබ ඔවුන් සමඟ බෙදා නොගන්නා කිසිවක් ඇතුළත් නොකරන්න.',
+    'Provider' => 'සපයන්නා',
+    'AIProviderURLHostNotAllowed' => '"%s" සත්කාරකය AI සපයන්නාගේ අවසර ලැයිස්තුවේ නොමැත. එය config.php හි $ai_allowed_provider_hosts වෙත එකතු කර සුරකින්න. (දන්නා AI සපයන්නන් සහ 127.0.0.1 ලූප්බැක් ලිපින සැමවිටම අවසර දෙනු ලැබේ.)',
+    'AIContextLastSaved' => 'අවසන් වරට සුරකින ලද්දේ',
+    'AIContextNeverSaved' => 'තවම සුරැකී නැත.',
+    'AICtxCardSubtitle' => 'ක්ෂේත්‍ර හතරක් හරහා ප්‍රශ්න 21ක්. ඔබ වැඩි වැඩියෙන් පිළිතුරු දෙන තරමට, සෑම නිර්දේශයක්ම තියුණු වේ.',
+    'AICtxAnswered' => '%1$d න් %2$d පිළිතුරු දුන්',
+    'AICtxAllOptional' => 'විකල්ප',
+    'AIContextSaving' => '… සුරකිමින්',
+    'AIContextSaveFailed' => 'ඔබගේ වෙනස්කම් සුරැකීමට නොහැකි විය. කරුණාකර නැවත උත්සාහ කරන්න.',
+    'AISettingsSavedNotReachable' => 'AI සැකසුම් සුරකින ලදී, නමුත් සැපයුම්කරු වෙත ළඟා වීමට නොහැකි විය. එය ක්‍රියාත්මක වන බවත් URL නිවැරදි බවත් සහතික කර ගන්න.',
+    'AISettingsSavedKeyRequired' => 'AI සැකසුම් සුරකින ලදී, නමුත් මෙම සැපයුම්කරුට එහි විශේෂාංග භාවිතා කිරීමට පෙර API යතුරක් අවශ්‍ය වේ.',
+    'TestAndSave' => 'පරීක්ෂා කර සුරකින්න',
+    'AICapEnableAll' => 'සියල්ල සබල කරන්න',
+    'AICapDisableAll' => 'සියල්ල අබල කරන්න',
+    'AISettingsSavedConnected' => 'AI සැකසුම් සුරකින ලදී — සම්බන්ධතාවය සාර්ථකයි.',
+    'AISettingsSavedNotConnected' => 'AI සැකසුම් සුරකින ලදී, නමුත් සම්බන්ධතා පරීක්ෂණය අසාර්ථක විය. ආකෘතිය, යතුර සහ URL එක පරීක්ෂා කරන්න.',
+    'AIProviderURLNotOnAllowlist' => 'මෙම සත්කාරකය AI සපයන්නාගේ SSRF අවසර ලැයිස්තුවේ නොමැත. එය සුරැකීමට පෙර config.php හි $ai_allowed_provider_hosts වෙත එක් කරන්න.',
+    'Connected' => 'සම්බන්ධයි',
+    'NotConnected' => 'සම්බන්ධ නැත',
+    'AICapBulkError' => 'සමහර හැකියාවන් යාවත්කාලීන කළ නොහැකි විය. කරුණාකර නැවත උත්සාහ කරන්න.',
+    'QuestionnaireAlreadyCompleted' => 'මෙම ප්‍රශ්නාවලිය දැනටමත් සම්පූර්ණ කර ඇත.',
+    'QuestionnaireDraftError' => 'කෙටුම්පත සුරැකීමේ දෝෂයකි. විස්තර සඳහා කොන්සෝලය බලන්න.',
+
+    // Audit cadence scheduling - Define Test modal (Interval/Calendar schedule redesign)
+    // 'Overdue' duplicates the English of 'ImKpiOverdue' on purpose: that key is
+    // an Incident Management KPI label, and a compliance status pill reusing an
+    // IM-scoped key would couple the two domains for a translator (and break the
+    // moment either wording moves). This is the generic, cross-domain one.
+    'Overdue' => 'කල් ඉකුත් වූ',
+    // Deliberate: the only other key rendering 'Manual' is 'ManualValuation',
+    // an asset-valuation label. Pointing a schedule mode at it would couple two
+    // unrelated domains for translators and break the moment either reworded.
+    'ScheduleManual' => 'අත්පොත',
+    'ScheduleInterval' => 'පරතරය',
+    'ScheduleCalendar' => 'දින දර්ශනය',
+    'Cadence' => 'අවරෝහය',
+    'CadenceBiweekly' => 'සති දෙකකට වරක්',
+    'CadenceSemiAnnually' => 'අර්ධ වාර්ෂිකව',
+    'AnchorDate' => 'නැංගුරම් දිනය',
+    'UpcomingOccurrences' => 'ඉදිරියේදී සිදුවීමට නියමිත සිදුවීම්',
+    'AuditLeadInDays' => 'විගණන ප්‍රමුඛ දින',
+    'SkipOccurrence' => 'මඟ හරින්න',
+    'OverrideDate' => 'අභිබවා යන දිනය',
+    'Week' => 'සතිය',
+    'NoUpcomingOccurrences' => 'මෙම කවුළුව තුළ ඉදිරියේදී සිදුවීමට නියමිත සිදුවීම් නොමැත.',
+    'FailedToLoadUpcomingOccurrences' => 'ඉදිරි සිදුවීම් පෙරදසුන පූරණය කිරීමට අසමත් විය.',
+    'AnchorDateMustBeTodayOrLater' => 'නැංගුරම් දිනය අද හෝ ඊට පසු විය යුතුය. අතීත දිනයක් කාලසටහන්ගත කිරීමට, ඒ වෙනුවට අතින් පරීක්ෂණයක් සාදන්න.',
+    'InvalidScheduleType' => 'වලංගු නොවන කාලසටහන් වර්ගය. අවසර ලත් අගයන්: අතින්, පරතරය, දින දර්ශනය.',
+    'Weeks' => 'සති',
+    'Months' => 'මාස',
+    'Years' => 'අවුරුදු',
+    'ScheduleSummaryEvery' => 'සෑම {$interval} {$unit}',
+
+    // Define Tests redesign - client-rendered grid (Phase 1, Task 6)
+    'LastResult' => 'අවසාන ප්‍රතිඵලය',
+    'NextDue' => 'ඊළඟ නියමිත දිනය',
+    'DueSoon' => 'ඉක්මනින් නියමිතයි',
+    'Retired' => 'විශ්‍රාමික',
+    'MyTests' => 'මගේ පරීක්ෂණ',
+    'Failing' => 'අසමත් වීම',
+    'Untested' => 'පරීක්ෂා නොකළ',
+    'ShowRetired' => 'විශ්‍රාමික පෙන්වන්න',
+    'Tests' => 'පරීක්ෂණ',
+    'NoTestsForThisControl' => 'මෙම පාලනය සඳහා තවමත් පරීක්ෂණ නොමැත.',
+    'NoControlsDefinedYet' => 'තවමත් පාලනයන් අර්ථ දක්වා නැත.',
+    'NoControlsDefinedYetBody' => 'පරීක්ෂණ එකතු කිරීමට පෙර පාලනයේ පාලනයන් නිර්වචනය කරන්න.',
+    'NoTestsMatchFilters' => 'ඔබගේ පෙරහන් වලට ගැලපෙන පරීක්ෂණ නොමැත.',
+    'NoTestsMatchFiltersBody' => 'ඔබගේ සෙවීම හෝ පෙරහන් සීරුමාරු කිරීමට උත්සාහ කරන්න.',
+    'CouldNotLoadTests' => 'පරීක්ෂණ පූරණය කළ නොහැකි විය.',
+    'CouldNotLoadTestsBody' => 'යමක් වැරදී ඇත. ඔබගේ දත්ත ආරක්ෂිතයි — නැවුම් කිරීමට උත්සාහ කරන්න.',
+    'ShowingXToYOfZ' => '{$start}–{$end} න් {$total} පෙන්වයි',
+    // Define Tests grid -- SCF-mapping + read-only procedure expand (Phase 1, Task 7)
+    'Reference' => 'යොමුව',
+    'NoFrameworksMapped' => 'මෙම පාලනයට කිසිදු රාමුවක් සිතියම්ගත කර නොමැත.',
+    // Define Tests grid -- batch select + retire/delete + quick filters (Phase 1, Task 8)
+    'Retire' => 'විශ්‍රාම යන්න',
+    'ReassignTester' => 'පරීක්ෂක නැවත පවරන්න',
+    'SetSchedule' => 'කාලසටහන සකසන්න',
+    'ConfirmRetireSelectedTests' => '{n} තෝරාගත් පරීක්ෂණ(ය) විශ්‍රාම ගන්නද?',
+    'ConfirmDeleteSelectedTests' => '{n} තෝරාගත් පරීක්ෂණ(ය) මකන්නද? මෙය අහෝසි කළ නොහැක.',
+    // Define Tests grid -- Coverage toolbar select (Issue 4)
+    'Coverage' => 'ආවරණය',
+    'CoverageWithTests' => 'පරීක්ෂණ සමඟ පාලනයන්',
+    'CoverageAllControls' => 'සියලු පාලන',
+    'CoverageGaps' => 'හිඩැස්',
+    // Define Tests insights band (Phase 2, Task 4) -- KPI tile labels + subtitles.
+    // 'Overdue', 'DueSoon', and 'Failing' are reused from the grid's quick-filter
+    // chips above (identical text) rather than duplicated here.
+    'DtTotalTests' => 'මුළු පරීක්ෂණ',
+    'DtCoverageGaps' => 'ආවරණ හිඩැස්',
+    'DtAcrossNControls' => '{$n} පාලන හරහා',
+    'DtControlsWithNoTest' => 'පරීක්ෂණයක් නොමැතිව පාලනයන්',
+    'DtNeedInitiationNow' => 'දැන් ආරම්භය අවශ්‍යයි',
+    'DtWithinLeadInWindow' => 'ඊයම් කවුළුව තුළ',
+    'DtLastResultFailed' => 'අවසාන ප්‍රතිඵලය අසාර්ථක විය.',
+    'InvalidTestMethod' => 'පරීක්ෂණ ක්‍රමය විමසීම, නිරීක්ෂණය, පරීක්ෂාව හෝ නැවත ක්‍රියාත්මක කිරීම යන ක්‍රමවලින් එකක් විය යුතුය!',
+    'TesterCannotBeApprover' => 'මෙම පරීක්ෂණය සඳහා පරීක්ෂකයා අනුමත කරන්නෙකු ලෙස ලැයිස්තුගත කළ නොහැක.',
+    'ApproverNotEligible' => 'තෝරාගත් අනුමත කරන්නන් එක් අයෙකුට හෝ වැඩි ගණනකට "පරීක්ෂණ අනුමත කිරීමේ" වගකීම නොමැත.',
+    'TestMethod' => 'පරීක්ෂණ ක්‍රමය',
+    'TestMethodInquiry' => 'පරීක්ෂණයක්',
+    'TestMethodObservation' => 'නිරීක්ෂණය',
+    'TestMethodInspection' => 'පරීක්ෂාව',
+    'TestMethodReperformance' => 'නැවත කාර්ය සාධනය',
+    'Sample' => 'නියැදිය',
+    'RequiredEvidence' => 'අවශ්‍ය සාක්ෂි',
+    'Approvers' => 'අනුමත කරන්නන්',
+    'AuditLog_TestAuditApproved' => '"{$test_audit_name}" (ID: {$test_audit_id}) "{$user_name}" පරිශීලකයා විසින් විගණනය අනුමත කරන ලදී.',
+    'AuditLog_TestAuditRejected' => '"{$test_audit_name}" විගණනය "(ID: {$test_audit_id}) පරිශීලකයා විසින් "{$user_name}" "{$comment}" අදහස සමඟ ප්‍රතික්ෂේප කරන ලදී.',
+    'AuditLog_TestAuditAwaitingApproval' => '"{$test_audit_name}" (ID: {$test_audit_id}) "{$user_name}" පරිශීලකයා විසින් වසා දැමීම සඳහා ඉදිරිපත් කරන ලද අතර අනුමැතිය බලාපොරොත්තුවෙන් සිටී. වෙනස්කම්: {$changes}.',
+    'AuditApproved' => 'විගණනය සාර්ථකව අනුමත කරන ලදී.',
+    'AuditRejected' => 'විගණනය සාර්ථකව ප්‍රතික්ෂේප කරන ලදී.',
+    'RejectCommentRequired' => 'විගණනයක් ප්‍රතික්ෂේප කිරීමට අදහස් දැක්වීමක් අවශ්‍ය වේ.',
+    'NotAnApproverOfThisAudit' => 'ඔබ මෙම විගණනය සඳහා වින්‍යාස කරන ලද අනුමත කරන්නෙකු නොවේ.',
+    'ApproverCannotBeTester' => 'අනුමත කරන්නාට මෙම විගණනයේ පරීක්ෂකයා ද විය නොහැක.',
+    'AuditNotAwaitingApproval' => 'මෙම විගණනය දැනට අනුමැතිය බලාපොරොත්තුවෙන් නොමැත.',
+    'NotificationAuditAwaitingApprovalTitle' => 'විගණනය ඔබගේ අනුමැතිය බලාපොරොත්තුවෙන් සිටී',
+    'NotificationAuditAwaitingApprovalBody' => '"{$test_audit_name}" විගණනය වසා දැමීම සඳහා ඉදිරිපත් කර ඇති අතර ඔබගේ අනුමැතිය බලාපොරොත්තුවෙන් සිටී.',
+    'NotificationAuditRejectedTitle' => 'විගණනය ප්‍රතික්ෂේප කරන ලදී',
+    'NotificationAuditRejectedBody' => '"{$test_audit_name}" විගණනය "{$comment}" යන අදහස සමඟ ප්‍රතික්ෂේප කරන ලදී.',
+    'AwaitingApproval' => 'අනුමැතිය බලාපොරොත්තුවෙන්',
+    'AwaitingApprovalBannerText' => 'මෙම විගණනය වසා දැමීම සඳහා ඉදිරිපත් කර ඇති අතර එය වසා දැමීමට පෙර වින්‍යාසගත අනුමත කරන්නෙකුගෙන් අනුමැතිය බලාපොරොත්තුවෙන් සිටී.',
+    'ReturnedForRework' => 'නැවත වැඩ සඳහා ආපසු ලබා දෙන ලදී',
+    'ReturnedForReworkBannerText' => 'මෙම විගණනය ප්‍රතික්ෂේප කර නැවත වැඩ සඳහා ආපසු යවන ලදී.',
+    'RejectReason' => 'ප්‍රතික්ෂේප කිරීමේ හේතුව',
+    'AreYouSureYouWantToApproveThisAudit' => 'ඔබට මෙම විගණනය අනුමත කිරීමට අවශ්‍ය බව ඔබට විශ්වාසද?',
+    'AtLeastOneControlRequired' => 'අවම වශයෙන් එක් පාලනයක් අවශ්‍ය වේ.',
+    'DtNCommonAcrossNControls' => '{$common} පොදු · {$n} පාලන',
+    'DtUntestedControls' => 'පරීක්ෂා නොකළ පාලන',
+    'DtControlsInScopeNoCoverage' => 'ආවරණයක් නැත',
+    'Passing' => 'සමත් වීම',
+    'DtLastResultPassed' => 'අවසාන ප්‍රතිඵලය සමත් විය',
+    'AllFamilies' => 'සියලුම පවුල්',
+    'SearchTestsPlaceholder' => 'සෙවුම් පරීක්ෂණ, පාලන සහ රාමු',
+    'AnySchedule' => 'ඕනෑම කාලසටහනක්',
+    'AnyTag' => 'ඕනෑම ටැගයක්',
+    'AuditAutoClosedTestRetired' => 'පරීක්ෂණය විශ්‍රාම ගිය නිසා අවිනිශ්චිත ලෙස ස්වයංක්‍රීයව වසා දමන ලදී.',
+    'Common' => 'පොදු',
+    'ValidatesAcrossMappedFrameworks' => 'සිතියම්ගත කළ රාමු හරහා වලංගු කරයි',
+    'EditTest' => 'පරීක්ෂණය සංස්කරණය කරන්න',
+    'ControlHasNoTestCoverage' => 'මෙම විෂය පථය තුළ පාලනයට තවමත් පරීක්ෂණ ආවරණයක් නොමැත.',
+    'AddTheFirstTest' => 'පළමු පරීක්ෂණය එකතු කරන්න',
+    'ApplyCommonTestHint' => 'මෙම පාලනයට පවතින පරීක්ෂණ එකක් හෝ කිහිපයක් යොදන්න. සෑම පරීක්ෂණයක්ම එහි වත්මන් පාලනයන් තබා ගන්නා අතර මෙයද ආවරණය වන පොදු පරීක්ෂණයක් බවට පත්වේ.',
+    'CommonTestApplied' => 'මෙම පාලනයට පරීක්ෂණය යොදන ලදී.',
+    'CouldNotApplyCommonTest' => 'මෙම පාලනයට පරීක්ෂණය යෙදිය නොහැකි විය.',
+    'SelectOneOrMoreTests' => 'පරීක්ෂණ එකක් හෝ කිහිපයක් තෝරන්න',
+    'CommonTestsApplied' => '{n} මෙම පාලනයට යොදන ලද පරීක්ෂණ.',
+    'ApplyCommonTests' => 'පොදු පරීක්ෂණ යොදන්න…',
+    'History' => 'ඉතිහාසය',
+    'Result' => 'ප්රතිඵලය',
+    'Approval' => 'අනුමැතිය',
+    'ThisTestHasNotBeenRunYet' => 'මෙම පරීක්ෂණය තවමත් ක්‍රියාත්මක කර නොමැත.',
+    'CouldNotLoadTestHistory' => 'මෙම පරීක්ෂණ ඉතිහාසය පූරණය කළ නොහැකි විය.',
+    'Identity' => 'අනන්‍යතාවය',
+    'IdentitySectionHint' => 'නම, පරීක්ෂක සහ එය වලංගු කරන පාලනයන්',
+    'WhenTheAuditInitiates' => 'විගණනය ආරම්භ වන විට',
+    'ProcedureAndEvidence' => 'ක්‍රියා පටිපාටිය සහ සාක්ෂි',
+    'CommonTestControlsHint' => 'එක් පරීක්ෂණයකින් බොහෝ පාලනයන් වලංගු කළ හැකිය - පොදු පරීක්ෂණයකි. පාලනයක "+ පරීක්ෂණය එකතු කරන්න" වෙතින් මෙය විවෘත කිරීමෙන් එය මෙහි පූර්ව-තෝරනු ලැබේ.',
+    'SeparationOfDutiesNote' => 'රාජකාරි වෙන් කිරීම - අනුමත කරන්නෙකුට පරීක්ෂකයෙකු විය නොහැක.',
+    'CommonTestEditScopeHint' => 'මෙම පොදු පරීක්ෂණය භාවිතා කරන සෑම තැනකම වෙනස්කම් අදාළ වේ.',
+    'Mode' => 'මාදිලිය',
+    'AddOrRemove' => '… එකතු කරන්න හෝ ඉවත් කරන්න',
+    'AddOrSearchTags' => '… ටැග් එකතු කරන්න හෝ සොයන්න',
+    'CreateTagX' => '“{tag}” සාදන්න',
+    'Archived' => 'සංරක්ෂණය කරන ලදී',
+    'ShowAllTests' => 'සියලුම පරීක්ෂණ',
+    'ShowActiveTests' => 'ක්‍රියාකාරී පරීක්ෂණ',
+    'ShowRetiredTests' => 'විශ්‍රාමික පරීක්ෂණ',
+    'UntestedControls' => 'පරීක්ෂා නොකළ පාලන',
+    'OverdueByXDays' => 'කල් ඉකුත් වූ · {n} දින',
+    'OverdueByOneDay' => 'කල් ඉකුත් වූ · දින 1ක්',
+    'DueInXDays' => '{n} දින කිහිපයකින් ගෙවිය යුතුය',
+    'DueTomorrow' => 'හෙට නියමිතයි',
+    'DueToday' => 'අදට නියමිතයි',
+    'ScheduledForX' => 'කාලසටහන්ගත කර ඇත · {date}',
+    'AllTesters' => 'සියලුම පරීක්ෂකයින්',
+    'AllStatuses' => 'සියලු තත්ත්වයන්',
+    'OnTrack' => 'මාර්ගයේ',
+    'NextTestDateDerivedHint' => 'අවසාන පරීක්ෂණ දිනය සහ පරීක්ෂණ සංඛ්‍යාතය එකතු කිරීමෙන් ගණනය කෙරේ. එය ස්වයංක්‍රීයව කාලසටහන්ගත කිරීමට සංඛ්‍යාතයක් සකසන්න, නැතහොත් මෙම දිනය ඔබම සැකසීමට සංඛ්‍යාතය හිස්ව තබන්න.',
+    'DueStatus' => 'නියමිත තත්ත්වය',
+    'AllResults' => 'සියලුම ප්‍රතිඵල',
+    // Remove a test from one control (Define Tests grid unlink row action)
+    'RemoveFromThisControl' => 'මෙම පාලනයෙන් ඉවත් කරන්න',
+    'RemoveTestFromControl' => 'පාලනයෙන් පරීක්ෂණය ඉවත් කරන්න',
+    'RemoveTestFromControlConfirm' => '"{test_name}" {control_name} වෙතින් ඉවත් කරන්නද?',
+    'RemoveTestFromControlStays' => 'පරීක්ෂණය එහි {n} අනෙකුත් පාලන මත පවතී. කිසිවක් මකා නොදමනු ලැබේ.',
+    'RemoveTestFromControlStaysOne' => 'පරීක්ෂණය එහි අනෙක් 1 පාලකයේ පවතී. කිසිවක් මකා නොදමනු ලැබේ.',
+    'CannotRemoveTestsOnlyControl' => 'පරීක්ෂණයක් අවම වශයෙන් එක් පාලනයකට අයත් විය යුතුය. ඒ වෙනුවට පරීක්ෂණයෙන් ඉවත් වන්න හෝ මකන්න.',
+    'TestRemovedFromControl' => 'පරීක්ෂණය පාලනයෙන් ඉවත් කරන ලදී.',
+    'CouldNotRemoveTestFromControl' => 'පරීක්ෂණය පාලනයෙන් ඉවත් කළ නොහැකි විය.',
+    'TestRemovedFromControlAuditLogMessage' => 'Test "{$test_name}"(ID: {$test_id}) was removed from control (ID: {$control_id}) by user "{$user}".',
+    'DeleteTestUsedByNControls' => 'එය {n} පාලන මගින් භාවිතා කරන අතර ඒ සියල්ලෙන්ම ඉවත් කරනු ලැබේ.',
+    'BulkDeleteSharedTestsNote' => 'මේවායින් {n} ක් අනෙකුත් පාලකයන් විසින් භාවිතා කරන අතර ඒවායින් ද ඉවත් කරනු ලැබේ.',
+    'BulkRetireSharedTestsNote' => 'මේවායින් {n} ක් අනෙකුත් පාලකයන් විසින් භාවිතා කරනු ලබන අතර එහිදීද විශ්‍රාම ගන්වනු ලැබේ.',
+    'BulkDeleteOneSharedTestNote' => 'මේවායින් 1ක් අනෙකුත් පාලකයන් විසින් භාවිතා කරන අතර ඒවායින්ද ඉවත් කරනු ලැබේ.',
+    'BulkRetireOneSharedTestNote' => 'මෙයින් 1ක් අනෙකුත් පාලන ආයතන විසින් භාවිතා කරනු ලබන අතර එහිදීද විශ්‍රාම ගන්වනු ලැබේ.',
+    'CouldNotLoadTest' => 'මෙම පරීක්ෂණය පූරණය කළ නොහැකි විය.',
+    'Expand' => 'පුළුල් කරන්න',
+    'SearchMappings' => 'රාමු සහ යොමු සොයන්න',
+    'NoMatchingMappings' => 'එම සෙවුමට ගැලපෙන සිතියම් නොමැත.',
+    'Insights' => 'තීක්ෂ්ණ බුද්ධිය',
+    'ShowInsights' => 'තීක්ෂ්ණ බුද්ධි ටයිල් පෙන්වන්න',
+    'HideInsights' => 'තීක්ෂ්ණ බුද්ධි ටයිල් සාරාංශ රේඛාවකට හකුළන්න',
+    'ChooseControls' => 'පාලන තෝරන්න',
+    'UseTheseControls' => 'මෙම පාලන භාවිතා කරන්න',
+    'SearchControlsPlaceholder' => 'අංකය හෝ නම අනුව සොයන්න',
+    'PickerKeyboardHint' => 'චලනය කිරීමට ඉහළට/පහළට, තේරීමට Enter, අවලංගු කිරීමට Esc ඔබන්න.',
+    'NoControlsMatchFilters' => 'මෙහි කිසිවක් ගැලපෙන්නේ නැත. වම් පසින් පියවරක් පළල් කරන්න, නැතහොත් සෙවුම හිස් කරන්න.',
+    'NoControlsSelectedYet' => 'තවම කිසිවක් තෝරාගෙන නැත.',
+    'AllControls' => 'සියලු පාලන',
+    'AddOrRemoveControls' => 'පාලන එකතු කරන්න හෝ ඉවත් කරන්න…',
+    'LastTested' => 'අවසන් වරට පරීක්ෂා කරන ලද්දේ',
+    'LastTestDateAnchorHint' => 'නැංගුරම් කාල පරතරය කාලසටහන්ගත කිරීම (මෙම දිනය සහ සංඛ්‍යාතය). පරීක්ෂණය ප්‍රතිඵල වාර්තා කළ පසු, ජාලකය ඒ වෙනුවට නවතම ප්‍රතිඵලයේ දිනය පෙන්වයි.',
+    'Filters' => 'පෙරහන්',
+    'ShowFilters' => 'පෙරහන් පෙන්වන්න',
+    'HideFilters' => 'පෙරහන් සඟවන්න',
+
+    // App shell — collapsing sidebar / new base design (SR app-shell redesign)
+    'AI' => 'AI',
+    'CollapseSidebar' => 'පැති තීරුව හකුළන්න',
+    'FooterCopyright' => '© %s සරල අවදානම. සියලුම හිමිකම් ඇවිරිණි.',
+    'ExpandSidebar' => 'පැති තීරුව දිග හරින්න',
+    'WorkflowsCloneConfirm' => '\'{$name}\' යන ක්ලෝන වැඩ ප්‍රවාහය?',
+    'WorkflowsDeleteConfirm' => '\'{$name}\' වැඩ ප්‍රවාහය මකන්නද? මෙය අහෝසි කළ නොහැක.',
+    'WorkflowActionFailed' => 'ක්‍රියාව අසාර්ථක විය: {$msg}',
+    'ClickToDisable' => 'අබල කිරීමට ක්ලික් කරන්න',
+    'ClickToEnable' => 'සබල කිරීමට ක්ලික් කරන්න',
+    'ENABLED' => 'සබල කරන ලදී',
+    'DISABLED' => 'අබල කළ',
+    'BackToWorkflows' => 'කාර්ය ප්‍රවාහ වෙත ආපසු',
+    'BackToHistory' => 'ඉතිහාසය වෙත ආපසු',
+    'NewWorkflow' => 'නව කාර්ය ප්‍රවාහය',
+    'ViewSteps' => 'පියවර බලන්න',
+    'SaveWorkflow' => 'කාර්ය ප්‍රවාහය සුරකින්න',
+    'WorkflowSavedSuccessfully' => 'කාර්ය ප්‍රවාහය සාර්ථකව සුරකින ලදී.',
+    'WorkflowNotFound' => 'කාර්ය ප්‍රවාහය හමු නොවීය.',
+    'EditWorkflow' => 'කාර්ය ප්‍රවාහය සංස්කරණය කරන්න: {$name}',
+    'OrganizationContextProfile' => 'සංවිධාන සන්දර්භ පැතිකඩ',
+    'AICtxAutoAcceptThreshold' => 'ඔබේ සංවිධානයේ ස්වයංක්‍රීයව පිළිගැනීමේ අවදානම් සීමාව කුමක්ද (ඩොලර් මුදලක් හෝ ALE ප්‍රතිශතයක්)?',
+    'AICtxGrcBudget' => 'ඔබේ වාර්ෂික GRC/ආරක්ෂක අයවැය කොපමණද?',
+    'AICtxAuditorPerspective' => 'ඔබ ප්‍රධාන වශයෙන් විගණනය කරනු ලබන්නේ කාගේ දෘෂ්ටිකෝණයෙන්ද?',
+    'AICtxUnitCurrency' => 'මුදල් ($)',
+    'AICtxUnitPercentOfAle' => 'ALE ප්‍රතිශතය (%)',
+    'AICtxFrameworksInUse' => 'දැනට භාවිතයේ ඇති රාමු',
+    'AICtxNoFrameworksInUse' => 'තවමත් ක්‍රියාකාරී රාමු හමු නොවීය. පාලනය > රාමු සිතියම්කරණය යටතේ රාමු එක් කරන්න.',
+    'AICtxFromYourData' => 'ඔබගේ දත්ත වලින්',
+    'AICtxAuthoritative' => 'බලධාරී',
+    'AICtxAppetiteNotSet' => 'සකසා නැත',
+    'AICtxAppetiteManageLink' => 'අවදානම් වින්‍යාසය තුළ කළමනාකරණය කරන්න',
+    'AICapControlTestGeneration' => 'පාලන පරීක්ෂණ උත්පාදනය',
+    'AICapControlTestGenerationDesc' => 'සමාලෝචනය සඳහා කෙටුම්පත් පාලන පරීක්ෂණ, පාලනයේ රාමු සිතියම්ගත කිරීම, පවතින පරීක්ෂණ සහ ස්වයං තක්සේරු ප්‍රතිඵල භාවිතා කරමින් - ඔබ එය අනුමත කරන තුරු කිසිවක් නිර්මාණය නොවේ.',
+    'AICapSurfacedControlTestGeneration' => 'අනුකූලතාව — පරීක්ෂණ නිර්වචනය කරන්න',
+    'AIControlTestGenUnavailable' => 'සේවාව ලබා ගත නොහැක: පරිපාලකයෙකු AI සැකසුම් තුළ මෙම ක්‍රියාකාරීත්වය සක්‍රීය කළ යුතුය.',
+    'AIControlTestGenInvalidId' => 'නරක ඉල්ලීම: ධනාත්මක පාලන හැඳුනුම්පතක් අවශ්‍යයි.',
+    'AIControlTestGenNotFound' => 'හමු නොවීය: නිශ්චිත පාලනය සොයාගත නොහැකි විය.',
+    'AIControlTestGenConflict' => 'ගැටුම: මෙම පාලනය සඳහා උත්පාදනය දැනටමත් පෝලිම්ගත කර ඇත.',
+    'AIControlTestGenQueued' => 'පිළිගත්තා: පාලන පරීක්ෂණ උත්පාදනය පෝලිම් කර ඇත.',
+    'AIControlTestGenFailed' => 'අභ්‍යන්තර සේවාදායක දෝෂය: පාලන පරීක්ෂණ උත්පාදනය පෝලිම් කිරීමට අසමත් විය.',
+    'AIControlTestGenCheckFailed' => 'දෝෂය: පෝලිමේ සිටීමට පෙර පාලනය සත්‍යාපනය කළ නොහැක.',
+    'GenerateTestsWithAI' => 'AI සමඟ පරීක්ෂණ ජනනය කරන්න',
+    'ShowAiSuggestedTests' => 'AI යෝජිත පරීක්ෂණ',
+    'AiSuggested' => 'AI යෝජනා කර ඇත',
+    'ReviewAndEdit' => 'සමාලෝචනය කර සංස්කරණය කරන්න',
+    'CreateSelected' => 'තෝරාගත් දේ සාදන්න',
+    'TestCreatedFromSuggestion' => 'යෝජනාවෙන් පරීක්ෂණය නිර්මාණය කරන ලදී.',
+    'SuggestionDismissed' => 'යෝජනාව ප්‍රතික්ෂේප කරන ලදී.',
+    'TestGenerationQueued' => 'පරීක්ෂණ උත්පාදනය පෝලිමේ තබා ඇත.',
+    'Generating' => '… ජනනය කිරීම',
+    'SuggestionDismissFailed' => 'පරීක්ෂණය නිර්මාණය කරන ලදී, නමුත් එහි AI යෝජනාව ඉවත දැමිය නොහැකි විය. එය පවතී නම් එය අතින් ඉවත දමන්න.',
+    'AICtxAuditorBig4' => 'බිග් 4 (බාහිර)',
+    'AICtxAuditorBoutique' => 'කඩ සාප්පුව / කලාපීය (බාහිර)',
+    'AICtxAuditorInternal' => 'අභ්‍යන්තර විගණනය පමණි',
+    'AICtxAuditorSelfAssessed' => 'ස්වයං තක්සේරුව',
+    'AICtxAuditorNotSure' => 'විශ්වාස නැහැ',
+    'AICtxAppetiteCautious' => 'ප්‍රවේශම් සහගතයි',
+    'AICtxAppetiteBalanced' => 'සමබර',
+    'AICtxAppetiteAggressive' => 'ආක්‍රමණශීලී',
+    'TestGenerationComplete' => 'AI-කෙටුම්පත් කරන ලද පාලන පරීක්ෂණ සමාලෝචනය සඳහා සූදානම්.',
+    'TestGenerationStillRunning' => 'පරීක්ෂණ උත්පාදනය තවමත් ක්‍රියාත්මකයි; කෙටුම්පත් ඉක්මනින් දිස්වනු ඇත.',
+    'TestGenerationNoNew' => 'පරම්පරාව අවසන් - මෙම පාලනය සඳහා යෝජනා කිරීමට නව පරීක්ෂණ නොමැත.',
+    'SearchEntities' => 'ආයතන සොයන්න',
+    'SearchEntitiesPlaceholder' => 'සෙවුම් අවදානම්, පාලන, ප්‍රතිපත්ති, ව්‍යතිරේක…',
+    'ShowTypes' => 'වර්ග පෙන්වන්න',
+    'Depth' => 'ගැඹුර',
+    'Inspector' => 'පරීක්ෂක',
+    'Connections' => 'සම්බන්ධතා',
+    'NoConnectionsFound' => 'තෝරාගත් ආයතනය සඳහා සම්බන්ධතා හමු නොවීය.',
+    'CouldNotLoadGraph' => 'සම්බන්ධතා ප්‍රස්තාරය පූරණය කළ නොහැකි විය.',
+    'CouldNotSearchEntities' => 'ආයතන සෙවීමට නොහැකි විය.',
+    'ShowingTopNOfM' => '{0} හි {1} ඉහළ <[⌇⌇⌇0⌇⌇]> පෙන්වමින්',
+    'RankedByMaturityGap' => 'පරිණත පරතරය අනුව ශ්‍රේණිගත කර ඇත',
+    'RankedByRiskScore' => 'අවදානම් ලකුණු අනුව ශ්‍රේණිගත කර ඇත',
+    'RankedByRecentFailure' => 'මෑත කාලීන අසාර්ථකත්වය අනුව ශ්‍රේණිගත කර ඇත',
+    'RankedByReviewDate' => 'ඊළඟ සමාලෝචන දිනය අනුව ශ්‍රේණිගත කර ඇත',
+    'RankedBySeverity' => 'බරපතලකම අනුව ශ්‍රේණිගත කර ඇත',
+    'RankedByName' => 'නමින් ශ්‍රේණිගත කර ඇත',
+    'NodeTypeSelfAssessmentResult' => 'ස්වයං තක්සේරු ප්‍රතිඵලය',
+    'Relationship' => 'සම්බන්ධතාවය',
+    'Exception' => 'ව්‍යතිරේකය',
+    'DesiredMaturity' => 'අපේක්ෂිත පරිණතභාවය',
+    'ApprovalState' => 'අනුමත තත්ත්වය',
+    'RelationshipOfType' => '{0} න් {1}',
+    // Connectivity Explorer Inspector: labels for enrichment field keys
+    // (ai_context_enrich_fetch(), ai_context_enrich_vulnerabilities()) that
+    // fieldLabel() in connectivity-visualizer.js did not yet cover.
+    'LastDate' => 'අවසාන දිනය',
+    'LastResultDate' => 'අවසාන ප්‍රතිඵල දිනය',
+    'PercentComplete' => 'සම්පූර්ණ ප්‍රතිශතය',
+    'AssessmentDate' => 'තක්සේරු දිනය',
+    'NextDate' => 'ඊළඟ දිනය',
+    'Number' => 'අංකය',
+    'Grouping' => 'කණ්ඩායම් කිරීම',
+    'Hidden' => 'සැඟවුණු',
+    'FirstFound' => 'මුලින්ම සොයා ගත්තේ',
+    'LastFound' => 'අවසන් වරට හමු වූයේ',
+    'Patchable' => 'පැච් කළ හැකි',
+    'Solution' => 'විසඳුමක්',
+    'Breadcrumb' => 'පාන් කුඩු',
+    'SelectANodeToInspect' => 'එහි විස්තර බැලීමට නෝඩයක් තෝරන්න.',
+    'HiddenUnreachableNodes' => '{0} නෝඩ්(ය) සඟවා ඇත: සැඟවුණු වර්ගය(ය) නොමැතිව තවදුරටත් සම්බන්ධ නොවේ.',
+    // Connectivity Explorer canvas launchpad (Level-1 type tiles / Level-2
+    // browsable entity list) -- docs/superpowers/specs/2026-07-27-
+    // connectivity-explorer-launchpad.md
+    'BrowsableEntityTypes' => 'බ්‍රවුස් කළ හැකි ආයතන වර්ග',
+    'CountFloor' => '{0}+',
+    'NoBrowsableTypes' => 'ඔබට කිසිදු ආයතන වර්ගයක් පිරික්සීමට අවසර නැත.',
+    'AllTypes' => 'සියලු වර්ග',
+    'FilterEntitiesPlaceholder' => '… පෙරහන කරන්න',
+    'NoMatchingEntities' => 'ඔබගේ පෙරහනට ගැලපෙන ආයතන කිසිවක් නොමැත.',
+    'LoadMore' => 'තවත් පූරණය කරන්න',
+    'Loading' => '… පූරණය වෙමින්',
+    'CouldNotLoadEntityCounts' => 'ආයතන ගණන පූරණය කළ නොහැකි විය.',
+    'CouldNotLoadEntities' => 'ආයතන පූරණය කළ නොහැකි විය.',
+    'ClearGraph' => 'ප්‍රස්තාරය හිස් කරන්න',
+    // Connectivity Explorer node-type chip label for the 'audit' type. Not
+    // reused from 'TeamType_audit' (same English text, "Audit") -- that key
+    // is scoped to the Team Separation team-type picker, a different feature
+    // whose wording should be free to diverge from this one's.
+    'Audit' => 'විගණන',
+    // Queued email send-failure notifications
+    'EmailSendFailedNotificationTitle' => 'විද්‍යුත් තැපෑල බෙදා හැරීම අසාර්ථක විය.',
+    'EmailSendFailedNotificationBody' => 'පෝලිම්ගත ඊමේල් එකක් හෝ කිහිපයක් ලබා දිය නොහැකි විය. ඔබගේ තැපැල් සැකසුම් පරීක්ෂා කරන්න, පසුව විස්තර සඳහා පෝලිම් මොනිටරය සහ සේවාදායක ලොගය බලන්න.',
+    'QuestionnaireShareInvalidEmailAddress' => 'වලංගු විද්‍යුත් තැපැල් ලිපිනයක් නොමැති සම්බන්ධතාවක් සමඟ ප්‍රශ්නාවලියේ ප්‍රතිඵල බෙදා ගත නොහැක.',
+    'AssessmentSendInvalidEmailAddress' => 'තක්සේරුව අවලංගු විද්‍යුත් තැපැල් ලිපිනයකට යැවිය නොහැක.',
+    'AssessmentSentTo' => 'තක්සේරුව "{$email}" වෙත යවන ලදී.',
+    'AssessmentNotSentNoValidRecipients' => 'තක්සේරුව යවා නැත - වලංගු විද්‍යුත් තැපැල් ලිපිනයක් සපයා නැත.',
+    'AssessmentContactUnusableEmailNotificationTitle' => 'ප්‍රශ්නාවලිය යවා නැත',
+    'AssessmentContactUnusableEmailNotificationBody' => '"{$questionnaire}" ප්‍රශ්නාවලිය "{$contact}" වෙත යැවිය නොහැකි වූයේ එම සම්බන්ධතාවයට වලංගු විද්‍යුත් තැපැල් ලිපිනයක් ගොනුවේ නොමැති බැවිනි. යැවීම නැවත ආරම්භ කිරීමට සම්බන්ධතා වාර්තාව යාවත්කාලීන කරන්න.',
+    'EmailFailureNotificationRetention' => 'විද්‍යුත් තැපැල් බෙදා හැරීමේ අසාර්ථක දැනුම්දීම රඳවා තබා ගැනීම',
+    'EmailFailureNotificationRetentionOutOfRange' => 'ඊමේල් බෙදා හැරීමේ අසාර්ථක දැනුම්දීම රඳවා තබා ගැනීම {$min} සහ {$max} දින අතර විය යුතුය.',
+    'MailSettingsUpdatedSuccessfully' => 'තැපැල් සැකසුම් සාර්ථකව යාවත්කාලීන කරන ලදී.',
+    // Questionnaire audit-trail entries for the API submit/draft paths (SR-1714).
+    // The token form credits the contact; an API caller is an authenticated
+    // SimpleRisk user acting on that contact's questionnaire, so both the
+    // contact and the acting user are named.
+    'QuestionnaireCompletedAuditLogViaApi' => 'Questionnaire "{$questionnaire_name}" for contact "{$contact_name}" was completed via the API by user "{$user_name}".',
+    'QuestionnaireDraftAuditLogViaApi' => 'Questionnaire "{$questionnaire_name}" for contact "{$contact_name}" was saved as draft via the API by user "{$user_name}".',
+    // Bad-input response for the questionnaire risk-list endpoints, which
+    // previously reported a malformed questionnaire_id as a permission denial.
+    // Mirrors the existing 'MissingOrInvalidTrackingID'.
+    'MissingOrInvalidQuestionnaireID' => 'නැතිවූ හෝ අවලංගු ප්‍රශ්නාවලි හැඳුනුම්පත.',
+    // POST /api/v2/assessments/questionnaire/result/file response messages.
+    // The `id` path deliberately returns QuestionIdCannotAcceptFile for every
+    // question-level rejection so a sequential tracking id cannot be used to
+    // probe questionnaire structure; the token path returns the specific reason.
+    'QuestionnaireResultNotFoundForTokenOrId' => 'හමු නොවීය: නිශ්චිත ටෝකනය හෝ හැඳුනුම්පත සමඟ ප්‍රශ්නාවලියේ ප්‍රතිඵලයක් සොයා ගැනීමට නොහැකි විය.',
+    'QuestionIdCannotAcceptFile' => 'නරක ඉල්ලීමක්: question_id {$question_id} මෙම ප්‍රශ්නාවලියේ ප්‍රතිඵලයේ ගොනුවක් පිළිගත නොහැක.',
+    'QuestionIdNotFoundInQuestionnaire' => 'නරක ඉල්ලීමක්: මෙම ප්‍රශ්නාවලියෙහි question_id {$question_id} හමු නොවීය.',
+    'QuestionIdInMultipleTemplates' => 'නරක ඉල්ලීම: question_id {$question_id} මෙම ප්‍රශ්නාවලිය සඳහා බහු සැකිලිවල දිස්වේ.',
+    'QuestionIdDoesNotAcceptFileUploads' => 'නරක ඉල්ලීමක්: question_id {$question_id} ගොනු උඩුගත කිරීම් පිළිගන්නේ නැත.',
+    // The Statement of Applicability's two UNVERIFIED implementation states.
+    //
+    // They exist because "we have not checked" is not "it does not work", and an
+    // SoA is ATTESTED — printing "No" for an unverified control is a false
+    // statement against yourself, exactly as printing "Yes" without evidence is
+    // a false statement the other way. Before these keys existed both states
+    // fell through to 'No', which on a framework where most controls carry no
+    // test meant the whole document read "not implemented".
+    //
+    // They are two states rather than one because they are different findings
+    // with different owners: no test defined is a GOVERNANCE gap (nobody decided
+    // how to verify this control), never run is an OPERATIONAL one (somebody
+    // decided, and it was not done).
+    //
+    // WORDING. Both must be unmistakably distinct from the bare 'No' in the same
+    // column. 'Tests never run' rather than 'Never run': in a column headed
+    // "Implemented", the bare phrase reads for a moment as though the CONTROL
+    // was never run, when the subject is its tests.
+    //
+    // BOTH ARE PLURAL, and that is not only style. English takes the plural
+    // after "no" when the expected quantity could exceed one ("no results
+    // found"), and a control normally carries several tests — the singular
+    // implies only ever one was expected. 'Tests never run' is the stronger
+    // case: soa_implemented_for() returns `never_run` only when NOT ONE of the
+    // control's tests has produced a verdict, so the state is inherently about
+    // the whole set. With four tests defined and none run, the singular reads as
+    // one omission rather than a wholesale one.
+    'SoaImplementedNoTestDefined' => 'පරීක්ෂණ කිසිවක් අර්ථ දක්වා නැත',
+    'SoaImplementedNeverRun' => 'පරීක්ෂණ කවදාවත් ක්‍රියාත්මක වෙන්නේ නැහැ',
+
+    // The Implemented column's fallback for a token neither sink recognizes.
+    //
+    // DELIBERATELY NOT A VERDICT, and the reason this key exists at all. Both
+    // sinks previously ended in a fallthrough to 'No', so adding a state without
+    // adding its label printed a confident, wrong answer into a compliance
+    // document. Falling through to 'Yes' would be worse. The only safe failure
+    // mode is a value that states nothing about the control — a visible bug
+    // instead of a silent misstatement.
+    'SoaImplementedUnknown' => 'තත්ත්වය නොමැත',
+    // How an APPLICABLE control's stored inclusion reason(s) join to its own
+    // freeform justification when it recorded both (spec §4). Reached ONLY when
+    // both halves exist — reasons alone print as the reason list, prose alone
+    // prints verbatim — so this string is punctuation and word order, not prose.
+    // It is a language key rather than a hardcoded separator because a locale
+    // that joins clauses with a colon, a full stop, or right-to-left ordering
+    // must be able to say so; both placeholders have to survive translation.
+    'SoaJustifiedByInclusionReasons' => '{reasons} — {narrative}',
+    // The Set applicability modal's reason field, which became a MULTI-select
+    // when reasons moved to a join table: a control is commonly included (or
+    // excluded) for more than one reason, and the singular 'Reason' the field
+    // used to reuse now under-describes it. 'Reason' is left alone rather than
+    // repointed -- the row drawer and the SoA still print exactly one joined
+    // value under it, and redefining a key changes every surface that reads it.
+    'ApplicabilityReasons' => 'හේතු',
+    // Said once, above a group of checkboxes, rather than implied by the widget.
+    // The old single <select> answered "how many may I pick?" by construction;
+    // a checkbox group does not, and a user who ticks one and stops has made the
+    // SoA less truthful than the one they meant to write.
+    'ApplicabilityReasonsHint' => 'අදාළ වන සෑම හේතුවක්ම තෝරන්න.',
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // THE STATEMENT OF APPLICABILITY'S MARKERS AND ITS LEGEND (spec §1, §3).
+    // ─────────────────────────────────────────────────────────────────────────
+
+    // THE EVIDENCE COLUMN'S TWO ABSENCES, which are OPPOSITES.
+    //
+    // 'No evidence linked' is a FINDING: the control is in scope, is possibly
+    // claimed implemented, and nothing substantiates it. The em dash below is
+    // the other answer -- the control is excluded, so no evidence is expected
+    // and the absence is correct. Rendering both as an empty cell hides the
+    // first, which is the one an auditor circles.
+    'SoaNoEvidenceLinked' => 'කිසිදු සාක්ෂියක් සම්බන්ධ නොවේ.',
+    // PUNCTUATION, NOT PROSE -- the glyph the Evidence cell prints when nothing
+    // is expected. A language key rather than a hardcoded character for the same
+    // reason 'SoaJustifiedByInclusionReasons' is one: a locale that marks "not
+    // applicable" with a different dash, or with a word, must be able to say so.
+    'SoaEvidenceNotExpected' => '—',
+    // Whether the evidence a test DECLARED it requires actually arrived with the
+    // result. A stronger claim than a pass/fail alone, and few SoA tools make it.
+
+    // THE REMEDIATION BLOCK -- what is being done about a control that reads
+    // Partial or No. The SoA points AT the risk treatment plan (clause 6.1.3(e))
+    // rather than becoming one.
+    'SoaRemediation' => 'ප්‍රතිකර්මය',
+    // THE MOST SERIOUS THING THAT BLOCK CAN FIND: the test failed and it is
+    // linked to no risk, so no treatment plan traces back to it. Dropping such a
+    // row for want of a risk to join to would render it as a blank cell, which
+    // reads as "nothing to report".
+    'SoaRemediationUnplanned' => 'අවදානමක් සම්බන්ධ නැත',
+
+    // THE LEGEND. Required in both variants and every export format, because six
+    // implementation states plus three markers is more nuanced than the
+    // Yes/No/Partial an auditor expects, and an undefined vocabulary invites the
+    // reader to guess unfavourably.
+    'SoaLegendTitle' => 'මෙම ප්‍රකාශය කියවන්නේ කෙසේද?',
+    'SoaLegendYes' => 'මෙම පාලනය සඳහා අර්ථ දක්වා ඇති සෑම පරීක්ෂණයක්ම එය අවසන් වරට ධාවනය කළ විට සමත් විය.',
+    'SoaLegendPartial' => 'පාලක පරීක්ෂණ එකඟ නොවේ: අවම වශයෙන් එකක් සමත් විය, සහ අවම වශයෙන් එකක් අසමත් විය හෝ කිසිදු තීන්දුවක් ලබා දුන්නේ නැත.',
+    'SoaLegendNo' => 'මෙම පාලනය අවසන් වරට ක්‍රියාත්මක වූ විට කිසිදු පරීක්ෂණයක් සමත් නොවූ අතර අවම වශයෙන් එකක්වත් අසාර්ථක විය.',
+    // The two unverified states are DIFFERENT FINDINGS WITH DIFFERENT OWNERS,
+    // and the labels alone do not quite carry that -- so the legend spells it
+    // out. This is the distinction the whole six-state set exists for.
+    'SoaLegendNoTestDefined' => 'මෙම පාලනය සඳහා කිසිදු පරීක්ෂණයක් අර්ථ දක්වා නැත, එබැවින් එහි ක්‍රියාකාරිත්වය කිසි විටෙකත් සත්‍යාපනය කර නොමැත. මෙය පාලනය අතුරුදහන් වී ඇති බවට හෝ එය අසමත් වන බවට ප්‍රකාශයක් නොවේ - මෙම ප්‍රකාශය එය පෙන්නුම් නොකරන බව පමණි. පාලන පරතරයක්: මෙම පාලනය පරීක්ෂා කරන්නේ කෙසේදැයි කිසිවෙකු තීරණය කර නොමැත.',
+    'SoaLegendNeverRun' => 'මෙම පාලනය සඳහා පරීක්ෂණ පවතී, නමුත් ඒවායින් කිසිවක් කිසිදා ක්‍රියාත්මක කර නොමැත, එබැවින් එහි ක්‍රියාකාරිත්වය මෙහි නිරූපණය කර නොමැත. මෙය පාලනය අස්ථානගත වී ඇති බවට හෝ එය අසාර්ථක වන බවට ප්‍රකාශයක් නොවේ. මෙහෙයුම් පරතරයක්: පරීක්ෂාවන් තීරණය කර ඇති අතර ඒවා සිදු කර නොමැත.',
+    'SoaLegendNotApplicable' => 'මෙම රාමුවේ විෂය පථයෙන් පාලනය බැහැර කර ඇත, එබැවින් එයට ක්‍රියාත්මක කිරීමේ තත්වයක් නොමැත.',
+    // The one most in need of explaining: with nothing to define it, this reads
+    // as an admission about the control rather than as what it is.
+    'SoaLegendUnknown' => 'SimpleRisk හට පටිගත කළ තත්ත්වය ලේබල් කිරීමට නොහැකි විය, එබැවින් ක්‍රියාත්මක කිරීම මෙහි නිරූපණය නොවේ. මෙය මෘදුකාංගයේ දෝෂයක් වන අතර පාලනය ගැන කිසිවක් නොකියයි - එය ක්‍රියාත්මක වන බව හෝ ක්‍රියා නොකරන බව නොවේ.',
+    'SoaLegendOverdue' => 'පෙන්වා ඇති ප්‍රතිඵලය තවමත් පවතී, නමුත් අවම වශයෙන් එය පිටුපස ඇති පරීක්ෂණ වලින් එකක්වත් එහි ඊළඟ පරීක්ෂණ දිනය ඉක්මවා ඇත. සාක්ෂි යල් පැන ගොස් ඇත.',
+    'SoaLegendNoEvidence' => 'පාලනය විෂය පථයට අයත් වන අතර එය සනාථ කිරීමට කිසිවක් සම්බන්ධ කර නොමැත: තහවුරු කරන ලද ලේඛනයක් සහ ප්‍රතිඵලයක් ලබා දුන් පරීක්ෂණයක් නොමැත.',
+    'SoaLegendEvidenceNotExpected' => 'පාලනය විෂය පථයෙන් බැහැර කර ඇති බැවින්, කිසිදු සාක්ෂියක් අපේක්ෂා නොකෙරේ.',
+    'SoaLegendUnplanned' => 'කිසිදු අවදානමක් නොමැති අසාර්ථක පරීක්ෂණයක්, එබැවින් කිසිදු ප්‍රතිකාර සැලැස්මක් ඒ දක්වා දිව නොයයි.',
+
+    // THE TWO VARIANTS, chosen on the launcher before the document is generated
+    // and PRINTED ON ITS COVER. A Statement of Applicability is a controlled
+    // document: two of them for the same framework that show different things,
+    // with nothing on either to say which is which, is a document nobody can
+    // file.
+
+    // THE THREE DETAILED-ONLY COLUMNS.
+    // What those three columns say instead of nothing. A blank cell in an audit
+    // document reads as a formatting artefact; "Not recorded" is a fact the
+    // reader can act on.
+
+    // THE BROWSER PRINT ROUTE. Beside the two downloads on the launcher, and the
+    // only PDF route for a framework too large for the server-side writer.
+    // Shown in place of "Download as PDF" when the chosen framework is above
+    // SOA_EXPORT_PDF_MAX_CONTROLS. The affordance is absent rather than
+    // disabled, so this sentence is what tells the reader the absence is
+    // deliberate and what to do instead.
+    // The footer of every printed page. {page} and {pages} are substituted with
+    // the browser's own page counters, so the two tokens must both survive
+    // translation -- but their ORDER and the words around them are the
+    // translator's, which is why this is one string and not "Page" + "of".
+    'SoaPrintPageNumber' => '{page} හි {pages} පිටුව',
+
+    // THE ONE PDF AFFORDANCE on the statement-of-applicability launcher, beside
+    // 'DownloadAsXLSX'. It replaces the pair that used to sit there --
+    // 'SoaPrintToPdf' and 'DownloadAsPDF' -- because a Statement of Applicability
+    // is a controlled document and two PDF buttons let two people hand an auditor
+    // two different-looking PDFs of the same statement.
+    //
+    // JUST "PDF", AND DELIBERATELY SO. Below SOA_EXPORT_PDF_MAX_CONTROLS the
+    // button downloads a server-rendered file and above it the browser writes
+    // one, but that is a mechanism and not a choice the reader has to make. A
+    // label that named the mechanism ("Print to PDF" / "Download as PDF") would
+    // put the difference back in front of them.
+    //
+    // 'SoaPrintToPdf' and 'SoaPdfTooLargeHint' above are LEFT IN PLACE with no
+    // caller: 39 locales carry them, and this file is append-only precisely so a
+    // customer running a custom lang.<locale>.php can reconcile it with a tail
+    // diff.
+    'SoaPdf' => 'PDF 옹호의',
+
+    // THE OTHER TWO ACTIONS IN THAT SAME ROW, shortened to match it.
+    //
+    // The row read "Open in browser" / "Download as XLSX" / "PDF", which put a
+    // verb on two of three actions and made the odd one out look like an
+    // abbreviation of something longer. The row's own context supplies the
+    // verbs -- these are the things you can DO with the framework you just
+    // chose -- so they carried no information and cost the reader a comparison.
+    // 'SoaPdf' is short because naming its mechanism would be dishonest (above
+    // SOA_EXPORT_PDF_MAX_CONTROLS it opens a print view rather than downloading
+    // a file), and the shortest of the three is the one that has to be right.
+    //
+    // NOT the generic 'Open' at line ~1021: that key lives among 'Mitigated' /
+    // 'Reviewed' and is the risk-status ADJECTIVE -- fr "Ouvert", de "Offen" --
+    // so reusing it would label a button with a state rather than an action in
+    // most of the 39 locales.
+    //
+    // 'SoaOpenInBrowser' above is LEFT IN PLACE with no caller, for the same
+    // reason 'SoaPrintToPdf' is: the locales carry it and this file is
+    // append-only so a customer's custom lang.<locale>.php reconciles with a
+    // tail diff. 'DownloadAsXLSX' keeps a caller either way -- the Assessments
+    // Extra's questionnaire results still use it.
+    'SoaOpen' => 'විවෘත',
+    'SoaXlsx' => 'එක්ස්එල්එස්එක්ස්',
+    // ---- The locked-affordance treatment -------------------------------------
+    // SHARED COPY, not chooser copy. SimpleRisk now SHOWS what's possible and
+    // MARKS what's out of reach because it isn't licensed, rather than hiding
+    // it -- so these strings appear both as a menu row's explanation (Define
+    // Control Frameworks' "+ Add framework" chooser) and beside a disabled
+    // toolbar button (the Statement of Applicability's PDF/XLSX exports). Each
+    // one is worded to read correctly in BOTH places, which is why none of them
+    // starts with "This route" or "This button".
+    //
+    // 'LockedAffordanceBadge' duplicates the English of 'AICapStateLocked'
+    // rather than reusing it: that key sits in the AI Capabilities Catalog's
+    // block and is scoped to a capability's state, and translators work from
+    // the key's neighbourhood as much as from its value.
+    'LockedAffordanceBadge' => 'අගුළු දමා ඇත',
+    // The two SCF steps before it can be switched on. admin/register.php serves
+    // both -- it is the registration form AND where the per-Extra download
+    // buttons render -- so these differ in what they say, not where they go.
+    'UnlockRegisterInstanceNote' => 'ආරක්ෂිත පාලන රාමුව ලබා ගැනීමට මෙම අවස්ථාව ලියාපදිංචි කරන්න.',
+    'UnlockRegisterInstanceLink' => 'සරල අවදානම් ලියාපදිංචි කරන්න',
+    'UnlockDownloadScfNote' => 'මෙම අවස්ථාව ලියාපදිංචි කර ඇත. එය භාවිතා කිරීමට ආරක්ෂිත පාලන රාමුව බාගන්න.',
+    'UnlockDownloadScfLink' => 'එය බාගන්න',
+    'UnlockActivateScfNote' => 'ආරක්ෂිත පාලන රාමුව බාගත කර ඇත, නමුත් සක්‍රිය කර නොමැත.',
+    'UnlockActivateScfLink' => 'එය ක්‍රියාත්මක කරන්න',
+    // Import-Export is a paid Extra, so "not installed" is an upsell rather
+    // than a registration prompt. Deliberately a bare capability sentence: it
+    // has to sit under a menu row and next to an export button equally well.
+    'RequiresImportExportExtra' => 'ආනයන-අපනයන අමතර ගාස්තුව අවශ්‍ය වේ.',
+    'UnlockImportExportLink' => 'එය එකතු කරන දේ බලන්න.',
+    'UnlockActivateImportExportNote' => 'ආනයන-අපනයන අමතර කොටස ස්ථාපනය කර ඇත, නමුත් සක්‍රිය කර නොමැත.',
+    'UnlockActivateImportExportLink' => 'එය ක්‍රියාත්මක කරන්න',
+    // Shown instead of any of the above to a user who is not an administrator:
+    // every unlock step lives on a check_admin page, so they get the half that
+    // is useful to them -- that the capability exists, and who to ask -- and no
+    // link that would only bounce them.
+    'UnlockNeedsAdministrator' => 'පරිපාලකයෙකුට මෙය සැකසිය හැක.',
+    // API date parsing. {$field} is the request field name (next_date, last_date,
+    // test_date); {$format} is this instance's configured display date format.
+    'InvalidSubmittedDate' => '{$field} අගය වලංගු දිනයක් නොවේ. එය YYYY-MM-DD ලෙස හෝ මෙම අවස්ථාවෙහි දින ආකෘතියෙන් ({$format} ) ඉදිරිපත් කරන්න.',
+    // Companion to InvalidSubmittedDate, for a value that matches the expected
+    // shape but names a day that does not exist (February 31st, month 13).
+    // Saying "submit it as MM/DD/YYYY" there would repeat what the caller did.
+    // {$value} is the submitted value, echoed back truncated.
+    'ImpossibleSubmittedDate' => '" {$field} අගය "{$value}" සැබෑ දින දර්ශන දිනයක් නොවේ. දිනය සහ මාසය පරීක්ෂා කරන්න — මෙම අවස්ථාව දින {$format} ලෙස කියවයි.',
+    // The Statement of Applicability's merged verification column. Replaces three
+    // separate headings (Implemented / Evidence / Review Cadence) with the one
+    // question all three answer: how do we know this control is working?
+    // The two appendices printed after the register. Justifications are truncated
+    // in the row and given in full here; remediation plans live here rather than
+    // in the table because ISO 27001 keeps the SoA (6.1.3(d)) and the risk
+    // treatment plan (6.1.3(e)) as separate artifacts.
+    'SoaAppendixJustifications' => 'උපග්‍රන්ථය A — සාධාරණීකරණයන්',
+    'SoaAppendixRemediation' => 'උපග්‍රන්ථය R — ප්‍රතිකර්ම සැලසුම්',
+    // Appendix E carries the WORDING of each test's evidence requirement. The row
+    // keeps only whether that evidence arrived, which is the finding; the wording
+    // is reference material and was the bulkiest thing in the Verification cell.
+    'SoaRequiredEvidenceSupplied' => 'අවශ්‍ය සාක්ෂි සපයා ඇත',
+    'SoaRequiredEvidenceNotSupplied' => 'අවශ්‍ය සාක්ෂි සපයා නැත',
+    // The one scheduling fact the SoA prints: the soonest date any of a control's
+    // tests is next due. Replaces a per-test "Manual — Next Test Date: ..." line,
+    // whose schedule type belongs on Define Tests and whose date is now on each
+    // test's own evidence bullet.
+    // The two dates on a test's evidence bullet. LABELLED, because two bare dates
+    // side by side are ambiguous in a way one is not.
+    // SINGULAR document-type labels for one piece of design evidence. SimpleRisk's
+    // existing keys are the plural tab names, which would read "Access Control
+    // Standard (Standards)".
+    'SoaEvidencePolicy' => 'ප්රතිපත්ති',
+    'SoaEvidenceStandard' => 'සම්මත',
+    'SoaEvidenceProcedure' => 'ක්රියා පටිපාටිය',
+    'SoaEvidenceGuideline' => 'මාර්ගෝපදේශය',
+    // ── The legend, grouped by column (SOA_LEGEND_GROUPS, includes/soa.php) ──
+    // The Applicability column's three values. These were never in the legend,
+    // so an auditor met "Inherited" -- a word with no meaning outside SimpleRisk
+    // -- with nothing to look it up in.
+    'SoaLegendApplicable' => 'මෙම රාමුව සඳහා පාලනය විෂය පථයට අයත් වන අතර එය ක්‍රියාත්මක කිරීම සඳහා සංවිධානය වගකිව යුතුය.',
+    // DISTINCT from 'SoaLegendNotApplicable', which defines the "N/A" that appears
+    // in the Implementation Status column. This one is the DECISION to exclude;
+    // that one is the consequence for the status.
+    'SoaLegendApplicabilityNotApplicable' => 'මෙම රාමුවේ විෂය පථයෙන් පාලනය බැහැර කර ඇත. සාධාරණීකරණ තීරුවේ ඇයි සහ තීරණය කළේ කවුද යන්න වාර්තා කරයි.',
+    'SoaLegendInherited' => 'පාලනය විෂය පථයට අයත් වේ, නමුත් එය ක්‍රියාත්මක කරනු ලබන්නේ මෙම සංවිධානය විසින් නොව තෙවන පාර්ශවයක් විසිනි - වලාකුළු සැපයුම්කරුවෙකු, මව් සංවිධානයක්, බාහිරින් ලබාගත් කාර්යයක්. සාධාරණීකරණය අසල සැපයුම්කරු නම් කර ඇත.',
+    // The Evidence column's four bullet glyphs. Load-bearing since the visible
+    // result word was dropped from pass and fail bullets, and until now defined
+    // nowhere at all.
+    'SoaLegendEvidencePass' => 'මෙම පාලනයේ පරීක්ෂණයකදී එය අවසන් වරට දිව ගිය විට සමත් වීමක් වාර්තා විය. ඒ අසල ඇති දිනය එය දිව ගිය දිනයයි.',
+    'SoaLegendEvidenceFail' => 'මෙම පාලනයේ පරීක්ෂණයක එය අවසන් වරට ක්‍රියාත්මක වූ විට අසාර්ථක වීමක් වාර්තා විය. උපග්‍රන්ථය R හි ප්‍රතිකාර සැලැස්ම අඩංගු වන අතර, එහිදී එකක් පවතී.',
+    'SoaLegendEvidenceInconclusive' => 'මෙම පාලනයේ පරීක්ෂණයක් පවත්වා කිසිදු තීන්දුවක් ලබා දී නොමැත. මෙම ලේඛනය හඳුනා නොගන්නා ප්‍රතිඵලයක් සඳහා එම ලකුණම භාවිතා කරන අතර, එම අවස්ථාවේදී ප්‍රතිඵලය ඒ අසල මුද්‍රණය කෙරේ.',
+    // The TERM beside the § glyph. Not a document type -- the four types
+    // (Policy, Standard, Procedure, Guideline) are printed per item; this names
+    // the CATEGORY of evidence a document is.
+    'SoaEvidenceDesignDocument' => 'නිර්මාණ ලේඛනය',
+    'SoaLegendEvidenceDocument' => 'මෙම පාලනය සඳහා සාක්ෂි ලෙස තහවුරු කරන ලද පාලන ලේඛනයක් - එහි ක්‍රියාකාරිත්වයට වඩා එහි සැලසුම. ලේඛනයකට කිසිදු තීන්දුවක් නොමැත, එම නිසා එය හරි ලකුණකින් සලකුණු කර නොමැත.',
+    // The XLSX export's first worksheet tab. The workbook's other four tabs reuse
+    // headings that already exist ('How to read this statement', 'Statement of
+    // Applicability', and the two appendix headings); the cover had no name of its
+    // own because it used to be the top of a single sheet.
+    //
+    // KEEP IT SHORT. Excel caps a worksheet name at 31 characters and
+    // soa_export_sheet_name() truncates rather than failing the export, so a long
+    // translation loses its tail on the tab.
+    'SoaSheetCover' => 'ආවරණය කරන්න',
+
+    'SearchFrameworks' => 'රාමු සොයන්න',
+    'SearchControls' => 'සෙවුම් පාලන',
+    'AddFramework' => 'රාමුවක් එක් කරන්න',
+    'Applicability' => 'අදාළත්වය',
+    'AnyFamily' => 'ඕනෑම පවුලක්',
+    'AnyOwner' => 'ඕනෑම හිමිකරුවෙක්',
+    'AnyClass' => 'ඕනෑම පන්තියක්',
+    'AnyPhase' => 'ඕනෑම අදියරක්',
+    'AnyPriority' => 'ඕනෑම ප්‍රමුඛතාවයක්',
+    'AnyType' => 'ඕනෑම වර්ගයක්',
+    'AnyStatus' => 'ඕනෑම තත්වයක්',
+    'SelectAllN' => 'සියල්ල තෝරන්න {n}',
+    'Classification' => 'වර්ගීකරණය',
+    'Placement' => 'ස්ථානගත කිරීම',
+    'OwnershipAndMaturity' => 'හිමිකාරිත්වය සහ පරිණතභාවය',
+    'MappingsAndGuidance' => 'සිතියම්කරණය සහ මග පෙන්වීම',
+    'DeleteFrameworkTitle' => '\'{$name}\' රාමුව මකන්නද?',
+    'DeleteControlTitle' => '\'{$name}\' පාලනය මකන්නද?',
+    'DeleteControlsTitle' => '{$n} පාලන මකන්නද?',
+    'DeleteCannotBeUndone' => 'මෙය අහෝසි කළ නොහැක.',
+    'DeleteFrameworkConsequence' => 'මෙය රාමුව සහ එහි සියලුම පාලන සිතියම්කරණයන් ඉවත් කරයි.',
+    'DeleteControlConsequence' => 'මෙය සිතියම්ගත කර ඇති සෑම රාමුවකින්ම පාලනය ඉවත් කරයි.',
+    'DeleteControlsConsequence' => 'මෙය සිතියම්ගත කර ඇති සෑම රාමුවකින්ම තෝරාගත් සෑම පාලනයක්ම ඉවත් කරයි.',
+    // Task 9: empty states (design-system.md §10) -- the four intents on
+    // Define Control Frameworks. Reuses existing keys where the copy already
+    // fits exactly (AddControl, AddFramework, ClearFilters, Retry,
+    // NoControlsDefinedYet, NoTestsMatchFiltersBody, CouldNotLoadTestsBody,
+    // RegisterYourInstance, GoToSCF, ImportExportExtra) -- only the strings
+    // with no existing match are added below.
+    'NoControlsMatch' => 'ඔබගේ පෙරහන් වලට ගැළපෙන පාලන නොමැත.',
+    'CouldNotLoadControls' => 'පාලන පූරණය කළ නොහැකි විය.',
+    'ControlsYouAddWillAppearHere' => 'ඔබ එකතු කරන පාලන මෙහි දිස්වනු ඇත.',
+    'NoFrameworksYet' => 'තවමත් රාමු නොමැත.',
+    'FrameworksYouAddWillAppearHere' => 'ඔබ එකතු කරන හෝ ආයාත කරන රාමු මෙහි දිස්වනු ඇත.',
+    'CouldNotLoadFrameworks' => 'රාමු පූරණය කළ නොහැකි විය.',
+    // Task 9 review fix: the framework rail's own "no results" intent, shown
+    // when the user has explicitly switched the status dropdown away from
+    // Active and that status has nothing (distinct from "No frameworks yet",
+    // which is reserved for the default Active status where the endpoint
+    // can't yet tell "no frameworks at all" from "none active").
+    'NoFrameworksMatchFilter' => 'මෙම තත්ත්වයට ගැලපෙන රාමු නොමැත.',
+    'ViewActiveFrameworks' => 'ක්‍රියාකාරී රාමු බලන්න',
+    // Task 10: Define Control Frameworks insights band (governance/index.php)
+    // -- KPI tile labels/subtitles. 'Controls', 'Pass', 'Fail', 'NotTested'
+    // already exist and are reused as label keys for their tiles.
+    'BelowTarget' => 'ඉලක්කයට පහළින්',
+    'Excluded' => 'බැහැර කර ඇත',
+    'FwInScope' => 'විෂය පථය තුළ',
+    'FwLastTestPassed' => 'අවසාන පරීක්ෂණය සමත් විය',
+    'FwLastTestFailed' => 'අවසාන පරීක්ෂණය අසාර්ථකයි',
+    'FwNoEvidence' => 'අදාළයි, සාක්ෂි නැහැ.',
+    'FwMaturityUnderDesired' => 'අපේක්ෂිත කාලය යටතේ පරිණතභාවය',
+    'FwScopeAFramework' => 'තීරණය කිරීමට රාමුවක් විෂය පථයට ගන්න',
+    'FwNotApplicableOrInherited' => 'අදාළ නොවේ හෝ උරුම වී ඇත',
+    // Task 22: framework rail search (governance/index.php's #sr-fw-search,
+    // wired client-side in governance-frameworks.js). Reuses the shipped
+    // "no results" empty-state tile (#sr-fw-filtered, Task 9) rather than
+    // inventing a fourth rail empty state -- only the title and action swap
+    // depending on whether a status filter or a search narrowed the list to
+    // nothing; NoTestsMatchFiltersBody already covers both as body copy.
+    'NoFrameworksMatchSearch' => 'ඔබගේ සෙවුමට ගැලපෙන රාමු නොමැත.',
+    'ClearSearch' => 'සෙවීම හිස් කරන්න',
+    // Task 24: Clone control pre-fills the Add Control modal from the source
+    // control (governance-frameworks.js's openControlForClone()) rather than
+    // creating a duplicate outright, so the modal needs to say plainly which
+    // control it was cloned from -- the reviewer's core complaint about an
+    // earlier one-click version of this feature was not knowing what was
+    // cloned. {$name} follows the same client-side formatTemplate()
+    // substitution ShowingXToYOfZ/NSelected already use on this page.
+    'ClonedFromControlNotice' => '"{$name}" වෙතින් ක්ලෝන කරන ලදී. පහත ක්ෂේත්‍ර සමාලෝචනය කර, පසුව සුරකින්න.',
+    // Task 24 review follow-up: the banner alone left the modal titled "New
+    // Control" over pre-populated fields -- "it doesn't prompt or anything
+    // so the user doesn't know what was cloned" (Josh) -- which reads as a
+    // bug, not a feature. Retitling #control--add-title to this (governance-
+    // frameworks.js's show.bs.modal delegate for #control--add) makes the
+    // clone unambiguous at a glance; NewControl is restored for a plain add.
+    'CloneOfControlTitle' => '"{$name}" හි ක්ලෝනය',
+    // Task 27: the framework rail's SCF-origin chip (governance-frameworks.js's
+    // railRow()) -- shown only for frameworks created via the ComplianceForge
+    // SCF Extra's authoritative-source import (get_scf_origin_framework_ids(),
+    // includes/governance.php). SCF is the badge text itself; ScfOriginHint is
+    // its title/tooltip.
+    'SCF' => 'එස්සීඑෆ්',
+    'ScfOriginHint' => 'ආරක්ෂිත පාලන රාමුවෙන් (SCF)',
+    // Task 34: the Maturity filter facet's placeholder on the Define Control
+    // Frameworks filter sheet (governance-frameworks.js's ensureFilterSheet()),
+    // matching the AnyFamily/AnyOwner/AnyClass/... set above. The facet's three
+    // OPTIONS reuse the existing BelowMaturity/AtMaturity/AboveMaturity keys --
+    // the same labels the governance dashboard's maturity-gap widgets already
+    // carry -- and the column chip renders those same three strings, so the
+    // filter and the cell can never read differently.
+    'AnyMaturity' => 'ඕනෑම පරිණතභාවයක්',
+    // Task 46: accessible name for the control table's pager landmark
+    // (governance-frameworks.js's renderPager()). The pager's own buttons
+    // reuse the existing Previous/Next keys Define Tests' pager already
+    // carries; only the <nav> label is new, and it names WHICH table's pager
+    // it is because the Define Control Frameworks page has two lists on it.
+    'ControlsPagination' => 'පිටු සැකසුම පාලනය කරයි',
+    // Task 14: the Applicability column's state chip (governance-frameworks.js's
+    // renderApplicability()), the matching filter facet (its three option labels
+    // reuse these same three keys) and its "Any applicability" placeholder.
+    //
+    // The three states are PREFIXED rather than named 'Applicable'/
+    // 'NotApplicable'/'Inherited' because 'NotApplicable' already exists above
+    // as the ABBREVIATION 'N/A' -- the self-assessment answer chip and three
+    // reporting charts render it -- and redefining that key to the spelled-out
+    // phrase this column needs would silently change all four of those
+    // surfaces. The prefix also keeps the trio recognisable as one family.
+    //
+    // The column HEADER and the facet's accessible name reuse the existing
+    // 'Applicability' key, and the drawer's record reuses 'Reason', 'Provider'
+    // and 'Justification' -- all four already carry exactly the right string.
+    'ApplicabilityApplicable' => 'අදාළයි',
+    'ApplicabilityNotApplicable' => 'අදාළ නොවේ',
+    'ApplicabilityInherited' => 'උරුම වූ',
+    'AnyApplicability' => 'ඕනෑම අදාළත්වයක්',
+    // The drawer's applicability record: who recorded the decision and when.
+    // Both are attribution for an audited decision a customer may have to
+    // defend years later, which is why the drawer names them at all.
+    'ApplicabilityDecidedBy' => 'තීරණය කළේ',
+    'ApplicabilityDecidedOn' => 'තීරණය කරන ලදී',
+    // The framework-level Statement of Applicability card in the Add/Edit
+    // framework modals (display_framework_soa_card(), includes/governance.php).
+    // These two fields are what ISO/IEC 27001:2022 clause 6.1.3(d) needs on an
+    // SoA cover: the scope the framework is certified against, and how inclusion
+    // was determined for the controls that are simply applicable.
+    //
+    // 'IsmsScopeStatement' rather than a bare 'ScopeStatement' because "scope"
+    // is already overloaded across SimpleRisk (assessment scope, audit scope,
+    // risk scope); the ISMS prefix is what an ISO practitioner calls this exact
+    // field and keeps it from being reused for an unrelated one.
+    'StatementOfApplicability' => 'අදාළතා ප්‍රකාශය',
+    'IsmsScopeStatement' => 'විෂය පථ ප්‍රකාශය',
+    'IsmsScopeStatementHint' => 'මෙම රාමුව සහතික කර ඇති විෂය පථය. SoA කවර පිටුවේ දිස්වේ.',
+    'DefaultInclusionJustification' => 'පෙරනිමි ඇතුළත් කිරීමේ සාධාරණීකරණය',
+    'DefaultInclusionJustificationHint' => 'සම්බන්ධිත අවදානම් නොමැති අදාළ පාලනයන් සඳහා භාවිතා වේ. රාමුව නොව ධාවකය නම් කරන්න.',
+    // THE DEFAULT SENTENCE, in all three of its roles: the create form seeds the
+    // textarea with it, the Edit form shows it as a placeholder, and
+    // soa_framework_default_justification() (includes/soa.php) substitutes it at
+    // read time for a framework that has none. One key, because a reader must not
+    // be able to tell a stored default from a fallen-back one, and because three
+    // keys holding the same sentence is three chances for a translator to make
+    // them disagree. The name predates the seeding decision (Task 67) and is kept
+    // rather than churned through Crowdin for 39 locales.
+    //
+    // It names the DRIVER (the risk assessment) rather than the framework:
+    // "included because it is part of this framework" is circular, and ISO 6.1.3
+    // derives controls from risk treatment, using Annex A afterwards only as a
+    // completeness cross-check.
+    //
+    // It was a placeholder ONLY until Task 67, so that an unreviewed sentence
+    // could not reach a customer's SoA by inaction. Measured, that produced the
+    // opposite failure: 19 of 20 frameworks left the field NULL and the SoA's
+    // Justification column came out BLANK for every applicable control with no
+    // linked risks -- the finding an SoA is most often failed on, and one a
+    // boilerplate sentence does not attract.
+    'DefaultInclusionJustificationPlaceholder' => 'සංවිධානයේ තොරතුරු ආරක්ෂණ අවදානම් තක්සේරුව මගින් තීරණය කර අවශ්‍ය පාලනයක් ලෙස රඳවා ගනු ලැබේ.',
+    // Task 15: bulk-setting applicability from the control table's selection bar
+    // (#applicability--set, governance/index.php + governance-frameworks.js).
+    //
+    // The action's own label and the modal's one section. 'Applicability',
+    // 'Reason', 'Provider', 'Justification', 'Save' and 'Cancel' already exist
+    // and are reused; only the strings with no existing home are added here.
+    'SetApplicability' => 'අදාළත්වය සකසන්න',
+    'ApplicabilityDecision' => 'තීරණය',
+    // The amber scope note, in two sentences the page assembles separately
+    // because they answer two different questions: WHICH framework the decision
+    // is scoped to, and WHICH controls are about to receive it. The second one
+    // has two spellings, because the header checkbox selects the current PAGE
+    // while "Select all N" escalates to the whole filtered result set -- the two
+    // genuinely differ once the table pages, and a note that blurred them would
+    // let the user write 1,535 decisions believing they had written 25.
+    'ApplicabilityScopeNote' => 'මෙම තීරණය අදාළ වන්නේ "{$framework}" තුළ පමණි. එම පාලනයම වෙනත් රාමුවක් තුළ අදාළව පැවතිය හැකිය.',
+    'ApplicabilityAppliesToSelected' => 'එය මෙම පිටුවේ තෝරාගත් {$n} පාලන(ය) වලට එරෙහිව සටහන් වනු ඇත.',
+    'ApplicabilityAppliesToAllFiltered' => 'එය අනෙකුත් පිටුවල ඇති ඒවා ඇතුළුව, වත්මන් පෙරහන් වලට ගැලපෙන සියලුම {$n} පාලන(ය) වලට එරෙහිව පටිගත කෙරේ.',
+    // Per-state hints under the segmented control. The "applicable" one is the
+    // load-bearing sentence of the whole modal, and the SoA audit-readiness work
+    // rewrote it: an applicable control MAY now carry its own reasons and
+    // justification (ISO/IEC 27001 clause 6.1.3(d) asks for one per control, for
+    // inclusion as much as for exclusion), and leaving both empty is what falls
+    // back to the framework's default inclusion justification. The old sentence
+    // -- "this removes any recorded decision. No justification is needed." --
+    // is now false in both halves.
+    'ApplicabilityApplicableHint' => 'මෙම රාමුව සඳහා විෂය පථය තුළ. හේතුවක් සහ සාධාරණීකරණයක් අත්‍යවශ්‍ය නොවේ; දෙකම හිස්ව තැබීම රාමුවේ පෙරනිමි ඇතුළත් කිරීමේ සාධාරණීකරණය භාවිතා කරයි.',
+    'ApplicabilityNotApplicableHint' => 'මෙම රාමුවේ විෂය පථයෙන් පාලනයක් බැහැර කිරීම. හේතුවක් සහ ලිඛිත සාධාරණීකරණයක් යන දෙකම අවශ්‍ය වේ.',
+    'ApplicabilityInheritedHint' => 'ඔබ වෙනුවෙන් වෙනත් කෙනෙක් මෙම පාලනය සිදු කරයි. ඔවුන් නම් කර, ඔවුන් කරන දේ කියන්න.',
+    'ApplicabilityNarrativeHint' => 'අදාළතා ප්‍රකාශයේ දැක්වේ. තීරණය පිළිගැනීමට විගණකවරයෙකුට අවශ්‍ය දේ ලියන්න.',
+    'ApplicabilityProviderHint' => 'පාලනය සිදු කරන සංවිධානය: වලාකුළු සැපයුම්කරුවෙකු, කළමනාකරණය කළ සේවාවක්, මව් සමාගමක්.',
+    'ChooseAReason' => 'හේතුවක් තෝරන්න',
+    'ApplicabilityNoReason' => 'හේතුවක් නැත',
+    // Result toasts. Both interpolate a COUNT taken from the API response and
+    // nothing else -- no submitted text is ever reflected into a toast, which
+    // toastr renders as HTML.
+    'ApplicabilitySetResult' => '{$n} පාලන(ය) සඳහා අදාළත්වය යාවත්කාලීන කරන ලදී.',
+    'ApplicabilityClearResult' => '{$n} පාලන(ය) සඳහා අදාළ වන පරිදි අදාළත්වය යළි පිහිටුවන ලදී.',
+    // Bulk control delete (Task 54, corrected Task 55). Deleting a control is
+    // final either way the delete engine implements it: a control with test
+    // history is soft-deleted (framework_controls.deleted = 1) to keep test
+    // history intact, a control with no tests is removed outright -- but
+    // nothing anywhere flips that flag back, so from the user's side there is
+    // no "kept" case, only "deleted, and its test history survives for audit
+    // purposes." Every sentence therefore leads with the same irreversible
+    // warning; the only thing that varies is whether an audit-history clause
+    // is appended, and that clause is omitted entirely rather than printed
+    // with a count of zero -- "0 are retained for audit history" reads as a
+    // warning about something that is not going to happen, and on a delete
+    // confirmation that is exactly the kind of noise that trains people to
+    // stop reading. Every {$...} is a count from the API response; no user
+    // text is ever interpolated, which matters because toastr renders HTML.
+    'DeleteControlsPreviewChecking' => 'මකා දමන දේ පරීක්ෂා කරමින්...',
+    'DeleteControlsPreviewSplit' => '{$n} පාලනය(ය) මකා දැමෙනු ඇත. මෙය අහෝසි කළ නොහැක. ඒවායින් {$m} සඳහා වන පරීක්ෂණ ප්‍රතිඵල විගණන ඉතිහාසය සඳහා රඳවා ගනු ලැබේ.',
+    'DeleteControlsPreviewKeptOnly' => 'සියලුම {$n} පාලන(ය) මකා දැමෙනු ඇත. මෙය අහෝසි කළ නොහැක. විගණන ඉතිහාසය සඳහා පරීක්ෂණ ප්‍රතිඵල රඳවා ගනු ලැබේ.',
+    'DeleteControlsPreviewRemovedOnly' => '{$n} පාලනය(ය) මකා දැමෙනු ඇත. මෙය අහෝසි කළ නොහැක.',
+    'DeleteControlsPreviewNone' => 'මැකීමට කිසිවක් නැත: තෝරාගත් පාලනය(ය) තවදුරටත් නොපවතී.',
+    'ControlsDeletedResult' => '{$n} පාලන(ය) මකා දමන ලදී.',
+
+    // The Add/Edit framework modal's Status field. The label reuses the existing
+    // 'Status' key -- the same word the rail's Active/Inactive/All filter already
+    // uses -- so only the explanatory hint is new. It says the two things a user
+    // cannot see from the control itself: that Inactive is the NON-destructive way
+    // to retire a framework (unlike Delete, which cannot be undone), and that the
+    // change cascades through the hierarchy, which is what update_framework_status()
+    // has always done and is genuinely surprising when a parent is deactivated.
+    'FrameworkStatusHint' => 'අක්‍රිය රාමු ඒවායේ සියලුම පාලනයන් සහ සිතියම්ගත කිරීම් තබා ගනී, නමුත් පෙරනිමි රාමු ලැයිස්තුවෙන් සඟවා පාලන උපකරණ පුවරුවෙන් බැහැර කරනු ලැබේ. රාමුවක් අක්‍රිය කිරීමෙන් ඊට යටින් ඇති සෑම රාමුවක්ම අක්‍රිය වේ; එකක් සක්‍රිය කිරීමෙන් එහි මාපියන් ද සක්‍රිය වේ.',
+
+    // Task 60: the same #applicability--set modal, opened from ONE control's row
+    // action instead of the selection bulk bar. The button's own label reuses
+    // 'SetApplicability'; these two exist because the modal now has to say which
+    // of the two it is acting on, and both spellings must be unambiguous.
+    //
+    // The title names the specific object (design-system.md §8) and the note
+    // says "only", because the dangerous reading is the silent one: with rows
+    // ticked -- or with "Select all N filtered" in force -- a modal that said
+    // nothing would let a click the user believed applied to one row be read as
+    // applying to every control in the framework. Naming the control in both
+    // places is what makes the narrower scope visible rather than assumed.
+    // Corrected in Task 63. This spelling used to end "...only, whatever else is
+    // selected", which was printed on every row-action open whether or not
+    // anything else WAS selected -- a dangling absolute with no antecedent, so
+    // it read as a sentence that had been cut off. It is now the plain form, and
+    // the reassurance about a competing selection moved to
+    // 'ApplicabilityAppliesToControlNotSelection' below, which is printed only
+    // when there is a competing selection to reassure anyone about.
+    'SetApplicabilityForControl' => 'අදාළත්වය සකසන්න: {$name}',
+    'ApplicabilityAppliesToControl' => 'එය "{$name}" ට එරෙහිව පමණක් පටිගත කෙරේ.',
+
+    // Task 17: the Statement of Applicability report itself
+    // (reports/statement_of_applicability.php + pages/statement-of-applicability.js),
+    // the document ISO/IEC 27001:2022 clause 6.1.3(d) asks for and the one every
+    // applicability decision recorded on the Define Control Frameworks page
+    // exists to produce.
+    //
+    // 'StatementOfApplicability' already exists above (the framework modal's SoA
+    // card) and is reused for the report's own title, as are 'IsmsScopeStatement',
+    // 'DefaultInclusionJustification', the three 'Applicability*' state labels,
+    // 'ApplicabilityDecidedBy'/'DecidedOn', and the plain 'Framework',
+    // 'ControlNumber', 'ControlName', 'Justification', 'Evidence', 'Reason',
+    // 'Provider', 'Total', 'Controls' and 'Export' keys. Only strings with no
+    // existing home are added here.
+    'StatementOfApplicabilityDesc' => 'එක් රාමුවක් සඳහා: සෑම පාලනයක්ම, එය අදාළද යන්න, එය ඇතුළත් කළේ හෝ බැහැර කළේ ඇයි සහ එය ක්‍රියාත්මක කරන්නේද යන්න.',
+    // The header button on Define Control Frameworks. The verb is "generate"
+    // rather than "view" because the document is assembled at the moment it is
+    // asked for -- there is no stored SoA that could be out of date.
+    'GenerateStatementOfApplicability' => 'අදාළතා ප්‍රකාශය ජනනය කරන්න',
+
+    // The Justification column's SECOND resolution step, and the reason an SoA
+    // built here beats the spreadsheet it replaces: the risks that drove the
+    // control are already recorded against it, so nobody retypes them and they
+    // cannot go stale. {risks} is substituted with the displayed risk ids.
+    //
+    // Phrased to match clause 6.1.3, which derives controls from risk treatment
+    // and uses Annex A afterwards only as a completeness cross-check -- the same
+    // reasoning behind 'DefaultInclusionJustificationPlaceholder' above.
+    'SoaJustifiedByRiskAssessment' => 'සංවිධානයේ තොරතුරු ආරක්ෂක අවදානම් තක්සේරුව මගින් තීරණය කරනු ලැබේ. සම්බන්ධිත අවදානම්: {risks}.',
+
+    // The Implemented column. DERIVED from maturity and the last test result on
+    // every read, never stored, so it cannot drift out of sync with the control.
+    // 'Yes' and 'No' already exist and are reused; only the middle value and the
+    // header need keys of their own. An excluded control's cell reuses the
+    // existing 'NotApplicable' ('N/A'), which is exactly the right abbreviation
+    // in a dense table.
+    'SoaImplemented' => 'ක්‍රියාත්මක කරන ලදී',
+    'SoaImplementedPartial' => 'අර්ධ',
+
+    // The cover block.
+    'SoaGeneratedOn' => 'ජනනය කරන ලද්දේ',
+    'SoaExcludedCount' => 'බැහැර කර ඇත',
+
+    // The prompt shown when the framework has never been given the two cover
+    // fields. It PROMPTS rather than silently printing a blank cover: an SoA
+    // whose scope is empty is the one defect an auditor spots first, and the
+    // moment somebody opens the report is the only moment those fields matter.
+    // Both spellings of empty (never set, and deliberately cleared) prompt --
+    // from a reader's point of view there is nothing to print either way.
+    //
+    // The inclusion-justification line states a WEAKER consequence than it used
+    // to, because Task 67 made the stronger one untrue: the column no longer goes
+    // blank when the field is empty -- soa_framework_default_justification()
+    // substitutes the generic default sentence. The prompt survives because a
+    // generic sentence is not the organization's own, and an auditor reading 1,500
+    // identical rows of boilerplate is entitled to ask whose risk assessment it
+    // refers to.
+    'SoaMissingFieldsTitle' => 'මෙම ප්‍රකාශයේ කවර විස්තර නොමැත.',
+    'SoaMissingScopeStatement' => 'මෙම රාමුව සඳහා කිසිදු විෂය පථ ප්‍රකාශයක් සටහන් කර නොමැත. SoA එකක් එය සිදු කර ඇති විෂය පථය සඳහන් කළ යුතුය.',
+    'SoaMissingInclusionJustification' => 'පෙරනිමි ඇතුළත් කිරීමේ සාධාරණීකරණයක් වාර්තා කර නොමැත. සම්බන්ධිත අවදානම් නොමැති අදාළ පාලනයන් ඔබේම ප්‍රකාශයට වඩා සාමාන්‍ය ප්‍රකාශයකට නැවත වැටෙනු ඇත.',
+    'SoaEditFrameworkToAdd' => 'ඒවා රාමුවට එක් කරන්න.',
+
+    // Opened from the Reporting Hub, which cannot supply a framework. A picker,
+    // not an error: an SoA is a per-framework document by definition -- the same
+    // control excluded from ISO 27001 is not thereby excluded from PCI DSS --
+    // and there is no cross-framework roll-up to offer instead.
+    'SoaChooseFramework' => 'රාමුවක් තෝරන්න',
+    'SoaChooseFrameworkHint' => 'අදාළත්වය පිළිබඳ ප්‍රකාශයක් වරකට එක් රාමුවක් පිළිබඳව ලියා ඇත.',
+    // The picker has a roster but nothing in it. Distinct from "this framework
+    // has no controls": there is no framework to write a statement about at all,
+    // and the fix is on a different page, so it says which one.
+    // The launcher's affordance row. "Open in browser" rather than "View"
+    // because it names what actually happens -- the document opens in a new tab,
+    // chrome-free -- and because Task 18 adds "Download as PDF" and "Download as
+    // XLSX" beside it, where "open" vs "download" is the distinction that
+    // matters.
+    // The document has no sidebar, so it needs its own way back for anyone who
+    // arrives from a bookmark or a shared link. Screen only; never printed.
+    'SoaBackToSelector' => 'අදාළතා ප්‍රකාශය වෙත ආපසු',
+    'SoaNoFrameworks' => 'ක්‍රියාකාරී රාමු නොමැත',
+    'SoaNoFrameworksHint' => 'Governance > Define Control Frameworks යටතේ රාමුවක් ස්ථාපනය කරන්න හෝ සක්‍රිය කරන්න, එවිට එය මෙහි ලබා ගත හැකිය.',
+
+    // The two refusals. Both explain rather than just failing, because the user
+    // arrived here deliberately.
+    'SoaFrameworkInactiveTitle' => 'මෙම රාමුව අක්‍රියයි.',
+    'SoaFrameworkInactiveBody' => 'අදාළතා ප්‍රකාශයක් මඟින් සංවිධානයක් දැනට ක්‍රියාත්මක වන විෂය පථය විස්තර කෙරේ. එකක් ජනනය කිරීම සඳහා රාමුව නැවත සක්‍රිය කරන්න.',
+    'SoaFrameworkNotFoundBody' => 'ඒ රාමුව තවදුරටත් නොපවතී.',
+
+    // A framework with no controls mapped into it. Not an error -- it is a real
+    // and recoverable state, and saying so beats an empty table.
+    'SoaNoControls' => 'මෙම රාමුවට පාලනයක් නොමැත.',
+    'SoaNoControlsHint' => 'සිතියම් පාලන රාමුවට ඇතුළත් කර එහි අදාළතා ප්‍රකාශය මඟින් ඒවා ලැයිස්තුගත කෙරේ.',
+
+    // The second half of the statement-of-applicability launcher's affordance
+    // row, beside "Open in browser" and the existing 'DownloadAsXLSX'. Rendered
+    // only where the Import/Export Extra is active, which is what supplies the
+    // export. "Download as" rather than "Export to" so the pair reads as one
+    // choice of format, and so it matches the XLSX label already in this file.
+    'DownloadAsPDF' => 'PDF ලෙස බාගන්න',
+
+    // The fourth column of the control modal's "Mapped Control Frameworks"
+    // widget, between the reference code and the reference text. The
+    // FRAMEWORK's own title for the control it is citing -- what a Statement of
+    // Applicability prints beside the clause number. Distinct from the existing
+    // 'ReferenceText', which holds the framework's full control statement, and
+    // from the SimpleRisk control's own name.
+    'ReferenceSubject' => 'යොමු විෂය',
+    // Placeholder/help text under that field, and the reason it is worth
+    // filling in: without it the Statement of Applicability has nothing to
+    // print but the source catalogue's name for its own control.
+    'ReferenceSubjectHint' => "මෙම පාලනය සඳහා රාමුවේම මාතෘකාව.",
+
+    // Task 63: the row-scoped population sentence in the Set applicability
+    // modal, in the one situation where the plain
+    // 'ApplicabilityAppliesToControl' above leaves a real question unanswered --
+    // the user has controls ticked, or a standing "Select all N filtered", and
+    // has just opened the modal from ONE row's own action.
+    //
+    // It states the guarantee rather than implying it. A user whose escalated
+    // selection covers an entire framework needs to know that this click is not
+    // about to overwrite it, and {$n} is the count of the OTHER selected
+    // controls -- the target is excluded, because it is very often ticked too
+    // and a promise that included it would be false.
+    'ApplicabilityAppliesToControlNotSelection' => 'එය "{$name}" ට එරෙහිව පමණක් පටිගත කෙරේ — ඔබ තෝරාගත් {$n} පාලන(ය) වලට බලපෑමක් සිදු නොවේ.',
+
+    // Task 65: the VISIBLE label on the controls toolbar's SoA button. The full
+    // sentence ('GenerateStatementOfApplicability' above) stays as the button's
+    // title and aria-label, and is still what the SoA page itself is called;
+    // this is the short form for a toolbar row it shares with the page's one
+    // primary action. At full length the secondary button measured more than
+    // twice the primary's width and became the largest element in the row.
+    //
+    // "SoA" is safe to abbreviate HERE and only here: the button appears solely
+    // when a single framework is scoped, beside an Applicability column, and it
+    // expands on hover.
+    'GenerateSoa' => 'SoA ජනනය කරන්න',
+
+    // ===== Clone framework (Task 64) =======================================
+    // The framework half of Clone control's framing (CloneOfControlTitle /
+    // ClonedFromControlNotice above), and for the same reason: the clone
+    // pre-fills the Add Framework modal rather than creating anything, so the
+    // modal has to say what was carried over before the user saves it.
+    //
+    // Separate keys from the control pair rather than one shared "Clone of
+    // {$name}" -- the two banners do not say the same thing. A cloned control
+    // simply asks to be reviewed; a cloned FRAMEWORK has to explain two things
+    // its fields cannot: that the source's control mappings come with it, and
+    // that the empty scope statement is deliberate. The blank field is the
+    // whole reason the banner is longer than the control's -- a scope statement
+    // left blank with no explanation reads as a field that failed to populate,
+    // and the one thing a clone exists to be given is a NEW scope (Josh: "you
+    // might want to use the same controls as one framework, but scope it
+    // differently"). {$name} and {$n} follow the same client-side
+    // formatTemplate() substitution the rest of this page's templates use.
+    'CloneOfFrameworkTitle' => '"{$name}" හි ක්ලෝනය',
+    // {$n} is the count the rail is SHOWING for the source row -- its controls,
+    // not its raw mapping rows. Those differ (a framework can cite one control
+    // under two clause numbers, and the rail excludes deleted controls), and the
+    // number to promise is the one the user is looking at when they click and
+    // the one the clone's own rail row will show afterwards.
+    'ClonedFromFrameworkNotice' => '"{$name}" වෙතින් ක්ලෝන කර ඇත. එහි {$n} පාලනයන් නව රාමුවට පිටපත් කරනු ලැබේ, ඒවායින් සෑම එකක්ම ආරම්භ කිරීමට අදාළ වේ - එහි අදාළ තීරණ කිසිවක් ඉදිරියට ගෙන නොයයි. විෂය පථ ප්‍රකාශය හිතාමතාම හිස් ය: එහි අදාළතා ප්‍රකාශය ජනනය කිරීමට පෙර මෙම රාමුව ආවරණය කරන විෂය පථය සඳහන් කරන්න.',
+    // Seeds the name field so the clone can be saved without a rename --
+    // framework names are unique, so a verbatim copy is refused on save.
+    'CloneOfFrameworkName' => '{$name} (ක්ලෝනය)',
+    'CloneFramework' => 'ක්ලෝන රාමුව',
+    // Extras version independently of Core, so an updated Import/Export Extra
+    // can end up calling a Core function the installed Core does not have. The
+    // export refuses with this rather than fataling -- see
+    // soa_export_refuse_if_core_too_old(), extras/import-export/includes/soa_export.php.
+    'SoaExportRequiresNewerCore' => 'මෙම නිර්යාතයට ස්ථාපනය කර ඇති අනුවාදයට වඩා SimpleRisk Core හි නව අනුවාදයක් අවශ්‍ය වේ. SimpleRisk යාවත්කාලීන කර, නැවත නිර්යාත කිරීමට උත්සාහ කරන්න.',
+    // The framework ACQUISITION chooser (Task 26): "+ Add framework" asks how you
+    // want to get one, rather than assuming you want to type it in. Each option is
+    // rendered only when the route behind it actually exists for this user, so the
+    // hint text may state plainly what the route does -- it is never shown to
+    // someone who cannot take it.
+    'HowDoYouWantToAddAFramework' => 'ඔබට රාමුවක් එකතු කිරීමට අවශ්‍ය වන්නේ කෙසේද?',
+    'CreateFrameworkManually' => 'එකක් අතින් සාදන්න',
+    'CreateFrameworkManuallyHint' => 'රාමුව ඔබම නම් කරන්න, ඉන්පසු එහි පාලන එකතු කරන්න හෝ සිතියම්ගත කරන්න.',
+    // Named for the framework rather than for its vendor. The hint was reworded
+    // at the same time: it used to end "...load its Secure Controls Framework
+    // controls", which read as a stutter once the label carried those words.
+    'GetFrameworkFromScf' => 'ආරක්ෂිත පාලන රාමුවෙන් එකක් ලබා ගන්න',
+    'GetFrameworkFromScfHint' => 'ප්‍රකාශිත රාමුවක් තෝරාගෙන එහි සිතියම්ගත කළ පාලනයන් එක් පියවරකින් පූරණය කරන්න.',
+    'ImportFrameworkFromCatalog' => 'එකක් ආයාත කරන්න',
+    'ImportFrameworkFromCatalogHint' => 'SimpleRisk අන්තර්ගත නාමාවලියෙන් රාමුවක් සහ එහි පාලනයන් ස්ථාපනය කරන්න.',
+
+    // The framework acquisition chooser's third route, which now offers the
+    // Import-Export Extra's CONTROL import (a spreadsheet naming a framework
+    // that does not exist yet creates it) rather than the GitHub catalogue the
+    // two keys above described. Those two are left in place, unreferenced, so a
+    // customer maintaining a custom lang.<locale>.php still reconciles by tail
+    // diff.
+    'ImportFrameworkFromSpreadsheet' => 'පැතුරුම්පතකින් එකක් ආයාත කරන්න',
+    'ImportFrameworkFromSpreadsheetHint' => 'රාමුව නම් කරන පාලන පැතුරුම්පතක් උඩුගත කරන්න, එවිට දෙකම නිර්මාණය වේ.',
+
+    // The Define Control Frameworks rail's second synthetic scope: the controls
+    // mapped to no framework at all. Its first, "All controls", reuses the
+    // existing AllControls key rather than adding a second string with the same
+    // English -- it replaced 'AllFrameworks' on that row, which named a union of
+    // frameworks while scoping to every control, mapped or not. 'AllFrameworks'
+    // is left in place and unreferenced by that page: other surfaces still use
+    // it, and every locale carries it.
+    'UnassignedControls' => 'පවරා නොමැති පාලන',
+    // APPLICABILITY VALIDATION FAILURES. These reach the user: the v2 endpoint
+    // returns the exception's message as the API status message and the page
+    // renders it in a toast, so a hardcoded English literal here would be
+    // permanently English for every locale.
+    //
+    // NOTHING THE CALLER TYPED IS EVER INTERPOLATED INTO THESE. The parameters
+    // are validated enum values, integer ids and byte limits the server itself
+    // owns -- naming the ALLOWED values rather than echoing the rejected one is
+    // deliberate (it is both safe and more useful than repeating a typo).
+    'ApplicabilityErrUnknownState' => 'නොදන්නා අදාළතා තත්ත්වය. අපේක්ෂිත එකක්: {$states}.',
+    'ApplicabilityErrNarrativeRequired' => '\'{$state}\' සඳහා ආඛ්‍යානයක් අවශ්‍ය වේ.',
+    'ApplicabilityErrNarrativeTooLong' => 'කතාව {$bytes} බයිට් වලට වඩා දිගුය.',
+    'ApplicabilityErrReasonRequired' => 'අදාළ නොවන පාලනයක් සලකුණු කිරීමට බැහැර කිරීමේ හේතුවක් අවශ්‍ය වේ.',
+    'ApplicabilityErrProviderRequired' => 'උරුම වූ පාලනයක් සලකුණු කිරීමට සැපයුම්කරුවෙකු අවශ්‍ය වේ.',
+    'ApplicabilityErrProviderTooLong' => 'සැපයුම්කරුගේ නම {$bytes} බයිට් වලට වඩා දිගු වේ.',
+    'ApplicabilityErrReasonsNotFound' => 'මෙම අදාළ වීමේ හේතු නොමැත: {$ids}.',
+    'ApplicabilityErrReasonsNotOffered' => 'මෙම තත්ත්වය සඳහා මෙම අදාළ වීමේ හේතු ඉදිරිපත් නොකෙරේ: {$ids}.',
+    'ApplicabilityErrFrameworkNotFound' => 'රාමුව {$framework} නොපවතී.',
+    'ApplicabilityErrControlsNotFound' => 'මෙම පාලන හැඳුනුම්පත් නොපවතී: {$ids}.',
+    // Controls/Risks import result messages (validation gate, individual bad-row
+    // alerts, and the batched submitted/created/updated summaries)
+    'ControlIdOrShortNameFieldRequired' => 'පාලන හැඳුනුම්පත හෝ පාලන කෙටි නාම ක්ෂේත්‍රය සිතියම්ගත කළ යුතුය -- ඒවායින් එකක් නොමැතිව පේළියක් හඳුනාගත නොහැක.',
+    'RiskImportSubjectNull' => 'අවදානම් හැඳුනුම්පත {$risk_id}: විෂය ක්ෂේත්‍රය හිස් හෝ අස්ථානගත වී ඇති නිසා යාවත්කාලීන කර නොමැත.',
+    'RiskImportSummary' => '{$submitted} අවදානම්(ය) ඉදිරිපත් කරන ලද අතර යාවත්කාලීන කරන ලද {$updated} අවදානම්(ය) ඉදිරිපත් කරන ලදී.',
+    'ControlImportSummary' => '{$created} පාලන(ය) නිර්මාණය කර {$updated} පාලන(ය) යාවත්කාලීන කරන ලදී.',
+    'ImportAdditionalIssuesSuppressed' => '{$count} අමතර පේළි(ය) වල ගැටළු ඇති වූ අතර ඒවා මෙහි තනි තනිව නොපෙන්වයි.',
+    'EncryptionPipelineStalledTask' => 'සංකේතන නල මාර්ගයක් (කාර්යය #{$id}, {$type}) ඇනහිට ඇති බව පෙනේ — එය අසාමාන්‍ය ලෙස දිගු කාලයක් තිස්සේ ප්‍රගතියක් නොමැතිව {$status} පැවතුනි. මෙයින් සාමාන්‍යයෙන් අදහස් වන්නේ පසුබිම් පෝලිම් සේවකයා ක්‍රියාත්මක නොවන බවයි; එය කාලසටහන්ගත කර ඇත්දැයි පරීක්ෂා කර, එය ඇනහිට ඇති කාර්යය සැකසූ පසු නැවත උත්සාහ කරන්න.',
+    'EncryptionPipelineStalledState' => 'සංකේතන නල මාර්ගයක් ඇණහිට ඇති බව පෙනේ - එය අසාමාන්‍ය ලෙස දිගු කාලයක් තිස්සේ ක්‍රියාත්මක වෙමින් පවතින බව සලකුණු කර ඇති අතර එයට යොමු කිරීමට ගැලපෙන පසුබිම් කාර්යයක් නොමැත. මෙයින් සාමාන්‍යයෙන් අදහස් වන්නේ පෝලිම් සේවකයා ක්‍රියාත්මක නොවන බවයි, නැතහොත් පෙර නල මාර්ගයක් මෙය නිවැරදිව යාවත්කාලීන නොකර අවසන් කර ඇති බවයි. නැවත උත්සාහ කිරීමට පෙර නිදොස් කිරීමේ ලොගය පරීක්ෂා කරන්න.',
+    // DEMO_MODE — shown when a visitor to a shared demo instance attempts one
+    // of the operations that would spoil the demo for the next visitor
+    'ActionDisabledOnDemoInstance' => 'මෙම ක්‍රියාව SimpleRisk demo අවස්ථාවෙහිදී අබල කර ඇත.',
+
+    // The one-click upgrade progress window: the step an upgrade is on, and
+    // the line shown once it finishes
+    // Shown when an upgrade's progress record has not been touched for long
+    // enough that the process running it is presumed gone
+    'UpgradeJobStalled' => 'උත්ශ්‍රේණි කිරීම ප්‍රතිචාර දැක්වීම නැවැත්වීය. නැවත උත්සාහ කිරීමට පෙර සේවාදායක ලොගය පරීක්ෂා කරන්න.',
+    // Shown when an upgrade replaced the instance's configuration file and could
+    // not put the original back
+    // Shown when the database was brought up to date but the application files
+    // could not be replaced, so the instance has NOT moved to the new release
+    'UpdateAppFailed' => 'යෙදුම් ගොනු උත්ශ්‍රේණි කර නැත, එබැවින් මෙම අවස්ථාව තවමත් එහි පෙර නිකුතුව ක්‍රියාත්මක වේ. හේතුව සඳහා SimpleRisk ලොගය පරීක්ෂා කර, පසුව උත්ශ්‍රේණි කිරීම නැවත ක්‍රියාත්මක කරන්න.',
+    // The one-click upgrade progress screen
+    'UpgradeInProgress' => 'ප්රගතියේ',
+    'UpgradeStepNotNeeded' => 'අවශ්‍ය නොවේ',
+    // Recovering an Upgrade Extra whose files are damaged
+    'UpgradeExtraDamagedReinstalling' => 'ස්ථාපිත උත්ශ්‍රේණි කිරීමේ අමතර කොටස හානි වී ඇත. නව පිටපතක් බාගනිමින්.',
+    'UpgradeExtraDamagedRepaired' => 'උත්ශ්‍රේණි කිරීමේ අමතර කොටස ක්‍රියාකාරී පිටපතකින් ප්‍රතිස්ථාපනය විය.',
+    'UpgradeExtraDamagedFailed' => 'උත්ශ්‍රේණි කිරීමේ අමතර කොටස හානි වී ඇති අතර ස්වයංක්‍රීයව ප්‍රතිස්ථාපනය කළ නොහැක. අමතර පිටුවෙන් එය නැවත ස්ථාපනය කරන්න, නැතහොත් උපස්ථයකින් simplerisk/extras/upgrade/ ප්‍රතිසාධනය කර නැවත උත්සාහ කරන්න.',
+    'UpgradeAlreadyCurrent' => 'මෙම අවස්ථාව දැනටමත් {version}හි ඇති අතර එය මෑත කාලීන නිකුතුවයි. කිසිවක් උත්ශ්‍රේණි කිරීමට අවශ්‍ය නොවේ.',
+    'UpgradeShowWhatItDid' => 'එය කළ දේ පෙන්වන්න',
+    'UpgradeBackupsListed' => 'මෙම උපස්ථ වින්‍යාස කරන්න > උපස්ථ යටතේ ලැයිස්තුගත කර ඇත.',
+    'UpgradingTo' => '{version} වෙත උත්ශ්‍රේණි කරමින්',
+    'UpgradeSafeToClose' => 'මෙම කවුළුව වැසීම ආරක්ෂිතයි. සේවාදායකයේ උත්ශ්‍රේණි කිරීම දිගටම සිදුවන අතර මෙම පිටුව නැවත අමුණනු ලැබේ.',
+    'UpgradeDownloadLog' => 'බාගැනීම් ලොගය',
+    'UpgradeStatementsApplied' => 'ආරම්භ කරන ලදී {started} · {count} ප්‍රකාශ යොදන ලදී',
+    // The Upgrade Extra's pre-upgrade check of the instance it is sitting on
+    'UpgradeCheckingInstance' => 'මෙම අවස්ථාව පරීක්ෂා කරමින්',
+    'UpgradeInstanceChecked' => 'අවස්ථාව පරීක්ෂා කරන ලදී, නිවැරදි කිරීම් අවශ්‍ය නොවේ.',
+    'UpgradeBlockedByCorrections' => 'මෙම අවස්ථාවට ස්වයංක්‍රීයව යෙදිය නොහැකි නිවැරදි කිරීමක් අවශ්‍ය වන බැවින් උත්ශ්‍රේණි කිරීම නතර විය. ඉහත උපදෙස් අනුගමනය කරන්න, ඉන්පසු උත්ශ්‍රේණි කිරීම නැවත ක්‍රියාත්මක කරන්න. වෙනත් කිසිවක් වෙනස් කර නැත.',
+    // Shown when an upgrade replaced the instance's configuration file and could not put the original back
+    'ConfigRestoreFailed' => 'උත්ශ්‍රේණි කිරීමට මෙම අවස්ථාවෙහි වින්‍යාස ගොනුව ප්‍රතිසාධනය කිරීමට නොහැකි විය. ඉදිරියට යාමට පෙර උපස්ථයෙන් simplerisk/includes/config.php ප්‍රතිසාධනය කරන්න.',
+    'UpgradeDidNotAdvance' => '"{$version}" අනුවාදය සඳහා උත්ශ්‍රේණි කිරීමේ ශ්‍රිතය දත්ත සමුදා අනුවාදය ඉදිරියට ගෙන ගියේ නැත; එය නැවත ක්‍රියාත්මක නොවන පරිදි නතර කිරීම.',
+    'BackupDatabaseNative' => 'දත්ත සමුදාය උපස්ථ කිරීම (බාහිර මෙවලම් අවශ්‍ය නොවේ)...',
+    'UpgradeAlreadyRunning' => 'මෙම අවස්ථාවේදී උත්ශ්‍රේණි කිරීමක් දැනටමත් ක්‍රියාත්මක වේ.',
+    'UpgradeStatusUnreachable' => 'උත්ශ්‍රේණි කිරීම ක්‍රියාත්මක වන අතරතුර සේවාදායකය සමඟ සම්බන්ධතාව නැති විය. SimpleRisk ලොගය පරීක්ෂා කරන්න; උත්ශ්‍රේණි කිරීම තවමත් සිදුවෙමින් පැවතිය හැකිය.',
+    'UpgradeJobUnwritable' => 'එහි ප්‍රගති වාර්තාව ලිවිය නොහැකි වූ නිසා උත්ශ්‍රේණි කිරීම ආරම්භ කළ නොහැකි විය. පද්ධති තාවකාලික නාමාවලිය වෙබ් පරිශීලකයාට ලිවිය හැකිදැයි පරීක්ෂා කරන්න.',
+    'UpgradeStepCheckingVersions' => 'අනුවාද පරීක්ෂා කිරීම',
+    'UpgradeStepUpgradingDatabase' => 'දත්ත සමුදා ක්‍රමලේඛනය උත්ශ්‍රේණි කිරීම',
+    'UpgradeStepFinalising' => 'උත්ශ්‍රේණි කිරීමෙන් පසු පරිවර්තන යෙදීම',
+    'UpgradeDatabaseHeading' => 'දත්ත සමුදාය උත්ශ්‍රේණි කිරීම',
+    'UpgradeDatabaseComplete' => 'දත්ත සමුදාය උත්ශ්‍රේණි කිරීම සම්පූර්ණයි.',
+    'UpgradeHideWhatItDid' => 'එය කළ දේ සඟවන්න',
+    'UpgradeStateRunning' => 'දුවනවා',
+    'UpgradeSessionExpired' => 'ඔබගේ සැසිය කල් ඉකුත් විය. උත්ශ්‍රේණි කිරීම බැලීමට නැවත පුරන්න.',
+    'UpgradeLostContact' => 'සේවාදායකය සමඟ සම්බන්ධතාව නැති විය. උත්ශ්‍රේණි කිරීමට නැවත සම්බන්ධ වීමට මෙම පිටුව නැවත පූරණය කරන්න.',
+    'UpgradeDatabaseAlreadyCurrent' => 'දත්ත සමුදාය දැනටමත් යෙදුම් අනුවාදයේ ඇත.',
+    'UpgradeConversionsApplied' => 'එන්ජිම සහ අක්ෂර කට්ටල පරිවර්තන යොදන ලදී.',
+    'UpgradeStoppedShort' => '{reached} {app}වෙත ළඟා නොවී උත්ශ්‍රේණි කිරීම නතර විය. සේවාදායක ලොගය බලන්න.',
+    'UpgradeStepBackingUp' => 'උපස්ථ කරමින්',
+    'UpgradeStepUpgradingFiles' => 'යෙදුම් ගොනු උත්ශ්‍රේණි කිරීම',
+    'UpgradeStepUpgradingExtras' => 'ස්ථාපිත අමතර අංග උත්ශ්‍රේණි කිරීම',
+    'UpgradeStepUpdatingUpgradeExtra' => 'උත්ශ්‍රේණි කිරීමේ අමතර කොටස යාවත්කාලීන කිරීම',
+    // The Upgrade Extra's pre-chain corrections: what is wrong, and what to do
+    // about it. These are the highest-stakes messages the upgrade produces --
+    // an operator reads them to unstick an instance that cannot upgrade.
+    'UpgradeCorrectionUnknownVersionTitle' => 'පටිගත කරන ලද දත්ත සමුදා අනුවාදය සැබෑ නිකුතුවක් නම් නොකරයි.',
+    'UpgradeCorrectionNoRecordedVersion' => 'දත්ත සමුදායේ පටිගත කළ අනුවාදයක් නොමැත.',
+    'UpgradeCorrectionUnknownVersionFinding' => 'දත්ත සමුදාය \'{$version}\' අනුවාදය වාර්තා කරයි, එය SimpleRisk නිකුතුවක් නම් නොකරයි. උත්ශ්‍රේණි කිරීමට එයින් ආරම්භක ස්ථානයක් තෝරා ගත නොහැක.',
+    'UpgradeCorrectionUnknownVersionGuidance' => 'db_version සැකසුම මෙම දත්ත සමුදායේ ඇත්ත වශයෙන්ම ඇති යෝජනා ක්‍රමයට සකසන්න, ඉන්පසු උත්ශ්‍රේණි කිරීම නැවත ක්‍රියාත්මක කරන්න: UPDATE සැකසුම් SET value=\'<release>\' WHERE name=\'db_version\'. අගය 2026XXXX-001 වැනි ස්ථාන දරන්නා නම්, නිවැරදි අගය සෑම විටම පාහේ උත්ශ්‍රේණි කිරීම ක්‍රියාත්මක වීමට පෙර ස්ථාපනය කරන ලද වඩාත්ම මෑත කාලීන සැබෑ නිකුතුව වේ.',
+    'UpgradeCorrectionLegacySessionsTitle' => 'සැසි වගුවට උත්ශ්‍රේණි කිරීමේ අක්ෂර කට්ටල පරිවර්තනයෙන් බේරිය නොහැක.',
+    'UpgradeCorrectionLegacySessionsFinding' => '`sessions`.`id` යනු MyISAM වගුවක VARCHAR({$width}) වේ. එය 20230106-001 සිට නිකුත් කරන utf8mb4 බවට පරිවර්තනය කිරීම, MyISAM හි 1000-byte දර්ශක සීමාව ඉක්මවා යන අතර උත්ශ්‍රේණි කිරීම අසාර්ථක වනු ඇත.',
+    'UpgradeCorrectionLegacySessionsGuidance' => 'ක්‍රියාකාරී සැසි එකක් හෝ කිහිපයක් අක්ෂර 128 ට වඩා දිගු හැඳුනුම්පතක් භාවිතා කරයි. දැන් තීරුව පටු කිරීමෙන් එම පරිශීලකයින් ලොග් අවුට් වනු ඇත, එබැවින් එය තනිවම ඉතිරි විය. එම සැසි කල් ඉකුත් වූ විට උත්ශ්‍රේණි කිරීම නැවත උත්සාහ කරන්න.',
+    'UpgradeCorrectionApplied' => 'නිවැරදි කරන ලදී.',
+    'UpgradeCorrectionFailed' => 'මෙම නිවැරදි කිරීම යෙදිය නොහැකි විය. හේතුව සඳහා SimpleRisk ලොගය බලන්න.',
+    'UpgradeCorrectionAppliedLine' => 'නිවැරදි කරන ලදී: {$title} {$message}',
+    'UpgradeCorrectionNotAppliedLine' => 'නිවැරදි කර නැත: {$title} {$message}',
+    'UpgradeCorrectionsNeeded' => 'මෙම අවස්ථාව උත්ශ්‍රේණි කිරීමට පෙර අවශ්‍ය නිවැරදි කිරීම්: {$count}',
+    'UpgradeCorrectionsNeededShort' => 'නිවැරදි කිරීම් අවශ්‍යයි: {$count}',
+    'UpdateDatabase' => 'දත්ත සමුදාය උත්ශ්‍රේණි කරමින්...',
+    // Authentication screens (index.php, reset.php, reset_password.php)
+    'EnterTheCredentialsForYourAccount' => 'ඔබගේ ගිණුම සඳහා අක්තපත්‍ර ඇතුළත් කරන්න.',
+    'TroubleSigningIn' => 'පුරනය වීමේ ගැටලුවක්ද? ඔබේ SimpleRisk පරිපාලක අමතන්න.',
+    'BackToLogin' => 'නැවත පිවිසීමට',
+    'Or' => 'හෝ',
+    'WeWillEmailAResetTokenToYourAccount' => 'අපි ඔබගේ ගිණුමේ ඇති ලිපිනයට යළි පිහිටුවීමේ ටෝකනයක් විද්‍යුත් තැපෑලෙන් එවන්නෙමු.',
+    'EnterTheResetTokenFromYourEmail' => 'ඔබගේ නව මුරපදය සමඟ ඔබගේ විද්‍යුත් තැපෑලෙන් යළි පිහිටුවීමේ ටෝකනය ඇතුළත් කරන්න.',
+    'ChooseANewPasswordToContinue' => 'ඉදිරියට යාමට නව මුරපදයක් තෝරන්න.',
+    'FromZeroToGRCInMinutes' => 'මිනිත්තු කිහිපයකින් ZERO සිට GRC දක්වා.',
+    'OrganizationLogo' => 'සංවිධාන ලාංඡනය',
+    'LoginScreenBranding' => 'පිවිසුම් තිර සන්නාමකරණය',
+    'CustomLogo' => 'අභිරුචි ලාංඡනය',
+    'CustomLogoHint' => 'PNG, JPG, GIF හෝ WebP, 1 MB දක්වා සහ 2000x2000 දක්වා. 260x64 දක්වා පෙන්වනු ලැබේ, එබැවින් ඉහළ ඝනත්ව තිර සඳහා 520x128 පමණ සපයන්න. ඉහළ තීරුව සහ පිවිසුම් පැනලය අඳුරු බැවින්, අඳුරු පසුබිමක කියවන ලාංඡනයක් උඩුගත කරන්න. SimpleRisk එකට ආපසු යාමට ලාංඡනය ඉවත් කරන්න.',
+    'CurrentLogo' => 'වත්මන් ලාංඡනය',
+    'RemoveLogo' => 'ලාංඡනය ඉවත් කරන්න',
+    'LoginTagline' => 'පිවිසුම් ටැග්ලයින්',
+    'LoginTaglineHint' => 'පිවිසුම් තිරයේ SimpleRisk ටැග්ලයින් එක ප්‍රතිස්ථාපනය කරයි. එක් කෙටි පේළියක් හොඳින්ම කියවිය හැකිය. SimpleRisk ටැග්ලයින් එක තබා ගැනීමට එය හිස්ව තබන්න.',
+    'LoginNotice' => 'පද්ධති භාවිත දැන්වීම',
+    'LoginNoticeHint' => 'කිසිවෙකු පුරනය වීමට පෙර පිවිසුම් තිරයේ පෙන්වනු ලැබේ. පිළිගත හැකි භාවිතයක් හෝ පද්ධති භාවිත දැනුම්දීමක් සඳහා එය භාවිතා කරන්න. දැනුම්දීමක් නොපෙන්වීමට එය හිස්ව තබන්න. සබැඳි සහ රූප සඳහා අවසර නැත.',
+    'BrandingRequiresCustomization' => 'පිවිසුම් තිර සන්නාමකරණය අභිරුචිකරණ අමතර කොටසකි.',
+    'LogoMustBeAnImage' => 'ලාංඡනය PNG, JPG, GIF හෝ WebP රූපයක් විය යුතුය.',
+    'LogoTooLarge' => 'ලාංඡනය 1 MB ට වඩා විශාල නොවිය යුතුය.',
+    'LogoDimensionsTooLarge' => 'ලාංඡනය පික්සල 2000x2000 ට වඩා විශාල නොවිය යුතුය.',
+    'LogoDimensionsTooSmall' => 'ලාංඡනය එහි දිගම කෙළවරේ අවම වශයෙන් පික්සල 32ක් විය යුතුය.',
+    'LogoUploadFailed' => 'ලාංඡනය උඩුගත කළ නොහැකි විය. කරුණාකර නැවත උත්සාහ කරන්න.',
+    'LogoUpdated' => 'ලාංඡනය යාවත්කාලීන කරන ලදී.',
+    'LogoRemoved' => 'ලාංඡනය ඉවත් කරන ලදී.',
+    'NoSystemUseNoticeSet' => 'පද්ධති භාවිත දැන්වීමක් සකසා නොමැත.',
+    'NoticeSizeSmall' => 'කුඩා',
+    'NoticeSizeNormal' => 'සාමාන්‍ය',
+    'NoticeSizeLarge' => 'විශාල',
+    // Preferences page save feedback
+    'TheSettingsWereUpdatedSuccessfully' => 'සැකසුම් සාර්ථකව යාවත්කාලීන කරන ලදී.',
+    'NoChangesWereMade' => 'කිසිදු වෙනසක් සිදු කර නොමැත.',
+    'PleaseSpecifyAnIntegerGreaterThanOrEqualToZeroForTheMinimumValue' => 'අවම අගය සඳහා ශුන්‍යයට වඩා වැඩි හෝ සමාන පූර්ණ සංඛ්‍යාවක් සඳහන් කරන්න.',
+    'PleaseSpecifyAnIntegerForTheMaximumValue' => 'උපරිම අගය සඳහා පූර්ණ සංඛ්‍යාවක් සඳහන් කරන්න.',
+    'PleaseSpecifyAMaximumValueGreaterThanTheMinimum' => 'කරුණාකර අවම අගයට වඩා වැඩි උපරිම අගයක් සඳහන් කරන්න.',
+    // Extra download version compatibility
+    'ExtraVersionIncompatibleWithApplication' => 'බාගත කළ "{$extra}" අමතර (අනුවාදය {$extra_version}) SimpleRisk {$app_version} සමඟ අනුකූල නොවන අතර ස්ථාපනය කර නොමැත. පළමුව SimpleRisk නවතම අනුවාදයට උත්ශ්‍රේණි කරන්න.',
+    'ExtraCompatibilityDataUnavailable' => 'මෙම නිකුතුව සහාය දක්වන අමතර අනුවාදයන් මොනවාදැයි SimpleRisk හට තහවුරු කළ නොහැකි විය, එබැවින් අමතර ස්ථාපනය කර නොමැත. කරුණාකර පසුව නැවත උත්සාහ කරන්න.',
+    'ExtraVersionCouldNotBeVerified' => 'බාගත කළ අමතර අනුවාදය තීරණය කළ නොහැකි විය, එබැවින් එය ස්ථාපනය කර නොමැත.',
     '' => '',
 );
 ?>

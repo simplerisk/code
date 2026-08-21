@@ -39,7 +39,6 @@ abstract class AbstractPrimeFieldParamsType extends AbstractDsig11Element
      * Convert this PrimeFieldParamsType element to XML.
      *
      * @param \DOMElement|null $parent The element we should append this PrimeFieldParamsType element to.
-     * @return \DOMElement
      */
     public function toXML(?DOMElement $parent = null): DOMElement
     {

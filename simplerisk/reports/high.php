@@ -45,7 +45,7 @@
         }
 
         echo "
-                    <h3 class='mt-4'>{$escaper->escapeHtml(_lang('NumberOfOpenRisks', ['number' => $open], false))}</h3>
+                    <h3 class='mt-4'>{$escaper->escapeHtml(_lang_raw('NumberOfOpenRisks', ['number' => $open]))}</h3>
         ";
 
         // If we have very high risks
@@ -54,8 +54,8 @@
             $display_name = get_risk_level_display_name('Very High');
 
             echo "
-                    <h3>{$escaper->escapeHtml(_lang('RiskNumberOfRiskLevel', ['display_name' => $display_name, 'number' => $veryhigh], false))}</h3>
-                    <h3>{$escaper->escapeHtml(_lang('RiskPercentageOfRiskLevel', ['display_name' => $display_name, 'percentage' => round($veryhighpercent, 2)], false))}</h3>
+                    <h3>{$escaper->escapeHtml(_lang_raw('RiskNumberOfRiskLevel', ['display_name' => $display_name, 'number' => $veryhigh]))}</h3>
+                    <h3>{$escaper->escapeHtml(_lang_raw('RiskPercentageOfRiskLevel', ['display_name' => $display_name, 'percentage' => round($veryhighpercent, 2)]))}</h3>
             ";
         }
 
@@ -65,8 +65,8 @@
             $display_name = get_risk_level_display_name('High');
 
             echo "
-                    <h3>{$escaper->escapeHtml(_lang('RiskNumberOfRiskLevel', ['display_name' => $display_name, 'number' => $high], false))}</h3>
-                    <h3>{$escaper->escapeHtml(_lang('RiskPercentageOfRiskLevel', ['display_name' => $display_name, 'percentage' => round($highpercent, 2)], false))}</h3>
+                    <h3>{$escaper->escapeHtml(_lang_raw('RiskNumberOfRiskLevel', ['display_name' => $display_name, 'number' => $high]))}</h3>
+                    <h3>{$escaper->escapeHtml(_lang_raw('RiskPercentageOfRiskLevel', ['display_name' => $display_name, 'percentage' => round($highpercent, 2)]))}</h3>
             ";
         }
     ?>
@@ -85,12 +85,12 @@
     <?php
         // Display the warning when the selected score is not matching with the 'next_review_date_uses' setting
         if (($next_review_date_uses === 'ResidualRisk' ? 'residual' : 'inherent') !== $score_used) {
-            $warning = _lang('HighRiskReport_ScoreWarning', [
+            $warning = _lang_raw('HighRiskReport_ScoreWarning', [
                 'score_used' => $lang[$score_used === 'inherent' ? 'InherentRisk' : 'ResidualRisk'],
                 'next_review_date_uses_name' => $lang['NextReviewDateUses'],
                 'management_review_header' => $lang['ManagementReview'],
                 'next_review_date_uses_value' => $lang[$next_review_date_uses]
-            ], false);
+            ]);
             echo "
                 <div class='card-body border mt-2'>
                     <div class='text-danger'><strong>{$escaper->escapeHtml($warning)}</strong></div>

@@ -61,11 +61,15 @@ function workflow_action_create_test_task(array $inputs, array $context): array
 
     $created_at = date('Y-m-d H:i:s');
     $db   = db_open();
+    // last_date is NOT NULL with no default; a brand-new test has no prior run,
+    // so use the '0000-00-00' zero-date sentinel add_framework_control_test()
+    // uses for the same "never tested yet" case (an explicit NULL here violates
+    // the NOT NULL column and fataled the whole action).
     $stmt = $db->prepare("
         INSERT INTO `framework_control_tests`
             (`framework_control_id`, `tester`, `test_frequency`, `last_date`, `next_date`, `created_at`)
         VALUES
-            (:control_id, :tester, 365, NULL, :due_date, :created_at)
+            (:control_id, :tester, 365, '0000-00-00', :due_date, :created_at)
     ");
     $stmt->bindParam(':control_id', $control_id, PDO::PARAM_INT);
     $stmt->bindParam(':tester',     $tester,     PDO::PARAM_INT);
@@ -73,6 +77,21 @@ function workflow_action_create_test_task(array $inputs, array $context): array
     $stmt->bindParam(':created_at', $created_at, PDO::PARAM_STR);
     $stmt->execute();
     $test_id = (int)$db->lastInsertId();
+
+    // Phase 4b: also record the (test, control) pair in test_control_map so the
+    // compliance grid/coverage readers resolve this workflow-created test's
+    // control through the junction (Phase 4a authoritative source) rather than
+    // relying on the grid's scalar framework_control_id fallback. Raw INSERT on
+    // the already-open $db -- this file has no require chain to
+    // save_junction_values, so a raw insert avoids a cross-file dependency.
+    // INSERT IGNORE is idempotent against the test_control_map PK.
+    if ($test_id > 0 && $control_id > 0) {
+        $map = $db->prepare("INSERT IGNORE INTO `test_control_map` (`test_id`, `framework_control_id`) VALUES (:t, :c)");
+        $map->bindParam(':t', $test_id,    PDO::PARAM_INT);
+        $map->bindParam(':c', $control_id, PDO::PARAM_INT);
+        $map->execute();
+    }
+
     db_close($db);
 
     write_debug_log("WORKFLOW: create_test_task control_id={$control_id} test_id={$test_id}", 'info');

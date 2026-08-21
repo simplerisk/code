@@ -206,7 +206,7 @@
 
         echo "
             <div>" . 
-                _lang($localizationKey, array('risk_name' => $risk_name, 'risk_value' => $risk_value, 'color_select' => $color_select), false) . "
+                _lang_raw($localizationKey, array('risk_name' => $risk_name, 'risk_value' => $risk_value, 'color_select' => $color_select)) . "
             </div>
         ";
     }
@@ -282,11 +282,11 @@
         $slider_bg_grad = '';
         foreach ($ranges as $key => $range) {
             if ($key == 0) {
-                $slider_bg_grad = "{$range['color']} " . ($range['range'][1] * $multiple_index) . "%";
+                $slider_bg_grad = "{$escaper->escapeCssColor($range['color'])} " . ($range['range'][1] * $multiple_index) . "%";
             } elseif ($key == count($ranges) - 1) {
-                $slider_bg_grad .= ", {$range['color']} " . ($ranges[$key - 1]['range'][1] * $multiple_index) . "%, {$range['color']} 100%";
+                $slider_bg_grad .= ", {$escaper->escapeCssColor($range['color'])} " . ($ranges[$key - 1]['range'][1] * $multiple_index) . "%, {$escaper->escapeCssColor($range['color'])} 100%";
             } else {
-                $slider_bg_grad .= ", {$range['color']} " . ($ranges[$key - 1]['range'][1] * $multiple_index) . "%, {$range['color']} " . ($range['range'][1] * $multiple_index) . "%";
+                $slider_bg_grad .= ", {$escaper->escapeCssColor($range['color'])} " . ($ranges[$key - 1]['range'][1] * $multiple_index) . "%, {$escaper->escapeCssColor($range['color'])} " . ($range['range'][1] * $multiple_index) . "%";
             }
         }
     ?>

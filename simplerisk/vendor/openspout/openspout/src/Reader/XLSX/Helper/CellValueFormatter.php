@@ -17,7 +17,7 @@ use OpenSpout\Reader\XLSX\Manager\StyleManagerInterface;
 /**
  * This class provides helper functions to format cell values.
  */
-final class CellValueFormatter
+final readonly class CellValueFormatter
 {
     /**
      * Definition of all possible cell types.
@@ -49,19 +49,19 @@ final class CellValueFormatter
     public const NUM_SECONDS_IN_ONE_DAY = 86400;
 
     /** @var SharedStringsManager Manages shared strings */
-    private readonly SharedStringsManager $sharedStringsManager;
+    private SharedStringsManager $sharedStringsManager;
 
     /** @var StyleManagerInterface Manages styles */
-    private readonly StyleManagerInterface $styleManager;
+    private StyleManagerInterface $styleManager;
 
     /** @var bool Whether date/time values should be returned as PHP objects or be formatted as strings */
-    private readonly bool $shouldFormatDates;
+    private bool $shouldFormatDates;
 
     /** @var bool Whether date/time values should use a calendar starting in 1904 instead of 1900 */
-    private readonly bool $shouldUse1904Dates;
+    private bool $shouldUse1904Dates;
 
     /** @var XLSX Used to unescape XML data */
-    private readonly XLSX $escaper;
+    private XLSX $escaper;
 
     /**
      * @param SharedStringsManager  $sharedStringsManager Manages shared strings
@@ -279,9 +279,7 @@ final class CellValueFormatter
         $dateObj = DateTimeImmutable::createFromFormat('|Y-m-d', $baseDate);
         \assert(false !== $dateObj);
         $dateObj = $dateObj->modify($daysSign.$daysSinceBaseDate.'days');
-        \assert(false !== $dateObj);
         $dateObj = $dateObj->modify($secondsSign.$secondsRemainder.'seconds');
-        \assert(false !== $dateObj);
 
         if ($this->shouldFormatDates) {
             $styleNumberFormatCode = $this->styleManager->getNumberFormatCode($cellStyleId);

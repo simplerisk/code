@@ -16,13 +16,14 @@ use Composer\Repository\PlatformRepository;
 use Composer\Repository\RepositoryManager;
 use Composer\Util\HttpDownloader;
 use InvalidArgumentException;
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use SimpleSAML\Composer\ModuleInstaller;
 
 /**
- * @covers \SimpleSAML\Composer\ModuleInstaller
  */
+#[CoversClass(ModuleInstaller::class)]
 class ModuleInstallerTest extends TestCase
 {
     /** @var \SimpleSAML\Composer\ModuleInstaller */

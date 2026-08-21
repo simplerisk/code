@@ -1,5 +1,5 @@
-<xenc:KeyReference xmlns:xenc="http://www.w3.org/2001/04/xmlenc#" URI="#Encrypted_KEY_ID">
-  <ds:Transforms xmlns:ds="http://www.w3.org/2000/09/xmldsig#">
+<xenc:KeyReference xmlns:xenc="http://www.w3.org/2001/04/xmlenc#" xmlns:ds="http://www.w3.org/2000/09/xmldsig#" URI="#Encrypted_KEY_ID">
+  <ds:Transforms>
     <ds:Transform Algorithm="http://www.w3.org/TR/1999/REC-xpath-19991116">
       <ds:XPath>self::xenc:EncryptedKey[@Id="example1"]</ds:XPath>
     </ds:Transform>

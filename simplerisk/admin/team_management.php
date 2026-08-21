@@ -257,7 +257,7 @@ if ($selected_team_id) {
             // When deleting, show a confirmation dialog before submitting the form
             if (action == "delete_team") {
                 // Display a confirmation dialog
-                confirm("<?= $escaper->escapeHtml($lang['AreYouSureYouWantToDeleteSelction']); ?>", () => {
+                confirm("<?= $escaper->escapeJs($lang['AreYouSureYouWantToDeleteSelction']); ?>", () => {
                     $(this)[0].form.submit();
                 });
             // For add and update actions, submit the form directly without confirmation

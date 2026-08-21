@@ -16,6 +16,7 @@ use SimpleSAML\XMLSecurity\Utils\Random;
 use function chr;
 use function mb_strlen;
 use function openssl_cipher_iv_length;
+use function openssl_cipher_key_length;
 use function openssl_decrypt;
 use function openssl_encrypt;
 use function openssl_sign;
@@ -31,29 +32,23 @@ use function substr;
  */
 final class OpenSSL implements EncryptionBackend, SignatureBackend
 {
+    public const int AUTH_TAG_LEN = 16;
+
+
     // digital signature options
-    /** @var string */
     protected string $digest;
 
     // asymmetric encryption options
-    /** @var int */
     protected int $padding = OPENSSL_PKCS1_OAEP_PADDING;
 
     // symmetric encryption options
-    /** @var string */
     protected string $cipher;
 
-    /** @var int */
     protected int $blocksize;
 
-    /** @var int */
     protected int $keysize;
 
-    /** @var bool */
     protected bool $useAuthTag = false;
-
-    /** @var int */
-    public const AUTH_TAG_LEN = 16;
 
 
     /**
@@ -255,7 +250,7 @@ final class OpenSSL implements EncryptionBackend, SignatureBackend
             default:
                 $this->cipher = C::$BLOCK_CIPHER_ALGORITHMS[$cipher];
                 $this->blocksize = C::$BLOCK_SIZES[$cipher];
-                $this->keysize = C::$BLOCK_CIPHER_KEY_SIZES[$cipher];
+                $this->keysize = openssl_cipher_key_length(C::$BLOCK_CIPHER_ALGORITHMS[$cipher]);
         }
     }
 

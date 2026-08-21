@@ -4,6 +4,11 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+// promise_chain_exists() lives in promises.php, which functions.php does not
+// auto-load. Declare it directly so this consumer's defining file is always
+// reachable, not only transitively via the worker (CLAUDE.md).
+require_once(realpath(__DIR__ . '/../promises.php'));
+
 return [
     'type' => 'core_control_update',
 
@@ -64,6 +69,16 @@ return [
         $payload = json_decode($task['payload'], true) ?? [];
         $control_id = $payload['control_id'] ?? null;
         if (!$control_id) return false;
+
+        // Idempotency guard: if a live promise chain already exists for this
+        // task, do not create another. Without this, the queue worker's
+        // stuck-task recovery re-invokes queue_check on every cycle and each
+        // call re-chains every stage (the re-chaining runaway). See
+        // promise_chain_exists() in promises.php.
+        if (promise_chain_exists($db, (int)$task['id'], 'core_control_update')) {
+            write_debug_log("Control Update: Live promise chain already exists for task #{$task['id']}; skipping duplicate creation.", "info");
+            return false;
+        }
 
         $stages = [
             'fetch_control',

@@ -4,6 +4,14 @@
 * License, v. 2.0. If a copy of the MPL was not distributed with this
 * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 require_once(realpath(__DIR__ . '/../vendor/autoload.php'));
+// Declared directly, not leaned on transitively. display_auth_brand_panel()
+// below calls purify_html_login_notice(), get_custom_logo_src() and _lang(),
+// all defined in functions.php, which this file otherwise reaches only through
+// reporting.php. CLAUDE.md requires every direct consumer of a shared helper to
+// require the defining file itself, because an include reorder or a split entry
+// point can strip a transitive chain and turn the call into a fatal.
+// require_once makes the duplicate load a no-op for callers that already have it.
+require_once(realpath(__DIR__ . '/functions.php'));
 require_once(realpath(__DIR__ . '/displayrisks.php'));
 require_once(realpath(__DIR__ . '/assets.php'));
 require_once(realpath(__DIR__ . '/assessments.php'));
@@ -11,6 +19,138 @@ require_once(realpath(__DIR__ . '/permissions.php'));
 require_once(realpath(__DIR__ . '/governance.php'));
 require_once(realpath(__DIR__ . '/reporting.php'));
 require_once(realpath(__DIR__ . '/extras.php'));
+
+/**********************************
+* FUNCTION: DISPLAY AUTH BRAND PANEL *
+***********************************/
+/**
+ * The charcoal brand panel on the left of the unauthenticated split-panel
+ * screens -- index.php (login / MFA), reset.php (password reset request and
+ * token redemption) and reset_password.php (forced password change).
+ *
+ * It lives here rather than being repeated in each of those three files
+ * because it is identical on all of them; each caller already require_once's
+ * this file directly, so the call is reachable without relying on a
+ * transitive include.
+ *
+ * Styles are in scss/modules/_auth.scss, scoped to `.sr-auth`. The photograph
+ * is decorative -- the wordmark beside it already names the product -- so both
+ * backdrop layers are hidden from assistive technology.
+ *
+ * The panel carries the wordmark, a single tagline, and the copyright line.
+ * The tagline is deliberately ONE short line rather than the value-proposition
+ * paragraph this screen used to show: everyone who reaches it has already
+ * obtained and installed SimpleRisk, so a sales argument addresses a reader who
+ * is not here. A brand signature under the wordmark is a different thing from a
+ * pitch, and it doubles as the visible hint that the slot is configurable.
+ *
+ * Both the mark and the tagline are the SimpleRisk defaults. The Customization
+ * Extra replaces them with the customer's own, and adds a separate system-use
+ * notice field; when that Extra is not active these defaults are what renders.
+ *
+ * The brandmark follows the same rule as the authenticated shell's
+ * `.sr-wordmark` (header.php): the two-tone text at desktop widths, the logo
+ * mark alone below `sm`. Showing both at once would make this a third brand
+ * lockup that exists nowhere else in the product.
+ */
+function display_auth_brand_panel()
+{
+    global $lang, $escaper;
+
+    // Customer branding is a Customization Extra feature. When that Extra is
+    // inactive the stored values are ignored entirely rather than merely being
+    // uneditable, so an instance that never had it -- or that let it lapse --
+    // renders the SimpleRisk defaults. Reading the settings behind the gate
+    // also means a value planted by any other route cannot reach this page
+    // while the Extra is off.
+    $customization_active = customization_extra();
+
+    $tagline = $customization_active ? trim((string)get_setting('login_tagline')) : '';
+    if ($tagline === '') {
+        $tagline = $lang['FromZeroToGRCInMinutes'];
+    }
+
+    // Sanitized again here, not only on save. A row written by a restore, a
+    // direct database edit or some future API has never been through the save
+    // path, and this page is served to unauthenticated visitors -- so the
+    // render boundary re-applies the allowlist rather than trusting storage.
+    // purify_html_login_notice() is idempotent, so already-clean values are
+    // unchanged.
+    $notice = $customization_active ? (string)get_setting('login_notice') : '';
+    $notice = $notice !== '' ? purify_html_login_notice($notice) : '';
+
+    // One shared decision (functions.php) rather than a third copy of it: the
+    // gate, the filename, the content version and the URL all resolve there.
+    // Still a settings read, never a blob query -- the bytes are fetched by the
+    // browser from the endpoint, so rendering this page pulls no image out of
+    // the database.
+    $custom_logo_src = get_custom_logo_src();
+
+    // Pick the type size from the tagline's length.
+    //
+    // This is done here, in PHP, rather than in CSS because CSS cannot do it:
+    // clamp() and container queries size text against the VIEWPORT, and nothing
+    // sizes it against how much text there is. The alternative is a JavaScript
+    // measure-and-shrink pass, which would put a reflow on the page that has to
+    // load fastest and would make a customer's notice render correctly only
+    // when scripting is available.
+    //
+    // Thresholds are in characters, which is an approximation of rendered width
+    // -- good enough to choose between three sizes, and it degrades in the safe
+    // direction because a wide string simply lands in a smaller bucket. The
+    // Customization tagline field caps its own length as well; these buckets
+    // absorb a reasonable range rather than making any length work.
+    // The bucketing itself lives in functions.php as a pure function, so the
+    // boundaries can be pinned by a test. Transposing two thresholds here would
+    // otherwise only ever show up as a customer's tagline rendering at the wrong
+    // size, which nothing asserts.
+    $tagline_size_class = auth_tagline_size_class($tagline);
+
+    echo "
+        <aside class='sr-auth-brand'>
+            <div class='sr-auth-brand-media' aria-hidden='true'></div>
+            <div class='sr-auth-brand-scrim' aria-hidden='true'></div>
+    ";
+
+    // A configured logo REPLACES the wordmark rather than sitting beside it --
+    // two marks in one lockup is exactly the third-variant problem the
+    // brandmark rule exists to avoid. Neither branch is a link: this screen is
+    // unauthenticated, and sending someone mid-sign-in out to simplerisk.com is
+    // the wrong affordance -- more so when the mark is the customer's own.
+    if ($custom_logo_src !== '') {
+        echo "
+            <span class='sr-auth-brandmark sr-auth-brandmark--custom'>
+                <img class='sr-auth-customlogo' src='" . $escaper->escapeHtmlAttr($custom_logo_src) . "' alt='" . $escaper->escapeHtmlAttr($lang['OrganizationLogo']) . "' />
+            </span>
+        ";
+    } else {
+        echo "
+            <span class='sr-auth-brandmark'>
+                <img class='sr-auth-brandlogo' src='images/simplerisk-logo-icon.png' alt='SimpleRisk' />
+                <span class='sr-auth-brandtext'><span class='s'>Simple</span><span class='r'>Risk</span></span>
+            </span>
+        ";
+    }
+
+    echo "
+            <p class='sr-auth-tagline {$tagline_size_class}'>" . $escaper->escapeHtml($tagline) . "</p>
+    ";
+
+    // The notice sits between the tagline and the copyright line. Emitted as
+    // raw HTML because it is restricted rich text -- purify_html_login_notice()
+    // above is what makes that safe, and escaping here as well would show the
+    // operator their own markup as literal text.
+    if ($notice !== '') {
+        echo "
+            <div class='sr-auth-notice'>{$notice}</div>
+        ";
+    }
+
+    echo "
+            <p class='sr-auth-legal'>" . $escaper->escapeHtml(sprintf($lang['FooterCopyright'], date('Y'))) . "</p>
+        </aside>
+    ";
+}
 
 /****************************
 * FUNCTION: VIEW SCORE HTML *
@@ -26,7 +166,7 @@ function view_score_html($risk_id, $calculated_risk, $mitigation_percent)
 
     // Inherent Risk
     echo "
-                <div class='risk-square p-10 text-center' style='background-color: " . $escaper->escapeHtml(get_risk_color($calculated_risk)) . "'>
+                <div class='risk-square p-10 text-center' style='background-color: " . $escaper->escapeCssColor(get_risk_color($calculated_risk)) . "'>
                     <h5 class=''>" .$escaper->escapeHtml($lang['InherentRisk']) . "</h5>
                     <h1 class='my-0'>" .$escaper->escapeHtml($calculated_risk) . "</h5>
                     <h5 class=''>" . $escaper->escapeHtml(get_risk_level_name($calculated_risk)) . "</h5>
@@ -46,7 +186,7 @@ function view_score_html($risk_id, $calculated_risk, $mitigation_percent)
 
     echo "
             <div class='col-6'>
-                <div class='risk-square p-10 text-center' style='background-color: " . $escaper->escapeHtml(get_risk_color($residual_risk)) . "'>
+                <div class='risk-square p-10 text-center' style='background-color: " . $escaper->escapeCssColor(get_risk_color($residual_risk)) . "'>
                     <h5 class=''>" . $escaper->escapeHtml($lang['ResidualRisk']) . "</h5>
                     <h1 class='my-0'>" . $escaper->escapeHtml($residual_risk) . "</h5>
                     <h5 class=''>" . $escaper->escapeHtml(get_risk_level_name($residual_risk)) . "</h5>
@@ -97,7 +237,7 @@ function view_top_table($risk_id, $calculated_risk, $subject, $status, $show_det
         // If the risk is closed, offer to reopen
         if ($status == "Closed") { 
             echo "
-                                    <li><a class='reopen-risk dropdown-item' href='reopen.php?id=" . $escaper->escapeHtml($risk_id) . "'>" . $escaper->escapeHtml($lang['ReopenRisk']) . "</a></li>
+                                    <li><a class='reopen-risk dropdown-item' href='#'>" . $escaper->escapeHtml($lang['ReopenRisk']) . "</a></li>
             "; 
         }
 
@@ -227,7 +367,7 @@ function view_print_top_table($id, $calculated_risk, $subject, $status) {
 
     echo "
         <div class='d-flex align-items-center'>
-            <div class='flex-shrink-0 d-flex flex-column align-items-center justify-content-center py-2 border' style='height: 120px; width: 120px; background-color: " . $escaper->escapeHtml(get_risk_color($calculated_risk)) . "'>
+            <div class='flex-shrink-0 d-flex flex-column align-items-center justify-content-center py-2 border' style='height: 120px; width: 120px; background-color: " . $escaper->escapeCssColor(get_risk_color($calculated_risk)) . "'>
                 <span>" . $escaper->escapeHtml($lang['InherentRisk']) . "</span>
                 <span style='font-size: 30px;'>" . $escaper->escapeHtml($calculated_risk) . "</span>
                 <span>(". $escaper->escapeHtml(get_risk_level_name($calculated_risk)) . ")</span>
@@ -237,7 +377,7 @@ function view_print_top_table($id, $calculated_risk, $subject, $status) {
     $residual_risk = get_residual_risk($id);
 
     echo "
-            <div class='flex-shrink-0 d-flex flex-column align-items-center justify-content-center py-2 ms-3 border' style='height: 120px; width: 120px; background-color: " . $escaper->escapeHtml(get_risk_color($residual_risk)) . "'>
+            <div class='flex-shrink-0 d-flex flex-column align-items-center justify-content-center py-2 ms-3 border' style='height: 120px; width: 120px; background-color: " . $escaper->escapeCssColor(get_risk_color($residual_risk)) . "'>
                 <span>" . $escaper->escapeHtml($lang['ResidualRisk']) . "</span>
                 <span style='font-size: 30px;'>" . $escaper->escapeHtml($residual_risk) . "</span>
                 <span>(". $escaper->escapeHtml(get_risk_level_name($residual_risk)) . ")</span>
@@ -1993,10 +2133,10 @@ function print_mitigation_controls_table($control_ids, $mitigation_id, $flag="vi
             $(document).ready(function(){
                 var mitigationControlDatatable = $('#{$tableID}').DataTable({
                     scrollX: true,
-                    bFilter: false,
+                    searching: false,
                     processing: true,
                     serverSide: true,
-                    bSort: true,
+                    ordering: true,
                     ajax: {
                         url: BASE_URL + '/api/v2/datatable/mitigation_controls',
                         type: 'POST',
@@ -4699,7 +4839,6 @@ function view_get_risks_by_selections($status=0, $group=0, $sort=0, $risk_column
     
     $encoded_request_uri = get_encoded_request_uri();
 
-    // @phan-suppress-next-line SecurityCheck-XSS -- build_url() sanitizes the path; GET params are URL-encoded by http_build_query() in get_encoded_request_uri()
     echo   "
         <div class='accordion-item' id='group-selections-container'>
             <h2 class='accordion-header'>
@@ -4707,7 +4846,7 @@ function view_get_risks_by_selections($status=0, $group=0, $sort=0, $risk_column
             </h2>
             <div id='group-selections-accordion-body' class='accordion-collapse collapse show'>
                 <div class='accordion-body card-body'>
-                    <form id='get_risks_by' name='get_risks_by' method='post' action='" . build_url($encoded_request_uri) . "'>
+                    <form id='get_risks_by' name='get_risks_by' method='post' action='" . $escaper->escapeHtmlAttr(build_url($encoded_request_uri)) . "'>
                         <div class='row'>
                             <!-- Risk Status Selection -->
                             <div class='col-4'>
@@ -4867,7 +5006,7 @@ function display_save_dynamic_risk_selections() {
                                             e.stopPropagation();
 
                                             let id = $(e.target).parents('.option').first().data('value');
-                                            confirm('{$escaper->escapeHtml($lang["AreYouSureYouWantToDeleteSelction"])}', () => delete_saved_selection(id));
+                                            confirm('{$escaper->escapeJs($lang["AreYouSureYouWantToDeleteSelction"])}', () => delete_saved_selection(id));
                                         });            
                                     });
             
@@ -5896,61 +6035,6 @@ function display_upgrade()
     }
 }
 
-/*************************************
-* FUNCTION: DISPLAY SELF ASSESSMENTS *
-**************************************/
-function display_self_assessments() {
-
-    global $lang;
-    global $escaper;
-
-    echo "
-        <div class='mt-2'>
-            <nav class='nav nav-tabs'>
-                <a class='nav-link active' data-bs-target='#self_assessments' data-bs-toggle='tab'>{$escaper->escapeHtml($lang['Assessments'])}</a>
-                <a class='nav-link' data-bs-target='#pending_risks' data-bs-toggle='tab'>{$escaper->escapeHtml($lang['PendingRisks'])}</a>
-            </nav>
-        </div>
-        <div class='tab-content'>
-            <div id='self_assessments' class='tab-pane active card-body my-2 border'>
-    ";
-
-    // Start the list
-    echo "
-                <ul class='nav nav-pills nav-stacked flex-column'>
-    ";
-
-    // Get the assessments
-    $assessments = get_assessment_names();
-
-    // For each entry in the assessments array
-    foreach ($assessments as $assessment) {
-
-        // Get the assessment values
-        $assessment_name = $assessment['name'];
-        $assessment_id = (int)$assessment['id'];
-
-        // Display the assessment
-        echo "
-                    <li style='text-align:center'>
-                        <a class='nav-link text-info' href='index.php?action=view&assessment_id={$escaper->escapeHtml($assessment_id)}'>{$escaper->escapeHTML($assessment_name)}</a>
-                    </li>
-        ";
-    }
-
-    // End the list
-    echo "
-                </ul>
-            </div>
-            <div id='pending_risks' class='tab-pane card-body my-2 border'>
-    ";
-                display_pending_risks();
-    echo "
-            </div>
-        </div>
-    ";
-
-}
 
 /*******************************************
 * FUNCTION: DISPLAY ADD DELETE ROW SCRIPT *
@@ -7030,16 +7114,16 @@ function create_risk_formula_table() {
     echo "
         <table class='risk-level-table'>
             <tr height='20px'>
-                <td><div class='risk-table-veryhigh' style='background-color: {$risk_levels_by_color['Very High']['color']}' /></td>
+                <td><div class='risk-table-veryhigh' style='background-color: {$escaper->escapeCssColor($risk_levels_by_color['Very High']['color'])}' /></td>
                 <td>{$escaper->escapeHtml($risk_levels_by_color['Very High']['display_name'] . " " . $lang['Risk'])}</td>
                 <td>&nbsp;</td>
-                <td><div class='risk-table-high' style='background-color: {$risk_levels_by_color['High']['color']}' /></td>
+                <td><div class='risk-table-high' style='background-color: {$escaper->escapeCssColor($risk_levels_by_color['High']['color'])}' /></td>
                 <td>{$escaper->escapeHtml($risk_levels_by_color['High']['display_name'] . " " . $lang['Risk'])}</td>
                 <td>&nbsp;</td>
-                <td><div class='risk-table-medium' style='background-color: {$risk_levels_by_color['Medium']['color']}' /></td>
+                <td><div class='risk-table-medium' style='background-color: {$escaper->escapeCssColor($risk_levels_by_color['Medium']['color'])}' /></td>
                 <td>{$escaper->escapeHtml($risk_levels_by_color['Medium']['display_name'] . " " . $lang['Risk'])}</td>
                 <td>&nbsp;</td>
-                <td><div class='risk-table-low' style='background-color: {$risk_levels_by_color['Low']['color']}' /></td>
+                <td><div class='risk-table-low' style='background-color: {$escaper->escapeCssColor($risk_levels_by_color['Low']['color'])}' /></td>
                 <td>{$escaper->escapeHtml($risk_levels_by_color['Low']['display_name'] . " " . $lang['Risk'])}</td>
                 <td>&nbsp;</td>
                 <td><div class='risk-table-insignificant' style='background-color: white' /></td>
@@ -7996,12 +8080,12 @@ function display_plan_mitigations()
                 $field_id = str_replace("custom_field_", "", $column);
                 $custom_field = get_field_by_id($field_id);
                 $label = $escaper->escapeHtml($custom_field['name']);
-                $tr .= "<th data-name='" . $column . "' align='left' style='" . $style . "'>" . $label . "</th>";
+                $tr .= "<th data-name='" . $escaper->escapeHtmlAttr($column) . "' align='left' style='" . $style . "'>" . $label . "</th>";
                 $index++;
             }
         } else {
             $label = get_label_by_risk_field_name($column);
-            $tr .= "<th data-name='" . $column . "' align='left' style='" . $style . "'>" . $label . "</th>";
+            $tr .= "<th data-name='" . $escaper->escapeHtmlAttr($column) . "' align='left' style='" . $style . "'>" . $label . "</th>";
             $index++;
         }
     }
@@ -8039,8 +8123,8 @@ function display_plan_mitigations()
                     });
                 });
                 var datatableInstance = $('#{$tableID}').DataTable({
-                    bFilter: true,
-                    bSort: true,
+                    searching: true,
+                    ordering: true,
                     orderCellsTop: true,
                     scrollX: true,
                     createdRow: function(row, data, index){
@@ -8174,12 +8258,12 @@ function display_management_review()
                 $field_id = str_replace("custom_field_", "", $column);
                 $custom_field = get_field_by_id($field_id);
                 $label = $escaper->escapeHtml($custom_field['name']);
-                $tr .= "<th data-name='" . $column . "' align='left' style='" . $style . "'>" . $label . "</th>";
+                $tr .= "<th data-name='" . $escaper->escapeHtmlAttr($column) . "' align='left' style='" . $style . "'>" . $label . "</th>";
                 $index++;
             }
         } else {
             $label = get_label_by_risk_field_name($column);
-            $tr .= "<th data-name='" . $column . "' align='left' style='" . $style . "'>" . $label . "</th>";
+            $tr .= "<th data-name='" . $escaper->escapeHtmlAttr($column) . "' align='left' style='" . $style . "'>" . $label . "</th>";
             $index++;
         }
     }
@@ -8216,8 +8300,8 @@ function display_management_review()
                     });
                 });
                 var datatableInstance = $('#{$tableID}').DataTable({
-                    bFilter: true,
-                    bSort: true,
+                    searching: true,
+                    ordering: true,
                     orderCellsTop: true,
                     scrollX: true,
                     createdRow: function(row, data, index){
@@ -8354,12 +8438,12 @@ function display_review_risks()
                 }
 
                 $label = $escaper->escapeHtml($custom_field['name']);
-                $tr .= "<th data-name='" . $column . "' align='left' style='" . $style . "'>" . $label . "</th>";
+                $tr .= "<th data-name='" . $escaper->escapeHtmlAttr($column) . "' align='left' style='" . $style . "'>" . $label . "</th>";
                 $index++;
             }
         } else {
             $label = get_label_by_risk_field_name($column);
-            $tr .= "<th data-name='" . $column . "' align='left' style='" . $style . "'>" . $label . "</th>";
+            $tr .= "<th data-name='" . $escaper->escapeHtmlAttr($column) . "' align='left' style='" . $style . "'>" . $label . "</th>";
             $index++;
         }
     }
@@ -8397,8 +8481,8 @@ function display_review_risks()
                     });
                 });
                  var datatableInstance = $('#{$tableID}').DataTable({
-                    bFilter: true,
-                    bSort: true,
+                    searching: true,
+                    ordering: true,
                     orderCellsTop: true,
                     scrollX: true,
                     createdRow: function(row, data, index){
@@ -8620,8 +8704,8 @@ function display_review_date_issues()
         <script>
             $(function () {
                 var datatableInstance = $('#{$tableID}').DataTable({
-                    bFilter: false,
-                    bSort: true,
+                    searching: false,
+                    ordering: true,
                     createdRow: function(row, data, index){
                         var background = $('.background-class', $(row)).data('background');
                         $(row).find('td').addClass(background)
@@ -9275,7 +9359,7 @@ function display_custom_risk_columns($custom_setting_field = "custom_plan_mitiga
         <script>
 
             // variable to store the custom display settings
-            var custom_display_settings = JSON.parse('" . json_encode($custom_display_settings) . "');
+            var custom_display_settings = " . json_encode($custom_display_settings, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) . ";
 
         </script>
     ";
@@ -9408,15 +9492,33 @@ function display_license_check()
 	global $lang;
 	global $escaper;
 
-	// If the license check failed
-	if (isset($_SESSION['license_check']) && $_SESSION['license_check'] == "fail")
-	{
-		echo "
-            <div class='license_check alert alert-danger mt-2 mb-0'>" . 
-                $escaper->escapeHtml($lang['LicenseCheckFailed']) . "
-            </div>
-        ";
+	if (!isset($_SESSION['license_check'])) {
+		return;
 	}
+
+	$state = $_SESSION['license_check'];
+
+	// 'pass' and unset/empty mean everything is fine — no banner needed.
+	if ($state === 'pass' || $state === '') {
+		return;
+	}
+
+	// Map each non-passing state to a distinct lang key and alert style.
+	// 'fail' (remove_extras) uses alert-danger; all others use alert-warning
+	// because they are informational rather than active-deactivation states.
+	$message_key = match ($state) {
+		'lock'      => 'LicenseStateLockMessage',
+		'fail'      => 'LicenseStateFailMessage',
+		'anonymous' => 'LicenseStateAnonymousMessage',
+		default     => 'LicenseStateUnknownMessage',
+	};
+	$alert_class = ($state === 'fail') ? 'alert-danger' : 'alert-warning';
+
+	echo "
+        <div class='license_check alert {$alert_class} mt-2 mb-0'>" .
+            $escaper->escapeHtml($lang[$message_key]) . "
+        </div>
+    ";
 }
 
 /******************************************
@@ -10009,7 +10111,7 @@ function render_column_selection_widget($view) {
         <script>
 
             // This is the list of selected columns for the view
-            var custom_display_settings_{$view} = JSON.parse('" . json_encode($settings) . "');
+            var custom_display_settings_{$view} = " . json_encode($settings, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) . ";
 
             $(function() {
                 $('form#custom_display_settings-{$view}').submit(function() {
@@ -11361,6 +11463,39 @@ function display_generic_dropdown($select_name, $select_array = [], $selected_va
     echo $text;
 }
 
+/*********************************************
+ * FUNCTION: DISPLAY GENERIC KEYED DROPDOWN  *
+ * Like display_generic_dropdown(), but for  *
+ * key => display maps (e.g. slug taxonomies)*
+ * where the submitted option VALUE must be  *
+ * the key, not the display text.            *
+ *********************************************/
+function display_generic_keyed_dropdown($select_name, $select_array = [], $selected_value = null)
+{
+    global $escaper;
+
+    // Create the default text
+    $text = "<select name='" . $escaper->escapeHtml($select_name) . "' class='form-select'>\n";
+
+    // For each key => display pair in the array
+    foreach ($select_array as $key => $value)
+    {
+        // Check if this key is selected
+        $selected = ($selected_value == $key ? " selected" : "");
+
+        // Add the option: value = key, text = display
+        // NOTE: neither the key nor the value is HTML encoded as we don't want to strip
+        // out HTML in this function, but make sure you HTML encode any user supplied
+        // data from the select_array first.
+        $text .= "<option value='" . $escaper->escapeHtml($key) . "'{$selected}>" . $escaper->escapeHtml($value) . "</option>\n";
+    }
+
+    $text .= "</select>";
+
+    // Output the text
+    echo $text;
+}
+
 /*************************************************
  * FUNCTION: DISPLAY DOCUMENTS TO CONTROLS TABLE *
  *************************************************/
@@ -11417,12 +11552,12 @@ function display_document_to_controls()
                 $field_id = str_replace("custom_field_", "", $column);
                 $custom_field = get_field_by_id($field_id);
                 $label = $escaper->escapeHtml($custom_field['name']);
-                $tr .= "<th data-name='" . $column . "' align='left' style='" . $style . "'>" . $label . "</th>";
+                $tr .= "<th data-name='" . $escaper->escapeHtmlAttr($column) . "' align='left' style='" . $style . "'>" . $label . "</th>";
                 $index++;
             }
         } else {
             $label = get_label_by_document_field_name($column);
-            $tr .= "<th data-name='" . $column . "' align='left' style='" . $style . "'>" . $label . "</th>";
+            $tr .= "<th data-name='" . $escaper->escapeHtmlAttr($column) . "' align='left' style='" . $style . "'>" . $label . "</th>";
             $index++;
         }
     }
@@ -11466,8 +11601,8 @@ function display_document_to_controls()
                     });
                 });
                 var datatableInstance = $('#{$tableID}').DataTable({
-                    bFilter: true,
-                    bSort: true,
+                    searching: true,
+                    ordering: true,
                     orderCellsTop: true,
                     scrollX: true,
                     createdRow: function(row, data, index){
@@ -11877,7 +12012,7 @@ function display_custom_document_control_columns($custom_setting_field = "custom
         <script>
 
             // variable to store the custom display settings
-            var custom_display_settings = JSON.parse('" . json_encode($custom_display_settings) . "');
+            var custom_display_settings = " . json_encode($custom_display_settings, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) . ";
 
         </script>
     ";

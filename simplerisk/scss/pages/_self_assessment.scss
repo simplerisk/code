@@ -1,0 +1,587 @@
+/* Self-Assessments (SCF-based) — /assessments/index.php default view.
+ *
+ * Two mutually-exclusive top-level blocks:
+ *   .self-assessment-prereq  — server-rendered "not ready yet" guidance panel
+ *                               (render_self_assessment_prereq_panel() in
+ *                               includes/self_assessments.php).
+ *   .self-assessment         — JS-hydrated app shell (#self-assessment-app,
+ *                               js/simplerisk/pages/self-assessment.js) that
+ *                               drives the index/history list, the framework
+ *                               picker, the domain-chip questionnaire, and
+ *                               the Pending Risks tab.
+ *
+ * Semantic tokens: Pass = $state-success, Fail = $state-danger,
+ * N/A = $sr-secondary (muted). No literal hex — see variable.scss.
+ */
+
+//*************************** SELF ASSESSMENT PREREQ BEGIN **************************//
+.self-assessment-prereq {
+    max-width: 640px;
+    margin: 0 auto;
+    padding: 1.5rem 0;
+
+    .sa-prereq-intro {
+        color: $gray-700;
+        margin-bottom: 1.5rem;
+    }
+
+    .sa-step {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        padding: 1rem 1.25rem;
+        margin-bottom: 1rem;
+        border: 1px solid $gray-300;
+        border-radius: 0.375rem;
+        background: $sr-body;
+
+        &.sa-step-done {
+            border-color: $state-success;
+            background-color: lighten($state-success, 58%);
+        }
+
+        .sa-step-body {
+            flex: 1 1 auto;
+
+            h3 {
+                margin: 0 0 0.25rem;
+                font-size: 1rem;
+                color: $gray-800;
+            }
+
+            p {
+                margin: 0;
+                font-size: 0.875rem;
+                color: $gray-600;
+            }
+        }
+
+        .sa-step-done-badge {
+            flex-shrink: 0;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background-color: $state-success;
+            color: $white;
+            font-size: 1rem;
+        }
+
+        .btn {
+            flex-shrink: 0;
+        }
+    }
+
+    .sa-prereq-tip {
+        margin-top: 0.5rem;
+        padding: 0.75rem 1rem;
+        border-left: 3px solid $sr-important;
+        border-radius: 0.25rem;
+        background-color: $gray-100;
+        color: $gray-700;
+        font-size: 0.85rem;
+    }
+}
+//**************************** SELF ASSESSMENT PREREQ END ***************************//
+
+//**************************** SELF ASSESSMENT APP BEGIN ****************************//
+.self-assessment {
+    // No top padding: the tabs sit close under the page-breadcrumb strip
+    // (which already carries its own bottom padding).
+    padding: 0 0 1rem;
+    // The enclosing `.col-12` adds ~10px of right padding that the page-header
+    // strip (where the "+ New" button lives) doesn't, leaving the tabs/tables
+    // 10px short of the button's right edge. Pull the app out into that padding
+    // so both line up — the tabs, all three table cards, and the button share
+    // one right edge. (Left stays aligned with the title.)
+    margin-right: -10px;
+    color: $gray-800;
+
+    // ---- Tabs (Self Assessments / Pending Risks) ----
+    .sa-tabs {
+        display: flex;
+        gap: 1.5rem;
+        margin-bottom: 1rem;
+        border-bottom: 1px solid $gray-300;
+
+        .sa-tab {
+            padding: 0.5rem 0.1rem;
+            background: none;
+            border: none;
+            border-bottom: 2px solid transparent;
+            color: $gray-600;
+            font-size: 0.95rem;
+            cursor: pointer;
+
+            &:hover {
+                color: $gray-800;
+            }
+
+            &.sa-tab-active {
+                color: $sr-primary;
+                border-bottom-color: $sr-important;
+                font-weight: 600;
+            }
+        }
+    }
+
+    .sa-empty {
+        padding: 2.5rem 0;
+        text-align: center;
+        color: $gray-600;
+        font-style: italic;
+    }
+
+    // ---- Index / Pending Risks tables ----
+    // Table styling itself comes from .sr-table-card / .sr-table
+    // (modules/_tables.scss, design-system.md §6) — see renderIndex() /
+    // renderPendingRisks() in js/simplerisk/pages/self-assessment.js.
+
+    // Pending-risk subject + risk-catalog description (subject bold, description muted below).
+    .sa-pr-subject {
+        font-weight: 600;
+    }
+
+    .sa-pr-desc {
+        margin-top: 0.15rem;
+        color: $gray-600;
+        font-size: 0.85rem;
+    }
+
+    // ---- Row action icons (View / Resume / Delete / Push) ----
+    // Text labels were replaced by titled inline-SVG icon buttons; the label
+    // lives in the `title`/`aria-label` (hover tooltip + screen-reader text).
+    .sa-row-actions {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
+
+    .sa-icon-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 30px;
+        height: 30px;
+        padding: 0;
+        background: none;
+        border: 1px solid transparent;
+        border-radius: 0.375rem;
+        color: $gray-600;
+        cursor: pointer;
+        transition: color 0.12s ease, background-color 0.12s ease, border-color 0.12s ease;
+
+        svg {
+            display: block;
+        }
+
+        &:hover,
+        &:focus-visible {
+            color: $sr-important;
+            background-color: $gray-100;
+            border-color: $gray-300;
+            outline: none;
+        }
+
+        &.sa-icon-danger:hover,
+        &.sa-icon-danger:focus-visible {
+            color: $state-danger;
+        }
+    }
+
+    // ---- Framework picker ----
+    .sa-picker-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+        margin-bottom: 1rem;
+
+        h3 {
+            margin: 0;
+            font-size: 1.15rem;
+            color: $gray-800;
+        }
+    }
+
+    .sa-toggle {
+        display: inline-flex;
+        border: 1px solid $gray-300;
+        border-radius: 0.25rem;
+        overflow: hidden;
+
+        button {
+            padding: 0.35rem 0.75rem;
+            background: $sr-body;
+            border: none;
+            color: $gray-700;
+            font-size: 0.8rem;
+            cursor: pointer;
+
+            &:not(:last-child) {
+                border-right: 1px solid $gray-300;
+            }
+
+            &.on {
+                background: $sr-important;
+                color: $white;
+            }
+        }
+    }
+
+    .sa-search {
+        margin-bottom: 1rem;
+    }
+
+    .sa-fw-list {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .sa-fw {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 0.75rem 1rem;
+        border: 1px solid $gray-300;
+        border-radius: 0.375rem;
+        background: $sr-body;
+        transition: border-color $transitions;
+
+        &:hover {
+            border-color: $sr-important;
+        }
+
+        .sa-fw-meta {
+            flex: 1 1 auto;
+            min-width: 0;
+        }
+
+        .sa-fw-name {
+            font-weight: 600;
+            color: $gray-800;
+        }
+
+        .sa-enabled {
+            margin-left: 0.5rem;
+            padding: 2px 8px;
+            border-radius: 999px;
+            background-color: lighten($state-success, 55%);
+            color: darken($state-success, 5%);
+            font-size: 0.7rem;
+            font-weight: 500;
+            text-transform: uppercase;
+        }
+
+        .sa-fw-count {
+            flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-width: 70px;
+
+            b {
+                font-size: 1.05rem;
+                color: $gray-800;
+            }
+
+            span {
+                font-size: 0.7rem;
+                color: $gray-600;
+                text-transform: uppercase;
+            }
+        }
+
+        .sa-start {
+            flex-shrink: 0;
+        }
+    }
+
+    // ---- Questionnaire ----
+    .sa-run-top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+        margin-bottom: 1rem;
+    }
+
+    .sa-run-title {
+        font-size: 1.15rem;
+        font-weight: 600;
+        color: $gray-800;
+    }
+
+    .sa-run-actions {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .sa-count {
+        color: $gray-600;
+        font-size: 0.85rem;
+    }
+
+    .sa-chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        margin-bottom: 1.25rem;
+    }
+
+    .sa-chip {
+        padding: 0.35rem 0.85rem;
+        border: 1px solid $gray-400;
+        border-radius: 999px;
+        background: $gray-100;
+        color: $gray-700;
+        font-size: 0.85rem;
+        cursor: pointer;
+        transition: background $transitions, border-color $transitions, color $transitions;
+
+        &.done {
+            border-color: $state-success;
+            color: darken($state-success, 5%);
+        }
+
+        &.on {
+            background: $sr-important;
+            border-color: $sr-important;
+            color: $white;
+        }
+    }
+
+    .sa-domain {
+        margin-bottom: 1rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 1px solid $gray-200;
+
+        h3 {
+            margin: 0;
+            font-size: 1rem;
+            color: $gray-800;
+        }
+    }
+
+    .sa-ctl-list {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .sa-ctl {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        flex-wrap: wrap;
+        padding: 0.9rem 1.1rem;
+        border: 1px solid $gray-300;
+        border-radius: 0.375rem;
+        background: $sr-body;
+    }
+
+    .sa-ctl-meta {
+        flex: 1 1 320px;
+        min-width: 0;
+    }
+
+    .sa-ctl-id {
+        margin-bottom: 0.35rem;
+        font-weight: 600;
+        color: $gray-800;
+    }
+
+    .sa-num {
+        display: inline-block;
+        padding: 2px 6px;
+        margin-right: 0.5rem;
+        border-radius: 4px;
+        background: $gray-100;
+        color: $gray-700;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+
+    .sa-ctl-q {
+        color: $gray-700;
+        font-size: 0.875rem;
+        line-height: 1.4;
+    }
+
+    .sa-qlabel {
+        display: block;
+        margin-bottom: 0.15rem;
+        color: $gray-600;
+        font-size: 0.7rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
+    }
+
+    // Pass / Fail / N-A segmented control. Semantic tokens: Pass=success,
+    // Fail=danger, N/A=secondary (muted) — never literal hex.
+    .sa-seg {
+        flex-shrink: 0;
+        display: inline-flex;
+        border: 1px solid $gray-400;
+        border-radius: 0.375rem;
+        overflow: hidden;
+    }
+
+    // Read-only answer display (completed-assessment view): show the recorded
+    // answer without any interactivity.
+    .sa-seg-readonly .sa-seg-btn {
+        cursor: default;
+        pointer-events: none;
+    }
+
+    .sa-seg-btn {
+        padding: 0.4rem 0.9rem;
+        background: $sr-body;
+        border: none;
+        color: $gray-700;
+        font-size: 0.85rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: background $transitions, color $transitions;
+
+        &:not(:last-child) {
+            border-right: 1px solid $gray-400;
+        }
+
+        &:hover {
+            background: $gray-100;
+        }
+
+        &.on-pass {
+            background: $state-success;
+            color: $white;
+        }
+
+        &.on-fail {
+            background: $state-danger;
+            color: $white;
+        }
+
+        &.on-na {
+            background: $sr-secondary;
+            color: $white;
+        }
+    }
+
+    .sa-foot {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .sa-prog {
+        flex: 1 1 auto;
+    }
+
+    .sa-prog-bar {
+        position: relative;
+        height: 8px;
+        border-radius: 999px;
+        background: $gray-200;
+        overflow: hidden;
+
+        i {
+            display: block;
+            height: 100%;
+            background: $sr-important;
+            border-radius: 999px;
+            transition: width $transitions;
+        }
+    }
+}
+//***************************** SELF ASSESSMENT APP END *****************************//
+
+// Bulk-action outcome summary — appended to <body> (not the app root) so it
+// survives the table re-render; a fixed toast at the top of the viewport.
+.sa-bulk-summary {
+    position: fixed;
+    top: 16px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1080;
+    max-width: 520px;
+    margin: 0;
+    box-shadow: $shadow;
+}
+
+//************************** SELF ASSESSMENT PAGE HEADER BEGIN **********************//
+// The Self-Assessments views re-lay-out the shared `.page-breadcrumb` strip
+// (self-assessment.js `setBreadcrumb`): the page title with the breadcrumb
+// stacked LEFT-aligned beneath it, and the "+ New Self-Assessment" action
+// right-aligned on the same row. These IDs are created only by that JS, so the
+// rules are inert on every other page.
+.page-breadcrumb {
+    #sa-title-block {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.15rem;
+
+        h4.page-title {
+            margin: 0;
+        }
+    }
+
+    // Breadcrumb sits directly under the title: smaller, muted, no chrome.
+    #sa-breadcrumb-slot {
+        .breadcrumb {
+            margin: 0;
+            font-size: 0.8rem;
+        }
+
+        .breadcrumb-item,
+        .breadcrumb-item + .breadcrumb-item::before {
+            color: $gray-600;
+        }
+
+        .breadcrumb-item a {
+            color: $gray-600;
+            text-decoration: none;
+
+            &:hover,
+            &:focus {
+                color: $sr-important;
+                text-decoration: underline;
+            }
+        }
+
+        .breadcrumb-item.active {
+            color: $gray-800;
+        }
+    }
+
+    #sa-page-action {
+        flex-shrink: 0;
+    }
+}
+
+// Let the app's cards sit on the page-wrapper gray rather than a white bordered
+// slab (matches the card-on-gray look — see _questionnaire.scss). `.bg-white`
+// is a Bootstrap !important utility, so these overrides need !important.
+.content:has(> .row > .col-12 > .self-assessment),
+.content:has(> .row > .col-12 > .self-assessment-prereq) {
+    background-color: transparent !important;
+    border-color: transparent !important;
+    margin: 0 !important;
+}
+.bg-white:has(> .col-12 > .self-assessment),
+.bg-white:has(> .col-12 > .self-assessment-prereq) {
+    background-color: transparent !important;
+    border-color: transparent !important;
+}
+//*************************** SELF ASSESSMENT PAGE HEADER END ***********************//

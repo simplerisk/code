@@ -10,7 +10,7 @@ ini_set('default_charset', 'utf-8');
 $lang = array(
     'Home'=>'Start',
     'RiskManagement'=>'Zarządzanie Ryzykiem',
-    'Reporting'=>'Sprawozdawczości',
+    'Reporting'=>'Raporty',
     'Configure'=>'Konfiguracja',
     'MyProfile'=>'Mój Profil',
     'Logout'=>'Wyjście',
@@ -28,15 +28,13 @@ $lang = array(
     'RepeatPassword'=>'Powtórz Hasło',
     'Submit'=>'Złożyć',
     'ProfileDetails'=>'Szczegóły Profilu',
-    'LastLogin'=>'Połącz',
+    'LastLogin'=>'Ostatnie logowanie',
     'ChangePassword'=>'Zmiana Hasła',
     'CurrentPassword'=>'Bieżące Hasło',
     'NewPassword'=>'Nowe Hasło',
     'ConfirmPassword'=>'Potwierdzenie Hasła',
-    'RiskConfiguration'=>'Konfiguracja ryzyka',
-    'ReviewSettings'=>'Ustawienia przeglądu',
     'AddAndRemoveValues'=>'Dodawanie i usuwanie wartości',
-    'UserManagement'=>'Podręcznik Użytkownika',
+    'UserManagement'=>'Zarządzanie użytkownikami',
     'RedefineNamingConventions'=>'Przeglądu Konwencje Nazewnictwa',
     'AuditTrail'=>'Audyt',
     'Extras'=>'Aplikacje',
@@ -51,7 +49,7 @@ $lang = array(
     'Type'=>'Typ',
     'FullName'=>'Pełna Nazwa',
     'EmailAddress'=>'Adres e-mail',
-    'Teams'=>'Polecenie(y)',
+    'Teams'=>'Zespół(y)',
     'ALL'=>'Wszystkie',
     'NONE'=>'Nikt',
     'UserResponsibilities'=>'Obowiązki Użytkownika',
@@ -80,8 +78,6 @@ $lang = array(
     'Delete'=>'Usunąć',
     'SendPasswordResetEmailForUser'=>'Wyślij reset hasła do poczty e-mail dla użytkownika',
     'Category'=>'Kategoria',
-    'Cards'=>'Karty',
-    'List'=>'Lista',
     'AddNewCategoryNamed'=>'Dodawanie nowej kategorii nazwy',
     'DeleteCurrentCategoryNamed'=>'Usuń aktualną kategorię nazwy',
     'Team'=>'Zespół',
@@ -99,7 +95,7 @@ $lang = array(
     'RiskPlanningStrategy'=>'Strategii Planowania Ryzyka',
     'AddNewRiskPlanningStrategyNamed'=>'Dodaj nowe strategie planowania ryzyka według nazwy',
     'DeleteCurrentRiskPlanningStrategyNamed'=>'Usuwanie bieżącej strategii planowania ryzyka według nazwy',
-    'CloseReason'=>'Obok Przyczyn',
+    'CloseReason'=>'Powód zamknięcia',
     'AddNewCloseReasonNamed'=>'Dodaj nowy powodów nazwał',
     'DeleteCurrentCloseReasonNamed'=>'Usuń bieżącą obok przyczyn nazwał',
     'IWantToReviewHighRiskEvery'=>'Chcę, aby każda opinia wysokie ryzyko',
@@ -135,21 +131,21 @@ $lang = array(
     'UNREVIEWED'=>'NIESPRAWDZONE',
     'PASTDUE'=>'PRZETERMINOWANE',
     'ID'=>'Identyfikator',
-    'Status'=>'Stanu',
+    'Status'=>'Stan',
     'Risk'=>'Ryzyko',
     'DaysOpen'=>'Dni Otwarte',
     'CalculatedRisk'=>'Skalkulowane Ryzyko',
     'SubmittedBy'=>'Przedstawiony',
     'NextReviewDate'=>'Następna Data Przeglądu',
-    'CVSSRiskScoring'=>'Ryzyko CVSS strzelił',
-    'DREADRiskScoring'=>'Strach oceny ryzyka',
-    'OWASPRiskScoring'=>'Ryzyko owasp to strzelił',
+    'CVSSRiskScoring'=>'Ocena ryzyka CVSS',
+    'DREADRiskScoring'=>'Ocena ryzyka DREAD',
+    'OWASPRiskScoring'=>'Ocena ryzyka OWASP',
     'CustomRiskScoring'=>'Własne Oceny Ryzyka',
     'MitigationPlanningHelp'=>'Poniżej znajduje się lista złożonych zagrożeń, które wymagają planowania łagodzenia',
     'ManagementReviewHelp'=>'Poniżej znajduje się lista złożonych zagrożeń, które wymagają przeglądu zarządzania',
     'Submitted'=>'Przedstawiony',
     'MitigationPlanned'=>'Zmiękczanie Planowanych',
-    'ManagementReview'=>'Komentarz Zarządzania',
+    'ManagementReview'=>'Przegląd zarządzania',
     'No'=>'Nie',
     'Yes'=>'Tak',
     'AddAndRemoveProjects'=>'Dodawać i usuwać projekty',
@@ -175,26 +171,26 @@ $lang = array(
     'SubmissionDate'=>'Data Złożenia',
     'DateSubmitted'=>'Data Złożenia',
     'EditDetails'=>'Edycja Części',
-    'Mitigation'=>'Zmiękczanie',
+    'Mitigation'=>'Łagodzenie ryzyka',
     'MitigationDate'=>'Data złożenia łagodzenia',
     'PlanningStrategy'=>'Strategia Planowania',
-    'CurrentSolution'=>'Aktualna Decyzja',
+    'CurrentSolution'=>'Aktualne Rozwiązanie',
     'SecurityRequirements'=>'Wymagania Bezpieczeństwa',
     'SecurityRecommendations'=>'Zalecenia Dotyczące Bezpieczeństwa',
     'EditMitigation'=>'Edytować Łagodzenia',
-    'LastReview'=>'Ostatni Komentarz',
+    'LastReview'=>'Ostatni Przegląd',
     'ReviewDate'=>'Data Weryfikacji',
     'Reviewer'=>'Recenzent',
-    'Review'=>'Komentarz',
+    'Review'=>'Przegląd',
     'NextStep'=>'Następny Krok',
     'Comments'=>'Komentarze',
     'ViewAllReviews'=>'Zobacz Wszystkie Opinie',
     'ReviewHistory'=>'Historia Przegląd',
     'Comment'=>'Komentarz',
     'ClassicRiskScoring'=>'Klasyczny Liczenie Ryzyka',
-    'RiskScoringActions'=>'Zabicie Działania Ryzyka',
+    'RiskScoringActions'=>'Działania oceny ryzyka',
     'UpdateClassicScore'=>'Aktualizacja Klasyczny Wynik',
-    'ScoreBy'=>'Konto',
+    'ScoreBy'=>'Oceniaj wg',
     'RISKClassicExp1'=>'Ryzyko = ( prawdopodobieństwo x wpływ + 2(uderzenie) )',
     'RISKClassicExp2'=>'Ryzyko = ( prawdopodobieństwo x wpływ + uderzenia )',
     'RISKClassicExp3'=>'Ryzyko = ( prawdopodobieństwo x wpływ )',
@@ -216,7 +212,7 @@ $lang = array(
     'SubmittedRisksByDate'=>'Przedstawiony Ryzyka Według Daty',
     'MitigationsByDate'=>'Poprawki Według Daty',
     'ManagementReviewsByDate'=>'Zarządzanie Komentarze Wg Daty',
-    'ProjectsAndRisksAssigned'=>'Projekty i ryzyko mianowany',
+    'ProjectsAndRisksAssigned'=>'Projekty i ryzyko przypisane',
     'OpenRisks'=>'Otwarte Ryzyko',
     'ClosedRisks'=>'Zamknięte Ryzyka',
     'ReportMyOpenHelp'=>'Ten raport pokazuje wszystkie otwarte ryzyko, że bieżącego użytkownika jako właściciela lub zarządcy, związane z ryzykiem wg poziomu ryzyka',
@@ -267,20 +263,20 @@ $lang = array(
     'AttackVector'=>'Wektor Ataku',
     'AttackComplexity'=>'Złożoność Ataku',
     'Authentication'=>'Uwierzytelnianie',
-    'ConfidentialityImpact'=>'Wpływ Prywatność',
+    'ConfidentialityImpact'=>'Wpływ na Poufność',
     'IntegrityImpact'=>'Wpływ Integralności',
-    'AvailabilityImpact'=>'Dostępność',
+    'AvailabilityImpact'=>'Dostępność Wpływ',
     'TemporalScoreMetrics'=>'Tymczasowe Rejestry Wynik',
-    'Exploitability'=>'Исчерпаемости',
+    'Exploitability'=>'Podatność na exploitację',
     'RemediationLevel'=>'Poziom Odzysku',
     'ReportConfidence'=>'Pewność Raport',
     'EnvironmentalScoreMetrics'=>'Wskaźniki Ekologiczne Ocena',
-    'CollateralDamagePotential'=>'Oprogramowanie Potencjalnej Szkody',
-    'TargetDistribution'=>'Целераспределение',
+    'CollateralDamagePotential'=>'Potencjalne Szkody Uboczne',
+    'TargetDistribution'=>'Dystrybucja Celu',
     'ConfidentialityRequirement'=>'Wymóg Prywatności',
     'IntegrityRequirement'=>'Wymóg Integralności',
-    'AvailabilityRequirement'=>'Wymóg Posiadania',
-    'UpdateDREADScore'=>'Obawiam się aktualizować wynik',
+    'AvailabilityRequirement'=>'Wymóg Dostępności',
+    'UpdateDREADScore'=>'Zaktualizuj wynik DREAD',
     'DamagePotential'=>'Potencjalne Szkody',
     'Reproducibility'=>'Powtarzalność',
     'AffectedUsers'=>'Poszkodowani Użytkownicy',
@@ -292,8 +288,8 @@ $lang = array(
     'Opportunity'=>'Możliwość',
     'Size'=>'Rozmiar',
     'VulnerabilityFactors'=>'Czynniki Podatności',
-    'EaseOfDiscovery'=>'Łatwość otwierania',
-    'EaseOfExploit'=>'Łatwość korzystania',
+    'EaseOfDiscovery'=>'Łatwość wykrycia',
+    'EaseOfExploit'=>'Łatwość wykorzystania luki',
     'Awareness'=>'Świadomość',
     'IntrusionDetection'=>'Wykrywania Włamań',
     'TechnicalImpact'=>'Techniczny Wpływ',
@@ -307,11 +303,11 @@ $lang = array(
     'NonCompliance'=>'Nieprzestrzeganie',
     'PrivacyViolation'=>'Naruszenie Prywatności',
     'UpdateCustomScore'=>'Aktualizacja Niestandardowych Wynik',
-    'ManuallyEnteredValue'=>'Wprowadzona Wartość',
+    'ManuallyEnteredValue'=>'Ręcznie Wprowadzona Wartość',
     'ScoreByClassic'=>'Wynik klasyczny',
     'ScoreByCVSS'=>'Wynik CVSS',
     'ScoreByDREAD'=>'Wynik strach',
-    'ScoreByOWASP'=>'Konto fundacji',
+    'ScoreByOWASP'=>'Wynik według OWASP',
     'ScoreByCustom'=>'Wynik niestandardowych',
     'BaseVector'=>'Podstawowy Wektor',
     'TemporalVector'=>'Osi Wektor',
@@ -357,8 +353,6 @@ $lang = array(
     'Activate'=>'Aktywować',
     'DeleteRisks'=>'Usuń Zagrożenia',
     'DeletedRisksCannotBeRecovered'=>'Wykluczyć Ryzyka, Nie Mogą Zostać Przywrócone',
-    'DeletedAssessmentsCannotBeRecovered'=>'Usuniętych ocen nie można odzyskać',
-    'TheAssessmentsWereDeletedSuccessfully'=>'Oceny zostały pomyślnie usunięte.',
     'RisksDeletedSuccessfully'=>'Ryzyko(y) pomyślnie usunięty',
     'ThereWasAProblemDeletingTheRisk'=>'Problem usuwania ryzyka(ów)',
     'Activated'=>'Aktywowany',
@@ -371,7 +365,7 @@ $lang = array(
     'IWantToReviewVeryHighRiskEvery'=> 'Chcę, aby każda opinia jest bardzo wysokie ryzyko',
     'AbleToReviewVeryHighRisks'=>'Możliwość widzenia bardzo wysokie ryzyko',
     'AbleToReviewInsignificantRisks'=>'Można zobaczyć niewielkie ryzyko',
-    'AllTeams'=>'Wszystkie Polecenia',
+    'AllTeams'=>'Wszystkie Zespoły',
     'FileUploadSettings'=>'Plik Parametrów Ładowania',
     'AllowedFileTypes'=>'Dozwolone Typy Plików',
     'AddNewFileTypeOf'=>'Dodaj nowy typ pliku',
@@ -403,7 +397,7 @@ $lang = array(
     'CustomExtrasText'=>'Byłoby fajnie, gdyby wszystko było za darmo, tak? Mam nadzieję podstawowej platformy SimpleRisk jest w stanie obsługiwać wszystkie Twoje potrzeby w zakresie zarządzania ryzykiem. Ale, jeśli znajdziesz się chce jeszcze więcej funkcjonalności, opracowaliśmy serię "Dodatki", które będą robić dokładnie to.',
     'Upgrade'=>'Aktualizacja',
     'Install'=>'Ustaw',
-    'Purchase'=>'Sprzedam',
+    'Purchase'=>'Zakup',
     'PasswordPolicy'=>'Zasady Haseł',
     'MinimumNumberOfCharacters'=>'Minimalna liczba znaków',
     'RequireAlphaCharacter'=>'Wymaga Alfa-Symbol',
@@ -411,17 +405,12 @@ $lang = array(
     'RequireLowerCaseCharacter'=>'Wymagają Małych Liter',
     'RequireNumericCharacter'=>'Wymagają Liczbowy Symbol',
     'RequireSpecialCharacter'=>'Wymagają Specjalnego Znaku',
-    'Enabled'=>'All inclusive',
+    'Enabled'=>'Włączono',
     'RiskAdvice'=>'Porady Ryzyko',
     'AddDeleteAssets'=>'Dodawanie I Usuwanie Aktywów',
     'EditAssets'=>'Zmiana Aktywów',
     'AutomaticAssetValuation'=>'Automatyczna Wycena Aktywów',
     'ManualAssetValuation'=>'Instrukcja Oceny Aktywów',
-    'AssetValuationMode'=>'Tryb wyceny aktywów',
-    'AutomaticLinearRange'=>'Automatyczny zakres liniowy',
-    'AutomaticExponentialRange'=>'Automatyczny zakres wykładniczy',
-    'ManualValuation'=>'Podręcznik',
-    'AssetValuationMinMustBeNonNegative'=>'Aby uzyskać automatyczny zakres wykładniczy, minimalna wycena aktywów musi wynosić zero lub więcej.',
     'MinimumValue'=>'Minimalna Wartość',
     'MaximumValue'=>'Maksymalna Wartość',
     'ValueRange'=>'Zakres Wartości',
@@ -448,7 +437,7 @@ $lang = array(
     'DeleteSourceNamed'=>'Usunąć źródło nazwy',
     'CheckAllAssessments'=>'Sprawdzić Wszystkie Oceny',
     'AllowAccessToAssessmentsMenu'=>'Zezwalaj na dostęp do menu "oceny" ',
-    'Assessments'=>'Ocen',
+    'Assessments'=>'Oceny',
     'PendingRisks'=>'Wstrzymane Ryzyko',
     'CreateAssessment'=>'Utworzyć Oceny',
     'EditAssessment'=>'Edytować Oceny',
@@ -487,10 +476,10 @@ $lang = array(
     'APIKey'=>'Klucz API',
     'GenerateAPIKey'=>'Wygenerować klucz API',
     'RotateAPIKey'=>'Obróć klucz API',
-    'InvalidateAPIKey'=>'Nieważny klucz API',
+    'InvalidateAPIKey'=>'Unieważnij klucz API',
     'Deactivate'=>'Dezaktywować',
     'ImportExportExtra'=>'Import eksport Extra',
-    'SaveDetails'=>'Zapisywanie szczegółów',
+    'SaveDetails'=>'Zapisz szczegóły',
     'ClearForm'=>'Wyczyść formularz',
     'SaveMitigation'=>'Zapisz łagodzenia',
     'Cancel'=>'Anuluj',
@@ -501,7 +490,7 @@ $lang = array(
     'UseCaseSensitiveValidationOfUsername'=>'Użyj liter sprawdzania poprawności nazwy użytkownika',
     'MitigationPlanning'=>'Planowane ograniczenie daty',
     'AssetDetails'=>'Szczegóły zasobu',
-    'RiskList'=>'Ryzyko zakażenia',
+    'RiskList'=>'Lista ryzyk',
     'Are you sure you want to close the risk? All changes will be lost!'=>'Czy na pewno chcesz zamknąć ryzyko? Wszystkie zmiany zostaną utracone!',
     'MinimumPasswordAge' => 'Minimalny okres ważności hasła',
     'MaximumPasswordAge' => 'Maksymalny okres ważności hasła',
@@ -565,14 +554,14 @@ $lang = array(
     'Passwords' => 'Hasła',
     'NoOwner' => 'Bez właściciela',
     'NoOwnersManager' => 'Nie Menedżera właścicieli',
-    'RiskAverageOverTime' => 'Średnie ryzyko czasem',
-    'AverageRiskScore' => 'Średnia ocena ryzyka na',
+    'RiskAverageOverTime' => 'Średnie ryzyko w czasie',
+    'AverageRiskScore' => 'Średnia ocena ryzyka',
     'Year' => 'Rok',
     'Month' => 'Miesiąc',
     'Day' => 'Dzień',
-    'FilterByAffectedAsset' => 'Przeanalizuj przedmiotowych aktywów',
+    'FilterByAffectedAsset' => 'Filtruj według dotkniętych aktywów',
     'RisksOpened' => 'Ryzyka, otwarte',
-    'RisksClosed' => 'Ryzyka, ZAMKNIĘTA',
+    'RisksClosed' => 'Zamknięte ryzyka',
     'HealthCheck' => 'Sprawdzanie kondycji',
     'RequirePasswordChangeOnLogin' => 'Wymagana jest zmiana hasła logowania',
     'PasswordChangeRequired' => 'Musisz zmienić hasło przed zalogowaniem.',
@@ -603,7 +592,6 @@ $lang = array(
     'SpecifiedTime' => 'Określonym czasie',
     'Governance' => 'Zarządzania',
     'Compliance' => 'Zgodności',
-    'CrossDomain' => 'Międzydomenowy',
     'AllowAccessToRiskManagementMenu' => 'Zezwalaj na dostęp do menu "Zarządzanie ryzykiem"',
     'CheckAllGovernance' => 'Sprawdź wszystkie zasady zarządzania',
     'CheckAllCompliance' => 'Sprawdzanie zgodności',
@@ -613,10 +601,10 @@ $lang = array(
     'NewFramework' => 'Nowe ramy',
     'EditFramework' => 'Edycja frameworka',
     'CurrentProjects' => 'Bieżące projekty',
-    'Frameworks' => 'RAM',
+    'Frameworks' => 'Struktury',
     'Controls' => 'Formantów',
     'NewControl' => 'Nowa kontrola',
-    'EditControl' => 'Formant edycji',
+    'EditControl' => 'Edytuj kontrolę',
     'CanceledProjects' => 'Anulowane projekty',
     'Priority' => 'Priorytet',
     'ProjectName' => 'Nazwa projektu',
@@ -645,7 +633,7 @@ $lang = array(
     'FieldType' => 'Typ pola',
     'CustomFieldNameNotEmpty' => 'Nazwa pola niestandardowego nie może być pusta.',
     'DeletedSuccess' => 'Pomyślnie usunięte',
-    'ActiveControls' => 'Aktywnych formantów',
+    'ActiveControls' => 'Aktywne kontrolki',
     'ControlName' => 'Nazwa formantu',
     'ControlShortName' => 'Krótka nazwa formantu',
     'ControlLongName' => 'Sterowanie długa nazwa',
@@ -658,7 +646,7 @@ $lang = array(
     'ControlPhase' => 'Faza kontroli',
     'ControlPriority' => 'Priorytet kontroli',
     'ControlFamily' => 'Rodzina formantów',
-    'AllFrameworks'=>'Wszystkie struktury',
+    'AllFrameworks'=>'Wszystkie frameworki',
     'NewControlName' => 'Nowa nazwa formantu',
     'NewControlDescription' => 'Nowy opis sterowania',
     'AreYouSureYouWantToDeleteThisControl' => 'Czy na pewno chcesz usunąć ten formant?',
@@ -735,7 +723,7 @@ $lang = array(
     'NextAuditDate'=>'Następna data audytu',
     'DesiredFrequency'=>'Żądanej częstotliwości',
     'Framework'=>'Ramy',
-    'Control'=>'Kontroli',
+    'Control'=>'Kontrola',
     'Test'=>'Test',
     'Active'=>'Aktywne',
     'Inactive'=>'Nieaktywne',
@@ -765,7 +753,7 @@ $lang = array(
     'RunNow'=>'Uruchom teraz',
     'ActiveAudits'=>'Aktywne inspekcje',
     'Questionnaire'=>'Kwestionariusz',
-    'Draft'=>'Projekt',
+    'Draft'=>'Szkic',
     'Complete'=>'Pełne',
     'AdditionalInformation'=>'Dodatkowe informacje',
     'Clear'=>'Wyczyść',
@@ -773,13 +761,12 @@ $lang = array(
     'EvidenceSubmittedPendingReview'=>'Dowody dostarczono / oczekuje na sprawdzenie',
     'PassedInternalQA'=>'Przeszła wewnętrzna QA',
     'RemediationRequired'=>'Wymagane środki zaradcze',
-    'Closed'=>'ZAMKNIĘTA',
+    'Closed'=>'Zamknięte',
     'TestResult'=>'Wynik testu',
-    'Summary'=>'Opis',
+    'Summary'=>'Podsumowanie',
     'TestDate'=>'Data testu',
     'Attachment'=>'Załącznik',
     'InvalidParams'=>'Nieprawidłowe parametry',
-    'ClearForm'=>'Wyczyść formularz',
     'QuestionnaireDraftSuccess'=>'Twoje odpowiedzi zostały pomyślnie zapisane.',
     'QuestionnaireCompletedSuccess'=>'Kwestionariusz został ukończony pomyślnie.',
     'EmailTemplateCompleteQuestionnaire' => '
@@ -790,7 +777,7 @@ $lang = array(
         </body></html>',
     'QuestionnaireResults'=>'Wyniki ankiety',
     'DateSent'=>'Data wysłania',
-    'Contact'=>'Z',
+    'Contact'=>'Kontakt',
     'PercentCompleted'=>'Procent ukończenia',
     'Incomplete'=>'Niedokończona',
     'Completed'=>'Zakończeniu',
@@ -822,7 +809,6 @@ $lang = array(
     'HasFile' => 'Ma pliku',
     'ClosedAuditStatus' => 'Stan zamkniętych inspekcji',
     'ClosedAuditStatusIsRequired' => 'Wymagany jest zamknięty stan inspekcji',
-    'Preferences' => 'Preferencje',
     'DefaultLanguage' => 'Język domyślny',
     'DefaultTimezone' => 'Domyślna strefa czasowa',
     'UserSessions' => 'Sesje użytkownika',
@@ -852,8 +838,6 @@ $lang = array(
     'NotifyOwnersManager' => 'Powiadamianie Menedżera właściciela',
     'NotifyTeam' => 'Powiadomić zespół',
     'NotifyAdditionalStakeholders' => 'Powiadomić dodatkowych interesariuszy',
-    'SpecificUser' => 'Konkretny użytkownik',
-    'SpecificUsers' => 'Konkretni użytkownicy',
     'NotifyReviewers' => 'Powiadamianie recenzentów',
     'NotifyTester' => 'Powiadomić testera',
     'SimpleRiskURL' => 'Adres URL SimpleRisk',
@@ -870,21 +854,20 @@ $lang = array(
     'RunAt' => 'Uruchomić w',
     'ImportControls' => 'Formanty importu',
     'RiskIDNoEXitFailedToUpdate' => 'Identyfikator ryzyka $risk_id nie istnieje, więc nie został zaimportowany lub zaktualizowany',
-    'CreatedRisksFromPendingRisks' => 'Ryzyko związane z oczekującymi zagrożeniami.',
+    'CreatedRisksFromPendingRisks' => 'Wszystkie ryzyka z oczekujących ryzyk zostały utworzone.',
     'AddAll' => 'Dodaj wszystkie',
     'SendingPleaseWait' => 'Wysyłanie... Czekaj.',
     'SelectForMitigationControls' => 'Wybierz dla formantów ograniczenia',
     'QuestionnaireTemplateName' => 'Nazwa szablonu kwestionariusza',
     'Ordering' => 'Zamawiania',
     'AuditsDueToday' => 'Audyty na dzień dzisiejszy',
-    'AuditsPastDue' => 'Audyty przeszłe z powodu',
+    'AuditsPastDue' => 'Audyty po terminie',
     'AuditsDueSoon' => 'Audyty wkrótce',
     'DateDue' => 'Data ukończenia',
     'ShowAllRisksForPlanProjects' => 'Pokaż wszystkie zagrożenia dla planowanych projektów, a nie tylko te, które zostały zweryfikowane jako "Rozważ dla projektu"',
     'Edit' => 'Edytuj',
     'Clone' => 'Clone',
     'SubQuestions' => 'Pytania cząstkowe',
-    'Ordering' => 'Zamawiania',
     'EncryptionKeyNoExist' => 'Plik klucza szyfrowania nie istnieje. Skontaktuj się z adminem.',
     'ResidualRiskScore' => 'Ocena ryzyka resztkowego',
     'DefaultInitiatedAuditStatus' => 'Domyślny stan inspekcji inicjowanej',
@@ -910,7 +893,7 @@ $lang = array(
     'GoToSSOLogin' => 'Pokaż link "przejdź do strony logowania jednokrotnego" na głównej stronie logowania',
     'SSOLoginDisabled' => 'Logowanie jednokrotne zostało wyłączone, więc nie można użyć tego uwierzytelniania.',
     'QuestionID' => 'Identyfikator pytania',
-    'QuestionOrdering' => 'Pytanie zamówienie',
+    'QuestionOrdering' => 'Kolejność pytań',
     'DefaultUserRole' => 'Domyślna rola użytkownika',
     'AbleToAcceptMitigations' => 'Możliwość akceptacji czynników łagodzących',
     'AcceptMitigation' => 'Akceptuj łagodzenie',
@@ -958,7 +941,7 @@ $lang = array(
     'AddImpact' => 'Dodaj wpływ',
     'DeleteImpact' => 'Usuń wpływ',
     'AddLikelihood' => 'Dodaj prawdopodobieństwo',
-    'DeleteLikelihood' => 'Prawdopodobieństwo usunięcia',
+    'DeleteLikelihood' => 'Usuń prawdopodobieństwo',
     'SuccessAddingImpact' => 'Sukces, aby dodać wpływ',
     'SuccessDeletingImpact' => 'Sukces, aby usunąć wpływ',
     'FailAddingImpact' => 'Brak dodania wpływu',
@@ -968,7 +951,7 @@ $lang = array(
     'FailAddingLikelihood' => 'Brak możliwości dodania prawdopodobieństwa',
     'FailDeletingLikelihood' => 'Niemożność usunięcia prawdopodobieństwa',
     'SubjectRequired' => 'Temat jest wymagany. Proszę wybrać pole.',
-    'Spreadsheet' => 'Arkusza kalkulacyjnego',
+    'Spreadsheet' => 'Arkusz kalkulacyjny',
     'SuccessUpdatingImpactName' => 'Nazwa wpływu została pomyślnie zaktualizowana.',
     'FailUpdatingImpactName' => 'Brak aktualizacji nazwy wpływu.',
     'SuccessUpdatingLikelihoodName' => 'Nazwa prawdopodobieństwa została pomyślnie zaktualizowana.',
@@ -1023,8 +1006,6 @@ $lang = array(
     'YouNeedToUpgradeYourSimpleRiskSubscription' => 'Musisz uaktualnić subskrypcję SimpleRisk, aby umożliwić korzystanie z tego dodatkowego.',
     'AutomaticallyAddNewlyAuthenticatedUsersWithDefaultRole' => 'Automatyczne dodawanie nowo uwierzytelnionych użytkowników z rolą domyślną',
     'Disabled' => 'Wyłączone',
-    'Help' => 'Pomoc',
-    'Profile' => 'Profil',
     'AbleToCommentRiskManagement' => 'Możliwość komentowania zarządzania ryzykiem',
     'AbleToCommentCompliance' => 'Możliwość komentowania zgodności',
     'LanguageUpdated' => 'Twój język został pomyślnie zaktualizowany.',
@@ -1039,13 +1020,13 @@ $lang = array(
     'IPFormatNotRecognized' => 'IP nie był rozpoznawalny format.',
     'Open' => 'Otwórz',
     'Mitigated' => 'Złagodzone',
-    'Unmitigated' => 'Prawdziwą',
-    'Reviewed' => 'Napisał(a) recenzję',
+    'Unmitigated' => 'Niezmniejszone',
+    'Reviewed' => 'Przeglądane',
     'Unreviewed' => 'Niesprawdzone',
     'NewRiskInstruction' => 'Wypełnij formularz powyżej, aby udokumentować ryzyko rozpatrzenia w procesie zarządzania ryzykiem',
     'New' => 'Nowy',
-    'ManagementReviewed' => 'Mgmt Recenzja',
-    'Reopened' => 'Ponownie',
+    'ManagementReviewed' => 'Mgmt Przejrzane',
+    'Reopened' => 'Ponownie otwarte',
     'Treated' => 'Traktowane',
     'Untreated' => 'Nieleczonych',
     'passwords' => [
@@ -1067,7 +1048,6 @@ $lang = array(
     'FailedToUploadFile' => 'Nie można przekazać pliku',
     'NewPasswordDoesNotMatchPolicy' => 'Nowe hasło nie jest zgodne ze skonfigurowanymi zasadami haseł.',
     'RiskLevels' => 'Poziomy ryzyka',
-    'Scoring' => 'Punktacja',
     'ClassicRiskFormula' => 'Klasyczna formuła ryzyka',
     'ContributingRiskFormula' => 'Formuła ryzyka przyCzyniania się',
     'ImpactHasMaxChars' => 'Wpływ powinien mieć max $length Znaków.',
@@ -1079,15 +1059,15 @@ $lang = array(
     'ScoreUsingContributingRisk' => 'Ocena przy wyKorzystaniu ryzyka',
     'ContributingRiskCalendarDescription' => 'Na tej stronie znajduje się Kalkulator służący do tworzenia punktów ciężkości w zakresie ryzyka związanego z usterką.',
     'SimpleriskContributingRiskCalculator' => 'SimpleRisk wkład Kalkulator ryzyka',
-    'ContributingRiskScore' => 'Ocena ryzyka',
-    'OverallContributingRiskScore' => 'Całkowity wynik ryzyka',
+    'ContributingRiskScore' => 'Wynik ryzyka czynnikowego',
+    'OverallContributingRiskScore' => 'Całkowity wynik ryzyka czynnikowego',
     'ContributingRisk' => 'PrzyCzynianie się do ryzyka',
     'Weight' => 'Waga',
     'AllowAllUsersToSeeRisksNotAssignedToTeam' => 'Zezwalaj wszystkim użytkownikom na wyświetlanie zagrożeń nieprzypisanych do zespołu',
     'ContributingLikelihood' => 'Prawdopodobieństwo wniesienia wkładu',
     'ContributingSubjectsImpacts' => 'PrzyCzynianie się uczestników i wpływów',
     'ScoreByContributingRisk' => 'Ocena poprzez udział w ryzyku',
-    'ContributingRiskScoring' => 'Punktacja ryzyka',
+    'ContributingRiskScoring' => 'Punktacja ryzyka czynnikowego',
     'UpdateContributingRiskScore' => 'Ocena ryzyka przyCzyniania się do aktualizacji',
     'MaxImpact' => 'Maksymalny wpływ',
     'MaxLikelihood' => 'Maksymalne prawdopodobieństwo',
@@ -1098,10 +1078,8 @@ $lang = array(
     'MapSuccessTeamAndGroup' => 'Pomyślnie mapowane grupy zespołu i LDAP.',
     'MappingTeamAndLDAPGroupRequired' => 'Wymagane jest mapowanie zespołu i grupy LDAP.',
     'ExistingMappings' => 'Istniejące mapowania',
-    'TeamGroup' => '(Grupa drużynowa <-->)</-->',
+    'TeamGroup' => '(Zespół <--> Grupa)',
     'ExistingMappingsRequired' => 'Należy wybrać istniejące mapowania.',
-    'EncryptionBackupFileExists' => 'W ramach procesu szyfrowania utworzono niezaszyfrowaną kopię zapasową bazy danych SimpleRisk.  Po sprawdzeniu, że wszystko jest prawidłowo zaszyfrowane, przenieś je do bezpiecznej lokalizacji lub kliknij przycisk, aby go usunąć.',
-    'BackupLocation' => 'Lokalizacja kopii zapasowej',
     'FileDeletedSuccessfully' => 'Plik został usunięty pomyślnie.',
     'ErrorDeletingFile' => 'Wystąpił błąd podczas usuwania pliku.  Sprawdź uprawnienia do pliku i spróbuj ponownie.',
     'MapToLDAPGroup' => 'Mapowanie na grupę LDAP',
@@ -1121,14 +1099,14 @@ $lang = array(
     'NotifyAuditStatusChangeSubject' => 'Zmieniono stan testu',
     'NotifyAuditStatusChangeStatement' => 'Test audytu (ID #{$test_audit_id}) stan zmieniony przez {$name}.  Otrzymujesz ten komunikat, ponieważ są wyświetlane jako Tester lub części zespołu skojarzonego z testem.',
     'OldValue' => 'Stara wartość',
-    'NewValue' => 'Nową wartość',
+    'NewValue' => 'Nowa wartość',
     'Actions' => 'Działania',
     'Templates' => 'Szablony',
     'ComplianceAudit' => 'Audyt zgodności',
     'FailControl' => 'NiePowodzenie kontroli',
     'Instructions' => 'Instrukcje',
     'UserInstructions' => 'Instrukcje użytkownika',
-    'Verified' => 'Sprawdzonych',
+    'Verified' => 'Zweryfikowano',
     'UnverifiedAssets' => 'Niezweryfikowane aktywa',
     'VerifyAll' => 'Sprawdź wszystkie',
     'NoPermissionForAsset' => 'Nie masz uprawnień do zarządzania zasobami.',
@@ -1155,7 +1133,6 @@ $lang = array(
     'Unverified' => 'Niezweryfikowane',
     'ExportAssets' => 'Eksportowanie zasobów',
     'ExportToCSVByClickingBelow' => 'Eksportuj do pliku CSV, klikając poniżej',
-    'RevertToUnencryptedBackup' => 'Przywróć niezaszyfrowaną kopię zapasową',
     'SuccessfullyRevertedToUnencryptedBackup' => 'Pomyślnie przywrócono niezaszyfrowaną kopię zapasową',
     'FailedToRevertToUnencryptedBackup' => 'Nie można przywrócić niezaszyfrowanej kopii zapasowej. Proszę sprawdzić logi serwera, aby uzyskać więcej informacji.',
     'AddNewItemNamed' => 'Dodaj nowy element o nazwie',
@@ -1221,7 +1198,7 @@ $lang = array(
     'StayUntilClicked' => 'Pozostań do momentu kliknięcia',
     'Pass' => 'Przekazać',
     'Inconclusive' => 'Niejednoznaczne',
-    'Fail' => 'Nie',
+    'Fail' => 'Niepowodzenie',
     'Tags' => 'Tagi',
     'NoTagAssigned' => 'Nie przypisano jeszcze znacznika',
     'AssetNameIsRequired' => 'Nazwa zasobu jest wymagana',
@@ -1294,7 +1271,6 @@ $lang = array(
     'Approve' => 'Zatwierdzić',
     'ExceptionType' => 'Typ wyjątku',
     'PolicyName' => 'Nazwa zasady',
-    'ControlName' => 'Nazwa formantu',
     'AreYouSureYouWantToDeleteTheseExceptions' => 'Czy na pewno chcesz usunąć te wyjątki?',
     'ExceptionsWereDeletedSuccessfully_policy' => 'Wyjątki zasad zostały usunięte pomyślnie.',
     'ExceptionsWereDeletedSuccessfully_control' => 'Wyjątki kontroli zostały usunięte pomyślnie.',
@@ -1321,7 +1297,6 @@ $lang = array(
     'AssetsWereVerifiedSuccessfully'=>'Aktywa zostały pomyślnie zweryfikowane.',
     'ThereWasAProblemVerifyingTheAssets'=>'Wystąpił problem podczas weryfikowania zasobów.',
     'ThereWasAProblemWithAddingTheProject' => 'Wystąpił problem z dodaniem projektu',
-    'ProjectName' => 'Nazwa projektu',
     'SuccessSetProject' => 'Pomyślnie dodano ryzyko dla projektu.',
     'SuccessCreateProject' => 'Pomyślnie utworzono nowy projekt.',
     'ReviewProjectSelectionInstructions' => 'Wybierz projekt lub wpisz nazwę nowego.',
@@ -1370,13 +1345,12 @@ $lang = array(
     'UpdateAssetGroupTooltip' => 'Aktualizuj grupę zasobów',
     'DeleteAssetGroupTooltip' => 'Usuń grupę zasobów',
     'RemoveAssetTooltip' => 'Usuń zasób z grupy zasobów',
-    'ControlShortNameFieldRequired' => 'Kontrola krótka nazwa pole jest wymagane.',
     'AffectedAssetsWidgetPlaceholder' => 'Wybierz zasób lub grupę zasobów',
     'AffectedAssetsWidgetNoDropdownPlaceholder' => 'Dodawanie nazwy zasobu',
     'AffectedAssetsWidgetInstructions' => 'Wybierz zasób lub grupę zasobów. Nowy zasób można utworzyć, dodając jego nazwę do listy.',
     'ImportAssetGroups' => 'Importowanie grup zasobów',
     'ExportAssetGroups' => 'Eksportuj grupy zasobów',
-    'Assets' => 'Aktywów',
+    'Assets' => 'Aktywa',
     'ImportAssetGroupAddSucceeded' => 'Dodana Grupa środków trwałych o nazwie "{$asset_group_name}".',
     'ImportAssetGroupAddFailed' => 'Nie można dodać grupy zasobów o nazwie "{$asset_group_name}".',
     'ImportAssetGroupAddNameTaken' => 'Nie można dodać grupy zasobów o nazwie "{$asset_group_name}", ponieważ nazwa jest już w użyciu.',
@@ -1407,7 +1381,7 @@ $lang = array(
     'ItemUpdateAuditLogRemoved' => 'Usunięto "{$items_removed}"',
     'ItemUpdateAuditLogAdded' => 'Dodano "{$items_added}"',
     'TeamType_test' => 'Test',
-    'TeamType_audit' => 'Inspekcji',
+    'TeamType_audit' => 'Audyt',
     'TestCreatedAuditLogMessage' => 'Test{$test_name}"(ID: {$test_id}) został stworzony przez użytkownika "{$user}".',
     'TestUpdatedAuditLogMessage' => 'Test{$test_name}"(ID: {$test_id}) został zaktualizowany przez użytkownika "{$user}".',
     'TestDeletedAuditLogMessage' => 'Test{$test_name}"(ID: {$test_id}) został usunięty przez użytkownika "{$user}".',
@@ -1433,8 +1407,8 @@ $lang = array(
     'LastName' => 'Nazwisko',
     'AdvancedSearch' => 'Wyszukiwanie zaawansowane',
     'AdvancedSearchExtra' => 'Zaawansowane wyszukiwanie dodatkowe',
-    'ExtraToggledOn' => 'Bardzo "{$extra_name}"był przełączany przez użytkownika"{$user}".',
-    'ExtraToggledOff' => 'Bardzo "{$extra_name}"był przełączany przez użytkownika"{$user}".',
+    'ExtraToggledOn' => 'Dodatek "{$extra_name}" został włączony przez użytkownika "{$user}".',
+    'ExtraToggledOff' => 'Dodatek "{$extra_name}" został wyłączony przez użytkownika "{$user}".',
     'RiskSearch' => 'Wyszukiwanie ryzyka',
     'SearchResults' => 'Wyniki wyszukiwania',
     'NoSearchResults' => 'Nie znaleziono wyników dla zapytania.',
@@ -1458,7 +1432,7 @@ $lang = array(
     'SavedSelections' => 'Zapisane',
     'SaveSelections' => 'Zapisywanie zaznaczeń',
     'Private' => 'Prywatny',
-    'Public' => 'Publicznego',
+    'Public' => 'Publiczny',
     'TheNameAlreadyExists' => 'Nazwa już istnieje. Proszę spróbować innej nazwy.',
     'NoPermissionForSelection' => 'Nie masz uprawnień dostępu do zaznaczenia',
     'RiskAppetiteReport' => 'Raport apetyt na ryzyko',
@@ -1491,21 +1465,18 @@ $lang = array(
     'BackupStart' => 'Rozpoczęto wykonywanie kopii zapasowej.',
     'BackupFailed' => 'Kopia zapasowa nie powiodła się. Prosimy o kontakt z administratorem.',
     'BackupSuccessful' => 'Kopia zapasowa powiodła się. Kopia zapasowa aplikacji, bazy danych i wszystkich zainstalowanych dodatków.',
+    'BackupLocation' => 'Lokalizacja kopii zapasowej',
     'BackupCheckingPreRequisites' => 'Sprawdzanie uprawnień, Konfigurowanie katalogów.',
     'BackupCheckingPreRequisitesDone' => 'Sprawdzanie uprawnień przekazany, wymagane katalogi pomyślnie utworzone.',
     'BackupApplicationFiles' => 'Rozpoczęto wykonywanie kopii zapasowej plików aplikacji.',
     'BackupApplicationFilesDone' => 'Pomyślnie wykonano kopię zapasową plików aplikacji',
     'BackupDatabase' => 'Rozpoczęto wykonywanie kopii zapasowej bazy danych.',
     'BackupDatabaseDone' => 'Baza danych została pomyślnie utworzona.',
-    'BackupDatabaseFailed' => 'Kopia zapasowa bazy danych nie powiodła się. Szczegóły można znaleźć w dzienniku SimpleRisk.',
-    'WindowsNotSupported' => 'SimpleRisk nie obsługuje już systemu Windows od wersji 20260421-001. Prosimy o migrację na serwer oparty na systemie Linux.',
-    'WindowsUpgradeHalted' => 'Ta operacja nie może zostać uruchomiona na serwerze Windows. SimpleRisk nie obsługuje już systemu Windows od wersji 20260421-001. Prosimy o migrację na serwer z systemem Linux.',
     'BackupDirectoryNotWriteable' => 'Na{$location}"katalog nie jest zapisywalny przez użytkownika sieci Web.',
     'BackupFailedToCreateDirectories' => 'Nie można utworzyć wymaganej struktury katalogów w "{$location}".',
     'AreYouSureYouWantToDeleteSelction' => 'Czy na pewno chcesz usunąć zaznaczenie?',
     'FieldIsRequired' => '_XXX_ pole jest wymagane',
     'NoPermissionForAssessments' => 'Nie masz uprawnień do ocen.',
-    'MissingOrInvalidTrackingID' => 'Brak lub nieprawidłowy identyfikator śledzenia.',
     'Encrypted' => 'Szyfrowane',
     'AreYouSureYouWantToApproveThisResult' => 'Czy na pewno chcesz zatwierdzić ten wynik?',
     'AreYouSureYouWantToRejectThisResult' => 'Czy na pewno chcesz odrzucić ten wynik?',
@@ -1539,9 +1510,8 @@ $lang = array(
     'FilterBy' => 'Filtruj według',
     'AddNewQuestion' => 'Dodaj nowe pytanie',
     'ControlAudit' => 'Audyt kontrolny',
-    'AssociatedControls' => 'Skojarzone formanty',
-    'AssociatedFrameworks' => 'Powiązane ramy',
-    'Analysis' => 'Analizę',
+    'AssociatedControls' => 'Skojarzone kontrole',
+    'Analysis' => 'Analiza',
     'TotalNumber' => 'Łączna liczba',
     'CumulativeScore' => 'Skumulowany wynik',
     'AverageScore' => 'Średni wynik',
@@ -1564,7 +1534,6 @@ $lang = array(
     'ChangedTo' => 'Zmieniono na',
 
     'Jira' => 'Jira',
-    'JiraIntegrationExtra' => 'Integracja Jira Extra',
 
     'JiraWebhookAuthTokenIsInvalid' => 'Podany token uwierzytelniania elementu webhook JIRA ("{$token}") jest nieprawidłowy!',
     'JiraWebhookNoBodyPosted' => 'Elementu webhook JIRA nie po ciele! Prosimy o kontakt support@simplerisk.com',
@@ -1587,7 +1556,7 @@ $lang = array(
     'JiraConnectionSettingsWarning' => 'Ustawienia połączenia są nieprawidłowe. Synchronizacja i dostęp do ustawień synchronizacji jest wyłączony.',
     'JiraConnectionSettingsSuccess' => 'Ustawienia połączenia są prawidłowe. Synchronizacja jest włączona.',
     'JiraWebhookSetupFailed' => 'Konfigurowanie elementu elementu webhook nie powiodło się. Sprawdź ustawienia połączenia.',
-    'JiraWebhookSetupSuccess' => 'Pomyślnie skonfigurować elementu webhook.',
+    'JiraWebhookSetupSuccess' => 'Element webhook został pomyślnie skonfigurowany.',
 
     'JiraProjectSynchronizationSettings' => 'Ustawienia synchronizacji projektu',
     'JiraFailedGetIssueTypes' => 'Nie udało się uzyskać typów problemów! Prosimy o kontakt z administratorem.',
@@ -1653,7 +1622,7 @@ $lang = array(
     'SimpleriskUsers' => 'Użytkownicy simplerisk',
     'QuestionnaireCompletedAuditLogByUser' => 'Kwestionariusz "{$questionnaire_name}" został uzupełniony przez użytkownika "{$contact_name}".',
     'QuestionnaireDraftAuditLogByUser' => 'Kwestionariusz "{$questionnaire_name}" został zapisany jako wersja robocza przez użytkownika "{$contact_name}".',
-    'Internal' => 'Wewnętrznego',
+    'Internal' => 'Wewnętrzny',
     'AnswerType' => 'Typ odpowiedzi',
     'MultipleChoice' => 'Wielokrotny wybór',
     'FillInTheBlank' => 'Wypełnij puste',
@@ -1715,8 +1684,6 @@ $lang = array(
     'CustomFieldUpdateFailed' => 'Nie można zaktualizować pola niestandardowego.',
     'IncidentManagement' => 'Zarządzanie incydentami',
     'IncidentManagementExtra' => 'Dodatkowe zarządzanie incydentami',
-    'IncidentManagementNotifications' => 'Powiadomienia dotyczące zarządzania incydentami',
-    'NotificationSettingsUpdated' => 'Zaktualizowano ustawienia powiadomień.',
     'Incident' => 'Incydent',
     'NewIncident' => 'Nowy incydent',
     'Preparation' => 'Przygotowaniu',
@@ -1725,7 +1692,7 @@ $lang = array(
     'Containment' => 'Zamknięcia',
     'Eradication' => 'Zwalczania',
     'Recovery' => 'Odzyskiwania',
-    'LessonsLearned' => 'Doświadczeń',
+    'LessonsLearned' => 'Wyciągnięte wnioski',
     'SubmitAnIncident' => 'Prześlij zdarzenie',
     'GovernanceRiskCompliance' => 'Ryzyko zarządzania & Zgodność',
     'Incidents' => 'Incydentów',
@@ -1749,8 +1716,8 @@ $lang = array(
     'BusinessUnitCreateAuditLog' => 'Użytkownik "{$user}" utworzono jednostkę biznesową "{$business_unit_name}"(ID:{$id}) z początkowymi zespołami "{$teams_to}".',
     'BusinessUnitUpdateAuditLog' => 'Użytkownik "{$user}" zaktualizowane zespoły jednostki biznesowej "{$business_unit_name}"(ID:{$id}) z "{$teams_from}" do "{$teams_to}" ({$team_changes}).',
     'BusinessUnitDeleteAuditLog' => 'Użytkownik "{$user}" usunięta jednostka biznesowa "{$business_unit_name}"(ID:{$id}).',
-    'BusinessUnitUpdateAuditLogRemoved' => 'Usunięte{$teams_removed}"',
-    'BusinessUnitUpdateAuditLogAdded' => 'Dodano{$teams_added}"',
+    'BusinessUnitUpdateAuditLogRemoved' => 'Usunięte "{$teams_removed}"',
+    'BusinessUnitUpdateAuditLogAdded' => 'Dodano "{$teams_added}"',
     'BusinessUnitRemoveTeamAuditLog' => 'Użytkownik "{$user}" usunięto Team "{$team_name}"(ID:{$team_id}) z działu biznesowego "{$business_unit_name}"(ID:{$business_unit_id}).',
     'BusinessUnitCreatedSuccessfully' => 'Pomyślnie utworzono nową jednostkę biznesową.',
     'BusinessUnitUpdatedSuccessfully' => 'Pomyślnie zaktualizowano jednostkę biznesową.',
@@ -1770,7 +1737,6 @@ $lang = array(
     'DeleteBusinessUnitTooltip' => 'Usuń jednostkę biznesową',
     'RemoveTeamTooltip' => 'Usuń zespół z jednostki biznesowej',
     'YouNeedToSpecifyATeamParameter' => 'Należy określić parametr Team.',
-    'OrganizationalHierarchyExtra' => 'Dodatkowa hierarchia organizacyjna',
     'Source' => 'Źródła',
     'SourceType' => 'Typ źródła',
     'DetectedBy' => 'Wykryte przez',
@@ -1783,9 +1749,9 @@ $lang = array(
     'Locations' => 'Lokalizacje',
     'Region' => 'Region',
     'Regions' => 'Regionów',
-    'Country' => 'Kraju',
-    'Countries' => 'Krajach',
-    'City' => 'Miasta',
+    'Country' => 'Kraj',
+    'Countries' => 'Kraje',
+    'City' => 'Miasto',
     'Cities' => 'Miasta',
     'Communications' => 'Komunikacji',
     'Facilities' => 'Udogodnienia',
@@ -1812,7 +1778,7 @@ $lang = array(
     'CollectedOn' => 'Zebrane na',
     'CollectedBy' => 'Zebrane przez',
     'AreYourSureYouWantToDeleteThisEvidence' => 'Czy na pewno chcesz usunąć ten dowód?',
-    'DetectedOn' => 'Wykryto włączone',
+    'DetectedOn' => 'Wykryto dnia',
     'BeganOn' => 'Rozpoczęto w dniu',
     'ReportedBy' => 'Zgłoszone przez',
     'OwnedBy' => 'Własnością',
@@ -1855,7 +1821,7 @@ $lang = array(
     'PermissionUpdateAuditLogAdded' => 'Dodano "{$permissions_added}"',
     'Admin' => 'Admin',
     'AdminRoleDescription' => 'To uprawnienie zapewnia dostęp do konfiguracji SimpleRisk. Użytkownik z tym uprawnieniem jest skutecznie użytkownik administracyjny w systemie. Są one w stanie wprowadzić zmiany do wszystkich menu znalezionych w menu "Konfiguruj". Pozwoli to również na aktywację i dezaktywacji dodatków i modyfikowanie ich konfiguracji. To pozwolenie powinno być udzielone tylko tym, którzy tego bezwzględnie potrzebują. Gdy użytkownik ma dostęp do tego uprawnienia będą mogli edytować inne konta użytkowników, jak również.',
-    'GrantAdmin' => 'Grant Admin',
+    'GrantAdmin' => 'Nadaj uprawnienia administratora',
     'RemoveAdmin' => 'Usuń administratora',
     'WouldYouLikeSimpleRiskToAutomaticallyGenerate' => 'Czy chcesz, aby SimpleRisk automatycznie wygenerował szablon kwestionariusza na podstawie wybranych struktur i formantów?',
     'GenerateStandardQuestionnaireTemplate' => 'Generowanie standardowego szablonu kwestionariusza',
@@ -1894,7 +1860,7 @@ $lang = array(
     'JiraScanProjectsForNewIssuesIsRequired' => 'Gdy filtrowanie jest włączone, wymagane jest pole "Skanuj projekty"!',
     'JiraCreateRiskAs' => 'Tworzenie ryzyka jako',
     'JiraCreateRiskAsInstructions' => 'Wybierz, który użytkownik będzie przesyłający utworzone ryzyko',
-    'JiraCreateIssueAsIsRequired' => 'Pole "Utwórz ryzyko jako"!',
+    'JiraCreateIssueAsIsRequired' => 'Pole "Utwórz ryzyko jako" jest wymagane!',
     'FixFileEncodingIssues' => 'Rozwiązywanie problemów z kodowaniem plików',
     'FixFileEncodingIssuesDisclaimer' => 'Wykryliśmy możliwy problem z plikami przechowywanymi w twojej bazie danych SimpleRisk. W poniższej tabeli pokazano, które elementy mają uszkodzone pliki i które muszą zostać poprawione. Zapoznaj się z wymienionymi elementami i prześlij ponownie pliki, których dotyczy problem.',
     'AttachmentType' => 'Typ załącznika',
@@ -1903,7 +1869,7 @@ $lang = array(
     'YouHaveToSelectAFileToUpload' => 'Musisz wybrać plik do przesłania.',
     'InvalidUniqueName' => 'Podana unikatowa nazwa pliku jest nieprawidłowa!',
     'ref_type_exceptions' => 'Wyjątek dokumentu',
-    'ref_type_documents' => 'Dokumentu',
+    'ref_type_documents' => 'Dokument',
     'ref_type_test_audit' => 'Audyt testu',
     'SessionAbsoluteTimeout' => 'Limit czasu bezwzględnego sesji',
     'TagsWidgetPlaceholder' => 'Wybierz / Dodaj tag',
@@ -1952,10 +1918,9 @@ $lang = array(
     'ConnectivityVisualizer' => 'Wizualizator połączeń',
     'ThereAreNoConnectionsAssociatedWithTheSelectedValue' => 'Brak połączeń skojarzonych z wybraną wartością',
     'InvalidSimpleriskBaseUrl' => 'Nieprawidłowy podstawowy adres URL SimpleRisk!',
-    'Questionnaire' => 'Kwestionariusz',
     'FileEncodingFixHeader_risk' => 'Zarządzanie Ryzykiem',
     'FileEncodingFixHeader_compliance' => 'Zarządzanie i zgodność',
-    'FileEncodingFixHeader_questionnaire' => 'Ocen',
+    'FileEncodingFixHeader_questionnaire' => 'Oceny',
     'DaysBeforeTheReviewIsDue' => 'dni przed terminem przeglądu',
     'DaysAfterTheReviewIsDue' => 'dni po terminie przeglądu',
     'SendAnEmailWhenTheReviewIsDue' => 'Wyślij e-mail, gdy zbliża się termin recenzji',
@@ -1964,7 +1929,7 @@ $lang = array(
     'ReviewsDueSoon' => 'Recenzje wkrótce za {$DueDate} dni',
     'Submitter' => 'Zgłaszający',
     'ControlMaturity' => 'Kontroluj dojrzałość',
-    'CurrentControlMaturity' => 'Aktualny termin zapadalności kontroli',
+    'CurrentControlMaturity' => 'Aktualny poziom dojrzałości kontroli',
     'DesiredControlMaturity' => 'Pożądana dojrzałość kontroli',
     'ControlGapAnalysis' => 'Analiza luk kontrolnych',
     'BelowMaturity' => 'Poniżej dojrzałości',
@@ -1973,7 +1938,7 @@ $lang = array(
     'NoAddProjectPermission' => 'Nie masz uprawnień, aby dodać projekt.',
     'ImportUsers' => 'Importuj użytkowników',
     'ExportUsers' => 'Eksportuj użytkowników',
-    'Lockout' => 'Lokaut',
+    'Lockout' => 'Blokada konta',
     'DynamicRiskReportDisplay' => 'Dynamiczne wyświetlanie raportu o ryzyku',
     'PlanMitigationDisplay' => 'Plan łagodzenia skutków wyświetlania',
     'PerformReviewsDisplay' => 'Wykonaj wyświetlanie recenzji',
@@ -1985,7 +1950,7 @@ $lang = array(
     'ThreatCatalog' => 'Katalog zagrożeń',
     'ThreatGrouping' => 'Grupowanie zagrożeń',
     'Threat' => 'Zagrożenie',
-    'ThreatEvent' => 'Zagrożenie',
+    'ThreatEvent' => 'Zdarzenie zagrożenia',
     'NewThreat' => 'Nowe zagrożenie',
     'EditThreat' => 'Edytuj zagrożenie',
     'AreYouSureYouWantToDeleteThisThreatCatalogItem' => 'Czy na pewno chcesz usunąć tę pozycję z katalogu zagrożeń?',
@@ -2011,8 +1976,6 @@ $lang = array(
     'TemplateAssignment' => 'Przypisanie szablonu',
     'PleaseSelectUser' => 'Proszę wybrać użytkownika',
     'AboutThisPage' => 'O tej stronie',
-    'UserGuide' => 'Instrukcja obsługi',
-    'AdministratorGuide' => 'Podręcznik administratora',
     'ProjectStatus' => 'Status projektu',
     'SupportPortal' => 'Portal wsparcia',
     'WebSupport' => 'Wsparcie internetowe',
@@ -2048,11 +2011,11 @@ $lang = array(
     'QuestionLogic' => 'Logika pytań',
     'QuestionnaireResponses' => 'Odpowiedzi na pytania ankiety',
     'ContributingImpact' => 'Wkład w oddziaływanie',
-    'Share' => 'Udział',
+    'Share' => 'Udostępnij',
     'ShareResults' => 'Udostępnij wyniki',
     'StopSharingResults' => 'Zatrzymaj udostępnianie',
     'AreYouSureYouWantToStopSharingThisResult' => 'Czy na pewno chcesz zatrzymać udostępnianie tego wyniku?',
-    'ShareResultsWith' => 'Udostępnij wyniki',
+    'ShareResultsWith' => 'Udostępnij wyniki użytkownikowi',
     'QuestionnaireResultShareContactsRequired' => 'Udostępnij kontakty są wymagane!',
     'QuestionnaireResultShareGetContactFailed' => 'Nie udało się uzyskać informacji kontaktowych!',
     'QuestionnaireResultShareSuccessful' => 'Wynik ankiety został pomyślnie udostępniony wybranym kontaktom',
@@ -2062,7 +2025,7 @@ $lang = array(
     'QuestionnaireResultShareAuditLog' => 'Użytkownik „{$user_name}” udostępnił ankietę „{$questionnaire_name}” (wysłaną do kontaktu „{$contact_name}” w wyniku „{$date}”) z komentarzem „{$comment}”. Udostępniono użytkownikowi „{$shared_with_contacts}”.',
     'QuestionnaireResultStopSharingAuditLog' => 'Użytkownik „{$user_name}” przestał udostępniać wynik ankiety „{$questionnaire_name}” (wysłanej do kontaktu „{$contact_name}” w dniu „{$date}”). Przestano udostępniać wynik ankiety „{$stopped_sharing_with_contacts}”.',
     'QuestionnaireResultShareOpenedAuditLog' => 'Otwarto wynik współdzielonej ankiety „{$questionnaire_name}” (wysłanej do kontaktu „{$contact_name}” dnia „{$date}”, udostępnionej „{$shared_with_contact_name}”).',
-    'Pending' => 'Aż do',
+    'Pending' => 'Oczekujące',
     'PasswordResetRequestsExceeded' => 'Zgłoszono już prośbę o zresetowanie hasła dla tego użytkownika. Odczekaj 10 minut przed ponownym zgłoszeniem prośby o zresetowanie hasła.',
     'Backups' => 'Kopie zapasowe',
     'AutomaticallyBackupThisSimpleRiskInstance' => 'Automatycznie utwórz kopię zapasową tej instancji simplerisk',
@@ -2101,7 +2064,7 @@ $lang = array(
     'ControlRisk' => 'Ryzyko kontroli',
     'VulnerabilityManagementExtra' => 'Zarządzanie lukami w zabezpieczeniach Extra',
     'VulnerabilityManagement' => 'Zarządzanie lukami w zabezpieczeniach',
-    'Setup' => 'Organizować coś',
+    'Setup' => 'Konfiguracja',
     'Triage' => 'Ocena stanu zdrowia rannych',
     'AutomaticallyUpdateVMDetails' => 'Automatycznie aktualizuj z platform maszyn wirtualnych',
     'SaveAndRunNow' => 'Zapisz i uruchom teraz',
@@ -2186,7 +2149,6 @@ $lang = array(
     'GraphicalRiskAnalysis' => 'Graficzna analiza ryzyka',
     'ResetMitigations' => 'Zresetuj środki zaradcze',
     'ResetReviews' => 'Zresetuj recenzje',
-	'EnableEncryptionDebugLogging' => 'Włącz dodatkowe rejestrowanie debugowania zaszyfrowanej bazy danych',
     'Log' => 'Dziennik',
     'Date' => 'Data',
     'Platform' => 'Platforma',
@@ -2202,7 +2164,7 @@ $lang = array(
     'Increasing' => 'Wzrastający',
     'Decreasing' => 'Malejąca',
     'NoChange' => 'Bez zmiany',
-    'Visualization' => 'Wyobrażanie sobie',
+    'Visualization' => 'Wizualizacja',
     'AreaRange' => 'Zakres obszaru',
     'Line' => 'Linia',
     'Bar' => 'Bar',
@@ -2262,7 +2224,7 @@ $lang = array(
     'IncidentSummaryUpdateFailed_empty' => 'Podsumowanie zdarzenia nie może być puste.',
     'IncidentSummaryUpdateSuccessful' => 'Podsumowanie zostało pomyślnie zaktualizowane.',
     'ImportSuccessful' => 'Importowanie powiodło się!',
-    'Document' => 'Dokumentu',
+    'Document' => 'Dokument',
     'SelfAssessments' => 'Samooceny',
     'AssetId'=>'Identyfikator zasobu',
     'ExportTemplateGroups' => 'Eksportuj grupy szablonów',
@@ -2278,10 +2240,8 @@ $lang = array(
     'SSLSecurityCheckWarning' => 'OSTRZEŻENIE: SSL zapobiega atakom MITM, a wyłączenie następujących opcji stanowi zagrożenie dla bezpieczeństwa',
     'EnableSSLCertificateCheckSimpleRisk' => 'Włącz sprawdzanie certyfikatów SSL dla żądań API SimpleRisk',
     'EnableSSLCertificateCheckExternal' => 'Włącz sprawdzanie certyfikatów SSL dla witryn zewnętrznych',
-    'EnableAPIv1Endpoints' => 'Włącz punkty końcowe API v1 (przestarzałe)',
-    'EnableAPIv1EndpointsHelp' => 'API v1 jest przestarzałe. Pozostaw wyłączone, chyba że masz integrację, która tego wymaga. To ustawienie nie ma wpływu na /api/v2/ i jest ono zawsze dostępne.',
     'EnableSSLCertificateCheckVM' => 'Włącz sprawdzanie certyfikatów SSL dla zarządzania lukami w zabezpieczeniach',
-    'DuoToopherRemoved' => 'Duo jest już obsługiwane bezpośrednio przez SimpleRisk. Zamiast tego przeprowadziliśmy migrację do ogólnego uwierzytelniania TOTP. Skonfiguruj swój nowy token uwierzytelniający poniżej.',
+    'DuoToopherRemoved' => 'Duo nie jest już obsługiwane bezpośrednio przez SimpleRisk. Zamiast tego przeprowadziliśmy migrację do ogólnego uwierzytelniania TOTP. Skonfiguruj swój nowy token uwierzytelniający poniżej.',
     'ProtectYourSimpleRiskAccount' => 'Chroń swoje konto SimpleRisk',
     '2FADescription' => 'Uwierzytelnianie dwuetapowe zwiększa bezpieczeństwo Twojego konta, wykorzystując dodatkowe urządzenie do weryfikacji Twojej tożsamości. Uniemożliwia to dostęp do konta każdemu, kto nie jest Tobą, nawet jeśli zna Twoje hasło.',
     '2FAStep1' => 'Krok 1 - Zeskanuj poniższy kod za pomocą aplikacji 2FA, takiej jak Google Authenticator',
@@ -2324,7 +2284,7 @@ $lang = array(
     'UpdateComplianceForgeSCF' => 'Zaktualizuj platformę Secure Controls Framework (SCF).',
     'MappedAssets' => 'Zmapowane zasoby',
     'AddControl' => 'Dodaj kontrolę',
-    'CurrentMaturity' => 'Bieżący termin zapadalności',
+    'CurrentMaturity' => 'Bieżąca dojrzałość',
     'AddDocument' => 'Dodaj dokument',
     'EditDocument' => 'Edytuj dokument',
     'EncodingIssueCountUpdated' => 'Zaktualizowano liczbę problemów z kodowaniem dla typu „{$type}”: {$old_count} -> {$count}.',
@@ -2376,11 +2336,11 @@ $lang = array(
     'AddMapping' => 'Dodaj mapowanie',
     'CreateSuccess_asset' => 'Zasób „{$name}” został pomyślnie utworzony przez użytkownika „{$user}”.',
     'AreYouSureYouWantToDeleteTheSelectedControls' => 'Czy na pewno chcesz usunąć wybrane elementy sterujące?',
-    'ControlMappedToDifferentMaturitiesOnAsset' =>'Kontrola jest przypisana do różnych terminów zapadalności tego samego składnika aktywów',
+    'ControlMappedToDifferentMaturitiesOnAsset' =>'Kontrola jest przypisana do różnych poziomów dojrzałości tego samego składnika aktywów',
     'Advanced_Search_no_results_1' => 'Wygląda na to, że dla Twojego zapytania nie ma żadnych wyników.',
     'Advanced_Search_no_results_2' => 'Dokładnie sprawdź wyszukiwanie pod kątem literówek i błędów ortograficznych lub wypróbuj inne wyszukiwane hasło.',
     'IncidentsPerDay' => 'Incydenty dziennie',
-    'CurrentVsDesiredMaturity' => 'Dojrzałość bieżąca a pożądana według rodziny kontrolnej',
+    'CurrentVsDesiredMaturity' => 'Dojrzałość przez rodzinę kontrolną',
     'RiskDistribution' => 'Dystrybucja ryzyka',
     'RiskDistributionDescription'=>'Powyższe wykresy kołowe pomagają pokazać rozkład ryzyka pomiędzy różnymi poziomami ryzyka, zarówno w przypadku ryzyka nieodłącznego, jak i rezydualnego. Możemy wykorzystać te dwa ciasta, aby pokazać postęp w naszych wysiłkach na rzecz ograniczenia ryzyka. Jeśli wykres ryzyka rezydualnego pokazuje duże wycinki bardzo wysokiego lub wysokiego ryzyka, może to oznaczać, że Twoja organizacja podejmuje zbyt duże ryzyko i konieczne są dalsze działania łagodzące.',
     'EnableTabs' => 'Włącz karty',
@@ -2393,7 +2353,7 @@ $lang = array(
     'GenericDeleteItemConfirmation' => 'Czy na pewno chcesz usunąć wybrane elementy?',
     'ConfirmDeletePendingRisk' => 'Czy na pewno chcesz usunąć wybrane elementy?',
     'Display' => 'Wyświetlacz',
-    'ShowAssociationData' => 'Pokaż dane stowarzyszenia',
+    'ShowAssociationData' => 'Pokaż dane powiązania',
     'Association' => 'Stowarzyszenie',
     'InstanceDetails' => 'Szczegóły instancji',
     'PendingResponse' => 'Oczekująca odpowiedź',
@@ -2406,7 +2366,7 @@ $lang = array(
     'QuestionnaireResultRejectedMessage' => 'Odrzucony przez {$user} w {$timestamp}.',
     'QuestionnaireResultNotApprovedMessage' => 'Oznaczone jako niezatwierdzone przez {$user} w dniu {$timestamp}.',
     'QuestionnaireStatus' => 'Stan kwestionariusza',
-    'ReviewStatus' => 'Przejrzyj stan',
+    'ReviewStatus' => 'Status przeglądu',
     'QuestionnaireResultsHelp' => 'Poniżej znajduje się lista wyników ankiety',
     'QuestionnaireColumns' => 'Kolumny kwestionariusza',
     'ContactColumns' => 'Kolumny kontaktowe',
@@ -2422,10 +2382,6 @@ $lang = array(
     'AnthropicConnectionWarning' => 'Nieprawidłowe dane uwierzytelniające! Nie można połączyć się z Anthropic za pomocą klucza API.',
     'ResetAPIKey' => 'Zresetuj klucz API',
     'ArtificialIntelligence' => 'Sztuczna inteligencja',
-    'ArtificialIntelligenceDesc' => 'Skonfiguruj połączenie z dostawcą sztucznej inteligencji i pytania kontekstowe, które będą podstawą odpowiedzi sztucznej inteligencji dla tej instancji SimpleRisk.',
-    'ProviderConfiguration' => 'Konfiguracja dostawcy',
-    'ContextQuestions' => 'Pytania kontekstowe',
-    'AIProviderNotConfiguredWarning' => 'Dostawca sztucznej inteligencji nie jest skonfigurowany. Nie można generować wyników na żywo, dopóki nie ustawisz dostawcy i klucza API na karcie Konfiguracja dostawcy.',
     'ArtificialIntelligenceAdditionalContext' => 'Sztuczna inteligencja Dodatkowy kontekst',
     'ArtificialIntelligenceAdditionalContextDescription' => 'Poniższe informacje są opcjonalne, ale zapewnią sztucznej inteligencji dodatkowy kontekst potrzebny do generowania bardziej wiarygodnych wyników. Wszystkie wprowadzone poniżej informacje ZOSTANĄ WYSŁANE DO SKONFIGUROWANEGO DOSTAWCY SZTUCZNEJ INTELIGENCJI w celu analizy i dostosowania odpowiedzi do potrzeb Twojej organizacji.',
     'OrganizationContext' => 'Kontekst organizacji',
@@ -2456,7 +2412,7 @@ $lang = array(
     'EditModeInformation' => 'Włącz tryb edycji, aby edytować układ. Wyłączenie go nie zapisze automatycznie układu.',
     'InvalidLayout' => 'Nieprawidłowy układ!',
     'InvalidLayoutOnlyCustomAllowedAsDefault' => 'Nieprawidłowy układ! Tylko układy niestandardowe mogą być zapisane jako domyślne.',
-    'LayoutSaved' => 'Układ zapisany!',
+    'LayoutSaved' => 'Układ pulpitu nawigacyjnego został zapisany.',
     'DefaultLayout' => 'Układ domyślny',
     'DefaultLayoutInformation' => 'Ustawia ten układ jako domyślny, który ma być używany zamiast tego dostarczonego przez SimpleRisk dla użytkowników, którzy nie mają ustawionego niestandardowego układu. Możesz ustawić tylko zapisany niepusty niestandardowy układ jako domyślny. Jeśli układ oznaczony jako domyślny zostanie przywrócony do domyślnego układu, przywróci go do domyślnego układu dostarczonego przez SimpleRisk.',
     'LayoutDefaultStatusUpdated' => 'Zaktualizowano domyślny status układu.',
@@ -2465,7 +2421,7 @@ $lang = array(
     'DefaultLayoutRestored' => 'Domyślny układ został pomyślnie przywrócony!',
     'SavedLayoutRestored' => 'Zapisany układ został pomyślnie przywrócony!',
     'ConfirmRestoreLayout' => 'Czy jesteś pewien? Utracisz zmiany wprowadzone do tego układu.',
-    'ConfirmDisableEditModeWithPendingChanges' => 'Masz niezapisane zmiany, które utracisz po opuszczeniu strony. Czy na pewno chcesz wyłączyć „Tryb edycji” i potencjalnie zapomnieć o zapisaniu zmian?',
+    'ConfirmDisableEditModeWithPendingChanges' => 'Masz niezapisane zmiany w tym panelu. Czy chcesz je odrzucić i zakończyć edycję?',
     'ConfirmSave' => 'Zapisanie tych zmian spowoduje nadpisanie wcześniej zapisanego układu. Czy na pewno chcesz kontynuować?',
     'ConfirmSaveAdminDefault' => 'Ten układ jest ustawiony jako domyślny dla tego typu układu. Zapisanie tych zmian spowoduje zmianę układu dla wszystkich użytkowników, którzy nie mają niestandardowego układu ustawionego dla tego typu układu. Czy na pewno chcesz kontynuować?',
     'RisksByMonth' => 'Ryzyka według miesiąca',
@@ -2481,7 +2437,7 @@ $lang = array(
     'InvalidDataPleaseContactAdministrator' => 'Nieprawidłowe dane! Skontaktuj się z administratorem.',
     'EditWidgetText' => 'Edytuj tekst widżetu',
     'UnauthorizedAccessInAPI' => 'Nieautoryzowany dostęp. Uwierzytelniony użytkownik nie ma odpowiednich uprawnień.',
-    'FAIRRiskAssessment' => 'Sprawiedliwa ocena ryzyka',
+    'FAIRRiskAssessment' => 'Ocena ryzyka FAIR',
     'RiskScenario' => 'Scenariusz ryzyka',
     'Assumptions' => 'Założenia',
     'MonteCarloSimulation' => 'Symulacja Monte Carlo',
@@ -2496,7 +2452,6 @@ $lang = array(
     'SecondaryLossEventFrequency' => 'Częstotliwość zdarzeń strat wtórnych',
     'SecondaryLossMagnitude' => 'Wielkość straty wtórnej',
     'Productivity' => 'Wydajność',
-    'Response' => 'Odpowiedzi',
     'Replacement' => 'Wymiana',
     'CompetitiveAdvantage' => 'Przewaga konkurencyjna',
     'FinesAndJudgements' => 'Grzywny i wyroki',
@@ -2590,7 +2545,6 @@ $lang = array(
     'NotAMatch' => 'Nie pasuje',
     'ReviewManually' => 'Przejrzyj ręcznie',
     'ResponsesToQuestionsWithLinkedControlsWillUpdateTheControlTypeTo' => 'Odpowiedzi na pytania z powiązanymi kontrolkami zaktualizują typ kontrolki na',
-    'DueDate' => 'Termin wykonania',
     'AuditLog_IncidentUpdated' => 'Incydent „{$incident_summary}”(ID: {$incident_id}) został zaktualizowany przez użytkownika „{$user_name}”. Zmiany: {$changes}.',
     'AnswersWillBeAutoSavedOnAssessments' => 'Odpowiedzi będą automatycznie zapisywane w ocenach',
     'SecondsAssessmentsAreAutoSaved' => 'Oceny sekundowe są automatycznie zapisywane',
@@ -2598,7 +2552,6 @@ $lang = array(
     'NotifyAuditInitiateSubject' => 'Rozpoczęto audyt',
     'BypassPendingRisksAndCreateRisksImmediatelyAfterAssessmentCompletion' => 'Omiń „Oczekujące ryzyka” i utwórz ryzyka natychmiast po zakończeniu oceny',
     'AssociatedExceptions' => 'Powiązane wyjątki',
-    'Required' => 'Wymagany',
     'EmailInstructions' => 'Instrukcje e-mailowe',
     'ApproveSelectedVulnerabilities' => 'Zatwierdź wybrane luki',
     'RejectSelectedVulnerabilities' => 'Odrzuć wybrane luki',
@@ -2637,7 +2590,7 @@ $lang = array(
     'AnExistingUploadFileTypeWasRemovedSuccessfully' => 'Istniejący typ przesłanego pliku został pomyślnie usunięty.',
     'AnExistingUploadFileExtensionWasRemovedSuccessfully' => 'Istniejące rozszerzenie przesłanego pliku zostało pomyślnie usunięte.',
     'UploadingFileTypeAndExtensionNoSupport' => 'Kombinacja typu pliku i rozszerzenia („{$file_type_name}”, „{$file_type_extension_name}”) nie jest obsługiwana.',
-    'Logging' => 'Wycięcie lasu',
+    'Logging' => 'Rejestrowanie',
     'EnableLoggingCritical' => 'KRYTYCZNE: Stany, które mogą wymagać natychmiastowej interwencji.',
     'EnableLoggingError' => 'BŁĄD: Błędy czasu wykonania wymagające uwagi, ale nie powodujące awarii aplikacji.',
     'EnableLoggingWarning' => 'OSTRZEŻENIE: Wystąpiło coś nieoczekiwanego, ale aplikacja nadal działa.',
@@ -2648,68 +2601,9 @@ $lang = array(
     'PleaseEnterAValidTimezone' => 'Proszę podać prawidłową strefę czasową.',
     'TFIDFMatch' => 'Mecz TF-IDF',
     'CompletionDate' => 'Data zakończenia',
-    'AutoProcessSCFUpdates' => 'Automatyczne przetwarzanie nowych wydań Secure Controls Framework (SCF)',
-    'AddNewControls' => 'Dodaj nowe kontrolki SCF',
-    'UpdateExistingControls' => 'Zaktualizuj istniejące elementy sterujące SCF',
-    'DeleteRemovedControls' => 'Usuń usunięte kontrolki SCF',
-    'CreateEvidenceRequests' => 'Tworzenie wniosków o dowody dla kontroli SCF',
-    'SelectSCFFrameworks' => 'Wybierz ramy SCF',
-    'SCFReleaseProcessing' => 'Przetwarzanie wydań SCF',
-    'NotFrameworkDescription' => 'Poniższy widżet wyświetla wszystkie nagłówki znajdujące się w arkuszu kalkulacyjnym Secure Controls Framework (SCF). Użyj go, aby wybrać kolumny zawierające dane frameworków i dane spoza frameworków.',
-    'Note' => 'Notatka',
-    'AISettingsNote' => 'Włączenie pomocy sztucznej inteligencji spowoduje wysłanie danych do firmy Anthropic w celu przeprowadzenia analizy w ramach programu LLM, przy użyciu klucza API firmy Anthropic, co pozwoli na dostarczenie dostosowanych wyników.',
-    'EnableAIAssistanceForControlData' => 'Włącz pomoc sztucznej inteligencji dla danych kontrolnych',
-    'ReferenceText' => 'Tekst odniesienia',
-    'FrameworkSelection' => 'Wybór ram',
-    'Show' => 'Pokazywać',
-    'InProgress' => 'W toku',
-    'Canceled' => 'Odwołany',
-    'Failed' => 'Przegrany',
-    'LegacyFrameworks' => 'Starsze struktury',
-    'Archive' => 'Archiwum',
-    'FailedToFetchCVEInformation' => 'Nie udało się pobrać informacji CVE. Sprawdź identyfikator CVE i spróbuj ponownie.',
-    'ComplianceDashboard' => 'Panel zgodności',
-    'DynamicAuditReportHelp' => 'W raporcie wyświetlane są wszystkie audyty i ich statusy.',
-    'ComplianceDashboardDescription' => 'Na tym wykresie przedstawiono liczbę kontroli w każdym frameworku, przy czym kontrole zaliczone są na zielono, a niezaliczone na czerwono.',
-    'PassingControls' => 'Kontrola podań',
-    'FailingControls' => 'Wadliwe sterowanie',
-    'ControlsByFramework' => 'Kontrole według Framework',
-    'NumberOfControls' => 'Liczba elementów sterujących',
     'AssetsAndControls' => 'Aktywa i kontrole',
     'AssetsByControl' => 'Aktywa według kontroli',
     'ControlsByAsset' => 'Kontrole według aktywów',
-    'PasswordResetTokenExpirationPeriod' => 'Okres ważności tokena resetującego hasło',
-    'APasswordResetTokenExpirationPeriodShouldBeMoreThan5Minutes' => 'Okres ważności tokena resetującego hasło powinien być dłuższy niż 5 minut.',
-    'MeanTimeToRemediate' => 'Średni czas naprawy',
-    'ByTeam' => 'Przez zespół',
-    'ByCategory' => 'Według kategorii',
-    'ByRiskLevel' => 'Według poziomu ryzyka',
-    'MeanTimeToRemediateDescription' => 'Średnia liczba dni do zamknięcia ryzyk, pogrupowana według zespołu, kategorii i poziomu ryzyka. Uwzględniono tylko zamknięte ryzyka.',
-    'AverageDaysToClose' => 'Średnia liczba dni do zamknięcia',
-    'ControlPassRateTrend' => 'Trend wskaźnika zaliczeń kontrolnych',
-    'ControlPassRateTrendDescription' => 'Miesięczny wskaźnik zdawalności (%) dla każdego systemu w ciągu ostatnich 12 miesięcy. Wyświetlane są tylko systemy z co najmniej jednym wynikiem testu w danym okresie.',
-    'PassRatePercent' => 'Wskaźnik zdawalności (%)',
-    'ExposureByTeam' => 'Narażenie na ryzyko według zespołu',
-    'ExposureByCategory' => 'Narażenie na ryzyko według kategorii',
-    'ExposureByLocation' => 'Narażenie na ryzyko według lokalizacji',
-    'TotalRiskScore' => 'Całkowity wynik ryzyka',
-    'SLABreachStatus' => 'Status naruszenia SLA',
-    'SLABreachDescription' => 'Otwarte ryzyka w granicach lub powyżej progu SLA według poziomu ryzyka. Progi domyślne: Bardzo wysoki = 30 dni, Wysoki = 60 dni, Średni = 90 dni, Niski = 180 dni.',
-    'WithinSLA' => 'W ramach SLA',
-    'SLABreached' => 'Naruszenie SLA',
-    'NumberOfRisks' => 'Liczba ryzyk',
-    'AllFrameworks' => 'Wszystkie struktury',
-    'ExposureByBusinessUnit' => 'Narażenie na ryzyko według jednostki biznesowej',
-    'BusinessUnit' => 'Jednostka biznesowa',
-    'BUChartCrossUnitNote' => 'Uwaga: ryzyka przypisane zespołom obejmującym wiele jednostek biznesowych są liczone w każdej z nich.',
-    'SLAThresholds' => 'Progi SLA',
-    'SLAThresholdsDescription' => 'Maksymalna liczba dni, przez które otwarte ryzyko może pozostać nierozwiązane, zanim zostanie uznane za przeterminowane, dla danego poziomu ryzyka.',
-    'SLAThresholdMustBeBetween1And3650' => 'Wartości progowe SLA muszą mieścić się w przedziale od 1 do 3650 dni.',
-    'SLAThresholdsUpdatedSuccessfully' => 'Progi SLA zostały pomyślnie zaktualizowane.',
-    'TimeToDetect' => 'Czas na wykrycie',
-    'TimeToDetectDescription' => 'Średnia liczba dni od rozpoczęcia incydentu (data rozpoczęcia) do wykrycia (data wykrycia), pogrupowana według zespołu i typu zdarzenia. Uwzględniono tylko incydenty z obiema zarejestrowanymi datami.',
-    'ByOccurrenceType' => 'Według typu wystąpienia',
-    'OccurrenceType' => 'Typ wystąpienia',
     'NoIncidentDetectionDataAvailable' => 'Nie odnotowano żadnych zdarzeń z datą „Rozpoczęto” i „Wykryto”.',
     'IncidentDashboard' => 'Panel incydentów',
     'TimeToDetectByTeam' => 'Czas wykrycia przez zespół',
@@ -2818,7 +2712,7 @@ $lang = array(
     'AuditRemediationCycleTimeDesc'           => 'Średni czas od ustaleń audytu do podjęcia działań naprawczych w zależności od struktury.',
     'ControlGapAnalysisDesc'                  => 'Kontrolki, w których brakuje testów, właścicieli lub które są nieaktualne.',
     'DocumentProgramReportDesc'               => 'Status programu dokumentów: liczba, zatwierdzenia i oczekujące przeglądy.',
-    'ExceptionReportDesc'                     => 'Otwórz wyjątki z datami wygaśnięcia i stanem zatwierdzenia.',
+    'ExceptionReportDesc'                     => 'Otwarte wyjątki z datami wygaśnięcia i stanem zatwierdzenia.',
     'ConnectivityVisualizerDesc'              => 'Interaktywny wykres ilustrujący powiązania między ryzykiem, aktywami, kontrolami i strukturami.',
     'RisksAndAssetsDesc'                      => 'Porównanie otwartych ryzyk i aktywów, na które wpływają.',
     'RisksAndControlsDesc'                    => 'Wzajemne porównanie ryzyk i kontroli je łagodzących.',
@@ -2850,16 +2744,15 @@ $lang = array(
     'SettingsSecurityDesc'                => 'Ustawienia uwierzytelniania, sesji, zasad dotyczących haseł, adresu URL podstawowego i zabezpieczeń interfejsu API.',
     'SettingsLoggingDesc'                 => 'Konfiguracja rejestrowania debugowania i audytu: poziomy rejestrowania, przechowywanie i lokalizacja plików rejestrowania.',
     'HealthCheckDesc'                     => 'Diagnozuj stan systemu: wersję PHP, rozszerzenia, uprawnienia plików, łączność z bazą danych, harmonogram cron i dodatkowe aktywacje.',
-    'AboutDesc'                           => 'Zobacz wersję SimpleRisk, informacje o licencji i autorach.',
-    'AnnouncementsDesc'                   => 'Twórz i zarządzaj banerami reklamowymi widocznymi dla wszystkich użytkowników.',
+    'AnnouncementsDesc'                   => 'Twórz i zarządzaj banerami komunikatów widocznymi dla wszystkich użytkowników.',
     'RegisterAndUpgradeDesc'              => 'Zarejestruj instalację SimpleRisk, wprowadź lub odnów klucz subskrypcji i uruchom uaktualnienia Core/Extra jednym kliknięciem.',
     'QueueMonitorDesc'                    => 'Sprawdź kolejkę zadań w tle: zadania oczekujące, w trakcie realizacji i nieudane.',
     'ExtrasDesc'                          => 'Aktywuj, dezaktywuj i skonfiguruj dodatki SimpleRisk (dodatki płatne).',
-    'ArtificialIntelligenceExtraDesc'     => 'Włącza wsparcie sztucznej inteligencji w całym SimpleRisk.',
-    'CustomizationExtraDesc'              => 'Umożliwia dodawanie i usuwanie różnych typów pól oraz dynamiczne tworzenie szablonów stron.',
-    'NotificationExtraDesc'               => 'Wysyła powiadomienia e-mail, gdy ryzyka zostaną przesłane, zaktualizowane, złagodzone lub przejrzane. Może działać zgodnie z harmonogramem, aby powiadomić użytkowników o ryzykach, które mają status Nieprzejrzane lub Przeterminowane.',
-    'VulnerabilityManagementExtraDesc'    => 'Umożliwia integrację SimpleRisk z Rapid7 Nexpose, InsightVM, Qualys i Tenable.io.',
-    'IncidentManagementExtraDesc'         => 'Zapewnia możliwości zarządzania incydentami z poziomu systemu SimpleRisk.',
+    'ArtificialIntelligenceExtraDesc'     => 'Usługa Artificial Intelligence Extra zapewnia rozszerzoną analizę ryzyka (w tym oceny FAIR) i dostosowaną dokumentację.',
+    'CustomizationExtraDesc'              => 'Funkcja Customization Extra umożliwia dodawanie i usuwanie różnych typów pól oraz dynamiczne tworzenie niestandardowych szablonów stron.',
+    'NotificationExtraDesc'               => 'Dodatek „Powiadomienia e-mail” umożliwia SimpleRisk wysyłanie powiadomień e-mail o zgłoszeniach, modyfikacjach lub innych działaniach związanych z ryzykiem. Dodatek ten można również dodać jako zaplanowany skrypt, aby wysyłać rutynowe przypomnienia, gdy ryzyko jest gotowe do przeglądu przez kierownictwo. W produkcie SimpleRisk Core, bez tego dodatku, powiadomienia nie są wysyłane poza samo narzędzie.',
+    'VulnerabilityManagementExtraDesc'    => 'Usługa Vulnerability Management Extra umożliwia klientom integrację instancji SimpleRisk z platformami Qualys, Tenable.io lub Rapid7 Nexpose/InsightVM oraz importowanie danych o zasobach i podatnościach do SimpleRisk. W tym miejscu można wybrać witryny, które mają zostać objęte ochroną, określić, które wyniki podatności powinny zostać zaimportowane, oraz dokonać selekcji luk, które mają zostać przekształcone w zagrożenia, aby je śledzić.',
+    'IncidentManagementExtraDesc'         => 'Moduł Incident Management Extra opiera się na podręczniku obsługi incydentów bezpieczeństwa komputerowego NIST 800-61 i udostępnia funkcje zarządzania incydentami z poziomu systemu SimpleRisk.',
 
     // Configure Hub - tile descriptions (customization category)
     'RedefineNamingConventionsDesc'       => 'Zmień nazwy terminologii SimpleRisk (Ryzyko, Zasób, Struktura itd.) w całym interfejsie użytkownika.',
@@ -2872,26 +2765,25 @@ $lang = array(
     'UserManagementDesc'                  => 'Dodawaj, edytuj, wyłączaj i resetuj użytkowników; zarządzaj polityką haseł.',
     'RoleManagementDesc'                  => 'Zdefiniuj role i uprawnienia, jakie każda z nich przyznaje.',
     'TeamManagementDesc'                  => 'Twórz i zarządzaj zespołami służącymi do filtrowania widoczności rekordów.',
-    'SeparationExtraDesc'                 => 'Ograniczenie widoczności ryzyka do członków zespołu, do których ryzyko jest przypisane.',
-    'CustomAuthenticationExtraDesc'       => 'Zapewnia obsługę Active Directory lub SAML/Single Sign-On w celu uwierzytelniania i autoryzacji.',
-    'EncryptionExtraDesc'                 => 'Szyfrowanie wrażliwych pól tekstowych w bazie danych.',
-    'OrganizationManagementDesc'          => 'Można zdefiniować wiele jednostek biznesowych powyżej zespołów. Następnie użytkownicy mogą być przypisani do jednego lub kilku zespołów w ramach różnych jednostek biznesowych. Ma to wpływ na ich możliwość przeglądania i korzystania z zespołów, użytkowników i zasobów, z którymi nie są powiązani.',
+    'SeparationExtraDesc'                 => 'Dodatek „Separacja zespołowa” ogranicza przeglądanie ryzyka tylko do użytkowników należących do zespołu, do którego ryzyko jest przypisane. W produkcie SimpleRisk Core, bez tego dodatku, każdy użytkownik może zobaczyć każde ryzyko.',
+    'CustomAuthenticationExtraDesc'       => 'Dodatek Custom Authentication Extra zapewnia obsługę uwierzytelniania Active Directory i SAML. W produkcie SimpleRisk Core, bez tego dodatku, jedyną opcją jest utworzenie nowych użytkowników w repozytorium tożsamości SimpleRisk.',
+    'EncryptionExtraDesc'                 => 'Funkcja Encrypted Database Extra generuje losowy 256-bitowy klucz szyfrujący AES, a następnie używa go do szyfrowania poufnego tekstu przed wstawieniem go do bazy danych SimpleRisk. Zapobiega to możliwości przeglądania lub modyfikowania danych bez bezpośredniego użycia aplikacji SimpleRisk.',
+    'OrganizationManagementDesc'          => "Hierarchia Organizacyjna Extra umożliwia definiowanie wielu Jednostek Biznesowych, które mogą obejmować dowolną liczbę zespołów. Użytkownicy mogą być następnie przypisani do jednego lub kilku zespołów w ramach różnych Jednostek Biznesowych. Ma to wpływ na możliwość przeglądania i korzystania przez użytkownika z zespołów, użytkowników i zasobów, z którymi nie jest on powiązany.",
 
     // Configure Hub - tile descriptions (data category)
-    'DeleteRisksDesc'                     => 'Ryzyko związane z masowym usuwaniem. Używaj oszczędnie – usunięcia są trwałe.',
+    'DeleteRisksDesc'                     => 'Masowe usuwanie ryzyk. Używaj oszczędnie – usunięcia są trwałe.',
     'AuditTrailDesc'                      => 'Przeszukaj i wyeksportuj dziennik audytu systemu dotyczący działań użytkownika.',
-    'ImportExportExtraDesc'               => 'Umożliwia importowanie i eksportowanie plików CSV zawierających informacje o ryzyku.',
-    'JiraExtraDesc'                       => 'Umożliwia integrację z instancją JIRA. Umożliwia łączenie ryzyk ze zgłoszeniami Jira, synchronizując ich dane, status i komentarze.',
-    'APIExtraDesc'                        => 'Umożliwia korzystanie z interfejsu API w celu integracji SimpleRisk z innymi narzędziami i zadaniami automatyzacji.',
-    'AdvancedSearchExtraDesc'             => "Rozszerzono funkcjonalność pola wyszukiwania na pasku górnym, aby umożliwić wyszukiwanie zagrożeń poprzez wyszukiwanie tekstowe w danych o ryzyku.",
-    'AssessmentsExtraDesc'                => 'Umożliwia tworzenie niestandardowych formularzy oceny ryzyka i wysyłanie ich do użytkowników.',
+    'ImportExportExtraDesc'               => 'Funkcja Import-Eksport Extra umożliwia importowanie danych do SimpleRisk poprzez mapowanie pól w pliku CSV na pola w bazie danych SimpleRisk. Można jej używać do importowania wyników audytu z arkusza kalkulacyjnego innej firmy, wyników skanowania podatności z innego narzędzia, zasobów z bazy CMDB i nie tylko. Funkcja Extra umożliwia również eksport plików CSV z SimpleRisk zawierających ryzyka, działania minimalizujące ryzyko, przeglądy lub raport łączony obejmujący wszystkie trzy elementy.',
+    'JiraExtraDesc'                       => 'Jira Integration Extra umożliwia użytkownikom dwukierunkową integrację z instancją Jira. Umożliwia ona łączenie ryzyka ze zgłoszeniami Jira, a także synchronizację danych, statusu i komentarzy.',
+    'APIExtraDesc'                        => 'API Extra umożliwia klientom korzystanie z interfejsu API RESTful w celu tworzenia skryptowanych interakcji z innymi aplikacjami, co pozwala na zaawansowaną automatyzację i wykorzystanie istniejącej infrastruktury.',
+    'AdvancedSearchExtraDesc'             => "Funkcja Wyszukiwanie zaawansowane rozszerza funkcjonalność pola wyszukiwania na górnym pasku, umożliwiając wyszukiwanie zagrożeń poprzez wyszukiwanie tekstowe w danych dotyczących zagrożeń.",
+    'AssessmentsExtraDesc'                => 'Moduł Risk Assessment Extra umożliwia użytkownikom definiowanie kontaktów, tworzenie pytań (w tym logicznych), łączenie wielu pytań z szablonem kwestionariusza, tworzenie kwestionariuszy i wysyłanie ich do kontaktów, przeglądanie wyników kwestionariusza, dodawanie ryzyka na podstawie tych wyników oraz porównywanie wyników w czasie, importowanie i eksportowanie ocen dostosowanych do potrzeb zewnętrznych oraz przeglądanie śladu audytu oceny ryzyka.',
     'ActiveAssessmentsDesc'               => 'Przeglądaj i zarządzaj ocenami, które są obecnie w toku.',
-    'WorkflowsExtraDesc'                  => 'Umożliwia wizualny, sterowany zdarzeniami silnik przepływu pracy w celu automatyzacji działań związanych z zarządzaniem ryzykiem wyzwalanych przez zdarzenia w SimpleRisk.',
+    'WorkflowsExtraDesc'                  => 'Dodatek Workflows Extra oferuje wizualny, sterowany zdarzeniami silnik przepływu pracy, który automatyzuje działania związane z zarządzaniem ryzykiem w odpowiedzi na zdarzenia w SimpleRisk. Możesz projektować przepływy pracy, które uruchamiają się po zmianach — takich jak przesłanie, aktualizacja lub przegląd ryzyka — aby kierować zatwierdzenia, przypisywać zadania i utrzymywać proces w ruchu bez ręcznej interwencji.',
 
     // Configure Hub - tile descriptions (frameworks category)
-    'UCFExtraDesc'                        => 'Umożliwia integrację elementów sterujących i testów Unified Control Framework (UCF) z SimpleRisk.',
-    'SCFExtraDesc'                        => 'Dodaje elementy sterujące z Secure Controls Framework (SCF) do SimpleRisk w celu wykorzystania ich z naszą funkcjonalnością Governance.',
-    'ComplianceForgeExtraDesc'            => 'Dodaje elementy sterujące z programu ComplianceForge Digital Security Program (DSP) do SimpleRisk w celu wykorzystania ich z naszą funkcjonalnością Governance.',
+    'UCFExtraDesc'                        => 'Unified Compliance Framework (UCF) Extra to integracja na poziomie API między Unified Compliance Framework a SimpleRisk. Włączenie jej umożliwia importowanie wybranych frameworków i mapowań kontroli bezpośrednio z UCF.',
+    'SCFExtraDesc'                        => "Secure Controls Framework (SCF) Extra to bezpośrednia integracja między Secure Controls Framework a SimpleRisk. Importuje katalog mechanizmów kontrolnych SCF i ich mapowania na szeroką gamę struktur zgodności i cyberbezpieczeństwa do funkcji zarządzania SimpleRisk, dzięki czemu możesz wdrożyć potrzebne struktury i zarządzać ich mechanizmami kontrolnymi bez konieczności ich ręcznego tworzenia.",
 
     // Configure Hub - tile descriptions (maintenance category)
     'FixReviewDatesDesc'                  => 'Migracja starszych kolumn varchar review-date do właściwych typów dat. Widoczne tylko w razie potrzeby.',
@@ -2909,7 +2801,6 @@ $lang = array(
     'WorkflowsExtra'                      => 'Przepływy pracy Extra',
     'UCFExtra'                            => 'Jednolita struktura zgodności (UCF) Extra',
     'SCFExtra'                            => 'Bezpieczne ramy kontroli Extra',
-    'ComplianceForgeExtra'                => 'ComplianceForge Extra',
     'DatabaseUpgrade'                     => 'Aktualizacja bazy danych',
 
     // Configure Hub - Extra tile state badges
@@ -2925,6 +2816,12 @@ $lang = array(
     'ActivateExtraBody'                   => 'Aktywować {name} Extra? To natychmiast włączy jego funkcjonalność. Możesz go później dezaktywować z tego samego kafelka.',
     'ActivateExtraError'                  => 'Nie udało się aktywować wersji Extra. Sprawdź stronę kontroli stanu, aby uzyskać diagnostykę.',
 
+    // Configure Hub - Deactivation modal (Encryption Extra)
+    // 'Deactivate' (line 491) and 'Cancel' (line 489) are reused as-is.
+    'DeactivateExtraTitle'                => 'Dezaktywuj Extra',
+    'DeactivateExtraBody'                 => 'Dezaktywować {name} Extra? Twoja baza danych SimpleRisk zostanie odszyfrowana na miejscu. Kopia zapasowa stanu zaszyfrowanego zostanie zachowana, aby w razie potrzeby można było przywrócić dane.',
+    'DeactivateExtraError'                => 'Nie udało się dezaktywować Extra. Sprawdź stronę kontroli stanu, aby uzyskać diagnostykę.',
+
     // Configure Hub - Async license enrichment notice (Phase 4)
     // 'Retry' (line 2764) is reused. The existing 'LicenseCheckFailed' key
     // (line 1851) refers to the 30-day-disable warning shown elsewhere in
@@ -2933,11 +2830,16 @@ $lang = array(
 
     // Configure Hub - Install modal (Phase 5)
     // 'Install' (line 403) and 'Cancel' (line 489) are reused as-is.
-    'InstallExtraTitle'                   => 'Zainstaluj dodatkowo',
-    'InstallExtraBody'                    => 'Zainstalować {name} Extra? Spowoduje to pobranie pakietu z SimpleRisk i rozpakowanie go do instalacji. Aktywacja to osobny krok, który można wykonać z kafelka po zakończeniu instalacji.',
-    'InstallExtraError'                   => 'Nie udało się zainstalować dodatku Extra. Sprawdź stronę kontroli stanu systemu w celu przeprowadzenia diagnostyki.',
-    'MissingExtraName'                    => 'Brak nazwy dodatkowej.',
-    'UnknownExtra'                        => 'Nieznana nazwa Extra.',
+    'InstallExtraTitle'                          => 'Zainstaluj dodatkowo',
+    'InstallExtraBody'                           => 'Zainstalować {name} Extra? Spowoduje to pobranie pakietu z SimpleRisk i rozpakowanie go do instalacji. Aktywacja to osobny krok, który można wykonać z kafelka po zakończeniu instalacji.',
+    'InstallExtraError'                          => 'Nie udało się zainstalować dodatku Extra. Sprawdź stronę kontroli stanu systemu w celu przeprowadzenia diagnostyki.',
+    'MissingExtraName'                           => 'Brak nazwy dodatkowej.',
+    'UnknownExtra'                               => 'Nieznana nazwa Extra.',
+
+    // License state banner messages (display_license_check() in display.php)
+    // Shown as a header banner when $_SESSION['license_check'] is a non-passing state.
+    // 'LicenseCheckFailed' (line ~1868) is the legacy 30-day-disable warning used
+    // by the old enforcement path; these keys cover the new enforcement states.
 
     // Configure Hub - Purchase modal (Phase 6)
     // 'Cancel' (line 489) is reused as-is.
@@ -2945,6 +2847,1796 @@ $lang = array(
     'PurchaseExtraBody'                   => 'Dodatek {name} nie jest zawarty w Twojej obecnej licencji SimpleRisk. Odwiedź stronę dodatków SimpleRisk, aby dowiedzieć się więcej lub kupić licencję.',
     'ViewExtras'                          => 'Zobacz dodatki',
 
+    // In-app notifications bell UI
+    // Note: 'Notifications' (line 2234), 'SelectAll' (line 816), 'Restore' (line 952),
+    // 'All' (line 1470), and 'Delete' (line 80) are reused as-is — do not duplicate.
+    'MarkRead'                             => 'Zaznacz jako przeczytane',
+    'NoNotifications'                      => 'Brak powiadomień',
+    // Time-unit abbreviations for the relative-time display in the bell panel.
+    // 'TimeDays' is already used for the column header "Time (Days)"; TimeDayUnit covers the 'd' abbrev.
+    'TimeSeconds'                          => 'S',
+    'TimeMinutes'                          => 'M',
+    'TimeHours'                            => 'H',
+    'TimeDayUnit'                          => 'D',
+    'NothingInTrash'                       => 'Nic w koszu',
+    'Promo'                                => 'Promocja',
+    'Trash'                                => 'Śmieci',
+    'Unread'                               => 'Nieprzeczytane',
+    'View'                                 => 'Podgląd',
+
+    // Workflow "Send In-App Notification" action — audience picker hints.
+    // 'NoneSelected' (line 1878) is reused as-is for the multi-select button.
+    'NotificationSentToAllAdmins'          => 'To powiadomienie zostanie wysłane do wszystkich administratorów.',
+    'NotificationSentToAllUsers'           => 'To powiadomienie zostanie wysłane do wszystkich użytkowników.',
+    'SelectAnAudienceAbove'                => 'Wybierz grupę odbiorców powyżej.',
+    'RiskConfiguration' => 'Konfiguracja ryzyka',
+    'ReviewSettings' => 'Ustawienia przeglądu',
+    'Cards' => 'Karty',
+    'List' => 'Lista',
+    'DeletedAssessmentsCannotBeRecovered' => 'Usuniętych ocen nie można odzyskać',
+    'TheAssessmentsWereDeletedSuccessfully' => 'Oceny zostały pomyślnie usunięte.',
+    'AssetValuationMode' => 'Tryb wyceny aktywów',
+    'AutomaticLinearRange' => 'Automatyczny zakres liniowy',
+    'AutomaticExponentialRange' => 'Automatyczny zakres wykładniczy',
+    'ManualValuation' => 'Ręczny',
+    'AssetValuationMinMustBeNonNegative' => 'Aby uzyskać automatyczny zakres wykładniczy, minimalna wycena aktywów musi wynosić zero lub więcej.',
+    'CrossDomain' => 'Międzydomenowy',
+    'Preferences' => 'Preferencje',
+    'SpecificUser' => 'Konkretny użytkownik',
+    'SpecificUsers' => 'Konkretni użytkownicy',
+    'Help' => 'Pomoc',
+    'Profile' => 'Profil',
+    'Scoring' => 'Punktacja',
+    'EncryptionMissingLockTablesPrivilege'   => 'Użytkownik bazy danych SimpleRisk nie ma uprawnienia LOCK TABLES, które jest wymagane do bezpiecznego szyfrowania bazy danych. Poproś administratora bazy danych o wykonanie instrukcji GRANT zwróconej w odpowiedzi i spróbuj ponownie.',
+    'EncryptionMissingLockTablesPrivilegeUi' => 'Użytkownik bazy danych SimpleRisk nie ma uprawnienia LOCK TABLES wymaganego do szyfrowania. Administrator bazy danych musi uruchomić polecenie: GRANT LOCK TABLES ON {$db}.* TO {$user}; a następnie spróbować ponownie.',
+    'EncryptionRequiredGrantLabel' => 'Wymagane oświadczenie GRANT:',
+    'EncryptionActivationAlreadyRunning' => 'Aktywacja szyfrowania jest już w toku. Poczekaj na jej zakończenie lub skorzystaj z opcji przywracania z kopii zapasowej, aby ją odzyskać.',
+    'EncryptionActivationEnqueued'           => 'Aktywacja funkcji Encryption Extra została umieszczona w kolejce. Interfejs administratora będzie śledził postęp szyfrowania bazy danych.',
+    'EncryptionActivationEnqueueFailed'      => 'Nie udało się dodać do kolejki zadania aktywacji szyfrowania. Szczegóły znajdziesz w dzienniku debugowania.',
+    'EncryptionDeactivationEnqueued'         => 'Dezaktywacja funkcji Encryption Extra została umieszczona w kolejce. Interfejs administratora będzie śledził postęp deszyfrowania bazy danych.',
+    'EncryptionDeactivationEnqueueFailed'    => 'Nie udało się dodać do kolejki zadania dezaktywacji szyfrowania. Szczegóły znajdziesz w dzienniku debugowania.',
+    'EncryptionPipelineInProgress'           => 'Proces szyfrowania (aktywacja, dezaktywacja lub przywracanie) jest obecnie w toku. Poczekaj na jego zakończenie, zanim spróbujesz ponownie.',
+    'EncryptionPipelineInProgressTask'       => 'Trwa przetwarzanie szyfrowania (zadanie #{id}, {type}). Poczekaj na zakończenie, zanim spróbujesz ponownie.',
+    'EncryptionInFlightTitle'            => 'Operacja szyfrowania w toku',
+    'EncryptionInFlightBody'             => 'Aktualnie działa proces aktywacji, dezaktywacji lub przywracania szyfrowania. Poczekaj na jego zakończenie — strona odświeży się automatycznie po zakończeniu operacji — zanim spróbujesz ponownie.',
+    'OK'                                 => 'OK',
+    'ActivationGuardFailed'                 => 'Nie można rozpocząć aktywacji. Szczegóły znajdziesz w alercie w nagłówku strony.',
+    'EncryptionStageStarting'               => 'Rozpoczęcie…',
+    'EncryptionStageProgress'               => 'Etap {current} z {total}: {name}',
+    'EncryptionStageAllDone'                => 'Wszystkie etapy ukończone.',
+    'EncryptionStageEncryptTable'           => 'Zaszyfruj tabelę: {table}',
+    'EncryptionStageDecryptTable'           => 'Odszyfruj tabelę: {table}',
+    'EncryptionActivationInProgress'        => 'Szyfruję bazę danych SimpleRisk. Proszę nie zamykać tej strony.',
+    'EncryptionActivationFailedTitle'       => 'Aktywacja szyfrowania nie powiodła się',
+    'EncryptionActivationFailedBody'        => 'Aktywacja nie mogła zostać ukończona, a baza danych może być w niespójnym stanie. Kopia zapasowa sprzed aktywacji została zachowana — aby ją odzyskać, skorzystaj z opcji Przywróć z kopii zapasowej lub skontaktuj się z pomocą techniczną SimpleRisk.',
+    'EncryptionDeactivationInProgress'      => 'Odszyfrowuję bazę danych SimpleRisk. Proszę nie zamykać tej strony.',
+    'EncryptionDeactivationFailedTitle'     => 'Dezaktywacja szyfrowania nie powiodła się',
+    'EncryptionDeactivationFailedBody'      => 'Dezaktywacja nie mogła zostać ukończona, a baza danych może być w niespójnym stanie. Kopia zapasowa w stanie zaszyfrowanym została zachowana — użyj opcji Przywróć z kopii zapasowej, aby przywrócić stan zaszyfrowany, lub skontaktuj się z pomocą techniczną SimpleRisk.',
+    'RestoreFromBackup'                     => 'Przywróć z kopii zapasowej',
+    'RestoreFromBackupNotYetAvailable'      => 'Przywracanie z kopii zapasowej nie jest jeszcze dostępne w tej wersji. Aby odzyskać dane, skontaktuj się z pomocą techniczną SimpleRisk.',
+    'EncryptionRestoreInProgress'           => 'Przywracanie bazy danych SimpleRisk z kopii zapasowej. Może to potrwać kilka minut.',
+    'EncryptionRestoreEnqueueFailed'        => 'Nie udało się rozpocząć przywracania. Sprawdź dzienniki SimpleRisk i spróbuj ponownie.',
+    'EncryptionStatusActive'                => 'Dodatkowa opcja Zaszyfrowanej Bazy Danych jest aktywna.',
+    'EncryptionStatusVersion'               => 'Wersja',
+    'EncryptionDeactivateCta'               => 'Dezaktywuj zaszyfrowaną bazę danych Extra',
+    'EncryptionDeactivateCtaHelp'           => 'Odszyfruj każdą zaszyfrowaną kolumnę z powrotem do tekstu jawnego. Zajmie to kilka minut w przypadku zapełnionej bazy danych.',
+    'EncryptionBackupPanelHeading'          => 'Kopia zapasowa przed aktywacją',
+    'EncryptionBackupCreatedAt'             => 'Stworzony',
+    'EncryptionBackupSize'                  => 'Rozmiar',
+    'EncryptionBackupOriginalFilename'      => 'Plik',
+    'EncryptionBackupDownloadTooltip'       => 'Kliknij, aby pobrać kopię tego pliku kopii zapasowej i przechowywać ją w trybie offline.',
+    'EncryptionBackupStateRestoring'        => 'Obecnie trwa przywracanie.',
+    'EncryptionNoBackupAvailable'           => 'Obecnie nie jest przechowywana żadna kopia zapasowa sprzed aktywacji. Kopia zapasowa jest tworzona na początku każdej aktywacji i nadpisywana przy każdej kolejnej aktywacji lub dezaktywacji.',
+    'EncryptionRestoreCtaHelp'              => 'Wybierz tę opcję, jeśli weryfikacja wykryje problemy i musisz przywrócić stan sprzed szyfrowania.',
+    'EncryptionRestoreTitle'                => 'Przywrócić z kopii zapasowej?',
+    'EncryptionRestoreBodyWhy'              => 'Przywracanie migawki sprzed szyfrowania, zarejestrowanej na początku ostatniej aktywacji. Wybierz tę opcję, jeśli walidacja po aktywacji wykryła problemy i musisz zrezygnować z szyfrowania.',
+    'EncryptionRestoreBodyWhat'             => 'Każdy wiersz zapisany w bazie danych po utworzeniu kopii zapasowej zostanie trwale utracony — łącznie z ryzykiem, działaniami zapobiegawczymi, wpisami w dzienniku audytu i wszelkimi innymi zmianami wprowadzonymi od momentu aktywacji. Dodatek Encrypted Database Extra zostanie dezaktywowany w ramach przywracania.',
+    'EncryptionDeleteBackupCta'             => 'Usuń kopię zapasową przed szyfrowaniem',
+    'EncryptionDeleteBackupCtaHelp'         => 'Wybierz tę opcję po zakończeniu walidacji po szyfrowaniu. Usunięcie niezaszyfrowanej migawki sprawia, że szyfrowanie jest faktycznie ochronne.',
+    'EncryptionDeleteBackupTitle'           => 'Czy usunąć kopię zapasową przed szyfrowaniem?',
+    'EncryptionDeleteBackupBodyWhy'         => 'Usunięcie niezaszyfrowanej migawki danych, która została przechwycona na początku ostatniej aktywacji. Przechowywanie jej w nieskończoność niweczy cel szyfrowania — każdy, kto ma dostęp do bazy danych, może odczytać kopię sprzed zaszyfrowania.',
+    'EncryptionDeleteBackupBodyWhat'        => 'Kopia zapasowa w bazie danych zostanie natychmiast usunięta. Nie będzie już można użyć opcji Przywróć z kopii zapasowej, aby przywrócić bazę danych do stanu sprzed szyfrowania. Jeśli później wystąpią problemy z szyfrowaniem, jedyną drogą do odzyskania danych będzie przywrócenie bazy danych z kopii zapasowych.',
+    'EncryptionDeleteBackupError'           => 'Nie udało się usunąć kopii zapasowej. Sprawdź dziennik debugowania i spróbuj ponownie.',
+    'EncryptionModalWhyLabel'               => 'Dlaczego warto z tego korzystać:',
+    'EncryptionModalWhatHappensLabel'       => 'Co się dzieje dalej:',
+    'EncryptionFieldsPanelHeading'          => 'Zaszyfrowane pola bazy danych',
+    'EncryptionFieldsHelp'                  => 'Każda kolumna wymieniona tutaj jest przechowywana w stanie zaszyfrowanym. Etykieta ikony kłódki pokazuje użyty algorytm kryptograficzny.',
+    'EncryptionFieldsTableColumn'           => 'Tabela bazy danych',
+    'EncryptionFieldsFieldColumn'           => 'Pole bazy danych',
+    'EncryptionFieldsEncryptedColumn'       => 'Szyfrowane',
+    'EncryptionFieldsNoneFound'             => 'Obecnie nie zarejestrowano żadnych zaszyfrowanych pól. Nie powinno to mieć miejsca w aktywnej instalacji — sprawdź tabelę encrypted_fields pod kątem danych początkowych.',
+    'EncryptionFieldsLockTooltipPrefix'     => 'Zaszyfrowane za pomocą',
+    'EncryptionInactiveRedirect'            => 'Dodatek Encrypted Database Extra nie jest aktywny. Aktywuj go w Centrum konfiguracji.',
+    'ContactSupport'                        => 'Skontaktuj się z pomocą techniczną',
+    'BackupDatabaseFailed' => 'Kopia zapasowa bazy danych nie powiodła się. Szczegóły można znaleźć w dzienniku SimpleRisk.',
+    'WindowsNotSupported' => 'SimpleRisk nie obsługuje już systemu Windows od wersji 20260421-001. Prosimy o migrację na serwer oparty na systemie Linux.',
+    'WindowsUpgradeHalted' => 'Ta operacja nie może zostać uruchomiona na serwerze Windows. SimpleRisk nie obsługuje już systemu Windows od wersji 20260421-001. Prosimy o migrację na serwer z systemem Linux.',
+    'BundleIntegrityVerificationFailed' => 'Pobrany pakiet SimpleRisk nie przeszedł weryfikacji integralności. Aktualizacja została przerwana i żadne pliki nie zostały zmodyfikowane.',
+    'BundleDownloadFailed' => 'Nie udało się pobrać pakietu SimpleRisk. Aktualizacja została przerwana i żadne pliki nie zostały zmodyfikowane.',
+    'MissingOrInvalidTrackingID' => 'Brak lub nieprawidłowy identyfikator śledzenia.',
+    'JiraIntegrationExtra' => 'Integracja Jira Extra',
+    'IncidentManagementNotifications' => 'Powiadomienia dotyczące zarządzania incydentami',
+    'NotificationSettingsUpdated' => 'Zaktualizowano ustawienia powiadomień.',
+    'DefaultBusinessUnit' => 'Domyślna jednostka biznesowa',
+    'TheDefaultBusinessUnitEncompasses' => 'Domyślna jednostka biznesowa obejmująca wszystkie zespoły.',
+    'UserGuide' => 'Instrukcja obsługi',
+    'AdministratorGuide' => 'Podręcznik administratora',
+    'DecryptionFailureToast' => 'Nie udało się odszyfrować jednego lub więcej zaszyfrowanych pól. Są one wyświetlane jako puste. Sprawdź dzienniki systemowe, aby uzyskać szczegółowe informacje.',
+    'EncryptionFailureToast' => 'Nie udało się zaszyfrować pola i nie zostało ono zapisane. Sprawdź logi systemowe, aby uzyskać więcej informacji.',
+    'EnableAPIv1Endpoints' => 'Włącz punkty końcowe API v1 (przestarzałe)',
+    'EnableAPIv1EndpointsHelp' => 'API v1 jest przestarzałe. Pozostaw wyłączone, chyba że masz integrację, która tego wymaga. To ustawienie nie ma wpływu na /api/v2/ i jest ono zawsze dostępne.',
+    'AllowAPIKeyInURL' => 'Zezwalaj na klucz API w adresie URL lub treści POST',
+    'AllowAPIKeyInURLHelp' => 'Ze względów bezpieczeństwa klucze API powinny być wysyłane w nagłówku żądania X-API-KEY. Po wyłączeniu tej opcji klucze wysyłane w ciągu zapytania URL (?key=) lub w treści POST (key=) są odrzucane, ponieważ te lokalizacje są łatwiej widoczne w logach proxy i historii przeglądania. Nagłówek X-API-KEY jest zawsze akceptowany. Pozostaw tę opcję wyłączoną, chyba że masz integrację, która nie może wysłać nagłówka.',
+    'ArtificialIntelligenceDesc' => 'Skonfiguruj połączenie z dostawcą sztucznej inteligencji i pytania kontekstowe, które będą podstawą odpowiedzi sztucznej inteligencji dla tej instancji SimpleRisk.',
+    'ProviderConfiguration' => 'Konfiguracja dostawcy',
+    'ContextQuestions' => 'Pytania kontekstowe',
+    'AIProviderNotConfiguredWarning' => 'Dostawca sztucznej inteligencji nie jest skonfigurowany. Nie można generować wyników na żywo, dopóki nie ustawisz dostawcy i klucza API na karcie Konfiguracja dostawcy.',
+    'AutoProcessSCFUpdates' => 'Automatyczne przetwarzanie nowych wydań Secure Controls Framework (SCF)',
+    'AddNewControls' => 'Dodaj nowe kontrolki SCF',
+    'UpdateExistingControls' => 'Zaktualizuj istniejące elementy sterujące SCF',
+    'DeleteRemovedControls' => 'Usuń usunięte kontrolki SCF',
+    'CreateEvidenceRequests' => 'Tworzenie wniosków o dowody dla kontroli SCF',
+    'SelectSCFFrameworks' => 'Wybierz ramy SCF',
+    'SCFReleaseProcessing' => 'Przetwarzanie wydań SCF',
+    'NotFrameworkDescription' => 'Poniższy widżet wyświetla wszystkie nagłówki znajdujące się w arkuszu kalkulacyjnym Secure Controls Framework (SCF). Użyj go, aby wybrać kolumny zawierające dane frameworków i dane spoza frameworków.',
+    'Note' => 'Notatka',
+    'AISettingsNote' => 'Włączenie pomocy sztucznej inteligencji spowoduje wysłanie danych do firmy Anthropic w celu przeprowadzenia analizy w ramach programu LLM, przy użyciu klucza API firmy Anthropic, co pozwoli na dostarczenie dostosowanych wyników.',
+    'EnableAIAssistanceForControlData' => 'Włącz pomoc sztucznej inteligencji dla danych kontrolnych',
+    'ReferenceText' => 'Tekst odniesienia',
+    'FrameworkSelection' => 'Wybór ram',
+    'Show' => 'Pokazywać',
+    'InProgress' => 'W toku',
+    'Canceled' => 'Odwołany',
+    'Failed' => 'Nieudany',
+    'LegacyFrameworks' => 'Starsze struktury',
+    'Archive' => 'Archiwum',
+    'FailedToFetchCVEInformation' => 'Nie udało się pobrać informacji CVE. Sprawdź identyfikator CVE i spróbuj ponownie.',
+    'ComplianceDashboard' => 'Panel zgodności',
+    'DynamicAuditReportHelp' => 'W raporcie wyświetlane są wszystkie audyty i ich statusy.',
+    'ComplianceDashboardDescription' => 'Na tym wykresie przedstawiono liczbę kontroli w każdym frameworku, przy czym kontrole zaliczone są na zielono, a niezaliczone na czerwono.',
+    'PassingControls' => 'Zaliczone kontrole',
+    'FailingControls' => 'Wadliwe sterowanie',
+    'ControlsByFramework' => 'Kontrole według Framework',
+    'NumberOfControls' => 'Liczba elementów sterujących',
+    'PasswordResetTokenExpirationPeriod' => 'Okres ważności tokena resetującego hasło',
+    'APasswordResetTokenExpirationPeriodShouldBeMoreThan5Minutes' => 'Okres ważności tokena resetującego hasło powinien być dłuższy niż 5 minut.',
+    'MeanTimeToRemediate' => 'Średni czas naprawy',
+    'ByTeam' => 'Przez zespół',
+    'ByCategory' => 'Według kategorii',
+    'ByRiskLevel' => 'Według poziomu ryzyka',
+    'MeanTimeToRemediateDescription' => 'Średnia liczba dni do zamknięcia ryzyk, pogrupowana według zespołu, kategorii i poziomu ryzyka. Uwzględniono tylko zamknięte ryzyka.',
+    'AverageDaysToClose' => 'Średnia liczba dni do zamknięcia',
+    'ControlPassRateTrend' => 'Trend wskaźnika zaliczeń kontrolnych',
+    'ControlPassRateTrendDescription' => 'Miesięczny wskaźnik zdawalności (%) dla każdego systemu w ciągu ostatnich 12 miesięcy. Wyświetlane są tylko systemy z co najmniej jednym wynikiem testu w danym okresie.',
+    'PassRatePercent' => 'Wskaźnik zdawalności (%)',
+    'ExposureByTeam' => 'Narażenie na ryzyko według zespołu',
+    'ExposureByCategory' => 'Narażenie na ryzyko według kategorii',
+    'ExposureByLocation' => 'Narażenie na ryzyko według lokalizacji',
+    'TotalRiskScore' => 'Całkowity wynik ryzyka',
+    'SLABreachStatus' => 'Status naruszenia SLA',
+    'SLABreachDescription' => 'Otwarte ryzyka w granicach lub powyżej progu SLA według poziomu ryzyka. Progi domyślne: Bardzo wysoki = 30 dni, Wysoki = 60 dni, Średni = 90 dni, Niski = 180 dni.',
+    'WithinSLA' => 'W ramach SLA',
+    'SLABreached' => 'Naruszenie SLA',
+    'NumberOfRisks' => 'Liczba ryzyk',
+    'ExposureByBusinessUnit' => 'Narażenie na ryzyko według jednostki biznesowej',
+    'BUChartCrossUnitNote' => 'Uwaga: ryzyka przypisane zespołom obejmującym wiele jednostek biznesowych są liczone w każdej z nich.',
+    'SLAThresholds' => 'Progi SLA',
+    'SLAThresholdsDescription' => 'Maksymalna liczba dni, przez które otwarte ryzyko może pozostać nierozwiązane, zanim zostanie uznane za przeterminowane, dla danego poziomu ryzyka.',
+    'SLAThresholdMustBeBetween1And3650' => 'Wartości progowe SLA muszą mieścić się w przedziale od 1 do 3650 dni.',
+    'SLAThresholdsUpdatedSuccessfully' => 'Progi SLA zostały pomyślnie zaktualizowane.',
+    'TimeToDetect' => 'Czas na wykrycie',
+    'TimeToDetectDescription' => 'Średnia liczba dni od rozpoczęcia incydentu (data rozpoczęcia) do wykrycia (data wykrycia), pogrupowana według zespołu i typu zdarzenia. Uwzględniono tylko incydenty z obiema zarejestrowanymi datami.',
+    'ByOccurrenceType' => 'Według typu wystąpienia',
+    'ApplicationVersion' => 'Wersja aplikacji',
+    'DatabaseVersion' => 'Wersja bazy danych',
+    'InstanceID' => 'Identyfikator instancji',
+    'LatestIsVersion' => 'Najnowszy jest {$version}',
+    'UpToDate' => 'Aktualny',
+    'UpdateAvailable' => 'Dostępna aktualizacja',
+    'RegistrationSuccessful' => 'Rejestracja pomyślna.',
+    'LocalRegistrationStateCleared' => 'Stan rejestracji lokalnej został wyczyszczony. Zarejestruj się ponownie w pliku /admin/register.php, aby uzyskać nowy identyfikator instancji.',
+    'InstanceInformationUpdated' => 'Zaktualizowano informacje o instancji.',
+    'UpgradeExtraDesc' => 'Dodatkowa aktualizacja utrzymuje aktualność Twojej instancji SimpleRisk poprzez pobieranie i instalowanie aktualizacji aplikacji i baz danych oraz instalowanie i aktualizowanie innych dodatków – wszystko na stronie Rejestracja i aktualizacja. Jest ona dołączona do SimpleRisk bezpłatnie, dzięki czemu możesz korzystać z najnowszej wersji bez konieczności ręcznego zarządzania plikami.',
+    'ExtraInstallDisabledByEnforcement' => 'Dodatkowa instalacja jest obecnie wyłączona przez Twój stan licencji. Skontaktuj się z administratorem lub pomocą techniczną SimpleRisk.',
+    'LicenseStateUnknownRetryShortly' => 'Informacje o licencji nie są jeszcze dostępne. Spróbuj ponownie za chwilę.',
+    'LicenseExpiringSoonTitle' => 'Licencja wkrótce wygaśnie: {$extra}',
+    'LicenseExpiringSoonBody' => 'Twoja licencja {$extra} wygasa za {$date} (pozostało{$days} dni). Odnów ją, korzystając z opcji „Zarejestruj i uaktualnij”, aby uniknąć utraty dostępu.',
+    'LicenseExpiredTitle' => 'Licencja wygasła: {$extra}',
+    'LicenseExpiredBody' => 'Twoja licencja {$extra} wygasła dnia {$date}. Odnów ją w sekcji „Zarejestruj i uaktualnij”, aby odzyskać dostęp.',
+    'Licenses' => 'Licencje',
+    'LicensesDesc' => 'Wyświetl status licencji dla każdego SimpleRisk Extra.',
+    'RefreshLicenses' => 'Odśwież licencje',
+    'LoadingLicenseData' => 'Ładowanie danych licencji...',
+    'Licensed' => 'Upoważniony',
+    'Unlicensed' => 'Nielicencjonowany',
+    'Expired' => 'Wygasły',
+    'Free' => 'Bezpłatny',
+    'License' => 'Licencja',
+    'NoLicensedExtras' => 'Brak licencjonowanych dodatków.',
+    'NoExpiredExtras' => 'Brak przeterminowanych dodatków.',
+    'NoUnlicensedExtras' => 'Żadnych dodatków bez licencji.',
+    'Unlimited' => 'Nieograniczony',
+    'LicenseStateLockMessage' => 'Dodatkowe czynności związane z instalacją i uaktualnianiem są obecnie wyłączone przez stan Twojej licencji. Istniejące zainstalowane dodatki nadal działają.',
+    'LicenseStateFailMessage' => 'Twoja licencja SimpleRisk wygasła lub została dezaktywowana. Skontaktuj się z pomocą techniczną SimpleRisk, aby przywrócić usługę.',
+    'LicenseStateAnonymousMessage' => 'Ta instancja SimpleRisk nie jest zarejestrowana. Dostępne są tylko bezpłatne dodatki. Zarejestruj się w menu Konfiguruj, aby uzyskać dostęp do płatnych dodatków.',
+    'LicenseStateUnknownMessage' => 'SimpleRisk nie mógł nawiązać połączenia z usługą licencjonowania. Stan licencji zostanie automatycznie odświeżony przy następnym sprawdzaniu.',
+    'ExtraIntegrityCheckFailed' => 'Pobrany pakiet nie przeszedł kontroli integralności i nie został zainstalowany.',
+    'ExtraInstallWriteFailed' => 'Nie można zainstalować dodatku Extra, ponieważ katalog extras nie jest zapisywalny.',
+    'ExtraInstallExtractFailed' => 'Dodatek został pobrany, ale nie udało się go wyodrębnić i zainstalować. Sprawdź logi aplikacji.',
+    'EncryptionPreflightFailed' => 'Wstępne DDL nie powiodło się — szczegóły w dzienniku debugowania.',
+    'EncryptionActivationFailed' => 'Aktywacja szyfrowania nie powiodła się podczas wstępnej konfiguracji. Sprawdź dzienniki aplikacji.',
+    'QuestionnaireSentSchedulingOnly' => 'Ankieta została wysłana. Można modyfikować tylko poniższe ustawienia harmonogramu.',
+    'AreYouSureYouWantToReopenThisResult' => 'Czy na pewno chcesz ponownie otworzyć ten wynik w celu sprawdzenia?',
+    'QuestionnaireResultReopenedSuccessfully' => 'Wyniki ankiety zostały pomyślnie otwarte ponownie w celu przeglądu.',
+    'QuestionnaireResultReopenedAuditLog' => 'Wynik ankiety „{$questionnaire_name}” (przesłanej przez osobę kontaktową „{$contact_name}”) został ponownie otwarty do wglądu przez użytkownika „{$user_name}”.',
+    'QuestionnaireDraftNoChanges' => 'Brak zmian do zapisania.',
+    'SendQuestionnaireIdRequired' => 'Parametr id jest wymagany i musi być numeryczny.',
+    'RiskIdMustBeNumeric' => 'Parametr risk_id musi być numeryczny.',
+    'AssessmentsExtraNotEnabled' => 'Assessments Extra nie jest włączone.',
+    'QuestionnaireSchedulingUpdatedAuditLog' => 'Ustawienia harmonogramu dla kwestionariusza o nazwie „{$name}” zostały zaktualizowane przez użytkownika o nazwie „{$user}”.',
+    'QuestionnaireResultNotReopenable' => 'Wyniku ankiety nie można ponownie otworzyć, ponieważ nie ma on statusu odrzuconego lub niezatwierdzonego.',
+    'QuestionnaireTrackingNotFoundAfterUpdate' => 'Nie znaleziono śledzenia kwestionariusza po aktualizacji.',
+    'QuestionnaireResultAlreadyDecided' => 'Wynik ankiety został już ustalony (zatwierdzony, odrzucony lub niezatwierdzony). Najpierw użyj akcji „Otwórz ponownie”.',
+    'QuestionnaireNoControlsForApproval' => 'Nie znaleziono kontroli dla tego kwestionariusza.',
+    'QuestionnaireNoResponsesForApproval' => 'Nie znaleziono odpowiedzi na pytania ankietowe dotyczące aktualizacji dojrzałości przetwarzania.',
+    'ResultMessageUnavailable' => 'Komunikat o wynikach jest niedostępny.',
+    'AIProviderURLNotAllowed' => 'Ten adres URL API jest niedozwolony. Użyj znanego dostawcy sztucznej inteligencji lub adresu hosta własnego pętli zwrotnej (127.0.0.1).',
+    'AIReenterKeyForNewURL' => 'Wprowadź ponownie klucz API, aby przetestować inny adres URL dostawcy.',
+    'WorkflowHttpRequestDisallowedURL' => 'http_request: Adres URL {$url} prowadzi do niedozwolonego adresu wewnętrznego lub zarezerwowanego.',
+    'BehaviorAndScheduling' => 'Zachowanie i harmonogramowanie',
+    'PrepopulateAcrossContacts' => 'Wstępnie wypełnij nowe odpowiedzi wcześniejszymi odpowiedziami innego kontaktu w ramach tej oceny',
+    'PrepopulateAcrossContactsHelp' => 'Wstępnie wypełnij formularz nowego respondenta najnowszymi, wcześniejszymi odpowiedziami od dowolnego kontaktu — przydatne dla zachowania ciągłości w przypadku zmiany osoby odpowiedzialnej.',
+    'PrepopulateAcrossContactsCaution' => 'Domyślnie wyłączone. Po wyłączeniu, kontakt widzi tylko swoje wcześniejsze odpowiedzi. Włącz tę opcję tylko wtedy, gdy respondenci są wewnętrzni lub zaufani — może to ujawnić odpowiedzi jednego kontaktu innemu (np. jeden dostawca widzi odpowiedzi innego).',
+    'AddTemplateAndContacts' => 'Dodaj szablon i kontakty',
+    'QuestionnaireGeneralSubtitle' => 'Nadaj nazwę kwestionariuszowi i ustal, kto jest jego właścicielem',
+    'QuestionnaireInstructionsSubtitle' => 'Wskazówki wyświetlane respondentom i w e-mailu z zaproszeniem',
+    'QuestionnaireBehaviorSubtitle' => 'Jak zachowuje się kwestionariusz po wysłaniu i wypełnieniu',
+    'QuestionnaireRiskDetailsSubtitle' => 'Opcjonalne wartości domyślne stosowane do ryzyk, jakie stwarza ta ocena',
+    'QuestionnaireTemplatesSubtitle' => 'Połącz każdy szablon pytania z kontaktami, które go otrzymują',
+    'BypassPendingRisksLabel' => 'Omiń oczekujące ryzyka',
+    'BypassPendingRisksDescription' => 'Twórz ryzyka od razu po zakończeniu oceny, zamiast czekać na ich analizę.',
+    'AutomaticallySendResultsLabel' => 'Automatyczne wysyłanie wyników',
+    'AutomaticallySendResultsDescription' => 'Po zakończeniu oceny prześlij wyniki oceny wszystkim osobom kontaktowym.',
+    'QuestionnaireMultiselectPlaceholder' => 'Wybierz lub wyszukaj…',
+    'QuestionnaireNamePlaceholder' => 'np. Przegląd bezpieczeństwa dostawców 2026',
+    'AddTeamPlaceholder' => 'Dodaj zespół…',
+    'AddStakeholderPlaceholder' => 'Dodaj interesariusza…',
+    'AddControlTypePlaceholder' => 'Dodaj typ kontroli…',
+    'AddLocationPlaceholder' => 'Dodaj lokalizację…',
+    'NotifyWhenNotCompleteLabel' => 'Powiadom, gdy nie zostanie ukończone',
+    'NotifyWhenNotCompleteDescription' => 'Przypomnij kontaktom, które nie ukończyły oceny.',
+    'RemindEveryDays' => 'Przypomnij co {$day} dni',
+    'ResendAssessmentLabel' => 'Wyślij ponownie ocenę',
+    'ResendAssessmentDescription' => 'Automatyczne ponowne wystawianie oceny w regularnych odstępach czasu.',
+    'ResendEveryDays' => 'Wyślij ponownie co {$day} dni',
+    'QuestionnaireSaveBarHint' => '„Zapisz i wyślij” natychmiast wysyła kwestionariusz do swoich kontaktów.',
+    // Home dashboard — KPI tile labels
+    'NewSelfAssessment' => 'Nowa samoocena',
+    'SelfAssessmentPrereqIntro' => 'Samooceny pozwalają ocenić organizację pod kątem bezpiecznych ram kontroli i automatycznie generować ryzyko wynikające z niespełnienia tych kontroli. Najpierw wymagane są dwa kroki konfiguracji:',
+    'RegisterYourInstance' => 'Zarejestruj swoją instancję',
+    'RegisterYourInstanceHelp' => 'Rejestracja łączy tę instancję z usługą licencyjną SimpleRisk, dzięki czemu możliwe jest pobranie bezpłatnych dodatków (w tym SCF).',
+    'InstallTheSCF' => 'Zainstaluj Secure Controls Framework',
+    'InstallTheSCFHelp' => 'SCF to darmowy dodatek, który zapewnia ramy, pytania kontrolne i mapowania ryzyka, na podstawie których ta funkcja ocenia ryzyko. Instalacja przebiega w tle i może potrwać kilka minut.',
+    'GoToRegistration' => 'Przejdź do rejestracji',
+    'GoToSCF' => 'Przejdź do Secure Controls Framework',
+    'SelfAssessmentEnableTip' => 'Opcjonalnie: w sekcji Zarządzanie > Ramy możesz włączyć określone ramy SCF, aby wyświetlić krótką, skróconą listę podczas rozpoczynania oceny. Możesz również przeprowadzić ocenę w oparciu o dowolną ramę z pełnego katalogu SCF bez jej włączania.',
+    'ChooseAFramework' => 'Wybierz ramy, na podstawie których przeprowadzisz ocenę',
+    'EnabledFrameworks' => 'Włączone struktury',
+    'AllScfFrameworks' => 'Wszystkie struktury SCF',
+    'Start' => 'Start',
+    'Resume' => 'Wznawiać',
+    'ControlQuestion' => 'Pytanie kontrolne',
+    'NotApplicable' => 'Nie dotyczy',
+    'SaveProgress' => 'Zapisz postęp',
+    'MarkComplete' => 'Oznacz jako ukończone',
+    'AnsweredOfTotal' => 'odpowiedział',
+    'FailedSoFar' => 'jak dotąd nie powiodło się',
+    'StartedBy' => 'Rozpoczęte przez',
+    'FailedControls' => 'Niesprawne sterowanie',
+    'PushToRisk' => 'Pchnij na ryzyko',
+    'ConfirmDeleteSelfAssessment' => 'Usunąć tę samoocenę? Tego nie da się cofnąć.',
+    'ConfirmCompleteSelfAssessment' => 'Czy oznaczyć tę ocenę jako zakończoną? Ryzyko będzie generowane przez nieskuteczne kontrole.',
+    'NoSelfAssessmentsYet' => 'Jeszcze nie ma samoocen. Zacznij od jednej.',
+    'RequestFailed' => 'Nie udało się zrealizować żądania. Spróbuj ponownie.',
+    'NoPendingRisks' => 'Brak ryzyka w toku. Przeprowadź ocenę, aby określić ryzyko wynikające z nieskutecznych kontroli.',
+    'NoFailedControls' => 'Brak wyników kontroli do wyświetlenia dla tego filtra.',
+    'ControlResultsTruncated' => 'Wyświetlane są najnowsze wyniki z 2000. Zawęź filtr, aby zobaczyć więcej.',
+    'GeneratedFromSelfAssessment' => 'Wygenerowano na podstawie samooceny',
+    'SelfAssessmentMitigationSolution' => 'Aby ograniczyć to ryzyko, wdroż kontrole wskazane poniżej, które w toku tej samooceny uznano za nieskuteczne.',
+    'NSelected' => '{n} wybrano',
+    'FilterByControl' => 'Filtruj według kontroli',
+    'Pushing' => 'Wciskanie…',
+    'Deleting' => 'Usuwanie…',
+    'ConfirmPushSelectedPendingRisks' => 'Czy przesunąć {n} wybrane oczekujące ryzyko(a) do ryzyk?',
+    'ConfirmDeleteSelectedPendingRisks' => 'Czy usunąć {n} wybrane oczekujące ryzyka? Tej czynności nie można cofnąć.',
+    'ConfirmDeleteSelectedSelfAssessments' => 'Czy usunąć {n} wybrane samooceny? Tej czynności nie można cofnąć.',
+    'BulkPartialFailure' => '{n} z {total} elementów pomyślnie zrealizowanych; pozostałe nie. Odśwież, aby zobaczyć aktualny stan.',
+
+    // Workflows Extra - deactivation confirm ('Deactivate' at line 480 is reused as-is)
+    'WorkflowsExtraDeactivateConfirm' => 'Dezaktywować opcję „Dodatkowe przepływy pracy”? Wszystkie definicje przepływów pracy utworzone przez użytkownika zostaną trwale usunięte. Przepływy pracy w systemie zostaną zachowane.',
+    'HomeKpiOpenRisks' => 'Otwarte Ryzyko',
+    'HomeKpiNeedsReview' => 'Potrzebny przegląd',
+    'HomeKpiUnmitigated' => 'Niezmniejszone',
+    'HomeKpiClosedRisks' => 'Zamknięte Ryzyka',
+    'HomeKpiControlPassRate' => 'Wskaźnik zaliczeń kontrolnych',
+    'HomeKpiFailingControls' => 'Wadliwe sterowanie',
+    'HomeKpiOpenAudits' => 'Otwarte audyty',
+    'HomeKpiTestsDueSoon' => 'Testy wkrótce',
+    'HomeKpiActiveFrameworks' => 'Aktywne ramy',
+    'HomeKpiTotalControls' => 'Całkowita kontrola',
+    // Home dashboard — What's Next feed
+    'WhatsNext' => 'Co dalej?',
+    'WhatsNextAllCaughtUp' => 'Jesteście na bieżąco.',
+    'WhatsNextRegisterInstance' => 'Zarejestruj swoją instancję SimpleRisk',
+    'WhatsNextSubmitFirstRisk' => 'Prześlij swoje pierwsze ryzyko',
+    'WhatsNextLoadFramework' => 'Załaduj strukturę kontrolną',
+    'WhatsNextUnreviewedRisks' => 'Ryzyka do przeglądu',
+    'WhatsNextUnmitigatedRisks' => 'Ryzyka, które należy ograniczyć',
+    'WhatsNextInitiateAudits' => 'Audyty do zainicjowania',
+    // Home dashboard — widget picker type labels
+    'WidgetType_kpi' => 'Kafelek KPI',
+    'WidgetType_whats_next' => 'Lista',
+    // Home dashboard — hub catalog entry
+    'HomeDashboard' => 'Start',
+    'HomeDashboardDesc' => 'Punkt wyjścia — najważniejsze wskaźniki i co zrobić dalej, na pierwszy rzut oka.',
+    'HomeChartRiskByLevel' => 'Ryzyko według poziomu',
+    'HomeKpiThisMonth' => 'w tym miesiącu',
+    'HomeKpiNoChange' => 'Bez zmian',
+    'EditLayout' => 'Edytuj układ',
+    'ListHighestRisks' => 'Moje największe ryzyko',
+    'ListPastDueReviews' => 'Zaległe recenzje',
+    'ListUpcomingTests' => 'Nadchodzące testy',
+    'ListRecentFailures' => 'Ostatnie awarie',
+    'ListPoliciesReview' => 'Dokumenty do przeglądu',
+    'ListExpiringExceptions' => 'Wygasające wyjątki',
+    'ImKpiOpenIncidents' => 'Całkowicie otwarte',
+    'ImKpiOverdue' => 'Zaległy',
+    'ImKpiMttr30' => 'Średnia rozdzielczość',
+    'ImKpiMttrQuarter' => 'Średnia determinacja (90 dni)',
+    'ImKpiMttrYear' => 'Średnia rozdzielczość (1 rok)',
+    'ImKpiMttrAll' => 'Średnia rozdzielczość (wszystko)',
+    'ImKpiResolved30' => 'Rozwiązany',
+    'ImChartBySeverity' => 'Według stopnia nasilenia',
+    'ImChartByStatus' => 'Według statusu',
+    'ImListRecent' => 'Ostatnie incydenty',
+    'ImListUnassigned' => 'Nieprzypisane incydenty',
+    'HomeKpiOpenExceptions' => 'Otwórz wyjątki',
+    'HomeKpiPolicies' => 'Zasady działalności',
+    'ResolutionTargets' => 'Cele rozwiązania (dni)',
+    'ResolutionTargetsHelp' => 'Liczba dni, przez które zgłoszenie może pozostać nierozstrzygnięte, zanim zostanie uznane za przeterminowane.',
+    'DefaultTarget' => 'Domyślnie',
+    'PerSeverityOverrideHelp' => 'Opcjonalnie zastąp ustawienia domyślne dla określonych poziomów ważności (pozostaw puste, aby użyć ustawień domyślnych):',
+    'ResolutionTargetUsesDefault' => 'Domyślne (%d)',
+    'SeverityColors' => 'Kolory powagi',
+    'SeverityColorsHelp' => 'Kolor odpowiadający każdej wadze zdarzenia, wyświetlany na pulpicie nawigacyjnym incydentów i stronie szczegółów incydentu.',
+    'Editing' => 'Redagowanie',
+    'SetAsDefaultForEveryone' => 'Ustaw jako domyślne dla wszystkich',
+    'EditLayoutHint' => 'Przeciągnij kafelek, aby go przesunąć · przeciągnij krawędź, aby zmienić rozmiar · ✕, aby go usunąć',
+    'RemoveWidget' => 'Usuń widget',
+    'AddWidget' => 'Dodaj widget',
+    'AddToDashboard' => 'Dodaj do pulpitu nawigacyjnego',
+    'AllWidgetsAdded' => 'Wszystkie dostępne widżety znajdują się na tym pulpicie.',
+    'AddText' => 'Dodaj tekst',
+    'GettingStarted' => 'Rozpoczęcie pracy',
+    'GettingStartedTitle' => 'Witamy w SimpleRisk',
+    'GettingStartedSubtitle' => 'Kilka szybkich kroków, które pozwolą Ci w pełni wykorzystać możliwości SimpleRisk.',
+    'GSProgressCount' => '{done} z {total} ukończono',
+    'GSNextUp' => 'Następne w kolejce',
+    'GSArea_setup' => 'Konfiguracja',
+    'GSArea_risk' => 'Ryzyko',
+    'GSArea_assessment' => 'Ocena',
+    'GSArea_compliance' => 'Zgodności',
+    'GSArea_assets' => 'Aktywa',
+    'GSArea_ai' => 'Konfiguracja',
+    'GSHide' => 'Ukryj Pierwsze kroki',
+    'GSDismissStep' => 'Odrzuć ten krok',
+    'GSAllSet' => 'Wszystko gotowe — dobra robota!',
+    'GSWalkthrough' => '30-minutowy spacer',
+    'Explore' => 'Badać',
+    'Learn' => 'Uczyć się',
+    'AdminGuide' => 'Przewodnik administratora',
+    'LearnMore' => 'Dowiedz się więcej',
+    'GSRegisterTitle' => 'Zarejestruj swoją instancję',
+    'GSRegisterDesc' => 'Aktywuj wsparcie i aktualizacje za pomocą klucza licencyjnego.',
+    'GSRegisterCta' => 'Zarejestruj się',
+    'GSScfTitle' => 'Zainstaluj Secure Controls Framework',
+    'GSScfDesc' => 'Zainstaluj SCF — bibliotekę sterowania obsługującą różne standardy.',
+    'GSScfCta' => 'Zainstaluj SCF',
+    'GSInviteTitle' => 'Zaproś swój zespół',
+    'GSInviteDesc' => 'Dodaj współpracowników, aby móc przypisywać i sprawdzać zadania.',
+    'GSInviteCta' => 'Dodaj użytkowników',
+    'GSAiTitle' => 'Konfiguruj AI',
+    'GSAiDesc' => 'Ulepsz swoje doświadczenie z SimpleRisk dzięki sztucznej inteligencji.',
+    'GSAiCta' => 'Skonfiguruj sztuczną inteligencję',
+    'GSSubmitRiskTitle' => 'Prześlij swoje pierwsze ryzyko',
+    'GSSubmitRiskDesc' => 'Rozpoznaj ryzyko, z jakim mierzy się Twoja organizacja.',
+    'GSSubmitRiskCta' => 'Prześlij ryzyko',
+    'GSMitigateTitle' => 'Zaplanuj działania łagodzące',
+    'GSMitigateDesc' => 'Dodaj plan łagodzenia ryzyka otwartego.',
+    'GSMitigateCta' => 'Zaplanuj łagodzenie',
+    'GSReviewTitle' => 'Przeprowadź przegląd ryzyka',
+    'GSReviewDesc' => 'Przeanalizuj ryzyko i podejmij decyzję o kolejnym kroku.',
+    'GSReviewCta' => 'Wykonaj przegląd',
+    'GSDefineTestTitle' => 'Zdefiniuj test kontrolny',
+    'GSDefineTestDesc' => 'Ustaw sposób testowania kontrolki.',
+    'GSDefineTestCta' => 'Zdefiniuj test',
+    'GSInitiateAuditTitle' => 'Rozpocznij audyt',
+    'GSInitiateAuditDesc' => 'Rozpocznij cykl testów lub audytów.',
+    'GSInitiateAuditCta' => 'Rozpocznij audyt',
+    'GSAssetTitle' => 'Dodaj swoje zasoby',
+    'GSAssetDesc' => 'Zrób inwentaryzację aktywów, które chcesz chronić.',
+    'GSAssetCta' => 'Dodaj zasoby',
+    'GSInvalidStep' => 'Nieprawidłowy krok wprowadzający.',
+    'GSPagerLabel' => '{from}–{to} z {total}',
+    'GSPrevCards' => 'Pokaż poprzednie kroki',
+    'GSNextCards' => 'Pokaż następne kroki',
+    'WhatsNextInstallSCF' => 'Zainstaluj Secure Controls Framework',
+    'GSActivateScfTitle' => 'Aktywuj Secure Controls Framework',
+    'GSActivateScfDesc' => 'Włącz zainstalowany SCF, aby załadować jego kontrolki do biblioteki.',
+    'GSActivateScfCta' => 'Aktywuj SCF',
+    'WhatsNextActivateSCF' => 'Aktywuj Secure Controls Framework',
+    'GSEnableFrameworksTitle' => 'Włącz odpowiednie ramy',
+    'GSEnableFrameworksDesc' => 'Włącz ramy SCF, które mają zastosowanie w Twojej organizacji.',
+    'GSEnableFrameworksCta' => 'Włącz frameworki',
+    'WhatsNextEnableFrameworks' => 'Włącz odpowiednie ramy',
+    'GSSelfAssessTitle' => 'Przeprowadź samoocenę',
+    'GSSelfAssessDesc' => 'Oceń swoją organizację w kontekście ponad 250 ram i oszacuj ryzyko wynikające z nieskutecznych mechanizmów kontroli.',
+    'GSSelfAssessCta' => 'Rozpocznij ocenę',
+    'WhatsNextTakeSelfAssessment' => 'Przeprowadź samoocenę',
+    'WhatsNextConfigureAI' => 'Konfiguruj AI',
+    'ListUnreviewedRisks' => 'Nieprzeanalizowane ryzyka',
+    'ControlsByDomain' => 'Kontrole według domeny',
+    'ControlsByClass' => 'Kontrole według klasy',
+    'ControlsByPhase' => 'Sterowanie fazowe',
+    'ControlsByPriority' => 'Kontrola według priorytetu',
+    'ControlsByCurrentMaturity' => 'Kontrole według bieżącej dojrzałości',
+    'ControlStatusOverTime' => 'Status kontroli w czasie',
+    'ComplianceTotalControls' => 'Całkowita kontrola',
+    'HomeKpiOverdueTests' => 'Zaległe testy',
+    'Total' => 'Całkowity',
+    'StartTheTest' => 'Rozpocznij test',
+    'TestStartsAutomatically' => 'Test rozpoczyna się automatycznie',
+    'GoToTest' => 'Przejdź do testu',
+    'NotTested' => 'Nie testowano',
+    'PassingPercent' => '% zaliczeń',
+    'ListFailingControls' => 'Wadliwe sterowanie',
+    'Exceptions' => 'Wyjątki',
+    'Documents' => 'Dokumenty',
+    'ControlsBelowMaturity' => 'Kontrole poniżej dojrzałości',
+    'ControlsAtMaturity' => 'Kontrole w momencie dojrzałości',
+    'ControlsAboveMaturity' => 'Kontrole powyżej dojrzałości',
+    'Maturity' => 'Dojrzałość',
+    'AllTime' => 'Cały czas',
+    'Last7Days' => 'Ostatnie 7 dni',
+    'Last30Days' => 'Ostatnie 30 dni',
+    'Last90Days' => 'Ostatnie 90 dni',
+    'YearToDate' => 'Rok do tej pory',
+    'CustomRange' => 'Zakres niestandardowy',
+    'Age' => 'Wiek',
+    'ImOpenIncidents' => 'Otwarte incydenty',
+    'ImClosedIncidents' => 'Zamknięte incydenty',
+    'ImByAttackVector' => 'Otwarte przez wektor ataku',
+    'ImBySource' => 'Otwarte według źródła',
+    'AverageDaysToDetect' => 'Średnia liczba dni do wykrycia',
+    'ImKpiAvgTtd' => 'Średnia detekcja',
+    'Days' => 'Dni',
+    'ImKpiCriticalOpen' => 'Krytyczny Otwarty',
+    'ImKpiResolvedInSla' => 'Rozwiązano w ramach SLA',
+    'Events' => 'Wydarzenia',
+    'ImEventsIncidents' => 'Wydarzenia i incydenty',
+    'ImSourceBreakdown' => 'Źródło według kategorii',
+    'ImClosureSummary' => 'Podsumowanie zamknięcia',
+    'ImSignalQuality' => 'Jakość sygnału',
+    'ImSignalLowSample' => 'Zbyt mało zamknięć, aby móc wiarygodnie oceniać',
+    'ImportExportExportPdf' => 'Eksportuj PDF',
+    'ImportExportExporting' => 'Przygotowywanie pliku PDF…',
+    'ImportExportExportFailed' => 'Nie udało się wygenerować pliku PDF. Spróbuj ponownie.',
+    'ImportExportGeneratedOn' => 'Wygenerowano',
+    'ImportExportPage' => 'Strona',
+    'ImportExportPageOf' => 'z',
+    'ResolutionTargetsUpdated' => 'Zaktualizowano cele rozwiązywania problemów według stopnia ważności.',
+    'SeverityColorsUpdated' => 'Zaktualizowano kolory ważności.',
+    // AI Capabilities Catalog + AI settings hub (unified AI settings)
+    'AICapGrcRecommendations' => 'Zalecenia dotyczące ram GRC',
+    'AICapGrcRecommendationsDesc' => 'Rekomendacje ramowe wygenerowane przez sztuczną inteligencję i podsumowanie dostosowane do kontekstu Twojej organizacji.',
+    'AICapRiskRecommendations' => 'Zalecenia dotyczące ryzyka',
+    'AICapRiskRecommendationsDesc' => 'Sugestie dotyczące szczegółów ryzyka i jego łagodzenia, generowane na podstawie ryzyka, jego łagodzenia i przeglądu.',
+    'AICapFairAnalysis' => 'Analiza ilościowa FAIR',
+    'AICapFairAnalysisDesc' => 'Sztuczna inteligencja szacuje parametry strat Beta-PERT; SimpleRisk przeprowadza 10 000 iteracji Monte Carlo w celu określenia ryzyka w dolarach.',
+    'AICapDocumentCustomization' => 'Dostosowywanie dokumentów',
+    'AICapDocumentCustomizationDesc' => 'Wypełnia symbole zastępcze i czyści tekst zasad w szablonach dokumentów, dzięki czemu standardowy tekst zasad jest odczytywany jako Twój.',
+    'AICapDocumentControlMatching' => 'Dokument ↔ Dopasowanie kontroli',
+    'AICapDocumentControlMatchingDesc' => 'Automatycznie mapuje elementy sterujące do dokumentów polityki, zapewniając wynik pewności i uzasadnienie, które można przejrzeć.',
+    'AICapDocumentTemplates' => 'Biblioteka szablonów dokumentów',
+    'AICapDocumentTemplatesDesc' => 'Zainstaluj opracowane szablony zasad, wytycznych i procedur z biblioteki SimpleRisk.',
+    'AICapControlReferenceEnhancement' => 'Ulepszenie odniesienia sterowania',
+    'AICapControlReferenceEnhancementDesc' => 'Przeszukuje dosłowne teksty kontrolne za pomocą wyszukiwarki internetowej, aby wzbogacić odniesienia do kontroli.',
+    'AICapAiChat' => 'Asystent czatu',
+    'AICapAiChatDesc' => 'Asystent GRC, który odpowiada na pytania kontekstowe w dowolnym miejscu w SimpleRisk.',
+    'AICapSurfacedRecommendations' => 'Strona poświęcona sztucznej inteligencji',
+    'AICapSurfacedRiskView' => 'Widok ryzyka — szczegóły i łagodzenie',
+    'AICapSurfacedFairTab' => 'Widok ryzyka — zakładka FAIR',
+    'AICapSurfacedDocuments' => 'Zarządzanie — Dokumenty',
+    'AICapSurfacedControls' => 'Zgodność — kontrole',
+    'AICapSurfacedEveryPage' => 'Każda strona — ruchomy asystent',
+    'AICapabilitiesCatalog' => 'Możliwości',
+    'AICapSearchPlaceholder' => 'Wyszukaj możliwości sztucznej inteligencji…',
+    'AICapFilterDomain' => 'Domena',
+    'AICapFilterTier' => 'Szczebel',
+    'AICapFilterState' => 'Państwo',
+    'AICapTierExtra' => 'AI Extra',
+    'AICapStateLocked' => 'Zamknięty',
+    'AICapIncludedInExtra' => 'W zestawie AI Extra',
+    'AICapPurchaseExtra' => 'Kup AI Extra',
+    'AICapNeedsProvider' => 'Wymaga konfiguracji dostawcy',
+    'AICapNoMatch' => 'Brak pasujących możliwości',
+    'AICapNoMatchHint' => 'Spróbuj użyć innej domeny, poziomu lub terminu wyszukiwania.',
+    'AICapCountSingular' => 'zdolność',
+    'AICapCountPlural' => 'możliwości',
+    'DomainAssistant' => 'Asystent',
+    'AICapLoadError' => 'Nie udało się załadować funkcji AI. Spróbuj ponownie.',
+    'AIProviderConfigSubtitle' => 'Połącz SimpleRisk z dostawcą sztucznej inteligencji, aby zwiększyć możliwości sztucznej inteligencji.',
+    'AIHowToGetAPIKeyFor' => 'Jak uzyskać klucz API dla',
+    'AIExtraNotActivated' => 'Nie aktywowano',
+    'AIExtraValueProp' => 'Udoskonalona sztuczna inteligencja — uczciwa kwantyfikacja ryzyka, pomoc w dokumentowaniu i kontroli oraz asystent czatu oparty na sztucznej inteligencji.',
+    'AICtxOrgName' => 'Jak nazywa się twoja organizacja?',
+    'AICtxOrgSizeEmployees' => 'Ilu pracowników zatrudnia Twoja organizacja?',
+    'AICtxOrgSizeRevenue' => 'Jakie są roczne przychody Twojej organizacji?',
+    'AICtxOrgObjective' => 'Jakie są główne cele biznesowe i strategiczne Twojej organizacji?',
+    'AICtxOrgIndustry' => 'Jaka jest główna branża lub sektor działalności Twojej organizacji?',
+    'AICtxOrgLocation' => 'W jakich krajach lub regionach działa Twoja organizacja?',
+    'AICtxOrgType' => 'Jakiego typu organizacją jesteś?',
+    'AICtxDataTypes' => 'Jakie rodzaje danych gromadzi, przetwarza lub przechowuje Twoja organizacja (np. dane osobowe, dane finansowe, informacje o stanie zdrowia)?',
+    'AICtxDataCustomers' => 'Kim są Twoi główni klienci lub interesariusze (np. konsumenci, firmy, jednostki rządowe)?',
+    'AICtxDataRegulatory' => 'Czy w Twojej branży obowiązują Cię jakieś szczególne wymogi regulacyjne?',
+    'AICtxDataThirdParties' => 'Czy masz jakieś relacje z podmiotami zewnętrznymi lub korzystasz z usług outsourcingowych, które wymagają nadzoru nad zgodnością z przepisami?',
+    'AICtxMaturityIssues' => 'Czy w ciągu ostatnich 3–5 lat doświadczyłeś jakichkolwiek poważnych problemów związanych z przestrzeganiem przepisów, naruszeń bezpieczeństwa lub zdarzeń stanowiących ryzyko?',
+    'AICtxMaturityConcerns' => 'Czy zidentyfikowali Państwo jakieś konkretne obszary wymagające poprawy lub wymagające poprawy w obecnych procesach GRC?',
+    'AICtxMaturityAppetite' => 'Jaka jest tolerancja ryzyka i apetyt na ryzyko w Twojej organizacji?',
+    'AICtxMaturityLevel' => 'Jaki jest obecnie poziom dojrzałości Państwa firmy w zakresie zarządzania, zarządzania ryzykiem i praktyk zgodności?',
+    'AICtxImplementationChanges' => 'Czy w Twoim modelu biznesowym, infrastrukturze technologicznej lub rynku nadchodzą jakieś zmiany, które mogą mieć wpływ na Twoje potrzeby w zakresie zgodności?',
+    'AICtxImplementationResourcesBudget' => 'Jakie środki budżetowe są dostępne na wdrożenie i utrzymanie ram zgodności?',
+    'AICtxImplementationResourcesPersonnel' => 'Jakie zasoby kadrowe są dostępne do wdrażania i utrzymywania ram zgodności?',
+    'AICtxImplementationResourcesTechnology' => 'Jakie zasoby infrastruktury technologicznej są dostępne w celu wdrożenia i utrzymania ram zgodności?',
+    'AICtxImplementationResourcesTraining' => 'Jakie zasoby szkoleniowe i rozwojowe są dostępne w celu wdrożenia i utrzymania ram zgodności?',
+    'AICtxImplementationResourcesExternal' => 'Z jakich zewnętrznych zasobów wsparcia mogą Państwo korzystać w celu wdrażania i utrzymywania ram zgodności?',
+    'AIAPIKeySecurityNote' => 'Twój klucz jest przechowywany po stronie serwera i nigdy nie jest zwracany do przeglądarki. Adresy URL dostawców są weryfikowane pod kątem listy dozwolonych SSRF, którą można skonfigurować w pliku config.php.',
+    'AIContextEgressWarning' => 'Twoje odpowiedzi są wysyłane do skonfigurowanego dostawcy sztucznej inteligencji, aby na ich podstawie sformułować rekomendacje. Nie umieszczaj w nich niczego, czym sam byś się z nim nie podzielił.',
+    'Provider' => 'Dostawca',
+    'AIProviderURLHostNotAllowed' => 'Host „%s” nie znajduje się na liście dozwolonych dostawców sztucznej inteligencji. Dodaj go do $ai_allowed_provider_hosts w pliku config.php, a następnie zapisz. (Znani dostawcy sztucznej inteligencji i adresy pętli zwrotnej 127.0.0.1 są zawsze dozwolone).',
+    'AIContextLastSaved' => 'Ostatnio zapisano',
+    'AIContextNeverSaved' => 'Jeszcze nie zapisane',
+    'AICtxCardSubtitle' => '21 pytań z czterech obszarów. Im więcej odpowiedzi, tym trafniejsze rekomendacje.',
+    'AICtxAnswered' => '%1$d z %2$d odpowiedziało',
+    'AICtxAllOptional' => 'Opcjonalne',
+    'AIContextSaving' => 'Zapisywanie…',
+    'AIContextSaveFailed' => 'Nie udało się zapisać zmian. Spróbuj ponownie.',
+    'AISettingsSavedNotReachable' => 'Ustawienia AI zostały zapisane, ale nie można nawiązać połączenia z dostawcą. Upewnij się, że jest on uruchomiony i adres URL jest poprawny.',
+    'AISettingsSavedKeyRequired' => 'Ustawienia sztucznej inteligencji zostały zapisane, ale ten dostawca wymaga klucza API, aby móc korzystać z jego funkcji.',
+    'TestAndSave' => 'Testuj i zapisz',
+    'AICapEnableAll' => 'Włącz wszystko',
+    'AICapDisableAll' => 'Wyłącz wszystko',
+    'AISettingsSavedConnected' => 'Ustawienia AI zapisane — połączenie pomyślne.',
+    'AISettingsSavedNotConnected' => 'Ustawienia AI zostały zapisane, ale test połączenia nie powiódł się. Sprawdź model, klucz i adres URL.',
+    'AIProviderURLNotOnAllowlist' => 'Ten host nie znajduje się na liście dozwolonych dostawców AI SSRF. Dodaj go do $ai_allowed_provider_hosts w pliku config.php, zanim będzie można go zapisać.',
+    'Connected' => 'Połączony',
+    'NotConnected' => 'Nie połączony',
+    'AICapBulkError' => 'Niektórych funkcji nie udało się zaktualizować. Spróbuj ponownie.',
+    'QuestionnaireAlreadyCompleted' => 'Ta ankieta została już wypełniona.',
+    'QuestionnaireDraftError' => 'Błąd podczas zapisywania wersji roboczej. Szczegóły w konsoli.',
+
+    // Audit cadence scheduling - Define Test modal (Interval/Calendar schedule redesign)
+    // 'Overdue' duplicates the English of 'ImKpiOverdue' on purpose: that key is
+    // an Incident Management KPI label, and a compliance status pill reusing an
+    // IM-scoped key would couple the two domains for a translator (and break the
+    // moment either wording moves). This is the generic, cross-domain one.
+    'Overdue' => 'Zaległy',
+    // Deliberate: the only other key rendering 'Manual' is 'ManualValuation',
+    // an asset-valuation label. Pointing a schedule mode at it would couple two
+    // unrelated domains for translators and break the moment either reworded.
+    'ScheduleManual' => 'Ręczny',
+    'ScheduleInterval' => 'Interwał',
+    'ScheduleCalendar' => 'Kalendarz',
+    'Cadence' => 'Rytm',
+    'CadenceBiweekly' => 'Dwutygodniowy',
+    'CadenceSemiAnnually' => 'Półrocznie',
+    'AnchorDate' => 'Data zakotwiczenia',
+    'UpcomingOccurrences' => 'Nadchodzące wydarzenia',
+    'AuditLeadInDays' => 'Dni przygotowawcze do audytu',
+    'SkipOccurrence' => 'Pominąć',
+    'OverrideDate' => 'Data nadpisania',
+    'Week' => 'Tydzień',
+    'NoUpcomingOccurrences' => 'Brak nadchodzących zdarzeń w tym oknie.',
+    'FailedToLoadUpcomingOccurrences' => 'Nie udało się załadować podglądu nadchodzących wystąpień.',
+    'AnchorDateMustBeTodayOrLater' => 'Data zakotwiczenia musi przypadać na dzień dzisiejszy lub późniejszy. Aby zaplanować datę z przeszłości, utwórz test ręczny.',
+    'InvalidScheduleType' => 'Nieprawidłowy typ harmonogramu. Dozwolone wartości: Ręczny, Interwałowy, Kalendarzowy.',
+    'Weeks' => 'Tygodnie',
+    'Months' => 'Miesiące',
+    'Years' => 'Lata',
+    'ScheduleSummaryEvery' => 'Co {$interval} {$unit}',
+
+    // Define Tests redesign - client-rendered grid (Phase 1, Task 6)
+    'LastResult' => 'Ostatni wynik',
+    'NextDue' => 'Następny termin',
+    'DueSoon' => 'Wkrótce',
+    'Retired' => 'Emerytowany',
+    'MyTests' => 'Moje testy',
+    'Failing' => 'W braku',
+    'Untested' => 'Nieprzetestowane',
+    'ShowRetired' => 'Pokaż emerytowanych',
+    'Tests' => 'Testy',
+    'NoTestsForThisControl' => 'Nie przeprowadzono jeszcze testów dla tej kontroli.',
+    'NoControlsDefinedYet' => 'Nie zdefiniowano jeszcze żadnych elementów sterujących',
+    'NoControlsDefinedYetBody' => 'Przed dodaniem testów zdefiniuj kontrole w module Governance.',
+    'NoTestsMatchFilters' => 'Brak testów odpowiadających Twoim filtrom',
+    'NoTestsMatchFiltersBody' => 'Spróbuj zmienić kryteria wyszukiwania lub filtry.',
+    'CouldNotLoadTests' => 'Nie można załadować testów',
+    'CouldNotLoadTestsBody' => 'Coś poszło nie tak. Twoje dane są bezpieczne — spróbuj odświeżyć.',
+    'ShowingXToYOfZ' => 'Wyświetlanie {$start}–{$end} z {$total}',
+    // Define Tests grid -- SCF-mapping + read-only procedure expand (Phase 1, Task 7)
+    'Reference' => 'Odniesienie',
+    'NoFrameworksMapped' => 'Do tej kontrolki nie przypisano żadnych struktur.',
+    // Define Tests grid -- batch select + retire/delete + quick filters (Phase 1, Task 8)
+    'Retire' => 'Odchodzić',
+    'ReassignTester' => 'Przypisz ponownie testera',
+    'SetSchedule' => 'Ustaw harmonogram',
+    'ConfirmRetireSelectedTests' => 'Czy usunąć {n} wybrane testy?',
+    'ConfirmDeleteSelectedTests' => 'Czy usunąć {n} wybrane testy? Tej czynności nie można cofnąć.',
+    // Define Tests grid -- Coverage toolbar select (Issue 4)
+    'Coverage' => 'Zasięg',
+    'CoverageWithTests' => 'Kontrole z testami',
+    'CoverageAllControls' => 'Wszystkie elementy sterujące',
+    'CoverageGaps' => 'Luki',
+    // Define Tests insights band (Phase 2, Task 4) -- KPI tile labels + subtitles.
+    // 'Overdue', 'DueSoon', and 'Failing' are reused from the grid's quick-filter
+    // chips above (identical text) rather than duplicated here.
+    'DtTotalTests' => 'Całkowita liczba testów',
+    'DtCoverageGaps' => 'Luki w pokryciu',
+    'DtAcrossNControls' => 'W poprzek {$n} kontrolek',
+    'DtControlsWithNoTest' => 'Kontrole bez testu',
+    'DtNeedInitiationNow' => 'Potrzebuję teraz inicjacji',
+    'DtWithinLeadInWindow' => 'W oknie wprowadzającym',
+    'DtLastResultFailed' => 'Ostatni wynik nieudany',
+    'InvalidTestMethod' => 'Metoda testowa musi być jedną z następujących: zapytanie, obserwacja, inspekcja lub ponowne wykonanie!',
+    'TesterCannotBeApprover' => 'Tester nie może być jednocześnie wymieniony jako osoba zatwierdzająca ten test.',
+    'ApproverNotEligible' => 'Jeden lub więcej wybranych zatwierdzających nie ma obowiązku „Zatwierdzania testów”.',
+    'TestMethod' => 'Metoda testowa',
+    'TestMethodInquiry' => 'Zapytanie',
+    'TestMethodObservation' => 'Obserwacja',
+    'TestMethodInspection' => 'Kontrola',
+    'TestMethodReperformance' => 'Ponowne wykonanie',
+    'Sample' => 'Próbka',
+    'RequiredEvidence' => 'Wymagane dowody',
+    'Approvers' => 'Zatwierdzający',
+    'AuditLog_TestAuditApproved' => 'Audyt „{$test_audit_name}”(ID: {$test_audit_id}) został zatwierdzony przez użytkownika „{$user_name}”.',
+    'AuditLog_TestAuditRejected' => 'Audyt „{$test_audit_name}”(ID: {$test_audit_id}) został odrzucony przez użytkownika „{$user_name}” z komentarzem „{$comment}”.',
+    'AuditLog_TestAuditAwaitingApproval' => 'Audyt „{$test_audit_name}” (ID: {$test_audit_id}) został przesłany do zamknięcia przez użytkownika „{$user_name}” i oczekuje na zatwierdzenie. Zmiany: {$changes}.',
+    'AuditApproved' => 'Audyt został zatwierdzony pomyślnie.',
+    'AuditRejected' => 'Audyt został pomyślnie odrzucony.',
+    'RejectCommentRequired' => 'Aby odrzucić audyt, wymagany jest komentarz.',
+    'NotAnApproverOfThisAudit' => 'Nie jesteś skonfigurowaną osobą zatwierdzającą dla tego audytu.',
+    'ApproverCannotBeTester' => 'Osoba zatwierdzająca nie może być jednocześnie testerem tego audytu.',
+    'AuditNotAwaitingApproval' => 'Niniejszy audyt nie oczekuje obecnie na zatwierdzenie.',
+    'NotificationAuditAwaitingApprovalTitle' => 'Audyt oczekuje na Twoją akceptację',
+    'NotificationAuditAwaitingApprovalBody' => 'Audyt „{$test_audit_name}” został przesłany do zamknięcia i oczekuje na Twoją akceptację.',
+    'NotificationAuditRejectedTitle' => 'Audyt odrzucony',
+    'NotificationAuditRejectedBody' => 'Audyt „{$test_audit_name}” został odrzucony z komentarzem: „{$comment}”',
+    'AwaitingApproval' => 'Oczekiwanie na zatwierdzenie',
+    'AwaitingApprovalBannerText' => 'Ten audyt został przesłany do zamknięcia i oczekuje na zatwierdzenie przez skonfigurowaną osobę zatwierdzającą przed zamknięciem.',
+    'ReturnedForRework' => 'Zwrócono do przeróbki',
+    'ReturnedForReworkBannerText' => 'Audyt ten został odrzucony i zwrócony do ponownego opracowania.',
+    'RejectReason' => 'Powód odrzucenia',
+    'AreYouSureYouWantToApproveThisAudit' => 'Czy na pewno chcesz zatwierdzić ten audyt?',
+    'AtLeastOneControlRequired' => 'Wymagany jest co najmniej jeden element sterujący.',
+    'DtNCommonAcrossNControls' => '{$common} wspólne · {$n} elementy sterujące',
+    'DtUntestedControls' => 'Nieprzetestowane elementy sterujące',
+    'DtControlsInScopeNoCoverage' => 'Brak zasięgu',
+    'Passing' => 'Przechodzący',
+    'DtLastResultPassed' => 'Ostatni wynik zaliczony',
+    'AllFamilies' => 'Wszystkie rodziny',
+    'SearchTestsPlaceholder' => 'Wyszukaj testy, kontrolki i struktury',
+    'AnySchedule' => 'Dowolny harmonogram',
+    'AnyTag' => 'Dowolny tag',
+    'AuditAutoClosedTestRetired' => 'Automatycznie zamknięto jako niejednoznaczny, ponieważ test został wycofany.',
+    'Common' => 'Wspólny',
+    'ValidatesAcrossMappedFrameworks' => 'Sprawdza zgodność w mapowanych ramach',
+    'EditTest' => 'Edytuj test',
+    'ControlHasNoTestCoverage' => 'Ta kontrola w zakresie nie ma jeszcze pokrycia testowego.',
+    'AddTheFirstTest' => 'Dodaj pierwszy test',
+    'ApplyCommonTestHint' => 'Zastosuj jeden lub więcej istniejących testów do tej kontrolki. Każdy test zachowuje swoje bieżące kontrolki i staje się wspólnym testem obejmującym również tę kontrolkę.',
+    'CommonTestApplied' => 'Test zastosowano do tej kontroli.',
+    'CouldNotApplyCommonTest' => 'Nie można zastosować testu do tej kontroli.',
+    'SelectOneOrMoreTests' => 'Wybierz jeden lub więcej testów',
+    'CommonTestsApplied' => 'Do tej kontrolki zastosowano {n} testów.',
+    'ApplyCommonTests' => 'Zastosuj typowe testy…',
+    'History' => 'Historia',
+    'Result' => 'Wynik',
+    'Approval' => 'Aprobata',
+    'ThisTestHasNotBeenRunYet' => 'Ten test jeszcze nie został przeprowadzony.',
+    'CouldNotLoadTestHistory' => 'Nie można załadować historii tego testu.',
+    'Identity' => 'Tożsamość',
+    'IdentitySectionHint' => 'Nazwa, tester i kontrolki, które weryfikuje',
+    'WhenTheAuditInitiates' => 'Kiedy rozpoczyna się audyt',
+    'ProcedureAndEvidence' => 'Procedura i dowody',
+    'CommonTestControlsHint' => 'Jeden test może walidować wiele kontrolek — to powszechny test. Otwarcie go z poziomu „+ Dodaj test” kontrolki powoduje jego wstępne wybranie.',
+    'SeparationOfDutiesNote' => 'Podział obowiązków — osoba zatwierdzająca nie może być jednocześnie testerem.',
+    'CommonTestEditScopeHint' => 'Zmiany obowiązują wszędzie tam, gdzie używany jest ten popularny test.',
+    'Mode' => 'Tryb',
+    'AddOrRemove' => 'Dodaj lub usuń…',
+    'AddOrSearchTags' => 'Dodaj lub wyszukaj tagi…',
+    'CreateTagX' => 'Utwórz „{tag}”',
+    'Archived' => 'Zarchiwizowane',
+    'ShowAllTests' => 'Wszystkie testy',
+    'ShowActiveTests' => 'Aktywne testy',
+    'ShowRetiredTests' => 'Wycofane testy',
+    'UntestedControls' => 'Nieprzetestowane kontrole',
+    'OverdueByXDays' => 'Przeterminowane · {n} dni',
+    'OverdueByOneDay' => 'Przeterminowane · 1 dzień',
+    'DueInXDays' => 'Termin realizacji za {n} dni',
+    'DueTomorrow' => 'Termin na jutro',
+    'DueToday' => 'Należne dzisiaj',
+    'ScheduledForX' => 'Zaplanowano · {date}',
+    'AllTesters' => 'Wszyscy testerzy',
+    'AllStatuses' => 'Wszystkie statusy',
+    'OnTrack' => 'Na dobrej drodze',
+    'NextTestDateDerivedHint' => 'Obliczana na podstawie daty ostatniego testu i częstotliwości testów. Ustaw częstotliwość, aby zaplanować ją automatycznie, lub pozostaw pole puste, aby ustawić tę datę samodzielnie.',
+    'DueStatus' => 'Status należny',
+    'AllResults' => 'Wszystkie wyniki',
+    // Remove a test from one control (Define Tests grid unlink row action)
+    'RemoveFromThisControl' => 'Usuń z tej kontroli',
+    'RemoveTestFromControl' => 'Usuń test z kontroli',
+    'RemoveTestFromControlConfirm' => 'Usunąć "{test_name}" z {control_name}?',
+    'RemoveTestFromControlStays' => 'Test pozostaje na {n} pozostałych kontrolkach. Nic nie jest usuwane.',
+    'RemoveTestFromControlStaysOne' => 'Test pozostaje na 1 innym elemencie sterującym. Nic nie jest usuwane.',
+    'CannotRemoveTestsOnlyControl' => 'Test musi należeć do co najmniej jednej kontroli. Zamiast tego wycofaj lub usuń test.',
+    'TestRemovedFromControl' => 'Test usunięto z kontroli.',
+    'CouldNotRemoveTestFromControl' => 'Testu nie udało się usunąć z kontroli.',
+    'TestRemovedFromControlAuditLogMessage' => 'Test „{$test_name}”(ID: {$test_id}) został usunięty z kontroli (ID: {$control_id}) przez użytkownika „{$user}”.',
+    'DeleteTestUsedByNControls' => 'Jest on używany przez kontrolki {n} i zostanie usunięty ze wszystkich z nich.',
+    'BulkDeleteSharedTestsNote' => '{n} z nich jest używanych przez inne kontrolki i zostanie z nich usunięte.',
+    'BulkRetireSharedTestsNote' => '{n} z nich jest używanych przez inne kontrolki i tam również zostaną wycofane.',
+    'BulkDeleteOneSharedTestNote' => 'Jeden z nich jest używany przez inne elementy sterujące i zostanie z nich usunięty.',
+    'BulkRetireOneSharedTestNote' => 'Jeden z nich jest używany przez inne elementy sterujące i tam również zostanie wycofany.',
+    'CouldNotLoadTest' => 'Nie można załadować tego testu.',
+    'Expand' => 'Zwiększać',
+    'SearchMappings' => 'Wyszukaj ramy i odniesienia',
+    'NoMatchingMappings' => 'Brak mapowań pasujących do tego wyszukiwania.',
+    'Insights' => 'Wgląd',
+    'ShowInsights' => 'Pokaż kafelki spostrzeżeń',
+    'HideInsights' => 'Zwiń kafelki spostrzeżeń do wiersza podsumowania',
+    'ChooseControls' => 'Wybierz elementy sterujące',
+    'UseTheseControls' => 'Użyj tych elementów sterujących',
+    'SearchControlsPlaceholder' => 'Szukaj według numeru lub nazwy',
+    'PickerKeyboardHint' => 'W górę/w dół, aby przesunąć, Enter, aby wybrać, Esc, aby anulować',
+    'NoControlsMatchFilters' => 'Nic tu nie pasuje. Poszerz krok po lewej stronie lub wyczyść wyszukiwanie.',
+    'NoControlsSelectedYet' => 'Jeszcze nic nie wybrano.',
+    'AllControls' => 'Wszystkie elementy sterujące',
+    'AddOrRemoveControls' => 'Dodaj lub usuń elementy sterujące…',
+    'LastTested' => 'Ostatnio testowane',
+    'LastTestDateAnchorHint' => 'Harmonogram interwałów kotwic (data plus częstotliwość). Po zarejestrowaniu wyników testu, siatka wyświetla datę najnowszego wyniku.',
+    'Filters' => 'Filtry',
+    'ShowFilters' => 'Pokaż filtry',
+    'HideFilters' => 'Ukryj filtry',
+
+    // App shell — collapsing sidebar / new base design (SR app-shell redesign)
+    'AI' => 'Sztuczna inteligencja',
+    'CollapseSidebar' => 'Zwiń pasek boczny',
+    'FooterCopyright' => '© %s SimpleRisk. Wszelkie prawa zastrzeżone.',
+    'ExpandSidebar' => 'Rozwiń pasek boczny',
+    'WorkflowsCloneConfirm' => 'Klonuj przepływ pracy \'{$name}\'?',
+    'WorkflowsDeleteConfirm' => 'Usunąć przepływ pracy „{$name}”? Tego nie można cofnąć.',
+    'WorkflowActionFailed' => 'Akcja nie powiodła się: {$msg}',
+    'ClickToDisable' => 'Kliknij, aby wyłączyć',
+    'ClickToEnable' => 'Kliknij, aby włączyć',
+    'ENABLED' => 'WŁĄCZONY',
+    'DISABLED' => 'WYŁĄCZONY',
+    'BackToWorkflows' => 'Powrót do przepływów pracy',
+    'BackToHistory' => 'Powrót do historii',
+    'NewWorkflow' => 'Nowy przepływ pracy',
+    'ViewSteps' => 'Wyświetl kroki',
+    'SaveWorkflow' => 'Zapisz przepływ pracy',
+    'WorkflowSavedSuccessfully' => 'Przepływ pracy został pomyślnie zapisany.',
+    'WorkflowNotFound' => 'Nie znaleziono przepływu pracy.',
+    'EditWorkflow' => 'Edytuj przepływ pracy: {$name}',
+    'OrganizationContextProfile' => 'Profil kontekstu organizacji',
+    'AICtxAutoAcceptThreshold' => 'Jaki jest próg automatycznej akceptacji ryzyka w Twojej organizacji (kwota lub procent ALE)?',
+    'AICtxGrcBudget' => 'Jaki jest Twój roczny budżet na GRC/bezpieczeństwo?',
+    'AICtxAuditorPerspective' => 'Z czyjej perspektywy jesteś głównie audytowany?',
+    'AICtxUnitCurrency' => 'Waluta ($)',
+    'AICtxUnitPercentOfAle' => 'Procent ALE (%)',
+    'AICtxFrameworksInUse' => 'Obecnie używane struktury',
+    'AICtxNoFrameworksInUse' => 'Nie znaleziono jeszcze aktywnych frameworków. Dodaj frameworki w obszarze Zarządzanie > Mapowanie frameworków.',
+    'AICtxFromYourData' => 'Z twoich danych',
+    'AICtxAuthoritative' => 'Autorytatywny',
+    'AICtxAppetiteNotSet' => 'Nie ustawiono',
+    'AICtxAppetiteManageLink' => 'Zarządzaj w konfiguracji ryzyka',
+    'AICapControlTestGeneration' => 'Generowanie testów kontrolnych',
+    'AICapControlTestGenerationDesc' => 'Przygotowuje testy kontroli do przeglądu, wykorzystując mapowanie struktury kontroli, istniejące testy i wyniki samooceny — nic nie zostanie utworzone bez Twojej zgody.',
+    'AICapSurfacedControlTestGeneration' => 'Zgodność — Zdefiniuj testy',
+    'AIControlTestGenUnavailable' => 'USŁUGA NIEDOSTĘPNA: Administrator musi włączyć tę funkcjonalność w ustawieniach AI.',
+    'AIControlTestGenInvalidId' => 'BŁĘDNE ŻĄDANIE: Wymagany jest pozytywny identyfikator kontroli.',
+    'AIControlTestGenNotFound' => 'NIE ZNALEZIONO: Nie można znaleźć określonego elementu sterującego.',
+    'AIControlTestGenConflict' => 'KONFLIKT: Generacja jest już w kolejce dla tej kontroli.',
+    'AIControlTestGenQueued' => 'ZAAKCEPTOWANO: Generowanie testów kontrolnych zostało umieszczone w kolejce.',
+    'AIControlTestGenFailed' => 'WEWNĘTRZNY BŁĄD SERWERA: Nie udało się dodać kolejki do generacji testów kontrolnych.',
+    'AIControlTestGenCheckFailed' => 'BŁĄD: Nie można zweryfikować kontrolki przed umieszczeniem jej w kolejce.',
+    'GenerateTestsWithAI' => 'Generuj testy za pomocą sztucznej inteligencji',
+    'ShowAiSuggestedTests' => 'Testy sugerowane przez sztuczną inteligencję',
+    'AiSuggested' => 'Zasugerowała sztuczna inteligencja',
+    'ReviewAndEdit' => 'Przejrzyj i edytuj',
+    'CreateSelected' => 'Utwórz wybrane',
+    'TestCreatedFromSuggestion' => 'Test utworzony na podstawie sugestii.',
+    'SuggestionDismissed' => 'Sugestia odrzucona.',
+    'TestGenerationQueued' => 'Generacja testów została ustawiona w kolejce.',
+    'Generating' => 'Generowanie…',
+    'SuggestionDismissFailed' => 'Test został utworzony, ale jego sugestia sztucznej inteligencji nie mogła zostać odrzucona. Jeśli nadal występuje, odrzuć ją ręcznie.',
+    'AICtxAuditorBig4' => 'Wielka Czwórka (zewnętrzna)',
+    'AICtxAuditorBoutique' => 'Butikowy / regionalny (zewnętrzny)',
+    'AICtxAuditorInternal' => 'Tylko audyt wewnętrzny',
+    'AICtxAuditorSelfAssessed' => 'Samoocena',
+    'AICtxAuditorNotSure' => 'Nie jestem pewien',
+    'AICtxAppetiteCautious' => 'Ostrożny',
+    'AICtxAppetiteBalanced' => 'Zrównoważony',
+    'AICtxAppetiteAggressive' => 'Agresywny',
+    'TestGenerationComplete' => 'Testy kontrolne opracowane przez sztuczną inteligencję są gotowe do przeglądu.',
+    'TestGenerationStillRunning' => 'Generowanie wersji testowych jest nadal w toku; wersje robocze pojawią się wkrótce.',
+    'TestGenerationNoNew' => 'Generacja zakończona — nie ma żadnych nowych sugestii dotyczących testów dla tej kontroli.',
+    'SearchEntities' => 'Wyszukaj jednostki',
+    'SearchEntitiesPlaceholder' => 'Wyszukaj ryzyka, kontrole, zasady, wyjątki…',
+    'ShowTypes' => 'Pokaż typy',
+    'Depth' => 'Głębokość',
+    'Inspector' => 'Inspektor',
+    'Connections' => 'Znajomości',
+    'NoConnectionsFound' => 'Nie znaleziono połączeń dla wybranej jednostki.',
+    'CouldNotLoadGraph' => 'Nie można załadować wykresu łączności.',
+    'CouldNotSearchEntities' => 'Nie można wyszukać jednostek.',
+    'ShowingTopNOfM' => 'Wyświetlanie najlepszych {0} z {1}',
+    'RankedByMaturityGap' => 'Posortowane według luki w dojrzałości',
+    'RankedByRiskScore' => 'Posortowane według wyniku ryzyka',
+    'RankedByRecentFailure' => 'Posortowane według ostatniej porażki',
+    'RankedByReviewDate' => 'Posortowane według daty następnej recenzji',
+    'RankedBySeverity' => 'Posortowane według stopnia ważności',
+    'RankedByName' => 'Posortowane według nazwy',
+    'NodeTypeSelfAssessmentResult' => 'Wynik samooceny',
+    'Relationship' => 'Relacja',
+    'Exception' => 'Wyjątek',
+    'DesiredMaturity' => 'Pożądana dojrzałość',
+    'ApprovalState' => 'Stan zatwierdzenia',
+    'RelationshipOfType' => '{0} z {1}',
+    // Connectivity Explorer Inspector: labels for enrichment field keys
+    // (ai_context_enrich_fetch(), ai_context_enrich_vulnerabilities()) that
+    // fieldLabel() in connectivity-visualizer.js did not yet cover.
+    'LastDate' => 'Ostatnia data',
+    'LastResultDate' => 'Data ostatniego wyniku',
+    'PercentComplete' => 'Procent ukończenia',
+    'AssessmentDate' => 'Data oceny',
+    'NextDate' => 'Następna data',
+    'Number' => 'Numer',
+    'Grouping' => 'Grupowanie',
+    'Hidden' => 'Ukryty',
+    'FirstFound' => 'Pierwsze znalezione',
+    'LastFound' => 'Ostatnio znaleziono',
+    'Patchable' => 'Możliwość łatania',
+    'Solution' => 'Rozwiązanie',
+    'Breadcrumb' => 'Ścieżka nawigacyjna',
+    'SelectANodeToInspect' => 'Wybierz węzeł, aby wyświetlić jego szczegóły.',
+    'HiddenUnreachableNodes' => '{0} ukryty(e) węzeł(y): nie są już połączone bez ukrytego typu(ów).',
+    // Connectivity Explorer canvas launchpad (Level-1 type tiles / Level-2
+    // browsable entity list) -- docs/superpowers/specs/2026-07-27-
+    // connectivity-explorer-launchpad.md
+    'BrowsableEntityTypes' => 'Przeglądalne typy jednostek',
+    'CountFloor' => '{0}+',
+    'NoBrowsableTypes' => 'Nie masz uprawnień do przeglądania żadnego typu jednostki.',
+    'AllTypes' => 'Wszystkie typy',
+    'FilterEntitiesPlaceholder' => 'Filtr…',
+    'NoMatchingEntities' => 'Żaden element nie spełnia kryteriów filtra.',
+    'LoadMore' => 'Załaduj więcej',
+    'Loading' => 'Ładowanie…',
+    'CouldNotLoadEntityCounts' => 'Nie można załadować liczby jednostek.',
+    'CouldNotLoadEntities' => 'Nie można załadować jednostek.',
+    'ClearGraph' => 'Wyczyść wykres',
+    // Connectivity Explorer node-type chip label for the 'audit' type. Not
+    // reused from 'TeamType_audit' (same English text, "Audit") -- that key
+    // is scoped to the Team Separation team-type picker, a different feature
+    // whose wording should be free to diverge from this one's.
+    'Audit' => 'Audyt',
+    // Queued email send-failure notifications
+    'EmailSendFailedNotificationTitle' => 'Nie udało się dostarczyć wiadomości e-mail',
+    'EmailSendFailedNotificationBody' => 'Nie udało się dostarczyć co najmniej jednej wiadomości e-mail z kolejki. Sprawdź ustawienia poczty, a następnie zapoznaj się ze szczegółami w Monitorze Kolejki i dzienniku serwera.',
+    'QuestionnaireShareInvalidEmailAddress' => 'Nie można udostępnić wyników ankiety kontaktowi, który nie ma prawidłowego adresu e-mail.',
+    'AssessmentSendInvalidEmailAddress' => 'Nie można wysłać oceny na nieprawidłowy adres e-mail.',
+    'AssessmentSentTo' => 'Ocenę wysłano do „{$email}”.',
+    'AssessmentNotSentNoValidRecipients' => 'Ocena nie została wysłana — nie podano prawidłowego adresu e-mail.',
+    'AssessmentContactUnusableEmailNotificationTitle' => 'Kwestionariusz nie został wysłany',
+    'AssessmentContactUnusableEmailNotificationBody' => 'Nie udało się wysłać kwestionariusza „{$questionnaire}” do „{$contact}”, ponieważ ten kontakt nie ma prawidłowego adresu e-mail w swoich danych. Zaktualizuj rekord kontaktu, aby wznowić wysyłanie.',
+    'EmailFailureNotificationRetention' => 'Przechowywanie powiadomień o nieudanym dostarczeniu wiadomości e-mail',
+    'EmailFailureNotificationRetentionOutOfRange' => 'Czas przechowywania powiadomień o niedostarczeniu wiadomości e-mail musi wynosić od {$min} do {$max} dni.',
+    'MailSettingsUpdatedSuccessfully' => 'Ustawienia poczty zostały pomyślnie zaktualizowane.',
+    // Questionnaire audit-trail entries for the API submit/draft paths (SR-1714).
+    // The token form credits the contact; an API caller is an authenticated
+    // SimpleRisk user acting on that contact's questionnaire, so both the
+    // contact and the acting user are named.
+    'QuestionnaireCompletedAuditLogViaApi' => 'Ankieta „{$questionnaire_name}” dla kontaktu „{$contact_name}” została wypełniona za pośrednictwem interfejsu API przez użytkownika „{$user_name}”.',
+    'QuestionnaireDraftAuditLogViaApi' => 'Kwestionariusz „{$questionnaire_name}” dla kontaktu „{$contact_name}” został zapisany jako wersja robocza za pośrednictwem interfejsu API przez użytkownika „{$user_name}”.',
+    // Bad-input response for the questionnaire risk-list endpoints, which
+    // previously reported a malformed questionnaire_id as a permission denial.
+    // Mirrors the existing 'MissingOrInvalidTrackingID'.
+    'MissingOrInvalidQuestionnaireID' => 'Brakujący lub nieprawidłowy identyfikator kwestionariusza.',
+    // POST /api/v2/assessments/questionnaire/result/file response messages.
+    // The `id` path deliberately returns QuestionIdCannotAcceptFile for every
+    // question-level rejection so a sequential tracking id cannot be used to
+    // probe questionnaire structure; the token path returns the specific reason.
+    'QuestionnaireResultNotFoundForTokenOrId' => 'NIE ZNALEZIONO: Nie można znaleźć wyniku ankiety o podanym tokenie lub identyfikatorze',
+    'QuestionIdCannotAcceptFile' => 'BŁĘDNE ŻĄDANIE: question_id {$question_id} nie może zaakceptować pliku z wynikami tego kwestionariusza',
+    'QuestionIdNotFoundInQuestionnaire' => 'BŁĘDNE ŻĄDANIE: question_id {$question_id} nie zostało znalezione w tym kwestionariuszu',
+    'QuestionIdInMultipleTemplates' => 'BŁĘDNE ŻĄDANIE: question_id {$question_id} pojawia się w wielu szablonach dla tego kwestionariusza',
+    'QuestionIdDoesNotAcceptFileUploads' => 'BŁĘDNE ŻĄDANIE: question_id {$question_id} nie akceptuje przesyłania plików',
+    // The Statement of Applicability's two UNVERIFIED implementation states.
+    //
+    // They exist because "we have not checked" is not "it does not work", and an
+    // SoA is ATTESTED — printing "No" for an unverified control is a false
+    // statement against yourself, exactly as printing "Yes" without evidence is
+    // a false statement the other way. Before these keys existed both states
+    // fell through to 'No', which on a framework where most controls carry no
+    // test meant the whole document read "not implemented".
+    //
+    // They are two states rather than one because they are different findings
+    // with different owners: no test defined is a GOVERNANCE gap (nobody decided
+    // how to verify this control), never run is an OPERATIONAL one (somebody
+    // decided, and it was not done).
+    //
+    // WORDING. Both must be unmistakably distinct from the bare 'No' in the same
+    // column. 'Tests never run' rather than 'Never run': in a column headed
+    // "Implemented", the bare phrase reads for a moment as though the CONTROL
+    // was never run, when the subject is its tests.
+    //
+    // BOTH ARE PLURAL, and that is not only style. English takes the plural
+    // after "no" when the expected quantity could exceed one ("no results
+    // found"), and a control normally carries several tests — the singular
+    // implies only ever one was expected. 'Tests never run' is the stronger
+    // case: soa_implemented_for() returns `never_run` only when NOT ONE of the
+    // control's tests has produced a verdict, so the state is inherently about
+    // the whole set. With four tests defined and none run, the singular reads as
+    // one omission rather than a wholesale one.
+    'SoaImplementedNoTestDefined' => 'Nie zdefiniowano testów',
+    'SoaImplementedNeverRun' => 'Testy nigdy nie są uruchamiane',
+
+    // The Implemented column's fallback for a token neither sink recognizes.
+    //
+    // DELIBERATELY NOT A VERDICT, and the reason this key exists at all. Both
+    // sinks previously ended in a fallthrough to 'No', so adding a state without
+    // adding its label printed a confident, wrong answer into a compliance
+    // document. Falling through to 'Yes' would be worse. The only safe failure
+    // mode is a value that states nothing about the control — a visible bug
+    // instead of a silent misstatement.
+    'SoaImplementedUnknown' => 'Status niedostępny',
+    // How an APPLICABLE control's stored inclusion reason(s) join to its own
+    // freeform justification when it recorded both (spec §4). Reached ONLY when
+    // both halves exist — reasons alone print as the reason list, prose alone
+    // prints verbatim — so this string is punctuation and word order, not prose.
+    // It is a language key rather than a hardcoded separator because a locale
+    // that joins clauses with a colon, a full stop, or right-to-left ordering
+    // must be able to say so; both placeholders have to survive translation.
+    'SoaJustifiedByInclusionReasons' => '{reasons} — {narrative}',
+    // The Set applicability modal's reason field, which became a MULTI-select
+    // when reasons moved to a join table: a control is commonly included (or
+    // excluded) for more than one reason, and the singular 'Reason' the field
+    // used to reuse now under-describes it. 'Reason' is left alone rather than
+    // repointed -- the row drawer and the SoA still print exactly one joined
+    // value under it, and redefining a key changes every surface that reads it.
+    'ApplicabilityReasons' => 'Powody',
+    // Said once, above a group of checkboxes, rather than implied by the widget.
+    // The old single <select> answered "how many may I pick?" by construction;
+    // a checkbox group does not, and a user who ticks one and stops has made the
+    // SoA less truthful than the one they meant to write.
+    'ApplicabilityReasonsHint' => 'Wybierz wszystkie pasujące powody.',
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // THE STATEMENT OF APPLICABILITY'S MARKERS AND ITS LEGEND (spec §1, §3).
+    // ─────────────────────────────────────────────────────────────────────────
+
+    // THE EVIDENCE COLUMN'S TWO ABSENCES, which are OPPOSITES.
+    //
+    // 'No evidence linked' is a FINDING: the control is in scope, is possibly
+    // claimed implemented, and nothing substantiates it. The em dash below is
+    // the other answer -- the control is excluded, so no evidence is expected
+    // and the absence is correct. Rendering both as an empty cell hides the
+    // first, which is the one an auditor circles.
+    'SoaNoEvidenceLinked' => 'Brak dowodów powiązanych',
+    // PUNCTUATION, NOT PROSE -- the glyph the Evidence cell prints when nothing
+    // is expected. A language key rather than a hardcoded character for the same
+    // reason 'SoaJustifiedByInclusionReasons' is one: a locale that marks "not
+    // applicable" with a different dash, or with a word, must be able to say so.
+    'SoaEvidenceNotExpected' => '—',
+    // Whether the evidence a test DECLARED it requires actually arrived with the
+    // result. A stronger claim than a pass/fail alone, and few SoA tools make it.
+
+    // THE REMEDIATION BLOCK -- what is being done about a control that reads
+    // Partial or No. The SoA points AT the risk treatment plan (clause 6.1.3(e))
+    // rather than becoming one.
+    'SoaRemediation' => 'Remediacja',
+    // THE MOST SERIOUS THING THAT BLOCK CAN FIND: the test failed and it is
+    // linked to no risk, so no treatment plan traces back to it. Dropping such a
+    // row for want of a risk to join to would render it as a blank cell, which
+    // reads as "nothing to report".
+    'SoaRemediationUnplanned' => 'Brak ryzyka związanego',
+
+    // THE LEGEND. Required in both variants and every export format, because six
+    // implementation states plus three markers is more nuanced than the
+    // Yes/No/Partial an auditor expects, and an undefined vocabulary invites the
+    // reader to guess unfavourably.
+    'SoaLegendTitle' => 'Jak czytać to oświadczenie',
+    'SoaLegendYes' => 'Wszystkie testy zdefiniowane dla tej kontrolki zakończyły się pomyślnie podczas jej ostatniego uruchomienia.',
+    'SoaLegendPartial' => 'Wyniki testów kontrolnych były różne: co najmniej jeden przeszedł pomyślnie, a co najmniej jeden zakończył się niepowodzeniem lub nie dał żadnego werdyktu.',
+    'SoaLegendNo' => 'Podczas ostatniego uruchomienia żaden z testów tego elementu sterującego nie przeszedł pomyślnie, a co najmniej jeden zakończył się niepowodzeniem.',
+    // The two unverified states are DIFFERENT FINDINGS WITH DIFFERENT OWNERS,
+    // and the labels alone do not quite carry that -- so the legend spells it
+    // out. This is the distinction the whole six-state set exists for.
+    'SoaLegendNoTestDefined' => 'Nie zdefiniowano żadnego testu dla tej kontrolki, więc jej działanie nigdy nie zostało zweryfikowane. Nie jest to stwierdzenie, że kontrolka jest nieobecna lub że działa nieprawidłowo – tylko że to stwierdzenie tego nie dowodzi. Luka w zarządzaniu: nikt nie zdecydował, jak ta kontrolka jest sprawdzana.',
+    'SoaLegendNeverRun' => 'Istnieją testy dla tego mechanizmu, ale żaden z nich nigdy nie został przeprowadzony, dlatego jego działanie nie jest tutaj demonstrowane. Nie oznacza to, że mechanizm jest nieobecny lub wadliwy. Luka operacyjna: kontrole zostały ustalone, ale nie zostały przeprowadzone.',
+    'SoaLegendNotApplicable' => 'Kontrola ta jest wyłączona z zakresu tych ram, dlatego nie ma statusu wdrożenia.',
+    // The one most in need of explaining: with nothing to define it, this reads
+    // as an admission about the control rather than as what it is.
+    'SoaLegendUnknown' => 'SimpleRisk nie mógł oznaczyć zarejestrowanego statusu, więc implementacja nie została tutaj zaprezentowana. Jest to wada oprogramowania i nic nie mówi o kontrolce – ani o tym, że działa, ani o tym, że nie działa.',
+    'SoaLegendOverdue' => 'Wynik nadal jest aktualny, ale co najmniej jeden z testów, na podstawie których się opiera, przekroczył już termin kolejnego testu. Dowody są nieaktualne.',
+    'SoaLegendNoEvidence' => 'Kontrola jest objęta zakresem kontroli, ale nie ma żadnych dowodów na jej poparcie: nie ma żadnego potwierdzonego dokumentu ani testu, który dałby wynik.',
+    'SoaLegendEvidenceNotExpected' => 'Nie oczekuje się żadnych dowodów, ponieważ kontrola jest wyłączona z zakresu.',
+    'SoaLegendUnplanned' => 'Niepowodzenie testu, który nie niesie ze sobą żadnego ryzyka, więc nie ma na niego żadnego wpływu żaden plan leczenia.',
+
+    // THE TWO VARIANTS, chosen on the launcher before the document is generated
+    // and PRINTED ON ITS COVER. A Statement of Applicability is a controlled
+    // document: two of them for the same framework that show different things,
+    // with nothing on either to say which is which, is a document nobody can
+    // file.
+
+    // THE THREE DETAILED-ONLY COLUMNS.
+    // What those three columns say instead of nothing. A blank cell in an audit
+    // document reads as a formatting artefact; "Not recorded" is a fact the
+    // reader can act on.
+
+    // THE BROWSER PRINT ROUTE. Beside the two downloads on the launcher, and the
+    // only PDF route for a framework too large for the server-side writer.
+    // Shown in place of "Download as PDF" when the chosen framework is above
+    // SOA_EXPORT_PDF_MAX_CONTROLS. The affordance is absent rather than
+    // disabled, so this sentence is what tells the reader the absence is
+    // deliberate and what to do instead.
+    // The footer of every printed page. {page} and {pages} are substituted with
+    // the browser's own page counters, so the two tokens must both survive
+    // translation -- but their ORDER and the words around them are the
+    // translator's, which is why this is one string and not "Page" + "of".
+    'SoaPrintPageNumber' => 'Strona {page} z {pages}',
+
+    // THE ONE PDF AFFORDANCE on the statement-of-applicability launcher, beside
+    // 'DownloadAsXLSX'. It replaces the pair that used to sit there --
+    // 'SoaPrintToPdf' and 'DownloadAsPDF' -- because a Statement of Applicability
+    // is a controlled document and two PDF buttons let two people hand an auditor
+    // two different-looking PDFs of the same statement.
+    //
+    // JUST "PDF", AND DELIBERATELY SO. Below SOA_EXPORT_PDF_MAX_CONTROLS the
+    // button downloads a server-rendered file and above it the browser writes
+    // one, but that is a mechanism and not a choice the reader has to make. A
+    // label that named the mechanism ("Print to PDF" / "Download as PDF") would
+    // put the difference back in front of them.
+    //
+    // 'SoaPrintToPdf' and 'SoaPdfTooLargeHint' above are LEFT IN PLACE with no
+    // caller: 39 locales carry them, and this file is append-only precisely so a
+    // customer running a custom lang.<locale>.php can reconcile it with a tail
+    // diff.
+    'SoaPdf' => 'PDF',
+
+    // THE OTHER TWO ACTIONS IN THAT SAME ROW, shortened to match it.
+    //
+    // The row read "Open in browser" / "Download as XLSX" / "PDF", which put a
+    // verb on two of three actions and made the odd one out look like an
+    // abbreviation of something longer. The row's own context supplies the
+    // verbs -- these are the things you can DO with the framework you just
+    // chose -- so they carried no information and cost the reader a comparison.
+    // 'SoaPdf' is short because naming its mechanism would be dishonest (above
+    // SOA_EXPORT_PDF_MAX_CONTROLS it opens a print view rather than downloading
+    // a file), and the shortest of the three is the one that has to be right.
+    //
+    // NOT the generic 'Open' at line ~1021: that key lives among 'Mitigated' /
+    // 'Reviewed' and is the risk-status ADJECTIVE -- fr "Ouvert", de "Offen" --
+    // so reusing it would label a button with a state rather than an action in
+    // most of the 39 locales.
+    //
+    // 'SoaOpenInBrowser' above is LEFT IN PLACE with no caller, for the same
+    // reason 'SoaPrintToPdf' is: the locales carry it and this file is
+    // append-only so a customer's custom lang.<locale>.php reconciles with a
+    // tail diff. 'DownloadAsXLSX' keeps a caller either way -- the Assessments
+    // Extra's questionnaire results still use it.
+    'SoaOpen' => 'Otwórz',
+    'SoaXlsx' => 'XLSX',
+    // ---- The locked-affordance treatment -------------------------------------
+    // SHARED COPY, not chooser copy. SimpleRisk now SHOWS what's possible and
+    // MARKS what's out of reach because it isn't licensed, rather than hiding
+    // it -- so these strings appear both as a menu row's explanation (Define
+    // Control Frameworks' "+ Add framework" chooser) and beside a disabled
+    // toolbar button (the Statement of Applicability's PDF/XLSX exports). Each
+    // one is worded to read correctly in BOTH places, which is why none of them
+    // starts with "This route" or "This button".
+    //
+    // 'LockedAffordanceBadge' duplicates the English of 'AICapStateLocked'
+    // rather than reusing it: that key sits in the AI Capabilities Catalog's
+    // block and is scoped to a capability's state, and translators work from
+    // the key's neighbourhood as much as from its value.
+    'LockedAffordanceBadge' => 'Zamknięty',
+    // The two SCF steps before it can be switched on. admin/register.php serves
+    // both -- it is the registration form AND where the per-Extra download
+    // buttons render -- so these differ in what they say, not where they go.
+    'UnlockRegisterInstanceNote' => 'Zarejestruj tę instancję, aby uzyskać Secure Controls Framework.',
+    'UnlockRegisterInstanceLink' => 'Zarejestrować SimpleRisk',
+    'UnlockDownloadScfNote' => 'Ta instancja jest zarejestrowana. Pobierz Secure Controls Framework, aby z niej skorzystać.',
+    'UnlockDownloadScfLink' => 'Pobierz to',
+    'UnlockActivateScfNote' => 'Secure Controls Framework został pobrany, ale nie jest włączony.',
+    'UnlockActivateScfLink' => 'Włącz to',
+    // Import-Export is a paid Extra, so "not installed" is an upsell rather
+    // than a registration prompt. Deliberately a bare capability sentence: it
+    // has to sit under a menu row and next to an export button equally well.
+    'RequiresImportExportExtra' => 'Wymagana jest opcja Import-Eksport Extra.',
+    'UnlockImportExportLink' => 'Zobacz, co dodaje',
+    'UnlockActivateImportExportNote' => 'Moduł Import-Export Extra jest zainstalowany, ale nie jest włączony.',
+    'UnlockActivateImportExportLink' => 'Włącz to',
+    // Shown instead of any of the above to a user who is not an administrator:
+    // every unlock step lives on a check_admin page, so they get the half that
+    // is useful to them -- that the capability exists, and who to ask -- and no
+    // link that would only bounce them.
+    'UnlockNeedsAdministrator' => 'Administrator może to skonfigurować.',
+    // API date parsing. {$field} is the request field name (next_date, last_date,
+    // test_date); {$format} is this instance's configured display date format.
+    'InvalidSubmittedDate' => 'Wartość {$field} nie jest prawidłową datą. Prześlij ją w formacie RRRR-MM-DD lub w tym formacie daty ({$format}).',
+    // Companion to InvalidSubmittedDate, for a value that matches the expected
+    // shape but names a day that does not exist (February 31st, month 13).
+    // Saying "submit it as MM/DD/YYYY" there would repeat what the caller did.
+    // {$value} is the submitted value, echoed back truncated.
+    'ImpossibleSubmittedDate' => 'Wartość {$field} „{$value}” nie jest prawdziwą datą kalendarzową. Sprawdź dzień i miesiąc — w tym przypadku daty są odczytywane jako {$format}.',
+    // The Statement of Applicability's merged verification column. Replaces three
+    // separate headings (Implemented / Evidence / Review Cadence) with the one
+    // question all three answer: how do we know this control is working?
+    // The two appendices printed after the register. Justifications are truncated
+    // in the row and given in full here; remediation plans live here rather than
+    // in the table because ISO 27001 keeps the SoA (6.1.3(d)) and the risk
+    // treatment plan (6.1.3(e)) as separate artifacts.
+    'SoaAppendixJustifications' => 'Załącznik A — Uzasadnienia',
+    'SoaAppendixRemediation' => 'Załącznik R — Plany naprawcze',
+    // Appendix E carries the WORDING of each test's evidence requirement. The row
+    // keeps only whether that evidence arrived, which is the finding; the wording
+    // is reference material and was the bulkiest thing in the Verification cell.
+    'SoaRequiredEvidenceSupplied' => 'wymagane dowody dostarczone',
+    'SoaRequiredEvidenceNotSupplied' => 'wymagane dowody nie zostały dostarczone',
+    // The one scheduling fact the SoA prints: the soonest date any of a control's
+    // tests is next due. Replaces a per-test "Manual — Next Test Date: ..." line,
+    // whose schedule type belongs on Define Tests and whose date is now on each
+    // test's own evidence bullet.
+    // The two dates on a test's evidence bullet. LABELLED, because two bare dates
+    // side by side are ambiguous in a way one is not.
+    // SINGULAR document-type labels for one piece of design evidence. SimpleRisk's
+    // existing keys are the plural tab names, which would read "Access Control
+    // Standard (Standards)".
+    'SoaEvidencePolicy' => 'Zasad',
+    'SoaEvidenceStandard' => 'Standard',
+    'SoaEvidenceProcedure' => 'Procedura',
+    'SoaEvidenceGuideline' => 'Wytyczne',
+    // ── The legend, grouped by column (SOA_LEGEND_GROUPS, includes/soa.php) ──
+    // The Applicability column's three values. These were never in the legend,
+    // so an auditor met "Inherited" -- a word with no meaning outside SimpleRisk
+    // -- with nothing to look it up in.
+    'SoaLegendApplicable' => 'Kontrola mieści się w zakresie tych ram, a organizacja jest odpowiedzialna za jej obsługę.',
+    // DISTINCT from 'SoaLegendNotApplicable', which defines the "N/A" that appears
+    // in the Implementation Status column. This one is the DECISION to exclude;
+    // that one is the consequence for the status.
+    'SoaLegendApplicabilityNotApplicable' => 'Kontrola została wyłączona z zakresu tych ram. Kolumna uzasadnienia zawiera informacje o powodach i osobach, które podjęły taką decyzję.',
+    'SoaLegendInherited' => 'Kontrola jest objęta zakresem, ale jest obsługiwana przez podmiot zewnętrzny – dostawcę usług w chmurze, organizację nadrzędną, funkcję outsourcingową – a nie przez tę organizację. Dostawca jest wymieniony obok uzasadnienia.',
+    // The Evidence column's four bullet glyphs. Load-bearing since the visible
+    // result word was dropped from pass and fail bullets, and until now defined
+    // nowhere at all.
+    'SoaLegendEvidencePass' => 'Test tego sterowania zarejestrował przebieg podczas ostatniego uruchomienia. Data obok wskazuje datę uruchomienia.',
+    'SoaLegendEvidenceFail' => 'Test tego sterowania zakończył się niepowodzeniem podczas ostatniego uruchomienia. Załącznik R zawiera plan leczenia, jeśli taki istnieje.',
+    'SoaLegendEvidenceInconclusive' => 'Przeprowadzono test tej kontroli, ale nie przyniósł on żadnego werdyktu. Ten sam znak jest używany dla wyniku, którego ten dokument nie rozpoznaje, i w takim przypadku sam wynik jest drukowany obok niego.',
+    // The TERM beside the § glyph. Not a document type -- the four types
+    // (Policy, Standard, Procedure, Guideline) are printed per item; this names
+    // the CATEGORY of evidence a document is.
+    'SoaEvidenceDesignDocument' => 'Dokument projektowy',
+    'SoaLegendEvidenceDocument' => 'Dokument dotyczący zarządzania stanowi dowód istnienia tej kontroli – jej projektu, a nie działania. Dokument nie zawiera werdyktu, dlatego nie jest oznaczony ptaszkiem.',
+    // The XLSX export's first worksheet tab. The workbook's other four tabs reuse
+    // headings that already exist ('How to read this statement', 'Statement of
+    // Applicability', and the two appendix headings); the cover had no name of its
+    // own because it used to be the top of a single sheet.
+    //
+    // KEEP IT SHORT. Excel caps a worksheet name at 31 characters and
+    // soa_export_sheet_name() truncates rather than failing the export, so a long
+    // translation loses its tail on the tab.
+    'SoaSheetCover' => 'Okładka',
+
+    'SearchFrameworks' => 'Ramki wyszukiwania',
+    'SearchControls' => 'Kontrola wyszukiwania',
+    'AddFramework' => 'Dodaj framework',
+    'Applicability' => 'Stosowalność',
+    'AnyFamily' => 'Jakakolwiek rodzina',
+    'AnyOwner' => 'Każdy właściciel',
+    'AnyClass' => 'Dowolna klasa',
+    'AnyPhase' => 'Jakakolwiek faza',
+    'AnyPriority' => 'Jakikolwiek priorytet',
+    'AnyType' => 'Dowolny typ',
+    'AnyStatus' => 'Jakikolwiek status',
+    'SelectAllN' => 'Zaznacz wszystko {n}',
+    'Classification' => 'Klasyfikacja',
+    'Placement' => 'Umieszczenie',
+    'OwnershipAndMaturity' => 'Własność i dojrzałość',
+    'MappingsAndGuidance' => 'Mapowania i wskazówki',
+    'DeleteFrameworkTitle' => 'Usunąć strukturę \'{$name}\'?',
+    'DeleteControlTitle' => 'Usunąć kontrolkę \'{$name}\'?',
+    'DeleteControlsTitle' => 'Usunąć elementy sterujące {$n}?',
+    'DeleteCannotBeUndone' => 'Tego nie da się cofnąć.',
+    'DeleteFrameworkConsequence' => 'Spowoduje to usunięcie struktury i wszystkich mapowań kontrolnych.',
+    'DeleteControlConsequence' => 'Usuwa to kontrolę ze wszystkich struktur, do których jest zamapowany.',
+    'DeleteControlsConsequence' => 'Spowoduje to usunięcie każdego wybranego elementu sterującego z każdego frameworka, do którego jest on zamapowany.',
+    // Task 9: empty states (design-system.md §10) -- the four intents on
+    // Define Control Frameworks. Reuses existing keys where the copy already
+    // fits exactly (AddControl, AddFramework, ClearFilters, Retry,
+    // NoControlsDefinedYet, NoTestsMatchFiltersBody, CouldNotLoadTestsBody,
+    // RegisterYourInstance, GoToSCF, ImportExportExtra) -- only the strings
+    // with no existing match are added below.
+    'NoControlsMatch' => 'Brak elementów sterujących pasujących do Twoich filtrów',
+    'CouldNotLoadControls' => 'Nie udało się załadować elementów sterujących',
+    'ControlsYouAddWillAppearHere' => 'Dodane przez Ciebie kontrolki pojawią się tutaj.',
+    'NoFrameworksYet' => 'Brak jeszcze frameworków',
+    'FrameworksYouAddWillAppearHere' => 'Tutaj pojawią się dodane lub zaimportowane struktury.',
+    'CouldNotLoadFrameworks' => 'Nie udało się załadować frameworków',
+    // Task 9 review fix: the framework rail's own "no results" intent, shown
+    // when the user has explicitly switched the status dropdown away from
+    // Active and that status has nothing (distinct from "No frameworks yet",
+    // which is reserved for the default Active status where the endpoint
+    // can't yet tell "no frameworks at all" from "none active").
+    'NoFrameworksMatchFilter' => 'Brak struktur o tym statusie',
+    'ViewActiveFrameworks' => 'Wyświetl aktywne struktury',
+    // Task 10: Define Control Frameworks insights band (governance/index.php)
+    // -- KPI tile labels/subtitles. 'Controls', 'Pass', 'Fail', 'NotTested'
+    // already exist and are reused as label keys for their tiles.
+    'BelowTarget' => 'Poniżej celu',
+    'Excluded' => 'Wyłączony',
+    'FwInScope' => 'W zakresie',
+    'FwLastTestPassed' => 'Ostatni test zaliczony',
+    'FwLastTestFailed' => 'Ostatni test nie powiódł się',
+    'FwNoEvidence' => 'Dotyczy, brak dowodów',
+    'FwMaturityUnderDesired' => 'Dojrzałość poniżej pożądanej',
+    'FwScopeAFramework' => 'Określ zakres ram, aby podjąć decyzję',
+    'FwNotApplicableOrInherited' => 'Nie dotyczy i nie jest dziedziczone',
+    // Task 22: framework rail search (governance/index.php's #sr-fw-search,
+    // wired client-side in governance-frameworks.js). Reuses the shipped
+    // "no results" empty-state tile (#sr-fw-filtered, Task 9) rather than
+    // inventing a fourth rail empty state -- only the title and action swap
+    // depending on whether a status filter or a search narrowed the list to
+    // nothing; NoTestsMatchFiltersBody already covers both as body copy.
+    'NoFrameworksMatchSearch' => 'Brak frameworków odpowiadających Twojemu wyszukiwaniu',
+    'ClearSearch' => 'Wyczyść wyszukiwanie',
+    // Task 24: Clone control pre-fills the Add Control modal from the source
+    // control (governance-frameworks.js's openControlForClone()) rather than
+    // creating a duplicate outright, so the modal needs to say plainly which
+    // control it was cloned from -- the reviewer's core complaint about an
+    // earlier one-click version of this feature was not knowing what was
+    // cloned. {$name} follows the same client-side formatTemplate()
+    // substitution ShowingXToYOfZ/NSelected already use on this page.
+    'ClonedFromControlNotice' => 'Sklonowano z „{$name}”. Sprawdź poniższe pola, a następnie zapisz.',
+    // Task 24 review follow-up: the banner alone left the modal titled "New
+    // Control" over pre-populated fields -- "it doesn't prompt or anything
+    // so the user doesn't know what was cloned" (Josh) -- which reads as a
+    // bug, not a feature. Retitling #control--add-title to this (governance-
+    // frameworks.js's show.bs.modal delegate for #control--add) makes the
+    // clone unambiguous at a glance; NewControl is restored for a plain add.
+    'CloneOfControlTitle' => 'Klon "{$name}"',
+    // Task 27: the framework rail's SCF-origin chip (governance-frameworks.js's
+    // railRow()) -- shown only for frameworks created via the ComplianceForge
+    // SCF Extra's authoritative-source import (get_scf_origin_framework_ids(),
+    // includes/governance.php). SCF is the badge text itself; ScfOriginHint is
+    // its title/tooltip.
+    'SCF' => 'SCF',
+    'ScfOriginHint' => 'Z Secure Controls Framework (SCF)',
+    // Task 34: the Maturity filter facet's placeholder on the Define Control
+    // Frameworks filter sheet (governance-frameworks.js's ensureFilterSheet()),
+    // matching the AnyFamily/AnyOwner/AnyClass/... set above. The facet's three
+    // OPTIONS reuse the existing BelowMaturity/AtMaturity/AboveMaturity keys --
+    // the same labels the governance dashboard's maturity-gap widgets already
+    // carry -- and the column chip renders those same three strings, so the
+    // filter and the cell can never read differently.
+    'AnyMaturity' => 'Dowolna dojrzałość',
+    // Task 46: accessible name for the control table's pager landmark
+    // (governance-frameworks.js's renderPager()). The pager's own buttons
+    // reuse the existing Previous/Next keys Define Tests' pager already
+    // carries; only the <nav> label is new, and it names WHICH table's pager
+    // it is because the Define Control Frameworks page has two lists on it.
+    'ControlsPagination' => 'Kontroluje paginację',
+    // Task 14: the Applicability column's state chip (governance-frameworks.js's
+    // renderApplicability()), the matching filter facet (its three option labels
+    // reuse these same three keys) and its "Any applicability" placeholder.
+    //
+    // The three states are PREFIXED rather than named 'Applicable'/
+    // 'NotApplicable'/'Inherited' because 'NotApplicable' already exists above
+    // as the ABBREVIATION 'N/A' -- the self-assessment answer chip and three
+    // reporting charts render it -- and redefining that key to the spelled-out
+    // phrase this column needs would silently change all four of those
+    // surfaces. The prefix also keeps the trio recognisable as one family.
+    //
+    // The column HEADER and the facet's accessible name reuse the existing
+    // 'Applicability' key, and the drawer's record reuses 'Reason', 'Provider'
+    // and 'Justification' -- all four already carry exactly the right string.
+    'ApplicabilityApplicable' => 'Odpowiedni',
+    'ApplicabilityNotApplicable' => 'Nie dotyczy',
+    'ApplicabilityInherited' => 'Dziedziczny',
+    'AnyApplicability' => 'Jakakolwiek stosowalność',
+    // The drawer's applicability record: who recorded the decision and when.
+    // Both are attribution for an audited decision a customer may have to
+    // defend years later, which is why the drawer names them at all.
+    'ApplicabilityDecidedBy' => 'Zdecydowano przez',
+    'ApplicabilityDecidedOn' => 'Zdecydowano się na',
+    // The framework-level Statement of Applicability card in the Add/Edit
+    // framework modals (display_framework_soa_card(), includes/governance.php).
+    // These two fields are what ISO/IEC 27001:2022 clause 6.1.3(d) needs on an
+    // SoA cover: the scope the framework is certified against, and how inclusion
+    // was determined for the controls that are simply applicable.
+    //
+    // 'IsmsScopeStatement' rather than a bare 'ScopeStatement' because "scope"
+    // is already overloaded across SimpleRisk (assessment scope, audit scope,
+    // risk scope); the ISMS prefix is what an ISO practitioner calls this exact
+    // field and keeps it from being reused for an unrelated one.
+    'StatementOfApplicability' => 'Oświadczenie o stosowalności',
+    'IsmsScopeStatement' => 'Oświadczenie o zakresie',
+    'IsmsScopeStatementHint' => 'Zakres, w ramach którego certyfikowano te ramy. Znajduje się na stronie tytułowej SoA.',
+    'DefaultInclusionJustification' => 'Domyślne uzasadnienie włączenia',
+    'DefaultInclusionJustificationHint' => 'Używane w przypadku odpowiednich elementów sterujących bez powiązanych ryzyk. Podaj nazwę sterownika, a nie frameworka.',
+    // THE DEFAULT SENTENCE, in all three of its roles: the create form seeds the
+    // textarea with it, the Edit form shows it as a placeholder, and
+    // soa_framework_default_justification() (includes/soa.php) substitutes it at
+    // read time for a framework that has none. One key, because a reader must not
+    // be able to tell a stored default from a fallen-back one, and because three
+    // keys holding the same sentence is three chances for a translator to make
+    // them disagree. The name predates the seeding decision (Task 67) and is kept
+    // rather than churned through Crowdin for 39 locales.
+    //
+    // It names the DRIVER (the risk assessment) rather than the framework:
+    // "included because it is part of this framework" is circular, and ISO 6.1.3
+    // derives controls from risk treatment, using Annex A afterwards only as a
+    // completeness cross-check.
+    //
+    // It was a placeholder ONLY until Task 67, so that an unreviewed sentence
+    // could not reach a customer's SoA by inaction. Measured, that produced the
+    // opposite failure: 19 of 20 frameworks left the field NULL and the SoA's
+    // Justification column came out BLANK for every applicable control with no
+    // linked risks -- the finding an SoA is most often failed on, and one a
+    // boilerplate sentence does not attract.
+    'DefaultInclusionJustificationPlaceholder' => 'Określane na podstawie oceny ryzyka bezpieczeństwa informacji w organizacji i traktowane jako niezbędna kontrola.',
+    // Task 15: bulk-setting applicability from the control table's selection bar
+    // (#applicability--set, governance/index.php + governance-frameworks.js).
+    //
+    // The action's own label and the modal's one section. 'Applicability',
+    // 'Reason', 'Provider', 'Justification', 'Save' and 'Cancel' already exist
+    // and are reused; only the strings with no existing home are added here.
+    'SetApplicability' => 'Ustaw stosowalność',
+    'ApplicabilityDecision' => 'Decyzja',
+    // The amber scope note, in two sentences the page assembles separately
+    // because they answer two different questions: WHICH framework the decision
+    // is scoped to, and WHICH controls are about to receive it. The second one
+    // has two spellings, because the header checkbox selects the current PAGE
+    // while "Select all N" escalates to the whole filtered result set -- the two
+    // genuinely differ once the table pages, and a note that blurred them would
+    // let the user write 1,535 decisions believing they had written 25.
+    'ApplicabilityScopeNote' => 'Ta decyzja obowiązuje tylko w ramach „{$framework}”. Ta sama kontrola może nadal obowiązywać w innych ramach.',
+    'ApplicabilityAppliesToSelected' => 'Będzie on rejestrowany w odniesieniu do kontrolek {$n} wybranych na tej stronie.',
+    'ApplicabilityAppliesToAllFiltered' => 'Będzie on rejestrowany dla wszystkich kontrolek {$n} pasujących do bieżących filtrów, w tym tych na innych stronach.',
+    // Per-state hints under the segmented control. The "applicable" one is the
+    // load-bearing sentence of the whole modal, and the SoA audit-readiness work
+    // rewrote it: an applicable control MAY now carry its own reasons and
+    // justification (ISO/IEC 27001 clause 6.1.3(d) asks for one per control, for
+    // inclusion as much as for exclusion), and leaving both empty is what falls
+    // back to the framework's default inclusion justification. The old sentence
+    // -- "this removes any recorded decision. No justification is needed." --
+    // is now false in both halves.
+    'ApplicabilityApplicableHint' => 'W zakresie tych ram. Powód i uzasadnienie są opcjonalne; pozostawienie obu pustych pól powoduje użycie domyślnego uzasadnienia włączenia w ramach.',
+    'ApplicabilityNotApplicableHint' => 'Wyłączenie kontroli z zakresu tych ram. Wymagane jest zarówno uzasadnienie, jak i pisemne uzasadnienie.',
+    'ApplicabilityInheritedHint' => 'Ktoś inny wykonuje tę kontrolę w Twoim imieniu. Podaj jego imię i nazwisko oraz opisz, czym się zajmuje.',
+    'ApplicabilityNarrativeHint' => 'Pojawia się w Oświadczeniu o Stosowalności. Napisz, co audytor musiałby zrobić, aby zaakceptować decyzję.',
+    'ApplicabilityProviderHint' => 'Organizacja sprawująca kontrolę: dostawca usług w chmurze, usługa zarządzana, spółka dominująca.',
+    'ChooseAReason' => 'Wybierz powód',
+    'ApplicabilityNoReason' => 'Bez powodu',
+    // Result toasts. Both interpolate a COUNT taken from the API response and
+    // nothing else -- no submitted text is ever reflected into a toast, which
+    // toastr renders as HTML.
+    'ApplicabilitySetResult' => 'Zaktualizowano możliwość zastosowania dla {$n} kontrolek.',
+    'ApplicabilityClearResult' => 'Zmieniono stosowalność na stosowalność dla {$n} kontrolek.',
+    // Bulk control delete (Task 54, corrected Task 55). Deleting a control is
+    // final either way the delete engine implements it: a control with test
+    // history is soft-deleted (framework_controls.deleted = 1) to keep test
+    // history intact, a control with no tests is removed outright -- but
+    // nothing anywhere flips that flag back, so from the user's side there is
+    // no "kept" case, only "deleted, and its test history survives for audit
+    // purposes." Every sentence therefore leads with the same irreversible
+    // warning; the only thing that varies is whether an audit-history clause
+    // is appended, and that clause is omitted entirely rather than printed
+    // with a count of zero -- "0 are retained for audit history" reads as a
+    // warning about something that is not going to happen, and on a delete
+    // confirmation that is exactly the kind of noise that trains people to
+    // stop reading. Every {$...} is a count from the API response; no user
+    // text is ever interpolated, which matters because toastr renders HTML.
+    'DeleteControlsPreviewChecking' => 'Sprawdzanie, co zostanie usunięte...',
+    'DeleteControlsPreviewSplit' => '{$n} kontrolek zostanie usuniętych. Tej czynności nie można cofnąć. Wyniki testów dla {$m} z nich są zachowywane w historii audytu.',
+    'DeleteControlsPreviewKeptOnly' => 'Wszystkie kontrolki {$n} zostaną usunięte. Tej operacji nie można cofnąć. Wyniki testów są przechowywane w historii audytu.',
+    'DeleteControlsPreviewRemovedOnly' => 'Kontrolki {$n} zostaną usunięte. Tej operacji nie można cofnąć.',
+    'DeleteControlsPreviewNone' => 'Nic do usunięcia: wybrane kontrolki już nie istnieją.',
+    'ControlsDeletedResult' => 'Usunięto {$n} kontrolek.',
+
+    // The Add/Edit framework modal's Status field. The label reuses the existing
+    // 'Status' key -- the same word the rail's Active/Inactive/All filter already
+    // uses -- so only the explanatory hint is new. It says the two things a user
+    // cannot see from the control itself: that Inactive is the NON-destructive way
+    // to retire a framework (unlike Delete, which cannot be undone), and that the
+    // change cascades through the hierarchy, which is what update_framework_status()
+    // has always done and is genuinely surprising when a parent is deactivated.
+    'FrameworkStatusHint' => 'Nieaktywne frameworki zachowują wszystkie swoje kontrolki i mapowania, ale są ukryte na domyślnej liście frameworków i pomijane w panelu zarządzania. Dezaktywacja frameworka powoduje również dezaktywację wszystkich frameworków pod nim; aktywacja jednego z nich powoduje również aktywację jego frameworków nadrzędnych.',
+
+    // Task 60: the same #applicability--set modal, opened from ONE control's row
+    // action instead of the selection bulk bar. The button's own label reuses
+    // 'SetApplicability'; these two exist because the modal now has to say which
+    // of the two it is acting on, and both spellings must be unambiguous.
+    //
+    // The title names the specific object (design-system.md §8) and the note
+    // says "only", because the dangerous reading is the silent one: with rows
+    // ticked -- or with "Select all N filtered" in force -- a modal that said
+    // nothing would let a click the user believed applied to one row be read as
+    // applying to every control in the framework. Naming the control in both
+    // places is what makes the narrower scope visible rather than assumed.
+    // Corrected in Task 63. This spelling used to end "...only, whatever else is
+    // selected", which was printed on every row-action open whether or not
+    // anything else WAS selected -- a dangling absolute with no antecedent, so
+    // it read as a sentence that had been cut off. It is now the plain form, and
+    // the reassurance about a competing selection moved to
+    // 'ApplicabilityAppliesToControlNotSelection' below, which is printed only
+    // when there is a competing selection to reassure anyone about.
+    'SetApplicabilityForControl' => 'Ustaw stosowalność: {$name}',
+    'ApplicabilityAppliesToControl' => 'Będzie on nagrywany tylko w odniesieniu do „{$name}”.',
+
+    // Task 17: the Statement of Applicability report itself
+    // (reports/statement_of_applicability.php + pages/statement-of-applicability.js),
+    // the document ISO/IEC 27001:2022 clause 6.1.3(d) asks for and the one every
+    // applicability decision recorded on the Define Control Frameworks page
+    // exists to produce.
+    //
+    // 'StatementOfApplicability' already exists above (the framework modal's SoA
+    // card) and is reused for the report's own title, as are 'IsmsScopeStatement',
+    // 'DefaultInclusionJustification', the three 'Applicability*' state labels,
+    // 'ApplicabilityDecidedBy'/'DecidedOn', and the plain 'Framework',
+    // 'ControlNumber', 'ControlName', 'Justification', 'Evidence', 'Reason',
+    // 'Provider', 'Total', 'Controls' and 'Export' keys. Only strings with no
+    // existing home are added here.
+    'StatementOfApplicabilityDesc' => 'Dla jednego frameworka: każda kontrola, niezależnie od tego, czy jest stosowalna, dlaczego została uwzględniona lub wykluczona i czy jest wdrożona.',
+    // The header button on Define Control Frameworks. The verb is "generate"
+    // rather than "view" because the document is assembled at the moment it is
+    // asked for -- there is no stored SoA that could be out of date.
+    'GenerateStatementOfApplicability' => 'Wygeneruj oświadczenie o stosowalności',
+
+    // The Justification column's SECOND resolution step, and the reason an SoA
+    // built here beats the spreadsheet it replaces: the risks that drove the
+    // control are already recorded against it, so nobody retypes them and they
+    // cannot go stale. {risks} is substituted with the displayed risk ids.
+    //
+    // Phrased to match clause 6.1.3, which derives controls from risk treatment
+    // and uses Annex A afterwards only as a completeness cross-check -- the same
+    // reasoning behind 'DefaultInclusionJustificationPlaceholder' above.
+    'SoaJustifiedByRiskAssessment' => 'Określane na podstawie oceny ryzyka bezpieczeństwa informacji organizacji. Powiązane ryzyka: {risks}.',
+
+    // The Implemented column. DERIVED from maturity and the last test result on
+    // every read, never stored, so it cannot drift out of sync with the control.
+    // 'Yes' and 'No' already exist and are reused; only the middle value and the
+    // header need keys of their own. An excluded control's cell reuses the
+    // existing 'NotApplicable' ('N/A'), which is exactly the right abbreviation
+    // in a dense table.
+    'SoaImplemented' => 'Wdrożono',
+    'SoaImplementedPartial' => 'Częściowy',
+
+    // The cover block.
+    'SoaGeneratedOn' => 'Wygenerowano w dniu',
+    'SoaExcludedCount' => 'Wyłączony',
+
+    // The prompt shown when the framework has never been given the two cover
+    // fields. It PROMPTS rather than silently printing a blank cover: an SoA
+    // whose scope is empty is the one defect an auditor spots first, and the
+    // moment somebody opens the report is the only moment those fields matter.
+    // Both spellings of empty (never set, and deliberately cleared) prompt --
+    // from a reader's point of view there is nothing to print either way.
+    //
+    // The inclusion-justification line states a WEAKER consequence than it used
+    // to, because Task 67 made the stronger one untrue: the column no longer goes
+    // blank when the field is empty -- soa_framework_default_justification()
+    // substitutes the generic default sentence. The prompt survives because a
+    // generic sentence is not the organization's own, and an auditor reading 1,500
+    // identical rows of boilerplate is entitled to ask whose risk assessment it
+    // refers to.
+    'SoaMissingFieldsTitle' => 'W tym oświadczeniu brakuje szczegółów dotyczących okładki',
+    'SoaMissingScopeStatement' => 'Nie sporządzono żadnego oświadczenia o zakresie dla tych ram. SoA powinno określać zakres, w odniesieniu do którego jest sporządzane.',
+    'SoaMissingInclusionJustification' => 'Nie odnotowano żadnego domyślnego uzasadnienia włączenia. Obowiązujące kontrole bez powiązanych ryzyk będą opierać się na ogólnym stwierdzeniu, a nie na Twoim własnym.',
+    'SoaEditFrameworkToAdd' => 'Dodaj je do struktury',
+
+    // Opened from the Reporting Hub, which cannot supply a framework. A picker,
+    // not an error: an SoA is a per-framework document by definition -- the same
+    // control excluded from ISO 27001 is not thereby excluded from PCI DSS --
+    // and there is no cross-framework roll-up to offer instead.
+    'SoaChooseFramework' => 'Wybierz framework',
+    'SoaChooseFrameworkHint' => 'Oświadczenie o stosowalności sporządza się dla każdego z ram osobno.',
+    // The picker has a roster but nothing in it. Distinct from "this framework
+    // has no controls": there is no framework to write a statement about at all,
+    // and the fix is on a different page, so it says which one.
+    // The launcher's affordance row. "Open in browser" rather than "View"
+    // because it names what actually happens -- the document opens in a new tab,
+    // chrome-free -- and because Task 18 adds "Download as PDF" and "Download as
+    // XLSX" beside it, where "open" vs "download" is the distinction that
+    // matters.
+    // The document has no sidebar, so it needs its own way back for anyone who
+    // arrives from a bookmark or a shared link. Screen only; never printed.
+    'SoaBackToSelector' => 'Powrót do oświadczenia o stosowalności',
+    'SoaNoFrameworks' => 'Brak aktywnych ram',
+    'SoaNoFrameworksHint' => 'Zainstaluj lub aktywuj strukturę w obszarze Zarządzanie > Definiuj struktury kontroli, a będzie ona tutaj dostępna.',
+
+    // The two refusals. Both explain rather than just failing, because the user
+    // arrived here deliberately.
+    'SoaFrameworkInactiveTitle' => 'Ta struktura jest nieaktywna',
+    'SoaFrameworkInactiveBody' => 'Oświadczenie o stosowalności opisuje zakres, w jakim obecnie działa organizacja. Aby je wygenerować, należy ponownie aktywować ramy.',
+    'SoaFrameworkNotFoundBody' => 'Te ramy już nie istnieją.',
+
+    // A framework with no controls mapped into it. Not an error -- it is a real
+    // and recoverable state, and saying so beats an empty table.
+    'SoaNoControls' => 'W tej strukturze nie ma żadnych elementów sterujących',
+    'SoaNoControlsHint' => 'Mapowanie kontrolek do struktury i oświadczenie o ich stosowalności będzie je zawierać.',
+
+    // The second half of the statement-of-applicability launcher's affordance
+    // row, beside "Open in browser" and the existing 'DownloadAsXLSX'. Rendered
+    // only where the Import/Export Extra is active, which is what supplies the
+    // export. "Download as" rather than "Export to" so the pair reads as one
+    // choice of format, and so it matches the XLSX label already in this file.
+    'DownloadAsPDF' => 'Pobierz jako PDF',
+
+    // The fourth column of the control modal's "Mapped Control Frameworks"
+    // widget, between the reference code and the reference text. The
+    // FRAMEWORK's own title for the control it is citing -- what a Statement of
+    // Applicability prints beside the clause number. Distinct from the existing
+    // 'ReferenceText', which holds the framework's full control statement, and
+    // from the SimpleRisk control's own name.
+    'ReferenceSubject' => 'Temat odniesienia',
+    // Placeholder/help text under that field, and the reason it is worth
+    // filling in: without it the Statement of Applicability has nothing to
+    // print but the source catalogue's name for its own control.
+    'ReferenceSubjectHint' => "Własny tytuł struktury dla tej kontrolki.",
+
+    // Task 63: the row-scoped population sentence in the Set applicability
+    // modal, in the one situation where the plain
+    // 'ApplicabilityAppliesToControl' above leaves a real question unanswered --
+    // the user has controls ticked, or a standing "Select all N filtered", and
+    // has just opened the modal from ONE row's own action.
+    //
+    // It states the guarantee rather than implying it. A user whose escalated
+    // selection covers an entire framework needs to know that this click is not
+    // about to overwrite it, and {$n} is the count of the OTHER selected
+    // controls -- the target is excluded, because it is very often ticked too
+    // and a promise that included it would be false.
+    'ApplicabilityAppliesToControlNotSelection' => 'Będzie on rejestrowany tylko w odniesieniu do „{$name}” — wybrane przez Ciebie elementy sterujące {$n} nie zostaną na niego nałożone.',
+
+    // Task 65: the VISIBLE label on the controls toolbar's SoA button. The full
+    // sentence ('GenerateStatementOfApplicability' above) stays as the button's
+    // title and aria-label, and is still what the SoA page itself is called;
+    // this is the short form for a toolbar row it shares with the page's one
+    // primary action. At full length the secondary button measured more than
+    // twice the primary's width and became the largest element in the row.
+    //
+    // "SoA" is safe to abbreviate HERE and only here: the button appears solely
+    // when a single framework is scoped, beside an Applicability column, and it
+    // expands on hover.
+    'GenerateSoa' => 'Generuj SoA',
+
+    // ===== Clone framework (Task 64) =======================================
+    // The framework half of Clone control's framing (CloneOfControlTitle /
+    // ClonedFromControlNotice above), and for the same reason: the clone
+    // pre-fills the Add Framework modal rather than creating anything, so the
+    // modal has to say what was carried over before the user saves it.
+    //
+    // Separate keys from the control pair rather than one shared "Clone of
+    // {$name}" -- the two banners do not say the same thing. A cloned control
+    // simply asks to be reviewed; a cloned FRAMEWORK has to explain two things
+    // its fields cannot: that the source's control mappings come with it, and
+    // that the empty scope statement is deliberate. The blank field is the
+    // whole reason the banner is longer than the control's -- a scope statement
+    // left blank with no explanation reads as a field that failed to populate,
+    // and the one thing a clone exists to be given is a NEW scope (Josh: "you
+    // might want to use the same controls as one framework, but scope it
+    // differently"). {$name} and {$n} follow the same client-side
+    // formatTemplate() substitution the rest of this page's templates use.
+    'CloneOfFrameworkTitle' => 'Klon "{$name}"',
+    // {$n} is the count the rail is SHOWING for the source row -- its controls,
+    // not its raw mapping rows. Those differ (a framework can cite one control
+    // under two clause numbers, and the rail excludes deleted controls), and the
+    // number to promise is the one the user is looking at when they click and
+    // the one the clone's own rail row will show afterwards.
+    'ClonedFromFrameworkNotice' => 'Sklonowano z „{$name}”. Jego kontrolki {$n} zostaną skopiowane do nowego frameworka, z zachowaniem wszystkich początkowych zasad stosowania — żadna z decyzji o stosowalności nie zostanie przeniesiona. Oświadczenie o zakresie celowo pozostawiono puste: przed wygenerowaniem oświadczenia o stosowalności należy określić zakres objęty przez ten framework.',
+    // Seeds the name field so the clone can be saved without a rename --
+    // framework names are unique, so a verbatim copy is refused on save.
+    'CloneOfFrameworkName' => '{$name} (Klon)',
+    'CloneFramework' => 'Struktura klonowania',
+    // Extras version independently of Core, so an updated Import/Export Extra
+    // can end up calling a Core function the installed Core does not have. The
+    // export refuses with this rather than fataling -- see
+    // soa_export_refuse_if_core_too_old(), extras/import-export/includes/soa_export.php.
+    'SoaExportRequiresNewerCore' => 'Ten eksport wymaga nowszej wersji SimpleRisk Core niż ta zainstalowana. Zaktualizuj SimpleRisk i spróbuj ponownie wykonać eksport.',
+    // The framework ACQUISITION chooser (Task 26): "+ Add framework" asks how you
+    // want to get one, rather than assuming you want to type it in. Each option is
+    // rendered only when the route behind it actually exists for this user, so the
+    // hint text may state plainly what the route does -- it is never shown to
+    // someone who cannot take it.
+    'HowDoYouWantToAddAFramework' => 'W jaki sposób chcesz dodać strukturę?',
+    'CreateFrameworkManually' => 'Utwórz go ręcznie',
+    'CreateFrameworkManuallyHint' => 'Nadaj ramce nazwę samodzielnie, a następnie dodaj lub zmapuj jej kontrolki.',
+    // Named for the framework rather than for its vendor. The hint was reworded
+    // at the same time: it used to end "...load its Secure Controls Framework
+    // controls", which read as a stutter once the label carried those words.
+    'GetFrameworkFromScf' => 'Pobierz jeden z Secure Controls Framework',
+    'GetFrameworkFromScfHint' => 'Wybierz opublikowany framework i załaduj jego zmapowane kontrolki w jednym kroku.',
+    'ImportFrameworkFromCatalog' => 'Importuj jeden',
+    'ImportFrameworkFromCatalogHint' => 'Zainstaluj strukturę i jej kontrolki z katalogu treści SimpleRisk.',
+
+    // The framework acquisition chooser's third route, which now offers the
+    // Import-Export Extra's CONTROL import (a spreadsheet naming a framework
+    // that does not exist yet creates it) rather than the GitHub catalogue the
+    // two keys above described. Those two are left in place, unreferenced, so a
+    // customer maintaining a custom lang.<locale>.php still reconciles by tail
+    // diff.
+    'ImportFrameworkFromSpreadsheet' => 'Zaimportuj jeden z arkusza kalkulacyjnego',
+    'ImportFrameworkFromSpreadsheetHint' => 'Prześlij arkusz kalkulacyjny z kontrolkami, w którym podasz nazwę struktury, a oba elementy zostaną utworzone.',
+
+    // The Define Control Frameworks rail's second synthetic scope: the controls
+    // mapped to no framework at all. Its first, "All controls", reuses the
+    // existing AllControls key rather than adding a second string with the same
+    // English -- it replaced 'AllFrameworks' on that row, which named a union of
+    // frameworks while scoping to every control, mapped or not. 'AllFrameworks'
+    // is left in place and unreferenced by that page: other surfaces still use
+    // it, and every locale carries it.
+    'UnassignedControls' => 'Nieprzypisane elementy sterujące',
+    // APPLICABILITY VALIDATION FAILURES. These reach the user: the v2 endpoint
+    // returns the exception's message as the API status message and the page
+    // renders it in a toast, so a hardcoded English literal here would be
+    // permanently English for every locale.
+    //
+    // NOTHING THE CALLER TYPED IS EVER INTERPOLATED INTO THESE. The parameters
+    // are validated enum values, integer ids and byte limits the server itself
+    // owns -- naming the ALLOWED values rather than echoing the rejected one is
+    // deliberate (it is both safe and more useful than repeating a typo).
+    'ApplicabilityErrUnknownState' => 'Nieznany stan stosowalności. Oczekiwano jednego z następujących: {$states}.',
+    'ApplicabilityErrNarrativeRequired' => 'Dla \'{$state} \' wymagana jest narracja.',
+    'ApplicabilityErrNarrativeTooLong' => 'Opowieść jest dłuższa niż {$bytes} bajtów.',
+    'ApplicabilityErrReasonRequired' => 'Aby oznaczyć kontrolę jako niemającą zastosowania, konieczne jest podanie przyczyny wykluczenia.',
+    'ApplicabilityErrProviderRequired' => 'Dostawca jest zobowiązany oznaczyć kontrolkę jako odziedziczoną.',
+    'ApplicabilityErrProviderTooLong' => 'Nazwa dostawcy jest dłuższa niż {$bytes} bajtów.',
+    'ApplicabilityErrReasonsNotFound' => 'Poniższe powody stosowalności nie istnieją: {$ids}.',
+    'ApplicabilityErrReasonsNotOffered' => 'Powodów stosowalności nie podano dla tego stanu: {$ids}.',
+    'ApplicabilityErrFrameworkNotFound' => 'Struktura {$framework} nie istnieje.',
+    'ApplicabilityErrControlsNotFound' => 'Te identyfikatory kontrolek nie istnieją: {$ids}.',
+    // Controls/Risks import result messages (validation gate, individual bad-row
+    // alerts, and the batched submitted/created/updated summaries)
+    'ControlIdOrShortNameFieldRequired' => 'Należy zamapować pole Identyfikator kontroli lub Skrócona nazwa kontroli — bez jednego z nich nie da się zidentyfikować wiersza.',
+    'RiskImportSubjectNull' => 'Identyfikator ryzyka {$risk_id}: Nie zaktualizowano, ponieważ pole Temat jest puste lub go brakuje.',
+    'RiskImportSummary' => 'Przesłano {$submitted} ryzyk i zaktualizowano {$updated} ryzyk.',
+    'ControlImportSummary' => 'Utworzono {$created} kontrolek i zaktualizowano {$updated} kontrolek.',
+    'ImportAdditionalIssuesSuppressed' => 'W {$count} dodatkowych wierszach występowały problemy, które nie są tutaj pokazane indywidualnie.',
+    'EncryptionPipelineStalledTask' => 'Proces szyfrowania (zadanie #{$id}, {$type}) wydaje się być zawieszony — od {$status} nie postępuje. Zwykle oznacza to, że proces kolejki w tle nie jest uruchomiony. Sprawdź, czy jest zaplanowany, a następnie spróbuj ponownie po przetworzeniu zawieszonego zadania.',
+    'EncryptionPipelineStalledState' => 'Potok szyfrowania wydaje się być zablokowany — jest oznaczony jako „w toku” przez nietypowo długi czas i nie ma pasującego zadania w tle, na które można by wskazać. Zazwyczaj oznacza to, że kolejka robocza nie działa lub poprzedni potok zakończył działanie bez poprawnej aktualizacji. Sprawdź dziennik debugowania przed ponowną próbą.',
+    // DEMO_MODE — shown when a visitor to a shared demo instance attempts one
+    // of the operations that would spoil the demo for the next visitor
+    'ActionDisabledOnDemoInstance' => 'Ta akcja jest wyłączona w wersji demonstracyjnej SimpleRisk.',
+
+    // The one-click upgrade progress window: the step an upgrade is on, and
+    // the line shown once it finishes
+    // Shown when an upgrade's progress record has not been touched for long
+    // enough that the process running it is presumed gone
+    'UpgradeJobStalled' => 'Aktualizacja przestała odpowiadać. Przed ponowną próbą sprawdź dziennik serwera.',
+    // Shown when an upgrade replaced the instance's configuration file and could
+    // not put the original back
+    // Shown when the database was brought up to date but the application files
+    // could not be replaced, so the instance has NOT moved to the new release
+    'UpdateAppFailed' => 'Pliki aplikacji nie zostały zaktualizowane, więc ta instancja nadal korzysta z poprzedniej wersji. Sprawdź dziennik SimpleRisk, aby dowiedzieć się, dlaczego tak się stało, a następnie ponownie uruchom aktualizację.',
+    // The one-click upgrade progress screen
+    'UpgradeInProgress' => 'W toku',
+    'UpgradeStepNotNeeded' => 'Niepotrzebne',
+    // Recovering an Upgrade Extra whose files are damaged
+    'UpgradeExtraDamagedReinstalling' => 'Zainstalowana aktualizacja Extra jest uszkodzona. Pobieram nową kopię.',
+    'UpgradeExtraDamagedRepaired' => 'Wersję Upgrade Extra zastąpiono kopią roboczą.',
+    'UpgradeExtraDamagedFailed' => 'Aktualizacja Extra jest uszkodzona i nie można jej automatycznie wymienić. Zainstaluj ją ponownie ze strony „Dodatki” lub przywróć simplerisk/extras/upgrade/ z kopii zapasowej, a następnie spróbuj ponownie.',
+    'UpgradeAlreadyCurrent' => 'Ta instancja jest już w wersji {version}, czyli najnowszej. Nic nie wymagało aktualizacji.',
+    'UpgradeShowWhatItDid' => 'Pokaż co zrobił',
+    'UpgradeBackupsListed' => 'Kopie zapasowe znajdują się na liście w obszarze Konfiguruj > Kopie zapasowe.',
+    'UpgradingTo' => 'Aktualizacja do {version}',
+    'UpgradeSafeToClose' => 'Można bezpiecznie zamknąć to okno. Aktualizacja będzie kontynuowana na serwerze, a ta strona zostanie ponownie dołączona.',
+    'UpgradeDownloadLog' => 'Pobierz dziennik',
+    'UpgradeStatementsApplied' => 'Rozpoczęto {started} · zastosowano {count} instrukcji',
+    // The Upgrade Extra's pre-upgrade check of the instance it is sitting on
+    'UpgradeCheckingInstance' => 'Sprawdzanie tej instancji',
+    'UpgradeInstanceChecked' => 'Sprawdzono wystąpienie, nie ma potrzeby wprowadzania poprawek.',
+    'UpgradeBlockedByCorrections' => 'Aktualizacja została zatrzymana, ponieważ ta instancja wymaga poprawki, której nie można było zastosować automatycznie. Postępuj zgodnie z powyższymi instrukcjami, a następnie ponownie uruchom aktualizację. Nic innego nie zostało zmienione.',
+    // Shown when an upgrade replaced the instance's configuration file and could not put the original back
+    'ConfigRestoreFailed' => 'Aktualizacja nie mogła przywrócić pliku konfiguracyjnego tej instancji. Przed kontynuowaniem przywróć plik simplerisk/includes/config.php z kopii zapasowej.',
+    'UpgradeDidNotAdvance' => 'Funkcja aktualizacji dla wersji „{$version}” nie zmieniła wersji bazy danych; została zatrzymana, więc nie zostanie uruchomiona ponownie.',
+    'BackupDatabaseNative' => 'Tworzenie kopii zapasowej bazy danych (nie są wymagane żadne zewnętrzne narzędzia)...',
+    'UpgradeAlreadyRunning' => 'Aktualizacja jest już uruchomiona na tej instancji.',
+    'UpgradeStatusUnreachable' => 'Utracono kontakt z serwerem podczas aktualizacji. Sprawdź dziennik SimpleRisk; aktualizacja może być nadal w toku.',
+    'UpgradeJobUnwritable' => 'Nie można rozpocząć aktualizacji, ponieważ nie można zapisać jej rekordu postępu. Sprawdź, czy tymczasowy katalog systemowy jest dostępny do zapisu dla użytkownika webowego.',
+    'UpgradeStepCheckingVersions' => 'Sprawdzanie wersji',
+    'UpgradeStepUpgradingDatabase' => 'Aktualizacja schematu bazy danych',
+    'UpgradeStepFinalising' => 'Zastosowanie konwersji po aktualizacji',
+    'UpgradeDatabaseHeading' => 'Aktualizacja bazy danych',
+    'UpgradeDatabaseComplete' => 'Aktualizacja bazy danych zakończona.',
+    'UpgradeHideWhatItDid' => 'Ukryj, co zrobił',
+    'UpgradeStateRunning' => 'Działanie',
+    'UpgradeSessionExpired' => 'Twoja sesja wygasła. Zaloguj się ponownie, aby zobaczyć aktualizację.',
+    'UpgradeLostContact' => 'Utracono kontakt z serwerem. Odśwież tę stronę, aby ponownie połączyć się z aktualizacją.',
+    'UpgradeDatabaseAlreadyCurrent' => 'Baza danych znajduje się już w wersji aplikacji.',
+    'UpgradeConversionsApplied' => 'Zastosowano konwersję silnika i zestawu znaków.',
+    'UpgradeStoppedShort' => 'Aktualizacja zatrzymała się na {reached} bez osiągnięcia {app}. Zobacz dziennik serwera.',
+    'UpgradeStepBackingUp' => 'Tworzenie kopii zapasowej',
+    'UpgradeStepUpgradingFiles' => 'Aktualizowanie plików aplikacji',
+    'UpgradeStepUpgradingExtras' => 'Aktualizacja zainstalowanych dodatków',
+    'UpgradeStepUpdatingUpgradeExtra' => 'Aktualizacja aktualizacji dodatkowej',
+    // The Upgrade Extra's pre-chain corrections: what is wrong, and what to do
+    // about it. These are the highest-stakes messages the upgrade produces --
+    // an operator reads them to unstick an instance that cannot upgrade.
+    'UpgradeCorrectionUnknownVersionTitle' => 'Zapisana wersja bazy danych nie podaje nazwy rzeczywistego wydania',
+    'UpgradeCorrectionNoRecordedVersion' => 'W bazie danych nie ma żadnej zarejestrowanej wersji.',
+    'UpgradeCorrectionUnknownVersionFinding' => 'Baza danych zgłasza wersję „{$version}”, która nie zawiera nazwy żadnej wersji SimpleRisk. Aktualizacja nie może wybrać z niej punktu początkowego.',
+    'UpgradeCorrectionUnknownVersionGuidance' => 'Ustaw ustawienie db_version na wersję, której schemat faktycznie ma ta baza danych, a następnie ponownie uruchom aktualizację: UPDATE settings SET value=\'<release>\' WHERE name=\'db_version\'. Jeśli wartość jest symbolem zastępczym, takim jak 2026XXXX-001, poprawną wartością jest prawie zawsze najnowsza rzeczywista wersja zainstalowana przed uruchomieniem aktualizacji.',
+    'UpgradeCorrectionLegacySessionsTitle' => 'Tabela sesji nie może przetrwać konwersji zestawu znaków podczas aktualizacji',
+    'UpgradeCorrectionLegacySessionsFinding' => '`sessions`.`id` ma format VARCHAR({$width}) w tabeli MyISAM. Konwersja do utf8mb4, którą stosuje się od wersji 20230106-001, spowodowałaby przekroczenie limitu indeksu MyISAM wynoszącego 1000 bajtów i niepowodzenie aktualizacji.',
+    'UpgradeCorrectionLegacySessionsGuidance' => 'Jedna lub więcej aktywnych sesji używa identyfikatora dłuższego niż 128 znaków. Zawężenie kolumny spowodowałoby teraz wylogowanie tych użytkowników, więc ta została pozostawiona bez zmian. Spróbuj ponownie przeprowadzić aktualizację po wygaśnięciu tych sesji.',
+    'UpgradeCorrectionApplied' => 'Poprawiono.',
+    'UpgradeCorrectionFailed' => 'Nie udało się zastosować tej poprawki. Powód można znaleźć w dzienniku SimpleRisk.',
+    'UpgradeCorrectionAppliedLine' => 'Poprawiono: {$title} {$message}',
+    'UpgradeCorrectionNotAppliedLine' => 'NIE poprawiono: {$title} {$message}',
+    'UpgradeCorrectionsNeeded' => 'Przed uaktualnieniem tej instancji konieczne są następujące poprawki: {$count}',
+    'UpgradeCorrectionsNeededShort' => 'Potrzebne poprawki: {$count}',
+    'UpdateDatabase' => 'Aktualizowanie bazy danych...',
+    // Authentication screens (index.php, reset.php, reset_password.php)
+    'EnterTheCredentialsForYourAccount' => 'Wprowadź dane logowania do swojego konta.',
+    'TroubleSigningIn' => 'Masz problem z logowaniem? Skontaktuj się z administratorem SimpleRisk.',
+    'BackToLogin' => 'Powrót do logowania',
+    'Or' => 'Lub',
+    'WeWillEmailAResetTokenToYourAccount' => 'Token resetujący zostanie wysłany na adres e-mail podany przy Twoim koncie.',
+    'EnterTheResetTokenFromYourEmail' => 'Wprowadź token resetujący otrzymany w wiadomości e-mail oraz nowe hasło.',
+    'ChooseANewPasswordToContinue' => 'Wybierz nowe hasło, aby kontynuować.',
+    'FromZeroToGRCInMinutes' => 'Od ZERO do GRC w kilka minut.',
+    'OrganizationLogo' => 'Logo organizacji',
+    'LoginScreenBranding' => 'Branding ekranu logowania',
+    'CustomLogo' => 'Niestandardowe logo',
+    'CustomLogoHint' => 'PNG, JPG, GIF lub WebP, do 1 MB i 2000 x 2000. Wyświetlane w rozdzielczości do 260 x 64, więc dla ekranów o wysokiej gęstości zaleca się rozdzielczość około 520 x 128. Górny pasek i panel logowania są ciemne, więc prześlij logo, które wyświetla się na ciemnym tle. Usuń logo, aby powrócić do logo SimpleRisk.',
+    'CurrentLogo' => 'Aktualne logo',
+    'RemoveLogo' => 'Usuń logo',
+    'LoginTagline' => 'Slogan logowania',
+    'LoginTaglineHint' => 'Zastępuje slogan SimpleRisk na ekranie logowania. Najlepiej sprawdza się jeden krótki wiersz. Pozostaw puste, aby zachować slogan SimpleRisk.',
+    'LoginNotice' => 'Powiadomienie o korzystaniu z systemu',
+    'LoginNoticeHint' => 'Wyświetlane na ekranie logowania przed zalogowaniem. Służy do powiadamiania o dozwolonym użytkowaniu lub korzystaniu z systemu. Pozostaw puste, aby nie wyświetlać powiadomienia. Linki i obrazy są niedozwolone.',
+    'BrandingRequiresCustomization' => 'Branding ekranu logowania jest częścią usługi Customization Extra.',
+    'LogoMustBeAnImage' => 'Logo musi być obrazem w formacie PNG, JPG, GIF lub WebP.',
+    'LogoTooLarge' => 'Rozmiar logo nie może przekraczać 1 MB.',
+    'LogoDimensionsTooLarge' => 'Logo nie może być większe niż 2000x2000 pikseli.',
+    'LogoDimensionsTooSmall' => 'Logo musi mieć co najmniej 32 piksele na dłuższej krawędzi.',
+    'LogoUploadFailed' => 'Nie udało się przesłać logo. Spróbuj ponownie.',
+    'LogoUpdated' => 'Zaktualizowano logo.',
+    'LogoRemoved' => 'Logo zostało usunięte.',
+    'NoSystemUseNoticeSet' => 'Nie ustawiono żadnego powiadomienia o korzystaniu z systemu.',
+    'NoticeSizeSmall' => 'Mały',
+    'NoticeSizeNormal' => 'Normalna',
+    'NoticeSizeLarge' => 'Duży',
+    // Preferences page save feedback
+    'TheSettingsWereUpdatedSuccessfully' => 'Ustawienia zostały pomyślnie zaktualizowane.',
+    'NoChangesWereMade' => 'Nie wprowadzono żadnych zmian.',
+    'PleaseSpecifyAnIntegerGreaterThanOrEqualToZeroForTheMinimumValue' => 'Proszę podać liczbę całkowitą większą lub równą zero jako wartość minimalną.',
+    'PleaseSpecifyAnIntegerForTheMaximumValue' => 'Proszę podać liczbę całkowitą jako wartość maksymalną.',
+    'PleaseSpecifyAMaximumValueGreaterThanTheMinimum' => 'Proszę podać wartość maksymalną większą od minimalnej.',
+    // Extra download version compatibility
+    'ExtraVersionIncompatibleWithApplication' => 'Pobrany dodatek „{$extra}” (wersja {$extra_version}) nie jest zgodny z SimpleRisk {$app_version} i nie został zainstalowany. Najpierw zaktualizuj SimpleRisk do najnowszej wersji.',
+    'ExtraCompatibilityDataUnavailable' => 'SimpleRisk nie mógł potwierdzić, które wersje Extra obsługuje ta wersja, więc Extra nie został zainstalowany. Spróbuj ponownie później.',
+    'ExtraVersionCouldNotBeVerified' => 'Nie udało się ustalić wersji pobranego dodatku, dlatego nie został on zainstalowany.',
     '' => '',
 );
 ?>

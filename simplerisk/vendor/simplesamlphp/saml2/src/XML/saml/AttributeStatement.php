@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace SimpleSAML\SAML2\XML\saml;
 
 use DOMElement;
-use SimpleSAML\Assert\Assert;
+use SimpleSAML\SAML2\Assert\Assert;
 use SimpleSAML\XML\Constants as C;
-use SimpleSAML\XML\Exception\InvalidDOMElementException;
 use SimpleSAML\XML\SchemaValidatableElementInterface;
 use SimpleSAML\XML\SchemaValidatableElementTrait;
+use SimpleSAML\XMLSchema\Exception\InvalidDOMElementException;
 
 /**
  * Class representing a SAML2 AttributeStatement
@@ -19,6 +19,7 @@ use SimpleSAML\XML\SchemaValidatableElementTrait;
 class AttributeStatement extends AbstractStatementType implements SchemaValidatableElementInterface
 {
     use SchemaValidatableElementTrait;
+
 
     /**
      * AttributeStatement constructor.
@@ -57,7 +58,6 @@ class AttributeStatement extends AbstractStatementType implements SchemaValidata
 
 
     /**
-     * @return bool
      */
     public function hasEncryptedAttributes(): bool
     {
@@ -66,10 +66,7 @@ class AttributeStatement extends AbstractStatementType implements SchemaValidata
 
 
     /**
-     * @param \DOMElement $xml
-     * @return static
-     *
-     * @throws \SimpleSAML\XML\Exception\InvalidDOMElementException
+     * @throws \SimpleSAML\XMLSchema\Exception\InvalidDOMElementException
      *   if the qualified name of the supplied element is wrong
      */
     public static function fromXML(DOMElement $xml): static
@@ -86,9 +83,6 @@ class AttributeStatement extends AbstractStatementType implements SchemaValidata
 
     /**
      * Convert this Attribute to XML.
-     *
-     * @param \DOMElement|null $parent The element we should append this Attribute to.
-     * @return \DOMElement
      */
     public function toXML(?DOMElement $parent = null): DOMElement
     {

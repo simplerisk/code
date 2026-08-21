@@ -1,7 +1,7 @@
 /**
- * HugeRTE version 1.0.10 (2026-02-16)
+ * HugeRTE version 1.0.12 (2026-06-29)
  * Copyright (c) 2022 Ephox Corporation DBA Tiny Technologies, Inc.
- * Copyright (c) 2024 HugeRTE contributors
+ * Copyright (c) 2026 HugeRTE contributors
  * Licensed under the MIT license (https://github.com/hugerte/hugerte/blob/main/LICENSE.TXT)
  */
 
@@ -805,10 +805,11 @@
       const parentTableCell = editor.dom.getParents(elm, 'TD,TH');
       return parentTableCell.length > 0 ? parentTableCell[0] : editor.getBody();
     };
-    const isListHost = (schema, node) => !isListNode(node) && !isListItemNode(node) && exists(listNames, listName => schema.isValidChild(node.nodeName, listName));
+    const isListHost = (schema, node, forcedRootBlock) => !isListNode(node) && !isListItemNode(node) && (forcedRootBlock === '' || node.nodeName.toLowerCase() !== forcedRootBlock.toLowerCase()) && exists(listNames, listName => schema.isValidChild(node.nodeName, listName));
     const getClosestListHost = (editor, elm) => {
+      const forcedRootBlockName = getForcedRootBlock(editor);
       const parentBlocks = editor.dom.getParents(elm, editor.dom.isBlock);
-      const parentBlock = find(parentBlocks, elm => isListHost(editor.schema, elm));
+      const parentBlock = find(parentBlocks, elm => isListHost(editor.schema, elm, forcedRootBlockName));
       return parentBlock.getOr(editor.getBody());
     };
     const isListInsideAnLiWithFirstAndLastNotListElement = list => parent(list).exists(parent => isListItemNode(parent.dom) && firstChild(parent).exists(firstChild => !isListNode(firstChild.dom)) && lastChild(parent).exists(lastChild => !isListNode(lastChild.dom)));
@@ -1413,9 +1414,9 @@
       return textBlocks;
     };
     const hasCompatibleStyle = (dom, sib, detail) => {
+      var _a;
       const sibStyle = dom.getStyle(sib, 'list-style-type');
-      let detailStyle = detail ? detail['list-style-type'] : '';
-      detailStyle = detailStyle === null ? '' : detailStyle;
+      const detailStyle = (_a = detail['list-style-type']) !== null && _a !== void 0 ? _a : '';
       return sibStyle === detailStyle;
     };
     const getRootSearchStart = (editor, range) => {
@@ -1537,7 +1538,7 @@
     };
     const toggleMultipleLists = (editor, parentList, lists, listName, detail) => {
       const parentIsList = isListNode(parentList);
-      if (parentIsList && parentList.nodeName === listName && !hasListStyleDetail(detail) && !isCustomList(parentList)) {
+      if (parentIsList && parentList.nodeName === listName && hasCompatibleStyle(editor.dom, parentList, detail) && !isCustomList(parentList)) {
         flattenListSelection(editor);
       } else {
         applyList(editor, listName, detail);
@@ -1553,15 +1554,12 @@
         editor.selection.setRng(resolveBookmark(bookmark));
       }
     };
-    const hasListStyleDetail = detail => {
-      return 'list-style-type' in detail;
-    };
     const toggleSingleList = (editor, parentList, listName, detail) => {
       if (parentList === editor.getBody()) {
         return;
       }
       if (parentList) {
-        if (parentList.nodeName === listName && !hasListStyleDetail(detail) && !isCustomList(parentList)) {
+        if (parentList.nodeName === listName && hasCompatibleStyle(editor.dom, parentList, detail) && !isCustomList(parentList)) {
           flattenListSelection(editor);
         } else {
           const bookmark = createBookmark(editor.selection.getRng());

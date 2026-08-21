@@ -4,66 +4,94 @@ declare(strict_types=1);
 
 namespace SimpleSAML\SAML2\XML\mdui;
 
-use SimpleSAML\Assert\Assert;
-use SimpleSAML\SAML2\Exception\InvalidArgumentException;
-use SimpleSAML\SAML2\Exception\ProtocolViolationException;
-use SimpleSAML\SAML2\XML\StringElementTrait;
+use SimpleSAML\SAML2\Assert\Assert;
+use SimpleSAML\SAML2\Exception\ArrayValidationException;
+use SimpleSAML\SAML2\Type\DomainValue;
+use SimpleSAML\XML\ArrayizableElementInterface;
 use SimpleSAML\XML\SchemaValidatableElementInterface;
 use SimpleSAML\XML\SchemaValidatableElementTrait;
+use SimpleSAML\XML\TypedTextContentTrait;
 
-use function filter_var;
-use function preg_replace;
-use function rtrim;
-use function sprintf;
+use function array_change_key_case;
+use function array_keys;
 
 /**
  * Class implementing DomainHint.
  *
  * @package simplesamlphp/saml2
  */
-final class DomainHint extends AbstractMduiElement implements SchemaValidatableElementInterface
+final class DomainHint extends AbstractMduiElement implements
+    ArrayizableElementInterface,
+    SchemaValidatableElementInterface
 {
     use SchemaValidatableElementTrait;
-    use StringElementTrait;
+    use TypedTextContentTrait;
+
+
+    public const string TEXTCONTENT_TYPE = DomainValue::class;
 
 
     /**
-     * @param string $content
+     * Create a class from an array
+     *
+     * @param array{
+     *   'url': string,
+     * } $data
      */
-    public function __construct(string $content)
+    public static function fromArray(array $data): static
     {
-        $this->setContent($content);
+        $data = self::processArrayContents($data);
+
+        return new static(
+            DomainValue::fromString($data['hint']),
+        );
     }
 
 
     /**
-     * Sanitize the content of the element.
+     * Validates an array representation of this object and returns the same array with
+     * rationalized keys (casing) and parsed sub-elements.
      *
-     * @param string $content  The unsanitized textContent
-     * @throws \Exception on failure
-     * @return string
+     * @param array{
+     *   'hint': string,
+     * } $data
+     * @return array{
+     *   'hint': string,
+     * }
      */
-    protected function sanitizeContent(string $content): string
+    private static function processArrayContents(array $data): array
     {
-        // Remove prefixed schema and/or trailing whitespace + forward slashes
-        return rtrim(preg_replace('#^http[s]?://#i', '', $content), " \n\r\t\v\x00/");
+        $data = array_change_key_case($data, CASE_LOWER);
+
+        // Make sure the array keys are known for this kind of object
+        Assert::allOneOf(
+            array_keys($data),
+            [
+                'hint',
+            ],
+            ArrayValidationException::class,
+        );
+
+        Assert::keyExists($data, 'hint', ArrayValidationException::class);
+        Assert::string($data['hint'], ArrayValidationException::class);
+
+        return [
+            'hint' => $data['hint'],
+        ];
     }
 
 
     /**
-     * Validate the content of the element.
+     * Create an array from this class
      *
-     * @param string $content  The value to go in the XML textContent
-     * @throws \Exception on failure
-     * @return void
+     * @return array{
+     *   'hint': string,
+     * }
      */
-    protected function validateContent(string $content): void
+    public function toArray(): array
     {
-        $sanitizedContent = $this->sanitizeContent($content);
-        Assert::notWhitespaceOnly($sanitizedContent, ProtocolViolationException::class);
-
-        if (!filter_var($sanitizedContent, FILTER_VALIDATE_DOMAIN, FILTER_FLAG_HOSTNAME)) {
-            throw new InvalidArgumentException(sprintf('DomainHint is not a valid hostname;  %s', $sanitizedContent));
-        }
+        return [
+            'hint' => $this->getContent()->getValue(),
+        ];
     }
 }

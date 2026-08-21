@@ -6,8 +6,8 @@
 
 namespace OpenApi\Attributes;
 
-use OpenApi\Generator;
 use OpenApi\Annotations as OA;
+use OpenApi\Undefined;
 
 #[\Attribute(\Attribute::TARGET_CLASS | \Attribute::TARGET_METHOD | \Attribute::TARGET_PROPERTY | \Attribute::IS_REPEATABLE)]
 class Examples extends OA\Examples
@@ -15,28 +15,29 @@ class Examples extends OA\Examples
     /**
      * @param string|class-string|object|null $ref
      * @param array<string,mixed>|null        $x
-     * @param Attachable[]|null               $attachables
+     * @param list<Attachable>|null           $attachables
      */
     public function __construct(
         ?string $example = null,
-        ?string $summary = null,
-        ?string $description = null,
+        ?string $summary = Undefined::UNDEFINED,
+        ?string $description = Undefined::UNDEFINED,
         int|string|array|null $value = null,
         ?string $externalValue = null,
         string|object|null $ref = null,
-        // annotation
+
+        // abstract annotation
         ?array $x = null,
         ?array $attachables = null
     ) {
         parent::__construct([
-            'example' => $example ?? Generator::UNDEFINED,
-            'summary' => $summary ?? Generator::UNDEFINED,
-            'description' => $description ?? Generator::UNDEFINED,
-            'value' => $value ?? Generator::UNDEFINED,
-            'externalValue' => $externalValue ?? Generator::UNDEFINED,
-            'ref' => $ref ?? Generator::UNDEFINED,
-            'x' => $x ?? Generator::UNDEFINED,
-            'attachables' => $attachables ?? Generator::UNDEFINED,
+            'example' => $example ?? Undefined::UNDEFINED,
+            'summary' => $summary,
+            'description' => $description,
+            'value' => $value ?? Undefined::UNDEFINED,
+            'externalValue' => $externalValue ?? Undefined::UNDEFINED,
+            'ref' => $ref ?? Undefined::UNDEFINED,
+            'x' => $x ?? Undefined::UNDEFINED,
+            'attachables' => $attachables ?? Undefined::UNDEFINED,
         ]);
     }
 }

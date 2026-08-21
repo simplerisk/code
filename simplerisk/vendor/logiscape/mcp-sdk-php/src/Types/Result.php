@@ -1,0 +1,119 @@
+<?php
+
+/**
+ * Model Context Protocol SDK for PHP
+ *
+ * (c) 2024 Logiscape LLC <https://logiscape.com>
+ *
+ * Based on the Python SDK for the Model Context Protocol
+ * https://github.com/modelcontextprotocol/python-sdk
+ *
+ * PHP conversion developed by:
+ * - Josh Abbott
+ * - Claude 3.5 Sonnet (Anthropic AI model)
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ *
+ * @package    logiscape/mcp-sdk-php
+ * @author     Josh Abbott <https://joshabbott.com>
+ * @copyright  Logiscape LLC
+ * @license    MIT License
+ * @link       https://github.com/logiscape/mcp-sdk-php
+ *
+ * Filename: Types/Result.php
+ */
+
+declare(strict_types=1);
+
+namespace Mcp\Types;
+
+/**
+ * Base class for all responses (Result)
+ * Schema: result objects can have `_meta?: object` and arbitrary fields
+ */
+class Result implements McpModel {
+    use ExtraFieldsTrait;
+
+    /** Discriminator value for an ordinary, complete result. */
+    public const RESULT_TYPE_COMPLETE = 'complete';
+
+    /**
+     * Result-type discriminator (2026-07-28 revision).
+     *
+     * The draft schema requires `resultType` on every result; a missing field
+     * means the response came from a legacy peer and is treated as
+     * "complete". The server session stamps this on the modern path and
+     * strips it for legacy clients, so handlers normally leave it null.
+     * (The "input_required" variant is the SEP-2322 multi-round-trip flow —
+     * see InputRequiredResult.)
+     */
+    public ?string $resultType = null;
+
+    public function __construct(
+        public ?Meta $_meta = null,
+    ) {}
+
+    /**
+     * Construct a Result from server response data.
+     * Subclasses should override this to handle their specific fields.
+     *
+     * @param array<string, mixed> $data
+     * @return self
+     */
+    public static function fromResponseData(array $data): self {
+        $meta = null;
+        if (isset($data['_meta'])) {
+            $metaData = $data['_meta'];
+            unset($data['_meta']);
+            $meta = new Meta();
+            foreach ($metaData as $k => $v) {
+                $meta->$k = $v;
+            }
+        }
+
+        $obj = new self($meta);
+
+        foreach ($data as $k => $v) {
+            $obj->$k = $v;
+        }
+
+        $obj->validate();
+        return $obj;
+    }
+
+    public function validate(): void {
+        if ($this->_meta !== null) {
+            $this->_meta->validate();
+        }
+        // Additional validation can be done in subclasses or specialized results
+    }
+
+    public function jsonSerialize(): mixed {
+        $data = [];
+        
+        // Only include _meta if it's not null
+        if ($this->_meta !== null) {
+            $data['_meta'] = $this->_meta;
+        }
+        
+        // Get object properties but exclude _meta (already handled) and extraFields (handled separately)
+        $vars = get_object_vars($this);
+        unset($vars['_meta'], $vars['extraFields']);
+        
+        // Add non-null properties
+        foreach ($vars as $key => $value) {
+            if ($value !== null) {
+                $data[$key] = $value;
+            }
+        }
+        
+        // Merge any extra fields
+        if (!empty($this->extraFields)) {
+            $data = array_merge($data, $this->extraFields);
+        }
+        
+        // Return empty object if data is empty
+        return !empty($data) ? $data : new \stdClass();
+    }
+}

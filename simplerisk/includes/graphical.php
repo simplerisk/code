@@ -277,7 +277,7 @@ function display_save_graphic_selection() {
             $(document).ready(function(){
                 $('#delete_saved_selection').click(function(e){
                     e.preventDefault();
-                    confirm('{$escaper->escapeHtml($lang["AreYouSureYouWantToDeleteSelction"])}', delete_saved_selection);
+                    confirm('{$escaper->escapeJs($lang["AreYouSureYouWantToDeleteSelction"])}', delete_saved_selection);
                 });
                 $('#save_selection').click(function(){
 

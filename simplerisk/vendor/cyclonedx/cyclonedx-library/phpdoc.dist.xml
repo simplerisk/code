@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<phpdocumentor xmlns="https://www.phpdoc.org"
+               xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+               xsi:schemaLocation="https://www.phpdoc.org https://raw.githubusercontent.com/phpDocumentor/phpDocumentor/master/data/xsd/phpdoc.xsd"
+               configVersion="3"
+>
+    <title>CycloneDX Library</title>
+    <paths>
+        <output>docs/.build/phpdoc</output>
+        <cache>.phpdoc.cache</cache>
+    </paths>
+    <version number="dev">
+        <api>
+            <source>
+                <path>src</path>
+            </source>
+            <default-package-name>CycloneDX Library</default-package-name>
+            <include-source>false</include-source>
+        </api>
+    </version>
+</phpdocumentor>

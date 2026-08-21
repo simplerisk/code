@@ -30,7 +30,6 @@ interface CanonicalizableElementInterface extends ElementInterface
      * @param string[]|null $xpaths An array of XPaths to filter the nodes by. Defaults to null (no filters).
      * @param string[]|null $prefixes An array of namespace prefixes to filter the nodes by. Defaults to null (no
      * filters).
-     * @return string
      */
     public function canonicalize(string $method, ?array $xpaths = null, ?array $prefixes = null): string;
 }

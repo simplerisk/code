@@ -2,10 +2,10 @@
 
 namespace SimpleSAML\Composer;
 
-use SimpleSAML\Assert\Assert;
 use Composer\Package\PackageInterface;
 use Composer\Installer\LibraryInstaller;
 use InvalidArgumentException;
+use SimpleSAML\Assert\Assert;
 
 use function in_array;
 use function is_string;
@@ -46,7 +46,8 @@ class ModuleInstaller extends LibraryInstaller
         $name = $package->getPrettyName();
         if (!preg_match('@^.*/simplesamlphp-(module|assets)-(.+)$@', $name, $matches)) {
             throw new InvalidArgumentException(sprintf(
-                'Unable to install module %s, package name must be on the form "VENDOR/simplesamlphp-(module|assets)-MODULENAME".',
+                'Unable to install module %s,'
+                . ' package name must be in the form "VENDOR/simplesamlphp-(module|assets)-MODULENAME".',
                 $name,
             ));
         }
@@ -59,7 +60,8 @@ class ModuleInstaller extends LibraryInstaller
             $moduleDir,
             '@^[a-z0-9_.-]*$@',
             sprintf(
-                'Unable to install module %s, module name must only contain characters from a-z, 0-9, "_", "." and "-".',
+                'Unable to install module %s,'
+                . ' module name must only contain characters from a-z, 0-9, "_", "." and "-".',
                 $name
             ),
             InvalidArgumentException::class
@@ -91,7 +93,8 @@ class ModuleInstaller extends LibraryInstaller
                 mb_strtolower($mixedCaseModuleName, 'utf-8'),
                 $moduleDir,
                 sprintf(
-                    'Unable to install module %s, "%s" must match the package name except that it can contain uppercase letters.',
+                    'Unable to install module %s,'
+                    . ' "%s" must match the package name except that it can contain uppercase letters.',
                     $name,
                     self::MIXED_CASE
                 ),

@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace SimpleSAML\XMLSecurity\XML\ds;
 
-use SimpleSAML\XML\IntegerElementTrait;
+use SimpleSAML\XML\TypedTextContentTrait;
+use SimpleSAML\XMLSchema\Type\IntegerValue;
 
 /**
  * Class representing a ds:X509SerialNumber element.
@@ -13,14 +14,8 @@ use SimpleSAML\XML\IntegerElementTrait;
  */
 final class X509SerialNumber extends AbstractDsElement
 {
-    use IntegerElementTrait;
+    use TypedTextContentTrait;
 
 
-    /**
-     * @param string $content
-     */
-    public function __construct(string $content)
-    {
-        $this->setContent($content);
-    }
+    public const string TEXTCONTENT_TYPE = IntegerValue::class;
 }

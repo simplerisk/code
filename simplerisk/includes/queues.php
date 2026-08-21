@@ -6,6 +6,10 @@
 
 // Include required configuration files
 require_once(realpath(__DIR__ . '/functions.php'));
+// run_as_user_for_queue() below calls set_user_permissions(); functions.php
+// already pulls authenticate.php into scope, but per CLAUDE.md's reachability
+// rule a direct consumer declares its own require_once.
+require_once(realpath(__DIR__ . '/authenticate.php'));
 
 /*************************************************************
  * FUNCTION: QUEUE TASK                                      *
@@ -114,6 +118,13 @@ function load_all_jobs(): array
         $load_jobs_from_dir($scfDir, 'SCF Extra');
     }
 
+    // --- Load Encryption Extra Jobs ---
+    $encryptionDir = realpath(__DIR__ . '/../extras/encryption/jobs');
+    if (is_dir($encryptionDir)) {
+        require_once(realpath(__DIR__ . '/../extras/encryption/index.php'));
+        $load_jobs_from_dir($encryptionDir, 'Encryption Extra');
+    }
+
     write_debug_log("Loaded " . count($jobs) . " total job definitions.", "debug");
 
     return $jobs;
@@ -210,10 +221,104 @@ function queue_update_status($task_id, $status, PDO $db): bool {
 }
 
 /**************************************************************************
+ * FUNCTION: RUN TIMESTAMPED QUEUE CHECK                                  *
+ * Shared queue_check wrapper for periodic jobs whose task_check is      *
+ * gated by a queue_timestamp_last_* setting.                            *
+ *                                                                        *
+ * Stamps the gate timestamp at the START of every attempt so the        *
+ * cadence holds regardless of outcome — stamping only on success would  *
+ * requeue a failing job on every worker tick, a per-minute retry storm  *
+ * against whatever the job talks to.                                     *
+ *                                                                        *
+ * Runs $body and marks the task completed when it returns true. On      *
+ * failure ($body returns false or throws) the task status is left       *
+ * alone: handle_queue_task_failure() in the worker owns bounded backoff *
+ * retries and the final 'failed'. Job handlers must never pre-mark      *
+ * their own task 'failed' — that dead-ends it before the retry          *
+ * machinery (which only re-fetches 'pending' rows) ever sees it.        *
+ **************************************************************************/
+function run_timestamped_queue_check(array $task, PDO $db, string $timestamp_setting, string $log_prefix, callable $body): bool
+{
+    update_or_insert_setting($timestamp_setting, time(), db: $db);
+
+    try {
+        if ($body()) {
+            queue_update_status($task['id'], 'completed', $db);
+            return true;
+        }
+        return false;
+    } catch (\Throwable $e) {
+        write_debug_log("{$log_prefix}: Exception during queue task — " . $e->getMessage(), "error");
+        return false;
+    }
+}
+
+/**************************************************************************
+ * FUNCTION: RUN AS USER FOR QUEUE                                        *
+ * Run $body() with the identity + permissions of a specific user, then   *
+ * ALWAYS restore the worker's original session.                          *
+ *                                                                        *
+ * The queue worker authenticates as "System User" (uid -1) with no       *
+ * domain permissions. A job that reads permission-gated data on behalf   *
+ * of the user who enqueued it — e.g. ai_get_context(), which enforces    *
+ * the L2/L3/L4 authorization filters — must run that read as THAT user,  *
+ * or the read is denied and the job silently produces nothing. This      *
+ * helper impersonates $uid for the duration of $body() and restores the  *
+ * prior $_SESSION in a finally, so the next task in the same worker loop *
+ * never inherits the elevated identity (even if $body() throws).         *
+ *                                                                        *
+ * Not a privilege escalation: the enqueuing endpoint sets $uid from the  *
+ * authenticated caller's OWN uid (never client-supplied), only an active *
+ * account (enabled, not locked out) is impersonated, and the data the    *
+ * impersonated read returns is still authz-filtered for that user. A     *
+ * missing/disabled/locked-out $uid is refused — $body() does not run and *
+ * $on_invalid (default false) is returned.                               *
+ **************************************************************************/
+function run_as_user_for_queue(int $uid, PDO $db, callable $body, mixed $on_invalid = false): mixed
+{
+    if ($uid <= 0) {
+        // A missing/invalid uid is a malformed request from the caller (the
+        // enqueue side always records a real uid) — an error, consistent with
+        // how a job treats a missing required payload field.
+        write_debug_log("run_as_user_for_queue: no user id supplied; refusing to impersonate.", "error");
+        return $on_invalid;
+    }
+
+    // Only an active account may be impersonated (mirrors the login gate:
+    // enabled = 1 AND lockout = 0).
+    $stmt = $db->prepare("SELECT `username` FROM `user` WHERE `value` = :uid AND `enabled` = 1 AND `lockout` = 0 LIMIT 1;");
+    $stmt->bindValue(":uid", $uid, PDO::PARAM_INT);
+    $stmt->execute();
+    $username = $stmt->fetchColumn();
+    if ($username === false) {
+        // The requester exists no more / is disabled or locked out — an
+        // expected operational condition that halts the workflow, so notice.
+        write_debug_log("run_as_user_for_queue: user #{$uid} is not an active account; refusing to impersonate.", "notice");
+        return $on_invalid;
+    }
+
+    // Snapshot the worker's session, impersonate, and always restore.
+    // NOTE: set_user_permissions() has one non-session side effect — with the
+    // Organizational Hierarchy Extra active it may normalize the impersonated
+    // user's stored selected_business_unit (a DB write on their own row). That
+    // write is intentional login-time behavior and is not reverted by the
+    // session restore below; it is harmless here (the user's own UI preference,
+    // the same correction their next login performs) and cannot be steered by
+    // an attacker (uid is the requester's own, server-set).
+    $saved_session = $_SESSION ?? [];
+    try {
+        set_user_permissions($username);
+        return $body();
+    } finally {
+        $_SESSION = $saved_session;
+    }
+}
+
+/**************************************************************************
  * FUNCTION: HANDLE QUEUE TASK FAILURE                                    *
  * Handle a failed queue task with exponential backoff and error storage. *
  **************************************************************************/
-function handle_queue_task_failure(PDO $db, array $task, string $errorMessage, int $maxRetryAttempts = 5, int $baseRetryDelay = 5, int $maxRetryDelay = 3600): void
+function handle_queue_task_failure(PDO $db, array $task, string $errorMessage, int $maxRetryAttempts = 5, int $baseRetryDelay = 5, int $maxRetryDelay = 3600): bool
 {
     $payload = json_decode($task['payload'] ?? '{}', true);
     $payload['last_error'] = $errorMessage;
@@ -234,10 +339,53 @@ function handle_queue_task_failure(PDO $db, array $task, string $errorMessage, i
             ':payload' => json_encode($payload),
             ':id' => $task['id'],
         ]);
-    } else {
-        write_debug_log("Task #{$task['id']} failed after {$retryAttempts} attempts, marking as failed.", "error");
-        queue_update_status($task['id'], 'failed', $db);
+
+        // Retries remain — the failure is not yet terminal.
+        return false;
     }
+
+    write_debug_log("Task #{$task['id']} failed after {$retryAttempts} attempts, marking as failed.", "error");
+    queue_update_status($task['id'], 'failed', $db);
+
+    // Terminal: retries are exhausted and the task is now 'failed'. The caller
+    // uses this to decide whether to run a job's on_terminal_failure hook, so
+    // that a job surfacing a failure to a user does so ONCE, after the retry
+    // machinery has had its say — not on the first recoverable blip.
+    return true;
+}
+
+/**************************************************************************
+ * FUNCTION: RECOVER STUCK QUEUE TASKS                                    *
+ * Re-queues tasks stuck 'in_progress' past $thresholdMinutes — but ONLY  *
+ * those with NO live promise chain. A multi-stage task is legitimately   *
+ * 'in_progress' for as long as its promise chain is being resolved by    *
+ * the promise worker, which can far exceed the threshold under load.     *
+ * Recovering such a task flips it back to 'pending' and re-runs its      *
+ * queue_check, re-creating the whole stage chain — the re-chaining       *
+ * runaway. So only recover tasks whose chain is gone/terminal.           *
+ *                                                                        *
+ * The liveness predicate (a promise is live only when NEITHER `state`    *
+ * NOR `status` is terminal) MUST stay in sync with promise_chain_exists()*
+ * in promises.php — cancellation writes only `status`, so both columns   *
+ * are checked. Returns the number of tasks recovered.                    *
+ **************************************************************************/
+function recover_stuck_queue_tasks(PDO $db, int $thresholdMinutes): int
+{
+    $stmt = $db->prepare("
+        UPDATE queue_tasks t
+        SET t.status='pending', t.updated_at=NOW()
+        WHERE t.status='in_progress'
+          AND t.updated_at < NOW() - INTERVAL :mins MINUTE
+          AND NOT EXISTS (
+              SELECT 1 FROM promises p
+              WHERE p.queue_task_id = t.id
+                AND p.state  NOT IN ('completed','fulfilled','failed','canceled')
+                AND p.status NOT IN ('completed','fulfilled','failed','canceled')
+          )
+    ");
+    $stmt->execute([':mins' => $thresholdMinutes]);
+
+    return $stmt->rowCount();
 }
 
 ?>

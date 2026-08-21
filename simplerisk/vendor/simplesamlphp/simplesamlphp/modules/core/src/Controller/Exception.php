@@ -6,9 +6,16 @@ namespace SimpleSAML\Module\core\Controller;
 
 use DateTimeInterface;
 use SimpleSAML\Assert\Assert;
-use SimpleSAML\{Auth, Configuration, Error, Logger, Module, Session, Utils};
+use SimpleSAML\Auth;
+use SimpleSAML\Configuration;
+use SimpleSAML\Error;
+use SimpleSAML\Logger;
+use SimpleSAML\Module;
+use SimpleSAML\Session;
+use SimpleSAML\Utils;
 use SimpleSAML\XHTML\Template;
-use Symfony\Component\HttpFoundation\{Request, Response};
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 
 use function array_keys;
 use function date;
@@ -26,7 +33,12 @@ use function urlencode;
  */
 class Exception
 {
-    public const CODES = ['IDENTIFICATION_FAILURE', 'AUTHENTICATION_FAILURE', 'AUTHORIZATION_FAILURE', 'OTHER_ERROR'];
+    public const array CODES = [
+        'IDENTIFICATION_FAILURE',
+        'AUTHENTICATION_FAILURE',
+        'AUTHORIZATION_FAILURE',
+        'OTHER_ERROR',
+    ];
 
 
     /**
@@ -34,8 +46,8 @@ class Exception
      *
      * It initializes the global configuration and auth source configuration for the controllers implemented here.
      *
-     * @param \SimpleSAML\Configuration              $config The configuration to use by the controllers.
-     * @param \SimpleSAML\Session                    $session The session to use by the controllers.
+     * @param \SimpleSAML\Configuration $config The configuration to use by the controllers.
+     * @param \SimpleSAML\Session $session The session to use by the controllers.
      *
      * @throws \Exception
      */
@@ -49,7 +61,7 @@ class Exception
     /**
      * Show Service Provider error.
      *
-     * @param Request $request The request that lead to this login operation.
+     * @param \Symfony\Component\HttpFoundation\Request $request The request that lead to this login operation.
      * @param string $code The error code
      * @return \SimpleSAML\XHTML\Template  An HTML template
      */
@@ -108,7 +120,7 @@ class Exception
     /**
      * Show cardinality error.
      *
-     * @param Request $request The request that lead to this login operation.
+     * @param \Symfony\Component\HttpFoundation\Request $request The request that lead to this login operation.
      * @throws \SimpleSAML\Error\BadRequest
      * @return \SimpleSAML\XHTML\Template|\Symfony\Component\HttpFoundation\RedirectResponse
      *   An HTML template or a redirection if we are not authenticated.
@@ -142,7 +154,7 @@ class Exception
     /**
      * Show missing cookie error.
      *
-     * @param Request $request The request that lead to this login operation.
+     * @param \Symfony\Component\HttpFoundation\Request $request The request that lead to this login operation.
      * @return \SimpleSAML\XHTML\Template|\Symfony\Component\HttpFoundation\RedirectResponse
      *   An HTML template or a redirection if we are not authenticated.
      */
@@ -165,10 +177,13 @@ class Exception
      * Show a warning to an user about the SP requesting SSO a short time after
      * doing it previously.
      *
-     * @param Request $request The request that lead to this login operation.
+     * @param \Symfony\Component\HttpFoundation\Request $request The request that lead to this login operation.
      *
-     * @return \SimpleSAML\XHTML\Template|\SimpleSAML\HTTP\RunnableResponse|\Symfony\Component\HttpFoundation\RedirectResponse
-     * An HTML template, a redirect or a "runnable" response.
+     * @return (
+     *   \SimpleSAML\XHTML\Template|
+     *   \SimpleSAML\HTTP\RunnableResponse|
+     *   \Symfony\Component\HttpFoundation\RedirectResponse
+     * ) An HTML template, a redirect or a "runnable" response.
      *
      * @throws \SimpleSAML\Error\BadRequest
      */

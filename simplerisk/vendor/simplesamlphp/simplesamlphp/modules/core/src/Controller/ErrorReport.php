@@ -5,8 +5,12 @@ declare(strict_types=1);
 namespace SimpleSAML\Module\core\Controller;
 
 use Exception as BuiltinException;
-use SimpleSAML\{Configuration, Error, Logger, Session, Utils};
+use SimpleSAML\Configuration;
+use SimpleSAML\Error;
 use SimpleSAML\HTTP\RunnableResponse;
+use SimpleSAML\Logger;
+use SimpleSAML\Session;
+use SimpleSAML\Utils;
 use SimpleSAML\XHTML\Template;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -30,7 +34,7 @@ class ErrorReport
      * It initializes the global configuration for the controllers implemented here.
      *
      * @param \SimpleSAML\Configuration $config The configuration to use by the controllers.
-     * @param \SimpleSAML\Session $config The session to use by the controllers.
+     * @param \SimpleSAML\Session $session The session to use by the controllers.
      */
     public function __construct(
         protected Configuration $config,

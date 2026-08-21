@@ -1,0 +1,158 @@
+<?php
+
+/**
+ * Model Context Protocol SDK for PHP
+ *
+ * (c) 2024 Logiscape LLC <https://logiscape.com>
+ *
+ * Based on the Python SDK for the Model Context Protocol
+ * https://github.com/modelcontextprotocol/python-sdk
+ *
+ * PHP conversion developed by:
+ * - Josh Abbott
+ * - Claude 3.5 Sonnet (Anthropic AI model)
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ *
+ * @package    logiscape/mcp-sdk-php
+ * @author     Josh Abbott <https://joshabbott.com>
+ * @copyright  Logiscape LLC
+ * @license    MIT License
+ * @link       https://github.com/logiscape/mcp-sdk-php
+ *
+ * Filename: Types/ClientCapabilities.php
+ */
+
+declare(strict_types=1);
+
+namespace Mcp\Types;
+
+/**
+ * Client capabilities
+ * 
+ * According to schema:
+ * ClientCapabilities {
+ *   experimental?: { ... },        // handled by parent class
+ *   roots?: { listChanged?: bool }, 
+ *   sampling?: object
+ * }
+ * 
+ * We have a SamplingCapability class for sampling.
+ */
+class ClientCapabilities extends Capabilities {
+    /**
+     * @param array<string, mixed>|null $extensions SEP-2133 extension map
+     *        (see {@see ExtensionIds}); the Tasks extension is declared here.
+     */
+    public function __construct(
+        /**
+         * @deprecated Deprecated as of protocol version 2026-07-28
+         *             (SEP-2577 deprecates the Roots feature). The
+         *             capability keeps negotiating unchanged for at least
+         *             twelve months; see the deprecated features registry.
+         */
+        public ?ClientRootsCapability $roots = null,
+        /**
+         * @deprecated Deprecated as of protocol version 2026-07-28
+         *             (SEP-2577 deprecates the Sampling feature). The
+         *             capability keeps negotiating unchanged for at least
+         *             twelve months; see the deprecated features registry.
+         */
+        public ?SamplingCapability $sampling = null,
+        ?ExperimentalCapabilities $experimental = null,
+        public ?ElicitationCapability $elicitation = null,
+        public ?array $extensions = null,
+    ) {
+        parent::__construct($experimental);
+    }
+
+    /**
+     * @param array<string, mixed> $data
+     */
+    public static function fromArray(array $data): self {
+        $experimental = self::parseExperimental($data);
+
+        $rootsData = $data['roots'] ?? null;
+        unset($data['roots']);
+        $roots = null;
+        if ($rootsData !== null && is_array($rootsData)) {
+            $listChanged = $rootsData['listChanged'] ?? null;
+            unset($rootsData['listChanged']);
+            $roots = new ClientRootsCapability(
+                listChanged: $listChanged
+            );
+            foreach ($rootsData as $k => $v) {
+                $roots->$k = $v;
+            }
+        }
+
+        $samplingData = $data['sampling'] ?? null;
+        unset($data['sampling']);
+        $sampling = null;
+        if ($samplingData !== null) {
+            $sampling = new SamplingCapability();
+            if (is_array($samplingData)) {
+                foreach ($samplingData as $k => $v) {
+                    $sampling->$k = $v;
+                }
+            }
+        }
+
+        $elicitationData = $data['elicitation'] ?? null;
+        unset($data['elicitation']);
+        $elicitation = null;
+        if ($elicitationData !== null && is_array($elicitationData)) {
+            $elicitation = ElicitationCapability::fromArray($elicitationData);
+        }
+
+        $extensions = ServerCapabilities::parseExtensions($data);
+        unset($data['extensions']);
+
+        $obj = new self(
+            roots: $roots,
+            sampling: $sampling,
+            experimental: $experimental,
+            elicitation: $elicitation,
+            extensions: $extensions,
+        );
+
+        // Extra fields
+        foreach ($data as $k => $v) {
+            $obj->$k = $v;
+        }
+
+        $obj->validate();
+        return $obj;
+    }
+
+    public function validate(): void {
+        parent::validate();
+        if ($this->roots !== null) {
+            $this->roots->validate();
+        }
+        if ($this->sampling !== null) {
+            $this->sampling->validate();
+        }
+        if ($this->elicitation !== null) {
+            $this->elicitation->validate();
+        }
+    }
+
+    public function jsonSerialize(): mixed {
+        $data = parent::jsonSerialize();
+        if ($this->roots !== null) {
+            $data['roots'] = $this->roots;
+        }
+        if ($this->sampling !== null) {
+            $data['sampling'] = $this->sampling;
+        }
+        if ($this->elicitation !== null) {
+            $data['elicitation'] = $this->elicitation;
+        }
+        if ($this->extensions !== null) {
+            $data['extensions'] = ServerCapabilities::serializeExtensions($this->extensions);
+        }
+        return empty($data) ? new \stdClass() : $data;
+    }
+}

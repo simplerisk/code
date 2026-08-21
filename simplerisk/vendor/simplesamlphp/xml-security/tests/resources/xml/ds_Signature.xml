@@ -1,4 +1,4 @@
-<ds:Signature xmlns:ds="http://www.w3.org/2000/09/xmldsig#" Id="def456">
+<ds:Signature xmlns:ds="http://www.w3.org/2000/09/xmldsig#" xmlns:xenc="http://www.w3.org/2001/04/xmlenc#" xmlns:ssp="urn:x-simplesamlphp:namespace" Id="def456">
   <ds:SignedInfo Id="cba321">
     <ds:CanonicalizationMethod Algorithm="http://www.w3.org/2001/10/xml-exc-c14n#" />
     <ds:SignatureMethod Algorithm="http://www.w3.org/2001/04/xmldsig-more#rsa-sha256" />
@@ -21,19 +21,19 @@
     <ds:PGPData>
       <ds:PGPKeyID>GpM7</ds:PGPKeyID>
       <ds:PGPKeyPacket>GpM8</ds:PGPKeyPacket>
-      <xenc:P xmlns:xenc="http://www.w3.org/2001/04/xmlenc#">/CTj03d1DB5e2t7CTo9BEzCf5S9NRzwnBgZRlm32REI=</xenc:P>
+      <xenc:P>/CTj03d1DB5e2t7CTo9BEzCf5S9NRzwnBgZRlm32REI=</xenc:P>
     </ds:PGPData>
     <ds:SPKIData>
       <ds:SPKISexp>GpM6</ds:SPKISexp>
-      <xenc:seed xmlns:xenc="http://www.w3.org/2001/04/xmlenc#">/CTj03d1DB5e2t7CTo9BEzCf5S9NRzwnBgZRlm32REI=</xenc:seed>
+      <xenc:seed>/CTj03d1DB5e2t7CTo9BEzCf5S9NRzwnBgZRlm32REI=</xenc:seed>
       <ds:SPKISexp>GpM7</ds:SPKISexp>
       <ds:SPKISexp>GpM8</ds:SPKISexp>
-      <xenc:CarriedKeyName xmlns:xenc="http://www.w3.org/2001/04/xmlenc#">Some label</xenc:CarriedKeyName>
+      <xenc:CarriedKeyName>Some label</xenc:CarriedKeyName>
     </ds:SPKIData>
     <ds:MgmtData>ManagementData</ds:MgmtData>
-    <ssp:Chunk xmlns:ssp="urn:x-simplesamlphp:namespace">some</ssp:Chunk>
+    <ssp:Chunk>some</ssp:Chunk>
   </ds:KeyInfo>
   <ds:Object>
-    <ssp:Chunk xmlns:ssp="urn:x-simplesamlphp:namespace">Some</ssp:Chunk>
+    <ssp:Chunk>Some</ssp:Chunk>
   </ds:Object>
 </ds:Signature>

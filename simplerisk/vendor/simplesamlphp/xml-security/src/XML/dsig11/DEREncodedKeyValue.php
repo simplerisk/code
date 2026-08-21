@@ -6,11 +6,14 @@ namespace SimpleSAML\XMLSecurity\XML\dsig11;
 
 use DOMElement;
 use SimpleSAML\XML\Assert\Assert;
-use SimpleSAML\XML\Base64ElementTrait;
-use SimpleSAML\XML\Exception\InvalidDOMElementException;
-use SimpleSAML\XML\Exception\SchemaViolationException;
 use SimpleSAML\XML\SchemaValidatableElementInterface;
 use SimpleSAML\XML\SchemaValidatableElementTrait;
+use SimpleSAML\XML\TypedTextContentTrait;
+use SimpleSAML\XMLSchema\Exception\InvalidDOMElementException;
+use SimpleSAML\XMLSchema\Type\Base64BinaryValue;
+use SimpleSAML\XMLSchema\Type\IDValue;
+
+use function strval;
 
 /**
  * Class representing a dsig11:DEREncodedKeyValue element.
@@ -19,32 +22,40 @@ use SimpleSAML\XML\SchemaValidatableElementTrait;
  */
 final class DEREncodedKeyValue extends AbstractDsig11Element implements SchemaValidatableElementInterface
 {
-    use Base64ElementTrait;
     use SchemaValidatableElementTrait;
+    use TypedTextContentTrait;
 
 
     /**
      * Initialize a DEREncodedKeyValue element.
      *
-     * @param string $value
-     * @param string|null $Id
+     * @param \SimpleSAML\XMLSchema\Type\Base64BinaryValue $value
+     * @param \SimpleSAML\XMLSchema\Type\IDValue|null $Id
      */
     public function __construct(
-        string $value,
-        protected ?string $Id = null,
+        protected Base64BinaryValue $value,
+        protected ?IDValue $Id = null,
     ) {
-        Assert::validNCName($Id, SchemaViolationException::class);
+    }
 
-        $this->setContent($value);
+
+    /**
+     * Get the content for this signature value.
+     *
+     * @return \SimpleSAML\XMLSchema\Type\Base64BinaryValue
+     */
+    public function getValue(): Base64BinaryValue
+    {
+        return $this->value;
     }
 
 
     /**
      * Collect the value of the Id-property
      *
-     * @return string|null
+     * @return \SimpleSAML\XMLSchema\Type\IDValue|null
      */
-    public function getId(): ?string
+    public function getId(): ?IDValue
     {
         return $this->Id;
     }
@@ -54,9 +65,8 @@ final class DEREncodedKeyValue extends AbstractDsig11Element implements SchemaVa
      * Convert XML into a DEREncodedKeyValue
      *
      * @param \DOMElement $xml The XML element we should load
-     * @return static
      *
-     * @throws \SimpleSAML\XML\Exception\InvalidDOMElementException
+     * @throws \SimpleSAML\XMLSchema\Exception\InvalidDOMElementException
      *   If the qualified name of the supplied element is wrong
      */
     public static function fromXML(DOMElement $xml): static
@@ -65,8 +75,8 @@ final class DEREncodedKeyValue extends AbstractDsig11Element implements SchemaVa
         Assert::same($xml->namespaceURI, static::getNamespaceURI(), InvalidDOMElementException::class);
 
         return new static(
-            $xml->textContent,
-            self::getOptionalAttribute($xml, 'Id', null),
+            Base64BinaryValue::fromString($xml->textContent),
+            self::getOptionalAttribute($xml, 'Id', IDValue::class, null),
         );
     }
 
@@ -75,15 +85,14 @@ final class DEREncodedKeyValue extends AbstractDsig11Element implements SchemaVa
      * Convert this DEREncodedKeyValue element to XML.
      *
      * @param \DOMElement|null $parent The element we should append this DEREncodedKeyValue element to.
-     * @return \DOMElement
      */
     public function toXML(?DOMElement $parent = null): DOMElement
     {
         $e = $this->instantiateParentElement($parent);
-        $e->textContent = $this->getContent();
+        $e->textContent = strval($this->getValue());
 
         if ($this->getId() !== null) {
-            $e->setAttribute('Id', $this->getId());
+            $e->setAttribute('Id', strval($this->getId()));
         }
 
         return $e;

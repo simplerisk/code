@@ -3,19 +3,60 @@
 *******************/
 
 .page-breadcrumb {
-  padding: 20px 10px;
+  // Tighter than the old 20px so the two-line pagehead (title + subtitle) stays
+  // compact and the page content sits higher.
+  padding: 14px 10px 12px;
+
+  // Line 1: page title (left) + a right-aligned slot for the page's primary
+  // action (e.g. the dashboard "Edit layout" control, hoisted in by UILayout).
+  .page-head {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-height: 32px;   // stable height whether or not an action is present
+  }
+
+  // Title scale/weight matches the Dashboard-tiles design proposal: a larger,
+  // heavier charcoal title anchoring the header.
   .page-title {
     margin-bottom: 0px;
+    font-size: 22px;
+    font-weight: 800;
+    color: $sr-primary;
   }
+
+  .page-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    // Collapse the slot when a page has no header action so it never adds width.
+    &:empty { display: none; }
+  }
+
+  // Line 2: the breadcrumb trail, now a muted subtitle beneath the title.
+  .page-subtitle {
+    margin-top: 3px;
+    line-height: 1.2;
+    color: $gray-600;   // secondary to the title, per the proposal
+  }
+
   .breadcrumb {
     padding: 0px;
     margin: 0px;
     background: transparent;
-    font-size: 12px;
+    font-size: 12.5px;
+    color: $gray-600;
+
+    // Trail links sit quiet with the rest of the subtitle; only darken on hover.
+    a {
+      color: inherit;
+      &:hover { color: $sr-primary; }
+    }
+
     .breadcrumb-item + .breadcrumb-item::before {
       content: "\f0142";
       font-family: "Material Design Icons";
-      //color: $gray-400;
+      color: $gray-500;   // faint separators
       font-size: 11px;
     }
   }

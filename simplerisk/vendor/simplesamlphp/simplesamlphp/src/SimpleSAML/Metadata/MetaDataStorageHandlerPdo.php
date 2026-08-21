@@ -58,6 +58,7 @@ class MetaDataStorageHandlerPdo extends MetaDataStorageSource
      * - 'password':                Password for the database user.
      *
      * @param array $config An associative array with the configuration for this handler.
+     * @phpstan-ignore constructor.unusedParameter
      */
     public function __construct(/** @scrutinizer ignore-unused */ array $config)
     {
@@ -92,7 +93,7 @@ class MetaDataStorageHandlerPdo extends MetaDataStorageSource
             while ($d = $stmt->fetch()) {
                 $data = json_decode($d['entity_data'], true);
                 if ($data === null) {
-                    throw new Error\Exception("Cannot decode metadata for entity '${d['entity_id']}'");
+                    throw new Error\Exception("Cannot decode metadata for entity '{$d['entity_id']}'");
                 }
                 if (!array_key_exists('entityid', $data)) {
                     $data['entityid'] = $d['entity_id'];
@@ -176,7 +177,7 @@ class MetaDataStorageHandlerPdo extends MetaDataStorageSource
             $data = json_decode($d['entity_data'], true);
             if (json_last_error() != JSON_ERROR_NONE) {
                 throw new \SimpleSAML\Error\Exception(
-                    "Cannot decode metadata for entity '${d['entity_id']}'",
+                    "Cannot decode metadata for entity '{$d['entity_id']}'",
                 );
             }
 

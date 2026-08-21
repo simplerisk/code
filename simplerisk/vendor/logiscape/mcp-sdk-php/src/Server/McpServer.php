@@ -1,0 +1,2532 @@
+<?php
+
+/**
+ * Model Context Protocol SDK for PHP
+ *
+ * (c) 2026 Logiscape LLC <https://logiscape.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ *
+ * @package    logiscape/mcp-sdk-php
+ * @author     Josh Abbott <https://joshabbott.com>
+ * @copyright  Logiscape LLC
+ * @license    MIT License
+ * @link       https://github.com/logiscape/mcp-sdk-php
+ *
+ * Filename: Server/McpServer.php
+ */
+
+declare(strict_types=1);
+
+namespace Mcp\Server;
+
+use Mcp\Server\Auth\TokenValidatorInterface;
+use Mcp\Server\ClientRequestSuspendException;
+use Mcp\Server\Elicitation\ElicitationContext;
+use Mcp\Server\Elicitation\ElicitationDeclinedException;
+use Mcp\Server\Elicitation\ElicitationSuspendException;
+use Mcp\Server\InputRequired\InputContext;
+use Mcp\Server\InputRequired\InputExchange;
+use Mcp\Server\InputRequired\InputRequiredSuspendException;
+use Mcp\Server\InputRequired\RequestStateCodec;
+use Mcp\Server\Sampling\SamplingContext;
+use Mcp\Server\Sampling\SamplingSuspendException;
+use Mcp\Server\Tasks\TaskContext;
+use Mcp\Server\Tasks\TaskDeferredException;
+use Mcp\Server\Tasks\TaskTransitionRejectedException;
+use Mcp\Server\Transport\Http\FileSessionStore;
+use Mcp\Server\Transport\Http\HttpIoInterface;
+use Mcp\Server\Transport\Http\SessionStoreInterface;
+use Mcp\Server\Transport\Http\StandardPhpAdapter;
+use Mcp\Server\Transport\TransportClosedException;
+use Mcp\Types\BlobResourceContents;
+use Mcp\Types\CallToolResult;
+use Mcp\Types\CompleteResult;
+use Mcp\Types\CompletionContext;
+use Mcp\Types\CompletionObject;
+use Mcp\Types\GetPromptResult;
+use Mcp\Types\ListPromptsResult;
+use Mcp\Types\ListResourcesResult;
+use Mcp\Types\ListResourceTemplatesResult;
+use Mcp\Types\ListToolsResult;
+use Mcp\Types\Prompt;
+use Mcp\Types\PromptArgument;
+use Mcp\Types\PromptMessage;
+use Mcp\Types\PromptReference;
+use Mcp\Types\ReadResourceResult;
+use Mcp\Types\Resource;
+use Mcp\Types\ResourceReference;
+use Mcp\Types\ResourceTemplate;
+use Mcp\Types\Role;
+use Mcp\Types\Task;
+use Mcp\Types\TaskStatus;
+use Mcp\Types\TaskGetResult;
+use Mcp\Types\CreateTaskResult;
+use Mcp\Types\TaskUpdateResult;
+use Mcp\Types\TaskCancelResult;
+use Mcp\Types\ExtensionIds;
+use Mcp\Types\InputRequiredResult;
+use Mcp\Types\TextContent;
+use Mcp\Types\TextResourceContents;
+use Mcp\Types\Meta;
+use Mcp\Types\ProgressToken;
+use Mcp\Types\Tool;
+use Mcp\Types\ToolAnnotations;
+use Mcp\Types\ToolInputProperties;
+use Mcp\Types\ToolInputSchema;
+use Mcp\Shared\ErrorData;
+use Mcp\Shared\McpError;
+use Mcp\Shared\McpHeaders;
+use Mcp\Shared\ProgressContext;
+use Mcp\Shared\UriTemplate;
+use Psr\Log\LoggerInterface;
+use Psr\Log\NullLogger;
+use ReflectionFunction;
+use ReflectionNamedType;
+
+/**
+ * Convenience wrapper around the MCP Server.
+ *
+ * Provides a developer-friendly interface for creating MCP servers with
+ * minimal boilerplate. Supports stdio and HTTP transports, optional OAuth
+ * authentication, and automatic type conversion.
+ *
+ * Example usage:
+ *
+ * ```php
+ * $server = new McpServer('my-server');
+ * $server
+ *     ->tool('add', 'Add numbers', fn(float $a, float $b) => "Sum: " . ($a + $b))
+ *     ->prompt('greet', 'Greeting', fn(string $name) => "Hello, {$name}!")
+ *     ->resource(uri: 'info://php', name: 'PHP Info', callback: fn() => PHP_VERSION)
+ *     ->run();
+ * ```
+ *
+ * Derived from pronskiy/mcp (https://github.com/pronskiy/mcp)
+ * Copyright (c) pronskiy <roman@pronskiy.com>
+ * Licensed under the MIT License
+ *
+ * Key changes from original class:
+ *
+ * - Namespace changed from `Pronskiy\Mcp` to `Mcp\Server`
+ * - Class renamed from `Server` to `McpServer` to avoid conflict with existing `Mcp\Server\Server`
+ * - Added HTTP transport support (`runHttp()`) using the SDK's `HttpServerRunner` and `StandardPhpAdapter`
+ * - Added automatic transport detection (`run()`) calls `runStdio()` for local servers and `runHttp()` for remote servers
+ * - Added OAuth authentication support (`withAuth()`) using the SDK's `TokenValidatorInterface`
+ * - Added PSR-3 logger support
+ * - Removed the static facade for now, to simplify implementation and testing
+ */
+class McpServer
+{
+    /**
+     * The MIME type for MCP Apps (SEP-1865) UI template resources — the only
+     * profile defined in the stable `2026-01-26` revision. Exact spelling
+     * matters (lowercase, no space after the semicolon).
+     */
+    public const UI_MIME_TYPE = 'text/html;profile=mcp-app';
+
+    /**
+     * Allowed `_meta.ui.visibility` values (MCP Apps). Public so
+     * configuration authors can enumerate the closed set; prefer
+     * {@see validateUiHints()} for ahead-of-time validation.
+     */
+    public const UI_VISIBILITY = ['model', 'app'];
+
+    /**
+     * Allowed `_meta.ui.permissions` members (each an empty-object value).
+     * Public so configuration authors can enumerate the closed set; prefer
+     * {@see validateUiHints()} for ahead-of-time validation.
+     */
+    public const UI_PERMISSIONS = ['camera', 'microphone', 'geolocation', 'clipboardWrite'];
+
+    /**
+     * Allowed `_meta.ui.csp` keys (each a `string[]` of domains). Public so
+     * configuration authors can enumerate the closed set; prefer
+     * {@see validateUiHints()} for ahead-of-time validation.
+     */
+    public const UI_CSP_KEYS = ['connectDomains', 'resourceDomains', 'frameDomains', 'baseUriDomains'];
+
+    /** The underlying MCP Server instance. */
+    protected Server $server;
+
+    /** @var Tool[] Registered tools. */
+    protected array $tools = [];
+
+    /** @var array<string, callable> Registered tool handlers keyed by name. */
+    protected array $toolHandlers = [];
+
+    /** @var Prompt[] Registered prompts. */
+    protected array $prompts = [];
+
+    /** @var array<string, callable> Registered prompt handlers keyed by name. */
+    protected array $promptHandlers = [];
+
+    /** @var Resource[] Registered resources. */
+    protected array $resources = [];
+
+    /** @var array<string, callable> Registered resource handlers keyed by URI. */
+    protected array $resourceHandlers = [];
+
+    /** @var ResourceTemplate[] Registered resource templates. */
+    protected array $resourceTemplates = [];
+
+    /**
+     * @var array<int, array{matcher: UriTemplate, handler: callable, mimeType: string}>
+     *      Compiled template handlers, in registration order.
+     */
+    protected array $resourceTemplateHandlers = [];
+
+    /** @var array<string, callable> Prompt-argument completion providers, keyed "promptName\0argName". */
+    protected array $promptCompletionProviders = [];
+
+    /** @var array<string, callable> Resource-template completion providers, keyed "uriTemplate\0argName". */
+    protected array $resourceTemplateCompletionProviders = [];
+
+    /** @var bool Whether the completion/complete handler has been registered. */
+    protected bool $completionHandlerRegistered = false;
+
+    /** @var array<string, mixed> [Added] HTTP transport options. */
+    protected array $httpOptions = [];
+
+    /**
+     * Bus backing subscriptions/listen event fan-out (SEP-2575). Null
+     * when no cross-request channel is configured.
+     */
+    protected ?\Mcp\Server\Subscriptions\SubscriptionBusInterface $subscriptionBus = null;
+
+    /**
+     * SEP-2322: the multi-round-trip exchange of the modern request
+     * currently being dispatched. Set around tools/call and prompts/get
+     * dispatch; the handler-context objects read it at construction.
+     */
+    protected ?InputExchange $currentExchange = null;
+
+    /**
+     * SEP-2663: taskId of the task round currently dispatching. Set around
+     * runTaskRound()'s handler call; the TaskContext injected into the tool
+     * callback reads it at construction (null on plain synchronous calls).
+     */
+    protected ?string $currentTaskId = null;
+
+    /**
+     * SEP-2322 requestState signer. Lazily defaults to the per-installation
+     * file-backed secret; override via inputStateCodec().
+     */
+    protected ?RequestStateCodec $stateCodec = null;
+
+    /** @var SessionStoreInterface|null [Added] Session store for HTTP transport. */
+    protected ?SessionStoreInterface $sessionStore = null;
+
+    /** @var LoggerInterface [Added] PSR-3 logger. */
+    protected LoggerInterface $logger;
+
+    /** @var bool [Added] Whether to notify clients of resource changes. */
+    protected bool $resourcesChanged = true;
+
+    /** @var bool [Added] Whether to notify clients of tool changes. */
+    protected bool $toolsChanged = true;
+
+    /** @var bool [Added] Whether to notify clients of prompt changes. */
+    protected bool $promptsChanged = true;
+
+    /** @var TaskManager|null Task manager for long-running operations. */
+    protected ?TaskManager $taskManager = null;
+
+    /** @var int|null Default ttlMs applied to tasks created from tools/call. */
+    protected ?int $taskDefaultTtlMs = null;
+
+    /** @var int|null Default pollIntervalMs advertised on created tasks. */
+    protected ?int $taskDefaultPollIntervalMs = null;
+
+    /** @var array<string, string> Per-tool SEP-2663 task-augmentation policy (see TaskSupport). */
+    protected array $toolTaskSupport = [];
+
+    /** @var array<string, string> Per-tool SEP-2663 x SEP-2322 input-composition mode (see TaskInputMode). */
+    protected array $toolTaskInputMode = [];
+
+    /** @var array<string, bool> Tool names that require ElicitationContext injection. */
+    protected array $toolsNeedElicitation = [];
+
+    /** @var array<string, bool> Tool names that require SamplingContext injection. */
+    protected array $toolsNeedSampling = [];
+
+    /**
+     * Create a new McpServer instance.
+     *
+     * @param string $name The server name advertised during initialization
+     * @param LoggerInterface|null $logger [Added] Optional PSR-3 logger
+     * @param string $version The server version advertised during initialization
+     */
+    public function __construct(
+        string $name,
+        ?LoggerInterface $logger = null,
+        string $version = '1.0.0',
+    )
+    {
+        $this->logger = $logger ?? new NullLogger();
+        $this->server = new Server($name, $this->logger, $version);
+        $this->registerDefaultHandlers();
+    }
+
+    // -----------------------------------------------------------------------
+    // Registration Methods
+    // -----------------------------------------------------------------------
+
+    /**
+     * Define a new tool.
+     *
+     * The input schema is automatically generated from the callback's parameters
+     * using reflection. The callback can return a string (auto-wrapped in
+     * CallToolResult), an array (auto-wrapped as structured content), or a
+     * CallToolResult directly.
+     *
+     * @param string $name The tool name
+     * @param string $description A description of what the tool does
+     * @param callable $callback The function that implements the tool
+     * @param string|null $title Display title for the tool
+     * @param array<int, array<string, mixed>>|null $icons Icons for the tool
+     * @param array<string, mixed>|null $outputSchema JSON Schema for structured output
+     * @param array<string, mixed>|null $inputSchema Custom JSON Schema for input (overrides reflection-generated schema)
+     * @param array<string, mixed>|ToolAnnotations|null $annotations Spec ToolAnnotations behavioral hints
+     *        (readOnlyHint/destructiveHint/idempotentHint/openWorldHint/title) — advisory only
+     * @param string $taskInputMode How a task-augmented tool composes with SEP-2322
+     *        multi-round-trip input (a {@see TaskInputMode} constant). IN_TASK (default)
+     *        mints the task handle first and gathers input in-task via tasks/get +
+     *        tasks/update. PRE_TASK resolves input through plain `input_required`
+     *        rounds while no task exists, and mints the task — already terminal —
+     *        on the final round (the spec-recommended composition). In PRE_TASK
+     *        rounds a protocol error surfaces as a JSON-RPC error (no task exists
+     *        to fail) and TaskContext::defer() is unavailable; deferring tools
+     *        should use IN_TASK. Requires taskSupport OPTIONAL or REQUIRED.
+     * @return self For method chaining
+     */
+    public function tool(
+        string $name,
+        string $description,
+        callable $callback,
+        ?string $title = null,
+        ?array $icons = null,
+        ?array $outputSchema = null,
+        ?array $inputSchema = null,
+        string $taskSupport = TaskSupport::FORBIDDEN,
+        array|ToolAnnotations|null $annotations = null,
+        string $taskInputMode = TaskInputMode::IN_TASK,
+    ): self {
+        if (!TaskSupport::isValid($taskSupport)) {
+            throw new \InvalidArgumentException(
+                "Invalid taskSupport '{$taskSupport}' for tool '{$name}' (expected one of: "
+                . implode(', ', TaskSupport::ALL) . ')'
+            );
+        }
+        if (!TaskInputMode::isValid($taskInputMode)) {
+            throw new \InvalidArgumentException(
+                "Invalid taskInputMode '{$taskInputMode}' for tool '{$name}' (expected one of: "
+                . implode(', ', TaskInputMode::ALL) . ')'
+            );
+        }
+        if ($taskInputMode === TaskInputMode::PRE_TASK && $taskSupport === TaskSupport::FORBIDDEN) {
+            throw new \InvalidArgumentException(
+                "taskInputMode 'pre-task' for tool '{$name}' requires taskSupport 'optional' or 'required'"
+            );
+        }
+        $this->toolTaskSupport[$name] = $taskSupport;
+        $this->toolTaskInputMode[$name] = $taskInputMode;
+
+        $schema = $inputSchema !== null
+            ? ToolInputSchema::fromArray(array_merge(['type' => 'object'], $inputSchema))
+            : $this->buildSchemaFromCallback($callback);
+
+        $tool = new Tool(
+            name: $name,
+            inputSchema: $schema,
+            description: $description,
+            annotations: ToolAnnotations::parse($annotations),
+            title: $title,
+            icons: \Mcp\Types\Icon::parseArray($icons),
+            outputSchema: $outputSchema,
+        );
+
+        $this->tools[] = $tool;
+
+        // Detect if callback needs ElicitationContext, SamplingContext, or ProgressContext
+        $needsElicitation = $this->callbackNeedsElicitation($callback);
+        if ($needsElicitation) {
+            $this->toolsNeedElicitation[$name] = true;
+        }
+        $needsSampling = $this->callbackNeedsSampling($callback);
+        if ($needsSampling) {
+            $this->toolsNeedSampling[$name] = true;
+        }
+        $needsProgress = $this->callbackNeedsProgress($callback);
+        $needsInput = $this->callbackNeedsInputContext($callback);
+        $needsTask = $this->callbackNeedsTaskContext($callback);
+
+        $this->toolHandlers[$name] = function ($args, ?Meta $meta = null) use ($name, $tool, $callback, $outputSchema, $needsElicitation, $needsSampling, $needsProgress, $needsInput, $needsTask) {
+            $arguments = json_decode(json_encode($args), true) ?? [];
+
+            // SEP-2243: on the modern HTTP path, arguments designated by an
+            // x-mcp-header annotation must arrive mirrored in Mcp-Param-*
+            // headers that match the body; a missing, undecodable, or
+            // mismatched header is rejected 400/-32020.
+            $this->validateMcpParamHeaders($tool, $arguments);
+
+            // Check for preloaded elicitation/sampling results (HTTP resume path)
+            $elicitationResults = [];
+            if (is_object($args) && isset($args->_elicitationResults)) {
+                $elicitationResults = (array) $args->_elicitationResults;
+            }
+            $samplingResults = [];
+            if (is_object($args) && isset($args->_samplingResults)) {
+                $samplingResults = (array) $args->_samplingResults;
+            }
+
+            $elicitContext = null;
+            if ($needsElicitation) {
+                $session = $this->server->getSession();
+                $isHttpMode = ($session instanceof HttpServerSession);
+                $elicitContext = new ElicitationContext(
+                    session: $session,
+                    httpMode: $isHttpMode,
+                    preloadedResults: $elicitationResults,
+                    toolName: $name,
+                    toolArguments: $arguments,
+                    originalRequestId: 0, // Set by HttpServerSession when catching suspend
+                    exchange: $this->currentExchange,
+                );
+            }
+
+            $samplingContext = null;
+            if ($needsSampling) {
+                $session = $this->server->getSession();
+                $isHttpMode = ($session instanceof HttpServerSession);
+                $samplingContext = new SamplingContext(
+                    session: $session,
+                    httpMode: $isHttpMode,
+                    preloadedResults: $samplingResults,
+                    toolName: $name,
+                    toolArguments: $arguments,
+                    originalRequestId: 0,
+                    exchange: $this->currentExchange,
+                );
+            }
+
+            $inputContext = null;
+            if ($needsInput) {
+                $session = $this->server->getSession();
+                if ($session instanceof ServerSession) {
+                    $inputContext = new InputContext($session, $this->currentExchange);
+                }
+            }
+
+            // Create ProgressContext if callback needs it and a progressToken was provided
+            $progressContext = null;
+            if ($needsProgress && $meta !== null) {
+                $rawToken = $meta->progressToken ?? null;
+                if ($rawToken !== null) {
+                    $token = $rawToken instanceof ProgressToken ? $rawToken : new ProgressToken($rawToken);
+                    $session = $this->server->getSession();
+                    if ($session !== null) {
+                        $progressContext = new ProgressContext($session, $token);
+                    }
+                }
+            }
+
+            // SEP-2663: always non-null when hinted — inert (null taskId)
+            // on a plain synchronous call, so callbacks can branch on
+            // isTask() and may declare a non-nullable parameter.
+            $taskContext = null;
+            if ($needsTask) {
+                $taskContext = new TaskContext($this->currentTaskId, $name);
+            }
+
+            $ordered = $this->matchNamedParameters($callback, $arguments, $elicitContext, $progressContext, $samplingContext, $inputContext, $taskContext);
+
+            $result = $callback(...$ordered);
+
+            if ($result instanceof CallToolResult) {
+                return $result;
+            }
+
+            // SEP-2106 (2026-07-28): when an outputSchema is declared, the
+            // callback's return value IS the structured output and may be
+            // any JSON value — object, array, string, number, boolean, or
+            // null. The serialized JSON always rides along as a TextContent
+            // block (spec back-compat SHOULD), and the server session strips
+            // non-object structuredContent for legacy clients.
+            if ($outputSchema !== null) {
+                $jsonValue = is_object($result) ? (array) $result : $result;
+                if ($jsonValue !== null && !is_array($jsonValue) && !is_scalar($jsonValue)) {
+                    throw McpServerException::invalidToolResult($result);
+                }
+                $callResult = new CallToolResult(
+                    content: [new TextContent(text: json_encode($jsonValue, JSON_UNESCAPED_SLASHES))],
+                    structuredContent: $jsonValue
+                );
+                if ($jsonValue === null) {
+                    $callResult->setStructuredContentNull();
+                }
+                return $callResult;
+            }
+
+            if (is_string($result)) {
+                return new CallToolResult(
+                    content: [new TextContent(text: $result)]
+                );
+            }
+
+            throw McpServerException::invalidToolResult($result);
+        };
+
+        return $this;
+    }
+
+    /**
+     * SEP-2243 Mcp-Param-* validation for the modern (2026-07-28) HTTP
+     * path. For every top-level inputSchema property carrying a valid
+     * x-mcp-header annotation whose argument is present (non-null) in the
+     * body, the request must carry a matching Mcp-Param-{name} header:
+     * missing, undecodable (broken base64 sentinel), or value-mismatched
+     * headers raise HeaderMismatch (-32020), which the session maps to
+     * HTTP 400. Null/absent arguments require the header to be omitted —
+     * the server never expects one for them.
+     *
+     * No-op when the session has no transport header map (stdio, where
+     * headers do not exist, and legacy HTTP requests).
+     *
+     * @param array<string, mixed> $arguments Decoded tool arguments
+     */
+    private function validateMcpParamHeaders(Tool $tool, array $arguments): void
+    {
+        $session = $this->server->getSession();
+        if (!$session instanceof ServerSession) {
+            return;
+        }
+        $headers = $session->getTransportHttpHeaders();
+        if ($headers === null) {
+            return;
+        }
+
+        $schema = json_decode(json_encode($tool->inputSchema), true);
+        if (!is_array($schema)) {
+            return;
+        }
+        $annotations = McpHeaders::collectAnnotations($schema);
+        if ($annotations['map'] === []) {
+            return;
+        }
+
+        foreach ($annotations['map'] as $path => $info) {
+            $headerName = McpHeaders::paramHeaderName($info['annotation']);
+            $headerValue = $headers[strtolower($headerName)] ?? null;
+
+            [$found, $value] = McpHeaders::argumentAtPath($arguments, $info['segments']);
+            if (!$found || $value === null) {
+                // Spec: a null/absent designated parameter means the client
+                // MUST omit the header and the server MUST NOT expect it.
+                continue;
+            }
+
+            if (is_float($value) && !is_finite($value)) {
+                $this->raiseHeaderMismatch(
+                    "Header mismatch: designated parameter '$path' is not a finite number"
+                );
+            }
+            if ((is_int($value) || is_float($value))
+                && ($info['type'] === 'integer' || is_int($value))
+                && !McpHeaders::isSafeIntegerValue($value)
+            ) {
+                // SEP-2243: designated integer values MUST be within
+                // ±(2^53 - 1) — and large JSON integers can decode as
+                // floats, so integral floats are held to the same bound.
+                $this->raiseHeaderMismatch(
+                    "Header mismatch: designated parameter '$path' exceeds the JavaScript-safe integer range"
+                );
+            }
+
+            if ($headerValue === null) {
+                $this->raiseHeaderMismatch(
+                    "Header mismatch: missing required $headerName header for parameter '$path'"
+                );
+            }
+
+            $decoded = McpHeaders::decodeParamValue(McpHeaders::trimOws($headerValue));
+            if ($decoded === null) {
+                $this->raiseHeaderMismatch(
+                    "Header mismatch: $headerName header value could not be base64-decoded"
+                );
+            }
+
+            if (!McpHeaders::paramValueMatches($decoded, $value, $info['type'])) {
+                $this->raiseHeaderMismatch(
+                    "Header mismatch: $headerName header value '$decoded' does not match the body value for '$path'"
+                );
+            }
+        }
+    }
+
+    /**
+     * @throws McpError Always — the -32020 HeaderMismatch protocol error.
+     */
+    private function raiseHeaderMismatch(string $message): never
+    {
+        throw new McpError(new ErrorData(
+            code: McpError::HEADER_MISMATCH,
+            message: $message
+        ));
+    }
+
+    /**
+     * [Added] Override the SEP-2322 requestState signer (secret + TTL).
+     * Defaults to a per-installation file-backed secret so multi-process
+     * deployments verify each other's state.
+     *
+     * @return self For method chaining
+     */
+    public function inputStateCodec(RequestStateCodec $codec): self
+    {
+        $this->stateCodec = $codec;
+        return $this;
+    }
+
+    protected function getStateCodec(): RequestStateCodec
+    {
+        return $this->stateCodec ??= RequestStateCodec::withFileSecret();
+    }
+
+    /**
+     * Build the SEP-2322 exchange for a modern tools/call or prompts/get
+     * dispatch: verify the echoed requestState (integrity + expiry +
+     * method/name binding — it is attacker-controlled input) and merge the
+     * results it carries with this round's fresh inputResponses. Null on
+     * legacy revisions, where the mechanism does not exist.
+     *
+     * @param mixed $params The typed request params
+     * @throws McpError -32602 when requestState fails verification
+     */
+    protected function buildInputExchange(mixed $params, string $method, string $name): ?InputExchange
+    {
+        if (!$this->server->clientSupportsFeature('stateless_lifecycle')) {
+            return null;
+        }
+
+        $state = is_object($params) && isset($params->requestState) && is_string($params->requestState)
+            ? $params->requestState
+            : null;
+        $carried = [];
+        if ($state !== null && $state !== '') {
+            $payload = $this->getStateCodec()->decode($state);
+            if ($payload === null
+                || ($payload['m'] ?? null) !== $method
+                || ($payload['n'] ?? null) !== $name
+                // SEP-2322: requestState is bound to the authenticated
+                // principal it was issued for — another user replaying a
+                // captured state fails verification exactly like
+                // tampering (no detail leaked about which check failed).
+                || ($payload['p'] ?? null) !== $this->currentPrincipal()
+            ) {
+                throw new McpError(new ErrorData(
+                    code: -32602,
+                    message: 'requestState integrity check failed'
+                ));
+            }
+            if (is_array($payload['res'] ?? null)) {
+                $carried = $payload['res'];
+            }
+        }
+
+        $fresh = [];
+        if (is_object($params) && isset($params->inputResponses)) {
+            $responses = $params->inputResponses;
+            if (is_object($responses)) {
+                $responses = json_decode((string) json_encode($responses), true);
+            }
+            if (is_array($responses)) {
+                // Spec: ignore (don't fail on) unexpected/malformed entries;
+                // a non-array inputResponses value counts as absent and the
+                // round is simply re-requested.
+                $fresh = $responses;
+            }
+        }
+
+        return new InputExchange(array_merge($carried, $fresh));
+    }
+
+    /**
+     * Convert an InputRequiredSuspendException into the wire
+     * InputRequiredResult: the queued input requests plus a signed
+     * requestState carrying every already-resolved result into the next
+     * round (the handler re-executes from scratch on the retry).
+     */
+    protected function buildInputRequiredResult(InputRequiredSuspendException $e, string $method, string $name): InputRequiredResult
+    {
+        $state = $this->getStateCodec()->encode([
+            'm' => $method,
+            'n' => $name,
+            'p' => $this->currentPrincipal(),
+            'res' => $e->carryResults,
+        ]);
+        return new InputRequiredResult(
+            inputRequests: $e->inputRequests,
+            requestState: $state,
+        );
+    }
+
+    /**
+     * The authenticated principal of the request being dispatched (token
+     * `sub` claim forwarded by the HTTP runner), or null when the request
+     * is anonymous / on stdio.
+     */
+    private function currentPrincipal(): ?string
+    {
+        $session = $this->server->getSession();
+        return $session instanceof ServerSession
+            ? $session->getAuthenticatedPrincipal()
+            : null;
+    }
+
+    /**
+     * Define a new prompt.
+     *
+     * The arguments are automatically generated from the callback's parameters
+     * using reflection. The callback can return a string, an array of strings,
+     * or a GetPromptResult directly.
+     *
+     * @param string $name The prompt name
+     * @param string $description A description of the prompt
+     * @param callable $callback The function that implements the prompt
+     * @param string|null $title Display title for the prompt
+     * @param array<int, array<string, mixed>>|null $icons Icons for the prompt
+     * @return self For method chaining
+     * @throws McpServerException If the callback returns an invalid result
+     */
+    public function prompt(
+        string $name,
+        string $description,
+        callable $callback,
+        ?string $title = null,
+        ?array $icons = null,
+    ): self {
+        $arguments = $this->buildArgumentsFromCallback($callback);
+
+        $prompt = new Prompt(
+            name: $name,
+            description: $description,
+            arguments: $arguments,
+            title: $title,
+            icons: \Mcp\Types\Icon::parseArray($icons),
+        );
+
+        $this->prompts[] = $prompt;
+
+        // [Modified from pronskiy/mcp] Use named parameter matching.
+        $needsElicitation = $this->callbackNeedsElicitation($callback);
+        $needsInput = $this->callbackNeedsInputContext($callback);
+        $this->promptHandlers[$name] = function ($args) use ($name, $callback, $needsElicitation, $needsInput) {
+            $arguments = json_decode(json_encode($args), true) ?? [];
+
+            // SEP-2322: prompts/get callbacks may gather client input on
+            // the modern path (the contexts suspend into an
+            // InputRequiredResult). The legacy suspend/resume pattern is
+            // tools-only, so on legacy revisions an elicitation-needing
+            // prompt degrades the same way an unsupported client does.
+            $elicitContext = null;
+            $inputContext = null;
+            $session = $this->server->getSession();
+            if ($needsElicitation && $session instanceof ServerSession) {
+                // httpMode stays false here on purpose: the legacy HTTP
+                // suspend/resume machinery is tools-only (its pending
+                // records re-invoke tools/call on resume), so a legacy
+                // HTTP prompt that elicits must fail loudly (the session's
+                // BadMethodCallException) rather than suspend into state
+                // it can never resume from. Modern requests use the
+                // SEP-2322 exchange; legacy stdio blocks synchronously.
+                $elicitContext = new ElicitationContext(
+                    session: $session,
+                    httpMode: false,
+                    toolName: $name,
+                    toolArguments: $arguments,
+                    exchange: $this->currentExchange,
+                );
+            }
+            if ($needsInput && $session instanceof ServerSession) {
+                $inputContext = new InputContext($session, $this->currentExchange);
+            }
+
+            $ordered = $this->matchNamedParameters($callback, $arguments, $elicitContext, null, null, $inputContext);
+
+            $result = $callback(...$ordered);
+
+            if ($result instanceof GetPromptResult) {
+                return $result;
+            }
+
+            if (is_string($result)) {
+                return new GetPromptResult(
+                    messages: [
+                        new PromptMessage(
+                            role: Role::USER,
+                            content: new TextContent(text: $result)
+                        ),
+                    ]
+                );
+            }
+
+            if (is_array($result)) {
+                $messages = [];
+                foreach ($result as $message) {
+                    $messages[] = new PromptMessage(
+                        role: Role::USER,
+                        content: new TextContent(text: (string) $message)
+                    );
+                }
+                return new GetPromptResult(messages: $messages);
+            }
+
+            throw McpServerException::invalidPromptResult($result);
+        };
+
+        return $this;
+    }
+
+    /**
+     * Define a new resource.
+     *
+     * The callback should return a string (auto-wrapped in ReadResourceResult),
+     * an SplFileObject or resource (base64-encoded as blob), or a
+     * ReadResourceResult directly.
+     *
+     * @param string $uri The resource URI
+     * @param string $name The resource name
+     * @param callable $callback The callback that returns the resource content
+     * @param string $description The resource description
+     * @param string $mimeType The MIME type
+     * @param string|null $title Display title for the resource
+     * @param array<int, array<string, mixed>>|null $icons Icons for the resource
+     * @param int|null $size Resource size in bytes
+     * @return self For method chaining
+     * @throws McpServerException If the callback returns an invalid result
+     */
+    public function resource(
+        string $uri,
+        string $name,
+        callable $callback,
+        string $description = '',
+        string $mimeType = 'text/plain',
+        ?string $title = null,
+        ?array $icons = null,
+        ?int $size = null,
+    ): self {
+
+        $resource = new Resource(
+            name: $name,
+            uri: $uri,
+            description: $description,
+            mimeType: $mimeType,
+            title: $title,
+            icons: \Mcp\Types\Icon::parseArray($icons),
+            size: $size,
+        );
+
+        $this->resources[] = $resource;
+
+        $this->resourceHandlers[$uri] = function () use ($callback, $uri, $mimeType) {
+            return $this->normalizeReadResourceResult($callback(), $uri, $mimeType);
+        };
+
+        return $this;
+    }
+
+    /**
+     * Define a new resource template (RFC 6570 Level 1 + reserved {+var}).
+     *
+     * A resource template lets a single callback serve a family of URIs that
+     * share a structure, e.g. `db://{table}/{id}`. Registering a template makes
+     * it appear in `resources/templates/list`, and a `resources/read` for any
+     * URI that matches the template invokes the callback with the extracted
+     * variables bound to its parameters **by name** (`fn(string $id) => ...`).
+     *
+     * Supported template syntax (see {@see UriTemplate}):
+     *  - `{var}` matches a SINGLE path segment (one or more non-`/` characters).
+     *  - `{+var}` (reserved) matches greedily, INCLUDING `/`, for filesystem-like
+     *    templates. The spec's `file:///{path}` example only reads a real
+     *    multi-segment path when written as `file:///{+path}`.
+     *  - Any other RFC 6570 operator or modifier (`{?q}`, `{#f}`, `{var:3}`,
+     *    `{var*}`, `{a,b}`, …) is rejected with an `InvalidArgumentException` at
+     *    registration, so a template the read path cannot match is never
+     *    advertised.
+     *
+     * Precedence: an exact-URI {@see resource()} always wins over a template,
+     * and templates are tried in registration order (first registered wins on
+     * an overlap).
+     *
+     * The callback follows the same return-value contract as {@see resource()}:
+     * a string (auto-wrapped in `ReadResourceResult` with the concrete request
+     * URI), an `SplFileObject`/resource (base64 blob), or a `ReadResourceResult`
+     * (passed through).
+     *
+     * @param string $uriTemplate The URI template (RFC 6570 subset)
+     * @param string $name The template name
+     * @param callable $callback Receives the extracted variables by name
+     * @param string $description The template description
+     * @param string $mimeType The MIME type
+     * @param string|null $title Display title for the template
+     * @param array<int, array<string, mixed>>|null $icons Icons for the template
+     * @return self For method chaining
+     * @throws \InvalidArgumentException If the template uses unsupported syntax
+     * @throws McpServerException If the callback returns an invalid result
+     */
+    public function resourceTemplate(
+        string $uriTemplate,
+        string $name,
+        callable $callback,
+        string $description = '',
+        string $mimeType = 'text/plain',
+        ?string $title = null,
+        ?array $icons = null,
+    ): self {
+
+        // Compile first: an unsupported RFC 6570 operator throws here, before
+        // any descriptor is stored or advertised.
+        $matcher = new UriTemplate($uriTemplate);
+
+        $this->resourceTemplates[] = new ResourceTemplate(
+            name: $name,
+            uriTemplate: $uriTemplate,
+            description: $description !== '' ? $description : null,
+            mimeType: $mimeType,
+            title: $title,
+            icons: \Mcp\Types\Icon::parseArray($icons),
+        );
+
+        $handler = function (array $vars, string $uri) use ($callback, $mimeType): ReadResourceResult {
+            // Map the extracted variables onto the callback's parameters by name
+            // and stamp the contents with the concrete request URI (not template).
+            $ordered = $this->matchNamedParameters($callback, $vars);
+            return $this->normalizeReadResourceResult($callback(...$ordered), $uri, $mimeType);
+        };
+
+        $this->resourceTemplateHandlers[] = [
+            'matcher' => $matcher,
+            'handler' => $handler,
+            'mimeType' => $mimeType,
+        ];
+
+        return $this;
+    }
+
+    /**
+     * Attach an MCP Apps (SEP-1865) UI template to an already-registered tool.
+     *
+     * Bundles the three conventions the Apps extension defines so an
+     * app-enabled server stays a few lines of PHP:
+     *
+     *  1. Registers a `ui://` template resource carrying the UI document with
+     *     MIME {@see UI_MIME_TYPE} (`text/html;profile=mcp-app`), so hosts can
+     *     prefetch, cache, and security-review it ahead of execution. The
+     *     resource appears in `resources/list` and `resources/read`.
+     *  2. Links the named tool to that resource through the tool's
+     *     `_meta.ui.resourceUri` (plus optional `_meta.ui.visibility`). The
+     *     deprecated flat `_meta["ui/resourceUri"]` key is written alongside
+     *     it for host back-compat during the extension's pre-GA window,
+     *     mirroring the reference ext-apps server SDK.
+     *  3. Declares the Apps extension in the server's capabilities
+     *     (`extensions["io.modelcontextprotocol/ui"] = {mimeTypes: [...]}`),
+     *     advertised in `initialize` and `server/discover`.
+     *
+     * Graceful degradation is automatic: the linked tool keeps returning its
+     * ordinary `content` (the SDK does not add a special UI path), so a host
+     * that cannot render the UI simply ignores `_meta.ui` and the tool still
+     * works. UI-originated interactions reach the server as ordinary
+     * `tools/call` requests — there is no UI-specific server handler. The tool
+     * MUST be registered with {@see tool()} before calling this.
+     *
+     * The optional resource-level metadata (`csp`, `permissions`, `domain`,
+     * `prefersBorder`) is emitted as `_meta.ui` on the `resources/read`
+     * content (where the stable revision reads it) and mirrored on the listed
+     * resource (where the draft revision also allows it; content takes
+     * precedence). All four are host hints and may be omitted entirely.
+     *
+     * @param string $tool The name of the tool to link (registered first)
+     * @param string $uri The template resource URI (MUST begin with `ui://`)
+     * @param string $name The resource name
+     * @param string|callable $html The HTML5 document, or a callback returning it
+     * @param string $description The resource description
+     * @param array<int, string>|null $visibility Subset of `model`/`app`; null
+     *        omits the field (host default is both)
+     * @param array<string, array<int, string>>|null $csp Content-Security-Policy
+     *        domain allowlists keyed by connect/resource/frame/baseUri Domains
+     * @param array<int, string>|null $permissions Subset of camera/microphone/
+     *        geolocation/clipboardWrite
+     * @param string|null $domain Optional dedicated sandbox origin (host-defined)
+     * @param bool|null $prefersBorder Visual border/background preference
+     * @return self For method chaining
+     * @throws \InvalidArgumentException If the URI is not a `ui://` URI, the
+     *         tool is not registered, or a metadata value is out of range
+     */
+    public function ui(
+        string $tool,
+        string $uri,
+        string $name,
+        string|callable $html,
+        string $description = '',
+        ?array $visibility = null,
+        ?array $csp = null,
+        ?array $permissions = null,
+        ?string $domain = null,
+        ?bool $prefersBorder = null,
+    ): self {
+        if (!str_starts_with($uri, 'ui://')) {
+            throw new \InvalidArgumentException(
+                "MCP Apps UI resource URI must begin with 'ui://', got '{$uri}'"
+            );
+        }
+
+        $target = $this->findTool($tool);
+        if ($target === null) {
+            throw new \InvalidArgumentException(
+                "Cannot attach a UI template to unknown tool '{$tool}': register it with tool() first"
+            );
+        }
+
+        // (2) Link the tool. Preserve any pre-existing _meta and merge the ui
+        // block; dual-write the deprecated flat key for host back-compat.
+        $uiToolMeta = ['resourceUri' => $uri];
+        if ($visibility !== null) {
+            $uiToolMeta['visibility'] = self::validateUiVisibility($visibility);
+        }
+        $existing = $target->getExtraField('_meta');
+        $meta = is_array($existing) ? $existing : [];
+        $meta['ui'] = $uiToolMeta;
+        $meta['ui/resourceUri'] = $uri;
+        $target->setExtraField('_meta', $meta);
+
+        // (1) Build the resource-level _meta.ui from the optional host hints.
+        $resourceMeta = $this->buildUiResourceMeta($csp, $permissions, $domain, $prefersBorder);
+
+        $resource = new Resource(
+            name: $name,
+            uri: $uri,
+            description: $description !== '' ? $description : null,
+            mimeType: self::UI_MIME_TYPE,
+        );
+        if ($resourceMeta !== null) {
+            // Draft revision also allows _meta.ui on the listing entry; the
+            // read content (below) carries the authoritative copy.
+            $resource->setExtraField('_meta', $resourceMeta);
+        }
+        $this->resources[] = $resource;
+
+        $this->resourceHandlers[$uri] = function () use ($html, $uri, $resourceMeta): ReadResourceResult {
+            $document = is_string($html) ? $html : $html();
+            if (!is_string($document)) {
+                throw McpServerException::invalidResourceResult($document);
+            }
+            $contents = new TextResourceContents(
+                text: $document,
+                uri: $uri,
+                mimeType: self::UI_MIME_TYPE,
+            );
+            if ($resourceMeta !== null) {
+                $contents->setExtraField('_meta', $resourceMeta);
+            }
+            return new ReadResourceResult(contents: [$contents]);
+        };
+
+        // (3) Declare the Apps extension so it is advertised in initialize and
+        // server/discover. Idempotent across multiple ui() calls.
+        $this->server->declareExtension(ExtensionIds::UI, ['mimeTypes' => [self::UI_MIME_TYPE]]);
+
+        return $this;
+    }
+
+    /**
+     * Find a registered Tool by name, or null. Returns the live object so
+     * callers can mutate it (e.g. attach `_meta`).
+     */
+    private function findTool(string $name): ?Tool
+    {
+        foreach ($this->tools as $tool) {
+            if ($tool->name === $name) {
+                return $tool;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Validate MCP Apps host hints ahead of registration time.
+     *
+     * Applies exactly the checks {@see ui()} applies (both delegate to the
+     * same internal validators, so the two can never disagree): `visibility`
+     * must be a non-empty subset of {@see UI_VISIBILITY}, every `csp` key
+     * must be in {@see UI_CSP_KEYS} with a list-of-strings value, and every
+     * `permissions` member must be in {@see UI_PERMISSIONS}. A `null`
+     * argument means "hint omitted" and is skipped, mirroring ui().
+     *
+     * Intended for deployments that author UI hints into stored
+     * configuration long before a server is constructed from it: validating
+     * at config-write time keeps an invalid hint from throwing on every
+     * subsequent request during per-request server construction.
+     *
+     * @param array<int, string>|null $visibility Subset of `model`/`app`
+     * @param array<string, array<int, string>>|null $csp Domain allowlists
+     *        keyed by connect/resource/frame/baseUri Domains
+     * @param array<int, string>|null $permissions Subset of camera/
+     *        microphone/geolocation/clipboardWrite
+     * @throws \InvalidArgumentException On the first out-of-range hint
+     */
+    public static function validateUiHints(
+        ?array $visibility = null,
+        ?array $csp = null,
+        ?array $permissions = null,
+    ): void {
+        if ($visibility !== null) {
+            self::validateUiVisibility($visibility);
+        }
+        if ($csp !== null) {
+            self::buildUiCsp($csp);
+        }
+        if ($permissions !== null) {
+            self::buildUiPermissions($permissions);
+        }
+    }
+
+    /**
+     * Validate a `_meta.ui.visibility` array against the allowed values,
+     * returning it re-indexed. An empty array is rejected (it would hide the
+     * tool from the agent AND block app calls — omit the argument for the
+     * host default of both instead).
+     *
+     * @param array<int, string> $visibility
+     * @return array<int, string>
+     */
+    private static function validateUiVisibility(array $visibility): array
+    {
+        if ($visibility === []) {
+            throw new \InvalidArgumentException(
+                'UI visibility cannot be empty; omit it for the default ["model", "app"]'
+            );
+        }
+        foreach ($visibility as $value) {
+            if (!in_array($value, self::UI_VISIBILITY, true)) {
+                throw new \InvalidArgumentException(
+                    "Invalid UI visibility '{$value}' (expected one of: "
+                    . implode(', ', self::UI_VISIBILITY) . ')'
+                );
+            }
+        }
+        return array_values($visibility);
+    }
+
+    /**
+     * Assemble the optional `_meta.ui` resource metadata block, or null when
+     * no hints were supplied.
+     *
+     * @param array<string, array<int, string>>|null $csp
+     * @param array<int, string>|null $permissions
+     * @return array<string, mixed>|null
+     */
+    private function buildUiResourceMeta(
+        ?array $csp,
+        ?array $permissions,
+        ?string $domain,
+        ?bool $prefersBorder,
+    ): ?array {
+        $ui = [];
+
+        if ($csp !== null) {
+            $ui['csp'] = self::buildUiCsp($csp);
+        }
+        if ($permissions !== null) {
+            $ui['permissions'] = self::buildUiPermissions($permissions);
+        }
+        if ($domain !== null) {
+            $ui['domain'] = $domain;
+        }
+        if ($prefersBorder !== null) {
+            $ui['prefersBorder'] = $prefersBorder;
+        }
+
+        return $ui === [] ? null : ['ui' => $ui];
+    }
+
+    /**
+     * Validate and normalize a `_meta.ui.csp` map: every key is a known CSP
+     * domain group and every value a list of domain strings.
+     *
+     * @param array<string, array<int, string>> $csp
+     * @return array<string, array<int, string>>
+     */
+    private static function buildUiCsp(array $csp): array
+    {
+        $out = [];
+        foreach ($csp as $key => $domains) {
+            if (!in_array($key, self::UI_CSP_KEYS, true)) {
+                throw new \InvalidArgumentException(
+                    "Invalid UI csp key '{$key}' (expected one of: " . implode(', ', self::UI_CSP_KEYS) . ')'
+                );
+            }
+            if (!is_array($domains) || !array_is_list($domains)) {
+                throw new \InvalidArgumentException("UI csp '{$key}' must be a list of domain strings");
+            }
+            foreach ($domains as $domain) {
+                if (!is_string($domain)) {
+                    throw new \InvalidArgumentException("UI csp '{$key}' must contain only domain strings");
+                }
+            }
+            $out[$key] = array_values($domains);
+        }
+        return $out;
+    }
+
+    /**
+     * Validate a `_meta.ui.permissions` list and render it as the wire shape
+     * `{name: {}}` (each member an empty object, per the extension schema).
+     *
+     * @param array<int, string> $permissions
+     * @return array<string, \stdClass>
+     */
+    private static function buildUiPermissions(array $permissions): array
+    {
+        $out = [];
+        foreach ($permissions as $permission) {
+            if (!in_array($permission, self::UI_PERMISSIONS, true)) {
+                throw new \InvalidArgumentException(
+                    "Invalid UI permission '{$permission}' (expected one of: "
+                    . implode(', ', self::UI_PERMISSIONS) . ')'
+                );
+            }
+            $out[$permission] = new \stdClass();
+        }
+        return $out;
+    }
+
+    /**
+     * Normalize a resource callback's return value into a ReadResourceResult.
+     *
+     * Shared by {@see resource()} and {@see resourceTemplate()} so the two
+     * paths never diverge. Accepts a string (TextResourceContents), an
+     * SplFileObject/resource (base64 BlobResourceContents), or a
+     * ReadResourceResult (passthrough).
+     *
+     * @param mixed $result The raw callback return value
+     * @param string $uri The concrete resource URI to stamp on the contents
+     * @param string $mimeType The MIME type to stamp on the contents
+     * @throws McpServerException If the result type is not supported
+     */
+    private function normalizeReadResourceResult(mixed $result, string $uri, string $mimeType): ReadResourceResult
+    {
+        if ($result instanceof ReadResourceResult) {
+            return $result;
+        }
+
+        if (is_string($result)) {
+            return new ReadResourceResult(
+                contents: [
+                    new TextResourceContents(
+                        text: $result,
+                        uri: $uri,
+                        mimeType: $mimeType
+                    ),
+                ]
+            );
+        }
+
+        if ($result instanceof \SplFileObject || is_resource($result)) {
+            $content = '';
+            if ($result instanceof \SplFileObject) {
+                $content = $result->fread($result->getSize());
+            } else {
+                $content = stream_get_contents($result);
+            }
+
+            return new ReadResourceResult(
+                contents: [
+                    new BlobResourceContents(
+                        blob: base64_encode($content),
+                        uri: $uri,
+                        mimeType: $mimeType
+                    ),
+                ]
+            );
+        }
+
+        throw McpServerException::invalidResourceResult($result);
+    }
+
+    /**
+     * Register a completion provider for a prompt argument.
+     *
+     * The provider supplies autocomplete suggestions as the user types a value
+     * for the named argument of the named prompt. Registering any completion
+     * provider causes the server to advertise the `completions` capability.
+     *
+     * The provider is called as `$provider(string $value, array $context = [])`:
+     *  - `$value` is the partial argument value typed so far.
+     *  - `$context` is the map of already-resolved argument values the client
+     *    sent (empty when none) — useful to filter on a prior selection. A
+     *    provider that doesn't need context simply omits the second parameter.
+     *
+     * It may return a `string[]` (auto-wrapped, truncated to 100 with
+     * `hasMore`/`total` if longer), a {@see CompletionObject}, or a
+     * {@see CompleteResult} (both passed through after validation).
+     *
+     * @param string $promptName The prompt the argument belongs to
+     * @param string $argumentName The argument to complete
+     * @param callable $provider The suggestion provider
+     * @return self For method chaining
+     */
+    public function completionForPrompt(
+        string $promptName,
+        string $argumentName,
+        callable $provider
+    ): self {
+        $this->promptCompletionProviders[$this->completionKey($promptName, $argumentName)] = $provider;
+        $this->ensureCompletionHandler();
+        return $this;
+    }
+
+    /**
+     * Register a completion provider for a resource-template argument.
+     *
+     * Identical contract to {@see completionForPrompt()}, but keyed on a
+     * registered `uriTemplate` and one of its variables. The `$uriTemplate`
+     * must match the string passed to {@see resourceTemplate()}; a completion
+     * request naming a template that was never registered yields a -32602
+     * error rather than an empty result.
+     *
+     * @param string $uriTemplate The registered template string
+     * @param string $argumentName The template variable to complete
+     * @param callable $provider The suggestion provider
+     * @return self For method chaining
+     */
+    public function completionForResourceTemplate(
+        string $uriTemplate,
+        string $argumentName,
+        callable $provider
+    ): self {
+        $this->resourceTemplateCompletionProviders[$this->completionKey($uriTemplate, $argumentName)] = $provider;
+        $this->ensureCompletionHandler();
+        return $this;
+    }
+
+    // -----------------------------------------------------------------------
+    // Configuration — [Added]
+    // -----------------------------------------------------------------------
+
+    /**
+     * [Added] Set HTTP transport options.
+     *
+     * @param array<string, mixed> $options Options passed to HttpServerTransport (see Config.php)
+     * @return self For method chaining
+     */
+    public function httpOptions(array $options): self
+    {
+        $this->httpOptions = array_merge($this->httpOptions, $options);
+        return $this;
+    }
+
+    /**
+     * [Added] Set the session store for HTTP transport.
+     *
+     * @param SessionStoreInterface $store Session store implementation
+     * @return self For method chaining
+     */
+    public function sessionStore(SessionStoreInterface $store): self
+    {
+        $this->sessionStore = $store;
+        return $this;
+    }
+
+    /**
+     * [Added] Set the subscription bus backing `subscriptions/listen`
+     * (SEP-2575, revision 2026-07-28).
+     *
+     * The bus carries change events between the request that causes a
+     * change and the request holding a listen stream open — on typical
+     * PHP hosting those are different processes, so use
+     * {@see \Mcp\Server\Subscriptions\FileSubscriptionBus} there. The
+     * publish helpers below write to this bus and, on stdio, also deliver
+     * to in-session subscriptions.
+     *
+     * @return self For method chaining
+     */
+    public function subscriptionBus(\Mcp\Server\Subscriptions\SubscriptionBusInterface $bus): self
+    {
+        $this->subscriptionBus = $bus;
+        $this->httpOptions['subscription_bus'] = $bus;
+        // Note: this deliberately does NOT register legacy
+        // resources/subscribe handlers or flip the legacy subscribe
+        // capability — McpServer has no legacy update-delivery channel,
+        // and advertising one would let pre-2026 clients subscribe into
+        // silence. The modern resourceSubscriptions filter is honored
+        // independently: subscriptions/listen gates it on actual
+        // deliverability (this bus on HTTP, the in-session channel on
+        // stdio), and the acknowledgement frame is the spec's signal of
+        // what the server agreed to honor.
+        return $this;
+    }
+
+    /**
+     * [Added] Announce that the tool list changed: notifies active
+     * subscriptions/listen channels (via the configured bus and, on
+     * stdio, in-session subscriptions).
+     */
+    public function publishToolsListChanged(): self
+    {
+        return $this->publishSubscriptionEvent('notifications/tools/list_changed');
+    }
+
+    /** [Added] Announce that the prompt list changed. */
+    public function publishPromptsListChanged(): self
+    {
+        return $this->publishSubscriptionEvent('notifications/prompts/list_changed');
+    }
+
+    /** [Added] Announce that the resource list changed. */
+    public function publishResourcesListChanged(): self
+    {
+        return $this->publishSubscriptionEvent('notifications/resources/list_changed');
+    }
+
+    /** [Added] Announce that a specific resource's contents changed. */
+    public function publishResourceUpdated(string $uri): self
+    {
+        return $this->publishSubscriptionEvent('notifications/resources/updated', ['uri' => $uri]);
+    }
+
+    /**
+     * @param array<string, mixed> $params
+     */
+    private function publishSubscriptionEvent(string $method, array $params = []): self
+    {
+        $this->subscriptionBus?->publish($method, $params);
+
+        $session = $this->server->getSession();
+        if ($session instanceof ServerSession && !($session instanceof HttpServerSession)) {
+            // stdio: subscriptions live in-session; forward directly.
+            $session->deliverSubscriptionNotification($method, $params);
+        }
+        return $this;
+    }
+
+    /**
+     * [Added] Configure OAuth authentication for the HTTP transport.
+     *
+     * @param TokenValidatorInterface $tokenValidator Token validator implementation
+     * @param string|array<int, string> $authorizationServers One or more authorization server URLs
+     * @param string $resourceId The protected resource identifier
+     * @return self For method chaining
+     */
+    public function withAuth(
+        TokenValidatorInterface $tokenValidator,
+        string|array $authorizationServers,
+        string $resourceId
+    ): self {
+        $servers = is_string($authorizationServers) ? [$authorizationServers] : $authorizationServers;
+
+        $this->httpOptions = array_merge($this->httpOptions, [
+            'auth_enabled' => true,
+            'token_validator' => $tokenValidator,
+            'authorization_servers' => $servers,
+            'resource' => $resourceId,
+        ]);
+
+        return $this;
+    }
+
+    /**
+     * [Added] Configure which change notifications to send.
+     *
+     * Alternative to passing parameters to run(). Affects both runStdio() and runHttp().
+     *
+     * @return self For method chaining
+     */
+    public function notifyOnChanges(
+        bool $resourcesChanged = true,
+        bool $toolsChanged = true,
+        bool $promptsChanged = true
+    ): self {
+        $this->resourcesChanged = $resourcesChanged;
+        $this->toolsChanged = $toolsChanged;
+        $this->promptsChanged = $promptsChanged;
+        return $this;
+    }
+
+    /**
+     * Enable the SEP-2663 Tasks extension (revision 2026-07-28).
+     *
+     * Declares `capabilities.extensions["io.modelcontextprotocol/tasks"]` and
+     * registers the three task methods: `tasks/get`, `tasks/update`,
+     * `tasks/cancel`. The removed `tasks/list` and `tasks/result` methods are
+     * intentionally NOT registered, so calling either answers -32601
+     * (Method Not Found). A tool opts into task augmentation via the
+     * `taskSupport` argument of {@see tool()}.
+     *
+     * Every task method requires the client to have declared the Tasks
+     * extension in its per-request `_meta` clientCapabilities; an undeclared
+     * client is rejected with -32021 (MissingRequiredClientCapability).
+     *
+     * @param string|null $storagePath Directory for task file storage (null = system temp)
+     * @param int|null $defaultTtlMs Default task ttlMs (null = unlimited)
+     * @param int|null $defaultPollIntervalMs Default suggested client poll interval (ms)
+     * @return self For method chaining
+     */
+    public function enableTasks(
+        ?string $storagePath = null,
+        ?int $defaultTtlMs = null,
+        ?int $defaultPollIntervalMs = null,
+    ): self {
+        $this->taskManager = new TaskManager($storagePath ?? '');
+        $this->taskDefaultTtlMs = $defaultTtlMs;
+        $this->taskDefaultPollIntervalMs = $defaultPollIntervalMs;
+
+        $this->server->registerHandler('tasks/get', function ($params) {
+            $this->requireTasksExtension();
+            $taskId = is_object($params) ? ($params->taskId ?? '') : '';
+            $record = $this->taskManager->getRecord((string) $taskId);
+            if ($record === null) {
+                throw McpServerException::taskNotFound((string) $taskId);
+            }
+            return $this->buildTaskGetResult($record);
+        });
+
+        $this->server->registerHandler('tasks/update', function ($params) {
+            $this->requireTasksExtension();
+            $taskId = is_object($params) ? ($params->taskId ?? '') : '';
+            $record = $this->taskManager->getRecord((string) $taskId);
+            if ($record === null) {
+                throw McpServerException::taskNotFound((string) $taskId);
+            }
+            $this->applyTaskInputResponses($record, $params);
+            return new TaskUpdateResult();
+        });
+
+        $this->server->registerHandler('tasks/cancel', function ($params) {
+            $this->requireTasksExtension();
+            $taskId = is_object($params) ? ($params->taskId ?? '') : '';
+            $record = $this->taskManager->getRecord((string) $taskId);
+            if ($record === null) {
+                throw McpServerException::taskNotFound((string) $taskId);
+            }
+            // Cooperative + eventually-consistent: idempotent ack on a
+            // terminal task, transition to cancelled otherwise.
+            $this->taskManager->cancelTask((string) $taskId);
+            return new TaskCancelResult();
+        });
+
+        return $this;
+    }
+
+    /**
+     * Get the TaskManager instance (if tasks are enabled). Applications that
+     * advance tasks out-of-band (a worker, cron, or a later request
+     * completing/failing a deferred task) use this handle. A tool enters the
+     * deferred model in-band via {@see \Mcp\Server\Tasks\TaskContext::defer()}.
+     */
+    public function getTaskManager(): ?TaskManager
+    {
+        return $this->taskManager;
+    }
+
+    /**
+     * Reject the current task method unless the client declared the Tasks
+     * extension. The `tasks/*` methods exist ONLY as part of the extension,
+     * so a caller that did not opt in is rejected -32021 regardless of era —
+     * a legacy caller can never have declared the extension and must not be
+     * served tasks. No-op only when there is no ServerSession (non-dispatch
+     * contexts).
+     */
+    private function requireTasksExtension(): void
+    {
+        $session = $this->server->getSession();
+        if ($session instanceof ServerSession
+            && !$session->clientDeclaresExtension(ExtensionIds::TASKS)
+        ) {
+            $session->raiseMissingExtension(ExtensionIds::TASKS);
+        }
+    }
+
+    /**
+     * Decide whether the current `tools/call` should be served as a task.
+     * Task creation is modern-only and requires the client to have declared
+     * the Tasks extension. A REQUIRED tool called by an undeclared modern
+     * client is rejected (-32021); an OPTIONAL tool falls back to a
+     * synchronous result. Legacy clients always get a synchronous result
+     * (graceful degradation).
+     */
+    private function shouldRunToolAsTask(string $name): bool
+    {
+        $support = $this->toolTaskSupport[$name] ?? TaskSupport::FORBIDDEN;
+        if ($support === TaskSupport::FORBIDDEN) {
+            return false;
+        }
+        $session = $this->server->getSession();
+        if (!$session instanceof ServerSession
+            || !$session->clientSupportsFeature('stateless_lifecycle')
+        ) {
+            return false;
+        }
+        if ($session->clientDeclaresExtension(ExtensionIds::TASKS)) {
+            return true;
+        }
+        if ($support === TaskSupport::REQUIRED) {
+            $session->raiseMissingExtensionIfModern(ExtensionIds::TASKS);
+        }
+        return false;
+    }
+
+    /**
+     * Augment a `tools/call` as a task in the default IN_TASK input mode:
+     * create the handle first, run the first round synchronously (capturing
+     * completion, failure, or a park for in-task input), and return the flat
+     * CreateTaskResult. PRE_TASK tools never come through here — they run
+     * the plain multi-round-trip path and mint via mintCompletedTask().
+     *
+     * @param mixed $arguments Decoded tool arguments
+     * @param mixed $params The original CallToolRequestParams
+     */
+    private function runToolAsTask(string $name, mixed $arguments, ?Meta $meta, mixed $params): CreateTaskResult
+    {
+        $toolArgs = json_decode(json_encode($arguments), true);
+        if (!is_array($toolArgs)) {
+            $toolArgs = [];
+        }
+        $task = $this->taskManager->createTask(
+            ttlMs: $this->taskDefaultTtlMs,
+            pollIntervalMs: $this->taskDefaultPollIntervalMs,
+            toolName: $name,
+            toolArguments: $toolArgs,
+        );
+
+        // First round: the exchange comes from the original tools/call params
+        // (any inputResponses/requestState the client already supplied).
+        $this->currentExchange = $this->buildInputExchange($params, 'tools/call', $name);
+        try {
+            $updated = $this->runTaskRound($task->taskId, $meta);
+        } finally {
+            $this->currentExchange = null;
+        }
+
+        return new CreateTaskResult($updated ?? $task);
+    }
+
+    /**
+     * Mint the task for a PRE_TASK tool whose final round just ran to
+     * completion: all multi-round-trip input was resolved on the plain
+     * `input_required` path while no record existed, so the task is born
+     * terminal — created and completed before its taskId reaches the client
+     * (the ext-tasks Task Creation SHOULD: resolve all MRTR exchanges
+     * synchronously before responding with a CreateTaskResult).
+     *
+     * @param mixed $arguments Decoded tool arguments
+     * @param mixed $result The captured tool result (a CallToolResult,
+     *        possibly isError — execution errors keep `completed` status,
+     *        matching runTaskRound())
+     */
+    private function mintCompletedTask(string $name, mixed $arguments, mixed $result): CreateTaskResult
+    {
+        $toolArgs = json_decode(json_encode($arguments), true);
+        if (!is_array($toolArgs)) {
+            $toolArgs = [];
+        }
+        $task = $this->taskManager->createTask(
+            ttlMs: $this->taskDefaultTtlMs,
+            pollIntervalMs: $this->taskDefaultPollIntervalMs,
+            toolName: $name,
+            toolArguments: $toolArgs,
+        );
+        $resultArray = json_decode(json_encode($result), true);
+        if (!is_array($resultArray)) {
+            $resultArray = [];
+        }
+        $completed = $this->taskManager->complete($task->taskId, $resultArray);
+
+        return new CreateTaskResult($completed ?? $task);
+    }
+
+    /**
+     * Run one execution round of a task's originating tool against the
+     * currently-installed input exchange, updating the stored record to the
+     * resulting state (completed / failed / input_required) and returning the
+     * new task handle.
+     *
+     * - The tool returns a result → completed (a tool EXECUTION error rides
+     *   as an isError CallToolResult, still `completed` per SEP-2663).
+     * - The tool throws a protocol McpError → failed (inlined error).
+     * - The tool suspends for client input → input_required, recording the
+     *   pending inputRequests and a signed requestState that `tasks/update`
+     *   echoes to resume.
+     * - The tool defers via TaskContext::defer() → stays `working`; an
+     *   application worker settles the record later through
+     *   getTaskManager().
+     */
+    private function runTaskRound(string $taskId, ?Meta $meta): ?Task
+    {
+        $record = $this->taskManager->getRecord($taskId);
+        if ($record === null) {
+            return null;
+        }
+        $name = (string) ($record['toolName'] ?? '');
+        $handler = $this->toolHandlers[$name] ?? null;
+        if ($handler === null) {
+            return $this->taskManager->fail($taskId, [
+                'code' => -32603,
+                'message' => "Tool no longer available: {$name}",
+            ]);
+        }
+        $args = (object) ($record['toolArguments'] ?? []);
+
+        $this->currentTaskId = $taskId;
+        try {
+            $result = $handler($args, $meta);
+        } catch (TaskDeferredException $e) {
+            // SEP-2663 application-driven model: the tool handed the work to
+            // an out-of-band worker, which holds the taskId and may have
+            // advanced — or even settled — the task before defer() unwound.
+            // Never force a transition over that newer state: write only
+            // when the record still needs it (an input_required record from
+            // a resumed round must move back to `working`; a fresh working
+            // record takes the defer statusMessage unless the worker already
+            // wrote one), and otherwise return the task exactly as the
+            // worker left it.
+            $record = $this->taskManager->getRecord($taskId);
+            $status = $record === null ? null : (string) ($record['status'] ?? '');
+            $needsWrite = $status === TaskStatus::INPUT_REQUIRED
+                || ($status === TaskStatus::WORKING
+                    && $e->statusMessage !== null
+                    && ($record['statusMessage'] ?? null) === null);
+            if ($needsWrite) {
+                try {
+                    return $this->taskManager->updateStatus($taskId, TaskStatus::WORKING, $e->statusMessage);
+                } catch (TaskTransitionRejectedException) {
+                    // Settled by the worker between the read and the write —
+                    // fall through to the state the worker left.
+                }
+            }
+            return $this->taskManager->getTask($taskId);
+        } catch (InputRequiredSuspendException $e) {
+            $state = $this->getStateCodec()->encode([
+                'm' => 'tools/call',
+                'n' => $name,
+                'p' => $this->currentPrincipal(),
+                'res' => $e->carryResults,
+            ]);
+            return $this->taskManager->setInputRequired(
+                $taskId,
+                $this->serializeInputRequests($e->inputRequests),
+                $state
+            );
+        } catch (McpError $e) {
+            return $this->taskManager->fail($taskId, $this->errorDataToArray($e), $e->getMessage());
+        } catch (ClientRequestSuspendException $e) {
+            // The legacy HTTP suspend/resume machinery cannot drive a task;
+            // fail loudly rather than leak a half-suspended record.
+            return $this->taskManager->fail($taskId, [
+                'code' => -32603,
+                'message' => 'Task tools require the modern input mechanism',
+            ]);
+        } catch (TransportClosedException $e) {
+            // Client disconnected mid-round (stdio EOF): the session is
+            // shutting down and the in-memory task record dies with the
+            // process — propagate instead of recording a bogus failure.
+            throw $e;
+        } catch (\Throwable $e) {
+            $result = new CallToolResult(
+                content: [new TextContent(text: 'Error: ' . $e->getMessage())],
+                isError: true
+            );
+        } finally {
+            $this->currentTaskId = null;
+        }
+
+        $resultArray = json_decode(json_encode($result), true);
+        if (!is_array($resultArray)) {
+            $resultArray = [];
+        }
+        return $this->taskManager->complete($taskId, $resultArray);
+    }
+
+    /**
+     * Apply a `tasks/update`'s inputResponses to an input_required task by
+     * resuming its tool: rebuild the verified exchange from the stored
+     * requestState plus this round's responses and re-run the tool, which
+     * either completes the task or re-parks it awaiting the remaining input
+     * (partial fulfillment). A no-op for tasks that are not awaiting input or
+     * were not created from a resumable tool.
+     *
+     * @param array<string, mixed> $record
+     * @param mixed $params The TaskUpdateParams
+     */
+    private function applyTaskInputResponses(array $record, mixed $params): void
+    {
+        if (($record['status'] ?? null) !== TaskStatus::INPUT_REQUIRED
+            || !isset($record['toolName'], $record['requestState'])
+        ) {
+            return;
+        }
+
+        $fresh = [];
+        if (is_object($params) && isset($params->inputResponses)) {
+            $responses = $params->inputResponses;
+            if (is_object($responses)) {
+                $responses = json_decode((string) json_encode($responses), true);
+            }
+            if (is_array($responses)) {
+                $fresh = $responses;
+            }
+        }
+
+        $synthetic = new \stdClass();
+        $synthetic->requestState = $record['requestState'];
+        $synthetic->inputResponses = $fresh;
+
+        $this->currentExchange = $this->buildInputExchange($synthetic, 'tools/call', (string) $record['toolName']);
+        try {
+            $this->runTaskRound((string) $record['taskId'], null);
+        } finally {
+            $this->currentExchange = null;
+        }
+    }
+
+    /**
+     * Build the `tasks/get` DetailedTask result from a stored record,
+     * inlining the result / error / inputRequests appropriate to its status.
+     *
+     * @param array<string, mixed> $record
+     */
+    private function buildTaskGetResult(array $record): TaskGetResult
+    {
+        $task = Task::fromArray($record);
+        $result = isset($record['result']) && is_array($record['result']) ? $record['result'] : null;
+        $error = isset($record['error']) && is_array($record['error']) ? $record['error'] : null;
+        $inputRequests = isset($record['inputRequests']) && is_array($record['inputRequests'])
+            ? $record['inputRequests']
+            : null;
+        return TaskGetResult::fromTask($task, $result, $error, $inputRequests);
+    }
+
+    /**
+     * Serialize an InputRequiredSuspendException's pending requests into the
+     * wire `inputRequests` map ({key: {method, params}}).
+     *
+     * @param array<string, \Mcp\Types\Request> $inputRequests
+     * @return array<string, array{method: string, params: mixed}>
+     */
+    private function serializeInputRequests(array $inputRequests): array
+    {
+        $out = [];
+        foreach ($inputRequests as $key => $request) {
+            $out[(string) $key] = [
+                'method' => $request->method,
+                'params' => $request->params !== null
+                    ? $request->params->jsonSerialize()
+                    : new \stdClass(),
+            ];
+        }
+        return $out;
+    }
+
+    /**
+     * Flatten an McpError's ErrorData into the inlined `error` object the
+     * failed `tasks/get` response carries.
+     *
+     * @return array{code: int, message: string, data?: mixed}
+     */
+    private function errorDataToArray(McpError $error): array
+    {
+        $data = $error->error;
+        $out = ['code' => $data->code, 'message' => $data->message];
+        if ($data->data !== null) {
+            $out['data'] = $data->data;
+        }
+        return $out;
+    }
+
+    /**
+     * Send a notifications/elicitation/complete notification to the client.
+     *
+     * Call this when your server learns (through its own endpoint, e.g., an
+     * OAuth callback) that an out-of-band URL-mode elicitation has completed.
+     * The client can then prompt the user to retry the original request.
+     *
+     * This is typically called from your OAuth callback handler or similar
+     * endpoint, outside of a tool handler context.
+     *
+     * @param string $elicitationId The ID of the completed elicitation
+     */
+    public function notifyElicitationComplete(string $elicitationId): void
+    {
+        $session = $this->server->getSession();
+        if ($session !== null) {
+            $session->sendElicitationCompleteNotification($elicitationId);
+        } else {
+            $this->logger->warning(
+                "Cannot send elicitation complete notification: no active session (elicitationId: {$elicitationId})"
+            );
+        }
+    }
+
+    // -----------------------------------------------------------------------
+    // Run Methods
+    // -----------------------------------------------------------------------
+
+    /**
+     * Run the server using stdio transport.
+     *
+     * [Modified from pronskiy/mcp] Logs errors via PSR-3 logger and rethrows
+     * instead of echoing to stdout.
+     *
+     * @param bool|null $resourcesChanged Whether to notify clients when resources change (null = use notifyOnChanges value)
+     * @param bool|null $toolsChanged Whether to notify clients when tools change (null = use notifyOnChanges value)
+     * @param bool|null $promptsChanged Whether to notify clients when prompts change (null = use notifyOnChanges value)
+     * @throws \Throwable If an error occurs while running the server
+     */
+    public function runStdio(
+        ?bool $resourcesChanged = null,
+        ?bool $toolsChanged = null,
+        ?bool $promptsChanged = null
+    ): void {
+        $notificationOptions = new NotificationOptions(
+            promptsChanged: $promptsChanged ?? $this->promptsChanged,
+            resourcesChanged: $resourcesChanged ?? $this->resourcesChanged,
+            toolsChanged: $toolsChanged ?? $this->toolsChanged,
+        );
+
+        $initOptions = $this->server->createInitializationOptions($notificationOptions);
+        $runner = new ServerRunner($this->server, $initOptions, $this->logger);
+
+        try {
+            $runner->run();
+        } catch (\Throwable $e) {
+            $this->logger->error('McpServer error: ' . $e->getMessage());
+            throw $e;
+        }
+    }
+
+    /**
+     * [Added] Run the server using HTTP transport.
+     *
+     * Uses the SDK's HttpServerRunner and StandardPhpAdapter to handle
+     * HTTP requests in a standard PHP web server environment.
+     *
+     * @throws \Throwable If an error occurs while running the server
+     */
+    public function runHttp(): void
+    {
+        // Auto-enable DNS rebinding protection when running under PHP's built-in
+        // development server (cli-server SAPI) and the user has not explicitly
+        // configured allowed_origins. This matches the pattern used by the
+        // TypeScript SDK's createMcpExpressApp() and the Python SDK's FastMCP,
+        // which auto-protect localhost-bound servers (CVE-2025-66414 / CVE-2025-66416).
+        //
+        // For production SAPIs (apache2handler, fpm-fcgi, etc.), protection is
+        // opt-in via httpOptions(['allowed_origins' => ['yourdomain.com']]) since
+        // the PHP host config does not reflect the actual bind address.
+        if (!array_key_exists('allowed_origins', $this->httpOptions) && PHP_SAPI === 'cli-server') {
+            $this->httpOptions['allowed_origins'] = ['localhost', '127.0.0.1', '::1'];
+        }
+
+        $notificationOptions = new NotificationOptions(
+            promptsChanged: $this->promptsChanged,
+            resourcesChanged: $this->resourcesChanged,
+            toolsChanged: $this->toolsChanged
+        );
+
+        $initOptions = $this->server->createInitializationOptions($notificationOptions);
+
+        $sessionStore = $this->sessionStore
+            ?? new FileSessionStore(sys_get_temp_dir() . '/mcp_sessions');
+
+        // Allow embedders to inject a custom HttpIoInterface via the
+        // httpOptions key 'io'. The option is stripped before the
+        // remaining options reach the transport's Config so it is not
+        // surfaced as user-facing configuration. Defaults to NativePhpIo
+        // inside HttpServerRunner when omitted — the cPanel/Apache path.
+        $io = null;
+        $runnerOptions = $this->httpOptions;
+        if (array_key_exists('io', $runnerOptions)) {
+            $candidate = $runnerOptions['io'];
+            unset($runnerOptions['io']);
+            if (!$candidate instanceof HttpIoInterface) {
+                throw new \InvalidArgumentException(
+                    "httpOptions['io'] must implement " . HttpIoInterface::class
+                );
+            }
+            $io = $candidate;
+        }
+
+        $runner = new HttpServerRunner(
+            $this->server,
+            $initOptions,
+            $runnerOptions,
+            $this->logger,
+            $sessionStore,
+            $io
+        );
+
+        $adapter = new StandardPhpAdapter($runner);
+        $adapter->handle();
+    }
+
+    /**
+     * [Added] Auto-detect transport and run.
+     *
+     * Uses stdio when running from CLI, HTTP when running in a web server.
+     */
+    public function run(): void
+    {
+        if (PHP_SAPI === 'cli') {
+            $this->runStdio();
+        } else {
+            $this->runHttp();
+        }
+    }
+
+    // -----------------------------------------------------------------------
+    // Escape Hatch
+    // -----------------------------------------------------------------------
+
+    /**
+     * [Added] Access the underlying Mcp\Server\Server instance.
+     *
+     * Use this to register low-level handlers or access advanced features
+     * not exposed by the convenience wrapper.
+     */
+    public function getServer(): Server
+    {
+        return $this->server;
+    }
+
+    // -----------------------------------------------------------------------
+    // Internal — Handler Registration
+    // -----------------------------------------------------------------------
+
+    /**
+     * Register the default MCP handlers for tools, prompts, and resources.
+     */
+    protected function registerDefaultHandlers(): void
+    {
+        $this->server->registerHandler('tools/list', function () {
+            return new ListToolsResult(array_values($this->tools));
+        });
+
+        $this->server->registerHandler('tools/call', function ($params) {
+            $name = $params->name;
+            $arguments = $params->arguments ?? new \stdClass();
+            $meta = $params->_meta ?? null;
+
+            // Forward elicitation/sampling results for HTTP resume path
+            if (is_object($params) && isset($params->_elicitationResults)) {
+                $arguments->_elicitationResults = $params->_elicitationResults;
+            }
+            if (is_object($params) && isset($params->_samplingResults)) {
+                $arguments->_samplingResults = $params->_samplingResults;
+            }
+
+            if (!isset($this->toolHandlers[$name])) {
+                throw McpServerException::unknownTool($name);
+            }
+
+            $handler = $this->toolHandlers[$name];
+
+            // SEP-2663: when this tool is task-augmented and the calling
+            // (modern) client declared the Tasks extension, serve the call as
+            // a task. A REQUIRED tool called by an undeclared client is
+            // rejected -32021 inside the check below. IN_TASK tools (the
+            // default) mint the handle first and gather input in-task;
+            // PRE_TASK tools fall through to the plain multi-round-trip path
+            // below and mint the task — already terminal — only when the
+            // final round completes.
+            $runAsTask = $this->taskManager !== null && $this->shouldRunToolAsTask((string) $name);
+            if ($runAsTask
+                && ($this->toolTaskInputMode[$name] ?? TaskInputMode::IN_TASK) === TaskInputMode::IN_TASK
+            ) {
+                return $this->runToolAsTask((string) $name, $arguments, $meta, $params);
+            }
+
+            // SEP-2322 (2026-07-28): build the multi-round-trip exchange
+            // from the verified requestState plus this round's
+            // inputResponses. Tampered/expired state is rejected here.
+            $this->currentExchange = $this->buildInputExchange($params, 'tools/call', (string) $name);
+
+            try {
+                $result = $handler($arguments, $meta);
+            } catch (InputRequiredSuspendException $e) {
+                // The handler needs client-side input: answer with the
+                // SEP-2322 InputRequiredResult instead of a normal result.
+                // For a PRE_TASK tool this is the composition's input phase:
+                // deliberately no task record exists yet.
+                return $this->buildInputRequiredResult($e, 'tools/call', (string) $name);
+            } catch (ClientRequestSuspendException $e) {
+                throw $e; // Must propagate to HttpServerSession for suspend/resume
+            } catch (TransportClosedException $e) {
+                // Client disconnected while the tool was blocked on a client
+                // round-trip (stdio elicitation/sampling): never convert the
+                // shutdown signal into an isError result — propagate so the
+                // session's message loop can exit.
+                throw $e;
+            } catch (\Mcp\Shared\McpError $e) {
+                // Protocol-level errors must surface as JSON-RPC errors,
+                // never as isError tool results: McpServerException
+                // (programming errors, -32042 URL elicitation) and the
+                // SDK-raised SEP-2575 errors alike — e.g. the -32021
+                // MissingRequiredClientCapabilityError thrown by the
+                // sampling/elicitation capability guards on the modern
+                // path, which the spec requires on the wire with HTTP 400.
+                // Only tool EXECUTION failures below become isError
+                // results. On the PRE_TASK path this means a protocol error
+                // never mints (or fails) a task — no taskId exists to poll.
+                throw $e;
+            } catch (\Throwable $e) {
+                // Tool EXECUTION failure: an isError result. When the call
+                // runs as a PRE_TASK task this keeps SEP-2663 parity with
+                // runTaskRound() — the minted task is `completed` carrying
+                // the isError result.
+                $result = new CallToolResult(
+                    content: [new TextContent(text: 'Error: ' . $e->getMessage())],
+                    isError: true
+                );
+            } finally {
+                $this->currentExchange = null;
+            }
+
+            // PRE_TASK final round: every input round has resolved and the
+            // body ran to completion — mint the task, born terminal.
+            return $runAsTask
+                ? $this->mintCompletedTask((string) $name, $arguments, $result)
+                : $result;
+        });
+
+        $this->server->registerHandler('prompts/list', function () {
+            return new ListPromptsResult(array_values($this->prompts));
+        });
+
+        $this->server->registerHandler('prompts/get', function ($params) {
+            $name = $params->name;
+            $arguments = $params->arguments ?? new \stdClass();
+
+            if (!isset($this->promptHandlers[$name])) {
+                throw McpServerException::unknownPrompt($name);
+            }
+
+            $handler = $this->promptHandlers[$name];
+
+            // SEP-2322: prompts/get is one of the three methods that may
+            // answer InputRequiredResult on the modern path.
+            $this->currentExchange = $this->buildInputExchange($params, 'prompts/get', (string) $name);
+            try {
+                return $handler($arguments);
+            } catch (InputRequiredSuspendException $e) {
+                return $this->buildInputRequiredResult($e, 'prompts/get', (string) $name);
+            } finally {
+                $this->currentExchange = null;
+            }
+        });
+
+        $this->server->registerHandler('resources/list', function () {
+            return new ListResourcesResult(array_values($this->resources));
+        });
+
+        // Registered unconditionally (mirrors resources/list): a server with no
+        // templates answers with an empty list rather than "method not found",
+        // which is friendlier to clients that probe this method on connect.
+        $this->server->registerHandler('resources/templates/list', function () {
+            return new ListResourceTemplatesResult(array_values($this->resourceTemplates));
+        });
+
+        $this->server->registerHandler('resources/read', function ($params) {
+            $uri = $params->uri;
+
+            // Exact-match static resources win over templates (unchanged fast path).
+            if (isset($this->resourceHandlers[$uri])) {
+                $handler = $this->resourceHandlers[$uri];
+                return $handler();
+            }
+
+            // Fall through to templates, tried in registration order.
+            foreach ($this->resourceTemplateHandlers as $entry) {
+                $vars = $entry['matcher']->extract($uri);
+                if ($vars !== null) {
+                    return ($entry['handler'])($vars, $uri);
+                }
+            }
+
+            // SEP-2164: -32602 under 2026-07-28, -32002 on legacy revisions.
+            // Never an empty contents array — a missing resource is always
+            // an error.
+            $modernErrorCode = $this->server->clientSupportsFeature('resource_not_found_invalid_params');
+            throw McpServerException::unknownResource($uri, $modernErrorCode);
+        });
+    }
+
+    /**
+     * Build the composite key for a completion provider.
+     *
+     * Uses a NUL separator so a name containing the separator cannot collide
+     * with a different (name, argument) pair.
+     */
+    private function completionKey(string $refName, string $argumentName): string
+    {
+        return $refName . "\0" . $argumentName;
+    }
+
+    /**
+     * Whether any registered resource template uses the given URI template.
+     */
+    private function hasResourceTemplate(string $uriTemplate): bool
+    {
+        foreach ($this->resourceTemplates as $template) {
+            if ($template->uriTemplate === $uriTemplate) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Lazily register the completion/complete handler on first provider use.
+     *
+     * Keeping registration lazy means Server::getCapabilities() only advertises
+     * the `completions` capability for servers that actually register a
+     * provider.
+     */
+    private function ensureCompletionHandler(): void
+    {
+        if ($this->completionHandlerRegistered) {
+            return;
+        }
+        $this->completionHandlerRegistered = true;
+
+        $this->server->registerHandler('completion/complete', function ($params) {
+            $ref = is_object($params) ? ($params->ref ?? null) : null;
+            $argument = is_object($params) ? ($params->argument ?? null) : null;
+            $argName = is_object($argument) ? ($argument->name ?? '') : '';
+            $argValue = is_object($argument) ? ($argument->value ?? '') : '';
+
+            // Already-resolved arguments for multi-argument completion.
+            $context = [];
+            $ctx = is_object($params) ? ($params->context ?? null) : null;
+            if ($ctx instanceof CompletionContext) {
+                $context = $ctx->arguments;
+            }
+
+            // An invalid *reference* is a -32602 error, not an empty result.
+            if ($ref instanceof PromptReference) {
+                if (!isset($this->promptHandlers[$ref->name])) {
+                    throw McpServerException::unknownPrompt($ref->name);
+                }
+                $provider = $this->promptCompletionProviders[$this->completionKey($ref->name, $argName)] ?? null;
+            } elseif ($ref instanceof ResourceReference) {
+                // ResourceReference->uri carries the registered template string.
+                if (!$this->hasResourceTemplate($ref->uri)) {
+                    throw McpServerException::unknownResourceTemplate($ref->uri);
+                }
+                $provider = $this->resourceTemplateCompletionProviders[$this->completionKey($ref->uri, $argName)] ?? null;
+            } else {
+                throw McpServerException::invalidCompletionRef();
+            }
+
+            // Valid ref but no provider for this specific argument: no suggestions.
+            if ($provider === null) {
+                return new CompleteResult(completion: new CompletionObject(values: []));
+            }
+
+            return $this->normalizeCompletionResult($provider($argValue, $context));
+        });
+    }
+
+    /**
+     * Normalize a completion provider's return value into a CompleteResult.
+     *
+     * Enforces the spec's 100-value cap on the SEND side (BaseSession does not
+     * validate outgoing results):
+     *  - A `string[]` longer than 100 is truncated to the first 100, with
+     *    `hasMore: true` and `total` set to the full count; truncation is
+     *    logged so it is not silent.
+     *  - A hand-built CompletionObject/CompleteResult is validated (which throws
+     *    above 100), so an author-built oversized response fails loudly at the
+     *    source rather than emitting a spec-violating payload.
+     *
+     * @param mixed $result The raw provider return value
+     * @throws McpServerException If the result type is unsupported
+     */
+    private function normalizeCompletionResult(mixed $result): CompleteResult
+    {
+        if ($result instanceof CompleteResult) {
+            $result->completion->validate();
+            return $result;
+        }
+
+        if ($result instanceof CompletionObject) {
+            $result->validate();
+            return new CompleteResult(completion: $result);
+        }
+
+        if (is_array($result)) {
+            $values = array_values(array_map(static fn ($v): string => (string)$v, $result));
+            $total = count($values);
+
+            if ($total > 100) {
+                $this->logger->debug(sprintf(
+                    'Completion provider returned %d values; truncating to 100 and setting hasMore=true.',
+                    $total
+                ));
+                return new CompleteResult(completion: new CompletionObject(
+                    values: array_slice($values, 0, 100),
+                    total: $total,
+                    hasMore: true,
+                ));
+            }
+
+            return new CompleteResult(completion: new CompletionObject(values: $values));
+        }
+
+        throw McpServerException::invalidCompletionResult($result);
+    }
+
+    // -----------------------------------------------------------------------
+    // Internal — Reflection Helpers
+    // -----------------------------------------------------------------------
+
+    /**
+     * Build a ToolInputSchema from a callback's parameter list using reflection.
+     */
+    protected function buildSchemaFromCallback(callable $callback): ToolInputSchema
+    {
+        $reflection = new ReflectionFunction(\Closure::fromCallable($callback));
+        $parameters = $reflection->getParameters();
+
+        $properties = [];
+        $required = [];
+
+        foreach ($parameters as $param) {
+            $name = $param->getName();
+            $type = $param->getType();
+            $typeName = $type instanceof ReflectionNamedType ? $type->getName() : 'string';
+
+            // Skip injected context parameters — they are not user input
+            if ($typeName === ElicitationContext::class
+                || $typeName === ProgressContext::class
+                || $typeName === SamplingContext::class
+                || $typeName === InputContext::class
+                || $typeName === TaskContext::class
+            ) {
+                continue;
+            }
+
+            $jsonType = match ($typeName) {
+                'int', 'float' => 'number',
+                'bool' => 'boolean',
+                'array' => 'array',
+                'object', 'stdClass' => 'object',
+                default => 'string',
+            };
+
+            $properties[$name] = [
+                'type' => $jsonType,
+                'description' => "Parameter: {$name}",
+            ];
+
+            if (!$param->isOptional()) {
+                $required[] = $name;
+            }
+        }
+
+        return new ToolInputSchema(
+            properties: ToolInputProperties::fromArray($properties),
+            required: $required
+        );
+    }
+
+    /**
+     * Build PromptArgument list from a callback's parameter list using reflection.
+     *
+     * @return array<int, PromptArgument>
+     */
+    protected function buildArgumentsFromCallback(callable $callback): array
+    {
+        $reflection = new ReflectionFunction(\Closure::fromCallable($callback));
+        $parameters = $reflection->getParameters();
+
+        $arguments = [];
+
+        foreach ($parameters as $param) {
+            $type = $param->getType();
+            $typeName = $type instanceof ReflectionNamedType ? $type->getName() : 'string';
+
+            // Skip injected context parameters — they are not user input
+            if ($typeName === ElicitationContext::class
+                || $typeName === ProgressContext::class
+                || $typeName === SamplingContext::class
+                || $typeName === InputContext::class
+                || $typeName === TaskContext::class
+            ) {
+                continue;
+            }
+
+            $arguments[] = new PromptArgument(
+                name: $param->getName(),
+                description: "Parameter: {$param->getName()}",
+                required: !$param->isOptional()
+            );
+        }
+
+        return $arguments;
+    }
+
+    /**
+     * [Added] Match named arguments from a JSON object to a callback's parameters.
+     *
+     * Uses reflection to map argument names to parameter positions, providing
+     * correct ordering regardless of JSON key order. ElicitationContext,
+     * SamplingContext, and ProgressContext parameters are injected automatically
+     * when provided.
+     *
+     * @param callable $callback The target callback
+     * @param array<string, mixed> $arguments Associative array of arguments
+     * @param ElicitationContext|null $elicitContext Optional context to inject
+     * @param ProgressContext|null $progressContext Optional context to inject
+     * @param SamplingContext|null $samplingContext Optional context to inject
+     * @param InputContext|null $inputContext Optional context to inject
+     * @param TaskContext|null $taskContext Optional context to inject (an
+     *        inert instance is substituted when absent, so non-nullable
+     *        TaskContext parameters stay safe on non-task call sites)
+     * @return array<int, mixed> Ordered arguments matching the callback's parameter list
+     */
+    protected function matchNamedParameters(callable $callback, array $arguments, ?ElicitationContext $elicitContext = null, ?ProgressContext $progressContext = null, ?SamplingContext $samplingContext = null, ?InputContext $inputContext = null, ?TaskContext $taskContext = null): array
+    {
+        $reflection = new ReflectionFunction(\Closure::fromCallable($callback));
+        $parameters = $reflection->getParameters();
+        $ordered = [];
+
+        foreach ($parameters as $param) {
+            $name = $param->getName();
+            $type = $param->getType();
+            $typeName = $type instanceof ReflectionNamedType ? $type->getName() : '';
+
+            // Inject ElicitationContext
+            if ($typeName === ElicitationContext::class) {
+                $ordered[] = $elicitContext;
+                continue;
+            }
+
+            // Inject SamplingContext
+            if ($typeName === SamplingContext::class) {
+                $ordered[] = $samplingContext;
+                continue;
+            }
+
+            // Inject InputContext (SEP-2322 batch input gathering)
+            if ($typeName === InputContext::class) {
+                $ordered[] = $inputContext;
+                continue;
+            }
+
+            // Inject TaskContext (SEP-2663 task awareness / deferral)
+            if ($typeName === TaskContext::class) {
+                $ordered[] = $taskContext ?? new TaskContext();
+                continue;
+            }
+
+            // Inject ProgressContext
+            if ($typeName === ProgressContext::class) {
+                if ($progressContext === null && !$param->allowsNull() && !$param->isOptional()) {
+                    throw new \InvalidArgumentException(
+                        "Tool callback declares non-nullable ProgressContext parameter '{$name}'. "
+                        . "Use ?ProgressContext \${$name} = null so the tool can execute when no progressToken is provided."
+                    );
+                }
+                $ordered[] = $progressContext;
+                continue;
+            }
+
+            if (array_key_exists($name, $arguments)) {
+                $ordered[] = $arguments[$name];
+            } elseif ($param->isOptional()) {
+                $ordered[] = $param->getDefaultValue();
+            } else {
+                throw new \InvalidArgumentException("Missing required parameter: {$name}");
+            }
+        }
+
+        return $ordered;
+    }
+
+    /**
+     * Check if a callback has an ElicitationContext parameter.
+     */
+    protected function callbackNeedsElicitation(callable $callback): bool
+    {
+        $reflection = new ReflectionFunction(\Closure::fromCallable($callback));
+        foreach ($reflection->getParameters() as $param) {
+            $type = $param->getType();
+            if ($type instanceof ReflectionNamedType && $type->getName() === ElicitationContext::class) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Check if a callback has an InputContext parameter (SEP-2322 batch
+     * input gathering).
+     */
+    protected function callbackNeedsInputContext(callable $callback): bool
+    {
+        $reflection = new ReflectionFunction(\Closure::fromCallable($callback));
+        foreach ($reflection->getParameters() as $param) {
+            $type = $param->getType();
+            if ($type instanceof ReflectionNamedType && $type->getName() === InputContext::class) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Check if a callback has a SamplingContext parameter.
+     */
+    protected function callbackNeedsSampling(callable $callback): bool
+    {
+        $reflection = new ReflectionFunction(\Closure::fromCallable($callback));
+        foreach ($reflection->getParameters() as $param) {
+            $type = $param->getType();
+            if ($type instanceof ReflectionNamedType && $type->getName() === SamplingContext::class) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Check if a callback has a ProgressContext parameter.
+     */
+    protected function callbackNeedsProgress(callable $callback): bool
+    {
+        $reflection = new ReflectionFunction(\Closure::fromCallable($callback));
+        foreach ($reflection->getParameters() as $param) {
+            $type = $param->getType();
+            if ($type instanceof ReflectionNamedType && $type->getName() === ProgressContext::class) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Check if a callback has a TaskContext parameter (SEP-2663).
+     */
+    protected function callbackNeedsTaskContext(callable $callback): bool
+    {
+        $reflection = new ReflectionFunction(\Closure::fromCallable($callback));
+        foreach ($reflection->getParameters() as $param) {
+            $type = $param->getType();
+            if ($type instanceof ReflectionNamedType && $type->getName() === TaskContext::class) {
+                return true;
+            }
+        }
+        return false;
+    }
+}

@@ -8,5 +8,6 @@ $baseDir = dirname(dirname($vendorDir));
 return array(
     'Smalot\\PdfParser\\' => array($vendorDir . '/smalot/pdfparser/src'),
     'Parsedown' => array($vendorDir . '/erusev/parsedown'),
+    'JsonMapper' => array($vendorDir . '/netresearch/jsonmapper/src'),
     'HTMLPurifier' => array($vendorDir . '/ezyang/htmlpurifier/library'),
 );

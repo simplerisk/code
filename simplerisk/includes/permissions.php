@@ -141,9 +141,9 @@ function check_questionnaire_get_token() {
         $token = $_GET['token'];
     }
     // If the token is provided via POST
-    else if (isset($_POST['token']))
+    else if (isset($_POST['questionnaire_token']))
     {
-        $token = $_POST['token'];
+        $token = $_POST['questionnaire_token'];
     }
     // No token was provided so fail the token check
     else return false;
@@ -218,6 +218,7 @@ function get_possible_permissions() {
             'define_tests',
             'edit_tests',
             'delete_tests',
+            'approve_tests',
             'initiate_audits',
             'modify_audits',
             'reopen_audits',
@@ -361,22 +362,20 @@ function update_permissions($user_id, $permissions) {
             
             $permission_changes = [];
             if ($permissions_to_add) {
-                $permission_changes[] = _lang('PermissionUpdateAuditLogAdded', array('permissions_added' => get_names_by_multi_values('permissions', $permissions_to_add, false, ', ', true)), false);
+                $permission_changes[] = _lang_raw('PermissionUpdateAuditLogAdded', array('permissions_added' => get_names_by_multi_values('permissions', $permissions_to_add, false, ', ', true)));
             }
             if ($permissions_to_remove) {
-                $permission_changes[] = _lang('PermissionUpdateAuditLogRemoved', array('permissions_removed' => get_names_by_multi_values('permissions', $permissions_to_remove, false, ', ', true)), false);
+                $permission_changes[] = _lang_raw('PermissionUpdateAuditLogRemoved', array('permissions_removed' => get_names_by_multi_values('permissions', $permissions_to_remove, false, ', ', true)));
             }
             
-            $message = _lang('UserPermissionUpdateAuditLog',
+            $message = _lang_raw('UserPermissionUpdateAuditLog',
                 array(
                     'user' => isset($_SESSION['user']) ? $_SESSION['user'] : '', // because it can happen that this function is used by the custom authentication logic when there's no session yet
                     'username' => get_name_by_value("user", $user_id),
                     'permissions_from' => get_names_by_multi_values('permissions', $current_permissions, false, ', ', true),
                     'permissions_to' => get_names_by_multi_values('permissions', $permissions, false, ', ', true),
                     'permission_changes' => implode(", ", $permission_changes)
-                ),
-                false
-                );
+                ));
             
             write_log((int)$user_id + 1000, isset($_SESSION['uid']) ? $_SESSION['uid'] : 0, $message, 'user');
         }
@@ -522,8 +521,13 @@ function add_new_permissions($permission_groups_and_permissions)
         $stmt = $db->prepare("SELECT `id` FROM `permission_groups` WHERE `name` = :name;");
         $stmt->bindParam(":name", $group_name, PDO::PARAM_STR);
         $stmt->execute();
-        $group = $stmt->fetch(PDO::FETCH_ASSOC);
-        $group_id = $group['id'];
+        $group_row = $stmt->fetch(PDO::FETCH_ASSOC);
+        $group_id = $group_row !== false ? $group_row['id'] : null;
+
+        if ($group_id === null) {
+            write_debug_log("[add_new_permissions] Could not resolve group id for name '{$group_name}'", 'error');
+            continue;
+        }
 
 		// Write debug log
 		write_debug_log("Added new permission group with the following values:", 'info');
@@ -556,12 +560,19 @@ function add_new_permissions($permission_groups_and_permissions)
 			$stmt->bindParam(":order", $permission_order, PDO::PARAM_INT);
 			$stmt->execute();
 
-			// Get the permission id
-			$stmt = $db->prepare("SELECT `id` FROM `permissions` WHERE `name` = :name;");
-			$stmt->bindParam(":name", $permission_name, PDO::PARAM_STR);
+			// Get the permission id by key (the unique field used in INSERT IGNORE),
+			// not name — so we always resolve the row even when the key already
+			// existed under a different name and INSERT IGNORE was a no-op.
+			$stmt = $db->prepare("SELECT `id` FROM `permissions` WHERE `key` = :key;");
+			$stmt->bindParam(":key", $key, PDO::PARAM_STR);
 			$stmt->execute();
-			$permission_id = $stmt->fetch(PDO::FETCH_ASSOC);
-			$permission_id = $permission_id['id'];
+			$permission_row = $stmt->fetch(PDO::FETCH_ASSOC);
+			$permission_id = $permission_row !== false ? $permission_row['id'] : null;
+
+			if ($permission_id === null) {
+				write_debug_log("[add_new_permissions] Could not resolve permission id for key '{$key}'", 'error');
+				continue;
+			}
 
 			// Add the new permission to the new permissions array
 			$new_permissions[] = $permission_id;

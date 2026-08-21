@@ -17,7 +17,7 @@
         // Session handler is database
         if (use_database_for_sessions())
         {
-            session_set_save_handler(new SimpleRiskSessionHandler());
+            SimpleRiskSessionHandler::register();
         }
 
         // Start session

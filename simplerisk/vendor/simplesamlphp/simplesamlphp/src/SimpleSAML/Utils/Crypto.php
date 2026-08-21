@@ -27,7 +27,7 @@ class Crypto
      *
      * @return string The decrypted data.
      * @throws \InvalidArgumentException If $ciphertext is not a string.
-     * @throws Error\Exception If the openssl module is not loaded.
+     * @throws \SimpleSAML\Error\Exception If the openssl module is not loaded.
      *
      * @see \SimpleSAML\Utils\Crypto::aesDecrypt()
      */
@@ -79,7 +79,7 @@ class Crypto
      *
      * @return string The decrypted data.
      * @throws \InvalidArgumentException If $ciphertext is not a string.
-     * @throws Error\Exception If the openssl module is not loaded.
+     * @throws \SimpleSAML\Error\Exception If the openssl module is not loaded.
      *
      * @deprecated - Possibly use xml-security library
      */
@@ -102,7 +102,7 @@ class Crypto
      *
      * @return string An HMAC of the encrypted data, the IV and the encrypted data, concatenated.
      * @throws \InvalidArgumentException If $data is not a string.
-     * @throws Error\Exception If the openssl module is not loaded.
+     * @throws \SimpleSAML\Error\Exception If the openssl module is not loaded.
      *
      * @see \SimpleSAML\Utils\Crypto::aesEncrypt()
      */
@@ -145,7 +145,7 @@ class Crypto
      *
      * @return string An HMAC of the encrypted data, the IV and the encrypted data, concatenated.
      * @throws \InvalidArgumentException If $data is not a string.
-     * @throws Error\Exception If the openssl module is not loaded.
+     * @throws \SimpleSAML\Error\Exception If the openssl module is not loaded.
      *
      * @deprecated - Possibly use xml-security library
      */
@@ -166,7 +166,7 @@ class Crypto
      * @param string $der Data encoded in DER format.
      * @param string $type The type of data we are encoding, as expressed by the PEM header. Defaults to "CERTIFICATE".
      * @return string The same data encoded in PEM format.
-     * @see RFC7648 for known types and PEM format specifics.
+     * @see https://www.ietf.org/rfc/rfc7648.txt for known types and PEM format specifics.
      */
     public function der2pem(string $der, string $type = 'CERTIFICATE'): string
     {
@@ -195,10 +195,10 @@ class Crypto
      * @param bool                      $full_path Whether the location found in the configuration contains the
      * full path to the private key or not (only relevant for file locations). Default to false.
      *
-     * @return array|NULL Extracted private key, or NULL if no private key is present.
+     * @return array|null Extracted private key, or NULL if no private key is present.
      * @throws \InvalidArgumentException If $required is not boolean or $prefix is not a string.
-     * @throws Error\Exception If no private key is found in the metadata, or it was not possible to load
-     *     it.
+     * @throws \SimpleSAML\Error\Exception If no private key is found in the metadata,
+     *   or it was not possible to load it.
      *
      */
     public function loadPrivateKey(
@@ -251,11 +251,11 @@ class Crypto
      * @param string                    $prefix The prefix which should be used when reading from the metadata array.
      *     Defaults to ''.
      *
-     * @return array|NULL Public key or certificate data, or NULL if no public key or certificate was found.
+     * @return array|null Public key or certificate data, or NULL if no public key or certificate was found.
      * @throws \InvalidArgumentException If $metadata is not an instance of \SimpleSAML\Configuration, $required is not
      *     boolean or $prefix is not a string.
-     * @throws Error\Exception If no public key is found in the metadata, or it was not possible to load
-     *     it.
+     * @throws \SimpleSAML\Error\Exception If no public key is found in the metadata,
+     *   or it was not possible to load it.
      *
      */
     public function loadPublicKey(Configuration $metadata, bool $required = false, string $prefix = ''): ?array
@@ -297,7 +297,7 @@ class Crypto
      * @param string $pem Data encoded in PEM format.
      * @return string The same data encoded in DER format.
      * @throws \InvalidArgumentException If $pem is not encoded in PEM format.
-     * @see RFC7648 for PEM format specifics.
+     * @see https://www.ietf.org/rfc/rfc7648.txt for PEM format specifics.
      */
     public function pem2der(string $pem): string
     {
@@ -333,7 +333,7 @@ class Crypto
      *
      * @return string The hashed password.
      * @throws \Exception If the algorithm is not known ti PHP.
-     * @throws Error\Exception If the algorithm specified is not supported.
+     * @throws \SimpleSAML\Error\Exception If the algorithm specified is not supported.
      *
      * @see hash_algos()
      * @deprecated Use Symfony NativePasswordHasher::hash instead
@@ -372,7 +372,7 @@ class Crypto
      *
      * @return boolean True if the hash corresponds with the given password, false otherwise.
      * @throws \InvalidArgumentException If the input parameters are not strings.
-     * @throws Error\Exception If the algorithm specified is not supported.
+     * @throws \SimpleSAML\Error\Exception If the algorithm specified is not supported.
      *
      * @deprecated Use Symfony NativePasswordHasher::verify instead
      */
@@ -386,6 +386,7 @@ class Crypto
         }
         return $hash === $password;
     }
+
 
     /**
      * Retrieve a certificate or private key from specified storage location
@@ -463,6 +464,7 @@ class Crypto
         return($data);
     }
 
+
     /**
      * Public wrapper around retrieveCertOrKey to retrieve a certificate
      *
@@ -478,6 +480,7 @@ class Crypto
     {
         return $this->retrieveCertOrKey('certificate', $location, $full_path);
     }
+
 
     /**
      * Public wrapper around retrieveCertOrKey to retrieve a private key

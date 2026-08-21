@@ -1,5 +1,18 @@
 <?php
 require_once(realpath(__DIR__ .'/head.php'));
+// This file directly consumes helpers defined in includes/functions.php
+// (resolve_required_localization_keys, build_js_lang_subset,
+// encode_js_lang_subset, resolve_header_script_asset, write_debug_log). head.php
+// already loads functions.php, but per the CLAUDE.md function-reachability rule a
+// direct consumer declares its own require_once so an include-order change can't
+// strip the chain (require_once makes the duplicate load a no-op).
+require_once(realpath(__DIR__ . '/includes/functions.php'));
+// The AI chat-icon/panel gates below call ai_provider_is_configured(), defined
+// in Core includes/artificial_intelligence.php. header.php is included from many
+// entry points and renders before sidebar.php loads that file, so require it
+// directly here — every direct consumer declares its own require_once (per the
+// CLAUDE.md function-reachability rule) rather than relying on include ordering.
+require_once(realpath(__DIR__ . '/includes/artificial_intelligence.php'));
 
 // Define the localization keys required by certain scripts and if there's a match in the requested scripts then the required localizations will be made available for the script to use
 // In the script and the page using it you will be able to use _lang['localization_key'] in javascript.
@@ -9,11 +22,139 @@ $localization_required_by_scripts = [
     'CUSTOM:pages/plan-project.js' => ['AreYouSureYouWantToDeleteThisProject'],
     'datatables' => ['All', 'datatables_ShowAll', 'datatables_ShowLess', 'First', 'Previous', 'Next', 'Last'],
     'blockUI' => ['ProcessingPleaseWait'],
-    'UILayoutWidget' => ['WidgetType_chart', 'WidgetType_table', 'WidgetType_WYSIWYG'],
+    'UILayoutWidget' => ['WidgetType_chart', 'WidgetType_table', 'WidgetType_WYSIWYG', 'WidgetType_kpi', 'WidgetType_whats_next'],
     'CUSTOM:pages/governance.js' => ['ExistingMappings', 'Unassigned', 'DocumentName', 'DocumentType', 'ControlFrameworks', 'Controls', 'CreationDate', 'ApprovalDate', 'Status', 'All', 'ExceptionName', 'ID', 'Description', 'Justification', 'NextReviewDate'],
-    'CUSTOM:pages/compliance.js' => ['AuditInitiationOffsetMustBeANonNegativeValue', 'AuditInitiationOffsetMustBeLessThanOrEqualToTestFrequency'],
+    'CUSTOM:pages/governance-frameworks.js' => ['AllControls', 'UnassignedControls', 'ControlNumber', 'ControlName', 'ControlFamily', 'Owner', 'Maturity', 'Status', 'Pass', 'Fail', 'NotTested', 'BelowMaturity', 'NoOwner', 'Unassigned', 'ShowingXToYOfZ', 'Controls', 'SearchControls', 'Filters', 'ClearFilters', 'AddControl', 'NSelected', 'ControlClass', 'ControlPhase', 'ControlPriority', 'ControlType', 'AnyFamily', 'AnyOwner', 'AnyClass', 'AnyPhase', 'AnyPriority', 'AnyType', 'AnyStatus', 'Description', 'SupplementalGuidance', 'MitigationPercent', 'SelectAllN', 'SelectAll', 'Clear', 'DeleteSelectedControls',
+        // Task 8: modal wiring (row-action labels, destructive-confirm titles, generic API-failure fallback)
+        'Edit', 'Delete', 'RequestFailed', 'DeleteFrameworkTitle', 'DeleteControlTitle', 'DeleteControlsTitle',
+        // Task 54: the bulk-delete confirmation states SERVER-RESOLVED numbers before
+        // anything is committed, so it needs the three split sentences (both halves,
+        // kept-only, removed-only), the nothing-left case, the in-flight placeholder,
+        // and the result toast. Task 8's 'BulkDeleteAllFilteredUnsupported' and
+        // 'ControlsDeleteResult' are GONE: the escalated case is supported now, and
+        // the delete is one transactional call rather than N parallel ones, so
+        // "{$ok} of {$total}" no longer describes anything that can happen.
+        'DeleteControlsPreviewChecking', 'DeleteControlsPreviewSplit', 'DeleteControlsPreviewKeptOnly',
+        'DeleteControlsPreviewRemovedOnly', 'DeleteControlsPreviewNone', 'ControlsDeletedResult',
+        // Task 24: restored Clone row action (row-action label; success/error toast text
+        // comes straight from the server's own status_message, same as every other control
+        // CRUD action on this page) plus the pre-fill banner naming which control was cloned.
+        'Clone', 'ClonedFromControlNotice', 'CloneOfControlTitle', 'NewControl',
+        // Task 22: framework rail search -- showFrameworksEmptyState() swaps the shared #sr-fw-filtered tile's title/action between these two pairs depending on whether a status filter or a search caused the empty result.
+        'NoFrameworksMatchFilter', 'ViewActiveFrameworks', 'NoFrameworksMatchSearch', 'ClearSearch',
+        // Task 23: the row-expand caret (renderRow()) swapped its glyph text for an
+        // icon-only .sr-group-caret button, so it needs its own accessible name.
+        'Details',
+        // Task 27: the rail's SCF-origin chip (railRow()) -- badge text + tooltip.
+        'SCF', 'ScfOriginHint',
+        // Task 34: the Maturity column's Below/At/Above chip (renderMaturity()),
+        // the matching filter facet (its three option labels reuse the same
+        // three keys) and its "Any maturity" placeholder, plus the drawer's
+        // label for the exact current -> desired level pair. 'BelowMaturity'
+        // and 'Maturity' are already registered above.
+        'AtMaturity', 'AboveMaturity', 'AnyMaturity', 'ControlMaturity',
+        // Task 36: the row-actions overflow toggle (rowActionsWrap()) is
+        // icon-only, so it needs its own accessible name. Same key Define
+        // Tests' identical toggle already uses -- reused, not re-added.
+        'Actions',
+        // Task 46: the control table's pager (renderPager()). Previous/Next
+        // are the SAME two keys Define Tests' pager already uses -- reused,
+        // not re-added -- alongside the new landmark label. ShowingXToYOfZ is
+        // already registered above; the rows-per-page select's own labels are
+        // server-rendered in governance/index.php.
+        'Previous', 'Next', 'ControlsPagination',
+        // Task 14: the Applicability column chip (renderApplicability()), the
+        // matching filter facet, and the drawer's applicability record. The
+        // column header, the facet's accessible name and three of the record's
+        // labels reuse existing keys ('Applicability', 'Reason', 'Provider',
+        // 'Justification') -- registered here, not re-added to lang.en.php.
+        'Applicability', 'ApplicabilityApplicable', 'ApplicabilityNotApplicable', 'ApplicabilityInherited',
+        'AnyApplicability', 'Reason', 'Provider', 'Justification',
+        'ApplicabilityDecidedBy', 'ApplicabilityDecidedOn',
+        // Task 15: bulk-set applicability from the selection bar. The bulk bar's
+        // action label, the modal's scope note (two sentences -- one naming the
+        // framework, one naming the population), the per-state hints, and the
+        // two result toasts. The modal's own static labels are server-rendered
+        // in governance/index.php; these are the strings the JS builds at
+        // runtime.
+        //
+        // 'ChooseAReason' / 'ApplicabilityNoReason' are gone from this list: the
+        // reason field became a CHECKBOX GROUP when reasons went multi-select,
+        // and a checkbox group has no placeholder row to label. The keys stay in
+        // lang.en.php -- they are generic enough to be reused, and retiring a
+        // key costs 39 locales a Crowdin round trip to gain nothing.
+        'SetApplicability', 'ApplicabilityScopeNote', 'ApplicabilityAppliesToSelected',
+        'ApplicabilityAppliesToAllFiltered', 'ApplicabilityApplicableHint',
+        'ApplicabilityNotApplicableHint', 'ApplicabilityInheritedHint',
+        'ApplicabilitySetResult', 'ApplicabilityClearResult',
+        // Task 60: the same modal, opened from a single control's row action.
+        // The row button's own label reuses 'SetApplicability' above; these two
+        // are the row-scoped title and population sentence, which name the
+        // control so the modal cannot be read as acting on the checkbox
+        // selection.
+        // Task 63 adds the second population spelling, used only when other
+        // controls are actually selected behind the row action.
+        'SetApplicabilityForControl', 'ApplicabilityAppliesToControl',
+        'ApplicabilityAppliesToControlNotSelection',
+        // Task 17: the "Generate statement of applicability" header button. It
+        // is shown only when exactly one framework is scoped -- the SoA is a
+        // per-framework document and there is no cross-framework roll-up -- so
+        // the label is the only string the JS needs for it.
+        // Task 65 adds the short visible label; the full string above stays as
+        // the button's title/aria-label, so both are needed.
+        'GenerateStatementOfApplicability', 'GenerateSoa',
+        // Task 53: the Mapped Assets widget's one runtime string -- the refusal
+        // shown when a second asset row picks a maturity level another row
+        // already holds. Same key js/simplerisk/pages/governance.js uses for
+        // the identical guard on the pre-redesign page: reused, not re-added.
+        'ExistingMappings',
+        // Task 64: Clone framework -- the rail row action's label, the
+        // pre-filled Add Framework modal's title and banner, and the seeded
+        // name. 'Clone' is already registered above (the control row action)
+        // and is deliberately NOT re-added; 'CloneFramework' is the rail
+        // button's own title/aria-label, which has to name the object because
+        // the rail and the control table both carry a Clone icon.
+        'CloneFramework', 'CloneOfFrameworkTitle', 'ClonedFromFrameworkNotice',
+        'CloneOfFrameworkName', 'NewFramework'],
+    // Task 17: the Statement of Applicability report
+    // (reports/statement_of_applicability.php). The page is a thin shell and
+    // EVERY visible string is built by this script, so the whole document's
+    // vocabulary is registered here: the cover, the six column headings, the
+    // three applicability states, the four implementation values, the
+    // missing-cover-fields prompt, the framework picker the Reporting Hub route
+    // lands on, and the two explained refusals.
+    'CUSTOM:pages/statement-of-applicability.js' => [
+        'StatementOfApplicability', 'SoaGeneratedOn', 'Controls', 'Framework', 'Frameworks',
+        'ApplicabilityApplicable', 'ApplicabilityNotApplicable', 'ApplicabilityInherited',
+        'SoaExcludedCount', 'IsmsScopeStatement', 'DefaultInclusionJustification',
+        'Reference', 'ControlName', 'Applicability', 'Justification', 'SoaImplemented', 'Evidence',
+        'Yes', 'No', 'SoaImplementedPartial', 'NotApplicable',
+        'Reason', 'Provider', 'ApplicabilityDecidedBy',
+        'SoaMissingFieldsTitle', 'SoaMissingScopeStatement', 'SoaMissingInclusionJustification',
+        'SoaEditFrameworkToAdd', 'SoaChooseFramework', 'SoaChooseFrameworkHint',
+        // The framework picker: its sr-select search field, the launcher's
+        // "Open" affordance, and the state where the roster itself is empty.
+        // The two exports beside it: the spreadsheet, and the ONE PDF affordance
+        // ('SoaPdf' -- just "PDF"), whose mechanism the framework's size picks
+        // and whose label it does not. Registered unconditionally -- the labels
+        // are just strings; whether the affordances are BUILT is decided by the
+        // page's data-sr-soa-can-export attribute, not by this list.
+        //
+        // THE THREE ACTION LABELS ARE SYMMETRIC and namespaced to this launcher:
+        // 'SoaOpen' / 'SoaXlsx' / 'SoaPdf' -- one word each, because the row itself
+        // supplies the verb and 'SoaPdf' could not honestly carry one anyway: above
+        // SOA_EXPORT_PDF_MAX_CONTROLS it opens a print view rather than downloading
+        // a file. ('DownloadAsXLSX' still has a caller of its own in the Assessments
+        // Extra, which is why that key is untouched.)
+        'Search', 'SoaOpen', 'SoaXlsx', 'SoaPdf',
+        'SoaNoFrameworks', 'SoaNoFrameworksHint',
+        'SoaFrameworkInactiveTitle', 'SoaFrameworkInactiveBody', 'SoaFrameworkNotFoundBody',
+        'SoaNoControls', 'SoaNoControlsHint', 'RequestFailed'],
+    'CUSTOM:pages/compliance.js' => ['AuditInitiationOffsetMustBeANonNegativeValue', 'AuditInitiationOffsetMustBeLessThanOrEqualToTestFrequency', 'AnchorDateMustBeTodayOrLater', 'TestSuccessCreated', 'RequestFailed', 'SuggestionDismissFailed', 'AreYouSureYouWantToApproveThisAudit', 'RejectCommentRequired', 'AtLeastOneControlRequired', 'AddOrRemove', 'Remove', 'CreateTagX', 'DeleteTestUsedByNControls', 'NoControlsMatchFilters', 'NoControlsSelectedYet', 'AllControls', 'AddOrRemoveControls', 'ChooseControls', 'Selected'],
+    'CUSTOM:pages/compliance-define-tests.js' => ['Frameworks', 'Test', 'Tests', 'AddTest', 'NotTested', 'Retired', 'Edit', 'Delete', 'ScheduleManual', 'Overdue', 'DueSoon', 'Failing', 'Passing', 'Scheduled', 'NoTestsForThisControl', 'ShowingXToYOfZ', 'Previous', 'Next', 'All', 'Pass', 'Fail', 'Inconclusive', 'Framework', 'Control', 'Reference', 'NoFrameworksMapped', 'CouldNotLoadTests', 'Objective', 'TestSteps', 'ExpectedResults', 'Tester', 'ApproximateTime', 'Tags', 'minutes', 'minute', 'Retire', 'Restore', 'Select', 'NSelected', 'ConfirmRetireSelectedTests', 'ConfirmDeleteSelectedTests', 'BulkPartialFailure', 'RequestFailed', 'TestMethod', 'TestMethodInquiry', 'TestMethodObservation', 'TestMethodInspection', 'TestMethodReperformance', 'Sample', 'RequiredEvidence', 'Approvers', 'AllFrameworks', 'AllFamilies', 'AllTesters', 'ScheduleCalendar', 'ScheduleInterval', 'OverdueByXDays', 'OverdueByOneDay', 'DueInXDays', 'DueTomorrow', 'DueToday', 'ScheduledForX', 'Common', 'Controls', 'Description', 'ValidatesAcrossMappedFrameworks', 'EditTest', 'Archived', 'ControlHasNoTestCoverage', 'AddTheFirstTest', 'ApplyCommonTests', 'SelectOneOrMoreTests', 'CommonTestApplied', 'CommonTestsApplied', 'CouldNotApplyCommonTest', 'History', 'Date', 'Result', 'Approval', 'InProgress', 'Approved', 'Pending', 'Rejected', 'ThisTestHasNotBeenRunYet', 'CouldNotLoadTestHistory', 'Open', 'RemoveFromThisControl', 'RemoveTestFromControlConfirm', 'RemoveTestFromControlStays', 'RemoveTestFromControlStaysOne', 'TestRemovedFromControl', 'CouldNotRemoveTestFromControl', 'BulkDeleteSharedTestsNote', 'BulkRetireSharedTestsNote', 'BulkDeleteOneSharedTestNote', 'BulkRetireOneSharedTestNote', 'ViewTest', 'CouldNotLoadTest', 'NotSpecified', 'Teams', 'LastTestDate', 'NextTestDate', 'AdditionalStakeholders', 'AuditInitiationOffset', 'Cadence', 'AnchorDate', 'Close', 'TestName', 'Schedule', 'Identity', 'ProcedureAndEvidence', 'SearchMappings', 'NoMatchingMappings', 'Actions', 'ShowFilters', 'HideFilters', 'Create', 'Dismiss', 'ReviewAndEdit', 'AiSuggested', 'GenerateTestsWithAI', 'TestCreatedFromSuggestion', 'SuggestionDismissed', 'TestGenerationQueued', 'Generating', 'TestGenerationComplete', 'TestGenerationStillRunning', 'TestGenerationNoNew'],
     'CUSTOM:pages/assessment.js' => ['SimpleriskUsers', 'AssessmentContacts'],
     'CUSTOM:dynamic.js' => ['Risk', 'Mitigation', 'Review', 'RiskScoring', 'Unassigned', 'RiskMapping', 'Remove', 'NoColumnsSelected'],
+    'CUSTOM:pages/connectivity-visualizer.js' => ['SearchEntities', 'SearchEntitiesPlaceholder', 'ShowTypes', 'Depth', 'Inspector', 'Connections', 'NoConnectionsFound', 'CouldNotLoadGraph', 'CouldNotSearchEntities', 'ShowingTopNOfM', 'RankedByMaturityGap', 'RankedByRiskScore', 'RankedByRecentFailure', 'RankedByReviewDate', 'RankedBySeverity', 'RankedByName', 'RiskCatalog', 'ThreatCatalog', 'Vulnerability', 'Audit', 'TestResult', 'NodeTypeSelfAssessmentResult', 'Relationship', 'CurrentMaturity', 'DesiredMaturity', 'ControlFamily', 'ApprovalState', 'ApprovalStatus', 'Manager', 'Approver', 'Tester', 'AssetValuation', 'Verified', 'Risk', 'Asset', 'Framework', 'Control', 'Test', 'Document', 'Exception', 'Name', 'Type', 'Status', 'Approved', 'Owner', 'RequestFailed', 'All', 'Close', 'RelationshipOfType', 'MitigationPercent', 'Objective', 'TestSteps', 'ExpectedResults', 'DesiredFrequency', 'LastDate', 'LastResult', 'LastResultDate', 'CalculatedRisk', 'Justification', 'NextReviewDate', 'PercentComplete', 'Response', 'AssessmentDate', 'FrameworkName', 'Score', 'Playbook', 'Severity', 'NextDate', 'ControlID', 'TestID', 'Number', 'Grouping', 'Description', 'Hidden', 'RiskId', 'FirstFound', 'LastFound', 'Patchable', 'Solution', 'Platform', 'Breadcrumb', 'SelectANodeToInspect', 'HiddenUnreachableNodes', 'BrowsableEntityTypes', 'CountFloor', 'NoBrowsableTypes', 'AllTypes', 'FilterEntitiesPlaceholder', 'NoMatchingEntities', 'LoadMore', 'Loading', 'CouldNotLoadEntityCounts', 'CouldNotLoadEntities', 'ClearGraph'],
 ];
 
 ?>
@@ -27,7 +168,10 @@ $localization_required_by_scripts = [
     <?php setup_favicon("..");?>
     
     <!-- Bootstrap CSS -->
-    <link rel="stylesheet" href="../css/style.min.css?<?= $current_app_version ?>" />
+    <!-- Cache-bust on the app version AND the bundle's mtime, so a recompiled
+         style.min.css (a CSS hotfix, or active development) is always served
+         fresh even without an app-version bump. -->
+    <link rel="stylesheet" href="../css/style.min.css?<?= $current_app_version ?>-<?= @filemtime(__DIR__ . '/css/style.min.css') ?>" />
 
     <!-- jQuery CSS -->
     <link rel="stylesheet" href="../vendor/node_modules/jquery-ui/dist/themes/base/jquery-ui.min.css?<?= $current_app_version ?>">
@@ -41,6 +185,25 @@ $localization_required_by_scripts = [
         var CURRENCY = '<?= $escaper->escapeHtml(get_setting("currency") ?: "") ?>';
   	</script>
 
+    <!-- Sidebar collapse state — set before paint so there's no flash-of-expanded -->
+    <script>
+      // Single source of truth for the auto-rail breakpoint; app-shell.js reads it.
+      window.SR_AUTO_RAIL_MAX = 992;
+      (function () {
+        try {
+          // Mirror app-shell.js effectiveState(): below the breakpoint default to
+          // the icon rail (minimum); at/above it honour the stored preference.
+          // Avoids a flash before app-shell.js runs.
+          var stored = localStorage.getItem('sr_sidebar_state');
+          var pref = (stored === 'expanded' || stored === 'rail' || stored === 'hidden') ? stored : null;
+          var s = (window.innerWidth < window.SR_AUTO_RAIL_MAX) ? 'rail' : (pref || 'expanded');
+          document.documentElement.setAttribute('data-sr-sidebar', s);
+        } catch (e) {
+          document.documentElement.setAttribute('data-sr-sidebar', 'expanded');
+        }
+      })();
+    </script>
+
     <!-- All Jquery -->
     <script src="../vendor/node_modules/jquery/dist/jquery.min.js?<?= $current_app_version ?>" id="script_jquery"></script>
     <script src="../vendor/node_modules/jquery-ui/dist/jquery-ui.min.js?<?= $current_app_version ?>" id="script_jqueryui"></script>
@@ -51,85 +214,76 @@ $localization_required_by_scripts = [
     <script src="../js/simplerisk/theme/waves.js" defer></script>
     <!--Menu sidebar -->
     <script src="../js/simplerisk/theme/sidebarmenu.js" id="script_sidebarmenu" defer></script>
+    <!--App shell (three-state sidebar collapse)-->
+    <script src="../js/simplerisk/theme/app-shell.js" id="script_app_shell" defer></script>
     <!--Custom JavaScript -->
     <script src="../js/simplerisk/theme/theme.js" defer></script>
+    <!-- In-app notifications -->
+    <script src="../js/simplerisk/notifications.js?<?= $current_app_version ?>" defer></script>
 
 <?php
 
-// Make sure it's not undefined
-$required_scripts_or_css = $required_scripts_or_css ?? [];
+// Normalize the two page-provided inputs so the logic below can treat them
+// uniformly (either may be unset when a page needs no scripts/localization).
+$required_scripts_or_css    = $required_scripts_or_css ?? [];
+$required_localization_keys = $required_localization_keys ?? [];
 
-// Add the 'JSLocalization' to the $required_scripts_or_css list if it's not in there, but there's somre localization requested
-if (!empty($required_localization_keys) && !in_array('JSLocalization', $required_scripts_or_css)) {
-    $required_scripts_or_css[]= 'JSLocalization';
+// Expand the UILayoutWidget's script dependencies BEFORE resolving localization
+// needs, so a dependency that itself needs localization (e.g. CUSTOM:common.js)
+// is picked up. Later we could build real dependency management, but right now
+// this hardcoded expansion is enough.
+if (in_array('UILayoutWidget', $required_scripts_or_css)) {
+    foreach (['gridstack', 'CUSTOM:common.js', 'WYSIWYG'] as $script_dependency) {
+        if (!in_array($script_dependency, $required_scripts_or_css)) {
+            $required_scripts_or_css[] = $script_dependency;
+        }
+    }
 }
 
-// If there're any scripts that's required by a page
-if (!empty($required_scripts_or_css)) {
+// Compute the final localization key set exactly once: the keys the page passed
+// explicitly, merged with the keys registered for any requested script. (This
+// supersedes the old 'JSLocalization' sentinel dance — the block below always
+// emits, so there is no gate left to flip. Pages may still pass 'JSLocalization'
+// in $required_scripts_or_css; it is now a harmless no-op in the switch below.)
+$required_localization_keys = resolve_required_localization_keys(
+    $required_scripts_or_css,
+    $required_localization_keys,
+    $localization_required_by_scripts
+);
 
-    // Add the other scripts required by the UILayoutWidget
-    // Later we could build a kind of dependency management, but right now it's not really needed
-    // so I decided to not waste the time on it
-    if (in_array('UILayoutWidget', $required_scripts_or_css)) {
-        foreach (['gridstack', 'CUSTOM:common.js', 'WYSIWYG'] as $script_dependency) {
-            if (!in_array($script_dependency, $required_scripts_or_css)) {
-                $required_scripts_or_css []= $script_dependency;
-            }
+// Build the _lang subset (if any keys were requested). Values come from $lang
+// (shipped translation files) and keys from a hardcoded map plus caller-supplied
+// literal arrays — no request-controlled input reaches this sink.
+$lang_json = null;
+if (!empty($required_localization_keys)) {
+    // Surface map/typo drift during development instead of silently shipping the
+    // raw key name (e.g. "AreYouSureYouWantToDeleteThisProject") to the user.
+    foreach ($required_localization_keys as $localization_key) {
+        if (!isset($lang[$localization_key])) {
+            write_debug_log("Localization requested for key '{$localization_key}' but it has no entry in \$lang; shipping the raw key name to JS", 'debug');
         }
     }
 
-    // check if there's a script that needs localization
-    $scripts_with_localization_needs = array_intersect(array_keys($localization_required_by_scripts), $required_scripts_or_css);
+    // encode_js_lang_subset() applies the safe-for-HTML flags (hex-encoding
+    // <, >, &, ', ") so a stray closing-tag/quote in a translated value can't
+    // break out of the <script> or the JS string, and falls back to '{}' if
+    // json_encode() ever fails — so the emitted _lang / window.L stay valid JS.
+    // (escapeHtml() would be the wrong escaper here: it entity-encodes &, ', "
+    // and would render literal "Users &amp; Access" in downstream textContent.)
+    $lang_json = encode_js_lang_subset(build_js_lang_subset($required_localization_keys, $lang));
+}
 
-    // If there is
-    if (count($scripts_with_localization_needs) > 0 || !empty($required_localization_keys)) {
-
-        // then make sure that the 'JSLocalization' is in the list of requested features
-        if (!in_array('JSLocalization', $required_scripts_or_css)) {
-            $required_scripts_or_css[]= 'JSLocalization';
-        }
-
-        // Initializa the `$required_localization_keys` variable if it isn't yet
-        if (empty($required_localization_keys)) {
-            $required_localization_keys = [];
-        }
-
-        // Add the list of localization keys that are setup to be required for the requested script
-        foreach ($scripts_with_localization_needs as $script_with_localization_needs) {
-            $required_localization_keys = array_merge_unique($required_localization_keys, $localization_required_by_scripts[$script_with_localization_needs]);
-        }
-
-        // Render the script tag with the localized strings.
-        // Use json_encode() with the safe-for-HTML flags so the object is
-        // a valid JS literal AND safe to embed inside a <script> tag — the
-        // flags hex-encode <, >, &, ', " so a stray closing-tag/quote in
-        // a translated value can't break out of the <script> or the JS
-        // string. The previous implementation used $escaper->escapeHtml()
-        // for the values, which is the wrong escaper for a JS-string
-        // context — it HTML-entity-encoded ampersands and quotes,
-        // producing literal "Users &amp; Access" in textContent renders
-        // downstream.
+// Always emit the _lang baseline and the global L() accessor — even with no keys
+// — so any consumer's _lang['X'] / L('X') degrades to undefined / the key name
+// instead of throwing "ReferenceError: _lang is not defined" and aborting the
+// rest of the inline script. This block is intentionally NOT deferred, so both
+// globals exist before the deferred page scripts (rendered below) run.
 ?>
 		<script type="text/javascript">
-<?php
-            if (!empty($required_localization_keys)) {
-                $lang_subset = [];
-                foreach ($required_localization_keys as $localization_key) {
-                    $lang_subset[$localization_key] = $lang[$localization_key] ?? $localization_key;
-                }
-                $lang_json = json_encode(
-                    $lang_subset,
-                    JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT
-                );
-?>
-    		var _lang = <?= $lang_json ?>;
-<?php
-            }
-?>
+    		var _lang = <?= $lang_json ?? 'window._lang || {}' ?>;
+    		window.L = window.L || function (k) { return (window._lang && window._lang[k]) || k; };
 		</script>
 <?php
-    }
-}
 
 // Include the required scripts and their css files
 // Also setting defaults for certain scripts
@@ -691,6 +845,14 @@ foreach ($required_scripts_or_css as $required_script_or_css) {
 ?>
             <script type="text/javascript" src="../vendor/node_modules/sigma/dist/sigma.min.js?<?= $current_app_version ?>" id="script_sigma" defer></script>
             <script type="text/javascript" src="../vendor/node_modules/graphology/dist/graphology.umd.min.js?<?= $current_app_version ?>" id="script_graphology" defer></script>
+            <!-- graphology-layout and graphology-layout-forceatlas2 individually publish no browser
+                 build, but graphology-library (the official aggregate package from the same
+                 maintainers) does -- an upstream-built dist/graphology-library.min.js with a
+                 `browser` field. It bundles both, exposed as window.graphologyLibrary.layout
+                 (circular/circlepack/random/rotation) and window.graphologyLibrary.layoutForceAtlas2
+                 (assign/inferSettings). See simplerisk/js/simplerisk/pages/connectivity-visualizer.js
+                 for the actual call shape. -->
+            <script type="text/javascript" src="../vendor/node_modules/graphology-library/dist/graphology-library.min.js?<?= $current_app_version ?>" id="script_graphology_library" defer></script>
 <?php
             break;
         case 'tabs:logic':
@@ -832,19 +994,19 @@ foreach ($required_scripts_or_css as $required_script_or_css) {
             require_once(realpath(__DIR__ . '/includes/Widgets/UILayout.php'));
             break;
         default:
-            // Custom scripts
-            if (preg_match("/^CUSTOM:((?:[\w,\s-]+\/)*[\w,\s-]+\.js)$/", $required_script_or_css, $matches)) {
+            // Custom (CUSTOM:*) and extra (EXTRA:JS:* / EXTRA:CSS:*) assets.
+            // resolve_header_script_asset() applies the path-charset guard and
+            // requires a real .css for the CSS branch (a prior copy-paste
+            // required .js, so the stylesheet loader was effectively dead).
+            $asset = resolve_header_script_asset($required_script_or_css);
+            if ($asset !== null && $asset['type'] === 'js') {
 ?>
-		<script src="../js/simplerisk/<?= $matches[1] ?>?<?= $current_app_version ?>" defer></script>
-<?php       // Custom scripts within extras
-            } elseif (preg_match("/^EXTRA:JS:([\w_]+):((?:[\w,\s-]+\/)*[\w,\s-]+\.js)$/", $required_script_or_css, $matches)) {
+		<script src="<?= $asset['path'] ?>?<?= $current_app_version ?>" defer></script>
+<?php       // Extra stylesheet
+            } elseif ($asset !== null) {
 ?>
-		<script src="../extras/<?= $matches[1] ?>/js/<?= $matches[2] ?>?<?= $current_app_version ?>" defer></script>
-<?php       // Custom css within extras
-            } elseif (preg_match("/^EXTRA:CSS:([\w_]+):((?:[\w,\s-]+\/)*[\w,\s-]+\.js)$/", $required_script_or_css, $matches)) {
-?>
-		<link rel="stylesheet" href="../extras/<?= $matches[1] ?>/css/<?= $matches[2] ?>?<?= $current_app_version ?>">
-<?php 
+		<link rel="stylesheet" href="<?= $asset['path'] ?>?<?= $current_app_version ?>">
+<?php
             }
             break;
         }
@@ -871,23 +1033,52 @@ foreach ($required_scripts_or_css as $required_script_or_css) {
     </div>
     <div id="main-wrapper" data-layout="vertical" data-navbarbg="skin5" data-sidebartype="full" data-sidebar-position="absolute" data-header-position="absolute" data-boxed-layout="full">
       <header class="topbar" data-navbarbg="skin5">
-        <nav class="navbar top-navbar navbar-expand-md navbar-dark">
+        <nav class="navbar top-navbar navbar-expand navbar-dark">
           <div class="navbar-header" data-logobg="skin5">
             <!-- ============================================================== -->
-            <!-- Logo -->
+            <!-- Hamburger (expand <-> rail) + wordmark. Shown at every width so
+                 the rail can always be expanded; the legacy mobile off-canvas
+                 toggler is unused (the sidebar is a persistent rail, not a drawer). -->
             <!-- ============================================================== -->
-            <a class="navbar-brand" href="https://www.simplerisk.com">
-                <img src="../images/logo@2x.png" alt="homepage" class="logo"/>
+            <!-- aria-label is kept in sync with the effective state by app-shell.js
+                 (applyState): "collapse" when expanded, "expand" in rail/hidden, so
+                 the accessible name always matches what the next activation does. -->
+            <button type="button" class="sr-hamburger d-inline-flex align-items-center justify-content-center"
+                    id="sr-hamburger"
+                    aria-label="<?= $escaper->escapeHtmlAttr($lang['CollapseSidebar']) ?>"
+                    data-label-collapse="<?= $escaper->escapeHtmlAttr($lang['CollapseSidebar']) ?>"
+                    data-label-expand="<?= $escaper->escapeHtmlAttr($lang['ExpandSidebar']) ?>"
+                    aria-pressed="false">
+              <i class="fas fa-bars"></i>
+            </button>
+<?php
+            // A logo uploaded through the Customization Extra replaces the
+            // wordmark here as well as on the login screen (SR-556). Same
+            // asset, same parameterless endpoint -- an authenticated-only copy
+            // would mean a second endpoint serving identical public branding.
+            //
+            // Decided from a SETTINGS read, never a blob query, so the shell
+            // that renders on every authenticated page never pulls an image out
+            // of the database.
+            $custom_logo_src = get_custom_logo_src('../');
+            if ($custom_logo_src !== '') {
+?>
+            <a class="navbar-brand sr-wordmark sr-wordmark--custom" href="../reports/home.php" title="SimpleRisk">
+              <img class="sr-brand-customlogo" src="<?= $escaper->escapeHtmlAttr($custom_logo_src) ?>" alt="<?= $escaper->escapeHtmlAttr($lang['OrganizationLogo']) ?>" />
             </a>
-           
-            <a class="nav-toggler waves-effect waves-light d-block d-md-none" href="javascript:void(0)"
-              ><i class="ti-menu ti-close"></i></a>
+<?php
+            } else {
+?>
+            <a class="navbar-brand sr-wordmark" href="../reports/home.php" title="SimpleRisk">
+              <img class="sr-brand-logo" src="../images/simplerisk-logo-icon.png" alt="SimpleRisk" />
+              <span class="sr-brand-text"><span class="s">Simple</span><span class="r">Risk</span></span>
+            </a>
+<?php
+            }
+?>
           </div>
           <div class="navbar-collapse collapse show" id="navbarSupportedContent" data-navbarbg="skin5">
             <ul class="navbar-nav float-start me-auto">
-              <li class="nav-item">
-                <a class="nav-link sidebartoggler waves-effect waves-light" href="javascript:void(0)" data-sidebartype="mini-sidebar"><i class="mdi mdi-menu font-24"></i></a>
-              </li>
               <!-- Search -->
               <?php
 if (!advanced_search_extra()) { ?>
@@ -909,7 +1100,7 @@ if (!advanced_search_extra()) { ?>
            
             <!-- Right side toggle and nav items -->
             <ul class="navbar-nav float-end">
-<?php if (!empty($permissions['show_ai_chat']) && artificial_intelligence_extra() && get_setting('ai_api_key')): ?>
+<?php if (!empty($permissions['show_ai_chat']) && artificial_intelligence_extra() && function_exists('ai_provider_is_configured') && ai_provider_is_configured()): ?>
               <?php require_once(realpath(__DIR__ . '/extras/artificial_intelligence/includes/chat.php')); ai_render_chat_icon(); ?>
 <?php endif; ?>
 			  <li class="nav-item dropdown">
@@ -926,10 +1117,10 @@ if (!advanced_search_extra()) { ?>
                 <ul class="dropdown-menu dropdown-menu-end animated" aria-labelledby="2">
                   
                   <!-- User Guide -->
-                  <li><a class="dropdown-item" href="https://support.simplerisk.com/kb/user-guide" target="_blank"><i class="fas fa-book-reader me-1 ms-1"></i><?= $escaper->escapeHtml($lang['UserGuide']);?></a></li>
+                  <li><a class="dropdown-item" href="https://www.simplerisk.com/support/user-guide" target="_blank"><i class="fas fa-book-reader me-1 ms-1"></i><?= $escaper->escapeHtml($lang['UserGuide']);?></a></li>
 
                   <!-- Administrator Guide -->
-                  <li><a class="dropdown-item" href="https://support.simplerisk.com/kb/administrator-guide" target="_blank"><i class="fas fa-user-shield me-1 ms-1"></i><?= $escaper->escapeHtml($lang['AdministratorGuide']);?></a></li>
+                  <li><a class="dropdown-item" href="https://www.simplerisk.com/support/admin-guide" target="_blank"><i class="fas fa-user-shield me-1 ms-1"></i><?= $escaper->escapeHtml($lang['AdministratorGuide']);?></a></li>
 
                   <!-- API Documentation -->
                   <li><a class="dropdown-item" href="<?php echo /* @phan-suppress-current-line SecurityCheck-XSS -- build_url() called with hardcoded path; base URL is admin-configured */ build_url("api/v2/documentation.php");?>" target="_blank"><i class="fas fa-info-circle me-1 ms-1"></i><?= $escaper->escapeHtml($lang['APIDocumentation']);?></a></li>
@@ -938,22 +1129,32 @@ if (!advanced_search_extra()) { ?>
                   <li><a class="dropdown-item" href="https://www.youtube.com/playlist?list=PLD9huGT2L0QFhvMoj7d8c4oDS5sFkWkUX" target="_blank"><i class="fas fa-video me-1 ms-1"></i><?= $escaper->escapeHtml($lang['HowToVideos']);?></a></li>
                   
                   <!-- FAQs -->
-                  <li><a class="dropdown-item" href="https://support.simplerisk.com/kb/faqs" target="_blank"><i class="fas fa-question-circle me-1 ms-1"></i><?= $escaper->escapeHtml($lang['FAQs']);?></a></li>
+                  <li><a class="dropdown-item" href="https://www.simplerisk.com/support/faqs" target="_blank"><i class="fas fa-question-circle me-1 ms-1"></i><?= $escaper->escapeHtml($lang['FAQs']);?></a></li>
 
                   <!-- Whats New -->
                   <li><a class="dropdown-item" href="https://github.com/simplerisk/documentation/raw/master/SimpleRisk%20Release%20Notes%20<?= $escaper->escapeHtml(get_latest_app_version());?>.pdf" target="_blank"><i class="fas fa-link me-1 ms-1"></i><?= $escaper->escapeHtml($lang['WhatsNew']);?></a></li>
 
                   <!-- Roadmap -->
-                  <li><a class="dropdown-item" href="https://simplerisk.atlassian.net/jira/discovery/share/views/ecc28d2f-82d4-444c-82ad-f16ea7e1a1c1" target="_blank"><i class="fas fa-map me-1 ms-1"></i><?= $escaper->escapeHtml($lang['Roadmap']);?></a></li>
+                  <li><a class="dropdown-item" href="https://www.simplerisk.com/support/roadmap" target="_blank"><i class="fas fa-map me-1 ms-1"></i><?= $escaper->escapeHtml($lang['Roadmap']);?></a></li>
 
                   <!-- Support Portal -->
-                  <li><a class="dropdown-item" href="https://support.simplerisk.com/kb" target="_blank"><i class="fas fa-cloud me-1 ms-1"></i><?= $escaper->escapeHtml($lang['SupportPortal']);?></a></li>
+                  <li><a class="dropdown-item" href="https://www.simplerisk.com/support/portal" target="_blank"><i class="fas fa-cloud me-1 ms-1"></i><?= $escaper->escapeHtml($lang['SupportPortal']);?></a></li>
 
                   <!-- Web Support -->
                   <li><a class="dropdown-item" href="https://support.simplerisk.com/tickets" target="_blank"><i class="fas fa-ticket-alt me-1 ms-1"></i><?= $escaper->escapeHtml($lang['WebSupport']);?></a></li>
                   
                   <!-- Email Support -->
                   <li><a class="dropdown-item" href="mailto: support@simplerisk.com" target="_blank"><i class="fas fa-envelope me-1 ms-1"></i><?= $escaper->escapeHtml($lang['EmailSupport']);?></a></li>
+
+                  <!-- Phone Support: reserved for customers with a paid Extra. The
+                       portal/web/email items above are standard support for everyone;
+                       phone support is an entitlement of a paid purchase. -->
+<?php
+                  require_once(realpath(__DIR__ . '/includes/extras.php'));
+                  if (has_paid_extra()):
+?>
+                  <li><a class="dropdown-item" href="https://www.simplerisk.com/schedule/support" target="_blank"><i class="fas fa-phone me-1 ms-1"></i><?= $escaper->escapeHtml($lang['PhoneSupport']);?></a></li>
+<?php endif; ?>
                 </ul>
               </li>
               <!-- End of Help dropdown -->
@@ -973,14 +1174,56 @@ if (!advanced_search_extra()) { ?>
               </li>
 <?php endif; ?>
 
+              <!-- Notifications bell -->
+              <li class="nav-item">
+                <a class="nav-link waves-effect waves-dark notifications-toggle"
+                   href="javascript:void(0)"
+                   title="<?= $escaper->escapeHtmlAttr($lang['Notifications']) ?>"
+                   aria-label="<?= $escaper->escapeHtmlAttr($lang['Notifications']) ?>"
+                   data-label-notifications="<?= $escaper->escapeHtmlAttr($lang['Notifications']) ?>"
+                   data-label-unread="<?= $escaper->escapeHtmlAttr($lang['Unread']) ?>"
+                   data-label-all="<?= $escaper->escapeHtmlAttr($lang['All']) ?>"
+                   data-label-trash="<?= $escaper->escapeHtmlAttr($lang['Trash']) ?>"
+                   data-label-selectall="<?= $escaper->escapeHtmlAttr($lang['SelectAll']) ?>"
+                   data-label-markread="<?= $escaper->escapeHtmlAttr($lang['MarkRead']) ?>"
+                   data-label-delete="<?= $escaper->escapeHtmlAttr($lang['Delete']) ?>"
+                   data-label-restore="<?= $escaper->escapeHtmlAttr($lang['Restore']) ?>"
+                   data-label-nonotifications="<?= $escaper->escapeHtmlAttr($lang['NoNotifications']) ?>"
+                   data-label-nothingintrash="<?= $escaper->escapeHtmlAttr($lang['NothingInTrash']) ?>"
+                   data-label-view="<?= $escaper->escapeHtmlAttr($lang['View']) ?>"
+                   data-label-close="<?= $escaper->escapeHtmlAttr($lang['Close']) ?>"
+                   data-label-promo="<?= $escaper->escapeHtmlAttr($lang['Promo']) ?>"
+                   data-label-timeseconds="<?= $escaper->escapeHtmlAttr($lang['TimeSeconds']) ?>"
+                   data-label-timeminutes="<?= $escaper->escapeHtmlAttr($lang['TimeMinutes']) ?>"
+                   data-label-timehours="<?= $escaper->escapeHtmlAttr($lang['TimeHours']) ?>"
+                   data-label-timedayunit="<?= $escaper->escapeHtmlAttr($lang['TimeDayUnit']) ?>">
+                  <i class="font-24 fas fa-bell align-middle"></i>
+                  <span class="notifications-badge" hidden>0</span>
+                </a>
+              </li>
+              <!-- End of Notifications bell -->
+
               <!-- Profile dropdown menu -->
+<?php
+    // Avatar initials from the logged-in user's name (falls back to the person
+    // glyph when no name is available). build_profile_initials() is defined in
+    // renderutils.php — require it so the call is reachable regardless of the
+    // include chain.
+    require_once(realpath(__DIR__ . '/includes/renderutils.php'));
+    $sr_profile_name = trim((string)($_SESSION['name'] ?? ''));
+    $sr_initials     = build_profile_initials($sr_profile_name);
+?>
               <li class="nav-item dropdown">
                 <a class="nav-link dropdown-toggle waves-effect waves-dark"
                    role="button"
                    data-bs-toggle="dropdown"
-                   title="<?= $escaper->escapeHtmlAttr($lang['Profile']) ?>"
+                   title="<?= $escaper->escapeHtmlAttr($sr_profile_name !== '' ? $sr_profile_name : $lang['Profile']) ?>"
                    aria-label="<?= $escaper->escapeHtmlAttr($lang['Profile']) ?>">
+<?php if ($sr_initials !== ''): ?>
+                  <span class="sr-avatar"><?= $escaper->escapeHtml($sr_initials) ?></span>
+<?php else: ?>
                   <i class="display-7 mdi mdi-account align-middle"></i>
+<?php endif; ?>
                 </a>
 		        <ul class="dropdown-menu dropdown-menu-end animated">
 			      <li><a class="dropdown-item" href="../account/profile.php"><i class="fa fa-user me-1 ms-1"></i> <?= $escaper->escapeHtml($lang['MyProfile']);?></a></li>
@@ -1000,7 +1243,7 @@ if (!advanced_search_extra()) { ?>
           </div>
         </nav>
       </header>
-<?php if (!empty($permissions['show_ai_chat']) && artificial_intelligence_extra() && get_setting('ai_api_key') && function_exists('ai_render_chat_panel')): ?>
+<?php if (!empty($permissions['show_ai_chat']) && artificial_intelligence_extra() && function_exists('ai_provider_is_configured') && ai_provider_is_configured() && function_exists('ai_render_chat_panel')): ?>
       <?php ai_render_chat_panel(); ?>
 <?php endif; ?>
 

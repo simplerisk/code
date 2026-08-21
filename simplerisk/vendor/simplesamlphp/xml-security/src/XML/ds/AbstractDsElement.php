@@ -14,12 +14,9 @@ use SimpleSAML\XMLSecurity\Constants as C;
  */
 abstract class AbstractDsElement extends AbstractElement
 {
-    /** @var string */
-    public const NS = C::NS_XDSIG;
+    public const string NS = C::NS_XDSIG;
 
-    /** @var string */
-    public const NS_PREFIX = 'ds';
+    public const string NS_PREFIX = 'ds';
 
-    /** @var string */
-    public const SCHEMA = 'resources/schemas/xmldsig-core-schema.xsd';
+    public const string SCHEMA = 'resources/schemas/xmldsig-core-schema.xsd';
 }

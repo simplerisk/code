@@ -1,0 +1,559 @@
+// Connectivity Explorer — canvas + inspector cards side by side, with the
+// search/types/depth controls living in the canvas card's own toolbar
+// header, plus the full-width connections card below.
+// Colors come from the palette; no hardcoded hex (see variable.scss).
+
+.sr-connectivity-explorer {
+    display: flex;
+    flex-direction: column;
+    gap: $spacer * .75;
+    // No horizontal/vertical padding here (matches .sr-qform, _questionnaire.scss)
+    // -- .content's own 10px padding already insets this wrapper, and each
+    // card supplies its own visible border/shadow. An extra padding here
+    // would inset the visible cards past .content's edge, breaking alignment
+    // with the page title/breadcrumb above (Issue 2).
+
+    &__crumbs {
+        font-size: .85rem;
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: .35rem;
+
+        button {
+            background: none;
+            border: 0;
+            padding: 0;
+            color: $primary;
+            text-decoration: underline;
+            cursor: pointer;
+        }
+
+        [aria-current="page"] {
+            font-weight: 600;
+        }
+    }
+
+    // Controls moved OUT of a left rail and into the canvas card's own
+    // header (mirrors .sr-table-toolbar sitting inside .sr-table-card,
+    // design-system.md §6) -- the canvas is the only element on this page
+    // whose usefulness scales with area; the rail's ~220px + gap now goes
+    // straight to it. Two cards side by side: canvas (wide) + inspector
+    // (narrow, it's content and earns its column, unlike the controls that
+    // used to share the rail with it).
+    &__layout {
+        display: flex;
+        gap: $spacer * .75;
+        align-items: stretch;
+        min-height: 520px;
+    }
+
+    &__canvas-col {
+        flex: 1 1 auto;
+        min-width: 0;
+        display: flex;
+    }
+
+    // Collapses to zero width -- rather than `display: none` -- so the
+    // column can still be measured/targeted consistently (a hidden element
+    // has no box at all) and so removing it costs nothing layout-wise
+    // beyond the width itself. Deliberately NOT an animated transition on
+    // flex-basis/gap: measured by hand against a live Sigma graph (not
+    // guessed) that animating the width fires this page's ResizeObserver
+    // (watchCanvasResize(), connectivity-visualizer.js) on every intermediate
+    // animation frame, each one calling sigma.resize() against a WIDTH THAT
+    // IS STILL CHANGING -- a node's on-screen position keeps drifting for
+    // the whole transition, not just once. setSelection()'s own 320ms defer
+    // (longer than Sigma's doubleClickTimeout) already stops a SELECTING
+    // click from moving anything during a double-click's 300ms window; an
+    // animated width on top of that would still drift a node out from under
+    // a SECOND double-click aimed at an already-selected node (confirmed by
+    // reproducing exactly that sequence: select, wait for the old animated
+    // expand to visually finish, then double-click the same node -- the
+    // second click missed because the transition's own resize churn was
+    // still catching up). An instant snap resizes and repaints exactly once,
+    // so a click resolved any time after the class change is valid
+    // immediately, with no window in which the coordinate is stale.
+    // `pointer-events: none` (while collapsed) stops a zero-width frame from
+    // swallowing clicks meant for the canvas.
+    &__inspector-col {
+        flex: 0 0 300px;
+        display: flex;
+    }
+
+    // The default, pre-selection state: launchpad tiles/list, or a focal
+    // whose graph is on screen but no node has been explicitly clicked yet
+    // (see connectivity-visualizer.js's setSelection() -- loading a NEW
+    // focal always deselects first). The canvas is the only element on this
+    // page whose usefulness scales with area (same rationale that moved
+    // search/types/depth out of a left rail and into the toolbar); giving
+    // the inspector column zero width by default, rather than only once a
+    // focal exists, is what lets the launchpad's tiles/list use the full
+    // card width too.
+    &--no-selection {
+        .sr-connectivity-explorer__layout {
+            gap: 0;
+        }
+
+        .sr-connectivity-explorer__inspector-col {
+            flex-basis: 0;
+            opacity: 0;
+            overflow: hidden;
+            pointer-events: none;
+        }
+    }
+
+    // Both cards are the shipped .sr-table-card shell (design-system.md §6) --
+    // the same 8px / $gray-300 / $shadow surface as .sr-qcard, floating on
+    // the page's gray ground instead of a white slab. .sr-table-card's own
+    // margin-bottom (meant for cards stacked vertically) is stood down here
+    // since these two sit side by side in a flex row and stretch to fill it.
+    &__canvas-card,
+    &__inspector-card {
+        margin-bottom: 0;
+        display: flex;
+        flex-direction: column;
+        flex: 1 1 auto;
+        width: 100%;
+    }
+
+    // The toolbar IS the canvas card's header now: search, the types-filter
+    // popover, and depth, in the one row .sr-table-toolbar already provides
+    // (search/filters/primary-action zone, design-system.md §6). flex-wrap
+    // (inherited from .sr-table-toolbar) is what keeps a narrow card from
+    // ever pushing the page body into horizontal scroll.
+    &__search-field {
+        position: relative;
+        flex: 1 1 200px;
+        min-width: 160px;
+        max-width: 420px;
+
+        // Floats the results list over the canvas below rather than
+        // pushing the toolbar (and the canvas with it) taller when results
+        // appear.
+        #sr-ce-results {
+            position: absolute;
+            top: calc(100% + 4px);
+            left: 0;
+            right: 0;
+            z-index: 5;
+            max-height: 320px;
+            overflow-y: auto;
+            background: $sr-body;
+            border: 1px solid $gray-300;
+            border-radius: 6px;
+            box-shadow: $shadow;
+        }
+    }
+
+    &__types-filter {
+        flex: 0 0 auto;
+
+        // A single column of one-per-row chips only needs to be wide enough
+        // for the longest label ("Self-Assessment Result") on one line, not
+        // the wider chip-grid allowance the ragged-wrap layout needed.
+        // Bounded height + scroll: ~15 node types stacked one per row would
+        // otherwise overflow a short viewport.
+        .dropdown-menu {
+            min-width: 220px;
+            max-width: 260px;
+            max-height: 320px;
+            overflow-y: auto;
+            padding: .4rem;
+        }
+    }
+
+    // One type chip per row, reading top to bottom, instead of a ragged
+    // wrapped grid (Issue 4) -- flex-direction: column keeps the same
+    // children/keyboard (Tab) order, just stacked vertically.
+    &__type-list {
+        display: flex;
+        flex-direction: column;
+        gap: .15rem;
+    }
+
+    &__depth-field {
+        display: flex;
+        align-items: center;
+        gap: .4rem;
+        flex: 0 0 auto;
+
+        .form-label {
+            margin: 0;
+            white-space: nowrap;
+        }
+
+        #sr-ce-depth {
+            width: 90px;
+        }
+    }
+
+    // Hidden until a focal is chosen (connectivity-visualizer.js toggles the
+    // `hidden` attribute in loadFocal()/clearGraph()) -- there is nothing to
+    // clear while the launchpad itself is on screen.
+    &__clear-btn {
+        flex: 0 0 auto;
+        white-space: nowrap;
+    }
+
+    &__canvas {
+        flex: 1 1 auto;
+        min-width: 0;
+        min-height: 480px;
+        border-top: 1px solid $gray-300;
+        position: relative;
+    }
+
+    // The canvas launchpad
+    // (docs/superpowers/specs/2026-07-27-connectivity-explorer-launchpad.md):
+    // Level-1 type tiles, or the Level-2 browsable list, shown in normal
+    // flow (unlike &__empty above, which overlays a live graph) since
+    // there is no canvas underneath it to preserve visibility of.
+    &__launchpad {
+        height: 100%;
+        padding: $spacer;
+        overflow-y: auto;
+    }
+
+    &__tiles {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+        gap: $spacer * .6;
+    }
+
+    // One tile per browsable type (design-system.md §4/§6: cards on gray
+    // ground, tokens not hex, 6px control radius). Deliberately its own
+    // page-scoped component rather than a reuse of .hub__tile (Reports Hub)
+    // -- that component's colors predate the token palette in
+    // design-system.md §1 ($gray-800/$gray-700 rather than $sr-primary/
+    // $gray-600) and this tile also needs a data-driven swatch the Hub tile
+    // has no concept of.
+    &__tile {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: .25rem;
+        text-align: left;
+        background: $sr-body;
+        border: 1px solid $gray-300;
+        border-radius: 8px;
+        padding: $spacer * .75;
+        cursor: pointer;
+        transition: border-color .1s, box-shadow .1s;
+
+        &:hover {
+            border-color: $sr-important;
+            box-shadow: $shadow;
+        }
+
+        &:focus-visible {
+            outline: 2px solid $sr-important;
+            outline-offset: 2px;
+        }
+    }
+
+    &__tile-swatch {
+        width: .65rem;
+        height: .65rem;
+        border-radius: 999px;
+        flex: none;
+        // Fallback only -- the real color is data-driven and painted by
+        // paintPaletteDots() via the style *property*, same discipline as
+        // &__type-chip-dot above.
+        background: $gray-500;
+    }
+
+    &__tile-label {
+        font-size: 13.5px;
+        font-weight: 700;
+        color: $sr-primary;
+    }
+
+    &__tile-count {
+        font-size: 20px;
+        font-weight: 800;
+        color: $sr-primary;
+        font-variant-numeric: tabular-nums;
+    }
+
+    // Level-2: back link + active-type badge, filter box, scrollable result
+    // list, Load More. Reuses the list-group markup/classes the toolbar
+    // search results (#sr-ce-results) already use rather than inventing a
+    // second row component.
+    &__browse {
+        display: flex;
+        flex-direction: column;
+        gap: $spacer * .5;
+    }
+
+    &__browse-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: $spacer * .5;
+    }
+
+    // Same look as the breadcrumb trail's own non-last-crumb buttons
+    // (&__crumbs button, above) -- both are a plain-text "go back" affordance.
+    &__back-link {
+        background: none;
+        border: 0;
+        padding: 0;
+        color: $primary;
+        text-decoration: underline;
+        cursor: pointer;
+        font-size: .85rem;
+        flex: none;
+    }
+
+    &__browse-type {
+        display: flex;
+        align-items: center;
+        gap: .4rem;
+        font-size: .8rem;
+        font-weight: 700;
+        color: $sr-primary;
+    }
+
+    &__browse-filter {
+        flex: none;
+    }
+
+    // A fixed max-height (matching &__inspector-body's own bounded scroll
+    // above) rather than a flex-fill of the parent's height: &__launchpad's
+    // parent (&__canvas) only sets `min-height`, not a definite height, and
+    // a percentage/flex height resolves to `auto` against an auto-height
+    // ancestor per the CSS box model -- which is exactly what let the list
+    // grow unbounded with every "Load more" click and scroll the whole page
+    // instead of scrolling internally, confirmed with the browser DOM/live
+    // render before landing on this fix.
+    &__browse-results {
+        max-height: 420px;
+        overflow-y: auto;
+        border: 1px solid $gray-300;
+        border-radius: 6px;
+    }
+
+    &__load-more {
+        align-self: center;
+    }
+
+    &__inspector-body {
+        flex: 1 1 auto;
+        overflow-y: auto;
+        max-height: 620px;
+        padding: $spacer * .5 $spacer * .75;
+    }
+
+    &__empty {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        // Anchored to the TOP, not vertically centered: the focal node is
+        // drawn underneath this overlay even when it has no visible
+        // neighbors (connectivity-visualizer.js's renderGraph() no longer
+        // returns early on an empty neighbor set -- the focal must stay
+        // visible and clickable), and Sigma's camera centers a single-node
+        // graph in the middle of the container -- exactly where a
+        // vertically-centered overlay would put its own text. Confirmed by
+        // hand against a real focal-only entity (a threat_catalog row with
+        // no mapped risks, e.g. "Earthquakes"): centered text and the
+        // centered node drew on top of one another, breaking the node's own
+        // label into the sentence. Top-anchoring with headroom keeps the
+        // message clear of the node regardless of container height.
+        align-items: flex-start;
+        justify-content: center;
+        text-align: center;
+        padding: $spacer * 2 $spacer $spacer;
+        color: $text-muted;
+        // This has no interactive children of its own (plain text), so
+        // letting clicks pass through to the canvas below costs nothing
+        // here and is what keeps the focal node clickable underneath it.
+        pointer-events: none;
+    }
+
+    // One per row in &__type-list now (Issue 4): a full-width toggle row
+    // rather than a self-sized pill, so the list reads as a single column
+    // instead of a chip grid. Toggle semantics (aria-pressed), the swatch,
+    // and DOM/keyboard order are unchanged -- only the layout/shape.
+    &__chip {
+        display: flex;
+        align-items: center;
+        width: 100%;
+        gap: .4rem;
+        border: 1px solid transparent;
+        border-radius: 6px;
+        padding: .3rem .5rem;
+        font-size: .8rem;
+        text-align: left;
+        cursor: pointer;
+        background: none;
+
+        &:hover {
+            background: $gray-100;
+        }
+
+        &[aria-pressed="false"] {
+            opacity: .45;
+        }
+
+        &-swatch {
+            flex: none;
+            width: .55rem;
+            height: .55rem;
+            border-radius: 999px;
+            display: inline-block;
+        }
+    }
+
+    &__kv {
+        display: flex;
+        justify-content: space-between;
+        gap: .5rem;
+        font-size: .8rem;
+        padding: .1rem 0;
+
+        dt {
+            color: $text-muted;
+            font-weight: 400;
+        }
+
+        dd {
+            margin: 0;
+            text-align: right;
+        }
+    }
+
+    // The connections panel is rebuilt on the shipped .sr-table-card
+    // (design-system.md §6) -- this wrapper carries no border/shell of its
+    // own now; the card supplies that, and horizontal scroll lives inside
+    // the card's own .sr-table-scroll so a wide table never pushes the
+    // page body itself into horizontal scroll.
+    &__connections {
+        display: block;
+
+        // This table is now a real DataTable (connectivity-visualizer.js's
+        // initConnectionsTable()), same as every other .sr-table-card in the
+        // product -- its row count, and therefore its height, is bounded by
+        // pagination, not by a fixed-height inner scrollbar. No max-height/
+        // overflow-y override here: that was the previous round's fix for
+        // an unpaginated table growing past the viewport, and it is exactly
+        // the nested-scrollbar UX the pager now replaces. The shared
+        // `.sr-table-scroll { overflow-x: auto; }` (_tables.scss) still
+        // applies unmodified, so a wide table scrolls sideways inside the
+        // card rather than pushing the page body into horizontal scroll
+        // (design-system.md §6).
+    }
+
+    // A data-driven identity chip for the connections table's Type column --
+    // colored from state.palette (see nodeColor() in the JS), the same
+    // per-node-type colors the canvas uses, so the table and the graph agree
+    // visually. Deliberately NOT .sr-state-pill: that family is reserved for
+    // semantic workflow status (design-system.md §7); this is a category/
+    // identity color, closer in spirit to the .sr-avatar identity palette.
+    // Genuinely new, so namespaced to the page rather than added to the
+    // shared _tables.scss module.
+    &__type-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 12.5px;
+        font-weight: 600;
+        color: $sr-primary;
+        white-space: nowrap;
+
+        &-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            flex: none;
+            // Fallback only -- the real color is data-driven and painted by
+            // paintPaletteDots() in the JS via the style *property*, never
+            // interpolated into the markup string.
+            background: $gray-500;
+        }
+    }
+
+    // Ranking disclosure notes (design-system.md §6: a clustered type's rows
+    // are a ranked top-N subset, not the full neighbor set -- state that,
+    // and by what ranking, or the table silently implies it's showing
+    // everything). Sits between the card's toolbar and its table, same
+    // visual weight as the shipped .sr-table-quickfilters row.
+    &__connections-notes {
+        list-style: none;
+        margin: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        padding: 6px 16px 10px;
+        border-bottom: 1px solid $gray-300;
+        font-size: 12px;
+        color: $gray-600;
+
+        strong {
+            color: $sr-primary;
+            font-weight: 700;
+        }
+    }
+
+    @include media-breakpoint-down(lg) {
+        &__layout {
+            flex-direction: column;
+        }
+
+        &__canvas-col,
+        &__inspector-col {
+            flex: 1 1 auto;
+        }
+
+        &__inspector-body {
+            max-height: none;
+        }
+    }
+}
+
+// Let the Explorer's cards sit on the page-wrapper gray rather than a white
+// bordered slab (matches the card-on-gray look -- see the bottom of
+// _questionnaire.scss, and the same rule for _self_assessment.scss /
+// _ai_catalog.scss). This page's OWN shell markup
+// (reports/connectivity_visualizer.php) no longer emits `bg-white` -- that
+// class was simply deleted at the source rather than neutralized here, since
+// we wrote it ourselves. What's left is the shared `.content` wrapper
+// (rendered by functions.php / styled in core/layout/layout.scss), which is
+// not page-owned and ships its own $body-bg (white) regardless -- this is
+// the piece that still needs cancelling, same as every other page in this
+// list.
+.content:has(> .row > .col-12 > .sr-connectivity-explorer) {
+    background-color: transparent !important;
+    border-color: transparent !important;
+    margin: 0 !important;
+    // .content's shared width (core/layout/layout.scss:37-41) is
+    // `calc(100vw - var(--sr-sidebar-width) - 18px)` -- a viewport-relative
+    // guess at how much horizontal space is actually available inside
+    // .content-wrapper. `100vw` cannot see .content-wrapper's own vertical
+    // scrollbar (`overflow-y: scroll`, always reserved on a classic/
+    // non-overlay scrollbar) or .page-wrapper's conditional one (`overflow:
+    // auto`, reserved once a paginated table makes the page tall enough to
+    // need it) -- both eat real width from .content-wrapper's box that no
+    // vw-derived formula can account for, regardless of the subtrahend
+    // tuned in. A prior version of this rule kept the vw formula and just
+    // shrank the subtrahend from 18px to 8px to recover the margin's 10px;
+    // that made this page's right edge fall exactly in the scrollbar's
+    // reserved strip whenever a real (non-overlay) scrollbar was present --
+    // reproduced by forcing `scrollbar-gutter: stable` on .page-wrapper/
+    // .content-wrapper in headless Chromium (which otherwise renders overlay
+    // scrollbars that reserve zero width and hide the bug entirely): the
+    // simulated classic scrollbar shrank .content-wrapper's client width
+    // while .content's vw-based right edge stayed fixed, producing genuine
+    // horizontal overflow inside a container that clips it (overflow-x:
+    // hidden) or sits directly under the browser's own scrollbar track --
+    // exactly "displays outside the browser window." `width: auto` is
+    // computed from .content-wrapper's real, already-scrollbar-adjusted
+    // content box (the same box .page-breadcrumb -- which has no margin/
+    // width override -- already reaches), so it is immune to this by
+    // construction: no viewport arithmetic, so nothing to get out of sync
+    // with a real scrollbar. Margin stays zeroed (Issue 2: keeps the left
+    // edge flush with the breadcrumb); auto width now makes the right edge
+    // flush with it too, in every scrollbar state.
+    width: auto !important;
+}

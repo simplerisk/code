@@ -149,22 +149,17 @@ $config = [
         'username' => 'user@example.org', // optional: if set, enables smtp authentication
         'password' => 'password', // optional: if set, enables smtp authentication
         'security' => 'tls', // optional: defaults to no smtp security
+        'sender' => 'no-reply@example.org', // optional: (envelope) from address
         'smtpOptions' => [], // optional: passed to stream_context_create when connecting via SMTP
     ],
 
     // sendmail mail transport options
     /*
     'mail.transport.options' => [
-        'path' => '/usr/sbin/sendmail' // optional: defaults to php.ini path
+        'path' => '/usr/sbin/sendmail', // optional: defaults to php.ini path
+        'sender' => 'no-reply@example.org' // optional: (envelope) from address
     ],
     */
-
-    /*
-     * The envelope from address for outgoing emails.
-     * This should be in a domain that has your application's IP addresses in its SPF record
-     * to prevent it from being rejected by mail filters.
-     */
-    //'sendmail_from' => 'no-reply@example.org',
 
     /*
      * The timezone of the server. This option should be set to the timezone you want
@@ -188,6 +183,11 @@ $config = [
      *
      * A possible way to generate a random salt is by running the following command from a unix shell:
      * LC_ALL=C tr -c -d '0123456789abcdefghijklmnopqrstuvwxyz' </dev/urandom | dd bs=32 count=1 2>/dev/null;echo
+     *
+     * If you alter this value on a live system then your old admin-password will
+     * no longer work if you have a hashed password. If you use persistent NameIDs
+     * they will be different and also subject-id / pairwise-id will change.
+     * It will also invalidate all sessions.
      */
     'secretsalt' => 'defaultsecretsalt',
 
@@ -281,7 +281,17 @@ $config = [
      * Whenever you change any of these headers, make sure to validate your config by running your
      * hostname through a security-test like https://en.internet.nl
     'headers.security' => [
-        'Content-Security-Policy' => "default-src 'none'; frame-ancestors 'self'; object-src 'none'; script-src 'self'; style-src 'self'; font-src 'self'; connect-src 'self'; img-src 'self' data:; base-uri 'none'",
+        'Content-Security-Policy' =>
+            "default-src 'none'; " .
+            "frame-ancestors 'self'; " .
+            "object-src 'none'; " .
+            "script-src 'self'; " .
+            "style-src 'self'; " .
+            "font-src 'self'; " .
+            "connect-src 'self'; " .
+            "media-src data:; " .
+            "img-src 'self' data:; " .
+            "base-uri 'none'",
         'X-Frame-Options' => 'SAMEORIGIN',
         'X-Content-Type-Options' => 'nosniff',
         'Referrer-Policy' => 'origin-when-cross-origin',
@@ -452,6 +462,9 @@ $config = [
      ***********************/
 
     /*
+     * @DEPRECATED: set your proxy using environment variables.
+     * @see: https://symfony.com/doc/current/http_client.html#http-proxies
+     *
      * Proxy to use for retrieving URLs.
      *
      * Example:
@@ -549,24 +562,32 @@ $config = [
      ***********/
 
     /*
-     * Configuration for enabling/disabling modules. By default the 'core', 'admin' and 'saml' modules are enabled.
+     * Configuration for enabling/disabling modules. By default, the 'core', 'admin' and 'saml' modules are enabled.
      *
      * Example:
      *
      * 'module.enable' => [
      *     'exampleauth' => true, // Setting to TRUE enables.
      *     'consent' => false, // Setting to FALSE disables.
-     *     'core' => null, // Unset or NULL uses default.
+     *     'core' => null, // Unset or NULL uses default from \SimpleSAML\Module::$core_modules.
      * ],
      */
-
     'module.enable' => [
-        'exampleauth' => false,
         'core' => true,
         'admin' => true,
         'saml' => true,
     ],
 
+    /*************************************
+    | POST/REDIRECT UI CONFIGURATION    |
+     *************************************/
+
+    /*
+     * Delay (in milliseconds) before revealing the slow-post message on the auto-submit POST page.
+     * If unset, defaults to 30000 ms. Negative values are coerced to 30000.
+     * Set to 0 to reveal immediately.
+     */
+    //'slow_post_delay_ms' => 30000,
 
     /*************************
      | SESSION CONFIGURATION |
@@ -926,6 +947,19 @@ $config = [
      * The serving of the resources can be configured through these settings.
      */
     'assets' => [
+        /*
+         * Used to generate cache buster tags. This salt is only used for this purpose.
+         * You should set this in the same way as secretsalt.
+         *
+         * You can change this salt at any time. This will have the effect of explicit
+         * cache busting as the tags for resources will change and thus all resources
+         * will be fetched again.
+         *
+         * Leaving the default value in place can allow an attacker the opportunity
+         * to work out the version of SSP you have installed.
+         */
+        'salt' => 'assets.salt.default',
+
         /*
          * These settings adjust the caching headers that are sent
          * when serving static resources.

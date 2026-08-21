@@ -38,19 +38,6 @@ class Uri implements UriInterface, \JsonSerializable
         'ldap' => 389,
     ];
 
-    /**
-     * Unreserved characters for use in a regex.
-     *
-     * @see https://datatracker.ietf.org/doc/html/rfc3986#section-2.3
-     */
-    private const CHAR_UNRESERVED = 'a-zA-Z0-9_\-\.~';
-
-    /**
-     * Sub-delims for use in a regex.
-     *
-     * @see https://datatracker.ietf.org/doc/html/rfc3986#section-2.2
-     */
-    private const CHAR_SUB_DELIMS = '!\$&\'\(\)\*\+,;=';
     private const QUERY_SEPARATORS_REPLACEMENT = ['=' => '%3D', '&' => '%26', '+' => '%2B'];
 
     /** @var string Uri scheme. */
@@ -81,7 +68,13 @@ class Uri implements UriInterface, \JsonSerializable
             if ($parts === false) {
                 throw new MalformedUriException("Unable to parse URI: $uri");
             }
-            $this->applyParts($parts);
+            try {
+                $this->applyParts($parts);
+            } catch (MalformedUriException $e) {
+                throw $e;
+            } catch (\InvalidArgumentException $e) {
+                throw new MalformedUriException($e->getMessage(), 0, $e);
+            }
         }
     }
 
@@ -106,15 +99,33 @@ class Uri implements UriInterface, \JsonSerializable
             return self::parsePathNoSchemeReference($url);
         }
 
-        // If IPv6
+        // Preserve bracketed IPv6 literals before encoding, including dotted IPv4
+        // tails. DEL (\x7F) is excluded so a raw-DEL host falls through to the
+        // general path and is rejected rather than silently mutated by parse_url().
         $prefix = '';
-        if (preg_match('%^(.*://\[[0-9:a-fA-F]+\])(.*?)$%', $url, $matches)) {
-            /** @var array{0:string, 1:string, 2:string} $matches */
-            $prefix = $matches[1];
-            $url = $matches[2];
+        $ipv6Prefix = preg_match('%\A([0-9A-Za-z+.-]+://\[[^\]\x00-\x20\x7F/?#@]+\])(.*)\z%s', $url, $matches);
+
+        if ($ipv6Prefix === false) {
+            return false;
         }
 
-        /** @var string */
+        if ($ipv6Prefix === 1) {
+            /** @var array{0:string, 1:string, 2:string} $matches */
+            $suffix = $matches[2];
+
+            // After the bracketed host only an optional numeric port and/or a
+            // path, query, or fragment may follow. Anything else (for example
+            // `:80@evil` or `:80x`) would let parse_url() reinterpret a
+            // different host.
+            if (preg_match('%\A(?::[0-9]*)?(?:[/?#].*)?\z%s', $suffix) !== 1) {
+                return false;
+            }
+
+            $prefix = $matches[1];
+            $url = $suffix;
+        }
+
+        /** @var string|null */
         $encodedUrl = preg_replace_callback(
             '%[^:/@?&=#]+%usD',
             static function ($matches) {
@@ -122,6 +133,10 @@ class Uri implements UriInterface, \JsonSerializable
             },
             $url
         );
+
+        if ($encodedUrl === null) {
+            return false;
+        }
 
         $result = parse_url($prefix.$encodedUrl);
 
@@ -374,10 +389,36 @@ class Uri implements UriInterface, \JsonSerializable
         $result = self::getFilteredQueryString($uri, array_keys($keyValueArray));
 
         foreach ($keyValueArray as $key => $value) {
-            $result[] = self::generateQueryString((string) $key, $value !== null ? (string) $value : null);
+            $result[] = self::generateQueryString((string) $key, $value !== null ? self::stringifyQueryValue($value) : null);
         }
 
         return $uri->withQuery(implode('&', $result));
+    }
+
+    /**
+     * Stringifies a non-null query value, deprecating non-string values that
+     * guzzlehttp/psr7 3.0 will reject. Non-finite floats are normalized to the
+     * strings PHP coerces them to, as implicit coercion of NAN emits a warning
+     * on PHP 8.5.
+     *
+     * @param mixed $value
+     */
+    private static function stringifyQueryValue($value): string
+    {
+        if (!is_string($value)) {
+            \trigger_deprecation(
+                'guzzlehttp/psr7',
+                '2.12',
+                'Passing %s to Uri::withQueryValues() is deprecated; cast it to a string. guzzlehttp/psr7 3.0 will only accept string or null query values.',
+                \gettype($value)
+            );
+
+            if (is_float($value) && !is_finite($value)) {
+                return is_nan($value) ? 'NAN' : ($value > 0 ? 'INF' : '-INF');
+            }
+        }
+
+        return (string) $value;
     }
 
     /**
@@ -390,10 +431,52 @@ class Uri implements UriInterface, \JsonSerializable
     public static function fromParts(array $parts): UriInterface
     {
         $uri = new self();
-        $uri->applyParts($parts);
-        $uri->validateState();
+        try {
+            $uri->applyParts($parts);
+            $uri->validateState();
+        } catch (MalformedUriException $e) {
+            throw $e;
+        } catch (\InvalidArgumentException $e) {
+            throw new MalformedUriException($e->getMessage(), 0, $e);
+        }
 
         return $uri;
+    }
+
+    /**
+     * @throws \InvalidArgumentException If the host is invalid.
+     *
+     * @internal
+     */
+    public static function assertValidHost(string $host): void
+    {
+        if ($host === '') {
+            return;
+        }
+
+        // Reject control characters and URI authority delimiters so getHost()
+        // cannot disagree with the on-wire authority.
+        $invalidHost = preg_match('/[\x00-\x20\x7F\/\?#@\\\\]/', $host);
+
+        if ($invalidHost === false) {
+            throw new \RuntimeException('Unable to validate URI host: '.preg_last_error_msg());
+        }
+
+        if ($invalidHost === 1) {
+            throw new \InvalidArgumentException(sprintf('Invalid host: "%s"', $host));
+        }
+
+        if (strpos($host, '[') !== false || strpos($host, ']') !== false) {
+            if ($host[0] !== '[' || substr($host, -1) !== ']') {
+                throw new \InvalidArgumentException(sprintf('Invalid host: "%s"', $host));
+            }
+
+            return;
+        }
+
+        if (strpos($host, ':') !== false) {
+            throw new \InvalidArgumentException(sprintf('Invalid host: "%s"', $host));
+        }
     }
 
     public function getScheme(): string
@@ -496,6 +579,15 @@ class Uri implements UriInterface, \JsonSerializable
 
     public function withPort($port): UriInterface
     {
+        if ($port !== null && !\is_int($port)) {
+            \trigger_deprecation(
+                'guzzlehttp/psr7',
+                '2.11',
+                'Passing %s to UriInterface::withPort() is deprecated; guzzlehttp/psr7 3.0 requires int|null.',
+                \get_debug_type($port)
+            );
+        }
+
         $port = $this->filterPort($port);
 
         if ($this->port === $port) {
@@ -604,7 +696,18 @@ class Uri implements UriInterface, \JsonSerializable
             throw new \InvalidArgumentException('Scheme must be a string');
         }
 
-        return \strtr($scheme, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz');
+        $scheme = Utils::asciiToLower($scheme);
+
+        if ($scheme !== '' && !preg_match('/^[a-z][a-z0-9.+-]*$/D', $scheme)) {
+            \trigger_deprecation(
+                'guzzlehttp/psr7',
+                '2.11',
+                'Passing "%s" as a URI scheme is deprecated; guzzlehttp/psr7 3.0 requires URI schemes to match RFC 3986 syntax and begin with a letter.',
+                $scheme
+            );
+        }
+
+        return $scheme;
     }
 
     /**
@@ -618,10 +721,10 @@ class Uri implements UriInterface, \JsonSerializable
             throw new \InvalidArgumentException('User info must be a string');
         }
 
-        return preg_replace_callback(
-            '/(?:[^%'.self::CHAR_UNRESERVED.self::CHAR_SUB_DELIMS.']+|%(?![A-Fa-f0-9]{2}))/',
-            [$this, 'rawurlencodeMatchZero'],
-            $component
+        return $this->filterComponent(
+            '/(?:[^%'.Rfc3986::CHAR_UNRESERVED.Rfc3986::CHAR_SUB_DELIMS.']+|%(?![A-Fa-f0-9]{2}))/',
+            $component,
+            'Unable to filter URI user info'
         );
     }
 
@@ -636,7 +739,10 @@ class Uri implements UriInterface, \JsonSerializable
             throw new \InvalidArgumentException('Host must be a string');
         }
 
-        return \strtr($host, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz');
+        $host = Utils::asciiToLower($host);
+        self::assertValidHost($host);
+
+        return $host;
     }
 
     /**
@@ -717,10 +823,10 @@ class Uri implements UriInterface, \JsonSerializable
             throw new \InvalidArgumentException('Path must be a string');
         }
 
-        return preg_replace_callback(
-            '/(?:[^'.self::CHAR_UNRESERVED.self::CHAR_SUB_DELIMS.'%:@\/]++|%(?![A-Fa-f0-9]{2}))/',
-            [$this, 'rawurlencodeMatchZero'],
-            $path
+        return $this->filterComponent(
+            '/(?:[^'.Rfc3986::CHAR_UNRESERVED.Rfc3986::CHAR_SUB_DELIMS.'%:@\/]++|%(?![A-Fa-f0-9]{2}))/',
+            $path,
+            'Unable to filter URI path'
         );
     }
 
@@ -737,11 +843,22 @@ class Uri implements UriInterface, \JsonSerializable
             throw new \InvalidArgumentException('Query and fragment must be a string');
         }
 
-        return preg_replace_callback(
-            '/(?:[^'.self::CHAR_UNRESERVED.self::CHAR_SUB_DELIMS.'%:@\/\?]++|%(?![A-Fa-f0-9]{2}))/',
-            [$this, 'rawurlencodeMatchZero'],
-            $str
+        return $this->filterComponent(
+            '/(?:[^'.Rfc3986::CHAR_UNRESERVED.Rfc3986::CHAR_SUB_DELIMS.'%:@\/\?]++|%(?![A-Fa-f0-9]{2}))/',
+            $str,
+            'Unable to filter URI query or fragment'
         );
+    }
+
+    private function filterComponent(string $pattern, string $component, string $context): string
+    {
+        $filtered = preg_replace_callback($pattern, [$this, 'rawurlencodeMatchZero'], $component);
+
+        if ($filtered === null) {
+            throw new \RuntimeException($context.': '.preg_last_error_msg());
+        }
+
+        return $filtered;
     }
 
     private function rawurlencodeMatchZero(array $match): string

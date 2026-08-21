@@ -1,20 +1,20 @@
-<xenc11:DerivedKey xmlns:xenc11="http://www.w3.org/2009/xmlenc11#" Recipient="phpunit" Id="phpunit" Type="urn:x-simplesamlphp:type">
+<xenc11:DerivedKey xmlns:xenc11="http://www.w3.org/2009/xmlenc11#" xmlns:ds="http://www.w3.org/2000/09/xmldsig#" xmlns:xenc="http://www.w3.org/2001/04/xmlenc#" Recipient="phpunit" Id="phpunit" Type="urn:x-simplesamlphp:type">
   <xenc11:KeyDerivationMethod Algorithm="http://www.w3.org/2009/xmlenc11#ConcatKDF">
-    <ds:RSAKeyValue xmlns:ds="http://www.w3.org/2000/09/xmldsig#">
+    <ds:RSAKeyValue>
       <ds:Modulus>dGhpcyBpcyBzb21lIHJhbmRvbSBtb2R1bHVzCg==</ds:Modulus>
       <ds:Exponent>dGhpcyBpcyBzb21lIHJhbmRvbSBleHBvbmVudAo=</ds:Exponent>
     </ds:RSAKeyValue>
   </xenc11:KeyDerivationMethod>
-  <xenc:ReferenceList xmlns:xenc="http://www.w3.org/2001/04/xmlenc#">
+  <xenc:ReferenceList>
     <xenc:DataReference URI="#Encrypted_DATA_ID">
-      <ds:Transforms xmlns:ds="http://www.w3.org/2000/09/xmldsig#">
+      <ds:Transforms>
         <ds:Transform Algorithm="http://www.w3.org/TR/1999/REC-xpath-19991116">
           <ds:XPath>self::xenc:EncryptedData[@Id="example1"]</ds:XPath>
         </ds:Transform>
       </ds:Transforms>
     </xenc:DataReference>
     <xenc:KeyReference URI="#Encrypted_KEY_ID">
-      <ds:Transforms xmlns:ds="http://www.w3.org/2000/09/xmldsig#">
+      <ds:Transforms>
         <ds:Transform Algorithm="http://www.w3.org/TR/1999/REC-xpath-19991116">
           <ds:XPath>self::xenc:EncryptedKey[@Id="example1"]</ds:XPath>
         </ds:Transform>

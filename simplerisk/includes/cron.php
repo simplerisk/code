@@ -16,7 +16,6 @@ $cron_jobs = array(
 	'cron_vulnmgmt',
 	'cron_notification',
 	'cron_assessments',
-    'cron_audit',
     'cron_tfidf_recalculation',
     'cron_temporary_cleanup',
 );
@@ -150,18 +149,6 @@ function cron_assessments()
 {
 	// Get the assessments schedule
 	$schedule = cron_schedule("daily");
-
-	// Return the schedule
-	return $schedule;
-}
-
-/************************
- * FUNCTION: CRON AUDIT *
- ************************/
-function cron_audit()
-{
-	// Get the audit schedule
-	$schedule = cron_schedule("hourly");
 
 	// Return the schedule
 	return $schedule;

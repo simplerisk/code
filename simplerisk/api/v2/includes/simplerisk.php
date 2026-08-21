@@ -8,6 +8,11 @@ require_once(realpath(__DIR__ . '/api.php'));
 require_once(realpath(__DIR__ . '/../../../includes/queues.php'));
 require_once(realpath(__DIR__ . '/../../../includes/promises.php'));
 require_once(realpath(__DIR__ . '/../../../includes/upgrade.php'));
+// apply_database_release() and is_newest_known_release() live here. Reachable
+// transitively through upgrade.php today, but declared directly per the
+// reachability rule: an include reorder there would otherwise turn the calls in
+// api_v2_admin_upgrade_db() into a fatal.
+require_once(realpath(__DIR__ . '/../../../includes/upgrade/common.php'));
 
 /**********************************
  * FUNCTION: API V2 ADMIN VERSION *
@@ -202,7 +207,18 @@ function api_v2_admin_upgrade_db()
     // Get version from POST parameters
     $version = $_POST['version'] ?? null;
 
-    // If no version is provided, use the most recent release
+    // ── No version: bring the database fully up to date ─────────────────────
+    //
+    // This walks the whole chain from wherever the database actually is, and
+    // finishes by running the in-flight migration for the release currently in
+    // development if there is one -- which is what makes this endpoint usable
+    // for testing a release that has no version number yet.
+    //
+    // It used to resolve to end($releases) and apply that single function. That
+    // was wrong in both directions: on a database that was behind, it ran the
+    // NEWEST release's migration and silently skipped every one in between,
+    // because it dispatched on the version the caller named rather than on the
+    // version the database was on.
     if (!$version)
     {
         if (empty($releases))
@@ -211,11 +227,39 @@ function api_v2_admin_upgrade_db()
             return;
         }
 
-        // Use the latest release (last element)
-        $version = end($releases);
+        $db = db_open();
+        // true: this endpoint is how an in-development release is tested, so it
+        // wants the in-flight migration. The management extra's /upgrade leaves
+        // it off, so an already-current hosted instance stays a no-op.
+        $result = run_database_upgrade_structured($db, null, null, true);
+        db_close($db);
+
+        // A refusal is not a failure. Same condition, same status, as the
+        // named-version branch below.
+        if (!empty($result['refused'])) {
+            api_v2_json_result(
+                409,
+                $GLOBALS['lang']['UpgradeAlreadyRunning'] ?? "An upgrade is already running on this instance.",
+                $result
+            );
+            return;
+        }
+
+        $status_code    = $result['success'] ? 200 : 500;
+        $status_message = $result['success']
+            ? "Upgrade successful"
+            : "The upgrade did not complete. See the releases detail and the server log";
+
+        api_v2_json_result($status_code, $status_message, $result);
+        return;
     }
 
-    // If the version provided is in the correct format
+    // ── An explicit version: apply exactly that one release ─────────────────
+    //
+    // Deliberately a single hop, for targeting one migration during
+    // development. It dispatches on the version NAMED, which is only the same
+    // thing as the database's own version when the caller says so -- omit the
+    // parameter to walk the chain instead.
     if ($version && preg_match('/^\d{8}-\d{3}$/', $version))
     {
         // If the version is not in the releases array, return an error
@@ -228,46 +272,130 @@ function api_v2_admin_upgrade_db()
         }
         else
         {
-            // Get the upgrade function to call for this release version
-            $release_function_name = get_database_upgrade_function_for_release($version);
+            // Behind the same lock as the no-version branch.
+            //
+            // A single named hop is still an entire upgrade_from_* body of DDL,
+            // and finalize_database_upgrade() below rewrites every table's
+            // engine and charset. Running either underneath another channel's
+            // chain is the interleaved-ALTER hazard with_upgrade_lock() exists
+            // to prevent -- just with a smaller blast radius, which is not a
+            // reason to leave it unserialised.
+            $upgrade_refused = new stdClass();
 
-            // If a release function name was found
-            if ($release_function_name !== false)
-            {
+            $outcome = with_upgrade_lock(function () use ($version, $releases) {
+                $status_code = 500;
+                $status_message = "";
+                $data = null;
 
-                // If the release function exists
-                if (function_exists($release_function_name))
+                // Open the database connection
+                $db = db_open();
+
+                // The DB user must hold the privileges the migrations need. This
+                // endpoint used to skip the check the other channels all make, so a
+                // migration could fail partway through on a missing GRANT and be
+                // reported as a successful upgrade.
+                if (!check_grants($db))
                 {
-                    // Open the database connection
-                    $db = db_open();
-
-                    // Call the release function
-                    call_user_func($release_function_name, $db);
-
-                    // Close the database
                     db_close($db);
 
-                    // Create the result
-                    $status_code = 200;
-                    $status_message = "Upgrade successful";
+                    $status_code = 500;
+                    $status_message = "The database user is missing privileges required to run the upgrade";
                     $data = null;
                 }
-                // If the upgrade function does not exist
                 else
                 {
-                    // Create the result
-                    $status_code = 400;
-                    $status_message = "Upgrade function does not exist";
-                    $data = null;
+                    // Apply the release through the step every upgrade channel
+                    // shares. This endpoint previously called the release function
+                    // directly, which meant it alone had no captured exception and
+                    // no check that the version actually moved -- a migration that
+                    // threw, or that did nothing, still answered "Upgrade
+                    // successful". See apply_database_release().
+                    $step = apply_database_release($db, $version);
+
+                    db_close($db);
+
+                    if (!$step['ran'])
+                    {
+                        $status_code = 400;
+                        $status_message = "Upgrade function not found";
+                        $data = null;
+                    }
+                    elseif ($step['error'] !== '')
+                    {
+                        // The detail goes to the log, not to the caller: exception
+                        // text carries table and column names and file paths, and
+                        // this endpoint answers anyone holding an admin key.
+                        write_debug_log("api_v2_admin_upgrade_db: migration error on release {$version}: " . $step['error'], 'error');
+
+                        $status_code = 500;
+                        $status_message = "The upgrade encountered an error. See the server log for details";
+                        $data = null;
+                    }
+                    elseif (!$step['advanced'])
+                    {
+                        // Not advancing is EXPECTED for the newest known release
+                        // mid-cycle: that function targets a placeholder version
+                        // which update_database_version() refuses to write. On any
+                        // earlier release it means the migration did nothing, and
+                        // reporting success would tell hosted automation the
+                        // instance moved when it did not.
+                        if (is_newest_known_release($version, $releases))
+                        {
+                            $status_code = 200;
+                            $status_message = "Changes applied; the database version stays at {$step['to']} because this upgrade targets a release that has not been cut yet";
+                            $data = null;
+                        }
+                        else
+                        {
+                            write_debug_log("api_v2_admin_upgrade_db: release {$version} did not advance db_version from {$step['from']}.", 'error');
+
+                            $status_code = 500;
+                            $status_message = "The upgrade did not advance the database version";
+                            $data = null;
+                        }
+                    }
+                    else
+                    {
+                        // Post-chain conversions, the same ones every other upgrade
+                        // channel runs. Without them an instance upgraded through
+                        // this endpoint finished on utf8mb3 while the upgrade page,
+                        // the one-click flow and the Upgrade Extra all finished on
+                        // utf8mb4 -- a difference in column TYPE, not just
+                        // collation, since CONVERT TO CHARACTER SET widens TEXT to
+                        // MEDIUMTEXT. Idempotent, and opens its own connection.
+                        finalize_database_upgrade();
+
+                        // And the standing integrity checks, once the hop has
+                        // actually landed the database on the application
+                        // version. finalize_database_upgrade() is only the two
+                        // conversions; these are the checks documented as
+                        // running on EVERY upgrade, and every other channel runs
+                        // both. A named single hop is a development-targeting
+                        // mode, so the exposure was small -- but the point of
+                        // this consolidation is that no caller can introduce a
+                        // difference by forgetting a line, and this one had.
+                        if (current_version("db") == current_version("app")) {
+                            $checks_db = db_open();
+                            run_upgrade_integrity_checks($checks_db);
+                            db_close($checks_db);
+                        }
+
+                        $status_code = 200;
+                        $status_message = "Upgrade successful";
+                        $data = null;
+                    }
                 }
-            }
-            // If a release function name was not found
-            else
-            {
-                // Create the result
-                $status_code = 400;
-                $status_message = "Upgrade function not found";
+        
+                return array($status_code, $status_message, $data);
+            }, 0, $upgrade_refused);
+
+            if ($outcome === $upgrade_refused) {
+                $status_code = 409;
+                $status_message = $GLOBALS['lang']['UpgradeAlreadyRunning']
+                    ?? "An upgrade is already running on this instance.";
                 $data = null;
+            } else {
+                list($status_code, $status_message, $data) = $outcome;
             }
         }
     }

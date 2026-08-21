@@ -17,8 +17,8 @@ use SimpleSAML\XMLSecurity\Key\KeyInterface;
  */
 abstract class AbstractSigner implements SignatureAlgorithmInterface
 {
-    /** @var string */
-    protected const DEFAULT_BACKEND = Backend\OpenSSL::class;
+    protected const string DEFAULT_BACKEND = Backend\OpenSSL::class;
+
 
     /** @var \SimpleSAML\XMLSecurity\Backend\SignatureBackend */
     protected SignatureBackend $backend;
@@ -56,7 +56,6 @@ abstract class AbstractSigner implements SignatureAlgorithmInterface
 
 
     /**
-     * @return string
      */
     public function getAlgorithmId(): string
     {
@@ -65,7 +64,6 @@ abstract class AbstractSigner implements SignatureAlgorithmInterface
 
 
     /**
-     * @return string
      */
     public function getDigest(): string
     {

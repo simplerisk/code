@@ -1,0 +1,444 @@
+// ============================================================
+// App shell — new base design (§12): three-state collapsing sidebar.
+// State attr is on <html>: :root[data-sr-sidebar="expanded|rail|hidden"].
+// The legacy layout consumes --sr-sidebar-width; each state re-points it.
+// The rail is the minimum at EVERY width (mobile included) — there is no
+// off-canvas drawer; below 992 the sidebar auto-defaults to the rail (app-shell.js).
+// NOTE: exact dark-flyout / overlay token choices belong to editing-stylesheets.
+// ============================================================
+
+$sr-sidebar-rail-width: 56px;
+
+// Smooth the collapse. `visibility` is transitioned on the sidebar too so the
+// hidden state (below) can drop it from the tab order without cutting the
+// width animation short — visibility holds `visible` for the .22s collapse,
+// then flips to `hidden` at rest.
+.left-sidebar,
+.page-wrapper {
+    transition: width .22s ease, margin-left .22s ease;
+}
+.left-sidebar { transition: width .22s ease, margin-left .22s ease, visibility .22s ease; }
+.page-wrapper .content-wrapper .content {
+    transition: width .22s ease;
+}
+
+// Re-point the width variable in the rail state — at ALL widths, so the icon
+// rail (not an off-canvas drawer) is the minimum on small screens too. The
+// extra [data-layout="vertical"] attribute makes this (1,3,0), beating the
+// legacy #main-wrapper[data-layout="vertical"][data-sidebartype="full"] (1,2,0).
+:root[data-sr-sidebar="rail"] #main-wrapper[data-layout="vertical"] {
+    --sr-sidebar-width: #{$sr-sidebar-rail-width};
+}
+// Hidden state: no sidebar, content full-bleed.
+:root[data-sr-sidebar="hidden"] #main-wrapper[data-layout="vertical"] {
+    --sr-sidebar-width: #{$sidebar-width-none};
+}
+// overflow clips it visually; visibility:hidden also drops the (0-width) nav from
+// the keyboard tab order so a keyboard user isn't tabbed through an invisible menu.
+:root[data-sr-sidebar="hidden"] .left-sidebar { overflow: hidden; visibility: hidden; }
+
+// Items fill the now-variable sidebar rather than the fixed 250px
+.sidebar-nav .sidebar-item { width: 100%; }
+
+// Nav icon (expanded: icon + label)
+.sidebar-nav .sidebar-link .sr-nav-ico {
+    width: 24px;
+    flex: none;
+    text-align: center;
+    font-size: 16px;
+    color: $sr-sidebar-icons;
+}
+
+// Submenu selected leaf flips to page-ground + charcoal (connects to content)
+.sidebar-nav ul.first-level li.sidebar-item.active > .sidebar-link {
+    background-color: $sr-sidebar-submenu-background-selected;
+    color: $sr-sidebar-submenu-text-selected;
+}
+
+// ---- Rail: icons only, labels/caret hidden, flyouts can escape ----
+:root[data-sr-sidebar="rail"] {
+    .left-sidebar { overflow: visible; }
+    // Constrain items + links to the rail width so justify-content:center places
+    // the icon INSIDE the visible 56px rail. The theme fixes items at 250px via
+    // `.left-sidebar .scroll-sidebar .sidebar-nav ul#sidebarnav .sidebar-item`
+    // (specificity 1,4,1); scoping under :root[data-sr-sidebar="rail"] makes this
+    // (1,5,2) so it wins without !important. Without this the icon centers in a
+    // 250px item and lands ~x114, outside the rail — reading as "no icons".
+    .left-sidebar .sidebar-nav ul#sidebarnav > li.sidebar-item,
+    .left-sidebar .sidebar-nav ul#sidebarnav > li.sidebar-item > .sidebar-link {
+        width: 100%;
+        min-width: 0;
+    }
+    .sidebar-nav .sidebar-link {
+        justify-content: center;
+        .hide-menu { display: none; }
+        span { margin-left: 0; }
+        &.has-arrow::after { display: none; }
+    }
+    // Red = current location still holds in the rail
+    .sidebar-nav .sidebar-item.selected > .sidebar-link {
+        background-color: $sr-sidebar-background-selected;
+    }
+}
+
+// ---- Rail: suppress the inline submenu so a click never opens blank rows ----
+// (the rail interaction is the click-pinned flyout below; if the sidebar is
+// collapsed while a submenu was accordion-open, this hides the label-less rows).
+:root[data-sr-sidebar="rail"] .left-sidebar .sidebar-nav ul#sidebarnav > li.sidebar-item > ul.first-level {
+    display: none;
+}
+// Highlight the icon whose flyout is currently pinned open.
+:root[data-sr-sidebar="rail"] #sidebarnav > li.sidebar-item.sr-flyout-active > .sidebar-link {
+    background: rgba(255, 255, 255, .12);
+}
+
+// ---- Rail flyout (built by app-shell.js into a <body>-level host) ----
+// Fixed-positioned and JS-placed (left/top set on open, clamped to the viewport),
+// so it escapes the sidebar's overflow and never opens off-screen. Shown via
+// .sr-flyout-open, which app-shell.js sets on BOTH hover (with a close-delay
+// grace period) and click (click pins it open); JS placement is what fixed the
+// earlier "unreachable for lower items" hover problem.
+.sr-flyout-host {
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+.sr-flyout {
+    position: fixed;
+    min-width: 210px;
+    max-height: calc(100vh - 16px);
+    overflow-y: auto;
+    background: $sr-sidebar;                 // charcoal inset; refine token in editing-stylesheets
+    border: 1px solid rgba(255, 255, 255, .09);
+    border-radius: 8px;
+    box-shadow: 0 6px 24px rgba(0, 0, 0, .28);
+    padding: 6px 0;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateX(-6px);
+    transition: opacity .12s ease, transform .12s ease, visibility .12s;
+    z-index: 1050;
+    pointer-events: none;
+
+    &.sr-flyout-open {
+        opacity: 1;
+        visibility: visible;
+        transform: none;
+        pointer-events: auto;
+    }
+}
+.sr-flyout-title {
+    display: block;
+    padding: 9px 16px 8px;
+    font-size: 12.5px;
+    font-weight: 800;
+    color: $sr-sidebar-text;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    border-bottom: 1px solid rgba(255, 255, 255, .08);
+    margin-bottom: 4px;
+}
+.sr-flyout-item {
+    display: block;
+    padding: 9px 16px;
+    font-size: 13px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, .78);
+    text-decoration: none;
+    white-space: nowrap;
+
+    &:hover { color: $sr-sidebar-text; background: rgba(255, 255, 255, .06); }
+    &.active {
+        background: $sr-sidebar-submenu-background-selected;
+        color: $sr-sidebar-submenu-text-selected;
+    }
+}
+
+// ---- Desktop 3-state hamburger ----
+// Momentary highlight only (hover/press) — no persistent "pressed" background,
+// and inset from the left edge so the highlight reads as a tidy square, not a
+// bar running to the screen edge. aria-pressed stays for assistive tech.
+.sr-hamburger {
+    background: transparent;
+    border: 0;
+    width: 38px;
+    height: 38px;
+    margin-left: 6px;
+    border-radius: 8px;
+    color: $sr-sidebar-icons;
+    cursor: pointer;
+    transition: background .12s ease;
+
+    &:hover { background: rgba(255, 255, 255, .12); }
+    &:active { background: rgba(255, 255, 255, .2); }
+}
+
+// ---- Topbar brand row: keep hamburger + wordmark together on one line ----
+// The theme makes .navbar-brand a full-width flex block (wordmark drops to a 2nd
+// row) and, below md, sets the header to width:100% + space-between (which pushes
+// the wordmark away from the hamburger). Override both. The [data-logobg]
+// attribute lifts specificity to (0,4,0) so it beats the theme's (0,3,0) header
+// rule at every width.
+.topbar .top-navbar .navbar-header[data-logobg] {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    width: auto;
+}
+.topbar .top-navbar .navbar-header a.sr-wordmark.navbar-brand {
+    width: auto;
+    display: inline-flex;
+    align-items: center;
+    padding-left: 4px;
+}
+
+// ---- Two-tone text wordmark, with a logo-mark fallback on narrow screens ----
+.sr-wordmark {
+    font-weight: 900;
+    font-size: 20px;
+    letter-spacing: -.02em;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+
+    .s { color: $sr-sidebar-text; }
+    .r { color: $sr-important; }
+
+    .sr-brand-logo {
+        display: none;      // shown only on narrow screens (below)
+        height: 30px;
+        width: auto;
+    }
+}
+// Below sm the full "SimpleRisk" text is dropped for the compact logo mark.
+@include media-breakpoint-down(sm) {
+    .sr-wordmark .sr-brand-text { display: none; }
+    .sr-wordmark .sr-brand-logo { display: inline-block; }
+}
+
+// ---- Wordmark on the UNAUTHENTICATED mastheads ----------------------------
+//
+// The upgrade, healthcheck, questionnaire and assessment pages render the
+// wordmark as a <span> rather than an anchor, because nothing on an
+// unauthenticated page should navigate off to simplerisk.com. The rule above
+// is scoped to `a.sr-wordmark`, so it does not reach them -- without this the
+// mark sits flush against the viewport edge.
+//
+// More left padding than the shell's 4px on purpose: there is no hamburger
+// ahead of it on these pages, so the mark would otherwise start at x=0.
+.topbar .top-navbar .navbar-header span.sr-wordmark.navbar-brand {
+    width: auto;
+    display: inline-flex;
+    align-items: center;
+    padding-left: 20px;
+}
+
+// ---- Customer logo (Customization Extra) ----------------------------------
+//
+// Replaces the wordmark outright rather than sitting beside it, matching the
+// login panel. There is no text/mark swap at narrow widths because there is no
+// text: the single asset just gets a smaller box.
+//
+// The height cap is what keeps an arbitrary upload from resizing the topbar --
+// it must stay within the 64px bar whatever the customer supplies, and
+// object-fit: contain preserves their proportions inside it.
+// Top level rather than scoped under .sr-wordmark--custom: the same asset also
+// brands admin/upgrade.php, which renders its own bare navbar rather than the
+// app shell, so the cap has to apply wherever the image lands.
+.sr-brand-customlogo {
+    display: block;
+    max-width: 190px;
+    max-height: 38px;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+}
+
+@include media-breakpoint-down(sm) {
+    .sr-brand-customlogo {
+        max-width: 128px;
+        max-height: 30px;
+    }
+}
+
+// ---- Topbar search: a persistent pill (icon + input) on the charcoal ----
+// The theme collapses the input to a 30px circle that expands on focus and
+// puts a red circular button over it. Make it an always-visible translucent
+// pill with the search glyph inline — behaviour (the form action, the Advanced
+// Search Extra's results) is untouched; this only restyles the shared classes.
+.topbar .nav-item-search {
+    .search-box {
+        display: inline-flex;
+        align-items: center;
+        height: 38px;
+        padding: 0 8px 0 10px;
+        background: rgba(255, 255, 255, .10);
+        border: 1px solid rgba(255, 255, 255, .10);
+        border-radius: 8px;
+
+        // The default (and Advanced Search Extra) markup wraps the glyph button
+        // and the input in a <form>. That form is display:block by default, so
+        // the full-width input wrapped BELOW the button. Lay it out as a flex row.
+        form {
+            display: flex;
+            align-items: center;
+            width: 100%;
+            min-width: 0;
+            margin: 0;
+        }
+
+        .search-button {
+            position: static;
+            flex: 0 0 auto;
+            width: auto;
+            height: auto;
+            padding: 0 6px 0 0;
+            background: transparent;
+            color: rgba(255, 255, 255, .7);
+            border-radius: 0;
+        }
+        .search-input,
+        .search-button ~ .search-input {
+            flex: 1 1 auto;
+            width: auto;
+            min-width: 0;
+            height: 34px;
+            padding: 0 4px;
+            background: transparent;
+            color: $sr-sidebar-text;
+            border-radius: 0;
+
+            &::placeholder {
+                color: rgba(255, 255, 255, .55);
+                letter-spacing: normal;
+                font-weight: 400;
+            }
+        }
+    }
+    // Neutralise the theme's focus-expand jump — the pill is already open.
+    &:focus-within .search-box .search-button ~ .search-input {
+        flex: 1 1 auto;
+        width: auto;
+        background: transparent;
+        padding-left: 4px;
+    }
+}
+
+// Center the search using flex (no fragile absolute positioning): the brand
+// cluster stays left, the icon cluster stays right, and the search sits centred
+// in the flexible band between them. The band shrinks with the viewport, so the
+// search shrinks too and never overlaps a cluster or has to be hidden.
+.topbar .top-navbar { width: 100%; }
+.topbar .navbar-collapse .navbar-nav.float-start {
+    flex: 1 1 auto;
+    min-width: 0;
+    margin: 0;                 // drop the theme's me-auto so the band can centre
+    justify-content: center;
+}
+.topbar .nav-item-search {
+    max-width: 100%;
+    min-width: 0;
+
+    .search-box {
+        width: clamp(80px, 30vw, 240px);
+        max-width: 100%;
+    }
+}
+
+// ---- Topbar right-side icons: consistent rounded-hover buttons ----
+.topbar .navbar-nav.float-end > .nav-item > .nav-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 42px;
+    height: 42px;
+    margin: 0 1px;
+    border-radius: 8px;
+    transition: background .12s ease;
+
+    &:hover { background: rgba(255, 255, 255, .12); }
+
+    // Normalise every glyph to one size (the profile's mdi-account defaulted to a
+    // much larger display-7, widening that button) — consistent icon buttons.
+    i { font-size: 20px; line-height: 1; }
+}
+
+// Profile initials avatar (replaces the person glyph) — a compact circular chip.
+.topbar .sr-avatar {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, .18);
+    color: $sr-sidebar-text;
+    font-size: 11.5px;
+    font-weight: 800;
+    line-height: 1;
+    letter-spacing: .02em;
+}
+
+// Below sm, tighten the icons + search so the whole row fits on a phone. Placed
+// AFTER the base icon/search rules so it wins on source order (a media query
+// adds no specificity).
+@include media-breakpoint-down(sm) {
+    .topbar .navbar-nav.float-end > .nav-item > .nav-link { min-width: 36px; margin: 0; }
+    .topbar .nav-item-search .search-box { width: clamp(44px, 24vw, 240px); }
+}
+
+// ---- Responsive: keep the topbar on ONE row at every width ----
+// The topbar uses navbar-expand (never collapses), so it stays a single inline
+// flex row at all widths. Force no-wrap and override the theme's
+// `.navbar-collapse.show` mobile rule (0,4,0) that set display:block + a
+// border-top (the stray grey line). The `#navbarSupportedContent` id lifts these
+// to (1,4,0) so they beat the theme on specificity — not on @import order.
+.topbar .top-navbar { flex-wrap: nowrap; }
+.topbar .top-navbar #navbarSupportedContent.navbar-collapse,
+.topbar .top-navbar #navbarSupportedContent.navbar-collapse.show,
+.topbar .top-navbar #navbarSupportedContent.navbar-collapse.collapsing {
+    display: flex;
+    width: auto;
+    position: static;
+    top: auto;
+    border: 0;
+}
+
+// ---- App footer, pinned to the bottom of the sidebar ----
+// Make the sidebar a column so the nav scrolls and the footer sits at the
+// bottom. This reclaims the content-column footer row (the footer no longer
+// costs page height). In hidden state the whole sidebar — footer included — is
+// gone and the content is full-bleed.
+.left-sidebar {
+    display: flex;
+    flex-direction: column;
+
+    .scroll-sidebar {
+        flex: 1 1 auto;
+        min-height: 0;
+        overflow-y: auto;
+    }
+    // Theme sets .sidebar-nav height:100%, which would push the footer off the
+    // bottom; let it size to its content within the growing scroll area.
+    .scroll-sidebar .sidebar-nav { height: auto; }
+}
+
+.sr-sidebar-footer {
+    flex: 0 0 auto;
+    padding: 12px 16px 14px;
+    border-top: 1px solid rgba(255, 255, 255, .08);
+    background: $sr-sidebar;
+    color: rgba(255, 255, 255, .5);
+    font-size: 11px;
+    line-height: 1.5;
+
+    .sr-sf-copy { color: rgba(255, 255, 255, .42); }
+
+    // Hidden by app-shell.js when the nav would collide with it (short viewport
+    // / long menu), and always in the collapsed rail below.
+    &.sr-sf-collapsed { display: none; }
+}
+
+// No room for the footer text in the collapsed rail — hide it (it returns in
+// the expanded sidebar).
+:root[data-sr-sidebar="rail"] .sr-sidebar-footer { display: none; }

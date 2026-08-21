@@ -23,6 +23,83 @@ use SimpleRisk\DocumentHandlers\WordHandler;
  */
 class UnsupportedDocumentException extends \RuntimeException {}
 
+/**
+ * Exception thrown when a document exceeds the safe pre-parse size limit for
+ * its type. Like an unsupported type, this is a permanent skip — retrying the
+ * same oversized file only repeats the blowup.
+ */
+class DocumentTooLargeException extends \RuntimeException {}
+
+/**
+ * Pre-parse size guard for document text extraction.
+ *
+ * Parsers expand a file far beyond its on-disk size — PhpSpreadsheet inflates
+ * an XLSX 10-50x — and, critically, XLSX/DOCX parse zipped XML through
+ * libxml/ZipArchive, which allocate C memory OUTSIDE the Zend allocator that
+ * PHP's `memory_limit` accounts for. A modest file can therefore grow the
+ * worker process to multiple GB and get OS-OOM-killed mid-parse, which
+ * `memory_limit` cannot prevent. Refusing an oversized file up front is the
+ * cheap first line of defense.
+ *
+ * NOTE: file size is an imperfect predictor (blowup tracks internal cell /
+ * shared-string count, not bytes), so this guard has both false positives and
+ * false negatives. The durable safeguard is a memory-bounded extraction
+ * subprocess (ulimit -v / cgroup) so a pathological file kills only the child;
+ * that is a tracked follow-up. This guard meaningfully reduces the blast radius
+ * in the meantime without being a complete solution.
+ *
+ * Limits are per-type because the expansion factor differs sharply. Only the
+ * supported, parse-heavy types are bounded; unrecognized types are left to the
+ * UnsupportedDocumentException path.
+ */
+class DocumentSizeGuard
+{
+    private const MB = 1024 * 1024;
+
+    /**
+     * Per-type maximum input bytes (in MB) eligible for extraction. Tuned
+     * conservative for the worst expanders (xlsx/xls strictest, observed to
+     * exceed 4 GB at ~9.4 MB on a production instance while ~7.8 MB stayed
+     * under 1 GB).
+     */
+    private const DEFAULT_LIMITS_MB = [
+        'xlsx' => 8,
+        'xls'  => 8,
+        'docx' => 16,
+        'pdf'  => 24,
+        'csv'  => 32,
+        'txt'  => 32,
+    ];
+
+    /**
+     * Maximum eligible bytes for a document type, or 0 if the type is not
+     * bounded by this guard (unknown/unsupported types).
+     *
+     * @param array<string,int> $overridesMb Optional per-type overrides in MB.
+     */
+    public static function maxBytes(string $docType, array $overridesMb = []): int
+    {
+        $limits = $overridesMb + self::DEFAULT_LIMITS_MB;
+        $type = strtolower($docType);
+        if (!isset($limits[$type]) || (int)$limits[$type] <= 0) {
+            return 0;
+        }
+        return (int)$limits[$type] * self::MB;
+    }
+
+    /**
+     * True when a document of $docType and $sizeBytes is too large to extract
+     * safely. Unbounded types (maxBytes 0) never exceed.
+     *
+     * @param array<string,int> $overridesMb Optional per-type overrides in MB.
+     */
+    public static function exceedsLimit(int $sizeBytes, string $docType, array $overridesMb = []): bool
+    {
+        $max = self::maxBytes($docType, $overridesMb);
+        return $max > 0 && $sizeBytes > $max;
+    }
+}
+
 class DocumentTextExtractor
 {
     /**
@@ -42,6 +119,17 @@ class DocumentTextExtractor
         array $options = []
     ): string {
         $docType = self::determineDocumentType($mimeType, $fileName, $content);
+
+        // Pre-parse size guard: refuse files whose type+size risk an
+        // out-of-memory blowup (esp. XLSX, which allocates outside PHP's
+        // memory_limit). Unbounded/unknown types fall through to the
+        // UnsupportedDocumentException path below. See DocumentSizeGuard.
+        $sizeBytes = strlen($content);
+        if (DocumentSizeGuard::exceedsLimit($sizeBytes, $docType)) {
+            throw new DocumentTooLargeException(
+                "Document too large for safe extraction. [Type = {$docType}, Bytes = {$sizeBytes}, File Name = {$fileName}]"
+            );
+        }
 
         switch ($docType) {
             case 'csv':

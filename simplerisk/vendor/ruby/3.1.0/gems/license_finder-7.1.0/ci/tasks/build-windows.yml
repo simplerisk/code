@@ -1,6 +1,0 @@
-platform: windows
-inputs:
-- name: LicenseFinder
-run:
-  path: powershell
-  args: ["-File", "LicenseFinder/ci/scripts/test.ps1"]

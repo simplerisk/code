@@ -210,7 +210,7 @@ $(document).ready(function(){
 
             var riskDatatable = $this.DataTable({
                 scrollX: true,
-                bSort: true,
+                ordering: true,
                 orderCellsTop: true,
                 deferRender: false,
                 ajax: {

@@ -5,6 +5,53 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 /******
+ * FUNCTION: REDACT SECRETS FOR LOG
+ * Returns a copy of $data with credential values masked, for safe debug logging.
+ * Masks the values of known secret keys in arrays (recursively) and inside any
+ * JSON-string request body (e.g. the 'content' field of an HTTP options array).
+ * Never mutates the caller's data.
+ */
+function redact_secrets_for_log($data)
+{
+    static $secret_keys = ['services_api_key', 'api_key', 'proxy_pass', 'proxy_password', 'password'];
+
+    if (is_array($data)) {
+        $out = [];
+        foreach ($data as $key => $value) {
+            if (is_string($key) && in_array(strtolower($key), $secret_keys, true)) {
+                $out[$key] = '***REDACTED***';
+            } else {
+                $out[$key] = redact_secrets_for_log($value);
+            }
+        }
+        return $out;
+    }
+
+    if (is_string($data) && $data !== '') {
+        // Mask a whole HTTP header line whose name is sensitive. Header entries in an
+        // http_options 'header' array are POSITIONAL strings ("Cookie: ...",
+        // "CSRF-TOKEN: ...", "Authorization: ...") stored under integer keys, so the
+        // key-based redaction above never sees them (SR-1912). Keep the header name
+        // for debug context; redact its value.
+        if (preg_match('/^\s*(Cookie|Set-Cookie|CSRF-TOKEN|X-CSRF-TOKEN|Authorization|Proxy-Authorization|X-API-KEY)\s*:/i', $data)) {
+            return preg_replace('/^(\s*[A-Za-z][A-Za-z0-9-]*\s*:\s*).*$/s', '${1}***REDACTED***', $data);
+        }
+        // Mask secrets embedded in a JSON or form-encoded string body. (The array-key
+        // redaction above is the primary control — it masks before json_encode; this is
+        // best-effort defense in depth for an already-serialized body.)
+        foreach ($secret_keys as $sk) {
+            // "key":"value"  (JSON) — value matcher consumes \" escapes so a value
+            // containing an escaped quote can't leak its tail past the redaction.
+            $data = preg_replace('/("' . preg_quote($sk, '/') . '"\s*:\s*")(?:\\\\.|[^"\\\\])*(")/i', '${1}***REDACTED***${2}', $data);
+            // key=value  (form-encoded)
+            $data = preg_replace('/(\b' . preg_quote($sk, '/') . '=)[^&\s]*/i', '${1}***REDACTED***', $data);
+        }
+    }
+
+    return $data;
+}
+
+/******
  * FUNCTION: FETCH URL CONTENT
  * @param $connection
  * @param $http_options
@@ -17,7 +64,9 @@ function fetch_url_content($connection = "curl", $http_options = [], $validate_s
 {
     write_debug_log("CONNECTIVITY: FUNCTION[fetch_url_content]: URL: {$url}", "debug");
     write_debug_log("CONNECTIVITY: FUNCTION[fetch_url_content]: HTTP Options:", "debug");
-    write_debug_log($http_options, "debug");
+    // Redact credentials (services_api_key etc.) before logging — the licensing client
+    // sends them in the request body / parameters, and debug logs must never leak secrets.
+    write_debug_log(redact_secrets_for_log($http_options), "debug");
 
     // If validate_ssl is true
     if ($validate_ssl)
@@ -27,7 +76,7 @@ function fetch_url_content($connection = "curl", $http_options = [], $validate_s
     else write_debug_log("CONNECTIVITY: FUNCTION[fetch_url_content]: SSL certificate validation is disabled", "debug");
 
     write_debug_log("CONNECTIVITY: FUNCTION[fetch_url_content]: Parameters", "debug");
-    write_debug_log($parameters, "debug");
+    write_debug_log(redact_secrets_for_log($parameters), "debug");
 
     // Call the proper function based on the specified connection
     switch ($connection)
@@ -48,6 +97,69 @@ function fetch_url_content($connection = "curl", $http_options = [], $validate_s
     return $results;
 }
 
+/**
+ * Resolve the request body for a POST/PUT transport. A raw, pre-encoded body
+ * supplied via $http_options['content'] (e.g. a JSON payload) takes precedence
+ * and is returned verbatim — the caller is responsible for the matching
+ * Content-Type header. Otherwise an array $parameters is form-encoded and a
+ * string $parameters is returned as-is (e.g. QPS XML). Pure helper so the
+ * body-selection contract is unit-testable without making a network call.
+ *
+ * Regression guard: the licensing client sends its JSON body via
+ * $http_options['content']; before this was honored, the body was dropped and
+ * the licensing service rejected every request as malformed.
+ */
+function resolve_request_body($http_options, $parameters)
+{
+    if (isset($http_options['content'])) {
+        return $http_options['content'];
+    }
+    if (is_array($parameters)) {
+        return http_build_query($parameters, '', '&');
+    }
+    return $parameters;
+}
+
+/**
+ * Fold one raw response-header line into an accumulating name => value map.
+ * Pure — no curl handle, no I/O — so the parsing is unit-testable while the
+ * CURLOPT_HEADERFUNCTION closure that feeds it stays trivial.
+ *
+ * Names are lowercased so callers can look up a header without guessing the
+ * casing the server used (HTTP header names are case-insensitive).
+ *
+ * A status line resets the map. CURLOPT_FOLLOWLOCATION is on by default and every
+ * redirect hop emits its own header block, so without the reset a header present
+ * only on an intermediate 302 would survive into the final response's headers.
+ *
+ * @param array<string, string> $headers Accumulated headers so far.
+ * @param string                $line    One raw header line, CRLF included.
+ *
+ * @return array<string, string>
+ */
+function parse_curl_header_line(array $headers, string $line): array
+{
+    if (stripos($line, 'HTTP/') === 0) {
+        return [];
+    }
+
+    // limit 2 splits on the FIRST colon only, so a value that itself contains a
+    // colon (a URL, a timestamp) is preserved intact.
+    $parts = explode(':', $line, 2);
+    if (count($parts) !== 2) {
+        // The blank CRLF that terminates the block, or a malformed line.
+        return $headers;
+    }
+
+    $name = strtolower(trim($parts[0]));
+    if ($name === '') {
+        return $headers;
+    }
+
+    $headers[$name] = trim($parts[1]);
+    return $headers;
+}
+
 function fetch_url_content_via_curl($http_options, $validate_ssl, $url, $parameters, $max_retries = 3)
 {
     $request_method = $http_options['method'] ?? 'GET';
@@ -58,12 +170,49 @@ function fetch_url_content_via_curl($http_options, $validate_ssl, $url, $paramet
     $attempt = 0;
     $return_code = false;
 
+    // Opt-in response-header capture. Off by default so every existing caller's
+    // return shape is unchanged: the 'headers' key appears only when asked for.
+    // Used by download_extra() to read the licensing service's X-SHA256 and
+    // X-Extra-Version before it writes a byte to disk.
+    $capture_headers = !empty($http_options['capture_headers']);
+    $captured_headers = [];
+
     while ($attempt < $max_retries && $response === false) {
         $ch = curl_init();
 
+        // Collect response headers into a lowercased name => value map. Reset per
+        // attempt so a retry does not inherit a failed attempt's headers, and
+        // cleared on a redirect so only the final response's headers survive
+        // (CURLOPT_FOLLOWLOCATION is on by default, and each hop emits a block).
+        if ($capture_headers) {
+            $captured_headers = [];
+            // The closure stays thin on purpose: it can only run inside a live
+            // transfer, so the parsing it would otherwise contain lives in
+            // parse_curl_header_line(), which is pure and unit-tested. curl
+            // requires the byte count back, which is the only work left here.
+            curl_setopt($ch, CURLOPT_HEADERFUNCTION, function ($ch, $line) use (&$captured_headers) {
+                $captured_headers = parse_curl_header_line($captured_headers, $line);
+                return strlen($line);
+            });
+        }
+
         // Common curl options
         curl_setopt($ch, CURLOPT_HTTPHEADER, $header);
-        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+        // Restrict to http/https on both the initial request and any redirect, so a
+        // response can never redirect the transfer onto file://, gopher://, etc.
+        curl_setopt($ch, CURLOPT_PROTOCOLS, CURLPROTO_HTTP | CURLPROTO_HTTPS);
+        curl_setopt($ch, CURLOPT_REDIR_PROTOCOLS, CURLPROTO_HTTP | CURLPROTO_HTTPS);
+        // Redirect-following defaults to on (existing callers rely on it); an SSRF-
+        // sensitive caller (e.g. the workflow HTTP Request action) passes
+        // 'follow_redirects' => false so an allowed host can't 302 onto an internal one.
+        $follow_redirects = array_key_exists('follow_redirects', $http_options)
+            ? (bool)$http_options['follow_redirects'] : true;
+        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, $follow_redirects);
+        // Optional IP pin ("host:port:ip" entries) so curl connects to a pre-validated
+        // IP instead of re-resolving DNS at connect time (DNS-rebinding defence).
+        if (!empty($http_options['resolve']) && is_array($http_options['resolve'])) {
+            curl_setopt($ch, CURLOPT_RESOLVE, $http_options['resolve']);
+        }
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_HEADER, false);
         curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 3); // slightly longer for network retries
@@ -85,17 +234,12 @@ function fetch_url_content_via_curl($http_options, $validate_ssl, $url, $paramet
         // Configure proxy if needed
         configure_curl_proxy($ch);
 
-        // Encode parameters only if it's an array and method is POST
+        // Encode parameters only if method is POST. A raw body in
+        // $http_options['content'] takes precedence over $parameters
+        // (see resolve_request_body()).
         if (strtoupper($request_method) === 'POST') {
             curl_setopt($ch, CURLOPT_POST, true);
-
-            if (is_array($parameters)) {
-                curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($parameters, '', '&'));
-            } else {
-                // already a string (e.g., QPS XML)
-                curl_setopt($ch, CURLOPT_POSTFIELDS, $parameters);
-            }
-
+            curl_setopt($ch, CURLOPT_POSTFIELDS, resolve_request_body($http_options, $parameters));
         } else {
             // GET request
             if (is_array($parameters) && !empty($parameters)) {
@@ -117,10 +261,8 @@ function fetch_url_content_via_curl($http_options, $validate_ssl, $url, $paramet
             write_debug_log("CONNECTIVITY: Attempt " . ($attempt+1) . " failed for URL: $url. Curl Error: " . curl_error($ch), "warning");
             $response = false;
             $attempt++;
-            curl_close($ch);
             sleep(1); // small delay before retry
         } else {
-            curl_close($ch);
             break;
         }
     }
@@ -134,10 +276,16 @@ function fetch_url_content_via_curl($http_options, $validate_ssl, $url, $paramet
     write_debug_log("CONNECTIVITY: FUNCTION[fetch_url_content_via_curl]: Return code: {$return_code}", "debug");
     write_debug_log("CONNECTIVITY: FUNCTION[fetch_url_content_via_curl]: Response: " . (is_array($response) ? '[]' : $response), "debug");
 
-    return [
+    $result = [
         'return_code' => $return_code,
         'response' => $response,
     ];
+
+    if ($capture_headers) {
+        $result['headers'] = $captured_headers;
+    }
+
+    return $result;
 }
 
 function fetch_url_content_via_stream($http_options, $validate_ssl, $url, $parameters, $max_retries = 3)
@@ -169,9 +317,13 @@ function fetch_url_content_via_stream($http_options, $validate_ssl, $url, $param
         }
     }
 
-    // POST/PUT parameters
-    if (!empty($parameters)) {
-        $opts['http']['content'] = http_build_query($parameters);
+    // POST/PUT body. A raw, pre-encoded body supplied via
+    // $http_options['content'] (e.g. JSON) is sent verbatim and takes
+    // precedence over $parameters; otherwise form-encode $parameters.
+    // Shares resolve_request_body() with the curl transport so both honor
+    // the same body contract.
+    if (isset($http_options['content']) || !empty($parameters)) {
+        $opts['http']['content'] = resolve_request_body($http_options, $parameters);
     }
 
     // Proxy settings
@@ -213,9 +365,9 @@ function fetch_url_content_via_stream($http_options, $validate_ssl, $url, $param
     // predefined $http_response_header magic variable in favor of
     // http_get_last_response_headers() (added in PHP 8.4). Prefer the new
     // function when available; fall back to the magic variable on PHP < 8.4.
-    // Phan runs against the PHP 8.1 floor and does not know about the new
-    // function, so the function_exists() and call_user_func() lines are
-    // suppressed individually.
+    // Phan runs against the PHP 8.3 floor and does not know about the new
+    // function (added in 8.4), so the function_exists() and call_user_func()
+    // lines are suppressed individually.
     // @phan-suppress-next-line PhanUndeclaredFunctionInCallable
     if (function_exists('http_get_last_response_headers')) {
         // @phan-suppress-next-line PhanUndeclaredFunctionInCallable

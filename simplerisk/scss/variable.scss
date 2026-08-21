@@ -4,7 +4,10 @@
 
 /*******************************/
 
-@import url("https://fonts.googleapis.com/css?family=Nunito+Sans:300,400,600,700,800");
+// Nunito Sans is SELF-HOSTED and no longer pulled from Google Fonts -- see
+// scss/_fonts.scss, which style.scss imports exactly once. It is not imported
+// from here because this file is @import'ed three times and 75 duplicated
+// @font-face blocks is not the same harmless duplicate a repeated @import is.
 
 // To force the primary button to be generated with light button text instead of dark
 $min-contrast-ratio: 3;
@@ -27,6 +30,7 @@ $sr-default: #E8E9EB;
 $sr-important: #ed3139;
 $sr-dark: #252525;
 $sr-body: #ffffff;
+$sr-row-selected: #fdeced;     // light red tint for selected notification rows
 $excel-green: #10793F;
 
 // Semantic state colors for the Configure Hub badges and similar status
@@ -36,6 +40,7 @@ $excel-green: #10793F;
 $state-success: $excel-green;
 $state-danger:  $sr-important;
 $state-info:    #0d6efd;
+$state-warning: #ffb848;
 
 $sr-theme-colors: (
   "primary": $sr-primary,
@@ -61,6 +66,7 @@ $body-color: $sr-primary !default;
 $page-wrapper-bg: $sr-default;
 
 $link-color: $sr-secondary !default;
+$file-uploader-link-color: $body-color;
 
 // Topbar
 $topbar: $sr-topbar;

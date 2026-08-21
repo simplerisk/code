@@ -1,0 +1,101 @@
+{
+    "name": "package-url/packageurl-php",
+    "description": "Builder and parser based on the package URL (purl) specification.",
+    "license": "MIT",
+    "keywords": [
+        "package-url",
+        "packageurl",
+        "purl",
+        "package",
+        "url"
+    ],
+    "readme": "README.md",
+    "authors": [
+        {
+            "name": "Jan Kowalleck",
+            "email": "jan.kowalleck@gmail.com",
+            "homepage": "https://github.com/jkowalleck"
+        }
+    ],
+    "homepage": "https://github.com/package-url/packageurl-php#readme",
+    "support": {
+        "issues": "https://github.com/package-url/packageurl-php/issues"
+    },
+    "funding": [
+        {
+            "type": "github",
+            "url": "https://github.com/sponsors/jkowalleck"
+        }
+    ],
+    "require": {
+        "php": "^7.3 || ^8.0"
+    },
+    "require-dev": {
+        "ext-json": "*",
+        "phpunit/phpunit": "9.6.16",
+        "roave/security-advisories": "dev-latest"
+    },
+    "prefer-stable": true,
+    "autoload": {
+        "psr-4": {
+            "PackageUrl\\": "src"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "PackageUrl\\Tests\\": "tests"
+        }
+    },
+    "config": {
+        "allow-plugins": {
+            "ergebnis/composer-normalize": true
+        },
+        "preferred-install": "dist",
+        "sort-packages": true
+    },
+    "extra": {
+        "composer-normalize": {
+            "indent-size": 4,
+            "indent-style": "space"
+        }
+    },
+    "scripts": {
+        "cs-fix": "@php tools/php-cs-fixer/vendor/friendsofphp/php-cs-fixer/php-cs-fixer fix --diff",
+        "dev-setup": [
+            "@composer update -dtools/composer-normalize",
+            "@composer update -dtools/composer-require-checker",
+            "@composer update -dtools/composer-unused",
+            "@composer update -dtools/php-cs-fixer",
+            "@composer update -dtools/psalm",
+            "@composer update"
+        ],
+        "normalize": "@composer -dtools/composer-normalize normalize --diff $PWD/composer.json",
+        "test": [
+            "@composer validate",
+            "@test:psalm",
+            "@test:phpunit",
+            "@test:cs-fixer",
+            "@test:composer-require-checker",
+            "@test:composer-unused",
+            "@test:composer-normalize"
+        ],
+        "test:composer-normalize": "@composer -dtools/composer-normalize normalize --dry-run --diff $PWD/composer.json",
+        "test:composer-require-checker": "@php tools/composer-require-checker/vendor/maglnet/composer-require-checker/bin/composer-require-checker",
+        "test:composer-unused": "@php tools/composer-unused/vendor/icanhazstring/composer-unused/bin/composer-unused",
+        "test:cs-fixer": "@php tools/php-cs-fixer/vendor/friendsofphp/php-cs-fixer/php-cs-fixer fix --dry-run --diff",
+        "test:phpunit": "phpunit",
+        "test:psalm": "@php tools/psalm/vendor/vimeo/psalm/psalm"
+    },
+    "scripts-descriptions": {
+        "cs-fix": "Fix files according to coding standards.",
+        "dev-setup": "Install dev-requirements and tools",
+        "normalize": "Normalize composer.json",
+        "test": "Run all tests!",
+        "test:composer-normalize": "Test if composer.json was normalized.",
+        "test:composer-require-checker": "Test compoer requirements with composer-require-checker.",
+        "test:composer-unused": "Test compoer requirements with composer-unused.",
+        "test:cs-fixer": "Test coding standards with PHP-CS-fixer.",
+        "test:phpunit": "Run tests with PHPUnit.",
+        "test:psalm": "Run static code analysis with Psalm."
+    }
+}

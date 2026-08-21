@@ -53,6 +53,8 @@ class SQLPermanentStorage
         $this->db = new PDO($dbfile);
         if ($this->db) {
             $this->db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_SILENT);
+            $this->db->setAttribute(PDO::ATTR_EMULATE_PREPARES, false);
+
             $q = @$this->db->query('SELECT key1 FROM data LIMIT 1');
             if ($q === false) {
                 $this->db->exec('
@@ -165,6 +167,7 @@ class SQLPermanentStorage
         return $res;
     }
 
+
     /**
      * Return the value directly (not in a container)
      *
@@ -206,7 +209,7 @@ class SQLPermanentStorage
      * @param string|null $key2
      * @return array|false
      */
-    public function getList(?string $type = null, ?string $key1 = null, ?string $key2 = null)
+    public function getList(?string $type = null, ?string $key1 = null, ?string $key2 = null): array|false
     {
         $conditions = $this->getCondition($type, $key1, $key2);
         $query = 'SELECT * FROM data WHERE ' . $conditions;
@@ -290,6 +293,7 @@ class SQLPermanentStorage
         $prepared->execute($data);
         return $prepared->rowCount();
     }
+
 
     /**
      * Create a SQL condition statement based on parameters

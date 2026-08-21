@@ -1,0 +1,44 @@
+{
+  "name": "swaggest/json-schema",
+  "description": "High definition PHP structures with JSON-schema based validation",
+  "type": "library",
+  "require": {
+    "php": ">=7.1",
+    "ext-json": "*",
+    "phplang/scope-exit": "^1.0",
+    "swaggest/json-diff": "^3.8.2",
+    "symfony/polyfill-mbstring": "^1.19"
+  },
+  "require-dev": {
+    "phperf/phpunit": "4.8.37"
+  },
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Viacheslav Poturaev",
+      "email": "vearutop@gmail.com"
+    }
+  ],
+  "support": {
+    "email": "vearutop@gmail.com"
+  },
+  "prefer-stable": true,
+  "autoload": {
+    "psr-4": {
+      "Swaggest\\JsonSchema\\": "src/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Swaggest\\JsonSchema\\Tests\\": "tests/src/"
+    }
+  },
+  "config": {
+    "platform": {
+      "php": "7.1.33"
+    }
+  },
+  "suggest": {
+    "ext-mbstring": "For better performance"
+  }
+}

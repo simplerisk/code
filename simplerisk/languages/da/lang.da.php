@@ -33,8 +33,6 @@ $lang = array(
     'CurrentPassword'=>'Nuværende Password',
     'NewPassword'=>'Ny Adgangskode',
     'ConfirmPassword'=>'Bekræft Adgangskode',
-    'RiskConfiguration'=>'Risikokonfiguration',
-    'ReviewSettings'=>'Gennemgå indstillinger',
     'AddAndRemoveValues'=>'Tilføje og Fjerne Værdier',
     'UserManagement'=>'Brugerstyring',
     'RedefineNamingConventions'=>'Omdefinere Navngivning',
@@ -80,8 +78,6 @@ $lang = array(
     'Delete'=>'Slet',
     'SendPasswordResetEmailForUser'=>'Send e-mail til nulstilling af adgangskoden til brugeren',
     'Category'=>'Kategori',
-    'Cards'=>'Kort',
-    'List'=>'Liste',
     'AddNewCategoryNamed'=>'Tilføj ny kategori ved navn',
     'DeleteCurrentCategoryNamed'=>'Slet nuværende kategori ved navn',
     'Team'=>'Hold',
@@ -99,7 +95,7 @@ $lang = array(
     'RiskPlanningStrategy'=>'Risiko Planlægning Af Strategi',
     'AddNewRiskPlanningStrategyNamed'=>'Tilføj nye risiko-planlægning, strategi, opkaldt',
     'DeleteCurrentRiskPlanningStrategyNamed'=>'Slet nuværende risiko planlægning strategi hedder',
-    'CloseReason'=>'Tæt Årsag',
+    'CloseReason'=>'Lukkeårsag',
     'AddNewCloseReasonNamed'=>'Tilføj ny grund tæt ved navn',
     'DeleteCurrentCloseReasonNamed'=>'Slet nuværende grund tæt ved navn',
     'IWantToReviewHighRiskEvery'=>'Jeg ønsker at gennemgå hver HØJ risiko',
@@ -142,7 +138,7 @@ $lang = array(
     'SubmittedBy'=>'Indsendt Af',
     'NextReviewDate'=>'Næste Revision Dato',
     'CVSSRiskScoring'=>'CVSS Risiko Scoring',
-    'DREADRiskScoring'=>'FRYGTER Risiko Scoring',
+    'DREADRiskScoring'=>'DREAD Risiko Scoring',
     'OWASPRiskScoring'=>'OWASP Risiko Scoring',
     'CustomRiskScoring'=>'Brugerdefineret Risiko Scoring',
     'MitigationPlanningHelp'=>'Nedenfor er en liste over de indsendte risici, der kræver afhjælpning planlægning',
@@ -150,7 +146,7 @@ $lang = array(
     'Submitted'=>'Indsendt',
     'MitigationPlanned'=>'Afhjælpning Planlagt',
     'ManagementReview'=>'Ledelsens Evaluering',
-    'No'=>'Ingen',
+    'No'=>'Nej',
     'Yes'=>'Ja',
     'AddAndRemoveProjects'=>'Tilføje og Fjerne Projekter',
     'AddAndRemoveProjectsHelp'=>'Tilføje og fjerne projekter med henblik på at inddrage flere risici sammen for prioritering',
@@ -185,7 +181,7 @@ $lang = array(
     'LastReview'=>'Sidste Revision',
     'ReviewDate'=>'Revision Dato',
     'Reviewer'=>'Anmelder',
-    'Review'=>'Anmeldelse',
+    'Review'=>'Gennemgang',
     'NextStep'=>'Næste Skridt',
     'Comments'=>'Kommentarer',
     'ViewAllReviews'=>'Vis Alle Anmeldelser',
@@ -287,7 +283,7 @@ $lang = array(
     'Discoverability'=>'Synlighed',
     'UpdateOWASPScore'=>'Opdatering OWASP Score',
     'ThreatAgentFactors'=>'Trussel Agent Faktorer',
-    'SkillLevel'=>'Niveau',
+    'SkillLevel'=>'Færdighedsniveau',
     'Motive'=>'Motiv',
     'Opportunity'=>'Mulighed',
     'Size'=>'Størrelse',
@@ -322,7 +318,7 @@ $lang = array(
     'ActivateTheImportExportExtra'=>'Aktivere Import/Eksport-Ekstra',
     'PrintableView'=>'Udskrift',
     'GroupBy'=>'Gruppen Af',
-    'IncludedColumns'=>'I Prisen Kolonner',
+    'IncludedColumns'=>'Inkluderede Kolonner',
     'AllRisks'=>'Alle Risici',
     'DynamicRiskReport'=>'Dynamisk Risiko-Rapport',
     'ObsoleteReports'=>'Forældede Rapporter',
@@ -341,8 +337,8 @@ $lang = array(
     'AddANewAsset'=>'Tilføje et Nyt Aktiv',
     'AssetName'=>'Aktiv Navn',
     'IPAddress'=>'IP-Adresse',
-    'AssetWasAddedSuccessfully'=>'Aktivet blev tilføjet.',
-    'AssetWasDeletedSuccessfully'=>'Aktiv was deleted successfully.',
+    'AssetWasAddedSuccessfully'=>'Aktivet blev tilføjet med succes.',
+    'AssetWasDeletedSuccessfully'=>'Aktivet blev slettet med succes.',
     'ThereWasAProblemAddingTheAsset'=>'Der var et problem med tilføjelse af aktivet.',
     'ThereWasAProblemDeletingTheAsset'=>'Der var et problem sletning af aktivet.',
     'ComingSoon'=>'Kommer Snart',
@@ -357,8 +353,6 @@ $lang = array(
     'Activate'=>'Aktivere',
     'DeleteRisks'=>'Slet Risici',
     'DeletedRisksCannotBeRecovered'=>'Slettet Risici, Der Ikke Kan Inddrives',
-    'DeletedAssessmentsCannotBeRecovered'=>'Slettede vurderinger kan ikke gendannes',
-    'TheAssessmentsWereDeletedSuccessfully'=>'Vurderingen(erne) blev slettet.',
     'RisksDeletedSuccessfully'=>'Risiko(s) Deleted Successfully',
     'ThereWasAProblemDeletingTheRisk'=>'Der Var et Problem Sletning af den Risiko(r)',
     'Activated'=>'AKTIVERET',
@@ -385,7 +379,7 @@ $lang = array(
     'MitigationTeam'=>'Afhjælpning Team',
     'ImportRisks'=>'Import Risici',
     'ImportAssets'=>'Import Aktiver',
-    'AssetValue'=>'Indre Værdi',
+    'AssetValue'=>'Aktivværdi',
     'Register'=>'Registrer dig',
     'RegisterSimpleRisk'=>'Registrer SimpleRisk',
     'RegistrationText'=>'Registrerede SimpleRisk-instanser får øjeblikkeligt adgang til Upgrade and Secure Controls Framework (SCF) Extras. Upgrade Extra giver mulighed for at sikkerhedskopiere og opgradere din SimpleRisk-instans med et klik på en knap. Secure Controls Framework (SCF) Extra giver en fælles kontrolramme, der er integreret i SimpleRisk Governance-funktionaliteten. Ved registrering af SimpleRisk vil dine registreringsoplysninger blive sendt til en server, der hostes af SimpleRisk. De angivne registreringsoplysninger vil blive brugt af SimpleRisk til at underrette kunder om nye udgivelser og sikkerhedsopdateringer. Registreringen af SimpleRisk vil tilmelde dig vores markedsføringskommunikation, men du kan til enhver tid framelde dig ved at bruge afmeldingslinket i denne kommunikation. SimpleRisk respekterer vores kunders privatliv, og oplysninger givet til os gennem SimpleRisk registreringsprocessen vil aldrig blive solgt til en tredjepart.',
@@ -417,11 +411,6 @@ $lang = array(
     'EditAssets'=>'Aktiver Rediger',
     'AutomaticAssetValuation'=>'Automatisk Værdiansættelse',
     'ManualAssetValuation'=>'Vejledning Til Værdiansættelse Af Aktiver',
-    'AssetValuationMode'=>'Værdiansættelsestilstand for aktiver',
-    'AutomaticLinearRange'=>'Automatisk lineært område',
-    'AutomaticExponentialRange'=>'Automatisk eksponentielt område',
-    'ManualValuation'=>'Manuel',
-    'AssetValuationMinMustBeNonNegative'=>'Minimumværdien af aktiverne skal være nul eller større for det automatiske eksponentielle interval.',
     'MinimumValue'=>'Minimum Værdi',
     'MaximumValue'=>'Maksimale Værdi',
     'ValueRange'=>'Værdi',
@@ -487,7 +476,7 @@ $lang = array(
     'APIKey'=>'API-nøgle',
     'GenerateAPIKey'=>'Generere API-nøgle',
     'RotateAPIKey'=>'Rotere API-nøgle',
-    'InvalidateAPIKey'=>'Ugyldig API-nøgle',
+    'InvalidateAPIKey'=>'Ugyldiggør API-nøgle',
     'Deactivate'=>'Deaktivere',
     'ImportExportExtra'=>'Import-eksport ekstra',
     'SaveDetails'=>'Gemme oplysninger',
@@ -603,7 +592,6 @@ $lang = array(
     'SpecifiedTime' => 'Angivne tidspunkt',
     'Governance' => 'Regerings',
     'Compliance' => 'Overholdelse',
-    'CrossDomain' => 'Krydsdomæne',
     'AllowAccessToRiskManagementMenu' => 'Tillad adgang til menuen "risikostyring"',
     'CheckAllGovernance' => 'Kontrollere al regeringsførelse',
     'CheckAllCompliance' => 'Kontrollere alle overholdelse',
@@ -670,7 +658,7 @@ $lang = array(
     'DeleteCurrentControlPriorityNamed' => 'Slet aktuel kontrol prioritet med navnet',
     'AddNewControlFamilyNamed' => 'Tilføj ny kontrol familie kaldet',
     'DeleteCurrentControlFamilyNamed' => 'Slet aktuel kontrol familie med navnet',
-    'MinutesAssessmentsAreValid' => 'Protokol vurderinger er gyldige',
+    'MinutesAssessmentsAreValid' => 'Vurderinger er gyldige i minutter',
     'ShowAvailableAssetsOnAssessments' => 'Vis disponible aktiver på vurderinger',
     'AssessmentSettingsUpdatedSuccessfully' => 'Vurderings indstillingerne er blevet opdateret.',
     'UseCommasToSeperateMultipleEmails' => 'Brug kommaer til at adskille flere e-mails.',
@@ -695,7 +683,7 @@ $lang = array(
     'AssessmentContactUpdated' => 'En vurderings kontakt blev opdateret',
     'InvalidInformations' => 'Ugyldige oplysninger',
     'AreYouSureYouWantToDeleteThisContact' => 'Er du sikker på, at du vil slette denne kontaktperson?',
-    'ImportAssessmentContacts' => 'Kontakter til import vurdering',
+    'ImportAssessmentContacts' => 'Importer vurderingskontakter',
     'ImportCsvXlsFile' => 'Importer følgende CSV-eller xls-fil til SimpleRisk',
     'AssessmentContactsImported' => 'De vurderings kontakter, der importeres',
     'DefineTests' => 'Definering af test',
@@ -742,7 +730,7 @@ $lang = array(
     'InitiateFrameworkAudit'=>'Indlede en ramme revision',
     'InitiateControlAudit'=>'Initiere kontrolovervågning',
     'InitiateTest'=>'Initiere test',
-    'Questionnaires'=>'Spørge',
+    'Questionnaires'=>'Spørgeskemaer',
     'AreYouSureYouWantToDeleteThisQestionnaire' => 'Er du sikker på, at du vil slette dette spørgeskema?',
     'NewQuestionnaire'=>'Nyt spørgeskema',
     'EditQuestionnaire'=>'Rediger spørgeskema',
@@ -764,8 +752,8 @@ $lang = array(
     'NoPermissionForTemplate'=>'Du har ikke tilladelse til denne skabelon.',
     'RunNow'=>'Kør nu',
     'ActiveAudits'=>'Aktive revisioner',
-    'Questionnaire'=>'Spørge',
-    'Draft'=>'Til',
+    'Questionnaire'=>'Spørgeskema',
+    'Draft'=>'Udkast',
     'Complete'=>'Komplet',
     'AdditionalInformation'=>'Yderligere oplysninger',
     'Clear'=>'Klart',
@@ -779,7 +767,6 @@ $lang = array(
     'TestDate'=>'Test dato',
     'Attachment'=>'Vedhæftning',
     'InvalidParams'=>'Ugyldige parametre',
-    'ClearForm'=>'Ryd formular',
     'QuestionnaireDraftSuccess'=>'Dine svar er blevet gemt.',
     'QuestionnaireCompletedSuccess'=>'Du afsluttede spørgeskemaet med succes.',
     'EmailTemplateCompleteQuestionnaire' => '
@@ -816,13 +803,12 @@ $lang = array(
     'SelectAll' => 'Vælg alle',
     'TestStatus' => 'Test status',
     'DeleteCurrentStatusNamed' => 'Slet aktuel status ved navn',
-    'AuditStatus' => 'Overvågnings status',
+    'AuditStatus' => 'Revisions status',
     'TheClosedStatusCantBeDeleted' => 'Statussen lukket kan ikke slettes.',
     'AuditStatusDeleted' => 'En overvågnings status blev fjernet.',
     'HasFile' => 'Har fil',
     'ClosedAuditStatus' => 'Lukket overvågnings status',
     'ClosedAuditStatusIsRequired' => 'Lukket overvågnings status er påkrævet',
-    'Preferences' => 'Præferencer',
     'DefaultLanguage' => 'Standardsprog',
     'DefaultTimezone' => 'Standardtidszone',
     'UserSessions' => 'Brugersessioner',
@@ -852,8 +838,6 @@ $lang = array(
     'NotifyOwnersManager' => 'Giv besked til ejerens Manager',
     'NotifyTeam' => 'Advisér team',
     'NotifyAdditionalStakeholders' => 'Underrette yderligere interessenter',
-    'SpecificUser' => 'Specifik bruger',
-    'SpecificUsers' => 'Specifikke brugere',
     'NotifyReviewers' => 'Advisér korrektur',
     'NotifyTester' => 'Anmeld tester',
     'SimpleRiskURL' => 'SimpleRisk URL',
@@ -867,7 +851,7 @@ $lang = array(
     'DaysAfterTheAuditIsDue' => 'dage efter, at revisionen skyldes',
     'SendAnEmailWhenTheAuditIsDue' => 'Send en e-mail, når revisionen forfalder',
     'PendingRiskDeleted' => 'Den ventende risiko blev slettet',
-    'RunAt' => 'Køre på',
+    'RunAt' => 'Kør kl.',
     'ImportControls' => 'Import kontrolelementer',
     'RiskIDNoEXitFailedToUpdate' => 'Risiko-id $risk_id findes ikke, så det er ikke blevet importeret eller opdateret',
     'CreatedRisksFromPendingRisks' => 'Skabt alle risici fra verserende risici.',
@@ -877,14 +861,13 @@ $lang = array(
     'QuestionnaireTemplateName' => 'Navn på spørgeskema skabelon',
     'Ordering' => 'Bestilling',
     'AuditsDueToday' => 'Revisioner på grund af i dag',
-    'AuditsPastDue' => 'Revisioner af fortiden',
+    'AuditsPastDue' => 'Revisioner med overskredet deadline',
     'AuditsDueSoon' => 'Revisioner snart',
     'DateDue' => 'Forfaldsdato',
     'ShowAllRisksForPlanProjects' => 'Vis alle risici for planlagte projekter i stedet for kun dem, der gennemgås som "overveje for projekt"',
     'Edit' => 'Redigere',
     'Clone' => 'Klon',
     'SubQuestions' => 'Sub spørgsmål',
-    'Ordering' => 'Bestilling',
     'EncryptionKeyNoExist' => 'Krypteringsnøgle filen findes ikke. Kontakt venligst admin.',
     'ResidualRiskScore' => 'Resterende risiko score',
     'DefaultInitiatedAuditStatus' => 'Standard initieret overvågnings status',
@@ -910,7 +893,7 @@ $lang = array(
     'GoToSSOLogin' => 'Vis linket "gå til SSO-login" på den primære login-side',
     'SSOLoginDisabled' => 'SSO-login blev deaktiveret, så du kan ikke bruge denne godkendelse.',
     'QuestionID' => 'Spørgsmåls-id',
-    'QuestionOrdering' => 'Bestilling af spørgsmål',
+    'QuestionOrdering' => 'Rækkefølge af spørgsmål',
     'DefaultUserRole' => 'Standardbrugerrolle',
     'AbleToAcceptMitigations' => 'I stand til at acceptere afhjælpninger',
     'AcceptMitigation' => 'Accepter afhjælpning',
@@ -973,7 +956,7 @@ $lang = array(
     'FailUpdatingImpactName' => 'Det lykkedes ikke at opdatere effekt navnet.',
     'SuccessUpdatingLikelihoodName' => 'Sandsynligheds navnet blev opdateret.',
     'FailUpdatingLikelihoodName' => 'Fejl ved opdatering af Sandsynligheds navn.',
-    'DocumentProgram' => 'Document program',
+    'DocumentProgram' => 'Dokumentprogram',
     'AbleToAddDocumentation' => 'Kan tilføje dokumentation',
     'AbleToModifyDocumentation' => 'Kunne ændre dokumentation',
     'AbleToDeleteDocumentation' => 'Kan slette dokumentation',
@@ -1023,8 +1006,6 @@ $lang = array(
     'YouNeedToUpgradeYourSimpleRiskSubscription' => 'Du er nødt til at opgradere din SimpleRisk abonnement for at muliggøre brug af denne ekstra.',
     'AutomaticallyAddNewlyAuthenticatedUsersWithDefaultRole' => 'Tilføj automatisk nye godkendte brugere med standardrollen',
     'Disabled' => 'Deaktiveret',
-    'Help' => 'Hjælp',
-    'Profile' => 'Profil',
     'AbleToCommentRiskManagement' => 'I stand til at kommentere risikostyring',
     'AbleToCommentCompliance' => 'Stand til at kommentere overholdelse',
     'LanguageUpdated' => 'Dit sprog er blevet opdateret.',
@@ -1039,9 +1020,9 @@ $lang = array(
     'IPFormatNotRecognized' => 'IP var ikke i et genkendeligt format.',
     'Open' => 'Åbne',
     'Mitigated' => 'Dæmpet',
-    'Unmitigated' => 'Ubetinget',
+    'Unmitigated' => 'Ikke mitigeret',
     'Reviewed' => 'Gennemgik',
-    'Unreviewed' => 'Sete',
+    'Unreviewed' => 'Ikke gennemgået',
     'NewRiskInstruction' => 'Udfyld formularen ovenfor for at dokumentere en risiko for overvejelse i risikostyringsprocessen',
     'New' => 'Nye',
     'ManagementReviewed' => 'Mgmt gennemgik',
@@ -1067,12 +1048,11 @@ $lang = array(
     'FailedToUploadFile' => 'Kunne ikke overføre fil',
     'NewPasswordDoesNotMatchPolicy' => 'Den angivne nye adgangskode overholder ikke den konfigurerede adgangskodepolitik.',
     'RiskLevels' => 'RisikoNiveauer',
-    'Scoring' => 'Scoring',
     'ClassicRiskFormula' => 'Klassisk risiko formel',
     'ContributingRiskFormula' => 'Formel for medVirkende risiko',
     'ImpactHasMaxChars' => 'Effekt bør have en maksimal $length Tegn.',
     'LikelihoodHasMaxChars' => 'SandsynligHeden bør have maks. $length Tegn.',
-    'MapTeamAndGroup' => 'Kort team og gruppe',
+    'MapTeamAndGroup' => 'Tilknyt team og gruppe',
     'ContributionWeight' => 'Bidrags vægt',
     'TotalContributingWeightsShouldBe1' => 'Den samlede vægt skal være lig med 1.',
     'SuccessSaveContributingRisks' => 'Der blev gemt medvirkende risici.',
@@ -1098,10 +1078,8 @@ $lang = array(
     'MapSuccessTeamAndGroup' => 'Team-og LDAP-gruppen blev tilknyttet.',
     'MappingTeamAndLDAPGroupRequired' => 'Team-og LDAP-gruppen til tilknytning er påkrævet.',
     'ExistingMappings' => 'Eksisterende tilknytninger',
-    'TeamGroup' => '(Team <-->gruppe)</-->',
+    'TeamGroup' => '(Team <--> Gruppe)',
     'ExistingMappingsRequired' => 'Eksisterende tilknytninger skal vælges.',
-    'EncryptionBackupFileExists' => 'Som en del af krypteringsprocessen er der oprettet en ukrypteret sikkerhedskopi af din SimpleRisk-database.  Når du har kontrolleret, at alt er krypteret korrekt, skal du flytte det til et sikkert sted eller klikke på knappen for at slette det.',
-    'BackupLocation' => 'Sikkerhedskopiplacering',
     'FileDeletedSuccessfully' => 'Filen er blevet slettet.',
     'ErrorDeletingFile' => 'Der opstod en fejl under sletningen af filen.  Kontroller filtilladelser, og prøv igen.',
     'MapToLDAPGroup' => 'Knyt til LDAP-gruppe',
@@ -1138,7 +1116,7 @@ $lang = array(
     'DiscardAll' => 'Kassér Alle',
     'AssetWasDiscardedSuccessfully' => 'Aktivet blev slettet.',
     'ThereWasAProblemDiscardingTheAsset' => 'Der var et problem med at kassere aktivet.',
-    'AuditTimeline' => 'Overvåg tidslinje',
+    'AuditTimeline' => 'Revisionstidslinje',
     'AssociatedFrameworks' => 'Associerede rammer',
     'Verify' => 'Bekræft',
     'Discard' => 'Kassér',
@@ -1155,7 +1133,6 @@ $lang = array(
     'Unverified' => 'Ubekræftet',
     'ExportAssets' => 'Eksport af aktiver',
     'ExportToCSVByClickingBelow' => 'Eksporter til en CSV-fil ved at klikke nedenfor',
-    'RevertToUnencryptedBackup' => 'Vend tilbage til ikke-krypteret sikkerhedskopi',
     'SuccessfullyRevertedToUnencryptedBackup' => 'Gendannet til ikke-krypteret sikkerhedskopi',
     'FailedToRevertToUnencryptedBackup' => 'Der kunne ikke gendannes en ikke-krypteret sikkerhedskopi. Kontroller serverlogfilerne for at få flere oplysninger.',
     'AddNewItemNamed' => 'Tilføj nyt element med navn',
@@ -1221,7 +1198,7 @@ $lang = array(
     'StayUntilClicked' => 'Bliv, indtil der klikkes',
     'Pass' => 'Passere',
     'Inconclusive' => 'Usikkert',
-    'Fail' => 'Ikke',
+    'Fail' => 'Mislykkes',
     'Tags' => 'Tags',
     'NoTagAssigned' => 'Der er endnu ikke tildelt et mærke',
     'AssetNameIsRequired' => 'Aktiv navn er påkrævet',
@@ -1290,11 +1267,10 @@ $lang = array(
     'ControlExceptionName' => 'Navn på kontrolelement/undtagelse',
     'UnapprovedExceptionName' => 'Navn på politik/kontrol/undtagelse',
     'Ok' => 'Ok',
-    'Close' => 'Tæt',
+    'Close' => 'Luk',
     'Approve' => 'Godkende',
     'ExceptionType' => 'Undtagelses type',
     'PolicyName' => 'Navn på politik',
-    'ControlName' => 'Kontrolelementnavn',
     'AreYouSureYouWantToDeleteTheseExceptions' => 'Er du sikker på, at du vil slette disse undtagelser?',
     'ExceptionsWereDeletedSuccessfully_policy' => 'Undtagelser fra politikken er blevet slettet.',
     'ExceptionsWereDeletedSuccessfully_control' => 'Undtagelser af kontrol blev slettet med succes.',
@@ -1321,7 +1297,6 @@ $lang = array(
     'AssetsWereVerifiedSuccessfully'=>'Aktiverne blev verificeret.',
     'ThereWasAProblemVerifyingTheAssets'=>'Der opstod et problem under kontrol af aktiverne.',
     'ThereWasAProblemWithAddingTheProject' => 'Der opstod et problem med at tilføje projektet',
-    'ProjectName' => 'Projektnavn',
     'SuccessSetProject' => 'Det lykkedes at tilføje risiko til projektet.',
     'SuccessCreateProject' => 'Et nyt projekt er blevet oprettet.',
     'ReviewProjectSelectionInstructions' => 'Vælg et projekt, eller skriv navnet på et nyt.',
@@ -1370,7 +1345,6 @@ $lang = array(
     'UpdateAssetGroupTooltip' => 'Opdater aktiv gruppe',
     'DeleteAssetGroupTooltip' => 'Slet aktiv gruppe',
     'RemoveAssetTooltip' => 'Fjern aktiv fra aktiv gruppe',
-    'ControlShortNameFieldRequired' => 'Feltet kontrolkort navn er påkrævet.',
     'AffectedAssetsWidgetPlaceholder' => 'Vælg et aktiv eller en aktiv gruppe',
     'AffectedAssetsWidgetNoDropdownPlaceholder' => 'Tilføj et aktiv navn',
     'AffectedAssetsWidgetInstructions' => 'Vælg et aktiv eller en aktiv gruppe. Du kan oprette et nyt aktiv ved at føje dets navn til listen.',
@@ -1394,7 +1368,7 @@ $lang = array(
     'QuestionnaireHasNoTemplates' => 'Dette spørgeskema kan ikke sendes, da det ikke har nogen skabeloner tilknyttet',
     'TestAuditWasDeletedSuccessfully' => 'Test overvågning er blevet slettet.',
     'TestAuditDeleteAuditTrailMessage' => 'En test audit (ID {$test_audit_id}) blev slettet af brugeren "{$user}".',
-    'CacheClearWarning' => 'Ofte vil nye Simplen-udgivelser give opdateringer til stilark, billeder og JavaScript, der kan være blevet cachelagret af din webbrowser.  Ryd browserens cache for at sikre, at Simplen ser ud, som den skal efter opgraderingen.',
+    'CacheClearWarning' => 'Ofte vil nye SimpleRisk-udgivelser give opdateringer til stilark, billeder og JavaScript, der kan være blevet cachelagret af din webbrowser.  Ryd browserens cache for at sikre, at SimpleRisk ser ud, som den skal efter opgraderingen.',
     'TestAddHeader' => 'Tilføj ny test',
     'TestEditHeader' => 'Opdater test',
     'ControlEditHeader' => 'Opdater kontrolelement',
@@ -1450,7 +1424,7 @@ $lang = array(
     'AutomatedNotificationsOfUnmitigatedRisks' => 'Automatiske meddelelser om ubegrænsede risici',
     'SelectForAffectedAssets' => 'Vælg for berørte aktiver',
     'SearchForQuestion' => 'Søg efter spørgsmål',
-    'Required' => 'Kræves',
+    'Required' => 'Påkrævet',
     'ThereAreRequiredFields' => 'Der er obligatoriske felter.',
     'ThisFieldIsRequired' => 'Dette felt er påkrævet.',
     'ThereAreUnexpectedProblems' => 'Der er uventede problemer.',
@@ -1491,21 +1465,18 @@ $lang = array(
     'BackupStart' => 'Sikkerhedskopieringen er startet.',
     'BackupFailed' => 'Sikkerhedskopieringen mislykkedes. Kontakt en administrator.',
     'BackupSuccessful' => 'Sikkerhedskopiering lykkedes. Programmet, databasen og alle dine installerede ekstramateriale er sikkerhedskopieret.',
+    'BackupLocation' => 'Sikkerhedskopiplacering',
     'BackupCheckingPreRequisites' => 'Kontrol af tilladelser, opsætning af mapper.',
     'BackupCheckingPreRequisitesDone' => 'Tilladelse checks bestået, krævede mapper med succes oprettet.',
     'BackupApplicationFiles' => 'Sikkerhedskopiering af programfiler er startet.',
     'BackupApplicationFilesDone' => 'Programfiler blev sikkerhedskopieret',
     'BackupDatabase' => 'Sikkerhedskopiering af database er startet.',
     'BackupDatabaseDone' => 'Databasen blev sikkerhedskopieret.',
-    'BackupDatabaseFailed' => 'Databasebackup mislykkedes. Se venligst SimpleRisk-loggen for detaljer.',
-    'WindowsNotSupported' => 'SimpleRisk understøtter ikke længere Windows fra version 20260421-001. Migrer venligst til en Linux-baseret server.',
-    'WindowsUpgradeHalted' => 'Denne handling kan ikke køre på en Windows-server. SimpleRisk understøtter ikke længere Windows fra version 20260421-001. Migrer venligst til en Linux-baseret server.',
     'BackupDirectoryNotWriteable' => 'Den{$location}"mappen kan ikke skrives af webbrugeren.',
     'BackupFailedToCreateDirectories' => 'Den påkrævede mappestruktur kunne ikke oprettes på "{$location}".',
     'AreYouSureYouWantToDeleteSelction' => 'Er du sikker på, at du vil slette valget?',
     'FieldIsRequired' => '_XXX_ feltet er obligatorisk',
     'NoPermissionForAssessments' => 'Du har ikke tilladelse til at foretage vurderinger.',
-    'MissingOrInvalidTrackingID' => 'Manglende eller ugyldigt sporings-ID.',
     'Encrypted' => 'Krypteret',
     'AreYouSureYouWantToApproveThisResult' => 'Er du sikker på, at du vil godkende dette resultat?',
     'AreYouSureYouWantToRejectThisResult' => 'Er du sikker på, at du vil afvise dette resultat?',
@@ -1524,7 +1495,7 @@ $lang = array(
         </body></html>',
     'QuestionnaireResultApprovedAuditLog' => 'Spørgeskema "{$questionnaire_name}"(sendt til kontakt"{$contact_name}" den "{$date}") resultatet blev godkendt af brugeren "{$user_name}".',
     'QuestionnaireResultRejectedAuditLog' => 'Spørgeskema "{$questionnaire_name}" resultatet blev afvist og sendt tilbage til kontakt "{$contact_name}" til reevaluering af brugeren "{$user_name}" med kommentar "{$reject_comment}".',
-    'PrePopulateWithAnswersFromLastAssessment' => 'Pre-befolke med svar fra sidste vurdering?',
+    'PrePopulateWithAnswersFromLastAssessment' => 'Forudfyld med svar fra den seneste vurdering?',
     'QuestionnaireResultCommentAuditLog' => 'Bruger{$user_name}"tilføjede en kommentar til spørgeskema"{$questionnaire_name}"(sendt til kontaktperson"{$contact_name}på{$date}") resultat.',
     'QuestionnaireSentAuditLog' => 'Spørgeskema{$questionnaire_name}"blev sendt til kontakt"{$contact_name}"efter bruger"{$user_name}".',
     'PendingRiskCreationAuditLog' => 'Spørgeskema{$questionnaire_name}"\'s færdiggørelse resulterede i at skabe verserende risiko"{$subject}".',
@@ -1540,7 +1511,6 @@ $lang = array(
     'AddNewQuestion' => 'Tilføj nyt spørgsmål',
     'ControlAudit' => 'Kontrol revision',
     'AssociatedControls' => 'Tilknyttede kontrolelementer',
-    'AssociatedFrameworks' => 'Associerede rammer',
     'Analysis' => 'Analyse',
     'TotalNumber' => 'Samlet antal',
     'CumulativeScore' => 'Kumulativ score',
@@ -1564,7 +1534,6 @@ $lang = array(
     'ChangedTo' => 'Ændret til',
 
     'Jira' => 'Jira',
-    'JiraIntegrationExtra' => 'Jira-integration Ekstra',
 
     'JiraWebhookAuthTokenIsInvalid' => 'Den medfølgende JIRA Webhook auth token ("{$token}") er ugyldigt!',
     'JiraWebhookNoBodyPosted' => 'Den JIRA webhook ikke sende en krop! Bedes du kontakte support@simplerisk.com',
@@ -1650,7 +1619,7 @@ $lang = array(
     'ViewActiveAudits'=>'Vis aktive revisioner',
     'ViewPastAudits'=>'Få vist tidligere revisioner',
     'Uninstall' => 'Afinstallere',
-    'SimpleriskUsers' => 'Simpleriske brugere',
+    'SimpleriskUsers' => 'Simplerisk-brugere',
     'QuestionnaireCompletedAuditLogByUser' => 'Spørgeskema "{$questionnaire_name}" blev afsluttet af brugeren "{$contact_name}".',
     'QuestionnaireDraftAuditLogByUser' => 'Spørgeskema "{$questionnaire_name}" blev gemt som kladde af brugeren "{$contact_name}".',
     'Internal' => 'Interne',
@@ -1715,8 +1684,6 @@ $lang = array(
     'CustomFieldUpdateFailed' => 'Det brugerdefinerede felt kunne ikke opdateres.',
     'IncidentManagement' => 'Håndtering af hændelser',
     'IncidentManagementExtra' => 'Håndtering af hændelser Ekstra',
-    'IncidentManagementNotifications' => 'Notifikationer om hændelsesstyring',
-    'NotificationSettingsUpdated' => 'Notifikationsindstillingerne er opdateret.',
     'Incident' => 'Hændelse',
     'NewIncident' => 'Ny hændelse',
     'Preparation' => 'Under forberedelse',
@@ -1732,7 +1699,7 @@ $lang = array(
     'Detection' => 'Påvisning',
     'Assignment' => 'Tildeling',
     'Prioritization' => 'Prioritering',
-    'Associations' => 'Foreninger',
+    'Associations' => 'Tilknytninger',
     'Location' => 'Placering',
     'DetectionDate' => 'Registreringsdato',
     'OccurrenceType' => 'Forekomsttype',
@@ -1750,7 +1717,7 @@ $lang = array(
     'BusinessUnitUpdateAuditLog' => 'Bruger "{$user}" opdaterede teams af afdeling "{$business_unit_name}"(ID:{$id}) fra "{$teams_from}" til "{$teams_to}" ({$team_changes}).',
     'BusinessUnitDeleteAuditLog' => 'Bruger "{$user}" slettet afdeling "{$business_unit_name}"(ID:{$id}).',
     'BusinessUnitUpdateAuditLogRemoved' => 'Fjernet{$teams_removed}"',
-    'BusinessUnitUpdateAuditLogAdded' => 'Tilføjet{$teams_added}"',
+    'BusinessUnitUpdateAuditLogAdded' => 'Tilføjet "{$teams_added}"',
     'BusinessUnitRemoveTeamAuditLog' => 'Bruger "{$user}" fjernet Team "{$team_name}"(ID:{$team_id}) fra afdeling "{$business_unit_name}"(ID:{$business_unit_id}).',
     'BusinessUnitCreatedSuccessfully' => 'Der er oprettet en ny afdeling.',
     'BusinessUnitUpdatedSuccessfully' => 'Afdelingen blev opdateret.',
@@ -1770,7 +1737,6 @@ $lang = array(
     'DeleteBusinessUnitTooltip' => 'Slet afdeling',
     'RemoveTeamTooltip' => 'Fjern gruppe fra afdeling',
     'YouNeedToSpecifyATeamParameter' => 'Du skal angive en teamparameter.',
-    'OrganizationalHierarchyExtra' => 'Ekstra organisationshierarki',
     'Source' => 'Kilde',
     'SourceType' => 'Kildetype',
     'DetectedBy' => 'Det er blevet opdaget af',
@@ -1812,7 +1778,7 @@ $lang = array(
     'CollectedOn' => 'Indsamlet på',
     'CollectedBy' => 'Indsamlet af',
     'AreYourSureYouWantToDeleteThisEvidence' => 'Er du sikker på, at du vil slette dette bevis?',
-    'DetectedOn' => 'Fundet slået til',
+    'DetectedOn' => 'Opdaget den',
     'BeganOn' => 'Begyndte den',
     'ReportedBy' => 'Rapporteret af',
     'OwnedBy' => 'Ejet af',
@@ -1904,12 +1870,12 @@ $lang = array(
     'InvalidUniqueName' => 'Det angivne entydige filnavn er ugyldigt!',
     'ref_type_exceptions' => 'Dokument undtagelse',
     'ref_type_documents' => 'Dokument',
-    'ref_type_test_audit' => 'Test overvågning',
+    'ref_type_test_audit' => 'Testrevision',
     'SessionAbsoluteTimeout' => 'Session absolut timeout',
     'TagsWidgetPlaceholder' => 'Vælg / Tilføj tag',
     'TagType_questionnaire_answer' => 'Spørgeskema Svar',
     'TagType_questionnaire_pending_risk' => 'Spørgeskema, der afventer risiko',
-    'TagType_incident_management_source' => 'Kildekode',
+    'TagType_incident_management_source' => 'Kildetag',
     'TagType_incident_management_destination' => 'Destinationsmærke',
     'ImportExportTagSeparatorChangeWarning' => 'Separatoren for individuelle tags blev ændret fra \',\' (komma) til \'| \'(rør). Sørg for, at din fil bruger den nye separator.',
     'ReportIMLessonsLearnedHelp' => 'Denne rapport viser alle åbne erfaringer, der er beseget af den gennemsnitlige prioritet for hændelser.',
@@ -1923,7 +1889,7 @@ $lang = array(
     'DateRange' => 'Datointerval',
     'Average' => 'Gennemsnitlige',
     'ResolutionTarget' => 'Løsningsmål (dage)',
-    'Playbooks' => 'Spillebøger',
+    'Playbooks' => 'Playbooks',
     'AddNewPlaybook' => 'Tilføj ny spillebog',
     'SelectAnExistingPlaybook' => 'Vælg en eksisterende playbook',
     'AreYouSureYouWantToDeleteThisPlaybook' => 'Er du sikker på, at du vil slette denne playbook?',
@@ -1952,7 +1918,6 @@ $lang = array(
     'ConnectivityVisualizer' => 'Forbindelse Visualizer',
     'ThereAreNoConnectionsAssociatedWithTheSelectedValue' => 'Der er ingen forbindelser forbundet med den valgte værdi',
     'InvalidSimpleriskBaseUrl' => 'Ugyldig SimpleRisk Base URL!',
-    'Questionnaire' => 'Spørge',
     'FileEncodingFixHeader_risk' => 'Risikostyring',
     'FileEncodingFixHeader_compliance' => 'Styring og overholdelse',
     'FileEncodingFixHeader_questionnaire' => 'Vurderinger',
@@ -1963,7 +1928,7 @@ $lang = array(
     'ReviewsPastDue' => 'Anmeldelser forfaldne',
     'ReviewsDueSoon' => 'Anmeldelser forfalder snart om {$DueDate} dage',
     'Submitter' => 'Afsender',
-    'ControlMaturity' => 'Kontroller modenhed',
+    'ControlMaturity' => 'Kontrolmodenhed',
     'CurrentControlMaturity' => 'Nuværende kontrolmodenhed',
     'DesiredControlMaturity' => 'Ønsket kontrolmodning',
     'ControlGapAnalysis' => 'Kontrol hul analyse',
@@ -2011,8 +1976,6 @@ $lang = array(
     'TemplateAssignment' => 'Skabelontildeling',
     'PleaseSelectUser' => 'Vælg venligst bruger',
     'AboutThisPage' => 'Om denne side',
-    'UserGuide' => 'Brugervejledning',
-    'AdministratorGuide' => 'Administratorvejledning',
     'ProjectStatus' => 'Projektstatus',
     'SupportPortal' => 'Supportportal',
     'WebSupport' => 'Websupport',
@@ -2040,7 +2003,7 @@ $lang = array(
     'AccessVector' => 'Adgangsvektor',
     'AccessComplexity' => 'Adgangskompleksitet',
     'MaturityAudit' => 'Modenhedsrevision',
-    'DefaultCurrentMaturity' => 'Misligholdt løbende udløb',
+    'DefaultCurrentMaturity' => 'Standardværdi for nuværende modenhed',
     'DefaultDesiredMaturity' => 'Standard ønsket løbetid',
     'ComplianceAssessment' => 'Overholdelsesvurdering',
     'MaturityAssessment' => 'Modenhedsvurdering',
@@ -2062,7 +2025,7 @@ $lang = array(
     'QuestionnaireResultShareAuditLog' => 'Brugeren "{$user_name}" delte spørgeskemaet "{$questionnaire_name}" (sendt til kontakten "{$contact_name}" på "{$date}") med kommentaren "{$comment}". Delt med "{$shared_with_contacts}".',
     'QuestionnaireResultStopSharingAuditLog' => 'Brugeren "{$user_name}" stoppede med at dele spørgeskemaet "{$questionnaire_name}" (sendt til kontakten "{$contact_name}" på grund af "{$date}"). Delingen med "{$stopped_sharing_with_contacts} " er stoppet.',
     'QuestionnaireResultShareOpenedAuditLog' => 'Det delte spørgeskema "{$questionnaire_name}" (sendt til kontakt "{$contact_name}" på "{$date}", delt med "{$shared_with_contact_name}") blev åbnet.',
-    'Pending' => 'Indtil',
+    'Pending' => 'Afventer',
     'PasswordResetRequestsExceeded' => 'Der er allerede anmodet om nulstilling af adgangskode for denne bruger. Vent venligst 10 minutter, før du anmoder om en ny nulstilling af adgangskode.',
     'Backups' => 'Sikkerhedskopier',
     'AutomaticallyBackupThisSimpleRiskInstance' => 'Automatisk sikkerhedskopiering af denne simplerisk-instans',
@@ -2093,7 +2056,7 @@ $lang = array(
     'AssociatedRisks' => 'Tilknyttede risici',
     'ThreatMapping' => 'Trusselskortlægning',
     'jQueryDeliveryMethod' => 'jQuery Leveringsmetode',
-    'AuditLog_DocumentUpdates' => 'Dokument "{$document_name}"(ID: {$document_id}) blev opdateret med "{$user_name}". Ændringer: {$changes}.',
+    'AuditLog_DocumentUpdates' => 'Dokument "{$document_name}"(ID: {$document_id}) blev opdateret af "{$user_name}". Ændringer: {$changes}.',
     'DocumentStatus' => 'Dokumentstatus',
     'UnassignedColumns' => 'Ikke-tildelte kolonner',
     'RiskMappingColumns' => 'Risikokortlægningskolonner',
@@ -2186,7 +2149,6 @@ $lang = array(
     'GraphicalRiskAnalysis' => 'Grafisk risikoanalyse',
     'ResetMitigations' => 'Nulstil begrænsninger',
     'ResetReviews' => 'Nulstil anmeldelser',
-	'EnableEncryptionDebugLogging' => 'Aktiver krypteret database Ekstra debug-logning',
     'Log' => 'Log',
     'Date' => 'Dato',
     'Platform' => 'Platform',
@@ -2224,7 +2186,7 @@ $lang = array(
     'GenerateReport' => 'Generer rapport',
     'MappedControlNumbers' => 'Kortlagte kontrolnumre',
     'TagType_test' => 'Test',
-    'TagType_test_audit' => 'Test overvågning',
+    'TagType_test_audit' => 'Testrevision',
     'Continue' => 'Fortsætte',
     'AddTagsToTestAudit' => 'Tilføj tags for at teste revision',
     'RisksAndIssuesDisplay' => 'Visning af risici og problemer',
@@ -2263,7 +2225,7 @@ $lang = array(
     'IncidentSummaryUpdateSuccessful' => 'Resumé blev opdateret.',
     'ImportSuccessful' => 'Importen lykkedes!',
     'Document' => 'Dokument',
-    'SelfAssessments' => 'Selvvurderinger',
+    'SelfAssessments' => 'Selvevalueringer',
     'AssetId'=>'Aktiv-id',
     'ExportTemplateGroups' => 'Eksportér skabelongrupper',
     'ImportTemplateGroups' => 'Importer skabelongrupper',
@@ -2278,10 +2240,8 @@ $lang = array(
     'SSLSecurityCheckWarning' => 'ADVARSEL: SSL forhindrer MITM-angreb, og deaktivering af følgende muligheder er et sikkerhedsproblem',
     'EnableSSLCertificateCheckSimpleRisk' => 'Aktiver SSL-certifikattjek for SimpleRisk API-anmodninger',
     'EnableSSLCertificateCheckExternal' => 'Aktiver SSL-certifikattjek for eksterne websteder',
-    'EnableAPIv1Endpoints' => 'Aktivér API v1-slutpunkter (udfaset)',
-    'EnableAPIv1EndpointsHelp' => 'API v1 er udfaset. Lad være deaktiveret, medmindre du har en integration, der kræver det. /api/v2/ påvirkes ikke af denne indstilling og er altid tilgængelig.',
     'EnableSSLCertificateCheckVM' => 'Aktiver SSL-certifikattjek for sårbarhedsstyring',
-    'DuoToopherRemoved' => 'Duo er længere understøttet af SimpleRisk direkte. I stedet er vi migreret til en generisk TOTP-godkendelse. Opsæt venligst din nye autentificering nedenfor.',
+    'DuoToopherRemoved' => 'Duo er ikke længere understøttet af SimpleRisk direkte. I stedet er vi migreret til en generisk TOTP-godkendelse. Opsæt venligst din nye autentificering nedenfor.',
     'ProtectYourSimpleRiskAccount' => 'Beskyt din SimpleRisk-konto',
     '2FADescription' => 'To-faktor-godkendelse øger sikkerheden på din konto ved at bruge en sekundær enhed til at bekræfte din identitet. Dette forhindrer andre end dig i at få adgang til din konto, selvom de kender din adgangskode.',
     '2FAStep1' => 'Trin 1 - Scan koden nedenfor med en 2FA-app såsom Google Authenticator',
@@ -2307,7 +2267,7 @@ $lang = array(
     'EditFailed_NoPermission' => 'Redigering mislykkedes, ingen tilladelse.',
     'EditFailed_FieldMustBeUnique' => 'Redigeringen mislykkedes, værdien af feltet "{$field}" skal være unik.',
     'EditFailed_NotSelected' => 'Redigering mislykkedes, feltet er ikke valgt på brugergrænsefladen.',
-    'EditFailed_IncorrectOrEmptyRequiredFields' => 'Rediger mislykkede, forkerte eller tomme obligatoriske felter.',
+    'EditFailed_IncorrectOrEmptyRequiredFields' => 'Redigering mislykkedes, forkerte eller tomme obligatoriske felter.',
     'EditFailed_RequiredFieldEmpty' => 'Redigering mislykkedes, det obligatoriske felt "{$field}" må ikke være tomt.',
     'EditFailed_FieldNotEditable' => 'Redigering mislykkedes, feltet "{$field}" kan ikke redigeres.',
     'EditFailed_CustomFieldNeedsCustomization' => 'Redigering mislykkedes, tilpassede felter kan kun redigeres, når Tilpasning ekstra er aktiveret.',
@@ -2324,7 +2284,7 @@ $lang = array(
     'UpdateComplianceForgeSCF' => 'Opdater Secure Controls Framework (SCF) Framework',
     'MappedAssets' => 'Kortlagte aktiver',
     'AddControl' => 'Tilføj kontrol',
-    'CurrentMaturity' => 'Nuværende Løbetid',
+    'CurrentMaturity' => 'Nuværende modenhed',
     'AddDocument' => 'Tilføj dokument',
     'EditDocument' => 'Rediger dokument',
     'EncodingIssueCountUpdated' => 'Antallet af kodningsproblemer er blevet opdateret for typen "{$type}": {$old_count} -> {$count}.',
@@ -2335,7 +2295,7 @@ $lang = array(
     'AllClosedRisksFromQuestionnaires' => 'Alle lukkede risici fra spørgeskemaer',
     'AllDeletedRisksFromQuestionnaires' => 'Alle slettede risici fra spørgeskemaer',
     'MultipleChoice_SingleSelect' => 'Multiple Choice (Enkeltvalg)',
-    'MultipleChoice_MultiSelect' => 'Multiple Choice (Multi-Select)',
+    'MultipleChoice_MultiSelect' => 'Multiple Choice (Flervalg)',
     'APIDocumentation' => 'API dokumentation',
     'ReviewedBy' => 'Anmeldt af',
     'LimitedTestmailMessage' => 'En test-e-mail er blevet sendt for nylig. Du skal vente 5 minutter, før der kan sendes endnu en test-e-mail.',
@@ -2376,11 +2336,11 @@ $lang = array(
     'AddMapping' => 'Tilføj kortlægning',
     'CreateSuccess_asset' => 'Aktivet "{$name}" blev oprettet af brugeren "{$user}".',
     'AreYouSureYouWantToDeleteTheSelectedControls' => 'Er du sikker på, at du vil slette den eller de valgte kontrolelementer?',
-    'ControlMappedToDifferentMaturitiesOnAsset' =>'En kontrol er kortlagt til forskellige løbetider på det samme aktiv',
+    'ControlMappedToDifferentMaturitiesOnAsset' =>'En kontrol er kortlagt til forskellige modenhedsniveauer på det samme aktiv',
     'Advanced_Search_no_results_1' => 'Der ser ikke ud til at være nogen resultater for din forespørgsel.',
     'Advanced_Search_no_results_2' => 'Dobbelttjek din søgning for stavefejl, stavefejl, eller prøv en anden søgeterm.',
     'IncidentsPerDay' => 'Hændelser pr. dag',
-    'CurrentVsDesiredMaturity' => 'Aktuel vs ønsket modenhed af kontrolfamilie',
+    'CurrentVsDesiredMaturity' => 'Modenhed efter kontrolfamilie',
     'RiskDistribution' => 'Risikofordeling',
     'RiskDistributionDescription'=>'Ovenstående cirkeldiagrammer hjælper med at vise fordelingen af risici mellem de forskellige risikoniveauer for både iboende og resterende risiko. Vi kan bruge disse to tærter til at vise fremskridt i vores risikobegrænsende indsats. Hvis kagen med resterende risiko viser store stykker af meget høje eller høje risici, kan det være et tegn på, at din organisation påtager sig for meget risiko, og at der er behov for yderligere afbødningsindsats.',
     'EnableTabs' => 'Aktiver faner',
@@ -2393,7 +2353,7 @@ $lang = array(
     'GenericDeleteItemConfirmation' => 'Er du sikker på, at du vil slette de valgte elementer?',
     'ConfirmDeletePendingRisk' => 'Er du sikker på, at du vil slette de valgte elementer?',
     'Display' => 'Vise',
-    'ShowAssociationData' => 'Vis foreningsdata',
+    'ShowAssociationData' => 'Vis tilknytningsdata',
     'Association' => 'Foreningen',
     'InstanceDetails' => 'Forekomstdetaljer',
     'PendingResponse' => 'Afventer svar',
@@ -2406,7 +2366,7 @@ $lang = array(
     'QuestionnaireResultRejectedMessage' => 'Afvist af {$user} den {$timestamp}.',
     'QuestionnaireResultNotApprovedMessage' => 'Markeret som ikke godkendt af {$user} den {$timestamp}.',
     'QuestionnaireStatus' => 'Spørgeskemastatus',
-    'ReviewStatus' => 'Gennemgå status',
+    'ReviewStatus' => 'Gennemgangsstatus',
     'QuestionnaireResultsHelp' => 'Nedenfor er listen over spørgeskemaresultater',
     'QuestionnaireColumns' => 'Spørgeskemakolonner',
     'ContactColumns' => 'Kontakt kolonner',
@@ -2422,10 +2382,6 @@ $lang = array(
     'AnthropicConnectionWarning' => 'Ugyldige legitimationsoplysninger! Kan ikke oprette forbindelse til Anthropic med API-nøglen.',
     'ResetAPIKey' => 'Nulstil API-nøgle',
     'ArtificialIntelligence' => 'Kunstig intelligens',
-    'ArtificialIntelligenceDesc' => 'Konfigurer AI-udbyderforbindelsen og de kontekstspørgsmål, der danner grundlag for AI-svar for denne SimpleRisk-instans.',
-    'ProviderConfiguration' => 'Udbyderkonfiguration',
-    'ContextQuestions' => 'Kontekstspørgsmål',
-    'AIProviderNotConfiguredWarning' => 'AI-udbyderen er ikke konfigureret. Kan ikke producere liveresultater, før du har angivet udbyderen og API-nøglen på fanen Udbyderkonfiguration.',
     'ArtificialIntelligenceAdditionalContext' => 'Yderligere kontekst for kunstig intelligens',
     'ArtificialIntelligenceAdditionalContextDescription' => 'Følgende oplysninger er valgfrie, men vil give AI\'en den yderligere kontekst, den har brug for, for at producere mere meningsfulde resultater. Alle oplysninger, der indtastes nedenfor, VIL BLIVE SENDT TIL DIN KONFIGUREREDE AI-LEVERANDØR til analyse for at skræddersy svar til din organisation.',
     'OrganizationContext' => 'Organisationskontekst',
@@ -2456,7 +2412,7 @@ $lang = array(
     'EditModeInformation' => 'Slå redigeringstilstand til, rediger layoutet. Hvis du slår det fra, gemmes layoutet ikke automatisk.',
     'InvalidLayout' => 'Ugyldigt layout!',
     'InvalidLayoutOnlyCustomAllowedAsDefault' => 'Ugyldigt layout! Kun brugerdefinerede layouts kan gemmes som standard.',
-    'LayoutSaved' => 'Layout gemt!',
+    'LayoutSaved' => 'Dit dashboardlayout er blevet gemt.',
     'DefaultLayout' => 'Standardlayout',
     'DefaultLayoutInformation' => 'Indstiller dette layout som standard, der skal bruges i stedet for det, der leveres af SimpleRisk til brugere, der ikke har et brugerdefineret layoutsæt. Du kan kun indstille et gemt ikke-tomt brugerdefineret layout som standard. Hvis et layout, der er markeret som standard, gendannes til standardlayoutet, vil det gendanne det til standarden leveret af SimpleRisk.',
     'LayoutDefaultStatusUpdated' => 'Layoutets standardstatus er blevet opdateret.',
@@ -2465,7 +2421,7 @@ $lang = array(
     'DefaultLayoutRestored' => 'Standardlayoutet er blevet gendannet!',
     'SavedLayoutRestored' => 'Gemt layout er blevet gendannet med succes!',
     'ConfirmRestoreLayout' => 'Er du sikker? Du mister dine ændringer i dette layout.',
-    'ConfirmDisableEditModeWithPendingChanges' => 'Du har ikke-gemte ændringer, som du vil miste, når du forlader siden. Er du sikker på, at du vil deaktivere \'Redigeringstilstand\' og muligvis glemmer at gemme dine ændringer?',
+    'ConfirmDisableEditModeWithPendingChanges' => 'Du har ikke-gemte ændringer på dette dashboard. Vil du kassere dem og stoppe redigeringen?',
     'ConfirmSave' => 'Hvis du gemmer disse ændringer, overskrives dit tidligere gemte layout. Er du sikker på, at du vil fortsætte?',
     'ConfirmSaveAdminDefault' => 'Dette layout er indstillet som standard for denne layouttype. Hvis du gemmer disse ændringer, ændres layoutet for alle brugere, der ikke har et tilpasset layout indstillet til denne layouttype. Er du sikker på, at du vil fortsætte?',
     'RisksByMonth' => 'Risici pr. måned',
@@ -2496,7 +2452,6 @@ $lang = array(
     'SecondaryLossEventFrequency' => 'Sekundær tabshændelsesfrekvens',
     'SecondaryLossMagnitude' => 'Sekundær tabsstørrelse',
     'Productivity' => 'Produktivitet',
-    'Response' => 'Svar',
     'Replacement' => 'Udskiftning',
     'CompetitiveAdvantage' => 'Konkurrencefordel',
     'FinesAndJudgements' => 'Bøder og domme',
@@ -2585,12 +2540,11 @@ $lang = array(
     'NoActionRequired' => 'Ingen handling påkrævet',
     'DefiniteMatch' => 'Sikker match',
     'LikelyMatch' => 'Sandsynligt match',
-    'PossibleMatch' => 'Mulig kamp',
+    'PossibleMatch' => 'Mulig match',
     'UnlikelyMatch' => 'Usandsynligt match',
     'NotAMatch' => 'Ikke et match',
     'ReviewManually' => 'Gennemgå manuelt',
     'ResponsesToQuestionsWithLinkedControlsWillUpdateTheControlTypeTo' => 'Svar på spørgsmål med linkede kontrolelementer opdaterer kontroltypen til',
-    'DueDate' => 'Forfaldsdato',
     'AuditLog_IncidentUpdated' => 'Hændelsen "{$incident_summary}" (ID: {$incident_id}) blev opdateret af brugeren "{$user_name}". Ændringer: {$changes}.',
     'AnswersWillBeAutoSavedOnAssessments' => 'Svar gemmes automatisk i evalueringer',
     'SecondsAssessmentsAreAutoSaved' => 'Sekunders vurderinger gemmes automatisk',
@@ -2598,7 +2552,6 @@ $lang = array(
     'NotifyAuditInitiateSubject' => 'Revision iværksat',
     'BypassPendingRisksAndCreateRisksImmediatelyAfterAssessmentCompletion' => 'Omgå \'Afventende risici\' og opret risici umiddelbart efter afslutning af vurderingen',
     'AssociatedExceptions' => 'Tilknyttede undtagelser',
-    'Required' => 'Påkrævet',
     'EmailInstructions' => 'E-mail-instruktioner',
     'ApproveSelectedVulnerabilities' => 'Godkend udvalgte sårbarheder',
     'RejectSelectedVulnerabilities' => 'Afvis valgte sårbarheder',
@@ -2648,68 +2601,9 @@ $lang = array(
     'PleaseEnterAValidTimezone' => 'Indtast venligst en gyldig tidszone.',
     'TFIDFMatch' => 'TF-IDF-kamp',
     'CompletionDate' => 'Færdiggørelsesdato',
-    'AutoProcessSCFUpdates' => 'Automatisk behandling af nye SCF-udgivelser (Secure Controls Framework)',
-    'AddNewControls' => 'Tilføj nye SCF-kontroller',
-    'UpdateExistingControls' => 'Opdater eksisterende SCF-kontroller',
-    'DeleteRemovedControls' => 'Slet fjernede SCF-kontroller',
-    'CreateEvidenceRequests' => 'Opret anmodninger om dokumentation for SCF-kontroller',
-    'SelectSCFFrameworks' => 'Vælg SCF-rammer',
-    'SCFReleaseProcessing' => 'SCF-frigivelsesbehandling',
-    'NotFrameworkDescription' => 'Widgetten nedenfor viser alle overskrifterne i Secure Controls Framework (SCF)-regnearket. Brug den til at vælge, hvilke kolonner der indeholder framework-data kontra ikke-framework-data.',
-    'Note' => 'Note',
-    'AISettingsNote' => 'Aktivering af AI-assistance sender data til Anthropic til analyse i deres LLM ved hjælp af din Anthropic API-nøgle for at give dig skræddersyede resultater.',
-    'EnableAIAssistanceForControlData' => 'Aktivér AI-assistance til kontroldata',
-    'ReferenceText' => 'Referencetekst',
-    'FrameworkSelection' => 'Valg af ramme',
-    'Show' => 'Vise',
-    'InProgress' => 'I gang',
-    'Canceled' => 'Annulleret',
-    'Failed' => 'Mislykkedes',
-    'LegacyFrameworks' => 'Ældre rammer',
-    'Archive' => 'Arkiv',
-    'FailedToFetchCVEInformation' => 'Kunne ikke hente CVE-oplysninger. Kontroller CVE-ID\'et, og prøv igen.',
-    'ComplianceDashboard' => 'Overholdelsesdashboard',
-    'DynamicAuditReportHelp' => 'Denne rapport viser alle revisioner og deres status.',
-    'ComplianceDashboardDescription' => 'Dette diagram viser antallet af kontroller i hvert framework med beståede kontroller markeret med grønt og fejlende kontroller markeret med rødt.',
-    'PassingControls' => 'Overgangskontroller',
-    'FailingControls' => 'Fejlende kontroller',
-    'ControlsByFramework' => 'Kontroller efter rammeværk',
-    'NumberOfControls' => 'Antal kontroller',
     'AssetsAndControls' => 'Aktiver og kontroller',
     'AssetsByControl' => 'Aktiver efter kontrol',
     'ControlsByAsset' => 'Kontroller efter aktiv',
-    'PasswordResetTokenExpirationPeriod' => 'Udløbsperiode for nulstilling af adgangskodetoken',
-    'APasswordResetTokenExpirationPeriodShouldBeMoreThan5Minutes' => 'En udløbsperiode for en nulstilling af adgangskoden skal være mere end 5 minutter.',
-    'MeanTimeToRemediate' => 'Gennemsnitlig tid til afhjælpning',
-    'ByTeam' => 'Efter hold',
-    'ByCategory' => 'Efter kategori',
-    'ByRiskLevel' => 'Efter risikoniveau',
-    'MeanTimeToRemediateDescription' => 'Gennemsnitligt antal dage til at lukke risici, grupperet efter team, kategori og risikoniveau. Kun lukkede risici er inkluderet.',
-    'AverageDaysToClose' => 'Gennemsnitlige dage til lukning',
-    'ControlPassRateTrend' => 'Tendens til kontrolbeståelsesprocent',
-    'ControlPassRateTrendDescription' => 'Månedlig beståelsesprocent (%) pr. ramme over de sidste 12 måneder. Kun rammer med mindst ét testresultat i perioden vises.',
-    'PassRatePercent' => 'Beståelsesprocent (%)',
-    'ExposureByTeam' => 'Risikoeksponering pr. team',
-    'ExposureByCategory' => 'Risikoeksponering efter kategori',
-    'ExposureByLocation' => 'Risikoeksponering efter placering',
-    'TotalRiskScore' => 'Samlet risikoscore',
-    'SLABreachStatus' => 'Status for SLA-brud',
-    'SLABreachDescription' => 'Åbne risici inden for eller over deres SLA-tærskel efter risikoniveau. Standardtærskler: Meget høj = 30 dage, Høj = 60 dage, Mellem = 90 dage, Lav = 180 dage.',
-    'WithinSLA' => 'Inden for SLA',
-    'SLABreached' => 'SLA brudt',
-    'NumberOfRisks' => 'Antal risici',
-    'AllFrameworks' => 'Alle rammer',
-    'ExposureByBusinessUnit' => 'Risikoeksponering pr. forretningsenhed',
-    'BusinessUnit' => 'Forretningsenhed',
-    'BUChartCrossUnitNote' => 'Bemærk: Risici tildelt teams, der spænder over flere BU\'er, tælles med i hver enkelt.',
-    'SLAThresholds' => 'SLA-grænser',
-    'SLAThresholdsDescription' => 'Maksimalt antal dage, en åben risiko må forblive uløst, før den betragtes som forfalden, pr. risikoniveau.',
-    'SLAThresholdMustBeBetween1And3650' => 'SLA-tærskelværdier skal være mellem 1 og 3650 dage.',
-    'SLAThresholdsUpdatedSuccessfully' => 'SLA-grænserne blev opdateret.',
-    'TimeToDetect' => 'Tid til at opdage',
-    'TimeToDetectDescription' => 'Gennemsnitligt antal dage fra hændelsens start (Begyndte den) til detektion (Detekteret den), grupperet efter team og hændelsestype. Kun hændelser med begge datoer registreret er inkluderet.',
-    'ByOccurrenceType' => 'Efter forekomsttype',
-    'OccurrenceType' => 'Forekomsttype',
     'NoIncidentDetectionDataAvailable' => 'Ingen hændelser med både "Begyndt den"- og "Detekteret den"-datoer registreret.',
     'IncidentDashboard' => 'Hændelsesdashboard',
     'TimeToDetectByTeam' => 'Tid til at opdage af teamet',
@@ -2734,8 +2628,8 @@ $lang = array(
     'ControlPassFailStatus' => 'Kontrolstatus for bestået/ikke bestået',
     'GovernanceDashboard' => 'Governance Dashboard',
     'GovernanceDashboardDescription' => 'Dette diagram viser den nuværende modenhed for alle kontroller.',
-    'GovernanceControlsByFrameworkMaturityStacked' => 'Kontroller efter ramme og nuværende løbetid',
-    'Custom' => 'Skik',
+    'GovernanceControlsByFrameworkMaturityStacked' => 'Kontroller efter ramme og nuværende modenhed',
+    'Custom' => 'Tilpasset',
     'SimpleRiskCustomScheduledNotifications' => 'SimpleRisk brugerdefinerede planlagte notifikationer',
     'AddCustomScheduledNotification' => 'Tilføj brugerdefineret planlagt notifikation',
     'ReportName' => 'Rapportnavn',
@@ -2850,16 +2744,15 @@ $lang = array(
     'SettingsSecurityDesc'                => 'Godkendelse, session, adgangskodepolitik, basis-URL og API-sikkerhedsindstillinger.',
     'SettingsLoggingDesc'                 => 'Konfiguration af fejlfindings- og revisionslogføring: logniveauer, opbevaring og placering af logfiler.',
     'HealthCheckDesc'                     => 'Diagnosticér systemstatus: PHP-version, udvidelser, filtilladelser, databaseforbindelse, cron-plan og ekstraaktiveringer.',
-    'AboutDesc'                           => 'Se SimpleRisk-versionen, licensoplysninger og kreditter.',
     'AnnouncementsDesc'                   => 'Skriv og administrer bannermeddelelser, der er synlige for alle brugere.',
     'RegisterAndUpgradeDesc'              => 'Registrer din SimpleRisk-installation, indtast eller forny en abonnementsnøgle, og udløs Core/Extra-opgraderinger med et enkelt klik.',
     'QueueMonitorDesc'                    => 'Undersøg baggrundsjobkøen: ventende, igangværende og mislykkede job.',
     'ExtrasDesc'                          => 'Aktiver, deaktiver og konfigurer SimpleRisk Extras (betalte tilføjelser).',
-    'ArtificialIntelligenceExtraDesc'     => 'Muliggør assistance med kunstig intelligens i hele SimpleRisk.',
-    'CustomizationExtraDesc'              => 'Aktiverer muligheden for at tilføje og fjerne forskellige typer felter og dynamisk oprette sideskabeloner.',
-    'NotificationExtraDesc'               => 'Sender e-mail-notifikationer, når risici indsendes, opdateres, afbødes eller gennemgås, og kan køres efter en tidsplan for at underrette brugere om risici i tilstanden Ikke-gennemgået eller Forfalden.',
-    'VulnerabilityManagementExtraDesc'    => 'Muliggør integration af SimpleRisk med Rapid7 Nexpose, InsightVM, Qualys og Tenable.io.',
-    'IncidentManagementExtraDesc'         => 'Tilbyder funktioner til hændelsesstyring fra SimpleRisk-systemet.',
+    'ArtificialIntelligenceExtraDesc'     => 'Ekstraprogrammet for kunstig intelligens leverer forbedret risikoanalyse (herunder FAIR-vurderinger) og tilpasset dokumentation.',
+    'CustomizationExtraDesc'              => 'Tilpasningsfunktionen gør det muligt at tilføje og fjerne forskellige typer felter og dynamisk oprette brugerdefinerede sideskabeloner.',
+    'NotificationExtraDesc'               => 'E-mail-notifikationsfunktionen gør det muligt for SimpleRisk at sende e-mail-notifikationer, når risici indsendes, ændres eller der på anden måde handles på. Denne ekstrafunktion kan også tilføjes som et planlagt script for at sende rutinemæssige påmindelser, når risici er klar til en ledelsesgennemgang. I SimpleRisk Core-produktet kommunikeres der ingen notifikationer uden for selve værktøjet uden denne ekstrafunktion.',
+    'VulnerabilityManagementExtraDesc'    => 'Vulnerability Management Extra giver kunderne mulighed for at integrere deres SimpleRisk-instans med Qualys, Tenable.io eller Rapid7 Nexpose/InsightVM og importere både aktiv- og sårbarhedsdata til SimpleRisk. Derfra kan du vælge, hvilke websteder du vil dække, bestemme hvilke sårbarhedsscorer der skal importeres, og prioritere, hvilke sårbarheder der omdannes til risici, for at spore dem.',
+    'IncidentManagementExtraDesc'         => 'Incident Management Extra er baseret på NIST 800-61 Computer Security Incident Handling Guide og tilbyder hændelsesstyringsfunktioner fra SimpleRisk-systemet.',
 
     // Configure Hub - tile descriptions (customization category)
     'RedefineNamingConventionsDesc'       => 'Omdøb SimpleRisk-terminologien (Risiko, Aktiv, Framework osv.) på tværs af brugergrænsefladen.',
@@ -2872,26 +2765,25 @@ $lang = array(
     'UserManagementDesc'                  => 'Tilføj, rediger, deaktiver og nulstil brugere; administrer adgangskodepolitik.',
     'RoleManagementDesc'                  => 'Definer roller og de tilladelser, som hver rolle giver.',
     'TeamManagementDesc'                  => 'Opret og administrer teams, der bruges til filtrering af synlighed af poster.',
-    'SeparationExtraDesc'                 => 'Begrænsning af risikovisning til teammedlemmer, som risikoen er kategoriseret som.',
-    'CustomAuthenticationExtraDesc'       => 'Understøtter Active Directory eller SAML/Single Sign-On til godkendelse og autorisation.',
-    'EncryptionExtraDesc'                 => 'Kryptering af følsomme tekstfelter i databasen.',
-    'OrganizationManagementDesc'          => 'Flere forretningsenheder kan defineres over teams. Brugere kan derefter tildeles på tværs af et eller flere teams under forskellige forretningsenheder. Dette påvirker deres evne til at se og bruge de teams, brugere og aktiver, som de ikke er tilknyttet.',
+    'SeparationExtraDesc'                 => 'Ekstrafunktionen Teambaseret adskillelse begrænser risikovisning til kun de brugere, der er medlemmer af det team, som risikoen er tildelt. I SimpleRisk Core-produktet kan alle brugere se alle risici uden denne ekstrafunktion.',
+    'CustomAuthenticationExtraDesc'       => 'Ekstraudstyret til brugerdefineret godkendelse understøtter Active Directory- og SAML-godkendelse. I SimpleRisk Core-produktet er den eneste mulighed uden dette ekstraudstyr at oprette nye brugere i SimpleRisk-identitetslageret.',
+    'EncryptionExtraDesc'                 => 'Encrypted Database Extra genererer en tilfældig AES-256-bit krypteringsnøgle og bruger den derefter til at kryptere følsom tekst, før den indsættes i SimpleRisk-databasen. Dette forhindrer nogen i at kunne se eller ændre dataene uden at bruge SimpleRisk-applikationen direkte.',
+    'OrganizationManagementDesc'          => "Organisationshierarki-ekstraen giver mulighed for at definere flere forretningsenheder, som kan omfatte et hvilket som helst antal teams. Brugere kan derefter tildeles et eller flere teams under forskellige forretningsenheder. Dette påvirker en brugers evne til at se og bruge de teams, brugere og aktiver, som de ikke er tilknyttet.",
 
     // Configure Hub - tile descriptions (data category)
-    'DeleteRisksDesc'                     => 'Risici ved massesletning. Brug sparsomt – sletninger er permanente.',
+    'DeleteRisksDesc'                     => 'Masseslet risici. Brug sparsomt – sletninger er permanente.',
     'AuditTrailDesc'                      => 'Søg i og eksporter systemets revisionslog over brugerhandlinger.',
-    'ImportExportExtraDesc'               => 'Muliggør import og eksport af CSV-filer, der indeholder risikooplysninger.',
-    'JiraExtraDesc'                       => 'Tillader integration med din JIRA-instans. Muliggør forbindelse af risici til Jira-problemer, synkronisering af deres data, status og kommentarer.',
-    'APIExtraDesc'                        => 'Aktiverer en API til integration af SimpleRisk med andre værktøjer og automatiseringsopgaver.',
-    'AdvancedSearchExtraDesc'             => "Udvider funktionaliteten i topbjælkens søgefelt, så det er muligt at finde risici ved at udføre tekstsøgning i risikodata.",
-    'AssessmentsExtraDesc'                => 'Giver mulighed for at oprette brugerdefinerede risikovurderingsformularer og sende dem til brugerne.',
+    'ImportExportExtraDesc'               => 'Import-Export Extra giver mulighed for at importere data til SimpleRisk ved at knytte felter i en CSV-fil til felter i SimpleRisk-databasen. Det kan bruges til at importere revisionsresultater fra et tredjepartsregneark, resultater af sårbarhedsscanninger fra et andet værktøj, aktiver fra din CMDB og mere. Extra giver også mulighed for at eksportere CSV-filer fra SimpleRisk, der indeholder risici, afhjælpningsforanstaltninger, anmeldelser eller en kombinationsrapport af alle tre.',
+    'JiraExtraDesc'                       => 'Jira Integration Extra giver brugerne mulighed for at integrere tovejs med en Jira-instans. Det muliggør forbindelse af risici til Jira-problemer, samt synkronisering af deres data, status og kommentarer.',
+    'APIExtraDesc'                        => 'API Extra giver kunderne mulighed for at bruge en RESTful API til at oprette scriptede interaktioner med andre applikationer for at opnå avanceret automatisering og udnytte eksisterende infrastruktur.',
+    'AdvancedSearchExtraDesc'             => "Den ekstra avancerede søgning udvider funktionaliteten i søgefeltet i den øverste bjælke, så det er muligt at finde risici ved at foretage tekstsøgning i risikodata.",
+    'AssessmentsExtraDesc'                => 'Risikovurderings-Ekstraprogrammet giver brugerne mulighed for at definere kontakter, oprette spørgsmål (inklusive logik), sammensætte flere spørgsmål med en spørgeskemaskabelon, oprette spørgeskemaer og sende dem til kontakter, se spørgeskemaresultaterne, tilføje risici baseret på disse resultater og sammenligne resultaterne over tid, importere og eksportere eksternt tilpassede vurderinger og gennemgå revisionssporet for risikovurderingen.',
     'ActiveAssessmentsDesc'               => 'Se og administrer vurderinger, der aktuelt er i gang.',
-    'WorkflowsExtraDesc'                  => 'Aktiverer en visuel, hændelsesdrevet workflow-motor til at automatisere risikostyringshandlinger udløst af hændelser i SimpleRisk.',
+    'WorkflowsExtraDesc'                  => 'Workflows Extra leverer en visuel, hændelsesdrevet workflow-motor, der automatiserer risikostyringshandlinger som reaktion på hændelser i SimpleRisk. Du kan designe workflows, der udløser ændringer – f.eks. en risiko, der indsendes, opdateres eller gennemgås – for at dirigere godkendelser, tildele arbejde og holde din proces i gang uden manuel indgriben.',
 
     // Configure Hub - tile descriptions (frameworks category)
-    'UCFExtraDesc'                        => 'Muliggør integration af Unified Control Framework (UCF) kontroller og tests med SimpleRisk.',
-    'SCFExtraDesc'                        => 'Tilføjer kontrollerne fra Secure Controls Framework (SCF) til SimpleRisk til brug med vores Governance-funktionalitet.',
-    'ComplianceForgeExtraDesc'            => 'Tilføjer kontrollerne fra ComplianceForge Digital Security Program (DSP) til SimpleRisk til brug med vores Governance-funktionalitet.',
+    'UCFExtraDesc'                        => 'Unified Compliance Framework (UCF) Extra er en integration på API-niveau mellem Unified Compliance Framework og SimpleRisk. Aktivering af den giver dig mulighed for at importere udvalgte frameworks og kontrolmappings direkte fra UCF.',
+    'SCFExtraDesc'                        => "Secure Controls Framework (SCF) Extra er en direkte integration mellem Secure Controls Framework og SimpleRisk. Den importerer SCF's katalog over kontroller og deres kortlægninger på tværs af en bred vifte af compliance- og cybersikkerhedsrammer til SimpleRisks Governance-funktionalitet, så du kan implementere de rammer, du har brug for, og administrere deres kontroller uden at skulle bygge dem manuelt.",
 
     // Configure Hub - tile descriptions (maintenance category)
     'FixReviewDatesDesc'                  => 'Migrer ældre VARCHAR-gennemgangsdatokolonner til de korrekte datotyper. Kun synlige når det er nødvendigt.',
@@ -2909,7 +2801,6 @@ $lang = array(
     'WorkflowsExtra'                      => 'Ekstra arbejdsgange',
     'UCFExtra'                            => 'Unified Compliance Framework (UCF) Ekstra',
     'SCFExtra'                            => 'Sikker kontrolramme Ekstra',
-    'ComplianceForgeExtra'                => 'ComplianceForge Extra',
     'DatabaseUpgrade'                     => 'Databaseopgradering',
 
     // Configure Hub - Extra tile state badges
@@ -2925,6 +2816,12 @@ $lang = array(
     'ActivateExtraBody'                   => 'Vil du aktivere {name} Extra? Dette vil aktivere dets funktionalitet med det samme. Du kan deaktivere det igen senere fra samme felt.',
     'ActivateExtraError'                  => 'Kunne ikke aktivere ekstrafunktionen. Tjek venligst siden Sundhedstjek for diagnosticering.',
 
+    // Configure Hub - Deactivation modal (Encryption Extra)
+    // 'Deactivate' (line 491) and 'Cancel' (line 489) are reused as-is.
+    'DeactivateExtraTitle'                => 'Deaktiver Ekstra',
+    'DeactivateExtraBody'                 => 'Deaktiver {name} Extra? Din SimpleRisk-database vil blive dekrypteret på stedet. En sikkerhedskopi af den krypterede tilstand gemmes, så du kan rulle tilbage, hvis det er nødvendigt.',
+    'DeactivateExtraError'                => 'Kunne ikke deaktivere Ekstra. Tjek venligst siden Tilstandstjek for diagnosticering.',
+
     // Configure Hub - Async license enrichment notice (Phase 4)
     // 'Retry' (line 2764) is reused. The existing 'LicenseCheckFailed' key
     // (line 1851) refers to the 30-day-disable warning shown elsewhere in
@@ -2933,11 +2830,16 @@ $lang = array(
 
     // Configure Hub - Install modal (Phase 5)
     // 'Install' (line 403) and 'Cancel' (line 489) are reused as-is.
-    'InstallExtraTitle'                   => 'Installer ekstra',
-    'InstallExtraBody'                    => 'Vil du installere {name} Extra? Dette downloader pakken fra SimpleRisk og pakker den ud i din installation. Aktivering er et separat trin, du kan udføre fra feltet, når installationen er fuldført.',
-    'InstallExtraError'                   => 'Kunne ikke installere ekstraprogrammet. Tjek venligst siden Sundhedstjek for diagnosticering.',
-    'MissingExtraName'                    => 'Mangler ekstra navn.',
-    'UnknownExtra'                        => 'Ukendt ekstra navn.',
+    'InstallExtraTitle'                          => 'Installer ekstra',
+    'InstallExtraBody'                           => 'Vil du installere {name} Extra? Dette downloader pakken fra SimpleRisk og pakker den ud i din installation. Aktivering er et separat trin, du kan udføre fra feltet, når installationen er fuldført.',
+    'InstallExtraError'                          => 'Kunne ikke installere ekstraprogrammet. Tjek venligst siden Sundhedstjek for diagnosticering.',
+    'MissingExtraName'                           => 'Mangler ekstra navn.',
+    'UnknownExtra'                               => 'Ukendt ekstra navn.',
+
+    // License state banner messages (display_license_check() in display.php)
+    // Shown as a header banner when $_SESSION['license_check'] is a non-passing state.
+    // 'LicenseCheckFailed' (line ~1868) is the legacy 30-day-disable warning used
+    // by the old enforcement path; these keys cover the new enforcement states.
 
     // Configure Hub - Purchase modal (Phase 6)
     // 'Cancel' (line 489) is reused as-is.
@@ -2945,6 +2847,1796 @@ $lang = array(
     'PurchaseExtraBody'                   => 'Ekstra {name} er ikke inkluderet i din nuværende SimpleRisk-licens. Besøg siden SimpleRisk Extras for at få mere at vide eller købe en licens.',
     'ViewExtras'                          => 'Se ekstraudstyr',
 
+    // In-app notifications bell UI
+    // Note: 'Notifications' (line 2234), 'SelectAll' (line 816), 'Restore' (line 952),
+    // 'All' (line 1470), and 'Delete' (line 80) are reused as-is — do not duplicate.
+    'MarkRead'                             => 'Markér læst',
+    'NoNotifications'                      => 'Ingen notifikationer',
+    // Time-unit abbreviations for the relative-time display in the bell panel.
+    // 'TimeDays' is already used for the column header "Time (Days)"; TimeDayUnit covers the 'd' abbrev.
+    'TimeSeconds'                          => 's',
+    'TimeMinutes'                          => 'm',
+    'TimeHours'                            => 'timer',
+    'TimeDayUnit'                          => 'd',
+    'NothingInTrash'                       => 'Intet i skraldespanden',
+    'Promo'                                => 'Kampagne',
+    'Trash'                                => 'Skrald',
+    'Unread'                               => 'Ulæst',
+    'View'                                 => 'Vis',
+
+    // Workflow "Send In-App Notification" action — audience picker hints.
+    // 'NoneSelected' (line 1878) is reused as-is for the multi-select button.
+    'NotificationSentToAllAdmins'          => 'Denne meddelelse vil blive sendt til alle administratorer.',
+    'NotificationSentToAllUsers'           => 'Denne meddelelse vil blive sendt til alle brugere.',
+    'SelectAnAudienceAbove'                => 'Vælg en målgruppe ovenfor.',
+    'RiskConfiguration' => 'Risikokonfiguration',
+    'ReviewSettings' => 'Gennemgå indstillinger',
+    'Cards' => 'Kort',
+    'List' => 'Liste',
+    'DeletedAssessmentsCannotBeRecovered' => 'Slettede vurderinger kan ikke gendannes',
+    'TheAssessmentsWereDeletedSuccessfully' => 'Vurderingen(erne) blev slettet.',
+    'AssetValuationMode' => 'Værdiansættelsestilstand for aktiver',
+    'AutomaticLinearRange' => 'Automatisk lineært område',
+    'AutomaticExponentialRange' => 'Automatisk eksponentielt område',
+    'ManualValuation' => 'Manuel',
+    'AssetValuationMinMustBeNonNegative' => 'Minimumværdien af aktiverne skal være nul eller større for det automatiske eksponentielle interval.',
+    'CrossDomain' => 'Krydsdomæne',
+    'Preferences' => 'Præferencer',
+    'SpecificUser' => 'Specifik bruger',
+    'SpecificUsers' => 'Specifikke brugere',
+    'Help' => 'Hjælp',
+    'Profile' => 'Profil',
+    'Scoring' => 'Scoring',
+    'EncryptionMissingLockTablesPrivilege'   => 'SimpleRisk-databasebrugeren har ikke LOCK TABLES-rettigheden, som er nødvendig for at kryptere databasen sikkert. Få en databaseadministrator til at køre GRANT-sætningen, der returneres i svaret, og prøv igen.',
+    'EncryptionMissingLockTablesPrivilegeUi' => 'SimpleRisk-databasebrugeren har ikke de nødvendige LOCK TABLES-rettigheder til kryptering. En databaseadministrator skal køre: GRANT LOCK TABLES ON {$db}.* TO {$user}; og prøv derefter igen.',
+    'EncryptionRequiredGrantLabel' => 'Påkrævet GRANT-erklæring:',
+    'EncryptionActivationAlreadyRunning' => 'En krypteringsaktivering er allerede i gang. Vent på, at den er fuldført, eller brug gendannelse fra sikkerhedskopi til at gendanne.',
+    'EncryptionActivationEnqueued'           => 'Aktivering af Encryption Extra er sat i kø. Administrationsgrænsefladen vil spore status, mens databasen krypteres.',
+    'EncryptionActivationEnqueueFailed'      => 'Kunne ikke sætte krypteringsaktiveringsopgaven i kø. Se fejlfindingsloggen for at få flere oplysninger.',
+    'EncryptionDeactivationEnqueued'         => 'Deaktivering af Encryption Extra er sat i kø. Administrationsgrænsefladen vil spore status, mens databasen dekrypteres.',
+    'EncryptionDeactivationEnqueueFailed'    => 'Kunne ikke sætte krypteringsdeaktiveringsopgaven i kø. Se fejlfindingsloggen for at få flere oplysninger.',
+    'EncryptionPipelineInProgress'           => 'En krypteringspipeline (aktiver, deaktiver eller gendan) er i øjeblikket i gang. Vent, indtil den er færdig, før du prøver igen.',
+    'EncryptionPipelineInProgressTask'       => 'En krypteringspipeline er i øjeblikket i gang (opgave #{id}, {type}). Vent, til den er færdig, før du prøver igen.',
+    'EncryptionInFlightTitle'            => 'Krypteringsoperation i gang',
+    'EncryptionInFlightBody'             => 'En pipeline til aktivering, deaktivering eller gendannelse af kryptering kører i øjeblikket. Vent på, at den er færdig – siden opdateres automatisk, når handlingen er fuldført – før du prøver igen.',
+    'OK'                                 => 'Okay',
+    'ActivationGuardFailed'                 => 'Aktiveringen kunne ikke starte. Se advarslen i sidehovedet for at få flere oplysninger.',
+    'EncryptionStageStarting'               => 'Starter…',
+    'EncryptionStageProgress'               => 'Fase {current} af {total}: {name}',
+    'EncryptionStageAllDone'                => 'Alle etaper er fuldført.',
+    'EncryptionStageEncryptTable'           => 'Krypter tabel: {table}',
+    'EncryptionStageDecryptTable'           => 'Dekryptér tabellen: {table}',
+    'EncryptionActivationInProgress'        => 'Krypterer din SimpleRisk-database. Luk venligst ikke denne side.',
+    'EncryptionActivationFailedTitle'       => 'Krypteringsaktivering mislykkedes',
+    'EncryptionActivationFailedBody'        => 'Aktiveringen kunne ikke fuldføres, og databasen er muligvis i en inkonsekvent tilstand. Sikkerhedskopien fra før aktiveringen er bevaret — brug Gendan fra sikkerhedskopi til at gendanne, eller kontakt SimpleRisk support.',
+    'EncryptionDeactivationInProgress'      => 'Dekrypterer din SimpleRisk-database. Luk venligst ikke denne side.',
+    'EncryptionDeactivationFailedTitle'     => 'Deaktivering af kryptering mislykkedes',
+    'EncryptionDeactivationFailedBody'      => 'Deaktiveringen kunne ikke fuldføres, og databasen er muligvis i en inkonsekvent tilstand. Sikkerhedskopien med krypteret tilstand bevares — brug Gendan fra sikkerhedskopi til at rulle tilbage til den krypterede tilstand, eller kontakt SimpleRisk-support.',
+    'RestoreFromBackup'                     => 'Gendan fra sikkerhedskopi',
+    'RestoreFromBackupNotYetAvailable'      => 'Gendannelse fra sikkerhedskopi er endnu ikke tilgængelig i denne build. Kontakt venligst SimpleRisk support for at gendanne.',
+    'EncryptionRestoreInProgress'           => 'Gendanner din SimpleRisk-database fra en sikkerhedskopi. Dette kan tage flere minutter.',
+    'EncryptionRestoreEnqueueFailed'        => 'Gendannelsen kunne ikke startes. Tjek SimpleRisk-loggene, og prøv igen.',
+    'EncryptionStatusActive'                => 'Den krypterede databaseekstra er aktiv.',
+    'EncryptionStatusVersion'               => 'Version',
+    'EncryptionDeactivateCta'               => 'Deaktiver den krypterede database-ekstrafunktion',
+    'EncryptionDeactivateCtaHelp'           => 'Dekrypter hver krypteret kolonne tilbage til klartekst. Dette tager få minutter på en udfyldt database.',
+    'EncryptionBackupPanelHeading'          => 'Sikkerhedskopiering før aktivering',
+    'EncryptionBackupCreatedAt'             => 'Oprettet',
+    'EncryptionBackupSize'                  => 'Størrelse',
+    'EncryptionBackupOriginalFilename'      => 'Fil',
+    'EncryptionBackupDownloadTooltip'       => 'Klik for at downloade en kopi af denne backupfil til offlinelagring.',
+    'EncryptionBackupStateRestoring'        => 'En gendannelse er i øjeblikket i gang.',
+    'EncryptionNoBackupAvailable'           => 'Der er i øjeblikket ikke gemt nogen sikkerhedskopi før aktivering. Sikkerhedskopien oprettes ved starten af hver aktivering og overskrives ved enhver efterfølgende aktivering eller deaktivering.',
+    'EncryptionRestoreCtaHelp'              => 'Vælg dette, hvis valideringen fandt problemer, og du skal rulle tilbage til tilstanden før kryptering.',
+    'EncryptionRestoreTitle'                => 'Gendan fra sikkerhedskopi?',
+    'EncryptionRestoreBodyWhy'              => 'Tilbage til det øjebliksbillede før kryptering, der blev taget ved starten af den seneste aktivering. Vælg dette, hvis din validering efter aktivering fandt problemer, og du er nødt til at opgive krypteringen.',
+    'EncryptionRestoreBodyWhat'             => 'Enhver række, der skrives til databasen efter sikkerhedskopien blev oprettet, vil gå permanent tabt – inklusive risici, afhjælpningsforanstaltninger, poster i revisionslogfiler og andre ændringer, der er foretaget siden aktiveringen. Den krypterede database-ekstrafunktion vil blive deaktiveret som en del af gendannelsen.',
+    'EncryptionDeleteBackupCta'             => 'Slet sikkerhedskopien før kryptering',
+    'EncryptionDeleteBackupCtaHelp'         => 'Vælg dette, når din validering efter kryptering er fuldført. Fjernelse af det ukrypterede snapshot er det, der gør krypteringen rent faktisk beskyttende.',
+    'EncryptionDeleteBackupTitle'           => 'Slet sikkerhedskopien før kryptering?',
+    'EncryptionDeleteBackupBodyWhy'         => 'Fjerner det ukrypterede snapshot af dine data, der blev taget ved starten af den seneste aktivering. At gemme det på ubestemt tid modarbejder krypteringens formål – alle med databaseadgang kan læse den prækrypterede kopi.',
+    'EncryptionDeleteBackupBodyWhat'        => 'Backup\'en i databasen slettes med det samme. Du vil ikke længere kunne bruge Gendan fra backup til at rulle databasen tilbage til tilstanden før kryptering. Hvis du senere finder problemer med kryptering, vil din eneste gendannelsesvej være en ny databasegendannelse fra dine operationelle backups.',
+    'EncryptionDeleteBackupError'           => 'Sikkerhedskopien kunne ikke slettes. Tjek fejlfindingsloggen, og prøv igen.',
+    'EncryptionModalWhyLabel'               => 'Hvorfor bruge dette:',
+    'EncryptionModalWhatHappensLabel'       => 'Hvad sker der nu:',
+    'EncryptionFieldsPanelHeading'          => 'Krypterede databasefelter',
+    'EncryptionFieldsHelp'                  => 'Hver kolonne, der er angivet her, gemmes krypteret i hviletilstand. Værktøjstipset på låseikonet viser den anvendte kryptografiske algoritme.',
+    'EncryptionFieldsTableColumn'           => 'Databasetabel',
+    'EncryptionFieldsFieldColumn'           => 'Databasefelt',
+    'EncryptionFieldsEncryptedColumn'       => 'Krypteret',
+    'EncryptionFieldsNoneFound'             => 'Der er i øjeblikket ingen krypterede felter registreret. Dette burde ikke ske på en aktiv installation — tjek tabellen encrypted_fields for seed-data.',
+    'EncryptionFieldsLockTooltipPrefix'     => 'Krypteret med',
+    'EncryptionInactiveRedirect'            => 'Den krypterede database-ekstra er ikke aktiv. Aktivér den fra Configure Hub.',
+    'ContactSupport'                        => 'Kontakt support',
+    'BackupDatabaseFailed' => 'Databasebackup mislykkedes. Se venligst SimpleRisk-loggen for detaljer.',
+    'WindowsNotSupported' => 'SimpleRisk understøtter ikke længere Windows fra version 20260421-001. Migrer venligst til en Linux-baseret server.',
+    'WindowsUpgradeHalted' => 'Denne handling kan ikke køre på en Windows-server. SimpleRisk understøtter ikke længere Windows fra version 20260421-001. Migrer venligst til en Linux-baseret server.',
+    'BundleIntegrityVerificationFailed' => 'Den downloadede SimpleRisk-pakke mislykkedes med integritetsverifikation. Opgraderingen er blevet afbrudt, og ingen filer er blevet ændret.',
+    'BundleDownloadFailed' => 'SimpleRisk-pakken kunne ikke downloades. Opgraderingen er blevet afbrudt, og ingen filer er blevet ændret.',
+    'MissingOrInvalidTrackingID' => 'Manglende eller ugyldigt sporings-ID.',
+    'JiraIntegrationExtra' => 'Jira-integration Ekstra',
+    'IncidentManagementNotifications' => 'Notifikationer om hændelsesstyring',
+    'NotificationSettingsUpdated' => 'Notifikationsindstillingerne er opdateret.',
+    'DefaultBusinessUnit' => 'Standard forretningsenhed',
+    'TheDefaultBusinessUnitEncompasses' => 'Standardforretningsenheden, der omfatter alle teams.',
+    'UserGuide' => 'Brugervejledning',
+    'AdministratorGuide' => 'Administratorvejledning',
+    'DecryptionFailureToast' => 'Et eller flere krypterede felter kunne ikke dekrypteres. De vises som tomme. Tjek systemloggene for detaljer.',
+    'EncryptionFailureToast' => 'Et felt kunne ikke krypteres og blev ikke gemt. Tjek systemloggene for detaljer.',
+    'EnableAPIv1Endpoints' => 'Aktivér API v1-slutpunkter (udfaset)',
+    'EnableAPIv1EndpointsHelp' => 'API v1 er udfaset. Lad være deaktiveret, medmindre du har en integration, der kræver det. /api/v2/ påvirkes ikke af denne indstilling og er altid tilgængelig.',
+    'AllowAPIKeyInURL' => 'Tillad API-nøgle i URL eller POST-brødtekst',
+    'AllowAPIKeyInURLHelp' => 'Af sikkerhedsmæssige årsager bør API-nøgler sendes i X-API-KEY-forespørgselsheaderen. Når de er deaktiveret, afvises nøgler, der sendes i URL-forespørgselsstrengen (?key=) eller POST-bodyen (key=), fordi disse placeringer lettere eksponeres i proxylogfiler og browserhistorik. X-API-KEY-headeren accepteres altid. Lad være med at deaktivere, medmindre du har en integration, der ikke kan sende headeren.',
+    'ArtificialIntelligenceDesc' => 'Konfigurer AI-udbyderforbindelsen og de kontekstspørgsmål, der danner grundlag for AI-svar for denne SimpleRisk-instans.',
+    'ProviderConfiguration' => 'Udbyderkonfiguration',
+    'ContextQuestions' => 'Kontekstspørgsmål',
+    'AIProviderNotConfiguredWarning' => 'AI-udbyderen er ikke konfigureret. Kan ikke producere liveresultater, før du har angivet udbyderen og API-nøglen på fanen Udbyderkonfiguration.',
+    'AutoProcessSCFUpdates' => 'Automatisk behandling af nye SCF-udgivelser (Secure Controls Framework)',
+    'AddNewControls' => 'Tilføj nye SCF-kontroller',
+    'UpdateExistingControls' => 'Opdater eksisterende SCF-kontroller',
+    'DeleteRemovedControls' => 'Slet fjernede SCF-kontroller',
+    'CreateEvidenceRequests' => 'Opret anmodninger om dokumentation for SCF-kontroller',
+    'SelectSCFFrameworks' => 'Vælg SCF-rammer',
+    'SCFReleaseProcessing' => 'SCF-frigivelsesbehandling',
+    'NotFrameworkDescription' => 'Widgetten nedenfor viser alle overskrifterne i Secure Controls Framework (SCF)-regnearket. Brug den til at vælge, hvilke kolonner der indeholder framework-data kontra ikke-framework-data.',
+    'Note' => 'Note',
+    'AISettingsNote' => 'Aktivering af AI-assistance sender data til Anthropic til analyse i deres LLM ved hjælp af din Anthropic API-nøgle for at give dig skræddersyede resultater.',
+    'EnableAIAssistanceForControlData' => 'Aktivér AI-assistance til kontroldata',
+    'ReferenceText' => 'Referencetekst',
+    'FrameworkSelection' => 'Valg af ramme',
+    'Show' => 'Vise',
+    'InProgress' => 'I gang',
+    'Canceled' => 'Annulleret',
+    'Failed' => 'Mislykkedes',
+    'LegacyFrameworks' => 'Ældre rammer',
+    'Archive' => 'Arkiv',
+    'FailedToFetchCVEInformation' => 'Kunne ikke hente CVE-oplysninger. Kontroller CVE-ID\'et, og prøv igen.',
+    'ComplianceDashboard' => 'Overholdelsesdashboard',
+    'DynamicAuditReportHelp' => 'Denne rapport viser alle revisioner og deres status.',
+    'ComplianceDashboardDescription' => 'Dette diagram viser antallet af kontroller i hvert framework med beståede kontroller markeret med grønt og fejlende kontroller markeret med rødt.',
+    'PassingControls' => 'Beståede kontroller',
+    'FailingControls' => 'Fejlende kontroller',
+    'ControlsByFramework' => 'Kontroller efter rammeværk',
+    'NumberOfControls' => 'Antal kontroller',
+    'PasswordResetTokenExpirationPeriod' => 'Udløbsperiode for nulstilling af adgangskodetoken',
+    'APasswordResetTokenExpirationPeriodShouldBeMoreThan5Minutes' => 'En udløbsperiode for en nulstilling af adgangskoden skal være mere end 5 minutter.',
+    'MeanTimeToRemediate' => 'Gennemsnitlig tid til afhjælpning',
+    'ByTeam' => 'Efter hold',
+    'ByCategory' => 'Efter kategori',
+    'ByRiskLevel' => 'Efter risikoniveau',
+    'MeanTimeToRemediateDescription' => 'Gennemsnitligt antal dage til at lukke risici, grupperet efter team, kategori og risikoniveau. Kun lukkede risici er inkluderet.',
+    'AverageDaysToClose' => 'Gennemsnitlige dage til lukning',
+    'ControlPassRateTrend' => 'Tendens til kontrolbeståelsesprocent',
+    'ControlPassRateTrendDescription' => 'Månedlig beståelsesprocent (%) pr. ramme over de sidste 12 måneder. Kun rammer med mindst ét testresultat i perioden vises.',
+    'PassRatePercent' => 'Beståelsesprocent (%)',
+    'ExposureByTeam' => 'Risikoeksponering pr. team',
+    'ExposureByCategory' => 'Risikoeksponering efter kategori',
+    'ExposureByLocation' => 'Risikoeksponering efter placering',
+    'TotalRiskScore' => 'Samlet risikoscore',
+    'SLABreachStatus' => 'Status for SLA-brud',
+    'SLABreachDescription' => 'Åbne risici inden for eller over deres SLA-tærskel efter risikoniveau. Standardtærskler: Meget høj = 30 dage, Høj = 60 dage, Mellem = 90 dage, Lav = 180 dage.',
+    'WithinSLA' => 'Inden for SLA',
+    'SLABreached' => 'SLA brudt',
+    'NumberOfRisks' => 'Antal risici',
+    'ExposureByBusinessUnit' => 'Risikoeksponering pr. forretningsenhed',
+    'BUChartCrossUnitNote' => 'Bemærk: Risici tildelt teams, der spænder over flere BU\'er, tælles med i hver enkelt.',
+    'SLAThresholds' => 'SLA-grænser',
+    'SLAThresholdsDescription' => 'Maksimalt antal dage, en åben risiko må forblive uløst, før den betragtes som forfalden, pr. risikoniveau.',
+    'SLAThresholdMustBeBetween1And3650' => 'SLA-tærskelværdier skal være mellem 1 og 3650 dage.',
+    'SLAThresholdsUpdatedSuccessfully' => 'SLA-grænserne blev opdateret.',
+    'TimeToDetect' => 'Tid til at opdage',
+    'TimeToDetectDescription' => 'Gennemsnitligt antal dage fra hændelsens start (Begyndte den) til detektion (Detekteret den), grupperet efter team og hændelsestype. Kun hændelser med begge datoer registreret er inkluderet.',
+    'ByOccurrenceType' => 'Efter forekomsttype',
+    'ApplicationVersion' => 'Applikationsversion',
+    'DatabaseVersion' => 'Databaseversion',
+    'InstanceID' => 'Instans-ID',
+    'LatestIsVersion' => 'Seneste er {$version}',
+    'UpToDate' => 'Opdateret',
+    'UpdateAvailable' => 'Opdatering tilgængelig',
+    'RegistrationSuccessful' => 'Registreringen er gennemført.',
+    'LocalRegistrationStateCleared' => 'Lokal registreringsstatus er ryddet. Registrer dig igen på /admin/register.php for at få et nyt instance_id.',
+    'InstanceInformationUpdated' => 'Instansoplysninger opdateret.',
+    'UpgradeExtraDesc' => 'Opgraderingsprogrammet holder din SimpleRisk-instans opdateret ved at downloade og anvende program- og databaseopgraderinger og ved at installere og opdatere dine andre ekstrafunktioner, alt sammen fra siden Registrer og opgrader. Det er bundtet med SimpleRisk uden omkostninger, så du kan forblive på den seneste udgivelse uden manuel filhåndtering.',
+    'ExtraInstallDisabledByEnforcement' => 'Ekstra installation er i øjeblikket deaktiveret på grund af din licensstatus. Kontakt din administrator eller SimpleRisk-support.',
+    'LicenseStateUnknownRetryShortly' => 'Licensoplysninger er endnu ikke tilgængelige. Prøv igen om et øjeblik.',
+    'LicenseExpiringSoonTitle' => 'Licensen udløber snart: {$extra}',
+    'LicenseExpiringSoonBody' => 'Din {$extra} licens udløber om {$date} ({$days} dage tilbage). Forny den fra Registrer og opgrader for at undgå at miste adgang.',
+    'LicenseExpiredTitle' => 'Licens udløbet: {$extra}',
+    'LicenseExpiredBody' => 'Din {$extra} -licens udløb den {$date}. Forny den fra Registrer og opgrader for at gendanne adgangen.',
+    'Licenses' => 'Licenser',
+    'LicensesDesc' => 'Se licensstatus for hver SimpleRisk Extra.',
+    'RefreshLicenses' => 'Opdater licenser',
+    'LoadingLicenseData' => 'Indlæser licensdata...',
+    'Licensed' => 'Licenseret',
+    'Unlicensed' => 'Ulicenseret',
+    'Expired' => 'Udløbet',
+    'Free' => 'Gratis',
+    'License' => 'Licens',
+    'NoLicensedExtras' => 'Ingen licenserede ekstramaterialer.',
+    'NoExpiredExtras' => 'Ingen udløbne ekstramateriale.',
+    'NoUnlicensedExtras' => 'Ingen ulicenserede ekstramaterialer.',
+    'Unlimited' => 'Ubegrænset',
+    'LicenseStateLockMessage' => 'Ekstra installation og opgraderingshandlinger er i øjeblikket deaktiveret af din licensstatus. Eksisterende installerede ekstrafunktioner fortsætter med at virke.',
+    'LicenseStateFailMessage' => 'Din SimpleRisk-licens er udløbet eller er blevet deaktiveret. Kontakt venligst SimpleRisk-support for at genoprette tjenesten.',
+    'LicenseStateAnonymousMessage' => 'Denne SimpleRisk-instans er ikke registreret. Kun gratis ekstrafunktioner er tilgængelige. Registrer dig i menuen Konfigurer for at få adgang til betalte ekstrafunktioner.',
+    'LicenseStateUnknownMessage' => 'SimpleRisk kunne ikke oprette forbindelse til licenstjenesten. Licensstatus opdateres automatisk ved næste kontrol.',
+    'ExtraIntegrityCheckFailed' => 'Den downloadede pakke bestod ikke integritetskontrollen og blev ikke installeret.',
+    'ExtraInstallWriteFailed' => 'Ekstraprogrammet kunne ikke installeres, fordi der ikke er skrivbar til extras-mappen.',
+    'ExtraInstallExtractFailed' => 'Ekstraprogrammet blev downloadet, men kunne ikke udpakkes og installeres. Tjek programloggene.',
+    'EncryptionPreflightFailed' => 'Foreløbig DDL mislykkedes — se fejlfindingsloggen for detaljer.',
+    'EncryptionActivationFailed' => 'Aktivering af kryptering mislykkedes under den indledende opsætning. Kontrollér applikationsloggene.',
+    'QuestionnaireSentSchedulingOnly' => 'Dette spørgeskema er blevet sendt. Kun nedenstående planlægningsindstillinger kan ændres.',
+    'AreYouSureYouWantToReopenThisResult' => 'Er du sikker på, at du vil genåbne dette resultat til gennemgang?',
+    'QuestionnaireResultReopenedSuccessfully' => 'Spørgeskemaresultatet er genåbnet til gennemgang.',
+    'QuestionnaireResultReopenedAuditLog' => 'Resultatet af spørgeskemaet "{$questionnaire_name}" (indsendt af kontaktpersonen "{$contact_name}") blev genåbnet til gennemgang af brugeren "{$user_name}".',
+    'QuestionnaireDraftNoChanges' => 'Ingen ændringer at gemme.',
+    'SendQuestionnaireIdRequired' => 'Parameteren id er obligatorisk og skal være numerisk.',
+    'RiskIdMustBeNumeric' => 'Parameteren risk_id skal være numerisk.',
+    'AssessmentsExtraNotEnabled' => 'Assessments Extra-modulet er ikke aktiveret.',
+    'QuestionnaireSchedulingUpdatedAuditLog' => 'Planlægningsindstillingerne for spørgeskemaet med navnet "{$name}" blev opdateret af brugernavnet "{$user}".',
+    'QuestionnaireResultNotReopenable' => 'Spørgeskemaresultatet kan ikke genåbnes, da det ikke er i en afvist eller ikke-godkendt tilstand.',
+    'QuestionnaireTrackingNotFoundAfterUpdate' => 'Spørgeskemasporing ikke fundet efter opdatering.',
+    'QuestionnaireResultAlreadyDecided' => 'Spørgeskemaresultatet er allerede blevet besluttet (godkendt, afvist eller ikke godkendt). Brug først handlingen Genåbn.',
+    'QuestionnaireNoControlsForApproval' => 'Der blev ikke fundet nogen kontroller til dette spørgeskema.',
+    'QuestionnaireNoResponsesForApproval' => 'Der blev ikke fundet nogen spørgeskemabesvarelser til behandling af modenhedsopdateringer.',
+    'ResultMessageUnavailable' => 'Resultatmeddelelsen er ikke tilgængelig.',
+    'AIProviderURLNotAllowed' => 'Den API-URL er ikke tilladt. Brug en kendt AI-udbyder eller en loopback (127.0.0.1) self-host-adresse.',
+    'AIReenterKeyForNewURL' => 'Indtast API-nøglen igen for at teste en anden udbyder-URL.',
+    'WorkflowHttpRequestDisallowedURL' => 'http_request: URL\'en {$url} oversættes til en ikke-tilladt intern eller reserveret adresse.',
+    'BehaviorAndScheduling' => 'Adfærd og planlægning',
+    'PrepopulateAcrossContacts' => 'Udfyld nye svar på forhånd med en anden kontakts tidligere svar til denne vurdering',
+    'PrepopulateAcrossContactsHelp' => 'Udfyld en ny respondents formular på forhånd med de seneste tidligere svar fra enhver kontakt – nyttigt for kontinuitet, når ansvaret skifter hænder.',
+    'PrepopulateAcrossContactsCaution' => 'Slået fra som standard. Når den er slået fra, ser en kontakt kun sine egne tidligere svar. Slå kun dette til, når respondenterne er interne eller betroede – det kan vise én kontakts svar til en anden (f.eks. hvis én leverandør ser en andens).',
+    'AddTemplateAndContacts' => 'Tilføj skabelon og kontakter',
+    'QuestionnaireGeneralSubtitle' => 'Navngiv spørgeskemaet og angiv, hvem der ejer det',
+    'QuestionnaireInstructionsSubtitle' => 'Vejledning vist til respondenter og i invitationsmailen',
+    'QuestionnaireBehaviorSubtitle' => 'Sådan opfører spørgeskemaet sig, når det sendes og udfyldes',
+    'QuestionnaireRiskDetailsSubtitle' => 'Valgfrie standardindstillinger anvendt på risici, som denne vurdering skaber',
+    'QuestionnaireTemplatesSubtitle' => 'Par hver spørgsmålskabelon med de kontakter, der modtager den',
+    'BypassPendingRisksLabel' => 'Omgå ventende risici',
+    'BypassPendingRisksDescription' => 'Opret risici umiddelbart efter vurderingens afslutning i stedet for at tilbageholde dem til gennemgang.',
+    'AutomaticallySendResultsLabel' => 'Send resultater automatisk',
+    'AutomaticallySendResultsDescription' => 'Send vurderingsresultaterne til alle vurderingskontakter efter afslutning.',
+    'QuestionnaireMultiselectPlaceholder' => 'Vælg eller søg…',
+    'QuestionnaireNamePlaceholder' => 'f.eks. leverandørsikkerhedsgennemgang 2026',
+    'AddTeamPlaceholder' => 'Tilføj team…',
+    'AddStakeholderPlaceholder' => 'Tilføj interessent…',
+    'AddControlTypePlaceholder' => 'Tilføj kontroltype…',
+    'AddLocationPlaceholder' => 'Tilføj placering…',
+    'NotifyWhenNotCompleteLabel' => 'Giv besked, når det ikke er færdigt',
+    'NotifyWhenNotCompleteDescription' => 'Påmind kontakter, der ikke har gennemført vurderingen.',
+    'RemindEveryDays' => 'Påmind hver {$day} dage',
+    'ResendAssessmentLabel' => 'Send vurdering igen',
+    'ResendAssessmentDescription' => 'Genudsted automatisk vurderingen i en tilbagevendende kadence.',
+    'ResendEveryDays' => 'Send igen hver {$day} dage',
+    'QuestionnaireSaveBarHint' => '"Gem og send" sender spørgeskemaet til sine kontakter med det samme.',
+    // Home dashboard — KPI tile labels
+    'NewSelfAssessment' => 'Ny selvevaluering',
+    'SelfAssessmentPrereqIntro' => 'Selvevalueringer giver dig mulighed for at evaluere din organisation i forhold til et Secure Controls Framework og automatisk generere risici fra de kontroller, der fejler. Først kræves der to opsætningstrin:',
+    'RegisterYourInstance' => 'Registrer din instans',
+    'RegisterYourInstanceHelp' => 'Registrering forbinder denne instans til SimpleRisks licenstjeneste, så gratis ekstramateriale (inklusive SCF) kan downloades.',
+    'InstallTheSCF' => 'Installer Secure Controls Framework',
+    'InstallTheSCFHelp' => 'SCF er et gratis ekstraværktøj, der leverer de rammer, kontrolspørgsmål og risikokortlægninger, som denne funktion vurderer i forhold til. Installationen kører i baggrunden og kan tage et par minutter.',
+    'GoToRegistration' => 'Gå til registrering',
+    'GoToSCF' => 'Gå til Sikker kontrolramme',
+    'SelfAssessmentEnableTip' => 'Valgfrit: Under Styring > Frameworks kan du aktivere specifikke SCF-frameworks til at se en kort kurateret liste, når du starter en vurdering. Du kan også vurdere i forhold til ethvert framework i det fulde SCF-katalog uden at aktivere det.',
+    'ChooseAFramework' => 'Vælg en ramme at vurdere i forhold til',
+    'EnabledFrameworks' => 'Aktiverede rammer',
+    'AllScfFrameworks' => 'Alle SCF-rammer',
+    'Start' => 'Starte',
+    'Resume' => 'Genoptage',
+    'ControlQuestion' => 'Kontrolspørgsmål',
+    'NotApplicable' => 'Ikke tilgængelig',
+    'SaveProgress' => 'Gem fremskridt',
+    'MarkComplete' => 'Markér fuldført',
+    'AnsweredOfTotal' => 'besvaret',
+    'FailedSoFar' => 'mislykkedes indtil videre',
+    'StartedBy' => 'Startet af',
+    'FailedControls' => 'Fejlslagne kontroller',
+    'PushToRisk' => 'Skub til risiko',
+    'ConfirmDeleteSelfAssessment' => 'Vil du slette denne selvevaluering? Dette kan ikke fortrydes.',
+    'ConfirmCompleteSelfAssessment' => 'Markerer du denne vurdering som fuldført? Der vil opstå risici som følge af fejlslagne kontroller.',
+    'NoSelfAssessmentsYet' => 'Ingen selvevalueringer endnu. Start en for at komme i gang.',
+    'RequestFailed' => 'Anmodningen kunne ikke fuldføres. Prøv igen.',
+    'NoPendingRisks' => 'Ingen udestående risici. Udfør en vurdering for at generere risici fra fejlslagne kontroller.',
+    'NoFailedControls' => 'Ingen kontrolresultater at vise for dette filter.',
+    'ControlResultsTruncated' => 'Viser de seneste 2000 resultater. Indskrænk filteret for at se flere.',
+    'GeneratedFromSelfAssessment' => 'Genereret fra selvevaluering',
+    'SelfAssessmentMitigationSolution' => 'Implementer de kontroller, der er linket nedenfor, og som blev identificeret som mangelfulde under denne selvevaluering, for at afbøde denne risiko.',
+    'NSelected' => '{n} valgt',
+    'FilterByControl' => 'Filtrer efter kontrolelement',
+    'Pushing' => 'Tryk…',
+    'Deleting' => 'Sletter…',
+    'ConfirmPushSelectedPendingRisks' => 'Skub den/de valgte ventende risiko(er) {n} til risici?',
+    'ConfirmDeleteSelectedPendingRisks' => 'Vil du slette den/de valgte, ventende risiko(er) {n} ? Dette kan ikke fortrydes.',
+    'ConfirmDeleteSelectedSelfAssessments' => 'Vil du slette den/de valgte selvevaluering(er) {n} ? Dette kan ikke fortrydes.',
+    'BulkPartialFailure' => '{n} af {total} elementer lykkedes; resten mislykkedes. Opdater for at se den aktuelle tilstand.',
+
+    // Workflows Extra - deactivation confirm ('Deactivate' at line 480 is reused as-is)
+    'WorkflowsExtraDeactivateConfirm' => 'Vil du deaktivere Workflows Extra? Alle brugeroprettede arbejdsgangsdefinitioner slettes permanent. Systemarbejdsgange bevares.',
+    'HomeKpiOpenRisks' => 'Åben Risici',
+    'HomeKpiNeedsReview' => 'Behov for gennemgang',
+    'HomeKpiUnmitigated' => 'Ikke mitigeret',
+    'HomeKpiClosedRisks' => 'Lukkede Risici',
+    'HomeKpiControlPassRate' => 'Kontrolbeståelsesprocent',
+    'HomeKpiFailingControls' => 'Fejlende kontroller',
+    'HomeKpiOpenAudits' => 'Åbne revisioner',
+    'HomeKpiTestsDueSoon' => 'Test forfalder snart',
+    'HomeKpiActiveFrameworks' => 'Aktive rammer',
+    'HomeKpiTotalControls' => 'Total kontrol',
+    // Home dashboard — What's Next feed
+    'WhatsNext' => 'Hvad er det næste?',
+    'WhatsNextAllCaughtUp' => 'Du er helt opdateret.',
+    'WhatsNextRegisterInstance' => 'Registrer din SimpleRisk-instans',
+    'WhatsNextSubmitFirstRisk' => 'Indsend din første risiko',
+    'WhatsNextLoadFramework' => 'Indlæs en kontrolramme',
+    'WhatsNextUnreviewedRisks' => 'Risici at gennemgå',
+    'WhatsNextUnmitigatedRisks' => 'Risici, der skal afbødes',
+    'WhatsNextInitiateAudits' => 'Revisioner, der skal iværksættes',
+    // Home dashboard — widget picker type labels
+    'WidgetType_kpi' => 'KPI-flise',
+    'WidgetType_whats_next' => 'Liste',
+    // Home dashboard — hub catalog entry
+    'HomeDashboard' => 'Hjem',
+    'HomeDashboardDesc' => 'Dit udgangspunkt – overblik over de vigtigste målinger og hvad du skal gøre nu.',
+    'HomeChartRiskByLevel' => 'Risiko efter niveau',
+    'HomeKpiThisMonth' => 'denne måned',
+    'HomeKpiNoChange' => 'Ingen ændring',
+    'EditLayout' => 'Rediger layout',
+    'ListHighestRisks' => 'Mine højeste risici',
+    'ListPastDueReviews' => 'Forfaldne anmeldelser',
+    'ListUpcomingTests' => 'Kommende tests',
+    'ListRecentFailures' => 'Nylige fejl',
+    'ListPoliciesReview' => 'Dokumenter til gennemgang',
+    'ListExpiringExceptions' => 'Udløbende undtagelser',
+    'ImKpiOpenIncidents' => 'Totalt åbne',
+    'ImKpiOverdue' => 'Forsinket',
+    'ImKpiMttr30' => 'Gennemsnitlig opløsning',
+    'ImKpiMttrQuarter' => 'Gennemsnitlig opløsning (90 dage)',
+    'ImKpiMttrYear' => 'Gennemsnitlig løsning (1 år)',
+    'ImKpiMttrAll' => 'Gennemsnitlig løsning (alle)',
+    'ImKpiResolved30' => 'Løst',
+    'ImChartBySeverity' => 'Efter sværhedsgrad',
+    'ImChartByStatus' => 'Efter status',
+    'ImListRecent' => 'Nylige hændelser',
+    'ImListUnassigned' => 'Ikke-tildelte hændelser',
+    'HomeKpiOpenExceptions' => 'Åbne undtagelser',
+    'HomeKpiPolicies' => 'Politikker',
+    'ResolutionTargets' => 'Løsningsmål (dage)',
+    'ResolutionTargetsHelp' => 'Antallet af dage, en hændelse må forblive åben, før den tæller som forsinket.',
+    'DefaultTarget' => 'Standard',
+    'PerSeverityOverrideHelp' => 'Tilsidesæt eventuelt standardindstillingen for specifikke alvorlighedsgrader (lad feltet stå tomt for at bruge standardindstillingen):',
+    'ResolutionTargetUsesDefault' => 'Standard (%d)',
+    'SeverityColors' => 'Sværhedsgradsfarver',
+    'SeverityColorsHelp' => 'Farven for hver alvorlighedsgrad, vist på hændelsesdashboardet og siden med hændelsesdetaljer.',
+    'Editing' => 'Redigering',
+    'SetAsDefaultForEveryone' => 'Angiv som standard for alle',
+    'EditLayoutHint' => 'Træk en flise for at flytte den · træk en kant for at ændre størrelsen · ✕ for at fjerne den',
+    'RemoveWidget' => 'Fjern widget',
+    'AddWidget' => 'Tilføj widget',
+    'AddToDashboard' => 'Føj til dashboard',
+    'AllWidgetsAdded' => 'Alle tilgængelige widgets findes på dette dashboard.',
+    'AddText' => 'Tilføj tekst',
+    'GettingStarted' => 'Kom godt i gang',
+    'GettingStartedTitle' => 'Velkommen til SimpleRisk',
+    'GettingStartedSubtitle' => 'Et par hurtige trin til at få mest muligt ud af SimpleRisk.',
+    'GSProgressCount' => '{done} af {total} fuldført',
+    'GSNextUp' => 'Næste op',
+    'GSArea_setup' => 'Opsætning',
+    'GSArea_risk' => 'Risiko',
+    'GSArea_assessment' => 'Vurdering',
+    'GSArea_compliance' => 'Overholdelse',
+    'GSArea_assets' => 'Aktiver',
+    'GSArea_ai' => 'Opsætning',
+    'GSHide' => 'Skjul Introduktion',
+    'GSDismissStep' => 'Afvis dette trin',
+    'GSAllSet' => 'Så er du klar – godt gået!',
+    'GSWalkthrough' => '30-minutters gennemgang',
+    'Explore' => 'Udforske',
+    'Learn' => 'Lære',
+    'AdminGuide' => 'Administratorvejledning',
+    'LearnMore' => 'Lær mere',
+    'GSRegisterTitle' => 'Registrer din instans',
+    'GSRegisterDesc' => 'Aktivér support og opdateringer med din licensnøgle.',
+    'GSRegisterCta' => 'Registrer dig',
+    'GSScfTitle' => 'Installer Secure Controls Framework',
+    'GSScfDesc' => 'Installer SCF — dit kontrolbibliotek på tværs af standarder.',
+    'GSScfCta' => 'Installer SCF',
+    'GSInviteTitle' => 'Inviter dit hold',
+    'GSInviteDesc' => 'Tilføj kolleger, så arbejde kan tildeles og gennemgås.',
+    'GSInviteCta' => 'Tilføj brugere',
+    'GSAiTitle' => 'Konfigurer AI',
+    'GSAiDesc' => 'Gør din SimpleRisk-oplevelse bedre med kunstig intelligens.',
+    'GSAiCta' => 'Opsæt AI',
+    'GSSubmitRiskTitle' => 'Indsend din første risiko',
+    'GSSubmitRiskDesc' => 'Registrer en risiko, som din organisation står over for.',
+    'GSSubmitRiskCta' => 'Indsend risiko',
+    'GSMitigateTitle' => 'Planlæg en afbødning',
+    'GSMitigateDesc' => 'Tilføj en afværgeplan til en åben risiko.',
+    'GSMitigateCta' => 'Planlæg afbødning',
+    'GSReviewTitle' => 'Udfør en risikovurdering',
+    'GSReviewDesc' => 'Gennemgå en risiko og beslut dens næste skridt.',
+    'GSReviewCta' => 'Udfør gennemgang',
+    'GSDefineTestTitle' => 'Definer en kontroltest',
+    'GSDefineTestDesc' => 'Konfigurer, hvordan en kontrol testes.',
+    'GSDefineTestCta' => 'Definer test',
+    'GSInitiateAuditTitle' => 'Start en revision',
+    'GSInitiateAuditDesc' => 'Start en test- eller revisionscyklus.',
+    'GSInitiateAuditCta' => 'Iværksæt revision',
+    'GSAssetTitle' => 'Tilføj dine aktiver',
+    'GSAssetDesc' => 'Lav en opgørelse over de aktiver, du beskytter.',
+    'GSAssetCta' => 'Tilføj aktiver',
+    'GSInvalidStep' => 'Ugyldigt introduktionstrin.',
+    'GSPagerLabel' => '{from}–{to} af {total}',
+    'GSPrevCards' => 'Vis forrige trin',
+    'GSNextCards' => 'Vis de næste trin',
+    'WhatsNextInstallSCF' => 'Installer Secure Controls Framework',
+    'GSActivateScfTitle' => 'Aktivér Secure Controls Framework',
+    'GSActivateScfDesc' => 'Slå den installerede SCF til for at indlæse dens kontrolelementer i dit bibliotek.',
+    'GSActivateScfCta' => 'Aktivér SCF',
+    'WhatsNextActivateSCF' => 'Aktivér Secure Controls Framework',
+    'GSEnableFrameworksTitle' => 'Aktivér relevante rammer',
+    'GSEnableFrameworksDesc' => 'Aktivér de SCF-rammer, der gælder for din organisation.',
+    'GSEnableFrameworksCta' => 'Aktivér rammer',
+    'WhatsNextEnableFrameworks' => 'Aktivér relevante rammer',
+    'GSSelfAssessTitle' => 'Tag en selvevaluering',
+    'GSSelfAssessDesc' => 'Evaluer din organisation i forhold til mere end 250 rammeværk og generer risici fra fejlslagne kontroller.',
+    'GSSelfAssessCta' => 'Start vurdering',
+    'WhatsNextTakeSelfAssessment' => 'Tag en selvevaluering',
+    'WhatsNextConfigureAI' => 'Konfigurer AI',
+    'ListUnreviewedRisks' => 'Ikke-gennemgåede risici',
+    'ControlsByDomain' => 'Kontroller efter domæne',
+    'ControlsByClass' => 'Kontroller efter klasse',
+    'ControlsByPhase' => 'Kontroller efter fase',
+    'ControlsByPriority' => 'Kontroller efter prioritet',
+    'ControlsByCurrentMaturity' => 'Kontroller efter nuværende modenhed',
+    'ControlStatusOverTime' => 'Kontrolstatus over tid',
+    'ComplianceTotalControls' => 'Total kontrol',
+    'HomeKpiOverdueTests' => 'Forsinkede prøver',
+    'Total' => 'Total',
+    'StartTheTest' => 'Start testen',
+    'TestStartsAutomatically' => 'Testen starter automatisk',
+    'GoToTest' => 'Gå til Test',
+    'NotTested' => 'Ikke testet',
+    'PassingPercent' => 'Bestået %',
+    'ListFailingControls' => 'Fejlende kontroller',
+    'Exceptions' => 'Undtagelser',
+    'Documents' => 'Dokumenter',
+    'ControlsBelowMaturity' => 'Kontroller under modenhed',
+    'ControlsAtMaturity' => 'Kontroller ved modenhedsmålet',
+    'ControlsAboveMaturity' => 'Kontroller over modenhed',
+    'Maturity' => 'Modenhed',
+    'AllTime' => 'Alle tider',
+    'Last7Days' => 'Sidste 7 dage',
+    'Last30Days' => 'Sidste 30 dage',
+    'Last90Days' => 'Sidste 90 dage',
+    'YearToDate' => 'År til dato',
+    'CustomRange' => 'Brugerdefineret område',
+    'Age' => 'Alder',
+    'ImOpenIncidents' => 'Åbne hændelser',
+    'ImClosedIncidents' => 'Lukkede hændelser',
+    'ImByAttackVector' => 'Åbne efter angrebsvektor',
+    'ImBySource' => 'Åbne efter kilde',
+    'AverageDaysToDetect' => 'Gennemsnitlige dage til at opdage',
+    'ImKpiAvgTtd' => 'Gennemsnitlig detektion',
+    'Days' => 'Dage',
+    'ImKpiCriticalOpen' => 'Kritisk åben',
+    'ImKpiResolvedInSla' => 'Løst i SLA',
+    'Events' => 'Begivenheder',
+    'ImEventsIncidents' => 'Begivenheder og hændelser',
+    'ImSourceBreakdown' => 'Kilde efter kategori',
+    'ImClosureSummary' => 'Opsummering af lukning',
+    'ImSignalQuality' => 'Signalkvalitet',
+    'ImSignalLowSample' => 'Ikke nok bedømte lukninger til at vurdere pålideligt',
+    'ImportExportExportPdf' => 'Eksportér PDF',
+    'ImportExportExporting' => 'Forbereder PDF…',
+    'ImportExportExportFailed' => 'Kunne ikke generere PDF-filen. Prøv igen.',
+    'ImportExportGeneratedOn' => 'Genereret',
+    'ImportExportPage' => 'Side',
+    'ImportExportPageOf' => 'af',
+    'ResolutionTargetsUpdated' => 'Målene for løsning pr. alvorlighedsgrad blev opdateret.',
+    'SeverityColorsUpdated' => 'Alvorlighedsfarverne blev opdateret.',
+    // AI Capabilities Catalog + AI settings hub (unified AI settings)
+    'AICapGrcRecommendations' => 'Anbefalinger fra GRC-rammen',
+    'AICapGrcRecommendationsDesc' => 'AI-genererede rammeanbefalinger og et resumé, der er tilpasset din organisations kontekst.',
+    'AICapRiskRecommendations' => 'Risikoanbefalinger',
+    'AICapRiskRecommendationsDesc' => 'Forslag pr. risiko til risikodetaljer og afbødning, genereret ud fra risikoen, dens afbødning og gennemgang.',
+    'AICapFairAnalysis' => 'FAIR kvantitativ analyse',
+    'AICapFairAnalysisDesc' => 'AI estimerer Beta-PERT-tabsparametre; SimpleRisk kører en Monte Carlo-beregning med 10.000 iterationer for at kvantificere risiko i dollars.',
+    'AICapDocumentCustomization' => 'Dokumenttilpasning',
+    'AICapDocumentCustomizationDesc' => 'Udfylder pladsholdere og renser politiktekst i dine dokumentskabeloner, så en standardpolitik læses som din.',
+    'AICapDocumentControlMatching' => 'Dokument ↔ Kontrolmatchning',
+    'AICapDocumentControlMatchingDesc' => 'Knytter automatisk kontroller til politikdokumenter med en konfidensscore og argumentation, du kan gennemgå.',
+    'AICapDocumentTemplates' => 'Dokumentskabelonbibliotek',
+    'AICapDocumentTemplatesDesc' => 'Installer kuraterede skabeloner til politikker, retningslinjer og procedurer fra SimpleRisk-biblioteket.',
+    'AICapControlReferenceEnhancement' => 'Forbedring af kontrolreferencer',
+    'AICapControlReferenceEnhancementDesc' => 'Undersøger ordret kontroltekst via websøgning for at berige dine kontrolreferencer.',
+    'AICapAiChat' => 'Chatassistent',
+    'AICapAiChatDesc' => 'En GRC-assistent, der besvarer spørgsmål i kontekst overalt i SimpleRisk.',
+    'AICapSurfacedRecommendations' => 'Kunstig intelligens-side',
+    'AICapSurfacedRiskView' => 'Risikovisning — Detaljer og afbødning',
+    'AICapSurfacedFairTab' => 'Risikovisning — fanen FAIR',
+    'AICapSurfacedDocuments' => 'Styring — Dokumenter',
+    'AICapSurfacedControls' => 'Overholdelse — Kontroller',
+    'AICapSurfacedEveryPage' => 'Hver side — flydende assistent',
+    'AICapabilitiesCatalog' => 'Evner',
+    'AICapSearchPlaceholder' => 'Søg efter AI-funktioner…',
+    'AICapFilterDomain' => 'Domæne',
+    'AICapFilterTier' => 'Niveau',
+    'AICapFilterState' => 'Tilstand',
+    'AICapTierExtra' => 'AI Ekstra',
+    'AICapStateLocked' => 'Låst',
+    'AICapIncludedInExtra' => 'Inkluderet i AI Extra',
+    'AICapPurchaseExtra' => 'Køb AI Extra',
+    'AICapNeedsProvider' => 'Kræver udbyderopsætning',
+    'AICapNoMatch' => 'Ingen matchende egenskaber',
+    'AICapNoMatchHint' => 'Prøv et andet domæne, niveau eller søgeord.',
+    'AICapCountSingular' => 'evne',
+    'AICapCountPlural' => 'evner',
+    'DomainAssistant' => 'Assistent',
+    'AICapLoadError' => 'Kunne ikke indlæse AI-funktioner. Prøv igen.',
+    'AIProviderConfigSubtitle' => 'Forbind SimpleRisk til en AI-udbyder for at styrke AI-funktionerne.',
+    'AIHowToGetAPIKeyFor' => 'Sådan får du en API-nøgle til',
+    'AIExtraNotActivated' => 'Ikke aktiveret',
+    'AIExtraValueProp' => 'Forbedret AI — FAIR-risikokvantificering, dokument- og kontrolassistance og AI-chatassistent.',
+    'AICtxOrgName' => 'Hvad er navnet på din organisation?',
+    'AICtxOrgSizeEmployees' => 'Hvor mange ansatte har din organisation?',
+    'AICtxOrgSizeRevenue' => 'Hvad er din organisations årlige omsætning?',
+    'AICtxOrgObjective' => 'Hvad er din organisations primære forretningsmål og strategiske mål?',
+    'AICtxOrgIndustry' => 'Hvad er din organisations primære branche eller sektor?',
+    'AICtxOrgLocation' => 'I hvilke lande eller regioner opererer din organisation?',
+    'AICtxOrgType' => 'Hvilken type organisation er du?',
+    'AICtxDataTypes' => 'Hvilke typer data indsamler, behandler eller opbevarer din organisation (f.eks. personoplysninger, økonomiske data, sundhedsoplysninger)?',
+    'AICtxDataCustomers' => 'Hvem er dine primære kunder eller interessenter (f.eks. forbrugere, virksomheder, offentlige enheder)?',
+    'AICtxDataRegulatory' => 'Er I underlagt specifikke lovgivningsmæssige krav i jeres branche?',
+    'AICtxDataThirdParties' => 'Har I tredjepartsrelationer eller outsourcede tjenester, der kræver compliance-tilsyn?',
+    'AICtxMaturityIssues' => 'Har du oplevet væsentlige compliance-problemer, sikkerhedsbrud eller risikobegivenheder i de seneste 3-5 år?',
+    'AICtxMaturityConcerns' => 'Er der specifikke områder, der giver anledning til bekymring eller forbedringer, som I har identificeret i jeres nuværende GRC-processer?',
+    'AICtxMaturityAppetite' => 'Hvad er din organisations risikoappetit og -tolerance?',
+    'AICtxMaturityLevel' => 'Hvad er jeres nuværende modenhedsniveau med hensyn til governance, risikostyring og compliance-praksis?',
+    'AICtxImplementationChanges' => 'Er der kommende ændringer i jeres forretningsmodel, teknologiske infrastruktur eller marked, der kan påvirke jeres compliance-behov?',
+    'AICtxImplementationResourcesBudget' => 'Hvilke budgetressourcer har I til rådighed til implementering og vedligeholdelse af compliance-rammer?',
+    'AICtxImplementationResourcesPersonnel' => 'Hvilke personaleressourcer har I til rådighed til at implementere og vedligeholde compliance-rammer?',
+    'AICtxImplementationResourcesTechnology' => 'Hvilke teknologiske infrastrukturressourcer har I til rådighed til at implementere og vedligeholde compliance-rammer?',
+    'AICtxImplementationResourcesTraining' => 'Hvilke trænings- og udviklingsressourcer har I til rådighed til implementering og vedligeholdelse af compliance-rammer?',
+    'AICtxImplementationResourcesExternal' => 'Hvilke eksterne supportressourcer har I til rådighed til implementering og vedligeholdelse af compliance-rammer?',
+    'AIAPIKeySecurityNote' => 'Din nøgle gemmes på serversiden og returneres aldrig til browseren. Udbyder-URL\'er valideres mod en SSRF-tilladelsesliste, der kan konfigureres i config.php-filen.',
+    'AIContextEgressWarning' => 'Dine svar sendes til din konfigurerede AI-udbyder, som skal basere sine anbefalinger. Medtag ikke noget, du ikke ville dele med dem.',
+    'Provider' => 'Udbyder',
+    'AIProviderURLHostNotAllowed' => 'Værten "%s" er ikke på AI-udbyderens tilladelsesliste. Tilføj den til $ai_allowed_provider_hosts i config.php, og gem derefter. (Kendte AI-udbydere og 127.0.0.1 loopback-adresser er altid tilladt.)',
+    'AIContextLastSaved' => 'Sidst gemt',
+    'AIContextNeverSaved' => 'Ikke gemt endnu',
+    'AICtxCardSubtitle' => '21 spørgsmål på tværs af fire områder. Jo flere du svarer, desto skarpere bliver hver anbefaling.',
+    'AICtxAnswered' => '%1$d af %2$d besvarede',
+    'AICtxAllOptional' => 'Valgfri',
+    'AIContextSaving' => 'Gemmer…',
+    'AIContextSaveFailed' => 'Dine ændringer kunne ikke gemmes. Prøv igen.',
+    'AISettingsSavedNotReachable' => 'AI-indstillingerne er gemt, men udbyderen kunne ikke kontaktes. Sørg for, at den kører, og at URL\'en er korrekt.',
+    'AISettingsSavedKeyRequired' => 'AI-indstillinger er gemt, men denne udbyder kræver en API-nøgle, før dens funktioner kan bruges.',
+    'TestAndSave' => 'Test og gem',
+    'AICapEnableAll' => 'Aktivér alle',
+    'AICapDisableAll' => 'Deaktiver alle',
+    'AISettingsSavedConnected' => 'AI-indstillinger gemt — forbindelsen er oprettet.',
+    'AISettingsSavedNotConnected' => 'AI-indstillingerne blev gemt, men forbindelsestesten mislykkedes. Kontroller model, nøgle og URL.',
+    'AIProviderURLNotOnAllowlist' => 'Denne vært er ikke på AI-udbyderens SSRF-tilladelsesliste. Tilføj den til $ai_allowed_provider_hosts i config.php, før den kan gemmes.',
+    'Connected' => 'Forbundet',
+    'NotConnected' => 'Ikke forbundet',
+    'AICapBulkError' => 'Nogle funktioner kunne ikke opdateres. Prøv igen.',
+    'QuestionnaireAlreadyCompleted' => 'Dette spørgeskema er allerede udfyldt.',
+    'QuestionnaireDraftError' => 'Fejl under lagring af kladde. Se konsollen for detaljer.',
+
+    // Audit cadence scheduling - Define Test modal (Interval/Calendar schedule redesign)
+    // 'Overdue' duplicates the English of 'ImKpiOverdue' on purpose: that key is
+    // an Incident Management KPI label, and a compliance status pill reusing an
+    // IM-scoped key would couple the two domains for a translator (and break the
+    // moment either wording moves). This is the generic, cross-domain one.
+    'Overdue' => 'Forsinket',
+    // Deliberate: the only other key rendering 'Manual' is 'ManualValuation',
+    // an asset-valuation label. Pointing a schedule mode at it would couple two
+    // unrelated domains for translators and break the moment either reworded.
+    'ScheduleManual' => 'Manuel',
+    'ScheduleInterval' => 'Interval',
+    'ScheduleCalendar' => 'Kalender',
+    'Cadence' => 'Kadence',
+    'CadenceBiweekly' => 'Hver anden uge',
+    'CadenceSemiAnnually' => 'Halvårligt',
+    'AnchorDate' => 'Ankerdato',
+    'UpcomingOccurrences' => 'Kommende hændelser',
+    'AuditLeadInDays' => 'Revisionens indledende dage',
+    'SkipOccurrence' => 'Spring over',
+    'OverrideDate' => 'Tilsidesættelsesdato',
+    'Week' => 'Uge',
+    'NoUpcomingOccurrences' => 'Ingen kommende hændelser i dette vindue.',
+    'FailedToLoadUpcomingOccurrences' => 'Kunne ikke indlæse forhåndsvisningen af kommende hændelser.',
+    'AnchorDateMustBeTodayOrLater' => 'Ankerdatoen skal være i dag eller senere. For at planlægge en tidligere dato, opret en manuel test i stedet.',
+    'InvalidScheduleType' => 'Ugyldig tidsplantype. Tilladte værdier: Manuel, Interval, Kalender.',
+    'Weeks' => 'Uger',
+    'Months' => 'Måneder',
+    'Years' => 'År',
+    'ScheduleSummaryEvery' => 'Hver {$interval} {$unit}',
+
+    // Define Tests redesign - client-rendered grid (Phase 1, Task 6)
+    'LastResult' => 'Sidste resultat',
+    'NextDue' => 'Næste forfaldsdato',
+    'DueSoon' => 'Forfalder snart',
+    'Retired' => 'Pensioneret',
+    'MyTests' => 'Mine tests',
+    'Failing' => 'Fejler',
+    'Untested' => 'Uafprøvet',
+    'ShowRetired' => 'Vis pensioneret',
+    'Tests' => 'Test',
+    'NoTestsForThisControl' => 'Ingen test endnu for denne kontrol.',
+    'NoControlsDefinedYet' => 'Ingen kontroller defineret endnu',
+    'NoControlsDefinedYetBody' => 'Definer kontroller i Governance, før du tilføjer tests.',
+    'NoTestsMatchFilters' => 'Ingen tests matcher dine filtre',
+    'NoTestsMatchFiltersBody' => 'Prøv at justere din søgning eller dine filtre.',
+    'CouldNotLoadTests' => 'Kunne ikke indlæse testene',
+    'CouldNotLoadTestsBody' => 'Noget gik galt. Dine data er sikre – prøv at opdatere.',
+    'ShowingXToYOfZ' => 'Viser {$start}–{$end} af {$total}',
+    // Define Tests grid -- SCF-mapping + read-only procedure expand (Phase 1, Task 7)
+    'Reference' => 'Reference',
+    'NoFrameworksMapped' => 'Ingen frameworks er knyttet til dette kontrolelement.',
+    // Define Tests grid -- batch select + retire/delete + quick filters (Phase 1, Task 8)
+    'Retire' => 'Udfas',
+    'ReassignTester' => 'Omfordel tester',
+    'SetSchedule' => 'Sæt tidsplan',
+    'ConfirmRetireSelectedTests' => 'Vil du trække den/de valgte {n} test(er) tilbage?',
+    'ConfirmDeleteSelectedTests' => 'Vil du slette den/de valgte test(er) {n} ? Dette kan ikke fortrydes.',
+    // Define Tests grid -- Coverage toolbar select (Issue 4)
+    'Coverage' => 'Dækning',
+    'CoverageWithTests' => 'Kontroller med test',
+    'CoverageAllControls' => 'Alle kontroller',
+    'CoverageGaps' => 'Huller',
+    // Define Tests insights band (Phase 2, Task 4) -- KPI tile labels + subtitles.
+    // 'Overdue', 'DueSoon', and 'Failing' are reused from the grid's quick-filter
+    // chips above (identical text) rather than duplicated here.
+    'DtTotalTests' => 'Samlede tests',
+    'DtCoverageGaps' => 'Dækningshuller',
+    'DtAcrossNControls' => 'På tværs af {$n} kontrolelementer',
+    'DtControlsWithNoTest' => 'Kontroller uden test',
+    'DtNeedInitiationNow' => 'Har brug for igangsættelse nu',
+    'DtWithinLeadInWindow' => 'Inden for indføringsvinduet',
+    'DtLastResultFailed' => 'Sidste resultat mislykkedes',
+    'InvalidTestMethod' => 'Testmetoden skal være en af følgende: Forespørgsel, Observation, Inspektion eller Genudførelse!',
+    'TesterCannotBeApprover' => 'Testeren kan ikke også være angivet som godkender for denne test.',
+    'ApproverNotEligible' => 'En eller flere udvalgte godkendere har ikke ansvaret for "Godkend test".',
+    'TestMethod' => 'Testmetode',
+    'TestMethodInquiry' => 'Forespørgsel',
+    'TestMethodObservation' => 'Observation',
+    'TestMethodInspection' => 'Inspektion',
+    'TestMethodReperformance' => 'Genopførelse',
+    'Sample' => 'Prøve',
+    'RequiredEvidence' => 'Nødvendig dokumentation',
+    'Approvers' => 'Godkendere',
+    'AuditLog_TestAuditApproved' => 'Revisionen "{$test_audit_name}" (ID: {$test_audit_id}) blev godkendt af brugeren "{$user_name}".',
+    'AuditLog_TestAuditRejected' => 'Revisionen "{$test_audit_name}" (ID: {$test_audit_id}) blev afvist af brugeren "{$user_name}" med kommentaren "{$comment}".',
+    'AuditLog_TestAuditAwaitingApproval' => 'Revisionen "{$test_audit_name}" (ID: {$test_audit_id}) blev indsendt til lukning af brugeren "{$user_name}" og afventer godkendelse. Ændringer: {$changes}.',
+    'AuditApproved' => 'Revisionen blev godkendt.',
+    'AuditRejected' => 'Revisionen blev afvist.',
+    'RejectCommentRequired' => 'En kommentar er påkrævet for at afvise en revision.',
+    'NotAnApproverOfThisAudit' => 'Du er ikke en konfigureret godkender for denne revision.',
+    'ApproverCannotBeTester' => 'Godkenderen kan ikke også være tester af denne revision.',
+    'AuditNotAwaitingApproval' => 'Denne revision afventer ikke godkendelse i øjeblikket.',
+    'NotificationAuditAwaitingApprovalTitle' => 'Revision afventer din godkendelse',
+    'NotificationAuditAwaitingApprovalBody' => 'Revisionen "{$test_audit_name}" er blevet indsendt til afslutning og afventer din godkendelse.',
+    'NotificationAuditRejectedTitle' => 'Revision afvist',
+    'NotificationAuditRejectedBody' => 'Revisionen "{$test_audit_name}" blev afvist med kommentaren: "{$comment}"',
+    'AwaitingApproval' => 'Venter på godkendelse',
+    'AwaitingApprovalBannerText' => 'Denne revision er blevet indsendt til lukning og afventer godkendelse fra en konfigureret godkender, før den kan lukkes.',
+    'ReturnedForRework' => 'Returneret til omarbejde',
+    'ReturnedForReworkBannerText' => 'Denne revision blev afvist og returneret til genbearbejdning.',
+    'RejectReason' => 'Afvisningsårsag',
+    'AreYouSureYouWantToApproveThisAudit' => 'Er du sikker på, at du vil godkende denne revision?',
+    'AtLeastOneControlRequired' => 'Mindst én kontrol er påkrævet.',
+    'DtNCommonAcrossNControls' => '{$common} fælles · {$n} kontrolelementer',
+    'DtUntestedControls' => 'Utestede kontroller',
+    'DtControlsInScopeNoCoverage' => 'Ingen dækning',
+    'Passing' => 'Beståelse',
+    'DtLastResultPassed' => 'Sidste resultat bestået',
+    'AllFamilies' => 'Alle familier',
+    'SearchTestsPlaceholder' => 'Søg efter tests, kontroller og frameworks',
+    'AnySchedule' => 'Enhver tidsplan',
+    'AnyTag' => 'Ethvert tag',
+    'AuditAutoClosedTestRetired' => 'Automatisk lukket som uafklaret, fordi testen blev trukket tilbage.',
+    'Common' => 'Fælles',
+    'ValidatesAcrossMappedFrameworks' => 'Validerer på tværs af kortlagte rammer',
+    'EditTest' => 'Rediger test',
+    'ControlHasNoTestCoverage' => 'Denne kontrol inden for området har endnu ingen testdækning.',
+    'AddTheFirstTest' => 'Tilføj den første test',
+    'ApplyCommonTestHint' => 'Anvend en eller flere eksisterende tests på denne kontrol. Hver test beholder sine nuværende kontroller og bliver en fælles test, der også dækker denne.',
+    'CommonTestApplied' => 'Test anvendt på denne kontrol.',
+    'CouldNotApplyCommonTest' => 'Testen kunne ikke anvendes på dette kontrolelement.',
+    'SelectOneOrMoreTests' => 'Vælg en eller flere tests',
+    'CommonTestsApplied' => '{n} test anvendt på denne kontrol.',
+    'ApplyCommonTests' => 'Anvend almindelige tests…',
+    'History' => 'Historie',
+    'Result' => 'Resultat',
+    'Approval' => 'Godkendelse',
+    'ThisTestHasNotBeenRunYet' => 'Denne test er ikke blevet kørt endnu.',
+    'CouldNotLoadTestHistory' => 'Kunne ikke indlæse denne tests historik.',
+    'Identity' => 'Identitet',
+    'IdentitySectionHint' => 'Navn, tester og de kontroller, den validerer',
+    'WhenTheAuditInitiates' => 'Når revisionen starter',
+    'ProcedureAndEvidence' => 'Procedure og beviser',
+    'CommonTestControlsHint' => 'Én test kan validere mange kontroller – en fælles test. Hvis du åbner denne fra en kontrols "+ Tilføj test", vælges den her på forhånd.',
+    'SeparationOfDutiesNote' => 'Funktionsadskillelse — en godkender kan ikke også være testeren.',
+    'CommonTestEditScopeHint' => 'Ændringer gælder overalt, hvor denne fælles test anvendes.',
+    'Mode' => 'Mode',
+    'AddOrRemove' => 'Tilføj eller fjern…',
+    'AddOrSearchTags' => 'Tilføj eller søg efter tags…',
+    'CreateTagX' => 'Opret “{tag}”',
+    'Archived' => 'Arkiveret',
+    'ShowAllTests' => 'Alle tests',
+    'ShowActiveTests' => 'Aktive tests',
+    'ShowRetiredTests' => 'Udgåede tests',
+    'UntestedControls' => 'Utestede kontroller',
+    'OverdueByXDays' => 'Forsinket · {n} dage',
+    'OverdueByOneDay' => 'Forsinket · 1 dag',
+    'DueInXDays' => 'Forfalder om {n} dage',
+    'DueTomorrow' => 'Forfalder i morgen',
+    'DueToday' => 'Forfald i dag',
+    'ScheduledForX' => 'Planlagt · {date}',
+    'AllTesters' => 'Alle testere',
+    'AllStatuses' => 'Alle statusser',
+    'OnTrack' => 'På rette spor',
+    'NextTestDateDerivedHint' => 'Beregnet ud fra den sidste testdato plus testfrekvensen. Angiv en frekvens for at planlægge den automatisk, eller lad frekvensen stå tom for selv at indstille denne dato.',
+    'DueStatus' => 'Forfaldsstatus',
+    'AllResults' => 'Alle resultater',
+    // Remove a test from one control (Define Tests grid unlink row action)
+    'RemoveFromThisControl' => 'Fjern fra denne kontrol',
+    'RemoveTestFromControl' => 'Fjern test fra kontrol',
+    'RemoveTestFromControlConfirm' => 'Fjern "{test_name}" fra {control_name}?',
+    'RemoveTestFromControlStays' => 'Testen forbliver på sine {n} andre kontrolelementer. Intet slettes.',
+    'RemoveTestFromControlStaysOne' => 'Testen forbliver på dens ene anden kontrol. Intet slettes.',
+    'CannotRemoveTestsOnlyControl' => 'En test skal tilhøre mindst én kontrol. Tilbagekald eller slet testen i stedet.',
+    'TestRemovedFromControl' => 'Testen blev fjernet fra kontrolgruppen.',
+    'CouldNotRemoveTestFromControl' => 'Testen kunne ikke fjernes fra kontrollen.',
+    'TestRemovedFromControlAuditLogMessage' => 'Testen "{$test_name}" (ID: {$test_id}) blev fjernet fra kontrolelementet (ID: {$control_id}) af brugeren "{$user}".',
+    'DeleteTestUsedByNControls' => 'Den bruges af {n} kontrolelementer og vil blive fjernet fra dem alle.',
+    'BulkDeleteSharedTestsNote' => '{n} af disse bruges af andre kontrolelementer og vil også blive fjernet fra disse.',
+    'BulkRetireSharedTestsNote' => '{n} af disse bruges af andre kontrolelementer og vil også blive udfaset der.',
+    'BulkDeleteOneSharedTestNote' => '1 af disse bruges af andre kontrolelementer og vil også blive fjernet fra disse.',
+    'BulkRetireOneSharedTestNote' => '1 af disse bruges af andre kontrolelementer og vil også blive udfaset der.',
+    'CouldNotLoadTest' => 'Kunne ikke indlæse denne test.',
+    'Expand' => 'Udvide',
+    'SearchMappings' => 'Søg i rammeværk og referencer',
+    'NoMatchingMappings' => 'Ingen kortlægninger matcher den søgning.',
+    'Insights' => 'Indsigt',
+    'ShowInsights' => 'Vis indsigtsfelterne',
+    'HideInsights' => 'Skjul indsigtsfelterne til en oversigtslinje',
+    'ChooseControls' => 'Vælg kontroller',
+    'UseTheseControls' => 'Brug disse kontroller',
+    'SearchControlsPlaceholder' => 'Søg efter nummer eller navn',
+    'PickerKeyboardHint' => 'Op/ned for at flytte, Enter for at vælge, Esc for at annullere',
+    'NoControlsMatchFilters' => 'Intet her matcher. Udvid et trin til venstre, eller ryd søgningen.',
+    'NoControlsSelectedYet' => 'Intet er valgt endnu.',
+    'AllControls' => 'Alle kontroller',
+    'AddOrRemoveControls' => 'Tilføj eller fjern kontrolelementer…',
+    'LastTested' => 'Sidst testet',
+    'LastTestDateAnchorHint' => 'Planlægning af ankerintervaller (denne dato plus hyppigheden). Når testen har registreret resultater, viser gitteret datoen for det nyeste resultat i stedet.',
+    'Filters' => 'Filtre',
+    'ShowFilters' => 'Vis filtre',
+    'HideFilters' => 'Skjul filtre',
+
+    // App shell — collapsing sidebar / new base design (SR app-shell redesign)
+    'AI' => 'AI',
+    'CollapseSidebar' => 'Skjul sidebjælken',
+    'FooterCopyright' => '© %s SimpleRisk. Alle rettigheder forbeholdes.',
+    'ExpandSidebar' => 'Udvid sidebjælken',
+    'WorkflowsCloneConfirm' => 'Klon arbejdsgang \'{$name}\'?',
+    'WorkflowsDeleteConfirm' => 'Sletter du arbejdsgangen \'{$name}\'? Dette kan ikke fortrydes.',
+    'WorkflowActionFailed' => 'Handling mislykkedes: {$msg}',
+    'ClickToDisable' => 'Klik for at deaktivere',
+    'ClickToEnable' => 'Klik for at aktivere',
+    'ENABLED' => 'AKTIVERET',
+    'DISABLED' => 'DEAKTIVERET',
+    'BackToWorkflows' => 'Tilbage til arbejdsgange',
+    'BackToHistory' => 'Tilbage til historien',
+    'NewWorkflow' => 'Ny arbejdsgang',
+    'ViewSteps' => 'Se trin',
+    'SaveWorkflow' => 'Gem arbejdsgang',
+    'WorkflowSavedSuccessfully' => 'Arbejdsgangen er gemt.',
+    'WorkflowNotFound' => 'Arbejdsgangen blev ikke fundet.',
+    'EditWorkflow' => 'Rediger arbejdsgang: {$name}',
+    'OrganizationContextProfile' => 'Organisationskontekstprofil',
+    'AICtxAutoAcceptThreshold' => 'Hvad er din organisations automatiske acceptgrænse for risiko (et dollarbeløb eller en procentdel af ALE)?',
+    'AICtxGrcBudget' => 'Hvad er jeres årlige GRC/sikkerhedsbudget?',
+    'AICtxAuditorPerspective' => 'Fra hvis perspektiv bliver du primært revideret?',
+    'AICtxUnitCurrency' => 'Valuta ($)',
+    'AICtxUnitPercentOfAle' => 'Procent af ALE (%)',
+    'AICtxFrameworksInUse' => 'Rammer i brug i øjeblikket',
+    'AICtxNoFrameworksInUse' => 'Ingen aktive rammer fundet endnu. Tilføj rammer under Styring > Rammekortlægning.',
+    'AICtxFromYourData' => 'Fra dine data',
+    'AICtxAuthoritative' => 'Autoritativ',
+    'AICtxAppetiteNotSet' => 'Ikke indstillet',
+    'AICtxAppetiteManageLink' => 'Administrer i risikokonfiguration',
+    'AICapControlTestGeneration' => 'Generering af kontroltest',
+    'AICapControlTestGenerationDesc' => 'Udarbejder kladder til kontroltests til gennemgang ved hjælp af kontrollens framework-kortlægning, eksisterende tests og resultater af selvevaluering – intet oprettes, før du godkender det.',
+    'AICapSurfacedControlTestGeneration' => 'Overholdelse — Definer test',
+    'AIControlTestGenUnavailable' => 'TJENESTE IKKE TILGÆNGELIG: En administrator skal aktivere denne funktion i AI-indstillingerne.',
+    'AIControlTestGenInvalidId' => 'FORKERT ANMODNING: Et positivt kontrol-id er påkrævet.',
+    'AIControlTestGenNotFound' => 'IKKE FUNDET: Det angivne kontrolelement kunne ikke findes.',
+    'AIControlTestGenConflict' => 'KONFLIKT: Generering er allerede i kø for dette kontrolelement.',
+    'AIControlTestGenQueued' => 'ACCEPTERET: Generering af kontroltest sat i kø.',
+    'AIControlTestGenFailed' => 'INTERN SERVERFEJL: Kunne ikke generere kontroltest i kø.',
+    'AIControlTestGenCheckFailed' => 'FEJL: Kontrollen kunne ikke verificeres før køopsætning.',
+    'GenerateTestsWithAI' => 'Generer tests med AI',
+    'ShowAiSuggestedTests' => 'AI-foreslåede tests',
+    'AiSuggested' => 'AI foreslået',
+    'ReviewAndEdit' => 'Gennemgå og rediger',
+    'CreateSelected' => 'Opret valgte',
+    'TestCreatedFromSuggestion' => 'Test oprettet ud fra forslaget.',
+    'SuggestionDismissed' => 'Forslag afvist.',
+    'TestGenerationQueued' => 'Testgenerering sat i kø.',
+    'Generating' => 'Genererer…',
+    'SuggestionDismissFailed' => 'Testen blev oprettet, men dens AI-forslag kunne ikke afvises. Afvis den manuelt, hvis den forbliver.',
+    'AICtxAuditorBig4' => 'De fire store (ekstern)',
+    'AICtxAuditorBoutique' => 'Butik / regional (ekstern)',
+    'AICtxAuditorInternal' => 'Kun intern revision',
+    'AICtxAuditorSelfAssessed' => 'Selvvurderet',
+    'AICtxAuditorNotSure' => 'Ikke sikker',
+    'AICtxAppetiteCautious' => 'Forsigtig',
+    'AICtxAppetiteBalanced' => 'Balanceret',
+    'AICtxAppetiteAggressive' => 'Aggressiv',
+    'TestGenerationComplete' => 'AI-udarbejdede kontroltests er klar til gennemgang.',
+    'TestGenerationStillRunning' => 'Testgenereringen kører stadig; udkastene vil blive offentliggjort snart.',
+    'TestGenerationNoNew' => 'Generation færdig — ingen nye tests at foreslå for denne kontrol.',
+    'SearchEntities' => 'Søg enheder',
+    'SearchEntitiesPlaceholder' => 'Søg risici, kontroller, politikker, undtagelser…',
+    'ShowTypes' => 'Vis typer',
+    'Depth' => 'Dybde',
+    'Inspector' => 'Inspektør',
+    'Connections' => 'Forbindelser',
+    'NoConnectionsFound' => 'Der blev ikke fundet nogen forbindelser til den valgte enhed.',
+    'CouldNotLoadGraph' => 'Kunne ikke indlæse forbindelsesgrafen.',
+    'CouldNotSearchEntities' => 'Kunne ikke søge efter enheder.',
+    'ShowingTopNOfM' => 'Viser top {0} af {1}',
+    'RankedByMaturityGap' => 'Rangeret efter modenhedsgab',
+    'RankedByRiskScore' => 'Rangeret efter risikoscore',
+    'RankedByRecentFailure' => 'Rangeret efter seneste fiasko',
+    'RankedByReviewDate' => 'Rangeret efter næste anmeldelsesdato',
+    'RankedBySeverity' => 'Rangeret efter sværhedsgrad',
+    'RankedByName' => 'Rangeret efter navn',
+    'NodeTypeSelfAssessmentResult' => 'Resultat af selvevaluering',
+    'Relationship' => 'Forhold',
+    'Exception' => 'Undtagelse',
+    'DesiredMaturity' => 'Ønsket modenhed',
+    'ApprovalState' => 'Godkendelsesstatus',
+    'RelationshipOfType' => '{0} af {1}',
+    // Connectivity Explorer Inspector: labels for enrichment field keys
+    // (ai_context_enrich_fetch(), ai_context_enrich_vulnerabilities()) that
+    // fieldLabel() in connectivity-visualizer.js did not yet cover.
+    'LastDate' => 'Sidste dato',
+    'LastResultDate' => 'Dato for sidste resultat',
+    'PercentComplete' => 'Procent fuldført',
+    'AssessmentDate' => 'Vurderingsdato',
+    'NextDate' => 'Næste dato',
+    'Number' => 'Antal',
+    'Grouping' => 'Gruppering',
+    'Hidden' => 'Skjult',
+    'FirstFound' => 'Først fundet',
+    'LastFound' => 'Sidst fundet',
+    'Patchable' => 'Kan patches',
+    'Solution' => 'Løsning',
+    'Breadcrumb' => 'Brødkrumme',
+    'SelectANodeToInspect' => 'Vælg en node for at se dens detaljer.',
+    'HiddenUnreachableNodes' => '{0} node(r) skjult: ikke længere forbundet uden den/de skjulte type(r).',
+    // Connectivity Explorer canvas launchpad (Level-1 type tiles / Level-2
+    // browsable entity list) -- docs/superpowers/specs/2026-07-27-
+    // connectivity-explorer-launchpad.md
+    'BrowsableEntityTypes' => 'Gennemsebare enhedstyper',
+    'CountFloor' => '{0}+',
+    'NoBrowsableTypes' => 'Du har ikke tilladelse til at gennemse nogen enhedstyper.',
+    'AllTypes' => 'Alle typer',
+    'FilterEntitiesPlaceholder' => 'Filter…',
+    'NoMatchingEntities' => 'Ingen enheder matcher dit filter.',
+    'LoadMore' => 'Indlæs mere',
+    'Loading' => 'Indlæser…',
+    'CouldNotLoadEntityCounts' => 'Kunne ikke indlæse enhedsantal.',
+    'CouldNotLoadEntities' => 'Kunne ikke indlæse enheder.',
+    'ClearGraph' => 'Ryd graf',
+    // Connectivity Explorer node-type chip label for the 'audit' type. Not
+    // reused from 'TeamType_audit' (same English text, "Audit") -- that key
+    // is scoped to the Team Separation team-type picker, a different feature
+    // whose wording should be free to diverge from this one's.
+    'Audit' => 'Revision',
+    // Queued email send-failure notifications
+    'EmailSendFailedNotificationTitle' => 'E-maillevering mislykkedes',
+    'EmailSendFailedNotificationBody' => 'En eller flere e-mails i køen kunne ikke leveres. Tjek dine e-mailindstillinger, og se derefter Køovervågningen og serverloggen for at få flere oplysninger.',
+    'QuestionnaireShareInvalidEmailAddress' => 'Kan ikke dele spørgeskemaresultater med en kontaktperson, der ikke har en gyldig e-mailadresse.',
+    'AssessmentSendInvalidEmailAddress' => 'Vurderingen kan ikke sendes til en ugyldig e-mailadresse.',
+    'AssessmentSentTo' => 'Vurderingen blev sendt til "{$email}".',
+    'AssessmentNotSentNoValidRecipients' => 'Vurderingen blev ikke sendt — der blev ikke angivet nogen gyldig e-mailadresse.',
+    'AssessmentContactUnusableEmailNotificationTitle' => 'Spørgeskema ikke sendt',
+    'AssessmentContactUnusableEmailNotificationBody' => 'Spørgeskemaet "{$questionnaire}" kunne ikke sendes til "{$contact}", fordi kontakten ikke har en gyldig e-mailadresse registreret. Opdater kontaktpersonens post for at genoptage afsendelsen.',
+    'EmailFailureNotificationRetention' => 'Opbevaring af meddelelse om manglende e-maillevering',
+    'EmailFailureNotificationRetentionOutOfRange' => 'Opbevaringen af beskeder om manglende levering af e-mails skal være mellem {$min} og {$max} dage.',
+    'MailSettingsUpdatedSuccessfully' => 'Mailindstillingerne blev opdateret.',
+    // Questionnaire audit-trail entries for the API submit/draft paths (SR-1714).
+    // The token form credits the contact; an API caller is an authenticated
+    // SimpleRisk user acting on that contact's questionnaire, so both the
+    // contact and the acting user are named.
+    'QuestionnaireCompletedAuditLogViaApi' => 'Spørgeskemaet "{$questionnaire_name}" til kontakten "{$contact_name}" blev udfyldt via API\'en af brugeren "{$user_name}".',
+    'QuestionnaireDraftAuditLogViaApi' => 'Spørgeskemaet "{$questionnaire_name}" til kontakten "{$contact_name}" blev gemt som kladde via API\'en af brugeren "{$user_name}".',
+    // Bad-input response for the questionnaire risk-list endpoints, which
+    // previously reported a malformed questionnaire_id as a permission denial.
+    // Mirrors the existing 'MissingOrInvalidTrackingID'.
+    'MissingOrInvalidQuestionnaireID' => 'Manglende eller ugyldigt spørgeskema-ID.',
+    // POST /api/v2/assessments/questionnaire/result/file response messages.
+    // The `id` path deliberately returns QuestionIdCannotAcceptFile for every
+    // question-level rejection so a sequential tracking id cannot be used to
+    // probe questionnaire structure; the token path returns the specific reason.
+    'QuestionnaireResultNotFoundForTokenOrId' => 'IKKE FUNDET: Der blev ikke fundet et spørgeskemaresultat med det angivne token eller id',
+    'QuestionIdCannotAcceptFile' => 'FORKERT ANMODNING: question_id {$question_id} kan ikke acceptere en fil på dette spørgeskemaresultat',
+    'QuestionIdNotFoundInQuestionnaire' => 'FORKERT ANMODNING: question_id {$question_id} blev ikke fundet i dette spørgeskema',
+    'QuestionIdInMultipleTemplates' => 'FORKERT ANMODNING: spørgsmåls-id {$question_id} vises i flere skabeloner til dette spørgeskema',
+    'QuestionIdDoesNotAcceptFileUploads' => 'FORKERT ANMODNING: question_id {$question_id} accepterer ikke filuploads',
+    // The Statement of Applicability's two UNVERIFIED implementation states.
+    //
+    // They exist because "we have not checked" is not "it does not work", and an
+    // SoA is ATTESTED — printing "No" for an unverified control is a false
+    // statement against yourself, exactly as printing "Yes" without evidence is
+    // a false statement the other way. Before these keys existed both states
+    // fell through to 'No', which on a framework where most controls carry no
+    // test meant the whole document read "not implemented".
+    //
+    // They are two states rather than one because they are different findings
+    // with different owners: no test defined is a GOVERNANCE gap (nobody decided
+    // how to verify this control), never run is an OPERATIONAL one (somebody
+    // decided, and it was not done).
+    //
+    // WORDING. Both must be unmistakably distinct from the bare 'No' in the same
+    // column. 'Tests never run' rather than 'Never run': in a column headed
+    // "Implemented", the bare phrase reads for a moment as though the CONTROL
+    // was never run, when the subject is its tests.
+    //
+    // BOTH ARE PLURAL, and that is not only style. English takes the plural
+    // after "no" when the expected quantity could exceed one ("no results
+    // found"), and a control normally carries several tests — the singular
+    // implies only ever one was expected. 'Tests never run' is the stronger
+    // case: soa_implemented_for() returns `never_run` only when NOT ONE of the
+    // control's tests has produced a verdict, so the state is inherently about
+    // the whole set. With four tests defined and none run, the singular reads as
+    // one omission rather than a wholesale one.
+    'SoaImplementedNoTestDefined' => 'Ingen test defineret',
+    'SoaImplementedNeverRun' => 'Testene kører aldrig',
+
+    // The Implemented column's fallback for a token neither sink recognizes.
+    //
+    // DELIBERATELY NOT A VERDICT, and the reason this key exists at all. Both
+    // sinks previously ended in a fallthrough to 'No', so adding a state without
+    // adding its label printed a confident, wrong answer into a compliance
+    // document. Falling through to 'Yes' would be worse. The only safe failure
+    // mode is a value that states nothing about the control — a visible bug
+    // instead of a silent misstatement.
+    'SoaImplementedUnknown' => 'Status utilgængelig',
+    // How an APPLICABLE control's stored inclusion reason(s) join to its own
+    // freeform justification when it recorded both (spec §4). Reached ONLY when
+    // both halves exist — reasons alone print as the reason list, prose alone
+    // prints verbatim — so this string is punctuation and word order, not prose.
+    // It is a language key rather than a hardcoded separator because a locale
+    // that joins clauses with a colon, a full stop, or right-to-left ordering
+    // must be able to say so; both placeholders have to survive translation.
+    'SoaJustifiedByInclusionReasons' => '{reasons} — {narrative}',
+    // The Set applicability modal's reason field, which became a MULTI-select
+    // when reasons moved to a join table: a control is commonly included (or
+    // excluded) for more than one reason, and the singular 'Reason' the field
+    // used to reuse now under-describes it. 'Reason' is left alone rather than
+    // repointed -- the row drawer and the SoA still print exactly one joined
+    // value under it, and redefining a key changes every surface that reads it.
+    'ApplicabilityReasons' => 'Årsager',
+    // Said once, above a group of checkboxes, rather than implied by the widget.
+    // The old single <select> answered "how many may I pick?" by construction;
+    // a checkbox group does not, and a user who ticks one and stops has made the
+    // SoA less truthful than the one they meant to write.
+    'ApplicabilityReasonsHint' => 'Vælg alle relevante årsager.',
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // THE STATEMENT OF APPLICABILITY'S MARKERS AND ITS LEGEND (spec §1, §3).
+    // ─────────────────────────────────────────────────────────────────────────
+
+    // THE EVIDENCE COLUMN'S TWO ABSENCES, which are OPPOSITES.
+    //
+    // 'No evidence linked' is a FINDING: the control is in scope, is possibly
+    // claimed implemented, and nothing substantiates it. The em dash below is
+    // the other answer -- the control is excluded, so no evidence is expected
+    // and the absence is correct. Rendering both as an empty cell hides the
+    // first, which is the one an auditor circles.
+    'SoaNoEvidenceLinked' => 'Ingen beviser forbundet',
+    // PUNCTUATION, NOT PROSE -- the glyph the Evidence cell prints when nothing
+    // is expected. A language key rather than a hardcoded character for the same
+    // reason 'SoaJustifiedByInclusionReasons' is one: a locale that marks "not
+    // applicable" with a different dash, or with a word, must be able to say so.
+    'SoaEvidenceNotExpected' => '—',
+    // Whether the evidence a test DECLARED it requires actually arrived with the
+    // result. A stronger claim than a pass/fail alone, and few SoA tools make it.
+
+    // THE REMEDIATION BLOCK -- what is being done about a control that reads
+    // Partial or No. The SoA points AT the risk treatment plan (clause 6.1.3(e))
+    // rather than becoming one.
+    'SoaRemediation' => 'Afhjælpning',
+    // THE MOST SERIOUS THING THAT BLOCK CAN FIND: the test failed and it is
+    // linked to no risk, so no treatment plan traces back to it. Dropping such a
+    // row for want of a risk to join to would render it as a blank cell, which
+    // reads as "nothing to report".
+    'SoaRemediationUnplanned' => 'Ingen risiko forbundet',
+
+    // THE LEGEND. Required in both variants and every export format, because six
+    // implementation states plus three markers is more nuanced than the
+    // Yes/No/Partial an auditor expects, and an undefined vocabulary invites the
+    // reader to guess unfavourably.
+    'SoaLegendTitle' => 'Sådan læser du denne udtalelse',
+    'SoaLegendYes' => 'Alle de test, der er defineret for dette kontrolelement, bestod, da det sidst blev kørt.',
+    'SoaLegendPartial' => 'Kontroltestene er uenige: mindst én bestod, og mindst én dumpede eller gav ingen konklusion.',
+    'SoaLegendNo' => 'Ingen test af denne kontrol bestod, da den sidst blev kørt, og mindst én mislykkedes.',
+    // The two unverified states are DIFFERENT FINDINGS WITH DIFFERENT OWNERS,
+    // and the labels alone do not quite carry that -- so the legend spells it
+    // out. This is the distinction the whole six-state set exists for.
+    'SoaLegendNoTestDefined' => 'Der er ikke defineret nogen test for denne kontrol, så dens funktion er aldrig blevet verificeret. Dette er ikke en påstand om, at kontrollen mangler eller fejler – kun at denne påstand ikke demonstrerer det. Et styringsgab: ingen har besluttet, hvordan denne kontrol kontrolleres.',
+    'SoaLegendNeverRun' => 'Der findes tests til denne kontrol, men ingen af dem er nogensinde blevet kørt, så dens funktion demonstreres ikke her. Dette er ikke en påstand om, at kontrollen mangler eller fejler. En operationel mangel: kontrollerne blev besluttet og er ikke blevet udført.',
+    'SoaLegendNotApplicable' => 'Kontrollen er undtaget fra dette frameworks anvendelsesområde, så den har ingen implementeringsstatus.',
+    // The one most in need of explaining: with nothing to define it, this reads
+    // as an admission about the control rather than as what it is.
+    'SoaLegendUnknown' => 'SimpleRisk kunne ikke mærke den registrerede status, så implementeringen demonstreres ikke her. Dette er en fejl i softwaren og siger ingenting om kontrollen -- hverken at den virker eller at den ikke gør.',
+    'SoaLegendOverdue' => 'Det viste resultat står stadig, men mindst én af de bagvedliggende tests har overskredet sin egen næste testdato. Beviserne er forældede.',
+    'SoaLegendNoEvidence' => 'Kontrollen er inden for omfanget, og der er ikke blevet forbundet noget, der underbygger den: intet bekræftet dokument og ingen test, der gav et resultat.',
+    'SoaLegendEvidenceNotExpected' => 'Der forventes ingen beviser, da kontrollen er udelukket fra anvendelsesområdet.',
+    'SoaLegendUnplanned' => 'En fejlende test, der ikke er forbundet med nogen risiko, så ingen behandlingsplan kan spores tilbage til den.',
+
+    // THE TWO VARIANTS, chosen on the launcher before the document is generated
+    // and PRINTED ON ITS COVER. A Statement of Applicability is a controlled
+    // document: two of them for the same framework that show different things,
+    // with nothing on either to say which is which, is a document nobody can
+    // file.
+
+    // THE THREE DETAILED-ONLY COLUMNS.
+    // What those three columns say instead of nothing. A blank cell in an audit
+    // document reads as a formatting artefact; "Not recorded" is a fact the
+    // reader can act on.
+
+    // THE BROWSER PRINT ROUTE. Beside the two downloads on the launcher, and the
+    // only PDF route for a framework too large for the server-side writer.
+    // Shown in place of "Download as PDF" when the chosen framework is above
+    // SOA_EXPORT_PDF_MAX_CONTROLS. The affordance is absent rather than
+    // disabled, so this sentence is what tells the reader the absence is
+    // deliberate and what to do instead.
+    // The footer of every printed page. {page} and {pages} are substituted with
+    // the browser's own page counters, so the two tokens must both survive
+    // translation -- but their ORDER and the words around them are the
+    // translator's, which is why this is one string and not "Page" + "of".
+    'SoaPrintPageNumber' => 'Side {page} af {pages}',
+
+    // THE ONE PDF AFFORDANCE on the statement-of-applicability launcher, beside
+    // 'DownloadAsXLSX'. It replaces the pair that used to sit there --
+    // 'SoaPrintToPdf' and 'DownloadAsPDF' -- because a Statement of Applicability
+    // is a controlled document and two PDF buttons let two people hand an auditor
+    // two different-looking PDFs of the same statement.
+    //
+    // JUST "PDF", AND DELIBERATELY SO. Below SOA_EXPORT_PDF_MAX_CONTROLS the
+    // button downloads a server-rendered file and above it the browser writes
+    // one, but that is a mechanism and not a choice the reader has to make. A
+    // label that named the mechanism ("Print to PDF" / "Download as PDF") would
+    // put the difference back in front of them.
+    //
+    // 'SoaPrintToPdf' and 'SoaPdfTooLargeHint' above are LEFT IN PLACE with no
+    // caller: 39 locales carry them, and this file is append-only precisely so a
+    // customer running a custom lang.<locale>.php can reconcile it with a tail
+    // diff.
+    'SoaPdf' => 'PDF-fil',
+
+    // THE OTHER TWO ACTIONS IN THAT SAME ROW, shortened to match it.
+    //
+    // The row read "Open in browser" / "Download as XLSX" / "PDF", which put a
+    // verb on two of three actions and made the odd one out look like an
+    // abbreviation of something longer. The row's own context supplies the
+    // verbs -- these are the things you can DO with the framework you just
+    // chose -- so they carried no information and cost the reader a comparison.
+    // 'SoaPdf' is short because naming its mechanism would be dishonest (above
+    // SOA_EXPORT_PDF_MAX_CONTROLS it opens a print view rather than downloading
+    // a file), and the shortest of the three is the one that has to be right.
+    //
+    // NOT the generic 'Open' at line ~1021: that key lives among 'Mitigated' /
+    // 'Reviewed' and is the risk-status ADJECTIVE -- fr "Ouvert", de "Offen" --
+    // so reusing it would label a button with a state rather than an action in
+    // most of the 39 locales.
+    //
+    // 'SoaOpenInBrowser' above is LEFT IN PLACE with no caller, for the same
+    // reason 'SoaPrintToPdf' is: the locales carry it and this file is
+    // append-only so a customer's custom lang.<locale>.php reconciles with a
+    // tail diff. 'DownloadAsXLSX' keeps a caller either way -- the Assessments
+    // Extra's questionnaire results still use it.
+    'SoaOpen' => 'Åbne',
+    'SoaXlsx' => 'XLSX',
+    // ---- The locked-affordance treatment -------------------------------------
+    // SHARED COPY, not chooser copy. SimpleRisk now SHOWS what's possible and
+    // MARKS what's out of reach because it isn't licensed, rather than hiding
+    // it -- so these strings appear both as a menu row's explanation (Define
+    // Control Frameworks' "+ Add framework" chooser) and beside a disabled
+    // toolbar button (the Statement of Applicability's PDF/XLSX exports). Each
+    // one is worded to read correctly in BOTH places, which is why none of them
+    // starts with "This route" or "This button".
+    //
+    // 'LockedAffordanceBadge' duplicates the English of 'AICapStateLocked'
+    // rather than reusing it: that key sits in the AI Capabilities Catalog's
+    // block and is scoped to a capability's state, and translators work from
+    // the key's neighbourhood as much as from its value.
+    'LockedAffordanceBadge' => 'Låst',
+    // The two SCF steps before it can be switched on. admin/register.php serves
+    // both -- it is the registration form AND where the per-Extra download
+    // buttons render -- so these differ in what they say, not where they go.
+    'UnlockRegisterInstanceNote' => 'Registrer denne instans for at få Secure Controls Framework.',
+    'UnlockRegisterInstanceLink' => 'Registrer SimpleRisk',
+    'UnlockDownloadScfNote' => 'Denne instans er registreret. Download Secure Controls Framework for at bruge den.',
+    'UnlockDownloadScfLink' => 'Download det',
+    'UnlockActivateScfNote' => 'Secure Controls Framework er downloadet, men ikke aktiveret.',
+    'UnlockActivateScfLink' => 'Tænd den',
+    // Import-Export is a paid Extra, so "not installed" is an upsell rather
+    // than a registration prompt. Deliberately a bare capability sentence: it
+    // has to sit under a menu row and next to an export button equally well.
+    'RequiresImportExportExtra' => 'Kræver import-eksport-ekstraudstyret.',
+    'UnlockImportExportLink' => 'Se hvad det tilføjer',
+    'UnlockActivateImportExportNote' => 'Import-Export Extra er installeret, men ikke aktiveret.',
+    'UnlockActivateImportExportLink' => 'Tænd den',
+    // Shown instead of any of the above to a user who is not an administrator:
+    // every unlock step lives on a check_admin page, so they get the half that
+    // is useful to them -- that the capability exists, and who to ask -- and no
+    // link that would only bounce them.
+    'UnlockNeedsAdministrator' => 'En administrator kan konfigurere dette.',
+    // API date parsing. {$field} is the request field name (next_date, last_date,
+    // test_date); {$format} is this instance's configured display date format.
+    'InvalidSubmittedDate' => 'Værdien {$field} er ikke en gyldig dato. Indsend den som ÅÅÅÅ-MM-DD eller i dette tilfælde datoformatet ({$format}).',
+    // Companion to InvalidSubmittedDate, for a value that matches the expected
+    // shape but names a day that does not exist (February 31st, month 13).
+    // Saying "submit it as MM/DD/YYYY" there would repeat what the caller did.
+    // {$value} is the submitted value, echoed back truncated.
+    'ImpossibleSubmittedDate' => 'Værdien {$field} "{$value}" er ikke en rigtig kalenderdato. Kontroller dagen og måneden — denne instans læser datoer som {$format}.',
+    // The Statement of Applicability's merged verification column. Replaces three
+    // separate headings (Implemented / Evidence / Review Cadence) with the one
+    // question all three answer: how do we know this control is working?
+    // The two appendices printed after the register. Justifications are truncated
+    // in the row and given in full here; remediation plans live here rather than
+    // in the table because ISO 27001 keeps the SoA (6.1.3(d)) and the risk
+    // treatment plan (6.1.3(e)) as separate artifacts.
+    'SoaAppendixJustifications' => 'Bilag A — Begrundelser',
+    'SoaAppendixRemediation' => 'Bilag R — Afhjælpningsplaner',
+    // Appendix E carries the WORDING of each test's evidence requirement. The row
+    // keeps only whether that evidence arrived, which is the finding; the wording
+    // is reference material and was the bulkiest thing in the Verification cell.
+    'SoaRequiredEvidenceSupplied' => 'krævet dokumentation fremlagt',
+    'SoaRequiredEvidenceNotSupplied' => 'krævet dokumentation ikke fremlagt',
+    // The one scheduling fact the SoA prints: the soonest date any of a control's
+    // tests is next due. Replaces a per-test "Manual — Next Test Date: ..." line,
+    // whose schedule type belongs on Define Tests and whose date is now on each
+    // test's own evidence bullet.
+    // The two dates on a test's evidence bullet. LABELLED, because two bare dates
+    // side by side are ambiguous in a way one is not.
+    // SINGULAR document-type labels for one piece of design evidence. SimpleRisk's
+    // existing keys are the plural tab names, which would read "Access Control
+    // Standard (Standards)".
+    'SoaEvidencePolicy' => 'Politik',
+    'SoaEvidenceStandard' => 'Standard',
+    'SoaEvidenceProcedure' => 'Procedure',
+    'SoaEvidenceGuideline' => 'Retningslinje',
+    // ── The legend, grouped by column (SOA_LEGEND_GROUPS, includes/soa.php) ──
+    // The Applicability column's three values. These were never in the legend,
+    // so an auditor met "Inherited" -- a word with no meaning outside SimpleRisk
+    // -- with nothing to look it up in.
+    'SoaLegendApplicable' => 'Kontrollen er omfattet af denne ramme, og organisationen er ansvarlig for at drive den.',
+    // DISTINCT from 'SoaLegendNotApplicable', which defines the "N/A" that appears
+    // in the Implementation Status column. This one is the DECISION to exclude;
+    // that one is the consequence for the status.
+    'SoaLegendApplicabilityNotApplicable' => 'Kontrollen er blevet udeladt fra dette frameworks anvendelsesområde. Begrundelseskolonnen angiver hvorfor, og hvem der besluttede.',
+    'SoaLegendInherited' => 'Kontrollen er inden for rammerne af licensen, men den drives af en tredjepart – en cloududbyder, en moderorganisation, en outsourcet funktion – snarere end af denne organisation. Udbyderen er navngivet ved siden af begrundelsen.',
+    // The Evidence column's four bullet glyphs. Load-bearing since the visible
+    // result word was dropped from pass and fail bullets, and until now defined
+    // nowhere at all.
+    'SoaLegendEvidencePass' => 'En test af denne kontrol registrerede en beståelse sidste gang den kørte. Datoen ved siden af er, hvornår den kørte.',
+    'SoaLegendEvidenceFail' => 'En test af denne kontrol registrerede en fejl sidste gang den kørte. Bilag R indeholder behandlingsplanen, hvor en sådan findes.',
+    'SoaLegendEvidenceInconclusive' => 'En test af denne kontrol blev udført og nåede ikke frem til nogen konklusion. Det samme mærke bruges til et resultat, som dette dokument ikke genkender, og i så fald udskrives selve resultatet ved siden af.',
+    // The TERM beside the § glyph. Not a document type -- the four types
+    // (Policy, Standard, Procedure, Guideline) are printed per item; this names
+    // the CATEGORY of evidence a document is.
+    'SoaEvidenceDesignDocument' => 'Designdokument',
+    'SoaLegendEvidenceDocument' => 'Et styringsdokument bekræftet som bevis for denne kontrol – dens design snarere end dens funktion. Et dokument bærer ingen konklusion, hvorfor det ikke er markeret med et flueben.',
+    // The XLSX export's first worksheet tab. The workbook's other four tabs reuse
+    // headings that already exist ('How to read this statement', 'Statement of
+    // Applicability', and the two appendix headings); the cover had no name of its
+    // own because it used to be the top of a single sheet.
+    //
+    // KEEP IT SHORT. Excel caps a worksheet name at 31 characters and
+    // soa_export_sheet_name() truncates rather than failing the export, so a long
+    // translation loses its tail on the tab.
+    'SoaSheetCover' => 'Forside',
+
+    'SearchFrameworks' => 'Søg i rammer',
+    'SearchControls' => 'Søg i kontroller',
+    'AddFramework' => 'Tilføj ramme',
+    'Applicability' => 'Anvendelighed',
+    'AnyFamily' => 'Enhver familie',
+    'AnyOwner' => 'Enhver ejer',
+    'AnyClass' => 'Enhver klasse',
+    'AnyPhase' => 'Enhver fase',
+    'AnyPriority' => 'Enhver prioritet',
+    'AnyType' => 'Enhver type',
+    'AnyStatus' => 'Enhver status',
+    'SelectAllN' => 'Vælg alle {n}',
+    'Classification' => 'Klassifikation',
+    'Placement' => 'Placering',
+    'OwnershipAndMaturity' => 'Ejerskab og modenhed',
+    'MappingsAndGuidance' => 'Kortlægninger og vejledning',
+    'DeleteFrameworkTitle' => 'Slet rammeværket \'{$name}\'?',
+    'DeleteControlTitle' => 'Slet kontrol \'{$name}\'?',
+    'DeleteControlsTitle' => 'Slet {$n} kontrolelementer?',
+    'DeleteCannotBeUndone' => 'Dette kan ikke fortrydes.',
+    'DeleteFrameworkConsequence' => 'Dette fjerner frameworket og alle dets kontroltilknytninger.',
+    'DeleteControlConsequence' => 'Dette fjerner kontrollen fra alle frameworks, den er knyttet til.',
+    'DeleteControlsConsequence' => 'Dette fjerner hvert markeret kontrolelement fra hvert framework, det er knyttet til.',
+    // Task 9: empty states (design-system.md §10) -- the four intents on
+    // Define Control Frameworks. Reuses existing keys where the copy already
+    // fits exactly (AddControl, AddFramework, ClearFilters, Retry,
+    // NoControlsDefinedYet, NoTestsMatchFiltersBody, CouldNotLoadTestsBody,
+    // RegisterYourInstance, GoToSCF, ImportExportExtra) -- only the strings
+    // with no existing match are added below.
+    'NoControlsMatch' => 'Ingen kontrolelementer matcher dine filtre',
+    'CouldNotLoadControls' => 'Kunne ikke indlæse kontrolelementerne',
+    'ControlsYouAddWillAppearHere' => 'Kontrolelementer, du tilføjer, vises her.',
+    'NoFrameworksYet' => 'Ingen rammer endnu',
+    'FrameworksYouAddWillAppearHere' => 'Frameworks, du tilføjer eller importerer, vises her.',
+    'CouldNotLoadFrameworks' => 'Kunne ikke indlæse frameworks',
+    // Task 9 review fix: the framework rail's own "no results" intent, shown
+    // when the user has explicitly switched the status dropdown away from
+    // Active and that status has nothing (distinct from "No frameworks yet",
+    // which is reserved for the default Active status where the endpoint
+    // can't yet tell "no frameworks at all" from "none active").
+    'NoFrameworksMatchFilter' => 'Ingen rammer matcher denne status',
+    'ViewActiveFrameworks' => 'Se aktive frameworks',
+    // Task 10: Define Control Frameworks insights band (governance/index.php)
+    // -- KPI tile labels/subtitles. 'Controls', 'Pass', 'Fail', 'NotTested'
+    // already exist and are reused as label keys for their tiles.
+    'BelowTarget' => 'Under målet',
+    'Excluded' => 'Ekskluderet',
+    'FwInScope' => 'Inden for rammerne',
+    'FwLastTestPassed' => 'Sidste bestået test',
+    'FwLastTestFailed' => 'Sidste test mislykkedes',
+    'FwNoEvidence' => 'Gældende, ingen beviser',
+    'FwMaturityUnderDesired' => 'Modenhed under ønsket',
+    'FwScopeAFramework' => 'Afgrænse et rammeværk for at beslutte',
+    'FwNotApplicableOrInherited' => 'Ikke relevant eller arvet',
+    // Task 22: framework rail search (governance/index.php's #sr-fw-search,
+    // wired client-side in governance-frameworks.js). Reuses the shipped
+    // "no results" empty-state tile (#sr-fw-filtered, Task 9) rather than
+    // inventing a fourth rail empty state -- only the title and action swap
+    // depending on whether a status filter or a search narrowed the list to
+    // nothing; NoTestsMatchFiltersBody already covers both as body copy.
+    'NoFrameworksMatchSearch' => 'Ingen rammer matcher din søgning',
+    'ClearSearch' => 'Ryd søgning',
+    // Task 24: Clone control pre-fills the Add Control modal from the source
+    // control (governance-frameworks.js's openControlForClone()) rather than
+    // creating a duplicate outright, so the modal needs to say plainly which
+    // control it was cloned from -- the reviewer's core complaint about an
+    // earlier one-click version of this feature was not knowing what was
+    // cloned. {$name} follows the same client-side formatTemplate()
+    // substitution ShowingXToYOfZ/NSelected already use on this page.
+    'ClonedFromControlNotice' => 'Klonet fra "{$name}". Gennemgå felterne nedenfor, og gem derefter.',
+    // Task 24 review follow-up: the banner alone left the modal titled "New
+    // Control" over pre-populated fields -- "it doesn't prompt or anything
+    // so the user doesn't know what was cloned" (Josh) -- which reads as a
+    // bug, not a feature. Retitling #control--add-title to this (governance-
+    // frameworks.js's show.bs.modal delegate for #control--add) makes the
+    // clone unambiguous at a glance; NewControl is restored for a plain add.
+    'CloneOfControlTitle' => 'Klon af "{$name}"',
+    // Task 27: the framework rail's SCF-origin chip (governance-frameworks.js's
+    // railRow()) -- shown only for frameworks created via the ComplianceForge
+    // SCF Extra's authoritative-source import (get_scf_origin_framework_ids(),
+    // includes/governance.php). SCF is the badge text itself; ScfOriginHint is
+    // its title/tooltip.
+    'SCF' => 'SCF',
+    'ScfOriginHint' => 'Fra Secure Controls Framework (SCF)',
+    // Task 34: the Maturity filter facet's placeholder on the Define Control
+    // Frameworks filter sheet (governance-frameworks.js's ensureFilterSheet()),
+    // matching the AnyFamily/AnyOwner/AnyClass/... set above. The facet's three
+    // OPTIONS reuse the existing BelowMaturity/AtMaturity/AboveMaturity keys --
+    // the same labels the governance dashboard's maturity-gap widgets already
+    // carry -- and the column chip renders those same three strings, so the
+    // filter and the cell can never read differently.
+    'AnyMaturity' => 'Enhver modenhed',
+    // Task 46: accessible name for the control table's pager landmark
+    // (governance-frameworks.js's renderPager()). The pager's own buttons
+    // reuse the existing Previous/Next keys Define Tests' pager already
+    // carries; only the <nav> label is new, and it names WHICH table's pager
+    // it is because the Define Control Frameworks page has two lists on it.
+    'ControlsPagination' => 'Kontrollerer paginering',
+    // Task 14: the Applicability column's state chip (governance-frameworks.js's
+    // renderApplicability()), the matching filter facet (its three option labels
+    // reuse these same three keys) and its "Any applicability" placeholder.
+    //
+    // The three states are PREFIXED rather than named 'Applicable'/
+    // 'NotApplicable'/'Inherited' because 'NotApplicable' already exists above
+    // as the ABBREVIATION 'N/A' -- the self-assessment answer chip and three
+    // reporting charts render it -- and redefining that key to the spelled-out
+    // phrase this column needs would silently change all four of those
+    // surfaces. The prefix also keeps the trio recognisable as one family.
+    //
+    // The column HEADER and the facet's accessible name reuse the existing
+    // 'Applicability' key, and the drawer's record reuses 'Reason', 'Provider'
+    // and 'Justification' -- all four already carry exactly the right string.
+    'ApplicabilityApplicable' => 'Gældende',
+    'ApplicabilityNotApplicable' => 'Ikke relevant',
+    'ApplicabilityInherited' => 'Arvet',
+    'AnyApplicability' => 'Enhver anvendelighed',
+    // The drawer's applicability record: who recorded the decision and when.
+    // Both are attribution for an audited decision a customer may have to
+    // defend years later, which is why the drawer names them at all.
+    'ApplicabilityDecidedBy' => 'Besluttet af',
+    'ApplicabilityDecidedOn' => 'Besluttet på',
+    // The framework-level Statement of Applicability card in the Add/Edit
+    // framework modals (display_framework_soa_card(), includes/governance.php).
+    // These two fields are what ISO/IEC 27001:2022 clause 6.1.3(d) needs on an
+    // SoA cover: the scope the framework is certified against, and how inclusion
+    // was determined for the controls that are simply applicable.
+    //
+    // 'IsmsScopeStatement' rather than a bare 'ScopeStatement' because "scope"
+    // is already overloaded across SimpleRisk (assessment scope, audit scope,
+    // risk scope); the ISMS prefix is what an ISO practitioner calls this exact
+    // field and keeps it from being reused for an unrelated one.
+    'StatementOfApplicability' => 'Erklæring om anvendelighed',
+    'IsmsScopeStatement' => 'Omfangserklæring',
+    'IsmsScopeStatementHint' => 'Det omfang, som dette framework er certificeret i forhold til. Fremgår af SoA-forsiden.',
+    'DefaultInclusionJustification' => 'Standardbegrundelse for inkludering',
+    'DefaultInclusionJustificationHint' => 'Bruges til relevante kontroller uden tilknyttede risici. Navngiv drivkraften, ikke rammeværket.',
+    // THE DEFAULT SENTENCE, in all three of its roles: the create form seeds the
+    // textarea with it, the Edit form shows it as a placeholder, and
+    // soa_framework_default_justification() (includes/soa.php) substitutes it at
+    // read time for a framework that has none. One key, because a reader must not
+    // be able to tell a stored default from a fallen-back one, and because three
+    // keys holding the same sentence is three chances for a translator to make
+    // them disagree. The name predates the seeding decision (Task 67) and is kept
+    // rather than churned through Crowdin for 39 locales.
+    //
+    // It names the DRIVER (the risk assessment) rather than the framework:
+    // "included because it is part of this framework" is circular, and ISO 6.1.3
+    // derives controls from risk treatment, using Annex A afterwards only as a
+    // completeness cross-check.
+    //
+    // It was a placeholder ONLY until Task 67, so that an unreviewed sentence
+    // could not reach a customer's SoA by inaction. Measured, that produced the
+    // opposite failure: 19 of 20 frameworks left the field NULL and the SoA's
+    // Justification column came out BLANK for every applicable control with no
+    // linked risks -- the finding an SoA is most often failed on, and one a
+    // boilerplate sentence does not attract.
+    'DefaultInclusionJustificationPlaceholder' => 'Bestemmes af organisationens risikovurdering for informationssikkerhed og bevares som en nødvendig kontrol.',
+    // Task 15: bulk-setting applicability from the control table's selection bar
+    // (#applicability--set, governance/index.php + governance-frameworks.js).
+    //
+    // The action's own label and the modal's one section. 'Applicability',
+    // 'Reason', 'Provider', 'Justification', 'Save' and 'Cancel' already exist
+    // and are reused; only the strings with no existing home are added here.
+    'SetApplicability' => 'Angiv anvendelighed',
+    'ApplicabilityDecision' => 'Afgørelse',
+    // The amber scope note, in two sentences the page assembles separately
+    // because they answer two different questions: WHICH framework the decision
+    // is scoped to, and WHICH controls are about to receive it. The second one
+    // has two spellings, because the header checkbox selects the current PAGE
+    // while "Select all N" escalates to the whole filtered result set -- the two
+    // genuinely differ once the table pages, and a note that blurred them would
+    // let the user write 1,535 decisions believing they had written 25.
+    'ApplicabilityScopeNote' => 'Denne beslutning gælder kun inden for "{$framework}". Den samme kontrol kan forblive gældende i et andet framework.',
+    'ApplicabilityAppliesToSelected' => 'Det vil blive registreret mod den/de {$n} kontrol(er), der er valgt på denne side.',
+    'ApplicabilityAppliesToAllFiltered' => 'Det vil blive registreret mod alle {$n} kontrol(er), der matcher de aktuelle filtre, inklusive dem på andre sider.',
+    // Per-state hints under the segmented control. The "applicable" one is the
+    // load-bearing sentence of the whole modal, and the SoA audit-readiness work
+    // rewrote it: an applicable control MAY now carry its own reasons and
+    // justification (ISO/IEC 27001 clause 6.1.3(d) asks for one per control, for
+    // inclusion as much as for exclusion), and leaving both empty is what falls
+    // back to the framework's default inclusion justification. The old sentence
+    // -- "this removes any recorded decision. No justification is needed." --
+    // is now false in both halves.
+    'ApplicabilityApplicableHint' => 'Inden for rammens anvendelsesområde. En årsag og en begrundelse er valgfrie; hvis begge efterlades tomme, bruges rammens standardbegrundelse for inkludering.',
+    'ApplicabilityNotApplicableHint' => 'En kontrol er udelukket fra denne rammes anvendelsesområde. Både en begrundelse og en skriftlig begrundelse er påkrævet.',
+    'ApplicabilityInheritedHint' => 'En anden udfører denne kontrol på dine vegne. Navngiv dem, og fortæl hvad de gør.',
+    'ApplicabilityNarrativeHint' => 'Fremgår af erklæringen om anvendelighed. Skriv, hvad en revisor skal bruge for at acceptere afgørelsen.',
+    'ApplicabilityProviderHint' => 'Den organisation, der udfører kontrollen: en cloududbyder, en administreret tjeneste, et moderselskab.',
+    'ChooseAReason' => 'Vælg en grund',
+    'ApplicabilityNoReason' => 'Ingen grund',
+    // Result toasts. Both interpolate a COUNT taken from the API response and
+    // nothing else -- no submitted text is ever reflected into a toast, which
+    // toastr renders as HTML.
+    'ApplicabilitySetResult' => 'Anvendelsesmulighed opdateret for {$n} kontrol(er).',
+    'ApplicabilityClearResult' => 'Anvendelsesmulighed nulstillet til gældende for {$n} kontrol(er).',
+    // Bulk control delete (Task 54, corrected Task 55). Deleting a control is
+    // final either way the delete engine implements it: a control with test
+    // history is soft-deleted (framework_controls.deleted = 1) to keep test
+    // history intact, a control with no tests is removed outright -- but
+    // nothing anywhere flips that flag back, so from the user's side there is
+    // no "kept" case, only "deleted, and its test history survives for audit
+    // purposes." Every sentence therefore leads with the same irreversible
+    // warning; the only thing that varies is whether an audit-history clause
+    // is appended, and that clause is omitted entirely rather than printed
+    // with a count of zero -- "0 are retained for audit history" reads as a
+    // warning about something that is not going to happen, and on a delete
+    // confirmation that is exactly the kind of noise that trains people to
+    // stop reading. Every {$...} is a count from the API response; no user
+    // text is ever interpolated, which matters because toastr renders HTML.
+    'DeleteControlsPreviewChecking' => 'Tjekker hvad der vil blive slettet...',
+    'DeleteControlsPreviewSplit' => '{$n} kontrol(er) vil blive slettet. Dette kan ikke fortrydes. Testresultater for {$m} af dem gemmes til revisionshistorikken.',
+    'DeleteControlsPreviewKeptOnly' => 'Alle {$n} kontrol(er) vil blive slettet. Dette kan ikke fortrydes. Testresultaterne gemmes til revisionshistorikken.',
+    'DeleteControlsPreviewRemovedOnly' => '{$n} kontrol(er) vil blive slettet. Dette kan ikke fortrydes.',
+    'DeleteControlsPreviewNone' => 'Intet at slette: den/de valgte kontrol(er) findes ikke længere.',
+    'ControlsDeletedResult' => '{$n} kontrol(er) slettet.',
+
+    // The Add/Edit framework modal's Status field. The label reuses the existing
+    // 'Status' key -- the same word the rail's Active/Inactive/All filter already
+    // uses -- so only the explanatory hint is new. It says the two things a user
+    // cannot see from the control itself: that Inactive is the NON-destructive way
+    // to retire a framework (unlike Delete, which cannot be undone), and that the
+    // change cascades through the hierarchy, which is what update_framework_status()
+    // has always done and is genuinely surprising when a parent is deactivated.
+    'FrameworkStatusHint' => 'Inaktive frameworks beholder alle deres kontrolelementer og tilknytninger, men er skjult fra standardlisten over frameworks og udeladt af styringsdashboardet. Deaktivering af et framework deaktiverer også alle underliggende frameworks; aktivering af et framework aktiverer også dets overordnede.',
+
+    // Task 60: the same #applicability--set modal, opened from ONE control's row
+    // action instead of the selection bulk bar. The button's own label reuses
+    // 'SetApplicability'; these two exist because the modal now has to say which
+    // of the two it is acting on, and both spellings must be unambiguous.
+    //
+    // The title names the specific object (design-system.md §8) and the note
+    // says "only", because the dangerous reading is the silent one: with rows
+    // ticked -- or with "Select all N filtered" in force -- a modal that said
+    // nothing would let a click the user believed applied to one row be read as
+    // applying to every control in the framework. Naming the control in both
+    // places is what makes the narrower scope visible rather than assumed.
+    // Corrected in Task 63. This spelling used to end "...only, whatever else is
+    // selected", which was printed on every row-action open whether or not
+    // anything else WAS selected -- a dangling absolute with no antecedent, so
+    // it read as a sentence that had been cut off. It is now the plain form, and
+    // the reassurance about a competing selection moved to
+    // 'ApplicabilityAppliesToControlNotSelection' below, which is printed only
+    // when there is a competing selection to reassure anyone about.
+    'SetApplicabilityForControl' => 'Angiv anvendelighed: {$name}',
+    'ApplicabilityAppliesToControl' => 'Den vil kun blive optaget mod "{$name}".',
+
+    // Task 17: the Statement of Applicability report itself
+    // (reports/statement_of_applicability.php + pages/statement-of-applicability.js),
+    // the document ISO/IEC 27001:2022 clause 6.1.3(d) asks for and the one every
+    // applicability decision recorded on the Define Control Frameworks page
+    // exists to produce.
+    //
+    // 'StatementOfApplicability' already exists above (the framework modal's SoA
+    // card) and is reused for the report's own title, as are 'IsmsScopeStatement',
+    // 'DefaultInclusionJustification', the three 'Applicability*' state labels,
+    // 'ApplicabilityDecidedBy'/'DecidedOn', and the plain 'Framework',
+    // 'ControlNumber', 'ControlName', 'Justification', 'Evidence', 'Reason',
+    // 'Provider', 'Total', 'Controls' and 'Export' keys. Only strings with no
+    // existing home are added here.
+    'StatementOfApplicabilityDesc' => 'For ét framework: hver kontrol, om den er relevant, hvorfor den blev inkluderet eller udeladt, og om den er implementeret.',
+    // The header button on Define Control Frameworks. The verb is "generate"
+    // rather than "view" because the document is assembled at the moment it is
+    // asked for -- there is no stored SoA that could be out of date.
+    'GenerateStatementOfApplicability' => 'Generer en anvendelighedserklæring',
+
+    // The Justification column's SECOND resolution step, and the reason an SoA
+    // built here beats the spreadsheet it replaces: the risks that drove the
+    // control are already recorded against it, so nobody retypes them and they
+    // cannot go stale. {risks} is substituted with the displayed risk ids.
+    //
+    // Phrased to match clause 6.1.3, which derives controls from risk treatment
+    // and uses Annex A afterwards only as a completeness cross-check -- the same
+    // reasoning behind 'DefaultInclusionJustificationPlaceholder' above.
+    'SoaJustifiedByRiskAssessment' => 'Bestemt af organisationens risikovurdering for informationssikkerhed. Tilknyttede risici: {risks}.',
+
+    // The Implemented column. DERIVED from maturity and the last test result on
+    // every read, never stored, so it cannot drift out of sync with the control.
+    // 'Yes' and 'No' already exist and are reused; only the middle value and the
+    // header need keys of their own. An excluded control's cell reuses the
+    // existing 'NotApplicable' ('N/A'), which is exactly the right abbreviation
+    // in a dense table.
+    'SoaImplemented' => 'Implementeret',
+    'SoaImplementedPartial' => 'Delvis',
+
+    // The cover block.
+    'SoaGeneratedOn' => 'Genereret den',
+    'SoaExcludedCount' => 'Ekskluderet',
+
+    // The prompt shown when the framework has never been given the two cover
+    // fields. It PROMPTS rather than silently printing a blank cover: an SoA
+    // whose scope is empty is the one defect an auditor spots first, and the
+    // moment somebody opens the report is the only moment those fields matter.
+    // Both spellings of empty (never set, and deliberately cleared) prompt --
+    // from a reader's point of view there is nothing to print either way.
+    //
+    // The inclusion-justification line states a WEAKER consequence than it used
+    // to, because Task 67 made the stronger one untrue: the column no longer goes
+    // blank when the field is empty -- soa_framework_default_justification()
+    // substitutes the generic default sentence. The prompt survives because a
+    // generic sentence is not the organization's own, and an auditor reading 1,500
+    // identical rows of boilerplate is entitled to ask whose risk assessment it
+    // refers to.
+    'SoaMissingFieldsTitle' => 'Denne erklæring mangler sine forsideoplysninger',
+    'SoaMissingScopeStatement' => 'Der er ikke registreret nogen omfangserklæring for dette framework. En SoA skal angive det omfang, den er udarbejdet i forhold til.',
+    'SoaMissingInclusionJustification' => 'Der er ikke registreret nogen standardbegrundelse for inkludering. Gældende kontroller uden tilknyttede risici vil blive baseret på en generisk erklæring i stedet for din egen.',
+    'SoaEditFrameworkToAdd' => 'Tilføj dem på rammen',
+
+    // Opened from the Reporting Hub, which cannot supply a framework. A picker,
+    // not an error: an SoA is a per-framework document by definition -- the same
+    // control excluded from ISO 27001 is not thereby excluded from PCI DSS --
+    // and there is no cross-framework roll-up to offer instead.
+    'SoaChooseFramework' => 'Vælg en ramme',
+    'SoaChooseFrameworkHint' => 'En anvendelighedserklæring skrives om én ramme ad gangen.',
+    // The picker has a roster but nothing in it. Distinct from "this framework
+    // has no controls": there is no framework to write a statement about at all,
+    // and the fix is on a different page, so it says which one.
+    // The launcher's affordance row. "Open in browser" rather than "View"
+    // because it names what actually happens -- the document opens in a new tab,
+    // chrome-free -- and because Task 18 adds "Download as PDF" and "Download as
+    // XLSX" beside it, where "open" vs "download" is the distinction that
+    // matters.
+    // The document has no sidebar, so it needs its own way back for anyone who
+    // arrives from a bookmark or a shared link. Screen only; never printed.
+    'SoaBackToSelector' => 'Tilbage til erklæring om anvendelighed',
+    'SoaNoFrameworks' => 'Ingen aktive rammer',
+    'SoaNoFrameworksHint' => 'Installer eller aktiver et framework under Governance > Definer kontrolframeworks, og det vil være tilgængeligt her.',
+
+    // The two refusals. Both explain rather than just failing, because the user
+    // arrived here deliberately.
+    'SoaFrameworkInactiveTitle' => 'Denne ramme er inaktiv',
+    'SoaFrameworkInactiveBody' => 'En anvendelighedserklæring beskriver det omfang, en organisation i øjeblikket opererer under. Genaktiver rammeværket for at generere et.',
+    'SoaFrameworkNotFoundBody' => 'Den ramme eksisterer ikke længere.',
+
+    // A framework with no controls mapped into it. Not an error -- it is a real
+    // and recoverable state, and saying so beats an empty table.
+    'SoaNoControls' => 'Denne ramme har ingen kontrolfunktioner',
+    'SoaNoControlsHint' => 'Kortlæg kontroller i frameworket, og dets anvendelighedserklæring vil liste dem.',
+
+    // The second half of the statement-of-applicability launcher's affordance
+    // row, beside "Open in browser" and the existing 'DownloadAsXLSX'. Rendered
+    // only where the Import/Export Extra is active, which is what supplies the
+    // export. "Download as" rather than "Export to" so the pair reads as one
+    // choice of format, and so it matches the XLSX label already in this file.
+    'DownloadAsPDF' => 'Download som PDF',
+
+    // The fourth column of the control modal's "Mapped Control Frameworks"
+    // widget, between the reference code and the reference text. The
+    // FRAMEWORK's own title for the control it is citing -- what a Statement of
+    // Applicability prints beside the clause number. Distinct from the existing
+    // 'ReferenceText', which holds the framework's full control statement, and
+    // from the SimpleRisk control's own name.
+    'ReferenceSubject' => 'Referenceemne',
+    // Placeholder/help text under that field, and the reason it is worth
+    // filling in: without it the Statement of Applicability has nothing to
+    // print but the source catalogue's name for its own control.
+    'ReferenceSubjectHint' => "Frameworkets egen titel for denne kontrol.",
+
+    // Task 63: the row-scoped population sentence in the Set applicability
+    // modal, in the one situation where the plain
+    // 'ApplicabilityAppliesToControl' above leaves a real question unanswered --
+    // the user has controls ticked, or a standing "Select all N filtered", and
+    // has just opened the modal from ONE row's own action.
+    //
+    // It states the guarantee rather than implying it. A user whose escalated
+    // selection covers an entire framework needs to know that this click is not
+    // about to overwrite it, and {$n} is the count of the OTHER selected
+    // controls -- the target is excluded, because it is very often ticked too
+    // and a promise that included it would be false.
+    'ApplicabilityAppliesToControlNotSelection' => 'Den vil kun blive optaget mod "{$name}" — den/de {$n} kontrol(er), du har valgt, påvirkes ikke.',
+
+    // Task 65: the VISIBLE label on the controls toolbar's SoA button. The full
+    // sentence ('GenerateStatementOfApplicability' above) stays as the button's
+    // title and aria-label, and is still what the SoA page itself is called;
+    // this is the short form for a toolbar row it shares with the page's one
+    // primary action. At full length the secondary button measured more than
+    // twice the primary's width and became the largest element in the row.
+    //
+    // "SoA" is safe to abbreviate HERE and only here: the button appears solely
+    // when a single framework is scoped, beside an Applicability column, and it
+    // expands on hover.
+    'GenerateSoa' => 'Generer SoA',
+
+    // ===== Clone framework (Task 64) =======================================
+    // The framework half of Clone control's framing (CloneOfControlTitle /
+    // ClonedFromControlNotice above), and for the same reason: the clone
+    // pre-fills the Add Framework modal rather than creating anything, so the
+    // modal has to say what was carried over before the user saves it.
+    //
+    // Separate keys from the control pair rather than one shared "Clone of
+    // {$name}" -- the two banners do not say the same thing. A cloned control
+    // simply asks to be reviewed; a cloned FRAMEWORK has to explain two things
+    // its fields cannot: that the source's control mappings come with it, and
+    // that the empty scope statement is deliberate. The blank field is the
+    // whole reason the banner is longer than the control's -- a scope statement
+    // left blank with no explanation reads as a field that failed to populate,
+    // and the one thing a clone exists to be given is a NEW scope (Josh: "you
+    // might want to use the same controls as one framework, but scope it
+    // differently"). {$name} and {$n} follow the same client-side
+    // formatTemplate() substitution the rest of this page's templates use.
+    'CloneOfFrameworkTitle' => 'Klon af "{$name}"',
+    // {$n} is the count the rail is SHOWING for the source row -- its controls,
+    // not its raw mapping rows. Those differ (a framework can cite one control
+    // under two clause numbers, and the rail excludes deleted controls), and the
+    // number to promise is the one the user is looking at when they click and
+    // the one the clone's own rail row will show afterwards.
+    'ClonedFromFrameworkNotice' => 'Klonet fra "{$name}". Dens {$n} -kontroller vil blive kopieret til det nye framework, hvor alle er gældende fra starten — ingen af dets anvendelighedsbeslutninger overføres. Omfangserklæringen er bevidst tom: Angiv det omfang, som dette framework dækker, før du genererer dens anvendelighedserklæring.',
+    // Seeds the name field so the clone can be saved without a rename --
+    // framework names are unique, so a verbatim copy is refused on save.
+    'CloneOfFrameworkName' => '{$name} (Klon)',
+    'CloneFramework' => 'Klon ramme',
+    // Extras version independently of Core, so an updated Import/Export Extra
+    // can end up calling a Core function the installed Core does not have. The
+    // export refuses with this rather than fataling -- see
+    // soa_export_refuse_if_core_too_old(), extras/import-export/includes/soa_export.php.
+    'SoaExportRequiresNewerCore' => 'Denne eksport kræver en nyere version af SimpleRisk Core end den installerede. Opdater SimpleRisk, og prøv derefter at eksportere igen.',
+    // The framework ACQUISITION chooser (Task 26): "+ Add framework" asks how you
+    // want to get one, rather than assuming you want to type it in. Each option is
+    // rendered only when the route behind it actually exists for this user, so the
+    // hint text may state plainly what the route does -- it is never shown to
+    // someone who cannot take it.
+    'HowDoYouWantToAddAFramework' => 'Hvordan vil du tilføje et framework?',
+    'CreateFrameworkManually' => 'Opret en manuelt',
+    'CreateFrameworkManuallyHint' => 'Navngiv selv frameworket, og tilføj eller tilknyt derefter dets kontrolelementer.',
+    // Named for the framework rather than for its vendor. The hint was reworded
+    // at the same time: it used to end "...load its Secure Controls Framework
+    // controls", which read as a stutter once the label carried those words.
+    'GetFrameworkFromScf' => 'Hent en fra Secure Controls Framework',
+    'GetFrameworkFromScfHint' => 'Vælg et publiceret framework, og indlæs dets tilknyttede kontrolelementer i ét trin.',
+    'ImportFrameworkFromCatalog' => 'Importér én',
+    'ImportFrameworkFromCatalogHint' => 'Installer et framework og dets kontroller fra SimpleRisk-indholdskataloget.',
+
+    // The framework acquisition chooser's third route, which now offers the
+    // Import-Export Extra's CONTROL import (a spreadsheet naming a framework
+    // that does not exist yet creates it) rather than the GitHub catalogue the
+    // two keys above described. Those two are left in place, unreferenced, so a
+    // customer maintaining a custom lang.<locale>.php still reconciles by tail
+    // diff.
+    'ImportFrameworkFromSpreadsheet' => 'Importér en fra et regneark',
+    'ImportFrameworkFromSpreadsheetHint' => 'Upload et regneark med kontrolelementer, der navngiver frameworket, og begge oprettes.',
+
+    // The Define Control Frameworks rail's second synthetic scope: the controls
+    // mapped to no framework at all. Its first, "All controls", reuses the
+    // existing AllControls key rather than adding a second string with the same
+    // English -- it replaced 'AllFrameworks' on that row, which named a union of
+    // frameworks while scoping to every control, mapped or not. 'AllFrameworks'
+    // is left in place and unreferenced by that page: other surfaces still use
+    // it, and every locale carries it.
+    'UnassignedControls' => 'Ikke-tildelte kontroller',
+    // APPLICABILITY VALIDATION FAILURES. These reach the user: the v2 endpoint
+    // returns the exception's message as the API status message and the page
+    // renders it in a toast, so a hardcoded English literal here would be
+    // permanently English for every locale.
+    //
+    // NOTHING THE CALLER TYPED IS EVER INTERPOLATED INTO THESE. The parameters
+    // are validated enum values, integer ids and byte limits the server itself
+    // owns -- naming the ALLOWED values rather than echoing the rejected one is
+    // deliberate (it is both safe and more useful than repeating a typo).
+    'ApplicabilityErrUnknownState' => 'Ukendt anvendelighedstilstand. Forventede en af: {$states}.',
+    'ApplicabilityErrNarrativeRequired' => 'En fortælling er påkrævet for \'{$state}\'.',
+    'ApplicabilityErrNarrativeTooLong' => 'Fortællingen er længere end {$bytes} bytes.',
+    'ApplicabilityErrReasonRequired' => 'En udelukkelsesårsag er påkrævet for at markere en kontrol som ikke relevant.',
+    'ApplicabilityErrProviderRequired' => 'En udbyder skal markere en kontrol som nedarvet.',
+    'ApplicabilityErrProviderTooLong' => 'Udbydernavnet er længere end {$bytes} bytes.',
+    'ApplicabilityErrReasonsNotFound' => 'Disse anvendelighedsårsager findes ikke: {$ids}.',
+    'ApplicabilityErrReasonsNotOffered' => 'Disse anvendelighedsårsager gives ikke for denne tilstand: {$ids}.',
+    'ApplicabilityErrFrameworkNotFound' => 'Frameworket {$framework} findes ikke.',
+    'ApplicabilityErrControlsNotFound' => 'Disse kontrol-id\'er findes ikke: {$ids}.',
+    // Controls/Risks import result messages (validation gate, individual bad-row
+    // alerts, and the batched submitted/created/updated summaries)
+    'ControlIdOrShortNameFieldRequired' => 'Enten feltet Kontrol-ID eller Kontrolkortnavn skal være tilknyttet – en række kan ikke identificeres uden en af dem.',
+    'RiskImportSubjectNull' => 'Risiko-ID {$risk_id}: Blev ikke opdateret, fordi emnefeltet er tomt eller mangler.',
+    'RiskImportSummary' => 'Indsendt {$submitted} risiko(er) og opdateret {$updated} risiko(er).',
+    'ControlImportSummary' => 'Oprettede {$created} kontrol(er) og opdaterede {$updated} kontrol(er).',
+    'ImportAdditionalIssuesSuppressed' => '{$count} yderligere række(r) havde problemer, der ikke vises enkeltvis her.',
+    'EncryptionPipelineStalledTask' => 'En krypteringspipeline (opgave #{$id}, {$type}) ser ud til at være gået i stå — den har været {$status} i usædvanlig lang tid uden at fortsætte. Dette betyder normalt, at baggrundskøarbejderen ikke kører. Kontroller, at den er planlagt, og prøv derefter igen, når den har behandlet den gåede opgave.',
+    'EncryptionPipelineStalledState' => 'En krypteringspipeline ser ud til at være gået i stå – den har været markeret som igangværende i usædvanlig lang tid uden nogen matchende baggrundsopgave at pege på. Dette betyder normalt, at køarbejderen ikke kører, eller at en tidligere pipeline er afsluttet uden korrekt opdatering. Tjek fejlfindingsloggen, før du prøver igen.',
+    // DEMO_MODE — shown when a visitor to a shared demo instance attempts one
+    // of the operations that would spoil the demo for the next visitor
+    'ActionDisabledOnDemoInstance' => 'Denne handling er deaktiveret på SimpleRisk-demoinstansen.',
+
+    // The one-click upgrade progress window: the step an upgrade is on, and
+    // the line shown once it finishes
+    // Shown when an upgrade's progress record has not been touched for long
+    // enough that the process running it is presumed gone
+    'UpgradeJobStalled' => 'Opgraderingen svarer ikke længere. Tjek serverloggen, før du prøver igen.',
+    // Shown when an upgrade replaced the instance's configuration file and could
+    // not put the original back
+    // Shown when the database was brought up to date but the application files
+    // could not be replaced, so the instance has NOT moved to the new release
+    'UpdateAppFailed' => 'Programfilerne blev ikke opgraderet, så denne instans kører stadig sin tidligere udgivelse. Tjek SimpleRisk-loggen for at finde årsagen, og kør derefter opgraderingen igen.',
+    // The one-click upgrade progress screen
+    'UpgradeInProgress' => 'I gang',
+    'UpgradeStepNotNeeded' => 'Ikke nødvendigt',
+    // Recovering an Upgrade Extra whose files are damaged
+    'UpgradeExtraDamagedReinstalling' => 'Den installerede Upgrade Extra er beskadiget. Downloader en ny kopi.',
+    'UpgradeExtraDamagedRepaired' => 'Opgraderingsprogrammet blev erstattet med en fungerende kopi.',
+    'UpgradeExtraDamagedFailed' => 'Opgraderings-ekstraen er beskadiget og kunne ikke udskiftes automatisk. Geninstaller den fra siden Ekstra, eller gendan simplerisk/extras/upgrade/ fra en sikkerhedskopi, og prøv derefter igen.',
+    'UpgradeAlreadyCurrent' => 'Denne instans er allerede på {version}, som er den seneste udgivelse. Intet krævede opgradering.',
+    'UpgradeShowWhatItDid' => 'Vis hvad den gjorde',
+    'UpgradeBackupsListed' => 'Disse sikkerhedskopier er angivet under Konfigurer > Sikkerhedskopier.',
+    'UpgradingTo' => 'Opgradering til {version}',
+    'UpgradeSafeToClose' => 'Det er sikkert at lukke dette vindue. Opgraderingen fortsætter på serveren, og denne side vil blive tilknyttet igen.',
+    'UpgradeDownloadLog' => 'Download logfil',
+    'UpgradeStatementsApplied' => 'Startede {started} · {count} sætninger anvendt',
+    // The Upgrade Extra's pre-upgrade check of the instance it is sitting on
+    'UpgradeCheckingInstance' => 'Tjekker denne instans',
+    'UpgradeInstanceChecked' => 'Instans kontrolleret, ingen rettelser nødvendige.',
+    'UpgradeBlockedByCorrections' => 'Opgraderingen blev stoppet, fordi denne instans kræver en rettelse, der ikke kunne anvendes automatisk. Følg instruktionerne ovenfor, og kør derefter opgraderingen igen. Intet andet blev ændret.',
+    // Shown when an upgrade replaced the instance's configuration file and could not put the original back
+    'ConfigRestoreFailed' => 'Opgraderingen kunne ikke gendanne denne instans\' konfigurationsfil. Gendan simplerisk/includes/config.php fra sikkerhedskopien, før du fortsætter.',
+    'UpgradeDidNotAdvance' => 'Opgraderingsfunktionen for version "{$version}" forbedrede ikke databaseversionen; den stopper, så den ikke kører igen.',
+    'BackupDatabaseNative' => 'Sikkerhedskopiering af databasen (ingen eksterne værktøjer kræves)...',
+    'UpgradeAlreadyRunning' => 'En opgradering kører allerede på denne instans.',
+    'UpgradeStatusUnreachable' => 'Mistede kontakten med serveren, mens opgraderingen kørte. Tjek SimpleRisk-loggen; opgraderingen er muligvis stadig i gang.',
+    'UpgradeJobUnwritable' => 'Opgraderingen kunne ikke starte, fordi dens statusregistrering ikke kunne skrives. Kontroller, at webbrugeren kan skrive til systemets midlertidige mappe.',
+    'UpgradeStepCheckingVersions' => 'Kontrollerer versioner',
+    'UpgradeStepUpgradingDatabase' => 'Opgradering af databaseskemaet',
+    'UpgradeStepFinalising' => 'Anvendelse af konverteringer efter opgradering',
+    'UpgradeDatabaseHeading' => 'Opgradering af databasen',
+    'UpgradeDatabaseComplete' => 'Databaseopgraderingen er fuldført.',
+    'UpgradeHideWhatItDid' => 'Skjul hvad den gjorde',
+    'UpgradeStateRunning' => 'Kører',
+    'UpgradeSessionExpired' => 'Din session er udløbet. Log ind igen for at se opgraderingen.',
+    'UpgradeLostContact' => 'Mistet kontakt med serveren. Genindlæs denne side for at oprette forbindelse til opgraderingen igen.',
+    'UpgradeDatabaseAlreadyCurrent' => 'Databasen findes allerede på applikationsversionen.',
+    'UpgradeConversionsApplied' => 'Motor- og tegnsætkonverteringer anvendt.',
+    'UpgradeStoppedShort' => 'Opgraderingen stoppede ved {reached} uden at nå {app}. Se serverloggen.',
+    'UpgradeStepBackingUp' => 'Sikkerhedskopiering',
+    'UpgradeStepUpgradingFiles' => 'Opgradering af programfiler',
+    'UpgradeStepUpgradingExtras' => 'Opgradering af installerede ekstrafunktioner',
+    'UpgradeStepUpdatingUpgradeExtra' => 'Opdatering af opgraderings-ekstraen',
+    // The Upgrade Extra's pre-chain corrections: what is wrong, and what to do
+    // about it. These are the highest-stakes messages the upgrade produces --
+    // an operator reads them to unstick an instance that cannot upgrade.
+    'UpgradeCorrectionUnknownVersionTitle' => 'Den registrerede databaseversion nævner ikke en rigtig udgivelse',
+    'UpgradeCorrectionNoRecordedVersion' => 'Databasen har ingen registreret version.',
+    'UpgradeCorrectionUnknownVersionFinding' => 'Databasen rapporterer version \'{$version}\', som ikke navngiver nogen SimpleRisk-udgivelse. Opgraderingen kan ikke vælge et startpunkt ud fra den.',
+    'UpgradeCorrectionUnknownVersionGuidance' => 'Indstil indstillingen db_version til den udgivelse, hvis skema denne database rent faktisk har, og kør derefter opgraderingen igen: UPDATE settings SET value=\'<release>\' WHERE name=\'db_version\'. Hvis værdien er en pladsholder, f.eks. 2026XXXX-001, er den korrekte værdi næsten altid den seneste faktiske udgivelse, der blev installeret, før opgraderingen kørte.',
+    'UpgradeCorrectionLegacySessionsTitle' => 'Sessionstabellen kan ikke overleve opgraderingens tegnsætkonvertering',
+    'UpgradeCorrectionLegacySessionsFinding' => '`sessions`.`id` er VARCHAR({$width}) på en MyISAM-tabel. Konvertering af den til utf8mb4, som version 20230106-001 og fremefter gør, ville overskride MyISAMs indeksgrænse på 1000 byte og mislykkes med opgraderingen.',
+    'UpgradeCorrectionLegacySessionsGuidance' => 'En eller flere aktive sessioner bruger et id, der er længere end 128 tegn. Hvis kolonnen blev indsnævret nu, ville disse brugere blive logget ud, så den blev ladt være. Prøv at opgradere igen, når disse sessioner er udløbet.',
+    'UpgradeCorrectionApplied' => 'Rettet.',
+    'UpgradeCorrectionFailed' => 'Denne rettelse kunne ikke anvendes. Se årsagen i SimpleRisk-loggen.',
+    'UpgradeCorrectionAppliedLine' => 'Rettet: {$title} {$message}',
+    'UpgradeCorrectionNotAppliedLine' => 'IKKE rettet: {$title} {$message}',
+    'UpgradeCorrectionsNeeded' => 'Rettelser nødvendige før denne instans kan opgraderes: {$count}',
+    'UpgradeCorrectionsNeededShort' => 'Nødvendige rettelser: {$count}',
+    'UpdateDatabase' => 'Opgraderer database...',
+    // Authentication screens (index.php, reset.php, reset_password.php)
+    'EnterTheCredentialsForYourAccount' => 'Indtast loginoplysningerne til din konto.',
+    'TroubleSigningIn' => 'Problemer med at logge ind? Kontakt din SimpleRisk-administrator.',
+    'BackToLogin' => 'Tilbage til login',
+    'Or' => 'eller',
+    'WeWillEmailAResetTokenToYourAccount' => 'Vi sender en nulstillingstoken via e-mail til adressen på din konto.',
+    'EnterTheResetTokenFromYourEmail' => 'Indtast nulstillingstokenet fra din e-mail sammen med din nye adgangskode.',
+    'ChooseANewPasswordToContinue' => 'Vælg en ny adgangskode for at fortsætte.',
+    'FromZeroToGRCInMinutes' => 'Fra NUL til GRC på få minutter.',
+    'OrganizationLogo' => 'Organisationslogo',
+    'LoginScreenBranding' => 'Branding af loginskærmen',
+    'CustomLogo' => 'Brugerdefineret logo',
+    'CustomLogoHint' => 'PNG, JPG, GIF eller WebP, op til 1 MB og 2000x2000. Vises i op til 260x64, så angiv omkring 520x128 til skærme med høj tæthed. Den øverste bjælke og loginpanelet er mørke, så upload et logo, der læses på en mørk baggrund. Fjern logoet for at gå tilbage til SimpleRisk-logoet.',
+    'CurrentLogo' => 'Nuværende logo',
+    'RemoveLogo' => 'Fjern logoet',
+    'LoginTagline' => 'Login-slogan',
+    'LoginTaglineHint' => 'Erstatter SimpleRisk-taglinen på loginskærmen. Én kort linje læses bedst. Lad den være tom for at beholde SimpleRisk-taglinen.',
+    'LoginNotice' => 'Meddelelse om systembrug',
+    'LoginNoticeHint' => 'Vises på loginskærmen, før nogen logger ind. Brug den til en notifikation om acceptabel brug eller systembrug. Lad feltet stå tomt for ikke at vise nogen notifikation. Links og billeder er ikke tilladt.',
+    'BrandingRequiresCustomization' => 'Branding af loginskærmen er en del af Customization Extra.',
+    'LogoMustBeAnImage' => 'Logoet skal være et PNG-, JPG-, GIF- eller WebP-billede.',
+    'LogoTooLarge' => 'Logoet må ikke være større end 1 MB.',
+    'LogoDimensionsTooLarge' => 'Logoet må ikke være større end 2000x2000 pixels.',
+    'LogoDimensionsTooSmall' => 'Logoet skal være mindst 32 pixels på sin længste kant.',
+    'LogoUploadFailed' => 'Logoet kunne ikke uploades. Prøv igen.',
+    'LogoUpdated' => 'Logoet blev opdateret.',
+    'LogoRemoved' => 'Logoet blev fjernet.',
+    'NoSystemUseNoticeSet' => 'Der er ikke angivet nogen meddelelse om systembrug.',
+    'NoticeSizeSmall' => 'Lille',
+    'NoticeSizeNormal' => 'Normal',
+    'NoticeSizeLarge' => 'Stor',
+    // Preferences page save feedback
+    'TheSettingsWereUpdatedSuccessfully' => 'Indstillingerne blev opdateret med succes.',
+    'NoChangesWereMade' => 'Der blev ikke foretaget nogen ændringer.',
+    'PleaseSpecifyAnIntegerGreaterThanOrEqualToZeroForTheMinimumValue' => 'Angiv venligst et heltal, der er større end eller lig med nul, som minimumsværdi.',
+    'PleaseSpecifyAnIntegerForTheMaximumValue' => 'Angiv venligst et heltal for den maksimale værdi.',
+    'PleaseSpecifyAMaximumValueGreaterThanTheMinimum' => 'Angiv venligst en maksimumværdi, der er større end minimumsværdien.',
+    // Extra download version compatibility
+    'ExtraVersionIncompatibleWithApplication' => 'Den downloadede "{$extra}" Extra (version {$extra_version}) er ikke kompatibel med SimpleRisk {$app_version} og blev ikke installeret. Opgrader SimpleRisk til den nyeste version først.',
+    'ExtraCompatibilityDataUnavailable' => 'SimpleRisk kunne ikke bekræfte, hvilke Extra-versioner denne udgivelse understøtter, så Extra-versionen blev ikke installeret. Prøv igen senere.',
+    'ExtraVersionCouldNotBeVerified' => 'Versionen af den downloadede Extra kunne ikke bestemmes, så den blev ikke installeret.',
     '' => '',
 );
 ?>

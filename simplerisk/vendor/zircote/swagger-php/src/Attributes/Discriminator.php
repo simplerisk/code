@@ -6,29 +6,30 @@
 
 namespace OpenApi\Attributes;
 
-use OpenApi\Generator;
 use OpenApi\Annotations as OA;
+use OpenApi\Undefined;
 
 #[\Attribute(\Attribute::TARGET_CLASS)]
 class Discriminator extends OA\Discriminator
 {
     /**
-     * @param string[]|null            $mapping
-     * @param array<string,mixed>|null $x
-     * @param Attachable[]|null        $attachables
+     * @param array<string,string>|null $mapping
+     * @param array<string,mixed>|null  $x
+     * @param list<Attachable>|null     $attachables
      */
     public function __construct(
         ?string $propertyName = null,
         ?array $mapping = null,
-        // annotation
+
+        // abstract annotation
         ?array $x = null,
         ?array $attachables = null
     ) {
         parent::__construct([
-            'propertyName' => $propertyName ?? Generator::UNDEFINED,
-            'mapping' => $mapping ?? Generator::UNDEFINED,
-            'x' => $x ?? Generator::UNDEFINED,
-            'attachables' => $attachables ?? Generator::UNDEFINED,
+            'propertyName' => $propertyName ?? Undefined::UNDEFINED,
+            'mapping' => $mapping ?? Undefined::UNDEFINED,
+            'x' => $x ?? Undefined::UNDEFINED,
+            'attachables' => $attachables ?? Undefined::UNDEFINED,
         ]);
     }
 }

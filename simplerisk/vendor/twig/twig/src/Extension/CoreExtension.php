@@ -85,6 +85,7 @@ use Twig\Node\Expression\Unary\NotUnary;
 use Twig\Node\Expression\Unary\PosUnary;
 use Twig\Node\Expression\Unary\SpreadUnary;
 use Twig\Node\Node;
+use Twig\NodeVisitor\CorrectnessNodeVisitor;
 use Twig\Parser;
 use Twig\Sandbox\SecurityNotAllowedMethodError;
 use Twig\Sandbox\SecurityNotAllowedPropertyError;
@@ -310,25 +311,27 @@ final class CoreExtension extends AbstractExtension
     public function getTests(): array
     {
         return [
-            new TwigTest('even', null, ['node_class' => EvenTest::class]),
-            new TwigTest('odd', null, ['node_class' => OddTest::class]),
-            new TwigTest('defined', null, ['node_class' => DefinedTest::class]),
-            new TwigTest('same as', null, ['node_class' => SameasTest::class, 'one_mandatory_argument' => true]),
-            new TwigTest('none', null, ['node_class' => NullTest::class]),
-            new TwigTest('null', null, ['node_class' => NullTest::class]),
-            new TwigTest('divisible by', null, ['node_class' => DivisiblebyTest::class, 'one_mandatory_argument' => true]),
+            new TwigTest('even', null, ['node_class' => EvenTest::class, 'always_allowed_in_sandbox' => true]),
+            new TwigTest('odd', null, ['node_class' => OddTest::class, 'always_allowed_in_sandbox' => true]),
+            new TwigTest('defined', null, ['node_class' => DefinedTest::class, 'always_allowed_in_sandbox' => true]),
+            new TwigTest('same as', null, ['node_class' => SameasTest::class, 'one_mandatory_argument' => true, 'always_allowed_in_sandbox' => true]),
+            new TwigTest('none', null, ['node_class' => NullTest::class, 'always_allowed_in_sandbox' => true]),
+            new TwigTest('null', null, ['node_class' => NullTest::class, 'always_allowed_in_sandbox' => true]),
+            new TwigTest('divisible by', null, ['node_class' => DivisiblebyTest::class, 'one_mandatory_argument' => true, 'always_allowed_in_sandbox' => true]),
             new TwigTest('constant', null, ['node_class' => ConstantTest::class]),
-            new TwigTest('empty', [self::class, 'testEmpty']),
-            new TwigTest('iterable', 'is_iterable'),
-            new TwigTest('sequence', [self::class, 'testSequence']),
-            new TwigTest('mapping', [self::class, 'testMapping']),
-            new TwigTest('true', null, ['node_class' => TrueTest::class]),
+            new TwigTest('empty', [self::class, 'testEmpty'], ['always_allowed_in_sandbox' => true]),
+            new TwigTest('iterable', 'is_iterable', ['always_allowed_in_sandbox' => true]),
+            new TwigTest('sequence', [self::class, 'testSequence'], ['always_allowed_in_sandbox' => true]),
+            new TwigTest('mapping', [self::class, 'testMapping'], ['always_allowed_in_sandbox' => true]),
+            new TwigTest('true', null, ['node_class' => TrueTest::class, 'always_allowed_in_sandbox' => true]),
         ];
     }
 
     public function getNodeVisitors(): array
     {
-        return [];
+        return [
+            new CorrectnessNodeVisitor(),
+        ];
     }
 
     public function getExpressionParsers(): array
@@ -1490,9 +1493,11 @@ final class CoreExtension extends AbstractExtension
      * @param bool                         $ignoreMissing Whether to ignore missing templates or not
      * @param bool                         $sandboxed     Whether to sandbox the template or not
      *
+     * @return string|Markup
+     *
      * @internal
      */
-    public static function include(Environment $env, $context, $template, $variables = [], $withContext = true, $ignoreMissing = false, $sandboxed = false): string
+    public static function include(Environment $env, $context, $template, $variables = [], $withContext = true, $ignoreMissing = false, $sandboxed = false)
     {
         $alreadySandboxed = false;
         $sandbox = null;
@@ -1519,11 +1524,9 @@ final class CoreExtension extends AbstractExtension
                 return '';
             }
 
-            if ($isSandboxed) {
-                $loaded->unwrap()->checkSecurity();
-            }
+            $rendered = $loaded->render($variables);
 
-            return $loaded->render($variables);
+            return '' === $rendered ? '' : new Markup($rendered, $env->getCharset());
         } finally {
             if ($isSandboxed && !$alreadySandboxed) {
                 $sandbox->disableSandbox();
@@ -1698,6 +1701,10 @@ final class CoreExtension extends AbstractExtension
                 try {
                     $env->getExtension(SandboxExtension::class)->checkPropertyAllowed($object, $arrayItem, $lineno, $source);
                 } catch (SecurityNotAllowedPropertyError $propertyNotAllowedError) {
+                    // The methodCheck path expects $item to be a string; stringify it here
+                    // to avoid PHP 8.1+ implicit float-to-int deprecations on downstream
+                    // array key lookups (e.g. isset($cache[$class][$item])).
+                    $item = (string) $item;
                     goto methodCheck;
                 }
             }
@@ -1791,10 +1798,6 @@ final class CoreExtension extends AbstractExtension
 
             static $propertyCheckers = [];
 
-            if ($object instanceof \Closure && '__invoke' === $item) {
-                return $isDefinedTest ? true : $object();
-            }
-
             if (isset($object->$item)
                 || ($propertyCheckers[$object::class][$item] ??= self::getPropertyChecker($object::class, $item))($object, $item)
             ) {
@@ -1843,14 +1846,14 @@ final class CoreExtension extends AbstractExtension
                 $classCache[$lcName = $lcMethods[$i]] = $method;
 
                 if ('g' === $lcName[0] && str_starts_with($lcName, 'get')) {
-                    $name = substr($method, 3);
-                    $lcName = substr($lcName, 3);
+                    $prefixLength = 3;
+                    $lcName = substr($lcName, $prefixLength);
                 } elseif ('i' === $lcName[0] && str_starts_with($lcName, 'is')) {
-                    $name = substr($method, 2);
-                    $lcName = substr($lcName, 2);
+                    $prefixLength = 2;
+                    $lcName = substr($lcName, $prefixLength);
                 } elseif ('h' === $lcName[0] && str_starts_with($lcName, 'has')) {
-                    $name = substr($method, 3);
-                    $lcName = substr($lcName, 3);
+                    $prefixLength = 3;
+                    $lcName = substr($lcName, $prefixLength);
                     if (\in_array('is'.$lcName, $lcMethods, true)) {
                         continue;
                     }
@@ -1858,8 +1861,11 @@ final class CoreExtension extends AbstractExtension
                     continue;
                 }
 
-                // skip get() and is() methods (in which case, $name is empty)
-                if ($name) {
+                // skip get(), is() and has() methods (in which case, $lcName is empty)
+                if ($lcName) {
+                    // camelCase name (e.g. getFooBar() -> fooBar)
+                    $name = $lcName[0].substr($method, $prefixLength + 1);
+
                     if (!isset($classCache[$name])) {
                         $classCache[$name] = $method;
                     }
@@ -1960,12 +1966,15 @@ final class CoreExtension extends AbstractExtension
         }
 
         if ($isSandboxed) {
-            $sandbox = $env->getExtension(SandboxExtension::class);
+            // The sandbox might be enabled via a SourcePolicyInterface, in which case the SandboxExtension
+            // would not consider the sandbox active without the current Source: $isSandboxed is already
+            // computed against the call-site source, so check the policy directly to honor that decision.
+            $policy = $env->getExtension(SandboxExtension::class)->getSecurityPolicy();
             foreach ($array as $item) {
                 if (\is_object($item)) {
-                    $sandbox->checkPropertyAllowed($item, (string) $name);
+                    $policy->checkPropertyAllowed($item, (string) $name);
                     if (null !== $index) {
-                        $sandbox->checkPropertyAllowed($item, (string) $index);
+                        $policy->checkPropertyAllowed($item, (string) $index);
                     }
                 }
             }

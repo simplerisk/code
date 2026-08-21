@@ -1,0 +1,72 @@
+{
+  "name": "graphology-metrics",
+  "version": "2.4.0",
+  "description": "Miscellaneous graph metrics for graphology.",
+  "main": "index.js",
+  "files": [
+    "index.js",
+    "*.d.ts",
+    "centrality",
+    "edge",
+    "graph",
+    "layout-quality",
+    "node"
+  ],
+  "scripts": {
+    "prepublishOnly": "npm test",
+    "test": "mocha --recursive test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/graphology/graphology.git"
+  },
+  "keywords": [
+    "betweenness",
+    "centrality",
+    "density",
+    "diameter",
+    "eccentricity",
+    "extent",
+    "graph",
+    "graphology",
+    "metrics",
+    "modularity"
+  ],
+  "contributors": [
+    {
+      "name": "Guillaume Plique",
+      "url": "http://github.com/Yomguithereal"
+    },
+    {
+      "name": "Tanguy Lucci",
+      "url": "https://github.com/luccitan"
+    },
+    {
+      "name": "Pauline Breteau",
+      "url": "https://github.com/paubre"
+    },
+    {
+      "name": "César Pichon",
+      "url": "http://github.com/16arpi"
+    },
+    {
+      "name": "Mathieu Jacomy",
+      "url": "http://github.com/jacomyma"
+    }
+  ],
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/graphology/graphology/issues"
+  },
+  "homepage": "https://github.com/graphology/graphology#readme",
+  "peerDependencies": {
+    "graphology-types": ">=0.20.0"
+  },
+  "dependencies": {
+    "graphology-indices": "^0.17.0",
+    "graphology-shortest-path": "^2.0.0",
+    "graphology-utils": "^2.4.4",
+    "mnemonist": "^0.39.0",
+    "pandemonium": "2.4.1"
+  }
+}

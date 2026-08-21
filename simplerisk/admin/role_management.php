@@ -225,7 +225,7 @@
                 }
 
                 // Confirm the deletion
-                confirm("<?= $escaper->escapeHtml($lang['AreYouSureYouWantToDeleteThisRole']); ?>", function() {
+                confirm("<?= $escaper->escapeJs($lang['AreYouSureYouWantToDeleteThisRole']); ?>", function() {
 
                         // Submit the form
                         $("#update_delete_role_form")[0].submit();

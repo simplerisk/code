@@ -942,6 +942,7 @@ class OpenApiAddRisk {}
  * @OA\Post(
  *     path="/management/risk/update",
  *     summary="Update an existing risk",
+ *     description="Partial update: any field omitted from the request keeps its stored value. To clear a field, send it explicitly with an empty value (e.g. `tags[]=`) — omitting it preserves rather than clears. `subject` must always be supplied. Also served as PATCH /risks/{id}.",
  *     operationId="updateRisk",
  *     tags={"risk"},
  *     security={{"ApiKeyAuth":{}}},
@@ -1071,6 +1072,7 @@ class OpenApiViewMitigation {}
  * @OA\Post(
  *     path="/management/mitigation/add",
  *     summary="Add or update a mitigation for a risk",
+ *     description="When the risk already has a mitigation this is a partial update: any field omitted from the request keeps its stored value. To clear a field, send it explicitly with an empty value — omitting it preserves rather than clears. When the risk has no mitigation yet, omitted fields take their defaults, since there is no stored value to preserve. Also served as PATCH /risks/{id}/mitigations.",
  *     operationId="saveMitigation",
  *     tags={"risk"},
  *     security={{"ApiKeyAuth":{}}},

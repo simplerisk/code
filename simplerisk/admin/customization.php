@@ -86,7 +86,7 @@
 				// Audit log
 				$risk_id = 1000;
 				$message = "A custom field named \"" . $name . "\" was added by the \"" . $_SESSION['user'] . "\" user.";
-				write_log($risk_id, $_SESSION['uid'], $message);
+				write_log($risk_id, $_SESSION['uid'] ?? 0, $message);
 
 				// Display an alert
 				set_alert(true, "good", "The new custom field was created successfully.");

@@ -10,11 +10,11 @@ ini_set('default_charset', 'utf-8');
 $lang = array(
     'Home'=>'Acasă',
     'RiskManagement'=>'Managementul Riscului',
-    'Reporting'=>'De raportare',
+    'Reporting'=>'Raportare',
     'Configure'=>'Configurați',
     'MyProfile'=>'Profilul Meu',
     'Logout'=>'Deconectare',
-    'LogInHere'=>'Login la spre SimpleRisk',
+    'LogInHere'=>'Conectați-vă la SimpleRisk',
     'Username'=>'Numele de utilizator',
     'Password'=>'Parola',
     'ForgotYourPassword'=>'Ți-ai uitat parola',
@@ -33,8 +33,6 @@ $lang = array(
     'CurrentPassword'=>'Parola Curentă',
     'NewPassword'=>'Noua Parola',
     'ConfirmPassword'=>'Confirma Parola',
-    'RiskConfiguration'=>'Configurarea riscului',
-    'ReviewSettings'=>'Setări de revizuire',
     'AddAndRemoveValues'=>'Adăuga și Elimina Valorile',
     'UserManagement'=>'Management De Utilizator',
     'RedefineNamingConventions'=>'Redefini Convențiile De Denumire',
@@ -57,7 +55,7 @@ $lang = array(
     'UserResponsibilities'=>'Responsabilitățile Utilizatorului',
     'AbleToSubmitNewRisks'=>'În măsură să Prezinte Riscuri Noi',
     'AbleToModifyExistingRisks'=>'Posibilitatea de a modifica detaliile riscului',
-    'AbleToCloseRisks'=>'Capabil să funcționeze Riscuri',
+    'AbleToCloseRisks'=>'Capabil să închidă riscuri',
     'AbleToPlanMitigations'=>'Capabil să-și Planifice Mitigations',
     'AbleToReviewLowRisks'=>'Capabil de a Revizui Riscuri Scăzute',
     'AbleToReviewMediumRisks'=>'Capabil de a Revizui Mediu Riscuri',
@@ -80,14 +78,12 @@ $lang = array(
     'Delete'=>'Șterge',
     'SendPasswordResetEmailForUser'=>'Trimite email de resetare a parolei pentru utilizatorul',
     'Category'=>'Categorie',
-    'Cards'=>'Cărți',
-    'List'=>'Listă',
     'AddNewCategoryNamed'=>'Adauga o noua categorie pe nume',
     'DeleteCurrentCategoryNamed'=>'Delete current categorie de nume',
     'Team'=>'Echipa',
     'AddNewTeamNamed'=>'Adăuga noi nume echipa',
     'DeleteCurrentTeamNamed'=>'Șterge actuala echipa de nume',
-    'Technology'=>'Tehnologia',
+    'Technology'=>'Tehnologie',
     'AddNewTechnologyNamed'=>'Adaugă nouă tehnologie numită',
     'DeleteCurrentTechnologyNamed'=>'Șterge tehnologia actuală numit',
     'SiteLocation'=>'Site-Ul/Locație',
@@ -99,7 +95,7 @@ $lang = array(
     'RiskPlanningStrategy'=>'Risc Strategia De Planificare',
     'AddNewRiskPlanningStrategyNamed'=>'Adăuga noi riscului strategia de planificare nume',
     'DeleteCurrentRiskPlanningStrategyNamed'=>'Șterge risc actual de planificare a strategiei de nume',
-    'CloseReason'=>'Aproape Motiv',
+    'CloseReason'=>'Motiv de închidere',
     'AddNewCloseReasonNamed'=>'Adaugă aproape nou motiv numit',
     'DeleteCurrentCloseReasonNamed'=>'Șterge curent aproape, motiv numit',
     'IWantToReviewHighRiskEvery'=>'Vreau să revizuiască risc RIDICAT de fiecare',
@@ -117,7 +113,7 @@ $lang = array(
     'Irrelevant'=>'Irelevant',
     'SubmitYourRisks'=>'Prezinte Risc',
     'PlanYourMitigations'=>'Plan de atenuare',
-    'PerformManagementReviews'=>'Efectua clienţilor',
+    'PerformManagementReviews'=>'Efectuați recenzii',
     'PrioritizeForProjectPlanning'=>'Plan de proiecte',
     'ReviewRisksRegularly'=>'Revizuirea în mod regulat',
     'DocumentANewRisk'=>'Document un Nou Risc',
@@ -175,7 +171,7 @@ $lang = array(
     'SubmissionDate'=>'Data Depunerii',
     'DateSubmitted'=>'Data Prezentării',
     'EditDetails'=>'Editare Detalii',
-    'Mitigation'=>'De atenuare',
+    'Mitigation'=>'Atenuare',
     'MitigationDate'=>'Data de depunerea de atenuare',
     'PlanningStrategy'=>'Strategia De Planificare',
     'CurrentSolution'=>'Soluția De Curent',
@@ -188,7 +184,7 @@ $lang = array(
     'Review'=>'Recenzie',
     'NextStep'=>'Următorul Pas',
     'Comments'=>'Comentarii',
-    'ViewAllReviews'=>'Vezi Toate Impresiile',
+    'ViewAllReviews'=>'Vezi Toate Recenziile',
     'ReviewHistory'=>'Revista De Istorie',
     'Comment'=>'Comentariu',
     'ClassicRiskScoring'=>'Clasic De Notare A Riscului',
@@ -325,9 +321,9 @@ $lang = array(
     'IncludedColumns'=>'Incluse Coloane',
     'AllRisks'=>'Toate Riscurile',
     'DynamicRiskReport'=>'Dinamic Raportul De Risc',
-    'ObsoleteReports'=>'Învechit Rapoarte',
+    'ObsoleteReports'=>'Rapoarte Învechite',
     'Project'=>'Proiect',
-    'SortBy'=>'Un Fel De',
+    'SortBy'=>'Sortare după',
     'MonthSubmitted'=>'Luna Prezentate',
     'AssetManagement'=>'De Gestionare A Activelor',
     'AutomatedDiscovery'=>'Descoperire Automată',
@@ -343,8 +339,8 @@ $lang = array(
     'IPAddress'=>'Adresa IP',
     'AssetWasAddedSuccessfully'=>'Activul a fost adăugat cu succes.',
     'AssetWasDeletedSuccessfully'=>'Activ a fost șters cu succes.',
-    'ThereWasAProblemAddingTheAsset'=>'Nu a fost o problemă la adăugarea activului.',
-    'ThereWasAProblemDeletingTheAsset'=>'Nu a fost o problemă ștergerea activului.',
+    'ThereWasAProblemAddingTheAsset'=>'A fost o problemă la adăugarea activului.',
+    'ThereWasAProblemDeletingTheAsset'=>'A fost o problemă la ștergerea activului.',
     'ComingSoon'=>'În Curând',
     'ExportRisks'=>'Export Riscuri',
     'ExportMitigations'=>'Export Mitigations',
@@ -357,8 +353,6 @@ $lang = array(
     'Activate'=>'Activa',
     'DeleteRisks'=>'Șterge Riscuri',
     'DeletedRisksCannotBeRecovered'=>'Elimină Riscurile Nu Pot Fi Recuperate',
-    'DeletedAssessmentsCannotBeRecovered'=>'Evaluările șterse nu pot fi recuperate',
-    'TheAssessmentsWereDeletedSuccessfully'=>'Evaluarea (evaluările) a(au) fost șterse cu succes.',
     'RisksDeletedSuccessfully'=>'Riscul(riscurile) Șters cu Succes',
     'ThereWasAProblemDeletingTheRisk'=>'Nu a Fost o Problemă Ștergerea Riscului(riscurilor)',
     'Activated'=>'ACTIVAT',
@@ -387,7 +381,7 @@ $lang = array(
     'ImportAssets'=>'Import Active',
     'AssetValue'=>'Valoarea Activului',
     'Register'=>'Registrul',
-    'RegisterSimpleRisk'=>'Registrul SimpleRisk',
+    'RegisterSimpleRisk'=>'Înregistrați SimpleRisk',
     'RegistrationText'=>'Instanțelor SimpleRisk înregistrate li se acordă imediat acces la Suplimentele Upgrade și Secure Controls Framework (SCF). Upgrade Extra oferă posibilitatea de a face copii de rezervă și de a actualiza instanța dvs. SimpleRisk printr-un clic pe un buton. Secure Controls Framework (SCF) Extra oferă un cadru de control comun care este integrat în funcționalitatea SimpleRisk Governance. La înregistrarea SimpleRisk, informațiile dvs. de înregistrare vor fi trimise către un server găzduit de SimpleRisk. Informațiile de înregistrare furnizate vor fi folosite de SimpleRisk pentru a notifica clienții cu privire la noile versiuni și actualizări de securitate. Înregistrarea SimpleRisk vă va include în comunicările noastre de marketing, dar vă puteți renunța oricând utilizând linkul de dezabonare din aceste comunicări. SimpleRisk respectă confidențialitatea clienților noștri, iar informațiile furnizate nouă prin procesul de înregistrare SimpleRisk nu vor fi niciodată vândute unei terțe părți.',
     'RegistrationInformation'=>'Informațiile De Înregistrare',
     'Company'=>'Compania',
@@ -417,18 +411,13 @@ $lang = array(
     'EditAssets'=>'Edit Active',
     'AutomaticAssetValuation'=>'Automate De Evaluare A Activelor',
     'ManualAssetValuation'=>'Manual De Evaluare A Activelor',
-    'AssetValuationMode'=>'Mod de evaluare a activelor',
-    'AutomaticLinearRange'=>'Interval liniar automat',
-    'AutomaticExponentialRange'=>'Interval exponențial automat',
-    'ManualValuation'=>'Manual',
-    'AssetValuationMinMustBeNonNegative'=>'Valoarea minimă a activelor trebuie să fie zero sau mai mare pentru Intervalul Exponențial Automat.',
     'MinimumValue'=>'Valoarea Minimă',
     'MaximumValue'=>'Valoarea Maximă',
     'ValueRange'=>'Gama De Valoare',
     'DefaultAssetValuation'=>'Implicit De Evaluare A Activelor',
     'Default'=>'În mod implicit',
     'RisksAndAssets'=>'Riscuri și Active',
-    'Report'=>'Raportul',
+    'Report'=>'Raport',
     'RisksByAsset'=>'Riscurile de Activ',
     'AssetsByRisk'=>'Activele de Risc',
     'MaximumQuantitativeLoss'=>'Maxim Cantitative Pierdere',
@@ -461,8 +450,8 @@ $lang = array(
     'TransportAgent'=>'Agent de transport',
     'FromName'=>'De La Numele',
     'FromEmail'=>'De La E-Mail',
-    'ReplyToName'=>'Răspunsreferitorla Numele',
-    'ReplyToEmail'=>'Răspunsreferitorla E-Mail',
+    'ReplyToName'=>'Răspunde La Numele',
+    'ReplyToEmail'=>'Răspunde La E-Mail',
     'Host'=>'Gazdă',
     'SMTPAuthentication'=>'Autentificare SMTP',
     'Encryption'=>'Criptare',
@@ -486,12 +475,12 @@ $lang = array(
     'GoToSSOLoginPage'=>'Du-te la pagina de Login SSO',
     'APIKey'=>'API-cheie',
     'GenerateAPIKey'=>'Genera API-cheie',
-    'RotateAPIKey'=>'API-cheie de roti',
+    'RotateAPIKey'=>'Rotiți cheia API',
     'InvalidateAPIKey'=>'Anulează API-cheie',
     'Deactivate'=>'Dezactiva',
     'ImportExportExtra'=>'Import-Export Extra',
     'SaveDetails'=>'Salvare detalii',
-    'ClearForm'=>'Formă clară',
+    'ClearForm'=>'Șterge formularul',
     'SaveMitigation'=>'Salvaţi de atenuare',
     'Cancel'=>'Revocare',
     'SubmitReview'=>'Trimite recenzie',
@@ -511,7 +500,7 @@ $lang = array(
     'minutes' => 'minute',
     'minute' => 'minute',
     'AccountLockedOut' => 'Cont blocat',
-    'AccountLockoutPolicy' => 'Politică de deconectare cont',
+    'AccountLockoutPolicy' => 'Politică de blocare a contului',
     'ImportExportIsDeactivated' => 'Import-export este dezactivat',
     'PurchaseTheExtra' => 'Cumparare suplimentare',
     'ExpandAll' => 'Extinde tot',
@@ -595,15 +584,14 @@ $lang = array(
     'DeletedMappingSuccess' => 'Șters cu succes o mapare.',
     'SelectMappingToRemove' => 'Selectați o mapare de eliminat.',
     'Schedule' => 'Programul',
-    'Daily' => 'Zi',
-    'Weekly' => 'Pe',
+    'Daily' => 'Zilnic',
+    'Weekly' => 'Săptămânal',
     'Monthly' => 'Lunar',
     'Quarterly' => 'Trimestriale',
     'Annually' => 'Anual',
     'SpecifiedTime' => 'Timp specificat',
     'Governance' => 'Guvernare',
     'Compliance' => 'Respectarea',
-    'CrossDomain' => 'Domeniu multiplu',
     'AllowAccessToRiskManagementMenu' => 'Permite accesul la meniul "managementul riscului"',
     'CheckAllGovernance' => 'Verificaţi toate guvernanţa',
     'CheckAllCompliance' => 'Verificaţi toate conformitatea',
@@ -688,7 +676,7 @@ $lang = array(
     'EnableTLSEncryptionAutomaticallyIfAServerSupportsIt' => 'Activați criptarea TLS automat dacă un server îl acceptă',
     'AssessmentContacts' => 'Contacte de evaluare',
     'Name' => 'nume',
-    'ContactManager' => 'Contactați managerul',
+    'ContactManager' => 'Manager de contacte',
     'AddNewAssessmentContact' => 'Adăugarea unui nou contact de evaluare',
     'UpdateAssessmentContact' => 'Actualizarea unui contact de evaluare',
     'AssessmentContactCreated' => 'S-a creat un nou contact de evaluare',
@@ -762,10 +750,10 @@ $lang = array(
     'RequiredTokenForQuestionnaire'=>'Trebuie să trimiteți un simbol pentru a afișa chestionarul.',
     'NoPermissionForQuestionnaire'=>'Nu ai permisiunea acestui chestionar.',
     'NoPermissionForTemplate'=>'Nu aveți permisiunea de acest șablon.',
-    'RunNow'=>'Fugi acum',
+    'RunNow'=>'Rulează acum',
     'ActiveAudits'=>'Audituri active',
     'Questionnaire'=>'Chestionar',
-    'Draft'=>'Proiectul',
+    'Draft'=>'Ciornă',
     'Complete'=>'Completă',
     'AdditionalInformation'=>'Informaţii suplimentare',
     'Clear'=>'Clar',
@@ -779,7 +767,6 @@ $lang = array(
     'TestDate'=>'Data testului',
     'Attachment'=>'Ataşare',
     'InvalidParams'=>'Params nevalide',
-    'ClearForm'=>'Formă clară',
     'QuestionnaireDraftSuccess'=>'Răspunsurile tale au fost salvate cu succes.',
     'QuestionnaireCompletedSuccess'=>'Aţi finalizat cu succes acest chestionar.',
     'EmailTemplateCompleteQuestionnaire' => '
@@ -822,7 +809,6 @@ $lang = array(
     'HasFile' => 'Are fişier',
     'ClosedAuditStatus' => 'Starea auditului închis',
     'ClosedAuditStatusIsRequired' => 'Este necesară o stare de auditare închisă',
-    'Preferences' => 'Preferințe',
     'DefaultLanguage' => 'Limba implicită',
     'DefaultTimezone' => 'Fus orar implicit',
     'UserSessions' => 'Sesiuni de utilizator',
@@ -839,7 +825,7 @@ $lang = array(
     'SimpleRiskActionNotifications' => 'Simplerisk notificări de acțiune',
     'WhenToNotify' => 'Când să notifice',
     'WhoToNotify' => 'Cine să notifice',
-    'HowToNotify' => 'să notifice',
+    'HowToNotify' => 'Cum să notifice',
     'NotifyOnNewRisk' => 'Notificare privind noul risc',
     'NotifyOnRiskUpdate' => 'Notificare privind actualizarea riscului',
     'NotifyOnNewMitigation' => 'Anunţă o nouă atenuare',
@@ -847,16 +833,14 @@ $lang = array(
     'NotifyOnRiskReview' => 'Notificare privind evaluarea riscului',
     'NotifyOnRiskClose' => 'Notificare privind închiderea riscului',
     'NotifyOnRiskComment' => 'Anunta pe comentariu de risc',
-    'NotifySubmitter' => 'Notificare Submitter',
+    'NotifySubmitter' => 'Notificare expeditor',
     'NotifyOwner' => 'Notificare proprietar',
     'NotifyOwnersManager' => 'Anunta managerul proprietarului',
     'NotifyTeam' => 'Anunta echipa',
     'NotifyAdditionalStakeholders' => 'Notifică părțile interesate suplimentare',
-    'SpecificUser' => 'Utilizator specific',
-    'SpecificUsers' => 'Utilizatori specifici',
     'NotifyReviewers' => 'Anunţaţi recenzenţii',
     'NotifyTester' => 'Notificare tester',
-    'SimpleRiskURL' => 'Simplerisk URL',
+    'SimpleRiskURL' => 'SimpleRisk URL',
     'Period' => 'Perioada',
     'PlaceTheFollowingInYourCrontabToRunAutomatically' => 'Plasaţi următoarele în crontab pentru a rula automat',
     'SimpleRiskScheduledNotifications' => 'Simplerisk notificări programate',
@@ -867,7 +851,7 @@ $lang = array(
     'DaysAfterTheAuditIsDue' => 'zile de la efectuarea auditului',
     'SendAnEmailWhenTheAuditIsDue' => 'Expedierea unui e-mail atunci când auditul se datorează',
     'PendingRiskDeleted' => 'Riscul în așteptare s-a șters cu succes',
-    'RunAt' => 'Alerga la',
+    'RunAt' => 'Rulează la',
     'ImportControls' => 'Controale import',
     'RiskIDNoEXitFailedToUpdate' => 'ID-ul de risc $risk_id nu există, Deci nu a fost importat sau actualizat',
     'CreatedRisksFromPendingRisks' => 'A creat toate riscurile în aşteptarea riscurilor.',
@@ -877,14 +861,13 @@ $lang = array(
     'QuestionnaireTemplateName' => 'Nume șablon chestionar',
     'Ordering' => 'Comanda',
     'AuditsDueToday' => 'Audituri scadente astăzi',
-    'AuditsPastDue' => 'Audituri trecute din cauza',
+    'AuditsPastDue' => 'Audituri restante',
     'AuditsDueSoon' => 'Audituri datorate în curând',
     'DateDue' => 'Dată scadentă',
     'ShowAllRisksForPlanProjects' => 'Arată toate riscurile pentru proiectele planificate în loc de doar cele revizuite ca "ia în considerare pentru proiect"',
     'Edit' => 'Editare',
     'Clone' => 'Clona',
     'SubQuestions' => 'Întrebări sub',
-    'Ordering' => 'Comanda',
     'EncryptionKeyNoExist' => 'Fişierul cheie de criptare nu există. Vă rugăm să contactaţi admin.',
     'ResidualRiskScore' => 'Scor rezidual de risc',
     'DefaultInitiatedAuditStatus' => 'Stare de audit iniţiată implicit',
@@ -910,7 +893,7 @@ $lang = array(
     'GoToSSOLogin' => 'Arată link-ul "Du-te la SSO login Page" pe pagina principală de autentificare',
     'SSOLoginDisabled' => 'SSO login a fost dezactivat, astfel încât nu puteţi utiliza această autentificare.',
     'QuestionID' => 'Întrebare ID',
-    'QuestionOrdering' => 'Întrebare comanda',
+    'QuestionOrdering' => 'Ordonare întrebări',
     'DefaultUserRole' => 'Rol utilizator implicit',
     'AbleToAcceptMitigations' => 'Posibilitatea de a accepta atenuări',
     'AcceptMitigation' => 'Acceptare atenuare',
@@ -968,7 +951,7 @@ $lang = array(
     'FailAddingLikelihood' => 'Imposibilitatea de a adăuga o probabilitate',
     'FailDeletingLikelihood' => 'Imposibilitatea de a şterge o probabilitate',
     'SubjectRequired' => 'Subiectul este necesar. Vă rugăm să selectaţi câmpul.',
-    'Spreadsheet' => 'Foaie',
+    'Spreadsheet' => 'Foaie de calcul',
     'SuccessUpdatingImpactName' => 'Numele de impact a fost actualizat cu succes.',
     'FailUpdatingImpactName' => 'Eroare la actualizarea numelui de impact.',
     'SuccessUpdatingLikelihoodName' => 'Numele probabilităţii a fost actualizat cu succes.',
@@ -1023,8 +1006,6 @@ $lang = array(
     'YouNeedToUpgradeYourSimpleRiskSubscription' => 'Tu nevoie la spre upgrade al tău SimpleRisk subscription la spre Enable folosire de this supliment.',
     'AutomaticallyAddNewlyAuthenticatedUsersWithDefaultRole' => 'Adăugarea automată a utilizatorilor nou autentificat cu rolul implicit',
     'Disabled' => 'Dezactivat',
-    'Help' => 'Ajutor',
-    'Profile' => 'Profil',
     'AbleToCommentRiskManagement' => 'Posibilitatea de a comenta managementul riscului',
     'AbleToCommentCompliance' => 'Posibilitatea de a comenta conformitatea',
     'LanguageUpdated' => 'Limba a fost actualizată cu succes.',
@@ -1067,7 +1048,6 @@ $lang = array(
     'FailedToUploadFile' => 'Nu s-a reușit încărcarea fișierului',
     'NewPasswordDoesNotMatchPolicy' => 'Parola nouă specificată nu respectă politica de parolă configurată.',
     'RiskLevels' => 'Niveluri de risc',
-    'Scoring' => 'Scorare',
     'ClassicRiskFormula' => 'Formula de risc clasic',
     'ContributingRiskFormula' => 'Formulă de risc contribuind',
     'ImpactHasMaxChars' => 'Impactul ar trebui să aibă Max $length Caractere.',
@@ -1098,10 +1078,8 @@ $lang = array(
     'MapSuccessTeamAndGroup' => 'Echipa mapată cu succes și grupul LDAP.',
     'MappingTeamAndLDAPGroupRequired' => 'Echipa și grupul LDAP pentru mapare este necesară.',
     'ExistingMappings' => 'Mapări existente',
-    'TeamGroup' => '(Grup de echipe <-->)</-->',
+    'TeamGroup' => '(Echipă <--> Grup)',
     'ExistingMappingsRequired' => 'Mapările existente trebuie selectate.',
-    'EncryptionBackupFileExists' => 'Ca parte a procesului de criptare, a fost creată o copie de rezervă necriptată a bazei de date SimpleRisk.  După ce ați verificat totul s-a criptat corect, mutați-l într-o locație sigură sau faceți clic pe buton pentru a-l șterge.',
-    'BackupLocation' => 'Locație de copiere de rezervă',
     'FileDeletedSuccessfully' => 'Fișierul a fost șters cu succes.',
     'ErrorDeletingFile' => 'Eroare la ștergerea fișierului.  Verificați permisiunile fișierului și încercați din nou.',
     'MapToLDAPGroup' => 'Mapare la grupul LDAP',
@@ -1125,7 +1103,7 @@ $lang = array(
     'Actions' => 'Acţiunile',
     'Templates' => 'Şabloane',
     'ComplianceAudit' => 'Audit De Conformitate',
-    'FailControl' => 'Nu Reușesc Control',
+    'FailControl' => 'Eșec control',
     'Instructions' => 'Instrucţiuni',
     'UserInstructions' => 'Instrucțiuni De Utilizare',
     'Verified' => 'Verificat',
@@ -1155,7 +1133,6 @@ $lang = array(
     'Unverified' => 'Neverificat',
     'ExportAssets' => 'Export active',
     'ExportToCSVByClickingBelow' => 'Exportați într-un fișier CSV făcând clic mai jos',
-    'RevertToUnencryptedBackup' => 'Revenire la copierea de rezervă necriptată',
     'SuccessfullyRevertedToUnencryptedBackup' => 'Revenire cu succes la copierea de rezervă necriptată',
     'FailedToRevertToUnencryptedBackup' => 'Nu s-a reușit revenirea la copierea de rezervă necriptată. Vă rugăm să verificați jurnalele de server pentru mai multe informații.',
     'AddNewItemNamed' => 'Adăugare element nou denumit',
@@ -1237,7 +1214,7 @@ $lang = array(
     'InvalidTestFrequency' => 'Frecvența de testare trebuie să fie o valoare pozitivă!',
     'InvalidApproximateTime' => 'Ora aproximativă trebuie să fie o valoare pozitivă!',
     'InvalidNextTestDateLastTestDateOrder' => 'Data testului următor nu poate fi înainte de data ultimei încercări!',
-    'HowToVideos' => 'să-video',
+    'HowToVideos' => 'Videoclipuri tutoriale',
     'FAQs' => 'Întrebări frecvente',
     'WhatsNew' => 'Ce mai e nou',
     'Roadmap' => 'Parcurs',
@@ -1257,7 +1234,7 @@ $lang = array(
     'ShowMore' => 'Afișare mai mult...',
     'ShowXMore' => 'Arată {$x} Mai multe...',
     'ShowLess' => 'Arată mai puțin...',
-    'RiskAppetite' => 'Riscul poftei de mâncare',
+    'RiskAppetite' => 'Apetit pentru risc',
     'FailedToCleanupExtraFiles' => 'Nu s-a reușit curățarea fișierelor suplimentare reziduale, împiedicând astfel instalarea/actualizarea să continue',
     'DocumentExceptions' => 'Definire excepții',
     'PolicyExceptions' => 'Excepții de politică',
@@ -1294,7 +1271,6 @@ $lang = array(
     'Approve' => 'Aproba',
     'ExceptionType' => 'Tip excepție',
     'PolicyName' => 'Nume politică',
-    'ControlName' => 'Nume de control',
     'AreYouSureYouWantToDeleteTheseExceptions' => 'Sigur ștergeți aceste excepții?',
     'ExceptionsWereDeletedSuccessfully_policy' => 'Excepțiile de politică au fost șterse cu succes.',
     'ExceptionsWereDeletedSuccessfully_control' => 'Excepțiile de control au fost șterse cu succes.',
@@ -1321,7 +1297,6 @@ $lang = array(
     'AssetsWereVerifiedSuccessfully'=>'Activele au fost verificate cu succes.',
     'ThereWasAProblemVerifyingTheAssets'=>'A fost o problemă la verificarea activelor.',
     'ThereWasAProblemWithAddingTheProject' => 'A existat o problemă cu adăugarea proiectului',
-    'ProjectName' => 'Nume proiect',
     'SuccessSetProject' => 'Risc adăugat cu succes la proiect.',
     'SuccessCreateProject' => 'Proiect cu succes creat nou.',
     'ReviewProjectSelectionInstructions' => 'Selectați un proiect sau tastați numele unuia nou.',
@@ -1370,7 +1345,6 @@ $lang = array(
     'UpdateAssetGroupTooltip' => 'Actualizare grupă de active',
     'DeleteAssetGroupTooltip' => 'Ștergere grupă active',
     'RemoveAssetTooltip' => 'Eliminare activ din Grupa de active',
-    'ControlShortNameFieldRequired' => 'Câmpul control nume scurt este necesar.',
     'AffectedAssetsWidgetPlaceholder' => 'Selectarea unui activ sau a unui grup de active',
     'AffectedAssetsWidgetNoDropdownPlaceholder' => 'Adăugarea unui nume de activ',
     'AffectedAssetsWidgetInstructions' => 'Selectați un mijloc sau un grup de active. Aveți posibilitatea să creați un nou mijloc prin adăugarea numelui său în listă.',
@@ -1450,7 +1424,7 @@ $lang = array(
     'AutomatedNotificationsOfUnmitigatedRisks' => 'Notificări automate privind riscurile neatenuate',
     'SelectForAffectedAssets' => 'Selectare pentru activele afectate',
     'SearchForQuestion' => 'Căutare întrebare',
-    'Required' => 'Necesare',
+    'Required' => 'Obligatoriu',
     'ThereAreRequiredFields' => 'Există câmpuri obligatorii.',
     'ThisFieldIsRequired' => 'Acest câmp este necesar.',
     'ThereAreUnexpectedProblems' => 'Există probleme neașteptate.',
@@ -1461,7 +1435,7 @@ $lang = array(
     'Public' => 'Publice',
     'TheNameAlreadyExists' => 'Numele există deja. Vă rugăm să încercați alt nume.',
     'NoPermissionForSelection' => 'Nu aveți permisiunea de a accesa selecția',
-    'RiskAppetiteReport' => 'Raportul de risc poftei de mâncare',
+    'RiskAppetiteReport' => 'Raport privind apetitul la risc',
     'WithinAppetite' => 'În cadrul poftei de mâncare',
     'OutsideAppetite' => 'În afara poftei de mâncare',
     'UpdateCustomField' => 'Actualizare câmp particularizat',
@@ -1491,21 +1465,18 @@ $lang = array(
     'BackupStart' => 'Copiere de rezervă pornit.',
     'BackupFailed' => 'Copiere de rezervă nereușită. Vă rugăm să contactați un administrator.',
     'BackupSuccessful' => 'Backup de succes. Aplicația, baza de date și toate figuranții instalate sunt susținute.',
+    'BackupLocation' => 'Locație de copiere de rezervă',
     'BackupCheckingPreRequisites' => 'Verificarea permisiunilor, parametrizarea directoarelor.',
     'BackupCheckingPreRequisitesDone' => 'Permisiunea controale trecut, directoarele necesare creat cu succes.',
     'BackupApplicationFiles' => 'Fișierele aplicației au început copierea de rezervă.',
     'BackupApplicationFilesDone' => 'Fișierele aplicației au făcut backup cu succes',
     'BackupDatabase' => 'A început copierea de rezervă a bazei de date.',
     'BackupDatabaseDone' => 'Baza de date cu succes backup.',
-    'BackupDatabaseFailed' => 'Copia de rezervă a bazei de date a eșuat. Vă rugăm să verificați jurnalul SimpleRisk pentru detalii.',
-    'WindowsNotSupported' => 'SimpleRisk nu mai este compatibil cu Windows începând cu versiunea 20260421-001. Vă rugăm să migrați la un server bazat pe Linux.',
-    'WindowsUpgradeHalted' => 'Această operațiune nu poate rula pe un server Windows. SimpleRisk nu mai este compatibil cu Windows începând cu versiunea 20260421-001. Vă rugăm să migrați pe un server bazat pe Linux.',
     'BackupDirectoryNotWriteable' => 'La{$location}"directorul nu este inscriptibil de către utilizatorul Web.',
     'BackupFailedToCreateDirectories' => 'Imposibil de creat structura de directoare necesare la "{$location}".',
     'AreYouSureYouWantToDeleteSelction' => 'Sigur doriți să ștergeți selecția?',
     'FieldIsRequired' => '_ XXX_ câmp este necesar',
     'NoPermissionForAssessments' => 'Nu aveți permisiunea pentru evaluări.',
-    'MissingOrInvalidTrackingID' => 'ID de urmărire lipsă sau nevalid.',
     'Encrypted' => 'Criptate',
     'AreYouSureYouWantToApproveThisResult' => 'Sigur aprobați acest rezultat?',
     'AreYouSureYouWantToRejectThisResult' => 'Sigur respingeți acest rezultat?',
@@ -1538,9 +1509,8 @@ $lang = array(
     'MitigationAccepted' => 'Atenuare acceptată',
     'FilterBy' => 'Filtrare după',
     'AddNewQuestion' => 'Adaugă o întrebare nouă',
-    'ControlAudit' => 'Controlul auditului',
+    'ControlAudit' => 'Audit de control',
     'AssociatedControls' => 'Controale asociate',
-    'AssociatedFrameworks' => 'Cadrele asociate',
     'Analysis' => 'Analiza',
     'TotalNumber' => 'Număr total',
     'CumulativeScore' => 'Scor cumulat',
@@ -1551,7 +1521,7 @@ $lang = array(
     'AllRisksFromQuestionnaires' => 'Toate riscurile din chestionare',
     'AllAddedRisksFromQuestionnaires' => 'Toate riscurile adăugate de la chestionare',
     'AllPendingRisksFromQuestionnaires' => 'Toate riscurile în așteptare din chestionare',
-    'AddedRisk' => 'Adăugat de risc',
+    'AddedRisk' => 'Risc adăugat',
     'PendingRisk' => 'Risc în așteptare',
     'Undefined' => 'Nedefinit',
     'SendingRequestPleaseWait' => 'Trimiterea cererii. te rog să aştepţi.',
@@ -1564,7 +1534,6 @@ $lang = array(
     'ChangedTo' => 'Schimbat în',
 
     'Jira' => 'Jira',
-    'JiraIntegrationExtra' => 'Integrare Jira Extra',
 
     'JiraWebhookAuthTokenIsInvalid' => 'Cu condiția JIRA Webhook auth token ("{$token}") nu este validă!',
     'JiraWebhookNoBodyPosted' => 'Webhook JIRA nu a posta un corp! Vă rugăm să contactați support@simplerisk.com',
@@ -1573,8 +1542,8 @@ $lang = array(
     'JiraConnectionSettings' => 'Setări conexiune',    
     'JiraInstanceURL' => 'Adresa URL a instanței JIRA',
     'JiraInstanceURLInstructions' => 'De exemplu: https://your-domain.atlassian.net/',
-    'JiraUserEmail' => 'JIRA de E-mail de utilizator',
-    'JiraUserAPIKey' => 'JIRA user \' API cheie',
+    'JiraUserEmail' => 'E-mailul utilizatorului JIRA',
+    'JiraUserAPIKey' => 'Cheia API a utilizatorului JIRA',
     'JiraInvalidCredentials' => 'Acreditări incorecte! Imposibil de conectat la instanța JIRA cu cheia de e-mail și API specificată.',
     'JiraInstanceURLIsRequired' => 'JIRA instanță URL-ul este necesar!',
     'JiraUserEmailIsRequired' => 'E-mail JIRA utilizatorului este necesar!',
@@ -1622,9 +1591,9 @@ $lang = array(
     'JiraSynchronizeStatus_IssueClose_SetStatus' => 'Setați starea problemei JIRA la',
     'JiraSynchronizeStatus_RiskReopen' => 'Redeschideți riscul atunci când este redeschisă problema asociată JIRA',
     'JiraSynchronizeStatus_RiskReopen_SetStatus' => 'Setați starea riscului la',
-    'JiraSynchronizeStatus_IssueReopen' => 'Redeschideți problema JIRA atunci când riscul asociat este deschis',
+    'JiraSynchronizeStatus_IssueReopen' => 'Redeschideți problema JIRA atunci când riscul asociat este redeschis',
     'JiraSynchronizeStatus_IssueReopen_SetStatus' => 'Setați starea problemei JIRA la',
-    'JiraSynchronizeDescription' => 'Activați sincronizarea "Description"',
+    'JiraSynchronizeDescription' => 'Activați sincronizarea "Descriere"',
     'JiraSynchronizeDescriptionWith' => 'Sincronizarea cu',
     'JiraSynchronizeDescriptionWithInstructions' => 'Selectați care câmp pentru a sincroniza problemele JIRA "Descriere cu.',
     'JiraSynchronizeSummary' => 'Activați sincronizarea câmpului de risc "subiect" cu problema JIRA \' s "Sumar"',
@@ -1656,7 +1625,7 @@ $lang = array(
     'Internal' => 'Interne',
     'AnswerType' => 'Tip de răspuns',
     'MultipleChoice' => 'Alegere multiplă',
-    'FillInTheBlank' => 'Completați butonul Necompletat',
+    'FillInTheBlank' => 'Completați spațiul liber',
     'Proxy' => 'Proxy',
     'ProxyWebRequests' => 'Solicitări Web proxy',
     'VerifySSLCertificate' => 'Verificarea certificatului SSL',
@@ -1665,12 +1634,12 @@ $lang = array(
     'AuthenticatedProxy' => 'Proxy autentificat',
     'ProxyUsername' => 'Nume utilizator proxy',
     'ProxyPassword' => 'Parolă proxy',
-    'SimpleRiskExtras' => 'Suplimente SimpleRisk',
+    'SimpleRiskExtras' => 'Suplimentele SimpleRisk',
     'ColumnSelections' => 'Selecții de coloane',
     'GroupAndFilteringSelections' => 'Selecții de grupare și filtrare',
     'Hyperlink' => 'Hyperlink',
     'URL' => 'Url',
-    'AssetTeams'=>'Echipa (echipa)activelor',
+    'AssetTeams'=>'Echipa(ele) activelor',
     'AssetSiteLocation'=>'Site/Locație activ',
     'ActivatingSCFMessage' => 'Se instalează framework-ul Secure Controls Framework (SCF).\n\nAceastă operațiune poate dura până la o oră, în funcție de performanța sistemului și de numărul de framework-uri selectate.\n\nPuteți părăsi această pagină în timp ce aceasta se procesează în fundal.',
     'DeactivatingSCFMessage' => 'Se dezinstalează framework-ul Secure Controls Framework (SCF).\n\nAceastă operațiune poate dura până la o oră, în funcție de performanța sistemului și de numărul de framework-uri selectate.\n\nPuteți părăsi această pagină în timp ce aceasta se procesează în fundal.',
@@ -1679,7 +1648,7 @@ $lang = array(
     'AlphabeticalOrder'=>'Ordine alfabetică',
     'UserReports'=>'Rapoarte utilizator',
     'UsersHeader'=>'Utilizatorii',
-    'Usernames'=>'Utilizator',
+    'Usernames'=>'Nume de utilizator',
     'TeamsHeader'=>'Echipe',
     'TeamNames'=>'Nume echipă',
     'YouNeedTeamSeparationEnabled' => 'Trebuie să aveți activată suplimentarea separației echipei pentru această funcționalitate.',
@@ -1715,8 +1684,6 @@ $lang = array(
     'CustomFieldUpdateFailed' => 'Actualizarea câmpului particularizat nu a reușit.',
     'IncidentManagement' => 'Gestionarea incidentelor',
     'IncidentManagementExtra' => 'Gestionarea incidentelor extra',
-    'IncidentManagementNotifications' => 'Notificări privind gestionarea incidentelor',
-    'NotificationSettingsUpdated' => 'Setările de notificare au fost actualizate.',
     'Incident' => 'Incident',
     'NewIncident' => 'Incident nou',
     'Preparation' => 'Pregătirea',
@@ -1749,8 +1716,8 @@ $lang = array(
     'BusinessUnitCreateAuditLog' => 'Utilizator "{$user}" creat Business Unit "{$business_unit_name}"(ID:{$id}) cu echipele inițiale de "{$teams_to}".',
     'BusinessUnitUpdateAuditLog' => 'Utilizator "{$user}" echipe actualizate ale Business Unit "{$business_unit_name}"(ID:{$id}) de la "{$teams_from}" la "{$teams_to}" ({$team_changes}).',
     'BusinessUnitDeleteAuditLog' => 'Utilizator "{$user}" unitate de business ștearsă "{$business_unit_name}"(ID:{$id}).',
-    'BusinessUnitUpdateAuditLogRemoved' => 'Eliminat{$teams_removed}"',
-    'BusinessUnitUpdateAuditLogAdded' => 'Adăugat{$teams_added}"',
+    'BusinessUnitUpdateAuditLogRemoved' => 'Eliminat "{$teams_removed}"',
+    'BusinessUnitUpdateAuditLogAdded' => 'Adăugat "{$teams_added}"',
     'BusinessUnitRemoveTeamAuditLog' => 'Utilizator "{$user}" eliminat Echipa "{$team_name}"(ID:{$team_id}) de la Unitatea de Business "{$business_unit_name}"(ID:{$business_unit_id}).',
     'BusinessUnitCreatedSuccessfully' => 'A creat cu succes o nouă unitate de business.',
     'BusinessUnitUpdatedSuccessfully' => 'Unitate de business actualizată cu succes.',
@@ -1759,7 +1726,7 @@ $lang = array(
     'TeamRemovedFromBusinessUnitSuccessfully' => 'Echipa a eliminat cu succes din unitatea sa de business.',
     'ThereWasAProblemGettingTheBusinessUnit' => 'A fost o problemă cu obținerea unității de business.',
     'ThereWasAProblemCreatingTheBusinessUnit' => 'A existat o problemă cu crearea unității de business.',
-    'ThereWasAProblemUpdatingTheBusinessUnit' => 'S-a problemă cu actualizarea unității de business.',
+    'ThereWasAProblemUpdatingTheBusinessUnit' => 'A existat o problemă cu actualizarea unității de business.',
     'ThereWasAProblemDeletingTheBusinessUnit' => 'Problemă la ștergerea unității de business.',
     'ThereWasAProblemSelectingTheBusinessUnit' => 'Problemă la selectarea unității de business.',
     'ThereWasAProblemRemovingTheTeamFromBusinessUnit' => 'A existat o problemă cu eliminarea echipei din unitatea sa de business.',
@@ -1770,7 +1737,6 @@ $lang = array(
     'DeleteBusinessUnitTooltip' => 'Ștergere unitate de business',
     'RemoveTeamTooltip' => 'Eliminare echipă din unitatea de business',
     'YouNeedToSpecifyATeamParameter' => 'Trebuie să specificați un parametru Echipă.',
-    'OrganizationalHierarchyExtra' => 'Ierarhie organizațională suplimentară',
     'Source' => 'Sursă',
     'SourceType' => 'Tip sursă',
     'DetectedBy' => 'Detectat de',
@@ -1785,7 +1751,7 @@ $lang = array(
     'Regions' => 'Regiuni',
     'Country' => 'Ţară',
     'Countries' => 'Ţări',
-    'City' => 'City',
+    'City' => 'Oraș',
     'Cities' => 'Oraşe',
     'Communications' => 'Comunicaţii',
     'Facilities' => 'Facilități oferite',
@@ -1879,7 +1845,7 @@ $lang = array(
     'SCFMappings' => 'Mapări SCF',
     'ActivatingSCFMappingMessage' => 'Instalarea mapării SCF de la Github. Acest lucru poate dura câteva minute pentru a finaliza.',
     'DeactivatingSCFMappingMessage' => 'Dezinstalarea mapării SCF.',
-    'Dismiss' => 'Respingerea',
+    'Dismiss' => 'Respinge',
     'NewLessonLearned' => 'Noua lecție învățată',
     'CurrentLessonsLearned' => 'Lecțiile actuale învățate',
     'AnswersDynamicallyCreated' => 'Răspunsurile vor fi create dinamic pentru această întrebare.',
@@ -1923,7 +1889,7 @@ $lang = array(
     'DateRange' => 'Interval de date',
     'Average' => 'Medie',
     'ResolutionTarget' => 'Țintă rezoluție (zile)',
-    'Playbooks' => 'Cărți de joc',
+    'Playbooks' => 'Playbook-uri',
     'AddNewPlaybook' => 'Adăugare playbook nou',
     'SelectAnExistingPlaybook' => 'Selectarea unui Playbook existent',
     'AreYouSureYouWantToDeleteThisPlaybook' => 'Sigur ștergeți acest playbook?',
@@ -1952,7 +1918,6 @@ $lang = array(
     'ConnectivityVisualizer' => 'Vizualizator de conectivitate',
     'ThereAreNoConnectionsAssociatedWithTheSelectedValue' => 'Nu există conexiuni asociate cu valoarea selectată',
     'InvalidSimpleriskBaseUrl' => 'URL de bază SimpleRisk nevalid!',
-    'Questionnaire' => 'Chestionar',
     'FileEncodingFixHeader_risk' => 'Managementul Riscului',
     'FileEncodingFixHeader_compliance' => 'Guvernanță și conformitate',
     'FileEncodingFixHeader_questionnaire' => 'Evaluările',
@@ -2011,8 +1976,6 @@ $lang = array(
     'TemplateAssignment' => 'Atribuire șablon',
     'PleaseSelectUser' => 'Vă rugăm să selectați utilizatorul',
     'AboutThisPage' => 'Despre această pagină',
-    'UserGuide' => 'Ghid de utilizare',
-    'AdministratorGuide' => 'Ghidul administratorului',
     'ProjectStatus' => 'Starea proiectului',
     'SupportPortal' => 'Portal de asistență',
     'WebSupport' => 'Asistență web',
@@ -2173,7 +2136,7 @@ $lang = array(
     'DisableTabs' => 'Dezactivați filele',
     'NoPermissionForThisSelection' => 'Nu aveți permisiunea de a accesa această selecție salvată!',
     'SelectionSaveFailed' => 'Salvarea selecției a eșuat!',
-    'Logs' => 'Bușteni',
+    'Logs' => 'Jurnale',
     'NoGroup' => 'Fără grup',
     'InvalidGroups' => 'Grupuri nevalide!',
     'OrderUpdatedSuccessfully' => 'Comanda a fost actualizată cu succes.',
@@ -2186,8 +2149,7 @@ $lang = array(
     'GraphicalRiskAnalysis' => 'Analiza grafică a riscurilor',
     'ResetMitigations' => 'Resetați atenuările',
     'ResetReviews' => 'Resetați recenziile',
-	'EnableEncryptionDebugLogging' => 'Activați înregistrarea de depanare suplimentară a bazei de date criptate',
-    'Log' => 'Buturuga',
+    'Log' => 'Jurnal',
     'Date' => 'Data',
     'Platform' => 'Platformă',
     'NotifyOnNewDocument' => 'Notificare privind documentul nou',
@@ -2278,10 +2240,8 @@ $lang = array(
     'SSLSecurityCheckWarning' => 'AVERTISMENT: SSL previne atacurile MITM și dezactivarea următoarelor opțiuni este o problemă de securitate',
     'EnableSSLCertificateCheckSimpleRisk' => 'Activați verificările certificatelor SSL pentru solicitările API SimpleRisk',
     'EnableSSLCertificateCheckExternal' => 'Activați verificările certificatelor SSL pentru site-uri web externe',
-    'EnableAPIv1Endpoints' => 'Activează punctele finale API v1 (depreciat)',
-    'EnableAPIv1EndpointsHelp' => 'API v1 este perimat. Lăsați-l dezactivat, cu excepția cazului în care aveți o integrare care îl necesită. /api/v2/ nu este afectat de această setare și este întotdeauna disponibil.',
     'EnableSSLCertificateCheckVM' => 'Activați verificările certificatelor SSL pentru gestionarea vulnerabilităților',
-    'DuoToopherRemoved' => 'Duo este mai susținut direct de SimpleRisk. În schimb, am migrat la un autentificator TOTP generic. Vă rugăm să configurați mai jos noul dvs. autentificator.',
+    'DuoToopherRemoved' => 'Duo nu mai este susținut direct de SimpleRisk. În schimb, am migrat la un autentificator TOTP generic. Vă rugăm să configurați mai jos noul dvs. autentificator.',
     'ProtectYourSimpleRiskAccount' => 'Protejați-vă contul SimpleRisk',
     '2FADescription' => 'Autentificarea în doi factori îmbunătățește securitatea contului dvs. prin utilizarea unui dispozitiv secundar pentru a vă verifica identitatea. Acest lucru împiedică pe oricine, în afară de dvs., să vă acceseze contul, chiar dacă vă cunoaște parola.',
     '2FAStep1' => 'Pasul 1 - Scanați codul de mai jos cu o aplicație 2FA, cum ar fi Google Authenticator',
@@ -2307,7 +2267,7 @@ $lang = array(
     'EditFailed_NoPermission' => 'Editarea a eșuat, fără permisiune.',
     'EditFailed_FieldMustBeUnique' => 'Editarea nu a reușit, valoarea câmpului „{$field}” trebuie să fie unică.',
     'EditFailed_NotSelected' => 'Editarea a eșuat, câmpul nu este selectat în interfața de utilizare.',
-    'EditFailed_IncorrectOrEmptyRequiredFields' => 'Editați câmpurile obligatorii nereușite, incorecte sau goale.',
+    'EditFailed_IncorrectOrEmptyRequiredFields' => 'Editare eșuată, câmpuri obligatorii incorecte sau goale.',
     'EditFailed_RequiredFieldEmpty' => 'Editarea nu a reușit, câmpul obligatoriu „{$field}” nu poate fi gol.',
     'EditFailed_FieldNotEditable' => 'Editarea nu a reușit, câmpul „{$field}” nu poate fi editat.',
     'EditFailed_CustomFieldNeedsCustomization' => 'Editarea nu a reușit, câmpurile personalizate pot fi editate numai atunci când opțiunea de personalizare suplimentară este activată.',
@@ -2315,7 +2275,7 @@ $lang = array(
     'FieldUpdated_asset' => 'Câmpul „{$fieldName}” al materialului „{$name}” a fost actualizat de utilizatorul „{$user}”.',
     'UpdateSuccess_asset' => 'Materialul „{$name}” a fost actualizat cu succes de către utilizatorul „{$user}”.',
     'AreYouSureYouWantToDeactivateThisExtra' => 'Sunteți sigur că doriți să dezactivați acest extra?',
-    'Abort' => 'Avorta',
+    'Abort' => 'Anulare',
     'EnablingSelectedSCFMessage' => 'Activarea cadrelor Secure Controls Framework (SCF) selectate. Acest lucru poate dura câteva secunde.',
     'DisablingSelectedSCFMessage' => 'Dezactivarea cadrelor Secure Controls Framework (SCF) selectate.',
     'AssetAssetGroupWidgetPlaceholder' => 'Selectarea unui activ sau a unui grup de active',
@@ -2374,13 +2334,13 @@ $lang = array(
     'DeleteSelectedControls' => 'Ștergeți comenzile selectate',
     'CreateControl' => 'Creați control',
     'AddMapping' => 'Adăugați cartografiere',
-    'CreateSuccess_asset' => 'Materialul „{$name}” a fost creat cu succes de utilizatorul „{$user}”.',
+    'CreateSuccess_asset' => 'Activul „{$name}“ a fost creat cu succes de utilizatorul „{$user}“.',
     'AreYouSureYouWantToDeleteTheSelectedControls' => 'Sigur doriți să ștergeți controalele selectate?',
-    'ControlMappedToDifferentMaturitiesOnAsset' =>'Un control este mapat la scadențe diferite pentru același activ',
+    'ControlMappedToDifferentMaturitiesOnAsset' =>'Un control este mapat la niveluri de maturitate diferite pentru același activ',
     'Advanced_Search_no_results_1' => 'Se pare că nu există rezultate pentru interogarea dvs.',
     'Advanced_Search_no_results_2' => 'Verificați de două ori căutarea pentru orice greșeli de scriere, greșeli de ortografie sau încercați un alt termen de căutare.',
     'IncidentsPerDay' => 'Incidente pe zi',
-    'CurrentVsDesiredMaturity' => 'Maturitatea curentă vs. dorită în funcție de familia de control',
+    'CurrentVsDesiredMaturity' => 'Maturitate în funcție de familia de control',
     'RiskDistribution' => 'Distribuția riscului',
     'RiskDistributionDescription'=>'Diagramele circulare de mai sus ajută la arătarea distribuției riscurilor între diferitele niveluri de risc atât pentru riscul inerent, cât și pentru cel rezidual. Putem folosi aceste două plăcinte pentru a arăta progresul în eforturile noastre de atenuare a riscurilor. Dacă plăcinta cu riscuri reziduale prezintă secțiuni mari de riscuri foarte mari sau mari, poate fi un semn că organizația dvs. își asumă prea mult risc și sunt necesare eforturi suplimentare de atenuare.',
     'EnableTabs' => 'Activați filele',
@@ -2417,15 +2377,11 @@ $lang = array(
     'MFANotEnabledForUser' => 'MFA nu este activat pentru utilizatorul selectat',
     'MFAResetSuccessful' => 'Resetarea MFA a avut succes',
     'First' => 'Primul',
-    'Last' => 'Dura',
+    'Last' => 'Ultimul',
     'AnthropicConnectionSuccess' => 'Conectat cu succes la API-ul Anthropic.',
     'AnthropicConnectionWarning' => 'Acreditări nevalide! Nu se poate conecta la Anthropic cu cheia API.',
     'ResetAPIKey' => 'Resetați cheia API',
     'ArtificialIntelligence' => 'Inteligenţă artificială',
-    'ArtificialIntelligenceDesc' => 'Configurați conexiunea furnizorului de inteligență artificială și întrebările contextuale care stau la baza răspunsurilor inteligenței artificiale pentru această instanță SimpleRisk.',
-    'ProviderConfiguration' => 'Configurarea furnizorului',
-    'ContextQuestions' => 'Întrebări contextuale',
-    'AIProviderNotConfiguredWarning' => 'Furnizorul de inteligență artificială nu este configurat. Nu se pot genera rezultate live până când nu setați furnizorul și cheia API în fila Configurare furnizor.',
     'ArtificialIntelligenceAdditionalContext' => 'Context suplimentar al inteligenței artificiale',
     'ArtificialIntelligenceAdditionalContextDescription' => 'Următoarele informații sunt opționale, dar vor oferi inteligenței artificiale contextul suplimentar de care are nevoie pentru a produce rezultate mai semnificative. Toate informațiile introduse mai jos VOR FI TRIMISE FURNIZORULUI DVS. DE IA CONFIGURAT pentru analiză, în vederea adaptării răspunsurilor la organizația dvs.',
     'OrganizationContext' => 'Contextul organizației',
@@ -2456,7 +2412,7 @@ $lang = array(
     'EditModeInformation' => 'Activați Modul Editare editați aspectul. Oprirea acestuia nu va salva automat aspectul.',
     'InvalidLayout' => 'Aspect nevalid!',
     'InvalidLayoutOnlyCustomAllowedAsDefault' => 'Aspect nevalid! Doar aspectele personalizate pot fi salvate ca implicite.',
-    'LayoutSaved' => 'Aspect salvat!',
+    'LayoutSaved' => 'Aspectul tabloului de bord a fost salvat.',
     'DefaultLayout' => 'Aspect implicit',
     'DefaultLayoutInformation' => 'Setează acest aspect ca implicit, pentru a fi utilizat în locul celui oferit de SimpleRisk pentru utilizatorii care nu au un set de aspect personalizat. Puteți seta ca implicit doar un aspect personalizat, care nu este gol. Dacă un aspect marcat ca implicit este restabilit la aspectul implicit, îl va restabili la aspectul implicit furnizat de SimpleRisk.',
     'LayoutDefaultStatusUpdated' => 'Starea implicită a aspectului a fost actualizată.',
@@ -2465,7 +2421,7 @@ $lang = array(
     'DefaultLayoutRestored' => 'Aspectul implicit a fost restabilit cu succes!',
     'SavedLayoutRestored' => 'Aspectul salvat a fost restaurat cu succes!',
     'ConfirmRestoreLayout' => 'esti sigur? Veți pierde modificările aduse acestui aspect.',
-    'ConfirmDisableEditModeWithPendingChanges' => 'Aveți modificări nesalvate pe care le veți pierde la părăsirea paginii. Sigur doriți să dezactivați „Modul de editare” și, eventual, să uitați de salvarea modificărilor?',
+    'ConfirmDisableEditModeWithPendingChanges' => 'Aveți modificări nesalvate la acest tablou de bord. Le renunțați și opriți editarea?',
     'ConfirmSave' => 'Salvarea acestor modificări va suprascrie aspectul salvat anterior. Ești sigur că vrei să continui?',
     'ConfirmSaveAdminDefault' => 'Acest aspect este setat ca implicit pentru acest tip de aspect. Salvarea acestor modificări va modifica aspectul pentru toți utilizatorii care nu au un aspect personalizat setat pentru acest tip de aspect. Ești sigur că vrei să continui?',
     'RisksByMonth' => 'Riscuri pe lună',
@@ -2496,7 +2452,6 @@ $lang = array(
     'SecondaryLossEventFrequency' => 'Frecvența evenimentului de pierdere secundară',
     'SecondaryLossMagnitude' => 'Mărimea pierderii secundare',
     'Productivity' => 'Productivitate',
-    'Response' => 'Răspuns',
     'Replacement' => 'Înlocuire',
     'CompetitiveAdvantage' => 'Avantaj competitiv',
     'FinesAndJudgements' => 'Amenzi și hotărâri',
@@ -2559,7 +2514,7 @@ $lang = array(
     'TheFileTypeExtensionIsTooLong' => 'Extensia tipului de fișier este prea lungă.',
     'EnterAValuationLevelName' => 'Introduceți un nume de nivel de evaluare.',
     'TheNameFieldCannotBeEmptyOrContainOnlySpaces' => 'Câmpul de nume nu poate fi gol sau conține doar spații.',
-    'EditAsset' => 'Editați materialul',
+    'EditAsset' => 'Editați activul',
     'TheSelectedControlsWereDeletedSuccessfully' => 'Controalele selectate au fost șterse cu succes.',
     'NothingControlsForDeletingWereSelected' => 'Nu a fost selectat nimic de control pentru ștergere.',
     'PleaseSelectARoleBeforeDeleting' => 'Vă rugăm să selectați un rol înainte de a șterge.',
@@ -2590,7 +2545,6 @@ $lang = array(
     'NotAMatch' => 'Nu se potrivește',
     'ReviewManually' => 'Revizuire manuală',
     'ResponsesToQuestionsWithLinkedControlsWillUpdateTheControlTypeTo' => 'Răspunsurile la întrebările cu controale legate vor actualiza tipul de control la',
-    'DueDate' => 'Data scadenței',
     'AuditLog_IncidentUpdated' => 'Incidentul „{$incident_summary}” (ID: {$incident_id}) a fost actualizat de utilizatorul „{$user_name}”. Modificări: {$changes}.',
     'AnswersWillBeAutoSavedOnAssessments' => 'Răspunsurile vor fi salvate automat în evaluări',
     'SecondsAssessmentsAreAutoSaved' => 'Evaluările secundelor sunt salvate automat',
@@ -2598,7 +2552,6 @@ $lang = array(
     'NotifyAuditInitiateSubject' => 'Audit inițiat',
     'BypassPendingRisksAndCreateRisksImmediatelyAfterAssessmentCompletion' => 'Ocoliți „Riscurile în așteptare” și creați riscuri imediat după finalizarea evaluării',
     'AssociatedExceptions' => 'Excepții asociate',
-    'Required' => 'Necesar',
     'EmailInstructions' => 'Instrucțiuni prin e-mail',
     'ApproveSelectedVulnerabilities' => 'Aprobați vulnerabilitățile selectate',
     'RejectSelectedVulnerabilities' => 'Respingeți vulnerabilitățile selectate',
@@ -2637,7 +2590,7 @@ $lang = array(
     'AnExistingUploadFileTypeWasRemovedSuccessfully' => 'Un tip de fișier încărcat existent a fost eliminat cu succes.',
     'AnExistingUploadFileExtensionWasRemovedSuccessfully' => 'O extensie de fișier încărcat existentă a fost eliminată cu succes.',
     'UploadingFileTypeAndExtensionNoSupport' => 'Combinația dintre tipul de fișier și extensia („{$file_type_name}”, „{$file_type_extension_name}”) nu este acceptată.',
-    'Logging' => 'Exploatare forestieră',
+    'Logging' => 'Jurnalizare',
     'EnableLoggingCritical' => 'CRITICE: Condiții care pot necesita acțiuni imediate.',
     'EnableLoggingError' => 'EROARE: Erori de execuție care necesită atenție, dar nu provoacă blocarea aplicației.',
     'EnableLoggingWarning' => 'AVERTISMENT: S-a întâmplat ceva neașteptat, dar aplicația încă rulează.',
@@ -2648,68 +2601,9 @@ $lang = array(
     'PleaseEnterAValidTimezone' => 'Introduceți un fus orar valid.',
     'TFIDFMatch' => 'Meci TF-IDF',
     'CompletionDate' => 'Data finalizării',
-    'AutoProcessSCFUpdates' => 'Procesarea automată a noilor versiuni ale Secure Controls Framework (SCF)',
-    'AddNewControls' => 'Adăugați noi controale SCF',
-    'UpdateExistingControls' => 'Actualizați controalele SCF existente',
-    'DeleteRemovedControls' => 'Ștergeți controalele SCF eliminate',
-    'CreateEvidenceRequests' => 'Creați cereri de dovezi pentru controalele SCF',
-    'SelectSCFFrameworks' => 'Selectați cadre SCF',
-    'SCFReleaseProcessing' => 'Procesarea lansării SCF',
-    'NotFrameworkDescription' => 'Widgetul de mai jos afișează toate anteturile găsite în foaia de calcul Secure Controls Framework (SCF). Folosește-l pentru a selecta ce coloane conțin date din framework-uri față de date care nu le conțin.',
-    'Note' => 'Nota',
-    'AISettingsNote' => 'Activarea asistenței prin inteligență artificială va trimite date către Anthropic pentru analiză în cadrul LLM-ului lor, folosind cheia API Anthropic, pentru a vă oferi rezultate personalizate.',
-    'EnableAIAssistanceForControlData' => 'Activează asistența AI pentru datele de control',
-    'ReferenceText' => 'Text de referință',
-    'FrameworkSelection' => 'Selectarea cadrului',
-    'Show' => 'Spectacol',
-    'InProgress' => 'În curs',
-    'Canceled' => 'Anulat',
-    'Failed' => 'Eșuat',
-    'LegacyFrameworks' => 'Framework-uri vechi',
-    'Archive' => 'Arhivă',
-    'FailedToFetchCVEInformation' => 'Nu s-au putut obține informațiile CVE. Verificați ID-ul CVE și încercați din nou.',
-    'ComplianceDashboard' => 'Tablou de bord de conformitate',
-    'DynamicAuditReportHelp' => 'Acest raport prezintă toate auditurile și stările acestora.',
-    'ComplianceDashboardDescription' => 'Această diagramă afișează numărul de controale din fiecare framework, controalele care reușesc fiind în verde și cele care eșuează fiind în roșu.',
-    'PassingControls' => 'Controale de depășire',
-    'FailingControls' => 'Controale defecte',
-    'ControlsByFramework' => 'Controale prin Framework',
-    'NumberOfControls' => 'Număr de controale',
     'AssetsAndControls' => 'Active și controale',
     'AssetsByControl' => 'Active prin control',
     'ControlsByAsset' => 'Controale pe active',
-    'PasswordResetTokenExpirationPeriod' => 'Perioada de expirare a tokenului de resetare a parolei',
-    'APasswordResetTokenExpirationPeriodShouldBeMoreThan5Minutes' => 'Perioada de expirare a unui token de resetare a parolei ar trebui să fie mai mare de 5 minute.',
-    'MeanTimeToRemediate' => 'Timpul mediu de remediere',
-    'ByTeam' => 'De echipă',
-    'ByCategory' => 'După categorie',
-    'ByRiskLevel' => 'După nivelul de risc',
-    'MeanTimeToRemediateDescription' => 'Numărul mediu de zile până la închiderea riscurilor, grupate după echipă, categorie și nivel de risc. Sunt incluse doar riscurile închise.',
-    'AverageDaysToClose' => 'Număr mediu de zile până la închidere',
-    'ControlPassRateTrend' => 'Tendința ratei de trecere a controlului',
-    'ControlPassRateTrendDescription' => 'Rata lunară de promovabilitate (%) per cadru în ultimele 12 luni. Sunt afișate doar cadrele cu cel puțin un rezultat al testului în această perioadă.',
-    'PassRatePercent' => 'Rata de promovabilitate (%)',
-    'ExposureByTeam' => 'Expunerea la risc în funcție de echipă',
-    'ExposureByCategory' => 'Expunerea la risc pe categorii',
-    'ExposureByLocation' => 'Expunerea la risc în funcție de locație',
-    'TotalRiskScore' => 'Scorul total de risc',
-    'SLABreachStatus' => 'Starea încălcării SLA',
-    'SLABreachDescription' => 'Riscuri deschise în interiorul sau peste pragul lor de nivel de serviciu (SLA) în funcție de nivelul de risc. Praguri implicite: Foarte ridicat = 30 zile, Ridicat = 60 zile, Mediu = 90 zile, Scăzut = 180 zile.',
-    'WithinSLA' => 'În cadrul acordului de nivel de serviciu (SLA)',
-    'SLABreached' => 'Încălcarea SLA-ului',
-    'NumberOfRisks' => 'Numărul de riscuri',
-    'AllFrameworks' => 'Toate cadrele',
-    'ExposureByBusinessUnit' => 'Expunerea la risc pe unități de afaceri',
-    'BusinessUnit' => 'Unitate de afacere',
-    'BUChartCrossUnitNote' => 'Notă: riscurile atribuite echipelor care acoperă mai multe BU-uri sunt luate în considerare în fiecare dintre ele.',
-    'SLAThresholds' => 'Praguri SLA',
-    'SLAThresholdsDescription' => 'Numărul maxim de zile în care un risc deschis poate rămâne nerezolvat înainte de a fi considerat restant, per nivel de risc.',
-    'SLAThresholdMustBeBetween1And3650' => 'Valorile prag ale SLA-urilor trebuie să fie între 1 și 3650 de zile.',
-    'SLAThresholdsUpdatedSuccessfully' => 'Pragurile SLA au fost actualizate cu succes.',
-    'TimeToDetect' => 'Timpul de detectare',
-    'TimeToDetectDescription' => 'Numărul mediu de zile de la începutul incidentului (Început pe) până la detectare (Detectat pe), grupate după echipă și tipul de incident. Sunt incluse doar incidentele cu ambele date înregistrate.',
-    'ByOccurrenceType' => 'După tipul de apariție',
-    'OccurrenceType' => 'Tip apariție',
     'NoIncidentDetectionDataAvailable' => 'Nu s-au înregistrat incidente cu ambele date: Început pe și Detectat pe.',
     'IncidentDashboard' => 'Tablou de bord pentru incidente',
     'TimeToDetectByTeam' => 'Timpul de detectare de către echipă',
@@ -2734,7 +2628,7 @@ $lang = array(
     'ControlPassFailStatus' => 'Starea de control reușită/nereușită',
     'GovernanceDashboard' => 'Tablou de bord de guvernanță',
     'GovernanceDashboardDescription' => 'Această diagramă afișează maturitatea actuală a tuturor controalelor.',
-    'GovernanceControlsByFrameworkMaturityStacked' => 'Controale în funcție de cadru și scadență curentă',
+    'GovernanceControlsByFrameworkMaturityStacked' => 'Controale în funcție de cadru și maturitate actuală',
     'Custom' => 'Personalizat',
     'SimpleRiskCustomScheduledNotifications' => 'Notificări programate personalizate SimpleRisk',
     'AddCustomScheduledNotification' => 'Adăugați o notificare programată personalizată',
@@ -2850,16 +2744,15 @@ $lang = array(
     'SettingsSecurityDesc'                => 'Setări de securitate pentru autentificare, sesiune, politică de parolă, URL de bază și API.',
     'SettingsLoggingDesc'                 => 'Configurarea jurnalizării de depanare și audit: nivelurile de jurnalizare, păstrarea și locația fișierelor jurnal.',
     'HealthCheckDesc'                     => 'Diagnosticarea stării sistemului: versiunea PHP, extensiile, permisiunile fișierelor, conectivitatea bazei de date, programarea cron și activările suplimentare.',
-    'AboutDesc'                           => 'Vizualizați versiunea SimpleRisk, informațiile despre licență și creditele.',
     'AnnouncementsDesc'                   => 'Redactați și gestionați anunțuri tip banner vizibile pentru toți utilizatorii.',
     'RegisterAndUpgradeDesc'              => 'Înregistrează-ți instalarea SimpleRisk, introdu sau reînnoiește o cheie de abonament și declanșează upgrade-uri Core/Extra cu un singur clic.',
     'QueueMonitorDesc'                    => 'Inspectați coada de joburi în fundal: joburi în așteptare, în curs de desfășurare și eșuate.',
     'ExtrasDesc'                          => 'Activați, dezactivați și configurați SimpleRisk Extras (suplimente plătite).',
-    'ArtificialIntelligenceExtraDesc'     => 'Activează asistența inteligenței artificiale în SimpleRisk.',
-    'CustomizationExtraDesc'              => 'Permite adăugarea și eliminarea diferitelor tipuri de câmpuri și crearea dinamică a șabloanelor de pagină.',
-    'NotificationExtraDesc'               => 'Trimite notificări prin e-mail atunci când riscurile sunt trimise, actualizate, atenuate sau revizuite și poate fi executat conform unui program pentru a notifica utilizatorii cu privire la riscurile aflate în starea Nerevizuite sau Depășite.',
-    'VulnerabilityManagementExtraDesc'    => 'Permite integrarea SimpleRisk cu Rapid7 Nexpose, InsightVM, Qualys și Tenable.io.',
-    'IncidentManagementExtraDesc'         => 'Oferă capabilități de gestionare a incidentelor din cadrul sistemului SimpleRisk.',
+    'ArtificialIntelligenceExtraDesc'     => 'Artificial Intelligence Extra oferă analize îmbunătățite ale riscurilor (inclusiv evaluări FAIR) și documentație personalizată.',
+    'CustomizationExtraDesc'              => 'Funcția de personalizare suplimentară permite adăugarea și eliminarea diferitelor tipuri de câmpuri și crearea dinamică a șabloanelor de pagină personalizate.',
+    'NotificationExtraDesc'               => 'Instrumentul suplimentar pentru notificări prin e-mail permite SimpleRisk să trimită notificări prin e-mail atunci când riscurile sunt trimise, modificate sau se iau măsuri în consecință. Acest instrument suplimentar poate fi adăugat și ca script programat pentru a trimite mementouri de rutină atunci când riscurile sunt gata pentru o analiză de management. În produsul SimpleRisk Core, fără acest instrument suplimentar, nu se comunică notificări în afara instrumentului în sine.',
+    'VulnerabilityManagementExtraDesc'    => 'Funcția Vulnerability Management Extra oferă clienților posibilitatea de a integra instanța SimpleRisk cu Qualys, Tenable.io sau Rapid7 Nexpose/InsightVM și de a importa atât date despre active, cât și vulnerabilități în SimpleRisk. De acolo, puteți selecta site-urile pe care doriți să le acoperiți, puteți determina ce scoruri de vulnerabilitate ar trebui importate și puteți evalua ce vulnerabilități sunt transformate în riscuri pentru a le urmări.',
+    'IncidentManagementExtraDesc'         => 'Incident Management Extra se bazează pe Ghidul NIST 800-61 pentru gestionarea incidentelor de securitate informatică și oferă capabilități de gestionare a incidentelor din cadrul sistemului SimpleRisk.',
 
     // Configure Hub - tile descriptions (customization category)
     'RedefineNamingConventionsDesc'       => 'Redenumiți terminologia SimpleRisk (Risc, Activ, Cadru etc.) în interfața cu utilizatorul.',
@@ -2872,26 +2765,25 @@ $lang = array(
     'UserManagementDesc'                  => 'Adăugați, editați, dezactivați și resetați utilizatori; gestionați politica de parole.',
     'RoleManagementDesc'                  => 'Definiți rolurile și permisiunile pe care le acordă fiecare rol.',
     'TeamManagementDesc'                  => 'Creați și gestionați echipe utilizate pentru filtrarea vizibilității înregistrărilor.',
-    'SeparationExtraDesc'                 => 'Restricționarea vizualizării riscurilor pentru membrii echipei, riscul este clasificat ca.',
-    'CustomAuthenticationExtraDesc'       => 'Oferă suport pentru Active Directory sau SAML/Single Sign-On pentru autentificare și autorizare.',
-    'EncryptionExtraDesc'                 => 'Criptarea câmpurilor de text sensibile din baza de date.',
-    'OrganizationManagementDesc'          => 'Mai multe unități de afaceri pot fi definite deasupra echipelor. Utilizatorii pot fi apoi repartizați într-una sau mai multe echipe sub diverse unități de afaceri. Acest lucru le afectează capacitatea de a vedea și utiliza echipele, utilizatorii și activele cu care nu sunt asociați.',
+    'SeparationExtraDesc'                 => 'Funcția Extra de Separare Bazată pe Echipă restricționează vizualizarea riscurilor doar la utilizatorii care sunt membri ai echipei căreia îi este atribuit riscul. În produsul SimpleRisk Core, fără această funcție Extra, fiecare utilizator poate vedea fiecare risc.',
+    'CustomAuthenticationExtraDesc'       => 'Extra-ul de autentificare personalizată oferă suport pentru autentificarea Active Directory și SAML. În produsul SimpleRisk Core, fără acest Extra, singura opțiune este crearea de utilizatori noi în depozitul de identități SimpleRisk.',
+    'EncryptionExtraDesc'                 => 'Instrumentul Encrypted Database Extra generează o cheie de criptare AES-256 biți aleatorie și apoi o folosește pentru a cripta textul sensibil înainte de a fi introdus în baza de date SimpleRisk. Acest lucru împiedică oricine să poată vizualiza sau modifica datele fără a utiliza direct aplicația SimpleRisk.',
+    'OrganizationManagementDesc'          => "Funcția Ierarhie Organizațională Extra permite definirea mai multor Unități de Afaceri, care pot include orice număr de echipe. Utilizatorii pot fi apoi repartizați la una sau mai multe echipe din cadrul diferitelor Unități de Afaceri. Acest lucru afectează capacitatea unui utilizator de a vedea și utiliza echipele, utilizatorii și activele cu care nu este asociat.",
 
     // Configure Hub - tile descriptions (data category)
-    'DeleteRisksDesc'                     => 'Riscuri legate de ștergerea în bloc. Folosiți cu moderație - ștergerile sunt permanente.',
+    'DeleteRisksDesc'                     => 'Ștergere în bloc a riscurilor. Folosiți cu moderație - ștergerile sunt permanente.',
     'AuditTrailDesc'                      => 'Căutați și exportați jurnalul de audit al sistemului pentru acțiunile utilizatorilor.',
-    'ImportExportExtraDesc'               => 'Permite importul și exportul fișierelor CSV care conțin informații despre riscuri.',
-    'JiraExtraDesc'                       => 'Permite integrarea cu instanța JIRA. Activează conectarea riscurilor la problemele Jira, sincronizarea datelor, stării și comentariilor acestora.',
-    'APIExtraDesc'                        => 'Activează o API pentru integrarea SimpleRisk cu alte instrumente și sarcini de automatizare.',
-    'AdvancedSearchExtraDesc'             => "Extinde funcționalitatea casetei de căutare din bara superioară pentru a putea găsi riscuri prin căutare textuală în datele de risc.",
-    'AssessmentsExtraDesc'                => 'Permite crearea de formulare personalizate de evaluare a riscurilor și trimiterea acestora utilizatorilor.',
+    'ImportExportExtraDesc'               => 'Funcția Import-Export Extra oferă posibilitatea de a importa date în SimpleRisk prin maparea câmpurilor dintr-un fișier CSV la câmpurile din baza de date SimpleRisk. Poate fi utilizată pentru a importa rezultatele auditului dintr-o foaie de calcul terță parte, rezultatele scanării de vulnerabilități dintr-un alt instrument, resurse din CMDB și multe altele. Funcția Extra oferă, de asemenea, posibilitatea de a exporta fișiere CSV din SimpleRisk care conțin Riscuri, Atenuări, Recenzii sau un raport combinat al tuturor trei.',
+    'JiraExtraDesc'                       => 'Jira Integration Extra oferă utilizatorilor posibilitatea de a se integra bidirecțional cu o instanță Jira. Permite conectarea riscurilor la problemele Jira, precum și sincronizarea datelor, stării și comentariilor acestora.',
+    'APIExtraDesc'                        => 'API Extra permite clienților să utilizeze o API RESTful pentru a crea interacțiuni scriptate cu alte aplicații, pentru a obține automatizare avansată și a valorifica infrastructura existentă.',
+    'AdvancedSearchExtraDesc'             => "Funcția Căutare Avansată suplimentară extinde funcționalitatea casetei de căutare din bara superioară pentru a putea găsi riscuri prin căutare textuală în datele privind riscurile.",
+    'AssessmentsExtraDesc'                => 'Instrumentul suplimentar pentru evaluarea riscurilor oferă utilizatorilor posibilitatea de a defini contacte, de a crea întrebări (inclusiv logica), de a asambla mai multe întrebări cu un șablon de chestionar, de a crea chestionare și de a le trimite contactelor, de a vizualiza rezultatele chestionarului, de a adăuga riscuri pe baza acestor rezultate și de a compara rezultatele în timp, de a importa și exporta evaluări personalizate extern și de a revizui pista de audit a evaluării riscurilor.',
     'ActiveAssessmentsDesc'               => 'Vizualizați și gestionați evaluările aflate în curs de desfășurare.',
-    'WorkflowsExtraDesc'                  => 'Permite unui motor vizual de flux de lucru bazat pe evenimente să automatizeze acțiunile de gestionare a riscurilor declanșate de evenimentele din SimpleRisk.',
+    'WorkflowsExtraDesc'                  => 'Workflows Extra oferă un motor vizual de fluxuri de lucru bazat pe evenimente, care automatizează acțiunile de gestionare a riscurilor ca răspuns la evenimentele din SimpleRisk. Puteți proiecta fluxuri de lucru care se declanșează la modificări - cum ar fi trimiterea, actualizarea sau revizuirea unui risc - pentru a direcționa aprobările, a atribui sarcini și a menține procesul în mișcare fără intervenție manuală.',
 
     // Configure Hub - tile descriptions (frameworks category)
-    'UCFExtraDesc'                        => 'Permite integrarea controalelor și testelor Unified Control Framework (UCF) cu SimpleRisk.',
-    'SCFExtraDesc'                        => 'Adaugă controalele din Secure Controls Framework (SCF) în SimpleRisk pentru utilizare cu funcționalitatea noastră de Guvernanță.',
-    'ComplianceForgeExtraDesc'            => 'Adaugă controalele din Programul de securitate digitală (DSP) ComplianceForge în SimpleRisk pentru utilizare cu funcționalitatea noastră de guvernanță.',
+    'UCFExtraDesc'                        => 'Unified Compliance Framework (UCF) Extra este o integrare la nivel de API între Unified Compliance Framework și SimpleRisk. Activarea acesteia vă permite să importați anumite framework-uri și mapări de control direct din UCF.',
+    'SCFExtraDesc'                        => "Secure Controls Framework (SCF) Extra este o integrare directă între Secure Controls Framework și SimpleRisk. Acesta importă catalogul de controale al SCF și mapările acestora într-o gamă largă de cadre de conformitate și securitate cibernetică în funcționalitatea de guvernanță a SimpleRisk, astfel încât să puteți adopta cadrele de care aveți nevoie și să gestionați controalele acestora fără a le construi manual.",
 
     // Configure Hub - tile descriptions (maintenance category)
     'FixReviewDatesDesc'                  => 'Migrați coloanele vechi de tip varchar review-date la tipurile de date corespunzătoare. Vizibil doar atunci când este necesar.',
@@ -2909,7 +2801,6 @@ $lang = array(
     'WorkflowsExtra'                      => 'Fluxuri de lucru suplimentare',
     'UCFExtra'                            => 'Cadrul de conformitate unificat (UCF) suplimentar',
     'SCFExtra'                            => 'Cadrul de control securizat suplimentar',
-    'ComplianceForgeExtra'                => 'ComplianceForge Extra',
     'DatabaseUpgrade'                     => 'Actualizare bază de date',
 
     // Configure Hub - Extra tile state badges
@@ -2925,6 +2816,12 @@ $lang = array(
     'ActivateExtraBody'                   => 'Activați Extra {name} ? Aceasta îi va activa funcționalitatea imediat. Îl puteți dezactiva din nou mai târziu din aceeași dală.',
     'ActivateExtraError'                  => 'Nu s-a putut activa Extra. Vă rugăm să verificați pagina Verificare stare de funcționare pentru diagnosticare.',
 
+    // Configure Hub - Deactivation modal (Encryption Extra)
+    // 'Deactivate' (line 491) and 'Cancel' (line 489) are reused as-is.
+    'DeactivateExtraTitle'                => 'Dezactivați Extra',
+    'DeactivateExtraBody'                 => 'Dezactivați opțiunea suplimentară {name} ? Baza dvs. de date SimpleRisk va fi decriptată pe loc. O copie de rezervă a stării criptate este păstrată, astfel încât să puteți reveni la versiunea anterioară, dacă este necesar.',
+    'DeactivateExtraError'                => 'Nu s-a putut dezactiva Extra. Vă rugăm să verificați pagina Verificare stare de funcționare pentru diagnosticare.',
+
     // Configure Hub - Async license enrichment notice (Phase 4)
     // 'Retry' (line 2764) is reused. The existing 'LicenseCheckFailed' key
     // (line 1851) refers to the 30-day-disable warning shown elsewhere in
@@ -2933,11 +2830,16 @@ $lang = array(
 
     // Configure Hub - Install modal (Phase 5)
     // 'Install' (line 403) and 'Cancel' (line 489) are reused as-is.
-    'InstallExtraTitle'                   => 'Instalare suplimentară',
-    'InstallExtraBody'                    => 'Instalați {name} Extra? Această acțiune descarcă pachetul din SimpleRisk și îl despachetează în instalarea dvs. Activarea este un pas separat pe care îl puteți face din dală după finalizarea instalării.',
-    'InstallExtraError'                   => 'Instalarea Extra a eșuat. Verificați pagina Verificare stare de funcționare pentru diagnosticare.',
-    'MissingExtraName'                    => 'Lipsește numele suplimentar.',
-    'UnknownExtra'                        => 'Nume necunoscut al extrasului.',
+    'InstallExtraTitle'                          => 'Instalare suplimentară',
+    'InstallExtraBody'                           => 'Instalați {name} Extra? Această acțiune descarcă pachetul din SimpleRisk și îl despachetează în instalarea dvs. Activarea este un pas separat pe care îl puteți face din dală după finalizarea instalării.',
+    'InstallExtraError'                          => 'Instalarea Extra a eșuat. Verificați pagina Verificare stare de funcționare pentru diagnosticare.',
+    'MissingExtraName'                           => 'Lipsește numele suplimentar.',
+    'UnknownExtra'                               => 'Nume necunoscut al extrasului.',
+
+    // License state banner messages (display_license_check() in display.php)
+    // Shown as a header banner when $_SESSION['license_check'] is a non-passing state.
+    // 'LicenseCheckFailed' (line ~1868) is the legacy 30-day-disable warning used
+    // by the old enforcement path; these keys cover the new enforcement states.
 
     // Configure Hub - Purchase modal (Phase 6)
     // 'Cancel' (line 489) is reused as-is.
@@ -2945,6 +2847,1796 @@ $lang = array(
     'PurchaseExtraBody'                   => 'Extra-ul {name} nu este inclus în licența dvs. SimpleRisk curentă. Vizitați pagina SimpleRisk Extras pentru a afla mai multe sau pentru a achiziționa o licență.',
     'ViewExtras'                          => 'Vezi extrasuri',
 
+    // In-app notifications bell UI
+    // Note: 'Notifications' (line 2234), 'SelectAll' (line 816), 'Restore' (line 952),
+    // 'All' (line 1470), and 'Delete' (line 80) are reused as-is — do not duplicate.
+    'MarkRead'                             => 'Marchează ca citit',
+    'NoNotifications'                      => 'Nicio notificare',
+    // Time-unit abbreviations for the relative-time display in the bell panel.
+    // 'TimeDays' is already used for the column header "Time (Days)"; TimeDayUnit covers the 'd' abbrev.
+    'TimeSeconds'                          => 's',
+    'TimeMinutes'                          => 'm.',
+    'TimeHours'                            => 'h',
+    'TimeDayUnit'                          => 'd',
+    'NothingInTrash'                       => 'Nimic în coșul de gunoi',
+    'Promo'                                => 'Promoție',
+    'Trash'                                => 'Gunoi',
+    'Unread'                               => 'Necitit',
+    'View'                                 => 'Vedere',
+
+    // Workflow "Send In-App Notification" action — audience picker hints.
+    // 'NoneSelected' (line 1878) is reused as-is for the multi-select button.
+    'NotificationSentToAllAdmins'          => 'Această notificare va fi trimisă tuturor administratorilor.',
+    'NotificationSentToAllUsers'           => 'Această notificare va fi trimisă tuturor utilizatorilor.',
+    'SelectAnAudienceAbove'                => 'Selectați un public mai sus.',
+    'RiskConfiguration' => 'Configurarea riscului',
+    'ReviewSettings' => 'Setări de revizuire',
+    'Cards' => 'Cărți',
+    'List' => 'Listă',
+    'DeletedAssessmentsCannotBeRecovered' => 'Evaluările șterse nu pot fi recuperate',
+    'TheAssessmentsWereDeletedSuccessfully' => 'Evaluarea (evaluările) a(au) fost șterse cu succes.',
+    'AssetValuationMode' => 'Mod de evaluare a activelor',
+    'AutomaticLinearRange' => 'Interval liniar automat',
+    'AutomaticExponentialRange' => 'Interval exponențial automat',
+    'ManualValuation' => 'Manual',
+    'AssetValuationMinMustBeNonNegative' => 'Valoarea minimă a activelor trebuie să fie zero sau mai mare pentru Intervalul Exponențial Automat.',
+    'CrossDomain' => 'Domeniu multiplu',
+    'Preferences' => 'Preferințe',
+    'SpecificUser' => 'Utilizator specific',
+    'SpecificUsers' => 'Utilizatori specifici',
+    'Help' => 'Ajutor',
+    'Profile' => 'Profil',
+    'Scoring' => 'Scorare',
+    'EncryptionMissingLockTablesPrivilege'   => 'Utilizatorul bazei de date SimpleRisk nu are privilegiul LOCK TABLES, necesar pentru criptarea în siguranță a bazei de date. Rugați un administrator de baze de date să execute instrucțiunea GRANT returnată în răspuns și încercați din nou.',
+    'EncryptionMissingLockTablesPrivilegeUi' => 'Utilizatorul bazei de date SimpleRisk nu are privilegiul LOCK TABLES necesar pentru criptare. Un administrator al bazei de date trebuie să execute: GRANT LOCK TABLES ON {$db}.* TO {$user}; apoi să încercați din nou.',
+    'EncryptionRequiredGrantLabel' => 'Instrucțiune GRANT necesară:',
+    'EncryptionActivationAlreadyRunning' => 'O activare a criptării este deja în curs. Așteptați finalizarea acesteia sau utilizați restaurarea din copie de rezervă pentru a recupera.',
+    'EncryptionActivationEnqueued'           => 'Activarea funcției Encryption Extra a fost pusă în coadă. Interfața de administrare va urmări progresul în timp ce baza de date este criptată.',
+    'EncryptionActivationEnqueueFailed'      => 'Nu s-a putut pune în coadă sarcina de activare a criptării. Verificați jurnalul de depanare pentru detalii.',
+    'EncryptionDeactivationEnqueued'         => 'Dezactivarea funcției Encryption Extra a fost pusă în coadă. Interfața de administrare va urmări progresul în timp ce baza de date este decriptată.',
+    'EncryptionDeactivationEnqueueFailed'    => 'Nu s-a putut pune în coadă sarcina de dezactivare a criptării. Verificați jurnalul de depanare pentru detalii.',
+    'EncryptionPipelineInProgress'           => 'O pipeline de criptare (activare, dezactivare sau restaurare) este în curs de desfășurare. Așteptați finalizarea înainte de a încerca din nou.',
+    'EncryptionPipelineInProgressTask'       => 'O conductă de criptare este în curs de desfășurare (sarcina #{id}, {type}). Așteptați finalizarea înainte de a încerca din nou.',
+    'EncryptionInFlightTitle'            => 'Operațiune de criptare în curs',
+    'EncryptionInFlightBody'             => 'O pipeline de activare, dezactivare sau restaurare a criptării rulează în prezent. Așteptați finalizarea — pagina se va actualiza automat după finalizarea operațiunii — înainte de a încerca din nou.',
+    'OK'                                 => 'Bine',
+    'ActivationGuardFailed'                 => 'Activarea nu a putut începe. Consultați alerta din antetul paginii pentru detalii.',
+    'EncryptionStageStarting'               => 'Se pornește…',
+    'EncryptionStageProgress'               => 'Etapa {current} din {total}: {name}',
+    'EncryptionStageAllDone'                => 'Toate etapele finalizate.',
+    'EncryptionStageEncryptTable'           => 'Criptare tabel: {table}',
+    'EncryptionStageDecryptTable'           => 'Decriptează tabelul: {table}',
+    'EncryptionActivationInProgress'        => 'Se criptează baza de date SimpleRisk. Vă rugăm să nu închideți această pagină.',
+    'EncryptionActivationFailedTitle'       => 'Activarea criptării a eșuat',
+    'EncryptionActivationFailedBody'        => 'Activarea nu s-a putut finaliza și este posibil ca baza de date să fie într-o stare inconsistentă. Copia de rezervă prealabilă activării este păstrată — utilizați opțiunea Restaurare din copie de rezervă pentru a recupera sau contactați asistența SimpleRisk.',
+    'EncryptionDeactivationInProgress'      => 'Se decriptează baza de date SimpleRisk. Vă rugăm să nu închideți această pagină.',
+    'EncryptionDeactivationFailedTitle'     => 'Dezactivarea criptării a eșuat',
+    'EncryptionDeactivationFailedBody'      => 'Dezactivarea nu a putut fi finalizată și este posibil ca baza de date să fie într-o stare inconsistentă. Copia de rezervă în stare criptată este păstrată — utilizați Restaurare din copie de rezervă pentru a reveni la starea criptată sau contactați asistența SimpleRisk.',
+    'RestoreFromBackup'                     => 'Restaurare din backup',
+    'RestoreFromBackupNotYetAvailable'      => 'Restaurarea din copie de rezervă nu este încă disponibilă în această versiune. Contactați asistența SimpleRisk pentru a recupera.',
+    'EncryptionRestoreInProgress'           => 'Restaurarea bazei de date SimpleRisk din copie de rezervă. Acest lucru poate dura câteva minute.',
+    'EncryptionRestoreEnqueueFailed'        => 'Restaurarea nu a putut fi pornită. Verificați jurnalele SimpleRisk și încercați din nou.',
+    'EncryptionStatusActive'                => 'Instrumentul suplimentar pentru baza de date criptată este activ.',
+    'EncryptionStatusVersion'               => 'Versiune',
+    'EncryptionDeactivateCta'               => 'Dezactivați extra baza de date criptată',
+    'EncryptionDeactivateCtaHelp'           => 'Decriptează fiecare coloană criptată înapoi la text simplu. Acest lucru durează câteva minute într-o bază de date populată.',
+    'EncryptionBackupPanelHeading'          => 'Copie de rezervă preactivare',
+    'EncryptionBackupCreatedAt'             => 'Creat',
+    'EncryptionBackupSize'                  => 'Dimensiune',
+    'EncryptionBackupOriginalFilename'      => 'Fişier',
+    'EncryptionBackupDownloadTooltip'       => 'Faceți clic pentru a descărca o copie a acestui fișier de rezervă pentru stocare offline.',
+    'EncryptionBackupStateRestoring'        => 'O restaurare este în curs de desfășurare.',
+    'EncryptionNoBackupAvailable'           => 'În prezent, nu este stocată nicio copie de rezervă pre-activare. Copia de rezervă este creată la începutul fiecărei activări și este suprascrisă de orice activare sau dezactivare ulterioară.',
+    'EncryptionRestoreCtaHelp'              => 'Alegeți această opțiune dacă validarea a găsit probleme și trebuie să reveniți la starea de dinainte de criptare.',
+    'EncryptionRestoreTitle'                => 'Restaurare din copie de rezervă?',
+    'EncryptionRestoreBodyWhy'              => 'Revenirea la instantaneul de pre-criptare capturat la începutul celei mai recente activări. Alegeți această opțiune dacă validarea post-activare a găsit probleme și trebuie să abandonați criptarea.',
+    'EncryptionRestoreBodyWhat'             => 'Fiecare rând scris în baza de date după crearea copiei de rezervă va fi pierdut definitiv — inclusiv riscurile, măsurile de atenuare, intrările din jurnalul de audit și orice alte modificări efectuate de la activare. Instrumentul suplimentar pentru baza de date criptată va fi dezactivat ca parte a restaurării.',
+    'EncryptionDeleteBackupCta'             => 'Ștergeți copia de rezervă pre-criptare',
+    'EncryptionDeleteBackupCtaHelp'         => 'Alegeți această opțiune după finalizarea validării post-criptare. Eliminarea instantaneului necriptat este ceea ce face ca criptarea să fie cu adevărat protectoare.',
+    'EncryptionDeleteBackupTitle'           => 'Ștergeți copia de rezervă pre-criptare?',
+    'EncryptionDeleteBackupBodyWhy'         => 'Eliminarea instantaneului necriptat al datelor dvs., capturat la începutul celei mai recente activări. Păstrarea acestuia pe termen nelimitat anulează scopul criptării - oricine are acces la baza de date poate citi copia pre-criptată.',
+    'EncryptionDeleteBackupBodyWhat'        => 'Copia de rezervă din baza de date este ștearsă imediat. Nu veți mai putea utiliza opțiunea Restaurare din copie de rezervă pentru a readuce baza de date la starea de dinainte de criptare. Dacă ulterior întâmpinați probleme cu criptarea, singura cale de recuperare va fi o restaurare nouă a bazei de date din copiile de rezervă operaționale.',
+    'EncryptionDeleteBackupError'           => 'Copia de rezervă nu a putut fi ștersă. Verificați jurnalul de depanare și încercați din nou.',
+    'EncryptionModalWhyLabel'               => 'De ce să folosești asta:',
+    'EncryptionModalWhatHappensLabel'       => 'Ce se întâmplă în continuare:',
+    'EncryptionFieldsPanelHeading'          => 'Câmpuri criptate ale bazei de date',
+    'EncryptionFieldsHelp'                  => 'Fiecare coloană listată aici este stocată criptat în repaus. Fereastra de instrumente a pictogramei lacăt arată algoritmul criptografic utilizat.',
+    'EncryptionFieldsTableColumn'           => 'Tabelul bazei de date',
+    'EncryptionFieldsFieldColumn'           => 'Câmpul bazei de date',
+    'EncryptionFieldsEncryptedColumn'       => 'Criptate',
+    'EncryptionFieldsNoneFound'             => 'În prezent, nu sunt înregistrate câmpuri criptate. Acest lucru nu ar trebui să se întâmple la o instalare activă — verificați tabela encrypted_fields pentru date inițiale.',
+    'EncryptionFieldsLockTooltipPrefix'     => 'Criptat cu',
+    'EncryptionInactiveRedirect'            => 'Instrumentul suplimentar pentru baza de date criptată nu este activ. Activați-l din Configure Hub.',
+    'ContactSupport'                        => 'Contactați asistența',
+    'BackupDatabaseFailed' => 'Copia de rezervă a bazei de date a eșuat. Vă rugăm să verificați jurnalul SimpleRisk pentru detalii.',
+    'WindowsNotSupported' => 'SimpleRisk nu mai este compatibil cu Windows începând cu versiunea 20260421-001. Vă rugăm să migrați la un server bazat pe Linux.',
+    'WindowsUpgradeHalted' => 'Această operațiune nu poate rula pe un server Windows. SimpleRisk nu mai este compatibil cu Windows începând cu versiunea 20260421-001. Vă rugăm să migrați pe un server bazat pe Linux.',
+    'BundleIntegrityVerificationFailed' => 'Pachetul SimpleRisk descărcat nu a trecut verificarea integrității. Actualizarea a fost anulată și niciun fișier nu a fost modificat.',
+    'BundleDownloadFailed' => 'Pachetul SimpleRisk nu a putut fi descărcat. Actualizarea a fost anulată și niciun fișier nu a fost modificat.',
+    'MissingOrInvalidTrackingID' => 'ID de urmărire lipsă sau nevalid.',
+    'JiraIntegrationExtra' => 'Integrare Jira Extra',
+    'IncidentManagementNotifications' => 'Notificări privind gestionarea incidentelor',
+    'NotificationSettingsUpdated' => 'Setările de notificare au fost actualizate.',
+    'DefaultBusinessUnit' => 'Unitate de afaceri implicită',
+    'TheDefaultBusinessUnitEncompasses' => 'Unitatea de afaceri implicită care cuprinde toate echipele.',
+    'UserGuide' => 'Ghid de utilizare',
+    'AdministratorGuide' => 'Ghidul administratorului',
+    'DecryptionFailureToast' => 'Unul sau mai multe câmpuri criptate nu au putut fi decriptate. Acestea sunt afișate ca goale. Verificați jurnalele de sistem pentru detalii.',
+    'EncryptionFailureToast' => 'Un câmp nu a putut fi criptat și nu a fost stocat. Verificați jurnalele de sistem pentru detalii.',
+    'EnableAPIv1Endpoints' => 'Activează punctele finale API v1 (depreciat)',
+    'EnableAPIv1EndpointsHelp' => 'API v1 este perimat. Lăsați-l dezactivat, cu excepția cazului în care aveți o integrare care îl necesită. /api/v2/ nu este afectat de această setare și este întotdeauna disponibil.',
+    'AllowAPIKeyInURL' => 'Permiteți cheia API în URL sau în corpul POST',
+    'AllowAPIKeyInURLHelp' => 'Din motive de securitate, cheile API ar trebui trimise în antetul cererii X-API-KEY. Când sunt dezactivate, cheile trimise în șirul de interogare URL (?key=) sau în corpul POST (key=) sunt respinse, deoarece aceste locații sunt mai ușor expuse în jurnalele proxy și în istoricul browserului. Antetul X-API-KEY este întotdeauna acceptat. Lăsați dezactivat, cu excepția cazului în care aveți o integrare care nu poate trimite antetul.',
+    'ArtificialIntelligenceDesc' => 'Configurați conexiunea furnizorului de inteligență artificială și întrebările contextuale care stau la baza răspunsurilor inteligenței artificiale pentru această instanță SimpleRisk.',
+    'ProviderConfiguration' => 'Configurarea furnizorului',
+    'ContextQuestions' => 'Întrebări contextuale',
+    'AIProviderNotConfiguredWarning' => 'Furnizorul de inteligență artificială nu este configurat. Nu se pot genera rezultate live până când nu setați furnizorul și cheia API în fila Configurare furnizor.',
+    'AutoProcessSCFUpdates' => 'Procesarea automată a noilor versiuni ale Secure Controls Framework (SCF)',
+    'AddNewControls' => 'Adăugați noi controale SCF',
+    'UpdateExistingControls' => 'Actualizați controalele SCF existente',
+    'DeleteRemovedControls' => 'Ștergeți controalele SCF eliminate',
+    'CreateEvidenceRequests' => 'Creați cereri de dovezi pentru controalele SCF',
+    'SelectSCFFrameworks' => 'Selectați cadre SCF',
+    'SCFReleaseProcessing' => 'Procesarea lansării SCF',
+    'NotFrameworkDescription' => 'Widgetul de mai jos afișează toate anteturile găsite în foaia de calcul Secure Controls Framework (SCF). Folosește-l pentru a selecta ce coloane conțin date din framework-uri față de date care nu le conțin.',
+    'Note' => 'Nota',
+    'AISettingsNote' => 'Activarea asistenței prin inteligență artificială va trimite date către Anthropic pentru analiză în cadrul LLM-ului lor, folosind cheia API Anthropic, pentru a vă oferi rezultate personalizate.',
+    'EnableAIAssistanceForControlData' => 'Activează asistența AI pentru datele de control',
+    'ReferenceText' => 'Text de referință',
+    'FrameworkSelection' => 'Selectarea cadrului',
+    'Show' => 'Spectacol',
+    'InProgress' => 'În curs',
+    'Canceled' => 'Anulat',
+    'Failed' => 'Eșuat',
+    'LegacyFrameworks' => 'Framework-uri vechi',
+    'Archive' => 'Arhivă',
+    'FailedToFetchCVEInformation' => 'Nu s-au putut obține informațiile CVE. Verificați ID-ul CVE și încercați din nou.',
+    'ComplianceDashboard' => 'Tablou de bord de conformitate',
+    'DynamicAuditReportHelp' => 'Acest raport prezintă toate auditurile și stările acestora.',
+    'ComplianceDashboardDescription' => 'Această diagramă afișează numărul de controale din fiecare framework, controalele care reușesc fiind în verde și cele care eșuează fiind în roșu.',
+    'PassingControls' => 'Controale trecute',
+    'FailingControls' => 'Controale defecte',
+    'ControlsByFramework' => 'Controale prin Framework',
+    'NumberOfControls' => 'Număr de controale',
+    'PasswordResetTokenExpirationPeriod' => 'Perioada de expirare a tokenului de resetare a parolei',
+    'APasswordResetTokenExpirationPeriodShouldBeMoreThan5Minutes' => 'Perioada de expirare a unui token de resetare a parolei ar trebui să fie mai mare de 5 minute.',
+    'MeanTimeToRemediate' => 'Timpul mediu de remediere',
+    'ByTeam' => 'De echipă',
+    'ByCategory' => 'După categorie',
+    'ByRiskLevel' => 'După nivelul de risc',
+    'MeanTimeToRemediateDescription' => 'Numărul mediu de zile până la închiderea riscurilor, grupate după echipă, categorie și nivel de risc. Sunt incluse doar riscurile închise.',
+    'AverageDaysToClose' => 'Număr mediu de zile până la închidere',
+    'ControlPassRateTrend' => 'Tendința ratei de trecere a controlului',
+    'ControlPassRateTrendDescription' => 'Rata lunară de promovabilitate (%) per cadru în ultimele 12 luni. Sunt afișate doar cadrele cu cel puțin un rezultat al testului în această perioadă.',
+    'PassRatePercent' => 'Rata de promovabilitate (%)',
+    'ExposureByTeam' => 'Expunerea la risc în funcție de echipă',
+    'ExposureByCategory' => 'Expunerea la risc pe categorii',
+    'ExposureByLocation' => 'Expunerea la risc în funcție de locație',
+    'TotalRiskScore' => 'Scorul total de risc',
+    'SLABreachStatus' => 'Starea încălcării SLA',
+    'SLABreachDescription' => 'Riscuri deschise în interiorul sau peste pragul lor de nivel de serviciu (SLA) în funcție de nivelul de risc. Praguri implicite: Foarte ridicat = 30 zile, Ridicat = 60 zile, Mediu = 90 zile, Scăzut = 180 zile.',
+    'WithinSLA' => 'În cadrul acordului de nivel de serviciu (SLA)',
+    'SLABreached' => 'Încălcarea SLA-ului',
+    'NumberOfRisks' => 'Numărul de riscuri',
+    'ExposureByBusinessUnit' => 'Expunerea la risc pe unități de afaceri',
+    'BUChartCrossUnitNote' => 'Notă: riscurile atribuite echipelor care acoperă mai multe BU-uri sunt luate în considerare în fiecare dintre ele.',
+    'SLAThresholds' => 'Praguri SLA',
+    'SLAThresholdsDescription' => 'Numărul maxim de zile în care un risc deschis poate rămâne nerezolvat înainte de a fi considerat restant, per nivel de risc.',
+    'SLAThresholdMustBeBetween1And3650' => 'Valorile prag ale SLA-urilor trebuie să fie între 1 și 3650 de zile.',
+    'SLAThresholdsUpdatedSuccessfully' => 'Pragurile SLA au fost actualizate cu succes.',
+    'TimeToDetect' => 'Timpul de detectare',
+    'TimeToDetectDescription' => 'Numărul mediu de zile de la începutul incidentului (Început pe) până la detectare (Detectat pe), grupate după echipă și tipul de incident. Sunt incluse doar incidentele cu ambele date înregistrate.',
+    'ByOccurrenceType' => 'După tipul de apariție',
+    'ApplicationVersion' => 'Versiunea aplicației',
+    'DatabaseVersion' => 'Versiunea bazei de date',
+    'InstanceID' => 'ID instanță',
+    'LatestIsVersion' => 'Cel mai recent este {$version}',
+    'UpToDate' => 'La zi',
+    'UpdateAvailable' => 'Actualizare disponibilă',
+    'RegistrationSuccessful' => 'Înregistrare reușită.',
+    'LocalRegistrationStateCleared' => 'Starea de înregistrare locală a fost ștearsă. Înregistrați-vă din nou la /admin/register.php pentru a obține un nou instance_id.',
+    'InstanceInformationUpdated' => 'Informațiile despre instanță au fost actualizate.',
+    'UpgradeExtraDesc' => 'Upgrade Extra menține instanța SimpleRisk la zi prin descărcarea și aplicarea actualizărilor aplicației și bazei de date și prin instalarea și actualizarea celorlalte Extra-uri, toate de pe pagina Înregistrare și actualizare. Este inclus gratuit în SimpleRisk, astfel încât să puteți rămâne la cea mai recentă versiune fără a gestiona manual fișierele.',
+    'ExtraInstallDisabledByEnforcement' => 'Instalarea suplimentară este dezactivată în prezent de statul licenței dvs. Contactați administratorul sau asistența SimpleRisk.',
+    'LicenseStateUnknownRetryShortly' => 'Informațiile despre licență nu sunt încă disponibile. Vă rugăm să încercați din nou peste câteva momente.',
+    'LicenseExpiringSoonTitle' => 'Licența expiră în curând: {$extra}',
+    'LicenseExpiringSoonBody' => 'Licența dumneavoastră {$extra} expiră pe {$date} (au mai rămas{$days} zile). Reînnoiți-o din Înregistrare și actualizare pentru a evita pierderea accesului.',
+    'LicenseExpiredTitle' => 'Licența a expirat: {$extra}',
+    'LicenseExpiredBody' => 'Licența dumneavoastră {$extra} a expirat pe {$date}. Reînnoiți-o din Înregistrare și actualizare pentru a restabili accesul.',
+    'Licenses' => 'Licențe',
+    'LicensesDesc' => 'Vizualizați starea licențierii pentru fiecare SimpleRisk Extra.',
+    'RefreshLicenses' => 'Actualizați licențele',
+    'LoadingLicenseData' => 'Se încarcă datele licenței...',
+    'Licensed' => 'Licențiat',
+    'Unlicensed' => 'Fără licență',
+    'Expired' => 'Expirat',
+    'Free' => 'Gratuit',
+    'License' => 'Licenţă',
+    'NoLicensedExtras' => 'Fără extrasuri licențiate.',
+    'NoExpiredExtras' => 'Fără extrasuri expirate.',
+    'NoUnlicensedExtras' => 'Fără accesorii nelicențiate.',
+    'Unlimited' => 'Nelimitat',
+    'LicenseStateLockMessage' => 'Acțiunile suplimentare de instalare și actualizare sunt dezactivate în prezent de starea licenței. Extrasele instalate existente continuă să funcționeze.',
+    'LicenseStateFailMessage' => 'Licența dumneavoastră SimpleRisk a expirat sau a fost dezactivată. Vă rugăm să contactați asistența SimpleRisk pentru a restabili serviciul.',
+    'LicenseStateAnonymousMessage' => 'Această instanță SimpleRisk nu este înregistrată. Sunt disponibile doar extrasuri gratuite. Înregistrați-vă în meniul Configurare pentru a accesa extrasurile plătite.',
+    'LicenseStateUnknownMessage' => 'SimpleRisk nu a putut accesa serviciul de licențiere. Starea licenței se va actualiza automat la următoarea verificare.',
+    'ExtraIntegrityCheckFailed' => 'Pachetul descărcat nu a trecut verificarea integrității și nu a fost instalat.',
+    'ExtraInstallWriteFailed' => 'Instrumentul Extra nu a putut fi instalat deoarece directorul extras nu este inscriptibil.',
+    'ExtraInstallExtractFailed' => 'Extra a fost descărcat, dar nu a putut fi extras și instalat. Verificați jurnalele aplicației.',
+    'EncryptionPreflightFailed' => 'DDL-ul preliminar a eșuat — consultați jurnalul de depanare pentru detalii.',
+    'EncryptionActivationFailed' => 'Activarea criptării a eșuat în timpul configurării preliminare. Verificați jurnalele aplicației.',
+    'QuestionnaireSentSchedulingOnly' => 'Acest chestionar a fost trimis. Doar setările de programare de mai jos pot fi modificate.',
+    'AreYouSureYouWantToReopenThisResult' => 'Sigur vrei să redeschizi acest rezultat pentru examinare?',
+    'QuestionnaireResultReopenedSuccessfully' => 'Rezultatul chestionarului a fost redeschis cu succes pentru revizuire.',
+    'QuestionnaireResultReopenedAuditLog' => 'Rezultatul chestionarului „{$questionnaire_name}” (trimis de contactul „{$contact_name}”) a fost redeschis pentru revizuire de către utilizatorul „{$user_name}”.',
+    'QuestionnaireDraftNoChanges' => 'Nicio modificare de salvat.',
+    'SendQuestionnaireIdRequired' => 'Parametrul id este obligatoriu și trebuie să fie numeric.',
+    'RiskIdMustBeNumeric' => 'Parametrul risk_id trebuie să fie numeric.',
+    'AssessmentsExtraNotEnabled' => 'Assessments Extra nu este activat.',
+    'QuestionnaireSchedulingUpdatedAuditLog' => 'Setările de programare pentru chestionarul numit „{$name}” au fost actualizate de numele de utilizator „{$user}”.',
+    'QuestionnaireResultNotReopenable' => 'Rezultatul chestionarului nu poate fi redeschis deoarece nu se află într-o stare respinsă sau neaprobată.',
+    'QuestionnaireTrackingNotFoundAfterUpdate' => 'Urmărirea chestionarului nu a fost găsită după actualizare.',
+    'QuestionnaireResultAlreadyDecided' => 'Rezultatul chestionarului a fost deja decis (aprobat, respins sau neaprobat). Folosiți mai întâi acțiunea Redeschidere.',
+    'QuestionnaireNoControlsForApproval' => 'Nu s-au găsit controale pentru acest chestionar.',
+    'QuestionnaireNoResponsesForApproval' => 'Nu s-au găsit răspunsuri la chestionar pentru procesarea actualizărilor privind maturitatea.',
+    'ResultMessageUnavailable' => 'Mesajul rezultatului nu este disponibil.',
+    'AIProviderURLNotAllowed' => 'URL-ul API respectiv nu este permis. Folosește un furnizor de inteligență artificială cunoscut sau o adresă self-host de tip loopback (127.0.0.1).',
+    'AIReenterKeyForNewURL' => 'Reintroduceți cheia API pentru a testa o adresă URL a unui furnizor diferit.',
+    'WorkflowHttpRequestDisallowedURL' => 'http_request: URL-ul {$url} se rezolvă la o adresă internă sau rezervată nepermisă.',
+    'BehaviorAndScheduling' => 'Comportament și programare',
+    'PrepopulateAcrossContacts' => 'Precompletează noile răspunsuri cu răspunsurile anterioare ale unei alte persoane de contact pentru această evaluare',
+    'PrepopulateAcrossContactsHelp' => 'Precompletează formularul unui nou respondent cu cele mai recente răspunsuri anterioare de la orice contact — util pentru continuitate atunci când responsabilitatea se schimbă.',
+    'PrepopulateAcrossContactsCaution' => 'Dezactivat în mod implicit. Când este dezactivat, un contact își vede doar propriile răspunsuri anterioare. Activați această opțiune numai atunci când respondenții sunt interni sau de încredere — poate expune răspunsurile unui contact altuia (de exemplu, un furnizor văzând răspunsurile altuia).',
+    'AddTemplateAndContacts' => 'Adăugați șablon și contacte',
+    'QuestionnaireGeneralSubtitle' => 'Denumiți chestionarul și specificați cine îl deține',
+    'QuestionnaireInstructionsSubtitle' => 'Îndrumări afișate respondenților și în e-mailul de invitație',
+    'QuestionnaireBehaviorSubtitle' => 'Cum se comportă chestionarul după trimitere și completare',
+    'QuestionnaireRiskDetailsSubtitle' => 'Valori implicite opționale aplicate riscurilor create de această evaluare',
+    'QuestionnaireTemplatesSubtitle' => 'Asociați fiecare șablon de întrebare cu contactele care îl primesc',
+    'BypassPendingRisksLabel' => 'Ignorați riscurile în așteptare',
+    'BypassPendingRisksDescription' => 'Creați riscuri imediat după finalizarea evaluării, în loc să le țineți pentru revizuire.',
+    'AutomaticallySendResultsLabel' => 'Trimiteți automat rezultatele',
+    'AutomaticallySendResultsDescription' => 'Trimiteți rezultatele evaluării tuturor contactelor de evaluare la finalizare.',
+    'QuestionnaireMultiselectPlaceholder' => 'Selectați sau căutați…',
+    'QuestionnaireNamePlaceholder' => 'de exemplu, Analiza Securității Furnizorului 2026',
+    'AddTeamPlaceholder' => 'Adaugă echipă…',
+    'AddStakeholderPlaceholder' => 'Adăugați o parte interesată…',
+    'AddControlTypePlaceholder' => 'Adăugați tipul de control…',
+    'AddLocationPlaceholder' => 'Adăugați locația…',
+    'NotifyWhenNotCompleteLabel' => 'Notificare când nu este complet',
+    'NotifyWhenNotCompleteDescription' => 'Reamintește-le contactelor care nu au finalizat evaluarea.',
+    'RemindEveryDays' => 'Reamintiți la fiecare {$day} zile',
+    'ResendAssessmentLabel' => 'Retrimiteți evaluarea',
+    'ResendAssessmentDescription' => 'Reemite automat evaluarea la o cadență recurentă.',
+    'ResendEveryDays' => 'Retrimiteți la fiecare {$day} zile',
+    'QuestionnaireSaveBarHint' => '„Salvare și trimitere” trimite chestionarul imediat contactelor sale.',
+    // Home dashboard — KPI tile labels
+    'NewSelfAssessment' => 'Noua autoevaluare',
+    'SelfAssessmentPrereqIntro' => 'Autoevaluările vă permit să evaluați organizația în raport cu un cadru de control securizat și să generați automat riscuri din controalele care eșuează. Mai întâi sunt necesari doi pași de configurare:',
+    'RegisterYourInstance' => 'Înregistrați-vă instanța',
+    'RegisterYourInstanceHelp' => 'Înregistrarea leagă această instanță de serviciul de licențiere SimpleRisk, astfel încât să se poată descărca gratuit extrasuri (inclusiv SCF).',
+    'InstallTheSCF' => 'Instalați cadrul de control securizat',
+    'InstallTheSCFHelp' => 'SCF este un extra gratuit care oferă cadrele, întrebările de control și hărțile de risc pe baza cărora se evaluează această funcție. Instalarea rulează în fundal și poate dura câteva minute.',
+    'GoToRegistration' => 'Accesați înregistrarea',
+    'GoToSCF' => 'Accesați Cadrul de control securizat',
+    'SelfAssessmentEnableTip' => 'Opțional: în secțiunea Guvernanță > Cadre de lucru puteți activa anumite cadre SCF pentru a vedea o listă scurtă selectată la începerea unei evaluări. De asemenea, puteți evalua în funcție de orice cadru de lucru din catalogul SCF complet fără a-l activa.',
+    'ChooseAFramework' => 'Alegeți un cadru în raport cu care să evaluați',
+    'EnabledFrameworks' => 'Cadre de lucru activate',
+    'AllScfFrameworks' => 'Toate cadrele SCF',
+    'Start' => 'Început',
+    'Resume' => 'Relua',
+    'ControlQuestion' => 'Întrebare de control',
+    'NotApplicable' => 'N / A',
+    'SaveProgress' => 'Salvați progresul',
+    'MarkComplete' => 'Marcare finalizată',
+    'AnsweredOfTotal' => 'a răspuns',
+    'FailedSoFar' => 'eșuat până acum',
+    'StartedBy' => 'Început de',
+    'FailedControls' => 'Controale eșuate',
+    'PushToRisk' => 'Împingeți la risc',
+    'ConfirmDeleteSelfAssessment' => 'Ștergeți această autoevaluare? Această acțiune nu poate fi anulată.',
+    'ConfirmCompleteSelfAssessment' => 'Marcați această evaluare ca finalizată? Riscurile vor fi generate de controalele eșuate.',
+    'NoSelfAssessmentsYet' => 'Încă nu există autoevaluări. Începeți una pentru a începe.',
+    'RequestFailed' => 'Cererea nu a putut fi finalizată. Vă rugăm să încercați din nou.',
+    'NoPendingRisks' => 'Nu există riscuri neprevăzute. Finalizați o evaluare pentru a genera riscuri din controalele eșuate.',
+    'NoFailedControls' => 'Nu există rezultate de control de afișat pentru acest filtru.',
+    'ControlResultsTruncated' => 'Se afișează cele mai recente 2000 de rezultate. Restrângeți filtrul pentru a vedea mai multe.',
+    'GeneratedFromSelfAssessment' => 'Generat din autoevaluare',
+    'SelfAssessmentMitigationSolution' => 'Implementați controalele menționate mai jos, care au fost identificate ca fiind defectuoase în timpul acestei autoevaluări, pentru a atenua acest risc.',
+    'NSelected' => '{n} selectat',
+    'FilterByControl' => 'Filtrare după control',
+    'Pushing' => 'Apăsând…',
+    'Deleting' => 'Ștergerea…',
+    'ConfirmPushSelectedPendingRisks' => 'Apăsați {n} riscul(ele) în așteptare selectat(e) către riscuri?',
+    'ConfirmDeleteSelectedPendingRisks' => 'Ștergeți riscul (riscurile) în așteptare selectat(e) {n} ? Această acțiune nu poate fi anulată.',
+    'ConfirmDeleteSelectedSelfAssessments' => 'Ștergeți autoevaluările {n} selectate? Această acțiune nu poate fi anulată.',
+    'BulkPartialFailure' => '{n} din {total} elemente au reușit; restul au eșuat. Reîmprospătați pentru a vedea starea actuală.',
+
+    // Workflows Extra - deactivation confirm ('Deactivate' at line 480 is reused as-is)
+    'WorkflowsExtraDeactivateConfirm' => 'Dezactivați Workflows Extra? Toate definițiile de fluxuri de lucru create de utilizator vor fi șterse definitiv. Fluxurile de lucru de sistem vor fi păstrate.',
+    'HomeKpiOpenRisks' => 'Deschide Riscuri',
+    'HomeKpiNeedsReview' => 'Necesită revizuire',
+    'HomeKpiUnmitigated' => 'Neatenuat',
+    'HomeKpiClosedRisks' => 'Închis Riscuri',
+    'HomeKpiControlPassRate' => 'Rata de trecere a controlului',
+    'HomeKpiFailingControls' => 'Controale defecte',
+    'HomeKpiOpenAudits' => 'Audituri deschise',
+    'HomeKpiTestsDueSoon' => 'Testele vor fi efectuate în curând',
+    'HomeKpiActiveFrameworks' => 'Cadre active',
+    'HomeKpiTotalControls' => 'Control total',
+    // Home dashboard — What's Next feed
+    'WhatsNext' => 'Ce urmează?',
+    'WhatsNextAllCaughtUp' => 'Ești la curent cu tot.',
+    'WhatsNextRegisterInstance' => 'Înregistrează-ți instanța SimpleRisk',
+    'WhatsNextSubmitFirstRisk' => 'Trimiteți primul risc',
+    'WhatsNextLoadFramework' => 'Încărcați un cadru de control',
+    'WhatsNextUnreviewedRisks' => 'Riscuri de revizuit',
+    'WhatsNextUnmitigatedRisks' => 'Riscuri de atenuat',
+    'WhatsNextInitiateAudits' => 'Audituri de inițiat',
+    // Home dashboard — widget picker type labels
+    'WidgetType_kpi' => 'Dală KPI',
+    'WidgetType_whats_next' => 'Listă',
+    // Home dashboard — hub catalog entry
+    'HomeDashboard' => 'Acasă',
+    'HomeDashboardDesc' => 'Punctul de plecare — indicatori cheie și ce trebuie făcut în continuare, dintr-o privire.',
+    'HomeChartRiskByLevel' => 'Risc pe nivel',
+    'HomeKpiThisMonth' => 'luna aceasta',
+    'HomeKpiNoChange' => 'Nicio schimbare',
+    'EditLayout' => 'Editați aspectul',
+    'ListHighestRisks' => 'Cele mai mari riscuri ale mele',
+    'ListPastDueReviews' => 'Recenzii restante',
+    'ListUpcomingTests' => 'Teste viitoare',
+    'ListRecentFailures' => 'Eșecuri recente',
+    'ListPoliciesReview' => 'Documente supuse revizuirii',
+    'ListExpiringExceptions' => 'Excepții care expiră',
+    'ImKpiOpenIncidents' => 'Total deschis',
+    'ImKpiOverdue' => 'Restanțat',
+    'ImKpiMttr30' => 'Rezoluție medie',
+    'ImKpiMttrQuarter' => 'Rezoluție medie (90d)',
+    'ImKpiMttrYear' => 'Rezoluție medie (1 an)',
+    'ImKpiMttrAll' => 'Rezoluție medie (toate)',
+    'ImKpiResolved30' => 'Rezolvat',
+    'ImChartBySeverity' => 'Prin severitate',
+    'ImChartByStatus' => 'După stare',
+    'ImListRecent' => 'Incidente recente',
+    'ImListUnassigned' => 'Incidente neatribuite',
+    'HomeKpiOpenExceptions' => 'Excepții deschise',
+    'HomeKpiPolicies' => 'Politicile',
+    'ResolutionTargets' => 'Obiective de rezoluție (zile)',
+    'ResolutionTargetsHelp' => 'Numărul de zile în care un incident poate rămâne deschis înainte de a fi considerat restant.',
+    'DefaultTarget' => 'În mod implicit',
+    'PerSeverityOverrideHelp' => 'Opțional, puteți suprascrie valoarea implicită pentru anumite severități (lăsați câmpul necompletat pentru a utiliza valoarea implicită):',
+    'ResolutionTargetUsesDefault' => 'Implicit (%d)',
+    'SeverityColors' => 'Culori de severitate',
+    'SeverityColorsHelp' => 'Culoarea pentru fiecare gravitate, afișată în tabloul de bord Incident și pe pagina cu detaliile incidentului.',
+    'Editing' => 'Editare',
+    'SetAsDefaultForEveryone' => 'Setează ca implicit pentru toată lumea',
+    'EditLayoutHint' => 'Trageți o dală pentru a muta · trageți o margine pentru a redimensiona · ✕ pentru a elimina',
+    'RemoveWidget' => 'Eliminați widgetul',
+    'AddWidget' => 'Adăugați widget',
+    'AddToDashboard' => 'Adăugați la tabloul de bord',
+    'AllWidgetsAdded' => 'Toate widgeturile disponibile se află pe acest tablou de bord.',
+    'AddText' => 'Adăugați text',
+    'GettingStarted' => 'Noțiuni de bază',
+    'GettingStartedTitle' => 'Bun venit la SimpleRisk',
+    'GettingStartedSubtitle' => 'Câțiva pași rapizi pentru a profita la maximum de SimpleRisk.',
+    'GSProgressCount' => '{done} din {total} complet',
+    'GSNextUp' => 'Următorul pas',
+    'GSArea_setup' => 'Înființat',
+    'GSArea_risk' => 'Risc',
+    'GSArea_assessment' => 'Evaluare',
+    'GSArea_compliance' => 'Respectarea',
+    'GSArea_assets' => 'Active',
+    'GSArea_ai' => 'Înființat',
+    'GSHide' => 'Ascundeți Introducerea',
+    'GSDismissStep' => 'Închideți acest pas',
+    'GSAllSet' => 'Ești gata - bună treabă!',
+    'GSWalkthrough' => 'Tur de 30 de minute',
+    'Explore' => 'Explora',
+    'Learn' => 'Învăţa',
+    'AdminGuide' => 'Ghid de administrare',
+    'LearnMore' => 'Află mai multe',
+    'GSRegisterTitle' => 'Înregistrați-vă instanța',
+    'GSRegisterDesc' => 'Activați asistența și actualizările cu cheia de licență.',
+    'GSRegisterCta' => 'Registrul',
+    'GSScfTitle' => 'Instalați cadrul de control securizat',
+    'GSScfDesc' => 'Instalați SCF — biblioteca dvs. de control pentru toate standardele.',
+    'GSScfCta' => 'Instalați SCF',
+    'GSInviteTitle' => 'Invită-ți echipa',
+    'GSInviteDesc' => 'Adăugați colegi pentru ca munca să poată fi atribuită și revizuită.',
+    'GSInviteCta' => 'Adăugați utilizatori',
+    'GSAiTitle' => 'Configurați AI-ul',
+    'GSAiDesc' => 'Îmbunătățiți-vă experiența SimpleRisk cu ajutorul inteligenței artificiale.',
+    'GSAiCta' => 'Configurați IA',
+    'GSSubmitRiskTitle' => 'Trimiteți primul risc',
+    'GSSubmitRiskDesc' => 'Captați un risc cu care se confruntă organizația dumneavoastră.',
+    'GSSubmitRiskCta' => 'Trimiteți riscul',
+    'GSMitigateTitle' => 'Planificați o atenuare',
+    'GSMitigateDesc' => 'Adăugați un plan de atenuare la un risc deschis.',
+    'GSMitigateCta' => 'Planificați atenuarea',
+    'GSReviewTitle' => 'Efectuați o analiză a riscurilor',
+    'GSReviewDesc' => 'Evaluează un risc și decide următorul pas.',
+    'GSReviewCta' => 'Efectuați o revizuire',
+    'GSDefineTestTitle' => 'Definiți un test de control',
+    'GSDefineTestDesc' => 'Configurați modul în care este testat un control.',
+    'GSDefineTestCta' => 'Definiți testul',
+    'GSInitiateAuditTitle' => 'Inițiați un audit',
+    'GSInitiateAuditDesc' => 'Lansați un ciclu de testare sau audit.',
+    'GSInitiateAuditCta' => 'Inițiați auditul',
+    'GSAssetTitle' => 'Adăugați-vă activele',
+    'GSAssetDesc' => 'Inventariați bunurile pe care le protejați.',
+    'GSAssetCta' => 'Adăugați active',
+    'GSInvalidStep' => 'Pas introductiv nevalid.',
+    'GSPagerLabel' => '{from}–{to} din {total}',
+    'GSPrevCards' => 'Afișați pașii anteriori',
+    'GSNextCards' => 'Afișați pașii următori',
+    'WhatsNextInstallSCF' => 'Instalați cadrul de control securizat',
+    'GSActivateScfTitle' => 'Activați cadrul de control securizat',
+    'GSActivateScfDesc' => 'Activați SCF-ul instalat pentru a încărca controalele sale în bibliotecă.',
+    'GSActivateScfCta' => 'Activează SCF',
+    'WhatsNextActivateSCF' => 'Activați cadrul de control securizat',
+    'GSEnableFrameworksTitle' => 'Activați framework-urile aplicabile',
+    'GSEnableFrameworksDesc' => 'Activați cadrele SCF care se aplică organizației dvs.',
+    'GSEnableFrameworksCta' => 'Activează framework-uri',
+    'WhatsNextEnableFrameworks' => 'Activați framework-urile aplicabile',
+    'GSSelfAssessTitle' => 'Faceți o autoevaluare',
+    'GSSelfAssessDesc' => 'Evaluează-ți organizația în raport cu peste 250 de cadre de lucru și generează riscuri din controalele eșuate.',
+    'GSSelfAssessCta' => 'Începeți evaluarea',
+    'WhatsNextTakeSelfAssessment' => 'Faceți o autoevaluare',
+    'WhatsNextConfigureAI' => 'Configurați AI-ul',
+    'ListUnreviewedRisks' => 'Riscuri nerevizuite',
+    'ControlsByDomain' => 'Controale după domeniu',
+    'ControlsByClass' => 'Controale după clasă',
+    'ControlsByPhase' => 'Controale pe fază',
+    'ControlsByPriority' => 'Controale după prioritate',
+    'ControlsByCurrentMaturity' => 'Controale în funcție de maturitatea curentă',
+    'ControlStatusOverTime' => 'Starea controlului în timp',
+    'ComplianceTotalControls' => 'Control total',
+    'HomeKpiOverdueTests' => 'Teste restante',
+    'Total' => 'Total',
+    'StartTheTest' => 'Începeți testul',
+    'TestStartsAutomatically' => 'Testul începe automat',
+    'GoToTest' => 'Mergi la Test',
+    'NotTested' => 'Netestat',
+    'PassingPercent' => '% de trecere',
+    'ListFailingControls' => 'Controale defecte',
+    'Exceptions' => 'Excepții',
+    'Documents' => 'Documente',
+    'ControlsBelowMaturity' => 'Controale sub limita de maturitate',
+    'ControlsAtMaturity' => 'Controale la maturitate',
+    'ControlsAboveMaturity' => 'Controale peste limita de maturitate',
+    'Maturity' => 'Maturitate',
+    'AllTime' => 'Toate timpurile',
+    'Last7Days' => 'Ultimele 7 zile',
+    'Last30Days' => 'Ultimele 30 de zile',
+    'Last90Days' => 'Ultimele 90 de zile',
+    'YearToDate' => 'De la începutul anului',
+    'CustomRange' => 'Interval personalizat',
+    'Age' => 'Vârstă',
+    'ImOpenIncidents' => 'Incidente deschise',
+    'ImClosedIncidents' => 'Incidente închise',
+    'ImByAttackVector' => 'Deschis prin Vector de Atac',
+    'ImBySource' => 'Deschis după sursă',
+    'AverageDaysToDetect' => 'Zile medii de detectare',
+    'ImKpiAvgTtd' => 'Detectare medie',
+    'Days' => 'Zile',
+    'ImKpiCriticalOpen' => 'Deschidere critică',
+    'ImKpiResolvedInSla' => 'Rezolvat în SLA',
+    'Events' => 'Evenimente',
+    'ImEventsIncidents' => 'Evenimente și incidente',
+    'ImSourceBreakdown' => 'Sursă după categorie',
+    'ImClosureSummary' => 'Rezumatul închiderii',
+    'ImSignalQuality' => 'Calitatea semnalului',
+    'ImSignalLowSample' => 'Nu sunt suficiente închideri adjudecate pentru a fi evaluate în mod fiabil',
+    'ImportExportExportPdf' => 'Export PDF',
+    'ImportExportExporting' => 'Pregătirea PDF-ului…',
+    'ImportExportExportFailed' => 'Nu s-a putut genera PDF-ul. Vă rugăm să încercați din nou.',
+    'ImportExportGeneratedOn' => 'Generat',
+    'ImportExportPage' => 'Pagină',
+    'ImportExportPageOf' => 'de',
+    'ResolutionTargetsUpdated' => 'Obiectivele de rezoluție în funcție de severitate au fost actualizate.',
+    'SeverityColorsUpdated' => 'Culorile de severitate au fost actualizate.',
+    // AI Capabilities Catalog + AI settings hub (unified AI settings)
+    'AICapGrcRecommendations' => 'Recomandările cadrului GRC',
+    'AICapGrcRecommendationsDesc' => 'Recomandări pentru un cadru de lucru generat de inteligența artificială și un rezumat executiv, adaptat la contextul organizației dumneavoastră.',
+    'AICapRiskRecommendations' => 'Recomandări de risc',
+    'AICapRiskRecommendationsDesc' => 'Sugestii per risc pentru detalii despre risc și atenuare, generate din risc, atenuarea acestuia și revizuire.',
+    'AICapFairAnalysis' => 'Analiza cantitativă FAIR',
+    'AICapFairAnalysisDesc' => 'AI estimează parametrii de pierdere Beta-PERT; SimpleRisk execută un test Monte Carlo cu 10.000 de iterații pentru a cuantifica riscul în dolari.',
+    'AICapDocumentCustomization' => 'Personalizarea documentelor',
+    'AICapDocumentCustomizationDesc' => 'Completează substituenții și curăță textul politicilor din șabloanele de documente, astfel încât o politică standard să fie citită ca a ta.',
+    'AICapDocumentControlMatching' => 'Document ↔ Control Matching',
+    'AICapDocumentControlMatchingDesc' => 'Asociază automat controalele la documentele de politici cu un scor de încredere și un raționament pe care le puteți revizui.',
+    'AICapDocumentTemplates' => 'Bibliotecă de șabloane de documente',
+    'AICapDocumentTemplatesDesc' => 'Instalați șabloane de politici, ghiduri și proceduri selectate din biblioteca SimpleRisk.',
+    'AICapControlReferenceEnhancement' => 'Îmbunătățirea referinței de control',
+    'AICapControlReferenceEnhancementDesc' => 'Cercetează textul de control verbatim prin căutare pe web pentru a îmbogăți referințele de control.',
+    'AICapAiChat' => 'Asistent de chat',
+    'AICapAiChatDesc' => 'Un asistent GRC care răspunde la întrebări în context oriunde în SimpleRisk.',
+    'AICapSurfacedRecommendations' => 'Pagina de Inteligență Artificială',
+    'AICapSurfacedRiskView' => 'Vizualizare risc — Detalii și atenuare',
+    'AICapSurfacedFairTab' => 'Vizualizare risc — fila FAIR',
+    'AICapSurfacedDocuments' => 'Guvernanță — Documente',
+    'AICapSurfacedControls' => 'Conformitate — Controale',
+    'AICapSurfacedEveryPage' => 'Fiecare pagină — asistent flotant',
+    'AICapabilitiesCatalog' => 'Capacități',
+    'AICapSearchPlaceholder' => 'Căutați capacități AI…',
+    'AICapFilterDomain' => 'Domeniu',
+    'AICapFilterTier' => 'Nivel',
+    'AICapFilterState' => 'Stat',
+    'AICapTierExtra' => 'AI Extra',
+    'AICapStateLocked' => 'Blocat',
+    'AICapIncludedInExtra' => 'Inclus în AI Extra',
+    'AICapPurchaseExtra' => 'Cumpără AI Extra',
+    'AICapNeedsProvider' => 'Necesită configurarea furnizorului',
+    'AICapNoMatch' => 'Nicio potrivire a capacităților',
+    'AICapNoMatchHint' => 'Încercați un alt domeniu, nivel sau termen de căutare.',
+    'AICapCountSingular' => 'capacitate',
+    'AICapCountPlural' => 'capacități',
+    'DomainAssistant' => 'Asistent',
+    'AICapLoadError' => 'Nu s-au putut încărca capacitățile IA. Vă rugăm să încercați din nou.',
+    'AIProviderConfigSubtitle' => 'Conectați SimpleRisk la un furnizor de inteligență artificială pentru a-i alimenta capabilitățile.',
+    'AIHowToGetAPIKeyFor' => 'Cum se obține o cheie API pentru',
+    'AIExtraNotActivated' => 'Neactivat',
+    'AIExtraValueProp' => 'IA îmbunătățită — cuantificarea riscurilor FAIR, asistență pentru documente și control și asistent de chat cu IA.',
+    'AICtxOrgName' => 'Care este numele organizației dumneavoastră?',
+    'AICtxOrgSizeEmployees' => 'Câți angajați are organizația dumneavoastră?',
+    'AICtxOrgSizeRevenue' => 'Care este venitul anual al organizației dumneavoastră?',
+    'AICtxOrgObjective' => 'Care sunt principalele obiective de afaceri și scopurile strategice ale organizației dumneavoastră?',
+    'AICtxOrgIndustry' => 'Care este principala industrie sau sector de activitate al organizației dumneavoastră?',
+    'AICtxOrgLocation' => 'În ce țări sau regiuni operează organizația dumneavoastră?',
+    'AICtxOrgType' => 'Ce tip de organizație ești?',
+    'AICtxDataTypes' => 'Ce tipuri de date colectează, prelucrează sau stochează organizația dumneavoastră (de exemplu, date cu caracter personal, date financiare, informații despre sănătate)?',
+    'AICtxDataCustomers' => 'Cine sunt principalii dumneavoastră clienți sau părți interesate (de exemplu, consumatori, companii, entități guvernamentale)?',
+    'AICtxDataRegulatory' => 'Sunteți supus vreunei cerințe de reglementare specifice în industria dumneavoastră?',
+    'AICtxDataThirdParties' => 'Aveți relații cu terți sau servicii externalizate care necesită supravegherea conformității?',
+    'AICtxMaturityIssues' => 'Ați întâmpinat probleme semnificative de conformitate, încălcări de securitate sau evenimente de risc în ultimii 3-5 ani?',
+    'AICtxMaturityConcerns' => 'Există domenii specifice de interes sau îmbunătățire pe care le-ați identificat în procesele actuale de GRC?',
+    'AICtxMaturityAppetite' => 'Care este apetitul și toleranța la risc a organizației dumneavoastră?',
+    'AICtxMaturityLevel' => 'Care este nivelul dumneavoastră actual de maturitate în ceea ce privește guvernanța, managementul riscurilor și practicile de conformitate?',
+    'AICtxImplementationChanges' => 'Există schimbări viitoare în modelul dumneavoastră de afaceri, infrastructura tehnologică sau piața care ar putea afecta nevoile dumneavoastră de conformitate?',
+    'AICtxImplementationResourcesBudget' => 'Ce resurse de alocare bugetară aveți disponibile pentru implementarea și menținerea cadrelor de conformitate?',
+    'AICtxImplementationResourcesPersonnel' => 'Ce resurse de personal aveți disponibile pentru implementarea și menținerea cadrelor de conformitate?',
+    'AICtxImplementationResourcesTechnology' => 'Ce resurse de infrastructură tehnologică aveți disponibile pentru implementarea și menținerea cadrelor de conformitate?',
+    'AICtxImplementationResourcesTraining' => 'Ce resurse de instruire și dezvoltare aveți disponibile pentru implementarea și menținerea cadrelor de conformitate?',
+    'AICtxImplementationResourcesExternal' => 'Ce resurse externe de asistență aveți disponibile pentru implementarea și menținerea cadrelor de conformitate?',
+    'AIAPIKeySecurityNote' => 'Cheia dvs. este stocată pe server și nu este returnată niciodată browserului. Adresele URL ale furnizorilor sunt validate în funcție de o listă de acces permisă SSRF configurabilă în fișierul config.php.',
+    'AIContextEgressWarning' => 'Răspunsurile tale sunt trimise furnizorului de inteligență artificială configurat pentru a-i fundamenta recomandările. Nu include nimic ce nu ai împărtăși cu aceștia.',
+    'Provider' => 'Furnizor',
+    'AIProviderURLHostNotAllowed' => 'Gazda „%s” nu se află pe lista permisă a furnizorilor de inteligență artificială. Adăugați-o la $ai_allowed_provider_hosts în config.php, apoi salvați. (Furnizorii de inteligență artificială cunoscuți și adresele de loopback 127.0.0.1 sunt întotdeauna permise.)',
+    'AIContextLastSaved' => 'Ultima salvare',
+    'AIContextNeverSaved' => 'Încă nesalvat',
+    'AICtxCardSubtitle' => '21 de întrebări în patru domenii. Cu cât răspunzi mai mult, cu atât fiecare recomandare este mai concisă.',
+    'AICtxAnswered' => '%1$d din %2$d a răspuns',
+    'AICtxAllOptional' => 'Opţional',
+    'AIContextSaving' => 'Salvarea…',
+    'AIContextSaveFailed' => 'Nu s-au putut salva modificările. Vă rugăm să încercați din nou.',
+    'AISettingsSavedNotReachable' => 'Setările AI au fost salvate, dar furnizorul nu a putut fi contactat. Asigurați-vă că rulează și că adresa URL este corectă.',
+    'AISettingsSavedKeyRequired' => 'Setările AI au fost salvate, dar acest furnizor necesită o cheie API înainte ca funcțiile sale să poată fi utilizate.',
+    'TestAndSave' => 'Testează și salvează',
+    'AICapEnableAll' => 'Activează tot',
+    'AICapDisableAll' => 'Dezactivați toate',
+    'AISettingsSavedConnected' => 'Setările AI au fost salvate — conexiune reușită.',
+    'AISettingsSavedNotConnected' => 'Setările AI au fost salvate, dar testul de conexiune a eșuat. Verificați modelul, cheia și adresa URL.',
+    'AIProviderURLNotOnAllowlist' => 'Această gazdă nu se află pe lista permisă SSRF a furnizorilor de inteligență artificială. Adăugați-o la $ai_allowed_provider_hosts în config.php înainte de a putea fi salvată.',
+    'Connected' => 'Conectat',
+    'NotConnected' => 'Neconectat',
+    'AICapBulkError' => 'Unele funcții nu au putut fi actualizate. Vă rugăm să încercați din nou.',
+    'QuestionnaireAlreadyCompleted' => 'Acest chestionar a fost deja completat.',
+    'QuestionnaireDraftError' => 'Eroare la salvarea schiței. Consultați consola pentru detalii.',
+
+    // Audit cadence scheduling - Define Test modal (Interval/Calendar schedule redesign)
+    // 'Overdue' duplicates the English of 'ImKpiOverdue' on purpose: that key is
+    // an Incident Management KPI label, and a compliance status pill reusing an
+    // IM-scoped key would couple the two domains for a translator (and break the
+    // moment either wording moves). This is the generic, cross-domain one.
+    'Overdue' => 'Restanțat',
+    // Deliberate: the only other key rendering 'Manual' is 'ManualValuation',
+    // an asset-valuation label. Pointing a schedule mode at it would couple two
+    // unrelated domains for translators and break the moment either reworded.
+    'ScheduleManual' => 'Manual',
+    'ScheduleInterval' => 'Interval',
+    'ScheduleCalendar' => 'Calendaristic',
+    'Cadence' => 'Cadenţă',
+    'CadenceBiweekly' => 'La două săptămâni',
+    'CadenceSemiAnnually' => 'Semestrial',
+    'AnchorDate' => 'Data ancorei',
+    'UpcomingOccurrences' => 'Evenimente viitoare',
+    'AuditLeadInDays' => 'Zile introductive de audit',
+    'SkipOccurrence' => 'Sari peste',
+    'OverrideDate' => 'Data de suprascriere',
+    'Week' => 'Săptămână',
+    'NoUpcomingOccurrences' => 'Nicio apariție viitoare în această fereastră.',
+    'FailedToLoadUpcomingOccurrences' => 'Nu s-a putut încărca previzualizarea aparițiilor viitoare.',
+    'AnchorDateMustBeTodayOrLater' => 'Data ancoră trebuie să fie astăzi sau mai târziu. Pentru a programa o dată trecută, creați în schimb un test manual.',
+    'InvalidScheduleType' => 'Tip de program nevalid. Valori permise: Manual, Interval, Calendar.',
+    'Weeks' => 'Săptămâni',
+    'Months' => 'Luni',
+    'Years' => 'Ani',
+    'ScheduleSummaryEvery' => 'Fiecare {$interval} {$unit}',
+
+    // Define Tests redesign - client-rendered grid (Phase 1, Task 6)
+    'LastResult' => 'Ultimul rezultat',
+    'NextDue' => 'Următoarea scadență',
+    'DueSoon' => 'Scadent în curând',
+    'Retired' => 'Retras',
+    'MyTests' => 'Testele mele',
+    'Failing' => 'Eșec',
+    'Untested' => 'Netestat',
+    'ShowRetired' => 'Afișați pensionari',
+    'Tests' => 'Teste',
+    'NoTestsForThisControl' => 'Încă nu s-au efectuat teste pentru acest control.',
+    'NoControlsDefinedYet' => 'Nu sunt încă definite controale',
+    'NoControlsDefinedYetBody' => 'Definiți controalele în Guvernanță înainte de a adăuga teste.',
+    'NoTestsMatchFilters' => 'Niciun test nu corespunde filtrelor dvs.',
+    'NoTestsMatchFiltersBody' => 'Încearcă să ajustezi căutarea sau filtrele.',
+    'CouldNotLoadTests' => 'Nu s-au putut încărca testele',
+    'CouldNotLoadTestsBody' => 'Ceva nu a mers bine. Datele tale sunt în siguranță — încearcă să actualizezi.',
+    'ShowingXToYOfZ' => 'Se afișează {$start}–{$end} din {$total}',
+    // Define Tests grid -- SCF-mapping + read-only procedure expand (Phase 1, Task 7)
+    'Reference' => 'Referinţă',
+    'NoFrameworksMapped' => 'Niciun framework mapat la acest control.',
+    // Define Tests grid -- batch select + retire/delete + quick filters (Phase 1, Task 8)
+    'Retire' => 'Pensionează-te',
+    'ReassignTester' => 'Reatribuire Tester',
+    'SetSchedule' => 'Setați programul',
+    'ConfirmRetireSelectedTests' => 'Retrageți testul (testele) selectat(e) {n}?',
+    'ConfirmDeleteSelectedTests' => 'Ștergeți testul (testele) selectat(e) {n} ? Această acțiune nu poate fi anulată.',
+    // Define Tests grid -- Coverage toolbar select (Issue 4)
+    'Coverage' => 'Acoperire',
+    'CoverageWithTests' => 'Controale cu teste',
+    'CoverageAllControls' => 'Toate controalele',
+    'CoverageGaps' => 'Lacune',
+    // Define Tests insights band (Phase 2, Task 4) -- KPI tile labels + subtitles.
+    // 'Overdue', 'DueSoon', and 'Failing' are reused from the grid's quick-filter
+    // chips above (identical text) rather than duplicated here.
+    'DtTotalTests' => 'Teste totale',
+    'DtCoverageGaps' => 'Lacune de acoperire',
+    'DtAcrossNControls' => 'În controalele {$n}',
+    'DtControlsWithNoTest' => 'Controale fără test',
+    'DtNeedInitiationNow' => 'Am nevoie de inițiere acum',
+    'DtWithinLeadInWindow' => 'În fereastra de introducere',
+    'DtLastResultFailed' => 'Ultimul rezultat a eșuat',
+    'InvalidTestMethod' => 'Metoda de testare trebuie să fie una dintre următoarele: Investigare, Observare, Inspecție sau Reefectuare!',
+    'TesterCannotBeApprover' => 'Testerul nu poate fi listat nici ca aprobator pentru acest test.',
+    'ApproverNotEligible' => 'Unul sau mai mulți aprobatori selectați nu au responsabilitatea de „Aprobare teste”.',
+    'TestMethod' => 'Metoda de testare',
+    'TestMethodInquiry' => 'Anchetă',
+    'TestMethodObservation' => 'Observare',
+    'TestMethodInspection' => 'Inspecţie',
+    'TestMethodReperformance' => 'Reperformanță',
+    'Sample' => 'Eşantion',
+    'RequiredEvidence' => 'Dovezi necesare',
+    'Approvers' => 'Aprobatori',
+    'AuditLog_TestAuditApproved' => 'Auditul „{$test_audit_name}” (ID: {$test_audit_id}) a fost aprobat de utilizatorul „{$user_name}”.',
+    'AuditLog_TestAuditRejected' => 'Auditul „{$test_audit_name}” (ID: {$test_audit_id}) a fost respins de utilizatorul „{$user_name}” cu comentariul „{$comment}”.',
+    'AuditLog_TestAuditAwaitingApproval' => 'Auditul „{$test_audit_name}” (ID: {$test_audit_id}) a fost trimis spre închidere de către utilizatorul „{$user_name}” și așteaptă aprobarea. Modificări: {$changes}.',
+    'AuditApproved' => 'Auditul a fost aprobat cu succes.',
+    'AuditRejected' => 'Auditul a fost respins cu succes.',
+    'RejectCommentRequired' => 'Este necesar un comentariu pentru a respinge un audit.',
+    'NotAnApproverOfThisAudit' => 'Nu sunteți un aprobator configurat pentru acest audit.',
+    'ApproverCannotBeTester' => 'Aprobatorul nu poate fi și testatorul acestui audit.',
+    'AuditNotAwaitingApproval' => 'Acest audit nu așteaptă în prezent aprobarea.',
+    'NotificationAuditAwaitingApprovalTitle' => 'Audit în așteptarea aprobării dumneavoastră',
+    'NotificationAuditAwaitingApprovalBody' => 'Auditul „{$test_audit_name}” a fost trimis spre închidere și așteaptă aprobarea dumneavoastră.',
+    'NotificationAuditRejectedTitle' => 'Audit respins',
+    'NotificationAuditRejectedBody' => 'Auditul „{$test_audit_name}” a fost respins cu comentariul: „{$comment}”',
+    'AwaitingApproval' => 'În așteptarea aprobării',
+    'AwaitingApprovalBannerText' => 'Acest audit a fost trimis spre închidere și așteaptă aprobarea unui aprobator configurat înainte de a putea fi închis.',
+    'ReturnedForRework' => 'Returnat pentru relucrare',
+    'ReturnedForReworkBannerText' => 'Acest audit a fost respins și returnat pentru reluare.',
+    'RejectReason' => 'Motivul respingerii',
+    'AreYouSureYouWantToApproveThisAudit' => 'Sigur doriți să aprobați acest audit?',
+    'AtLeastOneControlRequired' => 'Este necesar cel puțin un control.',
+    'DtNCommonAcrossNControls' => '{$common} comune · {$n} controale',
+    'DtUntestedControls' => 'Controale netestate',
+    'DtControlsInScopeNoCoverage' => 'Fără acoperire',
+    'Passing' => 'Trecerea',
+    'DtLastResultPassed' => 'Ultimul rezultat aprobat',
+    'AllFamilies' => 'Toate familiile',
+    'SearchTestsPlaceholder' => 'Teste de căutare, controale și cadre de lucru',
+    'AnySchedule' => 'Orice program',
+    'AnyTag' => 'Orice etichetă',
+    'AuditAutoClosedTestRetired' => 'Închis automat ca neconcludent deoarece testul a fost retras.',
+    'Common' => 'Comun',
+    'ValidatesAcrossMappedFrameworks' => 'Validează în cadrul framework-urilor mapate',
+    'EditTest' => 'Editați testul',
+    'ControlHasNoTestCoverage' => 'Acest control în domeniul de aplicare nu are încă acoperire de testare.',
+    'AddTheFirstTest' => 'Adăugați primul test',
+    'ApplyCommonTestHint' => 'Aplicați unul sau mai multe teste existente acestui control. Fiecare test își păstrează controalele actuale și devine un test comun care acoperă și acesta.',
+    'CommonTestApplied' => 'Test aplicat acestui control.',
+    'CouldNotApplyCommonTest' => 'Nu s-a putut aplica testul acestui control.',
+    'SelectOneOrMoreTests' => 'Selectați unul sau mai multe teste',
+    'CommonTestsApplied' => 'Testele {n} aplicate acestui control.',
+    'ApplyCommonTests' => 'Aplicați teste comune…',
+    'History' => 'Istorie',
+    'Result' => 'Rezultat',
+    'Approval' => 'Aprobare',
+    'ThisTestHasNotBeenRunYet' => 'Acest test nu a fost încă efectuat.',
+    'CouldNotLoadTestHistory' => 'Nu s-a putut încărca istoricul acestui test.',
+    'Identity' => 'Identitate',
+    'IdentitySectionHint' => 'Nume, tester și controalele pe care le validează',
+    'WhenTheAuditInitiates' => 'Când începe auditul',
+    'ProcedureAndEvidence' => 'Procedură și dovezi',
+    'CommonTestControlsHint' => 'Un test poate valida mai multe controale — un test comun. Deschiderea acestuia din „+ Adăugați test” al unui control îl preselectează aici.',
+    'SeparationOfDutiesNote' => 'Separarea sarcinilor — un aprobator nu poate fi și tester.',
+    'CommonTestEditScopeHint' => 'Modificările se aplică peste tot unde este utilizat acest test comun.',
+    'Mode' => 'Mod',
+    'AddOrRemove' => 'Adăugați sau eliminați…',
+    'AddOrSearchTags' => 'Adăugați sau căutați etichete…',
+    'CreateTagX' => 'Creați „{tag}”',
+    'Archived' => 'Arhivat',
+    'ShowAllTests' => 'Toate testele',
+    'ShowActiveTests' => 'Teste active',
+    'ShowRetiredTests' => 'Teste retrase',
+    'UntestedControls' => 'Controale netestate',
+    'OverdueByXDays' => 'Restanță · {n} zile',
+    'OverdueByOneDay' => 'Întârziat · 1 zi',
+    'DueInXDays' => 'Scadent în {n} zile',
+    'DueTomorrow' => 'Scadent mâine',
+    'DueToday' => 'Scadent astăzi',
+    'ScheduledForX' => 'Programat · {date}',
+    'AllTesters' => 'Toți testerii',
+    'AllStatuses' => 'Toate stările',
+    'OnTrack' => 'Pe drumul cel bun',
+    'NextTestDateDerivedHint' => 'Calculat din data ultimului test plus frecvența testului. Setați o frecvență pentru a-l programa automat sau lăsați frecvența necompletată pentru a seta singur această dată.',
+    'DueStatus' => 'Starea scadenței',
+    'AllResults' => 'Toate rezultatele',
+    // Remove a test from one control (Define Tests grid unlink row action)
+    'RemoveFromThisControl' => 'Eliminați din acest control',
+    'RemoveTestFromControl' => 'Eliminați testul din control',
+    'RemoveTestFromControlConfirm' => 'Eliminați „{test_name}” din {control_name}?',
+    'RemoveTestFromControlStays' => 'Testul rămâne pe celelalte controale {n} ale sale. Nimic nu este șters.',
+    'RemoveTestFromControlStaysOne' => 'Testul rămâne pe celălalt control al său. Nimic nu este șters.',
+    'CannotRemoveTestsOnlyControl' => 'Un test trebuie să aparțină la cel puțin un control. În schimb, retrageți sau ștergeți testul.',
+    'TestRemovedFromControl' => 'Testul a fost eliminat din grupul de control.',
+    'CouldNotRemoveTestFromControl' => 'Testul nu a putut fi eliminat din control.',
+    'TestRemovedFromControlAuditLogMessage' => 'Testul „{$test_name}” (ID: {$test_id}) a fost eliminat din control (ID: {$control_id}) de către utilizatorul „{$user}”.',
+    'DeleteTestUsedByNControls' => 'Este utilizat de controalele {n} și va fi eliminat din toate acestea.',
+    'BulkDeleteSharedTestsNote' => '{n} dintre acestea sunt utilizate de alte controale și vor fi eliminate și din acestea.',
+    'BulkRetireSharedTestsNote' => '{n} dintre acestea sunt utilizate de alte controale și vor fi retrase și acolo.',
+    'BulkDeleteOneSharedTestNote' => 'Unul dintre acestea este utilizat de alte controale și va fi eliminat și din acestea.',
+    'BulkRetireOneSharedTestNote' => 'Unul dintre acestea este utilizat de alte controale și va fi retras și acolo.',
+    'CouldNotLoadTest' => 'Nu s-a putut încărca acest test.',
+    'Expand' => 'Extinde',
+    'SearchMappings' => 'Căutați cadre și referințe',
+    'NoMatchingMappings' => 'Nicio mapare nu corespunde căutării respective.',
+    'Insights' => 'Informații',
+    'ShowInsights' => 'Afișați dalele cu informații',
+    'HideInsights' => 'Restrângeți dalele de informații într-o linie de rezumat',
+    'ChooseControls' => 'Alegeți controalele',
+    'UseTheseControls' => 'Folosește aceste controale',
+    'SearchControlsPlaceholder' => 'Căutare după număr sau nume',
+    'PickerKeyboardHint' => 'Sus/jos pentru mutare, Enter pentru selectare, Esc pentru anulare',
+    'NoControlsMatchFilters' => 'Nimic nu se potrivește aici. Lărgește un pas la stânga sau șterge căutarea.',
+    'NoControlsSelectedYet' => 'Nimic selectat încă.',
+    'AllControls' => 'Toate controalele',
+    'AddOrRemoveControls' => 'Adăugați sau eliminați controale…',
+    'LastTested' => 'Ultima testare',
+    'LastTestDateAnchorHint' => 'Programarea intervalelor ancorelor (această dată plus frecvența). După ce testul a înregistrat rezultatele, grila afișează în schimb data celui mai recent rezultat.',
+    'Filters' => 'Filtre',
+    'ShowFilters' => 'Afișați filtrele',
+    'HideFilters' => 'Ascunde filtrele',
+
+    // App shell — collapsing sidebar / new base design (SR app-shell redesign)
+    'AI' => 'IA',
+    'CollapseSidebar' => 'Restrângeți bara laterală',
+    'FooterCopyright' => '© %s SimpleRisk. Toate drepturile rezervate.',
+    'ExpandSidebar' => 'Extinde bara laterală',
+    'WorkflowsCloneConfirm' => 'Clonează fluxul de lucru \'{$name}\'?',
+    'WorkflowsDeleteConfirm' => 'Ștergeți fluxul de lucru „{$name}”? Această acțiune nu poate fi anulată.',
+    'WorkflowActionFailed' => 'Acțiunea a eșuat: {$msg}',
+    'ClickToDisable' => 'Faceți clic pentru a dezactiva',
+    'ClickToEnable' => 'Faceți clic pentru a activa',
+    'ENABLED' => 'ACTIVAT',
+    'DISABLED' => 'PERSOANĂ CU DIZABILITĂȚI',
+    'BackToWorkflows' => 'Înapoi la fluxuri de lucru',
+    'BackToHistory' => 'Înapoi la istorie',
+    'NewWorkflow' => 'Flux de lucru nou',
+    'ViewSteps' => 'Vizualizați pașii',
+    'SaveWorkflow' => 'Salvați fluxul de lucru',
+    'WorkflowSavedSuccessfully' => 'Fluxul de lucru a fost salvat cu succes.',
+    'WorkflowNotFound' => 'Flux de lucru negăsit.',
+    'EditWorkflow' => 'Editare flux de lucru: {$name}',
+    'OrganizationContextProfile' => 'Profilul contextului organizației',
+    'AICtxAutoAcceptThreshold' => 'Care este pragul de acceptare automată a riscului al organizației dumneavoastră (o sumă în dolari sau un procent din ALE)?',
+    'AICtxGrcBudget' => 'Care este bugetul dumneavoastră anual pentru GRC/securitate?',
+    'AICtxAuditorPerspective' => 'Din perspectiva cui sunteți auditat în principal?',
+    'AICtxUnitCurrency' => 'Valută ($)',
+    'AICtxUnitPercentOfAle' => 'Procentul de ALE (%)',
+    'AICtxFrameworksInUse' => 'Cadre utilizate în prezent',
+    'AICtxNoFrameworksInUse' => 'Nu s-au găsit încă framework-uri active. Adăugați framework-uri în Guvernanță > Mapare framework-uri.',
+    'AICtxFromYourData' => 'Din datele dvs.',
+    'AICtxAuthoritative' => 'Autoritar',
+    'AICtxAppetiteNotSet' => 'Nesetat',
+    'AICtxAppetiteManageLink' => 'Gestionare în Configurarea Riscurilor',
+    'AICapControlTestGeneration' => 'Generarea de teste de control',
+    'AICapControlTestGenerationDesc' => 'Pregătește teste de control pentru revizuire, utilizând maparea cadrului de control, testele existente și rezultatele autoevaluării — nimic nu este creat până când nu îl aprobați.',
+    'AICapSurfacedControlTestGeneration' => 'Conformitate — Definirea testelor',
+    'AIControlTestGenUnavailable' => 'SERVICIU INDISPONIBIL: Un administrator trebuie să activeze această funcționalitate în setările AI.',
+    'AIControlTestGenInvalidId' => 'CERERE INCORRECTĂ: Este necesar un ID de control pozitiv.',
+    'AIControlTestGenNotFound' => 'NEGĂSIT: Controlul specificat nu a putut fi găsit.',
+    'AIControlTestGenConflict' => 'CONFLICT: Generarea este deja pusă în coadă pentru acest control.',
+    'AIControlTestGenQueued' => 'ACCEPTAT: Generarea testului de control este pusă în coadă.',
+    'AIControlTestGenFailed' => 'EROARE SERVER INTERN: Generarea testului de control al cozii nu a reușit.',
+    'AIControlTestGenCheckFailed' => 'EROARE: Nu se poate verifica controlul înainte de a-l pune în coadă.',
+    'GenerateTestsWithAI' => 'Generați teste cu inteligență artificială',
+    'ShowAiSuggestedTests' => 'Teste sugerate de inteligența artificială',
+    'AiSuggested' => 'AI sugerat',
+    'ReviewAndEdit' => 'Revizuire și editare',
+    'CreateSelected' => 'Creați selecția',
+    'TestCreatedFromSuggestion' => 'Test creat pe baza sugestiei.',
+    'SuggestionDismissed' => 'Sugestie respinsă.',
+    'TestGenerationQueued' => 'Generarea de teste a fost pusă în coadă.',
+    'Generating' => 'Se generează…',
+    'SuggestionDismissFailed' => 'Testul a fost creat, dar sugestia sa bazată pe inteligența artificială nu a putut fi ignorată. Închideți-o manual dacă persistă.',
+    'AICtxAuditorBig4' => 'Big 4 (extern)',
+    'AICtxAuditorBoutique' => 'Boutique / regional (extern)',
+    'AICtxAuditorInternal' => 'Numai audit intern',
+    'AICtxAuditorSelfAssessed' => 'Autoevaluat',
+    'AICtxAuditorNotSure' => 'Nu sunt sigur',
+    'AICtxAppetiteCautious' => 'Precaut',
+    'AICtxAppetiteBalanced' => 'Echilibrat',
+    'AICtxAppetiteAggressive' => 'Agresiv',
+    'TestGenerationComplete' => 'Testele de control elaborate de inteligența artificială sunt gata de revizuire.',
+    'TestGenerationStillRunning' => 'Generarea de teste este încă în desfășurare; schițele vor apărea în curând.',
+    'TestGenerationNoNew' => 'Generația s-a încheiat — nu se sugerează teste noi pentru acest control.',
+    'SearchEntities' => 'Entități de căutare',
+    'SearchEntitiesPlaceholder' => 'Căutare riscuri, controale, politici, excepții…',
+    'ShowTypes' => 'Afișați tipurile',
+    'Depth' => 'Adâncime',
+    'Inspector' => 'Inspector',
+    'Connections' => 'Conexiuni',
+    'NoConnectionsFound' => 'Nu s-au găsit conexiuni pentru entitatea selectată.',
+    'CouldNotLoadGraph' => 'Nu s-a putut încărca graficul de conectivitate.',
+    'CouldNotSearchEntities' => 'Nu s-au putut căuta entități.',
+    'ShowingTopNOfM' => 'Se afișează primele {0} din {1}',
+    'RankedByMaturityGap' => 'Clasificat după decalajul de maturitate',
+    'RankedByRiskScore' => 'Clasificat după scorul de risc',
+    'RankedByRecentFailure' => 'Clasificat după cel mai recent eșec',
+    'RankedByReviewDate' => 'Clasificat după următoarea dată de evaluare',
+    'RankedBySeverity' => 'Clasificate după severitate',
+    'RankedByName' => 'Clasificat după nume',
+    'NodeTypeSelfAssessmentResult' => 'Rezultatul autoevaluării',
+    'Relationship' => 'Relaţie',
+    'Exception' => 'Excepţie',
+    'DesiredMaturity' => 'Maturitatea dorită',
+    'ApprovalState' => 'Stare de aprobare',
+    'RelationshipOfType' => '{0} din {1}',
+    // Connectivity Explorer Inspector: labels for enrichment field keys
+    // (ai_context_enrich_fetch(), ai_context_enrich_vulnerabilities()) that
+    // fieldLabel() in connectivity-visualizer.js did not yet cover.
+    'LastDate' => 'Ultima dată',
+    'LastResultDate' => 'Data ultimului rezultat',
+    'PercentComplete' => 'Procent finalizat',
+    'AssessmentDate' => 'Data evaluării',
+    'NextDate' => 'Următoarea dată',
+    'Number' => 'Număr',
+    'Grouping' => 'Grupare',
+    'Hidden' => 'Ascuns',
+    'FirstFound' => 'Prima găsită',
+    'LastFound' => 'Ultima găsire',
+    'Patchable' => 'Patchable',
+    'Solution' => 'Soluţie',
+    'Breadcrumb' => 'Breadcrumb',
+    'SelectANodeToInspect' => 'Selectați un nod pentru a-i vizualiza detaliile.',
+    'HiddenUnreachableNodes' => '{0} nod(uri) ascuns(e): nu mai este(au) conectat(e) fără tipul(ele) ascuns(e).',
+    // Connectivity Explorer canvas launchpad (Level-1 type tiles / Level-2
+    // browsable entity list) -- docs/superpowers/specs/2026-07-27-
+    // connectivity-explorer-launchpad.md
+    'BrowsableEntityTypes' => 'Tipuri de entități răsfoibile',
+    'CountFloor' => '{0}+',
+    'NoBrowsableTypes' => 'Nu aveți permisiunea de a răsfoi niciun tip de entitate.',
+    'AllTypes' => 'Toate tipurile',
+    'FilterEntitiesPlaceholder' => 'Filtru…',
+    'NoMatchingEntities' => 'Nicio entitate nu corespunde filtrului dvs.',
+    'LoadMore' => 'Încărcați mai multe',
+    'Loading' => 'Se încarcă…',
+    'CouldNotLoadEntityCounts' => 'Nu s-au putut încărca numărul de entități.',
+    'CouldNotLoadEntities' => 'Nu s-au putut încărca entitățile.',
+    'ClearGraph' => 'Grafic clar',
+    // Connectivity Explorer node-type chip label for the 'audit' type. Not
+    // reused from 'TeamType_audit' (same English text, "Audit") -- that key
+    // is scoped to the Team Separation team-type picker, a different feature
+    // whose wording should be free to diverge from this one's.
+    'Audit' => 'Audit',
+    // Queued email send-failure notifications
+    'EmailSendFailedNotificationTitle' => 'Livrarea e-mailului a eșuat',
+    'EmailSendFailedNotificationBody' => 'Unul sau mai multe e-mailuri din coadă nu au putut fi livrate. Verificați setările de e-mail, apoi consultați Monitorul de coadă și jurnalul serverului pentru detalii.',
+    'QuestionnaireShareInvalidEmailAddress' => 'Nu se pot partaja rezultatele chestionarului cu o persoană de contact care nu are o adresă de e-mail validă.',
+    'AssessmentSendInvalidEmailAddress' => 'Nu se poate trimite evaluarea la o adresă de e-mail nevalidă.',
+    'AssessmentSentTo' => 'Evaluarea a fost trimisă la „{$email}”.',
+    'AssessmentNotSentNoValidRecipients' => 'Evaluarea nu a fost trimisă — nu a fost furnizată o adresă de e-mail validă.',
+    'AssessmentContactUnusableEmailNotificationTitle' => 'Chestionar netrimis',
+    'AssessmentContactUnusableEmailNotificationBody' => 'Chestionarul „{$questionnaire}” nu a putut fi trimis către „{$contact}” deoarece acea persoană de contact nu are o adresă de e-mail validă înregistrată. Actualizați înregistrarea persoanei de contact pentru a relua trimiterea.',
+    'EmailFailureNotificationRetention' => 'Păstrarea notificărilor de eșec la livrarea e-mailurilor',
+    'EmailFailureNotificationRetentionOutOfRange' => 'Păstrarea notificărilor de eșuare a livrării prin e-mail trebuie să fie între {$min} și {$max} zile.',
+    'MailSettingsUpdatedSuccessfully' => 'Setările de e-mail au fost actualizate cu succes.',
+    // Questionnaire audit-trail entries for the API submit/draft paths (SR-1714).
+    // The token form credits the contact; an API caller is an authenticated
+    // SimpleRisk user acting on that contact's questionnaire, so both the
+    // contact and the acting user are named.
+    'QuestionnaireCompletedAuditLogViaApi' => 'Chestionarul „{$questionnaire_name}” pentru contactul „{$contact_name}” a fost completat prin intermediul API-ului de către utilizatorul „{$user_name}”.',
+    'QuestionnaireDraftAuditLogViaApi' => 'Chestionarul „{$questionnaire_name}” pentru contactul „{$contact_name}” a fost salvat ca schiță prin intermediul API-ului de către utilizatorul „{$user_name}”.',
+    // Bad-input response for the questionnaire risk-list endpoints, which
+    // previously reported a malformed questionnaire_id as a permission denial.
+    // Mirrors the existing 'MissingOrInvalidTrackingID'.
+    'MissingOrInvalidQuestionnaireID' => 'ID-ul chestionarului lipsește sau este invalid.',
+    // POST /api/v2/assessments/questionnaire/result/file response messages.
+    // The `id` path deliberately returns QuestionIdCannotAcceptFile for every
+    // question-level rejection so a sequential tracking id cannot be used to
+    // probe questionnaire structure; the token path returns the specific reason.
+    'QuestionnaireResultNotFoundForTokenOrId' => 'NEGĂSIT: Nu s-a putut găsi un rezultat al chestionarului cu tokenul sau ID-ul specificat',
+    'QuestionIdCannotAcceptFile' => 'CERERE INCORRECTĂ: question_id {$question_id} nu poate accepta un fișier cu rezultatul acestui chestionar',
+    'QuestionIdNotFoundInQuestionnaire' => 'CERERE GREȘITĂ: question_id {$question_id} nu a fost găsit în acest chestionar',
+    'QuestionIdInMultipleTemplates' => 'CERERE GREȘITĂ: question_id {$question_id} apare în mai multe șabloane pentru acest chestionar',
+    'QuestionIdDoesNotAcceptFileUploads' => 'CERERE INCORRECTĂ: question_id {$question_id} nu acceptă încărcări de fișiere',
+    // The Statement of Applicability's two UNVERIFIED implementation states.
+    //
+    // They exist because "we have not checked" is not "it does not work", and an
+    // SoA is ATTESTED — printing "No" for an unverified control is a false
+    // statement against yourself, exactly as printing "Yes" without evidence is
+    // a false statement the other way. Before these keys existed both states
+    // fell through to 'No', which on a framework where most controls carry no
+    // test meant the whole document read "not implemented".
+    //
+    // They are two states rather than one because they are different findings
+    // with different owners: no test defined is a GOVERNANCE gap (nobody decided
+    // how to verify this control), never run is an OPERATIONAL one (somebody
+    // decided, and it was not done).
+    //
+    // WORDING. Both must be unmistakably distinct from the bare 'No' in the same
+    // column. 'Tests never run' rather than 'Never run': in a column headed
+    // "Implemented", the bare phrase reads for a moment as though the CONTROL
+    // was never run, when the subject is its tests.
+    //
+    // BOTH ARE PLURAL, and that is not only style. English takes the plural
+    // after "no" when the expected quantity could exceed one ("no results
+    // found"), and a control normally carries several tests — the singular
+    // implies only ever one was expected. 'Tests never run' is the stronger
+    // case: soa_implemented_for() returns `never_run` only when NOT ONE of the
+    // control's tests has produced a verdict, so the state is inherently about
+    // the whole set. With four tests defined and none run, the singular reads as
+    // one omission rather than a wholesale one.
+    'SoaImplementedNoTestDefined' => 'Niciun test definit',
+    'SoaImplementedNeverRun' => 'Testele nu rulează niciodată',
+
+    // The Implemented column's fallback for a token neither sink recognizes.
+    //
+    // DELIBERATELY NOT A VERDICT, and the reason this key exists at all. Both
+    // sinks previously ended in a fallthrough to 'No', so adding a state without
+    // adding its label printed a confident, wrong answer into a compliance
+    // document. Falling through to 'Yes' would be worse. The only safe failure
+    // mode is a value that states nothing about the control — a visible bug
+    // instead of a silent misstatement.
+    'SoaImplementedUnknown' => 'Stare indisponibilă',
+    // How an APPLICABLE control's stored inclusion reason(s) join to its own
+    // freeform justification when it recorded both (spec §4). Reached ONLY when
+    // both halves exist — reasons alone print as the reason list, prose alone
+    // prints verbatim — so this string is punctuation and word order, not prose.
+    // It is a language key rather than a hardcoded separator because a locale
+    // that joins clauses with a colon, a full stop, or right-to-left ordering
+    // must be able to say so; both placeholders have to survive translation.
+    'SoaJustifiedByInclusionReasons' => '{reasons} — {narrative}',
+    // The Set applicability modal's reason field, which became a MULTI-select
+    // when reasons moved to a join table: a control is commonly included (or
+    // excluded) for more than one reason, and the singular 'Reason' the field
+    // used to reuse now under-describes it. 'Reason' is left alone rather than
+    // repointed -- the row drawer and the SoA still print exactly one joined
+    // value under it, and redefining a key changes every surface that reads it.
+    'ApplicabilityReasons' => 'Motive',
+    // Said once, above a group of checkboxes, rather than implied by the widget.
+    // The old single <select> answered "how many may I pick?" by construction;
+    // a checkbox group does not, and a user who ticks one and stops has made the
+    // SoA less truthful than the one they meant to write.
+    'ApplicabilityReasonsHint' => 'Alegeți fiecare motiv care se aplică.',
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // THE STATEMENT OF APPLICABILITY'S MARKERS AND ITS LEGEND (spec §1, §3).
+    // ─────────────────────────────────────────────────────────────────────────
+
+    // THE EVIDENCE COLUMN'S TWO ABSENCES, which are OPPOSITES.
+    //
+    // 'No evidence linked' is a FINDING: the control is in scope, is possibly
+    // claimed implemented, and nothing substantiates it. The em dash below is
+    // the other answer -- the control is excluded, so no evidence is expected
+    // and the absence is correct. Rendering both as an empty cell hides the
+    // first, which is the one an auditor circles.
+    'SoaNoEvidenceLinked' => 'Nicio dovadă legată',
+    // PUNCTUATION, NOT PROSE -- the glyph the Evidence cell prints when nothing
+    // is expected. A language key rather than a hardcoded character for the same
+    // reason 'SoaJustifiedByInclusionReasons' is one: a locale that marks "not
+    // applicable" with a different dash, or with a word, must be able to say so.
+    'SoaEvidenceNotExpected' => '—',
+    // Whether the evidence a test DECLARED it requires actually arrived with the
+    // result. A stronger claim than a pass/fail alone, and few SoA tools make it.
+
+    // THE REMEDIATION BLOCK -- what is being done about a control that reads
+    // Partial or No. The SoA points AT the risk treatment plan (clause 6.1.3(e))
+    // rather than becoming one.
+    'SoaRemediation' => 'Remediere',
+    // THE MOST SERIOUS THING THAT BLOCK CAN FIND: the test failed and it is
+    // linked to no risk, so no treatment plan traces back to it. Dropping such a
+    // row for want of a risk to join to would render it as a blank cell, which
+    // reads as "nothing to report".
+    'SoaRemediationUnplanned' => 'Niciun risc asociat',
+
+    // THE LEGEND. Required in both variants and every export format, because six
+    // implementation states plus three markers is more nuanced than the
+    // Yes/No/Partial an auditor expects, and an undefined vocabulary invites the
+    // reader to guess unfavourably.
+    'SoaLegendTitle' => 'Cum se citește această afirmație',
+    'SoaLegendYes' => 'Fiecare test definit pentru acest control a trecut la ultima rulare.',
+    'SoaLegendPartial' => 'Testele de control sunt contradictorii: cel puțin unul a trecut, iar cel puțin unul a eșuat sau nu a produs niciun verdict.',
+    'SoaLegendNo' => 'Niciun test al acestui control nu a trecut la ultima rulare și cel puțin unul a eșuat.',
+    // The two unverified states are DIFFERENT FINDINGS WITH DIFFERENT OWNERS,
+    // and the labels alone do not quite carry that -- so the legend spells it
+    // out. This is the distinction the whole six-state set exists for.
+    'SoaLegendNoTestDefined' => 'Nu a fost definit niciun test pentru acest control, așadar funcționarea sa nu a fost niciodată verificată. Aceasta nu este o afirmație că lipsește controlul sau că acesta eșuează - ci doar că această afirmație nu demonstrează acest lucru. O lacună în guvernanță: nimeni nu a decis cum este verificat acest control.',
+    'SoaLegendNeverRun' => 'Există teste pentru acest control, dar niciunul dintre ele nu a fost executat vreodată, așadar funcționarea sa nu este demonstrată aici. Aceasta nu este o afirmație că controlul lipsește sau că eșuează. O lacună operațională: verificările au fost decise și nu au fost efectuate.',
+    'SoaLegendNotApplicable' => 'Controlul este exclus din domeniul de aplicare al acestui cadru, deci nu are statut de implementare.',
+    // The one most in need of explaining: with nothing to define it, this reads
+    // as an admission about the control rather than as what it is.
+    'SoaLegendUnknown' => 'SimpleRisk nu a putut eticheta starea înregistrată, așadar implementarea nu este demonstrată aici. Acesta este un defect al software-ului și nu spune nimic despre control - nici că funcționează, nici că nu funcționează.',
+    'SoaLegendOverdue' => 'Rezultatul afișat este încă valabil, dar cel puțin unul dintre testele din spatele său a depășit data următoarei teste. Dovezile sunt învechite.',
+    'SoaLegendNoEvidence' => 'Controlul se încadrează în domeniul de aplicare și nu a fost asociat nimic care să îl justifice: niciun document confirmat și niciun test care să fi produs un rezultat.',
+    'SoaLegendEvidenceNotExpected' => 'Nu se așteaptă nicio dovadă, deoarece controlul este exclus din domeniul de aplicare.',
+    'SoaLegendUnplanned' => 'Un test eșuat, care nu prezintă niciun risc, deci niciun plan de tratament nu are legătură cu acesta.',
+
+    // THE TWO VARIANTS, chosen on the launcher before the document is generated
+    // and PRINTED ON ITS COVER. A Statement of Applicability is a controlled
+    // document: two of them for the same framework that show different things,
+    // with nothing on either to say which is which, is a document nobody can
+    // file.
+
+    // THE THREE DETAILED-ONLY COLUMNS.
+    // What those three columns say instead of nothing. A blank cell in an audit
+    // document reads as a formatting artefact; "Not recorded" is a fact the
+    // reader can act on.
+
+    // THE BROWSER PRINT ROUTE. Beside the two downloads on the launcher, and the
+    // only PDF route for a framework too large for the server-side writer.
+    // Shown in place of "Download as PDF" when the chosen framework is above
+    // SOA_EXPORT_PDF_MAX_CONTROLS. The affordance is absent rather than
+    // disabled, so this sentence is what tells the reader the absence is
+    // deliberate and what to do instead.
+    // The footer of every printed page. {page} and {pages} are substituted with
+    // the browser's own page counters, so the two tokens must both survive
+    // translation -- but their ORDER and the words around them are the
+    // translator's, which is why this is one string and not "Page" + "of".
+    'SoaPrintPageNumber' => 'Pagina {page} din {pages}',
+
+    // THE ONE PDF AFFORDANCE on the statement-of-applicability launcher, beside
+    // 'DownloadAsXLSX'. It replaces the pair that used to sit there --
+    // 'SoaPrintToPdf' and 'DownloadAsPDF' -- because a Statement of Applicability
+    // is a controlled document and two PDF buttons let two people hand an auditor
+    // two different-looking PDFs of the same statement.
+    //
+    // JUST "PDF", AND DELIBERATELY SO. Below SOA_EXPORT_PDF_MAX_CONTROLS the
+    // button downloads a server-rendered file and above it the browser writes
+    // one, but that is a mechanism and not a choice the reader has to make. A
+    // label that named the mechanism ("Print to PDF" / "Download as PDF") would
+    // put the difference back in front of them.
+    //
+    // 'SoaPrintToPdf' and 'SoaPdfTooLargeHint' above are LEFT IN PLACE with no
+    // caller: 39 locales carry them, and this file is append-only precisely so a
+    // customer running a custom lang.<locale>.php can reconcile it with a tail
+    // diff.
+    'SoaPdf' => 'PDF',
+
+    // THE OTHER TWO ACTIONS IN THAT SAME ROW, shortened to match it.
+    //
+    // The row read "Open in browser" / "Download as XLSX" / "PDF", which put a
+    // verb on two of three actions and made the odd one out look like an
+    // abbreviation of something longer. The row's own context supplies the
+    // verbs -- these are the things you can DO with the framework you just
+    // chose -- so they carried no information and cost the reader a comparison.
+    // 'SoaPdf' is short because naming its mechanism would be dishonest (above
+    // SOA_EXPORT_PDF_MAX_CONTROLS it opens a print view rather than downloading
+    // a file), and the shortest of the three is the one that has to be right.
+    //
+    // NOT the generic 'Open' at line ~1021: that key lives among 'Mitigated' /
+    // 'Reviewed' and is the risk-status ADJECTIVE -- fr "Ouvert", de "Offen" --
+    // so reusing it would label a button with a state rather than an action in
+    // most of the 39 locales.
+    //
+    // 'SoaOpenInBrowser' above is LEFT IN PLACE with no caller, for the same
+    // reason 'SoaPrintToPdf' is: the locales carry it and this file is
+    // append-only so a customer's custom lang.<locale>.php reconciles with a
+    // tail diff. 'DownloadAsXLSX' keeps a caller either way -- the Assessments
+    // Extra's questionnaire results still use it.
+    'SoaOpen' => 'Deschide',
+    'SoaXlsx' => 'XLSX',
+    // ---- The locked-affordance treatment -------------------------------------
+    // SHARED COPY, not chooser copy. SimpleRisk now SHOWS what's possible and
+    // MARKS what's out of reach because it isn't licensed, rather than hiding
+    // it -- so these strings appear both as a menu row's explanation (Define
+    // Control Frameworks' "+ Add framework" chooser) and beside a disabled
+    // toolbar button (the Statement of Applicability's PDF/XLSX exports). Each
+    // one is worded to read correctly in BOTH places, which is why none of them
+    // starts with "This route" or "This button".
+    //
+    // 'LockedAffordanceBadge' duplicates the English of 'AICapStateLocked'
+    // rather than reusing it: that key sits in the AI Capabilities Catalog's
+    // block and is scoped to a capability's state, and translators work from
+    // the key's neighbourhood as much as from its value.
+    'LockedAffordanceBadge' => 'Blocat',
+    // The two SCF steps before it can be switched on. admin/register.php serves
+    // both -- it is the registration form AND where the per-Extra download
+    // buttons render -- so these differ in what they say, not where they go.
+    'UnlockRegisterInstanceNote' => 'Înregistrați această instanță pentru a obține Secure Controls Framework.',
+    'UnlockRegisterInstanceLink' => 'Înregistrați SimpleRisk',
+    'UnlockDownloadScfNote' => 'Această instanță este înregistrată. Descărcați Secure Controls Framework pentru a o utiliza.',
+    'UnlockDownloadScfLink' => 'Descarcă-l',
+    'UnlockActivateScfNote' => 'Cadrul de control securizat este descărcat, dar nu este activat.',
+    'UnlockActivateScfLink' => 'Pornește-l',
+    // Import-Export is a paid Extra, so "not installed" is an upsell rather
+    // than a registration prompt. Deliberately a bare capability sentence: it
+    // has to sit under a menu row and next to an export button equally well.
+    'RequiresImportExportExtra' => 'Necesită Import-Export Extra.',
+    'UnlockImportExportLink' => 'Vezi ce adaugă',
+    'UnlockActivateImportExportNote' => 'Import-Export Extra este instalat, dar nu este activat.',
+    'UnlockActivateImportExportLink' => 'Pornește-l',
+    // Shown instead of any of the above to a user who is not an administrator:
+    // every unlock step lives on a check_admin page, so they get the half that
+    // is useful to them -- that the capability exists, and who to ask -- and no
+    // link that would only bounce them.
+    'UnlockNeedsAdministrator' => 'Un administrator poate configura acest lucru.',
+    // API date parsing. {$field} is the request field name (next_date, last_date,
+    // test_date); {$format} is this instance's configured display date format.
+    'InvalidSubmittedDate' => 'Valoarea {$field} nu este o dată validă. Trimiteți-o ca AAAA-LL-ZZ sau în formatul de dată al acestei instanțe ({$format}).',
+    // Companion to InvalidSubmittedDate, for a value that matches the expected
+    // shape but names a day that does not exist (February 31st, month 13).
+    // Saying "submit it as MM/DD/YYYY" there would repeat what the caller did.
+    // {$value} is the submitted value, echoed back truncated.
+    'ImpossibleSubmittedDate' => 'Valoarea {$field} „{$value}” nu este o dată calendaristică reală. Verificați ziua și luna — această instanță citește datele ca {$format}.',
+    // The Statement of Applicability's merged verification column. Replaces three
+    // separate headings (Implemented / Evidence / Review Cadence) with the one
+    // question all three answer: how do we know this control is working?
+    // The two appendices printed after the register. Justifications are truncated
+    // in the row and given in full here; remediation plans live here rather than
+    // in the table because ISO 27001 keeps the SoA (6.1.3(d)) and the risk
+    // treatment plan (6.1.3(e)) as separate artifacts.
+    'SoaAppendixJustifications' => 'Anexa A — Justificări',
+    'SoaAppendixRemediation' => 'Anexa R — Planuri de remediere',
+    // Appendix E carries the WORDING of each test's evidence requirement. The row
+    // keeps only whether that evidence arrived, which is the finding; the wording
+    // is reference material and was the bulkiest thing in the Verification cell.
+    'SoaRequiredEvidenceSupplied' => 'dovezile necesare furnizate',
+    'SoaRequiredEvidenceNotSupplied' => 'dovezile necesare nu au fost furnizate',
+    // The one scheduling fact the SoA prints: the soonest date any of a control's
+    // tests is next due. Replaces a per-test "Manual — Next Test Date: ..." line,
+    // whose schedule type belongs on Define Tests and whose date is now on each
+    // test's own evidence bullet.
+    // The two dates on a test's evidence bullet. LABELLED, because two bare dates
+    // side by side are ambiguous in a way one is not.
+    // SINGULAR document-type labels for one piece of design evidence. SimpleRisk's
+    // existing keys are the plural tab names, which would read "Access Control
+    // Standard (Standards)".
+    'SoaEvidencePolicy' => 'Politica',
+    'SoaEvidenceStandard' => 'Standard',
+    'SoaEvidenceProcedure' => 'Procedură',
+    'SoaEvidenceGuideline' => 'Ghid',
+    // ── The legend, grouped by column (SOA_LEGEND_GROUPS, includes/soa.php) ──
+    // The Applicability column's three values. These were never in the legend,
+    // so an auditor met "Inherited" -- a word with no meaning outside SimpleRisk
+    // -- with nothing to look it up in.
+    'SoaLegendApplicable' => 'Controlul se încadrează în domeniul de aplicare al acestui cadru, iar organizația este responsabilă de operarea acestuia.',
+    // DISTINCT from 'SoaLegendNotApplicable', which defines the "N/A" that appears
+    // in the Implementation Status column. This one is the DECISION to exclude;
+    // that one is the consequence for the status.
+    'SoaLegendApplicabilityNotApplicable' => 'Controlul a fost exclus din domeniul de aplicare al acestui cadru. Coloana de justificare înregistrează motivul și cine a decis.',
+    'SoaLegendInherited' => 'Controlul este inclus în domeniul de aplicare, dar este operat de o terță parte - un furnizor de cloud, o organizație-mamă, o funcție externalizată - și nu de această organizație. Furnizorul este menționat lângă justificare.',
+    // The Evidence column's four bullet glyphs. Load-bearing since the visible
+    // result word was dropped from pass and fail bullets, and until now defined
+    // nowhere at all.
+    'SoaLegendEvidencePass' => 'Un test al acestui control a înregistrat o reușită ultima dată când a fost executat. Data de lângă acesta indică momentul executării.',
+    'SoaLegendEvidenceFail' => 'Un test al acestui control a înregistrat o eroare ultima dată când a fost executat. Anexa R conține planul de tratament, acolo unde există.',
+    'SoaLegendEvidenceInconclusive' => 'Un test al acestui control a fost efectuat și nu a dus la niciun rezultat. Aceeași marcă este utilizată pentru un rezultat pe care acest document nu îl recunoaște, iar în acest caz, rezultatul în sine este tipărit lângă acesta.',
+    // The TERM beside the § glyph. Not a document type -- the four types
+    // (Policy, Standard, Procedure, Guideline) are printed per item; this names
+    // the CATEGORY of evidence a document is.
+    'SoaEvidenceDesignDocument' => 'Document de proiectare',
+    'SoaLegendEvidenceDocument' => 'Un document de guvernanță confirmat ca dovadă pentru acest control -- designul său, mai degrabă decât funcționarea sa. Un document nu poartă niciun verdict, motiv pentru care nu este marcat cu o bifă.',
+    // The XLSX export's first worksheet tab. The workbook's other four tabs reuse
+    // headings that already exist ('How to read this statement', 'Statement of
+    // Applicability', and the two appendix headings); the cover had no name of its
+    // own because it used to be the top of a single sheet.
+    //
+    // KEEP IT SHORT. Excel caps a worksheet name at 31 characters and
+    // soa_export_sheet_name() truncates rather than failing the export, so a long
+    // translation loses its tail on the tab.
+    'SoaSheetCover' => 'Acoperi',
+
+    'SearchFrameworks' => 'Cadre de căutare',
+    'SearchControls' => 'Comenzi de căutare',
+    'AddFramework' => 'Adăugați cadru',
+    'Applicability' => 'Aplicabilitate',
+    'AnyFamily' => 'Orice familie',
+    'AnyOwner' => 'Orice proprietar',
+    'AnyClass' => 'Orice clasă',
+    'AnyPhase' => 'Orice fază',
+    'AnyPriority' => 'Orice prioritate',
+    'AnyType' => 'Orice tip',
+    'AnyStatus' => 'Orice stare',
+    'SelectAllN' => 'Selectați toate {n}',
+    'Classification' => 'Clasificare',
+    'Placement' => 'Plasament',
+    'OwnershipAndMaturity' => 'Proprietate și maturitate',
+    'MappingsAndGuidance' => 'Hărți și îndrumări',
+    'DeleteFrameworkTitle' => 'Ștergeți cadrul de lucru „{$name}”?',
+    'DeleteControlTitle' => 'Ștergeți controlul \'{$name}\'?',
+    'DeleteControlsTitle' => 'Ștergeți controalele {$n}?',
+    'DeleteCannotBeUndone' => 'Aceasta nu poate fi anulată.',
+    'DeleteFrameworkConsequence' => 'Aceasta elimină framework-ul și toate mapările sale de control.',
+    'DeleteControlConsequence' => 'Aceasta elimină controlul din fiecare framework la care este mapat.',
+    'DeleteControlsConsequence' => 'Aceasta elimină fiecare control selectat din fiecare framework la care este mapat.',
+    // Task 9: empty states (design-system.md §10) -- the four intents on
+    // Define Control Frameworks. Reuses existing keys where the copy already
+    // fits exactly (AddControl, AddFramework, ClearFilters, Retry,
+    // NoControlsDefinedYet, NoTestsMatchFiltersBody, CouldNotLoadTestsBody,
+    // RegisterYourInstance, GoToSCF, ImportExportExtra) -- only the strings
+    // with no existing match are added below.
+    'NoControlsMatch' => 'Nicio comandă nu corespunde filtrelor dvs.',
+    'CouldNotLoadControls' => 'Nu s-au putut încărca controalele',
+    'ControlsYouAddWillAppearHere' => 'Controalele pe care le adăugați vor apărea aici.',
+    'NoFrameworksYet' => 'Încă nu există cadre',
+    'FrameworksYouAddWillAppearHere' => 'Framework-urile pe care le adăugați sau le importați vor apărea aici.',
+    'CouldNotLoadFrameworks' => 'Nu s-au putut încărca framework-urile',
+    // Task 9 review fix: the framework rail's own "no results" intent, shown
+    // when the user has explicitly switched the status dropdown away from
+    // Active and that status has nothing (distinct from "No frameworks yet",
+    // which is reserved for the default Active status where the endpoint
+    // can't yet tell "no frameworks at all" from "none active").
+    'NoFrameworksMatchFilter' => 'Niciun framework nu corespunde acestei stări',
+    'ViewActiveFrameworks' => 'Vizualizați cadrele active',
+    // Task 10: Define Control Frameworks insights band (governance/index.php)
+    // -- KPI tile labels/subtitles. 'Controls', 'Pass', 'Fail', 'NotTested'
+    // already exist and are reused as label keys for their tiles.
+    'BelowTarget' => 'Sub țintă',
+    'Excluded' => 'Exclus',
+    'FwInScope' => 'În domeniul de aplicare',
+    'FwLastTestPassed' => 'Ultimul test a trecut',
+    'FwLastTestFailed' => 'Ultimul test a eșuat',
+    'FwNoEvidence' => 'Aplicabil, fără dovezi',
+    'FwMaturityUnderDesired' => 'Maturitate sub nivelul dorit',
+    'FwScopeAFramework' => 'Definirea unui cadru pentru a decide',
+    'FwNotApplicableOrInherited' => 'Nu se aplică sau este moștenit',
+    // Task 22: framework rail search (governance/index.php's #sr-fw-search,
+    // wired client-side in governance-frameworks.js). Reuses the shipped
+    // "no results" empty-state tile (#sr-fw-filtered, Task 9) rather than
+    // inventing a fourth rail empty state -- only the title and action swap
+    // depending on whether a status filter or a search narrowed the list to
+    // nothing; NoTestsMatchFiltersBody already covers both as body copy.
+    'NoFrameworksMatchSearch' => 'Niciun framework nu corespunde căutării dvs.',
+    'ClearSearch' => 'Șterge căutarea',
+    // Task 24: Clone control pre-fills the Add Control modal from the source
+    // control (governance-frameworks.js's openControlForClone()) rather than
+    // creating a duplicate outright, so the modal needs to say plainly which
+    // control it was cloned from -- the reviewer's core complaint about an
+    // earlier one-click version of this feature was not knowing what was
+    // cloned. {$name} follows the same client-side formatTemplate()
+    // substitution ShowingXToYOfZ/NSelected already use on this page.
+    'ClonedFromControlNotice' => 'Clonat din „{$name}”. Verificați câmpurile de mai jos, apoi Salvați.',
+    // Task 24 review follow-up: the banner alone left the modal titled "New
+    // Control" over pre-populated fields -- "it doesn't prompt or anything
+    // so the user doesn't know what was cloned" (Josh) -- which reads as a
+    // bug, not a feature. Retitling #control--add-title to this (governance-
+    // frameworks.js's show.bs.modal delegate for #control--add) makes the
+    // clone unambiguous at a glance; NewControl is restored for a plain add.
+    'CloneOfControlTitle' => 'Clonă a lui „{$name}”',
+    // Task 27: the framework rail's SCF-origin chip (governance-frameworks.js's
+    // railRow()) -- shown only for frameworks created via the ComplianceForge
+    // SCF Extra's authoritative-source import (get_scf_origin_framework_ids(),
+    // includes/governance.php). SCF is the badge text itself; ScfOriginHint is
+    // its title/tooltip.
+    'SCF' => 'SCF',
+    'ScfOriginHint' => 'Din cadrul de control securizat (SCF)',
+    // Task 34: the Maturity filter facet's placeholder on the Define Control
+    // Frameworks filter sheet (governance-frameworks.js's ensureFilterSheet()),
+    // matching the AnyFamily/AnyOwner/AnyClass/... set above. The facet's three
+    // OPTIONS reuse the existing BelowMaturity/AtMaturity/AboveMaturity keys --
+    // the same labels the governance dashboard's maturity-gap widgets already
+    // carry -- and the column chip renders those same three strings, so the
+    // filter and the cell can never read differently.
+    'AnyMaturity' => 'Orice maturitate',
+    // Task 46: accessible name for the control table's pager landmark
+    // (governance-frameworks.js's renderPager()). The pager's own buttons
+    // reuse the existing Previous/Next keys Define Tests' pager already
+    // carries; only the <nav> label is new, and it names WHICH table's pager
+    // it is because the Define Control Frameworks page has two lists on it.
+    'ControlsPagination' => 'Controlează paginarea',
+    // Task 14: the Applicability column's state chip (governance-frameworks.js's
+    // renderApplicability()), the matching filter facet (its three option labels
+    // reuse these same three keys) and its "Any applicability" placeholder.
+    //
+    // The three states are PREFIXED rather than named 'Applicable'/
+    // 'NotApplicable'/'Inherited' because 'NotApplicable' already exists above
+    // as the ABBREVIATION 'N/A' -- the self-assessment answer chip and three
+    // reporting charts render it -- and redefining that key to the spelled-out
+    // phrase this column needs would silently change all four of those
+    // surfaces. The prefix also keeps the trio recognisable as one family.
+    //
+    // The column HEADER and the facet's accessible name reuse the existing
+    // 'Applicability' key, and the drawer's record reuses 'Reason', 'Provider'
+    // and 'Justification' -- all four already carry exactly the right string.
+    'ApplicabilityApplicable' => 'Aplicabil',
+    'ApplicabilityNotApplicable' => 'Nu se aplică',
+    'ApplicabilityInherited' => 'Moştenit',
+    'AnyApplicability' => 'Orice aplicabilitate',
+    // The drawer's applicability record: who recorded the decision and when.
+    // Both are attribution for an audited decision a customer may have to
+    // defend years later, which is why the drawer names them at all.
+    'ApplicabilityDecidedBy' => 'Decis de',
+    'ApplicabilityDecidedOn' => 'Decis asupra',
+    // The framework-level Statement of Applicability card in the Add/Edit
+    // framework modals (display_framework_soa_card(), includes/governance.php).
+    // These two fields are what ISO/IEC 27001:2022 clause 6.1.3(d) needs on an
+    // SoA cover: the scope the framework is certified against, and how inclusion
+    // was determined for the controls that are simply applicable.
+    //
+    // 'IsmsScopeStatement' rather than a bare 'ScopeStatement' because "scope"
+    // is already overloaded across SimpleRisk (assessment scope, audit scope,
+    // risk scope); the ISMS prefix is what an ISO practitioner calls this exact
+    // field and keeps it from being reused for an unrelated one.
+    'StatementOfApplicability' => 'Declarație de aplicabilitate',
+    'IsmsScopeStatement' => 'Declarație de domeniu de aplicare',
+    'IsmsScopeStatementHint' => 'Domeniul de aplicare pentru care este certificat acest cadru de lucru. Apare pe pagina de copertă a SoA.',
+    'DefaultInclusionJustification' => 'Justificarea includerii implicite',
+    'DefaultInclusionJustificationHint' => 'Se utilizează pentru controale aplicabile fără riscuri asociate. Denumiți driverul, nu cadrul.',
+    // THE DEFAULT SENTENCE, in all three of its roles: the create form seeds the
+    // textarea with it, the Edit form shows it as a placeholder, and
+    // soa_framework_default_justification() (includes/soa.php) substitutes it at
+    // read time for a framework that has none. One key, because a reader must not
+    // be able to tell a stored default from a fallen-back one, and because three
+    // keys holding the same sentence is three chances for a translator to make
+    // them disagree. The name predates the seeding decision (Task 67) and is kept
+    // rather than churned through Crowdin for 39 locales.
+    //
+    // It names the DRIVER (the risk assessment) rather than the framework:
+    // "included because it is part of this framework" is circular, and ISO 6.1.3
+    // derives controls from risk treatment, using Annex A afterwards only as a
+    // completeness cross-check.
+    //
+    // It was a placeholder ONLY until Task 67, so that an unreviewed sentence
+    // could not reach a customer's SoA by inaction. Measured, that produced the
+    // opposite failure: 19 of 20 frameworks left the field NULL and the SoA's
+    // Justification column came out BLANK for every applicable control with no
+    // linked risks -- the finding an SoA is most often failed on, and one a
+    // boilerplate sentence does not attract.
+    'DefaultInclusionJustificationPlaceholder' => 'Determinat de evaluarea riscurilor de securitate a informațiilor efectuată de organizație și reținut ca un control necesar.',
+    // Task 15: bulk-setting applicability from the control table's selection bar
+    // (#applicability--set, governance/index.php + governance-frameworks.js).
+    //
+    // The action's own label and the modal's one section. 'Applicability',
+    // 'Reason', 'Provider', 'Justification', 'Save' and 'Cancel' already exist
+    // and are reused; only the strings with no existing home are added here.
+    'SetApplicability' => 'Setați aplicabilitatea',
+    'ApplicabilityDecision' => 'Decizie',
+    // The amber scope note, in two sentences the page assembles separately
+    // because they answer two different questions: WHICH framework the decision
+    // is scoped to, and WHICH controls are about to receive it. The second one
+    // has two spellings, because the header checkbox selects the current PAGE
+    // while "Select all N" escalates to the whole filtered result set -- the two
+    // genuinely differ once the table pages, and a note that blurred them would
+    // let the user write 1,535 decisions believing they had written 25.
+    'ApplicabilityScopeNote' => 'Această decizie se aplică numai în cadrul „{$framework}”. Același control poate rămâne aplicabil și într-un alt framework.',
+    'ApplicabilityAppliesToSelected' => 'Va fi înregistrat pentru controlul (controlele) {$n} selectat(e) pe această pagină.',
+    'ApplicabilityAppliesToAllFiltered' => 'Va fi înregistrat pentru toate controalele {$n} care corespund filtrelor curente, inclusiv cele de pe alte pagini.',
+    // Per-state hints under the segmented control. The "applicable" one is the
+    // load-bearing sentence of the whole modal, and the SoA audit-readiness work
+    // rewrote it: an applicable control MAY now carry its own reasons and
+    // justification (ISO/IEC 27001 clause 6.1.3(d) asks for one per control, for
+    // inclusion as much as for exclusion), and leaving both empty is what falls
+    // back to the framework's default inclusion justification. The old sentence
+    // -- "this removes any recorded decision. No justification is needed." --
+    // is now false in both halves.
+    'ApplicabilityApplicableHint' => 'În domeniul de aplicare al acestui cadru. Un motiv și o justificare sunt opționale; dacă le lăsați pe amândouă goale, se utilizează justificarea implicită de includere a cadrului.',
+    'ApplicabilityNotApplicableHint' => 'Excluderea unui control din domeniul de aplicare al acestui cadru. Sunt necesare atât un motiv, cât și o justificare scrisă.',
+    'ApplicabilityInheritedHint' => 'Altcineva efectuează acest control în numele tău. Numește-i și spune ce fac.',
+    'ApplicabilityNarrativeHint' => 'Apare în Declarația de Aplicabilitate. Scrieți ce ar trebui să facă un auditor pentru a accepta decizia.',
+    'ApplicabilityProviderHint' => 'Organizația care efectuează controlul: un furnizor de cloud, un serviciu gestionat, o companie-mamă.',
+    'ChooseAReason' => 'Alege un motiv',
+    'ApplicabilityNoReason' => 'Niciun motiv',
+    // Result toasts. Both interpolate a COUNT taken from the API response and
+    // nothing else -- no submitted text is ever reflected into a toast, which
+    // toastr renders as HTML.
+    'ApplicabilitySetResult' => 'Aplicabilitatea a fost actualizată pentru controlul(ele) {$n}.',
+    'ApplicabilityClearResult' => 'Aplicabilitatea a fost resetată la „aplicabil” pentru {$n} control(uri).',
+    // Bulk control delete (Task 54, corrected Task 55). Deleting a control is
+    // final either way the delete engine implements it: a control with test
+    // history is soft-deleted (framework_controls.deleted = 1) to keep test
+    // history intact, a control with no tests is removed outright -- but
+    // nothing anywhere flips that flag back, so from the user's side there is
+    // no "kept" case, only "deleted, and its test history survives for audit
+    // purposes." Every sentence therefore leads with the same irreversible
+    // warning; the only thing that varies is whether an audit-history clause
+    // is appended, and that clause is omitted entirely rather than printed
+    // with a count of zero -- "0 are retained for audit history" reads as a
+    // warning about something that is not going to happen, and on a delete
+    // confirmation that is exactly the kind of noise that trains people to
+    // stop reading. Every {$...} is a count from the API response; no user
+    // text is ever interpolated, which matters because toastr renders HTML.
+    'DeleteControlsPreviewChecking' => 'Se verifică ce va fi șters...',
+    'DeleteControlsPreviewSplit' => 'Controalele {$n} vor fi șterse. Această acțiune nu poate fi anulată. Rezultatele testelor pentru {$m} dintre ele sunt păstrate pentru istoricul auditurilor.',
+    'DeleteControlsPreviewKeptOnly' => 'Toate controalele {$n} vor fi șterse. Această acțiune nu poate fi anulată. Rezultatele testelor sunt păstrate pentru istoricul auditurilor.',
+    'DeleteControlsPreviewRemovedOnly' => 'Controalele {$n} vor fi șterse. Această acțiune nu poate fi anulată.',
+    'DeleteControlsPreviewNone' => 'Nimic de șters: controlul (controlele) selectat(e) nu mai există.',
+    'ControlsDeletedResult' => '{$n} control(uri) șterse.',
+
+    // The Add/Edit framework modal's Status field. The label reuses the existing
+    // 'Status' key -- the same word the rail's Active/Inactive/All filter already
+    // uses -- so only the explanatory hint is new. It says the two things a user
+    // cannot see from the control itself: that Inactive is the NON-destructive way
+    // to retire a framework (unlike Delete, which cannot be undone), and that the
+    // change cascades through the hierarchy, which is what update_framework_status()
+    // has always done and is genuinely surprising when a parent is deactivated.
+    'FrameworkStatusHint' => 'Framework-urile inactive își păstrează toate controalele și mapările, dar sunt ascunse din lista implicită de framework-uri și excluse din tabloul de bord al guvernanței. Dezactivarea unui framework dezactivează și toate framework-urile de sub acesta; activarea unuia activează și părinții acestuia.',
+
+    // Task 60: the same #applicability--set modal, opened from ONE control's row
+    // action instead of the selection bulk bar. The button's own label reuses
+    // 'SetApplicability'; these two exist because the modal now has to say which
+    // of the two it is acting on, and both spellings must be unambiguous.
+    //
+    // The title names the specific object (design-system.md §8) and the note
+    // says "only", because the dangerous reading is the silent one: with rows
+    // ticked -- or with "Select all N filtered" in force -- a modal that said
+    // nothing would let a click the user believed applied to one row be read as
+    // applying to every control in the framework. Naming the control in both
+    // places is what makes the narrower scope visible rather than assumed.
+    // Corrected in Task 63. This spelling used to end "...only, whatever else is
+    // selected", which was printed on every row-action open whether or not
+    // anything else WAS selected -- a dangling absolute with no antecedent, so
+    // it read as a sentence that had been cut off. It is now the plain form, and
+    // the reassurance about a competing selection moved to
+    // 'ApplicabilityAppliesToControlNotSelection' below, which is printed only
+    // when there is a competing selection to reassure anyone about.
+    'SetApplicabilityForControl' => 'Setați aplicabilitatea: {$name}',
+    'ApplicabilityAppliesToControl' => 'Va fi înregistrat doar în raport cu „{$name}”.',
+
+    // Task 17: the Statement of Applicability report itself
+    // (reports/statement_of_applicability.php + pages/statement-of-applicability.js),
+    // the document ISO/IEC 27001:2022 clause 6.1.3(d) asks for and the one every
+    // applicability decision recorded on the Define Control Frameworks page
+    // exists to produce.
+    //
+    // 'StatementOfApplicability' already exists above (the framework modal's SoA
+    // card) and is reused for the report's own title, as are 'IsmsScopeStatement',
+    // 'DefaultInclusionJustification', the three 'Applicability*' state labels,
+    // 'ApplicabilityDecidedBy'/'DecidedOn', and the plain 'Framework',
+    // 'ControlNumber', 'ControlName', 'Justification', 'Evidence', 'Reason',
+    // 'Provider', 'Total', 'Controls' and 'Export' keys. Only strings with no
+    // existing home are added here.
+    'StatementOfApplicabilityDesc' => 'Pentru un cadru de lucru: fiecare control, dacă este aplicabil, de ce a fost inclus sau exclus și dacă este implementat.',
+    // The header button on Define Control Frameworks. The verb is "generate"
+    // rather than "view" because the document is assembled at the moment it is
+    // asked for -- there is no stored SoA that could be out of date.
+    'GenerateStatementOfApplicability' => 'Generați declarația de aplicabilitate',
+
+    // The Justification column's SECOND resolution step, and the reason an SoA
+    // built here beats the spreadsheet it replaces: the risks that drove the
+    // control are already recorded against it, so nobody retypes them and they
+    // cannot go stale. {risks} is substituted with the displayed risk ids.
+    //
+    // Phrased to match clause 6.1.3, which derives controls from risk treatment
+    // and uses Annex A afterwards only as a completeness cross-check -- the same
+    // reasoning behind 'DefaultInclusionJustificationPlaceholder' above.
+    'SoaJustifiedByRiskAssessment' => 'Determinat de evaluarea riscurilor de securitate a informațiilor realizată de organizație. Riscuri asociate: {risks}.',
+
+    // The Implemented column. DERIVED from maturity and the last test result on
+    // every read, never stored, so it cannot drift out of sync with the control.
+    // 'Yes' and 'No' already exist and are reused; only the middle value and the
+    // header need keys of their own. An excluded control's cell reuses the
+    // existing 'NotApplicable' ('N/A'), which is exactly the right abbreviation
+    // in a dense table.
+    'SoaImplemented' => 'Implementat',
+    'SoaImplementedPartial' => 'Parţial',
+
+    // The cover block.
+    'SoaGeneratedOn' => 'Generat pe',
+    'SoaExcludedCount' => 'Exclus',
+
+    // The prompt shown when the framework has never been given the two cover
+    // fields. It PROMPTS rather than silently printing a blank cover: an SoA
+    // whose scope is empty is the one defect an auditor spots first, and the
+    // moment somebody opens the report is the only moment those fields matter.
+    // Both spellings of empty (never set, and deliberately cleared) prompt --
+    // from a reader's point of view there is nothing to print either way.
+    //
+    // The inclusion-justification line states a WEAKER consequence than it used
+    // to, because Task 67 made the stronger one untrue: the column no longer goes
+    // blank when the field is empty -- soa_framework_default_justification()
+    // substitutes the generic default sentence. The prompt survives because a
+    // generic sentence is not the organization's own, and an auditor reading 1,500
+    // identical rows of boilerplate is entitled to ask whose risk assessment it
+    // refers to.
+    'SoaMissingFieldsTitle' => 'Această declarație nu are detalii de copertă.',
+    'SoaMissingScopeStatement' => 'Nu a fost înregistrată nicio declarație de domeniu de aplicare pentru acest cadru. O declarație de analiză (SoA) ar trebui să precizeze domeniul de aplicare în raport cu care este realizată.',
+    'SoaMissingInclusionJustification' => 'Nu a fost înregistrată nicio justificare pentru includerea implicită. Controalele aplicabile fără riscuri asociate vor recurge la o declarație generică, nu la propria declarație.',
+    'SoaEditFrameworkToAdd' => 'Adăugați-le pe cadru',
+
+    // Opened from the Reporting Hub, which cannot supply a framework. A picker,
+    // not an error: an SoA is a per-framework document by definition -- the same
+    // control excluded from ISO 27001 is not thereby excluded from PCI DSS --
+    // and there is no cross-framework roll-up to offer instead.
+    'SoaChooseFramework' => 'Alegeți un cadru',
+    'SoaChooseFrameworkHint' => 'O declarație de aplicabilitate este scrisă despre un cadru pe rând.',
+    // The picker has a roster but nothing in it. Distinct from "this framework
+    // has no controls": there is no framework to write a statement about at all,
+    // and the fix is on a different page, so it says which one.
+    // The launcher's affordance row. "Open in browser" rather than "View"
+    // because it names what actually happens -- the document opens in a new tab,
+    // chrome-free -- and because Task 18 adds "Download as PDF" and "Download as
+    // XLSX" beside it, where "open" vs "download" is the distinction that
+    // matters.
+    // The document has no sidebar, so it needs its own way back for anyone who
+    // arrives from a bookmark or a shared link. Screen only; never printed.
+    'SoaBackToSelector' => 'Înapoi la declarația de aplicabilitate',
+    'SoaNoFrameworks' => 'Niciun framework activ',
+    'SoaNoFrameworksHint' => 'Instalați sau activați un framework în secțiunea Guvernanță > Definire cadre de control și acesta va fi disponibil aici.',
+
+    // The two refusals. Both explain rather than just failing, because the user
+    // arrived here deliberately.
+    'SoaFrameworkInactiveTitle' => 'Acest cadru este inactiv',
+    'SoaFrameworkInactiveBody' => 'O declarație de aplicabilitate descrie domeniul de aplicare în care operează în prezent o organizație. Reactivați cadrul pentru a genera unul.',
+    'SoaFrameworkNotFoundBody' => 'Acel cadru nu mai există.',
+
+    // A framework with no controls mapped into it. Not an error -- it is a real
+    // and recoverable state, and saying so beats an empty table.
+    'SoaNoControls' => 'Acest cadru nu are controale',
+    'SoaNoControlsHint' => 'Mapați controalele în framework, iar declarația sa de aplicabilitate le va lista.',
+
+    // The second half of the statement-of-applicability launcher's affordance
+    // row, beside "Open in browser" and the existing 'DownloadAsXLSX'. Rendered
+    // only where the Import/Export Extra is active, which is what supplies the
+    // export. "Download as" rather than "Export to" so the pair reads as one
+    // choice of format, and so it matches the XLSX label already in this file.
+    'DownloadAsPDF' => 'Descărcați ca PDF',
+
+    // The fourth column of the control modal's "Mapped Control Frameworks"
+    // widget, between the reference code and the reference text. The
+    // FRAMEWORK's own title for the control it is citing -- what a Statement of
+    // Applicability prints beside the clause number. Distinct from the existing
+    // 'ReferenceText', which holds the framework's full control statement, and
+    // from the SimpleRisk control's own name.
+    'ReferenceSubject' => 'Subiect de referință',
+    // Placeholder/help text under that field, and the reason it is worth
+    // filling in: without it the Statement of Applicability has nothing to
+    // print but the source catalogue's name for its own control.
+    'ReferenceSubjectHint' => "Titlul propriu al framework-ului pentru acest control.",
+
+    // Task 63: the row-scoped population sentence in the Set applicability
+    // modal, in the one situation where the plain
+    // 'ApplicabilityAppliesToControl' above leaves a real question unanswered --
+    // the user has controls ticked, or a standing "Select all N filtered", and
+    // has just opened the modal from ONE row's own action.
+    //
+    // It states the guarantee rather than implying it. A user whose escalated
+    // selection covers an entire framework needs to know that this click is not
+    // about to overwrite it, and {$n} is the count of the OTHER selected
+    // controls -- the target is excluded, because it is very often ticked too
+    // and a promise that included it would be false.
+    'ApplicabilityAppliesToControlNotSelection' => 'Va fi înregistrat doar pentru „{$name}” — controlul (controlele) {$n} selectat(e) nu este(s) afectat(e).',
+
+    // Task 65: the VISIBLE label on the controls toolbar's SoA button. The full
+    // sentence ('GenerateStatementOfApplicability' above) stays as the button's
+    // title and aria-label, and is still what the SoA page itself is called;
+    // this is the short form for a toolbar row it shares with the page's one
+    // primary action. At full length the secondary button measured more than
+    // twice the primary's width and became the largest element in the row.
+    //
+    // "SoA" is safe to abbreviate HERE and only here: the button appears solely
+    // when a single framework is scoped, beside an Applicability column, and it
+    // expands on hover.
+    'GenerateSoa' => 'Generați SoA',
+
+    // ===== Clone framework (Task 64) =======================================
+    // The framework half of Clone control's framing (CloneOfControlTitle /
+    // ClonedFromControlNotice above), and for the same reason: the clone
+    // pre-fills the Add Framework modal rather than creating anything, so the
+    // modal has to say what was carried over before the user saves it.
+    //
+    // Separate keys from the control pair rather than one shared "Clone of
+    // {$name}" -- the two banners do not say the same thing. A cloned control
+    // simply asks to be reviewed; a cloned FRAMEWORK has to explain two things
+    // its fields cannot: that the source's control mappings come with it, and
+    // that the empty scope statement is deliberate. The blank field is the
+    // whole reason the banner is longer than the control's -- a scope statement
+    // left blank with no explanation reads as a field that failed to populate,
+    // and the one thing a clone exists to be given is a NEW scope (Josh: "you
+    // might want to use the same controls as one framework, but scope it
+    // differently"). {$name} and {$n} follow the same client-side
+    // formatTemplate() substitution the rest of this page's templates use.
+    'CloneOfFrameworkTitle' => 'Clonă a lui „{$name}”',
+    // {$n} is the count the rail is SHOWING for the source row -- its controls,
+    // not its raw mapping rows. Those differ (a framework can cite one control
+    // under two clause numbers, and the rail excludes deleted controls), and the
+    // number to promise is the one the user is looking at when they click and
+    // the one the clone's own rail row will show afterwards.
+    'ClonedFromFrameworkNotice' => 'Clonat din „{$name}”. Controalele sale {$n} vor fi copiate în noul framework, fiecare dintre ele fiind aplicabilă de la început — niciuna dintre deciziile sale de aplicabilitate nu se preia. Declarația de domeniu este intenționat goală: se precizează domeniul de aplicare pe care îl acoperă acest framework înainte de a genera Declarația de Aplicabilitate.',
+    // Seeds the name field so the clone can be saved without a rename --
+    // framework names are unique, so a verbatim copy is refused on save.
+    'CloneOfFrameworkName' => '{$name} (Clonă)',
+    'CloneFramework' => 'Cadrul clonelor',
+    // Extras version independently of Core, so an updated Import/Export Extra
+    // can end up calling a Core function the installed Core does not have. The
+    // export refuses with this rather than fataling -- see
+    // soa_export_refuse_if_core_too_old(), extras/import-export/includes/soa_export.php.
+    'SoaExportRequiresNewerCore' => 'Acest export necesită o versiune mai nouă de SimpleRisk Core decât cea instalată. Actualizați SimpleRisk, apoi încercați din nou exportul.',
+    // The framework ACQUISITION chooser (Task 26): "+ Add framework" asks how you
+    // want to get one, rather than assuming you want to type it in. Each option is
+    // rendered only when the route behind it actually exists for this user, so the
+    // hint text may state plainly what the route does -- it is never shown to
+    // someone who cannot take it.
+    'HowDoYouWantToAddAFramework' => 'Cum vrei să adaugi un cadru?',
+    'CreateFrameworkManually' => 'Creați unul manual',
+    'CreateFrameworkManuallyHint' => 'Denumiți framework-ul, apoi adăugați sau mapați controalele acestuia.',
+    // Named for the framework rather than for its vendor. The hint was reworded
+    // at the same time: it used to end "...load its Secure Controls Framework
+    // controls", which read as a stutter once the label carried those words.
+    'GetFrameworkFromScf' => 'Obțineți unul din cadrul Secure Controls Framework',
+    'GetFrameworkFromScfHint' => 'Alegeți un framework publicat și încărcați controalele sale mapate într-un singur pas.',
+    'ImportFrameworkFromCatalog' => 'Importați unul',
+    'ImportFrameworkFromCatalogHint' => 'Instalați un framework și controalele sale din catalogul de conținut SimpleRisk.',
+
+    // The framework acquisition chooser's third route, which now offers the
+    // Import-Export Extra's CONTROL import (a spreadsheet naming a framework
+    // that does not exist yet creates it) rather than the GitHub catalogue the
+    // two keys above described. Those two are left in place, unreferenced, so a
+    // customer maintaining a custom lang.<locale>.php still reconciles by tail
+    // diff.
+    'ImportFrameworkFromSpreadsheet' => 'Importați unul dintr-o foaie de calcul',
+    'ImportFrameworkFromSpreadsheetHint' => 'Încărcați o foaie de calcul cu controale care denumește framework-ul, iar ambele sunt create.',
+
+    // The Define Control Frameworks rail's second synthetic scope: the controls
+    // mapped to no framework at all. Its first, "All controls", reuses the
+    // existing AllControls key rather than adding a second string with the same
+    // English -- it replaced 'AllFrameworks' on that row, which named a union of
+    // frameworks while scoping to every control, mapped or not. 'AllFrameworks'
+    // is left in place and unreferenced by that page: other surfaces still use
+    // it, and every locale carries it.
+    'UnassignedControls' => 'Controale neatribuite',
+    // APPLICABILITY VALIDATION FAILURES. These reach the user: the v2 endpoint
+    // returns the exception's message as the API status message and the page
+    // renders it in a toast, so a hardcoded English literal here would be
+    // permanently English for every locale.
+    //
+    // NOTHING THE CALLER TYPED IS EVER INTERPOLATED INTO THESE. The parameters
+    // are validated enum values, integer ids and byte limits the server itself
+    // owns -- naming the ALLOWED values rather than echoing the rejected one is
+    // deliberate (it is both safe and more useful than repeating a typo).
+    'ApplicabilityErrUnknownState' => 'Stare de aplicabilitate necunoscută. Se aștepta una dintre următoarele: {$states}.',
+    'ApplicabilityErrNarrativeRequired' => 'Este necesară o narațiune pentru „{$state}”.',
+    'ApplicabilityErrNarrativeTooLong' => 'Narațiunea este mai lungă decât {$bytes} octeți.',
+    'ApplicabilityErrReasonRequired' => 'Este necesar un motiv de excludere pentru a marca un control ca neaplicabil.',
+    'ApplicabilityErrProviderRequired' => 'Un furnizor este obligat să marcheze un control ca moștenit.',
+    'ApplicabilityErrProviderTooLong' => 'Numele furnizorului este mai lung decât {$bytes} octeți.',
+    'ApplicabilityErrReasonsNotFound' => 'Aceste motive de aplicabilitate nu există: {$ids}.',
+    'ApplicabilityErrReasonsNotOffered' => 'Aceste motive de aplicabilitate nu sunt oferite pentru această stare: {$ids}.',
+    'ApplicabilityErrFrameworkNotFound' => 'Cadrul {$framework} nu există.',
+    'ApplicabilityErrControlsNotFound' => 'Aceste ID-uri de control nu există: {$ids}.',
+    // Controls/Risks import result messages (validation gate, individual bad-row
+    // alerts, and the batched submitted/created/updated summaries)
+    'ControlIdOrShortNameFieldRequired' => 'Trebuie mapat fie câmpul ID control, fie câmpul Nume scurt control -- un rând nu poate fi identificat fără unul dintre ele.',
+    'RiskImportSubjectNull' => 'ID-ul riscului {$risk_id}: Nu a fost actualizat deoarece câmpul Subiect este gol sau lipsește.',
+    'RiskImportSummary' => 'S-au trimis {$submitted} riscuri și s-au actualizat {$updated} riscuri.',
+    'ControlImportSummary' => 'S-au creat {$created} controale și s-au actualizat {$updated} controale.',
+    'ImportAdditionalIssuesSuppressed' => '{$count} rând(uri) suplimentar(e) au avut probleme care nu sunt afișate individual aici.',
+    'EncryptionPipelineStalledTask' => 'O conductă de criptare (sarcina #{$id}, {$type}) pare blocată — a fost {$status} pentru o perioadă neobișnuit de lungă fără a progresa. Aceasta înseamnă de obicei că lucrătorul coadei de fundal nu rulează; verificați dacă este programat, apoi încercați din nou după ce a procesat sarcina blocată.',
+    'EncryptionPipelineStalledState' => 'O conductă de criptare pare blocată — a fost marcată în curs de desfășurare pentru o perioadă neobișnuit de lungă, fără nicio sarcină de fundal corespunzătoare la care să indice. Aceasta înseamnă, de obicei, că lucrătorul de coadă nu rulează sau că o conductă anterioară s-a încheiat fără a fi actualizată corect. Verificați jurnalul de depanare înainte de a încerca din nou.',
+    // DEMO_MODE — shown when a visitor to a shared demo instance attempts one
+    // of the operations that would spoil the demo for the next visitor
+    'ActionDisabledOnDemoInstance' => 'Această acțiune este dezactivată pe instanța demo SimpleRisk.',
+
+    // The one-click upgrade progress window: the step an upgrade is on, and
+    // the line shown once it finishes
+    // Shown when an upgrade's progress record has not been touched for long
+    // enough that the process running it is presumed gone
+    'UpgradeJobStalled' => 'Actualizarea nu mai răspunde. Verificați jurnalul serverului înainte de a încerca din nou.',
+    // Shown when an upgrade replaced the instance's configuration file and could
+    // not put the original back
+    // Shown when the database was brought up to date but the application files
+    // could not be replaced, so the instance has NOT moved to the new release
+    'UpdateAppFailed' => 'Fișierele aplicației nu au fost actualizate, așadar această instanță rulează încă versiunea anterioară. Verificați jurnalul SimpleRisk pentru a afla motivul, apoi rulați din nou actualizarea.',
+    // The one-click upgrade progress screen
+    'UpgradeInProgress' => 'În curs',
+    'UpgradeStepNotNeeded' => 'Nu este necesar',
+    // Recovering an Upgrade Extra whose files are damaged
+    'UpgradeExtraDamagedReinstalling' => 'Programul Upgrade Extra instalat este deteriorat. Se descarcă o copie nouă.',
+    'UpgradeExtraDamagedRepaired' => 'Upgrade Extra a fost înlocuit cu o copie funcțională.',
+    'UpgradeExtraDamagedFailed' => 'Instrumentul Upgrade Extra este deteriorat și nu a putut fi înlocuit automat. Reinstalați-l din pagina Extras sau restaurați simplerisk/extras/upgrade/ dintr-o copie de rezervă, apoi încercați din nou.',
+    'UpgradeAlreadyCurrent' => 'Această instanță se află deja la {version}, care este cea mai recentă versiune. Nu a fost nevoie de actualizare.',
+    'UpgradeShowWhatItDid' => 'Arată ce a făcut',
+    'UpgradeBackupsListed' => 'Aceste copii de rezervă sunt listate în Configurare > Copii de rezervă.',
+    'UpgradingTo' => 'Actualizare la {version}',
+    'UpgradeSafeToClose' => 'Această fereastră poate fi închisă în siguranță. Actualizarea continuă pe server și această pagină se va reatașa.',
+    'UpgradeDownloadLog' => 'Descărcați jurnalul',
+    'UpgradeStatementsApplied' => 'Instrucțiuni {started} începute · instrucțiuni {count} aplicate',
+    // The Upgrade Extra's pre-upgrade check of the instance it is sitting on
+    'UpgradeCheckingInstance' => 'Verificarea acestei instanțe',
+    'UpgradeInstanceChecked' => 'Instanța a fost verificată, nu sunt necesare corecții.',
+    'UpgradeBlockedByCorrections' => 'Actualizarea s-a oprit deoarece această instanță necesită o corecție care nu a putut fi aplicată automat. Urmați instrucțiunile de mai sus, apoi rulați din nou actualizarea. Nu s-a modificat nimic altceva.',
+    // Shown when an upgrade replaced the instance's configuration file and could not put the original back
+    'ConfigRestoreFailed' => 'Actualizarea nu a putut restaura fișierul de configurare al acestei instanțe. Restaurați simplerisk/includes/config.php din copia de rezervă înainte de a continua.',
+    'UpgradeDidNotAdvance' => 'Funcția de actualizare pentru versiunea „{$version}” nu a avansat versiunea bazei de date; se oprește pentru a nu fi rulată din nou.',
+    'BackupDatabaseNative' => 'Copierea de rezervă a bazei de date (nu sunt necesare instrumente externe)...',
+    'UpgradeAlreadyRunning' => 'O actualizare rulează deja pe această instanță.',
+    'UpgradeStatusUnreachable' => 'Am pierdut contactul cu serverul în timpul actualizării. Verificați jurnalul SimpleRisk; este posibil ca actualizarea să fie încă în desfășurare.',
+    'UpgradeJobUnwritable' => 'Actualizarea nu a putut începe deoarece înregistrarea progresului acesteia nu a putut fi scrisă. Verificați dacă directorul temporar al sistemului are drepturi de scriere pentru utilizatorul web.',
+    'UpgradeStepCheckingVersions' => 'Se verifică versiunile',
+    'UpgradeStepUpgradingDatabase' => 'Actualizarea schemei bazei de date',
+    'UpgradeStepFinalising' => 'Aplicarea conversiilor post-upgrade',
+    'UpgradeDatabaseHeading' => 'Actualizarea bazei de date',
+    'UpgradeDatabaseComplete' => 'Actualizarea bazei de date a fost finalizată.',
+    'UpgradeHideWhatItDid' => 'Ascunde ce a făcut',
+    'UpgradeStateRunning' => 'Funcţionare',
+    'UpgradeSessionExpired' => 'Sesiunea ta a expirat. Conectează-te din nou pentru a vedea actualizarea.',
+    'UpgradeLostContact' => 'Contactul cu serverul a fost pierdut. Reîncărcați această pagină pentru a o atașa din nou la actualizare.',
+    'UpgradeDatabaseAlreadyCurrent' => 'Baza de date este deja în versiunea aplicației.',
+    'UpgradeConversionsApplied' => 'Conversiile motorului și ale setului de caractere au fost aplicate.',
+    'UpgradeStoppedShort' => 'Actualizarea s-a oprit la {reached} fără a ajunge la {app}. Consultați jurnalul serverului.',
+    'UpgradeStepBackingUp' => 'Copiere de rezervă',
+    'UpgradeStepUpgradingFiles' => 'Actualizarea fișierelor aplicației',
+    'UpgradeStepUpgradingExtras' => 'Actualizarea extraselor instalate',
+    'UpgradeStepUpdatingUpgradeExtra' => 'Actualizarea funcției Upgrade Extra',
+    // The Upgrade Extra's pre-chain corrections: what is wrong, and what to do
+    // about it. These are the highest-stakes messages the upgrade produces --
+    // an operator reads them to unstick an instance that cannot upgrade.
+    'UpgradeCorrectionUnknownVersionTitle' => 'Versiunea înregistrată a bazei de date nu menționează o versiune reală',
+    'UpgradeCorrectionNoRecordedVersion' => 'Baza de date nu are o versiune înregistrată.',
+    'UpgradeCorrectionUnknownVersionFinding' => 'Baza de date raportează versiunea „{$version}”, care nu denumește nicio versiune SimpleRisk. Actualizarea nu poate alege un punct de plecare de la aceasta.',
+    'UpgradeCorrectionUnknownVersionGuidance' => 'Setați setarea db_version la versiunea a cărei schemă o are de fapt această bază de date, apoi rulați din nou actualizarea: UPDATE settings SET value=\'<release>\' WHERE name=\'db_version\'. Dacă valoarea este un substituent, cum ar fi 2026XXXX-001, valoarea corectă este aproape întotdeauna cea mai recentă versiune reală instalată înainte de rularea actualizării.',
+    'UpgradeCorrectionLegacySessionsTitle' => 'Tabelul de sesiuni nu poate supraviețui conversiei setului de caractere a actualizării.',
+    'UpgradeCorrectionLegacySessionsFinding' => '`sessions`.`id` este VARCHAR({$width}) într-o tabelă MyISAM. Conversia acesteia la utf8mb4, lucru care se întâmplă începând cu versiunea 20230106-001, ar depăși limita de index de 1000 de octeți a MyISAM și ar eșua actualizarea.',
+    'UpgradeCorrectionLegacySessionsGuidance' => 'Una sau mai multe sesiuni active utilizează un ID mai lung de 128 de caractere. Restrângerea coloanei acum ar deconecta acei utilizatori, așa că a rămas nemodificată. Încercați din nou actualizarea după ce sesiunile respective au expirat.',
+    'UpgradeCorrectionApplied' => 'Corectat.',
+    'UpgradeCorrectionFailed' => 'Această corecție nu a putut fi aplicată. Consultați jurnalul SimpleRisk pentru motiv.',
+    'UpgradeCorrectionAppliedLine' => 'Corectat: {$title} {$message}',
+    'UpgradeCorrectionNotAppliedLine' => 'NU este corectat: {$title} {$message}',
+    'UpgradeCorrectionsNeeded' => 'Corecțiile necesare înainte ca această instanță să poată fi actualizată: {$count}',
+    'UpgradeCorrectionsNeededShort' => 'Corecții necesare: {$count}',
+    'UpdateDatabase' => 'Se actualizează baza de date...',
+    // Authentication screens (index.php, reset.php, reset_password.php)
+    'EnterTheCredentialsForYourAccount' => 'Introduceți datele de autentificare pentru contul dvs.',
+    'TroubleSigningIn' => 'Probleme la conectare? Contactați administratorul SimpleRisk.',
+    'BackToLogin' => 'Înapoi la autentificare',
+    'Or' => 'sau',
+    'WeWillEmailAResetTokenToYourAccount' => 'Vă vom trimite un token de resetare prin e-mail la adresa din contul dumneavoastră.',
+    'EnterTheResetTokenFromYourEmail' => 'Introduceți tokenul de resetare din adresa dvs. de e-mail împreună cu noua parolă.',
+    'ChooseANewPasswordToContinue' => 'Alegeți o parolă nouă pentru a continua.',
+    'FromZeroToGRCInMinutes' => 'De la ZERO la GRC în câteva minute.',
+    'OrganizationLogo' => 'Sigla organizației',
+    'LoginScreenBranding' => 'Brandingul ecranului de conectare',
+    'CustomLogo' => 'Logo personalizat',
+    'CustomLogoHint' => 'PNG, JPG, GIF sau WebP, până la 1 MB și 2000x2000. Afișat la o rezoluție de până la 260x64, deci furnizați aproximativ 520x128 pentru ecrane cu densitate mare. Bara superioară și panoul de conectare sunt întunecate, așa că încărcați un logo care se citește pe un fundal închis. Eliminați logo-ul pentru a reveni la cel SimpleRisk.',
+    'CurrentLogo' => 'Logo-ul actual',
+    'RemoveLogo' => 'Eliminați sigla',
+    'LoginTagline' => 'Slogan de conectare',
+    'LoginTaglineHint' => 'Înlocuiește sloganul SimpleRisk de pe ecranul de conectare. Cel mai bine este să scrii un rând scurt. Lasă-l gol pentru a păstra sloganul SimpleRisk.',
+    'LoginNotice' => 'Notificare privind utilizarea sistemului',
+    'LoginNoticeHint' => 'Afișat pe ecranul de conectare înainte ca cineva să se conecteze. Folosește-l pentru o notificare de utilizare acceptabilă sau de utilizare a sistemului. Lasă-l gol pentru a nu afișa nicio notificare. Linkurile și imaginile nu sunt permise.',
+    'BrandingRequiresCustomization' => 'Brandingul ecranului de conectare face parte din Customization Extra.',
+    'LogoMustBeAnImage' => 'Sigla trebuie să fie o imagine PNG, JPG, GIF sau WebP.',
+    'LogoTooLarge' => 'Sigla nu trebuie să depășească 1 MB.',
+    'LogoDimensionsTooLarge' => 'Sigla nu trebuie să depășească 2000x2000 pixeli.',
+    'LogoDimensionsTooSmall' => 'Sigla trebuie să aibă cel puțin 32 de pixeli pe latura cea mai lungă.',
+    'LogoUploadFailed' => 'Sigla nu a putut fi încărcată. Vă rugăm să încercați din nou.',
+    'LogoUpdated' => 'Logo-ul a fost actualizat.',
+    'LogoRemoved' => 'Sigla a fost eliminată.',
+    'NoSystemUseNoticeSet' => 'Nu este setată nicio notificare de utilizare a sistemului.',
+    'NoticeSizeSmall' => 'Mic',
+    'NoticeSizeNormal' => 'Normal',
+    'NoticeSizeLarge' => 'Mare',
+    // Preferences page save feedback
+    'TheSettingsWereUpdatedSuccessfully' => 'Setările au fost actualizate cu succes.',
+    'NoChangesWereMade' => 'Nu s-au făcut modificări.',
+    'PleaseSpecifyAnIntegerGreaterThanOrEqualToZeroForTheMinimumValue' => 'Vă rugăm să specificați un număr întreg mai mare sau egal cu zero pentru valoarea minimă.',
+    'PleaseSpecifyAnIntegerForTheMaximumValue' => 'Vă rugăm să specificați un număr întreg pentru valoarea maximă.',
+    'PleaseSpecifyAMaximumValueGreaterThanTheMinimum' => 'Vă rugăm să specificați o valoare maximă mai mare decât cea minimă.',
+    // Extra download version compatibility
+    'ExtraVersionIncompatibleWithApplication' => 'Fișierul Extra descărcat „{$extra}” (versiunea {$extra_version}) nu este compatibil cu SimpleRisk {$app_version} și nu a fost instalat. Actualizați mai întâi SimpleRisk la cea mai recentă versiune.',
+    'ExtraCompatibilityDataUnavailable' => 'SimpleRisk nu a putut confirma ce versiuni Extra sunt compatibile cu această versiune, așadar Extra nu a fost instalat. Vă rugăm să încercați din nou mai târziu.',
+    'ExtraVersionCouldNotBeVerified' => 'Versiunea Extra descărcat nu a putut fi determinată, prin urmare nu a fost instalat.',
     '' => '',
 );
 ?>

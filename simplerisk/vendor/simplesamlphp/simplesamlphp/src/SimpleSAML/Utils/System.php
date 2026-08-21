@@ -12,17 +12,23 @@ use SimpleSAML\Error;
  *
  * @package SimpleSAMLphp
  */
-
 class System
 {
-    public const WINDOWS = 1;
-    public const LINUX = 2;
-    public const OSX = 3;
-    public const HPUX = 4;
-    public const UNIX = 5;
-    public const BSD = 6;
-    public const IRIX = 7;
-    public const SUNOS = 8;
+    public const int WINDOWS = 1;
+
+    public const int LINUX = 2;
+
+    public const int OSX = 3;
+
+    public const int HPUX = 4;
+
+    public const int UNIX = 5;
+
+    public const int BSD = 6;
+
+    public const int IRIX = 7;
+
+    public const int SUNOS = 8;
 
 
     /**
@@ -30,7 +36,6 @@ class System
      *
      * @return int|false A predefined constant identifying the OS we are running on.
      *                   False if we are unable to determine it.
-     *
      */
     public function getOS(): int|false
     {
@@ -66,9 +71,9 @@ class System
      * This function retrieves the path to a directory where temporary files can be saved.
      *
      * @return string Path to a temporary directory, without a trailing directory separator.
-     * @throws Error\Exception If the temporary directory cannot be created or it exists and cannot be written
+     * @throws \SimpleSAML\Error\Exception
+     *   If the temporary directory cannot be created or it exists and cannot be written
      * to by the current user.
-     *
      */
     public function getTempDir(): string
     {
@@ -121,7 +126,6 @@ class System
      *     SimpleSAMLphp installation.
      *
      * @return string An absolute path referring to $path.
-     *
      */
     public function resolvePath(string $path, ?string $base = null): string
     {
@@ -183,9 +187,8 @@ class System
      *
      *
      * @throws \InvalidArgumentException If any of the input parameters doesn't have the proper types.
-     * @throws Error\Exception If the file cannot be saved, permissions cannot be changed or it is not
+     * @throws \SimpleSAML\Error\Exception If the file cannot be saved, permissions cannot be changed or it is not
      *     possible to write to the target file.
-     *
      */
     public function writeFile(string $filename, string $data, int $mode = 0600): void
     {
@@ -233,7 +236,6 @@ class System
      * Check if the supplied path is an absolute path.
      *
      * @param string $path
-     *
      * @return bool
      */
     public function isAbsolutePath(string $path): bool
@@ -246,7 +248,6 @@ class System
      * Check if the supplied path contains a Windows-style drive letter.
      *
      * @param string $path
-     *
      * @return bool
      */
     private function pathContainsDriveLetter(string $path): bool
@@ -256,8 +257,10 @@ class System
                 && $letterAsciiValue >= 65 && $letterAsciiValue <= 90;
     }
 
+
     /**
      * Check if the supplied path contains a stream wrapper
+     *
      * @param string $path
      * @return bool
      */

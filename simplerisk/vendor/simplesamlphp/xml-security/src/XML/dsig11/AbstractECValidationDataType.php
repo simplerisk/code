@@ -5,8 +5,9 @@ declare(strict_types=1);
 namespace SimpleSAML\XMLSecurity\XML\dsig11;
 
 use DOMElement;
-use SimpleSAML\Assert\Assert;
-use SimpleSAML\XML\Exception\SchemaViolationException;
+use SimpleSAML\XMLSchema\Type\AnyURIValue;
+
+use function strval;
 
 /**
  * Abstract class representing a dsig11:ECValidationDataType
@@ -19,13 +20,12 @@ abstract class AbstractECValidationDataType extends AbstractDsig11Element
      * Initialize a ECValidationDataType element.
      *
      * @param \SimpleSAML\XMLSecurity\XML\dsig11\Seed $seed
-     * @param string $hashAlgorithm
+     * @param \SimpleSAML\XMLSchema\Type\AnyURIValue $hashAlgorithm
      */
     public function __construct(
         protected Seed $seed,
-        protected string $hashAlgorithm,
+        protected AnyURIValue $hashAlgorithm,
     ) {
-        Assert::validURI($hashAlgorithm, SchemaViolationException::class);
     }
 
 
@@ -43,9 +43,9 @@ abstract class AbstractECValidationDataType extends AbstractDsig11Element
     /**
      * Collect the value of the hashAlgorithm-property
      *
-     * @return string
+     * @return \SimpleSAML\XMLSchema\Type\AnyURIValue
      */
-    public function getHashAlgorithm(): string
+    public function getHashAlgorithm(): AnyURIValue
     {
         return $this->hashAlgorithm;
     }
@@ -55,12 +55,11 @@ abstract class AbstractECValidationDataType extends AbstractDsig11Element
      * Convert this ECValidationDataType element to XML.
      *
      * @param \DOMElement|null $parent The element we should append this ECValidationDataType element to.
-     * @return \DOMElement
      */
     public function toXML(?DOMElement $parent = null): DOMElement
     {
         $e = $this->instantiateParentElement($parent);
-        $e->setAttribute('hashAlgorithm', $this->getHashAlgorithm());
+        $e->setAttribute('hashAlgorithm', strval($this->getHashAlgorithm()));
 
         $this->getSeed()->toXML($e);
 

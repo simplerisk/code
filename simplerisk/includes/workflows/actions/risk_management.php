@@ -109,6 +109,12 @@ function workflow_action_update_risk_field(array $inputs, array $context): array
     }
     elseif (in_array($field, $encrypted_fields, true))
     {
+        // Purify the rich-text fields before encrypting/storing (SR-1897) —
+        // assessment and notes are WYSIWYG fields rendered as raw HTML at their
+        // edit sinks; subject is plain text and must not be purified.
+        if (in_array($field, ['assessment', 'notes'], true)) {
+            $value = purify_html($value);
+        }
         $encrypted = try_encrypt($value);
         $stmt = $db->prepare("UPDATE `risks` SET `{$field}` = :value WHERE `id` = :id");
         $stmt->bindValue(':value', $encrypted);
@@ -232,6 +238,12 @@ function workflow_action_update_mitigation_field(array $inputs, array $context):
     else
     {
         $column = $field_map[$field];
+        // Purify the rich-text fields before storage (SR-1897) — current solution,
+        // security requirements and recommendations are WYSIWYG fields rendered as
+        // raw HTML at their edit sinks.
+        if (in_array($column, ['current_solution', 'security_requirements', 'security_recommendations'], true)) {
+            $value = purify_html($value);
+        }
         $stmt = $db->prepare("UPDATE `mitigations` SET `{$column}` = :value WHERE `id` = :id");
         $stmt->bindValue(':value', $value);
         $stmt->bindParam(':id', $mitigation_id, PDO::PARAM_INT);
@@ -306,6 +318,11 @@ function workflow_action_update_review_field(array $inputs, array $context): arr
     }
 
     $column = $field_map[$field];
+    // Purify the rich-text comments field before storage (SR-1897) — it is a
+    // WYSIWYG field rendered as raw HTML at its edit sink.
+    if ($column === 'comments') {
+        $value = purify_html($value);
+    }
     $stmt   = $db->prepare("UPDATE `mgmt_reviews` SET `{$column}` = :value WHERE `id` = :id");
     $stmt->bindValue(':value', $value);
     $stmt->bindParam(':id', $review_id, PDO::PARAM_INT);

@@ -117,13 +117,10 @@ section.gridstack {
                     }
 
                     &.editable_widget {
-                        & > .edit {
-                            position: absolute;
-                            top: .25em;
-                            right: .5em;
-                            cursor: pointer;
-                        }
-                        
+                        // The overlay edit affordance (edit-mode panel below) anchors
+                        // to this card, so make it the positioning context.
+                        position: relative;
+
                         & > .custom-WYSIWYG-content {
                             height: 100%;
                             width: 100%;
@@ -160,14 +157,72 @@ section.gridstack {
                     }
                     
                     &.editable_widget {
+                        // The ✎ edit affordance is a CENTERED OVERLAY, not a corner
+                        // icon: a soft, click-through scrim over the card with a single
+                        // clickable pill in the middle that opens the modal editor. The
+                        // scrim keeps pointer-events:none so drags still pass through to
+                        // the tile; only the pill is a click target. Filled tiles reveal
+                        // it on hover; empty tiles surface an "Add text" prompt always,
+                        // so a new tile is never a blank mystery. (Editing happens in the
+                        // roomy modal — a small tile has no room for the RTE toolbar.)
                         & > .edit {
                             position: absolute;
-                            top: .25em;
-                            right: .5em;
-                            cursor: pointer;
+                            inset: 0;
+                            z-index: 4;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            border-radius: 8px;
+                            text-decoration: none;
+                            opacity: 0;
+                            pointer-events: none;
+                            background: rgba($sr-primary, .04);
+                            transition: opacity .12s ease;
+
+                            .edit-pill,
+                            .edit-empty {
+                                pointer-events: auto;
+                                cursor: pointer;
+                                display: inline-flex;
+                                align-items: center;
+                                gap: 6px;
+                                padding: 6px 12px;
+                                border-radius: 6px;
+                                border: 1px solid $gray-300;
+                                background: rgba($white, .96);
+                                color: $sr-primary;
+                                font-size: 12px;
+                                font-weight: 700;
+                                box-shadow: 0 1px 4px rgba(0, 0, 0, .15);
+                            }
+
+                            .edit-empty { display: none; }
+
+                            &:hover {
+                                .edit-pill,
+                                .edit-empty {
+                                    border-color: $sr-important;
+                                    color: $sr-important;
+                                }
+                            }
+                        }
+
+                        // Reveal the overlay when hovering a filled tile.
+                        &:hover > .edit { opacity: 1; }
+
+                        // Empty tile: no content to show, so keep the affordance visible
+                        // and swap the pill's label to the "Add text" prompt. Drop the
+                        // scrim here — a persistent tint would make the empty card read as
+                        // permanently "selected"; the scrim stays a hover-only cue.
+                        &:has(> .custom-WYSIWYG-content:empty) > .edit {
+                            opacity: 1;
+                            background: transparent;
+
+                            .edit-pill { display: none; }
+                            .edit-empty { display: inline-flex; }
                         }
                     }
-                    
+
                 }
             }
         }
@@ -185,6 +240,612 @@ section.gridstack {
             }
         }
     }
+}
+
+/* "Edit layout" toolbar button — the design-system bordered action (the
+   artifact's .dswitch): white fill, gray border, charcoal text; a quiet
+   control, never the App Red accent. .sr-edit-layout.btn beats Bootstrap's
+   .btn base without !important. The Import-Export "Export PDF" button
+   (.sr-export-pdf) is a sibling in the same toolbar and shares the treatment. */
+.sr-edit-layout.btn,
+.sr-export-pdf.btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 1.2;
+    color: $sr-primary;
+    background: $white;
+    border: 1px solid $gray-300;
+    border-radius: 6px;
+    box-shadow: none;
+
+    &:hover,
+    &:focus,
+    &:active,
+    &.show {
+        color: $sr-primary;
+        background: $gray-100;
+        border-color: $gray-500;
+    }
+
+    &__icon {
+        font-size: .85em;
+        color: $gray-600;
+    }
+}
+
+// ---- Hoisted Edit-layout control (single-dashboard pages) ----
+// On a single dashboard, UILayout moves its `.settings` control up into the
+// shared page header's `.page-actions` slot (see UILayout.php). The control's
+// dropdown + toggle styles are otherwise scoped under
+// `section.gridstack .layout_toolbar`, which no longer contains the moved node,
+// so re-apply them here. The trigger button keeps `.sr-edit-layout` (top-level).
+.page-breadcrumb .page-actions .settings {
+    .dropdown-menu {
+        --bs-dropdown-divider-bg: var(--bs-dropdown-border-color);
+        hr.dropdown-divider { width: 100%; }
+    }
+    .edit-mode-dropdown {
+        padding: 10px;
+        &.dropdown-menu.show {
+            display: flex !important;
+            flex-direction: column;
+            flex-wrap: wrap;
+            align-content: center;
+            justify-content: center;
+            align-items: center;
+            .dropdown-header {
+                font-weight: bold !important;
+                padding: unset;
+                font-size: inherit;
+                color: var(--bs-dropdown-color);
+            }
+        }
+    }
+    .switch-widget {
+        label { cursor: pointer; }
+        .form-switch .form-check-input {
+            border-radius: 2em !important;
+            transition: background-position .15s ease-in-out !important;
+            &:checked { background-color: var(--sr-success); }
+            &:not(:checked) + label.on { font-weight: var(--bs-body-font-weight) !important; }
+        }
+        label.off:has(+div.form-check.form-switch input[type=checkbox].form-check-input:checked) {
+            font-weight: var(--bs-body-font-weight) !important;
+        }
+        label.off:has(+div.form-check.form-switch input[type=checkbox]:disabled) {
+            cursor: default;
+            opacity: .5;
+        }
+    }
+}
+
+// The hoisted control leaves the toolbar empty at rest, so collapse its margin
+// and let the grid sit directly under the page header. Only when NOT editing —
+// while editing, the toolbar becomes the tinted "Editing" bar with its own margin.
+section.gridstack.layout--head-action .layout_toolbar:not(:has(.show-hide:not(.hide))) {
+    margin: 0;
+}
+
+// Edit-layout suppressed (show_edit_layout: false) with Import-Export inactive
+// leaves .settings empty and nothing to hoist — collapse the toolbar's margin
+// directly so the empty control row doesn't leave a blank gap above the grid.
+.layout_toolbar.layout_toolbar--empty-settings:not(:has(.show-hide:not(.hide))) {
+    margin: 0;
+}
+
+// Hide the hoisted "Edit layout" trigger while editing (the .hide rule above is
+// scoped to .layout_toolbar, but the trigger lives in the page header once
+// hoisted, so it needs its own rule).
+.page-breadcrumb .page-actions .settings.hide {
+    display: none !important;
+}
+
+// ---- "Editing" action bar (dashboard edit mode) ----
+// The toolbar becomes a tinted action bar only WHILE editing (its controls are
+// visible); at rest it stays collapsed.
+.sr-editbar {
+    &:has(.show-hide:not(.hide)) {
+        // 10px side margin lines the bar's edges up with the widget grid (whose
+        // outer tiles are inset from the section by Gridstack's 10px cell margin).
+        margin: 0 10px 12px;
+        padding: 10px 12px;
+        background: rgba($sr-important, .06);
+        border: 1px solid rgba($sr-important, .22);
+        border-radius: 8px;
+        row-gap: 12px;
+        // Two top-aligned columns: editing controls (left) and the options stack
+        // (right), each with its own row of actions beneath it.
+        justify-content: space-between;
+        align-items: flex-start;
+    }
+
+    // Left column: editing controls on top, Cancel / Save beneath.
+    &__left {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+
+    &__toprow {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    &__commit {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    // Right column: "Set as default" on top, "Restore default layout" beneath.
+    &__right {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 12px;
+    }
+
+    &__mode {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        font-size: 12px;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: .04em;
+        color: $sr-important;
+    }
+
+    &__dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: $sr-important;
+        flex: none;
+    }
+
+    &__hint {
+        font-size: 12px;
+        color: $gray-600;
+    }
+
+    &__spacer {
+        flex: 1 1 auto;
+    }
+
+    &__default {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        margin: 0;
+        // Match the left column's top-row height (the button/select row) so the
+        // two second rows — Cancel/Save and Restore — line up horizontally.
+        min-height: 34px;
+        font-size: 12.5px;
+        font-weight: 700;
+        color: $sr-primary;
+        cursor: pointer;
+    }
+
+    // "Admin" chip next to the set-as-default checkbox.
+    &__adm {
+        font-size: 9px;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: .04em;
+        color: $gray-600;
+        background: $gray-200;
+        border: 1px solid $gray-300;
+        border-radius: 20px;
+        padding: 2px 8px;
+        line-height: 1;
+    }
+
+    // "+ Add widget" picker — styled to read like the header's ghost button
+    // rather than a form field.
+    &__add {
+        flex: none;
+        font-size: 13px;
+        font-weight: 700;
+        color: $sr-primary;
+        background-color: $white;
+        border: 1px solid $gray-300;
+        border-radius: 6px;
+        box-shadow: none;
+
+        &:focus {
+            border-color: $gray-500;
+            box-shadow: none;
+        }
+    }
+
+    // Buttons follow the design-system action-bar hierarchy (see .sr-qform §5):
+    // Cancel = ghost, Restore = outline (red on hover), Save = red primary.
+    &__cancel {
+        font-size: 13px;
+        font-weight: 700;
+        color: $gray-600;
+        background: transparent;
+        border: 1px solid $gray-300;
+
+        &:hover,
+        &:focus {
+            color: $sr-primary;
+            border-color: $gray-500;
+        }
+    }
+
+    &__save {
+        font-size: 13px;
+        font-weight: 700;
+        color: $white;
+        background: $sr-important;
+        border: 1px solid $sr-important;
+
+        &:hover,
+        &:focus {
+            color: $white;
+            background: darken($sr-important, 8%);
+            border-color: darken($sr-important, 8%);
+        }
+
+        &:disabled {
+            color: $white;
+            background: $sr-important;
+            border-color: $sr-important;
+            opacity: .55;
+        }
+    }
+
+    // "Restore default layout" — a real (ghost) button in the bottom-right;
+    // secondary reset action, confirm-gated in JS.
+    &__restore {
+        display: inline-flex;
+        align-items: center;
+        font-size: 13px;
+        font-weight: 700;
+        color: $sr-primary;
+        background: $white;
+        border: 1px solid $gray-300;
+        border-radius: 6px;
+        white-space: nowrap;
+
+        &:hover,
+        &:focus {
+            color: $sr-important;
+            border-color: $sr-important;
+            background: $white;
+        }
+    }
+}
+
+// While editing, hide the KPI domain tag so the ✕ (which sits in the same
+// top-right corner) doesn't collide with it.
+.grid-stack:not(.grid-stack-static) .sr-domain {
+    visibility: hidden;
+}
+
+// Per-tile ✕ remove button, injected onto each widget while editing — sits just
+// inside the widget's top-right corner (offset past Gridstack's ~10px cell margin
+// so it lands ON the card, not in the gutter above it).
+.sr-tile-remove {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    z-index: 5;
+    width: 20px;
+    height: 20px;
+    padding: 0;
+    border-radius: 50%;
+    border: 2px solid $white;
+    background: $sr-important;
+    color: $white;
+    font-size: 10px;
+    line-height: 1;
+    display: grid;
+    place-items: center;
+    cursor: pointer;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, .25);
+
+    &:hover {
+        background: darken($sr-important, 8%);
+    }
+}
+
+// ---- Add-widget picker (popover replacing the old <select>) ----
+.sr-add {
+    position: relative;
+}
+
+.sr-editbar__add {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 13px;
+    font-weight: 700;
+    color: $sr-primary;
+    background: $white;
+    border: 1px solid $gray-300;
+    border-radius: 6px;
+    white-space: nowrap;
+
+    &:hover,
+    &:focus {
+        color: $sr-important;
+        border-color: $sr-important;
+    }
+
+    .sr-add__plus { font-size: .8em; }
+    .sr-add__caret { font-size: .7em; color: $gray-500; margin-left: 2px; }
+}
+
+.sr-add-popover {
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0;
+    z-index: 20;
+    width: 300px;
+    background: $white;
+    border: 1px solid $gray-300;
+    border-radius: 8px;
+    box-shadow: 0 14px 34px rgba(0, 0, 0, .16);
+    overflow: hidden;
+
+    &__head {
+        padding: 9px 12px;
+        font-size: 11px;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: .05em;
+        color: $gray-600;
+        border-bottom: 1px solid $gray-200;
+    }
+}
+
+.sr-add-list {
+    max-height: 280px;
+    overflow-y: auto;
+}
+
+.sr-add-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 9px 12px;
+    background: transparent;
+    border: 0;
+    text-align: left;
+    cursor: pointer;
+    font-size: 13.5px;
+    font-weight: 600;
+    color: $sr-primary;
+
+    &:hover { background: rgba($sr-important, .06); }
+
+    &__ico {
+        width: 24px;
+        height: 24px;
+        flex: none;
+        display: grid;
+        place-items: center;
+        border-radius: 6px;
+        background: $gray-100;
+        color: $gray-600;
+        font-size: 12px;
+    }
+
+    &__nm {
+        flex: 1;
+        min-width: 0;
+    }
+
+    &__chip {
+        flex: none;
+        font-size: 9px;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: .03em;
+        color: $gray-600;
+        background: $gray-200;
+        border-radius: 20px;
+        padding: 2px 7px;
+    }
+
+    &__go { color: $gray-400; }
+
+    &--custom {
+        border-top: 1px solid $gray-200;
+        color: $sr-important;
+
+        .sr-add-item__ico {
+            background: rgba($sr-important, .1);
+            color: $sr-important;
+        }
+    }
+}
+
+// Domain section header in the add-widget picker (Risk, Compliance, Governance,
+// Incident, General). Quiet uppercase label; sticks to the top of its section
+// while the (potentially long) list scrolls.
+.sr-add-group {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    padding: 8px 12px 4px;
+    background: $white;
+    font-size: 10px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+    color: $gray-500;
+
+    &:not(:first-child) {
+        margin-top: 2px;
+        border-top: 1px solid $gray-200;
+        padding-top: 8px;
+    }
+}
+
+.sr-add-empty {
+    padding: 16px 12px;
+    text-align: center;
+    font-size: 12.5px;
+    color: $gray-600;
+}
+
+.sr-add-custom {
+    padding: 10px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+
+    &__back {
+        display: inline-flex;
+        align-items: center;
+        background: transparent;
+        border: 0;
+        padding: 0;
+        font-size: 11px;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: .04em;
+        color: $gray-600;
+        cursor: pointer;
+
+        &:hover { color: $sr-primary; }
+    }
+
+    &__add {
+        color: $white;
+        background: $sr-important;
+        border: 1px solid $sr-important;
+        font-size: 13px;
+        font-weight: 700;
+
+        &:hover,
+        &:focus {
+            background: darken($sr-important, 8%);
+            border-color: darken($sr-important, 8%);
+            color: $white;
+        }
+    }
+}
+
+// ===== Collapsible insights band ========================================
+//
+// For a layout embedded ABOVE other content (the Define Tests grid), where the
+// tiles introduce the content rather than being it. Collapsing swaps the tile
+// band for a summary strip carrying the same numbers, tones and links at about
+// a quarter of the height -- so the control trades chrome for rows, never
+// information.
+
+// The collapse trigger. It rides the same `.settings` hoist as "Edit layout"
+// and therefore has to read as its sibling: same quiet bordered action, same
+// height, so the header line stays one row of like-weighted controls.
+.sr-band-toggle.btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 1.2;
+    color: $sr-primary;
+    background: $white;
+    border: 1px solid $gray-300;
+    border-radius: 6px;
+    box-shadow: none;
+
+    &:hover,
+    &:focus {
+        color: $sr-primary;
+        background: $gray-100;
+        border-color: $gray-500;
+    }
+
+    &__caret {
+        font-size: .8em;
+        color: $gray-600;
+    }
+}
+
+// The collapsed stand-in: one card-height row of stats, on the same white card
+// ground as the tiles it replaces, so collapsing reads as the band shrinking
+// rather than as a different component appearing.
+.sr-band-summary {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 4px 22px;
+    padding: 8px 16px;
+    background: $white;
+    border: 1px solid $gray-200;
+    border-radius: 10px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, .04);
+}
+
+// The strip is not a Gridstack cell, so it doesn't get the 10px cell margin
+// that pulls the TILES back inside the section's negative side margins (see
+// _home.scss) -- left to itself it sits 10px proud of the table card on both
+// sides. The same 10px on the bottom gives it the gap to the card that the
+// expanded band gets from its cells' bottom margin, so collapsing changes the
+// band's height and nothing else about the page's rhythm.
+section.gridstack:has(.sr-kpi) .sr-band-summary {
+    margin: 0 10px 10px;
+}
+
+// Each stat keeps its tile's drill-through, so the strip is not a read-only
+// consolation prize -- clicking "4 Overdue" filters the grid exactly as the
+// tile did.
+.sr-band-stat {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 6px;
+    text-decoration: none;
+    border-radius: 6px;
+    padding: 2px 6px;
+    margin: -2px -6px;
+
+    &:hover,
+    &:focus-visible {
+        background: $gray-100;
+        text-decoration: none;
+
+        .sr-band-stat__label { color: $sr-primary; }
+    }
+
+    &__value {
+        font-size: 16px;
+        font-weight: 800;
+        line-height: 1.1;
+        font-variant-numeric: tabular-nums;
+        color: $sr-primary;
+
+        // App Red is spent on the number alone, exactly as in the tile.
+        &--danger { color: $sr-important; }
+        &--success { color: $success; }
+    }
+
+    &__label {
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: .04em;
+        color: $gray-600;
+    }
+}
+
+// Collapsed, the toolbar has nothing left to space out from the strip.
+section.gridstack.is-band-collapsed .layout_toolbar:not(:has(.show-hide:not(.hide))) {
+    margin: 0;
 }
 
 /* End of Gridstack style */

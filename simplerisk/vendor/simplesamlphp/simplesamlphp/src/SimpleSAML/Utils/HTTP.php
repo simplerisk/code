@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace SimpleSAML\Utils;
 
+use Exception;
 use SimpleSAML\Configuration;
 use SimpleSAML\Error;
 use SimpleSAML\Logger;
@@ -13,6 +14,12 @@ use SimpleSAML\XHTML\Template;
 use SimpleSAML\XMLSecurity\Alg\Encryption\AES;
 use SimpleSAML\XMLSecurity\Constants as C;
 use SimpleSAML\XMLSecurity\Key\SymmetricKey;
+use Symfony\Component\HttpClient\HttpClient;
+use Symfony\Contracts\HttpClient\HttpClientInterface;
+
+use function array_merge;
+use function parse_url;
+use function str_replace;
 
 /**
  * HTTP-related utility methods.
@@ -21,6 +28,39 @@ use SimpleSAML\XMLSecurity\Key\SymmetricKey;
  */
 class HTTP
 {
+    protected Configuration $config;
+
+
+    /**
+     * Instantiate an HTTP Client
+     *
+     * https://github.com/symfony/symfony/blob/d1ebc450128b626d4b9822f6baf97f530eb3b4d1/src/Symfony/Contracts/HttpClient/HttpClientInterface.php#L26
+     *
+     * @param array $options See Symfony\Contracts\HttpClient\HttpClientInterface::OPTIONS_DEFAULTS for possible values
+     */
+    public function createHttpClient(array $options = []): HttpClientInterface
+    {
+        $config = Configuration::getInstance();
+        $proxy = $config->getOptionalString('proxy', null);
+
+        if ($proxy !== null) {
+            $proxy = preg_replace('/^(tcp:\/\/)+/i', 'http://', $proxy);
+            $proxyAuth = $config->getOptionalString('proxy.auth', null);
+
+            if ($proxyAuth !== null) {
+                $scheme = parse_url($proxy, PHP_URL_SCHEME);
+                $proxy = str_replace($scheme . '://', $scheme . '://' . $proxyAuth . '@', $proxy);
+            }
+
+            $proxy = ['proxy' => $proxy];
+
+            $options = array_merge($proxy, $options);
+        }
+
+        return HttpClient::create($options);
+    }
+
+
     /**
      * Determine if the user agent can support cookies being sent with SameSite equal to "None".
      * Browsers without support may drop the cookie and or treat it as stricter setting
@@ -66,13 +106,14 @@ class HTTP
         return true;
     }
 
+
     /**
      * Obtain a URL where we can redirect to securely post a form with the given data to a specific destination.
      *
      * @param string $destination The destination URL.
      * @param array  $data An associative array containing the data to be posted to $destination.
      *
-     * @throws Error\Exception If the current session is transient.
+     * @throws \SimpleSAML\Error\Exception If the current session is transient.
      * @return string  A URL which allows to securely post a form to $destination.
      *
      */
@@ -140,18 +181,71 @@ class HTTP
      */
     public function getServerHTTPS(): bool
     {
-        if (!array_key_exists('HTTPS', $_SERVER)) {
-            // not an https-request
+        // When $_SERVER['HTTPS'] is set — by a web server that terminates
+        // TLS itself — it is the authoritative signal. Preserve the
+        // existing three-case interpretation exactly, so an admin's
+        // explicit 'off' (IIS convention) still wins.
+        if (array_key_exists('HTTPS', $_SERVER)) {
+            if ($_SERVER['HTTPS'] === 'off') {
+                return false;
+            }
+            return !empty($_SERVER['HTTPS']);
+        }
+
+        // $_SERVER['HTTPS'] is COMPLETELY ABSENT. This is the typical
+        // php-fpm case behind a TLS-terminating reverse proxy: nginx's
+        // stock fastcgi_params line `fastcgi_param HTTPS $https
+        // if_not_empty;` only sends the param when $https itself is
+        // non-empty, which only happens when nginx terminates TLS.
+        //
+        // Fall back to the admin-set baseurlpath. We trust it only when:
+        //   (a) it is a full URL starting with https://, AND
+        //   (b) its host exactly matches the current request's host.
+        //
+        // (a) restricts to deployments where the admin has explicitly
+        // declared an HTTPS deployment scheme (the maintainer-prescribed
+        // form for reverse-proxy setups, e.g. as in
+        // github.com/simplesamlphp/simplesamlphp/pull/795).
+        //
+        // (b) prevents a multi-host SimpleSAMLphp installation from
+        // over-promoting unrelated requests to HTTPS just because some
+        // virtual host the library knows about is configured for HTTPS.
+        //
+        // No client-controlled header is read at any point.
+        $cfg = Configuration::getInstance();
+        $baseURL = $cfg->getOptionalString('baseurlpath', null);
+        if (
+            $baseURL !== null
+            && preg_match('#^https://([^/:]+)(?::([0-9]+))?#', $baseURL, $matches)
+        ) {
+            $configuredHost = strtolower($matches[1]);
+            $currentHost = strtolower($this->getServerHost());
+            if ($configuredHost === $currentHost) {
+                Logger::debug(
+                    "getServerHTTPS(): no \$_SERVER['HTTPS']; treating the request as HTTPS "
+                    . "because the 'baseurlpath' host '" . $configuredHost
+                    . "' matches the current host.",
+                );
+
+                return true;
+            }
+
+            Logger::debug(
+                "getServerHTTPS(): no \$_SERVER['HTTPS']; not treating the request as HTTPS "
+                . "because the 'baseurlpath' host '" . $configuredHost
+                . "' does not match the current host '" . $currentHost . "'.",
+            );
+
             return false;
         }
 
-        if ($_SERVER['HTTPS'] === 'off') {
-            // IIS with HTTPS off
-            return false;
-        }
+        Logger::debug(
+            "getServerHTTPS(): no \$_SERVER['HTTPS'] and 'baseurlpath' is not a full https:// "
+            . "URL, so the request is not treated as HTTPS. If TLS is terminated at an upstream "
+            . "proxy, set 'baseurlpath' (or 'application.baseURL') to your full https:// URL.",
+        );
 
-        // otherwise, HTTPS will be non-empty
-        return !empty($_SERVER['HTTPS']);
+        return false;
     }
 
 
@@ -199,10 +293,7 @@ class HTTP
 
 
     /**
-     * This function redirects the user to the specified address.
-     *
-     * This function will use the "HTTP 303 See Other" redirection if the current request used the POST method and the
-     * HTTP version is 1.1. Otherwise, a "HTTP 302 Found" redirection will be used.
+     * This function redirects the user to the specified address using the "HTTP 303 See Other" redirection.
      *
      * The function will also generate a simple web page with a clickable link to the target page.
      *
@@ -265,7 +356,9 @@ class HTTP
         echo '</html>';
 
         // end script execution
-        exit;
+        if (!defined('SIMPLESAMLPHP_TEST_NOEXIT')) {
+            exit;
+        }
     }
 
 
@@ -360,13 +453,13 @@ class HTTP
      * Check if a URL is valid and is in our list of allowed URLs.
      *
      * @param string $url The URL to check.
-     * @param string[]|null $trustedSites An optional white list of domains. If none specified, the 'trusted.url.domains'
+     * @param string[]|null $trustedSites An optional whitelist of domains. If none specified, the 'trusted.url.domains'
      * configuration directive will be used.
      *
      * @return string The normalized URL itself if it is allowed. An empty string if the $url parameter is empty as
      * defined by the empty() function.
      * @throws \InvalidArgumentException If the URL is malformed.
-     * @throws Error\Exception If the URL is not allowed by configuration.
+     * @throws \SimpleSAML\Error\Exception If the URL is not allowed by configuration.
      *
      */
     public function checkURLAllowed(string $url, ?array $trustedSites = null): string
@@ -455,82 +548,28 @@ class HTTP
      * @return string|array An array if $getHeaders is set, containing the data and the headers respectively; string
      *  otherwise.
      * @throws \InvalidArgumentException If the input parameters are invalid.
-     * @throws Error\Exception If the file or URL cannot be retrieved.
-     *
+     * @throws \SimpleSAML\Error\Exception If the file or URL cannot be retrieved.
      */
+    #[\Deprecated('Use an HTTP client instead (see createHttpClient method)', '16-12-2025')]
     public function fetch(string $url, array $context = [], bool $getHeaders = false)
     {
-        $config = Configuration::getInstance();
+        $client = $this->createHttpClient($context);
+        $response = $client->request('GET', $url);
 
-        $proxy = $config->getOptionalString('proxy', null);
-        if ($proxy !== null) {
-            if (!isset($context['http']['proxy'])) {
-                $context['http']['proxy'] = $proxy;
+        try {
+            $headers = $response->getHeaders();
+            /** @var string $data */
+            $data = $response->getContent();
+
+            // data and headers
+            if ($getHeaders) {
+                return [$data, $headers];
             }
-            $proxy_auth = $config->getOptionalString('proxy.auth', null);
-            if ($proxy_auth !== null) {
-                $context['http']['header'] = "Proxy-Authorization: Basic " . base64_encode($proxy_auth);
-            }
-            if (!isset($context['http']['request_fulluri'])) {
-                $context['http']['request_fulluri'] = true;
-            }
-            /*
-             * If the remote endpoint over HTTPS uses the SNI extension (Server Name Indication RFC 4366), the proxy
-             * could introduce a mismatch between the names in the Host: HTTP header and the SNI_server_name in TLS
-             * negotiation (thanks to Cristiano Valli @ GARR-IDEM to have pointed this problem).
-             * See: https://bugs.php.net/bug.php?id=63519
-             * These controls will force the same value for both fields.
-             * Marco Ferrante (marco@csita.unige.it), Nov 2012
-             */
-            if (
-                preg_match('#^https#i', $url)
-                && defined('OPENSSL_TLSEXT_SERVER_NAME')
-                && OPENSSL_TLSEXT_SERVER_NAME
-            ) {
-                // extract the hostname
-                $hostname = parse_url($url, PHP_URL_HOST);
-                if (!empty($hostname)) {
-                    $context['ssl'] = [
-                        'SNI_server_name' => $hostname,
-                        'SNI_enabled'     => true,
-                    ];
-                } else {
-                    Logger::warning('Invalid URL format or local URL used through a proxy');
-                }
-            }
+
+            return $data;
+        } catch (Exception $e) {
+            throw new Error\Exception('Error fetching ' . var_export($url, true) . ':' . $e->getMessage());
         }
-
-        $context = stream_context_create($context);
-        $data = @file_get_contents($url, false, $context);
-        if ($data === false) {
-            $error = error_get_last();
-            throw new Error\Exception('Error fetching ' . var_export($url, true) . ':' .
-                (is_array($error) ? $error['message'] : 'no error available'));
-        }
-
-        // data and headers
-        if ($getHeaders) {
-            if (!empty($http_response_header)) {
-                $headers = [];
-                foreach ($http_response_header as $h) {
-                    if (preg_match('@^HTTP/1\.[01]\s+\d{3}\s+@', $h)) {
-                        $headers = []; // reset
-                        $headers[0] = $h;
-                        continue;
-                    }
-                    $bits = explode(':', $h, 2);
-                    if (count($bits) === 2) {
-                        $headers[strtolower($bits[0])] = trim($bits[1]);
-                    }
-                }
-            } else {
-                // no HTTP headers, probably a different protocol, e.g. file
-                $headers = null;
-            }
-            return [$data, $headers];
-        }
-
-        return $data;
     }
 
 
@@ -717,7 +756,6 @@ class HTTP
      * E.g. www.example.com
      *
      * @return string The current host.
-     *
      */
     public function getSelfHost(): string
     {
@@ -734,13 +772,12 @@ class HTTP
      *
      * @return string The current host, followed by a colon and the port number, in case the port is not standard for
      * the protocol.
-     *
      */
     public function getSelfHostWithNonStandardPort(): string
     {
         $url = $this->getBaseURL();
 
-        /** @var int $colon getBaseURL() will always return a valid URL */
+        /** @var int<0, max>|false $colon getBaseURL() will always return a valid URL */
         $colon = strpos($url, '://');
         $start = $colon + 3;
         $length = strcspn($url, '/', $start);
@@ -754,7 +791,6 @@ class HTTP
      * current SP, as defined in the global configuration.
      *
      * @return string The current host (with non-default ports included) plus the URL path.
-     *
      */
     public function getSelfHostWithPath(): string
     {
@@ -775,7 +811,6 @@ class HTTP
      * Note that this method does NOT make use of the HTTP X-Forwarded-* set of headers.
      *
      * @return string The current URL, including query parameters.
-     *
      */
     public function getSelfURL(): string
     {
@@ -784,12 +819,19 @@ class HTTP
         $cur_path = realpath($_SERVER['SCRIPT_FILENAME']);
         // make sure we got a string from realpath()
         $cur_path = is_string($cur_path) ? $cur_path : '';
+
         // find the path to the current script relative to the public/ directory of SimpleSAMLphp
         $rel_path = str_replace($baseDir . 'public' . DIRECTORY_SEPARATOR, '', $cur_path);
-        // convert that relative path to an HTTP query
+
         $url_path = str_replace(DIRECTORY_SEPARATOR, '/', $rel_path);
-        // find where the relative path starts in the current request URI
-        $uri_pos = (!empty($url_path)) ? strpos($_SERVER['REQUEST_URI'] ?? '', $url_path) : false;
+
+        $requestUri = (string)($_SERVER['REQUEST_URI'] ?? '');
+        $requestPath = (string)parse_url($requestUri, PHP_URL_PATH);
+        $requestQuery = (string)parse_url($requestUri, PHP_URL_QUERY);
+        $requestFragment = (string)parse_url($requestUri, PHP_URL_FRAGMENT);
+
+        // Match script-relative path only against the path part of the request
+        $uri_pos = (!empty($url_path)) ? strpos($requestPath, $url_path) : false;
 
         if ($cur_path == $rel_path || $uri_pos === false) {
             /*
@@ -798,12 +840,13 @@ class HTTP
              * - $_SERVER['SCRIPT_FILENAME'] points to a script that doesn't exist. E.g. functional testing. In this
              *   case, realpath() returns false and str_replace an empty string, so we compare them loosely.
              *
-             * - The URI requested does not belong to a script in the public/ directory of SimpleSAMLphp. In that case,
-             *   removing SimpleSAMLphp's base dir from the current path yields the same path, so $cur_path and
+             * - The script is not located under the public/ directory of SimpleSAMLphp. In that case, removing
+             *   SimpleSAMLphp's base dir and public/ from the current path yields the same path, so $cur_path and
              *   $rel_path are equal.
              *
-             * - The request URI does not match the current script. Even if the current script is located in the
-             *   public/ directory of SimpleSAMLphp, the URI does not contain its relative path, and $uri_pos is false.
+             * - The request path does not match the current script. Even if the current script is located in the
+             *   public/ directory of SimpleSAMLphp, the request path (without query string) does not contain its
+             *   relative path, and $uri_pos is false.
              *
              * It doesn't matter which one of those cases we have. We just know we can't apply our base URL to the
              * current URI, so we need to build it back from the PHP environment, unless we have a base URL specified
@@ -813,20 +856,33 @@ class HTTP
             $appurl = ($appcfg !== null) ? $appcfg->getOptionalString('baseURL', null) : null;
 
             if (!empty($appurl)) {
-                $protocol = parse_url($appurl, PHP_URL_SCHEME);
-                $hostname = parse_url($appurl, PHP_URL_HOST);
-                $port = parse_url($appurl, PHP_URL_PORT);
-                $port = !empty($port) ? ':' . $port : '';
+                $protocol = (string)parse_url($appurl, PHP_URL_SCHEME);
+                $hostname = (string)parse_url($appurl, PHP_URL_HOST);
+                $portNum = parse_url($appurl, PHP_URL_PORT);
+                $port = !empty($portNum) ? ':' . $portNum : '';
             } else {
                 // no base URL specified for app, just use the current URL
                 $protocol = $this->getServerHTTPS() ? 'https' : 'http';
                 $hostname = $this->getServerHost();
                 $port = $this->getServerPort();
             }
+
             return $protocol . '://' . $hostname . $port . $_SERVER['REQUEST_URI'];
         }
 
-        return $this->getBaseURL() . $url_path . substr($_SERVER['REQUEST_URI'], $uri_pos + strlen($url_path));
+        // Normal case: baseURL + script-relative path + remaining path, plus query if present
+        $suffix = substr($requestPath, $uri_pos + strlen($url_path));
+        $url = $this->getBaseURL() . $url_path . $suffix;
+
+        if ($requestQuery !== '') {
+            $url .= '?' . $requestQuery;
+        }
+
+        if ($requestFragment !== '') {
+            $url .= '#' . $requestFragment;
+        }
+
+        return $url;
     }
 
 
@@ -835,13 +891,12 @@ class HTTP
      * optionally, the port number.
      *
      * @return string The current URL without path or query parameters.
-     *
      */
     public function getSelfURLHost(): string
     {
         $url = $this->getSelfURL();
 
-        /** @var int $colon getBaseURL() will always return a valid URL */
+        /** @var int<0, max>|false $colon getBaseURL() will always return a valid URL */
         $colon = strpos($url, '://');
         $start = $colon + 3;
         $length = strcspn($url, '/', $start) + $start;
@@ -853,7 +908,6 @@ class HTTP
      * Retrieve the current URL using the base URL in the configuration, without the query parameters.
      *
      * @return string The current URL, not including query parameters.
-     *
      */
     public function getSelfURLNoQuery(): string
     {
@@ -870,7 +924,6 @@ class HTTP
      * This function checks if we are using HTTPS as protocol.
      *
      * @return boolean True if the HTTPS is used, false otherwise.
-     *
      */
     public function isHTTPS(): bool
     {
@@ -886,7 +939,6 @@ class HTTP
      *
      * @return string An absolute URL for the given relative URL.
      * @throws \InvalidArgumentException If $url is not a string or a valid URL.
-     *
      */
     public function normalizeURL(string $url): string
     {
@@ -913,7 +965,6 @@ class HTTP
      *
      * @return array The query string as an associative array.
      * @throws \InvalidArgumentException If $query_string is not a string.
-     *
      */
     public function parseQueryString(string $query_string): array
     {
@@ -954,7 +1005,6 @@ class HTTP
      * name, without a value.
      *
      * @throws \InvalidArgumentException If $url is not a string or $parameters is not an array.
-     *
      */
     public function redirectTrustedURL(string $url, array $parameters = []): void
     {
@@ -980,7 +1030,6 @@ class HTTP
      * name, without a value.
      *
      * @throws \InvalidArgumentException If $url is not a string or $parameters is not an array.
-     *
      */
     public function redirectUntrustedURL(string $url, array $parameters = []): void
     {
@@ -1006,7 +1055,6 @@ class HTTP
      * @return string An absolute URL for the given relative URL.
      * @throws \InvalidArgumentException If the base URL cannot be parsed into a valid URL, or the given parameters
      *     are not strings.
-     *
      */
     public function resolveURL(string $url, ?string $base = null): string
     {
@@ -1080,8 +1128,6 @@ class HTTP
      *
      * @throws \InvalidArgumentException If any parameter has an incorrect type.
      * @throws \SimpleSAML\Error\CannotSetCookie If the headers were already sent and the cookie cannot be set.
-     *
-     *
      */
     public function setCookie(string $name, ?string $value, ?array $params = null, bool $throw = true): void
     {
@@ -1102,15 +1148,17 @@ class HTTP
             $params = $default_params;
         }
 
-        // Do not set secure cookie if not on HTTPS
-        if ($params['secure'] && !$this->isHTTPS()) {
+        // Do not set secure cookie if not on HTTPS or localhost
+        if ($params['secure'] && !$this->isSecureCookieAllowed()) {
             if ($throw) {
                 throw new Error\CannotSetCookie(
-                    'Setting secure cookie on plain HTTP is not allowed.',
+                    'Setting secure cookie on plain HTTP (except on localhost) is not allowed.',
                     Error\CannotSetCookie::SECURE_COOKIE,
                 );
             }
-            Logger::warning('Error setting cookie: setting secure cookie on plain HTTP is not allowed.');
+            Logger::warning(
+                'Error setting cookie: setting secure cookie on plain HTTP (except on localhost) is not allowed.',
+            );
             return;
         }
 
@@ -1168,6 +1216,17 @@ class HTTP
 
 
     /**
+     * Check if "Secure" attribute on cookies is supported
+     *
+     * @return boolean True "Secure" attribute can be set, false otherwise.
+     */
+    public function isSecureCookieAllowed(): bool
+    {
+        return $this->isHTTPS() || in_array($this->getSelfHost(), ['localhost', '127.0.0.1', '::1'], true);
+    }
+
+
+    /**
      * Submit a POST form to a specific destination.
      *
      * This function never returns.
@@ -1177,8 +1236,6 @@ class HTTP
      *
      * @throws \InvalidArgumentException If $destination is not a string or $data is not an array.
      * @throws \SimpleSAML\Error\Exception If $destination is not a valid HTTP URL.
-     *
-     *
      */
     public function submitPOSTData(string $destination, array $data): void
     {
@@ -1192,12 +1249,23 @@ class HTTP
         if ($allowed && preg_match("#^http:#", $destination) && $this->isHTTPS()) {
             // we need to post the data to HTTP
             $this->redirect($this->getSecurePOSTRedirectURL($destination, $data));
+            return;
         }
 
         $p = new Template($config, 'post.twig');
         $p->data['destination'] = $destination;
         $p->data['post'] = $data;
+
+        // Read optional config override; default to 30s, ensure non-negative integer
+        $delay = $config->getOptionalInteger('slow_post_delay_ms', 30000);
+        if ($delay < 0) {
+            $delay = 30000;
+        }
+        $p->data['slow_post_delay_ms'] = $delay;
+
         $p->send();
-        exit(0);
+        if (!defined('SIMPLESAMLPHP_TEST_NOEXIT')) {
+            exit(0);
+        }
     }
 }

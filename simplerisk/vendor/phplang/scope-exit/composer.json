@@ -1,0 +1,28 @@
+{
+  "name": "phplang/scope-exit",
+  "description": "Emulation of SCOPE_EXIT construct from C++",
+  "type": "library",
+  "keywords": [
+    "cleanup",
+    "scope",
+    "exit"
+  ],
+  "homepage": "https://github.com/phplang/scope-exit",
+  "license": "BSD",
+  "authors": [
+    {
+      "name": "Sara Golemon",
+      "email": "pollita@php.net",
+      "homepage": "https://twitter.com/SaraMG",
+      "role": "Developer"
+    }
+  ],
+  "autoload": {
+    "psr-4": {
+      "PhpLang\\": "src/"
+    }
+  },
+  "require-dev": {
+    "phpunit/phpunit": "*"
+  }
+}

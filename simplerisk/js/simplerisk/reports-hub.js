@@ -10,12 +10,10 @@
 (function () {
     'use strict';
 
-    // ---------------------------------------------------------------------------
-    // Localization helper
-    // Falls back to the key itself when missing (only happens during dev
-    // before required_localization_keys are added on the page).
-    // ---------------------------------------------------------------------------
-    var L = function (k) { return (window._lang && window._lang[k]) || k; };
+    // Localization helper L(k) is defined once, globally, in header.php's inline
+    // _lang <script> (window.L). It falls back to the key name when a key is
+    // missing (only happens during dev before required_localization_keys are
+    // added on the page).
 
     // ---------------------------------------------------------------------------
     // Tag-to-lang-key mapping

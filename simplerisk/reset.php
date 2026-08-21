@@ -8,6 +8,7 @@
     require_once(realpath(__DIR__ . '/includes/authenticate.php'));
     require_once(realpath(__DIR__ . '/includes/display.php'));
     require_once(realpath(__DIR__ . '/includes/alerts.php'));
+    require_once(realpath(__DIR__ . '/includes/config_check.php'));
     require_once(realpath(__DIR__ . '/vendor/autoload.php'));
 
     // Add various security headers
@@ -17,7 +18,7 @@
 
         // Session handler is database
         if (use_database_for_sessions()) {
-            session_set_save_handler(new SimpleRiskSessionHandler());
+            SimpleRiskSessionHandler::register();
         }
 
         // Start session
@@ -47,8 +48,27 @@
         $from_email_link = true;
     }
 
+    // The password reset flow is closed on a shared demo instance. Both halves
+    // of it end in the same place — a new password on the account every visitor
+    // shares — and this page is reachable without logging in at all, so it is
+    // the one door a visitor doesn't even need the demo credentials to knock on.
+    //
+    // Refused here rather than deeper down because the token half writes the
+    // new password with its own UPDATE statement inside
+    // password_reset_by_token() instead of calling update_password(), so the
+    // chokepoint guard in that function does not cover it. Refusing the email
+    // request as well stops a visitor from using the demo as an on-demand way
+    // to mail whatever address the shared account is registered under.
+    if (demo_mode_blocks_password_reset(
+        isset($_POST['send_reset_email']),
+        isset($_POST['password_reset']),
+        demo_mode()
+    )) {
+
+        set_alert(true, "bad", $lang['ActionDisabledOnDemoInstance']);
+
     // Check if a password reset email was requested
-    if (isset($_POST['send_reset_email'])) {
+    } elseif (isset($_POST['send_reset_email'])) {
 
         if (isset($_POST['user']) && $_POST['user'] == "") {
             $message = _lang('FieldRequired', array("field"=>"Username"));
@@ -192,106 +212,86 @@ if (!empty($redirect_js)) {
 
 ?>
     </head>
-    <body>
+    <body class="sr-auth-page">
         <div class="preloader">
             <div class="lds-ripple">
                 <div class="lds-pos"></div>
                 <div class="lds-pos"></div>
             </div>
         </div>
-        <div id="main-wrapper" data-layout="vertical" data-navbarbg="skin5" data-sidebartype="none" data-sidebar-position="absolute" data-header-position="absolute" data-boxed-layout="full" data-function="reset">
-            <header class="topbar" data-navbarbg="skin5">
-                <nav class="navbar top-navbar navbar-expand-md navbar-dark">
-                    <div class="navbar-header">
-                        <a class="navbar-brand" href="https://www.simplerisk.com">
-                            <img src="images/logo@2x.png" alt="homepage" class="logo"/>
-                        </a>
-                    </div>
-                </nav>
-            </header>
-            <!-- ============================================================== -->
-            <!-- Page wrapper  -->
-            <div class="page-wrapper">
-            	<div class="scroll-content">
-            		<div class="content-wrapper">
-                        <!-- container - It's the direct container of all the -->
-                        <div class="content container-fluid">
-                            <div class="container reset-form">
-    <?php 
-    if (!isset($_POST['send_reset_email']) && (!isset($token) || !$token)) { 
+        <div class="sr-auth">
+<?php display_auth_brand_panel(); ?>
+            <main class="sr-auth-main">
+    <?php
+    if (!isset($_POST['send_reset_email']) && (!isset($token) || !$token)) {
     ?>
-                                <div class="row">
-                                	<div class="col-md-3 col-6"></div>
-                						<div class="col-md-6 col-6 offset4">
-                							<h3><?= $escaper->escapeHtml($lang['SendPasswordResetEmail']);?></h3>
-                                            <div class="card">
-                                            	<div class="card-body">
-                                            		<form name="send_reset_email" method="post" action="" class="send_reset_email">
-                                            			<div class="form-group">
-                                                            <label><?= $escaper->escapeHtml($lang['Username']);?></label>
-                                                            <input class="input-medium form-control" name="user" id="user" type="text" required />
-                                                        </div>
-                                                        <div class="form-actions float-end">
-                											<input class="btn btn-secondary text-white" value="<?= $escaper->escapeHtml($lang['Reset']); ?>" type="reset">
-                											<button type="submit" name="send_reset_email" class="btn btn-submit"><?= $escaper->escapeHtml($lang['Send']); ?></button>
-                										</div>
-                                            		</form>
-                                            	</div>
-                							</div>
-                						</div>
-
-                			        <div class="col-md-3 col-6"></div>
+                <div class="sr-auth-col">
+                    <div class="sr-auth-card">
+                        <div class="sr-auth-card-head">
+                            <h2><?= $escaper->escapeHtml($lang['SendPasswordResetEmail']);?></h2>
+                            <p><?= $escaper->escapeHtml($lang['WeWillEmailAResetTokenToYourAccount']);?></p>
+                        </div>
+                        <form name="send_reset_email" method="post" action="" class="send_reset_email">
+                            <div class="sr-auth-card-body">
+                                <div class="sr-auth-field">
+                                    <label for="user"><?= $escaper->escapeHtml($lang['Username']);?></label>
+                                    <input class="input-medium form-control" name="user" id="user" type="text" autocomplete="username" required />
                                 </div>
+                                <div class="sr-auth-actions">
+                                    <input class="btn btn-secondary" value="<?= $escaper->escapeHtml($lang['Reset']); ?>" type="reset">
+                                    <button type="submit" name="send_reset_email" class="btn btn-submit"><?= $escaper->escapeHtml($lang['Send']); ?></button>
+                                </div>
+                                <div class="sr-auth-linkrow sr-auth-linkrow--center">
+                                    <a class="sr-auth-link" href="index.php"><?= $escaper->escapeHtml($lang['BackToLogin']);?></a>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
     <?php
         }
 
         if (isset($_POST['send_reset_email']) || !empty($token)){
     ?>
-                                <div class="row">
-                                	<div class="col-md-3 col-6"></div>
-                						<div class="col-md-6 col-6 offset4">
-                							<h3><?= $escaper->escapeHtml($lang['PasswordReset']);?></h3>
-                                            <div class="card">
-                                            	<div class="card-body">
-                                            		<form name="password_reset" method="post" action="" class="password_reset">
-                                            			<div class="form-group">
-                			                                <label for="user"><?= $escaper->escapeHtml($lang['Username']) ?></label>
-                			                                <input class="form-control" autocomplete="username" name="user" value="<?= isset($username) ? $escaper->escapeHtml($username) : ''?>" id="user" type="text" required <?= $from_email_link ? 'readonly tabindex=-1' : ''?>/>
-                                                        </div>
-                                                        <div class="form-group">
-                                                    		<label for="token"><?= $escaper->escapeHtml($lang['ResetToken'])?></label>
-                			                                <input class="form-control" autocomplete="one-time-code" value="<?= isset($token) ? $escaper->escapeHtml($token) : '' ?>" name="token" id="token" type="text" maxlength="32" required <?= $from_email_link ? 'readonly tabindex=-1' : ''?>/>
-                                                        </div>
-                                                        <div class="form-group">
-                											<label for="password"><?= $escaper->escapeHtml($lang['Password']) ?></label>
-                				                            <input class="form-control" name="password" id="password" type="password" autocomplete="current-password" required />
-                										</div>
-                                                        <div class="form-group">
-                				                            <label for="repeat_password" ><?= $escaper->escapeHtml($lang['RepeatPassword']) ?></label>
-                				                            <input class="form-control" name="repeat_password" id="repeat_password" type="password" autocomplete="new-password" required />
-                                                        </div>
-                                                        <div class="form-actions float-end">
-                											<input class="btn btn-secondary text-white" value="<?= $escaper->escapeHtml($lang['Reset']); ?>" type="reset">
-                											<button type="submit" name="password_reset" class="btn btn-submit <?php if (!empty($redirect_js)) echo "hide";?>"><?= $escaper->escapeHtml($lang['Submit']); ?></button>
-                										</div>
-                                            		</form>
-                                            	</div>
-                							</div>
-                						</div>
-                			        <div class="col-md-3 col-6"></div>
-                                </div>
-    <?php
-        } 
-    ?>
-                            </div>
+                <div class="sr-auth-col">
+                    <div class="sr-auth-card">
+                        <div class="sr-auth-card-head">
+                            <h2><?= $escaper->escapeHtml($lang['PasswordReset']);?></h2>
+                            <p><?= $escaper->escapeHtml($lang['EnterTheResetTokenFromYourEmail']);?></p>
                         </div>
-                        <!-- End of content -->
-                	</div>
-                	<!-- End of content-wrapper -->
-        		</div>
-        		<!-- End of scroll-content -->
-          	</div>
-          <!-- End Page wrapper  -->
+                        <form name="password_reset" method="post" action="" class="password_reset">
+                            <div class="sr-auth-card-body">
+                                <div class="sr-auth-field">
+                                    <label for="user"><?= $escaper->escapeHtml($lang['Username']) ?></label>
+                                    <input class="form-control" autocomplete="username" name="user" value="<?= isset($username) ? $escaper->escapeHtml($username) : ''?>" id="user" type="text" required <?= $from_email_link ? 'readonly tabindex=-1' : ''?>/>
+                                </div>
+                                <div class="sr-auth-field">
+                                    <label for="token"><?= $escaper->escapeHtml($lang['ResetToken'])?></label>
+                                    <input class="form-control" autocomplete="one-time-code" value="<?= isset($token) ? $escaper->escapeHtml($token) : '' ?>" name="token" id="token" type="text" maxlength="32" required <?= $from_email_link ? 'readonly tabindex=-1' : ''?>/>
+                                </div>
+                                <div class="sr-auth-field">
+                                    <label for="password"><?= $escaper->escapeHtml($lang['Password']) ?></label>
+                                    <input class="form-control" name="password" id="password" type="password" autocomplete="current-password" required />
+                                </div>
+                                <div class="sr-auth-field">
+                                    <label for="repeat_password" ><?= $escaper->escapeHtml($lang['RepeatPassword']) ?></label>
+                                    <input class="form-control" name="repeat_password" id="repeat_password" type="password" autocomplete="new-password" required />
+                                </div>
+                                <div class="sr-auth-actions">
+                                    <input class="btn btn-secondary" value="<?= $escaper->escapeHtml($lang['Reset']); ?>" type="reset">
+                                    <button type="submit" name="password_reset" class="btn btn-submit <?php if (!empty($redirect_js)) echo "hide";?>"><?= $escaper->escapeHtml($lang['Submit']); ?></button>
+                                </div>
+                                <div class="sr-auth-linkrow sr-auth-linkrow--center">
+                                    <a class="sr-auth-link" href="index.php"><?= $escaper->escapeHtml($lang['BackToLogin']);?></a>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+    <?php
+        }
+    ?>
+            </main>
         </div>
         <!-- End Wrapper -->
 <?php

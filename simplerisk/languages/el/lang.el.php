@@ -8,7 +8,7 @@
 ini_set('default_charset', 'utf-8');
 
 $lang = array(
-    'Home'=>'Το σπίτι',
+    'Home'=>'Αρχική',
     'RiskManagement'=>'Διαχείριση Κινδύνου',
     'Reporting'=>'Αναφοράς',
     'Configure'=>'Ρυθμίστε τις παραμέτρους',
@@ -16,7 +16,7 @@ $lang = array(
     'Logout'=>'Αποσύνδεση',
     'LogInHere'=>'Συνδεθείτε για να SimpleRisk',
     'Username'=>'Όνομα χρήστη',
-    'Password'=>'Κωδικό πρόσβασης',
+    'Password'=>'Κωδικός πρόσβασης',
     'ForgotYourPassword'=>'Ξεχάσατε τον κωδικό σας',
     'Login'=>'Είσοδος',
     'Reset'=>'Επαναφορά',
@@ -33,8 +33,6 @@ $lang = array(
     'CurrentPassword'=>'Τρέχοντα Κωδικό Πρόσβασης',
     'NewPassword'=>'Νέο Κωδικό Πρόσβασης',
     'ConfirmPassword'=>'Επιβεβαιώστε Τον Κωδικό Πρόσβασης',
-    'RiskConfiguration'=>'Διαμόρφωση Κινδύνου',
-    'ReviewSettings'=>'Έλεγχος ρυθμίσεων',
     'AddAndRemoveValues'=>'Προσθέσετε και να Καταργήσετε Τιμές',
     'UserManagement'=>'Διαχείριση Χρηστών',
     'RedefineNamingConventions'=>'Επαναπροσδιορισμός Συμβάσεις Ονομασίας',
@@ -80,8 +78,6 @@ $lang = array(
     'Delete'=>'Διαγραφή',
     'SendPasswordResetEmailForUser'=>'Στείλτε την επαναφορά του κωδικού πρόσβασης ηλεκτρονικού ταχυδρομείου για το χρήστη',
     'Category'=>'Κατηγορία',
-    'Cards'=>'Καρτέλλες',
-    'List'=>'Λίστα',
     'AddNewCategoryNamed'=>'Να προσθέσετε νέα κατηγορία με το όνομα',
     'DeleteCurrentCategoryNamed'=>'Διαγραφή του τρέχοντος κατηγορία που ονομάζεται',
     'Team'=>'Ομάδα',
@@ -99,7 +95,7 @@ $lang = array(
     'RiskPlanningStrategy'=>'Κίνδυνος Στρατηγικής Σχεδιασμού',
     'AddNewRiskPlanningStrategyNamed'=>'Προσθέστε νέο κίνδυνο το σχεδιασμό και στρατηγική με το όνομα',
     'DeleteCurrentRiskPlanningStrategyNamed'=>'Διαγραφή του τρέχοντος κίνδυνο το σχεδιασμό και στρατηγική με το όνομα',
-    'CloseReason'=>'Σε Κοντινή Λόγο',
+    'CloseReason'=>'Λόγος κλεισίματος',
     'AddNewCloseReasonNamed'=>'Προσθήκη νέου κοντά το λόγο που ονομάζεται',
     'DeleteCurrentCloseReasonNamed'=>'Διαγραφή του τρέχοντος κοντά το λόγο που ονομάζεται',
     'IWantToReviewHighRiskEvery'=>'Θέλω να επανεξετάσει ΥΨΗΛΟΎ κινδύνου για κάθε',
@@ -125,14 +121,14 @@ $lang = array(
     'Subject'=>'Θέμα',
     'ExternalReferenceId'=>'Εξωτερικής Αναφοράς ID',
     'ControlNumber'=>'Αριθμός Ελέγχου',
-    'Owner'=>'Ιδιοκτήτη',
+    'Owner'=>'Ιδιοκτήτης',
     'OwnersManager'=>'Διαχείριση του ιδιοκτήτη',
     'RiskScoringMethod'=>'Βαθμολόγησης Κινδύνου Μέθοδος',
     'CurrentLikelihood'=>'Τρέχουσα Πιθανότητα',
     'CurrentImpact'=>'Τρέχουσα Επιπτώσεις',
     'RiskAssessment'=>'Αξιολόγηση Του Κινδύνου',
     'AdditionalNotes'=>'Συμπληρωματικές Σημειώσεις',
-    'UNREVIEWED'=>'ΦΟΡΆ',
+    'UNREVIEWED'=>'ΜΗ ΕΛΕΓΜΈΝΟ',
     'PASTDUE'=>'ΠΑΡΕΛΘΌΝ ΛΌΓΩ',
     'ID'=>'ΑΝΑΓΝΩΡΙΣΤΙΚΌ',
     'Status'=>'Κατάσταση',
@@ -175,7 +171,7 @@ $lang = array(
     'SubmissionDate'=>'Ημερομηνία Υποβολής',
     'DateSubmitted'=>'Ημερομηνία Υποβολής',
     'EditDetails'=>'Επεξεργαστείτε Τις Λεπτομέρειες',
-    'Mitigation'=>'Μετριασμού',
+    'Mitigation'=>'Μετριασμός',
     'MitigationDate'=>'Ημερομηνία υποβολής μετριασμού',
     'PlanningStrategy'=>'Στρατηγική Σχεδιασμού',
     'CurrentSolution'=>'Τρέχουσα Λύση',
@@ -188,7 +184,7 @@ $lang = array(
     'Review'=>'Αναθεώρηση',
     'NextStep'=>'Το Επόμενο Βήμα',
     'Comments'=>'Σχόλια',
-    'ViewAllReviews'=>'Δείτε Όλα Τα Σχόλια',
+    'ViewAllReviews'=>'Δείτε Όλες Τις Αναθεωρήσεις',
     'ReviewHistory'=>'Αναθεώρηση Της Ιστορίας',
     'Comment'=>'Σχόλιο',
     'ClassicRiskScoring'=>'Κλασικό Βαθμολόγησης Κινδύνου',
@@ -271,7 +267,7 @@ $lang = array(
     'IntegrityImpact'=>'Ακεραιότητα Επιπτώσεις',
     'AvailabilityImpact'=>'Διαθεσιμότητα Επιπτώσεις',
     'TemporalScoreMetrics'=>'Χρονική Βαθμολογία Μετρήσεις',
-    'Exploitability'=>'Αποθέματα',
+    'Exploitability'=>'Εκμεταλλευσιμότητα',
     'RemediationLevel'=>'Αποκατάσταση Επίπεδο',
     'ReportConfidence'=>'Έκθεση Εμπιστοσύνη',
     'EnvironmentalScoreMetrics'=>'Περιβαλλοντικές Μετρήσεις Βαθμολογία',
@@ -357,8 +353,6 @@ $lang = array(
     'Activate'=>'Ενεργοποίηση',
     'DeleteRisks'=>'Διαγραφή Κινδύνους',
     'DeletedRisksCannotBeRecovered'=>'Διαγράφονται Οι Κίνδυνοι Δεν Μπορούν Να Ανακτηθούν',
-    'DeletedAssessmentsCannotBeRecovered'=>'Δεν είναι δυνατή η ανάκτηση των διαγραμμένων αξιολογήσεων',
-    'TheAssessmentsWereDeletedSuccessfully'=>'Η/Οι αξιολόγηση/ες διαγράφηκαν με επιτυχία.',
     'RisksDeletedSuccessfully'=>'Κινδύνου(s) Διαγραφεί Επιτυχώς',
     'ThereWasAProblemDeletingTheRisk'=>'Υπήρξε ένα Πρόβλημα με τη Διαγραφή του Κινδύνου(s)',
     'Activated'=>'ΕΝΕΡΓΟΠΟΙΕΊΤΑΙ',
@@ -417,11 +411,6 @@ $lang = array(
     'EditAssets'=>'Επεξεργασία Στοιχείων Του Ενεργητικού',
     'AutomaticAssetValuation'=>'Αυτόματη Αποτίμηση Περιουσιακών Στοιχείων',
     'ManualAssetValuation'=>'Εγχειρίδιο Αποτίμηση Περιουσιακών Στοιχείων',
-    'AssetValuationMode'=>'Λειτουργία Αποτίμησης Περιουσιακών Στοιχείων',
-    'AutomaticLinearRange'=>'Αυτόματο γραμμικό εύρος',
-    'AutomaticExponentialRange'=>'Αυτόματο Εκθετικό Εύρος',
-    'ManualValuation'=>'Εγχειρίδιο',
-    'AssetValuationMinMustBeNonNegative'=>'Η ελάχιστη αποτίμηση περιουσιακών στοιχείων πρέπει να είναι μηδέν ή μεγαλύτερη για το Αυτόματο Εκθετικό Εύρος.',
     'MinimumValue'=>'Ελάχιστη Τιμή',
     'MaximumValue'=>'Μέγιστη Τιμή',
     'ValueRange'=>'Το Εύρος Τιμής',
@@ -448,10 +437,10 @@ $lang = array(
     'DeleteSourceNamed'=>'Διαγραφή πηγή με το όνομα',
     'CheckAllAssessments'=>'Ελέγξτε Όλες Τις Αξιολογήσεις',
     'AllowAccessToAssessmentsMenu'=>'Επιτρέπουν την Πρόσβαση σε "Εκτιμήσεις" Μενού',
-    'Assessments'=>'Αξιολογήσεων',
+    'Assessments'=>'Αξιολογήσεις',
     'PendingRisks'=>'Εν Αναμονή Των Κινδύνων',
     'CreateAssessment'=>'Δημιουργήστε Αξιολόγηση',
-    'EditAssessment'=>'Edit Αξιολόγηση',
+    'EditAssessment'=>'Επεξεργασία Αξιολόγησης',
     'Overview'=>'Επισκόπηση',
     'OpenVsClosed'=>'Ανοιχτό vs κλειστού',
     'MitigatedVsUnmitigated'=>'Μετριαστεί vs Ολοκληρωτική',
@@ -466,7 +455,7 @@ $lang = array(
     'Host'=>'Υποδοχής',
     'SMTPAuthentication'=>'Έλεγχος ταυτότητας SMTP',
     'Encryption'=>'Κρυπτογράφηση',
-    'Port'=>'Λιμάνι',
+    'Port'=>'Θύρα',
     'Next'=>'Την επόμενη',
     'NewAssessmentQuestion'=>'Νέα Αξιολόγηση Ερώτηση',
     'Question'=>'Ερώτηση',
@@ -485,9 +474,9 @@ $lang = array(
     'Key'=>'Κλειδί',
     'GoToSSOLoginPage'=>'Πηγαίνετε στη σελίδα σύνδεσης SSO',
     'APIKey'=>'Κλειδί API',
-    'GenerateAPIKey'=>'Δημιουργήσει API κλειδί',
+    'GenerateAPIKey'=>'Δημιουργήστε κλειδί API',
     'RotateAPIKey'=>'Περιστρέψτε το κλειδί API',
-    'InvalidateAPIKey'=>'Ακυρώνει το κλειδί API',
+    'InvalidateAPIKey'=>'Ακυρώστε το κλειδί API',
     'Deactivate'=>'Απενεργοποίηση',
     'ImportExportExtra'=>'Εισαγωγών-εξαγωγών επιπλέον',
     'SaveDetails'=>'Αποθηκεύστε τα στοιχεία',
@@ -495,7 +484,7 @@ $lang = array(
     'SaveMitigation'=>'Αποθήκευση μετριασμού',
     'Cancel'=>'Άκυρο',
     'SubmitReview'=>'Υποβάλετε κριτική',
-    'UnassignedRisks'=>'Μη αντιστοιχίσιμος κινδύνους',
+    'UnassignedRisks'=>'Μη ανατεθειμένοι κίνδυνοι',
     'DisableRegistrationNotice'=>'Απενεργοποίηση εγγραφή ειδοποίηση',
     'UserPolicy'=>'Η πολιτική χρήστη',
     'UseCaseSensitiveValidationOfUsername'=>'Χρήση πεζών επικύρωση του ονόματος χρήστη',
@@ -510,7 +499,7 @@ $lang = array(
     'attempts' => 'προσπάθειες',
     'minutes' => 'λεπτά',
     'minute' => 'λεπτό',
-    'AccountLockedOut' => 'Λογαριασμό κλειδωμένος',
+    'AccountLockedOut' => 'Λογαριασμός κλειδωμένος',
     'AccountLockoutPolicy' => 'Πολιτική κλειδώματος λογαριασμού',
     'ImportExportIsDeactivated' => 'Εισαγωγών-εξαγωγών είναι απενεργοποιημένη',
     'PurchaseTheExtra' => 'Αγοράστε την επιπλέον',
@@ -553,7 +542,7 @@ $lang = array(
     'AllOpenRisksByTeamByLevel' => 'Όλα τα ανοιχτά τους κινδύνους από την ομάδα από το επίπεδο κινδύνου',
     'Unknown' => 'Άγνωστο',
     'AllOwners' =>'Όλοι οι ιδιοκτήτες',
-    'AllOwnersManagers' => 'All ιδιοκτητη διευθυντές',
+    'AllOwnersManagers' => 'Όλοι οι διαχειριστές ιδιοκτήτη',
     'AddNewReviewNamed' => 'Προσθήκη νέου σχολίου που ονομάζεται',
     'DeleteCurrentReviewNamed' => 'Διαγραφή τρέχουσας αναθεώρησης που ονομάζεται',
     'AddNewNextstepNamed' => 'Προσθέστε νέο το επόμενο βήμα',
@@ -563,14 +552,14 @@ $lang = array(
     'PasswordNoLongerUse' => 'Το ιστορικό κωδικών πρόσβασης είναι ενεργοποιημένο και αυτός ο κωδικός πρόσβασης έχει ήδη χρησιμοποιηθεί. Δοκιμάστε έναν άλλο κωδικό πρόσβασης.',
     'RememberTheLast' => 'Θυμηθείτε την τελευταία',
     'Passwords' => 'Κωδικοί πρόσβασης',
-    'NoOwner' => 'Δεν μπορεί ο ιδιοκτήτης',
+    'NoOwner' => 'Χωρίς ιδιοκτήτη',
     'NoOwnersManager' => 'Χωρίς διαχείριση ιδιοκτητών',
     'RiskAverageOverTime' => 'Κινδύνου κατά μέσο όρο την πάροδο του χρόνου',
     'AverageRiskScore' => 'Μέση βαθμολογία κινδύνου',
     'Year' => 'Έτος',
     'Month' => 'Μήνας',
     'Day' => 'Ημέρα',
-    'FilterByAffectedAsset' => 'Φιλτράρετε με βάση σχετικού περιουσιακού στοιχείου',
+    'FilterByAffectedAsset' => 'Φιλτράρετε με βάση επηρεαζόμενου περιουσιακού στοιχείου',
     'RisksOpened' => 'Άνοιξαν κινδύνους',
     'RisksClosed' => 'Κινδύνους που έκλεισε',
     'HealthCheck' => 'Έλεγχος υγείας',
@@ -603,7 +592,6 @@ $lang = array(
     'SpecifiedTime' => 'Καθορισμένο χρόνο',
     'Governance' => 'Διακυβέρνηση',
     'Compliance' => 'Συμμόρφωση',
-    'CrossDomain' => 'Διατομέας',
     'AllowAccessToRiskManagementMenu' => 'Επιτρέπουν την πρόσβαση στο μενού «Διαχείριση κινδύνου»',
     'CheckAllGovernance' => 'Ελέγξτε όλα τα διακυβέρνηση',
     'CheckAllCompliance' => 'Ελέγξτε όλα τα συμμόρφωση',
@@ -617,11 +605,11 @@ $lang = array(
     'Controls' => 'Έλεγχοι',
     'NewControl' => 'Νέο στοιχείο ελέγχου',
     'EditControl' => 'Επεξεργασία στοιχείου ελέγχου',
-    'CanceledProjects' => 'Ακυρωμένες έργα',
+    'CanceledProjects' => 'Ακυρωμένα έργα',
     'Priority' => 'Προτεραιότητα',
     'ProjectName' => 'Όνομα έργου',
-    'ActiveFrameworks' => 'Ενεργό πλαισίων',
-    'InactiveFrameworks' => 'Ανενεργό πλαισίων',
+    'ActiveFrameworks' => 'Ενεργά πλαίσια',
+    'InactiveFrameworks' => 'Ανενεργά πλαίσια',
     'NewProjectName' => 'Νέο όνομα έργου',
     'NewFrameworkName' => 'Νέο πλαίσιο όνομα',
     'NewFrameworkDescription' => 'Νέο πλαίσιο Περιγραφή',
@@ -653,7 +641,7 @@ $lang = array(
     'SupplementalGuidance' => 'Συμπληρωματικές οδηγίες',
     'ControlFramework' => 'Πλαίσιο ελέγχου',
     'ControlFrameworks' => 'Πλαίσια ελέγχου',
-    'ControlOwner' => 'Έλεγχο ιδιοκτήτη',
+    'ControlOwner' => 'Υπεύθυνος ελέγχου',
     'ControlClass' => 'Κλάση του στοιχείου ελέγχου',
     'ControlPhase' => 'Φάση ελέγχου',
     'ControlPriority' => 'Προτεραιότητα ελέγχου',
@@ -669,7 +657,7 @@ $lang = array(
     'AddNewControlPriorityNamed' => 'Προσθήκη νέας προτεραιότητας ελέγχου που ονομάζεται',
     'DeleteCurrentControlPriorityNamed' => 'Διαγράψτε την τρέχουσα προτεραιότητα ελέγχου που ονομάζεται',
     'AddNewControlFamilyNamed' => 'Προσθέστε νέα οικογένεια ελέγχου που ονομάζεται',
-    'DeleteCurrentControlFamilyNamed' => 'Διαγράψτε την τρέχουσα επώνυμο ελέγχου',
+    'DeleteCurrentControlFamilyNamed' => 'Διαγράψτε την τρέχουσα οικογένεια ελέγχου που ονομάζεται',
     'MinutesAssessmentsAreValid' => 'Λεπτά εκτιμήσεις ισχύουν',
     'ShowAvailableAssetsOnAssessments' => 'Εμφάνιση διαθέσιμων περιουσιακών στοιχείων στις αξιολογήσεις',
     'AssessmentSettingsUpdatedSuccessfully' => 'Ρυθμίσεις αξιολόγησης ενημερώθηκαν με επιτυχία.',
@@ -683,7 +671,7 @@ $lang = array(
             <p>Αυτό είναι ένα αυτοματοποιημένο μήνυμα και οι απαντήσεις θα αγνοηθούν ή θα απορριφθούν.</p>
         </body></html>',
     'FilterByText' => 'Φιλτράρετε βάσει κειμένου',
-    'SelectMitigatingControls' => 'Επιλέξτε ελαφρυντικές μαρτύρων',
+    'SelectMitigatingControls' => 'Επιλέξτε μέτρα ελέγχου μετριασμού',
     'MitigationControls' => 'Μετριασμού τους ελέγχους',
     'EnableTLSEncryptionAutomaticallyIfAServerSupportsIt' => 'Ενεργοποιήσετε την κρυπτογράφηση TLS αυτόματα αν ένας διακομιστής υποστηρίζει',
     'AssessmentContacts' => 'Εκτίμηση επαφών',
@@ -735,7 +723,7 @@ $lang = array(
     'NextAuditDate'=>'Επόμενη ημερομηνία ελέγχου',
     'DesiredFrequency'=>'Επιθυμητή συχνότητα',
     'Framework'=>'Πλαίσιο',
-    'Control'=>'Ελέγχου',
+    'Control'=>'Έλεγχος',
     'Test'=>'Δοκιμή',
     'Active'=>'Ενεργό',
     'Inactive'=>'Ανενεργό',
@@ -763,7 +751,7 @@ $lang = array(
     'NoPermissionForQuestionnaire'=>'Δεν έχετε δικαίωμα αυτού του ερωτηματολογίου.',
     'NoPermissionForTemplate'=>'Δεν έχετε δικαίωμα αυτό το πρότυπο.',
     'RunNow'=>'Εκτέλεση τώρα',
-    'ActiveAudits'=>'Active έλεγχοι',
+    'ActiveAudits'=>'Ενεργοί έλεγχοι',
     'Questionnaire'=>'Ερωτηματολόγιο',
     'Draft'=>'Σχέδιο',
     'Complete'=>'Ολοκλήρωση',
@@ -779,7 +767,6 @@ $lang = array(
     'TestDate'=>'Ημερομηνία εξέτασης',
     'Attachment'=>'Συνημμένο',
     'InvalidParams'=>'Μη έγκυρη params',
-    'ClearForm'=>'Καθαρισμός φόρμας',
     'QuestionnaireDraftSuccess'=>'Οι απαντήσεις σας αποθηκεύτηκαν με επιτυχία.',
     'QuestionnaireCompletedSuccess'=>'Ολοκληρώσατε με επιτυχία αυτό το ερωτηματολόγιο.',
     'EmailTemplateCompleteQuestionnaire' => '
@@ -822,7 +809,6 @@ $lang = array(
     'HasFile' => 'Έχει αρχείο',
     'ClosedAuditStatus' => 'Κατάσταση ελέγχου κλειστού',
     'ClosedAuditStatusIsRequired' => 'Κλειστή κατάσταση ελέγχου απαιτείται',
-    'Preferences' => 'Προτιμήσεις',
     'DefaultLanguage' => 'Προεπιλεγμένη γλώσσα',
     'DefaultTimezone' => 'Προεπιλεγμένη ζώνη ώρας',
     'UserSessions' => 'Περίοδοι λειτουργίας χρήστη',
@@ -847,15 +833,13 @@ $lang = array(
     'NotifyOnRiskReview' => 'Κοινοποιεί στον κίνδυνο σχολίων',
     'NotifyOnRiskClose' => 'Ειδοποιεί σχετικά με κίνδυνο κοντά',
     'NotifyOnRiskComment' => 'Κοινοποιεί στον κίνδυνο σχόλιο',
-    'NotifySubmitter' => 'Κοινοποιούν Submitter',
-    'NotifyOwner' => 'Κοινοποιούν ιδιοκτήτη',
+    'NotifySubmitter' => 'Ειδοποίηση υποβάλλοντος',
+    'NotifyOwner' => 'Ειδοποίηση ιδιοκτήτη',
     'NotifyOwnersManager' => 'Ενημερώσετε τον διευθυντή του ιδιοκτήτη',
-    'NotifyTeam' => 'Ενημερώσετε την ομάδα',
+    'NotifyTeam' => 'Ειδοποίηση ομάδας',
     'NotifyAdditionalStakeholders' => 'Ενημερώνει τους ενδιαφερόμενους πρόσθετα',
-    'SpecificUser' => 'Συγκεκριμένος χρήστης',
-    'SpecificUsers' => 'Συγκεκριμένοι χρήστες',
-    'NotifyReviewers' => 'Κοινοποιούν οι αναθεωρητές',
-    'NotifyTester' => 'Ειδοποίηση Tester',
+    'NotifyReviewers' => 'Ειδοποίηση αναθεωρητών',
+    'NotifyTester' => 'Ειδοποίηση ελεγκτή',
     'SimpleRiskURL' => 'Διεύθυνση URL SimpleRisk',
     'Period' => 'Περίοδος',
     'PlaceTheFollowingInYourCrontabToRunAutomatically' => 'Τοποθετήστε τα ακόλουθα στο crontab σας ώστε να εκτελείται αυτόματα',
@@ -867,7 +851,7 @@ $lang = array(
     'DaysAfterTheAuditIsDue' => 'ημέρες μετά τον έλεγχο οφείλεται',
     'SendAnEmailWhenTheAuditIsDue' => 'Στείλτε ένα μήνυμα ηλεκτρονικού ταχυδρομείου όταν ο έλεγχος οφείλεται',
     'PendingRiskDeleted' => 'Ο κίνδυνος αναμονή διαγράφηκε επιτυχώς',
-    'RunAt' => 'Τρέχει σε',
+    'RunAt' => 'Εκτέλεση στις',
     'ImportControls' => 'Στοιχεία ελέγχου εισαγωγής',
     'RiskIDNoEXitFailedToUpdate' => 'Το Αναγνωριστικό κινδύνου $risk_id δεν υπάρχει, επομένως δεν έχει εισαχθεί ή ενημερωθεί',
     'CreatedRisksFromPendingRisks' => 'Δημιούργησε όλους τους κινδύνους από τους εκκρεμείς κινδύνους.',
@@ -884,7 +868,6 @@ $lang = array(
     'Edit' => 'Επεξεργασία',
     'Clone' => 'Κλώνος',
     'SubQuestions' => 'Υπο ΕΡΩΤΗΣΕΙΣ',
-    'Ordering' => 'Παραγγελία',
     'EncryptionKeyNoExist' => 'Το αρχείο κλειδιού κρυπτογράφησης δεν υπάρχει. Παρακαλώ επικοινωνήστε με το admin.',
     'ResidualRiskScore' => 'Υπολειμματική Βαθμολογία κινδύνου',
     'DefaultInitiatedAuditStatus' => 'Προεπιλεγμένη κατάσταση ελέγχου που ξεκίνησε',
@@ -910,7 +893,7 @@ $lang = array(
     'GoToSSOLogin' => 'Εμφάνιση της σύνδεσης "Μετάβαση στη σελίδα σύνδεσης SSO" στην κύρια σελίδα σύνδεσης',
     'SSOLoginDisabled' => 'Η σύνδεση SSO απενεργοποιήθηκε, επομένως δεν μπορείτε να χρησιμοποιήσετε αυτόν τον έλεγχο ταυτότητας.',
     'QuestionID' => 'Ερώτηση ID',
-    'QuestionOrdering' => 'Ερώτηση παραγγελία',
+    'QuestionOrdering' => 'Σειρά ερωτήσεων',
     'DefaultUserRole' => 'Προεπιλεγμένος ρόλος χρήστη',
     'AbleToAcceptMitigations' => 'Σε θέση να αποδεχθεί μετριασμούς',
     'AcceptMitigation' => 'Αποδοχή μετριασμού',
@@ -1023,8 +1006,6 @@ $lang = array(
     'YouNeedToUpgradeYourSimpleRiskSubscription' => 'Πρέπει να αναβαθμίσετε τη συνδρομή SimpleRisk σας για να επιτρέψετε τη χρήση αυτού του πρόσθετου.',
     'AutomaticallyAddNewlyAuthenticatedUsersWithDefaultRole' => 'Αυτόματη προσθήκη πρόσφατα ελεγμένων χρηστών με τον προεπιλεγμένο ρόλο',
     'Disabled' => 'Απενεργοποιημένη',
-    'Help' => 'Βοήθεια',
-    'Profile' => 'Προφίλ',
     'AbleToCommentRiskManagement' => 'Σε θέση να σχολιάσει τη διαχείριση κινδύνων',
     'AbleToCommentCompliance' => 'Σε θέση να σχολιάσει τη συμμόρφωση',
     'LanguageUpdated' => 'Η γλώσσα σας ενημερώθηκε με επιτυχία.',
@@ -1039,11 +1020,11 @@ $lang = array(
     'IPFormatNotRecognized' => 'IP δεν ήταν σε αναγνωρίσιμη μορφή.',
     'Open' => 'Ανοίξετε',
     'Mitigated' => 'Μετριάζεται',
-    'Unmitigated' => 'Ολοκληρωτική',
+    'Unmitigated' => 'Μη μετριασμένος',
     'Reviewed' => 'Αξιολόγηση',
-    'Unreviewed' => 'Αναθεωρηθεί',
+    'Unreviewed' => 'Μη αναθεωρημένο',
     'NewRiskInstruction' => 'Συμπληρώστε την παραπάνω φόρμα για να τεκμηριώσετε έναν κίνδυνο για εξέταση στη διαδικασία διαχείρισης κινδύνου',
-    'New' => 'Nwe',
+    'New' => 'Νέο',
     'ManagementReviewed' => 'Mgmt κριτική',
     'Reopened' => 'Ξανανοίξει',
     'Treated' => 'Αντιμετωπίζονται',
@@ -1067,7 +1048,6 @@ $lang = array(
     'FailedToUploadFile' => 'Απέτυχε η αποστολή του αρχείου',
     'NewPasswordDoesNotMatchPolicy' => 'Ο νέος κωδικός πρόσβασης που καθορίστηκε δεν εμμένει στην πολιτική ρυθμισμένων κωδικών πρόσβασης.',
     'RiskLevels' => 'Επίπεδα κινδύνου',
-    'Scoring' => 'Βαθμολογία',
     'ClassicRiskFormula' => 'Κλασικός τύπος κινδύνου',
     'ContributingRiskFormula' => 'ΣυμΒάλλοντας τύπος κινδύνου',
     'ImpactHasMaxChars' => 'Ο αντίκτυπος θα πρέπει να έχει Max $length Χαρακτήρες.',
@@ -1098,10 +1078,8 @@ $lang = array(
     'MapSuccessTeamAndGroup' => 'Με επιτυχία αντιστοιχισμένη ομάδα και ομάδα LDAP.',
     'MappingTeamAndLDAPGroupRequired' => 'Απαιτείται ομάδα και ομάδα LDAP για αντιστοίχιση.',
     'ExistingMappings' => 'Υπάρχουσες αντιστοιχίσεις',
-    'TeamGroup' => '(Ομάδα ομάδας <-->)</-->',
+    'TeamGroup' => '(Ομάδα <--> Γκρουπ)',
     'ExistingMappingsRequired' => 'Πρέπει να επιλεγούν οι υπάρχουσες αντιστοιχίσεις.',
-    'EncryptionBackupFileExists' => 'Ως μέρος της διαδικασίας κρυπτογράφησης, έχει δημιουργηθεί ένα μη κρυπτογραφημένο αντίγραφο ασφαλείας της βάσης δεδομένων SimpleRisk.  Μόλις επαληθεύσετε ότι όλα έχουν κρυπτογραφηθεί σωστά, μετακινήστε το σε μια ασφαλή τοποθεσία ή κάντε κλικ στο κουμπί για να το διαγράψετε.',
-    'BackupLocation' => 'Θέση αντιγράφου ασφαλείας',
     'FileDeletedSuccessfully' => 'Το αρχείο έχει διαγραφεί με επιτυχία.',
     'ErrorDeletingFile' => 'Παρουσιάστηκε σφάλμα κατά τη διαγραφή του αρχείου.  Ελέγξτε τα δικαιώματα αρχείων και προσπαθήστε ξανά.',
     'MapToLDAPGroup' => 'Αντιστοίχιση σε ομάδα LDAP',
@@ -1139,7 +1117,7 @@ $lang = array(
     'AssetWasDiscardedSuccessfully' => 'Το πάγιο απορρίφθηκε με επιτυχία.',
     'ThereWasAProblemDiscardingTheAsset' => 'Υπήρξε ένα πρόβλημα απορρίπτοντας το περιουσιακό στοιχείο.',
     'AuditTimeline' => 'Χρονοδιάγραμμα ελέγχου',
-    'AssociatedFrameworks' => 'ΣυνΑφών πλαισίων',
+    'AssociatedFrameworks' => 'Συσχετισμένα πλαίσια',
     'Verify' => 'Επαλήθευση',
     'Discard' => 'Απόρριψη',
     'VerifiedAssets' => 'Επαληθευμένα περιουσιακά στοιχεία',
@@ -1155,7 +1133,6 @@ $lang = array(
     'Unverified' => 'Ανεπιβεβαίωτος',
     'ExportAssets' => 'Εξαγωγικοί πόροι',
     'ExportToCSVByClickingBelow' => 'Εξαγωγή σε αρχείο CSV κάνοντας κλικ παρακάτω',
-    'RevertToUnencryptedBackup' => 'Επαναφορά σε μη κρυπτογραφημένο αντίγραφο ασφαλείας',
     'SuccessfullyRevertedToUnencryptedBackup' => 'Επιτυχής επαναφορά σε μη κρυπτογραφημένο αντίγραφο ασφαλείας',
     'FailedToRevertToUnencryptedBackup' => 'Απέτυχε η επαναφορά σε μη κρυπτογραφημένα αντίγραφα ασφαλείας. Ελέγξτε τα αρχεία καταγραφής του διακομιστή για περισσότερες πληροφορίες.',
     'AddNewItemNamed' => 'Προσθήκη νέου στοιχείου με το όνομα',
@@ -1212,7 +1189,7 @@ $lang = array(
     'NextReviewMassUpdateSuccess' => 'Ενημερώθηκε με επιτυχία {$mass_fixed} ημερομηνίες αναθεώρησης',
     'NextReviewTypeUpdateSuccess' => 'Επιτυχώς διορθώθηκε όλα τα θέματα ημερομηνίας αναθεώρησης!',
     'NextReviewTypeUpdateFailed' => 'Οι ημερομηνίες αναθεώρησης επιδιορθώνονται, αλλά απέτυχε η αλλαγή της στήλης \' next_review \' σε τύπο ημερομηνίας!',
-    'SimpleriskBaseUrl' => 'ΔΙΕΎΘΥΝΣΗ URL βασικής βάσης',
+    'SimpleriskBaseUrl' => 'Βασικό URL SimpleRisk',
     'PassworResetEmailSent' => 'Εάν ο χρήστης υπάρχει στο σύστημα, τότε ένα μήνυμα ηλεκτρονικού ταχυδρομείου επαναφοράς κωδικού πρόσβασης θα πρέπει να είναι στο δρόμο του.',
     'PassworResetRequestFailed' => 'Παρουσιάστηκε πρόβλημα με την αίτηση επαναφοράς του κωδικού πρόσβασής σας. Σε παρακαλώ, προσπάθησε ξανά.',
     'PassworResetSuccessfulRedirectIn5Secs' => 'Ο κωδικός πρόσβασής σας έχει γίνει επαναφορά με επιτυχία. Θα μεταφερθείτε στη σελίδα σύνδεσης σε 5 δευτερόλεπτα.',
@@ -1291,10 +1268,9 @@ $lang = array(
     'UnapprovedExceptionName' => 'Όνομα πολιτικής/ελέγχου/εξαίρεσης',
     'Ok' => 'Ok',
     'Close' => 'Κλείσετε',
-    'Approve' => 'Εγκρίνει',
+    'Approve' => 'Έγκριση',
     'ExceptionType' => 'Τύπος εξαίρεσης',
     'PolicyName' => 'Όνομα πολιτικής',
-    'ControlName' => 'Όνομα στοιχείου ελέγχου',
     'AreYouSureYouWantToDeleteTheseExceptions' => 'Είστε βέβαιοι ότι θέλετε να διαγράψετε αυτές τις εξαιρέσεις;',
     'ExceptionsWereDeletedSuccessfully_policy' => 'Οι εξαιρέσεις της πολιτικής διαγράφηκαν με επιτυχία.',
     'ExceptionsWereDeletedSuccessfully_control' => 'Οι εξαιρέσεις του ελέγχου διαγράφηκαν με επιτυχία.',
@@ -1321,7 +1297,6 @@ $lang = array(
     'AssetsWereVerifiedSuccessfully'=>'Τα περιουσιακά στοιχεία επαληθεύτηκαν επιτυχώς.',
     'ThereWasAProblemVerifyingTheAssets'=>'Παρουσιάστηκε πρόβλημα κατά την επαλήθευση των στοιχείων.',
     'ThereWasAProblemWithAddingTheProject' => 'Παρουσιάστηκε πρόβλημα με την προσθήκη του έργου',
-    'ProjectName' => 'Όνομα έργου',
     'SuccessSetProject' => 'Επιτυχής προσθήκη κινδύνου για το έργο.',
     'SuccessCreateProject' => 'Δημιουργήθηκε με επιτυχία νέο έργο.',
     'ReviewProjectSelectionInstructions' => 'Επιλέξτε ένα έργο ή πληκτρολογήστε το όνομα ενός νέου.',
@@ -1339,7 +1314,7 @@ $lang = array(
     'YouCantDownloadBecauseImportExportExtraDisabled' => 'Δεν μπορείτε να κάνετε λήψη επειδή η εισαγωγή/εξαγωγή Extra είναι απενεργοποιημένη.',
     'AuditTrailReport' => 'Αναφορά διαδρομής ελέγχου',
     'QuestionnaireAuditTrailReport' => 'Αναφορά ίχνους ελέγχου ερωτηματολογίου',
-    'ExeptionAuditTrailReport' => 'Αναφορά διαδρομής ελέγχου',
+    'ExeptionAuditTrailReport' => 'Αναφορά διαδρομής ελέγχου εξαιρέσεων',
     'ManageAssetGroups' => 'Διαχείριση ομάδων παγίων',
     'AssetGroups' => 'Ομάδες περιουσιακών στοιχείων',
     'AssetGroupName' => 'Όνομα ομάδας παγίων',
@@ -1370,7 +1345,6 @@ $lang = array(
     'UpdateAssetGroupTooltip' => 'Ενημέρωση ομάδας παγίων',
     'DeleteAssetGroupTooltip' => 'Διαγραφή ομάδας παγίων',
     'RemoveAssetTooltip' => 'Κατάργηση περιουσιακού στοιχείου από ομάδα παγίων',
-    'ControlShortNameFieldRequired' => 'Το πεδίο Έλεγχος σύντομου ονόματος απαιτείται.',
     'AffectedAssetsWidgetPlaceholder' => 'Επιλέξτε μια ομάδα παγίων ή παγίων',
     'AffectedAssetsWidgetNoDropdownPlaceholder' => 'Προσθήκη ονόματος περιουσιακού στοιχείου',
     'AffectedAssetsWidgetInstructions' => 'Επιλέξτε μια ομάδα παγίων ή παγίων. Μπορείτε να δημιουργήσετε ένα νέο πάγιο προσθέτοντας το όνομά του στη λίστα.',
@@ -1387,14 +1361,14 @@ $lang = array(
     'GroupMaximumQuantitativeLoss' => 'Μέγιστη ποσοτική ζημία του ομίλου',
     'AssetGroupRisk' => 'Κίνδυνος ομάδας περιουσιακών στοιχείων',
     'NonMitigationNotificationEamilDescription' => 'Λαμβάνετε αυτό το μήνυμα επειδή είστε ο υποβάλλων, ο ιδιοκτήτης, ο διαχειριστής του ιδιοκτήτη, ανήκετε στην ομάδα ή είστε ένας πρόσθετος ενδιαφερόμενος που σχετίζεται με τους ακόλουθους κινδύνους χωρίς μετριασμό.  Θα συνεχίσετε να λαμβάνετε υπενθυμίσεις ηλεκτρονικού ταχυδρομείου μέχρι να προγραμματιστεί ένα μετριασμό.',
-    'Manager' => 'Διαχείριση',
+    'Manager' => 'Διαχειριστής',
     'ErrorAssetAlreadyExistsAsVerified' => 'Το περιουσιακό στοιχείο "{$asset_name}"υπάρχει ήδη, αλλά δεν έχει επαληθευτεί ακόμα. Ελέγξτε τη σελίδα διαχείρισης περιουσιακών στοιχείων ή επικοινωνήστε με έναν διαχειριστή.',
     'NoPermissionForAssetAssetGroupList' => 'Για να δείτε τη λίστα των διαθέσιμων παγίων, χρειάζεστε δικαιώματα για τη διαχείριση κινδύνων, περιουσιακών στοιχείων ή αξιολογήσεων.',
     'NoPermissionForClosingRisks'=>'Δεν έχετε την άδεια να κλείσετε τους κινδύνους.',
     'QuestionnaireHasNoTemplates' => 'Δεν είναι δυνατή η αποστολή αυτού του ερωτηματολογίου, καθώς δεν έχει συσχετισμένα πρότυπα',
     'TestAuditWasDeletedSuccessfully' => 'Διαγράφηκε επιτυχώς ο έλεγχος δοκιμών.',
     'TestAuditDeleteAuditTrailMessage' => 'Έλεγχος ελέγχου (Αναγνωριστικό {$test_audit_id}) διαγράφηκε από το χρήστη "{$user}".',
-    'CacheClearWarning' => 'Συχνά οι νέες κυκλοφορίες του Simbissna θα παρέχουν ενημερώσεις σε φύλλα στυλ, εικόνες και JavaScript που ενδέχεται να έχουν αποθηκευτεί προσωρινά από το πρόγραμμα περιήγησής σας στο Web.  Απενεργοποιήστε τη μνήμη cache του browser σας, για να διασφαλίσετε ότι το Simdddeek φαίνεται ότι θα πρέπει μετά την αναβάθμιση.',
+    'CacheClearWarning' => 'Συχνά οι νέες κυκλοφορίες του SimpleRisk θα παρέχουν ενημερώσεις σε φύλλα στυλ, εικόνες και JavaScript που ενδέχεται να έχουν αποθηκευτεί προσωρινά από το πρόγραμμα περιήγησής σας στο Web.  Εκκαθαρίστε την προσωρινή μνήμη του προγράμματος περιήγησής σας, για να διασφαλίσετε ότι το SimpleRisk φαίνεται ότι θα πρέπει μετά την αναβάθμιση.',
     'TestAddHeader' => 'Προσθήκη νέας δοκιμής',
     'TestEditHeader' => 'Δοκιμή ενημέρωσης',
     'ControlEditHeader' => 'Ενημέρωση στοιχείου ελέγχου',
@@ -1407,7 +1381,7 @@ $lang = array(
     'ItemUpdateAuditLogRemoved' => 'Καταργήθηκε "{$items_removed}"',
     'ItemUpdateAuditLogAdded' => 'Προστέθηκε "{$items_added}"',
     'TeamType_test' => 'Δοκιμή',
-    'TeamType_audit' => 'Ελέγχου',
+    'TeamType_audit' => 'Έλεγχος',
     'TestCreatedAuditLogMessage' => 'Δοκιμή{$test_name}"(ID: {$test_id}) δημιουργήθηκε από το χρήστη "{$user}".',
     'TestUpdatedAuditLogMessage' => 'Δοκιμή{$test_name}"(ID: {$test_id}) Ενημερώθηκε από το χρήστη "{$user}".',
     'TestDeletedAuditLogMessage' => 'Δοκιμή{$test_name}"(ID: {$test_id}) διαγράφηκε από το χρήστη "{$user}".',
@@ -1434,7 +1408,7 @@ $lang = array(
     'AdvancedSearch' => 'Σύνθετη αναζήτηση',
     'AdvancedSearchExtra' => 'Σύνθετη αναζήτηση επιπλέον',
     'ExtraToggledOn' => 'Το έξτρα "{$extra_name}"είχε γίνει εναλλαγή από το χρήστη"{$user}".',
-    'ExtraToggledOff' => 'Το έξτρα "{$extra_name}"είχε γίνει εναλλαγή από το χρήστη"{$user}".',
+    'ExtraToggledOff' => 'Το έξτρα "{$extra_name}" απενεργοποιήθηκε από τον χρήστη "{$user}".',
     'RiskSearch' => 'Αναζήτηση κινδύνου',
     'SearchResults' => 'Αποτελέσματα αναζήτησης',
     'NoSearchResults' => 'Δεν βρέθηκαν αποτελέσματα για το ερώτημά σας.',
@@ -1442,7 +1416,7 @@ $lang = array(
     'ErrorInSearchQuery' => 'Σφάλμα στο ερώτημα αναζήτησης',
     'ManagerAttribute' => 'ΧΑΡΑΚΤΗΡΙΣΤΙ ΜΑΝΑΤΖΕΡ',
     'AutomaticallyAddNewUserForManagerIfTheyNoExist' => 'Αυτόματη προσθήκη νέου λογαριασμού χρήστη για ένα διαχειριστή, εάν δεν υπάρχουν',
-    'UPGRADECOMPLETED' => 'ΑΝΑΒΑΘΜΙΣΜΈΝΗ ΑΝΑΒΆΘΜΙΣΗ',
+    'UPGRADECOMPLETED' => 'ΑΝΑΒΆΘΜΙΣΗ ΟΛΟΚΛΗΡΏΘΗΚΕ',
     'NotifyPolicyOwner' => 'Ειδοποίηση κατόχου πολιτικής',
     'NotifyApprover' => 'Ειδοποίηση υπεύθυνου έγκρισης',
     'AutomatedNotificationsOfUnReviewedPastdueControlPolicyExceptions' => 'Αυτοματοποιημένες ειδοποιήσεις μη αναθεωρημένων/Παρελθονμένων εξαιρέσεων πολιτικής και ελέγχου',
@@ -1450,7 +1424,7 @@ $lang = array(
     'AutomatedNotificationsOfUnmitigatedRisks' => 'Αυτόματες ειδοποιήσεις για μη μετριασμένους κινδύνους',
     'SelectForAffectedAssets' => 'Επιλογή για επηρεαζόμενα περιουσιακά στοιχεία',
     'SearchForQuestion' => 'Αναζήτηση για ερώτηση',
-    'Required' => 'Απαιτείται',
+    'Required' => 'Απαιτούμενο',
     'ThereAreRequiredFields' => 'Υπάρχουν απαιτούμενα πεδία.',
     'ThisFieldIsRequired' => 'Αυτό το πεδίο είναι υποχρεωτικό.',
     'ThereAreUnexpectedProblems' => 'Υπάρχουν απροσδόκητα προβλήματα.',
@@ -1479,7 +1453,7 @@ $lang = array(
     'UpdateDatabaseMustFollowAppVersion' => 'Η εφαρμογή θα ενημερωθεί και η έκδοση της βάσης δεδομένων πρέπει να ακολουθήσει. Τελευταία έκδοση εφαρμογής: "{$app_version}", Έκδοση βάσης δεδομένων:"{$db_version}"',
     'UpdateDatabaseUpToDate' => 'Η έκδοση της βάσης δεδομένων ταιριάζει με την έκδοση της εφαρμογής, δεν απαιτείται ενημέρωση.',
     'UpdateInstalledExtrasOutOfDate' => 'Extra (s) εκτός ημερομηνίας. Πρέπει να ενημερωθούν τα ακόλουθα επιπλέον (α): "{$extrasToUpdate}"',
-    'UpdateInstalledExtrasUpToDate' => 'Οι κομπάρσοι είναι ενημερωμένοι.',
+    'UpdateInstalledExtrasUpToDate' => 'Τα πρόσθετα είναι ενημερωμένα.',
     'UpdateNoUpdateRequired' => 'Όλα είναι ενημερωμένα. Δεν απαιτείται ενημέρωση.',
     'UpdateExtraInvalidName' => 'Μη έγκυρο επιπλέον όνομα "{$name}".',
     'UpdateExtraNoPermissionForSimpleriskDirectory' => 'Το{$simplerisk_dir}"ο κατάλογος δεν είναι εγγράψιμο από το χρήστη Web.',
@@ -1488,28 +1462,25 @@ $lang = array(
     'UpdateExtrasSuccessful' => 'Οι πρόσθετες παροχές ενημερώθηκαν επιτυχώς.',
     'UpdateExtrasExtraUpdateStarted' => 'Ξεκίνησε την ενημέρωση για επιπλέον "{$extra}".',
     'UpdateExtrasUpdateExtraFailed' => 'Επιπλέον{$extra}"η ενημέρωση απέτυχε, ματαιώνεται η επιπλέον ενημέρωση.',
-    'BackupStart' => 'Ξεκίνησαν οι ενισχύσεις.',
+    'BackupStart' => 'Ξεκίνησε η δημιουργία αντιγράφου ασφαλείας',
     'BackupFailed' => 'Η δημιουργία αντιγράφων ασφαλείας απέτυχε. Επικοινωνήστε με έναν διαχειριστή.',
     'BackupSuccessful' => 'Επιτυχής δημιουργία αντιγράφου ασφαλείας. Η εφαρμογή, η βάση δεδομένων και όλα τα εγκατεστημένα πρόσθετα αντίγραφα ασφαλείας.',
+    'BackupLocation' => 'Θέση αντιγράφου ασφαλείας',
     'BackupCheckingPreRequisites' => 'Έλεγχος δικαιωμάτων, ρύθμιση καταλόγων.',
     'BackupCheckingPreRequisitesDone' => 'Οι έλεγχοι δικαιωμάτων έχουν παρέλθει, οι απαιτούμενες κατάλογοι δημιουργήθηκαν με επιτυχία.',
     'BackupApplicationFiles' => 'Ξεκίνησαν τα αντίγραφα ασφαλείας των αρχείων εφαρμογών.',
     'BackupApplicationFilesDone' => 'Αντίγραφα ασφαλείας των αρχείων εφαρμογών με επιτυχία',
     'BackupDatabase' => 'Ξεκίνησε το αντίγραφο ασφαλείας της βάσης δεδομένων.',
     'BackupDatabaseDone' => 'Η βάση δεδομένων ολοκληρώθηκε με επιτυχία.',
-    'BackupDatabaseFailed' => 'Η δημιουργία αντιγράφων ασφαλείας της βάσης δεδομένων απέτυχε. Ελέγξτε το αρχείο καταγραφής SimpleRisk για λεπτομέρειες.',
-    'WindowsNotSupported' => 'Το SimpleRisk δεν υποστηρίζει πλέον τα Windows από την έκδοση 20260421-001. Μεταβείτε σε έναν διακομιστή που βασίζεται σε Linux.',
-    'WindowsUpgradeHalted' => 'Αυτή η λειτουργία δεν μπορεί να εκτελεστεί σε διακομιστή Windows. Το SimpleRisk δεν υποστηρίζει πλέον τα Windows από την έκδοση 20260421-001. Μεταβείτε σε διακομιστή που βασίζεται σε Linux.',
     'BackupDirectoryNotWriteable' => 'Το{$location}"ο κατάλογος δεν είναι εγγράψιμο από το χρήστη Web.',
     'BackupFailedToCreateDirectories' => 'Δεν είναι δυνατή η δημιουργία της απαιτούμενης δομής καταλόγου στο "{$location}".',
     'AreYouSureYouWantToDeleteSelction' => 'Είστε βέβαιοι ότι θέλετε να διαγράψετε την επιλογή;',
     'FieldIsRequired' => '_XXX_ πεδίο απαιτείται',
     'NoPermissionForAssessments' => 'Δεν έχεις άδεια για αξιολογήσεις.',
-    'MissingOrInvalidTrackingID' => 'Λείπει ή δεν είναι έγκυρο το αναγνωριστικό παρακολούθησης.',
     'Encrypted' => 'Κρυπτογραφημένα',
     'AreYouSureYouWantToApproveThisResult' => 'Είστε βέβαιοι ότι θέλετε να εγκρίνετε αυτό το αποτέλεσμα;',
     'AreYouSureYouWantToRejectThisResult' => 'Είστε βέβαιοι ότι θέλετε να απορρίψετε αυτό το αποτέλεσμα;',
-    'Reject' => 'Απορρίψει',
+    'Reject' => 'Απόρριψη',
     'RejectComment' => 'Απόρριψη σχολίου (προαιρετικό)',
     'QuestionnaireResultApprovedMessage' => 'Αξιολόγηση και έγκριση από {$user} στο {$timestamp}.',
     'QuestionnaireResultApprovedSuccessfully' => 'Το αποτέλεσμα του ερωτηματολογίου εγκρίθηκε επιτυχώς.',
@@ -1535,18 +1506,17 @@ $lang = array(
     'QuestionnaireDraftAuditLog' => 'Ερωτηματολόγιο "{$questionnaire_name}" αποθηκεύτηκε ως πρόχειρο από την επαφή "{$contact_name}".',
     'QuestionnaireResultAuditTrailReport' => 'Αναφορά ίχνους ελέγχου αποτελεσμάτων ερωτηματολογίου',
     'SubTemplate' => 'Δευτερεύον πρότυπο',
-    'MitigationAccepted' => 'Ελαχιστοποίηση μετριασμού',
+    'MitigationAccepted' => 'Αποδοχή μετριασμού',
     'FilterBy' => 'Φιλτράρισμα με',
     'AddNewQuestion' => 'Προσθήκη νέας ερώτησης',
     'ControlAudit' => 'Έλεγχος ελέγχου',
     'AssociatedControls' => 'Συσχετισμένα στοιχεία ελέγχου',
-    'AssociatedFrameworks' => 'ΣυνΑφών πλαισίων',
     'Analysis' => 'Ανάλυση',
     'TotalNumber' => 'Συνολικός αριθμός',
     'CumulativeScore' => 'Σωρευτική Βαθμολογία',
     'AverageScore' => 'Μέση Βαθμολογία',
-    'AddedRisks' => 'Πρόσθετες κίνδυνοι',
-    'RejectedRisks' => 'Απορριφθείσες κίνδυνοι',
+    'AddedRisks' => 'Πρόσθετοι κίνδυνοι',
+    'RejectedRisks' => 'Απορριφθέντες κίνδυνοι',
     'RiskAnalysis' => 'Ανάλυση κινδύνου',
     'AllRisksFromQuestionnaires' => 'Όλοι οι κίνδυνοι από ερωτηματολόγια',
     'AllAddedRisksFromQuestionnaires' => 'Όλοι οι πρόσθεσαν κίνδυνοι από ερωτηματολόγια',
@@ -1564,7 +1534,6 @@ $lang = array(
     'ChangedTo' => 'Αλλαγή σε',
 
     'Jira' => 'JIRA',
-    'JiraIntegrationExtra' => 'Ενσωμάτωση Jira Extra',
 
     'JiraWebhookAuthTokenIsInvalid' => 'Το παρεχόμενο διακριτικό ελέγχου ταυτότητας JIRA Webhook ("{$token}") δεν είναι έγκυρος!',
     'JiraWebhookNoBodyPosted' => 'Το webhook JIRA δεν αναρτά ένα σώμα! Παρακαλούμε επικοινωνήστε με το support@simplerisk.com',
@@ -1617,7 +1586,7 @@ $lang = array(
     'JiraSynchronizeStatus' => 'Ενεργοποίηση συγχρονισμού "κατάσταση"',
     'JiraSynchronizeStatusSelectionInstructions' => 'Επιλέξτε μια κατάσταση που μπορεί να μετακυθάται ελεύθερα από οποιαδήποτε από τις καταστάσεις που χρησιμοποιούνται στις ροές εργασιών των έργων σας και είναι διαθέσιμη για όλα τα έργα σας.',
     'JiraSynchronizeStatusInstructions' => 'Αποφασίστε τι πρέπει να συμβεί σε ορισμένες μεταβάσεις κατάστασης',
-    'JiraSynchronizeStatus_RiskClose' => 'Στενός κίνδυνος όταν το συσχετισμένο θέμα JIRA είναι κλειστό',
+    'JiraSynchronizeStatus_RiskClose' => 'Κλείσιμο κινδύνου όταν το συσχετισμένο θέμα JIRA είναι κλειστό',
     'JiraSynchronizeStatus_IssueClose' => 'Κλείσιμο JIRA ζήτημα όταν ο συσχετισμένος κίνδυνος είναι κλειστός',
     'JiraSynchronizeStatus_IssueClose_SetStatus' => 'Ορισμός κατάστασης του θέματος JIRA σε',
     'JiraSynchronizeStatus_RiskReopen' => 'Επανάληψη ανοίγματος κινδύνου όταν ξανανοίγει το σχετικό θέμα JIRA',
@@ -1650,14 +1619,14 @@ $lang = array(
     'ViewActiveAudits'=>'Προβολή ενεργών ελέγχων',
     'ViewPastAudits'=>'Προβολή προηγούμενων λογιστικών ελέγχων',
     'Uninstall' => 'Απεγκαταστήσετε',
-    'SimpleriskUsers' => 'Χρήστες απλού κινδύνου',
+    'SimpleriskUsers' => 'Χρήστες Simplerisk',
     'QuestionnaireCompletedAuditLogByUser' => 'Ερωτηματολόγιο "{$questionnaire_name}" ολοκληρώθηκε από το χρήστη "{$contact_name}".',
     'QuestionnaireDraftAuditLogByUser' => 'Ερωτηματολόγιο "{$questionnaire_name}" αποθηκεύτηκε ως πρόχειρο από το χρήστη "{$contact_name}".',
     'Internal' => 'Εσωτερική',
     'AnswerType' => 'Τύπος απάντησης',
     'MultipleChoice' => 'Πολλαπλές επιλογές',
     'FillInTheBlank' => 'Συμπληρώστε το κενό',
-    'Proxy' => 'Διακομιστή μεσολάβησης',
+    'Proxy' => 'Διακομιστής μεσολάβησης',
     'ProxyWebRequests' => 'Αιτήσεις Web διακομιστή μεσολάβησης',
     'VerifySSLCertificate' => 'Επαλήθευση πιστοποιητικού SSL',
     'ProxyHostname' => 'Όνομα κεντρικού υπολογιστή διακομιστή μεσολάβησης / IP',
@@ -1665,7 +1634,7 @@ $lang = array(
     'AuthenticatedProxy' => 'Διακομιστής μεσολάβησης με έλεγχο ταυτότητας',
     'ProxyUsername' => 'Όνομα χρήστη διακομιστή μεσολάβησης',
     'ProxyPassword' => 'Κωδικός πρόσβασης διακομιστή μεσολάβησης',
-    'SimpleRiskExtras' => 'Πρόσθετα απλού κινδύνου',
+    'SimpleRiskExtras' => 'SimpleRisk Πρόσθετα',
     'ColumnSelections' => 'Επιλογές στηλών',
     'GroupAndFilteringSelections' => 'Επιλογές ομάδων και φιλτραρίσματος',
     'Hyperlink' => 'Υπερ - σύνδεση',
@@ -1690,15 +1659,15 @@ $lang = array(
     'UserSettings' => 'Ρυθμίσεις χρήστη',
     'AbleToAddProjects' => 'Δυνατότητα προσθήκης έργων',
     'AbleToDeleteProjects' => 'Δυνατότητα διαγραφής έργων',
-    'AbleToManageProjects' => 'Ικανός να διαχειριστεί τα προγράμματα',
+    'AbleToManageProjects' => 'Ικανός να διαχειριστεί τα έργα',
     'MitigationPlannedVsUnplanned' => 'Προγραμματισμένος μετριασμός έναντι μη προγραμματισμένου',
     'Scheduled' => 'Προγραμματισμένη',
     'AbleToDefineTests' => 'Ικανός να καθορίσει τις δοκιμές',
-    'AbleToEditTests' => 'Ικανός να εκδώσει τις δοκιμές',
+    'AbleToEditTests' => 'Ικανός να επεξεργαστεί τις δοκιμές',
     'AbleToDeleteTests' => 'Ικανός να διαγράψει τις δοκιμές',
     'AbleToInitiateAudits' => 'Ικανός να ξεκινήσει τους ελέγχους',
     'AbleToModifyAudits' => 'Δυνατότητα τροποποίησης ελέγχων',
-    'AbleToReopenAudits' => 'Δυνατότητα εκ νέου επανάληψης των ελέγχων',
+    'AbleToReopenAudits' => 'Δυνατότητα εκ νέου ανοίγματος των ελέγχων',
     'AbleToDeleteAudits' => 'Δυνατότητα διαγραφής ελέγχων',
     'ReportDisplayed' => 'Εμφανίζεται η αναφορά',
     'UsersWithoutTeam' => '<Users without a Team>',
@@ -1715,8 +1684,6 @@ $lang = array(
     'CustomFieldUpdateFailed' => 'Απέτυχε η ενημέρωση του προσαρμοσμένου πεδίου.',
     'IncidentManagement' => 'Διαχείριση συμβάντων',
     'IncidentManagementExtra' => 'Διαχείριση συμβάντων Επιπλέον',
-    'IncidentManagementNotifications' => 'Ειδοποιήσεις Διαχείρισης Συμβάντων',
-    'NotificationSettingsUpdated' => 'Οι ρυθμίσεις ειδοποιήσεων ενημερώθηκαν.',
     'Incident' => 'Περιστατικό',
     'NewIncident' => 'Νέο περιστατικό',
     'Preparation' => 'Προετοιμασία',
@@ -1749,8 +1716,8 @@ $lang = array(
     'BusinessUnitCreateAuditLog' => 'Χρήστης "{$user}" δημιουργήθηκε επιχειρηματική μονάδα "{$business_unit_name}"(Αναγνωριστικό:{$id}), με τις αρχικές ομάδες του "{$teams_to}".',
     'BusinessUnitUpdateAuditLog' => 'Χρήστης "{$user}" ενημερωμένες ομάδες επιχειρηματικής μονάδας "{$business_unit_name}"(Αναγνωριστικό:{$id}) από "{$teams_from}" έως "{$teams_to}" ({$team_changes}).',
     'BusinessUnitDeleteAuditLog' => 'Χρήστης "{$user}" διαγραμμένη επιχειρηματική μονάδα "{$business_unit_name}"(Αναγνωριστικό:{$id}).',
-    'BusinessUnitUpdateAuditLogRemoved' => 'Αφαιρεθεί{$teams_removed}"',
-    'BusinessUnitUpdateAuditLogAdded' => 'Πρόσθεσε{$teams_added}"',
+    'BusinessUnitUpdateAuditLogRemoved' => 'Αφαιρεθεί "{$teams_removed}"',
+    'BusinessUnitUpdateAuditLogAdded' => 'Προστέθηκε "{$teams_added}"',
     'BusinessUnitRemoveTeamAuditLog' => 'Χρήστης "{$user}" καταργήθηκε ομάδα "{$team_name}"(Αναγνωριστικό:{$team_id}) από επιχειρηματική μονάδα "{$business_unit_name}"(Αναγνωριστικό:{$business_unit_id}).',
     'BusinessUnitCreatedSuccessfully' => 'Η δημιουργία νέας επιχειρηματικής μονάδας ολοκληρώθηκε με επιτυχία.',
     'BusinessUnitUpdatedSuccessfully' => 'Η ενημέρωση της επιχειρηματικής μονάδας ολοκληρώθηκε με επιτυχία.',
@@ -1770,12 +1737,11 @@ $lang = array(
     'DeleteBusinessUnitTooltip' => 'Διαγραφή επιχειρηματικής μονάδας',
     'RemoveTeamTooltip' => 'Κατάργηση ομάδας από επιχειρηματική μονάδα',
     'YouNeedToSpecifyATeamParameter' => 'Πρέπει να καθορίσετε μια παράμετρο ομάδας.',
-    'OrganizationalHierarchyExtra' => 'Επιπλέον οργανωτική ιεραρχία',
     'Source' => 'Πηγή',
     'SourceType' => 'Τύπος προέλευσης',
     'DetectedBy' => 'Εντοπίστηκε από',
     'Direction' => 'Κατεύθυνση',
-    'Reporter' => 'Δημοσιογράφος',
+    'Reporter' => 'Αναφέρων',
     'FunctionalImpact' => 'Λειτουργικός αντίκτυπος',
     'Functional' => 'Λειτουργική',
     'InformationImpact' => 'Αντίκτυπος πληροφοριών',
@@ -1952,7 +1918,6 @@ $lang = array(
     'ConnectivityVisualizer' => 'Οπτικοποιητής συνδεσιμότητας',
     'ThereAreNoConnectionsAssociatedWithTheSelectedValue' => 'Δεν υπάρχουν συνδέσεις που να σχετίζονται με την επιλεγμένη τιμή',
     'InvalidSimpleriskBaseUrl' => 'Μη έγκυρη βασική διεύθυνση URL SimpleRisk!',
-    'Questionnaire' => 'Ερωτηματολόγιο',
     'FileEncodingFixHeader_risk' => 'Διαχείριση Κινδύνου',
     'FileEncodingFixHeader_compliance' => 'Διακυβέρνηση και συμμόρφωση',
     'FileEncodingFixHeader_questionnaire' => 'Αξιολογήσεων',
@@ -1960,7 +1925,7 @@ $lang = array(
     'DaysAfterTheReviewIsDue' => 'ημέρες μετά τη λήξη του ελέγχου',
     'SendAnEmailWhenTheReviewIsDue' => 'Στείλτε ένα μήνυμα ηλεκτρονικού ταχυδρομείου όταν είναι απαραίτητη η αξιολόγηση',
     'ReviewsDueToday' => 'Σχόλια οφείλονται σήμερα',
-    'ReviewsPastDue' => 'Κριτικές',
+    'ReviewsPastDue' => 'Εκπρόθεσμες κριτικές',
     'ReviewsDueSoon' => 'Αναθεωρήσεις σύντομα σε {$DueDate} ημέρες',
     'Submitter' => 'Υποβλητής',
     'ControlMaturity' => 'Έλεγχος ωριμότητας',
@@ -2011,8 +1976,6 @@ $lang = array(
     'TemplateAssignment' => 'Ανάθεση προτύπου',
     'PleaseSelectUser' => 'Παρακαλώ επιλέξτε χρήστη',
     'AboutThisPage' => 'Σχετικά με αυτήν τη σελίδα',
-    'UserGuide' => 'Οδηγός χρήστη',
-    'AdministratorGuide' => 'Οδηγός Διαχειριστή',
     'ProjectStatus' => 'Κατάσταση Έργου',
     'SupportPortal' => 'Πύλη υποστήριξης',
     'WebSupport' => 'Υποστήριξη Ιστού',
@@ -2039,8 +2002,8 @@ $lang = array(
     'Classic' => 'Κλασσικός',
     'AccessVector' => 'Διάνυσμα πρόσβασης',
     'AccessComplexity' => 'Πολυπλοκότητα Πρόσβασης',
-    'MaturityAudit' => 'Έλεγχος Λήξης',
-    'DefaultCurrentMaturity' => 'Προεπιλεγμένη τρέχουσα λήξη',
+    'MaturityAudit' => 'Έλεγχος Ωριμότητας',
+    'DefaultCurrentMaturity' => 'Προεπιλεγμένη τρέχουσα ωριμότητα',
     'DefaultDesiredMaturity' => 'Προεπιλεγμένη επιθυμητή ωριμότητα',
     'ComplianceAssessment' => 'Αξιολόγηση Συμμόρφωσης',
     'MaturityAssessment' => 'Αξιολόγηση Ωριμότητας',
@@ -2058,7 +2021,7 @@ $lang = array(
     'QuestionnaireResultShareSuccessful' => 'Το αποτέλεσμα του ερωτηματολογίου κοινοποιήθηκε με επιτυχία στις επιλεγμένες επαφές',
     'QuestionnaireResultStopSharingSuccessful' => 'Η κοινοποίηση του αποτελέσματος του ερωτηματολογίου διακόπηκε με επιτυχία',
     'AssessmentContact' => 'Επικοινωνία αξιολόγησης',
-    'User' => 'Μεταχειριζόμενος',
+    'User' => 'Χρήστης',
     'QuestionnaireResultShareAuditLog' => 'Ο χρήστης "{$user_name}" κοινοποίησε το ερωτηματολόγιο "{$questionnaire_name}" (απεστάλη στην επαφή "{$contact_name}" στο "{$date}") αποτέλεσμα με σχόλιο "{$comment}". Κοινοποιήθηκε με "{$shared_with_contacts}".',
     'QuestionnaireResultStopSharingAuditLog' => 'Ο χρήστης "{$user_name}" σταμάτησε να μοιράζεται το αποτέλεσμα του ερωτηματολογίου "{$questionnaire_name}" (απεστάλη στην επαφή "{$contact_name}" στο "{$date}"). Διακόπηκε η κοινοποίηση με τον χρήστη "{$stopped_sharing_with_contacts}".',
     'QuestionnaireResultShareOpenedAuditLog' => 'Το αποτέλεσμα του κοινόχρηστου ερωτηματολογίου "{$questionnaire_name}"(απεστάλη στην επαφή "{$contact_name}" στο "{$date}", κοινοποιήθηκε στον χρήστη "{$shared_with_contact_name}") άνοιξε.',
@@ -2173,7 +2136,7 @@ $lang = array(
     'DisableTabs' => 'Απενεργοποίηση καρτελών',
     'NoPermissionForThisSelection' => 'Δεν έχετε άδεια πρόσβασης σε αυτήν την Αποθηκευμένη Επιλογή!',
     'SelectionSaveFailed' => 'Η αποθήκευση της επιλογής απέτυχε!',
-    'Logs' => 'κούτσουρα',
+    'Logs' => 'Αρχεία καταγραφής',
     'NoGroup' => 'Όχι Ομάδα',
     'InvalidGroups' => 'Μη έγκυρες ομάδες!',
     'OrderUpdatedSuccessfully' => 'Η παραγγελία ενημερώθηκε με επιτυχία.',
@@ -2186,8 +2149,7 @@ $lang = array(
     'GraphicalRiskAnalysis' => 'Γραφική Ανάλυση Κινδύνων',
     'ResetMitigations' => 'Επαναφορά μετριασμού',
     'ResetReviews' => 'Επαναφορά κριτικών',
-	'EnableEncryptionDebugLogging' => 'Ενεργοποιήστε την καταγραφή επιπλέον εντοπισμού σφαλμάτων κρυπτογραφημένης βάσης δεδομένων',
-    'Log' => 'Κούτσουρο',
+    'Log' => 'Αρχείο καταγραφής',
     'Date' => 'Ημερομηνία',
     'Platform' => 'Πλατφόρμα',
     'NotifyOnNewDocument' => 'Ειδοποίηση σε νέο έγγραφο',
@@ -2202,7 +2164,7 @@ $lang = array(
     'Increasing' => 'Αυξάνεται',
     'Decreasing' => 'Μειώνεται',
     'NoChange' => 'Καμία αλλαγή',
-    'Visualization' => 'Οραματισμός',
+    'Visualization' => 'Οπτικοποίηση',
     'AreaRange' => 'Εύρος περιοχής',
     'Line' => 'Γραμμή',
     'Bar' => 'Μπαρ',
@@ -2243,9 +2205,9 @@ $lang = array(
     'IncidentManagementNotification_SectionHeader_evidence_attached' => 'Ειδοποίηση σχετικά με τα συνημμένα αποδεικτικά στοιχεία',
     'IncidentManagementNotification_SectionHeader_notes_added' => 'Ειδοποίηση σχετικά με τις σημειώσεις που προστέθηκαν',
     'IncidentManagementNotification_SectionHeader_lesson_learned_added' => 'Προστέθηκε ειδοποίηση σχετικά με τα διδάγματα',
-    'IncidentManagementNotification_Notify_reporter' => 'Ειδοποιήστε τον δημοσιογράφο',
-    'IncidentManagementNotification_Notify_owner' => 'Κοινοποιούν ιδιοκτήτη',
-    'IncidentManagementNotification_Notify_additional_stakeholders' => 'Ενημερώνει τους ενδιαφερόμενους πρόσθετα',
+    'IncidentManagementNotification_Notify_reporter' => 'Ειδοποιήστε τον καταγγέλλοντα',
+    'IncidentManagementNotification_Notify_owner' => 'Ειδοποιήστε τον ιδιοκτήτη',
+    'IncidentManagementNotification_Notify_additional_stakeholders' => 'Ειδοποίηση πρόσθετων ενδιαφερομένων μερών',
     'IncidentManagementNotification_Notify_team' => 'Ενημερώσετε την ομάδα',
     'IncidentManagementNotification_EmailSubject_new' => 'Αναφέρθηκε νέο περιστατικό',
     'IncidentManagementNotification_EmailSubject_status_changed' => 'Η κατάσταση του περιστατικού άλλαξε',
@@ -2278,10 +2240,8 @@ $lang = array(
     'SSLSecurityCheckWarning' => 'ΠΡΟΕΙΔΟΠΟΙΗΣΗ: Το SSL αποτρέπει τις επιθέσεις MITM και η απενεργοποίηση των παρακάτω επιλογών αποτελεί πρόβλημα ασφαλείας',
     'EnableSSLCertificateCheckSimpleRisk' => 'Ενεργοποιήστε τους ελέγχους πιστοποιητικών SSL για αιτήματα API SimpleRisk',
     'EnableSSLCertificateCheckExternal' => 'Ενεργοποιήστε τους ελέγχους πιστοποιητικών SSL για εξωτερικούς ιστότοπους',
-    'EnableAPIv1Endpoints' => 'Ενεργοποίηση τελικών σημείων API v1 (Καταργημένο)',
-    'EnableAPIv1EndpointsHelp' => 'Το API v1 έχει καταργηθεί. Αφήστε το απενεργοποιημένο, εκτός εάν έχετε κάποια ενσωμάτωση που το απαιτεί. Το /api/v2/ δεν επηρεάζεται από αυτήν τη ρύθμιση και είναι πάντα διαθέσιμο.',
     'EnableSSLCertificateCheckVM' => 'Ενεργοποιήστε τους ελέγχους πιστοποιητικών SSL για διαχείριση ευπάθειας',
-    'DuoToopherRemoved' => 'Το Duo υποστηρίζεται πλέον απευθείας από το SimpleRisk. Αντίθετα, έχουμε μετεγκατασταθεί σε έναν γενικό έλεγχο ταυτότητας TOTP. Ρυθμίστε το νέο σας εργαλείο ελέγχου ταυτότητας παρακάτω.',
+    'DuoToopherRemoved' => 'Το Duo δεν υποστηρίζεται πλέον απευθείας από το SimpleRisk. Αντίθετα, έχουμε μετεγκατασταθεί σε έναν γενικό έλεγχο ταυτότητας TOTP. Ρυθμίστε το νέο σας εργαλείο ελέγχου ταυτότητας παρακάτω.',
     'ProtectYourSimpleRiskAccount' => 'Προστατέψτε τον λογαριασμό σας SimpleRisk',
     '2FADescription' => 'Ο έλεγχος ταυτότητας δύο παραγόντων ενισχύει την ασφάλεια του λογαριασμού σας χρησιμοποιώντας μια δευτερεύουσα συσκευή για την επαλήθευση της ταυτότητάς σας. Αυτό εμποδίζει οποιονδήποτε άλλο εκτός από εσάς να έχει πρόσβαση στον λογαριασμό σας, ακόμα κι αν γνωρίζει τον κωδικό πρόσβασής σας.',
     '2FAStep1' => 'Βήμα 1 - Σαρώστε τον παρακάτω κώδικα με μια εφαρμογή 2FA, όπως το Google Authenticator',
@@ -2315,16 +2275,16 @@ $lang = array(
     'FieldUpdated_asset' => 'Το πεδίο "{$fieldName}" του στοιχείου "{$name}" ενημερώθηκε από τον χρήστη "{$user}".',
     'UpdateSuccess_asset' => 'Το στοιχείο "{$name}" ενημερώθηκε με επιτυχία από τον χρήστη "{$user}".',
     'AreYouSureYouWantToDeactivateThisExtra' => 'Είστε βέβαιοι ότι θέλετε να απενεργοποιήσετε αυτό το πρόσθετο;',
-    'Abort' => 'Αμβλώνω',
+    'Abort' => 'Ακύρωση',
     'EnablingSelectedSCFMessage' => 'Ενεργοποίηση των επιλεγμένων πλαισίων Secure Controls Framework (SCF). Αυτό μπορεί να διαρκέσει αρκετά δευτερόλεπτα για να ολοκληρωθεί.',
     'DisablingSelectedSCFMessage' => 'Απενεργοποίηση των επιλεγμένων πλαισίων Secure Controls Framework (SCF).',
-    'AssetAssetGroupWidgetPlaceholder' => 'Επιλέξτε μια ομάδα παγίων ή παγίων',
+    'AssetAssetGroupWidgetPlaceholder' => 'Επιλέξτε ένα πάγιο ή μια ομάδα παγίων',
     'AssetAssetGroupWidgetOnlyNewPlaceholder' => 'Προσθήκη ονόματος περιουσιακού στοιχείου',
-    'AssetAssetGroupWidgetInstructions' => 'Επιλέξτε μια ομάδα παγίων ή παγίων. Μπορείτε να δημιουργήσετε ένα νέο πάγιο προσθέτοντας το όνομά του στη λίστα.',
+    'AssetAssetGroupWidgetInstructions' => 'Επιλέξτε ένα πάγιο ή μια ομάδα παγίων. Μπορείτε να δημιουργήσετε ένα νέο πάγιο προσθέτοντας το όνομά του στη λίστα.',
     'UpdateComplianceForgeSCF' => 'Ενημέρωση του πλαισίου Secure Controls Framework (SCF).',
     'MappedAssets' => 'Αντιστοιχισμένα περιουσιακά στοιχεία',
     'AddControl' => 'Προσθήκη ελέγχου',
-    'CurrentMaturity' => 'Τρέχουσα ληκτότητα',
+    'CurrentMaturity' => 'Τρέχουσα ωριμότητα',
     'AddDocument' => 'Προσθήκη εγγράφου',
     'EditDocument' => 'Επεξεργασία εγγράφου',
     'EncodingIssueCountUpdated' => 'Ο αριθμός προβλημάτων κωδικοποίησης έχει ενημερωθεί για τον τύπο "{$type}": {$old_count} -> {$count}.',
@@ -2376,11 +2336,11 @@ $lang = array(
     'AddMapping' => 'Προσθήκη χαρτογράφησης',
     'CreateSuccess_asset' => 'Το στοιχείο "{$name}" δημιουργήθηκε με επιτυχία από τον χρήστη "{$user}".',
     'AreYouSureYouWantToDeleteTheSelectedControls' => 'Είστε βέβαιοι ότι θέλετε να διαγράψετε τα επιλεγμένα στοιχεία ελέγχου;',
-    'ControlMappedToDifferentMaturitiesOnAsset' =>'Ένας έλεγχος αντιστοιχίζεται σε διαφορετικές λήξεις στο ίδιο περιουσιακό στοιχείο',
+    'ControlMappedToDifferentMaturitiesOnAsset' =>'Ένας έλεγχος αντιστοιχίζεται σε διαφορετικά επίπεδα ωριμότητας στο ίδιο περιουσιακό στοιχείο',
     'Advanced_Search_no_results_1' => 'Δεν φαίνεται να υπάρχουν αποτελέσματα για το ερώτημά σας.',
     'Advanced_Search_no_results_2' => 'Ελέγξτε ξανά την αναζήτησή σας για τυχόν τυπογραφικά λάθη, ορθογραφικά λάθη ή δοκιμάστε έναν διαφορετικό όρο αναζήτησης.',
     'IncidentsPerDay' => 'Περιστατικά ανά ημέρα',
-    'CurrentVsDesiredMaturity' => 'Τρέχουσα έναντι επιθυμητής ωριμότητας από την οικογένεια ελέγχου',
+    'CurrentVsDesiredMaturity' => 'Ωριμότητα ανά Οικογένεια Ελέγχου',
     'RiskDistribution' => 'Κατανομή Κινδύνων',
     'RiskDistributionDescription'=>'Τα παραπάνω γραφήματα πίτας βοηθούν στην εμφάνιση της κατανομής των κινδύνων μεταξύ των διαφόρων επιπέδων κινδύνου τόσο για τον εγγενή όσο και για τον υπολειπόμενο κίνδυνο. Μπορούμε να χρησιμοποιήσουμε αυτές τις δύο πίτες για να δείξουμε πρόοδο στις προσπάθειές μας για τον μετριασμό του κινδύνου. Εάν η πίτα υπολειπόμενου κινδύνου εμφανίζει μεγάλα κομμάτια πολύ υψηλών ή υψηλών κινδύνων, μπορεί να είναι σημάδι ότι ο οργανισμός σας αναλαμβάνει υπερβολικά μεγάλο ρίσκο και απαιτούνται περαιτέρω προσπάθειες μετριασμού.',
     'EnableTabs' => 'Ενεργοποίηση καρτελών',
@@ -2422,10 +2382,6 @@ $lang = array(
     'AnthropicConnectionWarning' => 'Μη έγκυρα διαπιστευτήρια! Δεν είναι δυνατή η σύνδεση στο Anthropic με το κλειδί API.',
     'ResetAPIKey' => 'Επαναφορά κλειδιού API',
     'ArtificialIntelligence' => 'Τεχνητή νοημοσύνη',
-    'ArtificialIntelligenceDesc' => 'Ρυθμίστε τη σύνδεση του παρόχου τεχνητής νοημοσύνης και τις ερωτήσεις περιβάλλοντος που βασίζονται στις απαντήσεις τεχνητής νοημοσύνης για αυτήν την παρουσία του SimpleRisk.',
-    'ProviderConfiguration' => 'Διαμόρφωση παρόχου',
-    'ContextQuestions' => 'Ερωτήσεις πλαισίου',
-    'AIProviderNotConfiguredWarning' => 'Ο πάροχος τεχνητής νοημοσύνης δεν έχει ρυθμιστεί. Δεν είναι δυνατή η παραγωγή ζωντανών αποτελεσμάτων μέχρι να ορίσετε τον πάροχο και το κλειδί API στην καρτέλα Ρύθμιση παραμέτρων παρόχου.',
     'ArtificialIntelligenceAdditionalContext' => 'Πρόσθετο πλαίσιο τεχνητής νοημοσύνης',
     'ArtificialIntelligenceAdditionalContextDescription' => 'Οι ακόλουθες πληροφορίες είναι προαιρετικές, αλλά θα παρέχουν στην Τεχνητή Νοημοσύνη το πρόσθετο πλαίσιο που χρειάζεται για να παράγει πιο ουσιαστικά αποτελέσματα. Όλες οι πληροφορίες που καταχωρούνται παρακάτω ΘΑ ΣΤΑΛΟΥΝ ΣΤΟΝ ΔΙΑΜΟΡΦΩΜΕΝΟ ΠΑΡΟΧΟ ΤΕΧΝΗΣ ΝΟΗΜΟΣΥΝΗΣ ΣΑΣ για ανάλυση, προκειμένου να προσαρμοστούν οι απαντήσεις στον οργανισμό σας.',
     'OrganizationContext' => 'Οργανωτικό Πλαίσιο',
@@ -2456,7 +2412,7 @@ $lang = array(
     'EditModeInformation' => 'Ενεργοποιήστε τη λειτουργία επεξεργασίας επεξεργαστείτε τη διάταξη. Η απενεργοποίησή του δεν θα αποθηκεύσει αυτόματα τη διάταξη.',
     'InvalidLayout' => 'Μη έγκυρη διάταξη!',
     'InvalidLayoutOnlyCustomAllowedAsDefault' => 'Μη έγκυρη διάταξη! Μόνο προσαρμοσμένες διατάξεις μπορούν να αποθηκευτούν ως προεπιλογή.',
-    'LayoutSaved' => 'Η διάταξη αποθηκεύτηκε!',
+    'LayoutSaved' => 'Η διάταξη του πίνακα ελέγχου σας έχει αποθηκευτεί.',
     'DefaultLayout' => 'Προεπιλεγμένη διάταξη',
     'DefaultLayoutInformation' => 'Ορίζει αυτήν τη διάταξη ως προεπιλογή, ώστε να χρησιμοποιείται αντί για αυτήν που παρέχεται από το SimpleRisk για χρήστες που δεν διαθέτουν προσαρμοσμένο σύνολο διάταξης. Μπορείτε να ορίσετε μόνο μια αποθηκευμένη μη κενή προσαρμοσμένη διάταξη ως προεπιλογή. Εάν μια διάταξη που έχει επισημανθεί ως προεπιλογή επανέλθει στην προεπιλεγμένη διάταξη, θα την επαναφέρει στην προεπιλογή που παρέχεται από το SimpleRisk.',
     'LayoutDefaultStatusUpdated' => 'Η προεπιλεγμένη κατάσταση της διάταξης έχει ενημερωθεί.',
@@ -2465,12 +2421,12 @@ $lang = array(
     'DefaultLayoutRestored' => 'Η προεπιλεγμένη διάταξη έχει αποκατασταθεί με επιτυχία!',
     'SavedLayoutRestored' => 'Η αποθηκευμένη διάταξη έχει αποκατασταθεί με επιτυχία!',
     'ConfirmRestoreLayout' => 'Είσαι σίγουρος; Θα χάσετε τις αλλαγές που πραγματοποιήσατε σε αυτήν τη διάταξη.',
-    'ConfirmDisableEditModeWithPendingChanges' => 'Έχετε μη αποθηκευμένες αλλαγές που θα χάσετε όταν φύγετε από τη σελίδα. Είστε βέβαιοι ότι θέλετε να απενεργοποιήσετε τη "Λειτουργία επεξεργασίας" και ενδεχομένως να ξεχάσετε να αποθηκεύσετε τις αλλαγές σας;',
+    'ConfirmDisableEditModeWithPendingChanges' => 'Έχετε μη αποθηκευμένες αλλαγές σε αυτόν τον πίνακα ελέγχου. Να τις απορρίψετε και να διακόψετε την επεξεργασία;',
     'ConfirmSave' => 'Η αποθήκευση αυτών των αλλαγών θα αντικαταστήσει τη διάταξη που είχατε αποθηκεύσει στο παρελθόν. Είστε βέβαιοι ότι θέλετε να συνεχίσετε;',
     'ConfirmSaveAdminDefault' => 'Αυτή η διάταξη έχει οριστεί ως η προεπιλογή για αυτόν τον τύπο διάταξης. Η αποθήκευση αυτών των αλλαγών θα αλλάξει τη διάταξη για όλους τους χρήστες που δεν έχουν προσαρμοσμένο σύνολο διάταξης για αυτόν τον τύπο διάταξης. Είστε βέβαιοι ότι θέλετε να συνεχίσετε;',
     'RisksByMonth' => 'Κίνδυνοι ανά μήνα',
     'WidgetType_chart' => 'Διάγραμμα',
-    'WidgetType_table' => 'Τραπέζι',
+    'WidgetType_table' => 'Πίνακας',
     'WidgetType_WYSIWYG' => 'WYSIWYG',
     'EnableAIAssistanceForRiskData' => 'Ενεργοποίηση βοήθειας με τεχνητή νοημοσύνη για δεδομένα κινδύνου',
     'ArtificialIntelligenceAssistant' => 'Βοηθός Τεχνητής Νοημοσύνης',
@@ -2481,14 +2437,14 @@ $lang = array(
     'InvalidDataPleaseContactAdministrator' => 'Μη έγκυρα δεδομένα! Επικοινωνήστε με έναν διαχειριστή.',
     'EditWidgetText' => 'Επεξεργασία κειμένου γραφικού στοιχείου',
     'UnauthorizedAccessInAPI' => 'Μη εξουσιοδοτημένη πρόσβαση. Ο πιστοποιημένος χρήστης δεν έχει τα κατάλληλα δικαιώματα.',
-    'FAIRRiskAssessment' => 'Δίκαιη Εκτίμηση Κινδύνου',
+    'FAIRRiskAssessment' => 'Εκτίμηση Κινδύνου FAIR',
     'RiskScenario' => 'Σενάριο κινδύνου',
     'Assumptions' => 'Υποθέσεις',
     'MonteCarloSimulation' => 'Προσομοίωση Μόντε Κάρλο',
     'ContactFrequency' => 'Συχνότητα επαφών',
     'ProbabilityOfAction' => 'Πιθανότητα Δράσης',
     'ThreatCapability' => 'Δυνατότητα Απειλής',
-    'ResistanceStrength' => 'Αντοχή Αντοχής',
+    'ResistanceStrength' => 'Δύναμη αντίστασης',
     'ThreatEventFrequency' => 'Συχνότητα Συμβάντος Απειλής',
     'Vulnerability' => 'Τρωτό',
     'LossEventFrequency' => 'Συχνότητα συμβάντος απώλειας',
@@ -2496,7 +2452,6 @@ $lang = array(
     'SecondaryLossEventFrequency' => 'Συχνότητα συμβάντος δευτερεύουσας απώλειας',
     'SecondaryLossMagnitude' => 'Μέγεθος δευτερογενούς απώλειας',
     'Productivity' => 'Παραγωγικότητα',
-    'Response' => 'Απάντηση',
     'Replacement' => 'Αντικατάσταση',
     'CompetitiveAdvantage' => 'Ανταγωνιστικό Πλεονέκτημα',
     'FinesAndJudgements' => 'Πρόστιμα και δικαστικές αποφάσεις',
@@ -2583,14 +2538,13 @@ $lang = array(
     'ConsiderAddingControl' => 'Σκεφτείτε το ενδεχόμενο προσθήκης ελέγχου',
     'RemoveControlFromPolicy' => 'Κατάργηση ελέγχου από την πολιτική',
     'NoActionRequired' => 'Δεν απαιτείται ενέργεια',
-    'DefiniteMatch' => 'Σίγουρος αγώνας',
+    'DefiniteMatch' => 'Σίγουρη αντιστοίχιση',
     'LikelyMatch' => 'Πιθανή αντιστοίχιση',
     'PossibleMatch' => 'Πιθανή αντιστοίχιση',
     'UnlikelyMatch' => 'Απίθανη αντιστοίχιση',
     'NotAMatch' => 'Δεν είναι ταίριασμα',
     'ReviewManually' => 'Χειροκίνητη αναθεώρηση',
     'ResponsesToQuestionsWithLinkedControlsWillUpdateTheControlTypeTo' => 'Οι απαντήσεις σε ερωτήσεις με συνδεδεμένα στοιχεία ελέγχου θα ενημερώσουν τον τύπο στοιχείου ελέγχου σε',
-    'DueDate' => 'Ημερομηνία λήξης',
     'AuditLog_IncidentUpdated' => 'Το περιστατικό "{$incident_summary}" (ID: {$incident_id}) ενημερώθηκε από τον χρήστη "{$user_name}". Αλλαγές: {$changes}.',
     'AnswersWillBeAutoSavedOnAssessments' => 'Οι απαντήσεις θα αποθηκεύονται αυτόματα στις αξιολογήσεις',
     'SecondsAssessmentsAreAutoSaved' => 'Οι αξιολογήσεις δευτερολέπτων αποθηκεύονται αυτόματα',
@@ -2598,7 +2552,6 @@ $lang = array(
     'NotifyAuditInitiateSubject' => 'Ξεκίνησε ο έλεγχος',
     'BypassPendingRisksAndCreateRisksImmediatelyAfterAssessmentCompletion' => 'Παράκαμψη των «Εκκρεμών Κινδύνων» και δημιουργία Κινδύνων αμέσως μετά την ολοκλήρωση της Αξιολόγησης',
     'AssociatedExceptions' => 'Συνδεδεμένες εξαιρέσεις',
-    'Required' => 'Υποχρεούμαι',
     'EmailInstructions' => 'Οδηγίες μέσω ηλεκτρονικού ταχυδρομείου',
     'ApproveSelectedVulnerabilities' => 'Έγκριση επιλεγμένων ευπαθειών',
     'RejectSelectedVulnerabilities' => 'Απόρριψη επιλεγμένων ευπαθειών',
@@ -2615,7 +2568,7 @@ $lang = array(
     'NormalizeScoringOnA0_10Scale' => 'Κανονικοποιήστε τη βαθμολογία σε μια κλίμακα 0-10.',
     'TheRiskScoreNormalizationSettingWasUpdatedSuccessfully_TheScoresOfExistingRisksWereRecalculatedBasedOnTheNewSetting' => 'Η ρύθμιση ομαλοποίησης της βαθμολογίας κινδύνου ενημερώθηκε με επιτυχία. Οι βαθμολογίες των υπαρχόντων κινδύνων υπολογίστηκαν εκ νέου με βάση τη νέα ρύθμιση.',
     'DownloadFilePermissionMessage' => 'Δεν έχετε άδεια για να κατεβάσετε αυτό το αρχείο.',
-    'Tab' => 'Αυτί',
+    'Tab' => 'Καρτέλα',
     'TabOrdering' => 'Ταξινόμηση σε καρτέλες',
     'AutoInitiateAudit' => 'Αυτόματη έναρξη ελέγχου',
     'AuditInitiationOffset' => 'Αντιστάθμιση Έναρξης Ελέγχου',
@@ -2637,7 +2590,7 @@ $lang = array(
     'AnExistingUploadFileTypeWasRemovedSuccessfully' => 'Ένας υπάρχοντας τύπος αρχείου μεταφόρτωσης αφαιρέθηκε με επιτυχία.',
     'AnExistingUploadFileExtensionWasRemovedSuccessfully' => 'Μια υπάρχουσα επέκταση αρχείου μεταφόρτωσης καταργήθηκε με επιτυχία.',
     'UploadingFileTypeAndExtensionNoSupport' => 'Ο συνδυασμός τύπου αρχείου και επέκτασης ("{$file_type_name}", "{$file_type_extension_name}") δεν υποστηρίζεται.',
-    'Logging' => 'Ξύλευση',
+    'Logging' => 'Καταγραφή',
     'EnableLoggingCritical' => 'ΚΡΙΣΙΜΕΣ: Καταστάσεις που ενδέχεται να απαιτούν άμεση δράση.',
     'EnableLoggingError' => 'ΣΦΑΛΜΑ: Σφάλματα χρόνου εκτέλεσης που απαιτούν προσοχή αλλά δεν προκαλούν σφάλματα στην εφαρμογή.',
     'EnableLoggingWarning' => 'ΠΡΟΕΙΔΟΠΟΙΗΣΗ: Κάτι απροσδόκητο συνέβη, αλλά η εφαρμογή εξακολουθεί να εκτελείται.',
@@ -2648,68 +2601,9 @@ $lang = array(
     'PleaseEnterAValidTimezone' => 'Παρακαλώ εισάγετε μια έγκυρη ζώνη ώρας.',
     'TFIDFMatch' => 'Αγώνας TF-IDF',
     'CompletionDate' => 'Ημερομηνία ολοκλήρωσης',
-    'AutoProcessSCFUpdates' => 'Αυτόματη επεξεργασία νέων εκδόσεων Secure Controls Framework (SCF)',
-    'AddNewControls' => 'Προσθήκη νέων στοιχείων ελέγχου SCF',
-    'UpdateExistingControls' => 'Ενημέρωση υπαρχόντων ελέγχων SCF',
-    'DeleteRemovedControls' => 'Διαγραφή αφαιρεμένων στοιχείων ελέγχου SCF',
-    'CreateEvidenceRequests' => 'Δημιουργήστε αιτήματα αποδεικτικών στοιχείων για τους ελέγχους SCF',
-    'SelectSCFFrameworks' => 'Επιλέξτε Πλαίσια SCF',
-    'SCFReleaseProcessing' => 'Επεξεργασία έκδοσης SCF',
-    'NotFrameworkDescription' => 'Το παρακάτω γραφικό στοιχείο εμφανίζει όλες τις κεφαλίδες που βρίσκονται στο υπολογιστικό φύλλο Secure Controls Framework (SCF). Χρησιμοποιήστε το για να επιλέξετε ποιες στήλες περιέχουν δεδομένα framework έναντι δεδομένων που δεν περιέχουν framework.',
-    'Note' => 'Σημείωμα',
-    'AISettingsNote' => 'Η ενεργοποίηση της βοήθειας με τεχνητή νοημοσύνη θα στείλει δεδομένα στην Anthropic για ανάλυση στο LLM της, χρησιμοποιώντας το κλειδί API της Anthropic, προκειμένου να σας παρέχει εξατομικευμένα αποτελέσματα.',
-    'EnableAIAssistanceForControlData' => 'Ενεργοποίηση βοήθειας με τεχνητή νοημοσύνη για δεδομένα ελέγχου',
-    'ReferenceText' => 'Κείμενο αναφοράς',
-    'FrameworkSelection' => 'Επιλογή πλαισίου',
-    'Show' => 'Επίδειξη',
-    'InProgress' => 'Σε εξέλιξη',
-    'Canceled' => 'Ακυρώθηκε',
-    'Failed' => 'Αποτυχημένος',
-    'LegacyFrameworks' => 'Παλαιότερα Πλαίσια',
-    'Archive' => 'Αρχείο',
-    'FailedToFetchCVEInformation' => 'Αποτυχία ανάκτησης πληροφοριών CVE. Ελέγξτε το αναγνωριστικό CVE και προσπαθήστε ξανά.',
-    'ComplianceDashboard' => 'Πίνακας ελέγχου συμμόρφωσης',
-    'DynamicAuditReportHelp' => 'Αυτή η αναφορά εμφανίζει όλους τους ελέγχους και την κατάστασή τους.',
-    'ComplianceDashboardDescription' => 'Αυτό το γράφημα εμφανίζει τον αριθμό των ελέγχων σε κάθε πλαίσιο, με τα επιτυχή στοιχεία ελέγχου να εμφανίζονται με πράσινο χρώμα και τα αποτυχημένα στοιχεία ελέγχου με κόκκινο χρώμα.',
-    'PassingControls' => 'Πέρασμα ελέγχων',
-    'FailingControls' => 'Αποτυχία ελέγχων',
-    'ControlsByFramework' => 'Έλεγχοι ανά Πλαίσιο',
-    'NumberOfControls' => 'Αριθμός χειριστηρίων',
     'AssetsAndControls' => 'Περιουσιακά στοιχεία και έλεγχοι',
     'AssetsByControl' => 'Περιουσιακά στοιχεία ανά έλεγχο',
     'ControlsByAsset' => 'Έλεγχοι ανά Περιουσιακό Στοιχείο',
-    'PasswordResetTokenExpirationPeriod' => 'Περίοδος Λήξης Διακριτικού Επαναφοράς Κωδικού Πρόσβασης',
-    'APasswordResetTokenExpirationPeriodShouldBeMoreThan5Minutes' => 'Η περίοδος λήξης ενός διακριτικού επαναφοράς κωδικού πρόσβασης θα πρέπει να είναι μεγαλύτερη από 5 λεπτά.',
-    'MeanTimeToRemediate' => 'Μέσος χρόνος για αποκατάσταση',
-    'ByTeam' => 'Από την ομάδα',
-    'ByCategory' => 'Ανά κατηγορία',
-    'ByRiskLevel' => 'Ανά Επίπεδο Κινδύνου',
-    'MeanTimeToRemediateDescription' => 'Μέσος αριθμός ημερών για το κλείσιμο κινδύνων, ομαδοποιημένοι ανά ομάδα, κατηγορία και επίπεδο κινδύνου. Περιλαμβάνονται μόνο οι κλειστοί κίνδυνοι.',
-    'AverageDaysToClose' => 'Μέσος όρος ημερών έως το κλείσιμο',
-    'ControlPassRateTrend' => 'Τάση ποσοστού επιτυχίας ελέγχου',
-    'ControlPassRateTrendDescription' => 'Μηνιαίο ποσοστό επιτυχίας (%) ανά πλαίσιο κατά τους τελευταίους 12 μήνες. Εμφανίζονται μόνο τα πλαίσια με τουλάχιστον ένα αποτέλεσμα δοκιμής στην περίοδο.',
-    'PassRatePercent' => 'Ποσοστό επιτυχίας (%)',
-    'ExposureByTeam' => 'Έκθεση σε Κίνδυνο ανά Ομάδα',
-    'ExposureByCategory' => 'Έκθεση σε Κίνδυνο ανά Κατηγορία',
-    'ExposureByLocation' => 'Έκθεση σε κίνδυνο ανά τοποθεσία',
-    'TotalRiskScore' => 'Συνολική Βαθμολογία Κινδύνου',
-    'SLABreachStatus' => 'Κατάσταση παραβίασης SLA',
-    'SLABreachDescription' => 'Ανοικτοί κίνδυνοι εντός ή πέραν του ορίου SLA ανά επίπεδο κινδύνου. Προεπιλεγμένα όρια: Πολύ Υψηλό=30 ημέρες, Υψηλό=60 ημέρες, Μέτριο=90 ημέρες, Χαμηλό=180 ημέρες.',
-    'WithinSLA' => 'Εντός SLA',
-    'SLABreached' => 'Παραβίαση SLA',
-    'NumberOfRisks' => 'Αριθμός Κινδύνων',
-    'AllFrameworks' => 'Όλα τα πλαίσια',
-    'ExposureByBusinessUnit' => 'Έκθεση σε Κίνδυνο ανά Επιχειρηματική Μονάδα',
-    'BusinessUnit' => 'Επιχειρηματική μονάδα',
-    'BUChartCrossUnitNote' => 'Σημείωση: Οι κίνδυνοι που έχουν ανατεθεί σε ομάδες που εκτείνονται σε πολλαπλές BU υπολογίζονται σε κάθε μία.',
-    'SLAThresholds' => 'Όρια SLA',
-    'SLAThresholdsDescription' => 'Μέγιστος αριθμός ημερών που ένας ανοιχτός κίνδυνος μπορεί να παραμείνει ανεπίλυτος προτού θεωρηθεί εκπρόθεσμος, ανά επίπεδο κινδύνου.',
-    'SLAThresholdMustBeBetween1And3650' => 'Οι τιμές κατωφλίου SLA πρέπει να κυμαίνονται μεταξύ 1 και 3650 ημερών.',
-    'SLAThresholdsUpdatedSuccessfully' => 'Τα όρια SLA ενημερώθηκαν με επιτυχία.',
-    'TimeToDetect' => 'Ώρα για ανίχνευση',
-    'TimeToDetectDescription' => 'Μέσος αριθμός ημερών από την έναρξη του συμβάντος (Έναρξη στις) έως την ανίχνευση (Εντοπίστηκε στις), ομαδοποιημένος ανά ομάδα και τύπο συμβάντος. Περιλαμβάνονται μόνο τα συμβάντα με καταγεγραμμένες και τις δύο ημερομηνίες.',
-    'ByOccurrenceType' => 'Ανά τύπο εμφάνισης',
-    'OccurrenceType' => 'Τύπος εμφάνισης',
     'NoIncidentDetectionDataAvailable' => 'Δεν καταγράφηκαν περιστατικά ούτε με την ημερομηνία έναρξης ούτε με την ημερομηνία εντοπισμού.',
     'IncidentDashboard' => 'Πίνακας ελέγχου συμβάντων',
     'TimeToDetectByTeam' => 'Ώρα για ανίχνευση από την ομάδα',
@@ -2734,8 +2628,8 @@ $lang = array(
     'ControlPassFailStatus' => 'Κατάσταση Επιτυχίας/Αποτυχίας Ελέγχου',
     'GovernanceDashboard' => 'Πίνακας Ελέγχου Διακυβέρνησης',
     'GovernanceDashboardDescription' => 'Αυτό το γράφημα εμφανίζει την τρέχουσα ωριμότητα όλων των στοιχείων ελέγχου.',
-    'GovernanceControlsByFrameworkMaturityStacked' => 'Έλεγχοι ανά Πλαίσιο και Τρέχουσα Λήξη',
-    'Custom' => 'Εθιμο',
+    'GovernanceControlsByFrameworkMaturityStacked' => 'Έλεγχοι ανά Πλαίσιο και Τρέχουσα Ωριμότητα',
+    'Custom' => 'Προσαρμοσμένο',
     'SimpleRiskCustomScheduledNotifications' => 'Προσαρμοσμένες προγραμματισμένες ειδοποιήσεις SimpleRisk',
     'AddCustomScheduledNotification' => 'Προσθήκη προσαρμοσμένης προγραμματισμένης ειδοποίησης',
     'ReportName' => 'Όνομα αναφοράς',
@@ -2850,16 +2744,15 @@ $lang = array(
     'SettingsSecurityDesc'                => 'Ρυθμίσεις ασφαλείας ελέγχου ταυτότητας, περιόδου σύνδεσης, πολιτικής κωδικού πρόσβασης, βασικής διεύθυνσης URL και API.',
     'SettingsLoggingDesc'                 => 'Ρύθμιση παραμέτρων καταγραφής εντοπισμού σφαλμάτων και ελέγχου: επίπεδα καταγραφής, διατήρηση και θέση των αρχείων καταγραφής.',
     'HealthCheckDesc'                     => 'Διάγνωση κατάστασης συστήματος: έκδοση PHP, επεκτάσεις, δικαιώματα αρχείων, συνδεσιμότητα βάσης δεδομένων, χρονοδιάγραμμα cron και επιπλέον ενεργοποιήσεις.',
-    'AboutDesc'                           => 'Δείτε την έκδοση του SimpleRisk, τις πληροφορίες άδειας χρήσης και τις αναφορές.',
     'AnnouncementsDesc'                   => 'Σύνταξη και διαχείριση ανακοινώσεων banner που είναι ορατές σε όλους τους χρήστες.',
     'RegisterAndUpgradeDesc'              => 'Καταχωρίστε την εγκατάσταση SimpleRisk, εισαγάγετε ή ανανεώστε ένα κλειδί συνδρομής και ενεργοποιήστε τις αναβαθμίσεις Core/Extra με ένα κλικ.',
     'QueueMonitorDesc'                    => 'Επιθεωρήστε την ουρά εργασιών στο παρασκήνιο: εκκρεμείς, εν πτήσει και αποτυχημένες εργασίες.',
     'ExtrasDesc'                          => 'Ενεργοποίηση, απενεργοποίηση και διαμόρφωση των SimpleRisk Extras (πρόσθετα επί πληρωμή).',
-    'ArtificialIntelligenceExtraDesc'     => 'Ενεργοποιεί την υποστήριξη τεχνητής νοημοσύνης σε όλο το SimpleRisk.',
-    'CustomizationExtraDesc'              => 'Επιτρέπει τη δυνατότητα προσθήκης και αφαίρεσης διαφορετικών τύπων πεδίων και δυναμικής δημιουργίας προτύπων σελίδων.',
-    'NotificationExtraDesc'               => 'Αποστέλλει ειδοποιήσεις μέσω email όταν υποβάλλονται, ενημερώνονται, μετριάζονται ή εξετάζονται κίνδυνοι και μπορεί να εκτελείται βάσει χρονοδιαγράμματος για να ειδοποιεί τους χρήστες για κινδύνους που βρίσκονται στην κατάσταση "Μη εξετασμένοι" ή "Ληγόρητοι".',
-    'VulnerabilityManagementExtraDesc'    => 'Επιτρέπει την ενσωμάτωση του SimpleRisk με τα Rapid7 Nexpose, InsightVM, Qualys και Tenable.io.',
-    'IncidentManagementExtraDesc'         => 'Παρέχει δυνατότητες διαχείρισης περιστατικών μέσα από το σύστημα SimpleRisk.',
+    'ArtificialIntelligenceExtraDesc'     => 'Το Artificial Intelligence Extra παρέχει βελτιωμένη ανάλυση κινδύνου (συμπεριλαμβανομένων αξιολογήσεων FAIR) και προσαρμοσμένη τεκμηρίωση.',
+    'CustomizationExtraDesc'              => 'Το Customization Extra επιτρέπει τη δυνατότητα προσθήκης και αφαίρεσης διαφορετικών τύπων πεδίων και δυναμικής δημιουργίας προσαρμοσμένων προτύπων σελίδων.',
+    'NotificationExtraDesc'               => 'Το Email Notification Extra επιτρέπει στο SimpleRisk να στέλνει ειδοποιήσεις μέσω email όταν υποβάλλονται, τροποποιούνται ή λαμβάνονται άλλες ενέργειες για τους κινδύνους. Αυτό το πρόσθετο μπορεί επίσης να προστεθεί ως προγραμματισμένο σενάριο για την αποστολή υπενθυμίσεων ρουτίνας όταν οι κίνδυνοι είναι έτοιμοι για έλεγχο από τη διοίκηση. Στο προϊόν SimpleRisk Core, χωρίς αυτό το Extra, δεν κοινοποιούνται ειδοποιήσεις εκτός του ίδιου του εργαλείου.',
+    'VulnerabilityManagementExtraDesc'    => 'Το Vulnerability Management Extra παρέχει στους πελάτες τη δυνατότητα να ενσωματώσουν την παρουσία τους στο SimpleRisk με Qualys, Tenable.io ή Rapid7 Nexpose/InsightVM και να εισάγουν δεδομένα τόσο για τα περιουσιακά στοιχεία όσο και για τα τρωτά σημεία στο SimpleRisk. Από εκεί, μπορείτε να επιλέξετε ποιους ιστότοπους θέλετε να καλύψετε, να προσδιορίσετε ποιες βαθμολογίες τρωτότητας θα πρέπει να εισαχθούν και να διαχωρίσετε ποιες τρωτότητες μετατρέπονται σε κινδύνους για να τις παρακολουθήσετε.',
+    'IncidentManagementExtraDesc'         => 'Το Incident Management Extra βασίζεται στον Οδηγό Χειρισμού Συμβάντων Ασφάλειας Υπολογιστών NIST 800-61 και παρέχει δυνατότητες διαχείρισης συμβάντων μέσα από το σύστημα SimpleRisk.',
 
     // Configure Hub - tile descriptions (customization category)
     'RedefineNamingConventionsDesc'       => 'Μετονομάστε την ορολογία του SimpleRisk (Κίνδυνος, Περιουσιακό Στοιχείο, Πλαίσιο, κ.λπ.) σε όλο το περιβάλλον χρήστη.',
@@ -2872,26 +2765,25 @@ $lang = array(
     'UserManagementDesc'                  => 'Προσθήκη, επεξεργασία, απενεργοποίηση και επαναφορά χρηστών· διαχείριση πολιτικής κωδικών πρόσβασης.',
     'RoleManagementDesc'                  => 'Ορίστε ρόλους και τα δικαιώματα που παρέχει κάθε ρόλος.',
     'TeamManagementDesc'                  => 'Δημιουργήστε και διαχειριστείτε ομάδες που χρησιμοποιούνται για φιλτράρισμα ορατότητας εγγραφών.',
-    'SeparationExtraDesc'                 => 'Περιορισμός της προβολής κινδύνου στα μέλη της ομάδας στα οποία κατηγοριοποιείται ο κίνδυνος.',
-    'CustomAuthenticationExtraDesc'       => 'Παρέχει υποστήριξη για Active Directory ή SAML/Single Sign-On για έλεγχο ταυτότητας και εξουσιοδότηση.',
-    'EncryptionExtraDesc'                 => 'Κρυπτογράφηση ευαίσθητων πεδίων κειμένου στη βάση δεδομένων.',
-    'OrganizationManagementDesc'          => 'Πολλαπλές Επιχειρηματικές Μονάδες μπορούν να οριστούν πάνω από τις ομάδες. Οι χρήστες μπορούν στη συνέχεια να αντιστοιχιστούν σε μία ή περισσότερες ομάδες υπό διάφορες Επιχειρηματικές Μονάδες. Αυτό επηρεάζει την ικανότητά τους να βλέπουν και να χρησιμοποιούν τις ομάδες, τους χρήστες και τα στοιχεία με τα οποία δεν σχετίζονται.',
+    'SeparationExtraDesc'                 => 'Το Team-Based Separation Extra περιορίζει την προβολή κινδύνων μόνο στους χρήστες που είναι μέλη της ομάδας στην οποία έχει ανατεθεί ο κίνδυνος. Στο προϊόν SimpleRisk Core, χωρίς αυτό το Extra, κάθε χρήστης μπορεί να δει κάθε κίνδυνο.',
+    'CustomAuthenticationExtraDesc'       => 'Το Custom Authentication Extra παρέχει υποστήριξη για Active Directory και SAML Authentication. Στο προϊόν SimpleRisk Core, χωρίς αυτό το Extra, η μόνη επιλογή είναι η δημιουργία νέων χρηστών στο αποθετήριο ταυτοτήτων SimpleRisk.',
+    'EncryptionExtraDesc'                 => 'Το Encrypted Database Extra δημιουργεί ένα τυχαίο κλειδί κρυπτογράφησης AES-256 bit και στη συνέχεια το χρησιμοποιεί για την κρυπτογράφηση ευαίσθητου κειμένου πριν από την εισαγωγή του στη βάση δεδομένων SimpleRisk. Αυτό εμποδίζει οποιονδήποτε να δει ή να τροποποιήσει τα δεδομένα χωρίς να χρησιμοποιήσει απευθείας την εφαρμογή SimpleRisk.',
+    'OrganizationManagementDesc'          => "Το Organisational Hierarchy Extra επιτρέπει τον ορισμό πολλαπλών Επιχειρηματικών Μονάδων, οι οποίες μπορούν να περιλαμβάνουν οποιονδήποτε αριθμό ομάδων. Οι χρήστες μπορούν στη συνέχεια να αντιστοιχιστούν σε μία ή περισσότερες ομάδες υπό διάφορες Επιχειρηματικές Μονάδες. Αυτό επηρεάζει την ικανότητα ενός χρήστη να βλέπει και να χρησιμοποιεί τις ομάδες, τους χρήστες και τα στοιχεία με τα οποία δεν σχετίζεται.",
 
     // Configure Hub - tile descriptions (data category)
-    'DeleteRisksDesc'                     => 'Κίνδυνοι μαζικής διαγραφής. Χρησιμοποιήστε με φειδώ — οι διαγραφές είναι μόνιμες.',
+    'DeleteRisksDesc'                     => 'Μαζική διαγραφή κινδύνων. Χρησιμοποιήστε με φειδώ — οι διαγραφές είναι μόνιμες.',
     'AuditTrailDesc'                      => 'Αναζήτηση και εξαγωγή του αρχείου καταγραφής ελέγχου συστήματος των ενεργειών των χρηστών.',
-    'ImportExportExtraDesc'               => 'Επιτρέπει την εισαγωγή και εξαγωγή αρχείων CSV που περιέχουν πληροφορίες κινδύνου.',
-    'JiraExtraDesc'                       => 'Επιτρέπει την ενσωμάτωση με την παρουσία JIRA σας. Επιτρέπει τη σύνδεση κινδύνων με προβλήματα Jira, συγχρονίζοντας τα δεδομένα, την κατάσταση και τα σχόλιά τους.',
-    'APIExtraDesc'                        => 'Ενεργοποιεί ένα API για την ενσωμάτωση του SimpleRisk με άλλα εργαλεία και εργασίες αυτοματισμού.',
-    'AdvancedSearchExtraDesc'             => "Επεκτείνει τη λειτουργικότητα του πλαισίου αναζήτησης της επάνω γραμμής για να είναι δυνατή η εύρεση κινδύνων κάνοντας αναζήτηση κειμένου στα δεδομένα κινδύνου.",
-    'AssessmentsExtraDesc'                => 'Επιτρέπει τη δημιουργία προσαρμοσμένων φορμών αξιολόγησης κινδύνου και την αποστολή τους στους χρήστες.',
+    'ImportExportExtraDesc'               => 'Το Import-Export Extra παρέχει τη δυνατότητα εισαγωγής δεδομένων στο SimpleRisk αντιστοιχίζοντας πεδία σε ένα αρχείο CSV με πεδία στη βάση δεδομένων SimpleRisk. Μπορεί να χρησιμοποιηθεί για την εισαγωγή αποτελεσμάτων ελέγχου από ένα υπολογιστικό φύλλο τρίτου μέρους, αποτελεσμάτων σάρωσης ευπαθειών από άλλο εργαλείο, στοιχείων από το CMDB σας και πολλά άλλα. Το Extra παρέχει επίσης τη δυνατότητα εξαγωγής αρχείων CSV από το SimpleRisk που περιέχουν Κίνδυνους, Μετριασμούς, Κριτικές ή μια αναφορά συνδυασμού και των τριών.',
+    'JiraExtraDesc'                       => 'Το Jira Integration Extra παρέχει στους χρήστες τη δυνατότητα αμφίδρομης ενσωμάτωσης με μια παρουσία Jira. Επιτρέπει τη σύνδεση κινδύνων με προβλήματα Jira, καθώς και τον συγχρονισμό των δεδομένων, της κατάστασης και των σχολίων τους.',
+    'APIExtraDesc'                        => 'Το API Extra επιτρέπει στους πελάτες να χρησιμοποιούν ένα RESTful API για να δημιουργούν αλληλεπιδράσεις με άλλες εφαρμογές βάσει σεναρίων, ώστε να αποκτήσουν προηγμένο αυτοματισμό και να αξιοποιήσουν την υπάρχουσα υποδομή.',
+    'AdvancedSearchExtraDesc'             => "Η λειτουργία Advanced Search Extra επεκτείνει τη λειτουργικότητα του πλαισίου αναζήτησης στην επάνω γραμμή, ώστε να είναι δυνατή η εύρεση κινδύνων μέσω αναζήτησης κειμένου στα δεδομένα κινδύνου.",
+    'AssessmentsExtraDesc'                => 'Το Risk Assessment Extra παρέχει στους χρήστες τη δυνατότητα να ορίζουν επαφές, να δημιουργούν ερωτήσεις (συμπεριλαμβανομένης της λογικής), να συναρμολογούν πολλαπλές ερωτήσεις με ένα πρότυπο ερωτηματολογίου, να δημιουργούν ερωτηματολόγια και να τα στέλνουν στις επαφές, να βλέπουν τα αποτελέσματα του ερωτηματολογίου, να προσθέτουν κινδύνους με βάση αυτά τα αποτελέσματα και να συγκρίνουν τα αποτελέσματα με την πάροδο του χρόνου, να εισάγουν και να εξάγουν εξωτερικά προσαρμοσμένες αξιολογήσεις και να εξετάζουν την διαδρομή ελέγχου της αξιολόγησης κινδύνου.',
     'ActiveAssessmentsDesc'               => 'Προβολή και διαχείριση αξιολογήσεων που βρίσκονται σε εξέλιξη.',
-    'WorkflowsExtraDesc'                  => 'Ενεργοποιεί μια οπτική, καθοδηγούμενη από συμβάντα μηχανή ροής εργασίας για την αυτοματοποίηση των ενεργειών διαχείρισης κινδύνου που ενεργοποιούνται από συμβάντα εντός του SimpleRisk.',
+    'WorkflowsExtraDesc'                  => 'Το Workflows Extra παρέχει μια οπτική, καθοδηγούμενη από συμβάντα μηχανή ροής εργασίας που αυτοματοποιεί τις ενέργειες διαχείρισης κινδύνου ως απόκριση σε συμβάντα εντός του SimpleRisk. Μπορείτε να σχεδιάσετε ροές εργασίας που ενεργοποιούνται σε περίπτωση αλλαγών — όπως η υποβολή, η ενημέρωση ή η αναθεώρηση ενός κινδύνου — για τη δρομολόγηση εγκρίσεων, την ανάθεση εργασίας και τη διατήρηση της διαδικασίας σας σε κίνηση χωρίς χειροκίνητη παρέμβαση.',
 
     // Configure Hub - tile descriptions (frameworks category)
-    'UCFExtraDesc'                        => 'Επιτρέπει την ενσωμάτωση των ελέγχων και των δοκιμών του Unified Control Framework (UCF) με το SimpleRisk.',
-    'SCFExtraDesc'                        => 'Προσθέτει τα στοιχεία ελέγχου από το Secure Controls Framework (SCF) στο SimpleRisk για χρήση με τη λειτουργικότητα διακυβέρνησής μας.',
-    'ComplianceForgeExtraDesc'            => 'Προσθέτει τα στοιχεία ελέγχου από το Πρόγραμμα Ψηφιακής Ασφάλειας (DSP) του ComplianceForge στο SimpleRisk για χρήση με τη λειτουργικότητα Διακυβέρνησης.',
+    'UCFExtraDesc'                        => 'Το Unified Compliance Framework (UCF) Extra είναι μια ενσωμάτωση σε επίπεδο API μεταξύ του Unified Compliance Framework και του SimpleRisk. Η ενεργοποίησή του σάς επιτρέπει να εισάγετε επιλεγμένα πλαίσια και αντιστοιχίσεις ελέγχου απευθείας από το UCF.',
+    'SCFExtraDesc'                        => "Το Secure Controls Framework (SCF) Extra αποτελεί άμεση ενσωμάτωση μεταξύ του Secure Controls Framework και του SimpleRisk. Εισάγει τον κατάλογο ελέγχων του SCF και τις αντιστοιχίσεις τους σε ένα ευρύ φάσμα πλαισίων συμμόρφωσης και κυβερνοασφάλειας στη λειτουργικότητα Διακυβέρνησης του SimpleRisk, ώστε να μπορείτε να υιοθετήσετε τα πλαίσια που χρειάζεστε και να διαχειριστείτε τους ελέγχους τους χωρίς να τα δημιουργήσετε χειροκίνητα.",
 
     // Configure Hub - tile descriptions (maintenance category)
     'FixReviewDatesDesc'                  => 'Μετεγκατάσταση των παλαιών στηλών review-date varchar στους κατάλληλους τύπους ημερομηνίας. Ορατό μόνο όταν χρειάζεται.',
@@ -2909,7 +2801,6 @@ $lang = array(
     'WorkflowsExtra'                      => 'Επιπλέον Ροές Εργασίας',
     'UCFExtra'                            => 'Ενοποιημένο Πλαίσιο Συμμόρφωσης (UCF) Extra',
     'SCFExtra'                            => 'Πλαίσιο Ασφαλών Ελέγχων Extra',
-    'ComplianceForgeExtra'                => 'ΣυμμόρφωσηForge Extra',
     'DatabaseUpgrade'                     => 'Αναβάθμιση βάσης δεδομένων',
 
     // Configure Hub - Extra tile state badges
@@ -2925,6 +2816,12 @@ $lang = array(
     'ActivateExtraBody'                   => 'Ενεργοποίηση του {name} Extra; Αυτό θα ενεργοποιήσει αμέσως τη λειτουργικότητά του. Μπορείτε να το απενεργοποιήσετε ξανά αργότερα από το ίδιο πλακίδιο.',
     'ActivateExtraError'                  => 'Αποτυχία ενεργοποίησης του Extra. Ελέγξτε τη σελίδα Ελέγχου εύρυθμης λειτουργίας για διαγνωστικά.',
 
+    // Configure Hub - Deactivation modal (Encryption Extra)
+    // 'Deactivate' (line 491) and 'Cancel' (line 489) are reused as-is.
+    'DeactivateExtraTitle'                => 'Απενεργοποίηση Επιπλέον',
+    'DeactivateExtraBody'                 => 'Απενεργοποίηση του {name} Extra; Η βάση δεδομένων SimpleRisk θα αποκρυπτογραφηθεί στη θέση της. Διατηρείται ένα αντίγραφο ασφαλείας της κρυπτογραφημένης κατάστασης, ώστε να μπορείτε να την επαναφέρετε εάν χρειαστεί.',
+    'DeactivateExtraError'                => 'Αποτυχία απενεργοποίησης του Extra. Ελέγξτε τη σελίδα Ελέγχου εύρυθμης λειτουργίας για διαγνωστικά.',
+
     // Configure Hub - Async license enrichment notice (Phase 4)
     // 'Retry' (line 2764) is reused. The existing 'LicenseCheckFailed' key
     // (line 1851) refers to the 30-day-disable warning shown elsewhere in
@@ -2933,11 +2830,16 @@ $lang = array(
 
     // Configure Hub - Install modal (Phase 5)
     // 'Install' (line 403) and 'Cancel' (line 489) are reused as-is.
-    'InstallExtraTitle'                   => 'Εγκατάσταση επιπλέον',
-    'InstallExtraBody'                    => 'Εγκατάσταση του {name} Extra; Αυτό κατεβάζει το πακέτο από το SimpleRisk και το αποσυμπιέζει στην εγκατάστασή σας. Η ενεργοποίηση είναι ένα ξεχωριστό βήμα που μπορείτε να κάνετε από το πλακίδιο μετά την ολοκλήρωση της εγκατάστασης.',
-    'InstallExtraError'                   => 'Αποτυχία εγκατάστασης του Extra. Ελέγξτε τη σελίδα Ελέγχου εύρυθμης λειτουργίας για διαγνωστικά.',
-    'MissingExtraName'                    => 'Λείπει το επιπλέον όνομα.',
-    'UnknownExtra'                        => 'Άγνωστο Επιπλέον όνομα.',
+    'InstallExtraTitle'                          => 'Εγκατάσταση επιπλέον',
+    'InstallExtraBody'                           => 'Εγκατάσταση του {name} Extra; Αυτό κατεβάζει το πακέτο από το SimpleRisk και το αποσυμπιέζει στην εγκατάστασή σας. Η ενεργοποίηση είναι ένα ξεχωριστό βήμα που μπορείτε να κάνετε από το πλακίδιο μετά την ολοκλήρωση της εγκατάστασης.',
+    'InstallExtraError'                          => 'Αποτυχία εγκατάστασης του Extra. Ελέγξτε τη σελίδα Ελέγχου εύρυθμης λειτουργίας για διαγνωστικά.',
+    'MissingExtraName'                           => 'Λείπει το επιπλέον όνομα.',
+    'UnknownExtra'                               => 'Άγνωστο Επιπλέον όνομα.',
+
+    // License state banner messages (display_license_check() in display.php)
+    // Shown as a header banner when $_SESSION['license_check'] is a non-passing state.
+    // 'LicenseCheckFailed' (line ~1868) is the legacy 30-day-disable warning used
+    // by the old enforcement path; these keys cover the new enforcement states.
 
     // Configure Hub - Purchase modal (Phase 6)
     // 'Cancel' (line 489) is reused as-is.
@@ -2945,6 +2847,1796 @@ $lang = array(
     'PurchaseExtraBody'                   => 'Το {name} Extra δεν περιλαμβάνεται στην τρέχουσα άδεια χρήσης SimpleRisk. Επισκεφθείτε τη σελίδα SimpleRisk Extras για να μάθετε περισσότερα ή να αγοράσετε μια άδεια χρήσης.',
     'ViewExtras'                          => 'Δείτε επιπλέον',
 
+    // In-app notifications bell UI
+    // Note: 'Notifications' (line 2234), 'SelectAll' (line 816), 'Restore' (line 952),
+    // 'All' (line 1470), and 'Delete' (line 80) are reused as-is — do not duplicate.
+    'MarkRead'                             => 'Σήμανση ως αναγνωσμένο',
+    'NoNotifications'                      => 'Δεν υπάρχουν ειδοποιήσεις',
+    // Time-unit abbreviations for the relative-time display in the bell panel.
+    // 'TimeDays' is already used for the column header "Time (Days)"; TimeDayUnit covers the 'd' abbrev.
+    'TimeSeconds'                          => 'δ',
+    'TimeMinutes'                          => 'μ',
+    'TimeHours'                            => 'ω',
+    'TimeDayUnit'                          => 'μ',
+    'NothingInTrash'                       => 'Τίποτα στα σκουπίδια',
+    'Promo'                                => 'Προώθηση',
+    'Trash'                                => 'Σκουπίδια',
+    'Unread'                               => 'Αδιάβαστος',
+    'View'                                 => 'Προβολή',
+
+    // Workflow "Send In-App Notification" action — audience picker hints.
+    // 'NoneSelected' (line 1878) is reused as-is for the multi-select button.
+    'NotificationSentToAllAdmins'          => 'Αυτή η ειδοποίηση θα σταλεί σε όλους τους διαχειριστές.',
+    'NotificationSentToAllUsers'           => 'Αυτή η ειδοποίηση θα αποσταλεί σε όλους τους χρήστες.',
+    'SelectAnAudienceAbove'                => 'Επιλέξτε ένα κοινό παραπάνω.',
+    'RiskConfiguration' => 'Διαμόρφωση Κινδύνου',
+    'ReviewSettings' => 'Έλεγχος ρυθμίσεων',
+    'Cards' => 'Καρτέλλες',
+    'List' => 'Λίστα',
+    'DeletedAssessmentsCannotBeRecovered' => 'Δεν είναι δυνατή η ανάκτηση των διαγραμμένων αξιολογήσεων',
+    'TheAssessmentsWereDeletedSuccessfully' => 'Η/Οι αξιολόγηση/ες διαγράφηκαν με επιτυχία.',
+    'AssetValuationMode' => 'Λειτουργία Αποτίμησης Περιουσιακών Στοιχείων',
+    'AutomaticLinearRange' => 'Αυτόματο γραμμικό εύρος',
+    'AutomaticExponentialRange' => 'Αυτόματο Εκθετικό Εύρος',
+    'ManualValuation' => 'Χειροκίνητο',
+    'AssetValuationMinMustBeNonNegative' => 'Η ελάχιστη αποτίμηση περιουσιακών στοιχείων πρέπει να είναι μηδέν ή μεγαλύτερη για το Αυτόματο Εκθετικό Εύρος.',
+    'CrossDomain' => 'Διατομέας',
+    'Preferences' => 'Προτιμήσεις',
+    'SpecificUser' => 'Συγκεκριμένος χρήστης',
+    'SpecificUsers' => 'Συγκεκριμένοι χρήστες',
+    'Help' => 'Βοήθεια',
+    'Profile' => 'Προφίλ',
+    'Scoring' => 'Βαθμολογία',
+    'EncryptionMissingLockTablesPrivilege'   => 'Ο χρήστης της βάσης δεδομένων SimpleRisk δεν έχει το δικαίωμα LOCK TABLES, το οποίο απαιτείται για την ασφαλή κρυπτογράφηση της βάσης δεδομένων. Ζητήστε από έναν διαχειριστή βάσης δεδομένων να εκτελέσει την πρόταση GRANT που επιστρέφεται στην απόκριση και προσπαθήστε ξανά.',
+    'EncryptionMissingLockTablesPrivilegeUi' => 'Ο χρήστης της βάσης δεδομένων SimpleRisk δεν έχει το δικαίωμα LOCK TABLES που απαιτείται για την κρυπτογράφηση. Ένας διαχειριστής βάσης δεδομένων πρέπει να εκτελέσει: GRANT LOCK TABLES ON {$db}.* TO {$user}; στη συνέχεια, προσπαθήστε ξανά.',
+    'EncryptionRequiredGrantLabel' => 'Απαιτούμενη δήλωση GRANT:',
+    'EncryptionActivationAlreadyRunning' => 'Μια ενεργοποίηση κρυπτογράφησης βρίσκεται ήδη σε εξέλιξη. Περιμένετε να ολοκληρωθεί ή χρησιμοποιήστε την εντολή restore-from-backup για ανάκτηση.',
+    'EncryptionActivationEnqueued'           => 'Η ενεργοποίηση κρυπτογράφησης Extra έχει τοποθετηθεί σε ουρά αναμονής. Το περιβάλλον χρήστη διαχειριστή θα παρακολουθεί την πρόοδο όσο η βάση δεδομένων είναι κρυπτογραφημένη.',
+    'EncryptionActivationEnqueueFailed'      => 'Αποτυχία προσθήκης στην ουρά της εργασίας ενεργοποίησης κρυπτογράφησης. Ελέγξτε το αρχείο καταγραφής εντοπισμού σφαλμάτων για λεπτομέρειες.',
+    'EncryptionDeactivationEnqueued'         => 'Η απενεργοποίηση κρυπτογράφησης έχει τοποθετηθεί σε ουρά αναμονής. Το περιβάλλον χρήστη διαχειριστή θα παρακολουθεί την πρόοδο κατά την αποκρυπτογράφηση της βάσης δεδομένων.',
+    'EncryptionDeactivationEnqueueFailed'    => 'Αποτυχία προσθήκης στην ουρά της εργασίας απενεργοποίησης κρυπτογράφησης. Ελέγξτε το αρχείο καταγραφής εντοπισμού σφαλμάτων για λεπτομέρειες.',
+    'EncryptionPipelineInProgress'           => 'Μια διαδικασία κρυπτογράφησης (ενεργοποίηση, απενεργοποίηση ή επαναφορά) βρίσκεται αυτήν τη στιγμή σε εξέλιξη. Περιμένετε να ολοκληρωθεί πριν προσπαθήσετε ξανά.',
+    'EncryptionPipelineInProgressTask'       => 'Μια διαδικασία κρυπτογράφησης βρίσκεται αυτήν τη στιγμή σε εξέλιξη (εργασία #{id}, {type}). Περιμένετε να ολοκληρωθεί πριν προσπαθήσετε ξανά.',
+    'EncryptionInFlightTitle'            => 'Λειτουργία κρυπτογράφησης σε εξέλιξη',
+    'EncryptionInFlightBody'             => 'Αυτήν τη στιγμή εκτελείται μια διαδικασία ενεργοποίησης, απενεργοποίησης ή επαναφοράς κρυπτογράφησης. Περιμένετε να ολοκληρωθεί — η σελίδα θα ανανεωθεί αυτόματα όταν ολοκληρωθεί η λειτουργία — πριν προσπαθήσετε ξανά.',
+    'OK'                                 => 'ΕΝΤΑΞΕΙ',
+    'ActivationGuardFailed'                 => 'Δεν ήταν δυνατή η έναρξη της ενεργοποίησης. Δείτε την ειδοποίηση στην κεφαλίδα της σελίδας για λεπτομέρειες.',
+    'EncryptionStageStarting'               => 'Έναρξη…',
+    'EncryptionStageProgress'               => 'Στάδιο {current} του {total}: {name}',
+    'EncryptionStageAllDone'                => 'Όλα τα στάδια ολοκληρώθηκαν.',
+    'EncryptionStageEncryptTable'           => 'Κρυπτογράφηση πίνακα: {table}',
+    'EncryptionStageDecryptTable'           => 'Αποκρυπτογράφηση πίνακα: {table}',
+    'EncryptionActivationInProgress'        => 'Κρυπτογράφηση της βάσης δεδομένων SimpleRisk. Μην κλείσετε αυτήν τη σελίδα.',
+    'EncryptionActivationFailedTitle'       => 'Η ενεργοποίηση κρυπτογράφησης απέτυχε',
+    'EncryptionActivationFailedBody'        => 'Η ενεργοποίηση δεν ολοκληρώθηκε και η βάση δεδομένων ενδέχεται να βρίσκεται σε ασυνεπή κατάσταση. Το αντίγραφο ασφαλείας πριν από την ενεργοποίηση διατηρείται — χρησιμοποιήστε την επιλογή "Επαναφορά από αντίγραφο ασφαλείας" για ανάκτηση ή επικοινωνήστε με την υποστήριξη του SimpleRisk.',
+    'EncryptionDeactivationInProgress'      => 'Αποκρυπτογράφηση της βάσης δεδομένων SimpleRisk. Μην κλείσετε αυτήν τη σελίδα.',
+    'EncryptionDeactivationFailedTitle'     => 'Η απενεργοποίηση κρυπτογράφησης απέτυχε',
+    'EncryptionDeactivationFailedBody'      => 'Η απενεργοποίηση δεν ολοκληρώθηκε και η βάση δεδομένων ενδέχεται να βρίσκεται σε ασυνεπή κατάσταση. Το αντίγραφο ασφαλείας κρυπτογραφημένης κατάστασης διατηρείται — χρησιμοποιήστε την επιλογή Επαναφορά από αντίγραφο ασφαλείας για να επαναφέρετε την κρυπτογραφημένη κατάσταση ή επικοινωνήστε με την υποστήριξη του SimpleRisk.',
+    'RestoreFromBackup'                     => 'Επαναφορά από αντίγραφο ασφαλείας',
+    'RestoreFromBackupNotYetAvailable'      => 'Η επαναφορά από αντίγραφο ασφαλείας δεν είναι ακόμη διαθέσιμη σε αυτήν την έκδοση. Επικοινωνήστε με την υποστήριξη του SimpleRisk για να την επαναφέρετε.',
+    'EncryptionRestoreInProgress'           => 'Επαναφορά της βάσης δεδομένων SimpleRisk από αντίγραφο ασφαλείας. Αυτό μπορεί να διαρκέσει αρκετά λεπτά.',
+    'EncryptionRestoreEnqueueFailed'        => 'Αποτυχία έναρξης της επαναφοράς. Ελέγξτε τα αρχεία καταγραφής του SimpleRisk και δοκιμάστε ξανά.',
+    'EncryptionStatusActive'                => 'Το Encrypted Database Extra είναι ενεργό.',
+    'EncryptionStatusVersion'               => 'Εκδοχή',
+    'EncryptionDeactivateCta'               => 'Απενεργοποίηση της κρυπτογραφημένης βάσης δεδομένων Extra',
+    'EncryptionDeactivateCtaHelp'           => 'Αποκρυπτογραφήστε κάθε κρυπτογραφημένη στήλη ξανά σε απλό κείμενο. Αυτό διαρκεί λίγα λεπτά σε μια συμπληρωμένη βάση δεδομένων.',
+    'EncryptionBackupPanelHeading'          => 'Αντίγραφο ασφαλείας πριν από την ενεργοποίηση',
+    'EncryptionBackupCreatedAt'             => 'Δημιουργήθηκε',
+    'EncryptionBackupSize'                  => 'Μέγεθος',
+    'EncryptionBackupOriginalFilename'      => 'Αρχείο',
+    'EncryptionBackupDownloadTooltip'       => 'Κάντε κλικ για να κατεβάσετε ένα αντίγραφο αυτού του αρχείου αντιγράφου ασφαλείας για αποθήκευση εκτός σύνδεσης.',
+    'EncryptionBackupStateRestoring'        => 'Αυτήν τη στιγμή βρίσκεται σε εξέλιξη μια διαδικασία επαναφοράς.',
+    'EncryptionNoBackupAvailable'           => 'Δεν υπάρχει προς το παρόν αποθηκευμένο αντίγραφο ασφαλείας πριν από την ενεργοποίηση. Το αντίγραφο ασφαλείας δημιουργείται στην αρχή κάθε ενεργοποίησης και αντικαθίσταται από οποιαδήποτε επακόλουθη ενεργοποίηση ή απενεργοποίηση.',
+    'EncryptionRestoreCtaHelp'              => 'Επιλέξτε αυτήν τη ρύθμιση εάν η επικύρωση εντόπισε προβλήματα και πρέπει να επαναφέρετε την κατάσταση πριν από την κρυπτογράφηση.',
+    'EncryptionRestoreTitle'                => 'Επαναφορά από αντίγραφο ασφαλείας;',
+    'EncryptionRestoreBodyWhy'              => 'Επαναφορά στο στιγμιότυπο πριν από την κρυπτογράφηση που καταγράφηκε στην αρχή της πιο πρόσφατης ενεργοποίησης. Επιλέξτε αυτό εάν η επικύρωση μετά την ενεργοποίηση εντόπισε προβλήματα και πρέπει να εγκαταλείψετε την κρυπτογράφηση.',
+    'EncryptionRestoreBodyWhat'             => 'Κάθε γραμμή που εγγράφεται στη βάση δεδομένων μετά τη δημιουργία του αντιγράφου ασφαλείας θα χαθεί οριστικά — συμπεριλαμβανομένων των κινδύνων, των μετριασμών, των καταχωρίσεων στο αρχείο καταγραφής ελέγχου και οποιωνδήποτε άλλων αλλαγών που έγιναν από την ενεργοποίηση. Το Encrypted Database Extra θα απενεργοποιηθεί ως μέρος της επαναφοράς.',
+    'EncryptionDeleteBackupCta'             => 'Διαγραφή του αντιγράφου ασφαλείας πριν από την κρυπτογράφηση',
+    'EncryptionDeleteBackupCtaHelp'         => 'Επιλέξτε αυτό μόλις ολοκληρωθεί η επικύρωση μετά την κρυπτογράφηση. Η κατάργηση του μη κρυπτογραφημένου στιγμιότυπου είναι αυτό που καθιστά την κρυπτογράφηση πραγματικά προστατευτική.',
+    'EncryptionDeleteBackupTitle'           => 'Διαγραφή του αντιγράφου ασφαλείας πριν από την κρυπτογράφηση;',
+    'EncryptionDeleteBackupBodyWhy'         => 'Αφαίρεση του μη κρυπτογραφημένου στιγμιότυπου των δεδομένων σας που καταγράφηκε στην αρχή της πιο πρόσφατης ενεργοποίησης. Η διατήρησή του επ\' αόριστον ακυρώνει τον σκοπό της κρυπτογράφησης — οποιοσδήποτε έχει πρόσβαση στη βάση δεδομένων μπορεί να διαβάσει το αντίγραφο πριν από την κρυπτογράφηση.',
+    'EncryptionDeleteBackupBodyWhat'        => 'Το αντίγραφο ασφαλείας εντός της βάσης δεδομένων διαγράφεται αμέσως. Δεν θα μπορείτε πλέον να χρησιμοποιήσετε την Επαναφορά από αντίγραφο ασφαλείας για να επαναφέρετε τη βάση δεδομένων στην κατάσταση πριν από την κρυπτογράφηση. Εάν αργότερα εντοπίσετε προβλήματα με την κρυπτογράφηση, η μόνη διαδρομή ανάκτησης θα είναι μια νέα επαναφορά της βάσης δεδομένων από τα λειτουργικά αντίγραφα ασφαλείας σας.',
+    'EncryptionDeleteBackupError'           => 'Η διαγραφή του αντιγράφου ασφαλείας απέτυχε. Ελέγξτε το αρχείο καταγραφής εντοπισμού σφαλμάτων και δοκιμάστε ξανά.',
+    'EncryptionModalWhyLabel'               => 'Γιατί να χρησιμοποιήσετε αυτό:',
+    'EncryptionModalWhatHappensLabel'       => 'Τι συμβαίνει στη συνέχεια:',
+    'EncryptionFieldsPanelHeading'          => 'Κρυπτογραφημένα πεδία βάσης δεδομένων',
+    'EncryptionFieldsHelp'                  => 'Κάθε στήλη που αναφέρεται εδώ αποθηκεύεται κρυπτογραφημένη σε κατάσταση ηρεμίας. Η επεξήγηση εργαλείου στο εικονίδιο κλειδαριάς δείχνει τον κρυπτογραφικό αλγόριθμο που χρησιμοποιείται.',
+    'EncryptionFieldsTableColumn'           => 'Πίνακας βάσης δεδομένων',
+    'EncryptionFieldsFieldColumn'           => 'Πεδίο βάσης δεδομένων',
+    'EncryptionFieldsEncryptedColumn'       => 'Κρυπτογραφημένα',
+    'EncryptionFieldsNoneFound'             => 'Δεν υπάρχουν καταχωρημένα κρυπτογραφημένα πεδία αυτήν τη στιγμή. Αυτό δεν θα πρέπει να συμβαίνει σε μια ενεργή εγκατάσταση — ελέγξτε τον πίνακα encrypted_fields για δεδομένα εκκίνησης.',
+    'EncryptionFieldsLockTooltipPrefix'     => 'Κρυπτογραφημένο με',
+    'EncryptionInactiveRedirect'            => 'Το Encrypted Database Extra δεν είναι ενεργό. Ενεργοποιήστε το από το Configure Hub.',
+    'ContactSupport'                        => 'Επικοινωνήστε με την υποστήριξη',
+    'BackupDatabaseFailed' => 'Η δημιουργία αντιγράφων ασφαλείας της βάσης δεδομένων απέτυχε. Ελέγξτε το αρχείο καταγραφής SimpleRisk για λεπτομέρειες.',
+    'WindowsNotSupported' => 'Το SimpleRisk δεν υποστηρίζει πλέον τα Windows από την έκδοση 20260421-001. Μεταβείτε σε έναν διακομιστή που βασίζεται σε Linux.',
+    'WindowsUpgradeHalted' => 'Αυτή η λειτουργία δεν μπορεί να εκτελεστεί σε διακομιστή Windows. Το SimpleRisk δεν υποστηρίζει πλέον τα Windows από την έκδοση 20260421-001. Μεταβείτε σε διακομιστή που βασίζεται σε Linux.',
+    'BundleIntegrityVerificationFailed' => 'Η ληφθείσα δέσμη SimpleRisk απέτυχε στην επαλήθευση ακεραιότητας. Η αναβάθμιση ακυρώθηκε και δεν τροποποιήθηκαν αρχεία.',
+    'BundleDownloadFailed' => 'Δεν ήταν δυνατή η λήψη του πακέτου SimpleRisk. Η αναβάθμιση ακυρώθηκε και δεν τροποποιήθηκαν αρχεία.',
+    'MissingOrInvalidTrackingID' => 'Λείπει ή δεν είναι έγκυρο το αναγνωριστικό παρακολούθησης.',
+    'JiraIntegrationExtra' => 'Ενσωμάτωση Jira Extra',
+    'IncidentManagementNotifications' => 'Ειδοποιήσεις Διαχείρισης Συμβάντων',
+    'NotificationSettingsUpdated' => 'Οι ρυθμίσεις ειδοποιήσεων ενημερώθηκαν.',
+    'DefaultBusinessUnit' => 'Προεπιλεγμένη επιχειρηματική μονάδα',
+    'TheDefaultBusinessUnitEncompasses' => 'Η προεπιλεγμένη Επιχειρηματική Μονάδα που περιλαμβάνει όλες τις ομάδες.',
+    'UserGuide' => 'Οδηγός χρήστη',
+    'AdministratorGuide' => 'Οδηγός Διαχειριστή',
+    'DecryptionFailureToast' => 'Δεν ήταν δυνατή η αποκρυπτογράφηση ενός ή περισσότερων κρυπτογραφημένων πεδίων. Εμφανίζονται ως κενά. Ελέγξτε τα αρχεία καταγραφής συστήματος για λεπτομέρειες.',
+    'EncryptionFailureToast' => 'Δεν ήταν δυνατή η κρυπτογράφηση ενός πεδίου και δεν αποθηκεύτηκε. Ελέγξτε τα αρχεία καταγραφής συστήματος για λεπτομέρειες.',
+    'EnableAPIv1Endpoints' => 'Ενεργοποίηση τελικών σημείων API v1 (Καταργημένο)',
+    'EnableAPIv1EndpointsHelp' => 'Το API v1 έχει καταργηθεί. Αφήστε το απενεργοποιημένο, εκτός εάν έχετε κάποια ενσωμάτωση που το απαιτεί. Το /api/v2/ δεν επηρεάζεται από αυτήν τη ρύθμιση και είναι πάντα διαθέσιμο.',
+    'AllowAPIKeyInURL' => 'Να επιτρέπεται το κλειδί API στο URL ή στο σώμα POST',
+    'AllowAPIKeyInURLHelp' => 'Για λόγους ασφαλείας, τα κλειδιά API θα πρέπει να αποστέλλονται στην κεφαλίδα αιτήματος X-API-KEY. Όταν είναι απενεργοποιημένα, τα κλειδιά που αποστέλλονται στη συμβολοσειρά ερωτήματος URL (?key=) ή στο σώμα POST (key=) απορρίπτονται, επειδή αυτές οι τοποθεσίες εκτίθενται πιο εύκολα στα αρχεία καταγραφής διακομιστή μεσολάβησης και στο ιστορικό του προγράμματος περιήγησης. Η κεφαλίδα X-API-KEY γίνεται πάντα αποδεκτή. Αφήστε την απενεργοποιημένη, εκτός εάν έχετε μια ενσωμάτωση που δεν μπορεί να στείλει την κεφαλίδα.',
+    'ArtificialIntelligenceDesc' => 'Ρυθμίστε τη σύνδεση του παρόχου τεχνητής νοημοσύνης και τις ερωτήσεις περιβάλλοντος που βασίζονται στις απαντήσεις τεχνητής νοημοσύνης για αυτήν την παρουσία του SimpleRisk.',
+    'ProviderConfiguration' => 'Διαμόρφωση παρόχου',
+    'ContextQuestions' => 'Ερωτήσεις πλαισίου',
+    'AIProviderNotConfiguredWarning' => 'Ο πάροχος τεχνητής νοημοσύνης δεν έχει ρυθμιστεί. Δεν είναι δυνατή η παραγωγή ζωντανών αποτελεσμάτων μέχρι να ορίσετε τον πάροχο και το κλειδί API στην καρτέλα Ρύθμιση παραμέτρων παρόχου.',
+    'AutoProcessSCFUpdates' => 'Αυτόματη επεξεργασία νέων εκδόσεων Secure Controls Framework (SCF)',
+    'AddNewControls' => 'Προσθήκη νέων στοιχείων ελέγχου SCF',
+    'UpdateExistingControls' => 'Ενημέρωση υπαρχόντων ελέγχων SCF',
+    'DeleteRemovedControls' => 'Διαγραφή αφαιρεμένων στοιχείων ελέγχου SCF',
+    'CreateEvidenceRequests' => 'Δημιουργήστε αιτήματα αποδεικτικών στοιχείων για τους ελέγχους SCF',
+    'SelectSCFFrameworks' => 'Επιλέξτε Πλαίσια SCF',
+    'SCFReleaseProcessing' => 'Επεξεργασία έκδοσης SCF',
+    'NotFrameworkDescription' => 'Το παρακάτω γραφικό στοιχείο εμφανίζει όλες τις κεφαλίδες που βρίσκονται στο υπολογιστικό φύλλο Secure Controls Framework (SCF). Χρησιμοποιήστε το για να επιλέξετε ποιες στήλες περιέχουν δεδομένα framework έναντι δεδομένων που δεν περιέχουν framework.',
+    'Note' => 'Σημείωμα',
+    'AISettingsNote' => 'Η ενεργοποίηση της βοήθειας με τεχνητή νοημοσύνη θα στείλει δεδομένα στην Anthropic για ανάλυση στο LLM της, χρησιμοποιώντας το κλειδί API της Anthropic, προκειμένου να σας παρέχει εξατομικευμένα αποτελέσματα.',
+    'EnableAIAssistanceForControlData' => 'Ενεργοποίηση βοήθειας με τεχνητή νοημοσύνη για δεδομένα ελέγχου',
+    'ReferenceText' => 'Κείμενο αναφοράς',
+    'FrameworkSelection' => 'Επιλογή πλαισίου',
+    'Show' => 'Επίδειξη',
+    'InProgress' => 'Σε εξέλιξη',
+    'Canceled' => 'Ακυρώθηκε',
+    'Failed' => 'Αποτυχημένος',
+    'LegacyFrameworks' => 'Παλαιότερα Πλαίσια',
+    'Archive' => 'Αρχείο',
+    'FailedToFetchCVEInformation' => 'Αποτυχία ανάκτησης πληροφοριών CVE. Ελέγξτε το αναγνωριστικό CVE και προσπαθήστε ξανά.',
+    'ComplianceDashboard' => 'Πίνακας ελέγχου συμμόρφωσης',
+    'DynamicAuditReportHelp' => 'Αυτή η αναφορά εμφανίζει όλους τους ελέγχους και την κατάστασή τους.',
+    'ComplianceDashboardDescription' => 'Αυτό το γράφημα εμφανίζει τον αριθμό των ελέγχων σε κάθε πλαίσιο, με τα επιτυχή στοιχεία ελέγχου να εμφανίζονται με πράσινο χρώμα και τα αποτυχημένα στοιχεία ελέγχου με κόκκινο χρώμα.',
+    'PassingControls' => 'Ικανοποιητικοί έλεγχοι',
+    'FailingControls' => 'Αποτυχία ελέγχων',
+    'ControlsByFramework' => 'Έλεγχοι ανά Πλαίσιο',
+    'NumberOfControls' => 'Αριθμός ελέγχων',
+    'PasswordResetTokenExpirationPeriod' => 'Περίοδος Λήξης Διακριτικού Επαναφοράς Κωδικού Πρόσβασης',
+    'APasswordResetTokenExpirationPeriodShouldBeMoreThan5Minutes' => 'Η περίοδος λήξης ενός διακριτικού επαναφοράς κωδικού πρόσβασης θα πρέπει να είναι μεγαλύτερη από 5 λεπτά.',
+    'MeanTimeToRemediate' => 'Μέσος χρόνος για αποκατάσταση',
+    'ByTeam' => 'Από την ομάδα',
+    'ByCategory' => 'Ανά κατηγορία',
+    'ByRiskLevel' => 'Ανά Επίπεδο Κινδύνου',
+    'MeanTimeToRemediateDescription' => 'Μέσος αριθμός ημερών για το κλείσιμο κινδύνων, ομαδοποιημένοι ανά ομάδα, κατηγορία και επίπεδο κινδύνου. Περιλαμβάνονται μόνο οι κλειστοί κίνδυνοι.',
+    'AverageDaysToClose' => 'Μέσος όρος ημερών έως το κλείσιμο',
+    'ControlPassRateTrend' => 'Τάση ποσοστού επιτυχίας ελέγχου',
+    'ControlPassRateTrendDescription' => 'Μηνιαίο ποσοστό επιτυχίας (%) ανά πλαίσιο κατά τους τελευταίους 12 μήνες. Εμφανίζονται μόνο τα πλαίσια με τουλάχιστον ένα αποτέλεσμα δοκιμής στην περίοδο.',
+    'PassRatePercent' => 'Ποσοστό επιτυχίας (%)',
+    'ExposureByTeam' => 'Έκθεση σε Κίνδυνο ανά Ομάδα',
+    'ExposureByCategory' => 'Έκθεση σε Κίνδυνο ανά Κατηγορία',
+    'ExposureByLocation' => 'Έκθεση σε κίνδυνο ανά τοποθεσία',
+    'TotalRiskScore' => 'Συνολική Βαθμολογία Κινδύνου',
+    'SLABreachStatus' => 'Κατάσταση παραβίασης SLA',
+    'SLABreachDescription' => 'Ανοικτοί κίνδυνοι εντός ή πέραν του ορίου SLA ανά επίπεδο κινδύνου. Προεπιλεγμένα όρια: Πολύ Υψηλό=30 ημέρες, Υψηλό=60 ημέρες, Μέτριο=90 ημέρες, Χαμηλό=180 ημέρες.',
+    'WithinSLA' => 'Εντός SLA',
+    'SLABreached' => 'Παραβίαση SLA',
+    'NumberOfRisks' => 'Αριθμός Κινδύνων',
+    'ExposureByBusinessUnit' => 'Έκθεση σε Κίνδυνο ανά Επιχειρηματική Μονάδα',
+    'BUChartCrossUnitNote' => 'Σημείωση: Οι κίνδυνοι που έχουν ανατεθεί σε ομάδες που εκτείνονται σε πολλαπλές BU υπολογίζονται σε κάθε μία.',
+    'SLAThresholds' => 'Όρια SLA',
+    'SLAThresholdsDescription' => 'Μέγιστος αριθμός ημερών που ένας ανοιχτός κίνδυνος μπορεί να παραμείνει ανεπίλυτος προτού θεωρηθεί εκπρόθεσμος, ανά επίπεδο κινδύνου.',
+    'SLAThresholdMustBeBetween1And3650' => 'Οι τιμές κατωφλίου SLA πρέπει να κυμαίνονται μεταξύ 1 και 3650 ημερών.',
+    'SLAThresholdsUpdatedSuccessfully' => 'Τα όρια SLA ενημερώθηκαν με επιτυχία.',
+    'TimeToDetect' => 'Ώρα για ανίχνευση',
+    'TimeToDetectDescription' => 'Μέσος αριθμός ημερών από την έναρξη του συμβάντος (Έναρξη στις) έως την ανίχνευση (Εντοπίστηκε στις), ομαδοποιημένος ανά ομάδα και τύπο συμβάντος. Περιλαμβάνονται μόνο τα συμβάντα με καταγεγραμμένες και τις δύο ημερομηνίες.',
+    'ByOccurrenceType' => 'Ανά τύπο εμφάνισης',
+    'ApplicationVersion' => 'Έκδοση εφαρμογής',
+    'DatabaseVersion' => 'Έκδοση βάσης δεδομένων',
+    'InstanceID' => 'Αναγνωριστικό παρουσίας',
+    'LatestIsVersion' => 'Το τελευταίο είναι {$version}',
+    'UpToDate' => 'Ενημερωμένο',
+    'UpdateAvailable' => 'Διαθέσιμη ενημέρωση',
+    'RegistrationSuccessful' => 'Η εγγραφή ολοκληρώθηκε με επιτυχία.',
+    'LocalRegistrationStateCleared' => 'Η τοπική κατάσταση εγγραφής διαγράφηκε. Επαναλάβετε την εγγραφή σας στο /admin/register.php για να λάβετε ένα νέο instance_id.',
+    'InstanceInformationUpdated' => 'Οι πληροφορίες της παρουσίας ενημερώθηκαν.',
+    'UpgradeExtraDesc' => 'Το Upgrade Extra διατηρεί την παρουσία του SimpleRisk ενημερωμένη, κατεβάζοντας και εφαρμόζοντας αναβαθμίσεις εφαρμογών και βάσεων δεδομένων και εγκαθιστώντας και ενημερώνοντας τα άλλα Extras, όλα από τη σελίδα Εγγραφή & Αναβάθμιση. Συνοδεύεται από το SimpleRisk χωρίς κόστος, ώστε να μπορείτε να παραμένετε στην πιο πρόσφατη έκδοση χωρίς χειροκίνητη διαχείριση αρχείων.',
+    'ExtraInstallDisabledByEnforcement' => 'Η επιπλέον εγκατάσταση είναι αυτήν τη στιγμή απενεργοποιημένη από την κατάσταση της άδειάς σας. Επικοινωνήστε με τον διαχειριστή σας ή την υποστήριξη του SimpleRisk.',
+    'LicenseStateUnknownRetryShortly' => 'Οι πληροφορίες άδειας χρήσης δεν είναι ακόμη διαθέσιμες. Δοκιμάστε ξανά σε λίγα λεπτά.',
+    'LicenseExpiringSoonTitle' => 'Η άδεια λήγει σύντομα: {$extra}',
+    'LicenseExpiringSoonBody' => 'Η άδεια χρήσης {$extra} λήγει στις {$date} (απομένουν{$days} ημέρες). Ανανεώστε την από την ενότητα Εγγραφή & Αναβάθμιση για να αποφύγετε την απώλεια πρόσβασης.',
+    'LicenseExpiredTitle' => 'Η άδεια έληξε: {$extra}',
+    'LicenseExpiredBody' => 'Η άδεια χρήσης {$extra} έληξε στις {$date}. Ανανεώστε την από την ενότητα Εγγραφή & Αναβάθμιση για να επαναφέρετε την πρόσβαση.',
+    'Licenses' => 'Άδειες',
+    'LicensesDesc' => 'Δείτε την κατάσταση αδειοδότησης για κάθε SimpleRisk Extra.',
+    'RefreshLicenses' => 'Ανανέωση αδειών χρήσης',
+    'LoadingLicenseData' => 'Φόρτωση δεδομένων άδειας χρήσης...',
+    'Licensed' => 'Αδειούχος',
+    'Unlicensed' => 'Μη έχων άδειαν',
+    'Expired' => 'Λήξη',
+    'Free' => 'Δωρεάν',
+    'License' => 'Αδεια',
+    'NoLicensedExtras' => 'Δεν υπάρχουν αδειοδοτημένα έξτρα.',
+    'NoExpiredExtras' => 'Δεν υπάρχουν ληγμένα έξτρα.',
+    'NoUnlicensedExtras' => 'Δεν υπάρχουν μη αδειοδοτημένα έξτρα.',
+    'Unlimited' => 'Απεριόριστος',
+    'LicenseStateLockMessage' => 'Οι επιπλέον ενέργειες εγκατάστασης και αναβάθμισης είναι αυτήν τη στιγμή απενεργοποιημένες από την κατάσταση της άδειάς σας. Τα υπάρχοντα εγκατεστημένα πρόσθετα συνεχίζουν να λειτουργούν.',
+    'LicenseStateFailMessage' => 'Η άδεια χρήσης του SimpleRisk έχει λήξει ή έχει απενεργοποιηθεί. Επικοινωνήστε με την υποστήριξη του SimpleRisk για να επαναφέρετε την υπηρεσία.',
+    'LicenseStateAnonymousMessage' => 'Αυτή η παρουσία του SimpleRisk δεν είναι καταχωρημένη. Διατίθενται μόνο δωρεάν πρόσθετα. Εγγραφείτε στο μενού Ρύθμιση παραμέτρων για να αποκτήσετε πρόσβαση στα επί πληρωμή πρόσθετα.',
+    'LicenseStateUnknownMessage' => 'Το SimpleRisk δεν μπόρεσε να επικοινωνήσει με την υπηρεσία αδειοδότησης. Η κατάσταση της άδειας χρήσης θα ανανεωθεί αυτόματα στον επόμενο έλεγχο.',
+    'ExtraIntegrityCheckFailed' => 'Το πακέτο που λήφθηκε απέτυχε στον έλεγχο ακεραιότητάς του και δεν εγκαταστάθηκε.',
+    'ExtraInstallWriteFailed' => 'Δεν ήταν δυνατή η εγκατάσταση του Extra επειδή ο κατάλογος extras δεν είναι εγγράψιμος.',
+    'ExtraInstallExtractFailed' => 'Έγινε λήψη του Extra, αλλά δεν ήταν δυνατή η εξαγωγή και η εγκατάστασή του. Ελέγξτε τα αρχεία καταγραφής της εφαρμογής.',
+    'EncryptionPreflightFailed' => 'Η προκαταρκτική DDL απέτυχε — ανατρέξτε στο αρχείο καταγραφής εντοπισμού σφαλμάτων για λεπτομέρειες.',
+    'EncryptionActivationFailed' => 'Η ενεργοποίηση κρυπτογράφησης απέτυχε κατά την προκαταρκτική ρύθμιση. Ελέγξτε τα αρχεία καταγραφής της εφαρμογής.',
+    'QuestionnaireSentSchedulingOnly' => 'Αυτό το ερωτηματολόγιο έχει σταλεί. Μόνο οι παρακάτω ρυθμίσεις προγραμματισμού μπορούν να τροποποιηθούν.',
+    'AreYouSureYouWantToReopenThisResult' => 'Είστε βέβαιοι ότι θέλετε να ανοίξετε ξανά αυτό το αποτέλεσμα για έλεγχο;',
+    'QuestionnaireResultReopenedSuccessfully' => 'Το αποτέλεσμα του ερωτηματολογίου άνοιξε ξανά με επιτυχία για έλεγχο.',
+    'QuestionnaireResultReopenedAuditLog' => 'Το αποτέλεσμα του ερωτηματολογίου "{$questionnaire_name}" (υποβλήθηκε από την επαφή "{$contact_name}") άνοιξε ξανά για έλεγχο από τον χρήστη "{$user_name}".',
+    'QuestionnaireDraftNoChanges' => 'Δεν υπάρχουν αλλαγές για αποθήκευση.',
+    'SendQuestionnaireIdRequired' => 'Η παράμετρος id είναι υποχρεωτική και πρέπει να είναι αριθμητική.',
+    'RiskIdMustBeNumeric' => 'Η παράμετρος risk_id πρέπει να είναι αριθμητική.',
+    'AssessmentsExtraNotEnabled' => 'Το Assessments Extra δεν είναι ενεργοποιημένο.',
+    'QuestionnaireSchedulingUpdatedAuditLog' => 'Οι ρυθμίσεις προγραμματισμού για το ερωτηματολόγιο με όνομα "{$name}" ενημερώθηκαν από το όνομα χρήστη "{$user}".',
+    'QuestionnaireResultNotReopenable' => 'Το αποτέλεσμα του ερωτηματολογίου δεν μπορεί να ανοιχτεί ξανά επειδή δεν βρίσκεται σε κατάσταση απόρριψης ή μη έγκρισης.',
+    'QuestionnaireTrackingNotFoundAfterUpdate' => 'Δεν βρέθηκε παρακολούθηση ερωτηματολογίου μετά την ενημέρωση.',
+    'QuestionnaireResultAlreadyDecided' => 'Το αποτέλεσμα του ερωτηματολογίου έχει ήδη αποφασιστεί (εγκρίθηκε, απορρίφθηκε ή δεν εγκρίθηκε). Χρησιμοποιήστε πρώτα την ενέργεια "Εκ νέου άνοιγμα".',
+    'QuestionnaireNoControlsForApproval' => 'Δεν βρέθηκαν έλεγχοι για αυτό το ερωτηματολόγιο.',
+    'QuestionnaireNoResponsesForApproval' => 'Δεν βρέθηκαν απαντήσεις στο ερωτηματολόγιο για την επεξεργασία ενημερώσεων ωριμότητας.',
+    'ResultMessageUnavailable' => 'Το μήνυμα αποτελέσματος δεν είναι διαθέσιμο.',
+    'AIProviderURLNotAllowed' => 'Αυτή η διεύθυνση URL API δεν επιτρέπεται. Χρησιμοποιήστε έναν γνωστό πάροχο τεχνητής νοημοσύνης ή μια διεύθυνση loopback (127.0.0.1) για αυτο-φιλοξενία.',
+    'AIReenterKeyForNewURL' => 'Εισαγάγετε ξανά το κλειδί API για να δοκιμάσετε μια διαφορετική διεύθυνση URL παρόχου.',
+    'WorkflowHttpRequestDisallowedURL' => 'http_request: Η διεύθυνση URL {$url} καταλήγει σε μια μη επιτρεπόμενη εσωτερική ή δεσμευμένη διεύθυνση.',
+    'BehaviorAndScheduling' => 'Συμπεριφορά & Προγραμματισμός',
+    'PrepopulateAcrossContacts' => 'Προσυμπληρώστε τις νέες απαντήσεις με τις προηγούμενες απαντήσεις μιας άλλης επαφής για αυτήν την αξιολόγηση',
+    'PrepopulateAcrossContactsHelp' => 'Προσυμπληρώστε τη φόρμα ενός νέου ερωτηθέντος με τις πιο πρόσφατες προηγούμενες απαντήσεις από οποιαδήποτε επαφή — χρήσιμο για τη συνέχεια όταν η ευθύνη αλλάζει χέρια.',
+    'PrepopulateAcrossContactsCaution' => 'Απενεργοποιημένο από προεπιλογή. Όταν είναι απενεργοποιημένο, μια επαφή βλέπει μόνο τις προηγούμενες απαντήσεις της. Ενεργοποιήστε αυτήν τη ρύθμιση μόνο όταν οι ερωτηθέντες είναι εσωτερικοί ή έμπιστοι — μπορεί να εκθέσει τις απαντήσεις μιας επαφής σε μια άλλη (π.χ. ένας προμηθευτής να βλέπει τις απαντήσεις μιας άλλης).',
+    'AddTemplateAndContacts' => 'Προσθήκη προτύπου και επαφών',
+    'QuestionnaireGeneralSubtitle' => 'Ονομάστε το ερωτηματολόγιο και ορίστε σε ποιον ανήκει',
+    'QuestionnaireInstructionsSubtitle' => 'Οδηγίες που εμφανίζονται στους ερωτηθέντες και στο email πρόσκλησης',
+    'QuestionnaireBehaviorSubtitle' => 'Πώς συμπεριφέρεται το ερωτηματολόγιο κατά την αποστολή και συμπλήρωσή του',
+    'QuestionnaireRiskDetailsSubtitle' => 'Προαιρετικές προεπιλογές που εφαρμόζονται στους κινδύνους που δημιουργεί αυτή η αξιολόγηση',
+    'QuestionnaireTemplatesSubtitle' => 'Συνδέστε κάθε πρότυπο ερώτησης με τις επαφές που το λαμβάνουν',
+    'BypassPendingRisksLabel' => 'Παράκαμψη εκκρεμών κινδύνων',
+    'BypassPendingRisksDescription' => 'Δημιουργήστε κινδύνους αμέσως μετά την ολοκλήρωση της αξιολόγησης αντί να τους κρατάτε για έλεγχο.',
+    'AutomaticallySendResultsLabel' => 'Αυτόματη αποστολή αποτελεσμάτων',
+    'AutomaticallySendResultsDescription' => 'Στείλτε τα αποτελέσματα της αξιολόγησης σε όλες τις επαφές αξιολόγησης μετά την ολοκλήρωσή τους.',
+    'QuestionnaireMultiselectPlaceholder' => 'Επιλέξτε ή αναζητήστε…',
+    'QuestionnaireNamePlaceholder' => 'π.χ. Αναθεώρηση Ασφάλειας Προμηθευτών 2026',
+    'AddTeamPlaceholder' => 'Προσθήκη ομάδας…',
+    'AddStakeholderPlaceholder' => 'Προσθήκη ενδιαφερόμενου μέρους…',
+    'AddControlTypePlaceholder' => 'Προσθήκη τύπου ελέγχου…',
+    'AddLocationPlaceholder' => 'Προσθήκη τοποθεσίας…',
+    'NotifyWhenNotCompleteLabel' => 'Ειδοποίηση όταν δεν ολοκληρωθεί',
+    'NotifyWhenNotCompleteDescription' => 'Υπενθυμίστε στις επαφές που δεν έχουν ολοκληρώσει την αξιολόγηση.',
+    'RemindEveryDays' => 'Υπενθύμιση κάθε {$day} ημέρες',
+    'ResendAssessmentLabel' => 'Επανάληψη αποστολής αξιολόγησης',
+    'ResendAssessmentDescription' => 'Αυτόματη επανέκδοση της αξιολόγησης σε επαναλαμβανόμενο ρυθμό.',
+    'ResendEveryDays' => 'Επαναποστολή κάθε {$day} ημέρες',
+    'QuestionnaireSaveBarHint' => 'Η επιλογή «Αποθήκευση & Αποστολή» αποστέλλει το ερωτηματολόγιο στις επαφές της αμέσως.',
+    // Home dashboard — KPI tile labels
+    'NewSelfAssessment' => 'Νέα Αυτοαξιολόγηση',
+    'SelfAssessmentPrereqIntro' => 'Οι αυτοαξιολογήσεις σάς επιτρέπουν να αξιολογείτε τον οργανισμό σας σε σχέση με ένα Πλαίσιο Ασφαλών Ελέγχων και να δημιουργείτε αυτόματα κινδύνους από τους ελέγχους που αποτυγχάνουν. Απαιτούνται πρώτα δύο βήματα ρύθμισης:',
+    'RegisterYourInstance' => 'Καταχωρίστε την παρουσία σας',
+    'RegisterYourInstanceHelp' => 'Η εγγραφή συνδέει αυτήν την παρουσία με την υπηρεσία αδειοδότησης του SimpleRisk, ώστε να είναι δυνατή η λήψη δωρεάν Extras (συμπεριλαμβανομένου του SCF).',
+    'InstallTheSCF' => 'Εγκαταστήστε το Πλαίσιο Ασφαλών Ελέγχων',
+    'InstallTheSCFHelp' => 'Το SCF είναι ένα δωρεάν Extra που παρέχει τα πλαίσια, τις ερωτήσεις ελέγχου και τις χαρτογραφήσεις κινδύνου με βάση τα οποία αξιολογεί αυτή η λειτουργία. Η εγκατάσταση εκτελείται στο παρασκήνιο και ενδέχεται να διαρκέσει μερικά λεπτά.',
+    'GoToRegistration' => 'Μετάβαση στην Εγγραφή',
+    'GoToSCF' => 'Μετάβαση στο Πλαίσιο Ασφαλών Ελέγχων',
+    'SelfAssessmentEnableTip' => 'Προαιρετικά: στην ενότητα Διακυβέρνηση > Πλαίσια μπορείτε να ενεργοποιήσετε συγκεκριμένα πλαίσια SCF ώστε να βλέπουν μια σύντομη επιμελημένη λίστα κατά την έναρξη μιας αξιολόγησης. Μπορείτε επίσης να αξιολογήσετε σε σχέση με οποιοδήποτε πλαίσιο στον πλήρη κατάλογο SCF χωρίς να το ενεργοποιήσετε.',
+    'ChooseAFramework' => 'Επιλέξτε ένα πλαίσιο για αξιολόγηση',
+    'EnabledFrameworks' => 'Ενεργοποιημένα πλαίσια',
+    'AllScfFrameworks' => 'Όλα τα πλαίσια SCF',
+    'Start' => 'Αρχή',
+    'Resume' => 'Συνέχιση',
+    'ControlQuestion' => 'Ερώτηση Ελέγχου',
+    'NotApplicable' => 'Δ/Υ',
+    'SaveProgress' => 'Αποθήκευση προόδου',
+    'MarkComplete' => 'Σήμανση Ολοκληρωμένου',
+    'AnsweredOfTotal' => 'απάντησε',
+    'FailedSoFar' => 'απέτυχε μέχρι στιγμής',
+    'StartedBy' => 'Ξεκίνησε από',
+    'FailedControls' => 'Αποτυχημένοι έλεγχοι',
+    'PushToRisk' => 'Ώθηση στον Κίνδυνο',
+    'ConfirmDeleteSelfAssessment' => 'Διαγραφή αυτής της αυτοαξιολόγησης; Δεν είναι δυνατή η αναίρεση αυτής της ενέργειας.',
+    'ConfirmCompleteSelfAssessment' => 'Να χαρακτηρίσετε αυτήν την αξιολόγηση ως ολοκληρωμένη; Θα προκύψουν κίνδυνοι από αποτυχημένους ελέγχους.',
+    'NoSelfAssessmentsYet' => 'Δεν υπάρχουν ακόμη αυτοαξιολογήσεις. Ξεκινήστε μία για να ξεκινήσετε.',
+    'RequestFailed' => 'Δεν ήταν δυνατή η ολοκλήρωση του αιτήματος. Δοκιμάστε ξανά.',
+    'NoPendingRisks' => 'Δεν υπάρχουν εκκρεμείς κίνδυνοι. Ολοκληρώστε μια αξιολόγηση για να δημιουργήσετε κινδύνους από αποτυχημένους ελέγχους.',
+    'NoFailedControls' => 'Δεν υπάρχουν αποτελέσματα ελέγχου προς εμφάνιση για αυτό το φίλτρο.',
+    'ControlResultsTruncated' => 'Εμφάνιση των πιο πρόσφατων αποτελεσμάτων του 2000. Περιορίστε το φίλτρο για να δείτε περισσότερα.',
+    'GeneratedFromSelfAssessment' => 'Προκύπτει από αυτοαξιολόγηση',
+    'SelfAssessmentMitigationSolution' => 'Εφαρμόστε τους ελέγχους που συνδέονται παρακάτω, οι οποίοι εντοπίστηκαν ως ανεπαρκείς κατά τη διάρκεια αυτής της αυτοαξιολόγησης, για τον μετριασμό αυτού του κινδύνου.',
+    'NSelected' => 'επιλεγμένο {n}',
+    'FilterByControl' => 'Φιλτράρισμα κατά στοιχείο ελέγχου',
+    'Pushing' => 'Πίεση…',
+    'Deleting' => 'Διαγραφή…',
+    'ConfirmPushSelectedPendingRisks' => 'Ωθήστε τους {n} επιλεγμένους εκκρεμείς κινδύνους στους κινδύνους;',
+    'ConfirmDeleteSelectedPendingRisks' => 'Διαγραφή των {n} επιλεγμένων κινδύνων σε εκκρεμότητα; Δεν είναι δυνατή η αναίρεση αυτής της ενέργειας.',
+    'ConfirmDeleteSelectedSelfAssessments' => 'Διαγραφή των {n} επιλεγμένων αυτοαξιολογήσεων; Δεν είναι δυνατή η αναίρεση αυτής της ενέργειας.',
+    'BulkPartialFailure' => 'Τα {n} από τα {total} στοιχεία ολοκληρώθηκαν με επιτυχία. Τα υπόλοιπα απέτυχαν. Κάντε ανανέωση για να δείτε την τρέχουσα κατάσταση.',
+
+    // Workflows Extra - deactivation confirm ('Deactivate' at line 480 is reused as-is)
+    'WorkflowsExtraDeactivateConfirm' => 'Απενεργοποίηση του Workflows Extra; Όλοι οι ορισμοί ροής εργασίας που δημιουργούνται από τον χρήστη θα διαγραφούν οριστικά. Οι ροές εργασίας του συστήματος θα διατηρηθούν.',
+    'HomeKpiOpenRisks' => 'Ανοιχτοί Κίνδυνοι',
+    'HomeKpiNeedsReview' => 'Χρειάζεται αναθεώρηση',
+    'HomeKpiUnmitigated' => 'Μη μετριασμένος',
+    'HomeKpiClosedRisks' => 'Κλειστοί Κίνδυνοι',
+    'HomeKpiControlPassRate' => 'Ποσοστό επιτυχίας ελέγχου',
+    'HomeKpiFailingControls' => 'Αποτυχημένοι έλεγχοι',
+    'HomeKpiOpenAudits' => 'Ανοιχτοί Έλεγχοι',
+    'HomeKpiTestsDueSoon' => 'Σύντομα αναμένονται δοκιμές',
+    'HomeKpiActiveFrameworks' => 'Ενεργά πλαίσια',
+    'HomeKpiTotalControls' => 'Συνολικοί έλεγχοι',
+    // Home dashboard — What's Next feed
+    'WhatsNext' => 'Τι ακολουθεί;',
+    'WhatsNextAllCaughtUp' => 'Τα έχεις όλα καταφέρει.',
+    'WhatsNextRegisterInstance' => 'Εγγραφή της παρουσίας σας στο SimpleRisk',
+    'WhatsNextSubmitFirstRisk' => 'Υποβάλετε τον πρώτο σας κίνδυνο',
+    'WhatsNextLoadFramework' => 'Φόρτωση πλαισίου ελέγχου',
+    'WhatsNextUnreviewedRisks' => 'Κίνδυνοι προς αναθεώρηση',
+    'WhatsNextUnmitigatedRisks' => 'Κίνδυνοι προς μετριασμό',
+    'WhatsNextInitiateAudits' => 'Έλεγχοι προς έναρξη',
+    // Home dashboard — widget picker type labels
+    'WidgetType_kpi' => 'Πλακίδιο KPI',
+    'WidgetType_whats_next' => 'Λίστα',
+    // Home dashboard — hub catalog entry
+    'HomeDashboard' => 'Αρχική',
+    'HomeDashboardDesc' => 'Το σημείο εκκίνησής σας — βασικές μετρήσεις και τι πρέπει να κάνετε στη συνέχεια, με μια ματιά.',
+    'HomeChartRiskByLevel' => 'Κίνδυνος ανά Επίπεδο',
+    'HomeKpiThisMonth' => 'αυτόν τον μήνα',
+    'HomeKpiNoChange' => 'Καμία αλλαγή',
+    'EditLayout' => 'Επεξεργασία διάταξης',
+    'ListHighestRisks' => 'Οι υψηλότεροι κίνδυνοι μου',
+    'ListPastDueReviews' => 'Εκπρόθεσμες αναθεωρήσεις',
+    'ListUpcomingTests' => 'Προσεχείς εξετάσεις',
+    'ListRecentFailures' => 'Πρόσφατες αποτυχίες',
+    'ListPoliciesReview' => 'Έγγραφα προς εξέταση',
+    'ListExpiringExceptions' => 'Λήξη Εξαιρέσεων',
+    'ImKpiOpenIncidents' => 'Συνολικά ανοιχτά',
+    'ImKpiOverdue' => 'Εκπρόθεσμος',
+    'ImKpiMttr30' => 'Μέσος χρόνος επίλυσης',
+    'ImKpiMttrQuarter' => 'Μέση επίλυση (90 ημέρες)',
+    'ImKpiMttrYear' => 'Μέση επίλυση (1 έτος)',
+    'ImKpiMttrAll' => 'Μέση επίλυση (Όλα)',
+    'ImKpiResolved30' => 'Επιλυμένα',
+    'ImChartBySeverity' => 'Ανά σοβαρότητα',
+    'ImChartByStatus' => 'Κατά Κατάσταση',
+    'ImListRecent' => 'Πρόσφατα Περιστατικά',
+    'ImListUnassigned' => 'Μη ανατεθειμένα περιστατικά',
+    'HomeKpiOpenExceptions' => 'Ανοιχτές εξαιρέσεις',
+    'HomeKpiPolicies' => 'Πολιτικές',
+    'ResolutionTargets' => 'Στόχοι Επίλυσης (Ημέρες)',
+    'ResolutionTargetsHelp' => 'Ο αριθμός των ημερών που ένα περιστατικό μπορεί να παραμείνει ανοιχτό προτού θεωρηθεί εκπρόθεσμο.',
+    'DefaultTarget' => 'Προεπιλογή',
+    'PerSeverityOverrideHelp' => 'Προαιρετικά, παρακάμψτε την προεπιλογή για συγκεκριμένες σοβαρότητες (αφήστε το κενό για να χρησιμοποιήσετε την προεπιλογή):',
+    'ResolutionTargetUsesDefault' => 'Προεπιλογή (%d)',
+    'SeverityColors' => 'Χρώματα σοβαρότητας',
+    'SeverityColorsHelp' => 'Το χρώμα για κάθε σοβαρότητα, που εμφανίζεται στον πίνακα ελέγχου του Συμβάντος και στη σελίδα λεπτομερειών του συμβάντος.',
+    'Editing' => 'Επεξεργασία',
+    'SetAsDefaultForEveryone' => 'Ορισμός ως προεπιλογή για όλους',
+    'EditLayoutHint' => 'Σύρετε ένα πλακίδιο για μετακίνηση · σύρετε μια άκρη για αλλαγή μεγέθους · ✕ για αφαίρεση',
+    'RemoveWidget' => 'Κατάργηση γραφικού στοιχείου',
+    'AddWidget' => 'Προσθήκη γραφικού στοιχείου',
+    'AddToDashboard' => 'Προσθήκη στον πίνακα ελέγχου',
+    'AllWidgetsAdded' => 'Όλα τα διαθέσιμα γραφικά στοιχεία βρίσκονται σε αυτόν τον πίνακα ελέγχου.',
+    'AddText' => 'Προσθήκη κειμένου',
+    'GettingStarted' => 'Ξεκινώντας',
+    'GettingStartedTitle' => 'Καλώς ορίσατε στο SimpleRisk',
+    'GettingStartedSubtitle' => 'Μερικά γρήγορα βήματα για να αξιοποιήσετε στο έπακρο το SimpleRisk.',
+    'GSProgressCount' => '{done} από {total} ολοκληρωμένο',
+    'GSNextUp' => 'Επόμενο',
+    'GSArea_setup' => 'Ρύθμιση',
+    'GSArea_risk' => 'Κίνδυνος',
+    'GSArea_assessment' => 'Εκτίμηση',
+    'GSArea_compliance' => 'Συμμόρφωση',
+    'GSArea_assets' => 'Περιουσιακά στοιχεία',
+    'GSArea_ai' => 'Ρύθμιση',
+    'GSHide' => 'Απόκρυψη Ξεκινώντας',
+    'GSDismissStep' => 'Παράβλεψη αυτού του βήματος',
+    'GSAllSet' => 'Είστε έτοιμοι — ωραία δουλειά!',
+    'GSWalkthrough' => '30λεπτη περιήγηση',
+    'Explore' => 'Εξερεύνηση',
+    'Learn' => 'Μάθηση',
+    'AdminGuide' => 'Οδηγός Διαχείρισης',
+    'LearnMore' => 'Μάθετε περισσότερα',
+    'GSRegisterTitle' => 'Καταχωρίστε την παρουσία σας',
+    'GSRegisterDesc' => 'Ενεργοποιήστε την υποστήριξη και τις ενημερώσεις με το κλειδί άδειας χρήσης σας.',
+    'GSRegisterCta' => 'Εγγραφή',
+    'GSScfTitle' => 'Εγκαταστήστε το Πλαίσιο Ασφαλών Ελέγχων',
+    'GSScfDesc' => 'Εγκαταστήστε το SCF — τη βιβλιοθήκη ελέγχου σας σε όλα τα πρότυπα.',
+    'GSScfCta' => 'Εγκατάσταση SCF',
+    'GSInviteTitle' => 'Προσκαλέστε την ομάδα σας',
+    'GSInviteDesc' => 'Προσθέστε συναδέλφους, ώστε να είναι δυνατή η ανάθεση και η αξιολόγηση της εργασίας.',
+    'GSInviteCta' => 'Προσθήκη χρηστών',
+    'GSAiTitle' => 'Ρύθμιση παραμέτρων τεχνητής νοημοσύνης',
+    'GSAiDesc' => 'Βελτιώστε την εμπειρία σας στο SimpleRisk με Τεχνητή Νοημοσύνη.',
+    'GSAiCta' => 'Ρύθμιση Τεχνητής Νοημοσύνης',
+    'GSSubmitRiskTitle' => 'Υποβάλετε τον πρώτο σας κίνδυνο',
+    'GSSubmitRiskDesc' => 'Καταγράψτε έναν κίνδυνο που αντιμετωπίζει ο οργανισμός σας.',
+    'GSSubmitRiskCta' => 'Υποβολή κινδύνου',
+    'GSMitigateTitle' => 'Σχεδιάστε ένα πρόγραμμα μετριασμού',
+    'GSMitigateDesc' => 'Προσθέστε ένα σχέδιο μετριασμού σε έναν ανοιχτό κίνδυνο.',
+    'GSMitigateCta' => 'Σχεδιασμός μετριασμού',
+    'GSReviewTitle' => 'Εκτελέστε μια ανασκόπηση κινδύνου',
+    'GSReviewDesc' => 'Εξετάστε έναν κίνδυνο και αποφασίστε για το επόμενο βήμα του.',
+    'GSReviewCta' => 'Εκτέλεση αξιολόγησης',
+    'GSDefineTestTitle' => 'Ορίστε μια δοκιμή ελέγχου',
+    'GSDefineTestDesc' => 'Ρυθμίστε τον τρόπο δοκιμής ενός στοιχείου ελέγχου.',
+    'GSDefineTestCta' => 'Ορισμός δοκιμής',
+    'GSInitiateAuditTitle' => 'Έναρξη ελέγχου',
+    'GSInitiateAuditDesc' => 'Ξεκινήστε έναν κύκλο δοκιμών ή ελέγχου.',
+    'GSInitiateAuditCta' => 'Έναρξη ελέγχου',
+    'GSAssetTitle' => 'Προσθέστε τα στοιχεία σας',
+    'GSAssetDesc' => 'Καταγράψτε τα περιουσιακά στοιχεία που προστατεύετε.',
+    'GSAssetCta' => 'Προσθήκη στοιχείων',
+    'GSInvalidStep' => 'Μη έγκυρο βήμα έναρξης.',
+    'GSPagerLabel' => '{from}–{to} από {total}',
+    'GSPrevCards' => 'Εμφάνιση προηγούμενων βημάτων',
+    'GSNextCards' => 'Εμφάνιση επόμενων βημάτων',
+    'WhatsNextInstallSCF' => 'Εγκαταστήστε το Πλαίσιο Ασφαλών Ελέγχων',
+    'GSActivateScfTitle' => 'Ενεργοποίηση του Πλαισίου Ασφαλών Ελέγχων',
+    'GSActivateScfDesc' => 'Ενεργοποιήστε το εγκατεστημένο SCF για να φορτώσετε τα στοιχεία ελέγχου του στη βιβλιοθήκη σας.',
+    'GSActivateScfCta' => 'Ενεργοποίηση SCF',
+    'WhatsNextActivateSCF' => 'Ενεργοποίηση του Πλαισίου Ασφαλών Ελέγχων',
+    'GSEnableFrameworksTitle' => 'Ενεργοποίηση εφαρμοστέων πλαισίων',
+    'GSEnableFrameworksDesc' => 'Ενεργοποιήστε τα πλαίσια SCF που ισχύουν για τον οργανισμό σας.',
+    'GSEnableFrameworksCta' => 'Ενεργοποίηση πλαισίων',
+    'WhatsNextEnableFrameworks' => 'Ενεργοποίηση εφαρμοστέων πλαισίων',
+    'GSSelfAssessTitle' => 'Κάντε μια αυτοαξιολόγηση',
+    'GSSelfAssessDesc' => 'Αξιολογήστε τον οργανισμό σας σε σχέση με περισσότερα από 250 πλαίσια και δημιουργήστε κινδύνους από αποτυχημένους ελέγχους.',
+    'GSSelfAssessCta' => 'Έναρξη αξιολόγησης',
+    'WhatsNextTakeSelfAssessment' => 'Κάντε μια αυτοαξιολόγηση',
+    'WhatsNextConfigureAI' => 'Ρύθμιση παραμέτρων τεχνητής νοημοσύνης',
+    'ListUnreviewedRisks' => 'Μη ελεγμένοι κίνδυνοι',
+    'ControlsByDomain' => 'Έλεγχοι ανά τομέα',
+    'ControlsByClass' => 'Έλεγχοι ανά κλάση',
+    'ControlsByPhase' => 'Έλεγχοι ανά φάση',
+    'ControlsByPriority' => 'Έλεγχοι κατά προτεραιότητα',
+    'ControlsByCurrentMaturity' => 'Έλεγχοι ανά Τρέχουσα Ωριμότητα',
+    'ControlStatusOverTime' => 'Κατάσταση ελέγχου με την πάροδο του χρόνου',
+    'ComplianceTotalControls' => 'Συνολικοί έλεγχοι',
+    'HomeKpiOverdueTests' => 'Εκπρόθεσμες δοκιμές',
+    'Total' => 'Σύνολο',
+    'StartTheTest' => 'Έναρξη της δοκιμής',
+    'TestStartsAutomatically' => 'Η δοκιμή ξεκινά αυτόματα',
+    'GoToTest' => 'Μετάβαση στη δοκιμή',
+    'NotTested' => 'Δεν έχει δοκιμαστεί',
+    'PassingPercent' => 'Ποσοστό επιτυχίας',
+    'ListFailingControls' => 'Αποτυχία ελέγχων',
+    'Exceptions' => 'Εξαιρέσεις',
+    'Documents' => 'Εγγραφα',
+    'ControlsBelowMaturity' => 'Έλεγχοι κάτω του ορίου ωριμότητας',
+    'ControlsAtMaturity' => 'Έλεγχοι κατά την ωριμότητα',
+    'ControlsAboveMaturity' => 'Έλεγχοι άνω της ωριμότητας',
+    'Maturity' => 'Ωριμότητα',
+    'AllTime' => 'Όλων των εποχών',
+    'Last7Days' => 'Τελευταίες 7 ημέρες',
+    'Last30Days' => 'Τελευταίες 30 ημέρες',
+    'Last90Days' => 'Τελευταίες 90 ημέρες',
+    'YearToDate' => 'Έτος από σήμερα',
+    'CustomRange' => 'Προσαρμοσμένο εύρος',
+    'Age' => 'Ηλικία',
+    'ImOpenIncidents' => 'Ανοιχτά Περιστατικά',
+    'ImClosedIncidents' => 'Κλειστά Περιστατικά',
+    'ImByAttackVector' => 'Ανοιχτά ανά Attack Vector',
+    'ImBySource' => 'Ανοιχτά ανά πηγή',
+    'AverageDaysToDetect' => 'Μέσος όρος ημερών ανίχνευσης',
+    'ImKpiAvgTtd' => 'Μέση ανίχνευση',
+    'Days' => 'Ημέρες',
+    'ImKpiCriticalOpen' => 'Κρίσιμα ανοιχτά',
+    'ImKpiResolvedInSla' => 'Επιλύθηκε σε SLA',
+    'Events' => 'Εκδηλώσεις',
+    'ImEventsIncidents' => 'Γεγονότα & Περιστατικά',
+    'ImSourceBreakdown' => 'Πηγή ανά κατηγορία',
+    'ImClosureSummary' => 'Σύνοψη Κλεισίματος',
+    'ImSignalQuality' => 'Ποιότητα σήματος',
+    'ImSignalLowSample' => 'Δεν υπάρχουν αρκετές εκδικασμένες υποθέσεις για αξιόπιστη αξιολόγηση',
+    'ImportExportExportPdf' => 'Εξαγωγή PDF',
+    'ImportExportExporting' => 'Προετοιμασία PDF…',
+    'ImportExportExportFailed' => 'Δεν ήταν δυνατή η δημιουργία του PDF. Δοκιμάστε ξανά.',
+    'ImportExportGeneratedOn' => 'Δημιουργήθηκε',
+    'ImportExportPage' => 'Σελίδα',
+    'ImportExportPageOf' => 'του',
+    'ResolutionTargetsUpdated' => 'Οι στόχοι επίλυσης ανά σοβαρότητα ενημερώθηκαν.',
+    'SeverityColorsUpdated' => 'Τα χρώματα σοβαρότητας ενημερώθηκαν.',
+    // AI Capabilities Catalog + AI settings hub (unified AI settings)
+    'AICapGrcRecommendations' => 'Συστάσεις Πλαισίου GRC',
+    'AICapGrcRecommendationsDesc' => 'Συστάσεις πλαισίου που δημιουργούνται από την τεχνητή νοημοσύνη και μια συνοπτική περίληψη, προσαρμοσμένη στο πλαίσιο του οργανισμού σας.',
+    'AICapRiskRecommendations' => 'Συστάσεις κινδύνου',
+    'AICapRiskRecommendationsDesc' => 'Προτάσεις ανά κίνδυνο για λεπτομέρειες και μετριασμό του κινδύνου, που προκύπτουν από τον κίνδυνο, τον μετριασμό του και την αναθεώρησή του.',
+    'AICapFairAnalysis' => 'Ποσοτική Ανάλυση FAIR',
+    'AICapFairAnalysisDesc' => 'Η Τεχνητή Νοημοσύνη εκτιμά τις παραμέτρους απώλειας Beta-PERT. Το SimpleRisk εκτελεί μια μέθοδο Monte Carlo 10.000 επαναλήψεων για να ποσοτικοποιήσει τον κίνδυνο σε δολάρια.',
+    'AICapDocumentCustomization' => 'Προσαρμογή εγγράφων',
+    'AICapDocumentCustomizationDesc' => 'Συμπληρώνει τα placeholders και καθαρίζει το κείμενο πολιτικής στα πρότυπα εγγράφων σας, έτσι ώστε μια τυποποιημένη πολιτική να διαβάζεται ως δική σας.',
+    'AICapDocumentControlMatching' => 'Έγγραφο ↔ Αντιστοίχιση στοιχείων ελέγχου',
+    'AICapDocumentControlMatchingDesc' => 'Αντιστοιχίζει αυτόματα τα στοιχεία ελέγχου σε έγγραφα πολιτικής με βαθμολογία εμπιστοσύνης και συλλογισμό που μπορείτε να ελέγξετε.',
+    'AICapDocumentTemplates' => 'Βιβλιοθήκη προτύπων εγγράφων',
+    'AICapDocumentTemplatesDesc' => 'Εγκαταστήστε επιμελημένα πρότυπα πολιτικής, κατευθυντήριων γραμμών και διαδικασιών από τη βιβλιοθήκη SimpleRisk.',
+    'AICapControlReferenceEnhancement' => 'Βελτίωση αναφοράς ελέγχου',
+    'AICapControlReferenceEnhancementDesc' => 'Ερευνά αυτόματο κείμενο ελέγχου μέσω αναζήτησης στο διαδίκτυο για να εμπλουτίσει τις αναφορές ελέγχου σας.',
+    'AICapAiChat' => 'Βοηθός συνομιλίας',
+    'AICapAiChatDesc' => 'Ένας βοηθός GRC που απαντά σε ερωτήσεις εντός πλαισίου οπουδήποτε στο SimpleRisk.',
+    'AICapSurfacedRecommendations' => 'Σελίδα Τεχνητής Νοημοσύνης',
+    'AICapSurfacedRiskView' => 'Επισκόπηση κινδύνου — Λεπτομέρειες & Μετριασμός',
+    'AICapSurfacedFairTab' => 'Προβολή κινδύνου — καρτέλα FAIR',
+    'AICapSurfacedDocuments' => 'Διακυβέρνηση — Έγγραφα',
+    'AICapSurfacedControls' => 'Συμμόρφωση — Έλεγχοι',
+    'AICapSurfacedEveryPage' => 'Κάθε σελίδα — αιωρούμενος βοηθός',
+    'AICapabilitiesCatalog' => 'Δυνατότητες',
+    'AICapSearchPlaceholder' => 'Αναζήτηση δυνατοτήτων Τεχνητής Νοημοσύνης…',
+    'AICapFilterDomain' => 'Πεδίο ορισμού',
+    'AICapFilterTier' => 'Βαθμίδα',
+    'AICapFilterState' => 'Κατάσταση',
+    'AICapTierExtra' => 'Τεχνητή Νοημοσύνη (AI Extra)',
+    'AICapStateLocked' => 'Κλειδωμένο',
+    'AICapIncludedInExtra' => 'Περιλαμβάνεται στο AI Extra',
+    'AICapPurchaseExtra' => 'Αγοράστε το AI Extra',
+    'AICapNeedsProvider' => 'Απαιτείται ρύθμιση παρόχου',
+    'AICapNoMatch' => 'Δεν υπάρχει αντιστοιχία δυνατοτήτων',
+    'AICapNoMatchHint' => 'Δοκιμάστε διαφορετικό τομέα, επίπεδο ή όρο αναζήτησης.',
+    'AICapCountSingular' => 'ικανότητα',
+    'AICapCountPlural' => 'δυνατότητες',
+    'DomainAssistant' => 'Βοηθός',
+    'AICapLoadError' => 'Δεν ήταν δυνατή η φόρτωση των δυνατοτήτων τεχνητής νοημοσύνης. Δοκιμάστε ξανά.',
+    'AIProviderConfigSubtitle' => 'Συνδέστε το SimpleRisk με έναν πάροχο τεχνητής νοημοσύνης για να ενισχύσετε τις δυνατότητες της τεχνητής νοημοσύνης.',
+    'AIHowToGetAPIKeyFor' => 'Πώς να αποκτήσετε ένα κλειδί API για',
+    'AIExtraNotActivated' => 'Δεν έχει ενεργοποιηθεί',
+    'AIExtraValueProp' => 'Βελτιωμένη Τεχνητή Νοημοσύνη — ποσοτικοποίηση κινδύνου FAIR, βοήθεια εγγράφων και ελέγχου και βοηθός συνομιλίας με Τεχνητή Νοημοσύνη.',
+    'AICtxOrgName' => 'Ποιο είναι το όνομα του οργανισμού σας;',
+    'AICtxOrgSizeEmployees' => 'Πόσους υπαλλήλους έχει ο οργανισμός σας;',
+    'AICtxOrgSizeRevenue' => 'Ποια είναι τα ετήσια έσοδα του οργανισμού σας;',
+    'AICtxOrgObjective' => 'Ποιοι είναι οι κύριοι επιχειρηματικοί στόχοι και οι στρατηγικοί στόχοι του οργανισμού σας;',
+    'AICtxOrgIndustry' => 'Ποιος είναι ο κύριος κλάδος ή τομέας του οργανισμού σας;',
+    'AICtxOrgLocation' => 'Σε ποιες χώρες ή περιοχές δραστηριοποιείται ο οργανισμός σας;',
+    'AICtxOrgType' => 'Τι είδους οργανισμός είστε;',
+    'AICtxDataTypes' => 'Τι είδους δεδομένα συλλέγει, επεξεργάζεται ή αποθηκεύει ο οργανισμός σας (π.χ. προσωπικά δεδομένα, οικονομικά δεδομένα, πληροφορίες υγείας);',
+    'AICtxDataCustomers' => 'Ποιοι είναι οι κύριοι πελάτες ή ενδιαφερόμενοι φορείς σας (π.χ. καταναλωτές, επιχειρήσεις, κυβερνητικοί φορείς);',
+    'AICtxDataRegulatory' => 'Υπόκειστε σε συγκεκριμένες κανονιστικές απαιτήσεις στον κλάδο σας;',
+    'AICtxDataThirdParties' => 'Έχετε σχέσεις με τρίτους ή υπηρεσίες που έχουν ανατεθεί σε εξωτερικούς συνεργάτες και απαιτούν εποπτεία συμμόρφωσης;',
+    'AICtxMaturityIssues' => 'Έχετε αντιμετωπίσει σημαντικά προβλήματα συμμόρφωσης, παραβιάσεις ασφαλείας ή επικίνδυνα συμβάντα τα τελευταία 3-5 χρόνια;',
+    'AICtxMaturityConcerns' => 'Υπάρχουν συγκεκριμένοι τομείς ανησυχίας ή βελτίωσης που έχετε εντοπίσει στις τρέχουσες διαδικασίες GRC σας;',
+    'AICtxMaturityAppetite' => 'Ποια είναι η όρεξη και η ανοχή κινδύνου του οργανισμού σας;',
+    'AICtxMaturityLevel' => 'Ποιο είναι το τρέχον επίπεδο ωριμότητάς σας όσον αφορά τη διακυβέρνηση, τη διαχείριση κινδύνων και τις πρακτικές συμμόρφωσης;',
+    'AICtxImplementationChanges' => 'Υπάρχουν επικείμενες αλλαγές στο επιχειρηματικό σας μοντέλο, την τεχνολογική σας υποδομή ή την αγορά που ενδέχεται να επηρεάσουν τις ανάγκες συμμόρφωσής σας;',
+    'AICtxImplementationResourcesBudget' => 'Ποιους πόρους κατανομής προϋπολογισμού έχετε διαθέσιμους για την εφαρμογή και τη διατήρηση πλαισίων συμμόρφωσης;',
+    'AICtxImplementationResourcesPersonnel' => 'Ποιους ανθρώπινους πόρους έχετε διαθέσιμους για την εφαρμογή και τη διατήρηση πλαισίων συμμόρφωσης;',
+    'AICtxImplementationResourcesTechnology' => 'Ποιους πόρους τεχνολογικής υποδομής διαθέτετε για την εφαρμογή και τη διατήρηση πλαισίων συμμόρφωσης;',
+    'AICtxImplementationResourcesTraining' => 'Ποιους πόρους εκπαίδευσης και ανάπτυξης έχετε διαθέσιμους για την εφαρμογή και τη διατήρηση πλαισίων συμμόρφωσης;',
+    'AICtxImplementationResourcesExternal' => 'Ποιους εξωτερικούς υποστηρικτικούς πόρους έχετε διαθέσιμους για την εφαρμογή και τη διατήρηση πλαισίων συμμόρφωσης;',
+    'AIAPIKeySecurityNote' => 'Το κλειδί σας αποθηκεύεται από την πλευρά του διακομιστή και δεν επιστρέφεται ποτέ στο πρόγραμμα περιήγησης. Οι διευθύνσεις URL παρόχου επικυρώνονται σε σχέση με μια λίστα επιτρεπόμενων SSRF που μπορεί να διαμορφωθεί στο αρχείο config.php.',
+    'AIContextEgressWarning' => 'Οι απαντήσεις σας αποστέλλονται στον διαμορφωμένο πάροχο τεχνητής νοημοσύνης σας για να βασίσει τις προτάσεις του. Μην συμπεριλάβετε τίποτα που δεν θα μοιραζόσασταν μαζί του.',
+    'Provider' => 'Προμηθευτής',
+    'AIProviderURLHostNotAllowed' => 'Ο κεντρικός υπολογιστής "%s" δεν βρίσκεται στη λίστα επιτρεπόμενων παρόχων τεχνητής νοημοσύνης. Προσθέστε τον στο $ai_allowed_provider_hosts στο config.php και, στη συνέχεια, αποθηκεύστε τον. (Οι γνωστοί πάροχοι τεχνητής νοημοσύνης και οι διευθύνσεις loopback 127.0.0.1 επιτρέπονται πάντα.)',
+    'AIContextLastSaved' => 'Τελευταία αποθήκευση',
+    'AIContextNeverSaved' => 'Δεν έχει αποθηκευτεί ακόμη',
+    'AICtxCardSubtitle' => '21 ερωτήσεις σε τέσσερις τομείς. Όσο περισσότερες απαντήσεις, τόσο πιο σαφής είναι κάθε σύσταση.',
+    'AICtxAnswered' => 'Απαντήθηκε το %1$d από %2$d',
+    'AICtxAllOptional' => 'Προαιρετικά',
+    'AIContextSaving' => 'Αποθήκευση…',
+    'AIContextSaveFailed' => 'Δεν ήταν δυνατή η αποθήκευση των αλλαγών σας. Δοκιμάστε ξανά.',
+    'AISettingsSavedNotReachable' => 'Οι ρυθμίσεις τεχνητής νοημοσύνης αποθηκεύτηκαν, αλλά δεν ήταν δυνατή η επικοινωνία με τον πάροχο. Βεβαιωθείτε ότι εκτελείται και ότι η διεύθυνση URL είναι σωστή.',
+    'AISettingsSavedKeyRequired' => 'Οι ρυθμίσεις τεχνητής νοημοσύνης αποθηκεύτηκαν, αλλά αυτός ο πάροχος απαιτεί κλειδί API για να είναι δυνατή η χρήση των λειτουργιών του.',
+    'TestAndSave' => 'Δοκιμή & Αποθήκευση',
+    'AICapEnableAll' => 'Ενεργοποίηση όλων',
+    'AICapDisableAll' => 'Απενεργοποίηση όλων',
+    'AISettingsSavedConnected' => 'Οι ρυθμίσεις τεχνητής νοημοσύνης αποθηκεύτηκαν — η σύνδεση ολοκληρώθηκε με επιτυχία.',
+    'AISettingsSavedNotConnected' => 'Οι ρυθμίσεις τεχνητής νοημοσύνης αποθηκεύτηκαν, αλλά η δοκιμή σύνδεσης απέτυχε. Ελέγξτε το μοντέλο, το κλειδί και τη διεύθυνση URL.',
+    'AIProviderURLNotOnAllowlist' => 'Αυτός ο κεντρικός υπολογιστής δεν περιλαμβάνεται στη λίστα επιτρεπόμενων SSRF του παρόχου τεχνητής νοημοσύνης. Προσθέστε τον στο $ai_allowed_provider_hosts στο config.php πριν να είναι δυνατή η αποθήκευσή του.',
+    'Connected' => 'Συνδεδεμένος',
+    'NotConnected' => 'Δεν είναι συνδεδεμένο',
+    'AICapBulkError' => 'Δεν ήταν δυνατή η ενημέρωση ορισμένων δυνατοτήτων. Δοκιμάστε ξανά.',
+    'QuestionnaireAlreadyCompleted' => 'Αυτό το ερωτηματολόγιο έχει ήδη συμπληρωθεί.',
+    'QuestionnaireDraftError' => 'Σφάλμα κατά την αποθήκευση του προσχεδίου. Ανατρέξτε στην κονσόλα για λεπτομέρειες.',
+
+    // Audit cadence scheduling - Define Test modal (Interval/Calendar schedule redesign)
+    // 'Overdue' duplicates the English of 'ImKpiOverdue' on purpose: that key is
+    // an Incident Management KPI label, and a compliance status pill reusing an
+    // IM-scoped key would couple the two domains for a translator (and break the
+    // moment either wording moves). This is the generic, cross-domain one.
+    'Overdue' => 'Εκπρόθεσμος',
+    // Deliberate: the only other key rendering 'Manual' is 'ManualValuation',
+    // an asset-valuation label. Pointing a schedule mode at it would couple two
+    // unrelated domains for translators and break the moment either reworded.
+    'ScheduleManual' => 'Χειροκίνητο',
+    'ScheduleInterval' => 'Διάστημα',
+    'ScheduleCalendar' => 'Ημερολόγιο',
+    'Cadence' => 'Ρυθμός',
+    'CadenceBiweekly' => 'Ανά δύο εβδομάδες',
+    'CadenceSemiAnnually' => 'Εξαμηνιαία',
+    'AnchorDate' => 'Ημερομηνία αγκύρωσης',
+    'UpcomingOccurrences' => 'Προσεχείς εκδηλώσεις',
+    'AuditLeadInDays' => 'Ημέρες εισαγωγής ελέγχου',
+    'SkipOccurrence' => 'Παράλειψη',
+    'OverrideDate' => 'Ημερομηνία παράκαμψης',
+    'Week' => 'Εβδομάδα',
+    'NoUpcomingOccurrences' => 'Δεν υπάρχουν επερχόμενες εμφανίσεις σε αυτό το παράθυρο.',
+    'FailedToLoadUpcomingOccurrences' => 'Αποτυχία φόρτωσης της προεπισκόπησης επερχόμενων εμφανίσεων.',
+    'AnchorDateMustBeTodayOrLater' => 'Η ημερομηνία αγκύρωσης πρέπει να είναι σήμερα ή αργότερα. Για να προγραμματίσετε μια παρελθούσα ημερομηνία, δημιουργήστε μια μη αυτόματη δοκιμή.',
+    'InvalidScheduleType' => 'Μη έγκυρος τύπος χρονοδιαγράμματος. Επιτρεπόμενες τιμές: Χειροκίνητα, Διάστημα, Ημερολόγιο.',
+    'Weeks' => 'Εβδομάδες',
+    'Months' => 'Μήνες',
+    'Years' => 'Χρόνια',
+    'ScheduleSummaryEvery' => 'Κάθε {$interval} {$unit}',
+
+    // Define Tests redesign - client-rendered grid (Phase 1, Task 6)
+    'LastResult' => 'Τελευταίο Αποτέλεσμα',
+    'NextDue' => 'Επόμενη ημερομηνία λήξης',
+    'DueSoon' => 'Σύντομα λήγει',
+    'Retired' => 'Αποσυρμένο',
+    'MyTests' => 'Οι δοκιμές μου',
+    'Failing' => 'Αποτυχημένο',
+    'Untested' => 'Αδοκίμαστος',
+    'ShowRetired' => 'Εμφάνιση αποσυρμένων',
+    'Tests' => 'Δοκιμές',
+    'NoTestsForThisControl' => 'Δεν υπάρχουν ακόμη δοκιμές για αυτό το στοιχείο ελέγχου.',
+    'NoControlsDefinedYet' => 'Δεν έχουν οριστεί ακόμη στοιχεία ελέγχου',
+    'NoControlsDefinedYetBody' => 'Ορίστε τους ελέγχους στη Διακυβέρνηση πριν από την προσθήκη δοκιμών.',
+    'NoTestsMatchFilters' => 'Δεν υπάρχουν δοκιμές που να αντιστοιχούν στα φίλτρα σας',
+    'NoTestsMatchFiltersBody' => 'Δοκιμάστε να προσαρμόσετε την αναζήτηση ή τα φίλτρα σας.',
+    'CouldNotLoadTests' => 'Δεν ήταν δυνατή η φόρτωση των δοκιμών',
+    'CouldNotLoadTestsBody' => 'Κάτι πήγε στραβά. Τα δεδομένα σας είναι ασφαλή — δοκιμάστε να τα ανανεώσετε.',
+    'ShowingXToYOfZ' => 'Εμφάνιση {$start}–{$end} από {$total}',
+    // Define Tests grid -- SCF-mapping + read-only procedure expand (Phase 1, Task 7)
+    'Reference' => 'Αναφορά',
+    'NoFrameworksMapped' => 'Δεν υπάρχουν πλαίσια που να αντιστοιχίζονται σε αυτό το στοιχείο ελέγχου.',
+    // Define Tests grid -- batch select + retire/delete + quick filters (Phase 1, Task 8)
+    'Retire' => 'Απόσυρση',
+    'ReassignTester' => 'Επαναανάθεση ελεγκτή',
+    'SetSchedule' => 'Ορισμός χρονοδιαγράμματος',
+    'ConfirmRetireSelectedTests' => 'Να αποσυρθούν οι {n} επιλεγμένες δοκιμές;',
+    'ConfirmDeleteSelectedTests' => 'Διαγραφή των {n} επιλεγμένων δοκιμών; Δεν είναι δυνατή η αναίρεση αυτής της ενέργειας.',
+    // Define Tests grid -- Coverage toolbar select (Issue 4)
+    'Coverage' => 'Κάλυψη',
+    'CoverageWithTests' => 'Έλεγχοι με δοκιμές',
+    'CoverageAllControls' => 'Όλα τα στοιχεία ελέγχου',
+    'CoverageGaps' => 'Κενά',
+    // Define Tests insights band (Phase 2, Task 4) -- KPI tile labels + subtitles.
+    // 'Overdue', 'DueSoon', and 'Failing' are reused from the grid's quick-filter
+    // chips above (identical text) rather than duplicated here.
+    'DtTotalTests' => 'Συνολικές δοκιμές',
+    'DtCoverageGaps' => 'Κενά Κάλυψης',
+    'DtAcrossNControls' => 'Στα {$n} στοιχεία ελέγχου',
+    'DtControlsWithNoTest' => 'Έλεγχοι χωρίς δοκιμή',
+    'DtNeedInitiationNow' => 'Χρειάζεται μύηση τώρα',
+    'DtWithinLeadInWindow' => 'Εντός του παραθύρου εισαγωγής',
+    'DtLastResultFailed' => 'Το τελευταίο αποτέλεσμα απέτυχε',
+    'InvalidTestMethod' => 'Η μέθοδος δοκιμής πρέπει να είναι μία από τις μεθόδους Έρευνας, Παρατήρησης, Επιθεώρησης ή Επαναεκτέλεσης!',
+    'TesterCannotBeApprover' => 'Ο υπεύθυνος δοκιμών δεν μπορεί επίσης να αναφέρεται ως υπεύθυνος έγκρισης για αυτήν τη δοκιμή.',
+    'ApproverNotEligible' => 'Ένας ή περισσότεροι επιλεγμένοι υπεύθυνοι έγκρισης δεν έχουν την ευθύνη της «Έγκρισης Δοκιμών».',
+    'TestMethod' => 'Μέθοδος δοκιμής',
+    'TestMethodInquiry' => 'Ερευνα',
+    'TestMethodObservation' => 'Παρατήρηση',
+    'TestMethodInspection' => 'Επιθεώρηση',
+    'TestMethodReperformance' => 'Επαναεκτέλεση',
+    'Sample' => 'Δείγμα',
+    'RequiredEvidence' => 'Απαιτούμενα Αποδεικτικά Στοιχεία',
+    'Approvers' => 'Εγκρίνοντες',
+    'AuditLog_TestAuditApproved' => 'Ο έλεγχος "{$test_audit_name}"(ID: {$test_audit_id}) εγκρίθηκε από τον χρήστη "{$user_name}".',
+    'AuditLog_TestAuditRejected' => 'Ο έλεγχος "{$test_audit_name}"(ID: {$test_audit_id}) απορρίφθηκε από τον χρήστη "{$user_name}" με σχόλιο "{$comment}".',
+    'AuditLog_TestAuditAwaitingApproval' => 'Ο έλεγχος "{$test_audit_name}"(ID: {$test_audit_id}) υποβλήθηκε για κλείσιμο από τον χρήστη "{$user_name}" και αναμένει έγκριση. Αλλαγές: {$changes}.',
+    'AuditApproved' => 'Ο έλεγχος εγκρίθηκε με επιτυχία.',
+    'AuditRejected' => 'Ο έλεγχος απορρίφθηκε με επιτυχία.',
+    'RejectCommentRequired' => 'Απαιτείται ένα σχόλιο για την απόρριψη ενός ελέγχου.',
+    'NotAnApproverOfThisAudit' => 'Δεν είστε διαμορφωμένος υπεύθυνος έγκρισης για αυτόν τον έλεγχο.',
+    'ApproverCannotBeTester' => 'Ο εγκριτής δεν μπορεί να είναι και ο ελεγκτής αυτού του ελέγχου.',
+    'AuditNotAwaitingApproval' => 'Αυτός ο έλεγχος δεν αναμένει προς το παρόν έγκριση.',
+    'NotificationAuditAwaitingApprovalTitle' => 'Ο έλεγχος αναμένει την έγκρισή σας',
+    'NotificationAuditAwaitingApprovalBody' => 'Ο έλεγχος "{$test_audit_name}" έχει υποβληθεί για ολοκλήρωση και αναμένει την έγκρισή σας.',
+    'NotificationAuditRejectedTitle' => 'Ο έλεγχος απορρίφθηκε',
+    'NotificationAuditRejectedBody' => 'Ο έλεγχος "{$test_audit_name}" απορρίφθηκε με το σχόλιο: "{$comment}"',
+    'AwaitingApproval' => 'Αναμονή έγκρισης',
+    'AwaitingApprovalBannerText' => 'Αυτός ο έλεγχος έχει υποβληθεί για κλείσιμο και αναμένει έγκριση από έναν διαμορφωμένο υπεύθυνο έγκρισης πριν κλείσει.',
+    'ReturnedForRework' => 'Επιστράφηκε για επανεπεξεργασία',
+    'ReturnedForReworkBannerText' => 'Αυτός ο έλεγχος απορρίφθηκε και επιστράφηκε για επανεξέταση.',
+    'RejectReason' => 'Αιτιολογία απόρριψης',
+    'AreYouSureYouWantToApproveThisAudit' => 'Είστε βέβαιοι ότι θέλετε να εγκρίνετε αυτόν τον έλεγχο;',
+    'AtLeastOneControlRequired' => 'Απαιτείται τουλάχιστον ένα στοιχείο ελέγχου.',
+    'DtNCommonAcrossNControls' => '{$common} κοινά · {$n} στοιχεία ελέγχου',
+    'DtUntestedControls' => 'Μη δοκιμασμένοι έλεγχοι',
+    'DtControlsInScopeNoCoverage' => 'Δεν υπάρχει κάλυψη',
+    'Passing' => 'Επιτυχία',
+    'DtLastResultPassed' => 'Τελευταίο αποτέλεσμα που πέρασε',
+    'AllFamilies' => 'Όλες οι οικογένειες',
+    'SearchTestsPlaceholder' => 'Αναζήτηση δοκιμών, ελέγχων και πλαισίων',
+    'AnySchedule' => 'Οποιοδήποτε πρόγραμμα',
+    'AnyTag' => 'Οποιαδήποτε ετικέτα',
+    'AuditAutoClosedTestRetired' => 'Έκλεισε αυτόματα ως Αβάσιμο επειδή η δοκιμή αποσύρθηκε.',
+    'Common' => 'Κοινός',
+    'ValidatesAcrossMappedFrameworks' => 'Επικυρώνει σε όλα τα αντιστοιχισμένα πλαίσια',
+    'EditTest' => 'Επεξεργασία δοκιμής',
+    'ControlHasNoTestCoverage' => 'Αυτό το στοιχείο ελέγχου εντός εμβέλειας δεν έχει ακόμη κάλυψη δοκιμών.',
+    'AddTheFirstTest' => 'Προσθήκη της πρώτης δοκιμής',
+    'ApplyCommonTestHint' => 'Εφαρμόστε μία ή περισσότερες υπάρχουσες δοκιμές σε αυτό το στοιχείο ελέγχου. Κάθε δοκιμή διατηρεί τα τρέχοντα στοιχεία ελέγχου της και γίνεται μια κοινή δοκιμή που καλύπτει και αυτό.',
+    'CommonTestApplied' => 'Η δοκιμή εφαρμόστηκε σε αυτό το στοιχείο ελέγχου.',
+    'CouldNotApplyCommonTest' => 'Δεν ήταν δυνατή η εφαρμογή της δοκιμής σε αυτό το στοιχείο ελέγχου.',
+    'SelectOneOrMoreTests' => 'Επιλέξτε μία ή περισσότερες δοκιμές',
+    'CommonTestsApplied' => '{n} δοκιμές που εφαρμόστηκαν σε αυτόν τον έλεγχο.',
+    'ApplyCommonTests' => 'Εφαρμογή κοινών δοκιμών…',
+    'History' => 'Ιστορία',
+    'Result' => 'Αποτέλεσμα',
+    'Approval' => 'Εγκριση',
+    'ThisTestHasNotBeenRunYet' => 'Αυτή η δοκιμή δεν έχει εκτελεστεί ακόμη.',
+    'CouldNotLoadTestHistory' => 'Δεν ήταν δυνατή η φόρτωση του ιστορικού αυτής της δοκιμής.',
+    'Identity' => 'Ταυτότητα',
+    'IdentitySectionHint' => 'Όνομα, υπεύθυνος δοκιμών και τα στοιχεία ελέγχου που επικυρώνει',
+    'WhenTheAuditInitiates' => 'Όταν ξεκινήσει ο έλεγχος',
+    'ProcedureAndEvidence' => 'Διαδικασία και αποδεικτικά στοιχεία',
+    'CommonTestControlsHint' => 'Μία δοκιμή μπορεί να επικυρώσει πολλά στοιχεία ελέγχου — μια κοινή δοκιμή. Το άνοιγμα αυτού από την επιλογή "+ Προσθήκη δοκιμής" ενός στοιχείου ελέγχου το προεπιλέγει εδώ.',
+    'SeparationOfDutiesNote' => 'Διαχωρισμός καθηκόντων — ένας υπεύθυνος έγκρισης δεν μπορεί να είναι και ο υπεύθυνος δοκιμών.',
+    'CommonTestEditScopeHint' => 'Οι αλλαγές ισχύουν παντού όπου χρησιμοποιείται αυτή η κοινή δοκιμή.',
+    'Mode' => 'Τρόπος',
+    'AddOrRemove' => 'Προσθήκη ή αφαίρεση…',
+    'AddOrSearchTags' => 'Προσθήκη ή αναζήτηση ετικετών…',
+    'CreateTagX' => 'Δημιουργία “{tag}”',
+    'Archived' => 'Αρχειοθετημένο',
+    'ShowAllTests' => 'Όλες οι δοκιμές',
+    'ShowActiveTests' => 'Ενεργές δοκιμές',
+    'ShowRetiredTests' => 'Αποσυρμένες δοκιμές',
+    'UntestedControls' => 'Μη δοκιμασμένοι έλεγχοι',
+    'OverdueByXDays' => 'Εκπρόθεσμο · {n} ημέρες',
+    'OverdueByOneDay' => 'Καθυστερημένο · 1 ημέρα',
+    'DueInXDays' => 'Παράδοση σε {n} ημέρες',
+    'DueTomorrow' => 'Προθεσμία αύριο',
+    'DueToday' => 'Προθεσμία σήμερα',
+    'ScheduledForX' => 'Προγραμματισμένο · {date}',
+    'AllTesters' => 'Όλοι οι δοκιμαστές',
+    'AllStatuses' => 'Όλες οι καταστάσεις',
+    'OnTrack' => 'Σε καλό δρόμο',
+    'NextTestDateDerivedHint' => 'Υπολογίζεται από την ημερομηνία της τελευταίας δοκιμής συν τη συχνότητα της δοκιμής. Ορίστε μια συχνότητα για να την προγραμματίσετε αυτόματα ή αφήστε τη συχνότητα κενή για να ορίσετε αυτήν την ημερομηνία μόνοι σας.',
+    'DueStatus' => 'Κατάσταση λήξης',
+    'AllResults' => 'Όλα τα αποτελέσματα',
+    // Remove a test from one control (Define Tests grid unlink row action)
+    'RemoveFromThisControl' => 'Κατάργηση από αυτό το στοιχείο ελέγχου',
+    'RemoveTestFromControl' => 'Αφαίρεση δοκιμής από τον έλεγχο',
+    'RemoveTestFromControlConfirm' => 'Αφαίρεση του "{test_name}" από το {control_name};',
+    'RemoveTestFromControlStays' => 'Η δοκιμή παραμένει στα άλλα στοιχεία ελέγχου της {n} . Δεν διαγράφεται τίποτα.',
+    'RemoveTestFromControlStaysOne' => 'Η δοκιμή παραμένει στο 1 άλλο στοιχείο ελέγχου της. Δεν διαγράφεται τίποτα.',
+    'CannotRemoveTestsOnlyControl' => 'Μια δοκιμή πρέπει να ανήκει σε τουλάχιστον ένα στοιχείο ελέγχου. Αντ\' αυτού, αποσύρετε ή διαγράψτε τη δοκιμή.',
+    'TestRemovedFromControl' => 'Το τεστ αφαιρέθηκε από τον έλεγχο.',
+    'CouldNotRemoveTestFromControl' => 'Δεν ήταν δυνατή η αφαίρεση της δοκιμής από τον έλεγχο.',
+    'TestRemovedFromControlAuditLogMessage' => 'Η δοκιμή "{$test_name}"(ID: {$test_id}) αφαιρέθηκε από τον έλεγχο (ID: {$control_id}) από τον χρήστη "{$user}".',
+    'DeleteTestUsedByNControls' => 'Χρησιμοποιείται από τα στοιχεία ελέγχου {n} και θα αφαιρεθεί από όλα αυτά.',
+    'BulkDeleteSharedTestsNote' => '{n} από αυτά χρησιμοποιούνται από άλλα στοιχεία ελέγχου και θα αφαιρεθούν και από αυτά.',
+    'BulkRetireSharedTestsNote' => '{n} από αυτά χρησιμοποιούνται από άλλα στοιχεία ελέγχου και θα αποσυρθούν και εκεί.',
+    'BulkDeleteOneSharedTestNote' => '1 από αυτά χρησιμοποιείται από άλλα στοιχεία ελέγχου και θα αφαιρεθεί και από αυτά.',
+    'BulkRetireOneSharedTestNote' => '1 από αυτά χρησιμοποιείται από άλλα στοιχεία ελέγχου και θα αποσυρθεί και εκεί.',
+    'CouldNotLoadTest' => 'Δεν ήταν δυνατή η φόρτωση αυτής της δοκιμής.',
+    'Expand' => 'Ανάπτυξη',
+    'SearchMappings' => 'Αναζήτηση πλαισίων και αναφορών',
+    'NoMatchingMappings' => 'Δεν υπάρχουν αντιστοιχίσεις που να αντιστοιχούν σε αυτήν την αναζήτηση.',
+    'Insights' => 'Πληροφορίες',
+    'ShowInsights' => 'Εμφάνιση των πλακιδίων πληροφοριών',
+    'HideInsights' => 'Σύμπτυξη των πλακιδίων πληροφοριών σε μια γραμμή σύνοψης',
+    'ChooseControls' => 'Επιλογή στοιχείων ελέγχου',
+    'UseTheseControls' => 'Χρησιμοποιήστε αυτά τα στοιχεία ελέγχου',
+    'SearchControlsPlaceholder' => 'Αναζήτηση με αριθμό ή όνομα',
+    'PickerKeyboardHint' => 'Πάνω/κάτω για μετακίνηση, Enter για επιλογή, Esc για ακύρωση',
+    'NoControlsMatchFilters' => 'Δεν υπάρχει τίποτα που να ταιριάζει εδώ. Διευρύνετε ένα βήμα αριστερά ή διαγράψτε την αναζήτηση.',
+    'NoControlsSelectedYet' => 'Δεν έχει επιλεγεί τίποτα ακόμα.',
+    'AllControls' => 'Όλα τα στοιχεία ελέγχου',
+    'AddOrRemoveControls' => 'Προσθήκη ή κατάργηση στοιχείων ελέγχου…',
+    'LastTested' => 'Τελευταία δοκιμή',
+    'LastTestDateAnchorHint' => 'Προγραμματισμός διαστημάτων αγκυρών (αυτή η ημερομηνία συν τη συχνότητα). Μόλις καταγραφούν τα αποτελέσματα της δοκιμής, το πλέγμα εμφανίζει την ημερομηνία του νεότερου αποτελέσματος.',
+    'Filters' => 'Φίλτρα',
+    'ShowFilters' => 'Εμφάνιση φίλτρων',
+    'HideFilters' => 'Απόκρυψη φίλτρων',
+
+    // App shell — collapsing sidebar / new base design (SR app-shell redesign)
+    'AI' => 'Τεχνητή Νοημοσύνη',
+    'CollapseSidebar' => 'Σύμπτυξη πλευρικής γραμμής',
+    'FooterCopyright' => '© %s SimpleRisk. Με επιφύλαξη παντός δικαιώματος.',
+    'ExpandSidebar' => 'Ανάπτυξη πλευρικής γραμμής',
+    'WorkflowsCloneConfirm' => 'Κλωνοποίηση ροής εργασίας \'{$name}\';',
+    'WorkflowsDeleteConfirm' => 'Διαγραφή ροής εργασίας \'{$name}\'; Δεν είναι δυνατή η αναίρεση αυτής της ενέργειας.',
+    'WorkflowActionFailed' => 'Η ενέργεια απέτυχε: {$msg}',
+    'ClickToDisable' => 'Κάντε κλικ για απενεργοποίηση',
+    'ClickToEnable' => 'Κάντε κλικ για ενεργοποίηση',
+    'ENABLED' => 'ΕΝΕΡΓΟΠΟΙΗΜΕΝΟ',
+    'DISABLED' => 'ΑΠΕΝΕΡΓΟΠΟΙΗΜΕΝΟ',
+    'BackToWorkflows' => 'Επιστροφή στις Ροές εργασίας',
+    'BackToHistory' => 'Επιστροφή στην Ιστορία',
+    'NewWorkflow' => 'Νέα ροή εργασίας',
+    'ViewSteps' => 'Δείτε τα βήματα',
+    'SaveWorkflow' => 'Αποθήκευση ροής εργασίας',
+    'WorkflowSavedSuccessfully' => 'Η ροή εργασίας αποθηκεύτηκε με επιτυχία.',
+    'WorkflowNotFound' => 'Δεν βρέθηκε ροή εργασίας.',
+    'EditWorkflow' => 'Επεξεργασία ροής εργασίας: {$name}',
+    'OrganizationContextProfile' => 'Προφίλ πλαισίου οργανισμού',
+    'AICtxAutoAcceptThreshold' => 'Ποιο είναι το όριο αυτόματης αποδοχής κινδύνου του οργανισμού σας (ποσό σε δολάρια ή ποσοστό του ALE);',
+    'AICtxGrcBudget' => 'Ποιος είναι ο ετήσιος προϋπολογισμός σας για το GRC/ασφάλεια;',
+    'AICtxAuditorPerspective' => 'Από ποιανού την οπτική γωνία ελέγχεστε κυρίως;',
+    'AICtxUnitCurrency' => 'Νόμισμα ($)',
+    'AICtxUnitPercentOfAle' => 'Ποσοστό ALE (%)',
+    'AICtxFrameworksInUse' => 'Πλαίσια που χρησιμοποιούνται αυτήν τη στιγμή',
+    'AICtxNoFrameworksInUse' => 'Δεν βρέθηκαν ακόμη ενεργά πλαίσια. Προσθέστε πλαίσια στην ενότητα Διακυβέρνηση > Χαρτογράφηση πλαισίου.',
+    'AICtxFromYourData' => 'Από τα δεδομένα σας',
+    'AICtxAuthoritative' => 'Επίσημος',
+    'AICtxAppetiteNotSet' => 'Δεν έχει οριστεί',
+    'AICtxAppetiteManageLink' => 'Διαχείριση στη Διαμόρφωση Κινδύνου',
+    'AICapControlTestGeneration' => 'Δημιουργία Δοκιμής Ελέγχου',
+    'AICapControlTestGenerationDesc' => 'Συντάσσει σχέδια δοκιμών ελέγχου για αναθεώρηση, χρησιμοποιώντας την αντιστοίχιση πλαισίου του ελέγχου, τις υπάρχουσες δοκιμές και τα αποτελέσματα αυτοαξιολόγησης — τίποτα δεν δημιουργείται μέχρι να το εγκρίνετε.',
+    'AICapSurfacedControlTestGeneration' => 'Συμμόρφωση — Ορισμός Δοκιμών',
+    'AIControlTestGenUnavailable' => 'Η ΥΠΗΡΕΣΙΑ ΔΕΝ ΕΙΝΑΙ ΔΙΑΘΕΣΙΜΗ: Ένας διαχειριστής πρέπει να ενεργοποιήσει αυτήν τη λειτουργία στις ρυθμίσεις τεχνητής νοημοσύνης.',
+    'AIControlTestGenInvalidId' => 'ΚΑΚΟ ΑΙΤΗΜΑ: Απαιτείται θετικό αναγνωριστικό ελέγχου.',
+    'AIControlTestGenNotFound' => 'ΔΕΝ ΒΡΕΘΗΚΕ: Δεν ήταν δυνατή η εύρεση του καθορισμένου στοιχείου ελέγχου.',
+    'AIControlTestGenConflict' => 'ΣΥΓΚΡΟΥΣΗ: Η δημιουργία έχει ήδη τοποθετηθεί σε ουρά για αυτό το στοιχείο ελέγχου.',
+    'AIControlTestGenQueued' => 'ΑΠΟΔΟΧΗ: Η δημιουργία δοκιμής ελέγχου έχει τεθεί σε ουρά.',
+    'AIControlTestGenFailed' => 'ΕΣΩΤΕΡΙΚΟ ΣΦΑΛΜΑ ΔΙΑΚΟΜΙΣΤΗ: Αποτυχία δημιουργίας δοκιμής ελέγχου ουράς.',
+    'AIControlTestGenCheckFailed' => 'ΣΦΑΛΜΑ: Δεν είναι δυνατή η επαλήθευση του στοιχείου ελέγχου πριν από την ουρά.',
+    'GenerateTestsWithAI' => 'Δημιουργήστε δοκιμές με τεχνητή νοημοσύνη',
+    'ShowAiSuggestedTests' => 'Προτεινόμενες δοκιμές από την Τεχνητή Νοημοσύνη',
+    'AiSuggested' => 'Η τεχνητή νοημοσύνη πρότεινε',
+    'ReviewAndEdit' => 'Έλεγχος και επεξεργασία',
+    'CreateSelected' => 'Δημιουργία επιλεγμένων',
+    'TestCreatedFromSuggestion' => 'Δοκιμή που δημιουργήθηκε από την πρόταση.',
+    'SuggestionDismissed' => 'Η πρόταση απορρίφθηκε.',
+    'TestGenerationQueued' => 'Η δημιουργία δοκιμών έχει τοποθετηθεί σε ουρά.',
+    'Generating' => 'Δημιουργία…',
+    'SuggestionDismissFailed' => 'Η δοκιμή δημιουργήθηκε, αλλά η πρόταση τεχνητής νοημοσύνης που την προκάλεσε δεν ήταν δυνατή. Αν παραμένει, απορρίψτε την χειροκίνητα.',
+    'AICtxAuditorBig4' => 'Big 4 (εξωτερικό)',
+    'AICtxAuditorBoutique' => 'Μπουτίκ / περιφερειακό (εξωτερικό)',
+    'AICtxAuditorInternal' => 'Μόνο εσωτερικός έλεγχος',
+    'AICtxAuditorSelfAssessed' => 'Αυτοαξιολογημένος',
+    'AICtxAuditorNotSure' => 'Δεν είμαι σίγουρος/η',
+    'AICtxAppetiteCautious' => 'Προσεκτικός',
+    'AICtxAppetiteBalanced' => 'Ισορροπημένο',
+    'AICtxAppetiteAggressive' => 'Επιθετικός',
+    'TestGenerationComplete' => 'Οι δοκιμές ελέγχου που έχουν συνταχθεί από την Τεχνητή Νοημοσύνη είναι έτοιμες για έλεγχο.',
+    'TestGenerationStillRunning' => 'Η δοκιμαστική δημιουργία βρίσκεται ακόμη σε εξέλιξη. Τα προσχέδια θα εμφανιστούν σύντομα.',
+    'TestGenerationNoNew' => 'Η παραγωγή ολοκληρώθηκε — δεν υπάρχουν νέες δοκιμές που να υποδεικνύουν αυτό το στοιχείο ελέγχου.',
+    'SearchEntities' => 'Αναζήτηση οντοτήτων',
+    'SearchEntitiesPlaceholder' => 'Αναζήτηση κινδύνων, ελέγχων, πολιτικών, εξαιρέσεων…',
+    'ShowTypes' => 'Εμφάνιση τύπων',
+    'Depth' => 'Βάθος',
+    'Inspector' => 'Επιθεωρητής',
+    'Connections' => 'Συνδέσεις',
+    'NoConnectionsFound' => 'Δεν βρέθηκαν συνδέσεις για την επιλεγμένη οντότητα.',
+    'CouldNotLoadGraph' => 'Δεν ήταν δυνατή η φόρτωση του γραφήματος συνδεσιμότητας.',
+    'CouldNotSearchEntities' => 'Δεν ήταν δυνατή η αναζήτηση οντοτήτων.',
+    'ShowingTopNOfM' => 'Εμφάνιση των κορυφαίων {0} από {1}',
+    'RankedByMaturityGap' => 'Κατάταξη με βάση το χάσμα ωριμότητας',
+    'RankedByRiskScore' => 'Κατάταξη βάσει βαθμολογίας κινδύνου',
+    'RankedByRecentFailure' => 'Κατάταξη με βάση την πιο πρόσφατη αποτυχία',
+    'RankedByReviewDate' => 'Κατάταξη κατά ημερομηνία επόμενης αξιολόγησης',
+    'RankedBySeverity' => 'Κατάταξη κατά σοβαρότητα',
+    'RankedByName' => 'Κατάταξη με βάση το όνομα',
+    'NodeTypeSelfAssessmentResult' => 'Αποτέλεσμα Αυτοαξιολόγησης',
+    'Relationship' => 'Σχέση',
+    'Exception' => 'Εξαίρεση',
+    'DesiredMaturity' => 'Επιθυμητή ωριμότητα',
+    'ApprovalState' => 'Κατάσταση έγκρισης',
+    'RelationshipOfType' => '{0} από {1}',
+    // Connectivity Explorer Inspector: labels for enrichment field keys
+    // (ai_context_enrich_fetch(), ai_context_enrich_vulnerabilities()) that
+    // fieldLabel() in connectivity-visualizer.js did not yet cover.
+    'LastDate' => 'Τελευταία Ημερομηνία',
+    'LastResultDate' => 'Ημερομηνία Τελευταίου Αποτελέσματος',
+    'PercentComplete' => 'Ποσοστό ολοκλήρωσης',
+    'AssessmentDate' => 'Ημερομηνία αξιολόγησης',
+    'NextDate' => 'Επόμενη ημερομηνία',
+    'Number' => 'Αριθμός',
+    'Grouping' => 'Ομαδοποίηση',
+    'Hidden' => 'Κεκρυμμένος',
+    'FirstFound' => 'Πρώτο Βρέθηκε',
+    'LastFound' => 'Τελευταία Βρέθηκε',
+    'Patchable' => 'Ενημερώσιμο',
+    'Solution' => 'Λύση',
+    'Breadcrumb' => 'Ψίχουλα ψωμιού',
+    'SelectANodeToInspect' => 'Επιλέξτε έναν κόμβο για να δείτε τις λεπτομέρειές του.',
+    'HiddenUnreachableNodes' => '{0} κόμβος(-οι) κρυφός(-οι): δεν είναι πλέον συνδεδεμένος(-οι) χωρίς τον(τους) κρυφό(-ους) τύπο(-ους).',
+    // Connectivity Explorer canvas launchpad (Level-1 type tiles / Level-2
+    // browsable entity list) -- docs/superpowers/specs/2026-07-27-
+    // connectivity-explorer-launchpad.md
+    'BrowsableEntityTypes' => 'Τύποι οντοτήτων με δυνατότητα περιήγησης',
+    'CountFloor' => '{0}+',
+    'NoBrowsableTypes' => 'Δεν έχετε άδεια περιήγησης σε κανέναν τύπο οντότητας.',
+    'AllTypes' => 'Όλοι οι τύποι',
+    'FilterEntitiesPlaceholder' => 'Φίλτρο…',
+    'NoMatchingEntities' => 'Δεν υπάρχουν οντότητες που να αντιστοιχούν στο φίλτρο σας.',
+    'LoadMore' => 'Φόρτωση περισσότερων',
+    'Loading' => 'Φόρτωση…',
+    'CouldNotLoadEntityCounts' => 'Δεν ήταν δυνατή η φόρτωση των αριθμών οντοτήτων.',
+    'CouldNotLoadEntities' => 'Δεν ήταν δυνατή η φόρτωση οντοτήτων.',
+    'ClearGraph' => 'Καθαρισμός γραφήματος',
+    // Connectivity Explorer node-type chip label for the 'audit' type. Not
+    // reused from 'TeamType_audit' (same English text, "Audit") -- that key
+    // is scoped to the Team Separation team-type picker, a different feature
+    // whose wording should be free to diverge from this one's.
+    'Audit' => 'Έλεγχος',
+    // Queued email send-failure notifications
+    'EmailSendFailedNotificationTitle' => 'Η παράδοση ηλεκτρονικού ταχυδρομείου απέτυχε',
+    'EmailSendFailedNotificationBody' => 'Δεν ήταν δυνατή η παράδοση ενός ή περισσότερων μηνυμάτων ηλεκτρονικού ταχυδρομείου που βρίσκονται σε ουρά. Ελέγξτε τις ρυθμίσεις αλληλογραφίας σας και, στη συνέχεια, ανατρέξτε στην Παρακολούθηση ουράς και στο αρχείο καταγραφής διακομιστή για λεπτομέρειες.',
+    'QuestionnaireShareInvalidEmailAddress' => 'Δεν είναι δυνατή η κοινοποίηση των αποτελεσμάτων του ερωτηματολογίου σε μια επαφή που δεν έχει έγκυρη διεύθυνση ηλεκτρονικού ταχυδρομείου.',
+    'AssessmentSendInvalidEmailAddress' => 'Δεν είναι δυνατή η αποστολή της αξιολόγησης σε μη έγκυρη διεύθυνση ηλεκτρονικού ταχυδρομείου.',
+    'AssessmentSentTo' => 'Η αξιολόγηση στάλθηκε στο "{$email}".',
+    'AssessmentNotSentNoValidRecipients' => 'Η αξιολόγηση δεν στάλθηκε — δεν δόθηκε έγκυρη διεύθυνση ηλεκτρονικού ταχυδρομείου.',
+    'AssessmentContactUnusableEmailNotificationTitle' => 'Το ερωτηματολόγιο δεν στάλθηκε',
+    'AssessmentContactUnusableEmailNotificationBody' => 'Το ερωτηματολόγιο "{$questionnaire}" δεν ήταν δυνατό να σταλεί στον/στην "{$contact}" επειδή η συγκεκριμένη επαφή δεν έχει έγκυρη διεύθυνση ηλεκτρονικού ταχυδρομείου στο αρχείο της. Ενημερώστε την εγγραφή της επαφής για να συνεχίσετε την αποστολή.',
+    'EmailFailureNotificationRetention' => 'Διατήρηση ειδοποίησης αποτυχίας παράδοσης email',
+    'EmailFailureNotificationRetentionOutOfRange' => 'Η διατήρηση της ειδοποίησης αποτυχίας παράδοσης email πρέπει να είναι μεταξύ {$min} και {$max} ημερών.',
+    'MailSettingsUpdatedSuccessfully' => 'Οι ρυθμίσεις αλληλογραφίας ενημερώθηκαν με επιτυχία.',
+    // Questionnaire audit-trail entries for the API submit/draft paths (SR-1714).
+    // The token form credits the contact; an API caller is an authenticated
+    // SimpleRisk user acting on that contact's questionnaire, so both the
+    // contact and the acting user are named.
+    'QuestionnaireCompletedAuditLogViaApi' => 'Το ερωτηματολόγιο "{$questionnaire_name}" για επικοινωνία "{$contact_name}" συμπληρώθηκε μέσω του API από τον χρήστη "{$user_name}".',
+    'QuestionnaireDraftAuditLogViaApi' => 'Το ερωτηματολόγιο "{$questionnaire_name}" για την επαφή "{$contact_name}" αποθηκεύτηκε ως προσχέδιο μέσω του API από τον χρήστη "{$user_name}".',
+    // Bad-input response for the questionnaire risk-list endpoints, which
+    // previously reported a malformed questionnaire_id as a permission denial.
+    // Mirrors the existing 'MissingOrInvalidTrackingID'.
+    'MissingOrInvalidQuestionnaireID' => 'Λείπει ή δεν είναι έγκυρο το αναγνωριστικό ερωτηματολογίου.',
+    // POST /api/v2/assessments/questionnaire/result/file response messages.
+    // The `id` path deliberately returns QuestionIdCannotAcceptFile for every
+    // question-level rejection so a sequential tracking id cannot be used to
+    // probe questionnaire structure; the token path returns the specific reason.
+    'QuestionnaireResultNotFoundForTokenOrId' => 'ΔΕΝ ΒΡΕΘΗΚΕ: Δεν είναι δυνατή η εύρεση αποτελέσματος ερωτηματολογίου με το καθορισμένο διακριτικό ή αναγνωριστικό',
+    'QuestionIdCannotAcceptFile' => 'ΚΑΚΟ ΑΙΤΗΜΑ: question_id {$question_id} δεν μπορεί να δεχτεί ένα αρχείο σε αυτό το αποτέλεσμα ερωτηματολογίου',
+    'QuestionIdNotFoundInQuestionnaire' => 'ΚΑΚΟ ΑΙΤΗΜΑ: το question_id {$question_id} δεν βρέθηκε σε αυτό το ερωτηματολόγιο',
+    'QuestionIdInMultipleTemplates' => 'ΚΑΚΟ ΑΙΤΗΜΑ: question_id {$question_id} εμφανίζεται σε πολλά πρότυπα για αυτό το ερωτηματολόγιο',
+    'QuestionIdDoesNotAcceptFileUploads' => 'ΚΑΚΟ ΑΙΤΗΜΑ: το question_id {$question_id} δεν δέχεται μεταφορτώσεις αρχείων',
+    // The Statement of Applicability's two UNVERIFIED implementation states.
+    //
+    // They exist because "we have not checked" is not "it does not work", and an
+    // SoA is ATTESTED — printing "No" for an unverified control is a false
+    // statement against yourself, exactly as printing "Yes" without evidence is
+    // a false statement the other way. Before these keys existed both states
+    // fell through to 'No', which on a framework where most controls carry no
+    // test meant the whole document read "not implemented".
+    //
+    // They are two states rather than one because they are different findings
+    // with different owners: no test defined is a GOVERNANCE gap (nobody decided
+    // how to verify this control), never run is an OPERATIONAL one (somebody
+    // decided, and it was not done).
+    //
+    // WORDING. Both must be unmistakably distinct from the bare 'No' in the same
+    // column. 'Tests never run' rather than 'Never run': in a column headed
+    // "Implemented", the bare phrase reads for a moment as though the CONTROL
+    // was never run, when the subject is its tests.
+    //
+    // BOTH ARE PLURAL, and that is not only style. English takes the plural
+    // after "no" when the expected quantity could exceed one ("no results
+    // found"), and a control normally carries several tests — the singular
+    // implies only ever one was expected. 'Tests never run' is the stronger
+    // case: soa_implemented_for() returns `never_run` only when NOT ONE of the
+    // control's tests has produced a verdict, so the state is inherently about
+    // the whole set. With four tests defined and none run, the singular reads as
+    // one omission rather than a wholesale one.
+    'SoaImplementedNoTestDefined' => 'Δεν έχουν οριστεί δοκιμές',
+    'SoaImplementedNeverRun' => 'Οι δοκιμές δεν εκτελούνται ποτέ',
+
+    // The Implemented column's fallback for a token neither sink recognizes.
+    //
+    // DELIBERATELY NOT A VERDICT, and the reason this key exists at all. Both
+    // sinks previously ended in a fallthrough to 'No', so adding a state without
+    // adding its label printed a confident, wrong answer into a compliance
+    // document. Falling through to 'Yes' would be worse. The only safe failure
+    // mode is a value that states nothing about the control — a visible bug
+    // instead of a silent misstatement.
+    'SoaImplementedUnknown' => 'Η κατάσταση δεν είναι διαθέσιμη',
+    // How an APPLICABLE control's stored inclusion reason(s) join to its own
+    // freeform justification when it recorded both (spec §4). Reached ONLY when
+    // both halves exist — reasons alone print as the reason list, prose alone
+    // prints verbatim — so this string is punctuation and word order, not prose.
+    // It is a language key rather than a hardcoded separator because a locale
+    // that joins clauses with a colon, a full stop, or right-to-left ordering
+    // must be able to say so; both placeholders have to survive translation.
+    'SoaJustifiedByInclusionReasons' => '{reasons} — {narrative}',
+    // The Set applicability modal's reason field, which became a MULTI-select
+    // when reasons moved to a join table: a control is commonly included (or
+    // excluded) for more than one reason, and the singular 'Reason' the field
+    // used to reuse now under-describes it. 'Reason' is left alone rather than
+    // repointed -- the row drawer and the SoA still print exactly one joined
+    // value under it, and redefining a key changes every surface that reads it.
+    'ApplicabilityReasons' => 'Αιτιολογικό',
+    // Said once, above a group of checkboxes, rather than implied by the widget.
+    // The old single <select> answered "how many may I pick?" by construction;
+    // a checkbox group does not, and a user who ticks one and stops has made the
+    // SoA less truthful than the one they meant to write.
+    'ApplicabilityReasonsHint' => 'Επιλέξτε κάθε λόγο που ισχύει.',
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // THE STATEMENT OF APPLICABILITY'S MARKERS AND ITS LEGEND (spec §1, §3).
+    // ─────────────────────────────────────────────────────────────────────────
+
+    // THE EVIDENCE COLUMN'S TWO ABSENCES, which are OPPOSITES.
+    //
+    // 'No evidence linked' is a FINDING: the control is in scope, is possibly
+    // claimed implemented, and nothing substantiates it. The em dash below is
+    // the other answer -- the control is excluded, so no evidence is expected
+    // and the absence is correct. Rendering both as an empty cell hides the
+    // first, which is the one an auditor circles.
+    'SoaNoEvidenceLinked' => 'Δεν υπάρχουν συνδεδεμένα στοιχεία',
+    // PUNCTUATION, NOT PROSE -- the glyph the Evidence cell prints when nothing
+    // is expected. A language key rather than a hardcoded character for the same
+    // reason 'SoaJustifiedByInclusionReasons' is one: a locale that marks "not
+    // applicable" with a different dash, or with a word, must be able to say so.
+    'SoaEvidenceNotExpected' => '—',
+    // Whether the evidence a test DECLARED it requires actually arrived with the
+    // result. A stronger claim than a pass/fail alone, and few SoA tools make it.
+
+    // THE REMEDIATION BLOCK -- what is being done about a control that reads
+    // Partial or No. The SoA points AT the risk treatment plan (clause 6.1.3(e))
+    // rather than becoming one.
+    'SoaRemediation' => 'Αποκατάσταση',
+    // THE MOST SERIOUS THING THAT BLOCK CAN FIND: the test failed and it is
+    // linked to no risk, so no treatment plan traces back to it. Dropping such a
+    // row for want of a risk to join to would render it as a blank cell, which
+    // reads as "nothing to report".
+    'SoaRemediationUnplanned' => 'Δεν υπάρχει σύνδεση κινδύνου',
+
+    // THE LEGEND. Required in both variants and every export format, because six
+    // implementation states plus three markers is more nuanced than the
+    // Yes/No/Partial an auditor expects, and an undefined vocabulary invites the
+    // reader to guess unfavourably.
+    'SoaLegendTitle' => 'Πώς να διαβάσετε αυτήν τη δήλωση',
+    'SoaLegendYes' => 'Κάθε δοκιμή που ορίστηκε για αυτό το στοιχείο ελέγχου ήταν επιτυχής κατά την τελευταία εκτέλεσή της.',
+    'SoaLegendPartial' => 'Τα τεστ του ελέγχου διαφωνούν: τουλάχιστον ένα πέρασε και τουλάχιστον ένα απέτυχε ή δεν κατέληξε σε κανένα συμπέρασμα.',
+    'SoaLegendNo' => 'Καμία δοκιμή αυτού του ελέγχου δεν ήταν επιτυχής κατά την τελευταία του εκτέλεση και τουλάχιστον μία απέτυχε.',
+    // The two unverified states are DIFFERENT FINDINGS WITH DIFFERENT OWNERS,
+    // and the labels alone do not quite carry that -- so the legend spells it
+    // out. This is the distinction the whole six-state set exists for.
+    'SoaLegendNoTestDefined' => 'Δεν έχει οριστεί καμία δοκιμή για αυτό το στοιχείο ελέγχου, επομένως η λειτουργία του δεν έχει επαληθευτεί ποτέ. Δεν πρόκειται για δήλωση ότι το στοιχείο ελέγχου λείπει ή ότι αποτυγχάνει -- απλώς ότι αυτή η δήλωση δεν το καταδεικνύει. Ένα κενό διακυβέρνησης: κανείς δεν έχει αποφασίσει πώς ελέγχεται αυτό το στοιχείο ελέγχου.',
+    'SoaLegendNeverRun' => 'Υπάρχουν δοκιμές για αυτόν τον έλεγχο, αλλά καμία από αυτές δεν έχει εκτελεστεί ποτέ, επομένως η λειτουργία του δεν καταδεικνύεται εδώ. Αυτό δεν αποτελεί δήλωση ότι ο έλεγχος λείπει ή ότι αποτυγχάνει. Ένα λειτουργικό κενό: οι έλεγχοι αποφασίστηκαν και δεν έχουν πραγματοποιηθεί.',
+    'SoaLegendNotApplicable' => 'Ο έλεγχος εξαιρείται από το πεδίο εφαρμογής αυτού του πλαισίου, επομένως δεν έχει κατάσταση υλοποίησης.',
+    // The one most in need of explaining: with nothing to define it, this reads
+    // as an admission about the control rather than as what it is.
+    'SoaLegendUnknown' => 'Το SimpleRisk δεν μπόρεσε να επισημάνει την καταγεγραμμένη κατάσταση, επομένως η υλοποίηση δεν παρουσιάζεται εδώ. Αυτό είναι ένα ελάττωμα στο λογισμικό και δεν λέει τίποτα απολύτως για τον έλεγχο -- ούτε ότι λειτουργεί ούτε ότι δεν λειτουργεί.',
+    'SoaLegendOverdue' => 'Το αποτέλεσμα που παρουσιάζεται εξακολουθεί να ισχύει, αλλά τουλάχιστον ένα από τα τεστ που το αποτελούν έχει περάσει την ημερομηνία της επόμενης δοκιμής του. Τα στοιχεία είναι ξεπερασμένα.',
+    'SoaLegendNoEvidence' => 'Ο έλεγχος βρίσκεται εντός του πεδίου εφαρμογής και τίποτα δεν έχει συνδεθεί που να τον τεκμηριώνει: κανένα επιβεβαιωμένο έγγραφο και καμία δοκιμή που να παρήγαγε αποτέλεσμα.',
+    'SoaLegendEvidenceNotExpected' => 'Δεν αναμένονται αποδεικτικά στοιχεία, επειδή ο έλεγχος εξαιρείται από το πεδίο εφαρμογής.',
+    'SoaLegendUnplanned' => 'Μια αποτυχημένη εξέταση που δεν συνδέεται με κανέναν κίνδυνο, επομένως κανένα σχέδιο θεραπείας δεν την οδηγεί σε κάποιο συμπέρασμα.',
+
+    // THE TWO VARIANTS, chosen on the launcher before the document is generated
+    // and PRINTED ON ITS COVER. A Statement of Applicability is a controlled
+    // document: two of them for the same framework that show different things,
+    // with nothing on either to say which is which, is a document nobody can
+    // file.
+
+    // THE THREE DETAILED-ONLY COLUMNS.
+    // What those three columns say instead of nothing. A blank cell in an audit
+    // document reads as a formatting artefact; "Not recorded" is a fact the
+    // reader can act on.
+
+    // THE BROWSER PRINT ROUTE. Beside the two downloads on the launcher, and the
+    // only PDF route for a framework too large for the server-side writer.
+    // Shown in place of "Download as PDF" when the chosen framework is above
+    // SOA_EXPORT_PDF_MAX_CONTROLS. The affordance is absent rather than
+    // disabled, so this sentence is what tells the reader the absence is
+    // deliberate and what to do instead.
+    // The footer of every printed page. {page} and {pages} are substituted with
+    // the browser's own page counters, so the two tokens must both survive
+    // translation -- but their ORDER and the words around them are the
+    // translator's, which is why this is one string and not "Page" + "of".
+    'SoaPrintPageNumber' => 'Σελίδα {page} από {pages}',
+
+    // THE ONE PDF AFFORDANCE on the statement-of-applicability launcher, beside
+    // 'DownloadAsXLSX'. It replaces the pair that used to sit there --
+    // 'SoaPrintToPdf' and 'DownloadAsPDF' -- because a Statement of Applicability
+    // is a controlled document and two PDF buttons let two people hand an auditor
+    // two different-looking PDFs of the same statement.
+    //
+    // JUST "PDF", AND DELIBERATELY SO. Below SOA_EXPORT_PDF_MAX_CONTROLS the
+    // button downloads a server-rendered file and above it the browser writes
+    // one, but that is a mechanism and not a choice the reader has to make. A
+    // label that named the mechanism ("Print to PDF" / "Download as PDF") would
+    // put the difference back in front of them.
+    //
+    // 'SoaPrintToPdf' and 'SoaPdfTooLargeHint' above are LEFT IN PLACE with no
+    // caller: 39 locales carry them, and this file is append-only precisely so a
+    // customer running a custom lang.<locale>.php can reconcile it with a tail
+    // diff.
+    'SoaPdf' => 'PDF',
+
+    // THE OTHER TWO ACTIONS IN THAT SAME ROW, shortened to match it.
+    //
+    // The row read "Open in browser" / "Download as XLSX" / "PDF", which put a
+    // verb on two of three actions and made the odd one out look like an
+    // abbreviation of something longer. The row's own context supplies the
+    // verbs -- these are the things you can DO with the framework you just
+    // chose -- so they carried no information and cost the reader a comparison.
+    // 'SoaPdf' is short because naming its mechanism would be dishonest (above
+    // SOA_EXPORT_PDF_MAX_CONTROLS it opens a print view rather than downloading
+    // a file), and the shortest of the three is the one that has to be right.
+    //
+    // NOT the generic 'Open' at line ~1021: that key lives among 'Mitigated' /
+    // 'Reviewed' and is the risk-status ADJECTIVE -- fr "Ouvert", de "Offen" --
+    // so reusing it would label a button with a state rather than an action in
+    // most of the 39 locales.
+    //
+    // 'SoaOpenInBrowser' above is LEFT IN PLACE with no caller, for the same
+    // reason 'SoaPrintToPdf' is: the locales carry it and this file is
+    // append-only so a customer's custom lang.<locale>.php reconciles with a
+    // tail diff. 'DownloadAsXLSX' keeps a caller either way -- the Assessments
+    // Extra's questionnaire results still use it.
+    'SoaOpen' => 'Ανοίξετε',
+    'SoaXlsx' => 'XLSX',
+    // ---- The locked-affordance treatment -------------------------------------
+    // SHARED COPY, not chooser copy. SimpleRisk now SHOWS what's possible and
+    // MARKS what's out of reach because it isn't licensed, rather than hiding
+    // it -- so these strings appear both as a menu row's explanation (Define
+    // Control Frameworks' "+ Add framework" chooser) and beside a disabled
+    // toolbar button (the Statement of Applicability's PDF/XLSX exports). Each
+    // one is worded to read correctly in BOTH places, which is why none of them
+    // starts with "This route" or "This button".
+    //
+    // 'LockedAffordanceBadge' duplicates the English of 'AICapStateLocked'
+    // rather than reusing it: that key sits in the AI Capabilities Catalog's
+    // block and is scoped to a capability's state, and translators work from
+    // the key's neighbourhood as much as from its value.
+    'LockedAffordanceBadge' => 'Κλειδωμένο',
+    // The two SCF steps before it can be switched on. admin/register.php serves
+    // both -- it is the registration form AND where the per-Extra download
+    // buttons render -- so these differ in what they say, not where they go.
+    'UnlockRegisterInstanceNote' => 'Καταχωρίστε αυτήν την παρουσία για να λάβετε το Secure Controls Framework.',
+    'UnlockRegisterInstanceLink' => 'Εγγραφείτε SimpleRisk',
+    'UnlockDownloadScfNote' => 'Αυτή η παρουσία είναι καταχωρημένη. Κατεβάστε το Secure Controls Framework για να το χρησιμοποιήσετε.',
+    'UnlockDownloadScfLink' => 'Κατεβάστε το',
+    'UnlockActivateScfNote' => 'Το Secure Controls Framework έχει ληφθεί αλλά δεν είναι ενεργοποιημένο.',
+    'UnlockActivateScfLink' => 'Ενεργοποίησέ το',
+    // Import-Export is a paid Extra, so "not installed" is an upsell rather
+    // than a registration prompt. Deliberately a bare capability sentence: it
+    // has to sit under a menu row and next to an export button equally well.
+    'RequiresImportExportExtra' => 'Απαιτείται το επιπλέον στοιχείο Εισαγωγή-Εξαγωγή.',
+    'UnlockImportExportLink' => 'Δείτε τι προσθέτει',
+    'UnlockActivateImportExportNote' => 'Το Import-Export Extra είναι εγκατεστημένο αλλά δεν είναι ενεργοποιημένο.',
+    'UnlockActivateImportExportLink' => 'Ενεργοποίησέ το',
+    // Shown instead of any of the above to a user who is not an administrator:
+    // every unlock step lives on a check_admin page, so they get the half that
+    // is useful to them -- that the capability exists, and who to ask -- and no
+    // link that would only bounce them.
+    'UnlockNeedsAdministrator' => 'Ένας διαχειριστής μπορεί να το ρυθμίσει αυτό.',
+    // API date parsing. {$field} is the request field name (next_date, last_date,
+    // test_date); {$format} is this instance's configured display date format.
+    'InvalidSubmittedDate' => 'Η τιμή {$field} δεν είναι έγκυρη ημερομηνία. Υποβάλετέ την ως ΕΕΕΕ-ΜΜ-ΗΗ ή στη μορφή ημερομηνίας αυτής της παρουσίας ({$format}).',
+    // Companion to InvalidSubmittedDate, for a value that matches the expected
+    // shape but names a day that does not exist (February 31st, month 13).
+    // Saying "submit it as MM/DD/YYYY" there would repeat what the caller did.
+    // {$value} is the submitted value, echoed back truncated.
+    'ImpossibleSubmittedDate' => 'Η τιμή {$field} "{$value}" δεν είναι πραγματική ημερομηνία ημερολογίου. Ελέγξτε την ημέρα και τον μήνα — αυτή η παρουσία διαβάζει τις ημερομηνίες ως {$format}.',
+    // The Statement of Applicability's merged verification column. Replaces three
+    // separate headings (Implemented / Evidence / Review Cadence) with the one
+    // question all three answer: how do we know this control is working?
+    // The two appendices printed after the register. Justifications are truncated
+    // in the row and given in full here; remediation plans live here rather than
+    // in the table because ISO 27001 keeps the SoA (6.1.3(d)) and the risk
+    // treatment plan (6.1.3(e)) as separate artifacts.
+    'SoaAppendixJustifications' => 'Παράρτημα Α — Δικαιολογήσεις',
+    'SoaAppendixRemediation' => 'Παράρτημα R — Σχέδια αποκατάστασης',
+    // Appendix E carries the WORDING of each test's evidence requirement. The row
+    // keeps only whether that evidence arrived, which is the finding; the wording
+    // is reference material and was the bulkiest thing in the Verification cell.
+    'SoaRequiredEvidenceSupplied' => 'προσκομίστηκαν τα απαιτούμενα αποδεικτικά στοιχεία',
+    'SoaRequiredEvidenceNotSupplied' => 'δεν προσκομίστηκαν τα απαιτούμενα αποδεικτικά στοιχεία',
+    // The one scheduling fact the SoA prints: the soonest date any of a control's
+    // tests is next due. Replaces a per-test "Manual — Next Test Date: ..." line,
+    // whose schedule type belongs on Define Tests and whose date is now on each
+    // test's own evidence bullet.
+    // The two dates on a test's evidence bullet. LABELLED, because two bare dates
+    // side by side are ambiguous in a way one is not.
+    // SINGULAR document-type labels for one piece of design evidence. SimpleRisk's
+    // existing keys are the plural tab names, which would read "Access Control
+    // Standard (Standards)".
+    'SoaEvidencePolicy' => 'Πολιτική',
+    'SoaEvidenceStandard' => 'Πρότυπο',
+    'SoaEvidenceProcedure' => 'Διαδικασία',
+    'SoaEvidenceGuideline' => 'Οδηγία',
+    // ── The legend, grouped by column (SOA_LEGEND_GROUPS, includes/soa.php) ──
+    // The Applicability column's three values. These were never in the legend,
+    // so an auditor met "Inherited" -- a word with no meaning outside SimpleRisk
+    // -- with nothing to look it up in.
+    'SoaLegendApplicable' => 'Ο έλεγχος εμπίπτει στο πεδίο εφαρμογής αυτού του πλαισίου και ο οργανισμός είναι υπεύθυνος για τη λειτουργία του.',
+    // DISTINCT from 'SoaLegendNotApplicable', which defines the "N/A" that appears
+    // in the Implementation Status column. This one is the DECISION to exclude;
+    // that one is the consequence for the status.
+    'SoaLegendApplicabilityNotApplicable' => 'Ο έλεγχος έχει εξαιρεθεί από το πεδίο εφαρμογής αυτού του πλαισίου. Η στήλη αιτιολόγησης καταγράφει το γιατί και ποιος αποφάσισε.',
+    'SoaLegendInherited' => 'Ο έλεγχος εμπίπτει στο πεδίο εφαρμογής, αλλά λειτουργεί από τρίτο μέρος -- έναν πάροχο cloud, έναν γονικό οργανισμό, μια εξωτερική ανάθεση λειτουργίας -- και όχι από αυτόν τον οργανισμό. Ο πάροχος αναφέρεται δίπλα στην αιτιολόγηση.',
+    // The Evidence column's four bullet glyphs. Load-bearing since the visible
+    // result word was dropped from pass and fail bullets, and until now defined
+    // nowhere at all.
+    'SoaLegendEvidencePass' => 'Μια δοκιμή αυτού του ελέγχου κατέγραψε ένα πέρασμα την τελευταία φορά που εκτελέστηκε. Η ημερομηνία δίπλα του είναι η ημερομηνία εκτέλεσης.',
+    'SoaLegendEvidenceFail' => 'Μια δοκιμή αυτού του ελέγχου κατέγραψε αποτυχία την τελευταία φορά που εκτελέστηκε. Το Παράρτημα R περιλαμβάνει το σχέδιο θεραπείας, όπου υπάρχει.',
+    'SoaLegendEvidenceInconclusive' => 'Μια δοκιμή αυτού του ελέγχου πραγματοποιήθηκε και δεν κατέληξε σε κανένα συμπέρασμα. Το ίδιο σημάδι χρησιμοποιείται για ένα αποτέλεσμα που αυτό το έγγραφο δεν αναγνωρίζει και σε αυτήν την περίπτωση το ίδιο το αποτέλεσμα εκτυπώνεται δίπλα του.',
+    // The TERM beside the § glyph. Not a document type -- the four types
+    // (Policy, Standard, Procedure, Guideline) are printed per item; this names
+    // the CATEGORY of evidence a document is.
+    'SoaEvidenceDesignDocument' => 'Έγγραφο σχεδιασμού',
+    'SoaLegendEvidenceDocument' => 'Ένα έγγραφο διακυβέρνησης επιβεβαιώνεται ως απόδειξη για αυτόν τον έλεγχο -- ο σχεδιασμός του και όχι η λειτουργία του. Ένα έγγραφο δεν εκφέρει καμία ετυμηγορία, γι\' αυτό και δεν σημειώνεται με ένα τικ.',
+    // The XLSX export's first worksheet tab. The workbook's other four tabs reuse
+    // headings that already exist ('How to read this statement', 'Statement of
+    // Applicability', and the two appendix headings); the cover had no name of its
+    // own because it used to be the top of a single sheet.
+    //
+    // KEEP IT SHORT. Excel caps a worksheet name at 31 characters and
+    // soa_export_sheet_name() truncates rather than failing the export, so a long
+    // translation loses its tail on the tab.
+    'SoaSheetCover' => 'Κάλυμμα',
+
+    'SearchFrameworks' => 'Αναζήτηση πλαισίων',
+    'SearchControls' => 'Στοιχεία ελέγχου αναζήτησης',
+    'AddFramework' => 'Προσθήκη πλαισίου',
+    'Applicability' => 'Εφαρμογή',
+    'AnyFamily' => 'Οποιαδήποτε οικογένεια',
+    'AnyOwner' => 'Οποιοσδήποτε κάτοχος',
+    'AnyClass' => 'Οποιαδήποτε τάξη',
+    'AnyPhase' => 'Οποιαδήποτε φάση',
+    'AnyPriority' => 'Οποιαδήποτε προτεραιότητα',
+    'AnyType' => 'Οποιοσδήποτε τύπος',
+    'AnyStatus' => 'Οποιαδήποτε κατάσταση',
+    'SelectAllN' => 'Επιλογή όλων {n}',
+    'Classification' => 'Ταξινόμηση',
+    'Placement' => 'Τοποθέτηση',
+    'OwnershipAndMaturity' => 'Ιδιοκτησία και ωριμότητα',
+    'MappingsAndGuidance' => 'Χαρτογραφήσεις και καθοδήγηση',
+    'DeleteFrameworkTitle' => 'Διαγραφή πλαισίου \'{$name}\';',
+    'DeleteControlTitle' => 'Διαγραφή στοιχείου ελέγχου \'{$name}\';',
+    'DeleteControlsTitle' => 'Διαγραφή στοιχείων ελέγχου {$n};',
+    'DeleteCannotBeUndone' => 'Αυτό δεν μπορεί να αναιρεθεί.',
+    'DeleteFrameworkConsequence' => 'Αυτό καταργεί το πλαίσιο και όλες τις αντιστοιχίσεις ελέγχου του.',
+    'DeleteControlConsequence' => 'Αυτό αφαιρεί τον έλεγχο από κάθε πλαίσιο στο οποίο έχει αντιστοιχιστεί.',
+    'DeleteControlsConsequence' => 'Αυτό καταργεί κάθε επιλεγμένο στοιχείο ελέγχου από κάθε πλαίσιο στο οποίο έχει αντιστοιχιστεί.',
+    // Task 9: empty states (design-system.md §10) -- the four intents on
+    // Define Control Frameworks. Reuses existing keys where the copy already
+    // fits exactly (AddControl, AddFramework, ClearFilters, Retry,
+    // NoControlsDefinedYet, NoTestsMatchFiltersBody, CouldNotLoadTestsBody,
+    // RegisterYourInstance, GoToSCF, ImportExportExtra) -- only the strings
+    // with no existing match are added below.
+    'NoControlsMatch' => 'Δεν υπάρχουν στοιχεία ελέγχου που να αντιστοιχούν στα φίλτρα σας',
+    'CouldNotLoadControls' => 'Δεν ήταν δυνατή η φόρτωση των στοιχείων ελέγχου',
+    'ControlsYouAddWillAppearHere' => 'Τα στοιχεία ελέγχου που προσθέτετε θα εμφανίζονται εδώ.',
+    'NoFrameworksYet' => 'Δεν υπάρχουν ακόμη πλαίσια',
+    'FrameworksYouAddWillAppearHere' => 'Τα πλαίσια που προσθέτετε ή εισάγετε θα εμφανίζονται εδώ.',
+    'CouldNotLoadFrameworks' => 'Δεν ήταν δυνατή η φόρτωση των πλαισίων',
+    // Task 9 review fix: the framework rail's own "no results" intent, shown
+    // when the user has explicitly switched the status dropdown away from
+    // Active and that status has nothing (distinct from "No frameworks yet",
+    // which is reserved for the default Active status where the endpoint
+    // can't yet tell "no frameworks at all" from "none active").
+    'NoFrameworksMatchFilter' => 'Δεν υπάρχουν πλαίσια που να αντιστοιχούν σε αυτήν την κατάσταση',
+    'ViewActiveFrameworks' => 'Προβολή ενεργών πλαισίων',
+    // Task 10: Define Control Frameworks insights band (governance/index.php)
+    // -- KPI tile labels/subtitles. 'Controls', 'Pass', 'Fail', 'NotTested'
+    // already exist and are reused as label keys for their tiles.
+    'BelowTarget' => 'Κάτω από τον στόχο',
+    'Excluded' => 'Εξαιρείται',
+    'FwInScope' => 'Στο πεδίο εφαρμογής',
+    'FwLastTestPassed' => 'Η τελευταία δοκιμασία πέρασε',
+    'FwLastTestFailed' => 'Η τελευταία δοκιμή απέτυχε',
+    'FwNoEvidence' => 'Ισχύει, δεν υπάρχουν αποδεικτικά στοιχεία',
+    'FwMaturityUnderDesired' => 'Ωριμότητα κάτω από την επιθυμητή',
+    'FwScopeAFramework' => 'Εύρεση πλαισίου για την απόφαση',
+    'FwNotApplicableOrInherited' => 'Δεν ισχύει ή κληρονομείται',
+    // Task 22: framework rail search (governance/index.php's #sr-fw-search,
+    // wired client-side in governance-frameworks.js). Reuses the shipped
+    // "no results" empty-state tile (#sr-fw-filtered, Task 9) rather than
+    // inventing a fourth rail empty state -- only the title and action swap
+    // depending on whether a status filter or a search narrowed the list to
+    // nothing; NoTestsMatchFiltersBody already covers both as body copy.
+    'NoFrameworksMatchSearch' => 'Δεν υπάρχουν πλαίσια που να ταιριάζουν με την αναζήτησή σας',
+    'ClearSearch' => 'Εκκαθάριση αναζήτησης',
+    // Task 24: Clone control pre-fills the Add Control modal from the source
+    // control (governance-frameworks.js's openControlForClone()) rather than
+    // creating a duplicate outright, so the modal needs to say plainly which
+    // control it was cloned from -- the reviewer's core complaint about an
+    // earlier one-click version of this feature was not knowing what was
+    // cloned. {$name} follows the same client-side formatTemplate()
+    // substitution ShowingXToYOfZ/NSelected already use on this page.
+    'ClonedFromControlNotice' => 'Κλωνοποιήθηκε από το "{$name}". Ελέγξτε τα παρακάτω πεδία και, στη συνέχεια, Αποθήκευση.',
+    // Task 24 review follow-up: the banner alone left the modal titled "New
+    // Control" over pre-populated fields -- "it doesn't prompt or anything
+    // so the user doesn't know what was cloned" (Josh) -- which reads as a
+    // bug, not a feature. Retitling #control--add-title to this (governance-
+    // frameworks.js's show.bs.modal delegate for #control--add) makes the
+    // clone unambiguous at a glance; NewControl is restored for a plain add.
+    'CloneOfControlTitle' => 'Κλώνος του "{$name}"',
+    // Task 27: the framework rail's SCF-origin chip (governance-frameworks.js's
+    // railRow()) -- shown only for frameworks created via the ComplianceForge
+    // SCF Extra's authoritative-source import (get_scf_origin_framework_ids(),
+    // includes/governance.php). SCF is the badge text itself; ScfOriginHint is
+    // its title/tooltip.
+    'SCF' => 'SCF',
+    'ScfOriginHint' => 'Από το Πλαίσιο Ασφαλών Ελέγχων (SCF)',
+    // Task 34: the Maturity filter facet's placeholder on the Define Control
+    // Frameworks filter sheet (governance-frameworks.js's ensureFilterSheet()),
+    // matching the AnyFamily/AnyOwner/AnyClass/... set above. The facet's three
+    // OPTIONS reuse the existing BelowMaturity/AtMaturity/AboveMaturity keys --
+    // the same labels the governance dashboard's maturity-gap widgets already
+    // carry -- and the column chip renders those same three strings, so the
+    // filter and the cell can never read differently.
+    'AnyMaturity' => 'Οποιαδήποτε ωριμότητα',
+    // Task 46: accessible name for the control table's pager landmark
+    // (governance-frameworks.js's renderPager()). The pager's own buttons
+    // reuse the existing Previous/Next keys Define Tests' pager already
+    // carries; only the <nav> label is new, and it names WHICH table's pager
+    // it is because the Define Control Frameworks page has two lists on it.
+    'ControlsPagination' => 'Ελέγχει την σελιδοποίηση',
+    // Task 14: the Applicability column's state chip (governance-frameworks.js's
+    // renderApplicability()), the matching filter facet (its three option labels
+    // reuse these same three keys) and its "Any applicability" placeholder.
+    //
+    // The three states are PREFIXED rather than named 'Applicable'/
+    // 'NotApplicable'/'Inherited' because 'NotApplicable' already exists above
+    // as the ABBREVIATION 'N/A' -- the self-assessment answer chip and three
+    // reporting charts render it -- and redefining that key to the spelled-out
+    // phrase this column needs would silently change all four of those
+    // surfaces. The prefix also keeps the trio recognisable as one family.
+    //
+    // The column HEADER and the facet's accessible name reuse the existing
+    // 'Applicability' key, and the drawer's record reuses 'Reason', 'Provider'
+    // and 'Justification' -- all four already carry exactly the right string.
+    'ApplicabilityApplicable' => 'Εφαρμόσιμος',
+    'ApplicabilityNotApplicable' => 'Δεν ισχύει',
+    'ApplicabilityInherited' => 'Κληρονομημένο',
+    'AnyApplicability' => 'Οποιαδήποτε εφαρμογή',
+    // The drawer's applicability record: who recorded the decision and when.
+    // Both are attribution for an audited decision a customer may have to
+    // defend years later, which is why the drawer names them at all.
+    'ApplicabilityDecidedBy' => 'Αποφασίστηκε από',
+    'ApplicabilityDecidedOn' => 'Αποφάσισε σχετικά',
+    // The framework-level Statement of Applicability card in the Add/Edit
+    // framework modals (display_framework_soa_card(), includes/governance.php).
+    // These two fields are what ISO/IEC 27001:2022 clause 6.1.3(d) needs on an
+    // SoA cover: the scope the framework is certified against, and how inclusion
+    // was determined for the controls that are simply applicable.
+    //
+    // 'IsmsScopeStatement' rather than a bare 'ScopeStatement' because "scope"
+    // is already overloaded across SimpleRisk (assessment scope, audit scope,
+    // risk scope); the ISMS prefix is what an ISO practitioner calls this exact
+    // field and keeps it from being reused for an unrelated one.
+    'StatementOfApplicability' => 'Δήλωση εφαρμογής',
+    'IsmsScopeStatement' => 'Δήλωση πεδίου εφαρμογής',
+    'IsmsScopeStatementHint' => 'Το πεδίο εφαρμογής για το οποίο είναι πιστοποιημένο αυτό το πλαίσιο. Εμφανίζεται στη σελίδα εξωφύλλου του SoA.',
+    'DefaultInclusionJustification' => 'Προεπιλεγμένη αιτιολόγηση συμπερίληψης',
+    'DefaultInclusionJustificationHint' => 'Χρησιμοποιείται για εφαρμόσιμους ελέγχους χωρίς συνδεδεμένους κινδύνους. Ονομάστε το πρόγραμμα οδήγησης, όχι το πλαίσιο.',
+    // THE DEFAULT SENTENCE, in all three of its roles: the create form seeds the
+    // textarea with it, the Edit form shows it as a placeholder, and
+    // soa_framework_default_justification() (includes/soa.php) substitutes it at
+    // read time for a framework that has none. One key, because a reader must not
+    // be able to tell a stored default from a fallen-back one, and because three
+    // keys holding the same sentence is three chances for a translator to make
+    // them disagree. The name predates the seeding decision (Task 67) and is kept
+    // rather than churned through Crowdin for 39 locales.
+    //
+    // It names the DRIVER (the risk assessment) rather than the framework:
+    // "included because it is part of this framework" is circular, and ISO 6.1.3
+    // derives controls from risk treatment, using Annex A afterwards only as a
+    // completeness cross-check.
+    //
+    // It was a placeholder ONLY until Task 67, so that an unreviewed sentence
+    // could not reach a customer's SoA by inaction. Measured, that produced the
+    // opposite failure: 19 of 20 frameworks left the field NULL and the SoA's
+    // Justification column came out BLANK for every applicable control with no
+    // linked risks -- the finding an SoA is most often failed on, and one a
+    // boilerplate sentence does not attract.
+    'DefaultInclusionJustificationPlaceholder' => 'Καθορίζεται από την αξιολόγηση κινδύνου ασφάλειας πληροφοριών του οργανισμού και διατηρείται ως απαραίτητο στοιχείο ελέγχου.',
+    // Task 15: bulk-setting applicability from the control table's selection bar
+    // (#applicability--set, governance/index.php + governance-frameworks.js).
+    //
+    // The action's own label and the modal's one section. 'Applicability',
+    // 'Reason', 'Provider', 'Justification', 'Save' and 'Cancel' already exist
+    // and are reused; only the strings with no existing home are added here.
+    'SetApplicability' => 'Ορισμός εφαρμοσιμότητας',
+    'ApplicabilityDecision' => 'Απόφαση',
+    // The amber scope note, in two sentences the page assembles separately
+    // because they answer two different questions: WHICH framework the decision
+    // is scoped to, and WHICH controls are about to receive it. The second one
+    // has two spellings, because the header checkbox selects the current PAGE
+    // while "Select all N" escalates to the whole filtered result set -- the two
+    // genuinely differ once the table pages, and a note that blurred them would
+    // let the user write 1,535 decisions believing they had written 25.
+    'ApplicabilityScopeNote' => 'Αυτή η απόφαση ισχύει μόνο εντός του "{$framework}". Ο ίδιος έλεγχος μπορεί να παραμείνει εφαρμόσιμος σε άλλο πλαίσιο.',
+    'ApplicabilityAppliesToSelected' => 'Θα καταγραφεί σε σχέση με τα στοιχεία ελέγχου {$n} που έχουν επιλεγεί σε αυτήν τη σελίδα.',
+    'ApplicabilityAppliesToAllFiltered' => 'Θα καταγραφεί σε σχέση με όλα τα στοιχεία ελέγχου {$n} που αντιστοιχούν στα τρέχοντα φίλτρα, συμπεριλαμβανομένων εκείνων σε άλλες σελίδες.',
+    // Per-state hints under the segmented control. The "applicable" one is the
+    // load-bearing sentence of the whole modal, and the SoA audit-readiness work
+    // rewrote it: an applicable control MAY now carry its own reasons and
+    // justification (ISO/IEC 27001 clause 6.1.3(d) asks for one per control, for
+    // inclusion as much as for exclusion), and leaving both empty is what falls
+    // back to the framework's default inclusion justification. The old sentence
+    // -- "this removes any recorded decision. No justification is needed." --
+    // is now false in both halves.
+    'ApplicabilityApplicableHint' => 'Στο πεδίο εφαρμογής αυτού του πλαισίου. Η αιτιολόγηση και η αιτιολόγηση είναι προαιρετικές. Αν αφήσετε και τα δύο κενά, χρησιμοποιείται η προεπιλεγμένη αιτιολόγηση συμπερίληψης του πλαισίου.',
+    'ApplicabilityNotApplicableHint' => 'Εξαίρεση ενός ελέγχου από το πεδίο εφαρμογής αυτού του πλαισίου. Απαιτείται τόσο λόγος όσο και γραπτή αιτιολόγηση.',
+    'ApplicabilityInheritedHint' => 'Κάποιος άλλος εκτελεί αυτόν τον έλεγχο εκ μέρους σας. Ονομάστε τον και πείτε τι κάνει.',
+    'ApplicabilityNarrativeHint' => 'Εμφανίζεται στη Δήλωση Εφαρμογής. Γράψτε τι θα χρειαζόταν ένας ελεγκτής για να αποδεχτεί την απόφαση.',
+    'ApplicabilityProviderHint' => 'Ο οργανισμός που εκτελεί τον έλεγχο: πάροχος cloud, διαχειριζόμενη υπηρεσία, μητρική εταιρεία.',
+    'ChooseAReason' => 'Επιλέξτε έναν λόγο',
+    'ApplicabilityNoReason' => 'Χωρίς λόγο',
+    // Result toasts. Both interpolate a COUNT taken from the API response and
+    // nothing else -- no submitted text is ever reflected into a toast, which
+    // toastr renders as HTML.
+    'ApplicabilitySetResult' => 'Ενημερώθηκε η εφαρμογή για {$n} στοιχεία ελέγχου.',
+    'ApplicabilityClearResult' => 'Η εφαρμογή επαναφέρεται σε ισχύουσα για {$n} στοιχεία ελέγχου.',
+    // Bulk control delete (Task 54, corrected Task 55). Deleting a control is
+    // final either way the delete engine implements it: a control with test
+    // history is soft-deleted (framework_controls.deleted = 1) to keep test
+    // history intact, a control with no tests is removed outright -- but
+    // nothing anywhere flips that flag back, so from the user's side there is
+    // no "kept" case, only "deleted, and its test history survives for audit
+    // purposes." Every sentence therefore leads with the same irreversible
+    // warning; the only thing that varies is whether an audit-history clause
+    // is appended, and that clause is omitted entirely rather than printed
+    // with a count of zero -- "0 are retained for audit history" reads as a
+    // warning about something that is not going to happen, and on a delete
+    // confirmation that is exactly the kind of noise that trains people to
+    // stop reading. Every {$...} is a count from the API response; no user
+    // text is ever interpolated, which matters because toastr renders HTML.
+    'DeleteControlsPreviewChecking' => 'Έλεγχος των στοιχείων που θα διαγραφούν...',
+    'DeleteControlsPreviewSplit' => 'Τα στοιχεία ελέγχου {$n} θα διαγραφούν. Αυτή η ενέργεια δεν μπορεί να αναιρεθεί. Τα αποτελέσματα των δοκιμών για {$m} από αυτά διατηρούνται για το ιστορικό ελέγχου.',
+    'DeleteControlsPreviewKeptOnly' => 'Όλα τα στοιχεία ελέγχου {$n} θα διαγραφούν. Αυτή η ενέργεια δεν μπορεί να αναιρεθεί. Τα αποτελέσματα των δοκιμών διατηρούνται για το ιστορικό ελέγχου.',
+    'DeleteControlsPreviewRemovedOnly' => 'Τα στοιχεία ελέγχου {$n} θα διαγραφούν. Αυτή η ενέργεια δεν μπορεί να αναιρεθεί.',
+    'DeleteControlsPreviewNone' => 'Δεν υπάρχει τίποτα προς διαγραφή: τα επιλεγμένα στοιχεία ελέγχου δεν υπάρχουν πλέον.',
+    'ControlsDeletedResult' => '{$n} έλεγχος(-οι) διαγράφηκε(-αν).',
+
+    // The Add/Edit framework modal's Status field. The label reuses the existing
+    // 'Status' key -- the same word the rail's Active/Inactive/All filter already
+    // uses -- so only the explanatory hint is new. It says the two things a user
+    // cannot see from the control itself: that Inactive is the NON-destructive way
+    // to retire a framework (unlike Delete, which cannot be undone), and that the
+    // change cascades through the hierarchy, which is what update_framework_status()
+    // has always done and is genuinely surprising when a parent is deactivated.
+    'FrameworkStatusHint' => 'Τα ανενεργά πλαίσια διατηρούν όλα τα στοιχεία ελέγχου και τις αντιστοιχίσεις τους, αλλά αποκρύπτονται από τη λίστα προεπιλεγμένων πλαισίων και μένουν εκτός του πίνακα ελέγχου διακυβέρνησης. Η απενεργοποίηση ενός πλαισίου απενεργοποιεί επίσης κάθε πλαίσιο που βρίσκεται από κάτω του. Η ενεργοποίηση ενός πλαισίου ενεργοποιεί επίσης τα γονικά του πλαίσια.',
+
+    // Task 60: the same #applicability--set modal, opened from ONE control's row
+    // action instead of the selection bulk bar. The button's own label reuses
+    // 'SetApplicability'; these two exist because the modal now has to say which
+    // of the two it is acting on, and both spellings must be unambiguous.
+    //
+    // The title names the specific object (design-system.md §8) and the note
+    // says "only", because the dangerous reading is the silent one: with rows
+    // ticked -- or with "Select all N filtered" in force -- a modal that said
+    // nothing would let a click the user believed applied to one row be read as
+    // applying to every control in the framework. Naming the control in both
+    // places is what makes the narrower scope visible rather than assumed.
+    // Corrected in Task 63. This spelling used to end "...only, whatever else is
+    // selected", which was printed on every row-action open whether or not
+    // anything else WAS selected -- a dangling absolute with no antecedent, so
+    // it read as a sentence that had been cut off. It is now the plain form, and
+    // the reassurance about a competing selection moved to
+    // 'ApplicabilityAppliesToControlNotSelection' below, which is printed only
+    // when there is a competing selection to reassure anyone about.
+    'SetApplicabilityForControl' => 'Ορισμός εφαρμογής: {$name}',
+    'ApplicabilityAppliesToControl' => 'Θα καταγραφεί μόνο σε "{$name}".',
+
+    // Task 17: the Statement of Applicability report itself
+    // (reports/statement_of_applicability.php + pages/statement-of-applicability.js),
+    // the document ISO/IEC 27001:2022 clause 6.1.3(d) asks for and the one every
+    // applicability decision recorded on the Define Control Frameworks page
+    // exists to produce.
+    //
+    // 'StatementOfApplicability' already exists above (the framework modal's SoA
+    // card) and is reused for the report's own title, as are 'IsmsScopeStatement',
+    // 'DefaultInclusionJustification', the three 'Applicability*' state labels,
+    // 'ApplicabilityDecidedBy'/'DecidedOn', and the plain 'Framework',
+    // 'ControlNumber', 'ControlName', 'Justification', 'Evidence', 'Reason',
+    // 'Provider', 'Total', 'Controls' and 'Export' keys. Only strings with no
+    // existing home are added here.
+    'StatementOfApplicabilityDesc' => 'Για ένα πλαίσιο: κάθε έλεγχος, εάν είναι εφαρμόσιμος, γιατί συμπεριλήφθηκε ή εξαιρέθηκε και εάν εφαρμόζεται.',
+    // The header button on Define Control Frameworks. The verb is "generate"
+    // rather than "view" because the document is assembled at the moment it is
+    // asked for -- there is no stored SoA that could be out of date.
+    'GenerateStatementOfApplicability' => 'Δημιουργία δήλωσης εφαρμογής',
+
+    // The Justification column's SECOND resolution step, and the reason an SoA
+    // built here beats the spreadsheet it replaces: the risks that drove the
+    // control are already recorded against it, so nobody retypes them and they
+    // cannot go stale. {risks} is substituted with the displayed risk ids.
+    //
+    // Phrased to match clause 6.1.3, which derives controls from risk treatment
+    // and uses Annex A afterwards only as a completeness cross-check -- the same
+    // reasoning behind 'DefaultInclusionJustificationPlaceholder' above.
+    'SoaJustifiedByRiskAssessment' => 'Καθορίζεται από την αξιολόγηση κινδύνου ασφάλειας πληροφοριών του οργανισμού. Συνδεδεμένοι κίνδυνοι: {risks}.',
+
+    // The Implemented column. DERIVED from maturity and the last test result on
+    // every read, never stored, so it cannot drift out of sync with the control.
+    // 'Yes' and 'No' already exist and are reused; only the middle value and the
+    // header need keys of their own. An excluded control's cell reuses the
+    // existing 'NotApplicable' ('N/A'), which is exactly the right abbreviation
+    // in a dense table.
+    'SoaImplemented' => 'Υλοποιήθηκε',
+    'SoaImplementedPartial' => 'Μερικός',
+
+    // The cover block.
+    'SoaGeneratedOn' => 'Δημιουργήθηκε στις',
+    'SoaExcludedCount' => 'Εξαιρείται',
+
+    // The prompt shown when the framework has never been given the two cover
+    // fields. It PROMPTS rather than silently printing a blank cover: an SoA
+    // whose scope is empty is the one defect an auditor spots first, and the
+    // moment somebody opens the report is the only moment those fields matter.
+    // Both spellings of empty (never set, and deliberately cleared) prompt --
+    // from a reader's point of view there is nothing to print either way.
+    //
+    // The inclusion-justification line states a WEAKER consequence than it used
+    // to, because Task 67 made the stronger one untrue: the column no longer goes
+    // blank when the field is empty -- soa_framework_default_justification()
+    // substitutes the generic default sentence. The prompt survives because a
+    // generic sentence is not the organization's own, and an auditor reading 1,500
+    // identical rows of boilerplate is entitled to ask whose risk assessment it
+    // refers to.
+    'SoaMissingFieldsTitle' => 'Αυτή η δήλωση δεν έχει τις λεπτομέρειες εξωφύλλου της',
+    'SoaMissingScopeStatement' => 'Δεν έχει καταγραφεί καμία δήλωση πεδίου εφαρμογής για αυτό το πλαίσιο. Μια SoA θα πρέπει να δηλώνει το πεδίο εφαρμογής στο οποίο βασίζεται.',
+    'SoaMissingInclusionJustification' => 'Δεν έχει καταγραφεί καμία προεπιλεγμένη αιτιολόγηση συμπερίληψης. Τα ισχύοντα στοιχεία ελέγχου χωρίς συνδεδεμένους κινδύνους θα βασίζονται σε μια γενική δήλωση αντί για τη δική σας.',
+    'SoaEditFrameworkToAdd' => 'Προσθέστε τα στο πλαίσιο',
+
+    // Opened from the Reporting Hub, which cannot supply a framework. A picker,
+    // not an error: an SoA is a per-framework document by definition -- the same
+    // control excluded from ISO 27001 is not thereby excluded from PCI DSS --
+    // and there is no cross-framework roll-up to offer instead.
+    'SoaChooseFramework' => 'Επιλέξτε ένα πλαίσιο',
+    'SoaChooseFrameworkHint' => 'Μια δήλωση εφαρμοσιμότητας γράφεται για ένα πλαίσιο κάθε φορά.',
+    // The picker has a roster but nothing in it. Distinct from "this framework
+    // has no controls": there is no framework to write a statement about at all,
+    // and the fix is on a different page, so it says which one.
+    // The launcher's affordance row. "Open in browser" rather than "View"
+    // because it names what actually happens -- the document opens in a new tab,
+    // chrome-free -- and because Task 18 adds "Download as PDF" and "Download as
+    // XLSX" beside it, where "open" vs "download" is the distinction that
+    // matters.
+    // The document has no sidebar, so it needs its own way back for anyone who
+    // arrives from a bookmark or a shared link. Screen only; never printed.
+    'SoaBackToSelector' => 'Επιστροφή στη δήλωση εφαρμογής',
+    'SoaNoFrameworks' => 'Δεν υπάρχουν ενεργά πλαίσια',
+    'SoaNoFrameworksHint' => 'Εγκαταστήστε ή ενεργοποιήστε ένα πλαίσιο στην ενότητα Διακυβέρνηση > Ορισμός Πλαισίων Ελέγχου και θα είναι διαθέσιμο εδώ.',
+
+    // The two refusals. Both explain rather than just failing, because the user
+    // arrived here deliberately.
+    'SoaFrameworkInactiveTitle' => 'Αυτό το πλαίσιο είναι ανενεργό',
+    'SoaFrameworkInactiveBody' => 'Μια δήλωση εφαρμογής περιγράφει το πεδίο εφαρμογής στο οποίο λειτουργεί ένας οργανισμός αυτήν τη στιγμή. Επανενεργοποιήστε το πλαίσιο για να δημιουργήσετε ένα.',
+    'SoaFrameworkNotFoundBody' => 'Αυτό το πλαίσιο δεν υπάρχει πλέον.',
+
+    // A framework with no controls mapped into it. Not an error -- it is a real
+    // and recoverable state, and saying so beats an empty table.
+    'SoaNoControls' => 'Αυτό το πλαίσιο δεν έχει ελέγχους',
+    'SoaNoControlsHint' => 'Η αντιστοίχιση των στοιχείων ελέγχου στο πλαίσιο και η δήλωση εφαρμογής του θα τα απαριθμήσει.',
+
+    // The second half of the statement-of-applicability launcher's affordance
+    // row, beside "Open in browser" and the existing 'DownloadAsXLSX'. Rendered
+    // only where the Import/Export Extra is active, which is what supplies the
+    // export. "Download as" rather than "Export to" so the pair reads as one
+    // choice of format, and so it matches the XLSX label already in this file.
+    'DownloadAsPDF' => 'Λήψη ως PDF',
+
+    // The fourth column of the control modal's "Mapped Control Frameworks"
+    // widget, between the reference code and the reference text. The
+    // FRAMEWORK's own title for the control it is citing -- what a Statement of
+    // Applicability prints beside the clause number. Distinct from the existing
+    // 'ReferenceText', which holds the framework's full control statement, and
+    // from the SimpleRisk control's own name.
+    'ReferenceSubject' => 'Θέμα αναφοράς',
+    // Placeholder/help text under that field, and the reason it is worth
+    // filling in: without it the Statement of Applicability has nothing to
+    // print but the source catalogue's name for its own control.
+    'ReferenceSubjectHint' => "Ο τίτλος του ίδιου του πλαισίου για αυτό το στοιχείο ελέγχου.",
+
+    // Task 63: the row-scoped population sentence in the Set applicability
+    // modal, in the one situation where the plain
+    // 'ApplicabilityAppliesToControl' above leaves a real question unanswered --
+    // the user has controls ticked, or a standing "Select all N filtered", and
+    // has just opened the modal from ONE row's own action.
+    //
+    // It states the guarantee rather than implying it. A user whose escalated
+    // selection covers an entire framework needs to know that this click is not
+    // about to overwrite it, and {$n} is the count of the OTHER selected
+    // controls -- the target is excluded, because it is very often ticked too
+    // and a promise that included it would be false.
+    'ApplicabilityAppliesToControlNotSelection' => 'Θα καταγραφεί μόνο έναντι του "{$name}" — τα στοιχεία ελέγχου {$n} που έχετε επιλέξει δεν επηρεάζονται.',
+
+    // Task 65: the VISIBLE label on the controls toolbar's SoA button. The full
+    // sentence ('GenerateStatementOfApplicability' above) stays as the button's
+    // title and aria-label, and is still what the SoA page itself is called;
+    // this is the short form for a toolbar row it shares with the page's one
+    // primary action. At full length the secondary button measured more than
+    // twice the primary's width and became the largest element in the row.
+    //
+    // "SoA" is safe to abbreviate HERE and only here: the button appears solely
+    // when a single framework is scoped, beside an Applicability column, and it
+    // expands on hover.
+    'GenerateSoa' => 'Δημιουργία SoA',
+
+    // ===== Clone framework (Task 64) =======================================
+    // The framework half of Clone control's framing (CloneOfControlTitle /
+    // ClonedFromControlNotice above), and for the same reason: the clone
+    // pre-fills the Add Framework modal rather than creating anything, so the
+    // modal has to say what was carried over before the user saves it.
+    //
+    // Separate keys from the control pair rather than one shared "Clone of
+    // {$name}" -- the two banners do not say the same thing. A cloned control
+    // simply asks to be reviewed; a cloned FRAMEWORK has to explain two things
+    // its fields cannot: that the source's control mappings come with it, and
+    // that the empty scope statement is deliberate. The blank field is the
+    // whole reason the banner is longer than the control's -- a scope statement
+    // left blank with no explanation reads as a field that failed to populate,
+    // and the one thing a clone exists to be given is a NEW scope (Josh: "you
+    // might want to use the same controls as one framework, but scope it
+    // differently"). {$name} and {$n} follow the same client-side
+    // formatTemplate() substitution the rest of this page's templates use.
+    'CloneOfFrameworkTitle' => 'Κλώνος του "{$name}"',
+    // {$n} is the count the rail is SHOWING for the source row -- its controls,
+    // not its raw mapping rows. Those differ (a framework can cite one control
+    // under two clause numbers, and the rail excludes deleted controls), and the
+    // number to promise is the one the user is looking at when they click and
+    // the one the clone's own rail row will show afterwards.
+    'ClonedFromFrameworkNotice' => 'Κλωνοποιήθηκε από το "{$name}". Τα στοιχεία ελέγχου {$n} θα αντιγραφούν στο νέο πλαίσιο, με όλα τα εφαρμόσιμα εξαρχής — καμία από τις αποφάσεις εφαρμογής του δεν θα μεταφερθεί. Η δήλωση πεδίου εφαρμογής είναι σκόπιμα κενή: δηλώστε το πεδίο εφαρμογής που καλύπτει αυτό το πλαίσιο πριν δημιουργήσετε τη Δήλωση Εφαρμογής του.',
+    // Seeds the name field so the clone can be saved without a rename --
+    // framework names are unique, so a verbatim copy is refused on save.
+    'CloneOfFrameworkName' => '{$name} (Κλωνοποίηση)',
+    'CloneFramework' => 'Κλωνοποίηση πλαισίου',
+    // Extras version independently of Core, so an updated Import/Export Extra
+    // can end up calling a Core function the installed Core does not have. The
+    // export refuses with this rather than fataling -- see
+    // soa_export_refuse_if_core_too_old(), extras/import-export/includes/soa_export.php.
+    'SoaExportRequiresNewerCore' => 'Αυτή η εξαγωγή απαιτεί νεότερη έκδοση του SimpleRisk Core από αυτήν που είναι εγκατεστημένη. Ενημερώστε το SimpleRisk και, στη συνέχεια, δοκιμάστε ξανά την εξαγωγή.',
+    // The framework ACQUISITION chooser (Task 26): "+ Add framework" asks how you
+    // want to get one, rather than assuming you want to type it in. Each option is
+    // rendered only when the route behind it actually exists for this user, so the
+    // hint text may state plainly what the route does -- it is never shown to
+    // someone who cannot take it.
+    'HowDoYouWantToAddAFramework' => 'Πώς θέλετε να προσθέσετε ένα πλαίσιο;',
+    'CreateFrameworkManually' => 'Δημιουργήστε ένα χειροκίνητα',
+    'CreateFrameworkManuallyHint' => 'Ονομάστε το πλαίσιο μόνοι σας και, στη συνέχεια, προσθέστε ή αντιστοιχίστε τα στοιχεία ελέγχου του.',
+    // Named for the framework rather than for its vendor. The hint was reworded
+    // at the same time: it used to end "...load its Secure Controls Framework
+    // controls", which read as a stutter once the label carried those words.
+    'GetFrameworkFromScf' => 'Αποκτήστε ένα από το Secure Controls Framework',
+    'GetFrameworkFromScfHint' => 'Επιλέξτε ένα δημοσιευμένο πλαίσιο και φορτώστε τα αντιστοιχισμένα στοιχεία ελέγχου του σε ένα βήμα.',
+    'ImportFrameworkFromCatalog' => 'Εισαγωγή ενός',
+    'ImportFrameworkFromCatalogHint' => 'Εγκαταστήστε ένα πλαίσιο και τα στοιχεία ελέγχου του από τον κατάλογο περιεχομένου του SimpleRisk.',
+
+    // The framework acquisition chooser's third route, which now offers the
+    // Import-Export Extra's CONTROL import (a spreadsheet naming a framework
+    // that does not exist yet creates it) rather than the GitHub catalogue the
+    // two keys above described. Those two are left in place, unreferenced, so a
+    // customer maintaining a custom lang.<locale>.php still reconciles by tail
+    // diff.
+    'ImportFrameworkFromSpreadsheet' => 'Εισαγωγή ενός από ένα υπολογιστικό φύλλο',
+    'ImportFrameworkFromSpreadsheetHint' => 'Ανεβάστε ένα υπολογιστικό φύλλο με στοιχεία ελέγχου που ονομάζει το πλαίσιο και δημιουργούνται και τα δύο.',
+
+    // The Define Control Frameworks rail's second synthetic scope: the controls
+    // mapped to no framework at all. Its first, "All controls", reuses the
+    // existing AllControls key rather than adding a second string with the same
+    // English -- it replaced 'AllFrameworks' on that row, which named a union of
+    // frameworks while scoping to every control, mapped or not. 'AllFrameworks'
+    // is left in place and unreferenced by that page: other surfaces still use
+    // it, and every locale carries it.
+    'UnassignedControls' => 'Μη αντιστοιχισμένα στοιχεία ελέγχου',
+    // APPLICABILITY VALIDATION FAILURES. These reach the user: the v2 endpoint
+    // returns the exception's message as the API status message and the page
+    // renders it in a toast, so a hardcoded English literal here would be
+    // permanently English for every locale.
+    //
+    // NOTHING THE CALLER TYPED IS EVER INTERPOLATED INTO THESE. The parameters
+    // are validated enum values, integer ids and byte limits the server itself
+    // owns -- naming the ALLOWED values rather than echoing the rejected one is
+    // deliberate (it is both safe and more useful than repeating a typo).
+    'ApplicabilityErrUnknownState' => 'Άγνωστη κατάσταση εφαρμογής. Αναμενόταν ένα από τα εξής: {$states}.',
+    'ApplicabilityErrNarrativeRequired' => 'Απαιτείται αφήγηση για το \'{$state}\'.',
+    'ApplicabilityErrNarrativeTooLong' => 'Η αφήγηση έχει διάρκεια μεγαλύτερη από {$bytes} bytes.',
+    'ApplicabilityErrReasonRequired' => 'Απαιτείται λόγος αποκλεισμού για να επισημανθεί ένα στοιχείο ελέγχου ως μη εφαρμόσιμο.',
+    'ApplicabilityErrProviderRequired' => 'Ένας πάροχος υποχρεούται να επισημάνει ένα στοιχείο ελέγχου που έχει κληρονομηθεί.',
+    'ApplicabilityErrProviderTooLong' => 'Το όνομα παρόχου έχει μήκος μεγαλύτερο από {$bytes} bytes.',
+    'ApplicabilityErrReasonsNotFound' => 'Αυτοί οι λόγοι εφαρμογής δεν υπάρχουν: {$ids}.',
+    'ApplicabilityErrReasonsNotOffered' => 'Αυτοί οι λόγοι εφαρμογής δεν παρέχονται για αυτήν την κατάσταση: {$ids}.',
+    'ApplicabilityErrFrameworkNotFound' => 'Το πλαίσιο {$framework} δεν υπάρχει.',
+    'ApplicabilityErrControlsNotFound' => 'Αυτά τα αναγνωριστικά ελέγχου δεν υπάρχουν: {$ids}.',
+    // Controls/Risks import result messages (validation gate, individual bad-row
+    // alerts, and the batched submitted/created/updated summaries)
+    'ControlIdOrShortNameFieldRequired' => 'Πρέπει να αντιστοιχιστεί είτε το πεδίο "Αναγνωριστικό στοιχείου ελέγχου" είτε το πεδίο "Σύντομο όνομα στοιχείου ελέγχου" -- μια γραμμή δεν μπορεί να αναγνωριστεί χωρίς ένα από αυτά.',
+    'RiskImportSubjectNull' => 'Αναγνωριστικό κινδύνου {$risk_id}: Δεν ενημερώθηκε επειδή το πεδίο "Θέμα" είναι κενό ή λείπει.',
+    'RiskImportSummary' => 'Υποβλήθηκαν {$submitted} κίνδυνοι και ενημερώθηκαν {$updated} κίνδυνοι.',
+    'ControlImportSummary' => 'Δημιουργήθηκαν {$created} στοιχεία ελέγχου και ενημερώθηκαν {$updated} στοιχεία ελέγχου.',
+    'ImportAdditionalIssuesSuppressed' => '{$count} επιπλέον σειρές παρουσίασαν προβλήματα που δεν εμφανίζονται μεμονωμένα εδώ.',
+    'EncryptionPipelineStalledTask' => 'Μια αγωγός κρυπτογράφησης (εργασία #{$id}, {$type}) φαίνεται να έχει σταματήσει — έχει παραμείνει {$status} για ασυνήθιστα μεγάλο χρονικό διάστημα χωρίς να προοδεύει. Αυτό συνήθως σημαίνει ότι ο εργαζόμενος ουράς παρασκηνίου δεν εκτελείται. Ελέγξτε ότι είναι προγραμματισμένος και, στη συνέχεια, προσπαθήστε ξανά μόλις επεξεργαστεί την καθυστερημένη εργασία.',
+    'EncryptionPipelineStalledState' => 'Μια διοχέτευση κρυπτογράφησης φαίνεται να έχει σταματήσει — έχει επισημανθεί σε εξέλιξη για ασυνήθιστα μεγάλο χρονικό διάστημα χωρίς αντίστοιχη εργασία παρασκηνίου που να οδηγεί. Αυτό συνήθως σημαίνει ότι ο εργαζόμενος στην ουρά δεν εκτελείται ή ότι μια προηγούμενη διοχέτευση ολοκληρώθηκε χωρίς να την ενημερώσει σωστά. Ελέγξτε το αρχείο καταγραφής εντοπισμού σφαλμάτων πριν προσπαθήσετε ξανά.',
+    // DEMO_MODE — shown when a visitor to a shared demo instance attempts one
+    // of the operations that would spoil the demo for the next visitor
+    'ActionDisabledOnDemoInstance' => 'Αυτή η ενέργεια είναι απενεργοποιημένη στην παρουσία επίδειξης του SimpleRisk.',
+
+    // The one-click upgrade progress window: the step an upgrade is on, and
+    // the line shown once it finishes
+    // Shown when an upgrade's progress record has not been touched for long
+    // enough that the process running it is presumed gone
+    'UpgradeJobStalled' => 'Η αναβάθμιση σταμάτησε να ανταποκρίνεται. Ελέγξτε το αρχείο καταγραφής διακομιστή πριν προσπαθήσετε ξανά.',
+    // Shown when an upgrade replaced the instance's configuration file and could
+    // not put the original back
+    // Shown when the database was brought up to date but the application files
+    // could not be replaced, so the instance has NOT moved to the new release
+    'UpdateAppFailed' => 'Τα αρχεία της εφαρμογής δεν αναβαθμίστηκαν, επομένως αυτή η παρουσία εξακολουθεί να εκτελεί την προηγούμενη έκδοσή της. Ελέγξτε το αρχείο καταγραφής SimpleRisk για τον λόγο και, στη συνέχεια, εκτελέστε ξανά την αναβάθμιση.',
+    // The one-click upgrade progress screen
+    'UpgradeInProgress' => 'Σε εξέλιξη',
+    'UpgradeStepNotNeeded' => 'Δεν χρειάζεται',
+    // Recovering an Upgrade Extra whose files are damaged
+    'UpgradeExtraDamagedReinstalling' => 'Το εγκατεστημένο Upgrade Extra είναι κατεστραμμένο. Λήψη νέου αντιγράφου.',
+    'UpgradeExtraDamagedRepaired' => 'Το Upgrade Extra αντικαταστάθηκε με ένα λειτουργικό αντίγραφο.',
+    'UpgradeExtraDamagedFailed' => 'Το Upgrade Extra είναι κατεστραμμένο και δεν ήταν δυνατή η αυτόματη αντικατάστασή του. Εγκαταστήστε το ξανά από τη σελίδα Extras ή επαναφέρετε το simplerisk/extras/upgrade/ από ένα αντίγραφο ασφαλείας και δοκιμάστε ξανά.',
+    'UpgradeAlreadyCurrent' => 'Αυτή η παρουσία βρίσκεται ήδη στη διεύθυνση {version}, η οποία είναι η πιο πρόσφατη έκδοση. Δεν χρειαζόταν αναβάθμιση.',
+    'UpgradeShowWhatItDid' => 'Δείξε τι έκανε',
+    'UpgradeBackupsListed' => 'Αυτά τα αντίγραφα ασφαλείας παρατίθενται στην ενότητα Ρύθμιση παραμέτρων > Αντίγραφα ασφαλείας.',
+    'UpgradingTo' => 'Αναβάθμιση σε {version}',
+    'UpgradeSafeToClose' => 'Μπορείτε να κλείσετε αυτό το παράθυρο με ασφάλεια. Η αναβάθμιση συνεχίζεται στον διακομιστή και αυτή η σελίδα θα επισυναφθεί ξανά.',
+    'UpgradeDownloadLog' => 'Λήψη αρχείου καταγραφής',
+    'UpgradeStatementsApplied' => 'Έναρξη {started} · Εφαρμόστηκαν οι εντολές {count}',
+    // The Upgrade Extra's pre-upgrade check of the instance it is sitting on
+    'UpgradeCheckingInstance' => 'Έλεγχος αυτής της παρουσίας',
+    'UpgradeInstanceChecked' => 'Η περίπτωση ελέγχθηκε, δεν χρειάζονται διορθώσεις.',
+    'UpgradeBlockedByCorrections' => 'Η αναβάθμιση διακόπηκε επειδή αυτή η παρουσία χρειάζεται μια διόρθωση που δεν ήταν δυνατή η αυτόματη εφαρμογή. Ακολουθήστε τις παραπάνω οδηγίες και, στη συνέχεια, εκτελέστε ξανά την αναβάθμιση. Δεν άλλαξε τίποτα άλλο.',
+    // Shown when an upgrade replaced the instance's configuration file and could not put the original back
+    'ConfigRestoreFailed' => 'Η αναβάθμιση δεν μπόρεσε να επαναφέρει το αρχείο διαμόρφωσης αυτής της παρουσίας. Επαναφέρετε το simplerisk/includes/config.php από το αντίγραφο ασφαλείας πριν συνεχίσετε.',
+    'UpgradeDidNotAdvance' => 'Η συνάρτηση αναβάθμισης για την έκδοση "{$version}" δεν προώθησε την έκδοση της βάσης δεδομένων. Διακόπηκε, επομένως δεν εκτελείται ξανά.',
+    'BackupDatabaseNative' => 'Δημιουργία αντιγράφων ασφαλείας της βάσης δεδομένων (δεν απαιτούνται εξωτερικά εργαλεία)...',
+    'UpgradeAlreadyRunning' => 'Μια αναβάθμιση εκτελείται ήδη σε αυτήν την παρουσία.',
+    'UpgradeStatusUnreachable' => 'Χάθηκε η επαφή με τον διακομιστή κατά την εκτέλεση της αναβάθμισης. Ελέγξτε το αρχείο καταγραφής του SimpleRisk. Η αναβάθμιση ενδέχεται να βρίσκεται ακόμη σε εξέλιξη.',
+    'UpgradeJobUnwritable' => 'Η αναβάθμιση δεν ήταν δυνατό να ξεκινήσει επειδή δεν ήταν δυνατή η εγγραφή της καταγραφής προόδου. Ελέγξτε ότι ο προσωρινός κατάλογος συστήματος είναι εγγράψιμος από τον χρήστη ιστού.',
+    'UpgradeStepCheckingVersions' => 'Έλεγχος εκδόσεων',
+    'UpgradeStepUpgradingDatabase' => 'Αναβάθμιση του σχήματος βάσης δεδομένων',
+    'UpgradeStepFinalising' => 'Εφαρμογή των μετατροπών μετά την αναβάθμιση',
+    'UpgradeDatabaseHeading' => 'Αναβάθμιση της βάσης δεδομένων',
+    'UpgradeDatabaseComplete' => 'Η αναβάθμιση της βάσης δεδομένων ολοκληρώθηκε.',
+    'UpgradeHideWhatItDid' => 'Κρύψτε τι έκανε',
+    'UpgradeStateRunning' => 'Τρέξιμο',
+    'UpgradeSessionExpired' => 'Η συνεδρία σας έληξε. Συνδεθείτε ξανά για να δείτε την αναβάθμιση.',
+    'UpgradeLostContact' => 'Χάθηκε η επαφή με τον διακομιστή. Επαναφορτώστε αυτήν τη σελίδα για να την επισυνάψετε ξανά στην αναβάθμιση.',
+    'UpgradeDatabaseAlreadyCurrent' => 'Η βάση δεδομένων υπάρχει ήδη στην έκδοση της εφαρμογής.',
+    'UpgradeConversionsApplied' => 'Εφαρμόστηκαν μετατροπές μηχανής και συνόλου χαρακτήρων.',
+    'UpgradeStoppedShort' => 'Η αναβάθμιση σταμάτησε στο {reached} χωρίς να φτάσει στο {app}. Δείτε το αρχείο καταγραφής διακομιστή.',
+    'UpgradeStepBackingUp' => 'Δημιουργία αντιγράφων ασφαλείας',
+    'UpgradeStepUpgradingFiles' => 'Αναβάθμιση αρχείων εφαρμογής',
+    'UpgradeStepUpgradingExtras' => 'Αναβάθμιση εγκατεστημένων πρόσθετων στοιχείων',
+    'UpgradeStepUpdatingUpgradeExtra' => 'Ενημέρωση του Upgrade Extra',
+    // The Upgrade Extra's pre-chain corrections: what is wrong, and what to do
+    // about it. These are the highest-stakes messages the upgrade produces --
+    // an operator reads them to unstick an instance that cannot upgrade.
+    'UpgradeCorrectionUnknownVersionTitle' => 'Η καταγεγραμμένη έκδοση της βάσης δεδομένων δεν κατονομάζει μια πραγματική έκδοση',
+    'UpgradeCorrectionNoRecordedVersion' => 'Η βάση δεδομένων δεν έχει καταγεγραμμένη έκδοση.',
+    'UpgradeCorrectionUnknownVersionFinding' => 'Η βάση δεδομένων αναφέρει την έκδοση \'{$version}\', η οποία δεν κατονομάζει καμία έκδοση του SimpleRisk. Η αναβάθμιση δεν μπορεί να επιλέξει σημείο εκκίνησης από αυτήν.',
+    'UpgradeCorrectionUnknownVersionGuidance' => 'Ορίστε τη ρύθμιση db_version στην έκδοση της οποίας το σχήμα έχει στην πραγματικότητα αυτή η βάση δεδομένων και, στη συνέχεια, εκτελέστε ξανά την αναβάθμιση: UPDATE settings SET value=\'<release>\' WHERE name=\'db_version\'. Εάν η τιμή είναι ένα σύμβολο κράτησης θέσης, όπως 2026XXXX-001, η σωστή τιμή είναι σχεδόν πάντα η πιο πρόσφατη πραγματική έκδοση που εγκαταστάθηκε πριν από την εκτέλεση της αναβάθμισης.',
+    'UpgradeCorrectionLegacySessionsTitle' => 'Ο πίνακας περιόδων λειτουργίας δεν μπορεί να επιβιώσει από τη μετατροπή του συνόλου χαρακτήρων της αναβάθμισης',
+    'UpgradeCorrectionLegacySessionsFinding' => 'Το `sessions`.`id` είναι VARCHAR({$width}) σε έναν πίνακα MyISAM. Η μετατροπή του σε utf8mb4, το οποίο ισχύει από την έκδοση 20230106-001 και μετά, θα υπερέβαινε το όριο ευρετηρίου των 1000 byte του MyISAM και θα απέτυχε η αναβάθμιση.',
+    'UpgradeCorrectionLegacySessionsGuidance' => 'Μία ή περισσότερες ενεργές συνεδρίες χρησιμοποιούν ένα αναγνωριστικό μεγαλύτερο από 128 χαρακτήρες. Αν περιορίσετε τη στήλη τώρα, θα αποσυνδεθούν αυτοί οι χρήστες, επομένως δεν θα αλλάξει. Δοκιμάστε ξανά την αναβάθμιση όταν λήξουν αυτές οι συνεδρίες.',
+    'UpgradeCorrectionApplied' => 'Διορθώθηκε.',
+    'UpgradeCorrectionFailed' => 'Αυτή η διόρθωση δεν ήταν δυνατό να εφαρμοστεί. Δείτε το αρχείο καταγραφής του SimpleRisk για τον λόγο.',
+    'UpgradeCorrectionAppliedLine' => 'Διορθώθηκε: {$title} {$message}',
+    'UpgradeCorrectionNotAppliedLine' => 'ΔΕΝ διορθώθηκε: {$title} {$message}',
+    'UpgradeCorrectionsNeeded' => 'Διορθώσεις που απαιτούνται πριν από την αναβάθμιση αυτής της παρουσίας: {$count}',
+    'UpgradeCorrectionsNeededShort' => 'Απαιτούμενες διορθώσεις: {$count}',
+    'UpdateDatabase' => 'Αναβάθμιση βάσης δεδομένων...',
+    // Authentication screens (index.php, reset.php, reset_password.php)
+    'EnterTheCredentialsForYourAccount' => 'Εισαγάγετε τα διαπιστευτήρια για τον λογαριασμό σας.',
+    'TroubleSigningIn' => 'Δυσκολεύεστε να συνδεθείτε; Επικοινωνήστε με τον διαχειριστή του SimpleRisk.',
+    'BackToLogin' => 'Επιστροφή στη σύνδεση',
+    'Or' => 'ή',
+    'WeWillEmailAResetTokenToYourAccount' => 'Θα στείλουμε μέσω email ένα διακριτικό επαναφοράς στη διεύθυνση που αναγράφεται στον λογαριασμό σας.',
+    'EnterTheResetTokenFromYourEmail' => 'Εισαγάγετε το διακριτικό επαναφοράς από το email σας μαζί με τον νέο σας κωδικό πρόσβασης.',
+    'ChooseANewPasswordToContinue' => 'Επιλέξτε έναν νέο κωδικό πρόσβασης για να συνεχίσετε.',
+    'FromZeroToGRCInMinutes' => 'Από το ΜΗΔΕΝ στο GRC σε λίγα λεπτά.',
+    'OrganizationLogo' => 'Λογότυπο οργανισμού',
+    'LoginScreenBranding' => 'Εμπορική επωνυμία οθόνης σύνδεσης',
+    'CustomLogo' => 'Προσαρμοσμένο λογότυπο',
+    'CustomLogoHint' => 'PNG, JPG, GIF ή WebP, έως 1 MB και 2000x2000. Εμφανίζεται σε μέγεθος έως 260x64, επομένως παρέχετε περίπου 520x128 για οθόνες υψηλής πυκνότητας. Η επάνω γραμμή και ο πίνακας σύνδεσης είναι σκούρα, επομένως ανεβάστε ένα λογότυπο που διαβάζεται σε σκούρο φόντο. Αφαιρέστε το λογότυπο για να επιστρέψετε σε αυτό του SimpleRisk.',
+    'CurrentLogo' => 'Τρέχον λογότυπο',
+    'RemoveLogo' => 'Αφαίρεση του λογότυπου',
+    'LoginTagline' => 'Σύνθημα σύνδεσης',
+    'LoginTaglineHint' => 'Αντικαθιστά το σλόγκαν του SimpleRisk στην οθόνη σύνδεσης. Μία σύντομη γραμμή διαβάζεται καλύτερα. Αφήστε την κενή για να διατηρήσετε το σλόγκαν του SimpleRisk.',
+    'LoginNotice' => 'Ειδοποίηση χρήσης συστήματος',
+    'LoginNoticeHint' => 'Εμφανίζεται στην οθόνη σύνδεσης πριν από τη σύνδεση οποιουδήποτε χρήστη. Χρησιμοποιήστε το για μια ειδοποίηση αποδεκτής χρήσης ή χρήσης συστήματος. Αφήστε το κενό για να μην εμφανίζεται καμία ειδοποίηση. Δεν επιτρέπονται σύνδεσμοι και εικόνες.',
+    'BrandingRequiresCustomization' => 'Η δημιουργία επωνυμίας στην οθόνη σύνδεσης αποτελεί μέρος του Customization Extra.',
+    'LogoMustBeAnImage' => 'Το λογότυπο πρέπει να είναι εικόνα PNG, JPG, GIF ή WebP.',
+    'LogoTooLarge' => 'Το λογότυπο δεν πρέπει να έχει μέγεθος μεγαλύτερο από 1 MB.',
+    'LogoDimensionsTooLarge' => 'Το λογότυπο δεν πρέπει να έχει μέγεθος μεγαλύτερο από 2000x2000 pixel.',
+    'LogoDimensionsTooSmall' => 'Το λογότυπο πρέπει να έχει τουλάχιστον 32 pixel στη μεγαλύτερη άκρη του.',
+    'LogoUploadFailed' => 'Δεν ήταν δυνατή η μεταφόρτωση του λογότυπου. Δοκιμάστε ξανά.',
+    'LogoUpdated' => 'Το λογότυπο ενημερώθηκε.',
+    'LogoRemoved' => 'Το λογότυπο αφαιρέθηκε.',
+    'NoSystemUseNoticeSet' => 'Δεν έχει οριστεί ειδοποίηση χρήσης συστήματος.',
+    'NoticeSizeSmall' => 'Μικρό',
+    'NoticeSizeNormal' => 'Κανονικός',
+    'NoticeSizeLarge' => 'Μεγάλο',
+    // Preferences page save feedback
+    'TheSettingsWereUpdatedSuccessfully' => 'Οι ρυθμίσεις ενημερώθηκαν με επιτυχία.',
+    'NoChangesWereMade' => 'Δεν έγιναν αλλαγές.',
+    'PleaseSpecifyAnIntegerGreaterThanOrEqualToZeroForTheMinimumValue' => 'Παρακαλώ καθορίστε έναν ακέραιο αριθμό μεγαλύτερο ή ίσο με μηδέν για την ελάχιστη τιμή.',
+    'PleaseSpecifyAnIntegerForTheMaximumValue' => 'Παρακαλώ καθορίστε έναν ακέραιο αριθμό για τη μέγιστη τιμή.',
+    'PleaseSpecifyAMaximumValueGreaterThanTheMinimum' => 'Παρακαλώ καθορίστε μια μέγιστη τιμή μεγαλύτερη από την ελάχιστη.',
+    // Extra download version compatibility
+    'ExtraVersionIncompatibleWithApplication' => 'Το "{$extra}" Extra (έκδοση {$extra_version}) που λάβατε δεν είναι συμβατό με το SimpleRisk {$app_version} και δεν εγκαταστάθηκε. Αναβαθμίστε πρώτα το SimpleRisk στην πιο πρόσφατη έκδοση.',
+    'ExtraCompatibilityDataUnavailable' => 'Το SimpleRisk δεν μπόρεσε να επιβεβαιώσει ποιες εκδόσεις Extra υποστηρίζει αυτή η έκδοση, επομένως το Extra δεν εγκαταστάθηκε. Δοκιμάστε ξανά αργότερα.',
+    'ExtraVersionCouldNotBeVerified' => 'Δεν ήταν δυνατός ο προσδιορισμός της έκδοσης του Extra που λάβατε, επομένως δεν εγκαταστάθηκε.',
     '' => '',
 );
 ?>

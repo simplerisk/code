@@ -4,8 +4,7 @@ declare(strict_types=1);
 
 namespace SimpleSAML\Module\saml\Auth\Process;
 
-use SAML2\Constants;
-use SimpleSAML\{Auth, Utils};
+use SimpleSAML\SAML2\Constants;
 
 use function strtolower;
 
@@ -39,7 +38,7 @@ class PairwiseID extends SubjectID
     /**
      * The name for this class
      */
-    public const NAME = 'PairwiseID';
+    public const string NAME = 'PairwiseID';
 
 
     /**

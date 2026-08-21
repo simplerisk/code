@@ -15,6 +15,21 @@ final class ArrayGenerator extends Generator
     const PRETTY_INDENT = '    ';
 
     /**
+     * @private
+     */
+    const FORMAT_NORMAL = 'normal';
+
+    /**
+     * @private
+     */
+    const FORMAT_PRETTY = 'pretty';
+
+    /**
+     * @private
+     */
+    const FORMAT_COMPACT = 'compact';
+
+    /**
      * @var bool
      */
     private $includeEmpty;
@@ -25,34 +40,66 @@ final class ArrayGenerator extends Generator
     private $strictTypes;
 
     /**
-     * @var bool
+     * @var string
      */
-    private $pretty;
+    private $format;
 
     /**
      * Constructs a new ArrayGenerator
-     * @param array|null $options
-     *
-     * bool includeEmpty Controls whether empty translations should be included (default: false)
+     * @param array {
+     *   includeEmpty?: bool,                 // Controls whether empty translations should be included (default: false)
+     *   strictTypes?: bool,                  // Add declare(strict_types=1) (default: false)
+     *   format?: 'normal'|'pretty'|'compact' // How to format the code (default: 'normal')
+     *   pretty?: bool,                       // Deprecated: use format instead (default: false)
+     * } | null $options
      */
     public function __construct(?array $options = null)
     {
         $this->includeEmpty = (bool) ($options['includeEmpty'] ?? false);
         $this->strictTypes = (bool) ($options['strictTypes'] ?? false);
-        $this->pretty = (bool) ($options['pretty'] ?? false);
+        if (!isset($options['format'])) {
+            $this->format = ($options['pretty'] ?? false) ? self::FORMAT_PRETTY : self::FORMAT_NORMAL;
+        } elseif (in_array($options['format'], [self::FORMAT_PRETTY, self::FORMAT_COMPACT], true)) {
+            $this->format = $options['format'];
+        } else {
+            $this->format = self::FORMAT_NORMAL;
+        }
     }
 
     public function generateString(Translations $translations): string
     {
         $array = $this->generateArray($translations);
         $result = '<?php';
-        if ($this->pretty) {
-            $result .= $this->strictTypes ? "\n\ndeclare(strict_types=1);\n\n" : "\n\n";
+        if ($this->strictTypes) {
+            switch ($this->format) {
+                case self::FORMAT_PRETTY:
+                    $result .= "\n\ndeclare(strict_types=1);\n\n";
+                    break;
+                case self::FORMAT_COMPACT:
+                    $result .= ' declare(strict_types=1);';
+                    break;
+                case self::FORMAT_NORMAL:
+                default:
+                    $result .= ' declare(strict_types=1); ';
+                    break;
+            }
         } else {
-            $result .= $this->strictTypes ? ' declare(strict_types=1); ' : ' ';
+            $result .= $this->format === self::FORMAT_PRETTY ? "\n\n"  : ' ';
+        }
+        switch ($this->format) {
+            case self::FORMAT_PRETTY:
+                $result .= self::format($array, false);
+                break;
+            case self::FORMAT_COMPACT:
+                $result .= self::format($array, true);
+                break;
+            case self::FORMAT_NORMAL:
+            default:
+                $result .= 'return ' . var_export($array, true) . ';';
+                break;
         }
 
-        return $result . 'return ' . ($this->pretty ? self::prettyExport($array) : (var_export($array, true) . ';'));
+        return $result;
     }
 
     public function generateArray(Translations $translations): array
@@ -76,8 +123,10 @@ final class ArrayGenerator extends Generator
             if (self::hasPluralTranslations($translation)) {
                 $messages[$context][$original] = $translation->getPluralTranslations($pluralSize);
                 array_unshift($messages[$context][$original], $translation->getTranslation());
+            } elseif ($pluralSize !== null && $pluralSize > 1 && (string) $translation->getPlural() !== '') {
+                $messages[$context][$original] = array_fill(0, $pluralSize, '');
             } else {
-                $messages[$context][$original] = $translation->getTranslation();
+                $messages[$context][$original] = (string) $translation->getTranslation();
             }
         }
 
@@ -93,12 +142,12 @@ final class ArrayGenerator extends Generator
         return implode('', $translation->getPluralTranslations()) !== '';
     }
 
-    private static function prettyExport(array &$array): string
+    private static function format(array &$array, bool $compact): string
     {
-        return self::prettyExportArray($array, 0) . ";\n";
+        return 'return ' . self::formatArray($array, $compact, 0) . ($compact ? ';' : ";\n");
     }
 
-    private static function prettyExportArray(array &$array, int $depth): string
+    private static function formatArray(array &$array, bool $compact, int $depth): string
     {
         if ($array === []) {
             return '[]';
@@ -106,21 +155,29 @@ final class ArrayGenerator extends Generator
         $result = '[';
         $isList = self::isList($array);
         foreach ($array as $key => $value) {
-            $result .= "\n" . str_repeat(self::PRETTY_INDENT, $depth + 1);
+            if (!$compact) {
+                $result .= "\n" . str_repeat(self::PRETTY_INDENT, $depth + 1);
+            }
             if (!$isList) {
-                $result .= var_export($key, true) . ' => ';
+                $result .= var_export($key, true) . ($compact ? '=>' : ' => ');
             }
             if (is_array($value)) {
-                $result .= self::prettyExportArray($value, $depth + 1);
+                $result .= self::formatArray($value, $compact, $depth + 1);
             } else {
-                $result .= self::prettyExportScalar($value);
+                $result .= self::formatScalar($value);
             }
             $result .= ',';
         }
-        return $result . "\n" . str_repeat(self::PRETTY_INDENT, $depth) . ']';
+        if ($compact) {
+            $result = substr($result, 0, -1);
+        } else {
+            $result .= "\n" . str_repeat(self::PRETTY_INDENT, $depth);
+        }
+
+        return $result . ']';
     }
 
-    private static function prettyExportScalar($value): string
+    private static function formatScalar($value): string
     {
         return $value === null ? 'null' : var_export($value, true);
     }

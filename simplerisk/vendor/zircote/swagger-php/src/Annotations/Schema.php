@@ -6,7 +6,8 @@
 
 namespace OpenApi\Annotations;
 
-use OpenApi\Generator;
+use OpenApi\Analysis;
+use OpenApi\Undefined;
 
 /**
  * The definition of input and output data types.
@@ -23,6 +24,8 @@ use OpenApi\Generator;
  */
 class Schema extends AbstractAnnotation
 {
+    use JsonSchemaTrait;
+
     /**
      * The relative or absolute path to the endpoint.
      *
@@ -30,14 +33,14 @@ class Schema extends AbstractAnnotation
      *
      * @var string|class-string|object
      */
-    public $ref = Generator::UNDEFINED;
+    public $ref = Undefined::UNDEFINED;
 
     /**
      * The key into Components->schemas array.
      *
      * @var string
      */
-    public $schema = Generator::UNDEFINED;
+    public $schema = Undefined::UNDEFINED;
 
     /**
      * Can be used to decorate a user interface with information about the data produced by this user interface.
@@ -46,14 +49,14 @@ class Schema extends AbstractAnnotation
      *
      * @var string
      */
-    public $title = Generator::UNDEFINED;
+    public $title = Undefined::UNDEFINED;
 
     /**
      * A description will provide explanation about the purpose of the instance described by this schema.
      *
      * @var string
      */
-    public $description = Generator::UNDEFINED;
+    public $description = Undefined::UNDEFINED;
 
     /**
      * The maximum number of properties allowed in an object instance.
@@ -62,7 +65,7 @@ class Schema extends AbstractAnnotation
      *
      * @var int
      */
-    public $maxProperties = Generator::UNDEFINED;
+    public $maxProperties = Undefined::UNDEFINED;
 
     /**
      * The minimum number of properties allowed in an object instance.
@@ -71,24 +74,24 @@ class Schema extends AbstractAnnotation
      *
      * @var int
      */
-    public $minProperties = Generator::UNDEFINED;
+    public $minProperties = Undefined::UNDEFINED;
 
     /**
      * An object instance is valid against this property if its property set contains all elements in this property's
      * array value.
      *
-     * @var string[]
+     * @var list<string>
      */
-    public $required = Generator::UNDEFINED;
+    public $required = Undefined::UNDEFINED;
 
     /**
      * A collection of properties to define for an object.
      *
      * Each property is represented as an instance of the <a href="#property">Property</a> class.
      *
-     * @var Property[]
+     * @var list<Property>
      */
-    public $properties = Generator::UNDEFINED;
+    public $properties = Undefined::UNDEFINED;
 
     /**
      * The type of the schema/property.
@@ -99,7 +102,7 @@ class Schema extends AbstractAnnotation
      *
      * @var string|non-empty-array<string>
      */
-    public $type = Generator::UNDEFINED;
+    public $type = Undefined::UNDEFINED;
 
     /**
      * The extending format for the previously mentioned type.
@@ -108,14 +111,14 @@ class Schema extends AbstractAnnotation
      *
      * @var string
      */
-    public $format = Generator::UNDEFINED;
+    public $format = Undefined::UNDEFINED;
 
     /**
      * Required if type is "array". Describes the type of items in the array.
      *
      * @var Items
      */
-    public $items = Generator::UNDEFINED;
+    public $items = Undefined::UNDEFINED;
 
     /**
      * Determines the format of the array if type array is used.
@@ -131,132 +134,14 @@ class Schema extends AbstractAnnotation
      *
      * @var string
      */
-    public $collectionFormat = Generator::UNDEFINED;
-
-    /**
-     * Sets a default value to the parameter. The type of the value depends on the defined type.
-     *
-     * @see [JSON schema validation](http://json-schema.org/latest/json-schema-validation.html#anchor101)
-     */
-    public $default = Generator::UNDEFINED;
-
-    /**
-     * The maximum value allowed for a numeric property. This value must be a number.
-     *
-     * @see [JSON schema validation](http://json-schema.org/latest/json-schema-validation.html#anchor17)
-     *
-     * @var int|float
-     */
-    public $maximum = Generator::UNDEFINED;
-
-    /**
-     * A boolean indicating whether the maximum value is excluded from the set of valid values.
-     *
-     * When set to true, the maximum value is excluded, and when false or not specified, it is included.
-     *
-     * @see [JSON schema validation](http://json-schema.org/latest/json-schema-validation.html#anchor17)
-     *
-     * @var bool|int|float
-     */
-    public $exclusiveMaximum = Generator::UNDEFINED;
-
-    /**
-     * The minimum value allowed for a numeric property. This value must be a number.
-     *
-     * @see [JSON schema validation](http://json-schema.org/latest/json-schema-validation.html#anchor21)
-     *
-     * @var int|float
-     */
-    public $minimum = Generator::UNDEFINED;
-
-    /**
-     * A boolean indicating whether the minimum value is excluded from the set of valid values.
-     *
-     * When set to true, the minimum value is excluded, and when false or not specified, it is included.
-     *
-     * @see [JSON schema validation](http://json-schema.org/latest/json-schema-validation.html#anchor21)
-     *
-     * @var bool|int|float
-     */
-    public $exclusiveMinimum = Generator::UNDEFINED;
-
-    /**
-     * The maximum length of a string property.
-     *
-     * A string instance is valid against this property if its length is less than, or equal to, the value of this
-     * attribute.
-     *
-     * @see [JSON schema validation](http://json-schema.org/latest/json-schema-validation.html#anchor26)
-     *
-     * @var int
-     */
-    public $maxLength = Generator::UNDEFINED;
-
-    /**
-     * The minimum length of a string property.
-     *
-     * A string instance is valid against this property if its length is greater than, or equal to, the value of this
-     * attribute.
-     *
-     * @see [JSON schema validation](http://json-schema.org/latest/json-schema-validation.html#anchor29)
-     *
-     * @var int
-     */
-    public $minLength = Generator::UNDEFINED;
+    public $collectionFormat = Undefined::UNDEFINED;
 
     /**
      * A string instance is considered valid if the regular expression matches the instance successfully.
      *
      * @var string
      */
-    public $pattern = Generator::UNDEFINED;
-
-    /**
-     * The maximum number of items allowed in an array property.
-     *
-     * An array instance is valid against this property if its number of items is less than, or equal to, the value of
-     * this attribute.
-     *
-     * @see [JSON schema validation](http://json-schema.org/latest/json-schema-validation.html#anchor42)
-     *
-     * @var int
-     */
-    public $maxItems = Generator::UNDEFINED;
-
-    /**
-     * The minimum number of items allowed in an array property.
-     *
-     * An array instance is valid against this property if its number of items is greater than, or equal to, the value
-     * of this attribute.
-     *
-     * @see [JSON schema validation](http://json-schema.org/latest/json-schema-validation.html#anchor45)
-     *
-     * @var int
-     */
-    public $minItems = Generator::UNDEFINED;
-
-    /**
-     * A boolean value indicating whether all items in an array property must be unique.
-     *
-     * If this attribute is set to true, then all items in the array must be unique.
-     *
-     * @see [JSON schema validation](http://json-schema.org/latest/json-schema-validation.html#anchor49)
-     *
-     * @var bool
-     */
-    public $uniqueItems = Generator::UNDEFINED;
-
-    /**
-     * A collection of allowable values for a property.
-     *
-     * A property instance is valid against this attribute if its value is one of the values specified in this
-     * collection.
-     *
-     * @see [JSON schema validation](http://json-schema.org/latest/json-schema-validation.html#anchor76)
-     *
-     * @var array<string|int|float|bool|\UnitEnum>|class-string
-     */
-    public $enum = Generator::UNDEFINED;
+    public $pattern = Undefined::UNDEFINED;
 
     /**
      * A numeric instance is valid against "multipleOf" if the result of the division of the instance by this
@@ -264,7 +149,7 @@ class Schema extends AbstractAnnotation
      *
      * @var int|float
      */
-    public $multipleOf = Generator::UNDEFINED;
+    public $multipleOf = Undefined::UNDEFINED;
 
     /**
      * Adds support for polymorphism.
@@ -274,7 +159,7 @@ class Schema extends AbstractAnnotation
      *
      * @var Discriminator
      */
-    public $discriminator = Generator::UNDEFINED;
+    public $discriminator = Undefined::UNDEFINED;
 
     /**
      * Declares the property as "read only".
@@ -288,7 +173,7 @@ class Schema extends AbstractAnnotation
      *
      * @var bool
      */
-    public $readOnly = Generator::UNDEFINED;
+    public $readOnly = Undefined::UNDEFINED;
 
     /**
      * Declares the property as "write only".
@@ -301,7 +186,7 @@ class Schema extends AbstractAnnotation
      *
      * @var bool
      */
-    public $writeOnly = Generator::UNDEFINED;
+    public $writeOnly = Undefined::UNDEFINED;
 
     /**
      * This may be used only on properties schemas.
@@ -311,22 +196,24 @@ class Schema extends AbstractAnnotation
      *
      * @var Xml
      */
-    public $xml = Generator::UNDEFINED;
+    public $xml = Undefined::UNDEFINED;
 
     /**
      * Additional external documentation for this schema.
      *
      * @var ExternalDocumentation
      */
-    public $externalDocs = Generator::UNDEFINED;
+    public $externalDocs = Undefined::UNDEFINED;
 
     /**
      * A free-form property to include an example of an instance for this schema.
      *
      * To represent examples that cannot naturally be represented in JSON or YAML, a string value can be used to
      * contain the example with escaping where necessary.
+     *
+     * @var mixed
      */
-    public $example = Generator::UNDEFINED;
+    public $example = Undefined::UNDEFINED;
 
     /**
      * Examples of the schema.
@@ -335,11 +222,10 @@ class Schema extends AbstractAnnotation
      * The examples object is mutually exclusive of the example object.
      * Furthermore, if referencing a schema which contains an example, the examples value shall override the example provided by the schema.
      *
-     * @since 3.1.0
-     *
+     * @since OpenAPI 3.1.0
      * @var array<Examples>
      */
-    public $examples = Generator::UNDEFINED;
+    public $examples = Undefined::UNDEFINED;
 
     /**
      * Allows sending a null value for the defined schema.
@@ -352,7 +238,7 @@ class Schema extends AbstractAnnotation
      *
      * @see https://www.openapis.org/blog/2021/02/16/migrating-from-openapi-3-0-to-3-1-0
      */
-    public $nullable = Generator::UNDEFINED;
+    public $nullable = Undefined::UNDEFINED;
 
     /**
      * Specifies that a schema is deprecated and should be transitioned out of usage.
@@ -360,7 +246,7 @@ class Schema extends AbstractAnnotation
      *
      * @var bool
      */
-    public $deprecated = Generator::UNDEFINED;
+    public $deprecated = Undefined::UNDEFINED;
 
     /**
      * An instance validates successfully against this property if it validates successfully against all schemas
@@ -368,7 +254,7 @@ class Schema extends AbstractAnnotation
      *
      * @var array<Schema|\OpenApi\Attributes\Schema>
      */
-    public $allOf = Generator::UNDEFINED;
+    public $allOf = Undefined::UNDEFINED;
 
     /**
      * An instance validates successfully against this property if it validates successfully against at least one
@@ -376,7 +262,7 @@ class Schema extends AbstractAnnotation
      *
      * @var array<Schema|\OpenApi\Attributes\Schema>
      */
-    public $anyOf = Generator::UNDEFINED;
+    public $anyOf = Undefined::UNDEFINED;
 
     /**
      * An instance validates successfully against this property if it validates successfully against exactly one schema
@@ -384,49 +270,7 @@ class Schema extends AbstractAnnotation
      *
      * @var array<Schema|\OpenApi\Attributes\Schema>
      */
-    public $oneOf = Generator::UNDEFINED;
-
-    /**
-     * http://json-schema.org/latest/json-schema-validation.html#rfc.section.6.29.
-     */
-    public $not = Generator::UNDEFINED;
-
-    /**
-     * http://json-schema.org/latest/json-schema-validation.html#anchor64.
-     *
-     * @var bool|AdditionalProperties
-     */
-    public $additionalProperties = Generator::UNDEFINED;
-
-    /**
-     * http://json-schema.org/latest/json-schema-validation.html#rfc.section.6.10.
-     */
-    public $additionalItems = Generator::UNDEFINED;
-
-    /**
-     * http://json-schema.org/latest/json-schema-validation.html#rfc.section.6.14.
-     */
-    public $contains = Generator::UNDEFINED;
-
-    /**
-     * http://json-schema.org/latest/json-schema-validation.html#rfc.section.6.19.
-     */
-    public $patternProperties = Generator::UNDEFINED;
-
-    /**
-     * http://json-schema.org/latest/json-schema-validation.html#rfc.section.6.21.
-     */
-    public $dependencies = Generator::UNDEFINED;
-
-    /**
-     * http://json-schema.org/latest/json-schema-validation.html#rfc.section.6.22.
-     */
-    public $propertyNames = Generator::UNDEFINED;
-
-    /**
-     * http://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.6.1.3.
-     */
-    public $const = Generator::UNDEFINED;
+    public $oneOf = Undefined::UNDEFINED;
 
     /**
      * https://spec.openapis.org/oas/v3.1.0.html#considerations-for-file-uploads
@@ -434,7 +278,7 @@ class Schema extends AbstractAnnotation
      *
      * @var string
      */
-    public $contentEncoding = Generator::UNDEFINED;
+    public $contentEncoding = Undefined::UNDEFINED;
 
     /**
      * https://spec.openapis.org/oas/v3.1.0.html#considerations-for-file-uploads
@@ -442,7 +286,7 @@ class Schema extends AbstractAnnotation
      *
      * @var string
      */
-    public $contentMediaType = Generator::UNDEFINED;
+    public $contentMediaType = Undefined::UNDEFINED;
 
     /**
      * @inheritdoc
@@ -454,9 +298,9 @@ class Schema extends AbstractAnnotation
         'format' => 'string',
         'collectionFormat' => ['csv', 'ssv', 'tsv', 'pipes', 'multi'],
         'maximum' => 'number',
-        'exclusiveMaximum' => 'boolean|integer|number',
+        'exclusiveMaximum' => 'boolean|number',
         'minimum' => 'number',
-        'exclusiveMinimum' => 'boolean|integer|number',
+        'exclusiveMinimum' => 'boolean|number',
         'maxLength' => 'integer',
         'minLength' => 'integer',
         'pattern' => 'string',
@@ -503,14 +347,18 @@ class Schema extends AbstractAnnotation
      */
     public function isNullable(): bool
     {
-        return !Generator::isDefault($this->nullable) && $this->nullable;
+        return !Undefined::isDefault($this->nullable) && $this->nullable;
     }
 
     /**
-     * @inheritdoc
+     * Check if the given type is valid for this schema.
      */
-    #[\ReturnTypeWillChange]
-    public function jsonSerialize()
+    public function hasType(string $type): bool
+    {
+        return in_array($type, (array) $this->type, strict: true);
+    }
+
+    public function jsonSerialize(): \stdClass
     {
         $data = parent::jsonSerialize();
 
@@ -520,30 +368,32 @@ class Schema extends AbstractAnnotation
                 $data->enum = [$data->const];
                 unset($data->const);
             }
+            if (isset($data->not) && is_array($data->not) && array_key_exists('const', $data->not)) {
+                $data->not = ['enum' => [$data->not['const']]];
+            }
         }
 
         return $data;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function validate(array $stack = [], array $skip = [], string $ref = '', ?object $context = null): bool
+    #[\Override]
+    public function validate(?Analysis $analysis = null, string $version = OpenApi::DEFAULT_VERSION, ?object $context = null): bool
     {
-        if ($this->type === 'array' && Generator::isDefault($this->items)) {
+        $isValid = parent::validate($analysis, $version, $context);
+
+        if ($this->hasType('array') && Undefined::isDefault($this->items)) {
             $this->_context->logger->warning('@OA\\Items() is required when ' . $this->identity() . ' has type "array" in ' . $this->_context);
 
-            return false;
+            $isValid = false;
         }
 
-        if ($this->_context->isVersion('3.0.x')) {
-            if (!Generator::isDefault($this->examples)) {
-                $this->_context->logger->warning($this->identity() . ' is only allowed for 3.1.x');
-
-                return false;
+        if (OpenApi::versionMatch($version, '3.0.x')) {
+            if (!Undefined::isDefault($this->examples)) {
+                $this->_context->logger->warning(static::shorten(static::class) . '::examples is only allowed as of 3.1.0 in ' . $this->_context);
+                $isValid = false;
             }
         }
 
-        return parent::validate($stack, $skip, $ref, $context);
+        return $isValid;
     }
 }

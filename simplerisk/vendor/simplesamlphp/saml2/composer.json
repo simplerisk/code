@@ -1,39 +1,48 @@
 {
     "name": "simplesamlphp/saml2",
     "description": "SAML2 PHP library from SimpleSAMLphp",
+    "type": "simplesamlphp-xmlprovider",
     "license": "LGPL-2.1-or-later",
     "authors": [
         {
             "name": "Andreas Åkre Solberg",
             "email": "andreas.solberg@uninett.no"
+        },
+        {
+            "name": "Jaime Pérez Crespo",
+            "email": "jaime.perez@uninett.no"
+        },
+        {
+            "name": "Tim van Dijen",
+            "email": "tvdijen@gmail.com"
         }
     ],
     "require": {
-        "php": "^8.1",
+        "php": "^8.3",
         "ext-date": "*",
         "ext-dom": "*",
         "ext-filter": "*",
-        "ext-libxml": "*",
         "ext-openssl": "*",
         "ext-pcre": "*",
         "ext-zlib": "*",
 
-        "nyholm/psr7": "~1.8.2",
-        "psr/clock": "~1.0.0",
+        "nyholm/psr7": "~1.8",
+        "psr/clock": "~1.0",
         "psr/http-message": "~2.0",
-        "psr/log": "~2.3.1 || ~3.0.0",
-        "simplesamlphp/assert": "~1.8.1",
-        "simplesamlphp/xml-common": "~1.25.0",
-        "simplesamlphp/xml-security": "~1.13.8",
-        "simplesamlphp/xml-soap": "~1.7.0"
+        "psr/log": "~3.0",
+        "simplesamlphp/assert": "~2.0",
+        "simplesamlphp/xml-common": "~2.8",
+        "simplesamlphp/xml-security": "~2.3",
+        "simplesamlphp/xml-soap": "~2.3"
     },
     "require-dev": {
         "ext-intl": "*",
 
-        "beste/clock": "~3.0.0",
-        "mockery/mockery": "~1.6.12",
-        "simplesamlphp/composer-xmlprovider-installer": "~1.0.2",
-        "simplesamlphp/simplesamlphp-test-framework": "~1.9.2"
+        "beste/clock": "~3.0",
+        "mockery/mockery": "~1.6",
+        "simplesamlphp/simplesamlphp": "^2.5",
+        "simplesamlphp/simplesamlphp-test-framework": "~1.11",
+        "icanhazstring/composer-unused": "^0.9.6"
     },
     "suggest": {
         "ext-soap": "*"
@@ -45,20 +54,32 @@
     },
     "autoload-dev": {
         "psr-4": {
-            "SimpleSAML\\Test\\SAML2\\": "tests/SAML2/"
+            "SimpleSAML\\Test\\SAML2\\": "tests/SAML2/",
+            "SimpleSAML\\TestUtils\\SAML2\\": "tests/TestUtils/"
         }
     },
     "extra": {
         "branch-alias": {
-            "dev-master": "v5.0.x-dev"
+            "dev-master": "v6.1.x-dev"
         }
     },
     "config": {
         "allow-plugins": {
             "composer/package-versions-deprecated": true,
             "dealerdirect/phpcodesniffer-composer-installer": true,
+            "simplesamlphp/composer-module-installer": false,
             "phpstan/extension-installer": true,
             "simplesamlphp/composer-xmlprovider-installer": true
         }
+    },
+    "scripts": {
+        "pre-commit": [
+            "vendor/bin/phpcs -p",
+            "vendor/bin/composer-require-checker check --config-file=tools/composer-require-checker.json composer.json",
+            "vendor/bin/phpstan analyze -c phpstan.neon",
+            "vendor/bin/phpstan analyze -c phpstan-dev.neon",
+            "vendor/bin/composer-unused",
+            "vendor/bin/phpunit --no-coverage --testdox"
+        ]
     }
 }

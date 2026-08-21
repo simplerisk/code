@@ -474,8 +474,11 @@
             });
         });
 
-        $("body").on("click", ".document--edit", function() {
-            var document_id = $(this).data("id");
+        // Fetch a document's definition and open the "update document" modal populated
+        // with it. Shared by the edit-document click handler and the ?document_id=
+        // deep-link (e.g. the governance dashboard's Policies for Review list). The
+        // endpoint enforces governance permission on its own.
+        function openDocumentForEdit(document_id) {
             $("#document-update-modal [name='control_ids[]']").multiselect("deselectAll", false);
             $("#document-update-modal [name='framework_ids[]']").multiselect("deselectAll", false);
             $("#document-update-modal [name='additional_stakeholders[]']").multiselect("deselectAll", false);
@@ -518,7 +521,21 @@
                     $("#document-update-modal").modal("show");
                 }
             });
+        }
 
+        $("body").on("click", ".document--edit", function() {
+            openDocumentForEdit($(this).data("id"));
+        });
+
+        // Deep-link: open a specific document's edit modal on load — e.g. the
+        // governance dashboard's Policies for Review list
+        // (governance/documentation.php?document_id=N). No-op when the modal is
+        // absent or the param is missing/non-numeric; the endpoint enforces access.
+        $(function() {
+            if (!$('#document-update-modal').length) return;
+            var deepDocumentId = new URLSearchParams(window.location.search).get('document_id');
+            if (!(deepDocumentId && /^\d+$/.test(deepDocumentId))) return;
+            openDocumentForEdit(deepDocumentId);
         });
 
         var fileAPISupported = typeof $("<input type='file'>").get(0).files != "undefined";

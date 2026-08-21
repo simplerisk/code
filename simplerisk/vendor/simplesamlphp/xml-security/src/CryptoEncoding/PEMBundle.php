@@ -27,7 +27,7 @@ use function preg_replace;
  *
  * The order of PEMs shall be retained, eg. when read from a file.
  *
- * @phpstan-implements IteratorAggregate<int, \SimpleSAML\XMLSecurity\CryptoEncoding\PEM>
+ * @phpstan-implements \IteratorAggregate<int, \SimpleSAML\XMLSecurity\CryptoEncoding\PEM>
  */
 class PEMBundle implements Countable, IteratorAggregate
 {
@@ -42,7 +42,7 @@ class PEMBundle implements Countable, IteratorAggregate
     /**
      * Constructor.
      *
-     * @param PEM ...$pems
+     * @param \SimpleSAML\XMLSecurity\CryptoEncoding\PEM ...$pems
      */
     public function __construct(PEM ...$pems)
     {
@@ -51,7 +51,6 @@ class PEMBundle implements Countable, IteratorAggregate
 
 
     /**
-     * @return string
      */
     public function __toString(): string
     {
@@ -62,11 +61,7 @@ class PEMBundle implements Countable, IteratorAggregate
     /**
      * Initialize from a string.
      *
-     * @param string $str
-     *
      * @throws \UnexpectedValueException
-     *
-     * @return self
      */
     public static function fromString(string $str): self
     {
@@ -97,11 +92,7 @@ class PEMBundle implements Countable, IteratorAggregate
     /**
      * Initialize from a file.
      *
-     * @param string $filename
-     *
      * @throws \RuntimeException If file reading fails
-     *
-     * @return self
      */
     public static function fromFile(string $filename): self
     {
@@ -181,8 +172,6 @@ class PEMBundle implements Countable, IteratorAggregate
 
     /**
      * @see \Countable::count()
-     *
-     * @return int
      */
     public function count(): int
     {
@@ -195,7 +184,7 @@ class PEMBundle implements Countable, IteratorAggregate
      *
      * @see \IteratorAggregate::getIterator()
      *
-     * @return ArrayIterator<int, \SimpleSAML\XMLSecurity\CryptoEncoding\PEM>
+     * @return \ArrayIterator<int, \SimpleSAML\XMLSecurity\CryptoEncoding\PEM>
      */
     public function getIterator(): ArrayIterator
     {
@@ -205,8 +194,6 @@ class PEMBundle implements Countable, IteratorAggregate
 
     /**
      * Encode bundle to a string of contiguous PEM blocks.
-     *
-     * @return string
      */
     public function string(): string
     {

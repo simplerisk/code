@@ -1,0 +1,50 @@
+{
+  "name": "graphology-operators",
+  "version": "1.6.1",
+  "description": "Miscellaneous operators for graphology.",
+  "main": "index.js",
+  "types": "index.d.ts",
+  "files": [
+    "*.d.ts",
+    "disjoint-union.js",
+    "index.js",
+    "reverse.js",
+    "subgraph.js",
+    "to-directed.js",
+    "to-mixed.js",
+    "to-multi.js",
+    "to-undirected.js",
+    "to-simple.js",
+    "union.js"
+  ],
+  "scripts": {
+    "prepublishOnly": "npm test",
+    "test": "mocha test.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/graphology/graphology.git"
+  },
+  "keywords": [
+    "graph",
+    "graphology",
+    "operators",
+    "union",
+    "subgraph"
+  ],
+  "author": {
+    "name": "Guillaume Plique",
+    "url": "http://github.com/Yomguithereal"
+  },
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/graphology/graphology/issues"
+  },
+  "homepage": "https://github.com/graphology/graphology#readme",
+  "peerDependencies": {
+    "graphology-types": ">=0.20.0"
+  },
+  "dependencies": {
+    "graphology-utils": "^2.0.0"
+  }
+}

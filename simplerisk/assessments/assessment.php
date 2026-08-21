@@ -95,7 +95,8 @@ else
   echo "<div class=\"navbar\">\n";
   echo "<div class=\"navbar-inner\">\n";
   echo "<div class=\"container\">\n";
-  echo "<a class=\"brand\" href=\"http://www.simplerisk.com/\"><img src='../images/logo@2x.png' alt='SimpleRisk' /></a>\n";
+  // Unlinked, and Customization-aware, like every other unauthenticated page.
+  display_brand_logo('../');
   echo "</div>\n";
   echo "</div>\n";
   echo "</div>\n";

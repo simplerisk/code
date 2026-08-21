@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace SimpleSAML\XMLSecurity\XML\ds;
 
-use SimpleSAML\XML\IntegerElementTrait;
+use SimpleSAML\XML\TypedTextContentTrait;
+use SimpleSAML\XMLSecurity\Type\HMACOutputLengthValue;
 
 /**
  * Class representing a ds:HMACOutputLength element.
@@ -13,14 +14,8 @@ use SimpleSAML\XML\IntegerElementTrait;
  */
 final class HMACOutputLength extends AbstractDsElement
 {
-    use IntegerElementTrait;
+    use TypedTextContentTrait;
 
 
-    /**
-     * @param string $length
-     */
-    public function __construct(string $length)
-    {
-        $this->setContent($length);
-    }
+    public const string TEXTCONTENT_TYPE = HMACOutputLengthValue::class;
 }

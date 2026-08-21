@@ -6,9 +6,18 @@
 // Include required functions file
 require_once(realpath(__DIR__ . '/api.php'));
 require_once(realpath(__DIR__ . '/../../../includes/functions.php'));
+require_once(realpath(__DIR__ . '/../../../includes/api.php')); // datatable_response_for_view()
 require_once(realpath(__DIR__ . '/../../../includes/governance.php'));
 require_once (realpath(__DIR__ . '/../../../includes/Components/WordHandler.php'));
 require_once (realpath(__DIR__ . '/../../../includes/tf_idf_enrichment.php'));
+// entity_graph.php defines the get_*_connectivity_for_*() walkers called
+// directly below (api_v2_governance_controls_associations() etc.); declared
+// explicitly per CLAUDE.md's function-reachability rule even though it is
+// also reachable transitively today via includes/reporting.php.
+require_once(realpath(__DIR__ . '/../../../includes/entity_graph.php'));
+// ai_context_search_visible_ids() (the L4/Team-Separation record filter
+// applied to the walker results below) is defined here.
+require_once(realpath(__DIR__ . '/../../../includes/ai_context_graph.php'));
 
 require_once(language_file());
 
@@ -43,6 +52,10 @@ function api_v2_governance_frameworks()
             $status_code = 200;
             $status_message = "SUCCESS";
 
+            // Purify the rich-text description at this output boundary (defense-in-depth
+            // against any stored value that bypassed on-write purification).
+            $framework['description'] = purify_rich_text_output($framework['description'] ?? '');
+
             // Create the data array
             $data = [
                 "framework" => $framework,
@@ -57,6 +70,13 @@ function api_v2_governance_frameworks()
 
         // Get the frameworks array
         $frameworks = get_frameworks($status, true, true, "name");
+
+        // Purify each rich-text description at this output boundary (defense-in-depth
+        // against any stored value that bypassed on-write purification).
+        foreach ($frameworks as &$framework) {
+            $framework['description'] = purify_rich_text_output($framework['description'] ?? '');
+        }
+        unset($framework);
 
         // Create the data array
         $data = [
@@ -82,7 +102,15 @@ function api_v2_governance_frameworks_treegrid()
     // If the user has governance permissions
     if (check_permission("governance"))
     {
-        $status = (int)$_GET['status'];
+        // The rail's "All" option (Task 2) sends status='' -- that must mean
+        // "no status filter", which get_frameworks()/get_frameworks_as_treegrid()
+        // already support via $status === false. Blindly (int)-casting '' produces
+        // 0, and no framework has status 0 (status is only ever 1 or 2), so "All"
+        // silently returned zero frameworks instead of everything. An omitted
+        // status defaults to 1 (Active), matching api_v2_governance_frameworks()
+        // just above.
+        $status = get_param("GET", "status", 1);
+        $status = ($status === '' || $status === null) ? false : (int)$status;
         $result = get_frameworks_as_treegrid($status);
         echo json_encode($result);
         exit;
@@ -91,6 +119,85 @@ function api_v2_governance_frameworks_treegrid()
     {
         json_response(400, $escaper->escapeHtml($lang['NoPermissionForGovernance']), NULL);
     }
+}
+
+/*******************************************************************
+ * FUNCTION: API V2 GOVERNANCE FRAMEWORKS RAIL                     *
+ * Purpose-built payload for the Define Control Frameworks page's  *
+ * framework rail (Task 22) -- replaces that page's former reliance *
+ * on GET /governance/frameworks/treegrid above, which is shaped     *
+ * for the easyui treegrid js/simplerisk/pages/governance.js's       *
+ * Document Program / Exceptions treegrids still use (left            *
+ * untouched: this is a new, separate route, not a change to that    *
+ * one). The rail consumed only 3 of that endpoint's 10 fields and    *
+ * discarded its server-rendered `actions` HTML column entirely --    *
+ * this returns exactly what the rail renders: `value`, `name`,       *
+ * `depth` (tree indentation, build_framework_rail_rows()), a         *
+ * real per-framework `control_count` (get_framework_control_counts(), *
+ * one query for every framework in the response, not N+1), and       *
+ * `is_scf` (Task 27, get_scf_origin_framework_ids()) -- whether the   *
+ * framework was created from the ComplianceForge SCF Extra's import.  *
+ *******************************************************************/
+function api_v2_governance_frameworks_rail()
+{
+    // Check that this user has the ability to view governance
+    api_v2_check_permission("governance");
+
+    // Same "no status filter" semantics as the treegrid endpoint above
+    // (Task 9's '' -> false fix): an omitted status defaults to Active (1);
+    // an explicit empty string means "every status".
+    $status = get_param("GET", "status", 1);
+    $status = ($status === '' || $status === null) ? false : (int)$status;
+
+    $frameworks = get_frameworks($status);
+
+    // Task 27: the rail's own ordering, not get_frameworks()'s `order` column.
+    // "All frameworks" is pinned first client-side (governance-frameworks.js's
+    // renderRail() always prepends it); everything else sorts alphabetically
+    // by name via sort_frameworks_by_name() (includes/governance.php -- see
+    // its docblock for why sorting the flat list here is sufficient to sort
+    // siblings without flattening the tree).
+    $frameworks = sort_frameworks_by_name($frameworks);
+
+    $rows = build_framework_rail_rows($frameworks);
+
+    $counts = get_framework_control_counts(array_column($rows, 'value'));
+
+    // Task 27: SCF-origin chip. get_scf_origin_framework_ids() degrades to an
+    // empty list (no chips for anyone) when the ComplianceForge SCF Extra
+    // isn't installed or its schema hasn't been created -- see that function's
+    // docblock (includes/governance.php) for the Core/Extra boundary guard.
+    $scfFrameworkIds = get_scf_origin_framework_ids();
+
+    foreach ($rows as &$row) {
+        $row['control_count'] = $counts[$row['value']] ?? 0;
+        $row['is_scf'] = in_array($row['value'], $scfFrameworkIds, true);
+    }
+    unset($row);
+
+    // The count behind the rail's synthetic "Unassigned controls" row: live
+    // controls mapped to NO framework at all.
+    //
+    // NOT scoped by ?status=. A control that belongs to no framework is outside
+    // every framework, so no filter over framework STATUS can change how many
+    // there are -- returning a status-scoped number would make the row's chip
+    // move when the rail's Active/Inactive/All switch is thrown, describing a
+    // set that did not change.
+    //
+    // get_control_scope_totals([-1]) rather than a COUNT of its own: that is
+    // the SAME aggregate the insights band's Controls tile reads
+    // (get_ui_widget_define_frameworks_insights()), and its -1 handling is
+    // control_framework_scope_sql()'s `m.control_id is NULL` -- the identical
+    // spelling get_framework_controls_by_filter() uses for the controls table's
+    // own framework facet. So the rail chip, the tile and the table's row count
+    // under that scope are one computation rather than three that ought to
+    // agree, which is the rule Tasks 37/40 spent a day establishing on this page.
+    $unmapped = get_control_scope_totals([-1]);
+
+    api_v2_json_result(200, "SUCCESS", [
+        'rows'           => $rows,
+        'unmapped_count' => $unmapped['total'],
+    ]);
 }
 
 /*********************************************************
@@ -324,9 +431,35 @@ function api_v2_governance_controls_associations()
     {
         // Get the connectivity for the control
         $framework_associations = get_framework_connectivity_for_control($id);
-        $test_associations = get_test_connectivity_for_control($id);
+
+        // The "tests" bucket additionally requires the compliance domain
+        // permission -- holding "governance" alone does not grant test
+        // visibility (mirrors ai_context_type_permission()'s
+        // 'test' => 'compliance' mapping used by the /ai/context bundle).
+        // Omit the bucket rather than 403 the whole endpoint: every other
+        // bucket here is governance-gated and still valid.
+        $test_associations = graph_bucket_if_permitted("compliance", fn() => get_test_connectivity_for_control($id));
+
         $document_associations = get_document_connectivity_for_control($id);
         $risk_associations = get_risk_connectivity_for_control($id);
+
+        // L4 (Team Separation) record filter. get_risk_connectivity_for_control()
+        // already strips team-inaccessible risks internally (via
+        // graph_risk_edge_rows()), but get_test_connectivity_for_control() and
+        // get_document_connectivity_for_control() are plain graph_edge_rows()
+        // walkers with no L4 awareness of their own. This endpoint calls the
+        // walkers directly rather than through the /ai/context orchestrator
+        // (which applies its own L4 pass over the assembled node set), so
+        // without this the tests/documents buckets leak off-team records to
+        // any caller holding "governance" (see l4-audit.md Finding 3a).
+        if (!empty($test_associations)) {
+            $visibleTestIds = ai_context_search_visible_ids('test', array_column($test_associations, 'test_id'));
+            $test_associations = graph_filter_rows_by_visible_ids($test_associations, 'test_id', $visibleTestIds);
+        }
+        if (!empty($document_associations)) {
+            $visibleDocumentIds = ai_context_search_visible_ids('document', array_column($document_associations, 'document_id'));
+            $document_associations = graph_filter_rows_by_visible_ids($document_associations, 'document_id', $visibleDocumentIds);
+        }
 
         // Set the status
         $status_code = 200;
@@ -668,6 +801,13 @@ function saveCustomDocumentsToControlsDisplaySettingsAPI(){
         return;
     }
     if(isset($_POST["document_columns"]) && isset($_POST["control_columns"]) && isset($_POST["matching_columns"])){
+        // SR-1870: reject any column name that isn't a plain [A-Za-z0-9_] token
+        // before storing it (it is later echoed into a data-name attribute / JS).
+        if (!custom_display_columns_are_valid([$_POST["document_columns"], $_POST["control_columns"], $_POST["matching_columns"]])) {
+            set_alert(true, "bad", $lang['NoDataAvailable']);
+            json_response(400, get_alert(true), NULL);
+            return;
+        }
         $data = array(
             "document_columns" => $_POST["document_columns"],
             "control_columns" => $_POST["control_columns"],
@@ -854,6 +994,28 @@ function api_v2_get_control_mapped_frameworks_count()
     $data = get_control_framework_mappings_counts($control_id);
 
     json_response(200, "Successfully retrieved mapped frameworks count.", $data);
+}
+
+/*******************************************************************************
+ * FUNCTIONS: GOVERNANCE DATATABLE FEEDS                                         *
+ * Server-side DataTables feeds for the document-program and exception views,   *
+ * gated on the `governance` module permission (SR-1721). Exceptions apply to   *
+ * both documents and controls, so their feed lives at the top-level            *
+ * /exceptions (alongside the other /exceptions/* endpoints) and additionally   *
+ * requires the exception 'view' permission.                                    *
+ *******************************************************************************/
+function api_v2_governance_documents_datatable() {
+    api_v2_check_permission("governance");
+    datatable_response_for_view('document_program');
+}
+
+function api_v2_exceptions_datatable() {
+    api_v2_check_permission("governance");
+    if (!check_permission_exception('view')) {
+        api_v2_json_result(403, "FORBIDDEN: The user does not have the required permission to perform this action.", null);
+        exit;
+    }
+    datatable_response_for_view('document_exception');
 }
 
 ?>

@@ -14,12 +14,9 @@ use SimpleSAML\XMLSecurity\Constants as C;
  */
 abstract class AbstractEcElement extends AbstractElement
 {
-    /** @var string */
-    public const NS = C::C14N_EXCLUSIVE_WITHOUT_COMMENTS;
+    public const string NS = C::C14N_EXCLUSIVE_WITHOUT_COMMENTS;
 
-    /** @var string */
-    public const NS_PREFIX = 'ec';
+    public const string NS_PREFIX = 'ec';
 
-    /** @var string */
-    public const SCHEMA = 'resources/schemas/exc-c14n.xsd';
+    public const string SCHEMA = 'resources/schemas/exc-c14n.xsd';
 }

@@ -9,27 +9,32 @@ namespace OpenApi\Type;
 use OpenApi\Analysis;
 use OpenApi\Annotations as OA;
 use OpenApi\Context;
-use OpenApi\Generator;
-use OpenApi\TypeResolverInterface;
+use OpenApi\Undefined;
+use OpenApi\Utils\TypeMapper;
 
+/**
+ * @deprecated use `TypeInfoTypeResolver` instead
+ */
 class LegacyTypeResolver extends AbstractTypeResolver
 {
-    /** @inheritdoc */
+    /**
+     * @inheritdoc
+     */
     protected function doAugment(Analysis $analysis, OA\Schema $schema, \Reflector $reflector, string $sourceClass = OA\Schema::class): void
     {
         $docblockDetails = $this->getDocblockTypeDetails($reflector, $schema->_context);
         $reflectionTypeDetails = $this->getReflectionTypeDetails($reflector, $schema->_context);
 
         // we only consider nullable hints if the type is explicitly set
-        if (Generator::isDefault($schema->nullable)
+        if (Undefined::isDefault($schema->nullable)
             && (($docblockDetails->types && $docblockDetails->nullable)
                 || ($reflectionTypeDetails->types && $reflectionTypeDetails->nullable))
         ) {
             $schema->nullable = true;
         }
 
-        if (Generator::isDefault($schema->type, $schema->oneOf, $schema->allOf, $schema->anyOf) && ($docblockDetails->explicitType || $reflectionTypeDetails->explicitType)) {
-            $details = $docblockDetails->types ? $docblockDetails : $reflectionTypeDetails;
+        if (Undefined::isDefault($schema->type, $schema->oneOf, $schema->allOf, $schema->anyOf) && ($docblockDetails->explicitType || $reflectionTypeDetails->explicitType)) {
+            $details = ($docblockDetails->types || $docblockDetails->unsupported) ? $docblockDetails : $reflectionTypeDetails;
 
             // for now
             if (1 === count($details->types)) {
@@ -41,38 +46,73 @@ class LegacyTypeResolver extends AbstractTypeResolver
                     $schema->minimum = $details->explicitDetails['min'];
                     $schema->maximum = $details->explicitDetails['max'];
                 } elseif ('non-zero-int' === $details->explicitType) {
-                    $schema->not = $schema->_context->isVersion('3.1.x')
-                        ? ['const' => 0]
-                        : ['enum' => [0]];
+                    $schema->not = ['const' => 0];
                 }
             }
         }
 
-        if ($docblockDetails->isArray || $reflectionTypeDetails->isArray) {
+        if ($docblockDetails->isArray || ($reflectionTypeDetails->isArray  && !$docblockDetails->unsupported)) {
             $this->augmentItems($schema, $analysis);
         }
 
         $this->type2ref($schema, $analysis);
 
-        if (!Generator::isDefault($schema->const) && Generator::isDefault($schema->type)) {
+        if ($schema->items instanceof OA\Items) {
+            $schema->type = 'array';
+        }
+
+        if (!Undefined::isDefault($schema->const) && Undefined::isDefault($schema->type)) {
             if (!$this->mapNativeType($schema, gettype($schema->const))) {
-                $schema->type = Generator::UNDEFINED;
+                $schema->type = Undefined::UNDEFINED;
             }
         }
 
         // final sanity check
-        if (!Generator::isDefault($schema->type) && !$this->mapNativeType($schema, $schema->type)) {
-            $schema->type = Generator::UNDEFINED;
+        if (!Undefined::isDefault($schema->type) && !$this->mapNativeType($schema, $schema->type)) {
+            $schema->type = Undefined::UNDEFINED;
         }
     }
 
-    protected function normaliseTypeResult(?string $explicitType = null, ?array $explicitDetails = null, array $types = [], ?string $name = null, ?bool $nullable = null, ?bool $isArray = null, ?Context $context = null): \stdClass
+    protected function augmentItems(OA\Schema $schema, Analysis $analysis): void
     {
-        $types = array_filter($types, fn (string $t): bool => !in_array($t, ['null', '']));
+        if (!Undefined::isDefault($schema->type)) {
+            // PHP `mixed` is not a valid OpenAPI type; leave items unconstrained
+            $itemType = 'mixed' === $schema->type ? Undefined::UNDEFINED : $schema->type;
 
-        if ($context) {
+            if (Undefined::isDefault($schema->items)) {
+                $schema->items = new OA\Items([
+                    'type' => $itemType,
+                    '_context' => new Context(['generated' => true], $schema->_context),
+                ]);
+
+                $this->type2ref($schema->items, $analysis);
+
+                $analysis->addAnnotation($schema->items, $schema->items->_context);
+
+                if (!Undefined::isDefault($schema->ref)) {
+                    $schema->items->ref = $schema->ref;
+                    $schema->ref = Undefined::UNDEFINED;
+                }
+            } elseif (Undefined::isDefault($schema->items->type, $schema->items->oneOf, $schema->items->allOf, $schema->items->anyOf)) {
+                $schema->items->type = $itemType;
+
+                $this->type2ref($schema->items, $analysis);
+            }
+        }
+
+        if (!Undefined::isDefault($schema->items)) {
+            $this->mapNativeType($schema->items, $schema->items->type);
+        }
+        $schema->type = 'array';
+    }
+
+    protected function normaliseTypeResult(?string $explicitType = null, ?array $explicitDetails = null, array $types = [], ?string $name = null, ?bool $nullable = null, ?bool $isArray = null, bool $unsupported = false, ?Context $context = null): \stdClass
+    {
+        $types = array_filter($types, static fn (string $t): bool => !in_array($t, ['null', ''], strict: true));
+
+        if ($context instanceof Context) {
             foreach ($types as $ii => $type) {
-                if (!array_key_exists(strtolower($type), TypeResolverInterface::NATIVE_TYPE_MAP) && !class_exists($type)) {
+                if (!array_key_exists(strtolower((string) $type), TypeMapper::NATIVE_TYPE_MAP) && !class_exists($type)) {
                     if (($resolved = $context->fullyQualifiedName($type)) && class_exists($resolved)) {
                         $types[$ii] = ltrim($resolved, '\\');
                     } else {
@@ -85,7 +125,7 @@ class LegacyTypeResolver extends AbstractTypeResolver
             $types = array_values($types);
         }
 
-        $explicitType = $explicitType ?: ($types ? $types[0] : null);
+        $explicitType = $explicitType ?: ($types !== [] ? $types[0] : null);
 
         return (object) [
             'explicitType' => $explicitType,
@@ -94,6 +134,7 @@ class LegacyTypeResolver extends AbstractTypeResolver
             'name' => $name,
             'nullable' => $explicitType ? $nullable : true,
             'isArray' => $isArray,
+            'unsupported' => $unsupported,
         ];
     }
 
@@ -133,7 +174,7 @@ class LegacyTypeResolver extends AbstractTypeResolver
 
         $nullable = (is_object($rtype) ? $rtype->allowsNull() : true) || in_array('null', $types);
 
-        return $this->normaliseTypeResult(null, null, array_reverse($types), $name, $nullable, $isArray, $context);
+        return $this->normaliseTypeResult(null, null, array_reverse($types), $name, $nullable, $isArray, false, $context);
     }
 
     /**
@@ -141,48 +182,34 @@ class LegacyTypeResolver extends AbstractTypeResolver
      */
     protected function getDocblockTypeDetails(\Reflector $reflector, ?Context $context): \stdClass
     {
-        switch (true) {
-            case $reflector instanceof \ReflectionProperty:
-                $docComment = (method_exists($reflector, 'isPromoted') && $reflector->isPromoted())
-                && $reflector->getDeclaringClass() && $reflector->getDeclaringClass()->getConstructor()
-                    ? $reflector->getDeclaringClass()->getConstructor()->getDocComment()
-                    : $reflector->getDocComment();
-                break;
-            case $reflector instanceof \ReflectionParameter:
-                $docComment = $reflector->getDeclaringFunction()->getDocComment();
-                break;
-            case $reflector instanceof \ReflectionFunctionAbstract:
-                $docComment = $reflector->getDocComment();
-                break;
-            default:
-                $docComment = null;
-        }
+        $docComment = match (true) {
+            $reflector instanceof \ReflectionProperty => $reflector->isPromoted()
+            && $reflector->getDeclaringClass() && $reflector->getDeclaringClass()->getConstructor()
+                ? $reflector->getDeclaringClass()->getConstructor()->getDocComment()
+                : $reflector->getDocComment(),
+            $reflector instanceof \ReflectionParameter => $reflector->getDeclaringFunction()->getDocComment(),
+            $reflector instanceof \ReflectionFunctionAbstract => $reflector->getDocComment(),
+            default => null,
+        };
 
         // cheat
         $name = $reflector->getName();
 
         if (!$docComment) {
-            return $this->normaliseTypeResult(null, null, [], $name, null, null, $context);
+            return $this->normaliseTypeResult(null, null, [], $name, null, null, false, $context);
         }
 
-        switch (true) {
-            case $reflector instanceof \ReflectionProperty:
-                $tagName = (method_exists($reflector, 'isPromoted') && $reflector->isPromoted())
-                    ? '@param'
-                    : '@var';
-                break;
-            case $reflector instanceof \ReflectionParameter:
-                $tagName = '@param';
-                break;
-            case $reflector instanceof \ReflectionFunctionAbstract:
-                $tagName = '@return';
-                break;
-            default:
-                $tagName = null;
-        }
+        $tagName = match (true) {
+            $reflector instanceof \ReflectionProperty => $reflector->isPromoted()
+                ? '@param'
+                : '@var',
+            $reflector instanceof \ReflectionParameter => '@param',
+            $reflector instanceof \ReflectionFunctionAbstract => '@return',
+            default => null,
+        };
 
         if (!$tagName) {
-            return $this->normaliseTypeResult(null, null, [], $name, null, null, $context);
+            return $this->normaliseTypeResult(null, null, [], $name, null, null, false, $context);
         }
 
         $pattern = "/$tagName\s+(?<type>[^\s]+)([ \t])?/im";
@@ -194,7 +221,7 @@ class LegacyTypeResolver extends AbstractTypeResolver
         $docComment = str_replace("\r\n", "\n", $docComment);
         $docComment = str_replace('list', 'array', $docComment);
         $docComment = preg_replace('/\*\/[ \t]*$/', '', $docComment); // strip '*/'
-        preg_match($pattern, $docComment, $matches);
+        preg_match($pattern, (string) $docComment, $matches);
 
         $explicitType = null;
         $explicitDetails = null;
@@ -202,10 +229,12 @@ class LegacyTypeResolver extends AbstractTypeResolver
         $nullable = in_array('null', explode('|', strtolower($type))) || str_contains($type, '?');
         $isArray = str_contains($type, '[]') || str_contains($type, 'array');
         $type = str_replace(['|null', 'null|', '?', 'null', '[]'], '', $type);
+        $unsupported = false;
         $isUnion = count(explode('|', $type)) > 1;
         if ($isUnion && $isArray) {
             $type = '';
             $isArray = false;
+            $unsupported = true;
         }
 
         // typed array
@@ -213,7 +242,7 @@ class LegacyTypeResolver extends AbstractTypeResolver
         if ($result) {
             $type = $isArray ? $matches[2] : $matches[1];
             if ('int' === $type) {
-                $minMax = array_map(fn (string $s): string => trim($s), explode(',', $matches[2]));
+                $minMax = array_map(trim(...), explode(',', $matches[2]));
                 if (2 === count($minMax)) {
                     $explicitDetails = [
                         'min' => (int) ('min' === $minMax[0] ? \PHP_INT_MIN : $minMax[0]),
@@ -268,6 +297,6 @@ class LegacyTypeResolver extends AbstractTypeResolver
         $type = ltrim($type, '\\');
         $types = explode('|', $type);
 
-        return $this->normaliseTypeResult($explicitType, $explicitDetails, $types, $name, $nullable, $isArray, $context);
+        return $this->normaliseTypeResult($explicitType, $explicitDetails, $types, $name, $nullable, $isArray, $unsupported, $context);
     }
 }

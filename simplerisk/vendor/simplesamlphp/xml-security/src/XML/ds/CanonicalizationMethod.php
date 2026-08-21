@@ -6,12 +6,14 @@ namespace SimpleSAML\XMLSecurity\XML\ds;
 
 use DOMElement;
 use SimpleSAML\Assert\Assert;
-use SimpleSAML\XML\Exception\InvalidDOMElementException;
-use SimpleSAML\XML\Exception\SchemaViolationException;
 use SimpleSAML\XML\SchemaValidatableElementInterface;
 use SimpleSAML\XML\SchemaValidatableElementTrait;
+use SimpleSAML\XMLSchema\Exception\InvalidDOMElementException;
+use SimpleSAML\XMLSchema\Type\AnyURIValue;
 use SimpleSAML\XMLSecurity\Constants as C;
 use SimpleSAML\XMLSecurity\Exception\InvalidArgumentException;
+
+use function strval;
 
 /**
  * Class representing a ds:CanonicalizationMethod element.
@@ -22,17 +24,17 @@ final class CanonicalizationMethod extends AbstractDsElement implements SchemaVa
 {
     use SchemaValidatableElementTrait;
 
+
     /**
      * Initialize a CanonicalizationMethod element.
      *
-     * @param string $Algorithm
+     * @param \SimpleSAML\XMLSchema\Type\AnyURIValue $Algorithm
      */
     public function __construct(
-        protected string $Algorithm,
+        protected AnyURIValue $Algorithm,
     ) {
-        Assert::validURI($Algorithm, SchemaViolationException::class);
         Assert::oneOf(
-            $Algorithm,
+            $Algorithm->getValue(),
             [
                 C::C14N_EXCLUSIVE_WITH_COMMENTS,
                 C::C14N_EXCLUSIVE_WITHOUT_COMMENTS,
@@ -48,9 +50,9 @@ final class CanonicalizationMethod extends AbstractDsElement implements SchemaVa
     /**
      * Collect the value of the Algorithm-property
      *
-     * @return string
+     * @return \SimpleSAML\XMLSchema\Type\AnyURIValue
      */
-    public function getAlgorithm(): string
+    public function getAlgorithm(): AnyURIValue
     {
         return $this->Algorithm;
     }
@@ -62,7 +64,7 @@ final class CanonicalizationMethod extends AbstractDsElement implements SchemaVa
      * @param \DOMElement $xml The XML element we should load
      * @return static
      *
-     * @throws \SimpleSAML\XML\Exception\InvalidDOMElementException
+     * @throws \SimpleSAML\XMLSchema\Exception\InvalidDOMElementException
      *   If the qualified name of the supplied element is wrong
      */
     public static function fromXML(DOMElement $xml): static
@@ -70,7 +72,7 @@ final class CanonicalizationMethod extends AbstractDsElement implements SchemaVa
         Assert::same($xml->localName, 'CanonicalizationMethod', InvalidDOMElementException::class);
         Assert::same($xml->namespaceURI, CanonicalizationMethod::NS, InvalidDOMElementException::class);
 
-        $Algorithm = CanonicalizationMethod::getAttribute($xml, 'Algorithm');
+        $Algorithm = self::getAttribute($xml, 'Algorithm', AnyURIValue::class);
 
         return new static($Algorithm);
     }
@@ -80,12 +82,11 @@ final class CanonicalizationMethod extends AbstractDsElement implements SchemaVa
      * Convert this CanonicalizationMethod element to XML.
      *
      * @param \DOMElement|null $parent The element we should append this KeyName element to.
-     * @return \DOMElement
      */
     public function toXML(?DOMElement $parent = null): DOMElement
     {
         $e = $this->instantiateParentElement($parent);
-        $e->setAttribute('Algorithm', $this->getAlgorithm());
+        $e->setAttribute('Algorithm', strval($this->getAlgorithm()));
 
         return $e;
     }

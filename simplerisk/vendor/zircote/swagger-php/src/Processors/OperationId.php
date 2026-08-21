@@ -8,7 +8,7 @@ namespace OpenApi\Processors;
 
 use OpenApi\Analysis;
 use OpenApi\Annotations as OA;
-use OpenApi\Generator;
+use OpenApi\Undefined;
 
 /**
  * Generate the OperationId based on the context of the OpenApi annotation.
@@ -22,21 +22,6 @@ class OperationId
         $this->hash = $hash;
     }
 
-    public function isHash(): bool
-    {
-        return $this->hash;
-    }
-
-    /**
-     *  If set to <code>true</code> generate ids (md5) instead of clear text operation ids.
-     */
-    public function setHash(bool $hash): OperationId
-    {
-        $this->hash = $hash;
-
-        return $this;
-    }
-
     public function __invoke(Analysis $analysis): void
     {
         $allOperations = $analysis->getAnnotationsOfType(OA\Operation::class);
@@ -44,10 +29,10 @@ class OperationId
         /** @var OA\Operation $operation */
         foreach ($allOperations as $operation) {
             if (null === $operation->operationId) {
-                $operation->operationId = Generator::UNDEFINED;
+                $operation->operationId = Undefined::UNDEFINED;
             }
 
-            if (!Generator::isDefault($operation->operationId)) {
+            if (!Undefined::isDefault($operation->operationId)) {
                 continue;
             }
 
@@ -68,5 +53,20 @@ class OperationId
                 }
             }
         }
+    }
+
+    public function isHash(): bool
+    {
+        return $this->hash;
+    }
+
+    /**
+     *  If set to <code>true</code> generate ids (md5) instead of clear text operation ids.
+     */
+    public function setHash(bool $hash): OperationId
+    {
+        $this->hash = $hash;
+
+        return $this;
     }
 }

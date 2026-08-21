@@ -10,11 +10,21 @@ declare(strict_types=1);
 
 namespace SimpleSAML\Locale;
 
-use SimpleSAML\{Configuration, Logger, Utils};
+use SimpleSAML\Configuration;
+use SimpleSAML\Logger;
+use SimpleSAML\Utils;
 use Symfony\Component\Intl\Locales;
+
+use function sprintf;
 
 class Language
 {
+    /**
+     * The final fallback language to use when no current or default available
+     */
+    public const string FALLBACKLANGUAGE = 'en';
+
+
     /**
      * This is the default language map. It is used to map languages codes from the user agent to other language codes.
      * @var array<string, string>
@@ -41,13 +51,6 @@ class Language
      * @var string
      */
     private string $defaultLanguage;
-
-    /**
-     * The final fallback language to use when no current or default available
-     *
-     * @var string
-     */
-    public const FALLBACKLANGUAGE = 'en';
 
     /**
      * An array holding a list of languages that are written from right to left.
@@ -141,16 +144,35 @@ class Language
      * Constructor
      *
      * @param \SimpleSAML\Configuration $configuration Configuration object
+     * @param bool $handleLanguageRequestParameter Whether to handle the language request parameter, if present
+     * (switch the current language and possibly set the language cookie). Can be disabled by consumers which
+     * only need to query the instance, like the available languages, without triggering side effects.
      */
     public function __construct(
         private Configuration $configuration,
+        bool $handleLanguageRequestParameter = true,
     ) {
         $this->availableLanguages = $this->getInstalledLanguages();
-        $this->defaultLanguage = $configuration->getOptionalString('language.default', self::FALLBACKLANGUAGE);
+
+        $defaultLanguage = $configuration->getOptionalString('language.default', self::FALLBACKLANGUAGE);
+        // Default language might not be listed in 'language.available', but could still be supported by the
+        // translation system, so check translation system here only.
+        if (!Locales::exists($defaultLanguage)) {
+            // A default language unknown to the translation system can not be rendered for the user interface.
+            Logger::warning(sprintf(
+                "The default language \"%s\" is not known to the translation system. Falling back to \"%s\"."
+                . " Check language settings in your config.",
+                $defaultLanguage,
+                self::FALLBACKLANGUAGE,
+            ));
+            $defaultLanguage = self::FALLBACKLANGUAGE;
+        }
+        $this->defaultLanguage = $defaultLanguage;
+
         $this->languageParameterName = $configuration->getOptionalString('language.parameter.name', 'language');
         $this->customFunction = $configuration->getOptionalArray('language.get_language_function', null);
         $this->rtlLanguages = $configuration->getOptionalArray('language.rtl', []);
-        if (isset($_GET[$this->languageParameterName])) {
+        if ($handleLanguageRequestParameter && isset($_GET[$this->languageParameterName])) {
             $this->setLanguage(
                 $_GET[$this->languageParameterName],
                 $configuration->getOptionalBoolean('language.parameter.setcookie', true),
@@ -194,11 +216,27 @@ class Language
                 $availableLanguages[] = $code;
             } else {
                 /* The configured language code can't be found in Symfony's list of known locales */
-                Logger::error("Locale \"$code\" is not known to the translation system. Check language settings in your config.");
+                Logger::error(sprintf(
+                    "Locale \"%s\" is not known to the translation system. Check language settings in your config.",
+                    $code,
+                ));
             }
         }
 
         return $availableLanguages;
+    }
+
+
+    /**
+     * Return the languages that are both configured to be available (the `language.available` configuration
+     * option) and known to the translation system, i.e. the set of languages actually usable for the user
+     * interface.
+     *
+     * @return string[] The available languages.
+     */
+    public function getAvailableLanguages(): array
+    {
+        return $this->availableLanguages;
     }
 
 
@@ -238,7 +276,10 @@ class Language
     /**
      * This method will return the language selected by the user, or the default language. It looks first for a cached
      * language code, then checks for a language cookie, then it tries to calculate the preferred language from HTTP
-     * headers.
+     * headers. Only languages known to the translation system are ever returned, so that the user interface
+     * can be rendered in the returned language: an unknown language from the custom language function is
+     * ignored, and the language cookie is only honored for one of the available languages (it restores
+     * a choice from the language menu).
      *
      * @return string The language selected by the user according to the processing rules specified, or the default
      * language in any other case.
@@ -254,13 +295,20 @@ class Language
         if (isset($this->customFunction) && is_callable($this->customFunction)) {
             $customLanguage = call_user_func($this->customFunction, $this);
             if ($customLanguage !== null && $customLanguage !== false) {
-                return $customLanguage;
+                if (is_string($customLanguage) && Locales::exists($customLanguage)) {
+                    return $customLanguage;
+                }
+                // A language unknown to the translation system can not be rendered for the user interface.
+                Logger::warning(
+                    'The language returned by the custom language function is not known to the translation system.'
+                    . ' Ignoring.',
+                );
             }
         }
 
         // language is provided in a stored cookie
         $languageCookie = self::getLanguageCookie();
-        if ($languageCookie !== null) {
+        if ($languageCookie !== null && in_array($languageCookie, $this->availableLanguages, true)) {
             $this->language = $languageCookie;
             return $languageCookie;
         }
@@ -350,7 +398,8 @@ class Language
     /**
      * Return the default language according to configuration.
      *
-     * @return string The default language that has been configured. Defaults to english if not configured.
+     * @return string The default language that has been configured, or the fallback language if the configured
+     * default language is not known to the translation system. Defaults to english if not configured.
      */
     public function getDefaultLanguage(): string
     {
@@ -399,6 +448,7 @@ class Language
         return in_array($this->getLanguage(), $this->rtlLanguages, true);
     }
 
+
     /**
      * Returns the list of languages in order of preference. This is useful
      * to search e.g. an array of entity names for first the current language,
@@ -409,6 +459,7 @@ class Language
         $curLanguage = $this->getLanguage();
         return array_unique([0 => $curLanguage, 1 => $this->defaultLanguage, 2 => self::FALLBACKLANGUAGE]);
     }
+
 
     /**
      * Retrieve the user-selected language from a cookie.
@@ -430,6 +481,7 @@ class Language
 
         return null;
     }
+
 
     /**
      * This method will attempt to set the user-selected language in a cookie. It will do nothing if the language

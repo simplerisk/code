@@ -1,0 +1,1115 @@
+/*--------------------------------------------------------------
+ ## The design-system modal shell (design-system.md §8)
+ --------------------------------------------------------------
+
+ One shell for every modal purpose (confirm, destructive-confirm,
+ form-in-modal). It RESTYLES the Bootstrap 5.3.7 modal rather than
+ replacing it — Bootstrap keeps owning the backdrop, focus trap and Esc
+ handling, and the markup keeps using .modal / .modal-dialog /
+ .modal-content / -header / -body / -footer.
+
+ Opt in by adding `sr-modal` to the .modal element. Everything below is
+ scoped to that class, so the ~38 modals still on the legacy shell
+ (core/modals/modals.scss's dark header bar) are untouched until they're
+ converted one at a time.
+
+ The structure this implements, from the approved Define Tests artifact:
+
+   .modal.sr-modal
+     .modal-dialog > .modal-content
+       .modal-header   icon tile + title + ghost close
+       .modal-body     GREY canvas — a container for section cards, not a
+                       surface for fields. Fields live inside .sr-qcard.
+         .sr-qcard       white section card
+           .sr-qcard-head  icon + title (+ subtitle, + Optional tag)
+           .sr-qcard-body  .sr-qgrid of .sr-qfield
+       .modal-footer   left hint text + right-aligned actions
+
+ The grey body is the load-bearing idea: it turns a long flat form into a
+ few titled sections a user can scan, which is why a big form (Edit Test)
+ reads as four groups instead of fourteen stacked inputs.
+*/
+
+.sr-modal {
+
+    .modal-dialog {
+        // §8: form ≈560–640px. Long bodies scroll inside the body; the
+        // header and footer stay pinned (see .modal-body's overflow below).
+        max-width: 640px;
+    }
+
+    .modal-content {
+        border: 1px solid $gray-300;
+        border-radius: 8px;
+        // Deeper than the app's ambient $shadow — a modal sits above
+        // everything and needs to read as lifted off the page.
+        box-shadow: 0 14px 52px rgba(0, 0, 0, .30);
+        overflow: hidden;
+    }
+
+    // --- Header: icon tile + title + ghost close ------------------------
+    // Overrides core/modals/modals.scss's dark bar + 60%-opacity title,
+    // which every un-converted modal still inherits.
+    .modal-header {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 15px 18px;
+        background: $sr-body;
+        border-bottom: 1px solid $gray-300;
+        flex: none;
+
+        .modal-title {
+            flex: 1 1 auto;
+            font-size: 16px;
+            font-weight: 800;
+            color: $sr-primary;
+            opacity: 1;
+        }
+
+        // Bootstrap's own close button, un-inverted (core/modals applies a
+        // white filter for the dark bar) and given the same quiet-until-
+        // hover treatment as the grid's row actions.
+        .btn-close {
+            filter: none;
+            width: 30px;
+            height: 30px;
+            margin: 0;
+            border-radius: 6px;
+            opacity: .55;
+
+            &:hover {
+                opacity: 1;
+                background-color: $gray-100;
+            }
+        }
+    }
+
+    // The header's icon tile. Identifies the modal's purpose at a glance;
+    // §8 gives destructive dialogs a red one (.sr-modal-icon--danger).
+    .sr-modal-icon {
+        display: grid;
+        place-items: center;
+        flex: none;
+        width: 30px;
+        height: 30px;
+        border-radius: 7px;
+        background: $gray-100;
+        color: $gray-600;
+        font-size: 14px;
+    }
+
+    .sr-modal-icon--danger {
+        background: rgba($sr-important, .10);
+        color: $sr-important;
+    }
+
+    // --- Body: a grey canvas holding section cards ----------------------
+    .modal-body {
+        display: grid;
+        gap: 13px;
+        align-content: start;
+        padding: 15px 16px;
+        background: $sr-default;
+        overflow-y: auto;
+    }
+
+    // --- Footer: hint on the left, actions on the right -----------------
+    .modal-footer {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 12px 18px;
+        background: $sr-body;
+        border-top: 1px solid $gray-300;
+        flex: none;
+        // Lifts the pinned footer off a scrolling body.
+        box-shadow: 0 -4px 16px rgba(0, 0, 0, .06);
+
+        // Bootstrap margins on footer children would fight the flex gap.
+        > * {
+            margin: 0;
+        }
+    }
+
+    // Optional left-aligned hint ("Approvers can't be the tester"), which
+    // also pushes the action buttons to the right.
+    .sr-modal-hint {
+        flex: 1 1 auto;
+        font-size: 11.5px;
+        color: $gray-600;
+    }
+
+    // With no hint, the actions still sit right.
+    .modal-footer > .btn:first-child {
+        margin-left: auto;
+    }
+
+    .sr-modal-hint ~ .btn:first-of-type {
+        margin-left: 0;
+    }
+}
+
+// --- Section card ------------------------------------------------------
+// A titled group of fields inside a modal body. Not scoped to .sr-modal so
+// the same card can group fields on a full page, but it is designed
+// against the modal's grey canvas.
+.sr-qcard {
+    background: $sr-body;
+    border: 1px solid $gray-300;
+    border-radius: 8px;
+}
+
+.sr-qcard-head {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    padding: 10px 13px;
+    border-bottom: 1px solid $gray-300;
+
+    h3,
+    .sr-qcard-title {
+        margin: 0;
+        font-size: 13.5px;
+        font-weight: 800;
+        color: $sr-primary;
+    }
+
+    .sr-qcard-sub {
+        font-size: 11.5px;
+        color: $gray-600;
+    }
+
+    // "Optional" / count tag, pushed to the right of the card header.
+    .sr-qcard-tag {
+        margin-left: auto;
+        font-size: 9.5px;
+        font-weight: 800;
+        letter-spacing: .04em;
+        text-transform: uppercase;
+        color: $gray-600;
+        background: $gray-100;
+        border: 1px solid $gray-300;
+        border-radius: 4px;
+        padding: 2px 7px;
+    }
+}
+
+.sr-qcard-icon {
+    display: grid;
+    place-items: center;
+    flex: none;
+    width: 26px;
+    height: 26px;
+    border-radius: 7px;
+    background: $gray-100;
+    color: $gray-600;
+    font-size: 12px;
+}
+
+.sr-qcard-body {
+    display: grid;
+    gap: 12px;
+    padding: 13px;
+}
+
+// Two-column field grid; a field spans both columns with .sr-qfield--full.
+.sr-qgrid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+.sr-qfield {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    // Without this, a long select/input refuses to shrink and overflows
+    // its grid column.
+    min-width: 0;
+}
+
+.sr-qfield--full {
+    grid-column: 1 / -1;
+}
+
+.sr-qlabel {
+    font-size: 12.5px;
+    font-weight: 700;
+    color: $sr-primary;
+
+    // The required marker; matches the .required convention already used
+    // in the compliance modals.
+    .required,
+    .sr-req {
+        color: $sr-important;
+    }
+
+    // "(optional)" / unit hints living inside the label.
+    .sr-qlabel-note {
+        color: $gray-600;
+        font-weight: 600;
+    }
+}
+
+.sr-qhint {
+    font-size: 11.5px;
+    color: $gray-600;
+}
+
+// ===== Segmented control ================================================
+// A small set of mutually-exclusive modes (Manual / Interval / Calendar).
+// Built on Bootstrap's .btn-check radios so the value still posts and the
+// keyboard/ARIA semantics are the browser's, but styled as one joined
+// control sized to its content -- NOT a full-width button row, which reads
+// as three separate actions rather than one choice.
+.sr-seg {
+    display: inline-flex;
+    width: max-content;
+    max-width: 100%;
+    border: 1px solid $gray-400;
+    border-radius: 6px;
+    overflow: hidden;
+
+    .btn,
+    label.btn {
+        margin: 0;
+        border: 0;
+        border-right: 1px solid $gray-400;
+        border-radius: 0;
+        background: $sr-body;
+        color: $gray-600;
+        font-size: 12.5px;
+        font-weight: 700;
+        padding: 7px 15px;
+        box-shadow: none;
+
+        &:last-of-type {
+            border-right: 0;
+        }
+
+        &:hover {
+            background: $gray-100;
+            color: $sr-primary;
+        }
+    }
+
+    // The chosen mode: a solid ink fill, not the accent -- picking a schedule
+    // mode is a selection, not the page's primary action.
+    .btn-check:checked + .btn,
+    .btn-check:checked + label.btn {
+        background: $sr-primary;
+        color: $sr-body;
+        border-color: $sr-primary;
+    }
+
+    .btn-check:focus-visible + .btn {
+        outline: 2px solid $sr-important;
+        outline-offset: -2px;
+    }
+}
+
+// ===== Selection chips ==================================================
+// The current selection of a multi-select, shown as removable chips INSIDE
+// the field's own box, with the widget's button trailing them as the
+// "Add or remove…" affordance (renderSelectionChips(),
+// js/simplerisk/pages/compliance.js).
+//
+// "2 selected" tells you a count; chips tell you WHICH -- the whole question
+// for a common test's controls or a test's approvers. Keeping them inside
+// the box makes the selection part of the control rather than a caption
+// under it.
+.sr-chips-field {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    // The menu positions against the FIELD, not the trigger inside it. The
+    // trigger sits after the chips, so every chip added pushes it right; Popper
+    // anchors the 280px menu to wherever it has drifted to, and once that lands
+    // near the field's right edge the menu ends up past the modal body -- whose
+    // overflow-x then produces a horizontal scrollbar across the whole form.
+    // Selecting a team was enough to trigger it. Anchoring to the field keeps
+    // the menu where the user is looking and inside the dialog either way.
+    position: relative;
+    // Matches the height of a .form-control in the same card, so an empty
+    // chips field sits on the same baseline as the inputs beside it.
+    min-height: 35px;
+    padding: 4px 8px;
+    background: $sr-body;
+    border: 1px solid $gray-400;
+    border-radius: 6px;
+
+    // The widget's own button, restyled from a full-width form control into
+    // a quiet inline affordance sitting after the chips. It keeps its
+    // dropdown behaviour and its .dropdown-menu sibling.
+    > .btn-group {
+        flex: 0 1 auto;
+        min-width: 0;
+        // static so the absolutely-positioned menu resolves against
+        // .sr-chips-field above rather than this drifting button group.
+        position: static;
+        // The dropdown menu is a child of this group, so it would otherwise
+        // inherit the trigger's new content width (~100px) and its option
+        // labels would spill outside the menu. Give the menu a usable width
+        // of its own and let long labels wrap rather than overflow.
+        > .multiselect-container {
+            // Popper writes inset/transform inline to follow the trigger; these
+            // pin the menu under the field's left edge instead. !important is
+            // the only thing that outranks an inline style.
+            inset: 100% auto auto 0 !important;
+            transform: none !important;
+            min-width: 280px;
+            // Never wider than the field it belongs to once there is room for
+            // its own min-width -- the cap is what stops a long option label
+            // pushing the menu back out past the dialog.
+            max-width: min(420px, 100%);
+
+            .multiselect-option,
+            .form-check-label {
+                white-space: normal;
+                word-break: break-word;
+            }
+        }
+        // bootstrap-multiselect writes buttonWidth as an INLINE style on both
+        // the group and the button, which no ordinary rule can outrank -- left
+        // alone the trigger claims the full row and pushes the chips onto a
+        // line of their own, doubling the field's height.
+        width: auto !important;
+
+        > button.multiselect {
+            width: auto !important;
+            border: 0;
+            border-radius: 0;
+            background: none;
+            box-shadow: none;
+            // Sized to sit on the chips' line rather than at a .btn's own
+            // height, so an empty field is one input-height row.
+            display: inline-flex;
+            align-items: center;
+            height: 24px;
+            padding: 0 2px;
+            line-height: 1;
+            color: $gray-500;
+            font-size: 12.5px;
+            font-weight: 600;
+            text-align: left;
+
+            &:hover,
+            &:focus {
+                color: $sr-important;
+                background: none;
+            }
+
+            // The caret reads as a select's chrome; the label already says
+            // what the control does.
+            .caret,
+            .multiselect-selected-text + b {
+                display: none;
+            }
+        }
+    }
+}
+
+.sr-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    max-width: 100%;
+    padding: 2px 4px 2px 8px;
+    background: $gray-100;
+    border: 1px solid $gray-300;
+    border-radius: 5px;
+    font-size: 12px;
+    font-weight: 600;
+    color: $sr-primary;
+    // A long control name shortens rather than pushing the row wide.
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.sr-chip-x {
+    flex: none;
+    padding: 0 2px;
+    border: 0;
+    background: none;
+    border-radius: 3px;
+    color: $gray-600;
+    font-size: 11px;
+    line-height: 1;
+    cursor: pointer;
+
+    &:hover {
+        color: $sr-important;
+    }
+}
+
+// ===== Rounded controls =================================================
+// Per the artifact's 6px control radius. The app's legacy globals square
+// everything off (the Bootstrap radius variable is 1px, and custom.scss
+// carries a blanket `.tox-hugerte { border-radius: 0 !important }`), so the
+// shell overrides them scoped to itself. Done here rather than by editing
+// those globals so the new surface gets the design without restyling every
+// legacy page in the same change; as more surfaces adopt the shell, the
+// globals lose their remaining callers.
+.sr-modal {
+
+    .form-control,
+    .form-select,
+    .btn-group > button.multiselect,
+    .multiselect-native-select .btn-group > .btn {
+        border-radius: 6px;
+    }
+}
+
+// ===== Tags (selectize) =================================================
+// Tags are the one field that must CREATE values, not just choose them, so
+// they stay on selectize rather than the bootstrap-multiselect the other
+// chip fields use -- typing a new tag and pressing enter is exactly what a
+// dropdown of fixed options can't do. What it shouldn't be is a different
+// -looking control: this matches it to .sr-chips-field so the two read as
+// one family, and the chips to .sr-chip.
+.sr-modal .selectize-control.multi .selectize-input {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    min-height: 35px;
+    padding: 4px 8px;
+    background: $sr-body;
+    border: 1px solid $gray-400;
+    // Another legacy global squares this off with !important (custom.scss's
+    // `.selectize-input { border-radius: var(--bs-border-radius) !important }`,
+    // which resolves to 1px), same as the HugeRTE rule above.
+    border-radius: 6px !important;
+    box-shadow: none;
+
+    &.focus {
+        border-color: $gray-500;
+        box-shadow: none;
+    }
+
+    > .item {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        // selectize spaces its items with margins; the flex gap above owns
+        // that now, and leaving both doubles it.
+        margin: 0;
+        padding: 2px 6px 2px 8px;
+        background: $gray-100;
+        border: 1px solid $gray-300;
+        // !important for the same reason as the control above: the legacy
+        // global squares the item too, and a tag chip has to match the
+        // .sr-chip beside it.
+        border-radius: 5px !important;
+        font-size: 12px;
+        font-weight: 600;
+        color: $sr-primary;
+
+        .remove {
+            border-left: 0;
+            padding: 0 2px;
+            color: $gray-600;
+
+            &:hover {
+                background: none;
+                color: $sr-important;
+            }
+        }
+    }
+
+    input {
+        font-size: 12.5px;
+        color: $sr-primary;
+
+        &::placeholder {
+            color: $gray-500;
+        }
+    }
+}
+
+.sr-modal .selectize-dropdown {
+    border: 1px solid $gray-300;
+    border-radius: 6px;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, .12);
+    font-size: 13px;
+
+    // The create row -- the affordance that makes inventing a tag visible
+    // rather than something you have to guess is possible. Given the accent
+    // so it reads as an action, distinct from the existing tags above it.
+    // .active.create is listed explicitly: selectize styles the highlighted
+    // create row at the same specificity as ours and loads after us, so
+    // without it the accent is lost the moment the row is keyboard-focused
+    // (which is its normal state -- it's the row you're about to pick).
+    .create,
+    .sr-tag-create,
+    .active.create {
+        color: $sr-important;
+        font-weight: 700;
+        border-top: 1px solid $gray-200;
+    }
+}
+
+// ===== WYSIWYG (HugeRTE) inside a card ==================================
+// The editor ships with its own 2px chrome that reads as a foreign control
+// next to .form-control fields. Match the app's inputs instead, and let the
+// toolbar sit on the same tint as a card header.
+// The .sr-qfield in the selector isn't decoration: HugeRTE injects its skin
+// stylesheet into <head> at init time, i.e. AFTER style.min.css, so an
+// equal-specificity rule of ours loses the later-in-document tiebreak. This
+// selector outranks it. The !important is for the same reason as the control
+// radii above -- custom.scss's blanket `.tox-hugerte { border-radius: 0 }`
+// carries one too.
+.sr-modal .sr-qfield .tox.tox-hugerte {
+    border: 1px solid $gray-400;
+    border-radius: 6px !important;
+    // Without this the toolbar's square corners poke past the rounded frame.
+    overflow: hidden;
+
+    .tox-editor-header {
+        background: $gray-100;
+        border-bottom: 1px solid $gray-300;
+        box-shadow: none;
+        padding: 2px 4px;
+    }
+
+    .tox-toolbar__primary {
+        background: none;
+    }
+
+    .tox-tbtn {
+        height: 26px;
+        margin: 1px;
+        color: $gray-600;
+
+        &:hover {
+            background: $gray-300;
+            color: $sr-primary;
+        }
+    }
+
+    .tox-tbtn--enabled {
+        background: $gray-300;
+        color: $sr-primary;
+    }
+}
+
+// Amber advisory inside a card — a standing rule the user should know before
+// they act (e.g. separation of duties), NOT an error. Errors stay red and
+// appear only on violation. Mirrors the .sr-qnote already used in the
+// questionnaire module, redeclared here because that copy is scoped to
+// .sr-qform and this one has to work inside a modal card.
+//
+// The second selector is the same note standing DIRECTLY on the modal's grey
+// canvas, above the cards, where it advises about the dialog as a whole rather
+// than about one section — which is where the three destructive-confirms
+// (framework--delete / control--delete / controls--delete) and
+// applicability--set's per-framework scope note all put it. Without it those
+// notes rendered as unstyled body text: neither .sr-qform nor .sr-qcard is an
+// ancestor there, so the two rules above both missed them and the amber
+// treatment they were written for never applied.
+.sr-qcard .sr-qnote,
+.sr-modal .modal-body > .sr-qnote {
+    display: flex;
+    gap: 8px;
+    padding: 9px 11px;
+    background: rgba($orange, .10);
+    border: 1px solid rgba($orange, .40);
+    border-radius: 6px;
+    font-size: 12px;
+    color: $sr-primary;
+    line-height: 1.45;
+
+    .sr-qnote-ico {
+        flex: none;
+        color: $orange;
+        margin-top: 1px;
+    }
+}
+
+// A single-column stack for cards whose fields are all full width.
+.sr-qstack {
+    display: grid;
+    gap: 12px;
+}
+
+@media (max-width: 575.98px) {
+    .sr-qgrid {
+        grid-template-columns: 1fr;
+    }
+}
+
+// The second line of a confirm dialog: what SURVIVES the action, or what else
+// it reaches. "Remove X from AC-2?" alone reads a great deal like Delete —
+// the line underneath ("the test stays on its 3 other controls") is what tells
+// the two apart, and on Delete it's the blast radius ("used by 4 controls").
+// Quiet, but never hidden: it exists to be read before clicking.
+.sr-confirm-sub {
+    margin: 8px 0 0;
+    font-size: 13px;
+    line-height: 1.45;
+    color: $gray-600;
+
+    &:empty {
+        display: none;
+    }
+}
+
+// Read-only detail view (the View Test modal). A definition list, not a form:
+// values are text, never controls, so nothing invites an edit the reader can't
+// make (design-system.md §11 — "values, not controls").
+.sr-view-grid {
+    display: grid;
+    grid-template-columns: minmax(120px, 180px) 1fr;
+    gap: 10px 18px;
+    align-items: start;
+}
+
+.sr-view-row {
+    display: contents;
+}
+
+.sr-view-label {
+    font-size: 12.5px;
+    font-weight: 700;
+    color: $gray-600;
+    padding-top: 1px;
+}
+
+.sr-view-value {
+    font-size: 13.5px;
+    color: $sr-primary;
+    min-width: 0;
+    overflow-wrap: anywhere;
+
+    // Rich-text fields keep their authored formatting; keep the spacing tight
+    // so a one-line objective doesn't render with a paragraph's margins.
+    p:first-child { margin-top: 0; }
+    p:last-child { margin-bottom: 0; }
+
+    ul, ol { margin-bottom: 0; padding-left: 20px; }
+}
+
+// An unset field states so rather than rendering blank — a blank row reads as a
+// loading failure, and "not specified" is itself information on a test that is
+// meant to be executed by someone other than its author.
+.sr-view-empty {
+    color: $gray-500;
+    font-style: italic;
+}
+
+.sr-view-error {
+    margin-bottom: 12px;
+    padding: 10px 12px;
+    border-radius: 6px;
+    font-size: 13px;
+    color: $sr-important;
+    background: rgba($sr-important, .08);
+    border: 1px solid rgba($sr-important, .35);
+}
+
+// ===== Faceted picker ===================================================
+// Choosing from a roster too large to scroll: narrowing facets, then a list,
+// then the running selection -- all in one dialog (display_control_picker_
+// modal(), includes/compliance.php; createFacetedPicker(), pages/compliance.js).
+//
+// Roster SIZE is what earns this over a dropdown, not field type. A real SCF
+// import is ~1,500 controls, where a menu answers the wrong question: not
+// "which of these" but "how do I get to the right neighbourhood". The roster
+// fields beside it (Tester, Teams, Stakeholders, Approvers) are tens of rows
+// and keep their dropdown, where a dialog would be ceremony.
+//
+// Named .sr-picker-* rather than for controls: the ids are the only
+// control-specific part of it.
+
+// The <select> is still the form's value; the chips + picker are its UI. It
+// stays in the DOM (and submitted) but never renders as a list box.
+.sr-picker-value {
+    display: none;
+}
+
+// A required field that failed validation marks the select (common.js's
+// checkAndSetValidation), which is invisible -- so the error has to surface on
+// the chips box the user can actually see.
+.sr-picker-value.error + .sr-chips-field {
+    border-color: $sr-important;
+}
+
+// The affordance that opens the picker. Deliberately identical in weight to
+// the multiselect trigger it replaces (.sr-chips-field > .btn-group > button),
+// so the Control field and its neighbours still read as one family of fields.
+.sr-chips-add {
+    flex: 0 1 auto;
+    margin-left: auto;
+    display: inline-flex;
+    align-items: center;
+    height: 24px;
+    padding: 0 4px;
+    border: 0;
+    border-radius: 4px;
+    background: none;
+    color: $gray-500;
+    font-size: 12.5px;
+    font-weight: 600;
+    line-height: 1;
+    cursor: pointer;
+
+    &:hover,
+    &:focus-visible {
+        color: $sr-important;
+        outline: none;
+        background: $gray-100;
+    }
+}
+
+.sr-chip-remove {
+    flex: none;
+    padding: 0 2px;
+    border: 0;
+    background: none;
+    border-radius: 3px;
+    color: $gray-600;
+    font-size: 11px;
+    line-height: 1;
+    cursor: pointer;
+
+    &:hover,
+    &:focus-visible {
+        color: $sr-important;
+        outline: none;
+    }
+}
+
+// Stacking, while the picker is open over the modal that launched it: the app
+// pins every modal to one z-index, so the picker would otherwise win only by
+// DOM order. Its BACKDROP is raised in JS (createFacetedPicker(),
+// pages/compliance.js) -- the two backdrops aren't adjacent siblings, so no
+// selector can name the second one.
+body.sr-picker-open .sr-picker-modal {
+    z-index: 1065;
+}
+
+.sr-picker-modal {
+
+    // .sr-modal caps every dialog at 640px, which is right for a FORM (§8's
+    // 560-640px measure) and wrong here: this dialog's content is four
+    // side-by-side columns, and at 640px the list column collapses to nothing
+    // and the panes overlap each other. Overridden inside .sr-picker-modal
+    // rather than by loosening the shared cap, which would widen every form
+    // modal in the app.
+    &.sr-modal .modal-dialog {
+        max-width: min(1120px, 96vw);
+    }
+
+    .modal-body {
+        padding: 0;
+    }
+
+    .sr-picker-search {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 16px;
+        border-bottom: 1px solid $gray-200;
+    }
+
+    .sr-picker-search-icon {
+        color: $gray-500;
+        font-size: 13px;
+    }
+
+    .sr-picker-search-input {
+        flex: 1 1 auto;
+        min-width: 0;
+        border: 0;
+        background: none;
+        font-size: 13.5px;
+        color: $sr-primary;
+
+        &:focus {
+            outline: none;
+        }
+    }
+
+    // Names the set being searched, so a search that finds nothing explains
+    // itself instead of looking broken.
+    .sr-picker-scope {
+        flex: none;
+        max-width: 40%;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        font-size: 11.5px;
+        color: $gray-600;
+        background: $gray-100;
+        border: 1px solid $gray-200;
+        border-radius: 20px;
+        padding: 2px 10px;
+    }
+
+    .sr-picker-panes {
+        display: grid;
+        grid-template-columns: 210px 240px minmax(0, 1fr) 210px;
+
+        @media (max-width: 991px) {
+            grid-template-columns: 1fr 1fr;
+        }
+    }
+
+    .sr-picker-pane {
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+        border-right: 1px solid $gray-200;
+
+        &:last-child {
+            border-right: 0;
+        }
+    }
+
+    .sr-picker-pane-head {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 10px 12px 7px;
+        font-size: 10.5px;
+        font-weight: 800;
+        letter-spacing: .1em;
+        text-transform: uppercase;
+        color: $gray-600;
+    }
+
+    // The step number is the only thing that says these three columns are a
+    // sequence rather than three independent filters.
+    .sr-picker-step {
+        flex: none;
+        display: inline-grid;
+        place-items: center;
+        min-width: 15px;
+        height: 15px;
+        padding: 0 4px;
+        border-radius: 3px;
+        background: $gray-500;
+        color: $white;
+        font-size: 10px;
+        letter-spacing: 0;
+    }
+
+    .sr-picker-clear,
+    .sr-picker-pane-count {
+        margin-left: auto;
+        font-size: 10.5px;
+        letter-spacing: 0;
+        text-transform: none;
+        font-variant-numeric: tabular-nums;
+    }
+
+    .sr-picker-clear {
+        border: 0;
+        background: none;
+        padding: 0;
+        font-weight: 700;
+        color: $sr-important;
+        cursor: pointer;
+
+        &:focus-visible {
+            outline: 2px solid $sr-important;
+            outline-offset: 2px;
+        }
+    }
+
+    .sr-picker-pane-count {
+        color: $gray-500;
+        font-weight: 700;
+    }
+
+    .sr-picker-scroll {
+        flex: 1 1 auto;
+        overflow-y: auto;
+        // Tall enough that narrowing pays off visibly -- ~10 one-line rows --
+        // without the dialog outgrowing a 768px-tall laptop screen.
+        height: 300px;
+        padding-bottom: 6px;
+    }
+
+    .sr-picker-facet {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 8px;
+        align-items: center;
+        width: 100%;
+        padding: 6px 12px;
+        border: 0;
+        background: none;
+        text-align: left;
+        font-size: 12.5px;
+        color: $sr-primary;
+        cursor: pointer;
+
+        &:hover {
+            background: $gray-100;
+        }
+
+        &:focus-visible {
+            outline: 2px solid $sr-important;
+            outline-offset: -2px;
+        }
+
+        // Chosen: the inset bar reads as "you are inside this" without
+        // spending fill colour on a filter.
+        &[aria-pressed="true"] {
+            background: $gray-100;
+            font-weight: 800;
+            box-shadow: inset 3px 0 0 $sr-important;
+        }
+
+        // Nothing behind it in the current scope. Left visible on purpose --
+        // hiding it would make the column's length jump as other facets change.
+        &.is-empty {
+            opacity: .45;
+            cursor: default;
+
+            &:hover {
+                background: none;
+            }
+        }
+    }
+
+    .sr-picker-facet-label {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .sr-picker-facet-count {
+        font-size: 11px;
+        color: $gray-500;
+        font-variant-numeric: tabular-nums;
+    }
+
+    // One control per line: the number in its own column, the name truncated
+    // rather than wrapped, so ten are readable at once instead of five.
+    .sr-picker-row {
+        display: grid;
+        grid-template-columns: 16px 92px minmax(0, 1fr);
+        gap: 10px;
+        align-items: center;
+        width: 100%;
+        padding: 6px 12px;
+        border: 0;
+        background: none;
+        text-align: left;
+        color: $sr-primary;
+        cursor: pointer;
+
+        &:hover,
+        &.is-cursor {
+            background: $gray-100;
+        }
+
+        &:focus-visible {
+            outline: 2px solid $sr-important;
+            outline-offset: -2px;
+        }
+    }
+
+    .sr-picker-check {
+        display: grid;
+        place-items: center;
+        width: 14px;
+        height: 14px;
+        border: 1px solid $gray-400;
+        border-radius: 3px;
+        font-size: 9px;
+        color: $white;
+    }
+
+    .sr-picker-row[aria-selected="true"] .sr-picker-check {
+        background: $sr-important;
+        border-color: $sr-important;
+    }
+
+    // Identifiers, so they line up down the column and read as data.
+    .sr-picker-num {
+        font-family: $font-family-monospace;
+        font-size: 11.5px;
+        font-weight: 600;
+        font-variant-numeric: tabular-nums;
+        color: $gray-700;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .sr-picker-name {
+        font-size: 13px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .sr-picker-selected {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 5px;
+        padding: 4px 10px 10px;
+    }
+
+    .sr-picker-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        max-width: 100%;
+        padding: 2px 4px 2px 8px;
+        background: $gray-100;
+        border: 1px solid $gray-300;
+        border-radius: 5px;
+        font-size: 12px;
+        font-weight: 600;
+    }
+
+    .sr-picker-chip-num {
+        font-family: $font-family-monospace;
+        font-variant-numeric: tabular-nums;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .sr-picker-chip-remove {
+        flex: none;
+        padding: 0 2px;
+        border: 0;
+        background: none;
+        border-radius: 3px;
+        color: $gray-600;
+        font-size: 12px;
+        line-height: 1;
+        cursor: pointer;
+
+        &:hover,
+        &:focus-visible {
+            color: $sr-important;
+            outline: none;
+        }
+    }
+
+    .sr-picker-empty {
+        padding: 14px 12px;
+        font-size: 12.5px;
+        color: $gray-500;
+    }
+
+    .sr-picker-foot {
+        justify-content: flex-start;
+    }
+
+    .sr-picker-hint {
+        margin-right: auto;
+        font-size: 11.5px;
+        color: $gray-600;
+    }
+}

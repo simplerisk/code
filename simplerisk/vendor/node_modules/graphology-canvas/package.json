@@ -1,0 +1,55 @@
+{
+  "name": "graphology-canvas",
+  "version": "0.4.3",
+  "description": "Canvas rendering routines for graphology.",
+  "main": "index.js",
+  "types": "index.d.ts",
+  "files": [
+    "*.d.ts",
+    "browser.js",
+    "components",
+    "defaults.js",
+    "helpers.js",
+    "index.js",
+    "node.js",
+    "renderer.js"
+  ],
+  "scripts": {
+    "ftest": "node test/ftest.js",
+    "prepublishOnly": "npm test",
+    "test": "mocha test/index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/graphology/graphology.git"
+  },
+  "keywords": [
+    "graph",
+    "graphology",
+    "canvas",
+    "raster"
+  ],
+  "contributors": [
+    {
+      "name": "Guillaume Plique",
+      "url": "http://github.com/Yomguithereal"
+    }
+  ],
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/graphology/graphology/issues"
+  },
+  "homepage": "https://github.com/graphology/graphology#readme",
+  "dependencies": {
+    "graphology-layout": "0.6.0",
+    "graphology-utils": "^2.0.0"
+  },
+  "peerDependencies": {
+    "graphology-types": ">=0.20.0"
+  },
+  "peerDependenciesMeta": {
+    "canvas": {
+      "optional": true
+    }
+  }
+}

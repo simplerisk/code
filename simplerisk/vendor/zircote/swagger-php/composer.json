@@ -40,18 +40,19 @@
     "minimum-stability": "stable",
     "extra": {
         "branch-alias": {
-            "dev-master": "5.x-dev"
+            "dev-master": "6.x-dev"
         }
     },
     "require": {
-        "php": ">=7.4",
-        "ext-json": "*",
+        "php": ">=8.2",
         "nikic/php-parser": "^4.19 || ^5.0",
         "phpstan/phpdoc-parser": "^2.0",
         "psr/log": "^1.1 || ^2.0 || ^3.0",
+        "radebatz/type-info-extras": "^1.0.2",
+        "symfony/console": "^7.4 || ^8.0",
         "symfony/deprecation-contracts": "^2 || ^3",
-        "symfony/finder": "^5.0 || ^6.0 || ^7.0",
-        "symfony/yaml": "^5.4 || ^6.0 || ^7.0"
+        "symfony/finder": "^5.0 || ^6.0 || ^7.0 || ^8.0",
+        "symfony/yaml": "^5.4 || ^6.0 || ^7.0 || ^8.0"
     },
     "autoload": {
         "psr-4": {
@@ -64,74 +65,50 @@
         ],
         "psr-4": {
             "OpenApi\\Tools\\": "tools/src/",
+            "OpenApi\\Tools\\Tests\\": "tools/tests/",
             "OpenApi\\Tests\\": "tests/",
             "AnotherNamespace\\": "tests/Fixtures/AnotherNamespace"
         }
     },
     "require-dev": {
-        "composer/package-versions-deprecated": "^1.11",
         "doctrine/annotations": "^2.0",
-        "friendsofphp/php-cs-fixer": "^3.62.0",
-        "phpstan/phpstan": "^1.6 || ^2.0",
-        "phpunit/phpunit": "^9.0",
-        "rector/rector": "^1.0 || ^2.0",
-        "vimeo/psalm": "^4.30 || ^5.0"
+        "friendsofphp/php-cs-fixer": "^3.62",
+        "phpstan/phpstan": "^2.2",
+        "phpunit/phpunit": "^11.5 || >=12.5.22",
+        "rector/rector": "^2.3"
     },
     "conflict": {
         "symfony/process": ">=6, <6.4.14"
-    },
-    "suggest": {
-        "radebatz/type-info-extras": "^1.0.2",
-        "doctrine/annotations": "^2.0"
     },
     "scripts-descriptions": {
         "cs": "Fix all codestyle issues",
         "rector": "Automatic refactoring",
         "lint": "Test codestyle",
         "test": "Run all PHP, codestyle and rector tests",
-        "analyse": "Run static analysis (phpstan/psalm)",
-        "spectral-examples": "Run spectral lint over all .yaml files in the docs/examples folder",
-        "spectral-scratch": "Run spectral lint over all .yaml files in the tests/Fixtures/Scratch folder",
-        "spectral": "Run all spectral tests",
-        "redocly-examples": "Run redocly lint over all .yaml files in the docs/examples folder",
-        "redocly-scratch": "Run redocly lint over all .yaml files in the tests/Fixtures/Scratch folder",
-        "redocly": "Run all redocly tests",
+        "performance": "Run performance regression tests",
+        "analyse": "Run static analysis (phpstan)",
+        "redocly": "Validate generated specs with Redocly",
         "docs:gen": "Rebuild reference documentation",
         "docs:dev": "Run dev server for local development of gh-pages",
         "docs:build": "Re-build static gh-pages"
     },
     "scripts": {
         "cs": "export XDEBUG_MODE=off && php-cs-fixer fix --allow-risky=yes",
-        "rector": "rector process src",
+        "rector": "rector process src tests docs/examples",
         "lint": [
             "@cs --dry-run",
             "@rector --dry-run"
         ],
         "test": [
-            "export XDEBUG_MODE=off && phpunit",
-            "@lint"
+            "export XDEBUG_MODE=off && phpunit --display-all-issues @additional_args",
+            "@lint @no_additional_args"
         ],
+        "performance": "export XDEBUG_MODE=off && phpunit --group performance",
         "analyse": [
-            "export XDEBUG_MODE=off && phpstan analyse --memory-limit=2G",
-            "export XDEBUG_MODE=off && psalm --threads=1"
+            "export XDEBUG_MODE=off && phpstan analyse --memory-limit=3G"
         ],
-        "spectral-examples": "for ff in `find docs/examples -name '*.yaml'`; do npm run spectral lint $ff; done",
-        "spectral-scratch": "for ff in `find tests/Fixtures/Scratch -name '*.yaml'`; do npm run spectral lint $ff; done",
-        "spectral": [
-            "@spectral-examples",
-            "@spectral-scratch"
-        ],
-        "redocly-examples": "for ff in `find docs/examples -name '*.yaml'`; do npm run redocly lint $ff; done",
-        "redocly-scratch": "for ff in `find tests/Fixtures/Scratch -name '*.yaml'`; do npm run redocly lint $ff; done",
-        "redocly": [
-            "@redocly-examples",
-            "@redocly-scratch"
-        ],
-        "docs:gen": [
-            "@php tools/refgen.php",
-            "@php tools/procgen.php",
-            "@php tools/examplegen.php"
-        ],
+        "redocly": "npm run redocly -- lint 'docs/examples/specs/**/*.yaml' 'tests/Fixtures/Scratch/*.yaml'",
+        "docs:gen": "@php tools/docgen.php",
         "docs:dev": "cd docs && npm run dev",
         "docs:build": [
             "@docs:gen",

@@ -5,10 +5,11 @@ declare(strict_types=1);
 namespace SimpleSAML\XMLSecurity\XML\dsig11;
 
 use DOMElement;
-use SimpleSAML\XML\Exception\InvalidDOMElementException;
-use SimpleSAML\XML\Exception\SchemaViolationException;
 use SimpleSAML\XML\SchemaValidatableElementInterface;
 use SimpleSAML\XML\SchemaValidatableElementTrait;
+use SimpleSAML\XMLSchema\Exception\InvalidDOMElementException;
+use SimpleSAML\XMLSchema\Type\AnyURIValue;
+use SimpleSAML\XMLSchema\Type\IDValue;
 use SimpleSAML\XMLSecurity\Assert\Assert;
 
 /**
@@ -20,27 +21,26 @@ final class KeyInfoReference extends AbstractDsig11Element implements SchemaVali
 {
     use SchemaValidatableElementTrait;
 
+
     /**
      * Initialize a KeyInfoReference element.
      *
-     * @param string $URI
-     * @param string|null $Id
+     * @param \SimpleSAML\XMLSchema\Type\AnyURIValue $URI
+     * @param \SimpleSAML\XMLSchema\Type\IDValue|null $Id
      */
     public function __construct(
-        protected string $URI,
-        protected ?string $Id = null,
+        protected AnyURIValue $URI,
+        protected ?IDValue $Id = null,
     ) {
-        Assert::validURI($URI, SchemaViolationException::class);
-        Assert::nullOrValidNCName($Id);
     }
 
 
     /**
      * Collect the value of the URI-property
      *
-     * @return string
+     * @return \SimpleSAML\XMLSchema\Type\AnyURIValue
      */
-    public function getURI(): string
+    public function getURI(): AnyURIValue
     {
         return $this->URI;
     }
@@ -49,9 +49,9 @@ final class KeyInfoReference extends AbstractDsig11Element implements SchemaVali
     /**
      * Collect the value of the Id-property
      *
-     * @return string|null
+     * @return \SimpleSAML\XMLSchema\Type\IDValue|null
      */
-    public function getId(): ?string
+    public function getId(): ?IDValue
     {
         return $this->Id;
     }
@@ -61,9 +61,8 @@ final class KeyInfoReference extends AbstractDsig11Element implements SchemaVali
      * Convert XML into a KeyInfoReference
      *
      * @param \DOMElement $xml The XML element we should load
-     * @return static
      *
-     * @throws \SimpleSAML\XML\Exception\InvalidDOMElementException
+     * @throws \SimpleSAML\XMLSchema\Exception\InvalidDOMElementException
      *   If the qualified name of the supplied element is wrong
      */
     public static function fromXML(DOMElement $xml): static
@@ -71,10 +70,10 @@ final class KeyInfoReference extends AbstractDsig11Element implements SchemaVali
         Assert::same($xml->localName, 'KeyInfoReference', InvalidDOMElementException::class);
         Assert::same($xml->namespaceURI, KeyInfoReference::NS, InvalidDOMElementException::class);
 
-        $URI = KeyInfoReference::getAttribute($xml, 'URI');
-        $Id = KeyInfoReference::getOptionalAttribute($xml, 'Id', null);
-
-        return new static($URI, $Id);
+        return new static(
+            KeyInfoReference::getAttribute($xml, 'URI', AnyURIValue::class),
+            KeyInfoReference::getOptionalAttribute($xml, 'Id', IDValue::class, null),
+        );
     }
 
 
@@ -82,15 +81,14 @@ final class KeyInfoReference extends AbstractDsig11Element implements SchemaVali
      * Convert this KeyInfoReference element to XML.
      *
      * @param \DOMElement|null $parent The element we should append this KeyInfoReference element to.
-     * @return \DOMElement
      */
     public function toXML(?DOMElement $parent = null): DOMElement
     {
         $e = $this->instantiateParentElement($parent);
-        $e->setAttribute('URI', $this->getURI());
+        $e->setAttribute('URI', strval($this->getURI()));
 
         if ($this->getId() !== null) {
-            $e->setAttribute('Id', $this->getId());
+            $e->setAttribute('Id', strval($this->getId()));
         }
 
         return $e;
