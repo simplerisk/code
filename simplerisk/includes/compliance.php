@@ -6,6 +6,11 @@
 
 // Include required configuration files
 require_once(realpath(__DIR__ . '/bootstrap.php'));
+// ai_invalidate_risk_analysis() and risks_associated_with() are defined in
+// functions.php. Reachable transitively today (services.php/extras.php/
+// notifications.php all pull it in), but a direct consumer declares its own
+// require_once per CLAUDE.md reachability rules.
+require_once(realpath(__DIR__ . '/functions.php'));
 require_once(realpath(__DIR__ . '/cvss.php'));
 require_once(realpath(__DIR__ . '/services.php'));
 require_once(realpath(__DIR__ . '/alerts.php'));
@@ -333,8 +338,7 @@ function display_framework_controls_in_compliance()
                 <div class='sr-table-empty-action'><button type='button' class='btn btn-outline-secondary btn-sm' id='define-tests-retry'>{$escaper->escapeHtml($lang['Retry'])}</button></div>
             </div>
             <div class='sr-table-foot'>
-                <div class='dt-info' id='define-tests-info'></div>
-                <div class='sr-table-foot-right'>
+                <div class='sr-table-foot-left'>
                     <div class='dt-length'>
                         <label>{$escaper->escapeHtml($lang['Show'])}
                             <select id='define-tests-length' class='form-select'>
@@ -346,6 +350,9 @@ function display_framework_controls_in_compliance()
                             </select>
                         </label>
                     </div>
+                    <div class='dt-info' id='define-tests-info'></div>
+                </div>
+                <div class='sr-table-foot-right'>
                     <div class='dt-paging' id='define-tests-pager'></div>
                 </div>
             </div>
@@ -2530,60 +2537,608 @@ function display_initiate_audits() {
 
 }
 
-/***********************************
- * FUNCTION: DISPLAY ACTIVE AUDITS *
- ***********************************/
-function display_active_audits() {
+/*******************************************************
+ * FUNCTION: GET ALL AUDITS FILTER COUNTS               *
+ * Manage Audits' 6 quickfilters (Framework/Test Name/  *
+ * Tester/Result/Tag/Team) are server-paginated, so      *
+ * (unlike Initiate Audits, which counts against its own *
+ * fully-loaded client-side dataset) counts here must     *
+ * come from the server, scoped to whichever status chip *
+ * (active/past/all) is currently selected. Reuses the    *
+ * EXACT same building blocks get_data_for_datatable()    *
+ * uses -- get_wheres_for_view() for the status scoping    *
+ * and field_settings_get_join_parts() for the joins --   *
+ * rather than duplicating that SQL by hand, so this stays *
+ * in lockstep with the table's own scoping/permissions.  *
+ * Aggregates over the raw '*_filter' id columns each      *
+ * field's own select_parts already expose (the same ids  *
+ * process_selected_field_filter_for_active_audits()      *
+ * matches against), not the display text, so the counts  *
+ * always line up with the filter <option> values.        *
+ *******************************************************/
+function get_all_audits_filter_counts($status) {
+
+    $view = $status === 'past' ? 'past_audits' : ($status === 'all' ? 'all_audits' : 'active_audits');
+
+    $where = get_wheres_for_view($view);
+    if (team_separation_extra()) {
+        require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
+        $where .= get_user_teams_query_for_tests_and_audits("a", false, true);
+    }
+
+    list($select_parts, $join_parts) = field_settings_get_join_parts($view, ['id', 'framework_name', 'test_name', 'tester', 'test_result', 'tags', 'teams', 'status']);
+
+    $db = db_open();
+    $sql = "
+        SELECT t1.*
+        FROM (
+            SELECT
+                " . implode(',', $select_parts) . "
+            FROM
+                framework_control_test_audits a
+                " . implode(' ', $join_parts) . "
+            {$where}
+            GROUP BY a.id
+        ) t1;
+    ";
+    $stmt = $db->prepare($sql);
+    $stmt->execute();
+    $items = $stmt->fetchAll();
+    db_close($db);
+
+    $counts = [
+        'framework_name' => [],
+        'test_name' => [],
+        'tester' => [],
+        'test_result' => [],
+        'tags' => [],
+        'teams' => [],
+        'status' => [],
+    ];
+
+    foreach ($items as $item) {
+        foreach (array_filter(explode(',', (string)($item['framework_name_filter'] ?? ''))) as $id) {
+            $counts['framework_name'][$id] = ($counts['framework_name'][$id] ?? 0) + 1;
+        }
+        if (($item['test_name_filter'] ?? '') !== '') {
+            $id = $item['test_name_filter'];
+            $counts['test_name'][$id] = ($counts['test_name'][$id] ?? 0) + 1;
+        }
+        if (($item['tester'] ?? '') !== '') {
+            $id = $item['tester'];
+            $counts['tester'][$id] = ($counts['tester'][$id] ?? 0) + 1;
+        }
+        if (($item['test_result_filter'] ?? '') !== '') {
+            $id = $item['test_result_filter'];
+            $counts['test_result'][$id] = ($counts['test_result'][$id] ?? 0) + 1;
+        }
+        foreach (array_filter(explode('|', (string)($item['tags_filter'] ?? ''))) as $id) {
+            $counts['tags'][$id] = ($counts['tags'][$id] ?? 0) + 1;
+        }
+        foreach (array_filter(explode(',', (string)($item['teams_filter'] ?? ''))) as $id) {
+            $counts['teams'][$id] = ($counts['teams'][$id] ?? 0) + 1;
+        }
+        if (($item['status_filter'] ?? '') !== '') {
+            $id = $item['status_filter'];
+            $counts['status'][$id] = ($counts['status'][$id] ?? 0) + 1;
+        }
+    }
+
+    return $counts;
+}
+
+/*******************************************************
+ * FUNCTION: DISPLAY AUDITS                             *
+ * Merged Compliance > Audits page (replaces the        *
+ * separate Active Audits / Past Audits pages). Reuses   *
+ * the SAME render_view_table()/DataTables machinery,    *
+ * with a status-chip control that swaps the DataTable's *
+ * ajax.url between the active/past/all_audits           *
+ * datatable feeds -- all three share the identical       *
+ * column/action config, so the swap is a pure data-source *
+ * change, nothing else about the table re-initializes.   *
+ *******************************************************/
+function display_audits() {
 
     global $lang, $escaper;
-    
-	echo "
-		<div class='card-body border my-2'>
-			<div class='row'>
-				<div class='col-10'></div>
-				<div class='col-2'>
-					<div style='float: right;'>
-	";
-						render_column_selection_widget('active_audits');
-	echo "
-					</div>
-				</div>
-			</div>
-			<div class='row'>
-				<div class='col-12'>
-	";
-					render_view_table('active_audits');
-	echo "
-				</div>
-			</div>
-		</div>
+
+    $initial_status = in_array($_GET['status'] ?? '', ['active', 'past', 'all'], true) ? $_GET['status'] : 'active';
+    $initial_search = isset($_GET['search']) ? (string)$_GET['search'] : '';
+
+    $status_urls = json_encode([
+        'active' => '/api/v2/compliance/audits/active/datatable',
+        'past'   => '/api/v2/compliance/audits/past/datatable',
+        'all'    => '/api/v2/compliance/audits/all/datatable',
+    ], JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT);
+
+    $frameworks = get_options_from_table("frameworks");
+    $testers = get_options_from_table("enabled_users");
+    $test_names = get_options_from_table("framework_control_tests");
+    $test_results = get_options_from_table("test_results_filter");
+    $teams = get_options_from_table("team");
+    $test_statuses = get_options_from_table("test_status");
+    $tags = [];
+    foreach (getTagsOfType("test_audit") as $tag) {
+        $tags[] = ['value' => (int)$tag['id'], 'name' => $tag['tag']];
+    }
+
+    echo "
+        <div class='sr-table-card' id='audits-table-card'>
+            <div class='sr-table-toolbar'>
+                <div class='sr-table-status-filter' id='audits-status-filter' data-initial='{$escaper->escapeHtmlAttr($initial_status)}'>
+                    <span class='sr-status-chip' data-status='active'>{$escaper->escapeHtml($lang['ActiveAudits'])}</span>
+                    <span class='sr-status-chip' data-status='past'>{$escaper->escapeHtml($lang['PastAudits'])}</span>
+                    <span class='sr-status-chip' data-status='all'>{$escaper->escapeHtml($lang['ALL'])}</span>
+                </div>
+                <div class='sr-table-tools'>
+                    <div class='dt-search'>
+                        <input type='search' id='audits-search' class='form-control' placeholder='{$escaper->escapeHtml($lang['SearchTestsPlaceholder'])}' aria-label='{$escaper->escapeHtml($lang['SearchTestsPlaceholder'])}'>
+                    </div>
+                    <button type='button' class='sr-qf-toggle' id='audits-filters-toggle' aria-expanded='false' aria-controls='audits-quickfilters'>
+                        <i class='fa fa-filter'></i><span>{$escaper->escapeHtml($lang['Filters'])}</span>
+                        <span class='sr-qf-toggle-count' id='audits-filters-count' hidden></span>
+                    </button>
+    ";
+                    render_column_selection_widget('all_audits');
+    echo "
+                </div>
+            </div>
+    ";
+    if (isset($_SESSION['delete_audits']) && $_SESSION['delete_audits'] == 1) {
+        echo "
+            <div class='sr-bulk-bar d-none' id='audits-bulk-bar'>
+                <button type='button' class='sr-bulk-clear' id='audits-bulk-clear' aria-label='{$escaper->escapeHtmlAttr($lang['Clear'])}'>&times;</button>
+                <span class='sr-bulk-count' id='audits-bulk-count'></span>
+                <div class='sr-bulk-actions'>
+                    <button type='button' class='btn btn-outline-danger btn-sm' id='audits-bulk-delete'>{$escaper->escapeHtml($lang['Delete'])}</button>
+                </div>
+            </div>
+        ";
+    }
+    echo "
+            <div class='sr-table-quickfilters' id='audits-quickfilters'>
+                <div class='sr-qf-selects'>
+                    <select id='audits-framework-filter' class='form-select' multiple data-placeholder='{$escaper->escapeHtml($lang['AllFrameworks'])}'>
+    ";
+                        foreach ($frameworks as $framework) {
+                            echo "<option value='{$escaper->escapeHtmlAttr($framework['value'])}'>{$escaper->escapeHtml($framework['name'])}</option>";
+                        }
+    echo "
+                    </select>
+                    <select id='audits-test-name-filter' class='form-select' data-placeholder='{$escaper->escapeHtml($lang['ShowAllTests'])}'>
+                        <option value=''>{$escaper->escapeHtml($lang['ShowAllTests'])}</option>
+    ";
+                        foreach ($test_names as $test_name) {
+                            echo "<option value='{$escaper->escapeHtmlAttr($test_name['value'])}'>{$escaper->escapeHtml($test_name['name'])}</option>";
+                        }
+    echo "
+                    </select>
+                    <select id='audits-tester-filter' class='form-select' data-placeholder='{$escaper->escapeHtml($lang['AllTesters'])}'>
+                        <option value=''>{$escaper->escapeHtml($lang['AllTesters'])}</option>
+    ";
+                        foreach ($testers as $tester) {
+                            echo "<option value='{$escaper->escapeHtmlAttr($tester['value'])}'>{$escaper->escapeHtml($tester['name'])}</option>";
+                        }
+    echo "
+                    </select>
+                    <select id='audits-result-filter' class='form-select' data-placeholder='{$escaper->escapeHtml($lang['AllResults'])}'>
+                        <option value=''>{$escaper->escapeHtml($lang['AllResults'])}</option>
+    ";
+                        foreach ($test_results as $test_result) {
+                            echo "<option value='{$escaper->escapeHtmlAttr($test_result['value'])}'>{$escaper->escapeHtml($test_result['name'])}</option>";
+                        }
+    echo "
+                    </select>
+                    <select id='audits-workflow-status-filter' class='form-select' data-placeholder='{$escaper->escapeHtml($lang['AnyStatus'])}'>
+                        <option value=''>{$escaper->escapeHtml($lang['AnyStatus'])}</option>
+    ";
+                        foreach ($test_statuses as $test_status) {
+                            echo "<option value='{$escaper->escapeHtmlAttr($test_status['value'])}'>{$escaper->escapeHtml($test_status['name'])}</option>";
+                        }
+    echo "
+                    </select>
+                    <select id='audits-tag-filter' class='form-select' data-placeholder='{$escaper->escapeHtml($lang['AnyTag'])}'>
+                        <option value=''>{$escaper->escapeHtml($lang['AnyTag'])}</option>
+    ";
+                        foreach ($tags as $tag) {
+                            echo "<option value='{$escaper->escapeHtmlAttr($tag['value'])}'>{$escaper->escapeHtml($tag['name'])}</option>";
+                        }
+    echo "
+                    </select>
+                    <select id='audits-team-filter' class='form-select' data-placeholder='{$escaper->escapeHtml($lang['AllTeams'])}'>
+                        <option value=''>{$escaper->escapeHtml($lang['AllTeams'])}</option>
+    ";
+                        foreach ($teams as $team) {
+                            echo "<option value='{$escaper->escapeHtmlAttr($team['value'])}'>{$escaper->escapeHtml($team['name'])}</option>";
+                        }
+    echo "
+                    </select>
+                    <input type='text' id='audits-test-date-filter' class='form-control datepicker' placeholder='{$escaper->escapeHtml($lang['TestDate'])}' autocomplete='off'>
+                </div>
+            </div>
+            <div class='sr-table-scroll'>
+    ";
+                render_view_table('all_audits');
+    echo "
+            </div>
+        </div>
         <script>
-            $(function () {
-                initializeMultiselect('.header_filter .multiselect', {
-                    allSelectedText: '{$escaper->escapeHtml($lang['ALL'])}',
-					includeSelectAllOption: true,
-					buttonWidth: '100%',
-                    maxHeight: 400,
-					enableCaseInsensitiveFiltering: true,
-				});
+            (function () {
+                var STATUS_URLS = {$status_urls};
+                var INITIAL_STATUS = '{$escaper->escapeJs($initial_status)}';
+                var INITIAL_SEARCH = '{$escaper->escapeJs($initial_search)}';
 
-                $('.header_filter [name=test_date].datepicker').initAsDateRangePicker();
+                function setActiveChip(status) {
+                    $('#audits-status-filter .sr-status-chip').each(function () {
+                        $(this).toggleClass('on', $(this).data('status') === status);
+                    });
+                }
 
-                $('body').on('click', '.delete-btn', function() {
-                    confirm('{$escaper->escapeJs($lang['AreYouSureYouWantToDeleteThisTest'])}', () => {
-                        var id = $(this).data('id')
-    
+                function debounce(fn, delay) {
+                    var timer;
+                    return function () {
+                        var args = arguments, ctx = this;
+                        clearTimeout(timer);
+                        timer = setTimeout(function () { fn.apply(ctx, args); }, delay);
+                    };
+                }
+
+                $(function () {
+                    initializeMultiselect('.header_filter .multiselect', {
+                        allSelectedText: '{$escaper->escapeHtml($lang['ALL'])}',
+                        includeSelectAllOption: true,
+                        buttonWidth: '100%',
+                        maxHeight: 400,
+                        enableCaseInsensitiveFiltering: true,
+                    });
+
+                    $('.header_filter [name=test_date].datepicker').initAsDateRangePicker();
+
+                    // The generic view's own per-column filter header row (duplicating
+                    // what the toolbar search + quickfilters now cover) is hidden via
+                    // CSS (#all_audits_datatable tr.header_filter in _tables.scss), not
+                    // here -- DataTables' scrollX clones the whole <thead> at init time,
+                    // so a one-time class toggle on this original element wouldn't reach
+                    // the visible clone.
+
+                    var dt = datatableInstances['all_audits'];
+
+                    // DataTables' own native page-length control (rendered via the
+                    // app-wide layout.topStart:'pageLength' default in header.php)
+                    // is hidden -- not relocated -- and replaced with markup that
+                    // matches Initiate Audits'/Define Tests' own Show-N-entries
+                    // control exactly (same <label>+<select> shape, same options
+                    // as header.php's shared lengthMenu), placed in the FOOTER
+                    // grouped with the row-count text on the left (matching the
+                    // audits-redesign mockup), with the pager alone on the right.
+                    $('#all_audits_datatable').closest('.dt-container').find('.dt-length, .dataTables_length').addClass('d-none');
+
+                    var \$auditsLengthWrap = $(
+                        \"<div class='dt-length'><label>{$escaper->escapeJs($lang['Show'])}\" +
+                        \"<select id='audits-length' class='form-select'>\" +
+                        \"<option value='10'>10</option><option value='25'>25</option><option value='50'>50</option>\" +
+                        \"<option value='-1'>{$escaper->escapeJs($lang['ALL'])}</option>\" +
+                        \"</select></label></div>\",
+                    );
+                    \$auditsLengthWrap.find('select').val(String(dt.page.len()));
+                    \$auditsLengthWrap.find('select').on('change', function () {
+                        dt.page.len(parseInt(this.value, 10)).draw();
+                    });
+                    // Scoped to the bottomStart row specifically (:has(.dt-info)) --
+                    // '.dt-layout-start' alone also matches the (hidden) topStart
+                    // pageLength row above, and prependTo() against a multi-element
+                    // target clones the source into every match instead of moving it.
+                    // datatables.net-bs5's own layout renderer applies
+                    // 'justify-content-between' to every row slot regardless of our
+                    // config (invisible while bottomStart only ever held the lone
+                    // info feature) -- with a 2nd child now grouped in, it spreads
+                    // the two apart instead of keeping them together, so it's
+                    // swapped for 'justify-content-start' here.
+                    var \$auditsFootLeft = $('#all_audits_datatable').closest('.dt-container')
+                        .find('.dt-layout-start:has(.dt-info)')
+                        .removeClass('justify-content-between')
+                        .addClass('justify-content-start align-items-center gap-3');
+                    \$auditsLengthWrap.prependTo(\$auditsFootLeft);
+
+                    // The shared column-settings trigger (render_column_selection_widget())
+                    // carries data-sr-role='dt-settings' + data-sr-target, so header.php's
+                    // app-wide preInit.dt handler (line ~437) already auto-relocated it into
+                    // the DataTables-generated '.dt-container div.settings' slot -- a whole
+                    // extra layout row (topStart:pageLength + topEnd:settings) above the table
+                    // header that this page doesn't want, and which renders as a blank strip
+                    // once the length control above is also pulled out of it. Relocate the
+                    // button back into this page's own toolbar, then drop the now fully empty
+                    // native row.
+                    $(\"[data-bs-target='#setting_modal-all_audits']\").insertBefore($('#audits-filters-toggle'));
+
+                    $('#all_audits_datatable').closest('.dt-container').find('.dt-layout-start')
+                        .filter(function () { return $(this).children().length === 0; })
+                        .closest('.row').addClass('d-none');
+
+                    // render_view_table()'s own DataTables init always points ajax.url at
+                    // this view's configured datatable_ajax_uri ('all_audits' -> the ALL
+                    // endpoint) regardless of which status chip is the intended default --
+                    // so the first load must always explicitly set the URL too, not just
+                    // when the initial status differs from the view's own default.
+                    setActiveChip(INITIAL_STATUS);
+                    dt.ajax.url(BASE_URL + STATUS_URLS[INITIAL_STATUS]).load();
+                    if (INITIAL_SEARCH) {
+                        $('#audits-search').val(INITIAL_SEARCH);
+                        dt.search(INITIAL_SEARCH).draw();
+                    }
+
+                    $('#audits-status-filter .sr-status-chip').on('click', function () {
+                        var status = $(this).data('status');
+                        setActiveChip(status);
+                        applyTestDateFilterVisibility(status);
+                        dt.ajax.url(BASE_URL + STATUS_URLS[status]).load();
+                        loadFilterCounts(status);
+                    });
+
+                    $('#audits-search').on('input', debounce(function () {
+                        dt.search($(this).val()).draw();
+                    }, 300));
+
+                    var \$frameworkFilter = $('#audits-framework-filter');
+                    var \$testNameFilter = $('#audits-test-name-filter');
+                    var \$testerFilter = $('#audits-tester-filter');
+                    var \$resultFilter = $('#audits-result-filter');
+                    var \$statusFilter = $('#audits-workflow-status-filter');
+                    var \$tagFilter = $('#audits-tag-filter');
+                    var \$teamFilter = $('#audits-team-filter');
+                    var \$testDateFilter = $('#audits-test-date-filter');
+
+                    function updateFiltersCount() {
+                        var n = (\$frameworkFilter.val() || []).length
+                            + (\$testNameFilter.val() ? 1 : 0)
+                            + (\$testerFilter.val() ? 1 : 0)
+                            + (\$resultFilter.val() ? 1 : 0)
+                            + (\$statusFilter.val() ? 1 : 0)
+                            + (\$tagFilter.val() ? 1 : 0)
+                            + (\$teamFilter.val() ? 1 : 0)
+                            + (\$testDateFilter.val() ? 1 : 0);
+                        $('#audits-filters-count').text(n).prop('hidden', n === 0);
+                    }
+
+                    // .sr-qf-toggle only renders below 1100px (design-system.md 6b) --
+                    // above that the quickfilters row is always visible inline, and
+                    // this button stays display:none. Below it, the row starts
+                    // collapsed and this is what opens it.
+                    $('#audits-filters-toggle').on('click', function () {
+                        var \$panel = $('#audits-quickfilters');
+                        var expanded = \$panel.hasClass('is-open');
+                        \$panel.toggleClass('is-open');
+                        $(this).attr('aria-expanded', String(!expanded));
+                    });
+
+                    [
+                        [\$frameworkFilter, '{$escaper->escapeJs($lang['AllFrameworks'])}'],
+                        [\$testNameFilter, '{$escaper->escapeJs($lang['ShowAllTests'])}'],
+                        [\$testerFilter, '{$escaper->escapeJs($lang['AllTesters'])}'],
+                        [\$resultFilter, '{$escaper->escapeJs($lang['AllResults'])}'],
+                        [\$statusFilter, '{$escaper->escapeJs($lang['AnyStatus'])}'],
+                        [\$tagFilter, '{$escaper->escapeJs($lang['AnyTag'])}'],
+                        [\$teamFilter, '{$escaper->escapeJs($lang['AllTeams'])}'],
+                    ].forEach(function (pair) { srSelectEnhance(pair[0], pair[1]); });
+
+                    // Per-option count chips + zero-count exclusion (matches the
+                    // Initiate Audits pattern), but the counts can't be derived
+                    // client-side here the way they are there -- this table is
+                    // server-paginated, so the currently-loaded page is never the
+                    // full dataset. The full-value option lists are captured ONCE,
+                    // from the server-rendered <option>s above, before any
+                    // count-driven rebuild replaces them; every later rebuild
+                    // filters this same master list down to non-zero counts
+                    // rather than shrinking the pool of possible options.
+                    function captureOptions(\$select) {
+                        return \$select.find('option[value!=\"\"]').map(function () {
+                            return { value: $(this).val(), label: $(this).text() };
+                        }).get();
+                    }
+
+                    var FILTER_DIMENSIONS = [
+                        { key: 'framework_name', select: \$frameworkFilter },
+                        { key: 'test_name', select: \$testNameFilter },
+                        { key: 'tester', select: \$testerFilter },
+                        { key: 'test_result', select: \$resultFilter },
+                        { key: 'status', select: \$statusFilter },
+                        { key: 'tags', select: \$tagFilter },
+                        { key: 'teams', select: \$teamFilter },
+                    ];
+                    FILTER_DIMENSIONS.forEach(function (dim) {
+                        dim.options = captureOptions(dim.select);
+                        dim.placeholder = dim.select.data('placeholder') || '';
+                    });
+
+                    function rebuildSelect(\$select, placeholder, entries) {
+                        var prevVal = \$select.val();
+                        \$select.empty();
+                        if (!\$select.prop('multiple')) {
+                            $('<option>', { value: '' }).text(placeholder).appendTo(\$select);
+                        }
+                        entries.forEach(function (entry) {
+                            $('<option>', { value: entry.value }).attr('data-count', entry.count).text(entry.label).appendTo(\$select);
+                        });
+                        if (prevVal !== null && prevVal !== undefined) {
+                            \$select.val(prevVal);
+                        }
+                        srSelectRender(\$select);
+                    }
+
+                    function applyFilterCounts(counts) {
+                        FILTER_DIMENSIONS.forEach(function (dim) {
+                            var dimCounts = (counts && counts[dim.key]) || {};
+                            var entries = dim.options
+                                .filter(function (opt) { return (dimCounts[opt.value] || 0) > 0; })
+                                .map(function (opt) { return { value: opt.value, label: opt.label, count: dimCounts[opt.value] }; });
+                            rebuildSelect(dim.select, dim.placeholder, entries);
+                        });
+                    }
+
+                    function loadFilterCounts(status) {
+                        $.ajax({
+                            type: 'GET',
+                            url: BASE_URL + '/api/v2/compliance/audits/filter_counts',
+                            data: { status: status },
+                            dataType: 'json',
+                            success: function (res) {
+                                if (res && res.data) applyFilterCounts(res.data);
+                            },
+                        });
+                    }
+                    loadFilterCounts(INITIAL_STATUS);
+
+                    // Every server-recognized filter here is sent through BOTH
+                    // dt.column('field:name').search(arrayOfValues) -- the SAME
+                    // mechanism render_view_table()'s own (hidden) header_filter row
+                    // uses -- AND the auditsColumnFilters object below, which reaches
+                    // the server regardless of whether the field is a currently
+                    // displayed column. dt.column(...) is a silent no-op when the
+                    // field isn't one of the table's current columns (no matching
+                    // <th data-name> element means no column to search on), which
+                    // used to leave Framework/Tags/Team -- none of them in
+                    // default_enabled_columns -- unfilterable until a viewer happened
+                    // to also enable that column via the Columns picker. Both are
+                    // read the same way server-side: process_selected_field_filter_for_
+                    // active_audits() (reused by 'all_audits', functions.php) matches by
+                    // exact ID against each field's '*_filter' column, across the WHOLE
+                    // server-side dataset (not just the current page). The value must
+                    // be an ARRAY even for a single-select -- the PHP side always does
+                    // in_array(\$item_value, \$search_value).
+                    var auditsColumnFilters = {};
+
+                    \$frameworkFilter.on('change', function () {
+                        updateFiltersCount();
+                        var val = \$frameworkFilter.val() || [];
+                        auditsColumnFilters.framework_name = val;
+                        dt.column('framework_name:name').search(val).draw();
+                    });
+
+                    \$testNameFilter.on('change', function () {
+                        updateFiltersCount();
+                        var val = \$testNameFilter.val();
+                        auditsColumnFilters.test_name = val ? [val] : [];
+                        dt.column('test_name:name').search(val ? [val] : []).draw();
+                    });
+
+                    \$testerFilter.on('change', function () {
+                        updateFiltersCount();
+                        var val = \$testerFilter.val();
+                        auditsColumnFilters.tester = val ? [val] : [];
+                        dt.column('tester:name').search(val ? [val] : []).draw();
+                    });
+
+                    \$resultFilter.on('change', function () {
+                        updateFiltersCount();
+                        var val = \$resultFilter.val();
+                        auditsColumnFilters.test_result = val ? [val] : [];
+                        dt.column('test_result:name').search(val ? [val] : []).draw();
+                    });
+
+                    \$statusFilter.on('change', function () {
+                        updateFiltersCount();
+                        var val = \$statusFilter.val();
+                        auditsColumnFilters.status = val ? [val] : [];
+                        dt.column('status:name').search(val ? [val] : []).draw();
+                    });
+
+                    \$tagFilter.on('change', function () {
+                        updateFiltersCount();
+                        var val = \$tagFilter.val();
+                        auditsColumnFilters.tags = val ? [val] : [];
+                        dt.column('tags:name').search(val ? [val] : []).draw();
+                    });
+
+                    \$teamFilter.on('change', function () {
+                        updateFiltersCount();
+                        var val = \$teamFilter.val();
+                        auditsColumnFilters.teams = val ? [val] : [];
+                        dt.column('teams:name').search(val ? [val] : []).draw();
+                    });
+
+                    // Test Date is off by default (Columns picker), so it can't
+                    // be filtered the way the selects above are (dt.column(...)
+                    // requires the field to be one of the currently displayed
+                    // columns). Reaches the server instead via the ajax
+                    // data-callback hook render_view_table() exposes
+                    // (window.getExtraAjaxData_all_audits) as
+                    // audits_test_date_range, which get_data_for_datatable()
+                    // (includes/functions.php) reads directly off the raw row
+                    // regardless of column visibility -- same start-minus-end
+                    // format/parsing the old (broken -- it was never actually
+                    // wired to the datepicker widget) Active/Past Audits date
+                    // filter's backend already expected.
+                    \$testDateFilter.initAsDateRangePicker();
+                    window.getExtraAjaxData_all_audits = function () {
+                        return {
+                            audits_test_date_range: \$testDateFilter.val() || '',
+                            audits_column_filters: JSON.stringify(auditsColumnFilters),
+                        };
+                    };
+                    \$testDateFilter.on('change', function () {
+                        updateFiltersCount();
+                        dt.draw();
+                    });
+
+                    // Test Date (fctr.test_date) is only ever populated once a
+                    // result is recorded -- every row on the Active chip is
+                    // necessarily still open, so a range here could only ever
+                    // match zero rows. Hidden on Active rather than shown as a
+                    // control that can't do anything; any range already set
+                    // when switching TO Active is cleared so it doesn't sit
+                    // silently filtering everything out once the field is
+                    // hidden and the viewer can no longer see it's set.
+                    function applyTestDateFilterVisibility(status) {
+                        var hide = status === 'active';
+                        \$testDateFilter.toggle(!hide);
+                        if (hide && \$testDateFilter.val()) {
+                            \$testDateFilter.val('');
+                            updateFiltersCount();
+                        }
+                    }
+                    applyTestDateFilterVisibility(INITIAL_STATUS);
+
+                    $('body').on('click', '.delete-btn', function() {
+                        confirm('{$escaper->escapeJs($lang['AreYouSureYouWantToDeleteThisTest'])}', () => {
+                            var id = $(this).data('id')
+
+                            $.ajax({
+                                type: 'POST',
+                                url: BASE_URL + '/api/v2/compliance/delete_audit',
+                                data : {
+                                    id: id
+                                },
+                                success: function(data){
+                                    if(data.status_message){
+                                        showAlertsFromArray(data.status_message);
+                                    }
+                                    dt.ajax.reload(null, false);
+                                },
+                                error: function(xhr,status,error){
+                                    if(xhr.responseJSON && xhr.responseJSON.status_message){
+                                        showAlertsFromArray(xhr.responseJSON.status_message);
+                                    }
+                                    if(!retryCSRF(xhr, this))
+                                    {
+                                    }
+                                }
+                            });
+                        });
+                    });
+
+                    $('body').on('click', '.reopen', function(){
+                        var id = $(this).data('id');
                         $.ajax({
                             type: 'POST',
-                            url: BASE_URL + '/api/v2/compliance/delete_audit',
-                            data : {
+                            url: BASE_URL + '/api/v2/compliance/reopen_audit',
+                            data:{
                                 id: id
                             },
-                            success: function(data){
-                                if(data.status_message){
-                                    showAlertsFromArray(data.status_message);
+                            success: function(result){
+                                if (result.status_message) {
+                                    showAlertsFromArray(result.status_message);
                                 }
-                                datatableInstances['active_audits'].ajax.reload(null, false);
+                                dt.ajax.reload(null, false);
                             },
                             error: function(xhr,status,error){
                                 if(xhr.responseJSON && xhr.responseJSON.status_message){
@@ -2595,10 +3150,377 @@ function display_active_audits() {
                             }
                         });
                     });
-				});
-            });
+
+                    // Bulk select (the checkbox column swapped in via the 'id'
+                    // field's columnDefs override, functions.php). Selection is
+                    // scoped to the CURRENT page's loaded rows, matching the
+                    // common admin-table convention -- this table is real
+                    // server-side pagination, so \"select all\" across every page
+                    // would mean selecting rows never fetched.
+                    var \$auditsBulkBar = $('#audits-bulk-bar');
+                    if (\$auditsBulkBar.length) {
+                        var auditsSelected = new Set();
+
+                        // DataTables 2.x wraps each header cell's own text in its
+                        // OWN '.dt-column-header > .dt-column-title' structure at
+                        // init (and rebuilds/re-syncs it for the scrollX header
+                        // clone in '.dt-scroll-head', a SEPARATE DOM tree from the
+                        // original thead) -- a one-time .html() on the <th> itself
+                        // gets overwritten by that, and only ever touches the
+                        // original anyway, never the visible clone. Injecting into
+                        // '.dt-column-title' (both copies, whichever exist at the
+                        // time) and re-running on every draw survives both.
+                        function injectAuditsSelectAll() {
+                            $('#all_audits_datatable, .dt-scroll-head table')
+                                .find(\"th[data-dt-column='0'] .dt-column-title, th[data-name='id'] .dt-column-title\")
+                                .each(function () {
+                                    if (!$(this).find('.sr-check-all').length) {
+                                        $(this).html(
+                                            '<input type=\"checkbox\" class=\"form-check-input sr-check-all\" aria-label=\"{$escaper->escapeJs($lang['SelectAll'])}\">',
+                                        );
+                                    }
+                                });
+                        }
+                        injectAuditsSelectAll();
+
+                        function updateAuditsBulkBar() {
+                            var n = auditsSelected.size;
+                            if (n > 0) {
+                                \$auditsBulkBar.find('.sr-bulk-count').text(
+                                    '{$escaper->escapeJs($lang['NSelected'])}'.replace('{n}', n),
+                                );
+                                \$auditsBulkBar.removeClass('d-none');
+                                $('.sr-table-toolbar').first().hide();
+                            } else {
+                                \$auditsBulkBar.addClass('d-none');
+                                $('.sr-table-toolbar').first().show();
+                            }
+                        }
+
+                        function syncAuditsChecks() {
+                            $('#all_audits_datatable tbody .sr-row-check').each(function () {
+                                $(this).prop('checked', auditsSelected.has($(this).data('id').toString()));
+                            });
+                            var \$rows = $('#all_audits_datatable tbody .sr-row-check');
+                            var checkedCount = \$rows.filter(':checked').length;
+                            // Both copies (the original thead's and the scrollX
+                            // header clone's -- see injectAuditsSelectAll()) need
+                            // their state kept in sync; only the clone is ever
+                            // actually visible when the table is scrolling.
+                            $('#all_audits_datatable, .dt-scroll-head table').find('.sr-check-all')
+                                .prop('checked', \$rows.length > 0 && checkedCount === \$rows.length)
+                                .prop('indeterminate', checkedCount > 0 && checkedCount < \$rows.length);
+                        }
+
+                        // Swaps DataTables' own bundled up/down-caret sort indicator
+                        // (.dt-column-order's :before/:after pseudo-elements) for the
+                        // same FontAwesome 'fa-sort'/'fa-arrow-up-short-wide'/
+                        // 'fa-arrow-down-wide-short' glyph Define Tests' own
+                        // hand-rolled table uses (compliance-define-tests.js's
+                        // syncSortHeaders()), so every Compliance page reads the same
+                        // sort affordance. Targets BOTH the live table and its scrollX
+                        // header clone (.dt-scroll-head table) -- same dual-header
+                        // pattern the select-all checkbox sync above already handles,
+                        // since scrollX renders the visible header as a separate
+                        // clone. The clone carries no id/class of its own linking it
+                        // back to this table (it's a bare '.dt-scroll-head table'
+                        // shared by every scrollX-enabled DataTable in the app), so an
+                        // ID-scoped CSS rule can't reach it to suppress the native
+                        // caret -- 'sr-sort-native-off' is added here, directly on the
+                        // SAME elements this function already finds, and _tables.scss
+                        // keys its suppression off that class instead of an ancestor
+                        // selector. Without it the clone showed BOTH the native grey
+                        // caret pair AND this icon at once.
+                        function syncAuditsSortIcons() {
+                            $('#all_audits_datatable, .dt-scroll-head table').find('thead th[data-dt-column]').each(function () {
+                                var \$th = $(this);
+                                if (!\$th.is('.dt-orderable-asc, .dt-orderable-desc')) return;
+                                var \$order = \$th.find('.dt-column-order').addClass('sr-sort-native-off');
+                                if (!\$order.length) return;
+                                \$th.addClass('sr-sortable');
+                                var \$icon = \$order.find('.sr-sort-icon');
+                                if (!\$icon.length) {
+                                    \$icon = $('<i>', { 'class': 'fa sr-sort-icon' }).appendTo(\$order);
+                                }
+                                var sort = \$th.attr('aria-sort');
+                                \$th.toggleClass('is-sorted', sort === 'ascending' || sort === 'descending');
+                                \$icon.removeClass('fa-arrow-up-short-wide fa-arrow-down-wide-short fa-sort')
+                                    .addClass(sort === 'ascending' ? 'fa-arrow-up-short-wide' : sort === 'descending' ? 'fa-arrow-down-wide-short' : 'fa-sort');
+                            });
+                        }
+
+                        dt.on('draw', function () {
+                            injectAuditsSelectAll();
+                            syncAuditsChecks();
+                            syncAuditsSortIcons();
+                        });
+
+                        $('body').on('change', '#all_audits_datatable tbody .sr-row-check', function () {
+                            var id = $(this).data('id').toString();
+                            if ($(this).prop('checked')) {
+                                auditsSelected.add(id);
+                            } else {
+                                auditsSelected.delete(id);
+                            }
+                            syncAuditsChecks();
+                            updateAuditsBulkBar();
+                        });
+
+                        $('body').on('change', '.sr-check-all', function () {
+                            var checked = $(this).prop('checked');
+                            $('#all_audits_datatable tbody .sr-row-check').each(function () {
+                                var id = $(this).data('id').toString();
+                                if (checked) {
+                                    auditsSelected.add(id);
+                                } else {
+                                    auditsSelected.delete(id);
+                                }
+                            });
+                            syncAuditsChecks();
+                            updateAuditsBulkBar();
+                        });
+
+                        $('#audits-bulk-clear').on('click', function () {
+                            auditsSelected.clear();
+                            syncAuditsChecks();
+                            updateAuditsBulkBar();
+                        });
+
+                        $('#audits-bulk-delete').on('click', function () {
+                            var ids = Array.from(auditsSelected);
+                            if (!ids.length) return;
+                            confirm('{$escaper->escapeJs($lang['AreYouSureYouWantToDeleteThisTest'])}', () => {
+                                $.when.apply(
+                                    $,
+                                    ids.map(function (id) {
+                                        return $.ajax({
+                                            type: 'POST',
+                                            url: BASE_URL + '/api/v2/compliance/delete_audit',
+                                            data: { id: id },
+                                        });
+                                    }),
+                                ).always(function () {
+                                    auditsSelected.clear();
+                                    updateAuditsBulkBar();
+                                    dt.ajax.reload(null, false);
+                                });
+                            });
+                        });
+                    }
+
+                    // ===== Row-actions overflow (design-system.md 6b) ===================
+                    // The toggle rendered by get_custom_item_actions_for_all_audits()
+                    // (includes/functions.php) is display:none at full width -- the
+                    // shipped compact-tier CSS (_tables.scss's global '@media
+                    // (max-width: 1400px) { .sr-table-card { ... } }' rule) already turns
+                    // it on and hides '.sr-row-actions' in favor of it. The close/orient/
+                    // bind behavior itself lives in the shared js/simplerisk/sr-row-
+                    // actions-menu.js (also used by compliance-define-tests.js and
+                    // governance-frameworks.js) -- scoped to this card since DataTables
+                    // rebuilds tbody on every draw but '#audits-table-card' is static.
+                    SRRowActionsMenu.bind({
+                        container: '#audits-table-card',
+                        scope: $('#audits-table-card'),
+                        namespace: 'srauditsrowactions',
+                    });
+
+                    // ===== Width-tiered column folding (design-system.md 6b) =============
+                    // Manage Audits' columns are built server-side from each viewer's own
+                    // saved Columns-picker selection (render_view_table(), includes/
+                    // display.php) -- unlike Define Tests' fixed column set, an arbitrary
+                    // combination can never be guaranteed to fit a narrow card no matter
+                    // how many columns are folded one at a time, and pinning every
+                    // column's own width (functions.php's 'all_audits' datatable_options)
+                    // only gets scrollX to STOP inflating them -- it doesn't shrink the
+                    // TOTAL below what a laptop-width card actually holds. Two tiers below
+                    // full width, each trimming columns from the LOW-PRIORITY end (design-
+                    // system.md 6b: \"drop the lowest-value columns first\"):
+                    //
+                    //   mid (<=1400px): drop Last Test Date and Test Result -- Test Result
+                    //   is blank (\"--\") for every still-open audit anyway, and Last Test
+                    //   Date is secondary to Next Test Date for \"does this need me today\".
+                    //   Picked <=1400px to match the fold breakpoints _tables.scss already
+                    //   uses elsewhere (design-system.md 6b\'s own reference numbers).
+                    //
+                    //   narrow (<=1120px): collapse further to just Test Name + Next Test
+                    //   Date, plus the checkbox/actions columns that are always present --
+                    //   the guaranteed-fit set from before. Status is deliberately never in
+                    //   either tier\'s allow-list: even wrapped to 3 lines (_compliance.scss)
+                    //   its localized text (\"Evidence Submitted / Pending Review
+                    //   (Overdue)\") costs more width than any other single column, and
+                    //   Next Test Date alone already carries the \"needs attention\" signal
+                    //   (an overdue date IS the signal); Status stays one tap away on the
+                    //   audit\'s own detail page.
+                    //
+                    //   1120px, not the design-system-typical ~760/900 queue breakpoint --
+                    //   MEASURED: even the 6-column mid tier still had the Actions column
+                    //   sliding off-screen (47px short) at 1100px, and 0px overflow from
+                    //   1150px up, so the narrow tier has to claim that whole 760-1150
+                    //   range or it reads exactly as broken as the un-tiered table did
+                    //   (a cut-off date, an unreachable Actions column) -- narrower text
+                    //   columns is a fine trade for that.
+                    //
+                    // The Columns button is hidden below 1120px (_compliance.scss) since
+                    // customizing a selection that\'s about to be overridden would be
+                    // confusing -- it stays available at the mid tier, where the fold is
+                    // only trimming two low-value columns, not overriding the picker\'s
+                    // intent wholesale. If a viewer\'s saved selection doesn\'t include one
+                    // of a tier\'s allowed fields it simply isn\'t available to restore --
+                    // column(\'name:name\') no-ops on a column that was never rendered.
+                    var AUDITS_MID_ALLOW = ['id', 'test_name', 'control_name', 'status', 'next_date', 'actions'];
+                    var AUDITS_NARROW_ALLOW = ['id', 'test_name', 'next_date', 'actions'];
+                    var auditsMidQuery = window.matchMedia('(max-width: 1400px)');
+                    var auditsNarrowQuery = window.matchMedia('(max-width: 1120px)');
+
+                    function applyAuditsColumnTiers() {
+                        var allow = auditsNarrowQuery.matches ? AUDITS_NARROW_ALLOW
+                            : auditsMidQuery.matches ? AUDITS_MID_ALLOW
+                            : null;
+                        if (allow) {
+                            dt.columns().visible(false, false);
+                            allow.forEach(function (name) {
+                                dt.column(name + ':name').visible(true, false);
+                            });
+                        } else {
+                            dt.columns().visible(true, false);
+                        }
+                        dt.columns.adjust().draw(false);
+                    }
+
+                    applyAuditsColumnTiers();
+                    auditsMidQuery.addEventListener('change', applyAuditsColumnTiers);
+                    auditsNarrowQuery.addEventListener('change', applyAuditsColumnTiers);
+                });
+            })();
         </script>
-	";
+    ";
+
+}
+
+/*******************************************************
+ * FUNCTION: DISPLAY INITIATE AUDITS FLAT               *
+ * Redesigned Initiate Audits page: a flat, filterable   *
+ * list of tests instead of the framework -> control ->  *
+ * test treegrid. Framework/control become filters (the  *
+ * global search box already matches control/framework   *
+ * names), and "initiate whole framework/control" is      *
+ * reproduced by filtering to it, selecting all matching, *
+ * then "Initiate selected" -- rendered entirely by       *
+ * compliance-initiate-audits.js against the new           *
+ * /api/v2/compliance/audit_initiation/eligible_tests and *
+ * /initiate_bulk endpoints.                              *
+ *******************************************************/
+function display_initiate_audits_flat() {
+
+    global $lang, $escaper;
+
+    echo "
+        <div id='initiate-audits-app' class='sr-table-card'>
+            <div class='sr-table-toolbar'>
+                <span class='sr-table-title'>
+                    {$escaper->escapeHtml($lang['EligibleTests'])}
+                    <span class='sr-table-count' id='initiate-audits-count'></span>
+                </span>
+                <div class='sr-table-tools'>
+                    <div class='dt-search'>
+                        <input type='search' id='initiate-audits-search' class='form-control' placeholder='{$escaper->escapeHtml($lang['SearchTestsPlaceholder'])}' aria-label='{$escaper->escapeHtml($lang['SearchTestsPlaceholder'])}'>
+                    </div>
+                    <button type='button' class='sr-qf-toggle' id='initiate-filters-toggle' aria-expanded='false' aria-controls='initiate-quickfilters'>
+                        <i class='fa fa-filter'></i><span>{$escaper->escapeHtml($lang['Filters'])}</span>
+                        <span class='sr-qf-toggle-count' id='initiate-filters-count' hidden></span>
+                    </button>
+    ";
+                    render_column_selection_widget('initiate_audits');
+    echo "
+                </div>
+            </div>
+            <div class='sr-table-quickfilters' id='initiate-quickfilters'>
+                <div class='sr-qf-selects'>
+                    <select id='initiate-framework-filter' class='form-select' multiple data-placeholder='{$escaper->escapeHtml($lang['AllFrameworks'])}'></select>
+                    <select id='initiate-control-filter' class='form-select' multiple data-placeholder='{$escaper->escapeHtml($lang['AllControls'])}'></select>
+                    <select id='initiate-test-name-filter' class='form-select' data-placeholder='{$escaper->escapeHtml($lang['ShowAllTests'])}'>
+                        <option value=''>{$escaper->escapeHtml($lang['ShowAllTests'])}</option>
+                    </select>
+                    <select id='initiate-tester-filter' class='form-select' data-placeholder='{$escaper->escapeHtml($lang['AllTesters'])}'>
+                        <option value=''>{$escaper->escapeHtml($lang['AllTesters'])}</option>
+                    </select>
+                    <select id='initiate-team-filter' class='form-select' multiple data-placeholder='{$escaper->escapeHtml($lang['AllTeams'])}'></select>
+                    <select id='initiate-schedule-filter' class='form-select' data-placeholder='{$escaper->escapeHtml($lang['AnySchedule'])}'>
+                        <option value=''>{$escaper->escapeHtml($lang['AnySchedule'])}</option>
+                        <option value='calendar'>{$escaper->escapeHtml($lang['ScheduleCalendar'])}</option>
+                        <option value='interval'>{$escaper->escapeHtml($lang['ScheduleInterval'])}</option>
+                        <option value='manual' selected>{$escaper->escapeHtml($lang['ScheduleManual'])}</option>
+                    </select>
+                    <div class='form-check'>
+                        <input type='checkbox' class='form-check-input' id='initiate-show-in-progress'>
+                        <label class='form-check-label' for='initiate-show-in-progress'>{$escaper->escapeHtml($lang['ShowTestsWithAuditInProgress'])}</label>
+                    </div>
+                </div>
+            </div>
+            <div class='sr-table-scroll'>
+                <table id='initiate_audits_table' class='table table-bordered table-striped' width='100%'>
+                    <thead>
+                        <tr>
+                            <th class='sr-check-col'><input type='checkbox' class='form-check-input sr-check-all' aria-label='{$escaper->escapeHtml($lang['SelectAll'])}'></th>
+                            <th>{$escaper->escapeHtml($lang['TestName'])}</th>
+                            <th>{$escaper->escapeHtml($lang['ControlName'])}</th>
+                            <th>{$escaper->escapeHtml($lang['FrameworkName'])}</th>
+                            <th>{$escaper->escapeHtml($lang['Schedule'])}</th>
+                            <th>{$escaper->escapeHtml($lang['LastTestDate'])}</th>
+                            <th class='sr-init-next-col'>{$escaper->escapeHtml($lang['NextTestDate'])}</th>
+                            <th>{$escaper->escapeHtml($lang['TestFrequency'])}</th>
+                            <th class='sr-actions-col'></th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+            <div class='dt-length' id='initiate-audits-length-wrap'>
+                <label>{$escaper->escapeHtml($lang['Show'])}
+                    <select id='initiate-audits-length' class='form-select'>
+                        <option value='10'>10</option>
+                        <option value='25' selected>25</option>
+                        <option value='50'>50</option>
+                        <option value='100'>100</option>
+                        <option value='-1'>{$escaper->escapeHtml($lang['ALL'])}</option>
+                    </select>
+                </label>
+            </div>
+        </div>
+
+        <div class='modal fade sr-modal' id='initiate-tags-modal' tabindex='-1' aria-hidden='true'>
+            <div class='modal-dialog modal-dialog-centered'>
+                <div class='modal-content'>
+                    <div class='modal-header'>
+                        <span class='sr-modal-icon'><i class='fa fa-tags' aria-hidden='true'></i></span>
+                        <h4 class='modal-title' id='initiate-tags-modal-title'></h4>
+                        <button type='button' class='btn-close' data-bs-dismiss='modal' aria-label='{$escaper->escapeHtml($lang['Cancel'])}'></button>
+                    </div>
+                    <div class='modal-body'>
+                        <section class='sr-qcard'>
+                            <div class='sr-qcard-head'>
+                                <span class='sr-qcard-icon'><i class='fa fa-tags' aria-hidden='true'></i></span>
+                                <h3>{$escaper->escapeHtml($lang['Tags'])}</h3>
+                            </div>
+                            <div class='sr-qcard-body'>
+                                <div class='sr-qstack'>
+                                    <div class='sr-qfield'>
+                                        <label class='sr-qlabel' for='initiate-tags-select'>{$escaper->escapeHtml($lang['TagsOptionalAppliedToSelection'])}</label>
+                                        <select class='test_audit_tags form-select' id='initiate-tags-select' name='tags[]' multiple placeholder='{$escaper->escapeHtml($lang['TagsWidgetPlaceholder'])}'></select>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+                    </div>
+                    <div class='modal-footer'>
+                        <button type='button' class='btn btn-dark' data-bs-dismiss='modal'>{$escaper->escapeHtml($lang['Cancel'])}</button>
+                        <button type='button' class='btn btn-submit' id='initiate-tags-confirm'>{$escaper->escapeHtml($lang['Initiate'])}</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    ";
 
 }
 
@@ -2719,6 +3641,48 @@ function initiate_framework_control_tests($type, $id, $tags=[], &$new_audit_id=n
     db_close($db);
     
     return $name;
+}
+
+/****************************************************************
+ * FUNCTION: INITIATE TESTS BULK                                *
+ * Batch-initiates a flat list of individual test ids, backing  *
+ * the redesigned Initiate Audits page's "Initiate selected"    *
+ * bulk action. Filtering the flat list to one framework/control *
+ * then selecting all matching reproduces today's "initiate      *
+ * whole framework/control" bulk actions without a nested tree.  *
+ * Keeps going across the whole batch even when one test can't   *
+ * be initiated (retired, outside the viewer's team, etc.) --    *
+ * that test is reported back as skipped rather than failing the *
+ * entire batch. Team-scoping and the retired-test guard are     *
+ * enforced by initiate_framework_control_tests()/               *
+ * initiate_test_audit() themselves, called once per test here.  *
+ ****************************************************************/
+function initiate_tests_bulk(array $test_ids, array $tags = []) {
+
+    $initiated = [];
+    $skipped = [];
+
+    foreach ($test_ids as $test_id) {
+        $test_id = (int)$test_id;
+        $new_audit_id = null;
+
+        $name = initiate_framework_control_tests('test', $test_id, $tags, $new_audit_id);
+
+        if ($name !== false) {
+            $initiated[] = [
+                'test_id'  => $test_id,
+                'audit_id' => $new_audit_id,
+                'name'     => $name,
+            ];
+        } else {
+            $skipped[] = $test_id;
+        }
+    }
+
+    return [
+        'initiated' => $initiated,
+        'skipped'   => $skipped,
+    ];
 }
 
 function initiate_test_audit($test_id, $initiated_audit_status, $tags=[], $requested_from_ui=true, &$out_audit_id=null) {
@@ -3451,7 +4415,7 @@ function display_testing() {
         ";
     }
 
-    $risk_ids = get_test_result_to_risk_ids($test_audit["result_id"]);
+    $risk_ids = get_visible_associated_risk_ids(get_test_result_to_risk_ids($test_audit["result_id"]));
     $close_risks = isset($_SESSION["close_risks"]) ? $_SESSION["close_risks"] : 0;
 
     $tags_view = "";
@@ -4414,76 +5378,6 @@ function download_compliance_file($unique_name)
     }
 }
 
-/*********************************
- * FUNCTION: DISPLAY PAST AUDITS *
- *********************************/
-function display_past_audits() {
-
-    global $lang, $escaper;
-
-    echo "
-        <div class='card-body border my-2'>
-            <div class='row'>
-                <div class='col-10'></div>
-                <div class='col-2'>
-                    <div style='float: right;'>
-    ";
-                        render_column_selection_widget('past_audits');
-    echo "
-                    </div>
-                </div>
-            </div>
-            <div class='row'>
-                <div class='col-12'>
-    ";
-                    render_view_table('past_audits');
-    echo "
-                </div>
-            </div>
-        </div>
-
-        <script>
-            $(function () {
-                initializeMultiselect('.header_filter .multiselect', {
-                    allSelectedText: '{$escaper->escapeHtml($lang['ALL'])}',
-					includeSelectAllOption: true,
-					buttonWidth: '100%',
-                    maxHeight: 400,
-					enableCaseInsensitiveFiltering: true,
-				});
-
-                $('.header_filter [name=test_date].datepicker').initAsDateRangePicker();
-
-                $('body').on('click', '.reopen', function(){
-                    var id = $(this).data('id');
-                    $.ajax({
-                        type: 'POST',
-                        url: BASE_URL + '/api/v2/compliance/reopen_audit',
-                        data:{
-                            id: id
-                        },
-                        success: function(result){
-                            if (result.status_message) {
-                                showAlertsFromArray(result.status_message);
-                            }
-                            $('#past_audits_datatable').DataTable().draw();
-                        },
-                        error: function(xhr,status,error){
-                            if(xhr.responseJSON && xhr.responseJSON.status_message){
-                                showAlertsFromArray(xhr.responseJSON.status_message);
-                            }
-                            if(!retryCSRF(xhr, this))
-                            {
-                            }
-                        }
-                    })
-                });
-            });
-        </script>
-    ";
-
-}
-
 /************************************
  * FUNCTION: DISPLAY TEST IN DETAIL *
  ************************************/
@@ -4500,7 +5394,7 @@ function display_detail_test() {
     $files = get_compliance_files($test_audit_id, "test_audit");
 
     // Get associated risk ids
-    $risk_ids = get_test_result_to_risk_ids($test_audit["result_id"]);
+    $risk_ids = get_visible_associated_risk_ids(get_test_result_to_risk_ids($test_audit["result_id"]));
     $tags_view = "";
 
     if ($test_audit['tags']) {
@@ -5152,6 +6046,161 @@ function get_initiate_tests_by_filter($filter_by_text, $filter_by_status, $filte
 }
 
 /*******************************************************************
+ * FUNCTION: GET INITIATE ELIGIBLE TESTS                            *
+ * Flat, filterable list of tests eligible for initiation, backing  *
+ * the redesigned Initiate Audits page (replaces the framework ->   *
+ * control -> test treegrid; "initiate a whole framework/control"   *
+ * is reproduced by filtering to it, then bulk-selecting). Unlike   *
+ * get_initiate_tests_by_filter() and friends, this is team-scoped  *
+ * via get_compliance_separation_access_info() -- the SAME check    *
+ * initiate_framework_control_tests() already enforces at action    *
+ * time -- closing the gap where the old listing showed every test  *
+ * regardless of team even though initiating one outside the        *
+ * viewer's team was already silently refused.                      *
+ *******************************************************************/
+function get_initiate_eligible_tests($filters = []) {
+
+    // Open the database connection
+    $db = db_open();
+
+    $closed_audit_status = get_setting("closed_audit_status");
+
+    $sql = "
+        SELECT t1.id, t1.name, t1.test_frequency, t1.last_date, t1.next_date, t1.schedule_type,
+            t1.tester, u.name tester_name,
+            GROUP_CONCAT(DISTINCT t2.id ORDER BY t2.short_name SEPARATOR ',') control_ids,
+            GROUP_CONCAT(DISTINCT t2.short_name ORDER BY t2.short_name SEPARATOR ', ') control_names,
+            GROUP_CONCAT(DISTINCT f.name ORDER BY f.name SEPARATOR ', ') framework_names,
+            GROUP_CONCAT(DISTINCT itt.team_id ORDER BY itt.team_id SEPARATOR ',') team_ids,
+            GROUP_CONCAT(DISTINCT tm.name ORDER BY tm.name SEPARATOR ', ') team_names,
+            EXISTS (
+                SELECT 1 FROM `framework_control_test_audits` a2
+                WHERE a2.test_id = t1.id
+                    AND NOT (a2.status = '{$closed_audit_status}' AND a2.approval_state IN ('none','approved'))
+            ) has_in_progress_audit
+        FROM `framework_control_tests` t1
+            INNER JOIN `test_control_map` tcm ON tcm.test_id = t1.id
+            INNER JOIN `framework_controls` t2 ON t2.id = tcm.framework_control_id AND t2.deleted = 0
+            INNER JOIN `framework_control_mappings` m ON m.control_id = t2.id
+            INNER JOIN `frameworks` f ON f.value = m.framework AND f.status = 1
+            LEFT JOIN `user` u ON u.value = t1.tester
+            LEFT JOIN `items_to_teams` itt ON itt.item_id = t1.id AND itt.type = 'test'
+            LEFT JOIN `team` tm ON tm.value = itt.team_id
+        WHERE t1.retired_at IS NULL
+    ";
+
+    // A test already mid-audit is hidden by DEFAULT -- without this, a just-
+    // initiated test lingers in the list even though initiate_test_audit()'s
+    // own dedup logic makes clicking it again a no-op. \"Mid-audit\" mirrors
+    // the truly-closed predicate used elsewhere (get_wheres_for_view('past_audits')):
+    // status=closed AND approval_state IN ('none','approved') -- anything
+    // else (open, or closed-but-awaiting-approval) counts as in progress.
+    // show_in_progress is the escape hatch: someone who deliberately wants a
+    // SECOND audit running before the first closes needs a way to still find
+    // and re-initiate that test, so this only changes what's OFFERED, never
+    // what initiate_test_audit() itself allows.
+    if (empty($filters['show_in_progress'])) {
+        $sql .= "
+            AND NOT EXISTS (
+                SELECT 1 FROM `framework_control_test_audits` a
+                WHERE a.test_id = t1.id
+                    AND NOT (a.status = '{$closed_audit_status}' AND a.approval_state IN ('none','approved'))
+            )
+        ";
+    }
+
+    $wheres = [];
+
+    if (!empty($filters['filter_control'])) {
+        $control_ids = array_map('intval', $filters['filter_control']);
+        $wheres[] = "t2.id IN (" . implode(",", $control_ids) . ")";
+    }
+
+    if (!empty($filters['filter_framework'])) {
+        $framework_ids = array_map('intval', $filters['filter_framework']);
+        $wheres[] = "f.value IN (" . implode(",", $framework_ids) . ")";
+    }
+
+    if (!empty($filters['filter_schedule_type'])) {
+        $quoted_types = array_map(function ($type) use ($db) {
+            return $db->quote((string)$type);
+        }, $filters['filter_schedule_type']);
+        $schedule_where = "t1.schedule_type IN (" . implode(",", $quoted_types) . ")";
+        // A NULL schedule_type (no automatic schedule ever configured for this
+        // test -- add_framework_control_test() leaves the column NULL unless a
+        // schedule mode was explicitly set) means "no interval/calendar
+        // automation", functionally the same as 'manual'. Without this, a
+        // filter of ['manual'] would silently exclude every such test -- an
+        // IN(...) list never matches NULL.
+        if (in_array('manual', $filters['filter_schedule_type'], true)) {
+            $schedule_where = "(" . $schedule_where . " OR t1.schedule_type IS NULL)";
+        }
+        $wheres[] = $schedule_where;
+    }
+
+    if ($wheres) {
+        $sql .= " AND " . implode(" AND ", $wheres);
+    }
+
+    $sql .= " GROUP BY t1.id ";
+
+    $stmt = $db->prepare($sql);
+    $stmt->execute();
+    $tests = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    // Close the database connection
+    db_close($db);
+
+    // framework_names is a GROUP_CONCAT of the frameworks table's encrypted
+    // `name` column across every framework a test's control(s) belong to --
+    // each piece was encrypted independently, so it must be decrypted
+    // piece-by-piece (try_decrypt() is a no-op when the Encrypted Database
+    // Extra isn't active). Must run before the filter_text search below,
+    // which otherwise matches against raw ciphertext.
+    foreach ($tests as &$test) {
+        if (!empty($test['framework_names'])) {
+            $decrypted_framework_names = [];
+            foreach (explode(',', $test['framework_names']) as $framework_name) {
+                $framework_name = trim($framework_name);
+                if ($framework_name !== '') {
+                    $decrypted_framework_names[] = try_decrypt($framework_name);
+                }
+            }
+            $test['framework_names'] = implode(', ', $decrypted_framework_names);
+        }
+    }
+    unset($test);
+
+    // Team-based row scoping -- mirrors initiate_framework_control_tests()'s
+    // own get_compliance_separation_access_info() check exactly.
+    if (team_separation_extra()) {
+        require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
+
+        if (!should_skip_test_and_audit_permission_check()) {
+            $access_info = get_compliance_separation_access_info();
+            $allowed_test_ids = $access_info['framework_control_tests'] ?? [];
+
+            $tests = array_values(array_filter($tests, function ($test) use ($allowed_test_ids) {
+                return in_array((int)$test['id'], $allowed_test_ids);
+            }));
+        }
+    }
+
+    // Text filter, applied post-fetch to match against the assembled control/
+    // framework name lists -- same convention as get_initiate_tests_by_filter().
+    if (!empty($filters['filter_text'])) {
+        $needle = $filters['filter_text'];
+        $tests = array_values(array_filter($tests, function ($test) use ($needle) {
+            return stripos($test['name'], $needle) !== false
+                || stripos($test['control_names'] ?? '', $needle) !== false
+                || stripos($test['framework_names'] ?? '', $needle) !== false;
+        }));
+    }
+
+    return $tests;
+}
+
+/*******************************************************************
  * FUNCTION: GET INITIATE UNASSIGNED CONTROLS BY FILTER            *
  * Returns framework controls that have no framework mapping but    *
  * have at least one test defined, applying optional filters.       *
@@ -5388,6 +6437,10 @@ function save_test_result_to_risk($result_id, $risk_id) {
     $stmt->bindParam(":risk_id", $risk_id, PDO::PARAM_INT);
     $stmt->execute();
 
+    // The risk's context graph gained a test result, so any AI analysis of it
+    // was written against inputs that no longer describe the risk.
+    ai_invalidate_risk_analysis([(int)$risk_id], $db);
+
     // Close the database connection
     db_close($db);
     return true;
@@ -5400,10 +6453,20 @@ function delete_test_result_to_risk($result_id, $risk_id) {
     // Open the database connection
     $db = db_open();
 
+    // Resolve before the delete: afterwards these rows are gone and the
+    // affected risks are unreachable.
+    $affected = risks_associated_with('test_result', (int)$result_id, $db);
+
     // delete existing risk association
     $stmt = $db->prepare("DELETE FROM framework_control_test_results_to_risks WHERE `test_results_id` = :test_results_id AND `risk_id` = :risk_id;");
     $stmt->bindParam(":test_results_id", $result_id, PDO::PARAM_INT);
+    // :risk_id was never bound. The statement has two placeholders and one
+    // bound value, so every call raised "number of bound variables does not
+    // match number of tokens" and no association was ever deleted here.
+    $stmt->bindParam(":risk_id", $risk_id, PDO::PARAM_INT);
     $stmt->execute();
+
+    ai_invalidate_risk_analysis($affected, $db);
 
     // Close the database connection
     db_close($db);
@@ -5417,10 +6480,15 @@ function delete_test_result_to_risk_by_result_id($result_id) {
     // Open the database connection
     $db = db_open();
 
+    // Resolve before the delete, for the same reason as above.
+    $affected = risks_associated_with('test_result', (int)$result_id, $db);
+
     // delete existing risk association
     $stmt = $db->prepare("DELETE FROM framework_control_test_results_to_risks WHERE `test_results_id` = :test_results_id;");
     $stmt->bindParam(":test_results_id", $result_id, PDO::PARAM_INT);
     $stmt->execute();
+
+    ai_invalidate_risk_analysis($affected, $db);
 
     // Close the database connection
     db_close($db);
@@ -5449,6 +6517,39 @@ function get_test_result_to_risk_ids($result_id) {
     }
 
     return $risk_ids;
+}
+
+/*****************************************************
+ * FUNCTION: GET VISIBLE ASSOCIATED RISK IDS         *
+ * Filters a raw framework_control_test_results_to_risks *
+ * risk id list (as returned by get_test_result_to_risk_ids())
+ * down to what the CURRENT user is actually authorized to
+ * see: the riskmanagement permission gates the whole list
+ * (matching the section that displays them), and -- when
+ * Team Separation is active -- each remaining risk is also
+ * checked via the same extra_grant_access() that
+ * management/view.php already enforces on direct risk
+ * access. Callers must use this result for BOTH the visible
+ * risks section and any hidden field that round-trips the
+ * id list back to the server, or a viewer without
+ * riskmanagement (or without team access to a specific risk)
+ * still receives the raw ids in the page source.
+ *****************************************************/
+function get_visible_associated_risk_ids($risk_ids) {
+
+    if (!check_permission("riskmanagement")) {
+        return [];
+    }
+
+    if (!team_separation_extra()) {
+        return $risk_ids;
+    }
+
+    require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
+
+    return array_values(array_filter($risk_ids, function ($risk_id) {
+        return extra_grant_access($_SESSION['uid'], (int)$risk_id + 1000);
+    }));
 }
 
 /*******************************************

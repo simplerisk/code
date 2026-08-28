@@ -6,6 +6,7 @@
 
 // Load sub-components
 require_once(realpath(__DIR__ . '/workflows/variables.php'));
+require_once(realpath(__DIR__ . '/workflows/actions/communications.php'));
 require_once(realpath(__DIR__ . '/workflows/actions/data_ops.php'));
 require_once(realpath(__DIR__ . '/workflows/actions/risk_management.php'));
 require_once(realpath(__DIR__ . '/workflows/actions/governance.php'));
@@ -636,7 +637,86 @@ function get_workflow_action_catalog(): array
 {
     $catalog = [
         // Communications
-        // Note: send_email, send_webhook, send_slack, send_teams are registered by the Workflows Extra (extras/workflows)
+        'send_email' => [
+            'label'    => 'Send Email',
+            'category' => 'Communications',
+            'sync'     => false,
+            'inputs'   => [
+                'to'          => ['type' => 'string',   'label' => 'To (email, user ID, risk_owner, risk_submitter, or {{variable}})', 'required' => true],
+                'template_id' => ['type' => 'template', 'label' => 'Email Template (optional, requires the Workflows Extra)', 'required' => false],
+                'subject'     => ['type' => 'string',   'label' => 'Subject (supports {{variables}})', 'required' => false],
+                'body'        => ['type' => 'textarea', 'label' => 'Body (HTML, supports {{variables}})', 'required' => false],
+            ],
+        ],
+        'send_webhook' => [
+            'label'    => 'Send Webhook',
+            'category' => 'Communications',
+            'sync'     => false,
+            'inputs'   => [
+                'url'          => ['type' => 'string',   'label' => 'URL', 'required' => true],
+                'method'       => ['type' => 'select',   'label' => 'Method', 'options' => ['POST', 'GET', 'PUT', 'PATCH', 'DELETE'], 'required' => true],
+                'content_type' => ['type' => 'string',   'label' => 'Content-Type', 'required' => false, 'default' => 'application/json'],
+                'headers'      => ['type' => 'textarea', 'label' => 'Additional Headers (JSON)', 'required' => false],
+                'body'         => ['type' => 'textarea', 'label' => 'Body', 'required' => false],
+            ],
+        ],
+        'send_slack' => [
+            'label'    => 'Send Slack Message',
+            'category' => 'Communications',
+            'sync'     => false,
+            'inputs'   => [
+                'webhook_url' => ['type' => 'string',   'label' => 'Incoming Webhook URL', 'required' => true],
+                'message'     => ['type' => 'textarea', 'label' => 'Message', 'required' => true],
+            ],
+        ],
+        'send_teams' => [
+            'label'    => 'Send Teams Message',
+            'category' => 'Communications',
+            'sync'     => false,
+            'inputs'   => [
+                'webhook_url' => ['type' => 'string',   'label' => 'Incoming Webhook URL', 'required' => true],
+                'message'     => ['type' => 'textarea', 'label' => 'Message', 'required' => true],
+            ],
+        ],
+        'send_notification' => [
+            'label'    => 'Send In-App Notification',
+            'category' => 'Communications',
+            'sync'     => false,
+            'inputs'   => [
+                'audience_type' => [
+                    'type' => 'select',
+                    'label' => 'Audience',
+                    'options' => [
+                        ['value' => 'user',      'label' => 'Send to user(s)'],
+                        ['value' => 'team',      'label' => 'Send to team(s)'],
+                        ['value' => 'role',      'label' => 'Send to role(s)'],
+                        ['value' => 'all_admin', 'label' => 'Send to all admins'],
+                        ['value' => 'all_user',  'label' => 'Send to all users'],
+                    ],
+                    'required' => true,
+                ],
+                'audience_id' => [
+                    'type' => 'audience',
+                    'label' => 'Recipients',
+                    'required' => false,
+                ],
+                'title' => [
+                    'type' => 'string',
+                    'label' => 'Title (supports {{variables}})',
+                    'required' => true,
+                ],
+                'body' => [
+                    'type' => 'textarea',
+                    'label' => 'Body (supports {{variables}})',
+                    'required' => true,
+                ],
+                'link' => [
+                    'type' => 'string',
+                    'label' => 'Link URL (optional, supports {{variables}})',
+                    'required' => false,
+                ],
+            ],
+        ],
 
         // assign_risk_owner and set_risk_status removed from catalog — covered by the
         // unified update_field action (owner and status fields). Backend cases retained
@@ -896,8 +976,7 @@ function get_workflow_action_catalog(): array
         ],
     ];
 
-    // Merge in actions registered by the Workflows Extra (or other extras)
-    // Communications actions (send_email, send_webhook, send_slack, send_teams) are added here
+    // Merge in actions registered by extras (extension point; none currently register here)
     foreach ($GLOBALS['_workflow_extra_action_catalog'] ?? [] as $type => $entry) {
         $catalog[$type] = $entry;
     }
@@ -1451,7 +1530,12 @@ function execute_workflow_action(string $type, array $inputs, array $context): a
 {
     switch ($type)
     {
-        // Communications (all handled via the extras registry below)
+        // Communications
+        case 'send_email':        return workflow_action_send_email($inputs, $context);
+        case 'send_webhook':      return workflow_action_send_webhook($inputs, $context);
+        case 'send_slack':        return workflow_action_send_slack($inputs, $context);
+        case 'send_teams':        return workflow_action_send_teams($inputs, $context);
+        case 'send_notification': return workflow_action_send_notification($inputs, $context);
 
         // Data Ops
         case 'http_request':      return workflow_action_http_request($inputs, $context);

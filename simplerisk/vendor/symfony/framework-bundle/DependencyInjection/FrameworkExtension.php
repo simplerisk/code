@@ -651,6 +651,31 @@ class FrameworkExtension extends Extension
         // profiler depends on form, validation, translation, messenger, mailer, http-client, notifier, serializer being registered. console is optional
         $this->registerProfilerConfiguration($config['profiler'], $container, $loader);
 
+        // These listeners keep every message, attachments included, for the
+        // lifetime of the process. Only the profiler and the test assertions
+        // consume them, so drop them when neither is around, and let them skip
+        // messages nobody will collect otherwise. Test mode keeps collecting
+        // unconditionally because the assertions read the listeners directly.
+        if (!($config['test'] ?? false)) {
+            $loggerListeners = [
+                'mailer' => 'mailer.message_logger_listener',
+                'notifier' => 'notifier.notification_logger_listener',
+            ];
+
+            foreach ($loggerListeners as $extension => $id) {
+                if (!$this->isInitializedConfigEnabled($extension)) {
+                    continue;
+                }
+
+                if ($this->isInitializedConfigEnabled('profiler')) {
+                    $container->getDefinition($id)
+                        ->setArgument(0, new Reference('profiler.is_disabled_state_checker', ContainerInterface::NULL_ON_INVALID_REFERENCE));
+                } else {
+                    $container->removeDefinition($id);
+                }
+            }
+        }
+
         if ($this->readConfigEnabled('webhook', $container, $config['webhook'])) {
             $this->registerWebhookConfiguration($config['webhook'], $container, $loader, $this->readConfigEnabled('serializer', $container, $config['serializer']));
 
@@ -1491,6 +1516,9 @@ class FrameworkExtension extends Extension
 
         if (!$assetEnabled) {
             $container->removeDefinition('asset_mapper.asset_package');
+        } else {
+            $container->getDefinition('asset_mapper.asset_package')
+                ->replaceArgument(3, $config['server'] ? $config['public_prefix'] : null);
         }
 
         if (!$httpClientEnabled) {
@@ -2325,7 +2353,7 @@ class FrameworkExtension extends Extension
         }
 
         foreach ($config['resources'] as $resourceName => $resourceStores) {
-            if (0 === \count($resourceStores)) {
+            if (!$resourceStores) {
                 continue;
             }
 
@@ -2695,7 +2723,7 @@ class FrameworkExtension extends Extension
                 ->replaceArgument(0, $transportRateLimiterReferences);
         }
 
-        if (\count($failureTransports) > 0) {
+        if ($failureTransports) {
             if ($this->hasConsole()) {
                 $container->getDefinition('console.command.messenger_failed_messages_retry')
                     ->replaceArgument(0, $config['failure_transport']);
@@ -3050,7 +3078,7 @@ class FrameworkExtension extends Extension
 
         $loader->load('mailer.php');
         $loader->load('mailer_transports.php');
-        if (!\count($config['transports']) && null === $config['dsn']) {
+        if (!$config['transports'] && null === $config['dsn']) {
             $config['dsn'] = 'smtp://null';
         }
         $transports = $config['dsn'] ? ['main' => $config['dsn']] : $config['transports'];

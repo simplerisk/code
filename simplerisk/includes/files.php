@@ -191,10 +191,10 @@ function process_and_save_tmp_spreadsheet(string $file_name, string $file_tmp_na
     }
     
     // Turn the header array into a json string
-    $column_header_json = json_encode($column_header);
-    
+    $column_header_json = json_encode($column_header, JSON_INVALID_UTF8_SUBSTITUTE);
+
     // Turn the data array into a json string
-    $content_json = json_encode($data_array);
+    $content_json = json_encode($data_array, JSON_INVALID_UTF8_SUBSTITUTE);
     
     
     

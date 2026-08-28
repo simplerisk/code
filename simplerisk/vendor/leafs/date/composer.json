@@ -9,7 +9,7 @@
         "php",
         "framework"
     ],
-    "homepage": "https://leafphp.netlify.app/#/",
+    "homepage": "https://leafphp.dev/docs/utils/date",
     "type": "library",
     "license": "MIT",
     "authors": [
@@ -30,17 +30,22 @@
     },
     "minimum-stability": "dev",
     "prefer-stable": true,
+    "require": {
+        "php": "^8.2"
+    },
     "require-dev": {
-        "leafs/alchemy": "^4.0",
-        "friendsofphp/php-cs-fixer": "^3.14",
+        "leafs/alchemy": "^5.0",
+        "friendsofphp/php-cs-fixer": "*",
         "pestphp/pest": "*"
     },
     "scripts": {
-        "format": "vendor/bin/php-cs-fixer fix --config=.php_cs.dist.php --allow-risky=yes",
-        "test": "./vendor/bin/alchemy setup --test",
-        "alchemy": "./vendor/bin/alchemy setup",
-        "lint": "./vendor/bin/alchemy setup --lint",
-        "actions": "./vendor/bin/alchemy setup --actions"
+        "alchemy": "@php vendor/bin/alchemy all",
+        "test": "@php vendor/bin/alchemy test",
+        "lint": "@php vendor/bin/alchemy lint",
+        "fmt": "@php vendor/bin/alchemy fmt",
+        "analyse": "@php vendor/bin/alchemy analyse",
+        "refactor": "@php vendor/bin/alchemy refactor",
+        "ci": "@php vendor/bin/alchemy ci"
     },
     "config": {
         "allow-plugins": {

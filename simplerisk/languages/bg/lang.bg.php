@@ -3082,7 +3082,7 @@ $lang = array(
     'ResultMessageUnavailable' => 'Съобщението за резултата не е налично.',
     'AIProviderURLNotAllowed' => 'Тозият API URL адрес не е разрешен. Използвайте известен доставчик на изкуствен интелект или адрес за самостоятелно хостване с обратна връзка (127.0.0.1).',
     'AIReenterKeyForNewURL' => 'Въведете отново API ключа, за да тествате URL адрес на друг доставчик.',
-    'WorkflowHttpRequestDisallowedURL' => 'http_request: URL адресът {$url} води до забранен вътрешен или резервиран адрес.',
+    'WorkflowHttpRequestDisallowedURL' => '{$action}: URL адресът {$url} води до забранен вътрешен или резервиран адрес.',
     'BehaviorAndScheduling' => 'Поведение и планиране',
     'PrepopulateAcrossContacts' => 'Предварително попълване на новите отговори с предишните отговори на друг контакт за тази оценка',
     'PrepopulateAcrossContactsHelp' => 'Предварително попълнете формуляра на нов респондент с най-скорошните предишни отговори от всеки контакт – полезно за приемственост, когато отговорността се сменя.',
@@ -4637,6 +4637,28 @@ $lang = array(
     'ExtraVersionIncompatibleWithApplication' => 'Изтегленият "{$extra}" Extra (версия {$extra_version}) не е съвместим със SimpleRisk {$app_version} и не е инсталиран. Първо надстройте SimpleRisk до най-новата версия.',
     'ExtraCompatibilityDataUnavailable' => 'SimpleRisk не можа да потвърди кои версии на Extra поддържа тази версия, така че Extra не беше инсталиран. Моля, опитайте отново по-късно.',
     'ExtraVersionCouldNotBeVerified' => 'Версията на изтегленото Extra не можа да бъде определена, така че то не беше инсталирано.',
+    // User import temporary password
+    'NewUsernameAddedWithTemporaryPassword' => 'Нов потребител с потребителско име „{$username}“ беше добавен успешно. Временна парола: {$password} (потребителят трябва да я промени при първо влизане).',
+    'YouDontHavePermission' => 'Нямате разрешение.',
+    // Initiate Audits bulk-select
+    'InitiatedTestsBulk' => 'Започнати са $count тестове.',
+    // Merged Audits page (replaces Active Audits + Past Audits menu items)
+    'Audits' => 'Одити',
+    'ManageAudits' => 'Управление на одити',
+    'ViewAudits' => 'Преглед на одити',
+    // Redesigned, flat Initiate Audits page
+    'EligibleTests' => 'Допустими тестове',
+    'InitiateSelected' => 'Иницииране на избраното',
+    'InitiateNAudits' => 'Започнете {n} одити',
+    'TagsOptionalAppliedToSelection' => 'Етикети (по избор, прилагат се към всички)',
+    'Initiate' => 'Иницииране',
+    'NoEligibleTestsFound' => 'Не са намерени подходящи тестове.',
+    'Columns' => 'Колони',
+    'ShowTestsWithAuditInProgress' => 'Показване на тестове с текущ одит',
+    'NoMatchingOptions' => 'Няма съответстващи опции.',
+    'TestDetails' => 'Детайли за теста',
+    'PeopleAndTeams' => 'Хора и екипи',
+    'StatusAndTimeline' => 'Състояние и времева линия',
     '' => '',
 );
 ?>

@@ -30,20 +30,23 @@
     "minimum-stability": "dev",
     "prefer-stable": true,
     "require": {
+        "php": "^8.2",
         "ext-json": "*",
-        "leafs/anchor": "*"
+        "leafs/anchor": "^5.0"
     },
     "require-dev": {
-        "pestphp/pest": "^1.22",
-        "friendsofphp/php-cs-fixer": "^3.0",
-        "leafs/alchemy": "^2.1"
+        "pestphp/pest": "*",
+        "friendsofphp/php-cs-fixer": "*",
+        "leafs/alchemy": "^5.0"
     },
     "scripts": {
-        "format": "vendor/bin/php-cs-fixer fix --config=.php_cs.dist.php --allow-risky=yes",
-        "test": "./vendor/bin/alchemy setup --test",
-        "alchemy": "./vendor/bin/alchemy setup",
-        "lint": "./vendor/bin/alchemy setup --lint",
-        "actions": "./vendor/bin/alchemy setup --actions"
+        "test": "@php vendor/bin/alchemy test",
+        "alchemy": "@php vendor/bin/alchemy all",
+        "lint": "@php vendor/bin/alchemy lint",
+        "fmt": "@php vendor/bin/alchemy fmt",
+        "refactor": "@php vendor/bin/alchemy refactor",
+        "analyse": "@php vendor/bin/alchemy analyse",
+        "ci": "@php vendor/bin/alchemy ci"
     },
     "config": {
         "allow-plugins": {

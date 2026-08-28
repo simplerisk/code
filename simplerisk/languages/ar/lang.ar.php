@@ -1527,7 +1527,7 @@ $lang = array(
     'SendingRequestPleaseWait' => 'إرسال طلب. الرجاء الانتظار.',
     'ApplicationNeedsToBeUpgradeToLatestVersionToUpgradeExtras' => 'يجب ترقية التطبيق إلى أحدث إصدار لترقية إضافات.',
     'FilteredRiskReport' => 'تقرير المخاطر المصفاة',    
-    'NoPermissionForThisAction'=>'ليس لديك اذن هذا الاجراء.',
+    'NoPermissionForThisAction'=>'ليس لديك إذن للقيام بهذا الإجراء.',
     'QuestionnaireResult'=>'نتيجة الاستبيان',
     'ChangedField' => 'حقل تم تغييره',
     'ChangedFrom' => 'تغيير من',
@@ -3082,7 +3082,7 @@ $lang = array(
     'ResultMessageUnavailable' => 'رسالة النتيجة غير متوفرة.',
     'AIProviderURLNotAllowed' => 'عنوان URL الخاص بواجهة برمجة التطبيقات هذا غير مسموح به. استخدم موفر ذكاء اصطناعي معروفًا أو عنوان استضافة ذاتية (127.0.0.1).',
     'AIReenterKeyForNewURL' => 'أعد إدخال مفتاح API لاختبار عنوان URL لمزود خدمة مختلف.',
-    'WorkflowHttpRequestDisallowedURL' => 'http_request: يتم حل عنوان URL {$url} إلى عنوان داخلي أو محجوز غير مسموح به.',
+    'WorkflowHttpRequestDisallowedURL' => '{$action}: يتم حل عنوان URL {$url} إلى عنوان داخلي أو محجوز غير مسموح به.',
     'BehaviorAndScheduling' => 'السلوك والجدولة',
     'PrepopulateAcrossContacts' => 'قم بتعبئة الردود الجديدة مسبقًا بإجابات جهة اتصال أخرى سابقة لهذا التقييم',
     'PrepopulateAcrossContactsHelp' => 'قم بتعبئة نموذج المستجيب الجديد مسبقًا بأحدث الإجابات السابقة من أي جهة اتصال - وهو أمر مفيد لضمان استمرارية العمل عند تغيير المسؤولية.',
@@ -4637,6 +4637,28 @@ $lang = array(
     'ExtraVersionIncompatibleWithApplication' => 'الملف الإضافي "{$extra}" الذي تم تنزيله (الإصدار {$extra_version}) غير متوافق مع SimpleRisk {$app_version} ولم يتم تثبيته. يرجى ترقية SimpleRisk إلى أحدث إصدار أولاً.',
     'ExtraCompatibilityDataUnavailable' => 'لم يتمكن SimpleRisk من تحديد إصدارات الإضافات التي يدعمها هذا الإصدار، لذا لم يتم تثبيت الإضافات. يرجى المحاولة مرة أخرى لاحقًا.',
     'ExtraVersionCouldNotBeVerified' => 'لم يتم تحديد إصدار البرنامج الإضافي الذي تم تنزيله، لذلك لم يتم تثبيته.',
+    // User import temporary password
+    'NewUsernameAddedWithTemporaryPassword' => 'تمت إضافة مستخدم جديد بنجاح باسم المستخدم "{$username}". كلمة المرور المؤقتة: {$password} (يجب على المستخدم تغييرها عند تسجيل الدخول لأول مرة).',
+    'YouDontHavePermission' => 'ليس لديك إذن.',
+    // Initiate Audits bulk-select
+    'InitiatedTestsBulk' => 'تم بدء الاختبارات $count.',
+    // Merged Audits page (replaces Active Audits + Past Audits menu items)
+    'Audits' => 'عمليات التدقيق',
+    'ManageAudits' => 'إدارة عمليات التدقيق',
+    'ViewAudits' => 'عرض عمليات التدقيق',
+    // Redesigned, flat Initiate Audits page
+    'EligibleTests' => 'الاختبارات المؤهلة',
+    'InitiateSelected' => 'بدء العناصر المحددة',
+    'InitiateNAudits' => 'بدء عمليات التدقيق {n}',
+    'TagsOptionalAppliedToSelection' => 'الوسوم (اختياري، يتم تطبيقه على الجميع)',
+    'Initiate' => 'ابدأ',
+    'NoEligibleTestsFound' => 'لم يتم العثور على اختبارات مؤهلة.',
+    'Columns' => 'الأعمدة',
+    'ShowTestsWithAuditInProgress' => 'عرض الاختبارات مع وجود عملية تدقيق جارية',
+    'NoMatchingOptions' => 'لا توجد خيارات مطابقة.',
+    'TestDetails' => 'تفاصيل الاختبار',
+    'PeopleAndTeams' => 'الأفراد والفرق',
+    'StatusAndTimeline' => 'الحالة والجدول الزمني',
     '' => '',
 );
 ?>

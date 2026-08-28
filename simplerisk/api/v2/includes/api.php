@@ -598,7 +598,7 @@ function get_ui_widget_common($widget_name, $domain = null) {
             $total = $pass + $fail;
             $rate = $total > 0 ? round(($pass / $total) * 100) . '%' : '—';
             // Sparkline: 30-day pass-rate trend (global); a higher pass rate is good.
-            render_kpi_tile($rate, 'HomeKpiControlPassRate', '../compliance/past_audits.php', home_pass_rate_delta(), 'Compliance', kpi_sparkline_for('pass_rate', true));
+            render_kpi_tile($rate, 'HomeKpiControlPassRate', '../compliance/audits.php?status=past', home_pass_rate_delta(), 'Compliance', kpi_sparkline_for('pass_rate', true));
             break;
         case 'kpi_failing_controls':
             $counts = get_framework_controls_test_status_counts(compliance_dashboard_framework_filter());

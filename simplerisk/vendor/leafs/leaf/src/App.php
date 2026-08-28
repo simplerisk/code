@@ -10,7 +10,7 @@ namespace Leaf;
  * The easiest way to build simple but powerful apps and APIs quickly.
  *
  * @author Michael Darko <mickdd22@gmail.com>
- * @copyright 2019-2025 Michael Darko
+ * @copyright 2019-2026 Michael Darko
  * @link https://leafphp.dev
  * @license MIT
  * @package Leaf
@@ -19,8 +19,9 @@ class App extends Router
 {
     /**
      * Callable to be invoked on application error
+     * @var \Leaf\Crash\Handler|null
      */
-    protected Exception\Run $errorHandler;
+    protected static $errorHandler = null;
 
     /********************************************************************************
      * Instantiation and Configuration
@@ -50,17 +51,54 @@ class App extends Router
     {
         if (!empty($userSettings)) {
             Config::set(array_merge($userSettings, [
-                'mode' => _env('APP_ENV', Config::getStatic('mode')),
+                'mode' => _env('APP_ENV', $userSettings['mode'] ?? Config::getStatic('mode')),
             ]));
         }
 
         $this->setupDefaultContainer();
+        $this->syncCrashContext();
+    }
+
+    /**
+     * Keep the crash engine in step with app config: debug mode decides
+     * the crash page vs the production page, and every report carries
+     * the request + app context without any user setup.
+     */
+    protected function syncCrashContext()
+    {
+        if (!(static::$errorHandler instanceof \Leaf\Crash\Handler)) {
+            return;
+        }
+
+        static::$errorHandler->debug(Anchor::toBool(Config::getStatic('debug')) ?? true);
+
+        $context = [
+            'appRoot' => getcwd(),
+            'app' => [
+                'env' => Config::getStatic('mode'),
+                'leaf' => defined('static::VERSION') ? static::VERSION : 'v5',
+            ],
+        ];
+
+        if (isset($_SERVER['REQUEST_METHOD'])) {
+            $context['request'] = [
+                'method' => $_SERVER['REQUEST_METHOD'],
+                'url' => ($_SERVER['REQUEST_URI'] ?? '/'),
+            ];
+        }
+
+        crash()->context($context);
     }
 
     protected function setupErrorHandler()
     {
-        $this->errorHandler = (new Exception\Run());
-        $this->errorHandler->register();
+        // registering once keeps custom handlers intact and the handler stack balanced
+        if (static::$errorHandler !== null) {
+            return;
+        }
+
+        static::$errorHandler = new \Leaf\Crash\Handler(crash());
+        static::$errorHandler->register();
     }
 
     /**
@@ -70,15 +108,12 @@ class App extends Router
     public function setErrorHandler($handler)
     {
         if (Anchor::toBool(Config::getStatic('debug')) === false) {
-            if ($this->errorHandler instanceof Exception\Run) {
-                $this->errorHandler->unregister();
-            }
+            static::$errorHandler->renderWith(function ($report) use ($handler) {
+                ob_start();
+                $handler($report);
 
-            $this->errorHandler = new Exception\Run();
-            $this
-                ->errorHandler
-                ->pushHandler($handler)
-                ->register();
+                return ob_get_clean();
+            });
         }
     }
 
@@ -91,8 +126,31 @@ class App extends Router
         Config::singleton($name, $value);
     }
 
+    /**
+     * Check if a dependency exists in the container
+     * @param string $name The name of the registered dependency
+     */
+    public function has(string $name): bool
+    {
+        return Config::has($name);
+    }
+
     private function setupDefaultContainer()
     {
+        $mode = _env('APP_ENV', Config::getStatic('mode') ?: 'development');
+        Config::set('mode', $mode);
+
+        if (Config::getStatic('debug') === null) {
+            Config::set('debug', $mode !== 'production');
+        }
+
+        $sessionCookie = Config::getStatic('session.cookie') ?? [];
+
+        if (($sessionCookie['secure'] ?? null) === null) {
+            $sessionCookie['secure'] = !empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off';
+            Config::set('session.cookie', $sessionCookie);
+        }
+
         Config::singleton('request', function () {
             return new Http\Request();
         });
@@ -108,8 +166,6 @@ class App extends Router
         Config::singleton('app', function () {
             return $this;
         });
-
-        Config::set('mode', _env('APP_ENV', Config::getStatic('mode')));
     }
 
     public function __get($name)
@@ -134,7 +190,15 @@ class App extends Router
 
     public function __call($method, $args)
     {
-        return Config::view($method);
+        $view = Config::view($method);
+
+        if ($view !== null) {
+            return $view;
+        }
+
+        throw new \BadMethodCallException(
+            "Call to undefined method Leaf\\App::$method(). If you're trying to use a view engine, attach it with attachView() first."
+        );
     }
 
     /**
@@ -238,22 +302,6 @@ class App extends Router
         $this->use(function () {
             Anchor\CSRF::validate();
         });
-    }
-
-    /**
-     * Create a route handled by websocket (requires Eien module)
-     *
-     * @param string $name The url of the route
-     * @param callable $callback The callback function
-     * @uses package Eien module
-     * @see https://leafphp.dev/modules/eien/
-     */
-    public function ws(string $name, callable $callback)
-    {
-        Config::set('eien.events', \array_merge(
-            Config::getStatic('eien.events') ?? [],
-            [$name => $callback]
-        ));
     }
 
     /********************************************************************************
@@ -382,14 +430,6 @@ class App extends Router
      */
     public static function run(?callable $callback = null)
     {
-        if (\class_exists('Leaf\Eien\Server') && Config::getStatic('eien.enabled')) {
-            server()
-                ->wrap(function () use ($callback) {
-                    parent::run($callback);
-                })
-                ->listen();
-        } else {
-            return parent::run($callback);
-        }
+        return parent::run($callback);
     }
 }

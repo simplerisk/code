@@ -27,7 +27,8 @@ class LogWriter
             if ($createFile) {
                 FS\File::create($file, null, ['recursive' => true]);
             } else {
-                trigger_error(basename($file) . " not found in " . dirname($file), E_USER_ERROR);
+                // php 8.4 deprecates trigger_error with E_USER_ERROR
+                throw new \RuntimeException(basename($file) . ' not found in ' . dirname($file));
             }
         }
 
@@ -46,35 +47,27 @@ class LogWriter
         $style = class_exists('Leaf\Config') ? \Leaf\Config::get('log.style') ?? 'leaf' : 'leaf';
 
         if ($level !== null) {
-            $level = Log::getLevel($level) . " - ";
+            $level = Log::getLevel($level) . ' - ';
         }
 
-        if ($style === 'leaf') {
-            $this->writeAsLeaf($message, $level);
-        } else if ($style === 'linux') {
-            $this->writeAsLinux($message, $level);
+        $timestamp = (new \Leaf\Date())->tick()->now();
+        $formatted = $style === 'linux'
+            ? "[$timestamp] $level$message\n\n"
+            : "[$timestamp]\n$level$message\n\n";
+
+        // appending uses the file's own pointer; prepending rewrites the
+        // whole file on every line, which is unusable on production logs.
+        // `log.mode: prepend` keeps the old newest-first layout by choice.
+        $mode = class_exists('Leaf\Config') ? \Leaf\Config::get('log.mode') : null;
+
+        if ($mode === 'prepend') {
+            FS\File::write($this->logFile, function ($content) use ($formatted) {
+                return $formatted . $content;
+            });
+        } else {
+            FS\File::write($this->logFile, $formatted, FILE_APPEND);
         }
 
         return 1;
-    }
-
-    protected function writeAsLeaf($message, $level)
-    {
-        FS\File::write(
-            $this->logFile,
-            function ($content) use ($message, $level) {
-                return "[" . (new \Leaf\Date())->tick()->now() . "]\n" . $level . "$message\n\n" . $content;
-            },
-        );
-    }
-
-    protected function writeAsLinux($message, $level)
-    {
-        FS\File::write(
-            $this->logFile,
-            function ($content) use ($message, $level) {
-                return "[" . (new \Leaf\Date())->tick()->now() . "] " . $level . "$message\n\n" . $content;
-            },
-        );
     }
 }

@@ -27,7 +27,8 @@
  *         description="Risk retrieved successfully.",
  *         @OA\JsonContent(type="object", @OA\Property(property="data", type="array", @OA\Items(type="object")))
  *     ),
- *     @OA\Response(response=400, description="BAD REQUEST: Missing or invalid ID, or insufficient permission."),
+ *     @OA\Response(response=400, description="BAD REQUEST: Missing or invalid ID, or the caller lacks the risk management permission."),
+ *     @OA\Response(response=403, description="FORBIDDEN: The caller does not have access to this risk."),
  *     @OA\Response(response=404, description="NOT FOUND: Risk ID not found."),
  * )
  */
@@ -133,7 +134,8 @@ class OpenApiUpdateRiskById {}
  *         @OA\Schema(type="integer")
  *     ),
  *     @OA\Response(response=200, description="Mitigation retrieved successfully."),
- *     @OA\Response(response=400, description="BAD REQUEST: Missing ID, no mitigation found, or insufficient permission."),
+ *     @OA\Response(response=400, description="BAD REQUEST: Missing ID, no mitigation found, or the caller lacks the risk management permission."),
+ *     @OA\Response(response=403, description="FORBIDDEN: The caller does not have access to this risk."),
  * )
  */
 class OpenApiGetRiskMitigation {}
@@ -227,7 +229,8 @@ class OpenApiUpdateRiskMitigation {}
  *         @OA\Schema(type="integer")
  *     ),
  *     @OA\Response(response=200, description="Review retrieved successfully."),
- *     @OA\Response(response=400, description="BAD REQUEST: Missing ID, no review found, or insufficient permission."),
+ *     @OA\Response(response=400, description="BAD REQUEST: Missing ID, no review found, or the caller lacks the risk management permission."),
+ *     @OA\Response(response=403, description="FORBIDDEN: The caller does not have access to this risk."),
  * )
  */
 class OpenApiGetRiskReview {}
@@ -840,8 +843,12 @@ class OpenApiWhoami {}
  *       )
  *     ),
  *     @OA\Response(
- *       response=401,
- *       description="UNAUTHORIZED: No permission to view this risk.",
+ *       response=400,
+ *       description="BAD REQUEST: Missing ID, or the caller lacks the risk management permission.",
+ *     ),
+ *     @OA\Response(
+ *       response=403,
+ *       description="FORBIDDEN: The caller does not have access to this risk.",
  *     ),
  * )
  */
@@ -1061,8 +1068,12 @@ class OpenApiUpdateRisk {}
  *       )
  *     ),
  *     @OA\Response(
- *       response=401,
- *       description="UNAUTHORIZED: No permission to view this mitigation.",
+ *       response=400,
+ *       description="BAD REQUEST: Missing ID, or the caller lacks the risk management permission.",
+ *     ),
+ *     @OA\Response(
+ *       response=403,
+ *       description="FORBIDDEN: The caller does not have access to this risk.",
  *     ),
  * )
  */
@@ -1143,8 +1154,12 @@ class OpenApiSaveMitigation {}
  *       )
  *     ),
  *     @OA\Response(
- *       response=401,
- *       description="UNAUTHORIZED: No permission to view this review.",
+ *       response=400,
+ *       description="BAD REQUEST: Missing ID, or the caller lacks the risk management permission.",
+ *     ),
+ *     @OA\Response(
+ *       response=403,
+ *       description="FORBIDDEN: The caller does not have access to this risk.",
  *     ),
  * )
  */

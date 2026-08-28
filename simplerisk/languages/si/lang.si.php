@@ -1527,7 +1527,7 @@ $lang = array(
     'SendingRequestPleaseWait' => 'ඉල්ලීම යවමින්. කරුණාකර රැඳී සිටින්න.',
     'ApplicationNeedsToBeUpgradeToLatestVersionToUpgradeExtras' => 'අමතර යාවත්කාලීන කිරීම සඳහා යෙදුම නවතම අනුවාදයට යාවත්කාලීන කළ යුතුය.',
     'FilteredRiskReport' => 'පෙරහන් කළ අවදානම් වාර්තාව',    
-    'NoPermissionForThisAction'=>'මෙම ක්‍රියාව සඳහා ඔබට අවසර නොමැත.',
+    'NoPermissionForThisAction'=>'මෙම ක්‍රියාව සඳහා ඔබට අවසර නැත.',
     'QuestionnaireResult'=>'ප්රශ්නාවලිය ප්රති ult ලය',
     'ChangedField' => 'වෙනස් කළ ක්ෂේත්‍රය',
     'ChangedFrom' => 'සිට වෙනස් කරන ලදි',
@@ -3082,7 +3082,7 @@ $lang = array(
     'ResultMessageUnavailable' => 'ප්‍රතිඵල පණිවිඩය නොමැත.',
     'AIProviderURLNotAllowed' => 'එම API URL එකට අවසර නැත. දන්නා AI සැපයුම්කරුවෙකු හෝ ලූප්බැක් (127.0.0.1) ස්වයං-සත්කාරක ලිපිනයක් භාවිතා කරන්න.',
     'AIReenterKeyForNewURL' => 'වෙනස් සැපයුම්කරු URL එකක් පරීක්ෂා කිරීමට API යතුර නැවත ඇතුළත් කරන්න.',
-    'WorkflowHttpRequestDisallowedURL' => 'http_request: {$url} URL එක අවසර නොලත් අභ්‍යන්තර හෝ වෙන් කළ ලිපිනයකට විසඳයි.',
+    'WorkflowHttpRequestDisallowedURL' => '{$action}: {$url} URL එක අවසර නොලත් අභ්‍යන්තර හෝ වෙන් කළ ලිපිනයකට විසඳයි.',
     'BehaviorAndScheduling' => 'හැසිරීම සහ කාලසටහන්ගත කිරීම',
     'PrepopulateAcrossContacts' => 'මෙම තක්සේරුව සඳහා වෙනත් සම්බන්ධතාවක පෙර පිළිතුරු සමඟ නව ප්‍රතිචාර පූර්ව-පිරවීම.',
     'PrepopulateAcrossContactsHelp' => 'නව ප්‍රතිචාර දක්වන්නෙකුගේ පෝරමය, ඕනෑම සම්බන්ධතාවයකින් ලබාගත් මෑත කාලීන පිළිතුරු සමඟ පූර්ව-පුරවන්න - වගකීම අත මාරු වන විට අඛණ්ඩතාව සඳහා ප්‍රයෝජනවත් වේ.',
@@ -4637,6 +4637,28 @@ $lang = array(
     'ExtraVersionIncompatibleWithApplication' => 'බාගත කළ "{$extra}" අමතර (අනුවාදය {$extra_version}) SimpleRisk {$app_version} සමඟ අනුකූල නොවන අතර ස්ථාපනය කර නොමැත. පළමුව SimpleRisk නවතම අනුවාදයට උත්ශ්‍රේණි කරන්න.',
     'ExtraCompatibilityDataUnavailable' => 'මෙම නිකුතුව සහාය දක්වන අමතර අනුවාදයන් මොනවාදැයි SimpleRisk හට තහවුරු කළ නොහැකි විය, එබැවින් අමතර ස්ථාපනය කර නොමැත. කරුණාකර පසුව නැවත උත්සාහ කරන්න.',
     'ExtraVersionCouldNotBeVerified' => 'බාගත කළ අමතර අනුවාදය තීරණය කළ නොහැකි විය, එබැවින් එය ස්ථාපනය කර නොමැත.',
+    // User import temporary password
+    'NewUsernameAddedWithTemporaryPassword' => '"{$username}" යන පරිශීලක නාමය සහිත නව පරිශීලකයෙකු සාර්ථකව එකතු කරන ලදී. තාවකාලික මුරපදය: {$password} (පරිශීලකයා පළමු පිවිසුමේදී එය වෙනස් කළ යුතුය).',
+    'YouDontHavePermission' => 'ඔබට අවසර නැත.',
+    // Initiate Audits bulk-select
+    'InitiatedTestsBulk' => '$count පරීක්ෂණ ආරම්භ කරන ලදී.',
+    // Merged Audits page (replaces Active Audits + Past Audits menu items)
+    'Audits' => 'විගණන',
+    'ManageAudits' => 'විගණන කළමනාකරණය කරන්න',
+    'ViewAudits' => 'විගණන බලන්න',
+    // Redesigned, flat Initiate Audits page
+    'EligibleTests' => 'සුදුසුකම් ලත් පරීක්ෂණ',
+    'InitiateSelected' => 'තෝරාගත් ඒවා ආරම්භ කරන්න',
+    'InitiateNAudits' => '{n} විගණන ආරම්භ කරන්න',
+    'TagsOptionalAppliedToSelection' => 'ටැග් (විකල්ප, සියල්ලටම යොදන ලදී)',
+    'Initiate' => 'ආරම්භ කරන්න',
+    'NoEligibleTestsFound' => 'සුදුසුකම් ලත් පරීක්ෂණ කිසිවක් හමු නොවීය.',
+    'Columns' => 'තීරු',
+    'ShowTestsWithAuditInProgress' => 'සිදුවෙමින් පවතින විගණනයක් සහිත පරීක්ෂණ පෙන්වන්න',
+    'NoMatchingOptions' => 'ගැළපෙන විකල්ප නොමැත.',
+    'TestDetails' => 'පරීක්ෂණ විස්තර',
+    'PeopleAndTeams' => 'පුද්ගලයින් සහ කණ්ඩායම්',
+    'StatusAndTimeline' => 'තත්ත්වය සහ කාලරේඛාව',
     '' => '',
 );
 ?>

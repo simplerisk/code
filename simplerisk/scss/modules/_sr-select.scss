@@ -90,9 +90,12 @@
     left: 0;
     min-width: 100%;
     max-width: min(360px, 90vw);
+    // A flex column, not the scroll container itself -- the search box stays
+    // put and only .sr-select-options (below) scrolls, the same split
+    // .sr-picker-search/.sr-picker-modal's list pane uses.
+    display: flex;
+    flex-direction: column;
     max-height: 320px;
-    overflow-y: auto;
-    padding: 4px;
     background: $sr-body;
     border: 1px solid $gray-300;
     border-radius: 6px;
@@ -101,6 +104,48 @@
     &[hidden] {
         display: none;
     }
+}
+
+.sr-select-search {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: none;
+    padding: 8px 10px;
+    border-bottom: 1px solid $gray-200;
+}
+
+.sr-select-search-icon {
+    flex: none;
+    color: $gray-500;
+    font-size: 12px;
+}
+
+.sr-select-search-input {
+    flex: 1 1 auto;
+    min-width: 0;
+    border: 0;
+    background: none;
+    font-size: 13px;
+    color: $sr-primary;
+
+    &:focus {
+        outline: none;
+    }
+}
+
+.sr-select-options {
+    overflow-y: auto;
+    padding: 4px;
+}
+
+// Shown only when a search leaves nothing to pick -- explains the empty
+// list as "still searching", not "this filter is broken".
+.sr-select-empty {
+    padding: 10px 8px;
+    font-size: 12.5px;
+    color: $gray-600;
+    text-align: center;
 }
 
 .sr-select-option {
@@ -135,6 +180,13 @@
         &:hover {
             background: none;
         }
+    }
+
+    // A row the live search box has filtered out. Hidden, not detached --
+    // clearing the query needs the row back exactly as it was, selection
+    // state included.
+    &.is-search-hidden {
+        display: none;
     }
 }
 

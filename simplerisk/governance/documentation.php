@@ -591,10 +591,21 @@
                     baseZ: 1100,
                 });
 
+                // A <select multiple name="control_ids[]"> serializes into FormData as one
+                // control_ids[] entry per selected option, which can exceed PHP's
+                // max_input_vars ceiling (default 1000) once a framework contributes
+                // hundreds of controls -- the POST body is silently truncated past that
+                // point, dropping trailing fields with no error. Collapse the selection to
+                // a single comma-separated field instead, so the POST field count no
+                // longer scales with the number of selected controls.
+                var addFormData = new FormData($('#add-document-form')[0]);
+                addFormData.delete('control_ids[]');
+                addFormData.set('control_ids', ($("#add-document-form [name='control_ids[]']").val() || []).join(','));
+
                 $.ajax({
                     type: "POST",
                     url: BASE_URL + "/api/v2/documents/create",
-                    data: new FormData($('#add-document-form')[0]),
+                    data: addFormData,
                     async: true,
                     cache: false,
                     contentType: false,
@@ -657,10 +668,18 @@
                     baseZ: 1100,
                 });
 
+                // See the matching comment on the add-document submit handler above:
+                // collapse the multi-select's array serialization to a single
+                // comma-separated field so the POST field count doesn't scale with the
+                // number of selected controls.
+                var updateFormData = new FormData($('#update-document-form')[0]);
+                updateFormData.delete('control_ids[]');
+                updateFormData.set('control_ids', ($("#update-document-form [name='control_ids[]']").val() || []).join(','));
+
                 $.ajax({
                     type: "POST",
                     url: BASE_URL + "/api/v2/documents/update",
-                    data: new FormData($('#update-document-form')[0]),
+                    data: updateFormData,
                     async: true,
                     cache: false,
                     contentType: false,

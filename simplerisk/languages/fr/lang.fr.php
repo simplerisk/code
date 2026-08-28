@@ -1528,7 +1528,7 @@ $lang = array(
     'SendingRequestPleaseWait' => 'Envoi de la demande. Veuillez patienter.',
     'ApplicationNeedsToBeUpgradeToLatestVersionToUpgradeExtras' => 'L’application doit être mise à niveau vers la dernière version pour mettre à niveau les extras.',
     'FilteredRiskReport' => 'Rapport de risque filtré',    
-    'NoPermissionForThisAction'=>'Vous n\'avez pas la permission de cette action.',
+    'NoPermissionForThisAction'=>'Vous n\'êtes pas autorisé à effectuer cette action.',
     'QuestionnaireResult'=>'Résultat du questionnaire',
     'ChangedField' => 'Champ modifié',
     'ChangedFrom' => 'Changement de',
@@ -3083,7 +3083,7 @@ $lang = array(
     'ResultMessageUnavailable' => 'Message de résultat indisponible.',
     'AIProviderURLNotAllowed' => 'Cette URL d\'API n\'est pas autorisée. Veuillez utiliser un fournisseur d\'IA connu ou une adresse d\'auto-hébergement de bouclage (127.0.0.1).',
     'AIReenterKeyForNewURL' => 'Saisissez à nouveau la clé API pour tester l\'URL d\'un autre fournisseur.',
-    'WorkflowHttpRequestDisallowedURL' => 'http_request : L\'URL {$url} se résout en une adresse interne ou réservée non autorisée.',
+    'WorkflowHttpRequestDisallowedURL' => '{$action} : L\'URL {$url} se résout en une adresse interne ou réservée non autorisée.',
     'BehaviorAndScheduling' => 'Comportement et planification',
     'PrepopulateAcrossContacts' => 'Préremplir les nouvelles réponses avec les réponses précédentes d\'un autre contact pour cette évaluation',
     'PrepopulateAcrossContactsHelp' => 'Préremplissez le formulaire d\'un nouveau répondant avec les réponses les plus récentes de chaque contact précédent — utile pour assurer la continuité lorsque la responsabilité change de mains.',
@@ -4638,6 +4638,28 @@ $lang = array(
     'ExtraVersionIncompatibleWithApplication' => 'Le module complémentaire « {$extra} » téléchargé (version {$extra_version}) n\'est pas compatible avec SimpleRisk {$app_version} et n\'a pas été installé. Veuillez d\'abord mettre à jour SimpleRisk vers la dernière version.',
     'ExtraCompatibilityDataUnavailable' => 'SimpleRisk n\'a pas pu confirmer les versions d\'Extra prises en charge par cette version, celle-ci n\'a donc pas été installée. Veuillez réessayer plus tard.',
     'ExtraVersionCouldNotBeVerified' => 'La version du module complémentaire téléchargé n\'a pas pu être déterminée, il n\'a donc pas été installé.',
+    // User import temporary password
+    'NewUsernameAddedWithTemporaryPassword' => 'Un nouvel utilisateur, dont le nom d\'utilisateur est «{$username}», a été ajouté avec succès. Mot de passe temporaire : {$password} (l\'utilisateur devra le modifier lors de sa première connexion).',
+    'YouDontHavePermission' => 'Vous n\'avez pas l\'autorisation.',
+    // Initiate Audits bulk-select
+    'InitiatedTestsBulk' => 'Tests lancés $count.',
+    // Merged Audits page (replaces Active Audits + Past Audits menu items)
+    'Audits' => 'Audits',
+    'ManageAudits' => 'Gérer les audits',
+    'ViewAudits' => 'Consulter les audits',
+    // Redesigned, flat Initiate Audits page
+    'EligibleTests' => 'Tests admissibles',
+    'InitiateSelected' => 'Lancer la sélection',
+    'InitiateNAudits' => 'Lancer des audits {n}',
+    'TagsOptionalAppliedToSelection' => 'Étiquettes (facultatives, appliquées à tous)',
+    'Initiate' => 'Lancer',
+    'NoEligibleTestsFound' => 'Aucun test admissible trouvé.',
+    'Columns' => 'Colonnes',
+    'ShowTestsWithAuditInProgress' => 'Afficher les tests avec un audit en cours',
+    'NoMatchingOptions' => 'Aucune option correspondante.',
+    'TestDetails' => 'Détails du test',
+    'PeopleAndTeams' => 'Les personnes et les équipes',
+    'StatusAndTimeline' => 'État d\'avancement et calendrier',
     '' => '',
 );
 ?>

@@ -3082,7 +3082,7 @@ $lang = array(
     'ResultMessageUnavailable' => 'ข้อความผลลัพธ์ไม่พร้อมใช้งาน',
     'AIProviderURLNotAllowed' => 'URL API นั้นไม่ได้รับอนุญาต โปรดใช้ผู้ให้บริการ AI ที่รู้จัก หรือที่อยู่โฮสต์ตนเองแบบ loopback (127.0.0.1)',
     'AIReenterKeyForNewURL' => 'ป้อนรหัส API อีกครั้งเพื่อทดสอบ URL ของผู้ให้บริการรายอื่น',
-    'WorkflowHttpRequestDisallowedURL' => 'http_request: URL {$url} ถูกแปลงเส้นทางไปยังที่อยู่ภายในหรือที่สงวนไว้ซึ่งไม่ได้รับอนุญาต',
+    'WorkflowHttpRequestDisallowedURL' => '{$action}: URL {$url} ถูกแปลงเป็นที่อยู่ภายในหรือที่สงวนไว้ซึ่งไม่ได้รับอนุญาต',
     'BehaviorAndScheduling' => 'พฤติกรรมและการจัดตารางเวลา',
     'PrepopulateAcrossContacts' => 'กรอกข้อมูลล่วงหน้าในคำตอบใหม่โดยใช้คำตอบก่อนหน้าของผู้ติดต่อรายอื่นสำหรับการประเมินนี้',
     'PrepopulateAcrossContactsHelp' => 'กรอกข้อมูลในแบบฟอร์มของผู้ตอบแบบสอบถามรายใหม่ล่วงหน้าด้วยคำตอบล่าสุดจากผู้ติดต่อทุกราย — ซึ่งมีประโยชน์สำหรับการรักษาความต่อเนื่องเมื่อมีการเปลี่ยนมือผู้รับผิดชอบ',
@@ -4637,6 +4637,28 @@ $lang = array(
     'ExtraVersionIncompatibleWithApplication' => 'โปรแกรมเสริม "{$extra}" (เวอร์ชัน {$extra_version}) ที่ดาวน์โหลดมานั้นไม่สามารถใช้งานร่วมกับ SimpleRisk {$app_version} ได้ และไม่สามารถติดตั้งได้ โปรดอัปเกรด SimpleRisk เป็นเวอร์ชันล่าสุดก่อน',
     'ExtraCompatibilityDataUnavailable' => 'SimpleRisk ไม่สามารถยืนยันได้ว่าเวอร์ชันรีลีส์นี้รองรับ Extra เวอร์ชันใดบ้าง ดังนั้นจึงไม่ได้ติดตั้ง Extra โปรดลองอีกครั้งในภายหลัง',
     'ExtraVersionCouldNotBeVerified' => 'ไม่สามารถระบุเวอร์ชันของส่วนเสริมที่ดาวน์โหลดมาได้ จึงไม่ได้ทำการติดตั้ง',
+    // User import temporary password
+    'NewUsernameAddedWithTemporaryPassword' => 'เพิ่มผู้ใช้ใหม่ที่มีชื่อผู้ใช้ "{$username}" สำเร็จแล้ว รหัสผ่านชั่วคราว: {$password} (ผู้ใช้ต้องเปลี่ยนรหัสผ่านเมื่อเข้าสู่ระบบครั้งแรก)',
+    'YouDontHavePermission' => 'คุณไม่มีสิทธิ์',
+    // Initiate Audits bulk-select
+    'InitiatedTestsBulk' => 'เริ่มการทดสอบ $count แล้ว',
+    // Merged Audits page (replaces Active Audits + Past Audits menu items)
+    'Audits' => 'การตรวจสอบ',
+    'ManageAudits' => 'จัดการการตรวจสอบ',
+    'ViewAudits' => 'ดูผลการตรวจสอบ',
+    // Redesigned, flat Initiate Audits page
+    'EligibleTests' => 'การทดสอบที่เข้าเกณฑ์',
+    'InitiateSelected' => 'เริ่มการเลือก',
+    'InitiateNAudits' => 'เริ่มการตรวจสอบ {n}',
+    'TagsOptionalAppliedToSelection' => 'แท็ก (ไม่บังคับ ใช้กับทุกแท็ก)',
+    'Initiate' => 'เริ่มต้น',
+    'NoEligibleTestsFound' => 'ไม่พบการทดสอบที่เข้าเกณฑ์',
+    'Columns' => 'คอลัมน์',
+    'ShowTestsWithAuditInProgress' => 'แสดงผลการทดสอบที่มีการตรวจสอบระหว่างดำเนินการ',
+    'NoMatchingOptions' => 'ไม่มีตัวเลือกที่ตรงกัน',
+    'TestDetails' => 'รายละเอียดการทดสอบ',
+    'PeopleAndTeams' => 'บุคคลและทีม',
+    'StatusAndTimeline' => 'สถานะและระยะเวลา',
     '' => '',
 );
 ?>

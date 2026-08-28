@@ -11,7 +11,7 @@ namespace Leaf;
  *
  * @author Michael Darko
  * @since 1.2.0
- * @version 3.0
+ * @version 5.0
  */
 class Router
 {
@@ -29,10 +29,10 @@ class Router
      * 'Middleware' to run at specific times
      */
     protected static $hooks = [
-        'router.before' => false,
-        'router.before.route' => false,
-        'router.after.route' => false,
-        'router.after' => false,
+        'router.before' => [],
+        'router.before.route' => [],
+        'router.after.route' => [],
+        'router.after' => [],
     ];
 
     /**
@@ -51,6 +51,16 @@ class Router
     protected static $routes = [];
 
     /**
+     * Fast route lookup table for dispatching current request routes.
+     */
+    protected static $routeIndex = [];
+
+    /**
+     * Registration order used to preserve first-match routing semantics.
+     */
+    protected static $routeOrder = 0;
+
+    /**
      * Sorted list of routes and their handlers
      */
     protected static $appRoutes = [];
@@ -66,9 +76,26 @@ class Router
     protected static $routeGroupMiddleware = [];
 
     /**
+     * Lingo options
+     */
+    protected static $lingoOptions = [
+        'lingo.routes' => [],
+    ];
+
+    /**
+     * Sitemap options
+     */
+    protected static $sitemapOptions = [];
+
+    /**
      * Current group base path
      */
     protected static $groupRoute = '';
+
+    /**
+     * Current group name prefix for named routes (e.g. "admin.")
+     */
+    protected static $groupName = '';
 
     /**
      * Default controller namespace
@@ -76,9 +103,27 @@ class Router
     protected static $namespace = '';
 
     /**
-     * The Server Base Path for Router Execution
+     * The Server Base Path for Router Execution (null = not yet resolved)
      */
-    protected static $serverBasePath = '';
+    protected static $serverBasePath = null;
+
+    /**
+     * Cached URI for the current request
+     */
+    protected static $currentUri;
+
+    /**
+     * Cached HTTP method for the current request
+     */
+    protected static $currentMethod;
+
+    /**
+     * Get the current request method, resolving overrides only once per request
+     */
+    protected static function getCurrentMethod(): string
+    {
+        return static::$currentMethod ??= \Leaf\Http\Request::getMethod();
+    }
 
     /**
      * Set the 404 handling function.
@@ -91,7 +136,7 @@ class Router
             static::$notFoundHandler = $handler;
         } else {
             static::$notFoundHandler = function () {
-                \Leaf\Exception\General::default404();
+                \Leaf\Crash\Pages::default404();
             };
         }
     }
@@ -118,6 +163,9 @@ class Router
 
         $initialNamespace = static::$namespace;
         $initialGroupRoute = static::$groupRoute;
+        $initialGroupName = static::$groupName;
+        $initialLingoOptions = static::$lingoOptions;
+        $initialSitemapOptions = static::$sitemapOptions;
         $initialGroupMiddleware = static::$routeGroupMiddleware;
 
         if ($groupOptions['namespace']) {
@@ -130,10 +178,27 @@ class Router
             static::$routeGroupMiddleware = $groupOptions['middleware'];
         }
 
+        if (!empty($groupOptions['name'])) {
+            // group names cascade: group "admin" + route "users.index"
+            // registers as "admin.users.index" — nested groups compose
+            static::$groupName .= trim($groupOptions['name'], '.') . '.';
+        }
+
+        if (isset($groupOptions['lingo.routes'])) {
+            static::$lingoOptions['lingo.routes'] = $groupOptions['lingo.routes'];
+        }
+
+        if (isset($groupOptions['sitemap'])) {
+            static::$sitemapOptions = $groupOptions['sitemap'];
+        }
+
         call_user_func($handler);
 
         static::$namespace = $initialNamespace;
         static::$groupRoute = $initialGroupRoute;
+        static::$groupName = $initialGroupName;
+        static::$lingoOptions = $initialLingoOptions;
+        static::$sitemapOptions = $initialSitemapOptions;
         static::$routeGroupMiddleware = $initialGroupMiddleware;
     }
 
@@ -163,8 +228,13 @@ class Router
 
         $pattern = static::$groupRoute . '/' . trim($pattern, '/');
         $pattern = static::$groupRoute ? rtrim($pattern, '/') : $pattern;
+        $compiledPattern = static::compilePattern($pattern);
 
         list($handler, $routeOptions) = static::mapHandler($handler);
+
+        if (!empty($routeOptions['name']) && static::$groupName !== '') {
+            $routeOptions['name'] = static::$groupName . $routeOptions['name'];
+        }
 
         if (is_string($handler)) {
             $namespace = static::$namespace;
@@ -179,11 +249,26 @@ class Router
         }
 
         foreach ($methods as $method) {
+            $sitemapOptions = [];
+
+            if (isset($routeOptions['sitemap'])) {
+                $sitemapOptions = $routeOptions['sitemap'];
+            } elseif (static::$sitemapOptions === false || (is_array(static::$sitemapOptions) && !empty(static::$sitemapOptions))) {
+                $sitemapOptions = static::$sitemapOptions;
+            }
+
             static::$routes[$method][] = [
                 'pattern' => $pattern,
+                'regex' => $compiledPattern['regex'],
+                'params' => $compiledPattern['params'],
                 'handler' => $handler,
                 'name' => $routeOptions['name'] ?? '',
+                'sitemap' => $sitemapOptions,
+                'lingo.routes' => $routeOptions['lingo.routes'] ?? static::$lingoOptions['lingo.routes'] ?? [],
+                'order' => static::$routeOrder++,
             ];
+
+            static::indexRoute($method, static::$routes[$method][array_key_last(static::$routes[$method])]);
 
             if ($routeOptions['middleware'] || !empty(static::$routeGroupMiddleware)) {
                 $routeMiddleware = $routeOptions['middleware'] ?? static::$routeGroupMiddleware;
@@ -192,12 +277,16 @@ class Router
                     foreach ($routeMiddleware as $middleware) {
                         static::$middleware[$method][] = [
                             'pattern' => $pattern,
+                            'regex' => $compiledPattern['regex'],
+                            'params' => $compiledPattern['params'],
                             'handler' => $middleware,
                         ];
                     }
                 } else {
                     static::$middleware[$method][] = [
                         'pattern' => $pattern,
+                        'regex' => $compiledPattern['regex'],
+                        'params' => $compiledPattern['params'],
                         'handler' => $routeMiddleware,
                     ];
                 }
@@ -207,6 +296,8 @@ class Router
         static::$appRoutes[] = [
             'methods' => $methods,
             'pattern' => $pattern,
+            'regex' => $compiledPattern['regex'],
+            'params' => $compiledPattern['params'],
             'handler' => $handler,
             'name' => $routeOptions['name'] ?? '',
         ];
@@ -321,7 +412,7 @@ class Router
         int $status = 302
     ) {
         static::get($from, function () use ($to, $status) {
-            return header("location: $to", true, $status);
+            return header("Location: $to", true, $status);
         });
     }
 
@@ -369,6 +460,21 @@ class Router
      * @param string $pattern The base route to use eg: /post
      * @param array|string $controller to handle route eg: PostController
      */
+    /**
+     * Derive the dot-name base for a resource: '/admin/users' -> 'admin.users',
+     * '/' inside a group -> the group's last segment
+     */
+    protected static function resourceName(string $pattern): string
+    {
+        $base = trim($pattern, '/');
+
+        if ($base === '') {
+            $base = trim(basename(static::$groupRoute), '/');
+        }
+
+        return str_replace('/', '.', $base);
+    }
+
     public static function resource(string $pattern, $controller)
     {
         if (is_array($controller)) {
@@ -381,13 +487,15 @@ class Router
             return static::group($pattern, $controller);
         }
 
-        static::match('GET|HEAD', $pattern, "$controller@index");
-        static::post($pattern, "$controller@store");
-        static::match('GET|HEAD', "$pattern/create", "$controller@create");
-        static::match('DELETE', "$pattern/{id}", "$controller@destroy");
-        static::match('PUT|PATCH', "$pattern/{id}", "$controller@update");
-        static::match('GET|HEAD', "$pattern/{id}/edit", "$controller@edit");
-        static::match('GET|HEAD', "$pattern/{id}", "$controller@show");
+        $name = static::resourceName($pattern);
+
+        static::match('GET|HEAD', $pattern, ['name' => "$name.index", "$controller@index"]);
+        static::post($pattern, ['name' => "$name.store", "$controller@store"]);
+        static::match('GET|HEAD', "$pattern/create", ['name' => "$name.create", "$controller@create"]);
+        static::match('DELETE', "$pattern/{id}", ['name' => "$name.destroy", "$controller@destroy"]);
+        static::match('PUT|PATCH', "$pattern/{id}", ['name' => "$name.update", "$controller@update"]);
+        static::match('GET|HEAD', "$pattern/{id}/edit", ['name' => "$name.edit", "$controller@edit"]);
+        static::match('GET|HEAD', "$pattern/{id}", ['name' => "$name.show", "$controller@show"]);
 
         // still keeping DELETE and PUT|PATCH so earlier versions of leaf apps don't break
         static::match('POST|DELETE', "$pattern/{id}/delete", "$controller@destroy");
@@ -420,11 +528,13 @@ class Router
             return static::group($pattern, $controller);
         }
 
-        static::match('GET|HEAD', $pattern, "$controller@index");
-        static::post($pattern, "$controller@store");
-        static::match('GET|HEAD', "$pattern/{id}", "$controller@show");
-        static::match('DELETE', "$pattern/{id}", "$controller@destroy");
-        static::match('PUT|PATCH', "$pattern/{id}", "$controller@update");
+        $name = static::resourceName($pattern);
+
+        static::match('GET|HEAD', $pattern, ['name' => "$name.index", "$controller@index"]);
+        static::post($pattern, ['name' => "$name.store", "$controller@store"]);
+        static::match('GET|HEAD', "$pattern/{id}", ['name' => "$name.show", "$controller@show"]);
+        static::match('DELETE', "$pattern/{id}", ['name' => "$name.destroy", "$controller@destroy"]);
+        static::match('PUT|PATCH', "$pattern/{id}", ['name' => "$name.update", "$controller@update"]);
 
         // still keeping DELETE and PUT|PATCH so earlier versions of leaf apps don't break
         static::match('POST|DELETE', "$pattern/{id}/delete", "$controller@destroy");
@@ -453,13 +563,13 @@ class Router
             $args = '?';
 
             foreach ($data as $key => $value) {
-                $args .= "$key=$value&";
+                $args .= http_build_query([$key => $value]) . '&';
             }
 
             $data = rtrim($args, '&');
         }
 
-        return header("location: $route$data");
+        return header("Location: $route$data");
     }
 
     /**
@@ -474,20 +584,23 @@ class Router
     {
         if (!isset(static::$namedRoutes[$routeName])) {
             trigger_error('Route named ' . $routeName . ' not found');
+
+            return '';
         }
 
         $routePath = static::$namedRoutes[$routeName];
         if ($params) {
             if (is_array($params)) {
                 foreach ($params as $key => $value) {
-                    if (!preg_match('/{(' . $key . ')}/', $routePath)) {
+                    if (!preg_match('/{(' . preg_quote($key, '/') . ')(\?|:[^}]*)?}/', $routePath)) {
                         trigger_error('Param "' . $key . '" not found in route "' . static::$namedRoutes[$routeName] . '"');
                     }
-                    $routePath = str_replace('{' . $key . '}', $value, $routePath);
+
+                    $routePath = preg_replace('/{' . preg_quote($key, '/') . '(\?|:[^}]*)?}/', rawurlencode((string) $value), $routePath);
                 }
             }
             if (is_string($params)) {
-                $routePath = preg_replace('/{(.*?)}/', $params, $routePath);
+                $routePath = preg_replace('/{(.*?)}/', rawurlencode($params), $routePath);
             }
         }
 
@@ -588,8 +701,6 @@ class Router
                     }
                 }
             }
-
-            // $parsedOptions = array_merge($handler, $parsedOptions);
         }
 
         return [$parsedHandler, $parsedOptions];
@@ -615,7 +726,7 @@ class Router
             trigger_error("$name is not a valid hook! Refer to the docs for all supported hooks");
         }
 
-        static::$hooks[$name] = $handler;
+        static::$hooks[$name][] = $handler;
     }
 
     /**
@@ -625,7 +736,38 @@ class Router
      */
     private static function callHook(string $name)
     {
-        return is_callable(static::$hooks[$name]) ? static::$hooks[$name]() : null;
+        if (\count(static::$hooks[$name]) === 0) {
+            return;
+        }
+
+        foreach (static::$hooks[$name] as $hook) {
+            if (is_callable($hook)) {
+                $context = $hook(['routes' => static::$routes]);
+
+                if ($context && isset($context['routes']) && $context['routes'] !== static::$routes) {
+                    static::$routes = $context['routes'];
+                    static::reindexRoutes();
+                }
+            }
+        }
+    }
+
+    /**
+     * Rebuild the route index after routes are replaced at runtime (eg: by a router hook)
+     */
+    private static function reindexRoutes(): void
+    {
+        static::$routeIndex = [];
+
+        foreach (static::$routes as $method => $routes) {
+            foreach ($routes as $route) {
+                $compiledPattern = static::compilePattern($route['pattern']);
+                $route['regex'] = $compiledPattern['regex'];
+                $route['params'] = $compiledPattern['params'];
+
+                static::indexRoute($method, $route);
+            }
+        }
     }
 
     /**
@@ -638,21 +780,26 @@ class Router
      */
     public static function use($middleware)
     {
-        // if (in_array($middleware, static::$middleware)) {
-        //     throw new \RuntimeException('Circular Middleware setup detected. Tried to queue the same Middleware twice.');
-        // }
-
         if (is_string($middleware)) {
             $middleware = class_exists($middleware) ? function () use ($middleware) {
                 (new $middleware())->call();
-            } : static::$namedMiddleware[$middleware];
+            } : static::$namedMiddleware[$middleware] ?? null;
+        }
+
+        if (!$middleware) {
+            trigger_error('Middleware not found');
+
+            return;
         }
 
         $methods = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS', 'HEAD'];
+        $compiledPattern = static::compilePattern('/.*');
 
         for ($i = 0; $i < count($methods); $i++) {
             static::$middleware[$methods[$i]][] = [
                 'pattern' => '/.*',
+                'regex' => $compiledPattern['regex'],
+                'params' => $compiledPattern['params'],
                 'handler' => $middleware,
             ];
         }
@@ -676,8 +823,17 @@ class Router
      */
     public static function getBasePath(): string
     {
-        if (static::$serverBasePath === '') {
-            static::$serverBasePath = implode('/', array_slice(explode('/', $_SERVER['SCRIPT_NAME']), 0, -1)) . '/';
+        if (static::$serverBasePath === null) {
+            $scriptDir = implode('/', array_slice(explode('/', $_SERVER['SCRIPT_NAME'] ?? ''), 0, -1)) . '/';
+            $requestPath = rawurldecode(parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/');
+
+            // the script directory is only a base path when the request actually
+            // lives under it (classic subfolder deployments) — under php -S or
+            // the CLI it usually isn't, and stripping it would eat URI segments
+            // https://github.com/leafsphp/leaf/issues/323
+            static::$serverBasePath = ($scriptDir !== '/' && strncmp($requestPath, $scriptDir, strlen($scriptDir)) === 0)
+                ? $scriptDir
+                : '/';
         }
 
         return static::$serverBasePath;
@@ -691,7 +847,8 @@ class Router
      */
     public static function setBasePath($serverBasePath)
     {
-        static::$serverBasePath = $serverBasePath;
+        static::$serverBasePath = ($serverBasePath === '' || $serverBasePath === null) ? '/' : $serverBasePath;
+        static::$currentUri = null;
     }
 
     /**
@@ -701,26 +858,26 @@ class Router
      */
     public static function getCurrentUri(): string
     {
-        $basePath = static::getBasePath();
-        $requestUri = rawurldecode($_SERVER['REQUEST_URI']);
+        if (static::$currentUri !== null) {
+            return static::$currentUri;
+        }
 
-        // Early exit If base path doesn't match
-        if (strncmp($requestUri, $basePath, strlen($basePath)) !== 0) {
-            if (!static::$notFoundHandler) {
-                static::$notFoundHandler = function () {
-                    \Leaf\Exception\General::default404();
-                };
-            }
-            static::invoke(static::$notFoundHandler);
+        $basePath = static::getBasePath();
+        $requestUri = $_SERVER['REQUEST_URI'] ?? '/';
+        $requestPath = parse_url($requestUri, PHP_URL_PATH) ?: '/';
+        $requestPath = rawurldecode($requestPath);
+
+        // if an explicit base path doesn't prefix the request, don't strip
+        // anything (and never fire handlers from a getter) — unmatched routes
+        // 404 through the normal dispatch flow
+        if (strncmp($requestPath, $basePath, strlen($basePath)) !== 0) {
+            return static::$currentUri = '/' . trim($requestPath, '/');
         }
 
         // Get the current Request URI and remove rewrite base path from it (= allows one to run the router in a sub folder)
-        $uri = substr($requestUri, strlen($basePath)) ?: '/';
-        if (($queryPos = strpos($uri, '?')) !== false) {
-            $uri = substr($uri, 0, $queryPos);
-        }
+        $uri = substr($requestPath, strlen($basePath)) ?: '/';
 
-        return '/' . trim($uri, '/');
+        return static::$currentUri = '/' . trim($uri, '/');
     }
 
     /**
@@ -737,7 +894,7 @@ class Router
             $route = array_merge($route, [
                 'pattern' => $currentRoute[0]['route']['pattern'],
                 'path' => static::getCurrentUri(),
-                'method' => \Leaf\Http\Request::getMethod(),
+                'method' => static::getCurrentMethod(),
                 'name' => $currentRoute[0]['route']['name'] ?? null,
                 'handler' => $currentRoute[0]['route']['handler'],
                 'params' => $currentRoute[0]['params'] ?? [],
@@ -759,48 +916,49 @@ class Router
     ): array {
         $handledRoutes = [];
         $uri = $uri ?? static::getCurrentUri();
-        $routes = $routes ?? static::$routes[\Leaf\Http\Request::getMethod()];
+
+        if ($routes === null) {
+            $method = static::getCurrentMethod();
+
+            // exact matches win outright, so we can skip regex matching entirely
+            $staticRoute = static::$routeIndex[$method]['static'][$uri][0] ?? null;
+
+            if ($staticRoute && $returnFirst) {
+                return [[
+                    'params' => [],
+                    'handler' => $staticRoute['handler'],
+                    'route' => $staticRoute,
+                ]];
+            }
+
+            $routes = static::candidateRoutes($method, $uri);
+        }
 
         foreach ($routes as $route) {
-            // Replace all curly braces matches {} into word patterns (like Laravel)
-            $route['pattern'] = preg_replace('/\/{(.*?)}/', '/(.*?)', $route['pattern']);
+            if (($route['static'] ?? false) && $route['pattern'] === $uri) {
+                $handledRoutes[] = [
+                    'params' => [],
+                    'handler' => $route['handler'],
+                    'route' => $route,
+                ];
 
-            // we have a match!
-            if (preg_match_all('#^' . $route['pattern'] . '$#', $uri, $matches, PREG_OFFSET_CAPTURE)) {
-                // Rework matches to only contain the matches, not the orig string
-                $matches = array_slice($matches, 1);
-
-                // Extract the matched URL parameters (and only the parameters)
-                $params = array_map(function ($match, $index) use ($matches) {
-                    // We have a following parameter: take the substring from the current param position until the next one's position (thank you PREG_OFFSET_CAPTURE)
-                    if (isset($matches[$index + 1]) && isset($matches[$index + 1][0]) && $matches[$index + 1][0][1] != -1 && is_array($matches[$index + 1][0])) {
-                        return trim(substr($match[0][0], 0, $matches[$index + 1][0][1] - $match[0][1]), '/');
-                    }
-
-                    // Temporary fix for optional parameters
-                    if (($match[0][1] ?? 1) === -1 && ($match[0][0] ?? null) === '') {
-                        return;
-                    }
-
-                    // We have no following parameters: return the whole lot
-                    return isset($match[0][0]) ? trim($match[0][0], '/') : null;
-                }, $matches, array_keys($matches));
-
-                $paramsWithSlash = array_filter($params, function ($param) {
-                    if (!$param) {
-                        return false;
-                    }
-
-                    return strpos($param, '/') !== false;
-                });
-
-                // if any of the params contain /, we should skip this route
-                if (!empty($paramsWithSlash)) {
-                    continue;
+                if ($returnFirst) {
+                    break;
                 }
 
+                continue;
+            }
+
+            if (!isset($route['regex'])) {
+                $compiledPattern = static::compilePattern($route['pattern']);
+                $route['regex'] = $compiledPattern['regex'];
+                $route['params'] = $compiledPattern['params'];
+            }
+
+            // we have a match!
+            if (preg_match($route['regex'], $uri, $matches)) {
                 $routeData = [
-                    'params' => $params,
+                    'params' => static::extractParams($route['params'] ?? [], $matches),
                     'handler' => $route['handler'],
                     'route' => $route,
                 ];
@@ -821,13 +979,26 @@ class Router
      */
     public static function run(?callable $callback = null)
     {
-        $requestedMethod = \Leaf\Http\Request::getMethod();
+        static::$currentUri = null;
+        static::$currentMethod = null;
+
+        $requestedMethod = static::getCurrentMethod();
+
+        if (function_exists('crash')) {
+            crash()->leaveCrumb(
+                $requestedMethod . ' ' . static::getCurrentUri(),
+                \Leaf\Crash\Breadcrumbs::TYPE_REQUEST,
+                [],
+                false
+            );
+        }
+
         $appDown = _env('APP_DOWN', \Leaf\Anchor::toBool(\Leaf\Config::getStatic('app.down')) ?? false);
 
-        if ($appDown === true) {
+        if ($appDown === true || $appDown === 'true') {
             if (!static::$downHandler) {
                 static::$downHandler = function () {
-                    \Leaf\Exception\General::defaultDown();
+                    \Leaf\Crash\Pages::defaultDown();
                 };
             }
 
@@ -858,7 +1029,7 @@ class Router
         if ($numHandled === 0) {
             if (!static::$notFoundHandler) {
                 static::$notFoundHandler = function () {
-                    \Leaf\Exception\General::default404();
+                    \Leaf\Crash\Pages::default404();
                 };
             }
 
@@ -866,13 +1037,11 @@ class Router
         }
 
         // if it originally was a HEAD request, clean up after ourselves by emptying the output buffer
-        if ($_SERVER['REQUEST_METHOD'] == 'HEAD') {
+        if (($_SERVER['REQUEST_METHOD'] ?? null) == 'HEAD' && ob_get_level() > 0) {
             ob_end_clean();
         }
 
         static::callHook('router.after.route');
-
-        restore_error_handler();
 
         return static::callHook('router.after') ?? ($numHandled !== 0);
     }
@@ -891,20 +1060,19 @@ class Router
         $uri = $uri ?? static::getCurrentUri();
         $routeToHandle = static::findRoute($routes, $uri, $quitAfterRun);
 
-        // hacky solution to handle middleware catching all middleware with pattern (.*?)
-        $routesToRun = array_filter($routeToHandle, function ($route) use ($uri) {
-            return $route['route']['pattern'] === $uri || $route['route']['pattern'] === '/.*' || implode('/', $route['params'] ?? []) === ltrim($uri, '/');
-        });
+        if ($quitAfterRun) {
+            foreach ($routeToHandle as $currentRoute) {
+                static::invoke($currentRoute['handler'], $currentRoute['params']);
+            }
 
-        if (empty($routesToRun)) {
-            $routesToRun = $routeToHandle;
+            return count($routeToHandle);
         }
 
-        foreach ($routesToRun as $currentRoute) {
+        foreach ($routeToHandle as $currentRoute) {
             static::invoke($currentRoute['handler'], $currentRoute['params']);
         }
 
-        return count($routesToRun);
+        return count($routeToHandle);
     }
 
     private static function invoke($handler, $params = [])
@@ -950,7 +1118,176 @@ class Router
             $middlewareParams = explode(':', $handler);
             $middleware = array_shift($middlewareParams);
 
+            if (!isset(static::$namedMiddleware[$middleware])) {
+                trigger_error("Middleware named $middleware not found");
+
+                return;
+            }
+
             static::$namedMiddleware[$middleware](explode('|', $middlewareParams[0] ?? ''));
         }
+    }
+
+    /**
+     * Reset static router state.
+     *
+     * Useful for tests, workers, and long-running processes.
+     */
+    public static function reset(): void
+    {
+        static::$notFoundHandler = null;
+        static::$downHandler = null;
+        static::$hooks = [
+            'router.before' => [],
+            'router.before.route' => [],
+            'router.after.route' => [],
+            'router.after' => [],
+        ];
+        static::$middleware = [];
+        static::$namedMiddleware = [];
+        static::$routes = [];
+        static::$routeIndex = [];
+        static::$routeOrder = 0;
+        static::$appRoutes = [];
+        static::$namedRoutes = [];
+        static::$routeGroupMiddleware = [];
+        static::$lingoOptions = [
+            'lingo.routes' => [],
+        ];
+        static::$sitemapOptions = [];
+        static::$groupRoute = '';
+        static::$groupName = '';
+        static::$namespace = '';
+        static::$serverBasePath = null;
+        static::$currentUri = null;
+        static::$currentMethod = null;
+    }
+
+    private static function indexRoute(string $method, array $route): void
+    {
+        if (!isset(static::$routeIndex[$method])) {
+            static::$routeIndex[$method] = [
+                'static' => [],
+                'dynamic' => [],
+                'fallback' => [],
+            ];
+        }
+
+        if (empty($route['params']) && $route['pattern'] !== '/.*') {
+            $route['static'] = true;
+            static::$routeIndex[$method]['static'][$route['pattern']][] = $route;
+
+            return;
+        }
+
+        $bucket = static::routeBucket($route['pattern']);
+        $route['static'] = false;
+
+        if ($bucket === '*') {
+            static::$routeIndex[$method]['fallback'][] = $route;
+
+            return;
+        }
+
+        static::$routeIndex[$method]['dynamic'][$bucket][] = $route;
+    }
+
+    private static function candidateRoutes(string $method, string $uri): array
+    {
+        $index = static::$routeIndex[$method] ?? null;
+
+        if (!$index) {
+            return static::$routes[$method] ?? [];
+        }
+
+        // static routes outrank dynamic routes, which outrank catch-alls.
+        // Registration order only breaks ties within a tier.
+        $candidates = $index['static'][$uri] ?? [];
+        $bucket = static::uriBucket($uri);
+
+        if (isset($index['dynamic'][$bucket])) {
+            $candidates = array_merge($candidates, $index['dynamic'][$bucket]);
+        }
+
+        if (!empty($index['fallback'])) {
+            $candidates = array_merge($candidates, $index['fallback']);
+        }
+
+        return $candidates;
+    }
+
+    private static function routeBucket(string $pattern): string
+    {
+        $segment = explode('/', trim($pattern, '/'), 2)[0] ?? '';
+
+        if ($segment === '' || strpos($segment, '{') !== false || strpos($segment, '(') !== false || strpos($segment, '*') !== false) {
+            return '*';
+        }
+
+        return $segment;
+    }
+
+    private static function uriBucket(string $uri): string
+    {
+        return explode('/', trim($uri, '/'), 2)[0] ?? '';
+    }
+
+    protected static function compilePattern(string $pattern): array
+    {
+        if ($pattern === '/.*') {
+            return ['regex' => '#^/.*$#', 'params' => []];
+        }
+
+        $params = [];
+        $regex = '';
+        $offset = 0;
+
+        if (preg_match_all('/{([A-Za-z_][A-Za-z0-9_]*)(\?)?(?::((?:[^{}]|\{[^{}]*\})+))?}/', $pattern, $matches, PREG_OFFSET_CAPTURE)) {
+            foreach ($matches[0] as $index => $match) {
+                [$token, $position] = $match;
+                $literal = preg_quote(substr($pattern, $offset, $position - $offset), '#');
+
+                $name = $matches[1][$index][0];
+                $isOptional = ($matches[2][$index][0] ?? '') === '?';
+                $constraint = $matches[3][$index][0] ?: '[^/]+';
+
+                $params[] = $name;
+
+                // an optional param swallows its leading slash so /posts/{id?} also matches /posts
+                if ($isOptional && substr($literal, -1) === '/' && $regex . $literal !== '/') {
+                    $regex .= substr($literal, 0, -1) . "(?:/(?P<$name>$constraint))?";
+                } else {
+                    $regex .= $literal;
+                    $regex .= $isOptional ? "(?P<$name>$constraint)?" : "(?P<$name>$constraint)";
+                }
+
+                $offset = $position + strlen($token);
+            }
+        }
+
+        if (!empty($params)) {
+            $regex .= preg_quote(substr($pattern, $offset), '#');
+
+            return ['regex' => '#^' . $regex . '$#', 'params' => $params];
+        }
+
+        return ['regex' => '#^' . preg_quote($pattern, '#') . '$#', 'params' => []];
+    }
+
+    protected static function extractParams(array $params, array $matches): array
+    {
+        if (!empty($params)) {
+            $values = [];
+
+            foreach ($params as $param) {
+                $values[] = $matches[$param] ?? null;
+            }
+
+            return array_filter($values, function ($value) {
+                return $value !== null && $value !== '';
+            });
+        }
+
+        return array_values(array_slice(array_filter($matches, 'is_string', ARRAY_FILTER_USE_KEY), 1));
     }
 }

@@ -365,7 +365,7 @@ $lang = array(
     'IWantToReviewVeryHighRiskEvery'=> 'Jeg ønsker at gennemgå en MEGET HØJ risiko hver',
     'AbleToReviewVeryHighRisks'=>'I stand til at Gennemgå en Meget Høj Risiko',
     'AbleToReviewInsignificantRisks'=>'I stand til at Gennemgå Ubetydelige Risici',
-    'AllTeams'=>'Alle Hold',
+    'AllTeams'=>'Alle teams',
     'FileUploadSettings'=>'Fil-Upload-Indstillinger',
     'AllowedFileTypes'=>'Tilladte Filtyper',
     'AddNewFileTypeOf'=>'Tilføj en ny fil type',
@@ -3082,7 +3082,7 @@ $lang = array(
     'ResultMessageUnavailable' => 'Resultatmeddelelsen er ikke tilgængelig.',
     'AIProviderURLNotAllowed' => 'Den API-URL er ikke tilladt. Brug en kendt AI-udbyder eller en loopback (127.0.0.1) self-host-adresse.',
     'AIReenterKeyForNewURL' => 'Indtast API-nøglen igen for at teste en anden udbyder-URL.',
-    'WorkflowHttpRequestDisallowedURL' => 'http_request: URL\'en {$url} oversættes til en ikke-tilladt intern eller reserveret adresse.',
+    'WorkflowHttpRequestDisallowedURL' => '{$action}: URL\'en {$url} oversættes til en ikke-tilladt intern eller reserveret adresse.',
     'BehaviorAndScheduling' => 'Adfærd og planlægning',
     'PrepopulateAcrossContacts' => 'Udfyld nye svar på forhånd med en anden kontakts tidligere svar til denne vurdering',
     'PrepopulateAcrossContactsHelp' => 'Udfyld en ny respondents formular på forhånd med de seneste tidligere svar fra enhver kontakt – nyttigt for kontinuitet, når ansvaret skifter hænder.',
@@ -4637,6 +4637,28 @@ $lang = array(
     'ExtraVersionIncompatibleWithApplication' => 'Den downloadede "{$extra}" Extra (version {$extra_version}) er ikke kompatibel med SimpleRisk {$app_version} og blev ikke installeret. Opgrader SimpleRisk til den nyeste version først.',
     'ExtraCompatibilityDataUnavailable' => 'SimpleRisk kunne ikke bekræfte, hvilke Extra-versioner denne udgivelse understøtter, så Extra-versionen blev ikke installeret. Prøv igen senere.',
     'ExtraVersionCouldNotBeVerified' => 'Versionen af den downloadede Extra kunne ikke bestemmes, så den blev ikke installeret.',
+    // User import temporary password
+    'NewUsernameAddedWithTemporaryPassword' => 'En ny bruger med brugernavnet "{$username}" blev tilføjet. Midlertidig adgangskode: {$password} (brugeren skal ændre den ved første login).',
+    'YouDontHavePermission' => 'Du har ikke tilladelse.',
+    // Initiate Audits bulk-select
+    'InitiatedTestsBulk' => 'Startede $count tests.',
+    // Merged Audits page (replaces Active Audits + Past Audits menu items)
+    'Audits' => 'Revisioner',
+    'ManageAudits' => 'Administrer revisioner',
+    'ViewAudits' => 'Se revisioner',
+    // Redesigned, flat Initiate Audits page
+    'EligibleTests' => 'Kvalificerede tests',
+    'InitiateSelected' => 'Start valgte',
+    'InitiateNAudits' => 'Iværksæt {n} revisioner',
+    'TagsOptionalAppliedToSelection' => 'Tags (valgfrit, anvendes på alle)',
+    'Initiate' => 'Indlede',
+    'NoEligibleTestsFound' => 'Ingen egnede tests fundet.',
+    'Columns' => 'Kolonner',
+    'ShowTestsWithAuditInProgress' => 'Vis tests med en igangværende revision',
+    'NoMatchingOptions' => 'Ingen matchende muligheder.',
+    'TestDetails' => 'Testdetaljer',
+    'PeopleAndTeams' => 'Mennesker og teams',
+    'StatusAndTimeline' => 'Status og tidslinje',
     '' => '',
 );
 ?>

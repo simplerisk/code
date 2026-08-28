@@ -544,6 +544,114 @@ function recurse_copy($src, $dst) {
      return ['status' => $status, 'status_message' => $status_message, 'data' => $data];
  }
 
+/*******************************************************************************
+ * FUNCTION: REQUEST EXPECTS JSON RESPONSE                                      *
+ * Whether the current caller should be answered with a JSON envelope rather    *
+ * than an HTML page or a redirect. Used by the enforce_permission* family to   *
+ * decide the SHAPE of an authorization denial — never whether to deny.         *
+ *                                                                              *
+ * Three signals, checked in this order:                                        *
+ *                                                                              *
+ *  1. XHR. X-Requested-With: XMLHttpRequest, which jQuery and the SimpleRisk   *
+ *     page scripts set on every AJAX call.                                     *
+ *  2. ACCEPT. An explicit application/json, meaning the caller has said it     *
+ *     cannot render HTML.                                                      *
+ *  3. PATH. An /api/ path segment, AND the caller did not ask for text/html.   *
+ *     Matched as a whole segment so "/admin/rapid/..." does not qualify, and   *
+ *     matched on the path only so a page request cannot dress itself up as     *
+ *     an API one with "?next=/api/". Works for subpath installs                *
+ *     (/simplerisk/api/v2/...). The text/html veto is what keeps the HTML      *
+ *     pages the API tree serves -- today api/v2/documentation.php, the         *
+ *     Swagger UI -- rendering their login redirect rather than a JSON body.    *
+ *     1 and 2 are the caller describing itself, so they are not vetoed;        *
+ *     3 is an inference from the URL, so it is.                                *
+ *                                                                              *
+ * Every input is passed in rather than read from $_SERVER so the mapping is    *
+ * unit-testable without a request context; current_request_expects_json_       *
+ * response() is the thin wrapper that supplies the real superglobals.          *
+ *                                                                              *
+ * Note this is deliberately NOT a security boundary. Both branches deny the    *
+ * request; the flag only picks how the refusal is worded. A caller who spoofs  *
+ * a header gains a JSON 403 instead of a 302 — no access either way.           *
+ *******************************************************************************/
+function request_expects_json_response($request_path, $requested_with = '', $accept = '') {
+
+    // Only the path decides, so strip any query string or fragment first.
+    $path = (string)$request_path;
+    foreach (['?', '#'] as $delimiter) {
+        $position = strpos($path, $delimiter);
+        if ($position !== false) {
+            $path = substr($path, 0, $position);
+        }
+    }
+
+    // An XMLHttpRequest cannot follow a redirect to a login page usefully.
+    // Checked first because it is the caller's own statement about itself, so
+    // it outranks anything inferred from the URL below.
+    if (strcasecmp(trim((string)$requested_with), 'XMLHttpRequest') === 0) {
+        return true;
+    }
+
+    // The caller asked for JSON explicitly.
+    if (stripos((string)$accept, 'application/json') !== false) {
+        return true;
+    }
+
+    // An /api/ path segment, unless the caller said it wants HTML. The path
+    // describes where the request went, not what the endpoint produces, and
+    // the API tree does serve HTML: api/v2/documentation.php is the Swagger
+    // UI page and runs add_session_check(['check_access' => true]). Without
+    // the veto an expired session there renders a raw JSON body where the
+    // login form belongs, and set_unauthenticated_redirect() never runs, so
+    // the user also loses the return-to-page after logging back in. A browser
+    // navigation always sends text/html in Accept; jQuery and cURL API
+    // clients do not, so this costs those callers nothing.
+    if ($path !== '' && preg_match('#(^|/)api(/|$)#', $path) === 1
+        && stripos((string)$accept, 'text/html') === false) {
+        return true;
+    }
+
+    return false;
+}
+
+/*******************************************************************************
+ * FUNCTION: CURRENT REQUEST EXPECTS JSON RESPONSE                              *
+ * Thin wrapper that feeds the live request into                                *
+ * request_expects_json_response(). Kept separate so the decision itself stays  *
+ * pure and testable while this side reads the superglobals.                    *
+ *******************************************************************************/
+function current_request_expects_json_response() {
+    return request_expects_json_response(
+        isset($_SERVER['REQUEST_URI']) ? $_SERVER['REQUEST_URI'] : '',
+        isset($_SERVER['HTTP_X_REQUESTED_WITH']) ? $_SERVER['HTTP_X_REQUESTED_WITH'] : '',
+        isset($_SERVER['HTTP_ACCEPT']) ? $_SERVER['HTTP_ACCEPT'] : ''
+    );
+}
+
+/*******************************************************************************
+ * FUNCTION: DRAIN OUTPUT BUFFERS                                               *
+ * Discard every level of output buffering.                                     *
+ *                                                                              *
+ * The deny paths are reached from inside partials that render under            *
+ * ob_start(), so a half-built HTML fragment can be sitting in a buffer when    *
+ * the refusal is decided. Flushed ahead of a JSON body it leaves the client a  *
+ * response it cannot parse -- the exact failure those paths exist to fix.      *
+ *                                                                              *
+ * Drains every level rather than one: a partial included from another partial  *
+ * nests them, and ob_end_clean() only pops the innermost.                      *
+ *                                                                              *
+ * Lives here beside json_response() because it is a response-emission concern  *
+ * and because all three callers -- enforce_permission(),                       *
+ * redirect_permission_denied() and the Incident Management gate -- already      *
+ * require this file, which permissions.php is not in a position to assume.     *
+ *******************************************************************************/
+function drain_output_buffers() {
+
+    while (ob_get_level() > 0) {
+        ob_end_clean();
+    }
+}
+
 /***************************
  * FUNCTION: JSON RESPONSE *
  ***************************/

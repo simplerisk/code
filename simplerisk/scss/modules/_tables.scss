@@ -17,6 +17,40 @@
 // aria-sort on the active header regardless of layout mode) so sort-state
 // styling keeps working either way; a future consumer that ends up with
 // the dt-* layout will need a small selector addendum here.
+// Manage Audits / Initiate Audits render .sr-table-card as a DIRECT child of
+// .content (no .row/.col-12 wrapper -- removed because col-12's own padding
+// re-inset the card ~10px from the page title/breadcrumb above it, since
+// there's no second nested row to cancel that padding the way Bootstrap's
+// grid usually does). The shared theme still puts its own 10px margin on
+// .content (core/layout/layout.scss's `.page-wrapper .scroll-content
+// .content-wrapper .content { margin: 10px; }`), so a direct-child card
+// needs the same explicit zero-out every other direct-child-card surface
+// already carries (.sr-qform, .sr-aihub, .sr-connectivity-explorer,
+// .sr-soa--selector -- each `.content:has(> .row > .col-12 > X)`). Scoped by
+// `:has(> .sr-table-card)` so it only fires when .sr-table-card is THIS
+// page's direct top-level content, not a card nested lower on some other
+// page that still uses the .row/.col-12 wrapper.
+.content:has(> .sr-table-card) {
+    // .content's own base rule (core/layout/layout.scss) paints a solid
+    // background-color -- transparent here lets the page-wrapper's gray
+    // ground ($sr-default) show through instead, matching every other
+    // direct-child-card override (.sr-qform, .sr-aihub,
+    // .sr-connectivity-explorer, .sr-soa--selector all set this same
+    // property the same way) so the card reads as "floating on gray," not
+    // "sitting on a second white panel."
+    background-color: transparent !important;
+    // Only the outer MARGIN is dropped here -- .content's own 10px PADDING
+    // is kept (same as every sibling override above; .sr-qform's comment
+    // spells out why). .page-title (the "Manage Audits" H4) sits 10px to
+    // the RIGHT of .page-breadcrumb's own left edge, not flush with it --
+    // the two aren't at the same X position -- so keeping this padding is
+    // what lines the card up with the TITLE text, which is what the eye
+    // actually compares it against. Dropping the padding too (tried once)
+    // over-corrected: it aligned the card with the breadcrumb instead,
+    // 10px further left than the title above it.
+    margin: 0 !important;
+}
+
 .sr-table-card {
     background: $sr-body;
     border: 1px solid $gray-300;
@@ -153,6 +187,61 @@
         width: auto;
         min-width: 120px;
         font-size: 13px;
+    }
+
+    // Compliance > Audits page: a segmented pill-row rendering of the same
+    // "which status bucket" concept .sr-table-status-filter covers with a
+    // <select> -- three buttons (Active/Past/All) swap the DataTable's
+    // ajax.url instead of filtering a column. ID-scoped (this page only,
+    // PENDING per designing-ui's coverage-map -- not yet a shared pattern).
+    #audits-status-filter {
+        display: inline-flex;
+        background: $gray-100;
+        border: 1px solid $gray-300;
+        border-radius: 999px;
+        padding: 3px;
+        gap: 2px;
+
+        .sr-status-chip {
+            font-size: 12.5px;
+            font-weight: 700;
+            padding: 6px 13px;
+            border-radius: 999px;
+            color: $gray-600;
+            cursor: pointer;
+
+            &.on {
+                background: $sr-body;
+                color: $sr-primary;
+                box-shadow: 0 1px 3px rgba(0, 0, 0, .12);
+            }
+        }
+    }
+
+    // Manage Audits (#all_audits_datatable): the generic render_view_table()
+    // per-column filter header row duplicates this page's own toolbar search +
+    // quickfilters, so it's hidden -- as CSS, not a one-time JS .addClass(),
+    // because DataTables' scrollX mode clones the whole <thead> (including
+    // tr.header_filter) into a SEPARATE .dt-scroll-head element at init time.
+    // A JS class-toggle applied to the original after that clone already
+    // happened hides an element nobody sees, while the visible clone -- which
+    // carries the same class name -- stays exposed. A CSS rule keyed off the
+    // class name applies to both regardless of when the clone was made.
+    // Scoped to the WRAPPER, not the table id: DataTables' scrollX clone of
+    // the <thead> (including tr.header_filter) lives in a sibling
+    // .dt-scroll-head element outside #all_audits_datatable itself, so an
+    // #all_audits_datatable-scoped selector hides the original but misses
+    // the visible clone.
+    #all_audits_datatable_wrapper tr.header_filter {
+        display: none;
+    }
+
+    // The "Show All" toggle (header.php's shared layout.bottomEnd default --
+    // 'div.btn.shows', every render_view_table() page gets it) doesn't fit
+    // this page's pagination, which is meant to read like Initiate Audits'
+    // plain First/Previous/N/Next/Last nav with nothing extra beside it.
+    #all_audits_datatable_wrapper div.paginate > div.btn.shows {
+        display: none;
     }
 
     // A selectize-enhanced multi-select filter (e.g. Pending Risks "by control")
@@ -340,6 +429,21 @@
         overflow-x: auto;
     }
 
+    // render_view_table()'s DataTables init always sets scrollX:true
+    // (includes/display.php), which wraps the rendered table in DataTables'
+    // OWN .dt-container/.dt-scroll structure with its own horizontal scroll.
+    // That makes THIS wrapper's overflow-x a redundant second scrollbar
+    // directly beneath the first on any wide DataTables-driven table (Manage
+    // Audits' 11 columns is wide enough to actually show it; other
+    // render_view_table() pages have the same redundant structure, just
+    // narrow enough today that it isn't visible). :has(.dt-container) scopes
+    // the fix to exactly that case, leaving a plain non-DataTables table's
+    // own overflow-x (e.g. a custom-rendered grid with no DataTables
+    // scrollX) untouched.
+    .sr-table-scroll:has(.dt-container) {
+        overflow-x: visible;
+    }
+
     // Lifted while a row-actions overflow menu is open, and ONLY when the
     // table isn't actually using the horizontal scroll (the page's toggle
     // handler checks scrollWidth against clientWidth before adding this).
@@ -353,8 +457,25 @@
     // cut off opening upward, and elementFromPoint() on its top item returned
     // the toolbar button above the table. Nothing is being scrolled in that
     // state, so the clip costs the menu everything and buys the table nothing.
-    .sr-table-scroll.is-unclipped {
-        overflow: visible;
+    //
+    // Not scoped to .sr-table-scroll specifically: sr-row-actions-menu.js's
+    // findClipAncestor() walks up to whichever element is ACTUALLY clipping,
+    // which on a DataTables scrollX table is DataTables' own '.dt-scroll'
+    // wrapper one level further in (.sr-table-scroll is deliberately made
+    // non-clipping there -- see its own ':has(.dt-container)' rule above --
+    // to avoid a redundant second scrollbar under DataTables' own). A menu
+    // measured/unclipped against the wrong ancestor is exactly what left a
+    // downward-opened menu invisible and unclickable on Manage Audits.
+    //
+    // !important: '.dt-scroll's own `overflow: auto` comes from the vendor
+    // dataTables.bootstrap5.min.css bundle, loaded as a separate stylesheet
+    // (header.php) whose rule could tie or beat this one on specificity
+    // depending on exactly how the vendor authored it -- a JS-driven state
+    // override has to win regardless, the same way .sr-table-scroll's own
+    // version never had to worry about it (that element was always
+    // SimpleRisk's own, so both competing rules lived in this one file).
+    .is-unclipped {
+        overflow: visible !important;
     }
 
     table.sr-table,
@@ -393,9 +514,18 @@
 
             // Sort indicators: use DataTables' own grey up/down carets (the
             // `.dt-column-order` span this 2.x build renders on every sortable
-            // column). We deliberately add NO custom ::after caret — a second one
-            // layered a solid black caret on top of the grey pair on the active
-            // column (the "extra caret").
+            // column). We deliberately add NO custom ::after caret here — a
+            // second one layered a solid black caret on top of the grey pair
+            // on the active column (the "extra caret"). Manage Audits/
+            // Initiate Audits are the one deliberate exception: they REPLACE
+            // (not layer on top of) this native pair with Define Tests' own
+            // fa-sort/fa-arrow-up-short-wide/fa-arrow-down-wide-short icon --
+            // see the ID-scoped '.dt-column-order' override further down this
+            // file (search '#all_audits_datatable'), which suppresses the
+            // native carets' :before/:after content on just those two tables
+            // before their own JS injects the replacement <i>. Every other
+            // DataTable in the app (this generic rule) keeps the native pair
+            // until it's deliberately converted the same way.
         }
 
         tbody td {
@@ -448,8 +578,17 @@
         font-variant-numeric: tabular-nums;
     }
 
-    // Right-hand footer group: page-length select + pager on one line, pushed
-    // to the far right (row-count stays on the left).
+    // Left-hand footer group: page-length select + row-count text together
+    // (Initiate Audits' custom 'dom' string; Manage Audits' own JS adds this
+    // same grouping to the native layout.bottomStart row instead). 12px to
+    // match the audits-redesign mockup's .foot-left gap exactly.
+    .sr-table-foot-left {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    // Right-hand footer group: pager alone, pushed to the far right.
     .sr-table-foot-right {
         margin-left: auto;
         display: flex;
@@ -469,46 +608,99 @@
         }
     }
 
-    // Rows-per-page select. (DT 1.x `.dataTables_length` / DT 2.x `.dt-length`.)
+    // Manage Audits' bottom footer row (DT3's native layout.bottomStart/
+    // bottomEnd -- a Bootstrap .row wrapping both .dt-layout-start and
+    // .dt-layout-end) has no padding of its own: the row's negative gutter
+    // margin very nearly cancels the column's own padding, landing the
+    // "Show" control ~1px from the card edge instead of the design system's
+    // standard inset. Initiate Audits/Define Tests get that inset from their
+    // own custom '.sr-table-foot' div's `padding: 11px 16px` -- matched here
+    // (left/right only; top keeps the row's existing `mt-2` gap from the
+    // table) so the "Show" control sits in the same place on both pages.
+    .dt-container > .row:has(.dt-info) {
+        padding: 0 16px 11px;
+    }
+
+    // Rows-per-page control. (DT 1.x `.dataTables_length` / DT 2.x
+    // `.dt-length`.) Styled as ONE bordered pill -- matching the
+    // audits-redesign mockup's `.page-size-btn` ("Show 50 ⌄") -- rather than
+    // "Show" as plain label text next to a separately-bordered <select>: the
+    // border/radius/background/padding live on this wrapper, and the
+    // <select> itself goes borderless/transparent so it reads as part of
+    // the same pill. The custom chevron (mockup's stroke-width:3 arrow, not
+    // Bootstrap's own '.form-select' caret glyph) is generated from
+    // $sr-primary via SCSS's red()/green()/blue() rather than a literal hex,
+    // so it stays in sync with the token if that ever changes.
     .dataTables_length,
     .dt-length {
         display: flex;
         align-items: center;
+        // Fixed 26px to match the pager buttons (.paginate_button/.page-link
+        // below) exactly -- a native <select> has its own intrinsic ~32px
+        // closed-box height that survives padding:0 alone, so both this and
+        // the <select>'s own height are pinned explicitly rather than left
+        // to shrink-to-fit.
+        height: 26px;
         gap: 6px;
-        color: $gray-600;
+        border: 1px solid $gray-400;
+        border-radius: 6px;
+        background: $sr-body;
+        padding: 0 9px;
+        font-size: 12px;
+        font-weight: 700;
+        color: $sr-primary;
+
+        &:focus-within {
+            border-color: $sr-primary;
+        }
+
+        label {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            margin: 0;
+            height: 100%;
+            font: inherit;
+            color: inherit;
+        }
 
         select {
-            border: 1px solid $gray-400;
-            border-radius: 6px;
-            padding: 4px 8px;
-            background: $sr-body;
-            color: $sr-primary;
+            height: 100%;
+            border: 0;
+            background-color: transparent;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='9' height='9' viewBox='0 0 24 24' fill='none' stroke='rgb(#{red($sr-primary)},#{green($sr-primary)},#{blue($sr-primary)})' stroke-width='3'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right center;
+            background-size: 9px 9px;
+            padding: 0 15px 0 0;
+            margin: 0;
             font: inherit;
-            font-size: 12.5px;
+            color: inherit;
+            cursor: pointer;
 
             &:focus {
                 outline: 0;
-                border-color: $sr-primary;
             }
         }
     }
 
     // Pager. DT 1.x renders `.paginate_button` anchors directly; DT 2.x (bs5)
     // renders Bootstrap markup — `ul.pagination > li.page-item > button.page-link`.
-    // Style both to the same design-system button.
+    // Style both to the same design-system button -- sized/spaced to match
+    // the audits-redesign mockup's `.pg-btn` (26px square, 3px gap, 12px text).
     .dataTables_paginate,
     .dt-paging {
         margin-left: auto;
         display: flex;
         align-items: center;
-        gap: 4px;
+        gap: 3px;
 
         // Strip Bootstrap's pagination chrome so the buttons read as the
         // design-system pager rather than the default blue link group.
         .pagination {
             display: flex;
             align-items: center;
-            gap: 4px;
+            gap: 3px;
             margin: 0;
             padding: 0;
             list-style: none;
@@ -523,14 +715,17 @@
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            min-width: 30px;
-            height: 30px;
-            padding: 0 8px;
+            // min-width (not a hard 'width') so a 3-digit page number still
+            // fits -- the mockup's own fixed 26px only ever needed to hold
+            // a single glyph.
+            min-width: 26px;
+            height: 26px;
+            padding: 0 6px;
             border-radius: 6px;
             border: 1px solid $gray-300;
             background: $sr-body;
             font: inherit;
-            font-size: 12.5px;
+            font-size: 12px;
             font-weight: 700;
             color: $sr-primary;
             cursor: pointer;
@@ -544,6 +739,34 @@
                 outline: 0;
                 box-shadow: none;
             }
+        }
+
+        // Previous/Next render their language.paginate string ("Previous"/
+        // "Next") as the button's real text -- kept for the accessible name
+        // (DataTables also sets aria-label to the same string) but visually
+        // swapped for the mockup's compact ‹/› glyph via ::before, matching
+        // the numbered buttons' 26px-square footprint instead of a
+        // wide text pill.
+        .paginate_button.previous,
+        .page-link.previous,
+        .paginate_button.next,
+        .page-link.next {
+            font-size: 0;
+
+            &::before {
+                font-size: 14px;
+                font-weight: 700;
+            }
+        }
+
+        .paginate_button.previous::before,
+        .page-link.previous::before {
+            content: "\2039";
+        }
+
+        .paginate_button.next::before,
+        .page-link.next::before {
+            content: "\203A";
         }
 
         // Active page = charcoal ($sr-primary), never the red accent — accent
@@ -575,6 +798,19 @@
 // customized status label inherits the right family with no per-label CSS.
 // These render the answer pills (Yes/No/N-A) and control-status pills
 // (Pass/Fail) for the Self-Assessments / Failed Controls surfaces.
+// Read-only chip list for a DataTables cell (the Tags columns rendered by
+// DataTable.render.tags() in dataTables.renderers.js). Wraps tags in the SAME
+// .sr-chip look _sr-modal.scss's editable chip fields use (that class is
+// shared, not modal-specific) -- just the flex-wrap + gap layout, none of
+// that widget's border/background/min-height field chrome, since this is
+// plain cell content, not a form control.
+.sr-chip-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px;
+}
+
 .sr-state-pill {
     display: inline-flex;
     align-items: center;
@@ -669,6 +905,14 @@
 .sr-state-pill-result {
     min-width: 105px;
     justify-content: center;
+    // Manage Audits also tints the whole ROW by this same pass/fail/open
+    // state (green-background/red-background/etc., _compliance.scss) -- the
+    // pill's own translucent success/danger tint (.sr-state-success/-danger)
+    // washes out against a row already carrying that colour. A solid white
+    // fill keeps the pill legible there while still reading fine on the
+    // plain white/gray card backgrounds the other two contexts (Define
+    // Tests, the History modal) render it against.
+    background: $sr-body;
 }
 
 // A pill whose state is carried by a glyph rather than the generic status dot
@@ -1495,7 +1739,12 @@
         gap: 8px;
         row-gap: 8px;
 
-        .form-select {
+        // .form-control alongside .form-select: the Test Date range filter is
+        // a plain text input (fed by a daterangepicker popup, not a listbox),
+        // but it still needs to read as one of these filter slots, not a
+        // differently-sized stray control.
+        .form-select,
+        .form-control {
             width: auto;
             min-width: 130px;
             font-size: 13px;
@@ -1682,6 +1931,35 @@
             font-size: 10px;
             color: $gray-500;
         }
+    }
+}
+
+// Manage Audits / Initiate Audits use DataTables' native orderable columns
+// (not a hand-rolled <th>/JS pager like Define Tests), which render their
+// own bundled grey up/down-caret pair via .dt-column-order's :before/:after
+// pseudo-elements. Their own JS (compliance.php's syncAuditsSortIcons(),
+// compliance-initiate-audits.js's syncSortIcons()) adds the SAME
+// 'sr-sortable'/'sr-sort-icon' markup Define Tests uses instead -- this
+// suppresses the native carets so the two icons don't render on top of each
+// other, without touching every OTHER DataTables-driven view (Risks,
+// Assets, Documents, etc.) that still uses the native caret pair as its
+// (unrelated, not-yet-converted) sort indicator.
+//
+// Keyed off a class (added by that same JS, directly on the elements it
+// already finds) rather than an ID-scoped ancestor selector
+// (#all_audits_datatable .dt-column-order, tried first): scrollX clones the
+// whole visible <thead> into a BARE '.dt-scroll-head table' with no id/class
+// of its own linking it back to the original table, so an ID-scoped rule
+// only ever reached the original (invisible, scrolled-under) header and
+// missed the clone a viewer actually sees and clicks -- the native caret
+// and this icon both rendered there until this was scoped to the class
+// instead.
+.dt-column-order.sr-sort-native-off {
+    width: auto;
+
+    &::before,
+    &::after {
+        content: none !important;
     }
 }
 
@@ -1982,6 +2260,38 @@
 
     .sr-table-card {
         @include sr-row-actions-overflow-tier;
+    }
+}
+
+// The Columns-picker trigger (render_column_selection_widget(), includes/
+// display.php) -- shared by every view using that widget (Assets, Manage
+// Audits, Initiate Audits, Risks, ...), so this one rule reaches all of them.
+// Top-level (not nested under .sr-table-card): unlike .sr-qf-toggle below,
+// this button is never collapsed, so it doesn't need that selector's scope.
+// Neutral bordered chip matching the Filters toggle's own look, not a solid
+// accent button -- this opens a picker, it isn't the page's primary action,
+// and the accent stays spent once per view (design-system.md Sec 7).
+.sr-columns-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 6px 12px;
+    border: 1px solid $gray-400;
+    border-radius: 6px;
+    background: $sr-body;
+    color: $sr-primary;
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 1.2;
+
+    i {
+        font-size: 12px;
+        color: $gray-600;
+    }
+
+    &:hover {
+        border-color: $gray-600;
+        color: $sr-primary;
     }
 }
 

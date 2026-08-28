@@ -106,6 +106,7 @@ return array(
     '0174385c3be07e86008907d06ee66531' => $vendorDir . '/sabberworm/php-css-parser/src/Rule/Rule.php',
     '98aea6e41b9cb79b379b10f37ba1f0b7' => $vendorDir . '/sabberworm/php-css-parser/src/RuleSet/RuleContainer.php',
     'ac4c448857898c6b48907995b1d9e666' => $vendorDir . '/leafs/date/src/functions.php',
+    '2248e4b6009b7f65e673b914cf233a80' => $vendorDir . '/leafs/exception/src/functions.php',
     'cfb7c780793bfa1138356bbe97dc66da' => $vendorDir . '/leafs/http/src/functions.php',
     '2203a247e6fda86070a5e4e07aed533a' => $vendorDir . '/symfony/clock/Resources/now.php',
     '6a47392539ca2329373e0d33e1dba053' => $vendorDir . '/symfony/polyfill-intl-icu/bootstrap.php',

@@ -433,6 +433,8 @@ if (api_v2_is_authenticated())
     app()->post('/compliance/past_audits', 'getPastTestAuditsResponse');
     app()->post('/compliance/reopen_audit', 'reopenTestAuditResponse');
     app()->post('/compliance/audit_initiation/initiate', 'initiateFrameworkControlTestsResponse');
+    app()->post('/compliance/audit_initiation/initiate_bulk', 'initiateTestsBulkResponse');
+    app()->post('/compliance/audit_initiation/eligible_tests', 'getInitiateEligibleTestsResponse');
     app()->get('/compliance/audit_timeline', 'auditTimelineResponse');
     app()->post('/compliance/delete_audit', 'deleteTestAuditResponse');
     /*************************************************************************/
@@ -575,6 +577,8 @@ if (api_v2_is_authenticated())
     // gates on its module permission first, then serves a fixed view.
     app()->post('/compliance/audits/active/datatable', 'api_v2_compliance_active_audits_datatable');
     app()->post('/compliance/audits/past/datatable', 'api_v2_compliance_past_audits_datatable');
+    app()->post('/compliance/audits/all/datatable', 'api_v2_compliance_all_audits_datatable');
+    app()->get('/compliance/audits/filter_counts', 'api_v2_compliance_audits_filter_counts');
     app()->post('/compliance/audits/report/datatable', 'api_v2_compliance_dynamic_audit_report_datatable');
     app()->post('/compliance/audits/timeline/datatable', 'api_v2_compliance_audit_timeline_datatable');
     app()->post('/governance/documents/datatable', 'api_v2_governance_documents_datatable');

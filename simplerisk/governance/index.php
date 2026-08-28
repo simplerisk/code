@@ -16,7 +16,7 @@
          // Same asset the sibling define_tests_insights band's page
          // (compliance/index.php) already declares.
          'UILayoutWidget',
-         'CUSTOM:pages/governance-frameworks.js', 'CUSTOM:common.js', 'JSLocalization'],
+         'CUSTOM:sr-row-actions-menu.js', 'CUSTOM:pages/governance-frameworks.js', 'CUSTOM:common.js', 'JSLocalization'],
         ['check_governance' => true]
     );
 

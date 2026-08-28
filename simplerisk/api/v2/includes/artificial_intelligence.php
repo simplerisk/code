@@ -111,6 +111,41 @@ function api_v2_ai_capability_patch($id)
     // Persist the toggle
     update_setting($row['config_key'], $enabled ? '1' : '0');
 
+    // Enabling a capability widens what the analysis is built from, so a risk
+    // parked at the consecutive-failure bound deserves another attempt: the
+    // inputs genuinely changed. Same "a human decided" principle as a user
+    // clicking Refresh. Disabling narrows the inputs and needs no reset.
+    // Guarded on the Extra's table because this is a Core API file.
+    // ai_risk_reset_failure_bound() is defined in the AI Extra's index.php, which
+    // the v2 API request chain does NOT load: api/v2/index.php requires only Core
+    // includes, and includes/artificial_intelligence.php only pulls the Extra in
+    // from display_artificial_intelligence_icon(), a UI path this endpoint never
+    // touches. Verified by loading exactly the API's own require set:
+    // function_exists('ai_risk_reset_failure_bound') is false. Without this
+    // require the guard below is always false and the reset never runs. Same
+    // pattern as requeue_ai_risk_analysis_for_all_risks() in
+    // includes/artificial_intelligence.php.
+    if ($enabled && artificial_intelligence_extra()) {
+        $ai_extra_index = realpath(__DIR__ . '/../../../extras/artificial_intelligence/index.php');
+        if ($ai_extra_index !== false) {
+            require_once($ai_extra_index);
+        }
+    }
+
+    if ($enabled && function_exists('ai_risk_reset_failure_bound') && table_exists('ai_recommendations_risk')) {
+        $db = db_open();
+        $reset = ai_risk_reset_failure_bound($db);
+        db_close($db);
+
+        if ($reset > 0) {
+            write_debug_log(
+                "api_v2_ai_capability_patch: capability '{$id}' enabled; " .
+                "cleared {$reset} parked risk-analysis failure(s).",
+                "info"
+            );
+        }
+    }
+
     api_v2_json_result(200, "SUCCESS", ['id' => $id, 'enabled' => $enabled]);
 }
 

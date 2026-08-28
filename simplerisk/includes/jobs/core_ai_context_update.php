@@ -11,6 +11,9 @@ require_once(realpath(__DIR__ . '/../promises.php'));
 // ai_provider_is_configured() lives in artificial_intelligence.php, which
 // functions.php does not auto-load either — declare it directly (CLAUDE.md).
 require_once(realpath(__DIR__ . '/../artificial_intelligence.php'));
+// format_setting_timestamp() lives in setting_values.php — declare it directly
+// (CLAUDE.md) rather than relying on any transitive include.
+require_once(realpath(__DIR__ . '/../setting_values.php'));
 
 return [
     'type' => 'core_ai_context_update',
@@ -62,8 +65,18 @@ return [
         $last_saved = get_setting("ai_context_last_saved", false, false, db: $db);
         $last_updated = get_setting("ai_context_last_updated", false, false, db: $db);
 
-        write_debug_log("AI Context Update: Last saved at " . date("Y-m-d H:i:s", $last_saved), "debug");
-        write_debug_log("AI Context Update: Last updated at " . date("Y-m-d H:i:s", $last_updated), "debug");
+        // Both values come out of a string column and may be '' on a row that
+        // exists but was never stamped. format_setting_timestamp() coerces so a
+        // debug log line can't raise a TypeError and abort this task_check —
+        // which silently disabled this job entirely for over a month.
+        write_debug_log("AI Context Update: Last saved at " . format_setting_timestamp($last_saved), "debug");
+        write_debug_log("AI Context Update: Last updated at " . format_setting_timestamp($last_updated), "debug");
+
+        // Compare as integers for the same reason: '' and '0' must both read as
+        // "never", and a string/string comparison of numeric timestamps would
+        // otherwise sort lexicographically.
+        $last_saved   = coerce_setting_timestamp($last_saved);
+        $last_updated = coerce_setting_timestamp($last_updated);
 
         if (!$last_updated || $last_updated < $last_saved) {
             try {

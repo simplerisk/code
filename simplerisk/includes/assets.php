@@ -509,6 +509,9 @@ function update_asset_risks_associations($asset_id, $associated_risks) {
     // Open the database connection
     $db = db_open();
 
+    // Resolve before the DELETE below removes the rows we would need to read.
+    $previously_associated = risks_associated_with('asset', (int)$asset_id, $db);
+
     // Delete all associations for the asset
     $stmt = $db->prepare("DELETE FROM `risks_to_assets` WHERE `asset_id` = :asset_id;");
     $stmt->bindParam(":asset_id", $asset_id, PDO::PARAM_INT);
@@ -520,6 +523,13 @@ function update_asset_risks_associations($asset_id, $associated_risks) {
         $stmt->bindParam(":risk_id", $risk_id, PDO::PARAM_INT);
         $stmt->execute();
     }
+
+    // Both sides of the swap changed: risks that lost the asset and risks that
+    // gained it.
+    ai_invalidate_risk_analysis(
+        array_merge($previously_associated, array_map('intval', $associated_risks)),
+        $db
+    );
 
     // Close the database connection
     db_close($db);
@@ -688,6 +698,97 @@ function get_mapping_controls_by_asset_id($asset_id)
 
     return $rows;
 }
+/*********************************************************************
+ * FUNCTION: GET MAPPED-ASSET SEARCH TEXT FOR A SET OF CONTROLS      *
+ *********************************************************************
+ * The mapped-asset text of MANY controls at once, as [control_id => "text"].
+ * The batched counterpart of calling get_control_to_assets() once per control,
+ * which is what the control table's free-text search was doing -- one database
+ * connection and one query per control, for every control that did not match a
+ * core field. On a 1,001-control catalogue that was 409ms of a 2,951ms search.
+ *
+ * Text-for-searching only, NOT a batched get_control_to_assets(): that function
+ * returns per-maturity rows and is shaped for rendering. The search only ever
+ * looked at three strings on those rows -- the maturity name, the asset names
+ * and the asset-group names -- so this returns exactly those, joined, and skips
+ * reproducing the row structure (and its delicate GROUP BY) altogether.
+ *
+ * Asset names are decrypted and asset-group names are not, mirroring
+ * get_control_to_assets() exactly -- `assets` is in
+ * $tables_where_name_is_encrypted and `asset_groups` is not.
+ *
+ * Injection-safe: every id is (int)-cast before it reaches the string, so the
+ * interpolated IN list can only contain digits and commas.
+ *
+ * @param array $control_ids the controls to read
+ * @return array [control_id => searchable text]; controls with no mappings are absent
+ *********************************************************************/
+function get_control_to_assets_search_text(array $control_ids)
+{
+    $ids = [];
+    foreach ($control_ids as $control_id) {
+        $control_id = (int)$control_id;
+        if ($control_id) {
+            // Keyed, so duplicates cannot widen the IN list.
+            $ids[$control_id] = $control_id;
+        }
+    }
+
+    if (!$ids) {
+        return [];
+    }
+
+    $id_list = implode(',', $ids);
+
+    // Open the database connection
+    $db = db_open();
+
+    $parts = [];
+
+    // Directly-mapped assets.
+    $stmt = $db->query("
+        SELECT c2a.control_id, cm.name AS maturity_name, assets.name AS asset_name
+        FROM control_to_assets c2a
+            LEFT JOIN control_maturity cm ON cm.value = c2a.control_maturity
+            LEFT JOIN assets ON assets.id = c2a.asset_id
+        WHERE c2a.control_id IN ({$id_list});
+    ");
+    foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $row) {
+        $control_id = (int)$row['control_id'];
+        $parts[$control_id][] = (string)$row['maturity_name'];
+        $parts[$control_id][] = try_decrypt((string)$row['asset_name']);
+    }
+
+    // Assets reached through an asset group.
+    $stmt = $db->query("
+        SELECT c2ag.control_id, cm.name AS maturity_name, ag.name AS asset_group_name
+        FROM control_to_asset_groups c2ag
+            LEFT JOIN control_maturity cm ON cm.value = c2ag.control_maturity
+            LEFT JOIN asset_groups ag ON ag.id = c2ag.asset_group_id
+        WHERE c2ag.control_id IN ({$id_list});
+    ");
+    foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $row) {
+        $control_id = (int)$row['control_id'];
+        $parts[$control_id][] = (string)$row['maturity_name'];
+        $parts[$control_id][] = (string)$row['asset_group_name'];
+    }
+
+    // Close the database connection
+    db_close($db);
+
+    $search_text = [];
+    foreach ($parts as $control_id => $texts) {
+        $texts = array_filter(array_map('trim', $texts), function ($text) {
+            return $text !== "";
+        });
+        if ($texts) {
+            $search_text[$control_id] = implode("\n", $texts);
+        }
+    }
+
+    return $search_text;
+}
+
 /**********************************************
  * FUNCTION: GET MAPPING ASSETS BY CONTROL ID *
  **********************************************/
@@ -1149,6 +1250,9 @@ function tag_assets_to_risk($risk_id, $assets, $entered_assets=false)
     // Add the asset_id column to risks_to_assets
     //$stmt = $db->prepare("UPDATE `risks_to_assets` INNER JOIN `assets` ON `assets`.name = `risks_to_assets`.asset SET `risks_to_assets`.asset_id = `assets`.id;");
     //$stmt->execute();
+
+    // The risk's attached assets are part of its AI context.
+    ai_invalidate_risk_analysis([(int)$risk_id], $db);
 
     // Close the database connection
     db_close($db);

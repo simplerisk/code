@@ -1527,7 +1527,7 @@ $lang = array(
     'SendingRequestPleaseWait' => 'अनुरोध भेजरहा है। कृपया प्रतीक्षा करो.',
     'ApplicationNeedsToBeUpgradeToLatestVersionToUpgradeExtras' => 'एक्सट्रा को अपग्रेड करने के लिए एप्लीकेशन को लेटेस्ट वर्जन में अपग्रेड करने की जरूरत है ।',
     'FilteredRiskReport' => 'फ़िल्टर की गई जोखिम रिपोर्ट',    
-    'NoPermissionForThisAction'=>'आपके पास इस कार्रवाई की अनुमति नहीं है।',
+    'NoPermissionForThisAction'=>'आपको यह कार्रवाई करने की अनुमति नहीं है।',
     'QuestionnaireResult'=>'प्रश्नावली परिणाम',
     'ChangedField' => 'बदला हुआ क्षेत्र',
     'ChangedFrom' => 'से बदल गया',
@@ -3082,7 +3082,7 @@ $lang = array(
     'ResultMessageUnavailable' => 'परिणाम संदेश उपलब्ध नहीं है।',
     'AIProviderURLNotAllowed' => 'उस API URL की अनुमति नहीं है। किसी ज्ञात AI प्रदाता या लूपबैक (127.0.0.1) सेल्फ-होस्ट पते का उपयोग करें।',
     'AIReenterKeyForNewURL' => 'किसी अन्य प्रदाता यूआरएल का परीक्षण करने के लिए एपीआई कुंजी को दोबारा दर्ज करें।',
-    'WorkflowHttpRequestDisallowedURL' => 'http_request: URL {$url} एक अस्वीकृत आंतरिक या आरक्षित पते पर हल होता है।',
+    'WorkflowHttpRequestDisallowedURL' => '{$action}: URL {$url} एक अस्वीकृत आंतरिक या आरक्षित पते पर हल होता है।',
     'BehaviorAndScheduling' => 'व्यवहार और समय-निर्धारण',
     'PrepopulateAcrossContacts' => 'इस मूल्यांकन के लिए किसी अन्य संपर्क के पिछले उत्तरों के आधार पर नए उत्तरों को पहले से भरें।',
     'PrepopulateAcrossContactsHelp' => 'किसी भी संपर्क से प्राप्त नवीनतम पूर्व उत्तरों के साथ नए उत्तरदाता के फॉर्म को पहले से भर दें — यह जिम्मेदारी के हस्तांतरण के समय निरंतरता बनाए रखने में उपयोगी है।',
@@ -4637,6 +4637,28 @@ $lang = array(
     'ExtraVersionIncompatibleWithApplication' => 'डाउनलोड किया गया "{$extra}" एक्स्ट्रा (संस्करण {$extra_version}) SimpleRisk {$app_version} के साथ संगत नहीं है और इंस्टॉल नहीं हुआ। कृपया पहले SimpleRisk को नवीनतम संस्करण में अपग्रेड करें।',
     'ExtraCompatibilityDataUnavailable' => 'SimpleRisk यह पुष्टि नहीं कर सका कि यह रिलीज़ किन Extra संस्करणों का समर्थन करती है, इसलिए Extra इंस्टॉल नहीं हो पाया। कृपया बाद में पुनः प्रयास करें।',
     'ExtraVersionCouldNotBeVerified' => 'डाउनलोड किए गए एक्स्ट्रा का वर्जन निर्धारित नहीं किया जा सका, इसलिए इसे इंस्टॉल नहीं किया गया।',
+    // User import temporary password
+    'NewUsernameAddedWithTemporaryPassword' => 'उपयोगकर्ता नाम "{$username}" वाला एक नया उपयोगकर्ता सफलतापूर्वक जोड़ा गया। अस्थायी पासवर्ड: {$password} (उपयोगकर्ता को पहली बार लॉगिन करते समय इसे बदलना होगा)।',
+    'YouDontHavePermission' => 'आपके पास अनुमति नहीं है।',
+    // Initiate Audits bulk-select
+    'InitiatedTestsBulk' => '$count परीक्षण शुरू किए गए।',
+    // Merged Audits page (replaces Active Audits + Past Audits menu items)
+    'Audits' => 'ऑडिट',
+    'ManageAudits' => 'ऑडिट प्रबंधित करें',
+    'ViewAudits' => 'ऑडिट देखें',
+    // Redesigned, flat Initiate Audits page
+    'EligibleTests' => 'योग्य परीक्षण',
+    'InitiateSelected' => 'चयनित आरंभ करें',
+    'InitiateNAudits' => '{n} ऑडिट शुरू करें',
+    'TagsOptionalAppliedToSelection' => 'टैग (वैकल्पिक, सभी पर लागू)',
+    'Initiate' => 'आरंभ करना',
+    'NoEligibleTestsFound' => 'कोई भी उपयुक्त परीक्षण नहीं मिला।',
+    'Columns' => 'कॉलम',
+    'ShowTestsWithAuditInProgress' => 'ऑडिट जारी रहने के दौरान परीक्षण दिखाएँ',
+    'NoMatchingOptions' => 'कोई मेल खाने वाले विकल्प नहीं मिले।',
+    'TestDetails' => 'परीक्षण विवरण',
+    'PeopleAndTeams' => 'लोग और टीमें',
+    'StatusAndTimeline' => 'स्थिति और समयरेखा',
     '' => '',
 );
 ?>

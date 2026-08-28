@@ -6,6 +6,9 @@
 
 require_once(realpath(__DIR__ . '/../functions.php'));
 require_once(realpath(__DIR__ . '/../queues.php'));
+// format_setting_timestamp() — keeps a settings string out of date()'s int
+// parameter, where a TypeError would abort this task_check every cron tick.
+require_once(realpath(__DIR__ . '/../setting_values.php'));
 
 return [
     'type' => 'core_license_check',
@@ -27,7 +30,12 @@ return [
         $last_ping = get_setting('queue_timestamp_last_license_check', false, false, db: $db)
                   ?: get_setting('queue_timestamp_last_ping', false, false, db: $db);
         $now = time();
-        write_debug_log("License Check Daily: Last updated at " . date("Y-m-d H:i:s", $last_ping), "debug");
+        write_debug_log("License Check Daily: Last updated at " . format_setting_timestamp($last_ping), "debug");
+
+        // Normalize before the arithmetic below: either setting can be a
+        // non-numeric string (a row that exists but was never stamped), which
+        // both date() and the subtraction reject with a TypeError.
+        $last_ping = coerce_setting_timestamp($last_ping);
 
         // Run at most once per 24 hours
         if (!$last_ping || ($now - $last_ping) >= 24 * 60 * 60)

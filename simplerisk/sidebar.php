@@ -101,19 +101,14 @@ require_once(realpath(__DIR__ . '/includes/artificial_intelligence.php'));
                                 <span class="hide-menu"><?= $escaper->escapeHtml($lang['DefineTests']);?></span>
                             </a>
                         </li>
-                        <li class="sidebar-item">
+                        <li class="sidebar-item <?= ($active_sidebar_submenu == 'InitiateAudits')?'active':''; ?>">
                             <a href="../compliance/audit_initiation.php" class="sidebar-link">
                                 <span class="hide-menu"><?= $escaper->escapeHtml($lang['InitiateAudits']);?></span>
                             </a>
                         </li>
-                        <li class="sidebar-item <?= ($active_sidebar_submenu == 'ActiveAudits')?'active':''; ?>">
-                            <a href="../compliance/active_audits.php" class="sidebar-link">
-                                <span class="hide-menu"><?= $escaper->escapeHtml($lang['ActiveAudits']);?></span>
-                            </a>
-                        </li>
-                        <li class="sidebar-item <?= ($active_sidebar_submenu == 'PastAudits')?'active':''; ?>">
-                            <a href="../compliance/past_audits.php" class="sidebar-link">
-                                <span class="hide-menu"><?= $escaper->escapeHtml($lang['PastAudits']);?></span>
+                        <li class="sidebar-item <?= ($active_sidebar_submenu == 'ManageAudits')?'active':''; ?>">
+                            <a href="../compliance/audits.php" class="sidebar-link">
+                                <span class="hide-menu"><?= $escaper->escapeHtml($lang['ManageAudits']);?></span>
                             </a>
                         </li>
                     </ul>
@@ -483,7 +478,7 @@ require_once(realpath(__DIR__ . '/includes/artificial_intelligence.php'));
         // $active_sidebar_submenu because the submenu IS the current page -- in
         // that case the submenu crumb above is already the leaf, so appending the
         // title here would duplicate it ("... > Define Tests > Define Tests").
-        // Leaf pages set a distinct title (submenu "PastAudits" > title "ViewTest")
+        // Leaf pages set a distinct title (submenu "Audits" > title "ViewTest")
         // and still render the third crumb as before.
         if ($active_sidebar_submenu !== $breadcrumb_title_key) {
     ?>

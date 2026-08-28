@@ -605,6 +605,16 @@ function viewrisk($id = null) {
         // Get the id
         $id = (int)($id ?? $_GET['id']);
 
+        // riskmanagement above says the caller may use the risk module; this
+        // says they may see THIS risk. Both are needed: without the second, a
+        // caller on another team reads a risk they cannot edit. Every mutation
+        // handler in this file carries the same pair.
+        // No-op unless the Team Separation Extra is active.
+        if (!check_access_for_risk($id))
+        {
+            json_response(403, $escaper->escapeHtml($lang['NoPermissionForThisAction']), NULL);
+        }
+
         // Query the risk
         $risk = get_risk_by_id($id);
 
@@ -798,7 +808,18 @@ function viewmitigation($id = null) {
         // Return a JSON response
         json_response(400, $escaper->escapeHtml($lang['YouNeedToSpecifyAnIdParameter']), NULL);
     }
-    $risk_id = $id ?? $_GET['id'];
+    // Cast before gating, matching viewrisk(). check_access_for_risk() reaches
+    // extra_grant_access(), which casts internally, so an array-shaped id would
+    // otherwise be coerced there instead -- at a distance and with a warning.
+    $risk_id = (int)($id ?? $_GET['id']);
+
+    // See viewrisk(): riskmanagement grants the module, this grants the risk.
+    // No-op unless the Team Separation Extra is active.
+    if (!check_access_for_risk($risk_id))
+    {
+        json_response(403, $escaper->escapeHtml($lang['NoPermissionForThisAction']), NULL);
+    }
+
     $mitigation = get_mitigation_by_id($risk_id);
 
     if(!isset($mitigation[0])){
@@ -872,7 +893,18 @@ function viewreview($id = null) {
         json_response(400, $escaper->escapeHtml($lang['YouNeedToSpecifyAnIdParameter']), NULL);
     }
 
-    $risk_id = $id ?? $_GET['id'];
+    // Cast before gating, matching viewrisk(). check_access_for_risk() reaches
+    // extra_grant_access(), which casts internally, so an array-shaped id would
+    // otherwise be coerced there instead -- at a distance and with a warning.
+    $risk_id = (int)($id ?? $_GET['id']);
+
+    // See viewrisk(): riskmanagement grants the module, this grants the risk.
+    // No-op unless the Team Separation Extra is active.
+    if (!check_access_for_risk($risk_id))
+    {
+        json_response(403, $escaper->escapeHtml($lang['NoPermissionForThisAction']), NULL);
+    }
+
     $review = get_review_by_id($risk_id);
 
     if(!isset($review[0])){
@@ -1081,7 +1113,7 @@ function dynamicriskForm()
 
         // Return a JSON response
         // @phan-suppress-next-line SecurityCheck-XSS -- json_encode() output for DataTables; values are pre-escaped via escapeHtml()/purifyHtml()
-        echo json_encode($results);
+        echo json_encode($results, JSON_INVALID_UTF8_SUBSTITUTE);
     }
 }
 
@@ -1324,7 +1356,7 @@ function dynamicriskUniqueColumnDataAPI()
         }
 
         // Return a JSON response
-        echo json_encode($results);
+        echo json_encode($results, JSON_INVALID_UTF8_SUBSTITUTE);
     }
     
 }
@@ -1338,22 +1370,25 @@ function dynamicriskUniqueColumnDataAPI()
 function getTabHtml($id, $template){
     global $lang, $escaper;
 
-     // If team separation is enabled
-    if (team_separation_extra())
+    // Whether this caller may see this risk at all, and a hard refusal if
+    // not. check_access_for_risk() is what every mutation handler on this file
+    // already calls, and the sibling partials included directly rather than
+    // through this function (management/partials/close.php, changestatus.php)
+    // already deny the same condition through redirect_permission_denied(), so
+    // sharing both keeps every risk-tab route refusing alike.
+    //
+    // Refusing the whole render here is why the three optional sections below
+    // -- the scoring-method editor, the mitigation block and the management
+    // review -- do not re-test access themselves.
+    //
+    // extra_grant_access() returns false for a risk that does not exist as
+    // well as for one on another team (extras/separation/index.php), so the
+    // refusal is identical either way and cannot be used to test whether a
+    // given risk id exists.
+    if (!check_access_for_risk($id))
     {
-        //Include the team separation extra
-        require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
-
-        if (!extra_grant_access($_SESSION['uid'], $id))
-        {
-            // Do not allow the user to update the risk
-            $access = false;
-        }
-        // Otherwise, allow the user to update the risk
-        else $access = true;
+        redirect_permission_denied('NoPermissionForThisAction', "getTabHtml risk id={$id} template={$template}");
     }
-    // Otherwise, allow the user to update the risk
-    else $access = true;
 
     // Get the details of the risk
     $risk = get_risk_by_id($id);
@@ -1536,9 +1571,9 @@ function getTabHtml($id, $template){
     // through change_scoring_method() and update_*_score() to risk_scoring.
     // Gate the entire block on modify_risks so a riskmanagement-only user
     // cannot mutate stored scoring state by appending scoring_method to a view
-    // URL. The original code only checked $access (team-separation visibility)
-    // and let any reader trigger the writes. (HackerOne report.)
-    if (isset($_GET['scoring_method']) && $access && check_permission("modify_risks"))
+    // URL. The original code only checked team-separation visibility and let
+    // any reader trigger the writes. (HackerOne report.)
+    if (isset($_GET['scoring_method']) && check_permission("modify_risks"))
     {
         // If the current scoring method was changed to Classic
         if ($_GET['scoring_method'] == 1)
@@ -1623,8 +1658,9 @@ function getTabHtml($id, $template){
     // Get the mitigation for the risk
     $mitigation = get_mitigation_by_id($id);
 
-    // If a mitigation exists for the risk and the user is allowed to access
-    if ($mitigation == true && $access)
+    // If a mitigation exists for the risk. Team-separation access was already
+    // enforced at the top of this function, which refuses the whole render.
+    if ($mitigation == true)
     {
         // Set the mitigation values
         // @phan-suppress-next-line PhanTypeMismatchDimFetch
@@ -1671,8 +1707,9 @@ function getTabHtml($id, $template){
     // Get the management reviews for the risk
     $mgmt_reviews = get_review_by_id($id);
 
-    // If a mitigation exists for this risk and the user is allowed to access
-    if ($mgmt_reviews && $access)
+    // If a management review exists for this risk. Team-separation access was
+    // already enforced at the top of this function.
+    if ($mgmt_reviews)
     {
         // Set the mitigation values
         $review_date = $mgmt_reviews[0]['submission_date'];
@@ -1744,8 +1781,10 @@ function viewriskHtmlForm()
 {
     global $lang, $escaper;
 
+    // 403 rather than 400: this is an authorization refusal, not a malformed
+    // request. Consistent with the other four risk-tab handlers.
     if (!check_permission("riskmanagement")) {
-        json_response(400, $escaper->escapeHtml($lang['NoPermissionForRiskManagement']), NULL);
+        json_response(403, $escaper->escapeHtml($lang['NoPermissionForRiskManagement']), NULL);
         return;
     }
     // If the id is not sent
@@ -1852,8 +1891,10 @@ function overviewForm()
 {
     global $lang, $escaper;
 
+    // 403 rather than 400: this is an authorization refusal, not a malformed
+    // request. Consistent with the other four risk-tab handlers.
     if (!check_permission("riskmanagement")) {
-        json_response(400, $escaper->escapeHtml($lang['NoPermissionForRiskManagement']), NULL);
+        json_response(403, $escaper->escapeHtml($lang['NoPermissionForRiskManagement']), NULL);
         return;
     }
     // If the id is not sent
@@ -1979,6 +2020,16 @@ function editdetailsForm()
 {
     global $lang, $escaper;
 
+    // api/v2/index.php wraps its routes in an authentication check only, so the
+    // module gate belongs in the handler. getTabHtml()'s own gate is per-risk
+    // team separation, which is a no-op while that Extra is inactive, so it
+    // cannot stand in for this one: without both, a caller holding no
+    // riskmanagement permission reads a fully rendered risk.
+    if (!check_permission("riskmanagement"))
+    {
+        json_response(403, $escaper->escapeHtml($lang['NoPermissionForRiskManagement']), NULL);
+    }
+
     // If the id is not sent
     if (!isset($_GET['id']))
     {
@@ -2001,8 +2052,11 @@ function viewAllReviewsForm()
 {
     global $lang, $escaper;
 
+    // 403, matching editdetailsForm() and scoreactionForm(): this is an
+    // authorization refusal, not a malformed request. The 400 shape elsewhere in
+    // this file is legacy and is not the pattern to copy.
     if (!check_permission("riskmanagement")) {
-        json_response(400, $escaper->escapeHtml($lang['NoPermissionForRiskManagement']), NULL);
+        json_response(403, $escaper->escapeHtml($lang['NoPermissionForRiskManagement']), NULL);
         return;
     }
 
@@ -2640,6 +2694,16 @@ function saveMarkUnreviewForm()
 function scoreactionForm()
 {
     global $lang, $escaper;
+
+    // api/v2/index.php wraps its routes in an authentication check only, so the
+    // module gate belongs in the handler. getTabHtml()'s own gate is per-risk
+    // team separation, which is a no-op while that Extra is inactive, so it
+    // cannot stand in for this one: without both, a caller holding no
+    // riskmanagement permission reads a fully rendered risk.
+    if (!check_permission("riskmanagement"))
+    {
+        json_response(403, $escaper->escapeHtml($lang['NoPermissionForRiskManagement']), NULL);
+    }
 
     // If the id is not sent
     if (!isset($_GET['id']))
@@ -4234,7 +4298,7 @@ function getFrameworkControlsDatatable() {
             'ownerList' => $ownerList ,
             'priorityList' => $priorityList ,
         );
-        echo json_encode($result);
+        echo json_encode($result, JSON_INVALID_UTF8_SUBSTITUTE);
         exit;
     } else {
         json_response(400, $escaper->escapeHtml($lang['NoPermissionForGovernance']), NULL);
@@ -4535,7 +4599,7 @@ function getMitigationControlsDatatable(){
             'recordsTotal' => $recordsTotal,
             'recordsFiltered' => $recordsTotal,
         );
-        echo json_encode($result);
+        echo json_encode($result, JSON_INVALID_UTF8_SUBSTITUTE);
         exit;
     } else {
         json_response(400, $escaper->escapeHtml($lang['NoPermissionForRiskManagement']), NULL);
@@ -4554,7 +4618,7 @@ function getFrameworksResponse()
     {
         $status = (int)$_GET['status'];
         $result = get_frameworks_as_treegrid($status);
-        echo json_encode($result);
+        echo json_encode($result, JSON_INVALID_UTF8_SUBSTITUTE);
         exit;
     }
     else
@@ -5144,6 +5208,108 @@ function initiateFrameworkControlTestsResponse()
     
 }
 
+/*********************************************************************
+ * FUNCTION: GET INITIATE ELIGIBLE TESTS RESPONSE                    *
+ * Backs the redesigned, flat Initiate Audits page. Unlike the       *
+ * legacy datatable handlers in this file, this returns RAW field    *
+ * values (not pre-rendered HTML) -- the client renders the row,     *
+ * per the API-first pattern used by compliance_grid.php.            *
+ *********************************************************************/
+function getInitiateEligibleTestsResponse()
+{
+    global $lang, $escaper;
+
+    // If the user has compliance permissions
+    if (check_permission("compliance"))
+    {
+        $draw = $escaper->escapeHtml($_POST['draw']);
+
+        $filters = [
+            "filter_text"          => empty($_POST['filter_text']) ? '' : $_POST['filter_text'],
+            "filter_framework"     => empty($_POST['filter_framework']) ? [] : $_POST['filter_framework'],
+            "filter_control"       => empty($_POST['filter_control']) ? [] : $_POST['filter_control'],
+            "filter_schedule_type" => empty($_POST['filter_schedule_type']) ? [] : $_POST['filter_schedule_type'],
+            "show_in_progress"     => !empty($_POST['show_in_progress']),
+        ];
+
+        $tests = get_initiate_eligible_tests($filters);
+        $recordsTotal = count($tests);
+
+        $start  = (int)($_POST['start'] ?? 0);
+        $length = (int)($_POST['length'] ?? 10);
+
+        if ($length != -1) {
+            $tests = array_slice($tests, max($start, 0), $length);
+        }
+
+        $result = [
+            'draw' => $draw,
+            'data' => array_values($tests),
+            'recordsTotal' => $recordsTotal,
+            'recordsFiltered' => $recordsTotal,
+        ];
+
+        // Serve as JSON so the response is never sniffed/rendered as HTML --
+        // without this, add_security_headers()'s default text/html
+        // Content-Type stands, and a browser loading this endpoint as a
+        // top-level document would parse the body as HTML.
+        header("Content-Type: application/json");
+        // @phan-suppress-next-line SecurityCheck-XSS -- JSON response (application/json), not HTML; client escapes at DOM-render time
+        echo json_encode($result);
+        exit;
+    }
+    else
+    {
+        json_response(400, $escaper->escapeHtml($lang['NoPermissionForCompliance']), NULL);
+    }
+}
+
+/*********************************************************************
+ * FUNCTION: INITIATE TESTS BULK RESPONSE                            *
+ * Backs the redesigned Initiate Audits page's "Initiate selected"   *
+ * bulk action -- an arbitrary batch of individual test ids (built   *
+ * by filtering the flat list and selecting all matching, which      *
+ * reproduces "initiate whole framework/control" without a nested    *
+ * tree), sharing one tag set. A test that can't be initiated        *
+ * (retired, outside the viewer's team) is reported back as skipped  *
+ * rather than failing the whole batch.                              *
+ *********************************************************************/
+function initiateTestsBulkResponse()
+{
+    global $lang;
+
+    // If the user has compliance permissions
+    if (check_permission("compliance") && isset($_SESSION["initiate_audits"]) && $_SESSION["initiate_audits"] == 1)
+    {
+        $ids  = empty($_POST['ids']) ? [] : array_map('intval', (array)$_POST['ids']);
+        $tags = empty($_POST['tags']) ? [] : array_filter(array_map('strval', (array)$_POST['tags']), 'strlen');
+
+        if (empty($ids))
+        {
+            set_alert(true, "bad", $lang['FailedInitiate']);
+            json_response(400, get_alert(true), NULL);
+            return;
+        }
+
+        $result = initiate_tests_bulk($ids, $tags);
+
+        if (empty($result['initiated']))
+        {
+            set_alert(true, "bad", $lang['FailedInitiate']);
+            json_response(400, get_alert(true), $result);
+            return;
+        }
+
+        set_alert(true, "good", _lang_raw('InitiatedTestsBulk', ['count' => count($result['initiated'])]));
+        json_response(200, get_alert(true), $result);
+    }
+    else
+    {
+        set_alert(true, "bad", $lang['NoPermissionForCompliance']);
+        json_response(400, get_alert(true), NULL);
+    }
+}
+
 /***************************************************************
  * FUNCTION: AUDIT TIMELINE RESPONSE *
  ***************************************************************/
@@ -5180,11 +5346,12 @@ function auditTimelineResponse()
                 }
             }
             
-            $active_audits_url = build_url('compliance/active_audits.php?test_id='.$audit_test['id']);
-            $past_audits_url = build_url('compliance/past_audits.php?test_id='.$audit_test['id']);
+            // Active Audits + Past Audits merged into one Audits page -- deep-link
+            // via a search term (the test's own name) instead of a status-specific
+            // URL, matching get_custom_item_actions_for_audit_timeline().
+            $audits_url = build_url('compliance/audits.php?search=' . rawurlencode($audit_test['name']));
             $buttons = '<button class="btn btn-primary btn-initiate-audit" style="width:100%" id="'.$audit_test['id'].'">'.$escaper->escapeHtml($lang['InitiateAudit']).'</button>
-                        <a class="btn btn-secondary my-1" style="width:100%" type="button" href="'.$active_audits_url.'" target="_blank"><i class="mdi mdi-open-in-new mx-2"></i>'.$escaper->escapeHtml($lang['ViewActiveAudits']).'</a>
-                        <a class="btn btn-secondary" style="width:100%" type="button"href="'.$past_audits_url.'" target="_blank"><i class="mdi mdi-open-in-new mx-2"></i>'.$escaper->escapeHtml($lang['ViewPastAudits']).'</a>';
+                        <a class="btn btn-secondary my-1" style="width:100%" type="button" href="'.$audits_url.'" target="_blank"><i class="mdi mdi-open-in-new mx-2"></i>'.$escaper->escapeHtml($lang['ViewAudits']).'</a>';
 
             $data[] = [
                 $buttons,
@@ -5211,7 +5378,7 @@ function auditTimelineResponse()
         'recordsFiltered' => $recordsTotal,
     );
     // @phan-suppress-next-line SecurityCheck-XSS -- json_encode() output; build_url() called with hardcoded paths and DB integer IDs
-    echo json_encode($result);
+    echo json_encode($result, JSON_INVALID_UTF8_SUBSTITUTE);
     exit;
 
 }
@@ -5527,7 +5694,7 @@ function getDefineTestsResponse()
             'recordsTotal' => $recordsTotal,
             'recordsFiltered' => $recordsTotal,
         );
-        echo json_encode($result);
+        echo json_encode($result, JSON_INVALID_UTF8_SUBSTITUTE);
     }
     else
     {
@@ -6303,7 +6470,7 @@ function getInitiateTestAuditsResponse() {
         // any reflected markup is inert even before the per-field escaping above.
         header("Content-Type: application/json");
         // @phan-suppress-next-line SecurityCheck-XSS -- json_encode() output; all fields individually escaped
-        echo json_encode($results);
+        echo json_encode($results, JSON_INVALID_UTF8_SUBSTITUTE);
 
     } else {
 
@@ -6417,7 +6584,7 @@ function getPastTestAuditsResponse()
             'recordsFiltered' => $recordsTotal,
         );
         // @phan-suppress-next-line SecurityCheck-XSS -- json_encode() output; build_url() called with hardcoded path
-        echo json_encode($result);
+        echo json_encode($result, JSON_INVALID_UTF8_SUBSTITUTE);
         exit;
     }
     else
@@ -6553,7 +6720,7 @@ function getActiveTestAuditsResponse() {
             'recordsFiltered' => $recordsTotal,
         );
         // @phan-suppress-next-line SecurityCheck-XSS -- json_encode() output; build_url() called with hardcoded path
-        echo json_encode($result);
+        echo json_encode($result, JSON_INVALID_UTF8_SUBSTITUTE);
         exit;
     }
     else
@@ -6996,7 +7163,7 @@ function getDocumentsResponse()
     {
         $type = $_GET['type'];
         $result = get_documents_as_treegrid($type);
-        echo json_encode($result);
+        echo json_encode($result, JSON_INVALID_UTF8_SUBSTITUTE);
         exit;
     }
     else
@@ -7199,7 +7366,7 @@ function getTabularDocumentsResponse() {
         }
 
         // @phan-suppress-next-line SecurityCheck-XSS -- json_encode() output; build_url() called with hardcoded path and pre-escaped unique_name
-        echo json_encode($documents);
+        echo json_encode($documents, JSON_INVALID_UTF8_SUBSTITUTE);
         exit;
     } else {
 
@@ -7772,7 +7939,7 @@ function getPlanMitigationsDatatableResponse()
             'recordsFiltered' => $recordsTotal,
         );
         // @phan-suppress-next-line SecurityCheck-XSS -- json_encode() output for DataTables; all columns escaped via escapeHtml()/purifyHtml() in switch block
-        echo json_encode($result);
+        echo json_encode($result, JSON_INVALID_UTF8_SUBSTITUTE);
         exit;
     }
     else
@@ -8229,7 +8396,7 @@ function getManagementReviewsDatatableResponse()
             'recordsFiltered' => $recordsTotal,
         );
         // @phan-suppress-next-line SecurityCheck-XSS -- json_encode() output for DataTables; all columns escaped via escapeHtml()/purifyHtml() in switch block
-        echo json_encode($result);
+        echo json_encode($result, JSON_INVALID_UTF8_SUBSTITUTE);
         exit;
     }
     else
@@ -8717,7 +8884,7 @@ function getReviewRisksDatatableResponse()
             'recordsFiltered' => $recordsTotal,
         );
         // @phan-suppress-next-line SecurityCheck-XSS -- json_encode() output for DataTables; all columns escaped via escapeHtml()/purifyHtml() in switch block
-        echo json_encode($result);
+        echo json_encode($result, JSON_INVALID_UTF8_SUBSTITUTE);
         exit;
     }
     else
@@ -8781,7 +8948,7 @@ function getReviewsWithDateIssuesDatatableResponse()
             'recordsTotal' => $recordsTotal,
             'recordsFiltered' => $recordsTotal,
         );
-        echo json_encode($result);
+        echo json_encode($result, JSON_INVALID_UTF8_SUBSTITUTE);
         exit;
     }
     else
@@ -8822,6 +8989,24 @@ function fixReviewDateFormat() {
             }
 
             $id = (int)$_POST['review_id'];
+
+            // Team Separation scopes risk-write access per risk, and reopenForm()
+            // above enforces that scoping for its own risk-write action — this
+            // endpoint writes to a specific risk's review via review_id and must
+            // enforce the same scoping, or a team_separation user could rewrite
+            // any risk's review date by guessing/enumerating review_id.
+            if (team_separation_extra())
+            {
+                require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
+
+                $review_risk_id = get_mgmt_review_risk_id($id);
+
+                if ($review_risk_id === null || !extra_grant_access($_SESSION['uid'], $review_risk_id))
+                {
+                    set_alert(true, "bad", $lang['YouDontHavePermission']);
+                    json_response(400, get_alert(true), NULL);
+                }
+            }
 
             $format = convertDateFormatToPHP($_POST['format']);
 
@@ -9196,7 +9381,7 @@ function create_document_api() {
     $document_type = $_POST['document_type'];
     $document_name = $_POST['document_name'];
     $framework_ids = empty($_POST['framework_ids']) ? [] : $_POST['framework_ids'];
-    $control_ids   = empty($_POST['control_ids']) ? [] : $_POST['control_ids'];
+    $control_ids   = normalize_id_list_param($_POST['control_ids'] ?? null);
     $parent        = $_POST['parent'] ?? 0;
     $status        = $_POST['status'];
     $creation_date = get_standard_date_from_default_format($_POST['creation_date']);
@@ -9222,7 +9407,7 @@ function create_document_api() {
     else
     {
         // Insert a new document
-        $document_id = add_document($submitter, $document_type, $document_name, implode(',', $control_ids), $framework_ids, $parent, $status, $creation_date, $last_review_date, $review_frequency, $next_review_date, $approval_date, $document_owner, implode(',', $additional_stakeholders), $approver, implode(',', $team_ids));
+        $document_id = add_document($submitter, $document_type, $document_name, $control_ids, $framework_ids, $parent, $status, $creation_date, $last_review_date, $review_frequency, $next_review_date, $approval_date, $document_owner, implode(',', $additional_stakeholders), $approver, implode(',', $team_ids));
         if($document_id)
         {
             // Display an alert
@@ -9252,7 +9437,7 @@ function update_document_api() {
     $document_type              = $_POST['document_type'];
     $document_name              = $_POST['document_name'];
     $framework_ids              = empty($_POST['framework_ids']) ? [] : $_POST['framework_ids'];
-    $control_ids                = empty($_POST['control_ids']) ? [] : $_POST['control_ids'];
+    $control_ids                = normalize_id_list_param($_POST['control_ids'] ?? null);
 
     // Normalize the framework and control ids to be integers
     $framework_ids = array_map('intval', $framework_ids);
@@ -10750,7 +10935,7 @@ function appetite_report_api()
                 'recordsFiltered' => $data['recordsTotal'],
             );
 
-            echo json_encode($result);
+            echo json_encode($result, JSON_INVALID_UTF8_SUBSTITUTE);
             exit;
         }
     }
@@ -10870,7 +11055,7 @@ function user_management_reports_api() {
                 'recordsFiltered' => $results['recordsTotal'],
             );
             
-            echo json_encode($result);
+            echo json_encode($result, JSON_INVALID_UTF8_SUBSTITUTE);
             exit;
         }
     }
@@ -11046,7 +11231,7 @@ function user_management_reports_unique_column_data_api() {
             }
             
             
-            echo json_encode($unique_data);
+            echo json_encode($unique_data, JSON_INVALID_UTF8_SUBSTITUTE);
             exit;
         }
     }
@@ -11716,7 +11901,7 @@ function high_risk_report_datatable() {
     );
 
     // Return a JSON response
-    echo json_encode($results);
+    echo json_encode($results, JSON_INVALID_UTF8_SUBSTITUTE);
 }
 
 /****************************************
@@ -12068,7 +12253,7 @@ function getRiskCatalogDatatableAPI() {
             'recordsTotal' => count($risk_catalogs),
             'recordsFiltered' => count($risk_catalogs),
         );
-        echo json_encode($result);
+        echo json_encode($result, JSON_INVALID_UTF8_SUBSTITUTE);
         exit;
     }
     else
@@ -12106,7 +12291,7 @@ function getThreatCatalogDatatableAPI() {
             'recordsTotal' => count($threat_catalogs),
             'recordsFiltered' => count($threat_catalogs),
         );
-        echo json_encode($result);
+        echo json_encode($result, JSON_INVALID_UTF8_SUBSTITUTE);
         exit;
     } else {
         unauthorized_access();
@@ -12712,7 +12897,7 @@ function getFilesWithEncodingIssuesDatatableResponse() {
             'recordsTotal' => $recordsTotal,
             'recordsFiltered' => $recordsTotal,
         );
-        echo json_encode($result);
+        echo json_encode($result, JSON_INVALID_UTF8_SUBSTITUTE);
         exit;
     } else {
         unauthorized_access();
@@ -13176,7 +13361,7 @@ function my_open_risk_datatable() {
     );
 
     // Return a JSON response
-    echo json_encode($results);
+    echo json_encode($results, JSON_INVALID_UTF8_SUBSTITUTE);
 }
 /**************************************************************
  * FUNCTION: REPORTS - All Recent Commented Risks             *
@@ -13446,7 +13631,7 @@ function recent_commented_risk_datatable() {
     );
 
     // Return a JSON response
-    echo json_encode($results);
+    echo json_encode($results, JSON_INVALID_UTF8_SUBSTITUTE);
 }
 /***************************************************************************************
  * END OF SECTION CONTAINING FUNCTIONS DEDICATED TO FIXING FILE UPLOAD ENCODING ISSUES *
@@ -13514,7 +13699,7 @@ function controlGapAnalysisResponse()
         'recordsTotal' => $recordsTotal,
         'recordsFiltered' => $recordsTotal,
     );
-    echo json_encode($result);
+    echo json_encode($result, JSON_INVALID_UTF8_SUBSTITUTE);
     exit;
 }
 
@@ -15966,6 +16151,61 @@ function delete_asset_api(){
 /*******************************
  * FUNCTION: GET DATATABLE API *
  *******************************/
+/***********************************************************************
+ * FUNCTION: MERGE OUT OF BAND COLUMN FILTERS                          *
+ * Toolbar filters for a field the viewer hasn't added as a visible    *
+ * column still need to reach the server: DataTables only puts a field *
+ * in $_POST['columns'] when a <th data-name="..."> for it actually    *
+ * exists in the table, so datatable_response_for_view()'s own column  *
+ * loop -- gated on in_array(..., $selected_fields) -- never sees it.  *
+ * Manage Audits' per-field toolbar selects (Framework/Tester/Result/  *
+ * Status/Tags/Team) reach the server instead via the same out-of-band *
+ * ajax-data hook (window.getExtraAjaxData_all_audits) already used    *
+ * for the Test Date range, as a JSON object keyed by field name.      *
+ * Merged in here -- deliberately NOT gated on $selected_fields, since *
+ * a toolbar filter must work whether or not its column happens to be  *
+ * displayed; the $field_settings_for_type[...]['searchable'] check    *
+ * still keeps this from setting a filter on a field the view doesn't  *
+ * actually have. Extracted as a pure function (CLAUDE.md: refactor    *
+ * the testable decision out of $_POST-reading code) so the merge      *
+ * semantics can be unit-tested without a request or a DB.             *
+ ***********************************************************************/
+function merge_out_of_band_column_filters(array $column_filters, $raw_json, array $field_settings_for_type) {
+    if (empty($raw_json) || !is_string($raw_json)) {
+        return $column_filters;
+    }
+
+    $extra_column_filters = json_decode($raw_json, true);
+    if (!is_array($extra_column_filters)) {
+        return $column_filters;
+    }
+
+    foreach ($extra_column_filters as $extra_field_name => $extra_value) {
+        if (
+            !is_string($extra_field_name)
+            || empty($field_settings_for_type[$extra_field_name]['searchable'])
+            || !(is_string($extra_value) || is_array($extra_value))
+        ) {
+            continue;
+        }
+        if (is_array($extra_value) && array_filter($extra_value, fn($v) => !is_string($v) && !is_int($v))) {
+            continue;
+        }
+        // An empty value means "no filter selected for this field" --
+        // omit the key entirely (matching the caller's own column loop
+        // behavior for an empty columns[i][search][value]) rather than
+        // setting it to '' or [], which process_selected_field_filter_for_*()
+        // would instead read as an active filter matching nothing and drop
+        // every row.
+        if (empty($extra_value)) {
+            continue;
+        }
+        $column_filters[$extra_field_name] = $extra_value;
+    }
+
+    return $column_filters;
+}
+
 /*******************************************************************************
  * FUNCTION: DATATABLE RESPONSE FOR VIEW                                         *
  * Shared server-side DataTables JSON response for a `$field_settings_views`      *
@@ -15990,8 +16230,20 @@ function datatable_response_for_view($view) {
 
     //don't need customization now, but keep it yet.
     $customization = customization_extra();
-    
-    $selected_fields = display_settings_get_display_settings_for_view($view);
+
+    // active_audits/past_audits are no longer independently browsable pages --
+    // Manage Audits renders ONE 'all_audits' table client-side and only swaps
+    // this endpoint's ajax.url between status chips, so every chip must return
+    // the SAME columns the client actually asked for. Resolving the column
+    // selection against each view's own (stale, pre-merge) saved settings/
+    // defaults let it drift from 'all_audits'' -- a field present in the
+    // client's column config but absent from an active/past response comes
+    // back with no key at all (get_data_for_datatable() only sets $row[field]
+    // when the raw item has it), which a renderer like DataTable.render.
+    // testDate() can't tell apart from a genuinely blank date.
+    $selected_fields = display_settings_get_display_settings_for_view(
+        in_array($view, ['active_audits', 'past_audits'], true) ? 'all_audits' : $view
+    );
     
     // Validating and defaulting for the paging data
     $start = !empty($_POST['start']) ? (int)$_POST['start'] : 0;
@@ -16060,9 +16312,28 @@ function datatable_response_for_view($view) {
             }
         }
     }
-    
+
+    // See merge_out_of_band_column_filters() for why this merge exists.
+    $column_filters = merge_out_of_band_column_filters(
+        $column_filters,
+        $_POST['audits_column_filters'] ?? null,
+        $field_settings[$type] ?? []
+    );
+
+    // DataTables' own global search box -- $_POST['search']['value']. Every
+    // other datatable_response_for_view() caller today either has no visible
+    // search box or one that was silently doing nothing (get_data_for_datatable()
+    // never read this key before); passing it through is additive.
+    // @phan-suppress-next-line PhanTypeMismatchDimFetch
+    $global_search = isset($_POST['search']['value']) && is_scalar($_POST['search']['value']) ? (string)$_POST['search']['value'] : '';
+
+    // Manage Audits' Test Date range quickfilter -- read once here and passed
+    // as an explicit parameter, the same way $global_search is, rather than
+    // having get_data_for_datatable() reach into $_POST directly.
+    $test_date_range = isset($_POST['audits_test_date_range']) && is_scalar($_POST['audits_test_date_range']) ? (string)$_POST['audits_test_date_range'] : '';
+
     // Get data for datatable
-    $data = get_data_for_datatable($view, $selected_fields, $start, $length, $orderColumnName, $orderDir, $column_filters);
+    $data = get_data_for_datatable($view, $selected_fields, $start, $length, $orderColumnName, $orderDir, $column_filters, $global_search, $test_date_range);
 
     $result = array(
         'draw' => (int)$_POST['draw'],
@@ -16072,7 +16343,7 @@ function datatable_response_for_view($view) {
     );
     
     // @phan-suppress-next-line SecurityCheck-XSS -- JSON response for DataTables; data comes from get_data_for_datatable() with proper server-side processing
-    echo json_encode($result);
+    echo json_encode($result, JSON_INVALID_UTF8_SUBSTITUTE);
     exit;
 
 }

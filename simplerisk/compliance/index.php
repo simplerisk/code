@@ -12,12 +12,12 @@
     // on purpose -- the submenu IS the current page, so sidebar.php renders the
     // submenu as the breadcrumb leaf and (because title === submenu) skips the
     // redundant final crumb rather than duplicating it. A deeper leaf page would
-    // instead pass a distinct title (e.g. view_test.php: submenu 'PastAudits',
-    // title 'ViewTest' -> "Compliance > Past Audits > View Test").
+    // instead pass a distinct title (e.g. view_test.php: submenu 'ManageAudits',
+    // title 'ViewTest' -> "Compliance > Manage Audits > View Test").
     $breadcrumb_title_key = "DefineTests";
     $active_sidebar_menu = "Compliance";
     $active_sidebar_submenu = "DefineTests";
-    render_header_and_sidebar(['blockUI', 'selectize', 'datatables', 'WYSIWYG', 'multiselect', 'datetimerangepicker', 'UILayoutWidget', 'CUSTOM:pages/compliance.js', 'CUSTOM:pages/compliance-define-tests.js', 'CUSTOM:common.js'], ['check_compliance' => true], $breadcrumb_title_key, $active_sidebar_menu, $active_sidebar_submenu);
+    render_header_and_sidebar(['blockUI', 'selectize', 'datatables', 'WYSIWYG', 'multiselect', 'datetimerangepicker', 'UILayoutWidget', 'CUSTOM:sr-select.js', 'CUSTOM:sr-row-actions-menu.js', 'CUSTOM:pages/compliance.js', 'CUSTOM:pages/compliance-define-tests.js', 'CUSTOM:common.js'], ['check_compliance' => true], $breadcrumb_title_key, $active_sidebar_menu, $active_sidebar_submenu);
 
     // Include required functions file
     require_once(realpath(__DIR__ . '/../includes/governance.php'));

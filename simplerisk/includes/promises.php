@@ -553,6 +553,44 @@ function process_promise(array $promise, array $jobDef, PDO $db, int $maxRetryAt
     return 0; // success
 }
 
+/*********************************************************************
+ * FUNCTION: CANCEL QUEUE TASK                                       *
+ * Stop a queued task and any chain still to run for it.             *
+ *                                                                   *
+ * The promise fetcher treats a promise as terminal when EITHER      *
+ * `state` or `status` holds a terminal value, so writing            *
+ * status='canceled' is enough to make the worker skip it. A stage    *
+ * already executing runs to completion — an in-flight AI call       *
+ * cannot be interrupted — but nothing downstream of it starts.       *
+ *                                                                   *
+ * Deliberately does NOT touch tmp data: refs are job-specific, and   *
+ * the caller knows which of its own it needs to delete.             *
+ *********************************************************************/
+function cancel_queue_task(PDO $db, int $task_id, string $reason): bool
+{
+    if ($task_id <= 0) {
+        return true;
+    }
+
+    try {
+        $stmt = $db->prepare("UPDATE `queue_tasks` SET `status` = 'canceled' WHERE `id` = :task_id");
+        $stmt->execute([':task_id' => $task_id]);
+
+        $stmt = $db->prepare("
+            UPDATE `promises` SET `status` = 'canceled'
+            WHERE `queue_task_id` = :task_id AND `status` IN ('pending','in_progress')
+        ");
+        $stmt->execute([':task_id' => $task_id]);
+
+        write_debug_log("[cancel_queue_task] Canceled task {$task_id}: {$reason}", "info");
+
+        return true;
+    } catch (Throwable $e) {
+        write_debug_log("[cancel_queue_task] Error canceling task {$task_id}: " . $e->getMessage(), "error");
+        return false;
+    }
+}
+
 /*********************************
  * FUNCTION: CANCEL CONTROL TASK *
  *********************************/
@@ -568,22 +606,10 @@ function cancel_control_task(PDO $db, array $promise, string $reason): bool
             "info"
         );
 
-        // Cancel the task itself
-        $stmt = $db->prepare("
-            UPDATE queue_tasks
-            SET status = 'canceled'
-            WHERE id = :task_id
-        ");
-        $stmt->execute([':task_id' => $task_id]);
-
-        // Cancel all promises belonging to this task
-        $stmt = $db->prepare("
-            UPDATE promises
-            SET status = 'canceled'
-            WHERE queue_task_id = :task_id
-                AND status IN ('pending','in_progress')
-        ");
-        $stmt->execute([':task_id' => $task_id]);
+        // Cancel the task and any chain still to run for it. Delegated so the
+        // two functions cannot drift: this one adds only the control-specific
+        // tmp-data cleanup below.
+        cancel_queue_task($db, $task_id, $reason);
 
         // Clean the tmp_files
         $payload = json_decode($promise['payload'], true) ?? [];

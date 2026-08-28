@@ -18,8 +18,10 @@ require_once(realpath(__DIR__ . '/includes/artificial_intelligence.php'));
 // In the script and the page using it you will be able to use _lang['localization_key'] in javascript.
 $localization_required_by_scripts = [
     'CUSTOM:common.js' => ['Yes', 'Cancel', 'FieldRequired'],
+    'CUSTOM:sr-select.js' => ['NSelected', 'Search', 'NoMatchingOptions'],
     'EXTRA:JS:assessments:questionnaire_templates.js' => ['SelectedOnAnotherTab', 'ID', 'SelectedQuestions', 'SearchForQuestion', 'ConfirmDisableTabbedExperience', 'ConfirmDeleteTab', 'NewTab', 'Default', 'Actions', 'Required'],
     'CUSTOM:pages/plan-project.js' => ['AreYouSureYouWantToDeleteThisProject'],
+    'CUSTOM:pages/compliance-initiate-audits.js' => ['EligibleTests', 'TestName', 'ControlName', 'FrameworkName', 'Schedule', 'ScheduleManual', 'ScheduleInterval', 'ScheduleCalendar', 'LastTestDate', 'NextTestDate', 'ALL', 'Cancel', 'Clear', 'SelectAll', 'NSelected', 'Tags', 'Initiate', 'InitiateSelected', 'InitiateNAudits', 'TagsOptionalAppliedToSelection', 'NoEligibleTestsFound', 'RequestFailed', 'FailedInitiate', 'Search', 'AllFrameworks', 'AllControls', 'ShowAllTests', 'AllTesters', 'AnySchedule', 'Tests', 'InProgress', 'AllTeams', 'days', 'Day', 'ShowingXToYOfZ'],
     'datatables' => ['All', 'datatables_ShowAll', 'datatables_ShowLess', 'First', 'Previous', 'Next', 'Last'],
     'blockUI' => ['ProcessingPleaseWait'],
     'UILayoutWidget' => ['WidgetType_chart', 'WidgetType_table', 'WidgetType_WYSIWYG', 'WidgetType_kpi', 'WidgetType_whats_next'],
@@ -403,15 +405,27 @@ foreach ($required_scripts_or_css as $required_script_or_css) {
                 		]
             		},
 				},
-				language: {
-                	paginate: {
-                		first: _lang['First'],
-                		previous: _lang['Previous'],
-                		next: _lang['Next'],
-                		last: _lang['Last'],
-                		
-                	}
-                }
+            });
+
+            // Merged into the EXISTING language object (Object.assign above only
+            // touches the keys it lists) rather than folded into that call --
+            // 'language' is itself an object, and a top-level Object.assign
+            // REPLACES a nested object wholesale rather than merging into it.
+            // DataTables' own bundled defaults populate DataTable.defaults.language
+            // with the library's built-in English strings (info, infoEmpty,
+            // emptyTable, zeroRecords, search, etc. -- see
+            // vendor/node_modules/datatables.net/js/dataTables.js) before this
+            // script runs; replacing that object outright silently wiped every
+            // one of those strings to '' app-wide, leaving e.g. the "Showing X
+            // to Y of Z entries" footer text blank on every DataTable that
+            // doesn't render its own custom footer.
+            Object.assign(DataTable.defaults.language, {
+            	paginate: {
+            		first: _lang['First'],
+            		previous: _lang['Previous'],
+            		next: _lang['Next'],
+            		last: _lang['Last'],
+            	}
             });
 
        		$(document).on('preInit.dt', function(e, settings) {

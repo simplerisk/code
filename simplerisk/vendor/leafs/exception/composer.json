@@ -13,11 +13,6 @@
     "homepage": "https://github.com/leafsphp/exception",
     "authors": [
         {
-            "name": "Filipe Dobreira",
-            "homepage": "https://github.com/filp",
-            "role": "Developer"
-        },
-        {
             "name": "Michael Darko",
             "email": "mickdd22@gmail.com",
             "homepage": "https://mychi.netlify.app",
@@ -25,29 +20,36 @@
         }
     ],
     "scripts": {
-        "test": "phpunit --testdox tests"
+        "alchemy": "@php vendor/bin/alchemy all",
+        "test": "@php vendor/bin/alchemy test",
+        "lint": "@php vendor/bin/alchemy lint",
+        "fmt": "@php vendor/bin/alchemy fmt",
+        "analyse": "@php vendor/bin/alchemy analyse",
+        "refactor": "@php vendor/bin/alchemy refactor",
+        "ci": "@php vendor/bin/alchemy ci"
     },
     "require": {
-        "php": "^5.5.9 || ^7.0 || ^8.0",
-        "psr/log": "^1.0.1 || ^2.0 || ^3.0"
+        "php": "^8.2"
     },
     "require-dev": {
-        "phpunit/phpunit": "^4.8.36 || ^5.7.27 || ^6.5.14 || ^7.5.20 || ^8.5.8 || ^9.3.3",
-        "mockery/mockery": "^0.9 || ^1.0",
-        "symfony/var-dumper": "^2.6 || ^3.0 || ^4.0 || ^5.0"
+        "leafs/alchemy": "^5.0",
+        "friendsofphp/php-cs-fixer": "*",
+        "pestphp/pest": "*"
     },
     "suggest": {
-        "symfony/var-dumper": "Pretty print complex values better with var-dumper available",
-        "whoops/soap": "Formats errors as SOAP responses"
+        "symfony/var-dumper": "Pretty print complex values better with var-dumper available"
     },
     "autoload": {
         "psr-4": {
             "Leaf\\": "src"
-        }
+        },
+        "files": [
+            "src/functions.php"
+        ]
     },
-    "autoload-dev": {
-        "psr-4": {
-            "Leaf\\": "tests/Whoops/"
+    "config": {
+        "allow-plugins": {
+            "pestphp/pest-plugin": true
         }
     }
 }

@@ -16,6 +16,12 @@ class Storage
      */
     public static function connections(array $connections, string $default = 's3')
     {
+        if (!class_exists(Bucket::class)) {
+            static::$errorsArray['storage'] = 'Storage buckets require the leafs/s3 module. Run `composer require leafs/s3` first.';
+
+            return;
+        }
+
         Bucket::connections($connections, $default);
     }
 
@@ -43,6 +49,35 @@ class Storage
     public static function read(string $filePath)
     {
         return File::read($filePath);
+    }
+
+    /**
+     * Read a byte range from a file without loading the whole file
+     *
+     * @param string $filePath The path of the file to read
+     * @param int $start Byte offset to start from (negative = from the end of the file)
+     * @param int|null $length Number of bytes to read (null = to the end of the file)
+     *
+     * @return string|false
+     */
+    public static function readRange(string $filePath, int $start = 0, ?int $length = null)
+    {
+        return File::readRange($filePath, $start, $length);
+    }
+
+    /**
+     * Stream a file in chunks — memory stays flat no matter the file size
+     *
+     * @param string $filePath The path of the file to stream
+     * @param int $chunkSize Bytes per chunk (default 1MB)
+     * @param int $start Byte offset to start from (negative = from the end of the file)
+     * @param int|null $length Total bytes to stream (null = to the end of the file)
+     *
+     * @return \Generator|false
+     */
+    public static function chunks(string $filePath, int $chunkSize = 1048576, int $start = 0, ?int $length = null)
+    {
+        return File::chunks($filePath, $chunkSize, $start, $length);
     }
 
     /**
@@ -256,11 +291,13 @@ class Storage
      */
     public static function rename(string $name, string $newName)
     {
-        if (is_dir($name)) {
-            return Directory::move($name, $newName);
+        if (!static::exists($name)) {
+            static::$errorsArray['storage'] = 'Source does not exist';
+
+            return false;
         }
 
-        return File::move($name, $newName);
+        return rename($name, $newName);
     }
 
     /**
@@ -274,7 +311,7 @@ class Storage
     {
         if (is_dir($source)) {
             return Directory::delete($source, [
-                'recursive' => true
+                'recursive' => true,
             ]);
         }
 
@@ -306,7 +343,7 @@ class Storage
      */
     public static function link($target, $link)
     {
-        if (!windows_os()) {
+        if (PHP_OS_FAMILY !== 'Windows') {
             return symlink($target, $link);
         }
 
@@ -337,6 +374,30 @@ class Storage
     public static function isDir(string $dirPath)
     {
         return Directory::exists($dirPath);
+    }
+
+    /**
+     * Check if a path is a folder — alias of isDir(), matching createFolder()
+     *
+     * @param string $dirPath The path to check
+     *
+     * @return bool
+     */
+    public static function isFolder(string $dirPath)
+    {
+        return static::isDir($dirPath);
+    }
+
+    /**
+     * Get a summary of the file/directory information — alias of info()
+     *
+     * @param string $filePath The path of the file/directory to get the summary of
+     *
+     * @return array|bool
+     */
+    public static function fileInfo(string $filePath)
+    {
+        return static::info($filePath);
     }
 
     /**
