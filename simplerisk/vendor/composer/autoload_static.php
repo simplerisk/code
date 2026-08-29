@@ -111,6 +111,7 @@ class ComposerStaticInit3f45facd72e8ba2ee9e4579a9d562210
         'd81bab31d3feb45bfe2f283ea3c8fdf7' => __DIR__ . '/..' . '/sabre/event/lib/Loop/functions.php',
         'a1cce3d26cc15c00fcd0b3354bd72c88' => __DIR__ . '/..' . '/sabre/event/lib/Promise/functions.php',
         'ac4c448857898c6b48907995b1d9e666' => __DIR__ . '/..' . '/leafs/date/src/functions.php',
+        '2248e4b6009b7f65e673b914cf233a80' => __DIR__ . '/..' . '/leafs/exception/src/functions.php',
         'cfb7c780793bfa1138356bbe97dc66da' => __DIR__ . '/..' . '/leafs/http/src/functions.php',
         '6124b4c8570aa390c21fafd04a26c69f' => __DIR__ . '/..' . '/myclabs/deep-copy/src/DeepCopy/deep_copy.php',
         '14256cea64544233ca49f37177c0ad3b' => __DIR__ . '/..' . '/phan/phan/src/Phan/bootstrap/polyfills.php',

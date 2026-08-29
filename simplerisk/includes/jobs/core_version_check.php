@@ -7,8 +7,11 @@
 // run_timestamped_queue_check() — no-op when loaded via the worker, which
 // requires queues.php before loading job definitions.
 require_once(realpath(__DIR__ . '/../queues.php'));
-// latest_versions() and extra_compatibility_versions() live in functions.php.
-// queues.php requires it too, but a direct consumer declares its own.
+// format_setting_timestamp() — keeps a settings string out of date()'s int
+// parameter, where a TypeError would abort this task_check every cron tick.
+require_once(realpath(__DIR__ . '/../setting_values.php'));
+// run_version_check_fetches() lives in functions.php. queues.php requires it
+// too, but a direct consumer declares its own.
 require_once(realpath(__DIR__ . '/../functions.php'));
 
 return [
@@ -24,7 +27,12 @@ return [
         // Get the timestamp of the last version check
         $last_check = get_setting('queue_timestamp_last_version_check', false, false, db: $db);
         $now = time();
-        write_debug_log("Version Check: Last checked at " . ($last_check ? date("Y-m-d H:i:s", $last_check) : "never"), "debug");
+        write_debug_log("Version Check: Last checked at " . format_setting_timestamp($last_check), "debug");
+
+        // The truthiness guard below already covered '' and false, but a
+        // non-numeric non-empty value would still reach the subtraction and
+        // raise. Normalize once so neither the log nor the arithmetic can throw.
+        $last_check = coerce_setting_timestamp($last_check);
 
         // Check at most once per 24 hours
         if (!$last_check || ($now - $last_check) >= 24 * 60 * 60)

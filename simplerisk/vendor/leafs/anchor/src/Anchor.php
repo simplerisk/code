@@ -16,7 +16,7 @@ namespace Leaf;
 class Anchor
 {
     protected static $config = [
-        'secret' => '@nkor_leaf$0Secret!!',
+        'secret' => null,
         'secretKey' => 'X-Leaf-CSRF-Token',
 
         'except' => [],
@@ -36,7 +36,7 @@ class Anchor
      * @param array|null $config The config to set
      */
     public static function config($config = null)
-    {        
+    {
         if ($config === null) {
             return static::$config;
         }
@@ -53,7 +53,13 @@ class Anchor
     {
         if (is_array($data)) {
             foreach ($data as $key => $value) {
-                $data[is_string($key) ? self::sanitize($key) : $key] = self::sanitize($value);
+                $sanitizedKey = is_string($key) ? self::sanitize($key) : $key;
+
+                if ($sanitizedKey !== $key) {
+                    unset($data[$key]);
+                }
+
+                $data[$sanitizedKey] = self::sanitize($value);
             }
         }
 
@@ -111,7 +117,7 @@ class Anchor
             $items = explode('.', $item);
 
             if (count($items) > 1) {
-                $output = static::deepGetDot($dataSource[$items[0]] ?? null, $items[1]);
+                $output = static::deepGetDot($dataSource[$items[0]] ?? null, implode('.', array_slice($items, 1)));
             } else {
                 $output = $dataSource[$item] ?? null;
             }
@@ -136,12 +142,8 @@ class Anchor
         } else {
             $items = explode('.', $item);
 
-            if (count($items) > 2) {
-                trigger_error('Nested config can\'t be more than 1 level deep at ' . $item);
-            }
-
             if (count($items) > 1) {
-                $dataSource[$items[0]] = static::deepSetDot($dataSource[$items[0]] ?? null, $items[1], $value);
+                $dataSource[$items[0]] = static::deepSetDot($dataSource[$items[0]] ?? null, implode('.', array_slice($items, 1)), $value);
             } else {
                 $dataSource[$item] = $value;
             }
@@ -162,12 +164,8 @@ class Anchor
         } else {
             $items = explode('.', $item);
 
-            if (count($items) > 2) {
-                trigger_error('Nested config can\'t be more than 1 level deep at ' . $item);
-            }
-
             if (count($items) > 1) {
-                $dataSource[$items[0]] = static::deepUnsetDot($dataSource[$items[0]] ?? null, $items[1]);
+                $dataSource[$items[0]] = static::deepUnsetDot($dataSource[$items[0]] ?? null, implode('.', array_slice($items, 1)));
             } else {
                 unset($dataSource[$item]);
             }
@@ -210,7 +208,13 @@ class Anchor
      */
     public static function generateToken(int $strength = 16): string
     {
-        return bin2hex(static::$config['secret'] . '.' . random_bytes($strength));
+        if (!is_string(static::$config['secret'] ?? null) || static::$config['secret'] === '') {
+            throw new \RuntimeException('No secret is set. Pass a `secret` to config() before generating tokens.');
+        }
+
+        $random = random_bytes(max(16, $strength));
+
+        return bin2hex($random) . hash_hmac('sha256', $random, static::$config['secret']);
     }
 
     public static function errors(): array

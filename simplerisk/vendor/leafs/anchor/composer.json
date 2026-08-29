@@ -19,7 +19,13 @@
         }
     ],
     "scripts": {
-        "test": "vendor/bin/pest"
+        "test": "@php vendor/bin/alchemy test",
+        "alchemy": "@php vendor/bin/alchemy all",
+        "lint": "@php vendor/bin/alchemy lint",
+        "fmt": "@php vendor/bin/alchemy fmt",
+        "refactor": "@php vendor/bin/alchemy refactor",
+        "analyse": "@php vendor/bin/alchemy analyse",
+        "ci": "@php vendor/bin/alchemy ci"
     },
     "autoload": {
         "psr-4": {
@@ -27,13 +33,18 @@
         }
     },
     "minimum-stability": "dev",
-	"prefer-stable": true,
+    "prefer-stable": true,
     "require-dev": {
-        "pestphp/pest": "^1.21"
+        "pestphp/pest": "*",
+        "friendsofphp/php-cs-fixer": "*",
+        "leafs/alchemy": "^5.0"
     },
     "config": {
         "allow-plugins": {
             "pestphp/pest-plugin": true
         }
+    },
+    "require": {
+        "php": "^8.2"
     }
 }

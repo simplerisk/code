@@ -136,6 +136,7 @@ $releases = [
     "20260709-001",
     "20260811-001",
     "20260820-001",
+    "20260828-001",
 ];
 
 /*************************
@@ -11333,6 +11334,106 @@ function upgrade_from_20260811001($db) {
     // release in $releases, and a missing one is decided as 'no_upgrade_function'
     // and fails the upgrade rather than being skipped. So it advances the version
     // and nothing else.
+
+    // Update the database version
+    update_database_version($db, $version_to_upgrade, $version_upgrading_to);
+    echo "Finished SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
+}
+
+/***************************************
+ * FUNCTION: UPGRADE FROM 20260820-001 *
+ ***************************************/
+function upgrade_from_20260820001($db) {
+    // Database version to upgrade
+    $version_to_upgrade = '20260820-001';
+
+    // Database version upgrading to
+    $version_upgrading_to = '20260828-001';
+
+    echo "Beginning SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
+
+    // The Audits redesign merged Active Audits and Past Audits into a single
+    // Manage Audits page (compliance/audits.php, Active/Past/All now a
+    // status-chip filter over one dataset). active_audits.php/past_audits.php
+    // had already been reduced to thin stubs that just redirect old
+    // bookmarks/links to compliance/audits.php?status=active|past -- now
+    // removed entirely. Upgrades overlay new code but do not delete removed
+    // files, so unlink them here. Idempotent: guarded by file_exists.
+    if (file_exists(realpath(__DIR__ . '/../compliance/active_audits.php')))
+    {
+        echo "Deleting the /compliance/active_audits.php file as it has been replaced by the Manage Audits page.<br />\n";
+        unlink(realpath(__DIR__ . '/../compliance/active_audits.php'));
+    }
+
+    if (file_exists(realpath(__DIR__ . '/../compliance/past_audits.php')))
+    {
+        echo "Deleting the /compliance/past_audits.php file as it has been replaced by the Manage Audits page.<br />\n";
+        unlink(realpath(__DIR__ . '/../compliance/past_audits.php'));
+    }
+
+    // AI risk analysis staleness: record when a risk's ASSOCIATIONS last
+    // changed, separately from `last_update`. Kept apart because `last_update`
+    // is read and sorted on elsewhere in the product, so widening its meaning
+    // to "or one of my neighbours changed" would move rows around the UI for
+    // reasons a user never triggered.
+    //
+    // Nullable with no default on purpose: NULL means "associations have never
+    // changed", and every consumer must read it as
+    // COALESCE(association_last_update, last_update) because GREATEST()
+    // propagates NULL in MySQL — without that, every pre-existing risk would
+    // read as permanently fresh and the sweep would never re-analyse anything.
+    if (!field_exists_in_table('association_last_update', 'risks')) {
+        echo "Adding `association_last_update` to `risks` for AI analysis staleness.<br />\n";
+        $db->prepare("ALTER TABLE `risks` ADD COLUMN `association_last_update` TIMESTAMP NULL DEFAULT NULL;")->execute();
+    }
+
+    // Correct the "Edit/Close/Reopen Risk (Default)", "Plan Mitigation (Default)",
+    // and "Perform Reviews (Default)" system workflow descriptions seeded by
+    // upgrade_from_20260302001(): send_email is now a Core capability (see
+    // includes/workflows/actions/communications.php) rather than one gated by the
+    // Workflows Extra, so the "via the Workflows Extra (if active)" qualifier on
+    // the email half of each description is no longer accurate. That seed
+    // function already shipped, so it is not edited retroactively — instead this
+    // UPDATE corrects the text for databases that already ran it. Guarded on the
+    // exact old text (not just `name`) so a customer's own edit to the
+    // description is never overwritten, and the guard makes this idempotent: a
+    // second run finds no rows still holding the old text.
+    $description_corrections = [
+        'Edit Risk (Default)'       => [
+            'old' => 'System workflow that runs on every risk edit. Emails the risk owner via the Workflows Extra (if active) and syncs the linked JIRA issue via the JIRA Extra (if active).',
+            'new' => 'System workflow that runs on every risk edit. Emails the risk owner and syncs the linked JIRA issue via the JIRA Extra (if active).',
+        ],
+        'Close Risk (Default)'      => [
+            'old' => 'System workflow that runs when a risk is closed. Emails the risk owner via the Workflows Extra (if active) and syncs the linked JIRA issue via the JIRA Extra (if active).',
+            'new' => 'System workflow that runs when a risk is closed. Emails the risk owner and syncs the linked JIRA issue via the JIRA Extra (if active).',
+        ],
+        'Reopen Risk (Default)'     => [
+            'old' => 'System workflow that runs when a risk is reopened. Emails the risk owner via the Workflows Extra (if active) and syncs the linked JIRA issue via the JIRA Extra (if active).',
+            'new' => 'System workflow that runs when a risk is reopened. Emails the risk owner and syncs the linked JIRA issue via the JIRA Extra (if active).',
+        ],
+        'Plan Mitigation (Default)' => [
+            'old' => 'System workflow that runs when a mitigation plan is submitted. Emails the risk owner via the Workflows Extra (if active) and syncs the linked JIRA issue via the JIRA Extra (if active).',
+            'new' => 'System workflow that runs when a mitigation plan is submitted. Emails the risk owner and syncs the linked JIRA issue via the JIRA Extra (if active).',
+        ],
+        'Perform Reviews (Default)' => [
+            'old' => 'System workflow that runs when a management review is submitted. Emails the risk owner via the Workflows Extra (if active) and syncs the linked JIRA issue via the JIRA Extra (if active).',
+            'new' => 'System workflow that runs when a management review is submitted. Emails the risk owner and syncs the linked JIRA issue via the JIRA Extra (if active).',
+        ],
+    ];
+
+    if (table_exists('workflow_definitions')) {
+        $stmt = $db->prepare("
+            UPDATE `workflow_definitions`
+            SET `description` = :new_description
+            WHERE `name` = :name AND `description` = :old_description AND `system_workflow` = 1
+        ");
+        foreach ($description_corrections as $name => $text) {
+            $stmt->bindValue(':name',            $name);
+            $stmt->bindValue(':new_description', $text['new']);
+            $stmt->bindValue(':old_description', $text['old']);
+            $stmt->execute();
+        }
+    }
 
     // Update the database version
     update_database_version($db, $version_to_upgrade, $version_upgrading_to);

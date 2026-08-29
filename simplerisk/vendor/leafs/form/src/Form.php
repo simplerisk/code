@@ -62,7 +62,7 @@ class Form
         'email' => '{Field} must be a valid email address',
         'alpha' => '{Field} must contain only alphabets and spaces',
         'text' => '{Field} must contain only alphabets and spaces',
-        'string' => '{Field} must contain only alphabets and spaces',
+        'string' => '{Field} must be a string',
         'textonly' => '{Field} must contain only alphabets',
         'alphanum' => '{Field} must contain only alphabets and numbers',
         'alphadash' => '{Field} must contain only alphabets, numbers, dashes and underscores',
@@ -98,13 +98,13 @@ class Form
 
     public function __construct()
     {
-        $this->rules['array'] = function ($value, $internalRules = null, $fieldName = null) {
+        $this->rules['array'] = function ($value, $internalRules = null, $fieldName = null, array $dataSource = []) {
             $isArray = is_array($value);
 
             if ($isArray) {
                 foreach ($value as $valueItem) {
                     if ($internalRules) {
-                        if (!$this->test($internalRules, $valueItem, $fieldName)) {
+                        if (!$this->test($internalRules, $valueItem, $fieldName, $dataSource)) {
                             // we're tricking leaf into not adding the second error message by returning true here
                             // this is because we're already adding the error message in the test method
                             return true;
@@ -132,12 +132,50 @@ class Form
             return in_array($value, $param);
         };
 
-        $this->rules['matchesvalueof'] = function ($value, $param) {
+        $this->rules['matchesvalueof'] = function ($value, $param, $fieldName = null, array $dataSource = []) {
+            if (!empty($dataSource)) {
+                return Anchor::deepGetDot($dataSource, $param) === $value;
+            }
+
+            // standalone validateRule() has no data set to compare within
             return \Leaf\Http\Request::get($param) === $value;
+        };
+
+        // regex versions of these rejected valid values (emails with modern
+        // TLDs, octets over 255 in IPs) — filter_var knows better
+        $this->rules['email'] = function ($value) {
+            return (bool) filter_var($value, FILTER_VALIDATE_EMAIL);
+        };
+
+        $this->rules['ip'] = function ($value) {
+            return (bool) filter_var($value, FILTER_VALIDATE_IP);
+        };
+
+        $this->rules['ipv4'] = function ($value) {
+            return (bool) filter_var($value, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4);
+        };
+
+        $this->rules['ipv6'] = function ($value) {
+            return (bool) filter_var($value, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6);
+        };
+
+        $this->rules['url'] = function ($value) {
+            return (bool) filter_var($value, FILTER_VALIDATE_URL);
+        };
+
+        $this->rules['json'] = function ($value) {
+            if (!is_string($value)) {
+                return false;
+            }
+
+            // json_validate() needs PHP 8.3, floor is 8.2
+            json_decode($value);
+
+            return json_last_error() === JSON_ERROR_NONE;
         };
     }
 
-    protected function test($rule, $valueToTest, $fieldName = 'item'): bool
+    protected function test($rule, $valueToTest, $fieldName = 'item', array $dataSource = []): bool
     {
         $expandedErrors = false;
 
@@ -146,7 +184,7 @@ class Form
             $rule = $matches[0];
         }
 
-        if (in_array('optional', $rule) && empty($valueToTest)) {
+        if (in_array('optional', $rule) && ($valueToTest === null || $valueToTest === '' || $valueToTest === [])) {
             return true;
         }
 
@@ -157,13 +195,11 @@ class Form
         foreach ($rule as $currentRule) {
             $param = [];
 
-            $currentRule = strtolower($currentRule);
-
-            if ($currentRule === 'optional') {
+            if (strtolower($currentRule) === 'optional') {
                 continue;
             }
 
-            if ($currentRule === 'expanded') {
+            if (strtolower($currentRule) === 'expanded') {
                 continue;
             }
 
@@ -187,22 +223,28 @@ class Form
                 $param = explode(',', $matches[1]);
             }
 
+            // only the rule NAME is case-insensitive: params like
+            // contains<Foo> or matchesvalueof<Password> keep their case
+            $currentRule = strtolower($currentRule);
+
             if (!isset($this->rules[$currentRule])) {
                 throw new \Exception("Rule $currentRule does not exist");
             }
 
-            if (!$valueToTest) {
+            $isMissing = $valueToTest === null || $valueToTest === '' || $valueToTest === [];
+
+            if ($isMissing) {
                 if ($expandedErrors) {
                     $this->addError($fieldName, str_replace(
                         ['{field}', '{Field}', '{value}'],
                         [$fieldName, ucfirst($fieldName), is_array($valueToTest) ? json_encode($valueToTest) : $valueToTest],
-                        $this->messages['required'] ?? '{Field} is invalid!'
+                        $this->messages["$fieldName.required"] ?? $this->messages['required'] ?? '{Field} is invalid!'
                     ));
                 } else {
                     $this->errors[$fieldName] = str_replace(
                         ['{field}', '{Field}', '{value}'],
                         [$fieldName, ucfirst($fieldName), is_array($valueToTest) ? json_encode($valueToTest) : $valueToTest],
-                        $this->messages['required'] ?? '{Field} is invalid!'
+                        $this->messages["$fieldName.required"] ?? $this->messages['required'] ?? '{Field} is invalid!'
                     );
                 }
 
@@ -210,7 +252,7 @@ class Form
             }
 
             if (is_callable($this->rules[$currentRule])) {
-                if (!call_user_func($this->rules[$currentRule], $valueToTest, $param, $fieldName)) {
+                if (!call_user_func($this->rules[$currentRule], $valueToTest, $param, $fieldName, $dataSource)) {
                     if (empty($param)) {
                         $param = ['Item'];
                     }
@@ -224,7 +266,7 @@ class Form
                             str_replace(
                                 ['{field}', '{Field}', '{value}'],
                                 [$fieldName, ucfirst($fieldName), is_array($valueToTest) ? json_encode($valueToTest) : $valueToTest],
-                                $this->messages[$currentRule] ?? '{Field} is invalid!'
+                                $this->messages["$fieldName.$currentRule"] ?? $this->messages[$currentRule] ?? '{Field} is invalid!'
                             ),
                             ...$param,
                         ));
@@ -233,7 +275,7 @@ class Form
                             str_replace(
                                 ['{field}', '{Field}', '{value}'],
                                 [$fieldName, ucfirst($fieldName), is_array($valueToTest) ? json_encode($valueToTest) : $valueToTest],
-                                $this->messages[$currentRule] ?? '{Field} is invalid!'
+                                $this->messages["$fieldName.$currentRule"] ?? $this->messages[$currentRule] ?? '{Field} is invalid!'
                             ),
                             ...$param,
                         );
@@ -245,6 +287,10 @@ class Form
 
             if (!is_array($param)) {
                 $param = [$param];
+            }
+
+            if (is_bool($valueToTest)) {
+                $valueToTest = $valueToTest ? '1' : '0';
             }
 
             if (is_float($valueToTest)) {
@@ -262,7 +308,7 @@ class Form
                         str_replace(
                             ['{field}', '{Field}', '{value}'],
                             [$fieldName, ucfirst($fieldName), is_array($valueToTest) ? json_encode($valueToTest) : $valueToTest],
-                            $this->messages[$currentRule] ?? '{Field} is invalid!'
+                            $this->messages["$fieldName.$currentRule"] ?? $this->messages[$currentRule] ?? '{Field} is invalid!'
                         ),
                         ...$param,
                     ));
@@ -271,7 +317,7 @@ class Form
                         str_replace(
                             ['{field}', '{Field}', '{value}'],
                             [$fieldName, ucfirst($fieldName), is_array($valueToTest) ? json_encode($valueToTest) : $valueToTest],
-                            $this->messages[$currentRule] ?? '{Field} is invalid!'
+                            $this->messages["$fieldName.$currentRule"] ?? $this->messages[$currentRule] ?? '{Field} is invalid!'
                         ),
                         ...$param,
                     );
@@ -325,7 +371,7 @@ class Form
 
             $value = Anchor::deepGetDot($dataSource, $itemToValidate);
 
-            if (!$this->test($userRules, $value, $itemToValidate)) {
+            if (!$this->test($userRules, $value, $itemToValidate, $dataSource)) {
                 $output = false;
             } elseif ($output !== false && !$endsWithWildcard) {
                 if (
@@ -403,13 +449,21 @@ class Form
 
     /**
      * Directly 'submit' a form without having to work with any mark-up
+     *
+     * @deprecated 5.0 Will be removed in the next major release. Build the
+     * form in your view (or call your endpoint directly) instead.
      */
     public function submit(string $method, string $action, array $fields)
     {
+        trigger_error(
+            'form()->submit() is deprecated and will be removed in the next major release',
+            E_USER_DEPRECATED
+        );
+
         $form_fields = '';
 
         foreach ($fields as $key => $value) {
-            $form_fields = $form_fields . "<input type=\"hidden\" name=\"$key\" value=" . htmlspecialchars($value, ENT_QUOTES, 'UTF-8') . '>';
+            $form_fields = $form_fields . '<input type="hidden" name="' . htmlspecialchars($key, ENT_QUOTES, 'UTF-8') . '" value="' . htmlspecialchars($value, ENT_QUOTES, 'UTF-8') . '">';
         }
 
         echo "
@@ -420,7 +474,7 @@ class Form
 
     public function isEmail($value): bool
     {
-        return !!filter_var($value, 274);
+        return (bool) filter_var($value, FILTER_VALIDATE_EMAIL);
     }
 
     /**

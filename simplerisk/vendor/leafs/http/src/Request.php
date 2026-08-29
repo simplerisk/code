@@ -36,7 +36,7 @@ class Request
 
     public function __construct()
     {
-        static::$validator = new \Leaf\Form;
+        static::$validator = new \Leaf\Form();
     }
 
     /**
@@ -92,7 +92,7 @@ class Request
      */
     public static function hasHeader(string $header): bool
     {
-        return !!Headers::get($header);
+        return Headers::has($header);
     }
 
     /**
@@ -122,28 +122,21 @@ class Request
     {
         $handler = fopen('php://input', 'r');
         $data = stream_get_contents($handler);
-        $contentType = Headers::get('Content-Type') ?? '';
 
-        if ($contentType === 'application/x-www-form-urlencoded') {
-            $d = $data;
-            $data = [];
+        // media type is the content type minus any charset/boundary suffix,
+        // already lower-cased — so "Application/JSON; charset=utf-8" matches
+        $mediaType = static::getMediaType() ?? '';
 
-            if ($d) {
-                foreach (explode('&', $d) as $chunk) {
-                    $param = explode('=', $chunk);
-                    $data[$param[0]] = urldecode($param[1]);
-                }
-            }
-        } else if (strpos($contentType, 'application/json') !== 0 && strpos($contentType, 'multipart/form-data') !== 0) {
+        if ($mediaType === 'application/x-www-form-urlencoded') {
+            parse_str($data ?: '', $data);
+        } elseif ($mediaType === '' || $mediaType === 'application/json' || $mediaType === 'multipart/form-data') {
+            // multipart bodies are already parsed into $_POST/$_FILES by PHP,
+            // and requests without a content type usually have no body at all
+            $parsedData = json_decode($data ?: '[]', true);
+            $data = is_array($parsedData) ? $parsedData : [$parsedData];
+        } else {
             $safeData = false;
             $data = [$data];
-        } else {
-            if (!$data) {
-                $data = json_encode([]);
-            }
-
-            $parsedData = json_decode($data, true);
-            $data = is_array($parsedData) ? $parsedData : [$parsedData];
         }
 
         return $safeData ? \Leaf\Anchor::sanitize($data) : $data;
@@ -169,10 +162,11 @@ class Request
         foreach ($dataKeys as $key) {
             if (!isset($data[$key])) {
                 unset($data[$key]);
+
                 continue;
             }
 
-            if ($noEmptyString && !strlen($data[$key])) {
+            if ($noEmptyString && is_string($data[$key]) && !strlen($data[$key])) {
                 unset($data[$key]);
             }
         }
@@ -230,22 +224,30 @@ class Request
      * This method returns get, post, put patch, delete or raw form data or NULL
      * if the data isn't found.
      *
-     * @param array|string $params The parameter(s) to return
+     * @param array|string|callable $params The parameter(s) to return
      * @param bool $safeData Sanitize output
      */
     public static function get($params, bool $safeData = true)
     {
+        if ($params === null) {
+            return static::body($safeData);
+        }
+
         if (is_string($params)) {
             return static::body($safeData)[$params] ?? null;
         }
 
-        $data = [];
+        if (is_array($params)) {
+            $data = [];
 
-        foreach ($params as $param) {
-            $data[$param] = static::get($param, $safeData);
+            foreach ($params as $param) {
+                $data[$param] = static::get($param, $safeData);
+            }
+
+            return $data;
         }
 
-        return $data;
+        return $params(static::body($safeData));
     }
 
     /**
@@ -261,7 +263,7 @@ class Request
      */
     public static function params(?string $key = null, $default = null)
     {
-        return static::get($key) ?? $default;
+        return static::get($key) ?? (is_callable($default) ? $default(static::body()) : $default);
     }
 
     /**
@@ -295,6 +297,19 @@ class Request
     }
 
     /**
+     * Get the request data as an object instead of an array —
+     * nested structures become objects too, lists stay arrays
+     *
+     * @param bool $safeData Sanitize output
+     *
+     * @return object
+     */
+    public static function object(bool $safeData = true)
+    {
+        return json_decode(json_encode((object) static::body($safeData)));
+    }
+
+    /**
      * Get all files passed into the request.
      *
      * @param array|string|null $filenames The file(s) you want to get
@@ -313,6 +328,7 @@ class Request
         foreach ($filenames as $filename) {
             $files[$filename] = $_FILES[$filename] ?? null;
         }
+
         return $files;
     }
 
@@ -322,14 +338,26 @@ class Request
      * This method returns a key-value array of Cookie data sent in the HTTP request, or
      * the value of an array key if requested. If the array key does not exist, NULL is returned.
      *
-     * @param string|null $key
+     * @param string|array|null $key A cookie name, a list of cookie names, or null for all cookies
      * @return array|string|null
      */
-    public static function cookies(?string $key = null)
+    public static function cookies($key = null)
     {
-        return $key === null ?
-            Cookie::all() :
-            Cookie::get($key);
+        if ($key === null) {
+            return Cookie::all();
+        }
+
+        if (is_array($key)) {
+            $cookies = [];
+
+            foreach ($key as $name) {
+                $cookies[$name] = Cookie::get($name);
+            }
+
+            return $cookies;
+        }
+
+        return Cookie::get($key);
     }
 
     /**
@@ -340,7 +368,7 @@ class Request
      */
     public static function flash(?string $key = null)
     {
-        return \Leaf\Flash::display($key);
+        return \Leaf\Flash::display($key ?? 'default');
     }
 
     /**
@@ -376,14 +404,14 @@ class Request
      * Validate the request data
      *
      * @param array $rules The rules to validate against
-     * @param boolean $returnFullData Return the full data or just the validated data?
+     * @param bool $returnFullData Return the full data or just the validated data?
      *
      * @return false|array Returns false if validation fails, or the validated data if validation passes
      */
     public static function validate(array $rules, bool $returnFullData = false)
     {
         if (!static::$validator) {
-            static::$validator = new \Leaf\Form;
+            static::$validator = new \Leaf\Form();
         }
 
         $data = static::$validator->validate(static::body(false), $rules);
@@ -402,7 +430,7 @@ class Request
     public static function validator()
     {
         if (!static::$validator) {
-            static::$validator = new \Leaf\Form;
+            static::$validator = new \Leaf\Form();
         }
 
         return static::$validator;
@@ -420,7 +448,7 @@ class Request
 
         if (!(\Leaf\Config::getStatic('auth'))) {
             \Leaf\Config::singleton('auth', function () {
-                return new \Leaf\Auth;
+                return new \Leaf\Auth();
             });
         }
 
@@ -462,6 +490,7 @@ class Request
 
         if (!$file) {
             static::$errors['upload'] = 'No file was uploaded.';
+
             return false;
         }
 
@@ -486,11 +515,12 @@ class Request
 
             if (!in_array($fileExtension, $config['extensions'])) {
                 static::$errors['upload'] = 'Invalid file extension.';
+
                 return false;
             }
         }
 
-        $fileSystem = new \Leaf\FS\File;
+        $fileSystem = new \Leaf\FS\File();
 
         if (!isset($config['rename']) || !$config['rename']) {
             $config['unique'] = true;
@@ -534,6 +564,18 @@ class Request
     public static function getContentType(): ?string
     {
         return Headers::get('Content-Type');
+    }
+
+    /**
+     * Check if content type matches
+     * @param string $type The content type to check for
+     * @return bool
+     */
+    public static function contentTypeIs(string $type): bool
+    {
+        $contentType = static::getContentType();
+
+        return $contentType && stripos($contentType, $type) === 0;
     }
 
     /**
@@ -596,7 +638,7 @@ class Request
      */
     public static function getContentLength(): int
     {
-        return Headers::get('CONTENT_LENGTH') ?? 0;
+        return (int) (Headers::get('Content-Length') ?? 0);
     }
 
     /**
@@ -608,8 +650,9 @@ class Request
         if (isset($_SERVER['HTTP_HOST'])) {
             if (preg_match('/^(\[[a-fA-F0-9:.]+\])(:\d+)?\z/', $_SERVER['HTTP_HOST'], $matches)) {
                 return $matches[1];
-            } else if (strpos($_SERVER['HTTP_HOST'], ':') !== false) {
+            } elseif (strpos($_SERVER['HTTP_HOST'], ':') !== false) {
                 $hostParts = explode(':', $_SERVER['HTTP_HOST']);
+
                 return $hostParts[0];
             }
 
@@ -634,7 +677,7 @@ class Request
      */
     public static function getPort(): int
     {
-        return (int) $_SERVER['SERVER_PORT'] ?? 80;
+        return (int) ($_SERVER['SERVER_PORT'] ?? 80);
     }
 
     /**
@@ -717,7 +760,11 @@ class Request
      */
     public static function getFullUrl(): string
     {
-        return static::getUrl() . static::getPathInfo() . (static::getQueryString() ? '?' . static::getQueryString() : '');
+        // REQUEST_URI already contains the query string, so we only take
+        // its path portion before appending the query ourselves
+        $path = parse_url($_SERVER['REQUEST_URI'] ?? '', PHP_URL_PATH) ?? '';
+
+        return static::getUrl() . $path . (static::getQueryString() ? '?' . static::getQueryString() : '');
     }
 
     /**
@@ -726,9 +773,18 @@ class Request
      */
     public static function getIp(): string
     {
-        return $_SERVER['HTTP_CLIENT_IP']
+        $ip = $_SERVER['HTTP_CLIENT_IP']
             ?? $_SERVER['HTTP_X_FORWARDED_FOR']
-            ?? $_SERVER['REMOTE_ADDR'];
+            ?? $_SERVER['REMOTE_ADDR']
+            ?? '';
+
+        // X-Forwarded-For can be a list: "client, proxy1, proxy2" —
+        // the original client is always the first entry
+        if (strpos($ip, ',') !== false) {
+            $ip = trim(explode(',', $ip)[0]);
+        }
+
+        return $ip;
     }
 
     /**
@@ -793,7 +849,7 @@ class Request
      */
     public static function getReferrer(): ?string
     {
-        return Headers::get('HTTP_REFERER');
+        return $_SERVER['HTTP_REFERER'] ?? null;
     }
 
     /**

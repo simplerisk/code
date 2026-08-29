@@ -1,4 +1,4 @@
-/*! DataTables 3.0.1
+/*! DataTables 3.0.2
  * Copyright (c) SpryMedia Ltd - datatables.net/license
  */
 
@@ -3886,7 +3886,7 @@ const ext = {
      * Software version
      *  @type string
      */
-    version: '3.0.1'
+    version: '3.0.2'
 };
 //
 // Backwards compatibility. Alias to pre 1.10 Hungarian notation counter parts
@@ -4978,7 +4978,7 @@ function clearTable(settings) {
  * @param colIdx Column index to invalidate. If undefined the whole row will be
  *    invalidated
  */
-function invalidate(settings, rowIdx, src, colIdx) {
+function invalidateRow(settings, rowIdx, src, colIdx) {
     var row = settings.data[rowIdx];
     var i, iLen;
     if (!row) {
@@ -5008,6 +5008,18 @@ function invalidate(settings, rowIdx, src, colIdx) {
             }
         }
     }
+    invalidColumn(settings, colIdx);
+    // Update DataTables special `DT_*` attributes for the row
+    rowAttributes(settings, row);
+    callbackFire(settings, null, 'rowInvalidate', [settings, rowIdx, colIdx], false);
+}
+/**
+ * Column specific invalidation
+ *
+ * @param settings DataTables settings object
+ * @param colIdx Column index to invalidate, or all columns if not given
+ */
+function invalidColumn(settings, colIdx) {
     // Column specific invalidation
     var cols = settings.columns;
     if (colIdx !== undefined) {
@@ -5018,14 +5030,12 @@ function invalidate(settings, rowIdx, src, colIdx) {
         cols[colIdx].wideStrings = null;
     }
     else {
-        for (i = 0, iLen = cols.length; i < iLen; i++) {
+        for (let i = 0, iLen = cols.length; i < iLen; i++) {
             cols[i].type = null;
             cols[i].wideStrings = null;
         }
-        // Update DataTables special `DT_*` attributes for the row
-        rowAttributes(settings, row);
     }
-    callbackFire(settings, null, 'rowInvalidate', [settings, rowIdx, colIdx], false);
+    settings.containerWidth = -1;
 }
 /**
  * Get the cells and data for a given row - from a <tr> element
@@ -5115,9 +5125,20 @@ function readCellData(settings, cell, data, colIdx) {
 }
 
 /**
+ * Recalculate the column widths, if needed (by a column having been
+ * invalidated)
+ *
+ * @param settings DataTables settings object
+ */
+function columnWidths(settings) {
+    if (settings.columns.map(c => c.wideStrings).includes(null)) {
+        calculateColumnWidths(settings);
+    }
+}
+/**
  * Calculate the width of columns for the table
  *
- * @param settings dataTables settings object
+ * @param settings DataTables settings object
  */
 function calculateColumnWidths(settings) {
     // Not interested in doing column width calculation if auto-width is disabled
@@ -5665,12 +5686,9 @@ function scrollDraw(settings) {
             // Check against what the colgroup > col is set to and correct if needed
             for (let i = 0; i < colSizes.length; i++) {
                 let colEl = settings.columns[colSizes[i].idx].colEl;
-                let colWidth = colEl.width();
-                if (colWidth !== colSizes[i].width) {
-                    colEl.css('width', colSizes[i].width + 'px');
-                    if (scroll.x) {
-                        colEl.css('minWidth', colSizes[i].width + 'px');
-                    }
+                colEl.css('width', colSizes[i].width + 'px');
+                if (scroll.x) {
+                    colEl.css('minWidth', colSizes[i].width + 'px');
                 }
             }
         }
@@ -5968,13 +5986,15 @@ function _typeResult(typeDetect, res) {
  * Calculate the 'type' of a column
  * @param settings DataTables settings object
  */
-function columnTypes(settings) {
+function columnTypes(settings, originalTypes = '') {
     var columns = settings.columns;
     var data = settings.data;
     var types = ext.type.detect;
     var i, iLen, j, jen, k, ken;
     var col, detectedType, cache;
-    var originalTypes = columns.map(c => c.type).join(',');
+    if (!originalTypes) {
+        originalTypes = columns.map(c => c.type).join(',');
+    }
     // For each column, spin over the data type detection functions, seeing if
     // one matches
     for (i = 0, iLen = columns.length; i < iLen; i++) {
@@ -7673,6 +7693,7 @@ function ajaxUpdateDraw(settings, json) {
     var drawUnique = ajaxDataSrcParam(settings, 'draw', json);
     var recordsTotal = ajaxDataSrcParam(settings, 'recordsTotal', json);
     var recordsFiltered = ajaxDataSrcParam(settings, 'recordsFiltered', json);
+    var existingTypes = settings.columns.map(c => c.type).join(',');
     if (drawUnique !== undefined) {
         // Protect against out of sequence returns
         if (drawUnique * 1 < settings.drawCount) {
@@ -7692,7 +7713,7 @@ function ajaxUpdateDraw(settings, json) {
         addData(settings, data[i]);
     }
     settings.display = settings.displayMaster.slice();
-    columnTypes(settings);
+    columnTypes(settings, existingTypes);
     draw(settings, true);
     initComplete(settings);
     processingDisplay(settings, false);
@@ -8404,6 +8425,7 @@ function reDraw(settings, holdPosition, recompute) {
         // Resolve any column types that are unknown due to addition or
         // invalidation
         columnTypes(settings);
+        columnWidths(settings);
         if (doSort) {
             sort(settings);
         }
@@ -9720,7 +9742,7 @@ registerPlural('cells().indexes()', 'cell().index()', function () {
 });
 registerPlural('cells().invalidate()', 'cell().invalidate()', function (src) {
     return this.iterator('cell', function (settings, row, column) {
-        invalidate(settings, row, src, column);
+        invalidateRow(settings, row, src, column);
     });
 });
 register('cell()', function (rowSelector, columnSelector, opts) {
@@ -9737,7 +9759,7 @@ register('cell().data()', function (data) {
     }
     // Set
     setCellData(ctx[0], cell[0].row, cell[0].column, data);
-    invalidate(ctx[0], cell[0].row, 'data', cell[0].column);
+    invalidateRow(ctx[0], cell[0].row, 'data', cell[0].column);
     return this;
 });
 
@@ -9753,7 +9775,7 @@ register('cell().data()', function (data) {
  */
 // can be an array of these items, comma separated list, or an array of comma
 // separated lists
-const __re_column_selector = /^([^:]+)?:(name|title|visIdx|visible)$/;
+const __re_column_selector = /^(.*?):(name|title|visIdx|visible)$/;
 // r1 and r2 are redundant - but it means that the parameters match for the
 // iterator callback in columns().data()
 function columnData(settings, column, r1, r2, rows, type) {
@@ -10689,7 +10711,7 @@ register('rows().data()', function () {
 });
 registerPlural('rows().invalidate()', 'row().invalidate()', function (src) {
     return this.iterator('row', function (settings, row) {
-        invalidate(settings, row, src);
+        invalidateRow(settings, row, src);
     });
 });
 registerPlural('rows().indexes()', 'row().index()', function () {
@@ -10776,7 +10798,7 @@ register('row().data()', function (data) {
         util.set(ctx[0].rowId)(data, row.tr.id);
     }
     // Automatically invalidate
-    invalidate(ctx[0], this[0][0], 'data');
+    invalidateRow(ctx[0], this[0][0], 'data');
     return this;
 });
 register('row().node()', function () {
@@ -10790,12 +10812,15 @@ register('row().node()', function () {
     return null;
 });
 register('row.add()', function (row) {
-    // Allow a jQuery object to be passed in - only a single row is added from
-    // it though - the first element in the set
+    // Allow an array-like object to be passed in - only a single row is added
+    // from it though - the first element in the set
     if (row && row.fn && row.length) {
         row = row[0];
     }
     var rows = this.iterator('table', function (settings) {
+        // New column could cause a change in the cached column properties such
+        // as type and width.
+        invalidColumn(settings);
         if (row.nodeName && row.nodeName.toUpperCase() === 'TR') {
             return addTr(settings, Dom.s(row))[0];
         }
@@ -11156,7 +11181,11 @@ function b64ToBuf(b64) {
  */
 function check(releaseDate, software) {
     let expires = _licenseInfo.expires;
-    if (_licenseInfo.valid === false) {
+    if (!getSubtle()) {
+        noticePrep('Unable to validate license key');
+        noticeDisplay();
+    }
+    else if (_licenseInfo.valid === false) {
         noticePrep('License key invalid');
         noticeDisplay();
     }
@@ -11283,7 +11312,7 @@ function noticePrep(text) {
  * Display the license notice
  */
 function noticeDisplay() {
-    if (!_processingKey && !document.body.contains(_wm[0])) {
+    if (!_processingKey && document.body && !document.body.contains(_wm[0])) {
         document.body.appendChild(_wm[0]);
     }
 }
@@ -11305,36 +11334,33 @@ function verify(licenseString) {
             }
             var payload = parts[0];
             var signatureB64 = parts[1];
-            // Backwards compat for old browsers
-            var cryptoObj = window.crypto || window.msCrypto;
-            var subtle = cryptoObj.subtle || cryptoObj.webkitSubtle;
+            // Extract the payload to be useful
+            var payloadParts = payload.match(/(plus|trial|editor)_(\d+)_(\d{4})(\d{2})(\d{2})/);
+            if (!payloadParts || payloadParts.length !== 6) {
+                _licenseInfo.valid = false;
+                return resolve();
+            }
+            _licenseInfo.type = payloadParts[1];
+            _licenseInfo.developers = parseInt(payloadParts[2]);
+            _licenseInfo.expires = new Date(payloadParts[3] + '-' + payloadParts[4] + '-' + payloadParts[5]);
+            var subtle = getSubtle();
             var rawKey = b64ToBuf(_publicKey);
             var rawSig = b64ToBuf(signatureB64);
             var data = new TextEncoder().encode(payload);
+            // Non-secure environments don't have cryptographic verification
+            // available.
+            if (!subtle) {
+                _licenseInfo.valid = false;
+                resolve();
+                return;
+            }
             subtle
                 .importKey('raw', rawKey, { name: 'ECDSA', namedCurve: 'P-256' }, false, ['verify'])
                 .then(function (key) {
                 return subtle.verify({ name: 'ECDSA', hash: { name: 'SHA-256' } }, key, rawSig, data);
             })
                 .then(function (isValid) {
-                if (!isValid) {
-                    _licenseInfo.valid = false;
-                    return resolve();
-                }
-                // Extract the payload to be useful
-                var payloadParts = payload.match(/(plus|trial|editor)_(\d+)_(\d{4})(\d{2})(\d{2})/);
-                if (!payloadParts || payloadParts.length !== 6) {
-                    _licenseInfo.valid = false;
-                    return resolve();
-                }
-                _licenseInfo.valid = true;
-                _licenseInfo.type = payloadParts[1];
-                _licenseInfo.developers = parseInt(payloadParts[2]);
-                _licenseInfo.expires = new Date(payloadParts[3] +
-                    '-' +
-                    payloadParts[4] +
-                    '-' +
-                    payloadParts[5]);
+                _licenseInfo.valid = isValid;
                 resolve();
             })
                 .catch(function () {
@@ -11382,6 +11408,12 @@ function plus (DataTable) {
         enumerable: false,
         writable: false
     });
+}
+function getSubtle() {
+    // Backwards compat for old browsers
+    let cryptoObj = window.crypto || window.msCrypto;
+    let subtle = cryptoObj.subtle || cryptoObj.webkitSubtle;
+    return subtle;
 }
 
 /**

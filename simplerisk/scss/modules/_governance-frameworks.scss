@@ -1586,6 +1586,30 @@
         overscroll-behavior: contain;
     }
 
+    // sr-row-actions-menu.js's shared close/orient module adds .is-unclipped
+    // to a row's clipping ancestor when opening a menu on a table that isn't
+    // using its HORIZONTAL scroll (orient() checks scrollWidth <= clientWidth
+    // first) -- and _tables.scss answers that with `overflow: visible
+    // !important`, !important because it also has to beat DataTables' own
+    // bundled .dt-scroll rule on Manage Audits. !important beats specificity
+    // outright, so without this override it also stomps the ID-scoped rule
+    // above and disables the REAL vertical scroll the virtual list depends
+    // on -- unlike every other .sr-table-scroll consumer, this element's
+    // overflow-y was never a side effect of overflow-x:auto to begin with, it
+    // is the actual scrollport SRFrameworks' virtual list renders against.
+    // Losing it silently strands an open menu: the scroll listener that is
+    // supposed to close the menu (governance-frameworks.js) can never fire
+    // once scrollTop stops moving, so the menu (and the unclip) are stuck
+    // until reload -- SCENARIO-44 in define-control-frameworks-18.spec.ts
+    // pins exactly this.
+    //
+    // Restoring it is safe: is-unclipped was only ever requested for a
+    // horizontal reason, so leaving overflow-x visible is correct, and
+    // overflow-y alone is all this element needs back.
+    .sr-table-scroll-virt.is-unclipped {
+        overflow-y: scroll !important;
+    }
+
     // The sticky header (_tables.scss sets `position: sticky; top: 0` on every
     // .sr-table thead th) becomes REAL here for the first time: sticky pins
     // against the nearest scrollport, and until this class existed that

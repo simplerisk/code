@@ -32,8 +32,25 @@
     "minimum-stability": "dev",
     "prefer-stable": true,
     "require": {
-        "leafs/anchor": "*",
-        "leafs/form": "^3.0",
-        "leafs/fs": "^4.0"
+        "php": "^8.2",
+        "leafs/anchor": "^5.0",
+        "leafs/form": "^5.0",
+        "leafs/fs": "^5.0"
+    },
+    "require-dev": {
+        "friendsofphp/php-cs-fixer": "*",
+        "pestphp/pest": "*",
+        "leafs/alchemy": "^5.0"
+    },
+    "config": {
+        "allow-plugins": {
+            "pestphp/pest-plugin": true
+        }
+    },
+    "scripts": {
+        "test": "./vendor/bin/alchemy test",
+        "lint": "./vendor/bin/alchemy lint",
+        "fmt": "./vendor/bin/alchemy fmt",
+        "ci": "./vendor/bin/alchemy ci"
     }
 }

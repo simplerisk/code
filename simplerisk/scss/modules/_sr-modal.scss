@@ -233,6 +233,19 @@
     grid-column: 1 / -1;
 }
 
+// A <form> wrapping every .sr-qcard section in a modal body (the Columns-
+// picker needs ONE form so its submit captures every checkbox across every
+// section) would otherwise be a single un-styled grid item, swallowing
+// .modal-body's own gap between what should read as separate cards.
+// display:contents removes the form from box generation entirely -- its
+// .sr-qcard children become direct grid items of .modal-body instead,
+// exactly as if the form weren't there. Scoped to this one class rather
+// than a blanket .modal-body form rule, so it can't affect a modal whose
+// own form is meant to lay out normally.
+.sr-qcard-form {
+    display: contents;
+}
+
 .sr-qlabel {
     font-size: 12.5px;
     font-weight: 700;

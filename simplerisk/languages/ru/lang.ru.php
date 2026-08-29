@@ -365,7 +365,7 @@ $lang = array(
     'IWantToReviewVeryHighRiskEvery'=> 'Я хочу, чтобы каждый отзыв очень высокий риск',
     'AbleToReviewVeryHighRisks'=>'Возможность обзора очень высокие риски',
     'AbleToReviewInsignificantRisks'=>'Сможете ознакомиться незначительные риски',
-    'AllTeams'=>'Все Команды',
+    'AllTeams'=>'Все команды',
     'FileUploadSettings'=>'Файл Параметров Загрузки',
     'AllowedFileTypes'=>'Разрешенные Типы Файлов',
     'AddNewFileTypeOf'=>'Добавить новый тип файла',
@@ -3082,7 +3082,7 @@ $lang = array(
     'ResultMessageUnavailable' => 'Сообщение с результатом недоступно.',
     'AIProviderURLNotAllowed' => 'Этот URL-адрес API недопустим. Используйте известного поставщика ИИ или адрес петли обратной связи (127.0.0.1) для самостоятельного размещения.',
     'AIReenterKeyForNewURL' => 'Повторно введите ключ API, чтобы протестировать другой URL-адрес поставщика.',
-    'WorkflowHttpRequestDisallowedURL' => 'http_request: URL {$url} приводит к запрещенному внутреннему или зарезервированному адресу.',
+    'WorkflowHttpRequestDisallowedURL' => '{$action}: URL {$url} приводит к запрещенному внутреннему или зарезервированному адресу.',
     'BehaviorAndScheduling' => 'Поведение и планирование',
     'PrepopulateAcrossContacts' => 'Предварительно заполните новые ответы предыдущими ответами другого контакта для этой оценки.',
     'PrepopulateAcrossContactsHelp' => 'Заполните форму нового респондента заранее, используя самые последние ответы от всех предыдущих контактов — это полезно для обеспечения преемственности при смене ответственных лиц.',
@@ -4637,6 +4637,28 @@ $lang = array(
     'ExtraVersionIncompatibleWithApplication' => 'Загруженный файл "{$extra}" Extra (версия {$extra_version}) несовместим с SimpleRisk {$app_version} и не был установлен. Сначала обновите SimpleRisk до последней версии.',
     'ExtraCompatibilityDataUnavailable' => 'SimpleRisk не смог подтвердить, какие версии Extra поддерживаются в этом релизе, поэтому Extra не был установлен. Пожалуйста, попробуйте позже.',
     'ExtraVersionCouldNotBeVerified' => 'Не удалось определить версию загруженного дополнения, поэтому оно не было установлено.',
+    // User import temporary password
+    'NewUsernameAddedWithTemporaryPassword' => 'Успешно добавлен новый пользователь с именем пользователя "{$username}". Временный пароль: {$password} (пользователю необходимо изменить его при первом входе в систему).',
+    'YouDontHavePermission' => 'У вас нет разрешения.',
+    // Initiate Audits bulk-select
+    'InitiatedTestsBulk' => 'Начаты тесты $count.',
+    // Merged Audits page (replaces Active Audits + Past Audits menu items)
+    'Audits' => 'Аудиты',
+    'ManageAudits' => 'Управление аудитами',
+    'ViewAudits' => 'Просмотреть аудиты',
+    // Redesigned, flat Initiate Audits page
+    'EligibleTests' => 'Допустимые тесты',
+    'InitiateSelected' => 'Инициировать выбранные',
+    'InitiateNAudits' => 'Инициировать {n} аудитов',
+    'TagsOptionalAppliedToSelection' => 'Теги (необязательно, применяются ко всем)',
+    'Initiate' => 'Инициировать',
+    'NoEligibleTestsFound' => 'Подходящих тестов не найдено.',
+    'Columns' => 'Столбцы',
+    'ShowTestsWithAuditInProgress' => 'Показать тесты во время проведения аудита.',
+    'NoMatchingOptions' => 'Подходящих вариантов не найдено.',
+    'TestDetails' => 'Подробности теста',
+    'PeopleAndTeams' => 'Люди и команды',
+    'StatusAndTimeline' => 'Статус и сроки',
     '' => '',
 );
 ?>

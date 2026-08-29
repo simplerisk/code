@@ -72,15 +72,21 @@ function escapeHtml(text) {
  * @param file {name, unique_name}
  * @param downloadPath endpoint path relative to BASE_URL, no leading slash
  *                     (e.g. 'assessments/download.php')
+ * @param token        optional bearer token to carry on the link. The
+ *                     questionnaire download endpoint binds each fetch to the
+ *                     requester's own tracking row, so a respondent's link has
+ *                     to carry their token or the fetch 404s. Omit it for
+ *                     callers whose entitlement comes from the session instead.
  * @returns jQuery <li>
  */
-function renderSavedFileLi(file, downloadPath) {
+function renderSavedFileLi(file, downloadPath, token) {
     var $li = $('<li>', { id: file.unique_name, 'class': 'd-flex align-items-center' });
 
     var $nameDiv = $('<div>', { 'class': 'file-name float-start me-2' });
     $('<a>', {
         'class': 'text-info text-decoration-underline',
-        href: BASE_URL + '/' + downloadPath + '?id=' + encodeURIComponent(file.unique_name),
+        href: BASE_URL + '/' + downloadPath + '?id=' + encodeURIComponent(file.unique_name)
+              + (token ? '&token=' + encodeURIComponent(token) : ''),
         target: '_blank',
         text: file.name
     }).appendTo($nameDiv);

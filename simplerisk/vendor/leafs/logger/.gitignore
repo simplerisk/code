@@ -2,3 +2,6 @@ test
 Experimental
 vendor
 composer.lock
+# Alchemy
+.alchemy
+.phpunit.result.cache

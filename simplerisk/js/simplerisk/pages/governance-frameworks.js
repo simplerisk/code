@@ -961,94 +961,40 @@
             .append($actions);
     }
 
-    /** Shuts every open row-actions overflow menu, on both surfaces. */
-    function closeRowActionMenus() {
-        $('.sr-table-scroll.is-unclipped').removeClass('is-unclipped');
-        $('.sr-row-actions-wrap.is-open')
-            .removeClass('is-open is-up is-right')
-            .find('.sr-row-actions-toggle')
-            .attr('aria-expanded', 'false');
-    }
-
-    /**
-     * Gives an already-open menu somewhere to go: lifts the table scroller's
-     * clip when it is only clipping, flips the menu upward when it still won't
-     * fit below, and -- in the rail only -- opens it RIGHTWARD when the
-     * right-anchored menu would run off the rail's own left edge.
-     * (_tables.scss/_governance-frameworks.scss own what "unclipped", "up" and
-     * "right" look like; all three are measurements, so the decisions live
-     * here.)
-     *
-     * The control table's rows sit inside .sr-table-scroll, whose
-     * `overflow-x: auto` computes overflow-y to `auto` along with it -- the two
-     * axes cannot be auto/visible -- so a menu popped from a row is clipped
-     * VERTICALLY by a container that only ever wanted to scroll horizontally.
-     * Two failures were measured before this existed, both at 1200px:
-     *
-     *   - last row of a full table: the menu ran 52px past the scroller and
-     *     elementFromPoint() on Clone and Delete returned the footer;
-     *   - a single filtered row: the scroller was 117px tall against a 92px
-     *     menu, so neither direction fit and the flipped-up menu's top item
-     *     hit-tested to the toolbar's own button.
-     *
-     * Unclipping fixes both wherever the table isn't actually scrolling
-     * sideways, which is the normal case in this tier (the tier hides columns
-     * precisely so the row fits). Where it IS scrolling the clip has to stay,
-     * and the flip is what's left. The rail has no scroll container at all and
-     * clips against the viewport; the same two rules cover it.
-     *
-     * Must run AFTER .is-open -- a display:none menu measures 0 high.
-     */
-    function orientRowActionMenu($wrap) {
-        $wrap.removeClass('is-up is-right');
-        var $menu = $wrap.find('.sr-row-actions');
-        if (!$wrap.length || !$menu.length) { return; }
-
-        var $scroller = $wrap.closest('.sr-table-scroll');
-        if ($scroller.length && $scroller[0].scrollWidth <= $scroller[0].clientWidth) {
-            $scroller.addClass('is-unclipped');
-            $scroller = $();          // no longer a clipping ancestor
-        }
-
-        var wrapRect = $wrap[0].getBoundingClientRect();
-        var menuHeight = $menu[0].getBoundingClientRect().height;
-        var scrollerRect = $scroller.length ? $scroller[0].getBoundingClientRect() : null;
-        var floor = scrollerRect ? Math.min(scrollerRect.bottom, window.innerHeight) : window.innerHeight;
-        var ceiling = scrollerRect ? Math.max(scrollerRect.top, 0) : 0;
-
-        // Only flip when down doesn't fit AND up does -- a menu with room on
-        // neither side is better left opening downward, where at least its
-        // first item is the one nearest the toggle that opened it.
-        if (wrapRect.bottom + 4 + menuHeight > floor && wrapRect.top - 4 - menuHeight > ceiling) {
-            $wrap.addClass('is-up');
-        }
-
-        // ===== The horizontal half of the same question (rail only) =========
-        // The shipped menu is anchored to the toggle's RIGHT edge (`right: 0`,
-        // _tables.scss) so it opens INTO the row rather than off the card's
-        // right edge. That is correct for a data table, which is wide. The rail
-        // is not: it is a 232-276px pane, and once the menu carries text labels
-        // it measures 255px -- WIDER than the pane it is anchored inside. A
-        // right-anchored menu therefore grows leftward straight out of the rail
-        // and under the left navigation. Measured on the pre-fix build at every
-        // width from 900 to 1920 with the sidebar expanded: the menu's left edge
-        // sat 36px outside the rail's own left edge and 26px underneath the
-        // sidebar, with the last four characters of every item buried.
-        //
-        // The remedy is to open it rightward instead, into the controls pane,
-        // which has the room the rail does not. That is a MEASUREMENT, not a
-        // constant, for the same reason `is-up` is: at <=900px the rail stops
-        // being a 276px column and spans the full width (_governance-frameworks
-        // .scss's stacked rule), so the toggle sits at the right of the VIEWPORT
-        // and a rightward menu would run off screen -- there the shipped
-        // right-anchored geometry is already correct and is left alone.
-        //
-        // Deliberately NOT applied to the control table, whose cluster is a real
-        // column in a wide card: its menu has never reached that card's left
-        // edge, so this condition is false there anyway, and right-anchoring is
-        // what keeps it off the card's RIGHT edge, which is the edge that
-        // surface actually overflows (Tasks 42/45). _governance-frameworks.scss
-        // scopes the `is-right` geometry to #sr-fw-rail to match.
+    // Row-actions overflow close/orient (vertical is-up flip + scroller
+    // unclip) is shared with Manage Audits and Define Tests via
+    // js/simplerisk/sr-row-actions-menu.js -- SRRowActionsMenu. This page adds
+    // one extension on top, passed to SRRowActionsMenu.orient() as its
+    // `extend` callback: in the framework rail only, open the menu RIGHTWARD
+    // when the right-anchored menu would run off the rail's own left edge.
+    //
+    // The shipped menu is anchored to the toggle's RIGHT edge (`right: 0`,
+    // _tables.scss) so it opens INTO the row rather than off the card's right
+    // edge. That is correct for a data table, which is wide. The rail is not:
+    // it is a 232-276px pane, and once the menu carries text labels it
+    // measures 255px -- WIDER than the pane it is anchored inside. A
+    // right-anchored menu therefore grows leftward straight out of the rail
+    // and under the left navigation. Measured on the pre-fix build at every
+    // width from 900 to 1920 with the sidebar expanded: the menu's left edge
+    // sat 36px outside the rail's own left edge and 26px underneath the
+    // sidebar, with the last four characters of every item buried.
+    //
+    // The remedy is to open it rightward instead, into the controls pane,
+    // which has the room the rail does not. That is a MEASUREMENT, not a
+    // constant, for the same reason the shared `is-up` decision is: at
+    // <=900px the rail stops being a 276px column and spans the full width
+    // (_governance-frameworks.scss's stacked rule), so the toggle sits at the
+    // right of the VIEWPORT and a rightward menu would run off screen -- there
+    // the shipped right-anchored geometry is already correct and is left
+    // alone.
+    //
+    // Deliberately NOT applied to the control table, whose cluster is a real
+    // column in a wide card: its menu has never reached that card's left
+    // edge, so this condition is false there anyway, and right-anchoring is
+    // what keeps it off the card's RIGHT edge, which is the edge that surface
+    // actually overflows (Tasks 42/45). _governance-frameworks.scss scopes
+    // the `is-right` geometry to #sr-fw-rail to match.
+    function orientRailExtend($wrap, $menu, wrapRect) {
         var $rail = $wrap.closest('#sr-fw-rail');
         if (!$rail.length) { return; }
 
@@ -1063,7 +1009,7 @@
 
         // Flip only when the default overflows the rail AND the flip fits on
         // screen -- the same "neither side fits, so leave it alone" rule the
-        // vertical decision above uses.
+        // vertical decision uses.
         if (rightAnchoredLeft < railLeft && leftAnchoredRight <= window.innerWidth) {
             $wrap.addClass('is-right');
         }
@@ -3366,7 +3312,7 @@
         // is-unclipped state would all be lost with it, leaving the scroller
         // permanently unclipped. Closing through the one function that owns that
         // state keeps the invariant instead of unwinding it by hand.
-        if (entry.$row.find('.sr-row-actions-wrap.is-open').length) { closeRowActionMenus(); }
+        if (entry.$row.find('.sr-row-actions-wrap.is-open').length) { SRRowActionsMenu.close(); }
         virtNodesOf(entry).remove();
         delete virt.rendered[i];
     }
@@ -3624,7 +3570,7 @@
         // Emptying the tbody detaches whatever wrap a menu was open in, so the
         // shared close path runs first -- otherwise .sr-table-scroll keeps the
         // is-unclipped class the open menu put on it, forever.
-        closeRowActionMenus();
+        SRRowActionsMenu.close();
         var $b = $('#sr-ctl-tbody').empty();
         if (virt.on) {
             virtMount($b);
@@ -5966,7 +5912,7 @@
         // so this survives every table rebuild.
         //
         // Menus close on scroll, unconditionally and before anything is
-        // recycled. orientRowActionMenu() flips a menu by measuring the
+        // recycled. SRRowActionsMenu.orient() flips a menu by measuring the
         // scroller's edges ONCE, at open time, so a menu left standing while the
         // rows move under it is mis-oriented by construction -- and its row can
         // be recycled out from under it entirely. Closing is the behaviour a
@@ -5974,7 +5920,7 @@
         var $ctlScroll = $('#sr-ctl-table .sr-table-scroll');
         $ctlScroll.on('scroll', function () {
             if (virt.adjusting) { return; }   // our own anchor correction, not the user
-            if ($('.sr-row-actions-wrap.is-open').length) { closeRowActionMenus(); }
+            if ($('.sr-row-actions-wrap.is-open').length) { SRRowActionsMenu.close(); }
             virtScheduleRender();
         });
 
@@ -6016,8 +5962,9 @@
             selectFramework(raw === '' ? null : parseInt(raw, 10));
         });
         // Row-actions overflow (the compact tier and any no-hover pointer,
-        // design-system.md 6b) -- same behaviour compliance-define-tests.js
-        // implements, for both of this page's surfaces at once.
+        // design-system.md 6b) -- shared with Manage Audits and Define Tests
+        // via js/simplerisk/sr-row-actions-menu.js (SRRowActionsMenu), for
+        // both of this page's surfaces at once.
         //
         // Delegated from the two STATIC containers rather than from `document`,
         // exactly as Define Tests delegates from its own $tbody: the toggle
@@ -6029,34 +5976,16 @@
         // shutting the menu in the same click that opened it. Both containers
         // are emptied and refilled on every render, never replaced, so a
         // delegated binding survives.
-        $('#sr-ctl-tbody, #sr-fw-list').on('click', '.sr-row-actions-toggle', function (e) {
-            e.stopPropagation();
-            var $wrap = $(this).closest('.sr-row-actions-wrap');
-            var wasOpen = $wrap.hasClass('is-open');
-            // Close first, unconditionally: opening one row's menu closes any
-            // other row's, and a second click on the same toggle just closes.
-            closeRowActionMenus();
-            if (!wasOpen) {
-                $wrap.addClass('is-open').find('.sr-row-actions-toggle').attr('aria-expanded', 'true');
-                orientRowActionMenu($wrap);
-            }
-        });
-        // Anywhere else -- including an action inside the menu, which does its
-        // own thing and should leave the menu shut behind it.
-        $(document).on('click.srrowactions', function () {
-            closeRowActionMenus();
-        });
-        $(document).on('keydown.srrowactions', function (e) {
-            if (e.key !== 'Escape') { return; }
-            // Focus goes back to the toggle that opened the menu, not to
-            // wherever Escape happened to be pressed -- otherwise a keyboard
-            // user who tabbed into the menu is left with focus on a button
-            // that is now display:none, and the browser drops them to the top
-            // of the document.
-            var $toggle = $('.sr-row-actions-wrap.is-open').find('.sr-row-actions-toggle');
-            if (!$toggle.length) { return; }
-            closeRowActionMenus();
-            $toggle.trigger('focus');
+        //
+        // No `scope` is passed -- omitting it makes close()/Escape search the
+        // whole document, which is what "both surfaces" requires: opening the
+        // rail's menu has to be able to close one left open in the table, and
+        // vice versa. `orientRailExtend` adds the rail-only horizontal flip on
+        // top of the shared vertical one.
+        SRRowActionsMenu.bind({
+            container: '#sr-ctl-tbody, #sr-fw-list',
+            namespace: 'srrowactions',
+            orientExtend: orientRailExtend,
         });
 
         $(document).on('click keydown', '#sr-ctl-thead th.sr-sortable', function (e) {

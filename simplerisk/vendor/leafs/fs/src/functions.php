@@ -20,6 +20,10 @@ if (!function_exists('storage')) {
      */
     function storage(): Leaf\FS\Storage
     {
+        if (!class_exists(\Leaf\Config::class)) {
+            return new \Leaf\FS\Storage();
+        }
+
         if (!(\Leaf\Config::getStatic('storage'))) {
             \Leaf\Config::singleton('storage', function () {
                 return new \Leaf\FS\Storage();

@@ -9,6 +9,9 @@ require_once(realpath(__DIR__ . '/../vendor/autoload.php'));
 require_once(realpath(__DIR__ . '/functions.php'));
 require_once(realpath(__DIR__ . '/display.php'));
 require_once(realpath(__DIR__ . '/queues.php'));
+// format_setting_timestamp() — pure settings-value coercion (CLAUDE.md: every
+// direct consumer declares the defining file itself).
+require_once(realpath(__DIR__ . '/setting_values.php'));
 require_once(language_file());
 
 /*****************************
@@ -3609,8 +3612,14 @@ function check_artificial_intelligence_context_update()
     $last_saved = get_setting("ai_context_last_saved", db: $db);
     $last_updated = get_setting("ai_context_last_updated", db: $db);
 
-    write_debug_log("Artificial Intelligence: Context last saved at " . date("Y-m-d H:i:s", $last_saved), "debug");
-    write_debug_log("Artificial Intelligence: Context last updated: " . date("Y-m-d H:i:s", $last_updated), "debug");
+    // Coerced, not passed raw: these settings come from a string column and are
+    // '' on a row that exists but was never stamped, which date() rejects with a
+    // TypeError. Same defect that disabled core_ai_context_update's task_check.
+    write_debug_log("Artificial Intelligence: Context last saved at " . format_setting_timestamp($last_saved), "debug");
+    write_debug_log("Artificial Intelligence: Context last updated: " . format_setting_timestamp($last_updated), "debug");
+
+    $last_saved   = coerce_setting_timestamp($last_saved);
+    $last_updated = coerce_setting_timestamp($last_updated);
 
     // If it's time to update
     if ($last_updated < $last_saved || !$last_updated) {
@@ -3829,6 +3838,126 @@ function resolve_ai_context_profile(): array
             'last_updated' => $settings['ai_context_last_updated'] ?? null,
         ],
     ];
+}
+
+/*****************************************************************
+ * FUNCTION: AI CONTEXT NEIGHBOR DIGEST                          *
+ * Pure helper. Renders the neighbor nodes of any ai_get_context()*
+ * bundle as a compact, grouped plain-text block suitable for     *
+ * dropping into a prompt.                                        *
+ *                                                                *
+ * Shared across the AI capabilities so every job grounds its     *
+ * prompt in the same connectivity view the Connectivity Explorer *
+ * shows, rather than each one hand-rolling its own neighbor      *
+ * lookups. Whatever ai_get_context() returned is already scoped  *
+ * to the calling identity's L2/L3/L4 permissions — this function  *
+ * only formats, it never widens.                                 *
+ *                                                                *
+ * Side-effect-free: no DB, no network, never throws. A partial or*
+ * synthetic bundle degrades to an empty string.                  *
+ *****************************************************************/
+function ai_context_digest_field_map(): array
+{
+    // Field keys are those ai_context_enrich_fetch() actually populates; the
+    // *_label variants are chosen over their raw ids because a maturity of 3
+    // means nothing to the model while "Defined" does. A type absent from this
+    // map renders its names only.
+    return [
+        'asset'      => ['valuation_label' => 'valuation'],
+        'control'    => [
+            'maturity_label'         => 'maturity',
+            'desired_maturity_label' => 'target maturity',
+            'mitigation_percent'     => 'mitigated %',
+            'status_label'           => 'status',
+        ],
+        'exception'  => [
+            'status_label'     => 'status',
+            'approved_label'   => 'approved',
+            'next_review_date' => 'next review',
+        ],
+        'incident'   => ['status_label' => 'status', 'severity' => 'severity'],
+        'vulnerability' => ['severity' => 'severity', 'status' => 'status'],
+        'risk'       => ['calculated_risk' => 'score', 'status' => 'status'],
+        'test'       => ['last_result' => 'last result', 'last_date' => 'last run'],
+        'audit'      => ['status_label' => 'status', 'last_date' => 'last audit'],
+        'assessment' => ['status_label' => 'status', 'percent' => '% complete'],
+        'self_assessment_result' => ['response' => 'response', 'assessment_date' => 'assessed'],
+        'risk_catalog'   => ['number' => 'number'],
+        'threat_catalog' => ['number' => 'number'],
+    ];
+}
+
+function ai_context_neighbor_digest(array $context, int $per_type_limit = 12): string
+{
+    $nodes = $context['nodes'] ?? [];
+    if (!is_array($nodes) || empty($nodes)) {
+        return '';
+    }
+
+    $fieldMap = ai_context_digest_field_map();
+
+    // Group rendered entries by node type, preserving the ranked order
+    // ai_get_context() already applied (most relevant neighbor of each type
+    // first).
+    $byType = [];
+    foreach ($nodes as $node) {
+        if (!is_array($node)) {
+            continue;
+        }
+        $type = (string)($node['type'] ?? '');
+        $name = trim((string)($node['name'] ?? ''));
+        if ($type === '' || $name === '') {
+            continue;
+        }
+
+        // Carry the enriched fields the analysis actually reasons over. Names
+        // alone are not enough: an asset's valuation IS the loss-magnitude
+        // input for the FAIR estimate, and a control's maturity and mitigation
+        // coverage are what make it relevant to a residual score.
+        $fields = is_array($node['fields'] ?? null) ? $node['fields'] : [];
+        $rendered = [];
+        foreach ($fieldMap[$type] ?? [] as $key => $label) {
+            $value = $fields[$key] ?? null;
+            // Only null and empty-string are absence. Zero is data — a control
+            // mitigating 0% and a severity-0 finding both say something, and an
+            // empty() check here would silently discard exactly those.
+            if ($value === null || $value === '' || is_array($value)) {
+                continue;
+            }
+            $rendered[] = $label . ': ' . trim((string)$value);
+        }
+
+        // Fields are bracketed and comma-joined while nodes are joined with
+        // '; ', so a value containing commas or parentheses — valuation labels
+        // legitimately contain both, e.g. "$0 to $1,000 (Low)" — can never be
+        // mistaken for a node boundary.
+        $byType[$type][] = $rendered
+            ? $name . ' [' . implode(', ', $rendered) . ']'
+            : $name;
+    }
+
+    if (empty($byType)) {
+        return '';
+    }
+
+    ksort($byType);
+
+    $lines = [];
+    foreach ($byType as $type => $names) {
+        $total = count($names);
+        $shown = $per_type_limit > 0 ? array_slice($names, 0, $per_type_limit) : $names;
+
+        // Report the true total even when the list is trimmed, so the model
+        // can reason about scale without being handed every name.
+        $label = ucwords(str_replace('_', ' ', $type));
+        $suffix = $total > count($shown)
+            ? ' (+' . ($total - count($shown)) . ' more)'
+            : '';
+
+        $lines[] = "- {$label} ({$total}): " . implode('; ', $shown) . $suffix;
+    }
+
+    return implode("\n", $lines);
 }
 
 /*****************************************************************

@@ -448,6 +448,29 @@ function api_v2_compliance_past_audits_datatable() {
     datatable_response_for_view('past_audits');
 }
 
+function api_v2_compliance_all_audits_datatable() {
+    api_v2_check_permission("compliance");
+    datatable_response_for_view('all_audits');
+}
+
+/*******************************************************************************
+ * FUNCTION: API V2 COMPLIANCE AUDITS FILTER COUNTS                            *
+ * GET /compliance/audits/filter_counts?status=active|past|all -- per-option    *
+ * counts for Manage Audits' 6 quickfilters, scoped to the requested status    *
+ * chip (defaults to 'active'). Backs get_all_audits_filter_counts()           *
+ * (includes/compliance.php), which mirrors the same status/team scoping       *
+ * get_data_for_datatable() itself uses.                                       *
+ *******************************************************************************/
+function api_v2_compliance_audits_filter_counts() {
+    api_v2_check_permission("compliance");
+
+    $status = in_array($_GET['status'] ?? '', ['active', 'past', 'all'], true) ? $_GET['status'] : 'active';
+
+    $data = get_all_audits_filter_counts($status);
+
+    api_v2_json_result(200, "OK", $data);
+}
+
 function api_v2_compliance_dynamic_audit_report_datatable() {
     api_v2_check_permission("compliance");
     datatable_response_for_view('dynamic_audit_report');

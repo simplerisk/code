@@ -1527,7 +1527,7 @@ $lang = array(
     'SendingRequestPleaseWait' => '요청을 보내기. 기다리세요.',
     'ApplicationNeedsToBeUpgradeToLatestVersionToUpgradeExtras' => '응용 프로그램을 최신 버전으로 업그레이드하여 추가 버전을 업그레이드해야 합니다.',
     'FilteredRiskReport' => '필터링된 위험 보고서',    
-    'NoPermissionForThisAction'=>'이 작업에 권한이 없습니다.',
+    'NoPermissionForThisAction'=>'이 작업을 수행할 권한이 없습니다.',
     'QuestionnaireResult'=>'설문지 결과',
     'ChangedField' => '변경된 필드',
     'ChangedFrom' => '에서 변경되었습니다.',
@@ -3082,7 +3082,7 @@ $lang = array(
     'ResultMessageUnavailable' => '결과 메시지를 사용할 수 없습니다.',
     'AIProviderURLNotAllowed' => '해당 API URL은 허용되지 않습니다. 알려진 AI 제공업체 또는 루프백(127.0.0.1) 자체 호스팅 주소를 사용하십시오.',
     'AIReenterKeyForNewURL' => '다른 제공업체 URL을 테스트하려면 API 키를 다시 입력하십시오.',
-    'WorkflowHttpRequestDisallowedURL' => 'http_request: URL {$url} 이 허용되지 않는 내부 주소 또는 예약된 주소로 확인됩니다.',
+    'WorkflowHttpRequestDisallowedURL' => '{$action}: URL {$url} 이 허용되지 않는 내부 주소 또는 예약된 주소로 확인됩니다.',
     'BehaviorAndScheduling' => '행동 및 일정 관리',
     'PrepopulateAcrossContacts' => '이 평가에 대한 다른 연락처의 이전 답변을 사용하여 새 응답을 미리 채웁니다.',
     'PrepopulateAcrossContactsHelp' => '담당자가 바뀔 때 연속성을 유지하기 위해, 이전 담당자의 가장 최근 답변을 사용하여 새로운 응답자 양식을 미리 채워 넣으세요.',
@@ -4637,6 +4637,28 @@ $lang = array(
     'ExtraVersionIncompatibleWithApplication' => '다운로드한 "{$extra}" Extra(버전 {$extra_version})는 SimpleRisk {$app_version} 와 호환되지 않아 설치되지 않았습니다. 먼저 SimpleRisk를 최신 버전으로 업그레이드하십시오.',
     'ExtraCompatibilityDataUnavailable' => 'SimpleRisk는 이 릴리스에서 지원하는 Extra 버전을 확인할 수 없어 Extra를 설치하지 않았습니다. 나중에 다시 시도해 주세요.',
     'ExtraVersionCouldNotBeVerified' => '다운로드한 Extra의 버전을 확인할 수 없어서 설치하지 않았습니다.',
+    // User import temporary password
+    'NewUsernameAddedWithTemporaryPassword' => '사용자 이름 "{$username}"을 가진 새 사용자가 성공적으로 추가되었습니다. 임시 비밀번호: {$password} (사용자는 첫 로그인 시 비밀번호를 변경해야 합니다).',
+    'YouDontHavePermission' => '당신은 권한이 없습니다.',
+    // Initiate Audits bulk-select
+    'InitiatedTestsBulk' => '$count 테스트를 시작했습니다.',
+    // Merged Audits page (replaces Active Audits + Past Audits menu items)
+    'Audits' => '감사',
+    'ManageAudits' => '감사 관리',
+    'ViewAudits' => '감사 내역 보기',
+    // Redesigned, flat Initiate Audits page
+    'EligibleTests' => '적격 테스트',
+    'InitiateSelected' => '선택된 항목 시작',
+    'InitiateNAudits' => '{n} 감사를 시작합니다',
+    'TagsOptionalAppliedToSelection' => '태그 (선택 사항, 모두 적용)',
+    'Initiate' => '시작',
+    'NoEligibleTestsFound' => '적합한 검사를 찾을 수 없습니다.',
+    'Columns' => '컬럼',
+    'ShowTestsWithAuditInProgress' => '감사가 진행 중인 테스트를 표시합니다.',
+    'NoMatchingOptions' => '일치하는 옵션이 없습니다.',
+    'TestDetails' => '테스트 세부 정보',
+    'PeopleAndTeams' => '사람과 팀',
+    'StatusAndTimeline' => '진행 상황 및 일정',
     '' => '',
 );
 ?>

@@ -1,0 +1,27 @@
+app:
+  - ./src
+
+tests:
+  engine: pest
+  suites:
+    'Test Suite':
+      paths:
+        - ./tests
+      files:
+        - '*.test.php'
+
+lint:
+  preset: PSR12
+
+actions:
+  run:
+    - lint
+    - tests
+  php:
+    versions:
+      - '8.2'
+      - '8.3'
+      - '8.4'
+  events:
+    - push
+    - pull_request

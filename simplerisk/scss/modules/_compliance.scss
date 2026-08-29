@@ -1,14 +1,37 @@
 //**************************************** COMMON PART BEGIN **************************************//
-#active-audits-table, 
+#active-audits-table,
 #past-audits,
 #active_audits_datatable,
-#past_audits_datatable {
+#past_audits_datatable,
+#all_audits_datatable {
     .red-background {
         background-color: pink;
     }
-    
+
     .green-background {
         background-color: lightgreen;
+    }
+}
+
+// Manage Audits (#all_audits_datatable) merges open (Active) and closed
+// (Past) audits into one "All" view -- green/red/white above mean the
+// RESULT of a closed audit (Pass/Fail/Inconclusive, test_results.background_class),
+// so an open audit (no result yet) needs its OWN pair, distinct from
+// pass/fail, or an on-time open row and a Passed closed row would both
+// read as the same green (same for overdue vs. Failed, both red).
+#all_audits_datatable {
+    .white-background {
+        // Inconclusive: a visible neutral, not literally the row's own
+        // white/striped background (which would carry no signal at all).
+        background-color: $gray-200;
+    }
+
+    .blue-background {
+        background-color: rgba($info, .15);
+    }
+
+    .amber-background {
+        background-color: rgba($warning, .2);
     }
 }
 //***************************************** COMMON PART END ***************************************//
@@ -244,3 +267,189 @@
     }
 }
 //******************************* COMPLIANCE > PAST AUDITS > VIEW TEST END *************************//
+
+//******* MANAGE AUDITS / INITIATE AUDITS -- NARROW-WIDTH COLUMN LOCKDOWN (design-system.md 6b) ******//
+// Both tables build their columns from a per-viewer, arbitrarily-customizable
+// Columns picker selection (render_column_selection_widget(), includes/
+// display.php) rather than Define Tests' fixed set -- an arbitrary combination
+// can never be guaranteed to fit a phone-width card no matter how many columns
+// get folded one at a time. Below the breakpoint the corresponding inline
+// script (display_audits(), includes/compliance.php) and compliance-initiate-
+// audits.js override the picker's choice down to a small guaranteed-fit set,
+// which makes offering the picker itself confusing at this width -- so it's
+// hidden here rather than left present-but-overridden.
+//
+// Different breakpoints per table: Initiate Audits' narrow tier fits its own
+// 6-column set all the way down from 1250px (compliance-initiate-audits.js's
+// own INITIATE_NARROW_QUERY -- see its comment for the measurement that
+// moved it there). Manage Audits' matching tier needed 1120px instead -- see
+// AUDITS_NARROW_ALLOW's own comment (display_audits(), includes/
+// compliance.php) for that measurement.
+#initiate-audits-app {
+    @media (max-width: 1250px) {
+        .sr-columns-btn {
+            display: none;
+        }
+    }
+
+    // The Initiate button is a bare .sr-row-action (_tables.scss), not
+    // wrapped in .sr-row-actions-wrap like Manage Audits/Define Tests' own
+    // multi-action clusters -- there's exactly one action on this page, so
+    // the overflow-menu shell those pages need has nothing to collapse. But
+    // .sr-row-action is inline-flex (shrinks to its own 26x26px), so with no
+    // alignment rule of its own it sits flush against the LEFT edge of
+    // whatever width DataTables gives .sr-actions-col, same as .sr-check-col
+    // would without its own text-align: center. Matching that column's
+    // existing centered-utility-column treatment rather than left-alignment.
+    .sr-actions-col {
+        text-align: center;
+    }
+
+    // ===== WIDE-tier overflow (not just narrow) ==========================
+    // Same cause and same fix as Manage Audits' own "WIDE-tier overflow"
+    // section above it in this file: Test Name/Control Name/Framework Name
+    // (compliance-initiate-audits.js's rowHtml()) carried no width
+    // constraint at all, so DataTables' scrollX sized every column to its
+    // full natural content width -- and scrollX never compresses columns to
+    // fit a container that's too narrow for them, it only ever grows them
+    // to fill one that's too wide. Measured before this existed: at 1024px
+    // the table needed 910px against the card's 734px, a 176px shortfall
+    // that put the single Actions-column Initiate button entirely past the
+    // visible edge, reachable only by scrolling the table sideways -- not
+    // obvious for what is this page's one primary action per row.
+    //
+    // Control Name and Framework Name get a DataTables columnDefs `width`
+    // pin instead of a CSS cap (compliance-initiate-audits.js) -- scrollX
+    // writes an explicit pixel width onto its own <colgroup>, which ignores
+    // a <td>'s max-width entirely, so only the DataTables-level pin is
+    // actually authoritative for a PINNED column. Test Name and Next Test
+    // Date stay unpinned (both need to shrink further in the narrow-width
+    // lockdown below), so they're the two columns here that genuinely rely
+    // on a CSS cap instead, via autoWidth:false's browser-native table
+    // layout -- which respects max-width, but ALSO freely hands an
+    // unconstrained column whatever leftover space the pinned columns don't
+    // claim. Without a cap of its own, Next Test Date (a 10-character ISO
+    // date) was doing exactly that: measured at 375px, DataTables gave it
+    // 139px of colgroup width on a 281px-wide card, alone enough to push the
+    // Initiate button off the edge.
+    .sr-init-name-col {
+        max-width: 220px;
+    }
+
+    .sr-init-next-col {
+        max-width: 100px;
+    }
+
+    // Phone width, inside the narrow-width lockdown above: even the reduced
+    // 4-column set (checkbox + Test Name + Next Test Date + Actions) doesn't
+    // fit a phone card at Test Name's wide-tier 220px cap -- measured at
+    // 375px, the Initiate button ran 68px past the card edge with checkbox
+    // (34px) + Actions (60px) alone already claiming most of a 281px card.
+    // Shrinking Test Name's cap the rest of the way is one lever; the other
+    // is below.
+    @media (max-width: 480px) {
+        .sr-init-name-col {
+            max-width: 140px;
+        }
+
+        // .sr-init-next-col's own max-width (above) caps the CELL, but table
+        // auto-layout (autoWidth:false) can never shrink a column below its
+        // widest UNBREAKABLE content -- and thead th is white-space:nowrap
+        // (_tables.scss) app-wide, so "Next Test Date" (longer than any date
+        // value it labels) was the one actually setting this column's floor:
+        // measured at 375px, the column sat at 139px regardless of the
+        // 100px max-width on the td, because the uppercase, letter-spaced
+        // header text alone doesn't fit in 100px on one line. Letting it wrap
+        // here removes that floor; every other header in this table's row
+        // stays single-line since none of them are this word count.
+        .sr-init-next-col {
+            white-space: normal;
+        }
+    }
+}
+
+#audits-table-card {
+    @media (max-width: 1120px) {
+        .sr-columns-btn {
+            display: none;
+        }
+    }
+}
+
+// ===== Manage Audits' WIDE-tier overflow (not just narrow) ==================
+// Even the trimmed default_enabled_columns set (functions.php) needed a
+// horizontal scroll to reach Actions at every common laptop width measured --
+// 178px at 1920, up to 391px at 1280 -- because DataTables' scrollX doesn't
+// compress columns to fit a container that's too narrow for their natural
+// content width; it only stretches them to FILL one that's too wide. Two
+// contributors, both capped here rather than in the narrow-lockdown's media
+// query, since this is a full-width problem:
+//   - Status's localized text ("Evidence Submitted / Pending Review") sizes
+//     the column to 323px at every width, unconditionally -- capped here at
+//     190px. First tried as a single-line ellipsis clip, which read badly: a
+//     chip is short enough on its own that a clipped "Evidence Submitted /
+//     Pending R…" looks broken rather than intentional. Wrapping to 2-3
+//     lines instead -- the same relaxation _tables.scss's compact tier
+//     already gives .sr-state-pill-due/-result -- keeps the full text always
+//     visible without a hover. (The pill used to ALSO carry a literal
+//     " (Overdue)" suffix appended by test_audit_is_overdue() -- that's now
+//     a separate fa-bell icon next to Next Test Date instead, DataTable.
+//     render.nextTestDatePill() (dataTables.renderers.js): overdue-ness is a
+//     fact about that date, not about Status's workflow-stage text, and
+//     cramming both into one pill was what forced Status to 323px wide.) A
+//     title attribute still carries the full status text too, since a
+//     customer can rename statuses (test_status table) into something long
+//     enough to wrap past 3 lines.
+//   - Test Name and Control Name only carry a MIN width (custom_column_style,
+//     functions.php) -- scrollX fills whatever space is left over by
+//     stretching them past what their content needs (up to 289px each at
+//     1920px), which is space Status and the rest could use instead. Given a
+//     max there too (functions.php, alongside their existing min).
+#audits-table-card {
+    .sr-state-pill {
+        max-width: 190px;
+        white-space: normal;
+    }
+
+    // Bare fa-bell icon (no chip/pill shell) appended after Next Test Date
+    // when DataTable.render.nextTestDatePill() (dataTables.renderers.js)
+    // detects the audit is overdue. $danger, not the neutral gray every
+    // other icon on this table uses, since this is the one glyph whose whole
+    // job is to read as "needs attention" at a glance.
+    .sr-overdue-icon {
+        color: $danger;
+        margin-left: 4px;
+    }
+}
+
+// Status is ALSO excluded from the narrow-width lockdown's visible set
+// (display_audits(), includes/compliance.php's AUDITS_NARROW_ALLOW) -- even
+// clipped to 190px it was still the widest of the 4 narrow-tier columns, and
+// Next Test Date alone already carries the "needs attention" signal (an
+// overdue date IS the signal) without it.
+#audits-table-card {
+    @media (max-width: 1120px) {
+        // Test Name's 200px floor (custom_column_style, functions.php's
+        // 'framework_control_test_audit' catalog) is an INLINE style on the
+        // <th> -- render_view_table() (includes/display.php) generates it
+        // per-field for every view sharing that catalog, so it can't be
+        // conditioned on the view here, only overridden. !important is the
+        // only way to beat an inline style's specificity; scoped tightly to
+        // this table and this breakpoint, where the row already carries only
+        // 3 other columns and Test Name is the one field a row cannot be
+        // read without (design-system.md 6b) -- letting it size to its own
+        // content, wrapping across 2-3 lines, buys back the width the fixed
+        // 200px floor was costing every other column.
+        th[data-name='test_name'] {
+            min-width: 0 !important;
+        }
+
+        // Next Test Date's own 90px floor (custom_column_style, functions.php)
+        // is generous enough already for a bare "MM/DD/YYYY" string that this
+        // is mostly headroom -- kept as its own override (rather than relying
+        // on the base floor) in case that value drifts again.
+        th[data-name='next_date'] {
+            min-width: 75px !important;
+        }
+    }
+}

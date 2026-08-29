@@ -8,6 +8,15 @@
 require_once(realpath(__DIR__ . '/bootstrap.php'));
 require_once(realpath(__DIR__ . '/alerts.php'));
 
+// enforce_permission() answers API callers with a JSON envelope instead of a
+// redirect, so it needs json_response() and current_request_expects_json_
+// response(), which sit together in services.php. functions.php is for the
+// write_debug_log() / build_url() / get_base_url() calls further down. Both
+// are reachable transitively from every current caller, but the reachability
+// rule wants each consumer to declare the file that defines what it calls.
+require_once(realpath(__DIR__ . '/services.php'));
+require_once(realpath(__DIR__ . '/functions.php'));
+
 // Include the language file
 require_once(language_file());
 require_once(realpath(__DIR__ . '/../vendor/autoload.php'));
@@ -74,14 +83,56 @@ function check_permission($permission) {
 	}
 }	
 
+/*******************************************************************************
+ * FUNCTION: ENFORCE PERMISSION DENY STATUS                                     *
+ * The HTTP status an API/XHR caller is refused with when check_permission()    *
+ * says no.                                                                     *
+ *                                                                              *
+ * "access" is the authentication gate rather than an authorization one, so it  *
+ * answers 401 to match unauthenticated_access(); every other permission is a   *
+ * genuine authorization refusal and answers 403. A client that distinguishes   *
+ * "log in again" from "you may not do this" branches on exactly this, so it    *
+ * is pulled out of enforce_permission() -- which exits and cannot be called    *
+ * from a test -- and pinned by its own cases.                                  *
+ *******************************************************************************/
+function enforce_permission_deny_status($permission) {
+
+	return $permission === "access" ? 401 : 403;
+}
+
 /********************************
  * FUNCTION: ENFORCE PERMISSION *
  ********************************/
 function enforce_permission($permission)
 {
+	global $lang, $escaper;
+
 	// If the permission is not authorized
 	if (!check_permission($permission)) {
 
+		// An API or XHR caller cannot act on a redirect to the login page: it
+		// reads the 302 with its empty body as a success, and page JavaScript
+		// renders the returned login HTML into a tab container. Answer those
+		// callers with the JSON envelope the rest of the v2 API uses.
+		//
+		// json_response() exits, so the redirect below is unreachable here.
+		if (current_request_expects_json_response()) {
+
+			// See drain_output_buffers() in services.php for why a half-rendered
+			// partial must not be flushed ahead of the JSON body.
+			drain_output_buffers();
+
+			// An API refusal halts the caller's whole workflow, so it is worth
+			// an operator's attention; the page branch below is the routine
+			// low-stakes redirect and stays at info.
+			write_debug_log("User doesn't have the '{$permission}' permission. Refusing the API request.", 'notice');
+
+			json_response(enforce_permission_deny_status($permission), $escaper->escapeHtml($lang['NoPermissionForThisAction']), NULL);
+		}
+
+		// Past the JSON branch this request really is being redirected, so the
+		// message below is accurate. Logging it above the branch would have
+		// asserted a redirect that never happens for every API caller.
 	    write_debug_log("Redirecting back to the login page. User doesn't have the '{$permission}' permission.", 'info');
 
 		// Different actions for different permissions
@@ -128,6 +179,30 @@ function enforce_permission_exception($function)
 }
 
 /********************************************************************************
+ * FUNCTION: GET QUESTIONNAIRE REQUEST TOKEN                                    *
+ * The questionnaire token the caller presented, or '' when they presented      *
+ * none. GET 'token' is what the respondent's links carry and POST              *
+ * 'questionnaire_token' is what the response form posts; GET wins when both    *
+ * are present.                                                                 *
+ *                                                                              *
+ * Extracted so the two consumers cannot drift: this file's                     *
+ * check_questionnaire_get_token(), and download_questionnaire_file() in the     *
+ * Assessments Extra, which needs the token itself rather than a yes/no.        *
+ ********************************************************************************/
+function get_questionnaire_request_token() {
+
+    if (isset($_GET['token'])) {
+        return (string)$_GET['token'];
+    }
+
+    if (isset($_POST['questionnaire_token'])) {
+        return (string)$_POST['questionnaire_token'];
+    }
+
+    return '';
+}
+
+/********************************************************************************
  * FUNCTION: CHECK QUESTIONNAIRE GET TOKEN                                      *
  * Checks if the 'GET' parameter 'token' is a valid questionnaire token.        *
  * The function is built in a way to only check the database once per request   *
@@ -135,18 +210,10 @@ function enforce_permission_exception($function)
  ********************************************************************************/
 function check_questionnaire_get_token() {
 
-    // If the token is provided via GET
-    if (isset($_GET['token']))
-    {
-        $token = $_GET['token'];
-    }
-    // If the token is provided via POST
-    else if (isset($_POST['questionnaire_token']))
-    {
-        $token = $_POST['questionnaire_token'];
-    }
+    $token = get_questionnaire_request_token();
+
     // No token was provided so fail the token check
-    else return false;
+    if ($token === '') return false;
 
     $global_var_name = 'is_valid_questionnaire_token_' . $token;
 
@@ -874,6 +941,28 @@ function compute_workflow_redirect_target($workflow_start, $current_url, $fallba
 }
 
 /**********************************************************************
+ * FUNCTION: SANITIZE LOG CONTEXT                                      *
+ *                                                                     *
+ * Flattens control characters in a value bound for a log line.        *
+ *                                                                     *
+ * Callers build denial context out of request data (risk ids,         *
+ * unique_names, ref_types), and write_debug_log()'s formatter runs    *
+ * with $allowInlineLineBreaks = true, so a CR/LF in that value lands  *
+ * in the log verbatim. The authorization-denial record is what an     *
+ * incident responder reads after a suspected access-control probe, so *
+ * a caller able to inject newlines there could forge whole denial     *
+ * lines attributed to other users.                                    *
+ *                                                                     *
+ * Replaces rather than deletes, so two tokens either side of a        *
+ * stripped newline cannot silently fuse into one.                     *
+ *                                                                     *
+ * Pure: no session, no database, no $lang.                            *
+ **********************************************************************/
+function sanitize_log_context($context) {
+	return preg_replace('/[[:cntrl:]]/', ' ', (string)$context);
+}
+
+/**********************************************************************
  * FUNCTION: REDIRECT PERMISSION DENIED                                *
  *                                                                     *
  * Called when a permission/access check inside a page denies. Logs a  *
@@ -889,13 +978,43 @@ function compute_workflow_redirect_target($workflow_start, $current_url, $fallba
  * $log_context      — extra context for the debug log                 *
  **********************************************************************/
 function redirect_permission_denied($message_lang_key = 'NoPermissionForThisAction', $log_context = '') {
-	global $lang;
+	global $lang, $escaper;
 
-	$user = isset($_SESSION['user']) ? $_SESSION['user'] : '(unauthenticated)';
-	$detail = $log_context !== '' ? " ({$log_context})" : '';
+	// Both interpolated values are flattened, not just the caller-supplied one:
+	// a username is attacker-influenced wherever self-registration or an
+	// external identity provider supplies it, and one CR/LF in it forges log
+	// lines just as effectively as one in $log_context. $_SERVER['SCRIPT_NAME']
+	// is deliberately left alone -- it is the resolved script path, set by the
+	// server rather than taken from the request.
+	$user = sanitize_log_context(isset($_SESSION['user']) ? $_SESSION['user'] : '(unauthenticated)');
+
+	// $log_context is request-derived -- see sanitize_log_context() above for the
+	// forged-denial-line threat this closes. Applied centrally here, so it also
+	// covers the call sites that were already interpolating request data.
+	$detail = $log_context !== '' ? ' (' . sanitize_log_context($log_context) . ')' : '';
+
 	write_debug_log("Permission denied for user '{$user}' on " . $_SERVER['SCRIPT_NAME'] . $detail, 'warning');
 
 	$message = isset($lang[$message_lang_key]) ? $lang[$message_lang_key] : 'You do not have permission to perform that action.';
+
+	// Several of these call sites sit in management/partials/*.php, which the
+	// api/v2 risk handlers include to render a tab. A redirect is useless to an
+	// API caller -- it reads as an empty 302 -- so answer one with the same JSON
+	// envelope the rest of the v2 API uses.
+	//
+	// No set_alert() on this branch: the toast is queued for the NEXT page
+	// render, and an API caller has none. The message goes in the response.
+	// json_response() exits, so the redirect below is unreachable here.
+	if (current_request_expects_json_response()) {
+
+		// Several of these call sites are reached from inside an ob_start()'d
+		// partial render, so drop anything already buffered rather than let it
+		// be flushed ahead of the JSON body.
+		drain_output_buffers();
+
+		json_response(403, $escaper->escapeHtml($message), NULL);
+	}
+
 	set_alert(true, "bad", $message);
 
 	$base_url       = !empty($_SESSION['base_url']) ? $_SESSION['base_url'] : get_base_url();

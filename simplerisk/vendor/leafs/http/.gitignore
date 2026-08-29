@@ -20,3 +20,6 @@ Thumbs.db
 
 # Alchemy
 .alchemy
+
+# Alchemy-generated (kept for IDE support, never committed)
+phpunit.xml

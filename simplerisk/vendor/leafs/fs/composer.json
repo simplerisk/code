@@ -30,10 +30,13 @@
     },
     "minimum-stability": "dev",
     "prefer-stable": true,
+    "require": {
+        "php": "^8.2"
+    },
     "require-dev": {
-        "pestphp/pest": "^1.21",
-        "leafs/alchemy": "^2.1",
-        "friendsofphp/php-cs-fixer": "^3.64"
+        "pestphp/pest": "*",
+        "leafs/alchemy": "v5.x-dev",
+        "friendsofphp/php-cs-fixer": "*"
     },
     "config": {
         "allow-plugins": {
@@ -41,9 +44,15 @@
         }
     },
     "scripts": {
-        "alchemy": "./vendor/bin/alchemy setup",
-        "test": "./vendor/bin/alchemy setup --test",
-        "lint": "./vendor/bin/alchemy setup --lint",
-        "actions": "./vendor/bin/alchemy setup --actions"
+        "alchemy": "@php vendor/bin/alchemy all",
+        "test": "@php vendor/bin/alchemy test",
+        "lint": "@php vendor/bin/alchemy lint",
+        "fmt": "@php vendor/bin/alchemy fmt",
+        "refactor": "@php vendor/bin/alchemy refactor",
+        "analyse": "@php vendor/bin/alchemy analyse",
+        "ci": "@php vendor/bin/alchemy ci"
+    },
+    "suggest": {
+        "leafs/s3": "Required for storage bucket support (s3:// paths in File::create/upload)"
     }
 }

@@ -932,8 +932,86 @@ function get_framework_controls_by_filter($control_class="all", $control_phase="
 
     // Final results
     $filtered_controls = array();
-    
+
     $frameworks = get_frameworks(1);
+
+    // ---- Free-text search support, prepared ONCE for the whole result set ----
+    //
+    // The two fallback searches below -- mapped assets, and Customization Extra
+    // custom fields -- used to read their data one control at a time, from
+    // inside this loop. Each was a separate database connection and query per
+    // control (the custom-field one, per control PER FIELD, plus another query
+    // to turn stored option ids into names, plus a get_active_fields() call to
+    // re-derive the very same field list on every iteration).
+    //
+    // Measured on a 1,001-control catalogue with two searchable custom fields, a
+    // search that matched nothing took 2,951ms, of which: custom field values
+    // 1,762ms, re-deriving the field list 443ms, mapped assets 409ms. The SCF
+    // catalogue alone is ~1,535 controls, so this is a cost real installs pay on
+    // any search that does not match a core field early.
+    //
+    // Both are now read in a fixed number of queries and looked up from an array
+    // inside the loop. Prepared only when there IS search text: with none, the
+    // first condition below short-circuits and neither fallback ever runs, so
+    // building these would be pure waste on the ordinary unfiltered read.
+    $custom_field_search_text = [];
+    $mapped_asset_search_text = [];
+
+    if ($control_text) {
+
+        $control_ids_to_search = array_column($controls, 'id');
+
+        // Declared here rather than relied on transitively (CLAUDE.md, "Function
+        // Reachability Across Files"): get_control_to_assets_search_text() lives
+        // in assets.php, which governance.php does not otherwise load. It only
+        // resolves today because the two callers that pass search text reach
+        // this file through includes/api.php, which requires assets.php itself
+        // -- a chain an include reorder or a new entry point would silently
+        // break, turning this line into a fatal. Phan cannot see that: it
+        // resolves the definition regardless of load order.
+        //
+        // Required HERE, inside the search-text guard, rather than at the top of
+        // the file: assets.php pulls displayassets.php in with it, and
+        // governance.php is included by a great many pages that never search
+        // controls. require_once makes the duplicate include a no-op for the
+        // callers that already have it.
+        require_once(realpath(__DIR__ . '/assets.php'));
+
+        $mapped_asset_search_text = get_control_to_assets_search_text($control_ids_to_search);
+
+        // function_exists() as well as customization_extra(): Extras ship and
+        // upgrade SEPARATELY from Core, so a customer can be running this Core
+        // against a Customization Extra that predates
+        // get_custom_field_search_text_by_row_ids(). Core calling it on trust
+        // would fatal the whole controls table for them on any search. Without
+        // the function the map stays empty, and the loop below reads an empty
+        // map as "no custom-field match" -- so an out-of-date Extra degrades to
+        // "custom fields are not searchable" instead of a white page.
+        if (customization_extra()) {
+
+            require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
+        }
+
+        if (customization_extra() && function_exists('get_custom_field_search_text_by_row_ids')) {
+
+            // Only fields on the control VIEW layout (tab_index 2) are
+            // searchable -- searching what a control actually displays. This is
+            // the same set the per-control version selected; it is hoisted here
+            // because it is a property of the TEMPLATE, not of any one control.
+            $custom_search_fields = [];
+            foreach (get_active_fields("control", "", 2) as $field) {
+                if ((int)$field['is_basic'] === 0 && (int)$field['active'] === 1 && (int)$field['tab_index'] === 2) {
+                    $custom_search_fields[] = $field;
+                }
+            }
+
+            $custom_field_search_text = get_custom_field_search_text_by_row_ids(
+                $custom_search_fields,
+                $control_ids_to_search,
+                "control"
+            );
+        }
+    }
 
     foreach ($controls as $key => $control)
     {
@@ -977,63 +1055,23 @@ function get_framework_controls_by_filter($control_class="all", $control_phase="
             continue;
         }
 
-        // Search for the Mapped Assets Content
-        $mapped_assets_match = false;
-        $mapped_assets = get_control_to_assets((int)$control['id']);
-        foreach ($mapped_assets as $mapped_asset) {
-            if (stripos((string)$mapped_asset['control_maturity_name'], $control_text) !== false) {
-                $mapped_assets_match = true;
-                break;
-            }
-
-            $asset_names_array = [];
-            if (!empty($mapped_asset['asset_name'])) {
-                $asset_names_array[] = $mapped_asset['asset_name'];
-            }
-            if (!empty($mapped_asset['asset_group_name'])) {
-                $asset_names_array[] = $mapped_asset['asset_group_name'];
-            }
-            $asset_names = implode(",", $asset_names_array );
-
-            if (stripos((string)$asset_names, $control_text) !== false) {
-                $mapped_assets_match = true;
-                break;
-            }
-        }
-
-        if ($mapped_assets_match) {
+        // Search for the Mapped Assets Content -- the maturity name, the asset
+        // names and the asset-group names of everything mapped to this control,
+        // read for the whole result set above.
+        $asset_text = $mapped_asset_search_text[(int)$control['id']] ?? "";
+        if ($asset_text !== "" && stripos($asset_text, $control_text) !== false) {
             $filtered_controls[] = $control;
             continue;
         }
 
-        // Search for the Custom Fields Content if customization extra is enabled
-        if (customization_extra()) {
-            require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
-
-            $custom_search_fields = [];
-            $active_fields = get_active_fields("control", "", 2);
-            foreach ($active_fields as $field) {
-                if ((int)$field['is_basic'] === 0 && (int)$field['active'] === 1 && (int)$field['tab_index'] === 2) {
-                    $custom_search_fields[] = $field;
-                }
-            }
-
-            $custom_fields_match = false;
-            if (!empty($custom_search_fields)) {
-                foreach ($custom_search_fields as $field) {
-                    $custom_value = get_plan_custom_field_name_by_row_id($field, $control["id"], "control");
-                    $custom_value_text = trim(strip_tags((string)$custom_value));
-                    if ($custom_value_text !== "" && stripos($custom_value_text, $control_text) !== false) {
-                        $custom_fields_match = true;
-                        break;
-                    }
-                }
-            }
-
-            if ($custom_fields_match) {
-                $filtered_controls[] = $control;
-                continue;
-            }
+        // Search the Customization Extra custom field content, read for the
+        // whole result set above. Empty when the Extra is off or no field is on
+        // the control view layout, which is what makes this a no-op rather than
+        // a guard both here and there.
+        $custom_text = $custom_field_search_text[(int)$control['id']] ?? "";
+        if ($custom_text !== "" && stripos($custom_text, $control_text) !== false) {
+            $filtered_controls[] = $control;
+            continue;
         }
 
     }
@@ -3225,14 +3263,7 @@ function add_document($submitted_by, $document_type, $document_name, $control_id
 
     $document_id = $db->lastInsertId();
 
-    // Normalize control_ids to array
-    if (is_array($control_ids)) {
-        $ids = $control_ids;
-    } elseif (is_string($control_ids) && $control_ids !== '') {
-        $ids = array_map('trim', explode(',', $control_ids));
-    } else {
-        $ids = [];
-    }
+    $ids = normalize_id_list_param($control_ids);
 
     // Normalize framework_ids to array
     if (is_array($framework_ids)) {
@@ -4411,6 +4442,9 @@ function create_exception($name, $status, $policy, $framework, $control, $owner,
         $stmt->execute();
     }
 
+    // The exception's associated risks now carry it in their context graph.
+    ai_invalidate_risk_analysis_for('exception', (int)$id);
+
     trigger_workflow_event('exception.created', [
         'exception_id' => $id,
         'name'         => $name,
@@ -4431,6 +4465,11 @@ function update_exception($name, $status, $policy, $framework, $control, $owner,
     $original = getExceptionForChangeChecking($id);
 
     $db = db_open();
+
+    // Risks being unlinked by this edit must be invalidated as well, and they
+    // are unreachable once associated_risks is rewritten below. Uses the
+    // function's own connection — opening a second one here would leak it.
+    $ai_previously_associated = risks_associated_with('exception', (int)$id, $db);
 
     // Create an exception
     $stmt = $db->prepare("
@@ -4516,6 +4555,14 @@ function update_exception($name, $status, $policy, $framework, $control, $owner,
         $stmt->bindParam(":id", $id, PDO::PARAM_INT);
         $stmt->execute();
     }
+
+    // Both sides of the edit: risks that lost this exception and risks that
+    // gained it.
+    ai_invalidate_risk_analysis(array_merge(
+        $ai_previously_associated,
+        risks_associated_with('exception', (int)$id, $db)
+    ), $db);
+
     return true;
 }
 
@@ -4667,6 +4714,10 @@ function delete_exception($id) {
 
     $deleted_exception = $stmt->fetch();
 
+    // Resolve before the delete below: afterwards associated_risks is gone and
+    // the affected risks can no longer be found.
+    $ai_affected = risks_associated_with('exception', (int)$id, $db);
+
     $stmt = $db->prepare("DELETE FROM compliance_files WHERE ref_id=:document_id AND ref_type='exceptions'; ");
     $stmt->bindParam(":document_id", $id, PDO::PARAM_INT);
     $stmt->execute();
@@ -4675,6 +4726,8 @@ function delete_exception($id) {
     $stmt = $db->prepare("DELETE from `document_exceptions` where `value`=:id;");
     $stmt->bindParam(":id", $id, PDO::PARAM_INT);
     $stmt->execute();
+
+    ai_invalidate_risk_analysis($ai_affected, $db);
 
     // Close the database connection
     db_close($db);

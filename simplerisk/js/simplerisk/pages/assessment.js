@@ -555,8 +555,14 @@ function activate_tab(tab_id) {
  * @param committedInputs  the file inputs included in this request
  * @param pendingDeletions unique_names the contact removed but has not yet saved
  *                         (passed in from the inline script's state)
+ * @param token            the respondent's questionnaire token, passed in from the
+ *                         inline script. download.php binds each fetch to the
+ *                         requester's own tracking row, so the re-rendered links
+ *                         have to carry it exactly like the server-rendered ones
+ *                         do -- without it a respondent loses access to their own
+ *                         attachments the moment a draft save re-renders the list.
  */
-function applyDraftFileState(savedFiles, committedInputs, pendingDeletions) {
+function applyDraftFileState(savedFiles, committedInputs, pendingDeletions, token) {
     var pending = pendingDeletions || [];
 
     // 1. Drop the inputs we just uploaded.
@@ -579,7 +585,7 @@ function applyDraftFileState(savedFiles, committedInputs, pendingDeletions) {
         var $exist = $up.find('.exist-files').first();
         if ($exist.length) {
             $exist.empty();
-            files.forEach(function(f) { $exist.append(renderSavedFileLi(f, 'assessments/download.php')); });
+            files.forEach(function(f) { $exist.append(renderSavedFileLi(f, 'assessments/download.php', token)); });
         }
 
         // Rebuild the pending "to be uploaded" list + count from the inputs that remain.

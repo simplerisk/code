@@ -3082,7 +3082,7 @@ $lang = array(
     'ResultMessageUnavailable' => 'Resultaatboodskap nie beskikbaar nie.',
     'AIProviderURLNotAllowed' => 'Daardie API-URL word nie toegelaat nie. Gebruik \'n bekende KI-verskaffer of \'n teruglusadres (127.0.0.1).',
     'AIReenterKeyForNewURL' => 'Voer die API-sleutel weer in om \'n ander verskaffer-URL te toets.',
-    'WorkflowHttpRequestDisallowedURL' => 'http_request: Die URL {$url} los op na \'n nie-toegelate interne of gereserveerde adres.',
+    'WorkflowHttpRequestDisallowedURL' => '{$action}: Die URL {$url} los op na \'n nie-toegelate interne of gereserveerde adres.',
     'BehaviorAndScheduling' => 'Gedrag en skedulering',
     'PrepopulateAcrossContacts' => 'Vul nuwe antwoorde vooraf in met \'n ander kontak se vorige antwoorde vir hierdie assessering.',
     'PrepopulateAcrossContactsHelp' => 'Vul \'n nuwe respondent se vorm vooraf in met die mees onlangse vorige antwoorde van enige kontakpersoon – nuttig vir kontinuïteit wanneer verantwoordelikheid van hande verwissel.',
@@ -4637,6 +4637,28 @@ $lang = array(
     'ExtraVersionIncompatibleWithApplication' => 'Die afgelaaide "{$extra}" Extra (weergawe {$extra_version}) is nie versoenbaar met SimpleRisk {$app_version} nie en is nie geïnstalleer nie. Gradeer SimpleRisk eers op na die nuutste weergawe.',
     'ExtraCompatibilityDataUnavailable' => 'SimpleRisk kon nie bevestig watter Ekstra-weergawes hierdie vrystelling ondersteun nie, daarom is die Ekstra nie geïnstalleer nie. Probeer asseblief later weer.',
     'ExtraVersionCouldNotBeVerified' => 'Die weergawe van die afgelaaide Ekstra kon nie bepaal word nie, daarom is dit nie geïnstalleer nie.',
+    // User import temporary password
+    'NewUsernameAddedWithTemporaryPassword' => '\'n Nuwe gebruiker met gebruikersnaam "{$username}" is suksesvol bygevoeg. Tydelike wagwoord: {$password} (die gebruiker moet dit met die eerste aanmelding verander).',
+    'YouDontHavePermission' => 'Jy het nie toestemming nie.',
+    // Initiate Audits bulk-select
+    'InitiatedTestsBulk' => 'Het $count toetse begin.',
+    // Merged Audits page (replaces Active Audits + Past Audits menu items)
+    'Audits' => 'Oudits',
+    'ManageAudits' => 'Bestuur Oudits',
+    'ViewAudits' => 'Bekyk Oudits',
+    // Redesigned, flat Initiate Audits page
+    'EligibleTests' => 'Geskikte toetse',
+    'InitiateSelected' => 'Inisieer geselekteerde',
+    'InitiateNAudits' => 'Begin {n} oudits',
+    'TagsOptionalAppliedToSelection' => 'Etikette (opsioneel, op almal toegepas)',
+    'Initiate' => 'Inisieer',
+    'NoEligibleTestsFound' => 'Geen geskikte toetse gevind nie.',
+    'Columns' => 'Kolomme',
+    'ShowTestsWithAuditInProgress' => 'Wys toetse met \'n oudit aan die gang',
+    'NoMatchingOptions' => 'Geen ooreenstemmende opsies nie.',
+    'TestDetails' => 'Toetsbesonderhede',
+    'PeopleAndTeams' => 'Mense en spanne',
+    'StatusAndTimeline' => 'Status en Tydlyn',
     '' => '',
 );
 ?>

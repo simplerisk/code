@@ -1300,6 +1300,91 @@ class OpenApiReopenAudit {}
 class OpenApiInitiateAudit {}
 
 /**
+ * @OA\Post(
+ *     path="/compliance/audit_initiation/initiate_bulk",
+ *     summary="Initiate audits for an arbitrary batch of individual tests",
+ *     description="Batch-initiates audits for a list of framework_control_test ids, applying one shared tag set. Backs the redesigned Initiate Audits page's 'Initiate selected' bulk action -- filtering the flat list to one framework/control and selecting all matching reproduces 'initiate whole framework/control' without a nested tree. A test that can't be initiated (retired, outside the viewer's team) is reported back as skipped rather than failing the whole batch. Gated on the compliance permission plus Initiate Audits (SR-1721).",
+ *     operationId="initiateTestsBulk",
+ *     tags={"compliance"},
+ *     security={{"ApiKeyAuth":{}}},
+ *     @OA\RequestBody(
+ *         required=true,
+ *         @OA\MediaType(
+ *             mediaType="application/x-www-form-urlencoded",
+ *             @OA\Schema(
+ *                 type="object",
+ *                 required={"ids"},
+ *                 @OA\Property(property="ids", type="array", description="framework_control_test ids to initiate", @OA\Items(type="integer")),
+ *                 @OA\Property(property="tags", type="array", description="Tags applied to every initiated audit", @OA\Items(type="string"))
+ *             )
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=200,
+ *         description="OK: at least one audit was initiated.",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(property="status", type="string", example="success"),
+ *             @OA\Property(property="message", type="string", example="Initiated 3 tests."),
+ *             @OA\Property(
+ *                 property="data", type="object",
+ *                 @OA\Property(property="initiated", type="array", @OA\Items(type="object", additionalProperties=true)),
+ *                 @OA\Property(property="skipped", type="array", @OA\Items(type="integer"))
+ *             )
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=400,
+ *         description="No permission, no ids given, or every test in the batch was skipped."
+ *     )
+ * )
+ */
+class OpenApiInitiateTestsBulk {}
+
+/**
+ * @OA\Post(
+ *     path="/compliance/audit_initiation/eligible_tests",
+ *     summary="Flat, filterable list of tests eligible for initiation",
+ *     description="Server-side feed backing the redesigned, flat Initiate Audits page. Team-scoped via the same access check initiate_framework_control_tests() enforces at action time. Returns RAW field values (not pre-rendered HTML) -- the client renders each row. Gated on the compliance permission (SR-1721).",
+ *     operationId="complianceInitiateEligibleTests",
+ *     tags={"compliance"},
+ *     security={{"ApiKeyAuth":{}}},
+ *     @OA\RequestBody(
+ *         description="Standard DataTables-style paging (draw, start, length) plus this page's own filters.",
+ *         @OA\MediaType(
+ *             mediaType="application/x-www-form-urlencoded",
+ *             @OA\Schema(
+ *                 type="object",
+ *                 @OA\Property(property="draw", type="integer", example=1),
+ *                 @OA\Property(property="start", type="integer", example=0),
+ *                 @OA\Property(property="length", type="integer", example=25),
+ *                 @OA\Property(property="filter_text", type="string"),
+ *                 @OA\Property(property="filter_framework", type="array", @OA\Items(type="integer")),
+ *                 @OA\Property(property="filter_control", type="array", @OA\Items(type="integer")),
+ *                 @OA\Property(property="filter_schedule_type", type="array", description="manual|interval|calendar", @OA\Items(type="string"))
+ *             )
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=200,
+ *         description="OK: paginated list of eligible tests.",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(property="draw", type="integer", example=1),
+ *             @OA\Property(property="recordsTotal", type="integer", example=47),
+ *             @OA\Property(property="recordsFiltered", type="integer", example=47),
+ *             @OA\Property(property="data", type="array", @OA\Items(type="object", additionalProperties=true))
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=400,
+ *         description="FORBIDDEN: The user does not have the required permission to perform this action."
+ *     )
+ * )
+ */
+class OpenApiComplianceInitiateEligibleTests {}
+
+/**
  * @OA\Get(
  *     path="/compliance/audit_timeline",
  *     summary="Get the audit timeline data for calendar display",
@@ -1446,6 +1531,85 @@ class OpenApiComplianceActiveAuditsDatatable {}
  * )
  */
 class OpenApiCompliancePastAuditsDatatable {}
+
+/**
+ * @OA\Post(
+ *     path="/compliance/audits/all/datatable",
+ *     summary="Server-side DataTables feed for the merged Audits view",
+ *     description="Returns every non-deleted audit (open and closed together) in DataTables server-side format, backing the merged Compliance > Audits page that replaces the separate Active/Past Audits pages. Gated on the compliance permission (SR-1721).",
+ *     operationId="complianceAllAuditsDatatable",
+ *     tags={"compliance"},
+ *     security={{"ApiKeyAuth":{}}},
+ *     @OA\RequestBody(
+ *         description="Standard DataTables server-side request parameters (draw, start, length, order, columns, search).",
+ *         @OA\MediaType(
+ *             mediaType="application/x-www-form-urlencoded",
+ *             @OA\Schema(
+ *                 type="object",
+ *                 @OA\Property(property="draw", type="integer", example=1),
+ *                 @OA\Property(property="start", type="integer", example=0),
+ *                 @OA\Property(property="length", type="integer", example=10)
+ *             )
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=200,
+ *         description="OK: DataTables server-side response.",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(property="draw", type="integer", example=1),
+ *             @OA\Property(property="recordsTotal", type="integer", example=42),
+ *             @OA\Property(property="recordsFiltered", type="integer", example=42),
+ *             @OA\Property(property="data", type="array", @OA\Items(type="object"))
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=403,
+ *         description="FORBIDDEN: The user does not have the required permission to perform this action."
+ *     )
+ * )
+ */
+class OpenApiComplianceAllAuditsDatatable {}
+
+/**
+ * @OA\Get(
+ *     path="/compliance/audits/filter_counts",
+ *     summary="Per-option counts for the Manage Audits quickfilters",
+ *     description="Returns, for the requested status scope, how many audits match each option of the Framework/Test Name/Tester/Result/Tag/Team quickfilters -- keyed by the same raw id each filter's <option> value already uses. Backs the Manage Audits page's zero-count-option suppression. Gated on the compliance permission (SR-1721).",
+ *     operationId="complianceAuditsFilterCounts",
+ *     tags={"compliance"},
+ *     security={{"ApiKeyAuth":{}}},
+ *     @OA\Parameter(
+ *         name="status",
+ *         in="query",
+ *         required=false,
+ *         description="Which status chip's scope to count against. Defaults to 'active' when omitted or invalid.",
+ *         @OA\Schema(type="string", enum={"active","past","all"}, default="active")
+ *     ),
+ *     @OA\Response(
+ *         response=200,
+ *         description="OK: counts per filter dimension, each a map of raw filter value to matching audit count.",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(
+ *                 property="data",
+ *                 type="object",
+ *                 @OA\Property(property="framework_name", type="object", example={"1": 4, "2": 2}),
+ *                 @OA\Property(property="test_name", type="object", example={"7": 1}),
+ *                 @OA\Property(property="tester", type="object", example={"3": 5}),
+ *                 @OA\Property(property="test_result", type="object", example={"pass": 3, "fail": 1}),
+ *                 @OA\Property(property="tags", type="object", example={"12": 2}),
+ *                 @OA\Property(property="teams", type="object", example={"1": 6})
+ *             )
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=403,
+ *         description="FORBIDDEN: The user does not have the required permission to perform this action."
+ *     )
+ * )
+ */
+class OpenApiComplianceAuditsFilterCounts {}
 
 /**
  * @OA\Post(

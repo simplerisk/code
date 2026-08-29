@@ -7,7 +7,7 @@
     require_once(realpath(__DIR__ . '/../includes/renderutils.php'));
 
     $breadcrumb_title_key = "ViewTest";
-    $active_sidebar_submenu = "PastAudits";
+    $active_sidebar_submenu = "ManageAudits";
     $active_sidebar_menu = "Compliance";
     render_header_and_sidebar(['blockUI', 'selectize', 'WYSIWYG', 'multiselect', 'datetimerangepicker', 'CUSTOM:common.js', 'CUSTOM:pages/risk.js', 'CUSTOM:cve_lookup.js', 'CUSTOM:pages/compliance.js'], ['check_compliance' => true], $breadcrumb_title_key, $active_sidebar_menu, $active_sidebar_submenu);
 
@@ -24,7 +24,7 @@
         
         if (!is_user_allowed_to_access($_SESSION['uid'], $test_audit_id, 'audit')) {
             set_alert(true, "bad", $escaper->escapeHtml($lang['NoPermissionForThisAudit']));
-            refresh(build_url("compliance/past_audits.php"));
+            refresh(build_url("compliance/audits.php"));
         }
     }
 

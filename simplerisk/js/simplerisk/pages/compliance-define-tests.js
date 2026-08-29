@@ -775,247 +775,10 @@
         srSelectRender($select);
     }
 
-    /* ---------------------------------------------------------------- *
-     * sr-select: a listbox that can show a count chip per option
-     * ---------------------------------------------------------------- *
-     * A native <option> is plain text -- no markup, so no chip, and the
-     * count ended up reading as part of the label. This draws a listbox
-     * over the real <select>, which stays in the DOM as the source of
-     * truth: selecting sets the native value and fires its 'change', so
-     * every existing handler, .val() call and URL-sync path is untouched.
-     *
-     * Counts live on the option as data-count (set by decorateOptionCounts)
-     * rather than being baked into its text, so the label stays clean and
-     * the chip is a separate element.
-     *
-     * Labels go in with .text() only. These include user-authored values
-     * (tag names, tester names), and this component exists precisely
-     * because we would NOT turn on a widget's enableHTML to get a chip.
-     */
-    function srSelectRender($native) {
-        var api = $native.data('srSelect');
-        if (!api) {
-            return;
-        }
-
-        var isMulti = api.multiple;
-        var value = $native.val();
-        var selectedValues = isMulti ? (value || []) : [value];
-        var selectedLabels = [];
-        // The selected option's own count (data-count), captured during the loop
-        // so a captioned single-select can append it -- "Tests: Active tests · 142".
-        var selectedCount = null;
-        api.$menu.empty();
-
-        $native.find('option').each(function () {
-            var $option = $(this);
-            var count = $option.attr('data-count');
-            var isSelected = selectedValues.indexOf($option.attr('value')) !== -1;
-
-            var $row = $('<button>', {
-                type: 'button',
-                'class': 'sr-select-option',
-                role: 'option',
-                'data-value': $option.attr('value'),
-                'aria-selected': isSelected ? 'true' : 'false',
-            });
-            $row.prop('disabled', $option.prop('disabled'));
-
-            // A multi-select row carries a tick so its state is readable
-            // without relying on the row's weight alone.
-            if (isMulti) {
-                $('<i>', {
-                    'class': 'fa fa-check sr-select-tick' + (isSelected ? '' : ' is-empty'),
-                    'aria-hidden': 'true',
-                }).appendTo($row);
-            }
-
-            $('<span>', { 'class': 'sr-select-text', text: $option.text() }).appendTo($row);
-            if (count !== undefined && count !== '') {
-                $('<span>', { 'class': 'sr-count-chip', text: count }).appendTo($row);
-            }
-
-            if (isSelected) {
-                selectedLabels.push($option.text());
-                selectedCount = count;
-            }
-
-            $row.appendTo(api.$menu);
-        });
-
-        // Closed-state label. Multi-selects summarise: nothing picked reads as
-        // the placeholder ("All Frameworks"), one reads as itself, more than
-        // one as a count -- names would overflow the control.
-        var label;
-        if (isMulti) {
-            if (!selectedLabels.length) {
-                label = api.placeholder;
-            } else if (selectedLabels.length === 1) {
-                label = selectedLabels[0];
-            } else {
-                label = String(_lang['NSelected'] || '{n} selected').replace('{n}', selectedLabels.length);
-            }
-        } else {
-            label = selectedLabels.length ? selectedLabels[0] : $native.find('option:first').text();
-        }
-
-        // Opt-in caption: a select carrying data-caption bakes the dimension name
-        // INTO the closed control -- "Tests: AI suggested tests · 9" -- and appends
-        // the selected option's own count when it has one. Guarded on data-caption's
-        // presence so every other sr-select is untouched. The caption value is
-        // resolved server-side ($lang) into the attribute, so it's inserted as text
-        // like the rest of the label.
-        var caption = $native.attr('data-caption');
-        if (caption) {
-            label = caption + ': ' + label;
-            if (selectedCount !== null && selectedCount !== undefined && selectedCount !== '') {
-                label += ' · ' + selectedCount;
-            }
-        }
-        api.$button.find('.sr-select-value').text(label);
-    }
-
-    function srSelectClose(api, refocus) {
-        api.$menu.attr('hidden', 'hidden');
-        api.$button.attr('aria-expanded', 'false');
-        if (refocus) {
-            api.$button.trigger('focus');
-        }
-    }
-
-    function srSelectOpen(api) {
-        api.$menu.removeAttr('hidden');
-        api.$button.attr('aria-expanded', 'true');
-        // Land on the current selection so arrow keys continue from where the
-        // value already is, not from the top of the list.
-        var $selected = api.$menu.find('[aria-selected="true"]').first();
-        srSelectActivate(api, $selected.length ? $selected : api.$menu.find('.sr-select-option:not(:disabled)').first());
-    }
-
-    function srSelectActivate(api, $row) {
-        if (!$row || !$row.length) {
-            return;
-        }
-        api.$menu.find('.sr-select-option').removeClass('is-active');
-        $row.addClass('is-active');
-        if ($row[0].scrollIntoView) {
-            $row[0].scrollIntoView({ block: 'nearest' });
-        }
-    }
-
-    // Arrow keys skip disabled rows: a zero-count option is shown because the
-    // absence is information, but it is not a place you can land.
-    function srSelectMove(api, delta) {
-        var $rows = api.$menu.find('.sr-select-option').filter(function () { return !this.disabled; });
-        if (!$rows.length) {
-            return;
-        }
-        var index = $rows.index(api.$menu.find('.sr-select-option.is-active'));
-        var next = index + delta;
-        if (next < 0) { next = $rows.length - 1; }
-        if (next >= $rows.length) { next = 0; }
-        srSelectActivate(api, $rows.eq(next));
-    }
-
-    function srSelectChoose($native, value) {
-        var api = $native.data('srSelect');
-
-        if (api.multiple) {
-            // Toggle, and keep the menu OPEN: picking several is the whole
-            // point, and closing after each tick would make that a chore.
-            var $option = $native.find('option').filter(function () { return $(this).attr('value') === value; });
-            $option.prop('selected', !$option.prop('selected'));
-            srSelectRender($native);
-            srSelectActivate(api, api.$menu.find('[data-value="' + value + '"]'));
-        } else {
-            $native.val(value);
-            srSelectRender($native);
-            srSelectClose(api, true);
-        }
-
-        // The native 'change' is what the rest of the page listens to.
-        $native.trigger('change');
-    }
-
-    function srSelectEnhance($native, placeholder) {
-        if (!$native.length || $native.data('srSelect')) {
-            return;
-        }
-
-        var $wrapper = $('<div>', { 'class': 'sr-select' });
-        var $button = $('<button>', {
-            type: 'button',
-            'class': 'sr-select-button',
-            'aria-haspopup': 'listbox',
-            'aria-expanded': 'false',
-            'aria-label': $native.attr('aria-label') || $native.attr('title') || '',
-        });
-        $('<span>', { 'class': 'sr-select-value' }).appendTo($button);
-        $('<i>', { 'class': 'fa fa-chevron-down sr-select-caret', 'aria-hidden': 'true' }).appendTo($button);
-
-        var $menu = $('<div>', { 'class': 'sr-select-menu', role: 'listbox', tabindex: '-1' }).attr('hidden', 'hidden');
-        if ($native.prop('multiple')) {
-            $menu.attr('aria-multiselectable', 'true');
-        }
-
-        $native.addClass('sr-select-native').attr('tabindex', '-1').attr('aria-hidden', 'true');
-        $native.after($wrapper);
-        $wrapper.append($button).append($menu);
-
-        var api = {
-            $button: $button,
-            $menu: $menu,
-            multiple: !!$native.prop('multiple'),
-            placeholder: placeholder || $native.attr('data-placeholder') || $native.attr('title') || '',
-        };
-        $native.data('srSelect', api);
-
-        $button.on('click', function (e) {
-            e.preventDefault();
-            if ($menu.attr('hidden')) { srSelectOpen(api); } else { srSelectClose(api, false); }
-        });
-
-        $button.on('keydown', function (e) {
-            if (e.key === 'ArrowDown' || e.key === 'Enter' || e.key === ' ') {
-                e.preventDefault();
-                srSelectOpen(api);
-                $menu.trigger('focus');
-            }
-        });
-
-        $menu.on('click', '.sr-select-option', function () {
-            srSelectChoose($native, $(this).attr('data-value'));
-        });
-
-        $menu.on('keydown', function (e) {
-            switch (e.key) {
-                case 'ArrowDown': e.preventDefault(); srSelectMove(api, 1); break;
-                case 'ArrowUp': e.preventDefault(); srSelectMove(api, -1); break;
-                case 'Home': e.preventDefault(); srSelectActivate(api, $menu.find('.sr-select-option:not(:disabled)').first()); break;
-                case 'End': e.preventDefault(); srSelectActivate(api, $menu.find('.sr-select-option:not(:disabled)').last()); break;
-                case 'Enter':
-                case ' ':
-                    e.preventDefault();
-                    var $active = $menu.find('.sr-select-option.is-active');
-                    if ($active.length && !$active.prop('disabled')) {
-                        srSelectChoose($native, $active.attr('data-value'));
-                    }
-                    break;
-                case 'Escape': e.preventDefault(); srSelectClose(api, true); break;
-                case 'Tab': srSelectClose(api, false); break;
-                default: break;
-            }
-        });
-
-        // Clicking anywhere else dismisses it, like any other menu.
-        $(document).on('mousedown.srselect', function (e) {
-            if (!$wrapper[0].contains(e.target) && !$menu.attr('hidden')) {
-                srSelectClose(api, false);
-            }
-        });
-
-        srSelectRender($native);
-    }
+    // srSelectEnhance/srSelectRender and their internals now live in the
+    // shared sr-select.js (CUSTOM:sr-select.js, loaded before this file) --
+    // extracted once Manage Audits and Initiate Audits needed the same
+    // widget, so all three pages share one implementation.
 
     function renderFilterCounts(counts) {
         decorateOptionCounts($scheduleFilter, counts.schedule || {});
@@ -2206,27 +1969,35 @@
             return;
         }
 
-        if (length === -1) {
-            $info.text(formatTemplate(_lang['ShowingXToYOfZ'], { start: 1, end: total, total: total }));
-            return;
-        }
-
-        var start = Math.min(state.start, Math.max(0, total - 1));
-        var end = Math.min(start + length, total);
+        // Always render the pager -- even a single page -- to match
+        // DataTables' own native pager on Manage Audits/Initiate Audits,
+        // which always shows at least a disabled '‹ 1 ›' rather than
+        // disappearing outright. A hand-rolled pager that hides itself
+        // whenever there's nothing to page through read as an inconsistency
+        // against the other two Compliance pages.
+        var showingAll = length === -1;
+        var start = showingAll ? 0 : Math.min(state.start, Math.max(0, total - 1));
+        var end = showingAll ? total : Math.min(start + length, total);
         $info.text(formatTemplate(_lang['ShowingXToYOfZ'], { start: start + 1, end: end, total: total }));
 
-        var pageCount = Math.max(1, Math.ceil(total / length));
-        var currentPage = Math.floor(start / length) + 1;
-        if (pageCount <= 1) {
-            return;
-        }
+        var pageCount = showingAll ? 1 : Math.max(1, Math.ceil(total / length));
+        var currentPage = showingAll ? 1 : Math.floor(start / length) + 1;
 
         var $ul = $('<ul>', { 'class': 'pagination' });
 
-        function addButton(label, page, disabled, current) {
+        function addButton(label, page, disabled, current, extraClass) {
             var classes = 'page-item' + (disabled ? ' disabled' : '') + (current ? ' active' : '');
             var $li = $('<li>', { 'class': classes });
-            var $btn = $('<button>', { type: 'button', 'class': 'page-link', text: label });
+            var linkClass = 'page-link' + (extraClass ? ' ' + extraClass : '');
+            var $btn = $('<button>', { type: 'button', 'class': linkClass, text: label });
+            // Previous/Next visually swap to a compact ‹/› glyph (_tables.scss
+            // hides the text via font-size:0) -- an explicit aria-label keeps
+            // "Previous"/"Next" as the accessible name regardless, matching
+            // DataTables' own bs5 pager markup which carries the same
+            // attribute on its equivalent buttons.
+            if (extraClass === 'previous' || extraClass === 'next') {
+                $btn.attr('aria-label', label);
+            }
             if (!disabled && !current) {
                 $btn.on('click', function () {
                     state.start = (page - 1) * length;
@@ -2237,7 +2008,10 @@
             $ul.append($li);
         }
 
-        addButton(_lang['Previous'], currentPage - 1, currentPage === 1, false);
+        // 'previous'/'next' classes match DataTables' own bs5 pager markup so
+        // the shared footer CSS (_tables.scss) can swap both to the same
+        // compact ‹/› glyph via the same selectors.
+        addButton(_lang['Previous'], currentPage - 1, currentPage === 1, false, 'previous');
 
         var windowSize = 5;
         var startPage = Math.max(1, currentPage - Math.floor(windowSize / 2));
@@ -2248,7 +2022,7 @@
             addButton(String(p), p, false, p === currentPage);
         }
 
-        addButton(_lang['Next'], currentPage + 1, currentPage === pageCount, false);
+        addButton(_lang['Next'], currentPage + 1, currentPage === pageCount, false, 'next');
 
         $pager.append($ul);
     }
@@ -2931,71 +2705,10 @@
         updateBulkBar();
     }
 
-    /** Shuts every open row-actions overflow menu (see the toggle handler). */
-    function closeRowActionMenus() {
-        // The scroller's clip is lifted only for as long as a menu needs it --
-        // leaving .is-unclipped behind would hand the table a permanently
-        // unclipped scroller, so a genuinely wide table could then spill its
-        // rows out of the card instead of scrolling them.
-        $tbody.closest('.sr-table-scroll').removeClass('is-unclipped');
-        $tbody.find('.sr-row-actions-wrap.is-open')
-            .removeClass('is-open is-up')
-            .find('.sr-row-actions-toggle')
-            .attr('aria-expanded', 'false');
-    }
-
-    /**
-     * Gives an already-open menu somewhere to go: lifts the table scroller's
-     * clip when it is only clipping, and flips the menu upward when it still
-     * won't fit below. (_tables.scss owns what "unclipped" and "up" look like;
-     * both are measurements, so the decision lives here.)
-     *
-     * Every row sits inside .sr-table-scroll, whose `overflow-x: auto` computes
-     * overflow-y to `auto` along with it -- the two axes cannot be auto and
-     * visible at once -- so a menu popped from a row near the bottom of the
-     * list is clipped VERTICALLY by a container that only ever wanted to scroll
-     * horizontally. Measured on this page before this existed, with the last
-     * row's menu open: at 1400, 1200 and 1024 the menu ran 134px past the
-     * scroller and elementFromPoint() on ALL FIVE items (View / Edit / History
-     * / Retire / Delete) returned something else, i.e. the menu was open and
-     * not one of its actions was clickable; at 900 it ran 65px past and Retire
-     * and Delete were unreachable.
-     *
-     * Unclipping fixes that wherever the table isn't actually scrolling
-     * sideways, which is the normal case in this tier -- the tier hides columns
-     * precisely so the row fits. Where it IS scrolling the clip has to stay, and
-     * the flip is what's left.
-     *
-     * This is the same treatment governance-frameworks.js applies to the
-     * control table and the framework rail; _tables.scss shipped both classes
-     * for both pages and Define Tests was the one page never opting in.
-     *
-     * Must run AFTER .is-open -- a display:none menu measures 0 high.
-     */
-    function orientRowActionMenu($wrap) {
-        $wrap.removeClass('is-up');
-        var $menu = $wrap.find('.sr-row-actions');
-        if (!$wrap.length || !$menu.length) { return; }
-
-        var $scroller = $wrap.closest('.sr-table-scroll');
-        if ($scroller.length && $scroller[0].scrollWidth <= $scroller[0].clientWidth) {
-            $scroller.addClass('is-unclipped');
-            $scroller = $();          // no longer a clipping ancestor
-        }
-
-        var wrapRect = $wrap[0].getBoundingClientRect();
-        var menuHeight = $menu[0].getBoundingClientRect().height;
-        var scrollerRect = $scroller.length ? $scroller[0].getBoundingClientRect() : null;
-        var floor = scrollerRect ? Math.min(scrollerRect.bottom, window.innerHeight) : window.innerHeight;
-        var ceiling = scrollerRect ? Math.max(scrollerRect.top, 0) : 0;
-
-        // Only flip when down doesn't fit AND up does -- a menu with room on
-        // neither side is better left opening downward, where at least its
-        // first item is the one nearest the toggle that opened it.
-        if (wrapRect.bottom + 4 + menuHeight > floor && wrapRect.top - 4 - menuHeight > ceiling) {
-            $wrap.addClass('is-up');
-        }
-    }
+    // Row-actions overflow-menu close/orient behavior (see the toggle handler)
+    // lives in the shared js/simplerisk/sr-row-actions-menu.js (also used by
+    // includes/compliance.php's Manage Audits table and governance-
+    // frameworks.js's control table + framework rail) -- SRRowActionsMenu.
 
     // ===== The column budget, measured rather than predicted ================
     //
@@ -3059,7 +2772,7 @@
         // isn't there. Keep the standing decision; the next render re-measures.
         if (!scroll.clientWidth) { return; }
 
-        // No guard for .is-unclipped here, deliberately. orientRowActionMenu()
+        // No guard for .is-unclipped here, deliberately. SRRowActionsMenu.orient()
         // lifts the scroller's clip to `overflow: visible` while a row menu is
         // open, and the worry is that an element which is no longer a scroll
         // container would report scrollWidth == clientWidth -- which would read
@@ -3540,33 +3253,15 @@
 
         // Row-actions overflow (compact/queue tiers, design-system.md 6b). The
         // toggle is display:none at full width, so this handler is inert there
-        // -- the cluster is simply on screen. Delegated, because rows are
-        // rebuilt on every render.
-        $tbody.on('click', '.sr-row-actions-toggle', function (e) {
-            // The row's own click handler opens the procedure drawer; opening a
-            // menu is not asking to expand the row.
-            e.stopPropagation();
-
-            var $wrap = $(this).closest('.sr-row-actions-wrap');
-            var wasOpen = $wrap.hasClass('is-open');
-            closeRowActionMenus();
-            if (!wasOpen) {
-                $wrap.addClass('is-open').find('.sr-row-actions-toggle').attr('aria-expanded', 'true');
-                orientRowActionMenu($wrap);
-            }
-        });
-
-        // Anywhere else, including another row's toggle (handled above by
-        // closing everything first) and any action inside the menu, which
-        // does its own thing and should leave the menu shut behind it.
-        $(document).on('click.srrowactions', function () {
-            closeRowActionMenus();
-        });
-
-        $(document).on('keydown.srrowactions', function (e) {
-            if (e.key === 'Escape') {
-                closeRowActionMenus();
-            }
+        // -- the cluster is simply on screen. Delegated from $tbody, because
+        // rows are rebuilt on every render. Shared with Manage Audits and
+        // Governance Frameworks via SRRowActionsMenu (js/simplerisk/sr-row-
+        // actions-menu.js); the row's own click handler opens the procedure
+        // drawer, which is why the toggle handler there stops propagation.
+        SRRowActionsMenu.bind({
+            container: $tbody,
+            scope: $tbody,
+            namespace: 'srrowactions',
         });
 
         // Narrow-width filter sheet (design-system.md 6b). The button is

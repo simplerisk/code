@@ -36,6 +36,11 @@ class Response
     protected $status = 200;
 
     /**
+     * @var array|null [start byte, length] window for range downloads
+     */
+    protected $downloadRange = null;
+
+    /**
      * @var string HTTP Version
      */
     protected $version;
@@ -204,19 +209,55 @@ EOT;
         if (!file_exists($file)) {
             Headers::contentHtml();
             trigger_error("$file not found. Confirm your file path.");
+
+            return;
+        }
+
+        $size = filesize($file);
+        $start = 0;
+        $length = $size;
+
+        $range = $_SERVER['HTTP_RANGE'] ?? null;
+
+        if ($code === 200 && $range && preg_match('/^bytes=(\d*)-(\d*)$/', trim($range), $rangeParts) && ($rangeParts[1] !== '' || $rangeParts[2] !== '')) {
+            if ($rangeParts[1] === '') {
+                // suffix range: the last N bytes
+                $start = max(0, $size - (int) $rangeParts[2]);
+                $end = $size - 1;
+            } else {
+                $start = (int) $rangeParts[1];
+                $end = $rangeParts[2] === '' ? $size - 1 : min((int) $rangeParts[2], $size - 1);
+            }
+
+            if ($start >= $size || $start > $end) {
+                $this->status = 416;
+                $this->headers = array_merge($this->headers, [
+                    'Accept-Ranges' => 'bytes',
+                    'Content-Range' => "bytes */$size",
+                ]);
+                $this->content = '';
+
+                return $this->send();
+            }
+
+            $this->status = 206;
+            $length = $end - $start + 1;
+            $this->headers['Content-Range'] = "bytes $start-$end/$size";
         }
 
         $this->headers = array_merge($this->headers, [
             'Expires' => '0',
             'Pragma' => 'public',
-            'Content-Length' => filesize($file),
+            'Accept-Ranges' => 'bytes',
+            'Content-Length' => $length,
             'Cache-Control' => 'must-revalidate',
             'Content-Description' => 'File Transfer',
             'Content-Type' => 'application/octet-stream',
-            'Content-Disposition' => 'attachment; filename="' . $name ?? basename($file) . '"',
+            'Content-Disposition' => 'attachment; filename="' . ($name ?? basename($file)) . '"',
         ]);
 
         $this->content = $file;
+        $this->downloadRange = [$start, $length];
 
         $this->send();
     }
@@ -234,45 +275,78 @@ EOT;
 
     /**
      * Render a view file if a view engine is available
-     * 
+     *
      * @param string $view The view file to render
      * @param array $data The data to pass to the view
+     * @param int $code The response status code
      */
-    public function view(string $view, array $data = [])
+    public function view(string $view, array $data = [], int $code = 200)
     {
         if (function_exists('view')) {
             return $this->markup(
                 view($view, $data),
+                $code,
             );
         }
 
-        if (app()->blade()) {
-            return $this->markup(
-                app()->blade()->render($view, $data),
-            );
+        $engine = $this->resolveViewEngine();
+
+        if ($engine === null) {
+            trigger_error('No view engine found. response()->view() needs Leaf with an attached view engine (attachView()) or a view() helper to render views.');
+
+            return;
         }
 
-        if (app()->template()) {
-            return $this->markup(
-                app()->template()->render($view, $data),
-            );
+        return $this->markup(
+            $engine->render($view, $data),
+            $code,
+        );
+    }
+
+    /**
+     * Find an attached view engine without triggering App::__call,
+     * which throws when the named engine is not attached.
+     *
+     * Order: blade, template (BareUI), then any other attached engine with a render() method.
+     */
+    protected function resolveViewEngine()
+    {
+        if (!class_exists('Leaf\Config')) {
+            return null;
         }
+
+        foreach (['blade', 'template'] as $name) {
+            $engine = \Leaf\Config::view($name);
+
+            if ($engine !== null) {
+                return $engine;
+            }
+        }
+
+        foreach (\Leaf\Config::get() as $key => $value) {
+            if (strpos($key, 'views.') === 0 && is_object($value) && method_exists($value, 'render')) {
+                return $value;
+            }
+        }
+
+        return null;
     }
 
     /**
      * Render a view file if a view engine is available
-     * 
+     *
      * @param string $view The view file to render
      * @param array $data The data to pass to the view
+     * @param int $code The response status code
      */
-    public function render(string $view, array $data = [])
+    public function render(string $view, array $data = [], int $code = 200)
     {
-        $this->view($view, $data);
+        $this->view($view, $data, $code);
     }
 
     /**
      * Render an inertia view file if inertia is installed
-     * 
+     *
      * @param string $view The view file to render
      * @param array $data The data to pass to the view
      */
@@ -339,6 +413,7 @@ EOT;
 
         if (class_exists('Leaf\Eien\Server') && PHP_SAPI === 'cli') {
             \Leaf\Config::set('response.redirect', [$url, $status]);
+
             return;
         }
 
@@ -367,8 +442,27 @@ EOT;
      */
     public function status(?int $code = null): Response
     {
-        $this->status = $code;
-        Headers::status($code);
+        if ($code !== null) {
+            $this->status = $code;
+            Headers::status($code);
+        }
+
+        return $this;
+    }
+
+    /**
+     * Set common security headers on the response
+     *
+     * ```php
+     * response()->security();
+     * response()->security(['csp' => ['default-src' => "'self'"]]);
+     * ```
+     *
+     * @param array|bool $options Headers to set, or true for the defaults
+     */
+    public function security($options = true): Response
+    {
+        Headers::security($options);
 
         return $this;
     }
@@ -378,7 +472,7 @@ EOT;
      *
      * @param string|array $name Header name
      * @param string|null $value Header value
-     * @param boolean $replace Replace existing header
+     * @param bool $replace Replace existing header
      * @param int $httpCode The HTTP status code
      */
     public function withHeader($name, ?string $value = '', bool $replace = true, int $httpCode = 200): Response
@@ -399,6 +493,7 @@ EOT;
 
         if (is_array($name)) {
             $this->headers = array_merge($this->headers, $name);
+
             return $this;
         }
 
@@ -438,6 +533,14 @@ EOT;
      */
     public function withoutCookie($name): Response
     {
+        if (is_array($name)) {
+            foreach ($name as $cookie) {
+                $this->withoutCookie($cookie);
+            }
+
+            return $this;
+        }
+
         $this->cookies[$name] = ['', -1];
 
         if (class_exists('Leaf\Eien\Server') && PHP_SAPI === 'cli') {
@@ -466,6 +569,8 @@ EOT;
             foreach ($key as $k => $v) {
                 $this->withFlash($k, $v);
             }
+
+            return $this;
         }
 
         \Leaf\Flash::set($value, $key);
@@ -493,6 +598,7 @@ EOT;
     {
         if (class_exists('Leaf\Eien\Server') && PHP_SAPI === 'cli') {
             \Leaf\Config::set('response.headers', $this->headers);
+
             return $this;
         }
 
@@ -516,6 +622,7 @@ EOT;
     {
         if (class_exists('Leaf\Eien\Server') && PHP_SAPI === 'cli') {
             \Leaf\Config::set('response.cookies', $this->cookies);
+
             return $this;
         }
 
@@ -536,7 +643,28 @@ EOT;
     public function sendContent(): Response
     {
         if (strpos($this->headers['Content-Disposition'] ?? '', 'attachment') !== false) {
-            readfile($this->content);
+            $handle = fopen($this->content, 'rb');
+
+            if ($handle !== false) {
+                [$start, $remaining] = $this->downloadRange ?? [0, filesize($this->content)];
+
+                fseek($handle, $start);
+
+                // stream in 1MB pieces — memory stays flat for any file size
+                while ($remaining > 0 && !feof($handle)) {
+                    $chunk = fread($handle, min(1048576, $remaining));
+
+                    if ($chunk === false || $chunk === '') {
+                        break;
+                    }
+
+                    echo $chunk;
+
+                    $remaining -= strlen($chunk);
+                }
+
+                fclose($handle);
+            }
         } else {
             echo $this->content;
         }

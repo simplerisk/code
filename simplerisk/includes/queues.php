@@ -254,6 +254,25 @@ function run_timestamped_queue_check(array $task, PDO $db, string $timestamp_set
 }
 
 /**************************************************************************
+ * FUNCTION: ACTIVE ACCOUNT USERNAME                                      *
+ * The username for $uid if it is an active account (enabled, not locked  *
+ * out — mirrors the login gate), or false. The single definition of      *
+ * "active account" for queue-adjacent identity resolution: shared by     *
+ * run_as_user_for_queue() (which impersonates it) and any caller that    *
+ * only needs to know whether a candidate uid is currently usable         *
+ * (e.g. ai_risk_context_uid()'s owner/manager/submitter fallback chain), *
+ * so the predicate cannot drift between the two.                         *
+ **************************************************************************/
+function active_account_username(int $uid, PDO $db): string|false
+{
+    $stmt = $db->prepare("SELECT `username` FROM `user` WHERE `value` = :uid AND `enabled` = 1 AND `lockout` = 0 LIMIT 1;");
+    $stmt->bindValue(":uid", $uid, PDO::PARAM_INT);
+    $stmt->execute();
+
+    return $stmt->fetchColumn();
+}
+
+/**************************************************************************
  * FUNCTION: RUN AS USER FOR QUEUE                                        *
  * Run $body() with the identity + permissions of a specific user, then   *
  * ALWAYS restore the worker's original session.                          *
@@ -284,12 +303,8 @@ function run_as_user_for_queue(int $uid, PDO $db, callable $body, mixed $on_inva
         return $on_invalid;
     }
 
-    // Only an active account may be impersonated (mirrors the login gate:
-    // enabled = 1 AND lockout = 0).
-    $stmt = $db->prepare("SELECT `username` FROM `user` WHERE `value` = :uid AND `enabled` = 1 AND `lockout` = 0 LIMIT 1;");
-    $stmt->bindValue(":uid", $uid, PDO::PARAM_INT);
-    $stmt->execute();
-    $username = $stmt->fetchColumn();
+    // Only an active account may be impersonated.
+    $username = active_account_username($uid, $db);
     if ($username === false) {
         // The requester exists no more / is disabled or locked out — an
         // expected operational condition that halts the workflow, so notice.

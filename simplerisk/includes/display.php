@@ -10148,102 +10148,66 @@ function render_column_selection_widget($view) {
             });
         </script>
 
-        <a class='btn btn-primary float-end' title='{$escaper->escapeHtml($lang['Settings'])}' data-sr-role='dt-settings' data-sr-target='{$view}_datatable' data-bs-toggle='modal' data-bs-target='#setting_modal-{$view}'><i class='fa fa-cog'></i></a>
-        <div id='setting_modal-{$view}' class='modal fade hide' tabindex='-1' role='dialog' aria-labelledby='setting_modal-{$view}' aria-hidden='true'>
-            <div class='modal-dialog modal-lg modal-dialog-scrollable modal-dialog-centered'>
+        <a class='sr-columns-btn float-end' data-sr-role='dt-settings' data-sr-target='{$view}_datatable' data-bs-toggle='modal' data-bs-target='#setting_modal-{$view}'><i class='fa fa-table-columns' aria-hidden='true'></i><span>{$escaper->escapeHtml($lang['Columns'])}</span></a>
+        <div id='setting_modal-{$view}' class='modal fade sr-modal' tabindex='-1' role='dialog' aria-labelledby='setting_modal-{$view}' aria-hidden='true'>
+            <div class='modal-dialog modal-dialog-scrollable modal-dialog-centered'>
                 <div class='modal-content'>
                     <div class='modal-header'>
+                        <span class='sr-modal-icon'><i class='fa fa-table-columns'></i></span>
                         <h4 class='modal-title'>{$escaper->escapeHtml($lang['ColumnSelections'])}</h4>
-                        <button type='button' class='btn-close' data-bs-dismiss='modal' aria-label='Close'></button>
+                        <button type='button' class='btn-close' data-bs-dismiss='modal' aria-label='{$escaper->escapeHtmlAttr($lang['Cancel'])}'></button>
                     </div>
-                    <div class='modal-body column-selections-container'>
-                        <form id='custom_display_settings-{$view}' name='custom_display_settings-{$view}' method='post'>
+                    <div class='modal-body'>
+                        <form id='custom_display_settings-{$view}' name='custom_display_settings-{$view}' method='post' class='sr-qcard-form'>
                             <input type='hidden' name='display_settings_view' value='{$view}'>
-                            <div class='accordion'>
     ";
 
     foreach ($groups as $group_name => $group) {
+
+        echo "
+                            <section class='sr-qcard'>
+        ";
 
         // If the group has a header setup, then render it
         if ($group['header']) {
 
             echo "
-                                <div class='accordion-item'>
-                                    <h2 class='accordion-header'>
-                                        <button type='button' class='accordion-button collapsed' data-bs-toggle='collapse' data-bs-target='#{$group['header']}_container'>{$group['header']}</button>
-                                    </h2>
-                                    <div id='{$group['header']}_container' class='accordion-collapse collapse'>
-                                        <div class='accordion-body card-body'>
+                                <div class='sr-qcard-head'>
+                                    <h3>{$group['header']}</h3>
+                                </div>
             ";
 
         }
 
         echo "
-                                <div class='row'>
-                                    <div class='col-6'>
-                                        <div class='p-3 h-100 border'>
+                                <div class='sr-qcard-body'>
+                                    <div class='sr-qgrid'>
         ";
-
-        // Within a section the options are split into two columns.
-        $counter = 1;
-        // @phan-suppress-next-line PhanTypeMismatchArgumentInternal
-        $halfpoint = count($group['fields']) / 2;
 
         // @phan-suppress-next-line PhanTypeMismatchForeach
         foreach ($group['fields'] as $field_name => $text) {
 
             echo "
-                                            <div class='mb-1'>
-                                                <input class='form-check-input' type='checkbox' name='{$field_name}' id='checkbox_{$field_name}-{$view}-{$group_name}' " . (in_array($field_name, $settings) ? "checked" : "") . "/>
-                                                <label class='form-check-label mb-0 ms-2' for='checkbox_{$field_name}-{$view}-{$group_name}'>{$text}</label>
-                                            </div>
-            ";
-                                
-            // Add the closing of the left column and the start of the right column
-            if ($counter !== false) {
-
-                if ($counter >= $halfpoint) {
-
-                    echo "
+                                        <div class='form-check'>
+                                            <input class='form-check-input' type='checkbox' name='{$field_name}' id='checkbox_{$field_name}-{$view}-{$group_name}' " . (in_array($field_name, $settings) ? "checked" : "") . "/>
+                                            <label class='form-check-label' for='checkbox_{$field_name}-{$view}-{$group_name}'>{$text}</label>
                                         </div>
-                                    </div>
-                                    <div class='col-6'>
-                                        <div class='p-3 h-100 border'>
-                    ";
+            ";
 
-                    // disable the counting, we're over the halfway point
-                    $counter = false;
-
-                } else {
-                    $counter += 1;
-                }
-            }
         }
 
         echo "
-                                        </div>
                                     </div>
                                 </div>
+                            </section>
         ";
-
-        // Only have to add these if the section had a header
-        if ($group['header']) {
-
-            echo "
-                                        </div>
-                                    </div>
-                                </div>
-            ";
-
-        }
     }
 
     echo "
-                            </div>
                         </form>
                     </div>
                     <div class='modal-footer'>
-                        <button class='btn btn-secondary' data-bs-dismiss='modal'>{$escaper->escapeHtml($lang['Cancel'])}</button>
+                        <button type='button' class='btn btn-dark' data-bs-dismiss='modal'>{$escaper->escapeHtml($lang['Cancel'])}</button>
                         <button type='submit' form='custom_display_settings-{$view}' class='btn btn-submit'>{$escaper->escapeHtml($lang['Save'])}</button>
                     </div>
                 </div>
@@ -10987,6 +10951,17 @@ function render_view_table($view) {
     $actions_column_info = !empty($field_settings_views[$view]['actions_column']) ? $field_settings_views[$view]['actions_column'] : false;
     $actions_column_first = $actions_column_info && $actions_column_info['position'] === 'first';
 
+    // Bulk-select checkbox column: an existing field (typically 'id') always
+    // prepended as column 0, regardless of the viewer's saved Columns
+    // customization -- unlike a normal display field, a checkbox column
+    // isn't something a user should be able to toggle off (that would break
+    // bulk-select entirely), and default_enabled_columns doesn't apply once
+    // a per-user selection is saved. Mirrors actions_column's own
+    // unconditional-inclusion pattern; the page's own script overrides the
+    // field's cell rendering into a checkbox via a columnDefs targets:0
+    // override (this function has no per-column render hook of its own).
+    $selection_column_field = !empty($field_settings_views[$view]['selection_column']) ? $field_settings_views[$view]['selection_column'] : false;
+
     $order_index = false;
     $order_dir = "asc";
 
@@ -11002,16 +10977,54 @@ function render_view_table($view) {
 
         $localizations[$actions_column_info['field_name']] = $escaper->escapeHtml($field_settings[$view_type][$actions_column_info['field_name']]['localization_key']);
     }
-    
+
+    if ($selection_column_field) {
+        $settings = array_merge([$selection_column_field], $settings);
+        // Header cell text is swapped for a select-all checkbox client-side
+        // (this function only renders the label as text).
+        $localizations[$selection_column_field] = '';
+    }
+
+    // A view can prefer a specific multi-column default sort over "first
+    // orderable field, ascending" (Manage Audits sorts by urgency -- oldest
+    // Next Test Date, then oldest Last Test Date as the tiebreaker -- rather
+    // than alphabetically by Test Name, which has no bearing on which audit
+    // needs attention first). Resolved against $settings -- the ACTUAL
+    // per-user column list, already reflecting the actions/selection-column
+    // merges above -- rather than a hardcoded index, since a customized
+    // column selection changes which index each field lands at. A
+    // configured field the viewer has hidden via the Columns picker is
+    // simply skipped (array_search returns false) rather than breaking the
+    // sort or pointing it at the wrong column.
+    $default_order_pairs = [];
+    if (!empty($field_settings_views[$view]['default_order'])) {
+        foreach ($field_settings_views[$view]['default_order'] as $default_order_field) {
+            $default_order_index = array_search($default_order_field[0], $settings, true);
+            if ($default_order_index !== false) {
+                $default_order_pairs []= "[{$default_order_index}, '{$default_order_field[1]}']";
+            }
+        }
+    }
+
     // Iterate through the list of selected fields
     foreach ($settings as $field_idx => $field_name) {
 
-        if ($order_index === false && !empty($field_settings[$view_type][$field_name]['orderable']) && $field_settings[$view_type][$field_name]['orderable']) {
+        // The selection column is never a candidate default sort column,
+        // even though the field it reuses (e.g. 'id') is itself orderable --
+        // see the searchable/orderable override below for why.
+        $is_selection_column = $selection_column_field && $field_name === $selection_column_field;
+
+        if ($order_index === false && !$is_selection_column && !empty($field_settings[$view_type][$field_name]['orderable']) && $field_settings[$view_type][$field_name]['orderable']) {
             $order_index = $field_idx;
         }
 
         // If there's a custom column style defined for the field then use that instead of the default
-        if (!empty($field_settings[$view_type][$field_name]['custom_column_style'])) {
+        if ($is_selection_column) {
+            // Narrow, like Define Tests'/Initiate Audits' own checkbox
+            // column -- the underlying field's own custom_column_style (if
+            // any) is sized for its OTHER, non-checkbox uses.
+            $style = "width:34px;min-width:34px;";
+        } else if (!empty($field_settings[$view_type][$field_name]['custom_column_style'])) {
             $style = $field_settings[$view_type][$field_name]['custom_column_style'];
         } else {
             $style = "min-width:100px;";
@@ -11073,17 +11086,31 @@ function render_view_table($view) {
                 datatableInstances['{$view}'] = $('#{$datatable_id}').DataTable({
                     scrollX: true,
     " .
-    ($order_index !== false ? "
+    (!empty($default_order_pairs) ? "
+                    order: [" . implode(', ', $default_order_pairs) . "],
+    " : ($order_index !== false ? "
                     order: [[{$order_index}, '{$order_dir}']],
     " : "
                     ordering: false,
-    ") .
-    ((!empty($field_settings_views[$view]['datatable_options']) && $field_settings_views[$view]['datatable_options']) ? 
+    ")) .
+    ((!empty($field_settings_views[$view]['datatable_options']) && $field_settings_views[$view]['datatable_options']) ?
                     $field_settings_views[$view]['datatable_options'] : "") . "
                     ajax: {
                         url: BASE_URL + '{$field_settings_views[$view]['datatable_ajax_uri']}',
                         type: 'post',
-                        data: function(d){ },
+                        // Opt-in extra-parameter hook: a no-op for every view
+                        // that doesn't define window.getExtraAjaxData_{view}
+                        // (all_audits' Test Date range filter is the one
+                        // consumer today -- see display_audits(), includes/
+                        // compliance.php). Exists because some filters need a
+                        // value to reach the server independent of whether
+                        // their underlying field is one of the currently
+                        // displayed/toggleable columns.
+                        data: function(d){
+                            if (typeof window.getExtraAjaxData_{$view} === 'function') {
+                                $.extend(d, window.getExtraAjaxData_{$view}());
+                            }
+                        },
                         complete: function(response){ },
                         error: function(xhr,status,error){
                             if(!retryCSRF(xhr, this)){
@@ -11116,8 +11143,25 @@ function render_view_table($view) {
             $has_display_field = $field_settings[$view_type][$field_name]['has_display_field'];
         }
 
+        // The selection column reuses an existing field (e.g. 'id') purely
+        // for its data, not its catalog semantics -- sorting/searching by
+        // whatever that field's own settings say (id is orderable/searchable
+        // for its OTHER, non-checkbox uses) makes no sense on a checkbox
+        // column, so both are forced off here regardless of the underlying
+        // field's own flags.
+        if ($selection_column_field && $field_name === $selection_column_field) {
+            $searchable = 'false';
+            $orderable = 'false';
+        }
+
         // Get the renderer if there's any defined for the field
         $renderer = !empty($field_settings[$view_type][$field_name]['renderer']) ? $field_settings[$view_type][$field_name]['renderer'] : false;
+        // DataTables auto-detects each column's type (numeric/date/string) from
+        // the cell values it sees, and right-aligns anything it classifies as
+        // numeric or date -- fine for an actual date/number column, wrong for
+        // free-text content that can merely LOOK like one (a tag named "2024",
+        // for instance). 'column_type' lets a field opt out of that guesswork.
+        $column_type = !empty($field_settings[$view_type][$field_name]['column_type']) ? $field_settings[$view_type][$field_name]['column_type'] : false;
         $display_post_fix = $has_display_field ? '_display' : '';
         
         
@@ -11140,10 +11184,12 @@ function render_view_table($view) {
                             'data': '{$field_name}{$display_post_fix}',
                             'searchable': {$searchable},
                             'orderable': {$orderable}" .
-                            ($class_name ? ", 
-                            'className': '{$class_name}'" : "") . 
-                            ($renderer ? ", 
-                            'render': {$renderer}" : "") . ", 
+                            ($class_name ? ",
+                            'className': '{$class_name}'" : "") .
+                            ($renderer ? ",
+                            'render': {$renderer}" : "") .
+                            ($column_type ? ",
+                            'type': '{$column_type}'" : "") . ",
                             'defaultContent': ''
                         },
             ";
@@ -11154,10 +11200,12 @@ function render_view_table($view) {
                             'target': '{$field_idx}',
                             'searchable': {$searchable},
                             'orderable': {$orderable}" .
-                            ($class_name ? ", 
-                            'className': '{$class_name}'" : "") . 
-                            ($renderer ? ", 
-                            'render': {$renderer}" : "") . ", 
+                            ($class_name ? ",
+                            'className': '{$class_name}'" : "") .
+                            ($renderer ? ",
+                            'render': {$renderer}" : "") .
+                            ($column_type ? ",
+                            'type': '{$column_type}'" : "") . ",
                             'defaultContent': ''
                         },
             ";

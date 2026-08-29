@@ -110,6 +110,34 @@ function changeNextReviewToDateType() {
     return getTypeOfColumn('mgmt_reviews', 'next_review') == 'date';
 }
 
+/*******************************************************
+ * FUNCTION: GET MGMT REVIEW RISK ID                    *
+ * Resolves the risk_id a mgmt_reviews row belongs to,  *
+ * so a caller can run its normal per-risk access check *
+ * before writing to a review by id. Returns null if no *
+ * such review exists.                                  *
+ *******************************************************/
+function get_mgmt_review_risk_id($id) {
+
+    $db = db_open();
+
+    $stmt = $db->prepare("select `risk_id` from `mgmt_reviews` where `id`=:id;");
+    $stmt->bindParam(":id", $id, PDO::PARAM_INT);
+    $stmt->execute();
+
+    $risk_id = $stmt->fetch();
+
+    db_close($db);
+
+    // mgmt_reviews.risk_id stores the raw risks.id (see the INSERT in
+    // add_management_review()), but extra_grant_access() -- and every
+    // existing caller of it, e.g. reopenForm()'s $id -- expects the
+    // +1000 display/API id and subtracts 1000 itself. Add it back so this
+    // resolves to the same risk extra_grant_access() will check, instead
+    // of silently checking access against a different (or negative) id.
+    return $risk_id ? (int)$risk_id[0] + 1000 : null;
+}
+
 /*****************************************
  * FUNCTION: FIX NEXT REVIEW DATE FORMAT *
  *****************************************/

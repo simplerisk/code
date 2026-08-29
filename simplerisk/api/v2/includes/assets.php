@@ -205,7 +205,7 @@ function assets_for_view_API() {
         );
         
         // @phan-suppress-next-line SecurityCheck-XSS -- JSON response consumed by JavaScript/DataTables, not rendered as HTML; values are pre-escaped
-        echo json_encode($result);
+        echo json_encode($result, JSON_INVALID_UTF8_SUBSTITUTE);
         exit;
     }
 }

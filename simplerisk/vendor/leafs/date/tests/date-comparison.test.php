@@ -133,3 +133,35 @@ test('isDateTime checks if value is a DateTime object', function () {
     expect($date->isDateTime('2023-01-01'))->toBeFalse();
     expect($date->isDateTime($date))->toBeFalse();
 });
+
+test('diff returns signed whole units in dayjs style', function () {
+    // the booking case: nights between check-in and check-out
+    expect(tick('2026-09-14')->diff('2026-09-10', 'days'))->toBe(4)
+        ->and(tick('2026-09-10')->diff('2026-09-14', 'days'))->toBe(-4)
+        ->and(tick('2026-09-14')->diff('2026-09-14', 'days'))->toBe(0);
+
+    expect(tick('2026-09-14 12:00:00')->diff('2026-09-14 09:30:00', 'hours'))->toBe(2)
+        ->and(tick('2026-09-14 12:00:00')->diff('2026-09-14 11:58:30', 'minutes'))->toBe(1)
+        ->and(tick('2026-09-14 12:00:05')->diff('2026-09-14 12:00:00'))->toBe(5);
+
+    expect(tick('2028-03-01')->diff('2026-01-15', 'months'))->toBe(25)
+        ->and(tick('2028-03-01')->diff('2026-01-15', 'years'))->toBe(2);
+});
+
+test('diff in days is calendar-aware across DST boundaries', function () {
+    $previousTz = date_default_timezone_get();
+    date_default_timezone_set('America/New_York');
+
+    try {
+        // spring forward 2026-03-08: the interval is 95 wall-clock hours,
+        // but a stay is 4 nights, not 3.958 — timestamp math gets this wrong
+        expect(tick('2026-03-11')->diff('2026-03-07', 'days'))->toBe(4);
+    } finally {
+        date_default_timezone_set($previousTz);
+    }
+});
+
+test('diff accepts Date and DateTime instances', function () {
+    expect(tick('2026-09-14')->diff(tick('2026-09-10'), 'days'))->toBe(4)
+        ->and(tick('2026-09-14')->diff(new DateTime('2026-09-10'), 'days'))->toBe(4);
+});

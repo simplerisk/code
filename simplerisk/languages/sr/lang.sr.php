@@ -365,7 +365,7 @@ $lang = array(
     'IWantToReviewVeryHighRiskEvery'=> 'Желим да сваки коментар врло висок ризик',
     'AbleToReviewVeryHighRisks'=>'Могућност прегледа је веома висок ризик',
     'AbleToReviewInsignificantRisks'=>'Моћи да се упознају мање ризике',
-    'AllTeams'=>'Сви Тимови',
+    'AllTeams'=>'Сви тимови',
     'FileUploadSettings'=>'Датотеку Параметара За Преузимање',
     'AllowedFileTypes'=>'Дозвољене Врсте Датотека',
     'AddNewFileTypeOf'=>'Да додате нови тип фајла',
@@ -3082,7 +3082,7 @@ $lang = array(
     'ResultMessageUnavailable' => 'Порука о резултату није доступна.',
     'AIProviderURLNotAllowed' => 'Тај API URL није дозвољен. Користите познатог AI добављача или loopback (127.0.0.1) адресу самосталног хоста.',
     'AIReenterKeyForNewURL' => 'Поново унесите API кључ да бисте тестирали URL другог добављача.',
-    'WorkflowHttpRequestDisallowedURL' => 'http_request: URL {$url} се разрешава на недозвољену интерну или резервисану адресу.',
+    'WorkflowHttpRequestDisallowedURL' => '{$action}: URL {$url} се разрешава на недозвољену интерну или резервисану адресу.',
     'BehaviorAndScheduling' => 'Понашање и заказивање',
     'PrepopulateAcrossContacts' => 'Унапред попуните нове одговоре претходним одговорима другог контакта за ову процену',
     'PrepopulateAcrossContactsHelp' => 'Унапред попуните образац за новог испитаника најновијим претходним одговорима било ког контакта — корисно за континуитет када се одговорност промени.',
@@ -4637,6 +4637,28 @@ $lang = array(
     'ExtraVersionIncompatibleWithApplication' => 'Преузета додатна датотека „{$extra}“ (верзија {$extra_version}) није компатибилна са SimpleRisk-ом {$app_version} и није инсталирана. Прво надоградите SimpleRisk на најновију верзију.',
     'ExtraCompatibilityDataUnavailable' => 'SimpleRisk није могао да потврди које Extra верзије ово издање подржава, тако да Extra није инсталиран. Молимо покушајте поново касније.',
     'ExtraVersionCouldNotBeVerified' => 'Верзија преузете додатне апликације није могла бити утврђена, тако да није инсталирана.',
+    // User import temporary password
+    'NewUsernameAddedWithTemporaryPassword' => 'Нови корисник са корисничким именом „{$username}“ је успешно додат. Привремена лозинка: {$password} (корисник је мора променити при првом пријављивању).',
+    'YouDontHavePermission' => 'Немате дозволу.',
+    // Initiate Audits bulk-select
+    'InitiatedTestsBulk' => 'Initiated $count tests.',
+    // Merged Audits page (replaces Active Audits + Past Audits menu items)
+    'Audits' => 'Ревизије',
+    'ManageAudits' => 'Управљање ревизијама',
+    'ViewAudits' => 'Погледајте ревизије',
+    // Redesigned, flat Initiate Audits page
+    'EligibleTests' => 'Подобни тестови',
+    'InitiateSelected' => 'Покрени изабрано',
+    'InitiateNAudits' => 'Покрените {n} ревизија',
+    'TagsOptionalAppliedToSelection' => 'Ознаке (опционо, примењене на све)',
+    'Initiate' => 'Покрени',
+    'NoEligibleTestsFound' => 'Нису пронађени одговарајући тестови.',
+    'Columns' => 'Колоне',
+    'ShowTestsWithAuditInProgress' => 'Прикажи тестове са ревизијом у току',
+    'NoMatchingOptions' => 'Нема одговарајућих опција.',
+    'TestDetails' => 'Детаљи теста',
+    'PeopleAndTeams' => 'Људи и тимови',
+    'StatusAndTimeline' => 'Статус и временска линија',
     '' => '',
 );
 ?>

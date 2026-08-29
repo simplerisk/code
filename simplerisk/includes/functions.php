@@ -953,7 +953,12 @@ $field_settings = [
             'customization_field_name' => 'TestName',
             'localization_key' => 'TestName',
             'technical_field' => true,
-            'custom_column_style' => 'min-width:200px;',
+            // max-width caps how far DataTables' scrollX stretches this
+            // column to fill leftover space (up to 289px measured on a
+            // 1920px display with the default column set) -- space Status
+            // and the rest of the row need more (see _compliance.scss's
+            // wide-tier overflow note).
+            'custom_column_style' => 'min-width:200px; max-width:280px;',
             'encrypted' => false,
             'searchable' => true,
             'orderable' => true,
@@ -1021,6 +1026,10 @@ $field_settings = [
             'customization_field_name' => 'Objective',
             'localization_key' => 'Objective',
             'technical_field' => true,
+            // Manage Audits' toolbar search should cover this even for a
+            // viewer who hasn't added the column -- see the 'always_searchable'
+            // read in get_data_for_datatable().
+            'always_searchable' => true,
             'custom_column_style' => 'min-width:200px;',
             'encrypted' => false,
             'searchable' => true,
@@ -1033,11 +1042,68 @@ $field_settings = [
             'has_display_field' => false,
             'join_parts' => [],
         ],
+        "test_steps" => [
+            'customization_field_name' => 'TestSteps',
+            'localization_key' => 'TestSteps',
+            'technical_field' => true,
+            'always_searchable' => true,
+            'custom_column_style' => 'min-width:200px;',
+            'encrypted' => false,
+            'searchable' => true,
+            'orderable' => true,
+            'order_column' => "test_steps",
+            'editable' => false,
+            'select_parts' => [
+                "a.test_steps",
+            ],
+            'has_display_field' => false,
+            'join_parts' => [],
+        ],
+        "expected_results" => [
+            'customization_field_name' => 'ExpectedResults',
+            'localization_key' => 'ExpectedResults',
+            'technical_field' => true,
+            'always_searchable' => true,
+            'custom_column_style' => 'min-width:200px;',
+            'encrypted' => false,
+            'searchable' => true,
+            'orderable' => true,
+            'order_column' => "expected_results",
+            'editable' => false,
+            'select_parts' => [
+                "a.expected_results",
+            ],
+            'has_display_field' => false,
+            'join_parts' => [],
+        ],
+        "summary" => [
+            'customization_field_name' => 'Summary',
+            'localization_key' => 'Summary',
+            'technical_field' => true,
+            'always_searchable' => true,
+            'custom_column_style' => 'min-width:200px;',
+            'encrypted' => false,
+            'searchable' => true,
+            'orderable' => true,
+            'order_column' => "summary",
+            'editable' => false,
+            // Lives on the RESULT record (framework_control_test_results),
+            // not the audit itself -- same table 'test_date'/'test_result'
+            // already join, so blank until a result is recorded.
+            'select_parts' => [
+                "fctr.summary",
+            ],
+            'has_display_field' => false,
+            'join_parts' => [
+                "LEFT JOIN `framework_control_test_results` fctr ON a.id=fctr.test_audit_id",
+            ],
+        ],
         "control_name" => [
             'customization_field_name' => 'ControlName',
             'localization_key' => 'ControlName',
             'technical_field' => true,
-            'custom_column_style' => 'min-width:200px;',
+            // max-width -- same rationale as test_name's above.
+            'custom_column_style' => 'min-width:200px; max-width:220px;',
             'encrypted' => false,
             'searchable' => true,
             'orderable' => true,
@@ -1064,6 +1130,7 @@ $field_settings = [
             'technical_field' => true,
             'custom_column_style' => 'min-width:200px;',
             'encrypted' => true,
+            'encrypted_multi_value' => true,
             'searchable' => true,
             'orderable' => true,
             'order_column' => "framework_name",
@@ -1101,6 +1168,10 @@ $field_settings = [
             'localization_key' => 'Tags',
             'technical_field' => true,
             'renderer' => "DataTable.render.tags('test_audit')",
+            // Tag names are arbitrary user text -- a tag literally named "2024"
+            // or "1" would otherwise get auto-detected as DataTables' numeric
+            // type and right-aligned like an actual number/date column.
+            'column_type' => 'string',
             'encrypted' => false,
             'searchable' => true,
             'orderable' => true,
@@ -1120,14 +1191,15 @@ $field_settings = [
             'customization_field_name' => 'Status',
             'localization_key' => 'Status',
             'technical_field' => true,
+            'renderer' => "DataTable.render.statusPill()",
             'encrypted' => false,
             'searchable' => true,
             'orderable' => true,
             'order_column' => "status",
             'editable' => false,
             'select_parts' => [
-                "a.status", 
-                "IFNULL(ts.name, '--') status_display", 
+                "a.status",
+                "IFNULL(ts.name, '--') status_display",
                 "ts.value status_filter"
             ],
             'has_display_field' => true,
@@ -1139,6 +1211,13 @@ $field_settings = [
             'customization_field_name' => 'TestDate',
             'localization_key' => 'TestDate',
             'technical_field' => true,
+            'renderer' => "DataTable.render.testDate()",
+            // Blank (no result recorded yet) renders as an "Untested" chip
+            // rather than a bare empty cell -- see DataTable.render.testDate()
+            // for why. 'string' keeps DataTables' auto-detection (which would
+            // otherwise classify the column from its date-shaped values and
+            // right-align it) from fighting that mixed date-or-chip content.
+            'column_type' => 'string',
             'custom_column_style' => 'min-width:235px;',
             'encrypted' => false,
             'searchable' => true,
@@ -1146,7 +1225,7 @@ $field_settings = [
             'order_column' => "test_date",
             'editable' => false,
             'select_parts' => [
-                "fctr.test_date", 
+                "fctr.test_date",
             ],
             'has_display_field' => false,
             'join_parts' => [
@@ -1156,16 +1235,35 @@ $field_settings = [
         ],
         "last_date" => [
             'customization_field_name' => 'LastAuditDate',
-            'localization_key' => 'LastAuditDate',
+            // fct.last_date is the TEST's own rolling schedule field (same
+            // column Initiate Audits reads as t1.last_date, now labeled "Last
+            // Test Date" there) -- not a per-audit date, so it gets the same
+            // label here rather than implying this is specific to this audit
+            // row. customization_field_name is left alone: it's the identifier
+            // an existing Customization Extra config would already reference.
+            'localization_key' => 'LastTestDate',
             'technical_field' => true,
-            'custom_column_style' => 'min-width:150px;',
+            // A test with no audit history yet (never scheduled/run) has a
+            // zero-date last_date -- format_date() (get_custom_formatting_
+            // data_for_all_audits(), same file) already collapses that to an
+            // empty string, so the same blank-as-"Untested"-chip renderer
+            // used for test_date applies here unchanged.
+            'renderer' => "DataTable.render.testDate()",
+            'column_type' => 'string',
+            // 90px, not 150 -- 'all_audits'\'s own datatable_options
+            // columnDefs (below) pins this column to 105px via DataTables'
+            // scrollX `width` option (a <th> min-width alone doesn't stop
+            // scrollX from stretching a column further, but it CAN conflict
+            // with a narrower explicit width if left at the old 150px
+            // floor). A bare date string doesn't need more than this.
+            'custom_column_style' => 'min-width:90px;',
             'encrypted' => false,
             'searchable' => true,
             'orderable' => true,
             'order_column' => "last_date",
             'editable' => false,
             'select_parts' => [
-                "fct.last_date", 
+                "fct.last_date",
             ],
             'has_display_field' => false,
             'join_parts' => [],
@@ -1188,16 +1286,24 @@ $field_settings = [
         ],
         "next_date" => [
             'customization_field_name' => 'NextAuditDate',
-            'localization_key' => 'NextAuditDate',
+            'localization_key' => 'NextTestDate',
             'technical_field' => true,
-            'custom_column_style' => 'min-width:150px;',
+            // nextTestDatePill(), not the plain testDate() every other date
+            // column uses -- also appends the fa-bell overdue icon read off
+            // this same row's status_display (dataTables.renderers.js),
+            // since overdue-ness is a fact about THIS date, not about
+            // Status's workflow-stage text.
+            'renderer' => "DataTable.render.nextTestDatePill()",
+            'column_type' => 'string',
+            // 90px, not 150 -- same rationale as last_date's above.
+            'custom_column_style' => 'min-width:90px;',
             'encrypted' => false,
             'searchable' => true,
             'orderable' => true,
             'order_column' => "next_date",
             'editable' => false,
             'select_parts' => [
-                "fct.next_date", 
+                "fct.next_date",
             ],
             'has_display_field' => false,
             'join_parts' => [],
@@ -1225,6 +1331,7 @@ $field_settings = [
             'customization_field_name' => 'TestResult',
             'localization_key' => 'TestResult',
             'technical_field' => true,
+            'renderer' => "DataTable.render.resultPill()",
             'encrypted' => false,
             'searchable' => true,
             'orderable' => true,
@@ -1482,6 +1589,7 @@ $field_settings = [
             'technical_field' => true,
             'custom_column_style' => 'min-width:200px;',
             'encrypted' => true,
+            'encrypted_multi_value' => true,
             'searchable' => true,
             'orderable' => true,
             'order_column' => "framework_name",
@@ -2739,6 +2847,7 @@ $field_settings = [
             'technical_field' => true,
             'custom_column_style' => 'min-width:200px;',
             'encrypted' => true,
+            'encrypted_multi_value' => true,
             'searchable' => true,
             'orderable' => true,
             'order_column' => "framework_name",
@@ -2964,6 +3073,59 @@ $field_settings = [
             ],
         ],
     ],
+
+    // Initiate Audits renders its own table entirely client-side (compliance-
+    // initiate-audits.js fetches eligible tests directly, no get_data_for_
+    // datatable()/render_view_table() involved), so this catalog exists only
+    // to drive the shared Columns picker (render_column_selection_widget())
+    // and the per-user saved_table_display_settings row it reads/writes --
+    // none of the SQL-oriented keys (select_parts, join_parts, searchable,
+    // orderable, ...) apply here and are intentionally omitted.
+    // All fields here need 'technical_field' => true, same as every other
+    // catalog in this array -- field_settings_get_localization() only adds a
+    // field directly to the modal's $localizations when it's technical;
+    // otherwise it defers to the Customization Extra's get_active_fields()
+    // lookup, which has no records for a view_type ('initiate_audits') that
+    // was never a customizable entity. With the Customization Extra enabled,
+    // omitting this flag left every field diverted to that empty lookup and
+    // the Columns modal rendered with no checkboxes at all.
+    'initiate_audits' => [
+        'control_name' => [
+            'customization_field_name' => 'ControlName',
+            'localization_key' => 'ControlName',
+            'technical_field' => true,
+        ],
+        'framework_name' => [
+            'customization_field_name' => 'FrameworkName',
+            'localization_key' => 'FrameworkName',
+            'technical_field' => true,
+        ],
+        'schedule' => [
+            'customization_field_name' => 'Schedule',
+            'localization_key' => 'Schedule',
+            'technical_field' => true,
+        ],
+        'last_test_date' => [
+            'customization_field_name' => 'LastTestDate',
+            'localization_key' => 'LastTestDate',
+            'technical_field' => true,
+        ],
+        'next_test_date' => [
+            'customization_field_name' => 'NextTestDate',
+            'localization_key' => 'NextTestDate',
+            'technical_field' => true,
+        ],
+        // The old Initiate Audits treegrid had a working Test Frequency
+        // FILTER; this page only gets the column back (get_initiate_eligible_
+        // tests() already selects t1.test_frequency, includes/compliance.php)
+        // -- off by default, pending a decision on whether it's worth
+        // reviving as a filter too.
+        'test_frequency' => [
+            'customization_field_name' => 'TestFrequency',
+            'localization_key' => 'TestFrequency',
+            'technical_field' => true,
+        ],
+    ],
 ];
 
 global $field_settings_display_groups;
@@ -3089,6 +3251,67 @@ $field_settings_display_groups = [
             "test_result",
             "test_result_background_class",
             "teams",
+        ],
+    ],
+    // Manage Audits' Columns picker (render_column_selection_widget('all_audits'))
+    // reads field_settings_views['all_audits']['groups'] to pick WHICH of these
+    // 4 groups render, each as its own titled section -- split from a single
+    // flat 17-checkbox list into "what the question each section answers"
+    // (design-system.md Sec 8's own rule for a long modal body), grouped by what
+    // the field describes rather than by column order.
+    'all_audits_test_details' => [
+        'header_key' => 'TestDetails',
+        'field_type' => 'framework_control_test_audit',
+        'fields' => [
+            "test_name",
+            "test_frequency",
+            "objective",
+            "test_steps",
+            "expected_results",
+            "summary",
+        ],
+    ],
+    'all_audits_people_teams' => [
+        'header_key' => 'PeopleAndTeams',
+        'field_type' => 'framework_control_test_audit',
+        'fields' => [
+            "tester",
+            "additional_stakeholders",
+            "teams",
+        ],
+    ],
+    'all_audits_classification' => [
+        'header_key' => 'Classification',
+        'field_type' => 'framework_control_test_audit',
+        'fields' => [
+            "control_name",
+            "framework_name",
+            "tags",
+        ],
+    ],
+    'all_audits_status_timeline' => [
+        'header_key' => 'StatusAndTimeline',
+        'field_type' => 'framework_control_test_audit',
+        'fields' => [
+            "status",
+            "test_date",
+            "last_date",
+            "next_date",
+            "test_result",
+        ],
+    ],
+    // Only 5 toggleable fields -- one flat card, unlike all_audits' 4-way
+    // split; grouping only earns its keep once the list is long.
+    'initiate_audits' => [
+        'header_key' => '',
+        'field_type' => 'initiate_audits',
+        'fields' => [
+            "control_name",
+            "framework_name",
+            "schedule",
+            "last_test_date",
+            "next_test_date",
+            "test_frequency",
         ],
     ],
     'dynamic_audit_report' => [
@@ -3493,6 +3716,198 @@ $field_settings_views = [
                 $(row).find(\'td\').addClass(background)
             },
         ',
+    ],
+    'all_audits' => [
+        'view_type' => 'framework_control_test_audit',
+        'join_parts' => [
+            "LEFT JOIN `framework_controls` fc ON a.framework_control_id = fc.id",
+            "INNER JOIN `framework_control_tests` fct ON fct.id=a.test_id",
+            "LEFT JOIN `items_to_teams` i2t ON i2t.`item_id` = `a`.`id` and i2t.`type` = 'audit'"
+        ],
+        'id_field' => 'id',
+        'datatable_ajax_uri' => '/api/v2/compliance/audits/all/datatable',
+        'datatable_data_type' => 'associative',
+        'datatable_filter_submit_delay' => 600,
+        // 4 titled Columns-picker sections instead of one flat list -- see the
+        // all_audits_* entries in $field_settings_display_groups above.
+        'groups' => [
+            'all_audits_test_details',
+            'all_audits_people_teams',
+            'all_audits_classification',
+            'all_audits_status_timeline',
+        ],
+        // Sort by urgency by default, not alphabetically: oldest Next Test
+        // Date first (an overdue date sorts ahead of a future one), then
+        // oldest Last Test Date as the tiebreaker (long since last tested
+        // sorts ahead of recently tested) -- surfaces the audits most in
+        // need of attention at the top. render_view_table() (includes/
+        // display.php) resolves each field name against the viewer's ACTUAL
+        // resolved column list, not a hardcoded index, and simply skips a
+        // field the viewer has hidden via the Columns picker rather than
+        // pointing the sort at the wrong column.
+        'default_order' => [
+            ['next_date', 'asc'],
+            ['last_date', 'asc'],
+        ],
+        // 'test_date' is deliberately NOT in this default set -- it's only
+        // ever populated once a result is recorded, so on the Active chip
+        // (every row necessarily still open) it would be nothing but
+        // "Untested" chips. A per-status-chip visibility toggle was tried
+        // and reverted: it fought the Columns picker's own save flow (a full
+        // document.location.reload(), includes/display.php's
+        // render_column_selection_widget()) -- reloading after Save always
+        // recomputes the toggle from scratch and stomped an explicit "show
+        // it anyway" choice, and toggling column visibility immediately
+        // after triggering the async dt.ajax.url(...).load() (not waiting
+        // for it to finish) desynced the scrollX header clone from the body,
+        // misaligning every other column. Leaving it a normal, always-
+        // available Columns picker entry sidesteps both: hidden until a
+        // viewer opts in, and once on, on for every status chip (Active
+        // included, correctly showing Untested chips there too).
+        // Framework Name / Team(s) / Tags dropped from the default set: at a
+        // common 1440px laptop viewport the FULL prior default already
+        // overflowed the table's usable width by ~417px (measured). Framework
+        // is largely redundant with Control Name (whose naming convention
+        // already encodes it), Team(s) only matters to team-separation
+        // customers, and Tags is supplementary metadata -- all three stay
+        // fully available via the Columns picker for anyone who wants them.
+        //
+        // Tester dropped too: even after that first trim, the (still 7-
+        // column) default measured 178-391px of horizontal scroll across
+        // 1280-1920px displays (DataTables' scrollX doesn't compress columns
+        // to fit -- see _compliance.scss's wide-tier overflow note). Tester
+        // is an assignee, not a "what is this / does it need me today"
+        // field (design-system.md 6b's own fold-priority: "identifiers
+        // before names, assignees before states") -- stays available via the
+        // Columns picker.
+        'default_enabled_columns' => [
+            "test_name",
+            "control_name",
+            "status",
+            "last_date",
+            "next_date",
+            "test_result"
+        ],
+        'actions_column' => [
+            'field_name' => 'actions',
+            'position' => 'last'
+        ],
+        // Bulk-select checkbox column -- always column 0, never subject to
+        // the viewer's saved Columns customization (see render_view_table()'s
+        // handling of this key, includes/display.php). columnDefs targets:0
+        // below turns 'id' (ordinarily just a plain number) into the checkbox
+        // cell itself; the header cell's auto-generated "ID" text is swapped
+        // for a select-all checkbox client-side (display_audits()'s own
+        // script, includes/compliance.php).
+        'selection_column' => 'id',
+        'datatable_options' => '
+            // scrollX\'s own automatic column-width calculation kept
+            // stretching every explicitly-pinned column past its declared
+            // width to fill leftover container space (see the width pins
+            // below) -- disabling it is what makes those pins authoritative.
+            autoWidth: false,
+            orderCellsTop: true,
+            // Previous/[page numbers]/Next only -- matches Define Tests\' own
+            // custom pager (compliance-define-tests.js) and the audits-
+            // redesign mockup\'s footer, neither of which has First/Last.
+            // The app-wide DataTable.defaults (header.php) leaves pagingType
+            // at the library default (full_numbers, which does show First/
+            // Last) -- overridden here rather than there, since that default
+            // is shared by every OTHER table in the app.
+            pagingType: \'simple_numbers\',
+            // Terse "Showing X–Y of Z" wording (no "entries") to match
+            // Define Tests\' own hand-built footer and the audits-redesign
+            // mockup, instead of DataTables\' bundled "Showing X to Y of Z
+            // entries" default -- scoped to this view via infoCallback rather
+            // than changing the app-wide language.info in header.php, which
+            // every other DataTable in the app also reads.
+            language: {
+                infoCallback: function (settings, start, end, max, total, pre) {
+                    return String(_lang[\'ShowingXToYOfZ\'] || \'\')
+                        .replace(\'{$start}\', start)
+                        .replace(\'{$end}\', end)
+                        .replace(\'{$total}\', total);
+                }
+            },
+            createdRow: function(row, data, index){
+                var background = $(\'.background-class\', $(row)).data(\'background\');
+                $(row).find(\'td\').addClass(background)
+            },
+            columnDefs: [{
+                targets: 0,
+                orderable: false,
+                searchable: false,
+                className: \'sr-check-col\',
+                render: function (data, type) {
+                    if (type !== \'display\') return data;
+                    return \'<input type="checkbox" class="form-check-input sr-row-check" data-id="\' + data + \'">\';
+                }
+            }, {
+                // A `max-width` on the <th> alone (custom_column_style
+                // above) is NOT enough to cap a column: scrollX fills
+                // leftover container space by writing an explicit pixel
+                // `width` onto <colgroup>\'s own <col> element (measured up
+                // to 318px for Test Name on a 1920px display), which governs
+                // the table\'s actual column layout and ignores the <th>\'s
+                // max-width entirely. An explicit `width` here is what
+                // scrollX\'s sizing pass actually treats as authoritative
+                // rather than something to stretch further.
+                //
+                // Pinning only the two widest (Test Name/Control Name, first
+                // attempted here) didn\'t reduce total demand -- it just
+                // redirected scrollX\'s leftover-space stretch into Last/Next
+                // Test Date instead, so overflow at 1280px went UP, from
+                // 187px to 256px. Every flexible column needs a pin, sized
+                // to what its actual content needs (a pill, a short date, a
+                // single ⋯ button), for the row to total something a common
+                // laptop viewport can actually hold.
+                //
+                // Test Name and Next Test Date are deliberately NOT pinned
+                // here even though they\'re flexible columns too: both stay
+                // visible in the narrow-width lockdown (AUDITS_NARROW_ALLOW,
+                // display_audits(), includes/compliance.php), which relies on
+                // shrinking them well below any wide-tier pin (down to the
+                // \'min-width:0 !important\'/\'75px\' overrides in
+                // _compliance.scss) to fit a phone-width card. A `width` pin
+                // here is a fixed pixel value regardless of viewport --
+                // pinning these two locked them at their WIDE-tier size even
+                // at 480px, since autoWidth:false (below) stops DataTables
+                // from ever recalculating it, which is exactly what silently
+                // broke the narrow tier the first time this was tried.
+                targets: \'control_name:name\',
+                width: \'200px\',
+            }, {
+                targets: \'status:name\',
+                width: \'190px\',
+            }, {
+                targets: \'last_date:name\',
+                width: \'105px\',
+            }, {
+                targets: \'test_result:name\',
+                width: \'110px\',
+            }, {
+                targets: \'actions:name\',
+                width: \'60px\',
+            }],
+        ',
+    ],
+    // No datatable_ajax_uri/join_parts/etc. -- Initiate Audits fetches and
+    // renders its own table entirely client-side (compliance-initiate-
+    // audits.js). This entry exists purely so render_column_selection_widget()
+    // and display_settings_get_saved_selection()/_save_selection_single() have
+    // a registered view to read/write the per-user column choice against.
+    'initiate_audits' => [
+        'view_type' => 'initiate_audits',
+        'groups' => [
+            'initiate_audits'
+        ],
+        'default_enabled_columns' => [
+            "control_name",
+            "framework_name",
+            "schedule",
+            "last_test_date",
+            "next_test_date"
+        ],
     ],
     'dynamic_audit_report' => [
         'view_type' => 'framework_control_test_audit',
@@ -8967,8 +9382,9 @@ function core_get_mapping_value($prefix, $type, $mappings, $csv_line) {
             // The value is located in that spot in the array
             $value = $csv_line[$key];
 
-            // Return the value
-            return trim((string)$value);
+            // Return the sanitized value, guaranteed to be valid UTF-8 and free
+            // of stray control characters
+            return sanitize_import_cell_value($value);
         }
     }
 
@@ -10682,6 +11098,11 @@ function submit_mitigation($risk_id, $status, $post, $submitted_by_id=false)
     // Add residual risk score
     $residual_risk = get_residual_risk((int)$id + 1000);
     add_residual_risk_scoring_history($id, $residual_risk);
+
+    // A mitigation's controls are part of the risk's AI context. $id is
+    // already the raw risks.id here — the caller passes the display id and
+    // this function subtracted 1000 from it at the top.
+    ai_invalidate_risk_analysis([(int)$id]);
 
     return $error;
 }
@@ -16676,6 +17097,11 @@ function update_mitigation($risk_id, $post, $is_api = false)
     $residual_risk = get_residual_risk((int)$id + 1000);
     add_residual_risk_scoring_history($id, $residual_risk);
 
+    // A mitigation's controls are part of the risk's AI context. $id is
+    // already the raw risks.id here — the caller passes the display id and
+    // this function subtracted 1000 from it at the top.
+    ai_invalidate_risk_analysis([(int)$id]);
+
     return $error;
 }
 
@@ -18441,6 +18867,18 @@ function delete_risk($risk_id)
     $stmt = $db->prepare("DELETE FROM `residual_risk_scoring_history` WHERE `risk_id`=:id;");
     $stmt->bindParam(":id", $risk_id, PDO::PARAM_INT);
     $return = $stmt->execute();
+
+    // Remove any AI analysis held for this risk. Core/Extra boundary:
+    // ai_recommendations_risk is created by the AI Extra, so the table_exists()
+    // guard keeps this a no-op on a Core-only install. Note the id translation
+    // — that table keys on the 1000-offset display id, not risks.id. Without
+    // this the row outlives the risk and the AI job keeps re-queueing analysis
+    // for an id that no longer resolves, spending an AI call each time.
+    if (table_exists('ai_recommendations_risk')) {
+        $stmt = $db->prepare("DELETE FROM `ai_recommendations_risk` WHERE `risk_id`=:display_id;");
+        $stmt->bindValue(":display_id", (int)$risk_id + 1000, PDO::PARAM_INT);
+        $stmt->execute();
+    }
 
     cleanup_after_delete("risks");
     cleanup_after_delete("mitigations");
@@ -20664,6 +21102,34 @@ function param_was_sent($name)
     $data = json_decode(file_get_contents('php://input'), true);
 
     return is_array($data) && isset($data[$name]);
+}
+
+/*******************************************************************
+ * FUNCTION: NORMALIZE ID LIST PARAM                                *
+ * Accepts a request value that is either an array (the legacy       *
+ * name[]=1&name[]=2 shape) or a single comma-separated string (a    *
+ * caller collapsing many values into one field so the POST field    *
+ * count doesn't scale with the selection size -- a <select multiple>*
+ * with hundreds of selected options can otherwise push the request  *
+ * past PHP's max_input_vars ceiling, silently truncating the body). *
+ * Returns a plain array either way, with blank/whitespace-only      *
+ * string entries dropped. null/false/non-array/non-string input     *
+ * returns an empty array.                                           *
+ *******************************************************************/
+function normalize_id_list_param($value): array
+{
+    if (is_array($value)) {
+        return $value;
+    }
+
+    if (!is_string($value) || trim($value) === '') {
+        return [];
+    }
+
+    return array_values(array_filter(
+        array_map('trim', explode(',', $value)),
+        fn($v) => $v !== ''
+    ));
 }
 
 /************************************
@@ -23842,6 +24308,12 @@ function compliance_file_owning_module_permission($ref_type) {
  * unit-testable without a session; download_compliance_file() passes the real  *
  * check_permission_exception and check_permission. Keeps the header()/exit()   *
  * sink a thin wrapper over verifiable logic.                                    *
+ *                                                                              *
+ * Same shape as the other fail-closed download gates:                          *
+ * close_risks_by_test_result_denied() below, and                               *
+ * questionnaire_file_download_denied() in the Assessments Extra. See the Test  *
+ * Coverage section of CLAUDE.md for when to inject a checker rather than set   *
+ * $_SESSION.                                                                   *
  *******************************************************************************/
 function compliance_file_download_denied($ref_type, callable $exception_permission_checker, callable $module_permission_checker) {
     // The owning module is the first gate. An unmapped ref_type has no
@@ -23869,6 +24341,12 @@ function compliance_file_download_denied($ref_type, callable $exception_permissi
  * The permission check is injected as a callable so the decision — and that    *
  * close_risks specifically is the permission checked — is unit-testable        *
  * without a session; the callers pass the real check_permission.               *
+ *                                                                              *
+ * Same shape as the other fail-closed download gates:                          *
+ * compliance_file_download_denied() above, and                                 *
+ * questionnaire_file_download_denied() in the Assessments Extra. See the Test  *
+ * Coverage section of CLAUDE.md for when to inject a checker rather than set   *
+ * $_SESSION.                                                                   *
  *******************************************************************************/
 function close_risks_by_test_result_denied(callable $permission_checker) {
     return !$permission_checker('close_risks');
@@ -26821,6 +27299,9 @@ $change_audit_log_localization_config = [
         'start_date' => 'BeganOn',
         'reporter_id' => 'ReportedBy',
         'owner_id' => 'OwnedBy',
+        'functional_impact_name' => 'FunctionalImpact',
+        'information_impact_name' => 'InformationImpact',
+        'recovery_name' => 'Recovery',
         'additional_stakeholder_ids' => 'AdditionalStakeholders',
         'team_ids' => 'Teams',
         'source_tags' => 'IncidentTags_source',
@@ -30222,7 +30703,7 @@ function display_settings_get_display_settings_for_view($view) {
 /**
  * @phan-suppress PhanTypePossiblyInvalidDimOffset
  */
-function get_data_for_datatable($view, $selected_fields, $start = 0, $length = 10, $orderColumn = 'id', $orderDir = 'ASC', $column_filters = []) {
+function get_data_for_datatable($view, $selected_fields, $start = 0, $length = 10, $orderColumn = 'id', $orderDir = 'ASC', $column_filters = [], $global_search = '', $test_date_range = '') {
 
     global $field_settings_views, $field_settings, $escaper, $lang;
 
@@ -30291,7 +30772,7 @@ function get_data_for_datatable($view, $selected_fields, $start = 0, $length = 1
 
         require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
 
-        if (in_array($view, ['active_audits', 'past_audits', 'dynamic_audit_report'])) {
+        if (in_array($view, ['active_audits', 'past_audits', 'all_audits', 'dynamic_audit_report'])) {
             $where .= get_user_teams_query_for_tests_and_audits("a", false, true);
         } else if ($view == 'audit_timeline') {
             $where .= get_user_teams_query_for_tests("a", false, true);
@@ -30303,10 +30784,43 @@ function get_data_for_datatable($view, $selected_fields, $start = 0, $length = 1
     }
     
     // At this point it's safe to add the column directly into the sql as it was validated
-    $order_by = $sql_orderable ?  "ORDER BY {$sql_order_column} {$orderDir}, {$groupby} ASC" : "";
+    $order_by = $sql_orderable ?  "ORDER BY {$sql_order_column} {$orderDir}" : "";
+
+    // A view's default_order (e.g. Manage Audits' [['next_date','asc'],
+    // ['last_date','asc']] -- oldest Next Test Date first, oldest Last Test
+    // Date as the tiebreaker) declares a 2-level sort, but the client sends
+    // it as DataTables' own multi-column order (order[0]/order[1]) and this
+    // function's caller (datatable_response_for_view(), includes/api.php)
+    // only ever reads/resolves order[0] into $orderColumn/$orderDir. Rather
+    // than threading a general secondary-sort parameter through this
+    // function for every view (most have none), re-derive the tiebreak from
+    // the SAME default_order config already declared for the view: apply it
+    // only when the column currently being sorted is that config's own
+    // primary field, so clicking any OTHER column's header still produces a
+    // plain single-column sort.
+    $default_order = $field_settings_views[$view]['default_order'] ?? [];
+    if ($sql_orderable && !empty($default_order[1]) && $orderColumn === ($default_order[0][0] ?? null)) {
+        $secondary_field = $default_order[1][0];
+        // order_column falls back to the field name itself for a field
+        // whose SQL alias matches its catalog key (true for every current
+        // default_order secondary field, e.g. 'last_date').
+        $secondary_col = $field_settings[$view_type][$secondary_field]['order_column'] ?? $secondary_field;
+        // Use the tiebreak's OWN declared direction (default_order[1][1]), not
+        // the primary column's $orderDir -- the two are independent per the
+        // config shape, so reusing $orderDir silently flipped the tiebreak's
+        // direction whenever the primary column was sorted descending.
+        $secondary_dir = strtoupper($default_order[1][1] ?? $orderDir) === 'DESC' ? 'DESC' : 'ASC';
+        $order_by .= ", {$secondary_col} {$secondary_dir}";
+    }
+
+    $order_by .= $sql_orderable ? ", {$groupby} ASC" : "";
     
-    // We can do the paging through sql if there's no filtering and we can do the ordering through sql as well
-    $sql_paging = empty($column_filters) && $sql_orderable;
+    // We can do the paging through sql if there's no filtering and we can do the ordering through sql as well.
+    // audits_test_date_range (Manage Audits' Test Date range quickfilter) is filtered in PHP
+    // further down, same as $column_filters/$global_search -- SQL-level LIMIT/OFFSET applied
+    // before that PHP filter runs would silently drop matching rows that just weren't on the
+    // already-limited page.
+    $sql_paging = empty($column_filters) && $global_search === '' && empty($test_date_range) && $sql_orderable;
     if ($sql_paging) {
         // When requesting every results the $length is -1 so we only limit the results if $length is greater than 0
         if ($length > 0) {
@@ -30387,6 +30901,7 @@ function get_data_for_datatable($view, $selected_fields, $start = 0, $length = 1
         }
 
         $row = ['id' => $item['id']];
+        $search_haystack = '';
 
         foreach ($selected_fields as $selected_field_name) {
 
@@ -30404,7 +30919,24 @@ function get_data_for_datatable($view, $selected_fields, $start = 0, $length = 1
                     $value = $item[$selected_field_name];
                     $display = isset($item["{$selected_field_name}_display"]) ? $item["{$selected_field_name}_display"] : false;
                     if ($value && $encryption && !empty($field_setting['encrypted']) && $field_setting['encrypted']) {
-                        $value = try_decrypt($value);
+                        if (!empty($field_setting['encrypted_multi_value'])) {
+                            // This field's select_parts GROUP_CONCAT several rows' encrypted
+                            // columns into one comma-joined string (e.g. framework_name across
+                            // a control's multiple frameworks) -- each piece was encrypted
+                            // independently, so try_decrypt() must run per-piece. Feeding the
+                            // whole joined string to try_decrypt() as one ciphertext fails
+                            // HMAC/openssl and silently returns "" for every multi-value row.
+                            $decrypted_parts = [];
+                            foreach (explode(',', $value) as $part) {
+                                $part = trim($part);
+                                if ($part !== '') {
+                                    $decrypted_parts[] = try_decrypt($part);
+                                }
+                            }
+                            $value = implode(', ', $decrypted_parts);
+                        } else {
+                            $value = try_decrypt($value);
+                        }
                     }
 
                     // Get custom formatting
@@ -30424,6 +30956,15 @@ function get_data_for_datatable($view, $selected_fields, $start = 0, $length = 1
                 $row["{$selected_field_name}_display"] = $escaper->escapeHtml($display);
             }
 
+            // Accumulate every selected field's text into one haystack for the
+            // global search box (DataTables' own search.value) -- this engine
+            // previously only read per-column $_POST['columns'][i]['search'],
+            // silently ignoring the global box entirely.
+            if ($global_search !== '') {
+                $searchable_text = $display !== false ? $display : $value;
+                $search_haystack .= ' ' . (is_array($searchable_text) ? implode('|', $searchable_text) : $searchable_text);
+            }
+
             // Do the filtering.
             // stripos(is_array($value) ? implode('|', $value) : $value, $column_filters[$selected_field_name]) === false
             // The above line is used to be able to filter within both arrays and primitive values by making the array a single string separated by something that's not likely to be searched on
@@ -30437,6 +30978,84 @@ function get_data_for_datatable($view, $selected_fields, $start = 0, $length = 1
                     // If the row is getting filtered out we can stop processing it
                     break;
                 }
+            }
+        }
+
+        // A handful of long-text fields (Manage Audits' objective/test_steps/
+        // expected_results/summary) are worth searching even when a viewer
+        // hasn't added them as a visible column -- 'always_searchable' opts a
+        // field's raw SQL value into the haystack unconditionally, decoupled
+        // from whether it's currently one of the displayed $selected_fields
+        // (which technical_field=true already guarantees is present on $item
+        // regardless of $selected_fields -- see field_settings_get_join_parts()).
+        if ($global_search !== '') {
+            foreach ($field_settings[$view_type] as $always_search_field_name => $always_search_field_setting) {
+                if (empty($always_search_field_setting['always_searchable']) || in_array($always_search_field_name, $selected_fields, true)) {
+                    continue;
+                }
+                if (isset($item[$always_search_field_name])) {
+                    $search_haystack .= ' ' . $item[$always_search_field_name];
+                }
+            }
+        }
+
+        // Manage Audits' Framework/Tags/Team toolbar filters reach the server
+        // via $column_filters regardless of column visibility (see
+        // audits_column_filters, includes/api.php), but the main
+        // foreach($selected_fields) loop above only ever evaluates a filter
+        // for a field that's ALSO one of the current $selected_fields -- a
+        // filter on a field the viewer hasn't added as a column (none of
+        // Framework/Tags/Team are in all_audits' default_enabled_columns) was
+        // therefore never actually checked at all, regardless of whether
+        // $column_filters had an entry for it. process_selected_field_filter_
+        // for_*()'s per-field cases read straight off $item's own raw/
+        // '*_filter' keys (present because these fields are
+        // technical_field=true, so field_settings_get_join_parts() always
+        // fetches them, independent of $selected_fields) rather than off the
+        // $filter_value parameter, so calling them here for a
+        // not-currently-selected field is safe.
+        if (!$drop_row && !empty($columns_with_filters)) {
+            foreach ($columns_with_filters as $filtered_field_name) {
+                if (in_array($filtered_field_name, $selected_fields, true)) {
+                    continue; // already evaluated in the main loop above
+                }
+                if (process_selected_field_filter_for_views($view, $filtered_field_name, '', $column_filters, $item)) {
+                    $drop_row = true;
+                    $filtered = true;
+                    break;
+                }
+            }
+        }
+
+        if (!$drop_row && $global_search !== '' && stripos($search_haystack, $global_search) === false) {
+            $drop_row = true;
+            $filtered = true;
+        }
+
+        // Manage Audits' Test Date range quickfilter (display_audits(),
+        // includes/compliance.php) reaches every row via this explicit
+        // parameter rather than the normal per-column $column_filters
+        // mechanism -- 'test_date' is off by default (not necessarily one of
+        // the current $selected_fields), so this reads $item['test_date']
+        // directly, the same way the 'always_searchable' block above does
+        // for the global search box. Scoped to the three audit views by the
+        // isset() check alone (only their field catalog has 'test_date').
+        if (!$drop_row && !empty($test_date_range) && isset($item['test_date'])) {
+            $range = explode(' - ', (string)$test_date_range);
+            $range_start = !empty($range[0]) ? get_standard_date_from_default_format(trim($range[0])) : '';
+            $range_end = !empty($range[1]) ? get_standard_date_from_default_format(trim($range[1])) : '';
+            $item_test_date = $item['test_date'] ? strtotime($item['test_date']) : false;
+
+            if (!$item_test_date) {
+                $drop_row = true;
+            } elseif ($range_start && $item_test_date < strtotime($range_start)) {
+                $drop_row = true;
+            } elseif ($range_end && $item_test_date > strtotime($range_end)) {
+                $drop_row = true;
+            }
+
+            if ($drop_row) {
+                $filtered = true;
             }
         }
 
@@ -30458,6 +31077,22 @@ function get_data_for_datatable($view, $selected_fields, $start = 0, $length = 1
                 $row[$actions_column_info['field_name']] = "<span data-id='{$item['id']}'>" . implode('', $item_actions) . "</span>";
 
             }
+
+            // A clean boolean sibling of 'status'/'status_display' for the 3
+            // Manage Audits views, so DataTable.render.nextTestDatePill()
+            // (dataTables.renderers.js) can read overdue-ness directly instead
+            // of parsing it back out of the " (<Overdue>)" text suffix
+            // get_custom_formatting_data_for_all_audits()'s 'status' case
+            // appends to $display for the Status pill's own, unrelated
+            // purpose (that suffix stays -- it also feeds the toolbar search
+            // box). test_audit_is_overdue() is a cheap, side-effect-free
+            // check (no DB call), safe to call unconditionally, but scoped to
+            // these 3 views to avoid adding an irrelevant key to every other
+            // view's JSON rows.
+            if (in_array($view, ['active_audits', 'past_audits', 'all_audits'], true)) {
+                $row['is_overdue'] = test_audit_is_overdue($item);
+            }
+
             $rows []= $row;
         }
     }
@@ -30527,7 +31162,15 @@ function get_wheres_for_view($view) {
     } else if ($view == "dynamic_audit_report") {
 
         $where = "where fc.deleted = 0 ";
-        
+
+    } else if ($view == "all_audits") {
+
+        // The merged Compliance > Audits page (replaces separate Active/Past
+        // Audits pages): every non-deleted audit regardless of open/closed
+        // state. Active vs. Past becomes a client-side status-chip filter
+        // over this one dataset instead of two separate WHERE-restricted views.
+        $where = "where fc.deleted = 0 ";
+
     } else if ($view == "audit_timeline") {
         
         $where = "where f.status = 1 ";
@@ -30549,10 +31192,16 @@ function get_wheres_for_view($view) {
  ****************************************/
 function get_custom_formatting_data_for_view($view, $selected_field_name, $value = '', $display = '', $item = []) {
 
-    if ($view == 'active_audits') {
-        $result = get_custom_formatting_data_for_active_audits($selected_field_name, $value, $display, $item);
-    } else if ($view == 'past_audits') {
-        $result = get_custom_formatting_data_for_past_audits($selected_field_name, $value, $display, $item);
+    if ($view == 'active_audits' || $view == 'past_audits' || $view == 'all_audits') {
+        // Manage Audits' Active/Past/All status chips all re-fetch into the
+        // SAME physical table by swapping which of these three views'
+        // endpoint is loaded (compliance.php's display_audits()) -- routing
+        // all three to the identical formatting function is what keeps a
+        // row's chips/colors from visibly changing depending on which chip
+        // happens to be selected, which they did before this (a row is
+        // "amber" on All but the SAME row was "green" on Active, since the
+        // two dispatch branches had drifted into different color schemes).
+        $result = get_custom_formatting_data_for_all_audits($selected_field_name, $value, $display, $item);
     } else if ($view == 'dynamic_audit_report') {
         $result = get_custom_formatting_data_for_dynamic_audit_report($selected_field_name, $value, $display, $item);
     } else if ($view == 'audit_timeline') {
@@ -30579,22 +31228,62 @@ function test_audit_is_overdue(array $audit) {
         && (int)$audit['status'] !== $closed;
 }
 
+/*******************************************************
+ * FUNCTION: AUDIT STATUS IS CLOSED (derived)          *
+ *******************************************************/
+function audit_status_is_closed(array $item): bool {
+    $closed_audit_status = get_setting("closed_audit_status");
+    return (string)$item['status'] === (string)$closed_audit_status;
+}
+
+/*******************************************************
+ * FUNCTION: IS AUDIT TRULY CLOSED (derived)           *
+ * "Truly closed" means the audit's status is closed   *
+ * AND it isn't sitting in an approver's queue -- an    *
+ * audit awaiting approval is still status=closed but   *
+ * must render/act as open until approved/rejected.     *
+ *******************************************************/
+function is_audit_truly_closed(array $item): bool {
+    return audit_status_is_closed($item) && !audit_is_awaiting_approval((int)$item['id']);
+}
+
 /**********************************************************
- * FUNCTION: GET CUSTOM FORMATTING DATA FOR ACTIVE AUDITS *
+ * FUNCTION: GET CUSTOM FORMATTING DATA FOR ALL AUDITS    *
+ * Backs the merged Compliance > Audits page. A row here  *
+ * can be open or truly-closed, so test_name links to the *
+ * submit-a-result page (open) or the read-only view      *
+ * (truly closed) depending on the row's own state,       *
+ * mirroring active_audits/past_audits respectively.       *
  **********************************************************/
-function get_custom_formatting_data_for_active_audits($selected_field_name, $value, $display, $item) {
+function get_custom_formatting_data_for_all_audits($selected_field_name, $value, $display, $item) {
 
     global $lang, $escaper;
 
     // For fields that need custom formatting
     switch($selected_field_name) {
         case "test_name":
-             $value = "<a href='" . build_url("compliance/testing.php?id={$item['id']}") . "' class='text-left'>{$escaper->escapeHtml($value)}</a>";
+            require_once(realpath(__DIR__ . '/compliance.php'));
+            $truly_closed = is_audit_truly_closed($item);
+            $target = $truly_closed
+                ? "compliance/view_test.php?id={$item['id']}"
+                : "compliance/testing.php?id={$item['id']}";
+            $value = "<a href='" . build_url($target) . "' class='text-left'>{$escaper->escapeHtml($value)}</a>";
             break;
         case 'test_frequency':
             $value = (int)$value . " " .$escaper->escapeHtml($value > 1 ? $lang['days'] : $lang['Day']);
             break;
-        case 'objective': 
+        case 'objective':
+        case 'test_steps':
+        case 'expected_results':
+            // WYSIWYG-authored fields -- already purify_html()'d at write time
+            // (add_framework_control_test()/update_framework_control_test(),
+            // compliance.php), so this is belt-and-suspenders re-sanitization,
+            // same as testing.php's own rendering of these same fields. Must
+            // NOT fall through to the default escapeHtml() case below: that
+            // would entity-encode the stored markup (e.g. "<p>" ->
+            // "&lt;p&gt;"), and since the client renders cell data as raw
+            // HTML (no client-side escaping), the encoded tags would show up
+            // as literal text instead of the formatted content.
             $value = $escaper->purifyHtml($value);
             break;
         case 'tags':
@@ -30619,39 +31308,6 @@ function get_custom_formatting_data_for_active_audits($selected_field_name, $val
             if (test_audit_is_overdue($item)) {
                 $display = $display . ' (' . $lang['Overdue'] . ')';
             }
-            break;
-        default:
-            // Only have to escape non-custom fields as those are already escaped
-            $value = $escaper->escapeHtml($value);
-    }
-
-    return [$value, $display];
-
-}
-
-/**********************************************************
- * FUNCTION: GET CUSTOM FORMATTING DATA FOR PAST AUDITS *
- **********************************************************/
-function get_custom_formatting_data_for_past_audits($selected_field_name, $value, $display, $item) {
-
-    global $lang, $escaper;
-
-    // For fields that need custom formatting
-    switch($selected_field_name) {
-        case "test_name":
-             $value = "<a href='" . build_url("compliance/view_test.php?id={$item['id']}") . "' class='text-left'>{$escaper->escapeHtml($value)}</a>";
-            break;
-        case 'tags':
-            if ($value) {
-                $tags = [];
-                foreach(explode("|", $value) as $tag) {
-                    $tags []= $escaper->escapeHtml($tag);
-                }
-                $value = $tags;
-            }
-            break;
-        case 'audit_date':
-            $value = $escaper->escapeHtml(format_date($value));
             break;
         case 'test_result':
             $value = $escaper->escapeHtml($value ? $value : "--");
@@ -30830,7 +31486,14 @@ function get_custom_formatting_data_for_document_exception($selected_field_name,
  * FUNCTION: PROCESS SELECTED FIELD FILTER FOR VIEWS *
  *****************************************************/
 function process_selected_field_filter_for_views($view, $selected_field_name, $filter_value, $column_filters, $item) {
-    if ($view == 'active_audits') {
+    if ($view == 'active_audits' || $view == 'all_audits') {
+        // 'all_audits' shares 'active_audits'' exact row shape (same
+        // field_settings_views join_parts/select_parts for the
+        // framework_control_test_audit view_type) -- same filter logic applies
+        // verbatim, including the array-valued exact-ID matches a multi-select
+        // filter sends (framework/tester/test_name/tags/test_result), which the
+        // generic else-branch below can't handle (stripos() requires a string
+        // needle).
         $filter_result = process_selected_field_filter_for_active_audits($selected_field_name, $filter_value, $column_filters, $item);
     } else if ($view == 'past_audits') {
         $filter_result = process_selected_field_filter_for_past_audits($selected_field_name, $filter_value, $column_filters, $item);
@@ -30843,7 +31506,7 @@ function process_selected_field_filter_for_views($view, $selected_field_name, $f
     } else if ($view == 'document_exception') {
         $filter_result = process_selected_field_filter_for_document_exception($selected_field_name, $filter_value, $column_filters, $item);
     } else {
-        if(stripos(is_array($filter_value) ? implode('|', $filter_value) : $filter_value, $column_filters[$selected_field_name]) === false) {
+        if(stripos(is_array($filter_value) ? implode('|', $filter_value) : $filter_value, normalize_filter_needle($column_filters[$selected_field_name] ?? '')) === false) {
             $filter_result = true;
         } else {
             $filter_result = false;
@@ -30854,13 +31517,55 @@ function process_selected_field_filter_for_views($view, $selected_field_name, $f
 
 }
 
+/*****************************************************************
+ * FUNCTION: NORMALIZE MULTI-VALUE COLUMN FILTER                 *
+ * DataTables' column().search(value) serializes ANY JS value to *
+ * the wire as a plain string -- a JS array ['1','2'] arrives     *
+ * over POST as the literal string "1,2", never as                *
+ * columns[i][search][value][]=.. (confirmed against a live       *
+ * request body). Every process_selected_field_filter_for_*()     *
+ * branch below does in_array()/array_intersect() against         *
+ * $column_filters[$field], which throws a TypeError the moment    *
+ * that's a string instead of an array -- this normalizes either   *
+ * shape into the array those calls require.                      *
+ *****************************************************************/
+function normalize_multi_value_column_filter($value) {
+    if (is_array($value)) {
+        return $value;
+    }
+    if ($value === '' || $value === null) {
+        return [];
+    }
+    return explode(',', (string)$value);
+}
+
+/*****************************************************************
+ * FUNCTION: NORMALIZE FILTER NEEDLE                              *
+ * The generic (uncased) branch of every process_selected_field_  *
+ * filter_for_*() dispatches a stripos() haystack/needle match.    *
+ * The haystack side ($filter_value) is always normalized inline   *
+ * (array -> pipe-joined string) before that call, but the needle  *
+ * side ($column_filters[$field]) was assumed to already be a      *
+ * string -- true for a normal DataTables columns[i][search][value]*
+ * request, but NOT for merge_out_of_band_column_filters()         *
+ * (includes/api.php), which can inject a real PHP array for ANY   *
+ * searchable field regardless of whether that field's             *
+ * process_selected_field_filter_for_*() case actually handles     *
+ * arrays. Without this, stripos() throws an uncaught TypeError     *
+ * (needle must be a string) the moment an array reaches an        *
+ * uncased field via that path.                                    *
+ *****************************************************************/
+function normalize_filter_needle($value) {
+    return is_array($value) ? implode('|', $value) : (string)($value ?? '');
+}
+
 /*************************************************************
  * FUNCTION: PROCESS SELECTED FIELD FILTER FOR ACTIVE AUDITS *
  *************************************************************/
 function process_selected_field_filter_for_active_audits($selected_field_name, $filter_value, $column_filters, $item) {
     if ($selected_field_name == 'test_name') {
         $item_filter_value = $item['test_name_filter'];
-        $search_value = $column_filters[$selected_field_name];
+        $search_value = normalize_multi_value_column_filter($column_filters[$selected_field_name]);
         if (!empty($search_value)) {
             if (in_array($item_filter_value, $search_value)) {
                 $filter_result = false;
@@ -30872,7 +31577,7 @@ function process_selected_field_filter_for_active_audits($selected_field_name, $
         }
     } else if ($selected_field_name == 'tester') {
         $item_filter_value = $item['tester'];
-        $search_value = $column_filters[$selected_field_name];
+        $search_value = normalize_multi_value_column_filter($column_filters[$selected_field_name]);
         if (!empty($search_value)) {
             if (in_array($item_filter_value, $search_value)) {
                 $filter_result = false;
@@ -30885,7 +31590,7 @@ function process_selected_field_filter_for_active_audits($selected_field_name, $
     } else if ($selected_field_name == 'framework_name') {
         $item_filter_value = $item['framework_name_filter'];
         $item_filter_value_array = explode(",", $item_filter_value);
-        $search_value = $column_filters[$selected_field_name];
+        $search_value = normalize_multi_value_column_filter($column_filters[$selected_field_name]);
         if (!empty($search_value)) {
             if (array_intersect($item_filter_value_array, $search_value)) {
                 $filter_result = false;
@@ -30908,7 +31613,7 @@ function process_selected_field_filter_for_active_audits($selected_field_name, $
         } else {
             $item_filter_value_array = [];
         }
-        $search_value = $column_filters[$selected_field_name];
+        $search_value = normalize_multi_value_column_filter($column_filters[$selected_field_name]);
         if (!empty($search_value)) {
             if (array_intersect($item_filter_value_array, $search_value)) {
                 $filter_result = false;
@@ -30928,7 +31633,7 @@ function process_selected_field_filter_for_active_audits($selected_field_name, $
         }
     } else if ($selected_field_name == 'status') {
         $item_filter_value = $item['status_filter'];
-        $search_value = $column_filters[$selected_field_name];
+        $search_value = normalize_multi_value_column_filter($column_filters[$selected_field_name]);
         if (!empty($search_value)) {
             if (in_array($item_filter_value, $search_value)) {
                 $filter_result = false;
@@ -30948,7 +31653,10 @@ function process_selected_field_filter_for_active_audits($selected_field_name, $
         }
     } else if ($selected_field_name == 'test_date') {
         $item_filter_value = $item['test_date'];
-        $search_value = $column_filters[$selected_field_name];
+        // normalize_filter_needle(): merge_out_of_band_column_filters() (includes/api.php)
+        // can inject a real PHP array here for any 'searchable' field -- explode()
+        // requires a string, so an unnormalized array throws an uncaught TypeError.
+        $search_value = normalize_filter_needle($column_filters[$selected_field_name] ?? '');
         if (!empty($search_value)) {
             $start_date = get_standard_date_from_default_format(explode(" - ", $search_value)[0]);
             $end_date = get_standard_date_from_default_format(explode(" - ", $search_value)[1] ?? '');
@@ -30978,7 +31686,7 @@ function process_selected_field_filter_for_active_audits($selected_field_name, $
         }
     } else if ($selected_field_name == 'test_result') {
         $item_filter_value = $item['test_result_filter'];
-        $search_value = $column_filters[$selected_field_name];
+        $search_value = normalize_multi_value_column_filter($column_filters[$selected_field_name]);
         if (!empty($search_value)) {
             if (in_array($item_filter_value, $search_value)) {
                 $filter_result = false;
@@ -31000,7 +31708,7 @@ function process_selected_field_filter_for_active_audits($selected_field_name, $
     } else if (in_array($selected_field_name, ['teams'])) {
         $item_filter_value = $item['teams_filter'];
         $item_filter_value_array = explode(",", $item_filter_value);
-        $search_value = $column_filters[$selected_field_name];
+        $search_value = normalize_multi_value_column_filter($column_filters[$selected_field_name]);
         if (!empty($search_value)) {
             if (array_intersect($item_filter_value_array, $search_value)) {
                 $filter_result = false;
@@ -31021,7 +31729,7 @@ function process_selected_field_filter_for_active_audits($selected_field_name, $
     } else if (in_array($selected_field_name, ['additional_stakeholders'])) {
         $item_filter_value = $item['additional_stakeholders'];
         $item_filter_value_array = explode(",", $item_filter_value);
-        $search_value = $column_filters[$selected_field_name];
+        $search_value = normalize_multi_value_column_filter($column_filters[$selected_field_name]);
         if (!empty($search_value)) {
             if (array_intersect($item_filter_value_array, $search_value)) {
                 $filter_result = false;
@@ -31040,7 +31748,7 @@ function process_selected_field_filter_for_active_audits($selected_field_name, $
             $filter_result = true;
         }
     } else {
-        if(stripos(is_array($filter_value) ? implode('|', $filter_value) : $filter_value, $column_filters[$selected_field_name]) === false) {
+        if(stripos(is_array($filter_value) ? implode('|', $filter_value) : $filter_value, normalize_filter_needle($column_filters[$selected_field_name] ?? '')) === false) {
             $filter_result = true;
         } else {
             $filter_result = false;
@@ -31057,7 +31765,7 @@ function process_selected_field_filter_for_active_audits($selected_field_name, $
 function process_selected_field_filter_for_past_audits($selected_field_name, $filter_value, $column_filters, $item) {
     if ($selected_field_name == 'test_name') {
         $item_filter_value = $item['test_name_filter'];
-        $search_value = $column_filters[$selected_field_name];
+        $search_value = normalize_multi_value_column_filter($column_filters[$selected_field_name]);
         if (!empty($search_value)) {
             if (in_array($item_filter_value, $search_value)) {
                 $filter_result = false;
@@ -31071,7 +31779,10 @@ function process_selected_field_filter_for_past_audits($selected_field_name, $fi
         $item_filter_value = $item['audit_date'];
 
         // Get the start and end audit date
-        $search_value = $column_filters[$selected_field_name];
+        // normalize_filter_needle(): merge_out_of_band_column_filters() (includes/api.php)
+        // can inject a real PHP array here for any 'searchable' field -- explode()
+        // requires a string, so an unnormalized array throws an uncaught TypeError.
+        $search_value = normalize_filter_needle($column_filters[$selected_field_name] ?? '');
         $search_value_array = explode(' - ', $search_value);
         if (count($search_value_array) > 1) {
 			$audit_date_start = $search_value_array[0];
@@ -31107,7 +31818,7 @@ function process_selected_field_filter_for_past_audits($selected_field_name, $fi
         }
     } else if ($selected_field_name == 'control_name') {
         $item_filter_value = $item['control_name_filter'];
-        $search_value = $column_filters[$selected_field_name];
+        $search_value = normalize_multi_value_column_filter($column_filters[$selected_field_name]);
         if (!empty($search_value)) {
             if (in_array($item_filter_value, $search_value)) {
                 $filter_result = false;
@@ -31120,7 +31831,7 @@ function process_selected_field_filter_for_past_audits($selected_field_name, $fi
     } else if ($selected_field_name == 'framework_name') {
         $item_filter_value = $item['framework_name_filter'];
         $item_filter_value_array = explode(",", $item_filter_value);
-        $search_value = $column_filters[$selected_field_name];
+        $search_value = normalize_multi_value_column_filter($column_filters[$selected_field_name]);
         if (!empty($search_value)) {
             if (array_intersect($item_filter_value_array, $search_value)) {
                 $filter_result = false;
@@ -31143,7 +31854,7 @@ function process_selected_field_filter_for_past_audits($selected_field_name, $fi
         } else {
             $item_filter_value_array = [];
         }
-        $search_value = $column_filters[$selected_field_name];
+        $search_value = normalize_multi_value_column_filter($column_filters[$selected_field_name]);
         if (!empty($search_value)) {
             if (array_intersect($item_filter_value_array, $search_value)) {
                 $filter_result = false;
@@ -31163,7 +31874,7 @@ function process_selected_field_filter_for_past_audits($selected_field_name, $fi
         }
     } else if ($selected_field_name == 'test_result') {
         $item_filter_value = $item['test_result_filter'];
-        $search_value = $column_filters[$selected_field_name];
+        $search_value = normalize_multi_value_column_filter($column_filters[$selected_field_name]);
         if (!empty($search_value)) {
             if (in_array($item_filter_value, $search_value)) {
                 $filter_result = false;
@@ -31184,7 +31895,10 @@ function process_selected_field_filter_for_past_audits($selected_field_name, $fi
         }
     } else if ($selected_field_name == 'test_date') {
         $item_filter_value = $item['test_date'];
-        $search_value = $column_filters[$selected_field_name];
+        // normalize_filter_needle(): merge_out_of_band_column_filters() (includes/api.php)
+        // can inject a real PHP array here for any 'searchable' field -- explode()
+        // requires a string, so an unnormalized array throws an uncaught TypeError.
+        $search_value = normalize_filter_needle($column_filters[$selected_field_name] ?? '');
         if (!empty($search_value)) {
             $start_date = get_standard_date_from_default_format(explode(" - ", $search_value)[0]);
             $end_date = get_standard_date_from_default_format(explode(" - ", $search_value)[1] ?? '');
@@ -31215,7 +31929,7 @@ function process_selected_field_filter_for_past_audits($selected_field_name, $fi
     } else if (in_array($selected_field_name, ['teams'])) {
         $item_filter_value = $item['teams_filter'];
         $item_filter_value_array = explode(",", $item_filter_value);
-        $search_value = $column_filters[$selected_field_name];
+        $search_value = normalize_multi_value_column_filter($column_filters[$selected_field_name]);
         if (!empty($search_value)) {
             if (array_intersect($item_filter_value_array, $search_value)) {
                 $filter_result = false;
@@ -31233,8 +31947,53 @@ function process_selected_field_filter_for_past_audits($selected_field_name, $fi
         } else {
             $filter_result = true;
         }
+    } else if ($selected_field_name == 'status') {
+        // Mirrors process_selected_field_filter_for_active_audits()' own
+        // 'status' case verbatim -- this was missing here (the Manage
+        // Audits status quickfilter reaches every status chip, including
+        // Past, via the SAME dt.column('status:name').search([...]) call),
+        // so filtering by status while on Past fell through to the generic
+        // stripos() branch below, which throws a TypeError once handed an
+        // array $needle (stripos() requires a string).
+        $item_filter_value = $item['status_filter'];
+        $search_value = normalize_multi_value_column_filter($column_filters[$selected_field_name]);
+        if (!empty($search_value)) {
+            if (in_array($item_filter_value, $search_value)) {
+                $filter_result = false;
+            } else {
+                if (in_array(0, $search_value)) {
+                    if (!$item_filter_value) {
+                        $filter_result = false;
+                    } else {
+                        $filter_result = true;
+                    }
+                } else {
+                    $filter_result = true;
+                }
+            }
+        } else {
+            $filter_result = true;
+        }
+    } else if ($selected_field_name == 'tester') {
+        // Mirrors process_selected_field_filter_for_active_audits()' own
+        // 'tester' case verbatim -- missing here for the same reason
+        // 'status' was above: the Tester quickfilter reaches every status
+        // chip via the same dt.column('tester:name').search([...]) call, so
+        // filtering by tester while on Past fell through to the generic
+        // stripos() branch below and threw a TypeError on the array needle.
+        $item_filter_value = $item['tester'];
+        $search_value = normalize_multi_value_column_filter($column_filters[$selected_field_name]);
+        if (!empty($search_value)) {
+            if (in_array($item_filter_value, $search_value)) {
+                $filter_result = false;
+            } else {
+                $filter_result = true;
+            }
+        } else {
+            $filter_result = true;
+        }
     } else {
-        if(stripos(is_array($filter_value) ? implode('|', $filter_value) : $filter_value, $column_filters[$selected_field_name]) === false) {
+        if(stripos(is_array($filter_value) ? implode('|', $filter_value) : $filter_value, normalize_filter_needle($column_filters[$selected_field_name] ?? '')) === false) {
             $filter_result = true;
         } else {
             $filter_result = false;
@@ -31251,7 +32010,7 @@ function process_selected_field_filter_for_past_audits($selected_field_name, $fi
 function process_selected_field_filter_for_dynamic_audit_report($selected_field_name, $filter_value, $column_filters, $item) {
     if ($selected_field_name == 'test_name') {
         $item_filter_value = $item['test_name_filter'];
-        $search_value = $column_filters[$selected_field_name];
+        $search_value = normalize_multi_value_column_filter($column_filters[$selected_field_name]);
         if (!empty($search_value)) {
             if (in_array($item_filter_value, $search_value)) {
                 $filter_result = false;
@@ -31263,7 +32022,7 @@ function process_selected_field_filter_for_dynamic_audit_report($selected_field_
         }
     } else if ($selected_field_name == 'tester') {
         $item_filter_value = $item['tester'];
-        $search_value = $column_filters[$selected_field_name];
+        $search_value = normalize_multi_value_column_filter($column_filters[$selected_field_name]);
         if (!empty($search_value)) {
             if (in_array($item_filter_value, $search_value)) {
                 $filter_result = false;
@@ -31276,7 +32035,7 @@ function process_selected_field_filter_for_dynamic_audit_report($selected_field_
     } else if ($selected_field_name == 'framework_name') {
         $item_filter_value = $item['framework_name_filter'];
         $item_filter_value_array = explode(",", $item_filter_value);
-        $search_value = $column_filters[$selected_field_name];
+        $search_value = normalize_multi_value_column_filter($column_filters[$selected_field_name]);
         if (!empty($search_value)) {
             if (array_intersect($item_filter_value_array, $search_value)) {
                 $filter_result = false;
@@ -31294,7 +32053,7 @@ function process_selected_field_filter_for_dynamic_audit_report($selected_field_
         } else {
             $item_filter_value_array = [];
         }
-        $search_value = $column_filters[$selected_field_name];
+        $search_value = normalize_multi_value_column_filter($column_filters[$selected_field_name]);
         if (!empty($search_value)) {
             if (array_intersect($item_filter_value_array, $search_value)) {
                 $filter_result = false;
@@ -31314,7 +32073,7 @@ function process_selected_field_filter_for_dynamic_audit_report($selected_field_
         }
     } else if ($selected_field_name == 'status') {
         $item_filter_value = $item['status_filter'];
-        $search_value = $column_filters[$selected_field_name];
+        $search_value = normalize_multi_value_column_filter($column_filters[$selected_field_name]);
         if (!empty($search_value)) {
             if (in_array($item_filter_value, $search_value)) {
                 $filter_result = false;
@@ -31334,7 +32093,7 @@ function process_selected_field_filter_for_dynamic_audit_report($selected_field_
         }
     } else if ($selected_field_name == 'test_result') {
         $item_filter_value = $item['test_result_filter'];
-        $search_value = $column_filters[$selected_field_name];
+        $search_value = normalize_multi_value_column_filter($column_filters[$selected_field_name]);
         if (!empty($search_value)) {
             if (in_array($item_filter_value, $search_value)) {
                 $filter_result = false;
@@ -31354,7 +32113,7 @@ function process_selected_field_filter_for_dynamic_audit_report($selected_field_
             $filter_result = true;
         }
     } else {
-        if(stripos(is_array($filter_value) ? implode('|', $filter_value) : $filter_value, $column_filters[$selected_field_name]) === false) {
+        if(stripos(is_array($filter_value) ? implode('|', $filter_value) : $filter_value, normalize_filter_needle($column_filters[$selected_field_name] ?? '')) === false) {
             $filter_result = true;
         } else {
             $filter_result = false;
@@ -31371,7 +32130,7 @@ function process_selected_field_filter_for_dynamic_audit_report($selected_field_
 function process_selected_field_filter_for_audit_timeline($selected_field_name, $filter_value, $column_filters, $item) {
     if ($selected_field_name == 'test_name') {
         $item_filter_value = $item['test_name_filter'];
-        $search_value = $column_filters[$selected_field_name];
+        $search_value = normalize_multi_value_column_filter($column_filters[$selected_field_name]);
         if (!empty($search_value)) {
             if (in_array($item_filter_value, $search_value)) {
                 $filter_result = false;
@@ -31383,7 +32142,7 @@ function process_selected_field_filter_for_audit_timeline($selected_field_name, 
         }
     } else if (in_array($selected_field_name, ['tester', 'additional_stakeholders', 'control_owner'])) {
         $item_filter_value = $item[$selected_field_name];
-        $search_value = $column_filters[$selected_field_name];
+        $search_value = normalize_multi_value_column_filter($column_filters[$selected_field_name]);
         if (!empty($search_value)) {
             if (in_array($item_filter_value, $search_value)) {
                 $filter_result = false;
@@ -31396,7 +32155,7 @@ function process_selected_field_filter_for_audit_timeline($selected_field_name, 
     } else if ($selected_field_name == 'framework_name') {
         $item_filter_value = $item['framework_name_filter'];
         $item_filter_value_array = explode(",", $item_filter_value);
-        $search_value = $column_filters[$selected_field_name];
+        $search_value = normalize_multi_value_column_filter($column_filters[$selected_field_name]);
         if (!empty($search_value)) {
             if (array_intersect($item_filter_value_array, $search_value)) {
                 $filter_result = false;
@@ -31408,7 +32167,7 @@ function process_selected_field_filter_for_audit_timeline($selected_field_name, 
         }
     } else if ($selected_field_name == 'control_name') {
         $item_filter_value = $item['control_name_filter'];
-        $search_value = $column_filters[$selected_field_name];
+        $search_value = normalize_multi_value_column_filter($column_filters[$selected_field_name]);
         if (!empty($search_value)) {
             if (in_array($item_filter_value, $search_value)) {
                 $filter_result = false;
@@ -31426,7 +32185,7 @@ function process_selected_field_filter_for_audit_timeline($selected_field_name, 
         } else {
             $item_filter_value_array = [];
         }
-        $search_value = $column_filters[$selected_field_name];
+        $search_value = normalize_multi_value_column_filter($column_filters[$selected_field_name]);
         if (!empty($search_value)) {
             if (array_intersect($item_filter_value_array, $search_value)) {
                 $filter_result = false;
@@ -31446,7 +32205,7 @@ function process_selected_field_filter_for_audit_timeline($selected_field_name, 
         }
     } else if ($selected_field_name == 'last_test_result') {
         $item_filter_value = $item['last_test_result_filter'];
-        $search_value = $column_filters[$selected_field_name];
+        $search_value = normalize_multi_value_column_filter($column_filters[$selected_field_name]);
         if (!empty($search_value)) {
             if (in_array($item_filter_value, $search_value)) {
                 $filter_result = false;
@@ -31466,7 +32225,7 @@ function process_selected_field_filter_for_audit_timeline($selected_field_name, 
             $filter_result = true;
         }
     } else {
-        if(stripos(is_array($filter_value) ? implode('|', $filter_value) : $filter_value, $column_filters[$selected_field_name]) === false) {
+        if(stripos(is_array($filter_value) ? implode('|', $filter_value) : $filter_value, normalize_filter_needle($column_filters[$selected_field_name] ?? '')) === false) {
             $filter_result = true;
         } else {
             $filter_result = false;
@@ -31490,7 +32249,7 @@ function process_selected_field_filter_for_document_program($selected_field_name
             $item_filter_value_array = [];
         }
         
-        $search_value = $column_filters[$selected_field_name];
+        $search_value = normalize_multi_value_column_filter($column_filters[$selected_field_name]);
         if (!empty($search_value)) {
             if (in_array($item_filter_value, $search_value)) {
                 $filter_result = false;
@@ -31517,7 +32276,7 @@ function process_selected_field_filter_for_document_program($selected_field_name
             $item_filter_value_array = [];
         }
 
-        $search_value = $column_filters[$selected_field_name];
+        $search_value = normalize_multi_value_column_filter($column_filters[$selected_field_name]);
         if (!empty($search_value)) {
             if (array_intersect($item_filter_value_array, $search_value)) {
                 $filter_result = false;
@@ -31544,7 +32303,7 @@ function process_selected_field_filter_for_document_program($selected_field_name
             $item_filter_value_array = [];
         }
 
-        $search_value = $column_filters[$selected_field_name];
+        $search_value = normalize_multi_value_column_filter($column_filters[$selected_field_name]);
         if (!empty($search_value)) {
             if (array_intersect($item_filter_value_array, $search_value)) {
                 $filter_result = false;
@@ -31571,7 +32330,7 @@ function process_selected_field_filter_for_document_program($selected_field_name
             $item_filter_value_array = [];
         }
 
-        $search_value = $column_filters[$selected_field_name];
+        $search_value = normalize_multi_value_column_filter($column_filters[$selected_field_name]);
         if (!empty($search_value)) {
             if (array_intersect($item_filter_value_array, $search_value)) {
                 $filter_result = false;
@@ -31591,7 +32350,7 @@ function process_selected_field_filter_for_document_program($selected_field_name
         }
     } else if ($selected_field_name == 'document_status') {
         $item_filter_value = $item['document_status'];
-        $search_value = $column_filters[$selected_field_name];
+        $search_value = normalize_multi_value_column_filter($column_filters[$selected_field_name]);
         if (!empty($search_value)) {
             if (in_array($item_filter_value, $search_value)) {
                 $filter_result = false;
@@ -31610,7 +32369,7 @@ function process_selected_field_filter_for_document_program($selected_field_name
             $filter_result = true;
         }
     } else {
-        if(stripos(is_array($filter_value) ? implode('|', $filter_value) : $filter_value, $column_filters[$selected_field_name]) === false) {
+        if(stripos(is_array($filter_value) ? implode('|', $filter_value) : $filter_value, normalize_filter_needle($column_filters[$selected_field_name] ?? '')) === false) {
             $filter_result = true;
         } else {
             $filter_result = false;
@@ -31627,7 +32386,7 @@ function process_selected_field_filter_for_document_program($selected_field_name
 function process_selected_field_filter_for_document_exception($selected_field_name, $filter_value, $column_filters, $item) {
     if (in_array($selected_field_name, ['owner'])) {
         $item_filter_value = $item[$selected_field_name];
-        $search_value = $column_filters[$selected_field_name];
+        $search_value = normalize_multi_value_column_filter($column_filters[$selected_field_name]);
         if (!empty($search_value)) {
             if (in_array($item_filter_value, $search_value)) {
                 $filter_result = false;
@@ -31644,7 +32403,7 @@ function process_selected_field_filter_for_document_exception($selected_field_na
         } else {
             $item_filter_value_array = [];
         }
-        $search_value = $column_filters[$selected_field_name];
+        $search_value = normalize_multi_value_column_filter($column_filters[$selected_field_name]);
         if (!empty($search_value)) {
             if (array_intersect($item_filter_value_array, $search_value)) {
                 $filter_result = false;
@@ -31664,9 +32423,9 @@ function process_selected_field_filter_for_document_exception($selected_field_na
         }
     } else if ($selected_field_name == 'exception_status') {
         $item_filter_value = $item[$selected_field_name];
-        $search_value = $column_filters[$selected_field_name];
+        $search_value = normalize_multi_value_column_filter($column_filters[$selected_field_name]);
         if (!empty($search_value)) {
-            if ($item_filter_value == $search_value) {
+            if (in_array($item_filter_value, $search_value)) {
                 $filter_result = false;
             } else {
                 $filter_result = true;
@@ -31675,7 +32434,7 @@ function process_selected_field_filter_for_document_exception($selected_field_na
             $filter_result = false;
         }
     } else {
-        if(stripos(is_array($filter_value) ? implode('|', $filter_value) : $filter_value, $column_filters[$selected_field_name]) === false) {
+        if(stripos(is_array($filter_value) ? implode('|', $filter_value) : $filter_value, normalize_filter_needle($column_filters[$selected_field_name] ?? '')) === false) {
             $filter_result = true;
         } else {
             $filter_result = false;
@@ -31691,10 +32450,13 @@ function process_selected_field_filter_for_document_exception($selected_field_na
  *************************************/
 function get_custom_item_actions($view, $actions_tooltips, $item) {
 
-    if ($view == 'active_audits') {
-        $result = get_custom_item_actions_for_active_audits($view, $actions_tooltips, $item);
-    } else if ($view == 'past_audits') {
-        $result = get_custom_item_actions_for_past_audits($view, $actions_tooltips, $item);
+    if ($view == 'active_audits' || $view == 'past_audits' || $view == 'all_audits') {
+        // See the matching note in get_custom_formatting_data_for_view() --
+        // Manage Audits' three status chips share one physical table, so
+        // they must share one actions/coloring function or a row's buttons
+        // and background color visibly change depending on which chip is
+        // currently selected.
+        $result = get_custom_item_actions_for_all_audits($view, $actions_tooltips, $item);
     } else if ($view == 'audit_timeline') {
         $result = get_custom_item_actions_for_audit_timeline($view, $actions_tooltips, $item);
     } else {
@@ -31704,87 +32466,88 @@ function get_custom_item_actions($view, $actions_tooltips, $item) {
     return $result;
 }
 
-/*******************************************************
- * FUNCTION: GET CUSTOM ITEM ACTIONS FOR ACTIVE AUDITS *
- *******************************************************/
-function get_custom_item_actions_for_active_audits($view, $actions_tooltips, $item) {
+/****************************************************
+ * FUNCTION: GET CUSTOM ITEM ACTIONS FOR ALL AUDITS  *
+ * Backs the merged Compliance > Audits page. A row  *
+ * here can carry Delete, Reopen, AND Approve/Reject *
+ * at once -- they gate on independent permissions   *
+ * and, for Reopen/Approve, the row's own truly-      *
+ * closed / awaiting-approval state.                  *
+ ****************************************************/
+function get_custom_item_actions_for_all_audits($view, $actions_tooltips, $item) {
 
-    // audit_is_awaiting_approval() / user_is_approver_of_audit() (Phase 3b
-    // Task 2) are defined in compliance.php. This function is always reached
-    // via the datatable data path (includes/api.php requires compliance.php
-    // before calling get_data_for_datatable()), so in practice it's already
-    // loaded -- this call-time require_once is the CLAUDE.md
-    // belt-and-suspenders guard for any future caller that reaches this
-    // function through a chain that doesn't happen to load compliance.php
-    // first. Deliberately placed inside the function body (not at
-    // functions.php file-scope) -- compliance.php's own require chain
-    // (extras.php, services.php, notifications.php) requires functions.php
-    // back, and functions.php is parsed top-to-bottom by every entry point,
-    // so a file-scope require here would risk compliance.php's chain
-    // running before the rest of this very large file has finished being
-    // parsed. A call-time require has no such risk: this function can only
-    // be invoked after functions.php itself has fully loaded.
     require_once(realpath(__DIR__ . '/compliance.php'));
 
     global $lang, $escaper;
 
-    if(date("Y-m-d") <= $item['next_date']){
-        $next_date_background_class = "green-background";
-    }else{
-        $next_date_background_class = "red-background";
+    $status_is_closed = audit_status_is_closed($item);
+    $awaiting_approval = $status_is_closed && audit_is_awaiting_approval((int)$item['id']);
+    $truly_closed = $status_is_closed && !$awaiting_approval;
+
+    // Icon-only row actions revealed on row hover (design-system.md 6b's
+    // .sr-row-action/.sr-row-actions pattern, shared with Define Tests) --
+    // replaces the earlier full-width text buttons that stayed permanently
+    // visible in every row regardless of hover state. Order follows
+    // Define Tests' own convention: constructive actions first, destructive
+    // (Delete) last, gated the same as before.
+    $buttons = [];
+
+    // Phase 3b Task 6 Approve/Reject, unchanged from active_audits: a
+    // configured approver of an audit awaiting sign-off (never the audit's
+    // own tester). Display-only gate -- approveAuditById()/rejectAuditById()
+    // re-enforce all of this server-side.
+    $uid = (int)($_SESSION['uid'] ?? 0);
+    if (
+        $awaiting_approval
+        && isset($_SESSION['approve_tests']) && $_SESSION['approve_tests'] == 1
+        && $uid > 0
+        && $uid !== (int)$item['tester']
+        && user_is_approver_of_audit((int)$item['id'], $uid)
+    ) {
+        $buttons[] = "<button type='button' class='sr-row-action audit-approve-btn' data-id='{$item['id']}' title='{$escaper->escapeHtml($lang['Approve'])}'><i class='fa fa-check' aria-hidden='true'></i></button>";
+
+        $testing_url = build_url("compliance/testing.php?id=" . (int)$item['id']);
+        $buttons[] = "<a class='sr-row-action' href='{$escaper->escapeHtml($testing_url)}' title='{$escaper->escapeHtml($lang['Reject'])}'><i class='fa fa-xmark' aria-hidden='true'></i></a>";
+    }
+
+    if ($truly_closed && isset($_SESSION["modify_audits"]) && $_SESSION["modify_audits"] == 1) {
+        $buttons[] = "<button type='button' class='sr-row-action reopen' data-id='{$item['id']}' title='{$escaper->escapeHtml($lang['Reopen'])}'><i class='fa fa-rotate-left' aria-hidden='true'></i></button>";
+    }
+
+    if (isset($_SESSION["delete_audits"]) && $_SESSION["delete_audits"] == 1) {
+        $buttons[] = "<button type='button' class='sr-row-action sr-row-action-danger delete-btn' data-id='{$item['id']}' title='{$escaper->escapeHtml($lang['Delete'])}'><i class='fa fa-trash' aria-hidden='true'></i></button>";
     }
 
     $item_actions = [];
-
-    if(isset($_SESSION["delete_audits"]) && $_SESSION["delete_audits"] == 1) {
-        $item_actions[] = "<button class='btn btn-primary delete-btn' data-id='{$item['id']}' >{$escaper->escapeHtml($lang['Delete'])}</button>";
+    if (!empty($buttons)) {
+        // .sr-row-actions-wrap + .sr-row-actions-toggle is the shipped compact-
+        // tier disclosure (design-system.md 6b, _tables.scss) that the global
+        // "@media (max-width: 1400px) { .sr-table-card { ... } }" rule already
+        // applies to every .sr-table-card -- rendering the cluster WITHOUT the
+        // toggle (as before) adopts only half of that: the cluster goes
+        // display:none below 1400px with nothing left on screen to open it
+        // with. See governance-frameworks.js's rowActionsWrap() for the same
+        // fix on that page; display_audits() (includes/compliance.php) wires
+        // the click-to-open/close behavior for this table's own toggle.
+        $actions_label = $escaper->escapeHtml($lang['Actions']);
+        $item_actions[] = "<span class='sr-row-actions-wrap'><button type='button' class='sr-row-actions-toggle' aria-expanded='false' aria-haspopup='true' aria-label='{$actions_label}' title='{$actions_label}'><i class='fa fa-ellipsis' aria-hidden='true'></i></button><span class='sr-row-actions'>" . implode('', $buttons) . "</span></span>";
     }
 
-    // Phase 3b Task 6: Approve/Reject row actions for a configured approver
-    // of an audit that's awaiting sign-off. These are display-only gates --
-    // the API (approveAuditById()/rejectAuditById(), Task 5) re-enforces all
-    // of this server-side, so a stale or forged button here can't bypass
-    // anything. Reject links to the testing.php detail page (a rejection
-    // requires a comment, which needs a bigger surface than a row action);
-    // Approve is simple enough to fire directly from the row.
-    $uid = (int)($_SESSION['uid'] ?? 0);
-    if (
-        isset($_SESSION['approve_tests']) && $_SESSION['approve_tests'] == 1
-        && $uid > 0
-        && $uid !== (int)$item['tester']
-        && audit_is_awaiting_approval($item['id'])
-        && user_is_approver_of_audit($item['id'], $uid)
-    ) {
-        $item_actions[] = "<button type='button' class='btn btn-submit audit-approve-btn' data-id='{$item['id']}'>{$escaper->escapeHtml($lang['Approve'])}</button>";
-
-        $testing_url = build_url("compliance/testing.php?id=" . (int)$item['id']);
-        $item_actions[] = "<a class='btn btn-danger' href='{$escaper->escapeHtml($testing_url)}'>{$escaper->escapeHtml($lang['Reject'])}</a>";
-    }
-
-    $item_actions[] = "<input type='hidden' class='background-class' data-background='{$next_date_background_class}'>";
-
-    return $item_actions;
-
-}
-
-/*****************************************************
- * FUNCTION: GET CUSTOM ITEM ACTIONS FOR PAST AUDITS *
- *****************************************************/
-function get_custom_item_actions_for_past_audits($view, $actions_tooltips, $item) {
-
-    global $lang, $escaper;
-
-    $background_class = $escaper->escapeHtml($item['test_result_background_class']);
-
-    if(isset($_SESSION["modify_audits"]) && $_SESSION["modify_audits"] == 1) {
-        
-        $delete_button = "<button class='reopen btn btn-submit' data-id='{$item['id']}'>{$escaper->escapeHtml($lang['Reopen'])}</button><input type='hidden' class='background-class' data-background='{$background_class}'>";
-
+    if ($truly_closed) {
+        // green/red/white here mean the RESULT (Pass/Fail/Inconclusive --
+        // test_results.background_class) and only that.
+        $background_class = $escaper->escapeHtml($item['test_result_background_class'] ?? '');
     } else {
-        $delete_button = "<input type='hidden' class='background-class' data-background='{$background_class}'>";
+        // An open audit has no result yet, so it must never share green/red
+        // with a closed Pass/Fail row -- on the merged "All" view those two
+        // meanings would otherwise be visually indistinguishable (an
+        // on-time OPEN audit and a PASSED closed one both green; an
+        // OVERDUE open audit and a FAILED closed one both red). blue/amber
+        // read as "still running" at a glance, distinct from the
+        // pass/fail palette.
+        $background_class = (date("Y-m-d") <= ($item['next_date'] ?? '9999-12-31')) ? "blue-background" : "amber-background";
     }
-
-    $item_actions = [$delete_button];
+    $item_actions[] = "<input type='hidden' class='background-class' data-background='{$background_class}'>";
 
     return $item_actions;
 
@@ -31807,14 +32570,15 @@ function get_custom_item_actions_for_audit_timeline($view, $actions_tooltips, $i
 
     }
 
-    $active_audits_url = build_url('compliance/active_audits.php?test_id='.$item['id']);
-    $past_audits_url = build_url('compliance/past_audits.php?test_id='.$item['id']);
+    // Active Audits + Past Audits merged into one Audits page (Active/Past/All
+    // is now a status-chip filter over one dataset) -- deep-link via a search
+    // term (the test's own name) rather than a status-specific URL, so this
+    // one button surfaces the test's audits regardless of open/closed state.
+    $audits_url = build_url('compliance/audits.php?search=' . rawurlencode($item['name']));
 
-    $active_audits_button = "<a class='btn btn-secondary my-1' style='width:100%' type='button' href='{$active_audits_url}' target='_blank'><i class='mdi mdi-open-in-new mx-2'></i>{$escaper->escapeHtml($lang['ViewActiveAudits'])}</a>";
-    $past_audits_button = "<a class='btn btn-secondary' style='width:100%' type='button' href='{$past_audits_url}' target='_blank'><i class='mdi mdi-open-in-new mx-2'></i>{$escaper->escapeHtml($lang['ViewPastAudits'])}</a>";
+    $audits_button = "<a class='btn btn-secondary my-1' style='width:100%' type='button' href='{$audits_url}' target='_blank'><i class='mdi mdi-open-in-new mx-2'></i>{$escaper->escapeHtml($lang['ViewAudits'])}</a>";
 
-    $item_actions[] = $active_audits_button;
-    $item_actions[] = $past_audits_button;
+    $item_actions[] = $audits_button;
 
     return $item_actions;
 
@@ -33700,6 +34464,86 @@ function sanitizeUtf8(string $text): string
     return is_string($cleaned) ? $cleaned : '';
 }
 
+/**
+ * Sanitize a raw cell value extracted from an imported spreadsheet/CSV row
+ * (Import-Export Extra and any other spreadsheet-driven importer).
+ *
+ * Files exported from Excel as "CSV (Comma delimited)" on Windows are commonly
+ * Windows-1252 encoded rather than UTF-8; their smart quotes/dashes are single
+ * bytes (0x91-0x97) that are invalid as standalone UTF-8. Left unsanitized,
+ * those bytes reach json_encode() in a DataTables API response, which silently
+ * returns false on invalid UTF-8 -- breaking the entire table's Ajax response
+ * for every row, not just the corrupted one.
+ *
+ * @param mixed $value Raw value pulled from the parsed spreadsheet row
+ * @return string Sanitized, guaranteed-valid-UTF-8 string
+ */
+function sanitize_import_cell_value(mixed $value): string
+{
+    if (!is_string($value)) {
+        $value = (string)$value;
+    }
+
+    if ($value === '') {
+        return '';
+    }
+
+    // Only attempt Windows-1252 punctuation recovery when the raw bytes are NOT
+    // already valid UTF-8. The recovery itself is scoped to bytes that aren't
+    // part of a valid UTF-8 sequence anywhere in the string (see
+    // recover_cp1252_stray_bytes()), so a cell mixing one stray CP1252 byte with
+    // legitimate multi-byte text elsewhere (many CJK/Cyrillic code points use
+    // 0x91-0x97 as a continuation byte) doesn't have that valid text corrupted.
+    if (!mb_check_encoding($value, 'UTF-8')) {
+        $value = recover_cp1252_stray_bytes($value);
+    }
+
+    // Guarantee valid UTF-8 for anything still broken (or introduced by a byte
+    // sequence the table above doesn't cover)
+    $value = sanitizeUtf8($value);
+
+    // Strip stray control characters -- never legitimate in imported GRC field
+    // data -- while preserving tab/CR/LF
+    $value = preg_replace('/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/u', ' ', $value);
+
+    return trim($value);
+}
+
+/**
+ * Recover Windows-1252 smart-quote/dash punctuation from bytes that are NOT
+ * part of a valid UTF-8 sequence, leaving valid multi-byte sequences
+ * untouched even when they use the same byte values as continuation bytes.
+ *
+ * Walks the string as a sequence of "valid UTF-8 sequence | single byte"
+ * tokens (the alternation below is the standard UTF-8-validating regex) and
+ * only maps a token through the CP1252 table when it matched as a single,
+ * otherwise-unconsumed byte -- i.e. it wasn't part of a longer valid
+ * sequence. This is what keeps a stray invalid byte elsewhere in the same
+ * cell from corrupting legitimate CJK/Cyrillic text that happens to contain
+ * the same byte values as valid continuation bytes.
+ *
+ * @param string $value Raw bytes, already known not to be valid UTF-8 as a whole
+ * @return string Same bytes with only the genuinely-stray CP1252 punctuation bytes recovered
+ */
+function recover_cp1252_stray_bytes(string $value): string
+{
+    static $cp1252_punctuation = [
+        "\x91" => "'", "\x92" => "'", "\x93" => '"', "\x94" => '"',
+        "\x96" => '-', "\x97" => '—', "\x85" => '...', "\x95" => '*',
+    ];
+    static $pattern = '/[\x09\x0A\x0D\x20-\x7E]|[\xC2-\xDF][\x80-\xBF]|\xE0[\xA0-\xBF][\x80-\xBF]|[\xE1-\xEC\xEE\xEF][\x80-\xBF]{2}|\xED[\x80-\x9F][\x80-\xBF]|\xF0[\x90-\xBF][\x80-\xBF]{2}|[\xF1-\xF3][\x80-\xBF]{3}|\xF4[\x80-\x8F][\x80-\xBF]{2}|./s';
+
+    $recovered = preg_replace_callback($pattern, static function (array $m) use ($cp1252_punctuation): string {
+        $token = $m[0];
+        // Only a lone byte can be a CP1252 punctuation candidate -- every
+        // multi-byte alternative above matched a valid sequence and must be
+        // passed through unchanged.
+        return strlen($token) === 1 ? ($cp1252_punctuation[$token] ?? $token) : $token;
+    }, $value);
+
+    return $recovered ?? $value;
+}
+
 /*********************************
  * FUNCTION: REQUIRE POST FIELDS *
  *********************************/
@@ -34126,6 +34970,158 @@ function is_sendable_email_address(?string $email): bool
 function current_session_uid_or_null(): ?int
 {
     return !empty($_SESSION['uid']) ? (int)$_SESSION['uid'] : null;
+}
+
+/*********************************************************************
+ * FUNCTION: RISKS ASSOCIATED WITH                                   *
+ * Every risk connected to a given entity, as RAW risks.id values.   *
+ *                                                                   *
+ * Deliberately NOT the graph walkers. get_risk_connectivity_for_    *
+ * asset() applies strip_no_access_risks() (entity_graph.php:786),   *
+ * and the control/exception/test-result walkers inherit the same     *
+ * Team Separation filter through graph_risk_edge_rows() (:195).      *
+ * That is right for the Explorer and for ai_get_context(), and wrong *
+ * here: invalidation is system bookkeeping, not a user-facing read.  *
+ * Filtering it would mean a user who can see 10 of 50 affected risks *
+ * silently leaves the other 40 serving stale analysis.               *
+ *                                                                   *
+ * The joins below mirror the graph's own so the two cannot disagree  *
+ * about what "connected" means.                                      *
+ *********************************************************************/
+function risks_associated_with(string $type, int $id, PDO $db): array
+{
+    if ($id <= 0) {
+        return [];
+    }
+
+    switch ($type) {
+        case 'asset':
+            // Direct attachment, plus membership of any attached asset group.
+            $sql = "SELECT DISTINCT rta.risk_id AS id
+                    FROM risks_to_assets rta WHERE rta.asset_id = :id
+                    UNION
+                    SELECT DISTINCT rtag.risk_id AS id
+                    FROM risks_to_asset_groups rtag
+                    JOIN assets_asset_groups aag ON aag.asset_group_id = rtag.asset_group_id
+                    WHERE aag.asset_id = :id2";
+            $params = [':id' => $id, ':id2' => $id];
+            break;
+
+        case 'exception':
+            // associated_risks is a CSV of RAW risks.id values, not display ids.
+            // The exception form posts the raw id (governance/document_exceptions.php
+            // renders <option value='{$risk['id']}'> and only the LABEL adds 1000),
+            // and every existing reader joins raw — see
+            // get_risk_connectivity_for_exception() in entity_graph.php, whose
+            // docblock says "matching the raw ids stored in associated_risks".
+            // Mirroring that join here is what makes the docblock's promise true;
+            // an earlier version subtracted 1000 and silently resolved risk 42 to
+            // -958 (dropped) or raw 1200 to 200 (the WRONG risk marked stale).
+            $sql = "SELECT DISTINCT r.id AS id
+                    FROM document_exceptions de
+                    JOIN risks r ON FIND_IN_SET(r.id, de.associated_risks) > 0
+                    WHERE de.value = :id";
+            $params = [':id' => $id];
+            break;
+
+        case 'test_result':
+            $sql = "SELECT DISTINCT fctrr.risk_id AS id
+                    FROM framework_control_test_results_to_risks fctrr
+                    WHERE fctrr.test_results_id = :id";
+            $params = [':id' => $id];
+            break;
+
+        default:
+            return [];
+    }
+
+    try {
+        $stmt = $db->prepare($sql);
+        $stmt->execute($params);
+
+        return array_values(array_filter(
+            array_map('intval', $stmt->fetchAll(PDO::FETCH_COLUMN)),
+            fn($rid) => $rid > 0
+        ));
+    } catch (Throwable $e) {
+        write_debug_log("[risks_associated_with] {$type}: " . $e->getMessage(), "error");
+        return [];
+    }
+}
+
+/*********************************************************************
+ * FUNCTION: AI INVALIDATE RISK ANALYSIS                             *
+ * Stamp association_last_update for a set of RAW risks.id values.   *
+ *                                                                   *
+ * Invalidation is deliberately CHEAP and UNBOUNDED: one asset can be *
+ * attached to thousands of risks and a bulk import invalidates all   *
+ * of them at once. Bounding AI spend is the sweep's job (5 per tick  *
+ * plus a settle window), never this function's — conflating the two  *
+ * is exactly how the original requeue storm happened.                *
+ *                                                                   *
+ * Touches only `risks`, never the AI Extra's ai_recommendations_risk,*
+ * so it is safe on a Core-only install and needs no table_exists()   *
+ * guard. last_update is left alone: that column means "the risk      *
+ * record changed" and is read elsewhere in the product.              *
+ *********************************************************************/
+function ai_invalidate_risk_analysis(array $risk_ids, ?PDO $db = null): int
+{
+    $ids = array_values(array_unique(array_filter(
+        array_map('intval', $risk_ids),
+        fn($id) => $id > 0
+    )));
+
+    if (empty($ids)) {
+        return 0;
+    }
+
+    $close_db = false;
+    if ($db === null) {
+        $db = db_open();
+        $close_db = true;
+    }
+
+    try {
+        $placeholders = implode(',', array_fill(0, count($ids), '?'));
+        $stmt = $db->prepare(
+            "UPDATE `risks` SET `association_last_update` = NOW() WHERE `id` IN ({$placeholders})"
+        );
+        $stmt->execute($ids);
+
+        return $stmt->rowCount();
+    } catch (Throwable $e) {
+        write_debug_log("[ai_invalidate_risk_analysis] " . $e->getMessage(), "error");
+        return 0;
+    } finally {
+        if ($close_db) {
+            db_close($db);
+        }
+    }
+}
+
+/*********************************************************************
+ * FUNCTION: AI INVALIDATE RISK ANALYSIS FOR                         *
+ * Resolve every risk connected to an entity and mark them stale.     *
+ *                                                                   *
+ * Callers on a DELETE path must invoke this BEFORE removing the      *
+ * association rows — afterwards the resolver finds nothing and the   *
+ * affected risks are never invalidated.                              *
+ *********************************************************************/
+function ai_invalidate_risk_analysis_for(string $type, int $id, ?PDO $db = null): int
+{
+    $close_db = false;
+    if ($db === null) {
+        $db = db_open();
+        $close_db = true;
+    }
+
+    try {
+        return ai_invalidate_risk_analysis(risks_associated_with($type, $id, $db), $db);
+    } finally {
+        if ($close_db) {
+            db_close($db);
+        }
+    }
 }
 
 ?>

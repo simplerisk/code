@@ -2120,8 +2120,8 @@ $(function(){
 })(jQuery);
 
 // --- Phase 3b Task 6: audit approval workflow (approve/reject) ---
-// Shared between the Active Audits row actions (functions.php's
-// get_custom_item_actions_for_active_audits()) and the testing.php detail
+// Shared between Manage Audits' row actions (functions.php's
+// get_custom_item_actions_for_all_audits()) and the testing.php detail
 // page (display_testing()'s approver controls) -- both pages load this
 // script, and both render buttons carrying the same classes/data-id, so one
 // pair of delegated handlers here covers both surfaces. The API
@@ -2130,14 +2130,14 @@ $(function(){
 // and render whatever the API decides.
 
 function refreshAfterAuditApprovalAction() {
-    // On the Active Audits list, reload the row in place. On the testing.php
+    // On the merged Audits list, reload the row in place. On the testing.php
     // detail page there's no datatable -- send the user back to the list,
     // since the audit they were looking at just left the "awaiting approval"
     // state (approved -> closed, or rejected -> back in-progress).
-    if (typeof datatableInstances !== 'undefined' && datatableInstances['active_audits']) {
-        datatableInstances['active_audits'].ajax.reload(null, false);
+    if (typeof datatableInstances !== 'undefined' && datatableInstances['all_audits']) {
+        datatableInstances['all_audits'].ajax.reload(null, false);
     } else {
-        window.location.href = BASE_URL + '/compliance/active_audits.php';
+        window.location.href = BASE_URL + '/compliance/audits.php';
     }
 }
 

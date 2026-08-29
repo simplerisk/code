@@ -373,10 +373,17 @@
   // Register a filter scoped to one table element. predicate(tr) -> keep?
   function addRowFilter(tableEl, predicate) {
     var fn = function (settings, data, dataIndex) {
-      if (settings.nTable !== tableEl) {
+      // settings.nTable / settings.aoData are DataTables 1.x/2.x-era internals
+      // removed in the datatables.net 3.0.2 this app bundles (package.json) --
+      // settings.nTable is undefined here, so the old `!==` check was always
+      // true and every registered filter silently no-opped (returned "keep"
+      // for every row on every table). new jQuery.fn.dataTable.Api(settings)
+      // is the version-stable way to reach the table's node and a row's node.
+      var api = new jQuery.fn.dataTable.Api(settings);
+      if (api.table().node() !== tableEl) {
         return true;
       }
-      return predicate(settings.aoData[dataIndex].nTr);
+      return predicate(api.row(dataIndex).node());
     };
     jQuery.fn.dataTable.ext.search.push(fn);
     rowFilters.push(fn);

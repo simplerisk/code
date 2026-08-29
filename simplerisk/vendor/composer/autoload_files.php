@@ -110,6 +110,7 @@ return array(
     'd81bab31d3feb45bfe2f283ea3c8fdf7' => $vendorDir . '/sabre/event/lib/Loop/functions.php',
     'a1cce3d26cc15c00fcd0b3354bd72c88' => $vendorDir . '/sabre/event/lib/Promise/functions.php',
     'ac4c448857898c6b48907995b1d9e666' => $vendorDir . '/leafs/date/src/functions.php',
+    '2248e4b6009b7f65e673b914cf233a80' => $vendorDir . '/leafs/exception/src/functions.php',
     'cfb7c780793bfa1138356bbe97dc66da' => $vendorDir . '/leafs/http/src/functions.php',
     '6124b4c8570aa390c21fafd04a26c69f' => $vendorDir . '/myclabs/deep-copy/src/DeepCopy/deep_copy.php',
     '14256cea64544233ca49f37177c0ad3b' => $vendorDir . '/phan/phan/src/Phan/bootstrap/polyfills.php',

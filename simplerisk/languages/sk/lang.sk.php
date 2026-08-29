@@ -1527,7 +1527,7 @@ $lang = array(
     'SendingRequestPleaseWait' => 'Odoslanie žiadosti. prosím počkajte.',
     'ApplicationNeedsToBeUpgradeToLatestVersionToUpgradeExtras' => 'Ak chcete inovovať doplnky, je potrebné inovovať aplikáciu na najnovšiu verziu.',
     'FilteredRiskReport' => 'Filtrovaná správa o riziku',    
-    'NoPermissionForThisAction'=>'Nemáte povolenie tejto akcie.',
+    'NoPermissionForThisAction'=>'Na túto akciu nemáte povolenie.',
     'QuestionnaireResult'=>'Výsledok dotazníka',
     'ChangedField' => 'Zmenené pole',
     'ChangedFrom' => 'Zmenil z',
@@ -3082,7 +3082,7 @@ $lang = array(
     'ResultMessageUnavailable' => 'Výsledková správa nie je k dispozícii.',
     'AIProviderURLNotAllowed' => 'Táto URL adresa API nie je povolená. Použite známeho poskytovateľa umelej inteligencie alebo adresu spätnej slučky (127.0.0.1) so samostatným hostiteľom.',
     'AIReenterKeyForNewURL' => 'Znova zadajte kľúč API na otestovanie URL adresy iného poskytovateľa.',
-    'WorkflowHttpRequestDisallowedURL' => 'http_request: URL adresa {$url} sa prekladá na nepovolenú internú alebo rezervovanú adresu.',
+    'WorkflowHttpRequestDisallowedURL' => '{$action}: URL adresa {$url} sa prekladá na nepovolenú internú alebo rezervovanú adresu.',
     'BehaviorAndScheduling' => 'Správanie a plánovanie',
     'PrepopulateAcrossContacts' => 'Predvyplniť nové odpovede predchádzajúcimi odpoveďami iného kontaktu pre toto hodnotenie',
     'PrepopulateAcrossContactsHelp' => 'Vopred vyplňte formulár nového respondenta najnovšími predchádzajúcimi odpoveďami od akéhokoľvek kontaktu – užitočné pre zachovanie kontinuity pri zmene zodpovednosti.',
@@ -4637,6 +4637,28 @@ $lang = array(
     'ExtraVersionIncompatibleWithApplication' => 'Stiahnutý balík „{$extra}“ Extra (verzia {$extra_version}) nie je kompatibilný so SimpleRisk {$app_version} a nebol nainštalovaný. Najprv aktualizujte SimpleRisk na najnovšiu verziu.',
     'ExtraCompatibilityDataUnavailable' => 'SimpleRisk nedokázal potvrdiť, ktoré verzie doplnkov toto vydanie podporuje, takže doplnky neboli nainštalované. Skúste to znova neskôr.',
     'ExtraVersionCouldNotBeVerified' => 'Verziu stiahnutého doplnku sa nepodarilo určiť, takže sa nenainštaloval.',
+    // User import temporary password
+    'NewUsernameAddedWithTemporaryPassword' => 'Nový používateľ s používateľským menom „{$username}“ bol úspešne pridaný. Dočasné heslo: {$password} (používateľ si ho musí zmeniť pri prvom prihlásení).',
+    'YouDontHavePermission' => 'Nemáte oprávnenie.',
+    // Initiate Audits bulk-select
+    'InitiatedTestsBulk' => 'Začaté testy $count.',
+    // Merged Audits page (replaces Active Audits + Past Audits menu items)
+    'Audits' => 'Audity',
+    'ManageAudits' => 'Správa auditov',
+    'ViewAudits' => 'Zobraziť audity',
+    // Redesigned, flat Initiate Audits page
+    'EligibleTests' => 'Oprávnené testy',
+    'InitiateSelected' => 'Iniciovať vybrané',
+    'InitiateNAudits' => 'Začať audity {n}',
+    'TagsOptionalAppliedToSelection' => 'Značky (voliteľné, použité na všetky)',
+    'Initiate' => 'Iniciovať',
+    'NoEligibleTestsFound' => 'Neboli nájdené žiadne vhodné testy.',
+    'Columns' => 'Stĺpce',
+    'ShowTestsWithAuditInProgress' => 'Zobraziť testy s prebiehajúcim auditom',
+    'NoMatchingOptions' => 'Žiadne zhodné možnosti.',
+    'TestDetails' => 'Podrobnosti o teste',
+    'PeopleAndTeams' => 'Ľudia a tímy',
+    'StatusAndTimeline' => 'Stav a časová os',
     '' => '',
 );
 ?>

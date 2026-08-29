@@ -3082,7 +3082,7 @@ $lang = array(
     'ResultMessageUnavailable' => 'Ergebnismeldung nicht verfügbar.',
     'AIProviderURLNotAllowed' => 'Diese API-URL ist nicht zulässig. Verwenden Sie einen bekannten KI-Anbieter oder eine Loopback-Adresse (127.0.0.1) für Ihren eigenen Host.',
     'AIReenterKeyForNewURL' => 'Geben Sie den API-Schlüssel erneut ein, um eine andere Anbieter-URL zu testen.',
-    'WorkflowHttpRequestDisallowedURL' => 'http_request: Die URL {$url} wird zu einer nicht zulässigen internen oder reservierten Adresse aufgelöst.',
+    'WorkflowHttpRequestDisallowedURL' => '{$action}: Die URL {$url} wird zu einer nicht zulässigen internen oder reservierten Adresse aufgelöst.',
     'BehaviorAndScheduling' => 'Verhalten & Zeitplanung',
     'PrepopulateAcrossContacts' => 'Neue Antworten sollten mit den vorherigen Antworten eines anderen Kontakts für diese Bewertung vorausgefüllt werden.',
     'PrepopulateAcrossContactsHelp' => 'Das Formular für neue Befragte sollte mit den aktuellsten vorherigen Antworten eines beliebigen Kontakts vorausgefüllt werden – dies ist nützlich für die Kontinuität, wenn die Zuständigkeit wechselt.',
@@ -4637,6 +4637,28 @@ $lang = array(
     'ExtraVersionIncompatibleWithApplication' => 'Die heruntergeladene „{$extra}“-Extra-Datei (Version {$extra_version}) ist nicht mit SimpleRisk {$app_version} kompatibel und wurde nicht installiert. Aktualisieren Sie SimpleRisk zuerst auf die neueste Version.',
     'ExtraCompatibilityDataUnavailable' => 'SimpleRisk konnte nicht bestätigen, welche Extra-Versionen diese Version unterstützt, daher wurde das Extra nicht installiert. Bitte versuchen Sie es später erneut.',
     'ExtraVersionCouldNotBeVerified' => 'Die Version des heruntergeladenen Extras konnte nicht ermittelt werden, daher wurde es nicht installiert.',
+    // User import temporary password
+    'NewUsernameAddedWithTemporaryPassword' => 'Ein neuer Benutzer mit dem Benutzernamen "{$username}" wurde erfolgreich hinzugefügt. Temporäres Passwort: {$password} (Der Benutzer muss es beim ersten Anmelden ändern).',
+    'YouDontHavePermission' => 'Sie haben keine Berechtigung.',
+    // Initiate Audits bulk-select
+    'InitiatedTestsBulk' => 'Initiierte $count Tests.',
+    // Merged Audits page (replaces Active Audits + Past Audits menu items)
+    'Audits' => 'Prüfungen',
+    'ManageAudits' => 'Audits verwalten',
+    'ViewAudits' => 'Prüfungen ansehen',
+    // Redesigned, flat Initiate Audits page
+    'EligibleTests' => 'Zulässige Tests',
+    'InitiateSelected' => 'Ausgewählte initiieren',
+    'InitiateNAudits' => 'Initiieren Sie {n} Audits',
+    'TagsOptionalAppliedToSelection' => 'Tags (optional, werden auf alle angewendet)',
+    'Initiate' => 'Einleiten',
+    'NoEligibleTestsFound' => 'Es wurden keine geeigneten Tests gefunden.',
+    'Columns' => 'Spalten',
+    'ShowTestsWithAuditInProgress' => 'Tests während eines laufenden Audits anzeigen',
+    'NoMatchingOptions' => 'Keine passenden Optionen.',
+    'TestDetails' => 'Testdetails',
+    'PeopleAndTeams' => 'Personen und Teams',
+    'StatusAndTimeline' => 'Status und Zeitleiste',
     '' => '',
 );
 ?>

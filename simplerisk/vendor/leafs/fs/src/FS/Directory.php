@@ -55,7 +55,7 @@ class Directory
                     $dirPath
                 );
             } elseif ($options['overwrite']) {
-                unlink($dirPath);
+                static::delete($dirPath, ['recursive' => true]);
             } else {
                 static::$errorsArray['directory'] = 'Directory already exists';
 
@@ -98,7 +98,7 @@ class Directory
             if (is_callable($pattern)) {
                 $parsedFiles = array_filter($parsedFiles, $pattern);
             } else {
-                $regex = '$#^' . str_replace(['*', '/'], ['.*', '\/'], $pattern) . '$#i';
+                $regex = '#^' . str_replace(['*', '/'], ['.*', '\/'], $pattern) . '$#i';
                 $parsedFiles = preg_grep($regex, $parsedFiles);
             }
         }
@@ -117,8 +117,9 @@ class Directory
     {
         $path = new Path($dirPath);
         $dirPath = $path->normalize();
+        $contents = static::read($dirPath);
 
-        return count(static::read($dirPath)) === 0;
+        return $contents === false ? false : count($contents) === 0;
     }
 
     /**
@@ -132,7 +133,7 @@ class Directory
     {
         $glob = static::read($dirPath);
 
-        if (!$glob) {
+        if ($glob === false) {
             return false;
         }
 
@@ -158,7 +159,7 @@ class Directory
     {
         $glob = static::read($dirPath);
 
-        if (!$glob) {
+        if ($glob === false) {
             return false;
         }
 
@@ -172,36 +173,6 @@ class Directory
 
         return $files;
     }
-
-    // {
-    //     $dirPath = (new Path($dirPath))->normalize();
-
-    //     if (!file_exists($dirPath)) {
-    //         static::$errorsArray['directory'] = "$dirPath does not exist";
-    //         return false;
-    //     }
-
-    //     $resolvedList = [];
-
-    //     $glob = glob($dir, (\defined('GLOB_BRACE') ? \GLOB_BRACE : 0) | \GLOB_ONLYDIR | \GLOB_NOSORT);
-
-    //     foreach ((array) $dirs as $dir) {
-    //         if (is_dir($dir)) {
-    //             $resolvedDirs[] = [$this->normalizeDir($dir)];
-    //         } elseif () {
-    //             sort($glob);
-    //             $resolvedDirs[] = array_map($this->normalizeDir(...), $glob);
-    //         } else {
-    //             throw new DirectoryNotFoundException(sprintf('The "%s" directory does not exist.', $dir));
-    //         }
-    //     }
-
-    //     $this->dirs = array_merge($this->dirs, ...$resolvedDirs);
-
-    //     return $this;
-
-    //     return dir_get_contents($dirPath);
-    // }
 
     /**
      * Delete a directory
@@ -225,13 +196,24 @@ class Directory
             $files = array_diff(scandir($dirPath), ['.', '..']);
 
             foreach ($files as $file) {
-                (is_dir("$dirPath/$file"))
-                    ? static::delete("$dirPath/$file", $options)
-                    : File::delete("$dirPath/$file");
+                if (is_link("$dirPath/$file")) {
+                    // never follow symlinks during recursive deletes — remove the link itself
+                    unlink("$dirPath/$file");
+                } elseif (is_dir("$dirPath/$file")) {
+                    static::delete("$dirPath/$file", $options);
+                } else {
+                    File::delete("$dirPath/$file");
+                }
             }
         }
 
-        return rmdir($dirPath);
+        if (!@rmdir($dirPath)) {
+            static::$errorsArray['directory'] = 'Could not delete directory — it may not be empty (pass the `recursive` option)';
+
+            return false;
+        }
+
+        return true;
     }
 
     /**
@@ -255,6 +237,7 @@ class Directory
 
         if (!static::exists($source)) {
             static::$errorsArray['directory'] = 'Source directory does not exist';
+
             return false;
         }
 
@@ -278,7 +261,9 @@ class Directory
         }
 
         if (!$options['recursive']) {
-            mkdir($destination, $options['mode']);
+            if (!static::exists($destination)) {
+                mkdir($destination, $options['mode']);
+            }
 
             foreach (static::read($source) as $file) {
                 File::copy($source . DIRECTORY_SEPARATOR . $file, $destination . DIRECTORY_SEPARATOR . $file);
@@ -316,7 +301,7 @@ class Directory
     public static function move($source, $destination, $options = [])
     {
         if (static::copy($source, $destination, $options)) {
-            return static::delete($source, $options);
+            return static::delete($source, ['recursive' => true]);
         }
 
         return false;

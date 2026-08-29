@@ -4,11 +4,12 @@ namespace Leaf\Http;
 
 /**
  * Leaf Status Code Helper
- * 
+ *
  * @since 2.0
  * @version 1.0
  */
-class Status {
+class Status
+{
     public const HTTP_CONTINUE = 100;
     public const HTTP_SWITCHING_PROTOCOLS = 101;
     public const HTTP_PROCESSING = 102;                                                   // RFC2518
@@ -81,7 +82,7 @@ class Status {
      * (last updated 2021-10-01).
      *
      * Unless otherwise noted, the status code is defined in RFC2616.
-     * 
+     *
      * @author Fabien Potencier <fabien@symfony.com>
      *
      * @var array
