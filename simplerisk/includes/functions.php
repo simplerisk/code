@@ -29,6 +29,7 @@ require_once(realpath(__DIR__ . '/healthcheck.php'));
 require_once(realpath(__DIR__ . '/mfa.php'));
 require_once(realpath(__DIR__ . '/Widgets/AssetAssetGroupDropdown.php'));
 require_once(realpath(__DIR__ . '/renderutils.php'));
+require_once(realpath(__DIR__ . '/data_integrity.php'));
 
 // Include the language file
 require_once(language_file());
@@ -4646,6 +4647,101 @@ $ui_layout_widget_config = [
         'defaults' => ['w' => 2, 'h' => 2, 'minW' => 2, 'minH' => 2],
         '' => '',
     ],
+    // Document Program insights band (governance/documentation.php) -- one
+    // tile per SEEDED document type, each a plain drill-through link to the
+    // grid filtered to that type (get_ui_widget_document_program_insights()
+    // in api/v2/includes/api.php). No "All documents" tile: unlike Define
+    // Tests' combinable multi-filter state, this page has exactly one type
+    // filter, so "go back" is just navigating to the page itself. Left at ''
+    // here (not 'governance') because the page's own read gate is `governance`
+    // OR `view_documentation` -- a single required_permission string can't
+    // express that OR, so the real gate is enforced inside the widget
+    // function and at the page's own UILayout(...) call site instead.
+    // Attention tiles, same OR-gate reasoning as the type tiles below --
+    // design-system.md's Document Insights Directions "Direction A".
+    'kpi_doc_overdue' => [
+        'localization_key' => 'DocumentsOverdueForReview',
+        'type' => 'kpi',
+        'required_permission' => '',
+        'defaults' => ['w' => 2, 'h' => 2, 'minW' => 2, 'minH' => 2],
+        '' => '',
+    ],
+    'kpi_doc_due_soon' => [
+        'localization_key' => 'DocumentsDueSoonForReview',
+        'type' => 'kpi',
+        'required_permission' => '',
+        'defaults' => ['w' => 2, 'h' => 2, 'minW' => 2, 'minH' => 2],
+        '' => '',
+    ],
+    'kpi_doc_policies' => [
+        'localization_key' => 'Policies',
+        'type' => 'kpi',
+        'required_permission' => '',
+        'defaults' => ['w' => 2, 'h' => 2, 'minW' => 2, 'minH' => 2],
+        '' => '',
+    ],
+    'kpi_doc_guidelines' => [
+        'localization_key' => 'Guidelines',
+        'type' => 'kpi',
+        'required_permission' => '',
+        'defaults' => ['w' => 2, 'h' => 2, 'minW' => 2, 'minH' => 2],
+        '' => '',
+    ],
+    'kpi_doc_standards' => [
+        'localization_key' => 'Standards',
+        'type' => 'kpi',
+        'required_permission' => '',
+        'defaults' => ['w' => 2, 'h' => 2, 'minW' => 2, 'minH' => 2],
+        '' => '',
+    ],
+    'kpi_doc_procedures' => [
+        'localization_key' => 'Procedures',
+        'type' => 'kpi',
+        'required_permission' => '',
+        'defaults' => ['w' => 2, 'h' => 2, 'minW' => 2, 'minH' => 2],
+        '' => '',
+    ],
+    // Define Exceptions insights band (governance/document_exceptions.php)
+    // -- same OR-gate reasoning as the Document Program tiles above (the
+    // page's read gate is `governance` OR the exception 'view' permission,
+    // enforced inside get_ui_widget_define_exceptions_insights() and at the
+    // page's own UILayout(...) call site, not expressible as a single
+    // required_permission string here).
+    'kpi_exc_overdue' => [
+        'localization_key' => 'ExceptionsOverdueForReview',
+        'type' => 'kpi',
+        'required_permission' => '',
+        'defaults' => ['w' => 2, 'h' => 2, 'minW' => 2, 'minH' => 2],
+        '' => '',
+    ],
+    'kpi_exc_due_soon' => [
+        'localization_key' => 'ExceptionsDueSoonForReview',
+        'type' => 'kpi',
+        'required_permission' => '',
+        'defaults' => ['w' => 2, 'h' => 2, 'minW' => 2, 'minH' => 2],
+        '' => '',
+    ],
+    'kpi_exc_policy' => [
+        'localization_key' => 'PolicyExceptions',
+        'type' => 'kpi',
+        'required_permission' => '',
+        'defaults' => ['w' => 2, 'h' => 2, 'minW' => 2, 'minH' => 2],
+        '' => '',
+    ],
+    'kpi_exc_control' => [
+        'localization_key' => 'ControlExceptions',
+        'type' => 'kpi',
+        'required_permission' => '',
+        'defaults' => ['w' => 2, 'h' => 2, 'minW' => 2, 'minH' => 2],
+        '' => '',
+    ],
+    'kpi_exc_pending' => [
+        'localization_key' => 'PendingApproval',
+        'type' => 'kpi',
+        'required_permission' => '',
+        'defaults' => ['w' => 2, 'h' => 2, 'minW' => 2, 'minH' => 2],
+        '' => '',
+    ],
     'kpi_active_frameworks' => [
         'localization_key' => 'HomeKpiActiveFrameworks',
         'type' => 'kpi',
@@ -4663,7 +4759,9 @@ $ui_layout_widget_config = [
     'kpi_open_exceptions' => [
         'localization_key' => 'HomeKpiOpenExceptions',
         'type' => 'kpi',
-        'required_permission' => 'governance',
+        // view_exception, not governance -- HackerOne #3960721 / SR-2088; see
+        // get_open_exceptions_count()'s docblock (includes/reporting.php).
+        'required_permission' => 'view_exception',
         'defaults' => ['w' => 3, 'h' => 2, 'minW' => 2, 'minH' => 2],
         '' => '',
     ],
@@ -4743,7 +4841,9 @@ $ui_layout_widget_config = [
     'list_expiring_exceptions' => [
         'localization_key' => 'ListExpiringExceptions',
         'type' => 'whats_next',
-        'required_permission' => 'governance',
+        // view_exception, not governance -- HackerOne #3960721 / SR-2104; see
+        // get_home_expiring_exceptions_items()'s docblock (includes/reporting.php).
+        'required_permission' => 'view_exception',
         'defaults' => ['w' => 6, 'h' => 5, 'minW' => 3, 'minH' => 3],
         '' => '',
     ],
@@ -4952,6 +5052,7 @@ $ui_layout_config = [
             'compliance_pass_rate_trend_line_chart',
             // Governance
             'kpi_active_frameworks', 'kpi_total_controls', 'kpi_open_exceptions', 'kpi_policies',
+            'kpi_doc_overdue', 'kpi_doc_due_soon',
             'list_policies_review', 'list_expiring_exceptions',
             'governance_current_control_maturity_pie_chart',
             'governance_framework_maturity_stacked_bar_chart',
@@ -5223,12 +5324,70 @@ $ui_layout_config = [
             ['x' => 10, 'y' => 0, 'w' => 2, 'h' => 2, 'minW' => 2, 'minH' => 2, 'name' => 'kpi_fw_excluded',   'type' => 'kpi', 'layout' => 'define_frameworks_insights'],
         ],
     ],
+    'document_program_insights' => [
+        'API_endpoint' => '/api/v2/ui/layout',
+        // Left blank -- see the widget-config comment above kpi_doc_policies
+        // for why this OR-gated page can't use the single-string form.
+        'required_permission' => '',
+        'available_widgets' => [
+            'kpi_doc_overdue', 'kpi_doc_due_soon',
+            'kpi_doc_policies', 'kpi_doc_guidelines', 'kpi_doc_standards', 'kpi_doc_procedures',
+        ],
+        'available_custom_widgets' => [],
+        // Insights band above the Document Program grid (governance/
+        // documentation.php): a single-row KPI strip. Attention tiles
+        // (Overdue for Review, Due Soon) lead the row -- design-system.md's
+        // Document Insights Directions "Direction A" -- ahead of the four
+        // per-type counts, which are unchanged from before that proposal:
+        // one tile per seeded document type, each linking straight to the
+        // grid's own ?type=<slug> filter (governance-documents.js reads it
+        // on load) -- matches the sibling bands' "direct link, no
+        // ?insight= indirection" convention (see
+        // get_ui_widget_define_tests_insights()'s comment).
+        'default_layout' => [
+            ['x' => 0,  'y' => 0, 'w' => 2, 'h' => 2, 'minW' => 2, 'minH' => 2, 'name' => 'kpi_doc_overdue',    'type' => 'kpi', 'layout' => 'document_program_insights'],
+            ['x' => 2,  'y' => 0, 'w' => 2, 'h' => 2, 'minW' => 2, 'minH' => 2, 'name' => 'kpi_doc_due_soon',   'type' => 'kpi', 'layout' => 'document_program_insights'],
+            ['x' => 4,  'y' => 0, 'w' => 2, 'h' => 2, 'minW' => 2, 'minH' => 2, 'name' => 'kpi_doc_policies',   'type' => 'kpi', 'layout' => 'document_program_insights'],
+            ['x' => 6,  'y' => 0, 'w' => 2, 'h' => 2, 'minW' => 2, 'minH' => 2, 'name' => 'kpi_doc_guidelines', 'type' => 'kpi', 'layout' => 'document_program_insights'],
+            ['x' => 8,  'y' => 0, 'w' => 2, 'h' => 2, 'minW' => 2, 'minH' => 2, 'name' => 'kpi_doc_standards',  'type' => 'kpi', 'layout' => 'document_program_insights'],
+            ['x' => 10, 'y' => 0, 'w' => 2, 'h' => 2, 'minW' => 2, 'minH' => 2, 'name' => 'kpi_doc_procedures', 'type' => 'kpi', 'layout' => 'document_program_insights'],
+        ],
+    ],
+    'define_exceptions_insights' => [
+        'API_endpoint' => '/api/v2/ui/layout',
+        // Left blank -- same OR-gate reasoning as document_program_insights
+        // above (governance/document_exceptions.php's own read gate is
+        // `governance` OR the exception 'view' permission).
+        'required_permission' => '',
+        'available_widgets' => [
+            'kpi_exc_overdue', 'kpi_exc_due_soon',
+            'kpi_exc_policy', 'kpi_exc_control', 'kpi_exc_pending',
+        ],
+        'available_custom_widgets' => [],
+        // Insights band above the Define Exceptions grid (governance/
+        // document_exceptions.php): same "Direction A" shape as Document
+        // Program's band -- two attention tiles (Overdue for Review, Due
+        // Soon) lead the row, then the same three partitions the grid's own
+        // tabs already use (get_exceptions_as_treegrid()'s $type param).
+        'default_layout' => [
+            ['x' => 0,  'y' => 0, 'w' => 2, 'h' => 2, 'minW' => 2, 'minH' => 2, 'name' => 'kpi_exc_overdue',  'type' => 'kpi', 'layout' => 'define_exceptions_insights'],
+            ['x' => 2,  'y' => 0, 'w' => 2, 'h' => 2, 'minW' => 2, 'minH' => 2, 'name' => 'kpi_exc_due_soon', 'type' => 'kpi', 'layout' => 'define_exceptions_insights'],
+            ['x' => 4,  'y' => 0, 'w' => 2, 'h' => 2, 'minW' => 2, 'minH' => 2, 'name' => 'kpi_exc_policy',   'type' => 'kpi', 'layout' => 'define_exceptions_insights'],
+            ['x' => 6,  'y' => 0, 'w' => 2, 'h' => 2, 'minW' => 2, 'minH' => 2, 'name' => 'kpi_exc_control',  'type' => 'kpi', 'layout' => 'define_exceptions_insights'],
+            ['x' => 8,  'y' => 0, 'w' => 2, 'h' => 2, 'minW' => 2, 'minH' => 2, 'name' => 'kpi_exc_pending',  'type' => 'kpi', 'layout' => 'define_exceptions_insights'],
+        ],
+    ],
     'governance_dashboard' => [
         'API_endpoint' => '/api/v2/ui/layout',
         'required_permission' => 'governance',
         'available_widgets' => [
             // Shared governance KPIs + list widgets + What's Next ...
             'kpi_active_frameworks', 'kpi_total_controls', 'kpi_open_exceptions', 'kpi_policies', 'kpi_passing_percent', 'kpi_governance_failing_controls',
+            // ... plus the Document Program insights band's attention tiles
+            // (get_ui_widget_governance_dashboard()'s own kpi_doc_overdue/
+            // _due_soon cases -- same counts as the page band, '../'-relative
+            // link since this renders here, not governance/documentation.php).
+            'kpi_doc_overdue', 'kpi_doc_due_soon',
             'list_policies_review', 'list_expiring_exceptions', 'list_failing_controls', 'whats_next',
             // ... plus the governance charts.
             'governance_current_control_maturity_pie_chart',
@@ -5829,11 +5988,48 @@ function get_teams_by_login_user(){
 
     // Store the list in the array
     $array = $stmt->fetchAll(PDO::FETCH_ASSOC);
-    
+
     // Close the database connection
     db_close($db);
 
     return $array;
+}
+
+/*****************************************************************
+ * FUNCTION: SANITIZE TEAMS REQUESTED FROM AN AUTHENTICATED USER *
+ * $team_options: the caller's own accessible team list, as      *
+ * returned by get_teams_by_login_user() (optionally with the    *
+ * synthetic "Unassigned" 0 entry unshifted on) -- this already  *
+ * collapses to every team when the Separation Extra isn't       *
+ * active, and to only the user's own teams when it is.          *
+ * $requested: the requested team ids, either a comma-separated  *
+ * string (e.g. $_GET['teams']) or an array (e.g. $_POST['teams'] *
+ * from a multiselect), or null/anything else when absent.       *
+ * Returns the requested ids intersected with $team_options, so  *
+ * a caller can never widen its scope past its own team access   *
+ * by naming another team's id; absent input falls back to the   *
+ * caller's full accessible list, matching prior default         *
+ * behavior for pages that had no explicit request value.        *
+ *****************************************************************/
+function sanitize_requested_teams($team_options, $requested) {
+    $allowed = [];
+    if (is_array($team_options)) {
+        foreach ($team_options as $team_option) {
+            $allowed[] = (int) $team_option['value'];
+        }
+    }
+
+    if (is_array($requested)) {
+        $requested_ids = array_map('intval', array_filter($requested, 'ctype_digit'));
+        return array_values(array_intersect($requested_ids, $allowed));
+    }
+
+    if (!is_string($requested)) {
+        return $allowed;
+    }
+
+    $requested_ids = array_map('intval', array_filter(explode(',', $requested), 'ctype_digit'));
+    return array_values(array_intersect($requested_ids, $allowed));
 }
 
 /***************************************
@@ -7562,7 +7758,7 @@ function redact_sensitive_setting_value($name, $value)
 
     static $sensitive_suffixes = [
         'password', 'passwd', 'pwd', 'secret', 'salt', 'token',
-        'key', 'credential', 'credentials',
+        'key', 'credential', 'credentials', 'pepper',
     ];
 
     $lowered = strtolower((string)$name);
@@ -8025,6 +8221,93 @@ function setting_exists(string $setting_name, ?PDO $db = null): bool
             db_close($db);
         }
     }
+}
+
+/*********************************************************************
+ * FUNCTION: ENSURE RANDOM SECRET SETTING                            *
+ * Returns the value of a per-install random secret kept in the      *
+ * settings table (SAML_SECRETSALT, api_key_pepper, ...), generating  *
+ * it exactly once when absent.                                      *
+ *                                                                   *
+ * The insert is INSERT ... ON DUPLICATE KEY UPDATE `value` = `value` *
+ * (a self-assignment no-op for a populated row), so two concurrent   *
+ * first requests cannot clobber each other: whichever INSERT commits *
+ * first wins and both re-read the same row. A leftover empty row is  *
+ * treated as absent and filled in place, so it cannot wedge every    *
+ * later call into the fail-closed throw. update_or_insert_setting()'s*
+ * REPLACE INTO would leave a check-then-act race. The reads here     *
+ * bypass get_setting()'s per-request cache; the one cache clear at    *
+ * the top is for OTHER callers, whose earlier cached miss (false)     *
+ * must not outlive the value this call stores. The re-read is retried*
+ * briefly because get_setting() returns false on a caught exception  *
+ * rather than throwing.                                               *
+ *                                                                   *
+ * Pass $db to reuse an open connection, as with get_setting().       *
+ *                                                                   *
+ * Fails closed: throws when no value can be read back. Returning the *
+ * locally generated candidate instead would hand a losing writer a   *
+ * secret that differs from the committed one, and anything derived   *
+ * from it (session HMACs, key hashes) would silently diverge.        *
+ *                                                                   *
+ * $generated is set to true when this call created the value, so a  *
+ * caller can react to a first-time generation.                      *
+ *********************************************************************/
+function ensure_random_secret_setting(string $name, int $bytes, ?bool &$generated = null, ?PDO $db = null): string
+{
+    $generated = false;
+
+    // A caller that looked this setting up before it existed holds a cached
+    // miss; clear it so its next ordinary read sees the value stored below.
+    unset($GLOBALS['setting_' . $name]);
+
+    $close_db = false;
+    if ($db === null) {
+        $db = db_open();
+        $close_db = true;
+    }
+
+    try {
+        $existing = get_setting($name, false, false, $db);
+        if (is_string($existing) && $existing !== '') {
+            return $existing;
+        }
+
+        $candidate = bin2hex(random_bytes($bytes));
+
+        $stmt = $db->prepare("
+            INSERT INTO `settings` (`name`, `value`)
+            VALUES (:name, :value)
+            ON DUPLICATE KEY UPDATE `value` = IF(`value` = '', VALUES(`value`), `value`)
+        ");
+        $stmt->bindParam(":name", $name, PDO::PARAM_STR);
+        $stmt->bindParam(":value", $candidate, PDO::PARAM_STR);
+        $stmt->execute();
+
+        $stored = false;
+        for ($attempt = 1; $attempt <= 3; $attempt++) {
+            $stored = get_setting($name, false, false, $db);
+            if (is_string($stored) && $stored !== '') {
+                break;
+            }
+            if ($attempt < 3) {
+                usleep(20000);
+            }
+        }
+    } finally {
+        if ($close_db) {
+            db_close($db);
+        }
+    }
+    if (!is_string($stored) || $stored === '') {
+        throw new RuntimeException("Could not read back the per-install secret setting {$name} after inserting it.");
+    }
+
+    $generated = ($stored === $candidate);
+    if ($generated) {
+        write_debug_log("Generated per-install secret setting {$name}.", 'notice');
+    }
+
+    return $stored;
 }
 
 /****************************
@@ -9090,6 +9373,10 @@ function add_user($type, $user, $email, $name, $salt, $hash, $teams, $role_id, $
 
 /*************************
  * FUNCTION: UPDATE USER *
+ * Returns true, except when this update locks the user out: in that      *
+ * case it returns whatever kill_sessions_of_user() reports for the       *
+ * session-invalidation DELETE, so the caller can tell the operator when  *
+ * the lockout succeeded but the user's existing sessions are still live. *
  *************************/
 function update_user($user_id, $lockout, $type, $name, $email, $teams, $role_id, $language, $admin, $multi_factor, $change_password, $manager, $permissions=[])
 {
@@ -9162,8 +9449,9 @@ function update_user($user_id, $lockout, $type, $name, $email, $teams, $role_id,
         mfa_delete_userid($user_id);
     }
 
+    $sessions_cleared = true;
     if ($user_got_locked) {
-        kill_sessions_of_user($user_id);
+        $sessions_cleared = kill_sessions_of_user($user_id);
     } else {
         // If the update affects the current logged in user
         if (isset($_SESSION['uid']) && $_SESSION['uid'] == $user_id && isset($_SESSION['user'])) {
@@ -9198,7 +9486,7 @@ function update_user($user_id, $lockout, $type, $name, $email, $teams, $role_id,
     }
 
 
-    return true;
+    return $sessions_cleared;
 }
 
 /*************************************
@@ -9221,21 +9509,130 @@ function is_user_locked_out($user_id) {
     return isset($lockout_status) && (int)$lockout_status === 1;
 }
 
+/****************************************************************************
+ * FUNCTION: RUN IN OTHER SESSIONS                                        *
+ * Activates each session id in turn so $per_session_callback can read/   *
+ * write it, then restores the calling process's own session state:      *
+ * reopens $sid if one was active on entry, otherwise restores the        *
+ * pre-loop $_SESSION and leaves session_id('') (SD-828 / SR-2133 --      *
+ * leaving a brand-new, unclosed session active with whatever the last    *
+ * iterated session happened to hold is what silently wiped               *
+ * $_SESSION['uid'] for every PHPUnit test running afterward in the same  *
+ * process).                                                               *
+ * $sid: session_id() captured by the caller BEFORE querying              *
+ *       $session_ids, or '' if no session was active on entry.           *
+ * $session_ids: session ids to iterate; a no-op when empty.              *
+ * $per_session_callback: called once per activated session, with that    *
+ *       session's data already loaded into $_SESSION.                    *
+ ****************************************************************************/
+function run_in_other_sessions(string $sid, array $session_ids, callable $per_session_callback): void {
+    if (empty($session_ids)) {
+        return;
+    }
+
+    // Snapshot $_SESSION before the loop below replaces it, iteration by
+    // iteration, with each matched session's own stored data. Needed to
+    // restore this process's own in-memory state afterward when there
+    // was no active session to reopen (see the $sid === '' branch below).
+    $preloop_session = $_SESSION ?? [];
+
+    // Force-write current session changes
+    session_write_close();
+
+    // The restore-or-reopen block below must run even if $per_session_callback()
+    // throws mid-loop -- otherwise the process is left with session_id()/$_SESSION
+    // still pointed at whichever OTHER user's session was active when the
+    // exception hit, for the rest of this process's life (the same class of bug
+    // SD-828 / SR-2133 fixed for the non-exception path).
+    try {
+        // Iterate through the session ids
+        foreach ($session_ids as $session_id) {
+
+            // Activate our target session
+            session_id($session_id);
+            session_start();
+
+            $per_session_callback();
+
+            // Force-write current session changes
+            session_write_close();
+        }
+    } finally {
+        // A callback exception can leave the loop's session open (its own
+        // session_write_close() above never ran) -- close it before touching
+        // session_id() again below.
+        if (session_status() === PHP_SESSION_ACTIVE) {
+            session_write_close();
+        }
+
+        if ($sid !== '') {
+            // Start our old session again -- re-reads its own (just-written)
+            // data back into $_SESSION.
+            session_id($sid);
+            session_start();
+        } else {
+            // No session was active on entry (CLI/API/cron context, e.g. a
+            // PHPUnit process or an Extra activation cron job) -- there is no
+            // real session to "reopen." Restore $_SESSION and session_id()
+            // to their pre-loop state instead of leaving a brand-new,
+            // unclosed session active with whatever the last iterated
+            // session happened to hold (SD-828 / SR-2133: this is what
+            // silently wiped $_SESSION['uid'] for every test running
+            // afterward in the same PHPUnit process).
+            session_id('');
+            $_SESSION = $preloop_session;
+        }
+    }
+}
+
 /************************************************************************
  * FUNCTION: REFRESH PERMISSIONS IN SESSIONS OF USER                    *
  * Forces a permission refresh on the active sessions of the user.      *
+ * No-ops (and logs a warning) if `sessions`.`user_id` does not exist   *
+ * yet -- see the mid-upgrade-chain note below.                         *
  * $uid: User id of the user whose sessions need to be force-refreshed. *
  ************************************************************************/
 function refresh_permissions_in_sessions_of_user($uid) {
+
+    // add_new_permissions() calls this unconditionally for every admin user,
+    // and several upgrade_from_*() functions earlier in the chain than
+    // upgrade_from_20260828001() (which adds this column via
+    // migrate_sessions_user_id_schema()) call add_new_permissions(). Without
+    // this guard, any multi-release upgrade run with an admin user fails with
+    // "Unknown column 'user_id'" the first time an earlier release function
+    // grants a permission -- long before the migration that adds the column
+    // ever runs. Once that migration does run later in the same chain, it
+    // backfills every existing session's user_id, so skipping the refresh
+    // here is safe: those sessions pick up the new permissions on their next
+    // natural refresh instead of immediately.
+    //
+    // Deliberately NOT memoized (e.g. `static`) despite this running once per
+    // admin user in a bulk-grant loop: PHPUnit's tests for this exact guard
+    // (this file's PreMigrationTest, and MigrateSessionsUserIdSchemaTest)
+    // drop and restore this column mid-suite in a shared PHP process, so a
+    // cached result from an earlier, unrelated test would go stale and
+    // either mask or falsely trigger this guard depending on run order.
+    if (!field_exists_in_table('user_id', 'sessions')) {
+        // This guard also fires for the function's normal, non-upgrade
+        // callers (e.g. remove_permissions() revoking a permission). Outside
+        // an upgrade run the column should always exist, so a warning here
+        // means either a stuck/partial upgrade chain, or -- on the rare
+        // window where a live permission change lands mid-chain -- that this
+        // user's OTHER open sessions won't see the change until they
+        // separately refresh. Log so operators can tell the difference from
+        // silence.
+        write_debug_log("refresh_permissions_in_sessions_of_user(): skipped refreshing sessions for uid $uid because sessions.user_id does not exist yet.", 'warning');
+        return;
+    }
 
     $sid = session_id();
 
     $db = db_open();
 
-    // PHP session serialization stores uid as 'uid|i:N;' — match it at the
-    // start of the data string or after a semicolon to avoid false positives.
-    // Without this filter the function iterates every active session in the
-    // DB, which becomes a request-killer on installs with many users.
+    // Filter by the indexed `sessions`.`user_id` column (SD-828 / SR-2133)
+    // instead of an unindexed `data REGEXP` scan. Without this filter the
+    // function iterates every active session in the DB, which becomes a
+    // request-killer on installs with many users.
     // The current session is included intentionally: head.php calls
     // session_write_close() before permission-grant code runs, so an
     // in-memory $_SESSION update (e.g. from set_user_permissions() inside
@@ -9243,36 +9640,22 @@ function refresh_permissions_in_sessions_of_user($uid) {
     // current session in the same loop, we re-open it, re-read permissions
     // from permission_to_user, write back, and close — so the next request
     // picks up the newly granted permissions without requiring a relog.
-    $uid_pattern = '(^|;)uid\\|i:' . (int)$uid . ';';
-    $stmt = $db->prepare("SELECT `id` FROM sessions WHERE `data` REGEXP :uid_pattern");
-    $stmt->bindParam(":uid_pattern", $uid_pattern);
+    $stmt = $db->prepare("SELECT `id` FROM sessions WHERE `user_id` = :uid");
+    $stmt->bindValue(":uid", (int)$uid, PDO::PARAM_INT);
     $stmt->execute();
     $session_ids = $stmt->fetchAll(PDO::FETCH_COLUMN);
 
-    if (!empty($session_ids)) {
-        // Force-write current session changes
-        session_write_close();
-
-        // Iterate through the session ids
-        foreach($session_ids as $session_id) {
-
-            // Activate our target session
-            session_id($session_id);
-            session_start();
-
-            // Refresh permissions if the user id matches the current user
-            if (isset($_SESSION['uid']) && $_SESSION['uid'] == $uid && isset($_SESSION['user'])) {
-                // Refresh user permissions for that session
-                set_user_permissions($_SESSION['user']);
-            }
-            // Force-write current session changes
-            session_write_close();
+    // Re-opening $sid below (when one was active on entry) re-reads its own
+    // just-written data back into $_SESSION, so an in-memory permission
+    // update made earlier in this same request (e.g. via
+    // add_new_permissions()) is visible for the rest of the request.
+    run_in_other_sessions($sid, $session_ids, function () use ($uid) {
+        // Refresh permissions if the user id matches the current user
+        if (isset($_SESSION['uid']) && $_SESSION['uid'] == $uid && isset($_SESSION['user'])) {
+            // Refresh user permissions for that session
+            set_user_permissions($_SESSION['user']);
         }
-
-        // Start our old session again
-        session_id($sid);
-        session_start();
-    }
+    });
 
     db_close($db);
 }
@@ -14211,8 +14594,52 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false)
             $row['assessment'] = isset($row['assessment']) ? try_decrypt($row['assessment']) : "";
             $row['notes'] = isset($row['notes']) ? try_decrypt($row['notes']) : "";
         }
-        unset($row); 
+        unset($row);
     }
+
+    return $array;
+}
+
+/*******************************************
+ * FUNCTION: GET RISKS SUBJECT LIST        *
+ * Lightweight id+subject list of open     *
+ * (non-Closed) risks, respecting team     *
+ * separation, for pickers that only ever  *
+ * render the subject. Unlike get_risks(), *
+ * this does not decrypt assessment/notes  *
+ * -- avoiding needless decrypt work (and  *
+ * the decrypt-failure alert) for columns  *
+ * the caller never displays.              *
+ *******************************************/
+function get_risks_subject_list(): array
+{
+    // Open the database connection
+    $db = db_open();
+
+    $stmt = $db->prepare("SELECT id, subject FROM risks WHERE status != \"Closed\" ORDER BY id ASC");
+    $stmt->execute();
+
+    // Store the list in the array
+    $array = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    // Close the database connection
+    db_close($db);
+
+    if (!is_array($array)) {
+        return [];
+    }
+
+    // Reuse the same team-scope filter get_risk_subjects_by_ids() uses
+    // rather than re-deriving the separation JOIN/WHERE here.
+    if (team_separation_extra()) {
+        $visibleIds = array_flip(filter_risk_ids_by_team_scope(array_column($array, 'id')));
+        $array = array_values(array_filter($array, fn($row) => isset($visibleIds[(int)$row['id']])));
+    }
+
+    foreach ($array as &$row) {
+        $row['subject'] = isset($row['subject']) ? try_decrypt($row['subject']) : "";
+    }
+    unset($row);
 
     return $array;
 }
@@ -15386,6 +15813,18 @@ function clone_risk_project($project_id, $risk_id)
 function update_risk_project($project_id, $risk_id)
 {
     global $lang;
+
+    // Authorize the referenced risk (team separation) before reassigning its
+    // project. Without this, a caller with only manage_projects can move a
+    // cross-team risk they have no access to via the legacy project/update
+    // route, bypassing the modify_risks + check_access_for_risk() gate that
+    // the canonical setProjectToRisk route enforces. check_access_for_risk()
+    // expects the public risk ID (internal ID + 1000).
+    if (!check_access_for_risk((int)$risk_id + 1000))
+    {
+        return false;
+    }
+
     // Open the database connection
     $db = db_open();
 
@@ -16430,6 +16869,30 @@ function next_review_by_score($calculated_risk)
     return $next_review;
 }
 
+/*******************************************
+ * FUNCTION: RESOLVE CLOSE REASON LABEL     *
+ * Pulled out of close_risk() so the        *
+ * unselected-vs-"Rejected" (value 0)       *
+ * ambiguity is independently testable      *
+ * without going through the DB-touching,   *
+ * test-mode-skipped workflow trigger.      *
+ *******************************************/
+function resolve_close_reason_label($close_reason)
+{
+    // $close_reason can be '' when the closer left the dropdown unselected.
+    // Casting straight to (int) collapsed that case onto value 0 ("Rejected"),
+    // making an unselected reason indistinguishable from an explicit Rejected
+    // wherever the label is displayed (e.g. the risk.closed workflow trigger's
+    // notification email). Resolve the code to its label like the rest of the
+    // codebase does (see get_name_by_value() call in process_notification_template_risk()
+    // in extras/notification/index.php) instead of passing the raw int.
+    if ($close_reason === '' || $close_reason === null) {
+        return '-';
+    }
+
+    return get_name_by_value('close_reason', (int)$close_reason, '-');
+}
+
 /************************
  * FUNCTION: CLOSE RISK *
  ************************/
@@ -16500,7 +16963,7 @@ function close_risk($risk_id, $user_id, $status, $close_reason, $note, $closure_
         'risk_id'        => $id,
         'display_risk_id'=> $id + 1000,
         'owner'          => $_wf_owner,
-        'closure_reason' => (int)$close_reason,
+        'closure_reason' => resolve_close_reason_label($close_reason),
     ]);
 
         return true;
@@ -18592,15 +19055,13 @@ function download_file($unique_name, $file_type = "file")
     // For validation_files we need the parent risk to authorize against.
     // validation_files links to a risk indirectly:
     //   validation_files.mitigation_id → mitigations.id → mitigations.risk_id
-    // Resolve here while the connection is open so the team-separation
-    // branch below can call extra_grant_access() against the right risk.
+    // get_risk_id_for_mitigation() resolves this (db_open()/db_close() share
+    // the process-global connection, so nesting it here is safe) so the
+    // team-separation branch below can call extra_grant_access() against the
+    // right risk.
     $validation_file_risk_id = null;
     if ($file_type === "validation_file" && !empty($array['mitigation_id'])) {
-        $mstmt = $db->prepare("SELECT risk_id FROM mitigations WHERE id = :mitigation_id");
-        $mstmt->bindParam(":mitigation_id", $array['mitigation_id'], PDO::PARAM_INT);
-        $mstmt->execute();
-        $mrow = $mstmt->fetch();
-        $validation_file_risk_id = $mrow ? (int)$mrow['risk_id'] : null;
+        $validation_file_risk_id = get_risk_id_for_mitigation($array['mitigation_id']);
     }
 
     // Close the database connection
@@ -18936,6 +19397,18 @@ function completed_project($project_id)
         // Get the risks for the project
         $risks = get_project_risks($project_id);
 
+        // Scope the bulk close to risks the caller is authorized to see
+        // (no-op if team separation extra is disabled). Without this, a
+        // project manager who cannot see a hidden cross-team risk could
+        // still close it just by marking the shared project Completed.
+        $risks = call_extra_function(
+            'team_separation_extra',
+            __DIR__ . '/../extras/separation/index.php',
+            'strip_no_access_risks',
+            [$risks],
+            $risks
+        );
+
         // For each risk in the project
         foreach ($risks as $risk)
         {
@@ -18974,6 +19447,18 @@ function incomplete_project($project_id)
 
     // Get the risks for the project
     $risks = get_project_risks($project_id);
+
+    // Scope the bulk reopen to risks the caller is authorized to see
+    // (no-op if team separation extra is disabled). Without this, a
+    // project manager who cannot see a hidden cross-team risk could still
+    // reopen it just by marking the shared project Incomplete.
+    $risks = call_extra_function(
+        'team_separation_extra',
+        __DIR__ . '/../extras/separation/index.php',
+        'strip_no_access_risks',
+        [$risks],
+        $risks
+    );
 
     // For each risk in the project
     foreach ($risks as $risk)
@@ -19811,6 +20296,76 @@ function check_access_for_risk($risk_id)
     return $access;
 }
 
+/****************************************************************
+ * FUNCTION: GET RISK ID FOR MITIGATION                           *
+ * $mitigation_id: Mitigation ID to resolve                       *
+ * Returns the mitigation's parent risk as the raw INTERNAL id     *
+ * (the mitigations.risk_id column's own storage form), or null    *
+ * when no mitigation with that id exists.                         *
+ ****************************************************************/
+function get_risk_id_for_mitigation($mitigation_id)
+{
+    $db = db_open();
+    $stmt = $db->prepare("SELECT risk_id FROM mitigations WHERE id = :mitigation_id");
+    $stmt->bindParam(":mitigation_id", $mitigation_id, PDO::PARAM_INT);
+    $stmt->execute();
+    $mitigation = $stmt->fetch();
+    db_close($db);
+
+    return $mitigation ? (int)$mitigation['risk_id'] : null;
+}
+
+/****************************************************************
+ * FUNCTION: CHECK ACCESS FOR MITIGATION                          *
+ * $mitigation_id: Mitigation ID to check                         *
+ * Resolves the mitigation's parent risk and authorizes against   *
+ * it via check_access_for_risk() -- a no-op when Team Separation *
+ * is disabled. Returns false when the mitigation does not exist. *
+ ****************************************************************/
+function check_access_for_mitigation($mitigation_id)
+{
+    $risk_id = get_risk_id_for_mitigation($mitigation_id);
+    if ($risk_id === null) {
+        return false;
+    }
+    // check_access_for_risk() expects the +1000 DISPLAY id.
+    return check_access_for_risk($risk_id + 1000);
+}
+
+/******************************************************************
+ * FUNCTION: FILTER ACCESSIBLE RISK IDS                            *
+ * $risk_ids: array of raw (internal) risk ids, or risk-id-like     *
+ *            strings (e.g. entries from a caller-supplied CSV list) *
+ * Returns the deduplicated, validated risk ids (as ints) the        *
+ * current user is authorized to see, via check_access_for_risk() -- *
+ * a no-op when Team Separation is disabled. $risk_ids and           *
+ * check_access_for_risk() disagree on id convention: the former is  *
+ * the raw internal risks.id value, the latter (like extra_grant_    *
+ * access() underneath it) expects the +1000 DISPLAY id, so each     *
+ * candidate is converted via convert_to_risk_id() before the check. *
+ * Invalid entries (non-numeric, empty) are dropped.                 *
+ ******************************************************************/
+function filter_accessible_risk_ids(array $risk_ids)
+{
+    $access_cache = [];
+    $is_risk_accessible = function ($risk_id) use (&$access_cache) {
+        $risk_id = trim((string)$risk_id);
+        if ($risk_id === "" || !ctype_digit($risk_id)) {
+            return false;
+        }
+        $risk_id = (int)$risk_id;
+        if (!array_key_exists($risk_id, $access_cache)) {
+            $access_cache[$risk_id] = check_access_for_risk(convert_to_risk_id($risk_id));
+        }
+        return $access_cache[$risk_id];
+    };
+
+    return array_values(array_unique(array_map(
+        'intval',
+        array_filter($risk_ids, $is_risk_accessible)
+    )));
+}
+
 /************************************
  * FUNCTION: CHECK ACCESS FOR ASSET *
  * $asset_id: Asset ID to check     *
@@ -19836,6 +20391,26 @@ function check_access_for_asset($asset_id)
     else $access = true;
 
     return $access;
+}
+
+/***************************************************************
+ * FUNCTION: FILTER ACCESSIBLE ASSETS                           *
+ * $items: array of asset rows (each with an id under $id_key)  *
+ *         or an array of raw asset ids when $id_key is null    *
+ * $id_key: the array key holding the asset id, or null when    *
+ *          $items is itself a flat list of ids                 *
+ * Returns $items re-indexed, keeping only the entries whose     *
+ * asset id passes check_access_for_asset() -- a no-op when     *
+ * Team Separation is disabled.                                  *
+ ***************************************************************/
+function filter_accessible_assets(array $items, ?string $id_key = null)
+{
+    return array_values(array_filter(
+        $items,
+        $id_key === null
+            ? fn($id) => check_access_for_asset($id)
+            : fn($item) => check_access_for_asset($item[$id_key])
+    ));
 }
 
 /*****************************************
@@ -22368,7 +22943,7 @@ function is_admin($id = false) {
 /*************************************
  * FUNCTION: UPLOAD COMPLIANCE FILES *
  *************************************/
-function upload_compliance_files($test_audit_id, $ref_type, $files, $version=1, $user=null)
+function upload_compliance_files($test_audit_id, $ref_type, $files, $version=1, $user=null, $entity_name=null)
 {
     global $escaper, $lang;
 
@@ -22378,13 +22953,29 @@ function upload_compliance_files($test_audit_id, $ref_type, $files, $version=1, 
     // (governance.php), and three v2 API endpoints (api.php) all land here, and
     // none of them requires admin.
     //
+    // Unlike upload_file()/upload_validation_file(), $files is the raw
+    // $_FILES['file'][...] multi-file shape, so "was a file actually submitted"
+    // isn't a single isset() check — a <input type=file name="file[]"> with
+    // nothing chosen still arrives as ['name' => [''], ...], a non-empty array
+    // with a blank filename. Only refuse when at least one entry has a real
+    // name; otherwise this is just a plain save with no attachment and the
+    // demo restriction has nothing to refuse.
+    //
     // Returns the shape a successful call returns with nothing uploaded:
     // [true, [], []]. Callers destructure this as [$status, $file_ids, $errors]
     // and branch on a non-empty $errors, so an empty error list lets the
     // surrounding save (the test result, the document, the exception) complete
     // normally with no attachment — the same "record saves, file doesn't"
     // trade-off upload_file() makes.
-    if (demo_mode()) {
+    $has_submitted_file = false;
+    foreach (($files['name'] ?? []) as $name) {
+        if ($name !== '' && $name !== null) {
+            $has_submitted_file = true;
+            break;
+        }
+    }
+
+    if ($has_submitted_file && demo_mode()) {
         set_alert(true, "bad", $lang['ActionDisabledOnDemoInstance']);
 
         return [true, [], []];
@@ -22464,8 +23055,19 @@ function upload_compliance_files($test_audit_id, $ref_type, $files, $version=1, 
                             $log_type = 'exception';
                         }
 
-                        // Audit log entry for uploading a file
-                        $message = "File \"" . $file['name'] . "\" was uploaded by username \"" . $escaper->escapeHtml($_SESSION['user']) . "\".";
+                        // Audit log entry for uploading a file. $entity_name (when the
+                        // caller has it -- documents does, exceptions/test_audit don't
+                        // pass one today) names the record the file was attached to, not
+                        // just the raw uploaded filename -- otherwise this is the one
+                        // document audit message with no document name anywhere in its
+                        // own text, so get_documents_audit_log()'s live JOIN against
+                        // `documents` is the ONLY way to resolve it, and that JOIN
+                        // returns null once the document is deleted (classify_document_
+                        // audit_activity()/extract_document_name_from_audit_message(),
+                        // includes/governance.php, parse both shapes of this message).
+                        $message = $entity_name !== null
+                            ? "File \"" . $file['name'] . "\" was uploaded to document \"" . $entity_name . "\" (ID: \"" . $test_audit_id . "\") by username \"" . $escaper->escapeHtml($_SESSION['user']) . "\"."
+                            : "File \"" . $file['name'] . "\" was uploaded by username \"" . $escaper->escapeHtml($_SESSION['user']) . "\".";
                         write_log($test_audit_id + 1000, $_SESSION['uid'] ?? 0, $message, $log_type);
 
                     }
@@ -23845,7 +24447,8 @@ function prevent_extra_double_submit($extra, $is_enable) {
         ($extra == "jira" && (jira_extra() == $is_enable)) ||
         ($extra == "organizational_hierarchy" && (organizational_hierarchy_extra() == $is_enable)) ||
         ($extra == "ucf" && (ucf_extra() == $is_enable)) ||
-	($extra == "extra_vulnmgmt" && (vulnmgmt_extra() == $is_enable));
+        ($extra == "extra_vulnmgmt" && (vulnmgmt_extra() == $is_enable)) ||
+        ($extra == "workflows" && (workflows_extra() == $is_enable));
 
     if ($interrupt) {
         set_alert(true, "bad", $lang['ExtraIsAlready' . ($is_enable ? 'Enabled': 'Disabled')]);
@@ -24247,17 +24850,35 @@ function check_tag_type_permission($type) {
  * FUNCTION: COMPLIANCE FILE REQUIRED EXCEPTION PERMISSION                      *
  * SR-1694: the granular exception-permission that a compliance_files download  *
  * must enforce for a given ref_type at the sink (download_compliance_file()),  *
- * or null when coarse governance/compliance menu access is the intended        *
- * authorization model. Exception attachments (ref_type 'exceptions') require   *
- * view_exception — mirroring the exception display API, which already gates on  *
- * check_permission_exception('view'). `documents` and `test_audit` have no      *
- * granular view permission, so they return null (coarse access, plus the       *
- * entry-point team-separation check for test_audit, is their model). Pure — no  *
- * session/DB access — so the mapping is unit-testable and the coarse-by-design  *
- * intent is locked against accidental regression.                              *
+ * or null when the ref_type has no exception-module permission of its own.     *
+ * Exception attachments (ref_type 'exceptions') require view_exception —       *
+ * mirroring the exception display API, which already gates on                  *
+ * check_permission_exception('view'). `documents` and `test_audit` are not     *
+ * exception-module resources, so they return null here — `documents` has its   *
+ * own granular gate instead, see compliance_file_required_documentation_       *
+ * permission() below. Pure — no session/DB access — so the mapping is          *
+ * unit-testable and the coarse-by-design intent is locked against accidental   *
+ * regression.                                                                  *
  *******************************************************************************/
 function compliance_file_required_exception_permission($ref_type) {
     return $ref_type === 'exceptions' ? 'view' : null;
+}
+
+/*******************************************************************************
+ * FUNCTION: COMPLIANCE FILE REQUIRED DOCUMENTATION PERMISSION                  *
+ * Completes SR-1694 for the `documents` ref_type. When SR-1694 first gated     *
+ * this sink, `documents` had no granular view permission of its own, so the    *
+ * owning-module gate (governance) was its whole model — see the historical     *
+ * note on compliance_file_required_exception_permission() above. Governance    *
+ * Documents now has its own view_documentation permission, so a               *
+ * governance-menu user without it must still be denied a document download    *
+ * at this sink, the same way an exceptions-module user without view_exception  *
+ * is denied an exception attachment. Returns null for every other ref_type —  *
+ * this map is documents-specific, not a general allow-map. Pure — no           *
+ * session/DB access — so the mapping is unit-testable.                         *
+ *******************************************************************************/
+function compliance_file_required_documentation_permission($ref_type) {
+    return $ref_type === 'documents' ? 'view_documentation' : null;
 }
 
 /*******************************************************************************
@@ -24290,21 +24911,30 @@ function compliance_file_owning_module_permission($ref_type) {
  * FUNCTION: COMPLIANCE FILE DOWNLOAD DENIED                                    *
  * The deny decision enforced at download_compliance_file().                    *
  * Returns true when a compliance_files row of the given ref_type must NOT be   *
- * streamed to the current caller. Two independent reasons to deny:             *
+ * streamed to the current caller. Three independent reasons to deny:           *
  *                                                                              *
  *  1. MODULE. The caller does not hold the module permission that owns the     *
  *     ref_type (compliance_file_owning_module_permission()). This is what      *
  *     stops a file being pulled through the OTHER module's download page.      *
  *     An unmapped ref_type has no known owner and is denied — fail closed, so  *
  *     a future fourth ref_type cannot stream before someone maps it.           *
- *  2. GRANULAR. The ref_type additionally requires an exception permission     *
- *     (compliance_file_required_exception_permission()) that the caller        *
- *     lacks. Exception attachments require view_exception, mirroring the       *
- *     exception display API. documents and test_audit have no granular view    *
- *     permission, so the module gate is their whole model at this sink.        *
+ *  2. EXCEPTION-GRANULAR. The ref_type additionally requires an exception      *
+ *     permission (compliance_file_required_exception_permission()) that the    *
+ *     caller lacks. Exception attachments require view_exception, mirroring    *
+ *     the exception display API.                                              *
+ *  3. DOCUMENTATION-GRANULAR (completes SR-1694 for `documents`, see           *
+ *     compliance_file_required_documentation_permission()). Governance         *
+ *     documents require view_documentation at this sink — checked via the      *
+ *     same generic $module_permission_checker as the module gate               *
+ *     (view_documentation is a plain check_permission() key, not an            *
+ *     exception-module permission, so it does not go through the exception     *
+ *     checker). This sink is currently the only runtime enforcement point for  *
+ *     view_documentation; the documents display endpoints still gate on the    *
+ *     coarser `governance` permission only. test_audit still has no granular   *
+ *     permission at this sink; the module gate is its whole model.             *
  *                                                                              *
  * Both permission checks are injected as callables so the whole deny decision  *
- * — the two mappings AND that the correct permission is the one checked — is   *
+ * — the mappings AND that the correct permission is the one checked — is       *
  * unit-testable without a session; download_compliance_file() passes the real  *
  * check_permission_exception and check_permission. Keeps the header()/exit()   *
  * sink a thin wrapper over verifiable logic.                                    *
@@ -24323,8 +24953,34 @@ function compliance_file_download_denied($ref_type, callable $exception_permissi
         return true;
     }
 
-    $required_permission = compliance_file_required_exception_permission($ref_type);
-    return $required_permission !== null && !$exception_permission_checker($required_permission);
+    $required_exception_permission = compliance_file_required_exception_permission($ref_type);
+    if ($required_exception_permission !== null && !$exception_permission_checker($required_exception_permission)) {
+        return true;
+    }
+
+    $required_documentation_permission = compliance_file_required_documentation_permission($ref_type);
+    return $required_documentation_permission !== null && !$module_permission_checker($required_documentation_permission);
+}
+
+/*******************************************************************************
+ * FUNCTION: COMPLIANCE FILE DOWNLOAD DENIED FOR DOWNLOAD                       *
+ * Combines the admin bypass with compliance_file_download_denied()'s granular  *
+ * decision -- the exact `!is_admin() && compliance_file_download_denied(...)`  *
+ * shape governance/documentation.php's bulk-download branch inlines at its own *
+ * call site; download_compliance_file() (includes/compliance.php) calls this   *
+ * wrapper instead. Admin bypasses the granular checks the same way is_admin()  *
+ * bypasses them for the Document Program row actions (documentation.php's      *
+ * $can_edit/$can_delete/$can_approve/$can_view) -- an admin who wasn't          *
+ * individually granted these permissions must still be able to download what   *
+ * the UI now lets them see.                                                    *
+ *                                                                              *
+ * is_admin is injected as a callable, same reason the granular permission      *
+ * checkers are: the admin-bypass interaction is unit-testable without a        *
+ * session. compliance_file_download_denied() itself stays session-free and     *
+ * bypass-free per its own docblock; this wrapper is where the two combine.     *
+ *******************************************************************************/
+function compliance_file_download_denied_for_download($ref_type, callable $is_admin_checker, callable $exception_permission_checker, callable $module_permission_checker) {
+    return !$is_admin_checker() && compliance_file_download_denied($ref_type, $exception_permission_checker, $module_permission_checker);
 }
 
 /*******************************************************************************
@@ -24350,6 +25006,47 @@ function compliance_file_download_denied($ref_type, callable $exception_permissi
  *******************************************************************************/
 function close_risks_by_test_result_denied(callable $permission_checker) {
     return !$permission_checker('close_risks');
+}
+
+/**
+ * Pure decision helper for delete_project_api() (includes/api.php): true only
+ * if $is_accessible returns true for every risk in $risks, false on the first
+ * miss. Extracted so the check-before-mutate ordering guarantee is
+ * unit-testable without going through the exit()-driven json_response() sink,
+ * and independent of the order get_project_risks() (no ORDER BY) happens to
+ * return rows in.
+ */
+function all_project_risks_accessible(array $risks, callable $is_accessible): bool
+{
+    foreach ($risks as $risk)
+    {
+        if (!$is_accessible($risk))
+        {
+            return false;
+        }
+    }
+    return true;
+}
+
+/**
+ * Pure decision helper for delete_project_api() (includes/api.php): unassigns
+ * every risk in $risks via $unassign_risk (an injected callable), stopping
+ * and returning false on the first failure rather than continuing to the
+ * rest. Extracted so the stop-immediately ordering guarantee is
+ * unit-testable without a real DB connection or a live HTTP request; the
+ * caller decides what "stop" means (rolling back the surrounding
+ * transaction).
+ */
+function unassign_all_project_risks(array $risks, callable $unassign_risk): bool
+{
+    foreach ($risks as $risk)
+    {
+        if (!$unassign_risk($risk))
+        {
+            return false;
+        }
+    }
+    return true;
 }
 
 /*******************************************
@@ -26638,413 +27335,6 @@ function get_users_with_permission($permission_key) {
     return $users;
 }
 
-/***********************************************************************************
- * NEXT SECTION CONTAINS FUNCTIONS DEDICATED TO FIXING FILE UPLOAD ENCODING ISSUES *
- ***********************************************************************************/
-function has_files_with_encoding_issues($type = 'all') {
-    if ($type === 'all') {
-        $sum = 0;
-        foreach (get_settings(['file_encoding_issues_count_compliance', 'file_encoding_issues_count_risk', 'file_encoding_issues_count_questionnaire']) as $_ => $value) {
-            $sum += (int)$value;
-        }
-        return $sum;
-    } else {
-        return (int)get_setting("file_encoding_issues_count_{$type}", 0);
-    }
-}
-
-// Refresh the number of files having an issue, update the settings or delete if there're no file with encoding issue left
-function refresh_file_encoding_issue_counts($type = 'all') {
-
-    $db = db_open();
-
-    // Only query the database if it's really necessary
-    $questionnaire_table_exists = (($type === 'questionnaire' || $type === 'all') ? table_exists('questionnaire_files') : false);
-
-    if (($type === 'questionnaire' || $type === 'all') && !$questionnaire_table_exists) {
-        // Make sure there's no leftover data left in the settings table
-        delete_setting("file_encoding_issues_count_questionnaire");
-        
-        // If it's only for the questionnaire then there's nothing else to do here
-        if ($type === 'questionnaire') {
-            return;
-        }
-    }
-    
-    if ($type === 'all') {
-        $types = ['compliance', 'risk'];
-        if ($questionnaire_table_exists) {
-            $types []= 'questionnaire';
-        }
-    } else {
-        $types = [$type];
-    }
-
-    foreach ($types as $type) {
-        $setting_name = "file_encoding_issues_count_{$type}";
-        $log_type = $type;
-        $sql = '';
-        switch($type) {
-            case 'compliance':
-                $log_type = 'test_audit';
-                $sql = "SELECT count(1) AS cnt FROM `compliance_files` WHERE `size` <> LENGTH(`content`);";
-                break;
-            case 'risk':
-                $log_type = 'risk';
-                $sql = "SELECT count(1) AS cnt FROM `files` WHERE `size` <> LENGTH(`content`);";
-                break;
-            case 'questionnaire':
-                $log_type = 'questionnaire';
-                $sql = "SELECT count(1) AS cnt FROM `questionnaire_files` WHERE `size` <> LENGTH(`content`);";
-                break;
-        }
-        if (!$sql) continue;
-
-        $stmt = $db->prepare($sql);
-        $stmt->execute();
-
-        $count = (int)$stmt->fetch(PDO::FETCH_COLUMN);
-
-        // Refresh the numbers in the database
-        if ($count) {
-            $old_count = (int)get_setting($setting_name);
-            if ($old_count !== $count) {
-                update_or_insert_setting($setting_name, $count);
-                write_log(0, $_SESSION['uid'] ?? 0, _lang('EncodingIssueCountUpdated', ['type' => $type, 'old_count' => $old_count, 'count' => $count]), $log_type);
-            }
-        } else { 
-            // Or delete the setting if the issues were cleaned up
-            delete_setting($setting_name);
-            write_log(0, $_SESSION['uid'] ?? 0, _lang('EncodingIssueCleanedUp', ['type' => $type]), $log_type);
-        }
-    }
-
-    db_close($db);
-}
-
-function get_files_with_encoding_issues($type = 'risk', $order_column = 0, $order_dir = "asc", $offset = 0, $page_size = -1) {
-    
-    $limit =  $page_size>0 ? " LIMIT {$offset}, {$page_size}" : "";
-
-    $db = db_open();
-    $log_type = '';
-    $sql = '';
-    switch($type) {
-        case 'compliance':
-            $log_type = 'test_audit';
-            if ($order_column == 2) {
-                $order_column = "`u`.`name` {$order_dir}, `u`.`id` ASC";
-            } elseif ($order_column == 1) {
-                $order_column = "`u`.`ref_type` {$order_dir}";
-            } else $order_column = "`u`.`name` {$order_dir}";
-
-            $sql = "
-                SELECT * FROM (
-                    SELECT
-                    	`f`.`ref_id` AS id,
-                        `f`.`name` AS file_name,
-                        `f`.`ref_type`,
-                        `f`.`unique_name`,
-                        `t`.`name`,
-                        `t`.`status`
-                    FROM
-                    	`compliance_files` f
-                    	INNER JOIN `framework_control_test_audits` t ON `f`.`ref_type` = 'test_audit' AND `f`.`ref_id` = `t`.`id`
-                    WHERE
-                    	`f`.`size` <> LENGTH(`content`)
-                    UNION ALL
-                    SELECT
-                    	`f`.`ref_id` AS id,
-                        `f`.`name` AS file_name,
-                        `f`.`ref_type`,
-                        `f`.`unique_name`,
-                        `e`.`name`,
-                        0 AS status
-                    FROM
-                    	`compliance_files` f
-                    	INNER JOIN `document_exceptions` e ON `f`.`ref_type` = 'exceptions' AND `f`.`ref_id` = `e`.`value`
-                    WHERE
-                    	`f`.`size` <> LENGTH(`content`)
-                    UNION ALL
-                    SELECT
-                    	`f`.`ref_id` AS id,
-                        `f`.`name` AS file_name,
-                        `f`.`ref_type`,
-                        `f`.`unique_name`,
-                        `d`.`document_name` AS name,
-                        0 AS status
-                    FROM
-                    	`compliance_files` f
-                    	INNER JOIN `documents` d ON `f`.`ref_type` = 'documents' AND `f`.`ref_id` = `d`.`id`
-                    WHERE
-                    	`f`.`size` <> LENGTH(`content`)
-                ) u
-                ORDER BY {$order_column}
-            ";
-
-        break;
-        case 'risk':
-            $log_type = 'risk';
-            if ($order_column == 3) {
-                $order_column = "`f`.`name` {$order_dir}, `r`.`id` ASC";
-            } elseif ($order_column == 2) {
-                $order_column = "`f`.`view_type` {$order_dir}";
-            } elseif ($order_column == 1) {
-                $order_column = encryption_extra() ? "`r`.`order_by_subject` {$order_dir}" : "`r`.`subject` {$order_dir}";
-            } else $order_column = "`r`.`id` {$order_dir}";
-
-            $sql = "
-                SELECT
-                    `r`.`id` as risk_id,
-                    `r`.`subject`,
-                    `f`.`unique_name`,
-                    `f`.`name` AS file_name,
-                    `f`.`view_type`
-                FROM
-                    `files` f
-                    INNER JOIN `risks` r ON `r`.`id` = f.risk_id
-                WHERE
-                    `f`.`size` <> LENGTH(`f`.`content`)
-                ORDER BY {$order_column}
-            "; 
-        break;
-        case 'questionnaire':
-            $log_type = 'questionnaire';
-            if ($order_column == 2) {
-                $order_column = "`q`.`name` {$order_dir}, `t`.`id` ASC";
-            } elseif ($order_column == 1) {
-                $order_column = "`type` {$order_dir}";
-            } else $order_column = "`q`.`name` {$order_dir}, `t`.`id` ASC";
-            
-            $sql = "
-                SELECT
-                    `t`.`token`,
-                    `q`.`name`,
-                    `f`.`unique_name`,
-                    `f`.`name` AS file_name,
-                    IF(`f`.`template_id` = 0 AND `f`.`question_id` = 0, 'Questionnaire', 'Answer') AS `type`
-                FROM
-                    `questionnaire_files` f
-                    INNER JOIN `questionnaire_tracking` t ON `f`.`tracking_id` = `t`.`id`
-                    INNER JOIN `questionnaires` q ON `t`.`questionnaire_id` = `q`.`id`
-                WHERE
-                    `f`.`size` <> LENGTH(`f`.`content`)
-                ORDER BY {$order_column}
-            ";
-        break;
-    }
-    
-    $stmt = $db->prepare("
-        SELECT SQL_CALC_FOUND_ROWS t1.*
-        FROM (
-            {$sql}
-        ) t1
-        {$limit}
-    ");
-    $stmt->execute();
-    
-    $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
-    
-    $stmt = $db->prepare("SELECT FOUND_ROWS();");
-    $stmt->execute();
-    $recordsTotal = $stmt->fetch()[0];
-    
-    db_close($db);
-
-    $setting_name = "file_encoding_issues_count_{$type}";
-
-    // Refresh the numbers in the database
-    if ($recordsTotal) {
-        $recordsTotal = (int)$recordsTotal;
-        if ((int)get_setting($setting_name) !== $recordsTotal) {
-            update_or_insert_setting($setting_name, $recordsTotal);
-        }
-    } else { // Or delete the setting if the issues were cleaned up
-        delete_setting($setting_name);
-    }
-
-    return array($recordsTotal, $results);
-}
-
-function display_file_encoding_issues($type) {
-    global $lang, $escaper;
-    
-    $tableID = "upload-encoding-issues-$type";
-    
-    echo "
-        <table id='{$tableID}' width='100%' class='risk-datatable table table-bordered table-striped table-condensed'>
-            <thead>
-                <tr>";
-    $data_list = [];
-    switch($type) {
-        case 'risk':
-            echo "
-                    <th align='left' valign='top' width='5%'>" . $escaper->escapeHtml($lang['ID']) . "</th>
-                    <th align='left' valign='top'>" . $escaper->escapeHtml($lang['Subject']) . "</th>
-                    <th align='left' valign='top' width='10%'>" . $escaper->escapeHtml($lang['AttachmentType']) . "</th>";
-            $data_list = ['id', 'subject', 'view_type'];
-        break;
-        case 'compliance':
-            echo "
-                    <th align='left' valign='top'>" . $escaper->escapeHtml($lang['Name']) . "</th>
-                    <th align='left' valign='top' width='12%'>" . $escaper->escapeHtml($lang['AttachmentType']) . "</th>";
-            $data_list = ['name', 'ref_type'];
-        break;
-        case 'questionnaire':
-            echo "
-                    <th align='left' valign='top'>" . $escaper->escapeHtml($lang['QuestionnaireName']) . "</th>
-                    <th align='left' valign='top' width='12%'>" . $escaper->escapeHtml($lang['AttachmentType']) . "</th>";
-            $data_list = ['name', 'type'];
-        break;
-    }
-    
-    echo "
-                    <th align='left' valign='top' width='20%'>" . $escaper->escapeHtml($lang['FileName']) . "</th>
-                    <th align='left' valign='top' width='17%'></th>
-                    <th align='center' valign='top' width='5%'></th>
-                </tr>
-            </thead>
-            <tbody>
-            </tbody>
-        </table>
-        
-        <script>
-            $(function() {
-
-                var datatableInstance_{$type} = $('#{$tableID}').DataTable({
-                    searching: false,
-                    ordering: true,
-                    createdRow: function(row, data, index){
-                        var background = $('.background-class', $(row)).data('background');
-                        $(row).find('td').addClass(background)
-                    },
-                    order: [[0, 'asc']],
-                    ajax: {
-                        url: BASE_URL + '/api/v2/upload_encoding_issue_fix/datatable?type=$type',
-                        data: function(d){ },
-                        complete: function(response){ }
-                    },
-                    columnDefs : [";
-    foreach ($data_list as $target => $data) {
-        echo "
-                        {
-                            'targets': [$target],
-                            'data': '$data'
-                        },";
-    }
-
-    echo "
-                        {
-                            'targets': [-3],
-                            'data': 'file_name'
-                        },
-                        {
-                            'targets': [-2],
-                            'data': 'file_uploader',
-                            'orderable': false
-                        },
-                        {
-                            'targets': -1,
-                            'data': null,
-                            'defaultContent': '<button class=\"confirm upload-button btn btn-dark\" style=\"padding: 2px 15px;\">" . $escaper->escapeHtml($lang['Upload']) . "</button>',
-                            'orderable': false
-                        }
-                    ]
-                });
-                
-                // Add paginate options
-                datatableInstance_{$type}.on('draw', function(e, settings){
-                    
-                    if (datatableInstance_{$type}.page() == 0) {
-                        // Reload the page when no more issues left so the page load code can
-                        // run the wrap-up logic
-                        if (datatableInstance_{$type}.rows( {page:'current'} ).count() == 0) {
-                            setTimeout(function(){window.location=window.location;}, 1);
-                        }
-                    } else {// get to the previous page in case we confirmed the last one from the page and it's not the first page
-                        if (datatableInstance_{$type}.rows( {page:'current'} ).count() == 0) {
-                            setTimeout(function(){datatableInstance_{$type}.page('previous').draw('page');}, 1);
-                        }
-                    }
-                    
-                    $('#{$tableID} tbody').off('click', 'button.confirm');
-                    $('#{$tableID} tbody').on('click', 'button.confirm', function () {
-                        var data = datatableInstance_{$type}.row($(this).closest('tr')).data();
-                        var unique_name = data['unique_name'];
-                        var file_upload = $('#file-upload-' + unique_name)[0];
-
-                        if (!file_upload.files[0]) {
-                            alert('" . $escaper->escapeHtml($lang['YouHaveToSelectAFileToUpload']) . "');
-                            return false;
-                        }
-
-                        if (file_upload.files[0].size > " . (int)get_setting('max_upload_size') . ") {
-                            alert('" . $escaper->escapeHtml($lang['UploadingFileTooBig']) . "');
-                            return false;
-                        }
-
-                        var form_data = new FormData();
-                        form_data.append('file', file_upload.files[0]);
-                        form_data.append('type', '{$type}');
-                        form_data.append('unique_name', unique_name);
-
-                        $.ajax({
-                            type: 'POST',
-                            url: BASE_URL + '/api/v2/upload_encoding_issue_fix/file_upload',
-                            cache: false,
-                            contentType: false,
-                            processData: false,
-                            data : form_data,
-                            success: function(data) {
-                                if(data.status_message) {
-                                    showAlertsFromArray(data.status_message);
-                                }
-                                datatableInstance_{$type}.ajax.reload(null, false);
-                            },
-                            error: function(xhr,status,error) {
-                                if(!retryCSRF(xhr, this)) {
-                                    if(xhr.responseJSON && xhr.responseJSON.status_message) {
-                                        showAlertsFromArray(xhr.responseJSON.status_message);
-                                    }
-                                }
-                            }
-                        });
-                    });
-                });
-            });
-        </script>
-    ";
-}
-
-function get_encoding_issue_file_info($type, $unique_name) {
-    $db = db_open();
-    
-    switch($type) {
-        case 'compliance':
-            $sql = "SELECT `id`, `ref_id`, `ref_type`, `version` FROM `compliance_files` WHERE `unique_name` = :unique_name;";
-        break;
-        case 'risk':
-            $sql = "SELECT `risk_id`, `view_type` FROM `files` WHERE `unique_name` = :unique_name;";
-        break;
-        case 'questionnaire':
-            $sql = "SELECT `id`, `tracking_id`, `template_id`, `parent_question_id`, `question_id` FROM `questionnaire_files` WHERE `unique_name` = :unique_name;";
-        break;
-    }
-
-    $stmt = $db->prepare($sql);
-    $stmt->bindParam(":unique_name", $unique_name, PDO::PARAM_STR);
-    $stmt->execute();
-    
-    $results = $stmt->fetch(PDO::FETCH_ASSOC);
-    
-    db_close($db);
-    
-    return $results;
-}
-/***************************************************************************************
- * END OF SECTION CONTAINING FUNCTIONS DEDICATED TO FIXING FILE UPLOAD ENCODING ISSUES *
- ***************************************************************************************/
-
 /********************************************************************************
  * FUNCTION: ARRAY ORDERBY                                                      *
  * Reorders an array based on a column value                                    *
@@ -27888,10 +28178,77 @@ function create_zip_file($source, $destination)
     return $zip->close();
 }
 
+/*******************************************************************************
+ * FUNCTION: FILTER RISK IDS BY TEAM SCOPE                                      *
+ *******************************************************************************
+ * Narrows a list of risk ids to those the CURRENT user is allowed to see under
+ * the Team Separation Extra, using the same get_user_teams_query('b') fragment
+ * every other risk read path uses (see get_risk_by_id()). Returns the ids
+ * unchanged when the extra is inactive, so a plain instance is unaffected.
+ *
+ * WHY THIS EXISTS: a risk's `subject` is the sensitive part of a risk record —
+ * it is free text an analyst wrote about a specific problem. Any surface that
+ * bulk-resolves subjects from ids has to apply the same scope the risk grid
+ * does, or it leaks the subject of a risk outside the caller's teams to anyone
+ * who can name its id. The Define Exceptions grid's associated-risk column was
+ * exactly that surface.
+ *
+ * @param  array $ids Integer risk ids (RAW ids, not the +1000 display form).
+ * @return array The subset of $ids visible to the current user.
+ ******************************************************************************/
+function filter_risk_ids_by_team_scope(array $ids)
+{
+    $ids = array_values(array_unique(array_map('intval', $ids)));
+    if (!$ids) {
+        return [];
+    }
+
+    // Returns '' when the Team Separation Extra is inactive — in which case
+    // there is nothing to scope and every id stays.
+    $separation_query = call_extra_function(
+        'team_separation_extra',
+        __DIR__ . '/../extras/separation/index.php',
+        'get_user_teams_query',
+        ['b', false, true],
+        ''
+    );
+
+    if (trim((string)$separation_query) === '') {
+        return $ids;
+    }
+
+    $db = db_open();
+
+    // The joins the fragment's own predicates reference: rtt.team_id (team
+    // membership) and rtas.user_id (additional stakeholder). owner / manager /
+    // submitted_by come off the `b` alias directly.
+    $stmt = $db->prepare("
+        SELECT DISTINCT b.id
+        FROM `risks` b
+            LEFT JOIN `risk_to_team` rtt ON b.id = rtt.risk_id
+            LEFT JOIN `risk_to_additional_stakeholder` rtas ON b.id = rtas.risk_id
+        WHERE b.id IN (" . implode(',', $ids) . ")
+        " . $separation_query . "
+    ");
+    $stmt->execute();
+    $visible = $stmt->fetchAll(PDO::FETCH_COLUMN);
+
+    db_close($db);
+
+    return array_map('intval', $visible);
+}
+
 /****************************************
  * FUNCTION: GET RISK SUBJECTS FROM IDS *
  ****************************************/
-function get_risk_subjects_by_ids($ids="", $limit=4, $escape=false, $separate="<br>")
+/**
+ * $team_scoped narrows the result to risks the current user may see under the
+ * Team Separation Extra. It defaults to false — the historical, unscoped
+ * behaviour — so this stays a pure addition; pass true from any surface that
+ * renders a risk SUBJECT to a user who did not necessarily reach it through a
+ * scoped risk list.
+ */
+function get_risk_subjects_by_ids($ids="", $limit=4, $escape=false, $separate="<br>", $team_scoped=false)
 {
     global $escaper;
 
@@ -27909,6 +28266,13 @@ function get_risk_subjects_by_ids($ids="", $limit=4, $escape=false, $separate="<
     }
     unset($id);
 
+    if ($team_scoped) {
+        $idArray = filter_risk_ids_by_team_scope($idArray);
+        if (!$idArray) {
+            return "";
+        }
+    }
+
     // Open the database connection
     $db = db_open();
 
@@ -27920,6 +28284,18 @@ function get_risk_subjects_by_ids($ids="", $limit=4, $escape=false, $separate="<
     $risks = $stmt->fetchAll();
     // Close the database connection
     db_close($db);
+
+    // Strip out risks the caller should not have access to (no-op if team
+    // separation extra is disabled). Without this, a caller-supplied ID list
+    // (e.g. an exception's associated_risks) could disclose the subjects of
+    // hidden cross-team risks.
+    $risks = call_extra_function(
+        'team_separation_extra',
+        __DIR__ . '/../extras/separation/index.php',
+        'strip_no_access_risks',
+        [$risks],
+        $risks
+    );
 
     $subjects = array();
     $count = 0;
@@ -28622,6 +28998,45 @@ function cvss3_temporal_vector_split($cvss_temporal_vector)
         return $cvss_array;
 }
 
+/*****************************************************
+ * FUNCTION: RESOLVE TEMPLATE GROUP ID FROM CORE     *
+ *****************************************************/
+/**
+ * Core-side entry point for resolving the template_group_id a new
+ * asset/project/framework/control record is created under.
+ *
+ * The real resolution (Default-group lookup, fgroup/business-unit ownership
+ * validation of an explicitly submitted id) lives in the Customization
+ * Extra's resolve_template_group_id(). Core must never load that file
+ * unconditionally: the shipped customer bundle strips simplerisk/extras/,
+ * so a bare require_once(realpath(...)) of it is a fatal on every install
+ * without the Extra (realpath() returns false, require_once('') fails).
+ * Every Core caller goes through this guard instead of its own require.
+ *
+ * Without the Extra there are no template groups to validate against, so
+ * the value is stored as submitted (cast to int) or falls back to the
+ * schema's own default of 1 -- the same contract the Extra's helper applies
+ * in its own "Extra inactive" branch.
+ *
+ * @param string   $fgroup            'asset' | 'project' | 'framework' | 'control'
+ * @param int|null $template_group_id the caller-supplied id, or null for "no opinion"
+ * @return int
+ */
+function resolve_template_group_id_from_core($fgroup, $template_group_id)
+{
+    if (customization_extra() && table_exists('custom_template_group')) {
+        $extra_index = realpath(__DIR__ . '/../extras/customization/index.php');
+        if ($extra_index !== false) {
+            require_once($extra_index);
+            if (function_exists('resolve_template_group_id')) {
+                return (int)resolve_template_group_id($fgroup, $template_group_id);
+            }
+        }
+    }
+
+    return $template_group_id !== null ? (int)$template_group_id : 1;
+}
+
 /*****************************
  * FUNCTION: ADD NEW PROJECT *
  *****************************/
@@ -28634,24 +29049,29 @@ function add_project($project){
     $consultant = isset($project['consultant']) ? $project['consultant'] : 0;
     $business_owner = isset($project['business_owner']) ? $project['business_owner'] : 0;
     $data_classification = isset($project['data_classification']) ? $project['data_classification'] : 0;
+    $template_group_id = isset($project['template_group_id']) ? (int)$project['template_group_id'] : null;
 
+    // Resolve (and validate, when explicitly submitted) the template group
+    // through the Core guard -- never a bare require of the Extra file.
+    $template_group_id = resolve_template_group_id_from_core('project', $template_group_id);
 
     // Open the database connection
     $db = db_open();
-    
-    $stmt = $db->prepare("INSERT INTO `projects` (`name`, `due_date`, `consultant`, `business_owner`, `data_classification`) VALUES (:name, :due_date, :consultant, :business_owner, :data_classification)");
+
+    $stmt = $db->prepare("INSERT INTO `projects` (`name`, `due_date`, `consultant`, `business_owner`, `data_classification`, `template_group_id`) VALUES (:name, :due_date, :consultant, :business_owner, :data_classification, :template_group_id)");
     $stmt->bindParam(":name", $name, PDO::PARAM_STR, 1000);
     $stmt->bindParam(":due_date", $due_date, PDO::PARAM_STR);
     $stmt->bindParam(":consultant", $consultant, PDO::PARAM_INT);
     $stmt->bindParam(":business_owner", $business_owner, PDO::PARAM_INT);
     $stmt->bindParam(":data_classification", $data_classification, PDO::PARAM_INT);
+    $stmt->bindParam(":template_group_id", $template_group_id, PDO::PARAM_INT);
     $stmt->execute();
-    
+
     $project_id = $db->lastInsertId();
 
     $message = "A new prject named \"{$name}\" was created by username \"" . $escaper->escapeHtml($_SESSION['user']) . "\".";
     write_log(1000, $_SESSION['uid'] ?? 0, $message, "project");
-    
+
     // Close the database connection
     db_close($db);
 
@@ -30333,9 +30753,14 @@ function field_settings_get_display_defaults($view) {
  * @param boolean $grouped - whether to group results by display group
  * @param boolean $escaped - localization need to be escaped or not
  * @param boolean $escape_html - HTML escaping or JS
+ * @param int|null $template_group_id - when given, scope the active-fields lookup to this
+ *        template group instead of the union of every group for the fgroup (the default,
+ *        preserved for every existing caller). Lets a create/edit form scoped to one
+ *        admin-defined template group show only that group's chosen fields. See
+ *        docs/superpowers/plans/2026-09-05-template-group-business-unit-redesign.md Track B.
  * @return string[] ['field_name1' => 'localized string1', 'field_name2' => 'localized string2', ...]
  */
-function field_settings_get_localization($view, $grouped = true, $escaped = true, $escape_html = true) {
+function field_settings_get_localization($view, $grouped = true, $escaped = true, $escape_html = true, $template_group_id = null) {
 
     global $field_settings, $field_settings_display_groups, $field_settings_views, $lang, $escaper;
     $type = $field_settings_views[$view]['view_type'];
@@ -30387,7 +30812,7 @@ function field_settings_get_localization($view, $grouped = true, $escaped = true
 
             // Get the active fields for only the required tab(if there's any set up)
             // @phan-suppress-next-line PhanTypePossiblyInvalidDimOffset -- customization_tab_index is optional; !empty() guards the access
-            $active_fields = get_active_fields($type, null, !empty($field_settings_display_groups[$group]['customization_tab_index']) ? $field_settings_display_groups[$group]['customization_tab_index'] : null);
+            $active_fields = get_active_fields($type, $template_group_id, !empty($field_settings_display_groups[$group]['customization_tab_index']) ? $field_settings_display_groups[$group]['customization_tab_index'] : null);
 
             // The weights for ordering the fields
             $panel_weights = [

@@ -100,7 +100,7 @@ class OpenApiAdminVersionDB {}
  *                      property="version",
  *                      type="string",
  *                      description="Optional. When given, applies exactly that one release's migration -- a single hop, for targeting one migration during development. When OMITTED, the full chain runs from wherever the database actually is, finishing with the migration for the release currently in development if there is one; that is the mode to use for testing a release that has no version number yet.",
- *                      example="20260828-001",
+ *                      example="20260908-001",
  *                      pattern="^\\d{8}-\\d{3}$"
  *                  )
  *              )
@@ -459,12 +459,13 @@ class OpenApiAdminUsersDisabled {}
  * @OA\Post(
  *     path="/admin/fields/add",
  *     summary="Add a custom field",
+ *     description="Admin-only. Only exists while the Customization Extra is active.",
  *     operationId="addCustomField",
  *     tags={"Administrator Operations"},
  *     security={{"ApiKeyAuth":{}}},
  *     @OA\RequestBody(
  *         required=true,
- *         description="Add a custom field (requires Customization Extra).",
+ *         description="Add a custom field.",
  *         @OA\MediaType(
  *             mediaType="application/x-www-form-urlencoded",
  *             @OA\Schema(
@@ -478,6 +479,18 @@ class OpenApiAdminUsersDisabled {}
  *     @OA\Response(
  *       response=200,
  *       description="Custom field added successfully.",
+ *       @OA\JsonContent(
+ *           @OA\Property(property="status_message", type="string", example="Success: The item was added successfully."),
+ *           @OA\Property(
+ *               property="data",
+ *               type="object",
+ *               description="The newly created field. Only present on success.",
+ *               @OA\Property(property="id", type="integer", example=42),
+ *               @OA\Property(property="name", type="string", example="Data classification"),
+ *               @OA\Property(property="type", type="string", example="dropdown"),
+ *               @OA\Property(property="required", type="integer", example=0)
+ *           )
+ *       )
  *     ),
  *     @OA\Response(
  *       response=403,
@@ -492,12 +505,13 @@ class OpenApiAdminFieldsAdd {}
  * @OA\Post(
  *     path="/admin/fields/delete",
  *     summary="Delete a custom field",
+ *     description="Admin-only. Only exists while the Customization Extra is active.",
  *     operationId="deleteCustomField",
  *     tags={"Administrator Operations"},
  *     security={{"ApiKeyAuth":{}}},
  *     @OA\RequestBody(
  *         required=true,
- *         description="Delete a custom field (requires Customization Extra).",
+ *         description="Delete a custom field.",
  *         @OA\MediaType(
  *             mediaType="application/x-www-form-urlencoded",
  *             @OA\Schema(
@@ -524,13 +538,14 @@ class OpenApiAdminFieldsDelete {}
  * @OA\Get(
  *     path="/admin/fields/get",
  *     summary="Retrieve a custom field definition",
+ *     description="Admin-only. Only exists while the Customization Extra is active.",
  *     operationId="getCustomField",
  *     tags={"Administrator Operations"},
  *     security={{"ApiKeyAuth":{}}},
  *     @OA\Parameter(
  *         name="field_id",
  *         in="query",
- *         description="The ID of the custom field to retrieve (requires Customization Extra).",
+ *         description="The ID of the custom field to retrieve.",
  *         required=true,
  *         @OA\Schema(type="integer")
  *     ),
@@ -546,6 +561,354 @@ class OpenApiAdminFieldsDelete {}
  */
 
 class OpenApiAdminFieldsGet {}
+
+/**
+ * @OA\Get(
+ *     path="/admin/fields/list",
+ *     summary="List custom fields for a field group",
+ *     description="Admin-only. Only exists while the Customization Extra is active.",
+ *     operationId="listCustomFields",
+ *     tags={"Administrator Operations"},
+ *     security={{"ApiKeyAuth":{}}},
+ *     @OA\Parameter(
+ *         name="fgroup",
+ *         in="query",
+ *         description="The field group to list custom fields for.",
+ *         required=true,
+ *         @OA\Schema(type="string", enum={"asset", "risk", "project", "framework", "control"})
+ *     ),
+ *     @OA\Response(
+ *       response=200,
+ *       description="Array of custom field objects.",
+ *     ),
+ *     @OA\Response(
+ *       response=400,
+ *       description="BAD REQUEST: The fgroup parameter is missing or invalid.",
+ *     ),
+ *     @OA\Response(
+ *       response=403,
+ *       description="FORBIDDEN: The user does not have admin privileges.",
+ *     ),
+ * )
+ */
+
+class OpenApiAdminFieldsList {}
+
+/**
+ * @OA\Patch(
+ *     path="/admin/fields/{id}",
+ *     summary="Update a custom field",
+ *     description="Admin-only. Only exists while the Customization Extra is active.",
+ *     operationId="updateCustomField",
+ *     tags={"Administrator Operations"},
+ *     security={{"ApiKeyAuth":{}}},
+ *     @OA\Parameter(
+ *         name="id",
+ *         in="path",
+ *         description="The ID of the custom field to update.",
+ *         required=true,
+ *         @OA\Schema(type="integer")
+ *     ),
+ *     @OA\RequestBody(
+ *         required=true,
+ *         description="Update a custom field's name, required flag, and alphabetical order.",
+ *         @OA\MediaType(
+ *             mediaType="application/x-www-form-urlencoded",
+ *             @OA\Schema(
+ *                 type="object",
+ *                 required={"name"},
+ *                 @OA\Property(property="name", type="string", description="The name of the custom field."),
+ *                 @OA\Property(property="required", type="integer", enum={0, 1}, description="Whether the field is required."),
+ *                 @OA\Property(property="encryption", type="integer", enum={0, 1}, description="Whether the field is encrypted. Omit to preserve the current value."),
+ *                 @OA\Property(property="alphabetical_order", type="integer", enum={0, 1}, description="Whether the field's options are sorted alphabetically.")
+ *             )
+ *         )
+ *     ),
+ *     @OA\Response(
+ *       response=200,
+ *       description="Custom field updated successfully.",
+ *     ),
+ *     @OA\Response(
+ *       response=400,
+ *       description="BAD REQUEST: The id or name parameter is missing.",
+ *     ),
+ *     @OA\Response(
+ *       response=403,
+ *       description="FORBIDDEN: The user does not have admin privileges.",
+ *     ),
+ *     @OA\Response(
+ *       response=404,
+ *       description="NOT FOUND: No custom field exists with the specified id.",
+ *     ),
+ * )
+ */
+
+class OpenApiAdminFieldsUpdate {}
+
+/**
+ * @OA\Get(
+ *     path="/customization/templateGroups",
+ *     summary="List template groups for a field group",
+ *     description="Admin-only. Requires the Customization Extra to be active.",
+ *     operationId="getTemplateGroups",
+ *     tags={"Administrator Operations"},
+ *     security={{"ApiKeyAuth":{}}},
+ *     @OA\Parameter(
+ *         name="fgroup",
+ *         in="query",
+ *         description="The field group to list template groups for.",
+ *         required=false,
+ *         @OA\Schema(type="string", enum={"asset", "risk", "project", "framework", "control"}, default="risk")
+ *     ),
+ *     @OA\Response(
+ *         response=200,
+ *         description="Array of template group objects.",
+ *         @OA\JsonContent(
+ *             type="array",
+ *             @OA\Items(
+ *                 type="object",
+ *                 @OA\Property(property="id", type="integer", example=1),
+ *                 @OA\Property(property="name", type="string", example="Default"),
+ *                 @OA\Property(property="fgroup", type="string", example="risk"),
+ *                 @OA\Property(property="is_default", type="integer", example=1)
+ *             )
+ *         )
+ *     ),
+ *     @OA\Response(
+ *       response=400,
+ *       description="BAD REQUEST: The fgroup parameter is invalid.",
+ *     ),
+ *     @OA\Response(
+ *       response=403,
+ *       description="FORBIDDEN: The user does not have admin privileges, or the Customization Extra is not active.",
+ *     ),
+ * )
+ */
+
+class OpenApiCustomizationTemplateGroupsList {}
+
+/**
+ * @OA\Post(
+ *     path="/customization/templateGroups",
+ *     summary="Add a template group",
+ *     description="Admin-only. Requires the Customization Extra to be active.",
+ *     operationId="addTemplateGroup",
+ *     tags={"Administrator Operations"},
+ *     security={{"ApiKeyAuth":{}}},
+ *     @OA\RequestBody(
+ *         required=true,
+ *         @OA\MediaType(
+ *             mediaType="application/x-www-form-urlencoded",
+ *             @OA\Schema(
+ *                 type="object",
+ *                 required={"name"},
+ *                 @OA\Property(property="name", type="string", maxLength=100, description="The name of the template group."),
+ *                 @OA\Property(property="fgroup", type="string", enum={"asset", "risk", "project", "framework", "control"}, default="risk", description="The field group the template group belongs to."),
+ *                 @OA\Property(property="clone_from", type="integer", description="Optional id of an existing template group in the same fgroup whose layout (its custom_template rows) is copied into the new group. Ignored when it belongs to a different fgroup; omit it to create an empty group.")
+ *             )
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=200,
+ *         description="The refreshed list of template groups for the given fgroup. When clone_from was given, the new group starts with a copy of that group's layout.",
+ *     ),
+ *     @OA\Response(
+ *       response=400,
+ *       description="BAD REQUEST: The name is missing or longer than 100 characters, the fgroup is invalid, or a template group with that name already exists in the fgroup.",
+ *     ),
+ *     @OA\Response(
+ *       response=403,
+ *       description="FORBIDDEN: The user does not have admin privileges, or the Customization Extra is not active.",
+ *     ),
+ * )
+ */
+
+class OpenApiCustomizationTemplateGroupsAdd {}
+
+/**
+ * @OA\Patch(
+ *     path="/customization/templateGroups/{id}",
+ *     summary="Rename a template group",
+ *     description="Admin-only. Requires the Customization Extra to be active.",
+ *     operationId="updateTemplateGroup",
+ *     tags={"Administrator Operations"},
+ *     security={{"ApiKeyAuth":{}}},
+ *     @OA\Parameter(
+ *         name="id",
+ *         in="path",
+ *         description="The ID of the template group to update.",
+ *         required=true,
+ *         @OA\Schema(type="integer")
+ *     ),
+ *     @OA\RequestBody(
+ *         required=true,
+ *         @OA\MediaType(
+ *             mediaType="application/x-www-form-urlencoded",
+ *             @OA\Schema(
+ *                 type="object",
+ *                 required={"name"},
+ *                 @OA\Property(property="name", type="string", description="The new name of the template group.")
+ *             )
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=200,
+ *         description="The refreshed list of template groups for the group's fgroup.",
+ *     ),
+ *     @OA\Response(
+ *       response=400,
+ *       description="BAD REQUEST: The name is missing, or another template group with that name already exists in the fgroup.",
+ *     ),
+ *     @OA\Response(
+ *       response=403,
+ *       description="FORBIDDEN: The user does not have admin privileges, or the Customization Extra is not active.",
+ *     ),
+ *     @OA\Response(
+ *       response=404,
+ *       description="NOT FOUND: No template group exists with the specified id.",
+ *     ),
+ * )
+ */
+
+class OpenApiCustomizationTemplateGroupsUpdate {}
+
+/**
+ * @OA\Delete(
+ *     path="/customization/templateGroups/{id}",
+ *     summary="Delete a template group",
+ *     description="Admin-only. Requires the Customization Extra to be active. Also deletes any custom_template rows belonging to the group. Refuses to delete a fgroup's Default group.",
+ *     operationId="deleteTemplateGroup",
+ *     tags={"Administrator Operations"},
+ *     security={{"ApiKeyAuth":{}}},
+ *     @OA\Parameter(
+ *         name="id",
+ *         in="path",
+ *         description="The ID of the template group to delete.",
+ *         required=true,
+ *         @OA\Schema(type="integer")
+ *     ),
+ *     @OA\Response(
+ *         response=200,
+ *         description="The refreshed list of template groups for the group's fgroup.",
+ *     ),
+ *     @OA\Response(
+ *       response=400,
+ *       description="BAD REQUEST: The specified group is the fgroup's Default group and cannot be deleted.",
+ *     ),
+ *     @OA\Response(
+ *       response=403,
+ *       description="FORBIDDEN: The user does not have admin privileges, or the Customization Extra is not active.",
+ *     ),
+ *     @OA\Response(
+ *       response=404,
+ *       description="NOT FOUND: No template group exists with the specified id.",
+ *     ),
+ * )
+ */
+
+class OpenApiCustomizationTemplateGroupsDelete {}
+
+/**
+ * @OA\Get(
+ *     path="/organizational_hierarchy/templateAssignments",
+ *     summary="Get template-group to business-unit assignments for a field group",
+ *     description="Admin-only. Requires the Customization Extra to be active.",
+ *     operationId="getTemplateAssignments",
+ *     tags={"Administrator Operations"},
+ *     security={{"ApiKeyAuth":{}}},
+ *     @OA\Parameter(
+ *         name="fgroup",
+ *         in="query",
+ *         description="The field group to look up template groups for.",
+ *         required=false,
+ *         @OA\Schema(type="string", enum={"asset", "risk", "project", "framework", "control"}, default="risk")
+ *     ),
+ *     @OA\Response(
+ *         response=200,
+ *         description="The business units available for assignment, and each template group in the fgroup with its currently assigned business_unit_ids.",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(
+ *                 property="business_units",
+ *                 type="array",
+ *                 @OA\Items(
+ *                     type="object",
+ *                     @OA\Property(property="value", type="integer", example=1),
+ *                     @OA\Property(property="name", type="string", example="Finance")
+ *                 )
+ *             ),
+ *             @OA\Property(
+ *                 property="groups",
+ *                 type="array",
+ *                 @OA\Items(
+ *                     type="object",
+ *                     @OA\Property(property="id", type="integer", example=1),
+ *                     @OA\Property(property="name", type="string", example="Default"),
+ *                     @OA\Property(property="fgroup", type="string", example="risk"),
+ *                     @OA\Property(
+ *                         property="business_unit_ids",
+ *                         type="array",
+ *                         @OA\Items(type="integer"),
+ *                         example={1, 3}
+ *                     )
+ *                 )
+ *             )
+ *         )
+ *     ),
+ *     @OA\Response(
+ *       response=400,
+ *       description="BAD REQUEST: The fgroup parameter is invalid.",
+ *     ),
+ *     @OA\Response(
+ *       response=403,
+ *       description="FORBIDDEN: The user does not have admin privileges, or the Customization Extra is not active.",
+ *     ),
+ * )
+ */
+
+class OpenApiCustomizationTemplateAssignmentsGet {}
+
+/**
+ * @OA\Post(
+ *     path="/organizational_hierarchy/templateAssignments",
+ *     summary="Save template-group to business-unit assignments for a field group",
+ *     description="Admin-only. Requires the Customization Extra AND the Organizational Hierarchy Extra to both be active. IMPORTANT: this performs a full replace of every template group's business-unit assignment in the fgroup -- any group id in the fgroup that is missing from business_unit_ids has its assignments cleared, not left unchanged. Callers must always submit the complete current+edited mapping for every group in the fgroup, never a single-group delta.",
+ *     operationId="saveTemplateAssignments",
+ *     tags={"Administrator Operations"},
+ *     security={{"ApiKeyAuth":{}}},
+ *     @OA\RequestBody(
+ *         required=true,
+ *         @OA\MediaType(
+ *             mediaType="application/x-www-form-urlencoded",
+ *             @OA\Schema(
+ *                 type="object",
+ *                 required={"business_unit_ids"},
+ *                 @OA\Property(property="fgroup", type="string", enum={"asset", "risk", "project", "framework", "control"}, default="risk", description="The field group whose template groups are being assigned."),
+ *                 @OA\Property(
+ *                     property="business_unit_ids",
+ *                     type="object",
+ *                     description="A map keyed by template_group_id whose values are lists of business unit ids -- form-encoded as business_unit_ids[1][]=3&business_unit_ids[1][]=5 to assign template group 1 to business units 3 and 5, with an empty list clearing a group. MUST include every template group id in the fgroup: any omitted group's assignments are wiped.",
+ *                     @OA\AdditionalProperties(type="array", @OA\Items(type="integer"), description="Business unit ids assigned to the template group named by the key; an empty list clears that group's assignment.")
+ *                 )
+ *             )
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=200,
+ *         description="The refreshed business units and template groups (with business_unit_ids) for the given fgroup.",
+ *     ),
+ *     @OA\Response(
+ *       response=400,
+ *       description="BAD REQUEST: business_unit_ids is not an array/map.",
+ *     ),
+ *     @OA\Response(
+ *       response=403,
+ *       description="FORBIDDEN: The user does not have admin privileges, the Customization Extra is not active, or the Organizational Hierarchy Extra is not active.",
+ *     ),
+ * )
+ */
+
+class OpenApiCustomizationTemplateAssignmentsSave {}
 
 /**
  * @OA\Get(
@@ -1074,7 +1437,7 @@ class OpenApiAdminIncidentManagement {}
 class OpenApiComplianceforgescfStatus {}
 
 /**
- * @OA\Get(
+ * @OA\Post(
  *     path="/complianceforgescf/enable",
  *     summary="Enable the Secure Controls Framework (SCF) Extra",
  *     operationId="complianceforgescfEnable",
@@ -1094,7 +1457,7 @@ class OpenApiComplianceforgescfStatus {}
 class OpenApiComplianceforgescfEnable {}
 
 /**
- * @OA\Get(
+ * @OA\Post(
  *     path="/complianceforgescf/disable",
  *     summary="Disable the Secure Controls Framework (SCF) Extra",
  *     operationId="complianceforgescfDisable",

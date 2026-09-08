@@ -935,6 +935,311 @@ function migrate_framework_default_inclusion_justification($db) {
     }
 }
 
+/**
+ * Configurable document categories (replaces the hardcoded Policies/Guidelines/
+ * Standards/Procedures tab set). Follows the exact precedent already set on this
+ * table: documents.status (free enum) -> documents.document_status (INT FK), at
+ * upgrade.php ~line 5817-5831.
+ *
+ * Seeded INDEPENDENTLY of the CREATE TABLE: nesting the seed inside a
+ * !table_exists() branch means an interruption between the two statements
+ * leaves the table permanently empty on every re-run (table_exists() is true
+ * by then, so the whole block is skipped) -- and with an empty lookup, the
+ * document_type_id backfill has nothing to match and every document falls out
+ * of every category tab. Per-name existence checks, so re-running is a no-op
+ * and an admin who deliberately renamed a seeded category doesn't get the old
+ * slug silently re-added.
+ *
+ * The caller is still responsible for running backfill_document_type_ids()
+ * (includes/governance.php) afterward -- it lives outside upgrade.php /
+ * upgrade/common.php, so it is not part of the wiring graph these
+ * table/column changes are.
+ */
+function migrate_document_types_schema($db) {
+
+    if (!table_exists('document_types')) {
+        echo "Creating `document_types` table.<br />\n";
+        $stmt = $db->prepare("CREATE TABLE IF NOT EXISTS `document_types` (`value` INT NOT NULL AUTO_INCREMENT, `name` varchar(100) NOT NULL, PRIMARY KEY (`value`)) ENGINE=InnoDB DEFAULT CHARSET=utf8;");
+        $stmt->execute();
+    }
+
+    $stmt = $db->prepare("SELECT COUNT(*) FROM `document_types`");
+    $stmt->execute();
+    if ((int)$stmt->fetchColumn() === 0) {
+        echo "Seeding `document_types` with the existing four categories.<br />\n";
+        $stmt = $db->prepare("INSERT INTO `document_types` (`name`) VALUES ('policies'), ('guidelines'), ('standards'), ('procedures');");
+        $stmt->execute();
+    }
+
+    // Any OTHER distinct `documents.document_type` value already on this
+    // instance also needs a lookup row, otherwise those documents end up with a
+    // NULL document_type_id and disappear from the (now FK-keyed) category
+    // filter. Idempotent: the NOT EXISTS arm makes a re-run a no-op.
+    echo "Seeding `document_types` with any remaining in-use document categories.<br />\n";
+    $stmt = $db->prepare("
+        INSERT INTO `document_types` (`name`)
+        SELECT DISTINCT d.`document_type`
+        FROM `documents` d
+        WHERE d.`document_type` IS NOT NULL
+          AND d.`document_type` <> ''
+          AND NOT EXISTS (SELECT 1 FROM `document_types` dt WHERE dt.`name` = d.`document_type`)
+    ");
+    $stmt->execute();
+
+    if (!field_exists_in_table('document_type_id', 'documents')) {
+        echo "Adding `document_type_id` to `documents`.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `documents` ADD `document_type_id` INT NULL DEFAULT NULL AFTER `document_type`;");
+        $stmt->execute();
+    }
+}
+
+/**
+ * Ensures `document_team_mappings` exists, and migrates+drops the legacy
+ * `documents.team_ids` column when it is still present.
+ *
+ * upgrade_from_20260422001() only created this table INSIDE
+ * `if (field_exists_in_table('team_ids', 'documents'))` -- so any instance
+ * that reached that migration with `team_ids` already absent (the
+ * fresh-install-schema-drift pattern -- see the equivalent gap already fixed
+ * for `document_additional_stakeholder_mappings` in
+ * upgrade_from_20260519001()) skipped table creation entirely and every
+ * runtime read against it (governance.php, workflows.php, functions.php, the
+ * Notification/Team-Separation/AI Extras) fatally errors with "Base table or
+ * view not found". Discovered on simplerisk-dev: db_version had already
+ * advanced to 20260828-001 while `documents.team_ids` was STILL present and
+ * `document_team_mappings` did not exist -- a state only reachable if this
+ * instance's db_version marker got out of sync with its actual schema (e.g.
+ * a restored snapshot whose settings row was newer than its table
+ * definitions), not something a normal sequential upgrade produces.
+ *
+ * Called from upgrade_from_20260519001() (mirroring the sibling
+ * document_additional_stakeholder_mappings ensure-block immediately above
+ * its call site, for the instance that is genuinely walking the chain
+ * step-by-step) AND from run_upgrade_integrity_checks() as a standing
+ * self-heal -- because an instance whose db_version has already advanced
+ * PAST 20260519-001 (exactly the drift found on simplerisk-dev) never runs
+ * either upgrade_from_*() function again; only the standing check, which
+ * runs regardless of chain position, can reach it. Unlike the sibling's
+ * table-only ensure, this also recovers any team_ids data still sitting on
+ * the instance rather than silently orphaning it once the table exists.
+ *
+ * Idempotent: table creation is guarded by table_exists(), the migration
+ * INSERT is deduped by document_team_mappings' own composite PRIMARY KEY,
+ * and the DROP COLUMN can only run once (field_exists_in_table() is false
+ * on every call after the first).
+ *
+ * @param PDO $db Open connection from the calling driver.
+ */
+function migrate_document_team_mappings_schema($db) {
+    if (!table_exists('document_team_mappings')) {
+        echo "Creating `document_team_mappings` table.<br />\n";
+        $stmt = $db->prepare("
+            CREATE TABLE IF NOT EXISTS `document_team_mappings` (
+                `document_id` INT NOT NULL,
+                `team_id` INT NOT NULL,
+                PRIMARY KEY(`document_id`, `team_id`),
+                INDEX(`team_id`, `document_id`)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+        ");
+        $stmt->execute();
+    }
+
+    if (field_exists_in_table('team_ids', 'documents')) {
+        echo "Migrating team_ids field in documents table to new table.<br />\n";
+        // Single INSERT...SELECT rather than a fetch-then-loop-INSERT: the
+        // per-row PHP loop left document_team_mappings observably empty for
+        // every already-restricted document between table creation and the
+        // last INSERT, during which extras/separation/index.php treats a
+        // missing mapping row as "visible to everyone" whenever
+        // allow_all_to_document_noassign_team is enabled (the Team
+        // Separation Extra's default). One atomic statement closes that
+        // window instead of narrowing it.
+        $stmt = $db->prepare("
+            INSERT IGNORE INTO `document_team_mappings` (document_id, team_id)
+            SELECT DISTINCT t1.id, t2.value FROM `documents` t1, `team` t2 WHERE FIND_IN_SET(t2.value, t1.team_ids);
+        ");
+        $stmt->execute();
+
+        echo "Deleting `team_ids` field from the `documents` table.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `documents` DROP `team_ids`;");
+        $stmt->execute();
+    }
+}
+
+/**
+ * Schema and one-time data prep for the governance_review_due queue job
+ * (SR-189): the gate columns the job's queue_check stamps at the start of
+ * every attempt (writing-queue-jobs' anti-requeue-storm rule), plus the
+ * kill-switch setting and two idempotent backfills that keep the job's
+ * first run from mass-notifying on records that predate the feature.
+ *
+ * Extracted from upgrade_from_20260828001() (same reasoning as
+ * migrate_document_types_schema() above) so UpgradeMigrationWiringTest can
+ * verify it stays wired into whichever upgrade_from_*() is the current
+ * unreleased bucket — this exact class of placement bug (a migration parked
+ * in an already-shipped upgrade function) recurred three times across this
+ * feature's development before the helpers existed to catch it statically.
+ *
+ * WATERMARKING: without stamping `queue_timestamp_last_review_due` on
+ * already-overdue records, every document/exception past its
+ * next_review_date on the day this feature lands would be swept up by the
+ * job's very first task_check pass — a mass-email event on upgrade, on an
+ * instance that has never had this notification before. Idempotent: only
+ * rows whose gate is still NULL are touched.
+ *
+ * NO-CADENCE STAMP CLEANUP: before this release, approve_document()/
+ * approve_exception() unconditionally computed
+ * next_review_date = approval_date + review_frequency days, so a no-cadence
+ * (review_frequency <= 0) record approved under the old code was stamped
+ * with next_review_date == approval_date — the treegrids classify that as
+ * permanently overdue. The current code no longer produces this stamp (a
+ * no-cadence approval now writes '0000-00-00'), but records approved BEFORE
+ * this release keep their stale date until someone re-approves them.
+ * next_review_date = approval_date is the old bug's exact signature, so this
+ * only touches records that match it. Idempotent: once corrected to
+ * '0000-00-00', a row can never match that signature again.
+ *
+ * @param PDO $db Open connection from the calling driver.
+ */
+function migrate_governance_review_due_schema($db) {
+
+    if (!field_exists_in_table('queue_timestamp_last_review_due', 'documents')) {
+        echo "Adding `queue_timestamp_last_review_due` to `documents`.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `documents` ADD `queue_timestamp_last_review_due` DATETIME NULL DEFAULT NULL");
+        $stmt->execute();
+    }
+    if (!field_exists_in_table('queue_timestamp_last_review_due', 'document_exceptions')) {
+        echo "Adding `queue_timestamp_last_review_due` to `document_exceptions`.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `document_exceptions` ADD `queue_timestamp_last_review_due` DATETIME NULL DEFAULT NULL");
+        $stmt->execute();
+    }
+
+    // Admin kill-switch for the governance_review_due notification job,
+    // mirroring NOTIFICATIONS_REMOTE_FEED_ENABLED. INSERT IGNORE, so a re-run
+    // never resets an admin's chosen value back to 'true'.
+    echo "Inserting the Governance Review Due notification setting.<br />\n";
+    $stmt = $db->prepare("INSERT IGNORE INTO `settings` (`name`, `value`) VALUES ('GOVERNANCE_REVIEW_DUE_ENABLED', 'true');");
+    $stmt->execute();
+
+    echo "Watermarking already-overdue documents and exceptions so the first review-due run doesn't mass-notify.<br />\n";
+    $stmt = $db->prepare("
+        UPDATE `documents`
+        SET `queue_timestamp_last_review_due` = NOW()
+        WHERE `queue_timestamp_last_review_due` IS NULL
+          AND `next_review_date` IS NOT NULL
+          AND `next_review_date` != '0000-00-00'
+          AND `next_review_date` <= CURDATE()
+    ");
+    $stmt->execute();
+    $stmt = $db->prepare("
+        UPDATE `document_exceptions`
+        SET `queue_timestamp_last_review_due` = NOW()
+        WHERE `queue_timestamp_last_review_due` IS NULL
+          AND `next_review_date` IS NOT NULL
+          AND `next_review_date` != '0000-00-00'
+          AND `next_review_date` <= CURDATE()
+    ");
+    $stmt->execute();
+
+    echo "Clearing the pre-fix no-cadence overdue stamp on already-approved documents and exceptions.<br />\n";
+    $stmt = $db->prepare("
+        UPDATE `documents`
+        SET `next_review_date` = '0000-00-00'
+        WHERE `document_status` = 3
+          AND `review_frequency` <= 0
+          AND `next_review_date` = `approval_date`
+    ");
+    $stmt->execute();
+    $stmt = $db->prepare("
+        UPDATE `document_exceptions`
+        SET `next_review_date` = '0000-00-00'
+        WHERE `approved` = 1
+          AND `review_frequency` <= 0
+          AND `next_review_date` = `approval_date`
+    ");
+    $stmt->execute();
+}
+
+/****************************************************************************
+ * FUNCTION: BACKFILL SESSIONS USER ID                                      *
+ * One-time (per row) migration helper: populates `sessions`.`user_id` for  *
+ * every row still NULL, by parsing the uid out of its existing `data` with *
+ * extract_session_data_uid() (authenticate.php) — so a session already     *
+ * open when the SD-828 / SR-2133 fix ships is matched by                   *
+ * kill_sessions_of_user() and refresh_permissions_in_sessions_of_user()    *
+ * immediately, not only after its next write. Called from                  *
+ * migrate_sessions_user_id_schema() below, its sole caller.                *
+ *                                                                          *
+ * Idempotent: only rows where `user_id IS NULL` are read, and a row whose  *
+ * `data` has no uid (a pre-auth session) is left NULL — correctly, since   *
+ * that is not a user's session yet. Re-running only ever re-processes      *
+ * that same NULL set, which converges to the same result.                 *
+ ****************************************************************************/
+function backfill_sessions_user_id($db) {
+
+    $stmt = $db->prepare("SELECT `id`, `data` FROM sessions WHERE `user_id` IS NULL AND `data` IS NOT NULL AND `data` != ''");
+    $stmt->execute();
+    $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    if (empty($rows)) {
+        return;
+    }
+
+    echo "Backfilling `user_id` on " . count($rows) . " existing session row(s).<br />\n";
+
+    $update = $db->prepare("UPDATE sessions SET `user_id` = :user_id WHERE `id` = :id");
+    foreach ($rows as $row) {
+        $uid = extract_session_data_uid($row['data']);
+        if ($uid === null) {
+            // No uid in this row's data yet (e.g. a pre-auth session) — leave NULL.
+            continue;
+        }
+        $update->bindValue(':user_id', $uid, PDO::PARAM_INT);
+        $update->bindValue(':id', $row['id'], PDO::PARAM_STR);
+        $update->execute();
+    }
+}
+
+/**********************************************************
+ * FUNCTION: MIGRATE SESSIONS USER ID SCHEMA               *
+ **********************************************************
+ * SD-828 / SR-2133: kill_sessions_of_user() used to filter the `sessions`
+ * table with an unindexed `data REGEXP :uid_pattern` predicate -- a
+ * full-table scan that could take next-key locks broadly enough to hit
+ * MySQL's innodb_lock_wait_timeout under concurrent writes, throwing an
+ * uncaught PDOException on logout/password-reset. This adds a maintained,
+ * indexed `user_id` column so that query becomes a plain equality lookup.
+ *
+ * `user_id` is nullable, maintained going forward on every session write
+ * (see SimpleRiskSessionHandler::write() and sess_write() in
+ * authenticate.php), and backfilled here for every session already open
+ * at upgrade time -- see backfill_sessions_user_id() above.
+ * The only rows that stay NULL after this migration are ones whose `data`
+ * genuinely has no uid yet (a pre-auth session, e.g. mid-MFA) -- those are
+ * correctly excluded from kill_sessions_of_user() and refresh_permissions_
+ * in_sessions_of_user(), which is the same behavior the old REGEXP had.
+ **********************************************************/
+function migrate_sessions_user_id_schema($db) {
+
+    if (!field_exists_in_table('user_id', 'sessions')) {
+        echo "Adding `user_id` to `sessions`.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `sessions` ADD `user_id` INT NULL DEFAULT NULL");
+        $stmt->execute();
+    }
+
+    // Backfill before indexing: every currently open session gets its
+    // user_id populated from its existing `data` in one pass, so the index
+    // built next is populated from the start instead of maintained
+    // incrementally row-by-row during the backfill UPDATEs.
+    backfill_sessions_user_id($db);
+
+    if (!index_exists_on_table('sessions_user_id_idx', 'sessions')) {
+        echo "Adding the `sessions_user_id_idx` index on `sessions`.`user_id`.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `sessions` ADD INDEX `sessions_user_id_idx` (`user_id`)");
+        $stmt->execute();
+    }
+}
+
 /**********************************************************
  * FUNCTION: DUPLICATE INSTANCE IDS                       *
  **********************************************************
@@ -1224,6 +1529,131 @@ function repair_duplicate_instance_id($db, ?callable $transport = null, ?callabl
 }
 
 /**********************************************************
+ * FUNCTION: BACKFILL DOCUMENTATION PERMISSIONS           *
+ **********************************************************
+ * Grants the two Document Program permissions added in this release to the
+ * existing users who should already have them:
+ *
+ *   view_documentation    -> every existing `governance` holder. SR-2071:
+ *                            add_new_permissions() grants a new permission to
+ *                            admins only, never to existing holders of a
+ *                            related coarse permission, so the read access
+ *                            those users already had has to be re-granted
+ *                            explicitly or the upgrade takes it away.
+ *   approve_documentation -> every user who already holds BOTH
+ *                            add_documentation and modify_documentation --
+ *                            the closest existing proxy for "this user already
+ *                            manages documents end to end". A join of the two
+ *                            single-permission holder sets rather than
+ *                            INTERSECT, for MySQL/MariaDB portability.
+ *
+ * Extracted from upgrade_from_20260828001() so a test can invoke the real
+ * backfill against users it has just seeded, rather than asserting against a
+ * grant that ran once at DB-upgrade time -- long before any test fixture user
+ * existed. (tests/unit/DocumentationPermissionUpgradeTest.php asserted exactly
+ * that and could never pass.) A copy of the SQL in the test would be worse than
+ * no test: it would keep passing if this were changed or deleted.
+ *
+ * Idempotent: INSERT IGNORE against permission_to_user's (permission_id,
+ * user_id) key, and both statements are pure INSERT ... SELECT, so re-running
+ * grants nothing new.
+ *
+ * @param PDO $db Open connection from the calling driver.
+ **********************************************************/
+function backfill_documentation_permissions($db)
+{
+    $stmt = $db->prepare("
+        INSERT IGNORE INTO `permission_to_user` (`permission_id`, `user_id`)
+        SELECT (SELECT `id` FROM `permissions` WHERE `key` = 'view_documentation'), p2u.`user_id`
+        FROM `permission_to_user` p2u
+        INNER JOIN `permissions` p ON p.`id` = p2u.`permission_id`
+        WHERE p.`key` = 'governance';
+    ");
+    $stmt->execute();
+
+    $stmt = $db->prepare("
+        INSERT IGNORE INTO `permission_to_user` (`permission_id`, `user_id`)
+        SELECT (SELECT `id` FROM `permissions` WHERE `key` = 'approve_documentation'), t1.`user_id`
+        FROM (
+            SELECT p2u.`user_id` FROM `permission_to_user` p2u
+            INNER JOIN `permissions` p ON p.`id` = p2u.`permission_id` WHERE p.`key` = 'add_documentation'
+        ) t1
+        INNER JOIN (
+            SELECT p2u.`user_id` FROM `permission_to_user` p2u
+            INNER JOIN `permissions` p ON p.`id` = p2u.`permission_id` WHERE p.`key` = 'modify_documentation'
+        ) t2 ON t1.`user_id` = t2.`user_id`;
+    ");
+    $stmt->execute();
+}
+
+/**********************************************************
+ * FUNCTION: BACKFILL DOCUMENT AUDIT LOG IDS               *
+ **********************************************************
+ * Historical `audit_log` rows with log_type='document' predate write_log()'s
+ * `+1000` convention being applied consistently across every document
+ * call site (see the write_log(..., 'document') calls in
+ * includes/governance.php's add_document()/update_document()/
+ * delete_document()/approve_document()/unapprove_document() and
+ * includes/compliance.php's download-log addition). Their stored `risk_id`
+ * is therefore either 0 (the historical hardcoded `1000` bug) or offset by
+ * -1000 from the real document id (the pre-fix calls that passed the id
+ * without +1000). This reparses each row's decrypted message to recover the
+ * real document id and rewrites `risk_id` to match, so the audit trail's
+ * structured Document column/filter (which joins audit_log.risk_id directly
+ * to documents.id) resolves these entries too, not only ones logged after
+ * the fix.
+ *
+ * Only rows whose message matches one of the known document-audit message
+ * shapes are touched. The file-upload log line ("File \"x\" was uploaded by
+ * username \"y\".", written via a pre-existing call at functions.php:22606
+ * that already used +1000 correctly) carries no document id or name at all,
+ * matches nothing here, and is left as-is -- it was already correct.
+ *
+ * Idempotent: re-running recomputes the same risk_id for a row already
+ * fixed, and a row that can't be resolved (its document has since been
+ * renamed/deleted, or its name matches more than one document) is skipped
+ * the same way on every run rather than guessed at.
+ **********************************************************/
+function backfill_document_audit_log_ids($db)
+{
+    $stmt = $db->prepare("SELECT `id`, `message` FROM `audit_log` WHERE `log_type` = 'document';");
+    $stmt->execute();
+    $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    $update_stmt = $db->prepare("UPDATE `audit_log` SET `risk_id` = :risk_id WHERE `id` = :id;");
+    $lookup_stmt = $db->prepare("SELECT `id` FROM `documents` WHERE `document_name` = :document_name;");
+
+    foreach ($rows as $row) {
+        $message = try_decrypt($row['message']);
+        $document_id = null;
+
+        if (preg_match('/\(ID:\s*(\d+)\)/', $message, $matches)) {
+            // "Document \"x\"(ID: N) was updated by ..."
+            $document_id = (int)$matches[1];
+        } elseif (preg_match('/document ID "(\d+)"/i', $message, $matches)) {
+            // "The existing document ID \"N\" was deleted by ..."
+            $document_id = (int)$matches[1];
+        } elseif (preg_match('/^(?:A new document named|Document) "(.*?)" was (?:created by user|approved by|unapproved by|downloaded by)/', $message, $matches)) {
+            // Create/Approve/Unapprove/Download messages carry only the
+            // document name -- resolve it, but only when it names exactly
+            // one document.
+            $lookup_stmt->bindParam(":document_name", $matches[1], PDO::PARAM_STR);
+            $lookup_stmt->execute();
+            $matching_documents = $lookup_stmt->fetchAll(PDO::FETCH_COLUMN);
+            if (count($matching_documents) === 1) {
+                $document_id = (int)$matching_documents[0];
+            }
+        }
+
+        if ($document_id !== null) {
+            $update_stmt->bindParam(":risk_id", $document_id, PDO::PARAM_INT);
+            $update_stmt->bindParam(":id", $row['id'], PDO::PARAM_INT);
+            $update_stmt->execute();
+        }
+    }
+}
+
+/**********************************************************
  * FUNCTION: RUN UPGRADE INTEGRITY CHECKS                 *
  **********************************************************
  * Standing data-integrity checks, run by BOTH upgrade drivers at the point
@@ -1272,6 +1702,16 @@ function run_upgrade_integrity_checks($db, ?callable $transport = null, ?callabl
     } catch (\Throwable $e) {
         write_debug_log(
             'run_upgrade_integrity_checks: repair_duplicate_instance_id() failed: '
+            . $e->getMessage(),
+            'error'
+        );
+    }
+
+    try {
+        migrate_document_team_mappings_schema($db);
+    } catch (\Throwable $e) {
+        write_debug_log(
+            'run_upgrade_integrity_checks: migrate_document_team_mappings_schema() failed: '
             . $e->getMessage(),
             'error'
         );
@@ -1461,4 +1901,93 @@ function with_upgrade_lock(callable $work, $wait = 0, $refused = false)
         try { $db->query("SELECT RELEASE_LOCK('simplerisk_upgrade')"); } catch (Throwable $e) {}
         db_close($db);
     }
+}
+
+/**
+ * Recompute the file_encoding_issues_count_{compliance,risk,questionnaire}
+ * settings by counting rows whose stored `size` doesn't match the actual
+ * byte-length of `content` -- a mismatch left behind by a charset-conversion
+ * bug in an old upload path.
+ *
+ * Moved here from includes/functions.php when the legacy admin checker
+ * (admin/fix_upload_encoding_issues.php and its supporting functions) was
+ * retired in favor of the Data Integrity framework's file_content_mismatch
+ * detector. Its only remaining caller is upgrade_from_20230106001() in
+ * includes/upgrade.php (shipped 2023-03-31) -- an already-released historical
+ * upgrade function that must keep working for anyone upgrading from a
+ * pre-2023-03-31 database -- so per this file's admission rule ("a function
+ * belongs here only if EVERY call site is part of the upgrade process") it
+ * moves here rather than being deleted alongside the rest of the legacy
+ * checker.
+ *
+ * @param string $type 'all', 'compliance', 'risk', or 'questionnaire'.
+ * @return void
+ */
+// Refresh the number of files having an issue, update the settings or delete if there're no file with encoding issue left
+function refresh_file_encoding_issue_counts($type = 'all') {
+
+    $db = db_open();
+
+    // Only query the database if it's really necessary
+    $questionnaire_table_exists = (($type === 'questionnaire' || $type === 'all') ? table_exists('questionnaire_files') : false);
+
+    if (($type === 'questionnaire' || $type === 'all') && !$questionnaire_table_exists) {
+        // Make sure there's no leftover data left in the settings table
+        delete_setting("file_encoding_issues_count_questionnaire");
+
+        // If it's only for the questionnaire then there's nothing else to do here
+        if ($type === 'questionnaire') {
+            return;
+        }
+    }
+
+    if ($type === 'all') {
+        $types = ['compliance', 'risk'];
+        if ($questionnaire_table_exists) {
+            $types []= 'questionnaire';
+        }
+    } else {
+        $types = [$type];
+    }
+
+    foreach ($types as $type) {
+        $setting_name = "file_encoding_issues_count_{$type}";
+        $log_type = $type;
+        $sql = '';
+        switch($type) {
+            case 'compliance':
+                $log_type = 'test_audit';
+                $sql = "SELECT count(1) AS cnt FROM `compliance_files` WHERE `size` <> LENGTH(`content`);";
+                break;
+            case 'risk':
+                $log_type = 'risk';
+                $sql = "SELECT count(1) AS cnt FROM `files` WHERE `size` <> LENGTH(`content`);";
+                break;
+            case 'questionnaire':
+                $log_type = 'questionnaire';
+                $sql = "SELECT count(1) AS cnt FROM `questionnaire_files` WHERE `size` <> LENGTH(`content`);";
+                break;
+        }
+        if (!$sql) continue;
+
+        $stmt = $db->prepare($sql);
+        $stmt->execute();
+
+        $count = (int)$stmt->fetch(PDO::FETCH_COLUMN);
+
+        // Refresh the numbers in the database
+        if ($count) {
+            $old_count = (int)get_setting($setting_name);
+            if ($old_count !== $count) {
+                update_or_insert_setting($setting_name, $count);
+                write_log(0, $_SESSION['uid'] ?? 0, _lang('EncodingIssueCountUpdated', ['type' => $type, 'old_count' => $old_count, 'count' => $count]), $log_type);
+            }
+        } else {
+            // Or delete the setting if the issues were cleaned up
+            delete_setting($setting_name);
+            write_log(0, $_SESSION['uid'] ?? 0, _lang('EncodingIssueCleanedUp', ['type' => $type]), $log_type);
+        }
+    }
+
+    db_close($db);
 }

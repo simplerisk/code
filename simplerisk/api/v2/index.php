@@ -16,6 +16,7 @@ require_once(realpath(__DIR__ . '/includes/compliance.php'));
 require_once(realpath(__DIR__ . '/includes/artificial_intelligence.php'));
 require_once(realpath(__DIR__ . '/includes/reporting.php'));
 require_once(realpath(__DIR__ . '/includes/self_assessments.php'));
+require_once(realpath(__DIR__ . '/includes/data_integrity.php'));
 require_once(realpath(__DIR__ . '/../../includes/functions.php'));
 require_once(realpath(__DIR__ . '/../../includes/authenticate.php'));
 require_once(realpath(__DIR__ . '/../../includes/governance.php'));
@@ -51,6 +52,12 @@ if (api_v2_is_authenticated())
     app()->get('/admin/queue', 'api_v2_admin_queue');
     app()->get('/admin/queue/promises', 'api_v2_admin_queue_promises');
 
+    // Data Integrity Framework
+    app()->get('/admin/data-integrity/issues', 'api_v2_data_integrity_issues_list');
+    app()->patch('/admin/data-integrity/issues/{id}', 'api_v2_data_integrity_issue_apply');
+    app()->post('/admin/data-integrity/issues/bulk-repair', 'api_v2_data_integrity_issues_bulk_repair');
+    app()->post('/admin/data-integrity/scan', 'api_v2_data_integrity_scan_trigger');
+
     // Encryption Extra HTTP handlers. Registered in Core because the four
     // endpoints (status, restore, algorithm-check/trigger, backup/delete) must be
     // reachable even when encryption_extra() is false — failed or partial
@@ -62,6 +69,7 @@ if (api_v2_is_authenticated())
         app()->get('/encryption/activation/status', 'api_v2_encryption_activation_status');
         app()->post('/encryption/restore', 'api_v2_encryption_restore');
         app()->post('/encryption/algorithm-check/trigger', 'api_v2_encryption_algorithm_check_trigger');
+        app()->post('/encryption/frameworks-consistency/repair', 'api_v2_encryption_frameworks_consistency_repair');
         app()->delete('/encryption/backup', 'api_v2_encryption_backup_delete');
         app()->get('/encryption/backup/download', 'api_v2_encryption_backup_download');
     }
@@ -104,6 +112,15 @@ if (api_v2_is_authenticated())
     app()->get('/governance/frameworks/rail', 'api_v2_governance_frameworks_rail');
     app()->get('/governance/frameworks/associations', 'api_v2_governance_frameworks_associations');
     app()->get('/governance/controls', 'api_v2_governance_controls');
+    // Full cross-framework control roster (id, control_number, short_name,
+    // family, description, frameworks[]) for the sr-faceted-picker.js control
+    // pickers on Document Program and Define Exceptions -- same shape as
+    // api_v2_compliance_control_roster() (api/v2/includes/compliance.php),
+    // gated on governance instead of compliance permission since those two
+    // pages don't require the Compliance module. Registered as a literal
+    // path before the /governance/controls/{id} CRUD wildcard below, same
+    // reasoning as /governance/controls/table just below.
+    app()->get('/governance/controls/roster', 'api_v2_governance_control_roster');
     // Client-rendered controls table (Define Control Frameworks redesign). Returns
     // shaped row data, not HTML -- see api/v2/includes/governance_controls.php.
     // Registered as a literal path before the /governance/controls/{id} CRUD
@@ -321,9 +338,6 @@ if (api_v2_is_authenticated())
     app()->get('/admin/users/all', 'allusers');
     app()->get('/admin/users/enabled', 'enabledusers');
     app()->get('/admin/users/disabled', 'disabledusers');
-    app()->post('/admin/fields/add', 'customization_addCustomField');
-    app()->post('/admin/fields/delete', 'customization_deleteCustomField');
-    app()->get('/admin/fields/get', 'customization_getCustomField');
     app()->get('/reports', 'show_reports');
     app()->get('/reports/dynamic', 'dynamicrisk');
     app()->get('/risk_levels', 'risk_levels');
@@ -414,7 +428,17 @@ if (api_v2_is_authenticated())
     // (the v2-native flat list); they were previously colliding on the same
     // path.
     app()->get('/governance/documents/treegrid', 'getDocumentsResponse');
+    app()->get('/governance/documents/audit_log', 'get_documents_audit_log_api');
+    // Row-expander version history (Document Program grid): every historical
+    // compliance_files row for a document, not just the current file_id --
+    // get_document_versions_by_id() (includes/governance.php) already existed
+    // for the pre-redesign EasyUI treegrid's drilldown; this is its first v2
+    // exposure. See get_document_versions_api() in includes/api.php.
+    app()->get('/governance/documents/versions', 'get_document_versions_api');
     app()->get('/governance/document', 'getDocumentResponse');
+    // Document Program category tab strip (Task 10): read-only list backing the
+    // dynamic tabs + quick-add "+" affordance in governance-documents.js.
+    app()->get('/governance/document_types', 'get_document_types_api');
     app()->get('/governance/selected_parent_documents_dropdown', 'getSelectedParentDocumentsDropdownResponse');
     app()->get('/governance/related_controls_by_framework_ids', 'getRelatedControlsByFrameworkIdsResponse');
     app()->post('/governance/rebuild_control_filters', 'getControlFiltersByFrameworksResponse');
@@ -490,6 +514,17 @@ if (api_v2_is_authenticated())
     app()->post('/documents/create', 'create_document_api');
     app()->post('/documents/update', 'update_document_api');
     app()->post('/documents/delete', 'delete_document_api');
+    app()->post('/documents/approve', 'approve_document_api');
+    app()->post('/documents/unapprove', 'unapprove_document_api');
+    app()->post('/documents/batch-approve', 'batch_approve_document_api');
+    // Deleting exactly ONE historical version (never the document itself)
+    // is /documents/delete above with `version` set -- delete_document_api()
+    // already forwards it straight through to delete_document()'s existing
+    // $version branch (includes/governance.php), so the version-history row
+    // expander's delete-this-version action (governance-documents.js) reuses
+    // the SAME #document-delete-modal/delete-document-form the row's main
+    // delete action uses, just with a real version number in the hidden
+    // field instead of an empty one. No separate route needed.
     /***********************************************************/
 
     /***************** DOCUMENT EXCEPTIONS API *****************/
@@ -498,6 +533,7 @@ if (api_v2_is_authenticated())
     app()->post('/exceptions/delete', 'delete_exception_api');
     app()->post('/exceptions/approve', 'approve_exception_api');
     app()->post('/exceptions/unapprove', 'unapprove_exception_api');
+    app()->post('/exceptions/batch-approve', 'batch_approve_exception_api');
     app()->post('/exceptions/batch-delete', 'batch_delete_exception_api');
     app()->get('/exceptions/tree', 'get_exceptions_as_treegrid_api');
     app()->get('/exceptions/exception', 'get_exception_api');
@@ -509,9 +545,6 @@ if (api_v2_is_authenticated())
 
     app()->get('/management/tag_options_of_type', 'getTagOptionsOfType');
     app()->get('/management/tag_options_of_types', 'getTagOptionsOfTypes');
-
-    app()->get('/upload_encoding_issue_fix/datatable', 'getFilesWithEncodingIssuesDatatableResponse');
-    app()->post('/upload_encoding_issue_fix/file_upload', 'uploadFileToFixFileEncodingIssue');
 
     // Return scoring histories
     app()->get('/management/risk/scoring_history', 'scoringHistory');
@@ -562,8 +595,9 @@ if (api_v2_is_authenticated())
     app()->post('/admin/threat_catalog/delete_threat_catalog', 'deleteThreatCatalogAPI');
 
     // This status call needs to be available with ComplianceForge SCF disabled
-    app()->get('/complianceforgescf/enable', 'api_complianceforgescf_enable');
-    app()->get('/complianceforgescf/disable', 'api_complianceforgescf_disable');
+    // Enable/disable are state-changing and must be POST-only (GET is CSRF-able).
+    app()->post('/complianceforgescf/enable', 'api_complianceforgescf_enable');
+    app()->post('/complianceforgescf/disable', 'api_complianceforgescf_disable');
     app()->get('/complianceforgescf/status', 'api_complianceforgescf_status');
 
     //**************************** ACTIVATE/DEACTIVATE EXTRA BEGIN****************************//
@@ -716,6 +750,16 @@ if (api_v2_is_authenticated())
 
             // Get the customization routes
             get_customization_routes();
+
+            // Get the customization v2-only routes (custom fields, document
+            // types, template groups). Registered here (v2 only) rather than
+            // inside get_customization_routes() -- see that function's
+            // neighboring get_customization_v2_routes() docblock in
+            // extras/customization/includes/api.php for why:
+            // get_customization_routes() is also called from
+            // api/v1/index.php's own Customization Extra block, and none of
+            // these endpoints belong on the frozen v1 surface.
+            get_customization_v2_routes();
         }
     }
 

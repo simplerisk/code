@@ -6,6 +6,12 @@
 
 // Include required configuration files
 require_once(realpath(__DIR__ . '/functions.php'));
+// check_permission() / check_permission_exception() -- used directly by this
+// file's exception-widget data functions (get_open_exceptions_count(),
+// get_home_expiring_exceptions_items()) to enforce the granular
+// view_exception permission. Declared directly per CLAUDE.md's
+// function-reachability rule rather than relied on transitively.
+require_once(realpath(__DIR__ . '/permissions.php'));
 // audit_history_link_page() -- the shared audit deep-link rule used by
 // get_home_recent_failures_items(). Declared directly rather than relied on
 // transitively: a caller must load the file defining the helper it calls.
@@ -5569,7 +5575,7 @@ function make_full_risks_sql($query_type, $status, $sort, $group, $column_filter
             `cs_impacts`.`name`
         FROM
         	`risk_scoring_contributing_impacts` rs_impacts
-          	LEFT JOIN `contributing_risks_impact` cs_impacts ON `cs_impacts`.`value` = `rs_impacts`.`impact` AND `cs_impacts`.`contributing_risks_id` = `rs_impacts`.`contributing_risk_id`;
+          	INNER JOIN `contributing_risks_impact` cs_impacts ON `cs_impacts`.`value` = `rs_impacts`.`impact` AND `cs_impacts`.`contributing_risks_id` = `rs_impacts`.`contributing_risk_id`;
 
         /*Create temporary table for the risk catalog entries grouped by the risk id for easier querying*/
         CREATE TABLE `temp_associated_risk_catalog_entries{$unique_key}`(
@@ -5613,6 +5619,8 @@ function make_full_risks_sql($query_type, $status, $sort, $group, $column_filter
             LEFT JOIN `risk_function` rf ON `rc`.`function` = `rf`.`value`
             LEFT JOIN `risk_catalog_mappings` rcm ON rcm.risk_catalog_id = rc.id
             LEFT JOIN `risks` rsk ON rsk.id = rcm.risk_id
+        WHERE
+            `rsk`.`id` IS NOT NULL
         GROUP BY
             `rsk`.`id`;
         ";
@@ -9459,6 +9467,15 @@ function get_mttr_by_risk_level($teams = false) {
  * grouped by 'team', 'category', or 'location'.    *
  *****************************************************/
 function get_risk_exposure_by_dimension($dimension, $teams = false) {
+    // Intersect the caller-supplied teams filter with the teams the current
+    // user is actually authorized to see so a caller can't widen the filter
+    // to another team's data (Team Separation bypass).
+    if ($teams !== false) {
+        $authorized_teams = array_map('intval', array_column(get_teams_by_login_user(), 'value'));
+        $authorized_teams[] = 0; // "Unassigned" is not team-restricted data
+        $requested_teams = is_array($teams) ? $teams : explode(',', $teams);
+        $teams = array_intersect(array_map('intval', $requested_teams), $authorized_teams);
+    }
     $teams_query = generate_teams_query($teams, "rtt.team_id");
     $db = db_open();
 
@@ -9574,6 +9591,15 @@ function open_risk_location_exposure_pie($teams = false, $title = null) {
  * Low=180, Insignificant=365.                       *
  *****************************************************/
 function get_sla_breach_data($teams = false) {
+    // Intersect the caller-supplied teams filter with the teams the current
+    // user is actually authorized to see so a caller can't widen the filter
+    // to another team's data (Team Separation bypass).
+    if ($teams !== false) {
+        $authorized_teams = array_map('intval', array_column(get_teams_by_login_user(), 'value'));
+        $authorized_teams[] = 0; // "Unassigned" is not team-restricted data
+        $requested_teams = is_array($teams) ? $teams : explode(',', $teams);
+        $teams = array_intersect(array_map('intval', $requested_teams), $authorized_teams);
+    }
     $teams_query = generate_teams_query($teams, "rtt.team_id");
     $db = db_open();
     $stmt = $db->prepare("
@@ -10651,8 +10677,22 @@ function home_pass_rate_delta()
 // policy_document_id via document_framework_mappings). COUNT(DISTINCT de.value)
 // so an exception matching multiple paths isn't double-counted (`value` is
 // document_exceptions' primary key — the table has no `id` column).
-function get_open_exceptions_count($framework_ids = null)
+// $bypass_permission_check: true only for the daily KPI-snapshot cron job
+// (home_kpi_snapshot_metrics(), run by core_kpi_snapshot.php), which has no
+// authenticated session to check permissions against and records a
+// system-wide aggregate rather than rendering data to a specific user.
+function get_open_exceptions_count($framework_ids = null, $bypass_permission_check = false)
 {
+    // Require the granular view_exception permission (HackerOne #3960721 /
+    // SR-2088: the widget's config-level required_permission -- checked by
+    // the generic dispatcher in api.php before this function ever runs --
+    // used to be the module-level 'governance' permission alone, which let a
+    // governance holder without view_exception read exception data this
+    // function returns; view_exception is the correct, sufficient gate for
+    // exception data, matching api_v2_exceptions_datatable()'s own gate).
+    if (!$bypass_permission_check && !check_permission_exception('view')) {
+        return 0;
+    }
     if ($framework_ids !== null && empty($framework_ids)) { return 0; }
     $db = db_open();
     $fw_clause = '';
@@ -10728,7 +10768,7 @@ function home_kpi_snapshot_metrics()
     return [
         'active_frameworks' => (float) get_frameworks_count(1),
         'total_controls'    => (float) get_framework_controls_count(false),
-        'open_exceptions'   => (float) get_open_exceptions_count(),
+        'open_exceptions'   => (float) get_open_exceptions_count(null, true),
         'policies'          => (float) get_policies_count(),
     ];
 }
@@ -11839,7 +11879,7 @@ function get_home_highest_risks_items($limit = 6)
         $level_name = get_risk_level_name($r['calculated_risk']);
         $has_level  = ($level_name !== '' && isset($levels[$level_name]));
         $items[] = [
-            'name'  => $r['subject'],
+            'name'  => try_decrypt($r['subject']),
             'href'  => '../management/view.php?id=' . convert_to_risk_id($r['id']),
             'pill'  => $has_level ? $levels[$level_name]['display'] : ($level_name !== '' ? $level_name : '—'),
             'band'  => 'level',
@@ -11879,7 +11919,7 @@ function get_home_pastdue_reviews_items($limit = 6)
     foreach ($rows as $r) {
         $days = (int) floor((time() - strtotime($r['next_review'] . ' 00:00:00')) / 86400);
         $items[] = [
-            'name' => $r['subject'],
+            'name' => try_decrypt($r['subject']),
             'href' => '../management/view.php?id=' . convert_to_risk_id($r['id']) . '&type=2&action=editreview#review',
             'pill' => $days . 'd',
             'band' => 'danger',
@@ -11916,7 +11956,7 @@ function get_home_unreviewed_items($limit = 6)
     foreach ($rows as $r) {
         $days = (int) floor((time() - strtotime($r['submission_date'])) / 86400);
         $items[] = [
-            'name' => $r['subject'],
+            'name' => try_decrypt($r['subject']),
             'href' => '../management/view.php?id=' . convert_to_risk_id($r['id']) . '&type=2&action=editreview#review',
             'pill' => $days . 'd',
             'band' => 'warn',
@@ -12254,6 +12294,12 @@ function get_home_policies_review_items($limit = 6, $framework_ids = null)
 // of the three exception→framework paths (see get_open_exceptions_count()).
 function get_home_expiring_exceptions_items($limit = 6, $framework_ids = null)
 {
+    // Require the granular view_exception permission (HackerOne #3960721 /
+    // SR-2104: see get_open_exceptions_count()'s docblock for why
+    // view_exception alone, not governance, is the correct gate here).
+    if (!check_permission_exception('view')) {
+        return [];
+    }
     if ($framework_ids !== null && empty($framework_ids)) { return []; }
     $db = db_open();
     $fw_clause = '';

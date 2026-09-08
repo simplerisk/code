@@ -1,4 +1,4 @@
-/*! DataTables 3.0.2
+/*! DataTables 3.0.3
  * Copyright (c) SpryMedia Ltd - datatables.net/license
  */
 
@@ -566,6 +566,14 @@ function ajax(optionsIn) {
         !isCrossDomain(options.url)) {
         options.headers['X-Requested-With'] = 'XMLHttpRequest';
     }
+    // Add an accept header specifically for JSON data types, again to match
+    // how jQuery operates for this.
+    if (options.dataType === 'json' &&
+        options.headers &&
+        !options.headers['accepts']) {
+        options.headers['Accept'] =
+            'application/json, text/javascript, */*; q=0.01';
+    }
     each(options.headers, (key, val) => {
         xhr.setRequestHeader(key, val);
     });
@@ -607,7 +615,7 @@ function ajax(optionsIn) {
                 responseData = JSON.parse(responseData);
             }
             catch (e) {
-                statusText = 'parseerror';
+                statusText = 'parsererror';
             }
         }
         else if (!options.dataType) {
@@ -3920,7 +3928,7 @@ const ext = {
      * Software version
      *  @type string
      */
-    version: '3.0.2'
+    version: '3.0.3'
 };
 //
 // Backwards compatibility. Alias to pre 1.10 Hungarian notation counter parts
@@ -4431,7 +4439,7 @@ var helpers = {
                 }
                 flo = flo.toFixed(precision);
                 var absPart = Math.abs(flo);
-                var intPart = parseInt(flo, 10);
+                var intPart = Math.abs(parseInt(flo, 10));
                 var floatPart = precision
                     ? decimal +
                         (absPart - intPart).toFixed(precision).substring(2)
@@ -7254,17 +7262,17 @@ function loadState(settings, callback) {
         callback();
         return;
     }
-    var loaded = function (state) {
-        implementState(settings, state, callback);
+    var loaded = function (state, ignoreTime = false) {
+        implementState(settings, state, ignoreTime, callback);
     };
     var state = settings.stateLoadCallback.call(settings.instance, settings, loaded);
     if (state !== undefined) {
-        implementState(settings, state, callback);
+        implementState(settings, state, false, callback);
     }
     // otherwise, wait for the loaded callback to be executed
     return true;
 }
-function implementState(settings, s, callback) {
+function implementState(settings, s, ignoreTime, callback) {
     var i, iLen;
     var columns = settings.columns;
     var currentNames = pluck(settings.columns, 'name');
@@ -7273,17 +7281,19 @@ function implementState(settings, s, callback) {
     // any time Not just initialisation. To do this an api instance is required
     // in some places
     var api = settings.initDone ? new Api(settings) : null;
-    if (!s || !s.time) {
-        settings.loadingState = false;
-        callback();
-        return;
-    }
-    // Reject old data
-    var duration = settings.stateDuration;
-    if (duration > 0 && s.time < +new Date() - duration * 1000) {
-        settings.loadingState = false;
-        callback();
-        return;
+    if (!ignoreTime) {
+        if (!s || !s.time) {
+            settings.loadingState = false;
+            callback();
+            return;
+        }
+        // Reject old data
+        var duration = settings.stateDuration;
+        if (duration > 0 && s.time < +new Date() - duration * 1000) {
+            settings.loadingState = false;
+            callback();
+            return;
+        }
     }
     // Allow custom and plug-in manipulation functions to alter the saved data
     // set and cancelling of loading by returning false
@@ -7914,7 +7924,7 @@ function filter(searchRows, settings, input, options) {
             if ((searchFunc &&
                 searchFunc(data, row.data, searchRows[i], columns.length === 1 ? columns[0] : columns // compat
                 )) ||
-                (rpSearch && data && rpSearch.test(data))) {
+                (rpSearch && typeof data === 'string' && rpSearch.test(data))) {
                 matched.push(searchRows[i]);
             }
         }
@@ -10356,7 +10366,8 @@ register('processing()', function (show) {
     return this.iterator('table', ctx => processingDisplay(ctx, show));
 });
 
-Dom.s(document).on('plugin-init.dt', function (e, context) {
+// Add the state event handler in time for the initial draw to save state
+Dom.s(document).on('preInit.dt', function (e, context) {
     var api = new Api(context);
     api.on('stateSaveParams.DT', function (ev, settings, d) {
         // This could be more compact with the API, but it is a lot faster as a
@@ -10377,6 +10388,10 @@ Dom.s(document).on('plugin-init.dt', function (e, context) {
     api.on('stateLoaded.DT', function (ev, settings, state) {
         detailsStateLoad(api, state);
     });
+});
+// But initial details can wait until the end
+Dom.s(document).on('plugin-init.dt', function (e, context) {
+    var api = context.api;
     // And the initial load state
     detailsStateLoad(api, api.state.loaded());
 });
@@ -11012,7 +11027,7 @@ register(['columns().search.fixed()', 'column().search.fixed()'], function (name
     });
 });
 
-register('state()', function (set, ignoreTime) {
+register('state()', function (set, ignoreTime = true) {
     // getter
     if (!set) {
         return this.context.length ? this.context[0].stateSaved : null;
@@ -11020,10 +11035,7 @@ register('state()', function (set, ignoreTime) {
     let setMutate = assignDeep({}, set);
     // setter
     return this.iterator('table', function (settings) {
-        if (ignoreTime !== false) {
-            setMutate.time = +new Date() + 100;
-        }
-        implementState(settings, setMutate, function () { });
+        implementState(settings, setMutate, ignoreTime, function () { });
     });
 });
 register('state.clear()', function () {

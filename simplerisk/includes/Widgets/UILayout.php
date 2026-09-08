@@ -37,6 +37,21 @@ class UILayout {
     private bool $collapsible;
 
     /**
+     * The Edit Layout control's "show what's possible, mark what's locked"
+     * state (customization_acquisition_state(), includes/settings_catalog.php)
+     * -- null (default) keeps the pre-existing behavior of should_show_edit_
+     * layout() alone: show the real control, or nothing. A non-null array with
+     * 'locked' => true swaps the real control for the shared .sr-locked teaser
+     * instead of hiding it outright; 'locked' => false renders the real
+     * control exactly as null would have. Only meaningful when show_edit_
+     * layout is also true -- a caller that explicitly wants no edit-layout
+     * control at all (an embedded read-only rendering) is unaffected by this.
+     *
+     * Type: ?array
+     */
+    private ?array $edit_layout_locked_state;
+
+    /**
      * Initialize the widget
      *
      * @param string $layout_name the name of the layout that needs to be rendered
@@ -51,12 +66,21 @@ class UILayout {
      *                         one-line summary strip. For layouts embedded above
      *                         other content, where the tiles cost vertical space
      *                         the content below needs.
+     *                       - 'edit_layout_locked_state' (?array, default null):
+     *                         customization_acquisition_state()'s return shape.
+     *                         Pass it whenever show_edit_layout depends on
+     *                         customization_extra() so a customer without the
+     *                         Extra sees the locked teaser in place of the
+     *                         control, instead of the control simply vanishing.
+     *                         Leave null for a layout that doesn't gate Edit
+     *                         Layout on the Extra at all.
      */
     public function __construct($layout_name, $options = []) {
 	    $this->id = generate_token(10);
         $this->layout_name = $layout_name;
         $this->show_edit_layout = $options['show_edit_layout'] ?? true;
         $this->collapsible = $options['collapsible'] ?? false;
+        $this->edit_layout_locked_state = $options['edit_layout_locked_state'] ?? null;
 	}
 
 	/**
@@ -68,6 +92,29 @@ class UILayout {
 	 */
 	public function should_show_edit_layout(): bool {
 		return $this->show_edit_layout;
+	}
+
+	/**
+	 * Pure decision method (no I/O) for whether the real Edit-layout control
+	 * (as opposed to the locked teaser) should render -- true whenever no
+	 * locked state was passed at all, or the passed state says 'locked' =>
+	 * false. Only meaningful when should_show_edit_layout() is also true.
+	 *
+	 * @return bool
+	 */
+	public function should_show_real_edit_layout(): bool {
+		return empty($this->edit_layout_locked_state['locked']);
+	}
+
+	/**
+	 * The locked state passed at construction, or null. Used by render() to
+	 * fill in the .sr-locked teaser's copy/link when should_show_real_edit_
+	 * layout() is false.
+	 *
+	 * @return ?array
+	 */
+	public function edit_layout_locked_state(): ?array {
+		return $this->edit_layout_locked_state;
 	}
 
 	/**
@@ -139,8 +186,26 @@ class UILayout {
 <?php if ($this->is_collapsible()) { ?>
 			<button type="button" class="btn btn-sm text-nowrap sr-band-toggle" id="collapse_band_<?=$this->id?>" aria-expanded="true" aria-controls="band_panel_<?=$this->id?>" title="<?= $escaper->escapeHtmlAttr($lang['HideInsights'])?>"><i class="fas fa-chevron-down sr-band-toggle__caret"></i><?= $escaper->escapeHtml($lang['Insights'])?></button>
 <?php } ?>
-<?php if ($this->should_show_edit_layout()) { ?>
+<?php if ($this->should_show_edit_layout() && $this->should_show_real_edit_layout()) { ?>
 			<a class="btn btn-sm text-nowrap sr-edit-layout waves-effect waves-light" id="edit_layout_toggle_<?=$this->id?>" title="<?= $escaper->escapeHtml($lang['EditLayout'])?>" role="button"><i class="fas fa-pen sr-edit-layout__icon"></i><?= $escaper->escapeHtml($lang['EditLayout'])?></a>
+<?php } elseif ($this->should_show_edit_layout()) {
+			// Extra not active: the shared "show what's possible, mark
+			// what's locked" teaser (scss/modules/_locked-affordance.scss)
+			// in place of the control, rather than the control simply
+			// vanishing -- same component the audit trail Export button and
+			// the bulk-download button already use (governance/
+			// documentation.php).
+			$locked = $this->edit_layout_locked_state() ?? [];
+			$note = $locked['note_key'] !== null ? ($lang[$locked['note_key']] ?? '') : '';
+			$link_text = $locked['link_key'] !== null ? ($lang[$locked['link_key']] ?? '') : '';
+			$href = $locked['unlock_href'] ?? null;
+?>
+			<span class="sr-locked" data-sr-locked-state="<?= $escaper->escapeHtmlAttr($locked['state']) ?>">
+				<a class="btn btn-sm text-nowrap sr-edit-layout sr-locked--btn" role="button" aria-disabled="true" title="<?= $escaper->escapeHtmlAttr($note) ?>"><i class="fas fa-pen sr-edit-layout__icon"></i><?= $escaper->escapeHtml($lang['EditLayout']) ?><span class="sr-locked-badge"><i class="fa fa-lock" aria-hidden="true"></i> <?= $escaper->escapeHtml($lang['LockedAffordanceBadge']) ?></span></a>
+<?php if ($link_text && $href) { ?>
+				<a class="sr-locked-link" href="<?= $escaper->escapeHtmlAttr($href) ?>"<?= !empty($locked['external']) ? ' target="_blank" rel="noopener"' : '' ?> title="<?= $escaper->escapeHtmlAttr($note) ?>"><i class="fa fa-circle-info" aria-hidden="true"></i></a>
+<?php } ?>
+			</span>
 <?php } ?>
 <?php
 			// Import-Export Extra: PDF export of this dashboard. Gated on the Extra
@@ -148,6 +213,16 @@ class UILayout {
 			// not merely installed. Active extras' index.php is not auto-loaded on
 			// every page, so pull the export helper in directly when active. Core
 			// keeps no hard dependency: nothing runs unless the Extra is turned on.
+			//
+			// The four Core dashboards (im_export_dashboard_map()'s keys minus the
+			// IM Extra's own 'incident_dashboard', which manages its own export
+			// affordance) get the shared "show what's possible" teaser instead of
+			// the button simply not being there when the Extra is off -- the same
+			// gap Edit Layout had on these same four dashboards before this pass.
+			// Hardcoded here rather than read from im_export_dashboard_map() because
+			// that map lives in the Extra's own file, which (by design, per the
+			// comment above) is only loaded when the Extra is ACTIVE -- exactly the
+			// case this branch handles when it isn't.
 			if (import_export_extra()) {
 				$im_export_helper = realpath(__DIR__ . '/../../extras/import-export/includes/dashboard_export.php');
 				if ($im_export_helper) {
@@ -156,7 +231,20 @@ class UILayout {
 						im_export_dashboard_button($this->layout_name, $this->id);
 					}
 				}
-			}
+			} elseif (in_array($this->layout_name, ['home', 'risk_dashboard', 'compliance_dashboard', 'governance_dashboard'], true)) {
+				require_once(realpath(__DIR__ . '/../settings_catalog.php'));
+				$im_locked = import_export_acquisition_state($is_admin, get_setting('registration_registered') == 1);
+				$im_note = $im_locked['note_key'] !== null ? ($lang[$im_locked['note_key']] ?? '') : '';
+				$im_link_text = $im_locked['link_key'] !== null ? ($lang[$im_locked['link_key']] ?? '') : '';
+				$im_href = $im_locked['unlock_href'] ?? null;
+?>
+			<span class="sr-locked" data-sr-locked-state="<?= $escaper->escapeHtmlAttr($im_locked['state']) ?>">
+				<a class="btn btn-sm text-nowrap sr-export-pdf sr-locked--btn" role="button" aria-disabled="true" title="<?= $escaper->escapeHtmlAttr($im_note) ?>"><i class="fas fa-file-pdf sr-export-pdf__icon"></i><?= $escaper->escapeHtml($lang['ImportExportExportPdf']) ?><span class="sr-locked-badge"><i class="fa fa-lock" aria-hidden="true"></i> <?= $escaper->escapeHtml($lang['LockedAffordanceBadge']) ?></span></a>
+<?php if ($im_link_text && $im_href) { ?>
+				<a class="sr-locked-link" href="<?= $escaper->escapeHtmlAttr($im_href) ?>"<?= !empty($im_locked['external']) ? ' target="_blank" rel="noopener"' : '' ?> title="<?= $escaper->escapeHtmlAttr($im_note) ?>"><i class="fa fa-circle-info" aria-hidden="true"></i></a>
+<?php } ?>
+			</span>
+<?php }
 ?>
 		</div>
 	</div>
@@ -752,7 +840,7 @@ class UILayout {
 		layout_<?=$this->id?> = GridStack.init(
 			{
             	minRow: 1,
-<?php if (in_array($this->layout_name, ['home', 'risk_dashboard', 'compliance_dashboard', 'governance_dashboard', 'incident_dashboard', 'define_tests_insights', 'define_frameworks_insights'], true)) { ?>
+<?php if (in_array($this->layout_name, ['home', 'risk_dashboard', 'compliance_dashboard', 'governance_dashboard', 'incident_dashboard', 'define_tests_insights', 'define_frameworks_insights', 'document_program_insights', 'define_exceptions_insights'], true)) { ?>
             	// KPI-style dashboards use a shorter row so KPI stat-tiles (h2) read
             	// as compact cards (~120px) instead of tall, half-empty cells, and
             	// their charts stay proportionate — matches the dashboard design

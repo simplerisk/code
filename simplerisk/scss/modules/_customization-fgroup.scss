@@ -1,0 +1,821 @@
+// admin/customization.php chrome -- the unified Extra activation header, the
+// tabbed hub wrapper, and the field-group pill selector. None of these are a
+// shared design-system component yet (coverage-map.md lists tabs/segmented
+// selectors as PENDING), so this is page-scoped, built from real tokens
+// rather than new shared classes.
+//
+// Lives in its own partial rather than modules/_customization.scss: that
+// file's own @import in custom.scss has been commented out since custom.scss
+// was first created, alongside the styling for #template-container and
+// #edit-assets-table -- resurrecting it would silently activate those
+// long-dormant, unrelated rules too.
+
+// ── Unified Extra header (breadcrumb + title + status + action) ────────────
+// Matches admin/artificial_intelligence.php's .sr-ai-exthead exactly: the
+// left accent border signals activation state at a glance, and the dot
+// repeats that signal right on the title. Stock page title/breadcrumb are
+// suppressed below so this is the only header on the page (same as the AI
+// Extra page) -- otherwise the title/breadcrumb render twice.
+.sr-cust-exthead{
+  background: $sr-body;
+  border: 1px solid $gray-300;
+  border-left: 4px solid $success;
+  border-radius: 8px;
+  padding: 16px 20px;
+  margin-bottom: 16px;
+  box-shadow: $shadow;
+
+  &.inactive{ border-left-color: $gray-400; }
+
+  .sr-cust-exthead-crumbs{
+    font-size: 12px;
+    color: $gray-600;
+    margin-bottom: 10px;
+
+    a{ color: $gray-600; text-decoration: none; &:hover{ color: $sr-important; } }
+    .sep{ margin: 0 6px; color: $gray-500; }
+    .cur{ color: $sr-primary; font-weight: 600; }
+  }
+
+  .sr-cust-exthead-main{ display: flex; align-items: center; gap: 14px; }
+
+  .sr-cust-exthead-dot{
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: $success;
+    flex: none;
+    box-shadow: 0 0 0 3px rgba($success, 0.2);
+  }
+  &.inactive .sr-cust-exthead-dot{
+    background: $gray-500;
+    box-shadow: 0 0 0 3px rgba($gray-500, 0.2);
+  }
+
+  .sr-cust-exthead-text{ flex: 1; min-width: 0; }
+  .sr-cust-exthead-titlerow{ display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+  .sr-cust-exthead-title{ font-size: 20px; font-weight: 900; margin: 0; color: $sr-primary; }
+
+  .sr-cust-exthead-status{
+    font-size: 10.5px;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    border-radius: 20px;
+    padding: 3px 10px;
+    color: $success;
+    background: rgba($success, 0.13);
+  }
+  &.inactive .sr-cust-exthead-status{ color: $gray-700; background: $gray-100; }
+
+  .sr-cust-exthead-version{ font-size: 12px; color: $gray-600; font-variant-numeric: tabular-nums; }
+  .sr-cust-exthead-note{ font-size: 12.5px; color: $gray-700; font-style: italic; }
+
+  .sr-cust-exthead-action{ flex: none; }
+  form{ margin: 0; }
+
+  .sr-cust-btn{
+    display: inline-block;
+    font-size: 13px;
+    font-weight: 700;
+    border-radius: 6px;
+    padding: 8px 18px;
+    cursor: pointer;
+    border: 1px solid $gray-400;
+    background: $sr-body;
+    color: $sr-primary;
+    text-decoration: none;
+
+    &:hover{ border-color: $sr-important; color: $sr-important; }
+  }
+  .sr-cust-btn-primary{
+    background: $sr-important;
+    border-color: $sr-important;
+    color: $white;
+
+    &:hover{ filter: brightness(0.94); color: $white; border-color: $sr-important; }
+  }
+}
+
+// On the Customization Extra page (which renders its own .sr-cust-exthead),
+// hide the stock page header so the title/breadcrumb aren't duplicated --
+// mirrors admin/artificial_intelligence.php's identical rule for .sr-ai-exthead.
+body:has(.sr-cust-exthead) .page-breadcrumb{ display: none; }
+
+// ── Tabbed hub (Fields / Template Groups / Add and remove values) ─────────
+// Mirrors admin/artificial_intelligence.php's .sr-aihub tab treatment:
+// icon + label, underline-on-active, no background fill.
+.sr-cust-hub{
+  .nav-tabs{
+    border-bottom: 1px solid $gray-300;
+    gap: 4px;
+    margin-bottom: 16px;
+
+    .nav-link{
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      border: 0;
+      border-bottom: 2px solid transparent;
+      border-radius: 0;
+      margin-bottom: -1px;
+      padding: 11px 16px 12px;
+      background: transparent;
+      color: $gray-600;
+      font-weight: 700;
+      cursor: pointer;
+
+      i{ width: 16px; text-align: center; flex: none; }
+
+      &:hover{ color: $sr-primary; }
+
+      &.active{
+        color: $sr-primary;
+        background: transparent;
+        border-bottom-color: $sr-important;
+      }
+    }
+  }
+
+  .tab-content{ background: transparent; }
+}
+
+// Reveal the page-wrapper gray behind the hub (mirrors the identical rule for
+// .sr-aihub in admin/artificial_intelligence.php) so the exthead + cards float
+// on the page ground instead of sitting inside a flat white .content slab.
+// Keyed off '.sr-cust-exthead' rather than '.sr-cust-hub': the exthead
+// banner (Activate/Deactivate) always renders regardless of activation
+// state, but '.sr-cust-hub' only renders once the Extra is active -- with
+// the old '.sr-cust-hub'-only selector, deactivating the Extra left the
+// exthead alone in an un-matched '.content', which fell back to its
+// default white background around the banner (live user report).
+.content:has(> .row > .col-12 > .sr-cust-exthead){
+  background-color: transparent !important;
+  border-color: transparent !important;
+}
+
+// The remaining pre-existing Bootstrap `.card-body.border` boxes (field-group
+// pills, and the Templates tab-pane wrapper around the untouched
+// drag-and-drop designer -- deliberately not restructured, see Task 10's
+// plan) never carried their own background or corner radius --
+// they read as square white boxes only because .content used to be solid
+// white behind them with no visible seam. Now that .content is transparent,
+// give them the same white + 8px radius .sr-table-card already has, so every
+// card still floats correctly and every card on the page shares one corner
+// radius, without touching the designer's own internal markup at all.
+.sr-cust-hub .card-body.border{
+  background: $sr-body;
+  border-radius: 8px;
+}
+
+// .sr-qform's shared 72px padding-bottom exists to give a sticky
+// .sr-qactions save-bar room to float above the form's last field
+// (_questionnaire.scss). "Add a Custom Field" saves inline, in the card's
+// own footer -- it has no sticky bar, so that reserved space is just dead
+// whitespace here. Overridden per-page rather than in the shared component,
+// since a future .sr-qform on this page (or elsewhere) may still need it.
+.sr-cust-hub .sr-qform{
+  padding-bottom: 0;
+}
+
+.sr-fgroup-head{
+  margin-bottom: 8px;
+
+  h2{ font-size: 16px; font-weight: 800; margin: 0; color: $sr-primary; }
+}
+
+.sr-fgroup-head-sub{
+  font-size: 12.5px;
+  color: $gray-600;
+}
+
+.sr-fgroup-pills{
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.sr-fgroup-pill{
+  padding: 7px 14px;
+  border-radius: 20px;
+  border: 1px solid $gray-400;
+  background: $sr-body;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: $sr-primary;
+  cursor: pointer;
+  transition: background-color .15s ease, border-color .15s ease, color .15s ease;
+
+  &:hover:not(.active){
+    background: $gray-100;
+  }
+
+  &:focus-visible{
+    outline: 2px solid $sr-primary;
+    outline-offset: 2px;
+  }
+
+  &.active{
+    background: $sr-primary;
+    border-color: $sr-primary;
+    color: $sr-body;
+  }
+
+  // The Document field group isn't a data type like the others (it has no
+  // custom fields/templates of its own) -- the dashed border flags that
+  // visually before the tab strip below even changes. Selected state uses
+  // the same colors as every other pill (per feedback -- red read as an
+  // inconsistent one-off among the six).
+  &--document{
+    border-style: dashed;
+
+    &.active{
+      border-style: solid;
+    }
+  }
+}
+
+// Template Groups toolbar now carries two actions (Save assignments, Add) --
+// .sr-table-toolbar's shipped layout assumes one action button; group the
+// pair so they don't wrap awkwardly against the title.
+.sr-table-toolbar-actions{
+  display: flex;
+  gap: 8px;
+  flex: none;
+}
+
+// A richer toolbar variant for a .sr-table-card that IS the section (no
+// separate .sr-qform/form above it to distinguish it from) -- adds the
+// grey header-zone treatment .sr-qcard-head uses (icon tile pops white
+// against a light-grey bar), applied to .sr-table-toolbar itself instead
+// of a separate sibling box, since here the table IS the whole section.
+// Doubled selector (.sr-table-toolbar.sr-table-toolbar--headed) rather than
+// the modifier class alone: _tables.scss's shared rule is nested as
+// ".sr-table-card .sr-table-toolbar" (specificity 0,2,0), which otherwise
+// beats a bare ".sr-table-toolbar--headed" (0,1,0) regardless of source
+// order and silently drops this rule's padding/gap overrides.
+.sr-table-toolbar.sr-table-toolbar--headed{
+  background: $gray-100;
+  border-bottom: 1px solid $gray-300;
+  padding: 13px 18px;
+  gap: 12px;
+
+  .sr-section-head-ico{
+    flex: none;
+    width: 30px;
+    height: 30px;
+    border-radius: 7px;
+    background: $sr-body;
+    border: 1px solid $gray-300;
+    display: grid;
+    place-items: center;
+    color: $sr-primary;
+  }
+
+  .sr-section-head-text{
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    flex: 1;
+
+    h2{ font-size: 15px; font-weight: 800; margin: 0; color: $sr-primary; }
+  }
+
+  .sr-section-head-sub{ font-size: 12.5px; color: $gray-600; }
+}
+
+// A section-header banner used above the Templates tab's two stacked
+// sections (Template Groups, Template). Visually matches the AI Extra's
+// .sr-qcard-head (icon + title + subtitle, see artificial_intelligence.php's
+// Provider Configuration / Context Questions cards) but is self-contained
+// rather than requiring a .sr-qform > .sr-qcard ancestor: it sits as an
+// ordinary sibling directly above an .sr-table-card or the designer's own
+// markup, not wrapped around it -- nesting .sr-table-card inside a
+// .sr-qcard-body would double up borders/padding. Mirrors the Fields tab's
+// existing pattern of two independent, normally-spaced boxes (its
+// .sr-qform card and its .sr-table-card list are siblings, not nested).
+// STILL USED bare (no fusion) by the Template designer section further
+// down this file/page -- do not remove.
+.sr-section-head{
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 13px 18px;
+  background: $gray-100;
+  border: 1px solid $gray-300;
+  border-radius: 8px;
+  box-shadow: $shadow;
+  margin-bottom: 12px;
+
+  .sr-section-head-ico{
+    flex: none;
+    width: 30px;
+    height: 30px;
+    border-radius: 7px;
+    background: $sr-body;
+    border: 1px solid $gray-300;
+    display: grid;
+    place-items: center;
+    color: $sr-primary;
+  }
+
+  .sr-section-head-text{
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    flex: 1;
+
+    h2{ font-size: 15px; font-weight: 800; margin: 0; color: $sr-primary; }
+  }
+
+  .sr-section-head-sub{ font-size: 12.5px; color: $gray-600; }
+
+  // NEW (Task 19): the header-actions slot the field-picker trigger moved
+  // into. Mirrors .sr-table-toolbar-actions/.sr-table-tools -- .sr-section-
+  // head-text above is already flex:1, so this slot right-aligns with no
+  // other change. Its "+ Add field" button picks up the shared toolbar/
+  // header button radius from _tables.scss (design-system.md §3) simply by
+  // sitting inside this wrapper class -- no per-button CSS needed here.
+  .sr-section-head-actions{
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: none;
+  }
+}
+
+// #template-container (the field-assignment designer, labeled "Template" by
+// its own section header, now nested inside as its first child -- see the
+// modifier below) has no background of its own -- it was only ever white
+// because #templates' now-removed outer card-body/border wrapper supplied it
+// (see the commit that dropped that wrapper). Give it the same card
+// treatment .sr-table-card already has, so the designer's content floats on
+// a white card below its header instead of sitting on the page's bare grey
+// ground.
+#template-container{
+  background: $sr-body;
+  border: 1px solid $gray-300;
+  border-radius: 8px;
+  box-shadow: $shadow;
+  padding: 16px;
+  // Matches #template-groups-card's own margin-bottom (.sr-table-card's
+  // default) -- without this, the Custom Fields accordion directly below
+  // sat flush against this card (0px gap) while Template Groups above it
+  // kept the normal 16px stacked-card spacing.
+  margin-bottom: 16px;
+}
+
+// When .sr-section-head is #template-container's own first child (the
+// "Template" header, moved inside in Task 10), it needs to read as this
+// card's own header zone, not a separate box sitting on top of it --
+// matching the fused look Task 7 gave Template Groups/Custom Fields via
+// .sr-table-toolbar--headed. #template-container has no pre-existing
+// toolbar element to repurpose the way .sr-table-card does, so this pulls
+// the header flush to the parent's edges with negative margins against
+// its own 16px padding, rather than restructuring that padding model.
+#template-container > .sr-section-head{
+  margin: -16px -16px 16px -16px;
+  border: none;
+  border-bottom: 1px solid $gray-300;
+  border-radius: 8px 8px 0 0;
+  box-shadow: none;
+}
+
+// ── Field picker panel (Task 19) ────────────────────────────────────────────
+// The inline two-column "+ Add field" picker docked between the Template
+// section's fused header and its tab strip (display_field_picker_panel(),
+// extras/customization/index.php), replacing the single-list modal an
+// earlier pass of this task shipped. Genuinely new component family per the
+// design proposal Artifact's class-reuse table -- this instant-add,
+// no-facets, no-commit-step shape is distinct from the faceted sr-picker
+// (commit-based, built for 100s+ rosters with facets), so it doesn't belong
+// there. Namespaced to this page's own partial since nothing else in the
+// product uses this shape yet.
+.sr-fieldpick{
+  border: 1px solid $gray-300;
+  border-radius: 8px;
+  background: $sr-body;
+  margin: 0 0 16px;
+  overflow: hidden;
+
+  // This component's own buttons (Done / Cancel / Create & add) get the same
+  // 6px control radius design-system.md §3 gives toolbar/header "+ Add"
+  // buttons (_tables.scss) -- not covered by that shared rule since these sit
+  // in a panel head and a form row, not one of its three toolbar wrappers.
+  .btn{
+    border-radius: 6px;
+    padding: 7px 14px;
+    font-weight: 700;
+    font-size: 13px;
+  }
+
+  &.sr-fieldpick--inline{
+    // Tints the inline host so it reads as a temporary tray docked in the
+    // card, not a third nested white card.
+    background: $gray-100;
+    box-shadow: inset 0 1px 0 rgba(0, 0, 0, .02);
+
+    .sr-fieldpick-status{ background: $sr-body; }
+  }
+
+  .sr-fieldpick-head{
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 11px 14px;
+    border-bottom: 1px solid $gray-300;
+  }
+  .sr-fieldpick-title{
+    font-size: 13.5px;
+    font-weight: 800;
+    flex: none;
+
+    b{ color: $sr-important; }
+  }
+  .sr-fieldpick-hint{
+    font-size: 12px;
+    color: $gray-600;
+    flex: 1;
+    min-width: 0;
+  }
+
+  .sr-fieldpick-cols{
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0;
+  }
+  .sr-fieldpick-col{
+    padding: 12px 14px 14px;
+    border-right: 1px solid $gray-300;
+    min-width: 0;
+
+    &:last-child{ border-right: 0; }
+  }
+  .sr-fieldpick-colhead{
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    margin-bottom: 8px;
+
+    h3{
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: $gray-600;
+      margin: 0;
+    }
+  }
+
+  .sr-fieldpick-search{
+    width: 100%;
+    font-size: 13px;
+    padding: 6px 10px;
+    border-radius: 6px;
+    border: 1px solid $gray-400;
+    background: $sr-body;
+    color: $sr-primary;
+    margin-bottom: 9px;
+
+    &::placeholder{ color: $gray-500; }
+    &:focus{
+      outline: 0;
+      border-color: $sr-important;
+      box-shadow: 0 0 0 3px $sr-row-selected;
+    }
+  }
+
+  .sr-fieldpick-list{
+    max-height: 250px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    padding-right: 2px;
+  }
+
+  // Row-actions restructure (Task 20): custom-field rows now carry
+  // manage-options/edit/delete icons alongside the click-to-add affordance,
+  // and a <button> cannot contain another interactive element -- so the row
+  // is a plain (non-interactive) wrapper holding the real click target
+  // (.sr-fieldpick-add) and a sibling actions cluster (.sr-fieldpick-actions,
+  // custom-field rows only), rather than being a <button> itself the way
+  // Task 19 shipped it. Still replaces Bootstrap's .list-group-item-action,
+  // which carried none of this page's radius or hover tint.
+  .sr-fieldpick-item{
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    background: $sr-body;
+    border: 1px solid $gray-300;
+    border-radius: 6px;
+    padding: 3px 5px 3px 0;
+    flex: none;
+    transition: background 120ms ease, border-color 120ms ease, opacity 160ms ease,
+                max-height 160ms ease, padding 160ms ease, margin 160ms ease;
+    max-height: 44px;
+    overflow: hidden;
+
+    &:hover, &:focus-within{
+      background: $sr-row-selected;
+      border-color: $sr-important;
+
+      .plus{ color: $sr-important; }
+    }
+
+    // Collapses out of its column on add, rather than vanishing -- the
+    // shrink is what tells the eye "that row is the one that just moved".
+    &.is-leaving{
+      max-height: 0;
+      opacity: 0;
+      padding-top: 0;
+      padding-bottom: 0;
+      border-width: 0;
+      margin-bottom: -5px;
+    }
+  }
+
+  // The click-to-add target: plus, name, type tag. A real <button> (keyboard/
+  // screen-reader behavior needs no extra work); manage-options/edit/delete
+  // (if any) are its SIBLINGS in .sr-fieldpick-actions below, never nested
+  // inside it.
+  .sr-fieldpick-add{
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+    min-width: 0;
+    text-align: left;
+    font-size: 13px;
+    color: $sr-primary;
+    background: transparent;
+    border: 0;
+    border-radius: 5px;
+    padding: 5px 4px 5px 9px;
+    cursor: pointer;
+
+    &:focus-visible{
+      outline: 2px solid $sr-important;
+      outline-offset: 1px;
+    }
+    &:disabled{ cursor: default; }
+
+    .plus{ color: $gray-500; font-weight: 800; flex: none; font-size: 13px; }
+    .nm{ flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+    // Fixed width + centered text (user-approved visual fix): a type tag
+    // that sizes to its own text ("Dropdown" vs "User Multi Dropdown")
+    // reads as visually inconsistent row to row. A hard width risks
+    // truncating a longer translation, so it also gets its own
+    // overflow/ellipsis safety net rather than assuming English lengths.
+    .tagc{
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 88px;
+      flex: none;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      font-size: 9.5px;
+      font-weight: 700;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      text-align: center;
+      color: $gray-600;
+      background: $gray-100;
+      border: 1px solid $gray-300;
+      border-radius: 20px;
+      padding: 1px 7px;
+    }
+  }
+
+  // Manage-options/edit/delete -- custom-field rows only (Core fields have no
+  // custom_fields row to manage). Revealed on hover/focus like every other
+  // row-actions cluster (design-system.md §6), so the click-to-add target
+  // stays the whole row's primary affordance.
+  .sr-fieldpick-actions{
+    display: inline-flex;
+    align-items: center;
+    gap: 1px;
+    flex: none;
+    opacity: 0;
+    transition: opacity 120ms ease;
+  }
+  .sr-fieldpick-item:hover .sr-fieldpick-actions,
+  .sr-fieldpick-item:focus-within .sr-fieldpick-actions{
+    opacity: 1;
+  }
+
+  // Option B create-a-field row -- borrows .sr-qaddrow's dashed-border,
+  // red-on-hover treatment (_questionnaire.scss) so it reads as an add
+  // affordance, not a field row. A scoped rule of its own rather than reusing
+  // .sr-qaddrow directly: that class ships from a .sr-qform-scoped partial
+  // with its own margin/padding tuned for that context, and every SCSS
+  // module here compiles into the same global bundle -- a bare .sr-qaddrow
+  // rule in this file would leak onto every other page's instance of it.
+  .sr-fieldpick-new{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    width: 100%;
+    font-size: 12.5px;
+    font-weight: 700;
+    color: $gray-600;
+    background: transparent;
+    border: 1px dashed $gray-400;
+    border-radius: 6px;
+    padding: 8px;
+    margin-top: 9px;
+    cursor: pointer;
+
+    &:hover{ border-color: $sr-important; color: $sr-important; }
+  }
+
+  // Column-scoped variant of the empty-state shape (quiet icon tile, one
+  // line, at most one action) -- §10's page-level .sr-table-empty padding is
+  // too large for a single column half this width.
+  .sr-fieldpick-empty{
+    text-align: center;
+    padding: 26px 10px;
+    color: $gray-600;
+
+    .ico{
+      width: 34px;
+      height: 34px;
+      margin: 0 auto 8px;
+      border-radius: 8px;
+      background: $gray-100;
+      border: 1px solid $gray-300;
+      display: grid;
+      place-items: center;
+      color: $gray-500;
+      font-size: 14px;
+    }
+    .ttl{ font-size: 13px; font-weight: 700; color: $sr-primary; }
+    .sub{ font-size: 12px; margin-top: 3px; }
+    .lnk{
+      background: none;
+      border: 0;
+      font-size: 12px;
+      font-weight: 700;
+      color: $sr-important;
+      cursor: pointer;
+      text-decoration: underline;
+      padding: 4px;
+      margin-top: 4px;
+    }
+  }
+
+  // role="status"/aria-live="polite" -- deliberately not a toastr: adding
+  // several fields in a row would stack several toasts over the very
+  // designer the user is trying to watch.
+  .sr-fieldpick-status{
+    border-top: 1px solid $gray-300;
+    padding: 8px 14px;
+    font-size: 12px;
+    color: $gray-600;
+    min-height: 33px;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    background: $gray-100;
+
+    .ok{ color: $success; font-weight: 800; }
+  }
+
+  // Option B's inline create form.
+  .fp-create{
+    border-top: 1px solid $gray-300;
+    background: $gray-100;
+    padding: 11px 14px;
+    display: grid;
+    grid-template-columns: 1fr 1.4fr auto auto;
+    gap: 8px;
+    align-items: center;
+
+    select, input[type="text"]{
+      font-size: 13px;
+      padding: 6px 9px;
+      border: 1px solid $gray-400;
+      border-radius: 6px;
+      background: $sr-body;
+      color: $sr-primary;
+      width: 100%;
+    }
+    label.chk{
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12.5px;
+      color: $gray-700;
+      white-space: nowrap;
+    }
+  }
+  .sr-fieldpick-create-actions{ display: flex; gap: 8px; }
+
+  // Columns stack (Core above Custom, each keeping its own search) rather
+  // than scrolling sideways once the card gets this narrow.
+  @media (max-width: 820px){
+    .sr-fieldpick-cols{ grid-template-columns: 1fr; }
+    .sr-fieldpick-col{
+      border-right: 0;
+      border-bottom: 1px solid $gray-300;
+
+      &:last-child{ border-bottom: 0; }
+    }
+    .fp-create{ grid-template-columns: 1fr; }
+  }
+}
+
+// The Template Groups table's "active" row (the group whose layout the
+// designer above is currently showing) used to get Bootstrap's .table-active
+// grey background fill. Swapped for a colored left-border accent instead,
+// matching the inset-box-shadow technique already used for this kind of
+// row-state indicator elsewhere (e.g. .sr-table-scroll's severity stripes).
+// Applied to the row's first <td>, not the <tr> itself: this table carries
+// Bootstrap's plain .table class, which sets border-collapse: collapse, and
+// Chromium/WebKit do not paint a box-shadow on a table-row box in collapsed
+// border mode (verified live -- identical box-shadow on the <tr> reports
+// correctly from getComputedStyle but never paints a pixel). The <td> paints
+// it fine regardless of collapse mode, and since only the first column sits
+// at the table's left edge, a single first-child rule gives the same visual
+// result as a full-row accent.
+#template-groups-body tr.sr-row-active td:first-child{
+  box-shadow: inset 3px 0 0 0 $sr-important;
+}
+
+// Task 23 follow-up: the Custom Fields accordion's toggle reuses this page's
+// own .sr-table-toolbar--headed header look (see that class's own comment
+// above) rather than the .sr-qform-scoped .sr-qaccordion pattern the first
+// version of this section borrowed from assessments/index.php -- that
+// pattern needs a .sr-qform ancestor this admin page never has, so it
+// rendered with no styling at all.
+//
+// The toggle, the "+ Add" trigger, and the chevron are three SIBLINGS
+// inside .sr-table-toolbar--headed, not nested inside each other: a
+// <button> can't contain another interactive control, and the chevron
+// needs to stay the rightmost thing in the bar regardless of whether
+// "+ Add" (which only makes sense once the table is visible) is currently
+// shown -- so it can't live inside the toggle button either, or "+ Add"
+// would end up to ITS right instead of to its left. The toggle's own
+// flex:1 is what pushes both trailing siblings to the right edge; neither
+// needs its own margin-left:auto.
+.sr-cust-accordion-toggle{
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border: none;
+  background: transparent;
+  padding: 0;
+  text-align: left;
+  font: inherit;
+  cursor: pointer;
+
+  // "+ Add" is a sibling, not a child (see above) -- hide it via the
+  // sibling combinator off the SAME .collapsed class Bootstrap's collapse
+  // JS already toggles on this button, rather than tracking state twice.
+  &.collapsed ~ .sr-table-tools{
+    display: none;
+  }
+}
+
+.sr-cust-accordion-chevron{
+  flex: none;
+  color: $gray-500;
+  transition: transform 150ms ease;
+}
+
+.sr-cust-accordion-toggle:not(.collapsed) ~ .sr-cust-accordion-chevron{
+  transform: rotate(180deg);
+}
+
+// The border/radius that used to live on the toggle button itself when it
+// WAS the whole toolbar now belongs to the toolbar div that wraps it and
+// the "+ Add" sibling -- :has() reacts to the child button's .collapsed
+// state, which is the only place that state exists in the DOM. (This
+// codebase already relies on :has() elsewhere -- see _questionnaire.scss's
+// content-wrapper rule -- so this isn't a new browser-support bar.)
+.sr-table-toolbar--headed:has(> .sr-cust-accordion-toggle){
+  border-bottom-color: transparent;
+
+  &:has(> .sr-cust-accordion-toggle.collapsed){
+    border-bottom-left-radius: 8px;
+    border-bottom-right-radius: 8px;
+  }
+
+  &:has(> .sr-cust-accordion-toggle:not(.collapsed)){
+    border-bottom-color: $gray-300;
+  }
+}
+
+// Breathing room between the toggle header and the table/modals it reveals --
+// .sr-qcard-body (18px padding) provided this in the first version; a plain
+// Bootstrap .collapse div has none of its own.
+#custom-fields-accordion-body{
+  padding: 16px;
+}

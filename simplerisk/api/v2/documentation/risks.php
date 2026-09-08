@@ -284,7 +284,7 @@ class OpenApiSaveRiskReview {}
  *         @OA\Schema(type="integer")
  *     ),
  *     @OA\Response(response=200, description="Scoring history retrieved successfully."),
- *     @OA\Response(response=400, description="BAD REQUEST: Access denied or missing ID."),
+ *     @OA\Response(response=403, description="FORBIDDEN: The caller does not have access to this risk."),
  * )
  */
 class OpenApiGetRiskScoringHistory {}
@@ -304,7 +304,7 @@ class OpenApiGetRiskScoringHistory {}
  *         @OA\Schema(type="integer")
  *     ),
  *     @OA\Response(response=200, description="Residual scoring history retrieved successfully."),
- *     @OA\Response(response=400, description="BAD REQUEST: Access denied or missing ID."),
+ *     @OA\Response(response=403, description="FORBIDDEN: The caller does not have access to this risk."),
  * )
  */
 class OpenApiGetRiskResidualScoringHistory {}
@@ -1227,6 +1227,7 @@ class OpenApiSaveReview {}
  *         )
  *       )
  *     ),
+ *     @OA\Response(response=403, description="FORBIDDEN: The caller does not have access to this risk."),
  * )
  */
 class OpenApiScoringHistory {}
@@ -1261,6 +1262,7 @@ class OpenApiScoringHistory {}
  *         )
  *       )
  *     ),
+ *     @OA\Response(response=403, description="FORBIDDEN: The caller does not have access to this risk."),
  * )
  */
 class OpenApiResidualScoringHistory {}

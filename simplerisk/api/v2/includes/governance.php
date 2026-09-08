@@ -18,6 +18,10 @@ require_once(realpath(__DIR__ . '/../../../includes/entity_graph.php'));
 // ai_context_search_visible_ids() (the L4/Team-Separation record filter
 // applied to the walker results below) is defined here.
 require_once(realpath(__DIR__ . '/../../../includes/ai_context_graph.php'));
+// shape_control_roster() (api_v2_governance_control_roster() below) is
+// defined here -- a pure, unit-tested grouping/dedupe helper with no
+// Compliance-specific coupling, otherwise only reachable via compliance.php.
+require_once(realpath(__DIR__ . '/../../../includes/compliance_grid.php'));
 
 require_once(language_file());
 
@@ -285,6 +289,58 @@ function api_v2_governance_controls()
     api_v2_json_result($status_code, $status_message, $data);
 }
 
+/**********************************************
+ * FUNCTION: API V2 GOVERNANCE CONTROL ROSTER *
+ **********************************************/
+// Full cross-framework control roster for sr-faceted-picker.js (design-system.md
+// §14b) -- see the route registration comment in api/v2/index.php. Same SQL/
+// shaping as api_v2_compliance_control_roster() (api/v2/includes/compliance.php),
+// deliberately duplicated rather than shared across the two files: the two
+// endpoints differ only in which permission they gate on, and a shared helper
+// spanning api/v2/includes/compliance.php and governance.php would invert which
+// file owns which permission domain for no real savings over ~15 lines of SQL.
+function api_v2_governance_control_roster()
+{
+    // Check that this user has the ability to view governance
+    api_v2_check_permission("governance");
+
+    // Open the database connection
+    $db = db_open();
+
+    $stmt = $db->prepare("
+        SELECT `id`, `control_number`, `short_name`, `family`, `description`
+        FROM `framework_controls`
+        WHERE `deleted` = 0
+        ORDER BY `control_number`, `id`
+    ");
+    $stmt->execute();
+    $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    // Framework membership, gathered in one pass -- see
+    // api_v2_compliance_control_roster()'s identical comment on why this is
+    // joined to `frameworks` (a mapping pointing at a deleted/inactive
+    // framework can't put a facet in the picker the page's own framework
+    // list doesn't offer).
+    $stmt = $db->prepare("
+        SELECT m.`control_id`, m.`framework`
+        FROM `framework_control_mappings` m
+            INNER JOIN `frameworks` f ON f.`value` = m.`framework`
+        ORDER BY m.`control_id`
+    ");
+    $stmt->execute();
+    $mapping_rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    // Close the database connection
+    db_close($db);
+
+    // Grouping/dedupe is pure -- see shape_control_roster()
+    // (includes/compliance_grid.php), unit-tested without a DB.
+    $controls = shape_control_roster($rows, $mapping_rows);
+
+    // Return the result
+    api_v2_json_result(200, "SUCCESS", $controls);
+}
+
 /*****************************************
  * FUNCTION: API V2 GOVERNANCE DOCUMENTS *
  *****************************************/
@@ -441,7 +497,16 @@ function api_v2_governance_controls_associations()
         $test_associations = graph_bucket_if_permitted("compliance", fn() => get_test_connectivity_for_control($id));
 
         $document_associations = get_document_connectivity_for_control($id);
-        $risk_associations = get_risk_connectivity_for_control($id);
+
+        // The "risks" bucket additionally requires the riskmanagement domain
+        // permission -- holding "governance" alone does not grant Risk
+        // Management visibility (SR-2094 / HackerOne #3960918: a
+        // governance-only caller could read another team's Risk Management
+        // subjects through this bucket). Mirrors the "tests" bucket's
+        // compliance gate immediately above. Omit the bucket rather than
+        // 403 the whole endpoint: every other bucket here is governance-gated
+        // and still valid.
+        $risk_associations = graph_bucket_if_permitted("riskmanagement", fn() => get_risk_connectivity_for_control($id));
 
         // L4 (Team Separation) record filter. get_risk_connectivity_for_control()
         // already strips team-inaccessible risks internally (via
@@ -998,11 +1063,19 @@ function api_v2_get_control_mapped_frameworks_count()
 
 /*******************************************************************************
  * FUNCTIONS: GOVERNANCE DATATABLE FEEDS                                         *
- * Server-side DataTables feeds for the document-program and exception views,   *
- * gated on the `governance` module permission (SR-1721). Exceptions apply to   *
- * both documents and controls, so their feed lives at the top-level            *
- * /exceptions (alongside the other /exceptions/* endpoints) and additionally   *
- * requires the exception 'view' permission.                                    *
+ * Server-side DataTables feeds for the document-program and exception views    *
+ * (SR-1721). The document-program feed is gated on the `governance` module     *
+ * permission. Exceptions have their own granular permission set (view/create/  *
+ * update/delete/approve_exception) independent of `governance` -- `governance` *
+ * only ever gated the wider module, from before those granular exception       *
+ * permissions existed -- so their feed lives at the top-level /exceptions      *
+ * (alongside the other /exceptions/* endpoints) and is gated on the exception  *
+ * 'view' permission alone (HackerOne #3960658 / SR-2091, SR-2103: this used to *
+ * additionally require `governance`, which let a `governance` holder without  *
+ * `view_exception` read exception data through other surfaces -- e.g. the AI   *
+ * context graph -- that only ever checked `view_exception`; dropping the      *
+ * `governance` requirement here, rather than adding it everywhere else, makes *
+ * `view_exception` the single source of truth for exception read access).      *
  *******************************************************************************/
 function api_v2_governance_documents_datatable() {
     api_v2_check_permission("governance");
@@ -1010,7 +1083,6 @@ function api_v2_governance_documents_datatable() {
 }
 
 function api_v2_exceptions_datatable() {
-    api_v2_check_permission("governance");
     if (!check_permission_exception('view')) {
         api_v2_json_result(403, "FORBIDDEN: The user does not have the required permission to perform this action.", null);
         exit;

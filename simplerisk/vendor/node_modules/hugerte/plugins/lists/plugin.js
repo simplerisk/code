@@ -1,5 +1,5 @@
 /**
- * HugeRTE version 1.0.12 (2026-06-29)
+ * HugeRTE version 1.0.13 (2026-08-31)
  * Copyright (c) 2022 Ephox Corporation DBA Tiny Technologies, Inc.
  * Copyright (c) 2026 HugeRTE contributors
  * Licensed under the MIT license (https://github.com/hugerte/hugerte/blob/main/LICENSE.TXT)
@@ -1415,6 +1415,9 @@
     };
     const hasCompatibleStyle = (dom, sib, detail) => {
       var _a;
+      if (!('list-style-type' in detail)) {
+        return true;
+      }
       const sibStyle = dom.getStyle(sib, 'list-style-type');
       const detailStyle = (_a = detail['list-style-type']) !== null && _a !== void 0 ? _a : '';
       return sibStyle === detailStyle;

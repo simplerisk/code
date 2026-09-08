@@ -1,5 +1,5 @@
 /**
- * HugeRTE version 1.0.12 (2026-06-29)
+ * HugeRTE version 1.0.13 (2026-08-31)
  * Copyright (c) 2022 Ephox Corporation DBA Tiny Technologies, Inc.
  * Copyright (c) 2026 HugeRTE contributors
  * Licensed under the MIT license (https://github.com/hugerte/hugerte/blob/main/LICENSE.TXT)
@@ -15228,7 +15228,7 @@
       }
     };
 
-    /*! @license DOMPurify 3.4.11 | (c) Cure53 and other contributors | Released under the Apache license 2.0 and Mozilla Public License 2.0 | github.com/cure53/DOMPurify/blob/3.4.11/LICENSE */
+    /*! @license DOMPurify 3.4.13 | (c) Cure53 and other contributors | Released under the Apache license 2.0 and Mozilla Public License 2.0 | github.com/cure53/DOMPurify/blob/3.4.13/LICENSE */
 
     function _arrayLikeToArray(r, a) {
       (null == a || a > r.length) && (a = r.length);
@@ -15541,7 +15541,7 @@
     const text = freeze(['#text']);
 
     const html = freeze(['accept', 'action', 'align', 'alt', 'autocapitalize', 'autocomplete', 'autopictureinpicture', 'autoplay', 'background', 'bgcolor', 'border', 'capture', 'cellpadding', 'cellspacing', 'checked', 'cite', 'class', 'clear', 'color', 'cols', 'colspan', 'command', 'commandfor', 'controls', 'controlslist', 'coords', 'crossorigin', 'datetime', 'decoding', 'default', 'dir', 'disabled', 'disablepictureinpicture', 'disableremoteplayback', 'download', 'draggable', 'enctype', 'enterkeyhint', 'exportparts', 'face', 'for', 'headers', 'height', 'hidden', 'high', 'href', 'hreflang', 'id', 'inert', 'inputmode', 'integrity', 'ismap', 'kind', 'label', 'lang', 'list', 'loading', 'loop', 'low', 'max', 'maxlength', 'media', 'method', 'min', 'minlength', 'multiple', 'muted', 'name', 'nonce', 'noshade', 'novalidate', 'nowrap', 'open', 'optimum', 'part', 'pattern', 'placeholder', 'playsinline', 'popover', 'popovertarget', 'popovertargetaction', 'poster', 'preload', 'pubdate', 'radiogroup', 'readonly', 'rel', 'required', 'rev', 'reversed', 'role', 'rows', 'rowspan', 'spellcheck', 'scope', 'selected', 'shape', 'size', 'sizes', 'slot', 'span', 'srclang', 'start', 'src', 'srcset', 'step', 'style', 'summary', 'tabindex', 'title', 'translate', 'type', 'usemap', 'valign', 'value', 'width', 'wrap', 'xmlns']);
-    const svg = freeze(['accent-height', 'accumulate', 'additive', 'alignment-baseline', 'amplitude', 'ascent', 'attributename', 'attributetype', 'azimuth', 'basefrequency', 'baseline-shift', 'begin', 'bias', 'by', 'class', 'clip', 'clippathunits', 'clip-path', 'clip-rule', 'color', 'color-interpolation', 'color-interpolation-filters', 'color-profile', 'color-rendering', 'cx', 'cy', 'd', 'dx', 'dy', 'diffuseconstant', 'direction', 'display', 'divisor', 'dur', 'edgemode', 'elevation', 'end', 'exponent', 'fill', 'fill-opacity', 'fill-rule', 'filter', 'filterunits', 'flood-color', 'flood-opacity', 'font-family', 'font-size', 'font-size-adjust', 'font-stretch', 'font-style', 'font-variant', 'font-weight', 'fx', 'fy', 'g1', 'g2', 'glyph-name', 'glyphref', 'gradientunits', 'gradienttransform', 'height', 'href', 'id', 'image-rendering', 'in', 'in2', 'intercept', 'k', 'k1', 'k2', 'k3', 'k4', 'kerning', 'keypoints', 'keysplines', 'keytimes', 'lang', 'lengthadjust', 'letter-spacing', 'kernelmatrix', 'kernelunitlength', 'lighting-color', 'local', 'marker-end', 'marker-mid', 'marker-start', 'markerheight', 'markerunits', 'markerwidth', 'maskcontentunits', 'maskunits', 'max', 'mask', 'mask-type', 'media', 'method', 'mode', 'min', 'name', 'numoctaves', 'offset', 'operator', 'opacity', 'order', 'orient', 'orientation', 'origin', 'overflow', 'paint-order', 'path', 'pathlength', 'patterncontentunits', 'patterntransform', 'patternunits', 'points', 'preservealpha', 'preserveaspectratio', 'primitiveunits', 'r', 'rx', 'ry', 'radius', 'refx', 'refy', 'repeatcount', 'repeatdur', 'restart', 'result', 'rotate', 'scale', 'seed', 'shape-rendering', 'slope', 'specularconstant', 'specularexponent', 'spreadmethod', 'startoffset', 'stddeviation', 'stitchtiles', 'stop-color', 'stop-opacity', 'stroke-dasharray', 'stroke-dashoffset', 'stroke-linecap', 'stroke-linejoin', 'stroke-miterlimit', 'stroke-opacity', 'stroke', 'stroke-width', 'style', 'surfacescale', 'systemlanguage', 'tabindex', 'tablevalues', 'targetx', 'targety', 'transform', 'transform-origin', 'text-anchor', 'text-decoration', 'text-rendering', 'textlength', 'type', 'u1', 'u2', 'unicode', 'values', 'viewbox', 'visibility', 'version', 'vert-adv-y', 'vert-origin-x', 'vert-origin-y', 'width', 'word-spacing', 'wrap', 'writing-mode', 'xchannelselector', 'ychannelselector', 'x', 'x1', 'x2', 'xmlns', 'y', 'y1', 'y2', 'z', 'zoomandpan']);
+    const svg = freeze(['accent-height', 'accumulate', 'additive', 'alignment-baseline', 'amplitude', 'ascent', 'attributename', 'attributetype', 'azimuth', 'basefrequency', 'baseline-shift', 'begin', 'bias', 'by', 'class', 'clip', 'clippathunits', 'clip-path', 'clip-rule', 'color', 'color-interpolation', 'color-interpolation-filters', 'color-profile', 'color-rendering', 'cx', 'cy', 'd', 'dx', 'dy', 'diffuseconstant', 'direction', 'display', 'divisor', 'dominant-baseline', 'dur', 'edgemode', 'elevation', 'end', 'exponent', 'fill', 'fill-opacity', 'fill-rule', 'filter', 'filterunits', 'flood-color', 'flood-opacity', 'font-family', 'font-size', 'font-size-adjust', 'font-stretch', 'font-style', 'font-variant', 'font-weight', 'fx', 'fy', 'g1', 'g2', 'glyph-name', 'glyphref', 'gradientunits', 'gradienttransform', 'height', 'href', 'id', 'image-rendering', 'in', 'in2', 'intercept', 'k', 'k1', 'k2', 'k3', 'k4', 'kerning', 'keypoints', 'keysplines', 'keytimes', 'lang', 'lengthadjust', 'letter-spacing', 'kernelmatrix', 'kernelunitlength', 'lighting-color', 'local', 'marker-end', 'marker-mid', 'marker-start', 'markerheight', 'markerunits', 'markerwidth', 'maskcontentunits', 'maskunits', 'max', 'mask', 'mask-type', 'media', 'method', 'mode', 'min', 'name', 'numoctaves', 'offset', 'operator', 'opacity', 'order', 'orient', 'orientation', 'origin', 'overflow', 'paint-order', 'path', 'pathlength', 'patterncontentunits', 'patterntransform', 'patternunits', 'points', 'preservealpha', 'preserveaspectratio', 'primitiveunits', 'r', 'rx', 'ry', 'radius', 'refx', 'refy', 'repeatcount', 'repeatdur', 'restart', 'result', 'rotate', 'scale', 'seed', 'shape-rendering', 'slope', 'specularconstant', 'specularexponent', 'spreadmethod', 'startoffset', 'stddeviation', 'stitchtiles', 'stop-color', 'stop-opacity', 'stroke-dasharray', 'stroke-dashoffset', 'stroke-linecap', 'stroke-linejoin', 'stroke-miterlimit', 'stroke-opacity', 'stroke', 'stroke-width', 'style', 'surfacescale', 'systemlanguage', 'tabindex', 'tablevalues', 'targetx', 'targety', 'transform', 'transform-origin', 'text-anchor', 'text-decoration', 'text-orientation', 'text-rendering', 'textlength', 'type', 'u1', 'u2', 'unicode', 'values', 'viewbox', 'visibility', 'version', 'vert-adv-y', 'vert-origin-x', 'vert-origin-y', 'width', 'word-spacing', 'wrap', 'writing-mode', 'xchannelselector', 'ychannelselector', 'x', 'x1', 'x2', 'xmlns', 'y', 'y1', 'y2', 'z', 'zoomandpan']);
     const mathMl = freeze(['accent', 'accentunder', 'align', 'bevelled', 'close', 'columnalign', 'columnlines', 'columnspacing', 'columnspan', 'denomalign', 'depth', 'dir', 'display', 'displaystyle', 'encoding', 'fence', 'frame', 'height', 'href', 'id', 'largeop', 'length', 'linethickness', 'lquote', 'lspace', 'mathbackground', 'mathcolor', 'mathsize', 'mathvariant', 'maxsize', 'minsize', 'movablelimits', 'notation', 'numalign', 'open', 'rowalign', 'rowlines', 'rowspacing', 'rowspan', 'rspace', 'rquote', 'scriptlevel', 'scriptminsize', 'scriptsizemultiplier', 'selection', 'separator', 'separators', 'stretchy', 'subscriptshift', 'supscriptshift', 'symmetric', 'voffset', 'width', 'xmlns']);
     const xml = freeze(['xlink:href', 'xml:id', 'xlink:title', 'xml:space', 'xmlns:xlink']);
 
@@ -15654,7 +15654,7 @@
     function createDOMPurify() {
       let window = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : getGlobal();
       const DOMPurify = root => createDOMPurify(root);
-      DOMPurify.version = '3.4.11';
+      DOMPurify.version = '3.4.13';
       DOMPurify.removed = [];
       if (!window || !window.document || window.document.nodeType !== NODE_TYPE.document || !window.Element) {
         // Not running in a browser, provide a factory function
@@ -15685,6 +15685,7 @@
       const getAttributes = lookupGetter(ElementPrototype, 'attributes');
       const getNodeType = Node && Node.prototype ? lookupGetter(Node.prototype, 'nodeType') : null;
       const getNodeName = Node && Node.prototype ? lookupGetter(Node.prototype, 'nodeName') : null;
+      const getOwnerDocument = Node && Node.prototype ? lookupGetter(Node.prototype, 'ownerDocument') : null;
       // As per issue #47, the web-components registry is inherited by a
       // new document created via createHTMLDocument. As per the spec
       // (http://w3c.github.io/webcomponents/spec/custom/#creating-and-passing-registries)
@@ -16336,6 +16337,13 @@
        * @param root the in-place root to empty
        */
       const _neutralizeRoot = function _neutralizeRoot(root) {
+        /* Strip every disallowed attribute (on* handlers included) off the whole
+           subtree BEFORE detaching anything. Detaching first would hand back
+           handler-bearing originals (e.g. an already-loading `<img onerror>`)
+           whose queued resource event still fires in page scope after we throw.
+           Clobber-safe reads; a doomed clobbered node's own attributes are
+           irrelevant while its non-clobbered descendants are reached and scrubbed. */
+        _neutralizeSubtree(root);
         const childNodes = getChildNodes(root);
         if (childNodes) {
           const snapshot = [];
@@ -16464,6 +16472,82 @@
         }
       };
       /**
+       * _neutralizePatchLinkage
+       *
+       * IN_PLACE entry pre-pass (declarative-partial-updates / streaming
+       * hardening, https://github.com/WICG/declarative-partial-updates).
+       *
+       * The main walk strips patch linkage (`for`/`patchsrc`) and removes range
+       * markers (PIs / markup comments) node-by-node, in document order, AS it
+       * reaches each node. On a live in-place root that leaves a window: from the
+       * moment the root is connected until the walk arrives at a given node, that
+       * node's linkage is live. A patch applied on connection/stream can fire as
+       * a microtask during the walk and inject or teleport an unsanitized DOM
+       * range into a region the iterator has already passed and will not revisit,
+       * so the post-return "tree is sanitized" contract is violated. Sweep the
+       * whole tree once up front and sever every linkage before the walk begins,
+       * closing that window.
+       *
+       * This CANNOT undo a patch that already fired before sanitize ran — that is
+       * the irreducible "do not IN_PLACE a live-connected attacker tree" caveat —
+       * but it closes everything from sanitize-start onward. Gated on SAFE_FOR_XML
+       * to group with the rest of the declarative-partial-updates handling and
+       * stay overridable, consistent with the codebase.
+       *
+       * Clobber-safe traversal (cached childNodes getter); per-node try/catch so a
+       * clobbered root cannot defeat the sweep of its non-clobbered descendants.
+       *
+       * NOTE (pending real-Chrome confirmation, see test/declarative-patch-probe
+       * .html Q1): this mirrors the existing policy of keeping `for` on
+       * <label>/<output>. If the shipping feature can drive a patch through a
+       * surviving `for`-on-label/output + `id` pair, this pre-pass and the
+       * attribute check at _isBasicCustomElement's caller must additionally drop
+       * that pair on the IN_PLACE path. Left as-is until the taxonomy is verified.
+       *
+       * @param root the in-place root to sweep
+       */
+      const _neutralizePatchLinkage = function _neutralizePatchLinkage(root) {
+        if (!SAFE_FOR_XML) {
+          return;
+        }
+        const stack = [root];
+        while (stack.length > 0) {
+          const node = stack.pop();
+          const nodeType = getNodeType ? getNodeType(node) : node.nodeType;
+          /* Remove range markers (the target side of a patch linkage): every
+             processing instruction, and any markup-bearing comment. */
+          if (nodeType === NODE_TYPE.processingInstruction || nodeType === NODE_TYPE.comment && regExpTest(COMMENT_MARKUP_PROBE, node.data)) {
+            try {
+              remove(node);
+            } catch (_) {
+              /* Best-effort */
+            }
+            continue;
+          }
+          /* Strip patch-source attributes (the source side) off elements. */
+          if (nodeType === NODE_TYPE.element) {
+            const element = node;
+            const lcTag = transformCaseFunc(getNodeName ? getNodeName(node) : node.nodeName);
+            try {
+              if (element.hasAttribute && element.hasAttribute('patchsrc')) {
+                element.removeAttribute('patchsrc');
+              }
+              if (element.hasAttribute && element.hasAttribute('for') && lcTag !== 'label' && lcTag !== 'output') {
+                element.removeAttribute('for');
+              }
+            } catch (_) {
+              /* Clobbered removeAttribute/hasAttribute on a doomed node — ignore */
+            }
+          }
+          const childNodes = getChildNodes(node);
+          if (childNodes) {
+            for (let i = childNodes.length - 1; i >= 0; --i) {
+              stack.push(childNodes[i]);
+            }
+          }
+        }
+      };
+      /**
        * _initDocument
        *
        * @param dirty - a string of dirty markup
@@ -16520,7 +16604,17 @@
        * @return The created NodeIterator
        */
       const _createNodeIterator = function _createNodeIterator(root) {
-        return createNodeIterator.call(root.ownerDocument || root, root,
+        /* Read ownerDocument through the cached Node.prototype getter, never the
+           direct property. HTMLFormElement has [LegacyOverrideBuiltIns], so a
+           clobbering child (<input name="ownerDocument"> or a form-associated
+           external input) shadows the prototype getter and makes a direct read
+           return that <input>. createNodeIterator.call(<input>, ...) then throws
+           "Illegal invocation", and on the IN_PLACE path that throw lands before
+           the walk's fail-closed barrier - leaving the caller's live tree, with
+           any already-armed handler in it, un-neutralized. The cached getter
+           returns the real Document regardless of the clobber. */
+        const doc = getOwnerDocument ? getOwnerDocument(root) : root.ownerDocument;
+        return createNodeIterator.call(doc || root, root,
         // eslint-disable-next-line no-bitwise
         NodeFilter.SHOW_ELEMENT | NodeFilter.SHOW_COMMENT | NodeFilter.SHOW_TEXT | NodeFilter.SHOW_PROCESSING_INSTRUCTION | NodeFilter.SHOW_CDATA_SECTION, null);
       };
@@ -16560,7 +16654,11 @@
       const _scrubTemplateExpressions2 = function _scrubTemplateExpressions(node) {
         var _node$querySelectorAl;
         node.normalize();
-        const walker = createNodeIterator.call(node.ownerDocument || node, node,
+        /* Clobber-safe ownerDocument read, same reasoning as _createNodeIterator:
+           under SAFE_FOR_TEMPLATES this runs on the live IN_PLACE root, which may
+           carry a form-named-getter override of ownerDocument. */
+        const doc = getOwnerDocument ? getOwnerDocument(node) : node.ownerDocument;
+        const walker = createNodeIterator.call(doc || node, node,
         // eslint-disable-next-line no-bitwise
         NodeFilter.SHOW_TEXT | NodeFilter.SHOW_COMMENT | NodeFilter.SHOW_CDATA_SECTION | NodeFilter.SHOW_PROCESSING_INSTRUCTION, null);
         let currentNode = walker.nextNode();
@@ -16713,15 +16811,21 @@
       /**
        * Handle a node whose tag is forbidden or not allowlisted: keep
        * allowed custom elements (false return exits _sanitizeElements
-       * early - namespace/fallback checks and the afterSanitizeElements
-       * hook are intentionally skipped for kept custom elements), else
-       * hoist content per KEEP_CONTENT and remove.
+       * early - the namespace and fallback-tag removal checks are
+       * intentionally skipped for kept custom elements), else hoist
+       * content per KEEP_CONTENT and remove.
+       *
+       * A kept custom element is the ONLY case in which this function
+       * returns false, so the caller uses that return value to run the
+       * afterSanitizeElements hook on the kept element and keep the
+       * element-hook lifecycle consistent with normal allowlisted
+       * elements (GHSA-c2j3-45gr-mqc4).
        *
        * @param currentNode the disallowed node
        * @param tagName the node's transformCaseFunc'd tag name
        * @return true if the node was removed, false if kept
        */
-      const _sanitizeDisallowedNode = function _sanitizeDisallowedNode(currentNode, tagName) {
+      const _sanitizeDisallowedNode = function _sanitizeDisallowedNode(currentNode, tagName, root) {
         /* Check if we have a custom element to handle */
         if (!FORBID_TAGS[tagName] && _isBasicCustomElement(tagName)) {
           if (CUSTOM_ELEMENT_HANDLING.tagNameCheck instanceof RegExp && regExpTest(CUSTOM_ELEMENT_HANDLING.tagNameCheck, tagName)) {
@@ -16744,33 +16848,52 @@
           const childNodes = getChildNodes(currentNode);
           if (childNodes && parentNode) {
             const childCount = childNodes.length;
-            /* In-place: hoist the *original* children so the iterator visits
-                 and sanitises them through the same allowlist pass as every other
-                 node. The caller built the tree in the live document, so the
-                 originals carry already-queued resource events (`<img onerror>`,
-                 `<video>`/`<audio>` error, lazy/`onload`, …); cloning would leave
-                 those originals detached but still armed, firing in page scope
-                 while the returned tree looked clean. Moving is safe in-place: the
-                 root is pre-validated as an allowed tag and so is never the node
-                 being removed, which keeps `parentNode` inside the iterator root
-                 and the relocated child inside the serialised tree.
-                          Otherwise (string / DOM-copy paths): clone. The iterator is rooted
-                 at — and the result serialised from — `body`, so a restrictive
-                 ALLOWED_TAGS that removes `body` itself must leave its content in
-                 place, which only cloning does; and those paths parse into an
-                 inert document, so their discarded originals never had a queued
-                 event to neutralise.
+            /* Hoist by moving each child up one level rather than deep-cloning
+                 it. Moving transfers every descendant exactly once, so a chain of
+                 nested disallowed elements costs O(n) instead of the O(n^2) that
+                 re-cloning the shrinking subtree at each level produced; it also
+                 empties the removed original, so `DOMPurify.removed` no longer
+                 pins whole subtrees. Moving preserves the in-place guarantee too:
+                 an original carrying already-queued resource events (`<img
+                 onerror>`, `<video>`/`<audio>` error, lazy/`onload`, …) is
+                 relocated and sanitised rather than left detached but still armed.
+                          The sole case that must clone is removing the walk root itself.
+                 The result is serialised from the root's subtree, so a restrictive
+                 ALLOWED_TAGS that strips the root (`body` on the string path) must
+                 leave the content inside it, which only cloning does. In IN_PLACE
+                 the root is pre-validated as an allowed tag and so is never removed
+                 here, so that path always takes the move branch.
                           `childNodes` is live; a tail-to-head walk keeps `childNodes[i]`
                  valid whether we move (drops the trailing entry) or clone (leaves
                  the list intact). */
             for (let i = childCount - 1; i >= 0; --i) {
-              const hoisted = IN_PLACE ? childNodes[i] : cloneNode(childNodes[i], true);
+              const hoisted = currentNode === root ? cloneNode(childNodes[i], true) : childNodes[i];
               parentNode.insertBefore(hoisted, getNextSibling(currentNode));
             }
           }
         }
         _forceRemove(currentNode);
         return true;
+      };
+      /**
+       * Fork a hook-mutable allowlist off its shared binding the first time a
+       * (possibly lazily-installed) uponSanitize* hook is about to see it, so the
+       * hook cannot widen the per-instance default or the setConfig binding by
+       * reference and leak past the call. Returns the set unchanged once it is
+       * already call-local, so repeated calls across elements are idempotent.
+       *
+       * @param hookList the uponSanitize* hook array for this event
+       * @param set the current ALLOWED_TAGS / ALLOWED_ATTR binding
+       * @param defaultSet the per-instance DEFAULT_ALLOWED_* constant
+       * @param setConfigSet the captured setConfig() binding, or null
+       * @return a call-local clone if a hook is present and set is still shared,
+       *   else set unchanged
+       */
+      const _forkSharedAllowlist = function _forkSharedAllowlist(hookList, set, defaultSet, setConfigSet) {
+        if (hookList.length === 0) {
+          return set;
+        }
+        return set === defaultSet || set === setConfigSet ? clone(set) : set;
       };
       /**
        * _sanitizeElements
@@ -16781,9 +16904,20 @@
        * @param currentNode to check for permission to exist
        * @return true if node was killed, false if left alive
        */
-      const _sanitizeElements = function _sanitizeElements(currentNode) {
+      // eslint-disable-next-line complexity
+      const _sanitizeElements = function _sanitizeElements(currentNode, root) {
         /* Execute a hook if present */
         _executeHooks(hooks.beforeSanitizeElements, currentNode, null);
+        /* A hook may have detached the node - treat it as removed (see the
+           detached-node comment after the uponSanitizeElement hook below). On
+           the IN_PLACE path, neutralize the detached subtree first so a queued
+           resource handler on it cannot fire in page scope after we return. */
+        if (currentNode !== root && getParentNode(currentNode) === null) {
+          if (IN_PLACE) {
+            _neutralizeSubtree(currentNode);
+          }
+          return true;
+        }
         /* Check if element is clobbered or can clobber */
         if (_isClobbered(currentNode)) {
           _forceRemove(currentNode);
@@ -16791,11 +16925,47 @@
         }
         /* Now let's check the element's type and name */
         const tagName = transformCaseFunc(getNodeName ? getNodeName(currentNode) : currentNode.nodeName);
+        /* Close the pre-walk clone-guard's timing gap: an uponSanitizeElement
+           hook may have been installed after that guard sampled the hook arrays
+           (e.g. lazily from beforeSanitizeElements), leaving ALLOWED_TAGS still
+           aliasing a shared binding that a widening hook would mutate by
+           reference. Fork it before exposing it to the hook. */
+        ALLOWED_TAGS = _forkSharedAllowlist(hooks.uponSanitizeElement, ALLOWED_TAGS, DEFAULT_ALLOWED_TAGS, SET_CONFIG_ALLOWED_TAGS);
         /* Execute a hook if present */
         _executeHooks(hooks.uponSanitizeElement, currentNode, {
           tagName,
           allowedTags: ALLOWED_TAGS
         });
+        /* A hook may have detached the node from the tree — a long-standing
+           user pattern (issue #469; draw.io-style foreignObject filtering).
+           Per the cached, unclobberable parentNode getter the node is
+           genuinely out of the tree, so it can reach neither the serialized
+           output nor an IN_PLACE live tree; treat it as removed and stop
+           processing it. Without this guard, the unsafe-node / namespace
+           checks below would call _forceRemove on a parentless node and hit
+           the REPORT-3 fail-closed throw — which exists for nodes DOMPurify
+           wants gone but *cannot* detach (clobbered / parentless roots), the
+           opposite of a node that is already safely gone. The walk root is
+           exempt: a detached IN_PLACE root is legitimate input and must still
+           be fully sanitized, and a kill-decision on it must keep hitting the
+           REPORT-3 throw. Nodes detached by hooks stay the hook's
+           responsibility for placement: they are not recorded in
+           DOMPurify.removed, so the post-walk IN_PLACE pass (which iterates
+           DOMPurify.removed) does not reach them. But a hook-detached subtree
+           can still hold a queued resource-event handler - e.g. an <img onload>
+           that began loading when the caller built the live tree - which fires
+           in page scope after sanitize returns even though the handler never
+           reached the returned tree. That is the audit-5 F1 hazard, and the
+           documented node.remove() hook pattern walks straight into it. So on
+           the IN_PLACE path we neutralize the detached subtree inline here,
+           stripping its non-allow-listed attributes before returning, exactly
+           as the post-walk pass does for _forceRemove'd subtrees. */
+        if (currentNode !== root && getParentNode(currentNode) === null) {
+          if (IN_PLACE) {
+            _neutralizeSubtree(currentNode);
+          }
+          return true;
+        }
         /* Remove mXSS vectors, processing instructions and risky comments */
         if (_isUnsafeNode(currentNode, tagName)) {
           _forceRemove(currentNode);
@@ -16803,7 +16973,22 @@
         }
         /* Remove element if anything forbids its presence */
         if (FORBID_TAGS[tagName] || !(EXTRA_ELEMENT_HANDLING.tagCheck instanceof Function && EXTRA_ELEMENT_HANDLING.tagCheck(tagName)) && !ALLOWED_TAGS[tagName]) {
-          return _sanitizeDisallowedNode(currentNode, tagName);
+          const removed = _sanitizeDisallowedNode(currentNode, tagName, root);
+          /* A false return means the node is a custom element kept via
+             CUSTOM_ELEMENT_HANDLING - the only keep path through
+             _sanitizeDisallowedNode. Run afterSanitizeElements on it so the
+             element-hook lifecycle matches normal allowlisted elements: a
+             security policy applied in this hook (e.g. stripping an attribute
+             from every surviving element) must not silently skip kept custom
+             elements (GHSA-c2j3-45gr-mqc4). This mirrors the normal-element
+             tail below - the hook runs, then the walker's subsequent
+             _sanitizeAttributes pass sanitizes the element's attributes. The
+             deliberately skipped namespace and fallback-tag removal checks stay
+             skipped; they are removal decisions, not the hook contract. */
+          if (removed === false) {
+            _executeHooks(hooks.afterSanitizeElements, currentNode, null);
+          }
+          return removed;
         }
         /* Check whether element has a valid namespace.
            Realm-safe check (GHSA-hpcv-96wg-7vj8): use the cached Node.prototype
@@ -16848,6 +17033,33 @@
       const _isValidAttribute = function _isValidAttribute(lcTag, lcName, value) {
         /* FORBID_ATTR must always win, even if ADD_ATTR predicate would allow it */
         if (FORBID_ATTR[lcName]) {
+          return false;
+        }
+        /* Reject declarative-partial-updates patch-linkage attributes
+           (https://github.com/WICG/declarative-partial-updates).
+                Empirical note (Chrome 150, verified — see
+           test/declarative-patch-probe-v3.html): expansion is NOT applied after
+           sanitization. For the string path it fires during sanitize()'s own
+           parse, so the walk sees and sanitizes the fully materialized expanded
+           tree — teleports into MathML/SVG integration points included; a
+           weaponized `<template for>`->`<img onerror>` comes back with the handler
+           stripped. For the IN_PLACE path it fires on connection, before the walk.
+           Either way DOMPurify is NOT blind to the patch.
+                This removal is therefore defense-in-depth rather than the sole barrier:
+           it prevents live linkage from surviving into the OUTPUT and re-expanding
+           in the caller's context, and keeps behaviour deterministic if a future
+           engine defers expansion. `for` is legitimate only on <label>/<output>;
+           anywhere else (notably <template for>) it links the element to a patch
+           target and teleports or removes an arbitrary DOM range by id/marker name.
+           `patchsrc` fetches remote markup and is treated as a script-loading
+           mechanism (CSP). Gated on SAFE_FOR_XML so the removal groups with the
+           other structural-threat checks and stays overridable, consistent with
+           the rest of the codebase. PI range markers are already removed by
+           _isUnsafeNode. */
+        if (SAFE_FOR_XML && lcName === 'patchsrc') {
+          return false;
+        }
+        if (SAFE_FOR_XML && lcName === 'for' && lcTag !== 'label' && lcTag !== 'output') {
           return false;
         }
         /* Make sure attribute cannot clobber */
@@ -16966,6 +17178,9 @@
         if (!attributes || _isClobbered(currentNode)) {
           return;
         }
+        /* Same lazy-install guard as uponSanitizeElement (see there): fork the
+           attribute allowlist off its shared binding before a hook can see it. */
+        ALLOWED_ATTR = _forkSharedAllowlist(hooks.uponSanitizeAttribute, ALLOWED_ATTR, DEFAULT_ALLOWED_ATTR, SET_CONFIG_ALLOWED_ATTR);
         const hookEvent = {
           attrName: '',
           attrValue: '',
@@ -17059,7 +17274,7 @@
           /* Execute a hook if present */
           _executeHooks(hooks.uponSanitizeShadowNode, shadowNode, null);
           /* Sanitize tags and elements */
-          _sanitizeElements(shadowNode);
+          _sanitizeElements(shadowNode, fragment);
           /* Check attributes next */
           _sanitizeAttributes(shadowNode);
           /* Deep shadow DOM detected.
@@ -17250,6 +17465,11 @@
            keep using and whose return value they ignore — unsanitized. REPORT-2. */
         const inPlace = IN_PLACE && typeof dirty !== 'string' && _isNode(dirty);
         if (inPlace) {
+          /* Declarative-partial-updates / streaming pre-pass: sever every patch
+             linkage across the live tree BEFORE the walk, so no patch can fire
+             mid-walk and inject into an already-processed region. Runs first, so
+             it also covers the forbidden/clobbered roots that throw below. */
+          _neutralizePatchLinkage(dirty);
           /* Do some early pre-sanitization to avoid unsafe root nodes.
              Read nodeName through the cached prototype getter — a clobbering
              child named "nodeName" on the form root would otherwise shadow
@@ -17259,6 +17479,9 @@
           if (typeof nn === 'string') {
             const tagName = transformCaseFunc(nn);
             if (!ALLOWED_TAGS[tagName] || FORBID_TAGS[tagName]) {
+              /* Fail closed on a live root: neutralize handlers/children before
+                 throwing, exactly as the mid-walk abort path does. */
+              _neutralizeRoot(dirty);
               throw typeErrorCreate('root node is forbidden and cannot be sanitized in-place');
             }
           }
@@ -17273,6 +17496,10 @@
              the application unsanitized. Refuse to sanitize such a root
              the same way we refuse a forbidden tag. GHSA-r47g-fvhr-h676. */
           if (_isClobbered(dirty)) {
+            /* Fail closed on a live clobbered root before throwing.
+               _neutralizeRoot's reads are clobber-safe (cached getters); the
+               form's non-clobbered descendants, e.g. an armed <img>, are scrubbed. */
+            _neutralizeRoot(dirty);
             throw typeErrorCreate('root node is clobbered and cannot be sanitized in-place');
           }
           /* Sanitize attached shadow roots before the main iterator runs.
@@ -17325,20 +17552,24 @@
           _forceRemove(body.firstChild);
         }
         /* Get node iterator */
-        const nodeIterator = _createNodeIterator(inPlace ? dirty : body);
+        const walkRoot = inPlace ? dirty : body;
         /* Now start iterating over the created document.
            The walk runs inside an exception barrier (campaign-3 F2): a re-entrant
            engine/custom-element mutation can detach a node mid-walk so
            `_forceRemove`'s parentless guard throws, aborting the loop. Without the
            barrier the caller's in-place tree would be left half-sanitized with the
-           unvisited tail still armed. On any throw we fail closed — strip the
-           in-place root bare — then rethrow so the existing throw contract is
-           preserved. (String/DOM-copy paths never return the partial body, so the
-           propagating throw is already fail-closed there.) */
+           unvisited tail still armed. _createNodeIterator itself is inside the
+           barrier too: constructing the iterator dereferences the root's document,
+           and any failure there (e.g. an exotic/clobbered root) must still fail
+           closed rather than skip the neutralize. On any throw we fail closed -
+           strip the in-place root bare - then rethrow so the existing throw
+           contract is preserved. (String/DOM-copy paths never return the partial
+           body, so the propagating throw is already fail-closed there.) */
         try {
+          const nodeIterator = _createNodeIterator(walkRoot);
           while (currentNode = nodeIterator.nextNode()) {
             /* Sanitize tags and elements */
-            _sanitizeElements(currentNode);
+            _sanitizeElements(currentNode, walkRoot);
             /* Check attributes next */
             _sanitizeAttributes(currentNode);
             /* Shadow DOM detected, sanitize it.
@@ -17352,6 +17583,14 @@
         } catch (error) {
           if (inPlace) {
             _neutralizeRoot(dirty);
+            /* Nodes _forceRemove'd earlier in the aborted walk are already
+               detached from the root, so _neutralizeRoot's subtree pass does not
+               reach them. Defuse them too, mirroring the success-path loop below. */
+            arrayForEach(DOMPurify.removed, entry => {
+              if (entry.element) {
+                _neutralizeSubtree(entry.element);
+              }
+            });
           }
           throw error;
         }
@@ -17783,14 +18022,66 @@
 
     const filteredUrlAttrs = Tools.makeMap('src,href,data,background,action,formaction,poster,xlink:href');
     const internalElementAttr = 'data-mce-type';
+    const elementMarkupProbe = /<[/\w!]/g;
+    const commentMarkupProbe = /<[/\w]/g;
+    const probeMatches = (probe, value) => {
+      probe.lastIndex = 0;
+      return probe.test(value);
+    };
+    const reparseSensitiveChar = /[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F-\u009F\u00AD\u200B-\u200F\u2028-\u202E\u2060-\u206F\uFEFF\uFFF0-\uFFFB\uD800-\uDFFF]/;
+    const codeElements = Tools.makeMap('script,style');
+    const fallbackElements = Tools.makeMap('iframe,noscript,noembed,noframes,xmp,plaintext');
+    const reparseBoundaryProbe = /-->|--!>|<\/body|<\/html/i;
+    const savedNodeContent = new WeakMap();
+    const getTextContent$1 = node => {
+      var _a;
+      return (_a = node.textContent) !== null && _a !== void 0 ? _a : '';
+    };
+    const restoreSavedNodeContent = node => {
+      const saved = savedNodeContent.get(node);
+      if (isString(saved)) {
+        if (isComment(node) || isCData(node)) {
+          node.nodeValue = saved;
+        } else if (isElement$6(node)) {
+          node.textContent = saved;
+        }
+      }
+    };
+    const compensateRawTextElement = (element, tagName) => {
+      var _a;
+      const textContent = getTextContent$1(element);
+      if (element.hasChildNodes() && !isNonNullable(element.firstElementChild) && probeMatches(elementMarkupProbe, textContent) && probeMatches(elementMarkupProbe, element.innerHTML)) {
+        if (has$2(codeElements, tagName) && !new RegExp(`</${ tagName }`, 'i').test(textContent)) {
+          savedNodeContent.set(element, textContent);
+          empty(SugarElement.fromDom(element));
+        } else if (has$2(fallbackElements, tagName) && !reparseBoundaryProbe.test(textContent)) {
+          empty(SugarElement.fromDom(element));
+        } else {
+          for (const child of Array.from(element.childNodes)) {
+            const childValue = (_a = child.nodeValue) !== null && _a !== void 0 ? _a : '';
+            if (isCData(child) && probeMatches(elementMarkupProbe, childValue) && !reparseSensitiveChar.test(childValue)) {
+              savedNodeContent.set(child, childValue);
+              child.nodeValue = '';
+            }
+          }
+        }
+      }
+    };
     let uid = 0;
     const processNode = (node, settings, schema, scope, evt) => {
-      var _a, _b, _c, _d;
+      var _a, _b, _c, _d, _e, _f, _g;
       const validate = settings.validate;
-      if (node.nodeType === COMMENT && !settings.allow_conditional_comments && /^\[if/i.test((_a = node.nodeValue) !== null && _a !== void 0 ? _a : '')) {
-        node.nodeValue = ' ' + node.nodeValue;
+      if (node.nodeType === COMMENT) {
+        const commentValue = (_a = node.nodeValue) !== null && _a !== void 0 ? _a : '';
+        if (!settings.allow_conditional_comments && /^\[if/i.test(commentValue)) {
+          node.nodeValue = ' ' + commentValue;
+        }
+        if (isNonNullable(evt) && probeMatches(commentMarkupProbe, (_b = node.nodeValue) !== null && _b !== void 0 ? _b : '') && !reparseSensitiveChar.test((_c = node.nodeValue) !== null && _c !== void 0 ? _c : '')) {
+          savedNodeContent.set(node, (_d = node.nodeValue) !== null && _d !== void 0 ? _d : '');
+          node.nodeValue = '';
+        }
       }
-      const lcTagName = (_b = evt === null || evt === void 0 ? void 0 : evt.tagName) !== null && _b !== void 0 ? _b : node.nodeName.toLowerCase();
+      const lcTagName = (_e = evt === null || evt === void 0 ? void 0 : evt.tagName) !== null && _e !== void 0 ? _e : node.nodeName.toLowerCase();
       if (scope !== 'html' && schema.isValid(scope)) {
         if (isNonNullable(evt)) {
           evt.allowedTags[lcTagName] = true;
@@ -17837,10 +18128,10 @@
         }
       }
       if (validate && rule && !isInternalElement) {
-        each$e((_c = rule.attributesForced) !== null && _c !== void 0 ? _c : [], attr => {
+        each$e((_f = rule.attributesForced) !== null && _f !== void 0 ? _f : [], attr => {
           set$3(element, attr.name, attr.value === '{$uid}' ? `mce_${ uid++ }` : attr.value);
         });
-        each$e((_d = rule.attributesDefault) !== null && _d !== void 0 ? _d : [], attr => {
+        each$e((_g = rule.attributesDefault) !== null && _g !== void 0 ? _g : [], attr => {
           if (!has$1(element, attr.name)) {
             set$3(element, attr.name, attr.value === '{$uid}' ? `mce_${ uid++ }` : attr.value);
           }
@@ -17864,6 +18155,9 @@
         if (rule.outputName && rule.outputName !== lcTagName) {
           mutate(element, rule.outputName);
         }
+      }
+      if (isNonNullable(evt)) {
+        compensateRawTextElement(node, lcTagName);
       }
     };
     const processAttr = (ele, settings, schema, scope, evt) => {
@@ -17915,6 +18209,9 @@
       purify$1.addHook('uponSanitizeAttribute', (ele, evt) => {
         processAttr(ele, settings, schema, namespaceTracker.current(), evt);
       });
+      purify$1.addHook('afterSanitizeElements', node => {
+        restoreSavedNodeContent(node);
+      });
       return purify$1;
     };
     const getPurifyConfig = (settings, mimeType) => {
@@ -17926,8 +18223,7 @@
           '#cdata-section',
           'body'
         ],
-        ALLOWED_ATTR: [],
-        SAFE_FOR_XML: false
+        ALLOWED_ATTR: []
       };
       const config = { ...basePurifyConfig };
       config.PARSER_MEDIA_TYPE = mimeType;
@@ -22209,12 +22505,28 @@
       return position;
     };
 
+    const removeEmptyAnchors = (schema, block) => {
+      const visit = elm => {
+        each$e(children$1(elm), child => {
+          if (isHTMLElement$1(child)) {
+            if (name(child) === 'a' && isEmpty$2(schema, child)) {
+              remove$4(child);
+            } else {
+              visit(child);
+            }
+          }
+        });
+      };
+      visit(block);
+    };
     const deleteRangeMergeBlocks = (rootNode, selection, schema) => {
       const rng = selection.getRng();
       return lift2(getParentBlock$2(rootNode, SugarElement.fromDom(rng.startContainer)), getParentBlock$2(rootNode, SugarElement.fromDom(rng.endContainer)), (block1, block2) => {
         if (!eq(block1, block2)) {
           return Optional.some(() => {
             rng.deleteContents();
+            removeEmptyAnchors(schema, block1);
+            removeEmptyAnchors(schema, block2);
             mergeBlocks(rootNode, true, block1, block2, schema).each(pos => {
               selection.setRng(pos.toRange());
             });
@@ -32182,8 +32494,8 @@
       documentBaseURL: null,
       suffix: null,
       majorVersion: '1',
-      minorVersion: '0.12',
-      releaseDate: '2026-06-29',
+      minorVersion: '0.13',
+      releaseDate: '2026-08-31',
       i18n: I18n,
       activeEditor: null,
       focusedEditor: null,

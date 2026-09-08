@@ -347,9 +347,27 @@
   }
 
   function stripHtml(s) {
-    const div = document.createElement('div');
-    div.innerHTML = s || ''; // safe: content is discarded; only textContent is read back
-    return (div.textContent || div.innerText || '').trim();
+    // SR-2095: this used to assign attacker-controlled text to a live DOM
+    // node's innerHTML ("content is discarded; only textContent is read
+    // back" was NOT actually safe -- setting innerHTML on a real, connected
+    // document element is enough to run markup like <img src=x
+    // onerror=...> or <svg onload=...>: the browser attempts the resource
+    // fetch (which triggers onerror) and evaluates inline event-handler
+    // attributes as part of parsing, regardless of whether the caller ever
+    // reads anything back but textContent). DOMParser().parseFromString()
+    // builds an inert HTML document instead: per spec it does not fetch
+    // subresources and does not run scripts or event handlers, so no
+    // attacker-controlled markup in `s` is ever executed. Read .textContent
+    // off that inert document rather than assigning to any live node.
+    if (!s) return '';
+    try {
+      const doc = new DOMParser().parseFromString(String(s), 'text/html');
+      return ((doc.body && doc.body.textContent) || '').trim();
+    } catch (e) {
+      // DOMParser unavailable/threw -- fall back to a plain tag strip. Never
+      // assign attacker content to a live DOM node's innerHTML/outerHTML.
+      return String(s).replace(/<[^>]*>/g, '').trim();
+    }
   }
 
   function relativeTime(iso) {

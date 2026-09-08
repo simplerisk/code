@@ -989,7 +989,7 @@
         if (activeChip === 'favorites') {
             // --- Favorites-only layout: single section with header, no domain grouping ---
             var favEntries = entries
-                .filter(function (e) { return e.favorited && matchesSearch(e); })
+                .filter(function (e) { return (e.favorited || e.pinned) && matchesSearch(e); })
                 .slice()
                 .sort(function (a, b) { return a.key < b.key ? -1 : a.key > b.key ? 1 : 0; });
 
@@ -1026,7 +1026,7 @@
 
             // Favorites section
             var allFavEntries = entries
-                .filter(function (e) { return e.favorited; })
+                .filter(function (e) { return e.favorited || e.pinned; })
                 .slice()
                 .sort(function (a, b) { return a.key < b.key ? -1 : a.key > b.key ? 1 : 0; });
 

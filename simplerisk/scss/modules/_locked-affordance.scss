@@ -64,15 +64,20 @@
     }
 }
 
-// Button-shaped affordances (the SoA's export buttons). Kept as a modifier
-// rather than folded into .sr-locked because a menu row must NOT lose its
-// border/background treatment, and a button must.
+// Button-shaped affordances (the SoA's export buttons, the audit trail
+// Export button, the Document Program bulk-download button, Edit Layout).
+// Kept as a modifier rather than folded into .sr-locked because a menu row
+// must NOT lose its border/background treatment, and a button must.
 .sr-locked.sr-locked--btn,
 .sr-locked .sr-locked--btn {
     border-color: $gray-300;
     background: $gray-100;
     color: $gray-500;
     box-shadow: none;
+    // Clears the corner the unlock icon now sits in, just below -- without
+    // this the icon crowds (or on a short label, overlaps) the button's own
+    // trailing content.
+    padding-right: 22px;
 
     &:hover,
     &:focus {
@@ -80,6 +85,26 @@
         background: $gray-100;
         color: $gray-500;
         box-shadow: none;
+    }
+}
+
+// Nests the unlock icon into the button's own top-right corner instead of
+// floating it beside the button as a second, disconnected control -- the
+// button-shaped consumers above all read as "two controls" with the icon
+// as an outside sibling. :has() scopes this to the button-shaped case only;
+// the row-shaped chooser variant (display_framework_acquisition_chooser())
+// keeps its own inline link at the end of the row, where a corner badge
+// would collide with that very different layout.
+.sr-locked:has(> .sr-locked--btn) {
+    position: relative;
+    display: inline-block;
+
+    .sr-locked-link {
+        position: absolute;
+        top: 4px;
+        right: 6px;
+        font-size: 11px;
+        line-height: 1;
     }
 }
 

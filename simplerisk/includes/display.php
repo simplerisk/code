@@ -2152,7 +2152,7 @@ function print_mitigation_controls_table($control_ids, $mitigation_id, $flag="vi
                             }
                         },
                         complete: function(response){
-                            if(Number(response.responseJSON.recordsTotal) > 0){
+                            if(response.responseJSON && Number(response.responseJSON.recordsTotal) > 0){
                                 $('#{$tableID}').parents('.mitigation-controls-table-container').removeClass('hide');
                             }else{
                                 $('#{$tableID}').parents('.mitigation-controls-table-container').addClass('hide');
@@ -9783,7 +9783,84 @@ function display_datetimepicker_javascript($initialize = false) {
 * FUNCTION: DISPLAY ADD PROJECT *
 *********************************/
 function display_add_projects($template_group_id = "") {
-    
+
+    global $escaper;
+
+    // Resolve the tab-per-group selector when called at the top level (no
+    // group given yet) -- same shape as display_add_risk() for Risk and
+    // render_create_modal() for Asset: Organizational Hierarchy scopes the
+    // offered groups to the current user's business unit; otherwise every
+    // custom_template_group for this fgroup is offered. A caller that passes
+    // a specific group id skips the picker and renders straight through to a
+    // single un-tabbed form; the per-pane bodies go to
+    // display_add_projects_fields(), never back through here.
+    $template_groups = [];
+    if (!$template_group_id && customization_extra()) {
+        require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
+        // The same candidate set resolve_template_group_id() validates a
+        // submitted id against -- one helper, so the tabs offered here and
+        // the ids accepted on create can never drift apart.
+        $template_groups = get_template_groups_for_user('project');
+    }
+
+    if (count($template_groups) > 1) {
+
+        echo "
+            <div class='mt-2'>
+                <nav class='nav nav-tabs'>
+        ";
+        foreach ($template_groups as $index => $template_group) {
+            $active = $index == 0 ? "active" : "";
+            echo "
+                    <a class='nav-link {$active}' data-bs-target='#project_template_group_{$template_group['id']}' data-bs-toggle='tab'>" . $escaper->escapeHtml($template_group['name']) . "</a>
+            ";
+        }
+        echo "
+                </nav>
+            </div>
+            <div class='tab-content'>
+        ";
+        foreach ($template_groups as $index => $template_group) {
+            $pane_active = $index == 0 ? "show active" : "";
+            echo "
+                <div class='tab-pane fade {$pane_active}' id='project_template_group_{$template_group['id']}'>
+                    <form id='project-new' name='project-new' method='post' class='project-new-form'>
+            ";
+            display_add_projects_fields($template_group['id']);
+            echo "
+                    </form>
+                </div>
+            ";
+        }
+        echo "
+            </div>
+        ";
+        return;
+    }
+
+    // Zero or one resolved group: carry the single real id forward so the
+    // field body below scopes to and records the correct group without a
+    // visible tab picker. Falls back to "" (unresolved) when customization
+    // never resolved any group at all -- display_add_projects_fields() then
+    // resolves the real Default group itself, matching pre-existing behavior.
+    if (count($template_groups) == 1) {
+        $template_group_id = $template_groups[0]['id'];
+    }
+
+    echo "
+        <form id='project-new' name='project-new' method='post' class='project-new-form'>
+    ";
+    display_add_projects_fields($template_group_id);
+    echo "
+        </form>
+    ";
+}
+
+/****************************************************
+* FUNCTION: DISPLAY ADD PROJECT FIELDS (PER-GROUP)   *
+*****************************************************/
+function display_add_projects_fields($template_group_id) {
+
     global $lang, $escaper;
 
     // If customization extra is enabled
@@ -9796,6 +9873,17 @@ function display_add_projects($template_group_id = "") {
             $group = get_default_template_group("project");
             $template_group_id = $group["id"];
         }
+
+        // Carry the resolved template group forward so add_project_api()
+        // stores which admin-defined field layout this record was created
+        // under, instead of silently defaulting. No id= here (Task 25's
+        // Asset precedent): this helper renders once per pane when multiple
+        // template groups exist, and a shared id would be duplicated across
+        // panes' forms -- name= is enough since it submits via its own
+        // per-pane <form>.
+        echo "
+            <input type='hidden' name='template_group_id' value='" . (int)$template_group_id . "'>
+        ";
 
         $active_fields = get_active_fields("project", $template_group_id);
         foreach($active_fields as $field) {
@@ -10559,22 +10647,54 @@ function render_field_edit_popup_modal($view) {
 function render_create_modal($view) {
 
     global $field_settings_views, $field_settings_display_groups, $field_settings, $escaper, $lang;
-    
+
     $view_type = $field_settings_views[$view]['view_type'];
     $view_create_ajax_uri = $field_settings_views[$view]['create']['create_ajax_uri'];
     //$id_field_settings = !empty($field_settings_views[$view]['id_field']) ?  $field_settings[$view_type][$field_settings_views[$view]['id_field']] : false;
-    $groups = [];
-    $has_header = false;
 
-    foreach (field_settings_get_localization($view) as $group_name => $group) {
-        $groups[$group_name] = [
-            'header' => empty($field_settings_display_groups[$group_name]['header_key']) ? false : $escaper->escapeHtml($lang[$field_settings_display_groups[$group_name]['header_key']]),
-            'fields' =>  $group
-        ];
-        
-        $has_header = $has_header || !empty($groups[$group_name]['header']);
+    // Resolve which admin-defined template group(s) this create form should
+    // offer -- mirrors display_add_risk()'s resolution exactly (Organizational
+    // Hierarchy assigns groups by the current user's business unit; otherwise
+    // every group for the fgroup is offered). Zero or one resolved group (the
+    // only possibility without Organizational Hierarchy, and the common case
+    // even with it) renders exactly one un-tabbed form, same as before this
+    // change -- see docs/superpowers/plans/2026-09-05-template-group-business-unit-redesign.md
+    // Track B, Task 25.
+    $template_groups = [];
+    if (customization_extra()) {
+        require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
+        // The same candidate set resolve_template_group_id() validates a
+        // submitted id against -- one helper, so the tabs offered here and
+        // the ids accepted on create can never drift apart.
+        $template_groups = get_template_groups_for_user($view_type);
     }
-    
+    // Always iterate at least one pane. A single resolved group (whether
+    // that's the Default group, or -- with Organizational Hierarchy -- the
+    // one specific group this user's business unit is assigned to) still
+    // renders as one un-tabbed form, but its real id is carried through so
+    // the create endpoint stores the correct group even without a visible
+    // tab picker. Only when customization never resolves any group (the
+    // extra is disabled) does this fall back to a null-id pane, which is a
+    // no-op scoping-wise (identical results to the old unscoped/union query).
+    $render_panes = !empty($template_groups) ? $template_groups : [['id' => null, 'name' => null]];
+    $multi_group = count($render_panes) > 1;
+
+    $panes = [];
+    $has_header = false;
+    foreach ($render_panes as $template_group) {
+        $tgid = $template_group['id'];
+        $groups = [];
+        foreach (field_settings_get_localization($view, true, true, true, $tgid) as $group_name => $group) {
+            $groups[$group_name] = [
+                'header' => empty($field_settings_display_groups[$group_name]['header_key']) ? false : $escaper->escapeHtml($lang[$field_settings_display_groups[$group_name]['header_key']]),
+                'fields' =>  $group
+            ];
+
+            $has_header = $has_header || !empty($groups[$group_name]['header']);
+        }
+        $panes[] = ['id' => $tgid, 'name' => $template_group['name'], 'groups' => $groups];
+    }
+
     echo "
         <script>
             $(function() {
@@ -10591,27 +10711,56 @@ function render_create_modal($view) {
                     $(this).find('i').toggleClass('fa-caret-right fa-caret-down');
                 });
         ";
-    
+
     }
-    
+
     echo "
-                // Reset form fields when the modal is opened
+                // Reset form fields when the modal is opened. There is one
+                // <form id=\"create_popup-{view}\"> per template-group tab
+                // when more than one group is offered (mirrors
+                // display_add_risk()'s established one-<form>-per-pane
+                // pattern, which also duplicates ids across panes) -- the
+                // selectors below already match every such form, and
+                // resetForm() iterates every matched element.
                 $('#create_popup_modal-' + CSS.escape(view)).on('show.bs.modal', function() {
+                    // Re-assert the first tab/pane as active every time the
+                    // modal opens. Something elsewhere on the page (a
+                    // sitewide Bootstrap Tab/ARIA-enhancement pass over every
+                    // [data-bs-toggle=tab] on the page, which also stamps
+                    // role=tabpanel onto every .tab-pane it finds) strips the
+                    // server-rendered active/show state from these panes
+                    // before the user ever interacts with them, leaving the
+                    // modal looking blank until a tab is clicked. Re-applying
+                    // it here is a self-contained, defensive fix that doesn't
+                    // depend on tracking down that other script.
+                    var modalTabLinks = $(this).find('.nav-tabs .nav-link');
+                    if (modalTabLinks.length) {
+                        modalTabLinks.removeClass('active');
+                        modalTabLinks.first().addClass('active');
+                        var modalTabPanes = $(this).find('.tab-pane');
+                        modalTabPanes.removeClass('show active');
+                        modalTabPanes.first().addClass('show active');
+                    }
+
                     // Reset the form to clear any previous data
                     resetForm($('form#create_popup-' + CSS.escape(view)), true, true);
-                    
+
                     // Clear any WYSIWYG editor content
                     if (typeof setEditorContent === 'function') {
                         $('form#create_popup-' + CSS.escape(view) + ' textarea.create_input').each(function() {
                             setEditorContent($(this).attr('id'), '');
                         });
                     }
-                    
+
                     // Remove dynamically added control mapping rows
                     $('form#create_popup-' + CSS.escape(view) + ' table.mapping_control_table tbody').html('');
                 });
 
-                $('form#create_popup-' + CSS.escape(view)).submit(function() {
+                // Bound once per matched form (jQuery attaches .submit() to
+                // every element sharing the id), and \$(this) inside always
+                // refers to whichever pane's form actually fired -- so this
+                // already works correctly whether there's one form or several.
+                $('form#create_popup-' + CSS.escape(view)).submit(function(event) {
                     event.preventDefault();
 
                     // Create a JSON object based on the control mapping row
@@ -10624,7 +10773,7 @@ function render_create_modal($view) {
                     	}));
                     });
 
-                    var form = new FormData($(this)[0]);
+                    var form = new FormData(this);
                     $.blockUI({message:\"<i class=\'fa fa-spinner fa-spin\' style=\'font-size:24px\'></i>\"});
                     $.ajax({
                         type: 'POST',
@@ -10656,6 +10805,22 @@ function render_create_modal($view) {
                         }
                     });
                 });
+    ";
+
+    if ($multi_group) {
+        echo "
+                // With multiple template-group tabs, the Save button lives
+                // once in the shared modal footer (rather than once per pane)
+                // so route its click to whichever pane's <form> is the
+                // currently visible (active) tab.
+                $('#create_popup_modal-' + CSS.escape(view) + ' .create-popup-save-btn').on('click', function(event) {
+                    event.preventDefault();
+                    $(this).closest('.modal-content').find('form.create-popup-form:visible').trigger('submit');
+                });
+        ";
+    }
+
+    echo "
             });
         </script>
         <div id='create_popup_modal-{$view}' class='modal fade' tabindex='-1' aria-hidden='true'>
@@ -10678,71 +10843,115 @@ function render_create_modal($view) {
                         <button type='button' class='btn-close' data-bs-dismiss='modal' aria-label='Close'></button>
                     </div>
                     <div class='modal-body'>
-                        <form id='create_popup-{$view}' name='create_popup-{$view}' method='post'>
-                            <input type='hidden' name='create_view' value='{$view}'>
     ";
-    
-    // If there's an id field setup add a hidden field for it
-    if (!empty($field_settings_views[$view]['id_field'])) {
+
+    if ($multi_group) {
+        echo "
+                        <div class='mt-2'>
+                            <nav class='nav nav-tabs'>
+        ";
+        foreach ($panes as $index => $pane) {
+            $tab_active = $index == 0 ? "active" : "";
+            echo "
+                                <a class='nav-link {$tab_active}' data-bs-target='#{$escaper->escapeHtml($view)}_template_group_{$pane['id']}' data-bs-toggle='tab'>" . $escaper->escapeHtml($pane['name']) . "</a>
+            ";
+        }
+        echo "
+                            </nav>
+                        </div>
+                        <div class='tab-content'>
+        ";
+    }
+
+    foreach ($panes as $index => $pane) {
+
+        $tgid = $pane['id'];
+        $groups = $pane['groups'];
+
+        if ($multi_group) {
+            $pane_active = $index == 0 ? "show active" : "";
+            echo "
+                        <div class='tab-pane fade {$pane_active}' id='{$escaper->escapeHtml($view)}_template_group_{$tgid}'>
+            ";
+        }
 
         echo "
-                            <input type='hidden' name='{$field_settings_views[$view]['id_field']}' class='create_input'/>
-        ";
+                        <form id='create_popup-{$view}' name='create_popup-{$view}' method='post' class='create-popup-form'>
+                            <input type='hidden' name='create_view' value='{$view}'>
+    ";
 
-    }
-    
-    echo "
+        // If there's an id field setup add a hidden field for it
+        if (!empty($field_settings_views[$view]['id_field'])) {
+
+            echo "
+                            <input type='hidden' name='{$field_settings_views[$view]['id_field']}' class='create_input'/>
+            ";
+
+        }
+
+        // Carry the resolved template group forward so the create endpoint
+        // stores which admin-defined field layout this record was created
+        // under, instead of silently defaulting. Omitted when customization
+        // never resolved a real group (matches pre-existing behavior exactly
+        // -- the backend resolves the real Default group when this is absent).
+        if ($tgid !== null) {
+            echo "
+                            <input type='hidden' name='template_group_id' value='" . (int)$tgid . "'>
+            ";
+        }
+
+        echo "
                             <div class='well create-popup-container'>
     ";
-    
-    if ($customization = customization_extra()) {
 
-        require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
-        
-        $active_fields = get_active_fields($view_type);
-        $mapped_custom_field_settings = [];
-        
-        foreach ($active_fields as $active_field) {
-            
-            // Skip this step for basic fields
-            if ($active_field['is_basic']) {
-                continue;
+        if ($customization = customization_extra()) {
+
+            require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
+
+            $active_fields = get_active_fields($view_type, $tgid);
+            $mapped_custom_field_settings = [];
+
+            foreach ($active_fields as $active_field) {
+
+                // Skip this step for basic fields
+                if ($active_field['is_basic']) {
+                    continue;
+                }
+
+                $field_name = "custom_field_{$active_field['id']}";
+
+                $type = null;
+                switch($active_field['type']) {
+                    case "shorttext":
+                    case "hyperlink":
+                        $type = 'short_text';
+                        break;
+                    case "longtext":
+                        $type = 'long_text';
+                        break;
+                    case "date":
+                        $type = 'date';
+                        break;
+                    case "dropdown":
+                        $type = "select[{$field_name}]";
+                        break;
+                    case "multidropdown":
+                        $type = "multiselect[{$field_name}]";
+                        break;
+                    case "user_multidropdown":
+                        $type = "multiselect[user]";
+                        break;
+                }
+
+                $mapped_custom_field_settings[$field_name] = [
+                    'type' => $type,
+                    'required' => $active_field['required'],
+                    'alphabetical_order' => $active_field['alphabetical_order'],
+                ];
             }
-            
-            $field_name = "custom_field_{$active_field['id']}";
-
-            $type = null;
-            switch($active_field['type']) {
-                case "shorttext":
-                case "hyperlink":
-                    $type = 'short_text';
-                    break;
-                case "longtext":
-                    $type = 'long_text';
-                    break;
-                case "date":
-                    $type = 'date';
-                    break;
-                case "dropdown":
-                    $type = "select[{$field_name}]";
-                    break;
-                case "multidropdown":
-                    $type = "multiselect[{$field_name}]";
-                    break;
-                case "user_multidropdown":
-                    $type = "multiselect[user]";
-                    break;
-            }
-
-            $mapped_custom_field_settings[$field_name] = [
-                'type' => $type,
-                'required' => $active_field['required'],
-                'alphabetical_order' => $active_field['alphabetical_order'],
-            ];
         }
-    }
-    
-    foreach ($groups as $group_name => $group) {
+
+        foreach ($groups as $group_name => $group) {
 
         // If the group has a header setup, then render it
         if ($group['header']) {
@@ -10759,7 +10968,7 @@ function render_create_modal($view) {
                             <div class='row'>
                                 <div class='col-12'>
         ";
-        
+
         foreach ($group['fields'] as $field_name => $text) {
 
             // If it's not in the field settings then it's a custom field
@@ -10901,19 +11110,47 @@ function render_create_modal($view) {
                             </div>
             ";
         }
-    }
-    
-    echo "
+        }
+
+        echo "
+                            </div>
+                        </form>
+        ";
+
+        if ($multi_group) {
+            echo "
                         </div>
-                    </form>
-                </div>
-                <div class='modal-footer'>
-                    <button class='btn btn-secondary' data-bs-dismiss='modal'>{$escaper->escapeHtml($lang['Cancel'])}</button>
-                    <button type='submit' form='create_popup-{$view}' class='btn btn-submit'>{$escaper->escapeHtml($lang['Save'])}</button>
+            ";
+        }
+    }
+
+    if ($multi_group) {
+        echo "
+                        </div>
+        ";
+    }
+
+    echo "
+                    </div>
+                    <div class='modal-footer'>
+                        <button class='btn btn-secondary' data-bs-dismiss='modal'>{$escaper->escapeHtml($lang['Cancel'])}</button>
+    ";
+    if ($multi_group) {
+        // One shared Save button routes to whichever pane's form is active --
+        // see the .create-popup-save-btn click handler above.
+        echo "
+                        <button type='button' class='btn btn-submit create-popup-save-btn'>{$escaper->escapeHtml($lang['Save'])}</button>
+        ";
+    } else {
+        echo "
+                        <button type='submit' form='create_popup-{$view}' class='btn btn-submit'>{$escaper->escapeHtml($lang['Save'])}</button>
+        ";
+    }
+    echo "
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
     ";
 }
 

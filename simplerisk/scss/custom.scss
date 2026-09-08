@@ -508,17 +508,8 @@ input#dollarsign {
 // CONFIGURE / EXTRAS PAGE / CUSTOMIZATION EXTRA PAGE
 .field-group {
 	display: flex;
-	align-items: center;
-
-	label {
-		width: 100px;
-		min-width: 100px;
-	}
-
-	select {
-		width: 200px;
-		min-width: 200px;
-	}
+	flex-direction: column;
+	align-items: flex-start;
 }
 
 .field-create-form-item {
@@ -546,16 +537,6 @@ input#dollarsign {
 }
 
 #templates {
-	.templates-group-container {
-		display: flex;
-		align-items: flex-end;
-
-		.templates-btn-group {
-			width: 200px;
-			min-width: 200px;
-		}
-	}
-
 	#tabs {
 		border: none;
 	}
@@ -575,13 +556,79 @@ input#dollarsign {
 			width: 100%;
 			padding: 5px 10px;
 			display: flex;
-			justify-content: space-between;
+			align-items: center;
+			gap: 8px;
 			border: 1px solid var(--bs-secondary);
 
 			&:not(:first-child) {
 				margin-top: 5px;
 			}
+
+			// Task 19: a one-beat flash on the row the field picker just added,
+			// so the eye can find it in a panel that may hold many fields.
+			&.is-new {
+				animation: sr-field-just-added 1400ms ease-out;
+			}
+
+			// Drag-handle affordance (matches the field-picker Artifact's own
+			// .grip treatment): every field-holder is sortable regardless of
+			// whether it can be removed/edited, so this renders unconditionally
+			// at all emission sites, unlike the edit/delete icons.
+			.grip {
+				flex: none;
+				color: var(--bs-secondary);
+				display: flex;
+				cursor: grab;
+			}
+
+			// The name (plus required-marker asterisk) lives in its own span so
+			// updateFieldHolderChipText() can retarget it directly, and so it can
+			// grow to fill the row -- pushing .grip left and the actions cluster
+			// right -- now that a third flex item (.grip) means bare
+			// `justify-content: space-between` would spread three items evenly
+			// instead of grouping grip+name on the left.
+			.nm {
+				flex: 1;
+				min-width: 0;
+				overflow: hidden;
+				text-overflow: ellipsis;
+				white-space: nowrap;
+			}
+
+			// Task 20: custom-field chips gained an edit pencil alongside the
+			// pre-existing un-assign icon (.delete) -- grouped together as ONE
+			// flex item so the row still reads as "name on the left, actions on
+			// the right". Reuses the bare .sr-row-action chrome lifted in
+			// _tables.scss (Task 20) for the pencil; .delete keeps its own
+			// pre-existing (unstyled) look, unchanged.
+			.sr-row-actions {
+				display: inline-flex;
+				align-items: center;
+				gap: 2px;
+				flex: none;
+			}
 		}
+	}
+}
+
+@keyframes sr-field-just-added {
+	0% {
+		background-color: $sr-row-selected;
+		border-color: $sr-important;
+	}
+	60% {
+		background-color: $sr-row-selected;
+		border-color: $sr-important;
+	}
+	100% {
+		background-color: white;
+		border-color: var(--bs-secondary);
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.field-holder.is-new {
+		animation-duration: 0.001ms !important;
 	}
 }
 
@@ -1211,6 +1258,7 @@ a.open-in-new-tab {
 @import "modules/app-shell";
 @import "modules/configure";
 @import "modules/tables";
+@import "modules/data-integrity";
 // Imported after core/modals so the design-system shell wins the
 // specificity tie against that file's legacy dark header bar.
 @import "modules/sr-modal";
@@ -1231,6 +1279,7 @@ a.open-in-new-tab {
 // change). Scoped entirely to `.sr-auth`, so it never reaches the legacy
 // `[data-function="login"]` block above that admin/upgrade.php still uses.
 @import "modules/auth";
+@import "modules/customization-fgroup";
 //@import "modules/_tabs";
 
 

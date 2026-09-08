@@ -1,5 +1,5 @@
 /**
- * HugeRTE version 1.0.12 (2026-06-29)
+ * HugeRTE version 1.0.13 (2026-08-31)
  * Copyright (c) 2022 Ephox Corporation DBA Tiny Technologies, Inc.
  * Copyright (c) 2026 HugeRTE contributors
  * Licensed under the MIT license (https://github.com/hugerte/hugerte/blob/main/LICENSE.TXT)
@@ -19,6 +19,11 @@
     const shouldUseContentCssCors = option('content_css_cors');
     const getBodyClass = option('body_class');
     const getBodyId = option('body_id');
+    const getPreviewContentCallback = option('preview_content_callback');
+    const register$2 = editor => {
+      const registerOption = editor.options.register;
+      registerOption('preview_content_callback', { processor: 'function' });
+    };
 
     const getPreviewHtml = editor => {
       var _a;
@@ -39,7 +44,21 @@
       const preventClicksOnLinksScript = '<script>' + 'document.addEventListener && document.addEventListener("click", function(e) {' + 'for (var elm = e.target; elm; elm = elm.parentNode) {' + 'if (elm.nodeName === "A" && !(' + isMetaKeyPressed + ')) {' + 'e.preventDefault();' + '}' + '}' + '}, false);' + '</script> ';
       const directionality = editor.getBody().dir;
       const dirAttr = directionality ? ' dir="' + encode(directionality) + '"' : '';
-      const previewHtml = '<!DOCTYPE html>' + '<html>' + '<head>' + headHtml + '</head>' + '<body id="' + encode(bodyId) + '" class="mce-content-body ' + encode(bodyClass) + '"' + dirAttr + '>' + editor.getContent() + preventClicksOnLinksScript + '</body>' + '</html>';
+      let content = editor.getContent();
+      const callback = getPreviewContentCallback(editor);
+      if (typeof callback === 'function') {
+        try {
+          const result = callback(content);
+          if (typeof result === 'string') {
+            content = result;
+          } else if (result !== undefined) {
+            console.warn('preview_content_callback should return a string, got', typeof result);
+          }
+        } catch (e) {
+          console.warn('preview_content_callback threw an error:', e);
+        }
+      }
+      const previewHtml = '<!DOCTYPE html>' + '<html>' + '<head>' + headHtml + '</head>' + '<body id="' + encode(bodyId) + '" class="mce-content-body ' + encode(bodyClass) + '"' + dirAttr + '>' + content + preventClicksOnLinksScript + '</body>' + '</html>';
       return previewHtml;
     };
 
@@ -90,6 +109,7 @@
 
     var Plugin = () => {
       global$2.add('preview', editor => {
+        register$2(editor);
         register$1(editor);
         register(editor);
       });

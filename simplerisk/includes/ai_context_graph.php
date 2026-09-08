@@ -244,11 +244,26 @@ function ai_context_filter_by_domain(array $nodes, array $edges, array $perms): 
  * SECURITY: without this, the graph would surface records the caller cannot
  * see in the UI (aggregation-based authorization bypass). The scoped-id query
  * is the same visibility logic the normal list endpoints use.
+ *
+ * SECURITY (SR-2097): computes $focalHasDeclaredParent -- whether $focalNodeId
+ * (when it names a vulnerability) already has an edge to an asset/risk node
+ * in the UNPRUNED $nodes/$edges given to this call, i.e. BEFORE any L4
+ * removal below runs. This is what lets ai_context_drop_orphan_test_results()
+ * tell a genuinely parentless (untriaged) vulnerability focal -- which has no
+ * parent to check visibility against, and must stay exempt from the
+ * orphan-drop -- from one whose real asset/risk parent exists but is off-team
+ * and about to be pruned by L4 below: that declared edge is still present
+ * here, even though the parent node itself will not survive. Without this,
+ * the exemption ai_context_drop_orphaned() applies to $focalNodeId was
+ * unconditional, so a vulnerability focal with an off-team asset or risk
+ * parent bypassed Team Separation outright and was returned in full.
  */
 function ai_context_filter_by_record_visibility(array $nodes, array $edges, ?string $focalNodeId = null): array
 {
+    $focalHasDeclaredParent = ai_context_focal_has_declared_parent($nodes, $edges, $focalNodeId, ['asset', 'risk']);
+
     if (!team_separation_extra()) {
-        return ai_context_drop_orphan_test_results($nodes, $edges, $focalNodeId);
+        return ai_context_drop_orphan_test_results($nodes, $edges, $focalNodeId, $focalHasDeclaredParent);
     }
     require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
 
@@ -334,7 +349,39 @@ function ai_context_filter_by_record_visibility(array $nodes, array $edges, ?str
     //     two is not hidden — and $focalNodeId is exempt entirely, since a
     //     focal the caller named and was authorized for is not a "child"
     //     whose visibility is inherited from a parent.
-    return ai_context_drop_orphan_test_results($keptNodes, $keptEdges, $focalNodeId);
+    return ai_context_drop_orphan_test_results($keptNodes, $keptEdges, $focalNodeId, $focalHasDeclaredParent);
+}
+
+/**
+ * SECURITY (SR-2097): whether $focalNodeId has a declared edge, in the given
+ * (unpruned) $nodes/$edges, to a node whose type is in $parentTypes. Used to
+ * distinguish a genuinely parentless focal from one whose parent exists but
+ * is about to be (or already was) removed by L4 -- see
+ * ai_context_filter_by_record_visibility()'s docblock. Returns false when
+ * $focalNodeId is null, matching "no focal, nothing to check".
+ */
+function ai_context_focal_has_declared_parent(array $nodes, array $edges, ?string $focalNodeId, array $parentTypes): bool
+{
+    if ($focalNodeId === null) {
+        return false;
+    }
+    $parentTypeSet = array_flip($parentTypes);
+    $typeById = [];
+    foreach ($nodes as $n) {
+        $typeById[$n['node_id']] = $n['type'];
+    }
+    foreach ($edges as $e) {
+        $other = null;
+        if ($e['from'] === $focalNodeId) {
+            $other = $e['to'];
+        } elseif ($e['to'] === $focalNodeId) {
+            $other = $e['from'];
+        }
+        if ($other !== null && isset($typeById[$other]) && isset($parentTypeSet[$typeById[$other]])) {
+            return true;
+        }
+    }
+    return false;
 }
 
 /**
@@ -367,6 +414,17 @@ function ai_context_filter_by_record_visibility(array $nodes, array $edges, ?str
  * from ai_context_node_types(), so no focal node id can ever match one. The
  * security property for NEIGHBOURS is unchanged — only the single focal id is
  * skipped, never any other node of the same type.
+ *
+ * SECURITY (SR-2097): this function itself still exempts whatever
+ * $exemptNodeId it is handed unconditionally — the CALLER now decides
+ * whether to pass the real focal id or null. For the vulnerability pair,
+ * ai_context_drop_orphan_test_results() only passes the focal id through
+ * when the focal has NO declared asset/risk parent at all (genuinely
+ * parentless/untriaged); when a declared parent exists but was removed by
+ * L4 for being off-team, it passes null instead, so the normal drop logic
+ * above removes the focal like any other orphan. See
+ * ai_context_filter_by_record_visibility()'s docblock for how that
+ * distinction is computed.
  */
 function ai_context_drop_orphaned(array $nodes, array $edges, string $childType,
                                   array $parentTypes, ?string $exemptNodeId = null): array
@@ -419,20 +477,37 @@ function ai_context_drop_orphaned(array $nodes, array $edges, string $childType,
  * only visible — through its asset or its risk, so it is dropped only when
  * BOTH parents were removed by L4.
  *
- * $focalNodeId, when given, is exempt from every drop below — see
- * ai_context_drop_orphaned() for why the focal is not a "child". It is
- * threaded through unchanged rather than special-cased per pair so the
- * exemption cannot drift between them.
+ * $focalNodeId, when given, is exempt from the test_result/self_assessment_
+ * result drops below unconditionally — see ai_context_drop_orphaned() for why
+ * the focal is not a "child". Both are neighbour-only types that can never BE
+ * a focal (absent from ai_context_node_types()), so the exemption is inert
+ * for them regardless.
+ *
+ * SECURITY (SR-2097): the vulnerability pair is different, because
+ * `vulnerability` CAN be a focal. $focalHasDeclaredParent -- computed by the
+ * caller (ai_context_filter_by_record_visibility()) against the pre-L4
+ * node/edge set -- says whether the focal already had a declared asset/risk
+ * parent edge before L4 pruning ran. When it did, the focal is NOT exempted
+ * from the vulnerability drop: a real parent that L4 removed for being
+ * off-team must deny the focal like any other orphan, not wave it through
+ * merely because it is the one the caller named. The exemption is reserved
+ * for the genuinely parentless case (no asset/risk edge existed at all,
+ * $focalHasDeclaredParent === false) -- an untriaged finding with nothing to
+ * check visibility against, which is the only case ai_context_drop_orphaned()
+ * was ever meant to protect via $exemptNodeId.
  */
-function ai_context_drop_orphan_test_results(array $nodes, array $edges, ?string $focalNodeId = null): array
+function ai_context_drop_orphan_test_results(array $nodes, array $edges, ?string $focalNodeId = null,
+                                             bool $focalHasDeclaredParent = false): array
 {
     $dropped = ai_context_drop_orphaned($nodes, $edges, 'test_result', ['test'], $focalNodeId);
     $dropped = ai_context_drop_orphaned($dropped['nodes'], $dropped['edges'],
                                         'self_assessment_result', ['control'], $focalNodeId);
     // A vulnerability is visible through its asset OR its risk; it is dropped
-    // only when BOTH parents were removed by L4.
+    // only when BOTH parents were removed by L4 -- UNLESS it is the focal AND
+    // genuinely has no declared parent at all (see docblock above).
+    $vulnerabilityExemptId = $focalHasDeclaredParent ? null : $focalNodeId;
     return ai_context_drop_orphaned($dropped['nodes'], $dropped['edges'],
-                                    'vulnerability', ['asset', 'risk'], $focalNodeId);
+                                    'vulnerability', ['asset', 'risk'], $vulnerabilityExemptId);
 }
 
 /**

@@ -32,6 +32,13 @@ require_once(realpath(__DIR__ . '/../api/v2/includes/governance_controls.php'));
 // already states elsewhere. Required directly per CLAUDE.md's cross-file
 // reachability rule; the file and its own chain are pure function definitions.
 require_once(realpath(__DIR__ . '/compliance_grid.php'));
+// check_permission() -- SR-2099: build_soa_rows() gates the risk/compliance
+// cross-module fields it assembles (justification's risk citation,
+// evidence_items/remediation's test and risk identity) on riskmanagement/
+// compliance directly, since api_v2_governance_soa() only requires
+// "governance". Required directly per CLAUDE.md's cross-file reachability
+// rule rather than relied on transitively.
+require_once(realpath(__DIR__ . '/permissions.php'));
 
 /******************************************************************************
  * THE STATEMENT OF APPLICABILITY (spec §5.4a; ISO/IEC 27001:2022 clause 6.1.3(d))
@@ -1460,12 +1467,38 @@ function build_soa_rows(int $framework): array {
 
     $control_ids = array_map(static fn($c) => (int)$c['id'], $controls);
 
+    // SR-2099 / HackerOne #3960642: api_v2_governance_soa() gates this whole
+    // document on "governance" alone, but the row assembly below pulls in
+    // Risk Management and Compliance data (a linked risk's id, a compliance
+    // test's name/result/dates) that a governance-only caller is denied
+    // through the canonical /risks and /compliance APIs. Resolved once, here,
+    // and used both to starve `$risk_map` below (safe -- see its note) and to
+    // redact the already-derived rows further down (see that note for why
+    // evidence_items/remediation are NOT starved the same way).
+    $can_view_risk       = check_permission('riskmanagement');
+    $can_view_compliance = check_permission('compliance');
+
     // Deviations only — a control absent from this map is applicable, and
     // resolve_applicability() is what turns that absence into the answer.
     $decisions = get_framework_applicability_map($framework);
 
     $default_justification = soa_framework_default_justification($framework);
     $risk_map              = soa_risk_map($control_ids);
+
+    // `soa_justification_for()` below cites specific risk ids from
+    // `$risk_map` (via `$derivation['risk_ids']`) when a control is justified
+    // by its risk assessment -- disclosing a risk id/count a governance-only
+    // caller is denied through the canonical /risks API. `risk_ids` is read
+    // ONLY for that citation (see the note on it further down: "NO `risks`
+    // KEY" / "$risk_map is therefore still built and still read, through
+    // $derivation['risk_ids']"), so clearing the map here cannot change
+    // `implemented`, `evidence_absence` or any other governance-scoped part
+    // of the row -- those are derived solely from `$row['tests']` per the
+    // INPUT CONTRACT above.
+    if (!$can_view_risk) {
+        $risk_map = [];
+    }
+
     $document_map          = soa_document_map($control_ids);
     // THE TESTS, WITH THEIR LATEST RECORDED RESULTS — the input the whole
     // implementation-status derivation reads (see the INPUT CONTRACT above).
@@ -1711,6 +1744,45 @@ function build_soa_rows(int $framework): array {
         $order = strnatcasecmp($a['refs'][0] ?? '', $b['refs'][0] ?? '');
         return $order !== 0 ? $order : strnatcasecmp($a['control_number'], $b['control_number']);
     });
+
+    // SR-2099 / HackerOne #3960642, continued: `evidence_items`' "test" rows
+    // and `remediation`'s per-test/per-risk fields carry Compliance and Risk
+    // Management identifying data (a test's name/result/dates; a risk's id,
+    // mitigation owner and planning date) that this function has no gate for
+    // of its own. Unlike the `risk_map` clear above, `evidence_items` and
+    // `remediation` are NOT redacted at their source (`$test_map`): both
+    // `evidence_absence` and `implemented` for every row above were already
+    // derived from the SAME `tests` list (see the INPUT CONTRACT), so
+    // starving that source here would also change the applicability/
+    // implementation status a governance-only caller is entitled to see.
+    // Redacting the identifying fields AFTER derivation keeps that status
+    // — and the rest of the governance-scoped control view — unchanged.
+    if (!$can_view_compliance || !$can_view_risk) {
+        foreach ($rows as &$row) {
+            if (!$can_view_compliance) {
+                // Compliance test identity/verdict/dates.
+                $row['evidence_items'] = array_values(array_filter(
+                    $row['evidence_items'],
+                    static fn($item) => ($item['type'] ?? '') !== 'test'
+                ));
+            }
+
+            foreach ($row['remediation'] as &$plan) {
+                if (!$can_view_compliance) {
+                    unset($plan['test_name'], $plan['test_result'], $plan['summary'], $plan['last_date'], $plan['last_result_date']);
+                }
+                if (!$can_view_risk) {
+                    // Per-risk treatment plan (risk id, mitigation owner,
+                    // planning date, percent complete). `unplanned` is left
+                    // as-is -- it only says whether a plan exists, not what
+                    // the risk is.
+                    $plan['risks'] = [];
+                }
+            }
+            unset($plan);
+        }
+        unset($row);
+    }
 
     return $rows;
 }

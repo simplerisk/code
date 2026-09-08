@@ -17,7 +17,7 @@ require_once(realpath(__DIR__ . '/includes/artificial_intelligence.php'));
 // Define the localization keys required by certain scripts and if there's a match in the requested scripts then the required localizations will be made available for the script to use
 // In the script and the page using it you will be able to use _lang['localization_key'] in javascript.
 $localization_required_by_scripts = [
-    'CUSTOM:common.js' => ['Yes', 'Cancel', 'FieldRequired'],
+    'CUSTOM:common.js' => ['Yes', 'Cancel', 'FieldRequired', 'Remove'],
     'CUSTOM:sr-select.js' => ['NSelected', 'Search', 'NoMatchingOptions'],
     'EXTRA:JS:assessments:questionnaire_templates.js' => ['SelectedOnAnotherTab', 'ID', 'SelectedQuestions', 'SearchForQuestion', 'ConfirmDisableTabbedExperience', 'ConfirmDeleteTab', 'NewTab', 'Default', 'Actions', 'Required'],
     'CUSTOM:pages/plan-project.js' => ['AreYouSureYouWantToDeleteThisProject'],
@@ -26,6 +26,74 @@ $localization_required_by_scripts = [
     'blockUI' => ['ProcessingPleaseWait'],
     'UILayoutWidget' => ['WidgetType_chart', 'WidgetType_table', 'WidgetType_WYSIWYG', 'WidgetType_kpi', 'WidgetType_whats_next'],
     'CUSTOM:pages/governance.js' => ['ExistingMappings', 'Unassigned', 'DocumentName', 'DocumentType', 'ControlFrameworks', 'Controls', 'CreationDate', 'ApprovalDate', 'Status', 'All', 'ExceptionName', 'ID', 'Description', 'Justification', 'NextReviewDate'],
+    // Document Program grid redesign (js/simplerisk/pages/governance-documents.js, split out of governance.js -- Task 9)
+    'CUSTOM:pages/governance-documents.js' => ['DocumentProgram', 'Policies', 'Guidelines', 'Standards', 'Procedures', 'DocumentName', 'DocumentType', 'ControlFrameworks', 'Approver', 'Status', 'NextReviewDate', 'Actions', 'Submitter', 'UpdatedBy', 'Draft', 'InReview', 'Approved', 'Approve', 'Unapprove', 'ApproveSelected',
+        'SearchDocumentsPlaceholder', 'NoDocumentsYet', 'NoDocumentsYetBody', 'NoDocumentsMatchFilters', 'NoDocumentsMatchFiltersBody', 'ClearFilters', 'CouldNotLoadDocuments', 'CouldNotLoadDocumentsBody', 'Retry',
+        'ApproveDocumentQuestion', 'ApproveDocumentConfirmBody', 'UnapproveDocumentQuestion', 'UnapproveDocumentConfirmBody', 'ApproveSelectedDocumentsQuestion', 'ApproveSelectedDocumentsConfirmBody',
+        'DocumentApproved', 'DocumentUnapproved', 'DocumentsApproved', 'NoApproveDocumentationPermission', 'NSelected', 'Cancel', 'Clear', 'Show', 'SelectAll', 'Select', 'Edit', 'Delete', 'Download', 'YouNeedToSpecifyAnIdParameter', 'Previous', 'Next',
+        // Bulk delete (bulk bar's "Delete selected" action)
+        'DeleteSelected', 'AreYouSureYouWantToDeleteThisDocument', 'AreYouSureYouWantToDeleteTheseDocuments', 'DocumentsDeleted', 'SomeDocumentsNotDeleted',
+        // Filters row + Columns picker (design-system.md §6b/6c)
+        'Filters', 'ShowFilters', 'HideFilters', 'AllTypes', 'AllFrameworks', 'AllStatuses', 'AllApprovers',
+        'Overdue', 'DueSoon', 'OnTrack', 'NotScheduled', 'Columns', 'LastReviewDate', 'Controls', 'CreationDate', 'ApprovalDate',
+        // Version history row expander (design-system.md §6 row-expander pattern).
+        // 'EncryptionStatusVersion' reused for the "Version" column header --
+        // see the identical comment at its usage site in governance-documents.js.
+        'VersionHistory', 'EncryptionStatusVersion', 'Current', 'FileName', 'FileSize', 'UploadedBy', 'DeleteVersion',
+        'ConfirmDeleteVersionQuestion', 'ConfirmDeleteVersionConfirmBody', 'DocumentVersionDeleted', 'CouldNotLoadVersionHistory',
+    ],
+    // Customization Extra: Document Types / Fields / Template Groups / Template
+    // Assignment widgets (js/simplerisk/pages/customization.js). Extend this
+    // list in later tasks (8, 10, 12) as they add more L(...) calls to the
+    // same file -- do not create a second array entry for the same token.
+    'CUSTOM:pages/customization.js' => ['BuiltIn', 'CantDeleteSeededDocumentCategory', 'CantRenameSeededDocumentCategory', 'DocumentType', 'AddDocumentType', 'Required', 'Dropdown', 'MultiDropdown', 'ShortText', 'LongText', 'DateSelector', 'UserMultiDropdown', 'Hyperlink', 'AddTemplateGroup', 'UpdateTemplateGroup', 'CantDeleteDefaultTemplateGroup', 'AreYouSureYouWantToDeleteThisTemplateGroup', 'CloneTemplateGroup', 'AddFieldsToPrefix', 'AddFieldsHeading', 'FieldPickerHint', 'PickFieldToAdd', 'NoFieldsMatchSearchTerm', 'ClearSearch', 'NoCustomFieldsYet', 'AllCoreFieldsAddedToTab', 'AllCustomFieldsAddedToTemplate', 'FieldAddedToTab', 'FieldRemovedBackToList', 'NowAddingToTab', 'FieldCreatedAndAddedToTab', 'Template',
+        // Task 20: row-action icons on the field picker + delete confirm dialog
+        'DeleteCustomFieldTitle'],
+    // Document Program audit trail redesign (design-system.md §6/§7,
+    // js/simplerisk/pages/governance-document-audit-trail.js)
+    'CUSTOM:pages/governance-document-audit-trail.js' => [
+        'AuditTrail', 'Refresh', 'Export', 'AuditTrailDateAndTime', 'Document', 'Activity', 'User',
+        // 'EncryptionBackupCreatedAt' reused for the "Created" activity pill --
+        // see the identical comment at its usage site in
+        // governance-document-audit-trail.js's activityMeta.
+        'EncryptionBackupCreatedAt', 'Updated', 'Deleted', 'DeletedVersion', 'Approved', 'Unapproved', 'Downloaded', 'Uploaded',
+        'DateRange', 'PastWeek', 'PastMonth', 'PastQuarter', 'Past6Months', 'PastYear', 'AllTime',
+        'AllDocuments', 'AllActivities', 'AllUsers', 'DocumentName', 'ClearFilters', 'Filters', 'Columns',
+        'SearchAuditTrailPlaceholder', 'NoAuditLogEntries', 'NoAuditLogEntriesBody',
+        'NoAuditLogEntriesMatchFilters', 'NoAuditLogEntriesMatchFiltersBody',
+        'Show', 'All', 'Previous', 'Next', 'RequestFailed', 'By', 'UnknownUser',
+    ],
+    // Define Exceptions audit trail redesign (design-system.md §6/§7,
+    // js/simplerisk/pages/governance-exception-audit-trail.js) -- mirrors
+    // the Document Program audit trail above exactly.
+    'CUSTOM:pages/governance-exception-audit-trail.js' => [
+        'AuditTrail', 'Refresh', 'Export', 'AuditTrailDateAndTime', 'Exception', 'Activity', 'User',
+        // 'EncryptionBackupCreatedAt' reused for the "Created" activity pill --
+        // see the identical comment in governance-document-audit-trail.js's activityMeta.
+        'EncryptionBackupCreatedAt', 'Updated', 'Deleted', 'Approved', 'Unapproved',
+        'DateRange', 'PastWeek', 'PastMonth', 'PastQuarter', 'Past6Months', 'PastYear', 'AllTime',
+        'AllExceptions', 'AllActivities', 'AllUsers', 'ClearFilters', 'Columns',
+        'SearchAuditTrailPlaceholder', 'NoAuditLogEntries', 'NoAuditLogEntriesBody',
+        'NoAuditLogEntriesMatchFilters', 'NoAuditLogEntriesMatchFiltersBody',
+        'Show', 'All', 'Previous', 'Next', 'RequestFailed', 'By', 'UnknownUser',
+    ],
+    // Define Exceptions grid redesign (js/simplerisk/pages/governance-exceptions.js,
+    // split out of governance.js -- Task 11)
+    'CUSTOM:pages/governance-exceptions.js' => [
+        'Owner', 'FrameworkControl', 'AssociatedRisks', 'NextReviewDate', 'Control', 'Policy',
+        'Approved', 'Pending', 'View', 'Edit', 'Unapprove', 'Approve', 'Delete', 'Select', 'SelectAll',
+        'ExceptionName', 'Type', 'ExceptionStatus', 'ApprovalStatus', 'Actions',
+        'SearchExceptionsPlaceholder', 'NoExceptionsYet', 'NoExceptionsYetBody',
+        'NoExceptionsMatchFilters', 'NoExceptionsMatchFiltersBody', 'ClearFilters',
+        'CouldNotLoadExceptions', 'CouldNotLoadExceptionsBody', 'Retry', 'Previous', 'Next', 'NSelected',
+        'UnapproveExceptionQuestion', 'UnapproveExceptionConfirmBody',
+        'ApproveSelectedExceptionsQuestion', 'ApproveSelectedExceptionsConfirmBody', 'ApproveSelected',
+        'ApproveExceptionQuestion', 'ApproveExceptionConfirmBody',
+        'AreYouSureYouWantToDeleteTheseExceptions', 'AreYouSureYouWantToDeleteThisException',
+        'DeleteSelected', 'ExceptionsDeleted', 'SomeExceptionsNotDeleted',
+        // Filters row (design-system.md §6b/§6c)
+        'Filters', 'ControlFrameworks', 'AllTypes', 'AllFrameworks', 'AllControls', 'AllStates', 'AllStatuses', 'AllRisks',
+    ],
     'CUSTOM:pages/governance-frameworks.js' => ['AllControls', 'UnassignedControls', 'ControlNumber', 'ControlName', 'ControlFamily', 'Owner', 'Maturity', 'Status', 'Pass', 'Fail', 'NotTested', 'BelowMaturity', 'NoOwner', 'Unassigned', 'ShowingXToYOfZ', 'Controls', 'SearchControls', 'Filters', 'ClearFilters', 'AddControl', 'NSelected', 'ControlClass', 'ControlPhase', 'ControlPriority', 'ControlType', 'AnyFamily', 'AnyOwner', 'AnyClass', 'AnyPhase', 'AnyPriority', 'AnyType', 'AnyStatus', 'Description', 'SupplementalGuidance', 'MitigationPercent', 'SelectAllN', 'SelectAll', 'Clear', 'DeleteSelectedControls',
         // Task 8: modal wiring (row-action labels, destructive-confirm titles, generic API-failure fallback)
         'Edit', 'Delete', 'RequestFailed', 'DeleteFrameworkTitle', 'DeleteControlTitle', 'DeleteControlsTitle',
@@ -117,7 +185,20 @@ $localization_required_by_scripts = [
         // button's own title/aria-label, which has to name the object because
         // the rail and the control table both carry a Clone icon.
         'CloneFramework', 'CloneOfFrameworkTitle', 'ClonedFromFrameworkNotice',
-        'CloneOfFrameworkName', 'NewFramework'],
+        'CloneOfFrameworkName', 'NewFramework',
+        // Mapped Frameworks section in the row drawer (renderDrawer()) --
+        // restores the pre-redesign badge + lazy-loaded table
+        // (display_mapping_framework_view(), includes/governance.php).
+        // 'ReferenceName' names the OTHER framework's own control identifier
+        // -- deliberately not 'Control', which this page already uses
+        // throughout for OUR OWN control (ControlName, ControlNumber, etc.)
+        // and would read as a second, conflicting "Control" column here.
+        // 'Controls' is already registered above; 'MappedControlFrameworks',
+        // 'Framework', 'ReferenceName', 'ReferenceText', 'Frameworks' and
+        // 'Loading' (the section's initial AJAX-pending state) are existing
+        // lang.en.php keys not previously needed by this script.
+        'MappedControlFrameworks', 'Frameworks', 'Framework', 'ReferenceName', 'ReferenceText', 'Loading',
+        'CouldNotLoadMappedFrameworks', 'NoMappedFrameworksFound', 'SearchMappedFrameworks'],
     // Task 17: the Statement of Applicability report
     // (reports/statement_of_applicability.php). The page is a thin shell and
     // EVERY visible string is built by this script, so the whole document's
@@ -155,6 +236,8 @@ $localization_required_by_scripts = [
     'CUSTOM:pages/compliance.js' => ['AuditInitiationOffsetMustBeANonNegativeValue', 'AuditInitiationOffsetMustBeLessThanOrEqualToTestFrequency', 'AnchorDateMustBeTodayOrLater', 'TestSuccessCreated', 'RequestFailed', 'SuggestionDismissFailed', 'AreYouSureYouWantToApproveThisAudit', 'RejectCommentRequired', 'AtLeastOneControlRequired', 'AddOrRemove', 'Remove', 'CreateTagX', 'DeleteTestUsedByNControls', 'NoControlsMatchFilters', 'NoControlsSelectedYet', 'AllControls', 'AddOrRemoveControls', 'ChooseControls', 'Selected'],
     'CUSTOM:pages/compliance-define-tests.js' => ['Frameworks', 'Test', 'Tests', 'AddTest', 'NotTested', 'Retired', 'Edit', 'Delete', 'ScheduleManual', 'Overdue', 'DueSoon', 'Failing', 'Passing', 'Scheduled', 'NoTestsForThisControl', 'ShowingXToYOfZ', 'Previous', 'Next', 'All', 'Pass', 'Fail', 'Inconclusive', 'Framework', 'Control', 'Reference', 'NoFrameworksMapped', 'CouldNotLoadTests', 'Objective', 'TestSteps', 'ExpectedResults', 'Tester', 'ApproximateTime', 'Tags', 'minutes', 'minute', 'Retire', 'Restore', 'Select', 'NSelected', 'ConfirmRetireSelectedTests', 'ConfirmDeleteSelectedTests', 'BulkPartialFailure', 'RequestFailed', 'TestMethod', 'TestMethodInquiry', 'TestMethodObservation', 'TestMethodInspection', 'TestMethodReperformance', 'Sample', 'RequiredEvidence', 'Approvers', 'AllFrameworks', 'AllFamilies', 'AllTesters', 'ScheduleCalendar', 'ScheduleInterval', 'OverdueByXDays', 'OverdueByOneDay', 'DueInXDays', 'DueTomorrow', 'DueToday', 'ScheduledForX', 'Common', 'Controls', 'Description', 'ValidatesAcrossMappedFrameworks', 'EditTest', 'Archived', 'ControlHasNoTestCoverage', 'AddTheFirstTest', 'ApplyCommonTests', 'SelectOneOrMoreTests', 'CommonTestApplied', 'CommonTestsApplied', 'CouldNotApplyCommonTest', 'History', 'Date', 'Result', 'Approval', 'InProgress', 'Approved', 'Pending', 'Rejected', 'ThisTestHasNotBeenRunYet', 'CouldNotLoadTestHistory', 'Open', 'RemoveFromThisControl', 'RemoveTestFromControlConfirm', 'RemoveTestFromControlStays', 'RemoveTestFromControlStaysOne', 'TestRemovedFromControl', 'CouldNotRemoveTestFromControl', 'BulkDeleteSharedTestsNote', 'BulkRetireSharedTestsNote', 'BulkDeleteOneSharedTestNote', 'BulkRetireOneSharedTestNote', 'ViewTest', 'CouldNotLoadTest', 'NotSpecified', 'Teams', 'LastTestDate', 'NextTestDate', 'AdditionalStakeholders', 'AuditInitiationOffset', 'Cadence', 'AnchorDate', 'Close', 'TestName', 'Schedule', 'Identity', 'ProcedureAndEvidence', 'SearchMappings', 'NoMatchingMappings', 'Actions', 'ShowFilters', 'HideFilters', 'Create', 'Dismiss', 'ReviewAndEdit', 'AiSuggested', 'GenerateTestsWithAI', 'TestCreatedFromSuggestion', 'SuggestionDismissed', 'TestGenerationQueued', 'Generating', 'TestGenerationComplete', 'TestGenerationStillRunning', 'TestGenerationNoNew'],
     'CUSTOM:pages/assessment.js' => ['SimpleriskUsers', 'AssessmentContacts'],
+    // Data Integrity review/repair page controller (data-integrity.js).
+    'CUSTOM:pages/data-integrity.js' => ['DataIntegrityTotalCount', 'Repair', 'DataIntegrityRecordLocation', 'Selected', 'Open', 'RequestFailed', 'DataIntegrityShowingCapped'],
     'CUSTOM:dynamic.js' => ['Risk', 'Mitigation', 'Review', 'RiskScoring', 'Unassigned', 'RiskMapping', 'Remove', 'NoColumnsSelected'],
     'CUSTOM:pages/connectivity-visualizer.js' => ['SearchEntities', 'SearchEntitiesPlaceholder', 'ShowTypes', 'Depth', 'Inspector', 'Connections', 'NoConnectionsFound', 'CouldNotLoadGraph', 'CouldNotSearchEntities', 'ShowingTopNOfM', 'RankedByMaturityGap', 'RankedByRiskScore', 'RankedByRecentFailure', 'RankedByReviewDate', 'RankedBySeverity', 'RankedByName', 'RiskCatalog', 'ThreatCatalog', 'Vulnerability', 'Audit', 'TestResult', 'NodeTypeSelfAssessmentResult', 'Relationship', 'CurrentMaturity', 'DesiredMaturity', 'ControlFamily', 'ApprovalState', 'ApprovalStatus', 'Manager', 'Approver', 'Tester', 'AssetValuation', 'Verified', 'Risk', 'Asset', 'Framework', 'Control', 'Test', 'Document', 'Exception', 'Name', 'Type', 'Status', 'Approved', 'Owner', 'RequestFailed', 'All', 'Close', 'RelationshipOfType', 'MitigationPercent', 'Objective', 'TestSteps', 'ExpectedResults', 'DesiredFrequency', 'LastDate', 'LastResult', 'LastResultDate', 'CalculatedRisk', 'Justification', 'NextReviewDate', 'PercentComplete', 'Response', 'AssessmentDate', 'FrameworkName', 'Score', 'Playbook', 'Severity', 'NextDate', 'ControlID', 'TestID', 'Number', 'Grouping', 'Description', 'Hidden', 'RiskId', 'FirstFound', 'LastFound', 'Patchable', 'Solution', 'Platform', 'Breadcrumb', 'SelectANodeToInspect', 'HiddenUnreachableNodes', 'BrowsableEntityTypes', 'CountFloor', 'NoBrowsableTypes', 'AllTypes', 'FilterEntitiesPlaceholder', 'NoMatchingEntities', 'LoadMore', 'Loading', 'CouldNotLoadEntityCounts', 'CouldNotLoadEntities', 'ClearGraph'],
 ];

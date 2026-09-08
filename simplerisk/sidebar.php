@@ -21,7 +21,7 @@ require_once(realpath(__DIR__ . '/includes/artificial_intelligence.php'));
         }
     ?>
                     <ul aria-expanded="false" class="collapse first-level <?= ($active_sidebar_menu =='Governance')?'in':''; ?>">
-                        <li class="sidebar-item <?= ($active_sidebar_submenu =='index')?'active':''; ?>">
+                        <li class="sidebar-item <?= ($active_sidebar_submenu =='DefineControlFrameworks')?'active':''; ?>">
                             <a href="../governance/index.php" class="sidebar-link">
                                 <span class="hide-menu"><?= $escaper->escapeHtml($lang['DefineControlFrameworks']);?></span>
                             </a>

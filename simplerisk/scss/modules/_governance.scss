@@ -274,3 +274,432 @@
   &--other{ width: 45px; }
 }*/
 
+// Document Program audit trail (design-system.md §6/§7): a plain disclosure
+// row replacing the legacy Bootstrap accordion's chrome -- see
+// js/simplerisk/pages/governance-document-audit-trail.js and the
+// #document-audit-trail markup in governance/documentation.php. Everything
+// else (the card shell, toolbar, filters row, table, footer) reuses shipped
+// .sr-table-card components from _tables.scss as-is; this toggle button is
+// the one piece genuinely new to this page.
+.sr-audit-trail-toggle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: none;
+    border: 0;
+    padding: 0;
+    margin: 0;
+    cursor: pointer;
+    font: inherit;
+    color: inherit;
+    text-align: left;
+
+    &:hover .sr-table-title {
+        color: $sr-important;
+    }
+}
+
+.sr-audit-trail-caret {
+    color: $gray-500;
+    font-size: 12px;
+    transition: transform .15s ease;
+}
+
+.sr-audit-trail-toggle[aria-expanded="true"] .sr-audit-trail-caret {
+    transform: rotate(90deg);
+}
+
+// Deep link to the Customization Extra's Document Types manager (Task 6),
+// a plain-text icon link living beside the type filter in .sr-qf-selects
+// (_tables.scss) rather than a styled button -- it's a "by the way, here's
+// where to manage these" affordance, not a primary action. Muted like the
+// row-expander caret above until hovered, matching _tables.scss's
+// .sr-history-link convention for the same "quiet until reached for" intent.
+.sr-manage-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 12.5px;
+    color: $gray-600;
+    text-decoration: none;
+
+    &:hover {
+        color: $sr-important;
+    }
+}
+
+// display_audit_download_btn() (extras/import-export/index.php) renders a
+// shared, UNSCOPED global trigger (.download-btn in scss/custom.scss -- a
+// circular Excel-green icon button used by several pages) alongside the
+// hidden form/CSRF machinery this card's real Export submission still
+// relies on unmodified. Hiding it HERE, scoped to this card only, keeps
+// every other consumer of the shared component untouched while this page
+// shows its own `.sr-table-filter`-styled "Export" button instead
+// (#document-audit-trail-export in js/simplerisk/pages/
+// governance-document-audit-trail.js, which proxies a click onto this
+// hidden original).
+.sr-audit-trail-card .audit-download-folder .download-btn {
+    display: none;
+}
+
+// Document Program grid row expander (design-system.md §6 "Row expander"):
+// version history. The caret shares a cell with the document name (Define
+// Control Frameworks' own reference placement, governance-frameworks.js),
+// reusing the shipped .sr-group-caret icon component (_tables.scss) for
+// its size/color/transition -- but that shared rule was written against
+// Define Tests' <span> caret, which has no user-agent chrome to begin
+// with. A real <button> (kept for its own keyboard operability/
+// aria-expanded, same reasoning) does: a browser-default background, a 3D
+// "outset" border, and its own padding, none of which the shipped rule
+// neutralises. _governance-frameworks.scss hit this exact gap already
+// (Task 23 -- "rendered as a grey 3D box around the chevron instead of a
+// bare icon") and its fix is copied verbatim here, ID-scoped to this
+// table rather than a bare `.sr-group-caret { ... }` rule for the same
+// reason that file gives: a bare rule compiles into the shared bundle
+// every other .sr-group-caret consumer (Define Tests, Self-Assessment,
+// Define Control Frameworks) draws from, and would reset chrome on
+// carets that never had any to reset.
+#document-program-table .sr-group-caret {
+    background: none;
+    border: 0;
+    padding: 0;
+    appearance: none;
+    font: inherit;
+    line-height: 1;
+    cursor: pointer;
+
+    // Chrome is gone, but this is a real focusable control -- removing the
+    // UA default outline along with the rest of the chrome must not remove
+    // focus visibility for keyboard users.
+    &:focus-visible {
+        outline: 2px solid $sr-important;
+        outline-offset: 1px;
+    }
+}
+
+// The shipped rotate-on-expand rule keys off the ANCESTOR row's
+// aria-expanded (tr.sr-group-row[aria-expanded="true"] .sr-group-caret)
+// because Define Tests puts aria-expanded on the row; this button carries
+// its own aria-expanded instead (the correct target per ARIA authoring
+// practice for a real button, same as Define Control Frameworks' identical
+// caret), so that ancestor-keyed selector never matches here -- this
+// re-targets the same rotate/color treatment at the button's own state.
+#document-program-table .sr-group-caret[aria-expanded="true"] {
+    transform: rotate(90deg);
+    color: $sr-primary;
+}
+
+// Caret + name cell (see the comment at its markup, governance-documents.js
+// rowHtml()) -- same align-items:center + gap shape as the shipped
+// .sr-group-main, deliberately NOT that class: its flex-wrap: wrap is
+// right for Define Tests' multi-chip group row, wrong for a plain
+// two-item pairing, where it sent a merely-long document name to a whole
+// second line under the caret instead of letting the text wrap/truncate
+// in its own box.
+.sr-doc-namecell {
+    display: inline-flex;
+    align-items: center;
+    flex-wrap: nowrap;
+    gap: 8px;
+    min-width: 0;
+}
+
+// The panel itself: a soft info tint (the same family §7 uses for "state,
+// not severity" — this is reference information, not a status judgement),
+// so it reads at a glance as a distinct, secondary surface rather than more
+// grid. Deliberately NOT .sr-expand-panel's own plain white (see the
+// comment on that shared rule, _tables.scss) -- that's the right default
+// for Define Tests' read-only procedure text, but a version list benefits
+// from visually announcing "you've dropped into something else."
+.sr-version-history-panel {
+    background: rgba($info, .06);
+    // Defensive, not tier-gated: the inner table's own width: auto (below)
+    // sizes it to content, and on a narrow queue-tier card a long file name
+    // can still push that content past the panel -- scroll the panel itself
+    // rather than let it force the outer row (and the card) wider.
+    overflow-x: auto;
+}
+
+// The shared `tbody tr:hover:not(.sr-expand-row) { background: $gray-100; }`
+// rule (_tables.scss) is written for Define Tests' hand-built detail row,
+// which carries a real `.sr-expand-row` class the rule can :not() around.
+// DataTables' own row.child() API (used here) generates its wrapper <tr>
+// itself with NO class at all -- only a `data-dt-row` attribute -- so
+// `:not(.sr-expand-row)` never excludes it and the whole panel row (not just
+// the inner .sr-version-history-table fixed above) still tints grey on
+// hover. Target that generated wrapper directly; #document-program-table's
+// ID outranks the shared rule's class-only specificity regardless of the
+// attribute-selector's own count.
+#document-program-table tbody > tr[data-dt-row]:hover {
+    background: none;
+}
+
+// The table itself stays a clean white card floating on that tint, rather
+// than tinted all the way down to the cell borders -- keeps the version
+// rows/text as legible as the rest of the grid while the panel's own tint
+// still does the "this is a different zone" signalling.
+.sr-version-history-table {
+    // NOT width: 100% -- the parent .sr-expand-panel spans the OUTER
+    // grid's full column width (this table lives in a DataTables child
+    // row, design-system.md §6), 14 columns' worth and wider than this
+    // table's own 5 narrow ones need. width: 100% stretched version/size/
+    // date columns across that whole span with huge empty gaps between
+    // them instead of sizing to content -- auto lets it size like any
+    // normal table and simply stop where its content ends.
+    width: auto;
+    max-width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    background: $sr-body;
+    border: 1px solid $gray-300;
+
+    th {
+        text-align: left;
+        font-size: 11px;
+        font-weight: 800;
+        letter-spacing: .03em;
+        text-transform: uppercase;
+        color: $gray-600;
+        padding: 6px 10px;
+        background: $gray-100;
+        border-bottom: 1px solid $gray-300;
+    }
+
+    td {
+        padding: 7px 10px;
+        border-bottom: 1px solid $gray-200;
+        vertical-align: middle;
+    }
+
+    tr:last-child td {
+        border-bottom: none;
+    }
+
+}
+
+// Overrides the shared `table.dataTable tbody tr:hover:not(.sr-expand-row) {
+// background: $gray-100; }` rule (_tables.scss) -- that generic descendant
+// selector reaches into this table's OWN <tbody> too (it lives inside a
+// DataTables child row, itself a descendant of #document-program-table's
+// tbody -- CSS descendant combinators don't stop at the nested table's own
+// boundary), tinting a version row on hover even though nothing here is
+// clickable/actionable as a whole row (only the download/delete icons are).
+// A plain, dense reference list reads better with no hover state at all.
+//
+// The shared rule's specificity is (0,0,4,3) -- .sr-table-card + .dataTable +
+// :hover + :not(.sr-expand-row)'s class argument = 4 classes, table+tbody+tr
+// = 3 elements -- which beats a bare `.sr-version-history-table tbody
+// tr:hover` override (0,0,2,2) outright regardless of source order. Scoping
+// through the #document-program-table ID (as the caret rule above already
+// does) outranks any number of classes, so the override actually wins.
+#document-program-table .sr-version-history-table tbody tr:hover {
+    background: none;
+}
+
+.sr-version-current-badge {
+    display: inline-flex;
+    align-items: center;
+    margin-left: 6px;
+    padding: 1px 7px;
+    border-radius: 999px;
+    background: rgba($success, .12);
+    color: darken($success, 15%);
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: .03em;
+    text-transform: uppercase;
+}
+
+// Always-visible (not hover-revealed like the main grid's .sr-row-actions) --
+// see the identical comment in renderVersionHistory(), js/simplerisk/pages/
+// governance-documents.js.
+.sr-version-actions {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+// ===== Document Program grid: compact/queue tiers (design-system.md §6b) ==
+//
+// Measured, not guessed, per that section's own rule: with all 9 optional
+// columns visible the table's natural content width is ~1728px (a detached
+// clone measured at table-layout: auto). Add the shell's own ~290px
+// (sidebar + page padding + card inset — design-system.md's own number for
+// this exact fixed-sidebar shape) and "full tier, no scroll" needs north of
+// a 2000px BROWSER window — not a viewport size any real user sits at.
+// Define Tests hit the identical lesson with its own 1500px first guess
+// ("it doesn't [buy enough width]" — see sr-dt-fold-ids-tier's comment
+// above): the fix there was folding earlier and harder than intuition
+// suggested, which is the same fix here, just against this table's own
+// column set instead of Define Tests'.
+//
+// Reuses the EXISTING data-col infrastructure verbatim -- the same
+// attribute the Columns picker already toggles (design-system.md §6c,
+// applyColumnVisibility() in governance-documents.js). No new markup: a
+// column hidden by either mechanism is hidden the same way, and jQuery's
+// .toggle(true) clears its own inline override rather than forcing one, so
+// it never fights this stylesheet rule for a column the viewer re-enables.
+//
+// Compact folds in two steps. Provenance detail goes first -- Submitter,
+// Approval Date, Updated By, Creation Date, Last Review are history, not
+// "does this need me today" -- and Controls follows one step later: SR-180's
+// control links live in that column, and a 1920px desktop (CI's viewport,
+// and the most common wide monitor) must still show them. Document Type,
+// Control Frameworks, Status, Approver and Next Review Date -- the fields
+// that actually answer design-system.md §6b's question -- stay at every
+// tier down to Queue.
+//
+// 2000px for the first step, not 1800px: the arithmetic above (~1728px of
+// columns + ~290px of shell) is the boundary, and 1800 sat BELOW it.
+// Measured live at a 1920px viewport with the sidebar expanded, the
+// full-tier table was 1835px wide inside a 1630px card -- the Actions column
+// sat off-canvas and needed a horizontal scroll of .sr-table-scroll to
+// reach, which is exactly the regression document-program.spec.ts's
+// SCENARIO-8 guards against. Folding the five provenance columns (~590px
+// at natural width) leaves ~1250px, which fits that card with room to
+// spare while Controls stays on screen for SCENARIO-4's control-link check.
+@media (max-width: 2000px) {
+    // !important: DataTables/applyColumnVisibility() (governance-documents.js)
+    // set column visibility via jQuery's .toggle(), which -- confirmed live,
+    // not assumed -- writes an EXPLICIT inline `style="display: table-cell"`
+    // rather than clearing the attribute, for both <th> and <td>. An inline
+    // style always wins over a stylesheet rule regardless of selector
+    // specificity, so a plain `display: none` here would silently do
+    // nothing (and did, the first time this was written without it) the
+    // instant the grid finished its own render pass.
+    #document-program-table {
+        [data-col="submitter"],
+        [data-col="approval_date"],
+        [data-col="updated_by"],
+        [data-col="creation_date"],
+        [data-col="last_review"] {
+            display: none !important;
+        }
+    }
+}
+
+// Second compact step: below the original 1800px boundary Controls folds
+// too, so every width that was compact before keeps exactly the column set
+// it had.
+@media (max-width: 1800px) {
+    #document-program-table {
+        [data-col="controls"] {
+            display: none !important; // same inline-style override, see above
+        }
+    }
+}
+
+// Queue: past the point where even the compact set fits, Control
+// Frameworks is next -- a document's own name plus its Type/Status/
+// Approver/Next Review is still a complete, scannable row; which
+// framework(s) map to it is detail reachable by opening the row.
+@media (max-width: 1100px) {
+    #document-program-table {
+        [data-col="frameworks"] {
+            display: none !important; // same inline-style override, see above
+        }
+    }
+}
+
+// ===== The queue tier proper (design-system.md §6b) ========================
+// Below 900px the remaining 7 columns (check, name, type, status, approver,
+// next review, actions) still don't fit a card that's now under ~700px --
+// measured, not guessed: at 768px the flat table stayed pinned at ~768px of
+// natural content width against a 674px card, forcing an internal horizontal
+// scrollbar inside .sr-table-scroll that clipped column headers. No column
+// arrangement survives that; the row stops being a row and becomes a
+// stacked block, following Define Tests' own reference construction
+// (_tables.scss's sr-dt-queue-tier) exactly: real <tr>/<td>s turned into a
+// CSS Grid, nothing removed from the DOM, so sorting/selecting/expanding all
+// keep working untouched -- only the row's visual arrangement changes.
+//
+//   [x]  Name ................................... [...]
+//        [status pill]     [next review chip]
+//        [type]            [approver]
+//
+// The caret already lives INSIDE the name cell here (unlike Define Tests'
+// separate .sr-caret-col -- see rowHtml()'s own comment in governance-
+// documents.js), so there is no third leading column to place; the grid is
+// checkbox / content-A / content-B / actions, four tracks instead of five.
+@mixin sr-document-program-queue-tier {
+
+    #document-program-table thead {
+        display: none;
+    }
+
+    #document-program-table,
+    #document-program-table tbody,
+    #document-program-table tr {
+        display: block;
+        width: auto;
+    }
+
+    #document-program-table tbody > tr.sr-doc-row {
+        display: grid;
+        grid-template-columns: 26px minmax(0, auto) minmax(0, 1fr) 34px;
+        align-items: center;
+        gap: 5px 8px;
+        padding: 10px 12px;
+
+        > td {
+            display: block;
+            padding: 0;
+            border: 0;
+        }
+
+        // The 1800px/1100px folds above already hide these six by name --
+        // re-asserted here so the queue tier's own blanket `> td { display:
+        // block }` two rules up can never resurrect one of them by accident
+        // if this mixin is ever reordered ahead of those.
+        > [data-col="controls"],
+        > [data-col="submitter"],
+        > [data-col="approval_date"],
+        > [data-col="updated_by"],
+        > [data-col="creation_date"],
+        > [data-col="last_review"],
+        > [data-col="frameworks"] {
+            display: none;
+        }
+
+        .sr-check-col   { grid-area: 1 / 1; }
+        .sr-doc-name-col { grid-area: 1 / 2 / 2 / 4; }
+
+        .sr-actions-col {
+            grid-area: 1 / 4;
+            width: auto;
+            justify-self: end;
+        }
+
+        .sr-doc-status-col     { grid-area: 2 / 2; }
+        [data-col="next_review"] { grid-area: 2 / 3; justify-self: start; }
+        [data-col="document_type"] { grid-area: 3 / 2; }
+        [data-col="approver"]      { grid-area: 3 / 3; justify-self: start; }
+
+        // Restored at this width -- lines in the block now, not columns
+        // competing with the others for a shared table width.
+        [data-col="document_type"],
+        [data-col="approver"] {
+            display: block;
+            font-size: 12px;
+            color: $gray-600;
+        }
+
+        .sr-doc-namecell {
+            font-size: 13.5px;
+        }
+    }
+
+    // The version-history expand row (DataTables' own row.child() wrapper --
+    // see the hover-fix comment above; it carries no class, only
+    // data-dt-row) spans the block rather than sitting in the grid.
+    #document-program-table tbody > tr[data-dt-row] > td {
+        display: block;
+        padding: 0 12px 12px;
+        border: 0;
+    }
+}
+
+@media (max-width: 900px) {
+    @include sr-document-program-queue-tier;
+}
+

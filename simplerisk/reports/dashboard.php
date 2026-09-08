@@ -10,6 +10,9 @@
 
     // Include required functions file
     require_once(realpath(__DIR__ . '/../includes/reporting.php'));
+    // sanitize_requested_teams() is defined here -- require it directly
+    // rather than relying on reporting.php's transitive include.
+    require_once(realpath(__DIR__ . '/../includes/functions.php'));
 
     $teamOptions = get_teams_by_login_user();
     array_unshift($teamOptions, array(
@@ -17,15 +20,10 @@
         'name' => $lang['Unassigned'],
     ));
 
-    $teams = [];
-    // Get teams submitted by user
-    if (isset($_GET['teams'])) {
-        $teams = array_filter(explode(',', $_GET['teams']), 'ctype_digit');
-    } elseif (is_array($teamOptions)) {
-        foreach ($teamOptions as $teamOption) {
-            $teams[] = (int)$teamOption['value'];
-        }
-    }
+    // Restrict any client-submitted team ids to the ones this user can
+    // actually see -- otherwise a requester could name another team's id
+    // and pull that team's risk data regardless of their own team access.
+    $teams = sanitize_requested_teams($teamOptions, $_GET['teams'] ?? null);
 
 ?>
 <div class="card-body border my-2">

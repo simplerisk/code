@@ -1482,6 +1482,76 @@
     p:last-child { margin-bottom: 0; }
 }
 
+// Name-column mapped-frameworks badge (mappedFrameworksBadge(),
+// governance-frameworks.js) -- composes the shipped .sr-table-count pill
+// (_tables.scss, scoped to .sr-table-card -- #sr-ctl-table already carries
+// that class) exactly as the rail's .sr-fw-origin chip does above: this rule
+// adds only what makes a PILL sit correctly beside a name and READ as a
+// button, nothing .sr-table-count already sets.
+.sr-ctl-mapped-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    margin-left: 6px;
+    vertical-align: middle;
+    cursor: pointer;
+    font: inherit;                    // reset the <button> UA default
+    &:focus-visible { outline: 2px solid $sr-important; outline-offset: 1px; }
+}
+
+// Mapped Frameworks drawer section (renderMappedFrameworksBlock(),
+// governance-frameworks.js) -- restores display_mapping_framework_view()
+// (includes/governance.php) inside the shipped .sr-dl-block shell.
+.sr-mapped-fw-header {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    width: 100%;
+    background: none;
+    border: 0;
+    padding: 0;
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+    color: inherit;
+    &:focus-visible { outline: 2px solid $sr-important; outline-offset: 1px; }
+}
+.sr-mapped-fw-count { margin-left: auto; }
+// Only the chevron rotates -- contrast .sr-group-caret, where the whole
+// button IS the icon. Keyed off the header BUTTON's own aria-expanded
+// (ARIA authoring practice for a real button), same targeting rationale as
+// #sr-ctl-table .sr-group-caret[aria-expanded="true"] above.
+.sr-mapped-fw-caret {
+    transition: transform $transitions;
+    color: $gray-600;
+}
+.sr-mapped-fw-header[aria-expanded="true"] .sr-mapped-fw-caret {
+    transform: rotate(90deg);
+    color: $sr-primary;
+}
+.sr-mapped-fw-body {
+    margin-top: .6rem;
+    .sr-mapped-fw-search { margin-bottom: .5rem; font-size: 13px; }
+}
+.sr-mapped-fw-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12.5px;
+    th, td {
+        text-align: left;
+        padding: .35rem .5rem;
+        border-bottom: 1px solid $gray-300;
+        vertical-align: top;
+    }
+    th {
+        font-size: 10.5px;
+        font-weight: 800;
+        letter-spacing: .05em;
+        text-transform: uppercase;   // §2 carve-out: caps come from CSS
+        color: $gray-600;
+    }
+}
+
 // ===== Selection + contextual bulk bar (Task 7) =============================
 // The bar itself, its count, its actions cluster, and the checkbox column
 // are the SHIPPED design-system §6 pattern -- .sr-bulk-bar / .sr-bulk-count /

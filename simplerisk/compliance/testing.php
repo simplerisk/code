@@ -32,7 +32,15 @@
     if (isset($_POST['test_result'])) {
 
         // check permission
-        if (!isset($_SESSION["modify_audits"]) || $_SESSION["modify_audits"] != 1) {
+        // SR-2101: this submission also writes risk associations
+        // (associate_exist_risk_ids / associate_new_risk_id /
+        // remove_associated_risk, all handled inside submit_test_result())
+        // just like view_test.php's past-audit handler does -- and that
+        // handler requires riskmanagement in addition to modify_audits.
+        // Without the same check here, a tester who has modify_audits but
+        // had riskmanagement revoked could still POST a remembered risk id
+        // and recreate a risk relationship the UI no longer shows them.
+        if (!isset($_SESSION["modify_audits"]) || $_SESSION["modify_audits"] != 1 || !check_permission("riskmanagement")) {
             set_alert(true, "bad", $lang['NoPermissionForThisAction']);
             refresh();
         }

@@ -10,6 +10,9 @@ $breadcrumb_title_key = 'ProfileDetails';
 $title = 'SimpleRisk: Enterprise Risk Management Simplified';
 require_once(realpath(__DIR__ . '/../sidebar.php'));
 
+// Include required functions file
+require_once(realpath(__DIR__ . '/../includes/alerts.php'));
+
 // Add various security headers
 add_security_headers();
 
@@ -60,7 +63,7 @@ if (isset($_POST['change_password']))
                     add_last_password_history($_SESSION["uid"], $old_data["salt"], $old_data["password"]);
 
                     // Clean up other sessions of the user and roll the current session's id
-                    kill_other_sessions_of_current_user();
+                    $sessions_cleared = kill_other_sessions_of_current_user();
 
                     // Expire any active password reset tokens for this user
                     $user_info = get_user_by_id($_SESSION["uid"]);
@@ -69,6 +72,7 @@ if (isset($_POST['change_password']))
 
                     // Display an alert
                     set_alert(true, "good", $lang['PasswordUpdated']);
+                    alert_if_sessions_not_cleared($sessions_cleared);
 
                     // Redirect to the reports page
                     header("Location: ../reports");

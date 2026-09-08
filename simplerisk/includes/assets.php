@@ -252,20 +252,20 @@ function add_asset_by_name_with_forced_verification($name, $verified = false) {
 /***********************
  * FUNCTION: ADD ASSET *
  ***********************/
-function add_asset($ip, $name, $value=5, $location="", $teams="", $details = "", $tags = "", $verified = false, $mapped_controls=[], $associated_risks = [], $imported = false)
+function add_asset($ip, $name, $value=5, $location="", $teams="", $details = "", $tags = "", $verified = false, $mapped_controls=[], $associated_risks = [], $imported = false, $template_group_id = null)
 {
     global $lang;
 
     // If the asset does not already exist
     if (!asset_exists($name)) {
-    
+
         // Trim whitespace from the name, ip, and value
         $name   = trim($name);
         $ip     = trim($ip);
         $value  = trim($value);
         $location   = is_array($location) ? implode(',', $location) : $location;
         $teams   = is_array($teams) ? implode(',', $teams) : $teams;
-        
+
         if (!$name) {
             return false;
         }
@@ -281,10 +281,18 @@ function add_asset($ip, $name, $value=5, $location="", $teams="", $details = "",
             $verified = true;
         }
 
+        // Resolve (and validate, when explicitly submitted) the
+        // template_group_id this asset is created under. See
+        // resolve_template_group_id() in the Customization Extra for the
+        // fallback/ownership rules; the Core guard only loads that file when
+        // the Extra is actually active, so this never fatals on an install
+        // without it.
+        $template_group_id = resolve_template_group_id_from_core('asset', $template_group_id);
+
         // Open the database connection
         $db = db_open();
 
-        $stmt = $db->prepare("INSERT INTO `assets` (ip, name, value, location, teams, details, verified) VALUES (:ip, :name, :value, :location, :teams, :details, :verified) ON DUPLICATE KEY UPDATE `ip`=:ip, `value`=:value, `location`=:location, `teams`=:teams, `details`=:details, `verified`=:verified;");
+        $stmt = $db->prepare("INSERT INTO `assets` (ip, name, value, location, teams, details, verified, template_group_id) VALUES (:ip, :name, :value, :location, :teams, :details, :verified, :template_group_id) ON DUPLICATE KEY UPDATE `ip`=:ip, `value`=:value, `location`=:location, `teams`=:teams, `details`=:details, `verified`=:verified;");
         $stmt->bindParam(":ip", $ip_encrypted, PDO::PARAM_STR);
         $stmt->bindParam(":name", $name_encrypted, PDO::PARAM_STR);
         $stmt->bindParam(":value", $value, PDO::PARAM_INT, 2);
@@ -292,6 +300,7 @@ function add_asset($ip, $name, $value=5, $location="", $teams="", $details = "",
         $stmt->bindParam(":teams", $teams, PDO::PARAM_STR);
         $stmt->bindParam(":details", $details_encrypted, PDO::PARAM_STR);
         $stmt->bindParam(":verified", $verified, PDO::PARAM_INT);
+        $stmt->bindParam(":template_group_id", $template_group_id, PDO::PARAM_INT);
         $stmt->execute();
 
         $asset_id = $db->lastInsertId();
@@ -509,15 +518,41 @@ function update_asset_risks_associations($asset_id, $associated_risks) {
     // Open the database connection
     $db = db_open();
 
-    // Resolve before the DELETE below removes the rows we would need to read.
+    // Resolve before any mutation -- also needed for the AI cache invalidation
+    // list below. Deliberately unfiltered by Team Separation: cache
+    // invalidation is system bookkeeping, not a user-facing read (see
+    // risks_associated_with()'s docblock), and it includes indirect
+    // (asset-group) risk associations that this function never writes to.
     $previously_associated = risks_associated_with('asset', (int)$asset_id, $db);
 
-    // Delete all associations for the asset
-    $stmt = $db->prepare("DELETE FROM `risks_to_assets` WHERE `asset_id` = :asset_id;");
-    $stmt->bindParam(":asset_id", $asset_id, PDO::PARAM_INT);
-    $stmt->execute();
+    // SR-2027: every caller of this function has already authorized the
+    // asset itself (check_access_for_asset()), but not the risk ids being
+    // attached to -- or detached from -- it. Without a per-risk check here, a
+    // caller with only Asset permission could use their asset-edit access to
+    // create, or silently remove, a cross-team risk<->asset edge for a risk
+    // they cannot see. filter_accessible_risk_ids() authorizes each risk id
+    // individually and drops any risk the caller cannot see -- fail-open when
+    // Team Separation is off, so behavior is unchanged on the base product.
+    $authorized_risks = filter_accessible_risk_ids($associated_risks);
 
-    foreach($associated_risks as $risk_id){
+    // Only remove the direct associations the caller can actually see. A
+    // wholesale DELETE would let a caller unlink a hidden cross-team risk
+    // simply by omitting it from $associated_risks.
+    $current_direct_risks = get_associated_risks_for_asset($asset_id);
+    $removable_risks = filter_accessible_risk_ids($current_direct_risks);
+
+    if (!empty($removable_risks)) {
+        $placeholders = implode(',', array_fill(0, count($removable_risks), '?'));
+        $stmt = $db->prepare("DELETE FROM `risks_to_assets` WHERE `asset_id` = ? AND `risk_id` IN ($placeholders);");
+        $stmt->bindValue(1, $asset_id, PDO::PARAM_INT);
+        $i = 2;
+        foreach ($removable_risks as $risk_id) {
+            $stmt->bindValue($i++, (int)$risk_id, PDO::PARAM_INT);
+        }
+        $stmt->execute();
+    }
+
+    foreach($authorized_risks as $risk_id){
         $stmt = $db->prepare("INSERT INTO `risks_to_assets` (asset_id, risk_id) VALUES (:asset_id, :risk_id);");
         $stmt->bindParam(":asset_id", $asset_id, PDO::PARAM_INT);
         $stmt->bindParam(":risk_id", $risk_id, PDO::PARAM_INT);
@@ -527,7 +562,7 @@ function update_asset_risks_associations($asset_id, $associated_risks) {
     // Both sides of the swap changed: risks that lost the asset and risks that
     // gained it.
     ai_invalidate_risk_analysis(
-        array_merge($previously_associated, array_map('intval', $associated_risks)),
+        array_merge($previously_associated, $authorized_risks),
         $db
     );
 
@@ -578,6 +613,18 @@ function save_control_to_assets($control_id, $mapped_assets)
                 $type = 'asset';                
             } else {
                 //Invalid input
+                continue;
+            }
+
+            // SR-2032: $id here is client-controlled (posted as
+            // "<id>_asset"/"<id>_group" in $mapped_assets). The caller's
+            // Modify Controls permission authorizes acting on the control,
+            // not on an arbitrary cross-team asset id, so a Team A user with
+            // only control-management access could otherwise map -- and
+            // thereby disclose -- a hidden Team B asset. check_access_for_
+            // asset() is fail-open when Team Separation is off, so behavior
+            // is unchanged on the base product.
+            if ($type=='asset' && !check_access_for_asset($id)) {
                 continue;
             }
 
@@ -3385,7 +3432,7 @@ function get_assets_and_asset_groups_by_control_for_dropdown($control_id = false
                 `assets` a " .
     ($control_id ? "LEFT OUTER JOIN `control_to_assets` cta ON `cta`.`asset_id` = `a`.`id` and `cta`.`control_id` = :control_id" . ($filter_by_maturity ? " and cta.control_maturity = :control_maturity " : "") : "") . "
             WHERE
-                `a`.`verified` = 1" . ($control_id ? " or `cta`.`asset_id` IS NOT NULL" : "") . " {$team_based_separation_where_condition}
+                (`a`.`verified` = 1" . ($control_id ? " or `cta`.`asset_id` IS NOT NULL" : "") . ")" . " {$team_based_separation_where_condition}
         UNION ALL
             SELECT
                 `ag`.`id`,
@@ -4232,16 +4279,28 @@ function create_asset_API_v2($view) {
         set_alert(true, "bad", _lang_raw('EditFailed_FieldMustBeUnique', ['field' => 'name']));
         api_v2_json_result(400, get_alert(true), NULL);
     }
-    
+
     $mapped_custom_field_settings = [];
     $custom_field_data = [];
     $asset_name = null;
+
+    // Which admin-defined template group this record was created under.
+    // Read from the request (the create modal renders one <form> per
+    // template-group tab, each carrying its own hidden template_group_id --
+    // see render_create_modal()) and validated against the caller's actual
+    // fgroup/business-unit assignment by resolve_template_group_id() below.
+    $template_group_id = get_param("POST", "template_group_id", null);
+    $template_group_id = $template_group_id !== null ? (int)$template_group_id : null;
+    // Same Core guard add_asset() uses: resolves/validates through the Extra
+    // when it is active, otherwise stores the value as submitted or the
+    // schema's own Default of 1 -- without ever bare-requiring the Extra.
+    $template_group_id = resolve_template_group_id_from_core($view_type, $template_group_id);
 
     // If customization is enabled then gather information about the custom fields
     if ($customization = customization_extra()) {
         require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
 
-        $active_fields = get_active_fields($view_type);
+        $active_fields = get_active_fields($view_type, $template_group_id);
         foreach ($active_fields as $active_field) {
             // Skip this step for basic fields
             if ($active_field['is_basic']) {
@@ -4268,16 +4327,16 @@ function create_asset_API_v2($view) {
     $mapped_controls = [];
     $associated_risks = [];
     
-    $insert_parts = ["`verified` = :verified"];
-    $params = ["verified" => true];
+    $insert_parts = ["`verified` = :verified", "`template_group_id` = :template_group_id"];
+    $params = ["verified" => true, "template_group_id" => $template_group_id];
     // Do the field validation(like required fields not having a value) and collect the data for the update
-    foreach (field_settings_get_localization($view, false, false) as $field_name => $field_text) {
-        
+    foreach (field_settings_get_localization($view, false, false, true, $customization ? $template_group_id : null) as $field_name => $field_text) {
+
         // Skipping checks for the verified field here
         if ($field_name === 'verified') {
             continue;
         }
-        
+
         // Check if the field is required and if it is, then whether it has a proper value set
         if (empty($_POST[$field_name]) && ((!empty($field_settings[$view_type][$field_name]) && $field_settings[$view_type][$field_name]['required'])
             || ($customization && !empty($mapped_custom_field_settings[$field_name]) && $mapped_custom_field_settings[$field_name]['required']))) {

@@ -410,15 +410,10 @@ function get_ui_widget_dashboard_open($widget_name) {
         'name' => $lang['Unassigned'],
     ));
 
-    $teams = [];
-    // Get teams submitted by user
-    if (isset($_GET['teams'])) {
-        $teams = array_filter(explode(',', $_GET['teams']), 'ctype_digit');
-    } elseif (is_array($teamOptions)) {
-        foreach ($teamOptions as $teamOption) {
-            $teams[] = (int)$teamOption['value'];
-        }
-    }
+    // Restrict any client-submitted team ids to the ones this user can
+    // actually see -- otherwise a requester could name another team's id
+    // and pull that team's risk data regardless of their own team access.
+    $teams = sanitize_requested_teams($teamOptions, $_GET['teams'] ?? null);
 
     // Get the risk pie array
     $pie_array = get_pie_array(null, $teams);
@@ -508,15 +503,10 @@ function get_ui_widget_dashboard_close($widget_name) {
         'name' => $lang['Unassigned'],
     ));
 
-    $teams = [];
-    // Get teams submitted by user
-    if (isset($_GET['teams'])) {
-        $teams = array_filter(explode(',', $_GET['teams']), 'ctype_digit');
-    } elseif (is_array($teamOptions)) {
-        foreach ($teamOptions as $teamOption) {
-            $teams[] = (int)$teamOption['value'];
-        }
-    }
+    // Restrict any client-submitted team ids to the ones this user can
+    // actually see -- otherwise a requester could name another team's id
+    // and pull that team's risk data regardless of their own team access.
+    $teams = sanitize_requested_teams($teamOptions, $_GET['teams'] ?? null);
 
     // It's setup this way so we can generate the widget's html on the server side
     // it means we're able to use the UI layout widget for every kind of content
@@ -1053,10 +1043,138 @@ function get_ui_widget_define_frameworks_insights($widget_name) {
     return $widget_html;
 }
 
+/**
+ * Insights band above the Document Program grid (governance/documentation.php)
+ * -- one tile per SEEDED document type (Policies/Guidelines/Standards/
+ * Procedures), each a plain count that drills through to the grid via its own
+ * ?type=<slug> link (governance-documents.js reads it on load and pre-filters
+ * -- see the file comment on the 'document_program_insights' entry in
+ * $ui_layout_config, includes/functions.php). Custom types (admin-added via
+ * Add/Remove Values) get no tile, matching the grid's own filter-card scope.
+ *
+ * READ GATE done here rather than via required_permission: the page's own
+ * gate is `governance` OR `view_documentation` (getDocumentsResponse()'s own
+ * comment explains why), and $ui_layout_config/$ui_layout_widget_config's
+ * required_permission field only supports a single check_permission() call.
+ * A denied request renders nothing -- the band simply doesn't show, same as
+ * any other widget whose switch case never matches.
+ *
+ * Counts reuse get_documents($type) (includes/governance.php) -- the exact
+ * function the grid's own fetch calls -- rather than a parallel COUNT(*)
+ * query, so the tile can never drift from the team-separation scoping or the
+ * document_type_id/legacy-string fallback that function already encodes.
+ */
+function get_ui_widget_document_program_insights($widget_name) {
+    require_once(realpath(__DIR__ . '/../../../includes/governance.php'));
+    require_once(realpath(__DIR__ . '/../../../includes/reporting.php'));
+
+    if (!document_program_read_permitted()) {
+        return '';
+    }
+
+    // Attention tiles -- lead the band (design-system.md, Document Insights
+    // Directions "Direction A"), ahead of the per-type counts below. Counts
+    // come from count_documents_overdue_for_review()/_due_soon_for_review()
+    // (this file's sibling functions in governance.php), which are also
+    // reused verbatim by get_ui_widget_governance_dashboard() below for the
+    // Governance Dashboard / Home picker versions of these same two tiles --
+    // one aggregate each, two render call sites with page-appropriate links.
+    if ($widget_name === 'kpi_doc_overdue') {
+        ob_start();
+        render_kpi_tile((string)count_documents_overdue_for_review(), 'DocumentsOverdueForReview', 'documentation.php?review=overdue', null, 'Governance', '', '', '', 'danger');
+        $widget_html = ob_get_contents();
+        ob_end_clean();
+        return $widget_html;
+    }
+    if ($widget_name === 'kpi_doc_due_soon') {
+        ob_start();
+        render_kpi_tile((string)count_documents_due_soon_for_review(), 'DocumentsDueSoonForReview', 'documentation.php?review=due_soon', null, 'Governance');
+        $widget_html = ob_get_contents();
+        ob_end_clean();
+        return $widget_html;
+    }
+
+    // slug (get_documents()'s $type param / documents.document_type) => label key
+    $seeded_types = [
+        'policies'   => 'Policies',
+        'guidelines' => 'Guidelines',
+        'standards'  => 'Standards',
+        'procedures' => 'Procedures',
+    ];
+    $type_by_widget = [
+        'kpi_doc_policies'   => 'policies',
+        'kpi_doc_guidelines' => 'guidelines',
+        'kpi_doc_standards'  => 'standards',
+        'kpi_doc_procedures' => 'procedures',
+    ];
+    $type = $type_by_widget[$widget_name] ?? null;
+    if ($type === null) {
+        return '';
+    }
+
+    ob_start();
+    $count = count(get_documents($type));
+    render_kpi_tile((string)$count, $seeded_types[$type], 'documentation.php?type=' . $type, null, 'Governance');
+    $widget_html = ob_get_contents();
+    ob_end_clean();
+
+    return $widget_html;
+}
+
+/**
+ * Define Exceptions insights band (design-system.md, same "Direction A"
+ * shape as get_ui_widget_document_program_insights() above): two attention
+ * tiles (Overdue for Review, Due Soon) then the same three partitions the
+ * grid's own tabs already use (Policy/Control/Pending Approval -- see
+ * get_exceptions_as_treegrid()'s $type param, includes/governance.php).
+ * count_exceptions_*() (includes/governance.php) do the counting; this
+ * function only decides which widget_name maps to which count + link.
+ *
+ * Links carry ?review=/?type=/?status=, all read on first load by
+ * governance-exceptions.js's fetchAndRender() to seed the filter row (type/
+ * status have visible <select>s; review has no dropdown of its own -- see
+ * that file's `filters` comment -- but still narrows the grid).
+ */
+function get_ui_widget_define_exceptions_insights($widget_name) {
+    require_once(realpath(__DIR__ . '/../../../includes/governance.php'));
+    // render_kpi_tile() lives in reporting.php -- declared here directly (not
+    // left to api/v2/index.php's load order) per the function-reachability rule.
+    require_once(realpath(__DIR__ . '/../../../includes/reporting.php'));
+
+    if (!check_permission('governance') && !check_permission_exception('view')) {
+        return '';
+    }
+
+    $tiles = [
+        'kpi_exc_overdue'  => ['count_exceptions_overdue_for_review',  'ExceptionsOverdueForReview',  'document_exceptions.php?review=overdue',  'danger'],
+        'kpi_exc_due_soon' => ['count_exceptions_due_soon_for_review', 'ExceptionsDueSoonForReview',  'document_exceptions.php?review=due_soon', ''],
+        'kpi_exc_policy'   => ['count_exceptions_policy',              'PolicyExceptions',            'document_exceptions.php?type=policy',     ''],
+        'kpi_exc_control'  => ['count_exceptions_control',             'ControlExceptions',           'document_exceptions.php?type=control',    ''],
+        'kpi_exc_pending'  => ['count_exceptions_pending_approval',    'PendingApproval',             'document_exceptions.php?status=pending',  ''],
+    ];
+    if (!isset($tiles[$widget_name])) {
+        return '';
+    }
+    [$count_fn, $label_key, $href, $tone] = $tiles[$widget_name];
+
+    ob_start();
+    render_kpi_tile((string)$count_fn(), $label_key, $href, null, 'Governance', '', '', '', $tone);
+    $widget_html = ob_get_contents();
+    ob_end_clean();
+
+    return $widget_html;
+}
+
 /*******************************************************************************
  * This function is used to get the governance dashboard widget's html content *
  *******************************************************************************/
 function get_ui_widget_governance_dashboard($widget_name) {
+    // count_documents_overdue_for_review()/_due_soon_for_review() (kpi_doc_
+    // overdue/_due_soon below) are declared in governance.php -- explicit
+    // require_once here rather than relying on get_ui_widget_common()'s own
+    // require just below, which happens to load it first today but isn't
+    // this function's own declared dependency.
+    require_once(realpath(__DIR__ . '/../../../includes/governance.php'));
 
     // Shared widgets (KPI tiles, What's Next, etc.) render via the common
     // renderer; governance-specific charts fall through below. What's Next is
@@ -1069,6 +1187,40 @@ function get_ui_widget_governance_dashboard($widget_name) {
     ob_start();
 
     switch ($widget_name) {
+        // Document Program's own attention tiles (kpi_doc_overdue/_due_soon,
+        // get_ui_widget_document_program_insights() above), reused here so
+        // they're pickable on the Governance Dashboard and (via that
+        // dashboard's own place in get_ui_widget_home()'s fallback chain)
+        // Home. Same counts, '../'-relative link since this renders from
+        // reports/governance_dashboard.php or reports/home.php rather than
+        // governance/documentation.php itself -- matches kpi_policies'
+        // governance-domain '../governance/index.php' link just below in
+        // get_ui_widget_common(), the existing precedent for this exact
+        // same-widget-different-page relative-path adjustment.
+        case 'kpi_doc_overdue':
+        case 'kpi_doc_due_soon':
+            // Gate HERE, not only via the layout: both tiles carry a blank
+            // widget-level required_permission (their real gate is `governance`
+            // OR `view_documentation`, which a single required_permission
+            // string cannot express), and the `home` layout's own
+            // required_permission is blank too -- so a request routed through
+            // Home (get_ui_widget_home()'s fallback chain lands here) reaches
+            // this renderer with NO check having run in api_get_ui_widget().
+            // Only the governance_dashboard layout's 'governance' gate covered
+            // it before, which is the same layout-only hole HackerOne #3960721
+            // / SR-2088 found on kpi_open_exceptions. document_program_read_permitted()
+            // (includes/governance.php) is the one definition of that gate, shared
+            // with get_ui_widget_document_program_insights() above and the page;
+            // an empty render lets Home's handler loop fall through and return ''.
+            if (!document_program_read_permitted()) {
+                break;
+            }
+            if ($widget_name === 'kpi_doc_overdue') {
+                render_kpi_tile((string)count_documents_overdue_for_review(), 'DocumentsOverdueForReview', '../governance/documentation.php?review=overdue', null, 'Governance', '', '', '', 'danger');
+            } else {
+                render_kpi_tile((string)count_documents_due_soon_for_review(), 'DocumentsDueSoonForReview', '../governance/documentation.php?review=due_soon', null, 'Governance');
+            }
+            break;
         // Overall pass/fail/not-tested control status, framework-scoped.
         case 'governance_control_status_pie_chart':
             render_framed_chart('ControlStatus', 'Governance', fn() => governance_control_status_pie_chart());
@@ -1272,6 +1424,7 @@ function api_v2_admin_settings_catalog()
             'path'        => $entry['path'],
             'tags'        => $entry['tags'],
             'favorited'   => isset($favorites_set[$key]),
+            'pinned'      => $entry['pinned'] ?? false,
             'state'       => compute_extra_tile_state(
                 $entry,
                 static function (string $name): bool {

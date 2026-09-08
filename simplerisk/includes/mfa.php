@@ -6,6 +6,7 @@
 
 require_once(realpath(__DIR__ . '/../vendor/autoload.php'));
 require_once(realpath(__DIR__ . '/../includes/functions.php'));
+require_once(realpath(__DIR__ . '/../includes/alerts.php'));
 
 /**************************************
  * FUNCTION: ENABLE MFA FOR ALL USERS *
@@ -680,10 +681,11 @@ function process_mfa_verify($uid = null)
         verify_mfa_for_uid($uid);
 
         // Kill any other sessions for this uid
-        kill_sessions_of_user($uid, true);
+        $sessions_cleared = kill_sessions_of_user($uid, true);
 
         // Display an alert
         set_alert(true, "good", $lang['MFAEnabledSuccessfully']);
+        alert_if_sessions_not_cleared($sessions_cleared);
 
         // Return true
         return true;
@@ -731,10 +733,11 @@ function process_mfa_disable($uid = null)
         disable_mfa_for_uid($uid);
 
         // Kill any other sessions for this uid
-        kill_sessions_of_user($uid, true);
+        $sessions_cleared = kill_sessions_of_user($uid, true);
 
         // Display an alert
         set_alert(true, "good", $lang['MFADisabledSuccessfully']);
+        alert_if_sessions_not_cleared($sessions_cleared);
 
         // Return true
         return true;

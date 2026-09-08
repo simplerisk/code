@@ -499,6 +499,12 @@ function controls_table_status_to_db(array $tokens): array {
  */
 function controls_table_shape_row(array $c): array {
     global $escaper;
+    // Computed once and reused below for mapped_frameworks_count, rather
+    // than re-parsing framework_ids a second time -- the two must never
+    // disagree, since a client rendering N ids in `frameworks` and a
+    // different N in the badge would be showing two counts of the same
+    // fact.
+    $frameworks = array_values(array_filter(explode(',', (string)$c['framework_ids'])));
     return [
         'id'                  => (int)$c['id'],
         'control_number'      => $c['control_number'],
@@ -511,7 +517,20 @@ function controls_table_shape_row(array $c): array {
         'control_priority'    => (int)$c['control_priority'],
         'control_owner'       => (int)$c['control_owner'],
         'control_type_ids'    => array_values(array_filter(explode(',', (string)$c['control_type_ids']))),
-        'frameworks'          => array_values(array_filter(explode(',', (string)$c['framework_ids']))),
+        'frameworks'          => $frameworks,
+        // Mapped-frameworks summary (the drawer's Mapped Frameworks section
+        // and its badge in the Name column, governance-frameworks.js) --
+        // counted from the SAME DISTINCT GROUP_CONCAT columns `frameworks`
+        // above already reads (get_framework_controls_by_filter(),
+        // includes/governance.php), so this is free: no second query. The
+        // full per-mapping list (framework + reference name/text) is fetched
+        // lazily, on first expand, from GET /governance/controls/mapped-
+        // frameworks -- a plain JOIN keyed on control_id, not a GROUP_CONCAT
+        // reconstruction, because two independently-DISTINCT concatenated
+        // lists cannot be zipped back into correct (framework, reference)
+        // pairs once a control maps into more than one framework.
+        'mapped_frameworks_count' => count($frameworks),
+        'mapped_controls_count'   => count(array_values(array_filter(explode(',', (string)($c['reference_name'] ?? ''))))),
         // --- display names (drawer + table cells) ---
         'family_name'         => $c['family_short_name'],
         'control_class_name'  => $c['control_class_name'],

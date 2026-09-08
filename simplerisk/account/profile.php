@@ -12,6 +12,7 @@ render_header_and_sidebar(['CUSTOM:permissions-widget.js'], breadcrumb_title_key
 // Include required functions file
 require_once(realpath(__DIR__ . '/../includes/messages.php'));
 require_once(realpath(__DIR__ . '/../includes/extras.php'));
+require_once(realpath(__DIR__ . '/../includes/alerts.php'));
 
 // If the language was changed
 if (isset($_POST['change_language'])) {
@@ -113,13 +114,14 @@ if (isset($_POST['change_password'])) {
                 if (update_password($team, $hash)) {
 
                     // Clean up other sessions of the user and roll the current session's id
-                    kill_other_sessions_of_current_user();
+                    $sessions_cleared = kill_other_sessions_of_current_user();
 
                     // Expire any active password reset tokens for this user
                     expire_reset_token_for_username($username);
 
                     // Display an alert
                     set_alert(true, "good", $lang['PasswordUpdated']);
+                    alert_if_sessions_not_cleared($sessions_cleared);
 
                 }
 

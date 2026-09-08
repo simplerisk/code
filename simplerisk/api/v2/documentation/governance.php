@@ -429,6 +429,46 @@ class OpenApiGovernanceControls {}
 
 /**
  * @OA\Get(
+ *     path="/governance/controls/roster",
+ *     summary="Get the lightweight control roster (id/number/name/description, plus family and framework ids)",
+ *     description="Returns id, control_number, short_name, family and framework ids for every non-deleted control, with no test/last-result/tag enrichment. Backs Document Program's and Define Exceptions' control pickers (design-system.md §14b), whose framework and family columns filter client-side from these ids. Same shape as GET /compliance/control_roster, gated on governance instead of compliance permission -- these two pages don't require the Compliance module. Framework and family NAMES are not included; each page renders both lists for its own picker facets.",
+ *     operationId="governanceControlRoster",
+ *     tags={"governance"},
+ *     security={{"ApiKeyAuth":{}}},
+ *     @OA\Response(
+ *         response=200,
+ *         description="Every non-deleted control's id/control_number/short_name, with its family id and the ids of the frameworks it maps into.",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(property="status", type="integer", example=200),
+ *             @OA\Property(property="status_message", type="string", example="SUCCESS"),
+ *             @OA\Property(
+ *                 property="data",
+ *                 type="array",
+ *                 @OA\Items(
+ *                     type="object",
+ *                     @OA\Property(property="id", type="integer"),
+ *                     @OA\Property(property="control_number", type="string", nullable=true),
+ *                     @OA\Property(property="short_name", type="string"),
+ *                     @OA\Property(property="description", type="string", description="The control's description as one line of plain text (tags stripped, whitespace collapsed, capped at 300 characters) for the picker's hover."),
+ *                     @OA\Property(property="family", type="integer", description="Family id, or 0 when the control has no family."),
+ *                     @OA\Property(
+ *                         property="frameworks",
+ *                         type="array",
+ *                         description="Ids of the frameworks this control maps into; empty when it maps to none.",
+ *                         @OA\Items(type="integer")
+ *                     )
+ *                 )
+ *             )
+ *         )
+ *     ),
+ *     @OA\Response(response=403, description="FORBIDDEN: The user does not have governance permission.")
+ * )
+ */
+class OpenApiGovernanceControlRoster {}
+
+/**
+ * @OA\Get(
  *     path="/governance/controls/table",
  *     summary="List controls for the client-rendered controls table",
  *     description="Returns shaped, filtered, sorted, and paginated control rows for the Define Control Frameworks page. Unlike GET /governance/controls, this endpoint never renders HTML -- every field is data.",
@@ -480,6 +520,8 @@ class OpenApiGovernanceControls {}
  *                         @OA\Property(property="control_owner", type="integer"),
  *                         @OA\Property(property="control_type_ids", type="array", @OA\Items(type="string")),
  *                         @OA\Property(property="frameworks", type="array", @OA\Items(type="string")),
+ *                         @OA\Property(property="mapped_frameworks_count", type="integer", description="Distinct frameworks this control is mapped into. Same length as `frameworks`; sent as a count so the client doesn't have to re-derive it."),
+ *                         @OA\Property(property="mapped_controls_count", type="integer", description="Distinct reference names (the OTHER frameworks' own control identifiers) this control is mapped to. May differ from mapped_frameworks_count when a control maps into one framework under several reference names."),
  *                         @OA\Property(property="family_name", type="string"),
  *                         @OA\Property(property="control_class_name", type="string"),
  *                         @OA\Property(property="control_phase_name", type="string"),
@@ -1415,6 +1457,114 @@ class OpenApiParentDocumentsDropdown {}
  * )
  */
 class OpenApiGetDocument {}
+
+/**
+ * @OA\Get(
+ *     path="/governance/document_types",
+ *     summary="Get the document category lookup used by the Document Program tab strip",
+ *     description="Get every document category ({value, name}) a document can be filed under, in display order. Backs the Document Program tab strip and its quick-add affordance (Task 10); categories are created via Admin > Add/Remove Values.",
+ *     operationId="getDocumentTypes",
+ *     tags={"governance"},
+ *     security={{"ApiKeyAuth":{}}},
+ *     @OA\Response(
+ *         response=200,
+ *         description="List of document categories",
+ *         @OA\JsonContent(
+ *             type="array",
+ *             @OA\Items(
+ *                 type="object",
+ *                 @OA\Property(property="value", type="integer", example=1),
+ *                 @OA\Property(property="name", type="string", example="policies"),
+ *                 @OA\Property(property="label", type="string", example="Policies")
+ *             )
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=400,
+ *         description="User does not have the view_documentation permission",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(property="status", type="string", example="error"),
+ *             @OA\Property(property="message", type="string", example="You don't have permission to view Documentation"),
+ *             @OA\Property(property="data", type="object", nullable=true, additionalProperties=true)
+ *         )
+ *     )
+ * )
+ */
+class OpenApiGetDocumentTypes {}
+
+/**
+ * @OA\Post(
+ *     path="/governance/document_types",
+ *     summary="Add a document category",
+ *     description="Admin-only. Requires the Customization Extra to be active. Creates a new document category; duplicate names resolve to the existing row rather than erroring.",
+ *     operationId="addDocumentType",
+ *     tags={"governance"},
+ *     security={{"ApiKeyAuth":{}}},
+ *     @OA\RequestBody(
+ *         required=true,
+ *         @OA\JsonContent(
+ *             type="object",
+ *             required={"name"},
+ *             @OA\Property(property="name", type="string", maxLength=100, example="Runbooks")
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=200,
+ *         description="The refreshed list of document categories",
+ *         @OA\JsonContent(
+ *             type="array",
+ *             @OA\Items(
+ *                 type="object",
+ *                 @OA\Property(property="value", type="integer", example=5),
+ *                 @OA\Property(property="name", type="string", example="Runbooks"),
+ *                 @OA\Property(property="label", type="string", example="Runbooks")
+ *             )
+ *         )
+ *     ),
+ *     @OA\Response(response=400, description="Missing/too-long name"),
+ *     @OA\Response(response=403, description="Caller is not an admin, or the Customization Extra is not active")
+ * )
+ */
+class OpenApiAddDocumentType {}
+
+/**
+ * @OA\Patch(
+ *     path="/governance/document_types/{id}",
+ *     summary="Rename a document category",
+ *     description="Admin-only. Requires the Customization Extra to be active. Refuses to rename Policies/Guidelines/Standards/Procedures — those slugs are matched literally throughout the codebase.",
+ *     operationId="updateDocumentType",
+ *     tags={"governance"},
+ *     security={{"ApiKeyAuth":{}}},
+ *     @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer")),
+ *     @OA\RequestBody(
+ *         required=true,
+ *         @OA\JsonContent(type="object", required={"name"}, @OA\Property(property="name", type="string", maxLength=100))
+ *     ),
+ *     @OA\Response(response=200, description="The refreshed list of document categories"),
+ *     @OA\Response(response=400, description="Missing/too-long name, or the id is a seeded slug"),
+ *     @OA\Response(response=403, description="Caller is not an admin, or the Customization Extra is not active"),
+ *     @OA\Response(response=404, description="No document category with that id")
+ * )
+ */
+class OpenApiUpdateDocumentType {}
+
+/**
+ * @OA\Delete(
+ *     path="/governance/document_types/{id}",
+ *     summary="Delete a document category",
+ *     description="Admin-only. Requires the Customization Extra to be active. Refuses to delete Policies/Guidelines/Standards/Procedures — those slugs are matched literally throughout the codebase — or a category that still has documents filed under it.",
+ *     operationId="deleteDocumentType",
+ *     tags={"governance"},
+ *     security={{"ApiKeyAuth":{}}},
+ *     @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer")),
+ *     @OA\Response(response=200, description="The refreshed list of document categories"),
+ *     @OA\Response(response=400, description="The category is a seeded slug, or still has documents filed under it"),
+ *     @OA\Response(response=403, description="Caller is not an admin, or the Customization Extra is not active"),
+ *     @OA\Response(response=404, description="No document category with that id")
+ * )
+ */
+class OpenApiDeleteDocumentType {}
 
 /**
  * @OA\Get(

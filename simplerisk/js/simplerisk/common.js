@@ -1,6 +1,24 @@
+// DataTables' default errMode is 'alert', which calls the page's global
+// alert() (below) on any ajax error -- a non-2xx response, a network
+// failure, or a request aborted by navigation. That alert() renders a
+// Bootstrap modal that only closes on a manual click, so a single failed
+// background DataTables request permanently blocks every future click on
+// the page until someone notices and dismisses it. Every DataTable in the
+// app inherits this default unless overridden per-instance, so silence
+// ajax errors globally instead of popping a UI-blocking modal for what is
+// normally a transient, non-fatal condition (a denied cross-team request,
+// a request aborted by the user navigating away, a dropped connection).
+// error.dt still fires for anyone who wants to react to a specific table's
+// failure; this only suppresses the default alert() side effect.
+$(function () {
+    if ($.fn.dataTable) {
+        $.fn.dataTable.ext.errMode = 'none';
+    }
+});
+
 /**
 * When a file is added, should call this method
-* 
+*
 * @param $parent
 * @param currentButtonId: button ID for input[type=file].active
 */
@@ -303,7 +321,14 @@ $(document).ready(function () {
 function resetForm(formEL, multiselect = true, selectize = false) {
 
     let $form = $(formEL);
-    $form[0].reset();
+    // Reset every matched <form>, not just the first -- a create modal with a
+    // template-group tab per pane (see render_create_modal()) renders one
+    // <form> per pane sharing the same id (matching the established
+    // multi-pane pattern in display_add_risk()), so $form can legitimately
+    // match more than one element here.
+    $form.each(function () {
+        this.reset();
+    });
 
     // if there are any multiselects, refresh them
     if (multiselect) {
@@ -390,12 +415,25 @@ function sanitizeHTML(str) {
     // Remove any tags that aren't in our allowlist; strip all attributes from
     // tags that are allowed (prevents onclick, onerror, style, and other
     // attribute-based XSS vectors on otherwise-permitted elements).
+    //
+    // SR-2002 / HackerOne #3904974: a disallowed element used to be replaced
+    // via `element.outerHTML = element.textContent`. `textContent` DECODES
+    // HTML entities back into literal characters, and assigning that string
+    // to `outerHTML` RE-PARSES it as markup a second time -- so an
+    // entity-encoded payload like `&lt;img src=x onerror=...&gt;` came back
+    // out of `.textContent` as `<img src=x onerror=...>` and was then parsed
+    // straight into a live, executing element (a mutation-XSS gadget). A
+    // real DOM Text node's data is never parsed as HTML, so replacing the
+    // element with one instead — rather than round-tripping through
+    // `outerHTML` — closes that re-parse step entirely while keeping the
+    // exact same "disallowed tag becomes its own text" behavior.
     const allElements = div.getElementsByTagName('*');
     for (let i = allElements.length - 1; i >= 0; i--) {
         const element = allElements[i];
         if (!allowedTags.includes(element.tagName.toLowerCase())) {
-            // Replace the element with its text content
-            element.outerHTML = element.textContent;
+            // Replace the element with a genuine text node holding its text
+            // content -- never re-parsed as markup.
+            element.replaceWith(document.createTextNode(element.textContent));
         } else {
             // Strip every attribute from allowed elements
             while (element.attributes.length > 0) {
@@ -556,4 +594,93 @@ function setupAssetsAssetGroupsWidgetForRisk(select_tag, risk_id) {
             type: 'risk'
         }
     });
+}
+
+/**
+ * Renders a bootstrap-multiselect's current selection as removable chips
+ * beneath its button -- the shared implementation for every page using this
+ * pattern on a tens-of-rows roster field (framework_ids[]/team_ids[]/
+ * additional_stakeholders[]/associated_risks[], the sizes that stay on
+ * bootstrap-multiselect rather than getting the #document-control-picker/
+ * faceted-picker treatment; see design-system.md §14b). Previously
+ * duplicated near-verbatim between governance/documentation.php and
+ * governance/document_exceptions.php (each page loads common.js already, so
+ * there was no reason for either copy to exist).
+ *
+ * The widget's own button is MOVED into the .sr-chips-field box as the
+ * trailing "Add or remove…" affordance rather than duplicated, so it stays
+ * the real trigger and every existing .multiselect() call (select,
+ * deselectAll, rebuild) keeps working untouched. Safe to call repeatedly or
+ * with a multi-element jQuery set (e.g. every roster field at once on init).
+ *
+ * @param {jQuery} $select
+ */
+function renderMultiselectChips($select) {
+    if ($select.length > 1) {
+        $select.each(function() {
+            renderMultiselectChips($(this));
+        });
+        return;
+    }
+
+    if (!$select.length || !$select.data('multiselect')) {
+        return;
+    }
+
+    var $container = $select.closest('.multiselect-native-select');
+    if (!$container.length) {
+        return;
+    }
+
+    var $field = $container.find('> .sr-chips-field');
+    if (!$field.length) {
+        $field = $('<div>', { 'class': 'sr-chips-field' }).appendTo($container);
+    }
+
+    // .data('multiselect') always points at the most recent widget instance
+    // -- a page that (redundantly) double-inits a field would otherwise leave
+    // a second, orphaned trigger button rendering beside the live one.
+    var widget = $select.data('multiselect');
+    var $btnGroup = (widget && widget.$container && widget.$container.length)
+        ? widget.$container
+        : $container.find('.btn-group').last();
+    $container.find('.btn-group').not($btnGroup).remove();
+
+    $field.find('> .sr-chip').remove();
+
+    $select.find('option:selected').each(function() {
+        var value = $(this).val();
+        if (value === '' || value === null) {
+            return;
+        }
+
+        // text:, never html: -- these labels are user-authored (framework/
+        // team/user/risk names) and enableHTML is never turned on for this
+        // widget (design-system.md §14b).
+        var $chip = $('<span>', { 'class': 'sr-chip', text: $(this).text() });
+
+        $('<button>', {
+            type: 'button',
+            'class': 'sr-chip-x',
+            'aria-label': L('Remove'),
+        })
+            .append($('<i>', { 'class': 'fa fa-xmark', 'aria-hidden': 'true' }))
+            .on('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                $select.multiselect('deselect', value);
+                renderMultiselectChips($select);
+            })
+            .appendTo($chip);
+
+        if ($btnGroup.length) {
+            $chip.insertBefore($btnGroup);
+        } else {
+            $field.append($chip);
+        }
+    });
+
+    if ($btnGroup.length) {
+        $field.append($btnGroup);
+    }
 }
