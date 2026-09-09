@@ -100,7 +100,7 @@ class OpenApiAdminVersionDB {}
  *                      property="version",
  *                      type="string",
  *                      description="Optional. When given, applies exactly that one release's migration -- a single hop, for targeting one migration during development. When OMITTED, the full chain runs from wherever the database actually is, finishing with the migration for the release currently in development if there is one; that is the mode to use for testing a release that has no version number yet.",
- *                      example="20260908-001",
+ *                      example="20260909-001",
  *                      pattern="^\\d{8}-\\d{3}$"
  *                  )
  *              )

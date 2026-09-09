@@ -181,9 +181,7 @@ function collectForUndirectedDense(graph, options) {
     weights[edge] = weight;
 
     weightedDegrees[ids[source]] += weight;
-
-    // NOTE: we double degree only if we don't have a loop
-    if (source !== target) weightedDegrees[ids[target]] += weight;
+    weightedDegrees[ids[target]] += weight;
   });
 
   return {
@@ -269,9 +267,9 @@ function undirectedDenseModularity(graph, options) {
       didj = weightedDegrees[i] * weightedDegrees[j];
 
       // We add twice if we have a self loop
-      if (i === j && typeof e !== 'undefined')
-        S += (Aij - (didj / M2) * resolution) * 2;
-      else S += Aij - (didj / M2) * resolution;
+      if (i === j) Aij *= 2;
+
+      S += Aij - (didj / M2) * resolution;
     }
   }
 

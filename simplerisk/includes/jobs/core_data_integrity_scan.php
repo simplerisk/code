@@ -12,8 +12,9 @@ require_once(realpath(__DIR__ . '/../notifications.php'));
 /**
  * Runs every registered detector, upserts findings (dedup on
  * upsert_data_integrity_issue()'s natural key: issue_type, table_name,
- * column_name, record_id), purges old resolved issues, and reconciles the
- * admin notification: creates one the first time open issues appear,
+ * column_name, record_id), auto-resolves open issues a detector's recheck_fn
+ * confirms are no longer broken, purges old resolved issues, and reconciles
+ * the admin notification: creates one the first time open issues appear,
  * resolves it for every recipient the moment the queue empties. Called by
  * queue_check (weekly/scheduled) and directly by the on-demand scan-trigger
  * API endpoint -- both paths share this single implementation.
@@ -34,6 +35,13 @@ function run_data_integrity_scan(PDO $db): void
                 $issue['broken_value'],
                 $issue['suggested_value']
             );
+        }
+
+        // A detector without a recheck_fn opts out of auto-reconciliation
+        // -- its issues stay open until repaired, matching the pre-existing
+        // behavior for every detector before this was added.
+        if ($detector['recheck_fn'] !== null) {
+            resolve_stale_data_integrity_issues($db, $issue_type, $detector['recheck_fn'], $found);
         }
     }
 

@@ -133,6 +133,18 @@ function purge_resolved_data_integrity_issues(PDO $db, int $days = 90): int
  *      binary content); the review UI shows the record's table/id instead,
  *      for the admin to go find manually (no viewer page exists yet).
  *      apply_fn is null; resolution is detected on the next scan.
+ *
+ * recheck_fn(PDO $db, array{table_name:string, column_name:string,
+ * record_id:string} $issue): ?bool -- re-examines exactly the one row a
+ * currently-open issue points at, used by resolve_stale_data_integrity_
+ * issues() to auto-close issues a scan no longer reproduces. Returns
+ * false when the row is confirmed no longer broken (or no longer exists --
+ * nothing left to be broken), true when it's confirmed still broken, or
+ * null when it can't be determined this run (e.g. a decrypt failure, or
+ * the table/column is no longer a scan target). Only false resolves the
+ * issue; true and null both leave it open. A detector that omits this key
+ * (null) opts out of auto-reconciliation entirely -- its issues stay open
+ * until repaired, the pre-existing behavior.
  */
 function data_integrity_detectors(): array
 {
@@ -142,12 +154,14 @@ function data_integrity_detectors(): array
             'repair_mode' => 'inline_text_edit',
             'scan_fn'     => 'scan_invalid_text_encoding',
             'apply_fn'    => 'apply_text_encoding_repair',
+            'recheck_fn'  => 'recheck_invalid_text_encoding',
         ],
         'file_content_mismatch' => [
             'label_key'   => 'DataIntegrityFileEncoding',
             'repair_mode' => 'link_to_record',
             'scan_fn'     => 'scan_file_content_mismatch',
             'apply_fn'    => null,
+            'recheck_fn'  => 'recheck_file_content_mismatch',
         ],
     ];
 }
@@ -201,6 +215,188 @@ function data_integrity_text_encoding_primary_key(string $table): string
 }
 
 /**
+ * True when $raw has a genuine encoding problem worth flagging: invalid
+ * UTF-8 byte sequences, or a stray control character that has no legitimate
+ * place in GRC field data. Deliberately narrower than what
+ * sanitize_import_cell_value() normalizes -- that function also trims
+ * incidental leading/trailing whitespace, which is not a data integrity
+ * problem. Flagging a pure whitespace/newline difference as "invalid text
+ * encoding" produced a suggested-fix diff indistinguishable from doing
+ * nothing, which is exactly what a real encoding corruption should never
+ * look like.
+ */
+function has_invalid_text_encoding(string $raw): bool
+{
+    if (!mb_check_encoding($raw, 'UTF-8')) {
+        return true;
+    }
+
+    return preg_match(STRAY_CONTROL_CHARACTER_PATTERN, $raw) === 1;
+}
+
+/**
+ * data_integrity_detectors()'s recheck_fn for 'invalid_text_encoding'. Used
+ * only by resolve_stale_data_integrity_issues() -- re-reads the single row a
+ * stale open issue points at and re-applies the same encrypted-column
+ * handling scan_invalid_text_encoding() uses, so the two never disagree on
+ * what "still broken" means.
+ *
+ * Validates (table_name, column_name) against the same fixed allow-list
+ * apply_text_encoding_repair() uses before building any SQL -- an issue's
+ * staged table_name/column_name are scan-authored, not user-authored, but
+ * still not trusted as literal SQL identifiers (CLAUDE.md: identifiers that
+ * can't be bound must be validated against a fixed allow-list).
+ */
+function recheck_invalid_text_encoding(PDO $db, array $issue): ?bool
+{
+    $table = $issue['table_name'];
+    $column = $issue['column_name'];
+
+    $targets = data_integrity_text_encoding_scan_targets();
+    if (!isset($targets[$table][$column])) {
+        // No longer (or never) a scanned target -- e.g. the Customization
+        // Extra was uninstalled after this issue was staged. Can't confirm
+        // either way; leave the issue open rather than guess.
+        return null;
+    }
+
+    if ($table === 'custom_template_group' && !table_exists('custom_template_group')) {
+        return null;
+    }
+
+    $pk = data_integrity_text_encoding_primary_key($table);
+    $stmt = $db->prepare("SELECT `{$column}` AS `value` FROM `{$table}` WHERE `{$pk}` = :id");
+    $stmt->bindValue(':id', $issue['record_id'], PDO::PARAM_STR);
+    $stmt->execute();
+    $row = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    if ($row === false) {
+        // The record is gone -- nothing left to be broken.
+        return false;
+    }
+
+    $is_encrypted = $targets[$table][$column];
+    if ($is_encrypted) {
+        $raw = try_decrypt_or_null($row['value']);
+        if ($raw === null) {
+            // Same decrypt-failure case scan_invalid_text_encoding() skips
+            // -- can't confirm the row is fixed, so don't resolve it on
+            // missing information.
+            return null;
+        }
+    } else {
+        $raw = $row['value'];
+    }
+
+    if (!is_string($raw) || $raw === '') {
+        return false;
+    }
+
+    return has_invalid_text_encoding($raw);
+}
+
+/**
+ * data_integrity_detectors()'s recheck_fn for 'file_content_mismatch'. Mirrors
+ * scan_file_content_mismatch()'s size<>LENGTH(content) predicate for exactly
+ * the one row a stale open issue points at.
+ */
+function recheck_file_content_mismatch(PDO $db, array $issue): ?bool
+{
+    $table = $issue['table_name'];
+    $allowed_tables = ['compliance_files', 'files', 'questionnaire_files'];
+
+    if (!in_array($table, $allowed_tables, true)) {
+        return null;
+    }
+
+    if ($table === 'questionnaire_files' && !table_exists('questionnaire_files')) {
+        return null;
+    }
+
+    $stmt = $db->prepare("SELECT `size`, LENGTH(`content`) AS `content_length` FROM `{$table}` WHERE `unique_name` = :unique_name");
+    $stmt->bindValue(':unique_name', $issue['record_id'], PDO::PARAM_STR);
+    $stmt->execute();
+    $row = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    if ($row === false) {
+        // The record is gone -- nothing left to be broken.
+        return false;
+    }
+
+    return ((int)$row['size']) !== ((int)$row['content_length']);
+}
+
+/**
+ * Resolves every currently-open issue of $issue_type whose (table_name,
+ * column_name, record_id) natural key was NOT among this scan's $found
+ * results -- but only when $recheck_fn can positively confirm the specific
+ * row is no longer broken (or no longer exists). A row $found simply
+ * doesn't mention could mean "genuinely fixed" OR "this scan skipped it for
+ * an unrelated reason" (e.g. scan_invalid_text_encoding() skips a row it
+ * can't decrypt) -- treating every absence as "fixed" would silently close
+ * an issue we never actually re-verified. $recheck_fn removes that
+ * ambiguity by re-examining exactly that one row; only its `false` return
+ * resolves the issue, `true` and `null` both leave it open.
+ *
+ * Deliberately queries every open row of this type directly rather than
+ * going through get_open_data_integrity_issues() -- that function's default
+ * limit (DATA_INTEGRITY_ISSUES_LIST_LIMIT) exists to bound what the admin
+ * review UI renders in one pass, not what this internal reconciliation may
+ * close.
+ *
+ * @param array<int, array{table_name:string, column_name:string, record_id:string}> $found
+ * @return int Number of issues resolved
+ */
+function resolve_stale_data_integrity_issues(PDO $db, string $issue_type, callable $recheck_fn, array $found): int
+{
+    $found_keys = [];
+    foreach ($found as $issue) {
+        $found_keys[$issue['table_name'] . "\0" . $issue['column_name'] . "\0" . $issue['record_id']] = true;
+    }
+
+    $stmt = $db->prepare("SELECT `id`, `table_name`, `column_name`, `record_id` FROM `data_integrity_issues` WHERE `status` = 'open' AND `issue_type` = :issue_type");
+    $stmt->bindValue(':issue_type', $issue_type, PDO::PARAM_STR);
+    $stmt->execute();
+
+    $resolved = 0;
+    foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $row) {
+        $key = $row['table_name'] . "\0" . $row['column_name'] . "\0" . $row['record_id'];
+        if (isset($found_keys[$key])) {
+            continue;
+        }
+
+        if (recheck_data_integrity_issue_safely($recheck_fn, $db, $row) === false && resolve_data_integrity_issue($db, (int)$row['id'])) {
+            $resolved++;
+        }
+    }
+
+    return $resolved;
+}
+
+/**
+ * Runs $recheck_fn and swallows any throw into null -- the same "can't
+ * determine, leave the issue open" signal a recheck_fn returns for a known
+ * unresolvable case (e.g. a decrypt failure). A DB-level failure (a dropped
+ * connection, a table renamed between scan and reconciliation) must not
+ * abort the rest of run_data_integrity_scan()'s per-detector loop, which
+ * still has later detectors to scan/reconcile and the purge + notification
+ * steps to run afterward. Mirrors apply_data_integrity_repair_safely()'s
+ * rationale for apply_fn: log only the exception class and target
+ * table/column, never the exception message, since some recheck targets
+ * (user.username, user.email) are unencrypted plaintext PII a DB error
+ * message can embed a fragment of.
+ */
+function recheck_data_integrity_issue_safely(callable $recheck_fn, PDO $db, array $issue): ?bool
+{
+    try {
+        return $recheck_fn($db, $issue);
+    } catch (\Throwable $e) {
+        write_debug_log("data integrity reconciliation: recheck_fn threw for issue {$issue['id']} ({$issue['table_name']}.{$issue['column_name']}): " . get_class($e), 'warning');
+        return null;
+    }
+}
+
+/**
  * @return array<int, array{table_name:string, column_name:string, record_id:string, broken_value:string, suggested_value:string}>
  *
  * For encrypted-capable columns, broken_value/suggested_value in the
@@ -244,6 +440,10 @@ function scan_invalid_text_encoding(PDO $db): array
                 }
 
                 if (!is_string($raw) || $raw === '') {
+                    continue;
+                }
+
+                if (!has_invalid_text_encoding($raw)) {
                     continue;
                 }
 

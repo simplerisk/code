@@ -138,6 +138,7 @@ $releases = [
     "20260820-001",
     "20260828-001",
     "20260908-001",
+    "20260909-001",
 ];
 
 /*************************
@@ -11137,6 +11138,20 @@ function upgrade_from_20260828001($db) {
             echo "Removed {$removed_workflows} previously-seeded default system workflow(s).<br />\n";
         }
     }
+
+    // Update the database version
+    update_database_version($db, $version_to_upgrade, $version_upgrading_to);
+    echo "Finished SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
+}
+
+function upgrade_from_20260908001($db) {
+    // Database version to upgrade
+    $version_to_upgrade = '20260908-001';
+
+    // Database version upgrading to
+    $version_upgrading_to = '20260909-001';
+
+    echo "Beginning SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
 
     // Update the database version
     update_database_version($db, $version_to_upgrade, $version_upgrading_to);

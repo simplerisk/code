@@ -34890,6 +34890,16 @@ function sanitizeUtf8(string $text): string
 }
 
 /**
+ * Matches a stray control character that is never legitimate in imported GRC
+ * field data, while excluding tab/CR/LF (0x09/0x0A/0x0D), which are. Shared
+ * between sanitize_import_cell_value() (strips these) and
+ * has_invalid_text_encoding() in includes/data_integrity.php (detects
+ * these) so the two stay in sync -- the Data Integrity scanner's notion of
+ * "genuine corruption" must match exactly what the repair actually fixes.
+ */
+const STRAY_CONTROL_CHARACTER_PATTERN = '/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/u';
+
+/**
  * Sanitize a raw cell value extracted from an imported spreadsheet/CSV row
  * (Import-Export Extra and any other spreadsheet-driven importer).
  *
@@ -34929,7 +34939,7 @@ function sanitize_import_cell_value(mixed $value): string
 
     // Strip stray control characters -- never legitimate in imported GRC field
     // data -- while preserving tab/CR/LF
-    $value = preg_replace('/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/u', ' ', $value);
+    $value = preg_replace(STRAY_CONTROL_CHARACTER_PATTERN, ' ', $value);
 
     return trim($value);
 }

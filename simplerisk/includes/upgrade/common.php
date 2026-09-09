@@ -1174,29 +1174,57 @@ function migrate_governance_review_due_schema($db) {
  * `data` has no uid (a pre-auth session) is left NULL — correctly, since   *
  * that is not a user's session yet. Re-running only ever re-processes      *
  * that same NULL set, which converges to the same result.                 *
+ *                                                                          *
+ * Paged in bounded batches keyed on `id` (the primary key) rather than     *
+ * fetched in one SELECT. A `sessions` table can carry millions of rows on  *
+ * an install with heavy anonymous/bot traffic (each unauthenticated       *
+ * request that never returns with its cookie mints a fresh row) — an      *
+ * unpaged `fetchAll()` there tries to buffer the entire multi-hundred-MB   *
+ * result set into PHP's memory_limit in one shot and fatals with          *
+ * "Allowed memory size exhausted" before a single row is processed.       *
  ****************************************************************************/
 function backfill_sessions_user_id($db) {
 
-    $stmt = $db->prepare("SELECT `id`, `data` FROM sessions WHERE `user_id` IS NULL AND `data` IS NOT NULL AND `data` != ''");
-    $stmt->execute();
-    $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    $batch_size = 2000;
+    $last_id = '';
+    $total_backfilled = 0;
 
-    if (empty($rows)) {
-        return;
+    $select = $db->prepare(
+        "SELECT `id`, `data` FROM sessions " .
+        "WHERE `user_id` IS NULL AND `data` IS NOT NULL AND `data` != '' AND `id` > :last_id " .
+        "ORDER BY `id` ASC LIMIT " . $batch_size
+    );
+    $update = $db->prepare("UPDATE sessions SET `user_id` = :user_id WHERE `id` = :id");
+
+    while (true) {
+        $select->bindValue(':last_id', $last_id, PDO::PARAM_STR);
+        $select->execute();
+        $rows = $select->fetchAll(PDO::FETCH_ASSOC);
+        $fetched = count($rows);
+
+        foreach ($rows as $row) {
+            // Advance the keyset regardless of whether this row has a uid,
+            // so a run of pre-auth rows can't stall forward progress.
+            $last_id = $row['id'];
+
+            $uid = extract_session_data_uid($row['data']);
+            if ($uid === null) {
+                // No uid in this row's data yet (e.g. a pre-auth session) — leave NULL.
+                continue;
+            }
+            $update->bindValue(':user_id', $uid, PDO::PARAM_INT);
+            $update->bindValue(':id', $row['id'], PDO::PARAM_STR);
+            $update->execute();
+            $total_backfilled++;
+        }
+
+        if ($fetched < $batch_size) {
+            break;
+        }
     }
 
-    echo "Backfilling `user_id` on " . count($rows) . " existing session row(s).<br />\n";
-
-    $update = $db->prepare("UPDATE sessions SET `user_id` = :user_id WHERE `id` = :id");
-    foreach ($rows as $row) {
-        $uid = extract_session_data_uid($row['data']);
-        if ($uid === null) {
-            // No uid in this row's data yet (e.g. a pre-auth session) — leave NULL.
-            continue;
-        }
-        $update->bindValue(':user_id', $uid, PDO::PARAM_INT);
-        $update->bindValue(':id', $row['id'], PDO::PARAM_STR);
-        $update->execute();
+    if ($total_backfilled > 0) {
+        echo "Backfilled `user_id` on " . $total_backfilled . " existing session row(s).<br />\n";
     }
 }
 
