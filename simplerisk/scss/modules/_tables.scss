@@ -30,6 +30,27 @@
 // `:has(> .sr-table-card)` so it only fires when .sr-table-card is THIS
 // page's direct top-level content, not a card nested lower on some other
 // page that still uses the .row/.col-12 wrapper.
+// ===== Toolbar/header "+ Add" button radius (design-system.md §3) =====
+//
+// The 6px control radius isn't only a .sr-qform thing. Any primary "add"
+// action living in a fused card header or table toolbar should carry it too
+// -- left on the bare Bootstrap default (near-square), an "Add" button
+// sitting inside an otherwise-redesigned fused header (8px card radius, 7px
+// icon tile) reads as unfinished legacy chrome next to it. Shared here
+// (not the page-scoped _customization-fgroup.scss) so every page using these
+// three wrapper classes picks it up with no per-page CSS. Any new or
+// redesigned toolbar/header "Add" button reaches this by sitting inside one
+// of these wrappers -- never a bare .btn dropped directly into a header with
+// no wrapper, and never a page-local reinvention of this radius.
+.sr-table-tools .btn,
+.sr-table-toolbar-actions .btn,
+.sr-section-head-actions .btn {
+    border-radius: 6px;
+    padding: 7px 14px;
+    font-weight: 700;
+    font-size: 13px;
+}
+
 .content:has(> .sr-table-card) {
     // .content's own base rule (core/layout/layout.scss) paints a solid
     // background-color -- transparent here lets the page-wrapper's gray
@@ -83,29 +104,6 @@
         display: flex;
         align-items: baseline;
         gap: 8px;
-    }
-
-    // Result-count pill — a neutral, tabular-nums meta badge (§7 "count/meta
-    // badges"), never the accent. JS fills in the number.
-    .sr-table-count {
-        font-size: 12px;
-        font-weight: 700;
-        color: $gray-600;
-        background: $gray-100;
-        border: 1px solid $gray-300;
-        border-radius: 20px;
-        padding: 1px 9px;
-        font-variant-numeric: tabular-nums;
-    }
-
-    // Attention variant of the count pill — the "N overdue" pill beside the
-    // title (mirrors the artifact's .count-pill.attn). App-Red tint + accent
-    // text; a scoped, meaningful spend (an at-a-glance "needs attention" count),
-    // never the neutral pill's grey.
-    .sr-table-count--attn {
-        color: $sr-important;
-        background: rgba($sr-important, .10);
-        border-color: transparent;
     }
 
     // Search + the one primary action. The filters live on their own row
@@ -379,6 +377,67 @@
         }
     }
 
+    // ===== Columns picker (design-system.md §6c) =====
+    // A `.sr-table-tools` trigger + dropdown panel that lets a viewer hide
+    // optional/secondary columns (Owner, dates, etc.) without leaving the
+    // grid — new to the design system as of Define Exceptions (Task 11),
+    // which is the reference implementation
+    // (js/simplerisk/pages/governance-exceptions.js). `.colpicker` wraps a
+    // `.filterbtn` trigger reusing `.sr-table-filter`'s look, and `.colpanel`
+    // — an absolutely-positioned checkbox list. JS toggles each column's
+    // `data-col="..."` th/td `display` on checkbox change; nothing here
+    // depends on DataTables' own column-visibility API.
+    .colpicker {
+        position: relative;
+        display: inline-flex;
+
+        .filterbtn {
+            // Reuses .sr-table-filter's exact button chrome (border/radius/
+            // type) so the Columns trigger reads as the same control family
+            // as the "Filters · n" affordance elsewhere in the toolbar.
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .colpanel {
+            position: absolute;
+            top: calc(100% + 6px);
+            right: 0;
+            z-index: 20;
+            min-width: 200px;
+            background: $sr-body;
+            border: 1px solid $gray-300;
+            border-radius: 8px;
+            box-shadow: $shadow;
+            padding: 8px;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+
+            .colpanel-item {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                font-size: 13px;
+                font-weight: 400;
+                color: $sr-primary;
+                padding: 6px 8px;
+                border-radius: 6px;
+                margin: 0;
+                cursor: pointer;
+
+                &:hover {
+                    background: $gray-100;
+                }
+
+                input[type="checkbox"] {
+                    margin: 0;
+                }
+            }
+        }
+    }
+
     // DataTables' generated search box, restyled as the toolbar search field.
     // `.dataTables_filter` is the DT 1.x name; `.dt-search` is the DT 2.x (bs5)
     // name this build actually emits — target both.
@@ -431,16 +490,25 @@
 
     // render_view_table()'s DataTables init always sets scrollX:true
     // (includes/display.php), which wraps the rendered table in DataTables'
-    // OWN .dt-container/.dt-scroll structure with its own horizontal scroll.
-    // That makes THIS wrapper's overflow-x a redundant second scrollbar
-    // directly beneath the first on any wide DataTables-driven table (Manage
-    // Audits' 11 columns is wide enough to actually show it; other
-    // render_view_table() pages have the same redundant structure, just
-    // narrow enough today that it isn't visible). :has(.dt-container) scopes
-    // the fix to exactly that case, leaving a plain non-DataTables table's
-    // own overflow-x (e.g. a custom-rendered grid with no DataTables
-    // scrollX) untouched.
-    .sr-table-scroll:has(.dt-container) {
+    // OWN .dt-scroll structure with its own horizontal scroll. That makes
+    // THIS wrapper's overflow-x a redundant second scrollbar directly
+    // beneath the first on any wide DataTables-driven table (Manage Audits'
+    // 11 columns is wide enough to actually show it; other render_view_table()
+    // pages have the same redundant structure, just narrow enough today that
+    // it isn't visible).
+    //
+    // Scoped to :has(.dt-scroll), NOT :has(.dt-container): DataTables always
+    // wraps its output in a .dt-container element (that's the DOM option's
+    // outer wrapper), regardless of scrollX -- so :has(.dt-container) matched
+    // every DataTables-driven table, including a classic (non-scrollX)
+    // DataTable like the Document Program grid's, and silently disabled that
+    // table's OWN .sr-table-scroll overflow-x fallback (SR-2025). DataTables
+    // only builds the .dt-scroll wrapper -- classes.scrolling.container,
+    // datatables.net's featureTable() -- when scroll.x or scroll.y is
+    // non-empty, so it's present exactly for scrollX:true tables and absent
+    // for a plain client-side DataTable, which is the distinction this rule
+    // actually needs.
+    .sr-table-scroll:has(.dt-scroll) {
         overflow-x: visible;
     }
 
@@ -1493,35 +1561,9 @@
     // menu's hairline -- are gone with the markup that was their only consumer,
     // rather than left behind as dead style waiting for a re-emitter.
 
-    .sr-row-action {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        width: 26px;
-        height: 26px;
-        border: none;
-        background: transparent;
-        border-radius: 6px;
-        color: $gray-600;
-        cursor: pointer;
-
-        svg {
-            width: 14px;
-            height: 14px;
-        }
-
-        &:hover {
-            background: $gray-200;
-            color: $sr-primary;
-        }
-
-        // Destructive icon: neutral-until-hover, never a standing red
-        // button (design-system.md §6 "Row actions on hover").
-        &.sr-row-action-danger:hover {
-            background: rgba($danger, .1);
-            color: $danger;
-        }
-    }
+    // .sr-row-action / .sr-row-action-danger themselves moved to a bare,
+    // top-level rule below this .sr-table-card block (Task 20) -- see the
+    // comment there for why.
 
     // --- Expand panels: control SCF-mapping detail + test procedure ------
     // Both panels render as a full-width row directly under the row they
@@ -1828,6 +1870,93 @@
     }
 }
 
+// .sr-table-count / .sr-table-count--attn (Task 23 follow-up): lifted OUT of
+// .sr-table-card's ancestor scope for the same reason as .sr-row-action just
+// below -- the Custom Fields section's count chip now lives in the retired
+// Fields tab's replacement, a .sr-qaccordion header (.sr-qcard-head, not a
+// .sr-table-card), where the old nested rule never matched. Unstyled, the
+// chip rendered as bare text glued onto the heading ("Custom Fields 2"
+// instead of "Custom Fields" + a pill showing "2"). Removing the ancestor
+// constraint doesn't change the rule's own properties, so every existing
+// .sr-table-card usage (Document Types, Template Groups) renders identically
+// to before.
+.sr-table-count {
+    font-size: 12px;
+    font-weight: 700;
+    color: $gray-600;
+    background: $gray-100;
+    border: 1px solid $gray-300;
+    border-radius: 20px;
+    padding: 1px 9px;
+    font-variant-numeric: tabular-nums;
+}
+
+.sr-table-count--attn {
+    color: $sr-important;
+    background: rgba($sr-important, .10);
+    border-color: transparent;
+}
+
+// .sr-row-action / .sr-row-action-danger (Task 20): lifted OUT of
+// .sr-table-card's ancestor scope (where the rule above still lived through
+// PR #2185/customization Task 19) to a bare top-level selector, so the
+// Customization Extra's field picker (.sr-fieldpick, not a .sr-table-card)
+// and the Templates designer's layout chips (.field-holder, also not a
+// .sr-table-card) can use the same icon-button chrome standalone instead of
+// either stamping .sr-table-card onto a context that isn't one, or cloning
+// this rule into _customization-fgroup.scss. Removing the ancestor
+// constraint doesn't change the rule's own properties, so every existing
+// .sr-table-card usage renders identically to before.
+.sr-row-action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    height: 26px;
+    border: none;
+    background: transparent;
+    border-radius: 6px;
+    color: $gray-600;
+    cursor: pointer;
+
+    svg {
+        width: 14px;
+        height: 14px;
+    }
+
+    &:hover {
+        background: $gray-200;
+        color: $sr-primary;
+    }
+
+    // Destructive icon: neutral-until-hover, never a standing red
+    // button (design-system.md §6 "Row actions on hover").
+    &.sr-row-action-danger:hover {
+        background: rgba($danger, .1);
+        color: $danger;
+    }
+
+    // Inert row action (e.g. a seeded row's rename/delete icons):
+    // dimmed so it reads as disabled rather than as a clickable icon
+    // that happens to do nothing. Deliberately NOT `pointer-events:
+    // none` -- that would exclude the element from hit-testing, which
+    // suppresses the native `title` tooltip along with everything
+    // else, defeating the corrected tooltip text this class exists to
+    // show on hover. Clicks are prevented anyway because a disabled
+    // row never carries the trigger class (`.document-type-edit` /
+    // `.document-type-delete` / `.template-group-delete`) the
+    // delegated handlers listen for.
+    &.disabled {
+        cursor: default;
+        opacity: .45;
+
+        &:hover {
+            background: transparent;
+            color: $gray-600;
+        }
+    }
+}
+
 // Test ID column — a stable identifier, not a measurement, so it stays quiet:
 // narrow, tabular so the digits line up down the column, and secondary-coloured
 // so it never competes with the test name beside it.
@@ -1930,6 +2059,49 @@
         i {
             font-size: 10px;
             color: $gray-500;
+        }
+    }
+
+    // Overdue/due-soon/on-track next-review-date modifiers (Document
+    // Program + Define Exceptions grids -- governance-documents.js and
+    // governance-exceptions.js's twin reviewChipHtml()s). Unlike the
+    // neutral base chip above, a review date IS a status worth flagging --
+    // so it borrows the same soft-tint treatment .sr-state-danger/
+    // -warning/-success use for pills, applied to the chip shape instead of
+    // the pill shape (design calls for "a date chip, not a pill" here).
+    // Text stays the state's dark tone; the icon matches so the whole chip
+    // reads as one signal. `--ok` (7+ days out, or overdue/due-soon
+    // wouldn't have matched first) affirmatively reads "on track" in green
+    // rather than falling back to the neutral gray base chip, which read as
+    // "nothing to report" and made a genuinely fine date look identical to
+    // a date with no status at all.
+    .sr-date-chip--overdue {
+        color: darken($danger, 15%);
+        background: rgba($danger, .10);
+        border-color: rgba($danger, .35);
+
+        i {
+            color: darken($danger, 15%);
+        }
+    }
+
+    .sr-date-chip--due-soon {
+        color: darken($warning, 38%);
+        background: rgba($warning, .18);
+        border-color: rgba($warning, .5);
+
+        i {
+            color: darken($warning, 8%);
+        }
+    }
+
+    .sr-date-chip--ok {
+        color: darken($success, 15%);
+        background: rgba($success, .12);
+        border-color: rgba($success, .35);
+
+        i {
+            color: darken($success, 15%);
         }
     }
 }
@@ -2307,6 +2479,15 @@
         align-items: center;
         gap: 7px;
         padding: 6px 12px;
+        // The button is a direct child of .sr-table-card -- a sibling of
+        // .sr-table-toolbar and .sr-table-quickfilters, both of which carry
+        // their own 16px horizontal inset -- so with no margin of its own it
+        // sits flush against the card's left border, and with nothing below
+        // it but the (still-closed) quickfilters panel, flush against the
+        // table's header row too. margin-left matches that same 16px card
+        // inset every other zone uses; margin-bottom gives it breathing room
+        // before the table whether or not the filter sheet is open below it.
+        margin: 0 0 12px 16px;
         border: 1px solid $gray-400;
         border-radius: 6px;
         background: $sr-body;

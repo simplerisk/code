@@ -17,7 +17,7 @@
     $breadcrumb_title_key = "DefineTests";
     $active_sidebar_menu = "Compliance";
     $active_sidebar_submenu = "DefineTests";
-    render_header_and_sidebar(['blockUI', 'selectize', 'datatables', 'WYSIWYG', 'multiselect', 'datetimerangepicker', 'UILayoutWidget', 'CUSTOM:sr-select.js', 'CUSTOM:sr-row-actions-menu.js', 'CUSTOM:pages/compliance.js', 'CUSTOM:pages/compliance-define-tests.js', 'CUSTOM:common.js'], ['check_compliance' => true], $breadcrumb_title_key, $active_sidebar_menu, $active_sidebar_submenu);
+    render_header_and_sidebar(['blockUI', 'selectize', 'datatables', 'WYSIWYG', 'multiselect', 'datetimerangepicker', 'UILayoutWidget', 'CUSTOM:sr-select.js', 'CUSTOM:sr-row-actions-menu.js', 'CUSTOM:sr-faceted-picker.js', 'CUSTOM:pages/compliance.js', 'CUSTOM:pages/compliance-define-tests.js', 'CUSTOM:common.js'], ['check_compliance' => true], $breadcrumb_title_key, $active_sidebar_menu, $active_sidebar_submenu);
 
     // Include required functions file
     require_once(realpath(__DIR__ . '/../includes/governance.php'));
@@ -82,14 +82,19 @@
     }
 
     // Compliance insights band (Phase 2) — renders for every compliance user
-    // (Core). The Edit-layout control is shown only when the Customization extra
-    // is enabled (page-local gate; the UILayout framework itself does not gate it).
+    // (Core). The Edit-layout control shows the real control when the
+    // Customization Extra is active, or the shared locked teaser otherwise
+    // (customization_acquisition_state(), includes/settings_catalog.php) --
+    // "show what's possible, mark what's locked" rather than the control
+    // simply not being there.
     if (check_permission('compliance')) {
+        require_once(realpath(__DIR__ . '/../includes/settings_catalog.php'));
         // Collapsible here (unlike Home, where the layout IS the page): this band
         // introduces the grid below it rather than being the content, and its
         // ~120px is roughly two table rows on a 1366x768 laptop.
         (new \includes\Widgets\UILayout('define_tests_insights', [
-            'show_edit_layout' => customization_extra(),
+            'show_edit_layout' => true,
+            'edit_layout_locked_state' => customization_acquisition_state(is_admin(), get_setting('registration_registered') == 1),
             'collapsible' => true,
         ]))->render();
     }

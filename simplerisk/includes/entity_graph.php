@@ -633,8 +633,19 @@ function get_asset_connectivity_for_risk($risk_id)
     $associations = [];
     $assets_added = [];
 
+    // If team separation is enabled, restrict both queries below to assets
+    // the caller's teams can see (SR-2039 / HackerOne #3929257: this function
+    // was disclosing hidden cross-team asset names on the risk associations
+    // graph).
+    $asset_team_predicate = "";
+    if (team_separation_extra())
+    {
+        require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
+        $asset_team_predicate = get_user_teams_query_for_assets('a', false, true);
+    }
+
     // Get the assets
-    $stmt = $db->prepare("SELECT DISTINCT id, name FROM assets a LEFT JOIN risks_to_assets rta ON a.id = rta.asset_id WHERE rta.risk_id = :risk_id AND verified=1;");
+    $stmt = $db->prepare("SELECT DISTINCT id, name FROM assets a LEFT JOIN risks_to_assets rta ON a.id = rta.asset_id WHERE rta.risk_id = :risk_id AND verified=1 {$asset_team_predicate};");
     $stmt->bindParam(":risk_id", $id, PDO::PARAM_INT);
     $stmt->execute();
 
@@ -664,7 +675,7 @@ function get_asset_connectivity_for_risk($risk_id)
     }
 
     // Get the asset groups
-    $stmt = $db->prepare("SELECT DISTINCT a.id, a.name FROM risks_to_asset_groups rtag LEFT JOIN risks r ON rtag.risk_id = r.id LEFT JOIN assets_asset_groups aag ON aag.asset_group_id = rtag.asset_group_id LEFT JOIN assets a ON a.id = aag.asset_id WHERE rtag.risk_id = :risk_id;");
+    $stmt = $db->prepare("SELECT DISTINCT a.id, a.name FROM risks_to_asset_groups rtag LEFT JOIN risks r ON rtag.risk_id = r.id LEFT JOIN assets_asset_groups aag ON aag.asset_group_id = rtag.asset_group_id LEFT JOIN assets a ON a.id = aag.asset_id WHERE rtag.risk_id = :risk_id {$asset_team_predicate};");
     $stmt->bindParam(":risk_id", $id, PDO::PARAM_INT);
     $stmt->execute();
 

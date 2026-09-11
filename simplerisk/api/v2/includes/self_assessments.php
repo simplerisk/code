@@ -296,15 +296,27 @@ function api_v2_self_assessment_push_risk($id = null)
  * PENDING RISK                                       *
  *                                                     *
  * Deletes a self-assessment-generated pending risk    *
- * without pushing it to a real risk.                  *
+ * without pushing it to a real risk. Requires both     *
+ * the assessments permission (to act on the pending   *
+ * risk) and the submit_risks permission (to discard   *
+ * it), mirroring the sibling push-to-risk endpoint     *
+ * above. Scoped to self-assessment-generated rows only *
+ * (self_assessment_id IS NOT NULL) — this route can     *
+ * never delete a legacy pending risk, regardless of     *
+ * the id supplied.                                      *
  *****************************************************/
 function api_v2_self_assessment_delete_pending_risk($id = null)
 {
     api_v2_check_permission('assessments');
+    api_v2_check_permission('submit_risks');
 
-    delete_pending_risk((int)($id ?? 0));
+    $id = (int)($id ?? 0);
 
-    json_response(200, "SUCCESS", ['deleted' => (int)($id ?? 0)]);
+    if (!delete_pending_risk($id, true)) {
+        json_response(404, "NOT FOUND", null);
+    }
+
+    json_response(200, "SUCCESS", ['deleted' => $id]);
 }
 
 ?>

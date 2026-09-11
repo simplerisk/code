@@ -55,9 +55,6 @@
         app()->get('/admin/users/all', 'allusers');
         app()->get('/admin/users/enabled', 'enabledusers');
         app()->get('/admin/users/disabled', 'disabledusers');
-        app()->post('/admin/fields/add', 'customization_addCustomField');
-        app()->post('/admin/fields/delete', 'customization_deleteCustomField');
-        app()->get('/admin/fields/get', 'customization_getCustomField');
         app()->get('/reports', 'show_reports');
         app()->get('/reports/dynamic', 'dynamicrisk');
         app()->get('/risk_levels', 'risk_levels');
@@ -141,7 +138,7 @@
         app()->get('/governance/framework', 'getFrameworkResponse');
         app()->post('/governance/update_framework', 'updateFrameworkResponse');
         app()->get('/governance/parent_documents_dropdown', 'getParentDocumentsDropdownResponse');
-        app()->get('/governance/documents', 'getDocumentsResponse');
+        app()->get('/governance/documents', 'getDocumentsResponseV1');
         app()->get('/governance/document', 'getDocumentResponse');
         app()->get('/governance/selected_parent_documents_dropdown', 'getSelectedParentDocumentsDropdownResponse');
         app()->get('/governance/related_controls_by_framework_ids', 'getRelatedControlsByFrameworkIdsResponse');
@@ -230,9 +227,6 @@
         app()->get('/management/tag_options_of_type', 'getTagOptionsOfType');
         app()->get('/management/tag_options_of_types', 'getTagOptionsOfTypes');
 
-        app()->get('/upload_encoding_issue_fix/datatable', 'getFilesWithEncodingIssuesDatatableResponse');
-        app()->post('/upload_encoding_issue_fix/file_upload', 'uploadFileToFixFileEncodingIssue');
-        
         // Return scoring histories
         app()->get('/management/risk/scoring_history', 'scoringHistory');
         app()->get('/management/risk/residual_scoring_history', 'residualScoringHistory');
@@ -280,8 +274,9 @@
         app()->post('/admin/threat_catalog/delete_threat_catalog', 'deleteThreatCatalogAPI');
 
         // This status call needs to be available with ComplianceForge SCF disabled
-        app()->get('/complianceforgescf/enable', 'api_complianceforgescf_enable');
-        app()->get('/complianceforgescf/disable', 'api_complianceforgescf_disable');
+        // Enable/disable are state-changing and must be POST-only (GET is CSRF-able).
+        app()->post('/complianceforgescf/enable', 'api_complianceforgescf_enable');
+        app()->post('/complianceforgescf/disable', 'api_complianceforgescf_disable');
         app()->get('/complianceforgescf/status', 'api_complianceforgescf_status');
 
     // SR-1721: the generic POST /get/datatable route was removed from v1 entirely.

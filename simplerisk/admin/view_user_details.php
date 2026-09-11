@@ -7,6 +7,9 @@
 require_once(realpath(__DIR__ . '/../includes/renderutils.php'));
 render_header_and_sidebar(['multiselect', 'CUSTOM:permissions-widget.js'], ['check_admin' => true], 'Update an Existing User', 'Configure', 'UserManagement');
 
+// Include required functions file
+require_once(realpath(__DIR__ . '/../includes/alerts.php'));
+
 // If a user was posted
 if (isset($_POST['user']))
 {
@@ -69,10 +72,11 @@ if (isset($_POST['update_user']) && isset($_POST['user']))
                 }
             
                 // Update the user
-                update_user($user_id, $lockout, $type, $name, $email, $teams, $role_id, $language, $admin,  $multi_factor, $change_password, $manager, $permissions);
-            
+                $lockout_sessions_cleared = update_user($user_id, $lockout, $type, $name, $email, $teams, $role_id, $language, $admin,  $multi_factor, $change_password, $manager, $permissions);
+
                 // Display an alert
                 set_alert(true, "good", "The user was updated successfully.");
+                alert_if_sessions_not_cleared($lockout_sessions_cleared);
     }
     // Otherwise, the email address is invalid
     else

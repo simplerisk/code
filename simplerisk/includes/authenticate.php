@@ -376,8 +376,10 @@ function set_user_permissions($user, $upgrade = false)
     set_simplerisk_timezone();
 
     // Set the minimal session values
-    // Cast to int: PDO returns MySQL ints as strings, and kill_sessions_of_user()
-    // depends on the uid|i:N; PHP serialization format to locate sessions by REGEXP.
+    // Cast to int: PDO returns MySQL ints as strings. session_user_id_for_write()
+    // only stores an int (or digit-string) uid into sessions.user_id, and the
+    // no-live-session fallback extract_session_data_uid() likewise expects the
+    // uid|i:N; serialization an int produces.
     $_SESSION['uid'] = (int)$array[0]['value'];
     $_SESSION['user'] = $user;
     $_SESSION['name'] = $array[0]['name'];
@@ -848,10 +850,11 @@ function password_reset_by_token($username, $token, $password, $repeat_password)
                 write_debug_log("Password reset successful for username \"" . $username . "\" from IP " . $ip . ".", "info");
 
                 // Clean up other sessions of the user and roll the current session's id
-                kill_other_sessions_of_current_user($userid);
+                $sessions_cleared = kill_other_sessions_of_current_user($userid);
 
                 // Display an alert
                 set_alert(true, "good", "Your password has been reset successfully!");
+                alert_if_sessions_not_cleared($sessions_cleared);
                 return true;
             }
             // The password is not valid
@@ -1417,12 +1420,21 @@ class SimpleRiskSessionHandler implements SessionHandlerInterface
         try {
             $pdo = $this->getPdo();
             $access = time();
+            // Maintain the indexed `user_id` column so kill_sessions_of_user()
+            // (SD-828 / SR-2133) can filter by equality instead of an
+            // unindexed REGEXP scan of `data`.
+            $user_id = session_user_id_for_write($data);
             $stmt = $pdo->prepare(
-                "REPLACE INTO sessions (id, access, data) VALUES (:sess_id, :access, :data)"
+                "REPLACE INTO sessions (id, access, data, user_id) VALUES (:sess_id, :access, :data, :user_id)"
             );
             $stmt->bindParam(':sess_id', $id, \PDO::PARAM_STR);
             $stmt->bindParam(':access', $access, \PDO::PARAM_INT);
             $stmt->bindParam(':data', $data, \PDO::PARAM_LOB);
+            if ($user_id === null) {
+                $stmt->bindValue(':user_id', null, \PDO::PARAM_NULL);
+            } else {
+                $stmt->bindValue(':user_id', $user_id, \PDO::PARAM_INT);
+            }
             $stmt->execute();
 
             $pdo->commit();
@@ -1792,14 +1804,24 @@ function sess_read($sess_id)
 function sess_write($sess_id, $data)
 {
     $access = time();
-    
+
+    // Maintain the indexed `user_id` column so kill_sessions_of_user()
+    // (SD-828 / SR-2133) can filter by equality instead of an unindexed
+    // REGEXP scan of `data`.
+    $user_id = session_user_id_for_write($data);
+
     // Open the database connection
     $db = db_open();
 
-    $stmt = $db->prepare("REPLACE INTO sessions VALUES (:sess_id, :access, :data)");
+    $stmt = $db->prepare("REPLACE INTO sessions (id, access, data, user_id) VALUES (:sess_id, :access, :data, :user_id)");
     $stmt->bindParam(":sess_id", $sess_id, PDO::PARAM_STR);
     $stmt->bindParam(":access", $access, PDO::PARAM_INT);
     $stmt->bindParam(":data", $data, PDO::PARAM_LOB);
+    if ($user_id === null) {
+        $stmt->bindValue(":user_id", null, PDO::PARAM_NULL);
+    } else {
+        $stmt->bindValue(":user_id", $user_id, PDO::PARAM_INT);
+    }
     $stmt->execute();
 
     // Close the database connection
@@ -2307,31 +2329,191 @@ function login($user, $pass)
 }
 
 /****************************************************************************
+ * FUNCTION: EXTRACT SESSION DATA UID                                       *
+ * Pulls the uid out of a raw PHP session data string, or returns null if   *
+ * none is present. PHP's session serializer writes SimpleRisk's uid as     *
+ * 'uid|i:N;' — at the start of the string or right after a semicolon.      *
+ * Used on the session write path (SimpleRiskSessionHandler::write() and    *
+ * sess_write()) to maintain the indexed `sessions`.`user_id` column that   *
+ * kill_sessions_of_user() filters on (SD-828 / SR-2133).                   *
+ ****************************************************************************/
+function extract_session_data_uid($data) {
+
+    if ($data !== '' && preg_match('/(?:^|;)uid\|i:(\d+);/', (string)$data, $matches)) {
+        return (int)$matches[1];
+    }
+
+    return null;
+}
+
+/****************************************************************************
+ * FUNCTION: SESSION USER ID FOR WRITE                                      *
+ * The `sessions`.`user_id` value to persist alongside a session write.     *
+ *                                                                          *
+ * When PHP hands the session handler $data it has just serialized the live *
+ * $_SESSION superglobal, so the superglobal is the authoritative source    *
+ * and is read directly: a `uid` key holding a non-negative integer (or a   *
+ * digit string) is stored, anything else -- including no `uid` at all, as  *
+ * on a pre-login session -- stores NULL. This deliberately does NOT parse   *
+ * the serialized blob: extract_session_data_uid()'s regex cannot tell a    *
+ * real top-level `uid|i:N;` entry from the same bytes sitting inside an    *
+ * earlier string value (e.g. a username containing ";uid|i:N;"), so on a   *
+ * live session it could be steered into recording another user's id in    *
+ * the very column kill_sessions_of_user() filters on.                      *
+ *                                                                          *
+ * The regex parse remains the fallback only when there is no live session  *
+ * to consult (the handler being driven directly, as the unit tests do, or  *
+ * the one-time upgrade backfill of rows written before the column existed, *
+ * which has nothing but the stored blob to go on).                         *
+ ****************************************************************************/
+function session_user_id_for_write($data) {
+
+    if (isset($_SESSION) && is_array($_SESSION) && !empty($_SESSION)) {
+        if (!array_key_exists('uid', $_SESSION)) {
+            return null;
+        }
+        $uid = $_SESSION['uid'];
+        if (is_int($uid) && $uid >= 0) {
+            return $uid;
+        }
+        if (is_string($uid) && ctype_digit($uid)) {
+            return (int)$uid;
+        }
+        return null;
+    }
+
+    return extract_session_data_uid($data);
+}
+
+/****************************************************************************
  * FUNCTION: KILL SESSIONS OF USER                                          *
  * Used to kill off sessions of a user.                                     *
  * Set $keep_current_session to true if the current session should be kept. *
+ *                                                                          *
+ * SD-828 / SR-2133: this used to DELETE ... WHERE `data` REGEXP :pattern,  *
+ * an unindexed full-table scan that could take enough next-key locks to   *
+ * hit MySQL's innodb_lock_wait_timeout under concurrent writes to          *
+ * `sessions`, throwing an uncaught PDOException that turned logout and     *
+ * password-reset into a 500 after a ~50s hang. Filtering on the maintained *
+ * `user_id` column (see extract_session_data_uid()) makes this an indexed  *
+ * equality lookup instead. The lock-wait timeout is still capped and the   *
+ * failure still caught below as defense in depth — a session row can still *
+ * be briefly locked (e.g. SimpleRiskSessionHandler's FOR UPDATE window),   *
+ * and a failure here should never block the logout/reset it's cleaning up  *
+ * after.                                                                   *
+ *                                                                          *
+ * Returns true if every targeted session was deleted (including "nothing  *
+ * to delete"), false if the lookup or any single delete was caught below — *
+ * the caller is responsible for surfacing that to the operator/user rather *
+ * than reporting an unconditional success, since a false return means at   *
+ * least one target session is still live.                                  *
+ *                                                                          *
+ * Two statements, not one: the lookup and the delete are split on purpose. *
+ * A single `DELETE ... WHERE id <> :sid AND user_id = :uid` makes the      *
+ * optimizer walk the user_id index, which includes the CURRENT session's   *
+ * index entry -- and that row is X-locked by SimpleRiskSessionHandler's    *
+ * own connection for the whole request (its read() is SELECT ... FOR       *
+ * UPDATE, released at session_write_close()/destroy()). InnoDB then waits  *
+ * on our own request's lock, hits the cap below, and the caller silently   *
+ * keeps every other session alive (caught by the session-invalidation e2e  *
+ * spec). The old REGEXP form only worked because `id <> :sid` drove a      *
+ * primary-key range that skipped the current row. A plain SELECT is a      *
+ * non-locking consistent read, and a DELETE by primary key never touches   *
+ * the excluded row, so neither statement contends with the handler's lock. *
+ *                                                                          *
+ * Both statements run on a dedicated, short-lived connection whose         *
+ * lock-wait cap is set at connect time (the same pattern as                *
+ * SimpleRiskSessionHandler::getPdo()), so the cap can never leak into the  *
+ * shared request connection and there is nothing to reset afterwards.      *
+ *                                                                          *
+ * Residual race, unchanged in kind from the single-statement form: a       *
+ * session row for this user that is created after the lookup (a login      *
+ * completing on another device in that instant) is not in the id list and  *
+ * survives, exactly as a login completing just after a single DELETE would *
+ * have. The true return therefore means "every session that existed when   *
+ * we looked was removed", not "no session for this user can exist now".    *
  ****************************************************************************/
 function kill_sessions_of_user($user_id, $keep_current_session = false) {
 
-    $db = db_open();
+    $uid = (int)$user_id;
+    $sid = $keep_current_session ? (string)session_id() : '';
 
-    // PHP session serialization stores uid as 'uid|i:N;' — match it at the
-    // start of the data string or after a semicolon to avoid false positives
-    $uid_pattern = '(^|;)uid\\|i:' . (int)$user_id . ';';
+    $succeeded = true;
+    $pdo = null;
 
-    if ($keep_current_session) {
-        $sid = session_id();
-        $stmt = $db->prepare("DELETE FROM sessions WHERE `id` <> :session_id AND `data` REGEXP :uid_pattern");
-        $stmt->bindParam(":session_id", $sid);
-        $stmt->bindParam(":uid_pattern", $uid_pattern);
-    } else {
-        $stmt = $db->prepare("DELETE FROM sessions WHERE `data` REGEXP :uid_pattern");
-        $stmt->bindParam(":uid_pattern", $uid_pattern);
+    try {
+        // Cap the wait for THESE queries only, so a briefly-locked sessions
+        // row degrades to "didn't clean up other sessions this time" instead
+        // of hanging for MySQL's full default (50s) before failing.
+        $pdo = open_sessions_cleanup_connection(3);
+
+        // Step 1: find the target session ids with a non-locking read.
+        if ($keep_current_session) {
+            $stmt = $pdo->prepare("SELECT `id` FROM sessions WHERE `user_id` = :user_id AND `id` <> :session_id");
+            $stmt->bindParam(":session_id", $sid, PDO::PARAM_STR);
+        } else {
+            $stmt = $pdo->prepare("SELECT `id` FROM sessions WHERE `user_id` = :user_id");
+        }
+        $stmt->bindParam(":user_id", $uid, PDO::PARAM_INT);
+        $stmt->execute();
+        $session_ids = $stmt->fetchAll(PDO::FETCH_COLUMN);
+
+        // Step 2: delete them by primary key, never by the user_id index --
+        // and one row per statement. A single batched `DELETE ... WHERE id
+        // IN (...)` is all-or-nothing: if ANY listed row is locked (another
+        // of this user's sessions mid-request, holding the handler's FOR
+        // UPDATE lock), the whole statement waits out the cap and rolls back
+        // with zero rows deleted, so a disable/delete/password-reset would
+        // silently leave every session alive. Per-row deletes let a locked
+        // row be the only survivor, and $succeeded still reports it.
+        $stmt = $pdo->prepare("DELETE FROM sessions WHERE `id` = :id");
+        foreach ($session_ids as $session_id) {
+            try {
+                $stmt->bindValue(":id", $session_id, PDO::PARAM_STR);
+                $stmt->execute();
+            } catch (PDOException $e) {
+                $succeeded = false;
+                // Log the user, never the session id: the id is the bearer
+                // credential for a session that is, per this branch, still live.
+                write_debug_log("kill_sessions_of_user: failed to kill one of the sessions of user " . $uid . " (it is still live), continuing with the rest: " . $e->getMessage(), "warning");
+            }
+        }
+    } catch (PDOException $e) {
+        $succeeded = false;
+        write_debug_log("kill_sessions_of_user: failed to look up the sessions of user " . $uid . ", continuing without blocking logout/reset: " . $e->getMessage(), "warning");
     }
 
-    $stmt->execute();
+    // Dropping the only reference closes the dedicated connection.
+    $stmt = null;
+    $pdo = null;
 
-    db_close($db);
+    return $succeeded;
+}
+
+/****************************************************************************
+ * FUNCTION: OPEN SESSIONS CLEANUP CONNECTION                               *
+ * A dedicated PDO connection for kill_sessions_of_user(), separate from    *
+ * the request-lifetime db_open() connection. Mirrors                        *
+ * SimpleRiskSessionHandler::getPdo(): the InnoDB lock-wait cap is applied   *
+ * through the connection's init command, so it is scoped to this           *
+ * connection's lifetime by construction -- no SET SESSION on the shared    *
+ * connection, and no reset that could itself fail and leave every later    *
+ * query in the request running under the tightened cap.                    *
+ ****************************************************************************/
+function open_sessions_cleanup_connection($lock_wait_timeout_seconds) {
+
+    $dsn = "mysql:charset=UTF8;dbname=" . DB_DATABASE . ";host=" . DB_HOSTNAME . ";port=" . DB_PORT;
+    $pdo_mysql_init_command = defined('Pdo\Mysql::ATTR_INIT_COMMAND') ? constant('Pdo\Mysql::ATTR_INIT_COMMAND') : PDO::MYSQL_ATTR_INIT_COMMAND;
+    $pdo_mysql_ssl_ca       = defined('Pdo\Mysql::ATTR_SSL_CA')       ? constant('Pdo\Mysql::ATTR_SSL_CA')       : PDO::MYSQL_ATTR_SSL_CA;
+    $options = [
+        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+        $pdo_mysql_init_command => "SET NAMES utf8mb4, @@session.innodb_lock_wait_timeout = " . (int)$lock_wait_timeout_seconds,
+    ];
+    if (defined('DB_SSL_CERTIFICATE_PATH') && DB_SSL_CERTIFICATE_PATH !== '') {
+        $options[$pdo_mysql_ssl_ca] = DB_SSL_CERTIFICATE_PATH;
+    }
+
+    return new PDO($dsn, DB_USERNAME, DB_PASSWORD, $options);
 }
 
 /********************************************************************
@@ -2339,16 +2521,59 @@ function kill_sessions_of_user($user_id, $keep_current_session = false) {
  * Used to kill off possible other sessions of  the                 *
  * logged in user and rolls session id of the                       *
  * current one to make sure noone can re-use the session cookies.   *
+ *                                                                    *
+ * Returns true if the other sessions were cleared (or there was     *
+ * nothing to clear), false if kill_sessions_of_user() failed -- see *
+ * its docblock. Callers should surface a false return to the user   *
+ * rather than reporting an unconditional success, since this is the *
+ * SR-2038 / HackerOne #3929251 fix: a stale session surviving a      *
+ * password change is exactly the bug a silent failure re-opens.     *
  ********************************************************************/
 function kill_other_sessions_of_current_user($userid = false) {
 
-    if(isset($_SESSION['uid']) || $userid) kill_sessions_of_user($_SESSION['uid'] ?? $userid, true);
+    $killed = true;
+    if (isset($_SESSION['uid']) || $userid) {
+        $killed = kill_sessions_of_user($_SESSION['uid'] ?? $userid, true);
+    }
 
-    // change session ID for the current session and invalidate old session ID
-    session_regenerate_id(true);
+    // SR-2038 / HackerOne #3929251: both Profile Details (account/profile.php)
+    // and the legacy Change Password page (account/change_password.php) call
+    // this function from a POST handler that runs AFTER head.php's post-auth
+    // session_write_close() (see CLAUDE.md's "Session Writes After
+    // Authentication"). On a closed session, session_regenerate_id() has no
+    // active session to regenerate -- PHP emits an E_WARNING and returns
+    // false -- so the browser kept using the pre-change session cookie and a
+    // previously copied copy of that cookie stayed valid right through a
+    // password change.
+    //
+    // Reopen the session first, exactly like with_alert_session()
+    // (includes/alerts.php) does for alert writes, but WITHOUT its
+    // use_cookies=0 override: that option calls ini_set('session.use_cookies', 0)
+    // for the rest of the request, which would silently suppress the fresh
+    // Set-Cookie that session_regenerate_id() needs to send so the current,
+    // legitimate browser keeps working under the rolled id. Alerts never
+    // change the session id, so they can get away with suppressing the
+    // cookie; a session-id rotation cannot.
+    $reopened = false;
+    if (session_status() === PHP_SESSION_NONE
+        && (session_id() !== '' || !empty($_COOKIE[session_name()]))) {
+        @session_start();
+        $reopened = true;
+    }
 
-    // update creation time
-    $_SESSION['CREATED'] = time();
+    if (session_status() === PHP_SESSION_ACTIVE) {
+        // change session ID for the current session and invalidate old session ID
+        session_regenerate_id(true);
+
+        // update creation time
+        $_SESSION['CREATED'] = time();
+    }
+
+    if ($reopened) {
+        session_write_close();
+    }
+
+    return $killed;
 }
 
 /*****************************
@@ -2361,6 +2586,88 @@ function migrate_to_totp($app)
 
     // Set the MFA app in the session
     $_SESSION['mfa_app'] = $app;
+}
+
+/*********************************************************************
+ * FUNCTION: SAML METADATA SCHEMA FILE                               *
+ * The schema path SimpleSAMLphp's Utils\XML::isValid() resolves     *
+ * internally: getVendorDir() . 'simplesamlphp/saml2/resources/       *
+ * schemas/' . $schema. Mirrored here so a caller can check that the  *
+ * file is readable BEFORE isValid() hands it to                      *
+ * DOMDocument::schemaValidate(), which raises a raw PHP warning      *
+ * straight to error_log when the file cannot be loaded.              *
+ *********************************************************************/
+function saml_metadata_schema_file(string $vendor_dir, string $schema = 'saml-schema-metadata-2.0.xsd'): string
+{
+    return rtrim($vendor_dir, '/\\') . '/simplesamlphp/saml2/resources/schemas/' . $schema;
+}
+
+/*********************************************************************
+ * FUNCTION: SAML METADATA SCHEMA CHECK                              *
+ * Decides what to log about an IdP metadata document's schema        *
+ * validation and returns [log level, message]. This is diagnostic,   *
+ * not a gate: the metadata is parsed either way, exactly as before.  *
+ * isValid() returns true or a non-empty error string (never false),  *
+ * so its result never worked as a gate anyway, and                   *
+ * checkSAMLMessage() enforces validation when the SimpleSAMLphp      *
+ * 'validatexml' debug option is enabled. When the schema file is not *
+ * readable the validator is not called at all, which is what keeps   *
+ * schemaValidate()'s per-login warning out of error_log.             *
+ * $validator is Utils\XML::isValid() in production and is injected   *
+ * so the decision can be tested without SimpleSAMLphp.               *
+ *********************************************************************/
+function saml_metadata_schema_check(string $metadata_xml, string $schema_file, callable $validator): array
+{
+    // A persistent configuration gap re-checked on every login: notice, not
+    // warning (see the choosing-log-levels rubric). The condition is an
+    // actionable administrative fix, not an unexpected per-request event.
+    if (!is_readable($schema_file)) {
+        return ['notice', "SAML metadata schema file is not readable at {$schema_file}. Skipping schema validation and parsing the metadata as received."];
+    }
+
+    $result = $validator($metadata_xml, basename($schema_file));
+    if ($result === true) {
+        return ['info', "SAML metadata XML is valid. Parsing metadata."];
+    }
+
+    // The detail is libxml's formatted error list for an externally-served
+    // document (the IdP's metadata). Collapse it onto one line and cap it so
+    // a crafted document cannot forge log lines or bloat the log.
+    $max_detail_bytes = 1000;
+    $detail = trim((string) preg_replace('/\s*[\r\n]+\s*/', ' | ', (string) $result), " |");
+    if (strlen($detail) > $max_detail_bytes) {
+        // mb_strcut() cuts on a byte length without splitting a multi-byte character.
+        $detail = mb_strcut($detail, 0, $max_detail_bytes, 'UTF-8') . ' [truncated]';
+    }
+    return ['warning', "SAML metadata did not validate against the schema. Parsing the metadata anyway." . ($detail === '' ? '' : ' ' . $detail)];
+}
+
+/*********************************************************************
+ * FUNCTION: ENSURE SAML SECRETSALT                                  *
+ * The single generate-if-absent path for SimpleSAMLphp's secretsalt, *
+ * used by the shipped SimpleSAMLphp config.php                       *
+ * (scripts/simplesamlphp/config/config.php) and by the Custom        *
+ * Authentication Extra's activation. Reused across upgrades so       *
+ * existing SimpleSAMLphp sessions stay valid. When a value is         *
+ * generated, any SimpleSAMLphp_kvstore rows HMAC'd with a previous   *
+ * (or absent) salt are unreadable garbage, so they are cleared. The  *
+ * table is created lazily by SimpleSAMLphp on first SAML use, hence  *
+ * the table_exists() guard. Lives in Core, not the Extra, because     *
+ * config.php ships with Core and must not depend on the customer's   *
+ * Extra being at least as new as Core.                               *
+ *********************************************************************/
+function ensure_saml_secretsalt(?bool &$generated = null): string
+{
+    $secretsalt = ensure_random_secret_setting('SAML_SECRETSALT', 16, $generated);
+
+    if ($generated && table_exists('SimpleSAMLphp_kvstore')) {
+        $db = db_open();
+        $db->exec("DELETE FROM `SimpleSAMLphp_kvstore`");
+        db_close($db);
+        write_debug_log("Cleared SimpleSAMLphp_kvstore after SAML_SECRETSALT generation.", 'notice');
+    }
+
+    return $secretsalt;
 }
 
 ?>

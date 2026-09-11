@@ -650,6 +650,7 @@ interface BaseToolbarButtonInstanceApi {
     setEnabled: (state: boolean) => void;
     setText: (text: string) => void;
     setIcon: (icon: string) => void;
+    setTooltip: (tooltip: string) => void;
 }
 interface ToolbarButtonSpec extends BaseToolbarButtonSpec<ToolbarButtonInstanceApi> {
     type?: 'button';
@@ -821,6 +822,7 @@ interface BaseMenuButtonInstanceApi {
     setActive: (state: boolean) => void;
     setText: (text: string) => void;
     setIcon: (icon: string) => void;
+    setTooltip: (tooltip: string) => void;
 }
 interface ToolbarMenuButtonSpec extends BaseMenuButtonSpec {
     type?: 'menubutton';
@@ -2101,6 +2103,7 @@ interface EditorOptions extends NormalizedEditorOptions {
     pad_empty_with_br: boolean;
     paste_as_text: boolean;
     preview_styles: string;
+    preview_content_callback?: (content: string) => string;
     readonly: boolean;
     removed_menuitems: string;
     sandbox_iframes: boolean;

@@ -105,6 +105,11 @@ function autoloader(string $name)
     {
         require_once realpath(__DIR__ . '/self_assessments.php');
     }
+
+    if (file_exists(realpath(__DIR__ . '/data_integrity.php')))
+    {
+        require_once realpath(__DIR__ . '/data_integrity.php');
+    }
 }
 
 // Include required functions file
@@ -126,6 +131,7 @@ $scan_directories = [
     realpath(__DIR__ . '/ui.php'),
     realpath(__DIR__ . '/notifications.php'),
     realpath(__DIR__ . '/self_assessments.php'),
+    realpath(__DIR__ . '/data_integrity.php'),
 ];
 
 // If the Secure Controls Framework (SCF) Extra is installed

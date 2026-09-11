@@ -1674,6 +1674,8 @@ function get_latest_audit_rejection_comment($audit_id) {
  * branch in the first place (audit_requires_approval() gates that).   *
  *******************************************************************/
 function notify_audit_awaiting_approval($audit_id) {
+    global $escaper;
+
     $audit = get_framework_control_test_audit_by_id($audit_id);
     if (empty($audit['id']) || empty($audit['test_id'])) {
         return;
@@ -1685,10 +1687,29 @@ function notify_audit_awaiting_approval($audit_id) {
         return;
     }
 
+    // SR-2095: $audit['name'] is copied from the parent test's name, which a
+    // define_tests user controls -- it is not vetted/sanitized input. This
+    // is interpolated via _lang_raw() (no escaping) into the notification
+    // body, which is persisted and later handed to the recipient's
+    // notification UI. Defense in depth alongside the js/simplerisk/
+    // notifications.js stripHtml() fix (the primary control): escape it here
+    // so the stored body never carries live markup, even if a future
+    // rendering path forgets to treat it as untrusted.
+    //
+    // Body only, not title: the notification title is rendered with a
+    // single escapeHtml() pass client-side and nothing decodes entities
+    // first, so pre-escaping it here would double-encode (e.g. "&lt;"
+    // becomes "&amp;lt;" on display). The body instead flows through
+    // stripHtml()'s DOMParser-based extraction before any client escaping --
+    // parsing decodes HTML entities back to their literal characters as
+    // plain text, so escaping here and letting stripHtml() decode it is the
+    // correct one-encode/one-decode round trip.
+    $safe_test_name = $escaper->escapeHtml($audit['name']);
+
     create_notification_for_user_ids(
         source:     'workflow',
         title:      _lang_raw('NotificationAuditAwaitingApprovalTitle', ['test_audit_name' => $audit['name']]),
-        body:       _lang_raw('NotificationAuditAwaitingApprovalBody', ['test_audit_name' => $audit['name']]),
+        body:       _lang_raw('NotificationAuditAwaitingApprovalBody', ['test_audit_name' => $safe_test_name]),
         link:       build_url("compliance/testing.php?id=" . $audit_id),
         user_ids:   $approver_ids,
         created_by: $_SESSION['uid'] ?? null,
@@ -3704,151 +3725,190 @@ function initiate_test_audit($test_id, $initiated_audit_status, $tags=[], $reque
     // Open the database connection
     $db = db_open();
 
-    // Phase 4b (common tests): one audit per test per open due-window,
-    // across separate initiate calls (e.g. two control-button clicks that
-    // both fan out to the same common test -- Task 3a's junction-routed
-    // fan-out above is what makes that collision possible in the first
-    // place). If this test already has an audit for the SAME next_date
-    // window that is still open (not truly closed) or awaiting approval,
-    // this initiate is a no-op: hand back the existing audit id and return
-    // without inserting a duplicate audit/result/snapshot. A NEW due-window
-    // (different next_date) or a fully truly-closed prior audit
-    // (status=closed AND approval_state IN ('none','approved')) is NOT
-    // suppressed -- matches Josh's decision that a new window still
-    // initiates. Tests with no meaningful window can't be window-deduped, so
-    // the guard is skipped entirely for them: next_date null/empty, OR the
-    // zero-date sentinel '0000-00-00' (framework_control_tests.next_date is
-    // NOT NULL, so a "no schedule" test -- e.g. manual schedule_type -- stores
-    // '0000-00-00', not real NULL; without this a manual test would wrongly
-    // window-dedup all its re-initiations against a single zero-date bucket).
-    $next_date = $test['next_date'] ?? null;
-    if (!empty($next_date) && $next_date !== '0000-00-00') {
-        // Reuse the same "truly closed" predicate used throughout this file
-        // (see get_framework_control_test_audits()'s Active/Past view wheres):
-        // open/in-flight = status <> closed OR approval_state = 'pending'.
-        $closed_audit_status = (int)get_setting("closed_audit_status");
+    // SR-2089: the due-window duplicate-audit check below used to be a plain
+    // check-then-insert (SELECT, then a separate INSERT) with no lock and no
+    // unique constraint backing it. Two concurrent callers -- e.g. two
+    // control-button clicks, or a UI click racing the cron initiate path --
+    // could both run the SELECT before either INSERT committed, both see "no
+    // open audit", and each create its own audit/result/snapshot for the
+    // same test and due window. Wrapping the check and the insert in one
+    // transaction, with the check done as a locking SELECT ... FOR UPDATE,
+    // closes the race: a second concurrent caller blocks on the first
+    // caller's row lock, and once unblocked its locking re-read sees the
+    // audit the first caller just committed (locking reads always read the
+    // latest committed data, not a snapshot) and takes the existing-audit
+    // no-op branch instead of inserting a duplicate.
+    $db->beginTransaction();
 
-        $stmt = $db->prepare("
-            SELECT id FROM `framework_control_test_audits`
-            WHERE test_id = :test_id AND next_date = :next_date
-                AND (status <> :closed OR approval_state = 'pending')
-            ORDER BY id DESC LIMIT 1;
-        ");
+    try {
+        // Phase 4b (common tests): one audit per test per open due-window,
+        // across separate initiate calls (e.g. two control-button clicks that
+        // both fan out to the same common test -- Task 3a's junction-routed
+        // fan-out above is what makes that collision possible in the first
+        // place). If this test already has an audit for the SAME next_date
+        // window that is still open (not truly closed) or awaiting approval,
+        // this initiate is a no-op: hand back the existing audit id and return
+        // without inserting a duplicate audit/result/snapshot. A NEW due-window
+        // (different next_date) or a fully truly-closed prior audit
+        // (status=closed AND approval_state IN ('none','approved')) is NOT
+        // suppressed -- matches Josh's decision that a new window still
+        // initiates. Tests with no meaningful window can't be window-deduped, so
+        // the guard is skipped entirely for them: next_date null/empty, OR the
+        // zero-date sentinel '0000-00-00' (framework_control_tests.next_date is
+        // NOT NULL, so a "no schedule" test -- e.g. manual schedule_type -- stores
+        // '0000-00-00', not real NULL; without this a manual test would wrongly
+        // window-dedup all its re-initiations against a single zero-date bucket).
+        $next_date = $test['next_date'] ?? null;
+        if (!empty($next_date) && $next_date !== '0000-00-00') {
+            // Reuse the same "truly closed" predicate used throughout this file
+            // (see get_framework_control_test_audits()'s Active/Past view wheres):
+            // open/in-flight = status <> closed OR approval_state = 'pending'.
+            $closed_audit_status = (int)get_setting("closed_audit_status");
+
+            // FOR UPDATE: takes a row/gap lock (via idx_fct_audits_test_id_created,
+            // whose leading column is test_id) so a second concurrent transaction
+            // running this same SELECT blocks here instead of racing past it.
+            $stmt = $db->prepare("
+                SELECT id FROM `framework_control_test_audits`
+                WHERE test_id = :test_id AND next_date = :next_date
+                    AND (status <> :closed OR approval_state = 'pending')
+                ORDER BY id DESC LIMIT 1
+                FOR UPDATE;
+            ");
+            $stmt->bindParam(":test_id", $test_id, PDO::PARAM_INT);
+            $stmt->bindParam(":next_date", $next_date, PDO::PARAM_STR);
+            $stmt->bindParam(":closed", $closed_audit_status, PDO::PARAM_INT);
+            $stmt->execute();
+            $existing_audit_id = $stmt->fetchColumn();
+
+            if ($existing_audit_id) {
+                $out_audit_id = (int)$existing_audit_id;
+
+                // Nothing was written on this connection -- commit just to
+                // release the FOR UPDATE lock promptly rather than holding it
+                // until the connection is later reused/closed.
+                if ($db->inTransaction()) {
+                    $db->commit();
+                }
+
+                // Close the database connection
+                db_close($db);
+
+                return $name;
+            }
+        }
+
+        $sql = "
+            INSERT INTO
+                `framework_control_test_audits`(test_id, tester, test_frequency, last_date, next_date, name, objective, test_steps, approximate_time, expected_results, framework_control_id, desired_frequency, status, created_at)
+            SELECT
+                t1.id as test_id, t1.tester, t1.test_frequency, t1.last_date, t1.next_date, t1.name, t1.objective, t1.test_steps, t1.approximate_time, t1.expected_results, t1.framework_control_id, t1.desired_frequency, {$initiated_audit_status} as status, NOW() as created_at
+            FROM framework_control_tests t1
+            WHERE
+                t1.id=:test_id;
+        ";
+
+        // Create temp table from framework_control_test
+        $stmt = $db->prepare($sql);
         $stmt->bindParam(":test_id", $test_id, PDO::PARAM_INT);
-        $stmt->bindParam(":next_date", $next_date, PDO::PARAM_STR);
-        $stmt->bindParam(":closed", $closed_audit_status, PDO::PARAM_INT);
+
         $stmt->execute();
-        $existing_audit_id = $stmt->fetchColumn();
 
-        if ($existing_audit_id) {
-            $out_audit_id = (int)$existing_audit_id;
+        $audit_id = $db->lastInsertId();
 
-            // Close the database connection
-            db_close($db);
-
-            return $name;
+        // Phase 4b (common tests): snapshot the test's control set into
+        // audit_control_map at initiation time, so the audit "belongs to" every
+        // control the common test maps to -- not just the scalar
+        // framework_control_id (already copied by the INSERT..SELECT above,
+        // kept as the back-compat min-control column). $test['controls'] was
+        // already loaded via get_framework_control_test_by_id() at the top of
+        // this function. Fall back to the scalar framework_control_id for
+        // pre-4a tests that have no test_control_map rows, so the snapshot is
+        // never empty. Written on the already-open $db (not save_junction_values,
+        // which opens its own connection) so it's transactionally coherent with
+        // the audit insert above. Reachable from both the UI and cron initiate
+        // paths, since both call initiate_test_audit().
+        $snap = array_map('intval', $test['controls'] ?? []);
+        $snap = array_values(array_filter($snap));
+        if (empty($snap) && !empty($test['framework_control_id'])) {
+            $snap = [(int)$test['framework_control_id']];
         }
-    }
-
-    $sql = "
-        INSERT INTO
-            `framework_control_test_audits`(test_id, tester, test_frequency, last_date, next_date, name, objective, test_steps, approximate_time, expected_results, framework_control_id, desired_frequency, status, created_at)
-        SELECT
-            t1.id as test_id, t1.tester, t1.test_frequency, t1.last_date, t1.next_date, t1.name, t1.objective, t1.test_steps, t1.approximate_time, t1.expected_results, t1.framework_control_id, t1.desired_frequency, {$initiated_audit_status} as status, NOW() as created_at
-        FROM framework_control_tests t1
-        WHERE
-            t1.id=:test_id;
-    ";
-
-    // Create temp table from framework_control_test
-    $stmt = $db->prepare($sql);
-    $stmt->bindParam(":test_id", $test_id, PDO::PARAM_INT);
-
-    $stmt->execute();
-
-    $audit_id = $db->lastInsertId();
-
-    // Phase 4b (common tests): snapshot the test's control set into
-    // audit_control_map at initiation time, so the audit "belongs to" every
-    // control the common test maps to -- not just the scalar
-    // framework_control_id (already copied by the INSERT..SELECT above,
-    // kept as the back-compat min-control column). $test['controls'] was
-    // already loaded via get_framework_control_test_by_id() at the top of
-    // this function. Fall back to the scalar framework_control_id for
-    // pre-4a tests that have no test_control_map rows, so the snapshot is
-    // never empty. Written on the already-open $db (not save_junction_values,
-    // which opens its own connection) so it's transactionally coherent with
-    // the audit insert above. Reachable from both the UI and cron initiate
-    // paths, since both call initiate_test_audit().
-    $snap = array_map('intval', $test['controls'] ?? []);
-    $snap = array_values(array_filter($snap));
-    if (empty($snap) && !empty($test['framework_control_id'])) {
-        $snap = [(int)$test['framework_control_id']];
-    }
-    if (!empty($snap)) {
-        // Positional placeholders (not a repeated named :aid) so the multi-row
-        // INSERT works regardless of PDO::ATTR_EMULATE_PREPARES -- native MySQL
-        // prepares reject a named placeholder reused across value groups.
-        $value_groups = array_fill(0, count($snap), '(?, ?)');
-        $params = [];
-        foreach ($snap as $control_id) {
-            $params[] = (int)$audit_id;
-            $params[] = (int)$control_id;
+        if (!empty($snap)) {
+            // Positional placeholders (not a repeated named :aid) so the multi-row
+            // INSERT works regardless of PDO::ATTR_EMULATE_PREPARES -- native MySQL
+            // prepares reject a named placeholder reused across value groups.
+            $value_groups = array_fill(0, count($snap), '(?, ?)');
+            $params = [];
+            foreach ($snap as $control_id) {
+                $params[] = (int)$audit_id;
+                $params[] = (int)$control_id;
+            }
+            $stmt = $db->prepare("
+                INSERT IGNORE INTO `audit_control_map` (`audit_id`, `framework_control_id`)
+                VALUES " . implode(', ', $value_groups) . ";
+            ");
+            $stmt->execute($params);
         }
+
+        // Stamp approval_state on the new audit. Tests with >=1 configured approver
+        // (Phase 3a) require sign-off before a close sticks -- start those audits
+        // 'pending' so save_test_result()'s close branch (below, ~2851) knows to
+        // hold rather than advance. Tests with no approvers keep the column's
+        // 'none' default (today's behavior). Applies to both the UI and cron
+        // initiation paths, since both call initiate_test_audit().
+        if (count($test['approvers'] ?? []) >= 1) {
+            $stmt = $db->prepare("UPDATE `framework_control_test_audits` SET `approval_state`='pending' WHERE `id`=:audit_id;");
+            $stmt->bindParam(":audit_id", $audit_id, PDO::PARAM_INT);
+            $stmt->execute();
+        }
+
+        // Expose the new audit id to callers that want to navigate straight to it
+        // (e.g. the dashboard's one-click "Start test"). Return stays the name for
+        // backward compatibility with the existing alert-message callers.
+        $out_audit_id = (int) $audit_id;
+
+        $stmt = $db->prepare("INSERT INTO framework_control_test_results (`test_audit_id`) VALUES(:test_audit_id);");
+        $stmt->bindParam(":test_audit_id", $audit_id, PDO::PARAM_INT);
+        $stmt->execute();
+        $result_id = $db->lastInsertId();
+
         $stmt = $db->prepare("
-            INSERT IGNORE INTO `audit_control_map` (`audit_id`, `framework_control_id`)
-            VALUES " . implode(', ', $value_groups) . ";
-        ");
-        $stmt->execute($params);
-    }
-
-    // Stamp approval_state on the new audit. Tests with >=1 configured approver
-    // (Phase 3a) require sign-off before a close sticks -- start those audits
-    // 'pending' so save_test_result()'s close branch (below, ~2851) knows to
-    // hold rather than advance. Tests with no approvers keep the column's
-    // 'none' default (today's behavior). Applies to both the UI and cron
-    // initiation paths, since both call initiate_test_audit().
-    if (count($test['approvers'] ?? []) >= 1) {
-        $stmt = $db->prepare("UPDATE `framework_control_test_audits` SET `approval_state`='pending' WHERE `id`=:audit_id;");
-        $stmt->bindParam(":audit_id", $audit_id, PDO::PARAM_INT);
+            SELECT t1.* FROM `framework_control_test_results` t1
+            INNER JOIN `framework_control_test_audits` t2 ON t1.test_audit_id = t2.id
+            WHERE t2.test_id = :test_id AND t1.id != :result_id AND t1.test_result != 'Pass' 
+            ORDER By id DESC LIMIT 0,1");
+        $stmt->bindParam(":test_id", $test_id, PDO::PARAM_INT);
+        $stmt->bindParam(":result_id", $result_id, PDO::PARAM_INT);
         $stmt->execute();
-    }
-
-    // Expose the new audit id to callers that want to navigate straight to it
-    // (e.g. the dashboard's one-click "Start test"). Return stays the name for
-    // backward compatibility with the existing alert-message callers.
-    $out_audit_id = (int) $audit_id;
-
-    $stmt = $db->prepare("INSERT INTO framework_control_test_results (`test_audit_id`) VALUES(:test_audit_id);");
-    $stmt->bindParam(":test_audit_id", $audit_id, PDO::PARAM_INT);
-    $stmt->execute();
-    $result_id = $db->lastInsertId();
-
-    $stmt = $db->prepare("
-        SELECT t1.* FROM `framework_control_test_results` t1
-        INNER JOIN `framework_control_test_audits` t2 ON t1.test_audit_id = t2.id
-        WHERE t2.test_id = :test_id AND t1.id != :result_id AND t1.test_result != 'Pass' 
-        ORDER By id DESC LIMIT 0,1");
-    $stmt->bindParam(":test_id", $test_id, PDO::PARAM_INT);
-    $stmt->bindParam(":result_id", $result_id, PDO::PARAM_INT);
-    $stmt->execute();
-    $test_result = $stmt->fetch(PDO::FETCH_ASSOC);
-    if($test_result){
-        $risk_ids = get_test_result_to_risk_ids($test_result["id"]);
-        foreach($risk_ids as $risk_id) {
-            save_test_result_to_risk($result_id, $risk_id);
+        $test_result = $stmt->fetch(PDO::FETCH_ASSOC);
+        if($test_result){
+            $risk_ids = get_test_result_to_risk_ids($test_result["id"]);
+            foreach($risk_ids as $risk_id) {
+                save_test_result_to_risk($result_id, $risk_id);
+            }
         }
+
+        updateTeamsOfItem($audit_id, 'audit', $test['teams']);
+
+        // Add Tags to Test 
+        $tags_current = getTagsOfTaggee($test_id, "test");
+        $new_tags = array_unique(array_merge($tags, $tags_current));
+        updateTagsOfType($audit_id, 'test_audit', $new_tags);
+
+        // Commit the new audit (and everything snapshotted alongside it),
+        // releasing the FOR UPDATE lock taken above.
+        if ($db->inTransaction()) {
+            $db->commit();
+        }
+    } catch (Throwable $e) {
+        if ($db->inTransaction()) {
+            $db->rollBack();
+        }
+        throw $e;
+    } finally {
+        // Close the database connection
+        db_close($db);
     }
-
-    updateTeamsOfItem($audit_id, 'audit', $test['teams']);
-
-    // Add Tags to Test 
-    $tags_current = getTagsOfTaggee($test_id, "test");
-    $new_tags = array_unique(array_merge($tags, $tags_current));
-    updateTagsOfType($audit_id, 'test_audit', $new_tags);
-
-    // Close the database connection
-    db_close($db);
 
     // Send the notification (no-op if notification extra is disabled)
     call_extra_function(
@@ -4267,15 +4327,29 @@ function get_framework_control_test_audits($active, $columnName=false, $columnDi
 /*******************************
  * FUNCTION: SAVE TEST COMMENT *
  *******************************/
-function save_test_comment($test_audit_id, $comment){
+// SR-2090: returns bool -- whether a comment row was actually inserted. The
+// caller (saveTestAuditCommentResponse() in api.php) used to write a
+// "comment added" success event to the administrator audit log
+// unconditionally, regardless of what happened in here. A compliance-only
+// user without the comment_compliance permission hit the else branch below
+// (no insert, "bad" alert) but the caller's audit-log write still fired,
+// forging a successful-looking audit trail entry for a comment that never
+// landed. Reporting the real outcome back lets the caller gate that log
+// write on it. Existing callers (this file's reject_test_audit() at ~1558,
+// which treats this as best-effort and ignores the return) are unaffected --
+// adding a return value to a function that previously returned nothing is
+// backward compatible.
+function save_test_comment($test_audit_id, $comment): bool {
+    global $lang;
+
     $user    =  $_SESSION['uid'];
-    
+
     // Make sure the user has permission to comment
     if($_SESSION["comment_compliance"] == 1) {
 
         // Open the database connection
         $db = db_open();
-        
+
         $sql = "
             INSERT INTO `framework_control_test_comments`(`test_audit_id`, `user`, `comment`) VALUES(:test_audit_id, :user, :comment);
         ";
@@ -4285,13 +4359,20 @@ function save_test_comment($test_audit_id, $comment){
         $stmt->bindParam(":test_audit_id", $test_audit_id, PDO::PARAM_INT);
         $stmt->bindParam(":comment", $enc_comment, PDO::PARAM_STR);
         $stmt->bindParam(":user", $user, PDO::PARAM_INT);
-        
+
         // Insert a test result
         $stmt->execute();
-        
+        $inserted = $stmt->rowCount() > 0;
+
         // Close the database connection
         db_close($db);
-        
+
+        if (!$inserted) {
+            set_alert(true, "bad", $lang['CommentNotAddedToAudit']);
+
+            return false;
+        }
+
         // Send the notification (no-op if notification extra is disabled)
         call_extra_function(
             'notification_extra',
@@ -4301,9 +4382,13 @@ function save_test_comment($test_audit_id, $comment){
         );
 
         set_alert(true, "good",  "Your comment has been successfully added to the audit.");
+
+        return true;
     }
     else {
         set_alert(true, "bad", "You do not have permission to add comments to audits.");
+
+        return false;
     }
 }
 
@@ -5315,6 +5400,43 @@ function submit_test_result_to_risk()
     return true;
 }
 
+/**
+ * Document Program audit trail for a compliance-file download: looks up the
+ * current document_name and writes the audit_log entry. Split out of
+ * download_compliance_file() below purely so the write is testable without
+ * going through that function's header()/exit() sink; behavior is
+ * unchanged -- a document deleted in the moment between the file lookup and
+ * this call is a silent no-op, never a fatal.
+ *
+ * @param  int $document_id compliance_files.ref_id for a ref_type='documents'
+ *                           row (== documents.id).
+ * @return bool True if the audit entry was written, false if the document no
+ *              longer exists.
+ */
+function record_document_download_audit_log($document_id)
+{
+    $log_db = db_open();
+    $log_stmt = $log_db->prepare("SELECT `document_name` FROM `documents` WHERE `id`=:id;");
+    $log_stmt->bindParam(":id", $document_id, PDO::PARAM_INT);
+    $log_stmt->execute();
+    $downloaded_document_name = $log_stmt->fetchColumn();
+    db_close($log_db);
+
+    // A missing row (the document was deleted after the file metadata was
+    // fetched, in the moment between the two queries) has nothing meaningful
+    // to name in the log -- skip rather than write a blank-named entry.
+    if ($downloaded_document_name === false) {
+        return false;
+    }
+
+    // +1000 cancels write_log()'s internal -1000 (the risk-id display
+    // convention) so audit_log.risk_id stores the real document id -- see
+    // includes/governance.php's add_document(). Raw (unescaped) here too --
+    // matches Create/Update/Delete's convention (see that same function).
+    write_log($document_id + 1000, $_SESSION['uid'] ?? 0, _lang_raw('DocumentAuditLogDownload', array('document_name' => $downloaded_document_name, 'user' => $_SESSION['user'])), 'document');
+    return true;
+}
+
 /**************************************
  * FUNCTION: DOWNLOAD COMPLIANCE FILE *
  **************************************/
@@ -5348,7 +5470,7 @@ function download_compliance_file($unique_name)
         // the only place that knows which module the file actually belongs to.
         // Both entry points (governance/download.php and compliance/download.php)
         // forward here, each gated on its own module only, so the coarse gate is
-        // per-page and not per-file. Two checks apply:
+        // per-page and not per-file. Three checks apply:
         //   - The caller must hold the module permission that OWNS the ref_type
         //     (test_audit → compliance; documents/exceptions → governance).
         //     Without this a governance-only user can pull compliance audit
@@ -5358,16 +5480,41 @@ function download_compliance_file($unique_name)
         //   - Exception attachments additionally require view_exception, mirroring
         //     the exception display API's check_permission_exception('view'); the
         //     coarse entry-point gate does not enforce it.
+        //   - Documents additionally require view_documentation (SR-1694
+        //     completion); the coarse entry-point gate does not enforce it. This
+        //     sink is currently the only runtime check on view_documentation —
+        //     the documents display endpoints still gate on the coarser
+        //     'governance' permission only. test_audit still has no granular
+        //     permission at this sink — the module gate is its whole model.
         // An unrecognised ref_type is denied rather than streamed, so a future
         // fourth ref_type cannot leak before someone maps its owner. The whole
-        // deny decision (ref_type → owning module + granular permission → does
-        // the caller hold them) is factored into a pure, unit-tested helper so
-        // the mappings are locked against accidental regression; this
+        // deny decision (ref_type → owning module + granular permission(s) →
+        // does the caller hold them) is factored into a pure, unit-tested
+        // helper so the mappings are locked against accidental regression; this
         // header()/exit() sink stays a thin wrapper.
-        if (compliance_file_download_denied($array['ref_type'], 'check_permission_exception', 'check_permission'))
+        // Admin bypasses the granular checks below (governance/view_exception/
+        // view_documentation) the same way is_admin() bypasses them for the
+        // Document Program row actions (documentation.php's $can_edit/
+        // $can_delete/$can_approve/$can_view) -- an admin who wasn't
+        // individually granted these permissions must still be able to
+        // download what the UI now lets them see. The bypass + the pure
+        // decision are combined in compliance_file_download_denied_for_download()
+        // (includes/functions.php) so the combination is unit-testable with
+        // an injected is_admin checker; compliance_file_download_denied()
+        // itself stays a pure, session-free decision function.
+        if (compliance_file_download_denied_for_download($array['ref_type'], 'is_admin', 'check_permission_exception', 'check_permission'))
         {
             // Logs (warning) + sets the alert + redirects + exits.
             redirect_permission_denied('DownloadFilePermissionMessage', "compliance_files ref_type={$array['ref_type']} unique_name={$unique_name}");
+        }
+
+        // Document Program audit trail: record who downloaded which
+        // document. Documents only -- exceptions/test_audit downloads
+        // aren't tracked here, matching the request that added this.
+        // Placed after the permission gate above, so a denied attempt is
+        // never recorded as a successful download.
+        if ($array['ref_type'] === 'documents') {
+            record_document_download_audit_log((int)$array['ref_id']);
         }
 
         header("Content-length: " . $array['size']);
@@ -5585,23 +5732,22 @@ function delete_test_audit($test_audit_id) {
 /*******************************
  * FUNCTION: REOPEN TEST AUDIT *
  *******************************/
-function reopen_test_audit($test_audit_id)
-{
-    // Set test audit status to undefined
-    update_test_audit_status($test_audit_id, 0);
-
-    // Carry-forward fix (Phase 3b Task 5) -- approval-bypass close: without
-    // this, reopening an already-'approved' (or 'rejected') audit leaves
-    // approval_state at its old value. approve_audit()/reject_audit() only
-    // hold a close via save_test_result()'s `get_audit_approval_state()===
-    // 'pending'` check (~line 2987) -- an audit sitting at 'approved' fails
-    // that check, so the tester's *next* resubmitted close would fall straight
-    // into the "truly closed" branch and skip re-approval entirely. Reset to
-    // 'pending' when the parent test currently has >=1 configured approver
-    // (audit_requires_approval() -- re-derived from the test's live approver
-    // roster, not the audit's stale past state) so the next close is correctly
-    // re-gated; reset to 'none' otherwise so an audit whose test no longer
-    // requires approval doesn't get stuck waiting on a sign-off nobody can give.
+// Carry-forward fix (Phase 3b Task 5) -- approval-bypass close: without this,
+// reopening an already-'approved' (or 'rejected') audit leaves approval_state
+// at its old value. approve_audit()/reject_audit() only hold a close via
+// save_test_result()'s `get_audit_approval_state()==='pending'` check (~line
+// 2987) -- an audit sitting at 'approved' fails that check, so the tester's
+// *next* resubmitted close would fall straight into the "truly closed" branch
+// and skip re-approval entirely. Reset to 'pending' when the parent test
+// currently has >=1 configured approver (audit_requires_approval() --
+// re-derived from the test's live approver roster, not the audit's stale past
+// state) so the next close is correctly re-gated; reset to 'none' otherwise so
+// an audit whose test no longer requires approval doesn't get stuck waiting on
+// a sign-off nobody can give. Shared by both reopen entry points --
+// reopen_test_audit() (legacy Reopen Audit action) and the compliance API's
+// PATCH /compliance/audits/{id} reopen path -- so neither can drift out of
+// sync with the other's approval-bypass protection.
+function reset_audit_approval_state_for_reopen($test_audit_id) {
     $new_approval_state = audit_requires_approval($test_audit_id) ? 'pending' : 'none';
     $db = db_open();
     $stmt = $db->prepare("UPDATE `framework_control_test_audits` SET `approval_state` = :state WHERE `id` = :id;");
@@ -5609,6 +5755,16 @@ function reopen_test_audit($test_audit_id)
     $stmt->bindParam(":id", $test_audit_id, PDO::PARAM_INT);
     $stmt->execute();
     db_close($db);
+
+    return $new_approval_state;
+}
+
+function reopen_test_audit($test_audit_id)
+{
+    // Set test audit status to undefined
+    update_test_audit_status($test_audit_id, 0);
+
+    reset_audit_approval_state_for_reopen($test_audit_id);
 
     $test_audit_name = get_test_audit_name($test_audit_id);
     $message = _lang_raw('AuditLog_TestAuditReopen', ['test_audit_name' => $test_audit_name, 'test_audit_id' => $test_audit_id, 'user_name' => $_SESSION['user']]);

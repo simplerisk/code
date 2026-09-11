@@ -2587,6 +2587,24 @@
         });
     }
 
+    // Mapped-frameworks badge (Name column): restores the pre-redesign
+    // page's per-control "N mapped frameworks" link -- display_mapping_
+    // framework_view() (includes/governance.php), dropped when this page
+    // moved off the old getFrameworkControlsDatatable() control cards.
+    // Composes the shipped .sr-table-count pill exactly as the rail's own
+    // .sr-fw-origin chip does (_governance-frameworks.scss), as a real
+    // <button> so it is independently keyboard-operable from the row's own
+    // expand caret. ABSENT rather than a "0" pill when a control carries no
+    // mapping -- this file's standing rule for a fact that doesn't apply
+    // (the Applicability column, the Set Applicability row action).
+    function mappedFrameworksBadge(c) {
+        if (!c.mapped_frameworks_count) { return null; }
+        return $('<button type="button" class="sr-table-count sr-ctl-mapped-badge" data-sr-ctl-mapped>')
+            .attr({ title: _lang['MappedControlFrameworks'], 'aria-label': _lang['MappedControlFrameworks'] })
+            .append($('<i class="fa fa-link" aria-hidden="true">'))
+            .append(document.createTextNode(' ' + c.mapped_frameworks_count));
+    }
+
     function renderRow(c) {
         var $tr = $('<tr class="sr-ctl-row">').attr('data-sr-ctl', c.id);
         // Selection checkbox. .sr-check-col is the shipped checkbox-column
@@ -2612,10 +2630,13 @@
                 .attr('aria-label', _lang['Details'])
                 .append($('<i class="fa fa-chevron-right" aria-hidden="true">')),
             document.createTextNode(' ' + (c.control_number || ''))));
-        $tr.append($('<td class="sr-col-name">')
-            .append($('<span class="sr-ctl-name">').text(c.short_name || ''))
-            .append($('<span class="sr-ctl-sub">').text(
-                (c.family_name || _lang['Unassigned']) + (c.control_owner_name ? ' · ' + c.control_owner_name : ''))));
+        var $nameCell = $('<td class="sr-col-name">')
+            .append($('<span class="sr-ctl-name">').text(c.short_name || ''));
+        var $mappedBadge = mappedFrameworksBadge(c);
+        if ($mappedBadge) { $nameCell.append($mappedBadge); }
+        $nameCell.append($('<span class="sr-ctl-sub">').text(
+            (c.family_name || _lang['Unassigned']) + (c.control_owner_name ? ' · ' + c.control_owner_name : '')));
+        $tr.append($nameCell);
         $tr.append($('<td class="sr-col-family">').text(c.family_name || _lang['Unassigned']));
         $tr.append($('<td class="sr-col-owner">').text(c.control_owner_name || _lang['NoOwner']));
         // Only when the server said applicability is answerable for this view
@@ -3951,6 +3972,119 @@
         return $wrap;
     }
 
+    // ===== Mapped Frameworks (drawer section) ================================
+    // Restores display_mapping_framework_view() (includes/governance.php):
+    // the pre-redesign page rendered this inline in every control card, this
+    // page renders it as a collapsible section in the drawer instead. Counts
+    // come straight off the row (controls_table_shape_row(), api/v2/includes/
+    // governance_controls.php -- free, no extra request); the per-mapping
+    // list is fetched lazily, on first expand, from the SAME endpoint the
+    // pre-redesign page's own js/simplerisk/pages/governance.js already used
+    // (GET /governance/controls/mapped-frameworks) -- that endpoint and its
+    // backing query (get_mapping_control_frameworks(), includes/
+    // governance.php) are unchanged; only the caller is new.
+    //
+    // Cached by control id at module scope (not per-drawer): the drawer's
+    // <tr> is destroyed and rebuilt every time it's collapsed and reopened
+    // (renderDrawer() runs fresh each time, per its own comment above), so
+    // without this a user toggling the same row twice would issue the
+    // request twice for data that cannot have changed within the page's
+    // lifetime -- nothing on this page writes a mapping.
+    var mappedFrameworksCache = {};
+
+    function mappedFrameworksSummaryText(c) {
+        return _lang['Frameworks'] + ': ' + (c.mapped_frameworks_count || 0)
+            + ' | ' + _lang['Controls'] + ': ' + (c.mapped_controls_count || 0);
+    }
+
+    // The section's own disclosure toggle is a full-width <button>, not an
+    // icon-only one (contrast the row's .sr-group-caret) -- Josh recalled
+    // "a link icon ... when clicked, showed you the mappings", i.e. the whole
+    // row is the click target, not just a small chevron beside it. Only the
+    // chevron rotates (.sr-mapped-fw-caret, _governance-frameworks.scss);
+    // the label and count stay upright.
+    function renderMappedFrameworksBlock(c) {
+        var $block = $('<div class="sr-dl-block sr-mapped-fw">').attr('data-sr-mapped-for', c.id);
+        var $header = $('<button type="button" class="sr-mapped-fw-header" aria-expanded="false">')
+            .append($('<span class="sr-dl-label">').text(_lang['MappedControlFrameworks']))
+            .append($('<span class="sr-table-count sr-mapped-fw-count">').text(mappedFrameworksSummaryText(c)))
+            .append($('<i class="fa fa-chevron-right sr-mapped-fw-caret" aria-hidden="true">'));
+        var $body = $('<div class="sr-mapped-fw-body">').prop('hidden', true);
+        return $block.append($header).append($body);
+    }
+
+    function renderMappedFrameworksTable($body, rows) {
+        $body.empty();
+        if (!rows.length) {
+            $body.append($('<div class="text-muted sr-dl-value is-empty">').text(_lang['NoMappedFrameworksFound']));
+            return;
+        }
+        var $search = $('<input type="search" class="form-control form-control-sm sr-mapped-fw-search">')
+            .attr('placeholder', _lang['SearchMappedFrameworks']);
+        var $table = $('<table class="sr-table sr-mapped-fw-table">')
+            .append($('<thead>').append($('<tr>')
+                .append($('<th>').text(_lang['Framework']))
+                .append($('<th>').text(_lang['ReferenceName']))
+                .append($('<th>').text(_lang['ReferenceText']))));
+        var $tbody = $('<tbody>');
+        rows.forEach(function (row) {
+            $tbody.append($('<tr>')
+                .append($('<td>').text(row.framework_name || ''))
+                .append($('<td>').text(row.reference_name || ''))
+                .append($('<td>').text(row.reference_text || '')));
+        });
+        $table.append($tbody);
+        $body.append($search, $table);
+
+        // 'input', not 'keyup' -- this page's own convention (#sr-fw-search,
+        // .sr-table-search below), and unlike keyup it also fires on paste
+        // and IME composition, not just a physical keystroke.
+        $search.on('input', function () {
+            var q = $(this).val().toLowerCase();
+            $tbody.find('tr').each(function () {
+                $(this).toggle($(this).text().toLowerCase().indexOf(q) !== -1);
+            });
+        });
+    }
+
+    function loadMappedFrameworks(id, $body) {
+        $body.empty().append($('<div class="text-muted sr-dl-value is-empty">').text(_lang['Loading']));
+        $.ajax({
+            type: 'GET',
+            url: BASE_URL + '/api/v2/governance/controls/mapped-frameworks?control_id=' + id,
+            headers: csrfHeaders()
+        }).done(function (res) {
+            var rows = (res && Array.isArray(res.data)) ? res.data : [];
+            mappedFrameworksCache[id] = rows;
+            renderMappedFrameworksTable($body, rows);
+        }).fail(function () {
+            $body.empty().append($('<div class="text-danger sr-dl-value">').text(_lang['CouldNotLoadMappedFrameworks']));
+        });
+    }
+
+    // Expands (loading/rendering the table on first expand) or collapses the
+    // section. A true toggle -- callers that only want to ENSURE it's open
+    // (the Name-column badge) check aria-expanded themselves first, per the
+    // click handler below, rather than relying on a return value here.
+    function toggleMappedFrameworksBlock($block) {
+        var id = parseInt($block.attr('data-sr-mapped-for'), 10);
+        var $header = $block.find('.sr-mapped-fw-header');
+        var $body = $block.find('.sr-mapped-fw-body');
+        var expanded = $header.attr('aria-expanded') === 'true';
+        if (expanded) {
+            $header.attr('aria-expanded', 'false');
+            $body.prop('hidden', true);
+            return;
+        }
+        $header.attr('aria-expanded', 'true');
+        $body.prop('hidden', false);
+        if (mappedFrameworksCache[id]) {
+            renderMappedFrameworksTable($body, mappedFrameworksCache[id]);
+        } else {
+            loadMappedFrameworks(id, $body);
+        }
+    }
+
     function renderDrawer(c) {
         // The shipped disclosure shell (_tables.scss: tr.sr-expand-row /
         // .sr-expand-panel) rather than a bespoke .sr-ctl-drawer -- same
@@ -4000,6 +4134,7 @@
 
         $panel.append(richBlock('Description', c.description_purified));
         $panel.append(richBlock('SupplementalGuidance', c.supplemental_guidance_purified));
+        $panel.append(renderMappedFrameworksBlock(c));
 
         $td.append($panel);
         $tr.append($td);
@@ -4644,6 +4779,30 @@
     //               (includes/governance.php). The clone starts with every
     //               control applicable, which is the point of it.
     //
+    // Resets every template-group pane's <form> in the Add Framework modal --
+    // there is one per tab when the Customization Extra offers more than one
+    // Framework template group (display_add_framework(), Track B Task 27),
+    // each carrying its own uniquely-prefixed WYSIWYG editor ids
+    // (data-id-prefix). resetForm() already iterates every matched <form>
+    // (the fix Task 25 made to common.js for Asset), so a native reset()
+    // covers every pane's plain fields -- including restoring the
+    // server-seeded default inclusion justification -- in one call; the two
+    // WYSIWYG-backed fields still need a per-pane loop because a native
+    // reset() only restores the underlying <textarea>'s markup default, not
+    // the hugerte editor instance shadowing it. Used both after a successful
+    // create and when the modal opens for a plain (non-clone) "+ Add
+    // framework", so both paths stay in sync.
+    function resetFrameworkAddForms() {
+        resetForm('form#framework-create-form');
+        $('#framework--add form.framework-create-form-pane').each(function () {
+            var $form = $(this);
+            var idPrefix = $form.data('idPrefix') || 'add_';
+            if (typeof setEditorContent === 'function') { setEditorContent(idPrefix + 'framework_description', ''); }
+            setSoaEditorContent(idPrefix, 'scope_statement', '');
+            clearCustomFields($form);
+        });
+    }
+
     // The banner is where the blank scope statement is made legible as a
     // decision rather than a field that failed to populate.
     function openFrameworkForClone(id, name, count) {
@@ -4651,7 +4810,6 @@
             .done(function (res) {
                 var fw = (res.data || {}).framework || {};
                 var $modal = $('#framework--add');
-                var $form = $('#framework-create-form');
 
                 // Back to the create form's own defaults FIRST, so anything the
                 // pre-fill below does not set cannot be inherited from a
@@ -4659,41 +4817,65 @@
                 // default inclusion justification, which a native reset()
                 // restores to its HTML default (submitFrameworkAdd()'s comment
                 // has why that seed is server-rendered rather than assigned).
-                resetForm('#framework-create-form');
+                // 'form#framework-create-form', not the bare id: with more than
+                // one Framework template group there is one <form
+                // id="framework-create-form"> per tab pane (Track B, Task 27,
+                // display_add_framework()), and a bare $('#id') selector would
+                // only ever resolve the FIRST one via the ID fast path.
+                // resetForm() itself already iterates every matched form.
+                resetForm('form#framework-create-form');
 
                 var clonedName = formatTemplate(_lang['CloneOfFrameworkName'], { name: fw.name || name || '' });
-                $form.find('[name=framework_name]').val(clonedName);
-                $form.find('[name=framework_description]').val(fw.description || '');
-                if (typeof setEditorContent === 'function') {
-                    setEditorContent('add_framework_description', fw.description || '');
-                }
-                // Always Active on a clone -- see the note above. Set explicitly
-                // rather than left to the reset, so the rule is stated where the
-                // decision is rather than inferred from a markup default.
-                $form.find('[name=status]').val('1');
-
-                // The SoA pair. The scope statement is emptied EXPLICITLY, not
-                // merely left alone: this modal is reused, and a statement typed
-                // into a previous clone that was then cancelled would otherwise
-                // still be sitting there.
-                $form.find('[name=scope_statement]').val('');
-                // ...and emptied in the EDITOR too, not just in its source
-                // textarea -- resetForm() above restores the markup default of
-                // the <textarea>, which hugerte no longer reads from once it is
-                // initialised. Without this the visible box would still hold the
-                // previous clone's statement and the save would carry it.
-                setSoaEditorContent('add_', 'scope_statement', '');
                 var justification = (typeof fw.default_inclusion_justification === 'undefined')
                     ? null
                     : fw.default_inclusion_justification;
-                $form.find('[name=default_inclusion_justification]').val(justification === null ? '' : justification);
 
-                // Customization Extra fields carry over, like every other
-                // ordinary field on this form: a clone is a pre-filled CREATE
-                // that the user reviews, so what it shows has to be what the
-                // source framework holds. resetForm() above has already blanked
-                // them, so a source with no custom values leaves them blank.
-                applyCustomFieldValues($form, fw.custom_values);
+                // Prefill EVERY pane identically -- the user has not chosen a
+                // tab yet, and whichever one they ultimately submit from has to
+                // carry the clone's values. Each pane's own custom fields still
+                // scope correctly, since applyCustomFieldValues() is called
+                // with that pane's own $form. data-id-prefix is the same prefix
+                // display_add_framework() used to build this pane's field ids,
+                // so the WYSIWYG lookups below address the right editor
+                // instance instead of a fixed 'add_' that only ever matches the
+                // first pane.
+                $('#framework--add form.framework-create-form-pane').each(function () {
+                    var $form = $(this);
+                    var idPrefix = $form.data('idPrefix') || 'add_';
+
+                    $form.find('[name=framework_name]').val(clonedName);
+                    $form.find('[name=framework_description]').val(fw.description || '');
+                    if (typeof setEditorContent === 'function') {
+                        setEditorContent(idPrefix + 'framework_description', fw.description || '');
+                    }
+                    // Always Active on a clone -- see the note above. Set
+                    // explicitly rather than left to the reset, so the rule is
+                    // stated where the decision is rather than inferred from a
+                    // markup default.
+                    $form.find('[name=status]').val('1');
+
+                    // The SoA pair. The scope statement is emptied EXPLICITLY,
+                    // not merely left alone: this modal is reused, and a
+                    // statement typed into a previous clone that was then
+                    // cancelled would otherwise still be sitting there.
+                    $form.find('[name=scope_statement]').val('');
+                    // ...and emptied in the EDITOR too, not just in its source
+                    // textarea -- resetForm() above restores the markup default
+                    // of the <textarea>, which hugerte no longer reads from once
+                    // it is initialised. Without this the visible box would
+                    // still hold the previous clone's statement and the save
+                    // would carry it.
+                    setSoaEditorContent(idPrefix, 'scope_statement', '');
+                    $form.find('[name=default_inclusion_justification]').val(justification === null ? '' : justification);
+
+                    // Customization Extra fields carry over, like every other
+                    // ordinary field on this form: a clone is a pre-filled
+                    // CREATE that the user reviews, so what it shows has to be
+                    // what the source framework holds. resetForm() above has
+                    // already blanked them, so a source with no custom values
+                    // leaves them blank.
+                    applyCustomFieldValues($form, fw.custom_values);
+                });
 
                 pendingCloneFramework = {
                     id: id,
@@ -4720,6 +4902,17 @@
         // No loaded state: the framework does not exist yet, so every SoA field
         // is "never stored" and only a typed value is sent.
         var payload = frameworkFormPayload($form, null);
+
+        // Which admin-defined template group this framework is being created
+        // under -- the hidden input display_add_framework_fields()
+        // (includes/governance.php) renders only on the create path (Track B,
+        // Task 27). Not part of frameworkFormPayload() itself: that function
+        // is shared with submitFrameworkUpdate(), and an existing framework's
+        // template group is not something the Edit modal may change.
+        var $templateGroupId = $form.find('[name=template_group_id]');
+        if ($templateGroupId.length) {
+            payload.template_group_id = $templateGroupId.val();
+        }
 
         if (clone) {
             // The one thing the form cannot carry. Everything else about a clone
@@ -4767,19 +4960,13 @@
                 (res.data || {}).id,
                 $form.find('[name=framework_name]').val()
             );
-            $form[0].reset();
-            // A native reset() restores the markup defaults of the custom field
-            // inputs (blank -- display_add_framework() renders the create form
-            // with no values), but it cannot tell a bootstrap-multiselect to
-            // re-read its <select>, so a multi-valued custom field would keep
-            // showing the just-saved picks. clearCustomFields() does both.
-            clearCustomFields($form);
-            if (typeof setEditorContent === 'function') { setEditorContent('add_framework_description', ''); }
-            // The SoA scope statement is a WYSIWYG field too, and a native
-            // reset() puts the <textarea> back without touching the editor that
-            // shadows it -- so the next "+ Add framework" would open showing
-            // the statement just saved.
-            setSoaEditorContent('add_', 'scope_statement', '');
+            // Resets EVERY template-group pane, not just the one just
+            // submitted -- with more than one Framework template group tab
+            // (Track B, Task 27) the user could have typed into another pane
+            // before switching tabs and saving, and that stale content must
+            // not still be sitting there the next time "+ Add framework"
+            // opens.
+            resetFrameworkAddForms();
             loadFrameworks();
             reloadTable();
         }).fail(function (xhr) {
@@ -4999,11 +5186,13 @@
             // decision and re-derives it correctly on whatever the NEXT
             // open turns out to be (plain add or another Clone), the same
             // way it would if this save had failed instead.
-            resetForm('#add-control-form');
-            if (typeof setEditorContent === 'function') {
-                setEditorContent('add_control_description', '');
-                setEditorContent('add_supplemental_guidance', '');
-            }
+            //
+            // Resets EVERY template-group pane, not just the one just
+            // submitted -- with more than one Control template group tab
+            // (Track B, Task 28) the user could have typed into another pane
+            // before switching tabs and saving, and that stale content must
+            // not still be sitting there the next time "+ Add control" opens.
+            resetControlAddForms();
             reloadTable();
             loadFrameworks();
         }).fail(function (xhr) {
@@ -5148,13 +5337,44 @@
     // js/simplerisk/common.js), so the source control's mapped assets carry
     // over as live, editable rows rather than the inert ones that were the
     // reason this was scoped out originally.
+    // Resets every template-group pane's <form> in the Add Control modal --
+    // there is one per tab when the Customization Extra offers more than one
+    // Control template group (display_add_control(), Track B Task 28), each
+    // carrying its own uniquely-prefixed WYSIWYG editor ids (data-id-prefix).
+    // resetForm() already iterates every matched <form> (the fix Task 25 made
+    // to common.js for Asset), so a native reset() covers every pane's plain
+    // fields in one call; the two WYSIWYG-backed fields still need a per-pane
+    // loop because a native reset() only restores the underlying <textarea>'s
+    // markup default, not the hugerte editor instance shadowing it. Used both
+    // after a successful create and when the modal opens for a plain
+    // (non-clone) "+ Add control", so both paths stay in sync -- the same
+    // shape as Framework's resetFrameworkAddForms() (Track B, Task 27).
+    function resetControlAddForms() {
+        resetForm('form#add-control-form');
+        $('#control--add form.control-create-form-pane').each(function () {
+            var $form = $(this);
+            var idPrefix = $form.data('idPrefix') || 'add_';
+            if (typeof setEditorContent === 'function') {
+                setEditorContent(idPrefix + 'control_description', '');
+                setEditorContent(idPrefix + 'supplemental_guidance', '');
+            }
+            clearCustomFields($form);
+        });
+    }
+
     function openControlForClone(id) {
         $.ajax({ type: 'GET', url: BASE_URL + '/api/v2/governance/control?control_id=' + id, headers: csrfHeaders() })
             .done(function (res) {
                 var data = res.data || {};
                 var control = data.control || {};
                 var $modal = $('#control--add');
-                resetForm('#add-control-form');
+                // 'form#add-control-form', not the bare id: with more than one
+                // Control template group there is one <form
+                // id="add-control-form"> per tab pane (Track B, Task 28,
+                // display_add_control()), and a bare $('#id') selector would
+                // only ever resolve the FIRST one via the ID fast path.
+                // resetForm() itself already iterates every matched form.
+                resetForm('form#add-control-form');
                 $modal.find('.mapping_framework_table tbody').empty();
                 $modal.find('.mapping-framework-required-mark').addClass('d-none');
 
@@ -5196,12 +5416,29 @@
                 // Customization Extra fields carry over too -- same reasoning as
                 // every other pre-filled field here: a clone is a create the
                 // user reviews, so it has to show what the source control holds.
-                applyCustomFieldValues($modal, control.custom_values);
-
-                if (typeof setEditorContent === 'function') {
-                    setEditorContent('add_control_description', control.description || '');
-                    setEditorContent('add_supplemental_guidance', control.supplemental_guidance || '');
-                }
+                // Per-pane, not $modal-wide: with more than one Control
+                // template group (Track B, Task 28) each pane can offer a
+                // DIFFERENT set of custom fields (get_active_fields() is
+                // scoped per group), so applyCustomFieldValues() has to be
+                // told which pane's $form it is filling -- same reasoning as
+                // the WYSIWYG loop just below.
+                //
+                // The WYSIWYG editors are per-pane for the same reason
+                // Framework's clone flow is (openFrameworkForClone()):
+                // display_control_description_edit()/
+                // display_supplemental_guidance_edit() give each pane its own
+                // uniquely-prefixed id (data-id-prefix), so a fixed
+                // 'add_control_description' would only ever reach the first
+                // pane's editor instance.
+                $('#control--add form.control-create-form-pane').each(function () {
+                    var $form = $(this);
+                    var idPrefix = $form.data('idPrefix') || 'add_';
+                    applyCustomFieldValues($form, control.custom_values);
+                    if (typeof setEditorContent === 'function') {
+                        setEditorContent(idPrefix + 'control_description', control.description || '');
+                        setEditorContent(idPrefix + 'supplemental_guidance', control.supplemental_guidance || '');
+                    }
+                });
 
                 // Consumed by the show.bs.modal delegate below, which sets
                 // the title/banner -- doing it there (not here) is what lets
@@ -6106,6 +6343,38 @@
             }
         });
 
+        // Mapped Frameworks section (renderMappedFrameworksBlock() above) --
+        // its own toggle, independent of the row's drawer caret so a user who
+        // already has the drawer open can expand just this section.
+        $(document).on('click', '.sr-mapped-fw-header', function () {
+            toggleMappedFrameworksBlock($(this).closest('.sr-mapped-fw'));
+        });
+
+        // Name-column badge (mappedFrameworksBadge()) -- "a link icon next to
+        // the control name that showed you the mappings when clicked" (the
+        // pre-redesign behavior this restores). Opens the row's drawer if it
+        // isn't already, then expands the Mapped Frameworks section inside
+        // it, so the badge is a one-click shortcut to the same section the
+        // drawer's own header can also toggle. stopPropagation() because the
+        // badge sits in the same <td> as (not inside) the row's other
+        // controls -- nothing else listens on this cell today, but a bubbled
+        // click reaching a future row-level handler would be surprising.
+        $(document).on('click', '[data-sr-ctl-mapped]', function (e) {
+            e.stopPropagation();
+            var $row = $(this).closest('tr');
+            var id = $row.attr('data-sr-ctl');
+            var $drawer = $('#sr-ctl-tbody').find('tr[data-sr-drawer="' + id + '"]');
+            if (!$drawer.length) {
+                $row.find('.sr-group-caret').trigger('click');
+                $drawer = $('#sr-ctl-tbody').find('tr[data-sr-drawer="' + id + '"]');
+            }
+            var $block = $drawer.find('.sr-mapped-fw');
+            if ($block.length && $block.find('.sr-mapped-fw-header').attr('aria-expanded') !== 'true') {
+                toggleMappedFrameworksBlock($block);
+            }
+            if ($drawer.length && $drawer[0].scrollIntoView) { $drawer[0].scrollIntoView({ block: 'nearest' }); }
+        });
+
         // #sr-ctl-empty-clear (Task 9) is the "no results" empty tile's own
         // Clear filters action -- same reset, reached from inside the empty
         // state rather than the toolbar's Filters sheet.
@@ -6289,6 +6558,25 @@
         // immediately before the modal becomes visible.
         $(document).on('show.bs.modal', '#control--add', function () {
             var $modal = $(this);
+
+            // Re-assert the first tab/pane as active every time the modal
+            // opens. Something elsewhere on the page (a sitewide Bootstrap
+            // Tab/ARIA-enhancement pass over every [data-bs-toggle=tab])
+            // strips the server-rendered active/show state from these panes
+            // before the user ever interacts with them, leaving the modal
+            // looking blank until a tab is clicked -- same defensive fix
+            // display_add_framework() needed for Framework (Track B, Task
+            // 27). A no-op when there is only one (or zero) Control template
+            // groups, i.e. every install today.
+            var modalTabLinks = $modal.find('.nav-tabs .nav-link');
+            if (modalTabLinks.length) {
+                modalTabLinks.removeClass('active');
+                modalTabLinks.first().addClass('active');
+                var modalTabPanes = $modal.find('.tab-pane');
+                modalTabPanes.removeClass('show active');
+                modalTabPanes.first().addClass('show active');
+            }
+
             if (pendingCloneSourceName !== null) {
                 $('#control--add-title').text(formatTemplate(_lang['CloneOfControlTitle'], { name: pendingCloneSourceName }));
                 $modal.find('.sr-clone-banner')
@@ -6330,6 +6618,24 @@
             var clone = pendingCloneFramework;
             pendingCloneFramework = null;
 
+            // Re-assert the first tab/pane as active every time the modal
+            // opens. Something elsewhere on the page (a sitewide Bootstrap
+            // Tab/ARIA-enhancement pass over every [data-bs-toggle=tab])
+            // strips the server-rendered active/show state from these panes
+            // before the user ever interacts with them, leaving the modal
+            // looking blank until a tab is clicked -- same defensive fix
+            // render_create_modal() uses for Asset and display_add_projects()
+            // uses for Project. A no-op when there is only one (or zero)
+            // Framework template groups, i.e. every install today.
+            var modalTabLinks = $modal.find('.nav-tabs .nav-link');
+            if (modalTabLinks.length) {
+                modalTabLinks.removeClass('active');
+                modalTabLinks.first().addClass('active');
+                var modalTabPanes = $modal.find('.tab-pane');
+                modalTabPanes.removeClass('show active');
+                modalTabPanes.first().addClass('show active');
+            }
+
             // The modal's own copy, which submitFrameworkAdd() reads. Parked on
             // the element rather than left in the closure variable so a submit
             // can never read a clone that a LATER open has already replaced.
@@ -6360,9 +6666,8 @@
                 // native reset() is also what restores the SERVER-SEEDED default
                 // inclusion justification (display_add_framework()'s third
                 // argument), which is why it is a reset rather than a blanking.
-                resetForm('#framework-create-form');
-                if (typeof setEditorContent === 'function') { setEditorContent('add_framework_description', ''); }
-                setSoaEditorContent('add_', 'scope_statement', '');
+                // resetFrameworkAddForms() covers every template-group pane.
+                resetFrameworkAddForms();
             }
         });
 
@@ -6374,12 +6679,10 @@
         // show.bs.modal delegate above is the sole owner of the title/
         // banner/mapping-table decision; this handler only needs to reset
         // the field VALUES resetForm() itself covers.
+        // resetControlAddForms() covers every template-group pane (Track B,
+        // Task 28), not just a single fixed form.
         $(document).on('click', '#sr-ctl-add, #sr-ctl-empty-add', function () {
-            resetForm('#add-control-form');
-            if (typeof setEditorContent === 'function') {
-                setEditorContent('add_control_description', '');
-                setEditorContent('add_supplemental_guidance', '');
-            }
+            resetControlAddForms();
             $('#control--add').modal('show');
         });
 
@@ -6613,10 +6916,44 @@
             renderControlsDeleteScope();
         });
 
+        // With more than one Framework template group tab (Track B, Task 27)
+        // the Save button lives once in the shared modal footer rather than
+        // once per pane, so route its click to whichever pane's <form> is the
+        // currently visible (active) tab -- mirrors render_create_modal()'s
+        // .create-popup-save-btn pattern for Asset and display_add_projects()'s
+        // .project-add-save-btn pattern for Project. With a single un-tabbed
+        // form (every install today) this still resolves correctly, since
+        // that form is always visible.
+        $(document).on('click', '.framework-add-save-btn', function (event) {
+            event.preventDefault();
+            $(this).closest('.modal-content').find('form.framework-create-form-pane:visible').trigger('submit');
+        });
+
+        // Same reasoning for Control (Track B, Task 28): with more than one
+        // Control template group tab there is one <form id="add-control-form">
+        // per pane (duplicate ids), so the single shared Save button routes to
+        // whichever pane's form is currently visible instead of relying on the
+        // HTML5 form= attribute, which always resolves to the first same-id
+        // form. A single un-tabbed form (every install today) still resolves
+        // correctly, since that form is always visible.
+        $(document).on('click', '.control-add-save-btn', function (event) {
+            event.preventDefault();
+            $(this).closest('.modal-content').find('form.control-create-form-pane:visible').trigger('submit');
+        });
+
         // Form submits. type="submit" buttons inside each form (design-system.md
         // §8's Save/Delete) -- prevented here so the redesigned flow (AJAX,
         // stay-open-on-error, reload-in-place) replaces the browser's native
         // full-page POST, never falls back to it.
+        //
+        // Delegated on an ID selector, not a direct $('#framework-create-form')
+        // query: with more than one template-group tab there is one <form
+        // id="framework-create-form"> per pane (duplicate ids), and a
+        // DELEGATED handler matches the actual element that fired via
+        // Element.matches(), which is unaffected by the duplicate -- unlike a
+        // direct $('#id') query, which would hit the ID fast path and only
+        // ever resolve the first one. $(this) inside always refers to
+        // whichever pane's form actually submitted.
         $(document).on('submit', '#framework-create-form', function (e) {
             e.preventDefault();
             submitFrameworkAdd($(this), $('#framework--add [name=add_framework]'));

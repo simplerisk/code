@@ -89,6 +89,27 @@ function set_alert($alert = false, $type = "good", $message = "") {
 
 }
 
+/*****************************************
+ * FUNCTION: ALERT IF SESSIONS NOT CLEARED *
+ *****************************************/
+/**
+ * SD-828 / SR-2133: kill_sessions_of_user() / kill_other_sessions_of_current_user()
+ * return false (instead of throwing) when a lock-wait timeout stops a
+ * session-invalidation DELETE from completing. Every call site that acts on
+ * a security-sensitive event (password change, MFA enable/disable, admin
+ * disable/delete/lockout) needs to surface that failure to the user instead
+ * of showing an unconditional success message. Centralizes the repeated
+ * "if (!$sessions_cleared) { set_alert(...) }" pattern from the 8 call sites.
+ */
+function alert_if_sessions_not_cleared(bool $sessions_cleared) {
+
+    global $lang;
+
+    if (!$sessions_cleared) {
+        set_alert(true, "bad", $lang['OtherSessionsNotCleared']);
+    }
+}
+
 /***********************
  * FUNCTION: GET ALERT *
  ***********************/

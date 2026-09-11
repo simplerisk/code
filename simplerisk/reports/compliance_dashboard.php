@@ -11,6 +11,7 @@
     require_once(realpath(__DIR__ . '/../includes/reporting.php'));
     require_once(realpath(__DIR__ . '/../includes/compliance.php'));
     require_once(realpath(__DIR__ . '/../includes/governance.php'));
+    require_once(realpath(__DIR__ . '/../includes/settings_catalog.php'));
 
     // Get all active frameworks for the filter dropdown
     $all_frameworks = array_values(get_frameworks(1));
@@ -54,7 +55,13 @@
     </form>
 </div>
 <?php
-    (new \includes\Widgets\UILayout('compliance_dashboard'))->render();
+    // Edit-layout shows the real control when the Customization Extra is
+    // active, or the shared locked teaser otherwise
+    // (customization_acquisition_state(), includes/settings_catalog.php) --
+    // see reports/home.php's identical comment.
+    (new \includes\Widgets\UILayout('compliance_dashboard', [
+        'edit_layout_locked_state' => customization_acquisition_state(is_admin(), get_setting('registration_registered') == 1),
+    ]))->render();
 ?>
 <script>
 $(function() {

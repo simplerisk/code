@@ -5,6 +5,14 @@
 
     // Render the header and sidebar
     require_once(realpath(__DIR__ . '/../includes/renderutils.php'));
+    // Section-landing page (Governance > Define Control Frameworks): the
+    // submenu IS the current page, so breadcrumb_title_key equals
+    // active_sidebar_submenu -- sidebar.php's own convention for not
+    // duplicating the leaf crumb (see its comment above the third-crumb
+    // render). Matches compliance/index.php's identical pattern.
+    $breadcrumb_title_key = "DefineControlFrameworks";
+    $active_sidebar_menu = "Governance";
+    $active_sidebar_submenu = "DefineControlFrameworks";
     render_header_and_sidebar(
         ['blockUI', 'selectize', 'datatables', 'datetimerangepicker', 'WYSIWYG', 'multiselect',
          // Task 10: the insights band is a UILayout instance -- 'UILayoutWidget'
@@ -17,7 +25,8 @@
          // (compliance/index.php) already declares.
          'UILayoutWidget',
          'CUSTOM:sr-row-actions-menu.js', 'CUSTOM:pages/governance-frameworks.js', 'CUSTOM:common.js', 'JSLocalization'],
-        ['check_governance' => true]
+        ['check_governance' => true],
+        $breadcrumb_title_key, $active_sidebar_menu, $active_sidebar_submenu
     );
 
     // Include required functions file
@@ -108,8 +117,22 @@
         // init_minimun_editor() toolbar wraps to ~200px of chrome in this
         // modal's half-width sr-qcard columns, leaving almost nothing to
         // write in. init_compact_editor() trims the toolbar to fit.
-        $("#framework--add [name=framework_description]").attr("id", "add_framework_description");
-        init_compact_editor('#add_framework_description');
+        //
+        // Add side: one .each() rather than a single .attr("id", ...) + one
+        // init_compact_editor() call, because with more than one Framework
+        // template group display_add_framework() (Track B, Task 27) renders
+        // one <form> -- and one [name=framework_description] textarea -- per
+        // tab, each with its OWN already-correct, already-unique id (the
+        // pane's $id_prefix). Stamping a single fixed id onto every matched
+        // element the way the Update side still does below would collide
+        // every pane's editor onto the id of whichever element jQuery's
+        // .attr() touched last. The common case (Customization off, or
+        // exactly one Framework template group) still yields exactly one
+        // match here, with the exact same 'add_framework_description' id as
+        // before this task.
+        $("#framework--add [name=framework_description]").each(function() {
+            init_compact_editor('#' + CSS.escape(this.id));
+        });
         $("#framework--update [name=framework_description]").attr("id", "update_framework_description");
         init_compact_editor('#update_framework_description');
 
@@ -120,15 +143,33 @@
         // nothing to stamp on here (unlike the description above, whose ids
         // predate that prefix). The Initiate Audits page renders no SoA card,
         // so it has nothing to initialise and hugerte.init() on a selector that
-        // matches nothing is a no-op either way.
-        init_compact_editor('#add_scope_statement');
+        // matches nothing is a no-op either way. Same per-pane .each() reasoning
+        // as the description field above applies to the Add side.
+        $("#framework--add [name=scope_statement]").each(function() {
+            init_compact_editor('#' + CSS.escape(this.id));
+        });
         init_compact_editor('#update_scope_statement');
 
         // Add WYSIWYG editor to control modal
-        $("#control--add [name=description]").attr("id", "add_control_description");
-        init_compact_editor('#add_control_description');
-        $("#control--add [name=supplemental_guidance]").attr("id", "add_supplemental_guidance");
-        init_compact_editor('#add_supplemental_guidance');
+        //
+        // Add side: one .each() rather than a single .attr("id", ...) + one
+        // init_compact_editor() call, because with more than one Control
+        // template group display_add_control() (Track B, Task 28) renders one
+        // <form> -- and one [name=description]/[name=supplemental_guidance]
+        // textarea -- per tab, each with its OWN already-correct, already-
+        // unique id (the pane's $id_prefix). Stamping a single fixed id onto
+        // every matched element the way the Update side still does below
+        // would collide every pane's editor onto the id of whichever element
+        // jQuery's .attr() touched last. The common case (Customization off,
+        // or exactly one Control template group) still yields exactly one
+        // match here, with the exact same 'add_control_description' /
+        // 'add_supplemental_guidance' ids as before this task.
+        $("#control--add [name=description]").each(function() {
+            init_compact_editor('#' + CSS.escape(this.id));
+        });
+        $("#control--add [name=supplemental_guidance]").each(function() {
+            init_compact_editor('#' + CSS.escape(this.id));
+        });
         $("#control--update [name=description]").attr("id", "update_control_description");
         init_compact_editor('#update_control_description');
         $("#control--update [name=supplemental_guidance]").attr("id", "update_supplemental_guidance");
@@ -146,9 +187,22 @@
                 // The endpoint's HTML cannot carry it: the same response feeds
                 // the Edit modal too, and its response shape is a published
                 // v1+v2 contract.
-                var $container = $("#framework--add .parent_frameworks_container");
-                $container.html(res.data.html)
-                    .find('select[name="parent"]').attr('id', $container.data('sr-field-id'));
+                //
+                // .each(), not a single .html()/.attr() pair: with more than
+                // one Framework template group there is one
+                // .parent_frameworks_container per tab pane (Track B, Task 27),
+                // each carrying its OWN pane-specific data-sr-field-id. Reading
+                // .data('sr-field-id') off the whole multi-element set would
+                // read only the FIRST pane's id and stamp it onto every pane's
+                // injected <select> -- the exact collision this whole task's
+                // per-pane id scheme exists to avoid. The common case
+                // (Customization off, or exactly one Framework template group)
+                // still yields exactly one container here.
+                $("#framework--add .parent_frameworks_container").each(function() {
+                    var $container = $(this);
+                    $container.html(res.data.html)
+                        .find('select[name="parent"]').attr('id', $container.data('sr-field-id'));
+                });
             }
         });
 	});
@@ -169,16 +223,19 @@
     // governance-frameworks.js re-fetches every tile whenever the rail's
     // selected framework changes (window.srRefreshLayoutWidgets()), so a band
     // reading "All frameworks" totals can never sit above a table scoped to
-    // one. The Edit-layout control is shown only when the Customization
-    // extra is enabled (page-local gate; the UILayout framework itself does
-    // not gate it) -- matches the sibling band exactly.
+    // one. The Edit-layout control shows the real control when the
+    // Customization Extra is active, or the shared locked teaser otherwise
+    // (customization_acquisition_state(), includes/settings_catalog.php) --
+    // matches the sibling band exactly.
     if (check_permission('governance')) {
+        require_once(realpath(__DIR__ . '/../includes/settings_catalog.php'));
         // Collapsible here (unlike Home, where the layout IS the page): this
         // band introduces the master-detail panes below it rather than being
         // the content, and its ~120px is roughly two table rows on a
         // 1366x768 laptop.
         (new \includes\Widgets\UILayout('define_frameworks_insights', [
-            'show_edit_layout' => customization_extra(),
+            'show_edit_layout' => true,
+            'edit_layout_locked_state' => customization_acquisition_state(is_admin(), get_setting('registration_registered') == 1),
             'collapsible' => true,
         ]))->render();
     }
@@ -429,7 +486,6 @@
                      Set and cleared in ONE place, the #framework--add show.bs.modal
                      delegate, for the same reason the control banner is. -->
                 <div class="alert alert-info d-none sr-clone-banner" role="alert"></div>
-                <form id="framework-create-form" action="#" method="post" autocomplete="off">
     <?php
                     // The third argument is what makes this the CREATE form: the
                     // SoA card's default inclusion justification is prefilled with
@@ -448,13 +504,28 @@
                     // Edit modal further down this page, so without it every id
                     // appears twice and each modal's <label for> resolves to the
                     // FIRST match — the Add modal's copy. See that function.
+                    //
+                    // display_add_framework() now renders the <form id=
+                    // "framework-create-form"> itself (Track B, Task 27) instead of
+                    // it being written here: the third argument (true) is also what
+                    // makes this the CREATE path that offers a tab-per-template-group
+                    // picker when the Customization Extra has more than one Framework
+                    // group, which needs one <form> per tab pane rather than the
+                    // single fixed <form> this file used to wrap around it.
                     display_add_framework(true, true, true, 'add_');
     ?>
-                </form>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-dark" data-bs-dismiss="modal"><?= $escaper->escapeHtml($lang['Cancel']); ?></button>
-                <button type="submit" form="framework-create-form" name="add_framework" class="btn btn-submit"><?= $escaper->escapeHtml($lang['Add']); ?></button>
+                <!-- type="button", not type="submit" form="framework-create-form":
+                     with more than one template-group tab there is more than one
+                     <form id="framework-create-form"> (one per pane, duplicate ids --
+                     the same pattern display_add_risk() and render_create_modal()
+                     established), and the HTML5 form= attribute always resolves to
+                     the FIRST one regardless of which tab is active. The
+                     .framework-add-save-btn click handler (governance-frameworks.js)
+                     routes to whichever pane's form is currently visible instead. -->
+                <button type="button" name="add_framework" class="btn btn-submit framework-add-save-btn"><?= $escaper->escapeHtml($lang['Add']); ?></button>
             </div>
         </div>
     </div>
@@ -818,18 +889,34 @@
                      over. Cleared back to d-none/empty whenever this modal opens for a plain
                      add (see the '#sr-ctl-add, #sr-ctl-empty-add' handler). -->
                 <div class="alert alert-info d-none sr-clone-banner" role="alert"></div>
-                <form id="add-control-form" action="#controls-tab" method="post" autocomplete="off">
     <?php
                     // 'add_' namespaces this modal's field ids — the Edit
                     // control modal below renders the same markup. See
                     // display_add_control().
+                    //
+                    // display_add_control() now renders the <form id=
+                    // "add-control-form"> itself (Track B, Task 28) instead of
+                    // it being written here: 'add_' is also what makes this
+                    // the CREATE path that offers a tab-per-template-group
+                    // picker when the Customization Extra has more than one
+                    // Control group, which needs one <form> per tab pane
+                    // rather than the single fixed <form> this file used to
+                    // wrap around it.
                     display_add_control('add_');
     ?>
-                </form>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-dark" data-bs-dismiss="modal" aria-hidden="true"><?= $escaper->escapeHtml($lang['Cancel']); ?></button>
-                <button type="submit" id="add_control" form="add-control-form" class="btn btn-submit"><?= $escaper->escapeHtml($lang['Add']); ?></button>
+                <!-- type="button", not type="submit" form="add-control-form":
+                     with more than one template-group tab there is more than
+                     one <form id="add-control-form"> (one per pane, duplicate
+                     ids -- the same pattern display_add_framework() uses for
+                     Framework), and the HTML5 form= attribute always resolves
+                     to the FIRST one regardless of which tab is active. The
+                     .control-add-save-btn click handler
+                     (governance-frameworks.js) routes to whichever pane's
+                     form is currently visible instead. -->
+                <button type="button" id="add_control" name="add_control" class="btn btn-submit control-add-save-btn"><?= $escaper->escapeHtml($lang['Add']); ?></button>
             </div>
         </div>
     </div>

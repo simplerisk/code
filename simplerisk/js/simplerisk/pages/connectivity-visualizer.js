@@ -38,6 +38,12 @@
     // duplicate rather than an extra round trip just to disable a re-centre.
     const NEIGHBOR_ONLY_TYPES = new Set(['test_result', 'self_assessment_result']);
 
+    // Bumped on every runSearch() call so a slower, older request's response
+    // can never overwrite a newer one's -- two searches can be in flight at
+    // once (a fresh debounce fires while a prior fetch is still pending) and
+    // network scheduling gives no ordering guarantee on which resolves first.
+    let searchRequestSeq = 0;
+
     const state = {
         focal: null,          // {type, id}
         bundle: null,         // last API response payload
@@ -233,9 +239,17 @@
     }
 
     async function runSearch(mount, q) {
+        const seq = ++searchRequestSeq;
         const list = mount.querySelector('#sr-ce-results');
         try {
             const data = await apiGet('/ai/context/search', { q: q, limit: 25 });
+            if (seq !== searchRequestSeq) {
+                // A newer search superseded this one while the request was
+                // in flight -- discard the stale response instead of
+                // clobbering the results list with an out-of-date query's
+                // rows.
+                return;
+            }
             list.innerHTML = '';
             (data.results || []).forEach(function (row) {
                 const li = document.createElement('li');
@@ -265,6 +279,11 @@
             mount.querySelector('#sr-ce-search')
                  .setAttribute('aria-expanded', String(!list.hidden));
         } catch (err) {
+            if (seq !== searchRequestSeq) {
+                // A newer search already superseded this one -- don't hide
+                // its results just because this stale request failed.
+                return;
+            }
             list.hidden = true;
             // Log with enough context to identify the failing request --
             // the toast alone tells the user something failed, not which

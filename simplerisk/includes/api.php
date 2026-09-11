@@ -303,10 +303,16 @@ function show_audit_log()
 /*************************
  * FUNCTION: API VERSION *
  *************************/
-// @phan-suppress-next-line PhanRedefineFunction -- core definition; extras/api/index.php overrides this
-function api_version()
-{
-  return '1.1';
+if (!function_exists('api_version')) {
+    // Core definition; guarded so requiring this file after extras/api/index.php
+    // (which declares the same function name) doesn't fatal. Whichever file's
+    // declaration executes first in the process wins -- there is no enforced
+    // "Extra overrides Core" order.
+    // @phan-suppress-next-line PhanRedefineFunction
+    function api_version()
+    {
+        return '1.1';
+    }
 }
 
 /********************
@@ -994,7 +1000,17 @@ function dynamicriskForm()
 
         // Params in risks_by_teams page
         $risks_by_team = isset($_POST['risks_by_team']) ? true : false;
-        $teams = isset($_POST['teams']) ? $_POST['teams'] : [];
+
+        // Restrict any client-submitted team ids to the ones this user can
+        // actually see -- otherwise a requester could name another team's id
+        // and pull that team's risk data regardless of their own team access.
+        $teamOptions = get_teams_by_login_user();
+        array_unshift($teamOptions, array(
+            'value' => "0",
+            'name' => $lang['Unassigned'],
+        ));
+        $teams = sanitize_requested_teams($teamOptions, $_POST['teams'] ?? null);
+
         $owners = isset($_POST['owners']) ? $_POST['owners'] : [];
         $ownersmanagers = isset($_POST['ownersmanagers']) ? $_POST['ownersmanagers'] : [];
         
@@ -2388,8 +2404,11 @@ function saveReviewForm()
                 }
 
                 if (ctype_digit((string)$project)) {
-                    update_risk_project((int)$project, $id - 1000);
-                    set_alert(true, "good", $lang['SuccessSetProject']);
+                    if (update_risk_project((int)$project, $id - 1000)) {
+                        set_alert(true, "good", $lang['SuccessSetProject']);
+                    } else {
+                        set_alert(true, "bad", $lang['NoPermissionForRiskManagement']);
+                    }
                 } else if(strlen($project)){
                     set_alert(true, "bad", $lang['ThereWasAProblemWithAddingTheProject']);
                 }
@@ -2664,8 +2683,14 @@ function saveMarkUnreviewForm()
         // Check that the user has permission to review this risk level
         $review = check_review_permission_by_risk_id($id);
 
-        // If the user has permission to the risk and permission to review
-        if ($access && $review)
+        // Deleting an existing management review is a modification of the
+        // risk record, not a review submission -- review-tier permission
+        // alone (as used for saveReviewForm()) is not enough here.
+        $modify = check_permission("modify_risks");
+
+        // If the user has permission to the risk, permission to review, and
+        // permission to modify the risk record
+        if ($access && $review && $modify)
         {
             submit_management_unreview($id);
             set_alert(true, "good", $lang['SavedSuccess']);
@@ -2964,7 +2989,13 @@ function setProjectToRiskForm($id = null)
     }
 
     $risk_id = (int)$id - 1000;
-    update_risk_project((int)$project_id, $risk_id);
+    if (!update_risk_project((int)$project_id, $risk_id)) {
+        // get_alert(true) already escapes at read time -- pre-escaping here
+        // would double-encode the message.
+        set_alert(true, "bad", $lang['NoPermissionForRiskManagement']);
+        json_response(403, get_alert(true), NULL);
+        return;
+    }
 
     set_alert(true, "good", $escaper->escapeHtml($lang['SuccessSetProject']));
     json_response(200, get_alert(true), NULL);
@@ -3272,8 +3303,13 @@ function scoringHistory($id = null)
         }
         else
         {
-            // The user is not authorized to access that risk
-            json_response(401, "The user does not have permission to view this risk.", "");
+            // The user is not authorized to access that risk. 403 (not 401,
+            // which this used to answer with) -- the caller IS authenticated,
+            // just forbidden from this specific risk, matching the convention
+            // every other object-level denial in this file uses (e.g.
+            // getRiskComments()). No caller (frontend JS or otherwise) special-
+            // cases 401 for this route -- verified before making this change.
+            json_response(403, "The user does not have permission to view this risk.", "");
         }
     }
     // If the risk id was not sent
@@ -3318,8 +3354,13 @@ function residualScoringHistory($id = null)
         }
         else
         {
-            // The user is not authorized to access that risk
-            json_response(401, "The user does not have permission to view this risk.", "");
+            // The user is not authorized to access that risk. 403 (not 401,
+            // which this used to answer with) -- the caller IS authenticated,
+            // just forbidden from this specific risk, matching the convention
+            // every other object-level denial in this file uses (e.g.
+            // getRiskComments()). No caller (frontend JS or otherwise) special-
+            // cases 401 for this route -- verified before making this change.
+            json_response(403, "The user does not have permission to view this risk.", "");
         }
     }
     // If the risk id was not sent
@@ -3889,8 +3930,11 @@ function saveReview($id = null){
         }
 
         if (ctype_digit((string)$project)) {
-            update_risk_project((int)$project, $id - 1000);
-            set_alert(true, "good", $lang['SuccessSetProject']);
+            if (update_risk_project((int)$project, $id - 1000)) {
+                set_alert(true, "good", $lang['SuccessSetProject']);
+            } else {
+                set_alert(true, "bad", $lang['NoPermissionForRiskManagement']);
+            }
         } else {
             set_alert(true, "bad", $lang['ThereWasAProblemWithAddingTheProject']);
         }
@@ -4319,7 +4363,19 @@ function getMitigationControlsDatatable(){
         $mitigation_id = $escaper->escapeHtml($_POST['mitigation_id']);
         $control_ids = $_POST['control_ids'];
         $control_id_array = str_getcsv($control_ids, ',', '"', '');
-    
+
+        // The mitigation_id is caller-controlled; deny access to mitigations
+        // (and their validation notes) belonging to a risk the caller cannot
+        // otherwise see. An empty mitigation_id is the normal "no mitigation
+        // planned yet" case -- print_mitigation_controls_table() (display.php)
+        // fires this ajax call unconditionally on every risk view, including
+        // a brand-new risk, so there is no mitigation to authorize against
+        // and this must not be treated as an access attempt.
+        if ($mitigation_id !== '' && !check_access_for_mitigation($mitigation_id)) {
+            json_response(403, $escaper->escapeHtml($lang['NoPermissionForRiskManagement']), NULL);
+            return;
+        }
+
         $controls = get_framework_controls($control_ids);
     
         $recordsTotal = count($controls);
@@ -6755,14 +6811,20 @@ function saveTestAuditCommentResponse()
         $comment =  $_POST['comment'];
 
         // Save comment
-        save_test_comment($test_audit_id, $comment);
+        $saved = save_test_comment($test_audit_id, $comment);
 
         $commentList = get_testing_comment_list($test_audit_id);
 
-        $test_audit = get_framework_control_test_audit_by_id($test_audit_id);
+        // Only write an audit-log entry when the comment was actually
+        // inserted -- otherwise a caller lacking comment_compliance could
+        // forge a "comment added" event in the administrator audit log
+        // without ever having written a comment.
+        if ($saved) {
+            $test_audit = get_framework_control_test_audit_by_id($test_audit_id);
 
-        $message = "Comment was added to audit test \"" . $escaper->escapeHtml($test_audit['name']) . "\" by username \"" . $_SESSION['user'] . "\".";
-        write_log((int)$test_audit_id + 1000, $_SESSION['uid'] ?? 0, $message, "test_audit");
+            $message = "Comment was added to audit test \"" . $escaper->escapeHtml($test_audit['name']) . "\" by username \"" . $_SESSION['user'] . "\".";
+            write_log((int)$test_audit_id + 1000, $_SESSION['uid'] ?? 0, $message, "test_audit");
+        }
 
         json_response(200, get_alert(true), $commentList);
 
@@ -6843,93 +6905,6 @@ function reopenTestAuditResponse()
     {
         set_alert(true, "bad", $escaper->escapeHtml($lang['NoPermissionForCompliance']));
         json_response(400, get_alert(true), NULL);
-    }
-}
-
-/********************************************
- * FUNCTION: CUSTOMIZATION ADD CUSTOM FIELD *
- ********************************************/
-function customization_addCustomField()
-{
-    global $lang;
-
-    // Check that this is an admin user
-    if (!is_admin())
-    {
-        json_response(403, $lang['AdminPermissionRequired'], NULL);
-        return;
-    }
-
-    // Check customization extra is enabled
-    if (customization_extra())
-    {
-        // If the customization extra file exists
-        if (file_exists(realpath(__DIR__ . '/../extras/customization/index.php')))
-        {
-            // Include the file
-            require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
-
-            // Call the addCustomField function
-            addCustomField();
-        }
-    }
-}
-
-/***********************************************
- * FUNCTION: CUSTOMIZATION DELETE CUSTOM FIELD *
- ***********************************************/
-function customization_deleteCustomField()
-{
-    global $lang;
-
-    // Check that this is an admin user
-    if (!is_admin())
-    {
-        json_response(403, $lang['AdminPermissionRequired'], NULL);
-        return;
-    }
-
-    // Check customization extra is enabled
-    if (customization_extra())
-    {
-        // If the customization extra file exists
-        if (file_exists(realpath(__DIR__ . '/../extras/customization/index.php')))
-        {
-            // Include the file
-            require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
-
-            // Call the deleteCustomField function
-            deleteCustomField();
-        }
-    }
-}
-
-/********************************************
- * FUNCTION: CUSTOMIZATION GET CUSTOM FIELD *
- ********************************************/
-function customization_getCustomField()
-{
-    global $lang;
-
-    // Check that this is an admin user
-    if (!is_admin())
-    {
-        json_response(403, $lang['AdminPermissionRequired'], NULL);
-        return;
-    }
-
-    // Check customization extra is enabled
-    if (customization_extra())
-    {
-        // If the customization extra file exists
-        if (file_exists(realpath(__DIR__ . '/../extras/customization/index.php')))
-        {
-            // Include the file
-            require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
-
-            // Call the getCustomField function
-            getCustomField();
-        }
     }
 }
 
@@ -7158,17 +7133,128 @@ function getDocumentsResponse()
 {
     global $lang, $escaper;
 
-    // If the user has governance permissions
-    if (check_permission("governance"))
+    // READ GATE: `governance` OR `view_documentation`. view_documentation is
+    // shipped as "view Document Program without the rest of the Governance
+    // menu", so a holder of it alone must reach this read path -- see
+    // get_document_types_api() for the same OR-gate shape.
+    if (document_program_read_permitted())
     {
-        $type = $_GET['type'];
+        // `type` is optional -- an omitted category filter means "all
+        // documents" (the Document Hierarchy tab). Reading it unguarded raised
+        // "Undefined array key" on PHP 8, which SimpleRisk's Leaf error handler
+        // escalates to a thrown ErrorException -- a 500 for any API caller that
+        // simply didn't pass the parameter.
+        $type = $_GET['type'] ?? '';
         $result = get_documents_as_treegrid($type);
+        // Explicit Content-Type -- this endpoint predates json_response() and
+        // never set one, which the old EasyUI treegrid plugin tolerated (it
+        // parses the response body as JSON itself, ignoring headers). The
+        // Task 9 redesign's plain $.ajax() relies on jQuery's Content-Type-
+        // based dataType auto-detection, which silently treated the body as
+        // text without this header -- surfacing as "(nodes || []).forEach is
+        // not a function" client-side once the string reached
+        // flattenDocumentTree() (js/simplerisk/pages/governance-documents.js).
+        header("Content-Type: application/json");
+        // @phan-suppress-next-line SecurityCheck-XSS -- JSON response (application/json), not HTML; client escapes at DOM-render time
         echo json_encode($result, JSON_INVALID_UTF8_SUBSTITUTE);
         exit;
     }
     else
     {
         json_response(400, $escaper->escapeHtml($lang['NoPermissionForGovernance']), NULL);
+    }
+}
+
+/****************************************************************************
+ * FUNCTION: GET DATA FOR DOCUMENTS DATATABLE -- v1 API LEGACY RESPONSE SHAPE *
+ ****************************************************************************/
+// Registered on the still-shipped GET /api/v1/governance/documents
+// (api/v1/index.php) ONLY. getDocumentsResponse() above is registered on the
+// v2 route (GET /api/v2/governance/documents/treegrid) and stays exactly as
+// Task 9 left it -- raw values for the new client-rendered grid, which
+// escapes once at render time (CLAUDE.md's double-escaping rule).
+//
+// Before Task 9, get_documents_as_treegrid() itself pre-escaped every string
+// field and pre-wrapped document_name in a ready-to-inject `<a>` HTML string
+// (the old EasyUI treegrid's server-formatted-cell convention). Task 9
+// correctly dropped that from get_documents_as_treegrid() for the new v2
+// JSON consumer, but that function is shared -- v1 is registered on the
+// SAME handler, so the change silently altered v1's response contract too.
+// Not exploitable inside SimpleRisk's own code (nothing in-repo still reads
+// v1's HTML-wrapped fields), but a still-shipped API contract regressed for
+// any external v1 consumer that trusted the old pre-escaped/pre-linked
+// shape. This wrapper re-applies that exact old transformation on top of
+// get_documents_as_treegrid()'s now-raw output so v1's contract is
+// unchanged, without touching get_documents_as_treegrid() itself (v2
+// depends on its current raw-output shape).
+function getDocumentsResponseV1()
+{
+    global $lang, $escaper;
+
+    // Same `governance` OR `view_documentation` read gate as getDocumentsResponse().
+    if (document_program_read_permitted())
+    {
+        // Optional -- see getDocumentsResponse() above.
+        $type = $_GET['type'] ?? '';
+        $result = get_documents_as_treegrid($type);
+        apply_legacy_document_treegrid_escaping($result);
+        header("Content-Type: application/json");
+        // @phan-suppress-next-line SecurityCheck-XSS -- fields are pre-escaped/pre-linked by apply_legacy_document_treegrid_escaping() below to preserve the v1 API's historical response contract; not double-escaped (get_documents_as_treegrid() itself no longer escapes these fields, see Task 9)
+        echo json_encode($result, JSON_INVALID_UTF8_SUBSTITUTE);
+        exit;
+    }
+    else
+    {
+        json_response(400, $escaper->escapeHtml($lang['NoPermissionForGovernance']), NULL);
+    }
+}
+
+/**
+ * Recursively re-applies the pre-Task-9 v1 response shape (server-escaped
+ * fields, document_name pre-wrapped in an `<a>` link, an `actions` HTML
+ * cell) onto get_documents_as_treegrid()'s tree, mutating the array
+ * in place. Nodes nest via a `children` key (see makeTree()).
+ */
+function apply_legacy_document_treegrid_escaping(&$nodes)
+{
+    global $escaper;
+
+    foreach ($nodes as &$document) {
+        $document['document_type'] = $escaper->escapeHtml($document['document_type']);
+        $document['document_name'] = "<a class='text-info' href='" . build_url("governance/download.php?id=" . $document['unique_name']) . "' >" . $escaper->escapeHtml($document['document_name']) . "</a>";
+        $document['framework_ids'] = $escaper->escapeHtml($document['framework_ids']);
+        $document['framework_names'] = $escaper->escapeHtml($document['framework_names']);
+        $document['control_ids'] = $escaper->escapeHtml($document['control_ids']);
+        $document['control_names'] = $escaper->escapeHtml($document['control_names']);
+        $document['submitted_by'] = $escaper->escapeHtml($document['submitted_by']);
+        $document['updated_by'] = $escaper->escapeHtml($document['updated_by']);
+        $document['status'] = $escaper->escapeHtml($document['status']);
+        // approver_name is a Task 9 addition with no pre-Task-9 v1 shape to
+        // preserve, but it's the same "resolved user display name" family as
+        // submitted_by/updated_by, so it gets the same escaping treatment for
+        // a v1 consumer that renders it directly.
+        if (isset($document['approver_name'])) {
+            $document['approver_name'] = $escaper->escapeHtml($document['approver_name']);
+        }
+        // control_links (SR-180) is likewise a Task-9-and-later addition with no
+        // pre-Task-9 v1 shape to preserve -- escape each control's raw `name`
+        // for a v1 consumer that renders it directly, matching approver_name's
+        // treatment above. `url`/`id` carry no user-controlled data (see
+        // get_documents_as_treegrid()) so they're left as-is.
+        if (isset($document['control_links']) && is_array($document['control_links'])) {
+            foreach ($document['control_links'] as &$control_link) {
+                $control_link['name'] = $escaper->escapeHtml($control_link['name']);
+            }
+            unset($control_link);
+        }
+        $document['actions'] = "
+            <div class='text-center nowrap'>
+                <a class='framework-block--edit mx-1' data-id='" . ((int)$document['id']) . "'><i class='fa fa-edit'></i></a>
+                <a class='framework-block--delete mx-1' data-id='" . ((int)$document['id']) . "'><i class='fa fa-trash'></i></a></div>";
+
+        if (!empty($document['children'])) {
+            apply_legacy_document_treegrid_escaping($document['children']);
+        }
     }
 }
 
@@ -7179,8 +7265,11 @@ function getDocumentResponse()
 {
     global $lang, $escaper;
 
-    // If the user has governance permissions
-    if (check_permission("governance"))
+    // Same `governance` OR `view_documentation` read gate as
+    // getDocumentsResponse() -- this is the single-record read behind the same
+    // Document Program grid, so a view_documentation-only holder who can list
+    // documents must be able to open one.
+    if (document_program_read_permitted())
     {
         $id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
         $document = get_document_by_id($id);
@@ -7202,17 +7291,40 @@ function getDocumentResponse()
     }
 }
 
+/*******************************************************************************
+ * FUNCTION: GET DOCUMENT TYPES API                                             *
+ * Read-only [{value, name}, ...] backing the Document Program category tab     *
+ * strip (Task 10) -- get_document_types() itself (includes/governance.php)     *
+ * is the same lookup Task 2 built for the documents.document_type_id FK.       *
+ * Gated on view_documentation alone -- not the broader governance OR          *
+ * view_documentation read gate the rest of Document Program uses. An API      *
+ * endpoint shouldn't be authorized by the broad legacy `governance`           *
+ * permission, so this lookup requires the specific view_documentation grant.  *
+ *******************************************************************************/
+function get_document_types_api() {
+    global $lang;
+    if (!check_permission('view_documentation')) {
+        set_alert(true, "bad", $lang['NoPermissionToViewDocumentation']);
+        json_response(400, get_alert(true), NULL);
+        return;
+    }
+    json_response(200, "", get_document_types());
+}
+
 /******************************************************
  * FUNCTION: GET DATA FOR TABULAR DOCUMENTS DATATABLE *
  ******************************************************/
 function getTabularDocumentsResponse() {
      
     global $escaper, $lang;
-    
-    // If the user has governance permissions
-    if (check_permission("governance")) {
 
-        $type = $_GET['type'];
+    // Same `governance` OR `view_documentation` read gate as
+    // getDocumentsResponse() -- the tabular/versions view of the same
+    // Document Program data.
+    if (document_program_read_permitted()) {
+
+        // Optional -- see getDocumentsResponse().
+        $type = $_GET['type'] ?? '';
         $document_id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
 
         // If this is request to view all versions of selected document.
@@ -7268,17 +7380,44 @@ function getTabularDocumentsResponse() {
             $filterRules = isset($_GET["filterRules"]) ? json_decode($_GET["filterRules"],true) : array();
             $filtered_documents = array();
             $documents = get_documents($type);
-            foreach ($documents as &$document) {
-                $frameworks = get_frameworks_by_ids($document["framework_ids"] ?? '');
-                $framework_names = implode(", ", array_map(function($framework) {
-                    return $framework['name'];
-                }, $frameworks));
 
-                $control_ids = explode(",", $document["control_ids"] ?? '');
-                $controls = get_framework_controls_by_filter("all", "all", "all", "all", "all", "all", "all", "all", "", $control_ids);
-                $control_names = implode(", ", array_map(function($control) {
-                    return $control['short_name'];
-                }, $controls));
+            // Framework and control rosters are fetched ONCE for the whole
+            // document set, not once per row. This mirrors the hoist already
+            // applied to get_documents_as_treegrid() (includes/governance.php)
+            // and is the same fix for the same defect on this second, still
+            // live-routed handler (GET /api/v2/governance/documents/tabular and
+            // the v1 route): the per-row get_frameworks_by_ids() re-queried and
+            // re-decrypted the framework table for every document, so one
+            // orphaned/never-encrypted framework row fired the "could not be
+            // decrypted" toast once per row. get_framework_controls_by_filter()
+            // itself calls get_frameworks(1) on every invocation, so leaving
+            // THAT in the loop reintroduced the same per-row re-decrypt through
+            // a second path.
+            //
+            // get_frameworks(false) rather than get_frameworks_by_ids(): all
+            // statuses, keyed by id, exactly as the treegrid hoist does -- an
+            // Inactive framework keeps its document mappings and must still
+            // resolve a name here.
+            $all_frameworks_by_id = get_frameworks(false);
+
+            $controls_by_id = get_controls_by_ids_for_documents($documents);
+
+            foreach ($documents as &$document) {
+                $framework_names = [];
+                foreach (explode(",", $document["framework_ids"] ?? '') as $fw_id) {
+                    if ($fw_id !== "" && isset($all_frameworks_by_id[$fw_id])) {
+                        $framework_names[] = $all_frameworks_by_id[$fw_id]['name'];
+                    }
+                }
+                $framework_names = implode(", ", $framework_names);
+
+                $control_names = [];
+                foreach (explode(",", $document["control_ids"] ?? '') as $control_id) {
+                    if ($control_id !== "" && isset($controls_by_id[$control_id])) {
+                        $control_names[] = $controls_by_id[$control_id]['short_name'];
+                    }
+                }
+                $control_names = implode(", ", $control_names);
 
                 // document filtering
                 if (count($filterRules)>0) {
@@ -9287,6 +9426,20 @@ function get_exception_api()
 
     $exception = get_exception((int)$_GET['id']);
 
+    // Team-scope guard -- see exception_policy_document_access_denied()
+    // (includes/governance.php). This read path was never scoped (pre-existing
+    // gap, not introduced by this PR's other team-scope fixes); closing it here
+    // for the policy branch matches the mutation endpoints and
+    // get_exception_for_display()'s own identical guard. Control-type
+    // exceptions remain unscoped (tracked separately, SR-1650). A 404 (rather
+    // than 403) matches the not-found response used elsewhere in this file so
+    // an unauthorized caller can't distinguish "doesn't exist" from "not yours".
+    if (empty($exception) || exception_policy_document_access_denied($exception['policy_document_id'] ?? null)) {
+        set_alert(true, "bad", $lang['ExceptionDoesNotExist']);
+        json_response(404, get_alert(true), NULL);
+        return;
+    }
+
     $exception['additional_stakeholders'] = $exception['additional_stakeholders'] ? explode(',', $exception['additional_stakeholders']) : [];
     $exception['associated_risks'] = $exception['associated_risks'] ? explode(',', $exception['associated_risks']) : [];
     $exception['creation_date'] = format_date($exception['creation_date']);
@@ -9329,6 +9482,16 @@ function get_exception_for_display_api()
     $type = $_GET['type'];
     $exception = get_exception_for_display((int)$_GET['id'], $type);
 
+    // get_exception_for_display() returns false when the id doesn't resolve to
+    // an exception OF THIS TYPE. Every field access below then raised
+    // "Undefined array key", which SimpleRisk's Leaf handler escalates to a
+    // thrown ErrorException -- a 500 for what is simply a not-found lookup.
+    if (empty($exception)) {
+        set_alert(true, "bad", $lang['ExceptionDoesNotExist']);
+        json_response(404, get_alert(true), NULL);
+        return;
+    }
+
     // Purify the rich-text fields at this output boundary — they feed the
     // exception edit modal, which renders them raw into the WYSIWYG editor.
     $exception['description'] = purify_rich_text_output($exception['description'] ?? '');
@@ -9336,16 +9499,36 @@ function get_exception_for_display_api()
 
     $exception['name'] = $escaper->escapeHtml($exception['name']);
     $exception["{$type}_name"] = $escaper->escapeHtml($exception['parent_name']);
-    $exception['framework_name'] = $escaper->escapeHtml(try_decrypt($exception['framework_name']));
+    // NOTE: do NOT try_decrypt() here. get_exception_for_display() (governance.php)
+    // already decrypts framework_name. A second try_decrypt() on already-plaintext
+    // input HMAC-fails, returns "", and sets
+    // $GLOBALS['encryption_extra_decrypt_alert_fired'] -- which is exactly the
+    // "One or more encrypted fields could not be decrypted" toast this branch set
+    // out to stop firing on this page.
+    $exception['framework_name'] = $escaper->escapeHtml($exception['framework_name'] ?? '');
     $exception["type"] = $type;
     $exception["type_text"] = $escaper->escapeHtml($lang[ucfirst($type)]);
     $exception['document_exceptions_status'] = $escaper->escapeHtml($exception['document_exceptions_status']);
     $exception['owner'] = $escaper->escapeHtml($exception['owner']);
     $exception['additional_stakeholders'] = $escaper->escapeHtml(get_stakeholder_names($exception['additional_stakeholders'], 4));
-    $exception['associated_risks'] = get_risk_subjects_by_ids($exception['associated_risks'], 4, true);
+    // Team-scoped: the exception detail modal renders risk SUBJECTS resolved
+    // from ids the exception references, and an exception the caller can see
+    // may cite a risk outside the caller's teams. Same scoping the exceptions
+    // grid applies (get_exceptions_as_treegrid(), includes/governance.php);
+    // a no-op when the Team Separation Extra is inactive.
+    $exception['associated_risks'] = get_risk_subjects_by_ids($exception['associated_risks'], 4, true, "<br>", true);
     $exception['creation_date'] = format_date($exception['creation_date']);
     $exception['next_review_date'] = format_date($exception['next_review_date']);
-    if ($type = $_GET['approval']) {
+    // Pre-existing bug fixed here (Task 11): this was `if ($type = $_GET['approval'])`
+    // -- an assignment, not a comparison, which also silently clobbered $type
+    // (unused afterward, so harmless) and threw "Undefined array key" whenever
+    // the caller didn't send an `approval` param at all. The redesigned Define
+    // Exceptions grid's read-only View action (js/simplerisk/pages/
+    // governance-exceptions.js) does exactly that -- there is no more "open
+    // this info modal in approval mode" flow now that approve/unapprove are
+    // their own row/bulk actions -- which surfaced the bug as a 500 on every
+    // View click.
+    if (!empty($_GET['approval'])) {
         $exception['approval_date'] = format_date($exception['approval_date']);
         $exception['approver'] = $escaper->escapeHtml($exception['approver']);
     } else {
@@ -9368,11 +9551,16 @@ function get_exception_for_display_api()
 }
 function create_document_api() {
     global $lang;
-    if (!check_permission("governance")) {
+    // is_admin() bypasses both checks -- matches the row-action buttons'
+    // own is_admin() || has_permission(...) gate in
+    // governance/documentation.php's $can_add/$can_edit/$can_delete/
+    // $can_approve; without it an admin who wasn't individually granted
+    // these permissions sees the button but gets rejected here.
+    if (!is_admin() && !check_permission("governance")) {
         set_alert(true, "bad", $lang['NoPermissionForGovernance']);
         json_response(400, get_alert(true), NULL);
         return;
-    } elseif (!check_permission('add_documentation')) {
+    } elseif (!is_admin() && !check_permission('add_documentation')) {
         set_alert(true, "bad", $lang['NoAddDocumentationPermission']);
         json_response(400, get_alert(true), NULL);
         return;
@@ -9423,11 +9611,12 @@ function create_document_api() {
 }
 function update_document_api() {
     global $lang;
-    if (!check_permission("governance")) {
+    // is_admin() bypass -- see the identical comment in create_document_api().
+    if (!is_admin() && !check_permission("governance")) {
         set_alert(true, "bad", $lang['NoPermissionForGovernance']);
         json_response(400, get_alert(true), NULL);
         return;
-    } elseif (!check_permission('modify_documentation')) {
+    } elseif (!is_admin() && !check_permission('modify_documentation')) {
         set_alert(true, "bad", $lang['NoModifyDocumentationPermission']);
         json_response(400, get_alert(true), NULL);
         return;
@@ -9541,26 +9730,170 @@ function update_document_api() {
 }
 function delete_document_api() {
     global $lang;
-    if (!check_permission("governance")) {
+    // is_admin() bypass -- see the identical comment in create_document_api().
+    if (!is_admin() && !check_permission("governance")) {
         set_alert(true, "bad", $lang['NoPermissionForGovernance']);
         json_response(400, get_alert(true), NULL);
         return;
-    } elseif (!check_permission('delete_documentation')) {
+    } elseif (!is_admin() && !check_permission('delete_documentation')) {
         set_alert(true, "bad", $lang['NoDeleteDocumentationPermission']);
         json_response(400, get_alert(true), NULL);
         return;
     }
     $id             = $_POST['document_id'];
-    $version        = $_POST['version'];
-    $document_type  = $_POST['document_type'];
+    // Optional -- the bulk-delete loop (js/simplerisk/pages/governance-documents.js
+    // deleteOne()) posts only document_id: a bulk selection always removes the
+    // whole document, never a single uploaded version. See DocumentDeleteApiTest
+    // for the PHP 8 "Undefined array key" 500 an unguarded read used to raise.
+    $version        = $_POST['version'] ?? null;
+    $document_type  = $_POST['document_type'] ?? '';
     if($result = delete_document($id, $version)){
-        set_alert(true, "good", $lang['DocumentDeleted']);
+        // $version set = the version-history row expander's delete-this-
+        // version action (governance-documents.js), not the row's main
+        // delete button -- reusing this same endpoint/modal, just with a
+        // real version number in the hidden field instead of an empty one
+        // (see the comment on that route in api/v2/index.php). Distinct
+        // wording so the toast doesn't claim the whole document is gone
+        // when only one historical file version was removed.
+        set_alert(true, "good", $version ? $lang['DocumentVersionDeleted'] : $lang['DocumentDeleted']);
         json_response(200, get_alert(true), array('type' => $document_type));
     } else {
         json_response(400, get_alert(true), NULL);
     }
     return;
 }
+function approve_document_api() {
+    global $lang;
+    // is_admin() bypass -- see the identical comment in create_document_api().
+    if (!is_admin() && !check_permission("governance")) {
+        set_alert(true, "bad", $lang['NoPermissionForGovernance']);
+        json_response(400, get_alert(true), NULL);
+        return;
+    } elseif (!is_admin() && !check_permission('approve_documentation')) {
+        set_alert(true, "bad", $lang['NoApproveDocumentationPermission']);
+        json_response(400, get_alert(true), NULL);
+        return;
+    }
+    if (empty($_POST['document_id']) || !ctype_digit((string)$_POST['document_id'])) {
+        set_alert(true, "bad", $lang['YouNeedToSpecifyAnIdParameter']);
+        json_response(400, get_alert(true), NULL);
+        return;
+    }
+    $id = (int)$_POST['document_id'];
+    if (approve_document($id)) {
+        set_alert(true, "good", $lang['DocumentApproved']);
+        json_response(200, get_alert(true), NULL);
+    } else {
+        set_alert(true, "bad", $lang['DocumentDoesNotExist']);
+        json_response(400, get_alert(true), NULL);
+    }
+}
+function unapprove_document_api() {
+    global $lang;
+    // is_admin() bypass -- see the identical comment in create_document_api().
+    if (!is_admin() && !check_permission("governance")) {
+        set_alert(true, "bad", $lang['NoPermissionForGovernance']);
+        json_response(400, get_alert(true), NULL);
+        return;
+    } elseif (!is_admin() && !check_permission('approve_documentation')) {
+        set_alert(true, "bad", $lang['NoApproveDocumentationPermission']);
+        json_response(400, get_alert(true), NULL);
+        return;
+    }
+    if (empty($_POST['document_id']) || !ctype_digit((string)$_POST['document_id'])) {
+        set_alert(true, "bad", $lang['YouNeedToSpecifyAnIdParameter']);
+        json_response(400, get_alert(true), NULL);
+        return;
+    }
+    $id = (int)$_POST['document_id'];
+    if (unapprove_document($id)) {
+        set_alert(true, "good", $lang['DocumentUnapproved']);
+        json_response(200, get_alert(true), NULL);
+    } else {
+        set_alert(true, "bad", $lang['DocumentDoesNotExist']);
+        json_response(400, get_alert(true), NULL);
+    }
+}
+function batch_approve_document_api() {
+    global $lang;
+    // is_admin() bypass -- see the identical comment in create_document_api().
+    if (!is_admin() && !check_permission("governance")) {
+        set_alert(true, "bad", $lang['NoPermissionForGovernance']);
+        json_response(400, get_alert(true), NULL);
+        return;
+    } elseif (!is_admin() && !check_permission('approve_documentation')) {
+        set_alert(true, "bad", $lang['NoApproveDocumentationPermission']);
+        json_response(400, get_alert(true), NULL);
+        return;
+    }
+    if (empty($_POST['document_ids']) || !is_array($_POST['document_ids'])) {
+        set_alert(true, "bad", $lang['YouNeedToSpecifyAnIdParameter']);
+        json_response(400, get_alert(true), NULL);
+        return;
+    }
+    // Capped and element-filtered by normalize_bulk_approve_ids()
+    // (includes/governance.php): an uncapped loop let one authorized request
+    // drive unbounded UPDATEs / audit rows / workflow dispatches, and a
+    // nested-array member reached the (string) cast and raised "Array to
+    // string conversion". Counts only ids that actually resolved to a document.
+    // `truncated` tells the caller the cap bit: `approved` alone can't
+    // distinguish "all 500 you sent are done" from "you sent 900 and only the
+    // first 500 were processed", so a select-all over a large filtered grid
+    // would silently report success for records nothing ever touched.
+    $approved = 0;
+    $truncated = false;
+    foreach (normalize_bulk_approve_ids($_POST['document_ids'], $truncated) as $id) {
+        if (approve_document($id)) {
+            $approved++;
+        }
+    }
+    // _lang_raw, not _lang: get_alert(true) escapes the assembled string at read
+    // time, so pre-escaping the param here would double-encode it (CLAUDE.md's
+    // double-escaping rule). `limit` is an int constant either way.
+    set_alert(true, "good", $truncated
+        ? _lang_raw('DocumentsApprovedTruncated', array('limit' => GOVERNANCE_MAX_BULK_APPROVE_IDS))
+        : $lang['DocumentsApproved']);
+    json_response(200, get_alert(true), array('approved' => $approved, 'truncated' => $truncated, 'limit' => GOVERNANCE_MAX_BULK_APPROVE_IDS));
+}
+
+/**
+ * Version history for the Document Program grid's row expander -- every
+ * historical compliance_files row for a document (get_document_versions_by_id(),
+ * includes/governance.php), not just the one documents.file_id currently
+ * points to. Same read gate as the main list (getDocumentsResponse()):
+ * `governance` OR `view_documentation`, no is_admin() bypass, matching that
+ * sibling endpoint's existing (unmodified-by-this-change) convention exactly.
+ */
+function get_document_versions_api()
+{
+    global $lang, $escaper;
+
+    if (!document_program_read_permitted()) {
+        set_alert(true, "bad", $lang['NoPermissionForGovernance']);
+        json_response(400, get_alert(true), NULL);
+        return;
+    }
+    if (empty($_GET['document_id']) || !ctype_digit((string)$_GET['document_id'])) {
+        set_alert(true, "bad", $lang['YouNeedToSpecifyAnIdParameter']);
+        json_response(400, get_alert(true), NULL);
+        return;
+    }
+    $document_id = (int)$_GET['document_id'];
+
+    json_response(200, null, array_map(function ($row) use ($escaper) {
+        return array(
+            'compliance_file_id' => (int)$row['compliance_file_id'],
+            'is_current' => (int)$row['compliance_file_id'] === (int)$row['file_id'],
+            'version' => (int)$row['file_version'],
+            'file_name' => $escaper->escapeHtml($row['file_name']),
+            'unique_name' => $escaper->escapeHtml($row['unique_name']),
+            'file_size' => (int)$row['file_size'],
+            'uploaded_at' => $row['file_upload_time'],
+            'uploaded_by' => $row['uploaded_by_name'] !== null ? $escaper->escapeHtml($row['uploaded_by_name']) : null,
+        );
+    }, get_document_versions_by_id($document_id)));
+}
+
 function create_exception_api() {
 
     global $lang;
@@ -9777,26 +10110,56 @@ function update_exception_api() {
         }
     }
 
+    // The record's CURRENT state, loaded here rather than after the
+    // next_review_date calculation because that calculation needs to know
+    // whether the exception is already approved.
+    $old_exception = get_exception($id);
+
+    if (empty($old_exception)) {
+        set_alert(true, "bad", $lang['ExceptionDoesNotExist']);
+        json_response(404, get_alert(true), NULL);
+        return;
+    }
+
+    // SR-19 fix, corrected: read the already-approved flag from the DATABASE,
+    // not from $_POST['approved_original']. The adjacent comment below claims
+    // this value is "never trusted from the client" -- it wasn't true while the
+    // flag itself came from the request. A caller that simply OMITS
+    // approved_original (an API client bypassing the UI, or a stale/modified
+    // form submission) made the recalculation branch unreachable and persisted
+    // whatever stale next_review_date was posted -- reproducing exactly the bug
+    // SR-19 closed.
+    $approved_original = !empty($old_exception['approved']);
+    $approval_date = get_standard_date_from_default_format($_POST['approval_date']);
+    $approver = (!empty($_POST['approver']) && ctype_digit($_POST['approver']) && get_user_by_id((int)$_POST['approver'])) ? (int)$_POST['approver'] : false;
+
     //calculate next review date
-    $next_review_date = get_standard_date_from_default_format($_POST['next_review_date']);
-    if (!$next_review_date || $next_review_date === "0000-00-00") {
+    $posted_next_review_date = get_standard_date_from_default_format($_POST['next_review_date']);
+
+    if ($approved_original && !empty($approval_date) && $approval_date !== "0000-00-00") {
+        // SR-19: an already-approved exception's next_review_date is always
+        // derived from approval_date + review_frequency, never trusted from
+        // the client. The edit form pre-populates next_review_date with the
+        // record's existing stored value, so a reviewer who changes only
+        // review_frequency (without also hand-editing the date field) posts
+        // the OLD, now-stale next_review_date -- and it must not be silently
+        // persisted.
+        $next_review_date = strtotime($approval_date) + ($review_frequency * 24 * 3600);
+        $next_review_date = date('Y-m-d', $next_review_date);
+    } elseif (!$posted_next_review_date || $posted_next_review_date === "0000-00-00") {
         $next_review_date = strtotime($creation_date) + ($review_frequency * 24 * 3600);
         if ($next_review_date < $today_dt) {
             $next_review_date = $today_dt;
         }
         $next_review_date = date('Y-m-d', $next_review_date);
-    } elseif (strtotime($next_review_date) < $today_dt) {
+    } elseif (strtotime($posted_next_review_date) < $today_dt) {
         set_alert(true, "bad", $lang['InvalidNextReviewDate']);
 
         json_response(400, get_alert(true), NULL);
         return;
+    } else {
+        $next_review_date = $posted_next_review_date;
     }
-
-    $approved_original = !empty($_POST['approved_original']);
-    $approval_date = get_standard_date_from_default_format($_POST['approval_date']);
-    $approver = (!empty($_POST['approver']) && ctype_digit($_POST['approver']) && get_user_by_id((int)$_POST['approver'])) ? (int)$_POST['approver'] : false;
-
-    $old_exception = get_exception($id);
 
     $approved = $old_exception['approved'];
     if ($approval_date && $approval_date !== "0000-00-00") {
@@ -9889,10 +10252,13 @@ function approve_exception_api() {
     }else {
         $id = (int)$_POST['exception_id'];
 
-        approve_exception($id);
-
-        set_alert(true, "good", $lang['ExceptionWasApprovedSuccessfully']);
-        json_response(200, get_alert(true), null);
+        if (approve_exception($id)) {
+            set_alert(true, "good", $lang['ExceptionWasApprovedSuccessfully']);
+            json_response(200, get_alert(true), null);
+        } else {
+            set_alert(true, "bad", $lang['ExceptionDoesNotExist']);
+            json_response(400, get_alert(true), NULL);
+        }
     }
 }
 
@@ -9920,10 +10286,13 @@ function unapprove_exception_api() {
     }else {
         $id = (int)$_POST['exception_id'];
 
-        unapprove_exception($id);
-
-        set_alert(true, "good", $lang['ExceptionWasUnApprovedSuccessfully']);
-        json_response(200, get_alert(true), null);
+        if (unapprove_exception($id)) {
+            set_alert(true, "good", $lang['ExceptionWasUnApprovedSuccessfully']);
+            json_response(200, get_alert(true), null);
+        } else {
+            set_alert(true, "bad", $lang['ExceptionDoesNotExist']);
+            json_response(400, get_alert(true), NULL);
+        }
     }
 }
 
@@ -9951,10 +10320,13 @@ function delete_exception_api() {
     }else {
         $id = (int)$_POST['exception_id'];
 
-        delete_exception($id);
-
-        set_alert(true, "good", $lang['ExceptionWasDeletedSuccessfully']);
-        json_response(200, get_alert(true), null);
+        if (delete_exception($id)) {
+            set_alert(true, "good", $lang['ExceptionWasDeletedSuccessfully']);
+            json_response(200, get_alert(true), null);
+        } else {
+            set_alert(true, "bad", $lang['ExceptionDoesNotExist']);
+            json_response(400, get_alert(true), NULL);
+        }
     }
 }
 
@@ -9989,20 +10361,60 @@ function batch_delete_exception_api() {
         $approved = !empty($_POST['approved']);
         $type = $_POST['type'];
 
-        batch_delete_exception((int)$_POST['parent_id'], $type, $approved);
-
-        set_alert(true, "good", $lang['ExceptionsWereDeletedSuccessfully_' . $type]);
-        json_response(200, get_alert(true), null);
+        if (batch_delete_exception((int)$_POST['parent_id'], $type, $approved)) {
+            set_alert(true, "good", $lang['ExceptionsWereDeletedSuccessfully_' . $type]);
+            json_response(200, get_alert(true), null);
+        } else {
+            set_alert(true, "bad", $lang['ExceptionDoesNotExist']);
+            json_response(400, get_alert(true), NULL);
+        }
     }
+}
+
+// Batch-approves multiple exceptions in one request, mirroring
+// batch_approve_document_api()'s shape (Task 4) exactly but targeting
+// exceptions -- the redesigned Define Exceptions grid's bulk bar (Task 11)
+// calls this instead of looping POST /exceptions/approve once per selected
+// row.
+function batch_approve_exception_api() {
+    global $lang;
+    if (!check_permission("governance")) {
+        set_alert(true, "bad", $lang['NoPermissionForGovernance']);
+        json_response(400, get_alert(true), NULL);
+        return;
+    } elseif (!check_permission_exception('approve')) {
+        set_alert(true, "bad", $lang['NoPermissionForExceptionApprove']);
+        json_response(400, get_alert(true), NULL);
+        return;
+    }
+    if (empty($_POST['exception_ids']) || !is_array($_POST['exception_ids'])) {
+        set_alert(true, "bad", $lang['YouNeedToSpecifyAnIdParameter']);
+        json_response(400, get_alert(true), NULL);
+        return;
+    }
+    // See batch_approve_document_api() -- same cap, element filter and
+    // truncation signal.
+    $approved = 0;
+    $truncated = false;
+    foreach (normalize_bulk_approve_ids($_POST['exception_ids'], $truncated) as $id) {
+        if (approve_exception($id)) {
+            $approved++;
+        }
+    }
+    // _lang_raw -- see batch_approve_document_api().
+    set_alert(true, "good", $truncated
+        ? _lang_raw('ExceptionsApprovedTruncated', array('limit' => GOVERNANCE_MAX_BULK_APPROVE_IDS))
+        : $lang['ExceptionsApproved']);
+    json_response(200, get_alert(true), array('approved' => $approved, 'truncated' => $truncated, 'limit' => GOVERNANCE_MAX_BULK_APPROVE_IDS));
 }
 
 /******************************************
  * FUNCTION: GET EXCEPTIONS AUDIT LOG API *
  ******************************************/
-function get_exceptions_audit_log_api() 
+function get_exceptions_audit_log_api()
 {
 
-    global $lang, $escaper;
+    global $lang;
 
     if (!check_permission("governance")) {
         set_alert(true, "bad", $lang['NoPermissionForGovernance']);
@@ -10019,12 +10431,104 @@ function get_exceptions_audit_log_api()
     if ($days < 0)
         $days = 7;
 
-    json_response(200, null, array_map(function($log) use ($escaper) {
+    json_response(200, null, array_map(function($log) {
+            // exception_id is 0 for a row that predates the write_log()
+            // +1000 fix; the client shows an em-dash for that case.
+            //
+            // exception_name: get_exceptions_audit_log()'s JOIN against
+            // `document_exceptions` returns null once the exception is
+            // deleted -- for every row that ever referenced it, not just the
+            // delete event. Every exception message has embedded the name in
+            // its own sentence since it was written, so fall back to
+            // recovering it from the message text rather than showing an
+            // em-dash for an exception's entire history just because it was
+            // later deleted (see get_documents_audit_log_api()'s identical
+            // reasoning, includes/api.php, this file).
+            $decrypted_message = try_decrypt($log['message']);
+            $exception_name = $log['exception_name'] ?? extract_exception_name_from_audit_message($decrypted_message);
+            // Raw values throughout -- JSON response (application/json), not
+            // HTML; the client escapes once at DOM-render time, same
+            // convention get_documents_audit_log_api() uses (see that
+            // function's own comment on the double-escape this avoids).
             return array(
-                'timestamp' => date(get_default_datetime_format("g:i A T"), strtotime($log['timestamp'])),
-                'message' => $escaper->escapeHtml(try_decrypt($log['message']))
+                'timestamp' => $log['timestamp'],
+                'timestamp_display' => date(get_default_datetime_format("g:i A T"), strtotime($log['timestamp'])),
+                'message' => $decrypted_message,
+                'activity' => classify_exception_audit_activity($decrypted_message),
+                'exception_id' => (int)$log['exception_id'],
+                'exception_name' => $exception_name,
+                'user_id' => (int)$log['user_id'],
+                'user_name' => $log['user_name'],
             );
         }, get_exceptions_audit_log($days))
+    );
+}
+
+/*****************************************
+ * FUNCTION: GET DOCUMENTS AUDIT LOG API *
+ *****************************************/
+/**
+ * Mirror of get_exceptions_audit_log_api() for Document Program.
+ *
+ * approve_document()/unapprove_document() (and add/update/delete) have been
+ * writing log_type='document' rows all along, and get_documents_audit_log()
+ * existed to read them back -- but with no API wrapper, no route, and no UI,
+ * the trail was write-only. Document Program was specified to get the same
+ * formal audit trail Define Exceptions already has.
+ *
+ * Read gate is `is_admin()` OR its own dedicated `view_document_audit_logs`
+ * permission -- deliberately separate from Document Program's own
+ * governance/view_documentation visibility gate, so a user can see the
+ * grid without seeing who touched what (see the permission's own
+ * description, added alongside it in upgrade_from_20260828001()).
+ */
+function get_documents_audit_log_api()
+{
+    global $lang;
+
+    if (!is_admin() && !check_permission("view_document_audit_logs")) {
+        set_alert(true, "bad", $lang['NoPermissionForGovernance']);
+        json_response(400, get_alert(true), NULL);
+        return;
+    }
+
+    $days = !empty($_GET['days']) && ctype_digit($_GET['days']) ? (int)$_GET['days'] : 7;
+
+    if ($days < 0)
+        $days = 7;
+
+    json_response(200, null, array_map(function($log) {
+            // document_id is 0 when the entry predates the write_log()
+            // document-id fix; the client shows an em-dash for that case.
+            //
+            // document_name: get_documents_audit_log()'s JOIN against
+            // `documents` returns null once the document is deleted -- for
+            // EVERY row that ever referenced it, not just the delete event.
+            // Every document message has embedded the name in its own
+            // sentence since it was written, so fall back to recovering it
+            // from the message text rather than showing an em-dash for a
+            // document's entire history just because it was later deleted.
+            $decrypted_message = try_decrypt($log['message']);
+            $document_name = $log['document_name'] ?? extract_document_name_from_audit_message($decrypted_message);
+            // Raw values throughout -- JSON response (application/json), not
+            // HTML; the client escapes once at DOM-render time (esc() in
+            // js/simplerisk/pages/governance-document-audit-trail.js), same
+            // convention getDocumentsResponse() documents for the sibling v2
+            // treegrid endpoint just above in this file. This function used
+            // to escapeHtml() every string field here AND the client escaped
+            // them again at render -- a double-escape that mangled any name
+            // containing &, <, >, a quote, or an apostrophe.
+            return array(
+                'timestamp' => $log['timestamp'],
+                'timestamp_display' => date(get_default_datetime_format("g:i A T"), strtotime($log['timestamp'])),
+                'message' => $decrypted_message,
+                'activity' => classify_document_audit_activity($decrypted_message),
+                'document_id' => (int)$log['document_id'],
+                'document_name' => $document_name,
+                'user_id' => (int)$log['user_id'],
+                'user_name' => $log['user_name'],
+            );
+        }, get_documents_audit_log($days))
     );
 }
 
@@ -10281,6 +10785,14 @@ function getAssetGroupById($id = null)
         return;
     }
 
+    // Team Separation: don't leak the names of assets the caller can't otherwise see,
+    // in either the group's current membership or the "available to add" pick-list.
+    foreach (['selected_assets', 'available_assets'] as $key) {
+        if (!empty($group[$key])) {
+            $group[$key] = filter_accessible_assets($group[$key], 'id');
+        }
+    }
+
     json_response(200, "SUCCESS", ['asset_group' => $group]);
 }
 
@@ -10290,6 +10802,8 @@ function getAssetGroupById($id = null)
 function updateAssetGroupById($id = null)
 {
     global $escaper, $lang;
+
+    parse_non_post_body_into_post();
 
     if (!check_permission("asset")) {
         json_response(403, $escaper->escapeHtml($lang['NoPermissionForAsset']), NULL);
@@ -10317,9 +10831,19 @@ function updateAssetGroupById($id = null)
     }
 
     $name = get_param("POST", "name", null) ?: $current['name'];
+    $current_ids = array_column($current['selected_assets'], 'id');
+
+    // Team Separation: only accept caller-supplied asset ids the caller can
+    // actually see, and union back in any existing member the caller cannot
+    // see so this bulk-replace never silently drops an asset that was never
+    // shown to them in the first place (getAssetGroupById() already filters
+    // selected_assets before the client ever sees it to build this request)
+    // -- mirroring the additive semantics addAssetsToAssetGroup() uses.
+    $inaccessible_current_ids = array_diff($current_ids, filter_accessible_assets($current_ids));
     $selected_assets = isset($_POST['selected_assets'])
-        ? $_POST['selected_assets']
-        : array_column($current['selected_assets'], 'id');
+        ? filter_accessible_assets(array_map('intval', $_POST['selected_assets']))
+        : $current_ids;
+    $selected_assets = array_values(array_unique(array_merge($selected_assets, $inaccessible_current_ids)));
 
     // Validate name uniqueness (allow same name if it's this group's own name)
     $id_check = get_value_by_name('asset_groups', $name);
@@ -10404,6 +10928,10 @@ function getAssetGroupAssets($id = null)
     }
 
     $assets = get_assets_of_asset_group($id);
+
+    // Team Separation: don't leak the names of assets the caller can't otherwise see.
+    $assets = filter_accessible_assets($assets, 'id');
+
     json_response(200, "SUCCESS", ['assets' => $assets]);
 }
 
@@ -10427,7 +10955,14 @@ function addAssetsToAssetGroup($id = null)
 
     $asset_ids = $_POST['asset_ids'] ?? [];
     if (empty($asset_ids)) {
-        json_response(400, "BAD REQUEST: asset_ids[] is required.", NULL);
+        json_response(400, $escaper->escapeHtml($lang['AssetIdsRequired']), NULL);
+        return;
+    }
+
+    // Team Separation: only map assets the caller is actually allowed to see.
+    $asset_ids = filter_accessible_assets(array_map('intval', $asset_ids));
+    if (empty($asset_ids)) {
+        json_response(400, $escaper->escapeHtml($lang['AssetIdsRequired']), NULL);
         return;
     }
 
@@ -10447,7 +10982,7 @@ function addAssetsToAssetGroup($id = null)
 
     // Merge current asset IDs with new ones (deduplicated)
     $current_ids = array_column($current['selected_assets'], 'id');
-    $merged_ids = array_values(array_unique(array_merge($current_ids, array_map('intval', $asset_ids))));
+    $merged_ids = array_values(array_unique(array_merge($current_ids, $asset_ids)));
 
     try {
         update_asset_group($id, $current['name'], $merged_ids);
@@ -10476,6 +11011,12 @@ function removeAssetFromAssetGroupById($id = null, $asset_id = null)
     $asset_id = (int)($asset_id ?? 0);
     if (!$id || !$asset_id) {
         json_response(400, $escaper->escapeHtml($lang['YouNeedToSpecifyAnIdParameter']), NULL);
+        return;
+    }
+
+    // Team Separation: don't let the caller unlink an asset they can't see.
+    if (!check_access_for_asset($asset_id)) {
+        json_response(403, $escaper->escapeHtml($lang['NoPermissionForAsset']), NULL);
         return;
     }
 
@@ -11945,6 +12486,7 @@ function add_project_api(){
                 'consultant' => isset($_POST['consultant']) ? (int)$_POST['consultant'] : 0,
                 'business_owner' => isset($_POST['business_owner']) ? (int)$_POST['business_owner'] : 0,
                 'data_classification' => isset($_POST['data_classification']) ? (int)$_POST['data_classification'] : 0,
+                'template_group_id' => get_param("POST", "template_group_id", null),
             );
             // Insert a new project
             $new_project_id = add_project($project);
@@ -12084,7 +12626,7 @@ function delete_project_api(){
     global $lang, $escaper;
     $value = (int)$_POST['project_id'];
 
-    // check permission for project delete 
+    // check permission for project delete
     if(isset($_SESSION["delete_projects"]) && $_SESSION["delete_projects"] == 1){
         // Verify value is an integer
         if (is_int($value))
@@ -12102,23 +12644,70 @@ function delete_project_api(){
                 // Get the risks associated with the project
                 $risks = get_project_risks($value);
 
-                // For each associated risk
-                foreach ($risks as $risk)
+                // Verify access to every associated risk BEFORE mutating any of
+                // them (team separation). update_risk_project() denies a single
+                // inaccessible risk on its own, but checking mid-loop meant risks
+                // earlier in the list could already be reassigned to unassigned
+                // (0) by the time a later, inaccessible risk triggered the 403 --
+                // json_response()'s exit() stops the loop and the project delete
+                // that follows, but does not undo those earlier reassignments,
+                // leaving the project in a half-unwound state even though the
+                // request was denied. Check first; only mutate if every risk
+                // clears, so a denial never leaves partial state behind.
+                if (!all_project_risks_accessible($risks, function ($risk) {
+                    return check_access_for_risk((int)$risk['id'] + 1000);
+                }))
                 {
-                    // Set the project ID for the risk to unassigned (0)
-                    update_risk_project(0, $risk['id']);
+                    json_response(403, $escaper->escapeHtml($lang['NoPermissionForRiskManagement']), NULL);
                 }
 
-                // Delete the project
-                delete_value("projects", $value);
+                // Reassign every risk to Unassigned (0), delete the project, and
+                // remove its custom data as a single transaction. Every risk was
+                // already confirmed accessible above, but a false return from
+                // update_risk_project() here (access revoked between the check
+                // and this mutation, or an unexpected internal failure) still
+                // needs to stop the operation cold. update_risk_project() and
+                // delete_value() both call db_open(), which returns this same
+                // shared connection (db_close() is a no-op) -- so their writes
+                // join this transaction and roll back together on failure,
+                // rather than each auto-committing individually and leaving
+                // some risks reassigned while the project survives.
+                $db = db_open();
+                try
+                {
+                    $db->beginTransaction();
 
-                // Delete custom project data (no-op if customization extra is disabled)
-                call_extra_function(
-                    'customization_extra',
-                    __DIR__ . '/../extras/customization/index.php',
-                    'delete_custom_data_by_row_id',
-                    [$value, "project"]
-                );
+                    if (!unassign_all_project_risks($risks, function ($risk) {
+                        return update_risk_project(0, $risk['id']);
+                    }))
+                    {
+                        throw new Exception("Failed to reassign a risk while deleting project {$value}.");
+                    }
+
+                    // Delete the project
+                    delete_value("projects", $value);
+
+                    // Delete custom project data (no-op if customization extra is disabled)
+                    call_extra_function(
+                        'customization_extra',
+                        __DIR__ . '/../extras/customization/index.php',
+                        'delete_custom_data_by_row_id',
+                        [$value, "project"]
+                    );
+
+                    $db->commit();
+                }
+                catch (Exception $e)
+                {
+                    if ($db->inTransaction())
+                    {
+                        $db->rollBack();
+                    }
+                    db_close($db);
+                    write_debug_log("delete_project_api failed for project {$value}: " . $e->getMessage(), "error");
+                    json_response(500, $escaper->escapeHtml($lang['FailedToUpdateItem']), NULL);
+                }
+                db_close($db);
 
                 // Display an alert
                 set_alert(true, "good", "An existing project was deleted successfully.");
@@ -12142,16 +12731,24 @@ function delete_project_api(){
  ****************************************/
 function update_project_api(){
     global $lang, $escaper;
-    // check permission for project add 
-    if(isset($_SESSION["manage_projects"]) && $_SESSION["manage_projects"] == 1){
+    // check permission for project add. manage_projects alone only proves the
+    // caller may administer projects, not that they may reassign a specific
+    // risk -- require modify_risks too, matching the canonical
+    // setProjectToRiskForm() route. update_risk_project() still separately
+    // enforces check_access_for_risk() (Team Separation) on the target risk.
+    if(isset($_SESSION["manage_projects"]) && $_SESSION["manage_projects"] == 1 && has_permission("modify_risks")){
         if (isset($_POST['risk_id']))
         {
             $risk_id = $_POST['risk_id'];
             $project_id = $_POST['project_id'];
-            update_risk_project($project_id, $risk_id);  
-            // Display an alert
-            set_alert(true, "good", "The risks were saved successfully to the projects.");
-            json_response(200, get_alert(true), NULL);
+            if (update_risk_project($project_id, $risk_id)) {
+                // Display an alert. get_alert(true) already escapes at read
+                // time -- pre-escaping here would double-encode the message.
+                set_alert(true, "good", $lang['SuccessSetProject']);
+                json_response(200, get_alert(true), NULL);
+            } else {
+                json_response(403, $escaper->escapeHtml($lang['NoPermissionForRiskManagement']), NULL);
+            }
         } else {
             $message = _lang('FieldRequired', array("field"=>"Risk ID"));
             // Return a JSON response
@@ -12816,278 +13413,17 @@ function saveCustomReviewregularlyDisplaySettingsAPI(){
     return;
 }
 
-/***********************************************************************************
- * NEXT SECTION CONTAINS FUNCTIONS DEDICATED TO FIXING FILE UPLOAD ENCODING ISSUES *
- ***********************************************************************************/
-function getFilesWithEncodingIssuesDatatableResponse() {
-
-    if (is_admin()) {
-        global $lang;
-        global $escaper;
-        
-        $draw = (int)$_GET['draw'];
-        
-        // @phan-suppress-next-line PhanTypeMismatchDimFetch
-        $order_column = isset($_GET['order'][0]['column']) ? (int)$_GET['order'][0]['column'] : 0;
-        // @phan-suppress-next-line PhanTypeMismatchDimFetch
-        $order_dir = $escaper->escapeHtml($_GET['order'][0]['dir']) == "asc" ? "asc" : "desc";
-        $offset = (int)$_GET['start'];
-        $page_size = (int)$_GET['length'];
-
-        $type = isset($_GET['type']) && in_array($_GET['type'], ['risk', 'compliance', 'questionnaire']) ? $_GET['type'] : 'risk';
-
-        list($recordsTotal, $fileList) = get_files_with_encoding_issues($type, $order_column, $order_dir, $offset, $page_size);
-        
-        $data = array();
-        
-        foreach ($fileList as $file) {
-            $file_name = $file['file_name'];
-            $unique_name = $file['unique_name'];
-            
-            $row = [];
-            switch ($type) {
-                case 'risk':
-                    $row['id'] = "<div class='open-risk'><a target=\"_blank\" href=\"../management/view.php?id=" . $escaper->escapeHtml(convert_to_risk_id($file['risk_id'])) . "\">" . $escaper->escapeHtml(convert_to_risk_id($file['risk_id'])) . "</a></div>";
-                    $row['subject'] = $escaper->escapeHtml(try_decrypt($file['subject']));
-                    $row['view_type'] = $escaper->escapeHtml($lang[(int)$file['view_type'] === 1 ? 'Risk' : 'Mitigation']);
-                break;
-                case 'compliance':
-                    
-                    if ($file['ref_type'] === 'test_audit') {
-                        
-                        $closed = ((int)$file['status'] === (int)get_setting("closed_audit_status"));
-
-                        $row['name'] = "<a target='_blank' href='../compliance/" . ($closed ? 'view_test' : 'testing') . ".php?id=" . $escaper->escapeHtml($file['id']) . "'>" . $escaper->escapeHtml($file['name']) . "</a>";
-                    } else {
-                        $row['name'] = $escaper->escapeHtml($file['name']);
-                    }
-                    
-                    
-                    $row['ref_type'] = $escaper->escapeHtml($lang['ref_type_' . $file['ref_type']]);
-                break;
-                case 'questionnaire':
-
-                    $row['name'] = "<a target='_blank' href='../assessments/questionnaire_results.php?action=full_view&token=" . $escaper->escapeHtml($file['token']) . "'>" . $escaper->escapeHtml($file['name']) . "</a>";
-
-                    $row['type'] = $escaper->escapeHtml($lang[$file['type']]);
-                break;
-            }
-
-            $uploader = "
-                <div class='file-uploader'>
-                    <input type='text' class='form-control readonly' style='width: 50%; margin-bottom: 0px; cursor: default; padding: 2px 10px; height: 90%;'/>
-                    <label for='file-upload-{$unique_name}' class='btn' style='padding: 2px 15px;'>" . $escaper->escapeHtml($lang['ChooseFile']) . "</label>
-                    <span class='file-size'>
-                        <label for=''></label>
-                    </span>
-                    <input type='file' id='file-upload-{$unique_name}' name='file' class='hidden-file-upload active' />
-                </div>";
-            
-            
-            $row['file_name'] = $escaper->escapeHtml($file_name);
-            $row['file_uploader'] = $uploader;
-            $row['unique_name'] = $unique_name;
-            
-            $data[] = $row;
-            
-        }
-        $result = array(
-            'draw' => $draw,
-            'data' => $data,
-            'recordsTotal' => $recordsTotal,
-            'recordsFiltered' => $recordsTotal,
-        );
-        echo json_encode($result, JSON_INVALID_UTF8_SUBSTITUTE);
-        exit;
-    } else {
-        unauthorized_access();
-    }
-}
-
-function uploadFileToFixFileEncodingIssue() {
-
-    // If the user is an administrator and the upload is EXACTLY one file
-    if (is_admin() && !empty($_FILES) && count($_FILES) === 1) {
-
-        global $lang, $escaper;
-
-        // Refused outright on a demo instance, and this one destroys data if it
-        // isn't. Each branch below replaces an existing attachment by uploading
-        // the fixed copy and then deleting the old row — but under DEMO_MODE the
-        // upload helpers accept the file and store nothing while still reporting
-        // success, so the delete would run against a replacement that was never
-        // written. The original file would be gone for good.
-        //
-        // This is an admin-only maintenance tool, so a demo visitor cannot reach
-        // it (demo accounts are not administrators) — but the operator signing in
-        // to their own demo can, which is exactly when losing the demo's files
-        // would hurt.
-        if (demo_mode()) {
-            set_alert(true, "bad", $lang['ActionDisabledOnDemoInstance']);
-            json_response(400, get_alert(true), NULL);
-        }
-
-        $type = isset($_POST['type']) && in_array($_POST['type'], ['risk', 'compliance', 'questionnaire']) ? $_POST['type'] : false;
-
-        if (!$type) {
-            set_alert(true, "bad", $lang['YouNeedToSpecifyATypeParameter']);
-            json_response(400, get_alert(true), NULL);
-        }
-
-        // If the user wants to upload a `questionnaire` type file, check if the assessment extra file exists
-        if ($type === 'questionnaire') {
-            if(file_exists(realpath(__DIR__ . '/../extras/assessments/index.php'))) {
-                // Include the file
-                require_once(realpath(__DIR__ . '/../extras/assessments/index.php'));
-            } else {
-                set_alert(true, "bad", $lang['NoPermissionForAssessments']);
-                json_response(400, get_alert(true), NULL);
-            }
-        }
-
-        $unique_name = $_POST['unique_name'];
-
-        $file_info = get_encoding_issue_file_info($type, $unique_name);
-
-        if (!$file_info) {
-            set_alert(true, "bad", $lang['InvalidUniqueName']);
-            json_response(400, get_alert(true), NULL);
-        }
-
-        $log_type = null;
-
-        switch($type) {
-            case 'risk':
-                $log_type = 'risk';
-                $error = upload_file($file_info['risk_id'], $_FILES['file'], $file_info['view_type']);
-                if ($error === 1) {
-                    delete_db_file($unique_name);
-                } else {
-                    json_response(400, $escaper->escapeHtml($error), NULL);
-                }
-            break;
-            case 'compliance':
-                $log_type = 'test_audit';
-                $files = array(
-                    'name' => [$_FILES['file']['name']],
-                    'type' => [$_FILES['file']['type']],
-                    'tmp_name' => [$_FILES['file']['tmp_name']],
-                    'size' => [$_FILES['file']['size']],
-                    'error' => [$_FILES['file']['error']]
-                );
-
-                if ($file_info['ref_type'] === 'test_audit') {
-
-                    list($status, $_, $errors) = upload_compliance_files($file_info['ref_id'], "test_audit", $files);
-
-                    if($status){
-                        delete_compliance_file($file_info['id']);
-                    } else {
-                        json_response(400, $escaper->escapeHtml($errors[0]), NULL);
-                        return;
-                    }
-                } elseif ($file_info['ref_type'] === 'exceptions') {
-
-                    list($status, $file_ids, $errors) = upload_compliance_files($file_info['ref_id'], "exceptions", $files);
-
-                    if (!$status) {
-                        json_response(400, $escaper->escapeHtml($errors[0]), NULL);
-                        return;
-                    } else {
-
-                        $db = db_open();
-
-                        $stmt = $db->prepare("UPDATE `document_exceptions` SET file_id=:file_id WHERE value=:id");
-                        $stmt->bindParam(":file_id", $file_ids[0], PDO::PARAM_INT);
-                        $stmt->bindParam(":id", $file_info['ref_id'], PDO::PARAM_INT);
-                        $stmt->execute();
-
-                        db_close($db);
-
-                        delete_compliance_file($file_info['id']);
-                    }
-                } elseif ($file_info['ref_type'] === 'documents') {
-
-                    list($status, $file_ids, $errors) = upload_compliance_files($file_info['ref_id'], "documents", $files, $file_info['version']);
-
-                    if (!$status) {
-                        json_response(400, $escaper->escapeHtml($errors[0]), NULL);
-                        return;
-                    } else {
-                        // Open the database connection
-                        $db = db_open();
-
-                        $stmt = $db->prepare("UPDATE `documents` SET file_id=:file_id WHERE id=:id");
-                        $stmt->bindParam(":file_id", $file_ids[0], PDO::PARAM_INT);
-                        $stmt->bindParam(":id", $file_info['ref_id'], PDO::PARAM_INT);
-                        $stmt->execute();
-
-                        db_close($db);
-
-                        delete_compliance_file($file_info['id']);
-                    }
-                }
-            break;
-            case 'questionnaire':
-                $log_type = 'questionnaire';
-                $files = array(
-                    'name' => [$_FILES['file']['name']],
-                    'type' => [$_FILES['file']['type']],
-                    'tmp_name' => [$_FILES['file']['tmp_name']],
-                    'size' => [$_FILES['file']['size']],
-                    'error' => [$_FILES['file']['error']]
-                );
-
-                // It's ok to use the same logic for files attached to the answer or the questionnaire as in case of the file attached to the questionnaire
-                // the files `template_id`, `question_id` and `parent_question_id` will be 0 anyway(this is the default what's used whe those parameters aren't present)
-                // The tainted member of $files is the user-supplied original filename
-                // ($_FILES['file']['name']). Inside upload_questionnaire_files() it is
-                // used ONLY for pathinfo(...PATHINFO_EXTENSION) (a string op, no FS
-                // access) and as a parameterized DB column; the file content is read
-                // from the server-generated tmp_name and stored as a DB blob under a
-                // random generate_token(30) unique_name. No filesystem path is built
-                // from user input, so the PathTraversal flow is not reachable.
-                // @phan-suppress-next-line SecurityCheck-PathTraversal -- user filename only reaches pathinfo() (string) + a parameterized DB column; content is stored as a DB blob under a random unique_name, never a user-controlled FS path
-                $result = upload_questionnaire_files($file_info['tracking_id'], $files, $file_info['template_id'], $file_info['question_id'], $file_info['parent_question_id']);
-
-                // Check if there was an error
-                if($result['status'] !== true && is_array($result['data'])){
-                    json_response(400, $escaper->escapeHtml($result['data'][0]), NULL);
-                    return;
-                } else { // Delete the original file if everything went well with the upload
-                    delete_assessment_file($file_info['id']);
-                }
-            break;
-        }
-        $setting_name = "file_encoding_issues_count_{$type}";
-
-        $old_count = (int)get_setting($setting_name);
-        $count = $old_count - 1;
-
-        // Refresh the numbers in the database
-        if ($count > 0) {
-            update_or_insert_setting($setting_name, $count);
-            write_log(0, $_SESSION['uid'] ?? 0, _lang('EncodingIssueCountUpdated', ['type' => $type, 'old_count' => $old_count, 'count' => $count]), $log_type);
-        } else {
-            // If all files of this type are supposedly fixed check if they really are
-            refresh_file_encoding_issue_counts($type);
-        }
-    } else {
-        unauthorized_access();
-    }
-}
-/***************************************************************************************
- * END OF SECTION CONTAINING FUNCTIONS DEDICATED TO FIXING FILE UPLOAD ENCODING ISSUES *
- ***************************************************************************************/
-
-
-
 /*****************************************************
  * FUNCTION: REPORTS - All Open Risks Assigned to Me *
  * The My Open Risk Report datatable's API function  *
  *****************************************************/
 function my_open_risk_datatable() {
-    global $escaper;
+    global $escaper, $lang;
+
+    if (!check_permission("riskmanagement")) {
+        json_response(400, $escaper->escapeHtml($lang['NoPermissionForRiskManagement']), NULL);
+        return;
+    }
 
     $draw   = $escaper->escapeHtml($_POST['draw']);
 
@@ -15291,7 +15627,38 @@ function updateAuditById($id = null)
         return;
     }
 
+    // "Closed" is whatever test_status value the closed_audit_status setting
+    // names (default 5) -- NOT literally 0. Moving OFF that status to anything
+    // else is a reopen and must go through the same reopen_audits gate as the
+    // legacy Reopen Audit action (reopenTestAuditResponse()), not just
+    // modify_audits. Anchoring this on status===0 instead let a modify_audits-
+    // only caller PATCH a closed+approved audit to any other non-closed status
+    // (bypassing both the gate and reset_audit_approval_state_for_reopen()
+    // below), edit it, then PATCH it back to closed -- save_test_result()'s
+    // close branch only re-queues approval when approval_state is
+    // 'pending'/'rejected', so the untouched 'approved' state let it re-close
+    // with no re-approval.
+    $closed_audit_status = (int)get_setting("closed_audit_status");
+    $is_reopen = (int)$audit['status'] === $closed_audit_status && $status !== $closed_audit_status;
+    if ($is_reopen && !check_permission("reopen_audits")) {
+        json_response(403, $escaper->escapeHtml($lang['NoPermissionForCompliance']), NULL);
+        return;
+    }
+
     save_test_result($id, $status, $test_result, $tester, $test_date, $teams, $summary, $tags);
+
+    // save_test_result() only resets approval_state on a CLOSE (see its
+    // get_audit_approval_state()==='pending' branch); a reopen routes through
+    // it too (to apply the other field updates in this same PATCH), but
+    // without this it would leave a stale 'approved'/'rejected' approval_state
+    // in place -- the same approval-bypass this endpoint's reopen_audits gate
+    // exists to prevent. reopen_test_audit() (the legacy Reopen Audit action)
+    // already carries this fix; apply the same reset here so the two reopen
+    // entry points can't drift.
+    if ($is_reopen) {
+        reset_audit_approval_state_for_reopen($id);
+    }
+
     json_response(200, "Audit updated successfully.", NULL);
 }
 
@@ -15347,6 +15714,15 @@ function approveAuditById($id = null)
     }
 
     if ($uid === (int)$audit['tester']) {
+        json_response(403, $escaper->escapeHtml($lang['ApproverCannotBeTester']), NULL);
+        return;
+    }
+
+    // The 'tester' field on the audit is caller-settable via updateAuditById()
+    // and can be pointed at someone other than whoever actually submitted the
+    // pending result. Check the result's real author (submitted_by) too, or
+    // the tester check above can be defeated by manipulating that field.
+    if ($uid === (int)$audit['submitted_by']) {
         json_response(403, $escaper->escapeHtml($lang['ApproverCannotBeTester']), NULL);
         return;
     }
@@ -15413,6 +15789,13 @@ function rejectAuditById($id = null)
         return;
     }
 
+    // See approveAuditById() -- 'tester' is caller-settable, so also check
+    // the result's real author (submitted_by).
+    if ($uid === (int)$audit['submitted_by']) {
+        json_response(403, $escaper->escapeHtml($lang['ApproverCannotBeTester']), NULL);
+        return;
+    }
+
     if (!audit_is_awaiting_approval($id)) {
         json_response(409, $escaper->escapeHtml($lang['AuditNotAwaitingApproval']), NULL);
         return;
@@ -15436,10 +15819,19 @@ function rejectAuditById($id = null)
     // for subpath installs, same idiom used throughout compliance.php/api.php).
     $tester_id = (int)$audit['tester'];
     if ($tester_id > 0) {
+        // SR-2095: $audit['name'] (define_tests-controlled) and $comment
+        // (the rejecting approver's free text) are both interpolated via
+        // _lang_raw() (no escaping) into the notification body. Escape them
+        // here as defense in depth alongside the notifications.js
+        // stripHtml() fix (the primary control) -- see the matching note on
+        // notify_audit_awaiting_approval() in compliance.php for why the
+        // title is deliberately left unescaped (single client-side
+        // escapeHtml() pass with no prior decode) while the body isn't
+        // (stripHtml()'s DOMParser decodes entities before display).
         create_notification_for_user_ids(
             source:     'workflow',
             title:      _lang_raw('NotificationAuditRejectedTitle', ['test_audit_name' => $audit['name']]),
-            body:       _lang_raw('NotificationAuditRejectedBody', ['test_audit_name' => $audit['name'], 'comment' => $comment]),
+            body:       _lang_raw('NotificationAuditRejectedBody', ['test_audit_name' => $escaper->escapeHtml($audit['name']), 'comment' => $escaper->escapeHtml($comment)]),
             link:       build_url("compliance/testing.php?id=" . $id),
             user_ids:   [$tester_id],
             created_by: $uid,
@@ -15575,7 +15967,16 @@ function createFrameworkCrud()
         return;
     }
 
-    $framework_id = add_framework($name, $description, $parent, $status);
+    // Which admin-defined template group this framework is being created
+    // under. display_add_framework() renders one <form> per template-group
+    // tab and gives each a hidden template_group_id input (Track B, Task 27);
+    // absent (e.g. a plain API-key caller, or Customization off) resolves to
+    // the fgroup's real Default group inside add_framework() -- never a
+    // hardcoded 1, which is only ever Risk's seeded Default row.
+    $template_group_id = get_param("POST", "template_group_id", null);
+    $template_group_id = $template_group_id !== null ? (int)$template_group_id : null;
+
+    $framework_id = add_framework($name, $description, $parent, $status, $template_group_id);
     if ($framework_id === false) {
         json_response(409, "A framework with that name already exists.", NULL);
         return;
@@ -15891,6 +16292,12 @@ function createControlCrud()
         // different, NOT-yet-done change deliberately left alone here).
         'map_frameworks'           => parse_control_map_frameworks_request($_POST),
         'mapped_assets'            => parse_control_mapped_assets_request($_POST),
+        // Which admin-defined Control template group the user picked (Track B,
+        // Task 28) -- display_add_control_fields() (includes/governance.php)
+        // gives every create-path pane a hidden template_group_id input, same
+        // as createFrameworkCrud()/add_project() above. add_framework_control()
+        // resolves the fgroup's real Default group when this is null.
+        'template_group_id'       => get_param("POST", "template_group_id", null),
     ];
 
     $control_id = add_framework_control($control);
@@ -16134,6 +16541,10 @@ function delete_asset_api(){
     if (check_permission("asset")){
         $id = isset($_POST['id']) ? (int)$_POST['id'] : NULL;
         if(!is_null($id) && $id != "") {
+            if (!check_access_for_asset($id)) {
+                $message = $escaper->escapeHtml($lang['NoPermissionForAsset']);
+                return json_response(403, $message, NULL);
+            }
             delete_asset($id);
             $message = $escaper->escapeHtml($lang['AssetWasDeletedSuccessfully']);
             return json_response(200, $message, NULL);

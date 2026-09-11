@@ -3,6 +3,11 @@
 // Include the SimpleRisk functions.php file
 require_once(realpath(__DIR__ . '/../../../../includes/functions.php'));
 
+// Include the SimpleRisk authenticate.php file (defines saml_metadata_schema_file() /
+// saml_metadata_schema_check()); functions.php loads it too, but every direct consumer
+// declares its own require_once so a future include reorder cannot strip the chain.
+require_once(realpath(__DIR__ . '/../../../../includes/authenticate.php'));
+
 // Include the SimpleRisk extras.php file (provides call_extra_function)
 require_once(realpath(__DIR__ . '/../../../../includes/extras.php'));
 
@@ -40,9 +45,19 @@ write_debug_log($metadata_xml, 'debug');
 $entity_id = null;
 $xml       = new \SimpleSAML\Utils\XML();
 
-if ($metadata_xml !== false && $xml->isValid($metadata_xml, 'saml-schema-metadata-2.0.xsd'))
+if ($metadata_xml !== false)
 {
-    write_debug_log("SAML metadata XML is valid. Parsing metadata.", 'info');
+    // Schema validation is diagnostic only. The schema file is checked for
+    // readability first so DOMDocument::schemaValidate() is never handed a
+    // file it cannot load (that raised a raw PHP warning on every SAML login
+    // in environments where the vendored .xsd is unreadable). See
+    // saml_metadata_schema_check() in includes/authenticate.php.
+    [$schema_log_level, $schema_log_message] = saml_metadata_schema_check(
+        $metadata_xml,
+        saml_metadata_schema_file(\SimpleSAML\Configuration::getInstance()->getVendorDir()),
+        [$xml, 'isValid']
+    );
+    write_debug_log($schema_log_message, $schema_log_level);
 
     try {
         $xml->checkSAMLMessage($metadata_xml, 'saml-meta');
@@ -83,11 +98,7 @@ if ($metadata_xml !== false && $xml->isValid($metadata_xml, 'saml-schema-metadat
 }
 else
 {
-    if ($metadata_xml === false) {
-        write_debug_log("SAML metadata is not configured (no metadata URL and no stored XML).", 'notice');
-    } else {
-        write_debug_log("SAML metadata failed schema validation.", 'warning');
-    }
+    write_debug_log("SAML metadata is not configured (no metadata URL and no stored XML).", 'notice');
 }
 
 // -----------------------------------------------------------------
@@ -127,10 +138,10 @@ $ForceAuthn = get_setting("SAML_FORCE_AUTHENTICATION") == "1";
 // -----------------------------------------------------------------
 $config = [
 
-    // Admin authentication source (required by SimpleSAMLphp)
-    'admin' => [
-        'core:AdminPassword',
-    ],
+    // Deliberately no 'admin' auth source (core:AdminPassword). It only serves
+    // SimpleSAMLphp's own admin module, which config.php disables, so no admin
+    // password exists to protect; SimpleSAMLphp fails closed if anything asks
+    // for admin access (SR-2077 / HackerOne #3951030).
 
     // SP authentication source for SAML 2.0
     $saml_sp_name => [

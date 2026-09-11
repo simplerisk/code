@@ -5,7 +5,7 @@
 
 	// Render the header and sidebar
 	require_once(realpath(__DIR__ . '/../includes/renderutils.php'));
-	render_header_and_sidebar(['tabs:logic', 'multiselect', 'datetimerangepicker', 'CUSTOM:common.js'], ['check_admin' => true], 'CustomizationExtra', 'Configure', 'Extras');
+	render_header_and_sidebar(['tabs:logic', 'multiselect', 'datetimerangepicker', 'CUSTOM:common.js', 'CUSTOM:pages/customization.js'], ['check_admin' => true], 'CustomizationExtra', 'Configure', 'Extras');
 
 	// If the extra directory exists
 	if (is_dir(realpath(__DIR__ . '/../extras/customization'))) {
@@ -204,59 +204,66 @@
 		global $lang;
 		global $escaper;
 
-		// If the extra directory exists
-		if (is_dir(realpath(__DIR__ . '/../extras/customization'))) {
+		// ── State detection (mirrors admin/artificial_intelligence.php) ────────
+		$extra_installed = is_dir(realpath(__DIR__ . '/../extras/customization'));
+		$extra_active    = $extra_installed && customization_extra();
+		$restricted      = $extra_installed && !$extra_active && restricted_extra("customization");
 
-			// If the extra is not activated
-			if (!customization_extra()) {
-
-				echo "
-					<div class='card-body my-2 border'>
-				";
-
-				// If the extra is not restricted based on the install type
-				if (!restricted_extra("customization")) {
-					echo "
-						<div class='hero-unit'>
-							<form name='activate_extra' method='post' action=''>
-								<input type='submit' value='{$escaper->escapeHtml($lang['Activate'])}' name='activate' class='btn btn-submit'/>
-							</form>
-						</div>
-					";
-					
-				// The extra is restricted
-				} else {
-					echo $escaper->escapeHtml($lang['YouNeedToUpgradeYourSimpleRiskSubscription']);
-				}
-
-				echo "
-					</div>
-				";
-				
-			// Once it has been activated
-			} else {
-
-				// Include the Customizaton Extra
-				require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
-
-					display_customization();
-
-			}
-			
-		// Otherwise, the Extra does not exist
+		// ── Unified Extra header ────────────────────────────────────────────────
+		// Replaces the stock page header in every state (installed/activated,
+		// installed/not-activated, restricted, not-installed) so the title and
+		// activation status render once, consistently -- same shape as the AI
+		// Extra's .sr-ai-exthead.
+		if ($extra_active) {
+			$status = "<span class='sr-cust-exthead-status'>" . $escaper->escapeHtml($lang['Activated']) . "</span>"
+					. "<span class='sr-cust-exthead-version'>" . $escaper->escapeHtml($lang['EncryptionStatusVersion']) . " " . $escaper->escapeHtml(customization_version()) . "</span>";
+			$action = "<form id='deactivate_extra' name='deactivate' method='post'><button type='submit' name='deactivate' class='sr-cust-btn'>" . $escaper->escapeHtml($lang['Deactivate']) . "</button></form>";
 		} else {
-			echo "
-					<div class='card-body my-2 border'>
-						<a href='https://www.simplerisk.com/extras' target='_blank' class='text-info'>Purchase the Extra</a>
+			// AIExtraNotActivated's English value ("Not activated") is Extra-independent;
+			// reused here per the reuse-before-adding rule rather than adding a duplicate key.
+			$status = "<span class='sr-cust-exthead-status'>" . $escaper->escapeHtml($lang['AIExtraNotActivated']) . "</span>";
+			if (!$extra_installed) {
+				$action = "<a href='https://www.simplerisk.com/extras' target='_blank' class='sr-cust-btn sr-cust-btn-primary'>" . $escaper->escapeHtml($lang['PurchaseTheExtra']) . "</a>";
+			} elseif ($restricted) {
+				$action = "<span class='sr-cust-exthead-note'>" . $escaper->escapeHtml($lang['YouNeedToUpgradeYourSimpleRiskSubscription']) . "</span>";
+			} else {
+				$action = "<form name='activate_extra' method='post'><button type='submit' name='activate' class='sr-cust-btn sr-cust-btn-primary'>" . $escaper->escapeHtml($lang['Activate']) . "</button></form>";
+			}
+		}
+
+		echo "
+			<div class='sr-cust-exthead" . ($extra_active ? "" : " inactive") . "'>
+				<nav class='sr-cust-exthead-crumbs'>
+					<a href='../admin/index.php'>" . $escaper->escapeHtml($lang['Settings']) . "</a><span class='sep'>&rsaquo;</span><span class='cur'>" . $escaper->escapeHtml($lang['CustomizationExtra']) . "</span>
+				</nav>
+				<div class='sr-cust-exthead-main'>
+					<span class='sr-cust-exthead-dot'></span>
+					<div class='sr-cust-exthead-text'>
+						<div class='sr-cust-exthead-titlerow'>
+							<h1 class='sr-cust-exthead-title'>" . $escaper->escapeHtml($lang['CustomizationExtra']) . "</h1>
+							{$status}
+						</div>
 					</div>
-			";
+					<div class='sr-cust-exthead-action'>{$action}</div>
+				</div>
+			</div>
+		";
+
+		// Once it has been activated, render the rest of the page
+		if ($extra_active) {
+
+			// Include the Customizaton Extra
+			require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
+
+			display_customization();
+
 		}
 	}
 ?>
-<div class="row bg-white"> 
+<div class="row">
 	<div class="col-12">
-	<?php 
-		display(); 
+	<?php
+		display();
 	?>
 	</div>
 </div>

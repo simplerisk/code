@@ -11,6 +11,7 @@
     require_once(realpath(__DIR__ . '/../includes/messages.php'));
     require_once(realpath(__DIR__ . '/../includes/reporting.php'));
     require_once(realpath(__DIR__ . '/../includes/extras.php'));
+    require_once(realpath(__DIR__ . '/../includes/alerts.php'));
 
     $default_role_id = get_default_role_id();
 
@@ -207,9 +208,10 @@
                 // Disabling user
                 disable_user($value);
                 // Killing its active sessions
-                kill_sessions_of_user($value);
+                $sessions_cleared = kill_sessions_of_user($value);
                 // Display an alert
                 set_alert(true, "good", "The user was disabled successfully.");
+                alert_if_sessions_not_cleared($sessions_cleared);
 
             } else {
 
@@ -261,10 +263,11 @@
                 }
 
                 // Killing its active sessions
-                kill_sessions_of_user($value);
-                
+                $sessions_cleared = kill_sessions_of_user($value);
+
                 // Display an alert
                 set_alert(true, "good", "The existing user was deleted successfully.");
+                alert_if_sessions_not_cleared($sessions_cleared);
 
             } else {
 

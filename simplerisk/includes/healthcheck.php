@@ -9,6 +9,7 @@ require_once(language_file());
 require_once(realpath(__DIR__ . '/functions.php'));
 require_once(realpath(__DIR__ . '/bootstrap.php'));
 require_once(realpath(__DIR__ . '/extras.php'));
+require_once(realpath(__DIR__ . '/data_integrity.php'));
 require_once(realpath(__DIR__ . '/../vendor/autoload.php'));
 
 /*************************************
@@ -57,6 +58,9 @@ function simplerisk_health_check()
 
 	// Check that the automation cron is configured and running
 	$cron_configured = check_cron_configured();
+
+	// Check for open Data Integrity issues
+	$data_integrity_status = check_data_integrity_status();
 
 	// Check the Extra versions match the SimpleRisk version
 	$check_extra_versions = check_extra_versions($current_app_version);
@@ -204,7 +208,7 @@ function simplerisk_health_check()
     ";
 
     // Versions Summary
-    if ($check_app_version['result'] === 1 && $check_db_version['result'] === 1 && $check_same_app_and_db['result'] === 1 && $check_use_database_for_session['result'] === 1 && $check_session_handler_degraded['result'] === 1 && $cron_configured['result'] === 1)
+    if ($check_app_version['result'] === 1 && $check_db_version['result'] === 1 && $check_same_app_and_db['result'] === 1 && $check_use_database_for_session['result'] === 1 && $check_session_handler_degraded['result'] === 1 && $cron_configured['result'] === 1 && $data_integrity_status['result'] === 1)
     {
         health_check_good($lang['SimpleRiskCore']);
     }
@@ -297,6 +301,7 @@ function simplerisk_health_check()
     display_health_check_results($check_use_database_for_session);
     display_health_check_results($check_session_handler_degraded);
 	display_health_check_results($cron_configured);
+	display_health_check_results($data_integrity_status);
     echo "
         </div></div>
         <div class='tab-pane col-12' id='extras' tabindex='0'>
@@ -1161,6 +1166,20 @@ function check_cron_configured()
 			return array("result" => 0, "text" => "The automation cron hasn't run in the past hour. Check the 'Backups' tab under Configure-> Settings to learn more.");
 		}
 	}
+}
+
+/**********************************************
+ * FUNCTION: CHECK DATA INTEGRITY STATUS *
+ **********************************************/
+function check_data_integrity_status(): array
+{
+    global $lang;
+
+    $count = count_open_data_integrity_issues();
+    if ($count === 0) {
+        return ['result' => 1, 'text' => $lang['DataIntegrityAllCaughtUpBody']];
+    }
+    return ['result' => 0, 'text' => sprintf($lang['DataIntegrityHealthCheckFailed'], $count)];
 }
 
 /************************************

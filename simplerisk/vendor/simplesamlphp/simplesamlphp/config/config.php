@@ -3,6 +3,10 @@
 // Include the SimpleRisk functions.php file
 require_once(realpath(__DIR__ . '/../../../../includes/functions.php'));
 
+// Include the SimpleRisk authenticate.php file (provides ensure_saml_secretsalt());
+// functions.php loads it too, but every direct consumer declares its own require_once.
+require_once(realpath(__DIR__ . '/../../../../includes/authenticate.php'));
+
 // Get the SAML trusted domains
 $saml_trusted_domains = get_setting("TRUSTED_DOMAINS");
 
@@ -22,24 +26,12 @@ $baseurlpath = $simplerisk_base_url . 'vendor/simplesamlphp/simplesamlphp/public
 // Get the system temp directory
 $temp_dir = sys_get_temp_dir();
 
-// Resolve a per-install SimpleSAMLphp secretsalt. Lazily generated and persisted on first
-// load so each install has an independent value — no hardcoded fallback that an attacker
-// could rely on to forge HMAC'd state in SimpleSAMLphp_kvstore.
-$saml_secretsalt = get_setting('SAML_SECRETSALT');
-if (!$saml_secretsalt) {
-    $saml_secretsalt = bin2hex(random_bytes(16));
-    update_or_insert_setting('SAML_SECRETSALT', $saml_secretsalt);
-    write_debug_log("Lazily generated SAML_SECRETSALT in SimpleSAMLphp config.", 'notice');
-
-    // Clear any kvstore rows HMAC'd with the previous (legacy or absent) salt so SimpleSAMLphp
-    // does not encounter unreadable garbage. Mirrors upgrade_authentication_extra_20260429001.
-    if (table_exists('SimpleSAMLphp_kvstore')) {
-        $db = db_open();
-        $db->exec("DELETE FROM `SimpleSAMLphp_kvstore`");
-        db_close($db);
-        write_debug_log("Cleared SimpleSAMLphp_kvstore after lazy SAML_SECRETSALT rotation.", 'notice');
-    }
-}
+// Resolve the per-install SimpleSAMLphp secretsalt. Core's ensure_saml_secretsalt()
+// (includes/authenticate.php) is the single race-safe generate-if-absent path, shared
+// with the Custom Authentication Extra's activation; an install that reaches this file
+// with the setting missing gets the same generation and SimpleSAMLphp_kvstore clear.
+// It lives in Core so this file never depends on the Extra being as new as Core.
+$saml_secretsalt = ensure_saml_secretsalt();
 
 /**
  * The configuration of SimpleSAMLphp
@@ -229,12 +221,14 @@ $config = [
     'secretsalt' => $saml_secretsalt,
 
     /*
-     * This password must be kept secret, and modified from the default value 123.
-     * This password will give access to the installation page of SimpleSAMLphp with
-     * metadata listing and diagnostics pages.
-     * You can also put a hash here; run "bin/pwgen.php" to generate one.
+     * SimpleSAMLphp's sample config sets 'auth.adminpassword' here: the credential for
+     * its own installation, metadata-listing and diagnostics UI (the 'admin' module).
+     * SimpleRisk never uses that UI, the module is disabled below, and authsources.php
+     * defines no 'admin' auth source, so there is deliberately no admin password at all
+     * (SR-2077 / HackerOne #3951030: the value used to be SimpleSAMLphp's public sample
+     * hash, identical across every install). Anything that did require admin access
+     * fails closed: SimpleSAMLphp throws when no 'admin' auth source exists.
      */
-    'auth.adminpassword' => '{SSHA512}i/Teab3V5cRHStsoUjH/waOQMo7RPCqAb7A/kcg5yv0dWuWS4av3z/BqlJX6D/zpfvYuwUejpWVsScB2fO75W+fZgex1LRJH',
 
     /*
      * Set this options to true if you want to require administrator password to access the web interface
@@ -597,6 +591,17 @@ $config = [
      * ],
      *
      */
+
+    /*
+     * SR-2077 / HackerOne #3951030: the 'admin' module serves SimpleSAMLphp's own
+     * installation/diagnostics/metadata-listing UI (module.php/admin/...). SimpleRisk's
+     * SAML integration (extras/authentication) never uses it -- the SP metadata SimpleRisk
+     * exposes to an IdP comes from the 'saml' module, not 'admin' -- so it is disabled
+     * outright rather than relied on to be protected by 'auth.adminpassword' alone.
+     */
+    'module.enable' => [
+        'admin' => false,
+    ],
 
 
 

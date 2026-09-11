@@ -91,6 +91,32 @@ section.gridstack:has(.sr-kpi):has(~ .row .sr-table-card) {
     margin-left: -10px !important;   // cancel only the .content padding, not the cell margin
 }
 
+// Document Program insights band ↔ grid-card alignment: a THIRD DOM shape,
+// distinct from both cases above. governance/documentation.php's
+// `.sr-table-card` is neither a KPI-only dashboard's entire grid (the base
+// -20px rule, tuned for a page header with no card below it) nor a `.row`/
+// `.col-12`-wrapped card -- it's a DIRECT child of `.content` (design-
+// system.md's direct-child-card pattern, see the `.content:has(> .sr-table-
+// card)` rule in _tables.scss), which lands the card's left edge at exactly
+// `.content`'s own padding. The `.content:has(.sr-kpi):has(.sr-table-card)`
+// rule below already zeroes `.content`'s own extra margin for this page (it
+// matches on .sr-kpi + .sr-table-card alone, not the .row shape).
+//
+// What's left to cancel is the SAME thing the -10px rule above cancels:
+// `.content`'s padding, NOT Gridstack's own per-cell left margin (~10px)
+// on the first tile -- that margin is real breathing room between the
+// section's own edge and the tile inside it, present in every KPI band
+// regardless of DOM shape, and pulling it away too would land the section
+// 10px LEFT of where its first tile actually renders. Same target, same
+// value as the row-wrapped rule -- just reached from a card with no `.row`
+// wrapper to fall back on. (Measured on the live dev instance: an earlier
+// `margin-left: 0` version landed the first TILE 10px right of the card,
+// because it aligned the section's own edge to the card while leaving the
+// tile's cell-margin uncancelled.)
+section.gridstack:has(.sr-kpi):has(~ .sr-table-card) {
+    margin-left: -10px !important;
+}
+
 // Align the whole Define Tests content column (the insights band + the grid
 // card) with the page title + breadcrumb. `.content` (container-fluid) carries
 // margin-left:10px ON TOP of its padding-left:10px, so its children start 10px

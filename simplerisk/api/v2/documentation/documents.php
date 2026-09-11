@@ -303,4 +303,203 @@ class OpenApiUpdateDocument {}
  */
 class OpenApiDeleteDocumentPost {}
 
+/**
+ * @OA\Post(
+ *     path="/documents/approve",
+ *     summary="Approve a policy or procedure document.",
+ *     operationId="approveDocument",
+ *     tags={"governance"},
+ *     security={{"ApiKeyAuth":{}}},
+ *     @OA\RequestBody(
+ *         required=true,
+ *         @OA\MediaType(
+ *             mediaType="application/x-www-form-urlencoded",
+ *             @OA\Schema(
+ *                 type="object",
+ *                 required={"document_id"},
+ *                 @OA\Property(
+ *                     property="document_id",
+ *                     type="integer",
+ *                     description="The ID of the document to approve."
+ *                 )
+ *             )
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=200,
+ *         description="Document approved successfully."
+ *     ),
+ *     @OA\Response(
+ *         response=400,
+ *         description="BAD REQUEST: An error occurred while approving the document."
+ *     ),
+ *     @OA\Response(
+ *         response=403,
+ *         description="FORBIDDEN: The user does not have the required permission to perform this action."
+ *     )
+ * )
+ */
+class OpenApiApproveDocument {}
+
+/**
+ * @OA\Post(
+ *     path="/documents/unapprove",
+ *     summary="Unapprove a previously approved policy or procedure document.",
+ *     operationId="unapproveDocument",
+ *     tags={"governance"},
+ *     security={{"ApiKeyAuth":{}}},
+ *     @OA\RequestBody(
+ *         required=true,
+ *         @OA\MediaType(
+ *             mediaType="application/x-www-form-urlencoded",
+ *             @OA\Schema(
+ *                 type="object",
+ *                 required={"document_id"},
+ *                 @OA\Property(
+ *                     property="document_id",
+ *                     type="integer",
+ *                     description="The ID of the document to unapprove."
+ *                 )
+ *             )
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=200,
+ *         description="Document unapproved successfully."
+ *     ),
+ *     @OA\Response(
+ *         response=400,
+ *         description="BAD REQUEST: An error occurred while unapproving the document."
+ *     ),
+ *     @OA\Response(
+ *         response=403,
+ *         description="FORBIDDEN: The user does not have the required permission to perform this action."
+ *     )
+ * )
+ */
+class OpenApiUnapproveDocument {}
+
+/**
+ * @OA\Post(
+ *     path="/documents/batch-approve",
+ *     summary="Approve multiple policy or procedure documents at once.",
+ *     operationId="batchApproveDocument",
+ *     tags={"governance"},
+ *     security={{"ApiKeyAuth":{}}},
+ *     @OA\RequestBody(
+ *         required=true,
+ *         @OA\MediaType(
+ *             mediaType="application/x-www-form-urlencoded",
+ *             @OA\Schema(
+ *                 type="object",
+ *                 required={"document_ids"},
+ *                 @OA\Property(
+ *                     property="document_ids",
+ *                     type="array",
+ *                     description="The IDs of the documents to approve.",
+ *                     @OA\Items(type="integer")
+ *                 )
+ *             )
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=200,
+ *         description="Documents approved successfully.",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(property="approved", type="integer", description="The number of documents approved.")
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=400,
+ *         description="BAD REQUEST: An error occurred while approving the documents."
+ *     ),
+ *     @OA\Response(
+ *         response=403,
+ *         description="FORBIDDEN: The user does not have the required permission to perform this action."
+ *     )
+ * )
+ */
+class OpenApiBatchApproveDocument {}
+
+/**
+ * @OA\Get(
+ *     path="/governance/documents/audit_log",
+ *     summary="Get the audit log for Document Program documents.",
+ *     operationId="documentsAuditLog",
+ *     tags={"governance"},
+ *     security={{"ApiKeyAuth":{}}},
+ *     @OA\Parameter(
+ *         name="days",
+ *         in="query",
+ *         description="Number of days of audit log history to retrieve. Defaults to 7.",
+ *         required=false,
+ *         @OA\Schema(type="integer", default=7)
+ *     ),
+ *     @OA\Response(
+ *         response=200,
+ *         description="Array of audit log entries.",
+ *         @OA\JsonContent(
+ *             type="array",
+ *             @OA\Items(
+ *                 type="object",
+ *                 @OA\Property(property="timestamp", type="string"),
+ *                 @OA\Property(property="timestamp_display", type="string", description="Timestamp formatted per the instance's configured date/time display format."),
+ *                 @OA\Property(property="message", type="string"),
+ *                 @OA\Property(property="activity", type="string", description="Server-classified activity type.", enum={"create", "update", "delete", "delete_version", "approve", "unapprove", "download", "upload", "other"}),
+ *                 @OA\Property(property="document_id", type="integer", description="0 for a row that predates the write_log() +1000 fix."),
+ *                 @OA\Property(property="document_name", type="string", nullable=true, description="Null once the document has been deleted."),
+ *                 @OA\Property(property="user_id", type="integer"),
+ *                 @OA\Property(property="user_name", type="string", nullable=true)
+ *             )
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=400,
+ *         description="BAD REQUEST: The user does not have the required permission to perform this action."
+ *     )
+ * )
+ */
+class OpenApiDocumentsAuditLog {}
+
+/**
+ * @OA\Get(
+ *     path="/governance/documents/versions",
+ *     summary="Get the version history of a policy or procedure document's compliance file.",
+ *     operationId="getDocumentVersions",
+ *     tags={"governance"},
+ *     security={{"ApiKeyAuth":{}}},
+ *     @OA\Parameter(
+ *         name="document_id",
+ *         in="query",
+ *         description="The ID of the document whose version history is being requested.",
+ *         required=true,
+ *         @OA\Schema(type="integer")
+ *     ),
+ *     @OA\Response(
+ *         response=200,
+ *         description="Array of document file versions, most recent first.",
+ *         @OA\JsonContent(
+ *             type="array",
+ *             @OA\Items(
+ *                 type="object",
+ *                 @OA\Property(property="compliance_file_id", type="integer"),
+ *                 @OA\Property(property="is_current", type="boolean", description="Whether this version is the document's current file."),
+ *                 @OA\Property(property="version", type="integer"),
+ *                 @OA\Property(property="file_name", type="string"),
+ *                 @OA\Property(property="unique_name", type="string"),
+ *                 @OA\Property(property="file_size", type="integer"),
+ *                 @OA\Property(property="uploaded_at", type="string"),
+ *                 @OA\Property(property="uploaded_by", type="string", nullable=true)
+ *             )
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=400,
+ *         description="BAD REQUEST: The document_id parameter is missing/invalid, or the user does not have the required permission to perform this action."
+ *     )
+ * )
+ */
+class OpenApiGetDocumentVersions {}
+
 ?>

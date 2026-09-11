@@ -69,21 +69,26 @@
 <div class="modal fade" id="project--add" tabindex="-1" aria-labelledby="project--add" aria-hidden="true">
 	<div class="modal-dialog modal-md modal-dialog-scrollable modal-dialog-centered">
 		<div class="modal-content">
-			<form class="" id="project-new" action="#" method="post">
-				<div class="modal-header">
-					<h5 class="modal-title"><?= $escaper->escapeHtml($lang['NewProject']); ?></h5>
-					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-				</div>
-				<div class="modal-body">
-	<?php 
-					display_add_projects();
-	?>
-				</div>
-				<div class="modal-footer">
-					<button type="button" class="btn btn-secondary"  data-bs-dismiss="modal"><?= $escaper->escapeHtml($lang['Cancel']); ?></button>
-					<button type="submit" name="add_project" class="btn btn-submit"><?= $escaper->escapeHtml($lang['Add']); ?></button>
-				</div>
-			</form>
+			<div class="modal-header">
+				<h5 class="modal-title"><?= $escaper->escapeHtml($lang['NewProject']); ?></h5>
+				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+			</div>
+			<div class="modal-body">
+<?php
+				// display_add_projects() renders its own <form id="project-new">
+				// -- one per template-group tab when Customization resolves more
+				// than one group for this user (duplicate ids across panes,
+				// same established pattern as display_add_risk() for Risk and
+				// render_create_modal() for Asset). The shared footer Save
+				// button below routes its click to whichever pane's form is
+				// currently visible.
+				display_add_projects();
+?>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-secondary"  data-bs-dismiss="modal"><?= $escaper->escapeHtml($lang['Cancel']); ?></button>
+				<button type="button" name="add_project" class="btn btn-submit project-add-save-btn"><?= $escaper->escapeHtml($lang['Add']); ?></button>
+			</div>
 		</div>
 	</div>
 </div>

@@ -1085,11 +1085,16 @@ function get_framework_controls_by_filter($control_class="all", $control_phase="
 /************************************
  * FUNCTION: ADD NEW FRAMEWORK      *
  ************************************/
-function add_framework($name, $description, $parent=0, $status=1){
+function add_framework($name, $description, $parent=0, $status=1, $template_group_id=null){
     global $escaper;
+
+    // Resolve (and validate, when explicitly submitted) the template group
+    // through the Core guard -- never a bare require of the Extra file.
+    $template_group_id = resolve_template_group_id_from_core('framework', $template_group_id);
+
     // Open the database connection
     $db = db_open();
-    
+
     // Get latest order
     $stmt = $db->prepare("SELECT max(`order`) as `maxOrder` FROM `frameworks` where status=:status");
     $stmt->bindParam(":status", $status);
@@ -1100,7 +1105,7 @@ function add_framework($name, $description, $parent=0, $status=1){
     }else{
         $order = 0;
     }
-    
+
     // Sanitizing input that comes from the WYSIWYG editor or outside sources
     $description = purify_html($description);
 
@@ -1117,8 +1122,8 @@ function add_framework($name, $description, $parent=0, $status=1){
     }
 
     // Create a framework
-    $stmt = $db->prepare("INSERT INTO `frameworks` (`name`, `description`, `parent`, `status`, `order`) VALUES (?, ?, ?, ?, ?)");
-    $insert_args = [$try_encrypt_name, $try_encrypt_descryption, (int)$parent, (int)$status, (int)$order];
+    $stmt = $db->prepare("INSERT INTO `frameworks` (`name`, `description`, `parent`, `status`, `order`, `template_group_id`) VALUES (?, ?, ?, ?, ?, ?)");
+    $insert_args = [$try_encrypt_name, $try_encrypt_descryption, (int)$parent, (int)$status, (int)$order, (int)$template_group_id];
     $stmt->execute($insert_args);
 
     $framework_id = $db->lastInsertId();
@@ -1666,12 +1671,29 @@ function add_framework_control($control){
     $control_status = isset($control['control_status']) ? (int)$control['control_status'] : 2;
     $family = isset($control['family']) ? (int)$control['family'] : 0;
     $mitigation_percent = isset($control['mitigation_percent']) ? (int)$control['mitigation_percent'] : 0;
+    // Which admin-defined Control template group this control is being
+    // created under (Track B, Task 28) -- array-shaped like add_project()'s
+    // handling (includes/functions.php), unlike add_framework()'s trailing
+    // positional param. NOTE the fgroup value here is 'control', NOT
+    // 'framework_controls', even though this table is named
+    // `framework_controls` -- see Task 24's schema-migration note in
+    // includes/upgrade.php and get_plan_custom_field_name_by_row_id()'s
+    // switch statement in extras/customization/index.php, both of which map
+    // case "control" to this fgroup's real tables. Every non-interactive
+    // caller (ComplianceForge SCF, UCF, import-export) never sets this key
+    // and correctly falls through to the real Default group below, rather
+    // than a hardcoded 1 -- which is only ever Risk's seeded Default row.
+    $template_group_id = isset($control['template_group_id']) ? (int)$control['template_group_id'] : null;
+
+    // Resolve (and validate, when explicitly submitted) the template group
+    // through the Core guard -- never a bare require of the Extra file.
+    $template_group_id = resolve_template_group_id_from_core('control', $template_group_id);
 
     // Open the database connection
     $db = db_open();
 
     // Create a framework
-    $stmt = $db->prepare("INSERT INTO `framework_controls` (`short_name`, `long_name`, `description`, `supplemental_guidance`, `control_owner`, `control_class`, `control_phase`, `control_number`, `control_maturity`, `desired_maturity`, `control_priority`, `family`, `mitigation_percent`, `control_status`) VALUES (:short_name, :long_name, :description, :supplemental_guidance, :control_owner, :control_class, :control_phase, :control_number, :control_current_maturity, :control_desired_maturity, :control_priority, :family, :mitigation_percent, :control_status)");
+    $stmt = $db->prepare("INSERT INTO `framework_controls` (`short_name`, `long_name`, `description`, `supplemental_guidance`, `control_owner`, `control_class`, `control_phase`, `control_number`, `control_maturity`, `desired_maturity`, `control_priority`, `family`, `mitigation_percent`, `control_status`, `template_group_id`) VALUES (:short_name, :long_name, :description, :supplemental_guidance, :control_owner, :control_class, :control_phase, :control_number, :control_current_maturity, :control_desired_maturity, :control_priority, :family, :mitigation_percent, :control_status, :template_group_id)");
     $stmt->bindParam(":short_name", $short_name, PDO::PARAM_STR, 1000);
     $stmt->bindParam(":long_name", $long_name, PDO::PARAM_STR);
     $stmt->bindParam(":description", $description, PDO::PARAM_STR);
@@ -1686,6 +1708,7 @@ function add_framework_control($control){
     $stmt->bindParam(":family", $family, PDO::PARAM_INT);
     $stmt->bindParam(":mitigation_percent", $mitigation_percent, PDO::PARAM_INT);
     $stmt->bindParam(":control_status", $control_status, PDO::PARAM_INT);
+    $stmt->bindParam(":template_group_id", $template_group_id, PDO::PARAM_INT);
     $stmt->execute();
     
     $control_id = $db->lastInsertId();
@@ -3083,14 +3106,17 @@ function get_document_versions_by_id($id) {
 
     $sql = "
         SELECT
-            t1.*, t2.version file_version, t2.unique_name, t2.timestamp file_upload_time, t3.value as status
-        FROM 
-            `documents` t1 
+            t1.*, t2.id compliance_file_id, t2.version file_version, t2.unique_name,
+            t2.timestamp file_upload_time, t2.name file_name, t2.size file_size,
+            t2.user uploaded_by_id, t4.name uploaded_by_name, t3.value as status
+        FROM
+            `documents` t1
             INNER JOIN `compliance_files` t2 ON t1.id=t2.ref_id AND t2.ref_type='documents'
             LEFT JOIN `document_status` t3 ON t1.document_status=t3.value
-        WHERE 
+            LEFT JOIN `user` t4 ON t4.value=t2.user
+        WHERE
             t1.id=:id AND {$where}
-        ORDER BY 
+        ORDER BY
             t2.version;
     ";
     $stmt = $db->prepare($sql);
@@ -3182,14 +3208,29 @@ function get_documents($type="")
         ' WHERE 1'
     );
     if($type) {
-        $sql .= $where . " AND t1.document_type=:type";
+        // Category scoping keys off the `document_types` FK, not the legacy
+        // free-text `documents.document_type` string, so renaming a category
+        // in Add/Remove Values no longer silently drops every document filed
+        // under the old spelling out of every tab and filter. The incoming
+        // `type` is still the category NAME (unchanged API contract, and what
+        // the tab strip already sends) -- it is resolved to its id here.
+        //
+        // The legacy-string arm is a fallback for rows the migration backfill
+        // could not match to a lookup row (document_type_id still NULL), so
+        // they keep behaving exactly as they did before this change rather
+        // than disappearing.
+        $sql .= $where . " AND (t1.document_type_id = (SELECT `value` FROM `document_types` WHERE `name` = :type LIMIT 1)"
+              . " OR (t1.document_type_id IS NULL AND t1.document_type = :type2))";
     } else {
          $sql .= $where;
     }
     $sql .= " GROUP BY t1.id ORDER BY t1.document_type, t1.document_name";
 
     $stmt = $db->prepare($sql);
-    if($type) $stmt->bindParam(":type", $type, PDO::PARAM_STR);
+    if($type) {
+        $stmt->bindParam(":type", $type, PDO::PARAM_STR);
+        $stmt->bindParam(":type2", $type, PDO::PARAM_STR);
+    }
     $stmt->execute();
     $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
@@ -3197,6 +3238,90 @@ function get_documents($type="")
     db_close($db);
 
     return $results;
+}
+
+/*********************************************
+ * FUNCTION: DOCUMENT PROGRAM READ PERMITTED *
+ *********************************************
+ * THE read gate for Document Program data: `governance` OR
+ * `view_documentation`. view_documentation exists so a reader who is not a
+ * governance analyst can still see documents, so the gate has to be an OR --
+ * which is exactly what a single `required_permission` string in
+ * $ui_layout_widget_config cannot express, and why the kpi_doc_* widgets
+ * carry a blank one. Every surface that reads document data goes through this
+ * one predicate (the page's insights band in governance/documentation.php,
+ * both widget renderers in api/v2/includes/api.php, and the document read
+ * endpoints in includes/api.php), so a change to the audience changes in one
+ * place. The kpi_doc_* Home-routed authz gap this closed was a product of the
+ * check being retyped at each site and missed at one of them.
+ *
+ * Deliberately session-based (check_permission()) rather than injectable:
+ * every caller is a request handler with a live session, and is_admin() is
+ * NOT folded in -- the widget dispatcher and the endpoints apply their own
+ * admin handling.
+ *********************************************/
+function document_program_read_permitted() {
+    return check_permission('governance') || check_permission('view_documentation');
+}
+
+// The Document Program insights band's attention tiles (design-system.md,
+// Document Insights Directions proposal), and the same two counts reused as
+// Governance Dashboard / Home picker widgets (kpi_doc_overdue, kpi_doc_
+// due_soon -- get_ui_widget_document_program_insights() and
+// get_ui_widget_governance_dashboard(), api/v2/includes/api.php). A plain
+// COUNT(*) against `documents.next_review_date` rather than reusing
+// get_documents_as_treegrid()'s per-row PHP classification -- these only
+// need a number, not the full row set, and the "<= 7 days" due-soon
+// threshold matches that treegrid's own inline computation exactly (kept in
+// sync by hand; there is no shared pure helper for it today).
+
+/*****************************************************
+ * FUNCTION: COUNT DOCUMENTS OVERDUE FOR REVIEW *
+ *****************************************************/
+function count_documents_overdue_for_review() {
+    $db = db_open();
+    $where = call_extra_function(
+        'team_separation_extra',
+        __DIR__ . '/../extras/separation/index.php',
+        'get_user_teams_query_for_documents',
+        ['d', false],
+        ' 1'
+    );
+    $stmt = $db->prepare("
+        SELECT COUNT(*) FROM `documents` d
+        WHERE d.next_review_date IS NOT NULL AND d.next_review_date != '0000-00-00'
+            AND d.next_review_date < CURDATE()
+            AND {$where}
+    ");
+    $stmt->execute();
+    $count = (int)$stmt->fetchColumn();
+    db_close($db);
+    return $count;
+}
+
+/*************************************************
+ * FUNCTION: COUNT DOCUMENTS DUE SOON FOR REVIEW *
+ *************************************************/
+function count_documents_due_soon_for_review() {
+    $db = db_open();
+    $where = call_extra_function(
+        'team_separation_extra',
+        __DIR__ . '/../extras/separation/index.php',
+        'get_user_teams_query_for_documents',
+        ['d', false],
+        ' 1'
+    );
+    $stmt = $db->prepare("
+        SELECT COUNT(*) FROM `documents` d
+        WHERE d.next_review_date IS NOT NULL AND d.next_review_date != '0000-00-00'
+            AND d.next_review_date >= CURDATE()
+            AND d.next_review_date <= DATE_ADD(CURDATE(), INTERVAL 7 DAY)
+            AND {$where}
+    ");
+    $stmt->execute();
+    $count = (int)$stmt->fetchColumn();
+    db_close($db);
+    return $count;
 }
 
 /************************************
@@ -3243,9 +3368,16 @@ function add_document($submitted_by, $document_type, $document_name, $control_id
         return false;
     }
     // Create a document
-    $stmt = $db->prepare("INSERT INTO `documents` (`submitted_by`, `document_type`, `document_name`, `parent`, `document_status`, `file_id`, `creation_date`, `last_review_date`, `review_frequency`, `next_review_date`, `approval_date`, `document_owner`, `approver`) VALUES (:submitted_by, :document_type, :document_name, :parent, :status, :file_id, :creation_date, :last_review_date, :review_frequency, :next_review_date, :approval_date, :document_owner, :approver)");
+    // Resolve the submitted category name to its `document_types` FK so the
+    // grid's category filter (which now keys off document_type_id, so that a
+    // category rename can't orphan documents) sees this row. See
+    // get_document_type_id_by_name() for why the form still submits the name.
+    $document_type_id = get_document_type_id_by_name($document_type);
+
+    $stmt = $db->prepare("INSERT INTO `documents` (`submitted_by`, `document_type`, `document_type_id`, `document_name`, `parent`, `document_status`, `file_id`, `creation_date`, `last_review_date`, `review_frequency`, `next_review_date`, `approval_date`, `document_owner`, `approver`) VALUES (:submitted_by, :document_type, :document_type_id, :document_name, :parent, :status, :file_id, :creation_date, :last_review_date, :review_frequency, :next_review_date, :approval_date, :document_owner, :approver)");
     $stmt->bindParam(":submitted_by", $submitted_by, PDO::PARAM_INT);
     $stmt->bindParam(":document_type", $document_type, PDO::PARAM_STR);
+    $stmt->bindParam(":document_type_id", $document_type_id, $document_type_id === null ? PDO::PARAM_NULL : PDO::PARAM_INT);
     $stmt->bindParam(":document_name", $document_name, PDO::PARAM_STR);
     $stmt->bindParam(":parent", $parent, PDO::PARAM_INT);
     $stmt->bindParam(":status", $status, PDO::PARAM_STR);
@@ -3298,7 +3430,7 @@ function add_document($submitted_by, $document_type, $document_name, $control_id
     // If submitted files are existing, save files
     if(!empty($_FILES['file'])){
         $files = $_FILES['file'];
-        list($status, $file_ids, $errors) = upload_compliance_files($document_id, "documents", $files, 1, $user);
+        list($status, $file_ids, $errors) = upload_compliance_files($document_id, "documents", $files, 1, $user, $document_name);
         if($file_ids){
             $file_id = $file_ids[0];
         }
@@ -3326,7 +3458,14 @@ function add_document($submitted_by, $document_type, $document_name, $control_id
 
         $submitted_by_name = get_user_name($submitted_by);
         $message = _lang_raw('AuditLog_DocumentCreate', array('document_name' => $document_name, 'user_name' => $submitted_by_name));
-        write_log(1000, $submitted_by, $message, "document");
+        // +1000 cancels write_log()'s internal -1000 (the risk-id display
+        // convention), so audit_log.risk_id stores the real document id
+        // literally -- matching the existing file-upload write_log call
+        // below and the one at functions.php:22606, and what the audit
+        // trail's Document filter/column (joining audit_log.risk_id to
+        // documents.id) needs. The historical hardcoded `1000` here (no
+        // +document_id at all) stored risk_id=0 on every row instead.
+        write_log($document_id + 1000, $submitted_by, $message, "document");
 
         // Queue the core document add task
         $queue_task_payload = [
@@ -3459,10 +3598,15 @@ function update_document($document_id, $updated_by, $document_type, $document_na
     }
 
     // Update a document
-    $stmt = $db->prepare("UPDATE `documents` SET `updated_by` = :updated_by, `document_type`=:document_type, `document_name`=:document_name, `parent`=:parent, `document_status`=:document_status, `creation_date`=:creation_date, `last_review_date`=:last_review_date, `review_frequency`=:review_frequency, `next_review_date`=:next_review_date, `approval_date`=:approval_date, `document_owner`=:document_owner, `approver`=:approver WHERE id=:document_id; ");
+    // Keep the `document_types` FK in step with the submitted category name --
+    // see get_document_type_id_by_name() and add_document().
+    $document_type_id = get_document_type_id_by_name($document_type);
+
+    $stmt = $db->prepare("UPDATE `documents` SET `updated_by` = :updated_by, `document_type`=:document_type, `document_type_id`=:document_type_id, `document_name`=:document_name, `parent`=:parent, `document_status`=:document_status, `creation_date`=:creation_date, `last_review_date`=:last_review_date, `review_frequency`=:review_frequency, `next_review_date`=:next_review_date, `approval_date`=:approval_date, `document_owner`=:document_owner, `approver`=:approver WHERE id=:document_id; ");
     $stmt->bindParam(":document_id", $document_id, PDO::PARAM_INT);
     $stmt->bindParam(":updated_by", $updated_by, PDO::PARAM_INT);
     $stmt->bindParam(":document_type", $document_type, PDO::PARAM_STR);
+    $stmt->bindParam(":document_type_id", $document_type_id, $document_type_id === null ? PDO::PARAM_NULL : PDO::PARAM_INT);
     $stmt->bindParam(":document_name", $document_name, PDO::PARAM_STR);
     $stmt->bindParam(":parent", $parent, PDO::PARAM_INT);
     $stmt->bindParam(":document_status", $status, PDO::PARAM_STR);
@@ -3525,7 +3669,7 @@ function update_document($document_id, $updated_by, $document_type, $document_na
         $version = $document['file_version'] + 1;
 
         $files = $_FILES['file'];
-        list($status, $file_ids, $errors) = upload_compliance_files($document_id, "documents", $files, $version, (int)$updated_by);
+        list($status, $file_ids, $errors) = upload_compliance_files($document_id, "documents", $files, $version, (int)$updated_by, $document_name);
         if($file_ids){
             $file_id = $file_ids[0];
         }
@@ -3547,7 +3691,8 @@ function update_document($document_id, $updated_by, $document_type, $document_na
     if ($changes) {
         $updated_by_name = get_user_name($updated_by);
         $message = _lang_raw('AuditLog_DocumentUpdates', array('document_name' => $document_name, 'document_id' => $document_id, 'user_name' => $updated_by_name, 'changes' => $changes));
-        write_log(1000, $updated_by, $message, "document");
+        // +1000 -- see the identical comment in add_document().
+        write_log($document_id + 1000, $updated_by, $message, "document");
 
         // Send the notification (no-op if notification extra is disabled)
         call_extra_function(
@@ -3602,6 +3747,25 @@ function delete_document($document_id, $version=null)
     // Deletes documents only to have this version number
     if($version)
     {
+        // Refuse to delete the version `documents.file_id` currently points
+        // to -- doing so would leave that pointer referencing a row that no
+        // longer exists (an orphaned file_id), breaking the document's
+        // current-file download/display everywhere it's read. The row-
+        // expander version history (js/simplerisk/pages/
+        // governance-documents.js) already hides the delete action for the
+        // current version client-side; this is the server-side backstop.
+        $stmt = $db->prepare("SELECT id FROM compliance_files WHERE ref_id=:document_id AND ref_type='documents' AND version=:version; ");
+        $stmt->bindParam(":document_id", $document_id, PDO::PARAM_INT);
+        $stmt->bindParam(":version", $version, PDO::PARAM_INT);
+        $stmt->execute();
+        $target_file_id = $stmt->fetchColumn();
+
+        if ($target_file_id !== false && (int)$target_file_id === (int)$row['file_id']) {
+            db_close($db);
+            set_alert(true, "bad", $escaper->escapeHtml($lang['CannotDeleteCurrentDocumentVersion']));
+            return false;
+        }
+
         $stmt = $db->prepare("DELETE FROM compliance_files WHERE ref_id=:document_id AND ref_type='documents' AND version=:version; ");
         $stmt->bindParam(":document_id", $document_id, PDO::PARAM_INT);
         $stmt->bindParam(":version", $version, PDO::PARAM_INT);
@@ -3630,8 +3794,34 @@ function delete_document($document_id, $version=null)
         cleanup_after_delete("documents");
     }
 
-    $message = "The existing document ID \"".$document_id."\" was deleted by the \"" . $escaper->escapeHtml($_SESSION['user']) . "\" user.";
-    write_log(1000, $_SESSION['uid'] ?? 0, $message, "document");
+    // Version-only deletion gets its own message -- the document itself
+    // still fully exists, only one historical file version was removed, so
+    // logging the same "document ... was deleted" sentence the full-delete
+    // branch uses would misrepresent what happened in the audit trail
+    // (classify_document_audit_activity() also keys off this exact wording;
+    // giving each branch its own sentence keeps that classification honest
+    // rather than mislabeling a version delete as a document delete).
+    //
+    // Both branches embed $row['document_name'] (read BEFORE the DELETE
+    // above) directly in the sentence, matching every other document audit
+    // message (create/update/approve/unapprove/download) -- the full-delete
+    // branch used to log the ID alone, which meant the one audit event that
+    // most needs a name (the document is gone; this row is the only record
+    // left) was also the one event that could never show one, since
+    // get_documents_audit_log()'s Document column comes from a live JOIN
+    // against `documents` that a deleted row can no longer satisfy. Raw
+    // (unescaped) here on purpose -- matches Create/Update's _lang_raw()
+    // convention: get_documents_audit_log_api() returns the message as-is,
+    // and the client escapes it exactly once at DOM-render time. $_SESSION['user']
+    // is no longer pre-escaped here either -- it used to be, which
+    // double-escaped once the client started escaping the whole message.
+    if ($version) {
+        $message = "Version \"".$version."\" of document \"".$row['document_name']."\" (ID: \"".$document_id."\") was deleted by the \"" . $_SESSION['user'] . "\" user.";
+    } else {
+        $message = "The existing document \"".$row['document_name']."\" (ID: \"".$document_id."\") was deleted by the \"" . $_SESSION['user'] . "\" user.";
+    }
+    // +1000 -- see the identical comment in add_document().
+    write_log($document_id + 1000, $_SESSION['uid'] ?? 0, $message, "document");
 
     // Close the database connection
     db_close($db);
@@ -3645,6 +3835,531 @@ function delete_document($document_id, $version=null)
     }
 
     return true;
+}
+
+/**
+ * Upper bound on the number of ids a single bulk approve request may carry.
+ *
+ * The bulk bar operates on the grid's own selection, so a real request is a
+ * page's worth of rows -- but the endpoints take an arbitrary POST array, and
+ * each id drives an UPDATE, a write_log() row and a workflow dispatch. Without
+ * a cap one authorized request can drive unbounded work. Follows the existing
+ * NOTIFICATION_MAX_BULK_IDS precedent (includes/notifications.php); set higher
+ * than that 100 because select-all over a large Document Program page is a
+ * legitimate action, and low enough that a single request stays bounded.
+ */
+if (!defined('GOVERNANCE_MAX_BULK_APPROVE_IDS')) {
+    define('GOVERNANCE_MAX_BULK_APPROVE_IDS', 500);
+}
+
+/**
+ * Normalises a bulk-action `*_ids[]` POST array into a capped list of positive
+ * integer ids.
+ *
+ * Drops every member that isn't a scalar decimal-digit string -- a nested-array
+ * member used to reach `(string)$rawId` and raise "Array to string conversion"
+ * -- and truncates the result to GOVERNANCE_MAX_BULK_APPROVE_IDS.
+ *
+ * The optional by-reference $truncated out-param reports whether the cap
+ * actually bit, i.e. whether more valid ids were submitted than are being
+ * returned. The batch-approve endpoints surface it in their JSON response:
+ * without it, a "select all" over a 900-row filtered grid comes back as
+ * `{approved: 500}` -- indistinguishable from a complete success, so the caller
+ * silently believes 900 records were approved when 400 were never touched.
+ * Junk members that were filtered out don't count as truncation; only real ids
+ * that got dropped do.
+ *
+ * Pure: no session, no DB. Directly unit-testable.
+ *
+ * @param  mixed $raw_ids   Whatever arrived in $_POST.
+ * @param  bool  $truncated Set to true when the cap dropped at least one id.
+ * @return int[]
+ */
+function normalize_bulk_approve_ids($raw_ids, &$truncated = null) {
+    $truncated = false;
+
+    if (!is_array($raw_ids)) {
+        return [];
+    }
+
+    $ids = [];
+    foreach ($raw_ids as $raw_id) {
+        // Only an int or a string is a plausible id from a form post. is_scalar()
+        // alone would also admit bool true, which casts to the string "1" and
+        // would silently approve record 1.
+        if (!is_int($raw_id) && !is_string($raw_id)) {
+            continue;
+        }
+        $candidate = (string)$raw_id;
+        if ($candidate === '' || !ctype_digit($candidate) || (int)$candidate <= 0) {
+            continue;
+        }
+        // Past the cap: keep scanning (the array is already in memory, and PHP's
+        // max_input_vars bounds it) purely so $truncated reflects whether real
+        // ids -- not just filtered-out junk -- were actually dropped. Nothing
+        // beyond the cap is ever returned, so the bounded-work guarantee the cap
+        // exists for is unchanged.
+        if (count($ids) >= GOVERNANCE_MAX_BULK_APPROVE_IDS) {
+            $truncated = true;
+            continue;
+        }
+        $ids[] = (int)$candidate;
+    }
+
+    return $ids;
+}
+
+/**
+ * Same shape and purpose as GOVERNANCE_MAX_BULK_APPROVE_IDS above, kept as
+ * its own (smaller) constant rather than reused: a bulk approve is N cheap
+ * UPDATEs, but a bulk download is N real file reads streamed into one zip
+ * in a single request -- the bound that keeps one request's work bounded is
+ * tighter here.
+ */
+if (!defined('GOVERNANCE_MAX_BULK_DOWNLOAD_IDS')) {
+    define('GOVERNANCE_MAX_BULK_DOWNLOAD_IDS', 50);
+}
+
+/**
+ * Same contract as normalize_bulk_approve_ids() (see its docblock), capped
+ * to GOVERNANCE_MAX_BULK_DOWNLOAD_IDS instead -- kept as a sibling function
+ * rather than a shared parameterized one so each bulk action's cap stays a
+ * simple constant lookup at its own call site, not a threaded parameter.
+ *
+ * @param  mixed $raw_ids   Whatever arrived in $_POST.
+ * @param  bool  $truncated Set to true when the cap dropped at least one id.
+ * @return int[]
+ */
+function normalize_bulk_download_ids($raw_ids, &$truncated = null) {
+    $truncated = false;
+
+    if (!is_array($raw_ids)) {
+        return [];
+    }
+
+    $ids = [];
+    foreach ($raw_ids as $raw_id) {
+        if (!is_int($raw_id) && !is_string($raw_id)) {
+            continue;
+        }
+        $candidate = (string)$raw_id;
+        if ($candidate === '' || !ctype_digit($candidate) || (int)$candidate <= 0) {
+            continue;
+        }
+        if (count($ids) >= GOVERNANCE_MAX_BULK_DOWNLOAD_IDS) {
+            $truncated = true;
+            continue;
+        }
+        $ids[] = (int)$candidate;
+    }
+
+    return $ids;
+}
+
+/**
+ * Builds a zip of the selected documents' current files on disk. Pulled out
+ * of stream_documents_zip() as the testable decision -- everything here is a
+ * DB read + filesystem write with no header()/exit(), so it can be exercised
+ * directly in PHPUnit; stream_documents_zip() stays a thin header/exit sink
+ * around it (see that function's docblock for the authorization/team-
+ * separation/no-file-skip reasoning, which all applies here unchanged).
+ *
+ * @param  int[] $document_ids Already normalize_bulk_download_ids()-capped.
+ * @return array{tmp_path: string, included: int}|false `tmp_path` points at
+ *               a tempnam()'d zip the caller must unlink(); false when there
+ *               is nothing to zip (empty input, zip extension unavailable,
+ *               no matching/accessible documents, or every matched document
+ *               had no file to include) or the zip could not be opened.
+ */
+function build_documents_zip_archive($document_ids) {
+    if (empty($document_ids) || !extension_loaded('zip')) {
+        return false;
+    }
+
+    $db = db_open();
+    // Same team-scoping guard as get_document_versions_by_id() and
+    // delete_document() (both in this file) -- ' 1' (no-op) when the Team
+    // Separation Extra isn't installed, since there's no team model to
+    // restrict by in that case.
+    $where = call_extra_function(
+        'team_separation_extra',
+        __DIR__ . '/../extras/separation/index.php',
+        'get_user_teams_query_for_documents',
+        ['d', false],
+        ' 1'
+    );
+    $placeholders = implode(',', array_fill(0, count($document_ids), '?'));
+    $stmt = $db->prepare("
+        SELECT d.id AS document_id, d.document_name, cf.name AS file_name, cf.content
+        FROM `documents` d
+        INNER JOIN `compliance_files` cf ON cf.id = d.file_id
+        WHERE d.id IN ($placeholders) AND {$where}
+    ");
+    $stmt->execute($document_ids);
+    $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    db_close($db);
+
+    if (empty($rows)) {
+        return false;
+    }
+
+    $tmp_path = tempnam(sys_get_temp_dir(), 'srdoczip');
+    $zip = new ZipArchive();
+    if ($zip->open($tmp_path, ZipArchive::OVERWRITE) !== true) {
+        @unlink($tmp_path);
+        return false;
+    }
+
+    // A document's uploaded file name isn't unique across documents (two
+    // different policies can both be "policy.docx") -- dedupe against what
+    // this zip has already used rather than silently letting the second
+    // addFromString() overwrite the first entry in the archive.
+    $used_names = [];
+    $included = 0;
+    foreach ($rows as $row) {
+        $name = $row['file_name'] !== '' ? $row['file_name'] : ($row['document_name'] . '.bin');
+        $final_name = $name;
+        $suffix = 2;
+        while (isset($used_names[$final_name])) {
+            $pathinfo = pathinfo($name);
+            $final_name = $pathinfo['filename'] . ' (' . $suffix . ')' . (isset($pathinfo['extension']) ? '.' . $pathinfo['extension'] : '');
+            $suffix++;
+        }
+        $used_names[$final_name] = true;
+
+        $zip->addFromString($final_name, $row['content']);
+        $included++;
+
+        // Document Program audit trail: one entry per document actually
+        // included, mirroring download_compliance_file()'s single-file
+        // logging exactly (+1000 -- see includes/governance.php's
+        // add_document() comment for why).
+        // Raw -- matches Create/Update/Delete's convention (see add_document()).
+        write_log((int)$row['document_id'] + 1000, $_SESSION['uid'] ?? 0, _lang_raw('DocumentAuditLogDownload', array('document_name' => $row['document_name'], 'user' => $_SESSION['user'])), 'document');
+    }
+    $zip->close();
+
+    if ($included === 0) {
+        @unlink($tmp_path);
+        return false;
+    }
+
+    return ['tmp_path' => $tmp_path, 'included' => $included];
+}
+
+/**
+ * Streams a zip of the selected documents' current files and exits --
+ * governance/documentation.php's `download_selected_documents` POST handler
+ * is the only caller, matching download_compliance_file()'s (includes/
+ * compliance.php) header()/exit() sink shape. The zip itself is built by
+ * build_documents_zip_archive() (same file); this function is only the
+ * header/exit sink around it -- see that function's docblock for the
+ * authorization, team-separation, and no-file-skip reasoning.
+ *
+ * @param  int[] $document_ids Already normalize_bulk_download_ids()-capped.
+ * @return false|void Exits after streaming (success) or returns false
+ *               (nothing to zip / zip extension unavailable) so the caller
+ *               can alert and refresh() instead of streaming an empty file.
+ */
+function stream_documents_zip($document_ids) {
+    $built = build_documents_zip_archive($document_ids);
+    if ($built === false) {
+        return false;
+    }
+    $tmp_path = $built['tmp_path'];
+
+    // governance/documentation.php's POST handler runs AFTER
+    // render_header_and_sidebar() (called near the top of that file, before
+    // $_POST is even inspected), which has already echoed the page's
+    // <head>/sidebar HTML into PHP's output buffer. Without discarding it,
+    // that buffered HTML ends up concatenated BEFORE the zip bytes below,
+    // and the Content-Length header here (computed from ONLY the zip's own
+    // size) then makes the client read exactly that many bytes off the
+    // FRONT of the combined buffer -- the leading HTML, truncated, not the
+    // zip. Discard every active buffering level (there can be more than
+    // one) so this function's own output is the entire response body.
+    while (ob_get_level() > 0) {
+        ob_end_clean();
+    }
+
+    header("Content-Type: application/zip");
+    header("Content-Disposition: attachment; filename=\"documents.zip\"");
+    header("Content-Length: " . filesize($tmp_path));
+    readfile($tmp_path);
+    unlink($tmp_path);
+    exit;
+}
+
+/**
+ * Approves a document: moves document_status to Approved (3), records the
+ * approver and today's date, and computes next_review_date from
+ * review_frequency. Mirrors approve_exception() exactly.
+ */
+function approve_document($id) {
+
+    $db = db_open();
+
+    // Team-scope guard -- same team-scope WHERE clause update_document()/
+    // delete_document() already apply, so approve can't reach a document
+    // outside the caller's teams by id even though it's a separate query
+    // from those two. A row outside scope reads identically to an unknown
+    // id below (fail closed, no distinguishing information leaked).
+    $where = call_extra_function(
+        'team_separation_extra',
+        __DIR__ . '/../extras/separation/index.php',
+        'get_user_teams_query_for_documents',
+        [false, false],
+        ' 1'
+    );
+    $stmt = $db->prepare("SELECT document_name, id, next_review_date, review_frequency FROM `documents` WHERE `id`=:id AND {$where};");
+    $stmt->bindParam(":id", $id, PDO::PARAM_INT);
+    $stmt->execute();
+
+    $approved_document = $stmt->fetch();
+
+    // An unknown id used to fall straight through: PHP 8 "Undefined array key"
+    // warnings, date("Y-m-d", false) degrading to 1970-01-01, and a write_log()
+    // audit row naming an empty document. Nothing to approve, nothing to log.
+    if (!$approved_document) {
+        db_close($db);
+        return false;
+    }
+
+    $approver = (int)$_SESSION['uid'];
+
+    // Calculate next review date: today's date + review_frequency.
+    //
+    // review_frequency <= 0 means "no periodic review scheduled" -- the column
+    // defaults to 0 and the add/edit form leaves it there unless the user asks
+    // for a cadence. Stamping today + 0 days would set next_review_date =
+    // today, which the treegrid classifies as `due_soon` today and `overdue`
+    // every day after: a red chip that can never be cleared, on exactly the
+    // records governance_review_due.php's `review_frequency > 0` scan guard
+    // already decided not to email anyone about. Store the '0000-00-00'
+    // no-date sentinel instead -- the column is DATE NOT NULL (so NULL isn't
+    // available) and both get_documents_as_treegrid() and
+    // get_exceptions_as_treegrid() already skip that value when classifying,
+    // as does the review-due job's own scan.
+    $review_frequency = (int)$approved_document['review_frequency'];
+    if ($review_frequency > 0) {
+        $next_review_date = date("Y-m-d", strtotime("+{$review_frequency} day", time()));
+    } else {
+        $next_review_date = '0000-00-00';
+    }
+
+    $stmt = $db->prepare("UPDATE `documents` SET `document_status`=3, `approval_date`=CURDATE(), `approver`=:approver, `next_review_date`=:next_review_date WHERE `id`=:id;");
+    $stmt->bindParam(":approver", $approver, PDO::PARAM_INT);
+    $stmt->bindParam(":next_review_date", $next_review_date, PDO::PARAM_STR);
+    $stmt->bindParam(":id", $id, PDO::PARAM_INT);
+    $stmt->execute();
+
+    db_close($db);
+
+    // +1000 -- see the identical comment in add_document().
+    // Raw -- matches Create/Update/Delete's convention (see add_document()).
+    write_log($approved_document['id'] + 1000, $_SESSION['uid'] ?? 0, _lang_raw('DocumentAuditLogApprove', array('document_name' => $approved_document['document_name'], 'user' => $_SESSION['user'])), 'document');
+
+    // Key names match the registered trigger's variable catalog
+    // (includes/workflows.php) -- `document_name`, not `name`. Every other
+    // document field is filled in by enrich_workflow_context().
+    trigger_workflow_event('document.approved', [
+        'document_id'   => $id,
+        'document_name' => $approved_document['document_name'],
+        'approver'      => $approver,
+    ]);
+
+    return true;
+}
+
+/**
+ * Reverts an approved document to In Review (2) — not Draft (1). Unapprove
+ * means "send back for another look," matching Define Exceptions'
+ * unapprove-is-a-revert-to-pending shape, not "discard the draft."
+ */
+function unapprove_document($id) {
+
+    $db = db_open();
+
+    // Team-scope guard -- see approve_document()'s identical comment.
+    $where = call_extra_function(
+        'team_separation_extra',
+        __DIR__ . '/../extras/separation/index.php',
+        'get_user_teams_query_for_documents',
+        [false, false],
+        ' 1'
+    );
+    $stmt = $db->prepare("SELECT document_name, id FROM `documents` WHERE `id`=:id AND {$where};");
+    $stmt->bindParam(":id", $id, PDO::PARAM_INT);
+    $stmt->execute();
+
+    $unapproved_document = $stmt->fetch();
+
+    // See approve_document(): an unknown id has nothing to revert and must not
+    // produce an audit row for an empty document name.
+    if (!$unapproved_document) {
+        db_close($db);
+        return false;
+    }
+
+    $stmt = $db->prepare("UPDATE `documents` SET `document_status`=2, `approver`=0, `approval_date`='' WHERE `id`=:id;");
+    $stmt->bindParam(":id", $id, PDO::PARAM_INT);
+    $stmt->execute();
+
+    db_close($db);
+
+    // +1000 -- see the identical comment in add_document().
+    // Raw -- matches Create/Update/Delete's convention (see add_document()).
+    write_log($unapproved_document['id'] + 1000, $_SESSION['uid'] ?? 0, _lang_raw('DocumentAuditLogUnapprove', array('document_name' => $unapproved_document['document_name'], 'user' => $_SESSION['user'])), 'document');
+
+    trigger_workflow_event('document.unapproved', [
+        'document_id'   => $id,
+        'document_name' => $unapproved_document['document_name'],
+    ]);
+
+    return true;
+}
+
+/**
+ * Documents audit trail — mirrors get_exceptions_audit_log() exactly, reusing
+ * the shared audit_log table with a distinct log_type.
+ */
+// document_id/document_name/user_name are LEFT JOINed, not required: an
+// entry whose document has since been deleted (or, for an instance that
+// hasn't yet run the backfill_document_audit_log_ids() upgrade step, an
+// unresolvable historical row -- see that function's docblock) still has
+// no matching documents row. Both cases are meant to fall back to the
+// em-dash "no document" state client-side, not to drop the row -- the
+// message text is still the full record either way.
+function get_documents_audit_log($days) {
+
+    $db = db_open();
+
+    // Team-scope guard -- same pattern get_exceptions_as_treegrid() already
+    // applies to its own document-joined branch: AND the team-scope
+    // condition into the WHERE clause. A row whose document has since been
+    // deleted (d is NULL from the LEFT JOIN) is excluded by this same
+    // logic, same accepted trade-off the treegrid already lives with for
+    // policy-linked exceptions of a deleted document.
+    $where = call_extra_function(
+        'team_separation_extra',
+        __DIR__ . '/../extras/separation/index.php',
+        'get_user_teams_query_for_documents',
+        ['d', false],
+        ' 1'
+    );
+
+    $stmt = $db->prepare("
+        SELECT al.timestamp, al.message,
+            al.risk_id AS document_id, d.document_name,
+            al.user_id, u.name AS user_name
+        FROM `audit_log` al
+        LEFT JOIN `documents` d ON d.id = al.risk_id
+        LEFT JOIN `user` u ON u.value = al.user_id
+        WHERE (al.timestamp > CURDATE()-INTERVAL :days DAY) AND al.log_type='document' AND {$where}
+        ORDER BY al.timestamp DESC
+    ");
+    $stmt->bindParam(":days", $days, PDO::PARAM_INT);
+
+    $stmt->execute();
+
+    $logs = $stmt->fetchAll();
+
+    db_close($db);
+
+    return $logs;
+}
+
+/**
+ * Classifies a decrypted Document Program audit_log message into a short
+ * activity-type key for the audit trail's Activity column tag, so the
+ * client renders a state pill instead of parsing the sentence itself.
+ * Matches the same message shapes backfill_document_audit_log_ids()
+ * (includes/upgrade/common.php) parses for the id -- kept independent
+ * since that one is a one-time id repair and this runs on every read.
+ */
+function classify_document_audit_activity($message) {
+    if (preg_match('/^A new document named ".*" was created by user/', $message)) {
+        return 'create';
+    }
+    if (preg_match('/^Document ".*"\(ID: \d+\) was updated by/', $message)) {
+        return 'update';
+    }
+    // Two shapes: the current one embeds the document's name ("The existing
+    // document "Name" (ID: "5")..."); rows logged before this classification
+    // was extended to capture the name still read "...document ID "5"..."
+    // and must keep classifying correctly too.
+    if (preg_match('/^The existing document (?:"(?:.*)" \(ID: "\d+"\)|ID "\d+") was deleted by/', $message)) {
+        return 'delete';
+    }
+    if (preg_match('/^Version "\d+" of document (?:"(?:.*)" \(ID: "\d+"\)|ID "\d+") was deleted by/', $message)) {
+        return 'delete_version';
+    }
+    if (preg_match('/^Document ".*" was approved by/', $message)) {
+        return 'approve';
+    }
+    if (preg_match('/^Document ".*" was unapproved by/', $message)) {
+        return 'unapprove';
+    }
+    if (preg_match('/^Document ".*" was downloaded by/', $message)) {
+        return 'download';
+    }
+    // Two shapes, same as the delete messages above: the current one names
+    // the document the file was attached to ("File "x" was uploaded to
+    // document "Name" (ID: "5")..."); rows logged before upload_compliance_
+    // files() started taking an $entity_name (or logged by a caller that
+    // still doesn't pass one -- exceptions/test_audit uploads) read
+    // "File "x" was uploaded by username..." with no document reference.
+    if (preg_match('/^File ".*" was uploaded(?: to document "(?:.*)" \(ID: "\d+"\))? by username/', $message)) {
+        return 'upload';
+    }
+    return 'other';
+}
+
+/**
+ * Recovers the document name embedded in a document audit_log message, for
+ * get_documents_audit_log_api() to fall back to when get_documents_audit_log()'s
+ * LEFT JOIN against `documents` comes back null -- which it always does once
+ * a document is deleted, for every row that ever referenced it, not just the
+ * delete event itself (the create/update/approve/etc. history for a since-
+ * deleted document loses its name from the JOIN just as completely). Every
+ * document message has embedded the name in its own sentence since it was
+ * written (delete/delete_version as of the change that added this function);
+ * this is the one place that knows how to get it back out.
+ *
+ * Every write_log() call site for this log_type now stores the message raw
+ * (unescaped) -- create/update/approve/unapprove/download go through
+ * _lang_raw(), while delete/delete_version build the message directly via
+ * string concatenation with no escaping applied. approve/unapprove/download
+ * used to escape via _lang(), which double-escaped once the client started
+ * escaping the whole message at DOM-render time; see each write_log() call
+ * site. Rows written before that fix still carry the old HTML-escaped text,
+ * so html_entity_decode() stays here to normalize either case back to the
+ * same raw text get_documents_audit_log()'s JOIN already returns -- a no-op
+ * on already-raw text. Never escape this return value, and never call it on
+ * an already-escaped string a second time.
+ *
+ * @param string $message decrypted, not-yet-escaped audit_log.message
+ * @return ?string raw document name, or null when this message shape
+ *                 doesn't carry one (an unrecognized/legacy message, or a
+ *                 pre-fix delete/delete_version row with no name to recover)
+ */
+function extract_document_name_from_audit_message($message) {
+    $patterns = [
+        '/^A new document named "(.*)" was created by user/',
+        '/^Document "(.*)"\(ID: \d+\) was updated by/',
+        '/^The existing document "(.*)" \(ID: "\d+"\) was deleted by/',
+        '/^Version "\d+" of document "(.*)" \(ID: "\d+"\) was deleted by/',
+        '/^Document "(.*)" was approved by/',
+        '/^Document "(.*)" was unapproved by/',
+        '/^Document "(.*)" was downloaded by/',
+        '/^File ".*" was uploaded to document "(.*)" \(ID: "\d+"\) by username/',
+    ];
+    foreach ($patterns as $pattern) {
+        if (preg_match($pattern, $message, $matches)) {
+            return html_entity_decode($matches[1], ENT_QUOTES | ENT_HTML5);
+        }
+    }
+    return null;
 }
 
 /*****************************************
@@ -3698,25 +4413,118 @@ function get_document_tabular_tabs($type, $document_id=0)
     ";
 }
  
+/**
+ * Resolves the controls mapped by a whole SET of documents in ONE query,
+ * returning them keyed by control id.
+ *
+ * WHY THIS IS A NAMED FUNCTION AND NOT AN INLINE LOOP: the obvious shape --
+ * calling get_framework_controls_by_filter() once per document row -- is a
+ * correctness bug, not merely a slow one. That function calls get_frameworks(1)
+ * on every invocation, so a per-row call re-queries and re-DECRYPTS the whole
+ * frameworks table for every document. On an encryption-active instance a
+ * single orphaned or never-encrypted framework row then fires the "One or more
+ * encrypted fields could not be decrypted" toast once per document instead of
+ * once per page. Both Document Program read paths
+ * (get_documents_as_treegrid() here and getTabularDocumentsResponse() in
+ * includes/api.php) must go through this function, and it must stay a single
+ * lookup regardless of how many documents are passed in -- which is what
+ * tests/unit/DocumentsTreegridControlLookupTest.php pins.
+ *
+ * @param  array $documents Rows from get_documents(), each with a
+ *                          comma-separated `control_ids`.
+ * @return array<string, array> control id (as string) => control row.
+ */
+function get_controls_by_ids_for_documents(array $documents) {
+
+    $all_control_ids = [];
+    foreach ($documents as $document) {
+        foreach (explode(",", $document["control_ids"] ?? "") as $control_id) {
+            if ($control_id !== "") {
+                $all_control_ids[$control_id] = true;
+            }
+        }
+    }
+
+    if (!$all_control_ids) {
+        return [];
+    }
+
+    $controls_by_id = [];
+    foreach (get_framework_controls_by_filter("all", "all", "all", "all", "all", "all", "all", "all", "", array_keys($all_control_ids)) as $control) {
+        $controls_by_id[(string)$control['id']] = $control;
+    }
+
+    return $controls_by_id;
+}
+
 /***********************************************
  * FUNCTION: GET DOCUMENTS DATA IN TREE FORMAT *
  ***********************************************/
 function get_documents_as_treegrid($type){
-    global $lang, $escaper;
     $filterRules = isset($_GET["filterRules"])?json_decode($_GET["filterRules"],true):array();
     $filtered_documents = array();
     $documents = get_documents($type);
-    foreach($documents as &$document){
-        $frameworks = get_frameworks_by_ids($document["framework_ids"] ?? "");
-        $framework_names = implode(", ", array_map(function($framework){
-            return $framework['name'];
-        }, $frameworks));
 
-        $control_ids = explode(",", $document["control_ids"] ?? "");
-        $controls = get_framework_controls_by_filter("all", "all", "all", "all", "all", "all", "all", "all", "", $control_ids);
+    // Fetch the full framework list (all statuses) ONCE, not per document row —
+    // the prior per-row get_frameworks_by_ids() call was both a perf problem
+    // (N queries for N rows) and the source of the "could not be decrypted"
+    // toast: any single orphaned/never-encrypted framework row that fails to
+    // decrypt now surfaces the toast once, from this one cached lookup,
+    // instead of once per document row that references it. This intentionally
+    // does NOT filter by status=1 (Active) — Inactive frameworks keep their
+    // document mappings and must still resolve a name here; status filtering
+    // is unrelated to the decrypt-toast fix and would silently drop names for
+    // any document mapped to an Inactive framework (e.g. the stock-seeded
+    // HIPAA/ISO 27001/PCI DSS/SOX frameworks, which ship Inactive by default).
+    $all_frameworks_by_id = get_frameworks(false);
+
+    // ...and the control roster ONCE too -- see
+    // get_controls_by_ids_for_documents() for why a per-row call here is a
+    // correctness bug, not just a slow one.
+    $controls_by_id = get_controls_by_ids_for_documents($documents);
+
+    foreach($documents as &$document){
+        $framework_names = [];
+        foreach (explode(",", $document["framework_ids"] ?? "") as $fw_id) {
+            if ($fw_id !== "" && isset($all_frameworks_by_id[$fw_id])) {
+                $framework_names[] = $all_frameworks_by_id[$fw_id]['name'];
+            }
+        }
+        $framework_names = implode(", ", $framework_names);
+
+        // Pick this document's controls out of the hoisted roster above.
+        // Preserves the previous per-row ordering (the shared query is
+        // ORDER BY t1.id, and control_ids arrives id-ordered from the
+        // GROUP_CONCAT in get_documents()).
+        $controls = [];
+        foreach (explode(",", $document["control_ids"] ?? "") as $control_id) {
+            if ($control_id !== "" && isset($controls_by_id[$control_id])) {
+                $controls[] = $controls_by_id[$control_id];
+            }
+        }
         $control_names = implode(", ", array_map(function($control){
             return $control['short_name'];
         }, $controls));
+
+        // SR-180: per-control deep-link data for the client-rendered Document
+        // Program grid (Task 9) to hyperlink each control name back to its
+        // record on Define Control Frameworks. Target shape confirmed against
+        // the already-shipped `governance/index.php?control_id=N` deep-link --
+        // the governance dashboard's Failing Controls widget
+        // (js/simplerisk/pages/governance.js:242,334) and Define Control
+        // Frameworks' own control detail links (reporting.php:10293,12199) both
+        // use this exact convention, so this is not a new query-param shape.
+        // `name` is left RAW (matching this function's Task 9 escaping
+        // convention -- see the NOTE below) and escaped once client-side at
+        // render time; `url` is server-built from a hardcoded path and an
+        // (int)-cast id, so it carries no user-controlled data.
+        $control_links = array_map(function($control){
+            return [
+                'id' => (int)$control['id'],
+                'name' => $control['short_name'],
+                'url' => build_url('governance/index.php?control_id=' . (int)$control['id']),
+            ];
+        }, $controls);
 
         // document filtering
         if(count($filterRules)>0) {
@@ -3772,22 +4580,44 @@ function get_documents_as_treegrid($type){
             }
         }
 
+        // NOTE on escaping (design-system.md `.sr-table-card` grid rebuild, Task 9):
+        // this response is consumed ONLY by the client-rendered Document Program
+        // grid (js/simplerisk/pages/governance-documents.js), which escapes every value
+        // itself (escapeHtml(), common.js) exactly once at render time -- so every
+        // string field below is left RAW here. The previous shape pre-escaped each
+        // field and wrapped document_name in a ready-to-inject `<a>` HTML string,
+        // which suited the old EasyUI treegrid's server-formatted-cell convention;
+        // that convention is gone now that rows render from plain JSON, and mixing
+        // a pre-escaped/pre-linked field into a JSON API a JS template also escapes
+        // would double-encode entities (CLAUDE.md's double-escaping rule). The
+        // previous unconditional `actions` HTML field (with wrong
+        // .framework-block--edit/.framework-block--delete classes, wired to the
+        // FRAMEWORK edit modal, not the document one) is dropped entirely -- the
+        // grid now builds its own actions cell client-side against the real
+        // .document--edit / .document--delete triggers.
         $document['value'] = $document['id'];
-        $document['document_type'] = $escaper->escapeHtml($document['document_type']);
-        $document['document_name'] = "<a class='text-info' href='" . build_url("governance/download.php?id=" . $document['unique_name']) . "' >".$escaper->escapeHtml($document['document_name'])."</a>";
-        $document['framework_ids'] = $escaper->escapeHtml($document['framework_ids']);
-        $document['framework_names'] = $escaper->escapeHtml($framework_names);
-        $document['control_ids'] = $escaper->escapeHtml($document['control_ids']);
-        $document['control_names'] = $escaper->escapeHtml($control_names);
-        $document['submitted_by'] = $escaper->escapeHtml(get_name_by_value('user', (int)$document['submitted_by']));
-        $document['updated_by'] = $escaper->escapeHtml(get_name_by_value('user', (int)$document['updated_by']));
-        $document['status'] = $escaper->escapeHtml(get_name_by_value('document_status', $document['status']));
+        $document['framework_names'] = $framework_names;
+        $document['control_names'] = $control_names;
+        $document['control_links'] = $control_links;
+        $document['submitted_by'] = get_name_by_value('user', (int)$document['submitted_by']);
+        $document['updated_by'] = get_name_by_value('user', (int)$document['updated_by']);
+        // Preserve the raw numeric document_status BEFORE it's overwritten with the
+        // human-readable label below -- the grid's status pill maps off the stable
+        // numeric id (1=Draft, 2=In Review, 3=Approved), not the DB-stored label text.
+        $document['document_status_id'] = (int)$document['status'];
+        $document['status'] = get_name_by_value('document_status', $document['status']);
         $document['creation_date'] = format_date($document['creation_date']);
         $document['approval_date'] = format_date($document['approval_date']);
-        $document['actions'] = "
-            <div class='text-center nowrap'>
-                <a class='framework-block--edit mx-1' data-id='".((int)$document['id'])."'><i class='fa fa-edit'></i></a>
-                <a class='framework-block--delete mx-1' data-id='".((int)$document['id'])."'><i class='fa fa-trash'></i></a></div>";
+        $document['approver_name'] = $document['approver'] ? get_name_by_value('user', (int)$document['approver']) : '';
+        $document['next_review_status'] = 'ok';
+        if (!empty($document['next_review_date']) && $document['next_review_date'] !== '0000-00-00') {
+            $days_until_review = (strtotime($document['next_review_date']) - strtotime(date('Y-m-d'))) / 86400;
+            if ($days_until_review < 0) {
+                $document['next_review_status'] = 'overdue';
+            } elseif ($days_until_review <= 7) {
+                $document['next_review_status'] = 'due_soon';
+            }
+        }
         $filtered_documents[] = $document;
     }
 
@@ -3950,6 +4780,7 @@ function get_exception_for_display($id, $type){
     $sql = "
         select
             {$type_based_sql_parts[0]},
+            de.policy_document_id,
             de.name,
             o.name as owner,
             de.additional_stakeholders,
@@ -3985,8 +4816,22 @@ function get_exception_for_display($id, $type){
 
     $exception = $stmt->fetch(PDO::FETCH_ASSOC);
 
+    if (!empty($exception['framework_name'])) {
+        $exception['framework_name'] = try_decrypt($exception['framework_name']);
+    }
+
     // Close the database connection
     db_close($db);
+
+    // Team-scope guard -- see exception_policy_document_access_denied(). Unlike
+    // every other exception read/write path in this file, this one was never
+    // scoped (pre-existing gap, not introduced by this PR's other team-scope
+    // fixes) -- closing it here for the policy branch to match the mutation
+    // endpoints and get_exceptions_as_treegrid()'s own policy-branch scoping.
+    // Control-type exceptions remain unscoped (tracked separately, SR-1650).
+    if ($exception && $type === 'policy' && exception_policy_document_access_denied($exception['policy_document_id'] ?? null)) {
+        return false;
+    }
 
     return $exception;
 }
@@ -3995,34 +4840,21 @@ function get_exception_for_display($id, $type){
 /***********************************************
  * FUNCTION: GET EXCEPTION DATA IN TREE FORMAT *
  ***********************************************/
+// NOTE on shape (design-system.md `.sr-table-card` grid rebuild, Task 11):
+// this response is consumed ONLY by the client-rendered Define Exceptions
+// grid (js/simplerisk/pages/governance-exceptions.js), which escapes every
+// value itself (escapeHtml(), common.js) exactly once at render time -- so
+// every string field below is left RAW here, following the same convention
+// Task 9 established for get_documents_as_treegrid(). The previous shape
+// grouped rows under a synthetic per-policy/per-control parent node
+// (children[]) and pre-baked <a>/actions HTML for the old EasyUI treegrid's
+// server-formatted-cell convention; that convention (and the parent/child
+// grouping it existed for) is gone now that the redesigned grid is a flat,
+// one-row-per-exception table -- parent_name/framework_name below cover
+// "what this exception is attached to" instead. The function name/return
+// TYPE (an array) and the endpoint (`GET /exceptions/tree`) are unchanged,
+// so no new API surface was added for this.
 function get_exceptions_as_treegrid($type){
-
-    global $lang, $escaper;
-
-    // Set filter rules if they are set and not too long
-    if (isset($_GET["filterRules"]) && strlen($_GET["filterRules"]) <= 10000) {
-
-        // Set the json_decode depth to 10 to avoid issues with deeply nested structures
-        $filterRules = json_decode($_GET["filterRules"], true, 10);
-
-        if (!is_array($filterRules)) {
-            $filterRules = [];
-        }
-
-        // Limit total rules: at most 5 rules
-        $filterRules = array_slice($filterRules, 0, 5);
-
-        // Limit per-rule value length
-        foreach ($filterRules as &$rule) {
-            if (isset($rule['value']) && is_string($rule['value'])) {
-                $rule['value'] = substr($rule['value'], 0, 100);
-            }
-        }
-        unset($rule);
-        
-    } else {
-        $filterRules = [];
-    }
 
     // Open the database connection
     $db = db_open();
@@ -4078,106 +4910,224 @@ function get_exceptions_as_treegrid($type){
 
     $stmt->execute();
 
-    $exceptions = $stmt->fetchAll(PDO::FETCH_GROUP|PDO::FETCH_ASSOC);
+    $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     // Close the database connection
     db_close($db);
 
-    $exception_tree = [];
-
-    $update = check_permission_exception('update');
-    $approve = check_permission_exception('approve');
-    $delete = check_permission_exception('delete');
-
-    foreach($exceptions as $id => $group){
-        $branch = [];
-
-        $all_approved = true;
-        $branch_type = false;
-        $parent_name = "";
-
-        foreach($group as $row){
-
-            if (count($filterRules) > 0) {
-                foreach ($filterRules as $filter) {
-                    $value = $filter['value'];
-                    switch ($filter['field']) {
-                        case "name":
-                            if (stripos($row['name'], $value) === false) {
-                                continue 3;
-                            }
-                            break;
-                        case "exception_id":
-                            if (stripos(($row['exception_id'] + 1000), $value) === false) {
-                                continue 3;
-                            }
-                            break;
-                        case "description":
-                            if (stripos(strip_tags_and_extra_whitespace($row['description']), $value) === false) {
-                                continue 3;
-                            }
-                            break;
-                        case "justification":
-                            if (stripos(strip_tags_and_extra_whitespace($row['justification']), $value) === false) {
-                                continue 3;
-                            }
-                            break;
-                        case "next_review_date":
-                            if( stripos(format_date($row['next_review_date']), $value) === false ){
-                                continue 3;
-                            }
-                            break;
-                        case "status":
-                            if (!empty($value) && ($row['status'] != $value)) {
-                                continue 3;
-                            }
-                            break;
-                        default: 
-                            break;
-                    }
-                }
+    // Bulk-resolve every associated-risk subject referenced across the whole
+    // result set in ONE query, rather than one query per exception row (the
+    // shape get_exception_for_display()/get_risk_subjects_by_ids() use for a
+    // single record) -- same N-queries-for-N-rows fix Task 9 applied to
+    // get_documents_as_treegrid()'s framework-name lookups.
+    $all_risk_ids = [];
+    foreach ($rows as $row) {
+        foreach (explode(',', (string)$row['associated_risks']) as $rid) {
+            $rid = trim($rid);
+            if ($rid !== '' && ctype_digit($rid)) {
+                $all_risk_ids[(int)$rid] = true;
             }
-            
-            $parent_name = $row['parent_name'];
-            $row['children'] = [];
-
-            $row['name'] = "<span class='exception-name'><a class='text-info' href='#' data-id='".((int)$row['value'])."' data-type='{$row['type']}'>{$escaper->escapeHtml($row['name'])}</a></span>";
-
-            $row['exception_id'] = $escaper->escapeHtml($row['exception_id'] + 1000);
-
-            // The variable to be used in treegrid filtering for status
-            $row['status_value'] = $row['status'];
-            $row['status'] = $escaper->escapeHtml($row['document_exceptions_status']);
-
-            if ($type === "unapproved" && $approve)
-                $approve_action = "<a class='exception--approve' data-id='".((int)$row['value'])."' data-type='{$row['type']}'><i class='fa fa-check'></i></a>&nbsp;&nbsp;&nbsp;";
-            else $approve_action = "";
-
-            if ($update)
-                $updateAction = "<a class='exception--edit' data-id='".((int)$row['value'])."' data-type='{$row['type']}'><i class='fa fa-edit'></i></a>&nbsp;&nbsp;&nbsp;";
-            else $updateAction = "";
-
-            if ($delete)
-                $deleteAction = "<a class='exception--delete' data-id='".((int)$row['value'])."' data-type='{$row['type']}' data-approved='" . ($row['approved'] ? 'true' : 'false') . "'><i class='fa fa-trash'></i></a>"; 
-            else $deleteAction = "";
-
-            $row['actions'] = "<div class='text-center'>{$approve_action}{$updateAction}{$deleteAction}</div>";
-
-            if (!$branch_type)
-                $branch_type = $row['type'];
-
-            $all_approved = $all_approved && $row['approved'];
-
-            $branch[] = $row;
         }
-        if ($delete)
-            $parentAction = "<div class='text-center'><a class='exception-batch--delete' data-id='".((int)$id)."' data-type='{$branch_type}' data-all-approved='" . ($all_approved ? 'true' : 'false') . "' data-approved='" . ($type !== "unapproved" ? 'true' : 'false') . "'><i class='fa fa-trash'></i></a></div>";
-        else $parentAction = "";
-
-        $exception_tree[] = array('value' => $type . "-" . $id, 'name' => $escaper->escapeHtml($parent_name) . " (" . count($branch) . ")", 'children' => $branch, 'actions' => $parentAction);
+    }
+    // TEAM SEPARATION: a risk subject is free text an analyst wrote about a
+    // specific problem, and the exceptions grid resolves it from an id the
+    // exception happens to reference -- an exception the caller CAN see may
+    // cite a risk the caller cannot. Narrow the id set to the caller's scope
+    // first, using the same fragment every other risk read path uses. This
+    // function already applies team separation to the parent DOCUMENTS join
+    // above; the risk side had none. Ids outside scope simply drop out, so the
+    // exception row still renders with the subjects the caller may see.
+    // No-op when the Team Separation Extra is inactive.
+    $risk_subjects_by_id = [];
+    $visible_risk_ids = $all_risk_ids ? filter_risk_ids_by_team_scope(array_keys($all_risk_ids)) : [];
+    if ($visible_risk_ids) {
+        $risk_db = db_open();
+        $stmt = $risk_db->prepare("SELECT id, subject FROM risks WHERE id IN (" . implode(',', $visible_risk_ids) . ")");
+        $stmt->execute();
+        foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $risk) {
+            $risk_subjects_by_id[(int)$risk['id']] = "(" . ((int)$risk['id'] + 1000) . ") " . try_decrypt($risk['subject']);
+        }
+        db_close($risk_db);
     }
 
-    return $exception_tree;
+    $exceptions = [];
+
+    foreach ($rows as $row) {
+        // The exception's OWN id (document_exceptions.value) -- distinct from
+        // the parent policy/control's numeric id the grouped-tree shape used
+        // to key its branches on. This is what the row-action / bulk-action
+        // POSTs must send as exception_id, e.g. approve_exception_api().
+        $row['id'] = (int)$row['value'];
+        // A stable, human-facing display id (the +1000 offset convention
+        // used across the app -- risks, exceptions, etc.), separate from the
+        // raw id above so the two can never be confused for one another.
+        $row['display_id'] = $row['id'] + 1000;
+
+        // Preserve the raw numeric lifecycle status BEFORE it's overwritten
+        // with the human-readable label below -- the grid's lifecycle pill
+        // maps off the stable numeric id (document_exceptions_status is
+        // customer-editable via Add/Remove Values), not the DB-stored label
+        // text alone.
+        $row['status_value'] = (int)$row['status'];
+        $row['status'] = $row['document_exceptions_status'];
+        $row['approved'] = (bool)$row['approved'];
+
+        $row['owner_name'] = $row['owner'] ? get_name_by_value('user', (int)$row['owner']) : '';
+        $row['approver_name'] = $row['approver'] ? get_name_by_value('user', (int)$row['approver']) : '';
+        $row['framework_name'] = $row['framework_id'] ? get_name_by_value('frameworks', (int)$row['framework_id']) : '';
+
+        $associated_risk_subjects = [];
+        foreach (explode(',', (string)$row['associated_risks']) as $rid) {
+            $rid = trim($rid);
+            if ($rid !== '' && isset($risk_subjects_by_id[(int)$rid])) {
+                $associated_risk_subjects[] = $risk_subjects_by_id[(int)$rid];
+            }
+        }
+        $row['associated_risk_subjects'] = $associated_risk_subjects;
+
+        $row['next_review_status'] = 'ok';
+        if (!empty($row['next_review_date']) && $row['next_review_date'] !== '0000-00-00') {
+            $days_until_review = (strtotime($row['next_review_date']) - strtotime(date('Y-m-d'))) / 86400;
+            if ($days_until_review < 0) {
+                $row['next_review_status'] = 'overdue';
+            } elseif ($days_until_review <= 7) {
+                $row['next_review_status'] = 'due_soon';
+            }
+        }
+
+        // Heavy WYSIWYG blobs the grid never renders -- only the single-record
+        // /exceptions/info detail endpoint needs these.
+        unset($row['description'], $row['justification'], $row['value'], $row['exception_id']);
+
+        $exceptions[] = $row;
+    }
+
+    return $exceptions;
+}
+
+// The Define Exceptions insights band's tiles (design-system.md, mirrors
+// Document Program's Document Insights Directions proposal) -- attention
+// tiles (Overdue for Review, Due Soon) plus the same three partitions the
+// grid's own tabs already use (get_exceptions_as_treegrid()'s $type param:
+// approved-policy, approved-control, unapproved-either). Team-scoping
+// treatment (policy scoped via the linked document's team, control not
+// scoped at all) deliberately mirrors get_exceptions_as_treegrid() exactly
+// rather than introducing a different policy for the same data.
+
+/*******************************************************
+ * FUNCTION: COUNT EXCEPTIONS OVERDUE FOR REVIEW *
+ *******************************************************/
+// Team-scope guard shared by the three counters below (overdue/due-soon/
+// pending-approval) -- LEFT JOINs `documents` p and, in each caller's WHERE,
+// `AND (de.policy_document_id IS NULL OR {$where})` so a control-type row
+// (no policy_document_id) is always counted (control exceptions are
+// deliberately not team-scoped anywhere in this file -- see
+// count_exceptions_control()'s own comment) while a policy-type row is only
+// counted when the caller's teams can see its document. Same asymmetry
+// count_exceptions_policy() already applies, extended to these three so the
+// KPI tiles don't leak cross-team exception counts under Team Separation.
+function exception_kpi_team_scope_where() {
+    return call_extra_function(
+        'team_separation_extra',
+        __DIR__ . '/../extras/separation/index.php',
+        'get_user_teams_query_for_documents',
+        ['p', false],
+        ' 1'
+    );
+}
+
+function count_exceptions_overdue_for_review() {
+    $db = db_open();
+    $where = exception_kpi_team_scope_where();
+    $stmt = $db->prepare("
+        SELECT COUNT(*) FROM `document_exceptions` de
+            LEFT JOIN `documents` p ON de.policy_document_id = p.id
+        WHERE de.next_review_date IS NOT NULL AND de.next_review_date != '0000-00-00'
+            AND de.next_review_date < CURDATE()
+            AND (de.policy_document_id IS NULL OR {$where})
+    ");
+    $stmt->execute();
+    $count = (int)$stmt->fetchColumn();
+    db_close($db);
+    return $count;
+}
+
+/***************************************************
+ * FUNCTION: COUNT EXCEPTIONS DUE SOON FOR REVIEW *
+ ***************************************************/
+function count_exceptions_due_soon_for_review() {
+    $db = db_open();
+    $where = exception_kpi_team_scope_where();
+    $stmt = $db->prepare("
+        SELECT COUNT(*) FROM `document_exceptions` de
+            LEFT JOIN `documents` p ON de.policy_document_id = p.id
+        WHERE de.next_review_date IS NOT NULL AND de.next_review_date != '0000-00-00'
+            AND de.next_review_date >= CURDATE()
+            AND de.next_review_date <= DATE_ADD(CURDATE(), INTERVAL 7 DAY)
+            AND (de.policy_document_id IS NULL OR {$where})
+    ");
+    $stmt->execute();
+    $count = (int)$stmt->fetchColumn();
+    db_close($db);
+    return $count;
+}
+
+/*************************************
+ * FUNCTION: COUNT POLICY EXCEPTIONS *
+ *************************************/
+// Deliberately NOT approved-only -- the "Policy Exceptions" KPI tile links to
+// document_exceptions.php?type=policy, and the filter row's Type facet
+// narrows on row.type alone (governance-exceptions.js rowPassesFilters()),
+// with no approval condition. Counting only approved=1 rows here (as the
+// grid's own get_exceptions_as_treegrid('policy') mode does) would show a
+// tile number the clicked-through, type-filtered grid can't reproduce.
+function count_exceptions_policy() {
+    $db = db_open();
+    $where = exception_kpi_team_scope_where();
+    $stmt = $db->prepare("
+        SELECT COUNT(*) FROM `document_exceptions` de
+            LEFT JOIN `documents` p ON de.policy_document_id = p.id
+        WHERE p.document_type = 'policies' AND {$where}
+    ");
+    $stmt->execute();
+    $count = (int)$stmt->fetchColumn();
+    db_close($db);
+    return $count;
+}
+
+/**************************************
+ * FUNCTION: COUNT CONTROL EXCEPTIONS *
+ **************************************/
+// See count_exceptions_policy() -- same reasoning, not approved-only, so the
+// "Control Exceptions" tile's count matches ?type=control's filtered grid.
+function count_exceptions_control() {
+    $db = db_open();
+    $stmt = $db->prepare("
+        SELECT COUNT(*) FROM `document_exceptions` de
+            LEFT JOIN `framework_controls` c ON de.control_framework_id = c.id
+        WHERE c.id IS NOT NULL
+    ");
+    $stmt->execute();
+    $count = (int)$stmt->fetchColumn();
+    db_close($db);
+    return $count;
+}
+
+/*******************************************************
+ * FUNCTION: COUNT EXCEPTIONS PENDING APPROVAL *
+ *******************************************************/
+function count_exceptions_pending_approval() {
+    $db = db_open();
+    $where = exception_kpi_team_scope_where();
+    $stmt = $db->prepare("
+        SELECT COUNT(*) FROM `document_exceptions` de
+            LEFT JOIN `documents` p ON de.policy_document_id = p.id
+        WHERE de.approved = 0 AND (de.policy_document_id IS NULL OR {$where})
+    ");
+    $stmt->execute();
+    $count = (int)$stmt->fetchColumn();
+    db_close($db);
+    return $count;
 }
 
 /**********************************************************
@@ -4299,27 +5249,10 @@ function get_associated_exceptions_as_treegrid($risk_id, $type) {
     return $exception_tree;
 }
 
-/********************************
- * FUNCTION: GET EXCEPTION TABS *
- ********************************/
-function get_exception_tabs($type)
-{
-    global $lang, $escaper;
-
-    echo "
-        <table id='exception-table-{$type}' class='easyui-treegrid exception-table'>
-            <thead>
-                <th data-options=\"field:'name'\" width='24%'>{$escaper->escapeHtml($lang[ucfirst ($type) . "ExceptionName"])}</th>
-                <th data-options=\"field:'exception_id'\" width='7%'>{$escaper->escapeHtml($lang['ID'])}</th>
-                <th data-options=\"field:'status'\" width='7%'>{$escaper->escapeHtml($lang['Status'])}</th>
-                <th data-options=\"field:'description'\" width='23%'>{$escaper->escapeHtml($lang['Description'])}</th>
-                <th data-options=\"field:'justification'\" width='23%'>{$escaper->escapeHtml($lang['Justification'])}</th>
-                <th data-options=\"field:'next_review_date', align: 'center'\" width='9%'>{$escaper->escapeHtml($lang['NextReviewDate'])}</th>
-                <th data-options=\"field:'actions'\" width='7%'>{$escaper->escapeHtml($lang['Actions'])}</th>
-            </thead>
-        </table>
-    ";
-}
+// get_exception_tabs() (the per-tab EasyUI treegrid <table> skeleton for the
+// old Policy/Control/Unapproved Exceptions tabs) was removed here -- Task 11
+// replaced it with the client-rendered .sr-table-card grid, ExceptionsGrid
+// (js/simplerisk/pages/governance-exceptions.js). It had no other caller.
 
 /*******************************************
  * FUNCTION: GET ASSOCIATED EXCEPTION TABS *
@@ -4342,11 +5275,73 @@ function get_associated_exception_tabs($type) {
 
 }
 
+/**
+ * Whether the caller is denied access to a policy-type exception's parent
+ * document under Team Separation -- mirrors update_document()/
+ * delete_document()'s own team-scope guard (get_user_teams_query_for_documents(),
+ * extras/separation/index.php), applied here to every exception mutation
+ * (create/update/approve/unapprove/delete/batch_delete_exception) so a
+ * caller holding only the generic `governance` + one exception permission
+ * can't reach another team's document by supplying its policy_document_id
+ * directly. $policy_document_id is null/0/falsy for control-type
+ * exceptions, which this always allows -- control-type exceptions are
+ * deliberately NOT team-scoped anywhere else in this file either (see
+ * get_exceptions_as_treegrid()'s own control-branch asymmetry), so a
+ * control-type exception is scoped the same way here as it already is on
+ * read.
+ */
+function exception_policy_document_access_denied($policy_document_id) {
+    if (empty($policy_document_id)) {
+        return false;
+    }
+
+    $db = db_open();
+    $where = call_extra_function(
+        'team_separation_extra',
+        __DIR__ . '/../extras/separation/index.php',
+        'get_user_teams_query_for_documents',
+        [false, false],
+        ' 1'
+    );
+    $stmt = $db->prepare("SELECT 1 FROM `documents` WHERE `id` = :id AND {$where};");
+    $stmt->bindParam(":id", $policy_document_id, PDO::PARAM_INT);
+    $stmt->execute();
+    $row = $stmt->fetch();
+    db_close($db);
+
+    return !$row;
+}
+
+/**
+ * SR-2034 (HackerOne #3928882): filter a caller-supplied associated_risks
+ * list (array or CSV string of risk ids, as stored in
+ * document_exceptions.associated_risks) down to the risk ids the current
+ * user is actually authorized to see -- see filter_accessible_risk_ids()
+ * in functions.php. Shared by create_exception() and update_exception() --
+ * both accept this same parameter shape and need the same authorization
+ * before persisting it. Returns a CSV string, matching the column's
+ * storage format.
+ */
+function authorize_exception_associated_risks($associated_risks) {
+    $risk_id_candidates = is_array($associated_risks) ? $associated_risks : explode(",", (string)$associated_risks);
+
+    return implode(",", filter_accessible_risk_ids($risk_id_candidates));
+}
+
 function create_exception($name, $status, $policy, $framework, $control, $owner, $additional_stakeholders, $creation_date, $review_frequency, $next_review_date, $approval_date, $approver, $approved, $description, $justification, $associated_risks) {
+
+    if (exception_policy_document_access_denied($policy)) {
+        return false;
+    }
+
 
     // Sanitizing input that comes from the WYSIWYG editor or outside sources
     $description = purify_html($description);
     $justification = purify_html($justification);
+
+    // SR-2034 (HackerOne #3928882): authorize associated_risks before it is
+    // stored -- see authorize_exception_associated_risks() docblock above.
+    $associated_risks = authorize_exception_associated_risks($associated_risks);
 
     $db = db_open();
 
@@ -4414,7 +5409,11 @@ function create_exception($name, $status, $policy, $framework, $control, $owner,
     // Close the database connection
     db_close($db);
 
-    write_log($id, $_SESSION['uid'] ?? 0, _lang('ExceptionAuditLogCreate', array('exception_name' => $name, 'user' => $_SESSION['user'])), 'exception');
+    // Raw (unescaped) on purpose -- get_exceptions_audit_log_api() (includes/
+    // api.php) returns the message as-is; the client escapes it exactly once
+    // at DOM-render time. Matches the Document audit trail's create/update/
+    // delete convention (see add_document()/update_document()).
+    write_log($id + 1000, $_SESSION['uid'] ?? 0, _lang_raw('ExceptionAuditLogCreate', array('exception_name' => $name, 'user' => $_SESSION['user'])), 'exception');
 
 
     // If submitted files are existing, save files
@@ -4456,11 +5455,38 @@ function create_exception($name, $status, $policy, $framework, $control, $owner,
 
 function update_exception($name, $status, $policy, $framework, $control, $owner, $additional_stakeholders, $creation_date, $review_frequency, $next_review_date, $approval_date, $approver, $approved, $description, $justification, $associated_risks, $id) {
 
-    global $escaper;
+    // Team-scope guard against BOTH the exception's CURRENT policy_document_id
+    // and the NEW value being written. Checking only the new value (as an
+    // earlier pass at this fix did) is not sufficient: it lets a caller
+    // retarget/hijack an out-of-scope exception by id, since the check only
+    // ever sees the in-scope value they're submitting, never the exception's
+    // actual current document. Checking only the current value would leave
+    // the opposite gap -- exfiltrating an in-scope exception by retargeting
+    // it onto a document outside the caller's scope. Both checks are needed.
+    // See exception_policy_document_access_denied().
+    $db_for_current = db_open();
+    $current_policy_stmt = $db_for_current->prepare("SELECT `policy_document_id` FROM `document_exceptions` WHERE `value` = :id");
+    $current_policy_stmt->bindParam(":id", $id, PDO::PARAM_INT);
+    $current_policy_stmt->execute();
+    $current_policy_document_id = $current_policy_stmt->fetchColumn();
+    db_close($db_for_current);
+
+    if ($current_policy_document_id === false) {
+        // Unknown id -- fail closed the same way the other mutations do.
+        return false;
+    }
+
+    if (exception_policy_document_access_denied($current_policy_document_id) || exception_policy_document_access_denied($policy)) {
+        return false;
+    }
 
     // Sanitizing input that comes from the WYSIWYG editor or outside sources
     $description = purify_html($description);
     $justification = purify_html($justification);
+
+    // SR-2034 (HackerOne #3928882): authorize associated_risks before it is
+    // stored -- see authorize_exception_associated_risks() docblock above.
+    $associated_risks = authorize_exception_associated_risks($associated_risks);
 
     $original = getExceptionForChangeChecking($id);
 
@@ -4521,7 +5547,11 @@ function update_exception($name, $status, $policy, $framework, $control, $owner,
     $changes = getChangesInException($original, $updated);
 
     if (!empty($changes)) {
-        write_log($id, $_SESSION['uid'] ?? 0, _lang_raw('ExceptionAuditLogUpdate', array('exception_name' => $escaper->escapeHtml($name), 'user' => $escaper->escapeHtml($_SESSION['user']), 'changes' => implode(', ', $changes))), 'exception');
+        // Raw (unescaped) on purpose -- see create_exception()'s identical
+        // comment. $name/$_SESSION['user'] are no longer pre-escaped here
+        // (they used to be, which double-escaped once the client began
+        // escaping the whole message at DOM-render time).
+        write_log($id + 1000, $_SESSION['uid'] ?? 0, _lang_raw('ExceptionAuditLogUpdate', array('exception_name' => $name, 'user' => $_SESSION['user'], 'changes' => implode(', ', $changes))), 'exception');
     }
 
     trigger_workflow_event('exception.updated', [
@@ -4636,7 +5666,8 @@ function getChangesInException($original, $updated) {
                 $value = html_to_plain_text($value);
                 $new_value = html_to_plain_text($new_value);
             }
-            $changes[] = _lang('ExceptionAuditLogUpdateChange', array('key' => $key, 'value' => $value, 'new_value' => $new_value));
+            // Raw -- see the identical comment on update_exception()'s write_log() call below.
+            $changes[] = _lang_raw('ExceptionAuditLogUpdateChange', array('key' => $key, 'value' => $value, 'new_value' => $new_value));
         }
     }
     return $changes;
@@ -4646,19 +5677,37 @@ function approve_exception($id) {
 
     $db = db_open();
 
-    $stmt = $db->prepare("select name, value, next_review_date, review_frequency from `document_exceptions` where `value`=:id;");
+    $stmt = $db->prepare("select name, value, policy_document_id, next_review_date, review_frequency from `document_exceptions` where `value`=:id;");
     $stmt->bindParam(":id", $id, PDO::PARAM_INT);
     $stmt->execute();
 
     $approved_exception = $stmt->fetch();
 
+    // See approve_document() -- same unknown-id fall-through.
+    if (!$approved_exception) {
+        db_close($db);
+        return false;
+    }
+
+    // Team-scope guard -- see exception_policy_document_access_denied().
+    if (exception_policy_document_access_denied($approved_exception['policy_document_id'])) {
+        db_close($db);
+        return false;
+    }
+
     $approver = (int)$_SESSION['uid'];
 
-    // Calculate next review date: today's date + review_frequency
-    $today = time();
-    $next_review_date = strtotime("+{$approved_exception['review_frequency']} day", $today);
-    $next_review_date = date("Y-m-d", $next_review_date);
-    
+    // Calculate next review date: today's date + review_frequency.
+    // review_frequency <= 0 means "no periodic review scheduled" and gets the
+    // '0000-00-00' no-date sentinel rather than a permanently-overdue today --
+    // see approve_document() for the full reasoning.
+    $review_frequency = (int)$approved_exception['review_frequency'];
+    if ($review_frequency > 0) {
+        $next_review_date = date("Y-m-d", strtotime("+{$review_frequency} day", time()));
+    } else {
+        $next_review_date = '0000-00-00';
+    }
+
     // approve the exception
     $stmt = $db->prepare("UPDATE `document_exceptions` SET `approved`=1, `approval_date`=CURDATE(), `approver`=:approver, `next_review_date`=:next_review_date where `value`=:id;");
     $stmt->bindParam(":approver", $approver, PDO::PARAM_INT);
@@ -4669,24 +5718,39 @@ function approve_exception($id) {
     // Close the database connection
     db_close($db);
 
-    write_log($approved_exception['value'], $_SESSION['uid'] ?? 0, _lang('ExceptionAuditLogApprove', array('exception_name' => $approved_exception['name'], 'user' => $_SESSION['user'])), 'exception');
+    // Raw -- see create_exception()'s identical comment.
+    write_log($approved_exception['value'] + 1000, $_SESSION['uid'] ?? 0, _lang_raw('ExceptionAuditLogApprove', array('exception_name' => $approved_exception['name'], 'user' => $_SESSION['user'])), 'exception');
 
     trigger_workflow_event('exception.approved', [
         'exception_id' => $id,
         'name'         => $approved_exception['name'],
         'approver'     => $approver,
     ]);
+
+    return true;
 }
 
 function unapprove_exception($id) {
 
-    $db = db_open(); 
-    
-    $stmt = $db->prepare("select name, value from `document_exceptions` where `value`=:id;");
+    $db = db_open();
+
+    $stmt = $db->prepare("select name, value, policy_document_id from `document_exceptions` where `value`=:id;");
     $stmt->bindParam(":id", $id, PDO::PARAM_INT);
     $stmt->execute();
 
     $unapproved_exception = $stmt->fetch();
+
+    // See approve_document() -- same unknown-id fall-through.
+    if (!$unapproved_exception) {
+        db_close($db);
+        return false;
+    }
+
+    // Team-scope guard -- see exception_policy_document_access_denied().
+    if (exception_policy_document_access_denied($unapproved_exception['policy_document_id'])) {
+        db_close($db);
+        return false;
+    }
 
     // unapprove the exception
     $stmt = $db->prepare("UPDATE `document_exceptions` SET `approved`=0, `approver` = 0, `approval_date`='' where `value`=:id;");
@@ -4696,23 +5760,38 @@ function unapprove_exception($id) {
     // Close the database connection
     db_close($db);
 
-    write_log($unapproved_exception['value'], $_SESSION['uid'] ?? 0, _lang('ExceptionAuditLogUnapprove', array('exception_name' => $unapproved_exception['name'], 'user' => $_SESSION['user'])), 'exception');
+    // Raw -- see create_exception()'s identical comment.
+    write_log($unapproved_exception['value'] + 1000, $_SESSION['uid'] ?? 0, _lang_raw('ExceptionAuditLogUnapprove', array('exception_name' => $unapproved_exception['name'], 'user' => $_SESSION['user'])), 'exception');
 
     trigger_workflow_event('exception.unapproved', [
         'exception_id' => $id,
         'name'         => $unapproved_exception['name'],
     ]);
+
+    return true;
 }
 
 function delete_exception($id) {
 
     $db = db_open();
 
-    $stmt = $db->prepare("select name, value from `document_exceptions` where `value`=:id;");
+    $stmt = $db->prepare("select name, value, policy_document_id from `document_exceptions` where `value`=:id;");
     $stmt->bindParam(":id", $id, PDO::PARAM_INT);
     $stmt->execute();
 
     $deleted_exception = $stmt->fetch();
+
+    // See approve_document() -- same unknown-id fall-through.
+    if (!$deleted_exception) {
+        db_close($db);
+        return false;
+    }
+
+    // Team-scope guard -- see exception_policy_document_access_denied().
+    if (exception_policy_document_access_denied($deleted_exception['policy_document_id'])) {
+        db_close($db);
+        return false;
+    }
 
     // Resolve before the delete below: afterwards associated_risks is gone and
     // the affected risks can no longer be found.
@@ -4732,15 +5811,27 @@ function delete_exception($id) {
     // Close the database connection
     db_close($db);
 
-    write_log($deleted_exception['value'], $_SESSION['uid'] ?? 0, _lang('ExceptionAuditLogDelete', array('exception_name' => $deleted_exception['name'], 'user' => $_SESSION['user'])), 'exception');
+    // Raw -- see create_exception()'s identical comment.
+    write_log($deleted_exception['value'] + 1000, $_SESSION['uid'] ?? 0, _lang_raw('ExceptionAuditLogDelete', array('exception_name' => $deleted_exception['name'], 'user' => $_SESSION['user'])), 'exception');
 
     trigger_workflow_event('exception.deleted', [
         'exception_id' => $id,
         'name'         => $deleted_exception['name'],
     ]);
+
+    return true;
 }
 
 function batch_delete_exception($id, $type, $approved) {
+
+    // Team-scope guard -- for type='policy', $id IS the target
+    // policy_document_id (the WHERE clause below deletes every exception
+    // attached to it), so check access to that document directly rather
+    // than per-row. Control-type stays unscoped, matching every other
+    // control-branch query in this file.
+    if ($type === 'policy' && exception_policy_document_access_denied($id)) {
+        return false;
+    }
 
     $db = db_open();
 
@@ -4765,15 +5856,56 @@ function batch_delete_exception($id, $type, $approved) {
 
     $user = $_SESSION['user'];
     foreach($deleted_exceptions as $deleted_exception) {
-        write_log($deleted_exception['value'], $_SESSION['uid'] ?? 0, _lang('ExceptionAuditLogDelete', array('exception_name' => $deleted_exception['name'], 'user' => $user)), 'exception');
+        // Raw -- see create_exception()'s identical comment.
+        write_log($deleted_exception['value'] + 1000, $_SESSION['uid'] ?? 0, _lang_raw('ExceptionAuditLogDelete', array('exception_name' => $deleted_exception['name'], 'user' => $user)), 'exception');
     }
+
+    return true;
 }
 
+// Same shape as get_documents_audit_log() -- LEFT JOIN to `document_exceptions`
+// (de.value, its own PK column, matches write_log()'s stored risk_id now that
+// every exception write_log() call passes +1000, the same convention
+// get_documents_audit_log() relies on) and `user` for the display name.
+// Returns null exception_name/user_name once the exception is deleted or the
+// row predates the +1000 fix -- get_exceptions_audit_log_api() falls back to
+// extract_exception_name_from_audit_message() for the former, same as the
+// documents trail.
 function get_exceptions_audit_log($days){
 
     $db = db_open();
 
-    $stmt = $db->prepare("SELECT timestamp, message FROM audit_log WHERE (`timestamp` > CURDATE()-INTERVAL :days DAY) AND log_type='exception' ORDER BY timestamp DESC");
+    // Team-scope guard, same shape and reasoning as get_documents_audit_log()'s
+    // -- added late (surfaced by a delta re-review after this file's other
+    // audit-log/KPI reads were already team-scoped) because this read got the
+    // same entity/activity-column enhancement as the documents audit log but
+    // was missed for scoping. Reuses exception_kpi_team_scope_where() (aliased
+    // to 'p') rather than inlining another call_extra_function() call.
+    //
+    // Three cases, matching the control-type-is-never-team-scoped asymmetry
+    // documented elsewhere in this file (count_exceptions_control() etc.):
+    //   - de IS NULL (the exception has since been deleted) -- excluded. Same
+    //     accepted trade-off get_documents_audit_log() already has for a
+    //     deleted parent: no way to know which team a deleted record belonged
+    //     to, so its whole audit history is excluded rather than guessed at.
+    //   - de.policy_document_id IS NULL (a live control-type exception) --
+    //     always included, unscoped.
+    //   - de.policy_document_id IS NOT NULL (a live policy-type exception) --
+    //     team-scoped via the LEFT JOIN to documents p.
+    $where = exception_kpi_team_scope_where();
+
+    $stmt = $db->prepare("
+        SELECT al.timestamp, al.message,
+            al.risk_id AS exception_id, de.name AS exception_name,
+            al.user_id, u.name AS user_name
+        FROM `audit_log` al
+        LEFT JOIN `document_exceptions` de ON de.value = al.risk_id
+        LEFT JOIN `documents` p ON de.policy_document_id = p.id
+        LEFT JOIN `user` u ON u.value = al.user_id
+        WHERE (al.timestamp > CURDATE()-INTERVAL :days DAY) AND al.log_type='exception'
+            AND (de.value IS NOT NULL AND (de.policy_document_id IS NULL OR {$where}))
+        ORDER BY al.timestamp DESC
+    ");
     $stmt->bindParam(":days", $days, PDO::PARAM_INT);
 
     $stmt->execute();
@@ -4783,6 +5915,69 @@ function get_exceptions_audit_log($days){
     db_close($db);
 
     return $logs;
+}
+
+/**
+ * Classifies a decrypted Define Exceptions audit_log message into a short
+ * activity-type key for the audit trail's Activity column tag -- same
+ * purpose as classify_document_audit_activity() above, for the five
+ * exception message shapes (ExceptionAuditLogCreate/Update/Approve/
+ * Unapprove/Delete, languages/en/lang.en.php). Unlike documents, every
+ * exception message shape has always embedded the exception's name, so
+ * there is no legacy no-name variant to also match here.
+ */
+function classify_exception_audit_activity($message) {
+    if (preg_match('/^Exception ".*" was created by user/', $message)) {
+        return 'create';
+    }
+    if (preg_match('/^Exception ".*" was updated by user/', $message)) {
+        return 'update';
+    }
+    if (preg_match('/^Exception ".*" was deleted by user/', $message)) {
+        return 'delete';
+    }
+    if (preg_match('/^Exception ".*" was approved by user/', $message)) {
+        return 'approve';
+    }
+    if (preg_match('/^Exception ".*" was unapproved by user/', $message)) {
+        return 'unapprove';
+    }
+    return 'other';
+}
+
+/**
+ * Recovers the exception name embedded in an exception audit_log message --
+ * same purpose as extract_document_name_from_audit_message() above, for
+ * get_exceptions_audit_log_api() to fall back to when get_exceptions_audit_
+ * log()'s LEFT JOIN against `document_exceptions` comes back null (the
+ * exception has since been deleted). Every write_log() call site for this
+ * log_type now stores the message raw via _lang_raw() -- create/approve/
+ * unapprove/delete used to escape via _lang(), and Update via an explicit
+ * escapeHtml() through _lang_raw(), both of which double-escaped once the
+ * client started escaping the whole message at DOM-render time; see each
+ * write_log() call site. Rows written before that fix still carry the old
+ * escaped text, so html_entity_decode() stays here to normalize either case
+ * back to the same raw text, matching
+ * extract_document_name_from_audit_message()'s own reasoning exactly.
+ *
+ * @param string $message decrypted, not-yet-escaped audit_log.message
+ * @return ?string raw exception name, or null when this message shape
+ *                 doesn't carry one (an unrecognized/legacy message)
+ */
+function extract_exception_name_from_audit_message($message) {
+    $patterns = [
+        '/^Exception "(.*)" was created by user/',
+        '/^Exception "(.*)" was updated by user/',
+        '/^Exception "(.*)" was deleted by user/',
+        '/^Exception "(.*)" was approved by user/',
+        '/^Exception "(.*)" was unapproved by user/',
+    ];
+    foreach ($patterns as $pattern) {
+        if (preg_match($pattern, $message, $matches)) {
+            return html_entity_decode($matches[1], ENT_QUOTES | ENT_HTML5);
+        }
+    }
+    return null;
 }
 
 /*****************************************************************************
@@ -5829,8 +7024,121 @@ function get_governance_maturity_gap_items($bucket, $framework_ids = null, $limi
  *
  * The default is '' rather than a generated value so ids stay stable across
  * renders; the four call sites all pass one.
+ *
+ * TAB-PER-TEMPLATE-GROUP SELECTOR (Track B, Task 27) -- CREATE PATH ONLY.
+ * $seed_soa_defaults is the one flag among the three that the callers answer
+ * differently (see above): true only for governance/index.php's genuine "+ Add
+ * framework" call, false for both of display_update_framework_modal()'s calls
+ * (the Define Control Frameworks Edit modal and the Initiate Audits Edit
+ * modal). It is therefore the existing, reliable "is this really the create
+ * form?" signal -- reused here rather than adding a new parameter, since an
+ * EXISTING framework's fields stay under whichever template group it was
+ * created with; the Edit modal has no business re-offering that choice, and
+ * must never render this picker. When $seed_soa_defaults is true and the
+ * Customization Extra resolves more than one Framework template group, this
+ * function renders one Bootstrap nav-tab AND ONE FULL <form id=
+ * 'framework-create-form'> per group (duplicate ids across panes -- the same
+ * one-<form>-per-pane pattern display_add_risk() established for Risk and
+ * render_create_modal() established for Asset), delegating the actual field
+ * body to display_add_framework_fields() per pane so the tab-wrapping logic
+ * here never nests a <form> inside a <form>. Zero or one resolved group
+ * still renders a single un-tabbed <form>, with $id_prefix left exactly as
+ * the caller passed it -- so the common case (Customization off, or exactly
+ * one Framework template group) is byte-for-byte the markup this function
+ * always produced, ids included. Only when genuinely offering more than one
+ * group does a pane's $id_prefix become "{$id_prefix}{$template_group['id']}_",
+ * which keeps every field id -- including the two HugeRTE-backed ones,
+ * 'framework_description' and 'scope_statement', which display_add_framework()
+ * .governance/index.php initialises by (CSS) id -- unique per pane instead of
+ * colliding every pane's editor onto the first one's.
  */
 function display_add_framework($include_soa = true, $include_status = true, $seed_soa_defaults = false, $id_prefix = '') {
+
+    global $escaper;
+
+    // Only the genuine create call ($seed_soa_defaults === true) ever offers a
+    // group choice -- see the doc comment above. The Edit modal's two callers
+    // fall straight through to a single un-tabbed render of the field body,
+    // exactly as before this task.
+    if (!$seed_soa_defaults) {
+        display_add_framework_fields($include_soa, $include_status, $seed_soa_defaults, $id_prefix, null);
+        return;
+    }
+
+    $template_groups = [];
+    if (customization_extra()) {
+        require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
+        // The same candidate set resolve_template_group_id() validates a
+        // submitted id against -- one helper, so the tabs offered here and
+        // the ids accepted on create can never drift apart.
+        $template_groups = get_template_groups_for_user('framework');
+    }
+
+    if (count($template_groups) > 1) {
+
+        echo "
+            <div class='mt-2'>
+                <nav class='nav nav-tabs'>
+        ";
+        foreach ($template_groups as $index => $template_group) {
+            $active = $index == 0 ? "active" : "";
+            echo "
+                    <a class='nav-link {$active}' data-bs-target='#framework_template_group_{$template_group['id']}' data-bs-toggle='tab'>" . $escaper->escapeHtml($template_group['name']) . "</a>
+            ";
+        }
+        echo "
+                </nav>
+            </div>
+            <div class='tab-content'>
+        ";
+        foreach ($template_groups as $index => $template_group) {
+            $pane_active = $index == 0 ? "show active" : "";
+            $pane_prefix = $id_prefix . $template_group['id'] . '_';
+            echo "
+                <div class='tab-pane fade {$pane_active}' id='framework_template_group_{$template_group['id']}'>
+                    <form id='framework-create-form' name='framework-create-form' method='post' action='#' autocomplete='off' class='framework-create-form-pane' data-id-prefix='" . $escaper->escapeHtmlAttr($pane_prefix) . "'>
+            ";
+            display_add_framework_fields($include_soa, $include_status, $seed_soa_defaults, $pane_prefix, $template_group['id']);
+            echo "
+                    </form>
+                </div>
+            ";
+        }
+        echo "
+            </div>
+        ";
+        return;
+    }
+
+    // Zero or one resolved group: carry the single real id forward so the
+    // field body below scopes get_active_fields()/get_inactive_fields() to it
+    // and records the correct group without a visible tab picker. Falls back
+    // to null (unresolved) when Customization never resolved any group at
+    // all -- display_add_framework_fields() then resolves the real Default
+    // group itself inside add_framework(), matching pre-existing behavior.
+    $template_group_id = count($template_groups) == 1 ? $template_groups[0]['id'] : null;
+
+    echo "
+        <form id='framework-create-form' name='framework-create-form' method='post' action='#' autocomplete='off' class='framework-create-form-pane' data-id-prefix='" . $escaper->escapeHtmlAttr($id_prefix) . "'>
+    ";
+    display_add_framework_fields($include_soa, $include_status, $seed_soa_defaults, $id_prefix, $template_group_id);
+    echo "
+        </form>
+    ";
+}
+
+/**********************************************
+* FUNCTION: DISPLAY ADD FRAMEWORK FORM FIELDS *
+***********************************************
+* The per-group field body extracted out of display_add_framework() (Track B,
+* Task 27) so the tab-per-group wrapper above can call it once per pane
+* without nesting a <form> inside a <form>. $template_group_id scopes
+* get_active_fields()/get_inactive_fields() to whichever group this pane (or,
+* on the Edit path, the caller) is rendering -- null preserves this function's
+* pre-existing unscoped behavior (every custom field regardless of group),
+* which is what the Edit modal's two callers still get today.
+**********************************************/
+function display_add_framework_fields($include_soa, $include_status, $seed_soa_defaults, $id_prefix, $template_group_id) {
 
     global $lang, $escaper;
 
@@ -5840,8 +7148,37 @@ function display_add_framework($include_soa = true, $include_status = true, $see
         // Load the extra
         require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
 
-        $active_fields = get_active_fields("framework");
-        $inactive_fields = get_inactive_fields("framework");
+        // On the CREATE path, display_add_framework() above already resolved
+        // a real group per pane whenever more than one exists; when it found
+        // zero or one (the common case today, before Framework has any
+        // customer with a second template group), $template_group_id can
+        // still arrive here as null, so resolve the real Default rather than
+        // leave the fields/hidden-input below scoped to nothing -- same
+        // fallback add_framework() uses, so a create with no explicit choice
+        // and a create with an explicit Default choice behave identically.
+        // The Edit modal's two callers always pass $seed_soa_defaults=false,
+        // so they never enter this branch and keep get_active_fields()/
+        // get_inactive_fields() on their pre-existing unscoped behavior --
+        // every custom field regardless of group. Track B, Task 27.
+        if ($seed_soa_defaults && !$template_group_id) {
+            $default_group = get_default_template_group('framework');
+            $template_group_id = $default_group ? $default_group['id'] : null;
+        }
+
+        $active_fields = get_active_fields("framework", $template_group_id);
+        $inactive_fields = get_inactive_fields("framework", $template_group_id);
+
+        // Records which admin-defined template group this framework is being
+        // CREATED under, so add_framework() (includes/governance.php) and
+        // createFrameworkCrud() (includes/api.php) can store it instead of
+        // silently defaulting. Emitted only on the create path -- an existing
+        // framework's group is not something the Edit modal may change (see
+        // display_add_framework()'s doc comment).
+        if ($seed_soa_defaults) {
+            echo "
+                <input type='hidden' name='template_group_id' value='" . (int)$template_group_id . "'>
+            ";
+        }
 
         // The admin-configured field order can freely interleave core and
         // custom fields (Customization Extra), so it can't be split into the
@@ -6227,8 +7564,126 @@ function display_framework_soa_card($seed_inclusion = false, $id_prefix = '') {
  * display_add_framework() for the full reasoning. Same story: this renders the
  * body of BOTH the Add and the Edit control modal into one document, so a bare
  * column name as an id is a duplicate id. Callers pass 'add_' or 'update_'.
+ *
+ * TAB-PER-TEMPLATE-GROUP SELECTOR (Track B, Task 28) -- CREATE PATH ONLY.
+ * Control's display_add_control() has no third boolean flag the way
+ * display_add_framework() has $seed_soa_defaults, so $id_prefix itself is the
+ * only reliable "is this really the create form?" signal: 'add_' is the exact
+ * (and only) value governance/index.php's genuine "+ Add control" call
+ * passes; display_update_control_modal()'s call always passes 'update_'. An
+ * existing control's fields stay under whichever template group it was
+ * created with -- the Edit modal has no business re-offering that choice, and
+ * must never render this picker.
+ *
+ * When $id_prefix === 'add_' and the Customization Extra resolves more than
+ * one Control template group, this function renders one Bootstrap nav-tab AND
+ * ONE FULL <form id='add-control-form'> per group (duplicate ids across
+ * panes -- the same one-<form>-per-pane pattern Task 27 established for
+ * Framework), delegating the actual field body to display_add_control_fields()
+ * per pane so the tab-wrapping logic here never nests a <form> inside a
+ * <form>. Zero or one resolved group still renders a single un-tabbed <form>,
+ * with $id_prefix left exactly as the caller passed it -- so the common case
+ * (Customization off, or exactly one Control template group -- every install
+ * today before a second one is created) renders byte-for-byte the same
+ * markup and ids as before. Only when genuinely offering more than one group
+ * does a pane's $id_prefix become "{$id_prefix}{$template_group['id']}_",
+ * which keeps every field id -- including the two HugeRTE-backed ones,
+ * 'control_description' and 'supplemental_guidance', which governance/
+ * index.php initialises by (CSS) id -- unique per pane instead of colliding
+ * every pane's editor onto the first one's.
  **************************************/
 function display_add_control($id_prefix = '') {
+
+    global $escaper;
+
+    // Only the genuine create call ($id_prefix === 'add_') ever offers a
+    // group choice -- see the doc comment above. The Edit modal's call falls
+    // straight through to a single un-tabbed render of the field body, exactly
+    // as before this task.
+    $is_create = ($id_prefix === 'add_');
+
+    if (!$is_create) {
+        display_add_control_fields($id_prefix, null, false);
+        return;
+    }
+
+    $template_groups = [];
+    if (customization_extra()) {
+        require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
+        // The same candidate set resolve_template_group_id() validates a
+        // submitted id against -- one helper, so the tabs offered here and
+        // the ids accepted on create can never drift apart.
+        $template_groups = get_template_groups_for_user('control');
+    }
+
+    if (count($template_groups) > 1) {
+
+        echo "
+            <div class='mt-2'>
+                <nav class='nav nav-tabs'>
+        ";
+        foreach ($template_groups as $index => $template_group) {
+            $active = $index == 0 ? "active" : "";
+            echo "
+                    <a class='nav-link {$active}' data-bs-target='#control_template_group_{$template_group['id']}' data-bs-toggle='tab'>" . $escaper->escapeHtml($template_group['name']) . "</a>
+            ";
+        }
+        echo "
+                </nav>
+            </div>
+            <div class='tab-content'>
+        ";
+        foreach ($template_groups as $index => $template_group) {
+            $pane_active = $index == 0 ? "show active" : "";
+            $pane_prefix = $id_prefix . $template_group['id'] . '_';
+            echo "
+                <div class='tab-pane fade {$pane_active}' id='control_template_group_{$template_group['id']}'>
+                    <form id='add-control-form' name='add-control-form' method='post' action='#' autocomplete='off' class='control-create-form-pane' data-id-prefix='" . $escaper->escapeHtmlAttr($pane_prefix) . "'>
+            ";
+            display_add_control_fields($pane_prefix, $template_group['id'], true);
+            echo "
+                    </form>
+                </div>
+            ";
+        }
+        echo "
+            </div>
+        ";
+        return;
+    }
+
+    // Zero or one resolved group: carry the single real id forward so the
+    // field body below scopes get_active_fields()/get_inactive_fields() to it
+    // and records the correct group without a visible tab picker. Falls back
+    // to null (unresolved) when Customization never resolved any group at
+    // all -- display_add_control_fields() then resolves the real Default
+    // group itself, matching pre-existing behavior.
+    $template_group_id = count($template_groups) == 1 ? $template_groups[0]['id'] : null;
+
+    echo "
+        <form id='add-control-form' name='add-control-form' method='post' action='#' autocomplete='off' class='control-create-form-pane' data-id-prefix='" . $escaper->escapeHtmlAttr($id_prefix) . "'>
+    ";
+    display_add_control_fields($id_prefix, $template_group_id, true);
+    echo "
+        </form>
+    ";
+}
+
+/**********************************************
+* FUNCTION: DISPLAY ADD CONTROL FORM FIELDS   *
+***********************************************
+* The per-group field body extracted out of display_add_control() (Track B,
+* Task 28) so the tab-per-group wrapper above can call it once per pane
+* without nesting a <form> inside a <form>. $template_group_id scopes
+* get_active_fields()/get_inactive_fields() to whichever group this pane (or,
+* on the Edit path, the caller) is rendering -- null preserves this function's
+* pre-existing unscoped behavior (every custom field regardless of group),
+* which is what the Edit modal's call still gets today. $is_create is true
+* only on display_add_control()'s create path, and gates both the real-Default
+* resolution fallback and the hidden template_group_id input -- the Edit
+* modal must never emit either.
+**********************************************/
+function display_add_control_fields($id_prefix, $template_group_id, $is_create) {
 
     global $lang, $escaper;
 
@@ -6238,8 +7693,36 @@ function display_add_control($id_prefix = '') {
         // Load the extra
         require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
 
-        $active_fields = get_active_fields("control", "", 1);
-        $inactive_fields = get_inactive_fields("control", "");
+        // On the CREATE path, display_add_control() above already resolved a
+        // real group per pane whenever more than one exists; when it found
+        // zero or one (the common case today, before Control has any
+        // customer with a second template group), $template_group_id can
+        // still arrive here as null, so resolve the real Default rather than
+        // leave the fields/hidden-input below scoped to nothing -- same
+        // fallback add_framework_control() uses. The Edit modal's call always
+        // passes $is_create=false, so it never enters this branch and keeps
+        // get_active_fields()/get_inactive_fields() on their pre-existing
+        // unscoped behavior -- every custom field regardless of group.
+        // Track B, Task 28.
+        if ($is_create && !$template_group_id) {
+            $default_group = get_default_template_group('control');
+            $template_group_id = $default_group ? $default_group['id'] : null;
+        }
+
+        $active_fields = get_active_fields("control", $template_group_id, 1);
+        $inactive_fields = get_inactive_fields("control", $template_group_id);
+
+        // Records which admin-defined template group this control is being
+        // CREATED under, so add_framework_control() (includes/governance.php)
+        // and createControlCrud() (includes/api.php) can store it instead of
+        // silently defaulting. Emitted only on the create path -- an existing
+        // control's group is not something the Edit modal may change (see
+        // display_add_control()'s doc comment).
+        if ($is_create) {
+            echo "
+                <input type='hidden' name='template_group_id' value='" . (int)$template_group_id . "'>
+            ";
+        }
 
         // Same reasoning as display_add_framework()'s customization-extra
         // branch: the admin-configured field order can freely interleave
@@ -9729,6 +11212,241 @@ function display_framework_acquisition_chooser($trigger_id, $trigger_class, $wit
     echo "
           </div>
         </div>";
+}
+
+/**
+ * Matches each documents.document_type free-text value to its document_types
+ * lookup row by name and sets document_type_id. Only touches rows that are
+ * still unset, so re-running it is a no-op once every row is backfilled.
+ */
+function backfill_document_type_ids() {
+    $db = db_open();
+
+    $stmt = $db->prepare("
+        UPDATE `documents` d
+        INNER JOIN `document_types` dt ON dt.`name` = d.`document_type`
+        SET d.`document_type_id` = dt.`value`
+        WHERE d.`document_type_id` IS NULL
+    ");
+    $stmt->execute();
+
+    db_close($db);
+}
+
+/**
+ * The document categories a user can file a document under, in display order.
+ * Backs the Document Program tab strip and the add/edit category dropdown.
+ */
+function get_document_types() {
+    $db = db_open();
+
+    $stmt = $db->prepare("SELECT `value`, `name` FROM `document_types` ORDER BY `value`");
+    $stmt->execute();
+    $types = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    db_close($db);
+
+    foreach ($types as &$type) {
+        $type['label'] = document_type_label($type['name']);
+    }
+    unset($type);
+
+    return $types;
+}
+
+/**
+ * The `document_types.value` (FK id) for a category name, or null when the
+ * name doesn't resolve to a lookup row.
+ *
+ * WHY THE NAME AND NOT THE ID IS SUBMITTED: `documents.document_type` is the
+ * legacy free-text column and is still the value the add/update document
+ * forms post, the value the duplicate-name check keys on, the value the
+ * audit-log diff renders, and the value the policy-exception joins match
+ * (`p.document_type = 'policies'`). Changing the submitted value to a raw id
+ * would ripple through all of those. Instead the write paths keep storing the
+ * string AND resolve it to `document_type_id` here, so the FK is maintained on
+ * every write rather than only by the one-time migration backfill --
+ * which is what lets the grid's category filter key off the FK and survive a
+ * category rename.
+ */
+function get_document_type_id_by_name($name) {
+    if ($name === null || $name === '') {
+        return null;
+    }
+
+    $db = db_open();
+
+    $stmt = $db->prepare("SELECT `value` FROM `document_types` WHERE `name` = :name LIMIT 1");
+    $stmt->bindParam(":name", $name, PDO::PARAM_STR);
+    $stmt->execute();
+    $id = $stmt->fetchColumn();
+
+    db_close($db);
+
+    return $id === false ? null : (int)$id;
+}
+
+/**
+ * The four categories seeded with the `document_types` lookup, mapped to the
+ * lang key that renders each one's display label.
+ *
+ * These four are RESERVED: their stored slugs are hardcoded as string literals
+ * in queries all over the codebase -- the policy-exception joins
+ * (`p.document_type = 'policies'` in this file and in includes/functions.php),
+ * the asset policy join and the exception "policy" picker
+ * (includes/functions.php), the dynamic report document scope
+ * (includes/functions.php), the entity-graph policy walkers
+ * (includes/entity_graph.php), the policy KPI count (includes/reporting.php),
+ * and the Notification / Workflows Extras. None of those resolve through this
+ * lookup, so renaming a seeded slug would silently drop every document filed
+ * under it out of all of them. document_type_rename_blocked() below is the
+ * guard that keeps those literals permanently correct.
+ *
+ * Single source of truth for both document_type_label() and the rename guard --
+ * keep them driven off this one list so the two can't drift.
+ */
+function document_type_seeded_slugs() {
+    return [
+        'policies'   => 'Policies',
+        'guidelines' => 'Guidelines',
+        'standards'  => 'Standards',
+        'procedures' => 'Procedures',
+    ];
+}
+
+/**
+ * Display label for a document category.
+ *
+ * The four seeded categories are stored under their historical lowercase slugs
+ * (`policies`/`guidelines`/`standards`/`procedures`) because those slugs are
+ * the values already persisted in `documents.document_type` on every existing
+ * instance AND the literal the policy-exception queries match on
+ * (`p.document_type = 'policies'`). Re-casing the seed would need a second
+ * data migration and would break those literals, so the stored name stays the
+ * slug and the *display* is translated here instead. A category an admin adds
+ * or renames has no lang key of its own, so its stored name IS its label.
+ *
+ * This is the PHP twin of categoryLabel()/DOCUMENT_TYPE_LABEL_KEYS in
+ * js/simplerisk/pages/governance-documents.js -- keep the two in step.
+ */
+function document_type_label($name) {
+    global $lang;
+
+    $key = document_type_seeded_slugs()[$name] ?? null;
+
+    return ($key !== null && !empty($lang[$key])) ? $lang[$key] : (string)$name;
+}
+
+/**
+ * True when renaming the given category must be refused because its CURRENT
+ * stored name is one of the four reserved seeded slugs (see
+ * document_type_seeded_slugs() for the literal call sites that depend on them).
+ *
+ * Making categories admin-editable gave the Add/Edit document modals a
+ * dropdown rendered from the live lookup, and add_document()/update_document()
+ * write whatever name it renders verbatim into `documents.document_type`. So
+ * once a seeded slug is renamed -- say `policies` to `Policies` -- every
+ * document created or edited after the rename stores the NEW spelling and
+ * falls out of every hardcoded `= 'policies'` comparison, with no error
+ * anywhere. Blocking the rename is the bounded fix: an admin can still freely
+ * rename any category they added themselves, since nothing hardcodes those.
+ *
+ * A no-op "rename" to the identical name is allowed -- there is nothing to
+ * break and refusing it would just look broken to the admin.
+ *
+ * Backs $customUpdateFunction_document_types in admin/add_remove_values.php,
+ * mirroring how $customDeleteFunction_document_types uses
+ * document_type_in_use().
+ *
+ * @param  int    $document_type_id The `document_types.value` being updated.
+ * @param  string $new_name         The name the admin submitted.
+ * @return bool
+ */
+function document_type_rename_blocked($document_type_id, $new_name) {
+    $document_type_id = (int)$document_type_id;
+    if ($document_type_id <= 0) {
+        return false;
+    }
+
+    $db = db_open();
+
+    $stmt = $db->prepare("SELECT `name` FROM `document_types` WHERE `value` = :id LIMIT 1");
+    $stmt->bindParam(":id", $document_type_id, PDO::PARAM_INT);
+    $stmt->execute();
+    $current_name = $stmt->fetchColumn();
+
+    db_close($db);
+
+    // No such row -- nothing to protect; let the generic update path report it.
+    if ($current_name === false) {
+        return false;
+    }
+
+    // Not a reserved category: an admin-created one is renameable.
+    if (!array_key_exists($current_name, document_type_seeded_slugs())) {
+        return false;
+    }
+
+    // Reserved, but the submitted name is identical -- not actually a rename.
+    return trim((string)$new_name) !== (string)$current_name;
+}
+
+/**
+ * Renders the `document_type` <select> options for the Add/Edit document
+ * modals from the `document_types` lookup, so a category added via the tab
+ * strip's quick-add "+" or Add/Remove Values can actually be assigned to a
+ * document. Previously both modals hardcoded exactly the original four
+ * options, which made every admin-added category unusable.
+ *
+ * The option VALUE is the stored category name (see
+ * get_document_type_id_by_name() for why), the option TEXT is the translated
+ * display label (see document_type_label()).
+ */
+function document_type_options_html($selected = '') {
+    global $escaper;
+
+    $html = "<option value=\"\">--</option>\n";
+
+    foreach (get_document_types() as $type) {
+        $name = $type['name'];
+        $is_selected = ($selected !== '' && $selected === $name) ? ' selected' : '';
+        $html .= "<option value=\"" . $escaper->escapeHtmlAttr($name) . "\"{$is_selected}>"
+            . $escaper->escapeHtml(document_type_label($name)) . "</option>\n";
+    }
+
+    return $html;
+}
+
+/**
+ * True when at least one document is still filed under the given category id
+ * (either through the `document_type_id` FK or, for rows the migration
+ * backfill couldn't match, through the legacy `document_type` string).
+ * Backs the Add/Remove Values delete guard -- deleting a category in active
+ * use would otherwise silently orphan its documents out of every tab.
+ */
+function document_type_in_use($document_type_id) {
+    $document_type_id = (int)$document_type_id;
+    if ($document_type_id <= 0) {
+        return false;
+    }
+
+    $db = db_open();
+
+    $stmt = $db->prepare("
+        SELECT COUNT(*)
+        FROM `documents` d
+        LEFT JOIN `document_types` dt ON dt.`value` = :id
+        WHERE d.`document_type_id` = :id2
+           OR (d.`document_type_id` IS NULL AND dt.`name` IS NOT NULL AND d.`document_type` = dt.`name`)
+    ");
+    $stmt->bindParam(":id", $document_type_id, PDO::PARAM_INT);
+    $stmt->bindParam(":id2", $document_type_id, PDO::PARAM_INT);
+    $stmt->execute();
+    $count = (int)$stmt->fetchColumn();
+
+    db_close($db);
+
+    return $count > 0;
 }
 
 ?>

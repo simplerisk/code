@@ -107,188 +107,19 @@ $.fn.extend({
         $(this).data('initialized', true);
 	},
 
-    initAsDocumentProgramTreegrid: function(type=false) {
+    // initAsDocumentProgramTreegrid() (the EasyUI treegrid init for the old
+    // Document Program page) was removed here -- Task 9 replaced it with the
+    // client-rendered .sr-table-card grid, DocumentProgramGrid
+    // (js/simplerisk/pages/governance-documents.js). governance/documentation.php
+    // no longer loads the easyui:treegrid/easyui:filter assets this function
+    // depended on.
 
-        // Can't initialize it twice
-        if (this.data('initialized')) {
-            this.treegrid("resize");
-            return;
-        }
-
-        let tabs = this.parents('.tab-pane');
-        let activeTabs = this.parents('.tab-pane.active');
-
-        // Can't initialize if not all of the parent tabs(if there's any) active
-        // because the treegrid doesn't properly initialize in the background
-        if (tabs.length != activeTabs.length) {
-            return;
-        }
-
-        let _this = this;
-        
-        this.treegrid({
-            iconCls: 'icon-ok',
-            animate: true,
-            collapsible: false,
-            fitColumns: true,
-            url: BASE_URL + (type === 'document-hierarchy' ? '/api/v2/governance/documents/treegrid?type=' : `/api/v2/governance/tabular_documents?type=${type}`),
-            method: 'get',
-            idField: 'id',
-            treeField: 'document_name',
-            remoteFilter: true,
-            scrollbarSize: 0,
-            onResize: function() {
-                // After rendering the datagrid filter head row, reduce the editable filter inputs' width by 30px
-                // so that could make the datagrid table filter head row have the same width as the datagrid table body
-                $('.datagrid-htable .datagrid-filter-row .datagrid-filter', this).each((i, e) => {
-                    $(e).css('width', (parseInt($(e).css('width'))-30) + 'px');
-                });
-            },
-            onLoadSuccess: function(){
-                // Run the resize logic when the data is loaded
-                $(_this).treegrid('resize');
-
-                // Set custom placeholders
-                const filterRow = $('.datagrid-filter-row');
-
-                filterRow.find('input[name="document_name"]').attr('placeholder', _lang['DocumentName']);
-                filterRow.find('input[name="document_type"]').attr('placeholder', _lang['DocumentType']);
-                filterRow.find('input[name="framework_names"]').attr('placeholder', _lang['ControlFrameworks']);
-                filterRow.find('input[name="control_names"]').attr('placeholder', _lang['Controls']);
-                filterRow.find('input[name="submitted_by"]').attr('placeholder', _lang['Submitter']);
-                filterRow.find('input[name="updated_by"]').attr('placeholder', _lang['UpdatedBy']);
-                filterRow.find('input[name="creation_date"]').attr('placeholder', _lang['CreationDate']);
-                filterRow.find('input[name="approval_date"]').attr('placeholder', _lang['ApprovalDate']);
-                filterRow.find('input[name="status"]').attr('placeholder', _lang['Status']);
-
-            },
-            onCollapse: function() {
-                // Run the resize logic when the data is loaded
-                $(_this).treegrid('resize');
-            },
-            onExpand: function() {
-                // Run the resize logic when the data is loaded
-                $(_this).treegrid('resize');
-            },
-        }).treegrid('enableFilter', [{
-            field:'actions',
-            type:'label'
-        }]);
-
-        $(this).data('initialized', true);
-    },
-    
-    initAsExceptionTreegrid: function(type=false) {
-        // Can't initialize it twice
-        if (this.data('initialized')) {
-            this.treegrid("resize");
-            return;
-        }
-
-        let tabs = this.parents('.tab-pane');
-        let activeTabs = this.parents('.tab-pane.active');
-
-        // Can't initialize if not all of the parent tabs(if there's any) active
-        // because the treegrid doesn't properly initialize in the background
-        if (tabs.length != activeTabs.length) {
-            return;
-        }
-
-        let _this = this;
-        this.treegrid({
-            iconCls: 'icon-ok',
-            animate: false,
-            fitColumns: true,
-            nowrap: true,
-            url: BASE_URL + `/api/v2/exceptions/tree?type=${type}`,
-            method: 'get',
-            idField: 'value',
-            treeField: 'name',
-            scrollbarSize: 0,
-            remoteFilter: true,
-            onResize: function() {
-                // After rendering the datagrid filter head row, reduce the editable filter inputs' width by 30px
-                // so that could make the datagrid table filter head row have the same width as the datagrid table body
-                $('.datagrid-htable .datagrid-filter-row .datagrid-filter', this).each((i, e) => {
-                    $(e).css('width', (parseInt($(e).css('width'))-30) + 'px');
-                });
-            },
-            loadFilter: function(data, parentId) {
-                return data.data
-            },
-            onLoadSuccess: function(row, data){
-                // Run the resize logic when the data is loaded
-                $(_this).treegrid('resize');
-
-                // fixTreeGridCollapsableColumn();
-
-                // Set custom placeholders
-                const filterRow = $('.datagrid-filter-row');
-
-                filterRow.find('input[name="name"]').attr('placeholder', _lang['ExceptionName']);
-                filterRow.find('input[name="exception_id"]').attr('placeholder', _lang['ID']);
-                filterRow.find('input[name="description"]').attr('placeholder', _lang['Description']);
-                filterRow.find('input[name="justification"]').attr('placeholder', _lang['Justification']);
-                filterRow.find('input[name="next_review_date"]').attr('placeholder', _lang['NextReviewDate']);
-
-                // Set the max length of the text inputs in the filter row
-                filterRow.find('input[name="name"]').attr('maxlength', 100);
-                filterRow.find('input[name="exception_id"]').attr('maxlength', 100);
-                filterRow.find('input[name="description"]').attr('maxlength', 100);
-                filterRow.find('input[name="justification"]').attr('maxlength', 100);
-                filterRow.find('input[name="next_review_date"]').attr('maxlength', 100);
-
-                // Refresh exception counts in the tabs
-                var totalCount = 0;
-                data = Array.isArray(data) ? data : data.rows;
-                if((data && data.length))
-                {
-                    for(var i = 0; i < data.length; i++)
-                    {
-                        var parent = data[i];
-                        if((parent.children && parent.children.length))
-                        {
-                            totalCount += parent.children.length;
-                        }
-                    }
-                }
-
-                $(`#${type}-exceptions-count`).text(totalCount);
-
-                if (typeof wireActionButtons === 'function') {
-                    wireActionButtons(type);
-                }
-            }
-        }).treegrid('enableFilter', [
-            {
-                field: 'status',
-                type: 'select',
-                options: {
-                    name: 'status',
-                    url: BASE_URL + '/api/v2/exceptions/status',
-                    defaultOption: {value: '', name: _lang['All']},
-                    onChange: function(value){
-                        if (value == '') {
-                            _this.treegrid('removeFilterRule', 'status_value');
-                        } else {
-                            _this.treegrid('addFilterRule', {
-                                field: 'status_value',
-                                op: 'equal',
-                                value: value
-                            });
-                        }
-                        _this.treegrid('doFilter');
-                    }
-                }
-            },
-            {
-                field:'actions',
-                type:'label'
-            }
-        ]);
-
-        $(this).data('initialized', true);
-    }
+    // initAsExceptionTreegrid() (the EasyUI treegrid init for the old per-tab
+    // Policy/Control/Unapproved Exceptions page) was removed here -- Task 11
+    // replaced it with the client-rendered .sr-table-card grid, ExceptionsGrid
+    // (js/simplerisk/pages/governance-exceptions.js). governance/document_exceptions.php
+    // no longer loads this file (CUSTOM:pages/governance.js) or the
+    // easyui:treegrid/easyui:filter assets this function depended on.
 });
 
 
@@ -310,7 +141,15 @@ jQuery(document).ready(function($){
           $(document).on('click', '.document--delete', function(event) {
             event.preventDefault();
             var document_id = $(this).data('id');
-            var version = $(this).data('version');
+            // '' (not undefined) -- $(this).data('version') is undefined
+            // when the button carries no data-version attribute at all (the
+            // main row delete action, which must always take
+            // delete_document()'s full-document branch), and jQuery's
+            // .val(undefined) is a GETTER, a no-op that would leave the
+            // field holding whatever a PREVIOUS modal open (e.g. a
+            // version-history row's delete-this-version action) last wrote
+            // into it.
+            var version = $(this).data('version') || '';
             var document_type = $(this).data('type');
             var modal = $('#document-delete-modal');
             $('.document_id', modal).val(document_id);

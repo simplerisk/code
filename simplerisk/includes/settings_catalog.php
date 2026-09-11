@@ -4,6 +4,9 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+require_once(realpath(__DIR__ . '/functions.php'));
+require_once(realpath(__DIR__ . '/data_integrity.php'));
+
 /**
  * Settings Hub catalog — single source of truth for every admin tile
  * shown in the Settings Hub at /admin/index.php.
@@ -192,6 +195,14 @@ function settings_catalog(): array
             'tags'        => ['data'],
             'visibility'  => ['mode' => 'always'],
         ],
+        'data_integrity' => [
+            'label_key'   => 'DataIntegrity',
+            'desc_key'    => 'DataIntegrityDesc',
+            'path'        => 'admin/data_integrity.php',
+            'tags'        => ['data', 'maintenance'],
+            'visibility'  => ['mode' => 'callable', 'fn' => 'data_integrity_has_open_issues'],
+            'pinned'      => true,
+        ],
 
         // --- maintenance ---
         'fix_review_dates' => [
@@ -200,13 +211,6 @@ function settings_catalog(): array
             'path'        => 'admin/fix_review_dates.php',
             'tags'        => ['maintenance'],
             'visibility'  => ['mode' => 'callable', 'fn' => 'settings_visibility_fix_review_dates'],
-        ],
-        'fix_encoding_issues' => [
-            'label_key'   => 'FixFileEncodingIssues',
-            'desc_key'    => 'FixFileEncodingIssuesDesc',
-            'path'        => 'admin/fix_upload_encoding_issues.php',
-            'tags'        => ['maintenance'],
-            'visibility'  => ['mode' => 'callable', 'fn' => 'settings_visibility_fix_encoding_issues'],
         ],
         'db_upgrade' => [
             'label_key'   => 'DatabaseUpgrade',
@@ -470,20 +474,6 @@ function settings_visibility_fix_review_dates(): bool
 {
     return function_exists('getTypeOfColumn')
         && getTypeOfColumn('mgmt_reviews', 'next_review') === 'varchar';
-}
-
-/********************************************************
- * FUNCTION: SETTINGS VISIBILITY — FIX ENCODING ISSUES  *
- ********************************************************/
-/**
- * The fix_upload_encoding_issues page is only relevant when there are
- * upload files with encoding issues. Matches the predicate sidebar.php
- * used pre-collapse.
- */
-function settings_visibility_fix_encoding_issues(): bool
-{
-    return function_exists('has_files_with_encoding_issues')
-        && has_files_with_encoding_issues();
 }
 
 /******************************************************
@@ -900,5 +890,131 @@ function resolve_extra_affordance(array $entry, bool $is_activated, bool $is_ins
             // 'activated' — nothing to unlock, so nowhere to send anyone.
             return ['state' => $state, 'path' => null, 'external' => false];
     }
+}
+
+/******************************************************
+ * FUNCTION: EXTRA ACQUISITION STATE                   *
+ ******************************************************/
+/**
+ * The generic "show what's possible, mark what's locked" decision for a
+ * control gated on exactly one Extra with no per-surface permission gate
+ * beyond admin-ness -- the same decision framework_acquisition_path_states()
+ * (includes/governance.php) makes for the Frameworks page's SCF/Import-
+ * Export routes, but for one Extra at a time rather than three named routes,
+ * so it fits any single-Extra-gated control (Edit Layout, a dashboard's
+ * Export PDF button) rather than just the Frameworks chooser.
+ *
+ * Same shape as one entry of framework_acquisition_path_states()'s return so
+ * a caller can feed it straight into the shared .sr-locked markup
+ * (scss/modules/_locked-affordance.scss) without a second decoding step.
+ *
+ * @param string $extra_name    canonical Extra slug, e.g. 'customization' --
+ *                               passed to settings_catalog_entry_for_extra()
+ *                               and is_extra_installed()
+ * @param bool   $is_activated  <extra_name>_extra() -- the caller's own
+ *                               activation check, since this file has no
+ *                               generic way to call a per-extra-named
+ *                               function from a string
+ * @param bool   $is_admin      is_admin()
+ * @param bool   $is_registered get_setting('registration_registered') == 1
+ * @param array  $locked_copy   state => ['note' => lang key, 'link' => ?lang
+ *                               key], for whichever states this Extra can
+ *                               actually reach (a purchase-only Extra never
+ *                               needs a 'registration_required'/'ready_to_
+ *                               download' entry; 'admin_required' should
+ *                               always be present -- every Extra can be
+ *                               viewed by a non-admin)
+ *
+ * @return array{state: string, locked: bool, note_key: ?string, link_key: ?string, unlock_href: ?string, external: bool}
+ */
+function extra_acquisition_state($extra_name, $is_activated, $is_admin, $is_registered, array $locked_copy) {
+    if ($is_activated) {
+        return ['state' => 'activated', 'locked' => false, 'note_key' => null, 'link_key' => null, 'unlock_href' => null, 'external' => false];
+    }
+
+    if (!$is_admin) {
+        // Same "show the row, no anchor" shape as framework_acquisition_
+        // path_states()'s non-admin branch: both destinations are
+        // check_admin pages, so a non-admin can be told what's locked but
+        // not sent anywhere.
+        return ['state' => 'admin_required', 'locked' => true, 'note_key' => $locked_copy['admin_required']['note'] ?? null, 'link_key' => null, 'unlock_href' => null, 'external' => false];
+    }
+
+    $entry = settings_catalog_entry_for_extra($extra_name);
+    // $is_activated is always false here -- the early return above already
+    // handled the activated case, so reaching this line means it isn't.
+    $resolved = resolve_extra_affordance($entry ?? [], false, is_extra_installed($extra_name), (bool) $is_registered);
+    $state = $resolved['state'];
+    // Catalog paths are relative to simplerisk/ -- callers of this function
+    // render one directory down (governance/, compliance/, reports/), same
+    // as framework_acquisition_path_states()'s own admin-path adjustment.
+    $href = $resolved['path'] === null || $resolved['external'] ? $resolved['path'] : '../' . $resolved['path'];
+
+    return [
+        'state'       => $state,
+        'locked'      => true,
+        'note_key'    => $locked_copy[$state]['note'] ?? null,
+        'link_key'    => $locked_copy[$state]['link'] ?? null,
+        'unlock_href' => $href,
+        'external'    => (bool) $resolved['external'],
+    ];
+}
+
+/******************************************************
+ * FUNCTION: CUSTOMIZATION ACQUISITION STATE           *
+ ******************************************************/
+/**
+ * extra_acquisition_state() for the Edit Layout control (includes/Widgets/
+ * UILayout.php), which every dashboard and insights band gates on
+ * customization_extra().
+ *
+ * Customization has no registration-gated free tier the way SCF does (its
+ * catalog entry sets no `uninstalled_state` override, so
+ * compute_extra_tile_state()'s default 'uninstalled' -> resolve_extra_
+ * affordance()'s 'purchase' applies), so only three locked states are
+ * reachable: purchase, deactivated, admin_required.
+ *
+ * @param bool $is_admin      is_admin()
+ * @param bool $is_registered get_setting('registration_registered') == 1 --
+ *                            unused today (no registration-gated state for
+ *                            this Extra) but accepted for the same reason
+ *                            extra_acquisition_state() takes it: a future
+ *                            catalog change adding a registered free tier
+ *                            should not need every call site updated too.
+ *
+ * @return array{state: string, locked: bool, note_key: ?string, link_key: ?string, unlock_href: ?string, external: bool}
+ */
+function customization_acquisition_state($is_admin, $is_registered) {
+    return extra_acquisition_state('customization', customization_extra(), $is_admin, $is_registered, [
+        'purchase'       => ['note' => 'RequiresCustomizationExtra',       'link' => 'UnlockCustomizationLink'],
+        'deactivated'    => ['note' => 'UnlockActivateCustomizationNote',  'link' => 'UnlockActivateCustomizationLink'],
+        'admin_required' => ['note' => 'UnlockNeedsAdministrator',         'link' => null],
+    ]);
+}
+
+/******************************************************
+ * FUNCTION: IMPORT-EXPORT ACQUISITION STATE           *
+ ******************************************************/
+/**
+ * extra_acquisition_state() for a dashboard's "Export PDF" button
+ * (im_export_dashboard_button(), extras/import-export/includes/
+ * dashboard_export.php via includes/Widgets/UILayout.php), which previously
+ * just didn't render when import_export_extra() was false -- the same
+ * absent-not-locked gap Edit Layout had on the four dashboards before this
+ * pass. Reuses the SAME copy keys framework_acquisition_path_states()'s
+ * 'import' route already uses (RequiresImportExportExtra etc.) rather than
+ * defining new ones -- same Extra, same English text either way.
+ *
+ * @param bool $is_admin      is_admin()
+ * @param bool $is_registered get_setting('registration_registered') == 1
+ *
+ * @return array{state: string, locked: bool, note_key: ?string, link_key: ?string, unlock_href: ?string, external: bool}
+ */
+function import_export_acquisition_state($is_admin, $is_registered) {
+    return extra_acquisition_state('import-export', import_export_extra(), $is_admin, $is_registered, [
+        'purchase'       => ['note' => 'RequiresImportExportExtra',        'link' => 'UnlockImportExportLink'],
+        'deactivated'    => ['note' => 'UnlockActivateImportExportNote',   'link' => 'UnlockActivateImportExportLink'],
+        'admin_required' => ['note' => 'UnlockNeedsAdministrator',         'link' => null],
+    ]);
 }
 

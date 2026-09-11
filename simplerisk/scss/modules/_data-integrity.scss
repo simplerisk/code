@@ -1,0 +1,11 @@
+// Data Integrity page: highlights the corrupted value so an admin can see exactly
+// what's wrong at a glance. No shipped equivalent -- every other "preview a bad
+// value" surface in the app assumes valid text.
+.sr-di-broken-value {
+    font-family: $font-family-monospace;
+    font-size: 0.75rem;
+    background: rgba($danger, 0.08);
+    color: darken($danger, 10%);
+    padding: 0.0625rem 0.375rem;
+    border-radius: 0.25rem;
+}

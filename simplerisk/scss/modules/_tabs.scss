@@ -63,3 +63,40 @@
         max-width:300px;
     } 
 }*/
+
+// Tabs -- in-page facet switching. First real implementation of the
+// design-system.md §12 pattern (documented, not yet built). Distinct from
+// this file's existing .nav-tabs/.nav-link block above, which is legacy
+// Bootstrap tab styling used elsewhere in the app -- unrelated, left as-is.
+.sr-tabs {
+    display: flex;
+    gap: 1.375rem;
+    padding: 0.75rem 1.25rem 0;
+    border-bottom: 1px solid $gray-300;
+    background: $sr-body;
+}
+
+.sr-tab {
+    padding: 0.5rem 0.125rem 0.75rem;
+    font-size: 0.84375rem;
+    font-weight: 700;
+    color: $gray-600;
+    cursor: pointer;
+    border: 0;
+    background: transparent;
+    border-bottom: 2px solid transparent;
+
+    &.is-active {
+        color: $sr-primary;
+        border-bottom-color: $sr-important;
+    }
+
+    &:hover:not(.is-active) {
+        color: $sr-primary;
+    }
+}
+
+.sr-tab-count {
+    font-weight: 700;
+    margin-left: 0.1875rem;
+}

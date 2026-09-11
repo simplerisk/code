@@ -137,6 +137,8 @@ $releases = [
     "20260811-001",
     "20260820-001",
     "20260828-001",
+    "20260908-001",
+    "20260909-001",
 ];
 
 /*************************
@@ -9264,573 +9266,6 @@ function upgrade_from_20260302001($db) {
     ");
     $stmt->execute();
 
-    // Seed the default system workflows — but ONLY if they have not been seeded already.
-    // workflow_definitions has no UNIQUE key on `name`, so the INSERT IGNORE statements below
-    // do not actually dedupe. Without this guard, re-running this upgrade (which happens every
-    // time the unreleased version is re-applied during development) inserts a fresh copy of all
-    // the defaults on each run. Gate the whole seed block on there being no system workflows yet.
-    $existing_system_workflows = (int)$db->query("SELECT COUNT(*) FROM `workflow_definitions` WHERE `system_workflow` = 1")->fetchColumn();
-    if ($existing_system_workflows > 0) {
-        echo "Default system workflows already present; skipping seed.<br />\n";
-    } else {
-    echo "Seeding default system workflows.<br />\n";
-
-    // Seed the "Submit Risk (Default)" system workflow
-    $default_definition = json_encode([
-        'version' => '1.0',
-        'nodes' => [
-            'node_001' => [
-                'type'         => 'trigger',
-                'trigger_type' => 'risk.submitted',
-                'output'       => 'node_002',
-            ],
-            'node_002' => [
-                'type'     => 'action',
-                'action'   => 'notify_new_risk',
-                'inputs'   => [],
-                'on_error' => 'continue',
-                'output'   => 'node_003',
-            ],
-            'node_003' => [
-                'type'     => 'action',
-                'action'   => 'create_jira_issue',
-                'inputs'   => [],
-                'on_error' => 'continue',
-                'output'   => null,
-            ],
-        ],
-        'positions' => [
-            'node_001' => ['x' => 240, 'y' => 40],
-            'node_002' => ['x' => 240, 'y' => 160],
-            'node_003' => ['x' => 240, 'y' => 280],
-        ],
-    ]);
-
-    $stmt = $db->prepare("
-        INSERT IGNORE INTO `workflow_definitions`
-            (`name`, `description`, `trigger_type`, `definition`, `enabled`, `system_workflow`, `sync_execution`, `created_by`)
-        VALUES
-            (:name, :description, :trigger_type, :definition, 1, 1, 1, 0)
-    ");
-    $stmt->bindValue(':name',         'Submit Risk (Default)');
-    $stmt->bindValue(':description',  'System workflow that runs synchronously on every new risk submission. Sends a notification via the Notification Extra (if active) and creates a JIRA issue via the JIRA Extra (if active).');
-    $stmt->bindValue(':trigger_type', 'risk.submitted');
-    $stmt->bindValue(':definition',   $default_definition);
-    $stmt->execute();
-
-    // Seed the "Edit Risk (Default)" system workflow
-    $default_definition = json_encode([
-        'version' => '1.0',
-        'nodes' => [
-            'node_001' => [
-                'type'         => 'trigger',
-                'trigger_type' => 'risk.updated',
-                'output'       => 'node_002',
-            ],
-            'node_002' => [
-                'type'     => 'action',
-                'action'   => 'send_email',
-                'inputs'   => [
-                    'to'      => 'risk_owner',
-                    'subject' => 'Risk #{{display_risk_id}} Has Been Updated',
-                    'body'    => '<p>Risk #{{display_risk_id}} has been updated.</p><p>Changed fields: {{changed_fields}}</p>',
-                ],
-                'on_error' => 'continue',
-                'output'   => 'node_003',
-            ],
-            'node_003' => [
-                'type'     => 'action',
-                'action'   => 'sync_jira_issue',
-                'inputs'   => [],
-                'on_error' => 'continue',
-                'output'   => null,
-            ],
-        ],
-        'positions' => [
-            'node_001' => ['x' => 240, 'y' => 40],
-            'node_002' => ['x' => 240, 'y' => 160],
-            'node_003' => ['x' => 240, 'y' => 280],
-        ],
-    ]);
-
-    $stmt->bindValue(':name',         'Edit Risk (Default)');
-    $stmt->bindValue(':description',  'System workflow that runs on every risk edit. Emails the risk owner via the Workflows Extra (if active) and syncs the linked JIRA issue via the JIRA Extra (if active).');
-    $stmt->bindValue(':trigger_type', 'risk.updated');
-    $stmt->bindValue(':definition',   $default_definition);
-    $stmt->execute();
-
-    // Seed the "Close Risk (Default)" system workflow
-    $default_definition = json_encode([
-        'version' => '1.0',
-        'nodes' => [
-            'node_001' => [
-                'type'         => 'trigger',
-                'trigger_type' => 'risk.closed',
-                'output'       => 'node_002',
-            ],
-            'node_002' => [
-                'type'     => 'action',
-                'action'   => 'send_email',
-                'inputs'   => [
-                    'to'      => 'risk_owner',
-                    'subject' => 'Risk #{{display_risk_id}} Has Been Closed',
-                    'body'    => '<p>Risk #{{display_risk_id}} has been closed.</p><p>Closure reason: {{closure_reason}}</p>',
-                ],
-                'on_error' => 'continue',
-                'output'   => 'node_003',
-            ],
-            'node_003' => [
-                'type'     => 'action',
-                'action'   => 'sync_jira_issue',
-                'inputs'   => [],
-                'on_error' => 'continue',
-                'output'   => null,
-            ],
-        ],
-        'positions' => [
-            'node_001' => ['x' => 240, 'y' => 40],
-            'node_002' => ['x' => 240, 'y' => 160],
-            'node_003' => ['x' => 240, 'y' => 280],
-        ],
-    ]);
-
-    $stmt->bindValue(':name',         'Close Risk (Default)');
-    $stmt->bindValue(':description',  'System workflow that runs when a risk is closed. Emails the risk owner via the Workflows Extra (if active) and syncs the linked JIRA issue via the JIRA Extra (if active).');
-    $stmt->bindValue(':trigger_type', 'risk.closed');
-    $stmt->bindValue(':definition',   $default_definition);
-    $stmt->execute();
-
-    // Seed the "Reopen Risk (Default)" system workflow
-    $default_definition = json_encode([
-        'version' => '1.0',
-        'nodes' => [
-            'node_001' => [
-                'type'         => 'trigger',
-                'trigger_type' => 'risk.reopened',
-                'output'       => 'node_002',
-            ],
-            'node_002' => [
-                'type'     => 'action',
-                'action'   => 'send_email',
-                'inputs'   => [
-                    'to'      => 'risk_owner',
-                    'subject' => 'Risk #{{display_risk_id}} Has Been Reopened',
-                    'body'    => '<p>Risk #{{display_risk_id}} has been reopened and is now active again.</p>',
-                ],
-                'on_error' => 'continue',
-                'output'   => 'node_003',
-            ],
-            'node_003' => [
-                'type'     => 'action',
-                'action'   => 'sync_jira_issue',
-                'inputs'   => [],
-                'on_error' => 'continue',
-                'output'   => null,
-            ],
-        ],
-        'positions' => [
-            'node_001' => ['x' => 240, 'y' => 40],
-            'node_002' => ['x' => 240, 'y' => 160],
-            'node_003' => ['x' => 240, 'y' => 280],
-        ],
-    ]);
-
-    $stmt->bindValue(':name',         'Reopen Risk (Default)');
-    $stmt->bindValue(':description',  'System workflow that runs when a risk is reopened. Emails the risk owner via the Workflows Extra (if active) and syncs the linked JIRA issue via the JIRA Extra (if active).');
-    $stmt->bindValue(':trigger_type', 'risk.reopened');
-    $stmt->bindValue(':definition',   $default_definition);
-    $stmt->execute();
-
-    // Seed the "Plan Mitigation (Default)" system workflow
-    $default_definition = json_encode([
-        'version' => '1.0',
-        'nodes' => [
-            'node_001' => [
-                'type'         => 'trigger',
-                'trigger_type' => 'mitigation.submitted',
-                'output'       => 'node_002',
-            ],
-            'node_002' => [
-                'type'     => 'action',
-                'action'   => 'send_email',
-                'inputs'   => [
-                    'to'      => 'risk_owner',
-                    'subject' => 'Mitigation Plan Submitted for Risk #{{display_risk_id}}',
-                    'body'    => '<p>A mitigation plan has been submitted for Risk #{{display_risk_id}}.</p>',
-                ],
-                'on_error' => 'continue',
-                'output'   => 'node_003',
-            ],
-            'node_003' => [
-                'type'     => 'action',
-                'action'   => 'sync_jira_issue',
-                'inputs'   => [],
-                'on_error' => 'continue',
-                'output'   => null,
-            ],
-        ],
-        'positions' => [
-            'node_001' => ['x' => 240, 'y' => 40],
-            'node_002' => ['x' => 240, 'y' => 160],
-            'node_003' => ['x' => 240, 'y' => 280],
-        ],
-    ]);
-
-    $stmt->bindValue(':name',         'Plan Mitigation (Default)');
-    $stmt->bindValue(':description',  'System workflow that runs when a mitigation plan is submitted. Emails the risk owner via the Workflows Extra (if active) and syncs the linked JIRA issue via the JIRA Extra (if active).');
-    $stmt->bindValue(':trigger_type', 'mitigation.submitted');
-    $stmt->bindValue(':definition',   $default_definition);
-    $stmt->execute();
-
-    // Seed the "Perform Reviews (Default)" system workflow
-    $default_definition = json_encode([
-        'version' => '1.0',
-        'nodes' => [
-            'node_001' => [
-                'type'         => 'trigger',
-                'trigger_type' => 'review.submitted',
-                'output'       => 'node_002',
-            ],
-            'node_002' => [
-                'type'     => 'action',
-                'action'   => 'send_email',
-                'inputs'   => [
-                    'to'      => 'risk_owner',
-                    'subject' => 'Management Review Submitted for Risk #{{display_risk_id}}',
-                    'body'    => '<p>A management review has been submitted for Risk #{{display_risk_id}}.</p><p>Decision: {{decision}}</p>',
-                ],
-                'on_error' => 'continue',
-                'output'   => 'node_003',
-            ],
-            'node_003' => [
-                'type'     => 'action',
-                'action'   => 'sync_jira_issue',
-                'inputs'   => [],
-                'on_error' => 'continue',
-                'output'   => null,
-            ],
-        ],
-        'positions' => [
-            'node_001' => ['x' => 240, 'y' => 40],
-            'node_002' => ['x' => 240, 'y' => 160],
-            'node_003' => ['x' => 240, 'y' => 280],
-        ],
-    ]);
-
-    $stmt->bindValue(':name',         'Perform Reviews (Default)');
-    $stmt->bindValue(':description',  'System workflow that runs when a management review is submitted. Emails the risk owner via the Workflows Extra (if active) and syncs the linked JIRA issue via the JIRA Extra (if active).');
-    $stmt->bindValue(':trigger_type', 'review.submitted');
-    $stmt->bindValue(':definition',   $default_definition);
-    $stmt->execute();
-
-    // Seed the "Test Added to Control (Default)" system workflow
-    $default_definition = json_encode([
-        'version' => '1.0',
-        'nodes' => [
-            'node_001' => [
-                'type'         => 'trigger',
-                'trigger_type' => 'test.created',
-                'output'       => 'node_002',
-            ],
-            'node_002' => [
-                'type'     => 'action',
-                'action'   => 'send_email',
-                'inputs'   => [
-                    'to'      => 'tester',
-                    'subject' => 'You Have Been Assigned a New Compliance Test',
-                    'body'    => '<p>You have been assigned as the tester for a new compliance test (ID {{test_id}}) on control ID {{control_id}}.</p>',
-                ],
-                'on_error' => 'continue',
-                'output'   => null,
-            ],
-        ],
-        'positions' => [
-            'node_001' => ['x' => 240, 'y' => 40],
-            'node_002' => ['x' => 240, 'y' => 160],
-        ],
-    ]);
-
-    $stmt->bindValue(':name',         'Test Added to Control (Default)');
-    $stmt->bindValue(':description',  'System workflow that runs when a new test is added to a control. Emails the assigned tester via the Notification Extra (if active).');
-    $stmt->bindValue(':trigger_type', 'test.created');
-    $stmt->bindValue(':definition',   $default_definition);
-    $stmt->execute();
-
-    // Seed the "Test Updated (Default)" system workflow
-    $default_definition = json_encode([
-        'version' => '1.0',
-        'nodes' => [
-            'node_001' => [
-                'type'         => 'trigger',
-                'trigger_type' => 'test.updated',
-                'output'       => 'node_002',
-            ],
-            'node_002' => [
-                'type'     => 'action',
-                'action'   => 'send_email',
-                'inputs'   => [
-                    'to'      => 'tester',
-                    'subject' => 'Compliance Test ID {{test_id}} Has Been Updated',
-                    'body'    => '<p>Compliance test ID {{test_id}} on control ID {{control_id}} has been updated.</p>',
-                ],
-                'on_error' => 'continue',
-                'output'   => null,
-            ],
-        ],
-        'positions' => [
-            'node_001' => ['x' => 240, 'y' => 40],
-            'node_002' => ['x' => 240, 'y' => 160],
-        ],
-    ]);
-
-    $stmt->bindValue(':name',         'Test Updated (Default)');
-    $stmt->bindValue(':description',  'System workflow that runs when an existing compliance test is updated. Emails the assigned tester via the Notification Extra (if active).');
-    $stmt->bindValue(':trigger_type', 'test.updated');
-    $stmt->bindValue(':definition',   $default_definition);
-    $stmt->execute();
-
-    // Seed the "Audit Initiated (Default)" system workflow
-    $default_definition = json_encode([
-        'version' => '1.0',
-        'nodes' => [
-            'node_001' => [
-                'type'         => 'trigger',
-                'trigger_type' => 'audit.initiated',
-                'output'       => 'node_002',
-            ],
-            'node_002' => [
-                'type'     => 'action',
-                'action'   => 'send_email',
-                'inputs'   => [
-                    'to'      => 'tester',
-                    'subject' => 'A New Compliance Audit Has Been Initiated',
-                    'body'    => '<p>Audit ID {{audit_id}} has been initiated for test ID {{test_id}} on control ID {{control_id}}.</p>',
-                ],
-                'on_error' => 'continue',
-                'output'   => null,
-            ],
-        ],
-        'positions' => [
-            'node_001' => ['x' => 240, 'y' => 40],
-            'node_002' => ['x' => 240, 'y' => 160],
-        ],
-    ]);
-
-    $stmt->bindValue(':name',         'Audit Initiated (Default)');
-    $stmt->bindValue(':description',  'System workflow that runs when a new audit is initiated for a test. Emails the assigned tester via the Notification Extra (if active).');
-    $stmt->bindValue(':trigger_type', 'audit.initiated');
-    $stmt->bindValue(':definition',   $default_definition);
-    $stmt->execute();
-
-    // Seed the "Audit Updated (Default)" system workflow
-    $default_definition = json_encode([
-        'version' => '1.0',
-        'nodes' => [
-            'node_001' => [
-                'type'         => 'trigger',
-                'trigger_type' => 'audit.updated',
-                'output'       => 'node_002',
-            ],
-            'node_002' => [
-                'type'     => 'action',
-                'action'   => 'send_email',
-                'inputs'   => [
-                    'to'      => 'tester',
-                    'subject' => 'Compliance Audit ID {{audit_id}} Has Been Updated',
-                    'body'    => '<p>Audit ID {{audit_id}} for test ID {{test_id}} has been updated.</p>',
-                ],
-                'on_error' => 'continue',
-                'output'   => null,
-            ],
-        ],
-        'positions' => [
-            'node_001' => ['x' => 240, 'y' => 40],
-            'node_002' => ['x' => 240, 'y' => 160],
-        ],
-    ]);
-
-    $stmt->bindValue(':name',         'Audit Updated (Default)');
-    $stmt->bindValue(':description',  'System workflow that runs when an audit result is saved. Emails the assigned tester via the Notification Extra (if active).');
-    $stmt->bindValue(':trigger_type', 'audit.updated');
-    $stmt->bindValue(':definition',   $default_definition);
-    $stmt->execute();
-
-    // Seed the "Framework Added (Default)" system workflow
-    $default_definition = json_encode([
-        'version' => '1.0',
-        'nodes' => [
-            'node_001' => [
-                'type'         => 'trigger',
-                'trigger_type' => 'framework.created',
-                'output'       => null,
-            ],
-        ],
-        'positions' => [
-            'node_001' => ['x' => 240, 'y' => 40],
-        ],
-    ]);
-
-    $stmt->bindValue(':name',         'Framework Added (Default)');
-    $stmt->bindValue(':description',  'System workflow that fires when a new framework is added.');
-    $stmt->bindValue(':trigger_type', 'framework.created');
-    $stmt->bindValue(':definition',   $default_definition);
-    $stmt->execute();
-
-    // Seed the "Framework Edited (Default)" system workflow
-    $default_definition = json_encode([
-        'version' => '1.0',
-        'nodes' => [
-            'node_001' => [
-                'type'         => 'trigger',
-                'trigger_type' => 'framework.updated',
-                'output'       => null,
-            ],
-        ],
-        'positions' => [
-            'node_001' => ['x' => 240, 'y' => 40],
-        ],
-    ]);
-
-    $stmt->bindValue(':name',         'Framework Updated (Default)');
-    $stmt->bindValue(':description',  'System workflow that fires when a framework is updated.');
-    $stmt->bindValue(':trigger_type', 'framework.updated');
-    $stmt->bindValue(':definition',   $default_definition);
-    $stmt->execute();
-
-    // Seed the "Framework Deleted (Default)" system workflow
-    $default_definition = json_encode([
-        'version' => '1.0',
-        'nodes' => [
-            'node_001' => [
-                'type'         => 'trigger',
-                'trigger_type' => 'framework.deleted',
-                'output'       => null,
-            ],
-        ],
-        'positions' => [
-            'node_001' => ['x' => 240, 'y' => 40],
-        ],
-    ]);
-
-    $stmt->bindValue(':name',         'Framework Deleted (Default)');
-    $stmt->bindValue(':description',  'System workflow that fires when a framework is deleted.');
-    $stmt->bindValue(':trigger_type', 'framework.deleted');
-    $stmt->bindValue(':definition',   $default_definition);
-    $stmt->execute();
-
-    // Seed the "Control Added (Default)" system workflow
-    $default_definition = json_encode(['version' => '1.0', 'nodes' => ['node_001' => ['type' => 'trigger', 'trigger_type' => 'control.created', 'output' => null]], 'positions' => ['node_001' => ['x' => 240, 'y' => 40]]]);
-    $stmt->bindValue(':name',         'Control Added (Default)');
-    $stmt->bindValue(':description',  'System workflow that fires when a new control is added.');
-    $stmt->bindValue(':trigger_type', 'control.created');
-    $stmt->bindValue(':definition',   $default_definition);
-    $stmt->execute();
-
-    // Seed the "Control Updated (Default)" system workflow
-    $default_definition = json_encode(['version' => '1.0', 'nodes' => ['node_001' => ['type' => 'trigger', 'trigger_type' => 'control.updated', 'output' => null]], 'positions' => ['node_001' => ['x' => 240, 'y' => 40]]]);
-    $stmt->bindValue(':name',         'Control Updated (Default)');
-    $stmt->bindValue(':description',  'System workflow that fires when a control is updated.');
-    $stmt->bindValue(':trigger_type', 'control.updated');
-    $stmt->bindValue(':definition',   $default_definition);
-    $stmt->execute();
-
-    // Seed the "Control Deleted (Default)" system workflow
-    $default_definition = json_encode(['version' => '1.0', 'nodes' => ['node_001' => ['type' => 'trigger', 'trigger_type' => 'control.deleted', 'output' => null]], 'positions' => ['node_001' => ['x' => 240, 'y' => 40]]]);
-    $stmt->bindValue(':name',         'Control Deleted (Default)');
-    $stmt->bindValue(':description',  'System workflow that fires when a control is deleted.');
-    $stmt->bindValue(':trigger_type', 'control.deleted');
-    $stmt->bindValue(':definition',   $default_definition);
-    $stmt->execute();
-
-    // Seed the "Document Added (Default)" system workflow
-    $default_definition = json_encode(['version' => '1.0', 'nodes' => ['node_001' => ['type' => 'trigger', 'trigger_type' => 'document.created', 'output' => null]], 'positions' => ['node_001' => ['x' => 240, 'y' => 40]]]);
-    $stmt->bindValue(':name',         'Document Added (Default)');
-    $stmt->bindValue(':description',  'System workflow that fires when a new document is added.');
-    $stmt->bindValue(':trigger_type', 'document.created');
-    $stmt->bindValue(':definition',   $default_definition);
-    $stmt->execute();
-
-    // Seed the "Document Updated (Default)" system workflow
-    $default_definition = json_encode(['version' => '1.0', 'nodes' => ['node_001' => ['type' => 'trigger', 'trigger_type' => 'document.updated', 'output' => null]], 'positions' => ['node_001' => ['x' => 240, 'y' => 40]]]);
-    $stmt->bindValue(':name',         'Document Updated (Default)');
-    $stmt->bindValue(':description',  'System workflow that fires when a document is updated.');
-    $stmt->bindValue(':trigger_type', 'document.updated');
-    $stmt->bindValue(':definition',   $default_definition);
-    $stmt->execute();
-
-    // Seed the "Document Deleted (Default)" system workflow
-    $default_definition = json_encode(['version' => '1.0', 'nodes' => ['node_001' => ['type' => 'trigger', 'trigger_type' => 'document.deleted', 'output' => null]], 'positions' => ['node_001' => ['x' => 240, 'y' => 40]]]);
-    $stmt->bindValue(':name',         'Document Deleted (Default)');
-    $stmt->bindValue(':description',  'System workflow that fires when a document is deleted.');
-    $stmt->bindValue(':trigger_type', 'document.deleted');
-    $stmt->bindValue(':definition',   $default_definition);
-    $stmt->execute();
-
-    // Seed the "Exception Added (Default)" system workflow
-    $default_definition = json_encode(['version' => '1.0', 'nodes' => ['node_001' => ['type' => 'trigger', 'trigger_type' => 'exception.created', 'output' => null]], 'positions' => ['node_001' => ['x' => 240, 'y' => 40]]]);
-    $stmt->bindValue(':name',         'Exception Added (Default)');
-    $stmt->bindValue(':description',  'System workflow that fires when a new exception is created.');
-    $stmt->bindValue(':trigger_type', 'exception.created');
-    $stmt->bindValue(':definition',   $default_definition);
-    $stmt->execute();
-
-    // Seed the "Exception Approved (Default)" system workflow
-    $default_definition = json_encode(['version' => '1.0', 'nodes' => ['node_001' => ['type' => 'trigger', 'trigger_type' => 'exception.approved', 'output' => null]], 'positions' => ['node_001' => ['x' => 240, 'y' => 40]]]);
-    $stmt->bindValue(':name',         'Exception Approved (Default)');
-    $stmt->bindValue(':description',  'System workflow that fires when an exception is approved.');
-    $stmt->bindValue(':trigger_type', 'exception.approved');
-    $stmt->bindValue(':definition',   $default_definition);
-    $stmt->execute();
-
-    // Seed the "Exception Unapproved (Default)" system workflow
-    $default_definition = json_encode(['version' => '1.0', 'nodes' => ['node_001' => ['type' => 'trigger', 'trigger_type' => 'exception.unapproved', 'output' => null]], 'positions' => ['node_001' => ['x' => 240, 'y' => 40]]]);
-    $stmt->bindValue(':name',         'Exception Unapproved (Default)');
-    $stmt->bindValue(':description',  'System workflow that fires when an exception approval is revoked.');
-    $stmt->bindValue(':trigger_type', 'exception.unapproved');
-    $stmt->bindValue(':definition',   $default_definition);
-    $stmt->execute();
-
-    // Seed the "Exception Updated (Default)" system workflow
-    $default_definition = json_encode(['version' => '1.0', 'nodes' => ['node_001' => ['type' => 'trigger', 'trigger_type' => 'exception.updated', 'output' => null]], 'positions' => ['node_001' => ['x' => 240, 'y' => 40]]]);
-    $stmt->bindValue(':name',         'Exception Updated (Default)');
-    $stmt->bindValue(':description',  'System workflow that fires when an exception is updated.');
-    $stmt->bindValue(':trigger_type', 'exception.updated');
-    $stmt->bindValue(':definition',   $default_definition);
-    $stmt->execute();
-
-    // Seed the "Exception Deleted (Default)" system workflow
-    $default_definition = json_encode(['version' => '1.0', 'nodes' => ['node_001' => ['type' => 'trigger', 'trigger_type' => 'exception.deleted', 'output' => null]], 'positions' => ['node_001' => ['x' => 240, 'y' => 40]]]);
-    $stmt->bindValue(':name',         'Exception Deleted (Default)');
-    $stmt->bindValue(':description',  'System workflow that fires when an exception is deleted.');
-    $stmt->bindValue(':trigger_type', 'exception.deleted');
-    $stmt->bindValue(':definition',   $default_definition);
-    $stmt->execute();
-
-    // Seed the "Asset Added (Default)" system workflow
-    $default_definition = json_encode(['version' => '1.0', 'nodes' => ['node_001' => ['type' => 'trigger', 'trigger_type' => 'asset.created', 'output' => null]], 'positions' => ['node_001' => ['x' => 240, 'y' => 40]]]);
-    $stmt->bindValue(':name',         'Asset Added (Default)');
-    $stmt->bindValue(':description',  'System workflow that fires when a new asset is added.');
-    $stmt->bindValue(':trigger_type', 'asset.created');
-    $stmt->bindValue(':definition',   $default_definition);
-    $stmt->execute();
-
-    // Seed the "Asset Updated (Default)" system workflow
-    $default_definition = json_encode(['version' => '1.0', 'nodes' => ['node_001' => ['type' => 'trigger', 'trigger_type' => 'asset.updated', 'output' => null]], 'positions' => ['node_001' => ['x' => 240, 'y' => 40]]]);
-    $stmt->bindValue(':name',         'Asset Updated (Default)');
-    $stmt->bindValue(':description',  'System workflow that fires when an asset is updated.');
-    $stmt->bindValue(':trigger_type', 'asset.updated');
-    $stmt->bindValue(':definition',   $default_definition);
-    $stmt->execute();
-
-    // Seed the "Asset Deleted (Default)" system workflow
-    $default_definition = json_encode(['version' => '1.0', 'nodes' => ['node_001' => ['type' => 'trigger', 'trigger_type' => 'asset.deleted', 'output' => null]], 'positions' => ['node_001' => ['x' => 240, 'y' => 40]]]);
-    $stmt->bindValue(':name',         'Asset Deleted (Default)');
-    $stmt->bindValue(':description',  'System workflow that fires when an asset is deleted.');
-    $stmt->bindValue(':trigger_type', 'asset.deleted');
-    $stmt->bindValue(':definition',   $default_definition);
-    $stmt->execute();
-    } // end "seed default system workflows only when none exist yet" guard
-
     // Add a UNIQUE constraint on role.name to prevent race-condition duplicate insertions.
     if (!index_exists_on_table('unique_role_name', 'role')) {
 
@@ -10385,6 +9820,23 @@ function upgrade_from_20260519001($db) {
     } catch (Exception $e) {
         write_debug_log("Upgrade to " . $version_upgrading_to . " failed to create document_additional_stakeholder_mappings: " . $e->getMessage() . ".", 'error');
         echo "Warning: failed to create document_additional_stakeholder_mappings (" . htmlspecialchars($e->getMessage(), ENT_QUOTES, 'UTF-8') . ").<br />\n";
+    }
+
+    // Same gap as document_additional_stakeholder_mappings above, one table
+    // over: upgrade_from_20260422001 only created document_team_mappings when
+    // the legacy documents.team_ids column was still present, so an instance
+    // that reached that migration with team_ids already gone arrived at
+    // 20260519-001 without the table. migrate_document_team_mappings_schema()
+    // also recovers any team_ids data still on this instance and drops the
+    // column, rather than only ensuring the table exists. This call only fires
+    // for an instance walking the chain through this exact version; for an
+    // instance already past it, the load-bearing repair is the same helper's
+    // standing call in run_upgrade_integrity_checks().
+    try {
+        migrate_document_team_mappings_schema($db);
+    } catch (Exception $e) {
+        write_debug_log("Upgrade to " . $version_upgrading_to . " failed to migrate document_team_mappings: " . $e->getMessage() . ".", 'error');
+        echo "Warning: failed to migrate document_team_mappings (" . htmlspecialchars($e->getMessage(), ENT_QUOTES, 'UTF-8') . ").<br />\n";
     }
 
     // Drop the dead `unencrypted_backup_file_name` setting. The legacy /tmp-file
@@ -11434,6 +10886,272 @@ function upgrade_from_20260820001($db) {
             $stmt->execute();
         }
     }
+
+    // Update the database version
+    update_database_version($db, $version_to_upgrade, $version_upgrading_to);
+    echo "Finished SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
+}
+
+/***************************************
+ * FUNCTION: UPGRADE FROM 20260828-001 *
+ ***************************************/
+function upgrade_from_20260828001($db) {
+    // Database version to upgrade
+    $version_to_upgrade = '20260828-001';
+
+    // Database version upgrading to
+    $version_upgrading_to = '20260908-001';
+
+    echo "Beginning SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
+
+    // SD-828 / SR-2133: indexed `user_id` column on `sessions` so
+    // kill_sessions_of_user() no longer has to REGEXP-scan the whole table.
+    // Extracted into migrate_sessions_user_id_schema() (includes/upgrade/common.php)
+    // so UpgradeMigrationWiringTest can verify it stays wired into whichever
+    // upgrade_from_*() is the current unreleased bucket.
+    //
+    // ORDERING: this MUST run before the first add_new_permissions() call below.
+    // add_new_permissions() grants the new keys to every admin and then calls
+    // refresh_permissions_in_sessions_of_user(), which filters `sessions` by the
+    // `user_id` column this migration adds. On a fresh install whose baseline
+    // predates the column (CI provisions from the released 20260828-001 SQL,
+    // then runs this in-flight function), calling it later in the function
+    // fails the whole upgrade with "Unknown column 'user_id'" as soon as any
+    // user already holds a permission. UpgradeMigrationWiringTest pins this order.
+    migrate_sessions_user_id_schema($db);
+
+    // Configurable document categories (replaces the hardcoded Policies/Guidelines/
+    // Standards/Procedures tab set). Extracted into migrate_document_types_schema()
+    // (includes/upgrade/common.php) so UpgradeMigrationWiringTest can verify it stays
+    // wired into whichever upgrade_from_*() is the current unreleased bucket.
+    migrate_document_types_schema($db);
+
+    // Backfill: match each document's free-text document_type to its lookup row.
+    // Idempotent — only touches rows where document_type_id is still NULL.
+    backfill_document_type_ids();
+
+    // Document Program: formal approval permissions (SR-2071's view gap, plus a new
+    // approve responsibility mirroring Define Exceptions' approve_exception).
+    echo "Adding the `view_documentation` and `approve_documentation` permissions.<br />\n";
+    add_new_permissions([
+        'governance' => [
+            'name' => 'Governance', 'description' => '', 'order' => 1,
+            'permissions' => [
+                'view_documentation' => [
+                    'name' => 'Able to View Documentation',
+                    'description' => 'This permission allows a user to view Policies/Guidelines/Standards/Procedures in the "Governance" menu at the top, followed by "Document Program" on the left, without granting the rest of the Governance menu.',
+                    'order' => 16,
+                ],
+                'approve_documentation' => [
+                    'name' => 'Able to Approve Documentation',
+                    'description' => 'This permission allows a user to approve a document, moving it to Approved status, in the "Governance" menu at the top, followed by "Document Program" on the left.',
+                    'order' => 17,
+                ],
+            ],
+        ],
+    ]);
+
+    // SR-2071: every existing "governance" holder keeps read access to Document Program,
+    // and every user who already manages documents end-to-end gets approve_documentation.
+    // The SQL lives in includes/upgrade/common.php so a test can invoke the real backfill
+    // against users it has just seeded — see backfill_documentation_permissions().
+    backfill_documentation_permissions($db);
+
+    // Gate columns, kill-switch setting, and one-time backfills for the
+    // governance_review_due queue job (SR-189). Extracted into
+    // migrate_governance_review_due_schema() (includes/upgrade/common.php) so
+    // UpgradeMigrationWiringTest can verify it stays wired into whichever
+    // upgrade_from_*() is the current unreleased bucket.
+    migrate_governance_review_due_schema($db);
+
+    // Document Program's Audit Trail section previously had no permission
+    // gate of its own -- anyone who could see the page could see it. This
+    // is a NEW, narrower permission for it (add_new_permissions() itself is
+    // the idempotency guard -- INSERT IGNORE on `permissions.key`, which
+    // carries a real UNIQUE constraint). order 13 sits it right after the
+    // other documentation permissions -- see the reorder block below for
+    // why that's 13 and not the Governance group's next free number.
+    echo "Adding the `view_document_audit_logs` permission.<br />\n";
+    add_new_permissions([
+        'governance' => [
+            'name' => 'Governance', 'description' => '', 'order' => 1,
+            'permissions' => [
+                'view_document_audit_logs' => [
+                    'name' => 'Able to View Documentation Audit Logs',
+                    'description' => 'This permission allows a user to view the Audit Trail section of the "Governance" menu at the top, followed by "Document Program" on the left, without granting the rest of the Governance menu or Document Program itself.',
+                    'order' => 13,
+                ],
+            ],
+        ],
+    ]);
+
+    // Still-unreleased permission -- add_new_permissions()'s INSERT IGNORE
+    // guard means a dev/CI instance that already ran this migration before
+    // this rename keeps the old name forever otherwise. Harmless once every
+    // instance has picked up the new literal above: an UPDATE to the value
+    // it's already set to is a no-op.
+    $db->prepare("UPDATE `permissions` SET `name` = 'Able to View Documentation Audit Logs' WHERE `key` = 'view_document_audit_logs';")->execute();
+
+    // Manage Users' role/permission checkboxes render in `permissions.order`
+    // sequence (includes/permissions.php's get_permissions_of_user()-style
+    // query: ORDER BY pg.order, p.order). view_documentation and
+    // approve_documentation were added (a past release) with order 16/17 --
+    // AFTER the unrelated Define Exceptions permissions (view/create/
+    // update/delete/approve_exception, 11-15) -- so the Governance group's
+    // permission list reads Add/Modify/Delete Documentation, then five
+    // Exceptions permissions, then View/Approve Documentation again. Swap
+    // the two blocks so every documentation permission (including the new
+    // one just added above) is contiguous, and the exception permissions
+    // stay contiguous immediately after -- an UPDATE keyed on `key`, so
+    // it's idempotent by construction: re-running assigns the same target
+    // order every time, never a moving/incrementing one.
+    echo "Reordering documentation/exception permissions so each group is contiguous.<br />\n";
+    $document_permission_reorder = [
+        'view_documentation' => 11,
+        'approve_documentation' => 12,
+        // view_document_audit_logs is already 13 from add_new_permissions() above.
+        'view_exception' => 14,
+        'create_exception' => 15,
+        'update_exception' => 16,
+        'delete_exception' => 17,
+        'approve_exception' => 18,
+    ];
+    $reorder_stmt = $db->prepare("UPDATE `permissions` SET `order` = :order WHERE `key` = :key;");
+    foreach ($document_permission_reorder as $permission_key => $new_order) {
+        $reorder_stmt->bindParam(":order", $new_order, PDO::PARAM_INT);
+        $reorder_stmt->bindParam(":key", $permission_key, PDO::PARAM_STR);
+        $reorder_stmt->execute();
+    }
+
+    // Historical Document Program audit_log rows (log_type='document')
+    // predate write_log()'s `+1000` convention being applied consistently
+    // across every document call site -- their stored risk_id is either 0
+    // or offset by -1000 from the real document id, so the audit trail's
+    // new structured Document column/filter can't resolve them. Reparse
+    // each row's message and repair risk_id -- see the docblock on
+    // backfill_document_audit_log_ids() for the full explanation.
+    echo "Backfilling document ids on historical Document Program audit log entries.<br />\n";
+    backfill_document_audit_log_ids($db);
+
+    // Add a template_group_id field to the asset, project, framework, and
+    // framework_controls tables -- mirrors the existing risks.template_group_id
+    // column, extending real per-record template-group resolution beyond Risk.
+    // Default '1' matches every fgroup's seeded Default group id EXCEPT
+    // asset/project/framework/control, whose Default rows are ids 2-5
+    // (seed_customization_extra_initial_data(), extras/customization/upgrade.php)
+    // -- existing rows get corrected to their own fgroup's real Default id
+    // immediately after each ALTER, not left pointing at risk's row.
+    if (!field_exists_in_table('template_group_id', 'assets')) {
+        echo "Adding a field template_group_id to assets table.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `assets` ADD `template_group_id` INT NOT NULL DEFAULT '1';");
+        $stmt->execute();
+        if (table_exists('custom_template_group')) {
+            $stmt = $db->prepare("UPDATE `assets` SET `template_group_id` = (SELECT `id` FROM `custom_template_group` WHERE `fgroup` = 'asset' AND `is_default` = 1 LIMIT 1);");
+            $stmt->execute();
+        }
+    }
+
+    if (!field_exists_in_table('template_group_id', 'projects')) {
+        echo "Adding a field template_group_id to projects table.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `projects` ADD `template_group_id` INT NOT NULL DEFAULT '1';");
+        $stmt->execute();
+        if (table_exists('custom_template_group')) {
+            $stmt = $db->prepare("UPDATE `projects` SET `template_group_id` = (SELECT `id` FROM `custom_template_group` WHERE `fgroup` = 'project' AND `is_default` = 1 LIMIT 1);");
+            $stmt->execute();
+        }
+    }
+
+    if (!field_exists_in_table('template_group_id', 'frameworks')) {
+        echo "Adding a field template_group_id to frameworks table.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `frameworks` ADD `template_group_id` INT NOT NULL DEFAULT '1';");
+        $stmt->execute();
+        if (table_exists('custom_template_group')) {
+            $stmt = $db->prepare("UPDATE `frameworks` SET `template_group_id` = (SELECT `id` FROM `custom_template_group` WHERE `fgroup` = 'framework' AND `is_default` = 1 LIMIT 1);");
+            $stmt->execute();
+        }
+    }
+
+    // NOTE: `custom_template_group.fgroup` stores this fgroup as 'control',
+    // not 'framework_controls' -- see get_plan_custom_field_name_by_row_id()'s
+    // switch statement in extras/customization/index.php, which maps
+    // case "control" to the custom_control_data table.
+    if (!field_exists_in_table('template_group_id', 'framework_controls')) {
+        echo "Adding a field template_group_id to framework_controls table.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `framework_controls` ADD `template_group_id` INT NOT NULL DEFAULT '1';");
+        $stmt->execute();
+        if (table_exists('custom_template_group')) {
+            $stmt = $db->prepare("UPDATE `framework_controls` SET `template_group_id` = (SELECT `id` FROM `custom_template_group` WHERE `fgroup` = 'control' AND `is_default` = 1 LIMIT 1);");
+            $stmt->execute();
+        }
+    }
+
+    // Data Integrity framework: staging table for detected-but-unrepaired
+    // corrupted data (see docs/superpowers/specs/2026-08-26-data-integrity-framework-design.md).
+    // No 'dismissed' status by design -- these are defects, not preferences.
+    if (!table_exists('data_integrity_issues')) {
+        echo "Creating the `data_integrity_issues` table for the Data Integrity framework.<br />\n";
+        $db->prepare("
+            CREATE TABLE `data_integrity_issues` (
+                `id` INT NOT NULL AUTO_INCREMENT,
+                `issue_type` VARCHAR(64) NOT NULL,
+                `table_name` VARCHAR(64) NOT NULL,
+                `column_name` VARCHAR(64) NOT NULL,
+                `record_id` VARCHAR(64) NOT NULL,
+                `broken_value` MEDIUMBLOB NULL,
+                `suggested_value` MEDIUMBLOB NULL,
+                `status` ENUM('open','resolved') NOT NULL DEFAULT 'open',
+                `detected_at` DATETIME NOT NULL,
+                `resolved_at` DATETIME NULL,
+                PRIMARY KEY (`id`),
+                UNIQUE KEY `natural_key` (`issue_type`, `table_name`, `column_name`, `record_id`),
+                KEY `status_idx` (`status`)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+        ")->execute();
+    }
+
+    // The Data Integrity framework retires the narrower legacy checker page
+    // -- delete it so existing instances don't keep serving a page whose
+    // Settings Hub tile and API routes no longer exist.
+    if (file_exists(realpath(__DIR__ . '/../admin/fix_upload_encoding_issues.php')))
+    {
+        echo "Deleting the /admin/fix_upload_encoding_issues.php file as it has been replaced by the Data Integrity framework.<br />\n";
+        unlink(realpath(__DIR__ . '/../admin/fix_upload_encoding_issues.php'));
+    }
+
+    // Remove the default system workflows that upgrade_from_20260302001() used to
+    // seed. That function shipped, so it is not edited retroactively for the
+    // rows it already wrote (same reasoning as the description corrections in
+    // upgrade_from_20260820001() above) -- its seed block has been deleted for
+    // new/fresh installs, and this cleans up any workflow_definitions rows an
+    // already-upgraded database still has from before that removal. Only the
+    // Workflows Extra creates workflow_definitions rows going forward, so when
+    // that Extra is active the rows are its own (seeded on activation) and
+    // must stay: deleting them would strip a paying customer's defaults, and
+    // nothing re-seeds them once the Extra's own one-time backfill has run --
+    // exactly what happens when this in-development function is re-applied
+    // (the CI upgrade pass, admin/upgrade.php's re-run) after the Extra was
+    // activated. Idempotent: a second run finds no system_workflow=1 rows
+    // left and deletes nothing.
+    if (table_exists('workflow_definitions') && !workflows_extra()) {
+        $removed_workflows = $db->exec("DELETE FROM `workflow_definitions` WHERE `system_workflow` = 1");
+        if ($removed_workflows) {
+            echo "Removed {$removed_workflows} previously-seeded default system workflow(s).<br />\n";
+        }
+    }
+
+    // Update the database version
+    update_database_version($db, $version_to_upgrade, $version_upgrading_to);
+    echo "Finished SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
+}
+
+function upgrade_from_20260908001($db) {
+    // Database version to upgrade
+    $version_to_upgrade = '20260908-001';
+
+    // Database version upgrading to
+    $version_upgrading_to = '20260909-001';
+
+    echo "Beginning SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
 
     // Update the database version
     update_database_version($db, $version_to_upgrade, $version_upgrading_to);

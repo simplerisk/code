@@ -3,6 +3,11 @@
 // Include the SimpleRisk functions.php file
 require_once(realpath(__DIR__ . '/../../../../includes/functions.php'));
 
+// Include the SimpleRisk authenticate.php file (defines saml_metadata_schema_file() /
+// saml_metadata_schema_check()); functions.php loads it too, but every direct consumer
+// declares its own require_once so a future include reorder cannot strip the chain.
+require_once(realpath(__DIR__ . '/../../../../includes/authenticate.php'));
+
 // Include the SimpleRisk extras.php file (provides call_extra_function)
 require_once(realpath(__DIR__ . '/../../../../includes/extras.php'));
 
@@ -27,10 +32,19 @@ $xml = new \SimpleSAML\Utils\XML();
 $output   = [];
 $entityid = '';
 
-// If we have metadata and the XML is valid
-if ($metadata_xml !== false && $xml->isValid($metadata_xml, 'saml-schema-metadata-2.0.xsd'))
+// If we have metadata, parse it. Schema validation is diagnostic only; the
+// schema file is checked for readability first so DOMDocument::schemaValidate()
+// is never handed a file it cannot load (that raised a raw PHP warning on every
+// SAML login in environments where the vendored .xsd is unreadable). See
+// saml_metadata_schema_check() in includes/authenticate.php.
+if ($metadata_xml !== false)
 {
-    write_debug_log("SAML metadata XML is valid. Parsing metadata.", 'debug');
+    [$schema_log_level, $schema_log_message] = saml_metadata_schema_check(
+        $metadata_xml,
+        saml_metadata_schema_file(\SimpleSAML\Configuration::getInstance()->getVendorDir()),
+        [$xml, 'isValid']
+    );
+    write_debug_log($schema_log_message, $schema_log_level);
 
     try
     {
@@ -66,7 +80,7 @@ if ($metadata_xml !== false && $xml->isValid($metadata_xml, 'saml-schema-metadat
 }
 else
 {
-    write_debug_log("The SAML Metadata was either not configured, not received or was invalid.", 'warning');
+    write_debug_log("SAML metadata is not configured (no metadata URL and no stored XML).", 'notice');
 }
 
 /**

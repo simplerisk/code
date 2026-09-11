@@ -9,6 +9,7 @@ return [
     'core_audit_initiate' => true,
     'core_control_update' => true,
     'core_countries_update' => true,
+    'core_data_integrity_scan' => true,
     'core_document_update' => true,
     'core_email_send' => true,
     'core_kpi_snapshot' => true,
@@ -19,6 +20,7 @@ return [
     'core_version_check' => true,
     'core_workflow_action_execute' => true,
     'core_workflow_execute' => true,
+    'governance_review_due' => true,
 ];
 
 ?>

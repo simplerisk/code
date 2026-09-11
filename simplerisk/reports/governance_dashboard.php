@@ -10,6 +10,7 @@
     // Include required functions file
     require_once(realpath(__DIR__ . '/../includes/reporting.php'));
     require_once(realpath(__DIR__ . '/../includes/governance.php'));
+    require_once(realpath(__DIR__ . '/../includes/settings_catalog.php'));
 
     // Get all active frameworks for the filter dropdown
     $all_frameworks = array_values(get_frameworks(1));
@@ -55,8 +56,13 @@
 <?php
     // Render the grid bare on the gray page ground (like the Risk dashboard) — no
     // white .card-body slab wrapping it, so the KPI/chart tiles read as clean
-    // cards-on-gray instead of white-on-white.
-    (new \includes\Widgets\UILayout('governance_dashboard'))->render();
+    // cards-on-gray instead of white-on-white. Edit-layout shows the real
+    // control when the Customization Extra is active, or the shared locked
+    // teaser otherwise (customization_acquisition_state(), includes/
+    // settings_catalog.php) -- see reports/home.php's identical comment.
+    (new \includes\Widgets\UILayout('governance_dashboard', [
+        'edit_layout_locked_state' => customization_acquisition_state(is_admin(), get_setting('registration_registered') == 1),
+    ]))->render();
 ?>
 <script>
 $(function() {

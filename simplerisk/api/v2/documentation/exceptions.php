@@ -355,6 +355,49 @@ class OpenApiUnapproveException {}
 
 /**
  * @OA\Post(
+ *     path="/exceptions/batch-approve",
+ *     summary="Approve multiple exceptions at once.",
+ *     operationId="batchApproveExceptions",
+ *     tags={"governance"},
+ *     security={{"ApiKeyAuth":{}}},
+ *     @OA\RequestBody(
+ *         required=true,
+ *         @OA\MediaType(
+ *             mediaType="application/x-www-form-urlencoded",
+ *             @OA\Schema(
+ *                 type="object",
+ *                 required={"exception_ids"},
+ *                 @OA\Property(
+ *                     property="exception_ids",
+ *                     type="array",
+ *                     description="The IDs of the exceptions to approve.",
+ *                     @OA\Items(type="integer")
+ *                 )
+ *             )
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=200,
+ *         description="Exceptions approved successfully.",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(property="approved", type="integer", description="The number of exceptions approved.")
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=400,
+ *         description="BAD REQUEST: An error occurred while approving the exceptions."
+ *     ),
+ *     @OA\Response(
+ *         response=403,
+ *         description="FORBIDDEN: The user does not have the required permission to perform this action."
+ *     )
+ * )
+ */
+class OpenApiBatchApproveExceptions {}
+
+/**
+ * @OA\Post(
  *     path="/exceptions/batch-delete",
  *     summary="Delete all exceptions under a policy or control, optionally filtered by approval status.",
  *     operationId="batchDeleteExceptions",

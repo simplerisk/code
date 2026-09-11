@@ -52,29 +52,44 @@ function possibleFormats($date) {
  ******************************************/
 function getReviewsWithDateIssues($order_column = 0, $order_dir = "asc", $offset = 0, $page_size = -1) {
 
-    $limit =  $page_size>0 ? " LIMIT {$offset}, {$page_size}" : "";
-
     if ($order_column == 1)
         $order_column = 'ri.subject';
     else $order_column = 'ri.id';
 
     $db = db_open();
 
+    // Team Separation (SR-2098) has to filter the full malformed-review set
+    // BEFORE pagination is applied, or an off-team row could be pushed onto
+    // a page the caller shouldn't be able to reach while recordsTotal still
+    // reflects the unfiltered count. So the LIMIT/SQL_CALC_FOUND_ROWS pair
+    // that used to paginate in SQL is gone: fetch every matching row here,
+    // filter, then slice to the requested page below.
     $stmt = $db->prepare("
-        select SQL_CALC_FOUND_ROWS re.id as review_id, ri.id as risk_id, re.next_review, ri.subject
+        select re.id as review_id, ri.id as risk_id, re.next_review, ri.subject
             from `mgmt_reviews` re
             left join `risks` ri on re.risk_id = ri.id
-            where re.next_review not REGEXP '^[0-9]{4}-[0-9]{2}-[0-9]{2}' 
-            order by {$order_column} {$order_dir}, re.id {$limit};");
+            where re.next_review not REGEXP '^[0-9]{4}-[0-9]{2}-[0-9]{2}'
+            order by {$order_column} {$order_dir}, re.id;");
     $stmt->execute();
 
     $reviews = $stmt->fetchAll();
 
-    $stmt = $db->prepare("SELECT FOUND_ROWS();");
-    $stmt->execute();
-    $recordsTotal = $stmt->fetch()[0];
-
     db_close($db);
+
+    // Strip rows for risks the caller isn't allowed to see. Without this, a
+    // user holding only the broad `riskmanagement` permission could read
+    // off-team risk subjects and review dates through this maintenance
+    // listing, which the canonical risk API denies (SR-2098).
+    if (team_separation_extra()) {
+        require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
+        $reviews = strip_no_access_risks($reviews, null, 'risk_id');
+    }
+
+    $recordsTotal = count($reviews);
+
+    if ($page_size > 0) {
+        $reviews = array_slice($reviews, $offset, $page_size);
+    }
 
     return array($recordsTotal, $reviews);
 }
@@ -145,15 +160,30 @@ function fixNextReviewDateFormat($id, $format) {
 
     $db = db_open();
 
-    $stmt = $db->prepare("select `next_review` from `mgmt_reviews` where `id`=:id;");
+    $stmt = $db->prepare("select `next_review`, `risk_id` from `mgmt_reviews` where `id`=:id;");
     $stmt->bindParam(":id", $id, PDO::PARAM_INT);
     $stmt->execute();
 
-    $next_review = $stmt->fetch();
+    $review = $stmt->fetch();
 
-    if ($next_review && strlen($next_review[0]) == 10) {
+    // Resolve the review's parent risk and enforce access to it before
+    // allowing the caller to reschedule it (SR-2030). The API handler that
+    // calls this function only checks broad riskmanagement/modify_risks
+    // permissions, not whether the caller may access THIS risk, so without
+    // this check any holder of those permissions could reschedule a
+    // cross-team review by guessing/incrementing its review id.
+    //
+    // check_access_for_risk() (and get_risk_by_id()) key off the public/API
+    // risk id, which is the internal `risks`.`id` plus 1000 -- mgmt_reviews's
+    // risk_id column stores the internal id, so it has to be offset here.
+    if (!$review || !check_access_for_risk((int)$review['risk_id'] + 1000)) {
+        db_close($db);
+        return false;
+    }
 
-        $next_review = $next_review[0];
+    if (strlen($review['next_review']) == 10) {
+
+        $next_review = $review['next_review'];
 
         $d = DateTime::createFromFormat($format, $next_review);
         $standard_date = $d ? $d->format('Y-m-d') : false;

@@ -30,7 +30,7 @@ define('NOTIFICATION_AUDIENCE_TYPES',        ['user', 'team', 'role', 'all_admin
 // Subset of NOTIFICATION_AUDIENCE_TYPES used by remote feed ingest (Task 8).
 define('NOTIFICATION_REMOTE_AUDIENCE_TYPES', ['all_admin', 'all_user']);
 // Valid source values for notifications.
-define('NOTIFICATION_SOURCES',              ['workflow', 'remote_promo', 'license']);
+define('NOTIFICATION_SOURCES',              ['workflow', 'remote_promo', 'license', 'data_integrity']);
 define('NOTIFICATION_MAX_LINK_LENGTH',       2048);
 define('NOTIFICATION_MAX_BULK_IDS',          100);
 
@@ -303,6 +303,40 @@ function move_notifications_to_trash(array $notification_ids, int $user_id, PDO 
         "SET `deleted_at` = NOW()",
         "AND `deleted_at` IS NULL"
     );
+}
+
+/**
+ * System-initiated resolution: trashes a notification for EVERY recipient,
+ * not just the calling user's own copy. Used when the Data Integrity scan
+ * finds the open-issue queue has gone from non-empty to empty -- the
+ * notification stops being relevant for everyone at once, not just whoever
+ * happens to dismiss it first. Trash (not hard delete), consistent with the
+ * existing recoverable-trash UX: still visible in an admin's Trash tab, not
+ * silently erased.
+ *
+ * Returns the number of recipient rows trashed (0 if the guid doesn't match
+ * an existing notification, or every recipient was already read/trashed).
+ */
+function resolve_notification_for_all_recipients(string $external_guid, PDO $db): int
+{
+    $stmt = $db->prepare("SELECT `id` FROM `notifications` WHERE `external_guid` = :guid");
+    $stmt->bindValue(':guid', $external_guid, PDO::PARAM_STR);
+    $stmt->execute();
+    $notification_id = $stmt->fetchColumn();
+
+    if ($notification_id === false) {
+        return 0;
+    }
+
+    $stmt = $db->prepare("
+        UPDATE `notification_recipients`
+        SET `deleted_at` = NOW()
+        WHERE `notification_id` = :id AND `deleted_at` IS NULL
+    ");
+    $stmt->bindValue(':id', (int)$notification_id, PDO::PARAM_INT);
+    $stmt->execute();
+
+    return $stmt->rowCount();
 }
 
 function restore_notifications(array $notification_ids, int $user_id, PDO $db): int

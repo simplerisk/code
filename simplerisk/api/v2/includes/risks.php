@@ -187,39 +187,30 @@ function api_v2_risks_tags_get()
         }
         else
         {
-            // Set the status
-            $status_code = 200;
-            $status_message = "SUCCESS";
+            // Filter out tags with no caller-accessible risks (SR-2031 /
+            // HackerOne #3928792 -- see helper docblock below).
+            $tags = api_v2_risks_tags_filter_for_access($tags);
 
-            // For each tag returned
-            foreach ($tags as $key => $tag)
+            // If every tag was dropped, treat this exactly like "no tag
+            // found with that id" -- a caller with no visible risk for this
+            // tag id has no legitimate reason to learn it exists.
+            if (empty($tags))
             {
-                // Convert the risk_id string into an array
-                $tags[$key]['risk_ids'] = explode(',', $tag['risk_ids']);
-
-                // If team separation is enabled
-                if (team_separation_extra())
-                {
-                    // Include the team separation extra
-                    require_once(realpath(__DIR__ . '/../../../extras/separation/index.php'));
-
-                    // For each risk id
-                    foreach ($tags[$key]['risk_ids'] as $risk_id)
-                    {
-                        // If the user should not have access to this risk id
-                        if (!extra_grant_access($_SESSION['uid'], $risk_id))
-                        {
-                            // Remove it from the array
-                            $tags[$key]['risk_ids'] = array_diff($tags[$key]['risk_ids'], [$risk_id]);
-                        }
-                    }
-                }
+                $status_code = 204;
+                $status_message = "NO CONTENT: Unable to find a tag with the specified id.";
+                $data = null;
             }
+            else
+            {
+                // Set the status
+                $status_code = 200;
+                $status_message = "SUCCESS";
 
-            // Create the data array
-            $data = [
-                "tags" => $tags,
-            ];
+                // Create the data array
+                $data = [
+                    "tags" => $tags,
+                ];
+            }
         }
     }
     // Otherwise, return all tags
@@ -240,39 +231,28 @@ function api_v2_risks_tags_get()
         }
         else
         {
-            // Return the result
-            $status_code = 200;
-            $status_message = "SUCCESS";
+            // Filter out tags with no caller-accessible risks (SR-2031 /
+            // HackerOne #3928792 -- see helper docblock below).
+            $tags = api_v2_risks_tags_filter_for_access($tags);
 
-            // For each tag returned
-            foreach ($tags as $key => $tag)
+            // If every tag was dropped, mirror the "no tags found" response.
+            if (empty($tags))
             {
-                // Convert the risk_id string into an array
-                $tags[$key]['risk_ids'] = explode(',', $tag['risk_ids']);
-
-                // If team separation is enabled
-                if (team_separation_extra())
-                {
-                    // Include the team separation extra
-                    require_once(realpath(__DIR__ . '/../../../extras/separation/index.php'));
-
-                    // For each risk id
-                    foreach ($tags[$key]['risk_ids'] as $risk_id)
-                    {
-                        // If the user should not have access to this risk id
-                        if (!extra_grant_access($_SESSION['uid'], $risk_id))
-                        {
-                            // Remove it from the array
-                            $tags[$key]['risk_ids'] = array_diff($tags[$key]['risk_ids'], [$risk_id]);
-                        }
-                    }
-                }
+                $status_code = 204;
+                $status_message = "NO CONTENT: No tags found.";
+                $data = null;
             }
+            else
+            {
+                // Return the result
+                $status_code = 200;
+                $status_message = "SUCCESS";
 
-            // Create the data array
-            $data = [
-                "tags" => $tags,
-            ];
+                // Create the data array
+                $data = [
+                    "tags" => $tags,
+                ];
+            }
         }
     }
 
@@ -281,6 +261,73 @@ function api_v2_risks_tags_get()
 
     // Return the result
     api_v2_json_result($status_code, $status_message, $data);
+}
+
+/**
+ * Convert each tag row's comma-joined risk_ids string into an array and, when
+ * Team Separation is enabled, drop any risk id the caller cannot access.
+ *
+ * SR-2031 / HackerOne #3928792: the previous code stripped inaccessible risk
+ * ids from a tag's risk_ids array but always returned the tag's own id and
+ * label, even when EVERY associated risk had just been filtered out. That
+ * let a caller with no visible risk for a tag enumerate the tag's id and
+ * decrypted label via /risks/tags (bulk) and then confirm it again via
+ * /risks/tags?id=<id> -- disclosing a cross-team label the caller could not
+ * reach through any other endpoint.
+ *
+ * A tag that genuinely has zero associated risks (risk_ids is the single
+ * empty-string element produced by exploding a NULL group_concat) is left
+ * alone -- that is not a Team Separation leak, so it is not dropped here.
+ *
+ * @param array $tags Rows from the tags query: id, value, risk_ids (comma-joined string or NULL).
+ * @return array Re-indexed rows, each with risk_ids as an array; rows whose
+ *               only associated risks were all inaccessible are removed.
+ */
+function api_v2_risks_tags_filter_for_access(array $tags): array
+{
+    foreach ($tags as $key => $tag)
+    {
+        // Convert the risk_id string into an array
+        $tags[$key]['risk_ids'] = explode(',', $tag['risk_ids']);
+
+        // Whether this tag had at least one real associated risk BEFORE any
+        // filtering below, so a tag with no risks at all isn't confused with
+        // one whose risks were all filtered out.
+        $had_risks = ($tags[$key]['risk_ids'] !== ['']);
+
+        // If team separation is enabled and this tag has a real risk to
+        // filter. A never-tagged row's placeholder ['' ] is left alone --
+        // passing that empty string into extra_grant_access() as a "risk
+        // id" is meaningless, and doing so would silently mutate risk_ids
+        // from [''] to [] for a row that was never a Team Separation
+        // concern in the first place.
+        if ($had_risks && team_separation_extra())
+        {
+            // Include the team separation extra
+            require_once(realpath(__DIR__ . '/../../../extras/separation/index.php'));
+
+            // For each risk id
+            foreach ($tags[$key]['risk_ids'] as $risk_id)
+            {
+                // If the user should not have access to this risk id
+                if (!extra_grant_access($_SESSION['uid'], $risk_id))
+                {
+                    // Remove it from the array
+                    $tags[$key]['risk_ids'] = array_diff($tags[$key]['risk_ids'], [$risk_id]);
+                }
+            }
+
+            // If every associated risk was just filtered out, drop the tag
+            // itself -- its id/label must not be disclosed either.
+            if (empty($tags[$key]['risk_ids']))
+            {
+                unset($tags[$key]);
+            }
+        }
+    }
+
+    // Re-index so callers get a plain JSON array, not an object with gaps.
+    return array_values($tags);
 }
 
 /**

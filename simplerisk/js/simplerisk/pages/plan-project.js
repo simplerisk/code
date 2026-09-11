@@ -223,7 +223,14 @@ var planProject = {
 };
 
 $(function() {
-    $('#project-new').on('submit', function(event) {
+    // Compound tag+id selector (not a bare '#project-new') so this binds to
+    // EVERY form sharing that id -- display_add_projects() renders one
+    // <form id="project-new"> per template-group tab when Customization
+    // resolves more than one group (duplicate ids across panes, same as
+    // display_add_risk()'s / render_create_modal()'s established pattern). A
+    // bare '#project-new' selector would only ever match the first such form
+    // via the browser's getElementById-based ID fast path.
+    $('form#project-new').on('submit', function(event) {
         event.preventDefault();
 
         let form_element = this;
@@ -250,7 +257,7 @@ $(function() {
             return;
         }
 
-        var form = new FormData($(this)[0]);
+        var form = new FormData(form_element);
         $.ajax({
             url: BASE_URL + '/api/v2/management/project/add',
             type: "POST",
@@ -262,7 +269,12 @@ $(function() {
 
             success : function (data){
                 showAlertsFromArray(data.status_message);
-                $("#project-new")[0].reset();
+                // Reset every matched form, not just the first -- see the
+                // 'form#project-new' comment above for why there can be more
+                // than one.
+                $('form#project-new').each(function() {
+                    this.reset();
+                });
                 setTimeout(function(){
                     location.reload();
                 }, 1500)
@@ -275,6 +287,34 @@ $(function() {
         });
         $("#project--add").modal('hide');
         return false;
+    });
+
+    // With multiple template-group tabs, the Save button lives once in the
+    // shared modal footer (rather than once per pane) so route its click to
+    // whichever pane's <form> is the currently visible (active) tab. With a
+    // single un-tabbed form this still resolves correctly since that form is
+    // always visible.
+    $(document).on('click', '.project-add-save-btn', function(event) {
+        event.preventDefault();
+        $(this).closest('.modal-content').find('form.project-new-form:visible').trigger('submit');
+    });
+
+    // Re-assert the first tab/pane as active every time the Add Project
+    // modal opens. Something elsewhere on the page (a sitewide Bootstrap
+    // Tab/ARIA-enhancement pass over every [data-bs-toggle=tab]) strips the
+    // server-rendered active/show state from these panes before the user
+    // ever interacts with them, leaving the modal looking blank until a tab
+    // is clicked -- same defensive fix as render_create_modal() uses for
+    // Asset.
+    $('#project--add').on('show.bs.modal', function() {
+        var modalTabLinks = $(this).find('.nav-tabs .nav-link');
+        if (modalTabLinks.length) {
+            modalTabLinks.removeClass('active');
+            modalTabLinks.first().addClass('active');
+            var modalTabPanes = $(this).find('.tab-pane');
+            modalTabPanes.removeClass('show active');
+            modalTabPanes.first().addClass('show active');
+        }
     });
 
     $('#project-edit').on('submit', function(event) {
