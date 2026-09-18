@@ -830,7 +830,6 @@ class Request
             curl_setopt($ch, CURLOPT_TIMEOUT, 5);
 
             $res = curl_exec($ch);
-            curl_close($ch);
 
             $data = json_decode($res ?? '{}', true);
 

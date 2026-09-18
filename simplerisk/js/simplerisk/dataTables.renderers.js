@@ -1,6 +1,22 @@
 /******************************************************************
 ****************Renderers for the datatable widget*****************
 *******************************************************************/
+
+// DataTables' own ajax transport (not $.ajax) calls a table's `complete`
+// callback with the raw XMLHttpRequest, which has no .responseJSON -- only
+// jqXHR objects do. Parse .responseText instead so this works under both
+// transports. Shared by print_mitigation_controls_table() (includes/
+// display.php) and the Define Control Frameworks controls table (js/
+// simplerisk/pages/governance.js), both of which need the parsed response
+// body from inside a DataTables `complete:` handler.
+DataTable.parseCompleteResponse = function (xhr) {
+    var json = xhr && xhr.responseJSON ? xhr.responseJSON : null;
+    if (!json && xhr && xhr.responseText) {
+        try { json = JSON.parse(xhr.responseText); } catch (e) { json = null; }
+    }
+    return json;
+};
+
 DataTable.render.tags = function (tag_type) {
     return function (data, type, row) {
         // console.log(data, type, row);

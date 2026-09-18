@@ -12,7 +12,8 @@
     $breadcrumb_title_key = "DocumentProgram";
     $active_sidebar_menu = "Governance";
     $active_sidebar_submenu = "DocumentProgram";
-    render_header_and_sidebar(['datetimerangepicker', 'multiselect', 'blockUI', 'CUSTOM:common.js', 'CUSTOM:pages/governance.js', 'CUSTOM:sr-faceted-picker.js', 'CUSTOM:sr-row-actions-menu.js', 'CUSTOM:sr-select.js', 'CUSTOM:sr-audit-trail.js', 'CUSTOM:pages/governance-documents.js', 'CUSTOM:pages/governance-document-audit-trail.js', 'datatables',
+    render_header_and_sidebar(['datetimerangepicker', 'multiselect', 'blockUI', 'CUSTOM:common.js', 'CUSTOM:pages/governance.js', 'CUSTOM:sr-faceted-picker.js', 'CUSTOM:sr-row-actions-menu.js', 'CUSTOM:sr-select.js', 'CUSTOM:sr-audit-trail.js',
+        'CUSTOM:pages/governance-documents.js', 'CUSTOM:pages/governance-document-audit-trail.js', 'datatables',
         // The insights band below is a UILayout instance -- 'UILayoutWidget'
         // pulls in both the includes/Widgets/UILayout.php CLASS (header.php's
         // 'UILayoutWidget' case require_once's it; there is no Composer
@@ -212,6 +213,13 @@ if (document_program_read_permitted()) {
             <div class="sr-bulk-bar d-none" id="document-program-bulk-bar">
                 <button type="button" class="sr-bulk-clear" id="document-program-bulk-clear" aria-label="<?= $escaper->escapeHtmlAttr($lang['Clear']); ?>">&times;</button>
                 <span class="sr-bulk-count" id="document-program-bulk-count"></span>
+                <!-- Select all N: escalates a page-level selection to every document
+                     matching the current filters/search, the same .sr-bulk-lnk
+                     affordance Review Risk/Define Tests/Manage Audits/Plan Projects/
+                     Define Control Frameworks offer. Shown by updateBulkBar()
+                     (governance-documents.js) only while there are more matching
+                     documents than are selected. -->
+                <button type="button" class="sr-bulk-lnk d-none" id="document-program-select-all-filtered"></button>
                 <div class="sr-bulk-actions">
         <?php if ($can_approve) { ?>
                     <button type="button" class="btn btn-outline-secondary btn-sm" id="document-program-bulk-approve"><?= $escaper->escapeHtml($lang['ApproveSelected']); ?></button>

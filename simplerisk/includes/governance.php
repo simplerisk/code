@@ -644,8 +644,17 @@ function get_framework_controls_by_filter($control_class="all", $control_phase="
 {
     // Open the database connection
     $db = db_open();
+    // reference_name is DISTINCT on CONCAT(m.framework, ':', m.reference_name), not on
+    // m.reference_name alone: framework_control_mappings is unique on (control_id,
+    // framework, reference_name), so two DIFFERENT mappings for this control can
+    // legitimately share the same reference_name text across two frameworks (e.g. both
+    // use "AC-1"). A plain GROUP_CONCAT(DISTINCT m.reference_name) collapses those into
+    // one entry, undercounting controls_table_shape_row()'s mapped_controls_count against
+    // the per-mapping list GET /governance/controls/mapped-frameworks actually renders
+    // when the drawer's Mapped Frameworks section is expanded (one row per mapping, no
+    // dedup) -- the badge said "Controls: 34" while expanding showed 36 rows.
     $sql = "
-        SELECT t1.*, GROUP_CONCAT(DISTINCT f.value) framework_ids, GROUP_CONCAT(DISTINCT f.name) framework_names, t2.name control_class_name, t3.name control_phase_name, t4.name control_priority_name, t5.name family_short_name, t6.name control_owner_name, t7.name control_maturity_name, t8.name desired_maturity_name, group_concat(distinct ctype.value) control_type_ids, GROUP_CONCAT(distinct ctype.name) control_type_names, CASE t1.control_status WHEN 1 THEN 'Pass' WHEN 0 THEN 'Fail' ELSE 'Not Tested' END control_status_name, GROUP_CONCAT(DISTINCT m.reference_name) reference_name, GROUP_CONCAT(DISTINCT m.reference_text) reference_text
+        SELECT t1.*, GROUP_CONCAT(DISTINCT f.value) framework_ids, GROUP_CONCAT(DISTINCT f.name) framework_names, t2.name control_class_name, t3.name control_phase_name, t4.name control_priority_name, t5.name family_short_name, t6.name control_owner_name, t7.name control_maturity_name, t8.name desired_maturity_name, group_concat(distinct ctype.value) control_type_ids, GROUP_CONCAT(distinct ctype.name) control_type_names, CASE t1.control_status WHEN 1 THEN 'Pass' WHEN 0 THEN 'Fail' ELSE 'Not Tested' END control_status_name, GROUP_CONCAT(DISTINCT CONCAT(m.framework, ':', m.reference_name)) reference_name, GROUP_CONCAT(DISTINCT m.reference_name) reference_name_search_text, GROUP_CONCAT(DISTINCT m.reference_text) reference_text
         FROM `framework_controls` t1 
             LEFT JOIN `framework_control_mappings` m on t1.id=m.control_id
             LEFT JOIN `frameworks` f on m.framework=f.value AND f.status=1
@@ -835,9 +844,26 @@ function get_framework_controls_by_filter($control_class="all", $control_phase="
             }
         }
         if (!empty($where_or_ids)) {
-            $where[] = "m.framework IN (".implode(",", $where_or_ids).")";
+            // EXISTS, not a direct "m.framework IN (...)": `m`/`f` are the SAME LEFT
+            // JOINed aliases the SELECT's GROUP_CONCAT(DISTINCT ...) columns
+            // (framework_ids, framework_names, reference_name -- feeding
+            // mapped_frameworks_count/mapped_controls_count in
+            // controls_table_shape_row(), api/v2/includes/governance_controls.php)
+            // aggregate over. Filtering directly on `m.framework` here discarded
+            // every OTHER framework's mapping rows before that aggregation ran, so
+            // filtering the page to one framework understated a control's real
+            // mapping footprint down to just that framework everywhere the count is
+            // shown -- while the drawer's "Mapped Frameworks" expand
+            // (get_mapping_control_frameworks()) takes only control_id and always
+            // shows every mapping, so the badge and the expanded list disagreed
+            // (?framework=29: GOV-01's badge read "Frameworks: 1 | Controls: 1" while
+            // expanding it listed all 6/36). EXISTS only decides which controls are
+            // IN the result set -- the same set the old WHERE produced, since a
+            // control survives either form exactly when it has >=1 matching mapping
+            // row -- and leaves `m`/`f`, and therefore the aggregates, untouched.
+            $where[] = "EXISTS (SELECT 1 FROM `framework_control_mappings` fcm_filter WHERE fcm_filter.control_id = t1.id AND fcm_filter.framework IN (".implode(",", $where_or_ids)."))";
         }
-        
+
         $sql .= " AND (". implode(" OR ", $where) . ")";
 
     }
@@ -1042,7 +1068,11 @@ function get_framework_controls_by_filter($control_class="all", $control_phase="
             || (stripos((string)$control['family_short_name'], $control_text) !== false) 
             || (stripos((string)$control['control_owner_name'], $control_text) !== false) 
             || (stripos((string)$control['framework_names'], $control_text) !== false)
-            || (stripos((string)$control['reference_name'], $control_text) !== false)
+            // reference_name_search_text is the undecorated GROUP_CONCAT(DISTINCT
+            // m.reference_name) -- unlike reference_name (framework-prefixed for
+            // count-accuracy, see the SELECT above), it doesn't false-match a
+            // search term that happens to equal a framework id.
+            || (stripos((string)$control['reference_name_search_text'], $control_text) !== false)
             || (stripos((string)$control['reference_text'], $control_text) !== false)
             || (stripos((string)$control['control_maturity_name'], $control_text) !== false)
             || (stripos((string)$control['desired_maturity_name'], $control_text) !== false)
@@ -3876,37 +3906,11 @@ if (!defined('GOVERNANCE_MAX_BULK_APPROVE_IDS')) {
  * @return int[]
  */
 function normalize_bulk_approve_ids($raw_ids, &$truncated = null) {
-    $truncated = false;
-
-    if (!is_array($raw_ids)) {
-        return [];
-    }
-
-    $ids = [];
-    foreach ($raw_ids as $raw_id) {
-        // Only an int or a string is a plausible id from a form post. is_scalar()
-        // alone would also admit bool true, which casts to the string "1" and
-        // would silently approve record 1.
-        if (!is_int($raw_id) && !is_string($raw_id)) {
-            continue;
-        }
-        $candidate = (string)$raw_id;
-        if ($candidate === '' || !ctype_digit($candidate) || (int)$candidate <= 0) {
-            continue;
-        }
-        // Past the cap: keep scanning (the array is already in memory, and PHP's
-        // max_input_vars bounds it) purely so $truncated reflects whether real
-        // ids -- not just filtered-out junk -- were actually dropped. Nothing
-        // beyond the cap is ever returned, so the bounded-work guarantee the cap
-        // exists for is unchanged.
-        if (count($ids) >= GOVERNANCE_MAX_BULK_APPROVE_IDS) {
-            $truncated = true;
-            continue;
-        }
-        $ids[] = (int)$candidate;
-    }
-
-    return $ids;
+    // Thin wrapper: the actual sanitize/cap/truncate-signal logic lives once in
+    // the shared normalize_bulk_ids() (includes/functions.php) -- see that
+    // function's docblock. This wrapper just supplies this module's own fixed
+    // cap constant, keeping the existing name and call sites unchanged.
+    return normalize_bulk_ids($raw_ids, GOVERNANCE_MAX_BULK_APPROVE_IDS, $truncated);
 }
 
 /**
@@ -3922,38 +3926,19 @@ if (!defined('GOVERNANCE_MAX_BULK_DOWNLOAD_IDS')) {
 
 /**
  * Same contract as normalize_bulk_approve_ids() (see its docblock), capped
- * to GOVERNANCE_MAX_BULK_DOWNLOAD_IDS instead -- kept as a sibling function
- * rather than a shared parameterized one so each bulk action's cap stays a
- * simple constant lookup at its own call site, not a threaded parameter.
+ * to GOVERNANCE_MAX_BULK_DOWNLOAD_IDS instead -- kept as its own name so
+ * this module's existing call sites don't need to change.
  *
  * @param  mixed $raw_ids   Whatever arrived in $_POST.
  * @param  bool  $truncated Set to true when the cap dropped at least one id.
  * @return int[]
  */
 function normalize_bulk_download_ids($raw_ids, &$truncated = null) {
-    $truncated = false;
-
-    if (!is_array($raw_ids)) {
-        return [];
-    }
-
-    $ids = [];
-    foreach ($raw_ids as $raw_id) {
-        if (!is_int($raw_id) && !is_string($raw_id)) {
-            continue;
-        }
-        $candidate = (string)$raw_id;
-        if ($candidate === '' || !ctype_digit($candidate) || (int)$candidate <= 0) {
-            continue;
-        }
-        if (count($ids) >= GOVERNANCE_MAX_BULK_DOWNLOAD_IDS) {
-            $truncated = true;
-            continue;
-        }
-        $ids[] = (int)$candidate;
-    }
-
-    return $ids;
+    // Thin wrapper: the actual sanitize/cap/truncate-signal logic lives once in
+    // the shared normalize_bulk_ids() (includes/functions.php) -- see that
+    // function's docblock. This wrapper just supplies this module's own fixed
+    // cap constant, keeping the existing name and call sites unchanged.
+    return normalize_bulk_ids($raw_ids, GOVERNANCE_MAX_BULK_DOWNLOAD_IDS, $truncated);
 }
 
 /**
@@ -8631,10 +8616,17 @@ function get_control_framework_mappings_counts($control_id)
 {
     $db = db_open();
 
+    // `controls` is a plain COUNT(*), not COUNT(DISTINCT reference_name): the table is
+    // unique on (control_id, framework, reference_name), so for one control_id every row
+    // is already a distinct (framework, reference_name) mapping -- COUNT(*) IS that count.
+    // Deduping on reference_name text alone undercounts whenever two different frameworks
+    // legitimately share the same reference_name (e.g. both use "AC-1"), which used to
+    // make this badge disagree with the per-mapping list get_mapping_control_frameworks()
+    // renders when the section is expanded (one row per mapping, no dedup).
     $stmt = $db->prepare("
-        SELECT 
+        SELECT
             COUNT(DISTINCT framework) AS frameworks,
-            COUNT(DISTINCT reference_name) AS controls
+            COUNT(*) AS controls
         FROM `framework_control_mappings`
         WHERE control_id = :control_id;
     ");

@@ -423,6 +423,49 @@ class OpenApiUnapproveDocument {}
 class OpenApiBatchApproveDocument {}
 
 /**
+ * @OA\Post(
+ *     path="/documents/batch-delete",
+ *     summary="Delete multiple policy or procedure documents at once.",
+ *     operationId="batchDeleteDocument",
+ *     tags={"governance"},
+ *     security={{"ApiKeyAuth":{}}},
+ *     @OA\RequestBody(
+ *         required=true,
+ *         @OA\MediaType(
+ *             mediaType="application/x-www-form-urlencoded",
+ *             @OA\Schema(
+ *                 type="object",
+ *                 required={"document_ids"},
+ *                 @OA\Property(
+ *                     property="document_ids",
+ *                     type="array",
+ *                     description="The IDs of the documents to delete.",
+ *                     @OA\Items(type="integer")
+ *                 )
+ *             )
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=200,
+ *         description="Documents deleted successfully.",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(property="deleted", type="integer", description="The number of documents deleted.")
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=400,
+ *         description="BAD REQUEST: An error occurred while deleting the documents."
+ *     ),
+ *     @OA\Response(
+ *         response=403,
+ *         description="FORBIDDEN: The user does not have the required permission to perform this action."
+ *     )
+ * )
+ */
+class OpenApiBatchDeleteDocument {}
+
+/**
  * @OA\Get(
  *     path="/governance/documents/audit_log",
  *     summary="Get the audit log for Document Program documents.",

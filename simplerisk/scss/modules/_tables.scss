@@ -178,6 +178,114 @@
         }
     }
 
+    // ===== Review Risk toolbar restructure (page-scoped) =================
+    // Review Risk's toolbar grew a third chip-group this session
+    // (#review-risk-status-filter/-scope-filter/-status-scope-filter), and
+    // the shared .sr-table-tools zone above -- built for ONE chip group --
+    // started wrapping onto its own line at ordinary widths while keeping
+    // its margin-left:auto, which kept pushing it right even after it
+    // wrapped, stranding an empty gap on the left of that wrapped line.
+    // Rather than patch that margin, Review Risk's toolbar now carries only
+    // two children (the chip-group cluster, and .sr-table-toolbar-actions
+    // wrapping the "+ Add Risk" button) and uses justify-content instead:
+    // a single wrapped item under space-between packs back to flex-start on
+    // its own line (no other item on that line to create space against),
+    // so the row degrades cleanly at every width instead of leaving a gap.
+    // ID-scoped to this one page's card so it never touches the shared
+    // .sr-table-toolbar rule other pages (still using .sr-table-tools'
+    // margin-left:auto) depend on. `&` here is `.sr-table-card` -- the ID
+    // and that class land on the SAME element (includes/display.php's
+    // `<div class='sr-table-card' id='review-risk-table-card'>`), so the
+    // selector is `&#review-risk-table-card` (compound, one element), not
+    // a bare descendant `#review-risk-table-card` (which would compile to
+    // ".sr-table-card #review-risk-table-card" -- a card nested inside
+    // another card -- and never match).
+    &#review-risk-table-card .sr-table-toolbar {
+        justify-content: space-between;
+        // + Add Risk MUST stay pinned in the top-right corner at every width
+        // (explicit product-owner ask) -- never pushed around or wrapped
+        // below the chip-group cluster. The shared .sr-table-toolbar rule
+        // above sets `flex-wrap: wrap`; with only two children (the cluster,
+        // then .sr-table-toolbar-actions) that meant an overflowing cluster
+        // wrapped the SECOND/LAST flex child -- Add Risk itself -- onto its
+        // own line once the row ran out of room, which is backwards: it put
+        // the primary action BELOW the filters instead of the filters
+        // collapsing below the action. Measured live (chip-row layout, no
+        // selects yet): Add Risk started dropping to line 2 at ~1315px wide.
+        // The fix is `nowrap` here so the outer toolbar row itself never
+        // splits -- only the cluster (below) is allowed to wrap internally,
+        // via its own `flex-wrap: wrap` (.sr-toolbar-filters-cluster) -- so
+        // it is always the FILTERS that fold, never the action button.
+        flex-wrap: nowrap;
+        // Pin Add Risk to the TOP of the row (not vertically centered
+        // against a cluster that may now be two or three lines tall once it
+        // wraps) -- literally "top-right corner", not "right-center".
+        align-items: flex-start;
+    }
+
+    // The left-hand cluster of all three chip-groups (or, below the
+    // breakpoint further down this file, their <select> stand-ins) --
+    // replaces the old bare `style='display:flex;align-items:center;
+    // gap:14px;'` div (includes/display.php) so it can carry its own
+    // `flex-wrap`. `flex: 1 1 auto; min-width: 0;` lets it shrink and wrap
+    // instead of forcing .sr-table-toolbar-actions to share the squeeze --
+    // Add Risk (below) is fixed-size and never asked to shrink.
+    &#review-risk-table-card .sr-toolbar-filters-cluster {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 14px;
+        row-gap: 8px;
+        flex: 1 1 auto;
+        min-width: 0;
+    }
+
+    &#review-risk-table-card .sr-table-toolbar-actions {
+        // Fixed-size and never shrunk/wrapped -- see the .sr-table-toolbar
+        // comment above.
+        flex: 0 0 auto;
+    }
+
+    // Row 2 (new): the search box alone, on its own row, under the chip
+    // groups and above the Filters/Columns row. .dt-search keeps its base
+    // styling from the shared `.dataTables_filter, .dt-search` rule further
+    // down this file (nested under .sr-table-card, not .sr-table-tools, so
+    // it still applies here) -- this only sets the sizing this page's
+    // .sr-table-tools .dt-search rule used to provide. Now that the search
+    // field owns the whole row instead of sharing it with a chip cluster,
+    // it can grow a bit wider than the old 520px cap before it starts
+    // looking lost on a wide screen.
+    .sr-table-search-row {
+        display: flex;
+        // Top padding is 6px, not 10px to match the bottom -- the shared
+        // .sr-table-toolbar rule above (used by many other pages, so left
+        // untouched here) already contributes 4px of its own bottom padding
+        // right before this row starts; 4+6=10 matches this row's own 10px
+        // bottom padding, so the visual gap above and below the search bar
+        // comes out equal without changing anything outside this one page.
+        padding: 6px 16px 10px;
+
+        .dt-search {
+            flex: 1 1 320px;
+            max-width: 640px;
+
+            input {
+                width: 100%;
+            }
+        }
+    }
+
+    // Row 3: Filters + Columns together, resolved per explicit product-
+    // owner direction rather than a page-scoped wrapper -- see the comment
+    // in includes/display.php's display_review_risk() above the Filters
+    // button, and the comment in .sr-qf-selects (below) above the relocated
+    // .colpicker, for the full reasoning. No page-scoped CSS is needed here:
+    // .colpicker just becomes the last flex child of the shared
+    // .sr-qf-selects rule, and .sr-qf-toggle's own shared rule (further down
+    // this file) is restyled to match .filterbtn/.sr-table-filter so the two
+    // controls read as one consistent button family everywhere they appear
+    // together, not just on this page.
+
     // A status/segment <select> filter in the toolbar (e.g. Fail/Pass/N-A/All).
     // Bootstrap's .form-select is width:100%; shrink it to its content so it
     // sits inline beside the search field rather than wrapping to its own row.
@@ -187,12 +295,31 @@
         font-size: 13px;
     }
 
-    // Compliance > Audits page: a segmented pill-row rendering of the same
-    // "which status bucket" concept .sr-table-status-filter covers with a
-    // <select> -- three buttons (Active/Past/All) swap the DataTable's
-    // ajax.url instead of filtering a column. ID-scoped (this page only,
-    // PENDING per designing-ui's coverage-map -- not yet a shared pattern).
-    #audits-status-filter {
+    // A segmented pill-row rendering of the same "which status bucket"
+    // concept .sr-table-status-filter's <select> variant above covers --
+    // e.g. Compliance > Audits' Active/Past/All (swaps the DataTable's
+    // ajax.url) and Review Risk's All/Mitigation/Review (Task 8/10; filters
+    // client-side by needs_mitigation/needs_review). Shares the SAME
+    // .sr-table-status-filter class as the <select> rule above -- both
+    // pages' wrapper <div>s already carry it (compliance.php:2689,
+    // includes/display.php's display_review_risk()) -- so this generalizes
+    // the class-scoped selector design-system.md's component table already
+    // documents it as ("the status chip row") rather than staying ID-scoped
+    // to #audits-status-filter alone, which left every OTHER page reusing
+    // this class for its chip row (Review Risk included) with no pill/
+    // active-state styling at all: the chips rendered as identical, bare
+    // default buttons with no way to see which one was selected. No
+    // property here conflicts with the <select> rule above -- a <select>
+    // has no .sr-status-chip children, a chip-row <div> doesn't care about
+    // width/min-width -- so both apply cleanly to their own element type
+    // under the one shared class.
+    //
+    // The active-state class differs by page and is normalized here rather
+    // than forcing a rename: Audits toggles `.on` (compliance.php), Review
+    // Risk toggles `.active` (review-risk.js, matching display.php's
+    // server-rendered `class='sr-status-chip active'` default) -- both
+    // select the identical look.
+    .sr-table-status-filter {
         display: inline-flex;
         background: $gray-100;
         border: 1px solid $gray-300;
@@ -208,11 +335,183 @@
             color: $gray-600;
             cursor: pointer;
 
-            &.on {
+            &.on,
+            &.active {
                 background: $sr-body;
                 color: $sr-primary;
                 box-shadow: 0 1px 3px rgba(0, 0, 0, .12);
             }
+        }
+    }
+
+    // Review Risk's own chip-row shape, per its approved design mockup
+    // (docs/superpowers/specs/2026-09-09-review-risk-page-design.md's
+    // artifact): a rounded-RECTANGLE container (8px, matching the card
+    // radius token, no border) holding borderless 6px-radius chips -- a
+    // different shape from Audits' full-pill #audits-status-filter look
+    // above, which predates this page and isn't part of what the mockup
+    // specifies. ID-scoped override (same pattern as
+    // #define-tests-bulk-create/-delete below) rather than changing the
+    // shared rule, since Audits' own shape isn't in scope here and
+    // shouldn't change as a side effect of matching this page to its own
+    // spec. Also adds the count-badge (.n) treatment the mockup specifies
+    // and the shared rule has no equivalent for on any page.
+    // #review-risk-scope-filter (the My Action Items / All Items toggle,
+    // display.php) shares this same shape -- it's the second chip-row
+    // control on this page, right beside the action-type chips, and should
+    // read as the same control family, not a mismatched third style.
+    // #review-risk-status-scope-filter (the All/Open/Closed status-scope
+    // toggle, display.php) is the third chip-row control on this page, for
+    // the same reason -- all three should read as one control family. (A
+    // 4th, #review-risk-due-status-filter, existed briefly and was removed
+    // -- the Insights band's own KPI tiles already provide one-click
+    // due-status filtering, and the extra chip-group's width pushed this
+    // row's breakpoint out to ~1800px for no real gain in capability.)
+    #review-risk-status-filter,
+    #review-risk-scope-filter,
+    #review-risk-status-scope-filter {
+        gap: 6px;
+        padding: 4px;
+        border: none;
+        border-radius: 8px;
+
+        .sr-status-chip {
+            padding: 7px 13px;
+            border-radius: 6px;
+            background: transparent;
+            border: none;
+
+            .n {
+                font-variant-numeric: tabular-nums;
+                opacity: .75;
+            }
+
+            &.active .n {
+                color: $sr-important;
+                opacity: 1;
+            }
+        }
+    }
+
+    // The narrow-width <select> stand-in for each of the three chip-groups
+    // above (includes/display.php's display_review_risk() renders both --
+    // #review-risk-status-filter/-scope-filter/-status-scope-filter's chip
+    // <div>s, and their sibling `.sr-chip-select` <select>s -- always both
+    // in the DOM; only one of each pair is ever visible, toggled purely by
+    // the media query below). Hidden by default (i.e. at/above the
+    // breakpoint) so the chip rows are what render on a normal-width page.
+    // Sized to content like every other inline toolbar <select> on this page
+    // (.sr-table-status-filter's own <select> rule at the top of this file,
+    // .sr-table-tools .form-select) rather than Bootstrap's default
+    // width:100%, which would make a lone dropdown span the whole cluster
+    // row.
+    .sr-chip-select {
+        display: none;
+        width: auto;
+        min-width: 150px;
+        font-size: 13px;
+        border-color: $gray-400;
+        border-radius: 6px;
+    }
+
+    // Breakpoint chosen empirically for THIS row, not reused from the
+    // unrelated 1100px Filters/Columns breakpoint above (.sr-qf-toggle) --
+    // that one is sized for a much wider 9-filter/4-select row and has
+    // nothing to do with how much room these three small chip-groups need.
+    // Walked the review-risk toolbar live (Playwright, sidebar expanded) in
+    // 5-20px steps from 1600px down to 600px: the three chip-groups plus
+    // Add Risk fit on one line down to 1320px and started crowding (the
+    // last-fit width found) at 1315px, so 1320px is the natural point this
+    // row alone needs to shed the chip-button layout for the far narrower
+    // <select> stand-ins. (This measurement predates the nowrap/cluster
+    // fix above -- with that fix in place a chip row that no longer fits
+    // would fold onto a second line instead of shoving Add Risk down, but
+    // stacked chip BUTTONS -- as opposed to the three chip-group UNITS
+    // wrapping as a whole -- still isn't the compact narrow-width control
+    // the product owner asked for, hence the <select> swap below.)
+    // Reverted to the original 3-chip-group measurement above (1320px) after
+    // a 4th chip-group (#review-risk-due-status-filter, which briefly pushed
+    // this to ~1800px) was removed as redundant with the Insights band's own
+    // KPI tiles -- see that group's removal comment further up this file.
+    @media (max-width: 1320px) {
+
+        #review-risk-status-filter,
+        #review-risk-scope-filter,
+        #review-risk-status-scope-filter {
+            display: none;
+        }
+
+        .sr-chip-select {
+            display: inline-block;
+        }
+    }
+
+    // Review Risk's Actions column stays reachable at the right edge of
+    // .sr-table-scroll's horizontal scroll once enough optional columns are
+    // on to push the table wide -- the product-owner-approved fix keeps
+    // Actions on the RIGHT (the app's established row-actions side, design-
+    // system.md "Row actions on hover") rather than moving it left, which
+    // would be a first-of-its-kind deviation from Define Tests/Manage
+    // Audits/etc.
+    //
+    // Page-scoped via a SECOND class (sr-actions-col-sticky) alongside the
+    // SHARED .sr-actions-col class, and ID-scoped to #review_risk_table on
+    // top of that -- .sr-actions-col itself (display.php's shared-class
+    // comment above the <th>) is also used by admin/data_integrity.php and
+    // includes/compliance.php, and those tables don't need or expect sticky
+    // behavior. review-risk.js's 'actions' column def carries the matching
+    // className so the <td>s get it too (DataTables does not copy a <th>'s
+    // class onto its <td>s).
+    //
+    // Plan Projects opts in the same way (display_plan_projects() <th>s +
+    // plan-projects.js column defs) for both tables in its card: the
+    // projects grid and the unassigned-risk queue. Both share Review Risk's
+    // preconditions -- no zebra striping, no per-row selected tint, drawer
+    // rows carry .sr-expand-row -- so the same rule body applies unchanged.
+    #review_risk_table,
+    #plan_projects_table,
+    #unassigned_risks_table {
+        // The intersection of the sticky HEADER ROW (thead th above:
+        // position: sticky; top: 0;) and the sticky ACTIONS COLUMN is this
+        // one cell -- it needs both offsets at once. `top` is inherited
+        // as-is from the generic `thead th` rule (matched exactly, not
+        // reguessed); only `right` is added here.
+        thead th.sr-actions-col-sticky {
+            right: 0;
+        }
+
+        tbody td.sr-actions-col-sticky {
+            position: sticky;
+            right: 0;
+            // Opaque so scrolled-under cells don't show through. Review
+            // Risk's grid has no zebra striping and no per-row "selected"
+            // tint (checking a row's checkbox only tints the bulk-action
+            // bar with $sr-row-selected -- design-system.md's Selection
+            // row -- not the row itself), so the resting background is
+            // simply the card's own $sr-body.
+            background: $sr-body;
+            // Subtle "something's behind me" separator while actually
+            // mid-scroll. Reuses the card's own ambient $shadow token
+            // (design-system.md's Card shadow) rather than a new
+            // hardcoded value.
+            box-shadow: $shadow;
+        }
+
+        // Track the hover tint ($gray-100, tbody tr:hover rule above) --
+        // otherwise the sticky cell's own opaque resting background paints
+        // a flat, mismatched seam over an otherwise grey-tinted hovered row.
+        tbody tr:hover:not(.sr-expand-row) td.sr-actions-col-sticky {
+            background: $gray-100;
+        }
+
+        // A row-actions menu opened from a pinned cell: position:sticky makes
+        // every pinned <td> its own stacking context, so the menu's own
+        // z-index (20, .sr-row-actions above) only ranks it INSIDE its cell,
+        // and the following rows' pinned cells -- later in DOM order at the
+        // same auto level -- paint over the popped menu. Lift the open row's
+        // cell above its siblings for as long as its menu is open.
+        tbody tr:has(.sr-row-actions-wrap.is-open) td.sr-actions-col-sticky {
+            z-index: 1;
         }
     }
 
@@ -405,7 +704,7 @@
             top: calc(100% + 6px);
             right: 0;
             z-index: 20;
-            min-width: 200px;
+            min-width: 220px;
             background: $sr-body;
             border: 1px solid $gray-300;
             border-radius: 8px;
@@ -414,6 +713,38 @@
             display: flex;
             flex-direction: column;
             gap: 2px;
+            // Column-parity follow-up: the picker went from 3 checkboxes to
+            // ~40, grouped into Risk/Mitigation/Review sections (review-
+            // risk.js's COLUMN_GROUPS) -- cap the panel's height and let it
+            // scroll internally rather than growing past the viewport.
+            max-height: 70vh;
+            overflow-y: auto;
+
+            // One Risk/Mitigation/Review section (review-risk.js's
+            // renderColpanel()). Not the last child's bottom margin --
+            // the panel's own 8px padding already closes out the list.
+            .colpanel-group {
+                &:not(:last-child) {
+                    margin-bottom: 4px;
+                    padding-bottom: 4px;
+                    border-bottom: 1px solid $gray-100;
+                }
+            }
+
+            // Small-caps section label ("Risk Columns" / "Mitigation
+            // Columns" / "Review Columns") -- same small-caps eyebrow-label
+            // formula _home.scss's __eyebrow/__foot-label already establish
+            // elsewhere in this design system (10.5px / 700 / .04em
+            // letter-spacing / uppercase / muted gray), reused here rather
+            // than inventing a new label treatment.
+            .colpanel-group-label {
+                font-size: 10.5px;
+                font-weight: 700;
+                letter-spacing: .04em;
+                text-transform: uppercase;
+                color: $gray-500;
+                padding: 6px 8px 2px;
+            }
 
             .colpanel-item {
                 display: flex;
@@ -436,6 +767,80 @@
                 }
             }
         }
+    }
+
+    // Column-search follow-up: a search box at the top of the Review Risk
+    // Columns picker (#review-risk-colpanel) that live-filters the ~40
+    // `.colpanel-item` checkboxes as the user types, plus a "no matches"
+    // state. Visually mirrors sr-select.js's own per-dropdown search box
+    // (.sr-select-search / .sr-select-search-icon / .sr-select-search-input
+    // / .sr-select-empty, scss/modules/_sr-select.scss) -- the closer UX
+    // precedent for "a small search box inside a dropdown panel" than the
+    // toolbar's own wide #review-risk-search bar.
+    //
+    // Scoped to #review-risk-colpanel specifically, NOT the bare .colpanel
+    // class above -- .colpanel/.colpicker are shared class names across
+    // three pages' column pickers (Review Risk here, Define Exceptions'
+    // #exceptions-colpanel in governance-exceptions.js, and Document
+    // Library's #document-program-colpanel in governance-documents.js).
+    // Only review-risk.js's renderColpanel() renders this search markup, so
+    // ID-scoping keeps it from ever being mistaken for shared .colpanel
+    // infra those other two pages could inherit unintentionally.
+    #review-risk-colpanel {
+        .colpanel-search {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex: none;
+            padding: 4px 6px 8px;
+            margin-bottom: 4px;
+            border-bottom: 1px solid $gray-200;
+        }
+
+        .colpanel-search-icon {
+            flex: none;
+            color: $gray-500;
+            font-size: 12px;
+        }
+
+        .colpanel-search-input {
+            flex: 1 1 auto;
+            min-width: 0;
+            border: 0;
+            background: none;
+            font-size: 13px;
+            color: $sr-primary;
+
+            &:focus {
+                outline: none;
+            }
+        }
+
+        // Shown only when the search leaves nothing to pick -- same
+        // "still searching, not broken" empty-state formula as
+        // .sr-select-empty.
+        .colpanel-empty {
+            padding: 10px 8px;
+            font-size: 12.5px;
+            color: $gray-600;
+            text-align: center;
+        }
+    }
+
+    // Column-parity follow-up: single-line ellipsis truncation for the
+    // handful of long free-text toggleable columns (risk assessment /
+    // additional notes / current solution / security recommendations /
+    // requirements -- review-risk.js's toggleColumnDef() `longText` option).
+    // Same overflow/text-overflow/white-space formula .sr-group-name already
+    // uses elsewhere in this file for the identical single-line-ellipsis
+    // need; a max-width caps how much of the row a single opted-in long-text
+    // column can claim.
+    .sr-cell-truncate {
+        display: block;
+        max-width: 260px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
     }
 
     // DataTables' generated search box, restyled as the toolbar search field.
@@ -877,6 +1282,36 @@
     flex-wrap: wrap;
     align-items: center;
     gap: 4px;
+}
+
+// Review Risk's clickable filter chips (Team/Owner/Risk Level --
+// renderTeamChips()/renderOwnerChip()/renderRiskLevelPill(), review-risk.js)
+// -- each is a click target that adds its value to the matching secondary
+// filter. Shared base: cursor + a keyboard-focus ring (these are
+// role='button' spans, not real <button>s, so :focus-visible needs an
+// explicit outline -- native focus styling doesn't apply). Hover treatment
+// is split by the chip's own base look, per design-system's "color is never
+// alone" rule for state, applied here to affordance instead: a plain
+// .sr-chip (Team/Owner -- neutral gray at rest) gets a background/border
+// shift; a .sr-sev-pill (Risk Level -- already carries its own configured
+// severity color) gets a soft ring instead, so hovering never fights that
+// color.
+.sr-filter-chip {
+    cursor: pointer;
+
+    &:focus-visible {
+        outline: 2px solid $sr-primary;
+        outline-offset: 1px;
+    }
+}
+
+.sr-chip.sr-filter-chip:hover {
+    background: $gray-200;
+    border-color: $gray-400;
+}
+
+.sr-sev-pill.sr-filter-chip:hover {
+    box-shadow: 0 0 0 2px rgba($sr-primary, .35);
 }
 
 .sr-state-pill {
@@ -1360,6 +1795,24 @@
         font-size: 12.5px;
     }
 
+    // A cell value that's also a link to the full record (Review Risk's ID
+    // column, review-risk.js) -- deliberately subtle rather than link-blue,
+    // which would fight "accent spent once" (design-system.md) by adding a
+    // second, unrelated color to a grid that already reserves App Red for
+    // its one primary action. Inherits the cell's own text color; the
+    // underline appears only on hover/focus, the same restrained "this is
+    // interactive" signal .sr-row-action row-icons already use elsewhere in
+    // this file.
+    .sr-id-link {
+        color: inherit;
+        text-decoration: none;
+
+        &:hover,
+        &:focus-visible {
+            text-decoration: underline;
+        }
+    }
+
     // Schedule mode badge (Calendar / Interval) — the disambiguator, since
     // format_test_schedule_summary() renders both as "Every N <unit>".
     .sr-sched-mode {
@@ -1793,6 +2246,18 @@
             border-color: $gray-400;
             border-radius: 6px;
         }
+
+        // Review Risk's Columns picker (.colpicker, includes/display.php's
+        // display_review_risk()) is rendered as the last child here, after
+        // Clear Filters, per explicit product-owner direction -- no extra
+        // sizing rule needed: .colpicker's own `display: inline-flex` (its
+        // rule further down this file) already makes it behave like any
+        // other flex item in this row, picking up the same 8px gap as the
+        // selects beside it. Below 1100px this whole row (Columns included)
+        // grid-stacks one-per-line along with everything else here (see the
+        // `@media (max-width: 1100px) { .sr-qf-selects { ... } }` block
+        // further down), which is the intended behavior: Columns now lives
+        // inside the collapsed Filters sheet rather than standing outside it.
     }
 
     // --- Empty / coverage-gap state (design-system.md §10) ---------------
@@ -2477,8 +2942,19 @@
     .sr-qf-toggle {
         display: none;
         align-items: center;
-        gap: 7px;
-        padding: 6px 12px;
+        // Matched to .filterbtn/.sr-table-filter's exact chrome (gap,
+        // padding, border color, radius, font-weight) -- the same classes
+        // the Columns picker trigger (.colpicker .filterbtn) uses -- per
+        // explicit product-owner direction: Filters and Columns should read
+        // as one consistent button family everywhere they appear together
+        // (Review Risk, document_exceptions.php, documentation.php), not as
+        // "two independently-styled buttons" (this rule's own prior
+        // comment, before this change, already flagged that exact mismatch
+        // as a real regression risk). Only the count badge/.has-filters
+        // accent below stay unique to this control -- .filterbtn has no
+        // equivalent, since it doesn't carry an active-filter state.
+        gap: 6px;
+        padding: 7px 11px;
         // The button is a direct child of .sr-table-card -- a sibling of
         // .sr-table-toolbar and .sr-table-quickfilters, both of which carry
         // their own 16px horizontal inset -- so with no margin of its own it
@@ -2488,11 +2964,12 @@
         // inset every other zone uses; margin-bottom gives it breathing room
         // before the table whether or not the filter sheet is open below it.
         margin: 0 0 12px 16px;
-        border: 1px solid $gray-400;
+        border: 1px solid $gray-300;
         border-radius: 6px;
         background: $sr-body;
         color: $sr-primary;
         font-size: 13px;
+        font-weight: 700;
         line-height: 1.2;
 
         i {
@@ -2501,7 +2978,7 @@
         }
 
         &:hover {
-            border-color: $gray-600;
+            border-color: $gray-500;
         }
 
         // The count is the whole point of the button: a filtered view that
@@ -2523,10 +3000,12 @@
         }
 
         // Active filters read from the badge, and from a border that firms up
-        // rather than changes hue.
+        // rather than changes hue. No font-weight bump here anymore -- the
+        // base rule is already 700 (matched to .filterbtn/.sr-table-filter,
+        // above), so there's no lighter "inactive" weight left to firm up
+        // from.
         &.has-filters {
             border-color: $gray-600;
-            font-weight: 600;
         }
     }
 }

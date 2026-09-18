@@ -541,7 +541,7 @@ $lang = array(
     'UnavailableMysqldumpService' => 'සේවාදායකයේ ලබා ගත හැකි `mysqldump` සේවාවක් නොමැත. කරුණාකර නිරපේක්ෂ mysqldump සේවා මාර්ගය සකසන්න.',
     'AllOpenRisksByTeamByLevel' => 'කණ්ඩායම විසින් අවදානම් මට්ටම අනුව සියලුම විවෘත අවදානම්',
     'Unknown' => 'නොදන්නා',
-    'AllOwners' =>'සියලුම අයිතිකරුවන්',
+    'AllOwners' =>'සියලුම හිමිකරුවන්',
     'AllOwnersManagers' => 'සියලුම හිමිකරුවන්ගේ කළමනාකරුවන්',
     'AddNewReviewNamed' => 'නම් කළ නව සමාලෝචනයක් එක් කරන්න',
     'DeleteCurrentReviewNamed' => 'නම් කර ඇති වත්මන් සමාලෝචනය මකන්න',
@@ -4844,6 +4844,129 @@ $lang = array(
     'CreateAndAddField' => 'නිර්මාණය කර එකතු කරන්න',
     'FieldCreatedAndAddedToTab' => '{field} නිර්මාණය කර එය {tab} වෙත එක් කරන ලදී.',
     'DeleteCustomFieldTitle' => '\'{field}\' ක්ෂේත්‍රය මකන්නද?',
+    // Review Risk page (SR-2068 and others -- see design spec)
+    'ReviewRisk' => 'අවදානම සමාලෝචනය කරන්න',
+    'NeedsColumn' => 'අවශ්‍යතා',
+    'RiskScoreColumn' => 'අවදානම් ලකුණු',
+    'ReassignRiskOwner' => 'අවදානම් හිමිකරු නැවත පවරන්න',
+    'ReassignMitigationOwner' => 'අවම කිරීමේ හිමිකරු නැවත පවරන්න',
+    'NoActionItemsTitle' => 'ඔබේ පෙරහන් වලට ගැලපෙන අවදානම් නොමැත.',
+    'NoActionItemsBody' => 'ඔබට ක්‍රියා කිරීමට පෞද්ගලිකව අවසර ඇති කිසිවක් අවම කිරීම හෝ සමාලෝචනය කිරීම අවශ්‍ය නොවේ. කණ්ඩායමේ සම්පූර්ණ පෝලිම බැලීමට "මගේ ක්‍රියා අයිතම පෙන්වන්න" යන්න සලකුණු නොකර උත්සාහ කරන්න.',
+    'BulkChangeStatusTitle' => '%s තෝරාගත් අවදානම් සඳහා තත්ත්වය වෙනස් කරන්න',
+    'BulkReassignRiskOwnerTitle' => 'තෝරාගත් අවදානම් සඳහා අවදානම් හිමිකරු %s නැවත පවරන්න',
+    'BulkReassignMitigationOwnerTitle' => 'තෝරාගත් අවදානම් සඳහා %s අවම කිරීමේ හිමිකරු නැවත පවරන්න',
+    'BulkAddCommentTitle' => '%s තෝරාගත් අවදානම් වලට අදහසක් එක් කරන්න',
+    'BulkCloseRiskTitle' => 'තෝරාගත් අවදානම් %s වසන්න',
+    'BulkActionPartialSuccess' => 'යාවත්කාලීන කරන ලද %s අවදානම් %s කින් %s.',
+    'PerformReview' => 'සමාලෝචනය සිදු කරන්න',
+    'BulkActionSuccess' => '%s අවදානම් යාවත්කාලීන කරන ලදී.',
+    'SomeRowsSkippedNoMitigation' => 'තෝරාගත් සමහර අවදානම් මඟ හැරුණේ ඒවා අවම කිරීම සඳහා තවමත් සැලසුම් කර නොමැති බැවිනි.',
+    'ChangeStatusHint' => 'තෝරාගත් අවදානම් තෝරාගත් තත්ත්වයට යාවත්කාලීන කෙරේ.',
+    'StatusChanged' => 'තත්ත්වය යාවත්කාලීන කරන ලදී.',
+    'CloseRiskBulkConfirmBody' => 'සංවෘත අවදානම් ක්‍රියාකාරී පෝලිම් වලින් ඉවත් කරනු ලැබේ. ඔබට පසුව අවදානමක් නැවත විවෘත කළ හැක්කේ එහි තත්ත්වය නැවත වෙනස් කිරීමෙන් ය.',
+    // Column-parity follow-up fix review-risk-followups/column-parity-report.md):
+    // the Review Risk page's new scoring_method column (getReviewRiskDatatableResponse(),
+    // includes/api.php) renders get_scoring_method_name()'s (includes/functions.php)
+    // canonical scoring-method name through a $lang lookup rather than the raw
+    // hardcoded string. 'Classic'/'Custom'/'ContributingRisk' already existed
+    // (reused, not duplicated) -- only the three missing acronym keys are added
+    // here. These scoring methodology names/acronyms are typically kept
+    // untranslated (matching how the app's other risk-scoring UI already
+    // displays them, e.g. get_name_by_value('scoring_methods', ...) in
+    // displayrisks.php, which reads these same literal strings straight from
+    // the scoring_methods DB table with no translation layer), but every
+    // user-facing string still needs to flow through a lookup per CLAUDE.md,
+    // even one where the English and translated value would typically match.
+    'CVSS' => 'සීවීඑස්එස්',
+    'DREAD' => 'බිය',
+    'OWASP' => 'ඕඩබ්ලිව්ඒඑස්පී',
+    'MyActionItems' => 'මගේ ක්‍රියා අයිතම',
+    'AddRisk' => 'අවදානම එකතු කරන්න',
+    'ReviewCompleted' => 'සමාලෝචනය සම්පූර්ණ කරන ලදී',
+    // Review Risk insights band (management/review_risk.php). The "Needs
+    // Review" tile reuses the existing 'HomeKpiNeedsReview' key rather than
+    // adding a second key for the same English string. 'RrNeedsMitigation'
+    // carries the band prefix the sibling insights bands already use ('Dt',
+    // 'Fw', 'Exc') to distinguish it from the grid's much terser chip label
+    // ('Mitigation').
+    'RrNeedsMitigation' => 'අවම කිරීම අවශ්‍යයි',
+    'PastDue' => 'කල් ඉකුත් වූ',
+    'OpenedThisMonth' => 'මෙම මාසයේ විවෘත කරන ලදී',
+    'ClosedThisMonth' => 'මෙම මාසයේ වසා ඇත',
+    'AllRiskLevels' => 'සියලුම අවදානම් මට්ටම්',
+    // Import-Export Extra's Users sheet column for the Review Risk grid's
+    // persisted column-visibility/order preferences (user.custom_review_risk_display_settings).
+    'ReviewRiskDisplay' => 'සමාලෝචන අවදානම් සංදර්ශකය',
+    // Plan Projects grid API (SR-2229): reorder/save-order status messages
+    // and the derived highest-risk column label shared by the grid's
+    // Columns picker and the drawer. The sibling 'Risks' column label
+    // reuses the existing 'Risks' key (line ~1911) rather than duplicating it.
+    'PlanProjectsReorderMismatch' => 'ඔබ නැවත ඇණවුම් කරන අතරතුර ව්‍යාපෘති ලැයිස්තුව වෙනස් විය. නැවත පූරණය කර නැවත උත්සාහ කරන්න.',
+    'PlanProjectsOrderSaved' => 'ව්‍යාපෘති ඇණවුම සුරකින ලදී.',
+    'HighestRisk' => 'වැඩිම අවදානම',
+    // Plan Projects grid (SR-2229). Sentence case; column headers are upper-cased by CSS. {n} tokens are replaced client-side.
+    'OnHold' => 'රඳවා ගත්',
+    'SearchProjectsPlaceholder' => 'ව්‍යාපෘති සොයන්න',
+    'AllConsultants' => 'සියලුම උපදේශකයින්',
+    'AllBusinessOwners' => 'සියලුම ව්‍යාපාර හිමිකරුවන්',
+    'AllDataClassifications' => 'සියලුම දත්ත වර්ගීකරණයන්',
+    'AnyDueStatus' => 'ඕනෑම කාලසීමා තත්ත්වයක්',
+    'NoDueDate' => 'නියමිත දිනයක් නොමැත',
+    'AddProject' => 'ව්‍යාපෘතිය එක් කරන්න',
+    'AssignToProject' => 'ව්‍යාපෘතියට පවරන්න',
+    'RemoveFromProject' => 'ව්‍යාපෘතියෙන් ඉවත් කරන්න',
+    'AddRisksToThisProject' => 'මෙම ව්‍යාපෘතියට අවදානම් එකතු කරන්න.',
+    'NoProjectsYet' => 'තවම ව්‍යාපෘති නැත',
+    'NoProjectsYetHint' => 'ව්‍යාපෘති ආශ්‍රිත අවදානම් කාණ්ඩගත කරයි, එවිට ඔබට එක්ව ඔවුන්ගේ ප්‍රතිකාර සැලසුම් කර ප්‍රමුඛතාවය දිය හැකිය.',
+    'NoProjectsMatchFilters' => 'ඔබේ පෙරහන්වලට ගැළපෙන ව්‍යාපෘති නොමැත.',
+    'NoRisksInThisProject' => 'මෙම ව්‍යාපෘතියේ තවමත් අවදානම් නොමැත.',
+    'NoRisksWaitingForProject' => 'ව්‍යාපෘතියක් සඳහා බලා සිටීමේ අවදානමක් නැත',
+    'NoRisksWaitingForProjectHint' => '"ව්‍යාපෘතිය සඳහා සලකා බලන්න" ලෙස සමාලෝචනය කරන ලද අවදානම් ඒවා පවරන තෙක් මෙහි දිස්වේ.',
+    'NMoreRisks' => 'තවත් {n} අවදානම්',
+    'ChangeProjectStatus' => 'ව්‍යාපෘති තත්ත්වය වෙනස් කරන්න',
+    'ChangeStatusClosesRisks' => 'මෙම ව්‍යාපෘතිය සම්පූර්ණ කරන ලද බව සලකුණු කිරීමෙන් එහි {n} විවෘත අවදානම් "සම්පූර්ණයෙන්ම අවම කරන ලදී" යන හේතුව සමඟ වසා දමනු ඇත.',
+    'ChangeStatusReopensRisks' => 'මෙම ව්‍යාපෘතිය අවසන් වූ ස්ථානයෙන් පිටතට ගෙන යාමෙන් එය අවසන් වූ විට වසා දැමූ අවදානම් නැවත විවෘත වේ.',
+    'ChangeStatusNoCloseRightsHint' => 'අවදානම් වැසීමට හෝ නැවත විවෘත කිරීමට ඔබට අවසර නැත, එබැවින් ව්‍යාපෘති තත්ත්වය පමණක් වෙනස් වේ.',
+    'DeleteProjectReturnsRisks' => 'එහි {n} අවදානම් පවරා නොමැති පෝලිමට නැවත පැමිණෙනු ඇත.',
+    'ReorderNeedsPrioritySort' => 'ලැයිස්තුව එක් තත්වයක් තුළ ප්‍රමුඛතාවය අනුව වර්ග කළ විට නැවත ඇණවුම් කිරීම ලබා ගත හැකිය.',
+    'CouldNotLoadProjects' => 'ව්‍යාපෘති පූරණය කළ නොහැකි විය. ඔබගේ දත්ත ආරක්ෂිතයි.',
+    'MitigationNotPlanned' => 'සැලසුම් කර නැත',
+    'MitigationStatePlanned' => 'සැලසුම් කර ඇත',
+    'NoRisksMatchYourSearch' => 'ඔබගේ සෙවුමට ගැලපෙන අවදානම් නොමැත.',
+    'AllUnassignedRisks' => 'පවරා නොමැති සියලුම අවදානම්',
+    'NoRisksSelectedYet' => 'තවමත් අවදානම් තෝරාගෙන නොමැත',
+    'SomeQuestionsNotDeleted' => 'තෝරාගත් සමහර ප්‍රශ්න මකා දැමිය නොහැකි විය.',
+    'QuestionnaireQuestionDeleteRequiresJavaScript' => 'ප්‍රශ්නයක් මැකීමට ඔබගේ බ්‍රවුසරයේ JavaScript සක්‍රීය කර තිබීම අවශ්‍ය වේ.',
+    // Initiate Audits' bulk bar (SR-2234): the header checkbox already
+    // selects every row matching the current search/filters across every
+    // page in one click (client-side DataTables, the full eligible-test set
+    // is already loaded) -- this qualifier makes that explicit when the
+    // selection exceeds what a single page can hold, so "N selected" isn't
+    // read as a miscount against however many checkboxes are visibly ticked
+    // on the current page.
+    'NSelectedAllPages' => '{n} තෝරා ඇත (සියලුම පිටු හරහා ඔබගේ පෙරහන් ගැළපේ)',
+    // "Select all N" cross-page selection: shared too-many-matches message for
+    // Review Risk, Define Tests, Manage Audits, Document Program, and Define
+    // Exceptions (formerly 5 near-duplicate per-page keys). Callers supply
+    // both {$max} and {$noun} (e.g. the plain 'Risks'/'Tests'/'Audits'/
+    // 'Documents'/'Exceptions' key text) -- PHP call sites via _lang(), JS
+    // call sites via a manual .replace('{$max}', ...).replace('{$noun}', ...).
+    'SelectAllTooManyMatches' => 'වත්මන් පෙරහන් {$max} {$noun}ට වඩා ගැළපේ. පෙරහන පටු කර නැවත උත්සාහ කරන්න.',
+    // POST /documents/batch-delete (batch_delete_document_api(), includes/api.php):
+    // same truncation-signal shape as 'DocumentsApprovedTruncated' (see
+    // above) and the sibling 'ExceptionsDeletedTruncated' key just below,
+    // for the Document Program bulk-delete "Select all N" action.
+    'DocumentsDeletedTruncated' => 'තෝරාගත් පළමු {$limit} ලේඛන පමණක් මකා දමන ලදී. ඉතිරිය මකා දැමීමට කරුණාකර ක්‍රියාව නැවත කරන්න.',
+    // POST /exceptions/batch-delete-ids (batch_delete_exceptions_by_ids_api()) --
+    // deletes an arbitrary caller-supplied set of exception ids in one request,
+    // replacing the Define Exceptions bulk bar's looped POST /exceptions/delete
+    // calls. Mirrors ExceptionsApprovedTruncated's truncation-signal wording.
+    'ExceptionsDeletedTruncated' => 'පළමු {$limit} තෝරාගත් ව්‍යතිරේක පමණක් මකා දමන ලදී. ඉතිරිය මකා දැමීමට කරුණාකර ක්‍රියාව නැවත කරන්න.',
+    // POST /risks/batch-close (closeRiskBatch(), includes/api.php): whole-batch
+    // 403 when the caller holds no close_risks permission at all, mirroring
+    // closeriskForm()'s own (hardcoded, pre-existing) single-risk denial text.
+    'NoCloseRiskPermission' => 'අවදානම් වසා දැමීමට ඔබට අවසර නැත.',
+    'QuestionnaireRequiredQuestionUnanswered' => 'තක්සේරුව සම්පූර්ණ කිරීමට පෙර අවශ්‍ය සියලුම ප්‍රශ්නවලට පිළිතුරු සපයන්න.',
     '' => '',
 );
 ?>

@@ -4844,6 +4844,129 @@ $lang = array(
     'CreateAndAddField' => 'Crea i afegeix',
     'FieldCreatedAndAddedToTab' => 'S\'ha creat {field} i s\'ha afegit a {tab}.',
     'DeleteCustomFieldTitle' => 'Voleu suprimir el camp \'{field}\'?',
+    // Review Risk page (SR-2068 and others -- see design spec)
+    'ReviewRisk' => 'Revisió del risc',
+    'NeedsColumn' => 'Necessitats',
+    'RiskScoreColumn' => 'Puntuació de risc',
+    'ReassignRiskOwner' => 'Reassignar el propietari del risc',
+    'ReassignMitigationOwner' => 'Reassigna el propietari de la mitigació',
+    'NoActionItemsTitle' => 'No hi ha riscos que coincideixin amb els filtres',
+    'NoActionItemsBody' => 'No cal mitigació ni revisió de res sobre el qual tingueu permís personal per actuar. Proveu de desmarcar "Mostra els meus elements d\'acció" per veure la cua completa de l\'equip.',
+    'BulkChangeStatusTitle' => 'Canvia l\'estat dels %s riscos seleccionats',
+    'BulkReassignRiskOwnerTitle' => 'Reassigna el propietari del risc per als %s riscos seleccionats',
+    'BulkReassignMitigationOwnerTitle' => 'Reassigna el propietari de la mitigació per als %s riscos seleccionats',
+    'BulkAddCommentTitle' => 'Afegeix un comentari als %s riscos seleccionats',
+    'BulkCloseRiskTitle' => 'Tanca %s riscos seleccionats',
+    'BulkActionPartialSuccess' => '%s de %s riscos actualitzats.',
+    'PerformReview' => 'Realitza una revisió',
+    'BulkActionSuccess' => '%s riscos actualitzats.',
+    'SomeRowsSkippedNoMitigation' => 'Alguns riscos seleccionats s\'han omès perquè encara no tenen cap mitigació planificada.',
+    'ChangeStatusHint' => 'Els riscos seleccionats s\'actualitzaran a l\'estat escollit.',
+    'StatusChanged' => 'Estat actualitzat.',
+    'CloseRiskBulkConfirmBody' => 'Els riscos tancats s\'eliminen de les cues actives. Podeu tornar a obrir un risc més tard canviant-ne l\'estat.',
+    // Column-parity follow-up fix review-risk-followups/column-parity-report.md):
+    // the Review Risk page's new scoring_method column (getReviewRiskDatatableResponse(),
+    // includes/api.php) renders get_scoring_method_name()'s (includes/functions.php)
+    // canonical scoring-method name through a $lang lookup rather than the raw
+    // hardcoded string. 'Classic'/'Custom'/'ContributingRisk' already existed
+    // (reused, not duplicated) -- only the three missing acronym keys are added
+    // here. These scoring methodology names/acronyms are typically kept
+    // untranslated (matching how the app's other risk-scoring UI already
+    // displays them, e.g. get_name_by_value('scoring_methods', ...) in
+    // displayrisks.php, which reads these same literal strings straight from
+    // the scoring_methods DB table with no translation layer), but every
+    // user-facing string still needs to flow through a lookup per CLAUDE.md,
+    // even one where the English and translated value would typically match.
+    'CVSS' => 'CVSS',
+    'DREAD' => 'DREAD',
+    'OWASP' => 'OWASP',
+    'MyActionItems' => 'Els meus elements d\'acció',
+    'AddRisk' => 'Afegeix risc',
+    'ReviewCompleted' => 'Revisió completada',
+    // Review Risk insights band (management/review_risk.php). The "Needs
+    // Review" tile reuses the existing 'HomeKpiNeedsReview' key rather than
+    // adding a second key for the same English string. 'RrNeedsMitigation'
+    // carries the band prefix the sibling insights bands already use ('Dt',
+    // 'Fw', 'Exc') to distinguish it from the grid's much terser chip label
+    // ('Mitigation').
+    'RrNeedsMitigation' => 'Necessita mitigació',
+    'PastDue' => 'Vençut',
+    'OpenedThisMonth' => 'Obert aquest mes',
+    'ClosedThisMonth' => 'Tancat aquest mes',
+    'AllRiskLevels' => 'Tots els nivells de risc',
+    // Import-Export Extra's Users sheet column for the Review Risk grid's
+    // persisted column-visibility/order preferences (user.custom_review_risk_display_settings).
+    'ReviewRiskDisplay' => 'Revisar la pantalla de riscos',
+    // Plan Projects grid API (SR-2229): reorder/save-order status messages
+    // and the derived highest-risk column label shared by the grid's
+    // Columns picker and the drawer. The sibling 'Risks' column label
+    // reuses the existing 'Risks' key (line ~1911) rather than duplicating it.
+    'PlanProjectsReorderMismatch' => 'La llista de projectes ha canviat mentre reordenaves. Torna a carregar la pàgina i intenta-ho de nou.',
+    'PlanProjectsOrderSaved' => 'Ordre del projecte desada.',
+    'HighestRisk' => 'Risc més alt',
+    // Plan Projects grid (SR-2229). Sentence case; column headers are upper-cased by CSS. {n} tokens are replaced client-side.
+    'OnHold' => 'En espera',
+    'SearchProjectsPlaceholder' => 'Cerca projectes',
+    'AllConsultants' => 'Tots els consultors',
+    'AllBusinessOwners' => 'Tots els propietaris d\'empreses',
+    'AllDataClassifications' => 'Totes les classificacions de dades',
+    'AnyDueStatus' => 'Qualsevol estat de venciment',
+    'NoDueDate' => 'Sense data de venciment',
+    'AddProject' => 'Afegeix un projecte',
+    'AssignToProject' => 'Assignar al projecte',
+    'RemoveFromProject' => 'Elimina del projecte',
+    'AddRisksToThisProject' => 'Afegeix riscos a aquest projecte',
+    'NoProjectsYet' => 'Encara no hi ha projectes',
+    'NoProjectsYetHint' => 'Els projectes agrupen riscos relacionats per tal que pugueu planificar i prioritzar el seu tractament conjuntament.',
+    'NoProjectsMatchFilters' => 'No hi ha cap projecte que coincideixi amb els filtres',
+    'NoRisksInThisProject' => 'Encara no hi ha riscos en aquest projecte',
+    'NoRisksWaitingForProject' => 'Sense riscos esperant un projecte',
+    'NoRisksWaitingForProjectHint' => 'Els riscos revisats com a "Considerar per al projecte" apareixen aquí fins que s\'assignen.',
+    'NMoreRisks' => '{n} riscos més',
+    'ChangeProjectStatus' => 'Canvia l\'estat del projecte',
+    'ChangeStatusClosesRisks' => 'Marcar aquest projecte com a completat tancarà els seus {n} riscos oberts amb el motiu "Totalment mitigat".',
+    'ChangeStatusReopensRisks' => 'Treure aquest projecte de completat tornarà a obrir els riscos que estaven tancats quan es va completar.',
+    'ChangeStatusNoCloseRightsHint' => 'No tens permís per tancar ni reobrir riscos, de manera que només canviarà l\'estat del projecte.',
+    'DeleteProjectReturnsRisks' => 'Els seus {n} riscos tornaran a la cua no assignada.',
+    'ReorderNeedsPrioritySort' => 'La reordenació està disponible quan la llista està ordenada per prioritat dins d\'un estat.',
+    'CouldNotLoadProjects' => 'No s\'han pogut carregar els projectes. Les teves dades estan segures.',
+    'MitigationNotPlanned' => 'No planificat',
+    'MitigationStatePlanned' => 'Planificat',
+    'NoRisksMatchYourSearch' => 'No hi ha riscos que coincideixin amb la teva cerca',
+    'AllUnassignedRisks' => 'Tots els riscos no assignats',
+    'NoRisksSelectedYet' => 'Encara no s\'han seleccionat riscos',
+    'SomeQuestionsNotDeleted' => 'No s\'han pogut suprimir algunes de les preguntes seleccionades.',
+    'QuestionnaireQuestionDeleteRequiresJavaScript' => 'Per suprimir una pregunta, cal que tingueu activat JavaScript al navegador.',
+    // Initiate Audits' bulk bar (SR-2234): the header checkbox already
+    // selects every row matching the current search/filters across every
+    // page in one click (client-side DataTables, the full eligible-test set
+    // is already loaded) -- this qualifier makes that explicit when the
+    // selection exceeds what a single page can hold, so "N selected" isn't
+    // read as a miscount against however many checkboxes are visibly ticked
+    // on the current page.
+    'NSelectedAllPages' => '{n} seleccionats (coincidint amb els filtres, a totes les pàgines)',
+    // "Select all N" cross-page selection: shared too-many-matches message for
+    // Review Risk, Define Tests, Manage Audits, Document Program, and Define
+    // Exceptions (formerly 5 near-duplicate per-page keys). Callers supply
+    // both {$max} and {$noun} (e.g. the plain 'Risks'/'Tests'/'Audits'/
+    // 'Documents'/'Exceptions' key text) -- PHP call sites via _lang(), JS
+    // call sites via a manual .replace('{$max}', ...).replace('{$noun}', ...).
+    'SelectAllTooManyMatches' => 'Els filtres actuals coincideixen amb més de {$max} {$noun}. Reduïu el filtre i torneu-ho a provar.',
+    // POST /documents/batch-delete (batch_delete_document_api(), includes/api.php):
+    // same truncation-signal shape as 'DocumentsApprovedTruncated' (see
+    // above) and the sibling 'ExceptionsDeletedTruncated' key just below,
+    // for the Document Program bulk-delete "Select all N" action.
+    'DocumentsDeletedTruncated' => 'Només s\'han suprimit els primers {$limit} documents seleccionats. Repetiu l\'acció per suprimir la resta.',
+    // POST /exceptions/batch-delete-ids (batch_delete_exceptions_by_ids_api()) --
+    // deletes an arbitrary caller-supplied set of exception ids in one request,
+    // replacing the Define Exceptions bulk bar's looped POST /exceptions/delete
+    // calls. Mirrors ExceptionsApprovedTruncated's truncation-signal wording.
+    'ExceptionsDeletedTruncated' => 'Només s\'han suprimit les primeres {$limit} excepcions seleccionades. Repetiu l\'acció per suprimir la resta.',
+    // POST /risks/batch-close (closeRiskBatch(), includes/api.php): whole-batch
+    // 403 when the caller holds no close_risks permission at all, mirroring
+    // closeriskForm()'s own (hardcoded, pre-existing) single-risk denial text.
+    'NoCloseRiskPermission' => 'No teniu permís per tancar riscos.',
+    'QuestionnaireRequiredQuestionUnanswered' => 'Si us plau, responeu a totes les preguntes obligatòries abans de completar l\'avaluació.',
     '' => '',
 );
 ?>

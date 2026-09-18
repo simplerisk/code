@@ -2027,6 +2027,100 @@ function closeriskForm()
 
 }
 
+/**
+ * Batch variant of closeriskForm() above -- POST /risks/batch-close. Closes
+ * every risk id in `risk_ids[]` with the SAME close_reason/note in one
+ * request, replacing review-risk.js's bulk Close Risk action's previous
+ * "loop the single-risk endpoint once per id" client behavior
+ * (closeRiskOnOne() via runBulkActionBatched()).
+ *
+ * `close_risks` is a plain session permission -- identical for every id in
+ * the batch -- so it is checked on EVERY loop iteration exactly like
+ * check_access_for_risk() (never cached from the first id, never skipped for
+ * the rest), but since it can only ever come out the same way every time in
+ * a single request, a batch denied ENTIRELY for lacking it is reported as
+ * one whole-request 403 (matching what the single-risk endpoint above would
+ * have answered for the very first id) rather than a 200 full of individually
+ * "denied" ids that would look like a malfunction. check_access_for_risk() is
+ * NOT like that: it is a genuinely PER-RISK, team-separation-aware decision
+ * that can differ id to id, so a caller who is denied on some ids and
+ * admitted on others still gets the admitted ones processed.
+ */
+function closeRiskBatch()
+{
+    global $lang, $escaper;
+
+    if (empty($_POST['risk_ids']) || !is_array($_POST['risk_ids'])) {
+        set_alert(true, "bad", $escaper->escapeHtml($lang['YouNeedToSpecifyAnIdParameter']));
+        json_response(400, get_alert(true), NULL);
+        return;
+    }
+
+    // Same reason closeRiskOnOne() (review-risk.js) reads these fresh on
+    // every call rather than threading them through: one bulk operation
+    // applies the SAME reason/note to every selected risk.
+    $close_reason = $_POST['close_reason'] ?? '';
+    $note = $_POST['note'] ?? '';
+
+    $truncated = false;
+    $ids = normalize_bulk_risk_ids($_POST['risk_ids'], $truncated);
+
+    // has_permission(), not check_permission(): this is the same non-logging
+    // check its siblings (updateStatusBatch() etc.) use -- check_permission()
+    // logs on every call, so a large batch used to write one near-identical
+    // debug/info log line per id.
+    $result = run_batch_mutation(
+        $ids,
+        fn($id) => has_permission("close_risks"),
+        fn($id) => check_access_for_risk($id),
+        function ($id) use ($close_reason, $note) {
+            $status = "Closed";
+            $risk_id = null;
+            $synchronized_risk_field_values = null;
+            $issue_key = null;
+
+            if (jira_extra()) {
+                require_once(realpath(__DIR__ . '/../extras/jira/index.php'));
+
+                $risk_id = $id - 1000;
+                $metadata = get_risk_issue_association_metadata($risk_id);
+
+                if ($metadata && isset($metadata['issue_key'])) {
+                    $issue_key = $metadata['issue_key'];
+                    $synchronized_risk_field_values = get_synchronized_risk_field_values($risk_id);
+                }
+            }
+
+            // Submit a review
+            submit_management_review($id, $status, null, null, $_SESSION['uid'], $note, "0000-00-00", true);
+
+            // Close the risk
+            close_risk($id, $_SESSION['uid'], $status, $close_reason, $note);
+
+            if (jira_extra() && $issue_key) {
+                // check for changes in the risk and create the changelog entries
+                jira_update_pending_risk_changes($risk_id, $synchronized_risk_field_values);
+
+                // then synchronize
+                jira_push_changes($issue_key, $risk_id);
+            }
+        }
+    );
+
+    if ($result['processed'] === 0 && $result['denied_by_permission'] > 0) {
+        json_response(403, $escaper->escapeHtml($lang['NoCloseRiskPermission']), NULL);
+        return;
+    }
+
+    set_alert(true, "good", $lang['Success']);
+    json_response(200, get_alert(true), array(
+        'processed' => $result['processed'],
+        'denied'    => $result['denied_by_access'],
+        'total'     => count($ids),
+        'truncated' => $truncated,
+    ));
+}
+
 
 
 /*************************************
@@ -2532,6 +2626,92 @@ function updateStatusForm()
 
     }
 
+}
+
+/**
+ * Batch variant of updateStatusForm() above -- POST /risks/batch-update-status.
+ * Sets the SAME new status on every risk id in `risk_ids[]` in one request,
+ * replacing review-risk.js's bulk Change Status action's previous "loop the
+ * single-risk endpoint once per id" client behavior (changeStatusOnOne() via
+ * runBulkActionBatched()).
+ *
+ * `modify_risks` is a plain session permission -- identical for every id in
+ * the batch -- so it is checked on EVERY loop iteration exactly like
+ * check_access_for_risk() (never cached from the first id, never skipped for
+ * the rest), but since it can only ever come out the same way every time in
+ * a single request, a batch denied ENTIRELY for lacking it is reported as
+ * one whole-request 403 (matching what the single-risk endpoint above would
+ * have answered for the very first id) rather than a 200 full of individually
+ * "denied" ids that would look like a malfunction. check_access_for_risk() is
+ * NOT like that: it is a genuinely PER-RISK, team-separation-aware decision
+ * that can differ id to id, so a caller who is denied on some ids and
+ * admitted on others still gets the admitted ones processed.
+ */
+function updateStatusBatch()
+{
+    global $lang, $escaper;
+
+    if (empty($_POST['risk_ids']) || !is_array($_POST['risk_ids'])) {
+        set_alert(true, "bad", $escaper->escapeHtml($lang['YouNeedToSpecifyAnIdParameter']));
+        json_response(400, get_alert(true), NULL);
+        return;
+    }
+
+    // Same reason closeRiskBatch()/updateStatusForm() read their fresh
+    // $_POST values on every call rather than threading them through: one
+    // bulk operation applies the SAME new status to every selected risk.
+    $status_id = (int)($_POST['status'] ?? 0);
+    $status = get_name_by_value("status", $status_id);
+
+    $truncated = false;
+    $ids = normalize_bulk_risk_ids($_POST['risk_ids'], $truncated);
+
+    $result = run_batch_mutation(
+        $ids,
+        fn($id) => has_permission("modify_risks"),
+        fn($id) => check_access_for_risk($id),
+        function ($id) use ($status) {
+            $risk_id = null;
+            $synchronized_risk_field_values = null;
+            $issue_key = null;
+
+            if (jira_extra()) {
+                require_once(realpath(__DIR__ . '/../extras/jira/index.php'));
+
+                $risk_id = $id - 1000;
+                $metadata = get_risk_issue_association_metadata($risk_id);
+
+                if ($metadata && isset($metadata['issue_key'])) {
+                    $issue_key = $metadata['issue_key'];
+                    $synchronized_risk_field_values = get_synchronized_risk_field_values($risk_id);
+                }
+            }
+
+            // Update the status of the risk
+            update_risk_status($id, $status);
+
+            if (jira_extra() && $issue_key) {
+                // check for changes in the risk and create the changelog entries
+                jira_update_pending_risk_changes($risk_id, $synchronized_risk_field_values);
+
+                // then synchronize
+                jira_push_changes($issue_key, $risk_id);
+            }
+        }
+    );
+
+    if ($result['processed'] === 0 && $result['denied_by_permission'] > 0) {
+        json_response(403, $escaper->escapeHtml($lang['RiskUpdatePermissionMessage']), NULL);
+        return;
+    }
+
+    set_alert(true, "good", $lang['Success']);
+    json_response(200, get_alert(true), array(
+        'processed' => $result['processed'],
+        'denied'    => $result['denied_by_access'],
+        'total'     => count($ids),
+        'truncated' => $truncated,
+    ));
 }
 
 /********************************************************
@@ -3099,6 +3279,68 @@ function saveCommentForm($id = null)
     json_response(200, get_alert(true), $html);
 }
 
+/**
+ * Batch variant of saveCommentForm() above -- POST /risks/batch-comment. Adds
+ * ONE comment to every risk id in `risk_ids[]` in a single request, replacing
+ * review-risk.js's bulk Comment action's previous "loop the single-risk
+ * endpoint once per id" client behavior (addCommentToOne() via
+ * runBulkActionBatched()).
+ *
+ * `comment_risk_management` is a plain session permission -- identical for
+ * every id in the batch -- so it is checked on EVERY loop iteration exactly
+ * like check_access_for_risk() (never cached from the first id, never
+ * skipped for the rest), but since it can only ever come out the same way
+ * every time in a single request, a batch denied ENTIRELY for lacking it is
+ * reported as one whole-request 403 (matching what the single-risk endpoint
+ * above would have answered) rather than a 200 full of individually "denied"
+ * ids that would look like a malfunction. check_access_for_risk() is NOT like
+ * that: it is a genuinely PER-RISK, team-separation-aware decision that can
+ * differ id to id, so a caller who is denied on some ids and admitted on
+ * others still gets the admitted ones processed.
+ */
+function saveCommentBatch()
+{
+    global $lang, $escaper;
+
+    $comment = $_POST['comment'] ?? null;
+    if ($comment === null || $comment === '') {
+        set_alert(true, "bad", $escaper->escapeHtml($lang['CommentRiskRequired']));
+        json_response(400, get_alert(true), NULL);
+        return;
+    }
+
+    if (empty($_POST['risk_ids']) || !is_array($_POST['risk_ids'])) {
+        set_alert(true, "bad", $escaper->escapeHtml($lang['YouNeedToSpecifyAnIdParameter']));
+        json_response(400, get_alert(true), NULL);
+        return;
+    }
+
+    $truncated = false;
+    $ids = normalize_bulk_risk_ids($_POST['risk_ids'], $truncated);
+
+    $result = run_batch_mutation(
+        $ids,
+        fn($id) => !(empty($_SESSION['comment_risk_management']) || $_SESSION['comment_risk_management'] != 1),
+        fn($id) => check_access_for_risk($id),
+        function ($id) use ($comment) {
+            add_comment($id, $_SESSION['uid'], $comment);
+        }
+    );
+
+    if ($result['processed'] === 0 && $result['denied_by_permission'] > 0) {
+        json_response(403, $escaper->escapeHtml($lang['NoCommentRiskPermission']), NULL);
+        return;
+    }
+
+    set_alert(true, "good", $lang['Success']);
+    json_response(200, get_alert(true), array(
+        'processed' => $result['processed'],
+        'denied'    => $result['denied_by_access'],
+        'total'     => count($ids),
+        'truncated' => $truncated,
+    ));
+}
+
 /********************************************
  * FUNCTION: MANAGEMENT - Accept Mitigation *
  ********************************************/
@@ -3530,6 +3772,83 @@ function updateRisk($id = null){
     json_response($status, $status_message, NULL);
 }
 
+/**
+ * Batch variant of the bulk Reassign Risk Owner action -- POST
+ * /risks/batch-reassign-owner. Reassigns the SAME owner on every risk id in
+ * `risk_ids[]` in a single request, replacing review-risk.js's previous
+ * "loop the single-risk PATCH endpoint once per id" client behavior
+ * (reassignOwnerOnOne() via runBulkActionBatched()).
+ *
+ * Deliberately does NOT loop updateRisk() above (the general-purpose PATCH
+ * handler, which also drives subject updates and update_risk_scoring()) --
+ * this action only ever sends `owner`, so it calls update_risk($id, true)
+ * (includes/functions.php) directly for each id, the same partial-update
+ * function updateRisk() itself calls. update_risk() reads every OTHER field
+ * via get_param("post", ..., false) and skips writing it when absent
+ * (confirmed in that function's own comments), so leaving $_POST as-is
+ * across every iteration -- only `owner` present -- reproduces exactly what
+ * the single-id PATCH does when the caller sends `owner` alone, which is the
+ * one and only body review-risk.js's bulk Reassign Risk Owner action ever
+ * sends (see RiskOwnerPatchScoringRegressionTest, tests/api/, for why an
+ * owner-only PATCH must not disturb update_risk_scoring() -- that
+ * regression is only reachable through updateRisk()'s own
+ * update_risk_scoring() call, which this batch endpoint never invokes).
+ *
+ * `modify_risks` is a plain session permission -- identical for every id in
+ * the batch -- so it is checked on EVERY loop iteration exactly like
+ * check_access_for_risk() (never cached from the first id, never skipped for
+ * the rest), but since it can only ever come out the same way every time in
+ * a single request, a batch denied ENTIRELY for lacking it is reported as
+ * one whole-request 403 rather than a 200 full of individually "denied" ids
+ * that would look like a malfunction. check_access_for_risk() is NOT like
+ * that: it is a genuinely PER-RISK, team-separation-aware decision that can
+ * differ id to id, so a caller who is denied on some ids and admitted on
+ * others still gets the admitted ones processed.
+ */
+function updateRiskOwnerBatch()
+{
+    global $lang, $escaper;
+
+    // `owner` is read implicitly by update_risk() below via
+    // get_param("post", "owner", false) -- NOT passed as an argument here --
+    // exactly like updateRisk()'s own single-id PATCH handler above. It is
+    // constant across every iteration of the loop, so reading it fresh from
+    // $_POST inside update_risk() on every call reproduces the same body for
+    // every id without this function needing to thread it through.
+    if (empty($_POST['risk_ids']) || !is_array($_POST['risk_ids'])) {
+        set_alert(true, "bad", $escaper->escapeHtml($lang['YouNeedToSpecifyAnIdParameter']));
+        json_response(400, get_alert(true), NULL);
+        return;
+    }
+
+    $truncated = false;
+    $ids = normalize_bulk_risk_ids($_POST['risk_ids'], $truncated);
+
+    $result = run_batch_mutation(
+        $ids,
+        fn($id) => isset($_SESSION["modify_risks"]) && $_SESSION["modify_risks"] == 1,
+        fn($id) => check_access_for_risk($id),
+        function ($id) {
+            update_risk($id, true);
+        },
+        fn($id) => get_risk_by_id($id)
+    );
+
+    if ($result['processed'] === 0 && $result['denied_by_permission'] > 0) {
+        json_response(403, $escaper->escapeHtml($lang['RiskUpdatePermissionMessage']), NULL);
+        return;
+    }
+
+    set_alert(true, "good", $lang['Success']);
+    json_response(200, get_alert(true), array(
+        'processed'  => $result['processed'],
+        'denied'     => $result['denied_by_access'],
+        'not_found'  => $result['not_found'],
+        'total'      => count($ids),
+        'truncated'  => $truncated,
+    ));
+}
+
 /****************************************************
  * FUNCTION: ADDRISK - ADD A RISK FROM EXTERNAL APP *
  ****************************************************/
@@ -3823,6 +4142,100 @@ function saveMitigation($id = null){
         $status_message = $escaper->escapeHtml($lang['RiskUpdatePermissionMessage']);
     }
     return json_response($status, $status_message, $data);
+}
+
+/**
+ * Batch variant of the bulk Reassign Mitigation Owner action -- POST
+ * /risks/batch-reassign-mitigation-owner. Reassigns the SAME mitigation
+ * owner on every risk id in `risk_ids[]` in a single request, replacing
+ * review-risk.js's previous "loop the single-risk PATCH endpoint once per
+ * id" client behavior (reassignMitigationOwnerOnOne() via
+ * runBulkActionBatched()).
+ *
+ * Mirrors saveMitigation() above's own create-vs-update branch exactly (a
+ * risk with no mitigation record yet gets one CREATED via submit_mitigation()
+ * rather than updated) -- even though review-risk.js's own eligibility filter
+ * (rowCache[id] && !rowCache[id].needs_mitigation, see its trigger handler's
+ * comment) only ever sends ids that already have a mitigation record, this
+ * endpoint takes an arbitrary caller-supplied id array like every other batch
+ * endpoint here, so it cannot assume that filter was applied upstream.
+ *
+ * `plan_mitigations` is a plain session permission -- identical for every id
+ * in the batch -- so it is checked on EVERY loop iteration exactly like
+ * check_access_for_risk() (never cached from the first id, never skipped for
+ * the rest), but since it can only ever come out the same way every time in
+ * a single request, a batch denied ENTIRELY for lacking it is reported as
+ * one whole-request 403 rather than a 200 full of individually "denied" ids
+ * that would look like a malfunction. check_access_for_risk() is NOT like
+ * that: it is a genuinely PER-RISK, team-separation-aware decision that can
+ * differ id to id, so a caller who is denied on some ids and admitted on
+ * others still gets the admitted ones processed.
+ */
+function saveMitigationOwnerBatch()
+{
+    global $lang, $escaper;
+
+    if (empty($_POST['risk_ids']) || !is_array($_POST['risk_ids'])) {
+        set_alert(true, "bad", $escaper->escapeHtml($lang['YouNeedToSpecifyAnIdParameter']));
+        json_response(400, get_alert(true), NULL);
+        return;
+    }
+
+    $post = array();
+    if (param_was_sent('mitigation_owner')) {
+        $post['mitigation_owner'] = get_param("POST", "mitigation_owner");
+    }
+
+    $truncated = false;
+    $ids = normalize_bulk_risk_ids($_POST['risk_ids'], $truncated);
+
+    // $risk_row is populated by the existence check below and reused by the
+    // mutate closure -- same single get_risk_by_id() call per id as the
+    // pre-extraction loop, just threaded across two closures instead of one
+    // loop body.
+    $risk_row = null;
+    $result = run_batch_mutation(
+        $ids,
+        fn($id) => isset($_SESSION["plan_mitigations"]) && $_SESSION["plan_mitigations"] == 1,
+        fn($id) => check_access_for_risk($id),
+        function ($id) use (&$risk_row, $post) {
+            // run_batch_mutation() runs checkExists (below) for this same $id, strictly
+            // before mutate, on every iteration; checkExists never returns true without
+            // first setting $risk_row to a real row, so it cannot still be null here.
+            // Phan can't see the ordering guarantee across the two closures sharing
+            // &$risk_row.
+            // @phan-suppress-next-line PhanTypeArraySuspiciousNull
+            $mitigation_id = $risk_row['mitigation_id'];
+            if (!$mitigation_id) {
+                submit_mitigation($id, "Mitigation Planned", $post);
+            } else {
+                update_mitigation($id, $post, true);
+            }
+        },
+        function ($id) use (&$risk_row) {
+            $risk = get_risk_by_id($id);
+            if (count($risk) == 0) {
+                $risk_row = null;
+                return false;
+            }
+            $risk_row = $risk[0];
+            return true;
+        }
+    );
+
+    if ($result['processed'] === 0 && $result['denied_by_permission'] > 0) {
+        json_response(403, $escaper->escapeHtml($lang['MitigationPermissionMessage']), NULL);
+        return;
+    }
+
+    set_alert(true, "good", $lang['Success']);
+    json_response(200, get_alert(true), array(
+        'processed'  => $result['processed'],
+        'denied'     => $result['denied_by_access'],
+        'not_found'  => $result['not_found'],
+        'total'      => count($ids),
+        'truncated'  => $truncated,
+    ));
 }
 
 /*****************************************************************
@@ -7642,1394 +8055,1276 @@ function get_tooltip_api()
     exit();
 }
 
-/*************************************************************
- * FUNCTION: RETURN JSON DATA FOR PLAN MITIGATIONS DATATABLE *
- *************************************************************/
-function getPlanMitigationsDatatableResponse()
+/*******************************************************************
+ * FUNCTION: RETURN JSON DATA FOR THE REVIEW RISK DATATABLE (v2)   *
+ * Unified action queue: rows needing mitigation OR review, per    *
+ * get_risks(22, ...) (Task 4). Enriches each row with a review    *
+ * urgency bucket via classify_review_urgency() (Task 1), applies  *
+ * the Action Type chip filter, the "my action items" permission-  *
+ * relevance filter via user_can_act_on_risk_need() (Task 2), and  *
+ * the per-column secondary filters -- fetch-all-then-slice-in-PHP  *
+ * (no SQL LIMIT/OFFSET anywhere in this file's datatable handlers) *
+ *******************************************************************/
+function getReviewRiskDatatableResponse()
 {
+    global $lang, $escaper;
 
-    global $lang;
-    global $escaper;
-
-    // If the user has risk management permissions
-    if (check_permission("riskmanagement")) {
-
-        $user = get_user_by_id($_SESSION['uid']);
-        $settings = json_decode($user["custom_plan_mitigation_display_settings"] ?? '', true);
-        $risk_colums_setting = isset($settings["risk_colums"])?$settings["risk_colums"]:[];
-        $mitigation_colums_setting = isset($settings["mitigation_colums"])?$settings["mitigation_colums"]:[];
-        $review_colums_setting = isset($settings["review_colums"])?$settings["review_colums"]:[];
-        $columns_setting = array_merge($risk_colums_setting, $mitigation_colums_setting, $review_colums_setting);
-        $columns = [];
-
-        foreach($columns_setting as $column) {
-            if(stripos($column[0], "custom_field_") !== false) {
-                if(customization_extra() && $column[1] == 1) $columns[] = $column[0];
-            } else if($column[1] == 1) {
-                $columns[] = $column[0];
-            }
-        }
-        if(!count($columns)){
-            $columns = array("id","risk_status","subject","calculated_risk","submission_date","mitigation_planned","management_review");
-        }
-
-        $draw = $escaper->escapeHtml($_POST['draw']);
-
-        $start  = $_POST['start'] ? (int)$_POST['start'] : 0;
-        $length = $_POST['length'] ? (int)$_POST['length'] : 10;
-        // @phan-suppress-next-line PhanTypeMismatchDimFetch
-        $orderColumn = isset($_POST['order'][0]['column']) ? $_POST['order'][0]['column'] : "";
-        // @phan-suppress-next-line PhanTypeMismatchDimFetch
-        $orderColumnName = isset($_POST['columns'][$orderColumn]['name']) ? $_POST['columns'][$orderColumn]['name'] : null;;
-        // @phan-suppress-next-line PhanTypeMismatchDimFetch
-        $orderDir = !empty($_POST['order'][0]['dir']) && strtolower($_POST['order'][0]['dir']) === 'asc'? 'asc' : 'desc';
-
-        $column_filters = [];
-        for ( $i=0 ; $i<count($_POST['columns']) ; $i++ ) {
-            // @phan-suppress-next-line PhanTypeMismatchDimFetch,PhanTypeArraySuspiciousNullable,PhanTypeArraySuspiciousNull,PhanTypePossiblyInvalidDimOffset
-            if ( isset($_POST['columns'][$i]) && $_POST['columns'][$i]['searchable'] == "true" && $_POST['columns'][$i]['search']['value'] != '' ) {
-                // @phan-suppress-next-line PhanTypeMismatchDimFetch,PhanTypeArraySuspiciousNullable,PhanTypeArraySuspiciousNull,PhanTypePossiblyInvalidDimOffset
-                $column_filters[$_POST['columns'][$i]['name']] = $_POST['columns'][$i]['search']['value'];
-            }
-        }
-
-        // Get risks requiring mitigations
-        $risks = get_risks(1, $orderColumnName, $orderDir);
-
-        $encryption_columns = array("regulation", "project", "risk_assessment", "additional_notes", "current_solution", "security_recommendations", "security_requirements", "comments");
-
-        if(encryption_extra()&&in_array($orderColumnName, $encryption_columns)){
-            $decrypted_risks = array();
-            foreach($risks as $risk)
-            {
-                $risk['encryption_order'] = try_decrypt($risk[$orderColumnName]);
-                $decrypted_risks[] = $risk;
-            }
-            $risks = $decrypted_risks;
-            usort($risks, function($a, $b) use ($orderDir) {
-                if($orderDir == "asc") 
-                    return strcasecmp($a['encryption_order'], $b['encryption_order']);
-                else 
-                    return strcasecmp($b['encryption_order'], $a['encryption_order']);
-            });
-        }
-
-        $risk_levels = get_risk_levels();
-        $review_levels = get_review_levels();
-
-        // If we're ordering by the 'management_review' column
-        if ($orderColumnName === 'management_review') {
-            // Calculate the 'management_review' values
-            foreach($risks as &$risk) {
-                $risk_level = get_risk_level_name($risk['calculated_risk']);
-                $residual_risk_level = get_risk_level_name($risk['residual_risk']);
-
-                // If next_review_date_uses setting is Residual Risk.
-                if(get_setting('next_review_date_uses') == "ResidualRisk")
-                {
-                    $next_review = next_review($residual_risk_level, $risk['id'], $risk['next_review'], false, $review_levels);
-                }
-                // If next_review_date_uses setting is Inherent Risk.
-                else
-                {
-                    $next_review = next_review($risk_level, $risk['id'], $risk['next_review'], false, $review_levels);
-                }
-
-                $risk['management_review'] = management_review($risk['id'], $risk['mgmt_review'], $next_review);
-                $risk['management_review_text'] = management_review_text_only($risk['mgmt_review'], $next_review);
-            }
-            unset($risk);
-
-            // Sorting by the management review text as the normal 'management_review' field contains html
-            usort($risks, function($a, $b) use ($orderDir){
-                // For identical management reviews we're sorting on the id, so the results' order is not changing
-                if ($a['management_review_text'] === $b['management_review_text']) {
-                    return (int)$a['id'] - (int)$b['id'];
-                }
-                if($orderDir == "asc") {
-                    return strcmp($a['management_review_text'], $b['management_review_text']);
-                } else {
-                    return strcmp($b['management_review_text'], $a['management_review_text']);
-                }
-            });
-        }
-
-        // If we're ordering by the 'Next Review Date' column
-        if ($orderColumnName === 'next_review_date') {
-            // Calculate the 'management_review' values
-            foreach($risks as &$risk) {
-                $risk_level = get_risk_level_name($risk['calculated_risk']);
-                $residual_risk_level = get_risk_level_name($risk['residual_risk']);
-
-                // If next_review_date_uses setting is Residual Risk.
-                if(get_setting('next_review_date_uses') == "ResidualRisk")
-                {
-                    $next_review = next_review($residual_risk_level, $risk['id'], $risk['next_review'], false, $review_levels);
-                }
-                // If next_review_date_uses setting is Inherent Risk.
-                else
-                {
-                    $next_review = next_review($risk_level, $risk['id'], $risk['next_review'], false, $review_levels);
-                }
-
-                $risk['next_review_text'] = $next_review;
-            }
-
-            // Sorting by the management review text as the normal 'management_review' field contains html
-            usort($risks, function($a, $b) use ($orderDir){
-                // For identical management reviews we're sorting on the id, so the results' order is not changing
-                if ($a['next_review_text'] === $b['next_review_text']) {
-                    return (int)$a['id'] - (int)$b['id'];
-                }
-                if($orderDir == "asc") {
-                    return strcmp($a['next_review_text'], $b['next_review_text']);
-                } else {
-                    return strcmp($b['next_review_text'], $a['next_review_text']);
-                }
-            });
-        }
-
-        $review_levels = get_review_levels();
-        
-        $risks_data = [];
-        foreach ($risks as $key=>$risk)
-        {
-            $color = get_risk_color($risk['calculated_risk']);
-            
-            $residual_color = get_risk_color($risk['residual_risk']);
-
-            $risk_level = get_risk_level_name($risk['calculated_risk']);
-            $residual_risk_level = get_risk_level_name($risk['residual_risk']);
-
-            // If next_review_date_uses setting is Residual Risk.
-            if(get_setting('next_review_date_uses') == "ResidualRisk")
-            {
-                $next_review = next_review($residual_risk_level, $risk['id'], $risk['next_review'], false, $review_levels, false);
-            }
-            // If next_review_date_uses setting is Inherent Risk.
-            else
-            {
-                $next_review = next_review($risk_level, $risk['id'], $risk['next_review'], false, $review_levels, false);
-            }
-            $submission_date = date(get_default_datetime_format("g:i A T"), strtotime($risk['submission_date']));
-            $mitigation_planned = planned_mitigation(convert_to_risk_id($risk['id']), $risk['mitigation_id'], "PlanYourMitigations");
-            $management_review = management_review(convert_to_risk_id($risk['id']), $risk['mgmt_review'], $next_review, true, "PlanYourMitigations");
-            $data_row = [];
-            // Storing the data in a different format for filtering
-            // no html - so filtering on 'div' won't return items with <div> in it
-            // unencrypted - so don't have to unencrypt again for filtering
-            // unescaped - so you can find the correct items searching for '&'
-            $filter_data = [];
-            foreach($columns as $column){
-                switch ($column) {
-                    default :
-                        if(($pos = stripos($column, "custom_field_")) !== false){
-                            if(customization_extra()){
-                                $field_id = str_replace("custom_field_", "", $column);
-                                $custom_values = getCustomFieldValuesByRiskId(convert_to_risk_id($risk['id']));
-                                $text = "";
-                                // Get value of custom filed
-                                foreach($custom_values as $custom_value)
-                                {
-                                    // Check if this custom value is for the active field
-                                    if($custom_value['field_id'] == $field_id){
-                                        $text = get_custom_field_name_by_value($field_id, $custom_value['field_type'], $custom_value['encryption'], $custom_value['value']);
-                                        break;
-                                    }
-                                }
-                                $data_row[] = $text;
-                                $risk[$column] = strip_tags($text);
-                                $filter_data[$column] = $risk[$column];
-                            }
-                        } else {
-                            $data_row[] = $escaper->escapeHtml($risk[$column]);
-                            $filter_data[$column] = $risk[$column];
-                        }
-                        break;
-                    case "id":
-                        $id = (int) convert_to_risk_id($risk['id']);
-                        $data_row[] = "<div data-id='{$id}' class='open-risk'><a class='open-in-new-tab' href='../management/view.php?id={$id}&active=PlanYourMitigations#mitigation' target='_blank'>{$id}</a></div>";
-                        $filter_data[$column] = $id;
-                        break;
-                    case "risk_status":
-                        $data_row[] = $escaper->escapeHtml($risk['status']);
-                        $filter_data[$column] = $risk['status'];
-                        break;
-                    case "calculated_risk":
-                        $data_row[] = "<div class='".$escaper->escapeHtml($color)."'><div class='risk-cell-holder' style='position:relative;'>" . $escaper->escapeHtml($risk['calculated_risk']) . "<span class=\"risk-color\" style=\"background-color:" . $escaper->escapeCssColor($color) . "\"></span></div></div>";
-                        $filter_data[$column] = $risk['calculated_risk'];
-                        break;
-                    case "residual_risk":
-                        $data_row[] = "
-                            <div class='{$escaper->escapeHtml($residual_color)}'>
-                                <div class='risk-cell-holder' style='position:relative;'>
-                                    {$escaper->escapeHtml($risk['residual_risk'])}
-                                    <span class='risk-color' style='background-color:{$escaper->escapeCssColor($residual_color)}'></span>
-                                </div>
-                            </div>
-                        ";
-                        $filter_data[$column] = $risk['residual_risk'];
-                        break;
-                    case "submission_date":
-                        $data_row[] = $escaper->escapeHtml($submission_date);
-                        $filter_data[$column] = $submission_date;
-                        break;
-                    case "mitigation_planned":
-                        $data_row[] = "<div data-id=". $escaper->escapeHtml(convert_to_risk_id($risk['id'])) ." class=\"text-center open-mitigation mitigation active-cell\" >".$mitigation_planned."</div>";
-                        $filter_data[$column] = $mitigation_planned;
-                        break;
-                    case "management_review":
-                        $data_row[] = "<div data-id=". $escaper->escapeHtml(convert_to_risk_id($risk['id'])) ." class=\"text-center open-review management active-cell\">".$management_review."</div>";
-                        $filter_data[$column] = $management_review;
-                        break;
-                    case "closure_date":
-                        $filter_data[$column] = format_datetime($risk['closure_date'], "", "H:i");
-                        $data_row[] = $escaper->escapeHtml($filter_data[$column]);
-                        break;
-                    case "regulation":
-                        $filter_data[$column] = try_decrypt($risk["regulation"]);
-                        $data_row[] = $escaper->escapeHtml($filter_data[$column]);
-                        break;
-                    case "scoring_method":
-                        $filter_data[$column] = get_scoring_method_name($risk["scoring_method"]);
-                        $data_row[] = $escaper->escapeHtml($filter_data[$column]);
-                        break;
-                    case "project":
-                        $filter_data[$column] = try_decrypt($risk["project"]);
-                        $data_row[] = $escaper->escapeHtml($filter_data[$column]);
-                        break;
-                    case 'comments':
-                    case 'risk_assessment':
-                    case 'additional_notes':
-                    case 'current_solution':
-                    case 'security_recommendations':
-                    case 'security_requirements':
-                        $filter_data[$column] = try_decrypt($risk[$column]);
-                        $data_row[] = $escaper->purifyHtml($filter_data[$column]);
-                        break;
-                    case "affected_assets":
-                        // Do a lookup for the list of affected assets
-                        $affected_assets = '';
-                        $assets_array = [];
-
-                        // If the affected assets or affected asset groups is not empty
-                        if ($risk['affected_assets']) {
-                            foreach (explode(', ', $risk['affected_assets']) as $asset) {
-                                $asset = try_decrypt($asset);
-                                $affected_assets .= "<span class='asset'>" . $escaper->escapeHtml($asset) . "</span>";
-                                $assets_array []= $asset;
-                            }
-                        }
-
-                        if ($risk['affected_asset_groups']) {
-                            foreach (explode(', ', $risk['affected_asset_groups']) as $group) {
-                                $affected_assets .= "<span class='group'>" . $escaper->escapeHtml($group) . "</span>";
-                                $assets_array []= $group;
-                            }
-                        }
-
-                        $data_row[] = $affected_assets ? "<div class='affected-asset-cell'>{$affected_assets}</div>" : '';
-                        $filter_data[$column] = !empty($assets_array) ? implode(' ', $assets_array) : '';
-                        break;
-                    case "mitigation_cost":
-                        $mitigation_min_cost = $risk['mitigation_min_cost'];
-                        $mitigation_max_cost = $risk['mitigation_max_cost'];
-                        // If the mitigation costs are empty
-                        if (empty($mitigation_min_cost) && empty($mitigation_max_cost))
-                        {
-                                // Return no value
-                                $mitigation_cost = "";
-                        }
-                        else 
-                        {
-                            $currency = get_currency_symbol();
-                            $mitigation_cost = $currency . $mitigation_min_cost . " to " . $currency . $mitigation_max_cost;
-                            if (!empty($risk['valuation_level_name']))
-                                $mitigation_cost .= " ({$risk['valuation_level_name']})";
-                        }
-                        $data_row[] = $escaper->escapeHtml($mitigation_cost);
-                        $filter_data[$column] = $mitigation_cost;
-                        break;
-                    case "mitigation_accepted":
-                        $mitigation_accepted = $risk['mitigation_accepted'] ? $lang['Yes'] : $lang['No'];
-                        $data_row[] = $escaper->escapeHtml($mitigation_accepted);
-                        $filter_data[$column] = $mitigation_accepted;
-                        break;
-                    case "mitigation_date":
-                        $filter_data[$column] = format_datetime($risk['mitigation_date'], "", "H:i");
-                        $data_row[] = $escaper->escapeHtml($filter_data[$column]);
-                        break;
-                    case "review_date":
-                        $filter_data[$column] = format_datetime($risk['review_date'], "", "H:i");
-                        $data_row[] = $escaper->escapeHtml($filter_data[$column]);
-                        break;
-                    case "planning_date":
-                        $filter_data[$column] = format_datetime($risk['planning_date'], "", "");
-                        $data_row[] = $escaper->escapeHtml($filter_data[$column]);
-                        break;
-                    case "next_review_date":
-                        $data_row[] = $escaper->escapeHtml($next_review);
-                        $filter_data[$column] = $next_review;
-                        break;
-                    case "risk_tags":
-                        $tags = "";
-                        $filter_data[$column] = '';
-                        if ($risk['risk_tags']) {
-                            $filter_data[$column] = str_getcsv($risk['risk_tags'], ',', '"', '');
-                            foreach($filter_data[$column] as $tag) {
-                                $tags .= "<button class=\"btn btn-secondary btn-sm\" style=\"pointer-events: none;margin: 1px;padding: 4px 12px;\" role=\"button\" aria-disabled=\"true\">" . $escaper->escapeHtml($tag) . "</button>";
-                            }
-                        }
-                        $data_row[] = $tags;
-                        break;
-                    case "risk_mapping":
-                        if (!empty($risk['risk_catalog_mapping'])) {
-                            $filter_data[$column] = get_names_by_multi_values("risk_catalog", $risk['risk_catalog_mapping'], false, ", ", true);
-                            $data_row[] = $escaper->escapeHtml($filter_data[$column]);
-                        } else {
-                            $data_row[] = '';
-                            $filter_data[$column] = '';
-                        }
-                        break;
-                    case "threat_mapping":
-                        if (!empty($risk['threat_catalog_mapping'])) {
-                            $filter_data[$column] = get_names_by_multi_values("threat_catalog", $risk['threat_catalog_mapping'], false, ", ", true);
-                            $data_row[] = $escaper->escapeHtml($filter_data[$column]);
-                        } else {
-                            $data_row[] = '';
-                            $filter_data[$column] = '';
-                        }
-                        break;
-                }
-            }
-            $risk["data_row"] = $data_row;
-            $risk["filter_data"] = $filter_data;
-            $risks_data[] = $risk;
-        }
-
-        if(($pos = stripos($orderColumnName, "custom_field_")) !== false){
-            // Sorting by the custom field review text as the normal 'management_review' field contains html
-            usort($risks_data, function($a, $b) use ($orderDir, $orderColumnName){
-                // For identical custom fields we're sorting on the id, so the results' order is not changing
-                if ($a[$orderColumnName] === $b[$orderColumnName]) {
-                    return (int)$a['id'] - (int)$b['id'];
-                }
-                if($orderDir == "asc") {
-                    return strcmp($a[$orderColumnName], $b[$orderColumnName]);
-                } else {
-                    return strcmp($b[$orderColumnName], $a[$orderColumnName]);
-                }
-            });
-        }
-
-        $data = array();
-        foreach ($risks_data as $key=>$risk)
-        {
-            $filter_data = $risk["filter_data"];
-            // column filter 
-            $success = true;
-            foreach($column_filters as $column_name => $val){
-                switch ($column_name) {
-                    default :
-                        // Passing null to parameter 1 of type string in stripos is deprecated.
-                        if(stripos($filter_data[$column_name] ?? "", $val) === false){
-                            $success = false;
-                        }
-                        break;
-                    case "risk_tags":
-                        // @phan-suppress-next-line PhanTypePossiblyInvalidDimOffset
-                        if ($filter_data['risk_tags']) {
-                            $tag_match = false;
-                            // @phan-suppress-next-line PhanTypePossiblyInvalidDimOffset
-                            foreach ($filter_data['risk_tags'] as $tag) {
-                                $tag_match = $tag_match || stripos($tag, $val) !== false;
-                                if ($tag_match) {
-                                    break;
-                                }
-                            }
-                            if (!$tag_match) {
-                                $success = false;
-                            }
-                        } else {
-                            $success = false;
-                        }
-                        break;
-                }
-            }
-            if($success == true) $data[] = $risk["data_row"];
-        }
-        $risks_by_page = [];
-
-        if($length == -1)
-        {
-            $risks_by_page = $data;
-        }
-        else
-        {
-            for($i=$start; $i<count($data) && $i<$start + $length; $i++){
-                $risks_by_page[] = $data[$i];
-            }
-        }
-        $recordsTotal = count($data);
-        $result = array(
-            'draw' => $draw,
-            'data' => $risks_by_page,
-            'recordsTotal' => $recordsTotal,
-            'recordsFiltered' => $recordsTotal,
-        );
-        // @phan-suppress-next-line SecurityCheck-XSS -- json_encode() output for DataTables; all columns escaped via escapeHtml()/purifyHtml() in switch block
-        echo json_encode($result, JSON_INVALID_UTF8_SUBSTITUTE);
-        exit;
+    // 403 rather than 400: this is an authorization refusal, not a malformed
+    // request. Consistent with viewriskHtmlForm() and the other risk-tab
+    // handlers above.
+    if (!check_permission("riskmanagement")) {
+        json_response(403, $escaper->escapeHtml($lang['NoPermissionForRiskManagement']), NULL);
+        return;
     }
-    else
-    {
-        json_response(400, $escaper->escapeHtml($lang['NoPermissionForRiskManagement']), NULL);
+
+    // Customization Extra follow-up (Task 7, review-risk-dynamic-columns):
+    // resolved once here, same helper Task 6 already uses in display.php's
+    // <th> markup and get_risks()'s sort_order==22 branch (functions.php)
+    // now uses to decide which custom fields to SELECT/JOIN -- null when the
+    // Customization Extra isn't active, in which case the custom_field_
+    // splice into $rows[] below is skipped entirely.
+    $active_review_risk_columns = build_active_review_risk_columns();
+
+    $user = get_user_by_id($_SESSION['uid']);
+    $settings = json_decode($user["custom_review_risk_display_settings"] ?? '', true);
+    $columns_setting = $settings["columns"] ?? [];
+    $columns = [];
+    foreach ($columns_setting as $column) {
+        if (stripos($column[0], "custom_field_") !== false) {
+            if (customization_extra() && $column[1] == 1) $columns[] = $column[0];
+        } elseif ($column[1] == 1) {
+            $columns[] = $column[0];
+        }
     }
+
+    $draw   = $escaper->escapeHtml($_POST['draw']);
+    $start  = $_POST['start'] ? (int)$_POST['start'] : 0;
+    $length = $_POST['length'] ? (int)$_POST['length'] : 10;
+    // @phan-suppress-next-line PhanTypeMismatchDimFetch
+    $orderColumn = isset($_POST['order'][0]['column']) ? $_POST['order'][0]['column'] : "";
+    // Sanitizing input (post-review fix: this handler took $orderColumnName
+    // straight from client-submitted $_POST['columns'][...]['name'] with no
+    // validation before reaching get_risks()'s sort-field allowlist --
+    // unlike the sibling DataTables handler above (~line 996), which already
+    // guards the identical shape with this same preg_match(). Matched here
+    // for the same defense-in-depth reason: get_risks()'s default-branch
+    // allowlist is built from live INFORMATION_SCHEMA column names across
+    // risks/mitigations/mgmt_reviews, so whatever the next added/renamed
+    // column turns out to be, an unvalidated value reaching `ORDER BY
+    // \`$order_field\`` is one bad column name away from a SQL error an
+    // attacker can trigger at will, even though none of today's real column
+    // names inject anything beyond an error.
+    // @phan-suppress-next-line PhanTypeMismatchDimFetch
+    $orderColumnName = !empty($_POST['columns'][$orderColumn]['name']) && preg_match('/^[a-zA-Z0-9_]+$/', $_POST['columns'][$orderColumn]['name']) ? $_POST['columns'][$orderColumn]['name'] : null;
+    // @phan-suppress-next-line PhanTypeMismatchDimFetch
+    $orderDir = !empty($_POST['order'][0]['dir']) && strtolower($_POST['order'][0]['dir']) === 'asc' ? 'asc' : 'desc';
+
+    $action_type_raw = $_POST['action_type'] ?? 'all';
+    $action_type = in_array($action_type_raw, ['all', 'mitigation', 'review'], true) ? $action_type_raw : 'all';
+    $my_action_items = ($_POST['my_action_items'] ?? '1') !== '0';
+
+    // Status-scope toolbar control (All/Open/Closed) -- a SEPARATE, additional
+    // scope from action_type (All/Mitigation/Review) and my_action_items (My
+    // Action Items/All Items) above; all three coexist and apply independently.
+    // Defaults to 'open', which reproduces today's exact page (status != Closed
+    // AND needs_mitigation/needs_review) with zero behavior change.
+    $status_scope_raw = $_POST['status_scope'] ?? 'open';
+    $status_scope = in_array($status_scope_raw, ['all', 'open', 'closed'], true) ? $status_scope_raw : 'open';
+
+    // Due-status toolbar control (All/Unreviewed/Past Due/Coming Soon) -- a
+    // FOURTH, additional scope alongside action_type/my_action_items/
+    // status_scope above; all four coexist and apply independently. Exists
+    // so a KPI tile's drill-through link (get_ui_widget_review_risk_insights(),
+    // this file) can land on EXACTLY the row set its own count tallied,
+    // rather than the broader action_type=review queue those tiles used to
+    // link to (Needs Review/Past Due/Coming Soon otherwise all show the same
+    // "needs review for any reason" superset). Values match
+    // classify_review_urgency()'s own bucket vocabulary; $row_due_status
+    // below is computed per row from the SAME formula
+    // review_risk_insight_counts() uses (includes/reporting.php), so the
+    // grid and the Insights band never disagree about which bucket a row is
+    // in.
+    $due_status_raw = $_POST['due_status'] ?? 'all';
+    $due_status = in_array($due_status_raw, ['all', 'unreviewed', 'past_due', 'due_soon'], true) ? $due_status_raw : 'all';
+
+    // Secondary filters panel (multiselect/search follow-up): the three
+    // toolbar dropdowns (User/Team/Risk Level) are now real `multiple`
+    // <select>s enhanced with sr-select (design-system.md §5), so
+    // review-risk.js's ajax.data function sends each dimension as its own
+    // array-valued POST param (user_filter[]=.../team_filter[]=.../
+    // risk_level_filter[]=...) instead of the old
+    // single-string-per-column shape DataTables' own columns[i].search.value
+    // protocol offers -- that protocol has exactly one string slot per
+    // column, which cannot express "any of several". Keyed by the
+    // $filter_row key below (getReviewRiskFilterOptions() field name, not
+    // the grid's DataTables column name) so the match loop can index
+    // straight into $filter_row.
+    //
+    // Values come from the filter options endpoint's own option list
+    // (getReviewRiskFilterOptions()) -- real user/team NAMES and risk-level
+    // display names a user can only ever pick from that list, not free-typed
+    // text -- so an exact match against the selected set is the correct
+    // semantic here (a user picking "Team A" from the dropdown should not
+    // also match "Team AB"; substring matching is for a text search box, not
+    // a picklist selection).
+    //
+    // 'All users'/'All teams' merge (user request follow-up): the former
+    // separate owner_filter/reviewer_filter dimensions are now ONE
+    // user_filter matched against $filter_row['user'] -- a deduplicated
+    // array of every user-bearing role on the risk (Submitted By, Owner,
+    // Owner's Manager, Mitigation Owner, Reviewed By, Additional
+    // Stakeholders) built just below. Likewise team_filter is now matched
+    // against $filter_row['team_all'], merging Team + Mitigation Team.
+    // 'owner'/'team'/'reviewer' (singular) stay as separate $filter_row keys
+    // used only to populate the Owner/Reviewer/Team columns' own display
+    // values -- they are not filter dimensions anymore.
+    $multi_filters = [];
+    foreach (['user_filter' => 'user', 'team_filter' => 'team_all', 'risk_level_filter' => 'risk_level'] as $post_key => $filter_row_key) {
+        $raw = $_POST[$post_key] ?? [];
+        if (!is_array($raw)) {
+            continue; // Malformed/non-array POST value -- treat as no filter for this dimension rather than fatal.
+        }
+        $values = array_values(array_filter(array_map('strval', $raw), function ($v) {
+            return $v !== '';
+        }));
+        if (!empty($values)) {
+            $multi_filters[$filter_row_key] = $values;
+        }
+    }
+
+    // Finding 3 (final whole-branch review): DataTables' own global search box
+    // POSTs this standard shape -- see the per-row filter below for where it's
+    // actually applied (after $risk/$filter_row are in scope for that row).
+    // is_string() guard (re-review Minor fix): a crafted search[value][]=x POST
+    // makes $_POST['search']['value'] an array, and (string)$array triggers PHP's
+    // "Array to string conversion" warning plus searches for the literal term
+    // "Array" -- harmless (matches nothing) but noisy in logs. Treat anything
+    // that isn't a plain string as no search term at all.
+    $global_search = is_string($_POST['search']['value'] ?? null) ? trim($_POST['search']['value']) : '';
+
+    // Always fetch the broadest superset ('all' -- every non-orphaned risk,
+    // open and closed) regardless of the CALLER's $status_scope selection.
+    // $status_scope is still read/validated above and still drives the
+    // PHP-side display filtering below -- it's just no longer threaded into
+    // the SQL fetch itself. This is what makes it possible to compute
+    // accurate live status_all/status_open/status_closed toolbar counts for
+    // ALL THREE values from a single request, the same way the action_type
+    // and my_action_items counts already work below: those two never change
+    // what get_risks() fetches either, only how the PHP loop tallies/filters
+    // it. Deliberate performance tradeoff (product-owner-approved): every
+    // request now also fetches closed risks even when status_scope=open,
+    // where they used to be excluded at the SQL WHERE-clause level. Cheap on
+    // this dataset; a real cost on a customer instance with a large closed-
+    // risk history.
+    $risks = get_risks(22, $orderColumnName, $orderDir, 'all');
+
+    $review_levels = get_review_levels();
+    $risk_levels = get_risk_levels();
+    $next_review_date_uses = get_setting('next_review_date_uses');
+
+    // Keyed by the CURRENT resolved display name for each canonical level, not the
+    // literal English string -- risk_levels.display_name is customer-configurable
+    // (admin/risk_configuration.php), and user_can_act_on_risk_need() looks this map
+    // up by $risk_level_name, which is that configurable name. Keying by the literal
+    // English string worked only by coincidence with an instance's default names and
+    // silently broke on any renamed level -- a defect caught in this task's own
+    // review. Same resolution technique as $review_level_index below.
+    $review_permissions_by_level = [
+        get_risk_level_display_name('Very High') => !empty($_SESSION['review_veryhigh']),
+        get_risk_level_display_name('High') => !empty($_SESSION['review_high']),
+        get_risk_level_display_name('Medium') => !empty($_SESSION['review_medium']),
+        get_risk_level_display_name('Low') => !empty($_SESSION['review_low']),
+        get_risk_level_display_name('Insignificant') => !empty($_SESSION['review_insignificant']),
+    ];
+    $has_plan_mitigations = !empty($_SESSION['plan_mitigations']);
+    // Due-status per-row classification (below) compares against this ONE
+    // resolved "today", matching review_risk_insight_counts()'s own
+    // single-computation-per-request pattern (includes/reporting.php)
+    // rather than a fresh date('Y-m-d') call inside the loop.
+    $today_ymd = date('Y-m-d');
+
+    $rows = [];
+    // Tallies for the toolbar's All/Mitigation/Review chip counts -- every
+    // row that would show under "All" (i.e. passes every filter EXCEPT
+    // action_type itself: my_action_items, the secondary filters, the
+    // search box) counts once toward 'all', and again toward 'mitigation'/
+    // 'review' per its own needs_* flags -- so a row needing both counts in
+    // both buckets, matching the approved design mockup's counts (5/3/3,
+    // not 5/3/2, since row 1 needs both at once). This is why the
+    // action_type-specific skip below is applied AFTER these counts are
+    // tallied, not before -- moved down from where it used to sit
+    // (immediately after needs_mitigation/needs_review were computed) so a
+    // row filtered OUT of the current chip's result set still counts toward
+    // the OTHER two chips' totals.
+    //
+    // 'mine'/'all_items' are the analogous tallies for the toolbar's My
+    // Action Items / All Items scope toggle -- same tally point (after the
+    // needs-gate, multi_filters, and global_search, before any
+    // currently-selected-scope skip), but independent of the CURRENTLY
+    // SELECTED $my_action_items value, exactly as all/mitigation/review are
+    // independent of the CURRENTLY SELECTED $action_type. This is why the
+    // $my_action_items gate (formerly right after the needs-gate above) now
+    // lives inside this same combined tally block, after 'mine'/'all_items'
+    // are tallied but before 'all'/'mitigation'/'review' are -- those three
+    // stay scoped to the currently-selected my_action_items value, matching
+    // their pre-existing behavior.
+    //
+    // 'status_all'/'status_open'/'status_closed' are the analogous tallies
+    // for the toolbar's All/Open/Closed status-scope control -- independent
+    // of the CURRENTLY SELECTED $status_scope, same principle as the other
+    // two chip-groups' counts above. Unlike those two, this tally point
+    // can't reuse the existing needs-gate `continue` (there isn't one
+    // anymore -- see the status-scope skip further below) because these
+    // three counts need every row, open AND closed, to reach them regardless
+    // of which status_scope is actually selected right now.
+    $counts = [
+        'all' => 0, 'mitigation' => 0, 'review' => 0, 'mine' => 0, 'all_items' => 0,
+        'status_all' => 0, 'status_open' => 0, 'status_closed' => 0,
+        // due_status_all deliberately omitted -- tallied at the exact same
+        // point as 'all' above (see that field's own tally below), so the
+        // due-status chip-group's "All" badge reuses $counts['all'] rather
+        // than duplicating an identical count under a second name.
+        'due_status_unreviewed' => 0, 'due_status_past_due' => 0, 'due_status_due_soon' => 0,
+    ];
+    // Request-scoped filter context, resolved once and reused for every row
+    // below via review_risk_evaluate_row() (includes/reporting.php) -- the
+    // same shared predicate review_risk_filter_ids() uses to resolve the
+    // "Select all N" ids endpoint's full matching set, so the two can never
+    // disagree about which rows match the current filter.
+    $review_risk_ctx = [
+        'multi_filters' => $multi_filters,
+        'global_search' => $global_search,
+        'status_scope' => $status_scope,
+        'my_action_items' => $my_action_items,
+        'action_type' => $action_type,
+        'due_status' => $due_status,
+        'review_levels' => $review_levels,
+        'review_permissions_by_level' => $review_permissions_by_level,
+        'has_plan_mitigations' => $has_plan_mitigations,
+        'today_ymd' => $today_ymd,
+    ];
+
+    foreach ($risks as $risk) {
+        $r = review_risk_evaluate_row($risk, $review_risk_ctx);
+
+        // Sequential gate chain -- see review_risk_evaluate_row()'s own
+        // comment (includes/reporting.php) for why each gate's tally only
+        // ever counts rows that already survived every earlier gate.
+        if (!$r['passes_multi_and_search']) {
+            continue;
+        }
+
+        // Status-scope toolbar chip counts (All/Open/Closed) -- status_all
+        // counts every row reaching this point once; status_open/
+        // status_closed are mutually exclusive per row.
+        $counts['status_all']++;
+        if ($r['is_closed_row']) {
+            $counts['status_closed']++;
+        } elseif ($r['is_actionable']) {
+            $counts['status_open']++;
+        }
+
+        if (!$r['passes_status_scope']) {
+            continue;
+        }
+
+        // This row passes every filter except (deliberately) action_type and
+        // my_action_items -- tally it toward the toolbar chip counts before
+        // either of those scope filters is applied, so a row that needs both
+        // mitigation and review counts once in EACH of those two buckets
+        // even though only one of them matches whichever chip is actually
+        // active right now, and so 'mine'/'all_items' both reflect the full
+        // set regardless of which scope is currently selected.
+        $counts['all_items']++;
+        if ($r['can_act_on_row']) {
+            $counts['mine']++;
+        }
+
+        if (!$r['passes_my_action_items']) {
+            continue;
+        }
+        $counts['all']++;
+        if ($r['needs_mitigation']) {
+            $counts['mitigation']++;
+        }
+        if ($r['needs_review']) {
+            $counts['review']++;
+        }
+        // Due-status chip-group tally -- same tally point as all/mitigation/
+        // review above (independent of the CURRENTLY SELECTED $due_status,
+        // same principle as those three are independent of $action_type).
+        // The "All" badge reuses $counts['all'] (identical tally point,
+        // identical value) rather than a redundant due_status_all field.
+        if ($r['row_due_status'] === 'unreviewed') {
+            $counts['due_status_unreviewed']++;
+        } elseif ($r['row_due_status'] === 'past_due') {
+            $counts['due_status_past_due']++;
+        } elseif ($r['row_due_status'] === 'due_soon') {
+            $counts['due_status_due_soon']++;
+        }
+        if (!$r['passes_action_type'] || !$r['passes_due_status']) {
+            continue;
+        }
+
+        $needs_mitigation = $r['needs_mitigation'];
+        $needs_review = $r['needs_review'];
+        $risk_level_name = $r['risk_level_name'];
+        $urgency = $r['urgency'];
+        $filter_row = $r['filter_row'];
+        $mitigation_due_date = $r['mitigation_due_date'];
+        $review_due_date = $r['review_due_date'];
+        $due_date = $r['due_date'];
+
+        $rows[] = [
+            'id' => (int)$risk['id'],
+            'subject' => $escaper->escapeHtml($risk['subject']),
+            'needs_mitigation' => $needs_mitigation,
+            'needs_review' => $needs_review,
+            'review_bucket' => $urgency['bucket'],
+            'calculated_risk' => $risk['calculated_risk'],
+            'risk_level' => $risk_level_name,
+            'risk_level_color' => get_risk_color_from_levels($risk['calculated_risk'], $risk_levels),
+            'mitigation_due_date' => $mitigation_due_date,
+            'review_due_date' => $review_due_date,
+            'due_date' => $due_date,
+            // Security fix: 'owner'/'team'/'reviewer' were sent to the client
+            // RAW here -- $filter_row (above) is deliberately unescaped for its
+            // OWN purpose (exact-match filter comparison against the secondary-
+            // filter <select>s' selected values), but this second use, landing
+            // straight in the DataTables JSON response with no render: function
+            // client-side (default cell insertion = raw HTML), had no escaping
+            // pass at all. Owner/team/reviewer names are admin-managed
+            // (Team Management, user profiles) but VIEWED by every
+            // riskmanagement user -- an unescaped name is a stored-XSS path
+            // across that privilege boundary. Escaped here, once, matching
+            // every other free-text field in this same $rows[] block.
+            'owner' => $escaper->escapeHtml($filter_row['owner']),
+            // 'team' -- an array of individually-escaped names, not a joined
+            // string: Team chips (review-risk.js's renderTeamChips()) render
+            // each team as its own chip. Split on ',', the same separator
+            // get_risks()'s own GROUP_CONCAT(...SEPARATOR ',') already uses
+            // and the filter-matching code just above already splits on for
+            // the identical reason (a risk can belong to more than one team).
+            'team' => array_values(array_filter(array_map(
+                function ($name) use ($escaper) {
+                    return $escaper->escapeHtml(trim($name));
+                },
+                explode(',', $filter_row['team'] ?? '')
+            ), function ($name) {
+                return $name !== '';
+            })),
+            'reviewer' => $escaper->escapeHtml($filter_row['reviewer']),
+
+            // Column-parity toggleable fields (design-system.md §6c deliberate
+            // default-hidden exception -- see review-risk.js's TOGGLE_COLUMNS
+            // comment). These restore the legacy Plan Your Mitigations/Perform
+            // Management Reviews/Review Risks Regularly pages' full "Columns"
+            // picker as customer-optional columns on the unified queue. Every
+            // key below matches the exact risk_colums/mitigation_colums/
+            // review_colums name the three legacy pages' own column-settings
+            // JSON used (see get_risks()'s sort_order==22 SELECT list,
+            // functions.php, for where each value comes from) -- reusing those
+            // names is what keeps a customer's existing saved column-settings
+            // JSON (still validated by custom_display_columns_are_valid())
+            // meaningful against this page. Every free-text field is escaped
+            // here, the same as 'subject' above -- these all render through
+            // the same DataTables default (non-`render:`) cell insertion,
+            // which inserts the value as raw HTML, so the escaping has to
+            // happen before it reaches the client, not after.
+            //
+            // RISK group
+            'risk_status' => $escaper->escapeHtml($risk['status'] ?? ''),
+            'submission_date' => $risk['submission_date'] ?? null,
+            'closure_date' => $risk['closure_date'] ?? null,
+            'reference_id' => $escaper->escapeHtml($risk['reference_id'] ?? ''),
+            'regulation' => $escaper->escapeHtml(try_decrypt($risk['regulation'] ?? '')),
+            'control_number' => $escaper->escapeHtml($risk['control_number'] ?? ''),
+            'location' => $escaper->escapeHtml($risk['location'] ?? ''),
+            'source' => $escaper->escapeHtml($risk['source'] ?? ''),
+            'category' => $escaper->escapeHtml($risk['category'] ?? ''),
+            // 'All users' merge follow-up: an array of individually-escaped
+            // names, not a joined string -- same reasoning/technique as
+            // 'team' above (renderStakeholderChips(), review-risk.js, renders
+            // each stakeholder as its own clickable chip).
+            'additional_stakeholders' => array_values(array_filter(array_map(
+                function ($name) use ($escaper) {
+                    return $escaper->escapeHtml(trim($name));
+                },
+                explode(',', $risk['additional_stakeholders'] ?? '')
+            ), function ($name) {
+                return $name !== '';
+            })),
+            'technology' => $escaper->escapeHtml($risk['technology'] ?? ''),
+            'manager' => $escaper->escapeHtml($risk['manager'] ?? ''),
+            'submitted_by' => $escaper->escapeHtml($risk['submitted_by'] ?? ''),
+            'risk_tags' => $escaper->escapeHtml($risk['risk_tags'] ?? ''),
+            // get_scoring_method_name() (functions.php) is the same helper
+            // view.php/the Submit Risk form use to resolve the numeric
+            // scoring_method into a canonical name -- reused here rather than
+            // showing the raw method id. Post-review fix: that canonical name
+            // is then mapped through $lang (CLAUDE.md's language-lookup rule
+            // applies at this render site even though get_scoring_method_name()
+            // itself, a shared helper other callers rely on, returns a
+            // hardcoded English string) -- 'Classic'/'Custom'/'ContributingRisk'
+            // already existed as lang keys; 'CVSS'/'DREAD'/'OWASP' were added
+            // (append-only, lang.en.php). Falls back to the raw canonical name
+            // if either lookup somehow misses, rather than rendering blank.
+            'scoring_method' => (function () use ($risk, $escaper, $lang) {
+                $canonical = get_scoring_method_name($risk['scoring_method'] ?? null) ?? '';
+                $scoring_method_lang_keys = [
+                    'Classic' => 'Classic',
+                    'CVSS' => 'CVSS',
+                    'DREAD' => 'DREAD',
+                    'OWASP' => 'OWASP',
+                    'Custom' => 'Custom',
+                    'Contributing Risk' => 'ContributingRisk',
+                ];
+                $lang_key = $scoring_method_lang_keys[$canonical] ?? null;
+                return $escaper->escapeHtml(($lang_key !== null ? ($lang[$lang_key] ?? null) : null) ?? $canonical);
+            })(),
+            'residual_risk' => $risk['residual_risk'] ?? null,
+            'project' => $escaper->escapeHtml(try_decrypt($risk['project'] ?? '')),
+            'days_open' => $risk['days_open'] ?? null,
+            // affected_assets is a GROUP_CONCAT of per-row-encrypted asset
+            // names (functions.php SEPARATOR '|' -- chosen because base64
+            // ciphertext's alphabet, A-Za-z0-9+/=, can never contain '|', so
+            // splitting can't be fooled by a name that happens to match the
+            // old ', ' separator). GROUP_CONCAT can't decrypt after
+            // concatenation -- each value is independently encrypted -- so
+            // split first, decrypt each piece, then rejoin for display.
+            'affected_assets' => $escaper->escapeHtml(implode(', ', array_map(
+                'try_decrypt',
+                array_filter(explode('|', $risk['affected_assets'] ?? ''), 'strlen')
+            ))),
+            // Long-text fields: risk_assessment/additional_notes deliberately
+            // read $risk['assessment']/$risk['notes'] -- NOT the raw
+            // $risk['risk_assessment']/$risk['additional_notes'] duplicate
+            // columns get_risks() also selects -- because only 'assessment'/
+            // 'notes' go through get_risks()'s post-fetch try_decrypt() loop
+            // (functions.php). The 'risk_assessment'/'additional_notes'
+            // aliases are separate raw SELECT columns of the same encrypted
+            // b.assessment/b.notes values and are never decrypted; reading
+            // them directly would render ciphertext for any customer with
+            // the Encrypted Database Extra active. Harmless when encryption
+            // is off (try_decrypt() is then a no-op passthrough, so both
+            // keys hold the same plaintext), but wrong when it's on.
+            // WYSIWYG-editor fields (risk.js's init_minimun_editor('#assessment'/
+            // '#notes'/etc.) -- the stored value is real HTML markup (HugeRTE's
+            // own output), not plain text. Escaping it directly, as every other
+            // free-text column-parity field does, made the raw tags render as
+            // literal visible text in the grid ("&lt;p&gt;..." instead of the
+            // authored content). control_roster_description() (compliance_grid.php
+            // -- already required by this file, reused rather than duplicating a
+            // near-identical helper) is this codebase's established "flatten rich
+            // text to a clean plain-text grid/tooltip preview" function: turns
+            // block-boundary tags into spaces (so paragraphs don't run together),
+            // strips the rest, decodes entities, collapses whitespace, and caps at
+            // 300 chars (the client's own .sr-cell-truncate CSS ellipsis handles
+            // visual truncation regardless; this cap only bounds payload size).
+            // Escaped afterward, same as every other field here -- the decode step
+            // can reintroduce a literal '<'/'>'/'&' from the author's own text.
+            'risk_assessment' => $escaper->escapeHtml(control_roster_description($risk['assessment'] ?? '')),
+            'additional_notes' => $escaper->escapeHtml(control_roster_description($risk['notes'] ?? '')),
+            // risk_mapping/threat_mapping (post-review fix): read
+            // $risk['risk_catalog_names']/$risk['threat_catalog_names'] --
+            // NOT $risk['risk_catalog_mapping']/$risk['threat_catalog_mapping'],
+            // which get_risks() populates as raw comma-separated catalog IDs
+            // (the established convention for those two keys everywhere else
+            // in the codebase, e.g. edit-form pre-population). functions.php's
+            // sort_order==22 SELECT resolves the display NAMES via the
+            // risk_catalog/threat_catalog tables it already LEFT JOINs for
+            // the ID-based columns, so this page shows the same catalog
+            // names view.php/the risk edit form show, not raw IDs.
+            'risk_mapping' => $escaper->escapeHtml($risk['risk_catalog_names'] ?? ''),
+            'threat_mapping' => $escaper->escapeHtml($risk['threat_catalog_names'] ?? ''),
+
+            // MITIGATION group
+            // needs_mitigation's logical inverse -- already computed above in
+            // this same loop iteration, no extra query needed.
+            'mitigation_planned' => !$needs_mitigation,
+            'planning_strategy' => $escaper->escapeHtml($risk['planning_strategy'] ?? ''),
+            'planning_date' => $risk['planning_date'] ?? null,
+            'mitigation_effort' => $escaper->escapeHtml($risk['mitigation_effort'] ?? ''),
+            // The query selects a RANGE (asset_values.min_value/max_value),
+            // not the single value the legacy column showed -- combined here
+            // the same way get_asset_value_by_id() (includes/assets.php)
+            // already formats an asset-value range everywhere else in the
+            // app: currency-prefixed, comma-grouped, collapsed to one figure
+            // when min == max.
+            'mitigation_cost' => (function () use ($risk, $escaper) {
+                $min = $risk['mitigation_min_cost'] ?? null;
+                $max = $risk['mitigation_max_cost'] ?? null;
+                // Post-review fix: `||`, not `&&` -- both values come from the
+                // same LEFT JOIN row (asset_values via p.mitigation_cost = s.id)
+                // so a half-null case can't happen today, but guarding on
+                // `&&` meant IF it ever did, the missing side would silently
+                // number_format(0) instead of blanking the cell (a nonsensical
+                // "$0 to $1,000" rather than nothing) -- fail toward blank.
+                if ($min === null || $max === null) {
+                    return '';
+                }
+                $currency = get_setting('currency');
+                if ($min == $max) {
+                    return $escaper->escapeHtml($currency . number_format((float)$min));
+                }
+                return $escaper->escapeHtml($currency . number_format((float)$min) . ' to ' . $currency . number_format((float)$max));
+            })(),
+            'mitigation_owner' => $escaper->escapeHtml($risk['mitigation_owner'] ?? ''),
+            // 'All teams' merge follow-up: an array of individually-escaped
+            // names, same technique as 'team'/'additional_stakeholders'
+            // above (renderMitigationTeamChips(), review-risk.js).
+            'mitigation_team' => array_values(array_filter(array_map(
+                function ($name) use ($escaper) {
+                    return $escaper->escapeHtml(trim($name));
+                },
+                explode(',', $risk['mitigation_team'] ?? '')
+            ), function ($name) {
+                return $name !== '';
+            })),
+            'mitigation_accepted' => (bool)($risk['mitigation_accepted'] ?? false),
+            'mitigation_date' => $risk['mitigation_date'] ?? null,
+            'mitigation_controls' => $escaper->escapeHtml($risk['mitigation_controls'] ?? ''),
+            // WYSIWYG-editor fields -- see 'risk_assessment'/'additional_notes''s
+            // own comment above for why control_roster_description() is applied
+            // (strips real HugeRTE-authored HTML markup to a clean plain-text
+            // preview before the usual escape) before decrypting.
+            'current_solution' => $escaper->escapeHtml(control_roster_description(try_decrypt($risk['current_solution'] ?? ''))),
+            'security_recommendations' => $escaper->escapeHtml(control_roster_description(try_decrypt($risk['security_recommendations'] ?? ''))),
+            'security_requirements' => $escaper->escapeHtml(control_roster_description(try_decrypt($risk['security_requirements'] ?? ''))),
+
+            // REVIEW group
+            // review_completed mirrors mitigation_planned's own !$needs_* shape
+            // above (Task 17/18's original boolField pattern) -- a quick-glance
+            // Yes/No pair, distinct from management_review just below, which
+            // shows the review's OUTCOME (the `review` lookup table's name,
+            // e.g. "Approve Risk"/"Reject Risk and Close") rather than whether a
+            // review has happened at all. $needs_review already reflects
+            // classify_review_urgency()'s bucket (unreviewed/past_due/due_soon
+            // all count as "still needs one"), computed earlier in this same
+            // loop -- no new query or field.
+            'review_completed' => !$needs_review,
+            'management_review' => $escaper->escapeHtml($risk['review'] ?? ''),
+            // The OUTPUT key stays 'review_date' -- it's what review-risk.js's
+            // COLUMN_GROUPS/toggleColumnDef() and display.php's <th data-col>
+            // both key off -- but the SOURCE read is $risk['mgmt_review_date']
+            // (post-review fix), not $risk['review_date']. functions.php's
+            // sort_order==22 SELECT aliases this as `l.submission_date AS
+            // mgmt_review_date` -- the last review's own submission date,
+            // distinct from next_review_date (below), which is when the NEXT
+            // review is due -- deliberately NOT aliased `review_date`: `risks`
+            // already has its own real `review_date` column, and a same-named
+            // alias made `ORDER BY \`review_date\`` ambiguous SQL for this
+            // specific query (see functions.php's comment on the SELECT for
+            // the live-verified error and the exploitability note).
+            'review_date' => $risk['mgmt_review_date'] ?? null,
+            'next_review_date' => $risk['next_review'] ?? null,
+            'next_step' => $escaper->escapeHtml($risk['next_step'] ?? ''),
+            // WYSIWYG-editor field -- see 'risk_assessment''s own comment above.
+            'comments' => $escaper->escapeHtml(control_roster_description(try_decrypt($risk['comments'] ?? ''))),
+            'last_comment' => $escaper->escapeHtml(try_decrypt($risk['last_comment'] ?? '')),
+
+            'can_edit' => !empty($_SESSION['modify_risks']),
+            'can_plan_mitigation' => !empty($_SESSION['plan_mitigations']),
+            // Final whole-branch review, Finding 5: this used to call
+            // check_review_permission_by_risk_id(convert_to_risk_id($risk['id'])) here,
+            // which re-fetches the SAME risk via get_calculated_risk_by_id() ->
+            // get_risk_by_id() (a ~20-join query with 8 GROUP_CONCATs, its own
+            // db_open()/db_close()) once per row on this handler's unpaginated
+            // result set -- a real N+1 at customer scale. Traced both paths to
+            // confirm this is behaviourally identical, not just faster:
+            // check_review_permission_by_risk_id() resolves $level via
+            // get_risk_level_name($calculated_risk) off the re-fetched row's
+            // calculated_risk -- the exact same field, same value, this loop
+            // already resolved into $risk_level_name a few lines above (and used to
+            // build $review_level_index) -- then checks has_permission("review_<level>"),
+            // which is isset($_SESSION[x]) && $_SESSION[x] == 1. $review_permissions_by_level
+            // (built above from !empty($_SESSION['review_<level>'])) is equivalent for
+            // this codebase's 0/1-only permission session values: unset/0 -> false either
+            // way, 1 -> true either way. So this is a same-result, same-permission-map,
+            // zero-extra-query substitution.
+            'can_perform_review' => !empty($review_permissions_by_level[$risk_level_name]),
+        ];
+
+        // Customization Extra custom-field values (Task 7,
+        // review-risk-dynamic-columns). get_risks(22, ...) (functions.php)
+        // already resolved and escaped each active custom field's display
+        // value onto $risk["custom_field_{id}"] -- see that function's
+        // sort_order==22 branch for the dropdown/multidropdown/
+        // user_multidropdown-alias vs. field_data-JSON resolution. Read
+        // as-is here, NOT re-escaped: a second escapeHtml() pass here would
+        // double-encode it (CLAUDE.md's HTML Encoding double-escaping rule),
+        // turning a plain "&" into "&amp;amp;" for the reader.
+        if (customization_extra()) {
+            foreach (($active_review_risk_columns ?? []) as $active_review_risk_column) {
+                if (strpos($active_review_risk_column['key'], 'custom_field_') === 0) {
+                    $rows[count($rows) - 1][$active_review_risk_column['key']] = $risk[$active_review_risk_column['key']] ?? '';
+                }
+            }
+        }
+    }
+
+
+    // Finding 4a (final whole-branch review) -- ORIGINAL reasoning, now
+    // SUPERSEDED by the click-to-sort follow-up below: design spec item 5
+    // requires the default sort to be due-date ascending (most overdue
+    // first), but get_risks()'s sort_order==22 branch fell back to `ORDER BY
+    // a.calculated_risk DESC` and nothing overrode it -- due_date can't be a
+    // SQL ORDER BY target at all, since it's computed here in PHP
+    // (compute_next_action_due_date()) after the query already ran. 'id' and
+    // 'subject' are the only two columns on this grid that ARE real
+    // get_risks() sort-allowlist entries (functions.php's $order_field
+    // switch) and so already sort correctly at the SQL level when a user
+    // explicitly clicks one of those two headers -- don't fight that with a
+    // second, competing sort here. This was deliberately NOT full
+    // click-to-sort machinery at the time -- just the default state.
+    //
+    // Click-to-sort follow-up: review-risk.js now marks almost every column
+    // orderable, and functions.php's get_risks() switch/$static_allowed_fields
+    // now covers almost all of them at the SQL level (see that file's
+    // comments for the one still-deliberately-unsupported exception,
+    // 'management_review', plus the encrypted free-text columns review-
+    // risk.js keeps orderable:false so ciphertext is never asked to sort).
+    // 'next_review_date' is now supported too (a sort_order==22-scoped case
+    // in that same switch). $sql_sortable_columns below is this handler's
+    // mirror of that same set -- kept in sync with review-risk.js's per-column
+    // `orderable` flags and get_risks()'s switch/allowlist by hand, since
+    // get_risks() has no way to report back whether it actually recognized
+    // $orderColumnName. 'id'/'subject' aren't repeated in this list; they're
+    // checked separately below, same as before.
+    $sql_sortable_columns = [
+        'risk_status', 'submission_date', 'closure_date', 'reference_id',
+        'regulation', 'control_number', 'location', 'source', 'category',
+        'additional_stakeholders', 'technology', 'manager', 'submitted_by',
+        'risk_tags', 'scoring_method', 'residual_risk', 'days_open',
+        'risk_mapping', 'threat_mapping', 'mitigation_planned', 'next_review_date',
+        'planning_strategy', 'planning_date', 'mitigation_effort',
+        'mitigation_cost', 'mitigation_owner', 'mitigation_team',
+        'mitigation_accepted', 'mitigation_date', 'mitigation_controls',
+        'review_date', 'next_step', 'calculated_risk', 'owner', 'team',
+        'risk_level',
+    ];
+
+    if ($orderColumnName === 'due_date') {
+        // due_date has no single backing SQL column (compute_next_action_due_date()
+        // combines mitigation_due_date/review_due_date in PHP, above), so it's sorted
+        // here against the already-built $rows array instead of at the SQL level.
+        // Judgment call: a still-null due_date (no known deadline at all, e.g. a
+        // mitigation-only row with no planning_date yet) is pinned FIRST regardless
+        // of $orderDir, not flipped to last on desc -- "no known due date" reads as
+        // needing attention either way, same as Finding 1's reasoning below for the
+        // unconditional-ascending fallback; a descending click shouldn't bury the
+        // riskiest-looking unknowns at the bottom of the list.
+        usort($rows, function ($a, $b) use ($orderDir) {
+            if ($a['due_date'] === $b['due_date']) {
+                return 0;
+            }
+            if ($a['due_date'] === null) {
+                return -1;
+            }
+            if ($b['due_date'] === null) {
+                return 1;
+            }
+            $cmp = strtotime($a['due_date']) <=> strtotime($b['due_date']);
+            return $orderDir === 'desc' ? -$cmp : $cmp;
+        });
+    } elseif (!in_array($orderColumnName, ['id', 'subject'], true) && !in_array($orderColumnName, $sql_sortable_columns, true)) {
+        // Default-sort follow-up: superseded design spec item 5's due-date-
+        // ascending default -- the product owner's later call is that the
+        // default sort should be Risk Score (descending, highest risk
+        // first), matching get_risks()'s own long-standing SQL default for
+        // this grid ("ORDER BY a.calculated_risk DESC", functions.php's
+        // sort_order==22 branch, applied whenever $order_field is falsy or
+        // unrecognized) -- even though the Risk Score column itself is
+        // d-none/hidden from the grid by default (Columns picker). Default/
+        // unset order (DataTables' initial load, $orderColumnName === null,
+        // now that review-risk.js's DataTable init passes `order: []`
+        // instead of leaning on DataTables' own client-side default) OR a
+        // column name get_risks() doesn't actually sort at the SQL level
+        // (defensive -- covers a crafted POST, and the two explicit no-op
+        // cases functions.php's switch still carries) falls back to this
+        // explicit PHP-level sort of the already-built row array, before
+        // pagination -- rather than silently trusting that get_risks()'s own
+        // SQL default happens to already match, which would leave this
+        // behavior undocumented at the one call site that actually needs it
+        // and fragile to a future change in that function's default.
+        usort($rows, function ($a, $b) {
+            return $b['calculated_risk'] <=> $a['calculated_risk'];
+        });
+    }
+    // else: 'id'/'subject', or any name in $sql_sortable_columns -- get_risks()
+    // already returned $risks (and therefore $rows, built from it above by a plain
+    // foreach + $rows[] = [...] append, which preserves iteration/SQL order) in the
+    // right order; don't re-sort here.
+
+    $recordsTotal = count($rows);
+    $page = ($length == -1) ? $rows : array_slice($rows, $start, $length);
+
+    // @phan-suppress-next-line SecurityCheck-XSS -- json_encode() output for DataTables; every free-text field ('subject' plus the column-parity fields added above) is escaped via escapeHtml() before it reaches this array
+    echo json_encode([
+        'draw' => $draw,
+        'data' => $page,
+        'recordsTotal' => $recordsTotal,
+        'recordsFiltered' => $recordsTotal,
+        // Toolbar chip counts (All/Mitigation/Review, My Action Items/All
+        // Items, and All/Open/Closed status-scope) -- tallied above, each
+        // independent of the CURRENT action_type/my_action_items/
+        // status_scope filter respectively, so every chip across all three
+        // controls can show a live count at once. Not DataTables' own
+        // protocol; a page-specific addition the JS reads directly
+        // (updateChipCounts(), review-risk.js).
+        'counts' => $counts,
+    ], JSON_INVALID_UTF8_SUBSTITUTE);
+    exit;
 }
 
-/**************************************************************
- * FUNCTION: RETURN JSON DATA FOR MANAGEMENT REVIEW DATATABLE *
- **************************************************************/
-function getManagementReviewsDatatableResponse()
-{
+// Upper bound on how many ids "Select all N" (review-risk.js) will ever
+// resolve in one request. Every Review Risk bulk action -- Comment, Reassign
+// Owner, Reassign Mitigation Owner, Change Status, Close Risk -- sends this
+// whole set to ONE batch endpoint below (saveCommentBatch()/
+// updateRiskOwnerBatch()/saveMitigationOwnerBatch()/updateStatusBatch()/
+// closeRiskBatch()) rather than looping a single-risk endpoint client-side.
+// Kept well below Governance Controls' bulk-delete cap of 2000 regardless,
+// since every id here still drives its own check_access_for_risk() call, DB
+// row lookup and write inside the batch endpoint's request.
+const REVIEW_RISK_SELECT_ALL_MAX = 500;
 
-    global $lang;
-    global $escaper;
-
-    // If the user has risk management permissions
-    if (check_permission("riskmanagement"))
-    {
-        $user = get_user_by_id($_SESSION['uid']);
-        $settings = json_decode($user["custom_perform_reviews_display_settings"] ?? '', true);
-        $risk_colums_setting = isset($settings["risk_colums"])?$settings["risk_colums"]:[];
-        $mitigation_colums_setting = isset($settings["mitigation_colums"])?$settings["mitigation_colums"]:[];
-        $review_colums_setting = isset($settings["review_colums"])?$settings["review_colums"]:[];
-        $columns_setting = array_merge($risk_colums_setting, $mitigation_colums_setting, $review_colums_setting);
-        $columns = [];
-
-        foreach($columns_setting as $column) {
-            if(stripos($column[0], "custom_field_") !== false) {
-                if(customization_extra() && $column[1] == 1) $columns[] = $column[0];
-            } else if($column[1] == 1) {
-                $columns[] = $column[0];
-            }
-        }
-        if(!count($columns)){
-            $columns = array("id","risk_status","subject","calculated_risk","submission_date","mitigation_planned","management_review");
-        }
-
-        $draw = $escaper->escapeHtml($_POST['draw']);
-
-        $start  = $_POST['start'] ? (int)$_POST['start'] : 0;
-        $length = $_POST['length'] ? (int)$_POST['length'] : 10;
-
-        // In case there's no column selected that is orderable the order won't be sent from the client
-        if (!empty($_POST['order'])) {
-
-            // @phan-suppress-next-line PhanTypeMismatchDimFetch,PhanTypeArraySuspiciousNullable,PhanTypeArraySuspiciousNull,PhanTypePossiblyInvalidDimOffset
-            $orderColumn = isset($_POST['order'][0]['column']) ? $_POST['order'][0]['column'] : "";
-            // @phan-suppress-next-line PhanTypeMismatchDimFetch,PhanTypeArraySuspiciousNullable,PhanTypeArraySuspiciousNull,PhanTypePossiblyInvalidDimOffset
-            $orderColumnName = isset($_POST['columns'][$orderColumn]['name']) ? $_POST['columns'][$orderColumn]['name'] : null;
-            // @phan-suppress-next-line PhanTypeMismatchDimFetch,PhanTypeArraySuspiciousNullable,PhanTypeArraySuspiciousNull,PhanTypePossiblyInvalidDimOffset
-            $orderDir = !empty($_POST['order'][0]['dir']) && strtolower($_POST['order'][0]['dir']) === 'asc'? 'asc' : 'desc';
-
-        } else {
-
-            // Default ordering by id ascending if no order is specified
-            $orderColumnName = 'id';
-            $orderDir = "asc";
-
-        }
-
-        $column_filters = [];
-        for ( $i=0 ; $i<count($_POST['columns']) ; $i++ ) {
-            // @phan-suppress-next-line PhanTypeMismatchDimFetch,PhanTypeArraySuspiciousNullable,PhanTypeArraySuspiciousNull,PhanTypePossiblyInvalidDimOffset
-            if ( isset($_POST['columns'][$i]) && $_POST['columns'][$i]['searchable'] == "true" && $_POST['columns'][$i]['search']['value'] != '' ) {
-                // @phan-suppress-next-line PhanTypeMismatchDimFetch,PhanTypeArraySuspiciousNullable,PhanTypeArraySuspiciousNull,PhanTypePossiblyInvalidDimOffset
-                $column_filters[$_POST['columns'][$i]['name']] = $_POST['columns'][$i]['search']['value'];
-            }
-        }
-
-        // Get risks requiring mitigations
-        $risks = get_risks(2, $orderColumnName, $orderDir);
-
-        $encryption_columns = array("regulation", "project", "risk_assessment", "additional_notes", "current_solution", "security_recommendations", "security_requirements", "comments");
-
-        if(encryption_extra()&&in_array($orderColumnName, $encryption_columns)){
-            $decrypted_risks = array();
-            foreach($risks as $risk)
-            {
-                $risk['encryption_order'] = try_decrypt($risk[$orderColumnName]);
-                $decrypted_risks[] = $risk;
-            }
-            $risks = $decrypted_risks;
-            usort($risks, function($a, $b) use ($orderDir) {
-                if($orderDir == "asc") 
-                    return strcasecmp($a['encryption_order'], $b['encryption_order']);
-                else 
-                    return strcasecmp($b['encryption_order'], $a['encryption_order']);
-            });
-        }
-
-        $risk_levels = get_risk_levels();
-        $review_levels = get_review_levels();
-
-        // If we're ordering by the 'management_review' column
-        if ($orderColumnName === 'management_review') {
-            // Calculate the 'management_review' values
-            foreach($risks as &$risk) {
-                $risk_level = get_risk_level_name($risk['calculated_risk']);
-                $residual_risk_level = get_risk_level_name($risk['residual_risk']);
-
-                // If next_review_date_uses setting is Residual Risk.
-                if(get_setting('next_review_date_uses') == "ResidualRisk")
-                {
-                    $next_review = next_review($residual_risk_level, $risk['id'], $risk['next_review'], false, $review_levels);
-                }
-                // If next_review_date_uses setting is Inherent Risk.
-                else
-                {
-                    $next_review = next_review($risk_level, $risk['id'], $risk['next_review'], false, $review_levels);
-                }
-
-                $risk['management_review'] = management_review($risk['id'], $risk['mgmt_review'], $next_review);
-                $risk['management_review_text'] = management_review_text_only($risk['mgmt_review'], $next_review);
-            }
-            unset($risk);
-
-            // Sorting by the management review text as the normal 'management_review' field contains html
-            usort($risks, function($a, $b) use ($orderDir){
-                // For identical management reviews we're sorting on the id, so the results' order is not changing
-                if ($a['management_review_text'] === $b['management_review_text']) {
-                    return (int)$a['id'] - (int)$b['id'];
-                }
-                if($orderDir == "asc") {
-                    return strcmp($a['management_review_text'], $b['management_review_text']);
-                } else {
-                    return strcmp($b['management_review_text'], $a['management_review_text']);
-                }
-            });
-        }
-
-        // If we're ordering by the 'Next Review Date' column
-        if ($orderColumnName === 'next_review_date') {
-            // Calculate the 'management_review' values
-            foreach($risks as &$risk) {
-                $risk_level = get_risk_level_name($risk['calculated_risk']);
-                $residual_risk_level = get_risk_level_name($risk['residual_risk']);
-
-                // If next_review_date_uses setting is Residual Risk.
-                if(get_setting('next_review_date_uses') == "ResidualRisk")
-                {
-                    $next_review = next_review($residual_risk_level, $risk['id'], $risk['next_review'], false, $review_levels);
-                }
-                // If next_review_date_uses setting is Inherent Risk.
-                else
-                {
-                    $next_review = next_review($risk_level, $risk['id'], $risk['next_review'], false, $review_levels);
-                }
-
-                $risk['next_review_text'] = $next_review;
-            }
-
-            // Sorting by the management review text as the normal 'management_review' field contains html
-            usort($risks, function($a, $b) use ($orderDir){
-                // For identical management reviews we're sorting on the id, so the results' order is not changing
-                if ($a['next_review_text'] === $b['next_review_text']) {
-                    return (int)$a['id'] - (int)$b['id'];
-                }
-                if($orderDir == "asc") {
-                    return strcmp($a['next_review_text'], $b['next_review_text']);
-                } else {
-                    return strcmp($b['next_review_text'], $a['next_review_text']);
-                }
-            });
-        }
-
-       
-        $review_levels = get_review_levels();
-
-        $risks_data = [];
-        foreach ($risks as $key=>$risk)
-        {
-            $color = get_risk_color($risk['calculated_risk']);
-
-            $residual_color = get_risk_color($risk['residual_risk']);
-
-            $risk_level = get_risk_level_name($risk['calculated_risk']);
-            $residual_risk_level = get_risk_level_name($risk['residual_risk']);
-
-            // If next_review_date_uses setting is Residual Risk.
-            if(get_setting('next_review_date_uses') == "ResidualRisk")
-            {
-                $next_review = next_review($residual_risk_level, $risk['id'], $risk['next_review'], false, $review_levels);
-            }
-            // If next_review_date_uses setting is Inherent Risk.
-            else
-            {
-                $next_review = next_review($risk_level, $risk['id'], $risk['next_review'], false, $review_levels);
-            }
-            $submission_date = date(get_default_datetime_format("g:i A T"), strtotime($risk['submission_date']));
-            $mitigation_planned = planned_mitigation(convert_to_risk_id($risk['id']), $risk['mitigation_id'], "PerformManagementReviews");
-            $management_review = management_review(convert_to_risk_id($risk['id']), $risk['mgmt_review'], $next_review, true, "PerformManagementReviews");
-            $data_row = [];
-            // Storing the data in a different format for filtering
-            // no html - so filtering on 'div' won't return items with <div> in it
-            // unencrypted - so don't have to unencrypt again for filtering
-            // unescaped - so you can find the correct items searching for '&'
-            $filter_data = [];
-            foreach($columns as $column){
-                switch ($column) {
-                    default :
-                        if(($pos = stripos($column, "custom_field_")) !== false){
-                            if(customization_extra()){
-                                $field_id = str_replace("custom_field_", "", $column);
-                                $custom_values = getCustomFieldValuesByRiskId(convert_to_risk_id($risk['id']));
-                                $text = "";
-                                // Get value of custom filed
-                                foreach($custom_values as $custom_value)
-                                {
-                                    // Check if this custom value is for the active field
-                                    if($custom_value['field_id'] == $field_id) {
-                                        $text = get_custom_field_name_by_value($field_id, $custom_value['field_type'], $custom_value['encryption'], $custom_value['value']);
-                                        break;
-                                    }
-                                }
-                                $data_row[] = $text;
-                                $risk[$column] = strip_tags($text);
-                                $filter_data[$column] = $risk[$column];
-                            }
-                        } else {
-                            $data_row[] = $escaper->escapeHtml($risk[$column]);
-                            $filter_data[$column] = $risk[$column];
-                        }
-                        break;
-                    case "id":
-                        $id = convert_to_risk_id($risk['id']);
-                        $data_row[] = "<div data-id='{$id}' class='open-risk'><a class='open-in-new-tab' href='../management/view.php?id={$id}&active=PerformManagementReviews#review' target='_blank'>{$id}</a></div>";
-                        $filter_data[$column] = $id;
-                        break;
-                    case "risk_status":
-                        $data_row[] = $escaper->escapeHtml($risk['status']);
-                        $filter_data[$column] = $risk['status'];
-                        break;
-                    case "calculated_risk":
-                        $data_row[] = "<div class='" . $escaper->escapeHtml($color) . "'><div class='risk-cell-holder' style='position:relative;'>" . $escaper->escapeHtml($risk['calculated_risk']) . "<span class='risk-color' style='background-color:" . $escaper->escapeCssColor($color) . "'></span></div></div>";
-                        $filter_data[$column] = $risk['calculated_risk'];
-                        break;
-                    case "residual_risk":
-                        $data_row[] = "
-                            <div class='{$escaper->escapeHtml($residual_color)}'>
-                                <div class='risk-cell-holder' style='position:relative;'>
-                                    {$escaper->escapeHtml($risk['residual_risk'])}
-                                    <span class='risk-color' style='background-color:{$escaper->escapeCssColor($residual_color)}'></span>
-                                </div>
-                            </div>
-                        ";
-                        $filter_data[$column] = $risk['residual_risk'];
-                        break;
-                    case "submission_date":
-                        $data_row[] = $escaper->escapeHtml($submission_date);
-                        $filter_data[$column] = $submission_date;
-                        break;
-                    case "mitigation_planned":
-                        $data_row[] = "<div data-id=" . $escaper->escapeHtml(convert_to_risk_id($risk['id'])) . " class='text-center open-mitigation mitigation active-cell' >" . $mitigation_planned . "</div>";
-                        $filter_data[$column] = $mitigation_planned;
-                        break;
-                    case "management_review":
-                        $data_row[] = "<div data-id=" . $escaper->escapeHtml(convert_to_risk_id($risk['id'])) . " class='text-center open-review management active-cell'>" . $management_review . "</div>";
-                        $filter_data[$column] = $management_review;
-                        break;
-                    case "closure_date":
-                        $filter_data[$column] = format_datetime($risk['closure_date'], "", "H:i");
-                        $data_row[] = $escaper->escapeHtml($filter_data[$column]);
-                        break;
-                    case "regulation":
-                        $filter_data[$column] = try_decrypt($risk["regulation"]);
-                        $data_row[] = $escaper->escapeHtml($filter_data[$column]);
-                        break;
-                    case "scoring_method":
-                        $filter_data[$column] = get_scoring_method_name($risk["scoring_method"]);
-                        $data_row[] = $escaper->escapeHtml($filter_data[$column]);
-                        break;
-                    case "project":
-                        $filter_data[$column] = try_decrypt($risk["project"]);
-                        $data_row[] = $escaper->escapeHtml($filter_data[$column]);
-                        break;
-                    case 'comments':
-                    case 'risk_assessment':
-                    case 'additional_notes':
-                    case 'current_solution':
-                    case 'security_recommendations':
-                    case 'security_requirements':
-                        $filter_data[$column] = try_decrypt($risk[$column]);
-                        $data_row[] = $escaper->purifyHtml($filter_data[$column]);
-                        break;
-                    case "affected_assets":
-                        // Do a lookup for the list of affected assets
-                        $affected_assets = '';
-                        $assets_array = [];
-
-                        // If the affected assets or affected asset groups is not empty
-                        if ($risk['affected_assets']) {
-                            foreach (explode(', ', $risk['affected_assets']) as $asset) {
-                                $asset = try_decrypt($asset);
-                                $affected_assets .= "<span class='asset'>" . $escaper->escapeHtml($asset) . "</span>";
-                                $assets_array []= $asset;
-                            }
-                        }
-
-                        if ($risk['affected_asset_groups']) {
-                            foreach (explode(', ', $risk['affected_asset_groups']) as $group) {
-                                $affected_assets .= "<span class='group'>" . $escaper->escapeHtml($group) . "</span>";
-                                $assets_array []= $group;
-                            }
-                        }
-
-                        $data_row[] = $affected_assets ? "<div class='affected-asset-cell'>{$affected_assets}</div>" : '';
-                        $filter_data[$column] = !empty($assets_array) ? implode(' ', $assets_array) : '';
-                        break;
-                    case "mitigation_cost":
-                        $mitigation_min_cost = $risk['mitigation_min_cost'];
-                        $mitigation_max_cost = $risk['mitigation_max_cost'];
-                        // If the mitigation costs are empty
-                        if (empty($mitigation_min_cost) && empty($mitigation_max_cost))
-                        {
-                            // Return no value
-                            $mitigation_cost = "";
-                        }
-                        else
-                        {
-                            $currency = get_currency_symbol();
-                            $mitigation_cost = $currency . $mitigation_min_cost . " to " . $currency . $mitigation_max_cost;
-                            if (!empty($risk['valuation_level_name']))
-                                $mitigation_cost .= " ({$risk['valuation_level_name']})";
-                        }
-                        $data_row[] = $escaper->escapeHtml($mitigation_cost);
-                        $filter_data[$column] = $mitigation_cost;
-                        break;
-                    case "mitigation_accepted":
-                        $mitigation_accepted = $risk['mitigation_accepted'] ? $lang['Yes'] : $lang['No'];
-                        $data_row[] = $escaper->escapeHtml($mitigation_accepted);
-                        $filter_data[$column] = $mitigation_accepted;
-                        break;
-                    case "mitigation_date":
-                        $filter_data[$column] = format_datetime($risk['mitigation_date'], "", "H:i");
-                        $data_row[] = $escaper->escapeHtml($filter_data[$column]);
-                        break;
-                    case "review_date":
-                        $filter_data[$column] = format_datetime($risk['review_date'], "", "H:i");
-                        $data_row[] = $escaper->escapeHtml($filter_data[$column]);
-                        break;
-                    case "planning_date":
-                        $filter_data[$column] = format_datetime($risk['planning_date'], "", "");
-                        $data_row[] = $escaper->escapeHtml($filter_data[$column]);
-                        break;
-                    case "next_review_date":
-                        $data_row[] = $escaper->escapeHtml($next_review);
-                        $filter_data[$column] = $next_review;
-                        break;
-                    case "risk_tags":
-                        $tags = "";
-                        $filter_data[$column] = '';
-                        if ($risk['risk_tags']) {
-                            $filter_data[$column] = str_getcsv($risk['risk_tags'], '|', '"', '');
-                            foreach($filter_data[$column] as $tag) {
-                                $tags .= "<button class='btn btn-secondary btn-sm' style='pointer-events: none;margin: 1px;padding: 4px 12px;' role='button' aria-disabled='true'>" . $escaper->escapeHtml($tag) . "</button>";
-                            }
-                        }
-                        $data_row[] = $tags;
-                        break;
-                    case "risk_mapping":
-                        if (!empty($risk['risk_catalog_mapping'])) {
-                            $filter_data[$column] = get_names_by_multi_values("risk_catalog", $risk['risk_catalog_mapping'], false, ", ", true);
-                            $data_row[] = $escaper->escapeHtml($filter_data[$column]);
-                        } else {
-                            $data_row[] = '';
-                            $filter_data[$column] = '';
-                        }
-                        break;
-                    case "threat_mapping":
-                        if (!empty($risk['threat_catalog_mapping'])) {
-                            $filter_data[$column] = get_names_by_multi_values("threat_catalog", $risk['threat_catalog_mapping'], false, ", ", true);
-                            $data_row[] = $escaper->escapeHtml($filter_data[$column]);
-                        } else {
-                            $data_row[] = '';
-                            $filter_data[$column] = '';
-                        }
-                        break;
-                }
-            }
-            $risk["data_row"] = $data_row;
-            $risk["filter_data"] = $filter_data;
-            $risks_data[] = $risk;
-        }
-
-        if(($pos = stripos($orderColumnName, "custom_field_")) !== false){
-            // Sorting by the custom field review text as the normal 'management_review' field contains html
-            usort($risks_data, function($a, $b) use ($orderDir, $orderColumnName){
-                // For identical custom fields we're sorting on the id, so the results' order is not changing
-                if ($a[$orderColumnName] === $b[$orderColumnName]) {
-                    return (int)$a['id'] - (int)$b['id'];
-                }
-                if($orderDir == "asc") {
-                    return strcmp($a[$orderColumnName], $b[$orderColumnName]);
-                } else {
-                    return strcmp($b[$orderColumnName], $a[$orderColumnName]);
-                }
-            });
-        }
-
-        $data = array();
-        foreach ($risks_data as $key=>$risk) {
-            // column filter
-            $filter_data = $risk["filter_data"];
-            $success = true;
-            foreach($column_filters as $column_name => $val){
-                switch ($column_name) {
-                    default :
-                        // Passing null to parameter 1 of type string in stripos is deprecated.
-                        if(stripos($filter_data[$column_name] ?? "", $val) === false){
-                            $success = false;
-                        }
-                        break;
-                    case "risk_tags":
-                        // @phan-suppress-next-line PhanTypePossiblyInvalidDimOffset
-                        if ($filter_data['risk_tags']) {
-                            $tag_match = false;
-                            // @phan-suppress-next-line PhanTypePossiblyInvalidDimOffset
-                            foreach ($filter_data['risk_tags'] as $tag) {
-                                $tag_match = $tag_match || stripos($tag, $val) !== false;
-                                if ($tag_match) {
-                                    break;
-                                }
-                            }
-                            if (!$tag_match) {
-                                $success = false;
-                            }
-                        } else {
-                            $success = false;
-                        }
-                        break;
-                }
-            }
-            if($success == true) $data[] = $risk["data_row"];
-        }
-        $risks_by_page = [];
-
-        if($length == -1)
-        {
-            $risks_by_page = $data;
-        }
-        else
-        {
-            for($i=$start; $i<count($data) && $i<$start + $length; $i++){
-                $risks_by_page[] = $data[$i];
-            }
-        }
-        $recordsTotal = count($data);
-        $result = array(
-            'draw' => $draw,
-            'data' => $risks_by_page,
-            'recordsTotal' => $recordsTotal,
-            'recordsFiltered' => $recordsTotal,
-        );
-        // @phan-suppress-next-line SecurityCheck-XSS -- json_encode() output for DataTables; all columns escaped via escapeHtml()/purifyHtml() in switch block
-        echo json_encode($result, JSON_INVALID_UTF8_SUBSTITUTE);
-        exit;
-    }
-    else
-    {
-        json_response(400, $escaper->escapeHtml($lang['NoPermissionForRiskManagement']), NULL);
-    }
+/**
+ * Normalises a bulk risk-action `risk_ids[]` POST array into a capped list of
+ * positive integer DISPLAY ids (raw risks.id + 1000 -- the same id shape
+ * every single-risk endpoint these batch endpoints replace takes over the
+ * wire; see e.g. addCommentToOne()'s comment in review-risk.js for why the
+ * DISPLAY id, not the raw one, travels over the wire).
+ *
+ * Same contract and shape as normalize_bulk_approve_ids() (includes/
+ * governance.php) -- both are now thin wrappers around the shared
+ * normalize_bulk_ids() (includes/functions.php), which holds the one actual
+ * implementation: drops anything that isn't a scalar decimal-digit string
+ * (a nested-array member would otherwise reach `(string)$raw_id` and raise
+ * "Array to string conversion"), caps at $max, and reports via the
+ * by-reference $truncated out-param whether the cap actually dropped a real
+ * id (as opposed to merely filtering out junk) -- callers surface this in
+ * their JSON response the same way batch_approve_document_api() does.
+ *
+ * Pure: no session, no DB. Directly unit-testable.
+ *
+ * @param  mixed $raw_ids
+ * @param  bool  $truncated
+ * @param  int   $max
+ * @return int[]
+ */
+function normalize_bulk_risk_ids($raw_ids, &$truncated = null, $max = REVIEW_RISK_SELECT_ALL_MAX) {
+    return normalize_bulk_ids($raw_ids, $max, $truncated);
 }
 
-/*********************************************************
- * FUNCTION: RETURN JSON DATA FOR REVIEW RISKS DATATABLE *
- *********************************************************/
-function getReviewRisksDatatableResponse()
+/*******************************************************************************
+ * FUNCTION: RUN BATCH MUTATION                                                *
+ * Shared per-id authorization + mutation loop behind every "select all N"     *
+ * batch endpoint that re-runs its own permission check, then its own          *
+ * object-level access check, for EVERY id in the (already normalized/capped)  *
+ * $ids list -- skipping (never aborting on) a denied id and moving on to the  *
+ * next one. This is the exact shape hand-duplicated across closeRiskBatch(),  *
+ * updateStatusBatch(), saveCommentBatch(), updateRiskOwnerBatch(), and        *
+ * saveMitigationOwnerBatch() (this file), and                                 *
+ * api_v2_compliance_audits_batch_delete(), api_v2_compliance_tests_batch_retire(),*
+ * and api_v2_compliance_tests_batch_delete() (api/v2/includes/compliance.php) --*
+ * extracted here so the loop itself exists exactly once; each caller supplies *
+ * its own check/mutate closures and is otherwise untouched.                   *
+ *                                                                              *
+ * $checkPermission($id) -- the endpoint's module/action permission check.     *
+ *   For the risk endpoints this doesn't actually depend on $id (permission is *
+ *   not id-scoped), but it is still invoked once per iteration to match the   *
+ *   pre-extraction behavior exactly: a caller with no permission gets every   *
+ *   single id counted as denied_by_permission, never one up-front            *
+ *   short-circuit. The compliance endpoints already check their (also        *
+ *   not id-scoped) permission ONCE before the batch starts -- their own fixed *
+ *   gate, exiting via json_response before this helper is ever called -- so   *
+ *   those callers pass a closure that always returns true, reproducing "no    *
+ *   per-id permission check" exactly as their original loops had it.          *
+ * $checkAccess($id)   -- the per-id object-level check_access_for_*() call.   *
+ * $checkExists($id)   -- optional; an existence/row-lookup check some         *
+ *   endpoints run after authorization and before mutating (e.g.               *
+ *   get_risk_by_id(), get_framework_control_test_by_id()). Pass null to skip  *
+ *   it entirely, exactly as the endpoints without such a check never ran one. *
+ * $mutate($id)        -- performs the actual per-id mutation.                 *
+ *                                                                              *
+ * Returns int counts: processed, denied_by_permission, denied_by_access,      *
+ * not_found. Callers that need the actual denied/failed id LISTS (rather than *
+ * just counts) -- the compliance endpoints' `denied_ids`/`failed_ids` response *
+ * fields -- capture them into a variable from inside their own $checkAccess/   *
+ * $checkExists closures (by reference); the counts this function returns      *
+ * always agree with the sizes of those lists, since every push corresponds to *
+ * exactly one denial/not-found and vice versa.                                *
+ *******************************************************************************/
+function run_batch_mutation(array $ids, callable $checkPermission, callable $checkAccess, callable $mutate, ?callable $checkExists = null): array
 {
-    global $lang;
-    global $escaper;
+    $processed = 0;
+    $denied_by_permission = 0;
+    $denied_by_access = 0;
+    $not_found = 0;
 
-    // If the user has risk management permissions
-    if (check_permission("riskmanagement"))
-    {
-        $user = get_user_by_id($_SESSION['uid']);
-        $settings = json_decode($user["custom_reviewregularly_display_settings"] ?? '', true);
-        $risk_colums_setting = isset($settings["risk_colums"])?$settings["risk_colums"]:[];
-        $mitigation_colums_setting = isset($settings["mitigation_colums"])?$settings["mitigation_colums"]:[];
-        $review_colums_setting = isset($settings["review_colums"])?$settings["review_colums"]:[];
-        $columns_setting = array_merge($risk_colums_setting, $mitigation_colums_setting, $review_colums_setting);
-        $columns = [];
-        foreach($columns_setting as $column){
-            if(stripos($column[0], "custom_field_") !== false){
-                if(customization_extra() && $column[1] == 1) $columns[] = $column[0];
-            } else if($column[1] == 1) $columns[] = $column[0];
+    foreach ($ids as $id) {
+        if (!$checkPermission($id)) {
+            $denied_by_permission++;
+            continue;
         }
-        if(!count($columns)){
-            $columns = array("id","risk_status","subject","calculated_risk","days_open","next_review_date");
+        if (!$checkAccess($id)) {
+            $denied_by_access++;
+            continue;
+        }
+        if ($checkExists !== null && !$checkExists($id)) {
+            $not_found++;
+            continue;
         }
 
-        $draw = $escaper->escapeHtml($_POST['draw']);
-
-        $start  = $_POST['start'] ? (int)$_POST['start'] : 0;
-        $length = $_POST['length'] ? (int)$_POST['length'] : 10;
-        // @phan-suppress-next-line PhanTypeMismatchDimFetch
-        $orderColumn = isset($_POST['order'][0]['column']) ? $_POST['order'][0]['column'] : "";
-        // @phan-suppress-next-line PhanTypeMismatchDimFetch
-        $orderColumnName = isset($_POST['columns'][$orderColumn]['name']) ? $_POST['columns'][$orderColumn]['name'] : null;
-        // @phan-suppress-next-line PhanTypeMismatchDimFetch
-        $orderDir = !empty($_POST['order'][0]['dir']) && strtolower($_POST['order'][0]['dir']) === 'asc'? 'asc' : 'desc';
-
-        $column_filters = [];
-        for ( $i=0 ; $i<count($_POST['columns']) ; $i++ ) {
-            // @phan-suppress-next-line PhanTypeMismatchDimFetch,PhanTypeArraySuspiciousNullable,PhanTypeArraySuspiciousNull,PhanTypePossiblyInvalidDimOffset
-            if ( isset($_POST['columns'][$i]) && $_POST['columns'][$i]['searchable'] == "true" && $_POST['columns'][$i]['search']['value'] != '' ) {
-                // @phan-suppress-next-line PhanTypeMismatchDimFetch,PhanTypeArraySuspiciousNullable,PhanTypeArraySuspiciousNull,PhanTypePossiblyInvalidDimOffset
-                $column_filters[$_POST['columns'][$i]['name']] = $_POST['columns'][$i]['search']['value'];
-            }
-        }
-
-        // Get the list of reviews
-        $risks = get_risks(3, $orderColumnName, $orderDir);
-
-        $encryption_columns = array("regulation", "project", "risk_assessment", "additional_notes", "current_solution", "security_recommendations", "security_requirements", "comments");
-
-        if(encryption_extra()&&in_array($orderColumnName, $encryption_columns)){
-            $decrypted_risks = array();
-            foreach($risks as $risk)
-            {
-                $risk['encryption_order'] = try_decrypt($risk[$orderColumnName]);
-                $decrypted_risks[] = $risk;
-            }
-            $risks = $decrypted_risks;
-            usort($risks, function($a, $b) use ($orderDir) {
-                if($orderDir == "asc") 
-                    return strcasecmp($a['encryption_order'], $b['encryption_order']);
-                else 
-                    return strcasecmp($b['encryption_order'], $a['encryption_order']);
-            });
-        }
-
-        // Initialize the arrays
-        $sorted_reviews = array();
-        $need_reviews = array();
-        $need_next_review = array();
-        $need_calculated_risk = array();
-        $reviews = array();
-        $date_next_review = array();
-        $date_calculated_risk = array();
-
-        $risk_levels = get_risk_levels();
-        $next_review_date_uses = get_setting('next_review_date_uses');
-
-        $review_levels = get_review_levels();
-
-        // If we're ordering by the 'management_review' column
-        if ($orderColumnName === 'management_review') {
-            // Calculate the 'management_review' values
-            foreach($risks as &$risk) {
-                $risk_level = get_risk_level_name($risk['calculated_risk']);
-                $residual_risk_level = get_risk_level_name($risk['residual_risk']);
-
-                // If next_review_date_uses setting is Residual Risk.
-                if(get_setting('next_review_date_uses') == "ResidualRisk")
-                {
-                    $next_review = next_review($residual_risk_level, $risk['id'], $risk['next_review'], false, $review_levels);
-                }
-                // If next_review_date_uses setting is Inherent Risk.
-                else
-                {
-                    $next_review = next_review($risk_level, $risk['id'], $risk['next_review'], false, $review_levels);
-                }
-
-                $risk['management_review'] = management_review($risk['id'], $risk['mgmt_review'], $next_review);
-                $risk['management_review_text'] = management_review_text_only($risk['mgmt_review'], $next_review);
-            }
-            unset($risk);
-
-            // Sorting by the management review text as the normal 'management_review' field contains html
-            usort($risks, function($a, $b) use ($orderDir){
-                // For identical management reviews we're sorting on the id, so the results' order is not changing
-                if ($a['management_review_text'] === $b['management_review_text']) {
-                    return (int)$a['id'] - (int)$b['id'];
-                }
-                if($orderDir == "asc") {
-                    return strcmp($a['management_review_text'], $b['management_review_text']);
-                } else {
-                    return strcmp($b['management_review_text'], $a['management_review_text']);
-                }
-            });
-        }
-
-        $risk_id = [];
-        $subject = [];
-        $status = [];
-        $calculated_risk = [];
-        $color = [];
-        $dayssince = [];
-        $next_review = [];
-        $next_review_html = [];
-
-        // Parse through each row in the array
-        foreach ($risks as $key => $row)
-        {
-            // Create arrays for each value
-            $risk_id[$key] = (int)$row['id'];
-            $subject[$key] = $row['subject'];
-            $status[$key] = $row['status'];
-            $calculated_risk[$key] = $row['calculated_risk'];
-            $color[$key] = get_risk_color_from_levels($row['calculated_risk'], $risk_levels);
-            $risk_level = get_risk_level_name_from_levels($row['calculated_risk'], $risk_levels);
-            $residual_risk_level = get_risk_level_name_from_levels($row['residual_risk'], $risk_levels);
-//            $dayssince[$key] = dayssince($row['submission_date']);
-            $dayssince[$key] = $row['days_open'];
-
-            // If next_review_date_uses setting is Residual Risk.
-            if($next_review_date_uses == "ResidualRisk")
-            {
-                $next_review[$key] = next_review($residual_risk_level, $risk_id[$key], $row['next_review'], false);
-                $next_review_html[$key] = next_review($residual_risk_level, $row['id'], $row['next_review']);
-            }
-            // If next_review_date_uses setting is Inherent Risk.
-            else
-            {
-                $next_review[$key] = next_review($risk_level, $risk_id[$key], $row['next_review'], false);
-                $next_review_html[$key] = next_review($risk_level, $row['id'], $row['next_review']);
-            }
-
-            $sorted_reviews[] =  array('risk_id' => $risk_id[$key], 'subject' => $subject[$key], 'status' => $status[$key], 'calculated_risk' => $calculated_risk[$key], 'color' => $color[$key], 'dayssince' => $dayssince[$key], 'next_review' => $next_review[$key], 'next_review_html' => $next_review_html[$key], 'risk'=>$row);
-
-            // If the next review is UNREVIEWED or PAST DUE
-            if ($next_review[$key] == "UNREVIEWED" || $next_review[$key] == $lang['PASTDUE'])
-            {
-                // Create an array of the risks needing immediate review
-                $need_reviews[] = array('risk_id' => $risk_id[$key], 'subject' => $subject[$key], 'status' => $status[$key], 'calculated_risk' => $calculated_risk[$key], 'color' => $color[$key], 'dayssince' => $dayssince[$key], 'next_review' => $next_review[$key], 'next_review_html' => $next_review_html[$key], 'risk'=>$row);
-                $need_next_review[] = $next_review[$key];
-                $need_calculated_risk[] = $calculated_risk[$key];
-            }
-            // Otherwise it is an actual review date
-            else {
-                // Create an array of the risks with future reviews
-                $reviews[] = array('risk_id' => $risk_id[$key], 'subject' => $subject[$key], 'status' => $status[$key], 'calculated_risk' => $calculated_risk[$key], 'color' => $color[$key], 'dayssince' => $dayssince[$key], 'next_review' => $next_review[$key], 'next_review_html' => $next_review_html[$key], 'risk'=>$row);
-                // Convert next review to standard date fromat for sort
-                $standard_next_review = get_standard_date_from_default_format($next_review[$key]);
-                $date_next_review[] = $standard_next_review;
-                $date_calculated_risk[] = $calculated_risk[$key];
-            }
-        }
-        
-        if($orderColumnName == "next_review_date"){
-            // Sort the need reviews array by next_review
-            array_multisort($need_next_review, SORT_DESC, SORT_STRING, $need_calculated_risk, SORT_DESC, SORT_NUMERIC, $need_reviews);
-
-            // Sort the reviews array by next_review
-            array_multisort($date_next_review, SORT_ASC, SORT_STRING, $date_calculated_risk, SORT_DESC, SORT_NUMERIC, $reviews);
-
-            // Merge the two arrays back together to a single reviews array
-            $reviews = array_merge($need_reviews, $reviews);
-            
-            if($orderDir == "desc"){
-                $reviews = array_reverse($reviews);
-            }
-        }else{
-            $reviews = $sorted_reviews;
-        }
-        
-        $reviews_data = [];
-        foreach ($reviews as $key=>$review)
-        {
-            $risk = $review["risk"];
-            $risk_id = $review['risk_id'];
-            $subject = $review['subject'];
-            $status = $review['status'];
-            $calculated_risk = $review['calculated_risk'];
-            $color = $review['color'];
-            $residual_color = get_risk_color($risk['residual_risk']);
-            $dayssince = $review['dayssince'];
-            $next_review = $review['next_review'];
-            $next_review_html = $review['next_review_html'];
-            $submission_date = date(get_default_datetime_format("g:i A T"), strtotime($risk['submission_date']));
-            $mitigation_planned = planned_mitigation(convert_to_risk_id($risk['id']), $risk['mitigation_id'],"ReviewRisksRegularly");
-            $management_review = management_review(convert_to_risk_id($risk['id']), $risk['mgmt_review'], $next_review, true, "ReviewRisksRegularly");
-            $data_row = [];
-            // Storing the data in a different format for filtering
-            // no html - so filtering on 'div' won't return items with <div> in it
-            // unencrypted - so don't have to unencrypt again for filtering
-            // unescaped - so you can find the correct items searching for '&'
-            $filter_data = [];
-            foreach($columns as $column){
-                switch ($column) {
-                    default :
-                        if(($pos = stripos($column, "custom_field_")) !== false){
-                            if(customization_extra()){
-                                $field_id = str_replace("custom_field_", "", $column);
-                                $custom_values = getCustomFieldValuesByRiskId(convert_to_risk_id($risk['id']));
-                                $text = "";
-                                // Get value of custom filed
-                                foreach($custom_values as $custom_value)
-                                {
-                                    // Check if this custom value is for the active field
-                                    if($custom_value['field_id'] == $field_id){
-                                        $text = get_custom_field_name_by_value($field_id, $custom_value['field_type'], $custom_value['encryption'], $custom_value['value']);
-                                        break;
-                                    }
-                                }
-                                $data_row[] = $text;
-                                $risk[$column] = strip_tags($text);
-                                $filter_data[$column] = $risk[$column];
-                            }
-                        } else {
-                            $data_row[] = $escaper->escapeHtml($risk[$column]);
-                            $filter_data[$column] = $risk[$column];
-                        }
-                        break;
-                    case "id":
-                        $id = convert_to_risk_id($risk_id);
-                        $data_row[] = "<div data-id='{$id}' class='open-risk'><a target='_blank' class='open-in-new-tab' href='../management/view.php?id={$id}&active=ReviewRisksRegularly#review'>{$id}</a></div>";
-                        $filter_data[$column] = $id;
-                        break;
-                    case "risk_status":
-                        $data_row[] = $escaper->escapeHtml($status);
-                        $filter_data[$column] = $status;
-                        break;
-                    case "calculated_risk":
-                        $data_row[] = "<div class='".$escaper->escapeHtml($color)."'><div class='risk-cell-holder' style='position:relative;'>" . $escaper->escapeHtml($calculated_risk) . "<span class=\"risk-color\" style=\"background-color:" . $escaper->escapeCssColor($color) . "\"></span></div></div>";
-                        $filter_data[$column] = $calculated_risk;
-                        break;
-                    case "residual_risk":
-                        $data_row[] = "
-                            <div class='{$escaper->escapeHtml($residual_color)}'>
-                                <div class='risk-cell-holder' style='position:relative;'>
-                                    {$escaper->escapeHtml($risk['residual_risk'])}
-                                    <span class='risk-color' style='background-color:{$escaper->escapeCssColor($residual_color)}'></span>
-                                </div>
-                            </div>
-                        ";
-                        $filter_data[$column] = $risk['residual_risk'];
-                        break;
-                    case "days_open":
-                        $data_row[] = $escaper->escapeHtml($dayssince);
-                        $filter_data[$column] = $dayssince;
-                        break;
-                    case "submission_date":
-                        $data_row[] = $escaper->escapeHtml($submission_date);
-                        $filter_data[$column] = $submission_date;
-                        break;
-                    case "mitigation_planned":
-                        $data_row[] = "<div data-id=". $escaper->escapeHtml(convert_to_risk_id($risk['id'])) ." class=\"text-center open-mitigation mitigation active-cell\" >".$mitigation_planned."</div>";
-                        $filter_data[$column] = $mitigation_planned;
-                        break;
-                    case "management_review":
-                        $data_row[] = "<div data-id=". $escaper->escapeHtml(convert_to_risk_id($risk['id'])) ." class=\"text-center open-review management active-cell\">".$management_review."</div>";
-                        $filter_data[$column] = $management_review;
-                        break;
-                    case "closure_date":
-                        $filter_data[$column] = format_datetime($risk['closure_date'], "", "H:i");
-                        $data_row[] = $escaper->escapeHtml($filter_data[$column]);
-                        break;
-                    case "regulation":
-                        $filter_data[$column] = try_decrypt($risk["regulation"]);
-                        $data_row[] = $escaper->escapeHtml($filter_data[$column]);
-                        break;
-                    case "scoring_method":
-                        $filter_data[$column] = get_scoring_method_name($risk["scoring_method"]);
-                        $data_row[] = $escaper->escapeHtml($filter_data[$column]);
-                        break;
-                    case "project":
-                        $filter_data[$column] = try_decrypt($risk["project"]);
-                        $data_row[] = $escaper->escapeHtml($filter_data[$column]);
-                        break;
-                    case 'comments':
-                    case 'risk_assessment':
-                    case 'additional_notes':
-                    case 'current_solution':
-                    case 'security_recommendations':
-                    case 'security_requirements':
-                        $filter_data[$column] = try_decrypt($risk[$column]);
-                        $data_row[] = $escaper->purifyHtml($filter_data[$column]);
-                        break;
-                    case "affected_assets":
-                        // Do a lookup for the list of affected assets
-                        $affected_assets = '';
-                        $assets_array = [];
-
-                        // If the affected assets or affected asset groups is not empty
-                        if ($risk['affected_assets']) {
-                            foreach (explode(', ', $risk['affected_assets']) as $asset) {
-                                $asset = try_decrypt($asset);
-                                $affected_assets .= "<span class='asset'>" . $escaper->escapeHtml($asset) . "</span>";
-                                $assets_array []= $asset;
-                            }
-                        }
-
-                        if ($risk['affected_asset_groups']) {
-                            foreach (explode(', ', $risk['affected_asset_groups']) as $group) {
-                                $affected_assets .= "<span class='group'>" . $escaper->escapeHtml($group) . "</span>";
-                                $assets_array []= $group;
-                            }
-                        }
-
-                        $data_row[] = $affected_assets ? "<div class='affected-asset-cell'>{$affected_assets}</div>" : '';
-                        $filter_data[$column] = !empty($assets_array) ? implode(' ', $assets_array) : '';
-                        break;
-                    case "mitigation_cost":
-                        $mitigation_min_cost = $risk['mitigation_min_cost'];
-                        $mitigation_max_cost = $risk['mitigation_max_cost'];
-                        // If the mitigation costs are empty
-                        if (empty($mitigation_min_cost) && empty($mitigation_max_cost))
-                        {
-                                // Return no value
-                                $mitigation_cost = "";
-                        }
-                        else 
-                        {
-                            $currency = get_currency_symbol();
-                            $mitigation_cost = $currency . $mitigation_min_cost . " to " . $currency . $mitigation_max_cost;
-                            if (!empty($risk['valuation_level_name']))
-                                $mitigation_cost .= " ({$risk['valuation_level_name']})";
-                        }
-                        $data_row[] = $escaper->escapeHtml($mitigation_cost);
-                        $filter_data[$column] = $mitigation_cost;
-                        break;
-                    case "mitigation_accepted":
-                        $mitigation_accepted = $risk['mitigation_accepted'] ? $lang['Yes'] : $lang['No'];
-                        $data_row[] = $escaper->escapeHtml($mitigation_accepted);
-                        $filter_data[$column] = $mitigation_accepted;
-                        break;
-                    case "mitigation_date":
-                        $filter_data[$column] = format_datetime($risk['mitigation_date'], "", "H:i");
-                        $data_row[] = $escaper->escapeHtml($filter_data[$column]);
-                        break;
-                    case "review_date":
-                        $filter_data[$column] = format_datetime($risk['review_date'], "", "H:i");
-                        $data_row[] = $escaper->escapeHtml($filter_data[$column]);
-                        break;
-                    case "planning_date":
-                        $filter_data[$column] = format_datetime($risk['planning_date'], "", "");
-                        $data_row[] = $escaper->escapeHtml($filter_data[$column]);
-                        break;
-                    case "next_review_date":
-                        $data_row[] = "<div data-id=". $escaper->escapeHtml(convert_to_risk_id($risk_id)) ." class=\"text-center open-review\" >".$next_review_html."</div>";
-                        $filter_data[$column] = $next_review;
-                        break;
-                    case "risk_tags":
-                        $tags = "";
-                        $filter_data[$column] = '';
-                        if ($risk['risk_tags']) {
-                            $filter_data[$column] = str_getcsv($risk['risk_tags'], '|', '"', '');
-                            foreach($filter_data[$column] as $tag) {
-                                $tags .= "<button class=\"btn btn-secondary btn-sm\" style=\"pointer-events: none;margin: 1px;padding: 4px 12px;\" role=\"button\" aria-disabled=\"true\">" . $escaper->escapeHtml($tag) . "</button>";
-                            }
-                        }
-                        $data_row[] = $tags;
-                        break;
-                    case "risk_mapping":
-                        if (!empty($risk['risk_catalog_mapping'])) {
-                            $filter_data[$column] = get_names_by_multi_values("risk_catalog", $risk['risk_catalog_mapping'], false, ", ", true);
-                            $data_row[] = $escaper->escapeHtml($filter_data[$column]);
-                        } else {
-                            $data_row[] = '';
-                            $filter_data[$column] = '';
-                        }
-                        break;
-                    case "threat_mapping":
-                        if (!empty($risk['threat_catalog_mapping'])) {
-                            $filter_data[$column] = get_names_by_multi_values("threat_catalog", $risk['threat_catalog_mapping'], false, ", ", true);
-                            $data_row[] = $escaper->escapeHtml($filter_data[$column]);
-                        } else {
-                            $data_row[] = '';
-                            $filter_data[$column] = '';
-                        }
-                        break;
-                }
-            }
-            $review["data_row"] = $data_row;
-            $review["filter_data"] = $filter_data;
-            $review["risk"] = $risk;
-            $reviews_data[] = $review;
-        }
-
-        if(($pos = stripos($orderColumnName, "custom_field_")) !== false){
-            // Sorting by the custom field review text as the normal 'management_review' field contains html
-            usort($reviews_data, function($a, $b) use ($orderDir, $orderColumnName){
-                // For identical custom fields we're sorting on the id, so the results' order is not changing
-                if ($a["risk"][$orderColumnName] === $b["risk"][$orderColumnName]) {
-                    return (int)$a["risk"]['id'] - (int)$b["risk"]['id'];
-                }
-                if($orderDir == "asc") {
-                    return strcmp($a["risk"][$orderColumnName], $b["risk"][$orderColumnName]);
-                } else {
-                    return strcmp($b["risk"][$orderColumnName], $a["risk"][$orderColumnName]);
-                }
-            });
-        }
-
-        $data = array();
-        foreach ($reviews_data as $key=>$review)
-        {
-            $risk = $review["filter_data"];
-            // column filter 
-            $success = true;
-            foreach($column_filters as $column_name => $val){
-                switch ($column_name) {
-                    default :
-                        // Passing null to parameter 1 of type string in stripos is deprecated.
-                        if(stripos($risk[$column_name] ?? "", $val) === false){
-                            $success = false;
-                        }
-                        break;
-                    case "risk_tags":
-                        // @phan-suppress-next-line PhanTypePossiblyInvalidDimOffset
-                        if ($risk['risk_tags']) {
-                            $tag_match = false;
-                            // @phan-suppress-next-line PhanTypePossiblyInvalidDimOffset
-                            foreach ($risk['risk_tags'] as $tag) {
-                                $tag_match = $tag_match || stripos($tag, $val) !== false;
-                                if ($tag_match) {
-                                    break;
-                                }
-                            }
-                            if (!$tag_match) {
-                                $success = false;
-                            }
-                        } else {
-                            $success = false;
-                        }
-                        break;
-                }
-            }
-            if($success == true) $data[] = $review["data_row"];
-        }
-
-        $risks_by_page = [];
-
-        if($length == -1)
-        {
-            $risks_by_page = $data;
-        }
-        else
-        {
-            for($i=$start; $i<count($data) && $i<$start + $length; $i++){
-                $risks_by_page[] = $data[$i];
-            }
-        }
-        $recordsTotal = count($data);
-        $result = array(
-            'draw' => $draw,
-            'data' => $risks_by_page,
-            'recordsTotal' => $recordsTotal,
-            'recordsFiltered' => $recordsTotal,
-        );
-        // @phan-suppress-next-line SecurityCheck-XSS -- json_encode() output for DataTables; all columns escaped via escapeHtml()/purifyHtml() in switch block
-        echo json_encode($result, JSON_INVALID_UTF8_SUBSTITUTE);
-        exit;
+        $mutate($id);
+        $processed++;
     }
-    else
-    {
-        json_response(400, $escaper->escapeHtml($lang['NoPermissionForRiskManagement']), NULL);
+
+    return [
+        'processed' => $processed,
+        'denied_by_permission' => $denied_by_permission,
+        'denied_by_access' => $denied_by_access,
+        'not_found' => $not_found,
+    ];
+}
+
+/*******************************************************************
+ * FUNCTION: RESOLVE EVERY RISK ID MATCHING THE CURRENT FILTER      *
+ * "Select all N" (review-risk.js): unlike getReviewRiskDatatableResponse() *
+ * above, which returns one page, this resolves every id the SAME filter   *
+ * set would match across every page, via the shared                       *
+ * review_risk_evaluate_row()/review_risk_filter_ids() predicate           *
+ * (includes/reporting.php) -- so "select all" and "what the grid shows"   *
+ * can never disagree. The client merges the returned ids into its         *
+ * existing selectedIds map; every bulk action already just loops          *
+ * Object.keys(selectedIds), so no other client or server code needs to    *
+ * change to act on the full set.                                          *
+ *******************************************************************/
+function getReviewRiskFilteredIdsResponse()
+{
+    global $lang, $escaper;
+
+    // Same permission gate and lang key as getReviewRiskDatatableResponse()
+    // above -- this endpoint reads the exact same risk set.
+    if (!check_permission("riskmanagement")) {
+        json_response(403, $escaper->escapeHtml($lang['NoPermissionForRiskManagement']), NULL);
+        return;
     }
+
+    $filters = parse_review_risk_filter_request($_POST);
+
+    $review_levels = get_review_levels();
+    $review_permissions_by_level = [
+        get_risk_level_display_name('Very High') => !empty($_SESSION['review_veryhigh']),
+        get_risk_level_display_name('High') => !empty($_SESSION['review_high']),
+        get_risk_level_display_name('Medium') => !empty($_SESSION['review_medium']),
+        get_risk_level_display_name('Low') => !empty($_SESSION['review_low']),
+        get_risk_level_display_name('Insignificant') => !empty($_SESSION['review_insignificant']),
+    ];
+
+    // Same broadest-superset fetch getReviewRiskDatatableResponse() uses --
+    // see that function's own comment for why status scoping happens in PHP,
+    // not SQL. Reproducing that exact same $risks set (rather than, say,
+    // reusing getReviewRiskFilterOptions()'s older $status_scope-scoped
+    // get_risks() call) is what guarantees this endpoint's ids match exactly
+    // what the grid would show for the same filters.
+    $risks = get_risks(22, null, 'desc', 'all');
+
+    $ctx = array_merge($filters, [
+        'review_levels' => $review_levels,
+        'review_permissions_by_level' => $review_permissions_by_level,
+        'has_plan_mitigations' => !empty($_SESSION['plan_mitigations']),
+        'today_ymd' => date('Y-m-d'),
+    ]);
+
+    $ids = review_risk_filter_ids($risks, $ctx);
+
+    if (count($ids) > REVIEW_RISK_SELECT_ALL_MAX) {
+        json_response(400, select_all_too_many_matches_message(REVIEW_RISK_SELECT_ALL_MAX, 'Risks'), NULL);
+        return;
+    }
+
+    // Content-Type is NOT optional here: unlike json_response() (used by the
+    // 403/400 branches above), a bare echo never sets it, so without this
+    // header the browser has no MIME-type signal to auto-parse the body as
+    // JSON. jQuery then hands the click handler a raw STRING -- json.ids is
+    // undefined on a string, so "Select all N" silently selects nothing and
+    // reports no error anywhere (confirmed live: selectAllFiltered flips to
+    // true, but selectedIds never gains the resolved ids).
+    header('Content-Type: application/json');
+    echo json_encode([
+        'ids' => $ids,
+        'total' => count($ids),
+    ], JSON_INVALID_UTF8_SUBSTITUTE);
+    exit;
+}
+
+/**********************************************************
+ * FUNCTION: GET FILTER OPTIONS FOR THE REVIEW RISK PAGE   *
+ **********************************************************/
+function getReviewRiskFilterOptions()
+{
+    global $lang, $escaper;
+
+    // 403 rather than 400: authorization refusal, matching
+    // getReviewRiskDatatableResponse()'s own convention above (and the same
+    // real lang key it uses -- 'NoRiskManagementPermission' does not exist).
+    if (!check_permission("riskmanagement")) {
+        json_response(403, $escaper->escapeHtml($lang['NoPermissionForRiskManagement']), NULL);
+        return;
+    }
+
+    // Per-option counts + cross-filter reactivity (design follow-up): each of
+    // the 3 secondary-filter dropdowns now shows how many risks currently
+    // match each option ("Josh Sokol (12)"), and an option with a count of 0
+    // is dropped from the list entirely -- a DELIBERATE deviation from
+    // design-system.md §5's stated default ("never hide a zero-count
+    // option"), requested by the product owner specifically for this page.
+    // Counts are faceted (standard "what would this filter show me" search
+    // UX): a dimension's own counts are computed against every OTHER active
+    // filter (the other 2 secondary filters, the action-type chip, the
+    // my-action-items/all-items scope, and the search box) but NOT against
+    // that dimension's own selection -- counting a facet against its own
+    // filter would only ever show a single non-zero value (whatever's
+    // already picked) and 0 for everything else, which defeats the purpose.
+    //
+    // This endpoint's DataTables sibling, getReviewRiskDatatableResponse()
+    // above, does the equivalent filtering entirely in PHP over an
+    // in-memory get_risks(22, ...) fetch (there is no SQL-level WHERE for
+    // any of this) because Review Risk's grid is `serverSide: true` -- only
+    // the current page of rows is ever in the browser, so these counts
+    // cannot be computed client-side the way governance-documents.js/
+    // compliance-define-tests.js compute their own facet counts from an
+    // already-fully-loaded row set. The sanitization below mirrors that
+    // function's $_POST handling exactly, just read from $_GET -- this
+    // endpoint is a plain $.ajax() GET call (loadFilterOptions(),
+    // review-risk.js), not a DataTables POST, but the same param names
+    // (action_type/my_action_items/user_filter[]/team_filter[]/
+    // risk_level_filter[]/search) are reused for consistency between the two
+    // handlers.
+    $action_type_raw = $_GET['action_type'] ?? 'all';
+    $action_type = in_array($action_type_raw, ['all', 'mitigation', 'review'], true) ? $action_type_raw : 'all';
+    $my_action_items = ($_GET['my_action_items'] ?? '1') !== '0';
+
+    // Status-scope toolbar control (All/Open/Closed) -- same param, same
+    // allowlist, same 'open' default as getReviewRiskDatatableResponse()
+    // above, so the 3 secondary filters' per-option counts stay consistent
+    // with whichever status scope is currently active (cross-filter
+    // reactivity, matching how these counts already react to action_type/
+    // my_action_items/search).
+    $status_scope_raw = $_GET['status_scope'] ?? 'open';
+    $status_scope = in_array($status_scope_raw, ['all', 'open', 'closed'], true) ? $status_scope_raw : 'open';
+
+    // 'All users'/'All teams' merge -- see getReviewRiskDatatableResponse()'s
+    // own comment above for the full rationale. Mirrored here so this
+    // endpoint's facet counts stay keyed the same way the datatable
+    // handler's row-matching is.
+    $multi_filters = [];
+    foreach (['user_filter' => 'user', 'team_filter' => 'team_all', 'risk_level_filter' => 'risk_level'] as $get_key => $filter_row_key) {
+        $raw = $_GET[$get_key] ?? [];
+        if (!is_array($raw)) {
+            continue; // Malformed/non-array GET value -- treat as no filter for this dimension rather than fatal.
+        }
+        $values = array_values(array_filter(array_map('strval', $raw), function ($v) {
+            return $v !== '';
+        }));
+        if (!empty($values)) {
+            $multi_filters[$filter_row_key] = $values;
+        }
+    }
+
+    // Unlike the datatable handler's search box, which rides DataTables' own
+    // $_POST['search']['value'] protocol, this endpoint's caller builds its
+    // own query string (loadFilterOptions(), review-risk.js), so the search
+    // term is just a plain top-level 'search' GET param.
+    $global_search = is_string($_GET['search'] ?? null) ? trim($_GET['search']) : '';
+
+    $risks_for_counts = get_risks(22, false, false, $status_scope);
+    $review_levels_for_counts = get_review_levels();
+
+    // Same resolution technique getReviewRiskDatatableResponse() uses above --
+    // keyed by the CURRENT resolved display name for each canonical level
+    // (admin-configurable, admin/risk_configuration.php), not the literal
+    // English string, since user_can_act_on_risk_need() looks this map up by
+    // $risk_level_name.
+    $review_permissions_by_level_for_counts = [
+        get_risk_level_display_name('Very High') => !empty($_SESSION['review_veryhigh']),
+        get_risk_level_display_name('High') => !empty($_SESSION['review_high']),
+        get_risk_level_display_name('Medium') => !empty($_SESSION['review_medium']),
+        get_risk_level_display_name('Low') => !empty($_SESSION['review_low']),
+        get_risk_level_display_name('Insignificant') => !empty($_SESSION['review_insignificant']),
+    ];
+    $has_plan_mitigations_for_counts = !empty($_SESSION['plan_mitigations']);
+
+    // Tallies keyed by each dimension's own option VALUE (a name string --
+    // user/team_all/risk_level are all resolved to display names below,
+    // matching what review-risk.js's nameOption()/riskLevelOption() send back
+    // as user_filter[]/team_filter[]/risk_level_filter[] values, and what
+    // $filter_row holds here and in the datatable handler). 'user'/'team_all'
+    // are the merged dimensions -- see getReviewRiskDatatableResponse()'s
+    // own comment for what each merges.
+    $dimension_counts = ['user' => [], 'team_all' => [], 'risk_level' => []];
+
+    foreach ($risks_for_counts as $risk) {
+        $needs_mitigation = (bool)$risk['needs_mitigation'];
+
+        // Same risk-level/urgency resolution as getReviewRiskDatatableResponse()
+        // above, via the shared review_risk_level_index() helper (reporting.php).
+        $risk_level_name = get_risk_level_name($risk['calculated_risk']);
+        $review_level_index = review_risk_level_index($risk_level_name);
+        $urgency = classify_review_urgency($risk['next_review'], $review_level_index, (int)$risk['id'], $review_levels_for_counts);
+        $needs_review = in_array($urgency['bucket'], ['unreviewed', 'past_due', 'due_soon'], true);
+
+        // Same status-scope needs-gate bypass as getReviewRiskDatatableResponse()
+        // above -- a Closed row is never dropped by the needs-gate when the
+        // caller asked to include closed risks at all (status_scope !== 'open').
+        $is_closed_row = (($risk['status'] ?? '') === 'Closed');
+        if (!($is_closed_row && $status_scope !== 'open')) {
+            if (!$needs_mitigation && !$needs_review) {
+                continue; // SQL superset over-fetched this row; it's not actually actionable.
+            }
+        }
+        if ($my_action_items && !user_can_act_on_risk_need($needs_mitigation, $needs_review, $risk_level_name, $has_plan_mitigations_for_counts, $review_permissions_by_level_for_counts)) {
+            continue;
+        }
+
+        $filter_row = [
+            'risk_level' => $risk_level_name,
+        ];
+        // 'All users'/'All teams' merge -- identical construction to
+        // getReviewRiskDatatableResponse()'s own copy (see that function's
+        // comment for the full rationale); kept as a separate copy rather
+        // than a shared helper for the same reason this whole loop already
+        // duplicates that function's risk-level/urgency resolution instead
+        // of factoring it out (see this loop's own docblock above).
+        $filter_row['user'] = array_values(array_unique(array_filter(array_map('trim', array_merge(
+            [$risk['owner'] ?? '', $risk['manager'] ?? '', $risk['submitted_by'] ?? '', $risk['mitigation_owner'] ?? '', $risk['reviewer'] ?? ''],
+            explode(',', $risk['additional_stakeholders'] ?? '')
+        )), function ($name) {
+            return $name !== '';
+        })));
+        $filter_row['team_all'] = array_values(array_unique(array_filter(array_map('trim', array_merge(
+            explode(',', $risk['team'] ?? ''),
+            explode(',', $risk['mitigation_team'] ?? '')
+        )), function ($name) {
+            return $name !== '';
+        })));
+
+        if ($global_search !== '') {
+            // Widened haystack -- kept identical to getReviewRiskDatatableResponse()'s
+            // own copy (see that function's comment) so this endpoint's
+            // faceted User/Team/Risk-Level counts never disagree with which
+            // rows the grid itself is actually showing for the same search
+            // term.
+            $haystack = $risk['id'] . ' ' . ((int)$risk['id'] + 1000) . ' ' . ($risk['subject'] ?? '') . ' ' . ($risk['owner'] ?? '')
+                . ' ' . ($risk['category'] ?? '') . ' ' . ($risk['risk_tags'] ?? '') . ' ' . ($risk['location'] ?? '')
+                . ' ' . ($risk['control_number'] ?? '') . ' ' . ($risk['reference_id'] ?? '') . ' ' . ($risk['submitted_by'] ?? '')
+                . ' ' . ($risk['technology'] ?? '');
+            if (stripos($haystack, $global_search) === false) {
+                continue;
+            }
+        }
+
+        // action_type gates the base eligible set for facet counting the
+        // same way it gates the datatable's own row set -- it isn't one of
+        // the 3 secondary-filter dimensions, so every dimension's counts
+        // apply it (same as my_action_items/global_search above), not just
+        // the "other 2 dimensions" treatment below.
+        if ($action_type === 'mitigation' && !$needs_mitigation) {
+            continue;
+        }
+        if ($action_type === 'review' && !$needs_review) {
+            continue;
+        }
+
+        // This row is in the base eligible set. Tally it into each of the 3
+        // facet dimensions, applying the OTHER 2 dimensions' own
+        // multi_filters selection (AND across dimensions, same
+        // array_intersect-based OR-within-a-dimension semantics as the
+        // datatable handler) but never this dimension's own -- see this
+        // block's docblock above for why.
+        foreach ($dimension_counts as $dimension => $ignored_existing_tallies) {
+            $other_filters_ok = true;
+            foreach ($multi_filters as $column_name => $values) {
+                if ($column_name === $dimension) {
+                    continue; // this dimension's own selection doesn't count against itself
+                }
+                $row_values = in_array($column_name, ['team_all', 'user'], true) ? $filter_row[$column_name] : [$filter_row[$column_name] ?? ''];
+                if (!array_intersect($row_values, $values)) {
+                    $other_filters_ok = false;
+                    break;
+                }
+            }
+            if (!$other_filters_ok) {
+                continue;
+            }
+            if (in_array($dimension, ['team_all', 'user'], true)) {
+                // A row can carry SEVERAL values in a merged dimension (e.g.
+                // belongs to 2 teams, or has 3 distinct user-role names) --
+                // tally every one, matching how the multi_filters match
+                // above treats these as array_intersect-any-of, not a single
+                // value. $filter_row[$dimension] is already the deduplicated
+                // array built above, so this can't double-count a name that
+                // appears in two roles on the same row.
+                foreach ($filter_row[$dimension] as $name) {
+                    $dimension_counts[$dimension][$name] = ($dimension_counts[$dimension][$name] ?? 0) + 1;
+                }
+            } else {
+                $value = $filter_row[$dimension] ?? '';
+                if ($value === '') {
+                    continue;
+                }
+                $dimension_counts[$dimension][$value] = ($dimension_counts[$dimension][$value] ?? 0) + 1;
+            }
+        }
+    }
+
+    // User/Team option lists all resolve to 'enabled_users'/'team',
+    // which get_options_from_table() routes to get_custom_table() -- the
+    // single centralized place Org-Hierarchy scoping lives (get_custom_table(),
+    // includes/functions.php: "enabled_users"/"disabled_users" and "team"
+    // branches both check `!is_admin() && organizational_hierarchy_extra()`
+    // and, when true, restrict the result to the caller's
+    // $_SESSION['selected_business_unit']). No new scoping logic here -- this
+    // is the same function every other Owner/Team dropdown in the app goes
+    // through. get_risk_levels() is a flat, unscoped config table (risk_levels)
+    // shared across the whole instance, so it needs no such guard.
+    //
+    // get_options_from_table('enabled_users') returns the FULL `user` table
+    // row (get_custom_table()'s "SELECT u.*, GROUP_CONCAT(...) AS teams ..."),
+    // not a clean {value, name} pair -- confirmed live against simplerisk-dev,
+    // where the raw response included every enabled user's bcrypt `password`
+    // hash, `salt`, and email. This endpoint is reachable by ANY caller with
+    // riskmanagement permission (not admin-only), so echoing those rows
+    // straight through would be a credential-hash disclosure. Every list is
+    // reduced to just the fields the filter <select>s need before it ever
+    // reaches json_encode().
+    //
+    // 'All users' merge (user request follow-up): a SINGLE option list now,
+    // tallied against $dimension_counts['user'] -- the merged count built
+    // above from all 6 user-bearing roles (Submitted By, Owner, Owner's
+    // Manager, Mitigation Owner, Reviewed By, Additional Stakeholders),
+    // already deduplicated per-row so a person filling two roles on the same
+    // risk only counts once. Replaces the former separate $owners/$reviewers
+    // lists -- there is only one user dropdown now.
+    //
+    // Not escaped here: these are free-text, user-controlled names (user/
+    // team) that the JS consumer (review-risk.js's populateSelect())
+    // escapes exactly once at render time via esc()/escAttr() -- matching
+    // CLAUDE.md's "escape once, at the render sink" rule rather than
+    // pre-escaping here and risking double-encoding.
+    $users = [];
+    // Bulk-reassignment follow-up (Reassign Owner/Reassign Mitigation Owner,
+    // review-risk.js): those two modals need every ENABLED user as a
+    // reassignment candidate, not just users who currently hold some role on
+    // a risk the active filters happen to show -- coupling them to $users
+    // above (which the 'All users' merge just widened to "owner OR manager
+    // OR submitted-by OR mitigation-owner OR reviewer OR stakeholder on a
+    // MATCHING risk") would silently drop every enabled user who isn't
+    // currently one of those 6 roles on a visible risk from the reassignment
+    // picker -- not what "who can I reassign this to" means. $all_users is
+    // therefore built from the SAME get_options_from_table('enabled_users')
+    // fetch with NO count-filtering at all (every enabled user, always) --
+    // still Org-Hierarchy-scoped, since that scoping lives inside
+    // get_options_from_table()/get_custom_table() itself (see this
+    // function's own docblock above), not in the count-filtering loop.
+    $all_users = [];
+    foreach (get_options_from_table('enabled_users') as $user_option) {
+        $user_count = $dimension_counts['user'][$user_option['name']] ?? 0;
+        if ($user_count > 0) {
+            $users[] = ['value' => $user_option['value'], 'name' => $user_option['name'], 'count' => $user_count];
+        }
+        $all_users[] = ['value' => $user_option['value'], 'name' => $user_option['name']];
+    }
+
+    // 'All teams' merge: tallied against $dimension_counts['team_all'],
+    // merging Team + Mitigation Team the same way 'user' merges its 6 roles
+    // above.
+    $teams = [];
+    foreach (get_options_from_table('team') as $team_option) {
+        $team_count = $dimension_counts['team_all'][$team_option['name']] ?? 0;
+        if ($team_count > 0) {
+            $teams[] = ['value' => $team_option['value'], 'name' => $team_option['name'], 'count' => $team_count];
+        }
+    }
+
+    // risk_levels rows also come back via PDO's default (FETCH_BOTH) fetch
+    // mode -- get_risk_levels() does a plain fetchAll() -- so the raw row
+    // additionally carries duplicate 0/1/2/... numeric-indexed copies of
+    // every column. Not a disclosure risk (same values, just duplicated),
+    // but there is no reason to double the payload; map down to the fields
+    // the JS actually uses (display_name/name for the option label+value,
+    // color/value kept for potential future use). $label mirrors
+    // get_risk_level_name()'s own display_name-then-name-then-"Insignificant"
+    // precedence (includes/functions.php) so this lookup key matches exactly
+    // what $dimension_counts['risk_level'] was tallied by above.
+    $levels = [];
+    foreach (get_risk_levels() as $level) {
+        $label = $level['display_name'] !== '' && $level['display_name'] !== null
+            ? $level['display_name']
+            : ($level['name'] !== '' && $level['name'] !== null ? $level['name'] : 'Insignificant');
+        $level_count = $dimension_counts['risk_level'][$label] ?? 0;
+        if ($level_count > 0) {
+            $levels[] = [
+                'value' => $level['value'],
+                'name' => $level['name'],
+                'display_name' => $level['display_name'],
+                'color' => $level['color'],
+                'count' => $level_count,
+            ];
+        }
+    }
+
+    // Task 13: the columns picker's saved state. Same $user/settings shape
+    // getReviewRiskDatatableResponse() above already reads (get_user_by_id() +
+    // json_decode() on custom_review_risk_display_settings, '?? ""' guarding
+    // a fresh install that predates the upgrade adding this column) -- a
+    // second, independent fetch rather than threading the datatable
+    // handler's $user through, since this is a different request/response
+    // cycle. Not escaped for the same reason owners/teams/levels above
+    // aren't: saveCustomReviewRiskDisplaySettingsAPI() already rejects any
+    // column name that isn't [A-Za-z0-9_]+ before it's ever stored
+    // (custom_display_columns_are_valid(), SR-1870), and the JS consumer
+    // (review-risk.js's applyColumnVisibility()/renderColpanel()) escapes at
+    // its own render sink regardless.
+    // Task 18: the Bulk Change Status modal's <select> options. get_options_
+    // from_table('status') routes to get_table_ordered_by_name('status') --
+    // a plain `SELECT * FROM status ORDER BY name`. Unlike owners/teams
+    // above, no field-pruning/remap is needed: the `status` table
+    // (includes/upgrade.php's CREATE TABLE) has only `value` (its
+    // AUTO_INCREMENT PRIMARY KEY) and `name` columns -- nothing sensitive,
+    // and already the exact {value, name} shape review-risk.js's
+    // populateSelect() expects. `value` is what updateStatusForm()
+    // (includes/api.php) reads as `$_POST['status']` and resolves via
+    // get_name_by_value("status", $status_id) (`WHERE value=:value`), so
+    // it's also the id this modal's submit handler must send back.
+    $statuses = get_options_from_table('status');
+
+    $user = get_user_by_id($_SESSION['uid']);
+    $column_settings = json_decode($user['custom_review_risk_display_settings'] ?? '', true);
+
+    // Unlike getReviewRiskDatatableResponse() above (whose caller is
+    // DataTables, which always forces `dataType: 'json'` on its own ajax
+    // call regardless of the response's Content-Type), this endpoint's
+    // caller is review-risk.js's loadFilterOptions() -- a plain $.ajax()
+    // call that lets jQuery auto-detect the response type from the
+    // Content-Type header. Without an explicit header here, PHP's default
+    // (text/html) leaves jQuery treating the body as a plain string, not a
+    // parsed object -- verified live: every populateSelect() call silently
+    // received `[]` and filterOptionsCache held the raw JSON text. Setting
+    // it explicitly is what makes '.done(function (opts) {...})' actually
+    // receive a parsed object.
+    header('Content-Type: application/json');
+    echo json_encode([
+        'users' => $users,
+        'all_users' => $all_users,
+        'teams' => $teams,
+        'levels' => $levels,
+        'statuses' => $statuses,
+        'column_settings' => $column_settings,
+        'active_columns' => build_active_review_risk_columns(),
+    ], JSON_INVALID_UTF8_SUBSTITUTE);
+    exit;
 }
 
 /*********************************************************
@@ -9857,6 +10152,68 @@ function batch_approve_document_api() {
 }
 
 /**
+ * Batch-deletes multiple documents in one request, mirroring
+ * batch_approve_document_api()'s shape exactly -- the Document Program grid's
+ * "Select all N" bulk bar (governance-documents.js) calls this instead of
+ * looping POST /documents/delete once per selected id.
+ *
+ * Same permission gate as the single-document delete_document_api() above
+ * (governance, then delete_documentation -- no is_admin() bypass difference).
+ * Per-id authorization is enforced exactly as delete_document_api() enforces
+ * it today: delete_document() (includes/governance.php) re-SELECTs the row
+ * against the caller's team-scoped WHERE clause (get_user_teams_query_for_documents()
+ * under Team Separation, unconditionally-true otherwise) before deleting, so
+ * an id outside the caller's teams -- or that simply doesn't exist -- fails
+ * that lookup and is not counted, exactly like any other failed
+ * delete_document() call. No id ever aborts the rest of the batch.
+ */
+function batch_delete_document_api() {
+    global $lang;
+    // is_admin() bypass -- see the identical comment in create_document_api().
+    if (!is_admin() && !check_permission("governance")) {
+        set_alert(true, "bad", $lang['NoPermissionForGovernance']);
+        json_response(400, get_alert(true), NULL);
+        return;
+    } elseif (!is_admin() && !check_permission('delete_documentation')) {
+        set_alert(true, "bad", $lang['NoDeleteDocumentationPermission']);
+        json_response(400, get_alert(true), NULL);
+        return;
+    }
+    if (empty($_POST['document_ids']) || !is_array($_POST['document_ids'])) {
+        set_alert(true, "bad", $lang['YouNeedToSpecifyAnIdParameter']);
+        json_response(400, get_alert(true), NULL);
+        return;
+    }
+    // Capped and element-filtered by normalize_bulk_approve_ids()
+    // (includes/governance.php) -- see batch_approve_document_api() above for
+    // the full cap/filter/truncation rationale; same contract here.
+    $deleted = 0;
+    $truncated = false;
+    foreach (normalize_bulk_approve_ids($_POST['document_ids'], $truncated) as $id) {
+        if (delete_document($id)) {
+            $deleted++;
+        }
+    }
+    // Unlike approve_document(), delete_document() calls set_alert() itself on
+    // a per-id failure (unauthorized/nonexistent id -- see its "bad" alert
+    // above). Left alone, a batch with several denied ids would stack that
+    // "bad" alert once per denial ahead of the summary below, flooding the
+    // caller with N near-identical toasts instead of the one clean summary
+    // batch_approve_document_api() returns. Discard those interim alerts --
+    // the response's `deleted` count (versus the number of ids submitted)
+    // already tells the caller how many were skipped, exactly as
+    // `approved` does for batch-approve.
+    clear_alert();
+    // _lang_raw, not _lang: get_alert(true) escapes the assembled string at read
+    // time, so pre-escaping the param here would double-encode it (CLAUDE.md's
+    // double-escaping rule). `limit` is an int constant either way.
+    set_alert(true, "good", $truncated
+        ? _lang_raw('DocumentsDeletedTruncated', array('limit' => GOVERNANCE_MAX_BULK_APPROVE_IDS))
+        : $lang['DocumentsDeleted']);
+    json_response(200, get_alert(true), array('deleted' => $deleted, 'truncated' => $truncated, 'limit' => GOVERNANCE_MAX_BULK_APPROVE_IDS));
+}
+
+/**
  * Version history for the Document Program grid's row expander -- every
  * historical compliance_files row for a document (get_document_versions_by_id(),
  * includes/governance.php), not just the one documents.file_id currently
@@ -10406,6 +10763,58 @@ function batch_approve_exception_api() {
         ? _lang_raw('ExceptionsApprovedTruncated', array('limit' => GOVERNANCE_MAX_BULK_APPROVE_IDS))
         : $lang['ExceptionsApproved']);
     json_response(200, get_alert(true), array('approved' => $approved, 'truncated' => $truncated, 'limit' => GOVERNANCE_MAX_BULK_APPROVE_IDS));
+}
+
+// Batch-deletes an arbitrary caller-supplied set of exception ids in one
+// request. NOT the same endpoint as batch_delete_exception_api() /
+// POST /exceptions/batch-delete above, which deletes every exception under
+// ONE policy/control parent -- this one deletes exactly the ids the caller
+// selected, wherever they live, mirroring batch_approve_exception_api()'s
+// shape (same cap/truncation via normalize_bulk_approve_ids()) for the
+// redesigned Define Exceptions grid's bulk bar (Task 11), which previously
+// looped POST /exceptions/delete once per selected row.
+//
+// Per-id authorization: delete_exception($id) itself re-runs the team-scope
+// guard (exception_policy_document_access_denied()) for every id it is
+// handed and returns false without deleting when denied or when the id
+// doesn't resolve to a row -- identical to what the single-exception
+// DELETE endpoint (delete_exception_api() above) enforces for its one id.
+// Looping that same per-id-checked call means a denied id is skipped (not
+// counted in `deleted`) and can never abort the rest of the batch; the base
+// `governance` + check_permission_exception('delete') checks below are the
+// same coarse gate delete_exception_api() applies before ever reaching an id.
+function batch_delete_exceptions_by_ids_api() {
+    global $lang;
+    if (!check_permission("governance")) {
+        set_alert(true, "bad", $lang['NoPermissionForGovernance']);
+        json_response(400, get_alert(true), NULL);
+        return;
+    } elseif (!check_permission_exception('delete')) {
+        set_alert(true, "bad", $lang['NoPermissionForExceptionDelete']);
+        json_response(400, get_alert(true), NULL);
+        return;
+    }
+    if (empty($_POST['exception_ids']) || !is_array($_POST['exception_ids'])) {
+        set_alert(true, "bad", $lang['YouNeedToSpecifyAnIdParameter']);
+        json_response(400, get_alert(true), NULL);
+        return;
+    }
+    // See batch_approve_exception_api() -- same cap, element filter and
+    // truncation signal. Each id is independently re-authorized by
+    // delete_exception() (see the function banner above); a denied or
+    // nonexistent id simply isn't counted below.
+    $deleted = 0;
+    $truncated = false;
+    foreach (normalize_bulk_approve_ids($_POST['exception_ids'], $truncated) as $id) {
+        if (delete_exception($id)) {
+            $deleted++;
+        }
+    }
+    // _lang_raw -- see batch_approve_document_api().
+    set_alert(true, "good", $truncated
+        ? _lang_raw('ExceptionsDeletedTruncated', array('limit' => GOVERNANCE_MAX_BULK_APPROVE_IDS))
+        : $lang['ExceptionsDeleted']);
+    json_response(200, get_alert(true), array('deleted' => $deleted, 'truncated' => $truncated, 'limit' => GOVERNANCE_MAX_BULK_APPROVE_IDS));
 }
 
 /******************************************
@@ -12506,7 +12915,7 @@ function add_project_api(){
             }
 
             set_alert(true, "good", $escaper->escapeHtml($lang['AddedSuccess']));
-            json_response(200, get_alert(true), NULL);
+            json_response(200, get_alert(true), ['project_id' => (int)$new_project_id]);
         }
     } else {
         json_response(400, $escaper->escapeHtml($lang['NoPermissionForThisAction']), NULL);
@@ -12818,6 +13227,304 @@ function update_project_order_api(){
     } else {
         json_response(400, $escaper->escapeHtml($lang['NoPermissionForThisAction']), NULL);
     }
+}
+
+/**********************************************************************
+ * PLAN PROJECTS GRID (SR-2229)                                       *
+ * Read endpoints emit the bare JSON envelope the client-side          *
+ * DataTables consume (header + echo + exit, like                      *
+ * getReviewRiskFilterOptions()); mutation endpoints use json_response *
+ **********************************************************************/
+function plan_projects_require_riskmanagement()
+{
+    global $escaper, $lang;
+    if (!check_permission("riskmanagement")) {
+        json_response(403, $escaper->escapeHtml($lang['NoPermissionForRiskManagement']), NULL);
+    }
+}
+
+function plan_projects_emit_json(array $payload)
+{
+    header('Content-Type: application/json');
+    // @phan-suppress-next-line SecurityCheck-XSS -- payload-specific contract, not
+    // "everything here is pre-escaped": data/counts/filter_options are escaped
+    // exactly once by the Task 3 query builders (get_projects_for_grid(),
+    // get_project_risks_for_grid(), get_unassigned_risks_for_grid());
+    // column_settings is sanitised to [A-Za-z0-9_]+ column-name tokens and
+    // '0'/'1' values by plan_projects_sanitize_column_settings() before it ever
+    // reaches this function; active_columns[].label is deliberately RAW
+    // (mirrors build_active_review_risk_columns()) -- the page JS escapes it
+    // exactly once at render, the same contract as that sibling endpoint.
+    echo json_encode($payload, JSON_INVALID_UTF8_SUBSTITUTE);
+    exit;
+}
+
+/**
+ * Whether $value is an accepted column-visibility flag. Loose (non-strict
+ * types) because it must accept both a fresh POST body (string '0'/'1' from
+ * $_POST) and a value already json_decode()'d back out of storage (still a
+ * JSON string, but defends against a hand-edited/legacy int 0/1 row too).
+ * custom_display_columns_are_valid() (Task 1, shared with Review Risk) only
+ * validates the column NAME half of each [name, value] pair -- it accepts
+ * any value at all, including HTML. This validates the value half, which
+ * Plan Projects needs because column_settings is echoed back verbatim by
+ * getPlanProjectsGridApi().
+ */
+function plan_projects_column_value_is_valid($value): bool
+{
+    return in_array($value, ['0', '1', 0, 1], true);
+}
+
+/** Coerce an already-validated column-visibility flag to the canonical '1'/'0' string. */
+function plan_projects_normalize_column_flag($value): string
+{
+    return in_array($value, ['1', 1], true) ? '1' : '0';
+}
+
+/**
+ * Validate + normalise a `columns` array for saving: every pair's value must
+ * pass plan_projects_column_value_is_valid() (name validity is the caller's
+ * job via custom_display_columns_are_valid()). Returns the pairs with value
+ * coerced to '1'/'0', or null if any pair's value is not one of '0','1',0,1.
+ */
+function plan_projects_normalize_columns_for_save(array $columns): ?array
+{
+    $normalized = [];
+    foreach ($columns as $pair) {
+        $value = is_array($pair) ? ($pair[1] ?? null) : null;
+        if (!plan_projects_column_value_is_valid($value)) {
+            return null;
+        }
+        $name = is_array($pair) ? ($pair[0] ?? null) : $pair;
+        $normalized[] = [$name, plan_projects_normalize_column_flag($value)];
+    }
+    return $normalized;
+}
+
+/**
+ * Defends the read path against a custom_plan_projects_display_settings row
+ * written before value validation existed (this fix), or any other stray
+ * shape: re-validates the decoded JSON from scratch rather than trusting
+ * storage. Keeps only `columns` pairs whose name matches ^[A-Za-z0-9_]+$ and
+ * whose value passes plan_projects_column_value_is_valid() (coerced to
+ * '1'/'0'), and keeps `order` only when custom_column_order_is_valid()
+ * accepts it. Returns null when nothing valid remains.
+ */
+function plan_projects_sanitize_column_settings($decoded)
+{
+    if (!is_array($decoded)) {
+        return null;
+    }
+    $sanitized = [];
+    if (isset($decoded['columns']) && is_array($decoded['columns'])) {
+        $valid_columns = [];
+        foreach ($decoded['columns'] as $pair) {
+            $name = is_array($pair) ? ($pair[0] ?? null) : null;
+            $value = is_array($pair) ? ($pair[1] ?? null) : null;
+            if (is_string($name) && preg_match('/^[A-Za-z0-9_]+$/', $name) && plan_projects_column_value_is_valid($value)) {
+                $valid_columns[] = [$name, plan_projects_normalize_column_flag($value)];
+            }
+        }
+        if (!empty($valid_columns)) {
+            $sanitized['columns'] = $valid_columns;
+        }
+    }
+    if (isset($decoded['order']) && custom_column_order_is_valid($decoded['order'])) {
+        $sanitized['order'] = $decoded['order'];
+    }
+    return empty($sanitized) ? null : $sanitized;
+}
+
+/**
+ * Column vocabulary when the Customization Extra curates project fields:
+ * the site's active basic fields (standard labels) plus its custom fields
+ * (admin-named). NULL when the Extra is off -> client keeps its static list.
+ */
+function build_active_plan_projects_columns()
+{
+    global $lang, $escaper;
+    if (!customization_extra()) {
+        return null;
+    }
+    $file = realpath(__DIR__ . '/../extras/customization/index.php');
+    if ($file === false) {
+        return null;
+    }
+    require_once($file);
+    $basic_map = [
+        'ProjectName'        => null,               // always present, never toggleable
+        'DueDate'            => ['due_date', $lang['DueDate']],
+        'Consultant'         => ['consultant', $lang['Consultant']],
+        'BusinessOwner'      => ['business_owner', $lang['BusinessOwner']],
+        'DataClassification' => ['data_classification', $lang['DataClassification']],
+    ];
+    $columns = [];
+    foreach (get_active_fields('project') as $field) {
+        if ((int)$field['is_basic'] === 1) {
+            $entry = $basic_map[$field['name']] ?? null;
+            if ($entry) {
+                $columns[] = ['key' => $entry[0], 'label' => $entry[1], 'custom' => false];
+            }
+        } else {
+            $columns[] = [
+                'key' => 'custom_field_' . (int)$field['id'],
+                // Deliberately RAW -- see plan_projects_emit_json()'s docblock
+                // (mirrors build_active_review_risk_columns()'s custom-field
+                // label); the page JS escapes it exactly once at render.
+                'label' => $field['name'],
+                'custom' => true,
+            ];
+        }
+    }
+    // The derived columns are always offered regardless of curation.
+    $columns[] = ['key' => 'risk_count', 'label' => $lang['Risks'], 'custom' => false];
+    $columns[] = ['key' => 'highest_risk', 'label' => $lang['HighestRisk'], 'custom' => false];
+    $columns[] = ['key' => 'status', 'label' => $lang['Status'], 'custom' => false];
+    return $columns;
+}
+
+function getPlanProjectsGridApi()
+{
+    global $escaper;
+    plan_projects_require_riskmanagement();
+
+    $status = (isset($_GET['status']) && !is_array($_GET['status']) && in_array((string)$_GET['status'], ['1', '2', '3', '4', 'all'], true)) ? (string)$_GET['status'] : '1';
+    $grid = get_projects_for_grid($status);
+
+    $user = get_user_by_id($_SESSION['uid']);
+    $column_settings = plan_projects_sanitize_column_settings(json_decode($user['custom_plan_projects_display_settings'] ?? '', true));
+
+    // Filter options are derived from the loaded rows (Define Exceptions
+    // rule: offer what is actually there, not every value in the system).
+    $consultants = $owners = $classifications = [];
+    foreach ($grid['data'] as $row) {
+        if ($row['consultant']['id']) { $consultants[$row['consultant']['id']] = $row['consultant']; }
+        if ($row['business_owner']['id']) { $owners[$row['business_owner']['id']] = $row['business_owner']; }
+        if ($row['data_classification']['id']) { $classifications[$row['data_classification']['id']] = $row['data_classification']; }
+    }
+    $by_name = function ($a, $b) { return strcasecmp($a['name'], $b['name']); };
+    usort($consultants, $by_name); usort($owners, $by_name); usort($classifications, $by_name);
+
+    plan_projects_emit_json([
+        'data' => $grid['data'],
+        'counts' => $grid['counts'],
+        'column_settings' => $column_settings,
+        'active_columns' => build_active_plan_projects_columns(),
+        'filter_options' => [
+            // usort() above already reindexes these to sequential-integer
+            // lists, so array_values() here would be a redundant no-op
+            // (PhanRedundantArrayValuesCall).
+            'consultants' => $consultants,
+            'business_owners' => $owners,
+            'data_classifications' => $classifications,
+        ],
+        'show_all' => get_setting('plan_projects_show_all') == 1,
+    ]);
+}
+
+function getPlanProjectRisksApi($id = null)
+{
+    global $escaper, $lang;
+    plan_projects_require_riskmanagement();
+    $id = (int)($id ?? $_GET['id'] ?? 0);
+    if ($id <= 0 || !get_project($id)) {
+        json_response(404, $escaper->escapeHtml($lang['NoDataAvailable']), NULL);
+    }
+    plan_projects_emit_json(['data' => get_project_risks_for_grid($id)]);
+}
+
+function getPlanProjectsUnassignedRisksApi()
+{
+    plan_projects_require_riskmanagement();
+    plan_projects_emit_json([
+        'data' => get_unassigned_risks_for_grid(),
+        'show_all' => get_setting('plan_projects_show_all') == 1,
+    ]);
+}
+
+function assignRisksToProjectApi()
+{
+    global $escaper, $lang;
+    plan_projects_require_riskmanagement();
+    if (!check_permission("manage_projects") || !check_permission("modify_risks")) {
+        json_response(403, $escaper->escapeHtml($lang['NoPermissionForThisAction']), NULL);
+    }
+    $risk_ids = $_POST['risk_ids'] ?? null;
+    $project_id = isset($_POST['project_id']) ? (int)$_POST['project_id'] : null;
+    if (!is_array($risk_ids) || empty($risk_ids) || $project_id === null || $project_id < 0) {
+        json_response(400, $escaper->escapeHtml(_lang_raw('FieldRequired', ['field' => 'risk_ids'])), NULL);
+    }
+    if ($project_id > 0 && !get_project($project_id)) {
+        json_response(404, $escaper->escapeHtml($lang['NoDataAvailable']), NULL);
+    }
+    $assigned = [];
+    $denied = [];
+    foreach ($risk_ids as $raw) {
+        $risk_id = (int)$raw;
+        if ($risk_id <= 0) {
+            continue;
+        }
+        // update_risk_project() does the per-risk check_access_for_risk()
+        // (Team Separation) and writes the audit log; false = denied.
+        if (update_risk_project($project_id, $risk_id)) {
+            $assigned[] = $risk_id;
+        } else {
+            $denied[] = $risk_id;
+        }
+    }
+    if (empty($assigned)) {
+        json_response(403, $escaper->escapeHtml($lang['NoPermissionForRiskManagement']), ['assigned' => [], 'denied' => $denied]);
+    }
+    set_alert(true, "good", $lang['SuccessSetProject']);
+    json_response(200, get_alert(true), ['assigned' => $assigned, 'denied' => $denied]);
+}
+
+function reorderPlanProjectsApi()
+{
+    global $escaper, $lang;
+    plan_projects_require_riskmanagement();
+    if (!check_permission("manage_projects")) {
+        json_response(403, $escaper->escapeHtml($lang['NoPermissionForThisAction']), NULL);
+    }
+    $status = isset($_POST['status']) ? (int)$_POST['status'] : 0;
+    $ids = $_POST['project_ids'] ?? null;
+    if (!in_array($status, [1, 2, 3, 4], true) || !is_array($ids)) {
+        json_response(400, $escaper->escapeHtml(_lang_raw('FieldRequired', ['field' => 'project_ids'])), NULL);
+    }
+    if (!reorder_projects_within_status($status, $ids)) {
+        json_response(400, $escaper->escapeHtml($lang['PlanProjectsReorderMismatch']), NULL);
+    }
+    set_alert(true, "good", $lang['PlanProjectsOrderSaved']);
+    json_response(200, get_alert(true), NULL);
+}
+
+function savePlanProjectsDisplaySettingsApi()
+{
+    global $escaper, $lang;
+    plan_projects_require_riskmanagement();
+    if (!isset($_POST["columns"]) || !is_array($_POST["columns"]) || !custom_display_columns_are_valid([$_POST["columns"]])) {
+        set_alert(true, "bad", $lang['NoDataAvailable']);
+        json_response(400, get_alert(true), NULL);
+    }
+    // custom_display_columns_are_valid() only checked the column NAME half of
+    // each pair; the value half must also be validated -- it is stored and
+    // later echoed back verbatim by getPlanProjectsGridApi().
+    $normalized_columns = plan_projects_normalize_columns_for_save($_POST["columns"]);
+    if ($normalized_columns === null) {
+        set_alert(true, "bad", $lang['NoDataAvailable']);
+        json_response(400, get_alert(true), NULL);
+    }
+    $data = ["columns" => $normalized_columns];
+    if (isset($_POST["order"])) {
+        if (!custom_column_order_is_valid($_POST["order"])) {
+            set_alert(true, "bad", $lang['NoDataAvailable']);
+            json_response(400, get_alert(true), NULL);
+        }
+        $data["order"] = $_POST["order"];
+    }
+    save_custom_risk_display_settings("custom_plan_projects_display_settings", $data);
+    set_alert(true, "good", $lang['SavedSuccess']);
+    json_response(200, get_alert(true), NULL);
 }
 
 /****************************************
@@ -13325,85 +14032,49 @@ function deleteThreatCatalogAPI() {
     }
 }
 
-/**********************************************
- * FUNCTION: SAVE CUSTOM DISPLAY SETTINGS API *
- *********************************************/
-function saveCustomPlanMitigationDisplaySettingsAPI(){
+/*********************************************************************
+ * FUNCTION: SAVE CUSTOM REVIEW RISK DISPLAY SETTINGS API            *
+ * Review Risk has one unified action queue, not the risk/           *
+ * mitigation/review three-way split the retired legacy handlers     *
+ * (Task 22) stored -- one flat column list, stored as               *
+ * {"columns": [...]} under custom_review_risk_display_settings      *
+ * (Task 3), consumed by getReviewRiskDatatableResponse() above.     *
+ **********************************************************************/
+function saveCustomReviewRiskDisplaySettingsAPI(){
     global $escaper, $lang;
+    // 403 rather than 400: this is an authorization refusal, not a malformed
+    // request. Consistent with getReviewRiskDatatableResponse()/
+    // getReviewRiskFilterOptions() above, which back the same page and the
+    // same permission check.
     if (!check_permission("riskmanagement")){
-        json_response(400, $escaper->escapeHtml($lang['NoPermissionForRiskManagement']), NULL);
+        json_response(403, $escaper->escapeHtml($lang['NoPermissionForRiskManagement']), NULL);
         return;
     }
-    if(isset($_POST["risk_columns"]) && isset($_POST["mitigation_columns"]) && isset($_POST["review_columns"])){
+    if(isset($_POST["columns"])){
         // SR-1870: reject any column name that isn't a plain [A-Za-z0-9_] token
         // before storing it (it is later echoed into a data-name attribute / JS).
-        if (!custom_display_columns_are_valid([$_POST["risk_columns"], $_POST["mitigation_columns"], $_POST["review_columns"]])) {
+        if (!is_array($_POST["columns"]) || !custom_display_columns_are_valid([$_POST["columns"]])) {
             set_alert(true, "bad", $lang['NoDataAvailable']);
             json_response(400, get_alert(true), NULL);
             return;
         }
         $data = array(
-            "risk_colums" => $_POST["risk_columns"],
-            "mitigation_colums" => $_POST["mitigation_columns"],
-            "review_colums" => $_POST["review_columns"],
+            "columns" => $_POST["columns"],
         );
-        save_custom_risk_display_settings("custom_plan_mitigation_display_settings", $data);
-        set_alert(true, "good", $lang['SavedSuccess']);
-        json_response(200, get_alert(true), null);
-    } else {
-        set_alert(true, "bad", $lang['NoDataAvailable']);
-        json_response(400, get_alert(true), NULL);
-    }
-    return;
-}
-function saveCustomPerformReviewsDisplaySettingsAPI(){
-    global $escaper, $lang;
-    if (!check_permission("riskmanagement")){
-        json_response(400, $escaper->escapeHtml($lang['NoPermissionForRiskManagement']), NULL);
-        return;
-    }
-    if(isset($_POST["risk_columns"]) && isset($_POST["mitigation_columns"]) && isset($_POST["review_columns"])){
-        // SR-1870: reject any column name that isn't a plain [A-Za-z0-9_] token
-        // before storing it (it is later echoed into a data-name attribute / JS).
-        if (!custom_display_columns_are_valid([$_POST["risk_columns"], $_POST["mitigation_columns"], $_POST["review_columns"]])) {
-            set_alert(true, "bad", $lang['NoDataAvailable']);
-            json_response(400, get_alert(true), NULL);
-            return;
+        // ColReorder follow-up: `order` is an OPTIONAL sibling key -- a save
+        // triggered purely by toggling a checkbox in the picker (no drag)
+        // never sends it, and that must keep behaving exactly as before
+        // (order key simply absent from the stored JSON, which review-risk.js
+        // already treats as "use natural order").
+        if (isset($_POST["order"])) {
+            if (!custom_review_risk_column_order_is_valid($_POST["order"])) {
+                set_alert(true, "bad", $lang['NoDataAvailable']);
+                json_response(400, get_alert(true), NULL);
+                return;
+            }
+            $data["order"] = $_POST["order"];
         }
-        $data = array(
-            "risk_colums" => $_POST["risk_columns"],
-            "mitigation_colums" => $_POST["mitigation_columns"],
-            "review_colums" => $_POST["review_columns"],
-        );
-        save_custom_risk_display_settings("custom_perform_reviews_display_settings", $data);
-        set_alert(true, "good", $lang['SavedSuccess']);
-        json_response(200, get_alert(true), null);
-    } else {
-        set_alert(true, "bad", $lang['NoDataAvailable']);
-        json_response(400, get_alert(true), NULL);
-    }
-    return;
-}
-function saveCustomReviewregularlyDisplaySettingsAPI(){
-    global $escaper, $lang;
-    if (!check_permission("riskmanagement")){
-        json_response(400, $escaper->escapeHtml($lang['NoPermissionForRiskManagement']), NULL);
-        return;
-    }
-    if(isset($_POST["risk_columns"]) && isset($_POST["mitigation_columns"]) && isset($_POST["review_columns"])){
-        // SR-1870: reject any column name that isn't a plain [A-Za-z0-9_] token
-        // before storing it (it is later echoed into a data-name attribute / JS).
-        if (!custom_display_columns_are_valid([$_POST["risk_columns"], $_POST["mitigation_columns"], $_POST["review_columns"]])) {
-            set_alert(true, "bad", $lang['NoDataAvailable']);
-            json_response(400, get_alert(true), NULL);
-            return;
-        }
-        $data = array(
-            "risk_colums" => $_POST["risk_columns"],
-            "mitigation_colums" => $_POST["mitigation_columns"],
-            "review_colums" => $_POST["review_columns"],
-        );
-        save_custom_risk_display_settings("custom_reviewregularly_display_settings", $data);
+        save_custom_risk_display_settings("custom_review_risk_display_settings", $data);
         set_alert(true, "good", $lang['SavedSuccess']);
         json_response(200, get_alert(true), null);
     } else {

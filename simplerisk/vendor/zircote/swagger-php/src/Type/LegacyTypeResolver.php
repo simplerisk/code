@@ -10,7 +10,6 @@ use OpenApi\Analysis;
 use OpenApi\Annotations as OA;
 use OpenApi\Context;
 use OpenApi\Undefined;
-use OpenApi\Utils\TypeMapper;
 
 /**
  * @deprecated use `TypeInfoTypeResolver` instead
@@ -186,7 +185,7 @@ class LegacyTypeResolver extends AbstractTypeResolver
     {
         $docComment = match (true) {
             $reflector instanceof \ReflectionProperty => $reflector->isPromoted()
-            && $reflector->getDeclaringClass() && $reflector->getDeclaringClass()->getConstructor()
+            && $reflector->getDeclaringClass() instanceof \ReflectionClass && $reflector->getDeclaringClass()->getConstructor() instanceof \ReflectionMethod
                 ? $reflector->getDeclaringClass()->getConstructor()->getDocComment()
                 : $reflector->getDocComment(),
             $reflector instanceof \ReflectionParameter => $reflector->getDeclaringFunction()->getDocComment(),

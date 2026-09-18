@@ -14,7 +14,12 @@ require_once(realpath(__DIR__ . '/../includes/renderutils.php'));
 $breadcrumb_title_key = "DocumentExceptions";
 $active_sidebar_menu = "Governance";
 $active_sidebar_submenu = "DocumentExceptions";
-render_header_and_sidebar(['WYSIWYG', 'multiselect', 'datetimerangepicker', 'datatables', 'CUSTOM:common.js', 'CUSTOM:sr-faceted-picker.js', 'CUSTOM:sr-row-actions-menu.js', 'CUSTOM:sr-select.js', 'CUSTOM:sr-audit-trail.js', 'CUSTOM:pages/governance-exceptions.js', 'CUSTOM:pages/governance-exception-audit-trail.js',
+render_header_and_sidebar(['WYSIWYG', 'multiselect', 'datetimerangepicker', 'datatables', 'CUSTOM:common.js', 'CUSTOM:sr-faceted-picker.js', 'CUSTOM:sr-row-actions-menu.js', 'CUSTOM:sr-select.js', 'CUSTOM:sr-audit-trail.js',
+    // bulk-request-batch.js is NOT needed here: governance-exceptions.js's
+    // bulk delete sends one request to POST /exceptions/batch-delete-ids
+    // (batch_delete_exceptions_by_ids_api(), includes/api.php) instead of
+    // looping/chunking the single-delete endpoint client-side.
+    'CUSTOM:pages/governance-exceptions.js', 'CUSTOM:pages/governance-exception-audit-trail.js',
     // The insights band below is a UILayout instance -- 'UILayoutWidget'
     // pulls in both the includes/Widgets/UILayout.php CLASS and the
     // Gridstack JS/CSS the band's tile rendering depends on. Same asset
@@ -187,6 +192,12 @@ function display($display = "")
             <div class="sr-bulk-bar d-none" id="exceptions-bulk-bar">
                 <button type="button" class="sr-bulk-clear" id="exceptions-bulk-clear" aria-label="<?= $escaper->escapeHtmlAttr($lang['Clear']); ?>">&times;</button>
                 <span class="sr-bulk-count" id="exceptions-bulk-count"></span>
+                <!-- Select all N: escalates a page-level selection to every exception
+                     matching the current filters/search, the same .sr-bulk-lnk
+                     affordance Define Control Frameworks (governance-frameworks.js)
+                     offers. Shown by updateBulkBar() (governance-exceptions.js) only
+                     while there are more matching exceptions than are selected. -->
+                <button type="button" class="sr-bulk-lnk d-none" id="exceptions-select-all-filtered"></button>
                 <div class="sr-bulk-actions">
             <?php if ($can_approve) { ?>
                     <button type="button" class="btn btn-outline-secondary btn-sm" id="exceptions-bulk-approve"><?= $escaper->escapeHtml($lang['ApproveSelected']); ?></button>
@@ -1718,12 +1729,12 @@ function display($display = "")
 <?php } ?>
 
 <!-- DELETE EXCEPTION CONFIRM (design-system.md §8, Confirm type -- destructive).
-     Shared by the row-level delete icon (one exception_id) and the bulk bar's
-     "Delete selected" action (a set of ids, deleted with one
-     POST /exceptions/delete per id -- see the comment in
-     js/simplerisk/pages/governance-exceptions.js on why the existing parent-
-     scoped POST /exceptions/batch-delete endpoint doesn't fit an arbitrary
-     multi-row selection). -->
+     Shared by the row-level delete icon (one exception_id, POST
+     /exceptions/delete) and the bulk bar's "Delete selected" action (a set
+     of ids in one request to POST /exceptions/batch-delete-ids -- see the
+     comment in js/simplerisk/pages/governance-exceptions.js on why the
+     existing parent-scoped POST /exceptions/batch-delete endpoint doesn't
+     fit an arbitrary multi-row selection). -->
 <?php if ($can_delete) { ?>
 <div id="exception-delete-confirm" class="modal fade sr-modal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">

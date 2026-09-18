@@ -11252,8 +11252,13 @@ function render_kpi_sparkline_svg(array $series, $up_is_good = true)
     }
 
     // Trend goodness: net move across the window, in this metric's polarity.
+    // $up_is_good === null means the metric has NO good/bad polarity at all
+    // (design-system.md §13's "never assume up = good" -- e.g. Review Risk's
+    // "Opened This Month" tile: more submissions is neither good nor bad), so
+    // the whole spark renders in the neutral 'flat' tint regardless of which
+    // way it moved. A bool keeps the existing two-way behaviour unchanged.
     $diff = $pts[$n - 1] - $pts[0];
-    $goodness = (abs($diff) < 0.0001)
+    $goodness = ($up_is_good === null || abs($diff) < 0.0001)
         ? 'flat'
         : ((($diff > 0) === (bool) $up_is_good) ? 'good' : 'bad');
 
@@ -11282,6 +11287,796 @@ function kpi_sparkline_for($metric, $up_is_good = true, $days = 30)
         default:             $series = kpi_series_snapshot($metric, $days); break;
     }
     return render_kpi_sparkline_svg($series, $up_is_good);
+}
+
+/*******************************************************************************
+ * REVIEW RISK INSIGHTS BAND — counts + 30-day series for the five KPI tiles    *
+ * above management/review_risk.php's action queue.                            *
+ *******************************************************************************/
+// ACCESS SCOPING (security-critical). Every query below is scoped through
+// home_risk_separation_sql(), which is EXACTLY equivalent to the scoping the
+// Review Risk grid itself applies -- verified, not assumed:
+//
+//   grid  (get_risks()'s sort_order==22 separated branch, includes/functions.php):
+//         get_user_teams_query("b", false, true)   -> " AND (<predicate>) "
+//   here  (home_risk_separation_sql(), reporting.php):
+//         " AND " . get_user_teams_query("rsk")    -> " AND " . "(<predicate>)"
+//
+// Same function, same <predicate>, same net SQL -- only the alias and where the
+// " AND " is glued on differ. Both forms additionally require `rtt`
+// (risk_to_team) and `rtas` (risk_to_additional_stakeholder) to be joined, which
+// the grid does in its own FROM and which home_risk_separation_sql() supplies as
+// its $sep_from fragment. So a tile can never count a risk the grid below it
+// would hide. Do not replace these fragments with an unscoped COUNT(*).
+//
+// SEMANTIC PARITY. These tiles deliberately speak the REVIEW RISK GRID's
+// definitions, not the Home dashboard's -- the two genuinely differ:
+//   * A row must be ACTIONABLE (needs mitigation or needs review) to count
+//     toward the action-queue tiles, matching the grid's own needs-gate for
+//     the 'open' status scope. "Needs review" for THAT gate is
+//     classify_review_urgency()'s bucket in {unreviewed, past_due, due_soon}
+//     (the grid's own Review chip), NOT get_unreviewed_open_risk_count()'s
+//     `mgmt_review = 0` (Home's "never reviewed") -- a risk reviewed 200 days
+//     ago is Home-reviewed but grid-due.
+//
+// ONE BUCKET PER TILE. classify_review_urgency() already partitions every
+// actionable risk into exactly one of {unreviewed, past_due, due_soon}, so the
+// three review tiles each take exactly one of them and never overlap:
+//   * "Needs Review"  -> bucket === 'unreviewed'  (never reviewed at all)
+//   * "Past Due"      -> bucket === 'past_due'    (reviewed before, now overdue)
+//   * "Coming Soon"   -> bucket === 'due_soon'    (due within $due_soon_days)
+// These tile checks are deliberately NARROWER than the actionable gate above:
+// the gate asks "is this row in the queue at all?" (any of the three buckets),
+// each tile asks "which bucket is it in?". Do not collapse the two -- an
+// earlier revision counted a never-reviewed risk in BOTH "Needs Review" and
+// "Past Due", double-counting it across two tiles of the same band.
+// The tiles do NOT apply the grid's "Show my action items" permission-relevance
+// scope, because that is a live toolbar toggle a server-rendered band cannot
+// know the state of (and historical permission relevance is not reconstructable
+// for the sparklines). Every tile's drill-through URL therefore carries
+// `my_action_items=0`, so the grid the user lands on shows exactly the row set
+// the tile counted -- for every user, not just admins.
+
+// DB: one team-scoped row per risk carrying every field the five tiles need.
+// One query, not five -- each widget request pays for it once.
+function review_risk_insight_rows()
+{
+    [$sep_from, $sep_where] = home_risk_separation_sql();
+
+    $db = db_open();
+    // Correlated subqueries rather than JOINs for the per-risk aggregates so
+    // this stays exactly one row per risk without a GROUP BY (the grid needs
+    // GROUP BY only because it also selects joined display columns).
+    // `next_review` mirrors the grid's own derived `c` table: the next_review
+    // of the LATEST mgmt_review for the risk. `planning_date` mirrors the
+    // grid's `LEFT JOIN mitigations p ON b.id = p.risk_id` (by risk_id, not
+    // by risks.mitigation_id).
+    $stmt = $db->prepare("
+        SELECT DISTINCT
+            `rsk`.`id` AS id,
+            `rsk`.`status` AS status,
+            `rsk`.`mitigation_id` AS mitigation_id,
+            DATE(`rsk`.`submission_date`) AS submission_date,
+            `rs`.`calculated_risk` AS calculated_risk,
+            (SELECT DATE(`mit`.`planning_date`) FROM `mitigations` mit WHERE `mit`.`risk_id` = `rsk`.`id` ORDER BY `mit`.`id` LIMIT 1) AS planning_date,
+            (SELECT `mr1`.`next_review` FROM `mgmt_reviews` mr1 WHERE `mr1`.`risk_id` = `rsk`.`id` ORDER BY `mr1`.`submission_date` DESC, `mr1`.`id` DESC LIMIT 1) AS next_review,
+            (SELECT DATE(MAX(`mr2`.`submission_date`)) FROM `mgmt_reviews` mr2 WHERE `mr2`.`risk_id` = `rsk`.`id`) AS last_review,
+            (SELECT DATE(MAX(`cc`.`closure_date`)) FROM `closures` cc WHERE `cc`.`risk_id` = `rsk`.`id`) AS closed_date
+        FROM `risks` rsk
+        LEFT JOIN `risk_scoring` rs ON `rsk`.`id` = `rs`.`id`
+        {$sep_from}
+        WHERE 1 = 1 {$sep_where};
+    ");
+    $stmt->execute();
+    $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    db_close($db);
+
+    return $rows;
+}
+
+// Pure: resolve a risk's 0-4 review-cadence index from its risk-level display
+// name, the same five-branch resolution getReviewRiskDatatableResponse() and
+// getReviewRiskFilterOptions() (includes/api.php) both do inline.
+function review_risk_level_index($risk_level_name)
+{
+    if ($risk_level_name === get_risk_level_display_name('Very High')) { return 0; }
+    if ($risk_level_name === get_risk_level_display_name('High'))      { return 1; }
+    if ($risk_level_name === get_risk_level_display_name('Medium'))    { return 2; }
+    if ($risk_level_name === get_risk_level_display_name('Low'))       { return 3; }
+    return 4;
+}
+
+// Normalize a DB date-ish value to a comparable 'Y-m-d' string, or null when
+// it carries no real date (NULL / '' / MySQL's zero date).
+function review_risk_date_or_null($value)
+{
+    if ($value === null || $value === '' || $value === '0000-00-00' || $value === '0000-00-00 00:00:00') {
+        return null;
+    }
+    return substr((string) $value, 0, 10);
+}
+
+// Pure: validates/coerces the Review Risk toolbar's filter state into the
+// canonical shape review_risk_evaluate_row() expects. Input keys match
+// review-risk.js's buildFilterQueryParams() flat shape (action_type,
+// my_action_items as '0'/'1', status_scope, due_status, user_filter/
+// team_filter/risk_level_filter as arrays, search as a plain top-level
+// string) -- NOT DataTables' nested search.value protocol
+// getReviewRiskDatatableResponse() (includes/api.php) reads for its own
+// POST body, since that endpoint's ajax.data function builds its own
+// wire shape independently. Used by review_risk_resolve_filtered_ids_api()
+// (includes/api.php), the "Select all N" ids resolver, whose request body
+// IS buildFilterQueryParams()'s own output.
+function parse_review_risk_filter_request(array $params)
+{
+    $action_type_raw = $params['action_type'] ?? 'all';
+    $action_type = in_array($action_type_raw, ['all', 'mitigation', 'review'], true) ? $action_type_raw : 'all';
+    $my_action_items = ($params['my_action_items'] ?? '1') !== '0';
+
+    $status_scope_raw = $params['status_scope'] ?? 'open';
+    $status_scope = in_array($status_scope_raw, ['all', 'open', 'closed'], true) ? $status_scope_raw : 'open';
+
+    $due_status_raw = $params['due_status'] ?? 'all';
+    $due_status = in_array($due_status_raw, ['all', 'unreviewed', 'past_due', 'due_soon'], true) ? $due_status_raw : 'all';
+
+    // Same merged 'All users'/'All teams' dimensions getReviewRiskDatatableResponse()
+    // matches against (see that function's own comment for why) -- keyed here by
+    // the $filter_row key review_risk_evaluate_row() indexes into, not the wire
+    // param name.
+    $multi_filters = [];
+    foreach (['user_filter' => 'user', 'team_filter' => 'team_all', 'risk_level_filter' => 'risk_level'] as $param_key => $filter_row_key) {
+        $raw = $params[$param_key] ?? [];
+        if (!is_array($raw)) {
+            continue; // Malformed/non-array value -- treat as no filter for this dimension rather than fatal.
+        }
+        $values = array_values(array_filter(array_map('strval', $raw), function ($v) {
+            return $v !== '';
+        }));
+        if (!empty($values)) {
+            $multi_filters[$filter_row_key] = $values;
+        }
+    }
+
+    $global_search = is_string($params['search'] ?? null) ? trim($params['search']) : '';
+
+    return [
+        'action_type' => $action_type,
+        'my_action_items' => $my_action_items,
+        'status_scope' => $status_scope,
+        'due_status' => $due_status,
+        'multi_filters' => $multi_filters,
+        'global_search' => $global_search,
+    ];
+}
+
+// Pure: evaluates ONE get_risks(22, ...) row against the Review Risk page's
+// full filter set (secondary filters, global search, status scope, my-
+// action-items scope, action-type chip, due-status chip) and returns both
+// the final pass/fail decision and every intermediate value a caller needs
+// to build a display row or tally toolbar chip counts. This is the exact
+// sequence of checks getReviewRiskDatatableResponse() (includes/api.php)
+// used to apply inline -- extracted here so that function and
+// review_risk_filter_ids() below (same decision, but resolving every
+// matching id across every page for "Select all N", not just the current
+// page) share one implementation instead of two hand-maintained copies
+// that could silently drift apart.
+//
+// $ctx keys: multi_filters, global_search, status_scope, my_action_items
+// (bool), action_type, due_status (all from parse_review_risk_filter_request()
+// or getReviewRiskDatatableResponse()'s own equivalent parsing), plus
+// review_levels, review_permissions_by_level, has_plan_mitigations (bool),
+// and today_ymd ('Y-m-d') -- request-scoped context the caller resolves once
+// and reuses across every row.
+//
+// The four 'passes_*' fields reflect the SAME sequential short-circuiting
+// the original inline loop applied (multi_filters/search, THEN status_scope,
+// THEN my_action_items, THEN action_type/due_status) -- each gate's own
+// tally only ever counts rows that already survived every earlier gate, so
+// a caller reproducing the toolbar's chip counts must check them in this
+// same order, not independently.
+function review_risk_evaluate_row(array $risk, array $ctx)
+{
+    $needs_mitigation = (bool)$risk['needs_mitigation'];
+
+    $risk_level_name = get_risk_level_name($risk['calculated_risk']);
+    $review_level_index = review_risk_level_index($risk_level_name);
+    $urgency = classify_review_urgency($risk['next_review'], $review_level_index, (int)$risk['id'], $ctx['review_levels']);
+    $needs_review = in_array($urgency['bucket'], ['unreviewed', 'past_due', 'due_soon'], true);
+
+    // Due-status bucket for THIS row -- matches review_risk_insight_counts()'s
+    // exact formula (includes/reporting.php), same reasoning as the original
+    // inline computation this replaces.
+    $review_past_due_for_due_status = ($urgency['bucket'] === 'past_due');
+    $planning_date_for_due_status = review_risk_date_or_null($risk['planning_date'] ?? null);
+    $mitigation_past_due_for_due_status = ($needs_mitigation && $planning_date_for_due_status !== null && $planning_date_for_due_status < $ctx['today_ymd']);
+    if ($review_past_due_for_due_status || $mitigation_past_due_for_due_status) {
+        $row_due_status = 'past_due';
+    } elseif ($urgency['bucket'] === 'due_soon') {
+        $row_due_status = 'due_soon';
+    } elseif ($urgency['bucket'] === 'unreviewed') {
+        $row_due_status = 'unreviewed';
+    } else {
+        $row_due_status = null;
+    }
+
+    $is_closed_row = (($risk['status'] ?? '') === 'Closed');
+    $is_actionable = $needs_mitigation || $needs_review;
+
+    $mitigation_due_date = $needs_mitigation ? ($risk['planning_date'] ?? null) : null;
+    $review_due_date = $needs_review ? ($urgency['resolved_date'] ?? $risk['submission_date']) : null;
+    $due_date = compute_next_action_due_date($mitigation_due_date, $review_due_date);
+
+    $filter_row = [
+        'owner' => $risk['owner'] ?? '',
+        'team' => $risk['team'] ?? '',
+        'risk_level' => $risk_level_name,
+        'reviewer' => $risk['reviewer'] ?? '',
+    ];
+    // 'All users'/'All teams' merges -- see getReviewRiskDatatableResponse()'s
+    // own comment (includes/api.php) for why these are deduplicated merges
+    // rather than single-role values.
+    $filter_row['user'] = array_values(array_unique(array_filter(array_map('trim', array_merge(
+        [$risk['owner'] ?? '', $risk['manager'] ?? '', $risk['submitted_by'] ?? '', $risk['mitigation_owner'] ?? '', $risk['reviewer'] ?? ''],
+        explode(',', $risk['additional_stakeholders'] ?? '')
+    )), function ($name) {
+        return $name !== '';
+    })));
+    $filter_row['team_all'] = array_values(array_unique(array_filter(array_map('trim', array_merge(
+        explode(',', $risk['team'] ?? ''),
+        explode(',', $risk['mitigation_team'] ?? '')
+    )), function ($name) {
+        return $name !== '';
+    })));
+
+    $filter_ok = true;
+    foreach (($ctx['multi_filters'] ?? []) as $column_name => $values) {
+        $row_values = in_array($column_name, ['team_all', 'user'], true) ? $filter_row[$column_name] : [$filter_row[$column_name] ?? ''];
+        if (!array_intersect($row_values, $values)) {
+            $filter_ok = false;
+            break;
+        }
+    }
+
+    $global_search = $ctx['global_search'] ?? '';
+    if ($filter_ok && $global_search !== '') {
+        // Includes both the raw id and the DISPLAY id (+1000) -- see
+        // getReviewRiskDatatableResponse()'s own comment for why.
+        $haystack = $risk['id'] . ' ' . ((int)$risk['id'] + 1000) . ' ' . ($risk['subject'] ?? '') . ' ' . ($risk['owner'] ?? '')
+            . ' ' . ($risk['category'] ?? '') . ' ' . ($risk['risk_tags'] ?? '') . ' ' . ($risk['location'] ?? '')
+            . ' ' . ($risk['control_number'] ?? '') . ' ' . ($risk['reference_id'] ?? '') . ' ' . ($risk['submitted_by'] ?? '')
+            . ' ' . ($risk['technology'] ?? '');
+        if (stripos($haystack, $global_search) === false) {
+            $filter_ok = false;
+        }
+    }
+    $passes_multi_and_search = $filter_ok;
+
+    $status_scope = $ctx['status_scope'] ?? 'open';
+    $passes_status_scope = true;
+    if ($status_scope === 'open' && ($is_closed_row || !$is_actionable)) {
+        $passes_status_scope = false;
+    } elseif ($status_scope === 'closed' && !$is_closed_row) {
+        $passes_status_scope = false;
+    } elseif ($status_scope === 'all' && !$is_closed_row && !$is_actionable) {
+        $passes_status_scope = false;
+    }
+
+    $can_act_on_row = user_can_act_on_risk_need($needs_mitigation, $needs_review, $risk_level_name, $ctx['has_plan_mitigations'], $ctx['review_permissions_by_level']);
+    $my_action_items = $ctx['my_action_items'] ?? false;
+    $passes_my_action_items = !($my_action_items && !$can_act_on_row);
+
+    $action_type = $ctx['action_type'] ?? 'all';
+    $passes_action_type = true;
+    if ($action_type === 'mitigation' && !$needs_mitigation) {
+        $passes_action_type = false;
+    } elseif ($action_type === 'review' && !$needs_review) {
+        $passes_action_type = false;
+    }
+
+    $due_status = $ctx['due_status'] ?? 'all';
+    $passes_due_status = ($due_status === 'all' || $row_due_status === $due_status);
+
+    $passes = $passes_multi_and_search && $passes_status_scope && $passes_my_action_items && $passes_action_type && $passes_due_status;
+
+    return [
+        'passes' => $passes,
+        'passes_multi_and_search' => $passes_multi_and_search,
+        'passes_status_scope' => $passes_status_scope,
+        'passes_my_action_items' => $passes_my_action_items,
+        'passes_action_type' => $passes_action_type,
+        'passes_due_status' => $passes_due_status,
+        'needs_mitigation' => $needs_mitigation,
+        'needs_review' => $needs_review,
+        'risk_level_name' => $risk_level_name,
+        'urgency' => $urgency,
+        'row_due_status' => $row_due_status,
+        'is_closed_row' => $is_closed_row,
+        'is_actionable' => $is_actionable,
+        'can_act_on_row' => $can_act_on_row,
+        'filter_row' => $filter_row,
+        'mitigation_due_date' => $mitigation_due_date,
+        'review_due_date' => $review_due_date,
+        'due_date' => $due_date,
+    ];
+}
+
+// Pure: applies review_risk_evaluate_row()'s decision across an
+// already-fetched risk set (get_risks(22, null, 'desc', 'all')), returning
+// every id that matches -- across ALL pages, not just whatever
+// getReviewRiskDatatableResponse() would paginate onto the current page.
+// Backs the "Select all N" resolver endpoint (includes/api.php).
+function review_risk_filter_ids(array $risks, array $ctx)
+{
+    $ids = [];
+    foreach ($risks as $risk) {
+        if (review_risk_evaluate_row($risk, $ctx)['passes']) {
+            $ids[] = (int)$risk['id'];
+        }
+    }
+    return $ids;
+}
+
+// DB: the tile values, computed in one pass over review_risk_insight_rows().
+// Returns ['needs_mitigation','needs_review','past_due','coming_soon',
+// 'opened_this_month','closed_this_month','my_action_items'] as ints.
+//
+// The action-queue tiles call the REAL classify_review_urgency()
+// (includes/functions.php) rather than reimplementing its date branches, so a
+// tile and the grid chip beneath it can never drift. `last_review` is handed in
+// as classify_review_urgency()'s $submission_date argument purely to avoid its
+// internal get_last_review() per-risk query (an N+1 the grid handler still pays);
+// the value is identical -- get_last_review() returns MAX(submission_date) from
+// mgmt_reviews, which is what the subquery above already selected.
+function review_risk_insight_counts()
+{
+    $rows          = review_risk_insight_rows();
+    $review_levels = get_review_levels();
+    $today         = date('Y-m-d');
+    $month_start   = date('Y-m-01');
+
+    // The SAME session-derived inputs getReviewRiskDatatableResponse() and
+    // getReviewRiskFilterOptions() (includes/api.php) build for
+    // user_can_act_on_risk_need() -- keyed by the CURRENT resolved display
+    // name for each canonical level (admin-configurable,
+    // admin/risk_configuration.php), not the literal English string. Kept as
+    // an inline duplicate rather than a shared helper, matching those two
+    // handlers' own documented precedent (includes/api.php, around the
+    // 'review_permissions_by_level_for_counts' comment): this is a small,
+    // stable, session-read-only map, and threading a shared helper through
+    // reporting.php's DB-agnostic-until-now functions is a bigger change than
+    // the duplication risk it would remove.
+    $review_permissions_by_level = [
+        get_risk_level_display_name('Very High') => !empty($_SESSION['review_veryhigh']),
+        get_risk_level_display_name('High') => !empty($_SESSION['review_high']),
+        get_risk_level_display_name('Medium') => !empty($_SESSION['review_medium']),
+        get_risk_level_display_name('Low') => !empty($_SESSION['review_low']),
+        get_risk_level_display_name('Insignificant') => !empty($_SESSION['review_insignificant']),
+    ];
+    $has_plan_mitigations = !empty($_SESSION['plan_mitigations']);
+
+    $counts = [
+        'needs_mitigation'   => 0,
+        'needs_review'       => 0,
+        'past_due'           => 0,
+        'coming_soon'        => 0,
+        'opened_this_month'  => 0,
+        'closed_this_month'  => 0,
+        'my_action_items'    => 0,
+    ];
+
+    foreach ($rows as $row) {
+        $is_closed   = (($row['status'] ?? '') === 'Closed');
+        $submitted   = review_risk_date_or_null($row['submission_date'] ?? null);
+        $closed_date = review_risk_date_or_null($row['closed_date'] ?? null);
+
+        // The two volume tiles describe the whole register, open and closed
+        // alike -- a risk submitted this month counts whether or not it is
+        // still open, and a closed risk is by definition not in the queue.
+        if ($submitted !== null && $submitted >= $month_start) {
+            $counts['opened_this_month']++;
+        }
+        if ($is_closed && $closed_date !== null && $closed_date >= $month_start) {
+            $counts['closed_this_month']++;
+        }
+
+        // The action-queue tiles are open-only, matching the grid's
+        // default 'open' status scope.
+        if ($is_closed) {
+            continue;
+        }
+
+        $needs_mitigation = ((int) ($row['mitigation_id'] ?? 0) === 0);
+
+        $risk_level_name = get_risk_level_name($row['calculated_risk']);
+        $urgency = classify_review_urgency(
+            $row['next_review'],
+            review_risk_level_index($risk_level_name),
+            (int) $row['id'],
+            $review_levels,
+            review_risk_date_or_null($row['last_review'] ?? null) ?? false
+        );
+        // The QUEUE-MEMBERSHIP flag (all three urgency buckets), not the
+        // "Needs Review" tile's own value -- see the ONE BUCKET PER TILE note
+        // at the top of this section. This is what the grid's needs-gate and
+        // user_can_act_on_risk_need() both mean by "needs review".
+        $review_actionable = in_array($urgency['bucket'], ['unreviewed', 'past_due', 'due_soon'], true);
+
+        // The grid's needs-gate: the SQL superset over-fetches rows that turn
+        // out not to be actionable at all; they are not in the queue.
+        if (!$needs_mitigation && !$review_actionable) {
+            continue;
+        }
+
+        if ($needs_mitigation) {
+            $counts['needs_mitigation']++;
+        }
+        // One bucket per tile: 'unreviewed' here, 'past_due' and 'due_soon'
+        // below. A risk lands in exactly one of the three.
+        if ($urgency['bucket'] === 'unreviewed') {
+            $counts['needs_review']++;
+        }
+        if ($urgency['bucket'] === 'due_soon') {
+            $counts['coming_soon']++;
+        }
+
+        // My Action Items: the SAME permission-relevance predicate the grid's
+        // own "My Action Items / All Items" toolbar toggle applies
+        // (user_can_act_on_risk_need(), includes/functions.php) -- reused
+        // verbatim, not reimplemented, and tallied at the same point the grid
+        // itself tallies its 'mine' chip count (getReviewRiskDatatableResponse(),
+        // after the actionable needs-gate, scoped to the grid's default
+        // status_scope='open'). This is what makes the tile's number equal
+        // what a user sees when they land on the page with "My Action Items"
+        // selected -- its default state.
+        if (user_can_act_on_risk_need($needs_mitigation, $review_actionable, $risk_level_name, $has_plan_mitigations, $review_permissions_by_level)) {
+            $counts['my_action_items']++;
+        }
+
+        // "Past due" is the 'past_due' bucket ONLY -- a risk that WAS reviewed
+        // before and whose next scheduled review date has since passed. A
+        // never-reviewed risk is 'unreviewed' and belongs to the Needs Review
+        // tile alone; counting it here as well is what made these two tiles
+        // overlap. The mitigation chip is separately overdue when its planning
+        // date has passed.
+        $review_past_due   = ($urgency['bucket'] === 'past_due');
+        $planning_date     = review_risk_date_or_null($row['planning_date'] ?? null);
+        // NOTE: this leg is structurally unreachable on today's schema --
+        // needs_mitigation IS `risks.mitigation_id = 0`, and a risk with no
+        // planned mitigation has no `mitigations` row to carry a planning_date
+        // (confirmed zero such rows on the dev dataset). It is implemented
+        // anyway so the tile stays correct if that ever stops holding, and so
+        // this function matches the grid's own two-chip due-state rule rather
+        // than a simplification of it.
+        $mitigation_past_due = ($needs_mitigation && $planning_date !== null && $planning_date < $today);
+
+        if ($review_past_due || $mitigation_past_due) {
+            $counts['past_due']++;
+        }
+    }
+
+    return $counts;
+}
+
+// DB: every management review the current user is allowed to see, grouped by
+// risk and ordered oldest-first, so the pure series builder below can ask "what
+// was this risk's review state as of day D?" for any D. Team-scoped through the
+// same fragments as review_risk_insight_rows() -- the INNER JOIN back to `risks`
+// is what lets the separation predicate apply to a review row at all.
+function review_risk_review_history()
+{
+    [$sep_from, $sep_where] = home_risk_separation_sql();
+
+    $db = db_open();
+    $stmt = $db->prepare("
+        SELECT DISTINCT
+            `mr`.`id` AS id,
+            `mr`.`risk_id` AS risk_id,
+            DATE(`mr`.`submission_date`) AS review_date,
+            `mr`.`next_review` AS next_review
+        FROM `mgmt_reviews` mr
+        INNER JOIN `risks` rsk ON `rsk`.`id` = `mr`.`risk_id`
+        {$sep_from}
+        WHERE 1 = 1 {$sep_where}
+        ORDER BY `mr`.`risk_id`, `mr`.`submission_date`, `mr`.`id`;
+    ");
+    $stmt->execute();
+    $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    db_close($db);
+
+    $by_risk = [];
+    foreach ($rows as $r) {
+        $by_risk[(int) $r['risk_id']][] = [
+            'review_date' => review_risk_date_or_null($r['review_date']),
+            'next_review' => $r['next_review'],
+        ];
+    }
+    return $by_risk;
+}
+
+// Pure: reconstruct the Review Risk queue's state on every day of $axis.
+//
+// $rows carry the per-risk lifecycle dates; $reviews_by_risk is
+// review_risk_review_history() output. $which selects the series:
+//   'needs_review'     — open + actionable + review bucket 'unreviewed'
+//                        (never reviewed at all) as of D
+//   'past_due'         — open + actionable + review bucket 'past_due' as of D
+//                        (reviewed before, next review date since passed), or
+//                        mitigation planning date already passed as of D
+//   'coming_soon'      — open + actionable + review bucket 'due_soon' as of D
+//   'my_action_items'  — open + actionable AS OF D, filtered through the
+//                        CURRENT user's permission relevance -- see the
+//                        RECONSTRUCTION FIDELITY note below. $has_plan_mitigations
+//                        and $review_permissions_by_level are required for
+//                        this branch (ignored otherwise).
+//
+// The first three are a PARTITION of the review queue, not overlapping cuts of
+// it: classify_review_urgency() puts every actionable risk in exactly one of
+// {unreviewed, past_due, due_soon}, so on any day D the three series sum to the
+// review-actionable row count (plus, for 'past_due', the separate mitigation
+// leg). The broad "in any of the three buckets" test survives here only as the
+// queue-membership gate ($review_actionable below), which is what the grid's
+// needs-gate and user_can_act_on_risk_need() both mean -- it is deliberately
+// NOT what any single tile counts.
+//
+// There is deliberately no 'needs_mitigation' case: that series is already
+// exactly kpi_series_unmitigated() (open on D AND no mitigation submitted by
+// D), which the Needs Mitigation tile calls directly. Adding a third branch
+// here would duplicate tested code and pay for a review-history query the
+// metric never reads.
+//
+// This restates classify_review_urgency()'s date arithmetic against an
+// arbitrary day D instead of "today", which that function hard-codes. The two
+// agree exactly at D = today (asserted live during development), and the
+// boundaries are taken straight from it: past_due ⇔ resolved < D (its
+// `resolved + 24h <= now` test), due_soon ⇔ resolved <= D + $due_soon_days.
+//
+// RECONSTRUCTION FIDELITY — two documented approximations.
+//   1. A risk's review cadence for the '0000-00-00' (no explicit next-review
+//      date) branch is keyed off its risk LEVEL, and `risk_scoring` stores
+//      only the CURRENT calculated risk; there is no history of past scores.
+//      So a risk whose level changed inside the window is bucketed on every
+//      historical day using its level today. Everything else here is genuine
+//      history: submission dates, closure dates, mitigation submission
+//      dates, and each management review's own submission date and the
+//      next_review it recorded are all stored per row.
+//   2. 'my_action_items' ADDS its own approximation on top of (1):
+//      user_can_act_on_risk_need() depends on the viewer's CURRENT session
+//      permissions (their review_<level> flags and plan_mitigations), and
+//      SimpleRisk keeps no history of "what permissions did this user have on
+//      day D" -- only what they have right now. So this series answers "if my
+//      TODAY's permissions had applied on each of the last 30 days, how many
+//      rows would have been mine to act on?", not "how many rows were
+//      actually mine on day D" (which is unanswerable without a permission
+//      audit trail SimpleRisk does not keep). $has_plan_mitigations and
+//      $review_permissions_by_level are therefore evaluated ONCE by the
+//      caller (from today's $_SESSION) and applied unchanged to every day in
+//      $axis -- the trend line moves only because the underlying
+//      needs_mitigation/needs_review state changes day to day, never because
+//      the permission snapshot does.
+function kpi_compute_review_risk_series(array $rows, array $reviews_by_risk, array $review_levels, array $axis, $which, $due_soon_days = 30, $has_plan_mitigations = false, array $review_permissions_by_level = [])
+{
+    $series = [];
+    foreach ($axis as $d) {
+        $count = 0;
+        foreach ($rows as $r) {
+            $start = $r['start_date'] ?? null;
+            $end   = $r['end_date'] ?? null;
+            if ($start === null || $start > $d || ($end !== null && $end <= $d)) {
+                continue; // not open on D
+            }
+
+            $mit_date = $r['mitigation_date'] ?? null;
+            $needs_mitigation = ($mit_date === null || $mit_date > $d);
+
+            // Latest review submitted on/before D. Histories are tiny (a
+            // handful of reviews per risk) and pre-sorted ascending, so a
+            // forward scan is cheaper than any index-building.
+            $latest = null;
+            foreach ($reviews_by_risk[(int) $r['id']] ?? [] as $rev) {
+                if ($rev['review_date'] !== null && $rev['review_date'] <= $d) {
+                    $latest = $rev;
+                } else {
+                    break;
+                }
+            }
+
+            if ($latest === null) {
+                $bucket = 'unreviewed';
+            } else {
+                $raw = review_risk_date_or_null($latest['next_review']);
+                if ($raw === null) {
+                    // classify_review_urgency()'s cadence fallback: last review
+                    // date + the level's configured review interval.
+                    $days = (int) $review_levels[$r['review_level_index']]['value'];
+                    $resolved = date('Y-m-d', strtotime($latest['review_date'] . " +{$days} days"));
+                } else {
+                    $resolved = $raw;
+                }
+                if ($resolved < $d) {
+                    $bucket = 'past_due';
+                } elseif (strtotime($resolved) <= strtotime($d) + $due_soon_days * 86400) {
+                    $bucket = 'due_soon';
+                } else {
+                    $bucket = 'on_track';
+                }
+            }
+
+            // Queue membership on D (any of the three buckets) -- the gate, not
+            // any tile's own value. See the partition note in the docblock.
+            $review_actionable = in_array($bucket, ['unreviewed', 'past_due', 'due_soon'], true);
+            if (!$needs_mitigation && !$review_actionable) {
+                continue; // not actionable on D — same needs-gate as the grid
+            }
+
+            if ($which === 'needs_review') {
+                if ($bucket === 'unreviewed') { $count++; }
+            } elseif ($which === 'past_due') {
+                $planning = $r['planning_date'] ?? null;
+                $mitigation_past_due = ($needs_mitigation && $planning !== null && $planning < $d);
+                if ($bucket === 'past_due' || $mitigation_past_due) {
+                    $count++;
+                }
+            } elseif ($which === 'coming_soon') {
+                if ($bucket === 'due_soon') { $count++; }
+            } else { // 'my_action_items'
+                // $r['risk_level_name'] is the risk's CURRENT level (the same
+                // approximation RECONSTRUCTION FIDELITY note (1) above already
+                // makes for the review-cadence fallback); $has_plan_mitigations
+                // and $review_permissions_by_level are today's session values,
+                // per note (2) above.
+                if (user_can_act_on_risk_need($needs_mitigation, $review_actionable, $r['risk_level_name'] ?? null, $has_plan_mitigations, $review_permissions_by_level)) {
+                    $count++;
+                }
+            }
+        }
+        $series[] = ['date' => $d, 'value' => $count];
+    }
+    return $series;
+}
+
+// DB: 30-day series for the Needs Review, Past Due, Coming Soon, or My Action
+// Items tile. $which is 'needs_review' | 'past_due' | 'coming_soon' |
+// 'my_action_items'. The first three are one urgency bucket each and never
+// overlap -- see kpi_compute_review_risk_series()'s partition note. (Needs Mitigation
+// uses the existing kpi_series_unmitigated() -- see
+// kpi_compute_review_risk_series()'s docblock.) $has_plan_mitigations and
+// $review_permissions_by_level are required for 'my_action_items' (ignored
+// otherwise) -- see kpi_compute_review_risk_series()'s RECONSTRUCTION
+// FIDELITY note (2) for why they are evaluated once, from today's session,
+// rather than per historical day.
+function kpi_series_review_risk($which, $days = 30, $has_plan_mitigations = false, array $review_permissions_by_level = [])
+{
+    $review_levels = get_review_levels();
+
+    [$sep_from, $sep_where] = home_risk_separation_sql();
+
+    $db = db_open();
+    // Same lifecycle shape kpi_series_unmitigated() uses (open-on-D from
+    // submission/closure dates, mitigated-on-D from the mitigation's own
+    // submission date), plus the planning date and current risk score the
+    // review/past-due buckets need.
+    $stmt = $db->prepare("
+        SELECT DISTINCT
+            `rsk`.`id` AS id,
+            DATE(`rsk`.`submission_date`) AS start_date,
+            CASE WHEN `rsk`.`status` = 'Closed' THEN DATE(`c`.`closure_date`) ELSE NULL END AS end_date,
+            CASE WHEN `rsk`.`mitigation_id` <> 0 THEN DATE(`mit`.`submission_date`) ELSE NULL END AS mitigation_date,
+            (SELECT DATE(`mp`.`planning_date`) FROM `mitigations` mp WHERE `mp`.`risk_id` = `rsk`.`id` ORDER BY `mp`.`id` LIMIT 1) AS planning_date,
+            `rs`.`calculated_risk` AS calculated_risk
+        FROM `risks` rsk
+        LEFT JOIN `closures` c ON `rsk`.`close_id` = `c`.`id`
+        LEFT JOIN `mitigations` mit ON `rsk`.`mitigation_id` = `mit`.`id`
+        LEFT JOIN `risk_scoring` rs ON `rsk`.`id` = `rs`.`id`
+        {$sep_from}
+        WHERE 1 = 1 {$sep_where};
+    ");
+    $stmt->execute();
+    $raw = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    db_close($db);
+
+    $rows = [];
+    foreach ($raw as $r) {
+        // 'risk_level_name' is only read by the 'my_action_items' branch
+        // (user_can_act_on_risk_need() keys $review_permissions_by_level by
+        // display name); cheap to include unconditionally since
+        // get_risk_level_name() is already called for review_level_index.
+        $risk_level_name = get_risk_level_name($r['calculated_risk']);
+        $rows[] = [
+            'id'                 => (int) $r['id'],
+            'start_date'         => review_risk_date_or_null($r['start_date']),
+            'end_date'           => review_risk_date_or_null($r['end_date']),
+            'mitigation_date'    => review_risk_date_or_null($r['mitigation_date']),
+            'planning_date'      => review_risk_date_or_null($r['planning_date']),
+            'review_level_index' => review_risk_level_index($risk_level_name),
+            'risk_level_name'    => $risk_level_name,
+        ];
+    }
+
+    return kpi_compute_review_risk_series(
+        $rows,
+        review_risk_review_history(),
+        $review_levels,
+        kpi_build_day_axis($days),
+        $which,
+        30,
+        $has_plan_mitigations,
+        $review_permissions_by_level
+    );
+}
+
+// Pure: month-to-date running count. value(D) = how many of $dates fall in
+// D's own calendar month, on or before D. The last point therefore equals the
+// matching "this month" tile value exactly, and the series resets at each
+// month boundary inside the window -- which is the honest shape for a
+// month-to-date measure (a rolling 30-day count would drift away from the
+// number printed above it).
+function kpi_compute_month_to_date_series(array $dates, array $axis)
+{
+    $series = [];
+    foreach ($axis as $d) {
+        $month_start = substr($d, 0, 8) . '01';
+        $count = 0;
+        foreach ($dates as $date) {
+            if ($date !== null && $date >= $month_start && $date <= $d) {
+                $count++;
+            }
+        }
+        $series[] = ['date' => $d, 'value' => $count];
+    }
+    return $series;
+}
+
+// DB: month-to-date submitted-risk count per day, team-scoped.
+function kpi_series_opened_month_to_date($days = 30)
+{
+    [$sep_from, $sep_where] = home_risk_separation_sql();
+
+    $db = db_open();
+    $stmt = $db->prepare("
+        SELECT DISTINCT
+            `rsk`.`id` AS id,
+            DATE(`rsk`.`submission_date`) AS d
+        FROM `risks` rsk
+        {$sep_from}
+        WHERE 1 = 1 {$sep_where};
+    ");
+    $stmt->execute();
+    $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    db_close($db);
+
+    $dates = [];
+    foreach ($rows as $r) {
+        $dates[] = review_risk_date_or_null($r['d']);
+    }
+    return kpi_compute_month_to_date_series($dates, kpi_build_day_axis($days));
+}
+
+// DB: month-to-date closed-risk count per day, team-scoped. Keys on the LAST
+// closure per risk, the same "currently closed cohort" rule
+// kpi_series_closed_risks() uses (a risk can be closed, reopened, and closed
+// again), so a risk is counted at most once.
+function kpi_series_closed_month_to_date($days = 30)
+{
+    [$sep_from, $sep_where] = home_risk_separation_sql();
+
+    $db = db_open();
+    $stmt = $db->prepare("
+        SELECT DISTINCT
+            `rsk`.`id` AS id,
+            (SELECT DATE(MAX(`cc`.`closure_date`)) FROM `closures` cc WHERE `cc`.`risk_id` = `rsk`.`id`) AS d
+        FROM `risks` rsk
+        {$sep_from}
+        WHERE `rsk`.`status` = 'Closed' {$sep_where};
+    ");
+    $stmt->execute();
+    $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    db_close($db);
+
+    $dates = [];
+    foreach ($rows as $r) {
+        $dates[] = review_risk_date_or_null($r['d']);
+    }
+    return kpi_compute_month_to_date_series($dates, kpi_build_day_axis($days));
 }
 
 // Renders a home KPI stat-tile: an eyebrow label, a large charcoal value, an
@@ -11357,8 +12152,15 @@ function render_kpi_tile($value, $label_key, $cta_url, $delta = null, $domain_ke
     // App-Red-spent-once: only the numeric value gets the danger class, never
     // the tile/label -- $value_tone is a fixed internal 'danger'|'' flag, not
     // user input, so no escaping is needed for the class list itself.
+    //
+    // A zero count never gets the danger tint, regardless of what the caller
+    // passed -- "0 past due" / "0 unmitigated" is the tile being caught up,
+    // not something needing attention. Every 'danger'-tone caller passes a
+    // plain numeric string (`(string)$count`), so a strict '0' compare is
+    // exact -- no risk of matching a non-numeric value some caller meant to
+    // read as "not zero".
     $value_class = 'sr-kpi__value';
-    if ($value_tone === 'danger') {
+    if ($value_tone === 'danger' && $value !== '0') {
         $value_class .= ' sr-kpi__value--danger';
     } elseif ($value_tone === 'success') {
         $value_class .= ' sr-kpi__value--success';
@@ -11600,8 +12402,11 @@ function getting_started_catalog() {
         'self_assessment'  => ['area'=>'setup',      'gate'=>'assessments',      'cta'=>'../assessments/index.php',                    'title'=>'GSSelfAssessTitle',    'desc'=>'GSSelfAssessDesc',    'cta_label'=>'GSSelfAssessCta',    'doc'=>'https://www.simplerisk.com/support/self-assessment'],
         'invite'           => ['area'=>'setup',      'gate'=>'admin',            'cta'=>'../admin/user_management.php',                 'title'=>'GSInviteTitle',        'desc'=>'GSInviteDesc',        'cta_label'=>'GSInviteCta',        'doc'=>'https://www.simplerisk.com/support/users'],
         'submit_risks'     => ['area'=>'risk',       'gate'=>'submit_risks',     'cta'=>'../management/index.php',                     'title'=>'GSSubmitRiskTitle',    'desc'=>'GSSubmitRiskDesc',    'cta_label'=>'GSSubmitRiskCta',    'doc'=>'https://www.simplerisk.com/support/risk'],
-        'plan_mitigations' => ['area'=>'risk',       'gate'=>'plan_mitigations', 'cta'=>'../management/plan_mitigations.php',          'title'=>'GSMitigateTitle',      'desc'=>'GSMitigateDesc',      'cta_label'=>'GSMitigateCta',      'doc'=>'https://www.simplerisk.com/support/mitigation'],
-        'risk_review'      => ['area'=>'risk',       'gate'=>'review_any',       'cta'=>'../management/management_review.php',         'title'=>'GSReviewTitle',        'desc'=>'GSReviewDesc',        'cta_label'=>'GSReviewCta',        'doc'=>'https://www.simplerisk.com/support/review'],
+        // SR: both cards route to the merged Review Risk page (Task 22 retired
+        // the separate plan_mitigations.php/management_review.php pages);
+        // kept as two cards since each is gated by a different permission.
+        'plan_mitigations' => ['area'=>'risk',       'gate'=>'plan_mitigations', 'cta'=>'../management/review_risk.php',               'title'=>'GSMitigateTitle',      'desc'=>'GSMitigateDesc',      'cta_label'=>'GSMitigateCta',      'doc'=>'https://www.simplerisk.com/support/mitigation'],
+        'risk_review'      => ['area'=>'risk',       'gate'=>'review_any',       'cta'=>'../management/review_risk.php',               'title'=>'GSReviewTitle',        'desc'=>'GSReviewDesc',        'cta_label'=>'GSReviewCta',        'doc'=>'https://www.simplerisk.com/support/review'],
         'define_tests'     => ['area'=>'compliance', 'gate'=>'define_tests',     'cta'=>'../compliance/index.php',                     'title'=>'GSDefineTestTitle',    'desc'=>'GSDefineTestDesc',    'cta_label'=>'GSDefineTestCta',    'doc'=>'https://www.simplerisk.com/support/test'],
         'initiate_audits'  => ['area'=>'compliance', 'gate'=>'initiate_audits',  'cta'=>'../compliance/audit_initiation.php',          'title'=>'GSInitiateAuditTitle', 'desc'=>'GSInitiateAuditDesc', 'cta_label'=>'GSInitiateAuditCta', 'doc'=>'https://www.simplerisk.com/support/audit'],
         'asset'            => ['area'=>'assets',     'gate'=>'asset',            'cta'=>'../assets/index.php',                         'title'=>'GSAssetTitle',         'desc'=>'GSAssetDesc',         'cta_label'=>'GSAssetCta',         'doc'=>'https://www.simplerisk.com/support/assets'],

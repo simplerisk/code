@@ -55,6 +55,31 @@ var DocumentProgramGrid = (function ($) {
         return key ? L(key) : (name || '');
     }
 
+    // "Select all N" banner cap. A client-side selection-size guard:
+    // everything is already loaded in `allRows`, so there's no server round
+    // trip to build this list. Set to GOVERNANCE_MAX_BULK_APPROVE_IDS's own
+    // figure (500, includes/governance.php) -- the same ceiling the
+    // batch-delete call site below has the server enforce for the atomic
+    // bulk-delete request itself (POST /api/v2/documents/batch-delete,
+    // batch_delete_document_api(), includes/api.php), so this client-side
+    // guard and the server-side cap agree on the same bound.
+    //
+    // The `window.__...OVERRIDE__` read below exists solely so a Playwright
+    // spec can exercise the cap-EXCEEDED branch without seeding 501+ real
+    // documents through the API -- define-control-frameworks-26.spec.ts's own
+    // comment rejected that approach for a sibling cap (~500 API calls/test)
+    // and solves the same problem a different way: rerenderSoaLaunchActionsWithPdfMax()
+    // (define-control-frameworks.page.ts) sets a DOM attribute and dispatches
+    // a change event on an ALREADY-LOADED page, because SOA_EXPORT_PDF_MAX_CONTROLS
+    // is read live on every re-render. DOCUMENT_PROGRAM_SELECT_ALL_MAX is a
+    // module-scope constant evaluated once when this IIFE parses, so only
+    // `page.addInitScript()` -- which runs before the page's own scripts --
+    // can influence it; a post-load page.evaluate() would be too late. Either
+    // way, this narrows nothing a real user could not already do from the
+    // console: the server-side cap on the batch-delete endpoint (see above)
+    // is what actually enforces the bound, not this client-side guard.
+    var DOCUMENT_PROGRAM_SELECT_ALL_MAX = (typeof window !== 'undefined' && window.__DOCUMENT_PROGRAM_SELECT_ALL_MAX_OVERRIDE__) || 500;
+
     var dt = null;
     var perms = { canEdit: false, canDelete: false, canApprove: false, canView: false };
     var selectedIds = {};
@@ -498,14 +523,46 @@ var DocumentProgramGrid = (function ($) {
         }
         var n = Object.keys(selectedIds).length;
         var $toolbar = $('#document-program-toolbar');
+        var $selectAllFiltered = $('#document-program-select-all-filtered');
         if (n > 0) {
             $('#document-program-bulk-count').text(String(L('NSelected')).replace('{n}', n));
             $bar.removeClass('d-none');
             $toolbar.hide();
+
+            // matchingIds() reaches every row matching the current facet
+            // filters + DataTables search across every page (see its own
+            // comment) -- the banner only makes sense while that set is
+            // bigger than what's already selected.
+            var total = matchingIds().length;
+            if (total > n) {
+                $selectAllFiltered.text(String(L('SelectAllN')).replace('{n}', total)).removeClass('d-none');
+            } else {
+                $selectAllFiltered.addClass('d-none');
+            }
         } else {
             $bar.addClass('d-none');
             $toolbar.show();
+            $selectAllFiltered.addClass('d-none');
         }
+    }
+
+    // Ids of every row matching BOTH the facet filters (already baked into
+    // the `rows` fed to renderBody() -- see applyFiltersAndRender()) AND
+    // DataTables' own text search, across every page -- rows({search:
+    // 'applied'}) reaches every matching row even though only the current
+    // page's <tr>s are actually in the DOM (the rest are held in
+    // DataTables' own row model, not literally CSS-hidden). Backs the
+    // "Select all N" banner only; the header checkbox and syncCheckboxes()'s
+    // tri-state stay page-scoped (':visible'), matching Define Tests/Manage
+    // Audits/Review Risk's own per-page header checkboxes.
+    function matchingIds() {
+        if (!dt) {
+            return [];
+        }
+        return dt.rows({ search: 'applied' }).nodes().toArray().map(function (tr) {
+            var cb = tr.querySelector('.sr-row-check');
+            return cb ? cb.getAttribute('data-id') : null;
+        }).filter(Boolean);
     }
 
     function syncCheckboxes() {
@@ -552,7 +609,14 @@ var DocumentProgramGrid = (function ($) {
     }
 
     function wireSelection(tableEl) {
-        selectedIds = {};
+        // renderBody() rebuilds this table (and re-runs wireSelection())
+        // on EVERY reload -- a filter change, a bulk approve/delete
+        // completion, anything. selectedIds is deliberately NOT reset
+        // here: applyFiltersAndRender() already pruned it down to ids
+        // still present in the newly-filtered row set before renderBody()
+        // was called, so a real filter change drops stale ids there,
+        // while an unrelated reload (e.g. batch-approve, which doesn't
+        // change what matches the filters) leaves the selection intact.
         updateBulkBar();
         $(tableEl).on('change', '.sr-row-check', function () {
             var id = $(this).data('id');
@@ -756,7 +820,7 @@ var DocumentProgramGrid = (function ($) {
                 // build the same filter options twice on every load.
                 applyFiltersAndRender();
             },
-            error: function (xhr, status, error) {
+            error: function (xhr) {
                 if (!retryCSRF(xhr, this)) {
                     renderError();
                 }
@@ -848,7 +912,24 @@ var DocumentProgramGrid = (function ($) {
     }
 
     function applyFiltersAndRender() {
-        renderBody(allRows.filter(function (doc) { return rowPassesFilters(doc, null); }));
+        var rows = allRows.filter(function (doc) { return rowPassesFilters(doc, null); });
+
+        // Prune selectedIds down to whatever still matches BEFORE
+        // rebuilding the table -- a real filter change (or a document
+        // disappearing entirely, e.g. after a delete) drops the ids that
+        // fell out, while a reload that doesn't change what matches (e.g.
+        // batch-approve, whose own completion handler never touched
+        // selectedIds) leaves everything else selected. One choke point
+        // instead of each mutation handler having to remember to clear it.
+        var matching = {};
+        rows.forEach(function (doc) { matching[doc.id] = true; });
+        Object.keys(selectedIds).forEach(function (id) {
+            if (!matching[id]) {
+                delete selectedIds[id];
+            }
+        });
+
+        renderBody(rows);
         renderFilterOptions();
         syncFilterCount();
     }
@@ -1247,7 +1328,7 @@ var DocumentProgramGrid = (function ($) {
                 $('#document-approve-confirm').modal('hide');
                 reload();
             }
-            function onError(xhr, status, error) {
+            function onError(xhr) {
                 $yes.prop('disabled', false);
                 if (!retryCSRF(xhr, this)) {
                     if (xhr.responseJSON && xhr.responseJSON.status_message) {
@@ -1298,62 +1379,44 @@ var DocumentProgramGrid = (function ($) {
             var $yes = $(this);
             $yes.prop('disabled', true);
 
-            function deleteOne(id) {
-                // No `version` -- a bulk selection always removes the whole
-                // document, never a single uploaded version (see the modal's
-                // PHP comment in governance/documentation.php).
-                return $.ajax({ type: 'POST', url: BASE_URL + '/api/v2/documents/delete', data: { document_id: id } });
+            function onSuccess(data) {
+                if (data.status_message) {
+                    showAlertsFromArray(data.status_message);
+                }
+            }
+            function onError(xhr) {
+                if (!retryCSRF(xhr, this)) {
+                    if (xhr.responseJSON && xhr.responseJSON.status_message) {
+                        showAlertsFromArray(xhr.responseJSON.status_message);
+                    }
+                }
+            }
+            function onDone() {
+                $yes.prop('disabled', false);
+                $('#document-bulk-delete-confirm').modal('hide');
+                selectedIds = {};
+                reload();
             }
 
             if (ids.length === 1) {
-                deleteOne(ids[0]).done(function (data) {
-                    if (data.status_message) {
-                        showAlertsFromArray(data.status_message);
-                    }
-                }).fail(function (xhr, status, error) {
-                    if (!retryCSRF(xhr, this)) {
-                        if (xhr.responseJSON && xhr.responseJSON.status_message) {
-                            showAlertsFromArray(xhr.responseJSON.status_message);
-                        }
-                    }
-                }).always(function () {
-                    $yes.prop('disabled', false);
-                    $('#document-bulk-delete-confirm').modal('hide');
-                    selectedIds = {};
-                    reload();
-                });
+                // No `version` -- a bulk selection always removes the whole
+                // document, never a single uploaded version (see the modal's
+                // PHP comment in governance/documentation.php).
+                $.ajax({ type: 'POST', url: BASE_URL + '/api/v2/documents/delete', data: { document_id: ids[0] } })
+                    .done(onSuccess).fail(onError).always(onDone);
                 return;
             }
 
-            // Bulk delete: loop the single-delete endpoint once per selected id
-            // (mirrors governance-exceptions.js's bulk delete -- there's no
-            // arbitrary-id-array batch-delete endpoint for documents either),
-            // then show ONE aggregate toast rather than one per looped
-            // request. Each deleteOne() promise is wrapped in its own
-            // deferred that always resolves -- $.when.apply() rejects as soon
-            // as ANY input promise rejects, which would abandon the count
-            // before the other requests finish; wrapping lets every request
-            // complete and be tallied, so a partial failure is reported
-            // honestly instead of showing the same success toast either way.
-            var failedCount = 0;
-            var settled = ids.map(function (id) {
-                var d = $.Deferred();
-                deleteOne(id)
-                    .fail(function () { failedCount++; })
-                    .always(function () { d.resolve(); });
-                return d.promise();
-            });
-            $.when.apply($, settled).always(function () {
-                $yes.prop('disabled', false);
-                $('#document-bulk-delete-confirm').modal('hide');
-                if (failedCount > 0) {
-                    showAlertFromMessage(L('SomeDocumentsNotDeleted'), false);
-                } else {
-                    showAlertFromMessage(L('DocumentsDeleted'), true);
-                }
-                selectedIds = {};
-                reload();
-            });
+            // Bulk delete: ONE request carrying every selected id --
+            // POST /api/v2/documents/batch-delete (batch_delete_document_api(),
+            // includes/api.php) -- rather than looping the single-document
+            // delete endpoint once per id. Mirrors the batch-approve call
+            // site above exactly; "Select all N" can hand this up to
+            // DOCUMENT_PROGRAM_SELECT_ALL_MAX ids from a single click, and
+            // the server enforces its own cap (GOVERNANCE_MAX_BULK_APPROVE_IDS)
+            // and reports `truncated` in the response if it bites.
+            $.ajax({ type: 'POST', url: BASE_URL + '/api/v2/documents/batch-delete', data: { document_ids: ids } })
+                .done(onSuccess).fail(onError).always(onDone);
         });
 
         $(document).on('change', '#document-program-select-all', function () {
@@ -1372,6 +1435,24 @@ var DocumentProgramGrid = (function ($) {
 
         $(document).on('click', '#document-program-bulk-clear', function () {
             selectedIds = {};
+            syncCheckboxes();
+            updateBulkBar();
+        });
+
+        // "Select all N" banner (updateBulkBar()) -- escalates the current
+        // page-level selection to every document matching the active
+        // filters + search, across every page. Purely client-side (see
+        // matchingIds()); DOCUMENT_PROGRAM_SELECT_ALL_MAX bounds how large a
+        // selection this client-side resolution can hand to a bulk action --
+        // bulk-delete's own POST /api/v2/documents/batch-delete additionally
+        // enforces this same cap server-side (see that call site below).
+        $(document).on('click', '#document-program-select-all-filtered', function () {
+            var ids = matchingIds();
+            if (ids.length > DOCUMENT_PROGRAM_SELECT_ALL_MAX) {
+                showAlertFromMessage(String(L('SelectAllTooManyMatches')).replace('{$max}', DOCUMENT_PROGRAM_SELECT_ALL_MAX).replace('{$noun}', L('Documents')), false);
+                return;
+            }
+            ids.forEach(function (id) { selectedIds[id] = true; });
             syncCheckboxes();
             updateBulkBar();
         });

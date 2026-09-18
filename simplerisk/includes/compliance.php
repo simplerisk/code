@@ -138,6 +138,17 @@ function display_framework_controls_in_compliance()
             <div class='sr-bulk-bar d-none' id='define-tests-bulk-bar'>
                 <button type='button' class='sr-bulk-clear' id='define-tests-bulk-clear' aria-label='{$escaper->escapeHtmlAttr($lang['Clear'])}'>&times;</button>
                 <span class='sr-bulk-count' id='define-tests-bulk-count'></span>
+                <!-- Select all N: escalates a page-level selection to every REAL
+                     test matching the current filter/search, reusing the same
+                     .sr-bulk-lnk affordance class Define Control Frameworks
+                     (governance-frameworks.js) already ships -- though that page
+                     resolves+writes atomically server-side, while this one (like
+                     the parallel, not-yet-merged Select all N work on Review
+                     Risk and Plan Projects) resolves ids client-side and still
+                     loops per-id for Retire/Delete. Shown by compliance-define-
+                     tests.js's updateBulkBar() only while there are more matching
+                     tests than are selected. -->
+                <button type='button' class='sr-bulk-lnk d-none' id='define-tests-select-all-filtered'></button>
                 <div class='sr-bulk-actions'>
                     <button type='button' class='btn btn-outline-secondary btn-sm' id='define-tests-bulk-reassign' disabled title='{$escaper->escapeHtmlAttr($lang['ComingSoon'])}'>{$escaper->escapeHtml($lang['ReassignTester'])}</button>
                     <button type='button' class='btn btn-outline-secondary btn-sm' id='define-tests-bulk-schedule' disabled title='{$escaper->escapeHtmlAttr($lang['ComingSoon'])}'>{$escaper->escapeHtml($lang['SetSchedule'])}</button>
@@ -2710,6 +2721,16 @@ function display_audits() {
             <div class='sr-bulk-bar d-none' id='audits-bulk-bar'>
                 <button type='button' class='sr-bulk-clear' id='audits-bulk-clear' aria-label='{$escaper->escapeHtmlAttr($lang['Clear'])}'>&times;</button>
                 <span class='sr-bulk-count' id='audits-bulk-count'></span>
+                <!-- Select all N: escalates a page-level selection to every audit
+                     matching the current status chip + toolbar filters -- the same
+                     .sr-bulk-lnk affordance Define Control Frameworks offers
+                     (governance-frameworks.js), though that page's own escalation
+                     is a simple mode flag with no server round-trip; this is a
+                     client-resolved id-list variant. Review Risk/Define Tests/Plan
+                     Projects don't have this affordance yet. Shown by
+                     updateAuditsBulkBar() only while there are more matching
+                     audits than are selected. -->
+                <button type='button' class='sr-bulk-lnk d-none' id='audits-select-all-filtered'></button>
                 <div class='sr-bulk-actions'>
                     <button type='button' class='btn btn-outline-danger btn-sm' id='audits-bulk-delete'>{$escaper->escapeHtml($lang['Delete'])}</button>
                 </div>
@@ -2881,6 +2902,13 @@ function display_audits() {
                     // endpoint) regardless of which status chip is the intended default --
                     // so the first load must always explicitly set the URL too, not just
                     // when the initial status differs from the view's own default.
+                    // \"Select all N\" follow-up: which status chip is active determines
+                    // which SQL WHERE the resolver (POST /compliance/audits/filtered_ids)
+                    // must scope to -- tracked here alongside setActiveChip() rather than
+                    // re-derived from the DOM, since the chip click handler already knows
+                    // it directly.
+                    var currentAuditsStatus = INITIAL_STATUS;
+
                     setActiveChip(INITIAL_STATUS);
                     dt.ajax.url(BASE_URL + STATUS_URLS[INITIAL_STATUS]).load();
                     if (INITIAL_SEARCH) {
@@ -2890,6 +2918,7 @@ function display_audits() {
 
                     $('#audits-status-filter .sr-status-chip').on('click', function () {
                         var status = $(this).data('status');
+                        currentAuditsStatus = status;
                         setActiveChip(status);
                         applyTestDateFilterVisibility(status);
                         dt.ajax.url(BASE_URL + STATUS_URLS[status]).load();
@@ -3173,14 +3202,51 @@ function display_audits() {
                     });
 
                     // Bulk select (the checkbox column swapped in via the 'id'
-                    // field's columnDefs override, functions.php). Selection is
-                    // scoped to the CURRENT page's loaded rows, matching the
-                    // common admin-table convention -- this table is real
-                    // server-side pagination, so \"select all\" across every page
-                    // would mean selecting rows never fetched.
+                    // field's columnDefs override, functions.php).
+                    //
+                    // \"Select all N\" follow-up: auditsSelected already survived a
+                    // plain page/sort redraw (syncAuditsChecks() only ever PAINTS
+                    // checkboxes from it, never deletes from it) -- the gap this
+                    // closes is the opposite one: NOTHING previously cleared it on
+                    // a genuine status-chip/quickfilter/search/date-range change,
+                    // so a selection made under 'Active' silently stayed selected
+                    // (and counted) after switching to 'Past' or an unrelated
+                    // quickfilter, even though those ids might not even be in the
+                    // new result set. auditsFilterSignature()/the dt 'draw' handler
+                    // below now clear it when that signature actually changes --
+                    // the same class of bug compliance-define-tests.js's
+                    // loadGrid() sidesteps by re-deriving the grid from scratch
+                    // on every filter change rather than carrying selection
+                    // across it, though that page has no cross-page selection
+                    // to preserve in the first place.
                     var \$auditsBulkBar = $('#audits-bulk-bar');
                     if (\$auditsBulkBar.length) {
                         var auditsSelected = new Set();
+                        // True once \"Select all N\" has resolved every audit id
+                        // matching the current filter into auditsSelected --
+                        // suppresses re-showing the banner (updateAuditsBulkBar())
+                        // until the filter actually changes, same reasoning as
+                        // governance-frameworks.js's selectAllFiltered flag,
+                        // though that page's flag is a pure mode switch with no
+                        // server round-trip or resolved id-list to track.
+                        var auditsSelectAllFiltered = false;
+                        // The grid's own recordsFiltered from the most recent load
+                        // (captured on the DataTable's 'xhr' event, below).
+                        var lastAuditsRecordsFiltered = 0;
+                        // undefined until the first load completes -- see the
+                        // 'draw' handler below for how this decides \"just
+                        // re-paged/re-sorted\" (keep auditsSelected) apart from
+                        // \"the candidate set changed\" (clear it).
+                        var lastAuditsFilterSignature;
+
+                        function auditsFilterSignature() {
+                            return JSON.stringify({
+                                status: currentAuditsStatus,
+                                columnFilters: auditsColumnFilters,
+                                search: dt.search(),
+                                testDateRange: \$testDateFilter.val() || '',
+                            });
+                        }
 
                         // DataTables 2.x wraps each header cell's own text in its
                         // OWN '.dt-column-header > .dt-column-title' structure at
@@ -3216,6 +3282,16 @@ function display_audits() {
                                 \$auditsBulkBar.addClass('d-none');
                                 $('.sr-table-toolbar').first().show();
                             }
+
+                            // \"Select all N\": offer to escalate to every audit
+                            // matching the current status chip + filters while
+                            // there is more of it than is currently selected.
+                            // Hidden once auditsSelectAllFiltered is true
+                            // regardless of count -- a later manual deselection
+                            // shouldn't re-offer \"select everything\" again.
+                            \$auditsBulkBar.find('#audits-select-all-filtered')
+                                .toggleClass('d-none', auditsSelectAllFiltered || !(n > 0 && lastAuditsRecordsFiltered > n))
+                                .text('{$escaper->escapeJs($lang['SelectAllN'])}'.replace('{n}', lastAuditsRecordsFiltered));
                         }
 
                         function syncAuditsChecks() {
@@ -3270,10 +3346,36 @@ function display_audits() {
                             });
                         }
 
+                        // Captures recordsFiltered off the raw response, ahead of
+                        // 'draw' (DataTables fires 'xhr' before rebuilding tbody),
+                        // so updateAuditsBulkBar() (called from 'draw', below) has
+                        // the CURRENT load's count, not the previous one's.
+                        dt.on('xhr', function (e, settings, json) {
+                            lastAuditsRecordsFiltered = (json && json.recordsFiltered) || 0;
+                        });
+
                         dt.on('draw', function () {
                             injectAuditsSelectAll();
+
+                            // \"Select all N\" follow-up: a genuine status-chip/
+                            // quickfilter/search/date-range change can make a
+                            // previously-selected id invalid for the NEW result
+                            // set -- clear selection when the signature actually
+                            // changes. A plain page/sort change reaches here with
+                            // the same signature, so auditsSelected is left alone
+                            // and syncAuditsChecks() (below) paints whichever of
+                            // it the current page holds. undefined-guarded so the
+                            // very first draw (nothing to clear) never runs this.
+                            var signature = auditsFilterSignature();
+                            if (lastAuditsFilterSignature !== undefined && signature !== lastAuditsFilterSignature) {
+                                auditsSelected.clear();
+                                auditsSelectAllFiltered = false;
+                            }
+                            lastAuditsFilterSignature = signature;
+
                             syncAuditsChecks();
                             syncAuditsSortIcons();
+                            updateAuditsBulkBar();
                         });
 
                         $('body').on('change', '#all_audits_datatable tbody .sr-row-check', function () {
@@ -3303,6 +3405,7 @@ function display_audits() {
 
                         $('#audits-bulk-clear').on('click', function () {
                             auditsSelected.clear();
+                            auditsSelectAllFiltered = false;
                             syncAuditsChecks();
                             updateAuditsBulkBar();
                         });
@@ -3311,20 +3414,81 @@ function display_audits() {
                             var ids = Array.from(auditsSelected);
                             if (!ids.length) return;
                             confirm('{$escaper->escapeJs($lang['AreYouSureYouWantToDeleteThisTest'])}', () => {
-                                $.when.apply(
-                                    $,
-                                    ids.map(function (id) {
-                                        return $.ajax({
-                                            type: 'POST',
-                                            url: BASE_URL + '/api/v2/compliance/delete_audit',
-                                            data: { id: id },
-                                        });
-                                    }),
-                                ).always(function () {
+                                // Single request carrying every selected id, instead of
+                                // one request per id (or per fixed-size batch) --
+                                // 'Select all N' can hand this up to
+                                // MANAGE_AUDITS_SELECT_ALL_MAX ids from a single click.
+                                // The server-side batch endpoint
+                                // (api_v2_compliance_audits_batch_delete(), api/v2/
+                                // includes/compliance.php) performs every mutation
+                                // within that ONE request, re-running the exact same
+                                // per-id authorization POST /compliance/delete_audit
+                                // runs for a single id -- compliance + delete_audits
+                                // gate the whole request once, then (when Team
+                                // Separation is active) is_user_allowed_to_access() is
+                                // re-evaluated individually for every id, never just
+                                // once for the batch. This handler has never surfaced a
+                                // partial-failure toast, so the response's denied/
+                                // denied_ids are intentionally ignored here -- same
+                                // (silent) per-id failure handling as before.
+                                $.ajax({
+                                    type: 'POST',
+                                    url: BASE_URL + '/api/v2/compliance/audits/batch-delete',
+                                    data: { ids: ids },
+                                }).always(function () {
                                     auditsSelected.clear();
+                                    auditsSelectAllFiltered = false;
                                     updateAuditsBulkBar();
                                     dt.ajax.reload(null, false);
                                 });
+                            });
+                        });
+
+                        // \"Select all N\": resolves every audit id matching the
+                        // current status chip + toolbar filters across every page
+                        // (POST /compliance/audits/filtered_ids,
+                        // api_v2_compliance_audits_filtered_ids(), api/v2/includes/
+                        // compliance.php -- the exact same get_data_for_datatable()
+                        // engine (includes/functions.php) the three status-chip
+                        // datatable endpoints already use, forced to length=-1, so
+                        // the resolved set can never disagree with what the grid
+                        // shows for the SAME chip), then merges the returned ids
+                        // into auditsSelected. The existing Delete bulk action
+                        // already just loops Array.from(auditsSelected), so nothing
+                        // else needs to change to act on the full set.
+                        $('#audits-select-all-filtered').on('click', function () {
+                            var \$btn = $(this);
+                            if (\$btn.prop('disabled')) {
+                                return;
+                            }
+                            \$btn.prop('disabled', true);
+                            $.ajax({
+                                type: 'POST',
+                                url: BASE_URL + '/api/v2/compliance/audits/filtered_ids',
+                                data: {
+                                    status: currentAuditsStatus,
+                                    audits_column_filters: JSON.stringify(auditsColumnFilters),
+                                    search: dt.search(),
+                                    audits_test_date_range: \$testDateFilter.val() || '',
+                                },
+                                success: function (result) {
+                                    var ids = (result && result.data && result.data.ids) || [];
+                                    ids.forEach(function (id) {
+                                        auditsSelected.add(id.toString());
+                                    });
+                                    auditsSelectAllFiltered = true;
+                                    syncAuditsChecks();
+                                    updateAuditsBulkBar();
+                                },
+                                error: function (xhr) {
+                                    if (!retryCSRF(xhr, this)) {
+                                        var message = (xhr.responseJSON && xhr.responseJSON.status_message) || '{$escaper->escapeJs($lang['RequestFailed'])}';
+                                        showAlertsFromArray([message]);
+                                    }
+                                },
+                                complete: function () {
+                                    \$btn.prop('disabled', false);
+                                },
                             });
                         });
                     }

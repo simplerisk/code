@@ -632,8 +632,12 @@ body:has(.sr-ai-exthead) .page-breadcrumb { display: none; }
     .sr-qsubacc {
         border: 1px solid $gray-300;
         border-radius: 8px;
-        overflow: hidden;
         background: $sr-body;
+        // No overflow: hidden here — it clipped a bootstrap-multiselect dropdown
+        // popup opened near the bottom of .sr-qsubacc-body against the following
+        // sub-accordion. Corner-rounding is handled directly on
+        // .sr-qsubacc-head below instead, since it's the only child whose
+        // background differs from this container's own.
     }
 
     .sr-qsubacc-head.accordion-button {
@@ -645,9 +649,18 @@ body:has(.sr-ai-exthead) .page-breadcrumb { display: none; }
         color: $sr-primary;
         font-weight: 700;
         box-shadow: none;
+        // Matches the parent's 8px radius (minus the 1px border) so the header's
+        // own background doesn't square off past the rounded outer corners now
+        // that the parent no longer clips via overflow: hidden. Collapsed means
+        // this header is the only visible content, so all four corners round;
+        // expanded means the body follows below, so only the top corners do.
+        border-radius: 7px;
 
         &.collapsed { background: $sr-body; }
-        &:not(.collapsed) { border-bottom: 1px solid $gray-300; }
+        &:not(.collapsed) {
+            border-radius: 7px 7px 0 0;
+            border-bottom: 1px solid $gray-300;
+        }
         &:focus { box-shadow: none; border-color: $gray-300; }
         &::after { margin-left: 8px; }
 

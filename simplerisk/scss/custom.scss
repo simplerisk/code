@@ -988,15 +988,6 @@ html:has(.score-method-page) {
     }
 }
 
-// RISK MANAGEMENT / PLAN PROJECT PAGE
-.project-block {
-	.project-block--header {
-		div {
-			word-break: break-word;
-		}
-	}
-}
-
 // RISK MANAGEMENT / PRINT VIEW PAGE
 .risk-details-container, 
 .mitigation-details-container,
@@ -1304,7 +1295,6 @@ a.open-in-new-tab {
 // @import "modules/notification";
 // @import "modules/pagination";
 // @import "modules/permissions_widget";
-// @import "modules/plan-projects";
 // @import "modules/profile";
 // @import "modules/risks";
 // @import "modules/scoring";

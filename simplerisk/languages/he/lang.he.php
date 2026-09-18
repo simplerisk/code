@@ -4844,6 +4844,129 @@ $lang = array(
     'CreateAndAddField' => 'יצירה והוספה',
     'FieldCreatedAndAddedToTab' => 'יצר את {field} והוסיף אותו ל- {tab}.',
     'DeleteCustomFieldTitle' => 'למחוק את השדה \'{field}\'?',
+    // Review Risk page (SR-2068 and others -- see design spec)
+    'ReviewRisk' => 'סקירת סיכון',
+    'NeedsColumn' => 'צרכים',
+    'RiskScoreColumn' => 'ציון סיכון',
+    'ReassignRiskOwner' => 'הקצאה מחדש של בעל הסיכון',
+    'ReassignMitigationOwner' => 'הקצאה מחדש של בעל הפחתת הסיכון',
+    'NoActionItemsTitle' => 'אין סיכונים התואמים את המסננים שלך',
+    'NoActionItemsBody' => 'אין צורך בהקלה או בבדיקה של שום דבר שיש לך הרשאה אישית לפעול לגביו. נסה לבטל את הסימון של "הצג את סעיפי הפעולה שלי" כדי לראות את התור המלא של הצוות.',
+    'BulkChangeStatusTitle' => 'שינוי סטטוס עבור %s סיכונים נבחרים',
+    'BulkReassignRiskOwnerTitle' => 'הקצאה מחדש של בעל הסיכון עבור %s סיכונים נבחרים',
+    'BulkReassignMitigationOwnerTitle' => 'הקצאה מחדש של בעל הפחתת הסיכון עבור %s סיכונים נבחרים',
+    'BulkAddCommentTitle' => 'הוסף תגובה ל-%s סיכונים שנבחרו',
+    'BulkCloseRiskTitle' => 'סגור %s סיכונים נבחרים',
+    'BulkActionPartialSuccess' => '%s מתוך %s סיכונים עודכנו.',
+    'PerformReview' => 'בצע סקירה',
+    'BulkActionSuccess' => 'סיכונים %s עודכנו.',
+    'SomeRowsSkippedNoMitigation' => 'חלק מהסיכונים שנבחרו הודחו משום שעדיין לא תוכנן עבורם צמצום.',
+    'ChangeStatusHint' => 'הסיכונים שנבחרו יעודכנו לסטטוס שנבחר.',
+    'StatusChanged' => 'הסטטוס עודכן.',
+    'CloseRiskBulkConfirmBody' => 'סיכונים סגורים מוסרים מתורים פעילים. ניתן לפתוח מחדש סיכון מאוחר יותר על ידי שינוי הסטטוס שלו שוב.',
+    // Column-parity follow-up fix review-risk-followups/column-parity-report.md):
+    // the Review Risk page's new scoring_method column (getReviewRiskDatatableResponse(),
+    // includes/api.php) renders get_scoring_method_name()'s (includes/functions.php)
+    // canonical scoring-method name through a $lang lookup rather than the raw
+    // hardcoded string. 'Classic'/'Custom'/'ContributingRisk' already existed
+    // (reused, not duplicated) -- only the three missing acronym keys are added
+    // here. These scoring methodology names/acronyms are typically kept
+    // untranslated (matching how the app's other risk-scoring UI already
+    // displays them, e.g. get_name_by_value('scoring_methods', ...) in
+    // displayrisks.php, which reads these same literal strings straight from
+    // the scoring_methods DB table with no translation layer), but every
+    // user-facing string still needs to flow through a lookup per CLAUDE.md,
+    // even one where the English and translated value would typically match.
+    'CVSS' => 'CVSS',
+    'DREAD' => 'DREAD',
+    'OWASP' => 'OWASP',
+    'MyActionItems' => 'פריטי הפעולה שלי',
+    'AddRisk' => 'הוסף סיכון',
+    'ReviewCompleted' => 'הסקירה הושלמה',
+    // Review Risk insights band (management/review_risk.php). The "Needs
+    // Review" tile reuses the existing 'HomeKpiNeedsReview' key rather than
+    // adding a second key for the same English string. 'RrNeedsMitigation'
+    // carries the band prefix the sibling insights bands already use ('Dt',
+    // 'Fw', 'Exc') to distinguish it from the grid's much terser chip label
+    // ('Mitigation').
+    'RrNeedsMitigation' => 'דורש הפחתה',
+    'PastDue' => 'עבר את המועד',
+    'OpenedThisMonth' => 'נפתח החודש',
+    'ClosedThisMonth' => 'סגור החודש',
+    'AllRiskLevels' => 'כל רמות הסיכון',
+    // Import-Export Extra's Users sheet column for the Review Risk grid's
+    // persisted column-visibility/order preferences (user.custom_review_risk_display_settings).
+    'ReviewRiskDisplay' => 'סקירת תצוגת סיכונים',
+    // Plan Projects grid API (SR-2229): reorder/save-order status messages
+    // and the derived highest-risk column label shared by the grid's
+    // Columns picker and the drawer. The sibling 'Risks' column label
+    // reuses the existing 'Risks' key (line ~1911) rather than duplicating it.
+    'PlanProjectsReorderMismatch' => 'רשימת הפרויקטים השתנתה בזמן שביצעת את הסידור מחדש. טען מחדש ונסה שוב.',
+    'PlanProjectsOrderSaved' => 'סדר הפרויקטים נשמר.',
+    'HighestRisk' => 'הסיכון הגבוה ביותר',
+    // Plan Projects grid (SR-2229). Sentence case; column headers are upper-cased by CSS. {n} tokens are replaced client-side.
+    'OnHold' => 'בהמתנה',
+    'SearchProjectsPlaceholder' => 'חיפוש פרויקטים',
+    'AllConsultants' => 'כל היועצים',
+    'AllBusinessOwners' => 'כל בעלי העסקים',
+    'AllDataClassifications' => 'כל סיווגי הנתונים',
+    'AnyDueStatus' => 'כל סטטוס יעד',
+    'NoDueDate' => 'אין תאריך יעד',
+    'AddProject' => 'הוסף פרויקט',
+    'AssignToProject' => 'הקצאה לפרויקט',
+    'RemoveFromProject' => 'הסר מהפרויקט',
+    'AddRisksToThisProject' => 'הוסף סיכונים לפרויקט הזה',
+    'NoProjectsYet' => 'אין עדיין פרויקטים',
+    'NoProjectsYetHint' => 'פרויקטים מקבצים סיכונים קשורים כך שתוכלו לתכנן ולתעדף את הטיפול בהם יחד.',
+    'NoProjectsMatchFilters' => 'אין פרויקטים התואמים את המסננים שלך',
+    'NoRisksInThisProject' => 'אין עדיין סיכונים בפרויקט הזה',
+    'NoRisksWaitingForProject' => 'אין סיכונים בהמתנה לפרויקט',
+    'NoRisksWaitingForProjectHint' => 'סיכונים שנבדקו כ"יש לשקול עבור הפרויקט" מופיעים כאן עד להקצאתם.',
+    'NMoreRisks' => '{n} סיכונים נוספים',
+    'ChangeProjectStatus' => 'שינוי סטטוס הפרויקט',
+    'ChangeStatusClosesRisks' => 'סימון פרויקט זה כהשלמה יסגור את {n} הסיכונים הפתוחים שלו עם הסיבה "מופחת במלואו".',
+    'ChangeStatusReopensRisks' => 'העברת הפרויקט הזה ממצב "השלם" תפתח מחדש את הסיכונים שנסגרו עם השלמתו.',
+    'ChangeStatusNoCloseRightsHint' => 'אין לך הרשאה לסגור או לפתוח מחדש סיכונים, לכן רק סטטוס הפרויקט ישתנה.',
+    'DeleteProjectReturnsRisks' => '{n} הסיכונים שלו יחזרו לתור הלא מוקצה.',
+    'ReorderNeedsPrioritySort' => 'סידור מחדש זמין כאשר הרשימה ממוינת לפי עדיפות בתוך סטטוס אחד.',
+    'CouldNotLoadProjects' => 'לא ניתן היה לטעון את הפרויקטים. הנתונים שלך בטוחים.',
+    'MitigationNotPlanned' => 'לא מתוכנן',
+    'MitigationStatePlanned' => 'מתוכנן',
+    'NoRisksMatchYourSearch' => 'אין סיכונים התואמים את החיפוש שלך',
+    'AllUnassignedRisks' => 'כל הסיכונים שלא הוקצו',
+    'NoRisksSelectedYet' => 'עדיין לא נבחרו סיכונים',
+    'SomeQuestionsNotDeleted' => 'לא ניתן היה למחוק חלק מהשאלות שנבחרו.',
+    'QuestionnaireQuestionDeleteRequiresJavaScript' => 'מחיקת שאלה דורשת הפעלת JavaScript בדפדפן שלך.',
+    // Initiate Audits' bulk bar (SR-2234): the header checkbox already
+    // selects every row matching the current search/filters across every
+    // page in one click (client-side DataTables, the full eligible-test set
+    // is already loaded) -- this qualifier makes that explicit when the
+    // selection exceeds what a single page can hold, so "N selected" isn't
+    // read as a miscount against however many checkboxes are visibly ticked
+    // on the current page.
+    'NSelectedAllPages' => '{n} נבחר (תואם את המסננים שלך, בכל הדפים)',
+    // "Select all N" cross-page selection: shared too-many-matches message for
+    // Review Risk, Define Tests, Manage Audits, Document Program, and Define
+    // Exceptions (formerly 5 near-duplicate per-page keys). Callers supply
+    // both {$max} and {$noun} (e.g. the plain 'Risks'/'Tests'/'Audits'/
+    // 'Documents'/'Exceptions' key text) -- PHP call sites via _lang(), JS
+    // call sites via a manual .replace('{$max}', ...).replace('{$noun}', ...).
+    'SelectAllTooManyMatches' => 'המסננים הנוכחיים תואמים יותר מ- {$max} {$noun}. צמצם את המסנן ונסה שוב.',
+    // POST /documents/batch-delete (batch_delete_document_api(), includes/api.php):
+    // same truncation-signal shape as 'DocumentsApprovedTruncated' (see
+    // above) and the sibling 'ExceptionsDeletedTruncated' key just below,
+    // for the Document Program bulk-delete "Select all N" action.
+    'DocumentsDeletedTruncated' => 'רק המסמכים הראשונים {$limit} שנבחרו נמחקו. אנא חזור על הפעולה כדי למחוק את השאר.',
+    // POST /exceptions/batch-delete-ids (batch_delete_exceptions_by_ids_api()) --
+    // deletes an arbitrary caller-supplied set of exception ids in one request,
+    // replacing the Define Exceptions bulk bar's looped POST /exceptions/delete
+    // calls. Mirrors ExceptionsApprovedTruncated's truncation-signal wording.
+    'ExceptionsDeletedTruncated' => 'רק החריגים הראשונים {$limit} שנבחרו נמחקו. אנא חזור על הפעולה כדי למחוק את השאר.',
+    // POST /risks/batch-close (closeRiskBatch(), includes/api.php): whole-batch
+    // 403 when the caller holds no close_risks permission at all, mirroring
+    // closeriskForm()'s own (hardcoded, pre-existing) single-risk denial text.
+    'NoCloseRiskPermission' => 'אין לך הרשאה לסגור סיכונים.',
+    'QuestionnaireRequiredQuestionUnanswered' => 'אנא ענו על כל השאלות הנדרשות לפני השלמת ההערכה.',
     '' => '',
 );
 ?>

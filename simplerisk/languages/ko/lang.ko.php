@@ -4844,6 +4844,129 @@ $lang = array(
     'CreateAndAddField' => '생성 및 추가',
     'FieldCreatedAndAddedToTab' => '{field} 을 생성하고 {tab}에 추가했습니다.',
     'DeleteCustomFieldTitle' => '필드 \'{field} \'을 삭제하시겠습니까?',
+    // Review Risk page (SR-2068 and others -- see design spec)
+    'ReviewRisk' => '위험 검토',
+    'NeedsColumn' => '필요 사항',
+    'RiskScoreColumn' => '위험 점수',
+    'ReassignRiskOwner' => '위험 소유자 재배정',
+    'ReassignMitigationOwner' => '완화 조치 담당자 재지정',
+    'NoActionItemsTitle' => '필터와 일치하는 위험 요소가 없습니다.',
+    'NoActionItemsBody' => '본인이 직접 처리할 권한이 있는 항목은 수정이나 검토가 필요하지 않습니다. 팀의 전체 대기열을 보려면 "내 조치 항목 표시"를 해제해 보세요.',
+    'BulkChangeStatusTitle' => '%s 선택된 위험에 대한 상태 변경',
+    'BulkReassignRiskOwnerTitle' => '%s 선택된 위험에 대한 위험 소유자 재지정',
+    'BulkReassignMitigationOwnerTitle' => '%s 선택된 위험에 대한 완화 담당자 재지정',
+    'BulkAddCommentTitle' => '%s 선택된 위험에 댓글을 추가하세요',
+    'BulkCloseRiskTitle' => '선택한 위험을 닫으세요 %s',
+    'BulkActionPartialSuccess' => '%s %s 의 위험이 업데이트되었습니다.',
+    'PerformReview' => '검토 수행',
+    'BulkActionSuccess' => '%s 위험 요소가 업데이트되었습니다.',
+    'SomeRowsSkippedNoMitigation' => '일부 위험 요소는 아직 완화 계획이 수립되지 않았기 때문에 분석에서 제외되었습니다.',
+    'ChangeStatusHint' => '선택된 위험 요소는 선택한 상태로 업데이트됩니다.',
+    'StatusChanged' => '상태가 업데이트되었습니다.',
+    'CloseRiskBulkConfirmBody' => '종료된 위험은 활성 대기열에서 제거됩니다. 나중에 상태를 다시 변경하여 위험을 다시 열 수 있습니다.',
+    // Column-parity follow-up fix review-risk-followups/column-parity-report.md):
+    // the Review Risk page's new scoring_method column (getReviewRiskDatatableResponse(),
+    // includes/api.php) renders get_scoring_method_name()'s (includes/functions.php)
+    // canonical scoring-method name through a $lang lookup rather than the raw
+    // hardcoded string. 'Classic'/'Custom'/'ContributingRisk' already existed
+    // (reused, not duplicated) -- only the three missing acronym keys are added
+    // here. These scoring methodology names/acronyms are typically kept
+    // untranslated (matching how the app's other risk-scoring UI already
+    // displays them, e.g. get_name_by_value('scoring_methods', ...) in
+    // displayrisks.php, which reads these same literal strings straight from
+    // the scoring_methods DB table with no translation layer), but every
+    // user-facing string still needs to flow through a lookup per CLAUDE.md,
+    // even one where the English and translated value would typically match.
+    'CVSS' => 'CVSS',
+    'DREAD' => '공포',
+    'OWASP' => 'OWASP',
+    'MyActionItems' => '내 할 일 목록',
+    'AddRisk' => '위험 추가',
+    'ReviewCompleted' => '검토 완료',
+    // Review Risk insights band (management/review_risk.php). The "Needs
+    // Review" tile reuses the existing 'HomeKpiNeedsReview' key rather than
+    // adding a second key for the same English string. 'RrNeedsMitigation'
+    // carries the band prefix the sibling insights bands already use ('Dt',
+    // 'Fw', 'Exc') to distinguish it from the grid's much terser chip label
+    // ('Mitigation').
+    'RrNeedsMitigation' => '필요 완화',
+    'PastDue' => '연체',
+    'OpenedThisMonth' => '이번 달에 오픈했습니다',
+    'ClosedThisMonth' => '이번 달 휴무',
+    'AllRiskLevels' => '모든 위험 수준',
+    // Import-Export Extra's Users sheet column for the Review Risk grid's
+    // persisted column-visibility/order preferences (user.custom_review_risk_display_settings).
+    'ReviewRiskDisplay' => '위험 표시 검토',
+    // Plan Projects grid API (SR-2229): reorder/save-order status messages
+    // and the derived highest-risk column label shared by the grid's
+    // Columns picker and the drawer. The sibling 'Risks' column label
+    // reuses the existing 'Risks' key (line ~1911) rather than duplicating it.
+    'PlanProjectsReorderMismatch' => '순서를 변경하는 동안 프로젝트 목록이 변경되었습니다. 페이지를 새로 고친 후 다시 시도하세요.',
+    'PlanProjectsOrderSaved' => '프로젝트 순서가 저장되었습니다.',
+    'HighestRisk' => '가장 높은 위험',
+    // Plan Projects grid (SR-2229). Sentence case; column headers are upper-cased by CSS. {n} tokens are replaced client-side.
+    'OnHold' => '보류 중',
+    'SearchProjectsPlaceholder' => '프로젝트 검색',
+    'AllConsultants' => '모든 컨설턴트',
+    'AllBusinessOwners' => '모든 사업주',
+    'AllDataClassifications' => '모든 데이터 분류',
+    'AnyDueStatus' => '모든 기한 상태',
+    'NoDueDate' => '마감일 없음',
+    'AddProject' => '프로젝트 추가',
+    'AssignToProject' => '프로젝트에 할당',
+    'RemoveFromProject' => '프로젝트에서 제거',
+    'AddRisksToThisProject' => '이 프로젝트에 위험 요소를 추가하세요',
+    'NoProjectsYet' => '아직 프로젝트가 없습니다.',
+    'NoProjectsYetHint' => '프로젝트 그룹은 관련된 위험 요소를 묶어서 관리하므로, 이러한 위험 요소들을 함께 계획하고 우선순위를 정하여 처리할 수 있습니다.',
+    'NoProjectsMatchFilters' => '필터 조건에 맞는 프로젝트가 없습니다.',
+    'NoRisksInThisProject' => '이 프로젝트에는 아직 위험 요소가 없습니다.',
+    'NoRisksWaitingForProject' => '프로젝트를 기다리는 위험이 없습니다.',
+    'NoRisksWaitingForProjectHint' => '"프로젝트 고려 대상"으로 검토된 위험 요소는 담당자가 배정될 때까지 여기에 표시됩니다.',
+    'NMoreRisks' => '{n} 더 많은 위험',
+    'ChangeProjectStatus' => '프로젝트 상태 변경',
+    'ChangeStatusClosesRisks' => '이 프로젝트를 완료로 표시하면 {n} 개의 미해결 위험이 "완전히 완화됨"이라는 이유로 닫힙니다.',
+    'ChangeStatusReopensRisks' => '이 프로젝트를 완료 상태에서 해제하면 완료 시 닫혔던 위험이 다시 열립니다.',
+    'ChangeStatusNoCloseRightsHint' => '위험을 닫거나 다시 열 권한이 없으므로 프로젝트 상태만 변경됩니다.',
+    'DeleteProjectReturnsRisks' => '해당 {n} 위험은 할당되지 않은 대기열로 돌아갑니다.',
+    'ReorderNeedsPrioritySort' => '목록이 동일한 상태 내에서 우선순위 순으로 정렬된 경우 순서 변경이 가능합니다.',
+    'CouldNotLoadProjects' => '프로젝트를 불러올 수 없습니다. 데이터는 안전합니다.',
+    'MitigationNotPlanned' => '계획된 것이 아닙니다',
+    'MitigationStatePlanned' => '계획된',
+    'NoRisksMatchYourSearch' => '검색 조건에 맞는 위험 요소가 없습니다.',
+    'AllUnassignedRisks' => '할당되지 않은 모든 위험',
+    'NoRisksSelectedYet' => '아직 위험 요소가 선택되지 않았습니다.',
+    'SomeQuestionsNotDeleted' => '선택한 질문 중 일부는 삭제할 수 없었습니다.',
+    'QuestionnaireQuestionDeleteRequiresJavaScript' => '질문을 삭제하려면 브라우저에서 JavaScript가 활성화되어 있어야 합니다.',
+    // Initiate Audits' bulk bar (SR-2234): the header checkbox already
+    // selects every row matching the current search/filters across every
+    // page in one click (client-side DataTables, the full eligible-test set
+    // is already loaded) -- this qualifier makes that explicit when the
+    // selection exceeds what a single page can hold, so "N selected" isn't
+    // read as a miscount against however many checkboxes are visibly ticked
+    // on the current page.
+    'NSelectedAllPages' => '{n} 선택됨(모든 페이지에서 필터와 일치)',
+    // "Select all N" cross-page selection: shared too-many-matches message for
+    // Review Risk, Define Tests, Manage Audits, Document Program, and Define
+    // Exceptions (formerly 5 near-duplicate per-page keys). Callers supply
+    // both {$max} and {$noun} (e.g. the plain 'Risks'/'Tests'/'Audits'/
+    // 'Documents'/'Exceptions' key text) -- PHP call sites via _lang(), JS
+    // call sites via a manual .replace('{$max}', ...).replace('{$noun}', ...).
+    'SelectAllTooManyMatches' => '현재 필터는 {$max} {$noun}보다 많은 항목과 일치합니다. 필터 범위를 좁혀 다시 시도하세요.',
+    // POST /documents/batch-delete (batch_delete_document_api(), includes/api.php):
+    // same truncation-signal shape as 'DocumentsApprovedTruncated' (see
+    // above) and the sibling 'ExceptionsDeletedTruncated' key just below,
+    // for the Document Program bulk-delete "Select all N" action.
+    'DocumentsDeletedTruncated' => '선택한 문서 중 처음 {$limit} 개만 삭제되었습니다. 나머지 문서를 삭제하려면 작업을 반복하십시오.',
+    // POST /exceptions/batch-delete-ids (batch_delete_exceptions_by_ids_api()) --
+    // deletes an arbitrary caller-supplied set of exception ids in one request,
+    // replacing the Define Exceptions bulk bar's looped POST /exceptions/delete
+    // calls. Mirrors ExceptionsApprovedTruncated's truncation-signal wording.
+    'ExceptionsDeletedTruncated' => '선택된 첫 번째 {$limit} 예외만 삭제되었습니다. 나머지 예외를 삭제하려면 작업을 반복하십시오.',
+    // POST /risks/batch-close (closeRiskBatch(), includes/api.php): whole-batch
+    // 403 when the caller holds no close_risks permission at all, mirroring
+    // closeriskForm()'s own (hardcoded, pre-existing) single-risk denial text.
+    'NoCloseRiskPermission' => '위험을 닫을 권한이 없습니다.',
+    'QuestionnaireRequiredQuestionUnanswered' => '평가를 완료하기 전에 모든 필수 질문에 답변해 주십시오.',
     '' => '',
 );
 ?>

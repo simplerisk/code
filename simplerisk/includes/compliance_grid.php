@@ -1265,6 +1265,25 @@ function resolve_candidate_control_ids(array $filters): array
     return $candidate_ids;
 }
 
+// Pure: builds a named placeholder list + bind-value map for an `IN (...)`
+// clause over a list of ids -- shared by build_tests_grid()'s two id-list
+// placeholder sites (the hot-path recordsFilteredTests COUNT query and the
+// enrich-ids fetch) so the placeholder-building shape has exactly one
+// definition. $prefix keeps the two call sites' bound-parameter names from
+// colliding when both run in the same PDO statement lifecycle.
+function build_int_in_clause(array $ids, string $prefix): array
+{
+    $placeholders = [];
+    $params = [];
+    foreach ($ids as $i => $id) {
+        $key = ":{$prefix}{$i}";
+        $placeholders[] = $key;
+        $params[$key] = $id;
+    }
+
+    return ['sql' => implode(',', $placeholders), 'params' => $params];
+}
+
 /******************************************************************
  * FUNCTION: BUILD TESTS GRID                                       *
  * DB-backed orchestrator behind POST /api/v2/compliance/tests_grid *
@@ -1272,8 +1291,23 @@ function resolve_candidate_control_ids(array $filters): array
  * output of parse_grid_request()) and returns:                     *
  *   ['controls' => [...page of control cards...],                  *
  *    'recordsTotal' => int,    // all non-deleted controls          *
- *    'recordsFiltered' => int] // controls matching every filter,   *
- *                               // before pagination                *
+ *    'recordsFiltered' => int, // controls matching every filter,   *
+ *                               // before pagination (grouped mode; *
+ *                               // flattened-test rows in sorted    *
+ *                               // mode -- see sort_tests_flat())   *
+ *    'recordsFilteredTests' => int] // the REAL (non-suggestion)    *
+ *                               // test count matching every filter,*
+ *                               // across every matching control -- *
+ *                               // what "Select all N" (Define      *
+ *                               // Tests' own banner) actually      *
+ *                               // resolves. Distinct from          *
+ *                               // recordsFiltered, which counts    *
+ *                               // controls (or, sorted, includes   *
+ *                               // AI-suggestion rows) -- a shared   *
+ *                               // test under several controls      *
+ *                               // counts once, matching             *
+ *                               // flatten_tests_grid_ids()'s own    *
+ *                               // dedup.                            *
  *                                                                    *
  * Query shape:                                                      *
  *   1. A candidate-id query joins `framework_controls` fc to        *
@@ -1361,7 +1395,7 @@ function build_tests_grid(array $filters): array
     $candidate_ids = resolve_candidate_control_ids($filters);
 
     if (empty($candidate_ids)) {
-        return ['controls' => [], 'recordsTotal' => $records_total, 'recordsFiltered' => 0, 'total_tests' => count_active_tests(), 'overdue_tests' => count_overdue_tests(), 'quick_counts' => get_define_tests_quick_counts(), 'tester_options' => get_define_tests_tester_options(), 'filter_counts' => get_define_tests_filter_counts()];
+        return ['controls' => [], 'recordsTotal' => $records_total, 'recordsFiltered' => 0, 'recordsFilteredTests' => 0, 'total_tests' => count_active_tests(), 'overdue_tests' => count_overdue_tests(), 'quick_counts' => get_define_tests_quick_counts(), 'tester_options' => get_define_tests_tester_options(), 'filter_counts' => get_define_tests_filter_counts()];
     }
 
     // ---- Determine whether a TEST-LEVEL quick/schedule/tag filter is
@@ -1401,6 +1435,23 @@ function build_tests_grid(array $filters): array
     // count is also the honest default: it's what the filtered path starts from
     // before Step 4 narrows it.
     $records_filtered = count($candidate_ids);
+    // recordsFilteredTests: the REAL (non-suggestion) test count "Select all N"
+    // would actually resolve, across every candidate control -- not just the
+    // page's, and not the control count recordsFiltered carries. Moved up so
+    // both branches below can use them: the hot path (no per-control test
+    // enrichment beyond the current page) needs a dedicated COUNT query built
+    // from these; the filtered path instead derives the number from
+    // $final_controls once it's built (Step 3/4 below), since that path
+    // already enriches every candidate's tests.
+    $test_retired_predicate = tests_grid_retired_predicate($retired_mode, 'ft');
+    // Team Separation: the rows a user may see. Restores what the pre-redesign
+    // grid did per row with is_user_allowed_to_access() -- see
+    // test_team_scope_predicate(). Applied here AND on the candidate-id query's
+    // test join above, so a control whose only tests are invisible is counted
+    // as having none rather than rendering as an empty group.
+    $test_team_scope = test_team_scope_predicate('ft');
+    $pairs_sql = test_control_pairs_sql();
+    $records_filtered_tests = 0;
 
     if ($test_level_filter_active) {
         // ---- Filtered path: enrich every candidate, apply the PHP
@@ -1414,6 +1465,29 @@ function build_tests_grid(array $filters): array
         // enrich the page's controls, instead of the whole catalog. ----
         $records_filtered = count($candidate_ids);
 
+        // One cheap COUNT(DISTINCT) across every candidate control, reusing
+        // the exact same retired-mode and Team Separation predicates the
+        // real test-fetch query below applies (and flatten_tests_grid_ids()
+        // relies on for "Select all N"'s actual resolution) -- so this count
+        // can never disagree with, or leak past, what a real escalation
+        // would select. Kept a distinct query rather than widening
+        // $enrich_ids to $candidate_ids, which would undo the whole point of
+        // the hot path (skip per-row enrichment for controls not on this page).
+        $count_clause = build_int_in_clause($candidate_ids, 'ctid');
+        $count_id_list_sql = $count_clause['sql'];
+        $count_id_params = $count_clause['params'];
+        $count_stmt = $db->prepare("
+            SELECT COUNT(DISTINCT ft.id)
+            FROM `framework_control_tests` ft
+                JOIN {$pairs_sql} tcm ON tcm.test_id = ft.id
+            WHERE tcm.framework_control_id IN ({$count_id_list_sql}) AND ({$test_retired_predicate}) AND ({$test_team_scope})
+        ");
+        foreach ($count_id_params as $key => $value) {
+            $count_stmt->bindValue($key, $value, PDO::PARAM_INT);
+        }
+        $count_stmt->execute();
+        $records_filtered_tests = (int) $count_stmt->fetchColumn();
+
         $start = max(0, (int) ($filters['start'] ?? 0));
         $length = (int) ($filters['length'] ?? 10);
         $page_ids = ($length === -1)
@@ -1423,21 +1497,16 @@ function build_tests_grid(array $filters): array
         if (empty($page_ids)) {
             db_close($db);
 
-            return ['controls' => [], 'recordsTotal' => $records_total, 'recordsFiltered' => $records_filtered, 'total_tests' => count_active_tests(), 'overdue_tests' => count_overdue_tests(), 'quick_counts' => get_define_tests_quick_counts(), 'tester_options' => get_define_tests_tester_options(), 'filter_counts' => get_define_tests_filter_counts()];
+            return ['controls' => [], 'recordsTotal' => $records_total, 'recordsFiltered' => $records_filtered, 'recordsFilteredTests' => $records_filtered_tests, 'total_tests' => count_active_tests(), 'overdue_tests' => count_overdue_tests(), 'quick_counts' => get_define_tests_quick_counts(), 'tester_options' => get_define_tests_tester_options(), 'filter_counts' => get_define_tests_filter_counts()];
         }
 
         $ids_to_build = $page_ids;
         $enrich_ids = $page_ids;
     }
 
-    $id_placeholders = [];
-    $id_params = [];
-    foreach ($enrich_ids as $i => $id) {
-        $key = ":cid{$i}";
-        $id_placeholders[] = $key;
-        $id_params[$key] = $id;
-    }
-    $id_list_sql = implode(',', $id_placeholders);
+    $enrich_clause = build_int_in_clause($enrich_ids, 'cid');
+    $id_list_sql = $enrich_clause['sql'];
+    $id_params = $enrich_clause['params'];
 
     // ---- Step 2a: full control rows for the enrich ids (search-independent) ----
     $stmt = $db->prepare("
@@ -1468,15 +1537,10 @@ function build_tests_grid(array $filters): array
     // yields one row PER mapped control (fanning it into every bucket
     // below) while a test with no map row still surfaces once, under its
     // scalar framework_control_id (the raw-writer fallback -- see
-    // test_control_pairs_sql() docblock). ----
-    $test_retired_predicate = tests_grid_retired_predicate($retired_mode, 'ft');
-    // Team Separation: the rows a user may see. Restores what the pre-redesign
-    // grid did per row with is_user_allowed_to_access() -- see
-    // test_team_scope_predicate(). Applied here AND on the candidate-id query's
-    // test join above, so a control whose only tests are invisible is counted
-    // as having none rather than rendering as an empty group.
-    $test_team_scope = test_team_scope_predicate('ft');
-    $pairs_sql = test_control_pairs_sql();
+    // test_control_pairs_sql() docblock). $test_retired_predicate/
+    // $test_team_scope/$pairs_sql are computed once, up above (before the hot-
+    // path/filtered-path branch), so the recordsFilteredTests COUNT query in
+    // the hot path applies the exact same predicates as this one does. ----
     $stmt = $db->prepare("
         SELECT
             ft.id, tcm.framework_control_id, ft.name, ft.tester, tu.name AS tester_name,
@@ -1716,6 +1780,15 @@ function build_tests_grid(array $filters): array
     // was already set to the pre-slice candidate count above. ----
     if ($test_level_filter_active) {
         $records_filtered = count($final_controls);
+        // $final_controls holds every matching candidate's full (already
+        // test-level-filtered) tests here, unlike the hot path -- so the real
+        // "Select all N" test count can be read directly off it. Reuses
+        // flatten_tests_grid_ids() itself (rather than re-deriving the
+        // suggestion-exclusion/dedup rules here) so this number can never
+        // drift from what "Select all N" would actually resolve -- same
+        // reasoning as the shared-test dedup fix that function already
+        // carries.
+        $records_filtered_tests = count(flatten_tests_grid_ids(['sorted' => false, 'tests' => [], 'controls' => $final_controls]));
 
         $start = max(0, (int) ($filters['start'] ?? 0));
         $length = (int) ($filters['length'] ?? 10);
@@ -1752,6 +1825,13 @@ function build_tests_grid(array $filters): array
         'controls' => $flat ? [] : $page,
         'recordsTotal' => $records_total,
         'recordsFiltered' => $records_filtered,
+        // The real (non-suggestion) test count "Select all N" would resolve
+        // for the current filters, across every matching control -- distinct
+        // from recordsFiltered, which counts controls in grouped mode. See
+        // where this is set above (the hot-path COUNT query, or the
+        // filtered-path flatten_tests_grid_ids() call) for how it stays in
+        // lockstep with what a real escalation selects.
+        'recordsFilteredTests' => $records_filtered_tests,
         // Global test-level totals for the toolbar title pills (same numbers as
         // the insights band's Total Tests / Overdue tiles). Distinct test counts
         // (not per-control), so a common test counts once. Refreshed on every
@@ -1767,6 +1847,45 @@ function build_tests_grid(array $filters): array
         'tester_options' => get_define_tests_tester_options(),
         'filter_counts' => get_define_tests_filter_counts(),
     ];
+}
+
+// Pure: flattens a build_tests_grid() response into a plain list of real
+// test ids -- "Select all N" (api_v2_compliance_tests_grid_filtered_ids(),
+// api/v2/includes/compliance.php) calls build_tests_grid() with
+// start=0/length=-1 (every match, not one page) and hands the result here.
+// Reads EITHER shape build_tests_grid() can return: 'tests' (flat/sorted
+// mode) or 'controls'[*]['tests'] (grouped mode) -- never both at once
+// (build_tests_grid()'s own comment: "Flat mode ships tests and an empty
+// controls"). AI-suggestion rows ('kind' => 'suggestion', 'id' => null,
+// mixed into a control's tests[] alongside real ones) are excluded -- they
+// aren't real tests and are acted on by the separate "Create selected"
+// proposal-approval flow, not Retire/Delete.
+function flatten_tests_grid_ids(array $grid_result): array
+{
+    $rows = !empty($grid_result['sorted']) ? ($grid_result['tests'] ?? []) : null;
+    if ($rows === null) {
+        $rows = [];
+        foreach (($grid_result['controls'] ?? []) as $control) {
+            foreach (($control['tests'] ?? []) as $test) {
+                $rows[] = $test;
+            }
+        }
+    }
+
+    $ids = [];
+    foreach ($rows as $row) {
+        if (isset($row['id']) && $row['id'] !== null) {
+            $ids[] = (int) $row['id'];
+        }
+    }
+    // A shared test mapped to more than one control (see the
+    // BulkDeleteSharedTestsNote/BulkRetireSharedTestsNote lang keys -- this
+    // is a real, supported state, not an edge case) appears once per control
+    // it's grouped under in the unsorted branch above, so the same test id
+    // is pushed onto $ids once per appearance. Deduping here is what keeps
+    // "Select all N" from double-selecting a shared test and inflating the
+    // count this function's own caller reports as `total`.
+    return array_values(array_unique($ids));
 }
 
 /******************************************************************

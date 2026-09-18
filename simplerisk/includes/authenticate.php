@@ -1822,7 +1822,32 @@ function sess_write($sess_id, $data)
     } else {
         $stmt->bindValue(":user_id", $user_id, PDO::PARAM_INT);
     }
-    $stmt->execute();
+
+    try {
+        $stmt->execute();
+    } catch (PDOException $e) {
+        // SQLSTATE 42S22 on `user_id` means `sessions` predates the SR-2133
+        // migration that added the column (migrate_sessions_user_id_schema(),
+        // wired into upgrade_from_20260828001()) -- e.g. a database restored
+        // or migrated from an older SimpleRisk release. This is exactly the
+        // database admin/upgrade.php exists to fix, but that page requires a
+        // logged-in session to reach, and every session write up to now
+        // fatally errored here first: no session survives the request that
+        // creates it, so login always bounces straight back to the login
+        // page and the upgrade can never be reached through the UI. Retry
+        // against the pre-migration 3-column shape so the session still
+        // persists -- once the schema is upgraded, the column exists and
+        // this branch stops firing.
+        if ($e->getCode() === '42S22' && stripos($e->getMessage(), 'user_id') !== false) {
+            $stmt = $db->prepare("REPLACE INTO sessions (id, access, data) VALUES (:sess_id, :access, :data)");
+            $stmt->bindParam(":sess_id", $sess_id, PDO::PARAM_STR);
+            $stmt->bindParam(":access", $access, PDO::PARAM_INT);
+            $stmt->bindParam(":data", $data, PDO::PARAM_LOB);
+            $stmt->execute();
+        } else {
+            throw $e;
+        }
+    }
 
     // Close the database connection
     db_close($db);

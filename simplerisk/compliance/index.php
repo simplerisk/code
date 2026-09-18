@@ -17,7 +17,11 @@
     $breadcrumb_title_key = "DefineTests";
     $active_sidebar_menu = "Compliance";
     $active_sidebar_submenu = "DefineTests";
-    render_header_and_sidebar(['blockUI', 'selectize', 'datatables', 'WYSIWYG', 'multiselect', 'datetimerangepicker', 'UILayoutWidget', 'CUSTOM:sr-select.js', 'CUSTOM:sr-row-actions-menu.js', 'CUSTOM:sr-faceted-picker.js', 'CUSTOM:pages/compliance.js', 'CUSTOM:pages/compliance-define-tests.js', 'CUSTOM:common.js'], ['check_compliance' => true], $breadcrumb_title_key, $active_sidebar_menu, $active_sidebar_submenu);
+    // CUSTOM:bulk-request-batch.js: shared runBatchedRequests() helper
+    // (js/simplerisk/bulk-request-batch.js) compliance-define-tests.js's
+    // bulk retire/delete/create-from-suggestion actions use to chunk
+    // "Select all N" ids into bounded sequential batches.
+    render_header_and_sidebar(['blockUI', 'selectize', 'datatables', 'WYSIWYG', 'multiselect', 'datetimerangepicker', 'UILayoutWidget', 'CUSTOM:sr-select.js', 'CUSTOM:sr-row-actions-menu.js', 'CUSTOM:sr-faceted-picker.js', 'CUSTOM:bulk-request-batch.js', 'CUSTOM:pages/compliance.js', 'CUSTOM:pages/compliance-define-tests.js', 'CUSTOM:common.js'], ['check_compliance' => true], $breadcrumb_title_key, $active_sidebar_menu, $active_sidebar_submenu);
 
     // Include required functions file
     require_once(realpath(__DIR__ . '/../includes/governance.php'));

@@ -840,7 +840,7 @@ class UILayout {
 		layout_<?=$this->id?> = GridStack.init(
 			{
             	minRow: 1,
-<?php if (in_array($this->layout_name, ['home', 'risk_dashboard', 'compliance_dashboard', 'governance_dashboard', 'incident_dashboard', 'define_tests_insights', 'define_frameworks_insights', 'document_program_insights', 'define_exceptions_insights'], true)) { ?>
+<?php if (in_array($this->layout_name, ['home', 'risk_dashboard', 'compliance_dashboard', 'governance_dashboard', 'incident_dashboard', 'define_tests_insights', 'define_frameworks_insights', 'document_program_insights', 'define_exceptions_insights', 'review_risk_insights'], true)) { ?>
             	// KPI-style dashboards use a shorter row so KPI stat-tiles (h2) read
             	// as compact cards (~120px) instead of tall, half-empty cells, and
             	// their charts stay proportionate — matches the dashboard design

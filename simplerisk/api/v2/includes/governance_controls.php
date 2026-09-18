@@ -530,6 +530,13 @@ function controls_table_shape_row(array $c): array {
         // lists cannot be zipped back into correct (framework, reference)
         // pairs once a control maps into more than one framework.
         'mapped_frameworks_count' => count($frameworks),
+        // `reference_name` here is GROUP_CONCAT(DISTINCT CONCAT(m.framework, ':',
+        // m.reference_name)) -- one entry per (framework, reference_name) MAPPING, not
+        // per distinct reference_name text -- so this matches the per-mapping list the
+        // drawer renders on expand. A plain DISTINCT on reference_name text alone
+        // undercounts here whenever two different frameworks share a reference_name
+        // (e.g. both use "AC-1"), which is legitimate: framework_control_mappings is
+        // unique on (control_id, framework, reference_name), not on reference_name alone.
         'mapped_controls_count'   => count(array_values(array_filter(explode(',', (string)($c['reference_name'] ?? ''))))),
         // --- display names (drawer + table cells) ---
         'family_name'         => $c['family_short_name'],

@@ -4844,6 +4844,129 @@ $lang = array(
     'CreateAndAddField' => 'Tạo & thêm',
     'FieldCreatedAndAddedToTab' => 'Đã tạo {field} và thêm nó vào {tab}.',
     'DeleteCustomFieldTitle' => 'Xóa trường \'{field}\'?',
+    // Review Risk page (SR-2068 and others -- see design spec)
+    'ReviewRisk' => 'Đánh giá rủi ro',
+    'NeedsColumn' => 'Nhu cầu',
+    'RiskScoreColumn' => 'Điểm rủi ro',
+    'ReassignRiskOwner' => 'Phân công lại người chịu trách nhiệm rủi ro',
+    'ReassignMitigationOwner' => 'Chỉ định lại người chịu trách nhiệm giảm thiểu rủi ro',
+    'NoActionItemsTitle' => 'Không có rủi ro nào phù hợp với bộ lọc của bạn.',
+    'NoActionItemsBody' => 'Không có việc gì cần giảm thiểu hoặc xem xét lại mà bạn có quyền trực tiếp thực hiện. Hãy thử bỏ chọn "Hiển thị các mục hành động của tôi" để xem toàn bộ danh sách việc cần làm của nhóm.',
+    'BulkChangeStatusTitle' => 'Thay đổi trạng thái cho %s rủi ro đã chọn',
+    'BulkReassignRiskOwnerTitle' => 'Chỉ định lại chủ sở hữu rủi ro cho %s rủi ro đã chọn',
+    'BulkReassignMitigationOwnerTitle' => 'Chỉ định lại người chịu trách nhiệm giảm thiểu rủi ro cho %s rủi ro đã chọn',
+    'BulkAddCommentTitle' => 'Thêm bình luận vào %s các rủi ro đã chọn',
+    'BulkCloseRiskTitle' => 'Đóng %s các rủi ro đã chọn',
+    'BulkActionPartialSuccess' => '%s trong số %s rủi ro đã được cập nhật.',
+    'PerformReview' => 'Thực hiện đánh giá',
+    'BulkActionSuccess' => '%s rủi ro đã được cập nhật.',
+    'SomeRowsSkippedNoMitigation' => 'Một số rủi ro được chọn đã bị bỏ qua vì chưa có kế hoạch giảm thiểu rủi ro nào được đề ra.',
+    'ChangeStatusHint' => 'Các rủi ro đã chọn sẽ được cập nhật trạng thái theo lựa chọn của bạn.',
+    'StatusChanged' => 'Trạng thái đã được cập nhật.',
+    'CloseRiskBulkConfirmBody' => 'Các rủi ro đã đóng sẽ được xóa khỏi hàng đợi hoạt động. Bạn có thể mở lại rủi ro đó sau này bằng cách thay đổi trạng thái của nó.',
+    // Column-parity follow-up fix review-risk-followups/column-parity-report.md):
+    // the Review Risk page's new scoring_method column (getReviewRiskDatatableResponse(),
+    // includes/api.php) renders get_scoring_method_name()'s (includes/functions.php)
+    // canonical scoring-method name through a $lang lookup rather than the raw
+    // hardcoded string. 'Classic'/'Custom'/'ContributingRisk' already existed
+    // (reused, not duplicated) -- only the three missing acronym keys are added
+    // here. These scoring methodology names/acronyms are typically kept
+    // untranslated (matching how the app's other risk-scoring UI already
+    // displays them, e.g. get_name_by_value('scoring_methods', ...) in
+    // displayrisks.php, which reads these same literal strings straight from
+    // the scoring_methods DB table with no translation layer), but every
+    // user-facing string still needs to flow through a lookup per CLAUDE.md,
+    // even one where the English and translated value would typically match.
+    'CVSS' => 'CVSS',
+    'DREAD' => 'SỢ HÃI',
+    'OWASP' => 'OWASP',
+    'MyActionItems' => 'Các mục cần hành động của tôi',
+    'AddRisk' => 'Thêm rủi ro',
+    'ReviewCompleted' => 'Đánh giá đã hoàn tất',
+    // Review Risk insights band (management/review_risk.php). The "Needs
+    // Review" tile reuses the existing 'HomeKpiNeedsReview' key rather than
+    // adding a second key for the same English string. 'RrNeedsMitigation'
+    // carries the band prefix the sibling insights bands already use ('Dt',
+    // 'Fw', 'Exc') to distinguish it from the grid's much terser chip label
+    // ('Mitigation').
+    'RrNeedsMitigation' => 'Giảm thiểu nhu cầu',
+    'PastDue' => 'Quá hạn',
+    'OpenedThisMonth' => 'Khai trương tháng này',
+    'ClosedThisMonth' => 'Đóng cửa trong tháng này',
+    'AllRiskLevels' => 'Tất cả các mức độ rủi ro',
+    // Import-Export Extra's Users sheet column for the Review Risk grid's
+    // persisted column-visibility/order preferences (user.custom_review_risk_display_settings).
+    'ReviewRiskDisplay' => 'Xem lại mức độ rủi ro',
+    // Plan Projects grid API (SR-2229): reorder/save-order status messages
+    // and the derived highest-risk column label shared by the grid's
+    // Columns picker and the drawer. The sibling 'Risks' column label
+    // reuses the existing 'Risks' key (line ~1911) rather than duplicating it.
+    'PlanProjectsReorderMismatch' => 'Danh sách dự án đã thay đổi trong quá trình bạn sắp xếp lại. Vui lòng tải lại trang và thử lại.',
+    'PlanProjectsOrderSaved' => 'Đơn đặt hàng dự án đã được lưu.',
+    'HighestRisk' => 'Rủi ro cao nhất',
+    // Plan Projects grid (SR-2229). Sentence case; column headers are upper-cased by CSS. {n} tokens are replaced client-side.
+    'OnHold' => 'Đang chờ',
+    'SearchProjectsPlaceholder' => 'Tìm kiếm dự án',
+    'AllConsultants' => 'Tất cả các chuyên gia tư vấn',
+    'AllBusinessOwners' => 'Tất cả các chủ doanh nghiệp',
+    'AllDataClassifications' => 'Tất cả các phân loại dữ liệu',
+    'AnyDueStatus' => 'Bất kỳ tình trạng nào đến hạn',
+    'NoDueDate' => 'Không có ngày đến hạn',
+    'AddProject' => 'Thêm dự án',
+    'AssignToProject' => 'Phân công vào dự án',
+    'RemoveFromProject' => 'Xóa khỏi dự án',
+    'AddRisksToThisProject' => 'Thêm các rủi ro vào dự án này',
+    'NoProjectsYet' => 'Chưa có dự án nào.',
+    'NoProjectsYetHint' => 'Các dự án nhóm các rủi ro liên quan lại với nhau để bạn có thể lập kế hoạch và ưu tiên xử lý chúng cùng nhau.',
+    'NoProjectsMatchFilters' => 'Không có dự án nào phù hợp với bộ lọc của bạn.',
+    'NoRisksInThisProject' => 'Dự án này hiện chưa có rủi ro nào.',
+    'NoRisksWaitingForProject' => 'Không có rủi ro nào khi chờ đợi một dự án.',
+    'NoRisksWaitingForProjectHint' => 'Các rủi ro được đánh giá là "Cần xem xét cho dự án" sẽ hiển thị ở đây cho đến khi được phân công.',
+    'NMoreRisks' => '{n} nhiều rủi ro hơn',
+    'ChangeProjectStatus' => 'Thay đổi trạng thái dự án',
+    'ChangeStatusClosesRisks' => 'Việc đánh dấu dự án này là hoàn thành sẽ đóng {n} rủi ro đang mở với lý do "Đã được giảm thiểu hoàn toàn".',
+    'ChangeStatusReopensRisks' => 'Việc chuyển trạng thái dự án này từ trạng thái hoàn thành sang trạng thái khác sẽ làm tái xuất hiện những rủi ro đã được giải quyết khi dự án hoàn thành.',
+    'ChangeStatusNoCloseRightsHint' => 'Bạn không có quyền đóng hoặc mở lại các rủi ro, vì vậy chỉ trạng thái dự án sẽ thay đổi.',
+    'DeleteProjectReturnsRisks' => '{n} rủi ro của nó sẽ trở lại hàng đợi chưa phân công.',
+    'ReorderNeedsPrioritySort' => 'Chức năng sắp xếp lại chỉ khả dụng khi danh sách được sắp xếp theo mức độ ưu tiên trong cùng một trạng thái.',
+    'CouldNotLoadProjects' => 'Không thể tải dự án. Dữ liệu của bạn an toàn.',
+    'MitigationNotPlanned' => 'Không có kế hoạch',
+    'MitigationStatePlanned' => 'Đã lên kế hoạch',
+    'NoRisksMatchYourSearch' => 'Không có rủi ro nào phù hợp với tìm kiếm của bạn',
+    'AllUnassignedRisks' => 'Tất cả các rủi ro chưa được phân bổ',
+    'NoRisksSelectedYet' => 'Chưa có rủi ro nào được chọn.',
+    'SomeQuestionsNotDeleted' => 'Một số câu hỏi đã chọn không thể xóa được.',
+    'QuestionnaireQuestionDeleteRequiresJavaScript' => 'Để xóa câu hỏi, bạn cần bật JavaScript trên trình duyệt của mình.',
+    // Initiate Audits' bulk bar (SR-2234): the header checkbox already
+    // selects every row matching the current search/filters across every
+    // page in one click (client-side DataTables, the full eligible-test set
+    // is already loaded) -- this qualifier makes that explicit when the
+    // selection exceeds what a single page can hold, so "N selected" isn't
+    // read as a miscount against however many checkboxes are visibly ticked
+    // on the current page.
+    'NSelectedAllPages' => '{n} đã được chọn (phù hợp với bộ lọc của bạn, trên tất cả các trang)',
+    // "Select all N" cross-page selection: shared too-many-matches message for
+    // Review Risk, Define Tests, Manage Audits, Document Program, and Define
+    // Exceptions (formerly 5 near-duplicate per-page keys). Callers supply
+    // both {$max} and {$noun} (e.g. the plain 'Risks'/'Tests'/'Audits'/
+    // 'Documents'/'Exceptions' key text) -- PHP call sites via _lang(), JS
+    // call sites via a manual .replace('{$max}', ...).replace('{$noun}', ...).
+    'SelectAllTooManyMatches' => 'Các bộ lọc hiện tại khớp với nhiều hơn {$max} {$noun}. Hãy thu hẹp bộ lọc và thử lại.',
+    // POST /documents/batch-delete (batch_delete_document_api(), includes/api.php):
+    // same truncation-signal shape as 'DocumentsApprovedTruncated' (see
+    // above) and the sibling 'ExceptionsDeletedTruncated' key just below,
+    // for the Document Program bulk-delete "Select all N" action.
+    'DocumentsDeletedTruncated' => 'Chỉ {$limit} tài liệu được chọn đầu tiên mới bị xóa. Vui lòng lặp lại thao tác để xóa các tài liệu còn lại.',
+    // POST /exceptions/batch-delete-ids (batch_delete_exceptions_by_ids_api()) --
+    // deletes an arbitrary caller-supplied set of exception ids in one request,
+    // replacing the Define Exceptions bulk bar's looped POST /exceptions/delete
+    // calls. Mirrors ExceptionsApprovedTruncated's truncation-signal wording.
+    'ExceptionsDeletedTruncated' => 'Chỉ có {$limit} ngoại lệ được chọn đầu tiên bị xóa. Vui lòng lặp lại thao tác để xóa phần còn lại.',
+    // POST /risks/batch-close (closeRiskBatch(), includes/api.php): whole-batch
+    // 403 when the caller holds no close_risks permission at all, mirroring
+    // closeriskForm()'s own (hardcoded, pre-existing) single-risk denial text.
+    'NoCloseRiskPermission' => 'Bạn không có quyền đóng các rủi ro.',
+    'QuestionnaireRequiredQuestionUnanswered' => 'Vui lòng trả lời tất cả các câu hỏi bắt buộc trước khi hoàn thành bài đánh giá.',
     '' => '',
 );
 ?>

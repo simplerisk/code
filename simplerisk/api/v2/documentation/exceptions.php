@@ -442,6 +442,49 @@ class OpenApiBatchApproveExceptions {}
 class OpenApiBatchDeleteExceptions {}
 
 /**
+ * @OA\Post(
+ *     path="/exceptions/batch-delete-ids",
+ *     summary="Delete an arbitrary set of exceptions by id in one request.",
+ *     operationId="batchDeleteExceptionsByIds",
+ *     tags={"governance"},
+ *     security={{"ApiKeyAuth":{}}},
+ *     @OA\RequestBody(
+ *         required=true,
+ *         @OA\MediaType(
+ *             mediaType="application/x-www-form-urlencoded",
+ *             @OA\Schema(
+ *                 type="object",
+ *                 required={"exception_ids"},
+ *                 @OA\Property(
+ *                     property="exception_ids",
+ *                     type="array",
+ *                     description="The IDs of the exceptions to delete.",
+ *                     @OA\Items(type="integer")
+ *                 )
+ *             )
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=200,
+ *         description="Exceptions deleted successfully.",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(property="deleted", type="integer", description="The number of exceptions deleted.")
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=400,
+ *         description="BAD REQUEST: An error occurred while deleting the exceptions."
+ *     ),
+ *     @OA\Response(
+ *         response=403,
+ *         description="FORBIDDEN: The user does not have the required permission to perform this action."
+ *     )
+ * )
+ */
+class OpenApiBatchDeleteExceptionsByIds {}
+
+/**
  * @OA\Get(
  *     path="/exceptions/tree",
  *     summary="Get exceptions as a treegrid structure.",

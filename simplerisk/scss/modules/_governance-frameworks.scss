@@ -999,6 +999,25 @@
     gap: 8px;
 }
 
+// _tables.scss's shared toolbar-radius rule lists three wrapper classes
+// (.sr-table-tools, .sr-table-toolbar-actions, .sr-section-head-actions) and
+// says any new toolbar/header "Add" button should reach it by sitting inside
+// one of them. This wrapper is named .sr-ctl-toolbar-actions -- close to but
+// not one of those three -- so #sr-ctl-add and #sr-soa-btn silently fell back
+// to bare Bootstrap geometry (near-square corners) instead of picking up the
+// 6px radius Document Program's and Define Exceptions' own "+ Add X" buttons
+// get from sitting inside .sr-table-tools. Scoped to the WRAPPER, not the two
+// button IDs, so any future .btn dropped into this same action cluster (Task
+// 49's "row 1's action cluster") picks the radius up for free rather than
+// needing its own ID added here. Not the shared _tables.scss selector itself
+// (or a rename onto one of its three names) -- that rule also carries
+// padding/font-size/font-weight, which would disturb the bare-.btn
+// height/baseline match between these two buttons that the comments above
+// (and SCENARIO-26) measure and assert.
+#sr-ctl-toolbar .sr-ctl-toolbar-actions .btn {
+    border-radius: 6px;
+}
+
 // "Generate statement of applicability" is a long label on a row whose other
 // occupant is a user-authored framework name, and column 1 is the minmax(0, 1fr)
 // track while column 2 is `auto` -- so every pixel the actions cluster takes

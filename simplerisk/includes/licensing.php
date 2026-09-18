@@ -793,7 +793,7 @@ function build_license_check_extras(
  * Passes services_api_key only when non-null (anonymous installs omit it).
  *
  * @param array<string, mixed> $metadata The 'metadata' subobject (app_version,
- *     db_version, timezone, risks, users, last_login, metrics).
+ *     db_version, timezone, os, risks, users, last_login, metrics).
  * @param array<string, array<string, mixed>> $extras Map of filesystem-dir
  *     name => {installed, enabled, version}.
  */

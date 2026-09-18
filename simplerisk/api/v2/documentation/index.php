@@ -61,6 +61,11 @@ function autoloader(string $name)
         require_once realpath(__DIR__ . '/risks.php');
     }
 
+    if (file_exists(realpath(__DIR__ . '/projects.php')))
+    {
+        require_once realpath(__DIR__ . '/projects.php');
+    }
+
     if (file_exists(realpath(__DIR__ . '/compliance.php')))
     {
         require_once realpath(__DIR__ . '/compliance.php');
@@ -122,6 +127,7 @@ $scan_directories = [
     realpath(__DIR__ . '/assets.php'),
     realpath(__DIR__ . '/governance.php'),
     realpath(__DIR__ . '/risks.php'),
+    realpath(__DIR__ . '/projects.php'),
     realpath(__DIR__ . '/compliance.php'),
     realpath(__DIR__ . '/artificial_intelligence.php'),
     realpath(__DIR__ . '/reporting.php'),

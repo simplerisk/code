@@ -139,6 +139,7 @@ $releases = [
     "20260828-001",
     "20260908-001",
     "20260909-001",
+    "20260917-001",
 ];
 
 /*************************
@@ -11150,6 +11151,129 @@ function upgrade_from_20260908001($db) {
 
     // Database version upgrading to
     $version_upgrading_to = '20260909-001';
+
+    echo "Beginning SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
+
+    // Update the database version
+    update_database_version($db, $version_to_upgrade, $version_upgrading_to);
+    echo "Finished SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
+}
+
+/***************************************
+ * FUNCTION: UPGRADE FROM 20260909-001 *
+ ***************************************/
+function upgrade_from_20260909001($db) {
+    // Database version to upgrade
+    $version_to_upgrade = '20260909-001';
+
+    // Database version upgrading to
+    $version_upgrading_to = '20260917-001';
+
+    echo "Beginning SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
+
+    // custom_review_risk_display_settings -- persisted column preferences
+    // for the merged Review Risk page (replaces the three legacy
+    // custom_{plan_mitigation,perform_reviews,reviewregularly}_display_settings
+    // columns, retired once the new page ships -- see Task 22). Shipped as
+    // TEXT from the start (the three legacy columns were originally
+    // VARCHAR(2000), migrated to TEXT later) and does not carry forward
+    // their stored "colums" key-name typo since this column has no
+    // back-compat constraint.
+    if (!field_exists_in_table('custom_review_risk_display_settings', 'user')) {
+        echo "Adding a custom_review_risk_display_settings field to user table.<br />\n";
+        // The DEFAULT is wrapped in parentheses -- MySQL 8.0.13+ only accepts a
+        // BLOB/TEXT/GEOMETRY/JSON column default as an expression default
+        // (verified against this container's MySQL 8.0.45: the unparenthesized
+        // literal form the three legacy *_display_settings columns would have
+        // used raises ERROR 1101 "BLOB, TEXT, GEOMETRY or JSON column ... can't
+        // have a default value" -- which is why those three columns carry no
+        // DEFAULT at all today after their VARCHAR(2000)->TEXT migration).
+        $stmt = $db->prepare("
+            ALTER TABLE `user`
+            ADD COLUMN `custom_review_risk_display_settings` TEXT
+            DEFAULT ('{\"columns\":[[\"responsible\",\"1\"],[\"team\",\"1\"],[\"risk_score\",\"0\"],[\"submitted_date\",\"0\"],[\"tags\",\"0\"]]}')
+        ");
+        $stmt->execute();
+    }
+
+    // custom_plan_projects_display_settings -- persisted column visibility /
+    // order for the rebuilt Plan Projects grid (SR-2229). Same JSON shape as
+    // custom_review_risk_display_settings ({"columns": [[key,"1"|"0"],...],
+    // "order": [key,...]}); NULL means "client defaults" so no DEFAULT
+    // expression is needed (and MySQL 8 would require the parenthesised
+    // expression form for a TEXT default anyway).
+    if (!field_exists_in_table('custom_plan_projects_display_settings', 'user')) {
+        echo "Adding a custom_plan_projects_display_settings field to user table.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `user` ADD COLUMN `custom_plan_projects_display_settings` TEXT NULL");
+        $stmt->execute();
+    }
+
+    // Drop the three legacy per-page column-settings columns, superseded by
+    // custom_review_risk_display_settings above -- the three legacy pages that
+    // read/wrote them (plan_mitigations.php, management_review.php,
+    // review_risks.php) were retired in the same change (Task 22). All Core
+    // and Extra callers (install.php's installer_add_admin_user(), the
+    // Import-Export Extra's user import/export) were updated to stop
+    // referencing these columns before this DROP ships.
+    foreach (['custom_plan_mitigation_display_settings', 'custom_perform_reviews_display_settings', 'custom_reviewregularly_display_settings'] as $legacy_column) {
+        if (field_exists_in_table($legacy_column, 'user')) {
+            echo "Dropping the legacy {$legacy_column} field from user table.<br />\n";
+            $stmt = $db->prepare("ALTER TABLE `user` DROP COLUMN `{$legacy_column}`");
+            $stmt->execute();
+        }
+    }
+
+    // Upgrades overlay new code but do not delete removed files (the bundle
+    // is extracted over the live tree -- see the Manage Audits redesign's
+    // identical treatment of active_audits.php/past_audits.php,
+    // upgrade_from_20260820001() above), so unlink the three retired pages
+    // here. Idempotent: guarded by file_exists.
+    foreach (['plan_mitigations.php', 'management_review.php', 'review_risks.php'] as $legacy_page) {
+        $legacy_page_path = realpath(__DIR__ . '/../management/' . $legacy_page);
+        if ($legacy_page_path !== false && file_exists($legacy_page_path)) {
+            echo "Deleting the /management/{$legacy_page} file as it has been replaced by the Review Risk page.<br />\n";
+            unlink($legacy_page_path);
+        }
+    }
+
+    // The Home dashboard's "Control Pass Rate" KPI (and the same tile on the
+    // Compliance dashboard) resolves each control's LATEST test result through
+    // a correlated MAX(submission_date) subquery over `framework_control_test_
+    // results` joined on `test_audit_id` (home_control_pass_rate_percent(),
+    // includes/reporting.php; get_framework_controls_test_status_counts(),
+    // includes/compliance.php). That table shipped with only its PRIMARY KEY on
+    // `id` -- no index at all on `test_audit_id` -- so every one of those joins
+    // was a full table scan, repeated once per outer row the correlated
+    // subquery reaches. On a 1,537-control / ~5,000-test-result dev dataset the
+    // per-framework grouped query (the KPI tile's own query, called on both the
+    // Home and Compliance dashboards, and a second time again for the Home
+    // dashboard's "Failing Controls" tile in the SAME page load) measured
+    // ~37 SECONDS; adding this index alone -- no query rewrite -- brought it to
+    // ~0.15s, with byte-identical results verified before and after. Composite
+    // (test_audit_id, test_result, submission_date): every one of these queries
+    // joins on test_audit_id, then filters test_result IN ('Pass','Fail'), then
+    // either aggregates or compares submission_date, so the index covers the
+    // join, the filter, and the sort/comparison in one lookup instead of three
+    // separate scans.
+    if (!index_exists_on_table('idx_fctr_test_audit_id_result_date', 'framework_control_test_results')) {
+        echo "Adding an index on `framework_control_test_results` (`test_audit_id`, `test_result`, `submission_date`).<br />\n";
+        $db->prepare("CREATE INDEX `idx_fctr_test_audit_id_result_date` ON `framework_control_test_results` (`test_audit_id`, `test_result`, `submission_date`)")->execute();
+    }
+
+    // Update the database version
+    update_database_version($db, $version_to_upgrade, $version_upgrading_to);
+    echo "Finished SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
+}
+
+/***************************************
+ * FUNCTION: UPGRADE FROM 20260917-001 *
+ ***************************************/
+function upgrade_from_20260917001($db) {
+    // Database version to upgrade
+    $version_to_upgrade = '20260917-001';
+
+    // Database version upgrading to
+    $version_upgrading_to = '2026XXXX-001';
 
     echo "Beginning SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
 
