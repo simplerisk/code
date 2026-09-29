@@ -541,7 +541,7 @@ $lang = array(
     'UnavailableMysqldumpService' => 'Sunucu üzerinde hiçbir avaiable \'mysqldump\' hizmeti vardır. Lütfen mutlak mysqldump hizmet yolu ayarlayın.',
     'AllOpenRisksByTeamByLevel' => 'Ekip tarafından Risk düzeyine göre tüm açık risk',
     'Unknown' => 'Bilinmiyor',
-    'AllOwners' =>'Tüm sahipleri',
+    'AllOwners' =>'Tüm sahipler',
     'AllOwnersManagers' => 'Tüm sahibinin yöneticileri',
     'AddNewReviewNamed' => 'Adlı yeni gözden ekle',
     'DeleteCurrentReviewNamed' => 'Şimdiki inceleme adlı silmek',
@@ -4844,6 +4844,129 @@ $lang = array(
     'CreateAndAddField' => 'Oluştur ve ekle',
     'FieldCreatedAndAddedToTab' => '{field} oluşturuldu ve {tab}\'e eklendi.',
     'DeleteCustomFieldTitle' => '\'{field} \' alanını silmek istiyor musunuz?',
+    // Review Risk page (SR-2068 and others -- see design spec)
+    'ReviewRisk' => 'Riskleri Gözden Geçirin',
+    'NeedsColumn' => 'İhtiyaçlar',
+    'RiskScoreColumn' => 'Risk puanı',
+    'ReassignRiskOwner' => 'Risk sahibini yeniden atayın',
+    'ReassignMitigationOwner' => 'Risk azaltma sorumlusunu yeniden atayın',
+    'NoActionItemsTitle' => 'Filtrelerinizle eşleşen hiçbir risk yok.',
+    'NoActionItemsBody' => 'Kişisel olarak müdahale etme izniniz olan hiçbir şeyde düzeltme veya inceleme gerekmiyor. Ekibin tüm işlem listesini görmek için "İşlem öğelerimi göster" seçeneğinin işaretini kaldırın.',
+    'BulkChangeStatusTitle' => '%s seçili risk için durumu değiştir',
+    'BulkReassignRiskOwnerTitle' => '%s seçili risk için risk sahibini yeniden atayın.',
+    'BulkReassignMitigationOwnerTitle' => '%s seçili risk için azaltma sorumlusunu yeniden atayın',
+    'BulkAddCommentTitle' => '%s seçili risklere bir yorum ekle',
+    'BulkCloseRiskTitle' => 'Seçilen riskleri kapat %s',
+    'BulkActionPartialSuccess' => '%s riskten %s \'i güncellendi.',
+    'PerformReview' => 'İnceleme Gerçekleştir',
+    'BulkActionSuccess' => '%s riskler güncellendi.',
+    'SomeRowsSkippedNoMitigation' => 'Henüz bir önlem planı bulunmadığı için bazı riskler değerlendirmeye alınmadı.',
+    'ChangeStatusHint' => 'Seçilen riskler, seçilen duruma göre güncellenecektir.',
+    'StatusChanged' => 'Durum güncellendi.',
+    'CloseRiskBulkConfirmBody' => 'Kapatılan riskler aktif kuyruklardan kaldırılır. Risk durumunu tekrar değiştirerek daha sonra yeniden açabilirsiniz.',
+    // Column-parity follow-up fix review-risk-followups/column-parity-report.md):
+    // the Review Risk page's new scoring_method column (getReviewRiskDatatableResponse(),
+    // includes/api.php) renders get_scoring_method_name()'s (includes/functions.php)
+    // canonical scoring-method name through a $lang lookup rather than the raw
+    // hardcoded string. 'Classic'/'Custom'/'ContributingRisk' already existed
+    // (reused, not duplicated) -- only the three missing acronym keys are added
+    // here. These scoring methodology names/acronyms are typically kept
+    // untranslated (matching how the app's other risk-scoring UI already
+    // displays them, e.g. get_name_by_value('scoring_methods', ...) in
+    // displayrisks.php, which reads these same literal strings straight from
+    // the scoring_methods DB table with no translation layer), but every
+    // user-facing string still needs to flow through a lookup per CLAUDE.md,
+    // even one where the English and translated value would typically match.
+    'CVSS' => 'CVSS',
+    'DREAD' => 'KORKU',
+    'OWASP' => 'OWASP',
+    'MyActionItems' => 'Yapılacak İşlerim',
+    'AddRisk' => 'Risk Ekle',
+    'ReviewCompleted' => 'İnceleme Tamamlandı',
+    // Review Risk insights band (management/review_risk.php). The "Needs
+    // Review" tile reuses the existing 'HomeKpiNeedsReview' key rather than
+    // adding a second key for the same English string. 'RrNeedsMitigation'
+    // carries the band prefix the sibling insights bands already use ('Dt',
+    // 'Fw', 'Exc') to distinguish it from the grid's much terser chip label
+    // ('Mitigation').
+    'RrNeedsMitigation' => 'İhtiyaçların Azaltılması',
+    'PastDue' => 'Vadesi Geçmiş',
+    'OpenedThisMonth' => 'Bu Ay Açıldı',
+    'ClosedThisMonth' => 'Bu Ay Kapalı',
+    'AllRiskLevels' => 'Tüm risk seviyeleri',
+    // Import-Export Extra's Users sheet column for the Review Risk grid's
+    // persisted column-visibility/order preferences (user.custom_review_risk_display_settings).
+    'ReviewRiskDisplay' => 'Risk Ekranını İnceleyin',
+    // Plan Projects grid API (SR-2229): reorder/save-order status messages
+    // and the derived highest-risk column label shared by the grid's
+    // Columns picker and the drawer. The sibling 'Risks' column label
+    // reuses the existing 'Risks' key (line ~1911) rather than duplicating it.
+    'PlanProjectsReorderMismatch' => 'Sıralama işlemi sırasında proje listesi değişti. Sayfayı yeniden yükleyin ve tekrar deneyin.',
+    'PlanProjectsOrderSaved' => 'Proje siparişi kaydedildi.',
+    'HighestRisk' => 'En yüksek risk',
+    // Plan Projects grid (SR-2229). Sentence case; column headers are upper-cased by CSS. {n} tokens are replaced client-side.
+    'OnHold' => 'Beklemede',
+    'SearchProjectsPlaceholder' => 'Arama projeleri',
+    'AllConsultants' => 'Tüm danışmanlar',
+    'AllBusinessOwners' => 'Tüm işletme sahipleri',
+    'AllDataClassifications' => 'Tüm veri sınıflandırmaları',
+    'AnyDueStatus' => 'Herhangi bir hak durumu',
+    'NoDueDate' => 'Son teslim tarihi yok.',
+    'AddProject' => 'Proje ekle',
+    'AssignToProject' => 'Projeye atayın',
+    'RemoveFromProject' => 'Projeden kaldır',
+    'AddRisksToThisProject' => 'Bu projeye riskler ekleyin.',
+    'NoProjectsYet' => 'Henüz proje yok.',
+    'NoProjectsYetHint' => 'Projeler, ilgili riskleri gruplandırarak bunların ele alınmasını birlikte planlamanıza ve önceliklendirmenize olanak tanır.',
+    'NoProjectsMatchFilters' => 'Filtrelerinize uyan proje bulunamadı.',
+    'NoRisksInThisProject' => 'Bu projede henüz herhangi bir risk yok.',
+    'NoRisksWaitingForProject' => 'Proje beklemenin hiçbir riski yok.',
+    'NoRisksWaitingForProjectHint' => '"Proje için değerlendirilecek" olarak incelenen riskler, atanana kadar burada görünür.',
+    'NMoreRisks' => '{n} daha fazla risk',
+    'ChangeProjectStatus' => 'Proje durumunu değiştir',
+    'ChangeStatusClosesRisks' => 'Bu projenin tamamlandığını işaretlemek, {n} açık riskini "Tamamen giderildi" gerekçesiyle kapatacaktır.',
+    'ChangeStatusReopensRisks' => 'Bu projenin tamamlanmış statüsünden çıkarılması, tamamlandığında ortadan kalkmış olan riskleri yeniden ortaya çıkaracaktır.',
+    'ChangeStatusNoCloseRightsHint' => 'Riskleri kapatma veya yeniden açma yetkiniz yok, bu nedenle yalnızca proje durumu değişecektir.',
+    'DeleteProjectReturnsRisks' => 'Its {n} risks will return to the unassigned queue.',
+    'ReorderNeedsPrioritySort' => 'Liste aynı durum içinde önceliğe göre sıralandığında yeniden sıralama seçeneği kullanılabilir.',
+    'CouldNotLoadProjects' => 'Projeler yüklenemedi. Verileriniz güvende.',
+    'MitigationNotPlanned' => 'Planlanmamış',
+    'MitigationStatePlanned' => 'Planlanan',
+    'NoRisksMatchYourSearch' => 'Arama kriterlerinize uyan hiçbir risk bulunmamaktadır.',
+    'AllUnassignedRisks' => 'Atanmamış tüm riskler',
+    'NoRisksSelectedYet' => 'Henüz hiçbir risk seçilmedi.',
+    'SomeQuestionsNotDeleted' => 'Seçilen sorulardan bazıları silinemedi.',
+    'QuestionnaireQuestionDeleteRequiresJavaScript' => 'Soru silme işlemi için tarayıcınızda JavaScript\'in etkinleştirilmiş olması gerekmektedir.',
+    // Initiate Audits' bulk bar (SR-2234): the header checkbox already
+    // selects every row matching the current search/filters across every
+    // page in one click (client-side DataTables, the full eligible-test set
+    // is already loaded) -- this qualifier makes that explicit when the
+    // selection exceeds what a single page can hold, so "N selected" isn't
+    // read as a miscount against however many checkboxes are visibly ticked
+    // on the current page.
+    'NSelectedAllPages' => '{n} seçildi (filtrelerinizle eşleşen, tüm sayfalarda)',
+    // "Select all N" cross-page selection: shared too-many-matches message for
+    // Review Risk, Define Tests, Manage Audits, Document Program, and Define
+    // Exceptions (formerly 5 near-duplicate per-page keys). Callers supply
+    // both {$max} and {$noun} (e.g. the plain 'Risks'/'Tests'/'Audits'/
+    // 'Documents'/'Exceptions' key text) -- PHP call sites via _lang(), JS
+    // call sites via a manual .replace('{$max}', ...).replace('{$noun}', ...).
+    'SelectAllTooManyMatches' => 'Mevcut filtreler {$max} {$noun}\'den daha fazla eşleşme gösteriyor. Filtreyi daraltın ve tekrar deneyin.',
+    // POST /documents/batch-delete (batch_delete_document_api(), includes/api.php):
+    // same truncation-signal shape as 'DocumentsApprovedTruncated' (see
+    // above) and the sibling 'ExceptionsDeletedTruncated' key just below,
+    // for the Document Program bulk-delete "Select all N" action.
+    'DocumentsDeletedTruncated' => 'Yalnızca seçilen ilk {$limit} belge silindi. Geri kalanları silmek için lütfen işlemi tekrarlayın.',
+    // POST /exceptions/batch-delete-ids (batch_delete_exceptions_by_ids_api()) --
+    // deletes an arbitrary caller-supplied set of exception ids in one request,
+    // replacing the Define Exceptions bulk bar's looped POST /exceptions/delete
+    // calls. Mirrors ExceptionsApprovedTruncated's truncation-signal wording.
+    'ExceptionsDeletedTruncated' => 'Yalnızca seçilen ilk {$limit} istisna silindi. Geri kalanları silmek için lütfen işlemi tekrarlayın.',
+    // POST /risks/batch-close (closeRiskBatch(), includes/api.php): whole-batch
+    // 403 when the caller holds no close_risks permission at all, mirroring
+    // closeriskForm()'s own (hardcoded, pre-existing) single-risk denial text.
+    'NoCloseRiskPermission' => 'Riskleri kapatma izniniz yok.',
+    'QuestionnaireRequiredQuestionUnanswered' => 'Lütfen değerlendirmeyi tamamlamadan önce istenen tüm soruları yanıtlayın.',
     '' => '',
 );
 ?>

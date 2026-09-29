@@ -557,14 +557,15 @@ jQuery(document).ready(function($){
                 error: function (xhr, status, error) {
                     retryCSRF(xhr, this);
                 },
-                complete: function (response) {
-                    if (response.status == 200) {
-                        $("#controls_count").html(parseInt(response.responseJSON.recordsFiltered));
-                        rebuild_filter($("#filter_by_control_class"), response.responseJSON.classList);
-                        rebuild_filter($("#filter_by_control_phase"), response.responseJSON.phaseList);
-                        rebuild_filter($("#filter_by_control_family"), response.responseJSON.familyList);
-                        rebuild_filter($("#filter_by_control_owner"), response.responseJSON.ownerList);
-                        rebuild_filter($("#filter_by_control_priority"), response.responseJSON.priorityList);
+                complete: function (xhr) {
+                    var json = DataTable.parseCompleteResponse(xhr);
+                    if (xhr && xhr.status == 200 && json) {
+                        $("#controls_count").html(parseInt(json.recordsFiltered));
+                        rebuild_filter($("#filter_by_control_class"), json.classList);
+                        rebuild_filter($("#filter_by_control_phase"), json.phaseList);
+                        rebuild_filter($("#filter_by_control_family"), json.familyList);
+                        rebuild_filter($("#filter_by_control_owner"), json.ownerList);
+                        rebuild_filter($("#filter_by_control_priority"), json.priorityList);
                     }
                 }
             }

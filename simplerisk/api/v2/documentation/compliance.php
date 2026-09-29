@@ -745,6 +745,173 @@ class OpenApiComplianceAuditTagsGet {}
 class OpenApiComplianceTestsGrid {}
 
 /**
+ * @OA\Post(
+ *     path="/compliance/tests_grid/filtered_ids",
+ *     summary="Resolve every real test id matching the Define Tests page's current filter set, across every page ('Select all N')",
+ *     description="Unlike /compliance/tests_grid above, which returns one page, this applies the identical filter (parse_grid_request() + build_tests_grid() forced to length=-1, includes/compliance_grid.php) across the WHOLE matching set and flattens it to a plain list of real test ids (flatten_tests_grid_ids()) -- AI-suggestion rows are excluded, since they have no real id and are acted on by the separate proposal-approval flow, not Retire/Delete. Refused with 400 when the match count exceeds DEFINE_TESTS_SELECT_ALL_MAX (500, api/v2/includes/compliance.php) -- narrow the filter and retry, since every subsequent bulk action fires one request per selected id rather than a single atomic bulk write.",
+ *     operationId="complianceTestsGridFilteredIds",
+ *     tags={"compliance"},
+ *     security={{"ApiKeyAuth":{}}},
+ *     @OA\RequestBody(
+ *         required=false,
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(property="framework", type="array", @OA\Items(type="integer")),
+ *             @OA\Property(property="family", type="array", @OA\Items(type="integer")),
+ *             @OA\Property(property="search", type="string"),
+ *             @OA\Property(property="coverage", type="string", enum={"with","all","gaps"}),
+ *             @OA\Property(property="schedule", type="string", enum={"manual","interval","calendar"}),
+ *             @OA\Property(property="tag", type="string"),
+ *             @OA\Property(property="tester", type="integer"),
+ *             @OA\Property(property="retired", type="string", enum={"active","all","retired_only"}),
+ *             @OA\Property(
+ *                 property="quick",
+ *                 type="object",
+ *                 description="Same quick-filter toggles as /compliance/tests_grid."
+ *             )
+ *         )
+ *     ),
+ *     @OA\Response(
+ *       response=200,
+ *       description="Every matching real test id",
+ *       @OA\JsonContent(
+ *         type="object",
+ *         @OA\Property(property="status", type="integer", example=200),
+ *         @OA\Property(property="status_message", type="string", example="SUCCESS"),
+ *         @OA\Property(
+ *             property="data",
+ *             type="object",
+ *             @OA\Property(property="ids", type="array", @OA\Items(type="integer"), description="Real test ids (framework_control_tests.id) matching the given filters, across every page."),
+ *             @OA\Property(property="total", type="integer", description="count(ids).")
+ *         )
+ *       )
+ *     ),
+ *     @OA\Response(
+ *         response=400,
+ *         description="The filter matches more tests than DEFINE_TESTS_SELECT_ALL_MAX allows",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(property="status", type="integer", example=400),
+ *             @OA\Property(property="status_message", type="string"),
+ *             @OA\Property(property="data", nullable=true)
+ *         )
+ *     ),
+ *     @OA\Response(response=403, description="FORBIDDEN: The user does not have compliance permission.")
+ * )
+ */
+class OpenApiComplianceTestsGridFilteredIds {}
+
+/**
+ * @OA\Post(
+ *     path="/compliance/tests/batch-retire",
+ *     summary="Retire every test id in the given array in a single request ('Select all N')",
+ *     description="Replaces looping POST /compliance/tests/{id}/retire once per selected id: the Define Tests bulk-retire bar sends every selected/resolved id (up to DEFINE_TESTS_SELECT_ALL_MAX = 500, api/v2/includes/compliance.php) in one call. Runs the exact same authorization retireTestById() (includes/api.php) runs for a single retire -- can_retire_tests() (edit_tests OR delete_tests) gates the whole request once, then check_access_for_test() (includes/functions.php) is re-evaluated individually for EVERY id -- when the Team Separation Extra is active this can deny a caller access to a specific test even though they hold edit_tests/delete_tests in general. An id that fails that per-id check is skipped and reported in denied_ids/denied rather than aborting the batch or being silently dropped; an id with no matching test (already deleted elsewhere) is likewise skipped and reported in failed_ids/failed.",
+ *     operationId="complianceTestsBatchRetire",
+ *     tags={"compliance"},
+ *     security={{"ApiKeyAuth":{}}},
+ *     @OA\RequestBody(
+ *         required=true,
+ *         @OA\JsonContent(
+ *             type="object",
+ *             required={"ids"},
+ *             @OA\Property(property="ids", type="array", @OA\Items(type="integer"), description="Test ids (framework_control_tests.id) to retire.")
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=200,
+ *         description="Batch processed (individual ids may still have been denied or not found -- see denied/denied_ids and failed/failed_ids).",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(property="status", type="integer", example=200),
+ *             @OA\Property(property="status_message", type="string", example="SUCCESS"),
+ *             @OA\Property(
+ *                 property="data",
+ *                 type="object",
+ *                 @OA\Property(property="processed", type="integer", description="Count of ids actually retired."),
+ *                 @OA\Property(property="denied", type="integer", description="count(denied_ids)."),
+ *                 @OA\Property(property="denied_ids", type="array", @OA\Items(type="integer"), description="Ids skipped because the per-id check_access_for_test() check denied access to this user."),
+ *                 @OA\Property(property="failed", type="integer", description="count(failed_ids)."),
+ *                 @OA\Property(property="failed_ids", type="array", @OA\Items(type="integer"), description="Ids skipped because no matching test was found."),
+ *                 @OA\Property(property="total", type="integer", description="count(ids) actually considered, after the cap."),
+ *                 @OA\Property(property="truncated", type="boolean", description="True when more than `limit` valid ids were submitted -- only the first `limit` were processed."),
+ *                 @OA\Property(property="limit", type="integer", example=500)
+ *             )
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=400,
+ *         description="Missing/empty/non-array ids",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(property="status", type="integer", example=400),
+ *             @OA\Property(property="status_message", type="string"),
+ *             @OA\Property(property="data", nullable=true)
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=403,
+ *         description="FORBIDDEN: missing both edit_tests and delete_tests."
+ *     )
+ * )
+ */
+class OpenApiComplianceTestsBatchRetire {}
+
+/**
+ * @OA\Post(
+ *     path="/compliance/tests/batch-delete",
+ *     summary="Delete every test id in the given array in a single request ('Select all N')",
+ *     description="Replaces looping DELETE /compliance/tests/{id} once per selected id: the Define Tests bulk-delete bar sends every selected/resolved id (up to DEFINE_TESTS_SELECT_ALL_MAX = 500, api/v2/includes/compliance.php) in one call. Runs the exact same authorization deleteTestById() (includes/api.php) runs for a single delete -- the delete_tests permission gates the whole request once, then check_access_for_test() (includes/functions.php) is re-evaluated individually for EVERY id -- when the Team Separation Extra is active this can deny a caller access to a specific test even though they hold delete_tests in general. An id that fails that per-id check is skipped and reported in denied_ids/denied rather than aborting the batch or being silently dropped; an id with no matching test (already deleted elsewhere) is likewise skipped and reported in failed_ids/failed.",
+ *     operationId="complianceTestsBatchDelete",
+ *     tags={"compliance"},
+ *     security={{"ApiKeyAuth":{}}},
+ *     @OA\RequestBody(
+ *         required=true,
+ *         @OA\JsonContent(
+ *             type="object",
+ *             required={"ids"},
+ *             @OA\Property(property="ids", type="array", @OA\Items(type="integer"), description="Test ids (framework_control_tests.id) to delete.")
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=200,
+ *         description="Batch processed (individual ids may still have been denied or not found -- see denied/denied_ids and failed/failed_ids).",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(property="status", type="integer", example=200),
+ *             @OA\Property(property="status_message", type="string", example="SUCCESS"),
+ *             @OA\Property(
+ *                 property="data",
+ *                 type="object",
+ *                 @OA\Property(property="processed", type="integer", description="Count of ids actually deleted."),
+ *                 @OA\Property(property="denied", type="integer", description="count(denied_ids)."),
+ *                 @OA\Property(property="denied_ids", type="array", @OA\Items(type="integer"), description="Ids skipped because the per-id check_access_for_test() check denied access to this user."),
+ *                 @OA\Property(property="failed", type="integer", description="count(failed_ids)."),
+ *                 @OA\Property(property="failed_ids", type="array", @OA\Items(type="integer"), description="Ids skipped because no matching test was found."),
+ *                 @OA\Property(property="total", type="integer", description="count(ids) actually considered, after the cap."),
+ *                 @OA\Property(property="truncated", type="boolean", description="True when more than `limit` valid ids were submitted -- only the first `limit` were processed."),
+ *                 @OA\Property(property="limit", type="integer", example=500)
+ *             )
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=400,
+ *         description="Missing/empty/non-array ids",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(property="status", type="integer", example=400),
+ *             @OA\Property(property="status_message", type="string"),
+ *             @OA\Property(property="data", nullable=true)
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=403,
+ *         description="FORBIDDEN: missing delete_tests."
+ *     )
+ * )
+ */
+class OpenApiComplianceTestsBatchDelete {}
+
+/**
  * @OA\Get(
  *     path="/compliance/control_mappings",
  *     summary="Get the framework mappings for a single control",
@@ -1570,6 +1737,113 @@ class OpenApiCompliancePastAuditsDatatable {}
  * )
  */
 class OpenApiComplianceAllAuditsDatatable {}
+
+/**
+ * @OA\Post(
+ *     path="/compliance/audits/filtered_ids",
+ *     summary="Resolve every audit id matching the Manage Audits page's current status chip + filters, across every page ('Select all N')",
+ *     description="Unlike the three status-chip datatable endpoints above, which each return one page, this applies the identical filter (get_data_for_datatable(), includes/functions.php, forced to length=-1) across the WHOLE matching set for the given status and returns just the ids. `status` selects which of the three views' SQL scope (active_audits/past_audits/all_audits) to resolve against -- it is validated strictly with no silent default, since resolving against the wrong scope could hand a bulk Delete more ids than the viewer ever saw. Refused with 400 when the match count exceeds MANAGE_AUDITS_SELECT_ALL_MAX (2000, api/v2/includes/compliance.php) -- narrow the filter and retry, since the page's only bulk action (Delete) fires one request per selected id rather than a single atomic bulk write.",
+ *     operationId="complianceAuditsFilteredIds",
+ *     tags={"compliance"},
+ *     security={{"ApiKeyAuth":{}}},
+ *     @OA\RequestBody(
+ *         required=true,
+ *         @OA\JsonContent(
+ *             type="object",
+ *             required={"status"},
+ *             @OA\Property(property="status", type="string", enum={"active","past","all"}, description="Which status chip's SQL scope to resolve ids against."),
+ *             @OA\Property(property="audits_column_filters", type="string", description="JSON-encoded object of the toolbar quickfilter values (framework_name/test_name/tester/result/status/tags/teams), same shape the datatable endpoints' own audits_column_filters param takes."),
+ *             @OA\Property(property="search", type="string", description="Global search term, matched the same way the toolbar search box's term is matched."),
+ *             @OA\Property(property="audits_test_date_range", type="string", description="Manage Audits' Test Date range quickfilter, same start-minus-end format the datatable endpoints already expect.")
+ *         )
+ *     ),
+ *     @OA\Response(
+ *       response=200,
+ *       description="Every matching audit id",
+ *       @OA\JsonContent(
+ *         type="object",
+ *         @OA\Property(property="status", type="integer", example=200),
+ *         @OA\Property(property="status_message", type="string", example="SUCCESS"),
+ *         @OA\Property(
+ *             property="data",
+ *             type="object",
+ *             @OA\Property(property="ids", type="array", @OA\Items(type="integer"), description="Audit ids matching the given status + filters, across every page."),
+ *             @OA\Property(property="total", type="integer", description="count(ids).")
+ *         )
+ *       )
+ *     ),
+ *     @OA\Response(
+ *         response=400,
+ *         description="Missing/invalid status, or the filter matches more audits than MANAGE_AUDITS_SELECT_ALL_MAX allows",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(property="status", type="integer", example=400),
+ *             @OA\Property(property="status_message", type="string"),
+ *             @OA\Property(property="data", nullable=true)
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=403,
+ *         description="FORBIDDEN: The user does not have the required permission to perform this action."
+ *     )
+ * )
+ */
+class OpenApiComplianceAuditsFilteredIds {}
+
+/**
+ * @OA\Post(
+ *     path="/compliance/audits/batch-delete",
+ *     summary="Delete every audit id in the given array in a single request ('Select all N')",
+ *     description="Replaces looping POST /compliance/delete_audit once per selected id: the Manage Audits bulk-delete bar sends every selected/resolved id (up to MANAGE_AUDITS_SELECT_ALL_MAX = 2000, api/v2/includes/compliance.php) in one call. Runs the exact same authorization deleteTestAuditResponse() runs for a single delete -- the compliance permission plus the delete_audits session flag gate the whole request once, then, when the Team Separation Extra is active, is_user_allowed_to_access() (extras/separation/index.php) is re-evaluated individually for EVERY id. An id that fails that per-id check is skipped and reported in denied_ids/denied rather than aborting the batch or being silently dropped.",
+ *     operationId="complianceAuditsBatchDelete",
+ *     tags={"compliance"},
+ *     security={{"ApiKeyAuth":{}}},
+ *     @OA\RequestBody(
+ *         required=true,
+ *         @OA\MediaType(
+ *             mediaType="application/x-www-form-urlencoded",
+ *             @OA\Schema(
+ *                 type="object",
+ *                 required={"ids"},
+ *                 @OA\Property(property="ids", type="array", @OA\Items(type="integer"), description="Audit ids to delete.")
+ *             )
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=200,
+ *         description="Batch processed (individual ids may still have been denied -- see denied/denied_ids).",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(property="status", type="integer", example=200),
+ *             @OA\Property(property="status_message", type="string", example="SUCCESS"),
+ *             @OA\Property(
+ *                 property="data",
+ *                 type="object",
+ *                 @OA\Property(property="deleted", type="integer", description="Count of ids actually deleted."),
+ *                 @OA\Property(property="denied", type="integer", description="count(denied_ids)."),
+ *                 @OA\Property(property="denied_ids", type="array", @OA\Items(type="integer"), description="Ids skipped because the per-id Team Separation check denied access to this user."),
+ *                 @OA\Property(property="truncated", type="boolean", description="True when more than `limit` valid ids were submitted -- only the first `limit` were processed."),
+ *                 @OA\Property(property="limit", type="integer", example=2000)
+ *             )
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=400,
+ *         description="Missing/empty/non-array ids",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(property="status", type="integer", example=400),
+ *             @OA\Property(property="status_message", type="string"),
+ *             @OA\Property(property="data", nullable=true)
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=403,
+ *         description="FORBIDDEN: missing the compliance permission or the delete_audits flag."
+ *     )
+ * )
+ */
+class OpenApiComplianceAuditsBatchDelete {}
 
 /**
  * @OA\Get(

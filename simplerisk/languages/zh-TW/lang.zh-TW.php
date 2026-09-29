@@ -541,7 +541,7 @@ $lang = array(
     'UnavailableMysqldumpService' => '伺服器上沒有可用的 `mysqldump` 服務。請設定 mysqldump 服務的絕對路徑。',
     'AllOpenRisksByTeamByLevel' => '所有打開的團隊由風險水準風險',
     'Unknown' => '未知',
-    'AllOwners' =>'所有擁有者',
+    'AllOwners' =>'所有所有者',
     'AllOwnersManagers' => '所有業主經理',
     'AddNewReviewNamed' => '添加新命名的審查',
     'DeleteCurrentReviewNamed' => '刪除當前審查命名',
@@ -4844,6 +4844,129 @@ $lang = array(
     'CreateAndAddField' => '創建並添加',
     'FieldCreatedAndAddedToTab' => '創建了 {field} 並將其加到 {tab}。',
     'DeleteCustomFieldTitle' => '刪除字段“{field}”？',
+    // Review Risk page (SR-2068 and others -- see design spec)
+    'ReviewRisk' => '風險評估',
+    'NeedsColumn' => '需求',
+    'RiskScoreColumn' => '風險評分',
+    'ReassignRiskOwner' => '重新分配風險所有者',
+    'ReassignMitigationOwner' => '重新分配緩解措施負責人',
+    'NoActionItemsTitle' => '沒有風險符合您的篩選條件',
+    'NoActionItemsBody' => '您個人無權處理的任何事項都不需要採取緩解措施或進行審查。請嘗試取消勾選「顯示我的待辦事項」以查看團隊的完整待辦事項清單。',
+    'BulkChangeStatusTitle' => '變更 %s 項選取風險的狀態',
+    'BulkReassignRiskOwnerTitle' => '重新分配 %s 個選定風險的風險所有者',
+    'BulkReassignMitigationOwnerTitle' => '重新分配 %s 項選定風險的緩解負責人',
+    'BulkAddCommentTitle' => '將評論新增至 %s 選定的風險',
+    'BulkCloseRiskTitle' => '關閉 %s 所選取的風險',
+    'BulkActionPartialSuccess' => '%s 中的 %s 風險已更新。',
+    'PerformReview' => '執行審查',
+    'BulkActionSuccess' => '%s 風險已更新。',
+    'SomeRowsSkippedNoMitigation' => '部分風險被跳過，因為目前還沒有針對這些風險的緩解措施計劃。',
+    'ChangeStatusHint' => '選定的風險將更新為所選狀態。',
+    'StatusChanged' => '狀態已更新。',
+    'CloseRiskBulkConfirmBody' => '已關閉的風險將從活動佇列中移除。您可以稍後透過變更其狀態來重新開啟風險。',
+    // Column-parity follow-up fix review-risk-followups/column-parity-report.md):
+    // the Review Risk page's new scoring_method column (getReviewRiskDatatableResponse(),
+    // includes/api.php) renders get_scoring_method_name()'s (includes/functions.php)
+    // canonical scoring-method name through a $lang lookup rather than the raw
+    // hardcoded string. 'Classic'/'Custom'/'ContributingRisk' already existed
+    // (reused, not duplicated) -- only the three missing acronym keys are added
+    // here. These scoring methodology names/acronyms are typically kept
+    // untranslated (matching how the app's other risk-scoring UI already
+    // displays them, e.g. get_name_by_value('scoring_methods', ...) in
+    // displayrisks.php, which reads these same literal strings straight from
+    // the scoring_methods DB table with no translation layer), but every
+    // user-facing string still needs to flow through a lookup per CLAUDE.md,
+    // even one where the English and translated value would typically match.
+    'CVSS' => 'CVSS',
+    'DREAD' => '恐懼',
+    'OWASP' => 'OWASP',
+    'MyActionItems' => '我的行動事項',
+    'AddRisk' => '增加風險',
+    'ReviewCompleted' => '審核完成',
+    // Review Risk insights band (management/review_risk.php). The "Needs
+    // Review" tile reuses the existing 'HomeKpiNeedsReview' key rather than
+    // adding a second key for the same English string. 'RrNeedsMitigation'
+    // carries the band prefix the sibling insights bands already use ('Dt',
+    // 'Fw', 'Exc') to distinguish it from the grid's much terser chip label
+    // ('Mitigation').
+    'RrNeedsMitigation' => '需要緩解',
+    'PastDue' => '逾期',
+    'OpenedThisMonth' => '本月開幕',
+    'ClosedThisMonth' => '本月休息',
+    'AllRiskLevels' => '所有風險等級',
+    // Import-Export Extra's Users sheet column for the Review Risk grid's
+    // persisted column-visibility/order preferences (user.custom_review_risk_display_settings).
+    'ReviewRiskDisplay' => '風險顯示審查',
+    // Plan Projects grid API (SR-2229): reorder/save-order status messages
+    // and the derived highest-risk column label shared by the grid's
+    // Columns picker and the drawer. The sibling 'Risks' column label
+    // reuses the existing 'Risks' key (line ~1911) rather than duplicating it.
+    'PlanProjectsReorderMismatch' => '您重新排序時項目清單已變更。請重新加載並重試。',
+    'PlanProjectsOrderSaved' => '商品訂單已儲存。',
+    'HighestRisk' => '風險最高',
+    // Plan Projects grid (SR-2229). Sentence case; column headers are upper-cased by CSS. {n} tokens are replaced client-side.
+    'OnHold' => '等候接聽',
+    'SearchProjectsPlaceholder' => '搜尋項目',
+    'AllConsultants' => '所有顧問',
+    'AllBusinessOwners' => '所有企業主',
+    'AllDataClassifications' => '所有資料分類',
+    'AnyDueStatus' => '任何到期狀態',
+    'NoDueDate' => '沒有截止日期',
+    'AddProject' => '新增項目',
+    'AssignToProject' => '分配給項目',
+    'RemoveFromProject' => '從專案中移除',
+    'AddRisksToThisProject' => '增加該專案的風險',
+    'NoProjectsYet' => '目前還沒有項目',
+    'NoProjectsYetHint' => '將專案分組，以便您可以一起規劃和優先處理相關風險。',
+    'NoProjectsMatchFilters' => '沒有項目符合您的篩選條件。',
+    'NoRisksInThisProject' => '該項目目前尚無風險。',
+    'NoRisksWaitingForProject' => '等待項目沒有風險',
+    'NoRisksWaitingForProjectHint' => '被評為「考慮納入項目」的風險會顯示在這裡，直到被分配為止。',
+    'NMoreRisks' => '{n} 更多風險',
+    'ChangeProjectStatus' => '更改專案狀態',
+    'ChangeStatusClosesRisks' => '將此項目標記為已完成將關閉其 {n} 未解決的風險，原因是「已完全緩解」。',
+    'ChangeStatusReopensRisks' => '將該項目從已完成狀態移出，將會重新引發先前在專案完成時已消除的風險。',
+    'ChangeStatusNoCloseRightsHint' => '您沒有權限關閉或重新開啟風險，因此只會變更專案狀態。',
+    'DeleteProjectReturnsRisks' => '其 {n} 風險將傳回未分配佇列。',
+    'ReorderNeedsPrioritySort' => '當清單按同一狀態下的優先順序排序時，可以重新排序。',
+    'CouldNotLoadProjects' => '項目加載失敗。您的資料安全無虞。',
+    'MitigationNotPlanned' => '未計劃',
+    'MitigationStatePlanned' => '計劃',
+    'NoRisksMatchYourSearch' => '沒有符合您搜尋條件的風險',
+    'AllUnassignedRisks' => '所有未分配的風險',
+    'NoRisksSelectedYet' => '尚未選擇任何風險',
+    'SomeQuestionsNotDeleted' => '部分選定的問題無法刪除。',
+    'QuestionnaireQuestionDeleteRequiresJavaScript' => '刪除問題需要啟用瀏覽器中的 JavaScript 功能。',
+    // Initiate Audits' bulk bar (SR-2234): the header checkbox already
+    // selects every row matching the current search/filters across every
+    // page in one click (client-side DataTables, the full eligible-test set
+    // is already loaded) -- this qualifier makes that explicit when the
+    // selection exceeds what a single page can hold, so "N selected" isn't
+    // read as a miscount against however many checkboxes are visibly ticked
+    // on the current page.
+    'NSelectedAllPages' => '{n} 已選擇（符合您的篩選條件，適用於所有頁面）',
+    // "Select all N" cross-page selection: shared too-many-matches message for
+    // Review Risk, Define Tests, Manage Audits, Document Program, and Define
+    // Exceptions (formerly 5 near-duplicate per-page keys). Callers supply
+    // both {$max} and {$noun} (e.g. the plain 'Risks'/'Tests'/'Audits'/
+    // 'Documents'/'Exceptions' key text) -- PHP call sites via _lang(), JS
+    // call sites via a manual .replace('{$max}', ...).replace('{$noun}', ...).
+    'SelectAllTooManyMatches' => '目前篩選條件匹配到的數量超過了 {$max} {$noun}。請縮小篩選範圍並重試。',
+    // POST /documents/batch-delete (batch_delete_document_api(), includes/api.php):
+    // same truncation-signal shape as 'DocumentsApprovedTruncated' (see
+    // above) and the sibling 'ExceptionsDeletedTruncated' key just below,
+    // for the Document Program bulk-delete "Select all N" action.
+    'DocumentsDeletedTruncated' => '僅刪除了前 {$limit} 個選取文件。請重複此操作以刪除其餘文件。',
+    // POST /exceptions/batch-delete-ids (batch_delete_exceptions_by_ids_api()) --
+    // deletes an arbitrary caller-supplied set of exception ids in one request,
+    // replacing the Define Exceptions bulk bar's looped POST /exceptions/delete
+    // calls. Mirrors ExceptionsApprovedTruncated's truncation-signal wording.
+    'ExceptionsDeletedTruncated' => '僅刪除了前 {$limit} 個選定的例外情況。請重複此動作以刪除其餘例外情況。',
+    // POST /risks/batch-close (closeRiskBatch(), includes/api.php): whole-batch
+    // 403 when the caller holds no close_risks permission at all, mirroring
+    // closeriskForm()'s own (hardcoded, pre-existing) single-risk denial text.
+    'NoCloseRiskPermission' => '您沒有權限關閉風險。',
+    'QuestionnaireRequiredQuestionUnanswered' => '請在完成評估前回答所有必填問題。',
     '' => '',
 );
 ?>

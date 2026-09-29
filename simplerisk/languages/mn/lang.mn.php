@@ -541,7 +541,7 @@ $lang = array(
     'UnavailableMysqldumpService' => 'Ямар ч avaiable `mysqldump` үйлчилгээ, сервер дээр байна. Уу тогтоосон үнэмлэхүй mysqldump үйлчилгээ зам.',
     'AllOpenRisksByTeamByLevel' => 'Бүх Нээлттэй Эрсдлийг өөр Баг Эрсдэлийн Түвшин',
     'Unknown' => 'Үл мэдэгдэх',
-    'AllOwners' =>'Бүх Эзэд',
+    'AllOwners' =>'Бүх эзэмшигчид',
     'AllOwnersManagers' => 'Бүх Эзэмшигчийн Менежер',
     'AddNewReviewNamed' => 'Add new тойм нэртэй',
     'DeleteCurrentReviewNamed' => 'Устгах одоогийн тойм нэртэй',
@@ -4844,6 +4844,129 @@ $lang = array(
     'CreateAndAddField' => 'Үүсгэх ба нэмэх',
     'FieldCreatedAndAddedToTab' => '{field} -г үүсгээд {tab} руу нэмсэн.',
     'DeleteCustomFieldTitle' => '\'{field} \' талбарыг устгах уу?',
+    // Review Risk page (SR-2068 and others -- see design spec)
+    'ReviewRisk' => 'Эрсдэлийг хянах',
+    'NeedsColumn' => 'Хэрэгцээ',
+    'RiskScoreColumn' => 'Эрсдэлийн оноо',
+    'ReassignRiskOwner' => 'Эрсдэлийн эзэмшигчийг дахин оноох',
+    'ReassignMitigationOwner' => 'Хасах хэмжээг бууруулах эзэмшигчийг дахин оноох',
+    'NoActionItemsTitle' => 'Таны шүүлтүүртэй тохирох эрсдэл байхгүй',
+    'NoActionItemsBody' => 'Таны хувьдаа зөвшөөрөлтэй, бууруулах эсвэл хянах шаардлагагүй зүйл байхгүй. Багийн бүтэн дарааллыг харахын тулд "Миний үйлдлийн зүйлсийг харуулах" гэснийг болиулж үзнэ үү.',
+    'BulkChangeStatusTitle' => 'Сонгосон %s эрсдэлийн статусыг өөрчлөх',
+    'BulkReassignRiskOwnerTitle' => '%s сонгосон эрсдэлийн эрсдэлийн эзэмшигчийг дахин оноох',
+    'BulkReassignMitigationOwnerTitle' => 'Сонгосон %s эрсдэлийн хувьд бууруулах эзэмшигчийг дахин оноох',
+    'BulkAddCommentTitle' => '%s сонгосон эрсдэлд сэтгэгдэл нэмэх',
+    'BulkCloseRiskTitle' => 'Сонгосон эрсдэлүүдийн %s -г хаах',
+    'BulkActionPartialSuccess' => '%s эрсдэлийн %s -г шинэчилсэн.',
+    'PerformReview' => 'Шалгалт хийх',
+    'BulkActionSuccess' => '%s эрсдэлүүд шинэчлэгдсэн.',
+    'SomeRowsSkippedNoMitigation' => 'Зарим сонгосон эрсдэлийг бууруулах арга хэмжээ хараахан төлөвлөөгүй байгаа тул тэдгээрийг алгассан.',
+    'ChangeStatusHint' => 'Сонгосон эрсдэлүүдийг сонгосон төлөвт шинэчилнэ.',
+    'StatusChanged' => 'Статус шинэчлэгдсэн.',
+    'CloseRiskBulkConfirmBody' => 'Идэвхтэй дарааллаас хаалттай эрсдэлүүдийг хасдаг. Та эрсдэлийн статусыг дахин өөрчлөх замаар дараа нь дахин нээх боломжтой.',
+    // Column-parity follow-up fix review-risk-followups/column-parity-report.md):
+    // the Review Risk page's new scoring_method column (getReviewRiskDatatableResponse(),
+    // includes/api.php) renders get_scoring_method_name()'s (includes/functions.php)
+    // canonical scoring-method name through a $lang lookup rather than the raw
+    // hardcoded string. 'Classic'/'Custom'/'ContributingRisk' already existed
+    // (reused, not duplicated) -- only the three missing acronym keys are added
+    // here. These scoring methodology names/acronyms are typically kept
+    // untranslated (matching how the app's other risk-scoring UI already
+    // displays them, e.g. get_name_by_value('scoring_methods', ...) in
+    // displayrisks.php, which reads these same literal strings straight from
+    // the scoring_methods DB table with no translation layer), but every
+    // user-facing string still needs to flow through a lookup per CLAUDE.md,
+    // even one where the English and translated value would typically match.
+    'CVSS' => 'CVSS',
+    'DREAD' => 'АЙМШИГ',
+    'OWASP' => 'OWASP',
+    'MyActionItems' => 'Миний үйлдлийн зүйлс',
+    'AddRisk' => 'Эрсдэл нэмэх',
+    'ReviewCompleted' => 'Шалгалт дууссан',
+    // Review Risk insights band (management/review_risk.php). The "Needs
+    // Review" tile reuses the existing 'HomeKpiNeedsReview' key rather than
+    // adding a second key for the same English string. 'RrNeedsMitigation'
+    // carries the band prefix the sibling insights bands already use ('Dt',
+    // 'Fw', 'Exc') to distinguish it from the grid's much terser chip label
+    // ('Mitigation').
+    'RrNeedsMitigation' => 'Зөөлрүүлэлт хэрэгтэй',
+    'PastDue' => 'Хугацаа хэтэрсэн',
+    'OpenedThisMonth' => 'Энэ сард нээгдсэн',
+    'ClosedThisMonth' => 'Энэ сард хаалттай',
+    'AllRiskLevels' => 'Бүх эрсдэлийн түвшин',
+    // Import-Export Extra's Users sheet column for the Review Risk grid's
+    // persisted column-visibility/order preferences (user.custom_review_risk_display_settings).
+    'ReviewRiskDisplay' => 'Эрсдэлийн дэлгэцийг хянах',
+    // Plan Projects grid API (SR-2229): reorder/save-order status messages
+    // and the derived highest-risk column label shared by the grid's
+    // Columns picker and the drawer. The sibling 'Risks' column label
+    // reuses the existing 'Risks' key (line ~1911) rather than duplicating it.
+    'PlanProjectsReorderMismatch' => 'Та дахин захиалга өгөх үед төслийн жагсаалт өөрчлөгдсөн. Дахин ачаалаад дахин оролдоно уу.',
+    'PlanProjectsOrderSaved' => 'Төслийн дарааллыг хадгалсан.',
+    'HighestRisk' => 'Хамгийн өндөр эрсдэлтэй',
+    // Plan Projects grid (SR-2229). Sentence case; column headers are upper-cased by CSS. {n} tokens are replaced client-side.
+    'OnHold' => 'Түр хүлээгдэж байна',
+    'SearchProjectsPlaceholder' => 'Төслүүдийг хайх',
+    'AllConsultants' => 'Бүх зөвлөхүүд',
+    'AllBusinessOwners' => 'Бүх бизнес эрхлэгчид',
+    'AllDataClassifications' => 'Бүх өгөгдлийн ангилал',
+    'AnyDueStatus' => 'Дуусах хугацааны аль ч статус',
+    'NoDueDate' => 'Хугацаа тогтоогдоогүй',
+    'AddProject' => 'Төсөл нэмэх',
+    'AssignToProject' => 'Төсөлд оноох',
+    'RemoveFromProject' => 'Төслөөс хасах',
+    'AddRisksToThisProject' => 'Энэ төсөлд эрсдэл нэмэх',
+    'NoProjectsYet' => 'Төсөл хараахан алга',
+    'NoProjectsYetHint' => 'Төслүүд нь холбогдох эрсдэлүүдийг бүлэглэдэг тул та тэдгээрийн эмчилгээг хамтдаа төлөвлөж, эрэмбэлэх боломжтой.',
+    'NoProjectsMatchFilters' => 'Таны шүүлтүүртэй тохирох төсөл алга',
+    'NoRisksInThisProject' => 'Энэ төсөлд одоогоор эрсдэл байхгүй',
+    'NoRisksWaitingForProject' => 'Төслийг хүлээж буй эрсдэл байхгүй',
+    'NoRisksWaitingForProjectHint' => '"Төслийг авч үзэх" гэж хянасан эрсдэлүүд нь оноогдох хүртэл энд харагдана.',
+    'NMoreRisks' => '{n} илүү олон эрсдэл',
+    'ChangeProjectStatus' => 'Төслийн төлөвийг өөрчлөх',
+    'ChangeStatusClosesRisks' => 'Энэ төслийг дууссан гэж тэмдэглэснээр түүний {n} нээлттэй эрсдэлийг "Бүрэн бууруулсан" гэсэн шалтгаанаар хаах болно.',
+    'ChangeStatusReopensRisks' => 'Энэ төслийг дууссан төслөөс гаргах нь дууссан үед хаагдсан эрсдэлийг дахин нээх болно.',
+    'ChangeStatusNoCloseRightsHint' => 'Та эрсдэлийг хаах эсвэл дахин нээх зөвшөөрөлгүй тул зөвхөн төслийн төлөв өөрчлөгдөнө.',
+    'DeleteProjectReturnsRisks' => 'Үүний {n} эрсдэлүүд нь хуваарилагдаагүй дараалал руу буцаж ирнэ.',
+    'ReorderNeedsPrioritySort' => 'Жагсаалтыг нэг төлөв доторх эрэмбээр нь эрэмбэлэх үед дахин эрэмбэлэх боломжтой.',
+    'CouldNotLoadProjects' => 'Төслүүдийг ачаалж чадсангүй. Таны өгөгдөл аюулгүй байна.',
+    'MitigationNotPlanned' => 'Төлөвлөөгүй',
+    'MitigationStatePlanned' => 'Төлөвлөсөн',
+    'NoRisksMatchYourSearch' => 'Таны хайлтад тохирох эрсдэл алга',
+    'AllUnassignedRisks' => 'Бүх хуваарилагдаагүй эрсдэлүүд',
+    'NoRisksSelectedYet' => 'Одоогоор эрсдэл сонгоогүй байна',
+    'SomeQuestionsNotDeleted' => 'Сонгосон зарим асуултыг устгаж чадсангүй.',
+    'QuestionnaireQuestionDeleteRequiresJavaScript' => 'Асуулт устгахын тулд таны хөтөч дээр JavaScript-г идэвхжүүлсэн байх шаардлагатай.',
+    // Initiate Audits' bulk bar (SR-2234): the header checkbox already
+    // selects every row matching the current search/filters across every
+    // page in one click (client-side DataTables, the full eligible-test set
+    // is already loaded) -- this qualifier makes that explicit when the
+    // selection exceeds what a single page can hold, so "N selected" isn't
+    // read as a miscount against however many checkboxes are visibly ticked
+    // on the current page.
+    'NSelectedAllPages' => '{n} сонгосон (бүх хуудсан дээрх шүүлтүүрүүдтэй таарч байна)',
+    // "Select all N" cross-page selection: shared too-many-matches message for
+    // Review Risk, Define Tests, Manage Audits, Document Program, and Define
+    // Exceptions (formerly 5 near-duplicate per-page keys). Callers supply
+    // both {$max} and {$noun} (e.g. the plain 'Risks'/'Tests'/'Audits'/
+    // 'Documents'/'Exceptions' key text) -- PHP call sites via _lang(), JS
+    // call sites via a manual .replace('{$max}', ...).replace('{$noun}', ...).
+    'SelectAllTooManyMatches' => 'Одоогийн шүүлтүүрүүд нь {$max} {$noun}-с олон удаа таарч байна. Шүүлтүүрийг нарийсгаад дахин оролдоно уу.',
+    // POST /documents/batch-delete (batch_delete_document_api(), includes/api.php):
+    // same truncation-signal shape as 'DocumentsApprovedTruncated' (see
+    // above) and the sibling 'ExceptionsDeletedTruncated' key just below,
+    // for the Document Program bulk-delete "Select all N" action.
+    'DocumentsDeletedTruncated' => 'Зөвхөн эхний {$limit} сонгосон баримт бичгүүдийг устгасан. Үлдсэнийг нь устгахын тулд үйлдлийг давтана уу.',
+    // POST /exceptions/batch-delete-ids (batch_delete_exceptions_by_ids_api()) --
+    // deletes an arbitrary caller-supplied set of exception ids in one request,
+    // replacing the Define Exceptions bulk bar's looped POST /exceptions/delete
+    // calls. Mirrors ExceptionsApprovedTruncated's truncation-signal wording.
+    'ExceptionsDeletedTruncated' => 'Зөвхөн эхний {$limit} сонгосон үл хамаарах зүйлсийг устгасан. Үлдсэнийг нь устгахын тулд үйлдлийг давтана уу.',
+    // POST /risks/batch-close (closeRiskBatch(), includes/api.php): whole-batch
+    // 403 when the caller holds no close_risks permission at all, mirroring
+    // closeriskForm()'s own (hardcoded, pre-existing) single-risk denial text.
+    'NoCloseRiskPermission' => 'Та эрсдэлийг хаах зөвшөөрөлгүй.',
+    'QuestionnaireRequiredQuestionUnanswered' => 'Үнэлгээг бөглөхөөс өмнө шаардлагатай бүх асуултанд хариулна уу.',
     '' => '',
 );
 ?>

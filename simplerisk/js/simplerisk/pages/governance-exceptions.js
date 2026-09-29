@@ -50,6 +50,15 @@ var ExceptionsGrid = (function ($) {
     // governance-documents.js's allRows/renderBody() uses.
     var allRows = [];
     var currentRows = [];
+
+    // "Select all N" banner cap -- a client-side selection-size guard (not a
+    // server-round-trip cap): everything is already loaded in `allRows`. Bulk
+    // approve and bulk delete each send the full selection in one request to
+    // their respective batch endpoints (batch-approve / batch-delete-ids),
+    // which independently cap and report truncation server-side
+    // (GOVERNANCE_MAX_BULK_APPROVE_IDS, includes/governance.php).
+    var EXCEPTIONS_SELECT_ALL_MAX = 500;
+
     var dt = null;
     var perms = { canEdit: false, canDelete: false, canApprove: false };
     var selectedIds = {};
@@ -237,14 +246,47 @@ var ExceptionsGrid = (function ($) {
         }
         var n = Object.keys(selectedIds).length;
         var $toolbar = $('#exceptions-toolbar');
+        var $selectAllFiltered = $('#exceptions-select-all-filtered');
         if (n > 0) {
             $('#exceptions-bulk-count').text(String(L('NSelected')).replace('{n}', n));
             $bar.removeClass('d-none');
             $toolbar.hide();
+
+            // matchingIds() reaches every row matching the current facet
+            // filters + DataTables search across every page (see its own
+            // comment) -- the banner only makes sense while that set is
+            // bigger than what's already selected.
+            var total = matchingIds().length;
+            if (total > n) {
+                $selectAllFiltered.text(String(L('SelectAllN')).replace('{n}', total)).removeClass('d-none');
+            } else {
+                $selectAllFiltered.addClass('d-none');
+            }
         } else {
             $bar.addClass('d-none');
             $toolbar.show();
+            $selectAllFiltered.addClass('d-none');
         }
+    }
+
+    // Ids of every row matching BOTH the facet filters (already baked into
+    // the `rows` fed to renderBody() -- see renderFilteredGrid()) AND
+    // DataTables' own text search, across every page -- rows({search:
+    // 'applied'}) reaches every matching row even though only the current
+    // page's <tr>s are actually in the DOM. Backs the "Select all N" banner
+    // only; the header checkbox and syncCheckboxes()'s tri-state stay
+    // page-scoped (':visible'), matching Define Tests/Review Risk/Document
+    // Program's own per-page header checkboxes (Manage Audits is the
+    // exception -- its header checkbox already spans every filtered page via
+    // the same dt.rows({search:'applied'}) technique used here).
+    function matchingIds() {
+        if (!dt) {
+            return [];
+        }
+        return dt.rows({ search: 'applied' }).nodes().toArray().map(function (tr) {
+            var cb = tr.querySelector('.sr-row-check');
+            return cb ? cb.getAttribute('data-id') : null;
+        }).filter(Boolean);
     }
 
     function syncCheckboxes() {
@@ -291,7 +333,14 @@ var ExceptionsGrid = (function ($) {
     }
 
     function wireSelection(tableEl) {
-        selectedIds = {};
+        // renderBody() rebuilds this table (and re-runs wireSelection())
+        // on EVERY reload -- a filter change, a bulk approve/delete
+        // completion, anything. selectedIds is deliberately NOT reset
+        // here: renderFilteredGrid() already pruned it down to ids still
+        // present in the newly-filtered row set before renderBody() was
+        // called, so a real filter change drops stale ids there, while an
+        // unrelated reload (e.g. batch-approve, which doesn't change what
+        // matches the filters) leaves the selection intact.
         updateBulkBar();
         $(tableEl).on('change', '.sr-row-check', function () {
             var id = $(this).data('id');
@@ -634,7 +683,25 @@ var ExceptionsGrid = (function ($) {
     function renderFilteredGrid() {
         renderFilterOptions();
         syncFilterCount();
-        renderBody(allRows.filter(rowPassesFilters));
+
+        var rows = allRows.filter(rowPassesFilters);
+
+        // Prune selectedIds down to whatever still matches BEFORE
+        // rebuilding the table -- a real filter change (or an exception
+        // disappearing entirely, e.g. after a delete) drops the ids that
+        // fell out, while a reload that doesn't change what matches (e.g.
+        // batch-approve, whose own completion handler never touched
+        // selectedIds) leaves everything else selected. One choke point
+        // instead of each mutation handler having to remember to clear it.
+        var matching = {};
+        rows.forEach(function (row) { matching[row.id] = true; });
+        Object.keys(selectedIds).forEach(function (id) {
+            if (!matching[id]) {
+                delete selectedIds[id];
+            }
+        });
+
+        renderBody(rows);
     }
 
     function applyFiltersAndRender() {
@@ -711,7 +778,7 @@ var ExceptionsGrid = (function ($) {
             } else {
                 applyFiltersAndRender();
             }
-        }).fail(function (xhr, status, error) {
+        }).fail(function (xhr) {
             if (!retryCSRF(xhr, this)) {
                 renderError();
             }
@@ -870,7 +937,7 @@ var ExceptionsGrid = (function ($) {
                 $('#exception-approve-confirm').modal('hide');
                 reload();
             }
-            function onError(xhr, status, error) {
+            function onError(xhr) {
                 $yes.prop('disabled', false);
                 if (!retryCSRF(xhr, this)) {
                     if (xhr.responseJSON && xhr.responseJSON.status_message) {
@@ -892,10 +959,10 @@ var ExceptionsGrid = (function ($) {
         // modal. POST /exceptions/batch-delete (the existing endpoint) deletes
         // every exception under ONE policy/control parent, not an arbitrary set
         // of selected ids across different parents/types -- that shape doesn't
-        // fit a flat multi-select grid, so a bulk delete here loops
-        // POST /exceptions/delete once per selected id instead (the same
-        // "loop the single endpoint" fallback this task's brief sanctions for
-        // approve when no ids-array endpoint exists).
+        // fit a flat multi-select grid, so a bulk delete here uses
+        // POST /exceptions/batch-delete-ids instead, which takes an arbitrary
+        // `exception_ids` array in one request (batch_delete_exceptions_by_ids_api(),
+        // includes/api.php) -- same shape as /exceptions/batch-approve above.
         $(document).on('click', '.exception--delete', function (e) {
             e.preventDefault();
             openDeleteConfirm([$(this).data('id')], $(this).data('name'));
@@ -933,7 +1000,7 @@ var ExceptionsGrid = (function ($) {
                     if (data.status_message) {
                         showAlertsFromArray(data.status_message);
                     }
-                }).fail(function (xhr, status, error) {
+                }).fail(function (xhr) {
                     if (!retryCSRF(xhr, this)) {
                         if (xhr.responseJSON && xhr.responseJSON.status_message) {
                             showAlertsFromArray(xhr.responseJSON.status_message);
@@ -948,32 +1015,38 @@ var ExceptionsGrid = (function ($) {
                 return;
             }
 
-            // Bulk delete: loop the single-delete endpoint once per selected id
-            // (see the file banner comment on why the existing parent-scoped
-            // batch-delete endpoint doesn't fit an arbitrary multi-row
-            // selection), then show ONE aggregate toast rather than one per
-            // looped request. Each deleteOne() promise is wrapped in its own
-            // deferred that always resolves -- $.when.apply() rejects as soon
-            // as ANY input promise rejects, which would abandon the count
-            // before the other requests finish; wrapping lets every request
-            // complete and be tallied, so a partial failure is reported
-            // honestly instead of showing the same success toast either way.
-            var failedCount = 0;
-            var settled = ids.map(function (id) {
-                var d = $.Deferred();
-                deleteOne(id)
-                    .fail(function () { failedCount++; })
-                    .always(function () { d.resolve(); });
-                return d.promise();
-            });
-            $.when.apply($, settled).always(function () {
-                $yes.prop('disabled', false);
-                $('#exception-delete-confirm').modal('hide');
-                if (failedCount > 0) {
+            // Bulk delete: one request to the batch-delete-ids endpoint instead
+            // of looping the single-delete endpoint once per selected id --
+            // "Select all N" can hand this up to EXCEPTIONS_SELECT_ALL_MAX ids
+            // from a single click, and the server-side handler already caps
+            // and authorizes each id individually (delete_exception() re-runs
+            // the team-scope guard per id -- see batch_delete_exceptions_by_ids_api()'s
+            // banner comment, includes/api.php). `deleted` may be less than
+            // `ids.length` when an id was denied, already gone, or past the
+            // server's cap (`truncated`) -- surface that as the partial-failure
+            // toast rather than claiming full success.
+            $.ajax({
+                type: 'POST',
+                url: BASE_URL + '/api/v2/exceptions/batch-delete-ids',
+                data: { exception_ids: ids }
+            }).done(function (data) {
+                var deletedCount = (data && data.data && typeof data.data.deleted === 'number') ? data.data.deleted : 0;
+                if (deletedCount < ids.length) {
                     showAlertFromMessage(L('SomeExceptionsNotDeleted'), false);
                 } else {
                     showAlertFromMessage(L('ExceptionsDeleted'), true);
                 }
+            }).fail(function (xhr) {
+                if (!retryCSRF(xhr, this)) {
+                    if (xhr.responseJSON && xhr.responseJSON.status_message) {
+                        showAlertsFromArray(xhr.responseJSON.status_message);
+                    } else {
+                        showAlertFromMessage(L('SomeExceptionsNotDeleted'), false);
+                    }
+                }
+            }).always(function () {
+                $yes.prop('disabled', false);
+                $('#exception-delete-confirm').modal('hide');
                 selectedIds = {};
                 reload();
             });
@@ -995,6 +1068,37 @@ var ExceptionsGrid = (function ($) {
 
         $(document).on('click', '#exceptions-bulk-clear', function () {
             selectedIds = {};
+            syncCheckboxes();
+            updateBulkBar();
+        });
+
+        // "Select all N" banner (updateBulkBar()) -- escalates the current
+        // page-level selection to every exception matching the active
+        // filters + search, across every page. Purely client-side (see
+        // matchingIds()); EXCEPTIONS_SELECT_ALL_MAX guards against handing
+        // a huge id list to a bulk action that loops one request per id
+        // (bulk delete).
+        //
+        // This is deliberately simpler than Define Control Frameworks'
+        // (governance-frameworks.js) version of the same affordance, which
+        // sends a server-resolved `{all_filtered:true, filters}` payload
+        // instead of a materialized client id list -- that page's control
+        // catalog can be far larger than fits comfortably in the browser.
+        // Exceptions already loads its entire filtered dataset into `allRows`
+        // client-side (same as Document Program's grid), so escalating the
+        // selection from what's already in memory needs no extra round trip;
+        // EXCEPTIONS_SELECT_ALL_MAX + the batched bulk-delete loop above cap
+        // the resulting request fan-out instead. If exceptions volume ever
+        // grows enough that fully client-side loading stops being viable,
+        // this should move to the same server-resolved-filter design as
+        // governance-frameworks.js rather than raising the cap further.
+        $(document).on('click', '#exceptions-select-all-filtered', function () {
+            var ids = matchingIds();
+            if (ids.length > EXCEPTIONS_SELECT_ALL_MAX) {
+                showAlertFromMessage(String(L('SelectAllTooManyMatches')).replace('{$max}', EXCEPTIONS_SELECT_ALL_MAX).replace('{$noun}', L('Exceptions')), false);
+                return;
+            }
+            ids.forEach(function (id) { selectedIds[id] = true; });
             syncCheckboxes();
             updateBulkBar();
         });

@@ -4844,6 +4844,129 @@ $lang = array(
     'CreateAndAddField' => 'Креирај и додај',
     'FieldCreatedAndAddedToTab' => 'Направио/ла сам {field} и додао/ла га у {tab}.',
     'DeleteCustomFieldTitle' => 'Обриши поље „{field}“?',
+    // Review Risk page (SR-2068 and others -- see design spec)
+    'ReviewRisk' => 'Ризик прегледа',
+    'NeedsColumn' => 'Потребе',
+    'RiskScoreColumn' => 'Оцена ризика',
+    'ReassignRiskOwner' => 'Прерасподели власника ризика',
+    'ReassignMitigationOwner' => 'Поново доделите власника ублажавања',
+    'NoActionItemsTitle' => 'Ниједан ризик не одговара вашим филтерима',
+    'NoActionItemsBody' => 'Ништа не захтева ублажавање или преглед, а на шта лично имате дозволу да реагујете. Покушајте да уклоните ознаку из поља „Прикажи моје ставке радњи“ да бисте видели цео ред чекања тима.',
+    'BulkChangeStatusTitle' => 'Промени статус за %s одабраних ризика',
+    'BulkReassignRiskOwnerTitle' => 'Поново доделите власника ризика за %s одабраних ризика',
+    'BulkReassignMitigationOwnerTitle' => 'Поново доделите власника за ублажавање за %s изабраних ризика',
+    'BulkAddCommentTitle' => 'Додајте коментар за %s одабране ризике',
+    'BulkCloseRiskTitle' => 'Затвори %s одабране ризике',
+    'BulkActionPartialSuccess' => 'Ажурирано је %s од %s ризика.',
+    'PerformReview' => 'Извршите преглед',
+    'BulkActionSuccess' => '%s ризици ажурирани.',
+    'SomeRowsSkippedNoMitigation' => 'Неки одабрани ризици су прескочени јер још увек немају планирано ублажавање.',
+    'ChangeStatusHint' => 'Изабрани ризици ће бити ажурирани на изабрани статус.',
+    'StatusChanged' => 'Статус ажуриран.',
+    'CloseRiskBulkConfirmBody' => 'Затворени ризици се уклањају из активних редова. Ризик можете поново отворити касније тако што ћете поново променити његов статус.',
+    // Column-parity follow-up fix review-risk-followups/column-parity-report.md):
+    // the Review Risk page's new scoring_method column (getReviewRiskDatatableResponse(),
+    // includes/api.php) renders get_scoring_method_name()'s (includes/functions.php)
+    // canonical scoring-method name through a $lang lookup rather than the raw
+    // hardcoded string. 'Classic'/'Custom'/'ContributingRisk' already existed
+    // (reused, not duplicated) -- only the three missing acronym keys are added
+    // here. These scoring methodology names/acronyms are typically kept
+    // untranslated (matching how the app's other risk-scoring UI already
+    // displays them, e.g. get_name_by_value('scoring_methods', ...) in
+    // displayrisks.php, which reads these same literal strings straight from
+    // the scoring_methods DB table with no translation layer), but every
+    // user-facing string still needs to flow through a lookup per CLAUDE.md,
+    // even one where the English and translated value would typically match.
+    'CVSS' => 'CVSS',
+    'DREAD' => 'СТРАХ',
+    'OWASP' => 'ОВАСП',
+    'MyActionItems' => 'Моје акционе ставке',
+    'AddRisk' => 'Додај ризик',
+    'ReviewCompleted' => 'Преглед завршен',
+    // Review Risk insights band (management/review_risk.php). The "Needs
+    // Review" tile reuses the existing 'HomeKpiNeedsReview' key rather than
+    // adding a second key for the same English string. 'RrNeedsMitigation'
+    // carries the band prefix the sibling insights bands already use ('Dt',
+    // 'Fw', 'Exc') to distinguish it from the grid's much terser chip label
+    // ('Mitigation').
+    'RrNeedsMitigation' => 'Потребно је ублажавање',
+    'PastDue' => 'Доспело',
+    'OpenedThisMonth' => 'Отворено овог месеца',
+    'ClosedThisMonth' => 'Затворено овог месеца',
+    'AllRiskLevels' => 'Сви нивои ризика',
+    // Import-Export Extra's Users sheet column for the Review Risk grid's
+    // persisted column-visibility/order preferences (user.custom_review_risk_display_settings).
+    'ReviewRiskDisplay' => 'Прегледајте приказ ризика',
+    // Plan Projects grid API (SR-2229): reorder/save-order status messages
+    // and the derived highest-risk column label shared by the grid's
+    // Columns picker and the drawer. The sibling 'Risks' column label
+    // reuses the existing 'Risks' key (line ~1911) rather than duplicating it.
+    'PlanProjectsReorderMismatch' => 'Листа пројеката се променила док сте мењали редослед. Поново је учитајте и покушајте поново.',
+    'PlanProjectsOrderSaved' => 'Редослед пројекта је сачуван.',
+    'HighestRisk' => 'Највећи ризик',
+    // Plan Projects grid (SR-2229). Sentence case; column headers are upper-cased by CSS. {n} tokens are replaced client-side.
+    'OnHold' => 'На чекању',
+    'SearchProjectsPlaceholder' => 'Претражи пројекте',
+    'AllConsultants' => 'Сви консултанти',
+    'AllBusinessOwners' => 'Сви власници предузећа',
+    'AllDataClassifications' => 'Све класификације података',
+    'AnyDueStatus' => 'Било који статус доспелости',
+    'NoDueDate' => 'Нема рока',
+    'AddProject' => 'Додај пројекат',
+    'AssignToProject' => 'Додели пројекту',
+    'RemoveFromProject' => 'Уклони из пројекта',
+    'AddRisksToThisProject' => 'Додајте ризике овом пројекту',
+    'NoProjectsYet' => 'Још нема пројеката',
+    'NoProjectsYetHint' => 'Пројекти групишу повезане ризике тако да можете заједно планирати и одредити приоритет њиховог третмана.',
+    'NoProjectsMatchFilters' => 'Ниједан пројекат не одговара вашим филтерима',
+    'NoRisksInThisProject' => 'Још увек нема ризика у овом пројекту',
+    'NoRisksWaitingForProject' => 'Нема ризика чекања на пројекат',
+    'NoRisksWaitingForProjectHint' => 'Ризици прегледани као „Размотрити за пројекат“ појављују се овде док се не доделе.',
+    'NMoreRisks' => '{n} више ризика',
+    'ChangeProjectStatus' => 'Промена статуса пројекта',
+    'ChangeStatusClosesRisks' => 'Означавање овог пројекта као завршеног затвориће његове {n} отворене ризике са разлогом „Потпуно ублажено“.',
+    'ChangeStatusReopensRisks' => 'Премештање овог пројекта са статуса „завршен“ поново ће отворити ризике који су били затворени када је завршен.',
+    'ChangeStatusNoCloseRightsHint' => 'Немате дозволу да затварате или поново отварате ризике, тако да ће се променити само статус пројекта.',
+    'DeleteProjectReturnsRisks' => 'Његови {n} ризици ће се вратити у недодељени ред.',
+    'ReorderNeedsPrioritySort' => 'Промена редоследа је доступна када је листа сортирана по приоритету унутар једног статуса.',
+    'CouldNotLoadProjects' => 'Није могуће учитати пројекте. Ваши подаци су безбедни.',
+    'MitigationNotPlanned' => 'Није планирано',
+    'MitigationStatePlanned' => 'Планирано',
+    'NoRisksMatchYourSearch' => 'Ниједан ризик не одговара вашој претрази',
+    'AllUnassignedRisks' => 'Сви недодељени ризици',
+    'NoRisksSelectedYet' => 'Још увек није изабран ниједан ризик',
+    'SomeQuestionsNotDeleted' => 'Нека од изабраних питања нису могла бити обрисана.',
+    'QuestionnaireQuestionDeleteRequiresJavaScript' => 'За брисање питања потребно је да JavaScript буде омогућен у вашем прегледачу.',
+    // Initiate Audits' bulk bar (SR-2234): the header checkbox already
+    // selects every row matching the current search/filters across every
+    // page in one click (client-side DataTables, the full eligible-test set
+    // is already loaded) -- this qualifier makes that explicit when the
+    // selection exceeds what a single page can hold, so "N selected" isn't
+    // read as a miscount against however many checkboxes are visibly ticked
+    // on the current page.
+    'NSelectedAllPages' => '{n} изабрано (одговара вашим филтерима, на свим страницама)',
+    // "Select all N" cross-page selection: shared too-many-matches message for
+    // Review Risk, Define Tests, Manage Audits, Document Program, and Define
+    // Exceptions (formerly 5 near-duplicate per-page keys). Callers supply
+    // both {$max} and {$noun} (e.g. the plain 'Risks'/'Tests'/'Audits'/
+    // 'Documents'/'Exceptions' key text) -- PHP call sites via _lang(), JS
+    // call sites via a manual .replace('{$max}', ...).replace('{$noun}', ...).
+    'SelectAllTooManyMatches' => 'Тренутни филтери се подударају са више од {$max} {$noun}. Сузите филтер и покушајте поново.',
+    // POST /documents/batch-delete (batch_delete_document_api(), includes/api.php):
+    // same truncation-signal shape as 'DocumentsApprovedTruncated' (see
+    // above) and the sibling 'ExceptionsDeletedTruncated' key just below,
+    // for the Document Program bulk-delete "Select all N" action.
+    'DocumentsDeletedTruncated' => 'Само првих {$limit} изабраних докумената је обрисано. Поновите акцију да бисте обрисали остале.',
+    // POST /exceptions/batch-delete-ids (batch_delete_exceptions_by_ids_api()) --
+    // deletes an arbitrary caller-supplied set of exception ids in one request,
+    // replacing the Define Exceptions bulk bar's looped POST /exceptions/delete
+    // calls. Mirrors ExceptionsApprovedTruncated's truncation-signal wording.
+    'ExceptionsDeletedTruncated' => 'Само првих {$limit} изабраних изузетака је обрисано. Поновите акцију да бисте обрисали остале.',
+    // POST /risks/batch-close (closeRiskBatch(), includes/api.php): whole-batch
+    // 403 when the caller holds no close_risks permission at all, mirroring
+    // closeriskForm()'s own (hardcoded, pre-existing) single-risk denial text.
+    'NoCloseRiskPermission' => 'Немате дозволу да затворите ризике.',
+    'QuestionnaireRequiredQuestionUnanswered' => 'Молимо вас да одговорите на сва потребна питања пре него што завршите процену.',
     '' => '',
 );
 ?>

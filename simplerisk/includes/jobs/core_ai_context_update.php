@@ -100,6 +100,19 @@ return [
 
             // If the task is not already running and we have settings we can process
             if ($running_count === 0 && $settings_count > 0) {
+                // ai_context_* rows existing isn't enough — the questionnaire may
+                // have rows with no answers yet, or none of the current context
+                // parameters may match what's stored. Queuing in that case just
+                // burns 5 exponential-backoff retries before the task permanently
+                // fails in generate_message_context() ("Context content empty").
+                // Check for actual answerable content and skip quietly instead,
+                // matching the "no settings found" branch below.
+                $context_content = generate_ai_business_context();
+                if (trim($context_content) === '') {
+                    write_debug_log("AI Context Update: AI context settings exist but no answers have been provided yet. Skipping queueing.", "notice");
+                    return false;
+                }
+
                 $queue_task_payload = [
                     'triggered_at'      => time(),
                 ];

@@ -2414,7 +2414,13 @@ function display_artificial_intelligence_add_context($parameter_array = [])
                             if (el.name === 'auto_accept_threshold_amount') { aatAmount = el.value; return; }
                             if (el.name === 'auto_accept_threshold_unit') { aatUnit = el.value; return; }
                             if (el.tagName === 'SELECT' && el.multiple) {
-                                answers[el.name] = Array.prototype.filter.call(el.options, function(o){ return o.selected; }).map(function(o){ return o.value; });
+                                // el.name carries the trailing '[]' PHP's array-POST convention
+                                // expects (see display_generic_multiselect()), but this collector
+                                // builds a JSON payload keyed by the bare parameter name -- with
+                                // the bracket left in, save_ai_context_answers() never recognises
+                                // the key and silently drops the answer (no error, no persisted row).
+                                var acKey = el.name.replace(/\[\]$/, '');
+                                answers[acKey] = Array.prototype.filter.call(el.options, function(o){ return o.selected; }).map(function(o){ return o.value; });
                             } else if (el.type === 'radio' || el.type === 'checkbox') {
                                 if (el.checked) { answers[el.name] = el.value; }
                             } else {

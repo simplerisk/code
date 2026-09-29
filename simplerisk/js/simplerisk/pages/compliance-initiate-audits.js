@@ -144,7 +144,7 @@
             success: function (resp) {
                 renderRows(resp.data || []);
             },
-            error: function (xhr, status, error) {
+            error: function (xhr) {
                 if (!retryCSRF(xhr, this)) {
                     if (xhr.responseJSON && xhr.responseJSON.status_message) {
                         showAlertsFromArray(xhr.responseJSON.status_message);
@@ -427,7 +427,7 @@
             // Define Tests' own hand-built footer and the mockup, instead of
             // DataTables' bundled "Showing X to Y of Z entries" default.
             language: {
-                infoCallback: function (settings, start, end, max, total, pre) {
+                infoCallback: function (settings, start, end, max, total) {
                     return String(_lang["ShowingXToYOfZ"] || "")
                         .replace("{$start}", start)
                         .replace("{$end}", end)
@@ -702,7 +702,22 @@
             if (!bar.length) {
                 bar = buildBulkBar();
             }
-            bar.find(".sr-bulk-count").text(_n(L("NSelected"), n));
+            // The header checkbox (.sr-check-all's handler, below) already
+            // selects every row matching the current search/filters across
+            // EVERY page in one click -- dt.rows({search:'applied'}) reaches
+            // every eligible test's row, not just the current page's,
+            // because the whole set is already loaded client-side (no
+            // serverSide pagination on this table). Only the current page's
+            // rows show a visible checkmark (syncChecks() only paints what's
+            // rendered), so a plain "N selected" could read as a miscount
+            // against however many boxes are visibly ticked -- the
+            // across-pages qualifier only kicks in once the true count
+            // exceeds what a single page could show, so a small selection
+            // that happens to fit on one page still reads as the plain
+            // "N selected" text.
+            var pageInfo = dt ? dt.page.info() : null;
+            var acrossPages = !!pageInfo && pageInfo.length > 0 && n > pageInfo.length;
+            bar.find(".sr-bulk-count").text(_n(L(acrossPages ? "NSelectedAllPages" : "NSelected"), n));
             bar.show();
             $(".sr-table-toolbar", root).hide();
         } else {
@@ -767,7 +782,7 @@
                 selected.clear();
                 fetchEligibleTests();
             },
-            error: function (xhr, status, error) {
+            error: function (xhr) {
                 if (!retryCSRF(xhr, this)) {
                     if (xhr.responseJSON && xhr.responseJSON.status_message) {
                         showAlertsFromArray(xhr.responseJSON.status_message);

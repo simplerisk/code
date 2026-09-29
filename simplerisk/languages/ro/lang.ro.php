@@ -541,7 +541,7 @@ $lang = array(
     'UnavailableMysqldumpService' => 'Nu există nici un serviciu de "mysqldump" avaiable pe server. Vă rugăm să setaţi calea de imagini absolut mysqldump.',
     'AllOpenRisksByTeamByLevel' => 'Riscurile deschise de echipa de nivelul de risc',
     'Unknown' => 'Necunoscut',
-    'AllOwners' =>'Toate proprietarii',
+    'AllOwners' =>'Toți proprietarii',
     'AllOwnersManagers' => 'Toate proprietarului manageri',
     'AddNewReviewNamed' => 'Adauga comentariu nou numit',
     'DeleteCurrentReviewNamed' => 'Ştergeţi revizuire curent, numit',
@@ -4844,6 +4844,129 @@ $lang = array(
     'CreateAndAddField' => 'Creați și adăugați',
     'FieldCreatedAndAddedToTab' => 'A creat {field} și l-a adăugat la {tab}.',
     'DeleteCustomFieldTitle' => 'Ștergeți câmpul \'{field}\'?',
+    // Review Risk page (SR-2068 and others -- see design spec)
+    'ReviewRisk' => 'Risc de revizuire',
+    'NeedsColumn' => 'Nevoi',
+    'RiskScoreColumn' => 'Scorul de risc',
+    'ReassignRiskOwner' => 'Reatribuirea proprietarului riscului',
+    'ReassignMitigationOwner' => 'Reatribuirea proprietarului de atenuare',
+    'NoActionItemsTitle' => 'Niciun risc nu corespunde filtrelor tale',
+    'NoActionItemsBody' => 'Nimic nu necesită atenuare sau revizuire pentru care aveți permisiunea dumneavoastră personală de a acționa. Încercați să debifați „Afișați acțiunile mele” pentru a vedea coada completă a echipei.',
+    'BulkChangeStatusTitle' => 'Schimbați starea pentru %s riscuri selectate',
+    'BulkReassignRiskOwnerTitle' => 'Reatribuirea proprietarului riscului pentru %s riscuri selectate',
+    'BulkReassignMitigationOwnerTitle' => 'Reatribuirea proprietarului de atenuare pentru %s riscuri selectate',
+    'BulkAddCommentTitle' => 'Adăugați un comentariu la %s riscurile selectate',
+    'BulkCloseRiskTitle' => 'Închideți %s riscurile selectate',
+    'BulkActionPartialSuccess' => '%s din %s riscuri actualizate.',
+    'PerformReview' => 'Efectuați o revizuire',
+    'BulkActionSuccess' => 'Riscurile %s au fost actualizate.',
+    'SomeRowsSkippedNoMitigation' => 'Unele riscuri selectate au fost omise deoarece nu au încă măsuri de atenuare planificate.',
+    'ChangeStatusHint' => 'Riscurile selectate vor fi actualizate la starea aleasă.',
+    'StatusChanged' => 'Status actualizat.',
+    'CloseRiskBulkConfirmBody' => 'Riscurile închise sunt eliminate din cozile active. Puteți redeschide un risc ulterior, schimbându-i din nou starea.',
+    // Column-parity follow-up fix review-risk-followups/column-parity-report.md):
+    // the Review Risk page's new scoring_method column (getReviewRiskDatatableResponse(),
+    // includes/api.php) renders get_scoring_method_name()'s (includes/functions.php)
+    // canonical scoring-method name through a $lang lookup rather than the raw
+    // hardcoded string. 'Classic'/'Custom'/'ContributingRisk' already existed
+    // (reused, not duplicated) -- only the three missing acronym keys are added
+    // here. These scoring methodology names/acronyms are typically kept
+    // untranslated (matching how the app's other risk-scoring UI already
+    // displays them, e.g. get_name_by_value('scoring_methods', ...) in
+    // displayrisks.php, which reads these same literal strings straight from
+    // the scoring_methods DB table with no translation layer), but every
+    // user-facing string still needs to flow through a lookup per CLAUDE.md,
+    // even one where the English and translated value would typically match.
+    'CVSS' => 'CVSS',
+    'DREAD' => 'TEMUT',
+    'OWASP' => 'OWASP',
+    'MyActionItems' => 'Acțiunile mele',
+    'AddRisk' => 'Adăugați risc',
+    'ReviewCompleted' => 'Revizuire finalizată',
+    // Review Risk insights band (management/review_risk.php). The "Needs
+    // Review" tile reuses the existing 'HomeKpiNeedsReview' key rather than
+    // adding a second key for the same English string. 'RrNeedsMitigation'
+    // carries the band prefix the sibling insights bands already use ('Dt',
+    // 'Fw', 'Exc') to distinguish it from the grid's much terser chip label
+    // ('Mitigation').
+    'RrNeedsMitigation' => 'Atenuarea nevoilor',
+    'PastDue' => 'Restanță scadentă',
+    'OpenedThisMonth' => 'Deschis luna aceasta',
+    'ClosedThisMonth' => 'Închis luna aceasta',
+    'AllRiskLevels' => 'Toate nivelurile de risc',
+    // Import-Export Extra's Users sheet column for the Review Risk grid's
+    // persisted column-visibility/order preferences (user.custom_review_risk_display_settings).
+    'ReviewRiskDisplay' => 'Revizuirea afișajului de risc',
+    // Plan Projects grid API (SR-2229): reorder/save-order status messages
+    // and the derived highest-risk column label shared by the grid's
+    // Columns picker and the drawer. The sibling 'Risks' column label
+    // reuses the existing 'Risks' key (line ~1911) rather than duplicating it.
+    'PlanProjectsReorderMismatch' => 'Lista de proiecte s-a modificat în timp ce reordonai. Reîncarcă și încearcă din nou.',
+    'PlanProjectsOrderSaved' => 'Ordinea proiectului a fost salvată.',
+    'HighestRisk' => 'Cel mai mare risc',
+    // Plan Projects grid (SR-2229). Sentence case; column headers are upper-cased by CSS. {n} tokens are replaced client-side.
+    'OnHold' => 'În așteptare',
+    'SearchProjectsPlaceholder' => 'Căutați proiecte',
+    'AllConsultants' => 'Toți consultanții',
+    'AllBusinessOwners' => 'Toți proprietarii de afaceri',
+    'AllDataClassifications' => 'Toate clasificările datelor',
+    'AnyDueStatus' => 'Orice stare scadentă',
+    'NoDueDate' => 'Fără dată scadentă',
+    'AddProject' => 'Adăugați proiect',
+    'AssignToProject' => 'Atribuire la proiect',
+    'RemoveFromProject' => 'Eliminare din proiect',
+    'AddRisksToThisProject' => 'Adăugați riscuri la acest proiect',
+    'NoProjectsYet' => 'Niciun proiect încă',
+    'NoProjectsYetHint' => 'Proiectele grupează riscurile conexe, astfel încât să puteți planifica și prioritiza împreună tratamentul acestora.',
+    'NoProjectsMatchFilters' => 'Niciun proiect nu corespunde filtrelor dvs.',
+    'NoRisksInThisProject' => 'Încă nu există riscuri în acest proiect',
+    'NoRisksWaitingForProject' => 'Fără riscuri în așteptarea unui proiect',
+    'NoRisksWaitingForProjectHint' => 'Riscurile evaluate ca „Luate în considerare pentru proiect” apar aici până când sunt atribuite.',
+    'NMoreRisks' => '{n} mai multe riscuri',
+    'ChangeProjectStatus' => 'Schimbați starea proiectului',
+    'ChangeStatusClosesRisks' => 'Marcarea acestui proiect ca finalizat va închide riscurile deschise {n} cu motivul „Complet atenuat”.',
+    'ChangeStatusReopensRisks' => 'Mutarea acestui proiect din statutul de finalizat va redeschide riscurile care erau închise la momentul finalizării sale.',
+    'ChangeStatusNoCloseRightsHint' => 'Nu aveți permisiunea de a închide sau redeschide riscuri, așadar se va schimba doar starea proiectului.',
+    'DeleteProjectReturnsRisks' => 'Riscurile sale {n} vor reveni în coada neatribuită.',
+    'ReorderNeedsPrioritySort' => 'Reordonarea este disponibilă atunci când lista este sortată după prioritate în cadrul unui singur statut.',
+    'CouldNotLoadProjects' => 'Nu s-au putut încărca proiectele. Datele dvs. sunt în siguranță.',
+    'MitigationNotPlanned' => 'Neplanificat',
+    'MitigationStatePlanned' => 'Planificat',
+    'NoRisksMatchYourSearch' => 'Niciun risc nu corespunde căutării dvs.',
+    'AllUnassignedRisks' => 'Toate riscurile neatribuite',
+    'NoRisksSelectedYet' => 'Niciun risc selectat încă',
+    'SomeQuestionsNotDeleted' => 'Unele dintre întrebările selectate nu au putut fi șterse.',
+    'QuestionnaireQuestionDeleteRequiresJavaScript' => 'Ștergerea unei întrebări necesită activarea JavaScript în browser.',
+    // Initiate Audits' bulk bar (SR-2234): the header checkbox already
+    // selects every row matching the current search/filters across every
+    // page in one click (client-side DataTables, the full eligible-test set
+    // is already loaded) -- this qualifier makes that explicit when the
+    // selection exceeds what a single page can hold, so "N selected" isn't
+    // read as a miscount against however many checkboxes are visibly ticked
+    // on the current page.
+    'NSelectedAllPages' => '{n} selectat (corespunzând filtrelor dvs., pe toate paginile)',
+    // "Select all N" cross-page selection: shared too-many-matches message for
+    // Review Risk, Define Tests, Manage Audits, Document Program, and Define
+    // Exceptions (formerly 5 near-duplicate per-page keys). Callers supply
+    // both {$max} and {$noun} (e.g. the plain 'Risks'/'Tests'/'Audits'/
+    // 'Documents'/'Exceptions' key text) -- PHP call sites via _lang(), JS
+    // call sites via a manual .replace('{$max}', ...).replace('{$noun}', ...).
+    'SelectAllTooManyMatches' => 'Filtrele actuale corespund mai mult de {$max} {$noun}. Restrângeți filtrul și încercați din nou.',
+    // POST /documents/batch-delete (batch_delete_document_api(), includes/api.php):
+    // same truncation-signal shape as 'DocumentsApprovedTruncated' (see
+    // above) and the sibling 'ExceptionsDeletedTruncated' key just below,
+    // for the Document Program bulk-delete "Select all N" action.
+    'DocumentsDeletedTruncated' => 'Doar primele {$limit} documente selectate au fost șterse. Vă rugăm să repetați acțiunea pentru a șterge restul.',
+    // POST /exceptions/batch-delete-ids (batch_delete_exceptions_by_ids_api()) --
+    // deletes an arbitrary caller-supplied set of exception ids in one request,
+    // replacing the Define Exceptions bulk bar's looped POST /exceptions/delete
+    // calls. Mirrors ExceptionsApprovedTruncated's truncation-signal wording.
+    'ExceptionsDeletedTruncated' => 'Doar primele {$limit} excepții selectate au fost șterse. Repetați acțiunea pentru a le șterge pe celelalte.',
+    // POST /risks/batch-close (closeRiskBatch(), includes/api.php): whole-batch
+    // 403 when the caller holds no close_risks permission at all, mirroring
+    // closeriskForm()'s own (hardcoded, pre-existing) single-risk denial text.
+    'NoCloseRiskPermission' => 'Nu aveți permisiunea de a închide riscuri.',
+    'QuestionnaireRequiredQuestionUnanswered' => 'Vă rugăm să răspundeți la toate întrebările obligatorii înainte de a finaliza evaluarea.',
     '' => '',
 );
 ?>

@@ -422,6 +422,209 @@ class OpenApiAddRiskComment {}
  */
 class OpenApiAcceptRiskMitigation {}
 
+/**
+ * @OA\Post(
+ *     path="/risks/batch-comment",
+ *     summary="Add the same comment to multiple risks at once",
+ *     operationId="batchCommentRisks",
+ *     tags={"risk_crud"},
+ *     security={{"ApiKeyAuth":{}}},
+ *     @OA\RequestBody(
+ *         required=true,
+ *         @OA\MediaType(
+ *             mediaType="application/x-www-form-urlencoded",
+ *             @OA\Schema(
+ *                 required={"risk_ids", "comment"},
+ *                 @OA\Property(
+ *                     property="risk_ids",
+ *                     type="array",
+ *                     description="The IDs of the risks to comment on.",
+ *                     @OA\Items(type="integer")
+ *                 ),
+ *                 @OA\Property(property="comment", type="string", description="The comment text to add to every risk.")
+ *             )
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=200,
+ *         description="Comments processed.",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(property="processed", type="integer", description="Number of risks the comment was added to."),
+ *             @OA\Property(property="denied", type="integer", description="Number of risks skipped because the caller lacks per-risk access to them."),
+ *             @OA\Property(property="total", type="integer", description="Number of ids submitted, after the request-size cap."),
+ *             @OA\Property(property="truncated", type="boolean", description="Whether more ids were submitted than the cap allows.")
+ *         )
+ *     ),
+ *     @OA\Response(response=400, description="BAD REQUEST: Missing comment or risk_ids."),
+ *     @OA\Response(response=403, description="FORBIDDEN: The caller holds no comment_risk_management permission at all."),
+ * )
+ */
+class OpenApiBatchCommentRisks {}
+
+/**
+ * @OA\Post(
+ *     path="/risks/batch-reassign-owner",
+ *     summary="Reassign the same owner on multiple risks at once",
+ *     operationId="batchReassignRiskOwner",
+ *     tags={"risk_crud"},
+ *     security={{"ApiKeyAuth":{}}},
+ *     @OA\RequestBody(
+ *         required=true,
+ *         @OA\MediaType(
+ *             mediaType="application/x-www-form-urlencoded",
+ *             @OA\Schema(
+ *                 required={"risk_ids", "owner"},
+ *                 @OA\Property(
+ *                     property="risk_ids",
+ *                     type="array",
+ *                     description="The IDs of the risks to reassign.",
+ *                     @OA\Items(type="integer")
+ *                 ),
+ *                 @OA\Property(property="owner", type="integer", description="The uid of the new owner for every risk.")
+ *             )
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=200,
+ *         description="Owner reassignments processed.",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(property="processed", type="integer", description="Number of risks reassigned."),
+ *             @OA\Property(property="denied", type="integer", description="Number of risks skipped because the caller lacks per-risk access to them."),
+ *             @OA\Property(property="not_found", type="integer", description="Number of ids that did not resolve to an existing risk."),
+ *             @OA\Property(property="total", type="integer", description="Number of ids submitted, after the request-size cap."),
+ *             @OA\Property(property="truncated", type="boolean", description="Whether more ids were submitted than the cap allows.")
+ *         )
+ *     ),
+ *     @OA\Response(response=400, description="BAD REQUEST: Missing risk_ids."),
+ *     @OA\Response(response=403, description="FORBIDDEN: The caller holds no modify_risks permission at all."),
+ * )
+ */
+class OpenApiBatchReassignRiskOwner {}
+
+/**
+ * @OA\Post(
+ *     path="/risks/batch-reassign-mitigation-owner",
+ *     summary="Reassign the same mitigation owner on multiple risks at once",
+ *     operationId="batchReassignMitigationOwner",
+ *     tags={"risk_crud"},
+ *     security={{"ApiKeyAuth":{}}},
+ *     @OA\RequestBody(
+ *         required=true,
+ *         @OA\MediaType(
+ *             mediaType="application/x-www-form-urlencoded",
+ *             @OA\Schema(
+ *                 required={"risk_ids", "mitigation_owner"},
+ *                 @OA\Property(
+ *                     property="risk_ids",
+ *                     type="array",
+ *                     description="The IDs of the risks whose mitigation owner should be reassigned.",
+ *                     @OA\Items(type="integer")
+ *                 ),
+ *                 @OA\Property(property="mitigation_owner", type="integer", description="The uid of the new mitigation owner for every risk.")
+ *             )
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=200,
+ *         description="Mitigation owner reassignments processed.",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(property="processed", type="integer", description="Number of risks reassigned."),
+ *             @OA\Property(property="denied", type="integer", description="Number of risks skipped because the caller lacks per-risk access to them."),
+ *             @OA\Property(property="not_found", type="integer", description="Number of ids that did not resolve to an existing risk."),
+ *             @OA\Property(property="total", type="integer", description="Number of ids submitted, after the request-size cap."),
+ *             @OA\Property(property="truncated", type="boolean", description="Whether more ids were submitted than the cap allows.")
+ *         )
+ *     ),
+ *     @OA\Response(response=400, description="BAD REQUEST: Missing risk_ids."),
+ *     @OA\Response(response=403, description="FORBIDDEN: The caller holds no plan_mitigations permission at all."),
+ * )
+ */
+class OpenApiBatchReassignMitigationOwner {}
+
+/**
+ * @OA\Post(
+ *     path="/risks/batch-update-status",
+ *     summary="Set the same status on multiple risks at once",
+ *     operationId="batchUpdateRiskStatus",
+ *     tags={"risk_crud"},
+ *     security={{"ApiKeyAuth":{}}},
+ *     @OA\RequestBody(
+ *         required=true,
+ *         @OA\MediaType(
+ *             mediaType="application/x-www-form-urlencoded",
+ *             @OA\Schema(
+ *                 required={"risk_ids", "status"},
+ *                 @OA\Property(
+ *                     property="risk_ids",
+ *                     type="array",
+ *                     description="The IDs of the risks to update.",
+ *                     @OA\Items(type="integer")
+ *                 ),
+ *                 @OA\Property(property="status", type="integer", description="The `value` column of the status table row to apply to every risk.")
+ *             )
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=200,
+ *         description="Status updates processed.",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(property="processed", type="integer", description="Number of risks updated."),
+ *             @OA\Property(property="denied", type="integer", description="Number of risks skipped because the caller lacks per-risk access to them."),
+ *             @OA\Property(property="total", type="integer", description="Number of ids submitted, after the request-size cap."),
+ *             @OA\Property(property="truncated", type="boolean", description="Whether more ids were submitted than the cap allows.")
+ *         )
+ *     ),
+ *     @OA\Response(response=400, description="BAD REQUEST: Missing risk_ids."),
+ *     @OA\Response(response=403, description="FORBIDDEN: The caller holds no modify_risks permission at all."),
+ * )
+ */
+class OpenApiBatchUpdateRiskStatus {}
+
+/**
+ * @OA\Post(
+ *     path="/risks/batch-close",
+ *     summary="Close multiple risks at once",
+ *     operationId="batchCloseRisks",
+ *     tags={"risk_crud"},
+ *     security={{"ApiKeyAuth":{}}},
+ *     @OA\RequestBody(
+ *         required=true,
+ *         @OA\MediaType(
+ *             mediaType="application/x-www-form-urlencoded",
+ *             @OA\Schema(
+ *                 required={"risk_ids"},
+ *                 @OA\Property(
+ *                     property="risk_ids",
+ *                     type="array",
+ *                     description="The IDs of the risks to close.",
+ *                     @OA\Items(type="integer")
+ *                 ),
+ *                 @OA\Property(property="close_reason", type="string", description="The close reason applied to every risk."),
+ *                 @OA\Property(property="note", type="string", description="The close-out note applied to every risk.")
+ *             )
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=200,
+ *         description="Risks closed.",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(property="processed", type="integer", description="Number of risks closed."),
+ *             @OA\Property(property="denied", type="integer", description="Number of risks skipped because the caller lacks per-risk access to them."),
+ *             @OA\Property(property="total", type="integer", description="Number of ids submitted, after the request-size cap."),
+ *             @OA\Property(property="truncated", type="boolean", description="Whether more ids were submitted than the cap allows.")
+ *         )
+ *     ),
+ *     @OA\Response(response=400, description="BAD REQUEST: Missing risk_ids."),
+ *     @OA\Response(response=403, description="FORBIDDEN: The caller holds no close_risks permission at all."),
+ * )
+ */
+class OpenApiBatchCloseRisks {}
+
 // =====================================================================
 // RISK OPERATIONS (LEGACY)
 // =====================================================================
@@ -1758,9 +1961,9 @@ class OpenApiProjectDetail {}
 
 /**
  * @OA\Post(
- *     path="/risk_management/plan_mitigation",
- *     summary="Get risks pending mitigation in DataTables format",
- *     operationId="planMitigationDatatable",
+ *     path="/risk_management/review_risk",
+ *     summary="Get the unified Review Risk action queue (needs mitigation or review) in DataTables format",
+ *     operationId="reviewRiskDatatable",
  *     tags={"risk"},
  *     security={{"ApiKeyAuth":{}}},
  *     @OA\RequestBody(
@@ -1772,7 +1975,13 @@ class OpenApiProjectDetail {}
  *                 @OA\Property(property="start", type="integer", format="int32", description="Paging first record indicator."),
  *                 @OA\Property(property="length", type="integer", format="int32", description="Number of records to return."),
  *                 @OA\Property(property="columns", type="array", @OA\Items(type="object"), description="DataTables column definitions."),
- *                 @OA\Property(property="order", type="array", @OA\Items(type="object"), description="DataTables ordering parameters.")
+ *                 @OA\Property(property="order", type="array", @OA\Items(type="object"), description="DataTables ordering parameters."),
+ *                 @OA\Property(property="action_type", type="string", enum={"all","mitigation","review"}, description="Action Type chip filter. Defaults to 'all'."),
+ *                 @OA\Property(property="my_action_items", type="string", enum={"0","1"}, description="Whether to restrict results to rows the current user can act on. Defaults to '1'."),
+ *                 @OA\Property(property="owner_filter", type="array", @OA\Items(type="string"), description="Secondary filters panel: restrict to rows whose owner exactly matches any of these values (from the filter_options endpoint's owners list). Omit or send empty for no filter."),
+ *                 @OA\Property(property="team_filter", type="array", @OA\Items(type="string"), description="Secondary filters panel: restrict to rows whose team exactly matches any of these values (from the filter_options endpoint's teams list). Omit or send empty for no filter."),
+ *                 @OA\Property(property="risk_level_filter", type="array", @OA\Items(type="string"), description="Secondary filters panel: restrict to rows whose risk level exactly matches any of these values (from the filter_options endpoint's levels list). Omit or send empty for no filter."),
+ *                 @OA\Property(property="reviewer_filter", type="array", @OA\Items(type="string"), description="Secondary filters panel: restrict to rows whose reviewer exactly matches any of these values (from the filter_options endpoint's reviewers list). Omit or send empty for no filter.")
  *             )
  *         )
  *     ),
@@ -1789,48 +1998,125 @@ class OpenApiProjectDetail {}
  *     ),
  * )
  */
-class OpenApiPlanMitigationDatatable {}
+class OpenApiReviewRiskDatatable {}
 
 /**
  * @OA\Post(
- *     path="/risk_management/managment_review",
- *     summary="Get risks pending management review in DataTables format",
- *     operationId="managementReviewDatatable",
+ *     path="/risk_management/review_risk/filtered_ids",
+ *     summary="Resolve every risk id matching the Review Risk page's current filter set, across every page ('Select all N')",
+ *     description="Unlike the DataTables endpoint above, which returns one page, this applies the identical filter decision (review_risk_evaluate_row()/review_risk_filter_ids(), includes/reporting.php) across the WHOLE matching set and returns every id -- so a caller can select every row a filter matches, not just the ones currently rendered. Refused with 400 when the match count exceeds REVIEW_RISK_SELECT_ALL_MAX (500, includes/api.php) -- narrow the filter and retry, since every subsequent bulk action fires one request per selected id rather than a single atomic bulk write.",
+ *     operationId="reviewRiskFilteredIds",
  *     tags={"risk"},
  *     security={{"ApiKeyAuth":{}}},
  *     @OA\RequestBody(
- *         required=true,
+ *         required=false,
  *         @OA\MediaType(
  *             mediaType="application/x-www-form-urlencoded",
  *             @OA\Schema(
- *                 @OA\Property(property="draw", type="integer", format="int32", description="DataTables draw counter."),
- *                 @OA\Property(property="start", type="integer", format="int32", description="Paging first record indicator."),
- *                 @OA\Property(property="length", type="integer", format="int32", description="Number of records to return."),
- *                 @OA\Property(property="columns", type="array", @OA\Items(type="object"), description="DataTables column definitions."),
- *                 @OA\Property(property="order", type="array", @OA\Items(type="object"), description="DataTables ordering parameters.")
+ *                 @OA\Property(property="action_type", type="string", enum={"all","mitigation","review"}, description="Action Type chip filter. Defaults to 'all'."),
+ *                 @OA\Property(property="my_action_items", type="string", enum={"0","1"}, description="Whether to restrict results to rows the current user can act on. Defaults to '1'."),
+ *                 @OA\Property(property="status_scope", type="string", enum={"all","open","closed"}, description="All/Open/Closed status-scope toolbar control. Defaults to 'open'."),
+ *                 @OA\Property(property="due_status", type="string", enum={"all","unreviewed","past_due","due_soon"}, description="Due-status toolbar control. Defaults to 'all'."),
+ *                 @OA\Property(property="user_filter", type="array", @OA\Items(type="string"), description="Secondary filters panel: restrict to rows whose merged user roles (owner/manager/submitter/mitigation owner/reviewer/stakeholders) exactly match any of these values. Omit or send empty for no filter."),
+ *                 @OA\Property(property="team_filter", type="array", @OA\Items(type="string"), description="Secondary filters panel: restrict to rows whose merged team/mitigation-team values exactly match any of these values. Omit or send empty for no filter."),
+ *                 @OA\Property(property="risk_level_filter", type="array", @OA\Items(type="string"), description="Secondary filters panel: restrict to rows whose risk level exactly matches any of these values. Omit or send empty for no filter."),
+ *                 @OA\Property(property="search", type="string", description="Global search term, matched the same way the toolbar search box's term is matched (subject, id/display-id, owner, category, tags, location, control number, reference id, submitted by, technology).")
  *             )
  *         )
  *     ),
  *     @OA\Response(
  *       response=200,
- *       description="DataTables server-side response",
+ *       description="Every matching risk id",
  *       @OA\JsonContent(
  *         type="object",
- *         @OA\Property(property="draw", type="integer"),
- *         @OA\Property(property="recordsTotal", type="integer"),
- *         @OA\Property(property="recordsFiltered", type="integer"),
- *         @OA\Property(property="data", type="array", @OA\Items(type="object"))
+ *         @OA\Property(property="ids", type="array", @OA\Items(type="integer"), description="Raw risk ids (NOT the +1000 display id) matching the given filters, across every page."),
+ *         @OA\Property(property="total", type="integer", description="count(ids).")
  *       )
  *     ),
+ *     @OA\Response(
+ *         response=400,
+ *         description="The filter matches more risks than REVIEW_RISK_SELECT_ALL_MAX allows",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(property="status", type="integer", example=400),
+ *             @OA\Property(property="status_message", type="array", @OA\Items(type="string")),
+ *             @OA\Property(property="data", nullable=true)
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=403,
+ *         description="Caller lacks risk management permission",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(property="status", type="integer", example=403),
+ *             @OA\Property(property="status_message", type="array", @OA\Items(type="string"), example={"You have no permission for risk management."}),
+ *             @OA\Property(property="data", nullable=true)
+ *         )
+ *     )
  * )
  */
-class OpenApiManagementReviewDatatable {}
+class OpenApiReviewRiskFilteredIds {}
+
+/**
+ * @OA\Get(
+ *     path="/risk_management/review_risk/filter_options",
+ *     summary="Get the Owner/Team/Risk Level/Reviewer option lists for the Review Risk page's secondary filters panel",
+ *     description="Owner, Team, and Reviewer lists are Org-Hierarchy-scoped the same way as every other enabled_users/team dropdown in the app (get_options_from_table() -> get_custom_table()); a non-admin caller under the Organizational Hierarchy Extra only sees their selected business unit's users/teams. Risk Level options come from the flat, unscoped risk_levels config table.",
+ *     operationId="reviewRiskFilterOptions",
+ *     tags={"risk"},
+ *     security={{"ApiKeyAuth":{}}},
+ *     @OA\Response(
+ *       response=200,
+ *       description="Filter option lists",
+ *       @OA\JsonContent(
+ *         type="object",
+ *         @OA\Property(property="owners", type="array", description="Org-Hierarchy-scoped enabled users, reduced to {value, name} -- never the full user row (which carries the password hash/salt).", @OA\Items(type="object", @OA\Property(property="value", type="integer"), @OA\Property(property="name", type="string"))),
+ *         @OA\Property(property="teams", type="array", description="Org-Hierarchy-scoped teams, reduced to {value, name}.", @OA\Items(type="object", @OA\Property(property="value", type="integer"), @OA\Property(property="name", type="string"))),
+ *         @OA\Property(property="levels", type="array", description="risk_levels rows reduced to {value, name, display_name, color}.", @OA\Items(type="object", @OA\Property(property="value", type="string"), @OA\Property(property="name", type="string"), @OA\Property(property="display_name", type="string"), @OA\Property(property="color", type="string"))),
+ *         @OA\Property(property="reviewers", type="array", description="Same Org-Hierarchy-scoped {value, name} user list as 'owners' -- the Reviewer filter draws from the same user pool.", @OA\Items(type="object", @OA\Property(property="value", type="integer"), @OA\Property(property="name", type="string"))),
+ *         @OA\Property(property="statuses", type="array", description="Risk status options reduced to {value, name}.", @OA\Items(type="object", @OA\Property(property="value", type="integer"), @OA\Property(property="name", type="string"))),
+ *         @OA\Property(
+ *             property="column_settings",
+ *             type="object",
+ *             nullable=true,
+ *             description="The caller's own saved Review Risk column-picker state (user.custom_review_risk_display_settings), decoded. Null when the caller has never saved one. Same shape the save_custom_review_risk_display_settings endpoint stores.",
+ *             @OA\Property(property="columns", type="array", description="List of [column_name, visibility] pairs.", @OA\Items(type="array", @OA\Items(type="string"))),
+ *             @OA\Property(property="order", type="array", description="Saved left-to-right column order. Absent when no drag-reorder has been saved.", @OA\Items(type="string"))
+ *         ),
+ *         @OA\Property(
+ *             property="active_columns",
+ *             type="array",
+ *             nullable=true,
+ *             description="The site's Customization-Extra-active risk field set, resolved into the Review Risk grid's own column vocabulary (build_active_review_risk_columns()). NULL when the Customization Extra is not active, in which case the client keeps its built-in static column list instead. When non-null it REPLACES that static list: any built-in column absent from this array is neither offered in the Columns picker nor rendered.",
+ *             @OA\Items(
+ *                 type="object",
+ *                 @OA\Property(property="key", type="string", description="The column's data-col key -- a basic field's resolved db-column name (e.g. team, category) or custom_field_{id} for a Customization Extra custom field."),
+ *                 @OA\Property(property="label", type="string", description="Already-HTML-escaped display label for the column's Columns-picker checkbox."),
+ *                 @OA\Property(property="group", type="string", enum={"RiskColumns", "MitigationColumns", "ReviewColumns"}, description="Which Columns-picker section the column belongs to, mapped from the field's Customization Extra tab_index.")
+ *             )
+ *         )
+ *       )
+ *     ),
+ *     @OA\Response(
+ *         response=403,
+ *         description="Caller lacks risk management permission",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(property="status", type="integer", example=403),
+ *             @OA\Property(property="status_message", type="array", @OA\Items(type="string"), example={"You have no permission for risk management."}),
+ *             @OA\Property(property="data", nullable=true)
+ *         )
+ *     )
+ * )
+ */
+class OpenApiReviewRiskFilterOptions {}
 
 /**
  * @OA\Post(
- *     path="/risk_management/review_risks",
- *     summary="Get risks for periodic review in DataTables format",
- *     operationId="reviewRisksDatatable",
+ *     path="/risk_management/save_custom_review_risk_display_settings",
+ *     summary="Save the current user's column display settings for the Review Risk page",
+ *     description="Persists the caller's column-picker preferences for the unified Review Risk action queue as a single flat list -- unlike the retired per-page display-settings endpoints this replaces, this is one column set, not a risk/mitigation/review three-way split, since Review Risk has one unified table.",
+ *     operationId="saveCustomReviewRiskDisplaySettings",
  *     tags={"risk"},
  *     security={{"ApiKeyAuth":{}}},
  *     @OA\RequestBody(
@@ -1838,28 +2124,54 @@ class OpenApiManagementReviewDatatable {}
  *         @OA\MediaType(
  *             mediaType="application/x-www-form-urlencoded",
  *             @OA\Schema(
- *                 @OA\Property(property="draw", type="integer", format="int32", description="DataTables draw counter."),
- *                 @OA\Property(property="start", type="integer", format="int32", description="Paging first record indicator."),
- *                 @OA\Property(property="length", type="integer", format="int32", description="Number of records to return."),
- *                 @OA\Property(property="columns", type="array", @OA\Items(type="object"), description="DataTables column definitions."),
- *                 @OA\Property(property="order", type="array", @OA\Items(type="object"), description="DataTables ordering parameters.")
+ *                 @OA\Property(
+ *                     property="columns",
+ *                     type="array",
+ *                     description="List of [column_name, visibility] pairs, e.g. [[risk_score, 1], [team, 0]]. column_name must match ^[A-Za-z0-9_]+$; visibility is the string 0 or 1.",
+ *                     @OA\Items(type="array", @OA\Items(type="string"))
+ *                 ),
+ *                 @OA\Property(
+ *                     property="order",
+ *                     type="array",
+ *                     description="Optional. The caller's drag-reordered column sequence, as a flat list of column names in desired left-to-right order, e.g. [team, risk_score, responsible]. Each name must match ^[A-Za-z0-9_]+$ (custom_review_risk_column_order_is_valid()) -- an invalid entry fails the whole request with a 400, the same way an invalid columns entry does. The stored settings blob is REPLACED on every save, so a request that omits this key stores no order at all (clearing any previously saved one); send columns and order together to keep both. Stored names that no longer resolve to a real column are ignored when the order is applied.",
+ *                     @OA\Items(type="string")
+ *                 )
  *             )
  *         )
  *     ),
  *     @OA\Response(
- *       response=200,
- *       description="DataTables server-side response",
- *       @OA\JsonContent(
- *         type="object",
- *         @OA\Property(property="draw", type="integer"),
- *         @OA\Property(property="recordsTotal", type="integer"),
- *         @OA\Property(property="recordsFiltered", type="integer"),
- *         @OA\Property(property="data", type="array", @OA\Items(type="object"))
- *       )
+ *         response=200,
+ *         description="Display settings saved successfully",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(property="status", type="integer", example=200),
+ *             @OA\Property(property="status_message", type="array", @OA\Items(type="string"), example={"Successfully saved."}),
+ *             @OA\Property(property="data", nullable=true)
+ *         )
  *     ),
+ *     @OA\Response(
+ *         response=400,
+ *         description="Missing or invalid columns/order",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(property="status", type="integer", example=400),
+ *             @OA\Property(property="status_message", type="array", @OA\Items(type="string"), example={"No Data Available"}),
+ *             @OA\Property(property="data", nullable=true)
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=403,
+ *         description="Caller lacks risk management permission",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(property="status", type="integer", example=403),
+ *             @OA\Property(property="status_message", type="array", @OA\Items(type="string"), example={"You have no permission for risk management."}),
+ *             @OA\Property(property="data", nullable=true)
+ *         )
+ *     )
  * )
  */
-class OpenApiReviewRisksDatatable {}
+class OpenApiSaveCustomReviewRiskDisplaySettings {}
 
 /**
  * @OA\Get(

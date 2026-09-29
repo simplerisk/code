@@ -4845,6 +4845,129 @@ $lang = array(
     'CreateAndAddField' => 'Créer et ajouter',
     'FieldCreatedAndAddedToTab' => '{field} créé et ajouté à {tab}.',
     'DeleteCustomFieldTitle' => 'Supprimer le champ \'{field}\'?',
+    // Review Risk page (SR-2068 and others -- see design spec)
+    'ReviewRisk' => 'Réviser le risque',
+    'NeedsColumn' => 'Besoins',
+    'RiskScoreColumn' => 'Score de risque',
+    'ReassignRiskOwner' => 'Réaffecter le responsable du risque',
+    'ReassignMitigationOwner' => 'Réaffecter le responsable des mesures d\'atténuation',
+    'NoActionItemsTitle' => 'Aucun risque ne correspond à vos filtres.',
+    'NoActionItemsBody' => 'Aucune tâche ne nécessite d\'intervention ou de vérification si vous êtes personnellement autorisé à agir. Décochez « Afficher mes tâches » pour voir la file d\'attente complète de l\'équipe.',
+    'BulkChangeStatusTitle' => 'Modifier le statut de %s risques sélectionnés',
+    'BulkReassignRiskOwnerTitle' => 'Réaffecter le responsable du risque pour %s risques sélectionnés',
+    'BulkReassignMitigationOwnerTitle' => 'Réaffecter le responsable de la mitigation pour %s risques sélectionnés',
+    'BulkAddCommentTitle' => 'Ajouter un commentaire à %s risques sélectionnés',
+    'BulkCloseRiskTitle' => 'Fermer %s risques sélectionnés',
+    'BulkActionPartialSuccess' => '%s des %s risques mis à jour.',
+    'PerformReview' => 'Effectuer un examen',
+    'BulkActionSuccess' => '%s risques mis à jour.',
+    'SomeRowsSkippedNoMitigation' => 'Certains risques sélectionnés ont été écartés car aucune mesure d\'atténuation n\'est encore prévue.',
+    'ChangeStatusHint' => 'Les risques sélectionnés seront mis à jour selon le statut choisi.',
+    'StatusChanged' => 'Statut mis à jour.',
+    'CloseRiskBulkConfirmBody' => 'Les risques clôturés sont retirés des files d\'attente actives. Vous pouvez rouvrir un risque ultérieurement en modifiant à nouveau son statut.',
+    // Column-parity follow-up fix review-risk-followups/column-parity-report.md):
+    // the Review Risk page's new scoring_method column (getReviewRiskDatatableResponse(),
+    // includes/api.php) renders get_scoring_method_name()'s (includes/functions.php)
+    // canonical scoring-method name through a $lang lookup rather than the raw
+    // hardcoded string. 'Classic'/'Custom'/'ContributingRisk' already existed
+    // (reused, not duplicated) -- only the three missing acronym keys are added
+    // here. These scoring methodology names/acronyms are typically kept
+    // untranslated (matching how the app's other risk-scoring UI already
+    // displays them, e.g. get_name_by_value('scoring_methods', ...) in
+    // displayrisks.php, which reads these same literal strings straight from
+    // the scoring_methods DB table with no translation layer), but every
+    // user-facing string still needs to flow through a lookup per CLAUDE.md,
+    // even one where the English and translated value would typically match.
+    'CVSS' => 'CVSS',
+    'DREAD' => 'DREAD',
+    'OWASP' => 'OWASP',
+    'MyActionItems' => 'Mes tâches à accomplir',
+    'AddRisk' => 'Ajouter un risque',
+    'ReviewCompleted' => 'Révision terminée',
+    // Review Risk insights band (management/review_risk.php). The "Needs
+    // Review" tile reuses the existing 'HomeKpiNeedsReview' key rather than
+    // adding a second key for the same English string. 'RrNeedsMitigation'
+    // carries the band prefix the sibling insights bands already use ('Dt',
+    // 'Fw', 'Exc') to distinguish it from the grid's much terser chip label
+    // ('Mitigation').
+    'RrNeedsMitigation' => 'Mesures d\'atténuation nécessaires',
+    'PastDue' => 'En retard',
+    'OpenedThisMonth' => 'Ouvert ce mois-ci',
+    'ClosedThisMonth' => 'Fermé ce mois-ci',
+    'AllRiskLevels' => 'Tous les niveaux de risque',
+    // Import-Export Extra's Users sheet column for the Review Risk grid's
+    // persisted column-visibility/order preferences (user.custom_review_risk_display_settings).
+    'ReviewRiskDisplay' => 'Affichage de la revue des risques',
+    // Plan Projects grid API (SR-2229): reorder/save-order status messages
+    // and the derived highest-risk column label shared by the grid's
+    // Columns picker and the drawer. The sibling 'Risks' column label
+    // reuses the existing 'Risks' key (line ~1911) rather than duplicating it.
+    'PlanProjectsReorderMismatch' => 'La liste des projets a été modifiée pendant que vous la réorganisiez. Rechargez la page et réessayez.',
+    'PlanProjectsOrderSaved' => 'Ordre du projet enregistré.',
+    'HighestRisk' => 'Risque le plus élevé',
+    // Plan Projects grid (SR-2229). Sentence case; column headers are upper-cased by CSS. {n} tokens are replaced client-side.
+    'OnHold' => 'En attente',
+    'SearchProjectsPlaceholder' => 'Rechercher des projets',
+    'AllConsultants' => 'Tous les consultants',
+    'AllBusinessOwners' => 'Tous les propriétaires d\'entreprises',
+    'AllDataClassifications' => 'Toutes les classifications de données',
+    'AnyDueStatus' => 'Tout statut d’échéance',
+    'NoDueDate' => 'Aucune date d\'échéance',
+    'AddProject' => 'Ajouter un projet',
+    'AssignToProject' => 'Affecter au projet',
+    'RemoveFromProject' => 'Retirer du projet',
+    'AddRisksToThisProject' => 'Ajouter des risques à ce projet',
+    'NoProjectsYet' => 'Aucun projet pour l\'instant',
+    'NoProjectsYetHint' => 'Les projets regroupent les risques connexes afin que vous puissiez planifier et prioriser leur traitement conjointement.',
+    'NoProjectsMatchFilters' => 'Aucun projet ne correspond à vos filtres.',
+    'NoRisksInThisProject' => 'Aucun risque pour l\'instant dans ce projet',
+    'NoRisksWaitingForProject' => 'Aucun risque en attente d’un projet',
+    'NoRisksWaitingForProjectHint' => 'Les risques évalués comme « À prendre en compte pour le projet » apparaissent ici jusqu\'à leur attribution.',
+    'NMoreRisks' => '{n} risques de plus',
+    'ChangeProjectStatus' => 'Modifier l\'état du projet',
+    'ChangeStatusClosesRisks' => 'Le fait de marquer ce projet comme terminé permettra de clore ses {n} risques ouverts avec la raison « Entièrement atténués ».',
+    'ChangeStatusReopensRisks' => 'Le fait de sortir ce projet de l’état terminé rouvrira les risques qui avaient été fermés lors de son achèvement.',
+    'ChangeStatusNoCloseRightsHint' => 'Vous n\'êtes pas autorisé à fermer ou à rouvrir des risques ; seul le statut du projet changera donc.',
+    'DeleteProjectReturnsRisks' => 'Ses {n} risques retourneront dans la file d’attente non attribuée.',
+    'ReorderNeedsPrioritySort' => 'Le réordonnancement est possible lorsque la liste est triée par priorité au sein d\'un même statut.',
+    'CouldNotLoadProjects' => 'Impossible de charger les projets. Vos données sont en sécurité.',
+    'MitigationNotPlanned' => 'Non prévu',
+    'MitigationStatePlanned' => 'Prévu',
+    'NoRisksMatchYourSearch' => 'Aucun risque ne correspond à votre recherche',
+    'AllUnassignedRisks' => 'Tous les risques non attribués',
+    'NoRisksSelectedYet' => 'Aucun risque sélectionné pour le moment',
+    'SomeQuestionsNotDeleted' => 'Certaines questions sélectionnées n\'ont pas pu être supprimées.',
+    'QuestionnaireQuestionDeleteRequiresJavaScript' => 'La suppression d\'une question nécessite l\'activation de JavaScript dans votre navigateur.',
+    // Initiate Audits' bulk bar (SR-2234): the header checkbox already
+    // selects every row matching the current search/filters across every
+    // page in one click (client-side DataTables, the full eligible-test set
+    // is already loaded) -- this qualifier makes that explicit when the
+    // selection exceeds what a single page can hold, so "N selected" isn't
+    // read as a miscount against however many checkboxes are visibly ticked
+    // on the current page.
+    'NSelectedAllPages' => '{n} sélectionnés (correspondant à vos filtres, sur toutes les pages)',
+    // "Select all N" cross-page selection: shared too-many-matches message for
+    // Review Risk, Define Tests, Manage Audits, Document Program, and Define
+    // Exceptions (formerly 5 near-duplicate per-page keys). Callers supply
+    // both {$max} and {$noun} (e.g. the plain 'Risks'/'Tests'/'Audits'/
+    // 'Documents'/'Exceptions' key text) -- PHP call sites via _lang(), JS
+    // call sites via a manual .replace('{$max}', ...).replace('{$noun}', ...).
+    'SelectAllTooManyMatches' => 'Les filtres actuels correspondent à plus de {$max} {$noun}. Affinez le filtre et réessayez.',
+    // POST /documents/batch-delete (batch_delete_document_api(), includes/api.php):
+    // same truncation-signal shape as 'DocumentsApprovedTruncated' (see
+    // above) and the sibling 'ExceptionsDeletedTruncated' key just below,
+    // for the Document Program bulk-delete "Select all N" action.
+    'DocumentsDeletedTruncated' => 'Seuls les {$limit} premiers documents sélectionnés ont été supprimés. Veuillez répéter l\'opération pour supprimer les autres.',
+    // POST /exceptions/batch-delete-ids (batch_delete_exceptions_by_ids_api()) --
+    // deletes an arbitrary caller-supplied set of exception ids in one request,
+    // replacing the Define Exceptions bulk bar's looped POST /exceptions/delete
+    // calls. Mirrors ExceptionsApprovedTruncated's truncation-signal wording.
+    'ExceptionsDeletedTruncated' => 'Seules les {$limit} premières exceptions sélectionnées ont été supprimées. Veuillez répéter l\'opération pour supprimer les autres.',
+    // POST /risks/batch-close (closeRiskBatch(), includes/api.php): whole-batch
+    // 403 when the caller holds no close_risks permission at all, mirroring
+    // closeriskForm()'s own (hardcoded, pre-existing) single-risk denial text.
+    'NoCloseRiskPermission' => 'Vous n\'êtes pas autorisé à clôturer les risques.',
+    'QuestionnaireRequiredQuestionUnanswered' => 'Veuillez répondre à toutes les questions obligatoires avant de terminer l\'évaluation.',
     '' => '',
 );
 ?>

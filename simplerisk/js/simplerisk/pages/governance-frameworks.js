@@ -2113,8 +2113,13 @@
         // Both were swept at 1024/1280/1440 and keep SCENARIO-26's two
         // declared rows.
         if (can('add_new_controls')) {
-            $('<button type="button" class="btn btn-submit" id="sr-ctl-add">')
-                .text(_lang['AddControl'])
+            // 'btn-danger' + a literal '+ ' prefix -- not 'btn-submit', which
+            // has no rule outside the auth pages and so silently fell back to
+            // bare Bootstrap .btn geometry (near-square corners, no '+') here.
+            // Matches every other page-level "Add X" action's own convention
+            // (governance/documentation.php's '+ AddDocument').
+            $('<button type="button" class="btn btn-danger" id="sr-ctl-add">')
+                .text('+ ' + _lang['AddControl'])
                 .appendTo($actions);
         }
 
@@ -3434,7 +3439,6 @@
     function virtRender() {
         var sc = virtScroller();
         if (!virt.on || !sc) { return; }
-        var off = virtOffsets();
         var a = virt.n === 0 ? 0 : Math.max(0, virtIndexAt(sc.scrollTop) - VIRT_OVERSCAN);
         var b = virt.n === 0 ? -1 : Math.min(virt.n - 1, virtIndexAt(sc.scrollTop + sc.clientHeight) + VIRT_OVERSCAN);
 
@@ -3596,7 +3600,17 @@
         if (virt.on) {
             virtMount($b);
         } else {
-            st.rows.forEach(function (c) { $b.append(renderRow(c)); });
+            // Same restore-from-authoritative-state rule virtBuild() applies
+            // in virtual mode (see its own comment): a freshly rendered row
+            // must reflect `selection`/`selectAllFiltered`, not come back
+            // unchecked just because renderRow() itself never sets `checked`.
+            st.rows.forEach(function (c) {
+                var $row = renderRow(c);
+                if (selectAllFiltered || selection.has(c.id)) {
+                    $row.addClass('sr-row-checked').find('.sr-ctl-check').prop('checked', true);
+                }
+                $b.append($row);
+            });
             probeMount($b);
         }
         // aria-rowcount is the whole result set, not the rendered window --
@@ -3670,7 +3684,12 @@
         } else {
             var $rows = $('#sr-ctl-tbody tr:not(.sr-ctl-probe) .sr-ctl-check');
             total = $rows.length;
-            checkedCount = $rows.filter(function () { return this.checked; }).length;
+            // selectAllFiltered means "every filtered control", which can
+            // exceed what's rendered on this page -- reading the DOM here
+            // would report a partial (or even empty) page as the true
+            // population, exactly the "population on screen" reading this
+            // function's own header comment says is forbidden.
+            checkedCount = selectAllFiltered ? total : $rows.filter(function () { return this.checked; }).length;
         }
         $all.prop('checked', total > 0 && checkedCount === total);
         $all.prop('indeterminate', checkedCount > 0 && checkedCount < total);
@@ -6509,7 +6528,18 @@
 
         $(document).on('click', '#sr-ctl-select-all-filtered', function () {
             selectAllFiltered = true;
-            renderBulkBar();
+            // Same reasoning as the header checkbox's own VIRTUAL-mode branch
+            // above: escalating must be visible in the rows immediately, not
+            // only in the bulk bar's number -- otherwise a selection that IS
+            // "every filtered control" server-side still LOOKS like only
+            // whatever was manually ticked before this click. Ticking every
+            // checkbox currently in the DOM (rather than waiting for the next
+            // renderTable()/virtBuild() pass, which now also honors
+            // selectAllFiltered on its own) fixes what's already on screen.
+            $('#sr-ctl-tbody tr:not(.sr-ctl-probe) .sr-ctl-check').each(function () {
+                $(this).prop('checked', true).closest('tr').addClass('sr-row-checked');
+            });
+            syncSelection();
         });
 
         $(document).on('click', '#sr-ctl-clear-sel', clearSelection);

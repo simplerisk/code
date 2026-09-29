@@ -2151,8 +2151,9 @@ function print_mitigation_controls_table($control_ids, $mitigation_id, $flag="vi
                                 d.control_ids = $('.mitigation_control_ids', form).val();
                             }
                         },
-                        complete: function(response){
-                            if(response.responseJSON && Number(response.responseJSON.recordsTotal) > 0){
+                        complete: function(xhr){
+                            var json = DataTable.parseCompleteResponse(xhr);
+                            if(json && Number(json.recordsTotal) > 0){
                                 $('#{$tableID}').parents('.mitigation-controls-table-container').removeClass('hide');
                             }else{
                                 $('#{$tableID}').parents('.mitigation-controls-table-container').addClass('hide');
@@ -5581,226 +5582,226 @@ function get_dynamic_names_by_main_field_name($field_name)
         'ExternalReferenceId' => 
             [
                 'name' => "reference_id",
-                'text' => $escaper->escapeHtml($lang['ExternalReferenceId']),
+                'text' => $lang['ExternalReferenceId'],
             ],
         'ControlRegulation' => 
             [
                 'name' => "regulation",
-                'text' => $escaper->escapeHtml($lang['ControlRegulation']),
+                'text' => $lang['ControlRegulation'],
             ],
         'ControlNumber' => 
             [
                 'name' => "control_number",
-                'text' => $escaper->escapeHtml($lang['ControlNumber']),
+                'text' => $lang['ControlNumber'],
             ],
         'SiteLocation' => 
             [
                 'name' => "location",
-                'text' => $escaper->escapeHtml($lang['SiteLocation']),
+                'text' => $lang['SiteLocation'],
             ],
         'RiskSource' => 
             [
                 'name' => "source",
-                'text' => $escaper->escapeHtml($lang['RiskSource']),
+                'text' => $lang['RiskSource'],
             ],
         'Category' => 
             [
                 'name' => "category",
-                'text' => $escaper->escapeHtml($lang['Category']),
+                'text' => $lang['Category'],
             ],
         'Team' => 
             [
                 'name' => "team",
-                'text' => $escaper->escapeHtml($lang['Team']),
+                'text' => $lang['Team'],
             ],
         'Technology' => 
             [
                 'name' => "technology",
-                'text' => $escaper->escapeHtml($lang['Technology']),
+                'text' => $lang['Technology'],
             ],
         'Owner' => 
             [
                 'name' => "owner",
-                'text' => $escaper->escapeHtml($lang['Owner']),
+                'text' => $lang['Owner'],
             ],
         'OwnersManager' => 
             [
                 'name' => "manager",
-                'text' => $escaper->escapeHtml($lang['OwnersManager']),
+                'text' => $lang['OwnersManager'],
             ],
         'SubmittedBy' => 
             [
                 'name' => "submitted_by",
-                'text' => $escaper->escapeHtml($lang['SubmittedBy']),
+                'text' => $lang['SubmittedBy'],
             ],
         'RiskScoringMethod' => 
             [
                 'name' => "scoring_method",
-                'text' => $escaper->escapeHtml($lang['RiskScoringMethod']),
+                'text' => $lang['RiskScoringMethod'],
             ],
         'SubmissionDate' => 
             [
                 'name' => "submission_date",
-                'text' => $escaper->escapeHtml($lang['SubmissionDate']),
+                'text' => $lang['SubmissionDate'],
             ],
         'AffectedAssets' => 
             [
                 'name' => "affected_assets",
-                'text' => $escaper->escapeHtml($lang['AffectedAssets']),
+                'text' => $lang['AffectedAssets'],
             ],
         'RiskAssessment' => 
             [
                 'name' => "risk_assessment",
-                'text' => $escaper->escapeHtml($lang['RiskAssessment']),
+                'text' => $lang['RiskAssessment'],
             ],
         'AdditionalNotes' => 
             [
                 'name' => "additional_notes",
-                'text' => $escaper->escapeHtml($lang['AdditionalNotes']),
+                'text' => $lang['AdditionalNotes'],
             ],
 //        'SupportingDocumentation' => 
 //            [
 //                'name' => "submission_date",
-//                'text' => $escaper->escapeHtml($lang['SubmissionDate']),
+//                'text' => $lang['SubmissionDate'],
 //            ],
         'AdditionalStakeholders' => 
             [
                 'name' => "additional_stakeholders",
-                'text' => $escaper->escapeHtml($lang['AdditionalStakeholders']),
+                'text' => $lang['AdditionalStakeholders'],
             ],
         
         // mitigations
         'PlanningStrategy' => 
             [
                 'name' => "planning_strategy",
-                'text' => $escaper->escapeHtml($lang['PlanningStrategy']),
+                'text' => $lang['PlanningStrategy'],
             ],
         'MitigationPlanning' => 
             [
                 'name' => "planning_date",
-                'text' => $escaper->escapeHtml($lang['MitigationPlanning']),
+                'text' => $lang['MitigationPlanning'],
             ],
         'MitigationEffort' => 
             [
                 'name' => "mitigation_effort",
-                'text' => $escaper->escapeHtml($lang['MitigationEffort']),
+                'text' => $lang['MitigationEffort'],
             ],
         'MitigationCost' => 
             [
                 'name' => "mitigation_cost",
-                'text' => $escaper->escapeHtml($lang['MitigationCost']),
+                'text' => $lang['MitigationCost'],
             ],
         'MitigationOwner' => 
             [
                 'name' => "mitigation_owner",
-                'text' => $escaper->escapeHtml($lang['MitigationOwner']),
+                'text' => $lang['MitigationOwner'],
             ],
         'MitigationPercent' => 
             [
                 'name' => "mitigation_percent",
-                'text' => $escaper->escapeHtml($lang['MitigationPercent']),
+                'text' => $lang['MitigationPercent'],
             ],
         'MitigationTeam' => 
             [
                 'name' => "mitigation_team",
-                'text' => $escaper->escapeHtml($lang['MitigationTeam']),
+                'text' => $lang['MitigationTeam'],
             ],
         'MitigationDate' => 
             [
                 'name' => "mitigation_date",
-                'text' => $escaper->escapeHtml($lang['MitigationDate']),
+                'text' => $lang['MitigationDate'],
             ],
         'MitigationControls' => 
             [
                 'name' => "mitigation_controls",
-                'text' => $escaper->escapeHtml($lang['MitigationControls']),
+                'text' => $lang['MitigationControls'],
             ],
 //        'MitigationPercent' => 
 //            [
 //                'name' => "submission_date",
-//                'text' => $escaper->escapeHtml($lang['SubmissionDate']),
+//                'text' => $lang['SubmissionDate'],
 //            ],
         'AcceptMitigation' => 
             [
                 'name' => "mitigation_accepted",
-                'text' => $escaper->escapeHtml($lang['MitigationAccepted']),
+                'text' => $lang['MitigationAccepted'],
             ],
         'CurrentSolution' => 
             [
                 'name' => "current_solution",
-                'text' => $escaper->escapeHtml($lang['CurrentSolution']),
+                'text' => $lang['CurrentSolution'],
             ],
         'SecurityRecommendations' => 
             [
                 'name' => "security_recommendations",
-                'text' => $escaper->escapeHtml($lang['SecurityRecommendations']),
+                'text' => $lang['SecurityRecommendations'],
             ],
         'SecurityRequirements' => 
             [
                 'name' => "security_requirements",
-                'text' => $escaper->escapeHtml($lang['SecurityRequirements']),
+                'text' => $lang['SecurityRequirements'],
             ],
 //        'MitigationSupportingDocumentation' => 
 //            [
 //                'name' => "submission_date",
-//                'text' => $escaper->escapeHtml($lang['SubmissionDate']),
+//                'text' => $lang['SubmissionDate'],
 //            ],
 //        'MitigationControlsList' => 
 //            [
 //                'name' => "submission_date",
-//                'text' => $escaper->escapeHtml($lang['SubmissionDate']),
+//                'text' => $lang['SubmissionDate'],
 //            ],
         
         // Review
         'ReviewDate' => 
             [
                 'name' => "review_date",
-                'text' => $escaper->escapeHtml($lang['ReviewDate']),
+                'text' => $lang['ReviewDate'],
             ],
        'Reviewer' => 
            [
                'name' => "reviewer",
-               'text' => $escaper->escapeHtml($lang['ReviewedBy']),
+               'text' => $lang['ReviewedBy'],
            ],
 //        'Review' => 
 //            [
 //                'name' => "submission_date",
-//                'text' => $escaper->escapeHtml($lang['SubmissionDate']),
+//                'text' => $lang['SubmissionDate'],
 //            ],
         'Review' => 
             [
                 'name' => "review",
-                'text' => $escaper->escapeHtml($lang['Review']),
+                'text' => $lang['Review'],
             ],
         'NextReviewDate' => 
             [
                 'name' => "next_review_date",
-                'text' => $escaper->escapeHtml($lang['NextReviewDate']),
+                'text' => $lang['NextReviewDate'],
             ],
         'NextStep' => 
             [
                 'name' => "next_step",
-                'text' => $escaper->escapeHtml($lang['NextStep']),
+                'text' => $lang['NextStep'],
             ],
         'Tags' =>
             [
                 'name' => "risk_tags",
-                'text' => $escaper->escapeHtml($lang['Tags']),
+                'text' => $lang['Tags'],
             ],
         'Comment' => 
             [
                 'name' => "comments",
-                'text' => $escaper->escapeHtml($lang['Comments']),
+                'text' => $lang['Comments'],
             ],
         'RiskMapping' => 
             [
                 'name' => "risk_mapping",
-                'text' => $escaper->escapeHtml($lang['RiskMapping']),
+                'text' => $lang['RiskMapping'],
             ],
         'ThreatMapping' => 
             [
                 'name' => "threat_mapping",
-                'text' => $escaper->escapeHtml($lang['ThreatMapping']),
+                'text' => $lang['ThreatMapping'],
             ]
     );
     return isset($data[$field_name]) ? $data[$field_name] : "";
@@ -8025,536 +8026,765 @@ function display_contributing_risk_from_calculator()
 }
 
 /*******************************************
-* FUNCTION: DISPLAY PLAN MITIGATIONS TABLE *
+* FUNCTION: DISPLAY REVIEW RISK PAGE       *
 ********************************************/
-function display_plan_mitigations()
+function display_review_risk()
 {
-
     global $lang, $escaper;
 
-    $user = get_user_by_id($_SESSION['uid']);
-    $settings = json_decode($user["custom_plan_mitigation_display_settings"] ?? '', true);
-    $risk_colums_setting = isset($settings["risk_colums"])?$settings["risk_colums"]:[];
-    $mitigation_colums_setting = isset($settings["mitigation_colums"])?$settings["mitigation_colums"]:[];
-    $review_colums_setting = isset($settings["review_colums"])?$settings["review_colums"]:[];
-    $columns_setting = array_merge($risk_colums_setting, $mitigation_colums_setting, $review_colums_setting);
-    $columns = [];
+    // Customization Extra follow-up (Task 6, review-risk-dynamic-columns):
+    // resolved once here and spliced into the RiskColumns/MitigationColumns/
+    // ReviewColumns <th> sections below -- null when the Customization Extra
+    // isn't active, in which case none of the custom_field_ loops below emit
+    // anything and the thead is exactly the static ~46-column markup it was
+    // before this task.
+    $active_review_risk_columns = build_active_review_risk_columns();
 
-    foreach($columns_setting as $column) {
-        if(stripos($column[0], "custom_field_") !== false) {
-            if(customization_extra() && $column[1] == 1) $columns[] = $column[0];
-        } else if($column[1] == 1) {
-            $columns[] = $column[0];
-        }
-    }
-    if(!count($columns)) {
-        $columns = array("id","risk_status","subject","calculated_risk","submission_date","mitigation_planned","management_review");
-    }
-
-    $tr = "";
-    $index = 0;
-    $order_index = 0;
-    $order_dir = "asc";
-
-    // If the Customization Extra exists
-    $file = realpath(__DIR__ . '/../extras/customization/index.php');
-    if (file_exists($file)) {
-        // Load it
-        require_once($file);
-    }
-
-    foreach($columns as $column) {
-
-        if($column == "calculated_risk") {
-            $order_index = $index;
-            $order_dir = "desc";
-        }
-        if($column == "subject") {
-            $style = "min-width:250px;";
-        } else {
-            $style = "min-width:100px;";
-        }
-
-        if(($pos = stripos($column, "custom_field_")) !== false) {
-            if(customization_extra()) {
-                $field_id = str_replace("custom_field_", "", $column);
-                $custom_field = get_field_by_id($field_id);
-                $label = $escaper->escapeHtml($custom_field['name']);
-                $tr .= "<th data-name='" . $escaper->escapeHtmlAttr($column) . "' align='left' style='" . $style . "'>" . $label . "</th>";
-                $index++;
-            }
-        } else {
-            $label = get_label_by_risk_field_name($column);
-            $tr .= "<th data-name='" . $escaper->escapeHtmlAttr($column) . "' align='left' style='" . $style . "'>" . $label . "</th>";
-            $index++;
-        }
-    }
-
-    $tableID = "plan-mitigations";
     echo "
-        <table id='{$tableID}' width='100%' class='risk-datatable table table-bordered table-striped table-condensed'>
-            <thead >
-                <tr>{$tr}</tr> 
-            </thead>
-            <tbody>
-            </tbody>
-        </table>
-        <script>
-            $(function(){
-                var pageLength = 10;
-                var form = $('#{$tableID}').parents('form');
-                $('#{$tableID} thead tr').clone(true).appendTo( '#{$tableID} thead');
-                $('#{$tableID} thead tr:eq(1) th').each( function (i) {
-                    var title = $(this).text();
-                    var data_name = $(this).attr('data-name');
-                    if(data_name == 'mitigation_planned') {
-                        $(this).html( '<select name=\"mitigation_planned\" class= \"form-control\"><option value=\"\">--</option><option value=\"" . $escaper->escapeHtml($lang['Yes']) . "\">" . $escaper->escapeHtml($lang['Yes']) . "</option><option value=\"" . $escaper->escapeHtml($lang['No']) . "\">" . $escaper->escapeHtml($lang['No']) . "</option></select>' );
-                    } else if(data_name == 'management_review') {
-                        $(this).html( '<select name=\"management_review\" class= \"form-control\"><option value=\"\">--</option><option value=\"" . $escaper->escapeHtml($lang['Yes']) . "\">" . $escaper->escapeHtml($lang['Yes']) . "</option><option value=\"" . $escaper->escapeHtml($lang['No']) . "\">" . $escaper->escapeHtml($lang['No']) . "</option><option value=\"" . $escaper->escapeHtml($lang['PASTDUE']) . "\">" . $escaper->escapeHtml($lang['PASTDUE']) . "</option></select>' );
-                    } else {
-                        $(this).html(''); // To clear the title out of the header cell
-                        $('<input type=\"text\" class= \"form-control\">').attr('name', title).attr('placeholder', title).appendTo($(this));
+        <div class='sr-table-card' id='review-risk-table-card'>
+            <div class='sr-table-toolbar'>
+                <div class='sr-toolbar-filters-cluster' id='review-risk-filters-cluster'>
+                    <div class='sr-table-status-filter' id='review-risk-status-filter'>
+                        <button class='sr-status-chip active' data-action-type='all'>{$escaper->escapeHtml($lang['All'])} <span class='n' id='review-risk-count-all'></span></button>
+                        <button class='sr-status-chip' data-action-type='mitigation'>{$escaper->escapeHtml($lang['Mitigation'])} <span class='n' id='review-risk-count-mitigation'></span></button>
+                        <button class='sr-status-chip' data-action-type='review'>{$escaper->escapeHtml($lang['Review'])} <span class='n' id='review-risk-count-review'></span></button>
+                    </div>
+                    ";
+                    // Narrow-width companion for EACH of the three chip-groups on
+                    // this page (this one, plus #review-risk-scope-filter and
+                    // #review-risk-status-scope-filter below): a native <select>
+                    // mirroring the same data-* values as its chip row's own
+                    // buttons, as <option value>. Both representations are ALWAYS
+                    // rendered -- which one is visible is a pure CSS display swap
+                    // at the breakpoint (_tables.scss's #review-risk-status-filter/
+                    // #review-risk-scope-filter/#review-risk-status-scope-filter
+                    // vs. .sr-chip-select rules), the same show/hide-by-media-query
+                    // convention this page's own .sr-qf-toggle/.sr-table-quickfilters
+                    // pair already uses -- never a JS .hide()/.show() toggle.
+                    // review-risk.js keeps both representations in sync in BOTH
+                    // directions (chip click -> select value, select change -> chip
+                    // click, and the initial URL-param restore on load) through one
+                    // shared setter per chip-group rather than a second, separate
+                    // filtering implementation -- see that file's setActionType()/
+                    // setScope()/setStatusScope() for the shared contract. Each
+                    // <option>'s `data-label` holds the option's bare translated
+                    // text (no count) so updateChipCounts() (review-risk.js) can
+                    // rebuild "label (n)" -- e.g. 'All (157)' -- from the SAME
+                    // counts payload that already fills the matching chip's own
+                    // <span class='n'>, with no second lang lookup needed client-
+                    // side. No aria-label here, matching the three secondary filter
+                    // selects immediately below (#review-risk-user-filter etc.) --
+                    // this codebase's existing precedent for a toolbar filter
+                    // <select> is to rely on its own visible option text, not a
+                    // separate accessible name.
+                    echo "
+                    <select class='form-select sr-chip-select' id='review-risk-status-filter-select'>
+                        <option value='all' data-label='{$escaper->escapeHtml($lang['All'])}' selected>{$escaper->escapeHtml($lang['All'])} (0)</option>
+                        <option value='mitigation' data-label='{$escaper->escapeHtml($lang['Mitigation'])}'>{$escaper->escapeHtml($lang['Mitigation'])} (0)</option>
+                        <option value='review' data-label='{$escaper->escapeHtml($lang['Review'])}'>{$escaper->escapeHtml($lang['Review'])} (0)</option>
+                    </select>
+                    <!-- Replaces the previous checkbox: checked vs unchecked
+                         named only its ON state (Show my action items), leaving
+                         the OFF state's meaning implicit -- ambiguous enough that
+                         it read as a real usability gap. A two-option chip toggle
+                         names both states explicitly, matching this same page's
+                         action-type chip row shape immediately to its left rather
+                         than introducing a third distinct control style. Shares
+                         .sr-table-status-filter/.sr-status-chip with that chip row
+                         (see _tables.scss's #review-risk-status-filter,
+                         #review-risk-scope-filter shape override) -- a different id
+                         so JS can target the two chip groups independently; 'mine'
+                         starts active, matching the checkbox's previous default-
+                         checked state. -->
+                    <div class='sr-table-status-filter' id='review-risk-scope-filter'>
+                        <button class='sr-status-chip' data-scope='all'>{$escaper->escapeHtml($lang['All'])} <span class='n' id='review-risk-count-all-items'></span></button>
+                        <button class='sr-status-chip active' data-scope='mine'>{$escaper->escapeHtml($lang['MyActionItems'])} <span class='n' id='review-risk-count-mine'></span></button>
+                    </div>
+                    <select class='form-select sr-chip-select' id='review-risk-scope-filter-select'>
+                        <option value='all' data-label='{$escaper->escapeHtml($lang['All'])}'>{$escaper->escapeHtml($lang['All'])} (0)</option>
+                        <option value='mine' data-label='{$escaper->escapeHtml($lang['MyActionItems'])}' selected>{$escaper->escapeHtml($lang['MyActionItems'])} (0)</option>
+                    </select>
+                    ";
+                    // Status-scope toolbar control (All/Open/Closed) -- a SEPARATE,
+                    // additional control from #review-risk-status-filter (the
+                    // action-type chips above) and #review-risk-scope-filter (the
+                    // My Action Items/All Items chips above): all three coexist.
+                    // 'open' starts active -- it reproduces today's exact page
+                    // (status != Closed AND needs_mitigation/needs_review) with
+                    // zero regression, since this control did not exist before.
+                    // Shares .sr-table-status-filter/.sr-status-chip with the
+                    // other two chip groups (see _tables.scss's
+                    // #review-risk-status-filter, #review-risk-scope-filter,
+                    // #review-risk-status-scope-filter shape override) -- a
+                    // different id so JS can target all three chip groups
+                    // independently. 'AllStatuses'/'Open'/'Closed' are all
+                    // pre-existing lang keys (governance-documents.js/
+                    // governance-exceptions.js/compliance.php already use
+                    // 'AllStatuses'; risk status values already render 'Open'/
+                    // 'Closed' elsewhere in the app) -- no new keys needed.
+                    //
+                    // Live counts (follow-up, matching the action-type and
+                    // my-action-items chip groups above -- see
+                    // getReviewRiskDatatableResponse()'s status_all/
+                    // status_open/status_closed tallies, includes/api.php):
+                    // each span is set by updateChipCounts() (review-risk.js),
+                    // same .n badge shared across all three chip groups.
+                    echo "
+                    <div class='sr-table-status-filter' id='review-risk-status-scope-filter'>
+                        <button class='sr-status-chip' data-status-scope='all'>{$escaper->escapeHtml($lang['All'])} <span class='n' id='review-risk-count-status-all'></span></button>
+                        <button class='sr-status-chip active' data-status-scope='open'>{$escaper->escapeHtml($lang['Open'])} <span class='n' id='review-risk-count-status-open'></span></button>
+                        <button class='sr-status-chip' data-status-scope='closed'>{$escaper->escapeHtml($lang['Closed'])} <span class='n' id='review-risk-count-status-closed'></span></button>
+                    </div>
+                    <select class='form-select sr-chip-select' id='review-risk-status-scope-filter-select'>
+                        <option value='all' data-label='{$escaper->escapeHtml($lang['All'])}'>{$escaper->escapeHtml($lang['All'])} (0)</option>
+                        <option value='open' data-label='{$escaper->escapeHtml($lang['Open'])}' selected>{$escaper->escapeHtml($lang['Open'])} (0)</option>
+                        <option value='closed' data-label='{$escaper->escapeHtml($lang['Closed'])}'>{$escaper->escapeHtml($lang['Closed'])} (0)</option>
+                    </select>
+                    </div>";
+                    // A fourth toolbar chip-group here (Unreviewed/Past Due/
+                    // Coming Soon) was tried and removed: the Insights band's
+                    // own Needs Review/Past Due/Coming Soon KPI tiles are
+                    // always visible and already do exactly this filtering in
+                    // one click -- a toolbar control duplicating them added
+                    // clutter without adding capability, and its width pushed
+                    // this row's chip-vs-select breakpoint out to ~1800px,
+                    // collapsing to dropdowns on most normal windows. The
+                    // underlying due_status filter/URL param, server-side
+                    // validation, and Clear-Filters clearability (review-risk.js's
+                    // setDueStatus()/initialUrlHadInsightsFilter) are all still
+                    // in place -- only this visible, redundant toolbar control
+                    // was removed. See that file's setDueStatus() for the
+                    // current (chip-less) shape.
+                    // + Add Risk trigger, gated on the same session permission
+                    // the Submit Risk page itself is gated behind. NOTE: the
+                    // task brief for this button named the session key
+                    // 'submit_risk' (singular) -- grepped the whole codebase
+                    // and that key does not exist anywhere; every real gate on
+                    // this capability (management/index.php's own page guard,
+                    // includes/api.php:~3559, api/v2/includes/risks.php,
+                    // includes/assessments.php, includes/display.php's sidebar
+                    // nav item) checks $_SESSION['submit_risks'] (plural).
+                    // Verified live: with the singular key this button never
+                    // rendered for the admin test account either. Using the
+                    // plural key here so this gate actually matches the
+                    // permission the embedded form's own POST target enforces
+                    // server-side (management/index.php line ~11).
+                    // Matches governance/documentation.php's own '+ AddDocument'
+                    // button shape/pattern (btn btn-danger, the App Red accent
+                    // reserved for this toolbar's one primary action). Opened via
+                    // review-risk.js (explicit .modal('show'), matching this
+                    // page's own convention for every other trigger button here
+                    // -- e.g. #review-risk-bulk-close above -- rather than a
+                    // declarative data-bs-toggle/data-bs-target pair) against
+                    // #review-risk-add-modal (below), a standalone sr-modal
+                    // instance embedding display_add_risk() -- see that modal's
+                    // comment for the data-on-save contract.
+                    //
+                    // Wrapped in .sr-table-toolbar-actions (shared with
+                    // extras/customization's Template Groups toolbar) rather
+                    // than the old page-local .sr-table-tools: that class
+                    // already carries the shared "toolbar/header Add button"
+                    // radius rule (_tables.scss's .sr-table-toolbar-actions
+                    // .btn selector), and pairing it with .sr-table-toolbar's
+                    // own justify-content:space-between (below) pushes this
+                    // one remaining right-side element to the corner without
+                    // .sr-table-tools's old margin-left:auto -- which kept
+                    // pushing right even after wrapping onto its own line,
+                    // stranding a gap on the left. space-between naturally
+                    // packs a lone wrapped item back to the start instead.
+                    if (!empty($_SESSION['submit_risks'])) {
+                        echo "
+                <div class='sr-table-toolbar-actions'>
+                    <a class='btn btn-danger' href='#' id='review-risk-add-btn' role='button'>+ {$escaper->escapeHtml($lang['AddRisk'])}</a>
+                </div>";
                     }
+                    echo "
+            </div>";
+                    // Row 2: the search box, alone, on its own row -- freed
+                    // from competing with the three chip groups (row 1) and
+                    // the Columns/Filters controls (row 3 below) for space.
+                    // .sr-table-search-row is new/page-scoped (_tables.scss);
+                    // .dt-search itself keeps the same id/markup DataTables
+                    // and review-risk.js already bind to, just relocated.
+                    echo "
+            <div class='sr-table-search-row'>
+                <div class='dt-search'>
+                    <input type='search' id='review-risk-search' class='form-control' placeholder='{$escaper->escapeHtml($lang['Search'])}' aria-label='{$escaper->escapeHtml($lang['Search'])}'>
+                </div>
+            </div>";
+                    // Row 3: Filters + Columns, together -- resolved per
+                    // explicit product-owner direction (superseding an
+                    // earlier .sr-qf-bar draft this task tried first): the
+                    // Columns picker moves INTO .sr-qf-selects, as the last
+                    // control after Owner/Team/Risk-Level/Reviewer and the
+                    // Clear Filters button (see that div below) -- so at
+                    // >=1100px, where .sr-table-quickfilters is a plain
+                    // always-visible inline row, Columns reads as literally
+                    // the last item in that same row, right next to Clear
+                    // Filters. Below 1100px, .sr-table-quickfilters (Columns
+                    // now included) collapses behind THIS .sr-qf-toggle
+                    // button same as every other control in that row --
+                    // Filters becomes the single visible trigger, and
+                    // Columns appears once the sheet is opened, rather than
+                    // standing outside it. .sr-qf-toggle is restyled
+                    // (_tables.scss, the shared rule -- also used by
+                    // compliance.php's Initiate Audits/Define Tests/Manage
+                    // Audits and governance/document_exceptions.php/
+                    // documentation.php) to match .filterbtn/.sr-table-filter
+                    // -- the same chrome the Columns trigger itself uses --
+                    // so Filters and Columns read as one consistent button
+                    // family everywhere, not just here.
+                    //
+                    // .sr-qf-toggle stays a DIRECT CHILD of .sr-table-card --
+                    // a sibling of .sr-table-toolbar, .sr-table-search-row
+                    // and .sr-table-quickfilters, matching the reference
+                    // implementation (governance/document_exceptions.php) --
+                    // it's only ever rendered visible below the 1100px
+                    // compact tier (_tables.scss's .sr-qf-toggle rules).
+                    echo "
+            <button type='button' class='sr-qf-toggle' id='review-risk-filters-toggle' aria-expanded='false' aria-controls='review-risk-quickfilters'>
+                <i class='fa fa-filter'></i><span>{$escaper->escapeHtml($lang['Filters'])}</span>
+                <span class='sr-qf-toggle-count' id='review-risk-filters-count' hidden></span>
+            </button>
 
-                    $( 'input, select', this ).on( 'change', function () {
-                        if ( datatableInstance.column(i).search() !== this.value ) {
-                            datatableInstance.column(i).search( this.value ).draw();
-                        }
-                    });
-                });
-                var datatableInstance = $('#{$tableID}').DataTable({
-                    searching: true,
-                    ordering: true,
-                    orderCellsTop: true,
-                    scrollX: true,
-                    createdRow: function(row, data, index){
-                        var background = $('.background-class', $(row)).data('background');
-                        $(row).find('td').addClass(background)
-                    },
-                    order: [[{$order_index}, '{$order_dir}']],
-                    ajax: {
-                        url: BASE_URL + '/api/v2/risk_management/plan_mitigation',
-                        type: 'post',
-                        data: function(d){
-                        },
-                        complete: function(response){
-                        }
-                    },
-                });
-                
-                $(document).ready(function(){
-                    $('.sortable-risk').sortable({
-                        connectWith: '.sortable-risk'
-                    });
-                    $('.sortable-mitigation').sortable({
-                        connectWith: '.sortable-mitigation'
-                    });
-                    $('.sortable-review').sortable({
-                        connectWith: '.sortable-review'
-                    });
-                    $('#save_display_settings').click(function(){
-                        var risk_checkboxes = $('.sortable-risk .hidden-checkbox');
-                        var riskColumns = [];
-                        risk_checkboxes.each(function(){
-                            var check_val = $(this).is(':checked')?1:0;
-                            riskColumns.push([$(this).attr('name'),check_val]);
-                        });
-                        var mitigation_checkboxes = $('.sortable-mitigation .hidden-checkbox');
-                        var mitigationColumns = [];
-                        mitigation_checkboxes.each(function(){
-                            var check_val = $(this).is(':checked')?1:0;
-                            mitigationColumns.push([$(this).attr('name'),check_val]);
-                        });
-                        var review_checkboxes = $('.sortable-review .hidden-checkbox');
-                        var reviewColumns = [];
-                        review_checkboxes.each(function(){
-                            var check_val = $(this).is(':checked')?1:0;
-                            reviewColumns.push([$(this).attr('name'),check_val]);
-                        });
-                        $.ajax({
-                            type: 'POST',
-                            url: BASE_URL + '/api/v2/risk_management/save_custom_plan_mitigation_display_settings',
-                            data:{
-                                risk_columns: riskColumns,
-                                mitigation_columns: mitigationColumns,
-                                review_columns: reviewColumns,
-                            },
-                            success: function(res){
-                                $('#setting_modal').modal('hide');
-                                showAlertsFromArray(res.status_message);
-                                document.location.reload();
-                            },
-                            error: function(xhr,status,error){
-                                if(!retryCSRF(xhr, this)){
-                                    if(xhr.responseJSON && xhr.responseJSON.status_message) {
-                                        showAlertsFromArray(xhr.responseJSON.status_message);
-                                    }
-                                }
+            <div class='sr-bulk-bar d-none' id='review-risk-bulk-bar'>
+                <button type='button' class='sr-bulk-clear' id='review-risk-bulk-clear' aria-label='{$escaper->escapeHtml($lang['Clear'])}'>&times;</button>
+                <span class='sr-bulk-count' id='review-risk-bulk-count'></span>
+                <!-- Select all N: escalates a page-level selection to every
+                     risk matching the current toolbar/secondary filters/search,
+                     resolved server-side via /risk_management/review_risk/filtered_ids
+                     since this grid is serverSide -- the same .sr-bulk-lnk
+                     affordance the Governance controls grid and Plan Projects
+                     offer. Shown by review-risk.js syncBulkBar() only while
+                     there are more matching rows than are selected. -->
+                <button type='button' class='sr-bulk-lnk d-none' id='review-risk-select-all-filtered'></button>
+                <div class='sr-bulk-actions'>";
+                    // Each bulk action button is gated on the same session
+                    // permission its endpoint enforces server-side -- render
+                    // only what this user could actually use, matching how
+                    // Task 12's row actions are permission-gated. Every
+                    // button below follows this same if-guarded-echo shape;
+                    // there is no ungated bulk action.
+                    if (!empty($_SESSION['comment_risk_management'])) {
+                        echo "<button type='button' class='btn btn-outline-secondary btn-sm' id='review-risk-bulk-comment'>{$escaper->escapeHtml($lang['AddAComment'])}</button>";
+                    }
+                    if (!empty($_SESSION['modify_risks'])) {
+                        echo "<button type='button' class='btn btn-outline-secondary btn-sm' id='review-risk-bulk-reassign-owner'>{$escaper->escapeHtml($lang['ReassignRiskOwner'])}</button>";
+                    }
+                    if (!empty($_SESSION['plan_mitigations'])) {
+                        echo "<button type='button' class='btn btn-outline-secondary btn-sm' id='review-risk-bulk-reassign-mitigation-owner'>{$escaper->escapeHtml($lang['ReassignMitigationOwner'])}</button>";
+                    }
+                    if (!empty($_SESSION['modify_risks'])) {
+                        echo "<button type='button' class='btn btn-outline-secondary btn-sm' id='review-risk-bulk-change-status'>{$escaper->escapeHtml($lang['ChangeStatus'])}</button>";
+                    }
+                    if (!empty($_SESSION['close_risks'])) {
+                        echo "<button type='button' class='btn btn-outline-danger btn-sm' id='review-risk-bulk-close'>{$escaper->escapeHtml($lang['CloseRisk'])}</button>";
+                    }
+                    // Final whole-branch review, Finding 4b (re-review fix: this explanation was
+                    // originally placed INSIDE the echoed double-quoted string below as an HTML
+                    // <!-- --> comment, which (a) interpolated the literal $order_field token --
+                    // undefined in this function's scope, emitting a PHP warning on every page
+                    // render -- and (b) shipped ~700 bytes of internal-implementation detail as
+                    // literal HTML to every browser. Moved out to a real PHP comment instead.
+                    //
+                    // Risk Level and Due Date (below) previously carried class='sortable' + a
+                    // sort-ic placeholder like ID/Risk, but neither 'risk_level' nor 'due_date' is
+                    // in get_risks()'s sort allowlist (functions.php's $order_field switch) --
+                    // due_date can't be either, since it's computed in PHP after the query runs
+                    // (see getReviewRiskDatatableResponse()'s Finding 4a comment). Clicking either
+                    // header was a silent no-op. Removed the class/icon on just these two so the
+                    // UI stops advertising sort behavior that doesn't exist; ID/Risk (genuinely
+                    // SQL-sortable) are untouched.
+                    //
+                    // Column-parity follow-up (post-merge; .superpowers/sdd/review-risk-
+                    // followups/column-parity-report.md): the <th data-col='...' class='d-none'>
+                    // block between 'team' and 'due_date' below restores the legacy Plan Your
+                    // Mitigations/Perform Management Reviews/Review Risks Regularly pages' full
+                    // Columns picker as ~37 customer-opt-in columns (default-hidden, same
+                    // data-col mechanism risk_score/responsible/team already use above -- see
+                    // review-risk.js's COLUMN_GROUPS for the grouped picker and the matching
+                    // `columns:` DataTable defs, which MUST stay in this exact same order --
+                    // DataTables matches column defs and <th>s positionally, not by name).
+                    echo "
+                </div>
+            </div>
+
+            <div class='sr-table-quickfilters d-none' id='review-risk-quickfilters'>
+                <div class='sr-qf-selects'>
+                    <select id='review-risk-user-filter' class='form-select' multiple data-placeholder='{$escaper->escapeHtml($lang['AllUsers'])}'></select>
+                    <select id='review-risk-team-filter' class='form-select' multiple data-placeholder='{$escaper->escapeHtml($lang['AllTeams'])}'></select>
+                    <select id='review-risk-level-filter' class='form-select' multiple data-placeholder='{$escaper->escapeHtml($lang['AllRiskLevels'])}'></select>
+                    <!-- Columns picker (design-system.md §6c) -- lives in
+                         .sr-qf-selects (per explicit product-owner
+                         direction), rather than the toolbar's old
+                         .sr-table-tools zone (removed earlier this branch)
+                         or a standalone wrapper. At >=1100px this row is
+                         plain and always visible; below 1100px the whole row
+                         (Columns included) collapses behind .sr-qf-toggle
+                         above, same as every other control here.
+                         .colpicker's own JS wiring (review-risk.js) is
+                         entirely id/class-based (#review-risk-colpicker-btn,
+                         #review-risk-colpanel, .closest('.colpicker')) with
+                         no assumption about which parent it sits in or which
+                         sibling comes before/after it. -->
+                    <div class='colpicker'>
+                        <button type='button' class='filterbtn sr-table-filter' id='review-risk-colpicker-btn'>
+                            <i class='fa fa-table-columns' aria-hidden='true'></i> {$escaper->escapeHtml($lang['Columns'])}
+                        </button>
+                        <div class='colpanel d-none' id='review-risk-colpanel'></div>
+                    </div>
+                    <!-- Clear Filters -- moved to the END of this row (after
+                         Columns), per explicit product-owner direction.
+                         Matches every other page's sr-qf-clear button
+                         (governance/document_exceptions.php, governance/
+                         documentation.php): btn btn-link btn-sm sr-qf-clear
+                         -- this one was missing the three Bootstrap link-
+                         button base classes, rendering unstyled where every
+                         other page's version reads as a small text link. -->
+                    <button type='button' class='btn btn-link btn-sm sr-qf-clear d-none' id='review-risk-filters-clear'>{$escaper->escapeHtml($lang['ClearFilters'])}</button>
+                </div>
+            </div>
+
+            <div class='sr-table-scroll'>
+                <table id='review_risk_table' class='sr-table' width='100%'>
+                    <thead>
+                        <tr>
+                            <th style='width:36px;'><input type='checkbox' id='review-risk-select-all'></th>
+                            <th data-name='id' class='num sortable'>{$escaper->escapeHtml($lang['ID'])} <span class='sort-ic'></span></th>
+                            <th data-name='subject' class='sortable'>{$escaper->escapeHtml($lang['Risk'])} <span class='sort-ic'></span></th>
+                            <th>{$escaper->escapeHtml($lang['NeedsColumn'])}</th>
+                            <th data-name='risk_level'>{$escaper->escapeHtml($lang['RiskLevel'])}</th>
+                            <th data-col='risk_score' class='d-none'>{$escaper->escapeHtml($lang['RiskScoreColumn'])}</th>
+                            <th data-col='responsible'>{$escaper->escapeHtml($lang['Owner'])}</th>
+                            <th data-col='team' class='d-none'>{$escaper->escapeHtml($lang['Team'])}</th>
+                            <th data-col='risk_status' class='d-none'>{$escaper->escapeHtml($lang['Status'])}</th>
+                            <th data-col='submission_date' class='d-none'>{$escaper->escapeHtml($lang['SubmissionDate'])}</th>
+                            <th data-col='closure_date' class='d-none'>{$escaper->escapeHtml($lang['DateClosed'])}</th>
+                            <th data-col='reference_id' class='d-none'>{$escaper->escapeHtml($lang['ExternalReferenceId'])}</th>
+                            <th data-col='regulation' class='d-none'>{$escaper->escapeHtml($lang['ControlRegulation'])}</th>
+                            <th data-col='control_number' class='d-none'>{$escaper->escapeHtml($lang['ControlNumber'])}</th>
+                            <th data-col='location' class='d-none'>{$escaper->escapeHtml($lang['SiteLocation'])}</th>
+                            <th data-col='source' class='d-none'>{$escaper->escapeHtml($lang['RiskSource'])}</th>
+                            <th data-col='category' class='d-none'>{$escaper->escapeHtml($lang['Category'])}</th>
+                            <th data-col='additional_stakeholders' class='d-none'>{$escaper->escapeHtml($lang['AdditionalStakeholders'])}</th>
+                            <th data-col='technology' class='d-none'>{$escaper->escapeHtml($lang['Technology'])}</th>
+                            <th data-col='manager' class='d-none'>{$escaper->escapeHtml($lang['OwnersManager'])}</th>
+                            <th data-col='submitted_by' class='d-none'>{$escaper->escapeHtml($lang['SubmittedBy'])}</th>
+                            <th data-col='risk_tags' class='d-none'>{$escaper->escapeHtml($lang['Tags'])}</th>
+                            <th data-col='scoring_method' class='d-none'>{$escaper->escapeHtml($lang['RiskScoringMethod'])}</th>
+                            <th data-col='residual_risk' class='d-none'>{$escaper->escapeHtml($lang['ResidualRisk'])}</th>
+                            <th data-col='project' class='d-none'>{$escaper->escapeHtml($lang['Project'])}</th>
+                            <th data-col='days_open' class='d-none'>{$escaper->escapeHtml($lang['DaysOpen'])}</th>
+                            <th data-col='affected_assets' class='d-none'>{$escaper->escapeHtml($lang['AffectedAssets'])}</th>
+                            <th data-col='risk_assessment' class='d-none'>{$escaper->escapeHtml($lang['RiskAssessment'])}</th>
+                            <th data-col='additional_notes' class='d-none'>{$escaper->escapeHtml($lang['AdditionalNotes'])}</th>
+                            <th data-col='risk_mapping' class='d-none'>{$escaper->escapeHtml($lang['RiskMapping'])}</th>
+                            <th data-col='threat_mapping' class='d-none'>{$escaper->escapeHtml($lang['ThreatMapping'])}</th>
+                            <th data-col='last_comment' class='d-none'>{$escaper->escapeHtml($lang['LastComment'])}</th>";
+                    // Customization Extra custom fields (is_basic=0) for this section --
+                    // basic fields already have a matching static <th> above (or are
+                    // skipped by build_active_review_risk_columns() itself when
+                    // unresolvable), so only genuinely new custom_field_N keys need a
+                    // NEW <th> here. Must stay positionally aligned with review-risk.js's
+                    // COLUMN_GROUPS-replacement ordering and Task 8's `columns:` config --
+                    // DataTables matches column defs to <th>s by position, not by name.
+                    if ($active_review_risk_columns !== null) {
+                        foreach ($active_review_risk_columns as $col) {
+                            if ($col['group'] === 'RiskColumns' && strpos($col['key'], 'custom_field_') === 0) {
+                                echo "<th data-col='{$escaper->escapeHtmlAttr($col['key'])}' class='d-none'>{$escaper->escapeHtml($col['label'])}</th>";
                             }
-                        });
-                        return false;
-                    });
-                });
-            });
-            
-        </script>
+                        }
+                    }
+                    echo "
+                            <th data-col='mitigation_planned' class='d-none'>{$escaper->escapeHtml($lang['MitigationPlanned'])}</th>
+                            <th data-col='planning_strategy' class='d-none'>{$escaper->escapeHtml($lang['PlanningStrategy'])}</th>
+                            <th data-col='planning_date' class='d-none'>{$escaper->escapeHtml($lang['MitigationPlanning'])}</th>
+                            <th data-col='mitigation_effort' class='d-none'>{$escaper->escapeHtml($lang['MitigationEffort'])}</th>
+                            <th data-col='mitigation_cost' class='d-none'>{$escaper->escapeHtml($lang['MitigationCost'])}</th>
+                            <th data-col='mitigation_owner' class='d-none'>{$escaper->escapeHtml($lang['MitigationOwner'])}</th>
+                            <th data-col='mitigation_team' class='d-none'>{$escaper->escapeHtml($lang['MitigationTeam'])}</th>
+                            <th data-col='mitigation_accepted' class='d-none'>{$escaper->escapeHtml($lang['MitigationAccepted'])}</th>
+                            <th data-col='mitigation_date' class='d-none'>{$escaper->escapeHtml($lang['MitigationDate'])}</th>
+                            <th data-col='mitigation_controls' class='d-none'>{$escaper->escapeHtml($lang['MitigationControls'])}</th>
+                            <th data-col='current_solution' class='d-none'>{$escaper->escapeHtml($lang['CurrentSolution'])}</th>
+                            <th data-col='security_recommendations' class='d-none'>{$escaper->escapeHtml($lang['SecurityRecommendations'])}</th>
+                            <th data-col='security_requirements' class='d-none'>{$escaper->escapeHtml($lang['SecurityRequirements'])}</th>";
+                    // Customization Extra custom fields for the Mitigation section --
+                    // see the matching RiskColumns comment above for the full rationale.
+                    if ($active_review_risk_columns !== null) {
+                        foreach ($active_review_risk_columns as $col) {
+                            if ($col['group'] === 'MitigationColumns' && strpos($col['key'], 'custom_field_') === 0) {
+                                echo "<th data-col='{$escaper->escapeHtmlAttr($col['key'])}' class='d-none'>{$escaper->escapeHtml($col['label'])}</th>";
+                            }
+                        }
+                    }
+                    echo "
+                            <th data-col='review_completed' class='d-none'>{$escaper->escapeHtml($lang['ReviewCompleted'])}</th>
+                            <th data-col='management_review' class='d-none'>{$escaper->escapeHtml($lang['ManagementReview'])}</th>
+                            <th data-col='review_date' class='d-none'>{$escaper->escapeHtml($lang['ReviewDate'])}</th>
+                            <th data-col='next_review_date' class='d-none'>{$escaper->escapeHtml($lang['NextReviewDate'])}</th>
+                            <th data-col='next_step' class='d-none'>{$escaper->escapeHtml($lang['NextStep'])}</th>
+                            <th data-col='comments' class='d-none'>{$escaper->escapeHtml($lang['Comments'])}</th>
+                            <th data-col='reviewer' class='d-none'>{$escaper->escapeHtml($lang['ReviewedBy'])}</th>";
+                    // Customization Extra custom fields for the Review section --
+                    // see the matching RiskColumns comment above for the full rationale.
+                    if ($active_review_risk_columns !== null) {
+                        foreach ($active_review_risk_columns as $col) {
+                            if ($col['group'] === 'ReviewColumns' && strpos($col['key'], 'custom_field_') === 0) {
+                                echo "<th data-col='{$escaper->escapeHtmlAttr($col['key'])}' class='d-none'>{$escaper->escapeHtml($col['label'])}</th>";
+                            }
+                        }
+                    }
+                    echo "
+                            <th data-name='due_date'>{$escaper->escapeHtml($lang['DueDate'])}</th>
+                            <!-- .sr-actions-col (shared with admin/data_integrity.php,
+                                 includes/compliance.php) -- NOT an inline fixed width.
+                                 The compact-tier mixin (sr-row-actions-overflow-tier,
+                                 _tables.scss) narrows this column to 44px once the
+                                 standing View/Edit/Plan Mitigation/Perform Review icon
+                                 cluster collapses to a single ellipsis-menu toggle
+                                 below 1400px; a hardcoded inline width can't be overridden by
+                                 that class-scoped rule (inline styles always win), so
+                                 the fixed 150px this previously carried stayed reserved
+                                 for four icons' worth of space even once only one
+                                 toggle button remained -- widening the table by 106px
+                                 of dead space at exactly the point where every pixel
+                                 mattered, and pushing the toggle itself further into
+                                 the horizontally-scrolled-away region. No width is set
+                                 here at full viewport width either, matching every
+                                 other .sr-actions-col consumer -- the column sizes to
+                                 its own content (the icon cluster) with nothing
+                                 hardcoded to fight.
+
+                                 sr-actions-col-sticky (page-scoped, NOT part of the
+                                 shared .sr-actions-col rule above): pins this column to
+                                 the right edge of .sr-table-scroll's horizontal scroll
+                                 so Actions stays reachable once optional columns push
+                                 the table wide. review-risk.js's 'actions' column def
+                                 carries the matching className on the <td> side. Scoped
+                                 to #review_risk_table in _tables.scss so the OTHER
+                                 .sr-actions-col consumers (admin/data_integrity.php,
+                                 includes/compliance.php) are untouched. -->
+                            <th class='sr-actions-col sr-actions-col-sticky'></th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+
+            <div class='sr-table-foot'>
+                <div class='sr-table-foot-left'>
+                    <div class='dt-length'><label>{$escaper->escapeHtml($lang['Show'])}
+                        <select id='review-risk-length'><option value='10'>10</option><option value='25' selected>25</option><option value='50'>50</option><option value='100'>100</option><option value='-1'>{$escaper->escapeHtml($lang['ALL'])}</option></select>
+                    </label></div>
+                    <div class='dt-info' id='review-risk-info'></div>
+                </div>
+                <div class='sr-table-foot-right'>
+                    <div class='dt-paging' id='review-risk-pager'></div>
+                </div>
+            </div>
     ";
-}
 
-/********************************************
-* FUNCTION: DISPLAY MANAGEMENT REVIEW TABLE *
-*********************************************/
-function display_management_review()
-{
-
-    global $lang, $escaper;
-
-    $user = get_user_by_id($_SESSION['uid']);
-    $settings = json_decode($user["custom_perform_reviews_display_settings"] ?? '', true);
-    $risk_colums_setting = isset($settings["risk_colums"])?$settings["risk_colums"]:[];
-    $mitigation_colums_setting = isset($settings["mitigation_colums"])?$settings["mitigation_colums"]:[];
-    $review_colums_setting = isset($settings["review_colums"])?$settings["review_colums"]:[];
-    $columns_setting = array_merge($risk_colums_setting, $mitigation_colums_setting, $review_colums_setting);
-    $columns = [];
-
-    foreach($columns_setting as $column) {
-        if(stripos($column[0], "custom_field_") !== false) {
-            if(customization_extra() && $column[1] == 1) $columns[] = $column[0];
-        } else if($column[1] == 1) {
-            $columns[] = $column[0];
-        }
-    }
-    if(!count($columns)) {
-        $columns = array("id","risk_status","subject","calculated_risk","submission_date","mitigation_planned","management_review");
-    }
-
-    $tr = "";
-    $index = 0;
-    $order_index = 0;
-    $order_dir = "asc";
-
-    // If the Customization Extra exists
-    $file = realpath(__DIR__ . '/../extras/customization/index.php');
-    if (file_exists($file)) {
-        // Load it
-        require_once($file);
+    // Bulk Add Comment modal (Task 15). Gated on the same session permission
+    // as its trigger button (#review-risk-bulk-comment, above) -- there is no
+    // reason to ship the modal markup to a user who cannot see the button
+    // that opens it, matching this function's existing if-guarded-echo
+    // convention for every other bulk action.
+    if (!empty($_SESSION['comment_risk_management'])) {
+        echo "
+            <div class='modal fade sr-modal' id='review-risk-comment-modal' tabindex='-1' aria-labelledby='review-risk-comment-modal-title' aria-hidden='true'>
+                <div class='modal-dialog modal-dialog-centered'>
+                    <div class='modal-content'>
+                        <div class='modal-header'>
+                            <span class='sr-modal-icon'><i class='fa fa-comment' aria-hidden='true'></i></span>
+                            <h4 class='modal-title' id='review-risk-comment-modal-title'></h4>
+                            <button type='button' class='btn-close' data-bs-dismiss='modal' aria-label='{$escaper->escapeHtml($lang['Close'])}'></button>
+                        </div>
+                        <div class='modal-body'>
+                            <div class='alert alert-danger d-none sr-modal-inline-error' role='alert'></div>
+                            <section class='sr-qcard'>
+                                <div class='sr-qcard-body'>
+                                    <div class='sr-qgrid'>
+                                        <div class='sr-qfield sr-qfield--full'>
+                                            <label class='sr-qlabel' for='review-risk-comment-text'>{$escaper->escapeHtml($lang['Comment'])} <span class='required'>*</span></label>
+                                            <textarea class='form-control' id='review-risk-comment-text' rows='4'></textarea>
+                                        </div>
+                                    </div>
+                                </div>
+                            </section>
+                        </div>
+                        <div class='modal-footer'>
+                            <button type='button' class='btn btn-dark' data-bs-dismiss='modal'>{$escaper->escapeHtml($lang['Cancel'])}</button>
+                            <button type='button' class='btn btn-submit' id='review-risk-comment-submit'>{$escaper->escapeHtml($lang['Save'])}</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        ";
     }
 
-    foreach($columns as $column) {
-
-        if($column == "calculated_risk") {
-            $order_index = $index;
-            $order_dir = "desc";
-        }
-
-        if($column == "subject") {
-            $style = "min-width:250px;";
-        } else {
-            $style = "min-width:100px;";
-        }
-
-        if(($pos = stripos($column, "custom_field_")) !== false) {
-            if(customization_extra()){
-                $field_id = str_replace("custom_field_", "", $column);
-                $custom_field = get_field_by_id($field_id);
-                $label = $escaper->escapeHtml($custom_field['name']);
-                $tr .= "<th data-name='" . $escaper->escapeHtmlAttr($column) . "' align='left' style='" . $style . "'>" . $label . "</th>";
-                $index++;
-            }
-        } else {
-            $label = get_label_by_risk_field_name($column);
-            $tr .= "<th data-name='" . $escaper->escapeHtmlAttr($column) . "' align='left' style='" . $style . "'>" . $label . "</th>";
-            $index++;
-        }
+    // Bulk Reassign Risk Owner modal (Task 16). Gated on the same session
+    // permission as its trigger button (#review-risk-bulk-reassign-owner,
+    // above) and the same permission PATCH /risks/{id}'s updateRisk()
+    // enforces server-side -- matching Task 15's comment-modal gating
+    // convention immediately above.
+    if (!empty($_SESSION['modify_risks'])) {
+        echo "
+            <div class='modal fade sr-modal' id='review-risk-reassign-owner-modal' tabindex='-1' aria-labelledby='review-risk-reassign-owner-modal-title' aria-hidden='true'>
+                <div class='modal-dialog modal-dialog-centered'>
+                    <div class='modal-content'>
+                        <div class='modal-header'>
+                            <span class='sr-modal-icon'><i class='fa fa-user' aria-hidden='true'></i></span>
+                            <h4 class='modal-title' id='review-risk-reassign-owner-modal-title'></h4>
+                            <button type='button' class='btn-close' data-bs-dismiss='modal' aria-label='{$escaper->escapeHtml($lang['Close'])}'></button>
+                        </div>
+                        <div class='modal-body'>
+                            <div class='alert alert-danger d-none sr-modal-inline-error' role='alert'></div>
+                            <section class='sr-qcard'>
+                                <div class='sr-qcard-body'>
+                                    <div class='sr-qgrid'>
+                                        <div class='sr-qfield sr-qfield--full'>
+                                            <label class='sr-qlabel' for='review-risk-reassign-owner-select'>{$escaper->escapeHtml($lang['Owner'])} <span class='required'>*</span></label>
+                                            <select class='form-select' id='review-risk-reassign-owner-select'></select>
+                                        </div>
+                                    </div>
+                                </div>
+                            </section>
+                        </div>
+                        <div class='modal-footer'>
+                            <button type='button' class='btn btn-dark' data-bs-dismiss='modal'>{$escaper->escapeHtml($lang['Cancel'])}</button>
+                            <button type='button' class='btn btn-submit' id='review-risk-reassign-owner-submit'>{$escaper->escapeHtml($lang['Save'])}</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        ";
     }
 
-    $tableID = "management-review";
+    // Bulk Reassign Mitigation Owner modal (Task 17). Gated on the same
+    // session permission as its trigger button
+    // (#review-risk-bulk-reassign-mitigation-owner, above) and the same
+    // permission PATCH /risks/{id}/mitigations's saveMitigation() enforces
+    // server-side -- matching Task 16's reassign-owner modal gating
+    // convention immediately above.
+    if (!empty($_SESSION['plan_mitigations'])) {
+        echo "
+            <div class='modal fade sr-modal' id='review-risk-reassign-mitigation-owner-modal' tabindex='-1' aria-labelledby='review-risk-reassign-mitigation-owner-modal-title' aria-hidden='true'>
+                <div class='modal-dialog modal-dialog-centered'>
+                    <div class='modal-content'>
+                        <div class='modal-header'>
+                            <span class='sr-modal-icon'><i class='fa fa-shield-halved' aria-hidden='true'></i></span>
+                            <h4 class='modal-title' id='review-risk-reassign-mitigation-owner-modal-title'></h4>
+                            <button type='button' class='btn-close' data-bs-dismiss='modal' aria-label='{$escaper->escapeHtml($lang['Close'])}'></button>
+                        </div>
+                        <div class='modal-body'>
+                            <div class='alert alert-danger d-none sr-modal-inline-error' role='alert'></div>
+                            <section class='sr-qcard'>
+                                <div class='sr-qcard-body'>
+                                    <div class='sr-qgrid'>
+                                        <div class='sr-qfield sr-qfield--full'>
+                                            <label class='sr-qlabel' for='review-risk-reassign-mitigation-owner-select'>{$escaper->escapeHtml($lang['Owner'])} <span class='required'>*</span></label>
+                                            <select class='form-select' id='review-risk-reassign-mitigation-owner-select'></select>
+                                        </div>
+                                    </div>
+                                </div>
+                            </section>
+                        </div>
+                        <div class='modal-footer'>
+                            <button type='button' class='btn btn-dark' data-bs-dismiss='modal'>{$escaper->escapeHtml($lang['Cancel'])}</button>
+                            <button type='button' class='btn btn-submit' id='review-risk-reassign-mitigation-owner-submit'>{$escaper->escapeHtml($lang['Save'])}</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        ";
+    }
+
+    // Bulk Change Status modal (Task 18). Gated on the same session
+    // permission as its trigger button (#review-risk-bulk-change-status,
+    // above) and the same permission updateStatusForm()'s
+    // `has_permission("modify_risks") && check_access_for_risk($id)` enforces
+    // server-side -- matching Task 16/17's modal gating convention above.
+    // The <select> is left empty here and populated by JS
+    // (review-risk.js's click handler on #review-risk-bulk-change-status)
+    // from filterOptionsCache.statuses -- same "server data, JS-populated
+    // select" shape the owner/mitigation-owner modals use above, since the
+    // `status` table's seed values aren't hardcoded anywhere in this repo
+    // (same situation as risk_levels).
+    if (!empty($_SESSION['modify_risks'])) {
+        echo "
+            <div class='modal fade sr-modal' id='review-risk-status-modal' tabindex='-1' aria-labelledby='review-risk-status-modal-title' aria-hidden='true'>
+                <div class='modal-dialog modal-dialog-centered'>
+                    <div class='modal-content'>
+                        <div class='modal-header'>
+                            <span class='sr-modal-icon'><i class='fa fa-clipboard-check' aria-hidden='true'></i></span>
+                            <h4 class='modal-title' id='review-risk-status-modal-title'></h4>
+                            <button type='button' class='btn-close' data-bs-dismiss='modal' aria-label='{$escaper->escapeHtml($lang['Close'])}'></button>
+                        </div>
+                        <div class='modal-body'>
+                            <div class='alert alert-danger d-none sr-modal-inline-error' role='alert'></div>
+                            <section class='sr-qcard'>
+                                <div class='sr-qcard-body'>
+                                    <div class='sr-qgrid'>
+                                        <div class='sr-qfield sr-qfield--full'>
+                                            <label class='sr-qlabel' for='review-risk-status-select'>{$escaper->escapeHtml($lang['Status'])} <span class='required'>*</span></label>
+                                            <select class='form-select' id='review-risk-status-select'></select>
+                                            <span class='sr-qhint'>{$escaper->escapeHtml($lang['ChangeStatusHint'])}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </section>
+                        </div>
+                        <div class='modal-footer'>
+                            <button type='button' class='btn btn-dark' data-bs-dismiss='modal'>{$escaper->escapeHtml($lang['Cancel'])}</button>
+                            <button type='button' class='btn btn-submit' id='review-risk-status-submit'>{$escaper->escapeHtml($lang['Save'])}</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        ";
+    }
+
+    // Bulk Close Risk modal (Task 19). Gated on the same session permission
+    // as its trigger button (#review-risk-bulk-close, above) and the same
+    // permission closeriskForm()'s `check_permission("close_risks") &&
+    // check_access_for_risk($id)` enforces server-side -- matching Task
+    // 16/17/18's modal gating convention above. Unlike those, this is a
+    // §8 destructive-confirm (no form fields): backdrop/Esc disabled, Cancel
+    // is the focus target, and the body states the consequence once in a
+    // `.sr-qnote` the way governance/index.php's real destructive-confirm
+    // modals (framework/control delete) already do, rather than the plain
+    // `<p>` the task brief's own sample used.
+    //
+    // No `autofocus` attribute on the Cancel button: the HTML attribute is a
+    // documented Bootstrap 5 no-op here (only processed once at DOM
+    // insertion, while the modal is still `display:none`; inert by the time
+    // `.modal('show')` later reveals it). governance/index.php's real
+    // destructive-confirm modals carry no such attribute either -- the actual
+    // focus-on-open behavior lives in review-risk.js's `shown.bs.modal`
+    // handler, matching governance-frameworks.js's identical fix.
+    if (!empty($_SESSION['close_risks'])) {
+        // Bulk Close Risk follow-up: the single-risk Close Risk flow
+        // (view.php Actions -> Close Risk, management/partials/close.php)
+        // prompts for a Reason (create_dropdown('close_reason'), the same
+        // `close_reason` DB lookup table every close-reason report/filter in
+        // the app already reads) and Close-Out Information (a free-text
+        // note) before closing -- the original Task 19 bulk modal skipped
+        // both fields entirely ("the spec's mockup never designed per-risk
+        // reason/note collection for the bulk case," per closeRiskOnOne()'s
+        // own comment in review-risk.js), sending empty strings for every
+        // risk. Product-owner follow-up: bring the SAME two fields into the
+        // bulk modal -- one reason/note pair applies to every selected risk
+        // in the batch (not one per risk; that's a UX size that doesn't fit
+        // a "select many, act once" bulk action), reusing create_dropdown()
+        // with a distinct $id (last positional arg) so this doesn't collide
+        // with any other close_reason dropdown elsewhere on the page (there
+        // isn't one, but the single-risk form's own `id='close_reason'`
+        // convention only works because that form is never on the same page
+        // as this one -- an explicit distinct id here is the same
+        // discipline this page's other embedded-form work already applied
+        // when embedding Submit Risk's form via #review-risk-add-modal).
+        // $returnHtml=true (6th positional arg) so this can be interpolated
+        // into the echoed string below, matching how this whole function
+        // builds its markup.
+        $review_risk_close_reason_dropdown = create_dropdown('close_reason', null, null, true, false, true, '', '--', '', true, 0, null, true, 'review-risk-close-reason');
+        echo "
+            <div class='modal fade sr-modal' id='review-risk-close-modal' tabindex='-1' aria-labelledby='review-risk-close-modal-title' aria-hidden='true' data-bs-backdrop='static' data-bs-keyboard='false'>
+                <div class='modal-dialog modal-dialog-centered'>
+                    <div class='modal-content'>
+                        <div class='modal-header'>
+                            <span class='sr-modal-icon sr-modal-icon--danger'><i class='fa fa-triangle-exclamation' aria-hidden='true'></i></span>
+                            <h4 class='modal-title' id='review-risk-close-modal-title'></h4>
+                            <button type='button' class='btn-close' data-bs-dismiss='modal' aria-label='{$escaper->escapeHtml($lang['Close'])}'></button>
+                        </div>
+                        <div class='modal-body'>
+                            <div class='sr-qnote'>
+                                <i class='fa fa-triangle-exclamation sr-qnote-ico' aria-hidden='true'></i>
+                                <span>{$escaper->escapeHtml($lang['CloseRiskBulkConfirmBody'])}</span>
+                            </div>
+                            <div class='mb-2'>
+                                <label for='review-risk-close-reason' class='form-label'>{$escaper->escapeHtml($lang['Reason'])}:</label>
+                                {$review_risk_close_reason_dropdown}
+                            </div>
+                            <div class='mb-2'>
+                                <label for='review-risk-close-note' class='form-label'>{$escaper->escapeHtml($lang['CloseOutInformation'])}:</label>
+                                <textarea name='note' id='review-risk-close-note' rows='3' class='form-control'></textarea>
+                            </div>
+                        </div>
+                        <div class='modal-footer'>
+                            <button type='button' class='btn btn-dark' data-bs-dismiss='modal'>{$escaper->escapeHtml($lang['Cancel'])}</button>
+                            <button type='button' class='btn btn-submit' id='review-risk-close-submit'>{$escaper->escapeHtml($lang['CloseRisk'])}</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        ";
+    }
+
+    // + Add Risk modal (review-risk-add-modal): an sr-modal shell (design-
+    // system.md §8, "Form-in-modal") around the exact same display_add_risk()
+    // call the Compliance module already embeds twice (compliance/testing.php
+    // and compliance/view_test.php's #modal-new-risk) -- reused verbatim, zero
+    // changes to display_add_risk() or anything it calls, so the Customization
+    // Extra's field layout/order/labels come along automatically. Deliberately
+    // NOT #modal-new-risk / the legacy 'modal hide fade in' chrome those two
+    // pages use -- this page is built on the sr-modal shell throughout, and
+    // that id/behavior is tied to Compliance's own associate-with-a-test flow
+    // elsewhere in the app. Gated on the same submit_risks session permission
+    // (see the trigger button's comment above for why it's 'submit_risks',
+    // plural, not the brief's originally-named 'submit_risk').
+    //
+    // data-on-save='refresh-and-close' is a general-purpose convention (not
+    // hardcoded to this page) that risk.js's save-risk-form success handler
+    // checks for: when the submitted form's closest data-on-save='refresh-
+    // and-close' ancestor is found, risk.js hides that modal and fires a
+    // page-agnostic 'simplerisk:risk-created' event on document instead of
+    // doing its default full-page redirect to view.php. Any current or future
+    // page can opt a modal into this same behavior by adding this attribute.
+    if (!empty($_SESSION['submit_risks'])) {
+        echo "
+            <div class='modal fade sr-modal' id='review-risk-add-modal' tabindex='-1' aria-labelledby='review-risk-add-modal-title' aria-hidden='true' data-on-save='refresh-and-close'>
+                <div class='modal-dialog modal-xl modal-dialog-scrollable'>
+                    <div class='modal-content'>
+                        <div class='modal-header'>
+                            <span class='sr-modal-icon'><i class='fa fa-plus' aria-hidden='true'></i></span>
+                            <h4 class='modal-title' id='review-risk-add-modal-title'>{$escaper->escapeHtml($lang['NewRisk'])}</h4>
+                            <button type='button' class='btn-close' data-bs-dismiss='modal' aria-label='{$escaper->escapeHtml($lang['Close'])}'></button>
+                        </div>
+                        <div class='modal-body'>
+        ";
+        display_add_risk();
+        // The sr-modal shell's documented anatomy (scss/modules/_sr-modal.scss,
+        // header comment) puts a modal's actions in a .modal-footer -- 'left
+        // hint text + right-aligned actions' -- pinned below the scrolling
+        // body. display_add_risk() renders its own Submit/Clear buttons and
+        // its instruction line INSIDE the <form>, deep in the body, because
+        // its four other consumers are full pages rather than modals; that
+        // shared output is deliberately left alone here.
+        //
+        // So this footer ships empty and review-risk.js fills it on open (see
+        // its syncAddRiskModalFooter()). The buttons are NOT moved into it:
+        // risk.js resolves the form to submit with $this.closest('form') and
+        // display.php's own #reset_form handler resolves the tab with
+        // $(reset_btn).closest('.tab-data'), so a button re-parented out of
+        // the form stops submitting and stops resetting. The footer gets
+        // proxy buttons that forward their clicks to the real (CSS-hidden)
+        // ones still sitting inside the active tab's form -- which also keeps
+        // the Customization Extra's one-form-per-template-group tabs working,
+        // since the proxy always targets whichever tab is currently active.
+        echo "
+                        </div>
+                        <div class='modal-footer' id='review-risk-add-modal-footer'>
+                            <span class='sr-modal-hint' id='review-risk-add-modal-hint'></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        ";
+    }
+
     echo "
-        <table id='{$tableID}' width='100%' class='risk-datatable table table-bordered table-striped table-condensed'>
-            <thead >
-                <tr>{$tr}</tr>
-            </thead>
-            <tbody>
-            </tbody>
-        </table>
-        <script>
-            $(function(){
-                var form = $('#{$tableID}').parents('form');
-                $('#{$tableID} thead tr').clone(true).appendTo( '#{$tableID} thead');
-                $('#{$tableID} thead tr:eq(1) th').each( function (i) {
-                    var title = $(this).text();
-                    var data_name = $(this).attr('data-name');
-                    if(data_name == 'mitigation_planned') {
-                        $(this).html( '<select name=\"mitigation_planned\" class=\"form-control\"><option value=\"\">--</option><option value=\"".$escaper->escapeHtml($lang['Yes'])."\">".$escaper->escapeHtml($lang['Yes'])."</option><option value=\"".$escaper->escapeHtml($lang['No'])."\">".$escaper->escapeHtml($lang['No'])."</option></select>' );
-                    } else if(data_name == 'management_review') {
-                        $(this).html( '<select name=\"management_review\" class=\"form-control\"><option value=\"\">--</option><option value=\"".$escaper->escapeHtml($lang['Yes'])."\">".$escaper->escapeHtml($lang['Yes'])."</option><option value=\"".$escaper->escapeHtml($lang['No'])."\">".$escaper->escapeHtml($lang['No'])."</option><option value=\"".$escaper->escapeHtml($lang['PASTDUE'])."\">".$escaper->escapeHtml($lang['PASTDUE'])."</option></select>' );
-                    } else {
-                        $(this).html(''); // To clear the title out of the header cell
-                        $('<input type=\"text\" class=\"form-control\">').attr('name', title).attr('placeholder', title).appendTo($(this));
-                    }
-
-                    $( 'input, select', this ).on( 'change', function () {
-                        if ( datatableInstance.column(i).search() !== this.value ) {
-                            datatableInstance.column(i).search( this.value ).draw();
-                        }
-                    });
-                });
-                var datatableInstance = $('#{$tableID}').DataTable({
-                    searching: true,
-                    ordering: true,
-                    orderCellsTop: true,
-                    scrollX: true,
-                    createdRow: function(row, data, index){
-                        var background = $('.background-class', $(row)).data('background');
-                        $(row).find('td').addClass(background)
-                    },
-                    order: [[{$order_index}, '{$order_dir}']],
-                    ajax: {
-                        url: BASE_URL + '/api/v2/risk_management/managment_review',
-                        type: 'post',
-                        data: function(d){
-                        },
-                        complete: function(response){
-                        }
-                    },
-                });
-                
-                
-                $(document).ready(function(){
-                    $('.sortable-risk').sortable({
-                        connectWith: '.sortable-risk'
-                    });
-                    $('.sortable-mitigation').sortable({
-                        connectWith: '.sortable-mitigation'
-                    });
-                    $('.sortable-review').sortable({
-                        connectWith: '.sortable-review'
-                    });
-                    $('#save_display_settings').click(function(){
-                        var risk_checkboxes = $('.sortable-risk .hidden-checkbox');
-                        var riskColumns = [];
-                        risk_checkboxes.each(function(){
-                            var check_val = $(this).is(':checked')?1:0;
-                            riskColumns.push([$(this).attr('name'),check_val]);
-                        });
-                        var mitigation_checkboxes = $('.sortable-mitigation .hidden-checkbox');
-                        var mitigationColumns = [];
-                        mitigation_checkboxes.each(function(){
-                            var check_val = $(this).is(':checked')?1:0;
-                            mitigationColumns.push([$(this).attr('name'),check_val]);
-                        });
-                        var review_checkboxes = $('.sortable-review .hidden-checkbox');
-                        var reviewColumns = [];
-                        review_checkboxes.each(function(){
-                            var check_val = $(this).is(':checked')?1:0;
-                            reviewColumns.push([$(this).attr('name'),check_val]);
-                        });
-                        $.ajax({
-                            type: 'POST',
-                            url: BASE_URL + '/api/v2/risk_management/save_custom_perform_reviews_display_settings',
-                            data:{
-                                risk_columns: riskColumns,
-                                mitigation_columns: mitigationColumns,
-                                review_columns: reviewColumns,
-                            },
-                            success: function(res){
-                                $('#setting_modal').modal('hide');
-                                showAlertsFromArray(res.status_message);
-                                document.location.reload();
-                            },
-                            error: function(xhr,status,error){
-                                if(!retryCSRF(xhr, this)){
-                                    if(xhr.responseJSON && xhr.responseJSON.status_message) {
-                                        showAlertsFromArray(xhr.responseJSON.status_message);
-                                    }
-                                }
-                            }
-                        });
-                        return false;
-                    });
-                });
-            });
-        </script>
-    ";
-}
-
-/***************************************
-* FUNCTION: DISPLAY REVIEW RISKS TABLE *
-****************************************/
-function display_review_risks()
-{
-
-    global $lang, $escaper;
-
-    $user = get_user_by_id($_SESSION['uid']);
-    $settings = json_decode($user["custom_reviewregularly_display_settings"] ?? '', true);
-    $risk_colums_setting = isset($settings["risk_colums"])?$settings["risk_colums"]:[];
-    $mitigation_colums_setting = isset($settings["mitigation_colums"])?$settings["mitigation_colums"]:[];
-    $review_colums_setting = isset($settings["review_colums"])?$settings["review_colums"]:[];
-    $columns_setting = array_merge($risk_colums_setting, $mitigation_colums_setting, $review_colums_setting);
-    $columns = [];
-
-    foreach($columns_setting as $column) {
-        if(stripos($column[0], "custom_field_") !== false) {
-            if(customization_extra() && $column[1] == 1) $columns[] = $column[0];
-        } else if($column[1] == 1) {
-            $columns[] = $column[0];
-        }
-    }
-
-    if(!count($columns)) {
-        $columns = array("id","risk_status","subject","calculated_risk","days_open","next_review_date");
-    }
-
-    $tr = "";
-    $index = 0;
-    $order_index = 0;
-    $order_dir = "asc";
-
-    // If the Customization Extra exists
-    $file = realpath(__DIR__ . '/../extras/customization/index.php');
-    if (file_exists($file)) {
-        // Load it
-        require_once($file);
-    }
-
-    foreach($columns as $column) {
-        if($column == "next_review_date") {
-            $order_index = $index;
-            $order_dir = "asc";
-        }
-        if($column == "subject") {
-            $style = "min-width:250px;";
-        } else {
-            $style = "min-width:100px;";
-        }
-        if(($pos = stripos($column, "custom_field_")) !== false) {
-            if(customization_extra()) {
-                $field_id = str_replace("custom_field_", "", $column);
-                $custom_field = get_field_by_id($field_id);
-
-                if (!$custom_field) {
-                    continue;
-                }
-
-                $label = $escaper->escapeHtml($custom_field['name']);
-                $tr .= "<th data-name='" . $escaper->escapeHtmlAttr($column) . "' align='left' style='" . $style . "'>" . $label . "</th>";
-                $index++;
-            }
-        } else {
-            $label = get_label_by_risk_field_name($column);
-            $tr .= "<th data-name='" . $escaper->escapeHtmlAttr($column) . "' align='left' style='" . $style . "'>" . $label . "</th>";
-            $index++;
-        }
-    }
-
-    $tableID = "review-risks";
-    echo "
-
-        <table id='{$tableID}' width='100%' class='risk-datatable table table-bordered table-striped table-condensed'>
-            <thead >
-                <tr>{$tr}</tr>
-            </thead>
-            <tbody>
-            </tbody>
-        </table>
-        <script>
-            $(function(){
-                var form = $('#{$tableID}').parents('form');
-                $('#{$tableID} thead tr').clone(true).appendTo( '#{$tableID} thead');
-                $('#{$tableID} thead tr:eq(1) th').each( function (i) {
-                    var title = $(this).text();
-                    var data_name = $(this).attr('data-name');
-                    if(data_name == 'mitigation_planned') {
-                        $(this).html( '<select name=\"mitigation_planned\" class=\"form-control\"><option value=\"\">--</option><option value=\"".$escaper->escapeHtml($lang['Yes'])."\">".$escaper->escapeHtml($lang['Yes'])."</option><option value=\"".$escaper->escapeHtml($lang['No'])."\">".$escaper->escapeHtml($lang['No'])."</option></select>' );
-                    } else if(data_name == 'management_review') {
-                        $(this).html( '<select name=\"management_review\" class=\"form-control\"><option value=\"\">--</option><option value=\"".$escaper->escapeHtml($lang['Yes'])."\">".$escaper->escapeHtml($lang['Yes'])."</option><option value=\"".$escaper->escapeHtml($lang['No'])."\">".$escaper->escapeHtml($lang['No'])."</option><option value=\"".$escaper->escapeHtml($lang['PASTDUE'])."\">".$escaper->escapeHtml($lang['PASTDUE'])."</option></select>' );
-                    } else {
-                        $(this).html(''); // To clear the title out of the header cell
-                        $('<input type=\"text\" class=\"form-control\">').attr('name', title).attr('placeholder', title).appendTo($(this));
-                    }
-
-                    $( 'input, select', this ).on( 'change', function () {
-                        if ( datatableInstance.column(i).search() !== this.value ) {
-                            datatableInstance.column(i).search( this.value ).draw();
-                        }
-                    });
-                });
-                 var datatableInstance = $('#{$tableID}').DataTable({
-                    searching: true,
-                    ordering: true,
-                    orderCellsTop: true,
-                    scrollX: true,
-                    createdRow: function(row, data, index){
-                        var background = $('.background-class', $(row)).data('background');
-                        $(row).find('td').addClass(background)
-                    },
-                    order: [[{$order_index}, '{$order_dir}']],
-                    ajax: {
-                        url: BASE_URL + '/api/v2/risk_management/review_risks',
-                        type: 'post',
-                        data: function(d){
-                        },
-                        complete: function(response){
-                        }
-                    },
-                });
-                
-                $(document).ready(function(){
-                    $('.sortable-risk').sortable({
-                        connectWith: '.sortable-risk'
-                    });
-                    $('.sortable-mitigation').sortable({
-                        connectWith: '.sortable-mitigation'
-                    });
-                    $('.sortable-review').sortable({
-                        connectWith: '.sortable-review'
-                    });
-                    $('#save_display_settings').click(function(){
-                        var risk_checkboxes = $('.sortable-risk .hidden-checkbox');
-                        var riskColumns = [];
-                        risk_checkboxes.each(function(){
-                            var check_val = $(this).is(':checked')?1:0;
-                            riskColumns.push([$(this).attr('name'),check_val]);
-                        });
-                        var mitigation_checkboxes = $('.sortable-mitigation .hidden-checkbox');
-                        var mitigationColumns = [];
-                        mitigation_checkboxes.each(function(){
-                            var check_val = $(this).is(':checked')?1:0;
-                            mitigationColumns.push([$(this).attr('name'),check_val]);
-                        });
-                        var review_checkboxes = $('.sortable-review .hidden-checkbox');
-                        var reviewColumns = [];
-                        review_checkboxes.each(function(){
-                            var check_val = $(this).is(':checked')?1:0;
-                            reviewColumns.push([$(this).attr('name'),check_val]);
-                        });
-                        $.ajax({
-                            type: 'POST',
-                            url: BASE_URL + '/api/v2/risk_management/save_custom_reviewregularly_display_settings',
-                            data:{
-                                risk_columns: riskColumns,
-                                mitigation_columns: mitigationColumns,
-                                review_columns: reviewColumns,
-                            },
-                            success: function(res){
-                                $('#setting_modal').modal('hide');
-                                showAlertsFromArray(res.status_message);
-                                document.location.reload();
-                            },
-                            error: function(xhr,status,error){
-                                if(!retryCSRF(xhr, this)){
-                                    if(xhr.responseJSON && xhr.responseJSON.status_message) {
-                                        showAlertsFromArray(xhr.responseJSON.status_message);
-                                    }
-                                }
-                            }
-                        });
-                        return false;
-                    });
-                });
-            });
-        </script>
+        </div>
     ";
 }
 
@@ -8933,436 +9163,6 @@ function display_side_navigation($active)
 	echo "  }\n";
 	echo "}\n";
 	echo "</script>\n";
-}
-
-/****************************************
-* FUNCTION: DISPLAY CUSTOM RISK COLUMNS *
-****************************************/
-function display_custom_risk_columns($custom_setting_field = "custom_plan_mitigation_display_settings") {
-
-    global $escaper, $lang;
-    $user = get_user_by_id($_SESSION['uid']);
-    $settings = json_decode($user[$custom_setting_field] ?? "", true);
-
-    $risk_colums_setting = isset($settings["risk_colums"])?$settings["risk_colums"]:[];
-    $risk_setting = [];
-    foreach ($risk_colums_setting as $column) {
-        $risk_setting[$column[0]] = $column[1];
-    }
-
-    $mitigation_colums_setting = isset($settings["mitigation_colums"])?$settings["mitigation_colums"]:[];
-    $mitigation_setting = [];
-    foreach ($mitigation_colums_setting as $column) {
-        $mitigation_setting[$column[0]] = $column[1];
-    }
-
-    $review_colums_setting = isset($settings["review_colums"])?$settings["review_colums"]:[];
-    $review_setting = [];
-    foreach ($review_colums_setting as $column) {
-        $review_setting[$column[0]] = $column[1];
-    }
-
-    $columns_setting = array_merge($risk_colums_setting, $mitigation_colums_setting, $review_colums_setting);
-    $columns = [];
-    foreach ($columns_setting as $column) {
-        if (stripos($column[0], "custom_field_") !== false) {
-            if (customization_extra() && $column[1] == 1) {
-                $columns[] = $column[0];
-            }
-        } else if ($column[1] == 1) {
-            $columns[] = $column[0];
-        }
-    }
-
-    if (!count($columns)) {
-        if ($custom_setting_field == "custom_reviewregularly_display_settings") {
-            $risk_setting = array("id" => 1, "risk_status" => 1, "subject" => 1, "calculated_risk" => 1, "days_open" => 1);
-            $mitigation_setting = array();
-            $review_setting = array("management_review" => 0, "review_date" => 0, "next_step" => 0, "next_review_date" => 1);
-        } else {
-            $risk_setting = array("id"=>1,"risk_status"=>1,"subject"=>1,"calculated_risk"=>1,"submission_date"=>1);
-            $mitigation_setting = array("mitigation_planned"=>1);
-            $review_setting = array("management_review"=>1);
-        }
-    }
-
-    $str = "
-        <style>
-            #column-selections-container label{color:#000;}
-            ul.sortable{list-style:none;margin:0;}
-            ul.sortable li{border: 1px dotted #cccccc;margin:2px 0;padding:5px;}
-        </style>
-        <div class='well accordion' id='column-selections-container'>
-    ";
-    
-    // If customization extra is enabled
-    if(customization_extra()) {
-
-        // Include the extra
-        require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
-        $active_fields = get_active_fields();
-
-        $risk_columns = array(
-            'id' => $escaper->escapeHtml($lang['ID']),
-            'risk_status' => $escaper->escapeHtml($lang['Status']),
-            'closure_date' => $escaper->escapeHtml($lang['DateClosed']),
-            'subject' => $escaper->escapeHtml($lang['Subject']),
-            'calculated_risk' => $escaper->escapeHtml($lang['InherentRisk']),
-            'residual_risk' => $escaper->escapeHtml($lang['ResidualRisk']),
-            'project' => $escaper->escapeHtml($lang['Project']),
-            'days_open' => $escaper->escapeHtml($lang['DaysOpen']),
-        );
-        $mitigation_columns = array(
-            'mitigation_planned' => $escaper->escapeHtml($lang['MitigationPlanned']),
-        );
-        $review_columns = array("management_review"=>$escaper->escapeHtml($lang['ManagementReview']));
-
-        foreach ($active_fields as $active_field) {
-
-            $field = $label = "";
-            // If this is main field
-            if ($active_field['is_basic'] == 1) {
-
-                $dynamic_field_info = get_dynamic_names_by_main_field_name($active_field['name']);
-                if ($dynamic_field_info) {
-                    $field = $dynamic_field_info['name'];
-                    $label = $dynamic_field_info['text'];
-                } else {
-                    continue;
-                }
-
-            } else {
-
-                $field = "custom_field_{$active_field['id']}";
-                $label = $escaper->escapeHtml($active_field['name']);
-
-            }
-
-            $active_field["field"] = $field;
-            $active_field["label"] = $label;
-            switch ($active_field['tab_index']) {
-                case 1:
-                    $risk_columns[$field] = $label;
-                break;
-                case 2:
-                    $mitigation_columns[$field] = $label;
-                break;
-                case 3:
-                    $review_columns[$field] = $label;
-                break;
-            }
-        }
-
-    } else {
-
-        // Names list of Risk columns
-        $risk_columns = array(
-            'id' => $escaper->escapeHtml($lang['ID']),
-            'risk_status' => $escaper->escapeHtml($lang['Status']),
-            'closure_date' => $escaper->escapeHtml($lang['DateClosed']),
-            'subject' => $escaper->escapeHtml($lang['Subject']),
-            'reference_id' => $escaper->escapeHtml($lang['ExternalReferenceId']),
-            'regulation' => $escaper->escapeHtml($lang['ControlRegulation']),
-            'control_number' => $escaper->escapeHtml($lang['ControlNumber']),
-            'location' => $escaper->escapeHtml($lang['SiteLocation']),
-            'source' => $escaper->escapeHtml($lang['RiskSource']),
-            'category' => $escaper->escapeHtml($lang['Category']),
-            'team' => $escaper->escapeHtml($lang['Team']),
-            'additional_stakeholders' => $escaper->escapeHtml($lang['AdditionalStakeholders']),
-            'technology' => $escaper->escapeHtml($lang['Technology']),
-            'owner' => $escaper->escapeHtml($lang['Owner']),
-            'manager' => $escaper->escapeHtml($lang['OwnersManager']),
-            'submitted_by' => $escaper->escapeHtml($lang['SubmittedBy']),
-            'risk_tags' => $escaper->escapeHtml($lang['Tags']),
-            'scoring_method' => $escaper->escapeHtml($lang['RiskScoringMethod']),
-            'calculated_risk' => $escaper->escapeHtml($lang['InherentRisk']),
-            'residual_risk' => $escaper->escapeHtml($lang['ResidualRisk']),
-            'submission_date' => $escaper->escapeHtml($lang['SubmissionDate']),
-            'project' => $escaper->escapeHtml($lang['Project']),
-            'days_open' => $escaper->escapeHtml($lang['DaysOpen']),
-            'affected_assets' => $escaper->escapeHtml($lang['AffectedAssets']),
-            'risk_assessment' => $escaper->escapeHtml($lang['RiskAssessment']),
-            'additional_notes' => $escaper->escapeHtml($lang['AdditionalNotes']),
-            'risk_mapping' => $escaper->escapeHtml($lang['RiskMapping']),
-            'threat_mapping' => $escaper->escapeHtml($lang['ThreatMapping']),
-        );
-
-        $mitigation_columns = array(
-            'mitigation_planned' => $escaper->escapeHtml($lang['MitigationPlanned']),
-            'planning_strategy' => $escaper->escapeHtml($lang['PlanningStrategy']),
-            'planning_date' => $escaper->escapeHtml($lang['MitigationPlanning']),
-            'mitigation_effort' => $escaper->escapeHtml($lang['MitigationEffort']),
-            'mitigation_cost' => $escaper->escapeHtml($lang['MitigationCost']),
-            'mitigation_owner' => $escaper->escapeHtml($lang['MitigationOwner']),
-            'mitigation_team' => $escaper->escapeHtml($lang['MitigationTeam']),
-            'mitigation_accepted' => $escaper->escapeHtml($lang['MitigationAccepted']),
-            'mitigation_date' => $escaper->escapeHtml($lang['MitigationDate']),
-            'mitigation_controls' => $escaper->escapeHtml($lang['MitigationControls']),
-            'current_solution' => $escaper->escapeHtml($lang['CurrentSolution']),
-            'security_recommendations' => $escaper->escapeHtml($lang['SecurityRecommendations']),
-            'security_requirements' => $escaper->escapeHtml($lang['SecurityRequirements']),
-        );
-
-        $review_columns = array(
-            'management_review' => $escaper->escapeHtml($lang['ManagementReview']),
-            'review_date' => $escaper->escapeHtml($lang['ReviewDate']),
-            'next_review_date' => $escaper->escapeHtml($lang['NextReviewDate']),
-            'next_step' => $escaper->escapeHtml($lang['NextStep']),
-            'comments' => $escaper->escapeHtml($lang['Comments']),
-        );
-
-    }
-
-    $risk_columns_keys = array_values(array_unique(array_merge(array_keys($risk_setting),array_keys($risk_columns))));
-    $mitigation_columns_keys = array_values(array_unique(array_merge(array_keys($mitigation_setting),array_keys($mitigation_columns))));
-    $review_columns_keys = array_values(array_unique(array_merge(array_keys($review_setting),array_keys($review_columns))));
-
-    // risk columns
-    $str .= "
-            <div class='accordion-item'>
-                <h2 class='accordion-header'>
-                    <button type='button' class='accordion-button collapsed' data-bs-toggle='collapse' data-bs-target='#RiskColumns_container'>{$escaper->escapeHtml($lang['RiskColumns'])}</button>
-                </h2>
-                <div id='RiskColumns_container' class='accordion-collapse collapse'>
-                    <div class='accordion-body card-body'>
-                        <div class='row'>
-                            <div class='col-6'>
-                                <div class='p-3 h-100 border'>
-                                    <ul class='sortable sortable-risk mb-0 ps-0'>
-    ";
-
-    // variable to store the custom display settings
-    $custom_display_settings = [];
-
-    $half_num = ceil(count($risk_columns_keys)/2);
-    for ($i = 0; $i < $half_num ; $i++) {
-
-        $field = $risk_columns_keys[$i];
-        $elem_id = "checkbox_" . $field;
-        $check_val = isset($risk_setting[$field]) ? $risk_setting[$field] : 0;
-        $checked = $check_val ? "checked='yes'" : "";
-
-        // if the field is checked, add it to the custom display settings
-        if ($check_val) {
-            $custom_display_settings[] = $field;
-        }
-
-        if (isset($risk_columns[$field])) {
-            $str .= "
-                                        <li>
-                                            <input class='hidden-checkbox form-check-input' type='checkbox' name='{$field}' id='{$elem_id}' {$checked}/>
-                                            <label class='ms-2' for='{$elem_id}'>{$risk_columns[$field]}</label>
-                                        </li>
-            ";
-        }
-    }
-    
-    $str .= "
-                                    </ul>
-                                </div>
-                            </div>
-                            <div class='col-6'>
-                                <div class='p-3 h-100 border'>
-                                    <ul class='sortable sortable-risk mb-0 ps-0'>
-    ";
-
-    for (; $i < count($risk_columns_keys) ; $i++) {
-
-        $field = $risk_columns_keys[$i];
-        $elem_id = "checkbox_" . $field;
-        $check_val = isset($risk_setting[$field]) ? $risk_setting[$field] : 0;
-        $checked = $check_val ? "checked='yes'" : "";
-    
-        // if the field is checked, add it to the custom display settings
-        if ($check_val) {
-            $custom_display_settings[] = $field;
-        }
-
-        if (isset($risk_columns[$field])) {
-            $str .= "
-                                        <li>
-                                            <input class='hidden-checkbox form-check-input' type='checkbox' name='{$field}' id='{$elem_id}' {$checked}/>
-                                            <label class='ms-2' for='{$elem_id}'>{$risk_columns[$field]}</label>
-                                        </li>
-            ";
-        }
-    }
-
-    $str .= "
-                                    </ul>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-    ";
-
-    // mitigation columns
-    $str .= "
-            <div class='accordion-item'>
-                <h2 class='accordion-header'>
-                    <button type='button' class='accordion-button collapsed' data-bs-toggle='collapse' data-bs-target='#MitigationColumns_container'>{$escaper->escapeHtml($lang['MitigationColumns'])}</button>
-                </h2>
-                <div id='MitigationColumns_container' class='accordion-collapse collapse'>
-                    <div class='accordion-body card-body'>
-                        <div class='row'>
-                            <div class='col-6'>
-                                <div class='p-3 h-100 border'>
-                                    <ul class='sortable sortable-mitigation mb-0 ps-0'>
-    ";
-
-    $half_num = ceil(count($mitigation_columns_keys)/2);
-    for ($i = 0; $i < $half_num ; $i++) {
-
-        $field = $mitigation_columns_keys[$i];
-        $check_val = isset($mitigation_setting[$field]) ? $mitigation_setting[$field] : 0;
-        $elem_id = "checkbox_" . $field;
-        $checked = $check_val ? "checked='yes'" : "";
-
-        // if the field is checked, add it to the custom display settings
-        if ($check_val) {
-            $custom_display_settings[] = $field;
-        }
-
-        if (isset($mitigation_columns[$field])) {
-            $str .= "
-                                        <li>
-                                            <input class='hidden-checkbox form-check-input' type='checkbox' name='{$field}' id='{$elem_id}' {$checked}/>
-                                            <label class='ms-2' for='{$elem_id}'>{$mitigation_columns[$field]}</label>
-                                        </li>
-            ";
-        }
-    }
-
-    $str .= "
-                                    </ul>
-                                </div>
-                            </div>
-                            <div class='col-6'>
-                                <div class='p-3 h-100 border'>
-                                    <ul class='sortable sortable-mitigation mb-0 ps-0'>
-    ";
-
-    for (; $i < count($mitigation_columns_keys) ; $i++) {
-
-        $field = $mitigation_columns_keys[$i];
-        $elem_id = "checkbox_" . $field;
-        $check_val = isset($mitigation_setting[$field]) ? $mitigation_setting[$field] : 0;
-        $checked = $check_val ? "checked='yes'" : "";
-
-        // if the field is checked, add it to the custom display settings
-        if ($check_val) {
-            $custom_display_settings[] = $field;
-        }
-
-        if (isset($mitigation_columns[$field])) {
-            $str .= "
-                                        <li>
-                                            <input class='hidden-checkbox form-check-input' type='checkbox' name='{$field}' id='{$elem_id}' {$checked}/>
-                                            <label class='ms-2' for='{$elem_id}'>{$mitigation_columns[$field]}</label>
-                                        </li>
-            ";
-        }
-    }
-
-    $str .= "
-                                    </ul>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-    ";
-
-    // review columns
-    $str .= "
-            <div class='accordion-item'>
-                <h2 class='accordion-header'>
-                    <button type='button' class='accordion-button collapsed' data-bs-toggle='collapse' data-bs-target='#ReviewColumns_container'>{$escaper->escapeHtml($lang['ReviewColumns'])}</button>
-                </h2>
-                <div id='ReviewColumns_container' class='accordion-collapse collapse'>
-                    <div class='accordion-body card-body'>
-                        <div class='row'>
-                            <div class='col-6'>
-                                <div class='p-3 h-100 border'>
-                                    <ul class='sortable sortable-review mb-0 ps-0'>
-    ";
-
-    $half_num = ceil(count($review_columns_keys)/2);
-    for ($i = 0; $i < $half_num ; $i++) {
-
-        $field = $review_columns_keys[$i];
-        $check_val = isset($review_setting[$field]) ? $review_setting[$field] : 0;
-        $elem_id = "checkbox_" . $field;
-        $checked = $check_val ? "checked='yes'" : "";
-
-        // if the field is checked, add it to the custom display settings
-        if ($check_val) {
-            $custom_display_settings[] = $field;
-        }
-
-        if (isset($review_columns[$field])) {
-            $str .= "
-                                        <li>
-                                            <input class='hidden-checkbox form-check-input' type='checkbox' name='{$field}' id='{$elem_id}' {$checked}/>
-                                            <label class='ms-2' for='{$elem_id}'>{$review_columns[$field]}</label>
-                                        </li>
-            ";
-        }
-    }
-    $str .= "
-                                    </ul>
-                                </div>
-                            </div>
-                            <div class='col-6'>
-                                <div class='p-3 h-100 border'>
-                                    <ul class='sortable sortable-review mb-0 ps-0'>
-    ";
-
-    for (; $i < count($review_columns_keys) ; $i++) {
-
-        $field = $review_columns_keys[$i];
-        $elem_id = "checkbox_" . $field;
-        $check_val = isset($review_setting[$field]) ? $review_setting[$field] : 0;
-        $checked = $check_val ? "checked='yes'" : "";
-
-        // if the field is checked, add it to the custom display settings
-        if ($check_val) {
-            $custom_display_settings[] = $field;
-        }
-
-        if (isset($review_columns[$field])) {
-            $str .= "
-                                        <li>
-                                            <input class='hidden-checkbox form-check-input' type='checkbox' name='{$field}' id='{$elem_id}' {$checked}/>
-                                            <label class='ms-2' for='{$elem_id}'>{$review_columns[$field]}</label>
-                                        </li>
-            ";
-        }
-    }
-
-    $str .= "
-                                    </ul>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    ";
-    echo $str;
-
-    echo "
-        <script>
-
-            // variable to store the custom display settings
-            var custom_display_settings = " . json_encode($custom_display_settings, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) . ";
-
-        </script>
-    ";
 }
 
 function get_label_by_risk_field_name($field){
@@ -9883,6 +9683,10 @@ function display_add_projects_fields($template_group_id) {
         // per-pane <form>.
         echo "
             <input type='hidden' name='template_group_id' value='" . (int)$template_group_id . "'>
+            <section class='sr-qcard'>
+                <div class='sr-qcard-head'><h3>{$escaper->escapeHtml($lang['Details'])}</h3></div>
+                <div class='sr-qcard-body'>
+                    <div class='sr-qgrid'>
         ";
 
         $active_fields = get_active_fields("project", $template_group_id);
@@ -9891,24 +9695,24 @@ function display_add_projects_fields($template_group_id) {
                 switch($field['name']) {
                     case 'ProjectName':
                         echo "
-                            <div class='form-group'>
-                                <label for=''>{$escaper->escapeHtml($lang['NewProjectName'])}<span class='required'>*</span> :</label>
+                            <div class='sr-qfield sr-qfield--full'>
+                                <label class='sr-qlabel'>{$escaper->escapeHtml($lang['NewProjectName'])}<span class='required'>*</span></label>
                                 <input type='text' name='new_project' value='' class='form-control' required>
                             </div>
                         ";
                         break;
                     case 'DueDate':
                         echo "
-                            <div class='form-group'>
-                                <label for=''>{$escaper->escapeHtml($lang['DueDate'])} :</label>
+                            <div class='sr-qfield'>
+                                <label class='sr-qlabel'>{$escaper->escapeHtml($lang['DueDate'])}</label>
                                 <input type='text' name='due_date' class='form-control datepicker' value='' autocomplete='off'>
                             </div>
                         ";
                         break;
                     case 'Consultant':
                         echo "
-                            <div class='form-group'>
-                                <label for=''>{$escaper->escapeHtml($lang['Consultant'])} :</label>
+                            <div class='sr-qfield'>
+                                <label class='sr-qlabel'>{$escaper->escapeHtml($lang['Consultant'])}</label>
                         ";
                                 create_dropdown("enabled_users", NULL, "consultant", true, false, false, "", $escaper->escapeHtml($lang['Unassigned']));
                         echo "
@@ -9917,8 +9721,8 @@ function display_add_projects_fields($template_group_id) {
                         break;
                     case 'BusinessOwner':
                         echo "
-                            <div class='form-group'>
-                                <label for=''>{$escaper->escapeHtml($lang['BusinessOwner'])} :</label>
+                            <div class='sr-qfield'>
+                                <label class='sr-qlabel'>{$escaper->escapeHtml($lang['BusinessOwner'])}</label>
                         ";
                                 create_dropdown("enabled_users", NULL, "business_owner", true, false, false, "", $escaper->escapeHtml($lang['Unassigned']));
                         echo "
@@ -9927,8 +9731,8 @@ function display_add_projects_fields($template_group_id) {
                         break;
                     case 'DataClassification':
                         echo "
-                            <div class='form-group'>
-                                <label for=''>{$escaper->escapeHtml($lang['DataClassification'])} :</label>
+                            <div class='sr-qfield'>
+                                <label class='sr-qlabel'>{$escaper->escapeHtml($lang['DataClassification'])}</label>
                         ";
                                 create_dropdown("data_classification", NULL, "data_classification", true, false, false, "", $escaper->escapeHtml($lang['Unassigned']));
                         echo "
@@ -9941,28 +9745,41 @@ function display_add_projects_fields($template_group_id) {
                 display_custom_field_edit($field, [], "label");
             }
         }
+
+        echo "
+                    </div>
+                </div>
+            </section>
+        ";
     } else {
         echo "
-            <div class='form-group'>
-                <label for=''>{$escaper->escapeHtml($lang['NewProjectName'])}<span class='required'>*</span> :</label>
-                <input type='text' name='new_project' value='' class='form-control' required>
-            </div>
-            <div class='form-group'>
-                <label for=''>{$escaper->escapeHtml($lang['DueDate'])} :</label>
-                <input type='text' name='due_date' class='form-control datepicker' value='' autocomplete='off'>
-            </div>
-            <div class='form-group'>
-                <label for=''>{$escaper->escapeHtml($lang['Consultant'])} :</label>" . 
-                create_dropdown("enabled_users", NULL, "consultant", true, false, true, "", $escaper->escapeHtml($lang['Unassigned'])) . "
-            </div>
-            <div class='form-group'>
-                <label for=''>{$escaper->escapeHtml($lang['BusinessOwner'])} :</label>" . 
-                create_dropdown("enabled_users", NULL, "business_owner", true, false, true, "", $escaper->escapeHtml($lang['Unassigned'])) . "
-            </div>
-            <div class='form-group'>
-                <label for=''>{$escaper->escapeHtml($lang['DataClassification'])} :</label>" . 
-                create_dropdown("data_classification", NULL, "data_classification", true, false, true, "", $escaper->escapeHtml($lang['Unassigned'])) . "
-            </div>
+            <section class='sr-qcard'>
+                <div class='sr-qcard-head'><h3>{$escaper->escapeHtml($lang['Details'])}</h3></div>
+                <div class='sr-qcard-body'>
+                    <div class='sr-qgrid'>
+                        <div class='sr-qfield sr-qfield--full'>
+                            <label class='sr-qlabel'>{$escaper->escapeHtml($lang['NewProjectName'])}<span class='required'>*</span></label>
+                            <input type='text' name='new_project' value='' class='form-control' required>
+                        </div>
+                        <div class='sr-qfield'>
+                            <label class='sr-qlabel'>{$escaper->escapeHtml($lang['DueDate'])}</label>
+                            <input type='text' name='due_date' class='form-control datepicker' value='' autocomplete='off'>
+                        </div>
+                        <div class='sr-qfield'>
+                            <label class='sr-qlabel'>{$escaper->escapeHtml($lang['Consultant'])}</label>" .
+                            create_dropdown("enabled_users", NULL, "consultant", true, false, true, "", $escaper->escapeHtml($lang['Unassigned'])) . "
+                        </div>
+                        <div class='sr-qfield'>
+                            <label class='sr-qlabel'>{$escaper->escapeHtml($lang['BusinessOwner'])}</label>" .
+                            create_dropdown("enabled_users", NULL, "business_owner", true, false, true, "", $escaper->escapeHtml($lang['Unassigned'])) . "
+                        </div>
+                        <div class='sr-qfield'>
+                            <label class='sr-qlabel'>{$escaper->escapeHtml($lang['DataClassification'])}</label>" .
+                            create_dropdown("data_classification", NULL, "data_classification", true, false, true, "", $escaper->escapeHtml($lang['Unassigned'])) . "
+                        </div>
+                    </div>
+                </div>
+            </section>
         ";
     }
 }
@@ -9984,48 +9801,55 @@ function display_edit_projects($template_group_id = ""){
             $template_group_id = $group["id"];
         }
 
+        echo "
+            <section class='sr-qcard'>
+                <div class='sr-qcard-head'><h3>{$escaper->escapeHtml($lang['Details'])}</h3></div>
+                <div class='sr-qcard-body'>
+                    <div class='sr-qgrid'>
+        ";
+
         $active_fields = get_active_fields("project", $template_group_id);
         foreach($active_fields as $field) {
             if($field['is_basic'] == 1) {
                 switch($field['name']) {
                     case 'ProjectName':
                         echo "
-                            <div class='form-group'>
-                                <label for=''>{$escaper->escapeHtml($lang['Name'])}<span class='required'>*</span> :</label>
+                            <div class='sr-qfield sr-qfield--full'>
+                                <label class='sr-qlabel'>{$escaper->escapeHtml($lang['Name'])}<span class='required'>*</span></label>
                                 <input type='text' name='name' class='form-control' required>
                             </div>
                         ";
                         break;
                     case 'DueDate':
                         echo "
-                            <div class='form-group'>
-                                <label for=''>{$escaper->escapeHtml($lang['DueDate'])} :</label>
+                            <div class='sr-qfield'>
+                                <label class='sr-qlabel'>{$escaper->escapeHtml($lang['DueDate'])}</label>
                                 <input type='text' name='due_date' class='form-control datepicker' value='' autocomplete='off'>
                             </div>
                         ";
                         break;
                     case 'Consultant':
                         echo "
-                            <div class='form-group'>
-                                <label for=''>{$escaper->escapeHtml($lang['Consultant'])} :</label>" . 
+                            <div class='sr-qfield'>
+                                <label class='sr-qlabel'>{$escaper->escapeHtml($lang['Consultant'])}</label>" .
                                 create_dropdown("enabled_users", NULL, "consultant", true, false, true, "", $escaper->escapeHtml($lang['Unassigned'])) . "
                             </div>
                         ";
                         break;
                     case 'BusinessOwner':
                         echo "
-                            <div class='form-group'>
-                                <label for=''>{$escaper->escapeHtml($lang['BusinessOwner'])} :</label>" . 
+                            <div class='sr-qfield'>
+                                <label class='sr-qlabel'>{$escaper->escapeHtml($lang['BusinessOwner'])}</label>" .
                                 create_dropdown("enabled_users", NULL, "business_owner", true, false, true, "", $escaper->escapeHtml($lang['Unassigned'])) . "
                             </div>
                         ";
                         break;
                     case 'DataClassification':
                         echo "
-                            <div class='form-group'>
-                                <label for=''>{$escaper->escapeHtml($lang['DataClassification'])} :</label>" . 
+                            <div class='sr-qfield'>
+                                <label class='sr-qlabel'>{$escaper->escapeHtml($lang['DataClassification'])}</label>" .
                                 create_dropdown("data_classification", NULL, "data_classification", true, false, true, "", $escaper->escapeHtml($lang['Unassigned'])) . "
-                            </div>        
+                            </div>
                         ";
                         break;
                 }
@@ -10033,124 +9857,417 @@ function display_edit_projects($template_group_id = ""){
                 display_custom_field_edit($field, [], "label");
             }
         }
+
+        echo "
+                    </div>
+                </div>
+            </section>
+        ";
     } else {
         echo "
-            <div class='form-group'>
-                <label for=''>{$escaper->escapeHtml($lang['Name'])}<span class='required'>*</span> :</label>
-                <input type='text' name='name' class='form-control' required>
-            </div>
-            <div class='form-group'>
-                <label for=''>{$escaper->escapeHtml($lang['DueDate'])} :</label>
-                <input type='text' name='due_date' class='form-control datepicker' value='' autocomplete='off'>
-            </div>
-            <div class='form-group'>
-                <label for=''>{$escaper->escapeHtml($lang['Consultant'])} :</label>" . 
-                create_dropdown("enabled_users", NULL, "consultant", true, false, true, "", $escaper->escapeHtml($lang['Unassigned'])) . "
-            </div>
-            <div class='form-group'>
-                <label for=''>{$escaper->escapeHtml($lang['BusinessOwner'])} :</label>" . 
-                create_dropdown("enabled_users", NULL, "business_owner", true, false, true, "", $escaper->escapeHtml($lang['Unassigned'])) . "
-            </div>
-            <div class='form-group'>
-                <label for=''>{$escaper->escapeHtml($lang['DataClassification'])} :</label>" . 
-                create_dropdown("data_classification", NULL, "data_classification", true, false, true, "", $escaper->escapeHtml($lang['Unassigned'])) . "
-            </div>
+            <section class='sr-qcard'>
+                <div class='sr-qcard-head'><h3>{$escaper->escapeHtml($lang['Details'])}</h3></div>
+                <div class='sr-qcard-body'>
+                    <div class='sr-qgrid'>
+                        <div class='sr-qfield sr-qfield--full'>
+                            <label class='sr-qlabel'>{$escaper->escapeHtml($lang['Name'])}<span class='required'>*</span></label>
+                            <input type='text' name='name' class='form-control' required>
+                        </div>
+                        <div class='sr-qfield'>
+                            <label class='sr-qlabel'>{$escaper->escapeHtml($lang['DueDate'])}</label>
+                            <input type='text' name='due_date' class='form-control datepicker' value='' autocomplete='off'>
+                        </div>
+                        <div class='sr-qfield'>
+                            <label class='sr-qlabel'>{$escaper->escapeHtml($lang['Consultant'])}</label>" .
+                            create_dropdown("enabled_users", NULL, "consultant", true, false, true, "", $escaper->escapeHtml($lang['Unassigned'])) . "
+                        </div>
+                        <div class='sr-qfield'>
+                            <label class='sr-qlabel'>{$escaper->escapeHtml($lang['BusinessOwner'])}</label>" .
+                            create_dropdown("enabled_users", NULL, "business_owner", true, false, true, "", $escaper->escapeHtml($lang['Unassigned'])) . "
+                        </div>
+                        <div class='sr-qfield'>
+                            <label class='sr-qlabel'>{$escaper->escapeHtml($lang['DataClassification'])}</label>" .
+                            create_dropdown("data_classification", NULL, "data_classification", true, false, true, "", $escaper->escapeHtml($lang['Unassigned'])) . "
+                        </div>
+                    </div>
+                </div>
+            </section>
         ";
     }
 }
-/*****************************************
-* FUNCTION: DISPLAY PROJECT TABLE HEADER *
-*****************************************/
-function display_project_table_header($template_group_id = "") {
-
+/**********************************************
+ * FUNCTION: DISPLAY PLAN PROJECTS (SR-2229)  *
+ **********************************************/
+function display_plan_projects()
+{
     global $lang, $escaper;
-    $header_html = "";
-    $header_width = "1301";
-    
-    // If customization extra is enabled
-    if (customization_extra()) {
 
-        // Include the extra
-        require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
+    $can_add    = check_permission('add_projects') ? 'true' : 'false';
+    $can_manage = check_permission('manage_projects') ? 'true' : 'false';
+    $can_delete = check_permission('delete_projects') ? 'true' : 'false';
+    $can_modify = has_permission('modify_risks') ? 'true' : 'false';
+    $can_close  = has_permission('close_risks') ? 'true' : 'false';
 
-        if (!$template_group_id) {
-            $group = get_default_template_group("project");
-            $template_group_id = $group["id"];
-        }
-
-        $active_fields = get_active_fields("project", $template_group_id);
-        $header_html .= "
-                <div class='col p-2 border border-light'>{$escaper->escapeHtml($lang['Priority'])}</div>
-        ";
-        $custom_field_count = 0;
-
-        foreach ($active_fields as $field) {
-            if ($field['is_basic'] == 1) {
-                switch ($field['name']) {
-                    case 'ProjectName':
-                        $header_html .= "
-                <div class='col-3 p-2 border border-light'>{$escaper->escapeHtml($lang['Name'])}</div>
-                        ";
-                        break;
-                    case 'DueDate':
-                        $header_html .= "
-                <div class='col p-2 border border-light'>{$escaper->escapeHtml($lang['DueDate'])}</div>
-                        ";
-                        break;
-                    case 'Consultant':
-                        $header_html .= "
-                <div class='col p-2 border border-light'>{$escaper->escapeHtml($lang['Consultant'])}</div>
-                        ";
-                        break;
-                    case 'BusinessOwner':
-                        $header_html .= "
-                <div class='col p-2 border border-light'>{$escaper->escapeHtml($lang['BusinessOwner'])}</div>
-                        ";
-                        break;
-                    case 'DataClassification':
-                        $header_html .= "
-                <div class='col p-2 border border-light'>{$escaper->escapeHtml($lang['DataClassification'])}</div>
-                        ";
-                        break;
-                }
-            } else {
-
-                // If customization extra is enabled
-                if (customization_extra()) {
-
-                    // Include the extra
-                    require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
-
-                    $custom_field_count++;
-                    $header_html .= "
-                <div class='col p-2 border border-light'>{$escaper->escapeHtml($field['name'])}</div>
-                    ";
-                }
-            }
-        }
-        $header_html .= "
-                <div class='col-2 p-2 border border-light'>{$escaper->escapeHtml($lang['Risk'])}</div>
-        ";
-        $header_width += $custom_field_count * 150;
-        $header_html = "
-            <div class='d-flex bg-secondary text-light table-header' style='width:{$header_width}px'>
-                {$header_html}
-            </div>
-        ";
-    } else {
-        $header_html .= "
-            <div class='d-flex bg-secondary text-light table-header' style='width:{$header_width}px'>
-                <div class='col p-2 border border-light'>{$escaper->escapeHtml($lang['Priority'])}</div>
-                <div class='col-3 p-2 border border-light'>{$escaper->escapeHtml($lang['Name'])}</div>
-                <div class='col p-2 border border-light'>{$escaper->escapeHtml($lang['DueDate'])}</div>
-                <div class='col p-2 border border-light'>{$escaper->escapeHtml($lang['Consultant'])}</div>
-                <div class='col p-2 border border-light'>{$escaper->escapeHtml($lang['BusinessOwner'])}</div>
-                <div class='col p-2 border border-light'>{$escaper->escapeHtml($lang['DataClassification'])}</div>
-                <div class='col-2 p-2 border border-light'>{$escaper->escapeHtml($lang['Risk'])}</div>
-            </div>
+    // Both cards are DIRECT children of .content: _tables.scss's
+    // `.content:has(> .sr-table-card)` is what swaps the page's white slab for
+    // the gray ground, and a .row/.col-12 wrapper defeats it (see
+    // compliance/audits.php for the full rationale).
+    echo "
+        <div class='sr-table-card mb-3' id='plan-projects-card'
+             data-can-add='{$can_add}' data-can-manage='{$can_manage}'
+             data-can-delete='{$can_delete}' data-can-modify-risks='{$can_modify}'
+             data-can-close-risks='{$can_close}'>
+            <div class='sr-table-toolbar' id='plan-projects-toolbar'>
+                <div class='sr-table-status-filter' id='plan-projects-status-filter'>
+                    <span class='sr-status-chip active' data-status='1'>{$escaper->escapeHtml($lang['Active'])} <span class='n' id='plan-projects-count-1'></span></span>
+                    <span class='sr-status-chip' data-status='2'>{$escaper->escapeHtml($lang['OnHold'])} <span class='n' id='plan-projects-count-2'></span></span>
+                    <span class='sr-status-chip' data-status='3'>{$escaper->escapeHtml($lang['Completed'])} <span class='n' id='plan-projects-count-3'></span></span>
+                    <span class='sr-status-chip' data-status='4'>{$escaper->escapeHtml($lang['Canceled'])} <span class='n' id='plan-projects-count-4'></span></span>
+                    <span class='sr-status-chip' data-status='all'>{$escaper->escapeHtml($lang['ALL'])} <span class='n' id='plan-projects-count-all'></span></span>
+                    <span class='sr-status-chip sr-status-chip--attn' data-status='unassigned'>{$escaper->escapeHtml($lang['Unassigned'])} <span class='n' id='plan-projects-count-unassigned'></span></span>
+                </div>
+                <div class='sr-table-tools'>
+                    <div class='dt-search'>
+                        <input type='search' id='plan-projects-search' class='form-control' placeholder='{$escaper->escapeHtmlAttr($lang['SearchProjectsPlaceholder'])}' aria-label='{$escaper->escapeHtmlAttr($lang['SearchProjectsPlaceholder'])}'>
+                    </div>
+                    <button type='button' class='sr-qf-toggle' id='plan-projects-filters-toggle' aria-expanded='false' aria-controls='plan-projects-quickfilters'>
+                        <i class='fa fa-filter'></i><span>{$escaper->escapeHtml($lang['Filters'])}</span>
+                        <span class='sr-qf-toggle-count' id='plan-projects-filters-count' hidden></span>
+                    </button>
+                    <div class='colpicker'>
+                        <button type='button' class='filterbtn sr-table-filter' id='plan-projects-colpicker-btn' aria-haspopup='true' aria-expanded='false'>
+                            <i class='fa fa-table-columns' aria-hidden='true'></i> {$escaper->escapeHtml($lang['Columns'])}
+                        </button>
+                        <div class='colpanel d-none' id='plan-projects-colpanel'></div>
+                    </div>
+    ";
+    if ($can_add === 'true') {
+        echo "
+                    <button type='button' class='btn btn-danger' id='plan-projects-add-btn'>+ {$escaper->escapeHtml($lang['AddProject'])}</button>
         ";
     }
-    echo $header_html;
+    echo "
+                </div>
+            </div>
+            <div class='sr-bulk-bar d-none' id='plan-projects-bulk-bar'>
+                <button type='button' class='sr-bulk-clear' id='plan-projects-bulk-clear' aria-label='{$escaper->escapeHtmlAttr($lang['Clear'])}'>&times;</button>
+                <span class='sr-bulk-count' id='plan-projects-bulk-count'></span>
+                <!-- Select all N: escalates a page-level selection to every
+                     project matching the current chip/search/filters, the same
+                     .sr-bulk-lnk affordance the Governance controls grid offers.
+                     Shown by plan-projects.js syncBulkBar() only while there are
+                     more matching rows than are selected. -->
+                <button type='button' class='sr-bulk-lnk d-none' id='plan-projects-select-all-filtered'></button>
+                <div class='sr-bulk-actions'>
+    ";
+    if ($can_manage === 'true') {
+        echo "      <button type='button' class='btn btn-outline-secondary btn-sm' id='plan-projects-bulk-status'>{$escaper->escapeHtml($lang['ChangeStatus'])}</button>";
+    }
+    if ($can_delete === 'true') {
+        echo "      <button type='button' class='btn btn-outline-danger btn-sm' id='plan-projects-bulk-delete'>{$escaper->escapeHtml($lang['Delete'])}</button>";
+    }
+    echo "
+                </div>
+            </div>
+            <div class='sr-table-quickfilters d-none' id='plan-projects-quickfilters'>
+                <div class='sr-qf-selects'>
+                    <select id='plan-projects-consultant-filter' class='form-select' multiple data-placeholder='{$escaper->escapeHtmlAttr($lang['AllConsultants'])}' aria-label='{$escaper->escapeHtmlAttr($lang['Consultant'])}'></select>
+                    <select id='plan-projects-owner-filter' class='form-select' multiple data-placeholder='{$escaper->escapeHtmlAttr($lang['AllBusinessOwners'])}' aria-label='{$escaper->escapeHtmlAttr($lang['BusinessOwner'])}'></select>
+                    <select id='plan-projects-classification-filter' class='form-select' multiple data-placeholder='{$escaper->escapeHtmlAttr($lang['AllDataClassifications'])}' aria-label='{$escaper->escapeHtmlAttr($lang['DataClassification'])}'></select>
+                    <select id='plan-projects-due-filter' class='form-select' data-placeholder='{$escaper->escapeHtmlAttr($lang['AnyDueStatus'])}' aria-label='{$escaper->escapeHtmlAttr($lang['DueDate'])}'>
+                        <option value=''>{$escaper->escapeHtml($lang['AnyDueStatus'])}</option>
+                        <option value='on_track'>{$escaper->escapeHtml($lang['OnTrack'])}</option>
+                        <option value='due_soon'>{$escaper->escapeHtml($lang['DueSoon'])}</option>
+                        <option value='overdue'>{$escaper->escapeHtml($lang['Overdue'])}</option>
+                        <option value='none'>{$escaper->escapeHtml($lang['NoDueDate'])}</option>
+                    </select>
+                    <button type='button' class='btn btn-link btn-sm sr-qf-clear d-none' id='plan-projects-filters-clear'>{$escaper->escapeHtml($lang['ClearFilters'])}</button>
+                </div>
+            </div>
+            <div id='plan-projects-grid'>
+            <div class='sr-table-scroll'>
+                <table id='plan_projects_table' class='sr-table' width='100%'>
+                    <thead><tr>
+                        <th class='sr-drag-col'></th>
+                        <th class='sr-check-col'><input type='checkbox' class='form-check-input' id='plan-projects-select-all' aria-label='{$escaper->escapeHtmlAttr($lang['SelectAll'])}'></th>
+                        <th class='sr-caret-col'></th>
+                        <th class='num' data-col-fixed='priority'>{$escaper->escapeHtml($lang['Priority'])}</th>
+                        <th data-col-fixed='name'>{$escaper->escapeHtml($lang['ProjectName'])}</th>
+                        <th data-col='due_date'>{$escaper->escapeHtml($lang['DueDate'])}</th>
+                        <th data-col='consultant'>{$escaper->escapeHtml($lang['Consultant'])}</th>
+                        <th data-col='business_owner'>{$escaper->escapeHtml($lang['BusinessOwner'])}</th>
+                        <th data-col='data_classification'>{$escaper->escapeHtml($lang['DataClassification'])}</th>
+                        <th data-col='risk_count' class='num'>{$escaper->escapeHtml($lang['Risks'])}</th>
+                        <th data-col='highest_risk'>{$escaper->escapeHtml($lang['HighestRisk'])}</th>
+                        <th data-col='status' class='d-none'>{$escaper->escapeHtml($lang['Status'])}</th>
+                        <!-- sr-actions-col-sticky: pins the actions column to the
+                             right edge of .sr-table-scroll's horizontal scroll, the
+                             same opt-in Review Risk's grid uses (rule scoped by table
+                             id in _tables.scss; plan-projects.js's column def carries
+                             the class onto the <td>s). -->
+                        <th class='sr-actions-col sr-actions-col-sticky'></th>
+                    </tr></thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+            </div>
+            <div id='plan-projects-queue' class='d-none'>
+            <div class='sr-bulk-bar d-none' id='unassigned-risks-bulk-bar'>
+                <button type='button' class='sr-bulk-clear' id='unassigned-risks-bulk-clear' aria-label='{$escaper->escapeHtmlAttr($lang['Clear'])}'>&times;</button>
+                <span class='sr-bulk-count' id='unassigned-risks-bulk-count'></span>
+                <button type='button' class='sr-bulk-lnk d-none' id='unassigned-risks-select-all-filtered'></button>
+                <div class='sr-bulk-actions'>
+                    <button type='button' class='btn btn-outline-secondary btn-sm' id='unassigned-risks-bulk-assign'>{$escaper->escapeHtml($lang['AssignToProject'])}</button>
+                </div>
+            </div>
+            <div class='sr-table-scroll'>
+                <table id='unassigned_risks_table' class='sr-table' width='100%'>
+                    <thead><tr>
+                        <th class='sr-check-col'><input type='checkbox' class='form-check-input' id='unassigned-risks-select-all' aria-label='{$escaper->escapeHtmlAttr($lang['SelectAll'])}'></th>
+                        <th class='num'>{$escaper->escapeHtml($lang['ID'])}</th>
+                        <th>{$escaper->escapeHtml($lang['Subject'])}</th>
+                        <th>{$escaper->escapeHtml($lang['InherentRisk'])}</th>
+                        <th>{$escaper->escapeHtml($lang['Owner'])}</th>
+                        <th>{$escaper->escapeHtml($lang['Team'])}</th>
+                        <th>{$escaper->escapeHtml($lang['Reviewed'])}</th>
+                        <th class='sr-actions-col sr-actions-col-sticky'></th>
+                    </tr></thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+            </div>
+        </div>
+    ";
+}
+
+/*****************************************************
+ * FUNCTION: DISPLAY PLAN PROJECTS MODALS (SR-2229)  *
+ *****************************************************/
+function display_plan_projects_modals()
+{
+    global $lang, $escaper;
+
+    // Add
+    echo "
+    <div class='modal fade sr-modal' id='project-modal-add' tabindex='-1' aria-hidden='true'>
+        <div class='modal-dialog modal-dialog-centered modal-dialog-scrollable'>
+            <div class='modal-content'>
+                <div class='modal-header'>
+                    <span class='sr-modal-icon'><i class='fa fa-folder-plus'></i></span>
+                    <h4 class='modal-title'>{$escaper->escapeHtml($lang['NewProject'])}</h4>
+                    <button type='button' class='btn-close' data-bs-dismiss='modal' aria-label='{$escaper->escapeHtmlAttr($lang['Close'])}'></button>
+                </div>
+                <div class='modal-body sr-qform'>
+    ";
+    display_add_projects();
+    echo "
+                </div>
+                <div class='modal-footer'>
+                    <button type='button' class='btn btn-dark' data-bs-dismiss='modal'>{$escaper->escapeHtml($lang['Cancel'])}</button>
+                    <button type='button' class='btn btn-submit project-add-save-btn' name='add_project'>{$escaper->escapeHtml($lang['Add'])}</button>
+                </div>
+            </div>
+        </div>
+    </div>";
+
+    // Edit
+    echo "
+    <div class='modal fade sr-modal' id='project-modal-edit' tabindex='-1' aria-hidden='true'>
+        <div class='modal-dialog modal-dialog-centered modal-dialog-scrollable'>
+            <div class='modal-content'>
+                <form id='project-edit' action='#' method='post'>
+                    <input type='hidden' name='project_id' value=''>
+                    <div class='modal-header'>
+                        <span class='sr-modal-icon'><i class='fa fa-edit'></i></span>
+                        <h4 class='modal-title'>{$escaper->escapeHtml($lang['EditProject'])}</h4>
+                        <button type='button' class='btn-close' data-bs-dismiss='modal' aria-label='{$escaper->escapeHtmlAttr($lang['Close'])}'></button>
+                    </div>
+                    <div class='modal-body sr-qform'>
+    ";
+    display_edit_projects();
+    echo "
+                    </div>
+                    <div class='modal-footer'>
+                        <button type='button' class='btn btn-dark' data-bs-dismiss='modal'>{$escaper->escapeHtml($lang['Cancel'])}</button>
+                        <button type='submit' class='btn btn-submit' name='edit_project'>{$escaper->escapeHtml($lang['Update'])}</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>";
+
+    // Change status (single + bulk; JS fills #project-status-consequence)
+    echo "
+    <div class='modal fade sr-modal' id='project-status-modal' tabindex='-1' aria-hidden='true'>
+        <div class='modal-dialog modal-dialog-centered'>
+            <div class='modal-content'>
+                <div class='modal-header'>
+                    <span class='sr-modal-icon'><i class='fa fa-arrow-right-arrow-left'></i></span>
+                    <h4 class='modal-title'>{$escaper->escapeHtml($lang['ChangeProjectStatus'])}</h4>
+                    <button type='button' class='btn-close' data-bs-dismiss='modal' aria-label='{$escaper->escapeHtmlAttr($lang['Close'])}'></button>
+                </div>
+                <div class='modal-body'>
+                    <section class='sr-qcard'>
+                        <div class='sr-qcard-body'>
+                            <div class='sr-qstack' id='project-status-options'>
+    ";
+    foreach ([1 => 'Active', 2 => 'OnHold', 3 => 'Completed', 4 => 'Canceled'] as $value => $key) {
+        echo "
+                                <label class='form-check'><input class='form-check-input' type='radio' name='project_status' value='{$value}'> <span class='form-check-label'>{$escaper->escapeHtml($lang[$key])}</span></label>";
+    }
+    echo "
+                            </div>
+                            <div class='sr-qnote d-none' id='project-status-consequence'></div>
+                        </div>
+                    </section>
+                </div>
+                <div class='modal-footer'>
+                    <button type='button' class='btn btn-dark' data-bs-dismiss='modal'>{$escaper->escapeHtml($lang['Cancel'])}</button>
+                    <button type='button' class='btn btn-submit' id='project-status-confirm'>{$escaper->escapeHtml($lang['Update'])}</button>
+                </div>
+            </div>
+        </div>
+    </div>";
+
+    // Delete (single + bulk)
+    echo "
+    <div class='modal fade sr-modal' id='project-delete-modal' tabindex='-1' aria-hidden='true'>
+        <div class='modal-dialog modal-dialog-centered'>
+            <div class='modal-content'>
+                <div class='modal-header'>
+                    <span class='sr-modal-icon sr-modal-icon--danger'><i class='fa fa-trash'></i></span>
+                    <h4 class='modal-title'>{$escaper->escapeHtml($lang['Delete'])}</h4>
+                    <button type='button' class='btn-close' data-bs-dismiss='modal' aria-label='{$escaper->escapeHtmlAttr($lang['Close'])}'></button>
+                </div>
+                <div class='modal-body'>
+                    <section class='sr-qcard'><div class='sr-qcard-body'>
+                        <p id='project-delete-question'>{$escaper->escapeHtml($lang['AreYouSureYouWantToDeleteThisProject'])}</p>
+                        <p class='sr-qhint' id='project-delete-consequence'></p>
+                    </div></section>
+                </div>
+                <div class='modal-footer'>
+                    <button type='button' class='btn btn-dark' data-bs-dismiss='modal'>{$escaper->escapeHtml($lang['Cancel'])}</button>
+                    <button type='button' class='btn btn-danger' id='project-delete-confirm'>{$escaper->escapeHtml($lang['Delete'])}</button>
+                </div>
+            </div>
+        </div>
+    </div>";
+
+    // Assign to project (queue: single + bulk)
+    echo "
+    <div class='modal fade sr-modal' id='assign-project-modal' tabindex='-1' aria-hidden='true'>
+        <div class='modal-dialog modal-dialog-centered'>
+            <div class='modal-content'>
+                <div class='modal-header'>
+                    <span class='sr-modal-icon'><i class='fa fa-folder-open'></i></span>
+                    <h4 class='modal-title'>{$escaper->escapeHtml($lang['AssignToProject'])}</h4>
+                    <button type='button' class='btn-close' data-bs-dismiss='modal' aria-label='{$escaper->escapeHtmlAttr($lang['Close'])}'></button>
+                </div>
+                <div class='modal-body sr-qform'>
+                    <section class='sr-qcard'><div class='sr-qcard-body'>
+                        <div class='sr-qfield sr-qfield--full'>
+                            <label class='sr-qlabel' for='assign-project-select'>{$escaper->escapeHtml($lang['ProjectName'])}</label>
+                            <select id='assign-project-select' class='form-select' data-placeholder='{$escaper->escapeHtmlAttr($lang['ProjectName'])}'></select>
+                        </div>
+                    </div></section>
+                </div>
+                <div class='modal-footer'>
+                    <button type='button' class='btn btn-dark' data-bs-dismiss='modal'>{$escaper->escapeHtml($lang['Cancel'])}</button>
+                    <button type='button' class='btn btn-submit' id='assign-project-confirm'>{$escaper->escapeHtml($lang['AssignToProject'])}</button>
+                </div>
+            </div>
+        </div>
+    </div>";
+
+    // Add risks to this project: the shared faceted picker's modal markup.
+    // Same DOM shape as display_control_picker_modal() (this file) and the
+    // #document-control-picker markup in governance/documentation.php,
+    // minus the facet columns (this picker has no framework/family facets --
+    // facets: []): a JS-filled scope status span, the search box, the
+    // results list and the selected panel.
+    display_faceted_picker_modal_markup([
+        'modalId' => 'add-risks-picker', 'searchId' => 'add-risks-picker-search',
+        'listId' => 'add-risks-picker-list', 'selectedId' => 'add-risks-picker-selected',
+        'countId' => 'add-risks-picker-count', 'selectedCountId' => 'add-risks-picker-selected-count',
+        'scopeId' => 'add-risks-picker-scope', 'commitId' => 'add-risks-picker-commit',
+        'title' => $lang['AddRisksToThisProject'],
+    ]);
+}
+
+/******************************************************************************
+ * FUNCTION: DISPLAY FACETED PICKER MODAL MARKUP                             *
+ ******************************************************************************
+ * The shared DOM shell factored out of display_control_picker_modal() (this
+ * file) and the #document-control-picker markup in
+ * governance/documentation.php: the modal frame, title, search box, results
+ * list, selected panel and counts, and the commit/cancel footer -- but with
+ * NO facet columns (facets: []). Both existing callers keep their own
+ * framework/family facet-column copies; migrating them onto this helper is
+ * out of scope here.
+ *
+ * $ids keys (all required): modalId, searchId, listId, selectedId, countId,
+ * selectedCountId, scopeId, commitId, title. The caller wires up filtering,
+ * search and selection entirely client-side against these ids.
+ ******************************************************************************/
+function display_faceted_picker_modal_markup(array $ids) {
+    global $lang, $escaper;
+
+    $modal_id           = $ids['modalId'];
+    $search_id          = $ids['searchId'];
+    $list_id            = $ids['listId'];
+    $selected_id        = $ids['selectedId'];
+    $count_id           = $ids['countId'];
+    $selected_count_id  = $ids['selectedCountId'];
+    $scope_id           = $ids['scopeId'];
+    $commit_id          = $ids['commitId'];
+    $title              = (string)($ids['title'] ?? '');
+    $title_id           = "{$modal_id}-title";
+
+    echo "
+    <div id='{$modal_id}' class='modal fade sr-modal sr-picker-modal' tabindex='-1' aria-hidden='true' aria-labelledby='{$title_id}'>
+        <div class='modal-dialog modal-xl modal-dialog-centered'>
+            <div class='modal-content'>
+                <div class='modal-header'>
+                    <span class='sr-modal-icon'><i class='fa fa-list-check' aria-hidden='true'></i></span>
+                    <h5 class='modal-title' id='{$title_id}'>{$escaper->escapeHtml($title)}</h5>
+                    <button type='button' class='btn-close' data-bs-dismiss='modal' aria-label='{$escaper->escapeHtmlAttr($lang['Close'])}'></button>
+                </div>
+
+                <div class='sr-picker-search'>
+                    <i class='fa fa-magnifying-glass sr-picker-search-icon' aria-hidden='true'></i>
+                    <input type='text' id='{$search_id}' class='sr-picker-search-input' autocomplete='off'
+                           placeholder='{$escaper->escapeHtmlAttr($lang['Search'])}'
+                           aria-label='{$escaper->escapeHtmlAttr($lang['Search'])}'>
+                    <span class='sr-picker-scope' id='{$scope_id}'></span>
+                </div>
+
+                <div class='sr-picker-panes'>
+                    <div class='sr-picker-pane sr-picker-pane--list'>
+                        <div class='sr-picker-pane-head'>
+                            <span>{$escaper->escapeHtml($title)}</span>
+                            <span class='sr-picker-pane-count' id='{$count_id}'></span>
+                        </div>
+                        <div class='sr-picker-scroll' id='{$list_id}' role='listbox' aria-multiselectable='true'
+                             aria-label='{$escaper->escapeHtmlAttr($title)}'></div>
+                    </div>
+
+                    <div class='sr-picker-pane sr-picker-pane--selected'>
+                        <div class='sr-picker-pane-head'>
+                            <span>{$escaper->escapeHtml($lang['Selected'])}</span>
+                            <span class='sr-picker-pane-count' id='{$selected_count_id}'></span>
+                        </div>
+                        <div class='sr-picker-scroll sr-picker-selected' id='{$selected_id}'></div>
+                    </div>
+                </div>
+
+                <div class='modal-footer sr-picker-foot'>
+                    <span class='sr-picker-hint'>{$escaper->escapeHtml($lang['PickerKeyboardHint'])}</span>
+                    <button type='button' class='btn btn-dark' data-bs-dismiss='modal'>{$escaper->escapeHtml($lang['Cancel'])}</button>
+                    <button type='button' class='btn btn-submit' id='{$commit_id}'>{$escaper->escapeHtml($title)}</button>
+                </div>
+            </div>
+        </div>
+    </div>";
 }
 
 /**
@@ -10158,12 +10275,12 @@ function display_project_table_header($template_group_id = "") {
  * and the javascripts required for saving the selections.
  *
  * The emitted JS variable is namespaced per-view (`custom_display_settings_{$view}`) so that a single page
- * can render this widget for multiple views without one view's selection clobbering another's. The two
- * sibling renderers `display_custom_risk_columns()` and `display_custom_document_control_columns()` still
- * emit un-namespaced variables — that's intentional, because their callers (review_risks.php,
- * plan_mitigations.php, management_review.php, etc.) only ever render one of those widgets per page so
- * there is no name conflict to resolve. If you ever add a second widget call to the same page, namespace
- * those too.
+ * can render this widget for multiple views without one view's selection clobbering another's. The sibling
+ * renderer `display_custom_document_control_columns()` still emits an un-namespaced variable -- that's
+ * intentional, because its only caller (reports/documents_to_controls.php) only ever renders one of those
+ * widgets per page so there is no name conflict to resolve. (The other sibling, `display_custom_risk_columns()`,
+ * was retired in Task 22 along with the three legacy risk-queue pages that were its only callers.) If you
+ * ever add a second widget call to the same page, namespace those too.
  */
 function render_column_selection_widget($view) {
 

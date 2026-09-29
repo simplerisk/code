@@ -231,18 +231,6 @@ else
     $display_risk = false;
 }
 
-switch($active_sidebar_submenu){
-    default:
-    case "ReviewRisksRegularly":
-        $list_href = "review_risks.php";
-        break;
-    case "PerformManagementReviews":
-        $list_href = "management_review.php";
-        break;
-    case "PlanYourMitigations":
-        $list_href = "plan_mitigations.php";
-        break;
-}
 ?>
 <?php if (isset($id) && $id > 0): ?>
 <script>window.simplerisk_current_risk_id = <?= (int)$id ?>;</script>

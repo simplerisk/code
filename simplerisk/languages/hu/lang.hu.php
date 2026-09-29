@@ -4844,6 +4844,129 @@ $lang = array(
     'CreateAndAddField' => 'Létrehozás és hozzáadás',
     'FieldCreatedAndAddedToTab' => 'Létrehozta a {field} elemet, és hozzáadta a {tab} elemhez.',
     'DeleteCustomFieldTitle' => 'Törli a(z) \'{field} \' mezőt?',
+    // Review Risk page (SR-2068 and others -- see design spec)
+    'ReviewRisk' => 'Kockázat felülvizsgálata',
+    'NeedsColumn' => 'Igények',
+    'RiskScoreColumn' => 'Kockázati pontszám',
+    'ReassignRiskOwner' => 'Kockázatfelelős átrendelése',
+    'ReassignMitigationOwner' => 'Mérséklési tulajdonos átrendelése',
+    'NoActionItemsTitle' => 'Egyik kockázat sem felel meg a szűrőknek',
+    'NoActionItemsBody' => 'Nincs olyan intézkedés, amelyhez személyesen engedélyed van a beavatkozásra vagy enyhítésre. Próbáld meg kikapcsolni a „Teendőim megjelenítése” jelölőnégyzetet a csapat teljes várólistájának megtekintéséhez.',
+    'BulkChangeStatusTitle' => '%s kiválasztott kockázat állapotának módosítása',
+    'BulkReassignRiskOwnerTitle' => 'Kockázatfelelős átrendelése %s kiválasztott kockázathoz',
+    'BulkReassignMitigationOwnerTitle' => 'Mérséklési tulajdonos átrendelése a %s kiválasztott kockázathoz',
+    'BulkAddCommentTitle' => 'Hozzászólás hozzáadása a %s kiválasztott kockázatokhoz',
+    'BulkCloseRiskTitle' => '%s kiválasztott kockázat bezárása',
+    'BulkActionPartialSuccess' => '%s / %s kockázat frissítve.',
+    'PerformReview' => 'Felülvizsgálat végrehajtása',
+    'BulkActionSuccess' => '%s kockázatok frissítve.',
+    'SomeRowsSkippedNoMitigation' => 'Néhány kiválasztott kockázatot kihagytunk, mivel még nem terveztünk mérséklést rájuk.',
+    'ChangeStatusHint' => 'A kiválasztott kockázatok a kiválasztott állapotra frissülnek.',
+    'StatusChanged' => 'Állapot frissítve.',
+    'CloseRiskBulkConfirmBody' => 'A lezárt kockázatok eltávolításra kerülnek az aktív várólistából. A kockázatot később újra megnyithatja az állapotának módosításával.',
+    // Column-parity follow-up fix review-risk-followups/column-parity-report.md):
+    // the Review Risk page's new scoring_method column (getReviewRiskDatatableResponse(),
+    // includes/api.php) renders get_scoring_method_name()'s (includes/functions.php)
+    // canonical scoring-method name through a $lang lookup rather than the raw
+    // hardcoded string. 'Classic'/'Custom'/'ContributingRisk' already existed
+    // (reused, not duplicated) -- only the three missing acronym keys are added
+    // here. These scoring methodology names/acronyms are typically kept
+    // untranslated (matching how the app's other risk-scoring UI already
+    // displays them, e.g. get_name_by_value('scoring_methods', ...) in
+    // displayrisks.php, which reads these same literal strings straight from
+    // the scoring_methods DB table with no translation layer), but every
+    // user-facing string still needs to flow through a lookup per CLAUDE.md,
+    // even one where the English and translated value would typically match.
+    'CVSS' => 'CVSS',
+    'DREAD' => 'DREAD',
+    'OWASP' => 'OWASP',
+    'MyActionItems' => 'Saját műveleti elemek',
+    'AddRisk' => 'Kockázat hozzáadása',
+    'ReviewCompleted' => 'Felülvizsgálat befejezve',
+    // Review Risk insights band (management/review_risk.php). The "Needs
+    // Review" tile reuses the existing 'HomeKpiNeedsReview' key rather than
+    // adding a second key for the same English string. 'RrNeedsMitigation'
+    // carries the band prefix the sibling insights bands already use ('Dt',
+    // 'Fw', 'Exc') to distinguish it from the grid's much terser chip label
+    // ('Mitigation').
+    'RrNeedsMitigation' => 'Mérséklést igényel',
+    'PastDue' => 'Lejárt határidő',
+    'OpenedThisMonth' => 'Ebben a hónapban nyitották meg',
+    'ClosedThisMonth' => 'Ebben a hónapban zárva',
+    'AllRiskLevels' => 'Minden kockázati szint',
+    // Import-Export Extra's Users sheet column for the Review Risk grid's
+    // persisted column-visibility/order preferences (user.custom_review_risk_display_settings).
+    'ReviewRiskDisplay' => 'Kockázatkijelzés áttekintése',
+    // Plan Projects grid API (SR-2229): reorder/save-order status messages
+    // and the derived highest-risk column label shared by the grid's
+    // Columns picker and the drawer. The sibling 'Risks' column label
+    // reuses the existing 'Risks' key (line ~1911) rather than duplicating it.
+    'PlanProjectsReorderMismatch' => 'A projektlista megváltozott az átrendezés közben. Töltse be újra az oldalt, és próbálja meg újra.',
+    'PlanProjectsOrderSaved' => 'Projektsorrend mentve.',
+    'HighestRisk' => 'Legmagasabb kockázat',
+    // Plan Projects grid (SR-2229). Sentence case; column headers are upper-cased by CSS. {n} tokens are replaced client-side.
+    'OnHold' => 'Várakoztatás alatt',
+    'SearchProjectsPlaceholder' => 'Projektek keresése',
+    'AllConsultants' => 'Minden tanácsadó',
+    'AllBusinessOwners' => 'Minden üzlettulajdonos',
+    'AllDataClassifications' => 'Minden adatosztályozás',
+    'AnyDueStatus' => 'Bármilyen esedékességi állapot',
+    'NoDueDate' => 'Nincs határidő',
+    'AddProject' => 'Projekt hozzáadása',
+    'AssignToProject' => 'Projekthez hozzárendelés',
+    'RemoveFromProject' => 'Eltávolítás a projektből',
+    'AddRisksToThisProject' => 'Kockázatok hozzáadása ehhez a projekthez',
+    'NoProjectsYet' => 'Még nincsenek projektek',
+    'NoProjectsYetHint' => 'A projektek csoportosítják a kapcsolódó kockázatokat, így közösen megtervezheti és rangsorolhatja a kezelésüket.',
+    'NoProjectsMatchFilters' => 'Egyik projekt sem felel meg a szűrőknek',
+    'NoRisksInThisProject' => 'Ebben a projektben még nincsenek kockázatok',
+    'NoRisksWaitingForProject' => 'Nincs kockázat a projektre várva',
+    'NoRisksWaitingForProjectHint' => 'A „Projekt szempontjából figyelembe veendő” besorolásúként felülvizsgált kockázatok itt jelennek meg, amíg hozzá nem rendelik őket.',
+    'NMoreRisks' => '{n} több kockázat',
+    'ChangeProjectStatus' => 'Projekt állapotának módosítása',
+    'ChangeStatusClosesRisks' => 'A projekt befejezettként való megjelölése lezárja a {n} nyitott kockázatait „Teljesen enyhítve” okkal.',
+    'ChangeStatusReopensRisks' => 'A projekt befejezett állapotból való áthelyezése újra megnyitja azokat a kockázatokat, amelyek a projekt befejezésekor lezárultak.',
+    'ChangeStatusNoCloseRightsHint' => 'Nincs jogosultsága kockázatok lezárására vagy újranyitására, így csak a projekt állapota fog megváltozni.',
+    'DeleteProjectReturnsRisks' => 'A {n} kockázatai visszatérnek a hozzá nem rendelt várólistába.',
+    'ReorderNeedsPrioritySort' => 'Az átrendezés akkor érhető el, ha a lista egy állapoton belül prioritás szerint van rendezve.',
+    'CouldNotLoadProjects' => 'Nem sikerült betölteni a projekteket. Az adatai biztonságban vannak.',
+    'MitigationNotPlanned' => 'Nem tervezett',
+    'MitigationStatePlanned' => 'Tervezett',
+    'NoRisksMatchYourSearch' => 'Nincsenek a keresésnek megfelelő kockázatok',
+    'AllUnassignedRisks' => 'Minden nem hozzárendelt kockázat',
+    'NoRisksSelectedYet' => 'Még nincsenek kiválasztott kockázatok',
+    'SomeQuestionsNotDeleted' => 'Néhány kiválasztott kérdést nem sikerült törölni.',
+    'QuestionnaireQuestionDeleteRequiresJavaScript' => 'A kérdés törléséhez engedélyezni kell a JavaScriptet a böngészőben.',
+    // Initiate Audits' bulk bar (SR-2234): the header checkbox already
+    // selects every row matching the current search/filters across every
+    // page in one click (client-side DataTables, the full eligible-test set
+    // is already loaded) -- this qualifier makes that explicit when the
+    // selection exceeds what a single page can hold, so "N selected" isn't
+    // read as a miscount against however many checkboxes are visibly ticked
+    // on the current page.
+    'NSelectedAllPages' => '{n} kiválasztva (megfelel a szűrőknek, minden oldalon)',
+    // "Select all N" cross-page selection: shared too-many-matches message for
+    // Review Risk, Define Tests, Manage Audits, Document Program, and Define
+    // Exceptions (formerly 5 near-duplicate per-page keys). Callers supply
+    // both {$max} and {$noun} (e.g. the plain 'Risks'/'Tests'/'Audits'/
+    // 'Documents'/'Exceptions' key text) -- PHP call sites via _lang(), JS
+    // call sites via a manual .replace('{$max}', ...).replace('{$noun}', ...).
+    'SelectAllTooManyMatches' => 'A jelenlegi szűrők több mint {$max} {$noun}egyezést mutatnak. Szűkítse a szűrőt, és próbálja újra.',
+    // POST /documents/batch-delete (batch_delete_document_api(), includes/api.php):
+    // same truncation-signal shape as 'DocumentsApprovedTruncated' (see
+    // above) and the sibling 'ExceptionsDeletedTruncated' key just below,
+    // for the Document Program bulk-delete "Select all N" action.
+    'DocumentsDeletedTruncated' => 'Csak az első {$limit} kiválasztott dokumentum törölve lett. Kérjük, ismételje meg a műveletet a többi törléséhez.',
+    // POST /exceptions/batch-delete-ids (batch_delete_exceptions_by_ids_api()) --
+    // deletes an arbitrary caller-supplied set of exception ids in one request,
+    // replacing the Define Exceptions bulk bar's looped POST /exceptions/delete
+    // calls. Mirrors ExceptionsApprovedTruncated's truncation-signal wording.
+    'ExceptionsDeletedTruncated' => 'Csak az első {$limit} kiválasztott kivétel lett törölve. Kérjük, ismételje meg a műveletet a többi törléséhez.',
+    // POST /risks/batch-close (closeRiskBatch(), includes/api.php): whole-batch
+    // 403 when the caller holds no close_risks permission at all, mirroring
+    // closeriskForm()'s own (hardcoded, pre-existing) single-risk denial text.
+    'NoCloseRiskPermission' => 'Nincs engedélye a kockázatok lezárására.',
+    'QuestionnaireRequiredQuestionUnanswered' => 'Kérjük, válaszoljon az összes kötelező kérdésre a felmérés kitöltése előtt.',
     '' => '',
 );
 ?>

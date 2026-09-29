@@ -4844,6 +4844,129 @@ $lang = array(
     'CreateAndAddField' => 'Skep en voeg by',
     'FieldCreatedAndAddedToTab' => 'Het {field} geskep en dit by {tab} gevoeg.',
     'DeleteCustomFieldTitle' => 'Vee veld \'{field}\' uit?',
+    // Review Risk page (SR-2068 and others -- see design spec)
+    'ReviewRisk' => 'Hersien Risiko',
+    'NeedsColumn' => 'Behoeftes',
+    'RiskScoreColumn' => 'Risikotelling',
+    'ReassignRiskOwner' => 'Hertoewys risiko-eienaar',
+    'ReassignMitigationOwner' => 'Hertoewys eienaar van versagting',
+    'NoActionItemsTitle' => 'Geen risiko\'s stem ooreen met jou filters nie',
+    'NoActionItemsBody' => 'Niks benodig versagting of hersiening waarvoor jy persoonlik toestemming het om op te tree nie. Probeer om "Wys my aksie-items" af te merk om die span se volledige waglys te sien.',
+    'BulkChangeStatusTitle' => 'Verander status vir %s gekose risiko\'s',
+    'BulkReassignRiskOwnerTitle' => 'Ken risiko-eienaar weer toe vir %s gekose risiko\'s',
+    'BulkReassignMitigationOwnerTitle' => 'Ken versagtingseienaar weer toe vir %s gekose risiko\'s',
+    'BulkAddCommentTitle' => 'Voeg \'n opmerking by %s gekose risiko\'s',
+    'BulkCloseRiskTitle' => 'Maak %s geselekteerde risiko\'s toe',
+    'BulkActionPartialSuccess' => '%s van %s risiko\'s opgedateer.',
+    'PerformReview' => 'Voer hersiening uit',
+    'BulkActionSuccess' => '%s risiko\'s opgedateer.',
+    'SomeRowsSkippedNoMitigation' => 'Sommige geselekteerde risiko\'s is oorgeslaan omdat daar nog geen mitigasieplanne is nie.',
+    'ChangeStatusHint' => 'Geselekteerde risiko\'s sal opgedateer word na die gekose status.',
+    'StatusChanged' => 'Status opgedateer.',
+    'CloseRiskBulkConfirmBody' => 'Geslote risiko\'s word uit aktiewe toue verwyder. Jy kan \'n risiko later weer oopmaak deur die status daarvan weer te verander.',
+    // Column-parity follow-up fix review-risk-followups/column-parity-report.md):
+    // the Review Risk page's new scoring_method column (getReviewRiskDatatableResponse(),
+    // includes/api.php) renders get_scoring_method_name()'s (includes/functions.php)
+    // canonical scoring-method name through a $lang lookup rather than the raw
+    // hardcoded string. 'Classic'/'Custom'/'ContributingRisk' already existed
+    // (reused, not duplicated) -- only the three missing acronym keys are added
+    // here. These scoring methodology names/acronyms are typically kept
+    // untranslated (matching how the app's other risk-scoring UI already
+    // displays them, e.g. get_name_by_value('scoring_methods', ...) in
+    // displayrisks.php, which reads these same literal strings straight from
+    // the scoring_methods DB table with no translation layer), but every
+    // user-facing string still needs to flow through a lookup per CLAUDE.md,
+    // even one where the English and translated value would typically match.
+    'CVSS' => 'CVSS',
+    'DREAD' => 'DREAD',
+    'OWASP' => 'OWASP',
+    'MyActionItems' => 'My Aksie-items',
+    'AddRisk' => 'Voeg Risiko by',
+    'ReviewCompleted' => 'Hersiening voltooi',
+    // Review Risk insights band (management/review_risk.php). The "Needs
+    // Review" tile reuses the existing 'HomeKpiNeedsReview' key rather than
+    // adding a second key for the same English string. 'RrNeedsMitigation'
+    // carries the band prefix the sibling insights bands already use ('Dt',
+    // 'Fw', 'Exc') to distinguish it from the grid's much terser chip label
+    // ('Mitigation').
+    'RrNeedsMitigation' => 'Benodig versagting',
+    'PastDue' => 'Agterstallig',
+    'OpenedThisMonth' => 'Hierdie maand oopgemaak',
+    'ClosedThisMonth' => 'Gesluit hierdie maand',
+    'AllRiskLevels' => 'Alle risikovlakke',
+    // Import-Export Extra's Users sheet column for the Review Risk grid's
+    // persisted column-visibility/order preferences (user.custom_review_risk_display_settings).
+    'ReviewRiskDisplay' => 'Hersien Risiko-vertoning',
+    // Plan Projects grid API (SR-2229): reorder/save-order status messages
+    // and the derived highest-risk column label shared by the grid's
+    // Columns picker and the drawer. The sibling 'Risks' column label
+    // reuses the existing 'Risks' key (line ~1911) rather than duplicating it.
+    'PlanProjectsReorderMismatch' => 'Die projeklys het verander terwyl jy besig was om te herrangskik. Herlaai en probeer weer.',
+    'PlanProjectsOrderSaved' => 'Projekorder gestoor.',
+    'HighestRisk' => 'Hoogste risiko',
+    // Plan Projects grid (SR-2229). Sentence case; column headers are upper-cased by CSS. {n} tokens are replaced client-side.
+    'OnHold' => 'Op hold',
+    'SearchProjectsPlaceholder' => 'Soek projekte',
+    'AllConsultants' => 'Alle konsultante',
+    'AllBusinessOwners' => 'Alle sake-eienaars',
+    'AllDataClassifications' => 'Alle dataklassifikasies',
+    'AnyDueStatus' => 'Enige vervaldatumstatus',
+    'NoDueDate' => 'Geen vervaldatum nie',
+    'AddProject' => 'Voeg projek by',
+    'AssignToProject' => 'Toewys aan projek',
+    'RemoveFromProject' => 'Verwyder van projek',
+    'AddRisksToThisProject' => 'Voeg risiko\'s by hierdie projek',
+    'NoProjectsYet' => 'Geen projekte nog nie',
+    'NoProjectsYetHint' => 'Projekte groepeer verwante risiko\'s sodat jy hul behandeling saam kan beplan en prioritiseer.',
+    'NoProjectsMatchFilters' => 'Geen projekte stem ooreen met jou filters nie',
+    'NoRisksInThisProject' => 'Geen risiko\'s in hierdie projek nog nie',
+    'NoRisksWaitingForProject' => 'Geen risiko\'s wat wag op \'n projek nie',
+    'NoRisksWaitingForProjectHint' => 'Risiko\'s wat as "Oorweeg vir projek" hersien is, verskyn hier totdat hulle toegeken word.',
+    'NMoreRisks' => '{n} meer risiko\'s',
+    'ChangeProjectStatus' => 'Verander projekstatus',
+    'ChangeStatusClosesRisks' => 'As hierdie projek as voltooid gemerk word, sal die {n} oop risiko\'s met die rede "Volledig gemitigeer" gesluit word.',
+    'ChangeStatusReopensRisks' => 'As hierdie projek uit voltooide posisie geskuif word, sal die risiko\'s wat toegesluit was toe dit voltooi is, weer oopgemaak word.',
+    'ChangeStatusNoCloseRightsHint' => 'Jy het nie toestemming om risiko\'s te sluit of weer oop te maak nie, dus sal slegs die projekstatus verander.',
+    'DeleteProjectReturnsRisks' => 'Die {n} risiko\'s sal na die nie-toegewese tou terugkeer.',
+    'ReorderNeedsPrioritySort' => 'Herrangskikking is beskikbaar wanneer die lys volgens prioriteit binne een status gesorteer is.',
+    'CouldNotLoadProjects' => 'Kon nie projekte laai nie. Jou data is veilig.',
+    'MitigationNotPlanned' => 'Nie beplan nie',
+    'MitigationStatePlanned' => 'Beplan',
+    'NoRisksMatchYourSearch' => 'Geen risiko\'s stem ooreen met jou soektog nie',
+    'AllUnassignedRisks' => 'Alle ontoegekende risiko\'s',
+    'NoRisksSelectedYet' => 'Geen risiko\'s nog gekies nie',
+    'SomeQuestionsNotDeleted' => 'Sommige van die gekose vrae kon nie uitgevee word nie.',
+    'QuestionnaireQuestionDeleteRequiresJavaScript' => 'Om \'n vraag te verwyder, moet JavaScript in jou blaaier geaktiveer wees.',
+    // Initiate Audits' bulk bar (SR-2234): the header checkbox already
+    // selects every row matching the current search/filters across every
+    // page in one click (client-side DataTables, the full eligible-test set
+    // is already loaded) -- this qualifier makes that explicit when the
+    // selection exceeds what a single page can hold, so "N selected" isn't
+    // read as a miscount against however many checkboxes are visibly ticked
+    // on the current page.
+    'NSelectedAllPages' => '{n} gekies (ooreenstem met jou filters, oor alle bladsye)',
+    // "Select all N" cross-page selection: shared too-many-matches message for
+    // Review Risk, Define Tests, Manage Audits, Document Program, and Define
+    // Exceptions (formerly 5 near-duplicate per-page keys). Callers supply
+    // both {$max} and {$noun} (e.g. the plain 'Risks'/'Tests'/'Audits'/
+    // 'Documents'/'Exceptions' key text) -- PHP call sites via _lang(), JS
+    // call sites via a manual .replace('{$max}', ...).replace('{$noun}', ...).
+    'SelectAllTooManyMatches' => 'Die huidige filters stem ooreen met meer as {$max} {$noun}. Verfyn die filter en probeer weer.',
+    // POST /documents/batch-delete (batch_delete_document_api(), includes/api.php):
+    // same truncation-signal shape as 'DocumentsApprovedTruncated' (see
+    // above) and the sibling 'ExceptionsDeletedTruncated' key just below,
+    // for the Document Program bulk-delete "Select all N" action.
+    'DocumentsDeletedTruncated' => 'Slegs die eerste {$limit} gekose dokumente is uitgevee. Herhaal asseblief die aksie om die res te verwyder.',
+    // POST /exceptions/batch-delete-ids (batch_delete_exceptions_by_ids_api()) --
+    // deletes an arbitrary caller-supplied set of exception ids in one request,
+    // replacing the Define Exceptions bulk bar's looped POST /exceptions/delete
+    // calls. Mirrors ExceptionsApprovedTruncated's truncation-signal wording.
+    'ExceptionsDeletedTruncated' => 'Slegs die eerste {$limit} gekose uitsonderings is verwyder. Herhaal asseblief die aksie om die res te verwyder.',
+    // POST /risks/batch-close (closeRiskBatch(), includes/api.php): whole-batch
+    // 403 when the caller holds no close_risks permission at all, mirroring
+    // closeriskForm()'s own (hardcoded, pre-existing) single-risk denial text.
+    'NoCloseRiskPermission' => 'Jy het nie toestemming om risiko\'s te sluit nie.',
+    'QuestionnaireRequiredQuestionUnanswered' => 'Beantwoord asseblief al die vereiste vrae voordat u die assessering voltooi.',
     '' => '',
 );
 ?>

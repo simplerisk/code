@@ -4844,6 +4844,129 @@ $lang = array(
     'CreateAndAddField' => 'Opret og tilføj',
     'FieldCreatedAndAddedToTab' => 'Oprettede {field} og tilføjede det til {tab}.',
     'DeleteCustomFieldTitle' => 'Slet feltet \'{field}\'?',
+    // Review Risk page (SR-2068 and others -- see design spec)
+    'ReviewRisk' => 'Gennemgå risiko',
+    'NeedsColumn' => 'Behov',
+    'RiskScoreColumn' => 'Risikoscore',
+    'ReassignRiskOwner' => 'Omfordel risikoejer',
+    'ReassignMitigationOwner' => 'Omfordel ejer af afhjælpning',
+    'NoActionItemsTitle' => 'Ingen risici matcher dine filtre',
+    'NoActionItemsBody' => 'Intet kræver afhjælpning eller gennemgang, som du personligt har tilladelse til at handle på. Prøv at fjerne markeringen i "Vis mine handlingspunkter" for at se teamets fulde kø.',
+    'BulkChangeStatusTitle' => 'Ændring af status for %s valgte risici',
+    'BulkReassignRiskOwnerTitle' => 'Tildel risikoejeren igen for %s valgte risici',
+    'BulkReassignMitigationOwnerTitle' => 'Tildel ejeren af afhjælpningen igen for %s valgte risici',
+    'BulkAddCommentTitle' => 'Tilføj en kommentar til %s valgte risici',
+    'BulkCloseRiskTitle' => 'Luk %s valgte risici',
+    'BulkActionPartialSuccess' => '%s af %s risici opdateret.',
+    'PerformReview' => 'Udfør gennemgang',
+    'BulkActionSuccess' => '%s risici opdateret.',
+    'SomeRowsSkippedNoMitigation' => 'Nogle udvalgte risici blev sprunget over, fordi der endnu ikke er planlagt nogen afbødning.',
+    'ChangeStatusHint' => 'Udvalgte risici vil blive opdateret til den valgte status.',
+    'StatusChanged' => 'Status opdateret.',
+    'CloseRiskBulkConfirmBody' => 'Lukkede risici fjernes fra aktive køer. Du kan genåbne en risiko senere ved at ændre dens status igen.',
+    // Column-parity follow-up fix review-risk-followups/column-parity-report.md):
+    // the Review Risk page's new scoring_method column (getReviewRiskDatatableResponse(),
+    // includes/api.php) renders get_scoring_method_name()'s (includes/functions.php)
+    // canonical scoring-method name through a $lang lookup rather than the raw
+    // hardcoded string. 'Classic'/'Custom'/'ContributingRisk' already existed
+    // (reused, not duplicated) -- only the three missing acronym keys are added
+    // here. These scoring methodology names/acronyms are typically kept
+    // untranslated (matching how the app's other risk-scoring UI already
+    // displays them, e.g. get_name_by_value('scoring_methods', ...) in
+    // displayrisks.php, which reads these same literal strings straight from
+    // the scoring_methods DB table with no translation layer), but every
+    // user-facing string still needs to flow through a lookup per CLAUDE.md,
+    // even one where the English and translated value would typically match.
+    'CVSS' => 'CVSS',
+    'DREAD' => 'DREAD',
+    'OWASP' => 'OWASP',
+    'MyActionItems' => 'Mine handlingspunkter',
+    'AddRisk' => 'Tilføj risiko',
+    'ReviewCompleted' => 'Gennemgang fuldført',
+    // Review Risk insights band (management/review_risk.php). The "Needs
+    // Review" tile reuses the existing 'HomeKpiNeedsReview' key rather than
+    // adding a second key for the same English string. 'RrNeedsMitigation'
+    // carries the band prefix the sibling insights bands already use ('Dt',
+    // 'Fw', 'Exc') to distinguish it from the grid's much terser chip label
+    // ('Mitigation').
+    'RrNeedsMitigation' => 'Behov for afhjælpning',
+    'PastDue' => 'Forfalden',
+    'OpenedThisMonth' => 'Åbnet denne måned',
+    'ClosedThisMonth' => 'Lukket denne måned',
+    'AllRiskLevels' => 'Alle risikoniveauer',
+    // Import-Export Extra's Users sheet column for the Review Risk grid's
+    // persisted column-visibility/order preferences (user.custom_review_risk_display_settings).
+    'ReviewRiskDisplay' => 'Vis risikovisning',
+    // Plan Projects grid API (SR-2229): reorder/save-order status messages
+    // and the derived highest-risk column label shared by the grid's
+    // Columns picker and the drawer. The sibling 'Risks' column label
+    // reuses the existing 'Risks' key (line ~1911) rather than duplicating it.
+    'PlanProjectsReorderMismatch' => 'Projektlisten blev ændret, mens du omarrangerede. Genindlæs og prøv igen.',
+    'PlanProjectsOrderSaved' => 'Projektordre gemt.',
+    'HighestRisk' => 'Højeste risiko',
+    // Plan Projects grid (SR-2229). Sentence case; column headers are upper-cased by CSS. {n} tokens are replaced client-side.
+    'OnHold' => 'På hold',
+    'SearchProjectsPlaceholder' => 'Søg projekter',
+    'AllConsultants' => 'Alle konsulenter',
+    'AllBusinessOwners' => 'Alle virksomhedsejere',
+    'AllDataClassifications' => 'Alle dataklassifikationer',
+    'AnyDueStatus' => 'Enhver forfaldsstatus',
+    'NoDueDate' => 'Ingen forfaldsdato',
+    'AddProject' => 'Tilføj projekt',
+    'AssignToProject' => 'Tildel til projekt',
+    'RemoveFromProject' => 'Fjern fra projekt',
+    'AddRisksToThisProject' => 'Tilføj risici til dette projekt',
+    'NoProjectsYet' => 'Ingen projekter endnu',
+    'NoProjectsYetHint' => 'Projekter grupperer relaterede risici, så du kan planlægge og prioritere deres behandling samlet.',
+    'NoProjectsMatchFilters' => 'Ingen projekter matcher dine filtre',
+    'NoRisksInThisProject' => 'Ingen risici i dette projekt endnu',
+    'NoRisksWaitingForProject' => 'Ingen risici afventer et projekt',
+    'NoRisksWaitingForProjectHint' => 'Risici, der er gennemgået som "Overvejes til projekt", vises her, indtil de er tildelt.',
+    'NMoreRisks' => '{n} flere risici',
+    'ChangeProjectStatus' => 'Ændre projektstatus',
+    'ChangeStatusClosesRisks' => 'Markering af dette projekt som fuldfort vil lukke dets {n} abne risici med arsagen "Fuldt afbodet".',
+    'ChangeStatusReopensRisks' => 'Hvis dette projekt flyttes ud af "afsluttet", vil de risici, der blev lukket, da det blev færdiggjort, blive genåbnet.',
+    'ChangeStatusNoCloseRightsHint' => 'Du har ikke rettigheder til at lukke risici; de vil i stedet blive sat til "Under gennemgang".',
+    'DeleteProjectReturnsRisks' => 'Sletning af dette projekt vil returnere alle dets risici til status "Ikke tildelt".',
+    'ReorderNeedsPrioritySort' => 'Omarrangering er tilgaengelig, nar listen er sorteret efter prioritet inden for en status.',
+    'CouldNotLoadProjects' => 'Projekterne kunne ikke indlæses. Dine data er sikre.',
+    'MitigationNotPlanned' => 'Afbødning ikke planlagt',
+    'MitigationStatePlanned' => 'Afbødning planlagt',
+    'NoRisksMatchYourSearch' => 'Ingen risici matcher din søgning',
+    'AllUnassignedRisks' => 'Alle ikke-tildelte risici',
+    'NoRisksSelectedYet' => 'Ingen risici valgt endnu',
+    'SomeQuestionsNotDeleted' => 'Nogle af de valgte spørgsmål kunne ikke slettes.',
+    'QuestionnaireQuestionDeleteRequiresJavaScript' => 'Sletning af et spørgsmål kræver, at JavaScript er aktiveret i din browser.',
+    // Initiate Audits' bulk bar (SR-2234): the header checkbox already
+    // selects every row matching the current search/filters across every
+    // page in one click (client-side DataTables, the full eligible-test set
+    // is already loaded) -- this qualifier makes that explicit when the
+    // selection exceeds what a single page can hold, so "N selected" isn't
+    // read as a miscount against however many checkboxes are visibly ticked
+    // on the current page.
+    'NSelectedAllPages' => '{n} valgt (matcher dine filtre, på tværs af alle sider)',
+    // "Select all N" cross-page selection: shared too-many-matches message for
+    // Review Risk, Define Tests, Manage Audits, Document Program, and Define
+    // Exceptions (formerly 5 near-duplicate per-page keys). Callers supply
+    // both {$max} and {$noun} (e.g. the plain 'Risks'/'Tests'/'Audits'/
+    // 'Documents'/'Exceptions' key text) -- PHP call sites via _lang(), JS
+    // call sites via a manual .replace('{$max}', ...).replace('{$noun}', ...).
+    'SelectAllTooManyMatches' => 'De nuværende filtre matcher mere end {$max} {$noun}. Indskrænk filteret, og prøv igen.',
+    // POST /documents/batch-delete (batch_delete_document_api(), includes/api.php):
+    // same truncation-signal shape as 'DocumentsApprovedTruncated' (see
+    // above) and the sibling 'ExceptionsDeletedTruncated' key just below,
+    // for the Document Program bulk-delete "Select all N" action.
+    'DocumentsDeletedTruncated' => 'Kun de første {$limit} valgte dokumenter blev slettet. Gentag handlingen for at slette resten.',
+    // POST /exceptions/batch-delete-ids (batch_delete_exceptions_by_ids_api()) --
+    // deletes an arbitrary caller-supplied set of exception ids in one request,
+    // replacing the Define Exceptions bulk bar's looped POST /exceptions/delete
+    // calls. Mirrors ExceptionsApprovedTruncated's truncation-signal wording.
+    'ExceptionsDeletedTruncated' => 'Kun de første {$limit} valgte undtagelser blev slettet. Gentag handlingen for at slette resten.',
+    // POST /risks/batch-close (closeRiskBatch(), includes/api.php): whole-batch
+    // 403 when the caller holds no close_risks permission at all, mirroring
+    // closeriskForm()'s own (hardcoded, pre-existing) single-risk denial text.
+    'NoCloseRiskPermission' => 'Du har ikke tilladelse til at lukke risici.',
+    'QuestionnaireRequiredQuestionUnanswered' => 'Besvar venligst alle obligatoriske spørgsmål, inden du gennemfører vurderingen.',
     '' => '',
 );
 ?>

@@ -50,12 +50,18 @@
  * a header select-all swap the toolbar for a contextual bulk bar (Reassign
  * tester / Set schedule are deliberately stubbed disabled this task; only
  * Retire/Delete are wired, each shown only when the server-exposed
- * can-retire/can-delete flag allows it). Selection is intentionally scoped
- * to the *current* render only -- state.selected is cleared at the start of
- * every loadGrid() (search/filter/page-size/page-change all call it),
- * matching the "selects the current page" half of design-system.md's
- * selection spec; the "escalate to the whole result set" banner is out of
- * scope for this task.
+ * can-retire/can-delete flag allows it).
+ *
+ * "Select all N" cross-page selection (SR-2234 follow-up): state.selected
+ * survives a plain page/sort/page-size loadGrid() -- only an actual
+ * filter/search change clears it (filterSignature()/loadGrid(), below).
+ * The bulk bar's "Select all N" link (shown once more tests match the
+ * current filter than are selected) resolves every matching real-test id
+ * via POST /compliance/tests_grid/filtered_ids (a thin wrapper around
+ * build_tests_grid(length=-1), includes/compliance_grid.php -- the exact
+ * same predicate the paginated grid response already applies, so the two
+ * can never disagree) and merges them into state.selected, so browsing to
+ * another page to review or deselect a few no longer loses the rest.
  *
  * All user-supplied/API-returned text is set via jQuery's `text:`/`.text()`
  * (never string-concatenated into HTML), so nothing here needs a second
@@ -123,7 +129,6 @@
     var $tagFilter = $('#define-tests-tag-filter');
     var $showFilter = $('#define-tests-show-filter');
     var $lengthSelect = $('#define-tests-length');
-    var $quickfilters = $('#define-tests-quickfilters');
     var $removeControlConfirm = $('#define-tests-remove-control-confirm');
 
     // Batch select + retire/delete (Task 8) -- toolbar/bulk-bar swap + select-all.
@@ -181,6 +186,16 @@
         };
     }
 
+    // "Select all N": recordsFilteredTests (build_tests_grid()'s own
+    // docblock) -- the REAL test count matching the current filter, across
+    // every page -- captured in loadGrid()'s `.done()` below. updateBulkBar()
+    // compares selectedIds().length against this to decide whether more
+    // tests match the current filter than are currently selected, and uses
+    // it for the banner's own count. Deliberately NOT recordsFiltered, which
+    // counts CONTROLS in grouped mode (the default, unsorted view) rather
+    // than the flattened tests "Select all N" actually selects.
+    var lastRecordsFilteredTests = 0;
+
     var state = {
         search: '',
         framework: [],
@@ -222,14 +237,25 @@
         quick: defaultQuickFlags(),
         start: 0,
         length: 25,
-        // Batch-select ids for the *currently rendered* page only -- reset on
-        // every loadGrid() (see the file-header comment above).
+        // Batch-select ids -- NOT limited to the current page (see "Select
+        // all N" below). Survives a plain page/sort/page-size loadGrid();
+        // only cleared when the underlying filter/search actually changes
+        // (see lastFilterSignature/loadGrid() below).
         selected: {},
         // Batch-select proposal ids for suggestion rows (Task B3). Kept apart
         // from `selected` because a suggestion has no test id -- its checkbox
         // carries data-proposal-id, and "Create selected" approves proposals
         // while Retire/Delete act on the real-test `selected` set.
         selectedProposals: {},
+        // True once "Select all N" has resolved every real test id matching
+        // the current filter into `selected` -- suppresses re-showing the
+        // banner (see updateBulkBar()) until the filter actually changes.
+        selectAllFiltered: false,
+        // The filter signature (see filterSignature()) loadGrid() last saw --
+        // undefined until the first load completes. Compared on every
+        // loadGrid() call to tell "the same result set, re-paged/re-sorted"
+        // (keep selection) apart from "a different result set" (clear it).
+        lastFilterSignature: undefined,
     };
 
     /* ---------------------------------------------------------------- *
@@ -2224,7 +2250,7 @@
             renderFooter(data);
             // Nothing rendered means nothing selectable: prune here too, or a
             // bulk bar survives over an empty grid.
-            pruneSelectionToRendered();
+            updateBulkBar();
             return;
         }
 
@@ -2261,7 +2287,7 @@
         });
 
         renderFooter(data);
-        pruneSelectionToRendered();
+        updateBulkBar();
     }
 
     // Sorted view: one ordered list, no group rows. Each row carries the
@@ -2273,7 +2299,7 @@
         if (!tests.length) {
             showEmptyState(data.recordsTotal ? 'noresults' : 'nodata');
             renderFooter(data);
-            pruneSelectionToRendered();
+            updateBulkBar();
             return;
         }
 
@@ -2292,7 +2318,7 @@
         });
 
         renderFooter(data);
-        pruneSelectionToRendered();
+        updateBulkBar();
     }
 
     function buildFilters() {
@@ -2311,6 +2337,26 @@
             start: state.start,
             length: state.length,
         };
+    }
+
+    // "Select all N" follow-up: identifies WHICH tests can match -- everything
+    // buildFilters() sends EXCEPT start/length (paging position) and sort/dir
+    // (ordering only). loadGrid() compares this against the previous load's
+    // signature to tell "same result set, just re-paged/re-sorted" (keep
+    // state.selected/selectAllFiltered) apart from "the candidate set itself
+    // may have changed" (clear them) -- see loadGrid()'s own comment.
+    function filterSignature() {
+        return JSON.stringify({
+            framework: state.framework,
+            family: state.family,
+            search: state.search,
+            coverage: state.coverage,
+            schedule: state.schedule,
+            tag: state.tag,
+            tester: state.tester,
+            retired: state.retired,
+            quick: state.quick,
+        });
     }
 
     /* ---------------------------------------------------------------- *
@@ -2477,18 +2523,26 @@
     }
 
     function loadGrid() {
-        // Selection is scoped to what is on screen: a row the next render
-        // drops (searched away, filtered out, paged past, retired) leaves the
-        // selection with it, so a bulk action can never reach a row the user
-        // can no longer see. That pruning happens AFTER the render, in
-        // pruneSelectionToRendered() -- not here.
+        // "Select all N" follow-up: a genuine filter/search change can make a
+        // previously-selected id invalid (the new result set may not even
+        // contain it) -- clear selection when the signature actually
+        // changes. A plain page/sort/page-size change re-pages or re-orders
+        // the SAME matching set, so a selection made under it is still valid
+        // and is deliberately left alone; updateBulkBar() (called after
+        // every render, from renderControls() below) paints whichever of it
+        // is on the new page as checked regardless of which page that is --
+        // see state.lastFilterSignature's own comment for why this replaced
+        // the old "prune anything not currently rendered" behavior.
         //
-        // It used to happen here, by emptying state.selected up front. That
-        // discarded selections the render was about to put straight back:
-        // any reload landing after a click (the search debounce firing a beat
-        // late, a mutation refresh, the band's own reload) silently unchecked
-        // a row the user had just checked and dropped the bulk bar out from
-        // under them, on a grid whose rows hadn't changed at all.
+        // undefined-guarded so the very first load (nothing to clear) never
+        // runs this.
+        var signature = filterSignature();
+        if (state.lastFilterSignature !== undefined && signature !== state.lastFilterSignature) {
+            state.selected = {};
+            state.selectedProposals = {};
+            state.selectAllFiltered = false;
+        }
+        state.lastFilterSignature = signature;
 
         // Returns the request promise (Phase 2, Task 7) so the init
         // sequence can chain applyInsightFromUrl() onto the *first* load's
@@ -2502,6 +2556,7 @@
         return fetchGrid(buildFilters())
             .done(function (result) {
                 var data = (result && result.data) ? result.data : { controls: [], recordsTotal: 0, recordsFiltered: 0 };
+                lastRecordsFilteredTests = data.recordsFilteredTests || 0;
 
                 // Retiring or deleting the last rows on the final page leaves
                 // state.start past the end of a now-shorter result set: the
@@ -2625,44 +2680,27 @@
         return Object.keys(state.selectedProposals).map(Number);
     }
 
-    // Reflects state.selected onto the currently-rendered row checkboxes,
-    // updates the header select-all tri-state, and swaps the toolbar for
-    // the bulk bar once at least one row is selected. Called after every
-    // render and after every selection change (not just on click) so the
-    // two stay in sync regardless of what triggered the change.
     /**
-     * Drops any selected id the current render doesn't show, then syncs the
-     * bar. Called at the end of every render, so the selection can only ever
-     * name rows the user is looking at -- see the note in loadGrid().
+     * Reflects state.selected/state.selectedProposals onto whatever rows the
+     * current render actually holds, updates the header select-all
+     * tri-state, and swaps the toolbar for the bulk bar once at least one
+     * row is selected. Called after every render and after every selection
+     * change (not just on click) so the two stay in sync regardless of what
+     * triggered the change.
+     *
+     * "Select all N" follow-up: this used to DELETE any selected id the
+     * current render didn't show, on the theory that a selection could only
+     * ever name rows the user is currently looking at. That's what made
+     * turning the page after selecting several tests -- or after "Select
+     * all N" resolved ids spanning many pages -- silently drop everything
+     * not on the new page. loadGrid() now clears state.selected/
+     * selectedProposals itself, but only when the underlying filter/search
+     * actually changes (see filterSignature()) -- a plain page/sort/
+     * page-size change reaches here with both maps untouched, so this just
+     * paints whichever of them the CURRENT page happens to hold; ids for
+     * rows on other pages stay selected, invisibly, until they're either
+     * acted on or the filter changes.
      */
-    function pruneSelectionToRendered() {
-        var renderedTests = {};
-        var renderedProposals = {};
-        $tbody.find('.row-select').each(function () {
-            var $cb = $(this);
-            if ($cb.data('kind') === 'suggestion') {
-                renderedProposals[$cb.data('proposal-id')] = true;
-            } else {
-                renderedTests[$cb.data('test-id')] = true;
-            }
-        });
-
-        Object.keys(state.selected).forEach(function (id) {
-            // Object keys are strings; the checkbox's data-test-id comes back
-            // from jQuery as a number, so compare on the same side.
-            if (!renderedTests[Number(id)]) {
-                delete state.selected[id];
-            }
-        });
-        Object.keys(state.selectedProposals).forEach(function (id) {
-            if (!renderedProposals[Number(id)]) {
-                delete state.selectedProposals[id];
-            }
-        });
-
-        updateBulkBar();
-    }
-
     function updateBulkBar() {
         var $rowChecks = $tbody.find('.row-select');
         $rowChecks.each(function () {
@@ -2697,11 +2735,29 @@
             $bulkBar.addClass('d-none');
             $toolbar.removeClass('d-none');
         }
+
+        // "Select all N": offer to escalate to every REAL test matching the
+        // current filter (not proposals -- those aren't part of what
+        // filtered_ids resolves, see the endpoint's own doc) while there is
+        // more of it than is currently selected. Hidden once
+        // selectAllFiltered is true regardless of count -- a later manual
+        // deselection shouldn't re-offer "select everything" again. Same
+        // reasoning as the parallel "Select all N" work on Review Risk
+        // (review-risk.js's own banner, sibling in-progress branch).
+        // Reads lastRecordsFilteredTests, not the grid response's own
+        // recordsFiltered -- the latter counts controls in grouped mode,
+        // which read "Select all 51" for a click that actually selected 100
+        // tests.
+        var $selectAllFiltered = $bulkBar.find('#define-tests-select-all-filtered');
+        $selectAllFiltered
+            .toggleClass('d-none', state.selectAllFiltered || !(ids.length > 0 && lastRecordsFilteredTests > ids.length))
+            .text(String(_lang['SelectAllN'] || '').replace('{n}', lastRecordsFilteredTests));
     }
 
     function clearSelection() {
         state.selected = {};
         state.selectedProposals = {};
+        state.selectAllFiltered = false;
         updateBulkBar();
     }
 
@@ -2855,6 +2911,32 @@
         return $.ajax({ type: 'DELETE', url: BASE_URL + '/api/v2/compliance/tests/' + id, headers: csrfHeaders() });
     }
 
+    // Bulk retire/delete: ONE request carrying every selected id (server-side
+    // per-id authz -- api_v2_compliance_tests_batch_retire()/_batch_delete(),
+    // api/v2/includes/compliance.php) instead of the N-requests-batched-25-
+    // at-a-time runBulkAction()/runSequential() below still uses for bulk
+    // create-from-suggestion and applyCommonTest (per-id PATCHes with no
+    // batch endpoint on the server).
+    function batchRetireTestsRequest(ids) {
+        return $.ajax({
+            type: 'POST',
+            url: BASE_URL + '/api/v2/compliance/tests/batch-retire',
+            contentType: 'application/json',
+            headers: csrfHeaders(),
+            data: JSON.stringify({ ids: ids }),
+        });
+    }
+
+    function batchDeleteTestsRequest(ids) {
+        return $.ajax({
+            type: 'POST',
+            url: BASE_URL + '/api/v2/compliance/tests/batch-delete',
+            contentType: 'application/json',
+            headers: csrfHeaders(),
+            data: JSON.stringify({ ids: ids }),
+        });
+    }
+
     /* ---------------------------------------------------------------- *
      * AI suggestion actions (Task B3) -- reuse the Plan A proposal      *
      * endpoints. Approve applies the proposal server-side (writes the   *
@@ -2895,24 +2977,26 @@
         return $.ajax({ type: 'POST', url: BASE_URL + '/api/v2/ai/controls/' + controlId + '/generate-tests', headers: csrfHeaders() });
     }
 
-    // Calls `requestFn` for each id in turn (sequential, not parallel -- keeps
-    // the request rate predictable and mirrors the codebase's existing bulk
-    // pattern, e.g. self-assessment.js's runSequential()), resolving with
-    // {ok, fail} counts once every id has settled -- a per-id failure never
-    // aborts the remaining ids.
+    // Calls `requestFn` for each id, chunked into DEFINE_TESTS_BULK_BATCH_SIZE
+    // -sized batches run one batch at a time (each batch's own requests run in
+    // parallel; batches wait for one another) -- keeps the request rate
+    // bounded rather than firing every id at once. This page's bulk retire/
+    // delete/create-from-suggestion actions can hand this up to
+    // DEFINE_TESTS_SELECT_ALL_MAX ids from a single "Select all N" click, and
+    // firing that many requests simultaneously would overwhelm the browser's
+    // connection queue and the server. Delegates to the shared
+    // runBatchedRequests() helper (js/simplerisk/bulk-request-batch.js,
+    // loaded via header.php's 'CUSTOM:bulk-request-batch.js' token --
+    // consolidated out of what used to be this function's own hand-copy of
+    // governance-exceptions.js's BULK_DELETE_BATCH_SIZE precedent), which
+    // resolves with a single failedCount; translated back to this function's
+    // existing {ok, fail} shape so callers (runBulkAction() below) don't
+    // change. A per-id failure never aborts the remaining ids or batches.
+    var DEFINE_TESTS_BULK_BATCH_SIZE = 25;
     function runSequential(ids, requestFn) {
-        var ok = 0;
-        var fail = 0;
-        function next(i) {
-            if (i >= ids.length) {
-                return $.Deferred().resolve({ ok: ok, fail: fail }).promise();
-            }
-            return requestFn(ids[i]).then(
-                function () { ok++; return next(i + 1); },
-                function () { fail++; return next(i + 1); }
-            );
-        }
-        return next(0);
+        return runBatchedRequests(ids, DEFINE_TESTS_BULK_BATCH_SIZE, requestFn).then(function (failedCount) {
+            return { ok: ids.length - failedCount, fail: failedCount };
+        });
     }
 
     // Shared tail for both bulk actions: run sequentially, clear selection,
@@ -2932,6 +3016,38 @@
                 showAlertFromMessage(message, false);
             }
         });
+    }
+
+    // Shared tail for the batch retire/delete actions (batchRetireTestsRequest()/
+    // batchDeleteTestsRequest() above): ONE request instead of runBulkAction()'s
+    // N-requests-in-batches-of-25. The server already ran the per-id authz/
+    // existence checks (see the batch endpoints' docblocks) and reports the
+    // outcome as processed/denied/failed counts rather than a bare ok/fail
+    // pair -- denied and failed are both "didn't happen" from this toast's
+    // point of view, so they're summed for the partial-failure message, same
+    // wording runBulkAction() above uses.
+    function runBulkBatchAction(ids, batchRequestFn) {
+        setBulkBusy(true);
+        return batchRequestFn(ids)
+            .then(function (result) {
+                var data = (result && result.data) ? result.data : {};
+                var processed = data.processed || 0;
+                var notProcessed = (data.denied || 0) + (data.failed || 0);
+                setBulkBusy(false);
+                clearSelection();
+                reloadAfterMutation();
+                if (notProcessed) {
+                    var message = String(_lang['BulkPartialFailure'] || '')
+                        .replace('{n}', processed)
+                        .replace('{total}', ids.length);
+                    showAlertFromMessage(message, false);
+                }
+            })
+            .fail(function (xhr) {
+                setBulkBusy(false);
+                var message = (xhr.responseJSON && xhr.responseJSON.status_message) || _lang['RequestFailed'] || '';
+                showAlertFromMessage(message, false);
+            });
     }
 
     /* ---------------------------------------------------------------- *
@@ -3283,6 +3399,44 @@
             clearSelection();
         });
 
+        // "Select all N": resolves every REAL test id matching the current
+        // filter across every page (POST /compliance/tests_grid/filtered_ids,
+        // a thin wrapper around build_tests_grid(length=-1), includes/
+        // compliance_grid.php -- the exact same predicate the paginated grid
+        // response applies, so the resolved set can never disagree with what
+        // the grid shows), then merges the returned ids into state.selected.
+        // Every existing bulk action already just loops selectedIds(), so
+        // nothing else needs to change to act on the full set.
+        $(document).on('click', '#define-tests-select-all-filtered', function () {
+            var $btn = $(this);
+            if ($btn.prop('disabled')) {
+                return;
+            }
+            $btn.prop('disabled', true);
+            $.ajax({
+                type: 'POST',
+                url: BASE_URL + '/api/v2/compliance/tests_grid/filtered_ids',
+                contentType: 'application/json',
+                headers: csrfHeaders(),
+                data: JSON.stringify(buildFilters()),
+            })
+                .done(function (result) {
+                    var ids = (result && result.data && result.data.ids) || [];
+                    ids.forEach(function (id) {
+                        state.selected[id] = true;
+                    });
+                    state.selectAllFiltered = true;
+                    updateBulkBar();
+                })
+                .fail(function (xhr) {
+                    var message = (xhr.responseJSON && xhr.responseJSON.status_message) || _lang['RequestFailed'] || '';
+                    showAlertFromMessage(message, false);
+                })
+                .always(function () {
+                    $btn.prop('disabled', false);
+                });
+        });
+
         $(document).on('click', '#define-tests-bulk-retire', function () {
             var ids = selectedIds();
             if (!ids.length) {
@@ -3299,7 +3453,7 @@
             var ids = $retireConfirmModal.data('ids') || [];
             $retireConfirmModal.modal('hide');
             if (ids.length) {
-                runBulkAction(ids, retireTestRequest);
+                runBulkBatchAction(ids, batchRetireTestsRequest);
             }
         });
 
@@ -3319,7 +3473,7 @@
             var ids = $deleteConfirmModal.data('ids') || [];
             $deleteConfirmModal.modal('hide');
             if (ids.length) {
-                runBulkAction(ids, deleteTestRequest);
+                runBulkBatchAction(ids, batchDeleteTestsRequest);
             }
         });
 
@@ -3551,6 +3705,13 @@
             var request = $btn.hasClass('restore-row') ? restoreTestRequest(id) : retireTestRequest(id);
             request
                 .done(function () {
+                    // A same-filter reload (loadGrid() only clears state.selected
+                    // on a real filter change, see filterSignature() above) would
+                    // otherwise leave this id selected forever -- a ghost entry
+                    // that inflates the bulk-bar count and, if the row was later
+                    // hard-deleted, produces a misleading BulkPartialFailure on
+                    // the next bulk action.
+                    delete state.selected[id];
                     reloadAfterMutation();
                 })
                 .fail(function () {
@@ -3573,6 +3734,9 @@
             approveProposalRequest(proposalId)
                 .done(function () {
                     showAlertFromMessage(_lang['TestCreatedFromSuggestion'] || '', true);
+                    // See the retire-row/restore-row handler's comment above --
+                    // same ghost-selection risk, on the proposals map.
+                    delete state.selectedProposals[proposalId];
                     reloadAfterMutation();
                 })
                 .fail(function (xhr) {
@@ -3592,6 +3756,9 @@
             rejectProposalRequest(proposalId)
                 .done(function () {
                     showAlertFromMessage(_lang['SuggestionDismissed'] || '', true);
+                    // See the retire-row/restore-row handler's comment above --
+                    // same ghost-selection risk, on the proposals map.
+                    delete state.selectedProposals[proposalId];
                     reloadAfterMutation();
                 })
                 .fail(function (xhr) {
@@ -3857,6 +4024,11 @@
             }
             deleteTestRequest(id)
                 .done(function () {
+                    // See the retire-row/restore-row handler's comment above --
+                    // same ghost-selection risk, and worse here: the id no
+                    // longer exists in the DB at all, so a later bulk action
+                    // over a stale selection would 404 on it.
+                    delete state.selected[id];
                     reloadAfterMutation();
                 })
                 .fail(function (xhr) {

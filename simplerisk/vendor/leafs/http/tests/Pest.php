@@ -31,7 +31,6 @@ function call(string $path, array $options = []): array
 
     $response = curl_exec($ch);
     $error = curl_error($ch);
-    curl_close($ch);
 
     if ($error) {
         throw new RuntimeException("test request failed: $error");
@@ -146,7 +145,6 @@ function callRaw(string $path, array $options = []): array
     $error = curl_error($ch);
     $status = curl_getinfo($ch, CURLINFO_RESPONSE_CODE);
     $headerSize = curl_getinfo($ch, CURLINFO_HEADER_SIZE);
-    curl_close($ch);
 
     if ($error) {
         throw new RuntimeException("test request failed: $error");

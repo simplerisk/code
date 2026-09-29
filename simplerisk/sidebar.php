@@ -62,24 +62,14 @@ require_once(realpath(__DIR__ . '/includes/artificial_intelligence.php'));
     <?php
         }
     ?>
-                        <li class="sidebar-item <?= ($active_sidebar_submenu == 'PlanYourMitigations')?'active':''; ?>">
-                            <a href="../management/plan_mitigations.php" class="sidebar-link">
-                                <span class="hide-menu"><?= $escaper->escapeHtml($lang['PlanYourMitigations']);?></span>
-                            </a>
-                        </li>
-                        <li class="sidebar-item <?= ($active_sidebar_submenu == 'PerformManagementReviews')?'active':''; ?>">
-                            <a href="../management/management_review.php" class="sidebar-link">
-                                <span class="hide-menu"><?= $escaper->escapeHtml($lang['PerformManagementReviews']);?></span>
+                        <li class="sidebar-item <?= ($active_sidebar_submenu == 'ReviewRisk')?'active':''; ?>">
+                            <a href="../management/review_risk.php" class="sidebar-link">
+                                <span class="hide-menu"><?= $escaper->escapeHtml($lang['ReviewRisk']);?></span>
                             </a>
                         </li>
                         <li class="sidebar-item ">
                             <a href="../management/prioritize_planning.php" class="sidebar-link">
                                 <span class="hide-menu"><?= $escaper->escapeHtml($lang['PrioritizeForProjectPlanning']);?></span>
-                            </a>
-                        </li>
-                        <li class="sidebar-item <?= ($active_sidebar_submenu == 'ReviewRisksRegularly')?'active':''; ?>">
-                            <a href="../management/review_risks.php" class="sidebar-link">
-                                <span class="hide-menu"><?= $escaper->escapeHtml($lang['ReviewRisksRegularly']);?></span>
                             </a>
                         </li>
                     </ul>

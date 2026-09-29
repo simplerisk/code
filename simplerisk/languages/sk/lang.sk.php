@@ -4844,6 +4844,129 @@ $lang = array(
     'CreateAndAddField' => 'Vytvoriť a pridať',
     'FieldCreatedAndAddedToTab' => 'Vytvoril(a) som {field} a pridal(a) som ho do {tab}.',
     'DeleteCustomFieldTitle' => 'Odstrániť pole \'{field}\'?',
+    // Review Risk page (SR-2068 and others -- see design spec)
+    'ReviewRisk' => 'Riziko kontroly',
+    'NeedsColumn' => 'Potreby',
+    'RiskScoreColumn' => 'Skóre rizika',
+    'ReassignRiskOwner' => 'Znovu priradiť vlastníka rizika',
+    'ReassignMitigationOwner' => 'Znovu priradiť vlastníka zmierňovania',
+    'NoActionItemsTitle' => 'Žiadne riziká nezodpovedajú vašim filtrom',
+    'NoActionItemsBody' => 'Nič, na čo máte osobné povolenie, nepotrebuje zmiernenie alebo kontrolu. Skúste zrušiť začiarknutie políčka „Zobraziť moje úlohy“, aby ste videli celý zoznam úloh tímu.',
+    'BulkChangeStatusTitle' => 'Zmeniť stav pre %s vybraných rizík',
+    'BulkReassignRiskOwnerTitle' => 'Znovu priradiť vlastníka rizika pre %s vybraných rizík',
+    'BulkReassignMitigationOwnerTitle' => 'Znovu priradiť vlastníka zmierňovania pre %s vybratých rizík',
+    'BulkAddCommentTitle' => 'Pridať komentár k vybraným rizikám %s',
+    'BulkCloseRiskTitle' => 'Zatvoriť %s vybrané riziká',
+    'BulkActionPartialSuccess' => '%s z %s rizík aktualizovaných.',
+    'PerformReview' => 'Vykonajte kontrolu',
+    'BulkActionSuccess' => '%s riziká aktualizované.',
+    'SomeRowsSkippedNoMitigation' => 'Niektoré vybrané riziká boli vynechané, pretože zatiaľ nemajú naplánované žiadne zmierňujúce opatrenia.',
+    'ChangeStatusHint' => 'Vybrané riziká budú aktualizované na zvolený stav.',
+    'StatusChanged' => 'Stav aktualizovaný.',
+    'CloseRiskBulkConfirmBody' => 'Uzavreté riziká sa odstránia z aktívnych frontov. Riziko môžete neskôr znova otvoriť zmenou jeho stavu.',
+    // Column-parity follow-up fix review-risk-followups/column-parity-report.md):
+    // the Review Risk page's new scoring_method column (getReviewRiskDatatableResponse(),
+    // includes/api.php) renders get_scoring_method_name()'s (includes/functions.php)
+    // canonical scoring-method name through a $lang lookup rather than the raw
+    // hardcoded string. 'Classic'/'Custom'/'ContributingRisk' already existed
+    // (reused, not duplicated) -- only the three missing acronym keys are added
+    // here. These scoring methodology names/acronyms are typically kept
+    // untranslated (matching how the app's other risk-scoring UI already
+    // displays them, e.g. get_name_by_value('scoring_methods', ...) in
+    // displayrisks.php, which reads these same literal strings straight from
+    // the scoring_methods DB table with no translation layer), but every
+    // user-facing string still needs to flow through a lookup per CLAUDE.md,
+    // even one where the English and translated value would typically match.
+    'CVSS' => 'CVSS',
+    'DREAD' => 'DREAD',
+    'OWASP' => 'OWASP',
+    'MyActionItems' => 'Moje akčné položky',
+    'AddRisk' => 'Pridať riziko',
+    'ReviewCompleted' => 'Kontrola dokončená',
+    // Review Risk insights band (management/review_risk.php). The "Needs
+    // Review" tile reuses the existing 'HomeKpiNeedsReview' key rather than
+    // adding a second key for the same English string. 'RrNeedsMitigation'
+    // carries the band prefix the sibling insights bands already use ('Dt',
+    // 'Fw', 'Exc') to distinguish it from the grid's much terser chip label
+    // ('Mitigation').
+    'RrNeedsMitigation' => 'Potrebuje zmiernenie',
+    'PastDue' => 'Po splatnosti',
+    'OpenedThisMonth' => 'Otvorené tento mesiac',
+    'ClosedThisMonth' => 'Tento mesiac zatvorené',
+    'AllRiskLevels' => 'Všetky úrovne rizika',
+    // Import-Export Extra's Users sheet column for the Review Risk grid's
+    // persisted column-visibility/order preferences (user.custom_review_risk_display_settings).
+    'ReviewRiskDisplay' => 'Zobrazenie rizika kontroly',
+    // Plan Projects grid API (SR-2229): reorder/save-order status messages
+    // and the derived highest-risk column label shared by the grid's
+    // Columns picker and the drawer. The sibling 'Risks' column label
+    // reuses the existing 'Risks' key (line ~1911) rather than duplicating it.
+    'PlanProjectsReorderMismatch' => 'Zoznam projektov sa počas zmeny poradia zmenil. Znova ho načítajte a skúste to znova.',
+    'PlanProjectsOrderSaved' => 'Poradie projektu bolo uložené.',
+    'HighestRisk' => 'Najvyššie riziko',
+    // Plan Projects grid (SR-2229). Sentence case; column headers are upper-cased by CSS. {n} tokens are replaced client-side.
+    'OnHold' => 'Pozastavené',
+    'SearchProjectsPlaceholder' => 'Vyhľadávanie projektov',
+    'AllConsultants' => 'Všetci konzultanti',
+    'AllBusinessOwners' => 'Všetci majitelia firiem',
+    'AllDataClassifications' => 'Všetky klasifikácie údajov',
+    'AnyDueStatus' => 'Akýkoľvek stav splatnosti',
+    'NoDueDate' => 'Žiadny dátum splatnosti',
+    'AddProject' => 'Pridať projekt',
+    'AssignToProject' => 'Priradiť k projektu',
+    'RemoveFromProject' => 'Odstrániť z projektu',
+    'AddRisksToThisProject' => 'Pridajte k tomuto projektu riziká',
+    'NoProjectsYet' => 'Zatiaľ žiadne projekty',
+    'NoProjectsYetHint' => 'Projekty zoskupujú súvisiace riziká, aby ste mohli spoločne plánovať a stanovovať priority ich riešenia.',
+    'NoProjectsMatchFilters' => 'Žiadne projekty nezodpovedajú vašim filtrom',
+    'NoRisksInThisProject' => 'V tomto projekte zatiaľ nie sú žiadne riziká',
+    'NoRisksWaitingForProject' => 'Žiadne riziká pri čakaní na projekt',
+    'NoRisksWaitingForProjectHint' => 'Riziká posudzované ako „Zvážiť pre projekt“ sa tu zobrazujú, kým nie sú priradené.',
+    'NMoreRisks' => '{n} viac rizík',
+    'ChangeProjectStatus' => 'Zmeniť stav projektu',
+    'ChangeStatusClosesRisks' => 'Označením tohto projektu ako dokončeného sa uzavrú jeho {n} otvorených rizík s dôvodom „Úplne zmiernené“.',
+    'ChangeStatusReopensRisks' => 'Presunutím tohto projektu z dokončeného sa znovu otvoria riziká, ktoré boli uzavreté pri jeho dokončení.',
+    'ChangeStatusNoCloseRightsHint' => 'Nemáte povolenie na zatvorenie alebo opätovné otvorenie rizík, takže sa zmení iba stav projektu.',
+    'DeleteProjectReturnsRisks' => 'Jeho riziká {n} sa vrátia do nepriradeného frontu.',
+    'ReorderNeedsPrioritySort' => 'Zmena poradia je k dispozícii, keď je zoznam zoradený podľa priority v rámci jedného stavu.',
+    'CouldNotLoadProjects' => 'Projekty sa nepodarilo načítať. Vaše údaje sú v bezpečí.',
+    'MitigationNotPlanned' => 'Nie je plánované',
+    'MitigationStatePlanned' => 'Plánované',
+    'NoRisksMatchYourSearch' => 'Žiadne riziká nezodpovedajú vášmu vyhľadávaniu',
+    'AllUnassignedRisks' => 'Všetky nepridelené riziká',
+    'NoRisksSelectedYet' => 'Zatiaľ neboli vybrané žiadne riziká',
+    'SomeQuestionsNotDeleted' => 'Niektoré z vybraných otázok sa nepodarilo odstrániť.',
+    'QuestionnaireQuestionDeleteRequiresJavaScript' => 'Na odstránenie otázky je potrebné mať vo vašom prehliadači povolený JavaScript.',
+    // Initiate Audits' bulk bar (SR-2234): the header checkbox already
+    // selects every row matching the current search/filters across every
+    // page in one click (client-side DataTables, the full eligible-test set
+    // is already loaded) -- this qualifier makes that explicit when the
+    // selection exceeds what a single page can hold, so "N selected" isn't
+    // read as a miscount against however many checkboxes are visibly ticked
+    // on the current page.
+    'NSelectedAllPages' => '{n} vybrané (zodpovedá vašim filtrom, na všetkých stránkach)',
+    // "Select all N" cross-page selection: shared too-many-matches message for
+    // Review Risk, Define Tests, Manage Audits, Document Program, and Define
+    // Exceptions (formerly 5 near-duplicate per-page keys). Callers supply
+    // both {$max} and {$noun} (e.g. the plain 'Risks'/'Tests'/'Audits'/
+    // 'Documents'/'Exceptions' key text) -- PHP call sites via _lang(), JS
+    // call sites via a manual .replace('{$max}', ...).replace('{$noun}', ...).
+    'SelectAllTooManyMatches' => 'Aktuálne filtre zodpovedajú viacerým výrazom ako {$max} {$noun}. Zúžte filter a skúste to znova.',
+    // POST /documents/batch-delete (batch_delete_document_api(), includes/api.php):
+    // same truncation-signal shape as 'DocumentsApprovedTruncated' (see
+    // above) and the sibling 'ExceptionsDeletedTruncated' key just below,
+    // for the Document Program bulk-delete "Select all N" action.
+    'DocumentsDeletedTruncated' => 'Boli odstránené iba prvé {$limit} vybraté dokumenty. Zopakujte akciu pre odstránenie ostatných.',
+    // POST /exceptions/batch-delete-ids (batch_delete_exceptions_by_ids_api()) --
+    // deletes an arbitrary caller-supplied set of exception ids in one request,
+    // replacing the Define Exceptions bulk bar's looped POST /exceptions/delete
+    // calls. Mirrors ExceptionsApprovedTruncated's truncation-signal wording.
+    'ExceptionsDeletedTruncated' => 'Boli odstránené iba prvé {$limit} vybraté výnimky. Zopakujte akciu pre odstránenie ostatných.',
+    // POST /risks/batch-close (closeRiskBatch(), includes/api.php): whole-batch
+    // 403 when the caller holds no close_risks permission at all, mirroring
+    // closeriskForm()'s own (hardcoded, pre-existing) single-risk denial text.
+    'NoCloseRiskPermission' => 'Nemáte povolenie na uzavretie rizík.',
+    'QuestionnaireRequiredQuestionUnanswered' => 'Pred dokončením hodnotenia odpovedzte na všetky požadované otázky.',
     '' => '',
 );
 ?>

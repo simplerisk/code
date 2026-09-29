@@ -399,7 +399,11 @@
                still true and still worth saying. -->
           <div class="sr-table-empty-action">
 <?php       if (has_permission('add_new_controls')) { ?>
-            <button type="button" class="btn btn-submit" id="sr-ctl-empty-add"><?= $escaper->escapeHtml($lang['AddControl']) ?></button>
+            <!-- Same '#sr-ctl-add, #sr-ctl-empty-add' click handler (governance-frameworks.js) drives both;
+                 kept visually identical to it -- 'btn-danger' + a literal '+ ' prefix, matching this
+                 app's other page-level "Add X" actions (Document Program's '+ AddDocument'), not
+                 'btn-submit' (unstyled outside the auth pages). -->
+            <button type="button" class="btn btn-danger" id="sr-ctl-empty-add">+ <?= $escaper->escapeHtml($lang['AddControl']) ?></button>
 <?php       } ?>
           </div>
         </div>

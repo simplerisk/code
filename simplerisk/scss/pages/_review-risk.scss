@@ -1,0 +1,374 @@
+// Review Risk page: the two genuinely new visual components. Everything
+// else (chips, bulk bar, modals, columns picker) reuses shipped _tables.scss
+// / _sr-modal.scss components unchanged. The Needs column (renderNeedsBadges())
+// and Due Date column (renderDueState()) wrap their 1-2 chips in the
+// ALREADY-SHIPPED `.sr-chip-row` (_tables.scss, "read-only chip list for a
+// DataTables cell" -- the Tags columns' own wrapper) rather than a
+// page-local class of the same job -- no new rule needed here for that.
+
+.sr-need-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  // Fixed so the Mitigation and Review badges read as the same shape when
+  // they sit side by side, rather than each hugging its own (different-
+  // length) label -- sized to fit "Mitigation," the longer of the two
+  // labels in English, with room to spare; a longer translation just
+  // grows the badge past this floor since it's a min-width, not a fixed
+  // width.
+  min-width: 96px;
+  font-size: 11px;
+  font-weight: 700;
+  color: $gray-700;
+  background: $gray-100;
+  border: 1px solid $gray-300;
+  border-radius: 5px;
+  padding: 3px 7px;
+  white-space: nowrap;
+
+  i {
+    color: $gray-500;
+    font-size: 10px;
+  }
+
+  // Clickable filter follow-up (renderNeedsBadges(), review-risk.js): the
+  // Mitigation/Review badges set the Action Type chip-group's own toggle
+  // (setActionType()) rather than adding to a secondary <select> filter --
+  // a different mechanism from the Team/Owner/Risk Level chips'
+  // .sr-filter-chip (Action Type is a single mutually-exclusive toggle, not
+  // a multi-select), so this is its own modifier, not that shared class.
+  // Same cursor + keyboard-focus-ring shape as .sr-filter-chip for a
+  // consistent affordance across every clickable cell on this page.
+  &--clickable {
+    cursor: pointer;
+
+    &:hover {
+      background: $gray-200;
+      border-color: $gray-400;
+    }
+
+    &:focus-visible {
+      outline: 2px solid $sr-primary;
+      outline-offset: 1px;
+    }
+  }
+}
+
+// Final whole-branch review, Finding 6: renamed from the bare .score --
+// unscoped in the global compiled bundle, it collided with 4 unrelated
+// .score priority tiles in the Incident Management Extra
+// (extras/incident_management/includes/display.php), changing their layout
+// (display:inline-flex/min-width/padding/border-radius/font/color all
+// leaking onto those tiles). Task 20 correctly namespaced .need-badge ->
+// .sr-need-badge for this exact reason (see that selector above) and missed
+// doing the same here. sr-score-pill matches this file's own naming
+// convention (sr-need-badge) and this page's other pill classes
+// (sr-sev-pill in review-risk.js).
+.sr-score-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  padding: 4px 8px;
+  border-radius: 5px;
+  font-size: 12px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  color: $white;
+
+  // Lighter risk-level fills (Medium/Low) need the same on-light contrast
+  // switch the severity pill already uses -- see design-system.md §7.
+  &.on-light {
+    color: $sr-primary;
+  }
+}
+
+// ===== + Add Risk modal (#review-risk-add-modal) ========================
+//
+// This modal wraps display_add_risk() -- the SAME Submit Risk form rendered
+// by management/index.php, management/view.php and the two Compliance test
+// views. That shared render function is deliberately untouched: everything
+// below is a scoped reskin layered on top of the markup it already emits,
+// so the Customization Extra's dynamic field injection (which can add,
+// reorder or hide fields per customer) keeps working unchanged.
+//
+// Everything here is scoped to the modal's own ID on purpose. The rules
+// would be wrong as shared .sr-modal rules: the width one especially, since
+// every OTHER sr-modal (the bulk-close modal on this same page, Compliance's
+// Add Test, the destructive confirms) is a short dialog the shell correctly
+// caps at 640px.
+#review-risk-add-modal {
+
+    // --- Width -----------------------------------------------------------
+    // The markup already asks for modal-xl, but the shell's own
+    // `.sr-modal .modal-dialog { max-width: 640px }` (0,2,0) outranks
+    // Bootstrap's `.modal-xl` (0,1,0) whatever the source order, so the
+    // dialog rendered at 640px and the two HugeRTE editors were squeezed to
+    // 172px each -- narrow enough that the editor's own toolbar wrapped into
+    // seven rows and consumed the whole editing area, which is what read as
+    // the WYSIWYG being "hidden by the menu". There is no second stacking
+    // bug: measured live, the element painted over the editor is the
+    // editor's own .tox-tbtn, and the dialog (z-index 1055) sits above the
+    // backdrop (1050) with no page chrome in the way.
+    //
+    // Rather than pick an arbitrary in-between value with !important, this
+    // restates Bootstrap 5.3's OWN modal-xl ladder at ID specificity, so the
+    // dialog stays responsive instead of forcing 1140px onto a small
+    // viewport and overflowing it. A single flat max-width would have.
+    .modal-dialog {
+        max-width: none;
+    }
+
+    @media (min-width: 576px) {
+        .modal-dialog {
+            max-width: 500px;
+        }
+    }
+
+    @media (min-width: 992px) {
+        .modal-dialog {
+            max-width: 800px;
+        }
+    }
+
+    @media (min-width: 1200px) {
+        .modal-dialog {
+            max-width: 1140px;
+        }
+    }
+
+    // --- The form's own card on the modal's grey canvas -------------------
+    // display_add_risk() wraps the fields in `.card-body.border`, whose
+    // legacy square corners read as a foreign panel on the shell's rounded
+    // grey body. Matched to .sr-qcard, the section card every other sr-modal
+    // form uses.
+    #tab-content-container {
+        background: $sr-body;
+        border: 1px solid $gray-300 !important;
+        border-radius: 8px;
+    }
+
+    // --- "Selected layout" template-group picker --------------------------
+    // Rendered by display_add_risk() only when the Customization Extra is
+    // active: a Bootstrap nav-tabs with one .nav-link per template group
+    // (fed by the Customization Extra's get_custom_template_groups(), or by
+    // Org Hierarchy's get_assigned_template_group_by_user_id() when THAT
+    // extra is also on). On a stock instance that is the single "Default"
+    // tab. Restyled into a segmented control -- the design system has no
+    // browser-tab metaphor, and one square white tab floating on the grey
+    // canvas read as a stray button rather than a chooser. Behavior is
+    // untouched: still Bootstrap's own data-bs-toggle='tab'.
+    nav.nav-tabs {
+        display: inline-flex;
+        gap: 3px;
+        padding: 3px;
+        background: $gray-100;
+        border: 1px solid $gray-300;
+        border-radius: 7px;
+
+        .nav-link {
+            padding: 4px 12px;
+            border: 0;
+            border-radius: 5px;
+            background: none;
+            font-size: 12.5px;
+            font-weight: 600;
+            color: $gray-600;
+
+            &:hover {
+                color: $sr-primary;
+            }
+
+            &.active {
+                background: $sr-body;
+                border: 0;
+                color: $sr-primary;
+                box-shadow: 0 1px 3px rgba(0, 0, 0, .12);
+            }
+        }
+    }
+
+    // --- One control family ----------------------------------------------
+    // The form mixes four select technologies (plain .form-select, selectize
+    // single, selectize multi, bootstrap-multiselect) plus text inputs. None
+    // of them are swapped -- that would change the form's JS behavior for all
+    // five consumers of display_add_risk() -- they are matched to ONE box
+    // instead: 35px min-height, 6px radius, $gray-400 border, 14px text,
+    // which is what .form-control / .form-select already render as here.
+
+    // Selectize SINGLE (Owner, Manager). The shell already matches selectize
+    // MULTI to .sr-chips-field, but never covered the single variant, which
+    // is why Owner/Manager sat at the legacy 1px radius next to 6px
+    // neighbours. The !important is not specificity theatre: custom.scss
+    // carries a blanket `.selectize-input { border-radius: ... !important }`
+    // that an ID selector alone cannot outrank.
+    .selectize-control.single .selectize-input {
+        display: flex;
+        align-items: center;
+        min-height: 35px;
+        padding: 4px 10px;
+        background: $sr-body;
+        border: 1px solid $gray-400;
+        border-radius: 6px !important;
+        box-shadow: none;
+        font-size: 14px;
+        color: $sr-primary;
+
+        &.focus,
+        &.dropdown-active {
+            border-color: $gray-500;
+            box-shadow: none;
+        }
+
+        input::placeholder {
+            color: $gray-500;
+        }
+    }
+
+    // Selectize MULTI (Tags, Risk/Threat mapping, and Affected Assets once
+    // it is initialized -- see review-risk.js). The shell's own tags rule
+    // already gives these the chip treatment; this only lifts the typing
+    // area to the 14px the rest of THIS form uses, so the family reads as
+    // one size. Chips stay smaller than their field, as chips do.
+    .selectize-control.multi .selectize-input {
+        min-height: 35px;
+
+        > input {
+            font-size: 14px;
+        }
+    }
+
+    // bootstrap-multiselect (Site/Location, Technology, Team, Additional
+    // Stakeholders). Its trigger is a .btn, so it inherits Bootstrap button
+    // chrome -- centered text, button background -- and read as an action
+    // rather than a field. Matched to the box above. The plugin writes
+    // buttonWidth as an INLINE style on both the group and the button
+    // (design-system.md 14b), and review-risk.js passes 100%, so width is
+    // left alone here rather than fought.
+    .multiselect-native-select {
+
+        button.multiselect {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            min-height: 35px;
+            padding: 4px 10px;
+            background: $sr-body;
+            border: 1px solid $gray-400;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 400;
+            color: $sr-primary;
+            text-align: left;
+
+            &:hover,
+            &:focus,
+            &:active,
+            &.show {
+                background: $sr-body;
+                border-color: $gray-500;
+                color: $sr-primary;
+                box-shadow: none;
+            }
+        }
+
+        // Long selections have to truncate rather than stretch the trigger
+        // past its column.
+        .multiselect-selected-text {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        // 14b: the menu is a child of the trigger's .btn-group, so it
+        // inherits the trigger's width and its option labels spill. Give it
+        // its own floor.
+        .dropdown-menu {
+            min-width: 260px;
+            padding: 4px;
+            border: 1px solid $gray-300;
+            border-radius: 6px;
+            box-shadow: 0 6px 18px rgba(0, 0, 0, .12);
+            font-size: 13px;
+
+            label {
+                font-size: 13px;
+                color: $sr-primary;
+            }
+
+            .form-control {
+                font-size: 13px;
+            }
+        }
+    }
+
+    // --- WYSIWYG ----------------------------------------------------------
+    // The shell's HugeRTE rule is scoped `.sr-modal .sr-qfield .tox…`, and
+    // this legacy form has no .sr-qfield wrappers, so none of it applied and
+    // the editors kept their foreign 2px chrome. Same treatment, hung off
+    // this modal's ID instead -- which also clears the load-order problem
+    // 14b warns about, since HugeRTE injects its skin stylesheet after
+    // style.min.css and an equal-specificity rule of ours would lose.
+    .tox.tox-hugerte {
+        border: 1px solid $gray-400;
+        border-radius: 6px !important;
+        overflow: hidden;
+
+        .tox-editor-header {
+            background: $gray-100;
+            border-bottom: 1px solid $gray-300;
+            box-shadow: none;
+            padding: 2px 4px;
+        }
+
+        .tox-toolbar__primary {
+            background: none;
+        }
+
+        .tox-tbtn {
+            height: 26px;
+            margin: 1px;
+            color: $gray-600;
+
+            &:hover {
+                background: $gray-300;
+                color: $sr-primary;
+            }
+        }
+
+        .tox-tbtn--enabled {
+            background: $gray-300;
+            color: $sr-primary;
+        }
+    }
+
+    // --- Actions moved to the footer --------------------------------------
+    // review-risk.js mirrors the form's Submit/Clear buttons and its
+    // instruction line into the shell's .modal-footer. The originals stay in
+    // the DOM, inside the <form>, because that is what risk.js's
+    // closest('form') and display.php's closest('.tab-data') need in order to
+    // resolve -- they are hidden, not moved. `visibility` is not enough: they
+    // would still reserve their row at the bottom of the body.
+    .risk-form-actions {
+        display: none !important;
+    }
+
+    // The instruction paragraph that sits immediately before them, now shown
+    // as the footer's left hint. review-risk.js tags the exact <p> it
+    // harvested rather than this file guessing at a structural selector --
+    // the Customization Extra can inject fields into that column, so "the
+    // paragraph before the actions" is not a safe thing to match blind.
+    .review-risk-add-hint-source {
+        display: none;
+    }
+}
+
+// The footer's proxy buttons. Outside the ID block only because
+// .modal-footer's own `> * { margin: 0 }` in the shell already handles
+// spacing; these just need the shell's right-alignment to apply, which it
+// does via `.modal-footer > .btn:first-child { margin-left: auto }`.
+#review-risk-add-modal-footer .review-risk-add-footer-action {
+    font-size: 13px;
+}

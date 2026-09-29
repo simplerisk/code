@@ -1,0 +1,72 @@
+// Plan Projects (SR-2229) -- page-scoped additions to the shipped
+// .sr-table-card vocabulary (modules/_tables.scss). Two genuinely new pieces,
+// both recorded in design-system.md §6 on ship:
+//   .sr-drag-col   a priority column that carries a drag handle
+//   .sr-subtable   a nested table inside a .sr-expand-panel drawer
+#plan-projects-card {
+  .sr-drag-col { white-space: nowrap; }
+  .sr-drag-handle {
+    display: inline-block; width: 16px; margin-right: 6px; color: $gray-400; cursor: grab;
+    &:hover { color: $sr-primary; }
+  }
+  .sr-priority-rank { font-weight: 800; font-variant-numeric: tabular-nums; color: $gray-600; }
+  &.sr-reorder-off .sr-drag-handle, table.sr-reorder-off .sr-drag-handle { cursor: not-allowed; opacity: .35; }
+  .sr-project-name { font-weight: 700; }
+  .sr-table-subtitle { font-size: 12px; color: $gray-600; }
+
+  // The drawer <td> spans every column, so once optional columns push the
+  // grid into horizontal scroll the shared .sr-expand-panel would run the
+  // full table width and scroll sideways with it. Pin it to the card's
+  // visible width instead: sticky-left keeps it in view and plan-projects.js
+  // sizeDrawerPanels() sets its width to the scroller's clientWidth. Equal
+  // gutters replace the shared rule's under-the-caret indent -- this grid's
+  // caret sits behind the drag and checkbox columns, too far in to align to.
+  tr.sr-expand-row > td { padding: 0; } // the shared 14px cell padding would push the pinned panel past the scroller's edge
+  tr.sr-expand-row .sr-expand-panel {
+    position: sticky; left: 0; box-sizing: border-box; padding: 16px 20px 18px;
+    // The nested table's nowrap cells can still outgrow the panel at narrow
+    // widths; scroll them inside the panel rather than letting them run
+    // back out into the scrolled-away area the pin exists to avoid.
+    overflow-x: auto;
+  }
+
+  // Project rows carry .sr-group-row for the caret/expand contract, but they
+  // are the grid's data rows, not navigation headers: rest on the card's
+  // white and take the ordinary hover tint. (Both tables moved from
+  // Bootstrap's `table` class to `sr-table` so cells stop painting their own
+  // opaque background over the row tint -- the queue's rows had no hover at
+  // all -- which is what exposed the group-row grey here.)
+  #plan_projects_table tbody tr.sr-group-row {
+    background: transparent;
+    &:hover { background: $gray-100; }
+  }
+
+  // Nested risk table in the expand drawer.
+  .sr-subtable {
+    width: 100%; border-collapse: collapse; background: $sr-body; border: 1px solid $gray-300; border-radius: 6px; overflow: hidden; font-size: 12.5px;
+    th { font-size: 10px; letter-spacing: .05em; text-transform: uppercase; color: $gray-600; background: $gray-100; padding: 6px 10px; text-align: left; border-bottom: 1px solid $gray-300; }
+    td { padding: 6px 10px; border-bottom: 1px solid $gray-200; vertical-align: middle; white-space: nowrap; }
+    tr:last-child td { border-bottom: 0; }
+    // Subject is wrapped in a .sr-cell-truncate span (the shared one-line
+    // ellipsis rule; max-width on a <td> is ignored by auto table layout).
+    .sr-cell-truncate { max-width: 360px; }
+    .sr-row-actions { opacity: 1; }
+  }
+  .sr-subtable-foot { display: flex; align-items: center; gap: 12px; padding: 8px 0 0; }
+  .sr-subtable-more { font-size: 12px; color: $gray-600; }
+  .sr-subtable-loading { padding: 12px; color: $gray-600; font-size: 12.5px; }
+}
+
+// The Unassigned chip carries an attention count once there is intake work.
+#plan-projects-card .sr-status-chip.sr-status-chip--attn.has-items .n {
+  color: $sr-important;
+}
+
+// Add-risks picker: the roster has no facets and the subject is the identity,
+// so give the list the width and drop the (empty) number column.
+#add-risks-picker {
+  .sr-picker-panes { grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); }
+  .sr-picker-row { grid-template-columns: 16px minmax(0, 1fr); }
+  .sr-picker-num { display: none; }
+  .sr-picker-chip-num { font-family: inherit; }
+}

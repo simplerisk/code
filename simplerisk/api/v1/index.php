@@ -116,15 +116,11 @@
         app()->get('/role_responsibilities/get_responsibilities', 'getResponsibilitiesByRoleIdForm');
 
         /******************** Risk Management Datatatable API **********************/
-        app()->post('/risk_management/plan_mitigation', 'getPlanMitigationsDatatableResponse');
-        app()->post('/risk_management/managment_review', 'getManagementReviewsDatatableResponse');
-        app()->post('/risk_management/review_risks', 'getReviewRisksDatatableResponse');
+        // SR: the plan_mitigation/managment_review/review_risks routes and the
+        // three matching save_custom_*_display_settings routes were removed here
+        // (Task 22) -- their handlers were deleted from includes/api.php when the
+        // three legacy pages they served were retired in favor of review_risk.php.
         app()->get('/risk_management/review_date_issues', 'getReviewsWithDateIssuesDatatableResponse');
-
-        /******************** Custom Display Settings API **********************/
-        app()->post('/risk_management/save_custom_plan_mitigation_display_settings', 'saveCustomPlanMitigationDisplaySettingsAPI');
-        app()->post('/risk_management/save_custom_perform_reviews_display_settings', 'saveCustomPerformReviewsDisplaySettingsAPI');
-        app()->post('/risk_management/save_custom_reviewregularly_display_settings', 'saveCustomReviewregularlyDisplaySettingsAPI');
 
         /******************** Governance and Compliance API **********************/
         app()->get('/governance/frameworks', 'getFrameworksResponse');

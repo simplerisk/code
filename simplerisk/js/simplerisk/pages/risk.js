@@ -29,7 +29,7 @@ $.fn.extend({
             idField: 'value',
             treeField: 'name',
             scrollbarSize: 0,
-            loadFilter: function(data, parentId) {
+            loadFilter: function(data) {
                 return data.data;
             },
             onLoadSuccess: function(row, data){
@@ -60,18 +60,8 @@ $.fn.extend({
     }
 });
 
-var current_tab_close_object;
-
 // Variable to be used to prevent the form from being submitted multiple times
 var loading = false;
-
-function close_current_tab(index)
-{
-    $('#tab-container'+index+'').remove();
-    current_tab_close_object.parent().remove();
-    $('.tab-show').first().addClass('selected');
-    $('.tab-data').first().show();
-}
 
 function addRisk($this){
     var tabContainer = $this.closest('.tab-data');
@@ -83,7 +73,6 @@ function addRisk($this){
     }
 
     var getForm = $this.closest("form");
-    var index = tabContainer.index();
     var form = new FormData($(getForm)[0]);
     $.each($("input[type=file]", tabContainer), function(i, obj) {
         $.each(obj.files, function(j, file){
@@ -115,6 +104,26 @@ function addRisk($this){
                 $("#modal-new-risk").modal("hide");
                 $("#associate_new_risk_id").val(risk_id);
                 $('form#edit-test').submit();
+                return;
+            }
+
+            // Embedded-modal "stay on the page" contract: a modal opts into
+            // this behavior by carrying data-on-save="refresh-and-close" on
+            // itself (or an ancestor of the submitted form) -- e.g.
+            // includes/display.php's #review-risk-add-modal (Review Risk's
+            // + Add Risk modal). risk.js stays page-agnostic here: it doesn't
+            // know Review Risk exists, it just hides the modal and fires a
+            // generic 'simplerisk:risk-created' event on document with the
+            // new risk_id; any current or future page listens for that event
+            // to close its own modal (if not already closed here), refresh
+            // its grid, etc. This must be checked before the default
+            // full-page redirect below, since that redirect is exactly what
+            // an embedded-modal context needs to avoid.
+            var saveModal = getForm.closest('[data-on-save="refresh-and-close"]');
+            if (saveModal.length) {
+                saveModal.modal("hide");
+                $(document).trigger('simplerisk:risk-created', { risk_id: risk_id });
+                $this.prop('disabled', true);
                 return;
             }
 

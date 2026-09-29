@@ -4844,6 +4844,129 @@ $lang = array(
     'CreateAndAddField' => 'Δημιουργία & προσθήκη',
     'FieldCreatedAndAddedToTab' => 'Δημιουργήθηκε το {field} και προστέθηκε στο {tab}.',
     'DeleteCustomFieldTitle' => 'Διαγραφή πεδίου \'{field}\';',
+    // Review Risk page (SR-2068 and others -- see design spec)
+    'ReviewRisk' => 'Αξιολόγηση κινδύνου',
+    'NeedsColumn' => 'Αναγκαία',
+    'RiskScoreColumn' => 'Βαθμολογία κινδύνου',
+    'ReassignRiskOwner' => 'Επαναανάθεση κατόχου κινδύνου',
+    'ReassignMitigationOwner' => 'Επαναανάθεση κατόχου μετριασμού',
+    'NoActionItemsTitle' => 'Δεν υπάρχουν κίνδυνοι που να αντιστοιχούν στα φίλτρα σας',
+    'NoActionItemsBody' => 'Δεν υπάρχει τίποτα που να χρειάζεται μετριασμό ή έλεγχο για το οποίο έχετε προσωπικά άδεια να ενεργήσετε. Δοκιμάστε να καταργήσετε την επιλογή της επιλογής "Εμφάνιση στοιχείων δράσης μου" για να δείτε την πλήρη ουρά της ομάδας.',
+    'BulkChangeStatusTitle' => 'Αλλαγή κατάστασης για %s επιλεγμένους κινδύνους',
+    'BulkReassignRiskOwnerTitle' => 'Επαναπροσδιορισμός κατόχου κινδύνου για %s επιλεγμένους κινδύνους',
+    'BulkReassignMitigationOwnerTitle' => 'Επαναπροσδιορισμός κατόχου μετριασμού για %s επιλεγμένους κινδύνους',
+    'BulkAddCommentTitle' => 'Προσθήκη σχολίου σε %s επιλεγμένους κινδύνους',
+    'BulkCloseRiskTitle' => 'Κλείσιμο %s επιλεγμένων κινδύνων',
+    'BulkActionPartialSuccess' => 'Ενημερώθηκαν οι %s από τους %s κινδύνους.',
+    'PerformReview' => 'Εκτέλεση αξιολόγησης',
+    'BulkActionSuccess' => '%s κίνδυνοι ενημερώθηκαν.',
+    'SomeRowsSkippedNoMitigation' => 'Ορισμένοι επιλεγμένοι κίνδυνοι παραλείφθηκαν επειδή δεν έχουν ακόμη προγραμματιστεί μέτρα μετριασμού τους.',
+    'ChangeStatusHint' => 'Οι επιλεγμένοι κίνδυνοι θα ενημερωθούν στην επιλεγμένη κατάσταση.',
+    'StatusChanged' => 'Η κατάσταση ενημερώθηκε.',
+    'CloseRiskBulkConfirmBody' => 'Οι κλειστοί κίνδυνοι αφαιρούνται από τις ενεργές ουρές. Μπορείτε να ανοίξετε ξανά έναν κίνδυνο αργότερα αλλάζοντας ξανά την κατάστασή του.',
+    // Column-parity follow-up fix review-risk-followups/column-parity-report.md):
+    // the Review Risk page's new scoring_method column (getReviewRiskDatatableResponse(),
+    // includes/api.php) renders get_scoring_method_name()'s (includes/functions.php)
+    // canonical scoring-method name through a $lang lookup rather than the raw
+    // hardcoded string. 'Classic'/'Custom'/'ContributingRisk' already existed
+    // (reused, not duplicated) -- only the three missing acronym keys are added
+    // here. These scoring methodology names/acronyms are typically kept
+    // untranslated (matching how the app's other risk-scoring UI already
+    // displays them, e.g. get_name_by_value('scoring_methods', ...) in
+    // displayrisks.php, which reads these same literal strings straight from
+    // the scoring_methods DB table with no translation layer), but every
+    // user-facing string still needs to flow through a lookup per CLAUDE.md,
+    // even one where the English and translated value would typically match.
+    'CVSS' => 'CVSS',
+    'DREAD' => 'DREAD',
+    'OWASP' => 'OWASP',
+    'MyActionItems' => 'Τα στοιχεία δράσης μου',
+    'AddRisk' => 'Προσθήκη κινδύνου',
+    'ReviewCompleted' => 'Ο έλεγχος ολοκληρώθηκε',
+    // Review Risk insights band (management/review_risk.php). The "Needs
+    // Review" tile reuses the existing 'HomeKpiNeedsReview' key rather than
+    // adding a second key for the same English string. 'RrNeedsMitigation'
+    // carries the band prefix the sibling insights bands already use ('Dt',
+    // 'Fw', 'Exc') to distinguish it from the grid's much terser chip label
+    // ('Mitigation').
+    'RrNeedsMitigation' => 'Απαιτεί μετριασμό',
+    'PastDue' => 'Ληξιπρόθεσμο',
+    'OpenedThisMonth' => 'Άνοιξε αυτόν τον μήνα',
+    'ClosedThisMonth' => 'Κλειστά αυτόν τον μήνα',
+    'AllRiskLevels' => 'Όλα τα επίπεδα κινδύνου',
+    // Import-Export Extra's Users sheet column for the Review Risk grid's
+    // persisted column-visibility/order preferences (user.custom_review_risk_display_settings).
+    'ReviewRiskDisplay' => 'Έλεγχος εμφάνισης κινδύνου',
+    // Plan Projects grid API (SR-2229): reorder/save-order status messages
+    // and the derived highest-risk column label shared by the grid's
+    // Columns picker and the drawer. The sibling 'Risks' column label
+    // reuses the existing 'Risks' key (line ~1911) rather than duplicating it.
+    'PlanProjectsReorderMismatch' => 'Η λίστα έργων άλλαξε κατά την αναδιάταξη. Επαναλάβετε τη φόρτωση και δοκιμάστε ξανά.',
+    'PlanProjectsOrderSaved' => 'Η σειρά έργων αποθηκεύτηκε.',
+    'HighestRisk' => 'Υψηλότερος κίνδυνος',
+    // Plan Projects grid (SR-2229). Sentence case; column headers are upper-cased by CSS. {n} tokens are replaced client-side.
+    'OnHold' => 'Σε αναμονή',
+    'SearchProjectsPlaceholder' => 'Αναζήτηση έργων',
+    'AllConsultants' => 'Όλοι οι σύμβουλοι',
+    'AllBusinessOwners' => 'Όλοι οι ιδιοκτήτες επιχειρήσεων',
+    'AllDataClassifications' => 'Όλες οι ταξινομήσεις δεδομένων',
+    'AnyDueStatus' => 'Οποιαδήποτε κατάσταση προθεσμίας',
+    'NoDueDate' => 'Δεν υπάρχει ημερομηνία λήξης',
+    'AddProject' => 'Προσθήκη έργου',
+    'AssignToProject' => 'Ανάθεση σε έργο',
+    'RemoveFromProject' => 'Αφαίρεση από το έργο',
+    'AddRisksToThisProject' => 'Προσθέστε κινδύνους σε αυτό το έργο',
+    'NoProjectsYet' => 'Δεν υπάρχουν ακόμη έργα',
+    'NoProjectsYetHint' => 'Τα έργα ομαδοποιούν σχετικούς κινδύνους, ώστε να μπορείτε να προγραμματίσετε και να ιεραρχήσετε την αντιμετώπισή τους μαζί.',
+    'NoProjectsMatchFilters' => 'Δεν υπάρχουν έργα που να αντιστοιχούν στα φίλτρα σας',
+    'NoRisksInThisProject' => 'Δεν υπάρχουν ακόμη κίνδυνοι σε αυτό το έργο',
+    'NoRisksWaitingForProject' => 'Κανένας κίνδυνος εν αναμονή ενός έργου',
+    'NoRisksWaitingForProjectHint' => 'Οι κίνδυνοι που εξετάζονται ως "Λάβετε υπόψη για το έργο" εμφανίζονται εδώ μέχρι να τους ανατεθεί.',
+    'NMoreRisks' => '{n} περισσότεροι κίνδυνοι',
+    'ChangeProjectStatus' => 'Αλλαγή κατάστασης έργου',
+    'ChangeStatusClosesRisks' => 'Η σήμανση αυτού του έργου ως ολοκληρωμένου θα κλείσει τους {n} ανοιχτούς κινδύνους με την αιτιολογία "Πλήρως μετριασμένο".',
+    'ChangeStatusReopensRisks' => 'Η μετακίνηση αυτού του έργου από την κατάσταση ολοκληρωμένου θα ανοίξει ξανά τους κινδύνους που είχαν κλείσει όταν ολοκληρώθηκε.',
+    'ChangeStatusNoCloseRightsHint' => 'Δεν έχετε άδεια να κλείσετε ή να ανοίξετε ξανά κινδύνους, επομένως θα αλλάξει μόνο η κατάσταση του έργου.',
+    'DeleteProjectReturnsRisks' => 'Οι {n} κίνδυνοί του θα επιστρέψουν στην ουρά χωρίς ανάθεση.',
+    'ReorderNeedsPrioritySort' => 'Η αναδιάταξη είναι διαθέσιμη όταν η λίστα ταξινομείται κατά προτεραιότητα εντός μίας κατάστασης.',
+    'CouldNotLoadProjects' => 'Δεν ήταν δυνατή η φόρτωση έργων. Τα δεδομένα σας είναι ασφαλή.',
+    'MitigationNotPlanned' => 'Δεν έχει προγραμματιστεί',
+    'MitigationStatePlanned' => 'Προγραμματισμένο',
+    'NoRisksMatchYourSearch' => 'Δεν υπάρχουν κίνδυνοι που να αντιστοιχούν στην αναζήτησή σας',
+    'AllUnassignedRisks' => 'Όλοι οι μη εκχωρημένοι κίνδυνοι',
+    'NoRisksSelectedYet' => 'Δεν έχουν επιλεγεί ακόμη κίνδυνοι',
+    'SomeQuestionsNotDeleted' => 'Δεν ήταν δυνατή η διαγραφή ορισμένων από τις επιλεγμένες ερωτήσεις.',
+    'QuestionnaireQuestionDeleteRequiresJavaScript' => 'Η διαγραφή μιας ερώτησης απαιτεί την ενεργοποίηση της JavaScript στο πρόγραμμα περιήγησής σας.',
+    // Initiate Audits' bulk bar (SR-2234): the header checkbox already
+    // selects every row matching the current search/filters across every
+    // page in one click (client-side DataTables, the full eligible-test set
+    // is already loaded) -- this qualifier makes that explicit when the
+    // selection exceeds what a single page can hold, so "N selected" isn't
+    // read as a miscount against however many checkboxes are visibly ticked
+    // on the current page.
+    'NSelectedAllPages' => '{n} επιλεγμένα (ταιριάζουν με τα φίλτρα σας, σε όλες τις σελίδες)',
+    // "Select all N" cross-page selection: shared too-many-matches message for
+    // Review Risk, Define Tests, Manage Audits, Document Program, and Define
+    // Exceptions (formerly 5 near-duplicate per-page keys). Callers supply
+    // both {$max} and {$noun} (e.g. the plain 'Risks'/'Tests'/'Audits'/
+    // 'Documents'/'Exceptions' key text) -- PHP call sites via _lang(), JS
+    // call sites via a manual .replace('{$max}', ...).replace('{$noun}', ...).
+    'SelectAllTooManyMatches' => 'Τα τρέχοντα φίλτρα αντιστοιχούν σε περισσότερα από {$max} {$noun}. Περιορίστε το φίλτρο και προσπαθήστε ξανά.',
+    // POST /documents/batch-delete (batch_delete_document_api(), includes/api.php):
+    // same truncation-signal shape as 'DocumentsApprovedTruncated' (see
+    // above) and the sibling 'ExceptionsDeletedTruncated' key just below,
+    // for the Document Program bulk-delete "Select all N" action.
+    'DocumentsDeletedTruncated' => 'Μόνο τα πρώτα {$limit} επιλεγμένα έγγραφα διαγράφηκαν. Επαναλάβετε την ενέργεια για να διαγράψετε τα υπόλοιπα.',
+    // POST /exceptions/batch-delete-ids (batch_delete_exceptions_by_ids_api()) --
+    // deletes an arbitrary caller-supplied set of exception ids in one request,
+    // replacing the Define Exceptions bulk bar's looped POST /exceptions/delete
+    // calls. Mirrors ExceptionsApprovedTruncated's truncation-signal wording.
+    'ExceptionsDeletedTruncated' => 'Διαγράφηκαν μόνο οι πρώτες {$limit} επιλεγμένες εξαιρέσεις. Παρακαλώ επαναλάβετε την ενέργεια για να διαγράψετε τις υπόλοιπες.',
+    // POST /risks/batch-close (closeRiskBatch(), includes/api.php): whole-batch
+    // 403 when the caller holds no close_risks permission at all, mirroring
+    // closeriskForm()'s own (hardcoded, pre-existing) single-risk denial text.
+    'NoCloseRiskPermission' => 'Δεν έχετε άδεια να κλείσετε κινδύνους.',
+    'QuestionnaireRequiredQuestionUnanswered' => 'Παρακαλούμε απαντήστε σε όλες τις απαιτούμενες ερωτήσεις πριν ολοκληρώσετε την αξιολόγηση.',
     '' => '',
 );
 ?>

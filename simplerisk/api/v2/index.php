@@ -222,6 +222,15 @@ if (api_v2_is_authenticated())
 
     // Define Tests redesign (Phase 1, Task 4) -- grid data feed + control-mappings lookup
     app()->post('/compliance/tests_grid', 'api_v2_compliance_tests_grid');
+    app()->post('/compliance/tests_grid/filtered_ids', 'api_v2_compliance_tests_grid_filtered_ids');
+    // "Select all N" bulk actions -- ONE request carrying every selected id
+    // instead of the client looping one POST/DELETE per id (see
+    // api_v2_compliance_tests_batch_retire()/_batch_delete()'s docblocks,
+    // api/v2/includes/compliance.php). Hyphenated, matching every other
+    // batch-route in this file (/risks/batch-*, /documents/batch-delete,
+    // /exceptions/batch-delete-ids, /compliance/audits/batch-delete below).
+    app()->post('/compliance/tests/batch-retire', 'api_v2_compliance_tests_batch_retire');
+    app()->post('/compliance/tests/batch-delete', 'api_v2_compliance_tests_batch_delete');
     app()->get('/compliance/control_mappings', 'api_v2_compliance_control_mappings');
     // Define Tests redesign -- lightweight control roster (id/control_number/short_name
     // only, no test/last-result/tag enrichment) for the Add-Test modal's control <select>,
@@ -333,6 +342,16 @@ if (api_v2_is_authenticated())
     app()->get('/risks/{id}/comments', 'getRiskComments');
     app()->post('/risks/{id}/comments', 'saveCommentForm');
     app()->post('/risks/{id}/accept-mitigation', 'acceptMitigationForm');
+
+    // Review Risk "Select all N" bulk actions -- one request for up to
+    // REVIEW_RISK_SELECT_ALL_MAX ids (includes/api.php), replacing
+    // review-risk.js's previous "loop the single-risk endpoint above once
+    // per id" client behavior for these five actions.
+    app()->post('/risks/batch-comment', 'saveCommentBatch');
+    app()->post('/risks/batch-reassign-owner', 'updateRiskOwnerBatch');
+    app()->post('/risks/batch-reassign-mitigation-owner', 'saveMitigationOwnerBatch');
+    app()->post('/risks/batch-update-status', 'updateStatusBatch');
+    app()->post('/risks/batch-close', 'closeRiskBatch');
     /************************* END RISKS CRUD API ****************************/
     app()->get('/admin', 'show_admin');
     app()->get('/admin/users/all', 'allusers');
@@ -401,15 +420,18 @@ if (api_v2_is_authenticated())
     app()->get('/role_responsibilities/get_responsibilities', 'getResponsibilitiesByRoleIdForm');
 
     /******************** Risk Management Datatatable API **********************/
-    app()->post('/risk_management/plan_mitigation', 'getPlanMitigationsDatatableResponse');
-    app()->post('/risk_management/managment_review', 'getManagementReviewsDatatableResponse');
-    app()->post('/risk_management/review_risks', 'getReviewRisksDatatableResponse');
+    // SR: the plan_mitigation/managment_review/review_risks routes and the three
+    // matching save_custom_*_display_settings routes were removed here (Task 22)
+    // -- their handlers were deleted from includes/api.php when the three legacy
+    // pages they served (plan_mitigations.php/management_review.php/review_risks.php)
+    // were retired in favor of review_risk.php.
+    app()->post('/risk_management/review_risk', 'getReviewRiskDatatableResponse');
+    app()->get('/risk_management/review_risk/filter_options', 'getReviewRiskFilterOptions');
+    app()->post('/risk_management/review_risk/filtered_ids', 'getReviewRiskFilteredIdsResponse');
     app()->get('/risk_management/review_date_issues', 'getReviewsWithDateIssuesDatatableResponse');
 
     /******************** Custom Display Settings API **********************/
-    app()->post('/risk_management/save_custom_plan_mitigation_display_settings', 'saveCustomPlanMitigationDisplaySettingsAPI');
-    app()->post('/risk_management/save_custom_perform_reviews_display_settings', 'saveCustomPerformReviewsDisplaySettingsAPI');
-    app()->post('/risk_management/save_custom_reviewregularly_display_settings', 'saveCustomReviewregularlyDisplaySettingsAPI');
+    app()->post('/risk_management/save_custom_review_risk_display_settings', 'saveCustomReviewRiskDisplaySettingsAPI');
 
     /******************** Governance and Compliance API **********************/
     //app()->get('/governance/frameworks', 'getFrameworksResponse');
@@ -517,6 +539,7 @@ if (api_v2_is_authenticated())
     app()->post('/documents/approve', 'approve_document_api');
     app()->post('/documents/unapprove', 'unapprove_document_api');
     app()->post('/documents/batch-approve', 'batch_approve_document_api');
+    app()->post('/documents/batch-delete', 'batch_delete_document_api');
     // Deleting exactly ONE historical version (never the document itself)
     // is /documents/delete above with `version` set -- delete_document_api()
     // already forwards it straight through to delete_document()'s existing
@@ -535,6 +558,7 @@ if (api_v2_is_authenticated())
     app()->post('/exceptions/unapprove', 'unapprove_exception_api');
     app()->post('/exceptions/batch-approve', 'batch_approve_exception_api');
     app()->post('/exceptions/batch-delete', 'batch_delete_exception_api');
+    app()->post('/exceptions/batch-delete-ids', 'batch_delete_exceptions_by_ids_api');
     app()->get('/exceptions/tree', 'get_exceptions_as_treegrid_api');
     app()->get('/exceptions/exception', 'get_exception_api');
     app()->get('/exceptions/info', 'get_exception_for_display_api');
@@ -577,6 +601,17 @@ if (api_v2_is_authenticated())
     app()->post('/management/project/update_order', 'update_project_order_api');
     app()->get('/management/project/detail', 'detail_project_api');
 
+    // Plan Projects grid (SR-2229) -- the rebuilt management/prioritize_planning.php
+    // is API-backed; these are its read/mutation routes. The seven routes above
+    // (add/edit/detail/delete/update_status/update_order/update) are kept and
+    // still called by the page.
+    app()->get('/management/projects', 'getPlanProjectsGridApi');
+    app()->get('/management/projects/unassigned_risks', 'getPlanProjectsUnassignedRisksApi');
+    app()->get('/management/project/{id}/risks', 'getPlanProjectRisksApi');
+    app()->post('/management/projects/assign_risks', 'assignRisksToProjectApi');
+    app()->post('/management/projects/reorder', 'reorderPlanProjectsApi');
+    app()->post('/management/projects/display_settings', 'savePlanProjectsDisplaySettingsApi');
+
     // Get risk catalog table data
     app()->get('/admin/risk_catalog/datatable', 'getRiskCatalogDatatableAPI');
     app()->get('/admin/risk_catalog/detail', 'getRiskCatalogAPI');
@@ -612,6 +647,8 @@ if (api_v2_is_authenticated())
     app()->post('/compliance/audits/active/datatable', 'api_v2_compliance_active_audits_datatable');
     app()->post('/compliance/audits/past/datatable', 'api_v2_compliance_past_audits_datatable');
     app()->post('/compliance/audits/all/datatable', 'api_v2_compliance_all_audits_datatable');
+    app()->post('/compliance/audits/filtered_ids', 'api_v2_compliance_audits_filtered_ids');
+    app()->post('/compliance/audits/batch-delete', 'api_v2_compliance_audits_batch_delete');
     app()->get('/compliance/audits/filter_counts', 'api_v2_compliance_audits_filter_counts');
     app()->post('/compliance/audits/report/datatable', 'api_v2_compliance_dynamic_audit_report_datatable');
     app()->post('/compliance/audits/timeline/datatable', 'api_v2_compliance_audit_timeline_datatable');

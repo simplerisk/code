@@ -4844,6 +4844,129 @@ $lang = array(
     'CreateAndAddField' => 'Luo ja lisää',
     'FieldCreatedAndAddedToTab' => 'Luotu {field} ja lisätty se {tab}:een.',
     'DeleteCustomFieldTitle' => 'Poistetaanko kenttä \'{field}\'?',
+    // Review Risk page (SR-2068 and others -- see design spec)
+    'ReviewRisk' => 'Arvioi riski',
+    'NeedsColumn' => 'Tarpeet',
+    'RiskScoreColumn' => 'Riskipisteytys',
+    'ReassignRiskOwner' => 'Määritä riskin omistaja uudelleen',
+    'ReassignMitigationOwner' => 'Määritä lieventämisen omistaja uudelleen',
+    'NoActionItemsTitle' => 'Mikään riski ei vastaa suodattimiasi',
+    'NoActionItemsBody' => 'Mikään ei vaadi lieventämistä tai tarkistamista, johon sinulla on henkilökohtainen lupa. Kokeile poistaa valinta kohdasta "Näytä toimenpiteet", niin näet tiimin koko jonon.',
+    'BulkChangeStatusTitle' => 'Muuta %s valitun riskin tilaa',
+    'BulkReassignRiskOwnerTitle' => 'Määritä riskin omistaja uudelleen %s valitulle riskille',
+    'BulkReassignMitigationOwnerTitle' => 'Määritä lieventämisen omistaja uudelleen %s valitulle riskille',
+    'BulkAddCommentTitle' => 'Lisää kommentti %s valittuihin riskeihin',
+    'BulkCloseRiskTitle' => 'Sulje %s valitut riskit',
+    'BulkActionPartialSuccess' => '%s / %s riskiä päivitetty.',
+    'PerformReview' => 'Suorita tarkistus',
+    'BulkActionSuccess' => '%s riskit päivitetty.',
+    'SomeRowsSkippedNoMitigation' => 'Joitakin valittuja riskejä ohitettiin, koska niille ei ole vielä suunniteltu lieventämistoimia.',
+    'ChangeStatusHint' => 'Valitut riskit päivitetään valittuun tilaan.',
+    'StatusChanged' => 'Tila päivitetty.',
+    'CloseRiskBulkConfirmBody' => 'Suljetut riskit poistetaan aktiivisista jonoista. Voit avata riskin uudelleen myöhemmin muuttamalla sen tilaa.',
+    // Column-parity follow-up fix review-risk-followups/column-parity-report.md):
+    // the Review Risk page's new scoring_method column (getReviewRiskDatatableResponse(),
+    // includes/api.php) renders get_scoring_method_name()'s (includes/functions.php)
+    // canonical scoring-method name through a $lang lookup rather than the raw
+    // hardcoded string. 'Classic'/'Custom'/'ContributingRisk' already existed
+    // (reused, not duplicated) -- only the three missing acronym keys are added
+    // here. These scoring methodology names/acronyms are typically kept
+    // untranslated (matching how the app's other risk-scoring UI already
+    // displays them, e.g. get_name_by_value('scoring_methods', ...) in
+    // displayrisks.php, which reads these same literal strings straight from
+    // the scoring_methods DB table with no translation layer), but every
+    // user-facing string still needs to flow through a lookup per CLAUDE.md,
+    // even one where the English and translated value would typically match.
+    'CVSS' => 'CVSS',
+    'DREAD' => 'DREAD',
+    'OWASP' => 'OWASP',
+    'MyActionItems' => 'Omat toimintokohteet',
+    'AddRisk' => 'Lisää riski',
+    'ReviewCompleted' => 'Arviointi valmis',
+    // Review Risk insights band (management/review_risk.php). The "Needs
+    // Review" tile reuses the existing 'HomeKpiNeedsReview' key rather than
+    // adding a second key for the same English string. 'RrNeedsMitigation'
+    // carries the band prefix the sibling insights bands already use ('Dt',
+    // 'Fw', 'Exc') to distinguish it from the grid's much terser chip label
+    // ('Mitigation').
+    'RrNeedsMitigation' => 'Tarvitsee lieventämistä',
+    'PastDue' => 'Erääntynyt',
+    'OpenedThisMonth' => 'Avattu tässä kuussa',
+    'ClosedThisMonth' => 'Suljettu tässä kuussa',
+    'AllRiskLevels' => 'Kaikki riskitasot',
+    // Import-Export Extra's Users sheet column for the Review Risk grid's
+    // persisted column-visibility/order preferences (user.custom_review_risk_display_settings).
+    'ReviewRiskDisplay' => 'Tarkista riskinäyttö',
+    // Plan Projects grid API (SR-2229): reorder/save-order status messages
+    // and the derived highest-risk column label shared by the grid's
+    // Columns picker and the drawer. The sibling 'Risks' column label
+    // reuses the existing 'Risks' key (line ~1911) rather than duplicating it.
+    'PlanProjectsReorderMismatch' => 'Projektiluettelo muuttui järjestyksen uudelleenjärjestelyn aikana. Lataa sivu uudelleen ja yritä uudelleen.',
+    'PlanProjectsOrderSaved' => 'Projektijärjestys tallennettu.',
+    'HighestRisk' => 'Korkein riski',
+    // Plan Projects grid (SR-2229). Sentence case; column headers are upper-cased by CSS. {n} tokens are replaced client-side.
+    'OnHold' => 'Odottaa',
+    'SearchProjectsPlaceholder' => 'Hae projekteja',
+    'AllConsultants' => 'Kaikki konsultit',
+    'AllBusinessOwners' => 'Kaikki liiketoiminnan omistajat',
+    'AllDataClassifications' => 'Kaikki tietoluokitukset',
+    'AnyDueStatus' => 'Mikä tahansa eräpäivän tila',
+    'NoDueDate' => 'Ei eräpäivää',
+    'AddProject' => 'Lisää projekti',
+    'AssignToProject' => 'Määritä projektille',
+    'RemoveFromProject' => 'Poista projektista',
+    'AddRisksToThisProject' => 'Lisää riskejä tähän projektiin',
+    'NoProjectsYet' => 'Ei vielä projekteja',
+    'NoProjectsYetHint' => 'Projektit ryhmittelevät toisiinsa liittyvät riskit, jotta voitte suunnitella ja priorisoida niiden käsittelyä yhdessä.',
+    'NoProjectsMatchFilters' => 'Yksikään projekti ei vastaa suodattimiasi',
+    'NoRisksInThisProject' => 'Tässä projektissa ei ole vielä riskejä',
+    'NoRisksWaitingForProject' => 'Ei riskejä odottamassa projektia',
+    'NoRisksWaitingForProjectHint' => '"Projektissa huomioon otettavaksi" -arvoisiksi tarkastetut riskit näkyvät tässä, kunnes ne on määritetty.',
+    'NMoreRisks' => '{n} riskiä lisää',
+    'ChangeProjectStatus' => 'Muuta projektin tilaa',
+    'ChangeStatusClosesRisks' => 'Projektin merkitseminen valmiiksi sulkee sen {n} avoimet riskit syyllä "Täysin lievennetty".',
+    'ChangeStatusReopensRisks' => 'Tämän projektin siirtäminen pois valmiista tilasta avaa uudelleen riskit, jotka suljettiin projektin valmistuttua.',
+    'ChangeStatusNoCloseRightsHint' => 'Sinulla ei ole oikeutta sulkea tai avata riskejä uudelleen, joten vain projektin tila muuttuu.',
+    'DeleteProjectReturnsRisks' => 'Sen {n} riskit palaavat osoittamattomaan jonoon.',
+    'ReorderNeedsPrioritySort' => 'Järjestyksen uudelleenjärjestely on käytettävissä, kun lista on lajiteltu prioriteetin mukaan yhden tilan sisällä.',
+    'CouldNotLoadProjects' => 'Projektien lataaminen epäonnistui. Tietosi ovat turvassa.',
+    'MitigationNotPlanned' => 'Ei suunniteltu',
+    'MitigationStatePlanned' => 'Suunniteltu',
+    'NoRisksMatchYourSearch' => 'Hakuasi vastaavia riskejä ei löytynyt',
+    'AllUnassignedRisks' => 'Kaikki kohdentamattomat riskit',
+    'NoRisksSelectedYet' => 'Ei vielä valittuja riskejä',
+    'SomeQuestionsNotDeleted' => 'Joitakin valittuja kysymyksiä ei voitu poistaa.',
+    'QuestionnaireQuestionDeleteRequiresJavaScript' => 'Kysymyksen poistaminen edellyttää, että JavaScript on käytössä selaimessasi.',
+    // Initiate Audits' bulk bar (SR-2234): the header checkbox already
+    // selects every row matching the current search/filters across every
+    // page in one click (client-side DataTables, the full eligible-test set
+    // is already loaded) -- this qualifier makes that explicit when the
+    // selection exceeds what a single page can hold, so "N selected" isn't
+    // read as a miscount against however many checkboxes are visibly ticked
+    // on the current page.
+    'NSelectedAllPages' => '{n} valittu (vastaa suodattimiasi kaikilla sivuilla)',
+    // "Select all N" cross-page selection: shared too-many-matches message for
+    // Review Risk, Define Tests, Manage Audits, Document Program, and Define
+    // Exceptions (formerly 5 near-duplicate per-page keys). Callers supply
+    // both {$max} and {$noun} (e.g. the plain 'Risks'/'Tests'/'Audits'/
+    // 'Documents'/'Exceptions' key text) -- PHP call sites via _lang(), JS
+    // call sites via a manual .replace('{$max}', ...).replace('{$noun}', ...).
+    'SelectAllTooManyMatches' => 'Nykyiset suodattimet vastaavat useampaa kuin {$max} {$noun}. Rajaa suodatinta ja yritä uudelleen.',
+    // POST /documents/batch-delete (batch_delete_document_api(), includes/api.php):
+    // same truncation-signal shape as 'DocumentsApprovedTruncated' (see
+    // above) and the sibling 'ExceptionsDeletedTruncated' key just below,
+    // for the Document Program bulk-delete "Select all N" action.
+    'DocumentsDeletedTruncated' => 'Vain ensimmäiset {$limit} valitut asiakirjat poistettiin. Toista toiminto poistaaksesi loput.',
+    // POST /exceptions/batch-delete-ids (batch_delete_exceptions_by_ids_api()) --
+    // deletes an arbitrary caller-supplied set of exception ids in one request,
+    // replacing the Define Exceptions bulk bar's looped POST /exceptions/delete
+    // calls. Mirrors ExceptionsApprovedTruncated's truncation-signal wording.
+    'ExceptionsDeletedTruncated' => 'Vain ensimmäiset {$limit} valitut poikkeukset poistettiin. Toista toiminto poistaaksesi loput.',
+    // POST /risks/batch-close (closeRiskBatch(), includes/api.php): whole-batch
+    // 403 when the caller holds no close_risks permission at all, mirroring
+    // closeriskForm()'s own (hardcoded, pre-existing) single-risk denial text.
+    'NoCloseRiskPermission' => 'Sinulla ei ole lupaa sulkea riskejä.',
+    'QuestionnaireRequiredQuestionUnanswered' => 'Vastaa kaikkiin pakollisiin kysymyksiin ennen arvioinnin suorittamista.',
     '' => '',
 );
 ?>

@@ -541,7 +541,7 @@ $lang = array(
     'UnavailableMysqldumpService' => 'There is no avaiable `mysqldump` service on server. Please set absolute mysqldump service path.',
     'AllOpenRisksByTeamByLevel' => 'All Open Risks by Team by Risk Level',
     'Unknown' => 'Unknown',
-    'AllOwners' =>'All Owners',
+    'AllOwners' =>'All owners',
     'AllOwnersManagers' => 'All Owner\'s Managers',
     'AddNewReviewNamed' => 'Add new review named',
     'DeleteCurrentReviewNamed' => 'Delete current review named',
@@ -4844,6 +4844,129 @@ $lang = array(
     'CreateAndAddField' => 'Create & add',
     'FieldCreatedAndAddedToTab' => 'Created {field} and added it to {tab}.',
     'DeleteCustomFieldTitle' => 'Delete field \'{field}\'?',
+    // Review Risk page (SR-2068 and others -- see design spec)
+    'ReviewRisk' => 'Review Risk',
+    'NeedsColumn' => 'Needs',
+    'RiskScoreColumn' => 'Risk score',
+    'ReassignRiskOwner' => 'Reassign risk owner',
+    'ReassignMitigationOwner' => 'Reassign mitigation owner',
+    'NoActionItemsTitle' => 'No risks match your filters',
+    'NoActionItemsBody' => 'Nothing needs mitigation or review that you personally have permission to act on. Try unchecking "Show my action items" to see the team\'s full queue.',
+    'BulkChangeStatusTitle' => 'Change status for %s selected risks',
+    'BulkReassignRiskOwnerTitle' => 'Reassign risk owner for %s selected risks',
+    'BulkReassignMitigationOwnerTitle' => 'Reassign mitigation owner for %s selected risks',
+    'BulkAddCommentTitle' => 'Add a comment to %s selected risks',
+    'BulkCloseRiskTitle' => 'Close %s selected risks',
+    'BulkActionPartialSuccess' => '%s of %s risks updated.',
+    'PerformReview' => 'Perform Review',
+    'BulkActionSuccess' => '%s risks updated.',
+    'SomeRowsSkippedNoMitigation' => 'Some selected risks were skipped because they have no mitigation planned yet.',
+    'ChangeStatusHint' => 'Selected risks will be updated to the chosen status.',
+    'StatusChanged' => 'Status updated.',
+    'CloseRiskBulkConfirmBody' => 'Closed risks are removed from active queues. You can reopen a risk later by changing its status again.',
+    // Column-parity follow-up fix review-risk-followups/column-parity-report.md):
+    // the Review Risk page's new scoring_method column (getReviewRiskDatatableResponse(),
+    // includes/api.php) renders get_scoring_method_name()'s (includes/functions.php)
+    // canonical scoring-method name through a $lang lookup rather than the raw
+    // hardcoded string. 'Classic'/'Custom'/'ContributingRisk' already existed
+    // (reused, not duplicated) -- only the three missing acronym keys are added
+    // here. These scoring methodology names/acronyms are typically kept
+    // untranslated (matching how the app's other risk-scoring UI already
+    // displays them, e.g. get_name_by_value('scoring_methods', ...) in
+    // displayrisks.php, which reads these same literal strings straight from
+    // the scoring_methods DB table with no translation layer), but every
+    // user-facing string still needs to flow through a lookup per CLAUDE.md,
+    // even one where the English and translated value would typically match.
+    'CVSS' => 'CVSS',
+    'DREAD' => 'DREAD',
+    'OWASP' => 'OWASP',
+    'MyActionItems' => 'My Action Items',
+    'AddRisk' => 'Add Risk',
+    'ReviewCompleted' => 'Review Completed',
+    // Review Risk insights band (management/review_risk.php). The "Needs
+    // Review" tile reuses the existing 'HomeKpiNeedsReview' key rather than
+    // adding a second key for the same English string. 'RrNeedsMitigation'
+    // carries the band prefix the sibling insights bands already use ('Dt',
+    // 'Fw', 'Exc') to distinguish it from the grid's much terser chip label
+    // ('Mitigation').
+    'RrNeedsMitigation' => 'Needs Mitigation',
+    'PastDue' => 'Past Due',
+    'OpenedThisMonth' => 'Opened This Month',
+    'ClosedThisMonth' => 'Closed This Month',
+    'AllRiskLevels' => 'All risk levels',
+    // Import-Export Extra's Users sheet column for the Review Risk grid's
+    // persisted column-visibility/order preferences (user.custom_review_risk_display_settings).
+    'ReviewRiskDisplay' => 'Review Risk Display',
+    // Plan Projects grid API (SR-2229): reorder/save-order status messages
+    // and the derived highest-risk column label shared by the grid's
+    // Columns picker and the drawer. The sibling 'Risks' column label
+    // reuses the existing 'Risks' key (line ~1911) rather than duplicating it.
+    'PlanProjectsReorderMismatch' => 'The project list changed while you were reordering. Reload and try again.',
+    'PlanProjectsOrderSaved' => 'Project order saved.',
+    'HighestRisk' => 'Highest risk',
+    // Plan Projects grid (SR-2229). Sentence case; column headers are upper-cased by CSS. {n} tokens are replaced client-side.
+    'OnHold' => 'On hold',
+    'SearchProjectsPlaceholder' => 'Search projects',
+    'AllConsultants' => 'All consultants',
+    'AllBusinessOwners' => 'All business owners',
+    'AllDataClassifications' => 'All data classifications',
+    'AnyDueStatus' => 'Any due status',
+    'NoDueDate' => 'No due date',
+    'AddProject' => 'Add project',
+    'AssignToProject' => 'Assign to project',
+    'RemoveFromProject' => 'Remove from project',
+    'AddRisksToThisProject' => 'Add risks to this project',
+    'NoProjectsYet' => 'No projects yet',
+    'NoProjectsYetHint' => 'Projects group related risks so you can plan and prioritize their treatment together.',
+    'NoProjectsMatchFilters' => 'No projects match your filters',
+    'NoRisksInThisProject' => 'No risks in this project yet',
+    'NoRisksWaitingForProject' => 'No risks waiting for a project',
+    'NoRisksWaitingForProjectHint' => 'Risks reviewed as "Consider for project" appear here until they are assigned.',
+    'NMoreRisks' => '{n} more risks',
+    'ChangeProjectStatus' => 'Change project status',
+    'ChangeStatusClosesRisks' => 'Marking this project completed will close its {n} open risks with the reason "Fully mitigated".',
+    'ChangeStatusReopensRisks' => 'Moving this project out of completed will reopen the risks that were closed when it was completed.',
+    'ChangeStatusNoCloseRightsHint' => 'You do not have permission to close or reopen risks, so only the project status will change.',
+    'DeleteProjectReturnsRisks' => 'Its {n} risks will return to the unassigned queue.',
+    'ReorderNeedsPrioritySort' => 'Reorder is available when the list is sorted by priority within one status.',
+    'CouldNotLoadProjects' => 'Could not load projects. Your data is safe.',
+    'MitigationNotPlanned' => 'Not planned',
+    'MitigationStatePlanned' => 'Planned',
+    'NoRisksMatchYourSearch' => 'No risks match your search',
+    'AllUnassignedRisks' => 'All unassigned risks',
+    'NoRisksSelectedYet' => 'No risks selected yet',
+    'SomeQuestionsNotDeleted' => 'Some of the selected questions could not be deleted.',
+    'QuestionnaireQuestionDeleteRequiresJavaScript' => 'Deleting a question requires JavaScript to be enabled in your browser.',
+    // Initiate Audits' bulk bar (SR-2234): the header checkbox already
+    // selects every row matching the current search/filters across every
+    // page in one click (client-side DataTables, the full eligible-test set
+    // is already loaded) -- this qualifier makes that explicit when the
+    // selection exceeds what a single page can hold, so "N selected" isn't
+    // read as a miscount against however many checkboxes are visibly ticked
+    // on the current page.
+    'NSelectedAllPages' => '{n} selected (matching your filters, across all pages)',
+    // "Select all N" cross-page selection: shared too-many-matches message for
+    // Review Risk, Define Tests, Manage Audits, Document Program, and Define
+    // Exceptions (formerly 5 near-duplicate per-page keys). Callers supply
+    // both {$max} and {$noun} (e.g. the plain 'Risks'/'Tests'/'Audits'/
+    // 'Documents'/'Exceptions' key text) -- PHP call sites via _lang(), JS
+    // call sites via a manual .replace('{$max}', ...).replace('{$noun}', ...).
+    'SelectAllTooManyMatches' => 'The current filters match more than {$max} {$noun}. Narrow the filter and try again.',
+    // POST /documents/batch-delete (batch_delete_document_api(), includes/api.php):
+    // same truncation-signal shape as 'DocumentsApprovedTruncated' (see
+    // above) and the sibling 'ExceptionsDeletedTruncated' key just below,
+    // for the Document Program bulk-delete "Select all N" action.
+    'DocumentsDeletedTruncated' => 'Only the first {$limit} selected documents were deleted. Please repeat the action to delete the rest.',
+    // POST /exceptions/batch-delete-ids (batch_delete_exceptions_by_ids_api()) --
+    // deletes an arbitrary caller-supplied set of exception ids in one request,
+    // replacing the Define Exceptions bulk bar's looped POST /exceptions/delete
+    // calls. Mirrors ExceptionsApprovedTruncated's truncation-signal wording.
+    'ExceptionsDeletedTruncated' => 'Only the first {$limit} selected exceptions were deleted. Please repeat the action to delete the rest.',
+    // POST /risks/batch-close (closeRiskBatch(), includes/api.php): whole-batch
+    // 403 when the caller holds no close_risks permission at all, mirroring
+    // closeriskForm()'s own (hardcoded, pre-existing) single-risk denial text.
+    'NoCloseRiskPermission' => 'You do not have permission to close risks.',
+    'QuestionnaireRequiredQuestionUnanswered' => 'Please answer all required questions before completing the assessment.',
     '' => '',
 );
 ?>

@@ -4844,6 +4844,129 @@ $lang = array(
     'CreateAndAddField' => 'बनाएँ और जोड़ें',
     'FieldCreatedAndAddedToTab' => '{field} बनाया और इसे {tab} में जोड़ा।',
     'DeleteCustomFieldTitle' => 'फ़ील्ड \'{field}\' हटाएं?',
+    // Review Risk page (SR-2068 and others -- see design spec)
+    'ReviewRisk' => 'जोखिम की समीक्षा करें',
+    'NeedsColumn' => 'ज़रूरत',
+    'RiskScoreColumn' => 'जोखिम स्कोर',
+    'ReassignRiskOwner' => 'जोखिम के स्वामी को पुनः नियुक्त करें',
+    'ReassignMitigationOwner' => 'शमन स्वामी को पुनः नियुक्त करें',
+    'NoActionItemsTitle' => 'आपके फ़िल्टर से कोई जोखिम मेल नहीं खाता।',
+    'NoActionItemsBody' => 'जिन कार्यों पर आपको व्यक्तिगत रूप से कार्रवाई करने की अनुमति है, उनमें से किसी पर भी सुधार या समीक्षा की आवश्यकता नहीं है। टीम की पूरी कार्यसूची देखने के लिए "मेरे कार्य आइटम दिखाएँ" विकल्प को अनचेक करके देखें।',
+    'BulkChangeStatusTitle' => '%s चयनित जोखिमों के लिए स्थिति बदलें',
+    'BulkReassignRiskOwnerTitle' => '%s चयनित जोखिमों के लिए जोखिम स्वामी को पुनः नियुक्त करें',
+    'BulkReassignMitigationOwnerTitle' => '%s चयनित जोखिमों के लिए शमन स्वामी को पुनः नियुक्त करें',
+    'BulkAddCommentTitle' => '%s चयनित जोखिमों पर एक टिप्पणी जोड़ें',
+    'BulkCloseRiskTitle' => '%s चयनित जोखिमों को बंद करें',
+    'BulkActionPartialSuccess' => '%s में से %s जोखिम अपडेट किए गए।',
+    'PerformReview' => 'समीक्षा करें',
+    'BulkActionSuccess' => '%s जोखिम अपडेट किए गए.',
+    'SomeRowsSkippedNoMitigation' => 'कुछ चयनित जोखिमों को छोड़ दिया गया है क्योंकि उनके लिए अभी तक कोई निवारण योजना नहीं बनाई गई है।',
+    'ChangeStatusHint' => 'चयनित जोखिमों को चयनित स्थिति के अनुसार अपडेट किया जाएगा।',
+    'StatusChanged' => 'स्थिति अपडेट कर दी गई है।',
+    'CloseRiskBulkConfirmBody' => 'बंद किए गए जोखिम सक्रिय कतारों से हटा दिए जाते हैं। आप बाद में उनकी स्थिति बदलकर जोखिम को फिर से खोल सकते हैं।',
+    // Column-parity follow-up fix review-risk-followups/column-parity-report.md):
+    // the Review Risk page's new scoring_method column (getReviewRiskDatatableResponse(),
+    // includes/api.php) renders get_scoring_method_name()'s (includes/functions.php)
+    // canonical scoring-method name through a $lang lookup rather than the raw
+    // hardcoded string. 'Classic'/'Custom'/'ContributingRisk' already existed
+    // (reused, not duplicated) -- only the three missing acronym keys are added
+    // here. These scoring methodology names/acronyms are typically kept
+    // untranslated (matching how the app's other risk-scoring UI already
+    // displays them, e.g. get_name_by_value('scoring_methods', ...) in
+    // displayrisks.php, which reads these same literal strings straight from
+    // the scoring_methods DB table with no translation layer), but every
+    // user-facing string still needs to flow through a lookup per CLAUDE.md,
+    // even one where the English and translated value would typically match.
+    'CVSS' => 'CVSS',
+    'DREAD' => 'DREAD',
+    'OWASP' => 'OWASP',
+    'MyActionItems' => 'मेरे कार्य मद',
+    'AddRisk' => 'जोखिम जोड़ें',
+    'ReviewCompleted' => 'समीक्षा पूरी हुई',
+    // Review Risk insights band (management/review_risk.php). The "Needs
+    // Review" tile reuses the existing 'HomeKpiNeedsReview' key rather than
+    // adding a second key for the same English string. 'RrNeedsMitigation'
+    // carries the band prefix the sibling insights bands already use ('Dt',
+    // 'Fw', 'Exc') to distinguish it from the grid's much terser chip label
+    // ('Mitigation').
+    'RrNeedsMitigation' => 'शमन की आवश्यकता है',
+    'PastDue' => 'अतिदेय',
+    'OpenedThisMonth' => 'इस महीने खुला',
+    'ClosedThisMonth' => 'इस महीने बंद',
+    'AllRiskLevels' => 'सभी जोखिम स्तर',
+    // Import-Export Extra's Users sheet column for the Review Risk grid's
+    // persisted column-visibility/order preferences (user.custom_review_risk_display_settings).
+    'ReviewRiskDisplay' => 'जोखिम प्रदर्शन की समीक्षा करें',
+    // Plan Projects grid API (SR-2229): reorder/save-order status messages
+    // and the derived highest-risk column label shared by the grid's
+    // Columns picker and the drawer. The sibling 'Risks' column label
+    // reuses the existing 'Risks' key (line ~1911) rather than duplicating it.
+    'PlanProjectsReorderMismatch' => 'पुनर्व्यवस्था करते समय प्रोजेक्ट सूची में बदलाव हो गया। कृपया रीलोड करें और दोबारा प्रयास करें।',
+    'PlanProjectsOrderSaved' => 'प्रोजेक्ट क्रम सहेजा गया।',
+    'HighestRisk' => 'उच्चतम जोखिम',
+    // Plan Projects grid (SR-2229). Sentence case; column headers are upper-cased by CSS. {n} tokens are replaced client-side.
+    'OnHold' => 'होल्ड पर',
+    'SearchProjectsPlaceholder' => 'प्रोजेक्ट खोजें',
+    'AllConsultants' => 'सभी सलाहकार',
+    'AllBusinessOwners' => 'सभी व्यवसाय मालिक',
+    'AllDataClassifications' => 'सभी डेटा वर्गीकरण',
+    'AnyDueStatus' => 'कोई भी नियत स्थिति',
+    'NoDueDate' => 'कोई नियत तारीख नहीं',
+    'AddProject' => 'प्रोजेक्ट जोड़ें',
+    'AssignToProject' => 'परियोजना को सौंपें',
+    'RemoveFromProject' => 'प्रोजेक्ट से हटाएँ',
+    'AddRisksToThisProject' => 'इस परियोजना में जोखिम जोड़ें',
+    'NoProjectsYet' => 'अभी तक कोई परियोजना नहीं है',
+    'NoProjectsYetHint' => 'प्रोजेक्ट संबंधित जोखिमों को समूहबद्ध करते हैं ताकि आप उनके उपचार की योजना बना सकें और उन्हें प्राथमिकता दे सकें।',
+    'NoProjectsMatchFilters' => 'आपके फ़िल्टर से मेल खाने वाली कोई परियोजना नहीं है',
+    'NoRisksInThisProject' => 'इस परियोजना में अभी तक कोई जोखिम नहीं है।',
+    'NoRisksWaitingForProject' => 'किसी परियोजना की प्रतीक्षा में कोई जोखिम नहीं है।',
+    'NoRisksWaitingForProjectHint' => 'जिन जोखिमों की समीक्षा "परियोजना के लिए विचार करें" के रूप में की गई है, वे तब तक यहां दिखाई देते हैं जब तक कि उन्हें सौंपा नहीं जाता।',
+    'NMoreRisks' => '{n} अधिक जोखिम',
+    'ChangeProjectStatus' => 'प्रोजेक्ट की स्थिति बदलें',
+    'ChangeStatusClosesRisks' => 'इस प्रोजेक्ट को पूर्ण के रूप में चिह्नित करने से "पूर्ण रूप से न्यूनीकृत" कारण के साथ इसके {n} खुले जोखिम बंद हो जाएंगे।',
+    'ChangeStatusReopensRisks' => 'इस परियोजना को पूर्ण से बाहर करने से वे जोखिम फिर से खोल दिए जाएंगे जो इसके पूर्ण होने पर बंद हो गए थे।',
+    'ChangeStatusNoCloseRightsHint' => 'आपको जोखिमों को बंद करने या पुनः खोलने की अनुमति नहीं है, इसलिए केवल परियोजना की स्थिति में ही परिवर्तन होगा।',
+    'DeleteProjectReturnsRisks' => 'इसके {n} जोखिम अनअसाइन किए गए कतार में वापस आ जाएंगे।',
+    'ReorderNeedsPrioritySort' => 'सूची को एक ही स्थिति के भीतर प्राथमिकता के आधार पर क्रमबद्ध करने पर पुनर्व्यवस्थापन का विकल्प उपलब्ध होता है।',
+    'CouldNotLoadProjects' => 'प्रोजेक्ट लोड नहीं हो सके। आपका डेटा सुरक्षित है।',
+    'MitigationNotPlanned' => 'अनियोजित',
+    'MitigationStatePlanned' => 'नियोजित',
+    'NoRisksMatchYourSearch' => 'आपकी खोज से मेल खाने वाले कोई जोखिम नहीं हैं।',
+    'AllUnassignedRisks' => 'सभी असाइन न किए गए जोखिम',
+    'NoRisksSelectedYet' => 'अभी तक कोई जोखिम नहीं चुना गया है',
+    'SomeQuestionsNotDeleted' => 'चयनित प्रश्नों में से कुछ को हटाया नहीं जा सका।',
+    'QuestionnaireQuestionDeleteRequiresJavaScript' => 'किसी प्रश्न को हटाने के लिए आपके ब्राउज़र में जावास्क्रिप्ट सक्षम होना आवश्यक है।',
+    // Initiate Audits' bulk bar (SR-2234): the header checkbox already
+    // selects every row matching the current search/filters across every
+    // page in one click (client-side DataTables, the full eligible-test set
+    // is already loaded) -- this qualifier makes that explicit when the
+    // selection exceeds what a single page can hold, so "N selected" isn't
+    // read as a miscount against however many checkboxes are visibly ticked
+    // on the current page.
+    'NSelectedAllPages' => '{n} चयनित (आपके फ़िल्टर से मेल खाते हुए, सभी पृष्ठों पर)',
+    // "Select all N" cross-page selection: shared too-many-matches message for
+    // Review Risk, Define Tests, Manage Audits, Document Program, and Define
+    // Exceptions (formerly 5 near-duplicate per-page keys). Callers supply
+    // both {$max} and {$noun} (e.g. the plain 'Risks'/'Tests'/'Audits'/
+    // 'Documents'/'Exceptions' key text) -- PHP call sites via _lang(), JS
+    // call sites via a manual .replace('{$max}', ...).replace('{$noun}', ...).
+    'SelectAllTooManyMatches' => 'वर्तमान फ़िल्टर {$max} {$noun}से अधिक से मेल खाते हैं। फ़िल्टर को सीमित करें और पुनः प्रयास करें।',
+    // POST /documents/batch-delete (batch_delete_document_api(), includes/api.php):
+    // same truncation-signal shape as 'DocumentsApprovedTruncated' (see
+    // above) and the sibling 'ExceptionsDeletedTruncated' key just below,
+    // for the Document Program bulk-delete "Select all N" action.
+    'DocumentsDeletedTruncated' => 'केवल पहले {$limit} चयनित दस्तावेज़ ही हटाए गए हैं। शेष दस्तावेज़ों को हटाने के लिए कृपया यह प्रक्रिया दोहराएँ।',
+    // POST /exceptions/batch-delete-ids (batch_delete_exceptions_by_ids_api()) --
+    // deletes an arbitrary caller-supplied set of exception ids in one request,
+    // replacing the Define Exceptions bulk bar's looped POST /exceptions/delete
+    // calls. Mirrors ExceptionsApprovedTruncated's truncation-signal wording.
+    'ExceptionsDeletedTruncated' => 'केवल पहले {$limit} चयनित अपवादों को हटाया गया है। शेष को हटाने के लिए कृपया इस प्रक्रिया को दोहराएँ।',
+    // POST /risks/batch-close (closeRiskBatch(), includes/api.php): whole-batch
+    // 403 when the caller holds no close_risks permission at all, mirroring
+    // closeriskForm()'s own (hardcoded, pre-existing) single-risk denial text.
+    'NoCloseRiskPermission' => 'आपको जोखिमों को बंद करने की अनुमति नहीं है।',
+    'QuestionnaireRequiredQuestionUnanswered' => 'कृपया मूल्यांकन पूरा करने से पहले सभी आवश्यक प्रश्नों के उत्तर दें।',
     '' => '',
 );
 ?>

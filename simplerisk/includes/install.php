@@ -1925,11 +1925,13 @@ function installer_add_admin_user($user, $email, $name, $password)
         'management_review'
     ));
 
-    $custom_plan_mitigation_display_settings = '{"risk_colums":[["id","1"],["risk_status","1"],["subject","1"],["calculated_risk","1"],["submission_date","1"],["closure_date","0"],["reference_id","0"],["regulation","0"],["control_number","0"],["location","0"],["source","0"],["category","0"],["team","0"],["additional_stakeholders","0"],["technology","0"],["owner","0"],["manager","0"],["submitted_by","0"],["risk_tags","0"],["scoring_method","0"],["residual_risk","0"],["project","0"],["days_open","0"],["affected_assets","0"],["risk_assessment","0"],["additional_notes","0"],["risk_mapping","0"],["threat_mapping","0"]],"mitigation_colums":[["mitigation_planned","1"],["planning_strategy","0"],["planning_date","0"],["mitigation_effort","0"],["mitigation_cost","0"],["mitigation_owner","0"],["mitigation_team","0"],["mitigation_accepted","0"],["mitigation_date","0"],["mitigation_controls","0"],["current_solution","0"],["security_recommendations","0"],["security_requirements","0"]],"review_colums":[["management_review","1"],["review_date","0"],["next_review_date","0"],["next_step","0"],["comments","0"]]}';
-
-    $custom_perform_reviews_display_settings = '{"risk_colums":[["id","1"],["risk_status","1"],["subject","1"],["calculated_risk","1"],["submission_date","1"],["closure_date","0"],["reference_id","0"],["regulation","0"],["control_number","0"],["location","0"],["source","0"],["category","0"],["team","0"],["additional_stakeholders","0"],["technology","0"],["owner","0"],["manager","0"],["submitted_by","0"],["risk_tags","0"],["scoring_method","0"],["residual_risk","0"],["project","0"],["days_open","0"],["affected_assets","0"],["risk_assessment","0"],["additional_notes","0"],["risk_mapping","0"],["threat_mapping","0"]],"mitigation_colums":[["mitigation_planned","1"],["planning_strategy","0"],["planning_date","0"],["mitigation_effort","0"],["mitigation_cost","0"],["mitigation_owner","0"],["mitigation_team","0"],["mitigation_accepted","0"],["mitigation_date","0"],["mitigation_controls","0"],["current_solution","0"],["security_recommendations","0"],["security_requirements","0"]],"review_colums":[["management_review","1"],["review_date","0"],["next_review_date","0"],["next_step","0"],["comments","0"]]}';
-
-    $custom_reviewregularly_display_settings = '{"risk_colums":[["id","1"],["risk_status","1"],["subject","1"],["calculated_risk","1"],["days_open","1"],["closure_date","0"],["reference_id","0"],["regulation","0"],["control_number","0"],["location","0"],["source","0"],["category","0"],["team","0"],["additional_stakeholders","0"],["technology","0"],["owner","0"],["manager","0"],["submitted_by","0"],["risk_tags","0"],["scoring_method","0"],["residual_risk","0"],["submission_date","0"],["project","0"],["affected_assets","0"],["risk_assessment","0"],["additional_notes","0"],["risk_mapping","0"],["threat_mapping","0"]],"mitigation_colums":[["mitigation_planned","0"],["planning_strategy","0"],["planning_date","0"],["mitigation_effort","0"],["mitigation_cost","0"],["mitigation_owner","0"],["mitigation_team","0"],["mitigation_accepted","0"],["mitigation_date","0"],["mitigation_controls","0"],["current_solution","0"],["security_recommendations","0"],["security_requirements","0"]],"review_colums":[["management_review","0"],["review_date","0"],["next_step","0"],["next_review_date","1"],["comments","0"]]}';
+    // SR: custom_plan_mitigation_display_settings/custom_perform_reviews_display_settings/
+    // custom_reviewregularly_display_settings were dropped from the `user` table here
+    // (Task 22, see upgrade_from_20260909001()'s DROP COLUMN block) along with the three
+    // legacy pages they served -- no longer seeded on a fresh install. The replacement
+    // column, custom_review_risk_display_settings, is likewise left out of this explicit
+    // INSERT and relies on its own DEFAULT (see upgrade.php), matching how it was never
+    // added here when it was first introduced (Task 3).
 
     $type = "simplerisk";
     $role_id = 1;
@@ -1989,10 +1991,7 @@ function installer_add_admin_user($user, $email, $name, $password)
                 `multi_factor`,
                 `change_password`,
                 `manager`,
-                `custom_display_settings`,
-                `custom_plan_mitigation_display_settings`,
-                `custom_perform_reviews_display_settings`,
-                `custom_reviewregularly_display_settings`
+                `custom_display_settings`
             )
         VALUES (
             :type,
@@ -2006,10 +2005,7 @@ function installer_add_admin_user($user, $email, $name, $password)
             :multi_factor,
             :change_password,
             :manager,
-            :custom_display_settings,
-            :custom_plan_mitigation_display_settings,
-            :custom_perform_reviews_display_settings,
-            :custom_reviewregularly_display_settings
+            :custom_display_settings
         );
     ");
     $stmt->bindParam(":type", $type, PDO::PARAM_STR);
@@ -2024,9 +2020,6 @@ function installer_add_admin_user($user, $email, $name, $password)
     $stmt->bindParam(":change_password", $change_password, PDO::PARAM_INT);
     $stmt->bindParam(":manager", $manager, PDO::PARAM_INT);
     $stmt->bindParam(":custom_display_settings", $custom_display_settings, PDO::PARAM_STR);
-    $stmt->bindParam(":custom_plan_mitigation_display_settings", $custom_plan_mitigation_display_settings, PDO::PARAM_STR);
-    $stmt->bindParam(":custom_perform_reviews_display_settings", $custom_perform_reviews_display_settings, PDO::PARAM_STR);
-    $stmt->bindParam(":custom_reviewregularly_display_settings", $custom_reviewregularly_display_settings, PDO::PARAM_STR);
     $stmt->execute();
 
     $user_id = $db->lastInsertId();

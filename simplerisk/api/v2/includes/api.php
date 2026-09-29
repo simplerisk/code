@@ -557,12 +557,16 @@ function get_ui_widget_common($widget_name, $domain = null) {
             break;
         case 'kpi_needs_review':
             // Sparkline: 30-day unreviewed-open-risk trend, team-scoped; fewer is good.
-            render_kpi_tile((string)get_unreviewed_open_risk_count(), 'HomeKpiNeedsReview', '../management/management_review.php', home_risk_kpi_delta('unreviewed'), 'Risk', kpi_sparkline_for('needs_review', false));
+            // Links to the merged Review Risk action queue (Task 22 retired
+            // the separate management_review.php page).
+            render_kpi_tile((string)get_unreviewed_open_risk_count(), 'HomeKpiNeedsReview', '../management/review_risk.php', home_risk_kpi_delta('unreviewed'), 'Risk', kpi_sparkline_for('needs_review', false));
             break;
         case 'kpi_unmitigated':
             // Series reconstructed live (team-scoped); rising unmitigated is bad (red).
+            // Links to the merged Review Risk action queue (Task 22 retired
+            // the separate plan_mitigations.php page).
             $unmit_series = kpi_series_unmitigated();
-            render_kpi_tile((string)get_unmitigated_open_risk_count(), 'HomeKpiUnmitigated', '../management/plan_mitigations.php', home_series_delta($unmit_series, false), 'Risk', render_kpi_sparkline_svg($unmit_series, false));
+            render_kpi_tile((string)get_unmitigated_open_risk_count(), 'HomeKpiUnmitigated', '../management/review_risk.php', home_series_delta($unmit_series, false), 'Risk', render_kpi_sparkline_svg($unmit_series, false));
             break;
         case 'kpi_closed_risks':
             // Series reconstructed live (team-scoped); rising closures is good (green).
@@ -1037,6 +1041,258 @@ function get_ui_widget_define_frameworks_insights($widget_name) {
             }
             break;
     }
+    $widget_html = ob_get_contents();
+    ob_end_clean();
+
+    return $widget_html;
+}
+
+/**
+ * Insights band above the Review Risk action queue (management/review_risk.php).
+ *
+ * Unlike the four sibling insights bands -- which show plain counts -- every
+ * tile here carries a REAL 30-day trend sparkline, reconstructed retroactively
+ * from risk lifecycle dates (submission / closure / mitigation submission /
+ * management-review submission). There is no snapshot warm-up: the trend is
+ * correct on day one. Trend visibility earns its place on an action queue,
+ * where the question is not just "how many?" but "are we gaining or losing?".
+ *
+ * ACCESS SCOPING. Every count and every sparkline point below is team-scoped
+ * through home_risk_separation_sql(), which is exactly the predicate the grid
+ * beneath applies -- see the reconciliation note above
+ * review_risk_insight_counts() in includes/reporting.php. A user can never see
+ * a tile number covering risks the grid would hide from them.
+ *
+ * COUNT/GRID PARITY. The tile values come from review_risk_insight_counts(),
+ * which speaks the grid's own definitions (classify_review_urgency()'s buckets,
+ * the grid's actionable needs-gate) rather than the Home dashboard's simpler
+ * SQL-level ones. Verified live against the grid's chip tally for an admin and
+ * for five team-restricted users: all tiles matched, and each sparkline's
+ * final point equalled its tile value.
+ *
+ * ONE BUCKET PER REVIEW TILE. classify_review_urgency() partitions every
+ * actionable risk into exactly one of {unreviewed, past_due, due_soon}, and the
+ * three review tiles take one each -- Needs Review ('unreviewed'), Past Due
+ * ('past_due'), Coming Soon ('due_soon'). They never double-count the same
+ * risk. The broad "any of the three" test remains only as the queue-membership
+ * gate inside review_risk_insight_counts() /
+ * kpi_compute_review_risk_series(); it is not what any tile displays.
+ *
+ * DRILL-THROUGH. Tiles link straight to the grid's own URL-addressable filter
+ * params (review-risk.js's parseUrlFilterParams()) -- never a ?insight=<key>
+ * indirection (see get_ui_widget_define_tests_insights()'s comment for why that
+ * was abandoned). Every link carries my_action_items=0 so the landed row set is
+ * exactly the set the tile counted, for restricted users as well as admins --
+ * EXCEPT the My Action Items tile itself (kpi_rr_my_action_items below), which
+ * is the one case where my_action_items=1 is the correct link.
+ *
+ * ONE EXCEPTION TO THE PERMISSION-SCOPE RULE. Every tile but one
+ * deliberately does NOT apply the grid's "Show my action items" permission
+ * filter -- see the my_action_items=0 note above. The exception,
+ * kpi_rr_my_action_items ("My Action Items") -- available via Edit Layout but
+ * off by default (see $ui_layout_config, includes/functions.php) -- is the
+ * mirror image: it counts
+ * the exact rows the grid's own "My Action Items" toggle shows for the
+ * CURRENT user, via user_can_act_on_risk_need() (includes/functions.php)
+ * reused verbatim -- not reimplemented -- with the same session-derived
+ * inputs (review_<level> flags, plan_mitigations) the grid's own handler
+ * builds. Its sparkline carries one further, explicitly documented
+ * approximation beyond the other tiles' -- see
+ * kpi_compute_review_risk_series()'s RECONSTRUCTION FIDELITY note (2) in
+ * includes/reporting.php.
+ */
+function get_ui_widget_review_risk_insights($widget_name) {
+
+    require_once(realpath(__DIR__ . '/../../../includes/reporting.php'));
+
+    global $lang;
+
+    $counts = review_risk_insight_counts();
+
+    // 'my_action_items=0' on every link: the tiles deliberately do NOT apply
+    // the grid's "Show my action items" permission-relevance scope (a live
+    // toolbar toggle a server-rendered band can't know the state of), so the
+    // drill-through turns that toggle off to land on the matching row set.
+    $all_items = 'review_risk.php?my_action_items=0';
+
+    ob_start();
+
+    switch ($widget_name) {
+        case 'kpi_rr_needs_mitigation':
+            // kpi_series_unmitigated() IS this tile's series -- open on day D
+            // with no mitigation submitted by D. Computed once and fed to both
+            // the delta and the spark, the same way the Home dashboard's own
+            // Unmitigated tile does it (one query, not two).
+            $series = kpi_series_unmitigated(30);
+            render_kpi_tile(
+                (string)$counts['needs_mitigation'], 'RrNeedsMitigation',
+                $all_items . '&action_type=mitigation',
+                home_series_delta($series, false), 'Risk',
+                render_kpi_sparkline_svg($series, false), '', '', 'danger'
+            );
+            break;
+
+        case 'kpi_rr_needs_review':
+            // Reuses the existing 'HomeKpiNeedsReview' label key ("Needs
+            // Review"). Counts classify_review_urgency()'s 'unreviewed' bucket
+            // alone -- risks that have never been reviewed at all, the grid's
+            // own "Unreviewed" Due Date chip. Risks already reviewed once are
+            // Past Due or Coming Soon instead, never both here and there.
+            // 'danger' value tone -- consistent with Needs Mitigation/Past
+            // Due/My Action Items: an unreviewed backlog is exactly as
+            // attention-worthy as an unmitigated one. (Coming Soon stays
+            // neutral -- it isn't overdue yet.)
+            //
+            // Drill-through: due_status=unreviewed -- the grid's own 4th
+            // toolbar chip-group (review-risk.js's setDueStatus(),
+            // includes/api.php's getReviewRiskDatatableResponse()), added
+            // specifically so this link lands on EXACTLY the rows this tile
+            // counted rather than the broader "needs review for any reason"
+            // queue action_type=review alone would show. No action_type
+            // needed alongside it -- a row can only be in the 'unreviewed'
+            // bucket by already needing review.
+            $series = kpi_series_review_risk('needs_review', 30);
+            render_kpi_tile(
+                (string)$counts['needs_review'], 'HomeKpiNeedsReview',
+                $all_items . '&due_status=unreviewed',
+                home_series_delta($series, false), 'Risk',
+                render_kpi_sparkline_svg($series, false), '', '', 'danger'
+            );
+            break;
+
+        case 'kpi_rr_past_due':
+            // Past due on EITHER action: the review was DONE before and its
+            // next scheduled date has since passed (bucket 'past_due'), or the
+            // mitigation's planning date has passed. A never-reviewed risk is
+            // NOT counted here -- it belongs to Needs Review above.
+            //
+            // Drill-through: due_status=past_due, the grid's own 4th toolbar
+            // chip-group (see kpi_rr_needs_review's comment above for the
+            // mechanism). Deliberately no action_type restriction -- unlike
+            // the other three review tiles, 'past_due' can come from the
+            // MITIGATION leg too, and gating on action_type=review would
+            // wrongly exclude a mitigation-only past-due row.
+            $series = kpi_series_review_risk('past_due', 30);
+            render_kpi_tile(
+                (string)$counts['past_due'], 'PastDue',
+                $all_items . '&due_status=past_due',
+                home_series_delta($series, false), 'Risk',
+                render_kpi_sparkline_svg($series, false), '', '', 'danger'
+            );
+            break;
+
+        case 'kpi_rr_coming_soon':
+            // The third and last review-urgency bucket: 'due_soon' -- reviewed
+            // before, not yet overdue, but due inside classify_review_urgency()'s
+            // own $due_soon_days window (30). Not a separately-invented "next 30
+            // days" metric; it is the same window the grid's own amber Due Date
+            // chip already uses.
+            //
+            // Red-when-rising ($up_is_good = false), same as Needs Mitigation /
+            // Needs Review / Past Due: a growing near-term review workload is a
+            // backlog forming, not good news. No $value_tone though -- 'danger'
+            // paints the NUMBER App Red, which render_kpi_tile() reserves for
+            // "needs attention now". These reviews are not overdue yet, and a
+            // third red number beside Needs Mitigation and Past Due would flatten
+            // the band's urgency hierarchy. Same treatment as Needs Review: the
+            // polarity is carried by the trend, not the value.
+            //
+            // Reuses the existing 'ComingSoon' label key rather than adding a
+            // near-duplicate.
+            //
+            // Drill-through: due_status=due_soon, the grid's own 4th toolbar
+            // chip-group (see kpi_rr_needs_review's comment above for the
+            // mechanism) -- lands on exactly this tile's row set, not the
+            // broader review queue action_type=review alone would show.
+            $series = kpi_series_review_risk('coming_soon', 30);
+            render_kpi_tile(
+                (string)$counts['coming_soon'], 'ComingSoon',
+                $all_items . '&due_status=due_soon',
+                home_series_delta($series, false), 'Risk',
+                render_kpi_sparkline_svg($series, false)
+            );
+            break;
+
+        case 'kpi_rr_opened':
+            // NEUTRAL, deliberately: more submissions is neither good nor bad
+            // (design-system.md §13 -- "never assume up = good"). A rising
+            // intake can mean the programme is finding more risk, which is the
+            // system working. Both the delta and the spark are forced to the
+            // neutral tint: null polarity for the spark, and the delta's own
+            // goodness overwritten to 'flat' (home_series_delta() has no
+            // no-polarity mode of its own, and giving it one would change
+            // behaviour for every existing caller).
+            //
+            // The grid has no date-range facet, so the link can only widen the
+            // status scope to include risks that have since been closed --
+            // it does not restrict to this month. Known limitation.
+            $series = kpi_series_opened_month_to_date(30);
+            $delta = home_series_delta($series, true);
+            if (is_array($delta)) {
+                $delta['goodness'] = 'flat';
+            }
+            render_kpi_tile(
+                (string)$counts['opened_this_month'], 'OpenedThisMonth',
+                $all_items . '&status_scope=all',
+                $delta, 'Risk',
+                render_kpi_sparkline_svg($series, null)
+            );
+            break;
+
+        case 'kpi_rr_closed':
+            // Same date-range limitation as the Opened tile: the link scopes
+            // the grid to closed risks, not to this month's closures.
+            $series = kpi_series_closed_month_to_date(30);
+            render_kpi_tile(
+                (string)$counts['closed_this_month'], 'ClosedThisMonth',
+                $all_items . '&status_scope=closed',
+                home_series_delta($series, true), 'Risk',
+                render_kpi_sparkline_svg($series, true), '', '', 'success'
+            );
+            break;
+
+        case 'kpi_rr_my_action_items':
+            // The one tile where more of the metric is BAD: a growing
+            // personal backlog, same red-tint-when-rising tone as Needs
+            // Mitigation/Needs Review/Past Due ($up_is_good = false).
+            //
+            // Reuses the existing 'MyActionItems' key -- the page's own
+            // toolbar toggle label ("My Action Items") -- rather than adding a
+            // near-duplicate; the tile IS that toggle's own count.
+            //
+            // Session-derived inputs for user_can_act_on_risk_need(), built
+            // the SAME way review_risk_insight_counts() builds them internally
+            // for the count (includes/reporting.php) and
+            // getReviewRiskDatatableResponse()/getReviewRiskFilterOptions()
+            // (includes/api.php) build them for the grid's own 'mine' chip --
+            // duplicated inline rather than threaded through as a return value,
+            // matching those handlers' own documented precedent for this exact
+            // small, stable, session-read-only map.
+            $review_permissions_by_level = [
+                get_risk_level_display_name('Very High') => !empty($_SESSION['review_veryhigh']),
+                get_risk_level_display_name('High') => !empty($_SESSION['review_high']),
+                get_risk_level_display_name('Medium') => !empty($_SESSION['review_medium']),
+                get_risk_level_display_name('Low') => !empty($_SESSION['review_low']),
+                get_risk_level_display_name('Insignificant') => !empty($_SESSION['review_insignificant']),
+            ];
+            $has_plan_mitigations = !empty($_SESSION['plan_mitigations']);
+
+            // Drill-through: my_action_items=1 (the toggle ON) is the default
+            // action queue -- status_scope defaults to 'open' and action_type
+            // to 'all' on a plain load, matching this tile's own 'open' +
+            // actionable count exactly, so no other param is needed. This is
+            // the one tile where my_action_items=1 is correct, unlike the
+            // other five (see this function's docblock).
+            $series = kpi_series_review_risk('my_action_items', 30, $has_plan_mitigations, $review_permissions_by_level);
+            render_kpi_tile(
+                (string)$counts['my_action_items'], 'MyActionItems',
+                'review_risk.php?my_action_items=1',
+                home_series_delta($series, false), 'Risk',
+                render_kpi_sparkline_svg($series, false), '', '', 'danger'
+            );
+            break;
+    }
+
     $widget_html = ob_get_contents();
     ob_end_clean();
 

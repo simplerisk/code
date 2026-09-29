@@ -30,6 +30,13 @@ require_once(realpath(__DIR__ . '/mfa.php'));
 require_once(realpath(__DIR__ . '/Widgets/AssetAssetGroupDropdown.php'));
 require_once(realpath(__DIR__ . '/renderutils.php'));
 require_once(realpath(__DIR__ . '/data_integrity.php'));
+require_once(realpath(__DIR__ . '/countries_fallback.php'));
+// queue_countries_refresh_if_not_already_queued() below calls get_queue_items()
+// and queue_task(), both defined in queues.php. queues.php itself require_once's
+// functions.php, but PHP's require_once dedupes on realpath before executing a
+// file's body, so this circular require is safe -- it just skips the redundant
+// second load.
+require_once(realpath(__DIR__ . '/queues.php'));
 
 // Include the language file
 require_once(language_file());
@@ -631,6 +638,20 @@ $field_settings = [
             'technical_field' => true,
             'searchable' => true,
             'orderable' => true,
+            // Review Risk custom-field splice (get_risks()'s sort_order==22
+            // branch, functions.php) is the ONLY current consumer of this
+            // 'risk' catalog entry's 'select_parts' -- unlike 'asset' above,
+            // 'risk' has no $field_settings_views view_type wiring it into
+            // field_settings_get_join_parts()/get_data_for_datatable(), whose
+            // own base-table alias is `a` (`FROM {$base_table} a`). `b` here
+            // matches get_risks()'s OWN `risks b` alias instead, since that's
+            // the only query this select_part ever reaches
+            // (get_custom_value_join_parts('risk', ...), extras/customization/
+            // index.php, reads exactly this path as its JOIN target column).
+            // If 'risk' is ever wired into the generic a-aliased framework,
+            // this value needs to change to `a`.`id` for that consumer, or
+            // the two uses need to diverge.
+            'select_parts' => ["`b`.`id`"],
         ],
         'risk_status' => [
             'customization_field_name' => 'Status',
@@ -3580,66 +3601,14 @@ $field_settings_views = [
          'edit_ajax_uri' => '/api/v2/assets/update_asset_field',
          ],*/
     ],
-    
-    'perform_reviews' => [
-        'view_type' => 'risk',
-        'datatable_ajax_uri' => '/api/v2/risk_management/managment_review',
-        'datatable_data_type' => 'list',
-        'groups' => [
-            'risk_details',
-            'mitigation',
-            'review'
-        ],
-        'default_enabled_columns' => [
-            'id',
-            'risk_status',
-            'subject',
-            'calculated_risk',
-            'submission_date',
-            'mitigation_planned',
-            'management_review',
-        ],
-    ],
-    'plan_mitigation' => [
-        'view_type' => 'risk',
-        'datatable_ajax_uri' => '/api/v2/risk_management/plan_mitigation',
-        'datatable_data_type' => 'list',
-        'groups' => [
-            'risk_details',
-            'mitigation',
-            'review'
-        ],
-        'default_enabled_columns' => [
-            'id',
-            'risk_status',
-            'subject',
-            'calculated_risk',
-            'submission_date',
-            'mitigation_planned',
-            'management_review',
-        ],
-    ],
-    'review_regularly' => [
-        'view_type' => 'risk',
-        'datatable_ajax_uri' => '/api/v2/risk_management/review_risks',
-        'datatable_data_type' => 'list',
-        'groups' => [
-            'risk_details',
-            'mitigation',
-            'review'
-        ],
-        'default_enabled_columns' => [
-            'id',
-            'risk_status',
-            'subject',
-            'calculated_risk',
-            'days_open',
-            'management_review',
-            'review_date',
-            'next_step',
-            'next_review_date',
-        ],
-    ],
+
+    // SR: the 'perform_reviews'/'plan_mitigation'/'review_regularly' $field_settings_views
+    // entries were removed here (Task 22) -- they were unreferenced by any code
+    // (no field_settings_get_display_defaults()/display_settings_get_saved_selection()
+    // call site ever passed those view keys) and pointed at the plan_mitigation/
+    // managment_review/review_risks datatable routes deleted alongside the three
+    // legacy pages that used them.
+
     'active_audits' => [
         'view_type' => 'framework_control_test_audit',
         'join_parts' => [
@@ -4742,6 +4711,67 @@ $ui_layout_widget_config = [
         'defaults' => ['w' => 2, 'h' => 2, 'minW' => 2, 'minH' => 2],
         '' => '',
     ],
+    // Review Risk insights band (management/review_risk.php) -- six KPI tiles
+    // over the action queue. `required_permission` is 'riskmanagement', the
+    // same single permission the page itself gates on
+    // (render_header_and_sidebar()'s ['check_riskmanagement' => true]), so
+    // unlike the Document Program / Define Exceptions tiles above there is no
+    // OR-gate to leave blank here.
+    'kpi_rr_needs_mitigation' => [
+        'localization_key' => 'RrNeedsMitigation',
+        'type' => 'kpi',
+        'required_permission' => 'riskmanagement',
+        'defaults' => ['w' => 2, 'h' => 2, 'minW' => 2, 'minH' => 2],
+        '' => '',
+    ],
+    'kpi_rr_needs_review' => [
+        'localization_key' => 'HomeKpiNeedsReview',
+        'type' => 'kpi',
+        'required_permission' => 'riskmanagement',
+        'defaults' => ['w' => 2, 'h' => 2, 'minW' => 2, 'minH' => 2],
+        '' => '',
+    ],
+    'kpi_rr_past_due' => [
+        'localization_key' => 'PastDue',
+        'type' => 'kpi',
+        'required_permission' => 'riskmanagement',
+        'defaults' => ['w' => 2, 'h' => 2, 'minW' => 2, 'minH' => 2],
+        '' => '',
+    ],
+    // The third review-urgency bucket ('due_soon'), completing the partition
+    // Needs Review ('unreviewed') / Past Due ('past_due') / Coming Soon starts.
+    // Reuses the existing 'ComingSoon' key rather than adding a duplicate.
+    'kpi_rr_coming_soon' => [
+        'localization_key' => 'ComingSoon',
+        'type' => 'kpi',
+        'required_permission' => 'riskmanagement',
+        'defaults' => ['w' => 2, 'h' => 2, 'minW' => 2, 'minH' => 2],
+        '' => '',
+    ],
+    'kpi_rr_opened' => [
+        'localization_key' => 'OpenedThisMonth',
+        'type' => 'kpi',
+        'required_permission' => 'riskmanagement',
+        'defaults' => ['w' => 2, 'h' => 2, 'minW' => 2, 'minH' => 2],
+        '' => '',
+    ],
+    'kpi_rr_closed' => [
+        'localization_key' => 'ClosedThisMonth',
+        'type' => 'kpi',
+        'required_permission' => 'riskmanagement',
+        'defaults' => ['w' => 2, 'h' => 2, 'minW' => 2, 'minH' => 2],
+        '' => '',
+    ],
+    // "My Action Items" -- reuses the page's own toolbar-toggle label key
+    // ('MyActionItems') rather than adding a near-duplicate, since this tile
+    // IS that toggle's own count.
+    'kpi_rr_my_action_items' => [
+        'localization_key' => 'MyActionItems',
+        'type' => 'kpi',
+        'required_permission' => 'riskmanagement',
+        'defaults' => ['w' => 2, 'h' => 2, 'minW' => 2, 'minH' => 2],
+        '' => '',
+    ],
     'kpi_active_frameworks' => [
         'localization_key' => 'HomeKpiActiveFrameworks',
         'type' => 'kpi',
@@ -5375,6 +5405,55 @@ $ui_layout_config = [
             ['x' => 4,  'y' => 0, 'w' => 2, 'h' => 2, 'minW' => 2, 'minH' => 2, 'name' => 'kpi_exc_policy',   'type' => 'kpi', 'layout' => 'define_exceptions_insights'],
             ['x' => 6,  'y' => 0, 'w' => 2, 'h' => 2, 'minW' => 2, 'minH' => 2, 'name' => 'kpi_exc_control',  'type' => 'kpi', 'layout' => 'define_exceptions_insights'],
             ['x' => 8,  'y' => 0, 'w' => 2, 'h' => 2, 'minW' => 2, 'minH' => 2, 'name' => 'kpi_exc_pending',  'type' => 'kpi', 'layout' => 'define_exceptions_insights'],
+        ],
+    ],
+    'review_risk_insights' => [
+        'API_endpoint' => '/api/v2/ui/layout',
+        // The page's own gate, verbatim -- review_risk.php passes
+        // ['check_riskmanagement' => true] to render_header_and_sidebar(), a
+        // single permission with no OR-branch, so it is expressible here (and
+        // is re-checked per widget by api_get_ui_widget()).
+        'required_permission' => 'riskmanagement',
+        'available_widgets' => [
+            'kpi_rr_needs_mitigation', 'kpi_rr_needs_review', 'kpi_rr_past_due',
+            'kpi_rr_coming_soon', 'kpi_rr_opened', 'kpi_rr_closed',
+            // Available via Edit Layout but deliberately NOT in
+            // 'default_layout' below -- see the note there.
+            'kpi_rr_my_action_items',
+        ],
+        'available_custom_widgets' => [],
+        // Insights band above the Review Risk action queue
+        // (management/review_risk.php). The four action-queue tiles lead -- the
+        // same "what needs doing, most urgent first" ordering the Document
+        // Program and Define Exceptions bands use -- then the two volume tiles
+        // that give the queue its context (what came in, what went out).
+        //
+        // Needs Review / Past Due / Coming Soon are one classify_review_urgency()
+        // bucket each ('unreviewed' / 'past_due' / 'due_soon'), so they read
+        // left-to-right as a genuine urgency ramp with no risk counted twice.
+        //
+        // My Action Items is deliberately ABSENT from this default layout while
+        // remaining in 'available_widgets' above: it restates a personal subset
+        // of the leading tiles rather than introducing a new dimension, so it is
+        // opt-in via Edit Layout (Customization Extra) rather than shown to
+        // every user who has never customized the band.
+        //
+        // Unlike the four sibling bands, every tile here carries a REAL 30-day
+        // trend sparkline (get_ui_widget_review_risk_insights(),
+        // api/v2/includes/api.php), reconstructed from risk lifecycle dates the
+        // same way the Home dashboard's risk KPIs are -- an action queue is
+        // exactly where "is this getting better or worse?" is worth the pixels.
+        //
+        // Six w2 tiles fill exactly 12 columns (UILayout.php's own "column
+        // count IS the row capacity: 12 -> 6 across" comment) -- one clean row
+        // at the wide-screen default, matching the approved mockup.
+        'default_layout' => [
+            ['x' => 0, 'y' => 0, 'w' => 2, 'h' => 2, 'minW' => 2, 'minH' => 2, 'name' => 'kpi_rr_needs_mitigation', 'type' => 'kpi', 'layout' => 'review_risk_insights'],
+            ['x' => 2, 'y' => 0, 'w' => 2, 'h' => 2, 'minW' => 2, 'minH' => 2, 'name' => 'kpi_rr_needs_review',     'type' => 'kpi', 'layout' => 'review_risk_insights'],
+            ['x' => 4, 'y' => 0, 'w' => 2, 'h' => 2, 'minW' => 2, 'minH' => 2, 'name' => 'kpi_rr_past_due',         'type' => 'kpi', 'layout' => 'review_risk_insights'],
+            ['x' => 6, 'y' => 0, 'w' => 2, 'h' => 2, 'minW' => 2, 'minH' => 2, 'name' => 'kpi_rr_coming_soon',      'type' => 'kpi', 'layout' => 'review_risk_insights'],
+            ['x' => 8, 'y' => 0, 'w' => 2, 'h' => 2, 'minW' => 2, 'minH' => 2, 'name' => 'kpi_rr_opened',           'type' => 'kpi', 'layout' => 'review_risk_insights'],
+            ['x' => 10, 'y' => 0, 'w' => 2, 'h' => 2, 'minW' => 2, 'minH' => 2, 'name' => 'kpi_rr_closed',          'type' => 'kpi', 'layout' => 'review_risk_insights'],
         ],
     ],
     'governance_dashboard' => [
@@ -9238,11 +9317,12 @@ function add_user($type, $user, $email, $name, $salt, $hash, $teams, $role_id, $
         'management_review'
     ));
 
-    $custom_plan_mitigation_display_settings = '{"risk_colums":[["id","1"],["risk_status","1"],["subject","1"],["calculated_risk","1"],["submission_date","1"],["closure_date","0"],["reference_id","0"],["regulation","0"],["control_number","0"],["location","0"],["source","0"],["category","0"],["team","0"],["additional_stakeholders","0"],["technology","0"],["owner","0"],["manager","0"],["submitted_by","0"],["risk_tags","0"],["scoring_method","0"],["residual_risk","0"],["project","0"],["days_open","0"],["affected_assets","0"],["risk_assessment","0"],["additional_notes","0"],["risk_mapping","0"],["threat_mapping","0"]],"mitigation_colums":[["mitigation_planned","1"],["planning_strategy","0"],["planning_date","0"],["mitigation_effort","0"],["mitigation_cost","0"],["mitigation_owner","0"],["mitigation_team","0"],["mitigation_accepted","0"],["mitigation_date","0"],["mitigation_controls","0"],["current_solution","0"],["security_recommendations","0"],["security_requirements","0"]],"review_colums":[["management_review","1"],["review_date","0"],["next_review_date","0"],["next_step","0"],["comments","0"]]}';
-
-    $custom_perform_reviews_display_settings = '{"risk_colums":[["id","1"],["risk_status","1"],["subject","1"],["calculated_risk","1"],["submission_date","1"],["closure_date","0"],["reference_id","0"],["regulation","0"],["control_number","0"],["location","0"],["source","0"],["category","0"],["team","0"],["additional_stakeholders","0"],["technology","0"],["owner","0"],["manager","0"],["submitted_by","0"],["risk_tags","0"],["scoring_method","0"],["residual_risk","0"],["project","0"],["days_open","0"],["affected_assets","0"],["risk_assessment","0"],["additional_notes","0"],["risk_mapping","0"],["threat_mapping","0"]],"mitigation_colums":[["mitigation_planned","1"],["planning_strategy","0"],["planning_date","0"],["mitigation_effort","0"],["mitigation_cost","0"],["mitigation_owner","0"],["mitigation_team","0"],["mitigation_accepted","0"],["mitigation_date","0"],["mitigation_controls","0"],["current_solution","0"],["security_recommendations","0"],["security_requirements","0"]],"review_colums":[["management_review","1"],["review_date","0"],["next_review_date","0"],["next_step","0"],["comments","0"]]}';
-
-    $custom_reviewregularly_display_settings = '{"risk_colums":[["id","1"],["risk_status","1"],["subject","1"],["calculated_risk","1"],["days_open","1"],["closure_date","0"],["reference_id","0"],["regulation","0"],["control_number","0"],["location","0"],["source","0"],["category","0"],["team","0"],["additional_stakeholders","0"],["technology","0"],["owner","0"],["manager","0"],["submitted_by","0"],["risk_tags","0"],["scoring_method","0"],["residual_risk","0"],["submission_date","0"],["project","0"],["affected_assets","0"],["risk_assessment","0"],["additional_notes","0"],["risk_mapping","0"],["threat_mapping","0"]],"mitigation_colums":[["mitigation_planned","0"],["planning_strategy","0"],["planning_date","0"],["mitigation_effort","0"],["mitigation_cost","0"],["mitigation_owner","0"],["mitigation_team","0"],["mitigation_accepted","0"],["mitigation_date","0"],["mitigation_controls","0"],["current_solution","0"],["security_recommendations","0"],["security_requirements","0"]],"review_colums":[["management_review","0"],["review_date","0"],["next_step","0"],["next_review_date","1"],["comments","0"]]}';
+    // SR: custom_plan_mitigation_display_settings/custom_perform_reviews_display_settings/
+    // custom_reviewregularly_display_settings were dropped from the `user` table here
+    // (Task 22, see upgrade_from_20260909001()'s DROP COLUMN block) along with the three
+    // legacy pages they served -- no longer seeded when a new user is added. The
+    // replacement column, custom_review_risk_display_settings, relies on its own
+    // DEFAULT (see upgrade.php) rather than being seeded explicitly here.
 
     $custom_questionnaire_results_display_settings = '{"questionnaire_columns":[["questionnaire_name","1"],["date_sent","1"],["questionnaire_status","1"],["approval_status","1"],["last_comment","1"]],"contact_columns":[["contact_company","1"],["contact_name","1"]]}';
 
@@ -9274,10 +9354,7 @@ function add_user($type, $user, $email, $name, $salt, $hash, $teams, $role_id, $
                 `change_password`,
                 `manager`,
                 `custom_display_settings`,
-                `custom_plan_mitigation_display_settings`,
-                `custom_perform_reviews_display_settings`,
-                `custom_reviewregularly_display_settings`,
-                `lang`" . 
+                `lang`" .
                 ($custom_questionnaire_results_display_settings_exists ? ", `custom_questionnaire_results_display_settings`" : '') . "
             )
         VALUES (
@@ -9293,10 +9370,7 @@ function add_user($type, $user, $email, $name, $salt, $hash, $teams, $role_id, $
             :change_password,
             :manager,
             :custom_display_settings,
-            :custom_plan_mitigation_display_settings,
-            :custom_perform_reviews_display_settings,
-            :custom_reviewregularly_display_settings,
-            ''" . 
+            ''" .
             ($custom_questionnaire_results_display_settings_exists ? ", :custom_questionnaire_results_display_settings" : '') . "
         );
     ");
@@ -9312,9 +9386,6 @@ function add_user($type, $user, $email, $name, $salt, $hash, $teams, $role_id, $
     $stmt->bindParam(":change_password", $change_password, PDO::PARAM_INT);
     $stmt->bindParam(":manager", $manager, PDO::PARAM_INT);
     $stmt->bindParam(":custom_display_settings", $custom_display_settings, PDO::PARAM_STR);
-    $stmt->bindParam(":custom_plan_mitigation_display_settings", $custom_plan_mitigation_display_settings, PDO::PARAM_STR);
-    $stmt->bindParam(":custom_perform_reviews_display_settings", $custom_perform_reviews_display_settings, PDO::PARAM_STR);
-    $stmt->bindParam(":custom_reviewregularly_display_settings", $custom_reviewregularly_display_settings, PDO::PARAM_STR);
 
     if ($custom_questionnaire_results_display_settings_exists) {
         $stmt->bindParam(":custom_questionnaire_results_display_settings", $custom_questionnaire_results_display_settings, PDO::PARAM_STR);
@@ -11809,17 +11880,28 @@ function update_risk($risk_id, $is_api = false)
 
     $submission_date        = get_param("post", "submission_date", false);
     $risk = get_risk_by_id($risk_id);
-    if($submission_date != false){
+    if($submission_date !== false && $submission_date !== ""){
         $submission_date        =  get_standard_date_from_default_format($submission_date);
         if($risk[0]){
             $existing_submission_date = date('Y-m-d', strtotime($risk[0]['submission_date']));
             if($existing_submission_date == $submission_date) $submission_date = $risk[0]['submission_date'];
         }
-    } elseif($submission_date == ""){
+    } elseif($submission_date === ""){
         if($risk[0]){
             $existing_submission_date = date('Y-m-d', strtotime($risk[0]['submission_date']));
             $submission_date = $existing_submission_date;
         } else $submission_date = $current_datetime;
+    } else {
+        // Field was not sent at all (a partial PATCH, e.g. the bulk Reassign
+        // Risk Owner action, which intentionally sends only `owner`) --
+        // preserve the existing value at full precision. get_param()'s
+        // sentinel is the boolean `false`, which loose `==` treats the same
+        // as an explicitly-cleared "" field -- that conflation was the bug:
+        // it truncated submission_date to date-only on every partial PATCH
+        // that simply omitted the field. Do NOT fall into the date-only
+        // truncation branch above, which is for the different case of an
+        // explicitly-cleared field.
+        $submission_date = $risk[0] ? $risk[0]['submission_date'] : $current_datetime;
     }
     $risk_catalog_mapping = get_param("post", "risk_catalog_mapping", []);
 
@@ -12658,8 +12740,26 @@ function get_risks_by_project_id($project_id)
 /***********************
  * FUNCTION: GET RISKS *
  ***********************/
-function get_risks($sort_order=0, $order_field=false, $order_dir=false)
+// $review_status_scope is meaningful ONLY inside the sort_order==22 branch
+// (Review Risk's unified action queue) -- every other sort_order branch in
+// this function ignores it, so adding it here is backward compatible with
+// every existing caller (none passes a 4th arg today). It selects which
+// risk statuses sort_order==22 fetches: 'open' (default, today's exact
+// behavior -- non-Closed risks that need mitigation or review), 'closed'
+// (every Closed risk, regardless of the needs_mitigation/needs_review
+// formula -- "is it closed" is the point, not "does it need action"), or
+// 'all' (the union of both, NOT "ignore the needs gate for open risks" --
+// open risks in 'all' still require needs_mitigation/needs_review, exactly
+// as in 'open').
+function get_risks($sort_order=0, $order_field=false, $order_dir=false, $review_status_scope='open')
 {
+    // Only used inside the sort_order==22 branch below, to escape
+    // Customization Extra custom-field values resolved from the
+    // SQL-provided `custom_field_{id}_display` alias (dropdown/
+    // multidropdown/user_multidropdown). Declared at function scope since
+    // PHP requires `global` at the top level of a function, not inside a
+    // nested `if`.
+    global $escaper;
 
     // Open the database connection
     $db = db_open();
@@ -12687,6 +12787,13 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false)
                 }
             break;
             case "calculated_risk":
+            // 'risk_level' (Review Risk grid, includes/api.php's
+            // getReviewRiskDatatableResponse()) is a display-only pill derived
+            // via get_risk_level_name($risk['calculated_risk']) -- strictly
+            // monotonic in the underlying score, so ordering by the score gives
+            // the same row order as ordering by level, with no separate column
+            // to sort on.
+            case "risk_level":
                 $sort_query = " ORDER BY a.calculated_risk {$order_dir} ";
             break;
             case "submission_date":
@@ -12719,12 +12826,50 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false)
             case "project":
                 $sort_query = " ORDER BY project {$order_dir} ";
             break;
+            // 'next_review_date' follow-up: get_risks()'s sort_order==22
+            // branch resolves this via a correlated subquery aliased
+            // `next_review` (NOT `next_review_date`), joined as `c` -- an
+            // alias that only exists in that ONE sort_order's SELECT list,
+            // not every caller of this shared switch. Scoped to $sort_order
+            // (already in scope here, this switch runs before any
+            // sort_order-specific branch builds its query) rather than left
+            // as an unconditional no-op: 'next_review_date' isn't a real
+            // column name any OTHER sort_order branch is known to select
+            // under that name, so this is safe the same way the
+            // risk_mapping/threat_mapping/risk_level cases just above are --
+            // each resolves an alias that ALSO only exists in sort_order==22
+            // specifically, added unconditionally with the same reasoning.
             case "next_review_date":
+                $sort_query = ($sort_order == 22) ? " ORDER BY c.next_review {$order_dir} " : "";
+            break;
+            // 'management_review' remains unsupported -- it resolves via a
+            // `review` table LEFT JOIN aliased `rw`, present in sort_order==22
+            // but under a column key ('review', not 'management_review') that
+            // review-risk.js's own column key intentionally differs from
+            // (see api.php's 'management_review' => $risk['review'] mapping),
+            // so scoping this one the same way would need a second layer of
+            // name translation this switch doesn't have elsewhere. Left as an
+            // explicit no-op; review-risk.js keeps this column orderable:false
+            // to match.
             case "management_review":
                 $sort_query = "";
             break;
             case "mitigation_planned":
                 $sort_query = " ORDER BY b.mitigation_id != 0 {$order_dir}, b.id ASC";
+            break;
+            // Review Risk grid only (get_risks(22, ...)) -- risk_catalog_names/
+            // threat_catalog_names are GROUP_CONCAT'd display-name aliases that
+            // exist only in the sort_order==22 SELECT list (functions.php,
+            // ~line 14721-14724 and its team-separation twin); safe as ORDER BY
+            // targets there since MySQL allows ORDER BY to reference a SELECT-
+            // list alias. Distinct from the pre-existing risk_catalog_mapping/
+            // threat_catalog_mapping cases (handled by $static_allowed_fields
+            // below), which are the raw comma-separated catalog IDs, not names.
+            case "risk_mapping":
+                $sort_query = " ORDER BY risk_catalog_names {$order_dir} ";
+            break;
+            case "threat_mapping":
+                $sort_query = " ORDER BY threat_catalog_names {$order_dir} ";
             break;
             default:
                 $sort_query = '';
@@ -14585,6 +14730,576 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false)
         $array = $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
+    // 22 = Review Risk: unified action queue (needs_mitigation OR needs_review-candidate)
+    else if ($sort_order == 22)
+    {
+        // Set default sort field
+        if (empty($sort_query)) {
+            $sort_query = " ORDER BY a.calculated_risk DESC ";
+        }
+
+        // Column-parity follow-up (post-merge; .superpowers/sdd/review-risk-
+        // followups/column-parity-report.md): both branches below add
+        // `l.submission_date AS mgmt_review_date` to the SELECT list --
+        // `mgmt_reviews l` is already joined via `b.mgmt_review = l.id`, so
+        // this is the submission_date of the SPECIFIC review the risk
+        // currently points to, not a fresh lookup.
+        //
+        // Deliberately aliased `mgmt_review_date`, NOT `review_date`
+        // (post-review fix): `risks` already has its own raw `review_date`
+        // column (b.* expands it into this same result set) -- a
+        // denormalized timestamp set alongside `mgmt_review` whenever a
+        // review is submitted (see the UPDATE risks SET ...
+        // review_date=:review_date, mgmt_review=:... call sites in this
+        // file). An earlier version of this change reused the `review_date`
+        // alias, which merely shadowed the raw column in PHP's fetched
+        // array (harmless for get_risks() callers) but ALSO made every
+        // column name in this SELECT ambiguous for `ORDER BY` at the SQL
+        // level, since get_risks()'s sort-field allowlist resolves against
+        // both `risks` and `mgmt_reviews` columns and now had two candidates
+        // named `review_date` -- confirmed live: `ORDER BY \`review_date\``
+        // against this query fails with "ERROR 1052: Column 'review_date'
+        // in order clause is ambiguous". This column is `orderable: false`
+        // in review-risk.js's UI, but $orderColumnName is read from
+        // $_POST['columns'][...]['name'] and reaches get_risks() with no
+        // allowlist validation prior to this fix (see the matching
+        // preg_match() guard added to getReviewRiskDatatableResponse(),
+        // includes/api.php) -- so it was reachable by a crafted POST, not
+        // just a coincidental live-DB collision. The rename removes the
+        // ambiguity at its root rather than relying on ordering + validation
+        // alone to paper over it.
+        //
+        // The team-separation branch below was ALSO missing `rw.name AS
+        // review` (the management_review display name) and its
+        // `LEFT JOIN review rw ...` entirely -- a pre-existing bug (the
+        // non-team-separation branch above has both) fixed alongside this
+        // addition, since a customer running Team Separation would
+        // otherwise see a blank Management Review column regardless of
+        // mgmt_review_date.
+        //
+        // risk_catalog_names/threat_catalog_names (post-review fix): both
+        // branches below ALSO add these two GROUP_CONCAT'd name columns,
+        // deliberately alongside (not replacing) the pre-existing
+        // risk_catalog_mapping/threat_catalog_mapping columns (raw comma-
+        // separated IDs) -- every other get_risks() sort_order branch that
+        // selects risk_catalog_mapping/threat_catalog_mapping does so as IDs
+        // (the established, codebase-wide convention for those two names,
+        // used for edit-form pre-population elsewhere), so reusing that same
+        // alias for names here, even only in this one branch, would be a
+        // surprising, easy-to-miss exception to reads of get_risks()'s
+        // result shape. The Review Risk page's risk_mapping/threat_mapping
+        // toggleable columns need display NAMES, not IDs (getReviewRiskDatatableResponse(),
+        // includes/api.php, reads $risk['risk_catalog_names']/
+        // $risk['threat_catalog_names']) -- risk_catalog/threat_catalog are
+        // already LEFT JOINed in this query for the ID-based GROUP_CONCATs,
+        // so resolving names is a zero-extra-JOIN, zero-extra-query SQL-level
+        // aggregation (same GROUP_CONCAT(DISTINCT ...) technique
+        // reporting.php's Risk Register export already uses for the
+        // identical risk_catalog/threat_catalog name-resolution need,
+        // reporting.php ~line 4818) -- NOT a per-row
+        // get_names_by_multi_values() call (includes/functions.php), which
+        // would be a fresh db_open()/query/db_close() per risk and a real
+        // N+1 against this handler's unpaginated ~150-row result set.
+
+        // Review Risk status-scope (All/Open/Closed toolbar control): pick
+        // which statuses this query fetches. 'open' is the historical,
+        // default behavior -- unchanged. 'closed' and 'all' both need every
+        // Closed risk regardless of the needs_mitigation/needs_review
+        // formula below, since browsing closed risks is about status, not
+        // actionability -- so the needs-superset AND-clause is only ever
+        // appended when the scope is 'open'. For 'all', the PHP-side
+        // caller (getReviewRiskDatatableResponse(), includes/api.php)
+        // still enforces "open risks must be actionable" per-row after
+        // this fetch; this SQL layer's job here is only to widen or narrow
+        // which STATUSES come back, not to pre-filter open rows by
+        // actionability once the scope is anything but 'open'.
+        // SQL single-quotes for the 'Closed' literal here (not the
+        // backslash-escaped-double-quote style the rest of this function's
+        // WHERE clauses use for "Closed") -- those escaped double-quotes
+        // only work as written because they live inside the SAME
+        // double-quoted PHP string as the surrounding SQL. This switch
+        // builds $status_where as its own separate, single-quoted PHP
+        // string, where \" has no escape meaning at all and would insert a
+        // literal backslash character into the interpolated SQL -- MySQL
+        // couldn't parse `\"Closed\"` as a string literal, producing a
+        // syntax error. Single-quoted SQL avoids the whole PHP-quoting
+        // mismatch.
+        // 'all' uses `b.id IS NOT NULL`, NOT a bare `1=1` -- risk_scoring can
+        // hold orphaned rows with no matching risks.id (confirmed live on
+        // the dev DB: stale AI-analysis remnants left behind after a risk
+        // is deleted), which the LEFT JOIN turns into a row with b.id NULL.
+        // Both 'open' (`b.status != 'Closed'`) and 'closed'
+        // (`b.status = 'Closed'`) already exclude these incidentally, since
+        // a NULL comparison is neither true nor false in SQL and the WHERE
+        // clause drops it either way -- an unconditional `1=1` does not, and
+        // GROUP BY b.id collapses every orphaned row's NULL id into a
+        // single extra phantom result row (confirmed live: 157 real risks,
+        // 158 rows back from `1=1`).
+        switch ($review_status_scope) {
+            case 'closed':
+                $status_where = " b.status = 'Closed' ";
+                break;
+            case 'all':
+                $status_where = ' b.id IS NOT NULL ';
+                break;
+            case 'open':
+            default:
+                $status_where = " b.status != 'Closed' ";
+                break;
+        }
+
+        // The needs-superset restriction ("only rows that could plausibly
+        // need mitigation or review") only makes sense for the 'open'
+        // scope -- a Closed risk showing up under 'closed'/'all' is not
+        // supposed to be filtered by whether it happens to still compute
+        // as needing action.
+        $status_scope_where_clause = ($review_status_scope === 'open')
+            ? "{$status_where} AND (
+                    b.mitigation_id = 0
+                    OR c.next_review IS NULL
+                    OR c.next_review = '0000-00-00'
+                    OR DATEDIFF(c.next_review, CURDATE()) <= 30
+                )"
+            : $status_where;
+
+        // Customization Extra custom-field values -- Review Risk grid only.
+        // get_risks(22, ...) has exactly two callers, both in
+        // getReviewRiskDatatableResponse() (includes/api.php), so this splice
+        // is scoped to $sort_order == 22 and cannot affect any other
+        // get_risks() caller/branch.
+        //
+        // Resolves the FULL active-field set build_active_review_risk_columns()
+        // already exposes to the column picker and <th> markup (Task 6,
+        // includes/display.php) -- not the requesting user's own toggled-on
+        // column selection, since get_risks() has no per-request display-
+        // settings context and no business depending on one.
+        // getReviewRiskDatatableResponse() filters this superset down to what
+        // the requesting user actually has switched on when it builds
+        // $rows[].
+        //
+        // get_custom_value_join_parts('risk', ...) (extras/customization/
+        // index.php) needs `$field_settings['risk']['id']['select_parts'][0]`
+        // as its JOIN target column -- added just above in this same file
+        // (`'select_parts' => ["`b`.`id`"]`), matching this query's own
+        // `risks b` alias; that catalog entry had no consumer before this
+        // change.
+        $custom_field_select_sql = '';
+        $custom_field_join_sql = '';
+        $active_custom_field_ids = [];
+        if (customization_extra()) {
+            require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
+
+            foreach ((build_active_review_risk_columns() ?? []) as $active_review_risk_column) {
+                if (strpos($active_review_risk_column['key'], 'custom_field_') === 0) {
+                    $active_custom_field_ids[] = (int)substr($active_review_risk_column['key'], strlen('custom_field_'));
+                }
+            }
+
+            if (!empty($active_custom_field_ids)) {
+                list($custom_field_select_parts, $custom_field_join_parts) = get_custom_value_join_parts('risk', $active_custom_field_ids);
+                if (!empty($custom_field_select_parts)) {
+                    $custom_field_select_sql = ',' . implode(',', $custom_field_select_parts);
+                }
+                if (!empty($custom_field_join_parts)) {
+                    $custom_field_join_sql = ' ' . implode(' ', $custom_field_join_parts);
+                }
+            }
+        }
+
+        // If the team separation extra is not enabled
+        if (!team_separation_extra())
+        {
+            // Query the database
+            $stmt = $db->prepare("
+                SELECT
+                    a.calculated_risk, b.*, c.next_review,
+                    (b.mitigation_id = 0) AS needs_mitigation,
+                    ROUND((a.calculated_risk - (a.calculated_risk * IF(IFNULL(p.mitigation_percent,0) > 0, p.mitigation_percent, IFNULL(MAX(IF(mtc.validation_mitigation_percent > 0, mtc.validation_mitigation_percent, fc.mitigation_percent)), 0)) / 100)), 2) as residual_risk,
+                    o.closure_date, j.name AS regulation, b.regulation regulation_id, b.assessment AS risk_assessment, b.notes AS additional_notes,
+                    (
+                        SELECT
+                            GROUP_CONCAT(DISTINCT location.name SEPARATOR ',')
+                        FROM
+                            location, risk_to_location rtl
+                        WHERE
+                            rtl.risk_id=b.id AND rtl.location_id=location.value
+                    ) AS location,
+                    v.name AS source, 
+                    d.name AS category,
+                    (
+                        SELECT
+                            GROUP_CONCAT(DISTINCT team.name  SEPARATOR ',')
+                        FROM
+                            team, risk_to_team rtt
+                        WHERE
+                            rtt.risk_id=b.id AND rtt.team_id=team.value
+                    ) AS team,
+                    (
+                        SELECT
+                            GROUP_CONCAT(DISTINCT u.name SEPARATOR ',')
+                        FROM
+                            user u, risk_to_additional_stakeholder rtas
+                        WHERE
+                            rtas.risk_id=b.id AND rtas.user_id=u.value
+                    ) AS additional_stakeholders,
+                    (
+                        SELECT
+                            GROUP_CONCAT(DISTINCT tech.name SEPARATOR ',')
+                        FROM
+                            technology tech, risk_to_technology rttg
+                        WHERE
+                            rttg.risk_id=b.id AND rttg.technology_id=tech.value
+                    ) AS technology,
+                    g.name AS owner,
+                    h.name AS manager,
+                    a.scoring_method,
+                    k.name AS project, 
+                    DATEDIFF(IF(b.status != 'Closed', NOW(), o.closure_date) , b.submission_date) days_open,
+                    i.name AS submitted_by,
+                    (
+                        SELECT
+                            GROUP_CONCAT(t.tag ORDER BY t.tag ASC SEPARATOR ',')
+                        FROM
+                            tags t, tags_taggees tt 
+                        WHERE
+                            tt.tag_id = t.id AND tt.taggee_id=b.id AND tt.type='risk'
+                    ) AS risk_tags,
+                    (
+                        SELECT
+                            GROUP_CONCAT(DISTINCT a.name SEPARATOR '|')
+                        FROM
+                            risks_to_assets rta
+                            INNER JOIN assets a ON a.id = rta.asset_id
+                        WHERE
+                            rta.risk_id=b.id
+                    ) AS affected_assets,
+                    (
+                        SELECT
+                            GROUP_CONCAT(DISTINCT ag.name SEPARATOR ', ')
+                        FROM
+                            risks_to_asset_groups rtag
+                            INNER JOIN `asset_groups` ag ON ag.id = rtag.asset_group_id
+                        WHERE
+                            rtag.risk_id=b.id
+                    ) AS affected_asset_groups,
+                    q.name AS planning_strategy,
+                    p.planning_date,
+                    r.name AS mitigation_effort,
+                    s.min_value AS mitigation_min_cost,
+                    s.max_value AS mitigation_max_cost,
+                    t.name AS mitigation_owner,
+                    (
+                        SELECT
+                            GROUP_CONCAT(DISTINCT team.name SEPARATOR ',')
+                        FROM
+                            team, mitigation_to_team mtt
+                        WHERE
+                            mtt.mitigation_id=p.id AND mtt.team_id=team.value
+                    ) AS mitigation_team,
+
+
+                    NOT(ISNULL(mau.id)) mitigation_accepted,
+                    p.submission_date AS mitigation_date,
+                    (
+                        SELECT
+                            GROUP_CONCAT(DISTINCT fc.short_name SEPARATOR ',')
+                        FROM
+                            `mitigation_to_controls` mtc INNER JOIN framework_controls fc ON mtc.control_id=fc.id AND fc.deleted=0
+                        WHERE
+                            mtc.mitigation_id=p.id
+                    ) AS mitigation_controls,
+                    p.current_solution,
+                    p.security_recommendations,
+                    p.security_requirements,
+                    p.mitigation_percent,
+                    m.name AS next_step,
+                    rw.name AS review,
+                    l.submission_date AS mgmt_review_date,
+                    l.comments,
+                    n.name AS reviewer,
+                    group_concat(distinct rcm.risk_catalog_id) risk_catalog_mapping,
+                    group_concat(distinct tcm.threat_catalog_id) threat_catalog_mapping,
+                    group_concat(distinct risk_catalog.name SEPARATOR ',') AS risk_catalog_names,
+                    group_concat(distinct threat_catalog.name SEPARATOR ',') AS threat_catalog_names,
+                    (
+                        SELECT
+                            c.comment
+                        FROM
+                            comments c
+                        WHERE
+                            c.risk_id=b.id
+                        ORDER BY
+                            c.date DESC
+                        LIMIT 1
+                    ) AS last_comment{$custom_field_select_sql}
+                FROM
+                    risk_scoring a
+                    LEFT JOIN risks b ON a.id = b.id
+                    LEFT JOIN risk_to_team rtt ON b.id = rtt.risk_id
+                    LEFT JOIN risk_to_additional_stakeholder rtas ON b.id = rtas.risk_id
+                    LEFT JOIN (SELECT c1.risk_id, c1.next_review FROM mgmt_reviews c1 RIGHT JOIN (SELECT risk_id, MAX(submission_date) AS date FROM mgmt_reviews GROUP BY risk_id) AS c2 ON c1.risk_id = c2.risk_id AND c1.submission_date = c2.date) c ON a.id = c.risk_id
+                    LEFT JOIN mitigations p ON b.id = p.risk_id
+                    LEFT JOIN mitigation_to_controls mtc ON p.id = mtc.mitigation_id
+                    LEFT JOIN framework_controls fc ON mtc.control_id=fc.id AND fc.deleted=0
+                    LEFT JOIN closures o ON b.close_id = o.id
+                    LEFT JOIN frameworks j FORCE INDEX(PRIMARY) ON b.regulation = j.value
+                    LEFT JOIN source v FORCE INDEX(PRIMARY) ON b.source = v.value
+                    LEFT JOIN category d FORCE INDEX(PRIMARY) ON b.category = d.value
+                    LEFT JOIN user g FORCE INDEX(PRIMARY) ON b.owner = g.value
+                    LEFT JOIN user h FORCE INDEX(PRIMARY) ON b.manager = h.value
+                    LEFT JOIN projects k FORCE INDEX(PRIMARY) ON b.project_id = k.value
+                    LEFT JOIN user i FORCE INDEX(PRIMARY) ON b.submitted_by = i.value
+                    LEFT JOIN planning_strategy q FORCE INDEX(PRIMARY) ON p.planning_strategy = q.value
+                    LEFT JOIN mitigation_effort r FORCE INDEX(PRIMARY) ON p.mitigation_effort = r.value
+                    LEFT JOIN asset_values s ON p.mitigation_cost = s.id
+                    LEFT JOIN user t FORCE INDEX(PRIMARY) ON p.mitigation_owner = t.value
+                    LEFT JOIN mitigation_accept_users mau ON b.id=mau.risk_id
+                    LEFT JOIN mgmt_reviews l ON b.mgmt_review = l.id
+                    LEFT JOIN next_step m FORCE INDEX(PRIMARY) ON l.next_step = m.value
+                    LEFT JOIN review rw FORCE INDEX(PRIMARY) ON l.review = rw.value
+                    LEFT JOIN user n FORCE INDEX(PRIMARY) ON l.reviewer = n.value
+                    LEFT JOIN risk_catalog_mappings rcm on b.id=rcm.risk_id
+                    LEFT JOIN risk_catalog on rcm.risk_catalog_id=risk_catalog.id
+                    LEFT JOIN threat_catalog_mappings tcm on b.id=tcm.risk_id
+                    LEFT JOIN threat_catalog on tcm.threat_catalog_id=threat_catalog.id{$custom_field_join_sql}
+                WHERE
+                    {$status_scope_where_clause}
+                GROUP BY b.id
+                {$sort_query}
+                ;
+            ");
+        }
+        else
+        {
+            // Include the team separation extra
+            require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
+
+            // Get the separation query string
+            $separation_query = get_user_teams_query("b", false, true);
+
+            // Query the database
+            $stmt = $db->prepare("
+                SELECT
+                    a.calculated_risk, b.*, c.next_review,
+                    (b.mitigation_id = 0) AS needs_mitigation,
+                    ROUND((a.calculated_risk - (a.calculated_risk * IF(IFNULL(p.mitigation_percent,0) > 0, p.mitigation_percent, IFNULL(MAX(IF(mtc.validation_mitigation_percent > 0, mtc.validation_mitigation_percent, fc.mitigation_percent)), 0)) / 100)), 2) as residual_risk,
+                    o.closure_date, j.name AS regulation, b.regulation regulation_id, b.assessment AS risk_assessment, b.notes AS additional_notes,
+                    (
+                        SELECT
+                            GROUP_CONCAT(DISTINCT location.name SEPARATOR ',')
+                        FROM
+                            location, risk_to_location rtl
+                        WHERE
+                            rtl.risk_id=b.id AND rtl.location_id=location.value
+                    ) AS location,
+                    v.name AS source, 
+                    d.name AS category,
+                    (
+                        SELECT
+                            GROUP_CONCAT(DISTINCT team.name  SEPARATOR ',')
+                        FROM
+                            team, risk_to_team rtt
+                        WHERE
+                            rtt.risk_id=b.id AND rtt.team_id=team.value
+                    ) AS team,
+                    (
+                        SELECT
+                            GROUP_CONCAT(DISTINCT u.name SEPARATOR ',')
+                        FROM
+                            user u, risk_to_additional_stakeholder rtas
+                        WHERE
+                            rtas.risk_id=b.id AND rtas.user_id=u.value
+                    ) AS additional_stakeholders,
+                    (
+                        SELECT
+                            GROUP_CONCAT(DISTINCT tech.name SEPARATOR ',')
+                        FROM
+                            technology tech, risk_to_technology rttg
+                        WHERE
+                            rttg.risk_id=b.id AND rttg.technology_id=tech.value
+                    ) AS technology,
+                    g.name AS owner,
+                    h.name AS manager,
+                    a.scoring_method,
+                    k.name AS project, 
+                    DATEDIFF(IF(b.status != 'Closed', NOW(), o.closure_date) , b.submission_date) days_open,
+                    i.name AS submitted_by,
+                    (
+                        SELECT
+                            GROUP_CONCAT(t.tag ORDER BY t.tag ASC SEPARATOR ',')
+                        FROM
+                            tags t, tags_taggees tt 
+                        WHERE
+                            tt.tag_id = t.id AND tt.taggee_id=b.id AND tt.type='risk'
+                    ) AS risk_tags,
+                    (
+                        SELECT
+                            GROUP_CONCAT(DISTINCT a.name SEPARATOR '|')
+                        FROM
+                            risks_to_assets rta
+                            INNER JOIN assets a ON a.id = rta.asset_id
+                        WHERE
+                            rta.risk_id=b.id
+                    ) AS affected_assets,
+                    (
+                        SELECT
+                            GROUP_CONCAT(DISTINCT ag.name SEPARATOR ', ')
+                        FROM
+                            risks_to_asset_groups rtag
+                            INNER JOIN `asset_groups` ag ON ag.id = rtag.asset_group_id
+                        WHERE
+                            rtag.risk_id=b.id
+                    ) AS affected_asset_groups,
+                    q.name AS planning_strategy,
+                    p.planning_date,
+                    r.name AS mitigation_effort,
+                    s.min_value AS mitigation_min_cost,
+                    s.max_value AS mitigation_max_cost,
+                    t.name AS mitigation_owner,
+                    (
+                        SELECT
+                            GROUP_CONCAT(DISTINCT team.name SEPARATOR ',')
+                        FROM
+                            team, mitigation_to_team mtt
+                        WHERE
+                            mtt.mitigation_id=p.id AND mtt.team_id=team.value
+                    ) AS mitigation_team,
+
+
+                    NOT(ISNULL(mau.id)) mitigation_accepted,
+                    p.submission_date AS mitigation_date,
+                    (
+                        SELECT
+                            GROUP_CONCAT(DISTINCT fc.short_name SEPARATOR ',')
+                        FROM
+                            `mitigation_to_controls` mtc INNER JOIN framework_controls fc ON mtc.control_id=fc.id AND fc.deleted=0
+                        WHERE
+                            mtc.mitigation_id=p.id
+                    ) AS mitigation_controls,
+                    p.current_solution,
+                    p.security_recommendations,
+                    p.security_requirements,
+                    p.mitigation_percent,
+                    m.name AS next_step,
+                    rw.name AS review,
+                    l.submission_date AS mgmt_review_date,
+                    l.comments,
+                    n.name AS reviewer,
+                    group_concat(distinct rcm.risk_catalog_id) risk_catalog_mapping,
+                    group_concat(distinct tcm.threat_catalog_id) threat_catalog_mapping,
+                    group_concat(distinct risk_catalog.name SEPARATOR ',') AS risk_catalog_names,
+                    group_concat(distinct threat_catalog.name SEPARATOR ',') AS threat_catalog_names,
+                    (
+                        SELECT
+                            c.comment
+                        FROM
+                            comments c
+                        WHERE
+                            c.risk_id=b.id
+                        ORDER BY
+                            c.date DESC
+                        LIMIT 1
+                    ) AS last_comment{$custom_field_select_sql}
+                FROM
+                    risk_scoring a
+                    LEFT JOIN risks b ON a.id = b.id
+                    LEFT JOIN risk_to_team rtt ON b.id = rtt.risk_id
+                    LEFT JOIN risk_to_additional_stakeholder rtas ON b.id = rtas.risk_id
+                    LEFT JOIN (SELECT c1.risk_id, c1.next_review FROM mgmt_reviews c1 RIGHT JOIN (SELECT risk_id, MAX(submission_date) AS date FROM mgmt_reviews GROUP BY risk_id) AS c2 ON c1.risk_id = c2.risk_id AND c1.submission_date = c2.date) c ON a.id = c.risk_id
+                    LEFT JOIN mitigations p ON b.id = p.risk_id
+                    LEFT JOIN mitigation_to_controls mtc ON p.id = mtc.mitigation_id
+                    LEFT JOIN framework_controls fc ON mtc.control_id=fc.id AND fc.deleted=0
+                    LEFT JOIN closures o ON b.close_id = o.id
+                    LEFT JOIN frameworks j FORCE INDEX(PRIMARY) ON b.regulation = j.value
+                    LEFT JOIN source v FORCE INDEX(PRIMARY) ON b.source = v.value
+                    LEFT JOIN category d FORCE INDEX(PRIMARY) ON b.category = d.value
+                    LEFT JOIN user g FORCE INDEX(PRIMARY) ON b.owner = g.value
+                    LEFT JOIN user h FORCE INDEX(PRIMARY) ON b.manager = h.value
+                    LEFT JOIN projects k FORCE INDEX(PRIMARY) ON b.project_id = k.value
+                    LEFT JOIN user i FORCE INDEX(PRIMARY) ON b.submitted_by = i.value
+                    LEFT JOIN planning_strategy q FORCE INDEX(PRIMARY) ON p.planning_strategy = q.value
+                    LEFT JOIN mitigation_effort r FORCE INDEX(PRIMARY) ON p.mitigation_effort = r.value
+                    LEFT JOIN asset_values s ON p.mitigation_cost = s.id
+                    LEFT JOIN user t FORCE INDEX(PRIMARY) ON p.mitigation_owner = t.value
+                    LEFT JOIN mitigation_accept_users mau ON b.id=mau.risk_id
+                    LEFT JOIN mgmt_reviews l ON b.mgmt_review = l.id
+                    LEFT JOIN next_step m FORCE INDEX(PRIMARY) ON l.next_step = m.value
+                    LEFT JOIN review rw FORCE INDEX(PRIMARY) ON l.review = rw.value
+                    LEFT JOIN user n FORCE INDEX(PRIMARY) ON l.reviewer = n.value
+                    LEFT JOIN risk_catalog_mappings rcm on b.id=rcm.risk_id
+                    LEFT JOIN risk_catalog on rcm.risk_catalog_id=risk_catalog.id
+                    LEFT JOIN threat_catalog_mappings tcm on b.id=tcm.risk_id
+                    LEFT JOIN threat_catalog on tcm.threat_catalog_id=threat_catalog.id{$custom_field_join_sql}
+                WHERE
+                    {$status_scope_where_clause}
+                    {$separation_query}
+                GROUP BY b.id
+                {$sort_query}
+                ;
+            ");
+        }
+
+        $stmt->execute();
+
+        // Store the list in the array
+        $array = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        // Resolve the spliced-in custom-field SQL parts (above) into a final,
+        // display-ready, ALREADY-ESCAPED `custom_field_{id}` value per row --
+        // mirroring get_data_for_datatable()'s own field_data-unpacking loop
+        // in this same file (~line 32060+) rather than inventing a second
+        // resolution path for the same data shape:
+        //
+        //  - dropdown/multidropdown/user_multidropdown fields already arrive
+        //    as a friendly `custom_field_{id}_display` SQL alias
+        //    (get_custom_value_join_parts()'s own per-type switch) --
+        //    escaped here, same as every other free-text column this
+        //    function's caller escapes.
+        //  - every other type (shorttext/longtext/date/hyperlink -- no
+        //    per-field SELECT alias for these; see that function's docblock)
+        //    is resolved from the generic `field_data` JSON column via
+        //    get_custom_field_name_by_value(), which already
+        //    escapes/decrypts/formats per type -- so its result is NOT
+        //    re-escaped here.
+        //
+        // Scoped to $sort_order == 22 by construction: $active_custom_field_ids
+        // is only ever populated inside this branch.
+        if (!empty($active_custom_field_ids) && is_array($array)) {
+            foreach ($array as &$row) {
+                foreach ($active_custom_field_ids as $active_custom_field_id) {
+                    $display_key = "custom_field_{$active_custom_field_id}_display";
+                    if (!empty($row[$display_key])) {
+                        $row["custom_field_{$active_custom_field_id}"] = $escaper->escapeHtml($row[$display_key]);
+                    }
+                }
+
+                if (!empty($row['field_data']) && $row['field_data'] !== '[]') {
+                    $field_data_entries = json_decode($row['field_data'], true);
+                    foreach ((is_array($field_data_entries) ? $field_data_entries : []) as $field_data_entry) {
+                        $field_id = (int)($field_data_entry['field_id'] ?? 0);
+                        if (!in_array($field_id, $active_custom_field_ids, true)) {
+                            continue;
+                        }
+                        $key = "custom_field_{$field_id}";
+                        if (!empty($row[$key])) {
+                            // Already resolved above from the SQL-provided
+                            // `_display` alias -- field_data's raw stored
+                            // option id(s) would be the wrong value here.
+                            continue;
+                        }
+                        $row[$key] = get_custom_field_name_by_value(
+                            $field_id,
+                            $field_data_entry['type'] ?? '',
+                            $field_data_entry['encryption'] ?? 0,
+                            $field_data_entry['value'] ?? ''
+                        );
+                    }
+                }
+            }
+            unset($row);
+        }
+    }
+
     // Close the database connection
     db_close($db);
 
@@ -15873,251 +16588,6 @@ function update_project_status($status_id, $project_id)
     return true;
 }
 
-/******************************************
- * FUNCTION: GET PROJECTS COUNT BY STATUS *
- ******************************************/
-function get_projects_count($status) {
-
-    $projects = count_by_status($status);
-    
-    return $projects[0]['count'];
-
-}
-
-/********************************************
- * FUNCTION: UPDATE PROJECTS HTML BY STATUS *
- ********************************************/
-function get_project_tabs($status, $template_group_id="") {
-
-    global $lang;
-    global $escaper;
-
-    echo "
-        <div style='overflow-x: auto;'>
-    ";
-
-            display_project_table_header();
-
-    $projects = get_projects();
-
-    if ($status == 1) {
-        array_unshift($projects, ['value' => 0, 'name' => $escaper->escapeHtml($lang['UnassignedRisks']), 'status' => 1]);
-    } 
-    
-    $index = 0;
-    $str = "";
-    $row_width = "1301";
-    $custom_field_count = 0;
-    $active_fields = [];
-
-    // If customization extra is enabled
-    if (customization_extra()) {
-
-        // Include the extra
-        require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
-
-        $customization = true;
-
-        if (!$template_group_id) {
-            $group = get_default_template_group("project");
-            $template_group_id = $group["id"];
-        }
-
-        $active_fields = get_active_fields("project", $template_group_id);
-        foreach ($active_fields as $field) {
-            if ($field['is_basic'] != 1) {
-                $custom_field_count++;
-            }
-        }
-
-    } else {
-        $customization = false;
-    }
-
-    $row_width += $custom_field_count * 150;
-
-    foreach ($projects as $project) {
-        if ($project['status'] == $status) {
-
-            $id = (int)$project['value'];
-            $name = $project['name'];
-
-            // If unassigned risks
-            if (!$id) {
-                $delete = '';
-                $no_sort = 'id = "no-sort"';
-                $name = $escaper->escapehtml($lang['UnassignedRisks']);
-                $due_date = "";
-                $consultant = "";
-                $business_owner = "";
-                $data_classification = "";
-
-                // Get risks for this project
-                $risks = get_risks_unassigned_project();
-                $priority = "";
-                $edit_link = "";
-
-            // If project ID was defined
-            } else {
-                if (isset($_SESSION["delete_projects"]) && $_SESSION["delete_projects"] == 1) {
-                    $delete = '
-                        <button type="button" class="project-block--delete float-end btn btn-outline-secondary btn-sm mx-1"><i class="fa fa-trash"></i></button>
-                    ';
-                } else {
-                    $delete ='';
-                }
-
-                $no_sort = '';
-                $name = $escaper->escapeHtml($name);
-                $due_date = $escaper->escapeHtml(format_date($project['due_date']));
-                $consultant = $escaper->escapeHtml(get_user_name($project['consultant']));
-                $business_owner = $escaper->escapeHtml(get_user_name($project['business_owner']));
-                $data_classification = $escaper->escapeHtml(get_table_value_by_id("data_classification", $project['data_classification']));
-
-                // Get risks for this project
-                $risks = get_risks_by_project_id($id);
-                $index++;
-                $priority = $index;
-                $edit_link = "
-                        <button type='button' class='project-block--edit float-end btn btn-outline-secondary btn-sm mx-1' data-id='{$escaper->escapeHtml($id)}' data-name='{$name}'><i class='fa fa-edit'></i></button>
-                ";
-            }
-            
-            // Get count of risks for this project
-            $count = count($risks);
-
-            $str .= "
-                <div class='project-block clearfix' {$no_sort} style='width:{$row_width}px'>
-                    <div class='d-flex project-block--header' data-project='{$escaper->escapeHtml($id)}' style='width:{$row_width}px'>
-                        <div class='col p-2 border '>{$escaper->escapeHtml($priority)}</div>
-            ";
-            if ($customization == true) {
-                foreach ($active_fields as $field) {
-                    if ($field['is_basic'] == 1) {
-                        switch ($field['name']) {
-                            case 'ProjectName':
-                                $str .= "
-                        <div class='col-3 p-2 border'>{$name}</div>
-                                ";
-                                break;
-                            case 'DueDate':
-                                $str .= "
-                        <div class='col p-2 border'>{$due_date}</div>
-                        ";
-                                break;
-                            case 'Consultant':
-                                $str .= "
-                        <div class='col p-2 border'>{$consultant}</div>
-                                ";
-                                break;
-                            case 'BusinessOwner':
-                                $str .= "
-                        <div class='col p-2 border'>{$business_owner}</div>
-                                ";
-                                break;
-                            case 'DataClassification':
-                                $str .= "
-                        <div class='col p-2 border'>{$data_classification}</div>
-                                ";
-                                break;
-                        }
-                    } else {
-                        $custom_field_count++;
-                        $text = $escaper->escapeHtml(get_plan_custom_field_name_by_row_id($field, $id, "project"));
-                        $str .= "
-                        <div class='col p-2 border'>{$text}</div>
-                        ";
-                    }
-                }
-            } else {
-                $str .= "
-                        <div class='col-3 p-2 border'>{$name}</div>
-                        <div class='col p-2 border'>{$due_date}</div>
-                        <div class='col p-2 border'>{$consultant}</div>
-                        <div class='col p-2 border'>{$business_owner}</div>
-                        <div class='col p-2 border'>{$data_classification}</div>
-                ";
-            }
-            $str .= "
-                        <div class='col-2 p-2 border'>
-                            <span class='p-2 risk-count'>{$count}</span>
-                            <a href='#' class='view--risks link-info'>{$escaper->escapeHtml($lang['ViewRisk'])}</a>
-                            {$delete} {$edit_link}
-                        </div>
-                    </div>
-                    <div class='risks hide'>
-            ";
-
-            // For each risk
-            foreach ($risks as $risk) {
-                $subject = try_decrypt($risk['subject']);
-                $risk_id = (int)$risk['id'];
-                $project_id = (int)$risk['project_id'];
-                $color = get_risk_color($risk['calculated_risk']);
-
-                $risk_number = (int)$risk_id + 1000;
-
-                $str .= "
-                        <div class='risk row' style='width:{$row_width}px' data-risk='{$escaper->escapeHtml($risk_id)}' data-project='{$escaper->escapeHtml($project_id)}'>
-                            <div class='col-1'></div>
-                            <div class='col-11 bg-secondary my-1 p-2 text-light d-flex justify-content-between align-items-center'>
-                                <div class='d-flex align-items-center'>
-                                    <span class='grippy'></span>
-                                    <a class='risk-content d-flex align-items-center text-light' href='../management/view.php?id={$escaper->escapeHtml(convert_to_risk_id($risk_id))}' target='_blank'>
-                                        <span class='risk-number me-2'>#{$risk_number}</span>
-                                        <span class='risk-subject'>{$escaper->escapeHtml($subject)}</span>
-                                    </a>
-                                </div>
-                                <div class='risk--score ms-2'>
-                                    {$escaper->escapeHtml($lang['InherentRisk'])} : 
-                                    <span class='label label-danger' style='background-color: {$escaper->escapeCssColor($color)}; color: #000000;'>{$risk['calculated_risk']}</span> 
-                                </div>
-                            </div>
-                        </div>
-                ";
-            }
-
-            $str .= "
-                    </div>
-                </div>
-            ";
-        }
-    }
-    echo $str;
-
-    echo "
-        </div>
-    ";
-}
-
-/**************************************************
- * FUNCTION: GET PROJECTS COUNT FROM DB BY STATUS *
- **************************************************/
-function count_by_status($status) {
-
-    $db = db_open();
-
-    $stmt = $db->prepare("
-        SELECT 
-            count(*) as count 
-        FROM 
-            projects 
-        WHERE 
-            `status` = {$status}
-    ");
-
-    $stmt->execute();
-
-    // Store the list in the array
-    $array = $stmt->fetchAll();
-
-    // Close the database connection
-    db_close($db);
-
-    return $array;
-    
-}
-
 /**************************
  * FUNCTION: GET PROJECTS *
  **************************/
@@ -16808,6 +17278,81 @@ function next_review($risk_level, $id, $next_review, $html = true, $review_level
     }
     // Otherwise just return the text
     else return $escaper->escapeHtml($text);
+}
+
+/**
+ * Classify a risk's review urgency without producing display markup --
+ * mirrors next_review()'s (functions.php:16709) date-resolution branches
+ * (null -> unreviewed, "0000-00-00" -> cadence fallback via $review_levels,
+ * otherwise a real date checked against the past-due boundary) but returns a
+ * machine-readable bucket instead of an HTML string, so callers can filter
+ * and sort on it without re-parsing rendered text.
+ */
+function classify_review_urgency($next_review_raw, $review_level_index, $risk_id, array $review_levels, $submission_date = false, $due_soon_days = 30)
+{
+    if ($next_review_raw === null) {
+        return ['bucket' => 'unreviewed', 'resolved_date' => null];
+    }
+
+    if ($next_review_raw === "0000-00-00") {
+        $last_review = $submission_date !== false ? $submission_date : get_last_review($risk_id);
+
+        // $review_level_index is pre-resolved by the caller (0=Very High .. 4=Insignificant,
+        // matching $review_levels's own order) -- no DB lookup here, keeping this function
+        // genuinely pure. See next_review() (functions.php:16709) for the display-rendering
+        // twin of this branch, which resolves the index via get_risk_level_display_name()
+        // because it already has a display string on hand; this function never does.
+        $days = $review_levels[$review_level_index]['value'];
+
+        $resolved_date = date('Y-m-d', strtotime($last_review . " +{$days} days"));
+    } else {
+        $resolved_date = (new \DateTime($next_review_raw))->format('Y-m-d');
+    }
+
+    $days_until = (strtotime($resolved_date) - strtotime(date('Y-m-d'))) / 86400;
+
+    if ((strtotime($resolved_date) + 24 * 3600) <= time()) {
+        $bucket = 'past_due';
+    } elseif ($days_until <= $due_soon_days) {
+        $bucket = 'due_soon';
+    } else {
+        $bucket = 'on_track';
+    }
+
+    return ['bucket' => $bucket, 'resolved_date' => $resolved_date];
+}
+
+/**
+ * Earlier of a mitigation's planned date and a review's resolved due date,
+ * skipping whichever is null -- drives the merged queue's single "Due"
+ * sort/display column when a row needs both actions.
+ */
+function compute_next_action_due_date($mitigation_date, $review_resolved_date)
+{
+    if ($mitigation_date === null) {
+        return $review_resolved_date;
+    }
+    if ($review_resolved_date === null) {
+        return $mitigation_date;
+    }
+    return strtotime($mitigation_date) <= strtotime($review_resolved_date) ? $mitigation_date : $review_resolved_date;
+}
+
+/**
+ * "Show my action items" predicate: not ownership, permission relevance --
+ * can the viewer actually act on at least one of this row's active needs?
+ * See docs/superpowers/specs/2026-09-09-review-risk-page-design.md,
+ * "Correction: from ownership filter to permission-relevance filter."
+ */
+function user_can_act_on_risk_need($needs_mitigation, $needs_review, $risk_level_name, $has_plan_mitigations, array $review_permissions_by_level)
+{
+    if ($needs_mitigation && $has_plan_mitigations) {
+        return true;
+    }
+    if ($needs_review && !empty($review_permissions_by_level[$risk_level_name])) {
+        return true;
+    }
+    return false;
 }
 
 /**********************************
@@ -21536,6 +22081,7 @@ function license_check_daily()
         'app_version' => current_version('app'),
         'db_version'  => current_version('db'),
         'timezone'    => date_default_timezone_get(),
+        'os'          => getOSInformation(),
         'risks'       => $risks,
         'users'       => $users,
         'last_login'  => $last_login,
@@ -27229,10 +27775,208 @@ function custom_display_columns_are_valid($column_sets)
     return true;
 }
 
+/****************************************************
+ * FUNCTION: CUSTOM REVIEW RISK COLUMN ORDER IS VALID *
+ ****************************************************/
+function custom_review_risk_column_order_is_valid($order)
+{
+    if (!is_array($order)) {
+        return false;
+    }
+    foreach ($order as $key) {
+        if (!is_string($key) || !preg_match('/^[A-Za-z0-9_]+$/', $key)) {
+            return false;
+        }
+    }
+    return true;
+}
+
+/***********************************************
+ * FUNCTION: CUSTOM COLUMN ORDER IS VALID      *
+ * Generic name for the Review Risk validator: *
+ * the body was never Review-Risk-specific.    *
+ ***********************************************/
+function custom_column_order_is_valid($order)
+{
+    return custom_review_risk_column_order_is_valid($order);
+}
+
+/*****************************************************************
+ * FUNCTION: PLAN PROJECTS DUE STATUS                            *
+ * 'none' (no date), 'overdue' (before today), 'due_soon'        *
+ * (today .. today + $due_soon_days), else 'on_track'. The 30-day *
+ * default is the same window classify_review_urgency() uses.    *
+ *****************************************************************/
+function plan_projects_due_status(?string $due_date, ?string $today = null, int $due_soon_days = 30): string
+{
+    if ($due_date === null || $due_date === '' || strpos((string)$due_date, '0000-00-00') === 0) {
+        return 'none';
+    }
+    $due = strtotime(substr((string)$due_date, 0, 10) . ' 00:00:00');
+    if ($due === false) {
+        return 'none';
+    }
+    $today_ts = strtotime(($today ?: date('Y-m-d')) . ' 00:00:00');
+    $days = (int)floor(($due - $today_ts) / 86400);
+    if ($days < 0) {
+        return 'overdue';
+    }
+    if ($days <= (int)$due_soon_days) {
+        return 'due_soon';
+    }
+    return 'on_track';
+}
+
+/*******************************************************************
+ * FUNCTION: PLAN PROJECTS REORDER WITHIN STATUS                   *
+ * projects.order is ONE global sequence. Given every project and a *
+ * new ordering for the ids of one status, refill that status's     *
+ * slots in the global sequence and renumber 1..n so the relative   *
+ * order of every other status is preserved. Returns [id => order] *
+ * or false when $new_ordered_ids is not exactly that status's set. *
+ *******************************************************************/
+function plan_projects_reorder_within_status(array $projects, int $status, array $new_ordered_ids): array|false
+{
+    $status = (int)$status;
+    $current_ids = [];
+    foreach ($projects as $p) {
+        if ((int)$p['status'] === $status) {
+            $current_ids[] = (int)$p['id'];
+        }
+    }
+    foreach ($new_ordered_ids as $id) {
+        if (!is_int($id) && !(is_string($id) && ctype_digit($id))) {
+            return false;
+        }
+    }
+    $new_ordered_ids = array_map('intval', $new_ordered_ids);
+    if (count($new_ordered_ids) !== count(array_unique($new_ordered_ids))) {
+        return false;
+    }
+    $a = $current_ids;
+    $b = $new_ordered_ids;
+    sort($a);
+    sort($b);
+    if ($a !== $b) {
+        return false;
+    }
+    // Stable sort by current order, then id, so stale duplicates resolve deterministically.
+    usort($projects, function ($x, $y) {
+        return [(int)$x['order'], (int)$x['id']] <=> [(int)$y['order'], (int)$y['id']];
+    });
+    $result = [];
+    $next = 1;
+    $slot = 0;
+    foreach ($projects as $p) {
+        if ((int)$p['status'] === $status) {
+            $result[$new_ordered_ids[$slot++]] = $next++;
+        } else {
+            $result[(int)$p['id']] = $next++;
+        }
+    }
+    return $result;
+}
+
+/****************************************************
+ * FUNCTION: BUILD ACTIVE REVIEW RISK COLUMNS        *
+ ****************************************************/
+// Resolves the Customization Extra's active risk fields into the
+// {key, label, group} shape review-risk.js's COLUMN_GROUPS already uses --
+// mirrors the legacy display_custom_risk_columns()'s own resolution
+// (includes/display.php, deleted in a4e1321963 -- see it at a4e1321963~1)
+// but WITHOUT that function's basic-field "relabeling" (it never actually
+// relabeled anything -- get_dynamic_names_by_main_field_name() returns the
+// STANDARD $lang text for a basic field, not an admin-chosen rename; see
+// docs/superpowers/specs/2026-09-10-review-risk-dynamic-columns-design.md's
+// "Scope correction" section).
+//
+// Returns null when the Extra isn't active -- callers use this to decide
+// whether to fall back to review-risk.js's own static COLUMN_GROUPS.
+//
+// `label` is DELIBERATELY RAW, not pre-escaped -- double-escaping fix
+// (SR follow-up): this array feeds TWO different sinks with two different
+// escaping needs -- includes/display.php's three dynamic <th> echoes
+// (server-rendered, need escapeHtml() at that echo site) and
+// getReviewRiskFilterOptions()'s JSON `active_columns` response
+// (review-risk.js's columnLabel()/esc() already HTML-escapes exactly once
+// when it renders the label into the picker). Pre-escaping here made both
+// sinks double-escape (a label like "Owner's Manager" rendered literally as
+// "Owner&#039;s Manager" in the Columns picker) -- each sink now escapes
+// exactly once, at its own point of use, per CLAUDE.md's HTML Encoding
+// rule. get_dynamic_names_by_main_field_name() (includes/display.php)
+// returns its 'text' field raw for the same reason -- it has exactly one
+// caller (this function; confirmed via grep, its two other callers only
+// ever read 'name', never 'text').
+function build_active_review_risk_columns()
+{
+    if (!customization_extra()) {
+        return null;
+    }
+
+    // get_dynamic_names_by_main_field_name() below is defined in display.php,
+    // not functions.php -- and functions.php does NOT require display.php
+    // (see display_the_brand_logo()'s own comment: healthcheck.php loads only
+    // functions.php, deliberately). This function's only current caller
+    // (api.php) happens to already load both, but per CLAUDE.md's Function
+    // Reachability rule every direct consumer declares its own require_once
+    // rather than relying on that transitive load -- belt-and-suspenders, and
+    // required here since a future functions.php-only caller would otherwise
+    // hit a fatal "Call to undefined function" the moment an is_basic=1 field
+    // is active. Unguarded, matching api.php's and artificial_intelligence.php's
+    // own sibling `require_once(realpath(__DIR__ . '/display.php'))` -- this is
+    // a Core-to-Core require of a file that ships in every install (unlike the
+    // Extra file below, which the bundle can strip), so no realpath-false guard
+    // is needed. Safe to require mid-function: functions.php is already fully
+    // parsed by the time any function body executes.
+    require_once(realpath(__DIR__ . '/display.php'));
+
+    $file = realpath(__DIR__ . '/../extras/customization/index.php');
+    if ($file === false) {
+        return null;
+    }
+    require_once($file);
+
+    $tab_index_to_group = [1 => 'RiskColumns', 2 => 'MitigationColumns', 3 => 'ReviewColumns'];
+
+    $columns = [];
+    $active_fields = get_active_fields('risk');
+    foreach ($active_fields as $active_field) {
+        $group = $tab_index_to_group[(int)($active_field['tab_index'] ?? 0)] ?? null;
+        if ($group === null) {
+            continue; // Unrecognized tab -- matches the legacy switch's implicit drop of any other tab_index.
+        }
+
+        if ((int)($active_field['is_basic'] ?? 0) === 1) {
+            $dynamic_field_info = get_dynamic_names_by_main_field_name($active_field['name']);
+            if (!$dynamic_field_info) {
+                continue; // No resolvable db-column/label pair for this basic field name -- same skip the legacy code applied.
+            }
+            $columns[] = [
+                'key' => $dynamic_field_info['name'],
+                // Deliberately RAW, not escaped here -- see this function's
+                // own docblock (double-escaping fix). get_dynamic_names_by_
+                // main_field_name() also returns 'text' raw now, for the
+                // same reason.
+                'label' => $dynamic_field_info['text'],
+                'group' => $group,
+            ];
+        } else {
+            $columns[] = [
+                'key' => 'custom_field_' . (int)$active_field['id'],
+                // Deliberately RAW -- see this function's own docblock.
+                'label' => $active_field['name'],
+                'group' => $group,
+            ];
+        }
+    }
+
+    return $columns;
+}
+
 /***********************************************
  * FUNCTION: SAVE CUSTOM RISK DISPLAY SETTINGS *
  **********************************************/
-function save_custom_risk_display_settings($field = "custom_plan_mitigation_display_settings", $data = [])
+function save_custom_risk_display_settings($field = "custom_review_risk_display_settings", $data = [])
 {
     $data_str = json_encode($data);
     
@@ -27246,7 +27990,6 @@ function save_custom_risk_display_settings($field = "custom_plan_mitigation_disp
 
     // Close the database connection
     db_close($db);
-    return;
 }
 
 function get_user_name($user_id) {
@@ -29126,16 +29869,431 @@ function get_project($id){
     
     // Close the database connection
     db_close($db);
-    // If customization extra is enabled
-    if(customization_extra())
+    // If customization extra is enabled AND the project actually exists --
+    // otherwise $project (false, no matching row) would get array-written
+    // into, turning "no such project" into a truthy ['custom_values' => []]
+    // and breaking every falsy-for-missing check downstream
+    // (getPlanProjectRisksApi(), assignRisksToProjectApi(),
+    // get_project_risks_for_grid()).
+    if($project && customization_extra())
     {
         // Include the extra
         require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
         $custom_values = get_custom_value_by_row_id($id, "project");
         $project['custom_values'] = $custom_values;
     }
-    
+
     return $project;
+}
+
+/**********************************************************************
+ * FUNCTION: GET PROJECT RISK ROWS                                    *
+ * One fetch for the drawer AND the grid aggregates. Same predicate as *
+ * get_risks_by_project_id() (plan_projects_show_all vs. latest mgmt   *
+ * review next_step = 2), optionally including Closed risks (only for  *
+ * Completed projects -- completed_project() closes them, SR-77).      *
+ *                                                                      *
+ * NOTE: risks.team was migrated away to the risk_to_team junction     *
+ * table years ago (see includes/upgrade.php's "Migrating team field   *
+ * in risks table to new table" step, which DROPs risks.team) -- there *
+ * is no `b.team` column to select any more. Team name is resolved via *
+ * the same risk_to_team/team join get_unassigned_risks_for_grid() and *
+ * get_risks() use elsewhere, aliased `team_name` to match the key     *
+ * plan_projects_risk_row() reads.                                     *
+ **********************************************************************/
+function get_project_risk_rows(array $project_ids, bool $include_closed = false): array
+{
+    $project_ids = array_values(array_unique(array_map('intval', $project_ids)));
+    if (empty($project_ids)) {
+        return [];
+    }
+    $placeholders = implode(',', array_fill(0, count($project_ids), '?'));
+    $closed_clause = $include_closed ? '' : "AND b.status != 'Closed'";
+    // Unit-separator (0x1F) joined so plan_projects_risk_row() can split the
+    // names back out unambiguously -- a team name may itself contain ', '.
+    $team_name_subquery = "
+        (SELECT GROUP_CONCAT(t.name SEPARATOR '\x1F')
+         FROM risk_to_team rt INNER JOIN team t ON t.value = rt.team_id
+         WHERE rt.risk_id = b.id) AS team_name";
+
+    $db = db_open();
+    if (get_setting('plan_projects_show_all') == 1) {
+        $sql = "
+            SELECT b.id, b.project_id, b.status, b.subject, b.owner, b.mitigation_id,
+                   a.calculated_risk, m.mitigation_percent, m.planning_date, {$team_name_subquery}
+            FROM risks b
+                LEFT JOIN risk_scoring a ON a.id = b.id
+                LEFT JOIN mitigations m ON m.id = b.mitigation_id
+            WHERE b.project_id IN ({$placeholders}) {$closed_clause}
+            ORDER BY a.calculated_risk DESC, b.id ASC";
+    } else {
+        $sql = "
+            SELECT b.id, b.project_id, b.status, b.subject, b.owner, b.mitigation_id,
+                   a.calculated_risk, m.mitigation_percent, m.planning_date, {$team_name_subquery}
+            FROM risks b
+                LEFT JOIN risk_scoring a ON a.id = b.id
+                LEFT JOIN mitigations m ON m.id = b.mitigation_id
+                INNER JOIN (
+                    SELECT c1.risk_id
+                    FROM mgmt_reviews c1
+                        INNER JOIN (SELECT risk_id, MAX(submission_date) AS date FROM mgmt_reviews GROUP BY risk_id) AS c2
+                            ON c1.risk_id = c2.risk_id AND c1.submission_date = c2.date
+                    WHERE c1.next_step = 2
+                ) AS c ON c.risk_id = b.id
+            WHERE b.project_id IN ({$placeholders}) {$closed_clause}
+            ORDER BY a.calculated_risk DESC, b.id ASC";
+    }
+    $stmt = $db->prepare($sql);
+    $stmt->execute($project_ids);
+    $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    db_close($db);
+
+    // Team Separation (no-op when the Extra is off).
+    return call_extra_function(
+        'team_separation_extra',
+        __DIR__ . '/../extras/separation/index.php',
+        'strip_no_access_risks',
+        [$rows],
+        $rows
+    );
+}
+
+/*********************************************************************
+ * FUNCTION: GET PROJECT RISK AGGREGATES                             *
+ * [project_id => ['risk_count' => n, 'highest_risk' => float|null]] *
+ * computed AFTER Team Separation, so a hidden risk neither counts   *
+ * nor leaks its score. Two fetches at most: completed projects      *
+ * (closed included) and everything else.                            *
+ *********************************************************************/
+function get_project_risk_aggregates(array $projects): array
+{
+    $completed = [];
+    $others = [];
+    $result = [];
+    foreach ($projects as $p) {
+        $id = (int)$p['id'];
+        $result[$id] = ['risk_count' => 0, 'highest_risk' => null];
+        if ((int)$p['status'] === 3) {
+            $completed[] = $id;
+        } else {
+            $others[] = $id;
+        }
+    }
+    $rows = array_merge(
+        get_project_risk_rows($completed, true),
+        get_project_risk_rows($others, false)
+    );
+    foreach ($rows as $row) {
+        $pid = (int)$row['project_id'];
+        if (!isset($result[$pid])) {
+            continue;
+        }
+        $result[$pid]['risk_count']++;
+        $score = $row['calculated_risk'] === null ? null : (float)$row['calculated_risk'];
+        if ($score !== null && ($result[$pid]['highest_risk'] === null || $score > $result[$pid]['highest_risk'])) {
+            $result[$pid]['highest_risk'] = $score;
+        }
+    }
+    return $result;
+}
+
+/**************************************************************
+ * FUNCTION: PLAN PROJECTS RISK LEVEL                         *
+ * {score, level, color} from a calculated_risk against the   *
+ * pre-fetched risk_levels (no per-row query). Escaped once.  *
+ **************************************************************/
+function plan_projects_risk_level_payload($score, array $levels): array
+{
+    global $escaper;
+    if ($score === null) {
+        return ['score' => null, 'level' => '', 'color' => ''];
+    }
+    return [
+        'score' => (float)$score,
+        'level' => $escaper->escapeHtml(get_risk_level_name_from_levels($score, $levels)),
+        'color' => $escaper->escapeCssColor(get_risk_color_from_levels($score, $levels)),
+    ];
+}
+
+/*******************************************************************
+ * FUNCTION: GET PROJECTS FOR GRID                                 *
+ * Everything the Plan Projects card needs for one status chip in  *
+ * one call. $status_filter: '1'..'4' or 'all'. Names decrypted    *
+ * then escaped ONCE here -- the client injects them as HTML.       *
+ *******************************************************************/
+function get_projects_for_grid(string $status_filter = '1'): array
+{
+    global $escaper;
+
+    $status_filter = in_array((string)$status_filter, ['1', '2', '3', '4', 'all'], true) ? (string)$status_filter : '1';
+
+    // get_projects() already decrypts names and orders by `order`.
+    $all = get_projects();
+    $counts = [1 => 0, 2 => 0, 3 => 0, 4 => 0, 'all' => count($all)];
+    foreach ($all as $p) {
+        $s = (int)$p['status'];
+        if (isset($counts[$s])) {
+            $counts[$s]++;
+        }
+    }
+
+    $selected = [];
+    $rank_by_status = [1 => 0, 2 => 0, 3 => 0, 4 => 0];
+    foreach ($all as $p) {
+        $s = (int)$p['status'];
+        $rank_by_status[$s] = ($rank_by_status[$s] ?? 0) + 1;
+        if ($status_filter === 'all' || (string)$s === $status_filter) {
+            $p['priority'] = $rank_by_status[$s];
+            $selected[] = $p;
+        }
+    }
+
+    $aggregates = get_project_risk_aggregates(array_map(function ($p) {
+        return ['id' => (int)$p['value'], 'status' => (int)$p['status']];
+    }, $selected));
+    $levels = get_risk_levels();
+    $today = date('Y-m-d');
+
+    // Customization custom fields (read-only display values).
+    $custom_field_defs = [];
+    if (customization_extra()) {
+        $customization_file = realpath(__DIR__ . '/../extras/customization/index.php');
+        if ($customization_file !== false) {
+            require_once($customization_file);
+            foreach (get_active_fields('project') as $field) {
+                if ((int)$field['is_basic'] !== 1) {
+                    $custom_field_defs[] = $field;
+                }
+            }
+        }
+    }
+
+    $name_of = function ($uid) use ($escaper) {
+        $uid = (int)$uid;
+        if ($uid <= 0) {
+            return ['id' => 0, 'name' => ''];
+        }
+        return ['id' => $uid, 'name' => $escaper->escapeHtml(plan_projects_user_name_cached($uid))];
+    };
+
+    // Batched: one query per option-backed field plus one values query for
+    // every selected project, instead of get_plan_custom_field_name_by_row_id()
+    // once per (project, field) pair -- see
+    // get_plan_custom_field_names_by_row_ids()'s docblock for the cost this
+    // avoids.
+    $custom_field_values = $custom_field_defs
+        ? get_plan_custom_field_names_by_row_ids($custom_field_defs, array_map(function ($p) {
+            return (int)$p['value'];
+        }, $selected), 'project')
+        : [];
+
+    $rows = [];
+    foreach ($selected as $p) {
+        $id = (int)$p['value'];
+        $agg = $aggregates[$id];
+        $due = ($p['due_date'] && strpos($p['due_date'], '0000-00-00') !== 0) ? substr($p['due_date'], 0, 10) : '';
+        $classification_id = (int)$p['data_classification'];
+        $custom_fields = [];
+        foreach ($custom_field_defs as $field) {
+            $field_id = (int)$field['id'];
+            $custom_fields['custom_field_' . $field_id] =
+                $escaper->escapeHtml($custom_field_values[$id][$field_id] ?? '');
+        }
+        $rows[] = [
+            'id' => $id,
+            'name' => $escaper->escapeHtml($p['name']),
+            'status' => (int)$p['status'],
+            'order' => (int)$p['order'],
+            'priority' => (int)$p['priority'],
+            'due_date' => $due,
+            'due_status' => plan_projects_due_status($due, $today),
+            'consultant' => $name_of($p['consultant']),
+            'business_owner' => $name_of($p['business_owner']),
+            'data_classification' => [
+                'id' => $classification_id,
+                // See plan_projects_data_classification_name_cached()'s
+                // docblock for why this needs $use_id=true.
+                'name' => $classification_id ? $escaper->escapeHtml(plan_projects_data_classification_name_cached($classification_id)) : '',
+            ],
+            'risk_count' => $agg['risk_count'],
+            'highest_risk' => plan_projects_risk_level_payload($agg['highest_risk'], $levels),
+            'template_group_id' => (int)($p['template_group_id'] ?? 1),
+            'custom_fields' => $custom_fields,
+        ];
+    }
+
+    return ['data' => $rows, 'counts' => $counts];
+}
+
+/*****************************************************************
+ * FUNCTION: PLAN PROJECTS USER NAME CACHED                      *
+ * Per-request memoised get_user_name() lookup -- shared by       *
+ * plan_projects_risk_row() (one call per risk row) and           *
+ * get_projects_for_grid()'s $name_of closure (one call per       *
+ * project row's consultant/business_owner), so a grid or drawer  *
+ * with many rows referencing the same user re-queries once.      *
+ * Raw name -- callers escape at their own call site.             *
+ *****************************************************************/
+function plan_projects_user_name_cached($uid): string
+{
+    static $cache = [];
+    $uid = (int)$uid;
+    if ($uid <= 0) {
+        return '';
+    }
+    if (!array_key_exists($uid, $cache)) {
+        $cache[$uid] = (string)get_user_name($uid);
+    }
+    return $cache[$uid];
+}
+
+/*****************************************************************
+ * FUNCTION: PLAN PROJECTS DATA CLASSIFICATION NAME CACHED       *
+ * Per-request memoised get_name_by_value('data_classification', *
+ * ...) lookup -- shared by get_projects_for_grid()'s per-row     *
+ * classification name, so a grid with many rows sharing the      *
+ * same classification re-queries once. Raw name -- callers       *
+ * escape at their own call site.                                 *
+ *****************************************************************/
+function plan_projects_data_classification_name_cached(int $classification_id): string
+{
+    static $cache = [];
+    if ($classification_id <= 0) {
+        return '';
+    }
+    if (!array_key_exists($classification_id, $cache)) {
+        // data_classification's primary key is `id`, not `value` --
+        // get_name_by_value() defaults to WHERE value=..., which throws
+        // "Unknown column 'value'" against this table (its get_custom_table()
+        // dropdown query aliases id AS value only for the <select>, it isn't
+        // a real column). $use_id=true selects WHERE id=... instead.
+        $cache[$classification_id] = (string)get_name_by_value('data_classification', $classification_id, '', true);
+    }
+    return $cache[$classification_id];
+}
+
+/*****************************************************************
+ * FUNCTION: PLAN PROJECTS RISK ROW                              *
+ * Shared row shape for the drawer and the unassigned queue.     *
+ *****************************************************************/
+function plan_projects_risk_row(array $row, array $levels): array
+{
+    global $escaper, $lang;
+    $score = $row['calculated_risk'] === null ? null : (float)$row['calculated_risk'];
+    $level = plan_projects_risk_level_payload($score, $levels);
+    $mitigation_state = 'not_planned';
+    if (!empty($row['mitigation_id'])) {
+        $mitigation_state = ((int)($row['mitigation_percent'] ?? 0) >= 100) ? 'mitigated' : 'planned';
+    }
+    // mitigations.planning_date is a NOT NULL `date` with no default, so a
+    // mitigation saved without one stores the zero date; send '' for that
+    // (and for a risk with no mitigation row) so the client has one "unset".
+    $planning_date = (string)($row['planning_date'] ?? '');
+    if ($planning_date === '0000-00-00') {
+        $planning_date = '';
+    }
+    return [
+        'id' => (int)$row['id'],
+        'display_id' => (int)$row['id'] + 1000,
+        'project_id' => (int)($row['project_id'] ?? 0),
+        'subject' => $escaper->escapeHtml(try_decrypt($row['subject'])),
+        'calculated_risk' => $score,
+        'level' => $level['level'],
+        'color' => $level['color'],
+        'status' => $escaper->escapeHtml($row['status']),
+        'mitigation_state' => $mitigation_state,
+        'planning_date' => $planning_date,
+        'owner' => (int)($row['owner'] ?? 0) ? ['id' => (int)$row['owner'], 'name' => $escaper->escapeHtml(plan_projects_user_name_cached((int)$row['owner']))] : ['id' => 0, 'name' => ''],
+        // One escaped name per team (the queue renders a chip each), split on
+        // the 0x1F separator the team_name subqueries join with.
+        'team' => array_values(array_filter(array_map(
+            function ($name) use ($escaper) {
+                return $escaper->escapeHtml(trim($name));
+            },
+            explode("\x1F", (string)($row['team_name'] ?? ''))
+        ), function ($name) {
+            return $name !== '';
+        })),
+        'reviewed' => $row['reviewed'] ?? '',
+        'view_url' => 'view.php?id=' . ((int)$row['id'] + 1000),
+    ];
+}
+
+/***********************************************************
+ * FUNCTION: GET PROJECT RISKS FOR GRID (the expand drawer) *
+ ***********************************************************/
+function get_project_risks_for_grid(int $project_id): array
+{
+    $project = get_project((int)$project_id);
+    if (!$project) {
+        return [];
+    }
+    $rows = get_project_risk_rows([(int)$project_id], (int)$project['status'] === 3);
+    $levels = get_risk_levels();
+    return array_map(function ($r) use ($levels) { return plan_projects_risk_row($r, $levels); }, $rows);
+}
+
+/*******************************************************************
+ * FUNCTION: GET UNASSIGNED RISKS FOR GRID                         *
+ * get_risks_unassigned_project()'s rows (same predicate, same Team *
+ * Separation) enriched with team name and latest review date.     *
+ *******************************************************************/
+function get_unassigned_risks_for_grid(): array
+{
+    global $escaper;
+    $rows = get_risks_unassigned_project();
+    if (empty($rows)) {
+        return [];
+    }
+    $ids = array_map(function ($r) { return (int)$r['id']; }, $rows);
+    $placeholders = implode(',', array_fill(0, count($ids), '?'));
+    $db = db_open();
+    $stmt = $db->prepare("
+        SELECT b.id, m.mitigation_percent, m.planning_date,
+               (SELECT MAX(submission_date) FROM mgmt_reviews WHERE risk_id = b.id) AS reviewed,
+               (SELECT GROUP_CONCAT(t.name SEPARATOR '\x1F') FROM risk_to_team rt INNER JOIN team t ON t.value = rt.team_id WHERE rt.risk_id = b.id) AS team_name
+        FROM risks b LEFT JOIN mitigations m ON m.id = b.mitigation_id
+        WHERE b.id IN ({$placeholders})");
+    $stmt->execute($ids);
+    $extra = [];
+    foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $e) {
+        $extra[(int)$e['id']] = $e;
+    }
+    db_close($db);
+    $levels = get_risk_levels();
+    $out = [];
+    foreach ($rows as $r) {
+        $e = $extra[(int)$r['id']] ?? [];
+        $r['mitigation_percent'] = $e['mitigation_percent'] ?? null;
+        $r['planning_date'] = $e['planning_date'] ?? '';
+        $r['team_name'] = $e['team_name'] ?? '';
+        $r['reviewed'] = !empty($e['reviewed']) ? substr($e['reviewed'], 0, 10) : '';
+        $out[] = plan_projects_risk_row($r, $levels);
+    }
+    return $out;
+}
+
+/*****************************************************************
+ * FUNCTION: REORDER PROJECTS WITHIN STATUS                      *
+ * Persists plan_projects_reorder_within_status(). false when    *
+ * $ordered_ids is not exactly that status's id set.             *
+ *****************************************************************/
+function reorder_projects_within_status(int $status, array $ordered_ids): bool
+{
+    $projects = array_map(function ($p) {
+        return ['id' => (int)$p['value'], 'status' => (int)$p['status'], 'order' => (int)$p['order']];
+    }, get_projects());
+    $new_orders = plan_projects_reorder_within_status($projects, (int)$status, $ordered_ids);
+    if ($new_orders === false) {
+        return false;
+    }
+    $db = db_open();
+    $stmt = $db->prepare("UPDATE projects SET `order` = :order WHERE `value` = :id");
+    foreach ($new_orders as $id => $order) {
+        $stmt->execute([':order' => $order, ':id' => $id]);
+    }
+    db_close($db);
+    return true;
 }
 
 
@@ -33881,31 +35039,30 @@ function getSpreadsheetData($filePath) {
 /*****************************
  * FUNCTION: FETCH COUNTRIES *
  *****************************/
-function fetchCountries(): array
+function fetchCountries(?callable $fetcher = null): array
 {
+    // $fetcher is an injectable seam for tests only -- production callers never
+    // pass an argument, so this always resolves to the real API call. Mirrors
+    // the same seam on core_countries_update's queue_check (includes/jobs/core_countries_update.php).
+    $fetcher ??= 'fetchCountriesFromAPI';
+
     // Open the database connection
     $db = db_open();
 
     $setting = get_setting('countries_cache', db: $db);
     $cache = $setting ? json_decode($setting, true) : null;
-    $cache_valid = $cache && isset($cache['fetched_at'], $cache['countries']);
+    // !empty($cache['countries']) -- not just isset() -- so a cache entry
+    // that was itself written from a failed fetch (see the write side below,
+    // and the bug this guards against) is treated as invalid and retried
+    // immediately instead of being served, and stuck being re-served,
+    // forever.
+    $cache_valid = $cache && isset($cache['fetched_at']) && !empty($cache['countries']);
 
     if ($cache_valid) {
         // @phan-suppress-next-line PhanTypeArraySuspiciousNullable -- $cache_valid guarantees $cache is array with these keys set
         $age = time() - $cache['fetched_at'];
         if ($age >= 24 * 60 * 60) { // cache older than 1 day
-            // Only queue if no pending or in-progress task exists
-            $existing_tasks = get_queue_items($db, 'core_countries_update', ['pending', 'in_progress']);
-            if (empty($existing_tasks)) {
-                //Create the queue task to update countries
-                $queue_task_payload = [
-                    'triggered_at'      => time(),
-                ];
-                queue_task($db, 'core_countries_update', $queue_task_payload, 25, 5, 3600);
-                write_debug_log("Queued core_countries_update task", "info");
-            } else {
-                write_debug_log("core_countries_update task already queued or in progress", "info");
-            }
+            queue_countries_refresh_if_not_already_queued($db);
         }
 
         // Return cached countries immediately
@@ -33913,17 +35070,119 @@ function fetchCountries(): array
         return $cache['countries'];
     }
 
-    // Cache missing or invalid — fetch immediately
-    $countries = fetchCountriesFromAPI(); // your existing API logic
-    update_setting('countries_cache', json_encode([
-        'fetched_at' => time(),
-        'countries' => $countries
-    ]), db: $db);
+    // Cache missing or invalid. If a live fetch attempt failed recently,
+    // don't retry it inline on THIS request -- restcountries.com's v3.1
+    // endpoint is currently permanently broken (301-redirects to a
+    // deprecation notice), so without this, every single request would
+    // synchronously retry a live HTTPS call (with its own internal retries)
+    // that's essentially guaranteed to fail again. Serve the fallback
+    // immediately and let the background refresh (enqueued below, same as
+    // the stale-cache path above) retry on its own schedule instead. A
+    // short window distinct from the 24h success-staleness TTL: a genuine
+    // outage should degrade to "fallback + occasional background retry,"
+    // not "every request blocks on a doomed live HTTP call."
+    $last_failed_at = (int) get_setting('countries_cache_last_failed_at', 0, db: $db);
+    if ($last_failed_at && (time() - $last_failed_at) < (5 * 60)) {
+        queue_countries_refresh_if_not_already_queued($db);
+        db_close($db);
+        return get_fallback_countries();
+    }
 
-    // Close the database connection
+    $countries = $fetcher();
+
+    if (!empty($countries)) {
+        // Only cache a genuine success. Writing an empty result here is what
+        // stranded this field before: it looked identical to a real cache
+        // entry, so every request (and every 24h background refresh) kept
+        // serving -- and re-confirming -- the same empty list indefinitely.
+        update_setting('countries_cache', json_encode([
+            'fetched_at' => time(),
+            'countries' => $countries
+        ]), db: $db);
+
+        db_close($db);
+
+        return $countries;
+    }
+
+    // The live fetch failed (or, as with restcountries.com's now-deprecated
+    // v3.1 endpoint, the third-party API itself is unusable). Record the
+    // failure (read by the negative-cache check above) instead of caching
+    // the empty result under 'countries_cache' itself -- that's what
+    // stranded this field permanently before this fix.
+    update_setting('countries_cache_last_failed_at', (string) time(), db: $db);
+    queue_countries_refresh_if_not_already_queued($db);
+
     db_close($db);
 
-    return $countries;
+    return get_fallback_countries();
+}
+
+/**
+ * Enqueue a core_countries_update background refresh unless one is already
+ * pending/in-progress. Shared by fetchCountries()'s stale-cache path and its
+ * two live-fetch-failure paths so recovery from a broken restcountries.com
+ * happens asynchronously instead of on someone's page load, without
+ * duplicating the existing-task dedup check three times.
+ */
+function queue_countries_refresh_if_not_already_queued(PDO $db): void
+{
+    $existing_tasks = get_queue_items($db, 'core_countries_update', ['pending', 'in_progress']);
+    if (empty($existing_tasks)) {
+        $queue_task_payload = [
+            'triggered_at' => time(),
+        ];
+        queue_task($db, 'core_countries_update', $queue_task_payload, 25, 5, 3600);
+        write_debug_log("Queued core_countries_update task", "info");
+    } else {
+        write_debug_log("core_countries_update task already queued or in progress", "info");
+    }
+}
+
+/**
+ * Pure decode-and-group step for fetchCountriesFromAPI()'s response body,
+ * lifted out so the non-list-response guard and the grouping/sort logic are
+ * unit-testable without a live network call (CLAUDE.md: "refactor the
+ * testable decision out into a pure helper and test that").
+ *
+ * @return array<string, string[]>|null null when $decoded is not a JSON
+ *         *array* (e.g. restcountries.com's live v3.1 response: a JSON
+ *         object -- `{"success":false,"data":null,"errors":[...]}` --
+ *         confirmed by requesting the real endpoint, not a list of country
+ *         records) -- the caller is responsible for logging that outcome.
+ */
+function parse_countries_api_response($decoded): ?array
+{
+    // A 200 response body that isn't a JSON *array* -- a bare scalar/null
+    // (invalid JSON), or a JSON *object* like restcountries.com's
+    // deprecation-notice body -- would otherwise reach foreach() below.
+    // json_decode(..., true) turns a JSON object into a PHP associative
+    // array, which is_array() alone cannot tell apart from a real list of
+    // country records: without the array_is_list() half of this guard, that
+    // object's own values (an error message string, a null, ...) get
+    // foreach'd as if they were country entries, and the `?? 'Unknown'`
+    // fallbacks turn a should-be-empty result into a non-empty
+    // {"Unknown": ["Unknown", ...]} grouping that then gets cached and
+    // served as if it were real data instead of falling through to the
+    // fallback list.
+    if (!is_array($decoded) || !array_is_list($decoded)) {
+        return null;
+    }
+
+    $grouped_countries = [];
+    foreach ($decoded as $country) {
+        $region = $country['region'] ?? 'Unknown';
+        $name = $country['name']['common'] ?? 'Unknown';
+        $grouped_countries[$region][] = $name;
+    }
+
+    // Sort regions and countries alphabetically
+    ksort($grouped_countries);
+    foreach ($grouped_countries as &$region_countries) {
+        sort($region_countries);
+    }
+
+    return $grouped_countries;
 }
 
 /**************************************
@@ -33947,19 +35206,11 @@ function fetchCountriesFromAPI(): array
         return [];
     }
 
-    $countries = json_decode($response['response'], true);
+    $grouped_countries = parse_countries_api_response(json_decode($response['response'], true));
 
-    $grouped_countries = [];
-    foreach ($countries as $country) {
-        $region = $country['region'] ?? 'Unknown';
-        $name = $country['name']['common'] ?? 'Unknown';
-        $grouped_countries[$region][] = $name;
-    }
-
-    // Sort regions and countries alphabetically
-    ksort($grouped_countries);
-    foreach ($grouped_countries as &$region_countries) {
-        sort($region_countries);
+    if ($grouped_countries === null) {
+        write_debug_log("SimpleRisk received an unexpected non-array response from " . $url, "warning");
+        return [];
     }
 
     return $grouped_countries;
@@ -34049,7 +35300,7 @@ function retrieve_settings_values($parameter_array, $settings_prefix)
     $settings = [];
     foreach ($settings_table as $setting)
     {
-        $settings[$setting['name']] = json_decode($setting['value']);
+        $settings[$setting['name']] = isset($setting['value']) ? json_decode($setting['value']) : null;
     }
 
     // Close the database connection
@@ -34438,19 +35689,21 @@ function get_whats_next_items($domain = null)
                 'cta_url' => '../management/index.php', 'band' => 'setup', 'domain' => 'risk', 'count' => 1];
         }
 
-        // Work: risks needing review → the management review queue. Home lives in
+        // Work: risks needing review → the Review Risk action queue (Task 22
+        // retired the separate management_review.php page). Home lives in
         // /reports/, so links to other top-level dirs are relative with ../.
         $unreviewed = get_unreviewed_open_risk_count();
         if ($unreviewed > 0) {
             $items[] = ['key' => 'unreviewed_risks', 'label_key' => 'WhatsNextUnreviewedRisks',
-                'cta_url' => '../management/management_review.php', 'band' => 'due_soon', 'domain' => 'risk', 'count' => $unreviewed];
+                'cta_url' => '../management/review_risk.php', 'band' => 'due_soon', 'domain' => 'risk', 'count' => $unreviewed];
         }
 
-        // Work: risks needing mitigation → the plan-mitigations queue
+        // Work: risks needing mitigation → the Review Risk action queue (Task 22
+        // retired the separate plan_mitigations.php page)
         $unmitigated = get_unmitigated_open_risk_count();
         if ($unmitigated > 0) {
             $items[] = ['key' => 'unmitigated_risks', 'label_key' => 'WhatsNextUnmitigatedRisks',
-                'cta_url' => '../management/plan_mitigations.php', 'band' => 'due_soon', 'domain' => 'risk', 'count' => $unmitigated];
+                'cta_url' => '../management/review_risk.php', 'band' => 'due_soon', 'domain' => 'risk', 'count' => $unmitigated];
         }
     }
 
@@ -35557,6 +36810,81 @@ function ai_invalidate_risk_analysis_for(string $type, int $id, ?PDO $db = null)
             db_close($db);
         }
     }
+}
+
+/*******************************************************************************
+ * FUNCTION: NORMALIZE BULK IDS                                                *
+ * Shared "select all N" id-list sanitizer behind every batch-mutation         *
+ * endpoint's own normalize_*_ids() wrapper -- normalize_bulk_risk_ids()       *
+ * (includes/api.php), normalize_bulk_approve_ids() (includes/governance.php), *
+ * and manage_audits_normalize_batch_delete_ids() /                            *
+ * define_tests_normalize_batch_ids() (api/v2/includes/compliance.php). Those  *
+ * four were hand-duplicated copies of this exact loop, differing only in      *
+ * which cap constant they close over -- consolidated here so there is        *
+ * exactly one implementation to audit; each wrapper keeps its own name (and   *
+ * its own fixed cap constant) for its existing callers and tests, and just    *
+ * delegates to this function.                                                 *
+ *                                                                              *
+ * Drops any member that isn't a scalar decimal-digit string -- a nested-array *
+ * member would otherwise reach the (string) cast and raise "Array to string   *
+ * conversion"; is_scalar() alone would also admit bool true, which casts to   *
+ * "1" and would silently target record 1 -- then caps the result at $cap so   *
+ * one authorized request can't drive an unbounded number of mutations.        *
+ * $truncated is set true only when a real (numeric, positive) id was dropped  *
+ * by the cap -- never for junk that was filtered out anyway -- so the         *
+ * caller's batch response can tell "you sent exactly the cap" apart from      *
+ * "you sent more than the cap and some were silently never touched".         *
+ *                                                                              *
+ * Pure: no session, no DB. Directly unit-testable.                            *
+ *                                                                              *
+ * @param  mixed $raw_ids
+ * @param  int   $cap
+ * @param  bool  $truncated
+ * @return int[]
+ *******************************************************************************/
+function normalize_bulk_ids($raw_ids, $cap, &$truncated = null) {
+    $truncated = false;
+
+    if (!is_array($raw_ids)) {
+        return [];
+    }
+
+    $ids = [];
+    foreach ($raw_ids as $raw_id) {
+        if (!is_int($raw_id) && !is_string($raw_id)) {
+            continue;
+        }
+        $candidate = (string)$raw_id;
+        if ($candidate === '' || !ctype_digit($candidate) || (int)$candidate <= 0) {
+            continue;
+        }
+        if (count($ids) >= $cap) {
+            $truncated = true;
+            continue;
+        }
+        $ids[] = (int)$candidate;
+    }
+
+    return $ids;
+}
+
+// "Select all N"'s shared cap-exceeded message: Manage Audits, Define Tests,
+// and Review Risk's own filtered_ids endpoints all hit this exact branch
+// when the resolved id count exceeds their (independent) cap constant.
+// $noun_lang_key names a plain $lang[] key (e.g. 'Audits'/'Tests'/'Risks')
+// -- passed as the RAW lookup, not through _lang(), and deliberately so:
+// _lang() escapes every param it's given, and its own return value already
+// carries that escaping, so handing $lang[$noun_lang_key] straight to the
+// outer _lang() call here (which escapes it once) is correct, while nesting
+// a second _lang() call to resolve the noun would escape it twice
+// (Phan: SecurityCheck-DoubleEscaped -- this is exactly the bug that shipped
+// independently at all 3 call sites this helper replaces, and had to be
+// fixed independently at all 3).
+function select_all_too_many_matches_message(int $max, string $noun_lang_key): string
+{
+    global $lang;
+
+    return _lang('SelectAllTooManyMatches', ['max' => $max, 'noun' => $lang[$noun_lang_key] ?? '']);
 }
 
 ?>
