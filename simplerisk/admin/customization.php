@@ -5,7 +5,7 @@
 
 	// Render the header and sidebar
 	require_once(realpath(__DIR__ . '/../includes/renderutils.php'));
-	render_header_and_sidebar(['tabs:logic', 'multiselect', 'datetimerangepicker', 'CUSTOM:common.js', 'CUSTOM:pages/customization.js'], ['check_admin' => true], 'CustomizationExtra', 'Configure', 'Extras');
+	render_header_and_sidebar(['tabs:logic', 'multiselect', 'datetimerangepicker', 'gridstack', 'CUSTOM:common.js', 'CUSTOM:pages/customization.js', 'CUSTOM:pages/customization-layout-editor.js'], ['check_admin' => true], 'CustomizationExtra', 'Configure', 'Extras');
 
 	// If the extra directory exists
 	if (is_dir(realpath(__DIR__ . '/../extras/customization'))) {
@@ -37,6 +37,33 @@
 
 			// Set default main fields
 			set_default_main_fields($fgroup, $template_group_id);
+
+			// set_default_main_fields() deletes and re-inserts every
+			// custom_template row for this (fgroup, template_group_id) with
+			// card_key left NULL -- it only knows the legacy panel_name/
+			// ordering placement, not Cards geometry. Same gap
+			// customization_extra_addTemplateGroup() had (see its own fix's
+			// commit message): without re-backfilling here, Restore silently
+			// dumps every Details/Mitigation/Review field into the generic
+			// 'custom_fields' catch-all card instead of restoring the real
+			// curated cards. All three are existence-gated per (group,
+			// card_key)/field, so this is a safe no-op for any OTHER
+			// (fgroup, template_group_id) this restore didn't just touch.
+			if ($fgroup === 'risk') {
+				$backfill_db = db_open();
+				backfill_customization_cards_layout($backfill_db);
+				backfill_customization_mitigation_cards_layout($backfill_db);
+				backfill_customization_review_cards_layout($backfill_db);
+				db_close($backfill_db);
+			} elseif ($fgroup === 'asset') {
+				// Same gap for the asset record's Cards layout: set_default_main_fields()
+				// has just re-inserted the group's rows with a NULL card_key. Not quite a
+				// no-op for the other asset groups: one still missing the Scoring tile
+				// gets it here (under Classification, rows below shifted) -- intended.
+				$backfill_db = db_open();
+				backfill_customization_asset_cards_layout($backfill_db);
+				db_close($backfill_db);
+			}
 
 			refresh();
 			
@@ -114,6 +141,21 @@
 			} else {
 
 				add_custom_template_group($name, $fgroup);
+				if ($fgroup === 'asset') {
+					// Seed the asset record's six card tiles for the new group. The
+					// backfill covers every asset group, so another asset group still
+					// missing the Scoring tile gets it too (intended). A tile a
+					// concurrent request inserted first counts as present; any other
+					// failure is logged, since the group itself is already saved.
+					$backfill_db = db_open();
+					try {
+						backfill_customization_asset_cards_layout($backfill_db);
+					} catch (\Throwable $e) {
+						write_debug_log('Asset cards backfill after adding a template group failed: ' . $e->getMessage(), 'error');
+					} finally {
+						db_close($backfill_db);
+					}
+				}
 				set_alert(true, "good", $escaper->escapeHtml($lang['AddedSuccess']));
 
 			}

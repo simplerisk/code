@@ -756,7 +756,7 @@ function process_mfa_disable($uid = null)
 /****************************************
  * FUNCTION: CONFIRM MATCHING MFA TOKEN *
  ****************************************/
-function does_mfa_token_match($mfa_token = null, $uid = null)
+function does_mfa_token_match($mfa_token = null, $uid = null, $skip_attempt_throttle = false)
 {
     // If the MFA token was not provided
     if($mfa_token === null)
@@ -772,8 +772,12 @@ function does_mfa_token_match($mfa_token = null, $uid = null)
         $uid = $_SESSION['uid'];
     }
 
-    // Check the MFA attempts for this uid
-    if (!check_mfa_attempts($uid))
+    // Check the MFA attempts for this uid, UNLESS the caller already spent an
+    // attempt from this same bucket earlier in the same request and is
+    // passing $skip_attempt_throttle=true to avoid double-counting it here.
+    // Every existing caller omits this argument, so it defaults to false and
+    // this check_mfa_attempts() call behaves exactly as before for them.
+    if (!$skip_attempt_throttle && !check_mfa_attempts($uid))
     {
         // If we have too many MFA attempts return false
         return false;

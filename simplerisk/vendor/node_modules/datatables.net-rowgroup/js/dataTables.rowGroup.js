@@ -1,4 +1,4 @@
-/*! RowGroup 2.0.0 for DataTables
+/*! RowGroup 2.1.1 for DataTables
  * Copyright (c) SpryMedia Ltd - datatables.net/license
  */
 
@@ -44,8 +44,8 @@
 var Dom = DataTable.Dom;
 var util = DataTable.util;
 
-if (!DataTable || !DataTable.versionCheck || !DataTable.versionCheck('3')) {
-    throw new Error('RowGroup requires DataTables 3 or newer');
+if (!DataTable || !DataTable.versionCheck || !DataTable.versionCheck('3.1')) {
+    throw new Error('RowGroup requires DataTables 3.1 or newer');
 }
 class RowGroup {
     /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -357,10 +357,10 @@ RowGroup.defaults = {
      * @function
      */
     startRender(rows, group, level) {
-        return group;
+        return util.escapeHtml(group);
     }
 };
-RowGroup.version = '2.0.0';
+RowGroup.version = '2.1.1';
 
 
 DataTable.RowGroup = RowGroup;
@@ -399,7 +399,7 @@ DataTable.Api.register('rowGroup().dataSrc()', function (val) {
 });
 // Attach a listener to the document which listens for DataTables initialisation
 // events so we can automatically initialise
-Dom.s(document).on('preInit.dt.dtrg', function (e, settings, json) {
+Dom.on('preInit.dt.dtrg', function (e, settings, json) {
     if (e.namespace !== 'dt') {
         return;
     }

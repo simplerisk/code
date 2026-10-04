@@ -431,10 +431,17 @@ class OpenApiGovernanceControls {}
  * @OA\Get(
  *     path="/governance/controls/roster",
  *     summary="Get the lightweight control roster (id/number/name/description, plus family and framework ids)",
- *     description="Returns id, control_number, short_name, family and framework ids for every non-deleted control, with no test/last-result/tag enrichment. Backs Document Program's and Define Exceptions' control pickers (design-system.md §14b), whose framework and family columns filter client-side from these ids. Same shape as GET /compliance/control_roster, gated on governance instead of compliance permission -- these two pages don't require the Compliance module. Framework and family NAMES are not included; each page renders both lists for its own picker facets.",
+ *     description="Returns id, control_number, short_name, family and framework ids for every non-deleted control, with no test/last-result/tag enrichment. Backs Document Program's and Define Exceptions' control pickers (design-system.md §14b), whose framework and family columns filter client-side from these ids, AND the Mitigation Controls field's faceted picker (risk-mitigation-controls.js), which passes include_facets=1 to additionally receive resolved framework/family name lists (see that parameter's own description). Same shape as GET /compliance/control_roster, gated on governance instead of compliance permission -- these pages don't require the Compliance module. Without include_facets, framework and family NAMES are not included; each non-Mitigation-Controls caller renders both lists for its own picker facets separately.",
  *     operationId="governanceControlRoster",
  *     tags={"governance"},
  *     security={{"ApiKeyAuth":{}}},
+ *     @OA\Parameter(
+ *         name="include_facets",
+ *         in="query",
+ *         required=false,
+ *         description="When '1', wraps the response as {controls, frameworks, families} instead of returning the controls array directly -- frameworks/families are each {value, name} pairs resolved server-side, for a caller (the Mitigation Controls picker) that needs facet NAMES, not just ids. Omit for the default flat-array response.",
+ *         @OA\Schema(type="string", enum={"0", "1"}, default="0")
+ *     ),
  *     @OA\Response(
  *         response=200,
  *         description="Every non-deleted control's id/control_number/short_name, with its family id and the ids of the frameworks it maps into.",
@@ -536,6 +543,7 @@ class OpenApiGovernanceControlRoster {}
  *                         @OA\Property(property="mitigation_percent", type="integer"),
  *                         @OA\Property(property="description_purified", type="string", description="HTML-purified description, safe to insert with .html()."),
  *                         @OA\Property(property="supplemental_guidance_purified", type="string", description="HTML-purified supplemental guidance, safe to insert with .html()."),
+ *                         @OA\Property(property="custom_field_{id}", type="string", description="Present once per ACTIVE Customization Extra custom 'control' field, keyed by the field's numeric id. The active-field catalog itself (key/label/custom) is not served by this endpoint -- the Define Control Frameworks page renders it inline at page load, alongside its other server-resolved state. Each value is resolved to its display text (dropdown/multidropdown option names, decrypted where the field is encrypted) and HTML-escaped -- render with .text()/textContent or insert as-is into an already-trusted sink, never re-escape."),
  *                         @OA\Property(property="applicability", type="string", enum={"applicable","not_applicable","inherited"}, description="The control's applicability within the scoped framework. Only present when applicability_scoped is true. `applicable` is the DEFAULT and is never stored -- a control with no decision row resolves to it."),
  *                         @OA\Property(property="applicability_reason", type="string", nullable=true, description="Name of the configurable reason on the decision, or null. PLAIN TEXT, returned raw -- render with .text()/textContent, never .html()."),
  *                         @OA\Property(property="applicability_narrative", type="string", nullable=true, description="The justification recorded with the deviation, or null for an applicable control. PLAIN TEXT, returned raw -- render with .text()/textContent, never .html()."),
@@ -560,6 +568,42 @@ class OpenApiGovernanceControlRoster {}
  * )
  */
 class OpenApiGovernanceControlsTable {}
+
+/**
+ * @OA\Post(
+ *     path="/governance/controls/display_settings",
+ *     summary="Save the requesting user's Define Control Frameworks Columns picker state",
+ *     description="Persists the Columns picker's column visibility as one JSON blob on the requesting user's own record, read back on the next page load (rendered inline at page load, not served by any GET endpoint). There is no addressable resource -- only the caller's own display preferences -- hence POST rather than PATCH, matching POST /management/projects/display_settings' identical framing. The filter sheet's facet state is deliberately not accepted here: it is search state, not layout, and is never persisted.",
+ *     operationId="saveGovernanceControlsDisplaySettings",
+ *     tags={"governance_crud"},
+ *     security={{"ApiKeyAuth":{}}},
+ *     @OA\RequestBody(
+ *         required=true,
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(
+ *                 property="columns",
+ *                 type="array",
+ *                 description="Column visibility pairs. Each entry is [key, '0'|'1']. `key` is a standard column id (family, owner, class, phase, priority, control_type, maturity, status) or custom_field_{id}; anything else is rejected with a 400.",
+ *                 @OA\Items(type="array", @OA\Items())
+ *             )
+ *         )
+ *     ),
+ *     @OA\Response(response=200, description="Saved"),
+ *     @OA\Response(
+ *         response=400,
+ *         description="BAD REQUEST: columns was not sent, or a value failed validation.",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(property="status", type="integer", example=400),
+ *             @OA\Property(property="message", type="string"),
+ *             @OA\Property(property="data", type="object", nullable=true, additionalProperties=true)
+ *         )
+ *     ),
+ *     @OA\Response(response=403, description="FORBIDDEN: The user does not have governance permission.")
+ * )
+ */
+class OpenApiSaveGovernanceControlsDisplaySettings {}
 
 /**
  * @OA\Get(

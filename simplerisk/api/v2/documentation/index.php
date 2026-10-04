@@ -195,6 +195,17 @@ if (workflows_extra())
     }
 }
 
+// If the customization extra is enabled
+if (customization_extra())
+{
+    if (file_exists(realpath(__DIR__ . '/../../../extras/customization/includes/api_documentation.php')))
+    {
+        // Add the customization extra API documentation
+        require_once realpath(__DIR__ . '/../../../extras/customization/includes/api_documentation.php');
+        $scan_directories[] = realpath(__DIR__ . '/../../../extras/customization/includes/api_documentation.php');
+    }
+}
+
 // If the Encryption Extra directory is present, register its API docs. The
 // gate is `is_dir()` rather than `encryption_extra()` because the three
 // endpoints (status, restore, algorithm-check/trigger) are reachable even when the

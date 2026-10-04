@@ -130,6 +130,16 @@
         > * {
             margin: 0;
         }
+
+        // The theme's global $border-radius is 1px (near-square) -- .sr-q*
+        // components apply the design system's 6px control radius (§3) as a
+        // LOCAL override, but Cancel/Save here are plain Bootstrap .btn-dark/
+        // .btn-submit, so without this they rendered visibly square inside
+        // an otherwise fully-rounded modal (same gap .risk-details
+        // .sr-risk-tab-action's own local override exists to close).
+        .btn {
+            border-radius: 6px;
+        }
     }
 
     // Optional left-aligned hint ("Approvers can't be the tester"), which
@@ -150,6 +160,59 @@
     }
 }
 
+// --- Wide record modal: .sr-modal--cards --------------------------------
+// A record laid out as Cards (the asset record modal: view / edit / add on
+// the Customization template's card grid). The shell's 640px cap above
+// (0,2,0) outranks Bootstrap's .modal-xl (0,1,0), so this restates
+// Bootstrap 5.3's own modal-xl ladder at (0,3,0): 1140px from 1200, 800px
+// from 992, 500px from 576. Below 576 the dialog becomes a full-bleed sheet
+// (no margin, no radius, full height) so the footer's Save stays on screen
+// and the body scrolls between the pinned header and footer. Use it in new
+// work instead of another per-modal, ID-scoped copy of the ladder
+// (#modal-new-risk, #review-risk-add-modal predate it).
+.sr-modal.sr-modal--cards {
+
+    .modal-dialog {
+        max-width: none;
+    }
+
+    @media (min-width: 576px) {
+        .modal-dialog {
+            max-width: 500px;
+        }
+    }
+
+    @media (min-width: 992px) {
+        .modal-dialog {
+            max-width: 800px;
+        }
+    }
+
+    @media (min-width: 1200px) {
+        .modal-dialog {
+            max-width: 1140px;
+        }
+    }
+
+    @media (max-width: 575.98px) {
+        .modal-dialog {
+            margin: 0;
+            height: 100%;
+        }
+
+        .modal-dialog-scrollable {
+            height: 100%;
+            max-height: none;
+        }
+
+        .modal-content {
+            height: 100%;
+            border: 0;
+            border-radius: 0;
+        }
+    }
+}
+
 // --- Section card ------------------------------------------------------
 // A titled group of fields inside a modal body. Not scoped to .sr-modal so
 // the same card can group fields on a full page, but it is designed
@@ -158,6 +221,75 @@
     background: $sr-body;
     border: 1px solid $gray-300;
     border-radius: 8px;
+}
+
+// A stack of .sr-qcard with no .sr-qform ancestor -- the Details tab's
+// read-mode Cards renderer, risk-details-view.js -- has no wrapping grid of
+// its own, so the cards would render edge-to-edge. The separation belongs on
+// THAT wrapper, not on the shared .sr-qcard rule: this bare .sr-qcard is used
+// by ~10 other files (Compliance, Governance, AI, Upgrade), most of which
+// stack their cards as direct children of `.sr-modal .modal-body`, itself a
+// grid with `gap: 13px`. A margin-bottom on the card there adds to that gap
+// and leaves dead space before the modal footer.
+.sr-qcards-stack {
+    display: grid;
+    gap: 16px;
+}
+
+// Opt-in RiskDetailsView layouts (honorCardWidths / responsive), used by an
+// embedded record view such as the asset record modal. Default risk tabs
+// render neither class and are unaffected. The host wrapper is a size
+// container, so the collapse below follows the space the card stack is given
+// (a modal body), not the viewport.
+.sr-qcards-host {
+    container-type: inline-size;
+}
+
+// Cards at their saved pos_x/pos_w on 12 columns; the span arrives as a
+// custom property (set by risk-details-view.js) so the container query below
+// can override it without fighting an inline grid-column.
+.sr-qcards-stack--grid {
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+
+    > .sr-qcard {
+        grid-column: var(--sr-qcard-col, 1 / -1);
+    }
+}
+
+@container (max-width: 700px) {
+    .sr-qcards-stack--grid > .sr-qcard {
+        grid-column: 1 / -1;
+    }
+
+    // renderFieldItem() pins each field to its saved column/row with inline
+    // grid-column/grid-row, so collapsing to one column has to outrank them.
+    .sr-qcards-stack--responsive .sr-qgrid {
+        grid-template-columns: minmax(0, 1fr);
+
+        > .sr-qfield {
+            grid-column: 1 / -1 !important;
+            grid-row: auto !important;
+        }
+    }
+
+    .sr-qcards-stack--responsive .sr-qgrid--columns {
+        flex-direction: column;
+        gap: 12px;
+    }
+}
+
+// Matches risk-details-form.js's edit-mode .sr-qform .sr-qcard-head exactly
+// (sr-qcard-head-styled, scss/mixins/qcard-head.scss) rather than the older,
+// unrelated bare .sr-qcard-head/.sr-qcard-title rule directly below --
+// risk-details-view.js's card markup no longer emits an <h3>/.sr-qcard-title
+// at all (it builds .sr-qcard-ico + .sr-qcard-htext>h2 now), so that bare
+// rule's title styling simply no longer matches here; its .sr-qcard-sub/
+// .sr-qcard-tag rules are untouched and still apply to any card that uses
+// them. Scoped to .sr-qcards-stack (0,2,0) specifically so the ~10 other
+// pages sharing the bare rule below (Compliance, Governance, AI, Upgrade)
+// are never affected.
+.sr-qcards-stack .sr-qcard-head {
+    @include sr-qcard-head-styled;
 }
 
 .sr-qcard-head {
@@ -233,6 +365,31 @@
     grid-column: 1 / -1;
 }
 
+// Two independently-flowing flex columns instead of .sr-qgrid's shared CSS
+// Grid row tracks -- see this class's twin, scoped-and-overridden for the
+// live risk-view page under .sr-qform in modules/_questionnaire.scss, for
+// the root cause it fixes (a short field paired on the same row as a much
+// taller one, e.g. Review's own value beside Comment's multi-line
+// richtext, stretches the short field's cell to match instead of letting
+// the row after it start right away). Defined here, unscoped, so the
+// "View All Reviews" history modal -- which renders the SAME 'review'
+// card field roster via RiskDetailsView.renderFieldsGrid() but has no
+// .sr-qform ancestor of its own -- gets the fix too, not just the live
+// card.
+.sr-qgrid--columns {
+    display: flex;
+    align-items: flex-start;
+    gap: 0 12px;
+
+    .sr-qgrid-col {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        flex: 1 1 0;
+        min-width: 0;
+    }
+}
+
 // A <form> wrapping every .sr-qcard section in a modal body (the Columns-
 // picker needs ONE form so its submit captures every checkbox across every
 // section) would otherwise be a single un-styled grid item, swallowing
@@ -268,6 +425,95 @@
 .sr-qhint {
     font-size: 11.5px;
     color: $gray-600;
+}
+
+// The read-only counterpart of a form control inside a bare (non-.sr-qform)
+// .sr-qfield -- risk-details-view.js's label:value rows for the Details
+// tab's read mode. Sized/colored to read as plain body text under a bold
+// .sr-qlabel, not a form control -- no border/background of its own.
+.sr-qfield-value {
+    font-size: 13px;
+    color: $sr-primary;
+    word-break: break-word;
+}
+
+// design-system.md §11: "a missing value is an em dash, never a blank box" --
+// same rule and same color _governance-frameworks.scss's .sr-dl-value.is-empty
+// already applies to Governance's own detail/read views; renderFieldItem()
+// (risk-details-view.js) sets this class whenever a field resolved no value
+// at all, across Details/Mitigation/Review.
+.sr-qfield-value.is-empty { color: $gray-500; }
+
+// Details-tab-only per-field inline edit (renderFieldItem(), risk-details-
+// view.js) -- the same hover-revealed .sr-row-action pencil the record
+// header's Subject/Status fields already use (_riskmanagement.scss), scaled
+// to this smaller field-row context instead of that header's own horizontal
+// label+pill+icon row. .sr-qfield-value-row keeps the label ABOVE the value
+// (design-system.md #11's definition-list shape, .sr-qfield's own
+// flex-direction:column above) while putting the value and its edit icon
+// side by side on the value's own line -- .sr-row-action itself (_tables.scss)
+// supplies the icon-button chrome; only visibility + layout are scoped here.
+.sr-qfield-value-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.sr-qfield--inline-editable {
+    .sr-qfield-value-row > .sr-row-action {
+        opacity: 0;
+        transition: opacity $transitions;
+        flex: none;
+    }
+
+    &:hover .sr-qfield-value-row > .sr-row-action,
+    &:focus-within .sr-qfield-value-row > .sr-row-action {
+        opacity: 1;
+    }
+
+    // The edit row's control (input/select/selectize) takes the space the
+    // static value used to fill; Cancel/Save sit in their own
+    // .sr-inline-edit-actions group beside it (_riskmanagement.scss),
+    // unscoped there for the same reason .sr-row-action itself is unscoped.
+    .sr-qfield-edit-control {
+        flex: 1 1 auto;
+        min-width: 0;
+    }
+
+    // The control + Cancel/Save actually live inside a <form> (needed so
+    // serializeWithEmptyMultiValueMarkers() has a real form element to read
+    // -- risk-details-form.js) -- same display:contents trick .sr-qcard-form
+    // above uses to remove a wrapping <form> from box generation entirely,
+    // so its children lay out as direct flex items of .sr-qfield-value-row
+    // exactly as if the form weren't there.
+    .sr-qfield-edit-form {
+        display: contents;
+    }
+}
+
+// A multi-value field's read-mode row (Team/Site Location/Technology/
+// Additional Stakeholders/Tags/Risk Mapping/Threat Mapping) renders one
+// .sr-chip per selection instead of plain comma-joined text (renderFieldItem(),
+// risk-details-view.js) -- same chip look .sr-chips-field's edit-mode
+// selections use, just without a .sr-chip-x remove button, and wrapped in a
+// flex row here rather than that rule's own bordered/backgrounded box, since
+// a read-only value has no "box to add to."
+.sr-qfield-value--chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    // A hair of daylight between the label above and the first chip row --
+    // margin here rather than on .sr-qlabel, so every OTHER (plain-text)
+    // field's label spacing is untouched.
+    margin-top: 4px;
+
+    // Read-only chips carry no trailing .sr-chip-x remove button, so
+    // .sr-chip's own edit-mode padding (2px 4px 2px 8px -- asymmetric to
+    // leave room for that button) reads as lopsided and cramped here.
+    // Even, slightly roomier padding on all sides instead.
+    .sr-chip {
+        padding: 3px 10px;
+    }
 }
 
 // ===== Segmented control ================================================
@@ -440,6 +686,18 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+}
+
+// AffectedAssets' own asset-vs-asset-group distinction (renderFieldItem(),
+// risk-details-view.js) -- a plain type glyph, not a second accent color:
+// design-system.md #11 keeps read-mode chips neutral, so the icon alone
+// carries the distinction rather than a background/border tint. `.sr-chip`'s
+// own `gap: 5px` (above) already spaces it from the chip text; only the
+// icon's own size/color need setting here.
+.sr-chip-icon {
+    flex: none;
+    font-size: 11px;
+    color: $gray-600;
 }
 
 .sr-chip-x {

@@ -29,6 +29,11 @@ require_once(realpath(__DIR__ . '/artificial_intelligence.php'));
 // checks). Required AFTER functions.php so functions.php stays the canonical
 // definition of anything they share.
 require_once(realpath(__DIR__ . '/upgrade/common.php'));
+// sync_control_status_from_tests() (SR-2255-followup, upgrade_from_20260917001()
+// backfill below) is defined in compliance_grid.php. Already reachable
+// transitively via reporting.php, but declared directly per CLAUDE.md
+// reachability rules.
+require_once(realpath(__DIR__ . '/compliance_grid.php'));
 
 // Include the language file
 require_once(language_file());
@@ -140,6 +145,7 @@ $releases = [
     "20260908-001",
     "20260909-001",
     "20260917-001",
+    "20261003-001",
 ];
 
 /*************************
@@ -11273,9 +11279,103 @@ function upgrade_from_20260917001($db) {
     $version_to_upgrade = '20260917-001';
 
     // Database version upgrading to
-    $version_upgrading_to = '2026XXXX-001';
+    $version_upgrading_to = '20261003-001';
 
     echo "Beginning SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
+
+    // custom_control_frameworks_display_settings -- persisted column
+    // visibility for the Define Control Frameworks page's Columns picker.
+    // Same JSON shape family as custom_plan_projects_display_settings
+    // ({"columns": [[key,"1"|"0"],...]}); NULL means "client defaults" so no
+    // DEFAULT expression is needed (and MySQL 8 would require the
+    // parenthesised expression form for a TEXT default anyway -- see
+    // custom_review_risk_display_settings above for that trap).
+    if (!field_exists_in_table('custom_control_frameworks_display_settings', 'user')) {
+        echo "Adding a custom_control_frameworks_display_settings field to user table.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `user` ADD COLUMN `custom_control_frameworks_display_settings` TEXT NULL");
+        $stmt->execute();
+    }
+
+    // SR-2255-followup: backfill control_status for every existing
+    // Enterprise-type control from its tests' current last recorded results.
+    // Without this, only a control that receives a NEW test result after
+    // this release ships would self-correct -- a control already
+    // tested-and-mismatched before this release would stay wrong until its
+    // next test cycle. sync_control_status_from_tests() re-checks
+    // control_has_enterprise_type() itself, so this SELECT is a (harmless)
+    // narrowing, not the only gate. Idempotent: recomputing an
+    // already-correct status is a same-value UPDATE that changes nothing,
+    // so re-running this release function is safe.
+    echo "Backfilling control_status for Enterprise-type controls from their tests' last results.<br />\n";
+    $enterprise_type_id = (int) get_value_by_name('control_type', 'Enterprise');
+    if ($enterprise_type_id > 0) {
+        $stmt = $db->prepare("
+            SELECT DISTINCT fc.`id`
+            FROM `framework_controls` fc
+                JOIN `framework_control_type_mappings` m ON m.`control_id` = fc.`id` AND m.`control_type_id` = :control_type_id
+            WHERE fc.`deleted` = 0
+        ");
+        $stmt->bindParam(":control_type_id", $enterprise_type_id, PDO::PARAM_INT);
+        $stmt->execute();
+        $enterprise_control_ids = $stmt->fetchAll(PDO::FETCH_COLUMN);
+        foreach ($enterprise_control_ids as $enterprise_control_id) {
+            sync_control_status_from_tests((int) $enterprise_control_id);
+        }
+    }
+
+    // Renames the CVSS scoring method's display name from "CVSS" to
+    // "CVSS v2.0" (scoring_methods.name, value=2) -- this is the ONLY
+    // source for that label (get_name_by_value('scoring_methods', ...),
+    // api/v2/includes/api.php; get_options_from_table('scoring_methods'),
+    // includes/functions.php feed both the Risk Scoring Method dropdown's
+    // option text and the read-mode value line, in every locale -- the
+    // table's own comment history shows it was never translatable via
+    // $lang). Disambiguates now that Phase 4d-iii's read-mode card shows
+    // the CVSS v2 spec's own vector notation (AV:N/AC:L/...) beside the
+    // score, and the app has no CVSS v3 support to conflict with anyway.
+    // WHERE `name` = 'CVSS' makes this naturally idempotent -- a second run
+    // matches zero rows once the rename has already happened.
+    $stmt = $db->prepare("SELECT COUNT(*) FROM `scoring_methods` WHERE `value` = 2 AND `name` = 'CVSS'");
+    $stmt->execute();
+    if ((int) $stmt->fetchColumn() > 0) {
+        echo "Renaming the CVSS scoring method to \"CVSS v2.0\".<br />\n";
+        $stmt = $db->prepare("UPDATE `scoring_methods` SET `name` = 'CVSS v2.0' WHERE `value` = 2 AND `name` = 'CVSS'");
+        $stmt->execute();
+    }
+
+    // Upgrades overlay new code but do not delete removed files (the bundle
+    // is extracted over the live tree -- see this same function's earlier
+    // sibling treatment of plan_mitigations.php/management_review.php/
+    // review_risks.php above), so unlink the two retired risk-scoring
+    // expander partials here. Idempotent: guarded by file_exists. Both are
+    // pure presentation partials with zero includes/requires anywhere else
+    // in the codebase (verified before removal), so deleting the file is
+    // safe on any instance -- their functionality now lives inline in the
+    // Scoring card (risk-details-view.js/risk-details-form.js).
+    foreach (['score.php', 'score-overtime.php'] as $legacy_partial) {
+        $legacy_partial_path = realpath(__DIR__ . '/../management/partials/' . $legacy_partial);
+        if ($legacy_partial_path !== false && file_exists($legacy_partial_path)) {
+            echo "Deleting the /management/partials/{$legacy_partial} file as it has been replaced by the Scoring card's inline widgets.<br />\n";
+            unlink($legacy_partial_path);
+        }
+    }
+
+    // Asset management redesign: granular asset permissions, granted to every
+    // current holder of the parent `asset` permission. Idempotent.
+    echo "Adding granular asset management permissions.<br />\n";
+    upgrade_add_asset_granular_permissions($db);
+
+    // Asset management redesign: per-user Manage assets column settings.
+    upgrade_add_asset_column_settings($db);
+
+    // Asset management redesign: per-user Asset groups column settings.
+    upgrade_add_asset_group_column_settings($db);
+
+    // Asset management redesign: background asset discovery runs.
+    upgrade_add_asset_discovery_runs($db);
+
+    // Asset Scoring: the three FIPS 199 impact selections on assets.
+    upgrade_add_asset_scoring_columns($db);
 
     // Update the database version
     update_database_version($db, $version_to_upgrade, $version_upgrading_to);

@@ -342,6 +342,18 @@
     display: none;
 }
 
+// Opt-in second line under the Activity cell (createAuditTrail's
+// showMessageDetail option, js/simplerisk/sr-audit-trail.js) -- currently
+// only risk-audit-trail.js turns it on, for the field-by-field diff several
+// risk messages carry. .sr-qhint already sets the size/color; this adds the
+// table-row-specific spacing and lets a long diff string wrap onto multiple
+// lines instead of overflowing the cell.
+.sr-audit-detail {
+    margin-top: 3px;
+    white-space: normal;
+    word-break: break-word;
+}
+
 // Document Program grid row expander (design-system.md §6 "Row expander"):
 // version history. The caret shares a cell with the document name (Define
 // Control Frameworks' own reference placement, governance-frameworks.js),

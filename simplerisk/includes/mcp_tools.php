@@ -553,7 +553,7 @@ function mcp_tool_list_highest_risks(int $limit = 25): array
         WHERE rsk.status != 'Closed'
         {$sep_where}
         GROUP BY rsk.id
-        ORDER BY scoring.calculated_risk DESC
+        ORDER BY scoring.calculated_risk DESC, rsk.id DESC
         LIMIT " . (int) $limit . "
     ");
     $stmt->execute();

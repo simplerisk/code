@@ -5403,7 +5403,9 @@ function make_full_risks_sql($query_type, $status, $sort, $group, $column_filter
             // If the encryption extra is enabled, sort by order_by_subject field
             if (encryption_extra())
             {
-                $sort_name = " a.order_by_subject {$orderDir} ";
+                // id breaks ties, so equal ranks (a just-saved risk placed last
+                // before the rebuild job runs) cannot repeat or skip rows across pages.
+                $sort_name = " a.order_by_subject {$orderDir}, a.id ASC ";
             }
             else
             {
@@ -7880,7 +7882,7 @@ function get_risks_by_appetite($type, $start, $length, $orderColumn, $orderDir, 
             " . ($type === 'out' ? "residual_risk > :risk_appetite" : "residual_risk <= :risk_appetite") . "
             {$having_query}
         ORDER BY
-           {$orderColumn} {$orderDir} 
+           {$orderColumn} {$orderDir}, a.id ASC
         ";
 
     $limitQuery = $length == -1 ? "" : "Limit {$start}, {$length}";
@@ -11551,13 +11553,21 @@ function review_risk_evaluate_row(array $risk, array $ctx)
     }
     $passes_multi_and_search = $filter_ok;
 
+    // 'all' is deliberately not a branch here: it means no status/actionability
+    // restriction at all (every risk, open or closed, actionable or not), so
+    // $passes_status_scope's 'true' default already expresses it correctly.
+    // SR-2255: an earlier version of this code re-applied the 'open' branch's
+    // "must be closed or actionable" restriction under 'all' too, silently
+    // dropping open risks with no outstanding need (e.g. mitigation already
+    // planned and review already recorded) from a scope whose entire point is
+    // "no filter" -- visible as a mismatch between the "Opened This Month" KPI
+    // tile's count and the row count its own status_scope=all drill-through
+    // link actually returned.
     $status_scope = $ctx['status_scope'] ?? 'open';
     $passes_status_scope = true;
     if ($status_scope === 'open' && ($is_closed_row || !$is_actionable)) {
         $passes_status_scope = false;
     } elseif ($status_scope === 'closed' && !$is_closed_row) {
-        $passes_status_scope = false;
-    } elseif ($status_scope === 'all' && !$is_closed_row && !$is_actionable) {
         $passes_status_scope = false;
     }
 
@@ -12409,7 +12419,7 @@ function getting_started_catalog() {
         'risk_review'      => ['area'=>'risk',       'gate'=>'review_any',       'cta'=>'../management/review_risk.php',               'title'=>'GSReviewTitle',        'desc'=>'GSReviewDesc',        'cta_label'=>'GSReviewCta',        'doc'=>'https://www.simplerisk.com/support/review'],
         'define_tests'     => ['area'=>'compliance', 'gate'=>'define_tests',     'cta'=>'../compliance/index.php',                     'title'=>'GSDefineTestTitle',    'desc'=>'GSDefineTestDesc',    'cta_label'=>'GSDefineTestCta',    'doc'=>'https://www.simplerisk.com/support/test'],
         'initiate_audits'  => ['area'=>'compliance', 'gate'=>'initiate_audits',  'cta'=>'../compliance/audit_initiation.php',          'title'=>'GSInitiateAuditTitle', 'desc'=>'GSInitiateAuditDesc', 'cta_label'=>'GSInitiateAuditCta', 'doc'=>'https://www.simplerisk.com/support/audit'],
-        'asset'            => ['area'=>'assets',     'gate'=>'asset',            'cta'=>'../assets/index.php',                         'title'=>'GSAssetTitle',         'desc'=>'GSAssetDesc',         'cta_label'=>'GSAssetCta',         'doc'=>'https://www.simplerisk.com/support/assets'],
+        'asset'            => ['area'=>'assets',     'gate'=>'asset',            'cta'=>'../assets/manage_assets.php',                 'title'=>'GSAssetTitle',         'desc'=>'GSAssetDesc',         'cta_label'=>'GSAssetCta',         'doc'=>'https://www.simplerisk.com/support/assets'],
         // Configure AI is intentionally last (its own 'ai' area, ordered after
         // everything else).
         'ai'               => ['area'=>'ai',         'gate'=>'admin',            'cta'=>'../admin/artificial_intelligence_core.php',   'title'=>'GSAiTitle',            'desc'=>'GSAiDesc',            'cta_label'=>'GSAiCta',            'doc'=>'https://www.simplerisk.com/support/ai'],
@@ -12550,7 +12560,7 @@ function getting_started_explore_links() {
     if (check_permission('riskmanagement')) $links[] = ['label'=>'RiskManagement',  'url'=>'../management/index.php',  'icon'=>'fa-solid fa-triangle-exclamation'];
     if (check_permission('compliance'))     $links[] = ['label'=>'Compliance',      'url'=>'../compliance/index.php',  'icon'=>'fa-solid fa-clipboard-check'];
     if (check_permission('governance'))     $links[] = ['label'=>'Governance',      'url'=>'../governance/index.php',  'icon'=>'fa-solid fa-scale-balanced'];
-    if (check_permission('asset'))          $links[] = ['label'=>'AssetManagement', 'url'=>'../assets/index.php',      'icon'=>'fa-solid fa-server'];
+    if (check_permission('asset'))          $links[] = ['label'=>'AssetManagement', 'url'=>'../assets/manage_assets.php', 'icon'=>'fa-solid fa-server'];
     return $links;
 }
 

@@ -100,7 +100,7 @@ class OpenApiAdminVersionDB {}
  *                      property="version",
  *                      type="string",
  *                      description="Optional. When given, applies exactly that one release's migration -- a single hop, for targeting one migration during development. When OMITTED, the full chain runs from wherever the database actually is, finishing with the migration for the release currently in development if there is one; that is the mode to use for testing a release that has no version number yet.",
- *                      example="20260917-001",
+ *                      example="20261003-001",
  *                      pattern="^\\d{8}-\\d{3}$"
  *                  )
  *              )
@@ -1857,5 +1857,57 @@ class OpenApiAdminExtrasInstall {}
  */
 
 class OpenApiAdminResetRegistration {}
+
+/**
+ * @OA\Get(
+ *     path="/account/profile",
+ *     summary="Get the calling user's own profile",
+ *     operationId="getOwnProfile",
+ *     tags={"User Profile"},
+ *     security={{"ApiKeyAuth":{}}},
+ *     @OA\Response(
+ *       response=200,
+ *       description="The calling user's account details, MFA/language/display state, and permission grants. Always scoped to the caller -- there is no id parameter.",
+ *     ),
+ * )
+ */
+
+class OpenApiProfileGet {}
+
+/**
+ * @OA\Patch(
+ *     path="/account/profile",
+ *     summary="Update the calling user's language preference",
+ *     operationId="patchOwnProfile",
+ *     tags={"User Profile"},
+ *     security={{"ApiKeyAuth":{}}},
+ *     @OA\RequestBody(
+ *       required=true,
+ *       @OA\MediaType(
+ *         mediaType="application/x-www-form-urlencoded",
+ *         @OA\Schema(
+ *           @OA\Property(property="language", type="integer", description="A language id from GET /profile's languages list. This is the only field this endpoint accepts -- every other profile field is admin-managed."),
+ *         ),
+ *       ),
+ *     ),
+ *     @OA\Response(response=200, description="Language updated."),
+ *     @OA\Response(response=400, description="Missing or unknown language id."),
+ * )
+ */
+
+class OpenApiProfilePatch {}
+
+/**
+ * @OA\Post(
+ *     path="/account/reset-display-settings",
+ *     summary="Reset the calling user's custom table/dashboard display settings to the default",
+ *     operationId="resetOwnDisplaySettings",
+ *     tags={"User Profile"},
+ *     security={{"ApiKeyAuth":{}}},
+ *     @OA\Response(response=200, description="Display settings reset."),
+ * )
+ */
+
+class OpenApiProfileResetDisplaySettings {}
 
 ?>

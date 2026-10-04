@@ -27,6 +27,28 @@ function createAuditTrail(options) {
         var allEntitiesLabelKey = options.allEntitiesLabelKey;
         var entityColumnLabelKey = options.entityColumnLabelKey;
         var activityMeta = options.activityMeta;
+        // Opt-in: renders `row.detail` (when present) as a second line under
+        // the Activity cell. Off by default -- Document Program/Define
+        // Exceptions' own messages are one-line sentences with nothing
+        // beyond what the activity pill + actor already say, so showing an
+        // empty/redundant second line for every row would be new visual
+        // noise those two pages never asked for. Risk view's audit trail
+        // (risk-audit-trail.js) turns this on: several of its messages
+        // (Risk/Mitigation details updated) carry a real field-by-field
+        // diff the OLD get_audit_trail_html() dump showed and a bare
+        // activity pill alone would otherwise silently drop.
+        var showMessageDetail = !!options.showMessageDetail;
+        // Opt-in: relocates the search box beside the filter selects
+        // (.sr-qf-selects, as that row's own last flex item) instead of the
+        // card's separate inner toolbar row. Document Program/Define
+        // Exceptions' inner toolbar also holds their Export button, so
+        // search reads as "the other tool up there" on its own row; risk-
+        // audit-trail.js has no Export button, and a lone right-aligned
+        // search control on an otherwise-empty row read as a mistake, not a
+        // deliberate two-row layout -- placing it after the filters lets it
+        // wrap onto its own line, left-aligned like the filters above it,
+        // when the row runs out of width, rather than staying pinned right.
+        var searchBesideFilters = !!options.searchBesideFilters;
 
         function id(suffix) {
             return '#' + idPrefix + '-' + suffix;
@@ -187,22 +209,55 @@ function createAuditTrail(options) {
 
         function rowHtml(row) {
             var meta = activityMeta[row.activity] || activityMeta.other;
-            var entityCell = row[entityNameField]
-                ? esc(row[entityNameField])
-                : '<span class="sr-cell-dash">&mdash;</span>';
             var userLabel = row.user_name ? esc(row.user_name) : esc(L('UnknownUser'));
+            var entityCellHtml = '';
+            if (entityKey) {
+                var entityCell = row[entityNameField]
+                    ? esc(row[entityNameField])
+                    : '<span class="sr-cell-dash">&mdash;</span>';
+                entityCellHtml = '<td>' + entityCell + '</td>';
+            }
 
+            var detailHtml = (showMessageDetail && row.detail) ? '<div class="sr-qhint sr-audit-detail">' + esc(row.detail) + '</div>' : '';
+
+            // data-order pins DataTables' sort to the RAW, lexically-sortable
+            // 'YYYY-MM-DD HH:MM:SS' value (row.timestamp -- the same column
+            // get_audit_trail()'s own ORDER BY timestamp DESC, includes/
+            // functions.php, already sorts by server-side) instead of letting
+            // it fall back to this cell's own text content. Without it,
+            // DataTables sorts column 0 by row.timestamp_display -- a locale-
+            // formatted string built with PHP's unpadded 'g' hour ("3:39 PM",
+            // not "03:39 PM") -- so a STRING comparison reads any single-
+            // digit-hour time as less than every double-digit-hour time
+            // regardless of which is actually later: "3:39 PM" sorts before
+            // "10:15 AM" because '3' < '1' is false but the comparison never
+            // gets that far -- it's '3' vs '1' at the very first differing
+            // character, and '1' < '3'. Confirmed live: a risk's audit trail
+            // showed a 9:xx AM entry above a 3:xx PM entry from the same
+            // later day. Shared by every createAuditTrail() page (Document
+            // Program, Define Exceptions, Risk view), so this one fix covers
+            // all three.
             return '<tr>' +
-                '<td class="sr-audit-timestamp">' + esc(row.timestamp_display) + '</td>' +
-                '<td>' + entityCell + '</td>' +
-                '<td><span class="sr-state-pill ' + meta.pillClass + '">' + esc(L(meta.labelKey)) + '</span> ' + esc(L('By')) + ' <strong>' + userLabel + '</strong></td>' +
+                '<td class="sr-audit-timestamp" data-order="' + esc(row.timestamp) + '">' + esc(row.timestamp_display) + '</td>' +
+                entityCellHtml +
+                '<td><span class="sr-state-pill ' + meta.pillClass + '">' + esc(L(meta.labelKey)) + '</span> ' + esc(L('By')) + ' <strong>' + userLabel + '</strong>' + detailHtml + '</td>' +
             '</tr>';
         }
 
+        // entityKey is optional -- a page scoped to a single record already
+        // (management/view.php's own Audit Trail, risk-audit-trail.js) has
+        // no need for an Entity column repeating that one record's name on
+        // every row the way a list-page audit trail (Define Exceptions/
+        // Document Program, spanning many records) does. Every OTHER
+        // entity-driven code path in this module (currentFilters(),
+        // matchesFilters(), renderFilterOptions()) already degrades safely
+        // on its own when entityKey's DOM elements are simply absent from
+        // the page's markup -- see this file's own header comment -- so
+        // only the two HTML-generating functions need an explicit guard.
         function theadHtml() {
             return '<tr>' +
                 '<th>' + esc(L('AuditTrailDateAndTime')) + '</th>' +
-                '<th>' + esc(L(entityColumnLabelKey)) + '</th>' +
+                (entityKey ? '<th>' + esc(L(entityColumnLabelKey)) + '</th>' : '') +
                 '<th>' + esc(L('Activity')) + '</th>' +
             '</tr>';
         }
@@ -212,12 +267,29 @@ function createAuditTrail(options) {
         // always-visible toolbar, which holds only the toggle/title/Refresh.
         // Same relocation DocumentProgramGrid's relocateSearchIntoTools() (and
         // self-assessment.js's) perform, keeping the node's own event bindings.
+        //
+        // renderBody() (below) replaces #<idPrefix>-body's WHOLE innerHTML on
+        // every fetch/filter change, tearing down that DataTable and building
+        // a fresh one with its OWN freshly generated search box -- but the
+        // PREVIOUSLY relocated search box no longer lives inside #body (this
+        // function already moved it out, into $tools), so it was never torn
+        // down with the rest of the old table and silently stayed put. Each
+        // subsequent call then relocated a second box in alongside it,
+        // accumulating one stale, unbound search input per refetch -- the
+        // visible one after a couple of filter changes was often a dead
+        // leftover wired to an already-destroyed DataTable instance. Removing
+        // any previously relocated box first keeps exactly one live.
         function relocateSearchIntoTools() {
             var $filter = $(id('body') + ' .dt-search, ' + id('body') + ' .dataTables_filter').first();
-            var $tools = $(id('inner-toolbar') + ' .sr-table-tools');
+            var $tools = searchBesideFilters ? $(id('filters')) : $(id('inner-toolbar') + ' .sr-table-tools');
             if ($filter.length && $tools.length) {
+                $tools.find('.dt-search, .dataTables_filter').remove();
                 $filter.find('input[type="search"]').attr('placeholder', L('SearchAuditTrailPlaceholder')).attr('aria-label', L('SearchAuditTrailPlaceholder'));
-                $tools.prepend($filter);
+                if (searchBesideFilters) {
+                    $tools.append($filter);
+                } else {
+                    $tools.prepend($filter);
+                }
             }
         }
 
@@ -356,7 +428,50 @@ function createAuditTrail(options) {
             }
         }
 
+        // Namespaced so the two $(document)-delegated bindings below can be
+        // safely torn down before re-registering (see init()'s own comment) --
+        // scoped to idPrefix so two different createAuditTrail instances on
+        // the same page (unlikely on this view, real on a page embedding more
+        // than one) never touch each other's handlers.
+        var eventNamespace = '.' + idPrefix + '-audit-trail';
+
         function init() {
+            // init() is called more than once on this same, persistent
+            // closure -- once at initial page load (management/view.php's
+            // $(document).ready), and again after every AJAX-driven full-tab
+            // refresh (Close Risk/Reopen/Change Status all replace management/
+            // partials/viewhtml.php's entire markup, including this card, via
+            // getTabHtml()'s $isAjax-gated re-init script -- the exact
+            // mechanism management/partials/details.php's own Cards mount
+            // already uses). Reset the transient widget state to match the
+            // FRESH markup's own server-rendered default (collapsed, nothing
+            // fetched yet) -- without this, a widget left expanded before a
+            // swap kept `expanded`/`loaded` = true internally even though the
+            // new DOM came back collapsed, so the first click after a swap
+            // called setExpanded(false) (a no-op) instead of opening it.
+            // Matches fetchAndRender()'s own existing convention below
+            // (`dt = null;` with no explicit .destroy()) -- the table's
+            // markup is always fully replaced (fresh <table> element) rather
+            // than reused, so DataTables never operates on stale nodes
+            // either way.
+            dt = null;
+            expanded = false;
+            loaded = false;
+            allRows = [];
+            previousEntityValue = [''];
+            previousActivityValue = [''];
+            previousUserValue = [''];
+
+            // The two $(document)-delegated bindings below accumulate across
+            // repeated init() calls (jQuery's event delegation doesn't
+            // deduplicate identical selector/event/namespace registrations
+            // the way a direct binding harmlessly orphans with its old,
+            // destroyed node) -- without this, a second Close Risk/Reopen/
+            // Change Status in the same page session double-fires
+            // applyFiltersAndRender()/the filters-clear proxy, a third
+            // triple-fires it, and so on.
+            $(document).off(eventNamespace);
+
             $(id('toggle')).on('click', function () {
                 setExpanded(!expanded);
             });
@@ -370,6 +485,21 @@ function createAuditTrail(options) {
             });
 
             $(id('range-filter')).on('change', fetchAndRender);
+
+            // Narrow-width filter sheet (design-system.md §6b) -- same
+            // pattern the main grids' own #<x>-filters-toggle uses
+            // (governance-exceptions.js/governance-documents.js), generic
+            // here so every page using this factory gets it for free rather
+            // than each page wiring an identical handler itself. A harmless
+            // no-op if a page's markup has no #<idPrefix>-filters-toggle
+            // (jQuery's .on() over an empty selection registers nothing).
+            $(id('filters-toggle')).on('click', function () {
+                var $toggle = $(this);
+                var open = $(id('quickfilters')).toggleClass('is-open').hasClass('is-open');
+                $toggle
+                    .attr('aria-expanded', open ? 'true' : 'false')
+                    .attr('title', open ? L('HideFilters') : L('ShowFilters'));
+            });
 
             $(document).on('change', id('entity-filter') + ', ' + id('activity-filter') + ', ' + id('user-filter'), applyFiltersAndRender);
 

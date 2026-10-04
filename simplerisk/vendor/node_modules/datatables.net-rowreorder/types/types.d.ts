@@ -144,7 +144,7 @@ declare class RowReorder {
 }
 
 declare module 'datatables.net' {
-    interface Config {
+    interface Options {
         /**
          * RowReorder extension options
          */

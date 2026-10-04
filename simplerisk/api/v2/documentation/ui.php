@@ -422,4 +422,373 @@ class OpenApiGettingStartedRestore {}
  */
 class OpenApiGettingStartedDismissals {}
 
+/**
+ * @OA\Get(
+ *     path="/ui/risk/template_groups",
+ *     summary="Get the risk template groups the current user may submit a risk under",
+ *     operationId="getUiRiskTemplateGroups",
+ *     tags={"ui"},
+ *     security={{"ApiKeyAuth":{}}},
+ *     @OA\Response(
+ *         response=200,
+ *         description="Template groups retrieved successfully.",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(
+ *                 property="data",
+ *                 type="array",
+ *                 @OA\Items(
+ *                     type="object",
+ *                     @OA\Property(property="id", type="integer"),
+ *                     @OA\Property(property="name", type="string"),
+ *                     @OA\Property(property="is_default", type="integer", enum={0, 1})
+ *                 )
+ *             )
+ *         )
+ *     ),
+ *     @OA\Response(response=403, description="FORBIDDEN: The caller does not have the Submit Risks permission."),
+ * )
+ */
+class OpenApiGetUiRiskTemplateGroups {}
+
+/**
+ * @OA\Get(
+ *     path="/ui/risk/fields",
+ *     summary="Get the active risk field roster for a template group's Cards tab",
+ *     operationId="getUiRiskFields",
+ *     tags={"ui"},
+ *     security={{"ApiKeyAuth":{}}},
+ *     @OA\Parameter(
+ *         name="template_group_id",
+ *         in="query",
+ *         required=false,
+ *         description="The risk template group to resolve the field roster for. Falls back to the caller's own default group when omitted or when the caller isn't a member of the requested group.",
+ *         @OA\Schema(type="integer")
+ *     ),
+ *     @OA\Parameter(
+ *         name="tab_index",
+ *         in="query",
+ *         required=false,
+ *         description="Which Cards tab's field roster to return: 1 = Details (default), 2 = Mitigation.",
+ *         @OA\Schema(type="integer", enum={1, 2})
+ *     ),
+ *     @OA\Response(
+ *         response=200,
+ *         description="Field roster retrieved successfully.",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(property="data", type="array", @OA\Items(type="object"), description="Active fields for the resolved template group and tab, each with its name, label, and option data.")
+ *         )
+ *     ),
+ *     @OA\Response(response=403, description="FORBIDDEN: The caller does not have the Submit Risks or Risk Management permission."),
+ * )
+ */
+class OpenApiGetUiRiskFields {}
+
+/**
+ * @OA\Get(
+ *     path="/ui/risk/layout",
+ *     summary="Get the Cards layout (card/field positions) for a template group's tab",
+ *     operationId="getUiRiskLayout",
+ *     tags={"ui"},
+ *     security={{"ApiKeyAuth":{}}},
+ *     @OA\Parameter(
+ *         name="template_group_id",
+ *         in="query",
+ *         required=false,
+ *         description="The risk template group to resolve the layout for. Falls back to the caller's own default group when omitted or when the caller isn't a member of the requested group.",
+ *         @OA\Schema(type="integer")
+ *     ),
+ *     @OA\Parameter(
+ *         name="tab_index",
+ *         in="query",
+ *         required=false,
+ *         description="Which Cards tab's layout to return: 1 = Details (default), 2 = Mitigation, 3 = Review.",
+ *         @OA\Schema(type="integer", enum={1, 2, 3})
+ *     ),
+ *     @OA\Response(
+ *         response=200,
+ *         description="Layout retrieved successfully.",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(property="data", type="array", @OA\Items(type="object"), description="Card placement objects (card_key, position, size) for the resolved template group and tab.")
+ *         )
+ *     ),
+ *     @OA\Response(response=403, description="FORBIDDEN: The caller does not have the Submit Risks or Risk Management permission."),
+ * )
+ */
+class OpenApiGetUiRiskLayout {}
+
+/**
+ * @OA\Get(
+ *     path="/ui/risk/{id}/values",
+ *     summary="Get a risk's Details-tab field values for the Cards view",
+ *     operationId="getUiRiskValues",
+ *     tags={"ui"},
+ *     security={{"ApiKeyAuth":{}}},
+ *     @OA\Parameter(
+ *         name="id",
+ *         in="path",
+ *         required=true,
+ *         description="The ID of the risk.",
+ *         @OA\Schema(type="integer")
+ *     ),
+ *     @OA\Response(
+ *         response=200,
+ *         description="Risk values retrieved successfully.",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(property="template_group_id", type="integer", description="The risk's own template group -- the field/layout roster this response's values were resolved against."),
+ *             @OA\Property(property="values", type="object", description="Map of field name to {raw, display} value, covering both core and custom fields."),
+ *             @OA\Property(property="supporting_documentation_html", type="string", description="Server-rendered supporting-documentation file list."),
+ *             @OA\Property(property="risk_summary", type="object", description="Inherent and residual calculated risk score, level name, and color.")
+ *         )
+ *     ),
+ *     @OA\Response(response=400, description="BAD REQUEST: Missing ID or insufficient Risk Management permission."),
+ *     @OA\Response(response=403, description="FORBIDDEN: The caller does not have access to this risk."),
+ *     @OA\Response(response=404, description="NOT FOUND: Risk ID not found."),
+ * )
+ */
+class OpenApiGetUiRiskValues {}
+
+/**
+ * @OA\Get(
+ *     path="/ui/risk/{id}/mitigation-values",
+ *     summary="Get a risk's Mitigation-tab field values for the Cards view",
+ *     operationId="getUiRiskMitigationValues",
+ *     tags={"ui"},
+ *     security={{"ApiKeyAuth":{}}},
+ *     @OA\Parameter(
+ *         name="id",
+ *         in="path",
+ *         required=true,
+ *         description="The ID of the risk.",
+ *         @OA\Schema(type="integer")
+ *     ),
+ *     @OA\Response(
+ *         response=200,
+ *         description="Mitigation values retrieved successfully.",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(property="values", type="object", description="Map of field name to {raw, display} value for the risk's mitigation record.")
+ *         )
+ *     ),
+ *     @OA\Response(response=400, description="BAD REQUEST: Missing ID or insufficient Risk Management permission."),
+ *     @OA\Response(response=403, description="FORBIDDEN: The caller does not have access to this risk."),
+ *     @OA\Response(response=404, description="NOT FOUND: Risk ID not found."),
+ * )
+ */
+class OpenApiGetUiRiskMitigationValues {}
+
+/**
+ * @OA\Get(
+ *     path="/ui/risk/{id}/review-values",
+ *     summary="Get a risk's Review-tab field values for the Cards view",
+ *     operationId="getUiRiskReviewValues",
+ *     tags={"ui"},
+ *     security={{"ApiKeyAuth":{}}},
+ *     @OA\Parameter(
+ *         name="id",
+ *         in="path",
+ *         required=true,
+ *         description="The ID of the risk.",
+ *         @OA\Schema(type="integer")
+ *     ),
+ *     @OA\Response(
+ *         response=200,
+ *         description="Review values retrieved successfully.",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(property="values", type="object", description="Map of field name to {raw, display} value for the risk's current/most recent management review.")
+ *         )
+ *     ),
+ *     @OA\Response(response=400, description="BAD REQUEST: Missing ID or insufficient Risk Management permission."),
+ *     @OA\Response(response=403, description="FORBIDDEN: The caller does not have access to this risk."),
+ *     @OA\Response(response=404, description="NOT FOUND: Risk ID not found."),
+ * )
+ */
+class OpenApiGetUiRiskReviewValues {}
+
+/**
+ * @OA\Get(
+ *     path="/ui/risk/{id}/review-history",
+ *     summary="Get a risk's full management review history for the Cards view",
+ *     operationId="getUiRiskReviewHistory",
+ *     tags={"ui"},
+ *     security={{"ApiKeyAuth":{}}},
+ *     @OA\Parameter(
+ *         name="id",
+ *         in="path",
+ *         required=true,
+ *         description="The ID of the risk.",
+ *         @OA\Schema(type="integer")
+ *     ),
+ *     @OA\Response(
+ *         response=200,
+ *         description="Review history retrieved successfully.",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(
+ *                 property="data",
+ *                 type="object",
+ *                 @OA\Property(
+ *                     property="reviews",
+ *                     type="array",
+ *                     @OA\Items(type="object"),
+ *                     description="One entry per past review (id plus resolved field values), newest first. Empty when the risk has no reviews yet."
+ *                 )
+ *             )
+ *         )
+ *     ),
+ *     @OA\Response(response=400, description="BAD REQUEST: Missing ID or insufficient Risk Management permission."),
+ *     @OA\Response(response=403, description="FORBIDDEN: The caller does not have access to this risk."),
+ * )
+ */
+class OpenApiGetUiRiskReviewHistory {}
+
+/**
+ * @OA\Get(
+ *     path="/ui/asset/template_groups",
+ *     summary="Get the asset template groups the current user may create an asset under",
+ *     operationId="getUiAssetTemplateGroups",
+ *     tags={"ui"},
+ *     security={{"ApiKeyAuth":{}}},
+ *     @OA\Response(
+ *         response=200,
+ *         description="Template groups retrieved successfully. Without the Customization Extra a single default group is returned.",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(
+ *                 property="data",
+ *                 type="array",
+ *                 @OA\Items(
+ *                     type="object",
+ *                     @OA\Property(property="id", type="integer"),
+ *                     @OA\Property(property="name", type="string"),
+ *                     @OA\Property(property="is_default", type="integer", enum={0, 1})
+ *                 )
+ *             )
+ *         )
+ *     ),
+ *     @OA\Response(response=403, description="FORBIDDEN: The caller does not have the Asset Management permission."),
+ * )
+ */
+class OpenApiGetUiAssetTemplateGroups {}
+
+/**
+ * @OA\Get(
+ *     path="/ui/asset/fields",
+ *     summary="Get the asset field roster for the asset record's Cards layout",
+ *     description="Every field carries a card_key (general, assignment, classification, scoring, additional_info or custom_fields) and a position in its card. Fields the stored template has not placed are placed in the response only; nothing is saved. Without the Customization Extra the core asset fields are returned with their default placement. AssetName is always present and required. Select-shaped fields carry `options` ({value, name}); AssetValuation also carries `default_value`, MappedControls carries `maturity_options` and `can_select_controls` (true only with the Governance permission, which the control picker needs; without it the client shows the mapping read-only and does not send it), AssociatedRisks carries `can_select_risks` (true only with the Risk Management permission) and `options` listing only the risks the caller may see; without the permission `options` is empty and the client shows the count read-only and does not send associated_risks, and, for AssetScoring (the Scoring card's composite; never required), `scoring` {weights {confidentiality, integrity, availability}, values {low, moderate, high}, thresholds {moderate, high} (integers in hundredths: 1.67 is 167), defaults {confidentiality, integrity, availability} (level codes or null; they pre-fill the Add form only)}. AssetScoring is left out until the database upgrade has added the scoring columns.",
+ *     operationId="getUiAssetFields",
+ *     tags={"ui"},
+ *     security={{"ApiKeyAuth":{}}},
+ *     @OA\Parameter(
+ *         name="template_group_id",
+ *         in="query",
+ *         required=false,
+ *         description="The asset template group to resolve the roster for. Falls back to the caller's default asset group when omitted or when the caller may not use the requested group. Ignored when asset_id is sent.",
+ *         @OA\Schema(type="integer")
+ *     ),
+ *     @OA\Parameter(
+ *         name="asset_id",
+ *         in="query",
+ *         required=false,
+ *         description="Resolve the roster for this asset's own template group (use it when viewing or editing an existing asset). Gated like /ui/asset/{id}/values: an asset the caller cannot access returns the same 404 as one that does not exist.",
+ *         @OA\Schema(type="integer")
+ *     ),
+ *     @OA\Response(
+ *         response=200,
+ *         description="Field roster retrieved successfully.",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(property="data", type="array", @OA\Items(type="object"), description="Fields with id, name, type, is_basic, required, removable, card_key, pos_x, pos_y, pos_w, pos_h and, where applicable, options (and scoring for AssetScoring).")
+ *         )
+ *     ),
+ *     @OA\Response(response=403, description="FORBIDDEN: The caller does not have the Asset Management permission."),
+ *     @OA\Response(response=404, description="NOT FOUND: asset_id was sent and that asset does not exist or the caller may not access it (one response for both)."),
+ * )
+ */
+class OpenApiGetUiAssetFields {}
+
+/**
+ * @OA\Get(
+ *     path="/ui/asset/layout",
+ *     summary="Get the card tiles of the asset record's Cards layout",
+ *     description="One tile per asset card with its position and the number of fields it holds. A card with no stored tile gets one below the lowest stored tile in the response only; nothing is saved.",
+ *     operationId="getUiAssetLayout",
+ *     tags={"ui"},
+ *     security={{"ApiKeyAuth":{}}},
+ *     @OA\Parameter(
+ *         name="template_group_id",
+ *         in="query",
+ *         required=false,
+ *         description="The asset template group to resolve the layout for. Falls back to the caller's default asset group when omitted or when the caller may not use the requested group. Ignored when asset_id is sent.",
+ *         @OA\Schema(type="integer")
+ *     ),
+ *     @OA\Parameter(
+ *         name="asset_id",
+ *         in="query",
+ *         required=false,
+ *         description="Resolve the layout for this asset's own template group. Gated like /ui/asset/{id}/values: an asset the caller cannot access returns the same 404 as one that does not exist.",
+ *         @OA\Schema(type="integer")
+ *     ),
+ *     @OA\Response(
+ *         response=200,
+ *         description="Layout retrieved successfully.",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(property="data", type="array", @OA\Items(
+ *                 type="object",
+ *                 @OA\Property(property="card_key", type="string", enum={"general", "assignment", "classification", "scoring", "additional_info", "custom_fields"}),
+ *                 @OA\Property(property="pos_x", type="integer"),
+ *                 @OA\Property(property="pos_y", type="integer"),
+ *                 @OA\Property(property="pos_w", type="integer"),
+ *                 @OA\Property(property="pos_h", type="integer"),
+ *                 @OA\Property(property="field_count", type="integer")
+ *             ))
+ *         )
+ *     ),
+ *     @OA\Response(response=403, description="FORBIDDEN: The caller does not have the Asset Management permission."),
+ *     @OA\Response(response=404, description="NOT FOUND: asset_id was sent and that asset does not exist or the caller may not access it (one response for both)."),
+ * )
+ */
+class OpenApiGetUiAssetLayout {}
+
+/**
+ * @OA\Get(
+ *     path="/ui/asset/{id}/values",
+ *     summary="Get one asset's field values for the asset record",
+ *     description="Values are keyed by the names PATCH /assets/{id} accepts (name, ip, value, location, team, details, tags, mapped_controls, associated_risks, custom_field_<id>) plus verified and created (raw Y-m-d H:i:s, display in the configured date format); each is {raw, display}. location, team and associated_risks also carry names, a list of {id, name} objects; tags carries names as plain strings; mapped_controls carries items ({control_maturity, maturity_name, controls: [{id, name}]}). `scoring` (present once the database upgrade has added the scoring columns) is {raw: {confidentiality, integrity, availability} (low, moderate or high, not_applicable for confidentiality only, or null when not set), display: '', result: {scored, categorization, score, band}}: result is computed from the current Preferences; scored is false and the other three are null unless all three are answered; score is a string with two decimals. Every display and name is RAW, unescaped text: insert it with text or attribute setters only. details.display is the stored rich text as-is; details.display_html is the purified HTML to render. associated_risks also carries count (how many associated risks the caller may see). Associated risks are limited to the risks the caller may see; without the Risk Management permission raw, display and names are empty and only count is set. Control names need the Governance permission. An asset the caller cannot access returns exactly the same 404 response as an asset that does not exist.",
+ *     operationId="getUiAssetValues",
+ *     tags={"ui"},
+ *     security={{"ApiKeyAuth":{}}},
+ *     @OA\Parameter(
+ *         name="id",
+ *         in="path",
+ *         required=true,
+ *         description="The ID of the asset.",
+ *         @OA\Schema(type="integer")
+ *     ),
+ *     @OA\Response(
+ *         response=200,
+ *         description="Asset values retrieved successfully.",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(property="data", type="object",
+ *                 @OA\Property(property="template_group_id", type="integer", description="The asset's own template group: request fields and layout for this group."),
+ *                 @OA\Property(property="values", type="object", description="Field name to {raw, display}."),
+ *                 @OA\Property(property="can_edit", type="boolean", description="The caller holds asset_edit."),
+ *                 @OA\Property(property="can_verify", type="boolean", description="The caller holds asset_verify."),
+ *                 @OA\Property(property="can_delete", type="boolean", description="The caller holds asset_delete.")
+ *             )
+ *         )
+ *     ),
+ *     @OA\Response(response=400, description="BAD REQUEST: Missing or invalid ID."),
+ *     @OA\Response(response=403, description="FORBIDDEN: The caller does not have the Asset Management permission."),
+ *     @OA\Response(response=404, description="NOT FOUND: The asset does not exist or the caller may not access it (one response for both)."),
+ * )
+ */
+class OpenApiGetUiAssetValues {}
+
 ?>

@@ -620,7 +620,7 @@ function display_asset_tags_td_edit($asset_id, $asset_tags)
 function display_main_detail_asset_fields_treegrid_th($fields)
 {
     global $escaper;
-    
+
     foreach($fields as $field)
     {
         if($field['is_basic'] == 1)
@@ -629,7 +629,7 @@ function display_main_detail_asset_fields_treegrid_th($fields)
             {
                 continue;
             }
-            
+
             switch($field['name']){
                 case 'AssetName':
                     display_asset_name_treegrid_th();
@@ -663,11 +663,14 @@ function display_main_detail_asset_fields_treegrid_th($fields)
                 // Include the extra
                 require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
 
-                echo "<th data-options=\"field:'" . $escaper->escapeHtml($field['id']) . "'\" width='10%'>" . $escaper->escapeHtml($field['name']) . "</th>";
+                // `field` is a plain HTML attribute (not `data-options`, which jQuery
+                // EasyUI parses with new Function() -- blocked by the hardened CSP's
+                // script-src with no 'unsafe-eval'. See PR #2321.
+                echo "<th field='" . $escaper->escapeHtml($field['id']) . "' width='10%'>" . $escaper->escapeHtml($field['name']) . "</th>";
             }
         }
     }
-    
+
     display_asset_actions_treegrid_th();
 }
 
@@ -678,7 +681,7 @@ function display_asset_name_treegrid_th()
 {
     global $lang, $escaper;
 
-    echo "<th data-options=\"field:'name'\" width='20%'>" . $escaper->escapeHtml($lang["Name"]) . "</th>";
+    echo "<th field='name' width='20%'>" . $escaper->escapeHtml($lang["Name"]) . "</th>";
 }
 
 /**********************************
@@ -688,7 +691,7 @@ function display_asset_ip_address_treegrid_th()
 {
     global $lang, $escaper;
 
-    echo "<th data-options=\"field:'ip'\" width='10%'>" . $escaper->escapeHtml($lang['IPAddress']) . "</th>";
+    echo "<th field='ip' width='10%'>" . $escaper->escapeHtml($lang['IPAddress']) . "</th>";
 }
 
 /***************************************
@@ -698,7 +701,7 @@ function display_asset_valuation_treegrid_th()
 {
     global $lang, $escaper;
 
-    echo "<th data-options=\"field:'value'\" width='10%'>" . $escaper->escapeHtml($lang['AssetValuation']) . "</th>";
+    echo "<th field='value' width='10%'>" . $escaper->escapeHtml($lang['AssetValuation']) . "</th>";
 }
 
 /*******************************************
@@ -708,7 +711,7 @@ function display_asset_site_location_treegrid_th()
 {
     global $lang, $escaper;
 
-    echo "<th data-options=\"field:'location'\" width='10%'>" . $escaper->escapeHtml($lang['SiteLocation']) . "</th>";
+    echo "<th field='location' width='10%'>" . $escaper->escapeHtml($lang['SiteLocation']) . "</th>";
 }
 
 /**********************************
@@ -718,7 +721,7 @@ function display_asset_team_treegrid_th()
 {
     global $lang, $escaper;
 
-    echo "<th data-options=\"field:'team'\" width='10%'>" . $escaper->escapeHtml($lang['Team']) . "</th>";
+    echo "<th field='team' width='10%'>" . $escaper->escapeHtml($lang['Team']) . "</th>";
 }
 
 /*************************************
@@ -728,7 +731,7 @@ function display_asset_details_treegrid_th()
 {
     global $lang, $escaper;
 
-    echo "<th data-options=\"field:'details'\" width='15%'>" . $escaper->escapeHtml($lang['AssetDetails']) . "</th>";
+    echo "<th field='details' width='15%'>" . $escaper->escapeHtml($lang['AssetDetails']) . "</th>";
 }
 
 /*************************************
@@ -738,7 +741,7 @@ function display_asset_tags_treegrid_th()
 {
     global $lang, $escaper;
 
-    echo "<th data-options=\"field:'tags'\" width='10%'>" . $escaper->escapeHtml($lang['Tags']) . "</th>";
+    echo "<th field='tags' width='10%'>" . $escaper->escapeHtml($lang['Tags']) . "</th>";
 }
 
 /*************************************
@@ -748,7 +751,7 @@ function display_asset_actions_treegrid_th()
 {
     global $lang, $escaper;
 
-    echo "<th data-options=\"field:'actions', align: 'center'\" width='10%'>{$escaper->escapeHtml($lang['Actions'])}</th>";
+    echo "<th field='actions' align='center' width='10%'>{$escaper->escapeHtml($lang['Actions'])}</th>";
 }
 
 ?>

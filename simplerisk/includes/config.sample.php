@@ -59,3 +59,12 @@ define('USE_DATABASE_FOR_SESSIONS', '__USE_DATABASE_FOR_SESSIONS__');
 // system). Cloud metadata (169.254.169.254) is reachable only if you list it
 // explicitly — which you should not:
 // $workflow_http_allowed_internal_targets = ['jira.corp.example.com', '10.0.0.0/8'];
+
+// Asset discovery (Manage Assets > Discover assets) probes the addresses a user
+// enters from this server. It is fail-closed: with this list absent or empty,
+// no discovery run can start. Name the networks discovery may scan, as bare IPv4
+// addresses and/or IPv4 CIDR blocks; a requested range must lie entirely inside
+// them. Hostnames are accepted but never match an address (no DNS lookups).
+// Loopback, link-local (including 169.254.169.254 cloud metadata), multicast and
+// 0.0.0.0/8 stay refused even if listed here:
+// $asset_discovery_allowed_ranges = ['10.20.0.0/16', '192.168.50.0/24', '10.1.2.3'];

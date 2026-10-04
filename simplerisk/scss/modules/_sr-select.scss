@@ -106,6 +106,13 @@
     }
 }
 
+// Inside a modal the menu is placed position:fixed by sr-select.js so the
+// scrolling .modal-body cannot clip it. .modal forms its own stacking context,
+// so this z-index only orders the menu among the modal's own content.
+.modal .sr-select-menu {
+    z-index: 1080;
+}
+
 .sr-select-search {
     display: flex;
     align-items: center;

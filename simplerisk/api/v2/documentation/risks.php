@@ -54,20 +54,38 @@ class OpenApiGetRisk {}
  *                 @OA\Property(property="location[]", type="array", @OA\Items(type="integer")),
  *                 @OA\Property(property="source", type="integer"),
  *                 @OA\Property(property="category", type="integer"),
- *                 @OA\Property(property="team[]", type="array", @OA\Items(type="integer")),
+ *                 @OA\Property(property="team[]", type="array", description="Teams the new risk belongs to. Omitting it (or sending it empty) assigns NO team — it does not assign every team.", @OA\Items(type="integer")),
  *                 @OA\Property(property="technology[]", type="array", @OA\Items(type="integer")),
  *                 @OA\Property(property="owner", type="integer"),
  *                 @OA\Property(property="manager", type="integer"),
  *                 @OA\Property(property="assessment", type="string"),
  *                 @OA\Property(property="notes", type="string"),
  *                 @OA\Property(property="tags[]", type="array", @OA\Items(type="string")),
+ *                 @OA\Property(property="affected_assets", type="string", description="Comma-separated asset/asset-group NAMES (import-style callers)."),
+ *                 @OA\Property(property="assets_asset_groups[]", type="array", description="Affected Assets widget tokens ('<id>_asset', '<id>_group', 'new_asset_<name>') as posted by the in-app risk form.", @OA\Items(type="string")),
+ *                 @OA\Property(property="template_group_id", type="integer", description="Validated against the caller's own assigned template groups; an id the caller is not assigned to falls back to their default group."),
+ *                 @OA\Property(property="associate_test", type="integer", description="Echoed back unchanged in the response. Set to 1 by Compliance's create-risk-from-a-failed-test flow so the client knows to associate the new risk with the test instead of navigating to it."),
  *                 @OA\Property(property="scoring_method", type="integer", description="1=Classic, 2=CVSS, 3=DREAD, 4=OWASP, 5=Custom, 6=Contributing Risk."),
  *                 @OA\Property(property="likelihood", type="integer"),
  *                 @OA\Property(property="impact", type="integer")
  *             )
  *         )
  *     ),
- *     @OA\Response(response=200, description="Risk created successfully."),
+ *     @OA\Response(
+ *       response=200,
+ *       description="Risk created successfully. `data` carries `risk_id` and the echoed `associate_test`. `status_message` always carries the localized success message; when `associate_test` was set it is instead a JSON-encoded array of `{alert_type, alert_message}` objects, the shape the in-app create-risk-from-a-failed-test client parses. The same message is additionally queued in the session for the in-app clients that redirect on success.",
+ *       @OA\JsonContent(
+ *         type="object",
+ *         @OA\Property(property="status", type="integer", example=200),
+ *         @OA\Property(property="status_message", type="string", description="The localized success message, naming the risk that was created."),
+ *         @OA\Property(
+ *           property="data",
+ *           type="object",
+ *           @OA\Property(property="risk_id", type="integer", description="The display ID of the newly created risk (internal ID + 1000)."),
+ *           @OA\Property(property="associate_test", type="integer", description="The posted associate_test value, echoed back unchanged.")
+ *         )
+ *       )
+ *     ),
  *     @OA\Response(response=400, description="BAD REQUEST: Validation error or insufficient permission."),
  * )
  */
@@ -421,6 +439,200 @@ class OpenApiAddRiskComment {}
  * )
  */
 class OpenApiAcceptRiskMitigation {}
+
+/**
+ * @OA\Get(
+ *     path="/risks/{id}/mitigations/controls",
+ *     summary="Get the controls attached to a risk's mitigation, with validation summary",
+ *     operationId="getMitigationControlsList",
+ *     tags={"risk_crud"},
+ *     security={{"ApiKeyAuth":{}}},
+ *     @OA\Parameter(
+ *         name="id",
+ *         in="path",
+ *         required=true,
+ *         description="The ID of the risk.",
+ *         @OA\Schema(type="integer")
+ *     ),
+ *     @OA\Response(response=200, description="Mitigation controls returned successfully."),
+ *     @OA\Response(response=400, description="BAD REQUEST: Missing ID or insufficient permission."),
+ *     @OA\Response(response=403, description="FORBIDDEN: Team separation denies access to this risk."),
+ * )
+ */
+class OpenApiGetMitigationControlsList {}
+
+/**
+ * @OA\Get(
+ *     path="/risks/{id}/mitigations/controls/{control_id}/validation",
+ *     summary="Get one control's validation details for a risk's mitigation",
+ *     operationId="getMitigationControlValidation",
+ *     tags={"risk_crud"},
+ *     security={{"ApiKeyAuth":{}}},
+ *     @OA\Parameter(
+ *         name="id",
+ *         in="path",
+ *         required=true,
+ *         description="The ID of the risk.",
+ *         @OA\Schema(type="integer")
+ *     ),
+ *     @OA\Parameter(
+ *         name="control_id",
+ *         in="path",
+ *         required=true,
+ *         description="The ID of the control.",
+ *         @OA\Schema(type="integer")
+ *     ),
+ *     @OA\Response(response=200, description="Control validation returned successfully."),
+ *     @OA\Response(response=400, description="BAD REQUEST: Missing ID, invalid control, or insufficient permission."),
+ *     @OA\Response(response=403, description="FORBIDDEN: Team separation denies access to this risk."),
+ * )
+ */
+class OpenApiGetMitigationControlValidation {}
+
+/**
+ * @OA\Post(
+ *     path="/risks/{id}/mitigations/controls/{control_id}/validation",
+ *     summary="Save one control's validation details for a risk's mitigation",
+ *     operationId="saveMitigationControlValidation",
+ *     tags={"risk_crud"},
+ *     security={{"ApiKeyAuth":{}}},
+ *     @OA\Parameter(
+ *         name="id",
+ *         in="path",
+ *         required=true,
+ *         description="The ID of the risk.",
+ *         @OA\Schema(type="integer")
+ *     ),
+ *     @OA\Parameter(
+ *         name="control_id",
+ *         in="path",
+ *         required=true,
+ *         description="The ID of the control.",
+ *         @OA\Schema(type="integer")
+ *     ),
+ *     @OA\RequestBody(
+ *         required=true,
+ *         @OA\MediaType(
+ *             mediaType="multipart/form-data",
+ *             @OA\Schema(
+ *                 @OA\Property(property="validation_details", type="string", description="Validation notes for this control."),
+ *                 @OA\Property(property="validation_owner", type="integer", description="User ID of the validation owner."),
+ *                 @OA\Property(property="validation_mitigation_percent", type="integer", description="Mitigation percent achieved by this control (0-100)."),
+ *                 @OA\Property(property="file_ids", type="array", @OA\Items(type="integer"), description="IDs of previously-uploaded evidence files to keep; omitted existing files are deleted."),
+ *                 @OA\Property(property="artifact_file", type="string", format="binary", description="Optional new evidence file to upload.")
+ *             )
+ *         )
+ *     ),
+ *     @OA\Response(response=200, description="Control validation saved successfully."),
+ *     @OA\Response(response=400, description="BAD REQUEST: Missing ID, control not attached to this mitigation, insufficient permission, or upload error."),
+ *     @OA\Response(response=403, description="FORBIDDEN: Team separation denies access to this risk."),
+ * )
+ */
+class OpenApiSaveMitigationControlValidation {}
+
+/**
+ * @OA\Get(
+ *     path="/risks/{id}/supporting-documentation",
+ *     summary="List a risk's supporting documentation files (Details tab)",
+ *     operationId="getSupportingDocumentation",
+ *     tags={"risk_crud"},
+ *     security={{"ApiKeyAuth":{}}},
+ *     @OA\Parameter(
+ *         name="id",
+ *         in="path",
+ *         required=true,
+ *         description="The ID of the risk.",
+ *         @OA\Schema(type="integer")
+ *     ),
+ *     @OA\Response(response=200, description="Supporting documentation files returned successfully."),
+ *     @OA\Response(response=400, description="BAD REQUEST: Missing ID or insufficient permission."),
+ *     @OA\Response(response=403, description="FORBIDDEN: Team separation denies access to this risk."),
+ * )
+ */
+class OpenApiGetSupportingDocumentation {}
+
+/**
+ * @OA\Post(
+ *     path="/risks/{id}/supporting-documentation",
+ *     summary="Upload or remove a risk's supporting documentation files (Details tab)",
+ *     operationId="saveSupportingDocumentation",
+ *     tags={"risk_crud"},
+ *     security={{"ApiKeyAuth":{}}},
+ *     @OA\Parameter(
+ *         name="id",
+ *         in="path",
+ *         required=true,
+ *         description="The ID of the risk.",
+ *         @OA\Schema(type="integer")
+ *     ),
+ *     @OA\RequestBody(
+ *         required=true,
+ *         @OA\MediaType(
+ *             mediaType="multipart/form-data",
+ *             @OA\Schema(
+ *                 @OA\Property(property="unique_names", type="array", @OA\Items(type="string"), description="Unique names of previously-uploaded files to keep; omitted existing files are deleted."),
+ *                 @OA\Property(property="file", type="string", format="binary", description="Optional new file to upload.")
+ *             )
+ *         )
+ *     ),
+ *     @OA\Response(response=200, description="Supporting documentation saved successfully."),
+ *     @OA\Response(response=400, description="BAD REQUEST: Missing ID, insufficient permission, or upload error."),
+ *     @OA\Response(response=403, description="FORBIDDEN: Team separation denies access to this risk."),
+ * )
+ */
+class OpenApiSaveSupportingDocumentation {}
+
+/**
+ * @OA\Get(
+ *     path="/risks/{id}/mitigations/supporting-documentation",
+ *     summary="List a mitigation's supporting documentation files (Mitigation tab)",
+ *     operationId="getMitigationSupportingDocumentation",
+ *     tags={"risk_crud"},
+ *     security={{"ApiKeyAuth":{}}},
+ *     @OA\Parameter(
+ *         name="id",
+ *         in="path",
+ *         required=true,
+ *         description="The ID of the risk.",
+ *         @OA\Schema(type="integer")
+ *     ),
+ *     @OA\Response(response=200, description="Mitigation supporting documentation files returned successfully."),
+ *     @OA\Response(response=400, description="BAD REQUEST: Missing ID or insufficient permission."),
+ *     @OA\Response(response=403, description="FORBIDDEN: Team separation denies access to this risk."),
+ * )
+ */
+class OpenApiGetMitigationSupportingDocumentation {}
+
+/**
+ * @OA\Post(
+ *     path="/risks/{id}/mitigations/supporting-documentation",
+ *     summary="Upload or remove a mitigation's supporting documentation files (Mitigation tab)",
+ *     operationId="saveMitigationSupportingDocumentation",
+ *     tags={"risk_crud"},
+ *     security={{"ApiKeyAuth":{}}},
+ *     @OA\Parameter(
+ *         name="id",
+ *         in="path",
+ *         required=true,
+ *         description="The ID of the risk.",
+ *         @OA\Schema(type="integer")
+ *     ),
+ *     @OA\RequestBody(
+ *         required=true,
+ *         @OA\MediaType(
+ *             mediaType="multipart/form-data",
+ *             @OA\Schema(
+ *                 @OA\Property(property="unique_names", type="array", @OA\Items(type="string"), description="Unique names of previously-uploaded files to keep; omitted existing files are deleted."),
+ *                 @OA\Property(property="file", type="string", format="binary", description="Optional new file to upload.")
+ *             )
+ *         )
+ *     ),
+ *     @OA\Response(response=200, description="Mitigation supporting documentation saved successfully."),
+ *     @OA\Response(response=400, description="BAD REQUEST: Missing ID, insufficient permission, or upload error."),
+ *     @OA\Response(response=403, description="FORBIDDEN: Team separation denies access to this risk."),
+ * )
+ */
+class OpenApiSaveMitigationSupportingDocumentation {}
 
 /**
  * @OA\Post(
@@ -1077,7 +1289,7 @@ class OpenApiViewRisk {}
  *                 @OA\Property(property="location", type="array", @OA\Items(type="string")),
  *                 @OA\Property(property="source", type="integer", format="int32"),
  *                 @OA\Property(property="category", type="integer", format="int32"),
- *                 @OA\Property(property="team", type="array", @OA\Items(type="integer", format="int32")),
+ *                 @OA\Property(property="team", type="array", description="Teams the new risk belongs to. Omitting it (or sending it empty) assigns NO team — it does not assign every team.", @OA\Items(type="integer", format="int32")),
  *                 @OA\Property(property="technology", type="array", @OA\Items(type="integer", format="int32")),
  *                 @OA\Property(property="owner", type="integer", format="int32"),
  *                 @OA\Property(property="manager", type="integer", format="int32"),
@@ -1134,10 +1346,17 @@ class OpenApiViewRisk {}
  *     ),
  *     @OA\Response(
  *       response=200,
- *       description="Risk created successfully.",
+ *       description="Risk created successfully. Served by the same handler as POST /risks, so the envelope is identical.",
  *       @OA\JsonContent(
  *         type="object",
- *         @OA\Property(property="risk_id", type="integer", description="The ID of the newly created risk.")
+ *         @OA\Property(property="status", type="integer", example=200),
+ *         @OA\Property(property="status_message", type="string", description="The localized success message, naming the risk that was created. When associate_test was posted this is instead a JSON-encoded array of alert objects."),
+ *         @OA\Property(
+ *           property="data",
+ *           type="object",
+ *           @OA\Property(property="risk_id", type="integer", description="The display ID of the newly created risk (internal ID + 1000)."),
+ *           @OA\Property(property="associate_test", type="integer", description="The posted associate_test value, echoed back unchanged.")
+ *         )
  *       )
  *     ),
  *     @OA\Response(
@@ -1559,6 +1778,53 @@ class OpenApiReopenRisk {}
  * )
  */
 class OpenApiSaveRiskSubject {}
+
+/**
+ * @OA\Get(
+ *     path="/management/risk/auditLog",
+ *     summary="Get the structured audit log for a single risk.",
+ *     description="Returns Timestamp/Activity/User rows for one risk's own audit history (log_type risk/jira), classified server-side into a short activity key. Requires the riskmanagement permission and access to the risk (team separation).",
+ *     operationId="riskAuditLog",
+ *     tags={"risk"},
+ *     security={{"ApiKeyAuth":{}}},
+ *     @OA\Parameter(
+ *         in="query",
+ *         name="id",
+ *         required=true,
+ *         description="The risk ID (1000-padded display id).",
+ *         @OA\Schema(type="integer"),
+ *     ),
+ *     @OA\Parameter(
+ *         name="days",
+ *         in="query",
+ *         description="Number of days of audit log history to retrieve. Defaults to 7.",
+ *         required=false,
+ *         @OA\Schema(type="integer", default=7)
+ *     ),
+ *     @OA\Response(
+ *         response=200,
+ *         description="Array of audit log entries.",
+ *         @OA\JsonContent(
+ *             type="array",
+ *             @OA\Items(
+ *                 type="object",
+ *                 @OA\Property(property="timestamp", type="string"),
+ *                 @OA\Property(property="timestamp_display", type="string"),
+ *                 @OA\Property(property="message", type="string"),
+ *                 @OA\Property(property="detail", type="string", nullable=true, description="Field-by-field change detail parsed out of the message, when present."),
+ *                 @OA\Property(property="activity", type="string"),
+ *                 @OA\Property(property="user_id", type="integer"),
+ *                 @OA\Property(property="user_name", type="string")
+ *             )
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=400,
+ *         description="BAD REQUEST: Missing id, or user lacks riskmanagement permission/access to the risk.",
+ *     ),
+ * )
+ */
+class OpenApiRiskAuditLog {}
 
 /**
  * @OA\Post(

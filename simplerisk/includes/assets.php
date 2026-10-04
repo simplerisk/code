@@ -9,69 +9,22 @@ require_once(realpath(__DIR__ . '/functions.php'));
 require_once(realpath(__DIR__ . '/extras.php'));
 require_once(language_file());
 require_once(realpath(__DIR__ . '/displayassets.php'));
+require_once(realpath(__DIR__ . '/permissions.php'));
+require_once(realpath(__DIR__ . '/assets_write_rules.php'));
+require_once(realpath(__DIR__ . '/asset_scoring.php'));
 require_once(realpath(__DIR__ . '/../vendor/autoload.php'));
-
-/*****************************
- * FUNCTION: DISCOVER ASSETS *
- *****************************/
-function discover_assets($range)
-{
-    // Available IP array
-        $AvailableIPs = array();
-
-    // Check if the range is a single IP address
-    if (preg_match('/^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/', $range))
-    {
-        if (ping_check($range))
-        {
-            $name = gethostbyaddr($range);
-            $AvailableIPs[] = array("ip"=>$range, "name"=>$name);
-        }
-
-        // Add the live assets to the database
-        add_assets($AvailableIPs);
-
-        return $AvailableIPs;
-    }
-    // Check if it is a numerically expressed range
-    if (preg_match('/^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)-(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/', $range))
-    {
-        // This could take a while so we increase the max execution time
-            set_time_limit(300);
-
-        // Break apart range by - delimiter
-        $array = explode("-", $range);
-
-        // Get the start and end IPs
-        $start = $array[0];
-        $end = $array[1];
-
-        if ((ip2long($start) !== -1) && (ip2long($end) !== -1))
-        {
-            for ($ip = ip2long($start); $ip <= ip2long($end); $ip++)
-            {
-                if (ping_check(long2ip($ip)))
-                {
-                    $name = gethostbyaddr(long2ip($ip));
-                    $AvailableIPs[] = array("ip"=>long2ip($ip), "name"=>$name);
-                }
-            }
-        }
-
-        // Add the live assets to the database
-        add_assets($AvailableIPs);
-
-        return $AvailableIPs;
-    }
-    // IP was not in a recognizable format
-    else return false;
-}
 
 /************************
  * FUNCTION: PING CHECK *
  ************************/
 function ping_check($ip)
 {
+    // Used by the background discovery job (includes/assets_discovery.php). Only a literal IPv4 address ever
+    // reaches the shell, and it still goes through escapeshellarg().
+    if (!is_string($ip) || !filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)) {
+        return false;
+    }
+
     if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') { // Server OS is Windows
         $cmd = sprintf('ping -n 1 -w 1 %s', escapeshellarg($ip));
     } else { // Server OS is Linux
@@ -82,33 +35,19 @@ function ping_check($ip)
     return $rval === 0;
 }
 
-/************************
- * FUNCTION: ADD ASSETS *
- ************************/
-function add_assets($AvailableIPs)
-{
-    // For each IP
-    foreach ($AvailableIPs as $ip)
-    {
-        $ipv4addr = $ip['ip'];
-        $name = $ip['name'];
-
-        // Set the default values for assets
-        $value = get_default_asset_valuation();
-        $location = 0;
-        $team = 0;
-
-        // Add the asset
-        add_asset($ipv4addr, $name, $value, $location, $team, "", "", true);
-    }
-}
-
 /**************************
  * FUNCTION: ASSET EXISTS *
  **************************/
 function asset_exists($name)
 {
     global $escaper;
+
+    // One rule for every caller (SR-37): surrounding space never makes a
+    // different name, and the lookup is case-insensitive -- the unencrypted
+    // column's collation, and encrypted_asset_exists() by construction.
+    // Callers that look a name up and add it when missing (scanner imports,
+    // Import-Export, risk/asset forms) rely on this matching add_asset().
+    $name = trim((string)$name);
 
     write_debug_log("Checking if asset named \"" . $escaper->escapeHtml($name) . "\" exists", 'debug');
 
@@ -153,6 +92,85 @@ function asset_exists($name)
         write_debug_log("Asset was not found", 'debug');
         return false;
     }
+}
+
+/**
+ * Every asset whose name could equal $name under the asset name rule
+ * (assets_name_key()), as id => plaintext name, plus $self_id's own current
+ * name. The input of assets_name_conflict() and assets_name_for_storage().
+ *
+ * With the Encryption Extra the candidates come from the Extra's
+ * encrypted_asset_name_candidates(). The Extra ships separately from Core,
+ * so an older Extra may not have it: then the asset_exists() lookup stands
+ * in (it finds one holder of the name, which is all the conflict check needs
+ * outside the case-twin edge). $encrypted and $function_exists are
+ * injectable for tests (null = encryption_extra() / function_exists()).
+ *
+ * @return array<int,string>
+ */
+function asset_name_candidates(string $name, int $self_id, ?bool $encrypted = null, ?callable $function_exists = null): array
+{
+    $name = trim($name);
+    $function_exists = $function_exists ?? 'function_exists';
+
+    if ($encrypted ?? encryption_extra()) {
+        require_once(realpath(__DIR__ . '/../extras/encryption/index.php'));
+        if ($function_exists('encrypted_asset_name_candidates')) {
+            $names = encrypted_asset_name_candidates($name);
+        } else {
+            $names = [];
+            $found = asset_exists($name);
+            if ($found) {
+                $names[(int)$found] = $name;
+            }
+        }
+    } else {
+        $db = db_open();
+        $stmt = $db->prepare("SELECT `id`, `name` FROM `assets` WHERE `name` = :name;");
+        $stmt->bindParam(":name", $name, PDO::PARAM_STR);
+        $stmt->execute();
+        $names = array_column($stmt->fetchAll(PDO::FETCH_ASSOC), 'name', 'id');
+        db_close($db);
+    }
+
+    // The asset's own current name, wherever its row sits in the order.
+    $own = $self_id > 0 ? get_asset_by_id($self_id) : false;
+    if ($own) {
+        $names[$self_id] = (string)try_decrypt($own['name']);
+    }
+
+    return $names;
+}
+
+/**
+ * Whether an asset OTHER than $self_id already holds $name under the asset
+ * name rule (assets_name_key()). Used by the edit paths instead of comparing
+ * asset_exists() with the id being edited: with the Encryption Extra two case
+ * twins can already exist, and the lookup returns whichever twin it lands on,
+ * which would refuse the other twin's save under its own name.
+ */
+function asset_name_taken_by_other(string $name, int $self_id, ?bool $encrypted = null, ?callable $function_exists = null): bool
+{
+    return assets_name_conflict(asset_name_candidates($name, $self_id, $encrypted, $function_exists), trim($name), $self_id);
+}
+
+/**
+ * The asset name check of an edit, in one place for every edit path that
+ * writes the name: the name is trimmed (SR-37, as add_asset() does), refused
+ * when blank or held by another asset, and otherwise returned as the value to
+ * store (assets_name_for_storage()). Null = refused.
+ */
+function asset_name_for_edit($name, int $self_id): ?string
+{
+    $name = trim((string)$name);
+    if ($name === '') {
+        return null;
+    }
+    $names = asset_name_candidates($name, $self_id);
+    if (assets_name_conflict($names, $name, $self_id)) {
+        return null;
+    }
+    return assets_name_for_storage($names, $name, $self_id, !encryption_extra());
 }
 
 /**
@@ -244,6 +262,22 @@ function asset_exists_exact($ip, $name, $value, $location, $teams, $details, $ve
  * Used for adding an asset while defining its verified *
  * status, but without specifying the default values    *
  ********************************************************/
+/**
+ * Whether an asset the session user creates interactively starts verified:
+ * the user holds asset_verify, or the auto_verify_new_assets setting is on.
+ * Shared by add_asset() and the legacy create modal's endpoint
+ * (create_asset_API_v2(), POST /api/v2/assets/create_asset) so the two
+ * creation paths cannot disagree.
+ */
+function asset_new_verified_for_current_user(): bool
+{
+    return assets_verification_for_new(
+        asset_user_can('verify'),
+        (bool)get_setting("auto_verify_new_assets"),
+        false
+    ) === 1;
+}
+
 function add_asset_by_name_with_forced_verification($name, $verified = false) {
     // !!!!!!Update the values if the add_asset's default values change!!!!!!
     return add_asset('', $name, 5, 0, 0, "", "", $verified);
@@ -252,19 +286,32 @@ function add_asset_by_name_with_forced_verification($name, $verified = false) {
 /***********************
  * FUNCTION: ADD ASSET *
  ***********************/
-function add_asset($ip, $name, $value=5, $location="", $teams="", $details = "", $tags = "", $verified = false, $mapped_controls=[], $associated_risks = [], $imported = false, $template_group_id = null)
+function add_asset($ip, $name, $value=5, $location="", $teams="", $details = "", $tags = "", $verified = false, $mapped_controls=[], $associated_risks = [], $imported = false, $template_group_id = null, $custom_values = null, $verified_is_explicit = false, $scoring = null)
 {
     global $lang;
+
+    // Trim BEFORE the duplicate check (SR-37). Checking the untrimmed name let
+    // " web01" past the check for an existing "web01"; the trimmed insert then
+    // hit the UNIQUE key and ON DUPLICATE KEY UPDATE silently overwrote that
+    // asset (with the Encryption Extra, which has no such key, it created a
+    // second one).
+    $name = trim((string)$name);
+
+    // Asset Scoring while the database upgrade is pending: refused before
+    // anything is created (POST /assets answers this case itself, earlier).
+    if (is_array($scoring) && asset_scoring_write_refusal($scoring, asset_scoring_schema_ready()) !== null) {
+        asset_scoring_log_once('schema_pending_refused', 'Asset scoring: a save carrying scoring selections was refused because the assets table has no scoring columns yet. Run the SimpleRisk database upgrade.', 'notice');
+        return false;
+    }
 
     // If the asset does not already exist
     if (!asset_exists($name)) {
 
-        // Trim whitespace from the name, ip, and value
-        $name   = trim($name);
+        // Trim whitespace from the ip and value
         $ip     = trim($ip);
         $value  = trim($value);
-        $location   = is_array($location) ? implode(',', $location) : $location;
-        $teams   = is_array($teams) ? implode(',', $teams) : $teams;
+        $location   = is_array($location) ? assets_id_csv($location) : $location;
+        $teams   = is_array($teams) ? assets_id_csv($teams) : $teams;
 
         if (!$name) {
             return false;
@@ -275,10 +322,19 @@ function add_asset($ip, $name, $value=5, $location="", $teams="", $details = "",
         $name_encrypted = try_encrypt($name);
         $details_encrypted = try_encrypt($details);
 
-        $auto_verify_new_assets = get_setting("auto_verify_new_assets");
-
-        if (!$verified && $auto_verify_new_assets && !$imported) {
-            $verified = true;
+        // Verification rule for a NEW asset (asset-management redesign, spec D2/D8).
+        // An explicit truthy $verified (import, discovery, forced-verification
+        // callers) is kept as-is, and an $imported caller's value is never
+        // second-guessed. Otherwise the asset is verified iff the acting user
+        // holds asset_verify or the auto_verify_new_assets setting is on. There
+        // is no session in CLI/cron/queue contexts, so asset_user_can() is false
+        // there and non-interactive creation lands unverified unless one of the
+        // explicit paths above (or the auto-verify setting) says otherwise.
+        // $verified_is_explicit (POST /assets, R11): the caller already decided,
+        // so a false $verified means "create unverified" rather than "decide
+        // for me". Defaults to false, so every other caller is unchanged.
+        if (!$verified && !$imported && !$verified_is_explicit) {
+            $verified = asset_new_verified_for_current_user();
         }
 
         // Resolve (and validate, when explicitly submitted) the
@@ -317,8 +373,16 @@ function add_asset($ip, $name, $value=5, $location="", $teams="", $details = "",
             // Include the extra
             require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
 
+            // An explicit custom_field[<id>] => value map (POST /assets) is
+            // limited to the fields of the group the asset was filed under;
+            // null keeps the historical read of $_POST['custom_field'].
+            $custom_values_to_save = null;
+            if (is_array($custom_values)) {
+                $custom_values_to_save = assets_split_custom_field_input($custom_values, asset_custom_fields_by_id_for_group((int)$template_group_id))['values'];
+            }
+
             // If there is error in saving custom asset values, return false
-            if(!save_custom_field_values($asset_id, "asset"))
+            if(!save_custom_field_values($asset_id, "asset", $custom_values_to_save))
             {
                 delete_asset($asset_id);
                 return false;
@@ -326,6 +390,25 @@ function add_asset($ip, $name, $value=5, $location="", $teams="", $details = "",
         }
 
         updateTagsOfType($asset_id, 'asset', $tags);
+
+        // Asset Scoring selections (POST /assets only; ruling G5: the
+        // Preferences default is never applied here). Not logged per
+        // objective: the "added" line below covers a create.
+        // A failed write fails the create: the asset is removed again rather
+        // than reported as added without the scoring the caller sent.
+        if (is_array($scoring) && $scoring) {
+            try {
+                $applied = asset_scoring_apply((int)$asset_id, $scoring, false);
+            } catch (\Throwable $e) {
+                $applied = null;
+                write_debug_log("Asset scoring: saving the scoring selections of new asset {$asset_id} failed: " . get_class($e) . " [" . (string)$e->getCode() . "]", 'error');
+            }
+            if ($applied === null) {
+                delete_asset($asset_id);
+                return false;
+            }
+        }
+
         update_asset_risks_associations($asset_id, $associated_risks);
 
         if (notification_extra()) {
@@ -345,7 +428,9 @@ function add_asset($ip, $name, $value=5, $location="", $teams="", $details = "",
             [$asset_id, $name]
         );
 
-        $message = "Asset '{$name}' was added by user '{$_SESSION['user']}'.";
+        // No session in the discovery worker (or any queue/cron caller).
+        $by_user = $_SESSION['user'] ?? '';
+        $message = "Asset '{$name}' was added by user '{$by_user}'.";
         write_log($asset_id , $_SESSION['uid'] ?? 0, $message, "asset");
 
         trigger_workflow_event('asset.created', [
@@ -365,12 +450,316 @@ function add_asset($ip, $name, $value=5, $location="", $teams="", $details = "",
 }
 
 
-function update_asset($asset_id, $ip, $name, $value=null, $location=null, $teams=null, $details=null, $tags=null, $verified=null, $mapped_controls=[], $associated_risks=[], $skip_name_order_update = false) {
+/**
+ * Whether an edit by the current user must return a verified asset to
+ * unverified (spec section 10): the stored row is verified, the edit changes
+ * its name or IP address, and the user does not hold asset_verify. A null
+ * $name / $ip means "not supplied, leave alone" and never counts as a change.
+ * Shared by update_asset() (PATCH /assets/{id}) and update_asset_API_v2()
+ * (POST /assets/update_asset, the Manage assets Edit modal).
+ */
+function asset_edit_demotes_verification(int $asset_id, $name, $ip): bool
+{
+    $current = get_asset_by_id($asset_id);
+    if (!$current || (int)$current['verified'] !== 1) {
+        return false;
+    }
+
+    // Stored name/ip are ciphertext when the Encryption Extra is on; compare plaintext to plaintext.
+    $identity_changed = assets_identity_changed(
+        (string)try_decrypt($current['name']),
+        (string)try_decrypt($current['ip']),
+        is_null($name) ? null : (string)$name,
+        is_null($ip) ? null : (string)$ip
+    );
+
+    return assets_verification_after_edit(1, asset_user_can('verify'), $identity_changed) === 0;
+}
+
+/**
+ * Audit line for an asset returned to unverified by an identity edit.
+ * _lang() escapes the parameters; do not pre-escape them.
+ */
+function asset_write_unverified_by_edit_log(int $asset_id, $name): void
+{
+    $message = _lang('AssetUnverifiedByEditLog', [
+        'name' => (string)$name,
+        'user' => $_SESSION['user'] ?? '',
+    ]);
+    write_log($asset_id, $_SESSION['uid'] ?? 0, $message, "asset");
+}
+
+/**
+ * The template group an asset record is laid out and validated against: the
+ * asset's own group when it is a real asset template group, otherwise the
+ * asset Default. Rows written without a group carry the schema default of 1,
+ * which is the RISK Default group, so it cannot be trusted as-is. Without the
+ * Customization Extra's table there are no groups and the stored value is
+ * returned unchanged.
+ *
+ * @param array<string,mixed> $asset an assets row
+ */
+function asset_record_template_group_id(array $asset): int
+{
+    $stored = (int)($asset['template_group_id'] ?? 1);
+    if (!table_exists('custom_template_group')) {
+        return $stored;
+    }
+
+    $db = db_open();
+    $stmt = $db->prepare("SELECT COUNT(*) FROM `custom_template_group` WHERE `id` = :id AND `fgroup` = 'asset'");
+    $stmt->bindValue(':id', $stored, PDO::PARAM_INT);
+    $stmt->execute();
+    $is_asset_group = (int)$stmt->fetchColumn() > 0;
+    if (!$is_asset_group) {
+        $default = $db->query("SELECT `id` FROM `custom_template_group` WHERE `fgroup` = 'asset' AND `is_default` = 1 ORDER BY `id` LIMIT 1")->fetchColumn();
+        $stored = $default !== false ? (int)$default : $stored;
+    }
+    db_close($db);
+
+    return $stored;
+}
+
+/**
+ * The custom (is_basic = 0) fields active in an asset's template group, keyed
+ * by field id -- the only custom_field[<id>] keys an asset write may store.
+ * Empty without the Customization Extra.
+ *
+ * @return array<int,array<string,mixed>>
+ */
+function asset_custom_fields_by_id_for_asset(int $asset_id): array
+{
+    if (!customization_extra() || !table_exists('custom_template')) {
+        return [];
+    }
+    require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
+
+    $asset = get_asset_by_id($asset_id);
+    if (!$asset) {
+        return [];
+    }
+
+    return asset_custom_fields_by_id_for_group(asset_record_template_group_id($asset));
+}
+
+/**
+ * The custom (is_basic = 0) fields active in an asset template group, keyed
+ * by field id. Empty without the Customization Extra.
+ *
+ * @return array<int,array<string,mixed>>
+ */
+function asset_custom_fields_by_id_for_group(int $template_group_id): array
+{
+    if (!customization_extra() || !table_exists('custom_template')) {
+        return [];
+    }
+    require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
+
+    $fields = [];
+    foreach (get_active_fields('asset', $template_group_id, 1) as $field) {
+        if ((int)$field['is_basic'] === 0) {
+            $fields[(int)$field['id']] = $field;
+        }
+    }
+    return $fields;
+}
+
+/**
+ * The one response every asset record route gives for an asset the caller may
+ * not see AND for one that does not exist (asset record modal, Task 4: the
+ * product owner's rule that the modal never reveals a foreign-team asset).
+ * Same status, same message, no data, so neither the status nor the body is
+ * an existence oracle under Team Separation.
+ */
+function asset_record_not_available_response(): void
+{
+    global $escaper, $lang;
+    require_once(realpath(__DIR__ . '/services.php'));
+    json_response(404, $escaper->escapeHtml($lang['AssetNotAvailable']), NULL);
+}
+
+/**
+ * One asset's audit-log entries (log_type 'asset'), newest first, from the
+ * last $days days. write_log() stores the id minus 1000 in audit_log.risk_id,
+ * so the lookup applies the same offset (get_audit_trail() only serves ids
+ * above 1000, which most asset ids are not). Entity-less rows at stored id 0
+ * carry other log types (see assets_discovery_write_audit()). The CALLER must have checked
+ * check_access_for_asset().
+ *
+ * Messages are decrypted and entity-decoded once to plain text (some asset
+ * messages are built with _lang(), which escapes its parameters before
+ * storage): every string in the result is RAW text for text setters.
+ *
+ * @return array<int,array{timestamp:string,timestamp_display:string,message:string,user_id:int,user_name:?string}>
+ */
+function get_asset_audit_trail_entries(int $asset_id, int $days): array
+{
+    // Entity-less asset logs (discovery runs, the discovery settings) also sit
+    // at stored id 0 -- where asset #1000's own rows land -- but under their
+    // own log types ('asset_discovery', 'asset_settings'), which the
+    // log_type = 'asset' filter below leaves out.
+    $stored_id = $asset_id - 1000;
+
+    $db = db_open();
+    $stmt = $db->prepare("
+        SELECT a.`timestamp`, a.`message`, a.`user_id`, u.`name` AS user_name
+        FROM `audit_log` a
+            LEFT JOIN `user` u ON u.`value` = a.`user_id`
+        WHERE a.`risk_id` = :stored_id AND a.`log_type` = 'asset'
+            AND a.`timestamp` > (NOW() - INTERVAL :days DAY)
+        ORDER BY a.`timestamp` DESC, a.`id` DESC
+        LIMIT 500
+    ");
+    $stmt->bindValue(':stored_id', $stored_id, PDO::PARAM_INT);
+    $stmt->bindValue(':days', $days, PDO::PARAM_INT);
+    $stmt->execute();
+    $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    db_close($db);
+
+    $format = get_default_datetime_format("g:i A T");
+    return array_map(static function (array $row) use ($format): array {
+        $message = (string)try_decrypt((string)$row['message']);
+        return [
+            'timestamp' => (string)$row['timestamp'],
+            'timestamp_display' => date($format, strtotime((string)$row['timestamp'])),
+            'message' => html_entity_decode($message, ENT_QUOTES | ENT_HTML5, 'UTF-8'),
+            'user_id' => (int)$row['user_id'],
+            'user_name' => $row['user_name'] === null ? null : (string)$row['user_name'],
+        ];
+    }, $rows);
+}
+
+/**
+ * Whether every maturity in a [maturity => [control ids]] mapping is a real
+ * control_maturity value and every control id a live (not deleted)
+ * framework control. An empty mapping is valid.
+ *
+ * @param array<int,int[]> $mapping
+ */
+function asset_control_mapping_references_valid(array $mapping): bool
+{
+    if ($mapping === []) {
+        return true;
+    }
+
+    $maturities = array_values(array_unique(array_map('intval', array_keys($mapping))));
+    $controls = array_values(array_unique(array_map('intval', array_merge(...array_values($mapping)))));
+
+    $db = db_open();
+    $stmt = $db->prepare("SELECT COUNT(DISTINCT `value`) FROM `control_maturity` WHERE `value` IN (" . implode(',', array_fill(0, count($maturities), '?')) . ")");
+    $stmt->execute($maturities);
+    $maturities_ok = (int)$stmt->fetchColumn() === count($maturities);
+
+    $controls_ok = false;
+    if ($maturities_ok) {
+        $stmt = $db->prepare("SELECT COUNT(DISTINCT `id`) FROM `framework_controls` WHERE `deleted` = 0 AND `id` IN (" . implode(',', array_fill(0, count($controls), '?')) . ")");
+        $stmt->execute($controls);
+        $controls_ok = (int)$stmt->fetchColumn() === count($controls);
+    }
+    db_close($db);
+
+    return $maturities_ok && $controls_ok;
+}
+
+/**
+ * The escaped-once 400 message for an asset_mapped_controls_from_request()
+ * error key. The cap message takes the limit as a placeholder (_lang()
+ * escapes the parameter; the lang text itself is trusted).
+ */
+function asset_mapped_controls_error_message(string $error_key): string
+{
+    global $escaper, $lang;
+    if ($error_key === 'AssetMappedControlsTooMany') {
+        return _lang('AssetMappedControlsTooMany', ['max' => ASSETS_MAX_MAPPED_CONTROLS]);
+    }
+    return $escaper->escapeHtml($lang[$error_key]);
+}
+
+/**
+ * The control mapping a POST/PATCH /assets body asks for, fully validated
+ * before anything is written: 'mapping' is null (body names none: leave it),
+ * [] (explicit clear) or [maturity => [ids]]; 'error' is the lang key of the
+ * 400 to answer instead, or null.
+ *
+ * @param array<string,mixed> $body
+ * @return array{error:?string, mapping:?array}
+ */
+function asset_mapped_controls_from_request(array $body): array
+{
+    $parsed = assets_parse_mapped_controls_body($body);
+    switch ($parsed['status']) {
+        case 'absent':
+            return ['error' => null, 'mapping' => null];
+        case 'clear':
+            return ['error' => null, 'mapping' => []];
+        case 'too_many':
+            return ['error' => 'AssetMappedControlsTooMany', 'mapping' => null];
+        case 'ok':
+            if (!validate_asset_control_mapping($parsed['mapping'])) {
+                return ['error' => 'ControlMappedToDifferentMaturitiesOnAsset', 'mapping' => null];
+            }
+            if (!asset_control_mapping_references_valid($parsed['mapping'])) {
+                return ['error' => 'AssetMappedControlsInvalid', 'mapping' => null];
+            }
+            return ['error' => null, 'mapping' => $parsed['mapping']];
+        default:
+            return ['error' => 'AssetMappedControlsInvalid', 'mapping' => null];
+    }
+}
+
+/**
+ * $scoring: Asset Scoring selections (objective => level code or null), only
+ * the objectives the caller names. Refused (false, nothing written) while the
+ * scoring columns are missing, and written FIRST, so a failed scoring write
+ * fails the update before any other field changes. $scoring_writer is a test
+ * seam (default asset_scoring_apply()).
+ */
+function update_asset($asset_id, $ip, $name, $value=null, $location=null, $teams=null, $details=null, $tags=null, $verified=null, $mapped_controls=[], $associated_risks=[], $skip_name_order_update = false, $custom_values = null, $scoring = null, ?callable $scoring_writer = null) {
     global $escaper, $lang;
 
     // Return false if the asset we try to update doesn't exist
     if (!asset_exists_by_id($asset_id)) {
         return false;
+    }
+
+    // Custom field values (custom_field[<id>] => value), null = not supplied.
+    // Filtered to the fields of this asset's template group and checked for
+    // an emptied required field BEFORE anything is written, so a refused edit
+    // changes nothing.
+    $custom_field_values = null;
+    if (is_array($custom_values) && customization_extra()) {
+        $split = assets_split_custom_field_input($custom_values, asset_custom_fields_by_id_for_asset((int)$asset_id));
+        $rejection = assets_custom_field_rejection($split, true);
+        if ($rejection !== null) {
+            set_alert(true, "bad", $lang[$rejection]);
+            return false;
+        }
+        $custom_field_values = $split['values'];
+    }
+
+    // A mapping naming a control or maturity that does not exist is refused
+    // before any write as well.
+    if (is_array($mapped_controls) && !asset_control_mapping_references_valid($mapped_controls)) {
+        set_alert(true, "bad", $lang['AssetMappedControlsInvalid']);
+        return false;
+    }
+
+    // Asset Scoring while the database upgrade is pending: refused before any
+    // write (the API handlers answer this case themselves, earlier).
+    $scoring = is_array($scoring) ? $scoring : [];
+    if (asset_scoring_write_refusal($scoring, asset_scoring_schema_ready()) !== null) {
+        asset_scoring_log_once('schema_pending_refused', 'Asset scoring: a save carrying scoring selections was refused because the assets table has no scoring columns yet. Run the SimpleRisk database upgrade.', 'notice');
+        set_alert(true, "bad", $lang['AssetScoringUpgradePending']);
+        return false;
+    }
+
+    // The columns store CSV; an array (the v2 PATCH body) is imploded here the
+    // way add_asset() does it.
+    if (is_array($location)) {
+        $location = assets_id_csv($location);
+    }
+    if (is_array($teams)) {
+        $teams = assets_id_csv($teams);
     }
 
     // Make sure we're not updating something that doesn't need updating
@@ -379,11 +768,15 @@ function update_asset($asset_id, $ip, $name, $value=null, $location=null, $teams
         return false;
     }*/
 
-    // Check if the name we want to update TO already exists
-    // and that it's not on THIS asset
-    $existing_assets_id = asset_exists($name);
-    if($existing_assets_id && $existing_assets_id != $asset_id){
-        return false;
+    // Check if the name we want to update TO is held by ANOTHER asset. The
+    // asset is never compared with itself. The name is trimmed before the
+    // check AND before it is stored (SR-37, as add_asset() does); a blank
+    // name is refused (asset_name_for_edit()).
+    if (!is_null($name)) {
+        $name = asset_name_for_edit($name, (int)$asset_id);
+        if ($name === null) {
+            return false;
+        }
     }
 
     $encryption_extra = encryption_extra();
@@ -396,12 +789,39 @@ function update_asset($asset_id, $ip, $name, $value=null, $location=null, $teams
         $original_asset = get_asset_by_id($asset_id);
     }
 
+    // Asset Scoring first, each change audited: if the write fails (a
+    // database error) the update fails here, before any other field is
+    // written, instead of reporting success for a partial save. An empty set
+    // (a body naming no objective) skips it.
+    if ($scoring) {
+        try {
+            $applied = ($scoring_writer ?? 'asset_scoring_apply')((int)$asset_id, $scoring, true);
+        } catch (\Throwable $e) {
+            $applied = null;
+            write_debug_log("Asset scoring: saving the scoring selections of asset {$asset_id} failed: " . get_class($e) . " [" . (string)$e->getCode() . "]", 'error');
+        }
+        if ($applied === null) {
+            set_alert(true, "bad", $lang['ThereWasAProblemUpdatingTheAsset']);
+            return false;
+        }
+    }
+
+    // A verified asset whose identity (name or IP) is changed by a user who
+    // cannot verify goes back to unverified. Callers that pass an explicit
+    // $verified (integrations re-sending the existing value) are not overridden.
+    $unverified_by_identity_edit = false;
+    if (is_null($verified) && asset_edit_demotes_verification((int)$asset_id, $name, $ip)) {
+        $verified = 0;
+        $unverified_by_identity_edit = true;
+    }
+
     $ip = is_null($ip)?null:try_encrypt($ip);
     $details = is_null($details)?null:try_encrypt($details);
 
     $data = array(
         "ip"                    => $ip,
-        "name"                  => try_encrypt($name),
+        // null = "leave alone"; encrypting null would store a ciphertext of "" and blank the name
+        "name"                  => is_null($name) ? null : try_encrypt($name),
         "value"                 => $value,
         "location"              => $location,
         "teams"                 => $teams,
@@ -447,6 +867,17 @@ function update_asset($asset_id, $ip, $name, $value=null, $location=null, $teams
         save_asset_to_controls($asset_id, $mapped_controls);
     }
 
+    // Validated above with save_custom_field_values()'s own emptiness rule, so
+    // a false here is unexpected (a database error) -- report it, don't
+    // swallow it.
+    if (!empty($custom_field_values)) {
+        require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
+        if (!save_custom_field_values($asset_id, "asset", $custom_field_values)) {
+            write_debug_log("Saving the custom field values of asset {$asset_id} failed after validation.", 'error');
+            return false;
+        }
+    }
+
     updateTagsOfType($asset_id, 'asset', $tags);
 
     // Storing the current list of associated risks, so we can calculate the list of risk changes for the risk update notification
@@ -477,14 +908,25 @@ function update_asset($asset_id, $ip, $name, $value=null, $location=null, $teams
     }
 
     // If the encryption extra is enabled, updates order_by_name
-    if (!$skip_name_order_update && $encryption_extra && isset($original_asset) && $original_asset['name'] !== $name) {
+    // get_asset_by_id() returns the stored (encrypted) name, so compare it
+    // decrypted: comparing ciphertext with the new plaintext was always
+    // "changed" and re-ordered the bucket on every save.
+    if (!$skip_name_order_update && !is_null($name) && $encryption_extra && isset($original_asset) && try_decrypt($original_asset['name']) !== $name) {
         require_once(realpath(__DIR__ . '/../extras/encryption/index.php'));
         update_name_order_for_asset($asset_id, $name);
     }
 
 
-    $message = "Asset \"" . $name . "\" was modified by user \"" . $_SESSION['user'] . "\".";
+    // A partial update (PATCH without a name, e.g. verify/unverify) names the
+    // asset by its stored name instead of logging `Asset ""`.
+    $log_name = is_null($name) ? (string)get_name_by_value('assets', $asset_id, '', true) : $name;
+
+    $message = "Asset \"" . $log_name . "\" was modified by user \"" . $_SESSION['user'] . "\".";
     write_log($asset_id, $_SESSION['uid'] ?? 0, $message, "asset");
+
+    if ($unverified_by_identity_edit) {
+        asset_write_unverified_by_edit_log((int)$asset_id, $log_name);
+    }
 
     trigger_workflow_event('asset.updated', [
         'asset_id' => $asset_id,
@@ -1183,25 +1625,17 @@ function get_entered_assets($verified=null)
     // Store the list in the assets array
     $assets = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-    // Get the name keys
-    $keys = array_column($assets, 'name');
-
-    // Sort the array by name
-    array_multisort($keys, SORT_ASC, $assets);
+    // Sort by name, ignoring case. The column holds ciphertext when the
+    // Encryption Extra is on, so sort on the decrypted value (SR-37); the rows
+    // themselves are returned as stored, and callers decrypt.
+    $keys = array_map(fn($asset) => mb_strtolower(trim((string)try_decrypt($asset['name']))), $assets);
+    array_multisort($keys, SORT_ASC, SORT_STRING, $assets);
 
     // Close the database connection
     db_close($db);
 
     // Return the array of assets
     return $assets;
-}
-
-/***********************************
- * FUNCTION: GET UNVERIFIED ASSETS *
- ***********************************/
-function get_unverified_assets()
-{
-    return get_entered_assets(false);
 }
 
 /***********************************
@@ -1420,68 +1854,6 @@ function display_edit_asset_table()
     echo "</table>\n";
 }
 
-/********************************************************
- * FUNCTION: UPDATE ASSET FIELD VALUE OF THE FIELD NAME *
- ********************************************************/
-function update_asset_field_value_by_field_name($id, $fieldName, $fieldValue)
-{
-    switch($fieldName){
-        case "name":
-            $fieldName = "name";
-            $fieldValue = try_encrypt($fieldValue);
-        break;
-        case "value":
-            $fieldName = "value";
-        break;
-        case "location":
-            $fieldName = "location";
-            $fieldValue = is_array($fieldValue) ? implode(",", $fieldValue) : $fieldValue;
-        break;
-        case "team":
-            $fieldName = "teams";
-            $fieldValue = is_array($fieldValue) ? implode(",", $fieldValue) : $fieldValue;
-        break;
-        case "details":
-            $fieldName = "details";
-            $fieldValue = try_encrypt($fieldValue);
-        break;
-        case "tags":
-            $tags = empty($fieldValue) ? [] : $fieldValue;
-
-            foreach($tags as $tag){
-                if (strlen($tag) > 255) {
-                    global $lang;
-                    
-                    set_alert(true, "bad", $lang['MaxTagLengthWarning']);
-                    return false;
-                }
-            }
-
-            return updateTagsOfType($id, 'asset', $tags);
-        break;
-        default:
-            return false;
-        break;
-    }
-    
-    // Open the database connection
-    $db = db_open();
-
-    // Update the asset
-    $stmt = $db->prepare("UPDATE assets SET `". $fieldName ."` = :value WHERE id = :id");
-    $stmt->bindParam(":value", $fieldValue, PDO::PARAM_STR);
-    $stmt->bindParam(":id", $id, PDO::PARAM_INT);
-    $stmt->execute();
-
-    $name = get_name_by_value('assets', $id, "", true);
-    $message = "Asset '{$name}' was modified by user '{$_SESSION['user']}'.";
-    write_log($id, $_SESSION['uid'] ?? 0, $message, "asset");
-    
-    // Close the database connection
-    db_close($db);
-
-    return true;
-}
 
 /**********************************
  * FUNCTION: IMPORT ASSET *
@@ -1921,20 +2293,29 @@ function display_asset_valuation_table($form_id = '') {
     $stmt->execute();
     $values = $stmt->fetchAll();
 
+    // The configured Default Currency Symbol prefixes each boundary (SR-2075).
+    // It used to be a "$" drawn by the stylesheet, whatever the setting said.
+    // The setting is free text an administrator types, so it is escaped here.
+    $currency = (string)get_setting('currency');
+    $prefix = $currency !== '' ? "<span class='input-group-text'>{$escaper->escapeHtml($currency)}</span>" : '';
+
     // For each asset value
     foreach ($values as $value) {
 
         // Minimum value for field
         $minimum = (int)$value['id'] - 1;
+        $level = $escaper->escapeHtmlAttr($value['id']);
 
+        // data-valuation-bound / data-valuation-level are what
+        // js/simplerisk/asset_valuation.js keeps neighbouring levels in step by.
         echo "
                 <tr>
                     <td class='text-center'>{$escaper->escapeHtml($value['id'])}</td>
                     <td class='text-center'>
-                        <input id='dollarsign' type='number' min='{$escaper->escapeHtml($minimum)}' name='min_value_{$escaper->escapeHtml($value['id'])}' value='{$escaper->escapeHtml($value['min_value'])}' onFocus='this.oldvalue = this.value;' onChange='javascript:updateMinValue('{$escaper->escapeHtml($value['id'])}');this.oldvalue = this.value;' class='form-control'{$form_attr}/>
+                        <div class='input-group'>{$prefix}<input type='number' min='{$escaper->escapeHtml($minimum)}' name='min_value_{$level}' value='{$escaper->escapeHtml($value['min_value'])}' data-valuation-bound='min' data-valuation-level='{$level}' class='form-control'{$form_attr}/></div>
                     </td>
                     <td class='text-center'>
-                        <input id='dollarsign' type='number' min='{$escaper->escapeHtml($minimum)}' name='max_value_{$escaper->escapeHtml($value['id'])}' value='{$escaper->escapeHtml($value['max_value'])}' onFocus='this.oldvalue = this.value;' onChange='javascript:updateMaxValue('{$escaper->escapeHtml($value['id'])}');this.oldvalue = this.value;'  class='form-control'{$form_attr}/>
+                        <div class='input-group'>{$prefix}<input type='number' min='{$escaper->escapeHtml($minimum)}' name='max_value_{$level}' value='{$escaper->escapeHtml($value['max_value'])}' data-valuation-bound='max' data-valuation-level='{$level}' class='form-control'{$form_attr}/></div>
                     </td>
                     <td class='text-center'>
                         <input type='text' name='valuation_level_name_{$escaper->escapeHtml($value['id'])}' value='{$escaper->escapeHtml($value['valuation_level_name'])}'  class='form-control' placeholder='{$escaper->escapeHtml($lang['EnterAValuationLevelName'])}'{$form_attr}/>
@@ -2315,6 +2696,26 @@ function display_add_asset()
  * $name: name of the asset group                        *
  * $selected_assets: The assets associated to the group  * 
  *********************************************************/
+/**
+ * The asset group name rule applied to the stored groups (SR-1881); see
+ * asset_group_name_check(). Every create and rename path -- the v2 CRUD
+ * routes, the legacy /asset-group/* RPC and the Import-Export Extra -- asks
+ * this rather than get_value_by_name(), whose first-match lookup could
+ * resolve a group's own name to a different row and refuse the save.
+ *
+ * @param string   $name    the requested name, already normalised
+ * @param int|null $self_id the group being edited; null on create
+ * @return array{conflict:bool,name:string}
+ */
+function check_asset_group_name(string $name, ?int $self_id = null): array
+{
+    $db = db_open();
+    $groups = $db->query("SELECT `id`, `name` FROM `asset_groups`;")->fetchAll(PDO::FETCH_ASSOC);
+    db_close($db);
+
+    return asset_group_name_check($groups, $name, $self_id);
+}
+
 function create_asset_group($name, $selected_assets=false) {
 
     $db = db_open();
@@ -3020,36 +3421,9 @@ function get_asset_groups_table() {
 
     global $escaper;
 
-    // @phan-suppress-next-line SecurityCheck-XSS -- build_url() called with hardcoded path literal; base URL is admin-configured
-    echo "<table id='asset-groups-table' class='easyui-treegrid asset-groups-table'
-            data-options=\"
-                iconCls: 'icon-ok',
-                animate: false,
-                fitColumns: true,
-                nowrap: true,
-                pagination: true,
-                pageSize: 10,
-                pageList: [5,10,20,100],
-                url: '" . build_url("api/v2/asset-group/tree") . "',
-                method: 'GET',
-                idField: 'id',
-                treeField: 'name',
-                scrollbarSize: 0,
-                loadFilter: function(data, parentId) {
-                    return data.data;
-                },
-                onLoadSuccess: function(row, data){
-                    //fixTreeGridCollapsableColumn();
-                    //It's there to be able to have it collapsed on load
-                    /*var tree = $('#asset-groups-table');
-                    tree.treegrid('collapseAll');
-                    tree.treegrid('options').animate = true;*/
-                    if (data && data.total)
-                        $('#asset-groups-count').text(data.total);
-                }
-            \">";
+    echo "<table id='asset-groups-table' class='easyui-treegrid asset-groups-table'>";
     echo "<thead>";
-    
+
         // If the customization extra is enabled, shows fields by asset customization
     if (customization_extra()) {
         // Load the extra
@@ -3070,10 +3444,47 @@ function get_asset_groups_table() {
         display_asset_tags_treegrid_th();
         display_asset_actions_treegrid_th();
     }
-    
+
     echo "</thead>\n";
 
     echo "</table>";
+
+    // The treegrid is initialized here (rather than via the <table>'s own
+    // data-options="...") because jQuery EasyUI parses data-options with
+    // new Function(), which the hardened CSP's script-src (no 'unsafe-eval')
+    // blocks -- see PR #2321. Columns are derived from the <th>s echoed
+    // above (plain `field`/`align`/`width` attributes, not data-options),
+    // so no columns option is needed here.
+    echo "<script>
+        $(function() {
+            $('#asset-groups-table').treegrid({
+                iconCls: 'icon-ok',
+                animate: false,
+                fitColumns: true,
+                nowrap: true,
+                pagination: true,
+                pageSize: 10,
+                pageList: [5,10,20,100],
+                url: BASE_URL + '/api/v2/asset-group/tree',
+                method: 'GET',
+                idField: 'id',
+                treeField: 'name',
+                scrollbarSize: 0,
+                loadFilter: function(data, parentId) {
+                    return data.data;
+                },
+                onLoadSuccess: function(row, data){
+                    //fixTreeGridCollapsableColumn();
+                    //It's there to be able to have it collapsed on load
+                    /*var tree = $('#asset-groups-table');
+                    tree.treegrid('collapseAll');
+                    tree.treegrid('options').animate = true;*/
+                    if (data && data.total)
+                        $('#asset-groups-count').text(data.total);
+                }
+            });
+        });
+    </script>";
 }
 
 function get_asset_groups_for_treegrid($offset, $rows) {
@@ -3627,6 +4038,40 @@ function get_asset_ids_from_groups($group_ids)
 
 }
 
+/**
+ * The entries of an asset's `associated_risks` select part (the JSON array
+ * of {value: internal risk id, name: stored subject} built by the
+ * field_settings join) that the caller may see (SR-2313): none without the
+ * Risk Management permission, and otherwise each risk must pass
+ * check_access_for_risk() through filter_accessible_risk_ids(), so under Team
+ * Separation another team's risk is neither named nor counted. Without the
+ * Extra every entry is kept for a Risk Management user. Names stay as stored
+ * (the caller decrypts and escapes).
+ *
+ * @param mixed $json the select part's value
+ * @return array<int,array{value:int,name:string}>
+ */
+function assets_visible_associated_risk_entries($json): array
+{
+    if (!is_string($json) || $json === '' || $json === '[]' || !assets_caller_can_see_associated_risks()) {
+        return [];
+    }
+    $entries = json_decode($json, true);
+    if (!is_array($entries)) {
+        return [];
+    }
+    $entries = array_values(array_filter($entries, fn($e) => is_array($e) && isset($e['value'])));
+    $visible = array_flip(filter_accessible_risk_ids(array_column($entries, 'value')));
+
+    $out = [];
+    foreach ($entries as $entry) {
+        if (isset($visible[(int)$entry['value']])) {
+            $out[] = ['value' => (int)$entry['value'], 'name' => (string)($entry['name'] ?? '')];
+        }
+    }
+    return $out;
+}
+
 function get_assets_data_for_view_v2($view, $selected_fields, $verified = null, $start = 0, $length = 10, $orderColumn = 'id', $orderDir = 'ASC', $column_filters = []) {
 
     global $field_settings_views, $field_settings, $escaper, $lang;
@@ -3850,16 +4295,13 @@ function get_assets_data_for_view_v2($view, $selected_fields, $verified = null, 
                             }
                             break;
                         case 'associated_risks':
-                            if (!empty($value) && $value !== '[]') {
-                                $associated_risks = [];
-                                foreach (json_decode($value, true) as $associated_risk) {
-                                    $associated_risk_id = 1000 + (int)$associated_risk['value'];
-                                    $associated_risks []= $escaper->escapeHtml("[{$associated_risk_id}]" . try_decrypt($associated_risk['name']));
-                                }
-                                $value = implode(', ', $associated_risks);
-                            } else {
-                                $value = '';
+                            // Only the risks the caller may see (Team Separation).
+                            $associated_risks = [];
+                            foreach (assets_visible_associated_risk_entries($value) as $associated_risk) {
+                                $associated_risk_id = 1000 + $associated_risk['value'];
+                                $associated_risks []= $escaper->escapeHtml("[{$associated_risk_id}]" . try_decrypt($associated_risk['name']));
                             }
+                            $value = implode(', ', $associated_risks);
                             break;
                         default:
                             // Only have to escape non-custom fields as those are already escaped
@@ -3965,110 +4407,6 @@ function get_assets_data_for_view_v2($view, $selected_fields, $verified = null, 
     return $data;
 }
 
-// will be used for the inline editing for the assets
-//TODO: use the update_name_order_for_asset($id, $name) function if encryption is enabled and the name is updated
-function update_asset_field_API_v2($view, $fieldName) {
-    
-    global $field_settings_views, $field_settings, $lang, $escaper;
-    
-    $selected_fields = display_settings_get_display_settings_for_view($view);
-    
-    // Check if the edited field is in the selected fields for the view
-    // no editing for off-screen fields and it also makes sure the field is setup for the view
-    if (!in_array($fieldName, $selected_fields)) {
-        set_alert(true, "bad", $lang['EditFailed_NotSelected']);
-        api_v2_json_result(400, get_alert(true), NULL);
-    }
-
-    // @phan-suppress-next-line PhanTypeArraySuspiciousNullable
-    $view_type = $field_settings_views[$view]['view_type'];
-
-    // TODO: add check to see if field is editable
-    // TODO: Unique fields
-    // Check if the field is required and if it is, then whether it has a proper value set
-    if (!empty($field_settings[$view_type][$fieldName]['required']) && $field_settings[$view_type][$fieldName]['required'] && empty($_POST['fieldValue'])) {
-        set_alert(true, "bad", $lang['EditFailed_RequiredFieldEmpty']);
-        api_v2_json_result(400, get_alert(true), NULL);
-    }
-    
-    $id = (int)$_POST['id'];
-    $fieldValue = $_POST['fieldValue'];
-    $customization = customization_extra();
-    
-    // If this is custom field
-    if(stripos($fieldName, "custom_field") !== false) {
-        // If customization extra is enabled
-        if($customization) {
-            // Get the custom field id from the name
-            $custom_field_id = str_replace('custom_field_', '', $fieldName);
-            // Include the extra
-            require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
-            if (!save_custom_field_values($id, "asset", [$custom_field_id => $fieldValue])) {
-                api_v2_json_result(400, get_alert(true), NULL);
-            }
-        } else {
-            set_alert(true, "bad", $lang['EditFailed_CustomFieldNeedsCustomization']);
-            api_v2_json_result(400, get_alert(true), NULL);
-        }
-    } else { // Non-custom fields
-        // Tags handled differently than other fields
-        if ($fieldName === 'tags') {
-            $tags = empty($fieldValue) ? [] : $fieldValue;
-            
-            foreach($tags as $tag){
-                if (strlen($tag) > 255) {
-                    global $lang;
-                    
-                    set_alert(true, "bad", $lang['MaxTagLengthWarning']);
-                    api_v2_json_result(400, get_alert(true), NULL);
-                }
-            }
-            
-            updateTagsOfType($id, 'asset', $tags);
-        } else {
-            //$updated = update_asset_field_value_by_field_name($id, $fieldName, $fieldValue);
-            
-            // If encryption extra is activated, then encrypt the field's value it if needed
-            if (encryption_extra() && !empty($field_settings[$view_type][$fieldName]['encrypted']) && $field_settings[$view_type][$fieldName]['encrypted']) {
-                $fieldValue = try_encrypt($fieldValue);
-            }
-            
-            // These fields are still comma selected ids, need to remove this part once they're properly converted to use junction tables
-            // and have a separate section for them like for the tags
-            if (($fieldName === "location" || $fieldName === "teams") && is_array($fieldValue)) {
-                $fieldValue = implode(",", $fieldValue);
-            }
-            
-            // Open the database connection
-            $db = db_open();
-            
-            // Update the asset. At this point FieldName is already validated to be an existing field, so no security risk here
-            $stmt = $db->prepare("UPDATE `assets` SET `{$fieldName}` = :value WHERE `id` = :id");
-            $stmt->bindParam(":value", $fieldValue, PDO::PARAM_STR);
-            $stmt->bindParam(":id", $id, PDO::PARAM_INT);
-            $stmt->execute();
-            
-            // Close the database connection
-            db_close($db);
-        }
-        
-        $message = _lang("FieldUpdated_{$view_type}", ['fieldName' => $fieldName, 'name' => get_name_by_value('assets', $id, "", true), 'user' => $_SESSION['user']]);
-        write_log($id, $_SESSION['uid'] ?? 0, $message, "asset");
-    }
-    
-    /* Properly implement this part when finishing inline edits
-     $asset = get_asset_by_id($id);
-     set_alert(true, "good", $lang['AssetWasUpdatedSuccessfully']);
-     if ($fieldName == "tags") {
-     $options = [];
-     foreach(getTagsOfType('asset') as $tag) {
-     $options[] = array('label' => $tag['tag'], 'value' => $tag['id']);
-     }
-     json_response(200, get_alert(true), $options);
-     } else {
-     json_response(200, get_alert(true), null);
-     }*/
-}
 
 // Used to update the asset through the API call
 function update_asset_API_v2($view) {
@@ -4081,11 +4419,19 @@ function update_asset_API_v2($view) {
     $id_field = $field_settings_views[$view]['id_field'];
     $id = (int)$_POST[$id_field];
 
-    // If the asset name is alread taken, but not on this asset
-    $asset_id_tmp = asset_exists($_POST['name']);
-    if (!empty($_POST['name']) && $asset_id_tmp &&  $id !== $asset_id_tmp) {
-        set_alert(true, "bad", _lang_raw('EditFailed_FieldMustBeUnique', ['field' => 'name']));
-        api_v2_json_result(400, get_alert(true), NULL);
+    // The name is trimmed before the checks below and before it is stored
+    // (SR-37), so a blank one fails the required check; if it is already
+    // taken, but not by this asset, the edit is refused.
+    if ($view_type === 'asset' && isset($_POST['name']) && is_scalar($_POST['name'])) {
+        $_POST['name'] = trim((string)$_POST['name']);
+        if ($_POST['name'] !== '') {
+            $stored_name = asset_name_for_edit($_POST['name'], $id);
+            if ($stored_name === null) {
+                set_alert(true, "bad", _lang_raw('EditFailed_FieldMustBeUnique', ['field' => 'name']));
+                api_v2_json_result(400, get_alert(true), NULL);
+            }
+            $_POST['name'] = $stored_name;
+        }
     }
     
     $mapped_custom_field_settings = [];
@@ -4184,6 +4530,10 @@ function update_asset_API_v2($view) {
                     $mapped_controls = empty($_POST['mapped_controls']) ? [] : $_POST['mapped_controls'];
                     break;
                 case 'associated_risks':
+                    // An absent key keeps the links (see below), so there is nothing to notify about.
+                    if (!array_key_exists('associated_risks', $_POST)) {
+                        break;
+                    }
                     // Storing the list of associated risks so we can update it once the asset itself is updated
                     // If it's empty, we need an empty array, rather than null that's the default behavior for missing data
                     $associated_risks_new = $field_value ? $field_value : [];
@@ -4216,6 +4566,20 @@ function update_asset_API_v2($view) {
         }
     }
 
+    // A verified asset whose name or IP is changed by a user without
+    // asset_verify goes back to unverified (spec section 10), same rule as
+    // PATCH /assets/{id}. `verified` itself is not an editable field here.
+    $unverified_by_identity_edit = false;
+    if ($view_type === 'asset' && asset_edit_demotes_verification(
+        $id,
+        isset($_POST['name']) && is_scalar($_POST['name']) ? (string)$_POST['name'] : null,
+        isset($_POST['ip']) && is_scalar($_POST['ip']) ? (string)$_POST['ip'] : null
+    )) {
+        $update_parts[] = "`verified` = :verified_demoted";
+        $params[':verified_demoted'] = 0;
+        $unverified_by_identity_edit = true;
+    }
+
     $db = db_open();
 
     $stmt = $db->prepare("UPDATE `assets` SET " . implode(',', $update_parts) . " WHERE {$id_field} = :{$id_field};");
@@ -4229,7 +4593,11 @@ function update_asset_API_v2($view) {
     // so if we check and then still have to save we'd basically just wasted time on checking
     updateTagsOfType($id, $view_type, $tags);
 
-    update_asset_risks_associations($id, $associated_risks_new);
+    // Only a body that names associated_risks changes the links (SR-2313): an
+    // absent key keeps them, so a save never silently drops an asset's risks.
+    if (array_key_exists('associated_risks', $_POST)) {
+        update_asset_risks_associations($id, $associated_risks_new);
+    }
 
     if ($notification && !empty($associated_risks_need_notified)) {
         // Only send the notification about the updated risks that were changed on the asset
@@ -4243,8 +4611,10 @@ function update_asset_API_v2($view) {
         api_v2_json_result(400, get_alert(true), NULL);
     }
 
-    //TODO only do this if the name changed
-    if ($encryption && $original['name'] !== $asset_name) {
+    // Only when the name changed. get_asset_for_change_checking() returns the
+    // name decrypted; try_decrypt() keeps the comparison plaintext-to-plaintext
+    // should that ever change.
+    if ($encryption && $asset_name !== null && (string)try_decrypt($original['name'] ?? '') !== (string)$asset_name) {
         update_name_order_for_asset($id, $asset_name);
     }
 
@@ -4261,6 +4631,10 @@ function update_asset_API_v2($view) {
         ]);
     }
 
+    if ($unverified_by_identity_edit) {
+        asset_write_unverified_by_edit_log($id, $asset_name);
+    }
+
     set_alert(true, "good", $escaper->escapeHtml($lang['AssetWasUpdatedSuccessfully']));
     api_v2_json_result(200, get_alert(true), NULL);
 
@@ -4274,6 +4648,12 @@ function create_asset_API_v2($view) {
     // @phan-suppress-next-line PhanTypeArraySuspiciousNullable
     $view_type = $field_settings_views[$view]['view_type'];
     
+    // Stored trimmed, the way add_asset() stores it (SR-37); asset_exists()
+    // already compares trimmed names.
+    if ($view_type === 'asset' && isset($_POST['name']) && is_scalar($_POST['name'])) {
+        $_POST['name'] = trim((string)$_POST['name']);
+    }
+
     // If the asset name is alread taken, but not on this asset
     if (!empty($_POST['name']) && asset_exists($_POST['name'])) {
         set_alert(true, "bad", _lang_raw('EditFailed_FieldMustBeUnique', ['field' => 'name']));
@@ -4328,7 +4708,10 @@ function create_asset_API_v2($view) {
     $associated_risks = [];
     
     $insert_parts = ["`verified` = :verified", "`template_group_id` = :template_group_id"];
-    $params = ["verified" => true, "template_group_id" => $template_group_id];
+    // Verified iff the creator holds asset_verify or auto_verify_new_assets is
+    // on (spec D8/10); this legacy create-modal route used to always set true.
+    // (int): execute($params) binds as strings, and false would bind as ''.
+    $params = ["verified" => (int)asset_new_verified_for_current_user(), "template_group_id" => $template_group_id];
     // Do the field validation(like required fields not having a value) and collect the data for the update
     foreach (field_settings_get_localization($view, false, false, true, $customization ? $template_group_id : null) as $field_name => $field_text) {
 

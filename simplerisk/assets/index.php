@@ -3,83 +3,26 @@
     * License, v. 2.0. If a copy of the MPL was not distributed with this
     * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-    // Render the header and sidebar
-    require_once(realpath(__DIR__ . '/../includes/renderutils.php'));
-    render_header_and_sidebar(['blockUI'], ['check_assets' => true]);
+    // Retired: Automated Discovery now lives in the Discover assets modal on Manage assets.
+    // Kept so bookmarks and old links still land somewhere useful. The
+    // authentication and asset permission checks run first, so a caller
+    // without the permission is refused exactly as on the retired page
+    // rather than being redirected into the new one. Nothing runs here.
+    require_once(realpath(__DIR__ . '/../includes/functions.php'));
+    require_once(realpath(__DIR__ . '/../includes/authenticate.php'));
+    require_once(realpath(__DIR__ . '/../includes/permissions.php'));
+    require_once(realpath(__DIR__ . '/../vendor/autoload.php'));
 
-    $searchresult = array();
+    add_security_headers();
 
-    // Check if an asset search was submitted
-    if ((isset($_POST['search']))) {
+    // is_action: a redirect is not a page the user "visited", so it must not
+    // become the remembered landing location.
+    add_session_check([
+        'check_access' => true,
+        'check_assets' => true,
+        'is_action' => true,
+    ]);
 
-        $range = $_POST['range'];
-        $AvailableIPs = discover_assets($range);
-
-        // If the IP was not in a recognizable format
-        if ($AvailableIPs === false) {
-
-            // Display an alert
-            set_alert(true, "bad", $escaper->escapeHtml($lang['IPFormatNotRecognized']));
-
-        } else {
-            if(count($AvailableIPs)) {
-                foreach($AvailableIPs as $ip) {
-                    $searchresult[] = $ip['ip'];
-                }
-            } else {
-                $NoSearchResults = true;
-            }
-        }
-    }
-
-?>
-<div class="row bg-white">
-    <div class="col-12">
-        <div class="card-body border my-2">
-            <p><strong><?= $escaper->escapeHtml($lang['AutomatedDiscoveryHelp']) ?></strong></p>
-            <ul>
-                <li>192.168.0.1</li>
-                <li>192.168.0.1-192.168.0.255</li>
-            </ul>
-            <form id="discover_assets" name="discover_assets" method="post" action="" enctype="multipart/form-data">
-                <div class="row align-items-end">
-                    <div class="col-6">
-                        <label><?= $escaper->escapeHtml($lang['IPRange']) ?>:</label>
-                        <input maxlength="100" name="range" id="range" class="form-control" type="text">
-                    </div>
-                    <div class="col-6">
-                        <button type="submit" name="search" class="btn btn-submit"><?= $escaper->escapeHtml($lang['Search']) ?></button>
-                    </div>
-                </div>
-    <?php
-        if(count($searchresult)) {
-            // @phan-suppress-next-line SecurityCheck-XSS -- $searchresult contains only regex-validated IPv4 addresses (digits and dots only)
-            echo "
-                <div class='mt-3'>
-                    <label class='m-r-10'>" . $escaper->escapeHtml($lang['SearchResults']) . " :</label>" .
-                    implode(", ", $searchresult) . "
-                </div>
-            ";
-        } else if(isset($NoSearchResults)) {
-            echo "
-                <div class='mt-3'>
-                    <strong>" . 
-                        $escaper->escapeHtml($lang['NoSearchResults']) . "
-                    </strong>
-                </div>
-            ";
-        }
-    ?>
-            </form>
-        </div>
-    </div>
-</div>
-<script type="text/javascript">
-    $('form#discover_assets').submit(function() {
-        $.blockUI({message:"<i class='fa fa-spinner fa-spin' style='font-size:24px'></i>"});
-    });
-</script>
-<?php
-    // Render the footer of the page. Please don't put code after this part.
-    render_footer();
-?>
+    // Relative, so it works on installs served from a subpath.
+    header('Location: manage_assets.php', true, 302);
+    exit;

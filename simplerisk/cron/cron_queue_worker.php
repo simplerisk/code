@@ -32,6 +32,8 @@ $stuckThresholdMinutes = 30;
 
 $startTime = time();
 $lastWorkTime = time();
+// config.php, watched so an edit recycles the worker (see the main loop).
+$configPath = __DIR__ . '/../includes/config.php';
 
 // === SESSION IDENTITY FOR AUDIT LOGS ===
 // Functions that write audit log entries read $_SESSION['user'] and $_SESSION['uid'].
@@ -111,6 +113,17 @@ while (true) {
     // code. Workers started after the request keep running.
     if (worker_restart_requested_since($startTime, worker_restart_flag_timestamp())) {
         record_worker_restart($workerName, 'restart_requested');
+        break;
+    }
+
+    // config.php is read once, at start. When a system administrator edits it
+    // (for example the asset discovery allowlist), exit between tasks so cron
+    // respawns the worker with the new configuration. Fail-safe: a stat
+    // failure or a future mtime never triggers this, and the respawned worker
+    // starts after the edit, so it does not loop (worker_config_changed_since()).
+    clearstatcache(true, $configPath);
+    if (worker_config_changed_since($startTime, @filemtime($configPath), $now)) {
+        record_worker_restart($workerName, 'config_changed');
         break;
     }
 

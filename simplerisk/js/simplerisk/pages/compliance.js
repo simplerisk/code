@@ -1117,6 +1117,17 @@ $(function(){
     $("#add_test").on("click", function(event) {
         event.preventDefault();
 
+        // The Objective/Test Steps/Expected Results/Sample/Required Evidence
+        // fields are HugeRTE editors; HugeRTE only syncs its live iframe
+        // content back to the underlying <textarea> on its own 'change' event
+        // (js/WYSIWYG/editor.js). A save clicked right after typing -- before
+        // that event fires -- would otherwise read those fields as stale or
+        // empty. force_save_all_editors() (js/WYSIWYG/helpers.js) flushes every
+        // editor on the page first; see governance-frameworks.js's
+        // flushEditors() and UILayout.php's dashboard widget save handler for
+        // the same guard against the same race.
+        force_save_all_editors();
+
         let $form = $("#test-new-form");
 
         // Phase 4a (common tests): this check IS the client-side rule for the
@@ -1340,6 +1351,11 @@ $(function(){
     // the Compliance > Initiate Audits page
     $(document).on("submit", "#update-test-form", function(event) {
         event.preventDefault();
+
+        // Same HugeRTE stale-content race as the Add form above -- flush
+        // every editor's live content back into its <textarea> before this
+        // form is read. See the note on the Add handler for detail.
+        force_save_all_editors();
 
         // Same >=1 rule, same message, and the same before-not-after ordering
         // as the Add form above -- see the note there for why an empty control

@@ -814,7 +814,7 @@ $lang = array(
     'UserSessions' => 'Phiên người dùng',
     'SessionActivityTimeout' => 'Thời gian chờ phiên hoạt động',
     'Security' => 'An ninh',
-    'EnableCSP' => 'Sử nội dung chính sách bảo mật (điều này đã phá vỡ Chrome trong quá khứ)',
+    'EnableCSP' => 'Kích hoạt Chính sách Bảo mật Nội dung (Khuyến nghị)',
     'EnableDebugLogging' => 'Cho phép ghi sổ gỡ lỗi',
     'seconds' => 'giây',
     'FieldSample' => 'Trường mẫu',
@@ -4967,6 +4967,572 @@ $lang = array(
     // closeriskForm()'s own (hardcoded, pre-existing) single-risk denial text.
     'NoCloseRiskPermission' => 'Bạn không có quyền đóng các rủi ro.',
     'QuestionnaireRequiredQuestionUnanswered' => 'Vui lòng trả lời tất cả các câu hỏi bắt buộc trước khi hoàn thành bài đánh giá.',
+    'AuditLog_ControlStatusAutoSynced' => 'Trạng thái của kiểm soát "{$short_name}" đã được tự động cập nhật thành "{$status_text}" dựa trên kết quả kiểm tra gần đây nhất của nó.',
+    'EnableCSPHelp' => 'Chính sách bảo mật nội dung (CSP) hạn chế trình duyệt chỉ tải các tập lệnh, kiểu dáng, hình ảnh và phông chữ từ chính SimpleRisk, đồng thời chặn việc nhúng trang và gửi biểu mẫu từ nguồn khác. Đây là biện pháp phòng vệ tích hợp mạnh mẽ nhất chống lại tấn công kịch bản chéo trang (XSS). Hãy để CSP được bật trừ khi nó xung đột với máy chủ proxy, tiện ích mở rộng trình duyệt hoặc tích hợp của bên thứ ba trong môi trường của bạn.',
+    // Define Control Frameworks' Columns picker (Task: Columns picker + saved layout/filters) -- the "Standard" group label above its built-in fields (Family/Owner/Maturity/Status/Class/Phase/Priority/Type); 'CustomFields' already exists.
+    'StandardFields' => 'Các trường tiêu chuẩn',
+    // My Profile redesign (js/simplerisk/pages/account-profile.js)
+    'Administrator' => 'Quản trị viên',
+    'AccountDetails' => 'Thông tin tài khoản',
+    'YourPermissions' => 'Quyền của bạn',
+    'RoleAndTeamsGrantAccess' => 'Quyền truy cập mà vai trò và nhóm của bạn cấp cho bạn',
+    'AllGranted' => 'Tất cả đều được chấp thuận',
+    'PermissionsCountLabel' => '$count quyền hạn',
+    'ManagedByYourAdministrator' => 'Các thông tin chi tiết này do quản trị viên của bạn quản lý. Vui lòng liên hệ với họ nếu cần thay đổi bất cứ điều gì.',
+    'MultiFactorAuthenticationHint' => 'Thêm bước thứ hai vào quy trình đăng nhập để bảo mật tài khoản của bạn tốt hơn.',
+    'ChangingPasswordSignsOutEverywhere' => 'Việc thay đổi mật khẩu sẽ đăng xuất bạn khỏi tất cả các nền tảng khác.',
+    'APIKeyHint' => 'Được sử dụng để xác thực các tập lệnh và tích hợp của riêng bạn với API của SimpleRisk.',
+    'ResetDisplaySettingsHint' => 'Khôi phục các lựa chọn cột tùy chỉnh về mặc định.',
+    'CardGeneral' => 'Chung',
+    'CardClassification' => 'Phân loại',
+    'CardScoring' => 'Ghi điểm',
+    'CardAdditionalInformation' => 'Thông tin bổ sung',
+    'CardCustomFields' => 'Lĩnh vực tùy chỉnh',
+    'CardCustomFieldsHint' => 'Các trường này cần được sắp xếp vào một thẻ.',
+    'LayoutEditorHint' => 'Kéo một trường vào một thẻ khác để gán lại chức năng cho nó, kéo bên trong một thẻ để sắp xếp lại thứ tự hoặc thay đổi kích thước, và kéo hoặc thay đổi kích thước thẻ để thay đổi vị trí của nó trên trang.',
+    'ScoringNotYetAvailableInThisView' => 'Chức năng cấu hình chấm điểm hiện chưa khả dụng trong giao diện này.',
+    // Native tooltip on the Cards layout editor's Gridstack resize handles
+    // (js/simplerisk/pages/customization-layout-editor.js) -- the bare corner
+    // bracket read as an unexplained mark until it said what it does.
+    'DragToResize' => 'Kéo để thay đổi kích thước',
+    // Warning pill on a Cards layout editor card the admin has sized shorter
+    // than the fields it holds. Replaces the silent inner scrollbar that state
+    // used to produce.
+    'NFieldsDoNotFitCard' => '{n} trường không vừa với thẻ này. Hãy thay đổi kích thước thẻ để hiển thị chúng.',
+    // Card titles for the Mitigation tab's Cards layout editor
+    // (js/simplerisk/pages/customization-layout-editor.js), mirroring the
+    // Card* keys above for the Details tab. Order follows
+    // customization_mitigation_cards_layout_card_keys() (includes/functions.php).
+    'CardMitigationStrategy' => 'Chiến lược giảm thiểu rủi ro',
+    'CardMitigationSolution' => 'Giải pháp giảm thiểu',
+    'CardMitigationControls' => 'Giảm nhẹ điều khiển',
+    'CardReview' => 'Xem xét lại',
+    // Submit Risk page's three action-bar buttons (buildActionsBar(),
+    // risk-details-form.js, submitMode 'create' only) and the Reset Form
+    // confirm modal (management/index.php, design-system.md #8's "Confirm"
+    // type). 'Discard'/'Cancel'/'Close' already exist and are reused for the
+    // modal's own buttons.
+    'ResetForm' => 'Đặt lại biểu mẫu',
+    'SaveAndNew' => 'Tiết kiệm & Mới',
+    'SaveAndView' => 'Lưu & Xem',
+    'ResetFormConfirmTitle' => 'Bạn có muốn loại bỏ bản đánh giá rủi ro này không?',
+    'ResetFormConfirmBody' => 'Mọi thông tin bạn đã nhập sẽ bị mất.',
+    // Restore-template destructive confirm (Customization Extra, Save/Restore
+    // action bar). Two body variants: risk's Details/Mitigation/Review tabs
+    // named explicitly (the only fgroup with that 3-tab Cards layout), a
+    // generic fallback for every other fgroup (single legacy-panel tab).
+    // Both end on the same scoping reassurance -- confirmed via direct source
+    // read that Restore only ever touches the currently-selected template
+    // group, never any other.
+    'RestoreTemplateConfirmTitle' => 'Khôi phục bố cục mặc định?',
+    'RestoreTemplateConfirmBodyRisk' => 'Thao tác này sẽ đặt lại tất cả các trường trên các tab Chi tiết, Biện pháp khắc phục và Xem xét về giá trị mặc định cho nhóm mẫu này. Các nhóm mẫu khác không bị ảnh hưởng.',
+    'RestoreTemplateConfirmBody' => 'Thao tác này sẽ đặt lại tất cả các trường trên mẫu này về giá trị mặc định cho nhóm mẫu này. Các nhóm mẫu khác không bị ảnh hưởng.',
+    // CVSS holder's collapsed Temporal/Environmental/Impact-Modifiers
+    // accordion (buildCvssHolder(), risk-details-form.js) -- these three
+    // groups are optional CVSS v2 refinements on top of the required Base
+    // Score Metrics, so they collapse behind this header by default.
+    'AdvancedMetrics' => 'Số liệu nâng cao',
+    // CVSS holder's Base Score Metrics sub-group headers (buildCvssHolder(),
+    // risk-details-form.js) -- distinct from the existing 'ExploitabilityMetrics'/
+    // 'ImpactMetrics' keys, which the legacy cvss_modal_content.php modal
+    // still renders as plain "Exploitability Metrics"/"Impact Metrics" and
+    // must keep unchanged. These fold the umbrella "Base Score Metrics"
+    // heading into each sub-group's own header instead of a separate label.
+    'BaseScoreExploitabilityMetrics' => 'Các chỉ số về khả năng khai thác điểm số cơ bản',
+    'BaseScoreImpactMetrics' => 'Các chỉ số tác động điểm cơ bản',
+    // Per-field help popovers on the CVSS holder's 14 metric selects
+    // (buildCvssScoreItem(), risk-details-form.js) -- one per CVSS v2
+    // metric, matching the standard CVSS v2 specification definitions.
+    // Double-quoted (not single-quoted, this file's usual style) so the
+    // \n line breaks are real escape sequences: each popover leads with one
+    // overall sentence, then one bullet line per option, rendered via
+    // white-space: pre-line on .sr-scoring-help-popover .popover-body
+    // (scss/modules/_questionnaire.scss) -- plain text throughout, no HTML,
+    // so the popover stays initialized without Bootstrap's `html: true`.
+    "AttackVectorHelp" => "Cách thức truy cập lỗ hổng.\n• Cục bộ: yêu cầu truy cập cục bộ, chẳng hạn như bảng điều khiển hoặc shell.\n• Mạng liền kề: kẻ tấn công phải ở trên cùng một phân đoạn mạng vật lý hoặc logic.\n• Mạng: có thể khai thác từ xa qua mạng, không cần truy cập cục bộ hoặc liền kề.",
+    "AttackComplexityHelp" => "Độ phức tạp của cuộc tấn công sau khi kẻ tấn công có quyền truy cập vào mục tiêu.\n• Cao: yêu cầu các điều kiện chuyên biệt khó sắp xếp.\n• Trung bình: cần đáp ứng một số điều kiện, nhưng việc khai thác không khó khăn sau khi đáp ứng đủ điều kiện.\n• Thấp: không cần điều kiện đặc biệt nào.",
+    "AuthenticationHelp" => "Số lần kẻ tấn công phải xác thực với mục tiêu để khai thác nó.\n• Nhiều lần: cần xác thực hai lần trở lên, ngay cả khi sử dụng cùng một thông tin đăng nhập.\n• Một lần: chỉ cần xác thực một lần.\n• Không cần xác thực: không cần xác thực.",
+    "ConfidentialityImpactHelp" => "Tác động đến tính bảo mật của dữ liệu mà hệ thống xử lý nếu bị khai thác.\n• Không: không có tác động.\n• Một phần: một số thông tin bị tiết lộ, nhưng kẻ tấn công không kiểm soát được thông tin nào bị tiết lộ, hoặc mức độ thiệt hại bị hạn chế.\n• Hoàn toàn: toàn bộ thông tin trên hệ thống bị tiết lộ.",
+    "IntegrityImpactHelp" => "Tác động đến tính toàn vẹn của hệ thống nếu bị khai thác.\n• Không: không có tác động.\n• Một phần: một số dữ liệu có thể bị sửa đổi, nhưng kẻ tấn công không kiểm soát được dữ liệu nào bị sửa đổi, hoặc phạm vi bị hạn chế.\n• Hoàn toàn: tính toàn vẹn của hệ thống bị xâm phạm hoàn toàn; kẻ tấn công có thể sửa đổi bất kỳ tệp nào.",
+    "AvailabilityImpactHelp" => "Tác động đến tính khả dụng của hệ thống nếu bị khai thác.\n• Không: không có tác động.\n• Một phần: hiệu suất giảm hoặc gián đoạn khả dụng.\n• Hoàn toàn: tài nguyên bị ảnh hưởng bị tắt hoàn toàn.",
+    "RemediationLevelHelp" => "Mức độ khắc phục khả dụng cho lỗ hổng bảo mật.\n• Khắc phục chính thức: Có sẵn giải pháp hoàn chỉnh từ nhà cung cấp.\n• Khắc phục tạm thời: Có sẵn bản vá lỗi chính thức nhưng chỉ mang tính tạm thời.\n• Giải pháp tạm thời: Có giải pháp tạm thời không chính thức, không phải từ nhà cung cấp.\n• Không khả dụng: Không có giải pháp nào khả dụng hoặc không thể áp dụng bất kỳ giải pháp nào.",
+    "ReportConfidenceHelp" => "Mức độ tin cậy vào sự tồn tại của lỗ hổng và độ tin cậy của các chi tiết kỹ thuật.\n• Chưa được xác nhận: một báo cáo từ một nguồn duy nhất, chưa được xác nhận; vấn đề cơ bản chỉ là suy đoán.\n• Chưa được chứng thực: nhiều nguồn độc lập báo cáo cùng một hành vi, nhưng nguyên nhân gốc rễ chưa được xác nhận.\n• Đã được xác nhận: nhà cung cấp đã thừa nhận vấn đề, hoặc vấn đề được xác nhận bằng phân tích mã nguồn hoặc khai thác.",
+    "CollateralDamagePotentialHelp" => "Mức độ nguy cơ mất mát về sinh mạng, tài sản vật chất hoặc thiệt hại tài chính nếu lỗ hổng bị khai thác.\n• Không có: không có khả năng xảy ra thiệt hại nào.\n• Thấp đến Trung bình: có thể xảy ra thiệt hại ở mức độ vừa phải.\n• Cao: tác động thảm khốc đến tài sản, doanh thu hoặc sự an toàn của tổ chức.",
+    "TargetDistributionHelp" => "Tỷ lệ các hệ thống dễ bị tổn thương trong môi trường của bạn.\n• Không có: không có hệ thống mục tiêu nào tồn tại.\n• Thấp: 1-25% hệ thống dễ bị tổn thương.\n• Trung bình: 26-75% dễ bị tổn thương.\n• Cao: 76-100% dễ bị tổn thương.",
+    "ConfidentialityRequirementHelp" => "Mức độ quan trọng của việc bảo mật thông tin tài sản bị ảnh hưởng đối với tổ chức của bạn.\n• Thấp: Việc mất thông tin bảo mật có tác động hạn chế.\n• Trung bình: Có tác động nghiêm trọng.\n• Cao: Có tác động thảm khốc.",
+    "IntegrityRequirementHelp" => "Mức độ quan trọng của tính toàn vẹn của tài sản bị ảnh hưởng đối với tổ chức của bạn.\n• Thấp: Việc mất tính toàn vẹn có tác động hạn chế.\n• Trung bình: Nó có tác động nghiêm trọng.\n• Cao: Nó có tác động thảm khốc.",
+    "AvailabilityRequirementHelp" => "Mức độ quan trọng của việc tài sản bị ảnh hưởng khả dụng đối với tổ chức của bạn.\n• Thấp: việc mất khả dụng có tác động hạn chế.\n• Trung bình: nó có tác động nghiêm trọng.\n• Cao: nó có tác động thảm khốc.",
+    // Base Score Metrics' two sub-group intro sentences (metricsSubGroup()'s
+    // `descKey`, risk-details-form.js) -- orient the user to what the GROUP
+    // as a whole is asking, distinct from the per-field *Help popover keys
+    // above which explain each metric's own options.
+    'BaseScoreExploitabilityMetricsDescription' => 'Kẻ tấn công cần tiếp cận và kích hoạt lỗ hổng này như thế nào: vị trí của chúng, mức độ phức tạp của cuộc tấn công và liệu chúng có cần xác thực trước hay không.',
+    'BaseScoreImpactMetricsDescription' => 'Điều gì sẽ xảy ra nếu lỗ hổng bị khai thác thành công: ảnh hưởng đến tính bảo mật, tính toàn vẹn và tính khả dụng của hệ thống bị ảnh hưởng.',
+    // Advanced Metrics' three optional sub-group intro sentences -- same
+    // metricsSubGroup() `descKey` as the two Base Score groups above.
+    'TemporalScoreMetricsDescription' => 'Mức độ nguy hiểm thực tế của lỗ hổng này thay đổi như thế nào theo thời gian: tình trạng hiện tại của mã khai thác, các biện pháp khắc phục hiện có và mức độ tin cậy của các báo cáo về sự tồn tại của nó.',
+    'EnvironmentalScoreMetricsDescription' => 'Mức độ rủi ro của lỗ hổng này phụ thuộc vào môi trường của bạn: khả năng gây thiệt hại trong thực tế và số lượng hệ thống thực sự bị ảnh hưởng.',
+    'ImpactSubscoreModifiersDescription' => 'Đánh giá mức độ ảnh hưởng của Điểm Cơ bản dựa trên tầm quan trọng thực sự của tính bảo mật, tính toàn vẹn và tính khả dụng đối với tài sản cụ thể này.',
+    // Phase 4d-iii: DREAD holder help popovers (view_dread_help()'s
+    // existing English text, includes/display.php, extracted to real $lang
+    // keys -- that function's own content was raw hardcoded HTML, never
+    // localized, so it could not be reused verbatim).
+    'DamagePotentialHelp' => 'Nếu một cuộc tấn công mạng bị khai thác, thiệt hại sẽ lên tới bao nhiêu?' . "\n" . '0 = Không có gì' . "\n" . '5 = Dữ liệu cá nhân của người dùng bị xâm phạm hoặc bị ảnh hưởng.' . "\n" . '10 = Phá hủy hoàn toàn hệ thống hoặc dữ liệu',
+    'ReproducibilityHelp' => 'Việc tái tạo lỗ hổng bảo mật này dễ đến mức nào?' . "\n" . '0 = Rất khó hoặc không thể thực hiện được, ngay cả đối với người quản trị ứng dụng.' . "\n" . '5 = Cần thực hiện một hoặc hai bước, có thể cần người dùng được ủy quyền.' . "\n" . '10 = Chỉ cần trình duyệt web và thanh địa chỉ là đủ, không cần xác thực.',
+    'ExploitabilityHelp' => 'Cần những gì để khai thác mối đe dọa này?' . "\n" . '0 = Kiến thức lập trình và mạng nâng cao, với các công cụ tấn công tùy chỉnh hoặc nâng cao.' . "\n" . '5 = Phần mềm độc hại tồn tại trên Internet, hoặc có thể dễ dàng khai thác lỗ hổng bằng các công cụ tấn công hiện có.' . "\n" . '10 = Chỉ là một trình duyệt web',
+    'AffectedUsersHelp' => 'Sẽ có bao nhiêu người dùng bị ảnh hưởng?' . "\n" . '0 = Không có' . "\n" . '5 = Một số người dùng, nhưng không phải tất cả' . "\n" . '10 = Tất cả người dùng',
+    'DiscoverabilityHelp' => 'Việc phát hiện mối đe dọa này dễ đến mức nào?' . "\n" . '0 = Rất khó đến không thể; yêu cầu mã nguồn hoặc quyền quản trị.' . "\n" . '5 = Có thể tìm ra bằng cách đoán hoặc bằng cách theo dõi dấu vết mạng.' . "\n" . '9 = Thông tin chi tiết về những lỗi như thế này đã được công khai và có thể dễ dàng tìm thấy bằng công cụ tìm kiếm.' . "\n" . '10 = Thông tin hiển thị trên thanh địa chỉ của trình duyệt web hoặc trong một biểu mẫu.',
+    // The DREAD holder's summary card heading and "DREAD Metrics" card
+    // heading. No existing key covers either (confirmed via grep before
+    // adding).
+    'DreadScore' => 'Điểm DREAD',
+    'DreadMetrics' => 'Số liệu DREAD',
+    // Phase 4d-iv: OWASP holder help popovers (view_owasp_help()'s
+    // existing English text, includes/display.php, extracted to real
+    // $lang keys -- same never-localized-legacy-content extraction the
+    // DREAD phase already did for its own 5 fields). Wording/levels
+    // trued up against that function's real source text, not transcribed
+    // from an earlier standard-methodology draft.
+    'SkillLevelHelp' => 'Nhóm đặc vụ này có kỹ năng chuyên môn kỹ thuật đến mức nào?' . "\n" . '1 = Không có kỹ năng kỹ thuật' . "\n" . '3 = Một số kỹ năng kỹ thuật' . "\n" . '5 = Người dùng máy tính nâng cao' . "\n" . '6 = Kỹ năng mạng và lập trình' . "\n" . '9 = Kỹ năng xâm nhập bảo mật',
+    'MotiveHelp' => 'Nhóm tin tặc này có động lực như thế nào để tìm và khai thác lỗ hổng này?' . "\n" . '1 = Ít hoặc không có phần thưởng' . "\n" . '4 = Phần thưởng có thể nhận được' . "\n" . '9 = Phần thưởng cao',
+    'OpportunityHelp' => 'Nhóm tác nhân đe dọa này cần những nguồn lực và cơ hội nào để tìm ra và khai thác lỗ hổng này?' . "\n" . '0 = Quyền truy cập đầy đủ hoặc yêu cầu nguồn lực đắt tiền' . "\n" . '4 = Cần có quyền truy cập hoặc nguồn lực đặc biệt' . "\n" . '7 = Cần có một số quyền truy cập hoặc tài nguyên' . "\n" . '9 = Không cần quyền truy cập hoặc tài nguyên',
+    'SizeHelp' => 'Nhóm các tác nhân đe dọa này có quy mô bao nhiêu?' . "\n" . '2 = Nhà phát triển' . "\n" . '2 = Quản trị viên hệ thống' . "\n" . '4 = Người dùng mạng nội bộ' . "\n" . '5 = Đối tác' . "\n" . '6 = Người dùng đã xác thực' . "\n" . '9 = Người dùng Internet ẩn danh',
+    'EaseOfDiscoveryHelp' => 'Nhóm tin tặc này có dễ dàng phát hiện ra lỗ hổng này không?' . "\n" . '1 = Thực tế là không thể' . "\n" . '3 = Khó' . "\n" . '7 = Dễ' . "\n" . '9 = Có sẵn các công cụ tự động',
+    'EaseOfExploitHelp' => 'Nhóm tin tặc này có dễ dàng khai thác lỗ hổng này không?' . "\n" . '1 = Lý thuyết' . "\n" . '3 = Khó' . "\n" . '5 = Dễ' . "\n" . '9 = Có sẵn các công cụ tự động',
+    'AwarenessHelp' => 'Mức độ biết đến lỗ hổng này của nhóm tin tặc này như thế nào?' . "\n" . '1 = Không xác định' . "\n" . '4 = Ẩn' . "\n" . '6 = Rõ ràng' . "\n" . '9 = Kiến thức công cộng',
+    'IntrusionDetectionHelp' => 'Khả năng phát hiện lỗ hổng bảo mật cao đến mức nào?' . "\n" . '1 = Phát hiện chủ động trong ứng dụng' . "\n" . '3 = Đã ghi nhận và xem xét' . "\n" . '8 = Đã đăng nhập mà không qua xem xét' . "\n" . '9 = Chưa đăng nhập',
+    'LossOfConfidentialityHelp' => 'Lượng dữ liệu nào có thể bị tiết lộ và mức độ nhạy cảm của dữ liệu đó ra sao?' . "\n" . '2 = Tiết lộ tối thiểu dữ liệu không nhạy cảm' . "\n" . '6 = Tiết lộ tối thiểu dữ liệu quan trọng' . "\n" . '6 = Tiết lộ nhiều dữ liệu không nhạy cảm' . "\n" . '7 = Tiết lộ nhiều dữ liệu quan trọng' . "\n" . '9 = Tất cả dữ liệu đã được tiết lộ',
+    'LossOfIntegrityHelp' => 'Lượng dữ liệu có thể bị hỏng là bao nhiêu và mức độ hư hại như thế nào?' . "\n" . '1 = Dữ liệu bị lỗi nhẹ ở mức tối thiểu' . "\n" . '3 = Dữ liệu bị hỏng nghiêm trọng ở mức tối thiểu' . "\n" . '5 = Dữ liệu bị lỗi nhẹ trên diện rộng' . "\n" . '7 = Dữ liệu bị lỗi nghiêm trọng trên diện rộng' . "\n" . '9 = Tất cả dữ liệu đều bị hỏng hoàn toàn',
+    'LossOfAvailabilityHelp' => 'Lượng dịch vụ bị mất có thể là bao nhiêu và mức độ quan trọng của nó ra sao?' . "\n" . '1 = Mức độ gián đoạn dịch vụ phụ tối thiểu' . "\n" . '5 = Mức độ gián đoạn dịch vụ chính tối thiểu' . "\n" . '5 = Dịch vụ phụ trợ bị gián đoạn trên diện rộng' . "\n" . '7 = Dịch vụ chính bị gián đoạn trên diện rộng' . "\n" . '9 = Tất cả các dịch vụ bị mất hoàn toàn',
+    'LossOfAccountabilityHelp' => 'Liệu hành động của các tác nhân đe dọa có thể truy tìm được đến một cá nhân cụ thể nào không?' . "\n" . '1 = Có thể truy xuất nguồn gốc đầy đủ' . "\n" . '7 = Có thể truy xuất nguồn gốc' . "\n" . '9 = Hoàn toàn ẩn danh',
+    'FinancialDamageHelp' => 'Việc khai thác lỗ hổng bảo mật sẽ gây ra thiệt hại tài chính đến mức nào?' . "\n" . '1 = Ít hơn chi phí khắc phục lỗ hổng bảo mật' . "\n" . '3 = Ảnh hưởng nhỏ đến lợi nhuận hàng năm' . "\n" . '7 = Ảnh hưởng đáng kể đến lợi nhuận hàng năm' . "\n" . '9 = Phá sản',
+    'ReputationDamageHelp' => 'Liệu việc khai thác lỗ hổng bảo mật có gây tổn hại đến danh tiếng của doanh nghiệp hay không?' . "\n" . '1 = Thiệt hại tối thiểu' . "\n" . '4 = Mất các khách hàng lớn' . "\n" . '5 = Thiệt hại về uy tín' . "\n" . '9 = Thiệt hại thương hiệu',
+    'NonComplianceHelp' => 'Việc không tuân thủ quy định sẽ dẫn đến mức độ rủi ro như thế nào?' . "\n" . '2 = Vi phạm nhỏ' . "\n" . '5 = Vi phạm rõ ràng' . "\n" . '7 = Vi phạm nghiêm trọng',
+    'PrivacyViolationHelp' => 'Thông tin cá nhân có thể bị tiết lộ đến mức nào?' . "\n" . '3 = Một cá nhân' . "\n" . '5 = Hàng trăm người' . "\n" . '7 = Hàng ngàn người' . "\n" . '9 = Hàng triệu người',
+    // The OWASP holder's Score card heading. No existing key covers this
+    // (confirmed via grep before adding) -- the Likelihood/Impact card
+    // headings reuse the already-existing bare 'Likelihood'/'Impact' keys.
+    'OwaspScore' => 'Điểm OWASP',
+    // Phase 4d-iv follow-up: group-level descriptions for the 4 OWASP
+    // subgroup headings, sourced from OWASP's own Risk Rating Methodology
+    // (https://community.owasp.org/OWASP_Risk_Rating_Methodology), tightened
+    // into short UI captions -- not a verbatim quote (see this task's own
+    // source table for the original wording).
+    'ThreatAgentFactorsDescription' => 'Ước tính xác suất thành công của một cuộc tấn công do nhóm tin tặc này thực hiện.',
+    'VulnerabilityFactorsDescription' => 'Ước tính khả năng lỗ hổng này sẽ bị phát hiện và khai thác.',
+    'TechnicalImpactDescription' => 'Phân tích tác động dựa trên tính bảo mật, tính toàn vẹn, tính khả dụng và trách nhiệm giải trình.',
+    'BusinessImpactDescription' => 'Nó phản ánh những gì quan trọng đối với doanh nghiệp, vượt ra ngoài tác động kỹ thuật đơn thuần.',
+    // CVSS's own Temporal-metric 'Exploitability' help text. This key shares
+    // a labelKey ('Exploitability') with DREAD's own field, so both would
+    // otherwise derive the same generic lang key ('ExploitabilityHelp'),
+    // with DREAD's entry silently winning for both -- risk-details-form.js's
+    // buildCvssScoreItem() and risk-details-view.js's cvssMetricValueRow()
+    // reference this key directly for CVSS's Exploitability field instead
+    // of the generic '<labelKey>Help' derivation.
+    'CVSSExploitabilityHelp' => "Tình trạng hiện tại của các kỹ thuật khai thác hoặc mã khai thác.\n• Chưa được chứng minh: không có mã khai thác nào, hoặc việc khai thác chỉ mang tính lý thuyết.\n• Bằng chứng về khái niệm: mã khai thác tồn tại nhưng không thực tế đối với hầu hết các kẻ tấn công.\n• Có chức năng: mã khai thác có chức năng hoạt động trong hầu hết các trường hợp.\n• Cao: việc khai thác đáng tin cậy và được tự động hóa (ví dụ: sâu máy tính) hoặc không cần mã khai thác.",
+    // Risk Scoring -- Classic Inline (Task 3): the Classic scoring method's
+    // new inline Score card heading and its Likelihood/Impact cards' short
+    // plain-English descriptions (js/simplerisk/common/risk-details-form.js's
+    // buildClassicHolder()). Deliberately NOT sourced from NIST SP 800-30 or
+    // any other external standard -- confirmed with the user via the
+    // approved mockup review, unlike OWASP's own subgroup descriptions
+    // above, which do cite OWASP's Risk Rating Methodology.
+    'ClassicScore' => 'Nhạc phim kinh điển',
+    'ClassicLikelihoodDescription' => 'Mức độ khả năng xảy ra rủi ro này là bao nhiêu?',
+    'ClassicImpactDescription' => 'Hậu quả sẽ nghiêm trọng đến mức nào nếu rủi ro này xảy ra?',
+    // Risk Scoring -- Custom Inline (Task 2): the Custom scoring method's
+    // new inline Score card heading (js/simplerisk/common/risk-details-form.js's
+    // buildCustomHolder()) and the Custom Value card's short description
+    // caption. 'CustomValueDescription' text confirmed directly with the
+    // user, same as Classic's own description keys above.
+    'CustomScore' => 'Điểm số tùy chỉnh',
+    'CustomValueDescription' => 'Giá trị tùy chỉnh có thể là một số thập phân nằm giữa 0 và 10.',
+    // Risk Scoring -- Contributing Risk Inline (Phase 4d-v): the last of
+    // the three deferred scoring methods (DREAD/OWASP shipped earlier in
+    // this same project). The Likelihood/Contributing Risk cards' short
+    // plain-English descriptions (js/simplerisk/common/risk-details-form.js's
+    // buildContributingRiskHolder()). The Score card heading reuses the
+    // EXISTING 'ContributingRiskScore' key (already present above, same
+    // text) rather than duplicating it -- 'ContributingRisk'/
+    // 'ContributingLikelihood'/'Weight'/'Subject' are likewise reused as-is.
+    'ContributingLikelihoodDescription' => 'Mức độ khả năng xảy ra rủi ro này là bao nhiêu?',
+    'ContributingRiskDescription' => 'Mỗi yếu tố dưới đây được đánh giá theo tầm quan trọng tương đối của nó - hãy chọn mức độ ảnh hưởng của từng yếu tố đến rủi ro này.',
+    // OWASP read-mode card (buildOwaspReadView(), risk-details-view.js):
+    // the live calculation formula under each of the 4 sub-group names
+    // (Threat Agent Factors/Vulnerability Factors/Technical Impact/
+    // Business Impact), matching the legacy risk-scoring-details panel's
+    // own "= ( a + b + c + d ) / 4" text (includes/display.php), and the
+    // OWASP Risk Rating Methodology link note placed in the OWASP Score
+    // column's open space below the summary numbers.
+    'OwaspSubgroupFormula' => '= ( {a} + {b} + {c} + {d} ) / 4',
+    'OwaspMethodologyNote' => 'Bạn có thể tìm thấy thông tin chi tiết đầy đủ về Phương pháp đánh giá rủi ro OWASP tại đây.',
+    'Here' => 'đây',
+    // Scoring widget formula captions (Classic/DREAD/Contributing Risk),
+    // the same ".sr-cvss-vector under the score label" treatment CVSS's
+    // vector caption and OwaspSubgroupFormula above already have, on both
+    // the edit-mode holder (risk-details-form.js) and the read-mode card
+    // (risk-details-view.js). Classic reuses the existing RISKClassicExp1-5
+    // keys instead of a new one -- see those keys' own long-standing
+    // definitions above.
+    'DreadScoreFormula' => '= ( {a} + {b} + {c} + {d} + {e} ) / 5',
+    // Contributing Risk's per-factor weighted term and its shared
+    // Likelihood term (update_contributing_risk_score(), includes/
+    // functions.php) -- unlike DREAD/OWASP's fixed roster, the factor list
+    // is admin-configured, so this is one formula PER FACTOR ROW rather
+    // than one fixed caption under the total score.
+    // {maxName}: score.php parity -- legacy's "Maximum Value" column showed
+    // the max option's human-readable name alongside its number (e.g.
+    // "[5] Certain", includes/display.php); these formulas only showed the
+    // bare number.
+    'ContributingLikelihoodFormula' => '= {value} x 5 / {max} ({maxName})',
+    'ContributingFactorFormula' => '= {weight}% x {impact} x 5 / {max} ({maxName})',
+    // Contributing Risk's own subscore row in the Score card -- the sum of
+    // every factor's own term above it. Generic (not substituted with real
+    // numbers) since the number of terms is however many factors are
+    // configured, unlike the fixed-roster formulas above.
+    'ContributingRiskSubtotalFormula' => '= Tổng của (Trọng lượng x Tác động x 5 / Tối đa)',
+    // Contributing Risk Score's own formula, under the total row -- always
+    // exactly 2 terms (unlike the Contributing Risk subtotal above), so
+    // substituted with the real current subtotal values, same convention
+    // DreadScoreFormula/OwaspSubgroupFormula use for their own fixed roster.
+    'ContributingRiskScoreFormula' => '= {likelihood} + {contributing}',
+    // Risk Scoring History widget (risk-details-view.js) -- replaces the
+    // legacy chart's bare save icon with a real menu item, structured for
+    // future export types alongside it.
+    'DownloadChartAsImage' => 'Tải xuống dưới dạng hình ảnh',
+    // Legacy score.php's CVSS table had a "Full details of CVSS Version 2.0
+    // scoring can be found here." link (includes/display.php); this is its
+    // inline-scoring-card equivalent, same shape as OwaspMethodologyNote.
+    'CvssMethodologyNote' => 'Bạn có thể tìm thấy thông tin chi tiết đầy đủ về cách chấm điểm CVSS phiên bản 2.0 tại đây.',
+    // Mitigation Controls redesign: the picker reuses ChooseControls/
+    // AddOrRemoveControls/etc from Document Program's control picker.
+    'InvalidControlID' => 'Mã định danh điều khiển không hợp lệ.',
+    'ValidationOwner' => 'Chủ sở hữu xác thực',
+    'ValidationStatus' => 'Trạng thái xác thực',
+    'NotStarted' => 'Chưa bắt đầu',
+    // management/view.php's "risk ID does not exist" empty state.
+    'RiskIdDoesNotExistBody' => 'Rủi ro bạn đang tìm kiếm có thể đã bị xóa hoặc liên kết có thể không chính xác.',
+    'MitigationControlsRequiresGovernance' => 'Cần có sự cho phép của quản trị viên để xem.',
+    'ViewControlValidation' => 'Xác thực điều khiển chế độ xem',
+    'EditControlValidation' => 'Chỉnh sửa xác thực điều khiển',
+    'SupportingDocumentationRequiresSubmitRisk' => 'Cần có quyền "Gửi thông tin rủi ro" để tải lên tệp.',
+    'SupportingDocumentationRequiresModifyRisks' => 'Cần có quyền Chỉnh sửa rủi ro để quản lý tệp.',
+    'MitigationSupportingDocumentationRequiresPlanMitigations' => 'Cần có sự cho phép của Plan Mitigations để quản lý tập tin.',
+    'MitigationSubmittedBy' => 'Biện pháp giảm thiểu được đệ trình bởi',
+    'UseADifferentDate' => 'Hãy sử dụng ngày khác',
+    'AssetGroup' => 'Nhóm tài sản',
+    // Customization Cards Layout API (extras/customization/index.php) scope-validation errors.
+    'InvalidFgroup' => 'Nhóm fgroup không hợp lệ.',
+    'CustomizationCardsLayoutApiScopeError' => 'API bố cục thẻ tùy chỉnh chỉ khả dụng cho fgroup=risk, tab_index=1, tab_index=2 hoặc tab_index=3.',
+    // Asset management redesign
+    'DiscoverAssets' => 'Khám phá tài sản',
+    'DiscoveryRuns' => 'Khám phá',
+    'DiscoveryRangeHint' => 'Một địa chỉ, một dải bắt đầu-kết thúc, hoặc CIDR IPv4.',
+    'DiscoveryResolveNames' => 'Tra cứu tên máy chủ',
+    'DiscoveryAddAs' => 'Thêm tài sản mới như',
+    'DiscoveryStart' => 'Bắt đầu khám phá',
+    'DiscoveryBackgroundNote' => 'Chương trình chạy ngầm. Các địa chỉ đã tồn tại sẽ bị bỏ qua.',
+    'DiscoveryRangeInvalid' => 'Nhập địa chỉ IPv4 hợp lệ, dải địa chỉ hoặc khối CIDR.',
+    'DiscoveryRangeTooLarge' => 'Phạm vi đó quá lớn. Giới hạn là {$max} địa chỉ.',
+    'DiscoveryRunQueued' => 'Quá trình khám phá bắt đầu.',
+    'DiscoveryRunCompleted' => 'Quá trình khám phá đã hoàn tất: {$new} tài sản mới.',
+    'AssetBulkSelectAll' => 'Chọn tất cả {$count} tài sản',
+    'AssetBulkAssignTeams' => 'Phân công nhóm…',
+    'AssetBulkAddToGroup' => 'Thêm vào nhóm…',
+    'AssetBulkDeleteConfirmTitle' => 'Xóa {$count} tài sản?',
+    'AbleToEditAssets' => 'Có khả năng chỉnh sửa tài sản',
+    'AbleToDeleteAssets' => 'Có thể xóa tài sản',
+    'AbleToVerifyAssets' => 'Có khả năng xác minh tài sản',
+    'AbleToRunAssetDiscovery' => 'Có khả năng chạy tính năng phát hiện tài sản',
+    'AbleToCreateAssetGroups' => 'Có khả năng tạo nhóm tài sản',
+    'AbleToEditAssetGroups' => 'Có thể chỉnh sửa nhóm tài sản',
+    'AbleToDeleteAssetGroups' => 'Có thể xóa nhóm tài sản',
+    'ViewAsset' => 'Xem tài sản',
+    'AssetUnverifiedByEditLog' => 'Tài sản "{$name}" đã được trả về trạng thái chưa xác minh vì người dùng "{$user}" đã thay đổi tên hoặc địa chỉ IP mà không có quyền xác minh tài sản.',
+    'AssetTeamsAssignedLog' => 'Asset "{$name}" was assigned to team(s) "{$teams}" by user "{$user}".',
+    // Manage assets page (asset management redesign, Task 9)
+    'AddAsset' => 'Thêm tài sản',
+    'SearchAssetsPlaceholder' => 'Tìm kiếm theo tên hoặc địa chỉ IP',
+    'AllLocations' => 'Tất cả các địa điểm',
+    'AllTags' => 'Tất cả các thẻ',
+    'AllAssetGroups' => 'Tất cả các nhóm tài sản',
+    'AssetFields' => 'Các trường tài sản',
+    'AssetBulkAllSelected' => 'Tất cả {$count} tài sản phù hợp đã được chọn',
+    'AssetDeleteConfirmTitle' => 'Xóa tài sản "{$name}"?',
+    'DeleteAsset' => 'Xóa tài sản',
+    'DeleteAssets' => 'Xóa tài sản',
+    'AssetBulkAssignTeamsTitle' => 'Phân công nhóm cho các tài sản {$count}',
+    'AssetAssignTeamsHint' => 'Các đội được chọn sẽ được thêm vào. Các đội đã có tài sản sẽ được giữ nguyên.',
+    'AssetAddToGroupTitle' => 'Thêm {$count} tài sản vào một nhóm',
+    'AssetChooseTeams' => 'Chọn đội',
+    'AssetChooseGroup' => 'Chọn một nhóm',
+    'Assign' => 'Giao phó',
+    'AssetBulkVerifiedSummary' => '{$ok} đã xác minh, {$failed} đã bỏ qua',
+    'AssetBulkDeletedSummary' => '{$ok} đã bị xóa, {$failed} đã bị bỏ qua',
+    'AssetBulkTeamsSummary' => 'Các nhóm được chỉ định cho {$ok} tài sản, {$failed} bị bỏ qua',
+    'AssetBulkGroupSummary' => '{$ok} đã được thêm vào nhóm, {$failed} đã bị bỏ qua',
+    'AssetBulkSkippedList' => 'Đã bỏ qua: {$list}',
+    'AssetBulkReasonNotFound' => 'không tìm thấy',
+    'NoAssetsYet' => 'Chưa có tài sản nào',
+    'NoAssetsYetHint' => 'Các tài sản bạn thêm vào hoặc tìm thấy sẽ xuất hiện ở đây.',
+    'NoAssetsMatchFilters' => 'Không có tài sản nào phù hợp với bộ lọc của bạn.',
+    'CouldNotLoadAssets' => 'Không thể tải tài nguyên. Dữ liệu của bạn an toàn.',
+    'AllValuations' => 'Tất cả các định giá',
+    // Manage assets page, Asset groups tab (asset management redesign, Task 10)
+    'AddAssetGroup' => 'Thêm nhóm',
+    'EditAssetGroup' => 'Chỉnh sửa nhóm',
+    'DeleteAssetGroup' => 'Xóa nhóm',
+    'ViewGroupMembers' => 'Xem thành viên',
+    'SearchAssetGroupsPlaceholder' => 'Tìm kiếm nhóm theo tên',
+    'HighestValuation' => 'Định giá cao nhất',
+    'LinkedRisks' => 'Rủi ro liên quan',
+    'RemoveFromGroup' => 'Xóa khỏi nhóm',
+    'AssetGroupMoreMembers' => '+ {$count} thêm',
+    'ViewAllInAssetsTab' => 'Xem tất cả trong tab Tài sản',
+    'NoAssetsInGroup' => 'Không có tài sản nào trong nhóm này.',
+    'CouldNotLoadGroupMembers' => 'Không thể tải danh sách thành viên của nhóm này.',
+    'AssetGroupMembers' => 'Thành viên',
+    'AssetGroupMembersHint' => 'Chỉ những tài sản bạn có thể nhìn thấy mới được liệt kê. Các thành viên bạn không thể nhìn thấy vẫn ở trong nhóm.',
+    'ChooseAssets' => 'Chọn tài sản',
+    'AddOrRemoveAssets' => 'Thêm hoặc xóa tài sản…',
+    'UseTheseAssets' => 'Hãy sử dụng những tài sản này.',
+    'AllAssets' => 'Tất cả tài sản',
+    'Valuation' => 'Định giá',
+    'PickerShowingFirstN' => 'Hiển thị {$count} đầu tiên trong số {$total}. Tìm kiếm hoặc thu hẹp tìm kiếm để tìm phần còn lại.',
+    'AssetGroupDeleteConfirmTitle' => 'Xóa nhóm "{$name}"?',
+    'AssetGroupDeleteKeepsAssets' => 'Các tài sản trong nhóm này không bị xóa. Chỉ có nhóm này bị xóa bỏ.',
+    'NoAssetGroupsYet' => 'Chưa có nhóm tài sản nào.',
+    'NoAssetGroupsYetHint' => 'Gom nhóm các tài sản lại để bạn có thể lập bản đồ và báo cáo về chúng cùng nhau.',
+    'NoAssetGroupsMatchSearch' => 'Không có nhóm tài sản nào phù hợp với tìm kiếm của bạn',
+    'CouldNotLoadAssetGroups' => 'Không thể tải nhóm tài sản. Dữ liệu của bạn an toàn.',
+    'DiscoveryAssignTeams' => 'Phân công vào các nhóm',
+    'DiscoveryAssignTeamsHint' => 'Tùy chọn. Mỗi tài sản mới đều được thêm vào các nhóm này.',
+    'DiscoveryAddAsHint' => 'Được thiết lập theo sự cho phép của bạn để xác minh tài sản.',
+    'DiscoveryTeamsInvalid' => 'Hãy chọn những đội nhóm hiện có và bạn là thành viên.',
+    'DiscoveryResolveNamesInvalid' => 'Chức năng tra cứu tên máy chủ phải được bật hoặc tắt.',
+    'DiscoveryTooManyActiveRuns' => 'Bạn hiện đang có {$max} lượt chạy khám phá đang diễn ra. Hãy đợi một lượt hoàn tất hoặc hủy bỏ nó.',
+    'DiscoveryRunNotFound' => 'Không tìm thấy kết quả chạy khám phá.',
+    'DiscoveryRunAlreadyFinished' => 'Đợt thử nghiệm này đã kết thúc.',
+    'DiscoveryRunCancelled' => 'Chương trình phát sóng thử nghiệm đã bị hủy bỏ.',
+    'DiscoveryRunFailedToast' => 'Việc phát hiện {$range} đã thất bại.',
+    'DiscoveryStatusQueued' => 'Đã xếp hàng',
+    'DiscoveryProgress' => '{$scanned} của {$total}',
+    'DiscoveryLiveHosts' => 'Người dẫn chương trình trực tiếp',
+    'DiscoveryNewAssets' => 'Tài sản mới',
+    'DiscoveryStartedAt' => 'Bắt đầu',
+    'DiscoveryCancelRun' => 'Hủy bỏ quá trình chạy',
+    'CouldNotLoadDiscoveryRuns' => 'Không thể tải các lần chạy khám phá.',
+    'DiscoveryRangeReserved' => 'Dải địa chỉ đó bao gồm các địa chỉ dành riêng (loopback, link-local, multicast hoặc 0.0.0.0/8) mà không thể quét được.',
+    'DiscoveryTooManyActiveRunsInstance' => 'Hiện đã có {$max} lượt chạy khám phá đang được tiến hành. Hãy thử lại khi một lượt hoàn tất.',
+    'DiscoveryErrorScan' => 'Quá trình quét đã dừng do lỗi. Vui lòng kiểm tra nhật ký hệ thống để biết thêm chi tiết.',
+    'DiscoveryErrorWorkerLost' => 'Hàng đợi xử lý nền đã ngừng hoạt động lần này.',
+    'DiscoveryErrorRequesterInactive' => 'Người dùng đã khởi tạo lượt chạy này hiện không còn hoạt động nữa.',
+    // Asset management redesign: translated API errors (bulk actions, column settings, discovery) and discovery audit lines
+    'AssetBulkBodyInvalid' => 'Gửi thao tác hàng loạt dưới dạng nội dung JSON.',
+    'AssetBulkActionRequired' => 'Chọn thao tác hàng loạt.',
+    'AssetBulkUnknownAction' => 'Thao tác hàng loạt đó không khả dụng.',
+    'AssetBulkSelectionRequired' => 'Chọn tài sản theo ID hoặc theo bộ lọc.',
+    'AssetBulkIdsRequired' => 'Chọn ít nhất một tài sản.',
+    'AssetBulkIdsInvalid' => 'Mã số tài sản phải là số nguyên.',
+    'AssetBulkTooManyAssets' => 'Bạn chỉ có thể thao tác với tối đa {$max} tài sản cùng một lúc. Hãy thu hẹp lựa chọn của bạn và thử lại.',
+    'AssetBulkFilterInvalid' => 'Bộ lọc không hợp lệ. Vui lòng tải lại trang và thử lại.',
+    'AssetBulkFilterUnknownKey' => 'Bộ lọc "{$key}" không được nhận dạng.',
+    'AssetBulkFilterBadValue' => 'Bộ lọc "{$key}" có giá trị không hợp lệ.',
+    'AssetBulkFilterTooManyValues' => 'Bộ lọc "{$key}" có thể liệt kê tối đa {$max} giá trị.',
+    'AssetBulkFilterAllAlone' => 'Việc chọn tất cả tài sản không thể kết hợp với các bộ lọc khác.',
+    'AssetBulkFilterEmpty' => 'Chọn bộ lọc hoặc chọn tất cả tài sản trước khi thực hiện thao tác hàng loạt.',
+    'AssetBulkExpectedCountInvalid' => 'Số lượng tài sản dự kiến phải là một số nguyên.',
+    'AssetBulkParamsInvalid' => 'Các tùy chọn cho thao tác hàng loạt này không hợp lệ.',
+    'AssetBulkTeamsRequired' => 'Hãy chọn ít nhất một đội.',
+    'AssetBulkTeamsNotFound' => 'Một hoặc nhiều đội trong số đó hiện không còn tồn tại.',
+    'AssetBulkTeamsNotMember' => 'Bạn chỉ có thể chỉ định đội mà bạn thuộc về.',
+    'AssetBulkGroupNotFound' => 'Nhóm tài sản đó hiện không còn tồn tại.',
+    'AssetBulkNoMatch' => 'Không có tài sản nào phù hợp với lựa chọn của bạn.',
+    'AssetBulkCountMismatch' => 'Các tài sản phù hợp đã thay đổi từ {$expected} thành {$actual} kể từ khi bạn chọn chúng. Hãy xem lại danh sách và thử lại.',
+    'AssetColumnSettingsBodyInvalid' => 'Gửi các thiết lập cột dưới dạng nội dung JSON với các cột hoặc thứ tự.',
+    'AssetColumnSettingsSaveFailed' => 'Không thể lưu các cột của bạn. Vui lòng yêu cầu quản trị viên hoàn tất quá trình nâng cấp SimpleRisk.',
+    'DiscoveryRunQueueFailed' => 'Không thể xếp hàng chạy quá trình khám phá. Hãy thử lại.',
+    'DiscoveryRunStartedLog' => 'Quá trình khám phá tài sản #{$id} của {$range} ({$count} địa chỉ) đã được bắt đầu bởi người dùng "{$user}".',
+    'DiscoveryRunCancelledLog' => 'Quá trình khám phá tài sản #{$id} của {$range} đã bị người dùng "{$user} hủy bỏ.',
+    'AssetBulkTooManyToDelete' => 'Bạn chỉ có thể xóa tối đa {$max} tài sản mỗi lần. Hãy thu hẹp lựa chọn và thử lại.',
+    'AssetBulkFilterNotApplied' => 'Bộ lọc "{$key}" không thể được áp dụng như đã gửi, vì vậy không có gì thay đổi.',
+    'AssetBulkExpectedCountRequired' => 'Việc xóa tài sản theo bộ lọc yêu cầu bạn nhập số lượng tài sản dự kiến xóa.',
+    'AssetBulkReasonNotAttempted' => 'không thử',
+    'MoreActions' => 'Thêm hành động',
+    'AssetCreateNewGroupOption' => 'Tạo nhóm mới…',
+    'AssetNewGroupName' => 'Tên nhóm mới',
+    'AssetFilterByTeam' => 'Lọc theo đội {$name}',
+    'AssetFilterByValuation' => 'Lọc theo định giá {$name}',
+    'AssetFilterByTag' => 'Lọc theo thẻ {$name}',
+    'AssetFilterByLocation' => 'Lọc theo trang web/vị trí {$name}',
+    'AssetFilteringByTeam' => 'Lọc theo đội {$name}',
+    'AssetFilteringByValuation' => 'Lọc theo định giá {$name}',
+    'AssetFilteringByTag' => 'Lọc theo thẻ {$name}',
+    'AssetFilteringByLocation' => 'Lọc theo trang web/vị trí {$name}',
+    'AssetShowOnlyVerified' => 'Chỉ hiển thị các tài sản đã được xác minh',
+    'AssetShowOnlyUnverified' => 'Chỉ hiển thị các tài sản chưa được xác minh',
+    'AssetShowingVerified' => 'Hiển thị tài sản đã được xác minh',
+    'AssetShowingUnverified' => 'Hiển thị tài sản chưa được xác minh',
+    'CustomizationLayoutPayloadRejected' => 'Không thể lưu bố cục vì nó chứa các trường hoặc thẻ không thuộc mẫu này. Không có gì thay đổi.',
+    'CustomizationLayoutRejectedUnknownScope' => 'Không thể lưu phạm vi mẫu này từ trình chỉnh sửa bố cục. Không có gì thay đổi.',
+    'CustomizationLayoutRejectedEmptyFields' => 'Bố cục không có trường hợp lệ nào nên không được lưu. Không có gì thay đổi cả.',
+    'CustomizationLayoutRejectedWouldDeleteAll' => 'Việc lưu bố cục này sẽ xóa tất cả các trường khỏi mẫu, vì vậy nó không được lưu. Hãy tải lại trang và thử lại.',
+    'CustomizationLayoutRejectedRequiredField' => 'Không thể xóa trường bắt buộc khỏi bố cục. Không có gì thay đổi.',
+    'CustomizationLayoutRejectedBulkRemoval' => 'Việc lưu bố cục này sẽ xóa hầu hết các trường mẫu mà bạn không cần phải xóa chúng ở đây. Hãy tải lại trang và thử lại. Không có gì thay đổi cả.',
+    'CustomizationLayoutRejectedGroupMismatch' => 'Nhóm mẫu không tồn tại hoặc thuộc về một loại bản ghi khác. Không có gì thay đổi.',
+    'CustomizationLayoutLegacySaveRefused' => 'Mẫu này được chỉnh sửa bằng trình chỉnh sửa bố cục và không thể lưu thông qua điểm cuối bảng điều khiển cũ.',
+    // Asset discovery probe methods
+    'DiscoveryPortsInvalid' => 'Nhập tối đa {$max} cổng TCP từ 1 đến 65535, phân cách bằng dấu phẩy.',
+    'DiscoveryErrorProbeUnavailable' => 'Phương pháp thăm dò mà quá trình chạy này bắt đầu hiện không còn khả dụng cho tiến trình nền. Hãy bắt đầu một quá trình chạy mới.',
+    'DiscoveryProbeIcmpUnprivileged' => 'ICMP ping (socket không có đặc quyền)',
+    'DiscoveryProbeIcmpRaw' => 'ICMP ping (socket thô)',
+    'DiscoveryProbePingCommand' => 'Lệnh ping ICMP',
+    'DiscoveryProbeTcpConnect' => 'Kết nối TCP',
+    'DiscoveryProbeMethod' => 'Phương pháp thăm dò: {$method}',
+    'DiscoveryProbeDetectedByWebServer' => 'Được máy chủ web phát hiện. Trình xử lý nền có thể sử dụng phương pháp khác.',
+    'DiscoveryTcpProbeWarning' => 'Chỉ tìm thấy các máy chủ nếu chúng phản hồi trên một trong các cổng TCP được quét, vì vậy các máy chủ chặn các cổng đó sẽ không được tìm thấy. Để có kết quả đầy đủ, hãy cho phép máy chủ gửi ping ICMP: cho phép các socket ping không có đặc quyền hoặc khả năng NET_RAW, hoặc cài đặt ping.',
+    'DiscoveryTcpPortsForRun' => 'Các cổng TCP cho lần chạy này',
+    'DiscoveryTcpPortsHint' => 'Phân tách bằng dấu phẩy, tối đa {$max} cổng. Để trống để sử dụng mặc định: {$ports}.',
+    'DiscoveryDefaultTcpPorts' => 'Khám phá tài sản Cổng TCP',
+    'DiscoveryDefaultTcpPortsHint' => 'Được sử dụng khi tiến trình nền không thể gửi ping ICMP. Phân tách bằng dấu phẩy, tối đa {$max} cổng.',
+    'DiscoveryErrorTcpUnreliable' => 'Quá trình quét dừng lại vì mạng trả lời các kết nối TCP cho các địa chỉ không thể là máy chủ thực (do máy chủ proxy hoặc tường lửa chặn), vì vậy mọi địa chỉ đều trông như đang hoạt động. Hãy yêu cầu quản trị viên cho phép máy chủ gửi ping ICMP.',
+    'DiscoveryDefaultTcpPortsResetLog' => 'Các cổng TCP phát hiện tài sản đã được người dùng "{$user}đặt lại về mặc định.',
+    'DiscoveryNotConfigured' => 'Tính năng phát hiện chưa được cấu hình. Vui lòng yêu cầu quản trị viên hệ thống thiết lập phạm vi cho phép trong tệp config.php.',
+    'DiscoveryRangeNotAllowed' => 'Phạm vi đó nằm ngoài phạm vi mà hệ thống dò tìm được phép quét.',
+    'DiscoveryAllowedRangesList' => 'Các phạm vi cho phép: {$ranges}',
+    // Asset record modal
+    'AssetNotAvailable' => 'Tài sản này hiện không khả dụng. Có thể nó đã bị xóa hoặc bạn không có quyền truy cập vào nó.',
+    'AssetCustomFieldNotInTemplate' => 'Một hoặc nhiều trường tùy chỉnh không thuộc về mẫu của tài sản này. Không có gì thay đổi.',
+    'AssetMappedControlsInvalid' => 'Các điều khiển đã được ánh xạ không thể được lưu. Mỗi hàng cần có mức độ trưởng thành và ít nhất một điều khiển hiện có. Không có gì được thay đổi.',
+    'AssetMappedControlsTooMany' => 'Một tài sản có thể được ánh xạ tới tối đa {$max} điều khiển. Không có gì thay đổi.',
+    'AddControlsAtAnotherMaturity' => 'Thêm các biện pháp kiểm soát ở giai đoạn trưởng thành khác',
+    'ChoosingControlsNeedsGovernancePermission' => 'Việc lựa chọn các công cụ điều khiển cần có sự cho phép của Ban quản trị.',
+    'NControls' => '{n} điều khiển(s)',
+    'SavingKeepsTheCurrentControlMappings' => 'Việc lưu lại sẽ giữ nguyên các thiết lập điều khiển hiện tại.',
+    'LoadingControls' => 'Đang tải các điều khiển…',
+    'ControlListCouldNotBeLoaded' => 'Không thể tải danh sách điều khiển, do đó hiện tại không thể thay đổi các điều khiển đã được ánh xạ.',
+    'RemoveControlsAtMaturity' => 'Gỡ bỏ các biện pháp kiểm soát khi đạt đến độ chín muồi {maturity}',
+    'ControlIdUnavailable' => '#{id} (không khả dụng)',
+    'AssetRecordEdit' => 'Chỉnh sửa tài sản',
+    'AssetRecordIdN' => 'Tài sản #{$id}',
+    'AssetRecordCopyLink' => 'Sao chép liên kết đến tài sản này',
+    'AssetRecordLinkCopied' => 'Đã sao chép liên kết.',
+    'AssetRecordLinkCopyFailed' => 'Không thể sao chép liên kết. Vui lòng sao chép liên kết từ thanh địa chỉ.',
+    'AssetRecordMarkUnverified' => 'Đánh dấu chưa được xác minh',
+    'AssetRecordViewAuditTrail' => 'Xem nhật ký kiểm toán',
+    'AssetRecordAuditTrailTitle' => 'Nhật ký kiểm toán',
+    'AssetRecordAuditTrailEmpty' => 'Không có hoạt động nào được ghi nhận đối với tài sản này trong kỳ này.',
+    'AssetRecordAuditTrailFailed' => 'Không thể tải nhật ký kiểm toán.',
+    'AssetRecordBackToAsset' => 'Trở lại tài sản',
+    'AssetRecordSave' => 'Lưu tài sản',
+    'AssetRecordProvenanceVerified' => 'Đã xác minh · đã thêm {$date}',
+    'AssetRecordProvenanceUnverified' => 'Chưa được xác minh: chưa được xác nhận bởi người có thể xác minh tài sản · đã thêm {$date}',
+    'AssetRecordUnsavedHint' => 'Khi đóng ứng dụng mà chưa lưu các thay đổi, ứng dụng sẽ yêu cầu bạn xác nhận trước.',
+    'AssetRecordDiscardQuestion' => 'Bạn muốn hủy bỏ những thay đổi chưa được lưu?',
+    'AssetRecordKeepEditing' => 'Tiếp tục chỉnh sửa',
+    'AssetRecordDiscardChanges' => 'Hủy bỏ các thay đổi',
+    'AssetRecordVerificationCard' => 'Xác minh',
+    'AssetRecordVerificationTag' => 'Cần quyền xác minh tài sản',
+    'AssetRecordVerifiedHint' => 'Người có trách nhiệm đã xem xét tài sản này. Việc thay đổi tên hoặc địa chỉ IP của tài sản mà không có sự cho phép xác minh tài sản sẽ khiến nó trở lại trạng thái chưa được xác minh.',
+    'AssetRecordLoadFailed' => 'Không thể tải tài sản. Vui lòng thử lại.',
+    'CustomizationCardsLayoutApiScopeErrorWithAsset' => 'API bố cục thẻ tùy chỉnh chỉ khả dụng cho fgroup=risk (tab_index 1, 2 hoặc 3) và fgroup=asset (tab_index 1).',
+    'DiscoveryErrorRequesterNotPermitted' => 'Người dùng đã khởi chạy quá trình này hiện không còn quyền thực hiện khám phá tài sản nữa.',
+    'AssetRecordEditField' => 'Chỉnh sửa {$field}',
+    // Asset Scoring (FIPS 199 categorization + weighted score)
+    'Confidentiality' => 'Bảo mật',
+    'Integrity' => 'Chính trực',
+    'Availability' => 'Tính khả dụng',
+    'AssetScoringLevelLow' => 'Thấp',
+    'AssetScoringLevelModerate' => 'Vừa phải',
+    'AssetScoringLevelHigh' => 'Cao',
+    'AssetScoringValueInvalid' => 'Tính bảo mật, tính toàn vẹn và tính khả dụng chấp nhận mức độ thấp, trung bình hoặc cao (tính bảo mật cũng chấp nhận mức độ không áp dụng).',
+    'AssetScoringChangedLog' => 'Tài sản "{$name}" {$objective} đã được người dùng " {$from} thay đổi từ {$to} thành{$user}.',
+    'FIPSCategorization' => 'Phân loại FIPS',
+    'WeightedScore' => 'Điểm số có trọng số',
+    'WeightedBand' => 'Dây đai có trọng lượng',
+    'AllCategorizations' => 'Tất cả các phân loại',
+    'AllBands' => 'Tất cả các ban nhạc',
+    'AssetFilterByCategorization' => 'Lọc theo phân loại FIPS {$name}',
+    'AssetFilteringByCategorization' => 'Lọc theo phân loại FIPS {$name}',
+    'AssetFilterByBand' => 'Lọc theo dải trọng số {$name}',
+    'AssetFilteringByBand' => 'Lọc theo dải trọng số {$name}',
+    'AssetScoring' => 'Chấm điểm tài sản',
+    'AssetScoringSettingsHint' => 'Mỗi tài sản được đánh giá ở mức Thấp, Trung bình hoặc Cao về tính bảo mật, tính toàn vẹn và tính khả dụng, và tính bảo mật cũng có thể được đánh dấu là Không áp dụng, nghĩa là tài sản đó sẽ không được đưa vào cả hai kết quả. Phân loại FIPS của nó là mức cao nhất trong ba mức đánh giá. Điểm số có trọng số là điểm trung bình có trọng số của ba giá trị cấp độ, và các ngưỡng phân loại sẽ chuyển điểm số đó thành mức Thấp, Trung bình hoặc Cao. Thay đổi các cài đặt này sẽ chấm điểm lại cho mọi tài sản ngay lập tức.',
+    'Weights' => 'Trọng lượng',
+    'AssetScoringWeightsHint' => 'Mỗi mục tiêu được tính điểm trọng số như sau: từ 0 đến 100, với tối đa hai chữ số thập phân. Điểm trọng số bằng 0 sẽ bỏ qua mục tiêu đó. Tính toàn vẹn và tính khả dụng không thể cùng bằng 0, vì trường hợp "Không áp dụng" sẽ luôn bị loại bỏ.',
+    'LevelValues' => 'Giá trị mức',
+    'AssetScoringLevelValuesHint' => 'Mỗi mức đánh giá đóng góp một con số vào điểm số có trọng số: trên 0 và tối đa 100, với tối đa hai chữ số thập phân, và Thấp, dưới Trung bình, dưới Cao. Giá trị mặc định là Thấp 1, Trung bình 2 và Cao 3.',
+    'BandThresholds' => 'Ngưỡng băng tần',
+    'AssetScoringBandThresholdsHint' => 'Điểm số có trọng số bằng hoặc cao hơn một ngưỡng nhất định nằm trong khoảng đó, và điểm số dưới ngưỡng Trung bình được coi là Thấp. Mức Trung bình phải bắt đầu từ trên giá trị Thấp, và mức Cao phải bắt đầu từ trên mức Trung bình và không cao hơn giá trị Cao.',
+    'ModerateStartsAt' => 'Mức độ vừa phải bắt đầu từ',
+    'HighStartsAt' => 'Mức cao bắt đầu từ',
+    'DefaultScoringForNewAssets' => 'Hệ thống tính điểm mặc định cho tài sản mới',
+    'AssetScoringDefaultsHint' => 'Tự động chọn các xếp hạng này khi ai đó thêm tài sản trong biểu mẫu tài sản. Tài sản được tạo bằng cách khám phá, nhập khẩu hoặc API sẽ không được chấm điểm trừ khi chúng tự cung cấp xếp hạng của mình. Để cả ba tùy chọn "Không" để tắt chức năng này.',
+    'AssetScoringWeightsInvalid' => 'Hệ số chấm điểm tài sản phải là các số từ 0 đến 100 với tối đa hai chữ số thập phân, và cả Tính toàn vẹn và Tính khả dụng không thể cùng bằng 0.',
+    'AssetScoringValuesInvalid' => 'Giá trị mức độ chấm điểm tài sản phải là các số lớn hơn 0 và tối đa 100 với tối đa hai chữ số thập phân, trong đó Thấp, Trung bình và Cao tương ứng với...',
+    'AssetScoringThresholdsInvalid' => 'Ngưỡng điểm số tài sản phải có tối đa hai chữ số thập phân, trong đó mức Trung bình bắt đầu từ trên mức Thấp, mức Cao bắt đầu từ trên mức Trung bình, và mức Cao không được cao hơn mức Cao.',
+    'AssetScoringDefaultsInvalid' => 'Mức điểm mặc định cho các tài sản mới phải là mức điểm mà mỗi mục tiêu đưa ra.',
+    'AssetScoringSettingsNotSaved' => 'Không thể lưu cài đặt chấm điểm tài sản. Không có gì được thay đổi.',
+    'AssetScoringSettingsChangedLog' => 'Cài đặt chấm điểm tài sản đã được người dùng "{$user} thay đổi.',
+    'AssetScoringNotSet' => 'Chưa được thiết lập',
+    'NotScored' => 'Không được chấm điểm',
+    'AssetScoringNotScoredHint' => 'Hoàn thành cả ba mục tiêu để chấm điểm tài sản này.',
+    'ImportAssetScoringValueIgnored' => 'Giá trị {$objective} "{$value}" cho tài sản "{$asset_name}" không phải là xếp hạng hợp lệ và đã bị bỏ qua.',
+    'AssetScoringSecurityObjectives' => 'Mục tiêu an ninh',
+    'AssetScoringConfidentialityHelp' => 'Hậu quả tiềm tàng là gì nếu thông tin về tài sản này bị tiết lộ trái phép?',
+    'AssetScoringIntegrityHelp' => 'Hậu quả tiềm tàng là gì nếu thông tin trên tài sản này bị sửa đổi hoặc phá hủy trái phép?',
+    'AssetScoringAvailabilityHelp' => 'Nếu việc truy cập hoặc sử dụng tài sản này bị gián đoạn, hậu quả tiềm tàng sẽ như thế nào?',
+    'AssetScoringHelpHigh' => 'Tác dụng phụ nghiêm trọng hoặc thảm khốc',
+    'AssetScoringHelpModerate' => 'Tác dụng phụ nghiêm trọng',
+    'AssetScoringHelpLow' => 'Tác dụng phụ hạn chế hoặc không đáng kể',
+    'AssetScoringHelpNotApplicable' => 'Tính bảo mật không phải là vấn đề đáng lo ngại đối với loại tài sản này (ví dụ: thông tin công khai).',
+    'AssetScoringHelpLabel' => '{$objective} hướng dẫn xếp hạng',
+    'AssetScoringMeterValue' => '{$score}, {$band} band',
+    'AssetScoringNoWeightedScore' => 'Không có điểm số trọng số',
+    'AssetScoringNoWeightedScoreNote' => 'Không có điểm số trọng số: mọi mục tiêu quan trọng đều có trọng số là 0.',
+    'AssetScoringUpgradePending' => 'Kết quả chấm điểm tài sản không thể được lưu cho đến khi quá trình nâng cấp cơ sở dữ liệu SimpleRisk hoàn tất. Không có gì thay đổi.',
+    'AssetScoringResultHelpLabel' => '{$result} giải thích',
+    'AssetScoringScoreHelp' => 'Điểm số có trọng số kết hợp ba đánh giá thành một con số duy nhất từ {$low} đến {$high}. Mỗi đánh giá trở thành giá trị cố định của nó, và mỗi giá trị được nhân với trọng số của mục tiêu tương ứng. Kết quả được cộng lại với nhau và chia cho tổng trọng số. Mục "Tính bảo mật là Không áp dụng" sẽ bị bỏ qua, cùng với trọng số của nó. Các giá trị cố định và trọng số được cấu hình trong phần "Tùy chọn". Cả ba mục tiêu phải được đánh giá trước khi điểm số được hiển thị.',
+    'AssetScoringCategorizationHelp' => 'Phân loại bảo mật FIPS 199 là mức cao nhất: xếp hạng cao nhất trong số các mục tiêu áp dụng. Chỉ cần một xếp hạng Cao cũng đủ để đánh giá tài sản ở mức Cao, bất kể các xếp hạng khác là gì. Xếp hạng Không áp dụng sẽ bị bỏ qua.',
+    'AssetScoringBandHelp' => 'Dải điểm này xếp điểm số có trọng số vào thang điểm Thấp, Trung bình hoặc Cao. Điểm dưới {$moderate} là Thấp, từ {$moderate} đến {$highAt} là Trung bình, và {$highAt} trở lên là Cao. Các ngưỡng điểm được cấu hình trong phần Tùy chọn.',
+    // Manage assets: Confidentiality / Integrity / Availability rating filters
+    'AllConfidentialityRatings' => 'Tất cả các xếp hạng bảo mật',
+    'AllIntegrityRatings' => 'Tất cả các xếp hạng độ tin cậy',
+    'AllAvailabilityRatings' => 'Tất cả các xếp hạng khả dụng',
+    'AssetFilterByConfidentiality' => 'Lọc theo mức độ bảo mật {$name}',
+    'AssetFilteringByConfidentiality' => 'Lọc theo mức độ bảo mật {$name}',
+    'AssetFilterByIntegrity' => 'Lọc theo tính toàn vẹn {$name}',
+    'AssetFilteringByIntegrity' => 'Lọc theo tính toàn vẹn {$name}',
+    'AssetFilterByAvailability' => 'Lọc theo tình trạng sẵn có {$name}',
+    'AssetFilteringByAvailability' => 'Lọc theo tình trạng sẵn có {$name}',
+    'HighestFIPSCategorization' => 'Phân loại FIPS cao nhất',
+    'HighestWeightedScore' => 'Điểm số có trọng số cao nhất',
+    'HighestWeightedBand' => 'Dải có trọng số cao nhất',
+    'AssetGroupFields' => 'các trường nhóm tài sản',
+    'NoAssetGroupsMatchFilters' => 'Không có nhóm tài sản nào phù hợp với bộ lọc của bạn.',
+    'AssetGroupFilterByHighestCategorization' => 'Lọc theo phân loại FIPS cao nhất {$name}',
+    'AssetGroupFilteringByHighestCategorization' => 'Lọc theo phân loại FIPS cao nhất {$name}',
+    'AssetGroupFilterByHighestBand' => 'Lọc theo dải tần có trọng số cao nhất {$name}',
+    'AssetGroupFilteringByHighestBand' => 'Lọc theo dải tần có trọng số cao nhất {$name}',
+    'AssetGroupBulkSelectionRequired' => 'Chọn các nhóm tài sản theo ID hoặc theo bộ lọc.',
+    'AssetGroupBulkIdsRequired' => 'Chọn ít nhất một nhóm tài sản.',
+    'AssetGroupBulkIdsInvalid' => 'Mã định danh nhóm tài sản phải là số nguyên.',
+    'AssetGroupBulkFilterAllAlone' => 'Việc chọn tất cả các nhóm tài sản không thể kết hợp với các bộ lọc khác.',
+    'AssetGroupBulkFilterEmpty' => 'Hãy chọn bộ lọc hoặc chọn tất cả các nhóm tài sản trước khi xóa.',
+    'AssetGroupBulkExpectedCountInvalid' => 'Số lượng nhóm tài sản dự kiến phải là một số nguyên.',
+    'AssetGroupBulkExpectedCountRequired' => 'Việc xóa các nhóm tài sản theo bộ lọc yêu cầu bạn chỉ định số lượng nhóm mà bạn dự định xóa.',
+    'AssetGroupBulkNoMatch' => 'Không có nhóm tài sản nào phù hợp với lựa chọn của bạn.',
+    'AssetGroupBulkCountMismatch' => 'Các nhóm tài sản phù hợp đã thay đổi từ {$expected} thành {$actual} kể từ khi bạn chọn chúng. Hãy xem lại danh sách và thử lại.',
+    'AssetGroupBulkTooManyToDelete' => 'Bạn chỉ có thể xóa tối đa {$max} nhóm tài sản cùng một lúc. Hãy thu hẹp lựa chọn của bạn và thử lại.',
+    'AssetGroupBulkSelectAll' => 'Chọn tất cả {$count} nhóm tài sản',
+    'AssetGroupBulkAllSelected' => 'Tất cả {$count} nhóm tài sản phù hợp đã được chọn',
+    'AssetGroupBulkDeleteConfirmTitle' => 'Xóa {$count} nhóm tài sản?',
+    'AssetGroupBulkDeleteKeepsAssets' => 'Các tài sản trong các nhóm này không bị xóa. Chỉ có các nhóm đó bị loại bỏ.',
+    'DeleteAssetGroups' => 'Xóa nhóm',
+    'AssetGroupBulkDeletedSummary' => '{$ok} nhóm đã bị xóa, {$failed} đã bị bỏ qua',
+    'ChoosingRisksNeedsRiskManagementPermission' => 'Việc lựa chọn các rủi ro liên quan cần có sự cho phép của bộ phận Quản lý rủi ro.',
+    'NAssociatedRisks' => '{n} rủi ro liên quan',
+    'SavingKeepsTheCurrentRiskAssociations' => 'Việc tiết kiệm giúp giảm thiểu các rủi ro hiện tại.',
     '' => '',
 );
 ?>

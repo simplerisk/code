@@ -239,6 +239,26 @@ function has_permission($permission) {
     return $permission && isset($_SESSION[$permission]) && $_SESSION[$permission] == 1;
 }
 
+/*************************************************
+ * FUNCTION: ASSET USER CAN                      *
+ * Granular asset-management permission gate.    *
+ * $action: edit | delete | verify | discovery | *
+ *          group_create | group_edit |          *
+ *          group_delete                         *
+ * Any other action is denied. Read-only: only   *
+ * reads $_SESSION via has_permission().         *
+ *************************************************/
+function asset_user_can(string $action): bool
+{
+    static $allowed_actions = ['edit', 'delete', 'verify', 'discovery', 'group_create', 'group_edit', 'group_delete'];
+
+    if (!in_array($action, $allowed_actions, true)) {
+        return false;
+    }
+
+    return has_permission('asset_' . $action);
+}
+
 /**************************************
  * FUNCTION: GET POSSIBLE PERMISSIONS *
  **************************************/
@@ -252,6 +272,13 @@ function get_possible_permissions() {
             'compliance',
             'assessments',
             'asset',
+            'asset_edit',
+            'asset_delete',
+            'asset_verify',
+            'asset_discovery',
+            'asset_group_create',
+            'asset_group_edit',
+            'asset_group_delete',
             'admin',
             'review_veryhigh',
             'accept_mitigation',

@@ -814,7 +814,7 @@ $lang = array(
     'UserSessions' => 'Gebruikerssessies',
     'SessionActivityTimeout' => 'Time-out sessieactiviteit',
     'Security' => 'Beveiligings',
-    'EnableCSP' => 'Beveiligingsbeleid voor inhoud inschakelen (dit heeft Chrome in het verleden verbroken)',
+    'EnableCSP' => 'Inhoudsbeveiligingsbeleid inschakelen (aanbevolen)',
     'EnableDebugLogging' => 'Logboekregistratie voor foutopsporing inschakelen',
     'seconds' => 'seconden',
     'FieldSample' => 'Veld voorbeeld',
@@ -4967,6 +4967,572 @@ $lang = array(
     // closeriskForm()'s own (hardcoded, pre-existing) single-risk denial text.
     'NoCloseRiskPermission' => 'U hebt geen toestemming om risico\'s af te sluiten.',
     'QuestionnaireRequiredQuestionUnanswered' => 'Beantwoord alle verplichte vragen voordat u de beoordeling afrondt.',
+    'AuditLog_ControlStatusAutoSynced' => 'De status van de beheersmaatregel "{$short_name}" is automatisch bijgewerkt naar "{$status_text}" op basis van de meest recente testresultaten.',
+    'EnableCSPHelp' => 'Content Security Policy (CSP) beperkt de browser tot het laden van scripts, stijlen, afbeeldingen en lettertypen uitsluitend afkomstig van SimpleRisk zelf, en blokkeert paginaframing en het verzenden van formulieren van andere oorsprong. Het is de sterkste ingebouwde verdediging tegen cross-site scripting. Laat CSP ingeschakeld, tenzij het conflicteert met een proxy, browserextensie of integratie van derden in uw omgeving.',
+    // Define Control Frameworks' Columns picker (Task: Columns picker + saved layout/filters) -- the "Standard" group label above its built-in fields (Family/Owner/Maturity/Status/Class/Phase/Priority/Type); 'CustomFields' already exists.
+    'StandardFields' => 'Standaardvelden',
+    // My Profile redesign (js/simplerisk/pages/account-profile.js)
+    'Administrator' => 'Beheerder',
+    'AccountDetails' => 'Accountgegevens',
+    'YourPermissions' => 'Uw machtigingen',
+    'RoleAndTeamsGrantAccess' => 'Waartoe u toegang krijgt op basis van uw rol en de teams waartoe u behoort',
+    'AllGranted' => 'Alles toegekend',
+    'PermissionsCountLabel' => '$count machtigingen',
+    'ManagedByYourAdministrator' => 'Deze gegevens worden beheerd door uw beheerder. Neem contact met hen op als er iets moet worden gewijzigd.',
+    'MultiFactorAuthenticationHint' => 'Voeg een tweede stap toe aan je aanmeldingsproces om je account veiliger te maken.',
+    'ChangingPasswordSignsOutEverywhere' => 'Het wijzigen van uw wachtwoord logt u overal elders uit.',
+    'APIKeyHint' => 'Wordt gebruikt om uw eigen scripts en integraties te authenticeren via de SimpleRisk API.',
+    'ResetDisplaySettingsHint' => 'Hiermee worden uw aangepaste kolomselecties teruggezet naar de standaardinstellingen.',
+    'CardGeneral' => 'Algemeen',
+    'CardClassification' => 'Classificatie',
+    'CardScoring' => 'Score',
+    'CardAdditionalInformation' => 'Aanvullende informatie',
+    'CardCustomFields' => 'Aangepaste velden',
+    'CardCustomFieldsHint' => 'Deze velden moeten in een kaart worden gesorteerd.',
+    'LayoutEditorHint' => 'Sleep een veld naar een andere kaart om het opnieuw toe te wijzen, sleep binnen een kaart om de volgorde of het formaat ervan te wijzigen, en sleep of wijzig het formaat van een kaart om de positie ervan op de pagina te veranderen.',
+    'ScoringNotYetAvailableInThisView' => 'De configuratie voor de puntentelling is in deze weergave nog niet beschikbaar.',
+    // Native tooltip on the Cards layout editor's Gridstack resize handles
+    // (js/simplerisk/pages/customization-layout-editor.js) -- the bare corner
+    // bracket read as an unexplained mark until it said what it does.
+    'DragToResize' => 'Sleep om het formaat aan te passen.',
+    // Warning pill on a Cards layout editor card the admin has sized shorter
+    // than the fields it holds. Replaces the silent inner scrollbar that state
+    // used to produce.
+    'NFieldsDoNotFitCard' => '{n} veld(en) passen niet in deze kaart. Verklein de kaart om ze te tonen.',
+    // Card titles for the Mitigation tab's Cards layout editor
+    // (js/simplerisk/pages/customization-layout-editor.js), mirroring the
+    // Card* keys above for the Details tab. Order follows
+    // customization_mitigation_cards_layout_card_keys() (includes/functions.php).
+    'CardMitigationStrategy' => 'Mitigatiestrategie',
+    'CardMitigationSolution' => 'Oplossing ter beperking van de risico\'s',
+    'CardMitigationControls' => 'Mitigatie controles',
+    'CardReview' => 'Beoordeling',
+    // Submit Risk page's three action-bar buttons (buildActionsBar(),
+    // risk-details-form.js, submitMode 'create' only) and the Reset Form
+    // confirm modal (management/index.php, design-system.md #8's "Confirm"
+    // type). 'Discard'/'Cancel'/'Close' already exist and are reused for the
+    // modal's own buttons.
+    'ResetForm' => 'Formulier opnieuw instellen',
+    'SaveAndNew' => 'Opslaan & Nieuw',
+    'SaveAndView' => 'Opslaan en bekijken',
+    'ResetFormConfirmTitle' => 'Deze risico-inzending afwijzen?',
+    'ResetFormConfirmBody' => 'Alle door u ingevoerde gegevens gaan verloren.',
+    // Restore-template destructive confirm (Customization Extra, Save/Restore
+    // action bar). Two body variants: risk's Details/Mitigation/Review tabs
+    // named explicitly (the only fgroup with that 3-tab Cards layout), a
+    // generic fallback for every other fgroup (single legacy-panel tab).
+    // Both end on the same scoping reassurance -- confirmed via direct source
+    // read that Restore only ever touches the currently-selected template
+    // group, never any other.
+    'RestoreTemplateConfirmTitle' => 'Standaardlay-out herstellen?',
+    'RestoreTemplateConfirmBodyRisk' => 'Hierdoor worden alle velden op de tabbladen Details, Maatregelen ter beperking van de schade en Beoordeling teruggezet naar hun standaardwaarden voor deze sjabloongroep. Andere sjabloongroepen worden niet beïnvloed.',
+    'RestoreTemplateConfirmBody' => 'Hierdoor worden alle velden in deze sjabloon teruggezet naar de standaardwaarden voor deze sjabloongroep. Andere sjabloongroepen worden niet beïnvloed.',
+    // CVSS holder's collapsed Temporal/Environmental/Impact-Modifiers
+    // accordion (buildCvssHolder(), risk-details-form.js) -- these three
+    // groups are optional CVSS v2 refinements on top of the required Base
+    // Score Metrics, so they collapse behind this header by default.
+    'AdvancedMetrics' => 'Geavanceerde statistieken',
+    // CVSS holder's Base Score Metrics sub-group headers (buildCvssHolder(),
+    // risk-details-form.js) -- distinct from the existing 'ExploitabilityMetrics'/
+    // 'ImpactMetrics' keys, which the legacy cvss_modal_content.php modal
+    // still renders as plain "Exploitability Metrics"/"Impact Metrics" and
+    // must keep unchanged. These fold the umbrella "Base Score Metrics"
+    // heading into each sub-group's own header instead of a separate label.
+    'BaseScoreExploitabilityMetrics' => 'Basisscore exploitatiestatistieken',
+    'BaseScoreImpactMetrics' => 'Impactstatistieken van de basisscore',
+    // Per-field help popovers on the CVSS holder's 14 metric selects
+    // (buildCvssScoreItem(), risk-details-form.js) -- one per CVSS v2
+    // metric, matching the standard CVSS v2 specification definitions.
+    // Double-quoted (not single-quoted, this file's usual style) so the
+    // \n line breaks are real escape sequences: each popover leads with one
+    // overall sentence, then one bullet line per option, rendered via
+    // white-space: pre-line on .sr-scoring-help-popover .popover-body
+    // (scss/modules/_questionnaire.scss) -- plain text throughout, no HTML,
+    // so the popover stays initialized without Bootstrap's `html: true`.
+    "AttackVectorHelp" => "Hoe de kwetsbaarheid kan worden misbruikt.\n• Lokaal: vereist lokale toegang, zoals een console of shell.\n• Aangrenzend netwerk: de aanvaller moet zich op hetzelfde fysieke of logische netwerksegment bevinden.\n• Netwerk: op afstand te exploiteren via een netwerk, zonder dat lokale of aangrenzende toegang nodig is.",
+    "AttackComplexityHelp" => "Hoe complex de aanval is zodra een aanvaller toegang heeft tot het doelwit.\n• Hoog: vereist specifieke voorwaarden die moeilijk te realiseren zijn.\n• Gemiddeld: er moeten enkele voorwaarden worden vervuld, maar exploitatie is niet moeilijk zodra daaraan is voldaan.\n• Laag: er zijn geen speciale voorwaarden nodig.",
+    "AuthenticationHelp" => "Het aantal keren dat een aanvaller zich moet authenticeren bij het doelwit om het te exploiteren.\n• Meerdere: authenticatie is twee of meer keer vereist, zelfs met dezelfde inloggegevens.\n• Enkele: authenticatie is één keer vereist.\n• Geen: geen authenticatie vereist.",
+    "ConfidentialityImpactHelp" => "De impact op de vertrouwelijkheid van de gegevens die het systeem verwerkt als het wordt misbruikt.\n• Geen: geen impact.\n• Gedeeltelijk: enige informatie wordt openbaar gemaakt, maar de aanvaller heeft geen controle over welke informatie, of het verlies is beperkt.\n• Volledig: alle informatie op het systeem wordt volledig openbaar gemaakt.",
+    "IntegrityImpactHelp" => "De impact op de integriteit van het systeem bij misbruik.\n• Geen: geen impact.\n• Gedeeltelijk: sommige gegevens kunnen worden gewijzigd, maar de aanvaller heeft geen controle over wat, of de reikwijdte is beperkt.\n• Volledig: totale aantasting van de systeemintegriteit; de aanvaller kan alle bestanden wijzigen.",
+    "AvailabilityImpactHelp" => "De impact op de beschikbaarheid van het systeem bij misbruik.\n• Geen: geen impact.\n• Gedeeltelijk: verminderde prestaties of onderbrekingen in de beschikbaarheid.\n• Volledig: totale uitschakeling van de betreffende bron.",
+    "RemediationLevelHelp" => "Het beschikbare niveau van herstel voor de kwetsbaarheid.\n• Officiële oplossing: een complete oplossing van de leverancier is beschikbaar.\n• Tijdelijke oplossing: een officiële, maar tijdelijke oplossing is beschikbaar.\n• Tijdelijke oplossing: er bestaat een onofficiële, niet-leveranciersgebonden tijdelijke oplossing.\n• Niet beschikbaar: er is geen oplossing beschikbaar, of er kan geen oplossing worden toegepast.",
+    "ReportConfidenceHelp" => "De mate van vertrouwen in het bestaan van de kwetsbaarheid en de geloofwaardigheid van de technische details ervan.\n• Onbevestigd: één onbevestigd bronrapport; het onderliggende probleem is speculatief.\n• Niet bevestigd: meerdere onafhankelijke bronnen melden hetzelfde gedrag, maar de hoofdoorzaak is niet bevestigd.\n• Bevestigd: de leverancier heeft het probleem erkend, of het is bevestigd door analyse van de broncode of een exploit.",
+    "CollateralDamagePotentialHelp" => "Het potentiële risico op verlies van mensenlevens, materiële bezittingen of financieel verlies als de kwetsbaarheid wordt uitgebuit.\n• Geen: dergelijk verlies is onwaarschijnlijk.\n• Laag tot gemiddeld: een matig verlies is mogelijk.\n• Hoog: een catastrofale impact op de activa, inkomsten of veiligheid van de organisatie.",
+    "TargetDistributionHelp" => "Het percentage kwetsbare systemen in uw omgeving.\n• Geen: er zijn geen doelsystemen.\n• Laag: 1-25% van de systemen is kwetsbaar.\n• Gemiddeld: 26-75% is kwetsbaar.\n• Hoog: 76-100% is kwetsbaar.",
+    "ConfidentialityRequirementHelp" => "Hoe belangrijk de vertrouwelijkheid van de betreffende gegevens voor uw organisatie is.\n• Laag: een verlies van vertrouwelijkheid heeft een beperkte impact.\n• Gemiddeld: het heeft een ernstige impact.\n• Hoog: het heeft een catastrofale impact.",
+    "IntegrityRequirementHelp" => "Hoe belangrijk de integriteit van het betreffende bedrijfsmiddel is voor uw organisatie.\n• Laag: een integriteitsverlies heeft een beperkte impact.\n• Gemiddeld: het heeft een ernstige impact.\n• Hoog: het heeft een catastrofale impact.",
+    "AvailabilityRequirementHelp" => "Hoe belangrijk de beschikbaarheid van het betreffende bedrijfsmiddel is voor uw organisatie.\n• Laag: een beschikbaarheidsverlies heeft een beperkte impact.\n• Gemiddeld: het heeft een ernstige impact.\n• Hoog: het heeft een catastrofale impact.",
+    // Base Score Metrics' two sub-group intro sentences (metricsSubGroup()'s
+    // `descKey`, risk-details-form.js) -- orient the user to what the GROUP
+    // as a whole is asking, distinct from the per-field *Help popover keys
+    // above which explain each metric's own options.
+    'BaseScoreExploitabilityMetricsDescription' => 'Hoe een aanvaller deze kwetsbaarheid zou moeten bereiken en misbruiken: waar ze zich moeten bevinden, hoe complex de aanval is en of ze zich eerst moeten authenticeren.',
+    'BaseScoreImpactMetricsDescription' => 'Wat gebeurt er als de kwetsbaarheid succesvol wordt uitgebuit: het effect op de vertrouwelijkheid, integriteit en beschikbaarheid van het getroffen systeem.',
+    // Advanced Metrics' three optional sub-group intro sentences -- same
+    // metricsSubGroup() `descKey` as the two Base Score groups above.
+    'TemporalScoreMetricsDescription' => 'Hoe de daadwerkelijke dreiging van deze kwetsbaarheid in de loop van de tijd verandert: de huidige status van de exploitcode, welke oplossingen beschikbaar zijn en hoe zeker de meldingen zijn dat deze bestaat.',
+    'EnvironmentalScoreMetricsDescription' => 'Het risico van deze kwetsbaarheid hangt af van uw omgeving: de potentiële schade in de praktijk en hoeveel van uw systemen daadwerkelijk getroffen worden.',
+    'ImpactSubscoreModifiersDescription' => 'Weeg de impact van de basisscore af aan de mate waarin vertrouwelijkheid, integriteit en beschikbaarheid daadwerkelijk van belang zijn voor dit specifieke object.',
+    // Phase 4d-iii: DREAD holder help popovers (view_dread_help()'s
+    // existing English text, includes/display.php, extracted to real $lang
+    // keys -- that function's own content was raw hardcoded HTML, never
+    // localized, so it could not be reused verbatim).
+    'DamagePotentialHelp' => 'Als een cyberaanval plaatsvindt, hoeveel schade zal er dan ontstaan?' . "\n" . '0 = Niets' . "\n" . '5 = Individuele gebruikersgegevens zijn gecompromitteerd of aangetast.' . "\n" . '10 = Volledige systeem- of gegevensvernietiging',
+    'ReproducibilityHelp' => 'Hoe makkelijk is het om de kwetsbaarheid te reproduceren?' . "\n" . '0 = Zeer moeilijk of onmogelijk, zelfs voor beheerders van de applicatie.' . "\n" . '5 = Een of twee stappen vereist, mogelijk moet u een geautoriseerde gebruiker zijn.' . "\n" . '10 = Een webbrowser en de adresbalk zijn voldoende, authenticatie is niet nodig.',
+    'ExploitabilityHelp' => 'Wat is er nodig om deze dreiging te exploiteren?' . "\n" . '0 = Geavanceerde programmeer- en netwerkkennis, met aangepaste of geavanceerde aanvalstools.' . "\n" . '5 = Er bestaat malware op het internet, of een exploit kan eenvoudig worden uitgevoerd met behulp van beschikbare aanvalstools.' . "\n" . '10 = Gewoon een webbrowser',
+    'AffectedUsersHelp' => 'Hoeveel gebruikers zullen hierdoor worden getroffen?' . "\n" . '0 = Geen' . "\n" . '5 = Sommige gebruikers, maar niet allemaal' . "\n" . '10 = Alle gebruikers',
+    'DiscoverabilityHelp' => 'Hoe gemakkelijk is het om deze dreiging te ontdekken?' . "\n" . '0 = Zeer moeilijk tot onmogelijk; vereist broncode of beheerdersrechten.' . "\n" . '5 = Kan worden achterhaald door te gokken of door netwerkverkeer te monitoren.' . "\n" . '9 = Details over dergelijke fouten zijn al openbaar bekend en kunnen eenvoudig worden gevonden met behulp van een zoekmachine.' . "\n" . '10 = De informatie is zichtbaar in de adresbalk van de webbrowser of in een formulier.',
+    // The DREAD holder's summary card heading and "DREAD Metrics" card
+    // heading. No existing key covers either (confirmed via grep before
+    // adding).
+    'DreadScore' => 'DREAD-score',
+    'DreadMetrics' => 'DREAD-statistieken',
+    // Phase 4d-iv: OWASP holder help popovers (view_owasp_help()'s
+    // existing English text, includes/display.php, extracted to real
+    // $lang keys -- same never-localized-legacy-content extraction the
+    // DREAD phase already did for its own 5 fields). Wording/levels
+    // trued up against that function's real source text, not transcribed
+    // from an earlier standard-methodology draft.
+    'SkillLevelHelp' => 'Hoe technisch onderlegd is deze groep dreigingsagenten?' . "\n" . '1 = Geen technische vaardigheden' . "\n" . '3 = Enkele technische vaardigheden' . "\n" . '5 = Gevorderde computergebruiker' . "\n" . '6 = Netwerk- en programmeervaardigheden' . "\n" . '9 = Vaardigheden voor beveiligingspenetratie',
+    'MotiveHelp' => 'Hoe gemotiveerd is deze groep cybercriminelen om deze kwetsbaarheid te vinden en te misbruiken?' . "\n" . '1 = Weinig of geen beloning' . "\n" . '4 = Mogelijke beloning' . "\n" . '9 = Hoge beloning',
+    'OpportunityHelp' => 'Welke middelen en mogelijkheden heeft deze groep cybercriminelen nodig om deze kwetsbaarheid te vinden en te misbruiken?' . "\n" . '0 = Volledige toegang of dure resources vereist' . "\n" . '4 = Speciale toegang of middelen vereist' . "\n" . '7 = Toegang of bepaalde middelen vereist' . "\n" . '9 = Geen toegang of middelen vereist',
+    'SizeHelp' => 'Hoe groot is deze groep bedreigingsagenten?' . "\n" . '2 = Ontwikkelaars' . "\n" . '2 = Systeembeheerders' . "\n" . '4 = Intranetgebruikers' . "\n" . '5 = Partners' . "\n" . '6 = Geverifieerde gebruikers' . "\n" . '9 = Anonieme internetgebruikers',
+    'EaseOfDiscoveryHelp' => 'Hoe gemakkelijk is het voor deze groep cybercriminelen om deze kwetsbaarheid te ontdekken?' . "\n" . '1 = Vrijwel onmogelijk' . "\n" . '3 = Moeilijk' . "\n" . '7 = Gemakkelijk' . "\n" . '9 = Beschikbare geautomatiseerde tools',
+    'EaseOfExploitHelp' => 'Hoe gemakkelijk is het voor deze groep cybercriminelen om deze kwetsbaarheid daadwerkelijk te misbruiken?' . "\n" . '1 = Theoretisch' . "\n" . '3 = Moeilijk' . "\n" . '5 = Gemakkelijk' . "\n" . '9 = Beschikbare geautomatiseerde tools',
+    'AwarenessHelp' => 'Hoe bekend is deze kwetsbaarheid voor deze groep bedreigingsagenten?' . "\n" . '1 = Onbekend' . "\n" . '4 = Verborgen' . "\n" . '6 = Duidelijk' . "\n" . '9 = Publieke kennis',
+    'IntrusionDetectionHelp' => 'Hoe groot is de kans dat een beveiligingslek wordt ontdekt?' . "\n" . '1 = Actieve detectie in de toepassing' . "\n" . '3 = Geregistreerd en beoordeeld' . "\n" . '8 = Ingelogd zonder beoordeling' . "\n" . '9 = Niet geregistreerd',
+    'LossOfConfidentialityHelp' => 'Hoeveel gegevens kunnen openbaar gemaakt worden en hoe gevoelig zijn deze?' . "\n" . '2 = Minimale niet-gevoelige gegevens die worden vrijgegeven' . "\n" . '6 = Minimale kritische gegevens openbaar gemaakt' . "\n" . '6 = Uitgebreide niet-gevoelige gegevens openbaar gemaakt' . "\n" . '7 = Uitgebreide cruciale gegevens openbaar gemaakt' . "\n" . '9 = Alle gegevens openbaar gemaakt',
+    'LossOfIntegrityHelp' => 'Hoeveel gegevens kunnen beschadigd zijn en hoe ernstig zijn ze beschadigd?' . "\n" . '1 = Minimale, licht beschadigde gegevens' . "\n" . '3 = Minimaal aantal ernstig beschadigde gegevens' . "\n" . '5 = Uitgebreide, licht beschadigde gegevens' . "\n" . '7 = Uitgebreide, ernstig corrupte gegevens' . "\n" . '9 = Alle gegevens volledig corrupt',
+    'LossOfAvailabilityHelp' => 'Hoeveel dienstverlening zou er verloren kunnen gaan en hoe essentieel is die?' . "\n" . '1 = Minimale onderbreking van secundaire diensten' . "\n" . '5 = Minimale onderbreking van primaire diensten' . "\n" . '5 = Uitgebreide secundaire diensten onderbroken' . "\n" . '7 = Uitgebreide primaire zorgverlening onderbroken' . "\n" . '9 = Alle diensten volledig uitgevallen',
+    'LossOfAccountabilityHelp' => 'Zijn de acties van de daders te herleiden tot een individu?' . "\n" . '1 = Volledig traceerbaar' . "\n" . '7 = Mogelijk traceerbaar' . "\n" . '9 = Volledig anoniem',
+    'FinancialDamageHelp' => 'Hoe groot zal de financiële schade zijn als gevolg van een dergelijke aanval?' . "\n" . '1 = Minder dan de kosten om de kwetsbaarheid te verhelpen' . "\n" . '3 = Klein effect op de jaarwinst' . "\n" . '7 = Aanzienlijk effect op de jaarwinst' . "\n" . '9 = Faillissement',
+    'ReputationDamageHelp' => 'Zou een beveiligingslek leiden tot reputatieschade die het bedrijf zou schaden?' . "\n" . '1 = Minimale schade' . "\n" . '4 = Verlies van belangrijke klanten' . "\n" . '5 = Verlies van goodwill' . "\n" . '9 = Merkschade',
+    'NonComplianceHelp' => 'Hoeveel risico loopt u door niet-naleving?' . "\n" . '2 = Kleine overtreding' . "\n" . '5 = Duidelijke overtreding' . "\n" . '7 = Ernstige overtreding',
+    'PrivacyViolationHelp' => 'Hoeveel persoonsgegevens kunnen openbaar gemaakt worden?' . "\n" . '3 = Eén individu' . "\n" . '5 = Honderden mensen' . "\n" . '7 = Duizenden mensen' . "\n" . '9 = Miljoenen mensen',
+    // The OWASP holder's Score card heading. No existing key covers this
+    // (confirmed via grep before adding) -- the Likelihood/Impact card
+    // headings reuse the already-existing bare 'Likelihood'/'Impact' keys.
+    'OwaspScore' => 'OWASP-score',
+    // Phase 4d-iv follow-up: group-level descriptions for the 4 OWASP
+    // subgroup headings, sourced from OWASP's own Risk Rating Methodology
+    // (https://community.owasp.org/OWASP_Risk_Rating_Methodology), tightened
+    // into short UI captions -- not a verbatim quote (see this task's own
+    // source table for the original wording).
+    'ThreatAgentFactorsDescription' => 'Geeft een schatting van de waarschijnlijkheid van een succesvolle aanval door deze groep bedreigingsagenten.',
+    'VulnerabilityFactorsDescription' => 'Geeft een schatting van de waarschijnlijkheid dat deze kwetsbaarheid ontdekt en misbruikt zal worden.',
+    'TechnicalImpactDescription' => 'De impact wordt onderverdeeld naar vertrouwelijkheid, integriteit, beschikbaarheid en verantwoording.',
+    'BusinessImpactDescription' => 'Het weerspiegelt wat belangrijk is voor het bedrijf, voorbij de pure technische impact.',
+    // CVSS's own Temporal-metric 'Exploitability' help text. This key shares
+    // a labelKey ('Exploitability') with DREAD's own field, so both would
+    // otherwise derive the same generic lang key ('ExploitabilityHelp'),
+    // with DREAD's entry silently winning for both -- risk-details-form.js's
+    // buildCvssScoreItem() and risk-details-view.js's cvssMetricValueRow()
+    // reference this key directly for CVSS's Exploitability field instead
+    // of the generic '<labelKey>Help' derivation.
+    'CVSSExploitabilityHelp' => "De huidige stand van zaken met betrekking tot exploitatietechnieken of de beschikbaarheid van exploitcode.\n• Onbewezen: er is geen exploitcode beschikbaar, of exploitatie is theoretisch.\n• Proof-of-Concept: er bestaat exploitcode, maar deze is voor de meeste aanvallers niet praktisch.\n• Functioneel: functionele exploitcode werkt in de meeste situaties.\n• Hoog: exploitatie is betrouwbaar en ofwel geautomatiseerd (bijv. een worm) of vereist helemaal geen exploitcode.",
+    // Risk Scoring -- Classic Inline (Task 3): the Classic scoring method's
+    // new inline Score card heading and its Likelihood/Impact cards' short
+    // plain-English descriptions (js/simplerisk/common/risk-details-form.js's
+    // buildClassicHolder()). Deliberately NOT sourced from NIST SP 800-30 or
+    // any other external standard -- confirmed with the user via the
+    // approved mockup review, unlike OWASP's own subgroup descriptions
+    // above, which do cite OWASP's Risk Rating Methodology.
+    'ClassicScore' => 'Klassieke partituur',
+    'ClassicLikelihoodDescription' => 'Hoe groot is de kans dat dit risico zich voordoet?',
+    'ClassicImpactDescription' => 'Hoe ernstig de gevolgen zouden zijn als dit risico zich zou voordoen.',
+    // Risk Scoring -- Custom Inline (Task 2): the Custom scoring method's
+    // new inline Score card heading (js/simplerisk/common/risk-details-form.js's
+    // buildCustomHolder()) and the Custom Value card's short description
+    // caption. 'CustomValueDescription' text confirmed directly with the
+    // user, same as Classic's own description keys above.
+    'CustomScore' => 'Aangepaste score',
+    'CustomValueDescription' => 'Een aangepaste waarde kan een decimaal getal tussen 0 en 10 zijn.',
+    // Risk Scoring -- Contributing Risk Inline (Phase 4d-v): the last of
+    // the three deferred scoring methods (DREAD/OWASP shipped earlier in
+    // this same project). The Likelihood/Contributing Risk cards' short
+    // plain-English descriptions (js/simplerisk/common/risk-details-form.js's
+    // buildContributingRiskHolder()). The Score card heading reuses the
+    // EXISTING 'ContributingRiskScore' key (already present above, same
+    // text) rather than duplicating it -- 'ContributingRisk'/
+    // 'ContributingLikelihood'/'Weight'/'Subject' are likewise reused as-is.
+    'ContributingLikelihoodDescription' => 'Hoe groot is de kans dat dit risico zich voordoet?',
+    'ContributingRiskDescription' => 'Elke factor hieronder is gewogen op basis van zijn relatieve belang – selecteer in welke mate dit risico door elke factor wordt beïnvloed.',
+    // OWASP read-mode card (buildOwaspReadView(), risk-details-view.js):
+    // the live calculation formula under each of the 4 sub-group names
+    // (Threat Agent Factors/Vulnerability Factors/Technical Impact/
+    // Business Impact), matching the legacy risk-scoring-details panel's
+    // own "= ( a + b + c + d ) / 4" text (includes/display.php), and the
+    // OWASP Risk Rating Methodology link note placed in the OWASP Score
+    // column's open space below the summary numbers.
+    'OwaspSubgroupFormula' => '= ( {a} + {b} + {c} + {d} ) / 4',
+    'OwaspMethodologyNote' => 'Volledige details van de OWASP-risicobeoordelingsmethodologie zijn te vinden op [link].',
+    'Here' => 'hier',
+    // Scoring widget formula captions (Classic/DREAD/Contributing Risk),
+    // the same ".sr-cvss-vector under the score label" treatment CVSS's
+    // vector caption and OwaspSubgroupFormula above already have, on both
+    // the edit-mode holder (risk-details-form.js) and the read-mode card
+    // (risk-details-view.js). Classic reuses the existing RISKClassicExp1-5
+    // keys instead of a new one -- see those keys' own long-standing
+    // definitions above.
+    'DreadScoreFormula' => '= ( {a} + {b} + {c} + {d} + {e} ) / 5',
+    // Contributing Risk's per-factor weighted term and its shared
+    // Likelihood term (update_contributing_risk_score(), includes/
+    // functions.php) -- unlike DREAD/OWASP's fixed roster, the factor list
+    // is admin-configured, so this is one formula PER FACTOR ROW rather
+    // than one fixed caption under the total score.
+    // {maxName}: score.php parity -- legacy's "Maximum Value" column showed
+    // the max option's human-readable name alongside its number (e.g.
+    // "[5] Certain", includes/display.php); these formulas only showed the
+    // bare number.
+    'ContributingLikelihoodFormula' => '= {value} x 5 / {max} ({maxName})',
+    'ContributingFactorFormula' => '= {weight}% x {impact} x 5 / {max} ({maxName})',
+    // Contributing Risk's own subscore row in the Score card -- the sum of
+    // every factor's own term above it. Generic (not substituted with real
+    // numbers) since the number of terms is however many factors are
+    // configured, unlike the fixed-roster formulas above.
+    'ContributingRiskSubtotalFormula' => '= Som van ( Gewicht x Impact x 5 / Max )',
+    // Contributing Risk Score's own formula, under the total row -- always
+    // exactly 2 terms (unlike the Contributing Risk subtotal above), so
+    // substituted with the real current subtotal values, same convention
+    // DreadScoreFormula/OwaspSubgroupFormula use for their own fixed roster.
+    'ContributingRiskScoreFormula' => '= {likelihood} + {contributing}',
+    // Risk Scoring History widget (risk-details-view.js) -- replaces the
+    // legacy chart's bare save icon with a real menu item, structured for
+    // future export types alongside it.
+    'DownloadChartAsImage' => 'Downloaden als afbeelding',
+    // Legacy score.php's CVSS table had a "Full details of CVSS Version 2.0
+    // scoring can be found here." link (includes/display.php); this is its
+    // inline-scoring-card equivalent, same shape as OwaspMethodologyNote.
+    'CvssMethodologyNote' => 'Volledige details over de CVSS-scoreberekening versie 2.0 zijn te vinden op [link].',
+    // Mitigation Controls redesign: the picker reuses ChooseControls/
+    // AddOrRemoveControls/etc from Document Program's control picker.
+    'InvalidControlID' => 'Ongeldige besturings-ID.',
+    'ValidationOwner' => 'Validatie-eigenaar',
+    'ValidationStatus' => 'Validatiestatus',
+    'NotStarted' => 'Nog niet gestart',
+    // management/view.php's "risk ID does not exist" empty state.
+    'RiskIdDoesNotExistBody' => 'Het risico waarnaar u op zoek bent, is mogelijk verwijderd of de link is onjuist.',
+    'MitigationControlsRequiresGovernance' => 'Toegang tot deze pagina is alleen mogelijk met toestemming van de beheerder.',
+    'ViewControlValidation' => 'Weergavebesturingsvalidatie',
+    'EditControlValidation' => 'Bewerkingsbesturingselementvalidatie',
+    'SupportingDocumentationRequiresSubmitRisk' => 'Voor het uploaden van bestanden is toestemming voor het indienen van risico\'s vereist.',
+    'SupportingDocumentationRequiresModifyRisks' => 'Voor het beheren van bestanden is de machtiging \'Risico\'s wijzigen\' vereist.',
+    'MitigationSupportingDocumentationRequiresPlanMitigations' => 'Hiervoor is toestemming van Plan Mitigations vereist om bestanden te beheren.',
+    'MitigationSubmittedBy' => 'Mitigatievoorstel ingediend door',
+    'UseADifferentDate' => 'Gebruik een andere datum',
+    'AssetGroup' => 'Asset Group',
+    // Customization Cards Layout API (extras/customization/index.php) scope-validation errors.
+    'InvalidFgroup' => 'Ongeldige fgroup.',
+    'CustomizationCardsLayoutApiScopeError' => 'De Customization Cards Layout API is alleen beschikbaar voor fgroup=risk, tab_index=1, tab_index=2 of tab_index=3.',
+    // Asset management redesign
+    'DiscoverAssets' => 'Ontdek activa',
+    'DiscoveryRuns' => 'Ontdekkingsacties',
+    'DiscoveryRangeHint' => 'Eén adres, een begin-eindbereik of een IPv4 CIDR-adres.',
+    'DiscoveryResolveNames' => 'Zoek hostnamen op',
+    'DiscoveryAddAs' => 'Voeg nieuwe items toe als',
+    'DiscoveryStart' => 'Begin met ontdekken',
+    'DiscoveryBackgroundNote' => 'Wordt op de achtergrond uitgevoerd. Adressen die al bestaan, worden overgeslagen.',
+    'DiscoveryRangeInvalid' => 'Voer een geldig IPv4-adres, adresbereik of CIDR-blok in.',
+    'DiscoveryRangeTooLarge' => 'Dat bereik is te groot. De limiet is {$max} adressen.',
+    'DiscoveryRunQueued' => 'De ontdekkingstocht is begonnen.',
+    'DiscoveryRunCompleted' => 'Ontdekking voltooid: {$new} nieuwe activa.',
+    'AssetBulkSelectAll' => 'Selecteer alle {$count} -activa',
+    'AssetBulkAssignTeams' => 'Teams toewijzen…',
+    'AssetBulkAddToGroup' => 'Voeg toe aan groep…',
+    'AssetBulkDeleteConfirmTitle' => 'Assets {$count} verwijderen?',
+    'AbleToEditAssets' => 'Mogelijkheid om assets te bewerken',
+    'AbleToDeleteAssets' => 'Mogelijkheid om activa te verwijderen',
+    'AbleToVerifyAssets' => 'In staat om activa te verifiëren',
+    'AbleToRunAssetDiscovery' => 'Kan Asset Discovery uitvoeren',
+    'AbleToCreateAssetGroups' => 'Mogelijkheid om activagroepen aan te maken',
+    'AbleToEditAssetGroups' => 'Mogelijkheid om activagroepen te bewerken',
+    'AbleToDeleteAssetGroups' => 'Mogelijkheid om activagroepen te verwijderen',
+    'ViewAsset' => 'Bekijk het object',
+    'AssetUnverifiedByEditLog' => 'Asset "{$name}" werd als niet geverifieerd gemarkeerd omdat gebruiker "{$user}" zijn naam of IP-adres heeft gewijzigd zonder toestemming om assets te verifiëren.',
+    'AssetTeamsAssignedLog' => 'Het object "{$name}" is toegewezen aan team(s) "{$teams}" door gebruiker "{$user}".',
+    // Manage assets page (asset management redesign, Task 9)
+    'AddAsset' => 'Voeg een item toe',
+    'SearchAssetsPlaceholder' => 'Zoeken op naam of IP-adres',
+    'AllLocations' => 'Alle locaties',
+    'AllTags' => 'Alle tags',
+    'AllAssetGroups' => 'Alle activagroepen',
+    'AssetFields' => 'Activa-velden',
+    'AssetBulkAllSelected' => 'Alle {$count} overeenkomende activa geselecteerd',
+    'AssetDeleteConfirmTitle' => 'Asset "{$name} " verwijderen?',
+    'DeleteAsset' => 'Asset verwijderen',
+    'DeleteAssets' => 'Verwijder activa',
+    'AssetBulkAssignTeamsTitle' => 'Wijs teams toe aan {$count} activa',
+    'AssetAssignTeamsHint' => 'De geselecteerde teams worden toegevoegd. Teams die al op een asset zijn ondergebracht, blijven behouden.',
+    'AssetAddToGroupTitle' => 'Voeg {$count} -items toe aan een groep',
+    'AssetChooseTeams' => 'Kies teams',
+    'AssetChooseGroup' => 'Kies een groep',
+    'Assign' => 'Toewijzen',
+    'AssetBulkVerifiedSummary' => '{$ok} geverifieerd, {$failed} overgeslagen',
+    'AssetBulkDeletedSummary' => '{$ok} verwijderd, {$failed} overgeslagen',
+    'AssetBulkTeamsSummary' => 'Teams toegewezen aan {$ok} activa, {$failed} overgeslagen',
+    'AssetBulkGroupSummary' => '{$ok} toegevoegd aan de groep, {$failed} overgeslagen',
+    'AssetBulkSkippedList' => 'Overgeslagen: {$list}',
+    'AssetBulkReasonNotFound' => 'niet gevonden',
+    'NoAssetsYet' => 'Nog geen activa beschikbaar',
+    'NoAssetsYetHint' => 'De items die u toevoegt of ontdekt, verschijnen hier.',
+    'NoAssetsMatchFilters' => 'Er zijn geen objecten die aan uw filters voldoen.',
+    'CouldNotLoadAssets' => 'Kon de bestanden niet laden. Uw gegevens zijn veilig.',
+    'AllValuations' => 'Alle taxaties',
+    // Manage assets page, Asset groups tab (asset management redesign, Task 10)
+    'AddAssetGroup' => 'Groep toevoegen',
+    'EditAssetGroup' => 'Groep bewerken',
+    'DeleteAssetGroup' => 'Groep verwijderen',
+    'ViewGroupMembers' => 'Leden bekijken',
+    'SearchAssetGroupsPlaceholder' => 'Zoek groepen op naam',
+    'HighestValuation' => 'Hoogste waardering',
+    'LinkedRisks' => 'Gekoppelde risico\'s',
+    'RemoveFromGroup' => 'Verwijderen uit de groep',
+    'AssetGroupMoreMembers' => '+ {$count} meer',
+    'ViewAllInAssetsTab' => 'Bekijk alles in het tabblad \'Activa\'.',
+    'NoAssetsInGroup' => 'Deze groep heeft geen activa.',
+    'CouldNotLoadGroupMembers' => 'De leden van deze groep konden niet worden geladen.',
+    'AssetGroupMembers' => 'Leden',
+    'AssetGroupMembersHint' => 'Alleen zichtbare objecten worden weergegeven. Leden die u niet kunt zien, blijven in de groep.',
+    'ChooseAssets' => 'Kies activa',
+    'AddOrRemoveAssets' => 'Assets toevoegen of verwijderen…',
+    'UseTheseAssets' => 'Gebruik deze activa',
+    'AllAssets' => 'Alle activa',
+    'Valuation' => 'Waardebepaling',
+    'PickerShowingFirstN' => 'De eerste {$count} van {$total}wordt weergegeven. Zoek of filter om de rest te vinden.',
+    'AssetGroupDeleteConfirmTitle' => 'Groep "{$name} " verwijderen?',
+    'AssetGroupDeleteKeepsAssets' => 'De bestanden in deze groep worden niet verwijderd. Alleen de groep zelf wordt verwijderd.',
+    'NoAssetGroupsYet' => 'Nog geen activagroepen beschikbaar',
+    'NoAssetGroupsYetHint' => 'Groepeer activa zodat u ze samen in kaart kunt brengen en erover kunt rapporteren.',
+    'NoAssetGroupsMatchSearch' => 'Er zijn geen activagroepen die overeenkomen met uw zoekopdracht.',
+    'CouldNotLoadAssetGroups' => 'Kon de activagroepen niet laden. Uw gegevens zijn veilig.',
+    'DiscoveryAssignTeams' => 'Wijs ze toe aan teams.',
+    'DiscoveryAssignTeamsHint' => 'Optioneel. Elk nieuw bezit wordt aan deze teams toegevoegd.',
+    'DiscoveryAddAsHint' => 'Ingesteld op basis van uw toestemming om activa te verifiëren.',
+    'DiscoveryTeamsInvalid' => 'Kies teams die bestaan en waar je lid van bent.',
+    'DiscoveryResolveNamesInvalid' => 'Het opzoeken van hostnamen moet aan of uit staan.',
+    'DiscoveryTooManyActiveRuns' => 'Je hebt al {$max} ontdekkingsruns in uitvoering. Wacht tot er een is voltooid of annuleer deze.',
+    'DiscoveryRunNotFound' => 'Ontdekkingsrun niet gevonden.',
+    'DiscoveryRunAlreadyFinished' => 'Deze verkenningsronde is al afgerond.',
+    'DiscoveryRunCancelled' => 'Het verkenningsonderzoek is geannuleerd.',
+    'DiscoveryRunFailedToast' => 'Ontdekking van {$range} mislukt.',
+    'DiscoveryStatusQueued' => 'In de wachtrij',
+    'DiscoveryProgress' => '{$scanned} van {$total}',
+    'DiscoveryLiveHosts' => 'Live presentatoren',
+    'DiscoveryNewAssets' => 'Nieuwe activa',
+    'DiscoveryStartedAt' => 'Gestart',
+    'DiscoveryCancelRun' => 'Annuleer de uitvoering',
+    'CouldNotLoadDiscoveryRuns' => 'Kon de ontdekkingsruns niet laden.',
+    'DiscoveryRangeReserved' => 'Dat bereik omvat gereserveerde adressen (loopback, link-local, multicast of 0.0.0.0/8) die niet gescand kunnen worden.',
+    'DiscoveryTooManyActiveRunsInstance' => 'Er zijn al {$max} ontdekkingsruns bezig. Probeer het opnieuw wanneer er een is voltooid.',
+    'DiscoveryErrorScan' => 'De scan is gestopt vanwege een fout. Raadpleeg de systeemlogboeken voor meer informatie.',
+    'DiscoveryErrorWorkerLost' => 'De achtergrondverwerking van deze taak is gestopt.',
+    'DiscoveryErrorRequesterInactive' => 'De gebruiker die deze run startte, is niet langer actief.',
+    // Asset management redesign: translated API errors (bulk actions, column settings, discovery) and discovery audit lines
+    'AssetBulkBodyInvalid' => 'Verzend de bulkactie als een JSON-body.',
+    'AssetBulkActionRequired' => 'Kies een bulkactie.',
+    'AssetBulkUnknownAction' => 'Die bulkactie is niet beschikbaar.',
+    'AssetBulkSelectionRequired' => 'Selecteer activa op basis van ID of via een filter.',
+    'AssetBulkIdsRequired' => 'Selecteer ten minste één object.',
+    'AssetBulkIdsInvalid' => 'Asset-ID\'s moeten hele getallen zijn.',
+    'AssetBulkTooManyAssets' => 'Je kunt maximaal {$max} activa tegelijk bewerken. Verklein je selectie en probeer het opnieuw.',
+    'AssetBulkFilterInvalid' => 'Het filter is ongeldig. Vernieuw de pagina en probeer het opnieuw.',
+    'AssetBulkFilterUnknownKey' => 'Het filter "{$key}" wordt niet herkend.',
+    'AssetBulkFilterBadValue' => 'Het filter "{$key}" heeft een waarde die niet geldig is.',
+    'AssetBulkFilterTooManyValues' => 'Het filter "{$key}" kan maximaal {$max} waarden weergeven.',
+    'AssetBulkFilterAllAlone' => 'Het selecteren van alle objecten kan niet worden gecombineerd met andere filters.',
+    'AssetBulkFilterEmpty' => 'Kies een filter of selecteer alle assets voordat u een bulkactie uitvoert.',
+    'AssetBulkExpectedCountInvalid' => 'Het verwachte aantal activa moet een geheel getal zijn.',
+    'AssetBulkParamsInvalid' => 'De opties voor deze bulkactie zijn niet geldig.',
+    'AssetBulkTeamsRequired' => 'Kies minstens één team.',
+    'AssetBulkTeamsNotFound' => 'Een of meer van die teams bestaan niet meer.',
+    'AssetBulkTeamsNotMember' => 'Je kunt alleen teams toewijzen waar je zelf lid van bent.',
+    'AssetBulkGroupNotFound' => 'Die activagroep bestaat niet meer.',
+    'AssetBulkNoMatch' => 'Er zijn geen objecten die aan uw selectie voldoen.',
+    'AssetBulkCountMismatch' => 'De overeenkomende items zijn gewijzigd van {$expected} naar {$actual} sinds u ze hebt geselecteerd. Bekijk de lijst en probeer het opnieuw.',
+    'AssetColumnSettingsBodyInvalid' => 'Verzend de kolominstellingen als een JSON-body met de kolommen of de volgorde.',
+    'AssetColumnSettingsSaveFailed' => 'Uw kolommen konden niet worden opgeslagen. Vraag een beheerder om de SimpleRisk-upgrade te voltooien.',
+    'DiscoveryRunQueueFailed' => 'Het lukte niet om de ontdekkingsrun in de wachtrij te plaatsen. Probeer het opnieuw.',
+    'DiscoveryRunStartedLog' => 'De asset discovery run #{$id} van {$range} ({$count} adressen) is gestart door gebruiker "{$user}".',
+    'DiscoveryRunCancelledLog' => 'De asset discovery run #{$id} van {$range} is geannuleerd door gebruiker "{$user}".',
+    'AssetBulkTooManyToDelete' => 'Je kunt maximaal {$max} items tegelijk verwijderen. Verklein je selectie en probeer het opnieuw.',
+    'AssetBulkFilterNotApplied' => 'Het filter "{$key}" kon niet worden toegepast zoals het was verzonden, dus er is niets gewijzigd.',
+    'AssetBulkExpectedCountRequired' => 'Om activa te verwijderen met behulp van een filter, moet u het aantal activa opgeven dat u wilt verwijderen.',
+    'AssetBulkReasonNotAttempted' => 'niet geprobeerd',
+    'MoreActions' => 'Meer acties',
+    'AssetCreateNewGroupOption' => 'Maak een nieuwe groep aan…',
+    'AssetNewGroupName' => 'Nieuwe groepsnaam',
+    'AssetFilterByTeam' => 'Filteren op team {$name}',
+    'AssetFilterByValuation' => 'Filteren op waardering {$name}',
+    'AssetFilterByTag' => 'Filteren op tag {$name}',
+    'AssetFilterByLocation' => 'Filteren op site/locatie {$name}',
+    'AssetFilteringByTeam' => 'Filteren op team {$name}',
+    'AssetFilteringByValuation' => 'Filteren op waardering {$name}',
+    'AssetFilteringByTag' => 'Filteren op tag {$name}',
+    'AssetFilteringByLocation' => 'Filteren op site/locatie {$name}',
+    'AssetShowOnlyVerified' => 'Toon alleen geverifieerde activa',
+    'AssetShowOnlyUnverified' => 'Toon alleen niet-geverifieerde activa',
+    'AssetShowingVerified' => 'Geverifieerde activa weergeven',
+    'AssetShowingUnverified' => 'Niet-geverifieerde activa worden weergegeven',
+    'CustomizationLayoutPayloadRejected' => 'De lay-out kon niet worden opgeslagen omdat deze velden of kaarten bevat die niet bij deze sjabloon horen. Er is niets gewijzigd.',
+    'CustomizationLayoutRejectedUnknownScope' => 'Deze sjabloon kan niet worden opgeslagen vanuit de lay-outeditor. Er is niets gewijzigd.',
+    'CustomizationLayoutRejectedEmptyFields' => 'De lay-out bevat geen geldige velden, dus is deze niet opgeslagen. Er is niets gewijzigd.',
+    'CustomizationLayoutRejectedWouldDeleteAll' => 'Het opslaan van deze lay-out zou alle velden uit de sjabloon verwijderen, daarom is het niet gelukt. Vernieuw de pagina en probeer het opnieuw.',
+    'CustomizationLayoutRejectedRequiredField' => 'Een verplicht veld kan niet uit de lay-out worden verwijderd. Er is niets gewijzigd.',
+    'CustomizationLayoutRejectedBulkRemoval' => 'Als je deze lay-out opslaat, worden de meeste sjabloonvelden verwijderd zonder dat je ze hier hoeft te verwijderen. Vernieuw de pagina en probeer het opnieuw. Er is niets veranderd.',
+    'CustomizationLayoutRejectedGroupMismatch' => 'De sjabloongroep bestaat niet of behoort tot een ander recordtype. Er is niets gewijzigd.',
+    'CustomizationLayoutLegacySaveRefused' => 'Deze sjabloon wordt bewerkt met de lay-outeditor en kan niet worden opgeslagen via het oude paneel-eindpunt.',
+    // Asset discovery probe methods
+    'DiscoveryPortsInvalid' => 'Voer maximaal {$max} TCP-poorten in tussen 1 en 65535, gescheiden door komma\'s.',
+    'DiscoveryErrorProbeUnavailable' => 'De probe-methode waarmee deze run is gestart, is niet langer beschikbaar voor het achtergrondproces. Start een nieuwe run.',
+    'DiscoveryProbeIcmpUnprivileged' => 'ICMP-ping (niet-bevoorrechte socket)',
+    'DiscoveryProbeIcmpRaw' => 'ICMP-ping (raw socket)',
+    'DiscoveryProbePingCommand' => 'ICMP ping (ping-opdracht)',
+    'DiscoveryProbeTcpConnect' => 'TCP-verbinding',
+    'DiscoveryProbeMethod' => 'Sondemethode: {$method}',
+    'DiscoveryProbeDetectedByWebServer' => 'Gedetecteerd door de webserver. De achtergrondworker gebruikt mogelijk een andere methode.',
+    'DiscoveryTcpProbeWarning' => 'Hosts worden alleen gevonden als ze reageren op een van de gescande TCP-poorten; hosts die deze poorten blokkeren, worden dus niet gevonden. Voor volledige resultaten kunt u de server ICMP-ping laten verzenden: sta ping-sockets zonder privileges of de NET_RAW-mogelijkheid toe, of installeer ping.',
+    'DiscoveryTcpPortsForRun' => 'TCP-poorten voor deze run',
+    'DiscoveryTcpPortsHint' => 'Door komma\'s gescheiden poorten, tot {$max} . Laat leeg om de standaardpoort te gebruiken: {$ports}.',
+    'DiscoveryDefaultTcpPorts' => 'TCP-poorten voor het ontdekken van assets',
+    'DiscoveryDefaultTcpPortsHint' => 'Wordt gebruikt wanneer het achtergrondproces geen ICMP-ping kan verzenden. Door komma\'s gescheiden, tot en met poorten {$max}.',
+    'DiscoveryErrorTcpUnreliable' => 'De scan is gestopt omdat het netwerk TCP-verbindingen beantwoordt voor adressen die geen echte hosts kunnen zijn (een proxy of firewall zit in de weg), waardoor elk adres actief lijkt. Vraag uw beheerder om de server ICMP-pings te laten verzenden.',
+    'DiscoveryDefaultTcpPortsResetLog' => 'De TCP-poorten voor het ontdekken van assets zijn door de gebruiker "{$user}" teruggezet naar de standaardinstellingen.',
+    'DiscoveryNotConfigured' => 'Detectie is niet geconfigureerd. Vraag uw systeembeheerder om de toegestane bereiken in config.php in te stellen.',
+    'DiscoveryRangeNotAllowed' => 'Dat bereik ligt buiten de bereiken die de detectieapparatuur mag scannen.',
+    'DiscoveryAllowedRangesList' => 'Toegestane bereiken: {$ranges}',
+    // Asset record modal
+    'AssetNotAvailable' => 'Dit item is niet beschikbaar. Het is mogelijk verwijderd of u hebt er geen toegang toe.',
+    'AssetCustomFieldNotInTemplate' => 'Een of meer aangepaste velden behoren niet tot de sjabloon van dit item. Er is niets gewijzigd.',
+    'AssetMappedControlsInvalid' => 'De toegewezen besturingselementen konden niet worden opgeslagen. Elke rij heeft een volwassenheidsgraad en ten minste één bestaand besturingselement nodig. Er is niets gewijzigd.',
+    'AssetMappedControlsTooMany' => 'Een asset kan aan maximaal {$max} controls worden toegewezen. Er is niets gewijzigd.',
+    'AddControlsAtAnotherMaturity' => 'Voeg controles toe op een ander rijpheidsniveau.',
+    'ChoosingControlsNeedsGovernancePermission' => 'Voor het selecteren van besturingselementen is de governance-machtiging vereist.',
+    'NControls' => '{n} besturingselement(en)',
+    'SavingKeepsTheCurrentControlMappings' => 'Bij het opslaan blijven de huidige besturingsinstellingen behouden.',
+    'LoadingControls' => 'Bedieningselementen laden…',
+    'ControlListCouldNotBeLoaded' => 'De lijst met besturingselementen kon niet worden geladen, waardoor de toegewezen besturingselementen momenteel niet kunnen worden gewijzigd.',
+    'RemoveControlsAtMaturity' => 'Verwijder controles bij volwassenheid {maturity}',
+    'ControlIdUnavailable' => '#{id} (niet beschikbaar)',
+    'AssetRecordEdit' => 'Bewerk het betreffende item',
+    'AssetRecordIdN' => 'Asset #{$id}',
+    'AssetRecordCopyLink' => 'Kopieer de link naar dit bestand',
+    'AssetRecordLinkCopied' => 'Link gekopieerd.',
+    'AssetRecordLinkCopyFailed' => 'De link kon niet worden gekopieerd. Kopieer hem in plaats daarvan vanuit de adresbalk.',
+    'AssetRecordMarkUnverified' => 'Markeer als niet geverifieerd',
+    'AssetRecordViewAuditTrail' => 'Auditlogboek bekijken',
+    'AssetRecordAuditTrailTitle' => 'Auditspoor',
+    'AssetRecordAuditTrailEmpty' => 'Er zijn in deze periode geen activiteiten voor dit object geregistreerd.',
+    'AssetRecordAuditTrailFailed' => 'Het auditlogboek kon niet worden geladen.',
+    'AssetRecordBackToAsset' => 'Terug naar activa',
+    'AssetRecordSave' => 'Bewaar activa',
+    'AssetRecordProvenanceVerified' => 'Geverifieerd · toegevoegd {$date}',
+    'AssetRecordProvenanceUnverified' => 'Niet geverifieerd: nog niet bevestigd door iemand die de activa kan verifiëren · toegevoegd {$date}',
+    'AssetRecordUnsavedHint' => 'Als u afsluit met niet-opgeslagen wijzigingen, wordt u eerst om bevestiging gevraagd.',
+    'AssetRecordDiscardQuestion' => 'Niet-opgeslagen wijzigingen verwijderen?',
+    'AssetRecordKeepEditing' => 'Blijf bewerken',
+    'AssetRecordDiscardChanges' => 'Wijzigingen negeren',
+    'AssetRecordVerificationCard' => 'Verificatie',
+    'AssetRecordVerificationTag' => 'Vereist de machtiging \'activa verifiëren\'.',
+    'AssetRecordVerifiedHint' => 'Een verantwoordelijke persoon heeft dit item beoordeeld. Het wijzigen van de naam of het IP-adres zonder de machtiging \'items verifiëren\' zorgt ervoor dat het item weer als niet-geverifieerd wordt gemarkeerd.',
+    'AssetRecordLoadFailed' => 'Het bestand kon niet worden geladen. Probeer het opnieuw.',
+    'CustomizationCardsLayoutApiScopeErrorWithAsset' => 'De Customization Cards Layout API is alleen beschikbaar voor fgroup=risk (tab_index 1, 2 of 3) en fgroup=asset (tab_index 1).',
+    'DiscoveryErrorRequesterNotPermitted' => 'De gebruiker die deze run heeft gestart, heeft geen toestemming meer om asset discovery uit te voeren.',
+    'AssetRecordEditField' => 'Bewerken {$field}',
+    // Asset Scoring (FIPS 199 categorization + weighted score)
+    'Confidentiality' => 'Vertrouwelijkheid',
+    'Integrity' => 'Integriteit',
+    'Availability' => 'Beschikbaarheid',
+    'AssetScoringLevelLow' => 'Laag',
+    'AssetScoringLevelModerate' => 'Gematigd',
+    'AssetScoringLevelHigh' => 'Hoog',
+    'AssetScoringValueInvalid' => 'Vertrouwelijkheid, integriteit en beschikbaarheid accepteren laag, gemiddeld of hoog (vertrouwelijkheid accepteert ook niet van toepassing).',
+    'AssetScoringChangedLog' => 'Het object "{$name}" {$objective} is door gebruiker " {$from} gewijzigd van {$to} naar{$user}".',
+    'FIPSCategorization' => 'FIPS-categorisatie',
+    'WeightedScore' => 'Gewogen score',
+    'WeightedBand' => 'Verzwaarde band',
+    'AllCategorizations' => 'Alle categorisaties',
+    'AllBands' => 'Alle bands',
+    'AssetFilterByCategorization' => 'Filteren op FIPS-categorisatie {$name}',
+    'AssetFilteringByCategorization' => 'Filteren op FIPS-categorisatie {$name}',
+    'AssetFilterByBand' => 'Filteren op gewogen band {$name}',
+    'AssetFilteringByBand' => 'Filteren op basis van gewogen band {$name}',
+    'AssetScoring' => 'Asset Scoring',
+    'AssetScoringSettingsHint' => 'Elk asset wordt beoordeeld als Laag, Gemiddeld of Hoog voor vertrouwelijkheid, integriteit en beschikbaarheid. Vertrouwelijkheid kan ook als Niet van toepassing worden beoordeeld, waardoor het in beide resultaten wordt weggelaten. De FIPS-categorisatie is de hoogste van de drie beoordelingen. De gewogen score is het gewogen gemiddelde van de drie niveauwaarden, en de banddrempels zetten die score om in een Laag, Gemiddeld of Hoog niveau. Het wijzigen van deze instellingen zorgt ervoor dat elk asset direct opnieuw wordt beoordeeld.',
+    'Weights' => 'Gewichten',
+    'AssetScoringWeightsHint' => 'Hoeveel gewicht elk doel heeft in de gewogen score: 0 tot 100, met maximaal twee decimalen. Een gewicht van 0 betekent dat het betreffende doel niet wordt meegenomen. Integriteit en Beschikbaarheid kunnen niet beide 0 zijn, omdat een vertrouwelijkheidsstatus \'Niet van toepassing\' altijd wordt weggelaten.',
+    'LevelValues' => 'Niveauwaarden',
+    'AssetScoringLevelValuesHint' => 'Het aantal punten dat elke beoordeling bijdraagt aan de gewogen score: van boven de 0 tot en met 100, met maximaal twee decimalen, en Laag onder Gemiddeld onder Hoog. De standaardwaarden zijn Laag 1, Gemiddeld 2 en Hoog 3.',
+    'BandThresholds' => 'Banddrempels',
+    'AssetScoringBandThresholdsHint' => 'Een gewogen score gelijk aan of hoger dan een drempelwaarde valt in die categorie, en een score onder de drempelwaarde \'Gemiddeld\' valt in de categorie \'Laag\'. \'Gemiddeld\' moet beginnen boven de waarde \'Laag\', en \'Hoog\' moet beginnen boven \'Gemiddeld\' en niet hoger dan de waarde \'Hoog\'.',
+    'ModerateStartsAt' => 'Gemiddeld begint bij',
+    'HighStartsAt' => 'Hoog begint bij',
+    'DefaultScoringForNewAssets' => 'Standaardscore voor nieuwe activa',
+    'AssetScoringDefaultsHint' => 'Hiermee worden deze beoordelingen vooraf geselecteerd wanneer iemand een asset toevoegt via het assetformulier. Assets die via discovery, import of de API worden aangemaakt, blijven onbeoordeeld, tenzij ze zelf beoordelingen opgeven. Laat alle drie de opties \'Niet ingesteld\' staan om deze functie uit te schakelen.',
+    'AssetScoringWeightsInvalid' => 'De gewichten voor de activascore moeten getallen zijn van 0 tot 100 met maximaal twee decimalen, en Integriteit en Beschikbaarheid mogen niet beide 0 zijn.',
+    'AssetScoringValuesInvalid' => 'De waarden voor de Asset Scoring-niveaus moeten getallen zijn tussen 0 en 100 met maximaal twee decimalen, waarbij Laag onder Gemiddeld onder Hoog ligt.',
+    'AssetScoringThresholdsInvalid' => 'De drempelwaarden voor de Asset Scoring-categorieën mogen maximaal twee decimalen hebben, waarbij \'Gemiddeld\' boven de \'Laag\'-waarde begint, \'Hoog\' boven \'Gemiddeld\' en \'Hoog\' niet hoger dan de \'Hoog\'-waarde.',
+    'AssetScoringDefaultsInvalid' => 'De standaardscore voor nieuwe activa moet overeenkomen met het niveau dat elk doel biedt.',
+    'AssetScoringSettingsNotSaved' => 'De instellingen voor de vermogensscore konden niet worden opgeslagen. Er is niets gewijzigd.',
+    'AssetScoringSettingsChangedLog' => 'De instellingen voor de activascore zijn gewijzigd door gebruiker "{$user}".',
+    'AssetScoringNotSet' => 'Niet ingesteld',
+    'NotScored' => 'Niet beoordeeld',
+    'AssetScoringNotScoredHint' => 'Beantwoord alle drie de doelstellingen om deze waarde te bepalen.',
+    'ImportAssetScoringValueIgnored' => 'De waarde {$objective} "{$value}" voor activum "{$asset_name}" is geen geldige beoordeling en werd genegeerd.',
+    'AssetScoringSecurityObjectives' => 'Beveiligingsdoelstellingen',
+    'AssetScoringConfidentialityHelp' => 'Wat zijn de mogelijke gevolgen als de informatie over dit object zonder toestemming openbaar wordt gemaakt?',
+    'AssetScoringIntegrityHelp' => 'Wat zijn de mogelijke gevolgen als de informatie op dit systeem zonder toestemming wordt gewijzigd of vernietigd?',
+    'AssetScoringAvailabilityHelp' => 'Wat zijn de mogelijke gevolgen als de toegang tot of het gebruik van deze voorziening wordt verstoord?',
+    'AssetScoringHelpHigh' => 'Ernstige of catastrofale bijwerkingen',
+    'AssetScoringHelpModerate' => 'Ernstige bijwerkingen',
+    'AssetScoringHelpLow' => 'Beperkt of geen nadelig effect',
+    'AssetScoringHelpNotApplicable' => 'Vertrouwelijkheid is geen aandachtspunt voor dit type informatie (bijvoorbeeld openbare informatie).',
+    'AssetScoringHelpLabel' => '{$objective} beoordelingsrichtlijnen',
+    'AssetScoringMeterValue' => '{$score}, {$band} band',
+    'AssetScoringNoWeightedScore' => 'Geen gewogen score',
+    'AssetScoringNoWeightedScoreNote' => 'Geen gewogen score: elk meetellend doel heeft een gewicht van 0.',
+    'AssetScoringUpgradePending' => 'De assetscore kan pas worden opgeslagen nadat de SimpleRisk-database-upgrade is uitgevoerd. Er is niets gewijzigd.',
+    'AssetScoringResultHelpLabel' => '{$result} uitleg',
+    'AssetScoringScoreHelp' => 'De gewogen score combineert de drie beoordelingen tot één getal van {$low} tot {$high}. Elke beoordeling wordt de bijbehorende waarde en wordt vermenigvuldigd met het gewicht van het betreffende doel. De resultaten worden bij elkaar opgeteld en gedeeld door het totaal van de gewichten. Een vertrouwelijkheidsstatus van \'Niet van toepassing\' wordt weggelaten, samen met het bijbehorende gewicht. De waarden en gewichten worden geconfigureerd in de voorkeuren. Alle drie de doelen moeten beoordeeld zijn voordat een score wordt weergegeven.',
+    'AssetScoringCategorizationHelp' => 'De FIPS 199-beveiligingscategorisatie is de hoogste norm: de hoogste beoordeling van alle van toepassing zijnde doelstellingen. Een enkele \'Hoog\'-beoordeling maakt het actief \'Hoog\', ongeacht de andere beoordelingen. \'Niet van toepassing\' wordt genegeerd.',
+    'AssetScoringBandHelp' => 'De band plaatst de gewogen score op een schaal van Laag, Gemiddeld of Hoog. Een score lager dan {$moderate} is Laag, van {$moderate} tot en met {$highAt} is Gemiddeld en {$highAt} of hoger is Hoog. De drempelwaarden worden ingesteld in de voorkeuren.',
+    // Manage assets: Confidentiality / Integrity / Availability rating filters
+    'AllConfidentialityRatings' => 'Alle vertrouwelijkheidsbeoordelingen',
+    'AllIntegrityRatings' => 'Alle integriteitsbeoordelingen',
+    'AllAvailabilityRatings' => 'Alle beschikbaarheidsbeoordelingen',
+    'AssetFilterByConfidentiality' => 'Filteren op vertrouwelijkheid {$name}',
+    'AssetFilteringByConfidentiality' => 'Filteren op vertrouwelijkheid {$name}',
+    'AssetFilterByIntegrity' => 'Filteren op integriteit {$name}',
+    'AssetFilteringByIntegrity' => 'Filteren op integriteit {$name}',
+    'AssetFilterByAvailability' => 'Filteren op beschikbaarheid {$name}',
+    'AssetFilteringByAvailability' => 'Filteren op beschikbaarheid {$name}',
+    'HighestFIPSCategorization' => 'Hoogste FIPS-categorisatie',
+    'HighestWeightedScore' => 'Hoogste gewogen score',
+    'HighestWeightedBand' => 'Hoogst gewogen band',
+    'AssetGroupFields' => 'Assetgroepvelden',
+    'NoAssetGroupsMatchFilters' => 'Er zijn geen activagroepen die overeenkomen met uw filters.',
+    'AssetGroupFilterByHighestCategorization' => 'Filteren op hoogste FIPS-categorie {$name}',
+    'AssetGroupFilteringByHighestCategorization' => 'Filteren op hoogste FIPS-categorie {$name}',
+    'AssetGroupFilterByHighestBand' => 'Filteren op de hoogste gewogen band {$name}',
+    'AssetGroupFilteringByHighestBand' => 'Filteren op de hoogste gewogen band {$name}',
+    'AssetGroupBulkSelectionRequired' => 'Selecteer activagroepen op basis van ID of filter.',
+    'AssetGroupBulkIdsRequired' => 'Selecteer ten minste één activagroep.',
+    'AssetGroupBulkIdsInvalid' => 'ID\'s van activagroepen moeten hele getallen zijn.',
+    'AssetGroupBulkFilterAllAlone' => 'Het selecteren van alle activagroepen kan niet worden gecombineerd met andere filters.',
+    'AssetGroupBulkFilterEmpty' => 'Kies een filter of selecteer alle activagroepen voordat u ze verwijdert.',
+    'AssetGroupBulkExpectedCountInvalid' => 'Het verwachte aantal activagroepen moet een geheel getal zijn.',
+    'AssetGroupBulkExpectedCountRequired' => 'Om activagroepen te verwijderen met behulp van een filter, moet u het aantal groepen opgeven dat u wilt verwijderen.',
+    'AssetGroupBulkNoMatch' => 'Er zijn geen activagroepen die overeenkomen met uw selectie.',
+    'AssetGroupBulkCountMismatch' => 'De overeenkomende activagroepen zijn gewijzigd van {$expected} naar {$actual} sinds u ze hebt geselecteerd. Controleer de lijst en probeer het opnieuw.',
+    'AssetGroupBulkTooManyToDelete' => 'Je kunt maximaal {$max} activagroepen tegelijk verwijderen. Verklein je selectie en probeer het opnieuw.',
+    'AssetGroupBulkSelectAll' => 'Selecteer alle {$count} activagroepen',
+    'AssetGroupBulkAllSelected' => 'Alle {$count} overeenkomende activagroepen geselecteerd',
+    'AssetGroupBulkDeleteConfirmTitle' => 'Assetgroepen {$count} verwijderen?',
+    'AssetGroupBulkDeleteKeepsAssets' => 'De bestanden in deze groepen worden niet verwijderd. Alleen de groepen zelf worden verwijderd.',
+    'DeleteAssetGroups' => 'Groepen verwijderen',
+    'AssetGroupBulkDeletedSummary' => '{$ok} groepen verwijderd, {$failed} overgeslagen',
+    'ChoosingRisksNeedsRiskManagementPermission' => 'Voor het selecteren van de bijbehorende risico\'s is toestemming van het risicomanagementsysteem vereist.',
+    'NAssociatedRisks' => '{n} geassocieerde risico(\'s)',
+    'SavingKeepsTheCurrentRiskAssociations' => 'Sparen houdt de huidige risico\'s beperkt.',
     '' => '',
 );
 ?>

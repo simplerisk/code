@@ -814,7 +814,7 @@ $lang = array(
     'UserSessions' => 'Kullanıcı oturumları',
     'SessionActivityTimeout' => 'Oturum etkinliği zaman aşımı',
     'Security' => 'Güvenlik',
-    'EnableCSP' => 'İçerik güvenlik ilkesini etkinleştir (Bu geçmişte krom kırdı)',
+    'EnableCSP' => 'İçerik Güvenlik Politikasını Etkinleştirin (Önerilir)',
     'EnableDebugLogging' => 'Hata ayıklama günlüğünü etkinleştir',
     'seconds' => 'saniye',
     'FieldSample' => 'Alan örneği',
@@ -4967,6 +4967,572 @@ $lang = array(
     // closeriskForm()'s own (hardcoded, pre-existing) single-risk denial text.
     'NoCloseRiskPermission' => 'Riskleri kapatma izniniz yok.',
     'QuestionnaireRequiredQuestionUnanswered' => 'Lütfen değerlendirmeyi tamamlamadan önce istenen tüm soruları yanıtlayın.',
+    'AuditLog_ControlStatusAutoSynced' => '"{$short_name}" kontrolünün durumu, en son test sonuçlarına göre otomatik olarak "{$status_text}" olarak güncellendi.',
+    'EnableCSPHelp' => 'İçerik Güvenlik Politikası (CSP), tarayıcının komut dosyalarını, stilleri, resimleri ve yazı tiplerini yalnızca SimpleRisk\'in kendisinden yüklemesini kısıtlar ve sayfa çerçevelemeyi ve farklı kaynaklardan form gönderimlerini engeller. Çapraz site komut dosyası çalıştırmaya karşı en güçlü yerleşik savunmadır. Ortamınızda bir proxy, tarayıcı uzantısı veya üçüncü taraf entegrasyonuyla çakışmadığı sürece etkin bırakın.',
+    // Define Control Frameworks' Columns picker (Task: Columns picker + saved layout/filters) -- the "Standard" group label above its built-in fields (Family/Owner/Maturity/Status/Class/Phase/Priority/Type); 'CustomFields' already exists.
+    'StandardFields' => 'Standart Alanlar',
+    // My Profile redesign (js/simplerisk/pages/account-profile.js)
+    'Administrator' => 'Yönetici',
+    'AccountDetails' => 'Hesap bilgileri',
+    'YourPermissions' => 'İzinleriniz',
+    'RoleAndTeamsGrantAccess' => 'Rolünüz ve ekiplerinizin size sağladığı erişim olanakları',
+    'AllGranted' => 'Hepsi onaylandı.',
+    'PermissionsCountLabel' => '$count izinler',
+    'ManagedByYourAdministrator' => 'Bu bilgiler yöneticiniz tarafından yönetilmektedir. Burada herhangi bir değişiklik yapılması gerekiyorsa, lütfen onlarla iletişime geçin.',
+    'MultiFactorAuthenticationHint' => 'Hesabınızın güvenliğini sağlamak için oturum açma işlemine ikinci bir adım ekleyin.',
+    'ChangingPasswordSignsOutEverywhere' => 'Parolanızı değiştirmek, diğer tüm platformlardan da çıkış yapmanızı sağlar.',
+    'APIKeyHint' => 'Kendi komut dosyalarınızı ve entegrasyonlarınızı SimpleRisk API\'sine karşı doğrulamak için kullanılır.',
+    'ResetDisplaySettingsHint' => 'Özel sütun seçimlerinizi varsayılan değerlere sıfırlar.',
+    'CardGeneral' => 'Genel',
+    'CardClassification' => 'Sınıflandırma',
+    'CardScoring' => 'Puanlama',
+    'CardAdditionalInformation' => 'Ek bilgi',
+    'CardCustomFields' => 'Özel alanlar',
+    'CardCustomFieldsHint' => 'Bu alanların bir karta sıralanması gerekiyor.',
+    'LayoutEditorHint' => 'Bir alanı farklı bir karta sürükleyerek yeniden atayın, bir kart içindeki alanı sürükleyerek sırasını değiştirin veya boyutunu değiştirin ve bir kartı sürükleyerek veya boyutunu değiştirerek sayfadaki konumunu değiştirin.',
+    'ScoringNotYetAvailableInThisView' => 'Puanlama yapılandırması bu görünümde henüz mevcut değil.',
+    // Native tooltip on the Cards layout editor's Gridstack resize handles
+    // (js/simplerisk/pages/customization-layout-editor.js) -- the bare corner
+    // bracket read as an unexplained mark until it said what it does.
+    'DragToResize' => 'Boyutunu değiştirmek için sürükleyin.',
+    // Warning pill on a Cards layout editor card the admin has sized shorter
+    // than the fields it holds. Replaces the silent inner scrollbar that state
+    // used to produce.
+    'NFieldsDoNotFitCard' => '{n} alan(lar) bu karta sığmıyor. Bunları göstermek için kartı yeniden boyutlandırın.',
+    // Card titles for the Mitigation tab's Cards layout editor
+    // (js/simplerisk/pages/customization-layout-editor.js), mirroring the
+    // Card* keys above for the Details tab. Order follows
+    // customization_mitigation_cards_layout_card_keys() (includes/functions.php).
+    'CardMitigationStrategy' => 'Azaltma stratejisi',
+    'CardMitigationSolution' => 'Azaltma Çözümü',
+    'CardMitigationControls' => 'Azaltma denetimleri',
+    'CardReview' => 'İnceleme',
+    // Submit Risk page's three action-bar buttons (buildActionsBar(),
+    // risk-details-form.js, submitMode 'create' only) and the Reset Form
+    // confirm modal (management/index.php, design-system.md #8's "Confirm"
+    // type). 'Discard'/'Cancel'/'Close' already exist and are reused for the
+    // modal's own buttons.
+    'ResetForm' => 'Formu Sıfırla',
+    'SaveAndNew' => 'Kaydet ve Yeni',
+    'SaveAndView' => 'Kaydet ve Görüntüle',
+    'ResetFormConfirmTitle' => 'Bu risk bildirimini iptal edelim mi?',
+    'ResetFormConfirmBody' => 'Girdiğiniz tüm bilgiler kaybolacaktır.',
+    // Restore-template destructive confirm (Customization Extra, Save/Restore
+    // action bar). Two body variants: risk's Details/Mitigation/Review tabs
+    // named explicitly (the only fgroup with that 3-tab Cards layout), a
+    // generic fallback for every other fgroup (single legacy-panel tab).
+    // Both end on the same scoping reassurance -- confirmed via direct source
+    // read that Restore only ever touches the currently-selected template
+    // group, never any other.
+    'RestoreTemplateConfirmTitle' => 'Varsayılan düzeni geri yükle?',
+    'RestoreTemplateConfirmBodyRisk' => 'Bu işlem, Ayrıntılar, Önlem ve İnceleme sekmelerindeki tüm alanları bu şablon grubu için varsayılan değerlerine sıfırlar. Diğer şablon grupları etkilenmez.',
+    'RestoreTemplateConfirmBody' => 'Bu işlem, bu şablon grubu için bu şablondaki her alanı varsayılan değerlerine sıfırlar. Diğer şablon grupları etkilenmez.',
+    // CVSS holder's collapsed Temporal/Environmental/Impact-Modifiers
+    // accordion (buildCvssHolder(), risk-details-form.js) -- these three
+    // groups are optional CVSS v2 refinements on top of the required Base
+    // Score Metrics, so they collapse behind this header by default.
+    'AdvancedMetrics' => 'Gelişmiş Metrikler',
+    // CVSS holder's Base Score Metrics sub-group headers (buildCvssHolder(),
+    // risk-details-form.js) -- distinct from the existing 'ExploitabilityMetrics'/
+    // 'ImpactMetrics' keys, which the legacy cvss_modal_content.php modal
+    // still renders as plain "Exploitability Metrics"/"Impact Metrics" and
+    // must keep unchanged. These fold the umbrella "Base Score Metrics"
+    // heading into each sub-group's own header instead of a separate label.
+    'BaseScoreExploitabilityMetrics' => 'Temel Puan İstismar Edilebilirlik Metrikleri',
+    'BaseScoreImpactMetrics' => 'Temel Puan Etki Ölçütleri',
+    // Per-field help popovers on the CVSS holder's 14 metric selects
+    // (buildCvssScoreItem(), risk-details-form.js) -- one per CVSS v2
+    // metric, matching the standard CVSS v2 specification definitions.
+    // Double-quoted (not single-quoted, this file's usual style) so the
+    // \n line breaks are real escape sequences: each popover leads with one
+    // overall sentence, then one bullet line per option, rendered via
+    // white-space: pre-line on .sr-scoring-help-popover .popover-body
+    // (scss/modules/_questionnaire.scss) -- plain text throughout, no HTML,
+    // so the popover stays initialized without Bootstrap's `html: true`.
+    "AttackVectorHelp" => "Güvenlik açığına nasıl erişilebileceği.\n• Yerel: Konsol veya shell gibi yerel erişim gerektirir.\n• Bitişik Ağ: Saldırganın aynı fiziksel veya mantıksal ağ segmentinde olması gerekir.\n• Ağ: Yerel veya bitişik erişime gerek kalmadan, ağ üzerinden uzaktan istismar edilebilir.",
+    "AttackComplexityHelp" => "Saldırgan hedefe erişim sağladıktan sonra saldırının ne kadar karmaşık olduğu.\n• Yüksek: Düzenlenmesi zor olan özel koşullar gerektirir.\n• Orta: Bazı koşulların karşılanması gerekir, ancak karşılandıktan sonra istismar zor değildir.\n• Düşük: Özel koşullara gerek yoktur.",
+    "AuthenticationHelp" => "Saldırganın hedefi istismar etmek için kaç kez kimlik doğrulaması yapması gerektiği.\n• Çoklu: Aynı kimlik bilgileriyle bile olsa iki veya daha fazla kez kimlik doğrulaması gereklidir.\n• Tekli: Bir kez kimlik doğrulaması gereklidir.\n• Hiçbiri: Kimlik doğrulaması gerekmez.",
+    "ConfidentialityImpactHelp" => "Sistemin işlediği verilerin gizliliğinin istismar edilmesi durumunda oluşacak etki.\n• Yok: Etki yok.\n• Kısmi: Bazı bilgilerin ifşa edilmesi, ancak saldırganın neyin ifşa edileceğini kontrol edememesi veya kaybın sınırlı olması.\n• Tam: Sistemdeki tüm bilgilerin tamamen ifşa edilmesi.",
+    "IntegrityImpactHelp" => "Sistemin bütünlüğüne yönelik saldırının etkisi.\n• Yok: Etki yok.\n• Kısmi: Bazı veriler değiştirilebilir, ancak saldırgan neyin değiştirileceğini kontrol edemez veya kapsam sınırlıdır.\n• Tamamen: Sistem bütünlüğünün tamamen tehlikeye atılması; saldırgan herhangi bir dosyayı değiştirebilir.",
+    "AvailabilityImpactHelp" => "Sistemin kullanılabilirliğine etkisi (istismar edilmesi durumunda):\n• Yok: Etki yok.\n• Kısmi: Performans düşüşü veya kullanılabilirlikte kesintiler.\n• Tamamen: Etkilenen kaynağın tamamen kapatılması.",
+    "RemediationLevelHelp" => "Güvenlik açığı için mevcut olan düzeltme düzeyi.\n• Resmi Düzeltme: Tam bir satıcı çözümü mevcuttur.\n• Geçici Düzeltme: Resmi ancak geçici bir düzeltme mevcuttur.\n• Geçici Çözüm: Resmi olmayan, satıcı dışı bir geçici çözüm mevcuttur.\n• Kullanılamaz: Hiçbir çözüm mevcut değildir veya uygulanamaz.",
+    "ReportConfidenceHelp" => "Güvenlik açığının varlığına ve teknik ayrıntılarının güvenilirliğine duyulan güven derecesi.\n• Doğrulanmamış: Tek, doğrulanmamış bir kaynak raporu; altta yatan sorun spekülatif.\n• Doğrulanmamış: Birden fazla bağımsız kaynak aynı davranışı bildiriyor, ancak temel neden doğrulanmadı.\n• Doğrulandı: Satıcı sorunu kabul etti veya kaynak kod veya güvenlik açığı analiziyle doğrulandı.",
+    "CollateralDamagePotentialHelp" => "Güvenlik açığının istismar edilmesi durumunda can kaybı, fiziksel varlık kaybı veya mali kayıp potansiyeli.\n• Yok: Böyle bir kayıp olasılığı yok.\n• Düşük ila Orta: Orta düzeyde bir kayıp mümkün.\n• Yüksek: Kuruluşun varlıkları, geliri veya güvenliği üzerinde felaket niteliğinde bir etki.",
+    "TargetDistributionHelp" => "Ortamınızdaki savunmasız sistemlerin oranı.\n• Yok: Hedef sistem yok.\n• Düşük: Sistemlerin %1-25'i savunmasız.\n• Orta: %26-75'i savunmasız.\n• Yüksek: %76-100'ü savunmasız.",
+    "ConfidentialityRequirementHelp" => "Etkilenen varlığın gizliliğinin kuruluşunuz için ne kadar önemli olduğu.\n• Düşük: Gizlilik kaybının etkisi sınırlıdır.\n• Orta: Ciddi bir etkisi vardır.\n• Yüksek: Felaket niteliğinde bir etkisi vardır.",
+    "IntegrityRequirementHelp" => "Etkilenen varlığın bütünlüğünün kuruluşunuz için ne kadar önemli olduğu.\n• Düşük: Bütünlük kaybının etkisi sınırlıdır.\n• Orta: Ciddi bir etkisi vardır.\n• Yüksek: Felaket niteliğinde bir etkisi vardır.",
+    "AvailabilityRequirementHelp" => "Etkilenen varlığın kullanılabilirliğinin kuruluşunuz için ne kadar önemli olduğu.\n• Düşük: Kullanılabilirlik kaybının etkisi sınırlıdır.\n• Orta: Ciddi bir etkisi vardır.\n• Yüksek: Felaket niteliğinde bir etkisi vardır.",
+    // Base Score Metrics' two sub-group intro sentences (metricsSubGroup()'s
+    // `descKey`, risk-details-form.js) -- orient the user to what the GROUP
+    // as a whole is asking, distinct from the per-field *Help popover keys
+    // above which explain each metric's own options.
+    'BaseScoreExploitabilityMetricsDescription' => 'Bir saldırganın bu güvenlik açığına nasıl ulaşması ve onu nasıl tetiklemesi gerektiği: nerede olmaları gerektiği, saldırının karmaşıklığı ve öncelikle kimlik doğrulaması yapmaları gerekip gerekmediği.',
+    'BaseScoreImpactMetricsDescription' => 'Güvenlik açığının başarılı bir şekilde istismar edilmesi durumunda neler olur: etkilenen sistemin gizliliği, bütünlüğü ve kullanılabilirliği üzerindeki etkisi.',
+    // Advanced Metrics' three optional sub-group intro sentences -- same
+    // metricsSubGroup() `descKey` as the two Base Score groups above.
+    'TemporalScoreMetricsDescription' => 'Bu güvenlik açığının gerçek dünyadaki tehdidinin zaman içinde nasıl değiştiği: istismar kodunun mevcut durumu, mevcut çözüm yolları ve varlığına dair raporların ne kadar güvenilir olduğu.',
+    'EnvironmentalScoreMetricsDescription' => 'Bu güvenlik açığının riski, bulunduğunuz ortama bağlı olarak değişir: gerçek dünyada oluşabilecek hasar potansiyeli ve sistemlerinizin kaçının etkilendiği.',
+    'ImpactSubscoreModifiersDescription' => 'Temel Puanın etkisini, bu özel varlık için gizlilik, bütünlük ve erişilebilirliğin ne kadar önemli olduğuna göre ağırlıklandırın.',
+    // Phase 4d-iii: DREAD holder help popovers (view_dread_help()'s
+    // existing English text, includes/display.php, extracted to real $lang
+    // keys -- that function's own content was raw hardcoded HTML, never
+    // localized, so it could not be reused verbatim).
+    'DamagePotentialHelp' => 'Bir tehdit saldırısı gerçekleşirse ne kadar hasara yol açacaktır?' . "\n" . '0 = Hiçbir şey' . "\n" . '5 = Bireysel kullanıcı verileri tehlikeye girmiş veya etkilenmiştir.' . "\n" . '10 = Sistem veya verilerin tamamen yok edilmesi',
+    'ReproducibilityHelp' => 'Bu tehdit saldırısının tekrarlanması ne kadar kolay?' . "\n" . '0 = Uygulama yöneticileri için bile çok zor veya imkansız.' . "\n" . '5 = Bir veya iki adım gereklidir, yetkili kullanıcı olmanız gerekebilir.' . "\n" . '10 = Kimlik doğrulaması olmadan, yalnızca bir web tarayıcısı ve adres çubuğu yeterlidir.',
+    'ExploitabilityHelp' => 'Bu tehditten faydalanmak için ne gerekiyor?' . "\n" . '0 = Gelişmiş programlama ve ağ bilgisi, özel veya gelişmiş saldırı araçları kullanımı.' . "\n" . '5 = İnternette kötü amaçlı yazılım mevcut veya mevcut saldırı araçları kullanılarak kolayca bir güvenlik açığından yararlanılabiliyor.' . "\n" . '10 = Sadece bir web tarayıcısı',
+    'AffectedUsersHelp' => 'Kaç kullanıcı etkilenecek?' . "\n" . '0 = Yok' . "\n" . '5 = Bazı kullanıcılar, ama hepsi değil' . "\n" . '10 = Tüm kullanıcılar',
+    'DiscoverabilityHelp' => 'Bu tehdidi keşfetmek ne kadar kolay?' . "\n" . '0 = Çok zor veya imkansız; kaynak koduna veya yönetici erişimine ihtiyaç duyar.' . "\n" . '5 = Tahmin ederek veya ağ izlerini izleyerek çözebilir.' . "\n" . '9 = Bu tür arızaların detayları zaten kamuya açık ve bir arama motoru kullanılarak kolayca bulunabilir.' . "\n" . '10 = Bilgi, web tarayıcısının adres çubuğunda veya bir formda görünür.',
+    // The DREAD holder's summary card heading and "DREAD Metrics" card
+    // heading. No existing key covers either (confirmed via grep before
+    // adding).
+    'DreadScore' => 'DREAD Puanı',
+    'DreadMetrics' => 'DREAD Metrikleri',
+    // Phase 4d-iv: OWASP holder help popovers (view_owasp_help()'s
+    // existing English text, includes/display.php, extracted to real
+    // $lang keys -- same never-localized-legacy-content extraction the
+    // DREAD phase already did for its own 5 fields). Wording/levels
+    // trued up against that function's real source text, not transcribed
+    // from an earlier standard-methodology draft.
+    'SkillLevelHelp' => 'Bu tehdit ajanları grubunun teknik beceri düzeyi ne kadar?' . "\n" . '1 = Teknik Beceri Yok' . "\n" . '3 = Bazı Teknik Beceriler' . "\n" . '5 = İleri Düzey Bilgisayar Kullanıcısı' . "\n" . '6 = Ağ ve Programlama Becerileri' . "\n" . '9 = Güvenlik Sızma Becerileri',
+    'MotiveHelp' => 'Bu tehdit unsurları grubu, bu güvenlik açığını bulup istismar etme konusunda ne kadar motive olmuş durumda?' . "\n" . '1 = Düşük veya Hiç Ödül Yok' . "\n" . '4 = Olası Ödül' . "\n" . '9 = Yüksek Ödül',
+    'OpportunityHelp' => 'Bu tehdit unsurları grubunun bu güvenlik açığını bulup istismar edebilmesi için hangi kaynaklara ve fırsatlara ihtiyaç duyulmaktadır?' . "\n" . '0 = Tam erişim veya pahalı kaynaklar gereklidir' . "\n" . '4 = Özel Erişim veya Kaynak Gerekiyor' . "\n" . '7 = Bazı Erişim veya Kaynaklar Gereklidir' . "\n" . '9 = Erişim veya Kaynak Gerekmiyor',
+    'SizeHelp' => 'Bu tehdit unsurları grubu ne kadar büyük?' . "\n" . '2 = Geliştiriciler' . "\n" . '2 = Sistem Yöneticileri' . "\n" . '4 = İntranet Kullanıcıları' . "\n" . '5 = Ortaklar' . "\n" . '6 = Kimliği Doğrulanmış Kullanıcılar' . "\n" . '9 = Anonim İnternet Kullanıcıları',
+    'EaseOfDiscoveryHelp' => 'Bu tehdit unsurları grubunun bu güvenlik açığını keşfetmesi ne kadar kolay?' . "\n" . '1 = Pratik Olarak İmkansız' . "\n" . '3 = Zor' . "\n" . '7 = Kolay' . "\n" . '9 = Mevcut Otomatik Araçlar',
+    'EaseOfExploitHelp' => 'Bu tehdit unsurları grubunun bu güvenlik açığından yararlanması ne kadar kolay?' . "\n" . '1 = Teorik' . "\n" . '3 = Zor' . "\n" . '5 = Kolay' . "\n" . '9 = Mevcut Otomatik Araçlar',
+    'AwarenessHelp' => 'Bu tehdit unsurları grubuna karşı bu güvenlik açığı ne kadar biliniyor?' . "\n" . '1 = Bilinmiyor' . "\n" . '4 = Gizli' . "\n" . '6 = Açık' . "\n" . '9 = Kamu Bilgisi',
+    'IntrusionDetectionHelp' => 'Bir güvenlik açığının tespit edilme olasılığı ne kadar yüksek?' . "\n" . '1 = Uygulamada Aktif Algılama' . "\n" . '3 = Kaydedildi ve İncelendi' . "\n" . '8 = İnceleme Olmadan Kaydedildi' . "\n" . '9 = Giriş Yapılmadı',
+    'LossOfConfidentialityHelp' => 'Ne kadar veri ifşa edilebilir ve bu veriler ne kadar hassas?' . "\n" . '2 = Minimum Düzeyde Hassas Olmayan Veri Açıklandı' . "\n" . '6 = Minimum Kritik Veri Açıklandı' . "\n" . '6 = Kapsamlı Hassas Olmayan Veriler Açıklandı' . "\n" . '7 = Kapsamlı Kritik Veriler Açıklandı' . "\n" . '9 = Tüm Veriler Açıklandı',
+    'LossOfIntegrityHelp' => 'Ne kadar veri bozulmuş olabilir ve hasarın boyutu ne kadar?' . "\n" . '1 = Minimum Düzeyde Hafif Bozuk Veri' . "\n" . '3 = En Az Düzeyde Ciddi Derecede Bozuk Veri' . "\n" . '5 = Kapsamlı ve Hafif Bozuk Veriler' . "\n" . '7 = Kapsamlı ve Ciddi Derecede Bozuk Veriler' . "\n" . '9 = Tüm Veriler Tamamen Bozuk',
+    'LossOfAvailabilityHelp' => 'Ne kadar hizmet kaybı yaşanabilir ve bu ne kadar hayati önem taşıyor?' . "\n" . '1 = Minimum Düzeyde İkincil Hizmetlerde Kesinti' . "\n" . '5 = En Az Düzeyde Temel Hizmetlerde Kesinti' . "\n" . '5 = Kapsamlı İkincil Hizmetler Kesintiye Uğradı' . "\n" . '7 = Kapsamlı Temel Hizmetler Kesintiye Uğradı' . "\n" . '9 = Tüm Hizmetler Tamamen Kesildi',
+    'LossOfAccountabilityHelp' => 'Tehdit unsurlarının eylemleri bireye kadar takip edilebilir mi?' . "\n" . '1 = Tamamen İzlenebilir' . "\n" . '7 = Muhtemelen İzlenebilir' . "\n" . '9 = Tamamen Anonim',
+    'FinancialDamageHelp' => 'Bir güvenlik açığından ne kadar maddi zarar doğacak?' . "\n" . '1 = Güvenlik açığını gidermenin maliyetinden daha az' . "\n" . '3 = Yıllık Kâr Üzerinde Küçük Etki' . "\n" . '7 = Yıllık Kâr Üzerinde Önemli Etki' . "\n" . '9 = İflas',
+    'ReputationDamageHelp' => 'Bir güvenlik açığının kullanılması, işletmenin itibarını zedeleyerek zarar verebilir mi?' . "\n" . '1 = Minimum Hasar' . "\n" . '4 = Önemli Müşteri Kayıpları' . "\n" . '5 = İtibar Kaybı' . "\n" . '9 = Marka Hasarı',
+    'NonComplianceHelp' => 'Kurallara uymamanın yol açtığı risk ne kadar?' . "\n" . '2 = Küçük İhlal' . "\n" . '5 = Açık İhlal' . "\n" . '7 = Yüksek Profilli İhlal',
+    'PrivacyViolationHelp' => 'Kişisel olarak tanımlanabilir ne kadar bilgi ifşa edilebilir?' . "\n" . '3 = Bir Birey' . "\n" . '5 = Yüzlerce Kişi' . "\n" . '7 = Binlerce Kişi' . "\n" . '9 = Milyonlarca İnsan',
+    // The OWASP holder's Score card heading. No existing key covers this
+    // (confirmed via grep before adding) -- the Likelihood/Impact card
+    // headings reuse the already-existing bare 'Likelihood'/'Impact' keys.
+    'OwaspScore' => 'OWASP Puanı',
+    // Phase 4d-iv follow-up: group-level descriptions for the 4 OWASP
+    // subgroup headings, sourced from OWASP's own Risk Rating Methodology
+    // (https://community.owasp.org/OWASP_Risk_Rating_Methodology), tightened
+    // into short UI captions -- not a verbatim quote (see this task's own
+    // source table for the original wording).
+    'ThreatAgentFactorsDescription' => 'Bu tehdit unsurları grubunun başarılı bir saldırı gerçekleştirme olasılığını tahmin eder.',
+    'VulnerabilityFactorsDescription' => 'Bu güvenlik açığının keşfedilme ve istismar edilme olasılığını tahmin eder.',
+    'TechnicalImpactDescription' => 'Etkiyi gizlilik, bütünlük, erişilebilirlik ve hesap verebilirlik açısından inceler.',
+    'BusinessImpactDescription' => 'İşletme için neyin önemli olduğunu, ham teknik etkinin ötesinde yansıtır.',
+    // CVSS's own Temporal-metric 'Exploitability' help text. This key shares
+    // a labelKey ('Exploitability') with DREAD's own field, so both would
+    // otherwise derive the same generic lang key ('ExploitabilityHelp'),
+    // with DREAD's entry silently winning for both -- risk-details-form.js's
+    // buildCvssScoreItem() and risk-details-view.js's cvssMetricValueRow()
+    // reference this key directly for CVSS's Exploitability field instead
+    // of the generic '<labelKey>Help' derivation.
+    'CVSSExploitabilityHelp' => "Mevcut istismar tekniklerinin veya kod kullanılabilirliğinin durumu.\n• Kanıtlanmamış: İstismar kodu mevcut değil veya istismar teorik.\n• Kavram Kanıtı: İstismar kodu mevcut ancak çoğu saldırgan için pratik değil.\n• İşlevsel: İşlevsel istismar kodu çoğu durumda çalışır.\n• Yüksek: İstismar güvenilir ve ya otomatiktir (örneğin bir solucan) ya da hiç istismar kodu gerektirmez.",
+    // Risk Scoring -- Classic Inline (Task 3): the Classic scoring method's
+    // new inline Score card heading and its Likelihood/Impact cards' short
+    // plain-English descriptions (js/simplerisk/common/risk-details-form.js's
+    // buildClassicHolder()). Deliberately NOT sourced from NIST SP 800-30 or
+    // any other external standard -- confirmed with the user via the
+    // approved mockup review, unlike OWASP's own subgroup descriptions
+    // above, which do cite OWASP's Risk Rating Methodology.
+    'ClassicScore' => 'Klasik Puan',
+    'ClassicLikelihoodDescription' => 'Bu riskin gerçekleşme olasılığı ne kadar yüksek?',
+    'ClassicImpactDescription' => 'Bu riskin gerçekleşmesi durumunda sonuçların ne kadar ciddi olacağını düşünün.',
+    // Risk Scoring -- Custom Inline (Task 2): the Custom scoring method's
+    // new inline Score card heading (js/simplerisk/common/risk-details-form.js's
+    // buildCustomHolder()) and the Custom Value card's short description
+    // caption. 'CustomValueDescription' text confirmed directly with the
+    // user, same as Classic's own description keys above.
+    'CustomScore' => 'Özel Puan',
+    'CustomValueDescription' => 'Özel bir değer, 0 ile 10 arasında bir ondalık değer olabilir.',
+    // Risk Scoring -- Contributing Risk Inline (Phase 4d-v): the last of
+    // the three deferred scoring methods (DREAD/OWASP shipped earlier in
+    // this same project). The Likelihood/Contributing Risk cards' short
+    // plain-English descriptions (js/simplerisk/common/risk-details-form.js's
+    // buildContributingRiskHolder()). The Score card heading reuses the
+    // EXISTING 'ContributingRiskScore' key (already present above, same
+    // text) rather than duplicating it -- 'ContributingRisk'/
+    // 'ContributingLikelihood'/'Weight'/'Subject' are likewise reused as-is.
+    'ContributingLikelihoodDescription' => 'Bu riskin gerçekleşme olasılığı ne kadar yüksek?',
+    'ContributingRiskDescription' => 'Aşağıdaki faktörlerin her biri, göreceli önemine göre ağırlıklandırılmıştır; bu riskin her bir faktörden ne kadar etkilendiğini seçin.',
+    // OWASP read-mode card (buildOwaspReadView(), risk-details-view.js):
+    // the live calculation formula under each of the 4 sub-group names
+    // (Threat Agent Factors/Vulnerability Factors/Technical Impact/
+    // Business Impact), matching the legacy risk-scoring-details panel's
+    // own "= ( a + b + c + d ) / 4" text (includes/display.php), and the
+    // OWASP Risk Rating Methodology link note placed in the OWASP Score
+    // column's open space below the summary numbers.
+    'OwaspSubgroupFormula' => '= ( {a} + {b} + {c} + {d} ) / 4',
+    'OwaspMethodologyNote' => 'OWASP Risk Derecelendirme Metodolojisinin tüm ayrıntılarına şu adresten ulaşılabilir:',
+    'Here' => 'Burada',
+    // Scoring widget formula captions (Classic/DREAD/Contributing Risk),
+    // the same ".sr-cvss-vector under the score label" treatment CVSS's
+    // vector caption and OwaspSubgroupFormula above already have, on both
+    // the edit-mode holder (risk-details-form.js) and the read-mode card
+    // (risk-details-view.js). Classic reuses the existing RISKClassicExp1-5
+    // keys instead of a new one -- see those keys' own long-standing
+    // definitions above.
+    'DreadScoreFormula' => '= ( {a} + {b} + {c} + {d} + {e} ) / 5',
+    // Contributing Risk's per-factor weighted term and its shared
+    // Likelihood term (update_contributing_risk_score(), includes/
+    // functions.php) -- unlike DREAD/OWASP's fixed roster, the factor list
+    // is admin-configured, so this is one formula PER FACTOR ROW rather
+    // than one fixed caption under the total score.
+    // {maxName}: score.php parity -- legacy's "Maximum Value" column showed
+    // the max option's human-readable name alongside its number (e.g.
+    // "[5] Certain", includes/display.php); these formulas only showed the
+    // bare number.
+    'ContributingLikelihoodFormula' => '= {value} x 5 / {max} ({maxName})',
+    'ContributingFactorFormula' => '= {weight}% x {impact} x 5 / {max} ({maxName})',
+    // Contributing Risk's own subscore row in the Score card -- the sum of
+    // every factor's own term above it. Generic (not substituted with real
+    // numbers) since the number of terms is however many factors are
+    // configured, unlike the fixed-roster formulas above.
+    'ContributingRiskSubtotalFormula' => '= (Ağırlık x Darbe x 5 / Maks) Toplamı',
+    // Contributing Risk Score's own formula, under the total row -- always
+    // exactly 2 terms (unlike the Contributing Risk subtotal above), so
+    // substituted with the real current subtotal values, same convention
+    // DreadScoreFormula/OwaspSubgroupFormula use for their own fixed roster.
+    'ContributingRiskScoreFormula' => '= {likelihood} + {contributing}',
+    // Risk Scoring History widget (risk-details-view.js) -- replaces the
+    // legacy chart's bare save icon with a real menu item, structured for
+    // future export types alongside it.
+    'DownloadChartAsImage' => 'Resim olarak indir',
+    // Legacy score.php's CVSS table had a "Full details of CVSS Version 2.0
+    // scoring can be found here." link (includes/display.php); this is its
+    // inline-scoring-card equivalent, same shape as OwaspMethodologyNote.
+    'CvssMethodologyNote' => 'CVSS Sürüm 2.0 puanlamasının tüm ayrıntılarına buradan ulaşabilirsiniz.',
+    // Mitigation Controls redesign: the picker reuses ChooseControls/
+    // AddOrRemoveControls/etc from Document Program's control picker.
+    'InvalidControlID' => 'Geçersiz kontrol kimliği.',
+    'ValidationOwner' => 'Doğrulama Sahibi',
+    'ValidationStatus' => 'Doğrulama Durumu',
+    'NotStarted' => 'Başlamadı',
+    // management/view.php's "risk ID does not exist" empty state.
+    'RiskIdDoesNotExistBody' => 'Aradığınız risk silinmiş olabilir veya bağlantı hatalı olabilir.',
+    'MitigationControlsRequiresGovernance' => 'Görüntülemek için yönetimden izin alınması gerekmektedir.',
+    'ViewControlValidation' => 'Görünüm Kontrolü Doğrulaması',
+    'EditControlValidation' => 'Düzenleme Denetimi Doğrulaması',
+    'SupportingDocumentationRequiresSubmitRisk' => 'Dosya yüklemek için Risk Gönderme izni gereklidir.',
+    'SupportingDocumentationRequiresModifyRisks' => 'Dosyaları yönetmek için "Riskleri Değiştir" iznine sahip olmanız gerekir.',
+    'MitigationSupportingDocumentationRequiresPlanMitigations' => 'Dosyaları yönetmek için Plan Azaltma izni gereklidir.',
+    'MitigationSubmittedBy' => 'Sunulan Azaltma Önerisi',
+    'UseADifferentDate' => 'Farklı bir tarih kullanın',
+    'AssetGroup' => 'Varlık Grubu',
+    // Customization Cards Layout API (extras/customization/index.php) scope-validation errors.
+    'InvalidFgroup' => 'Geçersiz fgroup.',
+    'CustomizationCardsLayoutApiScopeError' => 'Özelleştirme Kartları Düzeni API\'si yalnızca fgroup=risk, tab_index=1, tab_index=2 veya tab_index=3 için kullanılabilir.',
+    // Asset management redesign
+    'DiscoverAssets' => 'Varlıkları keşfedin',
+    'DiscoveryRuns' => 'Keşif koşuları',
+    'DiscoveryRangeHint' => 'Tek bir adres, bir başlangıç-bitiş aralığı veya IPv4 CIDR',
+    'DiscoveryResolveNames' => 'Sunucu adlarını arayın',
+    'DiscoveryAddAs' => 'Yeni varlıkları şu şekilde ekleyin:',
+    'DiscoveryStart' => 'Keşfe başlayın',
+    'DiscoveryBackgroundNote' => 'Arka planda çalışır. Zaten mevcut olan adresler atlanır.',
+    'DiscoveryRangeInvalid' => 'Geçerli bir IPv4 adresi, aralığı veya CIDR bloğu girin.',
+    'DiscoveryRangeTooLarge' => 'Bu aralık çok geniş. Sınır {$max} adrestir.',
+    'DiscoveryRunQueued' => 'Keşif başladı.',
+    'DiscoveryRunCompleted' => 'Keşif tamamlandı: {$new} yeni varlık.',
+    'AssetBulkSelectAll' => 'Tüm {$count} varlıkları seçin',
+    'AssetBulkAssignTeams' => 'Takımları atayın…',
+    'AssetBulkAddToGroup' => 'Gruba ekle…',
+    'AssetBulkDeleteConfirmTitle' => '{$count} varlıkları silinsin mi?',
+    'AbleToEditAssets' => 'Varlıkları Düzenleyebilme',
+    'AbleToDeleteAssets' => 'Varlıkları Silebilme',
+    'AbleToVerifyAssets' => 'Varlıkların Doğruluğunu Doğrulayabilme',
+    'AbleToRunAssetDiscovery' => 'Varlık Keşfi Çalıştırabilme',
+    'AbleToCreateAssetGroups' => 'Varlık Grupları Oluşturabilme',
+    'AbleToEditAssetGroups' => 'Varlık Gruplarını Düzenleyebilme',
+    'AbleToDeleteAssetGroups' => 'Varlık Gruplarını Silme Özelliği',
+    'ViewAsset' => 'Varlığı görüntüle',
+    'AssetUnverifiedByEditLog' => '"{$name}" varlığı, "{$user}" kullanıcısının varlıkları doğrulama izni olmadan adını veya IP adresini değiştirmesi nedeniyle doğrulanmamış olarak geri döndü.',
+    'AssetTeamsAssignedLog' => '"{$name}" varlığı, "{$user} " kullanıcısı tarafından "{$teams}" takımına/takımlarına atandı.',
+    // Manage assets page (asset management redesign, Task 9)
+    'AddAsset' => 'Varlık ekle',
+    'SearchAssetsPlaceholder' => 'İsim veya IP adresine göre arama yapın',
+    'AllLocations' => 'Tüm konumlar',
+    'AllTags' => 'Tüm etiketler',
+    'AllAssetGroups' => 'Tüm varlık grupları',
+    'AssetFields' => 'Varlık alanları',
+    'AssetBulkAllSelected' => 'Seçilen tüm eşleşen varlıklar {$count}',
+    'AssetDeleteConfirmTitle' => '"{$name} " varlığını silmek mi?',
+    'DeleteAsset' => 'Varlığı sil',
+    'DeleteAssets' => 'Varlıkları sil',
+    'AssetBulkAssignTeamsTitle' => '{$count} varlığa ekipler atayın',
+    'AssetAssignTeamsHint' => 'Seçilen takımlar eklenir. Halihazırda bir varlığa sahip olan takımlar kalır.',
+    'AssetAddToGroupTitle' => '{$count} varlığı bir gruba ekle',
+    'AssetChooseTeams' => 'Takımları seçin',
+    'AssetChooseGroup' => 'Bir grup seçin',
+    'Assign' => 'Atamak',
+    'AssetBulkVerifiedSummary' => '{$ok} doğrulandı, {$failed} atlandı',
+    'AssetBulkDeletedSummary' => '{$ok} silindi, {$failed} atlandı',
+    'AssetBulkTeamsSummary' => '{$ok} varlığa atanan ekipler, {$failed} atlandı.',
+    'AssetBulkGroupSummary' => '{$ok} gruba eklendi, {$failed} atlandı',
+    'AssetBulkSkippedList' => 'Atlandı: {$list}',
+    'AssetBulkReasonNotFound' => 'bulunamadı',
+    'NoAssetsYet' => 'Henüz varlık yok.',
+    'NoAssetsYetHint' => 'Eklediğiniz veya keşfettiğiniz varlıklar burada görünür.',
+    'NoAssetsMatchFilters' => 'Filtrelerinize uyan hiçbir içerik bulunamadı.',
+    'CouldNotLoadAssets' => 'Dosyalar yüklenemedi. Verileriniz güvende.',
+    'AllValuations' => 'Tüm değerlendirmeler',
+    // Manage assets page, Asset groups tab (asset management redesign, Task 10)
+    'AddAssetGroup' => 'Grup ekle',
+    'EditAssetGroup' => 'Grup düzenleme',
+    'DeleteAssetGroup' => 'Grubu sil',
+    'ViewGroupMembers' => 'Üyeleri görüntüle',
+    'SearchAssetGroupsPlaceholder' => 'Grupları isme göre ara',
+    'HighestValuation' => 'En yüksek değerleme',
+    'LinkedRisks' => 'Bağlantılı riskler',
+    'RemoveFromGroup' => 'Gruptan kaldır',
+    'AssetGroupMoreMembers' => '+ {$count} daha fazla',
+    'ViewAllInAssetsTab' => 'Varlıklar sekmesinde tümünü görüntüleyin',
+    'NoAssetsInGroup' => 'Bu grupta hiçbir varlık bulunmamaktadır.',
+    'CouldNotLoadGroupMembers' => 'Bu grubun üyeleri yüklenemedi.',
+    'AssetGroupMembers' => 'Üyeler',
+    'AssetGroupMembersHint' => 'Sadece görebildiğiniz varlıklar listelenir. Göremediğiniz üyeler grupta kalır.',
+    'ChooseAssets' => 'Varlıkları seçin',
+    'AddOrRemoveAssets' => 'Varlık ekle veya kaldır…',
+    'UseTheseAssets' => 'Bu kaynakları kullanın',
+    'AllAssets' => 'Tüm varlıklar',
+    'Valuation' => 'Değerleme',
+    'PickerShowingFirstN' => '{$total}\'in ilk {$count} \'ini gösteriyor. Geri kalanını bulmak için arama yapın veya daraltın.',
+    'AssetGroupDeleteConfirmTitle' => '"{$name} " grubunu silmek mi?',
+    'AssetGroupDeleteKeepsAssets' => 'Bu gruptaki varlıklar silinmez. Sadece grup kaldırılır.',
+    'NoAssetGroupsYet' => 'Henüz varlık grubu yok.',
+    'NoAssetGroupsYetHint' => 'Varlıkları gruplandırarak, bunları birlikte haritalandırabilir ve raporlayabilirsiniz.',
+    'NoAssetGroupsMatchSearch' => 'Arama kriterlerinize uyan varlık grubu bulunamadı.',
+    'CouldNotLoadAssetGroups' => 'Varlık grupları yüklenemedi. Verileriniz güvende.',
+    'DiscoveryAssignTeams' => 'Takımlara atayın',
+    'DiscoveryAssignTeamsHint' => 'İsteğe bağlı. Her yeni varlık bu ekiplere eklenir.',
+    'DiscoveryAddAsHint' => 'Varlıkların doğrulanması için izniniz doğrultusunda ayarlanmıştır.',
+    'DiscoveryTeamsInvalid' => 'Var olan ve sizin de üyesi olduğunuz takımları seçin.',
+    'DiscoveryResolveNamesInvalid' => 'Sunucu adlarını arama özelliği açık veya kapalı olmalıdır.',
+    'DiscoveryTooManyActiveRuns' => 'Şu anda devam eden {$max} keşif çalışmanız var. Birinin bitmesini bekleyin veya iptal edin.',
+    'DiscoveryRunNotFound' => 'Keşif çalışması bulunamadı.',
+    'DiscoveryRunAlreadyFinished' => 'Bu keşif çalışması zaten tamamlandı.',
+    'DiscoveryRunCancelled' => 'Keşif gezisi iptal edildi.',
+    'DiscoveryRunFailedToast' => '{$range} keşfi başarısız oldu.',
+    'DiscoveryStatusQueued' => 'Sıraya alınmış',
+    'DiscoveryProgress' => '{$scanned} / {$total}',
+    'DiscoveryLiveHosts' => 'Canlı sunucular',
+    'DiscoveryNewAssets' => 'Yeni varlıklar',
+    'DiscoveryStartedAt' => 'Başladı',
+    'DiscoveryCancelRun' => 'Çalıştırmayı iptal et',
+    'CouldNotLoadDiscoveryRuns' => 'Keşif çalıştırmaları yüklenemedi.',
+    'DiscoveryRangeReserved' => 'Bu aralık, taranamayan ayrılmış adresleri (loopback, link-local, multicast veya 0.0.0.0/8) içerir.',
+    'DiscoveryTooManyActiveRunsInstance' => 'Şu anda {$max} keşif çalışması devam ediyor. Bir tanesi bittiğinde tekrar deneyin.',
+    'DiscoveryErrorScan' => 'Bir hata nedeniyle tarama durduruldu. Ayrıntılar için sistem günlüklerini kontrol edin.',
+    'DiscoveryErrorWorkerLost' => 'Arka plandaki işlem kuyruğu bu çalıştırmayı durdurdu.',
+    'DiscoveryErrorRequesterInactive' => 'Bu çalıştırmayı başlatan kullanıcı artık aktif değil.',
+    // Asset management redesign: translated API errors (bulk actions, column settings, discovery) and discovery audit lines
+    'AssetBulkBodyInvalid' => 'Toplu işlemi JSON gövdesi olarak gönderin.',
+    'AssetBulkActionRequired' => 'Toplu işlem seçeneğini belirleyin.',
+    'AssetBulkUnknownAction' => 'Toplu alım seçeneği mevcut değil.',
+    'AssetBulkSelectionRequired' => 'Varlıkları kimlik numarasına göre veya filtre kullanarak seçin.',
+    'AssetBulkIdsRequired' => 'En az bir varlık seçin.',
+    'AssetBulkIdsInvalid' => 'Varlık kimlik numaraları tam sayı olmalıdır.',
+    'AssetBulkTooManyAssets' => 'Aynı anda en fazla {$max} varlık üzerinde işlem yapabilirsiniz. Seçiminizi daraltın ve tekrar deneyin.',
+    'AssetBulkFilterInvalid' => 'Filtre geçerli değil. Sayfayı yeniden yükleyin ve tekrar deneyin.',
+    'AssetBulkFilterUnknownKey' => '"{$key}" filtresi tanınmıyor.',
+    'AssetBulkFilterBadValue' => '"{$key}" filtresinin değeri geçersiz.',
+    'AssetBulkFilterTooManyValues' => '"{$key}" filtresi en fazla {$max} değer listeleyebilir.',
+    'AssetBulkFilterAllAlone' => 'Tüm varlıkları seçme işlemi diğer filtrelerle birleştirilemez.',
+    'AssetBulkFilterEmpty' => 'Toplu işlem çalıştırmadan önce bir filtre seçin veya tüm varlıkları seçin.',
+    'AssetBulkExpectedCountInvalid' => 'Beklenen varlık sayısı tam sayı olmalıdır.',
+    'AssetBulkParamsInvalid' => 'Bu toplu işlem için seçenekler geçerli değil.',
+    'AssetBulkTeamsRequired' => 'En az bir takım seçin.',
+    'AssetBulkTeamsNotFound' => 'Bu takımlardan bir veya daha fazlası artık mevcut değil.',
+    'AssetBulkTeamsNotMember' => 'Sadece üyesi olduğunuz takımları atayabilirsiniz.',
+    'AssetBulkGroupNotFound' => 'Bu varlık grubu artık mevcut değil.',
+    'AssetBulkNoMatch' => 'Seçiminize uygun hiçbir varlık bulunamadı.',
+    'AssetBulkCountMismatch' => 'Eşleşen varlıklar, siz onları seçtiğinizden beri {$expected} \'dan {$actual} \'e değişti. Listeyi gözden geçirin ve tekrar deneyin.',
+    'AssetColumnSettingsBodyInvalid' => 'Sütun ayarlarını, sütunları veya sıralamayı belirterek JSON gövdesi olarak gönderin.',
+    'AssetColumnSettingsSaveFailed' => 'Sütunlarınız kaydedilemedi. SimpleRisk yükseltmesini tamamlamak için bir yöneticiden yardım isteyin.',
+    'DiscoveryRunQueueFailed' => 'Keşif çalıştırması sıraya alınamadı. Tekrar deneyin.',
+    'DiscoveryRunStartedLog' => '{$range} ({$count} adres) varlık keşif işlemi #{$id} , "{$user} " kullanıcısı tarafından başlatıldı.',
+    'DiscoveryRunCancelledLog' => '{$range} \'in varlık keşif çalıştırması #{$id} , "{$user} " kullanıcısı tarafından iptal edildi.',
+    'AssetBulkTooManyToDelete' => 'Bir seferde en fazla {$max} öğeyi silebilirsiniz. Seçiminizi daraltın ve tekrar deneyin.',
+    'AssetBulkFilterNotApplied' => '"{$key}" filtresi gönderildiği gibi uygulanamadı, bu nedenle hiçbir şey değiştirilmedi.',
+    'AssetBulkExpectedCountRequired' => 'Filtre kullanarak varlıkları silmek için silmeyi beklediğiniz varlık sayısını belirtmeniz gerekir.',
+    'AssetBulkReasonNotAttempted' => 'denenmedi',
+    'MoreActions' => 'Daha fazla işlem',
+    'AssetCreateNewGroupOption' => 'Yeni bir grup oluştur…',
+    'AssetNewGroupName' => 'Yeni grup adı',
+    'AssetFilterByTeam' => 'Takıma göre filtrele {$name}',
+    'AssetFilterByValuation' => 'Değerlendirmeye göre filtrele {$name}',
+    'AssetFilterByTag' => 'Etikete göre filtrele {$name}',
+    'AssetFilterByLocation' => 'Konuma/mekana göre filtrele {$name}',
+    'AssetFilteringByTeam' => 'Takıma göre filtreleme {$name}',
+    'AssetFilteringByValuation' => 'Değerlendirmeye göre filtreleme {$name}',
+    'AssetFilteringByTag' => 'Etikete göre filtreleme {$name}',
+    'AssetFilteringByLocation' => 'Site/konuma göre filtreleme {$name}',
+    'AssetShowOnlyVerified' => 'Yalnızca doğrulanmış varlıkları göster',
+    'AssetShowOnlyUnverified' => 'Yalnızca doğrulanmamış varlıkları göster',
+    'AssetShowingVerified' => 'Doğrulanmış varlıklar gösteriliyor',
+    'AssetShowingUnverified' => 'Doğrulanmamış varlıklar gösteriliyor',
+    'CustomizationLayoutPayloadRejected' => 'Bu şablona ait olmayan alanlar veya kartlar içerdiği için düzen kaydedilemedi. Hiçbir şey değiştirilmedi.',
+    'CustomizationLayoutRejectedUnknownScope' => 'Bu şablon kapsamı düzenleyici tarafından kaydedilemez. Hiçbir şey değiştirilmedi.',
+    'CustomizationLayoutRejectedEmptyFields' => 'Şablonda geçerli alan bulunmadığı için kaydedilmedi. Hiçbir şey değiştirilmedi.',
+    'CustomizationLayoutRejectedWouldDeleteAll' => 'Bu düzeni kaydetmek, şablondaki tüm alanları sileceği için kaydedilmedi. Sayfayı yeniden yükleyin ve tekrar deneyin.',
+    'CustomizationLayoutRejectedRequiredField' => 'Zorunlu bir alan, sayfa düzeninden kaldırılamaz. Hiçbir şey değiştirilmedi.',
+    'CustomizationLayoutRejectedBulkRemoval' => 'Bu düzeni kaydetmek, şablon alanlarının çoğunu siz burada silmeden kaldıracaktır. Sayfayı yeniden yükleyin ve tekrar deneyin. Hiçbir şey değişmedi.',
+    'CustomizationLayoutRejectedGroupMismatch' => 'Şablon grubu mevcut değil veya farklı bir kayıt türüne ait. Hiçbir şey değiştirilmedi.',
+    'CustomizationLayoutLegacySaveRefused' => 'Bu şablon, sayfa düzenleyici ile düzenlenir ve eski panel uç noktası üzerinden kaydedilemez.',
+    // Asset discovery probe methods
+    'DiscoveryPortsInvalid' => 'Virgülle ayırarak 1 ile 65535 arasında en fazla {$max} TCP port numarası girin.',
+    'DiscoveryErrorProbeUnavailable' => 'Bu çalıştırmanın başlangıcında kullanılan sorgulama yöntemi artık arka plan çalışanları için kullanılamıyor. Yeni bir çalıştırma başlatın.',
+    'DiscoveryProbeIcmpUnprivileged' => 'ICMP ping (ayrıcalıksız soket)',
+    'DiscoveryProbeIcmpRaw' => 'ICMP ping (ham soket)',
+    'DiscoveryProbePingCommand' => 'ICMP ping (ping komutu)',
+    'DiscoveryProbeTcpConnect' => 'TCP bağlantısı',
+    'DiscoveryProbeMethod' => 'Prob yöntemi: {$method}',
+    'DiscoveryProbeDetectedByWebServer' => 'Web sunucusu tarafından algılandı. Arka planda çalışan işlem farklı bir yöntem kullanabilir.',
+    'DiscoveryTcpProbeWarning' => 'Sunucular yalnızca taranan TCP portlarından birinde yanıt veriyorsa bulunur; bu nedenle bu portları engelleyen sunucular bulunamaz. Tam sonuçlar için sunucunun ICMP ping göndermesine izin verin: ayrıcalıksız ping soketlerine veya NET_RAW özelliğine izin verin veya ping\'i yükleyin.',
+    'DiscoveryTcpPortsForRun' => 'Bu çalıştırma için TCP bağlantı noktaları',
+    'DiscoveryTcpPortsHint' => 'Virgülle ayrılmış, en fazla {$max} port. Varsayılanı kullanmak için boş bırakın: {$ports}.',
+    'DiscoveryDefaultTcpPorts' => 'Varlık keşfi TCP portları',
+    'DiscoveryDefaultTcpPortsHint' => 'Arka plan çalışanı ICMP pingi gönderemediğinde kullanılır. Virgülle ayrılmış, en fazla {$max} port.',
+    'DiscoveryErrorTcpUnreliable' => 'Tarama durdu çünkü ağ, gerçek ana bilgisayar olamayacak adresler için (arada bir proxy veya güvenlik duvarı var) TCP bağlantılarına yanıt veriyor, bu nedenle her adres canlı gibi görünüyor. Yöneticinizden sunucunun ICMP ping göndermesine izin vermesini isteyin.',
+    'DiscoveryDefaultTcpPortsResetLog' => 'Varlık keşfi TCP portları "{$user}" kullanıcısı tarafından varsayılan değerlere sıfırlandı.',
+    'DiscoveryNotConfigured' => 'Keşif yapılandırılmamış. Lütfen sistem yöneticinizden config.php dosyasında izin verilen aralıkları ayarlamasını isteyin.',
+    'DiscoveryRangeNotAllowed' => 'Bu aralık, keşif işleminin taramasına izin verilen aralıkların dışındadır.',
+    'DiscoveryAllowedRangesList' => 'İzin verilen aralıklar: {$ranges}',
+    // Asset record modal
+    'AssetNotAvailable' => 'Bu varlık kullanılamıyor. Silinmiş olabilir veya erişim izniniz olmayabilir.',
+    'AssetCustomFieldNotInTemplate' => 'Bir veya daha fazla özel alan bu varlığın şablonuna ait değil. Hiçbir şey değiştirilmedi.',
+    'AssetMappedControlsInvalid' => 'Eşleştirilmiş kontroller kaydedilemedi. Her satırın bir olgunluk düzeyine ve en az bir mevcut kontrole ihtiyacı var. Hiçbir şey değiştirilmedi.',
+    'AssetMappedControlsTooMany' => 'Bir varlık en fazla {$max} kontrole eşlenebilir. Hiçbir şey değiştirilmedi.',
+    'AddControlsAtAnotherMaturity' => 'Başka bir olgunluk seviyesinde kontroller ekleyin.',
+    'ChoosingControlsNeedsGovernancePermission' => 'Kontrolleri seçmek için Yönetim izni gereklidir.',
+    'NControls' => '{n} kontrol(ler)',
+    'SavingKeepsTheCurrentControlMappings' => 'Kaydetme işlemi mevcut kontrol eşlemelerini korur.',
+    'LoadingControls' => 'Yükleme kontrolleri…',
+    'ControlListCouldNotBeLoaded' => 'Kontrol listesi yüklenemedi, bu nedenle eşlenmiş kontroller şu anda değiştirilemiyor.',
+    'RemoveControlsAtMaturity' => 'Vade sonunda kontrolleri kaldır {maturity}',
+    'ControlIdUnavailable' => '#{id} (kullanılamaz)',
+    'AssetRecordEdit' => 'Varlığı düzenle',
+    'AssetRecordIdN' => 'Varlık #{$id}',
+    'AssetRecordCopyLink' => 'Bu varlığa bağlantıyı kopyala',
+    'AssetRecordLinkCopied' => 'Bağlantı kopyalandı.',
+    'AssetRecordLinkCopyFailed' => 'Bağlantı kopyalanamadı. Bunun yerine adres çubuğundan kopyalayın.',
+    'AssetRecordMarkUnverified' => 'Doğrulanmamış olarak işaretle',
+    'AssetRecordViewAuditTrail' => 'Denetim izini görüntüle',
+    'AssetRecordAuditTrailTitle' => 'Denetim izi',
+    'AssetRecordAuditTrailEmpty' => 'Bu varlık için bu dönemde herhangi bir faaliyet kaydedilmemiştir.',
+    'AssetRecordAuditTrailFailed' => 'Denetim kaydı yüklenemedi.',
+    'AssetRecordBackToAsset' => 'Varlığa geri dön',
+    'AssetRecordSave' => 'Varlığı kaydet',
+    'AssetRecordProvenanceVerified' => 'Doğrulandı · eklendi {$date}',
+    'AssetRecordProvenanceUnverified' => 'Doğrulanmamış: Varlıkların doğruluğunu teyit edebilecek biri tarafından henüz onaylanmadı · {$date} eklendi',
+    'AssetRecordUnsavedHint' => 'Kaydedilmemiş değişikliklerle kapatmak, önce onaylamanızı ister.',
+    'AssetRecordDiscardQuestion' => 'Kaydedilmemiş değişikliklerinizi silmek mi istiyorsunuz?',
+    'AssetRecordKeepEditing' => 'Düzenlemeye devam edin',
+    'AssetRecordDiscardChanges' => 'Değişiklikleri iptal et',
+    'AssetRecordVerificationCard' => 'Doğrulama',
+    'AssetRecordVerificationTag' => 'Varlıkları doğrulama iznine ihtiyaç duyuyor.',
+    'AssetRecordVerifiedHint' => 'Bu varlık, yetkili bir kişi tarafından incelenmiştir. Doğrulama izni olmadan adını veya IP adresini değiştirmek, varlığı doğrulanmamış duruma getirir.',
+    'AssetRecordLoadFailed' => 'Dosya yüklenemedi. Lütfen tekrar deneyin.',
+    'CustomizationCardsLayoutApiScopeErrorWithAsset' => 'Özelleştirme Kartları Düzeni API\'si yalnızca fgroup=risk (tab_index 1, 2 veya 3) ve fgroup=asset (tab_index 1) için kullanılabilir.',
+    'DiscoveryErrorRequesterNotPermitted' => 'Bu çalıştırmayı başlatan kullanıcının artık varlık keşfi çalıştırma izni yok.',
+    'AssetRecordEditField' => 'Düzenle {$field}',
+    // Asset Scoring (FIPS 199 categorization + weighted score)
+    'Confidentiality' => 'Gizlilik',
+    'Integrity' => 'Bütünlük',
+    'Availability' => 'Müsaitlik',
+    'AssetScoringLevelLow' => 'Düşük',
+    'AssetScoringLevelModerate' => 'Ilıman',
+    'AssetScoringLevelHigh' => 'Yüksek',
+    'AssetScoringValueInvalid' => 'Gizlilik, bütünlük ve erişilebilirlik düşük, orta veya yüksek düzeyde kabul edilebilir (gizlilik ayrıca geçerli değil seçeneğini de kabul eder).',
+    'AssetScoringChangedLog' => 'Asset "{$name}" {$objective} was changed from {$from} to {$to} by user "{$user}".',
+    'FIPSCategorization' => 'FIPS Kategorizasyonu',
+    'WeightedScore' => 'Ağırlıklı Puan',
+    'WeightedBand' => 'Ağırlıklı Bant',
+    'AllCategorizations' => 'Tüm kategorizasyonlar',
+    'AllBands' => 'Tüm gruplar',
+    'AssetFilterByCategorization' => 'FIPS sınıflandırmasına göre filtrele {$name}',
+    'AssetFilteringByCategorization' => 'FIPS sınıflandırmasına göre filtreleme {$name}',
+    'AssetFilterByBand' => 'Ağırlıklı banta göre filtrele {$name}',
+    'AssetFilteringByBand' => 'Ağırlıklı bant ile filtreleme {$name}',
+    'AssetScoring' => 'Varlık Puanlaması',
+    'AssetScoringSettingsHint' => 'Her varlık, gizlilik, bütünlük ve kullanılabilirlik açısından Düşük, Orta veya Yüksek olarak derecelendirilir ve gizlilik bunun yerine "Uygulanamaz" olarak da değerlendirilebilir; bu durumda varlık her iki sonuçtan da çıkarılır. FIPS sınıflandırması, üç derecelendirmenin en yükseğidir. Ağırlıklı puanı, üç seviye değerinin ağırlıklı ortalamasıdır ve bant eşikleri bu puanı Düşük, Orta veya Yüksek bir banda dönüştürür. Bu ayarların değiştirilmesi, her varlığın puanını anında yeniden belirler.',
+    'Weights' => 'Ağırlıklar',
+    'AssetScoringWeightsHint' => 'Ağırlıklı puanda her bir hedefin ağırlığı: 0 ile 100 arasında, en fazla iki ondalık basamak. 0 ağırlık, o hedefi dışarıda bırakır. Bütünlük ve Erişilebilirlik ikisi birden 0 olamaz, çünkü "Uygulanamaz" gizlilik her zaman dışarıda bırakılır.',
+    'LevelValues' => 'Seviye değerleri',
+    'AssetScoringLevelValuesHint' => 'Her bir derecelendirmenin ağırlıklı puana katkısı: 0\'dan 100\'e kadar, en fazla iki ondalık basamaklı; Düşük, Orta ve Yüksek alt kategorilerinde. Varsayılan değerler Düşük 1, Orta 2 ve Yüksek 3\'tür.',
+    'BandThresholds' => 'Bant eşikleri',
+    'AssetScoringBandThresholdsHint' => 'Eşik değerin üzerinde veya ona eşit ağırlıklı bir puan o aralıktadır ve Orta eşiğin altındaki bir puan Düşük olarak kabul edilir. Orta değer Düşük değerin üzerinde başlamalı ve Yüksek değer Orta değerin üzerinde ve Yüksek değerden daha yüksek olmamalıdır.',
+    'ModerateStartsAt' => 'Orta seviye şuradan başlar:',
+    'HighStartsAt' => 'Yüksekler şuradan başlıyor:',
+    'DefaultScoringForNewAssets' => 'Yeni varlıklar için varsayılan puanlama',
+    'AssetScoringDefaultsHint' => 'Birisi varlık formunda bir varlık eklediğinde bu derecelendirmeleri önceden seçer. Keşif, içe aktarma veya API aracılığıyla oluşturulan varlıklar, kendi derecelendirmelerini sağlamadıkları sürece puanlanmaz. Bunu kapatmak için üçünü de "Hayır" olarak bırakın.',
+    'AssetScoringWeightsInvalid' => 'Varlık Puanlama ağırlıkları, en fazla iki ondalık basamaklı olmak üzere 0 ile 100 arasında sayılar olmalıdır ve Bütünlük ile Erişilebilirlik değerlerinin ikisi birden 0 olamaz.',
+    'AssetScoringValuesInvalid' => 'Varlık Puanlama düzeyi değerleri, en fazla iki ondalık basamaklı olmak üzere 0 ile 100 arasında sayılar olmalıdır; Düşük, Orta ve Yüksek sıralamaları içermelidir.',
+    'AssetScoringThresholdsInvalid' => 'Varlık Puanlama bandı eşiklerinin en fazla iki ondalık basamağa sahip olması gerekir; Orta düzey, Düşük değerin üzerinde, Yüksek düzey Orta düzeyin üzerinde ve Yüksek düzey, Yüksek değerden daha yüksekte başlamamalıdır.',
+    'AssetScoringDefaultsInvalid' => 'Yeni varlıklar için varsayılan puanlama, her hedefin sunduğu bir seviye olmalıdır.',
+    'AssetScoringSettingsNotSaved' => 'Varlık Puanlama ayarları kaydedilemedi. Hiçbir şey değiştirilmedi.',
+    'AssetScoringSettingsChangedLog' => 'Varlık Puanlama ayarları "{$user} " kullanıcısı tarafından değiştirildi.',
+    'AssetScoringNotSet' => 'Ayarlanmadı',
+    'NotScored' => 'Puanlanmadı',
+    'AssetScoringNotScoredHint' => 'Bu varlığın puanını almak için üç hedefin tümünü yanıtlayın.',
+    'ImportAssetScoringValueIgnored' => 'The {$objective} value "{$value}" for asset "{$asset_name}" is not a valid rating and was ignored.',
+    'AssetScoringSecurityObjectives' => 'Güvenlik Hedefleri',
+    'AssetScoringConfidentialityHelp' => 'Bu varlığa ilişkin bilgilerin yetkisiz bir şekilde ifşa edilmesi durumunda olası etkiler nelerdir?',
+    'AssetScoringIntegrityHelp' => 'Bu varlık üzerindeki bilgilerin yetkisiz bir şekilde değiştirilmesi veya yok edilmesi durumunda olası etkiler nelerdir?',
+    'AssetScoringAvailabilityHelp' => 'Bu varlığa erişimin veya kullanımın aksaması durumunda olası etkiler nelerdir?',
+    'AssetScoringHelpHigh' => 'Şiddetli veya felaket niteliğinde yan etki',
+    'AssetScoringHelpModerate' => 'Ciddi yan etki',
+    'AssetScoringHelpLow' => 'Sınırlı veya hiç yan etki yok',
+    'AssetScoringHelpNotApplicable' => 'Bu varlık için gizlilik bir sorun teşkil etmez (örneğin, kamuya açık bilgiler).',
+    'AssetScoringHelpLabel' => '{$objective} derecelendirme kılavuzu',
+    'AssetScoringMeterValue' => '{$score}, {$band} grubu',
+    'AssetScoringNoWeightedScore' => 'Ağırlıklı puan yok',
+    'AssetScoringNoWeightedScoreNote' => 'Ağırlıklı puanlama yok: Değerlendirmeye dahil olan her hedefin ağırlığı 0\'dır.',
+    'AssetScoringUpgradePending' => 'Varlık Puanlaması, SimpleRisk veritabanı yükseltmesi çalıştırılana kadar kaydedilemez. Hiçbir şey değiştirilmedi.',
+    'AssetScoringResultHelpLabel' => '{$result} açıklama',
+    'AssetScoringScoreHelp' => 'Ağırlıklı puan, üç derecelendirmeyi {$low} ile {$high}arasında tek bir sayıya dönüştürür. Her derecelendirme kendi değer kümesi olur ve her biri hedefin ağırlığıyla çarpılır. Sonuçlar toplanır ve ağırlıkların toplamına bölünür. "Uygulanamaz" gizlilik değeri ve ağırlığı dikkate alınmaz. Değer kümeleri ve ağırlıklar Tercihler\'de yapılandırılır. Puan gösterilmeden önce üç hedefin de derecelendirilmesi gerekir.',
+    'AssetScoringCategorizationHelp' => 'FIPS 199 menkul kıymet sınıflandırması en yüksek noktayı temsil eder: geçerli olan hedefler arasında en yüksek derecelendirme. Tek bir Yüksek derecelendirme, diğer derecelendirmeler ne olursa olsun varlığı Yüksek yapar. Uygulanamaz ifadesi dikkate alınmaz.',
+    'AssetScoringBandHelp' => 'Bu sistem, ağırlıklı puanı Düşük, Orta veya Yüksek ölçeğinde değerlendirir. {$moderate} \'ın altındaki puanlar Düşük, {$moderate} ile {$highAt} arası puanlar Orta ve {$highAt} veya üzeri puanlar Yüksek olarak değerlendirilir. Eşik değerleri Tercihler bölümünde yapılandırılır.',
+    // Manage assets: Confidentiality / Integrity / Availability rating filters
+    'AllConfidentialityRatings' => 'Tüm gizlilik derecelendirmeleri',
+    'AllIntegrityRatings' => 'Tüm bütünlük derecelendirmeleri',
+    'AllAvailabilityRatings' => 'Tüm müsaitlik derecelendirmeleri',
+    'AssetFilterByConfidentiality' => 'Gizlilik ölçütüne göre filtrele {$name}',
+    'AssetFilteringByConfidentiality' => 'Gizlilik esasına göre filtreleme {$name}',
+    'AssetFilterByIntegrity' => 'Bütünlüğe göre filtrele {$name}',
+    'AssetFilteringByIntegrity' => 'Bütünlüğe göre filtreleme {$name}',
+    'AssetFilterByAvailability' => 'Kullanılabilirlik ölçütüne göre filtrele {$name}',
+    'AssetFilteringByAvailability' => 'Kullanılabilirlik durumuna göre filtreleme {$name}',
+    'HighestFIPSCategorization' => 'En Yüksek FIPS Kategorisi',
+    'HighestWeightedScore' => 'En Yüksek Ağırlıklı Puan',
+    'HighestWeightedBand' => 'En Yüksek Ağırlıklı Bant',
+    'AssetGroupFields' => 'Varlık grubu alanları',
+    'NoAssetGroupsMatchFilters' => 'Filtrelerinize uyan hiçbir varlık grubu bulunamadı.',
+    'AssetGroupFilterByHighestCategorization' => 'En yüksek FIPS kategorisine göre filtrele {$name}',
+    'AssetGroupFilteringByHighestCategorization' => 'En yüksek FIPS kategorisine göre filtreleme {$name}',
+    'AssetGroupFilterByHighestBand' => 'En yüksek ağırlıklı banda göre filtrele {$name}',
+    'AssetGroupFilteringByHighestBand' => 'En yüksek ağırlıklı banda göre filtreleme {$name}',
+    'AssetGroupBulkSelectionRequired' => 'Varlık gruplarını kimlik numarasına göre veya filtre kullanarak seçin.',
+    'AssetGroupBulkIdsRequired' => 'En az bir varlık grubu seçin.',
+    'AssetGroupBulkIdsInvalid' => 'Varlık grubu kimlik numaraları tam sayı olmalıdır.',
+    'AssetGroupBulkFilterAllAlone' => 'Tüm varlık gruplarını seçme işlemi diğer filtrelerle birleştirilemez.',
+    'AssetGroupBulkFilterEmpty' => 'Silmeden önce bir filtre seçin veya tüm varlık gruplarını seçin.',
+    'AssetGroupBulkExpectedCountInvalid' => 'Beklenen varlık grubu sayısı tam sayı olmalıdır.',
+    'AssetGroupBulkExpectedCountRequired' => 'Filtre kullanarak varlık gruplarını silmek için silmek istediğiniz grup sayısını belirtmeniz gerekir.',
+    'AssetGroupBulkNoMatch' => 'Seçiminizle eşleşen varlık grubu bulunamadı.',
+    'AssetGroupBulkCountMismatch' => 'Eşleşen varlık grupları, siz onları seçtiğinizden beri {$expected} \'dan {$actual} \'e değişti. Listeyi gözden geçirin ve tekrar deneyin.',
+    'AssetGroupBulkTooManyToDelete' => 'Aynı anda en fazla {$max} varlık grubunu silebilirsiniz. Seçiminizi daraltın ve tekrar deneyin.',
+    'AssetGroupBulkSelectAll' => 'Tüm {$count} varlık gruplarını seçin',
+    'AssetGroupBulkAllSelected' => 'Seçilen tüm eşleşen varlık grupları {$count}',
+    'AssetGroupBulkDeleteConfirmTitle' => '{$count} varlık grubunu silmek mi?',
+    'AssetGroupBulkDeleteKeepsAssets' => 'Bu gruplardaki varlıklar silinmez. Sadece gruplar kaldırılır.',
+    'DeleteAssetGroups' => 'Grupları sil',
+    'AssetGroupBulkDeletedSummary' => '{$ok} grup silindi, {$failed} atlandı',
+    'ChoosingRisksNeedsRiskManagementPermission' => 'İlgili risklerin seçimi için Risk Yönetimi\'nin izni gereklidir.',
+    'NAssociatedRisks' => '{n} ilişkili risk(ler)',
+    'SavingKeepsTheCurrentRiskAssociations' => 'Tasarruf, mevcut riskleri de beraberinde getirir.',
     '' => '',
 );
 ?>

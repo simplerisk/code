@@ -252,3 +252,425 @@
 	margin-right: 1.25rem;
 }
 //******************************* RISK MANAGEMENT > RISK DETAILS END ********************************//
+
+// ===== Risk view record header (design-system.md §11) ======================
+//
+// Redesign of view_top_table()/view_score_html() (includes/display.php),
+// rendered by management/partials/overview.php just above the Details/
+// Mitigation/Review Cards tab strip. Three cards in one row: the Inherent/
+// Residual Risk severity tiles below, and a record-meta card (ID/Status/
+// Subject + the Actions menu) that reuses the SAME .sr-qcard/.sr-qlabel/
+// .sr-qfield-value classes the Details tab's own read-mode cards use just
+// below it (scss/modules/_sr-modal.scss), so the header reads as one system
+// with the Cards stack it sits above rather than a leftover Bootstrap block.
+// NOTE: lives here (not modules/risks -- see that file's own .risk-square/
+// .risk-subject rules, now dead) because modules/risks is NOT @imported by
+// custom.scss (commented out); modules/riskmanagement is.
+.sr-risk-record-header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: stretch;
+    gap: 14px;
+    margin-bottom: 16px;   // matches .sr-qcards-stack's own between-card gap
+}
+
+// ---- Inherent/Residual Risk hero tiles -------------------------------------
+// A larger sibling of .sr-cvss-risk-level-tile (scss/modules/_questionnaire.
+// scss) -- the same "solid, saturated, colored chip" severity treatment as
+// .sr-sev-pill (design-system.md §7), sized for record-header prominence
+// instead of that component's compact inline use. Fill color is painted
+// inline by view_score_html() (PHP, escapeCssColor()) from the configured
+// risk_levels color; risk_level_tile_is_light_color() (includes/display.php)
+// decides the .on-light contrast flip server-side, since this whole block
+// is plain server-rendered HTML with no client render pass of its own on
+// initial load (window.CvssRiskLevelPill.paint repaints both the fill AND
+// .on-light after a scoring save -- see patchRiskSummaryTiles(),
+// risk-view-details.js).
+.sr-risk-level-tile {
+    flex: none;
+    width: 148px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    padding: 14px 10px;
+    border-radius: 8px;
+    text-align: center;
+    color: $white;
+    background: $gray-500; // fallback until the inline style paints it
+
+    &.on-light { color: $sr-primary; }
+}
+
+.sr-risk-level-label {
+    font-size: 10px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: .02em;
+    opacity: .9;
+}
+
+.sr-risk-level-score {
+    font-size: 30px;
+    font-weight: 900;
+    line-height: 1.15;
+    font-variant-numeric: tabular-nums;
+}
+
+.sr-risk-level-name {
+    font-size: 12.5px;
+    font-weight: 700;
+}
+
+// ---- Record-meta card (ID / Status / Subject / Actions) -------------------
+.sr-risk-record-card {
+    flex: 1 1 320px;
+    min-width: 0;
+    padding: 13px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.sr-risk-record-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+// ID # and Status stack as their own rows (Subject gets its own row below,
+// via .sr-risk-record-subject) rather than sitting side by side -- each
+// .sr-qfield is overridden to lay its label + value out inline on one line
+// (row, not the base .sr-qfield's label-above-value column) so "ID #  1019"
+// reads as a single row, matching Subject's own single-row shape just below.
+.sr-risk-record-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+
+    .sr-qfield {
+        flex-direction: row;
+        align-items: baseline;
+        gap: 6px;
+    }
+
+    // Status carries a hover-revealed .sr-row-action edit button
+    // (view_top_table(), includes/display.php) -- a FIXED 26px-tall icon
+    // button doesn't participate in text baseline flow the way a plain
+    // inline glyph does, so baseline-aligning it against the label/pill
+    // text next to it visibly shifted the button down (confirmed live: its
+    // box top matched the text's box top instead of the two sharing a
+    // visual center, since the row's cross-axis size is set by the
+    // baseline-aligned siblings' ascent/descent, not by this item).
+    // Center-aligning just this one field's row sidesteps the mismatch
+    // instead of fighting it with a per-item align-self.
+    .sr-risk-record-status {
+        align-items: center;
+    }
+}
+
+// Subject reads slightly larger than a plain field value -- it's the
+// record's own name, the same emphasis a §11 record header's name+ID gets
+// on other detail views.
+.sr-risk-record-subject .sr-qfield-value {
+    font-size: 14px;
+    font-weight: 700;
+}
+
+// align-items: center, not baseline -- same reasoning as
+// .sr-risk-record-status just above: the hover-revealed edit-subject-btn
+// (.sr-row-action) is a fixed 26px box, not inline text, so baseline
+// alignment against the label/value text visibly shifted it downward.
+.sr-risk-record-subject .static-subject {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+// Edit affordances (Subject's pencil, Status' change-status shortcut) are
+// hover/focus-revealed rather than always-on chrome -- the same
+// .sr-row-actions convention design-system.md documents for table rows
+// (_tables.scss), applied here to two record-header fields instead of a
+// table row. .sr-row-action itself (_tables.scss, a bare top-level rule
+// reused standalone) supplies the actual icon-button chrome -- size,
+// transparent background, hover fill -- so only visibility is scoped here.
+// :focus-within keeps a keyboard user tabbing to the button from ever
+// losing sight of it mid-tab, matching the table-row precedent exactly.
+#static-subject .sr-row-action,
+.sr-risk-record-status .sr-row-action {
+    opacity: 0;
+    transition: opacity $transitions;
+}
+
+#static-subject:hover .sr-row-action,
+#static-subject:focus-within .sr-row-action,
+.sr-risk-record-status:hover .sr-row-action,
+.sr-risk-record-status:focus-within .sr-row-action {
+    opacity: 1;
+}
+
+// Replaces a former fixed `style='width:200px'` + `.text-end` wrapper, now
+// that Cancel/Save are icon buttons (.sr-row-action) rather than text
+// buttons needing that much reserved width.
+.sr-inline-edit-actions {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-left: 12px;
+}
+
+// ---- Actions trigger + menu ------------------------------------------------
+// Ghost/neutral chrome -- the same .sr-qcancel treatment design-system.md §5
+// gives a secondary action. The record header's one PRIMARY action is the
+// per-card Edit button the Cards stack below already provides (§11: "the one
+// primary action is Edit"), so Actions itself stays a quiet secondary
+// control here, never .btn-primary red.
+.sr-record-actions-trigger {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 12px;
+    font-size: 12.5px;
+    font-weight: 700;
+    color: $gray-600;
+    background: transparent;
+    border: 1px solid $gray-300;
+    border-radius: 6px;
+
+    &:hover,
+    &:focus {
+        color: $sr-primary;
+        border-color: $gray-500;
+    }
+}
+
+// Scoped to .sr-record-actions-menu rather than a bare .dropdown-menu --
+// this module compiles into the same global bundle as everything else, so
+// an unscoped rule would restyle every dropdown in the product (same
+// reasoning _governance-frameworks.scss's .sr-fw-acquire-menu comment gives
+// for its own scoped dropdown-menu override).
+.sr-record-actions-menu.dropdown-menu {
+    min-width: 200px;
+    padding: 6px;
+    border: 1px solid $gray-300;
+    border-radius: 8px;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, .09);
+
+    .dropdown-item {
+        border-radius: 6px;
+        padding: 7px 10px;
+        font-size: 13px;
+        color: $sr-primary;
+
+        &:hover,
+        &:focus {
+            background: $gray-100;
+            color: $sr-primary;
+        }
+    }
+}
+
+// ===== Bottom-of-page expandable sections (AI Analysis / Associated ========
+// Exceptions / Comments / Audit Trail) -- management/partials/viewhtml.php
+//
+// Matches the Audit Trail card's own §6d disclosure look (a caret-in-front
+// icon + bold .sr-table-title, both reused verbatim from _governance.scss/
+// _tables.scss) rather than Bootstrap's stock accordion-button chrome
+// (regular-weight text, chevron trailing via ::after) -- the two used to
+// read as different components on the same page. .sr-qacc-head still
+// supplies the card-styled frame (grey-100 fill, 8px top radius, border
+// when expanded); this file's own rule below layers the caret-first flex
+// layout on top, duplicated under this page's own .sr-record-accordion
+// scope for the same reason .sr-scoring-history-widget/the .sr-qform-scoped
+// original duplicate it: no .sr-qform/.sr-qcards-stack ancestor here.
+.sr-record-accordion .sr-qacc-head.accordion-button {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: $gray-100;
+    color: $sr-primary;
+    box-shadow: none;
+    border-bottom: none;
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+
+    &.collapsed {
+        border-bottom-left-radius: 8px;
+        border-bottom-right-radius: 8px;
+    }
+
+    &:not(.collapsed) {
+        background: $gray-100;
+        color: $sr-primary;
+        box-shadow: none;
+        border-bottom: 1px solid $gray-300;
+    }
+    &:focus { box-shadow: none; border-color: transparent; }
+
+    // Bootstrap's own ::after chevron is unused now (replaced by the literal
+    // .sr-audit-trail-caret <i> in the markup, matching the Audit Trail
+    // toggle) -- suppressed rather than left to render a second, redundant
+    // caret trailing the badge.
+    &::after { display: none; }
+}
+
+// Rotates the leading caret on expand -- same mechanism .sr-audit-trail-
+// toggle[aria-expanded="true"] .sr-audit-trail-caret uses (_governance.scss),
+// re-keyed off .sr-qacc-head since these buttons keep that class (for its
+// card-frame styling above) rather than swapping to .sr-audit-trail-toggle
+// itself, which assumes no background/padding of its own (it normally sits
+// inside .sr-table-toolbar, which supplies both).
+.sr-record-accordion .sr-qacc-head.accordion-button[aria-expanded="true"] .sr-audit-trail-caret {
+    transform: rotate(90deg);
+}
+
+// Frames each section as its own bordered/rounded card (matching the
+// .sr-qcard/KPI-tile 8px radius + $gray-300 border used everywhere else on
+// this page) -- overflow:hidden clips the header's own top-corner radius
+// and the expanded body's bottom corners cleanly to the item's outer edge,
+// the same technique .sr-scoring-history-widget uses for its own single
+// accordion.
+.sr-record-accordion .accordion-item {
+    border: 1px solid $gray-300;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+// 16px between sections -- the same "Cards on gray ground" rhythm
+// .sr-qcards-stack and .sr-risk-record-header use elsewhere on this page,
+// so the accordion reads as part of the same system instead of a tighter,
+// unrelated list spacing. AI Analysis is conditionally rendered ($_ai_show_
+// section, viewhtml.php), so this can't be a fixed nth-child gap.
+//
+// General sibling (~), not adjacent sibling (+): the Associated Exceptions
+// item is directly followed in the DOM by that tab's own <script> block and
+// the #exception--view modal markup (viewhtml.php) before the Comments item
+// -- real sibling ELEMENTS, so `+` never matched across them and that one
+// gap silently fell back to 0. `~` only requires a shared parent and DOM
+// order, not strict adjacency, so it's immune to whatever non-.accordion-
+// item siblings a section happens to interleave.
+.sr-record-accordion .accordion-item ~ .accordion-item {
+    margin-top: 16px;
+}
+
+// Comments form's Reset/Submit (viewhtml.php's #comment-div, inside the
+// Comments section above). Reset used unscoped .btn-dark -- raw Bootstrap
+// black (#252525), not a system token, the same off-palette issue the
+// tab-row Edit triggers had (see _tabs.scss's own .sr-risk-tab-action /
+// .sr-risk-tab-cancel comments) -- instead of the ghost/secondary treatment
+// a Reset naturally wants next to Submit's real .btn-submit primary. Both
+// also rendered at the theme's un-overridden 1px corner radius instead of
+// §3's 6px control radius.
+#comment-div {
+    #rest-btn {
+        background: transparent;
+        color: $gray-600;
+        border: 1px solid $gray-300;
+        border-radius: 6px;
+
+        &:hover,
+        &:focus {
+            color: $sr-primary;
+            border-color: $gray-500;
+        }
+    }
+
+    #comment-submit {
+        border-radius: 6px;
+    }
+}
+
+// ===== Audit Trail parity with the .sr-record-accordion sections above =====
+//
+// .sr-table-title's real rule (_tables.scss) is nested `.sr-table-card
+// .sr-table-title` -- it only matches inside Audit Trail's own card. The
+// three .sr-qacc-head buttons above put the same class on a span inside
+// .accordion-item instead (no .sr-table-card ancestor), so that rule never
+// matched there at all: the span fell through to INHERITING font-weight
+// from its own ancestor button instead, and custom.scss's `.accordion
+// .accordion-button { font-weight: 600; }` was the closest thing supplying
+// one -- rendering those three titles at 600 while Audit Trail's own (which
+// DOES get the real rule) rendered at 800, on top of the 15px-vs-13.5px
+// size mismatch against the .sr-qcard-head card titles ("Additional
+// Information" etc.) directly above this whole accordion group. Both
+// properties set explicitly here rather than relying on inheritance again,
+// for both contexts (Audit Trail's own included, redundant with the real
+// rule but harmless, and it stops this one from being the sole thing
+// standing between these titles and a future .accordion-button font
+// tweak). Scoped rather than changing .sr-table-title itself, which other,
+// ordinary (non-audit-trail) .sr-table-card grids elsewhere size/weight
+// correctly already and were never asked to change.
+.sr-record-accordion .sr-table-title,
+#risk-audit-trail .sr-table-title {
+    font-size: 13.5px;
+    font-weight: 800;
+}
+
+// Audit Trail's own outer toolbar (#risk-audit-trail-toolbar) inherits
+// .sr-table-card's plain white background and .sr-table-toolbar's shared
+// asymmetric padding (13px top / 4px bottom -- tuned for grids where a
+// filter row's own top padding immediately follows, not for a collapsed
+// toggle row with nothing below it), so next to the other three sections'
+// grey-100 .sr-qacc-head it read as a different, smaller, off-center
+// component instead of the fourth item in the same set. Matches their
+// background, symmetric padding, and -- via :has(), the same read-the-
+// toggle's-own-state technique .sr-qacc-head's &.collapsed/&:not(.collapsed)
+// pair uses -- their bottom-corner radius handling (rounded when this is
+// the last visible thing in the card; square, handed off to the filter row
+// below, once expanded).
+#risk-audit-trail .sr-table-toolbar {
+    background: $gray-100;
+    padding: 13px 16px;
+}
+
+#risk-audit-trail:has(#risk-audit-trail-toggle[aria-expanded="false"]) .sr-table-toolbar {
+    border-bottom-left-radius: 8px;
+    border-bottom-right-radius: 8px;
+}
+
+#risk-audit-trail:has(#risk-audit-trail-toggle[aria-expanded="true"]) .sr-table-toolbar {
+    border-bottom: 1px solid $gray-300;
+}
+
+// Breathing room between the Associated Exceptions .sr-tabs row and the
+// treegrid table below it -- .sr-tabs' own border-bottom sat flush against
+// the table's top edge with nothing separating them.
+#associated-exceptions-tab-content {
+    padding-top: 12px;
+}
+
+// Printable risk view (management/print_view.php) -- a bare page with no
+// sidebar/topbar, matching the "lack of menu or header" design intent, but
+// it still reuses .page-wrapper's own grey background/scroll-region shell
+// (scss/core/layout/layout.scss) for consistency with the rest of the app.
+// That shell reserves `margin-left: var(--sr-sidebar-width)` for the
+// sidebar it assumes is always present -- without a sidebar here, that
+// margin left a wide unstyled gap between the actual body background
+// (white, the browser/Bootstrap default) and the grey .page-wrapper,
+// reading as "the page is white" even though .page-wrapper's own fill was
+// already correct. $page-wrapper-bg (an alias of $sr-default) is set on
+// body too, belt-and-suspenders: .page-wrapper's `position: fixed` covers
+// the full viewport in every browser this page actually renders in, but a
+// print/PDF pipeline that flattens fixed positioning is exactly the case
+// this page exists for, so body itself carries the same fill rather than
+// depending on that being true.
+body.sr-print-page {
+    background-color: $page-wrapper-bg;
+
+    .page-wrapper {
+        margin-left: 0;
+    }
+
+    // print_view.php deliberately doesn't use layout.scss's '.content' class
+    // for its content wrapper (see that markup's own comment) -- dropping it
+    // also dropped its 10px top margin, so the record header's score tiles
+    // sat flush against the viewport edge with no breathing room.
+    // .container-fluid already supplies the left/right gutters (Bootstrap
+    // default); only the top was missing.
+    .container-fluid {
+        padding-top: 20px;
+    }
+}

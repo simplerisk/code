@@ -2823,10 +2823,11 @@ $('#review-risk-close-submit').on('click', function () {
 // #review-risk-bulk-close etc. above), which also leaves room to reset the
 // embedded form on each open below.
 //
-// #review-risk-add-modal carries display_add_risk() -- the exact same
-// Submit Risk form Compliance already embeds in its own #modal-new-risk
-// (compliance/testing.php, compliance/view_test.php) -- unmodified. The
-// form's own .save-risk-form submit handler lives in the SHARED
+// #review-risk-add-modal's body is an empty canvas div that
+// window.RiskDetailsForm.init() (js/simplerisk/common/risk-details-form.js)
+// renders the Cards form into on open, with embedded: true so it emits a
+// hidden .save-risk-form affordance instead of its own sticky action bar.
+// That affordance's submit handler lives in the SHARED
 // js/simplerisk/pages/risk.js (used by the standalone Submit Risk page, Edit
 // Risk, and both Compliance embeds too), which we don't want to make aware
 // of Review Risk specifically. Instead, the modal itself opts into a
@@ -2840,83 +2841,41 @@ $('#review-risk-add-btn').on('click', function (e) {
     $('#review-risk-add-modal').modal('show');
 });
 
-// ---- + Add Risk modal: per-page widget init ----
-//
-// display_add_risk() renders the form's <select>s as PLAIN markup and leaves
-// enhancing them to the embedding page -- every other consumer inlines its
-// own copy of this block (management/index.php's $(document).ready, and
-// compliance/testing.php + compliance/view_test.php). Review Risk embedded
-// the form without that block, so in this modal the Affected Assets field
-// and the four bootstrap-multiselect fields (Site/Location, Technology,
-// Team, Additional Stakeholders) rendered as bare, unusable <select multiple>
-// boxes -- Affected Assets in particular showed as an empty sliver with no
-// options at all, even though the instance has assets. Verified against the
-// standalone Submit Risk page side by side: there all five are enhanced.
-//
-// This is deliberately NOT fixed in the shared js/simplerisk/pages/risk.js:
-// that file is loaded by four other consumers that already run their own
-// init, and adding a second one there would double-initialize them.
-// setupAssetsAssetGroupsWidgetForRisk() is a top-level function in
-// js/simplerisk/common.js (which this page already loads), so calling it
-// here needs no change to risk.js at all.
-//
-// Runs on the first 'shown.bs.modal' rather than at page ready because
-// bootstrap-multiselect sizes its trigger from the live element and the
-// modal is display:none until then. The guard flag makes reopening the
-// modal a no-op: bootstrap-multiselect's .multiselect() on an already-
-// enhanced select builds a SECOND trigger next to the first (selectize has
-// its own idempotence guard in common.js, but this one does not).
-var reviewRiskAddModalWidgetsReady = false;
-
-function initAddRiskModalWidgets() {
-
-    if (reviewRiskAddModalWidgetsReady) {
-        return;
-    }
-    reviewRiskAddModalWidgetsReady = true;
-
-    var $modal = $('#review-risk-add-modal');
-
-    // Affected Assets -- the shared selectize implementation, risk-scoped
-    // (the /asset-group/options endpoint, type=risk). Passing no risk id
-    // means "a risk that does not exist yet", same as every other add path.
-    $modal.find('select.assets-asset-groups-select').each(function () {
-        setupAssetsAssetGroupsWidgetForRisk($(this));
-    });
-
-    // The four roster fields. buttonWidth 100% matches what the standalone
-    // Submit Risk page passes, so the trigger fills its column exactly as it
-    // does there. No enableHTML -- design-system.md 14b: it also switches
-    // OPTION-label rendering to .html(), and those labels are user-authored
-    // (team names, user names).
-    $modal.find('select.multiselect').multiselect({ buttonWidth: '100%' });
-}
-
 // ---- + Add Risk modal: footer actions ----
 //
 // Fills the empty .modal-footer that includes/display.php ships on this
 // modal with the design system's 'left hint + right-aligned actions' row.
 //
-// The real Submit/Clear buttons stay exactly where display_add_risk() put
-// them (inside the <form>, inside the active .tab-data) and are hidden with
-// scoped CSS instead -- see scss/pages/_review-risk.scss. They cannot simply
-// be re-parented into the footer: risk.js's save handler resolves the form
-// with $this.closest('form') and display.php's #reset_form handler resolves
-// the tab with $(reset_btn).closest('.tab-data'), so a relocated button
-// would silently submit nothing and reset nothing. The footer buttons are
-// proxies that forward a click to the real ones.
+// The real submit control is the engine's own hidden .save-risk-form button
+// -- built by buildEmbeddedSubmitAffordance() in
+// js/simplerisk/common/risk-details-form.js when init() is called with
+// embedded: true -- which sits inside the rendered <form> (class .tab-data)
+// and is never shown. There is NO reset/Clear button for this call site at
+// all: the engine's embedded rendering emits only the submit affordance, so
+// the [type="reset"] branch below is a no-op here and exists purely so this
+// function stays correct if a future embedder does render one.
+//
+// The real button cannot simply be re-parented into the footer: risk.js's
+// delegated .save-risk-form handler resolves the form it submits with
+// $this.closest('form'), so a button moved out of the <form> would silently
+// submit nothing. (Same for a reset button, whose handler resolves its tab
+// with closest('.tab-data').) The footer buttons are therefore proxies that
+// forward a click to the real one where it already lives.
 //
 // Labels and hint text are READ OFF the rendered markup with .text() rather
-// than hardcoded, so they stay translated (they come from $lang['SubmitRisk']
-// / $lang['ClearForm'] / $lang['NewRiskInstruction']) and this file adds no
-// user-facing English of its own. .text() in both directions also means a
-// label can never be interpreted as markup.
+// than hardcoded, so they stay translated and this file adds no user-facing
+// English of its own. .text() in both directions also means a label can
+// never be interpreted as markup. window.RiskDetailsForm's embedded
+// .save-risk-form affordance is deliberately unlabeled (it's never shown --
+// see buildEmbeddedSubmitAffordance() in risk-details-form.js), so the save
+// proxy falls back to $lang['SubmitRisk'] (the same key the legacy
+// display_add_risk() markup used for this action) when the harvested text
+// comes back empty.
 //
-// Re-runnable by design: it targets whichever .tab-data is active NOW, so it
-// runs again on template-group tab changes (Customization Extra renders one
-// form, with its own button pair, per template group). It rebuilds the
-// footer's contents each time rather than appending, so reopening the modal
-// or switching tabs can never duplicate the buttons.
+// Re-runnable by design: it targets whichever .tab-data form is active NOW,
+// so calling it again after a template-group switch or a re-render is safe.
+// It rebuilds the footer's contents each time rather than appending, so
+// reopening the modal or switching tabs can never duplicate the buttons.
 function syncAddRiskModalFooter() {
 
     var $modal = $('#review-risk-add-modal');
@@ -2926,9 +2885,12 @@ function syncAddRiskModalFooter() {
         return;
     }
 
-    // The active template-group pane, or the whole modal when the
-    // Customization Extra is off (display_add_risk() then renders a single
-    // #tab-container with no .tab-pane wrapper).
+    // window.RiskDetailsForm renders a single '<prefix>-form' (class
+    // 'tab-data') for the whole modal -- there is no per-template-group
+    // '.tab-pane' the way the legacy display_add_risk() markup had, but this
+    // selector still resolves it dynamically by class rather than by a
+    // hardcoded form id (the derived id is
+    // 'review-risk-add-modal-canvas-form').
     var $pane = $modal.find('.tab-pane.tab-data.active');
     if (!$pane.length) {
         $pane = $modal.find('.tab-data').first();
@@ -2946,11 +2908,12 @@ function syncAddRiskModalFooter() {
         return;
     }
 
-    // The instruction line display_add_risk() renders immediately before the
-    // action row, harvested as the footer's left hint. Tagging the exact
-    // element found here (rather than letting the stylesheet match "the <p>
-    // before .risk-form-actions") keeps the hiding rule honest when the
-    // Customization Extra injects extra fields into the same column.
+    // window.RiskDetailsForm's embedded rendering has no instruction line
+    // before the action row (unlike the legacy display_add_risk() markup),
+    // so this normally comes back empty -- which is fine, the footer hint
+    // simply stays blank. Tagging the exact element found here (rather than
+    // letting the stylesheet match "the <p> before .risk-form-actions") keeps
+    // the hiding rule honest for any future markup that does render one.
     var $hintSource = $pane.find('.risk-form-actions').prevAll('p').first();
     $hintSource.addClass('review-risk-add-hint-source');
     $footer.find('.sr-modal-hint').text($hintSource.text().trim());
@@ -2965,17 +2928,26 @@ function syncAddRiskModalFooter() {
             'class': 'btn btn-secondary review-risk-add-footer-action',
             'text': $realReset.text().trim()
         }).on('click', function () {
-            // Trigger the REAL button so display.php's delegated #reset_form
-            // handler runs with a $(this) that can still find its .tab-data.
+            // Unreachable for this call site -- the engine renders no reset
+            // button (see this function's header comment). Kept so that if a
+            // future embedder does, the proxy triggers the REAL button and
+            // display.php's delegated #reset_form handler runs with a $(this)
+            // that can still find its .tab-data.
             $pane.find('[type="reset"]').first().trigger('click');
         }).appendTo($footer);
     }
 
     if ($realSave.length) {
+        var saveLabel = $realSave.text().trim();
+        if (!saveLabel) {
+            // See the comment above this function: the engine's hidden
+            // .save-risk-form button carries no text of its own.
+            saveLabel = _lang['SubmitRisk'];
+        }
         $('<button>', {
             'type': 'button',
             'class': 'btn btn-submit review-risk-add-footer-action',
-            'text': $realSave.text().trim()
+            'text': saveLabel
         }).on('click', function () {
             // Same reasoning as the reset proxy: risk.js's delegated
             // .save-risk-form handler needs closest('form') to resolve.
@@ -2984,13 +2956,80 @@ function syncAddRiskModalFooter() {
     }
 }
 
+// window.RiskDetailsForm.init() is async (it fetches
+// /ui/risk/template_groups before rendering anything), so the form does not
+// exist in the DOM at the moment 'shown.bs.modal' fires -- a
+// syncAddRiskModalFooter() call right after init() finds nothing to proxy
+// and returns early. This MutationObserver closes that gap.
+//
+// It fires ONCE per open, not once per template-group tab switch, and that
+// is all it needs to do. It watches the canvas with `{ childList: true }`
+// and no `subtree`, so the only mutation it can see is a change to the
+// canvas's own direct children -- which happens in exactly one place:
+// renderTabs()'s `container.empty().append($form)` on the initial render.
+// Every later tab switch goes through loadTemplateGroup()/buildCanvas(),
+// which only ever rewrite a NESTED canvas div inside the already-built
+// $form, leaving the mount's direct children untouched. That is sufficient
+// because the <form> and its hidden .save-risk-form affordance are built
+// once by renderTabs() and persist across tab switches, so the footer proxy
+// the first sync builds stays correct for the life of the open modal.
+// Disconnected on close and reconnected on the next open, mirroring
+// window.RiskDetailsForm's own init()/destroy() lifecycle for this
+// container.
+var reviewRiskAddModalCanvasObserver = null;
+
 $('#review-risk-add-modal')
     .on('shown.bs.modal', function () {
-        initAddRiskModalWidgets();
+        // The page-wide GridStack.renderCB guard that used to live here now
+        // lives in the engine itself (guardGridStackRenderCB() in
+        // js/simplerisk/common/risk-details-form.js, called from init()), so
+        // every embedder of the Cards form gets it, not just this modal.
+        window.RiskDetailsForm.init('#review-risk-add-modal-canvas', {
+            embedded: true,
+            // Gates SupportingDocumentation's file input (buildSupportingDocumentationWidget(),
+            // risk-details-form.js) -- read from the canvas's own data
+            // attribute (includes/display.php), the real submit_risks
+            // session check: this modal is reachable by anyone with the
+            // broader riskmanagement permission, which does not imply
+            // submit_risks.
+            canSubmitRisk: $('#review-risk-add-modal-canvas').attr('data-can-submit-risk') === '1'
+        });
         syncAddRiskModalFooter();
+
+        var canvasEl = document.getElementById('review-risk-add-modal-canvas');
+        if (canvasEl && typeof MutationObserver !== 'undefined') {
+            if (reviewRiskAddModalCanvasObserver) {
+                reviewRiskAddModalCanvasObserver.disconnect();
+            }
+            reviewRiskAddModalCanvasObserver = new MutationObserver(function () {
+                syncAddRiskModalFooter();
+            });
+            reviewRiskAddModalCanvasObserver.observe(canvasEl, { childList: true });
+        }
     })
-    // Customization Extra: each template-group tab is its own <form> with its
-    // own button pair, so the footer has to re-point at the newly active one.
+    .on('hidden.bs.modal', function () {
+        if (reviewRiskAddModalCanvasObserver) {
+            reviewRiskAddModalCanvasObserver.disconnect();
+            reviewRiskAddModalCanvasObserver = null;
+        }
+
+        // Full teardown on close: every nested GridStack instance, HugeRTE
+        // editor and pending timer the engine built for this container. Also
+        // what makes open/close/reopen safe -- window.RiskDetailsForm.init()
+        // tears down and rebuilds from scratch regardless, but destroying
+        // here as soon as the modal is gone avoids leaving a live instance
+        // (and its window resize binding) around while the modal is hidden.
+        window.RiskDetailsForm.destroy('#review-risk-add-modal-canvas');
+    })
+    // The new engine's tabs (.sr-tabs/.sr-tab, risk-details-form.js) are NOT
+    // Bootstrap tabs, so this no longer fires for template-group switching --
+    // left in place as a harmless no-op rather than removed, since nothing
+    // in this modal emits 'shown.bs.tab' anymore. No replacement per-tab-
+    // switch sync is needed: a tab switch rewrites only the nested canvas
+    // inside the already-built form, and the form's hidden .save-risk-form
+    // button (the only thing the footer proxies) survives it untouched, so
+    // the one sync the MutationObserver above performs on the initial render
+    // stays valid for the life of the open modal.
     .on('shown.bs.tab', function () {
         syncAddRiskModalFooter();
     });

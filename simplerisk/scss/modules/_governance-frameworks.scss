@@ -763,8 +763,10 @@
 // BASE RULES FIRST -- Task 3 renders .sr-ctl-sub, .sr-ctl-name, .sr-mat and
 // .sr-mat-none with NO styling of their own. .sr-ctl-sub is a <span>, so
 // without an explicit `display: none` it is INLINE and visible at full width,
-// duplicating the Family and Owner columns it exists to replace at narrower
-// widths. (Caught reviewing Task 3; do not omit this block.)
+// duplicating the Family, Owner and Maturity columns it exists to replace at
+// narrower widths (Maturity joined the line later -- see the Columns picker
+// task note further down for why it was missing and what it fixes). (Caught
+// reviewing Task 3; do not omit this block.)
 .sr-ctl-sub {
     display: none;                       // compact/queue tiers turn it back on
     font-size: 11.5px;
@@ -1323,8 +1325,8 @@
             // tier turns every row into a grid, so the table stops being able
             // to overflow at all and a fit test would read "everything fits"
             // and switch the compact tier OFF. That would take `.sr-ctl-sub`
-            // with it -- the only place Family and Owner survive once the rules
-            // below hide their columns -- so evaluateResponsiveTiers() detects
+            // with it -- the only place Family, Owner and Maturity survive once
+            // the rules below hide their columns -- so evaluateResponsiveTiers() detects
             // that trigger (by `thead` computing to display:none with both tier
             // classes stripped) and holds the compact tier ON rather than
             // measuring. Under the CLASS trigger the compact tier is on for the
@@ -1343,6 +1345,24 @@
             // belt-and-braces today -- keep it: it is what makes this block
             // correct independently of how the compact tier is expressed.
             .sr-col-family, .sr-col-owner, .sr-col-mat { display: none; }
+
+            // Task: Columns picker + saved layout/filters -- the four new
+            // optional standard fields and every custom field share this
+            // tier's rule with Family/Owner/Maturity above rather than
+            // getting their own grid-column/grid-row placement: they are
+            // exactly as supplementary, none is surfaced in .sr-ctl-sub the
+            // way Family/Owner/Maturity are, and .sr-col-custom is the ONE class
+            // every custom field column carries (renderToggleableCell(),
+            // governance-frameworks.js), so this single rule covers however
+            // many are active without needing a rule per field. Without
+            // this, a toggled-on column here would fall through to the
+            // grid's default auto-placement inside `auto 1fr auto` --
+            // unlike Applicability/Status below, which are DELIBERATELY
+            // placed full-width, an auto-placed cell lands squeezed into
+            // whichever of the two `auto`-sized tracks it's given, which
+            // measured at ~20px wide for a text column with a 3-5 character
+            // value like a maturity level or a class name.
+            .sr-col-class, .sr-col-phase, .sr-col-priority, .sr-col-ctype, .sr-col-custom { display: none; }
         }
 
         // The min-content probe (Task 47) is REMOVED at this tier, and it has to
@@ -1603,6 +1623,60 @@
 #sr-ctl-table tbody tr.sr-row-checked,
 #sr-ctl-table tbody tr.sr-row-checked:hover { background: $sr-row-selected; }
 
+// Actions column pinned to the right edge of the horizontal scroll (Task:
+// Columns picker + saved layout/filters) -- the Columns picker can now push
+// this table well past its card's width (up to 4 new optional fields plus
+// any number of custom fields), so Edit/Clone/Delete need the same "stay
+// reachable while scrolled sideways" fix Review Risk shipped for its own
+// optional-column growth. Page-scoped under #sr-ctl-table rather than
+// joining _tables.scss's #review_risk_table/#plan_projects_table/
+// #unassigned_risks_table block: that block's own comment states its
+// preconditions explicitly ("no zebra striping, no per-row selected tint"),
+// and THIS table has one -- the .sr-row-checked tint immediately above --
+// so the shared rule's flat `background: $sr-body` resting state would
+// paint a mismatched seam over a selected row's sticky cell. This block
+// tracks BOTH tints (hover, same as the shared block, and checked, which it
+// doesn't need to) instead of inheriting only one of them.
+//
+// `right` layers onto `thead th`'s inherited `position: sticky; top: 0`
+// (_tables.scss's shared rule) exactly like the reused block does; the
+// governance-frameworks.js side adds the matching sr-actions-col-sticky
+// class to both the <th> (renderThead()) and every row's <td>
+// (renderRow()), so the header and the rows can never disagree about which
+// cell is pinned.
+#sr-ctl-table {
+    thead th.sr-actions-col-sticky {
+        right: 0;
+        // Virtualized rows scroll UNDER the header (.sr-table-scroll-virt
+        // thead th above, z-index: 2) -- match it here so the header's own
+        // pinned actions cell isn't the one exception a row's pinned cell
+        // can paint over.
+        z-index: 3;
+    }
+
+    tbody td.sr-actions-col-sticky {
+        position: sticky;
+        right: 0;
+        background: $sr-body;
+        box-shadow: $shadow;
+    }
+
+    tbody tr:hover td.sr-actions-col-sticky { background: $gray-100; }
+
+    tbody tr.sr-row-checked td.sr-actions-col-sticky,
+    tbody tr.sr-row-checked:hover td.sr-actions-col-sticky { background: $sr-row-selected; }
+
+    // A row-actions menu opened from a pinned cell: position:sticky makes
+    // every pinned <td> its own stacking context, so the menu's own z-index
+    // only ranks it INSIDE its cell, and the following rows' pinned cells --
+    // later in DOM order at the same auto level -- paint over the popped
+    // menu. Lift the open row's cell above its siblings for as long as its
+    // menu is open (mirrors _tables.scss's identical Review Risk rule).
+    tbody tr:has(.sr-row-actions-wrap.is-open) td.sr-actions-col-sticky {
+        z-index: 1;
+    }
+}
+
 // ===== Empty states (Task 9, design-system.md §10) ==========================
 // The shipped .sr-table-empty family (_tables.scss) covers the shell (icon
 // tile / title / body / action) for every intent on both #sr-ctl-table and
@@ -1673,30 +1747,6 @@
     .sr-table-scroll-virt {
         overflow-y: scroll;
         overscroll-behavior: contain;
-    }
-
-    // sr-row-actions-menu.js's shared close/orient module adds .is-unclipped
-    // to a row's clipping ancestor when opening a menu on a table that isn't
-    // using its HORIZONTAL scroll (orient() checks scrollWidth <= clientWidth
-    // first) -- and _tables.scss answers that with `overflow: visible
-    // !important`, !important because it also has to beat DataTables' own
-    // bundled .dt-scroll rule on Manage Audits. !important beats specificity
-    // outright, so without this override it also stomps the ID-scoped rule
-    // above and disables the REAL vertical scroll the virtual list depends
-    // on -- unlike every other .sr-table-scroll consumer, this element's
-    // overflow-y was never a side effect of overflow-x:auto to begin with, it
-    // is the actual scrollport SRFrameworks' virtual list renders against.
-    // Losing it silently strands an open menu: the scroll listener that is
-    // supposed to close the menu (governance-frameworks.js) can never fire
-    // once scrollTop stops moving, so the menu (and the unclip) are stuck
-    // until reload -- SCENARIO-44 in define-control-frameworks-18.spec.ts
-    // pins exactly this.
-    //
-    // Restoring it is safe: is-unclipped was only ever requested for a
-    // horizontal reason, so leaving overflow-x visible is correct, and
-    // overflow-y alone is all this element needs back.
-    .sr-table-scroll-virt.is-unclipped {
-        overflow-y: scroll !important;
     }
 
     // The sticky header (_tables.scss sets `position: sticky; top: 0` on every

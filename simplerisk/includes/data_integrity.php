@@ -47,9 +47,6 @@ function upsert_data_integrity_issue(
     $stmt->execute();
 }
 
-/**
- * @return array<int, array{id:int, issue_type:string, table_name:string, column_name:string, record_id:string, broken_value:?string, suggested_value:?string, status:string, detected_at:string}>
- */
 // The admin review page renders every returned row in one pass (no
 // pagination UI yet -- see the architecture note in
 // api_v2_data_integrity_issues_list()). This cap bounds the worst case (a
@@ -57,6 +54,9 @@ function upsert_data_integrity_issue(
 // affecting realistic volumes, which run in the tens to low hundreds.
 const DATA_INTEGRITY_ISSUES_LIST_LIMIT = 1000;
 
+/**
+ * @return array<int, array{id:int, issue_type:string, table_name:string, column_name:string, record_id:string, broken_value:?string, suggested_value:?string, status:string, detected_at:string}>
+ */
 function get_open_data_integrity_issues(PDO $db, ?string $issue_type = null, int $limit = DATA_INTEGRITY_ISSUES_LIST_LIMIT): array
 {
     if ($issue_type !== null) {

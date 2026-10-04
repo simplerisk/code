@@ -814,7 +814,7 @@ $lang = array(
     'UserSessions' => 'เซสชันผู้ใช้',
     'SessionActivityTimeout' => 'หมดเวลาการใช้งานเซสชั่น',
     'Security' => 'ความปลอดภัย',
-    'EnableCSP' => 'เปิดใช้งานนโยบายความปลอดภัยของเนื้อหา (วิธีนี้เคยทำให้ Chrome มีปัญหาในอดีต)',
+    'EnableCSP' => 'เปิดใช้งานนโยบายความปลอดภัยของเนื้อหา (แนะนำ)',
     'EnableDebugLogging' => 'เปิดใช้งานการบันทึกข้อมูลการแก้ไขข้อผิดพลาด',
     'seconds' => 'วินาที',
     'FieldSample' => 'ตัวอย่างภาคสนาม',
@@ -4967,6 +4967,572 @@ $lang = array(
     // closeriskForm()'s own (hardcoded, pre-existing) single-risk denial text.
     'NoCloseRiskPermission' => 'คุณไม่มีสิทธิ์ในการปิดความเสี่ยง',
     'QuestionnaireRequiredQuestionUnanswered' => 'โปรดตอบคำถามที่กำหนดทั้งหมดก่อนทำแบบประเมินให้เสร็จสมบูรณ์',
+    'AuditLog_ControlStatusAutoSynced' => 'สถานะของการควบคุม "{$short_name}" ได้รับการอัปเดตโดยอัตโนมัติเป็น "{$status_text}" โดยอิงตามผลการทดสอบล่าสุด',
+    'EnableCSPHelp' => 'นโยบายความปลอดภัยของเนื้อหา (Content Security Policy หรือ CSP) จำกัดให้เบราว์เซอร์โหลดสคริปต์ สไตล์ รูปภาพ และฟอนต์จาก SimpleRisk เท่านั้น และบล็อกการสร้างเฟรมหน้าเว็บและการส่งแบบฟอร์มข้ามโดเมน นับเป็นการป้องกันการโจมตีแบบ Cross-Site Scripting ที่แข็งแกร่งที่สุดในระบบ ควรเปิดใช้งานไว้เว้นแต่จะขัดแย้งกับพร็อกซี ส่วนขยายเบราว์เซอร์ หรือการผสานรวมจากภายนอกในสภาพแวดล้อมของคุณ',
+    // Define Control Frameworks' Columns picker (Task: Columns picker + saved layout/filters) -- the "Standard" group label above its built-in fields (Family/Owner/Maturity/Status/Class/Phase/Priority/Type); 'CustomFields' already exists.
+    'StandardFields' => 'ช่องข้อมูลมาตรฐาน',
+    // My Profile redesign (js/simplerisk/pages/account-profile.js)
+    'Administrator' => 'ผู้ดูแลระบบ',
+    'AccountDetails' => 'รายละเอียดบัญชี',
+    'YourPermissions' => 'สิทธิ์ของคุณ',
+    'RoleAndTeamsGrantAccess' => 'สิทธิ์การเข้าถึงที่คุณได้รับจากบทบาทและทีมของคุณ',
+    'AllGranted' => 'อนุญาตทั้งหมด',
+    'PermissionsCountLabel' => 'สิทธิ์ $count',
+    'ManagedByYourAdministrator' => 'รายละเอียดเหล่านี้ได้รับการจัดการโดยผู้ดูแลระบบของคุณ โปรดติดต่อผู้ดูแลระบบหากมีสิ่งใดที่ต้องการเปลี่ยนแปลง',
+    'MultiFactorAuthenticationHint' => 'เพิ่มขั้นตอนการเข้าสู่ระบบอีกขั้นตอนหนึ่งเพื่อเพิ่มความปลอดภัยให้กับบัญชีของคุณ',
+    'ChangingPasswordSignsOutEverywhere' => 'การเปลี่ยนรหัสผ่านจะทำให้คุณออกจากระบบในทุกที่',
+    'APIKeyHint' => 'ใช้สำหรับตรวจสอบความถูกต้องของสคริปต์และการผสานรวมของคุณกับ API ของ SimpleRisk',
+    'ResetDisplaySettingsHint' => 'รีเซ็ตการเลือกคอลัมน์ที่กำหนดเองของคุณกลับไปเป็นค่าเริ่มต้น',
+    'CardGeneral' => 'ทั่วไป',
+    'CardClassification' => 'การจำแนกประเภท',
+    'CardScoring' => 'การให้คะแนน',
+    'CardAdditionalInformation' => 'ข้อมูลเพิ่มเติม',
+    'CardCustomFields' => 'ช่องข้อมูลที่กำหนดเอง',
+    'CardCustomFieldsHint' => 'จำเป็นต้องจัดเรียงข้อมูลเหล่านี้ลงในการ์ด',
+    'LayoutEditorHint' => 'ลากฟิลด์ไปยังการ์ดอื่นเพื่อกำหนดฟิลด์นั้นใหม่ ลากภายในการ์ดเพื่อจัดลำดับใหม่หรือปรับขนาด และการลากหรือปรับขนาดการ์ดเพื่อเปลี่ยนตำแหน่งบนหน้าเว็บ',
+    'ScoringNotYetAvailableInThisView' => 'การตั้งค่าการให้คะแนนยังไม่พร้อมใช้งานในมุมมองนี้',
+    // Native tooltip on the Cards layout editor's Gridstack resize handles
+    // (js/simplerisk/pages/customization-layout-editor.js) -- the bare corner
+    // bracket read as an unexplained mark until it said what it does.
+    'DragToResize' => 'ลากเพื่อปรับขนาด',
+    // Warning pill on a Cards layout editor card the admin has sized shorter
+    // than the fields it holds. Replaces the silent inner scrollbar that state
+    // used to produce.
+    'NFieldsDoNotFitCard' => 'ช่องข้อมูล {n} ไม่พอดีกับการ์ดนี้ กรุณาปรับขนาดการ์ดเพื่อแสดงช่องข้อมูลเหล่านั้น',
+    // Card titles for the Mitigation tab's Cards layout editor
+    // (js/simplerisk/pages/customization-layout-editor.js), mirroring the
+    // Card* keys above for the Details tab. Order follows
+    // customization_mitigation_cards_layout_card_keys() (includes/functions.php).
+    'CardMitigationStrategy' => 'กลยุทธ์การบรรเทาผลกระทบ',
+    'CardMitigationSolution' => 'แนวทางแก้ไขบรรเทาผลกระทบ',
+    'CardMitigationControls' => 'มาตรการควบคุมบรรเทาผลกระทบ',
+    'CardReview' => 'ทบทวน',
+    // Submit Risk page's three action-bar buttons (buildActionsBar(),
+    // risk-details-form.js, submitMode 'create' only) and the Reset Form
+    // confirm modal (management/index.php, design-system.md #8's "Confirm"
+    // type). 'Discard'/'Cancel'/'Close' already exist and are reused for the
+    // modal's own buttons.
+    'ResetForm' => 'รีเซ็ตฟอร์ม',
+    'SaveAndNew' => 'ประหยัดและใหม่',
+    'SaveAndView' => 'บันทึกและดู',
+    'ResetFormConfirmTitle' => 'ควรยกเลิกการยื่นรายงานความเสี่ยงนี้หรือไม่?',
+    'ResetFormConfirmBody' => 'ข้อมูลทั้งหมดที่คุณป้อนจะสูญหายไป',
+    // Restore-template destructive confirm (Customization Extra, Save/Restore
+    // action bar). Two body variants: risk's Details/Mitigation/Review tabs
+    // named explicitly (the only fgroup with that 3-tab Cards layout), a
+    // generic fallback for every other fgroup (single legacy-panel tab).
+    // Both end on the same scoping reassurance -- confirmed via direct source
+    // read that Restore only ever touches the currently-selected template
+    // group, never any other.
+    'RestoreTemplateConfirmTitle' => 'คืนค่าเค้าโครงเริ่มต้น?',
+    'RestoreTemplateConfirmBodyRisk' => 'การดำเนินการนี้จะรีเซ็ตทุกฟิลด์ในแท็บรายละเอียด การบรรเทาผลกระทบ และการตรวจสอบ กลับไปเป็นค่าเริ่มต้นสำหรับกลุ่มเทมเพลตนี้ กลุ่มเทมเพลตอื่นๆ จะไม่ได้รับผลกระทบ',
+    'RestoreTemplateConfirmBody' => 'การดำเนินการนี้จะรีเซ็ตทุกฟิลด์ในเทมเพลตนี้กลับไปเป็นค่าเริ่มต้นสำหรับกลุ่มเทมเพลตนี้ กลุ่มเทมเพลตอื่นๆ จะไม่ได้รับผลกระทบ',
+    // CVSS holder's collapsed Temporal/Environmental/Impact-Modifiers
+    // accordion (buildCvssHolder(), risk-details-form.js) -- these three
+    // groups are optional CVSS v2 refinements on top of the required Base
+    // Score Metrics, so they collapse behind this header by default.
+    'AdvancedMetrics' => 'เมตริกขั้นสูง',
+    // CVSS holder's Base Score Metrics sub-group headers (buildCvssHolder(),
+    // risk-details-form.js) -- distinct from the existing 'ExploitabilityMetrics'/
+    // 'ImpactMetrics' keys, which the legacy cvss_modal_content.php modal
+    // still renders as plain "Exploitability Metrics"/"Impact Metrics" and
+    // must keep unchanged. These fold the umbrella "Base Score Metrics"
+    // heading into each sub-group's own header instead of a separate label.
+    'BaseScoreExploitabilityMetrics' => 'ตัวชี้วัดความสามารถในการใช้ประโยชน์จากคะแนนพื้นฐาน',
+    'BaseScoreImpactMetrics' => 'ตัวชี้วัดผลกระทบของคะแนนพื้นฐาน',
+    // Per-field help popovers on the CVSS holder's 14 metric selects
+    // (buildCvssScoreItem(), risk-details-form.js) -- one per CVSS v2
+    // metric, matching the standard CVSS v2 specification definitions.
+    // Double-quoted (not single-quoted, this file's usual style) so the
+    // \n line breaks are real escape sequences: each popover leads with one
+    // overall sentence, then one bullet line per option, rendered via
+    // white-space: pre-line on .sr-scoring-help-popover .popover-body
+    // (scss/modules/_questionnaire.scss) -- plain text throughout, no HTML,
+    // so the popover stays initialized without Bootstrap's `html: true`.
+    "AttackVectorHelp" => "วิธีการเข้าถึงช่องโหว่\n• โลคอล: ต้องเข้าถึงภายในเครื่อง เช่น คอนโซลหรือเชลล์\n• เครือข่ายข้างเคียง: ผู้โจมตีต้องอยู่ในส่วนเครือข่ายทางกายภาพหรือตรรกะเดียวกัน\n• เครือข่าย: สามารถโจมตีจากระยะไกลผ่านเครือข่ายได้ โดยไม่จำเป็นต้องเข้าถึงภายในเครื่องหรือเครือข่ายข้างเคียง",
+    "AttackComplexityHelp" => "ความซับซ้อนของการโจมตีเมื่อผู้โจมตีเข้าถึงเป้าหมายได้แล้ว\n• สูง: ต้องมีเงื่อนไขเฉพาะที่จัดเตรียมได้ยาก\n• ปานกลาง: ต้องมีเงื่อนไขบางอย่าง แต่การโจมตีจะไม่ยากเมื่อเงื่อนไขเหล่านั้นครบถ้วนแล้ว\n• ต่ำ: ไม่จำเป็นต้องมีเงื่อนไขพิเศษใดๆ",
+    "AuthenticationHelp" => "จำนวนครั้งที่ผู้โจมตีต้องยืนยันตัวตนกับเป้าหมายเพื่อใช้ประโยชน์จากช่องโหว่นั้น\n• หลายครั้ง: ต้องยืนยันตัวตนสองครั้งขึ้นไป แม้ว่าจะใช้ข้อมูลประจำตัวเดียวกันก็ตาม\n• ครั้งเดียว: ต้องยืนยันตัวตนเพียงครั้งเดียว\n• ไม่มี: ไม่ต้องยืนยันตัวตน",
+    "ConfidentialityImpactHelp" => "ผลกระทบต่อความลับของข้อมูลที่ระบบประมวลผลหากถูกโจมตี\n• ไม่มี: ไม่มีผลกระทบ\n• บางส่วน: มีการเปิดเผยข้อมูลบางส่วน แต่ผู้โจมตีไม่สามารถควบคุมได้ หรือความเสียหายมีจำกัด\n• สมบูรณ์: มีการเปิดเผยข้อมูลทั้งหมดในระบบ",
+    "IntegrityImpactHelp" => "ผลกระทบต่อความสมบูรณ์ของระบบหากถูกโจมตี\n• ไม่มี: ไม่มีผลกระทบ\n• บางส่วน: ข้อมูลบางส่วนสามารถแก้ไขได้ แต่ผู้โจมตีไม่สามารถควบคุมได้ หรือขอบเขตจำกัด\n• สมบูรณ์: ความสมบูรณ์ของระบบถูกทำลายโดยสิ้นเชิง ผู้โจมตีสามารถแก้ไขไฟล์ใดก็ได้",
+    "AvailabilityImpactHelp" => "ผลกระทบต่อความพร้อมใช้งานของระบบหากถูกโจมตี\n• ไม่มี: ไม่มีผลกระทบ\n• บางส่วน: ประสิทธิภาพลดลงหรือเกิดการหยุดชะงักในการใช้งาน\n• สมบูรณ์: ปิดใช้งานทรัพยากรที่ได้รับผลกระทบทั้งหมด",
+    "RemediationLevelHelp" => "ระดับของการแก้ไขช่องโหว่ที่มีอยู่\n• การแก้ไขอย่างเป็นทางการ: มีโซลูชันที่สมบูรณ์จากผู้จำหน่าย\n• การแก้ไขชั่วคราว: มีการแก้ไขอย่างเป็นทางการแต่เป็นการแก้ไขชั่วคราว\n• วิธีแก้ปัญหาเฉพาะหน้า: มีวิธีแก้ปัญหาเฉพาะหน้าที่ไม่เป็นทางการและไม่ได้มาจากผู้จำหน่าย\n• ไม่พร้อมใช้งาน: ไม่มีโซลูชัน หรือไม่สามารถนำโซลูชันใดมาใช้ได้",
+    "ReportConfidenceHelp" => "ระดับความมั่นใจในการมีอยู่ของช่องโหว่และความน่าเชื่อถือของรายละเอียดทางเทคนิค\n• ไม่ได้รับการยืนยัน: รายงานจากแหล่งเดียวที่ไม่ได้รับการยืนยัน ปัญหาพื้นฐานยังเป็นการคาดเดา\n• ไม่ได้รับการยืนยันจากหลายแหล่ง: รายงานพฤติกรรมเดียวกันจากหลายแหล่ง แต่สาเหตุหลักยังไม่ได้รับการยืนยัน\n• ได้รับการยืนยัน: ผู้จำหน่ายยอมรับปัญหา หรือได้รับการยืนยันจากการวิเคราะห์ซอร์สโค้ดหรือการวิเคราะห์ช่องโหว่",
+    "CollateralDamagePotentialHelp" => "ความเสี่ยงต่อการสูญเสียชีวิต ทรัพย์สิน หรือความเสียหายทางการเงิน หากช่องโหว่นั้นถูกใช้ประโยชน์\n• ไม่มี: ไม่น่าจะเกิดการสูญเสียดังกล่าว\n• ต่ำถึงปานกลาง: อาจเกิดการสูญเสียในระดับปานกลาง\n• สูง: อาจส่งผลกระทบอย่างร้ายแรงต่อทรัพย์สิน รายได้ หรือความปลอดภัยขององค์กร",
+    "TargetDistributionHelp" => "สัดส่วนของระบบที่เสี่ยงต่อการถูกโจมตีในสภาพแวดล้อมของคุณ\n• ไม่มี: ไม่มีระบบเป้าหมายอยู่เลย\n• ต่ำ: 1-25% ของระบบมีความเสี่ยง\n• ปานกลาง: 26-75% มีความเสี่ยง\n• สูง: 76-100% มีความเสี่ยง",
+    "ConfidentialityRequirementHelp" => "ความลับของข้อมูลที่ได้รับผลกระทบมีความสำคัญต่อองค์กรของคุณมากน้อยเพียงใด\n• ต่ำ: การสูญเสียความลับมีผลกระทบจำกัด\n• ปานกลาง: มีผลกระทบร้ายแรง\n• สูง: มีผลกระทบหายนะ",
+    "IntegrityRequirementHelp" => "ความสำคัญของความสมบูรณ์ของสินทรัพย์ที่ได้รับผลกระทบต่อองค์กรของคุณ\n• ต่ำ: การสูญเสียความสมบูรณ์มีผลกระทบจำกัด\n• ปานกลาง: มีผลกระทบร้ายแรง\n• สูง: มีผลกระทบหายนะ",
+    "AvailabilityRequirementHelp" => "ความพร้อมใช้งานของสินทรัพย์ที่ได้รับผลกระทบมีความสำคัญต่อองค์กรของคุณมากน้อยเพียงใด\n• ต่ำ: การสูญเสียความพร้อมใช้งานมีผลกระทบจำกัด\n• ปานกลาง: มีผลกระทบร้ายแรง\n• สูง: มีผลกระทบหายนะ",
+    // Base Score Metrics' two sub-group intro sentences (metricsSubGroup()'s
+    // `descKey`, risk-details-form.js) -- orient the user to what the GROUP
+    // as a whole is asking, distinct from the per-field *Help popover keys
+    // above which explain each metric's own options.
+    'BaseScoreExploitabilityMetricsDescription' => 'ผู้โจมตีจะต้องเข้าถึงและกระตุ้นช่องโหว่นี้ได้อย่างไร: พวกเขาต้องอยู่ที่ไหน การโจมตีมีความซับซ้อนแค่ไหน และพวกเขาจำเป็นต้องยืนยันตัวตนก่อนหรือไม่',
+    'BaseScoreImpactMetricsDescription' => 'หากช่องโหว่ถูกโจมตีสำเร็จจะเกิดอะไรขึ้น: ผลกระทบต่อความลับ ความสมบูรณ์ และความพร้อมใช้งานของระบบที่ได้รับผลกระทบจะเป็นอย่างไร',
+    // Advanced Metrics' three optional sub-group intro sentences -- same
+    // metricsSubGroup() `descKey` as the two Base Score groups above.
+    'TemporalScoreMetricsDescription' => 'ภัยคุกคามในโลกแห่งความเป็นจริงของช่องโหว่นี้เปลี่ยนแปลงไปอย่างไรเมื่อเวลาผ่านไป: สถานะปัจจุบันของโค้ดที่ใช้ในการโจมตี การแก้ไขที่มีอยู่ และความมั่นใจของรายงานต่างๆ ว่าช่องโหว่นี้มีอยู่จริง',
+    'EnvironmentalScoreMetricsDescription' => 'ความเสี่ยงจากช่องโหว่นี้ขึ้นอยู่กับสภาพแวดล้อมของคุณ: ศักยภาพในการเกิดความเสียหายในโลกแห่งความเป็นจริง และจำนวนระบบของคุณที่ได้รับผลกระทบจริง ๆ',
+    'ImpactSubscoreModifiersDescription' => 'ถ่วงน้ำหนักผลกระทบของคะแนนพื้นฐานตามความสำคัญของความลับ ความสมบูรณ์ และความพร้อมใช้งานสำหรับสินทรัพย์เฉพาะนี้',
+    // Phase 4d-iii: DREAD holder help popovers (view_dread_help()'s
+    // existing English text, includes/display.php, extracted to real $lang
+    // keys -- that function's own content was raw hardcoded HTML, never
+    // localized, so it could not be reused verbatim).
+    'DamagePotentialHelp' => 'หากเกิดการโจมตีโดยใช้ช่องโหว่ จะสร้างความเสียหายมากน้อยเพียงใด?' . "\n" . '0 = ไม่มีอะไรเลย' . "\n" . '5 = ข้อมูลส่วนบุคคลของผู้ใช้ถูกละเมิดหรือได้รับผลกระทบ' . "\n" . '10 = การทำลายระบบหรือข้อมูลทั้งหมด',
+    'ReproducibilityHelp' => 'การจำลองช่องโหว่ภัยคุกคามนั้นง่ายแค่ไหน?' . "\n" . '0 = ยากมากหรือเป็นไปไม่ได้เลย แม้แต่สำหรับผู้ดูแลระบบของแอปพลิเคชัน' . "\n" . '5 = ต้องทำหนึ่งหรือสองขั้นตอน อาจต้องเป็นผู้ใช้ที่ได้รับอนุญาต' . "\n" . '10 = เพียงแค่ใช้เว็บเบราว์เซอร์และแถบที่อยู่ก็เพียงพอแล้ว โดยไม่จำเป็นต้องมีการยืนยันตัวตน',
+    'ExploitabilityHelp' => 'ต้องใช้สิ่งใดบ้างในการใช้ประโยชน์จากภัยคุกคามนี้?' . "\n" . '0 = ความรู้ด้านการเขียนโปรแกรมและเครือข่ายขั้นสูง พร้อมเครื่องมือโจมตีแบบกำหนดเองหรือขั้นสูง' . "\n" . '5 = มีมัลแวร์อยู่บนอินเทอร์เน็ต หรือสามารถเจาะระบบได้ง่ายโดยใช้เครื่องมือโจมตีที่มีอยู่' . "\n" . '10 = แค่เว็บเบราว์เซอร์',
+    'AffectedUsersHelp' => 'จะมีผู้ใช้งานได้รับผลกระทบกี่ราย?' . "\n" . '0 = ไม่มี' . "\n" . '5 = ผู้ใช้บางส่วน แต่ไม่ใช่ทั้งหมด' . "\n" . '10 = ผู้ใช้ทั้งหมด',
+    'DiscoverabilityHelp' => 'การค้นพบภัยคุกคามนี้ทำได้ง่ายแค่ไหน?' . "\n" . '0 = ยากมากถึงเป็นไปไม่ได้ ต้องใช้ซอร์สโค้ดหรือสิทธิ์การเข้าถึงระดับผู้ดูแลระบบ' . "\n" . '5 = สามารถหาคำตอบได้โดยการเดาหรือตรวจสอบข้อมูลการใช้งานเครือข่าย' . "\n" . '9 = รายละเอียดของข้อผิดพลาดประเภทนี้มีอยู่ในแหล่งข้อมูลสาธารณะอยู่แล้ว และสามารถค้นหาได้ง่ายๆ โดยใช้เครื่องมือค้นหา' . "\n" . '10 = ข้อมูลจะปรากฏให้เห็นในแถบที่อยู่ของเว็บเบราว์เซอร์หรือในแบบฟอร์ม',
+    // The DREAD holder's summary card heading and "DREAD Metrics" card
+    // heading. No existing key covers either (confirmed via grep before
+    // adding).
+    'DreadScore' => 'คะแนน DREAD',
+    'DreadMetrics' => 'ตัวชี้วัด DREAD',
+    // Phase 4d-iv: OWASP holder help popovers (view_owasp_help()'s
+    // existing English text, includes/display.php, extracted to real
+    // $lang keys -- same never-localized-legacy-content extraction the
+    // DREAD phase already did for its own 5 fields). Wording/levels
+    // trued up against that function's real source text, not transcribed
+    // from an earlier standard-methodology draft.
+    'SkillLevelHelp' => 'กลุ่มสายลับเหล่านี้มีความเชี่ยวชาญด้านเทคนิคมากแค่ไหน?' . "\n" . '1 = ไม่มีทักษะทางเทคนิค' . "\n" . '3 = ทักษะทางเทคนิคบางประการ' . "\n" . '5 = ผู้ใช้คอมพิวเตอร์ขั้นสูง' . "\n" . '6 = ทักษะด้านเครือข่ายและการเขียนโปรแกรม' . "\n" . '9 = ทักษะการเจาะระบบรักษาความปลอดภัย',
+    'MotiveHelp' => 'กลุ่มผู้คุกคามเหล่านี้มีแรงจูงใจมากน้อยเพียงใดในการค้นหาและใช้ประโยชน์จากช่องโหว่นี้?' . "\n" . '1 = รางวัลน้อยหรือไม่ได้รับรางวัลเลย' . "\n" . '4 = รางวัลที่เป็นไปได้' . "\n" . '9 = รางวัลสูง',
+    'OpportunityHelp' => 'กลุ่มผู้คุกคามเหล่านี้ต้องการทรัพยากรและโอกาสอะไรบ้างในการค้นหาและใช้ประโยชน์จากช่องโหว่นี้?' . "\n" . '0 = เข้าถึงได้อย่างเต็มรูปแบบ หรือต้องใช้ทรัพยากรราคาแพง' . "\n" . '4 = ต้องมีการเข้าถึงหรือทรัพยากรพิเศษ' . "\n" . '7 = ต้องมีการเข้าถึงหรือทรัพยากรบางอย่าง' . "\n" . '9 = ไม่จำเป็นต้องเข้าถึงหรือใช้ทรัพยากรใดๆ',
+    'SizeHelp' => 'กลุ่มผู้ก่อภัยคุกคามนี้มีขนาดใหญ่แค่ไหน?' . "\n" . '2 = นักพัฒนา' . "\n" . '2 = ผู้ดูแลระบบ' . "\n" . '4 = ผู้ใช้ระบบอินทราเน็ต' . "\n" . '5 = หุ้นส่วน' . "\n" . '6 = ผู้ใช้ที่ได้รับการยืนยันตัวตน' . "\n" . '9 = ผู้ใช้งานอินเทอร์เน็ตนิรนาม',
+    'EaseOfDiscoveryHelp' => 'กลุ่มผู้คุกคามเหล่านี้จะค้นพบช่องโหว่นี้ได้ง่ายแค่ไหน?' . "\n" . '1 = แทบเป็นไปไม่ได้' . "\n" . '3 = ยาก' . "\n" . '7 = ง่าย' . "\n" . '9 = มีเครื่องมืออัตโนมัติให้ใช้งาน',
+    'EaseOfExploitHelp' => 'กลุ่มผู้คุกคามเหล่านี้สามารถใช้ประโยชน์จากช่องโหว่นี้ได้ง่ายแค่ไหน?' . "\n" . '1 = เชิงทฤษฎี' . "\n" . '3 = ยาก' . "\n" . '5 = ง่าย' . "\n" . '9 = มีเครื่องมืออัตโนมัติให้ใช้งาน',
+    'AwarenessHelp' => 'กลุ่มผู้คุกคามเหล่านี้รู้จักช่องโหว่นี้ดีแค่ไหน?' . "\n" . '1 = ไม่ทราบ' . "\n" . '4 = ซ่อนอยู่' . "\n" . '6 = ชัดเจน' . "\n" . '9 = ความรู้สาธารณะ',
+    'IntrusionDetectionHelp' => 'โอกาสที่จะตรวจพบช่องโหว่มีมากน้อยแค่ไหน?' . "\n" . '1 = การตรวจจับเชิงรุกในแอปพลิเคชัน' . "\n" . '3 = บันทึกและตรวจสอบแล้ว' . "\n" . '8 = บันทึกโดยไม่ตรวจสอบ' . "\n" . '9 = ไม่ได้เข้าสู่ระบบ',
+    'LossOfConfidentialityHelp' => 'ข้อมูลอาจถูกเปิดเผยได้มากน้อยแค่ไหน และข้อมูลนั้นมีความละเอียดอ่อนเพียงใด?' . "\n" . '2 = เปิดเผยข้อมูลที่ไม่เป็นความลับน้อยที่สุด' . "\n" . '6 = การเปิดเผยข้อมูลสำคัญขั้นต่ำ' . "\n" . '6 = เปิดเผยข้อมูลที่ไม่เป็นความลับจำนวนมาก' . "\n" . '7 = การเปิดเผยข้อมูลสำคัญจำนวนมาก' . "\n" . '9 = เปิดเผยข้อมูลทั้งหมด',
+    'LossOfIntegrityHelp' => 'ข้อมูลอาจเสียหายได้มากแค่ไหน และเสียหายรุนแรงเพียงใด?' . "\n" . '1 = ข้อมูลเสียหายเล็กน้อยมาก' . "\n" . '3 = ข้อมูลเสียหายร้ายแรงน้อยที่สุด' . "\n" . '5 = ข้อมูลที่เสียหายเล็กน้อยจำนวนมาก' . "\n" . '7 = ข้อมูลที่เสียหายร้ายแรงเป็นจำนวนมาก' . "\n" . '9 = ข้อมูลทั้งหมดเสียหายโดยสิ้นเชิง',
+    'LossOfAvailabilityHelp' => 'บริการอาจสูญหายไปมากแค่ไหน และบริการนั้นมีความสำคัญเพียงใด?' . "\n" . '1 = บริการรองถูกขัดจังหวะน้อยที่สุด' . "\n" . '5 = บริการหลักขั้นต่ำถูกขัดจังหวะ' . "\n" . '5 = บริการรองที่ครอบคลุมถูกขัดจังหวะ' . "\n" . '7 = บริการปฐมภูมิที่ครอบคลุมถูกขัดจังหวะ' . "\n" . '9 = บริการทั้งหมดใช้งานไม่ได้โดยสิ้นเชิง',
+    'LossOfAccountabilityHelp' => 'การกระทำของกลุ่มผู้คุกคามสามารถระบุตัวบุคคลได้หรือไม่?' . "\n" . '1 = ตรวจสอบย้อนกลับได้อย่างสมบูรณ์' . "\n" . '7 = อาจตรวจสอบย้อนกลับได้' . "\n" . '9 = ไม่เปิดเผยตัวตนโดยสมบูรณ์',
+    'FinancialDamageHelp' => 'การโจมตีทางไซเบอร์จะสร้างความเสียหายทางการเงินมากน้อยเพียงใด?' . "\n" . '1 = น้อยกว่าค่าใช้จ่ายในการแก้ไขช่องโหว่' . "\n" . '3 = ผลกระทบเล็กน้อยต่อกำไรประจำปี' . "\n" . '7 = ผลกระทบอย่างมีนัยสำคัญต่อกำไรประจำปี' . "\n" . '9 = การล้มละลาย',
+    'ReputationDamageHelp' => 'การโจมตีดังกล่าวจะส่งผลให้ชื่อเสียงของธุรกิจเสียหายและส่งผลเสียต่อธุรกิจหรือไม่?' . "\n" . '1 = ความเสียหายเล็กน้อย' . "\n" . '4 = การสูญเสียลูกค้ารายใหญ่' . "\n" . '5 = การสูญเสียชื่อเสียงที่ดี' . "\n" . '9 = ความเสียหายต่อแบรนด์',
+    'NonComplianceHelp' => 'การไม่ปฏิบัติตามกฎระเบียบก่อให้เกิดความเสี่ยงมากน้อยเพียงใด?' . "\n" . '2 = การละเมิดเล็กน้อย' . "\n" . '5 = การละเมิดอย่างชัดเจน' . "\n" . '7 = การละเมิดที่มีความสำคัญสูง',
+    'PrivacyViolationHelp' => 'ข้อมูลส่วนบุคคลที่สามารถเปิดเผยได้มีมากน้อยแค่ไหน?' . "\n" . '3 = หนึ่งคน' . "\n" . '5 = หลายร้อยคน' . "\n" . '7 = หลายพันคน' . "\n" . '9 = ผู้คนนับล้าน',
+    // The OWASP holder's Score card heading. No existing key covers this
+    // (confirmed via grep before adding) -- the Likelihood/Impact card
+    // headings reuse the already-existing bare 'Likelihood'/'Impact' keys.
+    'OwaspScore' => 'คะแนน OWASP',
+    // Phase 4d-iv follow-up: group-level descriptions for the 4 OWASP
+    // subgroup headings, sourced from OWASP's own Risk Rating Methodology
+    // (https://community.owasp.org/OWASP_Risk_Rating_Methodology), tightened
+    // into short UI captions -- not a verbatim quote (see this task's own
+    // source table for the original wording).
+    'ThreatAgentFactorsDescription' => 'ประเมินโอกาสที่กลุ่มผู้คุกคามนี้จะโจมตีสำเร็จ',
+    'VulnerabilityFactorsDescription' => 'ประเมินโอกาสที่ช่องโหว่นี้จะถูกค้นพบและนำไปใช้ประโยชน์',
+    'TechnicalImpactDescription' => 'วิเคราะห์ผลกระทบโดยแยกตามการรักษาความลับ ความสมบูรณ์ ความพร้อมใช้งาน และความรับผิดชอบ',
+    'BusinessImpactDescription' => 'สะท้อนให้เห็นถึงสิ่งที่สำคัญต่อธุรกิจ นอกเหนือจากผลกระทบทางเทคนิคเพียงอย่างเดียว',
+    // CVSS's own Temporal-metric 'Exploitability' help text. This key shares
+    // a labelKey ('Exploitability') with DREAD's own field, so both would
+    // otherwise derive the same generic lang key ('ExploitabilityHelp'),
+    // with DREAD's entry silently winning for both -- risk-details-form.js's
+    // buildCvssScoreItem() and risk-details-view.js's cvssMetricValueRow()
+    // reference this key directly for CVSS's Exploitability field instead
+    // of the generic '<labelKey>Help' derivation.
+    'CVSSExploitabilityHelp' => "สถานะปัจจุบันของเทคนิคการโจมตีหรือความพร้อมใช้งานของโค้ด\n• ยังไม่ได้รับการพิสูจน์: ไม่มีโค้ดโจมตีให้ใช้งาน หรือการโจมตีเป็นเพียงทฤษฎี\n• การพิสูจน์แนวคิด: มีโค้ดโจมตีอยู่ แต่ไม่สามารถนำไปใช้ได้จริงสำหรับผู้โจมตีส่วนใหญ่\n• ใช้งานได้: โค้ดโจมตีที่ใช้งานได้จริงในสถานการณ์ส่วนใหญ่\n• สูง: การโจมตีมีความน่าเชื่อถือและเป็นแบบอัตโนมัติ (เช่น เวิร์ม) หรือไม่จำเป็นต้องใช้โค้ดโจมตีเลย",
+    // Risk Scoring -- Classic Inline (Task 3): the Classic scoring method's
+    // new inline Score card heading and its Likelihood/Impact cards' short
+    // plain-English descriptions (js/simplerisk/common/risk-details-form.js's
+    // buildClassicHolder()). Deliberately NOT sourced from NIST SP 800-30 or
+    // any other external standard -- confirmed with the user via the
+    // approved mockup review, unlike OWASP's own subgroup descriptions
+    // above, which do cite OWASP's Risk Rating Methodology.
+    'ClassicScore' => 'คะแนนคลาสสิก',
+    'ClassicLikelihoodDescription' => 'ความเสี่ยงนี้มีโอกาสเกิดขึ้นมากน้อยเพียงใด',
+    'ClassicImpactDescription' => 'หากความเสี่ยงนี้เกิดขึ้น ผลที่ตามมาจะรุนแรงแค่ไหน',
+    // Risk Scoring -- Custom Inline (Task 2): the Custom scoring method's
+    // new inline Score card heading (js/simplerisk/common/risk-details-form.js's
+    // buildCustomHolder()) and the Custom Value card's short description
+    // caption. 'CustomValueDescription' text confirmed directly with the
+    // user, same as Classic's own description keys above.
+    'CustomScore' => 'คะแนนที่กำหนดเอง',
+    'CustomValueDescription' => 'ค่าที่กำหนดเองสามารถเป็นค่าทศนิยมระหว่าง 0 ถึง 10 ได้',
+    // Risk Scoring -- Contributing Risk Inline (Phase 4d-v): the last of
+    // the three deferred scoring methods (DREAD/OWASP shipped earlier in
+    // this same project). The Likelihood/Contributing Risk cards' short
+    // plain-English descriptions (js/simplerisk/common/risk-details-form.js's
+    // buildContributingRiskHolder()). The Score card heading reuses the
+    // EXISTING 'ContributingRiskScore' key (already present above, same
+    // text) rather than duplicating it -- 'ContributingRisk'/
+    // 'ContributingLikelihood'/'Weight'/'Subject' are likewise reused as-is.
+    'ContributingLikelihoodDescription' => 'ความเสี่ยงนี้มีโอกาสเกิดขึ้นมากน้อยเพียงใด',
+    'ContributingRiskDescription' => 'แต่ละปัจจัยด้านล่างมีค่าน้ำหนักตามความสำคัญสัมพัทธ์ โปรดเลือกว่าความเสี่ยงนี้ได้รับผลกระทบจากแต่ละปัจจัยมากน้อยเพียงใด',
+    // OWASP read-mode card (buildOwaspReadView(), risk-details-view.js):
+    // the live calculation formula under each of the 4 sub-group names
+    // (Threat Agent Factors/Vulnerability Factors/Technical Impact/
+    // Business Impact), matching the legacy risk-scoring-details panel's
+    // own "= ( a + b + c + d ) / 4" text (includes/display.php), and the
+    // OWASP Risk Rating Methodology link note placed in the OWASP Score
+    // column's open space below the summary numbers.
+    'OwaspSubgroupFormula' => '= ( {a} + {b} + {c} + {d} ) / 4',
+    'OwaspMethodologyNote' => 'รายละเอียดทั้งหมดของระเบียบวิธีประเมินความเสี่ยงของ OWASP สามารถดูได้ที่นี่',
+    'Here' => 'ที่นี่',
+    // Scoring widget formula captions (Classic/DREAD/Contributing Risk),
+    // the same ".sr-cvss-vector under the score label" treatment CVSS's
+    // vector caption and OwaspSubgroupFormula above already have, on both
+    // the edit-mode holder (risk-details-form.js) and the read-mode card
+    // (risk-details-view.js). Classic reuses the existing RISKClassicExp1-5
+    // keys instead of a new one -- see those keys' own long-standing
+    // definitions above.
+    'DreadScoreFormula' => '= ( {a} + {b} + {c} + {d} + {e} ) / 5',
+    // Contributing Risk's per-factor weighted term and its shared
+    // Likelihood term (update_contributing_risk_score(), includes/
+    // functions.php) -- unlike DREAD/OWASP's fixed roster, the factor list
+    // is admin-configured, so this is one formula PER FACTOR ROW rather
+    // than one fixed caption under the total score.
+    // {maxName}: score.php parity -- legacy's "Maximum Value" column showed
+    // the max option's human-readable name alongside its number (e.g.
+    // "[5] Certain", includes/display.php); these formulas only showed the
+    // bare number.
+    'ContributingLikelihoodFormula' => '= {value} x 5 / {max} ({maxName})',
+    'ContributingFactorFormula' => '= {weight}% x {impact} x 5 / {max} ({maxName})',
+    // Contributing Risk's own subscore row in the Score card -- the sum of
+    // every factor's own term above it. Generic (not substituted with real
+    // numbers) since the number of terms is however many factors are
+    // configured, unlike the fixed-roster formulas above.
+    'ContributingRiskSubtotalFormula' => '= ผลรวมของ (น้ำหนัก x แรงกระแทก x 5 / ค่าสูงสุด)',
+    // Contributing Risk Score's own formula, under the total row -- always
+    // exactly 2 terms (unlike the Contributing Risk subtotal above), so
+    // substituted with the real current subtotal values, same convention
+    // DreadScoreFormula/OwaspSubgroupFormula use for their own fixed roster.
+    'ContributingRiskScoreFormula' => '= {likelihood} + {contributing}',
+    // Risk Scoring History widget (risk-details-view.js) -- replaces the
+    // legacy chart's bare save icon with a real menu item, structured for
+    // future export types alongside it.
+    'DownloadChartAsImage' => 'ดาวน์โหลดเป็นรูปภาพ',
+    // Legacy score.php's CVSS table had a "Full details of CVSS Version 2.0
+    // scoring can be found here." link (includes/display.php); this is its
+    // inline-scoring-card equivalent, same shape as OwaspMethodologyNote.
+    'CvssMethodologyNote' => 'รายละเอียดทั้งหมดเกี่ยวกับการให้คะแนน CVSS เวอร์ชัน 2.0 สามารถดูได้ที่นี่',
+    // Mitigation Controls redesign: the picker reuses ChooseControls/
+    // AddOrRemoveControls/etc from Document Program's control picker.
+    'InvalidControlID' => 'รหัสควบคุมไม่ถูกต้อง',
+    'ValidationOwner' => 'เจ้าของการตรวจสอบ',
+    'ValidationStatus' => 'สถานะการตรวจสอบ',
+    'NotStarted' => 'ยังไม่เริ่ม',
+    // management/view.php's "risk ID does not exist" empty state.
+    'RiskIdDoesNotExistBody' => 'ความเสี่ยงที่คุณกำลังมองหาอาจถูกลบไปแล้ว หรือลิงก์อาจไม่ถูกต้อง',
+    'MitigationControlsRequiresGovernance' => 'ต้องได้รับอนุญาตจากผู้ดูแลระบบจึงจะสามารถดูได้',
+    'ViewControlValidation' => 'การตรวจสอบความถูกต้องของการควบคุมมุมมอง',
+    'EditControlValidation' => 'การตรวจสอบความถูกต้องของการควบคุมการแก้ไข',
+    'SupportingDocumentationRequiresSubmitRisk' => 'ต้องได้รับอนุญาตจาก Submit Risk ก่อนจึงจะสามารถอัปโหลดไฟล์ได้',
+    'SupportingDocumentationRequiresModifyRisks' => 'ต้องได้รับสิทธิ์ในการแก้ไขความเสี่ยงเพื่อจัดการไฟล์',
+    'MitigationSupportingDocumentationRequiresPlanMitigations' => 'ต้องได้รับอนุญาตจาก Plan Mitigation ก่อนจึงจะสามารถจัดการไฟล์ได้',
+    'MitigationSubmittedBy' => 'มาตรการบรรเทาผลกระทบที่ยื่นโดย',
+    'UseADifferentDate' => 'ใช้วันที่อื่น',
+    'AssetGroup' => 'กลุ่มสินทรัพย์',
+    // Customization Cards Layout API (extras/customization/index.php) scope-validation errors.
+    'InvalidFgroup' => 'fgroup ไม่ถูกต้อง',
+    'CustomizationCardsLayoutApiScopeError' => 'API สำหรับการจัดวางเลย์เอาต์การ์ดแบบกำหนดเองนั้นใช้งานได้เฉพาะกับ fgroup=risk, tab_index=1, tab_index=2 หรือ tab_index=3 เท่านั้น',
+    // Asset management redesign
+    'DiscoverAssets' => 'ค้นพบสินทรัพย์',
+    'DiscoveryRuns' => 'การค้นพบดำเนินไป',
+    'DiscoveryRangeHint' => 'ที่อยู่เดียว ช่วงเริ่มต้น-สิ้นสุด หรือ IPv4 CIDR',
+    'DiscoveryResolveNames' => 'ค้นหาชื่อโฮสต์',
+    'DiscoveryAddAs' => 'เพิ่มสินทรัพย์ใหม่เป็น',
+    'DiscoveryStart' => 'เริ่มต้นการค้นพบ',
+    'DiscoveryBackgroundNote' => 'ทำงานในพื้นหลัง ระบบจะข้ามที่อยู่ที่มีอยู่แล้ว',
+    'DiscoveryRangeInvalid' => 'ป้อนที่อยู่ IPv4 ช่วง หรือบล็อก CIDR ที่ถูกต้อง',
+    'DiscoveryRangeTooLarge' => 'ช่วงนั้นกว้างเกินไป ขีดจำกัดคือที่อยู่ {$max} ที่อยู่',
+    'DiscoveryRunQueued' => 'การค้นพบได้เริ่มต้นขึ้นแล้ว',
+    'DiscoveryRunCompleted' => 'การค้นพบเสร็จสิ้น: {$new} สินทรัพย์ใหม่',
+    'AssetBulkSelectAll' => 'เลือกสินทรัพย์ {$count} ทั้งหมด',
+    'AssetBulkAssignTeams' => 'มอบหมายทีม…',
+    'AssetBulkAddToGroup' => 'เพิ่มลงในกลุ่ม…',
+    'AssetBulkDeleteConfirmTitle' => 'ลบสินทรัพย์ {$count} หรือไม่?',
+    'AbleToEditAssets' => 'สามารถแก้ไขข้อมูลสินทรัพย์ได้',
+    'AbleToDeleteAssets' => 'สามารถลบสินทรัพย์ได้',
+    'AbleToVerifyAssets' => 'สามารถตรวจสอบสินทรัพย์ได้',
+    'AbleToRunAssetDiscovery' => 'สามารถดำเนินการค้นหาทรัพย์สินได้',
+    'AbleToCreateAssetGroups' => 'สามารถสร้างกลุ่มสินทรัพย์ได้',
+    'AbleToEditAssetGroups' => 'สามารถแก้ไขกลุ่มสินทรัพย์ได้',
+    'AbleToDeleteAssetGroups' => 'สามารถลบกลุ่มสินทรัพย์ได้',
+    'ViewAsset' => 'ดูสินทรัพย์',
+    'AssetUnverifiedByEditLog' => 'สินทรัพย์ "{$name}" ถูกส่งกลับไปยังสถานะไม่ได้รับการตรวจสอบ เนื่องจากผู้ใช้ "{$user}" เปลี่ยนชื่อหรือที่อยู่ IP โดยไม่ได้รับอนุญาตในการตรวจสอบสินทรัพย์',
+    'AssetTeamsAssignedLog' => 'สินทรัพย์ "{$name}" ถูกกำหนดให้กับทีม "{$teams}" โดยผู้ใช้ "{$user}"',
+    // Manage assets page (asset management redesign, Task 9)
+    'AddAsset' => 'เพิ่มสินทรัพย์',
+    'SearchAssetsPlaceholder' => 'ค้นหาตามชื่อหรือที่อยู่ IP',
+    'AllLocations' => 'ทุกสถานที่',
+    'AllTags' => 'แท็กทั้งหมด',
+    'AllAssetGroups' => 'กลุ่มสินทรัพย์ทั้งหมด',
+    'AssetFields' => 'ฟิลด์สินทรัพย์',
+    'AssetBulkAllSelected' => 'เลือกสินทรัพย์ที่ตรงกันทั้งหมด {$count} รายการแล้ว',
+    'AssetDeleteConfirmTitle' => 'ลบสินทรัพย์ "{$name}"?',
+    'DeleteAsset' => 'ลบสินทรัพย์',
+    'DeleteAssets' => 'ลบสินทรัพย์',
+    'AssetBulkAssignTeamsTitle' => 'มอบหมายทีมให้กับสินทรัพย์ {$count}',
+    'AssetAssignTeamsHint' => 'ทีมที่ได้รับการคัดเลือกจะถูกเพิ่มเข้าไป ทีมที่อยู่ในพื้นที่อยู่แล้วจะยังคงอยู่ต่อไป',
+    'AssetAddToGroupTitle' => 'เพิ่มสินทรัพย์ {$count} ลงในกลุ่ม',
+    'AssetChooseTeams' => 'เลือกทีม',
+    'AssetChooseGroup' => 'เลือกกลุ่ม',
+    'Assign' => 'กำหนด',
+    'AssetBulkVerifiedSummary' => '{$ok} ได้รับการยืนยันแล้ว, {$failed} ถูกข้ามไป',
+    'AssetBulkDeletedSummary' => '{$ok} ถูกลบ, {$failed} ถูกข้าม',
+    'AssetBulkTeamsSummary' => 'ทีมที่ได้รับมอบหมายให้กับสินทรัพย์ {$ok} รายการ ข้าม {$failed} รายการ',
+    'AssetBulkGroupSummary' => '{$ok} ถูกเพิ่มเข้ากลุ่มแล้ว {$failed} ถูกข้ามไป',
+    'AssetBulkSkippedList' => 'ข้ามไป: {$list}',
+    'AssetBulkReasonNotFound' => 'ไม่พบ',
+    'NoAssetsYet' => 'ยังไม่มีสินทรัพย์ใดๆ',
+    'NoAssetsYetHint' => 'ทรัพย์สินที่คุณเพิ่มหรือค้นพบจะปรากฏที่นี่',
+    'NoAssetsMatchFilters' => 'ไม่มีสินทรัพย์ใดตรงกับตัวกรองของคุณ',
+    'CouldNotLoadAssets' => 'ไม่สามารถโหลดไฟล์ได้ ข้อมูลของคุณปลอดภัย',
+    'AllValuations' => 'การประเมินมูลค่าทั้งหมด',
+    // Manage assets page, Asset groups tab (asset management redesign, Task 10)
+    'AddAssetGroup' => 'เพิ่มกลุ่ม',
+    'EditAssetGroup' => 'แก้ไขกลุ่ม',
+    'DeleteAssetGroup' => 'ลบกลุ่ม',
+    'ViewGroupMembers' => 'ดูรายชื่อสมาชิก',
+    'SearchAssetGroupsPlaceholder' => 'ค้นหากลุ่มตามชื่อ',
+    'HighestValuation' => 'มูลค่าสูงสุด',
+    'LinkedRisks' => 'ความเสี่ยงที่เชื่อมโยงกัน',
+    'RemoveFromGroup' => 'ลบออกจากกลุ่ม',
+    'AssetGroupMoreMembers' => '+ {$count} เพิ่มเติม',
+    'ViewAllInAssetsTab' => 'ดูทั้งหมดได้ในแท็บสินทรัพย์',
+    'NoAssetsInGroup' => 'กลุ่มนี้ไม่มีสินทรัพย์ใดๆ',
+    'CouldNotLoadGroupMembers' => 'ไม่สามารถโหลดรายชื่อสมาชิกของกลุ่มนี้ได้',
+    'AssetGroupMembers' => 'สมาชิก',
+    'AssetGroupMembersHint' => 'เฉพาะทรัพย์สินที่คุณมองเห็นเท่านั้นที่จะแสดงขึ้น สมาชิกที่คุณมองไม่เห็นจะยังคงอยู่ในกลุ่ม',
+    'ChooseAssets' => 'เลือกสินทรัพย์',
+    'AddOrRemoveAssets' => 'เพิ่มหรือลบสินทรัพย์…',
+    'UseTheseAssets' => 'ใช้ทรัพยากรเหล่านี้',
+    'AllAssets' => 'ทรัพย์สินทั้งหมด',
+    'Valuation' => 'การประเมินมูลค่า',
+    'PickerShowingFirstN' => 'แสดง {$count} แรกจาก {$total}ค้นหาหรือจำกัดขอบเขตเพื่อดูส่วนที่เหลือ',
+    'AssetGroupDeleteConfirmTitle' => 'ลบกลุ่ม "{$name}"?',
+    'AssetGroupDeleteKeepsAssets' => 'ไฟล์ต่างๆ ในกลุ่มนี้จะไม่ถูกลบ มีเพียงกลุ่มเท่านั้นที่จะถูกลบออก',
+    'NoAssetGroupsYet' => 'ยังไม่มีกลุ่มสินทรัพย์',
+    'NoAssetGroupsYetHint' => 'จัดกลุ่มสินทรัพย์เพื่อให้คุณสามารถสร้างแผนที่และรายงานข้อมูลร่วมกันได้',
+    'NoAssetGroupsMatchSearch' => 'ไม่พบกลุ่มสินทรัพย์ใดตรงกับผลการค้นหาของคุณ',
+    'CouldNotLoadAssetGroups' => 'ไม่สามารถโหลดกลุ่มสินทรัพย์ได้ ข้อมูลของคุณปลอดภัย',
+    'DiscoveryAssignTeams' => 'มอบหมายให้กับทีม',
+    'DiscoveryAssignTeamsHint' => '(ไม่บังคับ) สินทรัพย์ใหม่ทุกชิ้นจะถูกเพิ่มเข้าไปในทีมเหล่านี้',
+    'DiscoveryAddAsHint' => 'ตั้งค่าตามสิทธิ์ของคุณเพื่อตรวจสอบสินทรัพย์',
+    'DiscoveryTeamsInvalid' => 'เลือกทีมที่มีอยู่จริงและที่คุณเป็นสมาชิกอยู่',
+    'DiscoveryResolveNamesInvalid' => 'ต้องเปิดหรือปิดใช้งานฟังก์ชันค้นหาชื่อโฮสต์',
+    'DiscoveryTooManyActiveRuns' => 'คุณมีการดำเนินการค้นหา {$max} ครั้งที่กำลังดำเนินการอยู่แล้ว รอให้การดำเนินการใดการดำเนินการหนึ่งเสร็จสิ้น หรือยกเลิกการดำเนินการนั้น',
+    'DiscoveryRunNotFound' => 'ไม่พบการทำงานของ Discovery',
+    'DiscoveryRunAlreadyFinished' => 'การทดสอบสำรวจนี้ได้สิ้นสุดลงแล้ว',
+    'DiscoveryRunCancelled' => 'รายการ Discovery ออกอากาศถูกยกเลิก',
+    'DiscoveryRunFailedToast' => 'การค้นหา {$range} ล้มเหลว',
+    'DiscoveryStatusQueued' => 'เข้าคิว',
+    'DiscoveryProgress' => '{$scanned} ของ {$total}',
+    'DiscoveryLiveHosts' => 'พิธีกรสด',
+    'DiscoveryNewAssets' => 'สินทรัพย์ใหม่',
+    'DiscoveryStartedAt' => 'เริ่ม',
+    'DiscoveryCancelRun' => 'ยกเลิกการรัน',
+    'CouldNotLoadDiscoveryRuns' => 'ไม่สามารถโหลดผลการทดสอบการค้นหาได้',
+    'DiscoveryRangeReserved' => 'ช่วงดังกล่าวรวมถึงที่อยู่ IP ที่สงวนไว้ (loopback, link-local, multicast หรือ 0.0.0.0/8) ซึ่งไม่สามารถสแกนได้',
+    'DiscoveryTooManyActiveRunsInstance' => 'ขณะนี้มีการดำเนินการค้นหาอยู่ {$max} ครั้ง โปรดลองอีกครั้งเมื่อการดำเนินการใดการดำเนินการหนึ่งเสร็จสิ้น',
+    'DiscoveryErrorScan' => 'การสแกนหยุดลงเนื่องจากเกิดข้อผิดพลาด โปรดตรวจสอบบันทึกระบบเพื่อดูรายละเอียดเพิ่มเติม',
+    'DiscoveryErrorWorkerLost' => 'คิวงานเบื้องหลังหยุดประมวลผลการทำงานครั้งนี้แล้ว',
+    'DiscoveryErrorRequesterInactive' => 'ผู้ใช้ที่เริ่มการทำงานนี้ไม่ได้ใช้งานอีกต่อไปแล้ว',
+    // Asset management redesign: translated API errors (bulk actions, column settings, discovery) and discovery audit lines
+    'AssetBulkBodyInvalid' => 'ส่งคำสั่งแบบกลุ่มในรูปแบบ JSON',
+    'AssetBulkActionRequired' => 'เลือกการดำเนินการแบบกลุ่ม',
+    'AssetBulkUnknownAction' => 'การดำเนินการแบบกลุ่มนั้นไม่สามารถใช้งานได้',
+    'AssetBulkSelectionRequired' => 'เลือกสินทรัพย์โดยใช้ ID หรือโดยใช้ตัวกรอง',
+    'AssetBulkIdsRequired' => 'เลือกสินทรัพย์อย่างน้อยหนึ่งรายการ',
+    'AssetBulkIdsInvalid' => 'รหัสประจำสินทรัพย์ต้องเป็นจำนวนเต็ม',
+    'AssetBulkTooManyAssets' => 'คุณสามารถดำเนินการกับสินทรัพย์ได้มากที่สุด {$max} รายการในแต่ละครั้ง จำกัดตัวเลือกของคุณแล้วลองใหม่อีกครั้ง',
+    'AssetBulkFilterInvalid' => 'ตัวกรองไม่ถูกต้อง โปรดรีเฟรชหน้าเว็บแล้วลองใหม่อีกครั้ง',
+    'AssetBulkFilterUnknownKey' => 'ตัวกรอง "{$key}" ไม่ได้รับการยอมรับ',
+    'AssetBulkFilterBadValue' => 'ตัวกรอง "{$key}" มีค่าที่ไม่ถูกต้อง',
+    'AssetBulkFilterTooManyValues' => 'ตัวกรอง "{$key}" สามารถแสดงค่าได้มากที่สุด {$max} ค่า',
+    'AssetBulkFilterAllAlone' => 'การเลือกสินทรัพย์ทั้งหมดไม่สามารถใช้ร่วมกับตัวกรองอื่นๆ ได้',
+    'AssetBulkFilterEmpty' => 'เลือกตัวกรอง หรือเลือกสินทรัพย์ทั้งหมด ก่อนดำเนินการแบบกลุ่ม',
+    'AssetBulkExpectedCountInvalid' => 'จำนวนสินทรัพย์ที่คาดการณ์ไว้จะต้องเป็นจำนวนเต็ม',
+    'AssetBulkParamsInvalid' => 'ตัวเลือกสำหรับการดำเนินการแบบกลุ่มนี้ไม่ถูกต้อง',
+    'AssetBulkTeamsRequired' => 'เลือกทีมอย่างน้อยหนึ่งทีม',
+    'AssetBulkTeamsNotFound' => 'ทีมเหล่านั้นอย่างน้อยหนึ่งทีมอาจไม่มีอยู่แล้วในปัจจุบัน',
+    'AssetBulkTeamsNotMember' => 'คุณสามารถกำหนดทีมได้เฉพาะทีมที่คุณเป็นสมาชิกอยู่เท่านั้น',
+    'AssetBulkGroupNotFound' => 'กลุ่มสินทรัพย์นั้นไม่มีอยู่อีกต่อไปแล้ว',
+    'AssetBulkNoMatch' => 'ไม่มีสินทรัพย์ใดตรงกับตัวเลือกของคุณ',
+    'AssetBulkCountMismatch' => 'รายการสินทรัพย์ที่ตรงกันเปลี่ยนจาก {$expected} เป็น {$actual} นับตั้งแต่ที่คุณเลือก โปรดตรวจสอบรายการอีกครั้งแล้วลองใหม่',
+    'AssetColumnSettingsBodyInvalid' => 'ส่งการตั้งค่าคอลัมน์ในรูปแบบ JSON โดยระบุคอลัมน์หรือลำดับ',
+    'AssetColumnSettingsSaveFailed' => 'ไม่สามารถบันทึกคอลัมน์ของคุณได้ โปรดขอให้ผู้ดูแลระบบดำเนินการอัปเกรด SimpleRisk ให้เสร็จสมบูรณ์',
+    'DiscoveryRunQueueFailed' => 'ไม่สามารถเริ่มการค้นหาได้ โปรดลองอีกครั้ง',
+    'DiscoveryRunStartedLog' => 'การค้นหาทรัพย์สิน #{$id} ของ {$range} ({$count} ที่อยู่) เริ่มโดยผู้ใช้ "{$user}"',
+    'DiscoveryRunCancelledLog' => 'การค้นหาทรัพย์สิน #{$id} ของ {$range} ถูกยกเลิกโดยผู้ใช้ "{$user}"',
+    'AssetBulkTooManyToDelete' => 'คุณสามารถลบสินทรัพย์ได้ครั้งละไม่เกิน {$max} รายการ ลองจำกัดตัวเลือกให้แคบลงแล้วลองใหม่อีกครั้ง',
+    'AssetBulkFilterNotApplied' => 'ไม่สามารถใช้ตัวกรอง "{$key}" ตามที่ส่งมาได้ ดังนั้นจึงไม่มีอะไรเปลี่ยนแปลง',
+    'AssetBulkExpectedCountRequired' => 'การลบสินทรัพย์โดยใช้ตัวกรองจำเป็นต้องระบุจำนวนสินทรัพย์ที่คุณต้องการลบ',
+    'AssetBulkReasonNotAttempted' => 'ยังไม่ได้ลอง',
+    'MoreActions' => 'การดำเนินการเพิ่มเติม',
+    'AssetCreateNewGroupOption' => 'สร้างกลุ่มใหม่…',
+    'AssetNewGroupName' => 'ชื่อกลุ่มใหม่',
+    'AssetFilterByTeam' => 'กรองตามทีม {$name}',
+    'AssetFilterByValuation' => 'กรองตามการประเมินค่า {$name}',
+    'AssetFilterByTag' => 'กรองตามแท็ก {$name}',
+    'AssetFilterByLocation' => 'กรองตามเว็บไซต์/สถานที่ {$name}',
+    'AssetFilteringByTeam' => 'การกรองตามทีม {$name}',
+    'AssetFilteringByValuation' => 'การกรองตามการประเมินค่า {$name}',
+    'AssetFilteringByTag' => 'การกรองตามแท็ก {$name}',
+    'AssetFilteringByLocation' => 'การกรองตามไซต์/สถานที่ {$name}',
+    'AssetShowOnlyVerified' => 'แสดงเฉพาะสินทรัพย์ที่ได้รับการยืนยันแล้ว',
+    'AssetShowOnlyUnverified' => 'แสดงเฉพาะสินทรัพย์ที่ยังไม่ได้รับการตรวจสอบ',
+    'AssetShowingVerified' => 'แสดงสินทรัพย์ที่ได้รับการตรวจสอบแล้ว',
+    'AssetShowingUnverified' => 'แสดงสินทรัพย์ที่ยังไม่ได้รับการตรวจสอบ',
+    'CustomizationLayoutPayloadRejected' => 'ไม่สามารถบันทึกเค้าโครงได้เนื่องจากมีฟิลด์หรือการ์ดที่ไม่เข้ากับแม่แบบนี้ ไม่มีการเปลี่ยนแปลงใดๆ เกิดขึ้น',
+    'CustomizationLayoutRejectedUnknownScope' => 'ไม่สามารถบันทึกขอบเขตเทมเพลตนี้จากตัวแก้ไขเค้าโครงได้ ไม่มีการเปลี่ยนแปลงใดๆ เกิดขึ้น',
+    'CustomizationLayoutRejectedEmptyFields' => 'รูปแบบดังกล่าวไม่มีช่องข้อมูลที่ถูกต้อง จึงไม่สามารถบันทึกได้ ไม่มีอะไรเปลี่ยนแปลง',
+    'CustomizationLayoutRejectedWouldDeleteAll' => 'การบันทึกเค้าโครงนี้จะลบทุกช่องในเทมเพลต ดังนั้นจึงบันทึกไม่สำเร็จ กรุณาโหลดหน้าเว็บใหม่และลองอีกครั้ง',
+    'CustomizationLayoutRejectedRequiredField' => 'ไม่สามารถลบช่องที่จำเป็นออกจากเค้าโครงได้ ไม่มีอะไรเปลี่ยนแปลง',
+    'CustomizationLayoutRejectedBulkRemoval' => 'การบันทึกเค้าโครงนี้จะลบฟิลด์เทมเพลตส่วนใหญ่โดยที่คุณไม่ต้องลบออกที่นี่ โหลดหน้าเว็บใหม่และลองอีกครั้ง ไม่มีอะไรเปลี่ยนแปลง',
+    'CustomizationLayoutRejectedGroupMismatch' => 'กลุ่มเทมเพลตไม่มีอยู่จริง หรือเป็นของเรคอร์ดประเภทอื่น ไม่มีอะไรเปลี่ยนแปลง',
+    'CustomizationLayoutLegacySaveRefused' => 'เทมเพลตนี้แก้ไขด้วยโปรแกรมแก้ไขเค้าโครง และไม่สามารถบันทึกผ่านทางจุดเชื่อมต่อแผงควบคุมแบบเดิมได้',
+    // Asset discovery probe methods
+    'DiscoveryPortsInvalid' => 'ป้อนพอร์ต TCP ได้สูงสุด {$max} พอร์ต ระหว่างหมายเลข 1 ถึง 65535 โดยคั่นด้วยเครื่องหมายจุลภาค',
+    'DiscoveryErrorProbeUnavailable' => 'วิธีการตรวจสอบที่ใช้ในการเริ่มต้นการทำงานครั้งนี้ไม่สามารถใช้งานได้อีกต่อไปสำหรับตัวประมวลผลเบื้องหลัง เริ่มการทำงานใหม่',
+    'DiscoveryProbeIcmpUnprivileged' => 'ICMP ping (ซ็อกเก็ตที่ไม่ได้รับสิทธิ์)',
+    'DiscoveryProbeIcmpRaw' => 'ICMP ping (raw socket)',
+    'DiscoveryProbePingCommand' => 'ICMP ping (คำสั่ง ping)',
+    'DiscoveryProbeTcpConnect' => 'เชื่อมต่อ TCP',
+    'DiscoveryProbeMethod' => 'วิธีการตรวจสอบ: {$method}',
+    'DiscoveryProbeDetectedByWebServer' => 'ตรวจพบโดยเว็บเซิร์ฟเวอร์ ตัวประมวลผลเบื้องหลังอาจใช้วิธีอื่น',
+    'DiscoveryTcpProbeWarning' => 'ระบบจะค้นหาโฮสต์ได้ก็ต่อเมื่อโฮสต์นั้นตอบรับบนพอร์ต TCP ที่ถูกสแกนเท่านั้น ดังนั้นโฮสต์ที่บล็อกพอร์ตเหล่านั้นจะไม่ถูกค้นพบ เพื่อให้ได้ผลลัพธ์ที่สมบูรณ์ โปรดอนุญาตให้เซิร์ฟเวอร์ส่ง ICMP ping: อนุญาตซ็อกเก็ต ping ที่ไม่มีสิทธิ์พิเศษ หรือความสามารถ NET_RAW หรือติดตั้ง ping',
+    'DiscoveryTcpPortsForRun' => 'พอร์ต TCP สำหรับการทำงานครั้งนี้',
+    'DiscoveryTcpPortsHint' => 'คั่นด้วยเครื่องหมายจุลภาค สูงสุด {$max} พอร์ต เว้นว่างไว้เพื่อใช้ค่าเริ่มต้น: {$ports}',
+    'DiscoveryDefaultTcpPorts' => 'พอร์ต TCP สำหรับการค้นหาทรัพย์สิน',
+    'DiscoveryDefaultTcpPortsHint' => 'ใช้เมื่อโปรแกรมทำงานเบื้องหลังไม่สามารถส่ง ICMP ping ได้ คั่นด้วยเครื่องหมายจุลภาค รองรับพอร์ตได้สูงสุด {$max} พอร์ต',
+    'DiscoveryErrorTcpUnreliable' => 'การสแกนหยุดลงเนื่องจากเครือข่ายตอบสนองการเชื่อมต่อ TCP สำหรับที่อยู่ที่ไม่ใช่โฮสต์จริง (อาจมีพร็อกซีหรือไฟร์วอลล์ขวางอยู่) ทำให้ทุกที่อยู่ดูเหมือนใช้งานได้ โปรดขอให้ผู้ดูแลระบบอนุญาตให้เซิร์ฟเวอร์ส่งคำสั่ง ICMP ping',
+    'DiscoveryDefaultTcpPortsResetLog' => 'พอร์ต TCP สำหรับการค้นหาทรัพย์สินถูกรีเซ็ตเป็นค่าเริ่มต้นโดยผู้ใช้ "{$user}"',
+    'DiscoveryNotConfigured' => 'การค้นหาข้อมูลยังไม่ได้ถูกกำหนดค่า โปรดขอให้ผู้ดูแลระบบของคุณตั้งค่าช่วงที่อนุญาตในไฟล์ config.php',
+    'DiscoveryRangeNotAllowed' => 'ช่วงดังกล่าวอยู่นอกเหนือช่วงที่ระบบค้นหาสามารถสแกนได้',
+    'DiscoveryAllowedRangesList' => 'ช่วงที่อนุญาต: {$ranges}',
+    // Asset record modal
+    'AssetNotAvailable' => 'ไฟล์นี้ไม่พร้อมใช้งาน อาจถูกลบไปแล้ว หรือคุณอาจไม่สามารถเข้าถึงได้',
+    'AssetCustomFieldNotInTemplate' => 'ฟิลด์ที่กำหนดเองอย่างน้อยหนึ่งฟิลด์ไม่อยู่ในแม่แบบของสินทรัพย์นี้ ไม่มีการเปลี่ยนแปลงใดๆ เกิดขึ้น',
+    'AssetMappedControlsInvalid' => 'ไม่สามารถบันทึกการควบคุมที่แมปไว้ได้ แต่ละแถวจำเป็นต้องมีระดับความสมบูรณ์และอย่างน้อยหนึ่งการควบคุมที่มีอยู่ ไม่มีการเปลี่ยนแปลงใดๆ เกิดขึ้น',
+    'AssetMappedControlsTooMany' => 'สินทรัพย์หนึ่งรายการสามารถเชื่อมโยงกับตัวควบคุมได้มากที่สุด {$max} รายการ ไม่มีอะไรเปลี่ยนแปลง',
+    'AddControlsAtAnotherMaturity' => 'เพิ่มการควบคุมในระดับความสมบูรณ์อีกระดับหนึ่ง',
+    'ChoosingControlsNeedsGovernancePermission' => 'การเลือกใช้ตัวควบคุมจำเป็นต้องได้รับอนุญาตจากฝ่ายกำกับดูแล',
+    'NControls' => '{n} การควบคุม',
+    'SavingKeepsTheCurrentControlMappings' => 'การบันทึกจะคงการตั้งค่าการควบคุมปัจจุบันไว้',
+    'LoadingControls' => 'การควบคุมการโหลด…',
+    'ControlListCouldNotBeLoaded' => 'ไม่สามารถโหลดรายการควบคุมได้ ดังนั้นจึงไม่สามารถเปลี่ยนแปลงการตั้งค่าการควบคุมได้ในขณะนี้',
+    'RemoveControlsAtMaturity' => 'ลบการควบคุมเมื่อถึงวัยที่เหมาะสม {maturity}',
+    'ControlIdUnavailable' => '#{id} (ไม่สามารถใช้งานได้)',
+    'AssetRecordEdit' => 'แก้ไขสินทรัพย์',
+    'AssetRecordIdN' => 'สินทรัพย์ #{$id}',
+    'AssetRecordCopyLink' => 'คัดลิงก์ไปยังไฟล์นี้',
+    'AssetRecordLinkCopied' => 'คัดลอกลิงก์แล้ว',
+    'AssetRecordLinkCopyFailed' => 'ไม่สามารถคัดลิงก์ได้ โปรดคัดลิงก์จากแถบที่อยู่แทน',
+    'AssetRecordMarkUnverified' => 'ทำเครื่องหมายว่ายังไม่ได้รับการยืนยัน',
+    'AssetRecordViewAuditTrail' => 'ดูบันทึกการตรวจสอบ',
+    'AssetRecordAuditTrailTitle' => 'บันทึกการตรวจสอบ',
+    'AssetRecordAuditTrailEmpty' => 'ไม่มีการบันทึกกิจกรรมใดๆ สำหรับสินทรัพย์นี้ในช่วงเวลาดังกล่าว',
+    'AssetRecordAuditTrailFailed' => 'ไม่สามารถโหลดบันทึกการตรวจสอบได้',
+    'AssetRecordBackToAsset' => 'กลับไปยังสินทรัพย์',
+    'AssetRecordSave' => 'บันทึกสินทรัพย์',
+    'AssetRecordProvenanceVerified' => 'ยืนยันแล้ว · เพิ่มแล้ว {$date}',
+    'AssetRecordProvenanceUnverified' => 'ยังไม่ได้รับการยืนยัน: ยังไม่ได้รับการยืนยันจากผู้ที่สามารถตรวจสอบสินทรัพย์ได้ · เพิ่ม {$date}',
+    'AssetRecordUnsavedHint' => 'การปิดหน้าต่างโดยที่ยังไม่ได้บันทึกการเปลี่ยนแปลง จะขอให้คุณยืนยันก่อน',
+    'AssetRecordDiscardQuestion' => 'ต้องการยกเลิกการเปลี่ยนแปลงที่ยังไม่ได้บันทึกหรือไม่?',
+    'AssetRecordKeepEditing' => 'แก้ไขต่อไป',
+    'AssetRecordDiscardChanges' => 'ยกเลิกการเปลี่ยนแปลง',
+    'AssetRecordVerificationCard' => 'การตรวจสอบ',
+    'AssetRecordVerificationTag' => 'ต้องได้รับอนุญาตในการตรวจสอบสินทรัพย์',
+    'AssetRecordVerifiedHint' => 'มีผู้รับผิดชอบตรวจสอบทรัพย์สินนี้แล้ว การเปลี่ยนชื่อหรือที่อยู่ IP โดยไม่ได้รับอนุญาตในการตรวจสอบทรัพย์สินจะทำให้ทรัพย์สินนั้นกลับไปอยู่ในสถานะไม่ได้รับการตรวจสอบ',
+    'AssetRecordLoadFailed' => 'ไม่สามารถโหลดไฟล์ได้ โปรดลองอีกครั้ง',
+    'CustomizationCardsLayoutApiScopeErrorWithAsset' => 'API สำหรับการปรับแต่งเค้าโครงบัตรมีให้ใช้งานเฉพาะสำหรับ fgroup=risk (tab_index 1, 2 หรือ 3) และ fgroup=asset (tab_index 1) เท่านั้น',
+    'DiscoveryErrorRequesterNotPermitted' => 'ผู้ใช้ที่เริ่มการทำงานนี้ไม่มีสิทธิ์ในการค้นหาทรัพย์สินอีกต่อไปแล้ว',
+    'AssetRecordEditField' => 'แก้ไข {$field}',
+    // Asset Scoring (FIPS 199 categorization + weighted score)
+    'Confidentiality' => 'การรักษาความลับ',
+    'Integrity' => 'ความซื่อสัตย์',
+    'Availability' => 'ความพร้อมใช้งาน',
+    'AssetScoringLevelLow' => 'ต่ำ',
+    'AssetScoringLevelModerate' => 'ปานกลาง',
+    'AssetScoringLevelHigh' => 'สูง',
+    'AssetScoringValueInvalid' => 'การรักษาความลับ ความสมบูรณ์ และความพร้อมใช้งาน สามารถยอมรับได้ในระดับต่ำ ปานกลาง หรือสูง (การรักษาความลับยังสามารถยอมรับได้ว่าไม่เกี่ยวข้อง)',
+    'AssetScoringChangedLog' => 'สินทรัพย์ "{$name}" {$objective} ถูกเปลี่ยนจาก {$from} เป็น {$to} โดยผู้ใช้ "{$user}"',
+    'FIPSCategorization' => 'การจัดหมวดหมู่ FIPS',
+    'WeightedScore' => 'คะแนนถ่วงน้ำหนัก',
+    'WeightedBand' => 'แถบถ่วงน้ำหนัก',
+    'AllCategorizations' => 'การจัดหมวดหมู่ทั้งหมด',
+    'AllBands' => 'วงดนตรีทั้งหมด',
+    'AssetFilterByCategorization' => 'กรองตามการจัดหมวดหมู่ FIPS {$name}',
+    'AssetFilteringByCategorization' => 'การกรองตามการจัดหมวดหมู่ FIPS {$name}',
+    'AssetFilterByBand' => 'กรองตามแบนด์ถ่วงน้ำหนัก {$name}',
+    'AssetFilteringByBand' => 'การกรองด้วยแถบน้ำหนัก {$name}',
+    'AssetScoring' => 'การประเมินมูลค่าสินทรัพย์',
+    'AssetScoringSettingsHint' => 'สินทรัพย์แต่ละรายการจะได้รับการจัดอันดับต่ำ ปานกลาง หรือสูง สำหรับการรักษาความลับ ความสมบูรณ์ และความพร้อมใช้งาน และการรักษาความลับอาจถูกระบุว่า "ไม่เกี่ยวข้อง" ซึ่งจะทำให้สินทรัพย์นั้นไม่ปรากฏในผลลัพธ์ทั้งสองส่วน การจัดประเภท FIPS ของสินทรัพย์นั้นจะเป็นระดับสูงสุดในสามระดับ คะแนนถ่วงน้ำหนักคือค่าเฉลี่ยถ่วงน้ำหนักของค่าทั้งสามระดับ และเกณฑ์ของแต่ละช่วงจะเปลี่ยนคะแนนนั้นให้เป็นช่วงต่ำ ปานกลาง หรือสูง การเปลี่ยนแปลงการตั้งค่าเหล่านี้จะให้คะแนนสินทรัพย์แต่ละรายการใหม่ทันที',
+    'Weights' => 'น้ำหนัก',
+    'AssetScoringWeightsHint' => 'แต่ละวัตถุประสงค์มีน้ำหนักคะแนนเท่าใดในการคำนวณคะแนนถ่วงน้ำหนัก: 0 ถึง 100 โดยมีทศนิยมได้สูงสุดสองตำแหน่ง น้ำหนัก 0 หมายถึงวัตถุประสงค์นั้นไม่ถูกนำมาพิจารณา ความสมบูรณ์และความพร้อมใช้งานไม่สามารถมีค่าเป็น 0 พร้อมกันได้ เนื่องจากความลับที่ไม่เกี่ยวข้องจะถูกละเว้นเสมอ',
+    'LevelValues' => 'ค่าระดับ',
+    'AssetScoringLevelValuesHint' => 'แต่ละระดับการให้คะแนนมีส่วนช่วยในการคำนวณคะแนนถ่วงน้ำหนัก โดยมีค่าตั้งแต่ 0 ถึง 100 และมีทศนิยมได้สูงสุดสองตำแหน่ง และค่าจะแบ่งเป็น ต่ำ ต่ำกว่า ปานกลาง และ สูง ค่าเริ่มต้นคือ ต่ำ 1, ปานกลาง 2 และ สูง 3',
+    'BandThresholds' => 'เกณฑ์แบนด์',
+    'AssetScoringBandThresholdsHint' => 'คะแนนถ่วงน้ำหนักที่เท่ากับหรือสูงกว่าเกณฑ์ที่กำหนดจะอยู่ในระดับนั้น และคะแนนที่ต่ำกว่าเกณฑ์ระดับปานกลางจะอยู่ในระดับต่ำ ระดับปานกลางต้องเริ่มต้นสูงกว่าค่าระดับต่ำ และระดับสูงต้องเริ่มต้นสูงกว่าระดับปานกลางและไม่สูงกว่าค่าระดับสูง',
+    'ModerateStartsAt' => 'ระดับความยากปานกลางเริ่มต้นที่',
+    'HighStartsAt' => 'จุดเริ่มต้นที่สูงที่',
+    'DefaultScoringForNewAssets' => 'การให้คะแนนเริ่มต้นสำหรับสินทรัพย์ใหม่',
+    'AssetScoringDefaultsHint' => 'ระบบจะเลือกเรตติ้งเหล่านี้ล่วงหน้าเมื่อมีคนเพิ่มสินทรัพย์ในแบบฟอร์มสินทรัพย์ สินทรัพย์ที่สร้างขึ้นจากการค้นหา การนำเข้า หรือ API จะยังไม่มีการให้คะแนน เว้นแต่จะมีการให้คะแนนด้วยตนเอง หากต้องการปิดใช้งานฟังก์ชันนี้ ให้ปล่อยว่างไว้ทั้งสามช่อง',
+    'AssetScoringWeightsInvalid' => 'ค่าถ่วงน้ำหนักการให้คะแนนสินทรัพย์ต้องเป็นตัวเลขตั้งแต่ 0 ถึง 100 โดยมีทศนิยมไม่เกินสองตำแหน่ง และค่าความสมบูรณ์ (Integrity) และค่าความพร้อมใช้งาน (Availability) ต้องไม่เป็น 0 ทั้งคู่',
+    'AssetScoringValuesInvalid' => 'ค่าระดับการให้คะแนนสินทรัพย์ต้องเป็นตัวเลขที่มากกว่า 0 และไม่เกิน 100 โดยมีทศนิยมไม่เกินสองตำแหน่ง โดยระดับต่ำจะต่ำกว่าระดับปานกลางและต่ำกว่าระดับสูง',
+    'AssetScoringThresholdsInvalid' => 'เกณฑ์การให้คะแนนสินทรัพย์ต้องมีทศนิยมไม่เกินสองตำแหน่ง โดยระดับปานกลางจะอยู่เหนือระดับต่ำ ระดับสูงจะอยู่เหนือระดับปานกลาง และระดับสูงจะไม่สูงกว่าระดับสูง',
+    'AssetScoringDefaultsInvalid' => 'การให้คะแนนเริ่มต้นสำหรับสินทรัพย์ใหม่จะต้องเป็นระดับที่แต่ละวัตถุประสงค์เสนอ',
+    'AssetScoringSettingsNotSaved' => 'ไม่สามารถบันทึกการตั้งค่าการให้คะแนนสินทรัพย์ได้ ไม่มีการเปลี่ยนแปลงใดๆ เกิดขึ้น',
+    'AssetScoringSettingsChangedLog' => 'การตั้งค่าการให้คะแนนสินทรัพย์ถูกเปลี่ยนแปลงโดยผู้ใช้ "{$user}"',
+    'AssetScoringNotSet' => 'ไม่ได้ตั้งค่า',
+    'NotScored' => 'ไม่ได้ให้คะแนน',
+    'AssetScoringNotScoredHint' => 'ตอบโจทย์ทั้งสามข้อเพื่อให้ได้คะแนนสำหรับสินทรัพย์นี้',
+    'ImportAssetScoringValueIgnored' => 'ค่า {$objective} "{$value}" สำหรับสินทรัพย์ "{$asset_name}" ไม่ใช่การจัดอันดับที่ถูกต้องและถูกละเลย',
+    'AssetScoringSecurityObjectives' => 'วัตถุประสงค์ด้านความปลอดภัย',
+    'AssetScoringConfidentialityHelp' => 'หากมีการเปิดเผยข้อมูลเกี่ยวกับสินทรัพย์นี้โดยไม่ได้รับอนุญาต ผลกระทบที่อาจเกิดขึ้นจะเป็นอย่างไร?',
+    'AssetScoringIntegrityHelp' => 'หากมีการแก้ไขหรือทำลายข้อมูลในสินทรัพย์นี้โดยไม่ได้รับอนุญาต ผลกระทบที่อาจเกิดขึ้นจะเป็นอย่างไร?',
+    'AssetScoringAvailabilityHelp' => 'หากการเข้าถึงหรือการใช้งานสินทรัพย์นี้หยุดชะงัก จะส่งผลกระทบอย่างไรบ้าง?',
+    'AssetScoringHelpHigh' => 'ผลข้างเคียงที่รุนแรงหรือร้ายแรงมาก',
+    'AssetScoringHelpModerate' => 'ผลข้างเคียงร้ายแรง',
+    'AssetScoringHelpLow' => 'ผลข้างเคียงมีน้อยหรือไม่เกิดขึ้นเลย',
+    'AssetScoringHelpNotApplicable' => 'การรักษาความลับไม่ใช่ปัญหาสำหรับสินทรัพย์นี้ (ตัวอย่างเช่น ข้อมูลสาธารณะ)',
+    'AssetScoringHelpLabel' => '{$objective} คำแนะนำการให้คะแนน',
+    'AssetScoringMeterValue' => '{$score}, {$band} วงดนตรี',
+    'AssetScoringNoWeightedScore' => 'ไม่มีการให้คะแนนถ่วงน้ำหนัก',
+    'AssetScoringNoWeightedScoreNote' => 'ไม่มีการให้คะแนนถ่วงน้ำหนัก: ทุกเป้าหมายที่สำคัญจะมีน้ำหนักเท่ากับ 0',
+    'AssetScoringUpgradePending' => 'ไม่สามารถบันทึกการให้คะแนนสินทรัพย์ได้จนกว่าจะทำการอัปเกรดฐานข้อมูล SimpleRisk เสร็จสิ้น ไม่มีอะไรเปลี่ยนแปลง',
+    'AssetScoringResultHelpLabel' => '{$result} คำอธิบาย',
+    'AssetScoringScoreHelp' => 'คะแนนถ่วงน้ำหนักจะรวมการให้คะแนนทั้งสามเข้าด้วยกันเป็นตัวเลขเดียวตั้งแต่ {$low} ถึง {$high}แต่ละการให้คะแนนจะกลายเป็นค่าที่กำหนดไว้ และแต่ละค่าจะถูกคูณด้วยน้ำหนักของวัตถุประสงค์นั้นๆ ผลลัพธ์จะถูกบวกเข้าด้วยกันและหารด้วยผลรวมของน้ำหนักทั้งหมด ส่วนการรักษาความลับที่ไม่เกี่ยวข้องจะถูกละเว้นไปพร้อมกับน้ำหนักของมัน ค่าที่กำหนดไว้และน้ำหนักจะถูกกำหนดค่าในส่วนการตั้งค่า วัตถุประสงค์ทั้งสามต้องได้รับการให้คะแนนก่อนจึงจะแสดงคะแนนได้',
+    'AssetScoringCategorizationHelp' => 'การจัดประเภทความปลอดภัย FIPS 199 เป็นจุดสูงสุด: การจัดอันดับสูงสุดในบรรดาวัตถุประสงค์ที่เกี่ยวข้อง การจัดอันดับ "สูง" เพียงอย่างเดียวทำให้สินทรัพย์นั้นมีสถานะ "สูง" ไม่ว่าวัตถุประสงค์อื่นๆ จะเป็นอย่างไรก็ตาม คำว่า "ไม่เกี่ยวข้อง" จะถูกละเลย',
+    'AssetScoringBandHelp' => 'วงดนตรีจะให้คะแนนถ่วงน้ำหนักเป็นระดับ ต่ำ ปานกลาง หรือ สูง คะแนนต่ำกว่า {$moderate} คือ ต่ำ คะแนนตั้งแต่ {$moderate} ถึง {$highAt} คือ ปานกลาง และคะแนนตั้งแต่ {$highAt} ขึ้นไปคือ สูง สามารถกำหนดค่าเกณฑ์เหล่านี้ได้ในการตั้งค่า',
+    // Manage assets: Confidentiality / Integrity / Availability rating filters
+    'AllConfidentialityRatings' => 'ระดับการรักษาความลับทั้งหมด',
+    'AllIntegrityRatings' => 'การประเมินความซื่อสัตย์ทั้งหมด',
+    'AllAvailabilityRatings' => 'การจัดอันดับความพร้อมใช้งานทั้งหมด',
+    'AssetFilterByConfidentiality' => 'กรองตามระดับการรักษาความลับ {$name}',
+    'AssetFilteringByConfidentiality' => 'การกรองตามการรักษาความลับ {$name}',
+    'AssetFilterByIntegrity' => 'กรองตามความสมบูรณ์ {$name}',
+    'AssetFilteringByIntegrity' => 'การกรองตามความสมบูรณ์ {$name}',
+    'AssetFilterByAvailability' => 'กรองตามความพร้อมใช้งาน {$name}',
+    'AssetFilteringByAvailability' => 'กรองตามความพร้อมใช้งาน {$name}',
+    'HighestFIPSCategorization' => 'การจัดประเภท FIPS สูงสุด',
+    'HighestWeightedScore' => 'คะแนนถ่วงน้ำหนักสูงสุด',
+    'HighestWeightedBand' => 'แถบน้ำหนักสูงสุด',
+    'AssetGroupFields' => 'ฟิลด์กลุ่มสินทรัพย์',
+    'NoAssetGroupsMatchFilters' => 'ไม่มีกลุ่มสินทรัพย์ใดตรงกับตัวกรองของคุณ',
+    'AssetGroupFilterByHighestCategorization' => 'กรองตามการจัดหมวดหมู่ FIPS สูงสุด {$name}',
+    'AssetGroupFilteringByHighestCategorization' => 'การกรองตามหมวดหมู่ FIPS สูงสุด {$name}',
+    'AssetGroupFilterByHighestBand' => 'กรองตามแบนด์ที่มีน้ำหนักสูงสุด {$name}',
+    'AssetGroupFilteringByHighestBand' => 'การกรองตามแบนด์ที่มีน้ำหนักสูงสุด {$name}',
+    'AssetGroupBulkSelectionRequired' => 'เลือกกลุ่มสินทรัพย์โดยใช้ ID หรือโดยใช้ตัวกรอง',
+    'AssetGroupBulkIdsRequired' => 'เลือกกลุ่มสินทรัพย์อย่างน้อยหนึ่งกลุ่ม',
+    'AssetGroupBulkIdsInvalid' => 'รหัสกลุ่มสินทรัพย์ต้องเป็นจำนวนเต็ม',
+    'AssetGroupBulkFilterAllAlone' => 'การเลือกกลุ่มสินทรัพย์ทั้งหมดไม่สามารถใช้ร่วมกับตัวกรองอื่นๆ ได้',
+    'AssetGroupBulkFilterEmpty' => 'เลือกตัวกรอง หรือเลือกกลุ่มสินทรัพย์ทั้งหมดก่อนทำการลบ',
+    'AssetGroupBulkExpectedCountInvalid' => 'จำนวนกลุ่มสินทรัพย์ที่คาดหวังจะต้องเป็นจำนวนเต็ม',
+    'AssetGroupBulkExpectedCountRequired' => 'การลบกลุ่มสินทรัพย์โดยใช้ตัวกรองจำเป็นต้องระบุจำนวนกลุ่มที่คุณต้องการลบ',
+    'AssetGroupBulkNoMatch' => 'ไม่มีกลุ่มสินทรัพย์ใดตรงกับการเลือกของคุณ',
+    'AssetGroupBulkCountMismatch' => 'กลุ่มสินทรัพย์ที่ตรงกันเปลี่ยนจาก {$expected} เป็น {$actual} นับตั้งแต่ที่คุณเลือก โปรดตรวจสอบรายการและลองใหม่อีกครั้ง',
+    'AssetGroupBulkTooManyToDelete' => 'คุณสามารถลบกลุ่มสินทรัพย์ได้ครั้งละไม่เกิน {$max} กลุ่ม ลองจำกัดตัวเลือกให้แคบลงแล้วลองใหม่อีกครั้ง',
+    'AssetGroupBulkSelectAll' => 'เลือกกลุ่มสินทรัพย์ {$count} ทั้งหมด',
+    'AssetGroupBulkAllSelected' => 'เลือกกลุ่มสินทรัพย์ที่ตรงกันทั้งหมด {$count} แล้ว',
+    'AssetGroupBulkDeleteConfirmTitle' => 'ลบกลุ่มสินทรัพย์ {$count} หรือไม่?',
+    'AssetGroupBulkDeleteKeepsAssets' => 'ไฟล์ต่างๆ ในกลุ่มเหล่านี้จะไม่ถูกลบออก มีเพียงกลุ่มเหล่านั้นเท่านั้นที่จะถูกลบออก',
+    'DeleteAssetGroups' => 'ลบกลุ่ม',
+    'AssetGroupBulkDeletedSummary' => 'กลุ่ม {$ok} ถูกลบ, กลุ่ม {$failed} ถูกข้าม',
+    'ChoosingRisksNeedsRiskManagementPermission' => 'การเลือกความเสี่ยงที่เกี่ยวข้องจำเป็นต้องได้รับอนุญาตจากฝ่ายบริหารความเสี่ยง',
+    'NAssociatedRisks' => '{n} ความเสี่ยงที่เกี่ยวข้อง',
+    'SavingKeepsTheCurrentRiskAssociations' => 'การออมช่วยลดความเสี่ยงที่เกี่ยวข้องในปัจจุบันลงได้',
     '' => '',
 );
 ?>

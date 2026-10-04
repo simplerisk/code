@@ -814,7 +814,7 @@ $lang = array(
     'UserSessions' => 'Sesiuni de utilizator',
     'SessionActivityTimeout' => 'Timeout activitate sesiune',
     'Security' => 'Securitate',
-    'EnableCSP' => 'Activați Politica de securitate a conținutului (acest lucru a rupt Chrome în trecut)',
+    'EnableCSP' => 'Activează politica de securitate a conținutului (recomandat)',
     'EnableDebugLogging' => 'Activează înregistrarea în jurnal depanare',
     'seconds' => 'secunde',
     'FieldSample' => 'Eșantion de câmp',
@@ -4967,6 +4967,572 @@ $lang = array(
     // closeriskForm()'s own (hardcoded, pre-existing) single-risk denial text.
     'NoCloseRiskPermission' => 'Nu aveți permisiunea de a închide riscuri.',
     'QuestionnaireRequiredQuestionUnanswered' => 'Vă rugăm să răspundeți la toate întrebările obligatorii înainte de a finaliza evaluarea.',
+    'AuditLog_ControlStatusAutoSynced' => 'Starea controlului „{$short_name}” a fost actualizată automat la „{$status_text}” pe baza celui/celor mai recente rezultat(e) al/ale testului/testelor sale.',
+    'EnableCSPHelp' => 'Politica de securitate a conținutului (CSP) restricționează browserul la încărcarea scripturilor, stilurilor, imaginilor și fonturilor doar din SimpleRisk și blochează încadrarea paginilor și trimiterea de formulare între origini diferite. Este cea mai puternică apărare încorporată împotriva scriptării între site-uri. Lăsați activată, cu excepția cazului în care intră în conflict cu un proxy, o extensie de browser sau o integrare terță parte din mediul dvs.',
+    // Define Control Frameworks' Columns picker (Task: Columns picker + saved layout/filters) -- the "Standard" group label above its built-in fields (Family/Owner/Maturity/Status/Class/Phase/Priority/Type); 'CustomFields' already exists.
+    'StandardFields' => 'Câmpuri standard',
+    // My Profile redesign (js/simplerisk/pages/account-profile.js)
+    'Administrator' => 'Administrator',
+    'AccountDetails' => 'Detalii cont',
+    'YourPermissions' => 'Permisiunile dvs.',
+    'RoleAndTeamsGrantAccess' => 'La ce îți oferă acces rolul și echipele tale',
+    'AllGranted' => 'Toate sunt acordate',
+    'PermissionsCountLabel' => 'permisiuni $count',
+    'ManagedByYourAdministrator' => 'Aceste detalii sunt gestionate de administratorul dvs. Contactați-l dacă trebuie să modificați ceva aici.',
+    'MultiFactorAuthenticationHint' => 'Adăugați un al doilea pas la conectare pentru a vă menține contul în siguranță.',
+    'ChangingPasswordSignsOutEverywhere' => 'Schimbarea parolei vă deconectează din toate celelalte sesiuni.',
+    'APIKeyHint' => 'Folosit pentru autentificarea propriilor scripturi și integrări în raport cu API-ul SimpleRisk.',
+    'ResetDisplaySettingsHint' => 'Resetează selecțiile personalizate ale coloanelor la valorile implicite.',
+    'CardGeneral' => 'Generale',
+    'CardClassification' => 'Clasificare',
+    'CardScoring' => 'Scorare',
+    'CardAdditionalInformation' => 'Informaţii suplimentare',
+    'CardCustomFields' => 'Câmpuri particularizate',
+    'CardCustomFieldsHint' => 'Aceste câmpuri trebuie sortate într-o fișă',
+    'LayoutEditorHint' => 'Trageți un câmp într-o altă fișă pentru a-l reatribui, trageți în interiorul unei fișe pentru a-l reordona sau redimensiona și trageți sau redimensionați o fișă pentru a-i schimba poziția pe pagină.',
+    'ScoringNotYetAvailableInThisView' => 'Configurația scorului nu este încă disponibilă în această vizualizare.',
+    // Native tooltip on the Cards layout editor's Gridstack resize handles
+    // (js/simplerisk/pages/customization-layout-editor.js) -- the bare corner
+    // bracket read as an unexplained mark until it said what it does.
+    'DragToResize' => 'Trageți pentru a redimensiona',
+    // Warning pill on a Cards layout editor card the admin has sized shorter
+    // than the fields it holds. Replaces the silent inner scrollbar that state
+    // used to produce.
+    'NFieldsDoNotFitCard' => 'Câmpul(ele) {n} nu încap în acest card. Redimensionați cardul pentru a le afișa.',
+    // Card titles for the Mitigation tab's Cards layout editor
+    // (js/simplerisk/pages/customization-layout-editor.js), mirroring the
+    // Card* keys above for the Details tab. Order follows
+    // customization_mitigation_cards_layout_card_keys() (includes/functions.php).
+    'CardMitigationStrategy' => 'Strategia de atenuare',
+    'CardMitigationSolution' => 'Soluție de atenuare',
+    'CardMitigationControls' => 'Controale de atenuare',
+    'CardReview' => 'Recenzie',
+    // Submit Risk page's three action-bar buttons (buildActionsBar(),
+    // risk-details-form.js, submitMode 'create' only) and the Reset Form
+    // confirm modal (management/index.php, design-system.md #8's "Confirm"
+    // type). 'Discard'/'Cancel'/'Close' already exist and are reused for the
+    // modal's own buttons.
+    'ResetForm' => 'Resetare formular',
+    'SaveAndNew' => 'Salvare și nou',
+    'SaveAndView' => 'Salvați și vizualizați',
+    'ResetFormConfirmTitle' => 'Renunțați la această trimitere de risc?',
+    'ResetFormConfirmBody' => 'Orice informație introdusă se va pierde.',
+    // Restore-template destructive confirm (Customization Extra, Save/Restore
+    // action bar). Two body variants: risk's Details/Mitigation/Review tabs
+    // named explicitly (the only fgroup with that 3-tab Cards layout), a
+    // generic fallback for every other fgroup (single legacy-panel tab).
+    // Both end on the same scoping reassurance -- confirmed via direct source
+    // read that Restore only ever touches the currently-selected template
+    // group, never any other.
+    'RestoreTemplateConfirmTitle' => 'Restabiliți aspectul implicit?',
+    'RestoreTemplateConfirmBodyRisk' => 'Această acțiune resetează toate câmpurile din filele Detalii, Atenuare și Revizuire la valorile implicite pentru acest grup de șabloane. Celelalte grupuri de șabloane nu sunt afectate.',
+    'RestoreTemplateConfirmBody' => 'Această acțiune resetează fiecare câmp din acest șablon la valorile sale implicite pentru acest grup de șabloane. Celelalte grupuri de șabloane nu sunt afectate.',
+    // CVSS holder's collapsed Temporal/Environmental/Impact-Modifiers
+    // accordion (buildCvssHolder(), risk-details-form.js) -- these three
+    // groups are optional CVSS v2 refinements on top of the required Base
+    // Score Metrics, so they collapse behind this header by default.
+    'AdvancedMetrics' => 'Metrici avansate',
+    // CVSS holder's Base Score Metrics sub-group headers (buildCvssHolder(),
+    // risk-details-form.js) -- distinct from the existing 'ExploitabilityMetrics'/
+    // 'ImpactMetrics' keys, which the legacy cvss_modal_content.php modal
+    // still renders as plain "Exploitability Metrics"/"Impact Metrics" and
+    // must keep unchanged. These fold the umbrella "Base Score Metrics"
+    // heading into each sub-group's own header instead of a separate label.
+    'BaseScoreExploitabilityMetrics' => 'Metrici de exploatare a scorului de bază',
+    'BaseScoreImpactMetrics' => 'Indicatori de impact ai scorului de bază',
+    // Per-field help popovers on the CVSS holder's 14 metric selects
+    // (buildCvssScoreItem(), risk-details-form.js) -- one per CVSS v2
+    // metric, matching the standard CVSS v2 specification definitions.
+    // Double-quoted (not single-quoted, this file's usual style) so the
+    // \n line breaks are real escape sequences: each popover leads with one
+    // overall sentence, then one bullet line per option, rendered via
+    // white-space: pre-line on .sr-scoring-help-popover .popover-body
+    // (scss/modules/_questionnaire.scss) -- plain text throughout, no HTML,
+    // so the popover stays initialized without Bootstrap's `html: true`.
+    "AttackVectorHelp" => "Cum poate fi accesată vulnerabilitatea.\n• Local: necesită acces local, cum ar fi o consolă sau un shell.\n• Rețea adiacentă: atacatorul trebuie să se afle pe același segment fizic sau logic de rețea.\n• Rețea: poate fi exploatată de la distanță printr-o rețea, fără a fi nevoie de acces local sau adiacent.",
+    "AttackComplexityHelp" => "Cât de complex este atacul odată ce un atacator are acces la țintă.\n• Ridicat: necesită condiții specializate care sunt greu de aranjat.\n• Mediu: trebuie îndeplinite anumite condiții, dar exploatarea nu este dificilă odată ce acestea sunt.\n• Scăzut: nu sunt necesare condiții speciale.",
+    "AuthenticationHelp" => "Numărul de autentificări ale unui atacator la țintă pentru a o exploata.\n• Multiplă: autentificarea este necesară de două sau mai multe ori, chiar și cu aceleași credențiale.\n• Simplă: autentificarea este necesară o singură dată.\n• Niciuna: nu este necesară nicio autentificare.",
+    "ConfidentialityImpactHelp" => "Impactul asupra confidențialității datelor pe care sistemul le procesează în cazul exploatării.\n• Niciunul: fără impact.\n• Parțial: divulgarea unor informații, dar atacatorul nu controlează ce anume se întâmplă sau pierderea este limitată.\n• Complet: divulgarea totală a tuturor informațiilor din sistem.",
+    "IntegrityImpactHelp" => "Impactul asupra integrității sistemului în caz de exploatare.\n• Niciunul: fără impact.\n• Parțial: unele date pot fi modificate, dar atacatorul nu controlează ce anume sau domeniul de aplicare este limitat.\n• Complet: compromiterea totală a integrității sistemului; atacatorul poate modifica orice fișiere.",
+    "AvailabilityImpactHelp" => "Impactul asupra disponibilității sistemului în caz de exploatare.\n• Niciunul: fără impact.\n• Parțial: performanță redusă sau întreruperi ale disponibilității.\n• Complet: oprirea totală a resursei afectate.",
+    "RemediationLevelHelp" => "Nivelul de remediere disponibil pentru vulnerabilitate.\n• Corecție oficială: este disponibilă o soluție completă de la furnizor.\n• Corecție temporară: este disponibilă o soluție oficială, dar temporară.\n• Soluție alternativă: există o soluție alternativă neoficială, care nu este de la furnizor.\n• Indisponibil: nu este disponibilă nicio soluție sau nu poate fi aplicată.",
+    "ReportConfidenceHelp" => "Gradul de încredere în existența vulnerabilității și credibilitatea detaliilor sale tehnice.\n• Neconfirmat: raportul unei singure surse neconfirmate; problema de bază este speculativă.\n• Necorroborat: mai multe surse independente raportează același comportament, dar cauza principală nu este confirmată.\n• Confirmat: furnizorul a recunoscut problema sau aceasta este confirmată prin analiza codului sursă sau a exploit-ului.",
+    "CollateralDamagePotentialHelp" => "Potențialul de pierdere a vieții omenești, a bunurilor fizice sau a pierderilor financiare dacă vulnerabilitatea este exploatată.\n• Niciuna: nicio astfel de pierdere nu este probabilă.\n• Scăzut spre mediu: o pierdere moderată este posibilă.\n• Ridicat: un impact catastrofal asupra bunurilor, veniturilor sau siguranței organizației.",
+    "TargetDistributionHelp" => "Proporția sistemelor vulnerabile din mediul dumneavoastră.\n• Niciunul: nu există sisteme țintă.\n• Scăzut: 1-25% dintre sisteme sunt vulnerabile.\n• Mediu: 26-75% sunt vulnerabile.\n• Ridicat: 76-100% sunt vulnerabile.",
+    "ConfidentialityRequirementHelp" => "Cât de importantă este confidențialitatea activului afectat pentru organizația dumneavoastră.\n• Scăzută: o pierdere a confidențialității are un impact limitat.\n• Medie: are un impact serios.\n• Ridicată: are un impact catastrofal.",
+    "IntegrityRequirementHelp" => "Cât de importantă este integritatea activului afectat pentru organizația dumneavoastră.\n• Scăzută: o pierdere de integritate are un impact limitat.\n• Medie: are un impact grav.\n• Ridicată: are un impact catastrofal.",
+    "AvailabilityRequirementHelp" => "Cât de importantă este disponibilitatea activului afectat pentru organizația dumneavoastră.\n• Scăzută: o pierdere de disponibilitate are un impact limitat.\n• Medie: are un impact serios.\n• Ridicată: are un impact catastrofal.",
+    // Base Score Metrics' two sub-group intro sentences (metricsSubGroup()'s
+    // `descKey`, risk-details-form.js) -- orient the user to what the GROUP
+    // as a whole is asking, distinct from the per-field *Help popover keys
+    // above which explain each metric's own options.
+    'BaseScoreExploitabilityMetricsDescription' => 'Cum ar trebui un atacator să ajungă și să declanșeze această vulnerabilitate: unde trebuie să se afle, cât de complex este atacul și dacă trebuie să se autentifice mai întâi.',
+    'BaseScoreImpactMetricsDescription' => 'Ce se întâmplă dacă vulnerabilitatea este exploatată cu succes: efectul asupra confidențialității, integrității și disponibilității sistemului afectat.',
+    // Advanced Metrics' three optional sub-group intro sentences -- same
+    // metricsSubGroup() `descKey` as the two Base Score groups above.
+    'TemporalScoreMetricsDescription' => 'Cum se schimbă în timp amenințarea reală reprezentată de această vulnerabilitate: starea actuală a codului de exploatare, ce remedieri sunt disponibile și cât de sigure sunt rapoartele că există.',
+    'EnvironmentalScoreMetricsDescription' => 'Modul în care riscul acestei vulnerabilități depinde de mediul înconjurător: potențialul de daune reale și câte dintre sistemele dumneavoastră sunt afectate efectiv.',
+    'ImpactSubscoreModifiersDescription' => 'Ponderați impactul Scorului de Bază în funcție de cât de importante sunt confidențialitatea, integritatea și disponibilitatea pentru acest activ specific.',
+    // Phase 4d-iii: DREAD holder help popovers (view_dread_help()'s
+    // existing English text, includes/display.php, extracted to real $lang
+    // keys -- that function's own content was raw hardcoded HTML, never
+    // localized, so it could not be reused verbatim).
+    'DamagePotentialHelp' => 'Dacă are loc o exploatare a unei amenințări, ce daune vor fi cauzate?' . "\n" . '0 = Nimic' . "\n" . '5 = Datele individuale ale utilizatorilor sunt compromise sau afectate.' . "\n" . '10 = Distrugere completă a sistemului sau a datelor',
+    'ReproducibilityHelp' => 'Cât de ușor este să reproduci exploatarea amenințării?' . "\n" . '0 = Foarte greu sau imposibil, chiar și pentru administratorii aplicației.' . "\n" . '5 = Sunt necesari unul sau doi pași, este posibil să fie nevoie să fii un utilizator autorizat.' . "\n" . '10 = Doar un browser web și bara de adrese sunt suficiente, fără autentificare.',
+    'ExploitabilityHelp' => 'Ce este necesar pentru a exploata această amenințare?' . "\n" . '0 = Cunoștințe avansate de programare și rețele, cu instrumente de atac personalizate sau avansate.' . "\n" . '5 = Există programe malware pe internet sau o exploatare poate fi realizată cu ușurință folosind instrumentele de atac disponibile.' . "\n" . '10 = Doar un browser web',
+    'AffectedUsersHelp' => 'Câți utilizatori vor fi afectați?' . "\n" . '0 = Niciunul' . "\n" . '5 = Unii utilizatori, dar nu toți' . "\n" . '10 = Toți utilizatorii',
+    'DiscoverabilityHelp' => 'Cât de ușor este să descoperi această amenințare?' . "\n" . '0 = Foarte greu până la imposibil; necesită cod sursă sau acces administrativ.' . "\n" . '5 = Se poate afla ghicind sau monitorizând urmele rețelei.' . "\n" . '9 = Detalii despre astfel de defecțiuni sunt deja disponibile publicului și pot fi ușor descoperite folosind un motor de căutare.' . "\n" . '10 = Informația este vizibilă în bara de adrese a browserului web sau într-un formular.',
+    // The DREAD holder's summary card heading and "DREAD Metrics" card
+    // heading. No existing key covers either (confirmed via grep before
+    // adding).
+    'DreadScore' => 'Scor DREAD',
+    'DreadMetrics' => 'Metrici DREAD',
+    // Phase 4d-iv: OWASP holder help popovers (view_owasp_help()'s
+    // existing English text, includes/display.php, extracted to real
+    // $lang keys -- same never-localized-legacy-content extraction the
+    // DREAD phase already did for its own 5 fields). Wording/levels
+    // trued up against that function's real source text, not transcribed
+    // from an earlier standard-methodology draft.
+    'SkillLevelHelp' => 'Cât de priceput din punct de vedere tehnic este acest grup de agenți amenințători?' . "\n" . '1 = Fără abilități tehnice' . "\n" . '3 = Câteva abilități tehnice' . "\n" . '5 = Utilizator avansat de calculator' . "\n" . '6 = Abilități de rețea și programare' . "\n" . '9 = Abilități de penetrare a securității',
+    'MotiveHelp' => 'Cât de motivat este acest grup de agenți amenințători să găsească și să exploateze această vulnerabilitate?' . "\n" . '1 = Recompensă mică sau deloc' . "\n" . '4 = Recompensă posibilă' . "\n" . '9 = Recompensă mare',
+    'OpportunityHelp' => 'Ce resurse și oportunități sunt necesare pentru ca acest grup de agenți amenințători să găsească și să exploateze această vulnerabilitate?' . "\n" . '0 = Acces complet sau resurse costisitoare necesare' . "\n" . '4 = Acces sau resurse speciale necesare' . "\n" . '7 = Este necesar un anumit acces sau anumite resurse' . "\n" . '9 = Nu este necesar acces sau resurse',
+    'SizeHelp' => 'Cât de mare este acest grup de agenți amenințători?' . "\n" . '2 = Dezvoltatori' . "\n" . '2 = Administratori de sistem' . "\n" . '4 = Utilizatori Intranet' . "\n" . '5 = Parteneri' . "\n" . '6 = Utilizatori autentificați' . "\n" . '9 = Utilizatori de internet anonimi',
+    'EaseOfDiscoveryHelp' => 'Cât de ușor este pentru acest grup de agenți de amenințare să descopere această vulnerabilitate?' . "\n" . '1 = Practic imposibil' . "\n" . '3 = Dificil' . "\n" . '7 = Ușor' . "\n" . '9 = Instrumente automate disponibile',
+    'EaseOfExploitHelp' => 'Cât de ușor este pentru acest grup de agenți amenințători să exploateze efectiv această vulnerabilitate?' . "\n" . '1 = Teoretic' . "\n" . '3 = Dificil' . "\n" . '5 = Ușor' . "\n" . '9 = Instrumente automate disponibile',
+    'AwarenessHelp' => 'Cât de bine cunoscută este această vulnerabilitate la acest grup de agenți amenințători?' . "\n" . '1 = Necunoscut' . "\n" . '4 = Ascuns' . "\n" . '6 = Evident' . "\n" . '9 = Cunoștințe publice',
+    'IntrusionDetectionHelp' => 'Cât de probabil este ca o vulnerabilitate să fie detectată?' . "\n" . '1 = Detectare activă în aplicație' . "\n" . '3 = Înregistrat și verificat' . "\n" . '8 = Înregistrat fără revizuire' . "\n" . '9 = Neînregistrat',
+    'LossOfConfidentialityHelp' => 'Câte date pot fi divulgate și cât de sensibile sunt acestea?' . "\n" . '2 = Date minime nesensibile divulgate' . "\n" . '6 = Date critice minime divulgate' . "\n" . '6 = Date nesensibile extinse divulgate' . "\n" . '7 = Date critice extinse dezvăluite' . "\n" . '9 = Toate datele divulgate',
+    'LossOfIntegrityHelp' => 'Câte date ar putea fi corupte și cât de deteriorate sunt acestea?' . "\n" . '1 = Date minime ușor corupte' . "\n" . '3 = Date minime, grav corupte' . "\n" . '5 = Date extinse, ușor corupte' . "\n" . '7 = Date extinse, grav corupte' . "\n" . '9 = Toate datele sunt complet corupte',
+    'LossOfAvailabilityHelp' => 'Cât de mult serviciu s-ar putea pierde și cât de vital este acesta?' . "\n" . '1 = Servicii secundare minime întrerupte' . "\n" . '5 = Servicii primare minime întrerupte' . "\n" . '5 = Servicii secundare extinse întrerupte' . "\n" . '7 = Servicii primare extinse întrerupte' . "\n" . '9 = Toate serviciile complet pierdute',
+    'LossOfAccountabilityHelp' => 'Acțiunile agenților amenințători pot fi urmărite până la o persoană?' . "\n" . '1 = Complet trasabil' . "\n" . '7 = Posibil trasabil' . "\n" . '9 = Complet anonim',
+    'FinancialDamageHelp' => 'Câte daune financiare vor rezulta în urma unei exploatări?' . "\n" . '1 = Mai puțin decât costul remedierii vulnerabilității' . "\n" . '3 = Efect minor asupra profitului anual' . "\n" . '7 = Efect semnificativ asupra profitului anual' . "\n" . '9 = Faliment',
+    'ReputationDamageHelp' => 'Ar duce o vulnerabilitate la daune reputaționale care ar dăuna afacerii?' . "\n" . '1 = Daune minime' . "\n" . '4 = Pierderea conturilor majore' . "\n" . '5 = Pierderea fondului comercial' . "\n" . '9 = Daune aduse mărcii',
+    'NonComplianceHelp' => 'Câtă expunere introduce nerespectarea regulilor?' . "\n" . '2 = Încălcare minoră' . "\n" . '5 = Încălcare clară' . "\n" . '7 = Încălcare de profil înalt',
+    'PrivacyViolationHelp' => 'Câte informații personale de identificare ar putea fi divulgate?' . "\n" . '3 = Un individ' . "\n" . '5 = Sute de oameni' . "\n" . '7 = Mii de oameni' . "\n" . '9 = Milioane de oameni',
+    // The OWASP holder's Score card heading. No existing key covers this
+    // (confirmed via grep before adding) -- the Likelihood/Impact card
+    // headings reuse the already-existing bare 'Likelihood'/'Impact' keys.
+    'OwaspScore' => 'Scor OWASP',
+    // Phase 4d-iv follow-up: group-level descriptions for the 4 OWASP
+    // subgroup headings, sourced from OWASP's own Risk Rating Methodology
+    // (https://community.owasp.org/OWASP_Risk_Rating_Methodology), tightened
+    // into short UI captions -- not a verbatim quote (see this task's own
+    // source table for the original wording).
+    'ThreatAgentFactorsDescription' => 'Estimează probabilitatea unui atac reușit din partea acestui grup de agenți amenințători.',
+    'VulnerabilityFactorsDescription' => 'Estimează probabilitatea ca această vulnerabilitate să fie descoperită și exploatată.',
+    'TechnicalImpactDescription' => 'Descompune impactul în funcție de confidențialitate, integritate, disponibilitate și responsabilitate.',
+    'BusinessImpactDescription' => 'Reflectă ceea ce contează pentru afacere, dincolo de impactul tehnic brut.',
+    // CVSS's own Temporal-metric 'Exploitability' help text. This key shares
+    // a labelKey ('Exploitability') with DREAD's own field, so both would
+    // otherwise derive the same generic lang key ('ExploitabilityHelp'),
+    // with DREAD's entry silently winning for both -- risk-details-form.js's
+    // buildCvssScoreItem() and risk-details-view.js's cvssMetricValueRow()
+    // reference this key directly for CVSS's Exploitability field instead
+    // of the generic '<labelKey>Help' derivation.
+    'CVSSExploitabilityHelp' => "Starea actuală a tehnicilor de exploatare sau disponibilitatea codului.\n• Nedemonstrat: nu este disponibil cod de exploatare sau exploatarea este teoretică.\n• Dovadă de concept: există cod de exploatare, dar nu este practic pentru majoritatea atacatorilor.\n• Funcțional: codul de exploatare funcțional funcționează în majoritatea situațiilor.\n• Ridicat: exploatarea este fiabilă și fie automatizată (de exemplu, un vierme), fie nu necesită deloc cod de exploatare.",
+    // Risk Scoring -- Classic Inline (Task 3): the Classic scoring method's
+    // new inline Score card heading and its Likelihood/Impact cards' short
+    // plain-English descriptions (js/simplerisk/common/risk-details-form.js's
+    // buildClassicHolder()). Deliberately NOT sourced from NIST SP 800-30 or
+    // any other external standard -- confirmed with the user via the
+    // approved mockup review, unlike OWASP's own subgroup descriptions
+    // above, which do cite OWASP's Risk Rating Methodology.
+    'ClassicScore' => 'Scor clasic',
+    'ClassicLikelihoodDescription' => 'Cât de probabilă este apariția acestui risc.',
+    'ClassicImpactDescription' => 'Cât de grave ar fi consecințele dacă acest risc s-ar produce.',
+    // Risk Scoring -- Custom Inline (Task 2): the Custom scoring method's
+    // new inline Score card heading (js/simplerisk/common/risk-details-form.js's
+    // buildCustomHolder()) and the Custom Value card's short description
+    // caption. 'CustomValueDescription' text confirmed directly with the
+    // user, same as Classic's own description keys above.
+    'CustomScore' => 'Scor personalizat',
+    'CustomValueDescription' => 'O valoare personalizată poate fi o valoare zecimală între 0 și 10.',
+    // Risk Scoring -- Contributing Risk Inline (Phase 4d-v): the last of
+    // the three deferred scoring methods (DREAD/OWASP shipped earlier in
+    // this same project). The Likelihood/Contributing Risk cards' short
+    // plain-English descriptions (js/simplerisk/common/risk-details-form.js's
+    // buildContributingRiskHolder()). The Score card heading reuses the
+    // EXISTING 'ContributingRiskScore' key (already present above, same
+    // text) rather than duplicating it -- 'ContributingRisk'/
+    // 'ContributingLikelihood'/'Weight'/'Subject' are likewise reused as-is.
+    'ContributingLikelihoodDescription' => 'Cât de probabilă este apariția acestui risc.',
+    'ContributingRiskDescription' => 'Fiecare factor de mai jos este ponderat în funcție de importanța sa relativă -- selectați cât de mult este afectat acest risc de fiecare dintre ele.',
+    // OWASP read-mode card (buildOwaspReadView(), risk-details-view.js):
+    // the live calculation formula under each of the 4 sub-group names
+    // (Threat Agent Factors/Vulnerability Factors/Technical Impact/
+    // Business Impact), matching the legacy risk-scoring-details panel's
+    // own "= ( a + b + c + d ) / 4" text (includes/display.php), and the
+    // OWASP Risk Rating Methodology link note placed in the OWASP Score
+    // column's open space below the summary numbers.
+    'OwaspSubgroupFormula' => '= ( {a} + {b} + {c} + {d} ) / 4',
+    'OwaspMethodologyNote' => 'Detalii complete despre Metodologia de evaluare a riscurilor OWASP pot fi găsite',
+    'Here' => 'Aici',
+    // Scoring widget formula captions (Classic/DREAD/Contributing Risk),
+    // the same ".sr-cvss-vector under the score label" treatment CVSS's
+    // vector caption and OwaspSubgroupFormula above already have, on both
+    // the edit-mode holder (risk-details-form.js) and the read-mode card
+    // (risk-details-view.js). Classic reuses the existing RISKClassicExp1-5
+    // keys instead of a new one -- see those keys' own long-standing
+    // definitions above.
+    'DreadScoreFormula' => '= ( {a} + {b} + {c} + {d} + {e} ) / 5',
+    // Contributing Risk's per-factor weighted term and its shared
+    // Likelihood term (update_contributing_risk_score(), includes/
+    // functions.php) -- unlike DREAD/OWASP's fixed roster, the factor list
+    // is admin-configured, so this is one formula PER FACTOR ROW rather
+    // than one fixed caption under the total score.
+    // {maxName}: score.php parity -- legacy's "Maximum Value" column showed
+    // the max option's human-readable name alongside its number (e.g.
+    // "[5] Certain", includes/display.php); these formulas only showed the
+    // bare number.
+    'ContributingLikelihoodFormula' => '= {value} x 5 / {max} ({maxName})',
+    'ContributingFactorFormula' => '= {weight}% x {impact} x 5 / {max} ({maxName})',
+    // Contributing Risk's own subscore row in the Score card -- the sum of
+    // every factor's own term above it. Generic (not substituted with real
+    // numbers) since the number of terms is however many factors are
+    // configured, unlike the fixed-roster formulas above.
+    'ContributingRiskSubtotalFormula' => '= Suma dintre (Greutate x Impact x 5 / Max)',
+    // Contributing Risk Score's own formula, under the total row -- always
+    // exactly 2 terms (unlike the Contributing Risk subtotal above), so
+    // substituted with the real current subtotal values, same convention
+    // DreadScoreFormula/OwaspSubgroupFormula use for their own fixed roster.
+    'ContributingRiskScoreFormula' => '= {likelihood} + {contributing}',
+    // Risk Scoring History widget (risk-details-view.js) -- replaces the
+    // legacy chart's bare save icon with a real menu item, structured for
+    // future export types alongside it.
+    'DownloadChartAsImage' => 'Descărcați ca imagine',
+    // Legacy score.php's CVSS table had a "Full details of CVSS Version 2.0
+    // scoring can be found here." link (includes/display.php); this is its
+    // inline-scoring-card equivalent, same shape as OwaspMethodologyNote.
+    'CvssMethodologyNote' => 'Detalii complete despre scorarea CVSS versiunea 2.0 pot fi găsite',
+    // Mitigation Controls redesign: the picker reuses ChooseControls/
+    // AddOrRemoveControls/etc from Document Program's control picker.
+    'InvalidControlID' => 'ID de control nevalid.',
+    'ValidationOwner' => 'Proprietar de validare',
+    'ValidationStatus' => 'Starea validării',
+    'NotStarted' => 'Neînceput',
+    // management/view.php's "risk ID does not exist" empty state.
+    'RiskIdDoesNotExistBody' => 'Riscul pe care îl căutați poate fi șters sau linkul poate fi incorect.',
+    'MitigationControlsRequiresGovernance' => 'Necesită permisiune de administrare pentru vizualizare.',
+    'ViewControlValidation' => 'Validarea controlului vizualizării',
+    'EditControlValidation' => 'Validarea controlului de editare',
+    'SupportingDocumentationRequiresSubmitRisk' => 'Necesită permisiunea Submit Risk pentru a încărca fișiere.',
+    'SupportingDocumentationRequiresModifyRisks' => 'Necesită permisiunea de modificare a riscurilor pentru a gestiona fișierele.',
+    'MitigationSupportingDocumentationRequiresPlanMitigations' => 'Necesită permisiunea Plan Mitigations pentru a gestiona fișiere.',
+    'MitigationSubmittedBy' => 'Atenuare trimisă de',
+    'UseADifferentDate' => 'Folosește o altă dată',
+    'AssetGroup' => 'Grup de active',
+    // Customization Cards Layout API (extras/customization/index.php) scope-validation errors.
+    'InvalidFgroup' => 'Grup f nevalid.',
+    'CustomizationCardsLayoutApiScopeError' => 'API-ul Customization Cards Layout este disponibil numai pentru fgroup=risk, tab_index=1, tab_index=2 sau tab_index=3.',
+    // Asset management redesign
+    'DiscoverAssets' => 'Descoperiți active',
+    'DiscoveryRuns' => 'Rulare Discovery',
+    'DiscoveryRangeHint' => 'O adresă, un interval de început-sfârșit sau un CIDR IPv4',
+    'DiscoveryResolveNames' => 'Căutați nume de gazdă',
+    'DiscoveryAddAs' => 'Adăugați active noi ca',
+    'DiscoveryStart' => 'Începeți descoperirea',
+    'DiscoveryBackgroundNote' => 'Rulează în fundal. Adresele care există deja sunt omise.',
+    'DiscoveryRangeInvalid' => 'Introduceți o adresă IPv4, un interval sau un bloc CIDR valid.',
+    'DiscoveryRangeTooLarge' => 'Intervalul respectiv este prea mare. Limita este de {$max} adrese.',
+    'DiscoveryRunQueued' => 'Descoperirea a început.',
+    'DiscoveryRunCompleted' => 'Descoperire finalizată: {$new} active noi.',
+    'AssetBulkSelectAll' => 'Selectați toate activele {$count}',
+    'AssetBulkAssignTeams' => 'Atribuiți echipe…',
+    'AssetBulkAddToGroup' => 'Adaugă la grupul…',
+    'AssetBulkDeleteConfirmTitle' => 'Ștergeți activele {$count}?',
+    'AbleToEditAssets' => 'Posibilitatea de a edita active',
+    'AbleToDeleteAssets' => 'Posibilitatea de a șterge active',
+    'AbleToVerifyAssets' => 'Capabil să verifice activele',
+    'AbleToRunAssetDiscovery' => 'Capabil să execute descoperirea de active',
+    'AbleToCreateAssetGroups' => 'Posibilitatea de a crea grupuri de active',
+    'AbleToEditAssetGroups' => 'Posibilitatea de a edita grupuri de active',
+    'AbleToDeleteAssetGroups' => 'Posibilitatea de a șterge grupuri de active',
+    'ViewAsset' => 'Vizualizați elementul',
+    'AssetUnverifiedByEditLog' => 'Activul „{$name}” a fost returnat la neverificat deoarece utilizatorul „{$user}” și-a schimbat numele sau adresa IP fără permisiunea de a verifica activele.',
+    'AssetTeamsAssignedLog' => 'Activul „{$name}” a fost atribuit echipei/echipelor „{$teams}” de către utilizatorul „{$user}”.',
+    // Manage assets page (asset management redesign, Task 9)
+    'AddAsset' => 'Adăugați un element',
+    'SearchAssetsPlaceholder' => 'Căutare după nume sau adresă IP',
+    'AllLocations' => 'Toate locațiile',
+    'AllTags' => 'Toate etichetele',
+    'AllAssetGroups' => 'Toate grupurile de active',
+    'AssetFields' => 'Câmpuri de active',
+    'AssetBulkAllSelected' => 'Toate activele corespondente {$count} selectate',
+    'AssetDeleteConfirmTitle' => 'Ștergeți elementul „{$name}”?',
+    'DeleteAsset' => 'Ștergeți elementul',
+    'DeleteAssets' => 'Ștergeți activele',
+    'AssetBulkAssignTeamsTitle' => 'Atribuiți echipe la active {$count}',
+    'AssetAssignTeamsHint' => 'Echipele selectate sunt adăugate. Echipele care se află deja pe un activ rămân.',
+    'AssetAddToGroupTitle' => 'Adăugați active {$count} la un grup',
+    'AssetChooseTeams' => 'Alegeți echipele',
+    'AssetChooseGroup' => 'Alegeți un grup',
+    'Assign' => 'Atribui',
+    'AssetBulkVerifiedSummary' => '{$ok} verificat, {$failed} omis',
+    'AssetBulkDeletedSummary' => '{$ok} șters, {$failed} omis',
+    'AssetBulkTeamsSummary' => 'Echipele atribuite activelor {$ok} , {$failed} omise',
+    'AssetBulkGroupSummary' => '{$ok} adăugat la grup, {$failed} omis',
+    'AssetBulkSkippedList' => 'Omis: {$list}',
+    'AssetBulkReasonNotFound' => 'nu a fost găsit',
+    'NoAssetsYet' => 'Niciun activ încă',
+    'NoAssetsYetHint' => 'Resursele pe care le adăugați sau le descoperiți apar aici.',
+    'NoAssetsMatchFilters' => 'Niciun element nu corespunde filtrelor dvs.',
+    'CouldNotLoadAssets' => 'Nu s-au putut încărca resursele. Datele dvs. sunt în siguranță.',
+    'AllValuations' => 'Toate evaluările',
+    // Manage assets page, Asset groups tab (asset management redesign, Task 10)
+    'AddAssetGroup' => 'Adăugați un grup',
+    'EditAssetGroup' => 'Editați grupul',
+    'DeleteAssetGroup' => 'Ștergeți grupul',
+    'ViewGroupMembers' => 'Vizualizați membrii',
+    'SearchAssetGroupsPlaceholder' => 'Căutați grupuri după nume',
+    'HighestValuation' => 'Cea mai mare evaluare',
+    'LinkedRisks' => 'Riscuri conexe',
+    'RemoveFromGroup' => 'Eliminare din grup',
+    'AssetGroupMoreMembers' => '+ {$count} mai multe',
+    'ViewAllInAssetsTab' => 'Vedeți toate în fila Active',
+    'NoAssetsInGroup' => 'Nu există active în acest grup.',
+    'CouldNotLoadGroupMembers' => 'Nu s-au putut încărca membrii acestui grup.',
+    'AssetGroupMembers' => 'Membri',
+    'AssetGroupMembersHint' => 'Sunt listate doar activele pe care le puteți vedea. Membrii pe care nu îi puteți vedea rămân în grup.',
+    'ChooseAssets' => 'Alegeți active',
+    'AddOrRemoveAssets' => 'Adăugați sau eliminați active…',
+    'UseTheseAssets' => 'Folosește aceste active',
+    'AllAssets' => 'Toate activele',
+    'Valuation' => 'Evaluare',
+    'PickerShowingFirstN' => 'Se afișează primul {$count} din {$total}. Căutați sau restrângeți căutarea pentru a găsi restul.',
+    'AssetGroupDeleteConfirmTitle' => 'Ștergeți grupul „{$name}”?',
+    'AssetGroupDeleteKeepsAssets' => 'Activele din acest grup nu sunt șterse. Doar grupul este eliminat.',
+    'NoAssetGroupsYet' => 'Niciun grup de active încă',
+    'NoAssetGroupsYetHint' => 'Grupați activele pentru a le putea cartografia și raporta împreună.',
+    'NoAssetGroupsMatchSearch' => 'Niciun grup de active nu corespunde căutării dvs.',
+    'CouldNotLoadAssetGroups' => 'Nu s-au putut încărca grupurile de active. Datele dvs. sunt în siguranță.',
+    'DiscoveryAssignTeams' => 'Atribuiți echipelor',
+    'DiscoveryAssignTeamsHint' => 'Opțional. Fiecare element nou este adăugat la aceste echipe.',
+    'DiscoveryAddAsHint' => 'Setată cu permisiunea dvs. pentru verificarea activelor.',
+    'DiscoveryTeamsInvalid' => 'Alege echipe care există și din care faci parte.',
+    'DiscoveryResolveNamesInvalid' => 'Căutarea numelor de gazde trebuie să fie activată sau dezactivată.',
+    'DiscoveryTooManyActiveRuns' => 'Aveți deja {$max} runde de descoperire în curs. Așteptați finalizarea uneia sau anulați-o.',
+    'DiscoveryRunNotFound' => 'Execuția de descoperire nu a fost găsită.',
+    'DiscoveryRunAlreadyFinished' => 'Această rundă de descoperire s-a încheiat deja.',
+    'DiscoveryRunCancelled' => 'Rula de descoperire a fost anulată.',
+    'DiscoveryRunFailedToast' => 'Descoperirea {$range} a eșuat.',
+    'DiscoveryStatusQueued' => 'În coadă',
+    'DiscoveryProgress' => '{$scanned} din {$total}',
+    'DiscoveryLiveHosts' => 'Gazde live',
+    'DiscoveryNewAssets' => 'Active noi',
+    'DiscoveryStartedAt' => 'Început',
+    'DiscoveryCancelRun' => 'Anulează rularea',
+    'CouldNotLoadDiscoveryRuns' => 'Nu s-au putut încărca rulările de descoperire.',
+    'DiscoveryRangeReserved' => 'Acel interval include adrese rezervate (loopback, link-local, multicast sau 0.0.0.0/8) care nu pot fi scanate.',
+    'DiscoveryTooManyActiveRunsInstance' => 'Există deja {$max} runde de descoperire în curs. Încercați din nou când una dintre ele se termină.',
+    'DiscoveryErrorScan' => 'Scanarea s-a oprit din cauza unei erori. Verificați jurnalele de sistem pentru detalii.',
+    'DiscoveryErrorWorkerLost' => 'Coada de așteptare în fundal a oprit procesarea acestei rulări.',
+    'DiscoveryErrorRequesterInactive' => 'Utilizatorul care a început această rulare nu mai este activ.',
+    // Asset management redesign: translated API errors (bulk actions, column settings, discovery) and discovery audit lines
+    'AssetBulkBodyInvalid' => 'Trimiteți acțiunea în bloc ca corp JSON.',
+    'AssetBulkActionRequired' => 'Alegeți o acțiune în bloc.',
+    'AssetBulkUnknownAction' => 'Acea acțiune în bloc nu este disponibilă.',
+    'AssetBulkSelectionRequired' => 'Selectați activele fie după ID, fie după filtru.',
+    'AssetBulkIdsRequired' => 'Selectați cel puțin un element.',
+    'AssetBulkIdsInvalid' => 'ID-urile activelor trebuie să fie numere întregi.',
+    'AssetBulkTooManyAssets' => 'Puteți acționa asupra a maximum {$max} active simultan. Restrângeți selecția și încercați din nou.',
+    'AssetBulkFilterInvalid' => 'Filtrul nu este valid. Reîncărcați pagina și încercați din nou.',
+    'AssetBulkFilterUnknownKey' => 'Filtrul „{$key}” nu este recunoscut.',
+    'AssetBulkFilterBadValue' => 'Filtrul „{$key}” are o valoare care nu este validă.',
+    'AssetBulkFilterTooManyValues' => 'Filtrul „{$key}” poate lista cel mult valori {$max}.',
+    'AssetBulkFilterAllAlone' => 'Selectarea tuturor activelor nu poate fi combinată cu alte filtre.',
+    'AssetBulkFilterEmpty' => 'Alegeți un filtru sau selectați toate resursele înainte de a executa o acțiune în bloc.',
+    'AssetBulkExpectedCountInvalid' => 'Numărul așteptat de active trebuie să fie un număr întreg.',
+    'AssetBulkParamsInvalid' => 'Opțiunile pentru această acțiune în bloc nu sunt valide.',
+    'AssetBulkTeamsRequired' => 'Alegeți cel puțin o echipă.',
+    'AssetBulkTeamsNotFound' => 'Una sau mai multe dintre aceste echipe nu mai există.',
+    'AssetBulkTeamsNotMember' => 'Poți atribui doar echipele din care faci parte.',
+    'AssetBulkGroupNotFound' => 'Grupul de active respectiv nu mai există.',
+    'AssetBulkNoMatch' => 'Niciun element nu corespunde selecției dvs.',
+    'AssetBulkCountMismatch' => 'Materialele corespondente s-au modificat de la {$expected} la {$actual} de când le-ați selectat. Verificați lista și încercați din nou.',
+    'AssetColumnSettingsBodyInvalid' => 'Trimiteți setările coloanei ca corp JSON cu coloane sau ordine.',
+    'AssetColumnSettingsSaveFailed' => 'Nu s-au putut salva coloanele. Rugați un administrator să finalizeze actualizarea SimpleRisk.',
+    'DiscoveryRunQueueFailed' => 'Nu s-a putut pune în coadă rularea descoperirii. Încercați din nou.',
+    'DiscoveryRunStartedLog' => 'Execuția de descoperire a activelor #{$id} din {$range} (adrese{$count} ) a fost inițiată de utilizatorul „{$user}”.',
+    'DiscoveryRunCancelledLog' => 'Execuția de descoperire a activelor #{$id} din {$range} a fost anulată de utilizatorul „{$user}”.',
+    'AssetBulkTooManyToDelete' => 'Puteți șterge maximum {$max} resurse odată. Restrângeți selecția și încercați din nou.',
+    'AssetBulkFilterNotApplied' => 'Filtrul „{$key}” nu a putut fi aplicat așa cum a fost trimis, așa că nimic nu a fost modificat.',
+    'AssetBulkExpectedCountRequired' => 'Ștergerea activelor după filtru necesită numărul de active pe care așteptați să le ștergeți.',
+    'AssetBulkReasonNotAttempted' => 'neîncercat',
+    'MoreActions' => 'Mai multe acțiuni',
+    'AssetCreateNewGroupOption' => 'Creați un grup nou…',
+    'AssetNewGroupName' => 'Numele noului grup',
+    'AssetFilterByTeam' => 'Filtrare după echipă {$name}',
+    'AssetFilterByValuation' => 'Filtrare după evaluare {$name}',
+    'AssetFilterByTag' => 'Filtrare după etichetă {$name}',
+    'AssetFilterByLocation' => 'Filtrare după site/locație {$name}',
+    'AssetFilteringByTeam' => 'Filtrare după echipă {$name}',
+    'AssetFilteringByValuation' => 'Filtrare după evaluare {$name}',
+    'AssetFilteringByTag' => 'Filtrare după etichetă {$name}',
+    'AssetFilteringByLocation' => 'Filtrare după site/locație {$name}',
+    'AssetShowOnlyVerified' => 'Afișați doar activele verificate',
+    'AssetShowOnlyUnverified' => 'Afișați doar activele neverificate',
+    'AssetShowingVerified' => 'Se afișează activele verificate',
+    'AssetShowingUnverified' => 'Se afișează active neverificate',
+    'CustomizationLayoutPayloadRejected' => 'Aspectul nu a putut fi salvat deoarece conține câmpuri sau fișe care nu aparțin acestui șablon. Nu s-a modificat nimic.',
+    'CustomizationLayoutRejectedUnknownScope' => 'Acest domeniu de aplicare al șablonului nu poate fi salvat din editorul de aspect. Nu s-a modificat nimic.',
+    'CustomizationLayoutRejectedEmptyFields' => 'Aspectul nu are câmpuri valide, deci nu a fost salvat. Nu s-a modificat nimic.',
+    'CustomizationLayoutRejectedWouldDeleteAll' => 'Salvarea acestui aspect ar elimina toate câmpurile din șablon, așadar nu a fost salvat. Reîncărcați pagina și încercați din nou.',
+    'CustomizationLayoutRejectedRequiredField' => 'Un câmp obligatoriu nu poate fi eliminat din machetă. Nu s-a modificat nimic.',
+    'CustomizationLayoutRejectedBulkRemoval' => 'Salvarea acestui aspect ar elimina majoritatea câmpurilor șablonului fără a fi nevoie să le eliminați aici. Reîncărcați pagina și încercați din nou. Nu s-a modificat nimic.',
+    'CustomizationLayoutRejectedGroupMismatch' => 'Grupul de șabloane nu există sau aparține unui alt tip de înregistrare. Nu s-a modificat nimic.',
+    'CustomizationLayoutLegacySaveRefused' => 'Acest șablon este editat cu editorul de aspect și nu poate fi salvat prin intermediul punctului final al panoului vechi.',
+    // Asset discovery probe methods
+    'DiscoveryPortsInvalid' => 'Introduceți până la {$max} porturi TCP între 1 și 65535, separate prin virgule.',
+    'DiscoveryErrorProbeUnavailable' => 'Metoda de sondare cu care a început această rulare nu mai este disponibilă lucrătorului din fundal. Începeți o rulare nouă.',
+    'DiscoveryProbeIcmpUnprivileged' => 'Ping ICMP (socket neprivilegiat)',
+    'DiscoveryProbeIcmpRaw' => 'Ping ICMP (socket brut)',
+    'DiscoveryProbePingCommand' => 'Ping ICMP (comanda ping)',
+    'DiscoveryProbeTcpConnect' => 'Conexiune TCP',
+    'DiscoveryProbeMethod' => 'Metoda sondei: {$method}',
+    'DiscoveryProbeDetectedByWebServer' => 'Detectat de serverul web. Lucrătorul din fundal poate folosi o metodă diferită.',
+    'DiscoveryTcpProbeWarning' => 'Gazdele sunt găsite numai dacă răspund pe unul dintre porturile TCP scanate, deci gazdele care blochează aceste porturi nu vor fi găsite. Pentru rezultate complete, permiteți serverului să trimită ping ICMP: permiteți socket-uri ping neprivilegiate sau capacitatea NET_RAW sau instalați ping.',
+    'DiscoveryTcpPortsForRun' => 'Porturi TCP pentru această rulare',
+    'DiscoveryTcpPortsHint' => 'Separate prin virgulă, până la {$max} porturi. Lăsați necompletat pentru a utiliza valoarea implicită: {$ports}.',
+    'DiscoveryDefaultTcpPorts' => 'Porturi TCP pentru descoperirea activelor',
+    'DiscoveryDefaultTcpPortsHint' => 'Se folosește atunci când utilizatorul din fundal nu poate trimite ping ICMP. Separate prin virgulă, până la {$max} porturi.',
+    'DiscoveryErrorTcpUnreliable' => 'Scanarea s-a oprit deoarece rețeaua răspunde la conexiuni TCP pentru adrese care nu pot fi gazde reale (un proxy sau un firewall stă în cale), astfel încât fiecare adresă ar părea activă. Solicitați administratorului să permită serverului să trimită ping ICMP.',
+    'DiscoveryDefaultTcpPortsResetLog' => 'Porturile TCP pentru descoperirea activelor au fost resetate la valorile implicite de către utilizatorul „{$user}”.',
+    'DiscoveryNotConfigured' => 'Funcția Discovery nu este configurată. Rugați administratorul de sistem să seteze intervalele permise în config.php.',
+    'DiscoveryRangeNotAllowed' => 'Intervalul respectiv se află în afara intervalelor pe care Discovery le poate scana.',
+    'DiscoveryAllowedRangesList' => 'Intervale permise: {$ranges}',
+    // Asset record modal
+    'AssetNotAvailable' => 'Acest element nu este disponibil. Este posibil să fi fost șters sau este posibil să nu aveți acces la el.',
+    'AssetCustomFieldNotInTemplate' => 'Unul sau mai multe câmpuri personalizate nu aparțin șablonului acestui element. Nu s-a modificat nimic.',
+    'AssetMappedControlsInvalid' => 'Controalele mapate nu au putut fi salvate. Fiecare rând necesită o maturitate și cel puțin un control existent. Nu s-a modificat nimic.',
+    'AssetMappedControlsTooMany' => 'Un element poate fi mapat la cel mult {$max} controale. Nu s-a schimbat nimic.',
+    'AddControlsAtAnotherMaturity' => 'Adăugați controale la o altă maturitate',
+    'ChoosingControlsNeedsGovernancePermission' => 'Alegerea controalelor necesită permisiunea Guvernanță.',
+    'NControls' => '{n} control(uri)',
+    'SavingKeepsTheCurrentControlMappings' => 'Salvarea păstrează mapările de control curente.',
+    'LoadingControls' => 'Comenzi de încărcare…',
+    'ControlListCouldNotBeLoaded' => 'Lista de controale nu a putut fi încărcată, prin urmare controalele mapate nu pot fi modificate acum.',
+    'RemoveControlsAtMaturity' => 'Eliminați controalele la maturitate {maturity}',
+    'ControlIdUnavailable' => '#{id} (indisponibil)',
+    'AssetRecordEdit' => 'Editează elementul',
+    'AssetRecordIdN' => 'Activ #{$id}',
+    'AssetRecordCopyLink' => 'Copiați linkul către acest element',
+    'AssetRecordLinkCopied' => 'Linkul a fost copiat.',
+    'AssetRecordLinkCopyFailed' => 'Linkul nu a putut fi copiat. Copiați-l din bara de adrese.',
+    'AssetRecordMarkUnverified' => 'Marcați ca neverificat',
+    'AssetRecordViewAuditTrail' => 'Vizualizați pista de audit',
+    'AssetRecordAuditTrailTitle' => 'Pistă de audit',
+    'AssetRecordAuditTrailEmpty' => 'Nu a fost înregistrată nicio activitate pentru acest activ în această perioadă.',
+    'AssetRecordAuditTrailFailed' => 'Nu s-a putut încărca pista de audit.',
+    'AssetRecordBackToAsset' => 'Înapoi la element',
+    'AssetRecordSave' => 'Salvați elementul',
+    'AssetRecordProvenanceVerified' => 'Verificat · adăugat {$date}',
+    'AssetRecordProvenanceUnverified' => 'Neverificat: nu a fost încă confirmat de cineva care poate verifica activele · adăugat {$date}',
+    'AssetRecordUnsavedHint' => 'Închiderea cu modificări nesalvate vă solicită mai întâi confirmarea.',
+    'AssetRecordDiscardQuestion' => 'Renunțați la modificările nesalvate?',
+    'AssetRecordKeepEditing' => 'Continuă să editezi',
+    'AssetRecordDiscardChanges' => 'Anulează modificările',
+    'AssetRecordVerificationCard' => 'Verificare',
+    'AssetRecordVerificationTag' => 'Necesită permisiunea de verificare a activelor',
+    'AssetRecordVerifiedHint' => 'Cineva responsabil a revizuit acest element. Schimbarea numelui sau a adresei IP fără permisiunea de verificare a elementelor îl readuce la starea neverificată.',
+    'AssetRecordLoadFailed' => 'Materialul nu a putut fi încărcat. Vă rugăm să încercați din nou.',
+    'CustomizationCardsLayoutApiScopeErrorWithAsset' => 'API-ul pentru personalizarea layout-ului cardurilor este disponibil doar pentru fgroup=risk (tab_index 1, 2 sau 3) și fgroup=asset (tab_index 1).',
+    'DiscoveryErrorRequesterNotPermitted' => 'Utilizatorul care a început această rulare nu mai are permisiunea de a rula descoperirea de resurse.',
+    'AssetRecordEditField' => 'Editare {$field}',
+    // Asset Scoring (FIPS 199 categorization + weighted score)
+    'Confidentiality' => 'Confidențialitate',
+    'Integrity' => 'Integritate',
+    'Availability' => 'Disponibilitate',
+    'AssetScoringLevelLow' => 'Scăzut',
+    'AssetScoringLevelModerate' => 'Moderat',
+    'AssetScoringLevelHigh' => 'Ridicat',
+    'AssetScoringValueInvalid' => 'Confidențialitatea, integritatea și disponibilitatea acceptă niveluri scăzute, moderate sau ridicate (confidențialitatea acceptă și niveluri de „not_appliable”).',
+    'AssetScoringChangedLog' => 'Elementul „{$name}” {$objective} a fost modificat de la {$from} la {$to} de către utilizatorul „{$user}”.',
+    'FIPSCategorization' => 'Clasificare FIPS',
+    'WeightedScore' => 'Scor ponderat',
+    'WeightedBand' => 'Bandă ponderată',
+    'AllCategorizations' => 'Toate categorizările',
+    'AllBands' => 'Toate trupele',
+    'AssetFilterByCategorization' => 'Filtrare după clasificarea FIPS {$name}',
+    'AssetFilteringByCategorization' => 'Filtrare după clasificarea FIPS {$name}',
+    'AssetFilterByBand' => 'Filtrare după bandă ponderată {$name}',
+    'AssetFilteringByBand' => 'Filtrare după banda ponderată {$name}',
+    'AssetScoring' => 'Scorarea activelor',
+    'AssetScoringSettingsHint' => 'Fiecare activ este evaluat cu Scăzut, Moderat sau Ridicat pentru confidențialitate, integritate și disponibilitate, iar confidențialitatea poate fi în schimb Neaplicabilă, ceea ce îl exclude din ambele rezultate. Clasificarea sa FIPS este cea mai mare dintre cele trei evaluări. Scorul său ponderat este media ponderată a celor trei valori de nivel, iar pragurile de bandă transformă acel scor într-o bandă Scăzut, Moderat sau Ridicat. Modificarea acestor setări reevaluează imediat fiecare activ.',
+    'Weights' => 'Greutăți',
+    'AssetScoringWeightsHint' => 'Cât contează fiecare obiectiv în scorul ponderat: de la 0 la 100, cu maximum două zecimale. O pondere de 0 exclude obiectivul respectiv. Integritatea și Disponibilitatea nu pot fi ambele 0, deoarece o valoare „Nu se aplică” a confidențialității este întotdeauna exclusă.',
+    'LevelValues' => 'Valori de nivel',
+    'AssetScoringLevelValuesHint' => 'Numărul cu care contribuie fiecare evaluare la scorul ponderat: peste 0 și până la 100, cu până la două zecimale, și Scăzut sub Moderat sub Ridicat. Valorile implicite sunt Scăzut 1, Moderat 2 și Ridicat 3.',
+    'BandThresholds' => 'Praguri de bandă',
+    'AssetScoringBandThresholdsHint' => 'Un scor ponderat la sau peste un prag se încadrează în acea bandă, iar un scor sub pragul Moderat este Scăzut. Moderat trebuie să înceapă peste valoarea Scăzută, iar Ridicat trebuie să înceapă peste valoarea Moderată și să nu depășească valoarea Ridicată.',
+    'ModerateStartsAt' => 'Începe moderat la',
+    'HighStartsAt' => 'Începe la',
+    'DefaultScoringForNewAssets' => 'Scorarea implicită pentru activele noi',
+    'AssetScoringDefaultsHint' => 'Preselectează aceste evaluări atunci când cineva adaugă un element în formularul de element. Elementele create prin descoperire, import sau API rămân neevaluate, cu excepția cazului în care furnizează propriile evaluări. Lăsați toate trei opțiunile Nesetate pentru a dezactiva această opțiune.',
+    'AssetScoringWeightsInvalid' => 'Ponderile de punctaj ale activelor trebuie să fie numere de la 0 la 100 cu cel mult două zecimale, iar Integritatea și Disponibilitatea nu pot fi ambele 0.',
+    'AssetScoringValuesInvalid' => 'Valorile nivelului de scor al activelor trebuie să fie numere între 0 și 100, cu cel mult două zecimale, iar cele între Scăzut sub Moderat sub Ridicat.',
+    'AssetScoringThresholdsInvalid' => 'Pragurile benzilor de scor ale activelor trebuie să aibă cel mult două zecimale, valoarea Moderat începând peste valoarea Scăzută, valoarea Ridicată începând peste valoarea Moderată, iar valoarea Ridicată începând nu mai sus decât valoarea Ridicată.',
+    'AssetScoringDefaultsInvalid' => 'Scorul implicit pentru activele noi trebuie să fie un nivel oferit de fiecare obiectiv.',
+    'AssetScoringSettingsNotSaved' => 'Setările de evaluare a activelor nu au putut fi salvate. Nu s-a modificat nimic.',
+    'AssetScoringSettingsChangedLog' => 'Setările de evaluare a activelor au fost modificate de utilizatorul „{$user}”.',
+    'AssetScoringNotSet' => 'Nesetat',
+    'NotScored' => 'Neevaluat',
+    'AssetScoringNotScoredHint' => 'Îndeplinește toate cele trei obiective pentru a obține punctajul pentru acest avantaj.',
+    'ImportAssetScoringValueIgnored' => 'The {$objective} value "{$value}" for asset "{$asset_name}" is not a valid rating and was ignored.',
+    'AssetScoringSecurityObjectives' => 'Obiective de securitate',
+    'AssetScoringConfidentialityHelp' => 'Care este impactul potențial în cazul unei divulgări neautorizate a informațiilor despre acest activ?',
+    'AssetScoringIntegrityHelp' => 'Care este impactul potențial în cazul unei modificări sau distrugeri neautorizate a informațiilor de pe acest activ?',
+    'AssetScoringAvailabilityHelp' => 'Care este impactul potențial dacă există o întrerupere a accesului la acest activ sau a utilizării acestuia?',
+    'AssetScoringHelpHigh' => 'Efect advers sever sau catastrofal',
+    'AssetScoringHelpModerate' => 'Efect advers grav',
+    'AssetScoringHelpLow' => 'Efecte adverse limitate sau inexistente',
+    'AssetScoringHelpNotApplicable' => 'Confidențialitatea nu reprezintă o preocupare pentru acest activ (de exemplu, informații publice)',
+    'AssetScoringHelpLabel' => '{$objective} îndrumări de evaluare',
+    'AssetScoringMeterValue' => '{$score}, {$band} bandă',
+    'AssetScoringNoWeightedScore' => 'Fără scor ponderat',
+    'AssetScoringNoWeightedScoreNote' => 'Fără scor ponderat: fiecare obiectiv care contează are o pondere de 0.',
+    'AssetScoringUpgradePending' => 'Scorarea activelor nu poate fi salvată până când nu a fost executată actualizarea bazei de date SimpleRisk. Nu s-a modificat nimic.',
+    'AssetScoringResultHelpLabel' => 'explicație {$result}',
+    'AssetScoringScoreHelp' => 'Scorul ponderat combină cele trei evaluări într-un singur număr de la {$low} la {$high}. Fiecare evaluare devine valoarea sa setată, iar fiecare este înmulțită cu ponderea obiectivului său. Rezultatele sunt adunate și împărțite la totalul ponderilor. O opțiune de confidențialitate „Neaplicabil” este omisă, împreună cu ponderea sa. Valorile și ponderile setate sunt configurate în Preferințe. Toate cele trei obiective trebuie evaluate înainte de a fi afișat un scor.',
+    'AssetScoringCategorizationHelp' => 'Clasificarea de securitate FIPS 199 este pragul de vârf: cea mai mare evaluare dintre obiectivele aplicabile. O singură evaluare Ridicată face ca activul să fie Ridicat, indiferent de celelalte. Nu se aplică este ignorat.',
+    'AssetScoringBandHelp' => 'Banda plasează scorul ponderat pe o scală Scăzut, Moderat sau Ridicat. Un scor sub {$moderate} este Scăzut, de la {$moderate} până la {$highAt} este Moderat, iar {$highAt} sau mai mult este Ridicat. Pragurile sunt configurate în Preferințe.',
+    // Manage assets: Confidentiality / Integrity / Availability rating filters
+    'AllConfidentialityRatings' => 'Toate evaluările de confidențialitate',
+    'AllIntegrityRatings' => 'Toate ratingurile de integritate',
+    'AllAvailabilityRatings' => 'Toate evaluările de disponibilitate',
+    'AssetFilterByConfidentiality' => 'Filtrare după confidențialitate {$name}',
+    'AssetFilteringByConfidentiality' => 'Filtrare după confidențialitate {$name}',
+    'AssetFilterByIntegrity' => 'Filtrare după integritate {$name}',
+    'AssetFilteringByIntegrity' => 'Filtrare după integritate {$name}',
+    'AssetFilterByAvailability' => 'Filtrare după disponibilitate {$name}',
+    'AssetFilteringByAvailability' => 'Filtrare după disponibilitate {$name}',
+    'HighestFIPSCategorization' => 'Cea mai înaltă clasificare FIPS',
+    'HighestWeightedScore' => 'Cel mai mare scor ponderat',
+    'HighestWeightedBand' => 'Banda cu cea mai mare ponderare',
+    'AssetGroupFields' => 'Câmpuri ale grupului de active',
+    'NoAssetGroupsMatchFilters' => 'Niciun grup de active nu corespunde filtrelor dvs.',
+    'AssetGroupFilterByHighestCategorization' => 'Filtrare după cea mai înaltă clasificare FIPS {$name}',
+    'AssetGroupFilteringByHighestCategorization' => 'Filtrarea după cea mai înaltă clasificare FIPS {$name}',
+    'AssetGroupFilterByHighestBand' => 'Filtrare după banda cu cea mai mare ponderare {$name}',
+    'AssetGroupFilteringByHighestBand' => 'Filtrarea după banda cu cea mai mare ponderare {$name}',
+    'AssetGroupBulkSelectionRequired' => 'Selectați grupurile de active fie după ID, fie după filtru.',
+    'AssetGroupBulkIdsRequired' => 'Selectați cel puțin un grup de active.',
+    'AssetGroupBulkIdsInvalid' => 'ID-urile grupurilor de active trebuie să fie numere întregi.',
+    'AssetGroupBulkFilterAllAlone' => 'Selectarea tuturor grupurilor de active nu poate fi combinată cu alte filtre.',
+    'AssetGroupBulkFilterEmpty' => 'Alegeți un filtru sau selectați toate grupurile de active înainte de a le șterge.',
+    'AssetGroupBulkExpectedCountInvalid' => 'Numărul așteptat de grupuri de active trebuie să fie un număr întreg.',
+    'AssetGroupBulkExpectedCountRequired' => 'Ștergerea grupurilor de active după filtru necesită numărul de grupuri pe care așteptați să le ștergeți.',
+    'AssetGroupBulkNoMatch' => 'Niciun grup de active nu corespunde selecției dvs.',
+    'AssetGroupBulkCountMismatch' => 'Grupurile de active corespunzătoare s-au modificat de la {$expected} la {$actual} de când le-ați selectat. Verificați lista și încercați din nou.',
+    'AssetGroupBulkTooManyToDelete' => 'Puteți șterge maximum {$max} grupuri de active simultan. Restrângeți selecția și încercați din nou.',
+    'AssetGroupBulkSelectAll' => 'Selectați toate grupurile de active {$count}',
+    'AssetGroupBulkAllSelected' => 'Toate grupurile de active corespondente {$count} selectate',
+    'AssetGroupBulkDeleteConfirmTitle' => 'Ștergeți grupurile de active {$count}?',
+    'AssetGroupBulkDeleteKeepsAssets' => 'Activele din aceste grupuri nu sunt șterse. Doar grupurile sunt eliminate.',
+    'DeleteAssetGroups' => 'Ștergeți grupurile',
+    'AssetGroupBulkDeletedSummary' => '{$ok} grupuri șterse, {$failed} omise',
+    'ChoosingRisksNeedsRiskManagementPermission' => 'Alegerea riscurilor asociate necesită permisiunea Managementului Riscurilor.',
+    'NAssociatedRisks' => '{n} risc(uri) asociat(e)',
+    'SavingKeepsTheCurrentRiskAssociations' => 'Economisirea păstrează riscurile asociate actuale.',
     '' => '',
 );
 ?>

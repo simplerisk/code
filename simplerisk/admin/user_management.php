@@ -628,8 +628,8 @@
                         <div class="row" style="align-items:flex-end">
                             <div class="col-md-4">
                                 <label><?= $escaper->escapeHtml($lang['DeleteCurrentUser']); ?> :</label>
-    <?php 
-                                create_dropdown("user"); 
+    <?php
+                                create_dropdown("user_all", null, "user");
     ?>
                             </div>
                             <div class="col-md-2">
@@ -644,8 +644,8 @@
                         <div class="row" style="align-items:flex-end">
                             <div class="col-md-4">
                                 <label><?= $escaper->escapeHtml($lang['SendPasswordResetEmailForUser']); ?> :</label>
-    <?php 
-                                create_dropdown("user"); 
+    <?php
+                                create_dropdown("user_all", null, "user");
     ?>
                             </div>
                             <div class="col-md-2">
@@ -660,8 +660,8 @@
                         <div class="row" style="align-items:flex-end">
                             <div class="form-group col-md-4">
                                 <label><?= $escaper->escapeHtml($lang['PerformMFAResetForUser']); ?> :</label>
-    <?php 
-                                create_dropdown("user"); 
+    <?php
+                                create_dropdown("user_all", null, "user");
     ?>
                             </div>
                         </div>

@@ -41,20 +41,8 @@
     &:hover { background: $gray-100; }
   }
 
-  // Nested risk table in the expand drawer.
-  .sr-subtable {
-    width: 100%; border-collapse: collapse; background: $sr-body; border: 1px solid $gray-300; border-radius: 6px; overflow: hidden; font-size: 12.5px;
-    th { font-size: 10px; letter-spacing: .05em; text-transform: uppercase; color: $gray-600; background: $gray-100; padding: 6px 10px; text-align: left; border-bottom: 1px solid $gray-300; }
-    td { padding: 6px 10px; border-bottom: 1px solid $gray-200; vertical-align: middle; white-space: nowrap; }
-    tr:last-child td { border-bottom: 0; }
-    // Subject is wrapped in a .sr-cell-truncate span (the shared one-line
-    // ellipsis rule; max-width on a <td> is ignored by auto table layout).
-    .sr-cell-truncate { max-width: 360px; }
-    .sr-row-actions { opacity: 1; }
-  }
-  .sr-subtable-foot { display: flex; align-items: center; gap: 12px; padding: 8px 0 0; }
-  .sr-subtable-more { font-size: 12px; color: $gray-600; }
-  .sr-subtable-loading { padding: 12px; color: $gray-600; font-size: 12.5px; }
+  // Nested risk table in the expand drawer (mixins/_subtable.scss).
+  @include sr-subtable-drawer;
 }
 
 // The Unassigned chip carries an attention count once there is intake work.

@@ -4934,6 +4934,11 @@ function get_exceptions_as_treegrid($type){
         }
         db_close($risk_db);
     }
+    // SR-2257 (HackerOne #3928882 residual): a lookup set of the same
+    // team-scoped ids, so the raw associated_risks field below can be
+    // narrowed alongside associated_risk_subjects instead of passing the
+    // caller-invisible ids through untouched.
+    $visible_risk_id_set = array_flip($visible_risk_ids);
 
     $exceptions = [];
 
@@ -4962,13 +4967,26 @@ function get_exceptions_as_treegrid($type){
         $row['framework_name'] = $row['framework_id'] ? get_name_by_value('frameworks', (int)$row['framework_id']) : '';
 
         $associated_risk_subjects = [];
+        $visible_associated_risks = [];
         foreach (explode(',', (string)$row['associated_risks']) as $rid) {
             $rid = trim($rid);
-            if ($rid !== '' && isset($risk_subjects_by_id[(int)$rid])) {
+            if ($rid === '') {
+                continue;
+            }
+            if (isset($risk_subjects_by_id[(int)$rid])) {
                 $associated_risk_subjects[] = $risk_subjects_by_id[(int)$rid];
+            }
+            if (isset($visible_risk_id_set[(int)$rid])) {
+                $visible_associated_risks[] = (int)$rid;
             }
         }
         $row['associated_risk_subjects'] = $associated_risk_subjects;
+        // SR-2257 (HackerOne #3928882 residual): narrow the raw id list to the
+        // caller's visible risks -- previously left as the unfiltered DB
+        // string, disclosing a hidden cross-team risk's internal id even
+        // though associated_risk_subjects above correctly withheld its
+        // subject.
+        $row['associated_risks'] = implode(',', $visible_associated_risks);
 
         $row['next_review_status'] = 'ok';
         if (!empty($row['next_review_date']) && $row['next_review_date'] !== '0000-00-00') {
@@ -5185,6 +5203,25 @@ function get_associated_exceptions_as_treegrid($risk_id, $type) {
     // Close the database connection
     db_close($db);
 
+    // SR-2257 (HackerOne #3928882 residual): each row's raw associated_risks
+    // can cite risks OTHER than the one this function was queried for -- an
+    // exception the caller can see (because it cites $risk_id, which they
+    // already have access to) may also cite a hidden cross-team risk. Narrow
+    // every row's list to the caller's visible risks, same fragment/pattern
+    // as get_exceptions_as_treegrid().
+    $all_risk_ids = [];
+    foreach ($exceptions as $group) {
+        foreach ($group as $row) {
+            foreach (explode(',', (string)$row['associated_risks']) as $rid) {
+                $rid = trim($rid);
+                if ($rid !== '' && ctype_digit($rid)) {
+                    $all_risk_ids[(int)$rid] = true;
+                }
+            }
+        }
+    }
+    $visible_risk_id_set = array_flip($all_risk_ids ? filter_risk_ids_by_team_scope(array_keys($all_risk_ids)) : []);
+
     $exception_tree = [];
 
     $update = check_permission_exception('update');
@@ -5200,6 +5237,15 @@ function get_associated_exceptions_as_treegrid($risk_id, $type) {
         foreach($group as $row){
             $parent_name = $row['parent_name'];
             $row['children'] = [];
+
+            $visible_associated_risks = [];
+            foreach (explode(',', (string)$row['associated_risks']) as $rid) {
+                $rid = trim($rid);
+                if ($rid !== '' && isset($visible_risk_id_set[(int)$rid])) {
+                    $visible_associated_risks[] = (int)$rid;
+                }
+            }
+            $row['associated_risks'] = implode(',', $visible_associated_risks);
 
             $row['name'] = "<span class='exception-name'><a class='text-info' href='#' data-id='".((int)$row['value'])."' data-type='{$row['type']}'>{$escaper->escapeHtml($row['name'])}</a></span>";
             $row['status'] = $escaper->escapeHtml($row['document_exceptions_status']);
@@ -5249,11 +5295,11 @@ function get_associated_exception_tabs($type) {
     echo "
         <table id='associated-exception-table-{$type}' class='easyui-treegrid exception-table'>
             <thead>
-                <th data-options=\"field:'name'\" width='25%'>{$escaper->escapeHtml($lang[ucfirst ($type) . "ExceptionName"])}</th>
-                <th data-options=\"field:'status'\" width='8%'>{$escaper->escapeHtml($lang['Status'])}</th>
-                <th data-options=\"field:'description'\" width='25%'>{$escaper->escapeHtml($lang['Description'])}</th>
-                <th data-options=\"field:'justification'\" width='24%'>{$escaper->escapeHtml($lang['Justification'])}</th>
-                <th data-options=\"field:'next_review_date', align: 'center'\" width='18%'>{$escaper->escapeHtml($lang['NextReviewDate'])}</th>
+                <th field='name' width='25%'>{$escaper->escapeHtml($lang[ucfirst ($type) . "ExceptionName"])}</th>
+                <th field='status' width='8%'>{$escaper->escapeHtml($lang['Status'])}</th>
+                <th field='description' width='25%'>{$escaper->escapeHtml($lang['Description'])}</th>
+                <th field='justification' width='24%'>{$escaper->escapeHtml($lang['Justification'])}</th>
+                <th field='next_review_date' align='center' width='18%'>{$escaper->escapeHtml($lang['NextReviewDate'])}</th>
             </thead>
         </table>
     ";
@@ -5592,7 +5638,7 @@ function getExceptionForChangeChecking($id) {
             END)  AS parent_name,
             de.name,
             des.name AS status,
-            GROUP_CONCAT(r.subject SEPARATOR ', ') AS associated_risks,
+            de.associated_risks,
             o.name AS owner,
             de.additional_stakeholders,
             de.creation_date,
@@ -5607,11 +5653,8 @@ function getExceptionForChangeChecking($id) {
             LEFT JOIN user o ON o.value = de.owner
             LEFT JOIN user a ON a.value = de.approver
             LEFT JOIN document_exceptions_status des ON des.value = de.status
-            LEFT JOIN risks r ON FIND_IN_SET(r.id, de.associated_risks) > 0
         WHERE
             de.value=:id
-        GROUP BY
-            de.value
     ;";
 
     // Query the database
@@ -5620,6 +5663,27 @@ function getExceptionForChangeChecking($id) {
     $stmt->execute();
 
     $exception = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    // SR-2257 (HackerOne #3928882 residual, 2nd pass): this used to resolve
+    // associated_risks straight from an unscoped GROUP_CONCAT(r.subject) join,
+    // so editing ANY field of an exception that cited a hidden cross-team risk
+    // would diff that risk's decrypted subject text into the exception's own
+    // audit-trail message (getChangesInException() below, called from
+    // update_exception()) -- a worse disclosure than the raw-id leak this same
+    // ticket's 1st pass fixed, since audit-trail view access is gated by the
+    // exception's own (document-team-scoped) permissions, not by the cited
+    // risk's team. Resolve subjects only for the caller's visible risk ids,
+    // same team-scope helper every other sink in this ticket uses.
+    $visible_associated_risk_ids = $exception['associated_risks']
+        ? filter_risk_ids_by_team_scope(explode(',', $exception['associated_risks']))
+        : [];
+    if ($visible_associated_risk_ids) {
+        $subjects_stmt = $db->prepare("SELECT `subject` FROM `risks` WHERE `id` IN (" . implode(',', $visible_associated_risk_ids) . ")");
+        $subjects_stmt->execute();
+        $exception['associated_risks'] = implode(', ', array_map('try_decrypt', $subjects_stmt->fetchAll(PDO::FETCH_COLUMN)));
+    } else {
+        $exception['associated_risks'] = '';
+    }
 
     $exception['additional_stakeholders'] = get_stakeholder_names($exception['additional_stakeholders'], 999);
     $exception['creation_date'] = format_date($exception['creation_date']);

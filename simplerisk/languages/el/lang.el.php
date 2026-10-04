@@ -814,7 +814,7 @@ $lang = array(
     'UserSessions' => 'Περίοδοι λειτουργίας χρήστη',
     'SessionActivityTimeout' => 'Χρονικό όριο περιόδου λειτουργίας δραστηριότητας',
     'Security' => 'Ασφάλεια',
-    'EnableCSP' => 'Ενεργοποιήσετε την πολιτική ασφαλείας περιεχομένου (αυτό έχει σπασμένα Chrome στο παρελθόν)',
+    'EnableCSP' => 'Ενεργοποίηση πολιτικής ασφάλειας περιεχομένου (Συνιστάται)',
     'EnableDebugLogging' => 'Ενεργοποίηση της καταγραφής εντοπισμού σφαλμάτων',
     'seconds' => 'δευτερόλεπτα',
     'FieldSample' => 'Δείγμα πεδίου',
@@ -4967,6 +4967,572 @@ $lang = array(
     // closeriskForm()'s own (hardcoded, pre-existing) single-risk denial text.
     'NoCloseRiskPermission' => 'Δεν έχετε άδεια να κλείσετε κινδύνους.',
     'QuestionnaireRequiredQuestionUnanswered' => 'Παρακαλούμε απαντήστε σε όλες τις απαιτούμενες ερωτήσεις πριν ολοκληρώσετε την αξιολόγηση.',
+    'AuditLog_ControlStatusAutoSynced' => 'Η κατάσταση του ελέγχου "{$short_name}" ενημερώθηκε αυτόματα σε "{$status_text}" με βάση τα πιο πρόσφατα αποτελέσματα δοκιμών.',
+    'EnableCSPHelp' => 'Η Πολιτική Ασφαλείας Περιεχομένου (CSP) περιορίζει το πρόγραμμα περιήγησης στη φόρτωση σεναρίων, στυλ, εικόνων και γραμματοσειρών μόνο από το ίδιο το SimpleRisk και αποκλείει την πλαισίωση σελίδων και τις υποβολές φορμών διασταυρούμενης προέλευσης. Είναι η ισχυρότερη ενσωματωμένη άμυνα κατά των σεναρίων μεταξύ ιστότοπων. Αφήστε την ενεργοποιημένη, εκτός εάν έρχεται σε διένεξη με έναν διακομιστή μεσολάβησης, μια επέκταση προγράμματος περιήγησης ή μια ενσωμάτωση τρίτου μέρους στο περιβάλλον σας.',
+    // Define Control Frameworks' Columns picker (Task: Columns picker + saved layout/filters) -- the "Standard" group label above its built-in fields (Family/Owner/Maturity/Status/Class/Phase/Priority/Type); 'CustomFields' already exists.
+    'StandardFields' => 'Τυπικά Πεδία',
+    // My Profile redesign (js/simplerisk/pages/account-profile.js)
+    'Administrator' => 'Διαχειριστής',
+    'AccountDetails' => 'Στοιχεία λογαριασμού',
+    'YourPermissions' => 'Τα δικαιώματά σας',
+    'RoleAndTeamsGrantAccess' => 'Σε τι σας παρέχουν πρόσβαση ο ρόλος σας και οι ομάδες σας',
+    'AllGranted' => 'Όλα χορηγήθηκαν',
+    'PermissionsCountLabel' => '$count δικαιώματα',
+    'ManagedByYourAdministrator' => 'Αυτές οι λεπτομέρειες διαχειρίζεται ο διαχειριστής σας. Επικοινωνήστε μαζί του εάν χρειάζεται να αλλάξει κάτι εδώ.',
+    'MultiFactorAuthenticationHint' => 'Προσθέστε ένα δεύτερο βήμα στη σύνδεσή σας για να διατηρήσετε τον λογαριασμό σας ασφαλέστερο.',
+    'ChangingPasswordSignsOutEverywhere' => 'Η αλλαγή του κωδικού πρόσβασής σας σάς αποσυνδέει από οπουδήποτε αλλού.',
+    'APIKeyHint' => 'Χρησιμοποιείται για τον έλεγχο ταυτότητας των δικών σας σεναρίων και ενσωματώσεων στο API SimpleRisk.',
+    'ResetDisplaySettingsHint' => 'Επαναφέρει τις επιλογές προσαρμοσμένων στηλών στις προεπιλογές.',
+    'CardGeneral' => 'Γενική',
+    'CardClassification' => 'Ταξινόμηση',
+    'CardScoring' => 'Βαθμολογία',
+    'CardAdditionalInformation' => 'Πρόσθετες πληροφορίες',
+    'CardCustomFields' => 'Προσαρμοσμένα πεδία',
+    'CardCustomFieldsHint' => 'Αυτά τα πεδία χρειάζονται ταξινόμηση σε μια κάρτα',
+    'LayoutEditorHint' => 'Σύρετε ένα πεδίο σε μια διαφορετική κάρτα για να το αντιστοιχίσετε ξανά, σύρετε μέσα σε μια κάρτα για να την αναδιατάξετε ή να αλλάξετε το μέγεθός της και σύρετε ή αλλάξτε το μέγεθος μιας κάρτας για να αλλάξετε τη θέση της στη σελίδα.',
+    'ScoringNotYetAvailableInThisView' => 'Η διαμόρφωση βαθμολόγησης δεν είναι ακόμη διαθέσιμη σε αυτήν την προβολή.',
+    // Native tooltip on the Cards layout editor's Gridstack resize handles
+    // (js/simplerisk/pages/customization-layout-editor.js) -- the bare corner
+    // bracket read as an unexplained mark until it said what it does.
+    'DragToResize' => 'Σύρετε για αλλαγή μεγέθους',
+    // Warning pill on a Cards layout editor card the admin has sized shorter
+    // than the fields it holds. Replaces the silent inner scrollbar that state
+    // used to produce.
+    'NFieldsDoNotFitCard' => 'Τα πεδία {n} δεν χωράνε σε αυτήν την κάρτα. Αλλάξτε το μέγεθος της κάρτας για να τα εμφανίσετε.',
+    // Card titles for the Mitigation tab's Cards layout editor
+    // (js/simplerisk/pages/customization-layout-editor.js), mirroring the
+    // Card* keys above for the Details tab. Order follows
+    // customization_mitigation_cards_layout_card_keys() (includes/functions.php).
+    'CardMitigationStrategy' => 'Στρατηγική μετριασμού',
+    'CardMitigationSolution' => 'Λύση μετριασμού',
+    'CardMitigationControls' => 'Μετριασμού τους ελέγχους',
+    'CardReview' => 'Αναθεώρηση',
+    // Submit Risk page's three action-bar buttons (buildActionsBar(),
+    // risk-details-form.js, submitMode 'create' only) and the Reset Form
+    // confirm modal (management/index.php, design-system.md #8's "Confirm"
+    // type). 'Discard'/'Cancel'/'Close' already exist and are reused for the
+    // modal's own buttons.
+    'ResetForm' => 'Επαναφορά φόρμας',
+    'SaveAndNew' => 'Αποθήκευση & Νέα',
+    'SaveAndView' => 'Αποθήκευση & Προβολή',
+    'ResetFormConfirmTitle' => 'Απόρριψη αυτής της υποβολής κινδύνου;',
+    'ResetFormConfirmBody' => 'Οποιεσδήποτε πληροφορίες έχετε εισαγάγει θα χαθούν.',
+    // Restore-template destructive confirm (Customization Extra, Save/Restore
+    // action bar). Two body variants: risk's Details/Mitigation/Review tabs
+    // named explicitly (the only fgroup with that 3-tab Cards layout), a
+    // generic fallback for every other fgroup (single legacy-panel tab).
+    // Both end on the same scoping reassurance -- confirmed via direct source
+    // read that Restore only ever touches the currently-selected template
+    // group, never any other.
+    'RestoreTemplateConfirmTitle' => 'Επαναφορά προεπιλεγμένης διάταξης?',
+    'RestoreTemplateConfirmBodyRisk' => 'Αυτό επαναφέρει κάθε πεδίο στις καρτέλες Λεπτομέρειες, Μετριασμός και Αναθεώρηση στις προεπιλεγμένες τιμές τους για αυτήν την ομάδα προτύπων. Οι άλλες ομάδες προτύπων δεν επηρεάζονται.',
+    'RestoreTemplateConfirmBody' => 'Αυτό επαναφέρει κάθε πεδίο σε αυτό το πρότυπο στις προεπιλεγμένες τιμές του για αυτήν την ομάδα προτύπων. Οι άλλες ομάδες προτύπων δεν επηρεάζονται.',
+    // CVSS holder's collapsed Temporal/Environmental/Impact-Modifiers
+    // accordion (buildCvssHolder(), risk-details-form.js) -- these three
+    // groups are optional CVSS v2 refinements on top of the required Base
+    // Score Metrics, so they collapse behind this header by default.
+    'AdvancedMetrics' => 'Προηγμένες μετρήσεις',
+    // CVSS holder's Base Score Metrics sub-group headers (buildCvssHolder(),
+    // risk-details-form.js) -- distinct from the existing 'ExploitabilityMetrics'/
+    // 'ImpactMetrics' keys, which the legacy cvss_modal_content.php modal
+    // still renders as plain "Exploitability Metrics"/"Impact Metrics" and
+    // must keep unchanged. These fold the umbrella "Base Score Metrics"
+    // heading into each sub-group's own header instead of a separate label.
+    'BaseScoreExploitabilityMetrics' => 'Βασικές μετρήσεις εκμετάλλευσης βαθμολογίας',
+    'BaseScoreImpactMetrics' => 'Μετρήσεις αντίκτυπου βασικής βαθμολογίας',
+    // Per-field help popovers on the CVSS holder's 14 metric selects
+    // (buildCvssScoreItem(), risk-details-form.js) -- one per CVSS v2
+    // metric, matching the standard CVSS v2 specification definitions.
+    // Double-quoted (not single-quoted, this file's usual style) so the
+    // \n line breaks are real escape sequences: each popover leads with one
+    // overall sentence, then one bullet line per option, rendered via
+    // white-space: pre-line on .sr-scoring-help-popover .popover-body
+    // (scss/modules/_questionnaire.scss) -- plain text throughout, no HTML,
+    // so the popover stays initialized without Bootstrap's `html: true`.
+    "AttackVectorHelp" => "Πώς μπορεί να γίνει πρόσβαση στην ευπάθεια.\n• Τοπικό: απαιτεί τοπική πρόσβαση, όπως κονσόλα ή κέλυφος.\n• Γειτονικό δίκτυο: ο εισβολέας πρέπει να βρίσκεται στο ίδιο φυσικό ή λογικό τμήμα δικτύου.\n• Δίκτυο: εκμεταλλεύσιμο εξ αποστάσεως μέσω δικτύου, χωρίς να απαιτείται τοπική ή γειτονική πρόσβαση.",
+    "AttackComplexityHelp" => "Πόσο πολύπλοκη είναι η επίθεση από τη στιγμή που ο εισβολέας αποκτά πρόσβαση στον στόχο.\n• Υψηλή: απαιτεί εξειδικευμένες συνθήκες που είναι δύσκολο να διευθετηθούν.\n• Μέτρια: πρέπει να πληρούνται ορισμένες συνθήκες, αλλά η εκμετάλλευση δεν είναι δύσκολη από τη στιγμή που πληρούνται.\n• Χαμηλή: δεν απαιτούνται ειδικές συνθήκες.",
+    "AuthenticationHelp" => "Ο αριθμός των φορών που ένας εισβολέας πρέπει να πιστοποιηθεί στον στόχο για να τον εκμεταλλευτεί.\n• Πολλαπλός: απαιτείται έλεγχος ταυτότητας δύο ή περισσότερες φορές, ακόμη και με τα ίδια διαπιστευτήρια.\n• Μονός: απαιτείται έλεγχος ταυτότητας μία φορά.\n• Καμία: δεν απαιτείται έλεγχος ταυτότητας.",
+    "ConfidentialityImpactHelp" => "Ο αντίκτυπος στην εμπιστευτικότητα των δεδομένων που επεξεργάζεται το σύστημα σε περίπτωση εκμετάλλευσης.\n• Καμία: καμία επίδραση.\n• Μερική: κάποια αποκάλυψη πληροφοριών, αλλά ο εισβολέας δεν ελέγχει ποιες ή η απώλεια είναι περιορισμένη.\n• Πλήρης: πλήρης αποκάλυψη όλων των πληροφοριών στο σύστημα.",
+    "IntegrityImpactHelp" => "Ο αντίκτυπος στην ακεραιότητα του συστήματος σε περίπτωση εκμετάλλευσης.\n• Καμία: καμία επίδραση.\n• Μερική: ορισμένα δεδομένα μπορούν να τροποποιηθούν, αλλά ο εισβολέας δεν ελέγχει ποια ή το πεδίο εφαρμογής είναι περιορισμένο.\n• Πλήρης: πλήρης παραβίαση της ακεραιότητας του συστήματος· ο εισβολέας μπορεί να τροποποιήσει οποιαδήποτε αρχεία.",
+    "AvailabilityImpactHelp" => "Ο αντίκτυπος στη διαθεσιμότητα του συστήματος σε περίπτωση εκμετάλλευσης.\n• Καμία: καμία επίδραση.\n• Μερική: μειωμένη απόδοση ή διακοπές στη διαθεσιμότητα.\n• Ολοκληρωμένη: πλήρης τερματισμός λειτουργίας του επηρεαζόμενου πόρου.",
+    "RemediationLevelHelp" => "Το επίπεδο αποκατάστασης που είναι διαθέσιμο για την ευπάθεια.\n• Επίσημη Επιδιόρθωση: υπάρχει διαθέσιμη μια ολοκληρωμένη λύση από τον προμηθευτή.\n• Προσωρινή Επιδιόρθωση: υπάρχει μια επίσημη αλλά προσωρινή επιδιόρθωση.\n• Λύση: υπάρχει μια ανεπίσημη λύση, μη από τον προμηθευτή.\n• Μη διαθέσιμο: δεν υπάρχει διαθέσιμη λύση ή δεν μπορεί να εφαρμοστεί καμία.",
+    "ReportConfidenceHelp" => "Ο βαθμός εμπιστοσύνης στην ύπαρξη της ευπάθειας και η αξιοπιστία των τεχνικών λεπτομερειών της.\n• Μη επιβεβαιωμένο: μια μοναδική, μη επιβεβαιωμένη αναφορά πηγής. Το υποκείμενο ζήτημα είναι εικασίες.\n• Μη επιβεβαιωμένο: πολλαπλές ανεξάρτητες πηγές αναφέρουν την ίδια συμπεριφορά, αλλά η βασική αιτία δεν έχει επιβεβαιωθεί.\n• Επιβεβαιωμένο: ο προμηθευτής έχει αναγνωρίσει το πρόβλημα ή έχει επιβεβαιωθεί από την ανάλυση πηγαίου κώδικα ή exploits.",
+    "CollateralDamagePotentialHelp" => "Η πιθανότητα απώλειας ζωής, υλικών περιουσιακών στοιχείων ή οικονομικής ζημίας σε περίπτωση εκμετάλλευσης της ευπάθειας.\n• Καμία: δεν υπάρχει πιθανότητα τέτοιας ζημίας.\n• Χαμηλή έως Μέτρια: είναι πιθανή μια μέτρια ζημία.\n• Υψηλή: καταστροφική επίδραση στα περιουσιακά στοιχεία, τα έσοδα ή την ασφάλεια του οργανισμού.",
+    "TargetDistributionHelp" => "Το ποσοστό των ευάλωτων συστημάτων στο περιβάλλον σας.\n• Κανένα: δεν υπάρχουν στοχευμένα συστήματα.\n• Χαμηλό: 1-25% των συστημάτων είναι ευάλωτα.\n• Μέτριο: 26-75% είναι ευάλωτα.\n• Υψηλό: 76-100% είναι ευάλωτα.",
+    "ConfidentialityRequirementHelp" => "Πόσο σημαντική είναι η εμπιστευτικότητα του επηρεαζόμενου περιουσιακού στοιχείου για τον οργανισμό σας.\n• Χαμηλή: η απώλεια εμπιστευτικότητας έχει περιορισμένο αντίκτυπο.\n• Μέτρια: έχει σοβαρό αντίκτυπο.\n• Υψηλή: έχει καταστροφικό αντίκτυπο.",
+    "IntegrityRequirementHelp" => "Πόσο σημαντική είναι η ακεραιότητα του επηρεαζόμενου περιουσιακού στοιχείου για τον οργανισμό σας.\n• Χαμηλή: η απώλεια ακεραιότητας έχει περιορισμένο αντίκτυπο.\n• Μέτρια: έχει σοβαρό αντίκτυπο.\n• Υψηλή: έχει καταστροφικό αντίκτυπο.",
+    "AvailabilityRequirementHelp" => "Πόσο σημαντική είναι η διαθεσιμότητα του επηρεαζόμενου περιουσιακού στοιχείου για τον οργανισμό σας.\n• Χαμηλή: η απώλεια διαθεσιμότητας έχει περιορισμένο αντίκτυπο.\n• Μέτρια: έχει σοβαρό αντίκτυπο.\n• Υψηλή: έχει καταστροφικό αντίκτυπο.",
+    // Base Score Metrics' two sub-group intro sentences (metricsSubGroup()'s
+    // `descKey`, risk-details-form.js) -- orient the user to what the GROUP
+    // as a whole is asking, distinct from the per-field *Help popover keys
+    // above which explain each metric's own options.
+    'BaseScoreExploitabilityMetricsDescription' => 'Πώς θα έπρεπε ένας εισβολέας να φτάσει και να ενεργοποιήσει αυτήν την ευπάθεια: πού πρέπει να βρίσκεται, πόσο περίπλοκη είναι η επίθεση και αν χρειάζεται πρώτα να επαληθεύσει τον έλεγχο ταυτότητας.',
+    'BaseScoreImpactMetricsDescription' => 'Τι συμβαίνει εάν η ευπάθεια αξιοποιηθεί με επιτυχία: η επίδραση στην εμπιστευτικότητα, την ακεραιότητα και τη διαθεσιμότητα του επηρεαζόμενου συστήματος.',
+    // Advanced Metrics' three optional sub-group intro sentences -- same
+    // metricsSubGroup() `descKey` as the two Base Score groups above.
+    'TemporalScoreMetricsDescription' => 'Πώς αλλάζει η πραγματική απειλή αυτής της ευπάθειας με την πάροδο του χρόνου: η τρέχουσα κατάσταση του κώδικα εκμετάλλευσης, ποια αποκατάσταση είναι διαθέσιμη και πόσο βέβαιες είναι οι αναφορές ότι υπάρχει.',
+    'EnvironmentalScoreMetricsDescription' => 'Πώς εξαρτάται ο κίνδυνος αυτής της ευπάθειας από το περιβάλλον σας: η πιθανότητα πρόκλησης ζημιάς στον πραγματικό κόσμο και πόσα από τα συστήματά σας επηρεάζονται στην πραγματικότητα.',
+    'ImpactSubscoreModifiersDescription' => 'Σταθμίστε την επίδραση της Βασικής Βαθμολογίας με βάση το πόσο σημαντική είναι στην πραγματικότητα η εμπιστευτικότητα, η ακεραιότητα και η διαθεσιμότητα για αυτό το συγκεκριμένο στοιχείο.',
+    // Phase 4d-iii: DREAD holder help popovers (view_dread_help()'s
+    // existing English text, includes/display.php, extracted to real $lang
+    // keys -- that function's own content was raw hardcoded HTML, never
+    // localized, so it could not be reused verbatim).
+    'DamagePotentialHelp' => 'Εάν συμβεί μια εκμετάλλευση απειλής, πόση ζημιά θα προκληθεί;' . "\n" . '0 = Τίποτα' . "\n" . '5 = Τα δεδομένα μεμονωμένων χρηστών έχουν παραβιαστεί ή επηρεαστεί.' . "\n" . '10 = Πλήρης καταστροφή συστήματος ή δεδομένων',
+    'ReproducibilityHelp' => 'Πόσο εύκολο είναι να αναπαραχθεί η εκμετάλλευση της απειλής;' . "\n" . '0 = Πολύ δύσκολο ή αδύνατο, ακόμη και για τους διαχειριστές της εφαρμογής.' . "\n" . '5 = Απαιτούνται ένα ή δύο βήματα, ίσως χρειαστεί να είστε εξουσιοδοτημένος χρήστης.' . "\n" . '10 = Αρκεί μόνο ένα πρόγραμμα περιήγησης ιστού και η γραμμή διευθύνσεων, χωρίς έλεγχο ταυτότητας.',
+    'ExploitabilityHelp' => 'Τι χρειάζεται για να αξιοποιηθεί αυτή η απειλή;' . "\n" . '0 = Προηγμένες γνώσεις προγραμματισμού και δικτύωσης, με προσαρμοσμένα ή προηγμένα εργαλεία επίθεσης.' . "\n" . '5 = Υπάρχει κακόβουλο λογισμικό στο Διαδίκτυο ή εκτελείται εύκολα μια εκμετάλλευση, χρησιμοποιώντας τα διαθέσιμα εργαλεία επίθεσης.' . "\n" . '10 = Απλώς ένα πρόγραμμα περιήγησης ιστού',
+    'AffectedUsersHelp' => 'Πόσοι χρήστες θα επηρεαστούν;' . "\n" . '0 = Κανένα' . "\n" . '5 = Μερικοί χρήστες, αλλά όχι όλοι' . "\n" . '10 = Όλοι οι χρήστες',
+    'DiscoverabilityHelp' => 'Πόσο εύκολο είναι να ανακαλύψει κανείς αυτή την απειλή;' . "\n" . '0 = Πολύ δύσκολο έως αδύνατο· απαιτεί πηγαίο κώδικα ή πρόσβαση διαχειριστή.' . "\n" . '5 = Μπορεί να το καταλάβει μαντεύοντας ή παρακολουθώντας τα ίχνη του δικτύου.' . "\n" . '9 = Λεπτομέρειες για τέτοια σφάλματα είναι ήδη διαθέσιμες στο κοινό και μπορούν εύκολα να ανακαλυφθούν χρησιμοποιώντας μια μηχανή αναζήτησης.' . "\n" . '10 = Οι πληροφορίες είναι ορατές στη γραμμή διευθύνσεων του προγράμματος περιήγησης ιστού ή σε μια φόρμα.',
+    // The DREAD holder's summary card heading and "DREAD Metrics" card
+    // heading. No existing key covers either (confirmed via grep before
+    // adding).
+    'DreadScore' => 'Βαθμολογία DREAD',
+    'DreadMetrics' => 'Μετρήσεις DREAD',
+    // Phase 4d-iv: OWASP holder help popovers (view_owasp_help()'s
+    // existing English text, includes/display.php, extracted to real
+    // $lang keys -- same never-localized-legacy-content extraction the
+    // DREAD phase already did for its own 5 fields). Wording/levels
+    // trued up against that function's real source text, not transcribed
+    // from an earlier standard-methodology draft.
+    'SkillLevelHelp' => 'Πόσο τεχνικά καταρτισμένη είναι αυτή η ομάδα απειλητικών πρακτόρων;' . "\n" . '1 = Χωρίς Τεχνικές Δεξιότητες' . "\n" . '3 = Κάποιες Τεχνικές Δεξιότητες' . "\n" . '5 = Προχωρημένος χρήστης υπολογιστή' . "\n" . '6 = Δεξιότητες Δικτύου και Προγραμματισμού' . "\n" . '9 = Δεξιότητες Διείσδυσης Ασφαλείας',
+    'MotiveHelp' => 'Πόσο κίνητρο έχει αυτή η ομάδα απειλητικών πρακτόρων να εντοπίσει και να εκμεταλλευτεί αυτό το κενό ασφαλείας;' . "\n" . '1 = Χαμηλή ή καθόλου ανταμοιβή' . "\n" . '4 = Πιθανή Ανταμοιβή' . "\n" . '9 = Υψηλή Αμοιβή',
+    'OpportunityHelp' => 'Ποιοι πόροι και ευκαιρίες απαιτούνται για να εντοπίσει και να εκμεταλλευτεί αυτή την ευπάθεια αυτή η ομάδα απειλητικών παραγόντων;' . "\n" . '0 = Απαιτούνται πλήρης πρόσβαση ή ακριβοί πόροι' . "\n" . '4 = Απαιτείται ειδική πρόσβαση ή πόροι' . "\n" . '7 = Απαιτείται κάποια πρόσβαση ή πόροι' . "\n" . '9 = Δεν απαιτείται πρόσβαση ή πόροι',
+    'SizeHelp' => 'Πόσο μεγάλη είναι αυτή η ομάδα απειλητικών πρακτόρων;' . "\n" . '2 = Προγραμματιστές' . "\n" . '2 = Διαχειριστές Συστήματος' . "\n" . '4 = Χρήστες Intranet' . "\n" . '5 = Συνεργάτες' . "\n" . '6 = Πιστοποιημένοι χρήστες' . "\n" . '9 = Ανώνυμοι χρήστες του Διαδικτύου',
+    'EaseOfDiscoveryHelp' => 'Πόσο εύκολο είναι για αυτήν την ομάδα απειλητικών πρακτόρων να ανακαλύψει αυτό το τρωτό σημείο;' . "\n" . '1 = Πρακτικά αδύνατο' . "\n" . '3 = Δύσκολο' . "\n" . '7 = Εύκολο' . "\n" . '9 = Διαθέσιμα αυτοματοποιημένα εργαλεία',
+    'EaseOfExploitHelp' => 'Πόσο εύκολο είναι για αυτήν την ομάδα απειλητικών πρακτόρων να εκμεταλλευτεί πραγματικά αυτό το τρωτό σημείο;' . "\n" . '1 = Θεωρητικό' . "\n" . '3 = Δύσκολο' . "\n" . '5 = Εύκολο' . "\n" . '9 = Διαθέσιμα αυτοματοποιημένα εργαλεία',
+    'AwarenessHelp' => 'Πόσο γνωστή είναι αυτή η ευπάθεια σε αυτήν την ομάδα απειλητικών παραγόντων;' . "\n" . '1 = Άγνωστο' . "\n" . '4 = Κρυφό' . "\n" . '6 = Προφανές' . "\n" . '9 = Δημόσια Γνώση',
+    'IntrusionDetectionHelp' => 'Πόσο πιθανό είναι να εντοπιστεί ένα exploit;' . "\n" . '1 = Ενεργή ανίχνευση στην εφαρμογή' . "\n" . '3 = Καταγράφηκε και αναθεωρήθηκε' . "\n" . '8 = Συνδεδεμένο χωρίς έλεγχο' . "\n" . '9 = Δεν έχει καταγραφεί',
+    'LossOfConfidentialityHelp' => 'Πόσα δεδομένα μπορούν να αποκαλυφθούν και πόσο ευαίσθητα είναι;' . "\n" . '2 = Ελάχιστα Μη Ευαίσθητα Δεδομένα που Αποκαλύφθηκαν' . "\n" . '6 = Ελάχιστα κρίσιμα δεδομένα που αποκαλύφθηκαν' . "\n" . '6 = Εκτεταμένη γνωστοποίηση μη ευαίσθητων δεδομένων' . "\n" . '7 = Αποκαλύπτονται Εκτεταμένα Κρίσιμα Δεδομένα' . "\n" . '9 = Όλα τα Δεδομένα Αποκαλύπτονται',
+    'LossOfIntegrityHelp' => 'Πόσα δεδομένα μπορούν να καταστραφούν και πόσο έχουν καταστραφεί;' . "\n" . '1 = Ελάχιστα ελαφρώς αλλοιωμένα δεδομένα' . "\n" . '3 = Ελάχιστα Σοβαρά Διεφθαρμένα Δεδομένα' . "\n" . '5 = Εκτεταμένα ελαφρώς αλλοιωμένα δεδομένα' . "\n" . '7 = Εκτεταμένα Σοβαρά Διαφθαρμένα Δεδομένα' . "\n" . '9 = Όλα τα δεδομένα είναι εντελώς κατεστραμμένα',
+    'LossOfAvailabilityHelp' => 'Πόση υπηρεσία θα μπορούσε να χαθεί και πόσο ζωτικής σημασίας είναι;' . "\n" . '1 = Διακοπή Ελάχιστων Δευτερευουσών Υπηρεσιών' . "\n" . '5 = Διακοπή Ελάχιστων Κύριων Υπηρεσιών' . "\n" . '5 = Διακοπή εκτεταμένων δευτερευόντων υπηρεσιών' . "\n" . '7 = Διακοπή εκτεταμένων κύριων υπηρεσιών' . "\n" . '9 = Όλες οι υπηρεσίες χάθηκαν εντελώς',
+    'LossOfAccountabilityHelp' => 'Είναι οι ενέργειες των απειλητικών παραγόντων ανιχνεύσιμες σε ένα άτομο;' . "\n" . '1 = Πλήρως Ιχνηλασιμο' . "\n" . '7 = Πιθανώς ιχνηλάσιμο' . "\n" . '9 = Εντελώς Ανώνυμος',
+    'FinancialDamageHelp' => 'Πόση οικονομική ζημία θα προκύψει από μια εκμετάλλευση;' . "\n" . '1 = Λιγότερο από το κόστος για την επιδιόρθωση της ευπάθειας' . "\n" . '3 = Μικρή επίδραση στο ετήσιο κέρδος' . "\n" . '7 = Σημαντική επίδραση στο ετήσιο κέρδος' . "\n" . '9 = Πτώχευση',
+    'ReputationDamageHelp' => 'Θα μπορούσε μια εκμετάλλευση να προκαλέσει ζημιά στη φήμη που θα έβλαπτε την επιχείρηση;' . "\n" . '1 = Ελάχιστη ζημιά' . "\n" . '4 = Απώλεια Σημαντικών Λογαριασμών' . "\n" . '5 = Απώλεια Υπεραξίας' . "\n" . '9 = Ζημιά στην επωνυμία',
+    'NonComplianceHelp' => 'Πόση έκθεση προκαλεί η μη συμμόρφωση;' . "\n" . '2 = Μικρή παράβαση' . "\n" . '5 = Σαφής παραβίαση' . "\n" . '7 = Παραβίαση υψηλού προφίλ',
+    'PrivacyViolationHelp' => 'Πόσες προσωπικές πληροφορίες μπορούν να αποκαλυφθούν;' . "\n" . '3 = Ένα άτομο' . "\n" . '5 = Εκατοντάδες άνθρωποι' . "\n" . '7 = Χιλιάδες άνθρωποι' . "\n" . '9 = Εκατομμύρια άνθρωποι',
+    // The OWASP holder's Score card heading. No existing key covers this
+    // (confirmed via grep before adding) -- the Likelihood/Impact card
+    // headings reuse the already-existing bare 'Likelihood'/'Impact' keys.
+    'OwaspScore' => 'Βαθμολογία OWASP',
+    // Phase 4d-iv follow-up: group-level descriptions for the 4 OWASP
+    // subgroup headings, sourced from OWASP's own Risk Rating Methodology
+    // (https://community.owasp.org/OWASP_Risk_Rating_Methodology), tightened
+    // into short UI captions -- not a verbatim quote (see this task's own
+    // source table for the original wording).
+    'ThreatAgentFactorsDescription' => 'Εκτιμά την πιθανότητα μιας επιτυχημένης επίθεσης από αυτήν την ομάδα απειλητικών παραγόντων.',
+    'VulnerabilityFactorsDescription' => 'Εκτιμά την πιθανότητα να ανακαλυφθεί και να αξιοποιηθεί αυτό το κενό ασφαλείας.',
+    'TechnicalImpactDescription' => 'Αναλύει τον αντίκτυπο με βάση την εμπιστευτικότητα, την ακεραιότητα, τη διαθεσιμότητα και την υπευθυνότητα.',
+    'BusinessImpactDescription' => 'Αντικατοπτρίζει τι έχει σημασία για την επιχείρηση, πέρα από τον ακατέργαστο τεχνικό αντίκτυπο.',
+    // CVSS's own Temporal-metric 'Exploitability' help text. This key shares
+    // a labelKey ('Exploitability') with DREAD's own field, so both would
+    // otherwise derive the same generic lang key ('ExploitabilityHelp'),
+    // with DREAD's entry silently winning for both -- risk-details-form.js's
+    // buildCvssScoreItem() and risk-details-view.js's cvssMetricValueRow()
+    // reference this key directly for CVSS's Exploitability field instead
+    // of the generic '<labelKey>Help' derivation.
+    'CVSSExploitabilityHelp' => "Η τρέχουσα κατάσταση των τεχνικών εκμετάλλευσης ή η διαθεσιμότητα κώδικα.\n• Μη αποδεδειγμένο: δεν υπάρχει διαθέσιμος κώδικας εκμετάλλευσης ή η εκμετάλλευση είναι θεωρητική.\n• Απόδειξη της έννοιας: ο κώδικας εκμετάλλευσης υπάρχει αλλά δεν είναι πρακτικός για τους περισσότερους εισβολείς.\n• Λειτουργικός: ο λειτουργικός κώδικας εκμετάλλευσης λειτουργεί στις περισσότερες περιπτώσεις.\n• Υψηλή: η εκμετάλλευση είναι αξιόπιστη και είτε αυτοματοποιημένη (π.χ. ένας ιός τύπου worm) είτε δεν απαιτεί καθόλου κώδικα εκμετάλλευσης.",
+    // Risk Scoring -- Classic Inline (Task 3): the Classic scoring method's
+    // new inline Score card heading and its Likelihood/Impact cards' short
+    // plain-English descriptions (js/simplerisk/common/risk-details-form.js's
+    // buildClassicHolder()). Deliberately NOT sourced from NIST SP 800-30 or
+    // any other external standard -- confirmed with the user via the
+    // approved mockup review, unlike OWASP's own subgroup descriptions
+    // above, which do cite OWASP's Risk Rating Methodology.
+    'ClassicScore' => 'Κλασική Παρτιτούρα',
+    'ClassicLikelihoodDescription' => 'Πόσο πιθανό είναι να συμβεί αυτός ο κίνδυνος.',
+    'ClassicImpactDescription' => 'Πόσο σοβαρές θα ήταν οι συνέπειες εάν προέκυπτε αυτός ο κίνδυνος.',
+    // Risk Scoring -- Custom Inline (Task 2): the Custom scoring method's
+    // new inline Score card heading (js/simplerisk/common/risk-details-form.js's
+    // buildCustomHolder()) and the Custom Value card's short description
+    // caption. 'CustomValueDescription' text confirmed directly with the
+    // user, same as Classic's own description keys above.
+    'CustomScore' => 'Προσαρμοσμένη βαθμολογία',
+    'CustomValueDescription' => 'Μια προσαρμοσμένη τιμή μπορεί να είναι μια δεκαδική τιμή μεταξύ 0 και 10.',
+    // Risk Scoring -- Contributing Risk Inline (Phase 4d-v): the last of
+    // the three deferred scoring methods (DREAD/OWASP shipped earlier in
+    // this same project). The Likelihood/Contributing Risk cards' short
+    // plain-English descriptions (js/simplerisk/common/risk-details-form.js's
+    // buildContributingRiskHolder()). The Score card heading reuses the
+    // EXISTING 'ContributingRiskScore' key (already present above, same
+    // text) rather than duplicating it -- 'ContributingRisk'/
+    // 'ContributingLikelihood'/'Weight'/'Subject' are likewise reused as-is.
+    'ContributingLikelihoodDescription' => 'Πόσο πιθανό είναι να συμβεί αυτός ο κίνδυνος.',
+    'ContributingRiskDescription' => 'Κάθε παράγοντας παρακάτω σταθμίζεται με βάση τη σχετική του σημασία -- επιλέξτε πόσο επηρεάζεται αυτός ο κίνδυνος από τον καθένα.',
+    // OWASP read-mode card (buildOwaspReadView(), risk-details-view.js):
+    // the live calculation formula under each of the 4 sub-group names
+    // (Threat Agent Factors/Vulnerability Factors/Technical Impact/
+    // Business Impact), matching the legacy risk-scoring-details panel's
+    // own "= ( a + b + c + d ) / 4" text (includes/display.php), and the
+    // OWASP Risk Rating Methodology link note placed in the OWASP Score
+    // column's open space below the summary numbers.
+    'OwaspSubgroupFormula' => '= ( {a} + {b} + {c} + {d} ) / 4',
+    'OwaspMethodologyNote' => 'Πλήρεις λεπτομέρειες σχετικά με τη Μεθοδολογία Αξιολόγησης Κινδύνου OWASP μπορείτε να βρείτε',
+    'Here' => 'εδώ',
+    // Scoring widget formula captions (Classic/DREAD/Contributing Risk),
+    // the same ".sr-cvss-vector under the score label" treatment CVSS's
+    // vector caption and OwaspSubgroupFormula above already have, on both
+    // the edit-mode holder (risk-details-form.js) and the read-mode card
+    // (risk-details-view.js). Classic reuses the existing RISKClassicExp1-5
+    // keys instead of a new one -- see those keys' own long-standing
+    // definitions above.
+    'DreadScoreFormula' => '= ( {a} + {b} + {c} + {d} + {e} ) / 5',
+    // Contributing Risk's per-factor weighted term and its shared
+    // Likelihood term (update_contributing_risk_score(), includes/
+    // functions.php) -- unlike DREAD/OWASP's fixed roster, the factor list
+    // is admin-configured, so this is one formula PER FACTOR ROW rather
+    // than one fixed caption under the total score.
+    // {maxName}: score.php parity -- legacy's "Maximum Value" column showed
+    // the max option's human-readable name alongside its number (e.g.
+    // "[5] Certain", includes/display.php); these formulas only showed the
+    // bare number.
+    'ContributingLikelihoodFormula' => '= {value} x 5 / {max} ({maxName})',
+    'ContributingFactorFormula' => '= {weight}% x {impact} x 5 / {max} ({maxName})',
+    // Contributing Risk's own subscore row in the Score card -- the sum of
+    // every factor's own term above it. Generic (not substituted with real
+    // numbers) since the number of terms is however many factors are
+    // configured, unlike the fixed-roster formulas above.
+    'ContributingRiskSubtotalFormula' => '= Άθροισμα (Βάρος x Κρούση x 5 / Μέγιστο)',
+    // Contributing Risk Score's own formula, under the total row -- always
+    // exactly 2 terms (unlike the Contributing Risk subtotal above), so
+    // substituted with the real current subtotal values, same convention
+    // DreadScoreFormula/OwaspSubgroupFormula use for their own fixed roster.
+    'ContributingRiskScoreFormula' => '= {likelihood} + {contributing}',
+    // Risk Scoring History widget (risk-details-view.js) -- replaces the
+    // legacy chart's bare save icon with a real menu item, structured for
+    // future export types alongside it.
+    'DownloadChartAsImage' => 'Λήψη ως εικόνα',
+    // Legacy score.php's CVSS table had a "Full details of CVSS Version 2.0
+    // scoring can be found here." link (includes/display.php); this is its
+    // inline-scoring-card equivalent, same shape as OwaspMethodologyNote.
+    'CvssMethodologyNote' => 'Πλήρεις λεπτομέρειες σχετικά με τη βαθμολόγηση CVSS Έκδοση 2.0 μπορείτε να βρείτε',
+    // Mitigation Controls redesign: the picker reuses ChooseControls/
+    // AddOrRemoveControls/etc from Document Program's control picker.
+    'InvalidControlID' => 'Μη έγκυρο αναγνωριστικό ελέγχου.',
+    'ValidationOwner' => 'Κάτοχος επικύρωσης',
+    'ValidationStatus' => 'Κατάσταση επικύρωσης',
+    'NotStarted' => 'Δεν έχει ξεκινήσει',
+    // management/view.php's "risk ID does not exist" empty state.
+    'RiskIdDoesNotExistBody' => 'Ο κίνδυνος που αναζητάτε ενδέχεται να έχει διαγραφεί ή ο σύνδεσμος ενδέχεται να είναι εσφαλμένος.',
+    'MitigationControlsRequiresGovernance' => 'Απαιτείται άδεια από τη Διοίκηση για προβολή.',
+    'ViewControlValidation' => 'Επικύρωση ελέγχου προβολής',
+    'EditControlValidation' => 'Επεξεργασία Επικύρωσης Ελέγχου',
+    'SupportingDocumentationRequiresSubmitRisk' => 'Απαιτείται άδεια Υποβολής Κινδύνου για την αποστολή αρχείων.',
+    'SupportingDocumentationRequiresModifyRisks' => 'Απαιτείται άδεια Modify Risks για τη διαχείριση αρχείων.',
+    'MitigationSupportingDocumentationRequiresPlanMitigations' => 'Απαιτείται άδεια Plan Mitigations για τη διαχείριση αρχείων.',
+    'MitigationSubmittedBy' => 'Μετριασμός Υποβλήθηκε από',
+    'UseADifferentDate' => 'Χρησιμοποιήστε διαφορετική ημερομηνία',
+    'AssetGroup' => 'Ομάδα Περιουσιακών Στοιχείων',
+    // Customization Cards Layout API (extras/customization/index.php) scope-validation errors.
+    'InvalidFgroup' => 'Μη έγκυρη ομάδα f.',
+    'CustomizationCardsLayoutApiScopeError' => 'Το API διάταξης καρτών προσαρμογής είναι διαθέσιμο μόνο για fgroup=risk, tab_index=1, tab_index=2 ή tab_index=3.',
+    // Asset management redesign
+    'DiscoverAssets' => 'Ανακαλύψτε περιουσιακά στοιχεία',
+    'DiscoveryRuns' => 'Το Discovery τρέχει',
+    'DiscoveryRangeHint' => 'Μία διεύθυνση, ένα εύρος έναρξης-τέλους ή IPv4 CIDR',
+    'DiscoveryResolveNames' => 'Αναζήτηση ονομάτων κεντρικών υπολογιστών',
+    'DiscoveryAddAs' => 'Προσθήκη νέων στοιχείων ως',
+    'DiscoveryStart' => 'Έναρξη ανακάλυψης',
+    'DiscoveryBackgroundNote' => 'Εκτελείται στο παρασκήνιο. Οι διευθύνσεις που υπάρχουν ήδη παραλείπονται.',
+    'DiscoveryRangeInvalid' => 'Εισαγάγετε μια έγκυρη διεύθυνση IPv4, εύρος ή μπλοκ CIDR.',
+    'DiscoveryRangeTooLarge' => 'Αυτό το εύρος είναι πολύ μεγάλο. Το όριο είναι {$max} διευθύνσεις.',
+    'DiscoveryRunQueued' => 'Η ανακάλυψη ξεκίνησε.',
+    'DiscoveryRunCompleted' => 'Η ανακάλυψη ολοκληρώθηκε: {$new} νέα περιουσιακά στοιχεία.',
+    'AssetBulkSelectAll' => 'Επιλογή όλων των {$count} στοιχείων',
+    'AssetBulkAssignTeams' => 'Ανάθεση ομάδων…',
+    'AssetBulkAddToGroup' => 'Προσθήκη στην ομάδα…',
+    'AssetBulkDeleteConfirmTitle' => 'Διαγραφή {$count} στοιχείων;',
+    'AbleToEditAssets' => 'Δυνατότητα επεξεργασίας στοιχείων',
+    'AbleToDeleteAssets' => 'Δυνατότητα διαγραφής περιουσιακών στοιχείων',
+    'AbleToVerifyAssets' => 'Δυνατότητα επαλήθευσης περιουσιακών στοιχείων',
+    'AbleToRunAssetDiscovery' => 'Δυνατότητα εκτέλεσης ανακάλυψης περιουσιακών στοιχείων',
+    'AbleToCreateAssetGroups' => 'Δυνατότητα δημιουργίας ομάδων περιουσιακών στοιχείων',
+    'AbleToEditAssetGroups' => 'Δυνατότητα επεξεργασίας ομάδων περιουσιακών στοιχείων',
+    'AbleToDeleteAssetGroups' => 'Δυνατότητα διαγραφής ομάδων περιουσιακών στοιχείων',
+    'ViewAsset' => 'Προβολή στοιχείου',
+    'AssetUnverifiedByEditLog' => 'Το στοιχείο "{$name}" επιστράφηκε στην κατάσταση "μη επαληθευμένο" επειδή ο χρήστης "{$user}" άλλαξε το όνομα ή τη διεύθυνση IP του χωρίς την άδεια επαλήθευσης στοιχείων.',
+    'AssetTeamsAssignedLog' => 'Το στοιχείο "{$name}" ανατέθηκε στην/στις ομάδα/ες "{$teams}" από τον χρήστη "{$user}".',
+    // Manage assets page (asset management redesign, Task 9)
+    'AddAsset' => 'Προσθήκη στοιχείου',
+    'SearchAssetsPlaceholder' => 'Αναζήτηση με όνομα ή διεύθυνση IP',
+    'AllLocations' => 'Όλες οι τοποθεσίες',
+    'AllTags' => 'Όλες οι ετικέτες',
+    'AllAssetGroups' => 'Όλες οι ομάδες περιουσιακών στοιχείων',
+    'AssetFields' => 'Πεδία περιουσιακών στοιχείων',
+    'AssetBulkAllSelected' => 'Επιλέχθηκαν όλα τα {$count} αντίστοιχα στοιχεία',
+    'AssetDeleteConfirmTitle' => 'Διαγραφή στοιχείου "{$name}";',
+    'DeleteAsset' => 'Διαγραφή στοιχείου',
+    'DeleteAssets' => 'Διαγραφή στοιχείων',
+    'AssetBulkAssignTeamsTitle' => 'Ανάθεση ομάδων σε {$count} στοιχεία',
+    'AssetAssignTeamsHint' => 'Οι επιλεγμένες ομάδες προστίθενται. Ομάδες που βρίσκονται ήδη σε καθεστώς διατήρησης περιουσιακού στοιχείου.',
+    'AssetAddToGroupTitle' => 'Προσθήκη {$count} στοιχείων σε μια ομάδα',
+    'AssetChooseTeams' => 'Επιλέξτε ομάδες',
+    'AssetChooseGroup' => 'Επιλέξτε μια ομάδα',
+    'Assign' => 'Αναθέτω',
+    'AssetBulkVerifiedSummary' => 'Επαληθεύτηκε το {$ok} , παραλείφθηκε το {$failed}',
+    'AssetBulkDeletedSummary' => 'Διαγράφηκε το {$ok} , παραλείφθηκε το {$failed}',
+    'AssetBulkTeamsSummary' => 'Ομάδες που έχουν ανατεθεί σε {$ok} περιουσιακά στοιχεία, {$failed} παραλείφθηκαν',
+    'AssetBulkGroupSummary' => '{$ok} προστέθηκε στην ομάδα, {$failed} παραλείφθηκε',
+    'AssetBulkSkippedList' => 'Παραλείφθηκε: {$list}',
+    'AssetBulkReasonNotFound' => 'δεν βρέθηκε',
+    'NoAssetsYet' => 'Δεν υπάρχουν ακόμη στοιχεία',
+    'NoAssetsYetHint' => 'Τα στοιχεία που προσθέτετε ή ανακαλύπτετε εμφανίζονται εδώ.',
+    'NoAssetsMatchFilters' => 'Δεν υπάρχουν στοιχεία που να αντιστοιχούν στα φίλτρα σας',
+    'CouldNotLoadAssets' => 'Δεν ήταν δυνατή η φόρτωση στοιχείων. Τα δεδομένα σας είναι ασφαλή.',
+    'AllValuations' => 'Όλες οι εκτιμήσεις',
+    // Manage assets page, Asset groups tab (asset management redesign, Task 10)
+    'AddAssetGroup' => 'Προσθήκη ομάδας',
+    'EditAssetGroup' => 'Επεξεργασία ομάδας',
+    'DeleteAssetGroup' => 'Διαγραφή ομάδας',
+    'ViewGroupMembers' => 'Προβολή μελών',
+    'SearchAssetGroupsPlaceholder' => 'Αναζήτηση ομάδων με βάση το όνομα',
+    'HighestValuation' => 'Υψηλότερη αξιολόγηση',
+    'LinkedRisks' => 'Συνδεδεμένοι κίνδυνοι',
+    'RemoveFromGroup' => 'Αφαίρεση από την ομάδα',
+    'AssetGroupMoreMembers' => '+ {$count} περισσότερα',
+    'ViewAllInAssetsTab' => 'Δείτε όλα στην καρτέλα Στοιχεία ενεργητικού',
+    'NoAssetsInGroup' => 'Δεν υπάρχουν στοιχεία σε αυτήν την ομάδα.',
+    'CouldNotLoadGroupMembers' => 'Δεν ήταν δυνατή η φόρτωση των μελών αυτής της ομάδας.',
+    'AssetGroupMembers' => 'Μέλη',
+    'AssetGroupMembersHint' => 'Παρατίθενται μόνο τα στοιχεία που μπορείτε να δείτε. Τα μέλη που δεν μπορείτε να δείτε παραμένουν στην ομάδα.',
+    'ChooseAssets' => 'Επιλογή στοιχείων',
+    'AddOrRemoveAssets' => 'Προσθήκη ή αφαίρεση στοιχείων…',
+    'UseTheseAssets' => 'Χρησιμοποιήστε αυτά τα στοιχεία',
+    'AllAssets' => 'Όλα τα περιουσιακά στοιχεία',
+    'Valuation' => 'Αξιολόγηση',
+    'PickerShowingFirstN' => 'Εμφάνιση του πρώτου {$count} από {$total}. Αναζητήστε ή περιορίστε τα υπόλοιπα για να τα βρείτε.',
+    'AssetGroupDeleteConfirmTitle' => 'Διαγραφή ομάδας "{$name}";',
+    'AssetGroupDeleteKeepsAssets' => 'Τα στοιχεία σε αυτήν την ομάδα δεν διαγράφονται. Μόνο η ομάδα καταργείται.',
+    'NoAssetGroupsYet' => 'Δεν υπάρχουν ακόμη ομάδες περιουσιακών στοιχείων',
+    'NoAssetGroupsYetHint' => 'Ομαδοποιήστε στοιχεία, ώστε να μπορείτε να τα αντιστοιχίσετε και να δημιουργήσετε αναφορές για αυτά μαζί.',
+    'NoAssetGroupsMatchSearch' => 'Δεν υπάρχουν ομάδες περιουσιακών στοιχείων που να αντιστοιχούν στην αναζήτησή σας',
+    'CouldNotLoadAssetGroups' => 'Δεν ήταν δυνατή η φόρτωση ομάδων στοιχείων. Τα δεδομένα σας είναι ασφαλή.',
+    'DiscoveryAssignTeams' => 'Ανάθεση σε ομάδες',
+    'DiscoveryAssignTeamsHint' => 'Προαιρετικό. Κάθε νέο στοιχείο προστίθεται σε αυτές τις ομάδες.',
+    'DiscoveryAddAsHint' => 'Ορίστηκε από την άδειά σας για επαλήθευση στοιχείων.',
+    'DiscoveryTeamsInvalid' => 'Διάλεξε ομάδες που υπάρχουν και στις οποίες ανήκεις.',
+    'DiscoveryResolveNamesInvalid' => 'Η αναζήτηση ονομάτων κεντρικών υπολογιστών πρέπει να είναι ενεργοποιημένη ή απενεργοποιημένη.',
+    'DiscoveryTooManyActiveRuns' => 'Έχετε ήδη {$max} εκτελέσεις εντοπισμού σε εξέλιξη. Περιμένετε να ολοκληρωθεί μία ή ακυρώστε την.',
+    'DiscoveryRunNotFound' => 'Δεν βρέθηκε εκτέλεση ανακάλυψης.',
+    'DiscoveryRunAlreadyFinished' => 'Αυτή η ανακάλυψη έχει ήδη ολοκληρωθεί.',
+    'DiscoveryRunCancelled' => 'Η εκτέλεση του Discovery ακυρώθηκε.',
+    'DiscoveryRunFailedToast' => 'Η ανακάλυψη του {$range} απέτυχε.',
+    'DiscoveryStatusQueued' => 'Σε ουρά',
+    'DiscoveryProgress' => '{$scanned} από {$total}',
+    'DiscoveryLiveHosts' => 'Ζωντανοί παρουσιαστές',
+    'DiscoveryNewAssets' => 'Νέα περιουσιακά στοιχεία',
+    'DiscoveryStartedAt' => 'Ξεκίνησε',
+    'DiscoveryCancelRun' => 'Ακύρωση εκτέλεσης',
+    'CouldNotLoadDiscoveryRuns' => 'Δεν ήταν δυνατή η φόρτωση εκτελέσεων εντοπισμού.',
+    'DiscoveryRangeReserved' => 'Αυτό το εύρος περιλαμβάνει δεσμευμένες διευθύνσεις (loopback, link-local, multicast ή 0.0.0.0/8) που δεν μπορούν να σαρωθούν.',
+    'DiscoveryTooManyActiveRunsInstance' => 'Υπάρχουν ήδη {$max} εκτελέσεις ανακάλυψης σε εξέλιξη. Δοκιμάστε ξανά όταν ολοκληρωθεί μία.',
+    'DiscoveryErrorScan' => 'Η σάρωση διακόπηκε λόγω σφάλματος. Ελέγξτε τα αρχεία καταγραφής συστήματος για λεπτομέρειες.',
+    'DiscoveryErrorWorkerLost' => 'Η ουρά παρασκηνίου σταμάτησε την επεξεργασία αυτής της εκτέλεσης.',
+    'DiscoveryErrorRequesterInactive' => 'Ο χρήστης που ξεκίνησε αυτήν την εκτέλεση δεν είναι πλέον ενεργός.',
+    // Asset management redesign: translated API errors (bulk actions, column settings, discovery) and discovery audit lines
+    'AssetBulkBodyInvalid' => 'Στείλτε τη μαζική ενέργεια ως σώμα JSON.',
+    'AssetBulkActionRequired' => 'Επιλέξτε μια μαζική ενέργεια.',
+    'AssetBulkUnknownAction' => 'Αυτή η μαζική ενέργεια δεν είναι διαθέσιμη.',
+    'AssetBulkSelectionRequired' => 'Επιλέξτε στοιχεία είτε με βάση το αναγνωριστικό είτε με βάση το φίλτρο.',
+    'AssetBulkIdsRequired' => 'Επιλέξτε τουλάχιστον ένα στοιχείο.',
+    'AssetBulkIdsInvalid' => 'Τα αναγνωριστικά στοιχείων πρέπει να είναι ακέραιοι αριθμοί.',
+    'AssetBulkTooManyAssets' => 'Μπορείτε να κάνετε ενέργειες σε έως και {$max} στοιχεία ταυτόχρονα. Περιορίστε την επιλογή σας και δοκιμάστε ξανά.',
+    'AssetBulkFilterInvalid' => 'Το φίλτρο δεν είναι έγκυρο. Επαναφορτώστε τη σελίδα και δοκιμάστε ξανά.',
+    'AssetBulkFilterUnknownKey' => 'Το φίλτρο "{$key}" δεν αναγνωρίζεται.',
+    'AssetBulkFilterBadValue' => 'Το φίλτρο "{$key}" έχει μια τιμή που δεν είναι έγκυρη.',
+    'AssetBulkFilterTooManyValues' => 'Το φίλτρο "{$key}" μπορεί να εμφανίσει το πολύ {$max} τιμές.',
+    'AssetBulkFilterAllAlone' => 'Η επιλογή όλων των στοιχείων δεν μπορεί να συνδυαστεί με άλλα φίλτρα.',
+    'AssetBulkFilterEmpty' => 'Επιλέξτε ένα φίλτρο ή επιλέξτε όλα τα στοιχεία, πριν εκτελέσετε μια μαζική ενέργεια.',
+    'AssetBulkExpectedCountInvalid' => 'Ο αναμενόμενος αριθμός περιουσιακών στοιχείων πρέπει να είναι ακέραιος αριθμός.',
+    'AssetBulkParamsInvalid' => 'Οι επιλογές για αυτήν τη μαζική ενέργεια δεν είναι έγκυρες.',
+    'AssetBulkTeamsRequired' => 'Επιλέξτε τουλάχιστον μία ομάδα.',
+    'AssetBulkTeamsNotFound' => 'Μία ή περισσότερες από αυτές τις ομάδες δεν υπάρχουν πλέον.',
+    'AssetBulkTeamsNotMember' => 'Μπορείτε να ορίσετε ομάδες μόνο στις οποίες ανήκετε.',
+    'AssetBulkGroupNotFound' => 'Αυτή η ομάδα περιουσιακών στοιχείων δεν υπάρχει πλέον.',
+    'AssetBulkNoMatch' => 'Δεν υπάρχουν στοιχεία που να αντιστοιχούν στην επιλογή σας.',
+    'AssetBulkCountMismatch' => 'Τα αντίστοιχα στοιχεία άλλαξαν από {$expected} σε {$actual} από τότε που τα επιλέξατε. Ελέγξτε τη λίστα και προσπαθήστε ξανά.',
+    'AssetColumnSettingsBodyInvalid' => 'Στείλτε τις ρυθμίσεις στηλών ως σώμα JSON με στήλες ή σειρά.',
+    'AssetColumnSettingsSaveFailed' => 'Δεν ήταν δυνατή η αποθήκευση των στηλών σας. Ζητήστε από έναν διαχειριστή να ολοκληρώσει την αναβάθμιση του SimpleRisk.',
+    'DiscoveryRunQueueFailed' => 'Δεν ήταν δυνατή η προσθήκη στην ουρά της εκτέλεσης ανακάλυψης. Δοκιμάστε ξανά.',
+    'DiscoveryRunStartedLog' => 'Η εκτέλεση ανακάλυψης περιουσιακών στοιχείων #{$id} από {$range} ({$count} διευθύνσεις) ξεκίνησε από τον χρήστη "{$user}".',
+    'DiscoveryRunCancelledLog' => 'Η εκτέλεση ανακάλυψης περιουσιακών στοιχείων #{$id} από {$range} ακυρώθηκε από τον χρήστη "{$user}".',
+    'AssetBulkTooManyToDelete' => 'Μπορείτε να διαγράψετε το πολύ {$max} στοιχεία ταυτόχρονα. Περιορίστε την επιλογή σας και δοκιμάστε ξανά.',
+    'AssetBulkFilterNotApplied' => 'Το φίλτρο "{$key}" δεν μπόρεσε να εφαρμοστεί ως απεσταλμένο, επομένως δεν άλλαξε τίποτα.',
+    'AssetBulkExpectedCountRequired' => 'Η διαγραφή στοιχείων ανά φίλτρο απαιτεί τον αριθμό των στοιχείων που αναμένετε να διαγράψετε.',
+    'AssetBulkReasonNotAttempted' => 'δεν επιχειρήθηκε',
+    'MoreActions' => 'Περισσότερες ενέργειες',
+    'AssetCreateNewGroupOption' => 'Δημιουργήστε μια νέα ομάδα…',
+    'AssetNewGroupName' => 'Νέο όνομα ομάδας',
+    'AssetFilterByTeam' => 'Φιλτράρισμα ανά ομάδα {$name}',
+    'AssetFilterByValuation' => 'Φιλτράρισμα κατά αποτίμηση {$name}',
+    'AssetFilterByTag' => 'Φιλτράρισμα κατά ετικέτα {$name}',
+    'AssetFilterByLocation' => 'Φιλτράρισμα κατά τοποθεσία/ιστότοπο {$name}',
+    'AssetFilteringByTeam' => 'Φιλτράρισμα ανά ομάδα {$name}',
+    'AssetFilteringByValuation' => 'Φιλτράρισμα κατά αποτίμηση {$name}',
+    'AssetFilteringByTag' => 'Φιλτράρισμα κατά ετικέτα {$name}',
+    'AssetFilteringByLocation' => 'Φιλτράρισμα κατά τοποθεσία {$name}',
+    'AssetShowOnlyVerified' => 'Εμφάνιση μόνο επαληθευμένων στοιχείων',
+    'AssetShowOnlyUnverified' => 'Εμφάνιση μόνο μη επαληθευμένων στοιχείων',
+    'AssetShowingVerified' => 'Εμφάνιση επαληθευμένων στοιχείων',
+    'AssetShowingUnverified' => 'Εμφάνιση μη επαληθευμένων στοιχείων',
+    'CustomizationLayoutPayloadRejected' => 'Η διάταξη δεν ήταν δυνατό να αποθηκευτεί επειδή περιέχει πεδία ή κάρτες που δεν ανήκουν σε αυτό το πρότυπο. Δεν άλλαξε τίποτα.',
+    'CustomizationLayoutRejectedUnknownScope' => 'Αυτό το εύρος προτύπου δεν μπορεί να αποθηκευτεί από τον επεξεργαστή διάταξης. Δεν άλλαξε τίποτα.',
+    'CustomizationLayoutRejectedEmptyFields' => 'Η διάταξη δεν έχει έγκυρα πεδία, επομένως δεν αποθηκεύτηκε. Δεν άλλαξε τίποτα.',
+    'CustomizationLayoutRejectedWouldDeleteAll' => 'Η αποθήκευση αυτής της διάταξης θα αφαιρούσε κάθε πεδίο από το πρότυπο, επομένως δεν αποθηκεύτηκε. Επαναφορτώστε τη σελίδα και δοκιμάστε ξανά.',
+    'CustomizationLayoutRejectedRequiredField' => 'Δεν είναι δυνατή η κατάργηση ενός υποχρεωτικού πεδίου από τη διάταξη. Δεν άλλαξε τίποτα.',
+    'CustomizationLayoutRejectedBulkRemoval' => 'Η αποθήκευση αυτής της διάταξης θα καταργούσε τα περισσότερα πεδία προτύπου χωρίς να τα καταργήσετε εδώ. Επαναφορτώστε τη σελίδα και δοκιμάστε ξανά. Δεν άλλαξε τίποτα.',
+    'CustomizationLayoutRejectedGroupMismatch' => 'Η ομάδα προτύπων δεν υπάρχει ή ανήκει σε διαφορετικό τύπο εγγραφής. Δεν άλλαξε τίποτα.',
+    'CustomizationLayoutLegacySaveRefused' => 'Αυτό το πρότυπο επεξεργάζεται με το πρόγραμμα επεξεργασίας διάταξης και δεν μπορεί να αποθηκευτεί μέσω του τελικού σημείου του παλαιού πίνακα.',
+    // Asset discovery probe methods
+    'DiscoveryPortsInvalid' => 'Εισαγάγετε έως {$max} θύρες TCP μεταξύ 1 και 65535, διαχωρισμένες με κόμματα.',
+    'DiscoveryErrorProbeUnavailable' => 'Η μέθοδος ανίχνευσης με την οποία ξεκίνησε αυτή η εκτέλεση δεν είναι πλέον διαθέσιμη στον επεξεργαστή παρασκηνίου. Ξεκινήστε μια νέα εκτέλεση.',
+    'DiscoveryProbeIcmpUnprivileged' => 'ICMP ping (υποδοχή χωρίς δικαιώματα)',
+    'DiscoveryProbeIcmpRaw' => 'ICMP ping (ακατέργαστη υποδοχή)',
+    'DiscoveryProbePingCommand' => 'ICMP ping (εντολή ping)',
+    'DiscoveryProbeTcpConnect' => 'Σύνδεση TCP',
+    'DiscoveryProbeMethod' => 'Μέθοδος ανίχνευσης: {$method}',
+    'DiscoveryProbeDetectedByWebServer' => 'Εντοπίστηκε από τον διακομιστή ιστού. Ο χρήστης που εργάζεται στο παρασκήνιο ενδέχεται να χρησιμοποιεί διαφορετική μέθοδο.',
+    'DiscoveryTcpProbeWarning' => 'Οι κεντρικοί υπολογιστές βρίσκονται μόνο εάν απαντούν σε μία από τις σαρωμένες θύρες TCP, επομένως οι κεντρικοί υπολογιστές που μπλοκάρουν αυτές τις θύρες δεν θα βρεθούν. Για πλήρη αποτελέσματα, αφήστε τον διακομιστή να στείλει ping ICMP: επιτρέψτε υποδοχές ping χωρίς δικαιώματα ή τη δυνατότητα NET_RAW ή εγκαταστήστε το ping.',
+    'DiscoveryTcpPortsForRun' => 'Θύρες TCP για αυτήν την εκτέλεση',
+    'DiscoveryTcpPortsHint' => 'Διαχωρισμένες με κόμμα, έως {$max} θύρες. Αφήστε το κενό για να χρησιμοποιήσετε την προεπιλογή: {$ports}.',
+    'DiscoveryDefaultTcpPorts' => 'Θύρες TCP ανακάλυψης περιουσιακών στοιχείων',
+    'DiscoveryDefaultTcpPortsHint' => 'Χρησιμοποιείται όταν ο εργάτης παρασκηνίου δεν μπορεί να στείλει ping ICMP. Διαχωρισμένα με κόμματα, έως {$max} θύρες.',
+    'DiscoveryErrorTcpUnreliable' => 'Η σάρωση σταμάτησε επειδή το δίκτυο απαντά σε συνδέσεις TCP για διευθύνσεις που δεν μπορούν να είναι πραγματικοί κεντρικοί υπολογιστές (ένας διακομιστής μεσολάβησης ή ένα τείχος προστασίας παρεμποδίζει), επομένως κάθε διεύθυνση θα φαίνεται ενεργή. Ζητήστε από τον διαχειριστή σας να επιτρέψει στον διακομιστή να στείλει ping ICMP.',
+    'DiscoveryDefaultTcpPortsResetLog' => 'Οι θύρες TCP ανακάλυψης περιουσιακών στοιχείων επανήλθαν στις προεπιλεγμένες ρυθμίσεις από τον χρήστη "{$user}".',
+    'DiscoveryNotConfigured' => 'Δεν έχει ρυθμιστεί ο εντοπισμός. Ζητήστε από τον διαχειριστή του συστήματός σας να ορίσει τα επιτρεπόμενα εύρη στο config.php.',
+    'DiscoveryRangeNotAllowed' => 'Αυτό το εύρος βρίσκεται εκτός των εύρων που επιτρέπεται να σαρώσει η ανακάλυψη.',
+    'DiscoveryAllowedRangesList' => 'Επιτρεπόμενα εύρη: {$ranges}',
+    // Asset record modal
+    'AssetNotAvailable' => 'Αυτό το στοιχείο δεν είναι διαθέσιμο. Ενδέχεται να έχει διαγραφεί ή ενδέχεται να μην έχετε πρόσβαση σε αυτό.',
+    'AssetCustomFieldNotInTemplate' => 'Ένα ή περισσότερα προσαρμοσμένα πεδία δεν ανήκουν στο πρότυπο αυτού του στοιχείου. Δεν άλλαξε τίποτα.',
+    'AssetMappedControlsInvalid' => 'Δεν ήταν δυνατή η αποθήκευση των αντιστοιχισμένων στοιχείων ελέγχου. Κάθε σειρά χρειάζεται μια ωριμότητα και τουλάχιστον ένα υπάρχον στοιχείο ελέγχου. Δεν άλλαξε τίποτα.',
+    'AssetMappedControlsTooMany' => 'Ένα στοιχείο μπορεί να αντιστοιχιστεί σε το πολύ {$max} στοιχεία ελέγχου. Δεν άλλαξε τίποτα.',
+    'AddControlsAtAnotherMaturity' => 'Προσθήκη στοιχείων ελέγχου σε άλλη ημερομηνία λήξης',
+    'ChoosingControlsNeedsGovernancePermission' => 'Η επιλογή στοιχείων ελέγχου απαιτεί άδεια Διακυβέρνησης.',
+    'NControls' => '{n} έλεγχος(-οι)',
+    'SavingKeepsTheCurrentControlMappings' => 'Η αποθήκευση διατηρεί τις τρέχουσες αντιστοιχίσεις ελέγχου.',
+    'LoadingControls' => 'Φόρτωση στοιχείων ελέγχου…',
+    'ControlListCouldNotBeLoaded' => 'Δεν ήταν δυνατή η φόρτωση της λίστας στοιχείων ελέγχου, επομένως τα αντιστοιχισμένα στοιχεία ελέγχου δεν μπορούν να αλλάξουν αυτήν τη στιγμή.',
+    'RemoveControlsAtMaturity' => 'Κατάργηση ελέγχων κατά την ημερομηνία λήξης {maturity}',
+    'ControlIdUnavailable' => '#{id} (μη διαθέσιμο)',
+    'AssetRecordEdit' => 'Επεξεργασία στοιχείου',
+    'AssetRecordIdN' => 'Περιουσιακό στοιχείο #{$id}',
+    'AssetRecordCopyLink' => 'Αντιγραφή συνδέσμου προς αυτό το στοιχείο',
+    'AssetRecordLinkCopied' => 'Ο σύνδεσμος αντιγράφηκε.',
+    'AssetRecordLinkCopyFailed' => 'Δεν ήταν δυνατή η αντιγραφή του συνδέσμου. Αντιγράψτε τον από τη γραμμή διευθύνσεων.',
+    'AssetRecordMarkUnverified' => 'Επισήμανση ως μη επαληθευμένης',
+    'AssetRecordViewAuditTrail' => 'Δείτε την διαδρομή ελέγχου',
+    'AssetRecordAuditTrailTitle' => 'Διαδρομή ελέγχου',
+    'AssetRecordAuditTrailEmpty' => 'Δεν καταγράφηκε καμία δραστηριότητα για αυτό το περιουσιακό στοιχείο κατά τη διάρκεια αυτής της περιόδου.',
+    'AssetRecordAuditTrailFailed' => 'Δεν ήταν δυνατή η φόρτωση της διαδρομής ελέγχου.',
+    'AssetRecordBackToAsset' => 'Επιστροφή στο στοιχείο',
+    'AssetRecordSave' => 'Αποθήκευση στοιχείου',
+    'AssetRecordProvenanceVerified' => 'Επαληθεύτηκε · προστέθηκε {$date}',
+    'AssetRecordProvenanceUnverified' => 'Μη επαληθευμένο: δεν έχει ακόμη επιβεβαιωθεί από κάποιον που μπορεί να επαληθεύσει στοιχεία · προστέθηκε {$date}',
+    'AssetRecordUnsavedHint' => 'Το κλείσιμο με μη αποθηκευμένες αλλαγές σας ζητά πρώτα να επιβεβαιώσετε.',
+    'AssetRecordDiscardQuestion' => 'Απόρριψη των μη αποθηκευμένων αλλαγών σας;',
+    'AssetRecordKeepEditing' => 'Συνέχιση επεξεργασίας',
+    'AssetRecordDiscardChanges' => 'Απόρριψη αλλαγών',
+    'AssetRecordVerificationCard' => 'Επαλήθευση',
+    'AssetRecordVerificationTag' => 'Απαιτείται η άδεια επαλήθευσης περιουσιακών στοιχείων',
+    'AssetRecordVerifiedHint' => 'Κάποιος υπεύθυνος έχει ελέγξει αυτό το στοιχείο. Η αλλαγή του ονόματος ή της διεύθυνσης IP του χωρίς την άδεια επαλήθευσης στοιχείων το επιστρέφει σε μη επαληθευμένο.',
+    'AssetRecordLoadFailed' => 'Δεν ήταν δυνατή η φόρτωση του στοιχείου. Δοκιμάστε ξανά.',
+    'CustomizationCardsLayoutApiScopeErrorWithAsset' => 'Το API διάταξης καρτών προσαρμογής είναι διαθέσιμο μόνο για fgroup=risk (tab_index 1, 2 ή 3) και fgroup=asset (tab_index 1).',
+    'DiscoveryErrorRequesterNotPermitted' => 'Ο χρήστης που ξεκίνησε αυτήν την εκτέλεση δεν έχει πλέον δικαίωμα εκτέλεσης της ανακάλυψης στοιχείων.',
+    'AssetRecordEditField' => 'Επεξεργασία {$field}',
+    // Asset Scoring (FIPS 199 categorization + weighted score)
+    'Confidentiality' => 'Εμπιστευτικότητα',
+    'Integrity' => 'Ακεραιότητα',
+    'Availability' => 'Διαθεσιμότητα',
+    'AssetScoringLevelLow' => 'Χαμηλός',
+    'AssetScoringLevelModerate' => 'Μέτριος',
+    'AssetScoringLevelHigh' => 'Ψηλά',
+    'AssetScoringValueInvalid' => 'Η εμπιστευτικότητα, η ακεραιότητα και η διαθεσιμότητα αποδέχονται χαμηλή, μέτρια ή υψηλή (η εμπιστευτικότητα αποδέχεται επίσης μη εφαρμόσιμη).',
+    'AssetScoringChangedLog' => 'Το στοιχείο "{$name}" {$objective} άλλαξε από {$from} σε {$to} από τον χρήστη "{$user}".',
+    'FIPSCategorization' => 'Κατηγοριοποίηση FIPS',
+    'WeightedScore' => 'Σταθμισμένη βαθμολογία',
+    'WeightedBand' => 'Ζώνη με βάρη',
+    'AllCategorizations' => 'Όλες οι κατηγοριοποιήσεις',
+    'AllBands' => 'Όλες οι μπάντες',
+    'AssetFilterByCategorization' => 'Φιλτράρισμα κατά κατηγοριοποίηση FIPS {$name}',
+    'AssetFilteringByCategorization' => 'Φιλτράρισμα κατά κατηγοριοποίηση FIPS {$name}',
+    'AssetFilterByBand' => 'Φιλτράρισμα κατά ζώνη βάρους {$name}',
+    'AssetFilteringByBand' => 'Φιλτράρισμα κατά ζώνη βάρους {$name}',
+    'AssetScoring' => 'Βαθμολογία Περιουσιακών Στοιχείων',
+    'AssetScoringSettingsHint' => 'Κάθε στοιχείο αξιολογείται ως Χαμηλό, Μέτριο ή Υψηλό για εμπιστευτικότητα, ακεραιότητα και διαθεσιμότητα, και η εμπιστευτικότητα μπορεί να είναι Μη εφαρμόσιμη, γεγονός που το αφήνει εκτός και των δύο αποτελεσμάτων. Η κατηγοριοποίησή του κατά FIPS είναι η υψηλότερη από τις τρεις αξιολογήσεις. Η σταθμισμένη βαθμολογία του είναι ο σταθμισμένος μέσος όρος των τριών τιμών επιπέδου και τα όρια ζώνης μετατρέπουν αυτήν τη βαθμολογία σε Χαμηλή, Μέτρια ή Υψηλή ζώνη. Η αλλαγή αυτών των ρυθμίσεων επαναβαθμολογεί κάθε στοιχείο αμέσως.',
+    'Weights' => 'Βάρη',
+    'AssetScoringWeightsHint' => 'Πόσο μετράει κάθε στόχος στη σταθμισμένη βαθμολογία: 0 έως 100, με έως δύο δεκαδικά ψηφία. Ένα βάρος 0 δεν λαμβάνει υπόψη αυτόν τον στόχο. Η ακεραιότητα και η διαθεσιμότητα δεν μπορούν να είναι και οι δύο 0, επειδή η τιμή εμπιστευτικότητας "Δεν ισχύει" παραλείπεται πάντα.',
+    'LevelValues' => 'Τιμές επιπέδου',
+    'AssetScoringLevelValuesHint' => 'Ο αριθμός που κάθε αξιολόγηση συμβάλλει στη σταθμισμένη βαθμολογία: πάνω από 0 και έως 100, με έως δύο δεκαδικά ψηφία, και Χαμηλό κάτω από Μέτριο κάτω από Υψηλό. Οι προεπιλογές είναι Χαμηλό 1, Μέτριο 2 και Υψηλό 3.',
+    'BandThresholds' => 'Κατώφλια ζώνης',
+    'AssetScoringBandThresholdsHint' => 'Μια σταθμισμένη βαθμολογία στο ή πάνω από ένα όριο βρίσκεται σε αυτήν την περιοχή και μια βαθμολογία κάτω από το Μέτριο όριο είναι Χαμηλή. Η Μέτρια πρέπει να ξεκινά πάνω από τη Χαμηλή τιμή και η Υψηλή πρέπει να ξεκινά πάνω από τη Μέτρια και όχι υψηλότερη από την Υψηλή τιμή.',
+    'ModerateStartsAt' => 'Μέτρια ξεκινά στις',
+    'HighStartsAt' => 'Υψηλή τιμή ξεκινά στις',
+    'DefaultScoringForNewAssets' => 'Προεπιλεγμένη βαθμολογία για νέα στοιχεία',
+    'AssetScoringDefaultsHint' => 'Προεπιλέγει αυτές τις αξιολογήσεις όταν κάποιος προσθέτει ένα στοιχείο στη φόρμα στοιχείου. Τα στοιχεία που δημιουργούνται από την ανακάλυψη, την εισαγωγή ή το API παραμένουν χωρίς βαθμολογία, εκτός εάν παρέχουν τις δικές τους αξιολογήσεις. Αφήστε και τα τρία. Δεν έχει οριστεί για να απενεργοποιηθεί αυτή η επιλογή.',
+    'AssetScoringWeightsInvalid' => 'Τα βάρη βαθμολόγησης στοιχείων ενεργητικού πρέπει να είναι αριθμοί από 0 έως 100 με το πολύ δύο δεκαδικά ψηφία, και η Ακεραιότητα και η Διαθεσιμότητα δεν μπορούν να είναι και οι δύο ίσες με 0.',
+    'AssetScoringValuesInvalid' => 'Οι τιμές επιπέδου βαθμολογίας στοιχείων πρέπει να είναι αριθμοί άνω του 0 και έως το 100 με το πολύ δύο δεκαδικά ψηφία, με Χαμηλό κάτω από Μέτριο κάτω από Υψηλό.',
+    'AssetScoringThresholdsInvalid' => 'Τα όρια της ζώνης βαθμολόγησης στοιχείων ενεργητικού πρέπει να έχουν το πολύ δύο δεκαδικά ψηφία, με τη Μέτρια να ξεκινά πάνω από τη Χαμηλή τιμή, την Υψηλή να ξεκινά πάνω από τη Μέτρια και την Υψηλή να μην ξεκινά υψηλότερα από την Υψηλή τιμή.',
+    'AssetScoringDefaultsInvalid' => 'Η προεπιλεγμένη βαθμολογία για τα νέα στοιχεία πρέπει να είναι ένα επίπεδο που προσφέρει κάθε στόχος.',
+    'AssetScoringSettingsNotSaved' => 'Δεν ήταν δυνατή η αποθήκευση των ρυθμίσεων Βαθμολογίας Πόρων. Δεν άλλαξε τίποτα.',
+    'AssetScoringSettingsChangedLog' => 'Οι ρυθμίσεις βαθμολόγησης περιουσιακών στοιχείων άλλαξαν από τον χρήστη "{$user}".',
+    'AssetScoringNotSet' => 'Δεν έχει οριστεί',
+    'NotScored' => 'Δεν έχει βαθμολογηθεί',
+    'AssetScoringNotScoredHint' => 'Απαντήστε και στους τρεις στόχους για να σκοράρετε αυτό το στοιχείο.',
+    'ImportAssetScoringValueIgnored' => 'Η τιμή {$objective} "{$value}" για το στοιχείο "{$asset_name}" δεν είναι έγκυρη αξιολόγηση και αγνοήθηκε.',
+    'AssetScoringSecurityObjectives' => 'Στόχοι ασφαλείας',
+    'AssetScoringConfidentialityHelp' => 'Ποιες είναι οι πιθανές επιπτώσεις σε περίπτωση μη εξουσιοδοτημένης αποκάλυψης των πληροφοριών σχετικά με αυτό το περιουσιακό στοιχείο;',
+    'AssetScoringIntegrityHelp' => 'Ποιες είναι οι πιθανές επιπτώσεις σε περίπτωση μη εξουσιοδοτημένης τροποποίησης ή καταστροφής των πληροφοριών σε αυτό το περιουσιακό στοιχείο;',
+    'AssetScoringAvailabilityHelp' => 'Ποιες είναι οι πιθανές επιπτώσεις σε περίπτωση διακοπής της πρόσβασης ή της χρήσης αυτού του περιουσιακού στοιχείου;',
+    'AssetScoringHelpHigh' => 'Σοβαρή ή καταστροφική δυσμενής επίδραση',
+    'AssetScoringHelpModerate' => 'Σοβαρή ανεπιθύμητη ενέργεια',
+    'AssetScoringHelpLow' => 'Περιορισμένη ή καθόλου ανεπιθύμητη ενέργεια',
+    'AssetScoringHelpNotApplicable' => 'Η εμπιστευτικότητα δεν αποτελεί ζήτημα ανησυχίας για αυτό το περιουσιακό στοιχείο (για παράδειγμα, δημόσιες πληροφορίες)',
+    'AssetScoringHelpLabel' => '{$objective} καθοδήγηση αξιολόγησης',
+    'AssetScoringMeterValue' => '{$score}, {$band} ζώνη',
+    'AssetScoringNoWeightedScore' => 'Χωρίς σταθμισμένη βαθμολογία',
+    'AssetScoringNoWeightedScoreNote' => 'Χωρίς σταθμισμένη βαθμολογία: κάθε στόχος που μετράει έχει βάρος 0.',
+    'AssetScoringUpgradePending' => 'Η βαθμολόγηση περιουσιακών στοιχείων δεν μπορεί να αποθηκευτεί μέχρι να εκτελεστεί η αναβάθμιση της βάσης δεδομένων SimpleRisk. Δεν άλλαξε τίποτα.',
+    'AssetScoringResultHelpLabel' => '{$result} εξήγηση',
+    'AssetScoringScoreHelp' => 'Η σταθμισμένη βαθμολογία συνδυάζει τις τρεις αξιολογήσεις σε έναν αριθμό από {$low} έως {$high}. Κάθε βαθμολογία γίνεται η καθορισμένη τιμή της και κάθε μία πολλαπλασιάζεται με το βάρος του στόχου της. Τα αποτελέσματα προστίθενται και διαιρούνται με το σύνολο των βαρών. Η επιλογή "Εμπιστευτικότητα" "Δεν ισχύει" παραλείπεται, μαζί με το βάρος της. Οι καθορισμένες τιμές και τα βάρη διαμορφώνονται στις Προτιμήσεις. Και οι τρεις στόχοι πρέπει να αξιολογηθούν πριν εμφανιστεί μια βαθμολογία.',
+    'AssetScoringCategorizationHelp' => 'Η κατηγοριοποίηση ασφαλείας FIPS 199 είναι το υψηλότερο σημείο: η υψηλότερη βαθμολογία μεταξύ των στόχων που ισχύουν. Μία μόνο υψηλή βαθμολογία καθιστά το περιουσιακό στοιχείο Υψηλό, όποιες και αν είναι οι άλλες. Η ένδειξη "Δεν ισχύει" αγνοείται.',
+    'AssetScoringBandHelp' => 'Η ζώνη τοποθετεί τη σταθμισμένη βαθμολογία σε κλίμακα Χαμηλή, Μέτρια ή Υψηλή. Μια βαθμολογία κάτω από {$moderate} είναι Χαμηλή, από {$moderate} έως {$highAt} είναι Μέτρια και {$highAt} ή περισσότερο είναι Υψηλή. Τα όρια διαμορφώνονται στις Προτιμήσεις.',
+    // Manage assets: Confidentiality / Integrity / Availability rating filters
+    'AllConfidentialityRatings' => 'Όλες οι αξιολογήσεις εμπιστευτικότητας',
+    'AllIntegrityRatings' => 'Όλες οι αξιολογήσεις ακεραιότητας',
+    'AllAvailabilityRatings' => 'Όλες οι αξιολογήσεις διαθεσιμότητας',
+    'AssetFilterByConfidentiality' => 'Φιλτράρισμα κατά εμπιστευτικότητα {$name}',
+    'AssetFilteringByConfidentiality' => 'Φιλτράρισμα με βάση την εμπιστευτικότητα {$name}',
+    'AssetFilterByIntegrity' => 'Φιλτράρισμα κατά ακεραιότητα {$name}',
+    'AssetFilteringByIntegrity' => 'Φιλτράρισμα κατά ακεραιότητα {$name}',
+    'AssetFilterByAvailability' => 'Φιλτράρισμα κατά διαθεσιμότητα {$name}',
+    'AssetFilteringByAvailability' => 'Φιλτράρισμα κατά διαθεσιμότητα {$name}',
+    'HighestFIPSCategorization' => 'Υψηλότερη κατηγοριοποίηση FIPS',
+    'HighestWeightedScore' => 'Υψηλότερη Βαθμολογία',
+    'HighestWeightedBand' => 'Ζώνη με τη μεγαλύτερη βαρύτητα',
+    'AssetGroupFields' => 'Πεδία ομάδας περιουσιακών στοιχείων',
+    'NoAssetGroupsMatchFilters' => 'Δεν υπάρχουν ομάδες στοιχείων που να αντιστοιχούν στα φίλτρα σας',
+    'AssetGroupFilterByHighestCategorization' => 'Φιλτράρισμα κατά υψηλότερη κατηγοριοποίηση FIPS {$name}',
+    'AssetGroupFilteringByHighestCategorization' => 'Φιλτράρισμα κατά υψηλότερη κατηγοριοποίηση FIPS {$name}',
+    'AssetGroupFilterByHighestBand' => 'Φιλτράρισμα κατά ζώνη με τη μεγαλύτερη βαρύτητα {$name}',
+    'AssetGroupFilteringByHighestBand' => 'Φιλτράρισμα κατά ζώνη με τη μεγαλύτερη βαρύτητα {$name}',
+    'AssetGroupBulkSelectionRequired' => 'Επιλέξτε ομάδες περιουσιακών στοιχείων είτε με βάση το αναγνωριστικό είτε με βάση το φίλτρο.',
+    'AssetGroupBulkIdsRequired' => 'Επιλέξτε τουλάχιστον μία ομάδα περιουσιακών στοιχείων.',
+    'AssetGroupBulkIdsInvalid' => 'Τα αναγνωριστικά ομάδας περιουσιακών στοιχείων πρέπει να είναι ακέραιοι αριθμοί.',
+    'AssetGroupBulkFilterAllAlone' => 'Η επιλογή όλων των ομάδων στοιχείων δεν μπορεί να συνδυαστεί με άλλα φίλτρα.',
+    'AssetGroupBulkFilterEmpty' => 'Επιλέξτε ένα φίλτρο ή επιλέξτε όλες τις ομάδες στοιχείων πριν από τη διαγραφή.',
+    'AssetGroupBulkExpectedCountInvalid' => 'Ο αναμενόμενος αριθμός ομάδων περιουσιακών στοιχείων πρέπει να είναι ακέραιος αριθμός.',
+    'AssetGroupBulkExpectedCountRequired' => 'Η διαγραφή ομάδων στοιχείων κατά φίλτρο απαιτεί τον αριθμό ομάδων που αναμένετε να διαγράψετε.',
+    'AssetGroupBulkNoMatch' => 'Δεν υπάρχουν ομάδες στοιχείων που να αντιστοιχούν στην επιλογή σας.',
+    'AssetGroupBulkCountMismatch' => 'Οι αντίστοιχες ομάδες περιουσιακών στοιχείων άλλαξαν από {$expected} σε {$actual} από τότε που τις επιλέξατε. Ελέγξτε τη λίστα και δοκιμάστε ξανά.',
+    'AssetGroupBulkTooManyToDelete' => 'Μπορείτε να διαγράψετε το πολύ {$max} ομάδες στοιχείων κάθε φορά. Περιορίστε την επιλογή σας και δοκιμάστε ξανά.',
+    'AssetGroupBulkSelectAll' => 'Επιλογή όλων των {$count} ομάδων περιουσιακών στοιχείων',
+    'AssetGroupBulkAllSelected' => 'Επιλέχθηκαν όλες οι {$count} αντίστοιχες ομάδες περιουσιακών στοιχείων',
+    'AssetGroupBulkDeleteConfirmTitle' => 'Διαγραφή {$count} ομάδων περιουσιακών στοιχείων;',
+    'AssetGroupBulkDeleteKeepsAssets' => 'Τα στοιχεία σε αυτές τις ομάδες δεν διαγράφονται. Μόνο οι ομάδες καταργούνται.',
+    'DeleteAssetGroups' => 'Διαγραφή ομάδων',
+    'AssetGroupBulkDeletedSummary' => '{$ok} ομάδες διαγράφηκαν, {$failed} παραλείφθηκαν',
+    'ChoosingRisksNeedsRiskManagementPermission' => 'Η επιλογή σχετικών κινδύνων απαιτεί την άδεια της Διαχείρισης Κινδύνων.',
+    'NAssociatedRisks' => '{n} σχετικός/οί κίνδυνος/οι',
+    'SavingKeepsTheCurrentRiskAssociations' => 'Η αποταμίευση διατηρεί τους τρέχοντες σχετικούς κινδύνους.',
     '' => '',
 );
 ?>

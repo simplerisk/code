@@ -6161,12 +6161,13 @@ function get_table_ordered_by_name($table_name) {
 
 /******************************
  * FUNCTION: GET CUSTOM TABLE *
- * 
+ *
  * Some info on the user management for some of the options.
- * "user": It will return all users, ignoring the organizational hierarchy extra for admin users, use the selected business unit for non-admin users 
+ * "user"/"team": Will return the users/teams of the selected business unit (EVEN FOR ADMINS) when the Organizational Hierarchy Extra is enabled. Use it outside of admin-only areas
+ * "user_all"/"team_all": Will return every user/team, ignoring the selected business unit. Use it ONLY inside of admin-only areas
  * "enabled/disabled_users": Will return the enabled/disabled users of the selected business unit(EVEN FOR ADMINS). Use it outside of admin-only area
  * "enabled/disabled_users_all": Will return the enabled/disabled users, ignoring the selected business unit. Use it ONLY inside of admin-only area
- * 
+ *
  ******************************/
 function get_custom_table($type) {
 
@@ -6182,10 +6183,14 @@ function get_custom_table($type) {
     // Array of CVSS values
     $allowed_cvss_values = array('AccessComplexity', 'AccessVector', 'Authentication', 'AvailabilityRequirement', 'AvailImpact', 'CollateralDamagePotential', 'ConfidentialityRequirement', 'ConfImpact', 'Exploitability', 'IntegImpact', 'IntegrityRequirement', 'RemediationLevel', 'ReportConfidence', 'TargetDistribution');
 
-    // If we want users
-    if ($type == "user") {
+    // If we want users, or want every user regardless of business unit
+    if (in_array($type, ["user", "user_all"])) {
 
-        if (!is_admin() && organizational_hierarchy_extra()) {
+        // SR-1954: BU-scope for every user, admins included -- "user_all" is
+        // the explicit escape hatch for admin-area screens (e.g. deleting a
+        // user, resetting a password/MFA for a user) that must be able to
+        // reach a user outside the viewer's own selected business unit.
+        if ($type == "user" && organizational_hierarchy_extra()) {
 
             $stmt = $db->prepare("
                 SELECT
@@ -6201,37 +6206,70 @@ function get_custom_table($type) {
                 ORDER BY
                     `u`.`name`;
             ");
-            
+
             if (!isset($_SESSION['selected_business_unit'])) {
                 require_once(realpath(__DIR__ . '/../extras/organizational_hierarchy/index.php'));
                 $selected_business_unit = get_selected_business_unit($_SESSION['uid']);
             } else {
                 $selected_business_unit = $_SESSION['selected_business_unit'];
             }
-            
+
             $stmt->bindParam(":selected_business_unit", $selected_business_unit, PDO::PARAM_INT);
-            
+
         } else {
             $stmt = $db->prepare("SELECT * FROM `user` ORDER BY `name`;");
         }
-      
+
     // If we want enabled/disabled users or want the enabled users without caring for business units
     } else if (in_array($type, ["enabled_users", "disabled_users", "enabled_users_all", "disabled_users_all"])) { // $type == "enabled_users" || $type == "disabled_users" || $type == "enabled_users_all") {
         
         if (in_array($type, ["enabled_users", "disabled_users"]) && organizational_hierarchy_extra()) {
 
+            // The business-unit membership test is a SEMI-join (EXISTS), not a
+            // second pair of INNER JOINs onto `user_to_team`/`business_unit_to_team`.
+            // Both shapes select exactly the same users -- the INNER JOIN pair only
+            // ever asked "does this user have at least one team in the selected
+            // business unit?", and GROUP BY `u`.`value` + GROUP_CONCAT(DISTINCT ...)
+            // collapsed the duplicate rows back out again -- but the JOIN form pays
+            // for a full cross product of `user_to_team` against ITSELF for every
+            // user before collapsing it. On a dataset of the size this was measured
+            // against -- a few hundred users carrying dozens of team memberships
+            // each -- that is upwards of a MILLION intermediate rows funneled
+            // through a temporary table and a filesort: ~950-1,230 ms for a result
+            // set of under 200 rows. The EXISTS form lets MySQL stop at the first
+            // matching team per user (FirstMatch), leaving only the single
+            // `user_to_team` join the `teams` column actually needs: ~23 ms for a
+            // byte-identical result set (verified row-by-row, `teams` string
+            // included, for both enabled=1 and enabled=0).
+            //
+            // Intentionally stated as an order of magnitude rather than exact row
+            // counts: the numbers this was first measured against drifted within
+            // weeks as the dev dataset grew, and a comment that has to be re-derived
+            // every time someone adds a user stops being maintained. The argument
+            // does not depend on the exact figures -- see the scaling note below.
+            //
+            // Do NOT "simplify" this back into a join -- it is not a stylistic
+            // choice, and the cost is invisible on a small dataset because it
+            // scales with the SQUARE of a user's team count.
             $stmt = $db->prepare("
                 SELECT
                     `u`.*, GROUP_CONCAT(DISTINCT `t`.`value`) as teams
                 FROM
                     `user` u
-                    INNER JOIN `user_to_team` u2t_bu ON `u2t_bu`.`user_id` = `u`.`value`
-                    INNER JOIN `business_unit_to_team` bu2t ON `u2t_bu`.`team_id` = `bu2t`.`team_id`
                     LEFT JOIN `user_to_team` u2t ON `u2t`.`user_id` = `u`.`value`
                     LEFT JOIN `team` t ON `u2t`.`team_id` = `t`.`value`
                 WHERE
-                    `bu2t`.`business_unit_id` = :selected_business_unit
-                    AND `u`.`enabled` = :enabled
+                    `u`.`enabled` = :enabled
+                    AND EXISTS (
+                        SELECT
+                            1
+                        FROM
+                            `user_to_team` u2t_bu
+                            INNER JOIN `business_unit_to_team` bu2t ON `bu2t`.`team_id` = `u2t_bu`.`team_id`
+                        WHERE
+                            `u2t_bu`.`user_id` = `u`.`value`
+                            AND `bu2t`.`business_unit_id` = :selected_business_unit
+                    )
                 GROUP BY
                     `u`.`value`
                 ORDER BY
@@ -6442,35 +6480,51 @@ function get_custom_table($type) {
                 document_name
             ");
 
-    } else if ($type == "team") {
-        if (!is_admin() && organizational_hierarchy_extra()) {
+    // If we want teams, or want every team regardless of business unit
+    } else if (in_array($type, ["team", "team_all"])) {
 
-            // If the Organizational Hierarchy is activated the function only returns the teams the
-            // user's selected business unit allows. Unless it's an admin user as admins can see everything.
+        // SR-1954: BU-scope for every viewer, admins included -- "team_all" is
+        // the explicit escape hatch for admin-area screens (e.g. renaming or
+        // deleting a team, managing team membership) that must be able to
+        // reach a team outside the viewer's own selected business unit.
+        //
+        // Resolves the business unit the same way the "user"/"enabled_users"
+        // branches do (session first, DB fallback) rather than joining live
+        // against user.selected_business_unit -- the two must agree, since
+        // set_selected_business_unit() writes both in the same request, but a
+        // second concurrent session could otherwise see the DB-fresh value
+        // here while this session's own $_SESSION still reports the old one.
+        if ($type == "team" && organizational_hierarchy_extra()) {
+
             $stmt = $db->prepare("
                 SELECT
                     `t`.*
                 FROM
                     `business_unit_to_team` bu2t
                     INNER JOIN `team` t ON `t`.`value` = `bu2t`.`team_id`
-                    INNER JOIN `user` u ON `u`.`selected_business_unit` = `bu2t`.`business_unit_id`
                 WHERE
-                    `u`.`value` = :user_id
+                    `bu2t`.`business_unit_id` = :selected_business_unit
                 ORDER BY
                     `t`.`name`;
             ");
 
-            $uid = (int)$_SESSION['uid'];
-            $stmt->bindParam(":user_id", $uid, PDO::PARAM_INT);
+            if (!isset($_SESSION['selected_business_unit'])) {
+                require_once(realpath(__DIR__ . '/../extras/organizational_hierarchy/index.php'));
+                $selected_business_unit = get_selected_business_unit($_SESSION['uid']);
+            } else {
+                $selected_business_unit = $_SESSION['selected_business_unit'];
+            }
+
+            $stmt->bindParam(":selected_business_unit", $selected_business_unit, PDO::PARAM_INT);
 
         } else {
 
             $stmt = $db->prepare("
-                SELECT 
-                    * 
-                FROM 
-                    `team` 
-                ORDER BY 
+                SELECT
+                    *
+                FROM
+                    `team`
+                ORDER BY
                     name
             ");
 
@@ -6559,7 +6613,7 @@ function get_custom_table($type) {
             FROM 
                 `risks` 
             ORDER BY 
-                `" . ($encryption ? 'order_by_subject' : 'subject') . "` ASC;
+                `" . ($encryption ? 'order_by_subject' : 'subject') . "` ASC, `id` ASC;
         ");
 
     }
@@ -6647,7 +6701,8 @@ function get_custom_table($type) {
 /************************************
  * FUNCTION: GET OPTIONS FROM TABLE *
  * Some info on the user management for some of the options.
- * "user": It will return all users, ignoring the organizational hierarchy extra for admin users, use the selected business unit for non-admin users 
+ * "user"/"team": Will return the users/teams of the selected business unit (EVEN FOR ADMINS) when the Organizational Hierarchy Extra is enabled. Use it outside of admin-only areas
+ * "user_all"/"team_all": Will return every user/team, ignoring the selected business unit. Use it ONLY inside of admin-only areas
  * "enabled/disabled_users": Will return the enabled/disabled users of the selected business unit(EVEN FOR ADMINS). Use it outside of admin-only area
  * "enabled/disabled_users_all": Will return the enabled/disabled users, ignoring the selected business unit. Use it ONLY inside of admin-only area
  ************************************/
@@ -6662,7 +6717,7 @@ function get_options_from_table($name) {
 
         $options = get_table_ordered_by_name($name);
 
-    } else if (in_array($name, array("user", "team", "enabled_users", "disabled_users", "enabled_users_all", "disabled_users_all", "languages", "family", "date_formats",
+    } else if (in_array($name, array("user", "user_all", "team", "team_all", "enabled_users", "disabled_users", "enabled_users_all", "disabled_users_all", "languages", "family", "date_formats",
             "parent_frameworks", "frameworks", "framework_controls", "risk_tags", "asset_tags", "test_results", "test_results_filter",
             "policies", "framework_control_tests", "risk_catalog", "threat_catalog", "risk_catalog_grouped", "threat_catalog_grouped", "remote_team-SAML",
             "remote_role-SAML", "remote_team-LDAP", "data_classification", "asset_valuation", "risks", "risks_with_id"))) {
@@ -7113,7 +7168,8 @@ function create_multiusers_dropdown($name, $selected = "", $custom_html = "", $r
 /*****************************
  * FUNCTION: CREATE DROPDOWN *
  * Some info on the user management for some of the options.
- * "user": It will return all users, ignoring the organizational hierarchy extra for admin users, use the selected business unit for non-admin users 
+ * "user"/"team": Will return the users/teams of the selected business unit (EVEN FOR ADMINS) when the Organizational Hierarchy Extra is enabled. Use it outside of admin-only areas
+ * "user_all"/"team_all": Will return every user/team, ignoring the selected business unit. Use it ONLY inside of admin-only areas
  * "enabled/disabled_users": Will return the enabled/disabled users of the selected business unit(EVEN FOR ADMINS). Use it outside of admin-only area
  * "enabled/disabled_users_all": Will return the enabled/disabled users, ignoring the selected business unit. Use it ONLY inside of admin-only area
  *****************************/
@@ -7229,7 +7285,8 @@ function create_dropdown($name, $selected = NULL, $rename = NULL, $blank = true,
 /**************************************
  * FUNCTION: CREATE MULTIPLE DROPDOWN *
  * Some info on the user management for some of the options.
- * "user": It will return all users, ignoring the organizational hierarchy extra for admin users, use the selected business unit for non-admin users 
+ * "user"/"team": Will return the users/teams of the selected business unit (EVEN FOR ADMINS) when the Organizational Hierarchy Extra is enabled. Use it outside of admin-only areas
+ * "user_all"/"team_all": Will return every user/team, ignoring the selected business unit. Use it ONLY inside of admin-only areas
  * "enabled/disabled_users": Will return the enabled/disabled users of the selected business unit(EVEN FOR ADMINS). Use it outside of admin-only area
  * "enabled/disabled_users_all": Will return the enabled/disabled users, ignoring the selected business unit. Use it ONLY inside of admin-only area
  *
@@ -7706,8 +7763,9 @@ function change_scoring_method($risk_id, $scoring_method)
         $stmt->bindParam(":id", $id, PDO::PARAM_INT);
         $stmt->execute();
 
-        // Audit log
-        $message = "Scoring method has been updated for risk ID \"" . $risk_id . "\" by username \"" . $escaper->escapeHtml($_SESSION['user'] ?? 'unknown') . "\".";
+        // Audit log -- before/after names, same "Field name : `x` (`old`=>
+        // `new`)" diff format update_risk()'s own $detail_updated build uses.
+        $message = "Scoring method has been updated for risk ID \"" . $risk_id . "\" by username \"" . $escaper->escapeHtml($_SESSION['user'] ?? 'unknown') . "\".\nField name : `scoring_method` (`" . $escaper->escapeHtml(get_scoring_method_name($old_scoring_method)) . "`=>`" . $escaper->escapeHtml(get_scoring_method_name($scoring_method)) . "`)";
         write_log($risk_id, (int)($_SESSION['uid'] ?? 0), $message);
     }
 
@@ -9092,26 +9150,14 @@ function check_valid_min_chars($password)
  *******************************/
 function check_valid_alpha($password)
 {
-    // If alpha checking is enabled
-    if (get_setting('pass_policy_alpha_required') == 1)
-    {
-        // If the password contains an alpha character
-        if (preg_match('/[A-Za-z]+/', $password))
-        {
-            // Return true
-            return true;
-        }
-            else
-            {
-                    // Display an alert
-                    set_alert(true, "bad", "Unable to update the password because it does not contain an alpha character.");
-
-                    // Return false
-                    return false;
-            }
+    if (password_has_alpha($password)) {
+        return true;
     }
-    // Otherwise, return true
-    else return true;
+
+    // Display an alert
+    set_alert(true, "bad", "Unable to update the password because it does not contain an alpha character.");
+
+    return false;
 }
 
 /*******************************
@@ -9119,26 +9165,14 @@ function check_valid_alpha($password)
  *******************************/
 function check_valid_upper($password)
 {
-        // If upper checking is enabled
-        if (get_setting('pass_policy_upper_required') == 1)
-        {
-                // If the password contains an upper character
-                if (preg_match('/[A-Z]+/', $password))
-                {
-                        // Return true
-                        return true;
-                }
-                else
-                {
-                        // Display an alert
-                        set_alert(true, "bad", "Unable to update the password because it does not contain an uppercase character.");
+    if (password_has_upper($password)) {
+        return true;
+    }
 
-                        // Return false
-                        return false;
-                }
-        }
-        // Otherwise, return true
-        else return true;
+    // Display an alert
+    set_alert(true, "bad", "Unable to update the password because it does not contain an uppercase character.");
+
+    return false;
 }
 
 /*******************************
@@ -9146,26 +9180,14 @@ function check_valid_upper($password)
  *******************************/
 function check_valid_lower($password)
 {
-        // If lower checking is enabled
-        if (get_setting('pass_policy_lower_required') == 1)
-        {
-                // If the password contains an lower character
-                if (preg_match('/[a-z]+/', $password))
-                {
-                        // Return true
-                        return true;
-                }
-                else
-                {
-                        // Display an alert
-                        set_alert(true, "bad", "Unable to update the password because it does not contain a lowercase character.");
+    if (password_has_lower($password)) {
+        return true;
+    }
 
-                        // Return false
-                        return false;
-                }
-        }
-        // Otherwise, return true
-        else return true;
+    // Display an alert
+    set_alert(true, "bad", "Unable to update the password because it does not contain a lowercase character.");
+
+    return false;
 }
 
 /********************************
@@ -9173,26 +9195,14 @@ function check_valid_lower($password)
  ********************************/
 function check_valid_digits($password)
 {
-    // If digit checking is enabled
-    if (get_setting('pass_policy_digits_required') == 1)
-    {
-        // If the password contains a digit
-        if (preg_match("/[0-9]+/", $password))
-        {
-            // Return true
-            return true;
-        }
-                else
-                {
-                        // Display an alert
-                        set_alert(true, "bad", "Unable to update the password because it does not contain a digit.");
-
-                        // Return false
-                        return false;
-                }
+    if (password_has_digit($password)) {
+        return true;
     }
-    // Otherwise, return true
-    else return true;
+
+    // Display an alert
+    set_alert(true, "bad", "Unable to update the password because it does not contain a digit.");
+
+    return false;
 }
 
 /**********************************
@@ -9200,26 +9210,71 @@ function check_valid_digits($password)
  **********************************/
 function check_valid_specials($password)
 {
-    // If special checking is enabled
-    if (get_setting('pass_policy_special_required') == 1)
-    {
-        // If the password contains a special
-        if (preg_match("/[^A-Za-z0-9]+/", $password))
-            {
-                    // Return true
-                    return true;
-            }
-                else
-                {
-                    // Display an alert
-                    set_alert(true, "bad", "Unable to update the password because it does not contain a special character.");
-
-                    // Return false
-                    return false;
-                }
+    if (password_has_special($password)) {
+        return true;
     }
-    // Otherwise, return true
-    else return true;
+
+    // Display an alert
+    set_alert(true, "bad", "Unable to update the password because it does not contain a special character.");
+
+    return false;
+}
+
+/*****************************************************************************
+ * Side-effect-free password character-class predicates, split out of the   *
+ * check_valid_*() functions above the same way password_meets_min_age()    *
+ * was split out of check_current_password_age() -- check_valid_*() calls   *
+ * set_alert() as a side effect, which a caller behind a closed session     *
+ * (e.g. the v2 API's api_v2_profile_password_update()) would otherwise     *
+ * leak as a stale toast on the next page load via with_alert_session().    *
+ * Each predicate also owns its own policy-enabled check (mirroring         *
+ * password_meets_min_age()'s own get_setting() short-circuit), so a caller *
+ * that already knows the requirement is enabled -- and one that doesn't -- *
+ * both get the correct answer.                                             *
+ *****************************************************************************/
+function password_has_alpha($password)
+{
+    if (get_setting('pass_policy_alpha_required') != 1) {
+        return true;
+    }
+
+    return (bool)preg_match('/[A-Za-z]+/', $password);
+}
+
+function password_has_upper($password)
+{
+    if (get_setting('pass_policy_upper_required') != 1) {
+        return true;
+    }
+
+    return (bool)preg_match('/[A-Z]+/', $password);
+}
+
+function password_has_lower($password)
+{
+    if (get_setting('pass_policy_lower_required') != 1) {
+        return true;
+    }
+
+    return (bool)preg_match('/[a-z]+/', $password);
+}
+
+function password_has_digit($password)
+{
+    if (get_setting('pass_policy_digits_required') != 1) {
+        return true;
+    }
+
+    return (bool)preg_match('/[0-9]+/', $password);
+}
+
+function password_has_special($password)
+{
+    if (get_setting('pass_policy_special_required') != 1) {
+        return true;
+    }
+
+    return (bool)preg_match('/[^A-Za-z0-9]+/', $password);
 }
 
 /************************************
@@ -9338,7 +9393,16 @@ function add_user($type, $user, $email, $name, $salt, $hash, $teams, $role_id, $
     // Open the database connection
     $db = db_open();
 
-    // Insert the new user
+    // `lang` is intentionally left out of this INSERT so the column's own
+    // `DEFAULT NULL` (see upgrade.php's MODIFY `lang` VARCHAR(5) DEFAULT null)
+    // applies -- a new user has no language preference until they set one.
+    // This used to hardcode '' instead, which the is_null() checks in
+    // set_user_permissions() / the API Extra's session bootstrap didn't treat
+    // as "unset", so every newly created user (SSO/SAML/LDAP/CSV/admin -- any
+    // path, since they all funnel through add_user()) shipped an empty
+    // <html lang=""> and could trigger a spurious browser translate prompt
+    // instead of falling back to the instance's configured default_language
+    // (SD-854).
     $stmt = $db->prepare(
         "INSERT INTO
             user (
@@ -9353,8 +9417,7 @@ function add_user($type, $user, $email, $name, $salt, $hash, $teams, $role_id, $
                 `multi_factor`,
                 `change_password`,
                 `manager`,
-                `custom_display_settings`,
-                `lang`" .
+                `custom_display_settings`" .
                 ($custom_questionnaire_results_display_settings_exists ? ", `custom_questionnaire_results_display_settings`" : '') . "
             )
         VALUES (
@@ -9369,8 +9432,7 @@ function add_user($type, $user, $email, $name, $salt, $hash, $teams, $role_id, $
             :multi_factor,
             :change_password,
             :manager,
-            :custom_display_settings,
-            ''" .
+            :custom_display_settings" .
             ($custom_questionnaire_results_display_settings_exists ? ", :custom_questionnaire_results_display_settings" : '') . "
         );
     ");
@@ -10033,7 +10095,14 @@ function submit_risk($status, $subject, $reference_id, $regulation, $control_num
         // Load the extra
         require_once(realpath(__DIR__ . '/../extras/encryption/index.php'));
 
-        create_subject_order(isset($_SESSION['encrypted_pass']) && $_SESSION['encrypted_pass'] ? base64_decode($_SESSION['encrypted_pass']) : fetch_key());
+        // Place the new risk last and let the Extra's queue job re-rank every
+        // risk, instead of decrypting and re-ranking the whole table inside
+        // this request. An Extra that predates the job still ranks inline.
+        if (function_exists('encryption_risk_subject_order_changed')) {
+            encryption_risk_subject_order_changed([(int)$last_insert_id]);
+        } else {
+            create_subject_order(isset($_SESSION['encrypted_pass']) && $_SESSION['encrypted_pass'] ? base64_decode($_SESSION['encrypted_pass']) : fetch_key());
+        }
     }
 
     $risk_catalog_mapping = count($risk_catalog_mapping)?implode(",", $risk_catalog_mapping):"";
@@ -10544,8 +10613,9 @@ function update_classic_score($risk_id, $CLASSIC_likelihood, $CLASSIC_impact)
         $residual_risk = get_residual_risk($id+1000);
         add_residual_risk_scoring_history($id, $residual_risk);
 
-        // Audit log
-        $message = "Risk score has been updated for risk ID \"" . $risk_id . "\" by username \"" . $escaper->escapeHtml($_SESSION['user']) . "\".";
+        // Audit log -- before/after score, same "Field name : `x` (`old`=>
+        // `new`)" diff format update_risk()'s own $detail_updated build uses.
+        $message = "Risk score has been updated for risk ID \"" . $risk_id . "\" by username \"" . $escaper->escapeHtml($_SESSION['user']) . "\".\nField name : `calculated_risk` (`" . $escaper->escapeHtml($old_calculated_risk) . "`=>`" . $escaper->escapeHtml($calculated_risk) . "`)";
         write_log($risk_id, $_SESSION['uid'] ?? 0, $message);
     }
 
@@ -10624,8 +10694,9 @@ function update_cvss_score($risk_id, $AccessVector, $AccessComplexity, $Authenti
         $residual_risk = get_residual_risk($id+1000);
         add_residual_risk_scoring_history($id, $residual_risk);
 
-        // Audit log
-        $message = "Risk score has been updated for risk ID \"" . $risk_id . "\" by username \"" . $escaper->escapeHtml($_SESSION['user']) . "\".";
+        // Audit log -- before/after score, same "Field name : `x` (`old`=>
+        // `new`)" diff format update_risk()'s own $detail_updated build uses.
+        $message = "Risk score has been updated for risk ID \"" . $risk_id . "\" by username \"" . $escaper->escapeHtml($_SESSION['user']) . "\".\nField name : `calculated_risk` (`" . $escaper->escapeHtml($old_calculated_risk) . "`=>`" . $escaper->escapeHtml($calculated_risk) . "`)";
         write_log($risk_id, $_SESSION['uid'] ?? 0, $message);
     }
 
@@ -10679,8 +10750,9 @@ function update_dread_score($risk_id, $DREADDamagePotential, $DREADReproducibili
         $residual_risk = get_residual_risk($id+1000);
         add_residual_risk_scoring_history($id, $residual_risk);
 
-        // Audit log
-        $message = "Risk score has been updated for risk ID \"" . $risk_id . "\" by username \"" . $escaper->escapeHtml($_SESSION['user']) . "\".";
+        // Audit log -- before/after score, same "Field name : `x` (`old`=>
+        // `new`)" diff format update_risk()'s own $detail_updated build uses.
+        $message = "Risk score has been updated for risk ID \"" . $risk_id . "\" by username \"" . $escaper->escapeHtml($_SESSION['user']) . "\".\nField name : `calculated_risk` (`" . $escaper->escapeHtml($old_calculated_risk) . "`=>`" . $escaper->escapeHtml($calculated_risk) . "`)";
         write_log($risk_id, $_SESSION['uid'] ?? 0, $message);
     }
 
@@ -10828,8 +10900,9 @@ function update_owasp_score($risk_id, $OWASPSkill, $OWASPMotive, $OWASPOpportuni
         $residual_risk = get_residual_risk($id+1000);
         add_residual_risk_scoring_history($id, $residual_risk);
 
-        // Audit log
-        $message = "Risk score has been updated for risk ID \"" . $risk_id . "\" by username \"" . $escaper->escapeHtml($_SESSION['user']) . "\".";
+        // Audit log -- before/after score, same "Field name : `x` (`old`=>
+        // `new`)" diff format update_risk()'s own $detail_updated build uses.
+        $message = "Risk score has been updated for risk ID \"" . $risk_id . "\" by username \"" . $escaper->escapeHtml($_SESSION['user']) . "\".\nField name : `calculated_risk` (`" . $escaper->escapeHtml($old_calculated_risk) . "`=>`" . $escaper->escapeHtml($calculated_risk) . "`)";
         write_log($risk_id, $_SESSION['uid'] ?? 0, $message);
     }
 
@@ -10854,8 +10927,8 @@ function update_custom_score($risk_id, $custom)
     // If the custom value is not between 0 and 10
     if (!(($custom >= 0) && ($custom <= 10)))
     {
-        // Set the custom value to 10
-            $custom = 10;
+        // Set the custom value to the default risk score
+            $custom = get_setting('default_risk_score');
     }
 
     // Calculated risk is the custom value
@@ -10886,8 +10959,9 @@ function update_custom_score($risk_id, $custom)
         $residual_risk = get_residual_risk($id+1000);
         add_residual_risk_scoring_history($id, $residual_risk);
 
-        // Audit log
-        $message = "Risk score has been updated for risk ID \"" . $risk_id . "\" by username \"" . $escaper->escapeHtml($_SESSION['user']) . "\".";
+        // Audit log -- before/after score, same "Field name : `x` (`old`=>
+        // `new`)" diff format update_risk()'s own $detail_updated build uses.
+        $message = "Risk score has been updated for risk ID \"" . $risk_id . "\" by username \"" . $escaper->escapeHtml($_SESSION['user']) . "\".\nField name : `calculated_risk` (`" . $escaper->escapeHtml($old_calculated_risk) . "`=>`" . $escaper->escapeHtml($calculated_risk) . "`)";
         write_log($risk_id, $_SESSION['uid'] ?? 0, $message);
     }
 
@@ -10965,8 +11039,9 @@ function update_contributing_risk_score($risk_id, $ContributingLikelihood="", $C
         $residual_risk = get_residual_risk($id+1000);
         add_residual_risk_scoring_history($id, $residual_risk);
 
-        // Audit log
-        $message = "Risk score has been updated for risk ID \"" . $risk_id . "\" by username \"" . $escaper->escapeHtml($_SESSION['user']) . "\".";
+        // Audit log -- before/after score, same "Field name : `x` (`old`=>
+        // `new`)" diff format update_risk()'s own $detail_updated build uses.
+        $message = "Risk score has been updated for risk ID \"" . $risk_id . "\" by username \"" . $escaper->escapeHtml($_SESSION['user']) . "\".\nField name : `calculated_risk` (`" . $escaper->escapeHtml($old_calculated_risk) . "`=>`" . $escaper->escapeHtml($calculated_risk) . "`)";
         write_log($risk_id, $_SESSION['uid'] ?? 0, $message);
     }
 
@@ -11203,8 +11278,8 @@ function update_risk_scoring($risk_id, $scoring_method, $CLASSIC_likelihood, $CL
         // If the custom value is not between 0 and 10
         if (!(($custom >= 0) && ($custom <= 10)))
         {
-                // Set the custom value to 10
-                $custom = 10;
+                // Set the custom value to the default risk score
+                $custom = get_setting('default_risk_score');
         }
 
         // Calculated risk is the custom value
@@ -11221,6 +11296,23 @@ function update_risk_scoring($risk_id, $scoring_method, $CLASSIC_likelihood, $CL
     else if ($scoring_method == 6)
     {
         $calculated_risk = update_contributing_risk_score($id+1000, $ContributingLikelihood, $ContributingImpacts);
+
+        // PHASE 4d-v FIX: update_contributing_risk_score() only persists
+        // calculated_risk/Contributing_Likelihood/the impacts junction rows
+        // -- it never touches the scoring_method column itself, unlike
+        // every other branch above (each of whose own UPDATE statement
+        // always sets scoring_method alongside its method-specific
+        // columns). Without a $stmt assignment here, the trailing
+        // `$stmt->execute()` below silently re-runs the unrelated "SELECT
+        // scoring_method" query from the top of this function (the last
+        // statement $stmt was bound to) instead of persisting the new
+        // method -- an existing risk switched TO Contributing Risk via
+        // Edit Details keeps whatever scoring_method it had before, even
+        // though calculated_risk/Contributing_Likelihood/impacts are
+        // already correctly updated underneath it.
+        $stmt = $db->prepare("UPDATE risk_scoring SET scoring_method=:scoring_method WHERE id=:id; ");
+        $stmt->bindParam(":id", $id, PDO::PARAM_INT);
+        $stmt->bindParam(":scoring_method", $scoring_method, PDO::PARAM_INT);
     }
     // Otherwise
     else
@@ -11237,8 +11329,11 @@ function update_risk_scoring($risk_id, $scoring_method, $CLASSIC_likelihood, $CL
     // If scoring method was changed
     if($old_scoring_method != $scoring_method)
     {
-        // Audit log
-        $message = "Scoring method has been updated for risk ID \"" . $risk_id . "\" by username \"" . $escaper->escapeHtml($_SESSION['user'] ?? 'unknown') . "\".";
+        // Audit log -- before/after names (get_scoring_method_name()),
+        // same "Field name : `x` (`old`=>`new`)" diff format update_risk()'s
+        // own $detail_updated build uses, so this reads with the same
+        // level of detail as a full Details-card save.
+        $message = "Scoring method has been updated for risk ID \"" . $risk_id . "\" by username \"" . $escaper->escapeHtml($_SESSION['user'] ?? 'unknown') . "\".\nField name : `scoring_method` (`" . $escaper->escapeHtml(get_scoring_method_name($old_scoring_method)) . "`=>`" . $escaper->escapeHtml(get_scoring_method_name($scoring_method)) . "`)";
         write_log($risk_id, (int)($_SESSION['uid'] ?? 0), $message);
     }
 
@@ -11252,8 +11347,8 @@ function update_risk_scoring($risk_id, $scoring_method, $CLASSIC_likelihood, $CL
         $residual_risk = get_residual_risk($id+1000);
         add_residual_risk_scoring_history($id, $residual_risk);
 
-        // Audit log
-        $message = "Risk score has been updated for risk ID \"" . $risk_id . "\" by username \"" . $escaper->escapeHtml($_SESSION['user']) . "\".";
+        // Audit log -- same before/after diff format as above.
+        $message = "Risk score has been updated for risk ID \"" . $risk_id . "\" by username \"" . $escaper->escapeHtml($_SESSION['user']) . "\".\nField name : `calculated_risk` (`" . $escaper->escapeHtml($old_calculated_risk) . "`=>`" . $escaper->escapeHtml($calculated_risk) . "`)";
         write_log($risk_id, $_SESSION['uid'] ?? 0, $message);
     }
 
@@ -11263,65 +11358,141 @@ function update_risk_scoring($risk_id, $scoring_method, $CLASSIC_likelihood, $CL
 /**************************************
  * FUNCTION: SAVE MITIGATION CONTROLS *
  **************************************/
-function save_mitigation_controls($mitigation_id, $control_ids, $post = array())
+// Syncs the mitigation<->control ATTACHMENT list only -- a diff against
+// what's currently attached, never a wipe. This used to DELETE every
+// mitigation_to_controls row for the mitigation and reinsert all of them
+// from $post['validation_details_<id>']/etc, which discarded every
+// remaining control's validation_details/validation_owner/
+// validation_mitigation_percent -- and its uploaded validation_files, via
+// an unconditional refresh_files_for_validation($mitigation_id, $id, [])
+// call -- on every single save, even one that only changed which controls
+// are attached and never touched validation data at all. Per-control
+// validation is now exclusively read/written by
+// save_mitigation_control_validation(), below; this function no longer
+// takes or reads a $post array.
+function save_mitigation_controls($mitigation_id, $control_ids)
 {
     $control_ids = is_array($control_ids) ? $control_ids : explode(",", $control_ids);
+    $control_ids = array_values(array_unique(array_filter(array_map('intval', $control_ids))));
+
     // Open the database connection
     $db = db_open();
 
-    // Delete existing mitigation by risk ID
-    $stmt = $db->prepare("DELETE FROM `mitigation_to_controls` WHERE mitigation_id = :mitigation_id");
+    $stmt = $db->prepare("SELECT control_id FROM `mitigation_to_controls` WHERE mitigation_id = :mitigation_id");
     $stmt->bindParam(":mitigation_id", $mitigation_id, PDO::PARAM_INT);
     $stmt->execute();
-    
-    foreach($control_ids as $control_id)
-    {
-        $validation_details = isset($post["validation_details_".$control_id])?$post["validation_details_".$control_id]:"";
-        $validation_owner = isset($post["validation_owner_".$control_id])?$post["validation_owner_".$control_id]:0;
-        $validation_mitigation_percent = (isset($post["validation_mitigation_percent_".$control_id]) && $post["validation_mitigation_percent_".$control_id] >=0 && $post["validation_mitigation_percent_".$control_id] <=100) ? $post["validation_mitigation_percent_".$control_id]:0;
-        $stmt = $db->prepare("INSERT INTO `mitigation_to_controls`(mitigation_id, control_id, validation_details, validation_owner, validation_mitigation_percent) VALUES(:mitigation_id, :control_id, :validation_details, :validation_owner, :validation_mitigation_percent); ");
-        $stmt->bindParam(":mitigation_id", $mitigation_id, PDO::PARAM_INT);
-        $stmt->bindParam(":control_id", $control_id, PDO::PARAM_INT);
-        $stmt->bindParam(":validation_details", $validation_details, PDO::PARAM_STR);
-        $stmt->bindParam(":validation_owner", $validation_owner, PDO::PARAM_INT);
-        $stmt->bindParam(":validation_mitigation_percent", $validation_mitigation_percent, PDO::PARAM_INT);
-        $stmt->execute();
+    $existing_ids = array_map('intval', $stmt->fetchAll(PDO::FETCH_COLUMN));
 
-        // Sanitizing list of ids 
-        $file_ids = !empty($post['file_ids_' . $control_id]) ? sanitize_int_array($post['file_ids_' . $control_id]) : [];
-        refresh_files_for_validation($mitigation_id, $control_id, $file_ids);
+    $removed_ids = array_diff($existing_ids, $control_ids);
+    $added_ids = array_diff($control_ids, $existing_ids);
 
-        // If a artifact file was submitted
-        if (!empty($_FILES['artifact-file-'.$control_id]))
-        {
-            $files = $_FILES['artifact-file-'.$control_id];
-            // Upload any file that is submitted
-            for($i=0; $i<count($files['name']); $i++){
-                if($files['error'][$i] || $i==0){
-                    continue;
-                }
-                $file = array(
-                    'name' => $files['name'][$i],
-                    'type' => $files['type'][$i],
-                    'tmp_name' => $files['tmp_name'][$i],
-                    'size' => $files['size'][$i],
-                    'error' => $files['error'][$i],
-                );
-                // Upload any file that is submitted
-                $error = upload_validation_file($mitigation_id, $control_id, $file);
-                if($error != 1){
-                    /**
-                    * If error, stop uploading files;
-                    */
-                    break;
-                }
-            }
+    // A control actually being removed from the mitigation legitimately
+    // takes its validation row and any uploaded evidence with it -- unlike
+    // the bug above, this only ever touches controls no longer attached.
+    if (!empty($removed_ids)) {
+        $delete_mapping_stmt = $db->prepare("DELETE FROM `mitigation_to_controls` WHERE mitigation_id = :mitigation_id AND control_id = :control_id");
+        foreach ($removed_ids as $control_id) {
+            $delete_mapping_stmt->bindParam(":mitigation_id", $mitigation_id, PDO::PARAM_INT);
+            $delete_mapping_stmt->bindParam(":control_id", $control_id, PDO::PARAM_INT);
+            $delete_mapping_stmt->execute();
+            refresh_files_for_validation($mitigation_id, $control_id, []);
+        }
+    }
 
+    // A newly-attached control starts with blank validation -- same
+    // default the old unconditional reinsert produced for any control that
+    // did not already have a mitigation_to_controls row.
+    if (!empty($added_ids)) {
+        $insert_stmt = $db->prepare("INSERT INTO `mitigation_to_controls`(mitigation_id, control_id, validation_details, validation_owner, validation_mitigation_percent) VALUES(:mitigation_id, :control_id, '', 0, 0)");
+        foreach ($added_ids as $control_id) {
+            $insert_stmt->bindParam(":mitigation_id", $mitigation_id, PDO::PARAM_INT);
+            $insert_stmt->bindParam(":control_id", $control_id, PDO::PARAM_INT);
+            $insert_stmt->execute();
         }
     }
 
     // Close the database connection
     db_close($db);
+}
+
+/****************************************************
+ * FUNCTION: SAVE MITIGATION CONTROL VALIDATION      *
+ * Upserts the validation_details/validation_owner/  *
+ * validation_mitigation_percent for ONE control on  *
+ * a mitigation -- mitigation_to_controls' existing  *
+ * PRIMARY KEY (mitigation_id, control_id) makes this *
+ * a plain INSERT ... ON DUPLICATE KEY UPDATE, so a   *
+ * save here never touches any other control's row.   *
+ * The caller (saveMitigationControlValidation(),     *
+ * includes/api.php) is responsible for having first  *
+ * confirmed the control is actually attached to the  *
+ * mitigation -- this function will happily create a  *
+ * row for one that isn't, so it does not double as an *
+ * attachment check.                                  *
+ ****************************************************/
+function save_mitigation_control_validation($mitigation_id, $control_id, $validation_details, $validation_owner, $validation_mitigation_percent)
+{
+    $validation_owner = (int)$validation_owner;
+    $validation_mitigation_percent = ($validation_mitigation_percent >= 0 && $validation_mitigation_percent <= 100) ? (int)$validation_mitigation_percent : 0;
+
+    // Open the database connection
+    $db = db_open();
+
+    $stmt = $db->prepare("
+        INSERT INTO `mitigation_to_controls`(mitigation_id, control_id, validation_details, validation_owner, validation_mitigation_percent)
+        VALUES(:mitigation_id, :control_id, :validation_details, :validation_owner, :validation_mitigation_percent)
+        ON DUPLICATE KEY UPDATE
+            validation_details = VALUES(validation_details),
+            validation_owner = VALUES(validation_owner),
+            validation_mitigation_percent = VALUES(validation_mitigation_percent)
+    ");
+    $stmt->bindParam(":mitigation_id", $mitigation_id, PDO::PARAM_INT);
+    $stmt->bindParam(":control_id", $control_id, PDO::PARAM_INT);
+    $stmt->bindParam(":validation_details", $validation_details, PDO::PARAM_STR);
+    $stmt->bindParam(":validation_owner", $validation_owner, PDO::PARAM_INT);
+    $stmt->bindParam(":validation_mitigation_percent", $validation_mitigation_percent, PDO::PARAM_INT);
+    $stmt->execute();
+
+    // Close the database connection
+    db_close($db);
+}
+
+/**********************************************************************
+ * FUNCTION: MITIGATION CONTROLS SELECTION CHANGED                      *
+ * True when $submitted_control_ids differs, as a SET (order-           *
+ * independent, deduped), from the mitigation's currently-attached       *
+ * control ids. A mitigation that doesn't exist yet ($mitigation_id       *
+ * falsy) has no controls attached, so any non-empty submission counts    *
+ * as a change.                                                            *
+ *                                                                          *
+ * Used by saveMitigation() (includes/api.php) to scope its extra           *
+ * governance-permission check to genuine control-SELECTION changes only:    *
+ * the Cards edit form serializes mitigation_controls[] on every save, even   *
+ * one that never touched the picker, so gating on mere presence in $post      *
+ * would block a riskmanagement-only user from editing an unrelated             *
+ * mitigation field like planning_strategy -- selecting controls is a            *
+ * governance-owned decision, but planning a mitigation is not.                   *
+ **********************************************************************/
+function mitigation_controls_selection_changed($mitigation_id, $submitted_control_ids): bool
+{
+    $submitted = is_array($submitted_control_ids) ? $submitted_control_ids : explode(",", (string)$submitted_control_ids);
+    $submitted = array_values(array_unique(array_filter(array_map('intval', $submitted))));
+    sort($submitted);
+
+    if (!$mitigation_id) {
+        return !empty($submitted);
+    }
+
+    $db = db_open();
+    $stmt = $db->prepare("SELECT control_id FROM `mitigation_to_controls` WHERE mitigation_id = :mitigation_id");
+    $stmt->bindParam(":mitigation_id", $mitigation_id, PDO::PARAM_INT);
+    $stmt->execute();
+    $existing = array_map('intval', $stmt->fetchAll(PDO::FETCH_COLUMN));
+    db_close($db);
+
+    sort($existing);
+
+    return $submitted !== $existing;
 }
 
 /*******************************
@@ -11440,8 +11611,8 @@ function submit_mitigation($risk_id, $status, $post, $submitted_by_id=false)
     $mitigation_id = get_mitigation_id($id);
     
     // Save mitigation controls
-    save_mitigation_controls($mitigation_id, $mitigation_controls, $post);
-    
+    save_mitigation_controls($mitigation_id, $mitigation_controls);
+
     // Save mitigation teams
     save_junction_values("mitigation_to_team", "mitigation_id", $mitigation_id, "team_id", $mitigation_team);
 
@@ -11931,12 +12102,31 @@ function update_risk($risk_id, $is_api = false)
         if($value !== false)
             $sql .= " {$key}=:{$key}, ";
         // find updated field
+        //
+        // Both branches below must skip a field the caller never sent
+        // ($value === false, the same sentinel the SQL-building line above
+        // already gates on) -- not just the SQL write. Without this, a
+        // partial PATCH (the API path's whole reason to exist: send only
+        // the one field that changed, leave everything else alone) still
+        // fell into the `!= $risk[0][$key]` comparison below for every OTHER
+        // field. PHP's loose `!=` treats the boolean `false` sentinel as
+        // not-equal to almost any real stored value ("System" != false,
+        // "7" != false, ...), so every unsent field logged a bogus
+        // `updated_fields` entry claiming it had just been cleared to blank
+        // -- even though the SQL loop correctly never wrote it and the
+        // column was untouched. Confirmed live: saving ONLY Owner via the
+        // Details tab's per-field inline editor produced an audit log entry
+        // that also claimed Category/Risk Source/Manager/Risk Assessment/
+        // Additional Notes had all just been wiped, while a direct
+        // GET .../ui/risk/{id}/values re-fetch showed every one of them
+        // completely intact. The data was always safe; only the audit
+        // trail's own diff was lying about what changed.
         if($key=="assessment" || $key=="notes") {
-            if(try_decrypt($value) != try_decrypt($risk[0][$key])) {
+            if($value !== false && try_decrypt($value) != try_decrypt($risk[0][$key])) {
                 $updated_fields[$key]["original"] = try_decrypt($risk[0][$key]);
                 $updated_fields[$key]["updated"] = try_decrypt($value);
             }
-        } else if($value != $risk[0][$key] && $key != "last_update") {
+        } else if($value !== false && $value != $risk[0][$key] && $key != "last_update") {
             switch($key)
             {
                 default:
@@ -12040,11 +12230,26 @@ function update_risk($risk_id, $is_api = false)
         updateTagsOfType($id, 'risk', $tags);
     }
 
-    if($is_api === false) {
+    // Affected Assets. Two different input shapes reach this function, same
+    // as the CREATE path (includes/api.php's addRisk() docblock has the full
+    // history): the widget posts pre-resolved 'assets_asset_groups[]'
+    // tokens, an external/import API caller posts a plain comma-separated
+    // NAME list under 'affected_assets' instead. Both used to be gated on
+    // $is_api rather than on whether the widget's own field was actually
+    // SENT -- an API-path save (submitMode: 'update', the Cards Edit
+    // Details/Details-tab forms) always posts 'assets_asset_groups[]' the
+    // same way the non-API path does, but the old `else` branch only ever
+    // looked for 'affected_assets', so the widget's real selection was
+    // silently dropped on every API-routed save. $sent() (this function's
+    // own partial-update-aware helper, used identically by every other
+    // junction field above) fixes that: act on 'assets_asset_groups' when
+    // it was actually sent (unconditionally true for the non-API path,
+    // matching every other field's $sent() semantics), and fall back to the
+    // import shape only when the widget's own field was never sent at all.
+    if ($sent('assets_asset_groups')) {
         $assets_asset_groups = get_param("post", "assets_asset_groups", []);
-        // Update affected assets and asset groups
         process_selected_assets_asset_groups_of_type($id, $assets_asset_groups, 'risk');
-    } else {
+    } elseif ($is_api !== false) {
         $affected_assets = get_param("POST", 'affected_assets');
 
         if ($affected_assets)
@@ -12101,8 +12306,27 @@ function update_risk($risk_id, $is_api = false)
         delete_db_file($file);
       }
     }
-    $unique_names = empty($_POST['unique_names']) ? "" : $_POST['unique_names'];
-    refresh_files_for_risk($unique_names, $id, 1);
+    // refresh_files_for_risk() DELETES every file row for this risk that is not
+    // named in $unique_names -- the legacy edit form's "remove a file" mechanism
+    // is simply omitting that file's hidden unique_names[] input, so an absent
+    // list there genuinely means "the user removed them all".
+    //
+    // On the API/partial-update path an absent field means "leave it alone", the
+    // same rule the junction tables above follow. Without this gate every PATCH
+    // that does not happen to carry unique_names -- which the redesigned Details
+    // edit form never sends, because PATCH cannot carry multipart uploads -- wiped
+    // the risk's entire Supporting Documentation. An explicitly-sent empty list
+    // still clears, because param_was_sent() keys off presence, not emptiness.
+    //
+    // $_POST['delete'] is deliberately NOT part of this gate: those files were
+    // already removed one-by-one by delete_db_file() above, so letting a
+    // delete-only request fall into refresh_files_for_risk() with an empty list
+    // would delete every OTHER file as a side effect. The form path is
+    // unaffected either way, since $sent() is unconditionally true there.
+    if ($sent('unique_names')) {
+        $unique_names = empty($_POST['unique_names']) ? "" : $_POST['unique_names'];
+        refresh_files_for_risk($unique_names, $id, 1);
+    }
 
     $success = 1;
     // If a file was submitted
@@ -12208,6 +12432,16 @@ function update_risk_subject($risk_id, $subject)
     // Subtract 1000 from risk_id
     $id = (int)$risk_id - 1000;
 
+    // Fetch the current subject BEFORE overwriting it, for the audit log's
+    // before/after diff -- same "Field name : `x` (`old`=>`new`)" format
+    // update_risk()'s own $detail_updated build uses, so a Subject-only edit
+    // (this function's own single caller, saveSubjectForm() -> the Subject
+    // field's inline pencil-edit on management/view.php) reads with the same
+    // level of detail as a full Details-card save instead of a bare
+    // "was updated by X" with nothing else.
+    $current_risk = get_risk_by_id($risk_id);
+    $original_subject = $current_risk ? try_decrypt($current_risk[0]['subject']) : '';
+
     // Open the database connection
     $db = db_open();
 
@@ -12221,20 +12455,37 @@ function update_risk_subject($risk_id, $subject)
     $stmt->bindParam(":date", $current_datetime, PDO::PARAM_STR);
     $stmt->execute();
 
-    // Audit log
-    $message = "Risk subject was updated for risk ID \"" . $risk_id . "\" by username \"" . $escaper->escapeHtml($_SESSION['user']) . "\".";
-    write_log($risk_id, $_SESSION['uid'] ?? 0, $message);
+    // Audit log -- only when the subject actually changed. The Details-tab
+    // Cards form always submits `subject` (it's a required, always-rendered
+    // field), so this function runs on every Details-tab save regardless of
+    // whether the user touched Subject; without this guard it wrote a
+    // spurious "was updated" entry claiming subject changed from its old
+    // value to the same value on every save of any OTHER field. Mirrors the
+    // old-vs-new comparison update_risk() already applies before logging its
+    // own scalar fields (assessment, notes, owner, etc.).
+    $updated_subject = try_decrypt($subject);
+    if ($original_subject !== $updated_subject) {
+        $message = "Risk subject was updated for risk ID \"" . $risk_id . "\" by username \"" . $escaper->escapeHtml($_SESSION['user']) . "\".\nField name : `subject` (`" . $escaper->escapeHtml($original_subject) . "`=>`" . $escaper->escapeHtml($updated_subject) . "`)";
+        write_log($risk_id, $_SESSION['uid'] ?? 0, $message);
+    }
 
     // Close the database connection
     db_close($db);
 
-    // If the encryption extra is enabled, updates order_by_subject
-    if (encryption_extra())
+    // If the encryption extra is enabled and the subject changed, the subject
+    // order needs a rebuild: requested from the Extra's queue job (an Extra
+    // that predates the job still ranks inline). An unchanged subject needs
+    // nothing -- this runs on every Details-tab save.
+    if (encryption_extra() && $original_subject !== $updated_subject)
     {
         // Load the extra
         require_once(realpath(__DIR__ . '/../extras/encryption/index.php'));
 
-        create_subject_order(isset($_SESSION['encrypted_pass']) && $_SESSION['encrypted_pass'] ? base64_decode($_SESSION['encrypted_pass']) : fetch_key());
+        if (function_exists('encryption_risk_subject_order_changed')) {
+            encryption_risk_subject_order_changed([$id]);
+        } else {
+            create_subject_order(isset($_SESSION['encrypted_pass']) && $_SESSION['encrypted_pass'] ? base64_decode($_SESSION['encrypted_pass']) : fetch_key());
+        }
     }
 
     // Send the notification (no-op if notification extra is disabled)
@@ -12781,7 +13032,8 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false, $review_
             case "subject":
                 if (encryption_extra())
                 {
-                    $sort_query = " ORDER BY b.order_by_subject {$order_dir} ";
+                    // id breaks ties between equal ranks (see make_full_risks_sql()).
+                    $sort_query = " ORDER BY b.order_by_subject {$order_dir}, b.id ASC ";
                 }else{
                     $sort_query = " ORDER BY b.subject {$order_dir} ";
                 }
@@ -16716,7 +16968,7 @@ function get_delete_risk_table() {
 /*******************************
  * FUNCTION: MANAGEMENT REVIEW *
  *******************************/
-function management_review($risk_id, $mgmt_review, $next_review, $is_html = true, $active="ReviewRisksRegularly")
+function management_review($risk_id, $mgmt_review, $next_review, $is_html = true, $active="ReviewRisk")
 {
     global $lang;
     global $escaper;
@@ -16762,7 +17014,7 @@ function management_review_text_only($mgmt_review_id, $next_review) {
 /********************************
  * FUNCTION: PLANNED MITIGATION *
  ********************************/
-function planned_mitigation($risk_id, $mitigation_id, $active="ReviewRisksRegularly")
+function planned_mitigation($risk_id, $mitigation_id, $active="ReviewRisk")
 {
     global $lang;
     global $escaper;
@@ -17000,8 +17252,13 @@ function update_language($uid, $language)
     // If the session belongs to the same UID as the one we are updating
     if ($_SESSION['uid'] == $uid)
     {
-        // Update the language for the session
-        $_SESSION['lang'] = $language;
+        // Update the language for the session. Wrapped in with_alert_session()
+        // because callers (e.g. the profile API) may run after head.php /
+        // is_session_authenticated() has already called session_write_close(),
+        // which makes a bare $_SESSION write silently discarded.
+        with_alert_session(function () use ($language) {
+            $_SESSION['lang'] = $language;
+        });
     }
 
     return true;
@@ -17489,8 +17746,28 @@ function close_risk($risk_id, $user_id, $status, $close_reason, $note, $closure_
         [$id]
     );
 
-    // Audit log
+    // Audit log. The reason/note captured on close are otherwise only
+    // visible by adding the Close Reason/Close-Out Information columns to a
+    // Dynamic Risk Report (reports/dynamic_risk_report.php) -- surfacing
+    // them here too puts them somewhere a reviewer would actually look
+    // first. resolve_close_reason_label() is the same lookup the
+    // risk.closed workflow trigger below already uses for its own
+    // notification text, computed once and reused for both.
+    //
+    // The reason/note go on a SECOND line, after a "\n" -- classify_risk_
+    // audit_activity() anchors its close-message regex to the start of the
+    // string only (no trailing anchor), so this doesn't affect activity-pill
+    // classification, and get_risk_audit_log_api() (includes/api.php)
+    // already splits everything after the first "\n" out as a `detail` hint
+    // line under the pill -- the exact mechanism update_risk_details()'s own
+    // field-diff messages use, reused here rather than inventing a second
+    // convention.
+    $close_reason_label = resolve_close_reason_label($close_reason);
     $message = "Risk ID \"" . $risk_id . "\" was marked as closed by username \"" . $escaper->escapeHtml($_SESSION['user'] ?? 'unknown') . "\".";
+    $message .= "\nReason: \"" . $escaper->escapeHtml($close_reason_label) . "\"";
+    if (trim((string)$note) !== '') {
+        $message .= ", Close-out information: \"" . $escaper->escapeHtml($note) . "\"";
+    }
     write_log($risk_id, (int)($_SESSION['uid'] ?? 0), $message);
 
     // Capture risk owner for workflow context before closing the connection
@@ -17508,7 +17785,7 @@ function close_risk($risk_id, $user_id, $status, $close_reason, $note, $closure_
         'risk_id'        => $id,
         'display_risk_id'=> $id + 1000,
         'owner'          => $_wf_owner,
-        'closure_reason' => resolve_close_reason_label($close_reason),
+        'closure_reason' => $close_reason_label,
     ]);
 
         return true;
@@ -17788,7 +18065,87 @@ function get_audit_trail($id = NULL, $days = 7, $log_type=NULL)
         // Return false
         return [];
     }
-    
+
+}
+
+/**
+ * Classifies a decrypted risk audit_log message into a short activity key
+ * for get_risk_audit_log_api()'s Activity column/pill -- same purpose and
+ * shape as classify_exception_audit_activity()/classify_document_audit_
+ * activity() (includes/governance.php). One pattern per message template a
+ * risk-lifecycle write_log() call site actually writes (add_risk(),
+ * update_risk_subject(), close_risk(), reopen_risk(), edit_mitigation_
+ * details()/save_mitigation(), delete_mitigation(), the management review
+ * submit/delete pair, add_comment(), the Accept/Reject Mitigation bulk
+ * actions, and the supporting-documentation upload/delete handlers -- all
+ * in this file). 'other' is the safe fallback for every message shape this
+ * doesn't recognize (Jira sync messages, scoring-method-change messages,
+ * risk-formula-change messages, etc.) -- the same acceptable-imprecision
+ * level the exception/document classifiers already ship with.
+ *
+ * @param string $message decrypted, not-yet-escaped audit_log.message
+ * @return string one of: create/update/close/reopen/review/delete/comment/
+ *                upload/mitigation_accept/mitigation_reject/other
+ */
+function classify_risk_audit_activity($message) {
+    if (preg_match('/^A new risk ID "/', $message)) {
+        return 'create';
+    }
+    if (preg_match('/^Risk ID ".*" was DELETED by/', $message)) {
+        return 'delete';
+    }
+    if (preg_match('/^A management review was deleted for risk ID "/', $message)) {
+        return 'delete';
+    }
+    if (preg_match('/^A mitigation was deleted for risk ID "/', $message)) {
+        return 'delete';
+    }
+    if (preg_match('/^File ".*" was deleted by/', $message)) {
+        return 'delete';
+    }
+    if (preg_match('/^Risk ID ".*" was marked as closed by/', $message)) {
+        return 'close';
+    }
+    if (preg_match('/^Risk ID ".*" was reopened by/', $message)) {
+        return 'reopen';
+    }
+    if (preg_match('/^A management review was submitted for risk ID "/', $message)) {
+        return 'review';
+    }
+    if (preg_match('/^Mitigation for risk ID .* accepted by/', $message)) {
+        return 'mitigation_accept';
+    }
+    if (preg_match('/^Mitigation for risk ID .* rejected by/', $message)) {
+        return 'mitigation_reject';
+    }
+    if (preg_match('/^A comment was added to risk ID "/', $message)) {
+        return 'comment';
+    }
+    if (preg_match('/^File ".*" was uploaded by/', $message)) {
+        return 'upload';
+    }
+    if (preg_match('/^Risk subject was updated for risk ID "/', $message)) {
+        return 'update';
+    }
+    if (preg_match('/^Risk details were updated for risk ID "/', $message)) {
+        return 'update';
+    }
+    if (preg_match('/^Risk mitigation details were updated for risk ID "/', $message)) {
+        return 'update';
+    }
+    if (preg_match('/^A mitigation was submitted for risk ID "/', $message)) {
+        return 'update';
+    }
+    if (preg_match('/^A risk status for subject ".*" was changed by/', $message)) {
+        return 'update';
+    }
+    if (preg_match('/^Scoring method has been updated for risk ID "/', $message)) {
+        return 'update';
+    }
+    if (preg_match('/^Risk score has been updated for risk ID "/', $message)) {
+        return 'update';
+    }
+    return 'other';
 }
 
 /*******************************
@@ -18006,12 +18363,13 @@ function update_mitigation($risk_id, $post, $is_api = false)
 
     $mitigation_id = get_mitigation_id($id);
 
-    // Both of these DELETE before they test the incoming id list, so passing the
-    // [] default for a field the caller never named wipes the junction. Same
-    // partial-update rule as the columns: absent preserves, explicit clears.
+    // Both of these sync a junction against the incoming id list, so passing
+    // the [] default for a field the caller never named would still clear
+    // it down to empty. Same partial-update rule as the columns: absent
+    // preserves, explicit clears.
     // Save mitigation controls
     if (!$is_api || array_key_exists('mitigation_controls', $post)) {
-        save_mitigation_controls($mitigation_id, $mitigation_controls, $post);
+        save_mitigation_controls($mitigation_id, $mitigation_controls);
     }
 
     // Save mitigation teams
@@ -18064,11 +18422,24 @@ function update_mitigation($risk_id, $post, $is_api = false)
             delete_db_file($file);
         }
     }
-    // if(!empty($post['unique_names'])){
-    //     refresh_files_for_risk($post['unique_names'], $id, 2);
-    // }
-    $unique_names = empty($post['unique_names']) ? "" : $post['unique_names'];
-    refresh_files_for_risk($unique_names, $id, 2);
+    // Same partial-update gate as mitigation_controls/mitigation_team just
+    // above -- 'unique_names' is how the LEGACY urlencoded form says "here
+    // is the complete kept-file list, delete anything else" (an unchecked
+    // multi-select submits no key at all, so absent genuinely means "the
+    // user removed them all" there, same reasoning update_risk()'s own
+    // identical guard documents). The Cards Mitigation form
+    // (saveSupportingDocumentation()/saveMitigationSupportingDocumentation(),
+    // includes/api.php) manages files through its OWN dedicated multipart
+    // endpoint entirely, so its PATCH body never carries 'unique_names' at
+    // all -- unconditionally calling refresh_files_for_risk() with an
+    // absent field silently deleted every Mitigation Supporting
+    // Documentation file on every single Cards save (confirmed live: two
+    // uploaded files vanished from both read and edit view immediately
+    // after clicking the main form's Save).
+    if (!$is_api || array_key_exists('unique_names', $post)) {
+        $unique_names = empty($post['unique_names']) ? "" : $post['unique_names'];
+        refresh_files_for_risk($unique_names, $id, 2);
+    }
 
     $error = 1;
     // If a file was submitted
@@ -18745,6 +19116,41 @@ function get_announcements()
 
     // Return the announcement
     return $announcements;
+}
+
+/*********************************************
+ * FUNCTION: RESOLVE USER LANG PREFERENCE     *
+ * Decides what to store in $_SESSION['lang'] given a user's raw stored     *
+ * `lang` column value. NULL and '' both mean "no preference" -- add_user() *
+ * used to hardcode '' for every newly created user, and a historical       *
+ * migration (upgrade_from_20221013001(), target version 20230106-001)      *
+ * normalized every pre-existing NULL row to '' fleet-wide, so both         *
+ * sentinels occur in the wild. Checking only is_null() missed the ''       *
+ * case, shipping an empty <html lang=""> and triggering spurious browser  *
+ * translate prompts (SD-854).                                             *
+ *                                                                          *
+ * Shared by set_user_permissions() (authenticate.php) and                 *
+ * authenticate_key() (extras/api/index.php) so the two session-bootstrap  *
+ * paths cannot drift apart the way they had before this fix -- and so the *
+ * decision is unit-testable without a live session or API-key request.    *
+ *********************************************/
+function resolve_user_lang_preference(?string $stored_lang): string
+{
+    if (!empty($stored_lang)) {
+        return $stored_lang;
+    }
+
+    // LANG_DEFAULT is a legacy config.php constant that predates the
+    // default_language setting; only authenticate_key()'s call site ever
+    // checked it before this fix unified the two. Nothing in this repo
+    // defines it today, but an old customer config.php might still, so the
+    // check is preserved rather than dropped.
+    if (defined('LANG_DEFAULT')) {
+        return LANG_DEFAULT;
+    }
+
+    $default_language = get_setting("default_language");
+    return $default_language ?: "en";
 }
 
 /***************************
@@ -19693,7 +20099,7 @@ function supporting_documentation($id, $mode = "view", $view_type = 1)
             foreach ($array as $file) {
                 echo "
                     <div class ='doc-link edit-mode'>
-                        <a class='link-success' href='download.php?id=" . $escaper->escapeHtml($file['unique_name']) . "' >" . $escaper->escapeHtml($file['name']) . "</a>
+                        <a class='link-success' href='download.php?id=" . $escaper->escapeHtml($file['unique_name']) . "' ><i class='fa fa-download' aria-hidden='true'></i> " . $escaper->escapeHtml($file['name']) . "</a>
                     </div>
                 ";
             }
@@ -20264,6 +20670,14 @@ function update_risk_status($risk_id, $status)
     // Adjust the risk id
     $id = (int)$risk_id - 1000;
 
+    // Fetch the current status BEFORE overwriting it, for the audit log's
+    // before/after diff -- same "Field name : `x` (`old`=>`new`)" format
+    // update_risk_subject()'s own audit message uses for a Subject-only
+    // edit, so a Status change reads with the same level of detail instead
+    // of a bare "was changed by X" with no indication of what changed.
+    $current_risk = get_risk_by_id($risk_id);
+    $original_status = $current_risk ? $current_risk[0]['status'] : '';
+
     // Open the database connection
     $db = db_open();
 
@@ -20383,11 +20797,38 @@ function update_risk_status($risk_id, $status)
     // Check if the risk exists
     if(!empty($risk[0])){
         $subject = try_decrypt($risk[0]["subject"]);
-        $message = "A risk status for subject \"{$subject}\" was changed by the \"" . $escaper->escapeHtml($_SESSION['user']) . "\" user.";
+        $message = "A risk status for subject \"{$subject}\" was changed by the \"" . $escaper->escapeHtml($_SESSION['user']) . "\" user.\nField name : `status` (`" . $escaper->escapeHtml($original_status) . "`=>`" . $escaper->escapeHtml($status) . "`)";
         write_log($risk_id, $_SESSION['uid'] ?? 0, $message);
     }
 
     return true;
+}
+
+/*****************************************************************
+ * FUNCTION: TRY DECRYPT FIELDS                                  *
+ * Returns $row with each of $fields that is present passed      *
+ * through $decrypt (try_decrypt() by default). Used by the API  *
+ * read handlers that hand stored encrypted-at-rest columns      *
+ * (Encrypted Database Extra) straight to the client: without    *
+ * it GET /risks/{id}/mitigations and GET /risks/{id}/reviews    *
+ * returned ciphertext whenever that Extra was active.           *
+ * try_decrypt() is a passthrough when it is not, so this is     *
+ * safe either way. $decrypt is a parameter so the field         *
+ * selection is testable without an encryption key. NOTE: the    *
+ * shared getters (get_mitigation_by_id(), get_review_by_id())   *
+ * return the STORED value; a new API handler that exposes these *
+ * columns must decrypt them, and the getters must not (display  *
+ * code already calls try_decrypt on their result).              *
+ *****************************************************************/
+function try_decrypt_fields(array $row, array $fields, ?callable $decrypt = null): array
+{
+    $decrypt = $decrypt ?? 'try_decrypt';
+    foreach ($fields as $field) {
+        if (array_key_exists($field, $row)) {
+            $row[$field] = $decrypt($row[$field]);
+        }
+    }
+    return $row;
 }
 
 /*************************
@@ -20715,7 +21156,7 @@ function get_default_landing_page()
     // Users with no core-GRC permission fall through to their working area.
     if (incident_management_extra() && !empty($_SESSION['im_incidents']))    return "incidents/index.php";
     if (vulnmgmt_extra()            && !empty($_SESSION['vm_vulnerabilities'])) return "vulnerabilities/index.php";
-    if (!empty($_SESSION['asset']))       return "assets/index.php";
+    if (!empty($_SESSION['asset']))       return "assets/manage_assets.php";
     if (!empty($_SESSION['assessments'])) return "assessments/index.php";
     return "account/profile.php";
 }
@@ -21115,47 +21556,58 @@ function get_salt_and_password_by_user_id($user_id){
  ****************************************/
 function check_current_password_age($user_id = false)
 {
-    if($user_id === false){
+    if ($user_id === false) {
         return true;
     }
+
+    if (password_meets_min_age($user_id)) {
+        return true;
+    }
+
+    // Display an alert
+    set_alert(true, "bad", "Unable to update the password because the minimum age of ". get_setting("pass_policy_min_age") . " days has not elapsed.");
+
+    return false;
+}
+
+/*****************************************************************************
+ * FUNCTION: PASSWORD MEETS MIN AGE                                        *
+ * Side-effect-free minimum-password-age check, split out of               *
+ * check_current_password_age() so callers that already surface their own  *
+ * error response (e.g. the v2 API) don't also trigger that function's     *
+ * set_alert() -- a caller behind a closed session (session_write_close()  *
+ * already ran) would otherwise still leak a stale toast onto the next     *
+ * page load via with_alert_session().                                    *
+ * $user_id: the user to check                                             *
+ *****************************************************************************/
+function password_meets_min_age($user_id)
+{
     // Get the minimum password age
     $min_password_age = get_setting("pass_policy_min_age");
 
-    // If the minimum age policy is enabled
-    if ($min_password_age != 0)
-    {
-        // Open the database connection
-        $db = db_open();
-
-        // Get the last time the password for this user was updated
-        $stmt = $db->prepare("SELECT last_password_change_date FROM user WHERE value=:user_id;");
-        $stmt->bindParam(":user_id", $user_id, PDO::PARAM_INT);
-        $stmt->execute();
-        $value = $stmt->fetch();
-        $last_password_change_date = strtotime($value['last_password_change_date']);
-
-        // Close the database connection
-        db_close($db);
-
-        // Get the min password age date by subtracting today from the number of days x 86400
-        $min_password_age_date = time() - ($min_password_age * 86400);
-
-        // If the last time the password was changed is older than the min password age
-        if ($last_password_change_date < $min_password_age_date)
-        {
-            return true;
-        }
-        else
-        {
-            // Display an alert
-            set_alert(true, "bad", "Unable to update the password because the minimum age of ". $min_password_age . " days has not elapsed.");
-
-            // Return false
-            return false;
-        }
+    // If the minimum age policy is disabled, there's nothing to check
+    if ($min_password_age == 0) {
+        return true;
     }
-    // Otherwise, the minimum age policy is disabled so return true
-    else return true;
+
+    // Open the database connection
+    $db = db_open();
+
+    // Get the last time the password for this user was updated
+    $stmt = $db->prepare("SELECT last_password_change_date FROM user WHERE value=:user_id;");
+    $stmt->bindParam(":user_id", $user_id, PDO::PARAM_INT);
+    $stmt->execute();
+    $value = $stmt->fetch();
+    $last_password_change_date = strtotime($value['last_password_change_date']);
+
+    // Close the database connection
+    db_close($db);
+
+    // Get the min password age date by subtracting today from the number of days x 86400
+    $min_password_age_date = time() - ($min_password_age * 86400);
+
+    // The password may be changed once the last change predates the minimum age window
+    return $last_password_change_date < $min_password_age_date;
 }
 
 /************************************************************************************************
@@ -21779,14 +22231,16 @@ function save_custom_display_settings() {
  ***********************************/
 function reset_custom_display_settings()
 {
-    $_SESSION['custom_display_settings'] = array(
-        'id',
-        'subject',
-        'calculated_risk',
-        'submission_date',
-        'mitigation_planned',
-        'management_review'
-    );
+    with_alert_session(function () {
+        $_SESSION['custom_display_settings'] = array(
+            'id',
+            'subject',
+            'calculated_risk',
+            'submission_date',
+            'mitigation_planned',
+            'management_review'
+        );
+    });
     $custom_display_settings = json_encode($_SESSION['custom_display_settings']);
 
     // Open the database connection
@@ -23176,7 +23630,9 @@ function add_security_headers($x_frame_options = true, $x_xss_protection = true,
 	if ($content_security_policy)
 	{
 		// If we want to enable the Content Security Policy (CSP) - This may break Chrome
-		if (csp_enabled())
+		$csp_enabled = csp_enabled();
+
+		if ($csp_enabled)
 		{
 			// If the base URL is not set
 			if (!isset($_SESSION) || !array_key_exists('base_url', $_SESSION))
@@ -23186,18 +23642,40 @@ function add_security_headers($x_frame_options = true, $x_xss_protection = true,
 			}
 			// Otherwise, set the base URL
 			else  $simplerisk_base_url = $_SESSION['base_url'];
-
-			// If the simplerisk base url is valid
-			if (filter_var($simplerisk_base_url, FILTER_VALIDATE_URL))
-			{
-				// Add the Content-Security-Policy header with the simplerisk base url
-				header("Content-Security-Policy: default-src 'self'; style-src-elem 'unsafe-inline' *.googleapis.com cdn.jsdelivr.net " . $simplerisk_base_url . "; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline' 'unsafe-eval' *.googleapis.com cdn.jsdelivr.net; font-src cdn.jsdelivr.net " . $simplerisk_base_url . "; img-src 'self' *.googleapis.com " . $simplerisk_base_url . " data:; connect-src 'self' *.simplerisk.com services.nvd.nist.gov; frame-src 'self';");
-			}
-			// Otherwise add the Content-Security-Policy header without it
-			else header("Content-Security-Policy: default-src * 'unsafe-inline' 'unsafe-eval' data:");
 		}
-		else header("Content-Security-Policy: default-src * 'unsafe-inline' 'unsafe-eval' data:");
+		else $simplerisk_base_url = null;
+
+		header("Content-Security-Policy: " . build_csp_header_value($csp_enabled, $simplerisk_base_url));
 	}
+}
+
+/********************************************************
+ * FUNCTION: BUILD CONTENT SECURITY POLICY HEADER VALUE *
+ ********************************************************/
+function build_csp_header_value($csp_enabled, $simplerisk_base_url)
+{
+	// If CSP is disabled, or the base URL isn't a valid URL, fall back to the permissive policy
+	if (!$csp_enabled || !filter_var($simplerisk_base_url, FILTER_VALIDATE_URL))
+	{
+		return "default-src * 'unsafe-inline' 'unsafe-eval' data:";
+	}
+
+	$directives = array(
+		"default-src 'self'",
+		"style-src-elem 'unsafe-inline' " . $simplerisk_base_url,
+		"style-src 'self' 'unsafe-inline'",
+		"script-src 'self' 'unsafe-inline' " . $simplerisk_base_url,
+		"font-src 'self' " . $simplerisk_base_url,
+		"img-src 'self' " . $simplerisk_base_url . " data:",
+		"connect-src 'self'",
+		"frame-src 'self'",
+		"object-src 'none'",
+		"base-uri 'self'",
+		"frame-ancestors 'none'",
+		"form-action 'self' https://www.simplerisk.com",
+	);
+
+	return implode('; ', $directives) . ';';
 }
 
 /******************************************
@@ -27775,6 +28253,49 @@ function custom_display_columns_are_valid($column_sets)
     return true;
 }
 
+/**
+ * Whether $value is an accepted column-visibility flag -- the value half of
+ * a [name, value] display-column pair. custom_display_columns_are_valid()
+ * above only validates the NAME half; this is the shared value validator
+ * every page-scoped `*_column_value_is_valid()` wrapper (Plan Projects,
+ * Define Control Frameworks) delegates to. Loose (non-strict types) because
+ * it must accept both a fresh POST body (string '0'/'1' from $_POST) and a
+ * value already json_decode()'d back out of storage (still a JSON string,
+ * but defends against a hand-edited/legacy int 0/1 row too).
+ */
+function custom_display_column_value_is_valid($value): bool
+{
+    return in_array($value, ['0', '1', 0, 1], true);
+}
+
+/** Coerce an already-validated column-visibility flag to the canonical '1'/'0' string. */
+function custom_display_normalize_column_flag($value): string
+{
+    return in_array($value, ['1', 1], true) ? '1' : '0';
+}
+
+/**
+ * Validate + normalise a `columns` array for saving: every pair's value must
+ * pass custom_display_column_value_is_valid() (name validity is the caller's
+ * job via custom_display_columns_are_valid()). Returns the pairs with value
+ * coerced to '1'/'0', or null if any pair's value is not one of '0','1',0,1.
+ * Shared by every page-scoped `*_normalize_columns_for_save()` wrapper (Plan
+ * Projects, Define Control Frameworks).
+ */
+function custom_display_normalize_columns_for_save(array $columns): ?array
+{
+    $normalized = [];
+    foreach ($columns as $pair) {
+        $value = is_array($pair) ? ($pair[1] ?? null) : null;
+        if (!custom_display_column_value_is_valid($value)) {
+            return null;
+        }
+        $name = is_array($pair) ? ($pair[0] ?? null) : $pair;
+        $normalized[] = [$name, custom_display_normalize_column_flag($value)];
+    }
+    return $normalized;
+}
+
 /****************************************************
  * FUNCTION: CUSTOM REVIEW RISK COLUMN ORDER IS VALID *
  ****************************************************/
@@ -27973,11 +28494,112 @@ function build_active_review_risk_columns()
     return $columns;
 }
 
+/**
+ * Column vocabulary for the Define Control Frameworks page's Columns picker
+ * (mirrors build_active_review_risk_columns()/build_active_plan_projects_
+ * columns() -- the standing pattern for a page whose custom-field columns are
+ * curated by the Customization Extra). NULL when the Extra is off -> the
+ * client keeps its own static 8-column list (ControlFamily/Owner/Class/Phase/
+ * Priority/ControlType/Maturity/Status) and offers no custom fields.
+ *
+ * ControlNumber and ControlShortName are the page's pinned lead columns --
+ * never toggleable, so they map to null and are dropped, matching
+ * build_active_plan_projects_columns()'s 'ProjectName' => null entry.
+ *
+ * `label` is DELIBERATELY RAW for custom fields (admin-named, not translated)
+ * -- same double-escaping contract as the two sibling functions above: the
+ * picker's JS escapes it exactly once when it renders the checkbox label.
+ */
+function build_active_control_columns()
+{
+    global $lang;
+    if (!customization_extra()) {
+        return null;
+    }
+    $file = realpath(__DIR__ . '/../extras/customization/index.php');
+    if ($file === false) {
+        return null;
+    }
+    require_once($file);
+
+    $basic_map = [
+        'ControlNumber'          => null,
+        'ControlShortName'       => null,
+        'ControlFamily'          => ['family', $lang['ControlFamily']],
+        'ControlOwner'           => ['owner', $lang['Owner']],
+        'ControlClass'           => ['class', $lang['ControlClass']],
+        'ControlPhase'           => ['phase', $lang['ControlPhase']],
+        'ControlPriority'        => ['priority', $lang['ControlPriority']],
+        'ControlType'            => ['control_type', $lang['ControlType']],
+        'CurrentControlMaturity' => ['maturity', $lang['Maturity']],
+        'ControlStatus'          => ['status', $lang['Status']],
+    ];
+
+    $columns = [];
+    foreach (get_active_fields('control') as $field) {
+        if ((int)$field['is_basic'] === 1) {
+            $entry = $basic_map[$field['name']] ?? null;
+            if ($entry) {
+                $columns[] = ['key' => $entry[0], 'label' => $entry[1], 'custom' => false];
+            }
+        } else {
+            $columns[] = [
+                'key' => 'custom_field_' . (int)$field['id'],
+                // Deliberately RAW -- see this function's own docblock.
+                'label' => $field['name'],
+                'custom' => true,
+            ];
+        }
+    }
+    return $columns;
+}
+
+/**
+ * Structural sanitizer for a decoded custom_control_frameworks_display_
+ * settings row: defends the read path against a row written before this
+ * validation existed, or any other stray shape, the same way
+ * plan_projects_sanitize_column_settings() (includes/api.php) re-validates
+ * its own stored JSON from scratch rather than trusting storage.
+ *
+ * `columns` pairs are kept only when the name is a plain [A-Za-z0-9_]+ token
+ * (SR-1870 -- it is later used as a data-col attribute) and the value is a
+ * recognized 0/1 flag. Any other top-level key -- including a `filters` key
+ * a pre-fix row may still carry -- is silently dropped: the filter sheet's
+ * facet state is not persisted, so a leftover `filters` blob from before
+ * this was pulled back out is inert data, never read back into the client.
+ *
+ * Returns ['columns' => [...]] or null when nothing valid remains.
+ */
+function control_frameworks_sanitize_display_settings($decoded)
+{
+    if (!is_array($decoded)) {
+        return null;
+    }
+    $sanitized = [];
+    if (isset($decoded['columns']) && is_array($decoded['columns'])) {
+        $valid_columns = [];
+        foreach ($decoded['columns'] as $pair) {
+            $name = is_array($pair) ? ($pair[0] ?? null) : null;
+            $value = is_array($pair) ? ($pair[1] ?? null) : null;
+            if (is_string($name) && preg_match('/^[A-Za-z0-9_]+$/', $name) && custom_display_column_value_is_valid($value)) {
+                $valid_columns[] = [$name, custom_display_normalize_column_flag($value)];
+            }
+        }
+        if (!empty($valid_columns)) {
+            $sanitized['columns'] = $valid_columns;
+        }
+    }
+    return empty($sanitized) ? null : $sanitized;
+}
+
 /***********************************************
  * FUNCTION: SAVE CUSTOM RISK DISPLAY SETTINGS *
  **********************************************/
-function save_custom_risk_display_settings($field = "custom_review_risk_display_settings", $data = [])
+function save_custom_risk_display_settings($field = "custom_review_risk_display_settings", $data = [], $user_id = null)
 {
+    // Defaults to the session user; callers that already know the user (and
+    // tests) may pass an explicit id. $field is always a caller-side constant.
+    $user_id = ($user_id === null) ? $_SESSION['uid'] : (int)$user_id;
     $data_str = json_encode($data);
     
     // Open the database connection
@@ -27985,7 +28607,7 @@ function save_custom_risk_display_settings($field = "custom_review_risk_display_
 
     $stmt = $db->prepare("UPDATE `user` SET `{$field}` = :data_str WHERE `value` = :value");
     $stmt->bindParam(":data_str", $data_str, PDO::PARAM_STR);
-    $stmt->bindParam(":value", $_SESSION['uid'], PDO::PARAM_INT);
+    $stmt->bindParam(":value", $user_id, PDO::PARAM_INT);
     $stmt->execute();
 
     // Close the database connection
@@ -29371,10 +29993,10 @@ function upload_validation_file($mitigation_id, $control_id, $file)
         // non-admin risk-management work, so it is exactly as reachable on a
         // demo as a risk attachment.
         //
-        // Returns 1 — the success code — because the caller in
-        // save_mitigation_controls() breaks its upload loop on any non-1
-        // return, and refusing loudly would abort the rest of a legitimate
-        // mitigation save.
+        // Returns 1 — the success code — because the caller
+        // (saveMitigationControlValidation(), includes/api.php) treats any
+        // other return as a real upload error and would otherwise fail a
+        // legitimate validation save over a refusal that isn't one.
         if (demo_mode())
         {
             set_alert(true, "bad", $lang['ActionDisabledOnDemoInstance']);
@@ -29761,7 +30383,7 @@ function cvss3_temporal_vector_split($cvss_temporal_vector)
  * schema's own default of 1 -- the same contract the Extra's helper applies
  * in its own "Extra inactive" branch.
  *
- * @param string   $fgroup            'asset' | 'project' | 'framework' | 'control'
+ * @param string   $fgroup            'risk' | 'asset' | 'project' | 'framework' | 'control'
  * @param int|null $template_group_id the caller-supplied id, or null for "no opinion"
  * @return int
  */
@@ -29778,6 +30400,949 @@ function resolve_template_group_id_from_core($fgroup, $template_group_id)
     }
 
     return $template_group_id !== null ? (int)$template_group_id : 1;
+}
+
+/**********************************************************************
+ * FUNCTION: CUSTOMIZATION CARDS LAYOUT CARD KEYS                     *
+ * The curated card set for the risk Details tab, in canvas order.    *
+ *                                                                    *
+ * CORE, not Extra: this (and the three helpers below it) used to live *
+ * in extras/customization/{index,upgrade}.php, but the Core-only      *
+ * Submit Risk fallback (api_synthesize_no_extra_risk_fields() /       *
+ * _layout(), api/v2/includes/api.php) depends on them -- and the      *
+ * shipped customer bundle deletes simplerisk/extras/ entirely         *
+ * (.github/workflows/publish-bundle.yml's `rm -rf simplerisk/extras`),*
+ * so a Core fallback that structurally requires an Extra file to      *
+ * exist on disk renders nothing at all for a real Core-only customer. *
+ * All four are pure -- literal arrays and arithmetic, no DB access,   *
+ * no Extra-table or Extra-state dependency -- so Core owns them and   *
+ * the Customization Extra calls them like any other Core helper       *
+ * (Extra -> Core calls are always safe; Core -> Extra calls are the   *
+ * direction that needs a guard).                                     *
+ **********************************************************************/
+function customization_cards_layout_card_keys(): array
+{
+    // 'assignment' sits directly after Scoring, ahead of Classification: the
+    // stack reads as what the risk is (General), how bad it is (Scoring), WHO
+    // is on the hook for it (Assignment), what kind of thing it is
+    // (Classification), then the long-form supporting material (Additional
+    // information). The name is not new to the product -- Incident
+    // Management's own `incident_assignment` section (the
+    // $field_settings_display_groups map in this file) groups reporter/owner/
+    // team/additional_stakeholders under the same 'Assignment' header key, so
+    // the two features agree on what that word means.
+    //
+    // 'custom_fields' trails last, same as
+    // customization_mitigation_cards_layout_card_keys() and
+    // customization_review_cards_layout_card_keys() -- a catch-all for an
+    // admin-created custom field, not a curated card. Present in this list
+    // purely so save_customization_layout()'s $valid_card_keys accepts it
+    // (extras/customization/index.php) and so backfill_customization_cards_
+    // layout()'s existence-gated seed loop creates its row like every other
+    // card (extras/customization/upgrade.php) -- api_synthesize_no_extra_
+    // risk_layout() (api/v2/includes/api.php) already strips it back out via
+    // array_diff() for the no-Extra Submit Risk fallback, where there is
+    // never a custom field to put in it. Whether it's ever actually SHOWN is
+    // a separate, render-time decision made from field count, not from this
+    // list or from whether its row exists (risk-details-view.js's
+    // renderCards(), risk-details-form.js's buildCanvas(), and the admin
+    // layout editor's own buildCanvas() all skip it -- and every other card,
+    // in the two risk-view engines' case -- when it currently holds zero
+    // fields). See customization-layout-editor.js's
+    // DEFAULT_CATCH_ALL_CARD_KEY_BY_CANVAS for where a newly-created custom
+    // field actually lands by default.
+    return ['general', 'scoring', 'assignment', 'classification', 'additional_info', 'custom_fields'];
+}
+
+/**********************************************************************
+ * FUNCTION: CUSTOMIZATION FIELDS PER ROW                             *
+ * How many field chips the default layout puts side by side inside a  *
+ * card. The nested grid is customization_nested_grid_columns() wide,   *
+ * so two chips at half width is the two-column form the risk Details   *
+ * tab had for its whole life before the Cards layout -- `panel_name`   *
+ * was literally 'left'/'right' (display_admin_field_list(), extras/    *
+ * customization/index.php), and the first Cards backfill collapsed     *
+ * both panels into one full-width column.                              *
+ *                                                                     *
+ * Subject is the deliberate exception and stays full width: it is the  *
+ * one free-text field an author always fills in, and it is synthesized *
+ * at full width by get_subject_synthetic_field_entry() rather than     *
+ * counted here.                                                        *
+ **********************************************************************/
+function customization_nested_grid_columns(): int
+{
+    return 6;
+}
+
+function customization_fields_per_row(): int
+{
+    return 2;
+}
+
+function customization_default_field_width(): int
+{
+    return (int)(customization_nested_grid_columns() / customization_fields_per_row());
+}
+
+/**********************************************************************
+ * FUNCTION: CUSTOMIZATION CARD HEIGHT FOR FIELD COUNT                *
+ * A card tile's seeded height (top-grid rows, cellHeight 60) derived  *
+ * from how many field chips it actually holds, so the default stack    *
+ * genuinely "renders identically to today" rather than clipping a      *
+ * 7-field card into a uniform 4-row tile.                              *
+ *                                                                     *
+ * Each field chip is 2 nested rows tall at cellHeight 30 (= 60px) and  *
+ * customization_fields_per_row() of them share a row, so n fields need  *
+ * 2 * ceil(n / fields-per-row) nested rows. The nested grid's own      *
+ * minRow is 2, and the General card reserves its first nested row pair *
+ * for the synthetic Subject entry, which is full width and therefore   *
+ * never shares its row. One extra top-grid row covers the card's       *
+ * header strip.                                                       *
+ *                                                                     *
+ * $field_count is the count of fields that actually DRAW something --  *
+ * risk_details_drawn_field_count(), below. Counting a widget-less      *
+ * field here sizes the tile for a slot Submit Risk never renders:      *
+ * packRenderableFields() (js/simplerisk/pages/submit-risk.js) drops    *
+ * those fields and reclaims the rows they held, so the card would be   *
+ * seeded one top-grid row taller than its own content.                 *
+ *                                                                     *
+ * Honest about the blast radius: that row is not visible on the        *
+ * shipped default layout today. This formula budgets nothing for the   *
+ * card's padding, header or GridStack margin, so the height it returns *
+ * lands BELOW the height the grow-only auto-fit sweep settles on, and  *
+ * the seeded value is never the binding one. Measured live -- General  *
+ * rendered identically at the over-counted height and the drawn-count  *
+ * one; only a height well above the content (pos_h 10) showed as dead  *
+ * space. So this keeps the stored geometry honest rather than fixing a *
+ * visible gap, and it matters the moment a card's controls are short   *
+ * enough for the formula to become the binding number.                 *
+ **********************************************************************/
+function customization_card_height_for_field_count(int $field_count, bool $reserves_first_row = false): int
+{
+    $rows_of_fields = (int)ceil(max(0, $field_count) / customization_fields_per_row());
+    $nested_rows = ($reserves_first_row ? 2 : 0) + (2 * $rows_of_fields);
+    if ($nested_rows < 2) {
+        $nested_rows = 2;
+    }
+
+    return (int)ceil($nested_rows / 2) + 1;
+}
+
+/**********************************************************************
+ * FUNCTION: CUSTOMIZATION ASSET CARDS LAYOUT CARD KEYS                *
+ * The asset record's card set (fgroup 'asset', tab_index 1), in stack  *
+ * order. Sibling to customization_cards_layout_card_keys() (risk       *
+ * Details) -- a distinct function so the asset set can evolve without  *
+ * any risk to the shipped risk cards. 'custom_fields' trails as the    *
+ * same computed-visibility catch-all the risk card sets use.           *
+ **********************************************************************/
+function customization_asset_cards_layout_card_keys(): array
+{
+    // Same keys (and labels) as the risk Details cards they mirror, so the
+    // two designers share one vocabulary: General, Assignment,
+    // Classification, Additional Information. 'scoring' (Asset Scoring,
+    // spec 2026-09-30) sits after Classification. It shares the risk
+    // Details 'scoring' KEY only by name: every validator, backfill and
+    // query is scoped by fgroup/tab, so the two sets never mix.
+    return ['general', 'assignment', 'classification', 'scoring', 'additional_info', 'custom_fields'];
+}
+
+/**********************************************************************
+ * FUNCTION: GET ASSET CORE FIELD CARD MAP                            *
+ * Deterministic core-field-name => ['card' => card_key, 'w' => width  *
+ * in the nested customization_nested_grid_columns()-wide grid] map     *
+ * for the ten seeded asset fields. Pure data (no DB access), so the    *
+ * Customization Extra's backfill, the Core no-Extra fallback layout    *
+ * and tests all share one answer. A custom (is_basic=0) asset field is *
+ * not listed: it defaults to the 'custom_fields' card at             *
+ * customization_default_field_width().                                *
+ **********************************************************************/
+function get_asset_core_field_card_map(): array
+{
+    $full = customization_nested_grid_columns();
+    $half = customization_default_field_width();
+
+    return [
+        'AssetName' => ['card' => 'general', 'w' => $full],
+        'IPAddress' => ['card' => 'general', 'w' => $half],
+        'AssetValuation' => ['card' => 'general', 'w' => $half],
+        'Team' => ['card' => 'assignment', 'w' => $full],
+        'SiteLocation' => ['card' => 'classification', 'w' => $full],
+        'AssetDetails' => ['card' => 'additional_info', 'w' => $full],
+        'MappedControls' => ['card' => 'additional_info', 'w' => $full],
+        'AssociatedRisks' => ['card' => 'additional_info', 'w' => $full],
+        'Tags' => ['card' => 'additional_info', 'w' => $full],
+        // Asset Scoring's composite widget (three selections plus the computed
+        // results), alone in its own card. Never required (ruling G8).
+        'AssetScoring' => ['card' => 'scoring', 'w' => $full],
+    ];
+}
+
+/**********************************************************************
+ * FUNCTION: GET ASSET CORE FIELD DEFAULT ORDER                       *
+ * The order a fresh Customization-Extra install writes the asset core *
+ * fields' `ordering` in -- mirrors the literal INSERTs in             *
+ * seed_customization_extra_initial_data() and the asset branch of     *
+ * set_default_main_fields() (extras/customization/), which must stay  *
+ * in step with this list.                                             *
+ **********************************************************************/
+function get_asset_core_field_default_order(): array
+{
+    // Also the top-to-bottom order of the fields inside each card: the
+    // backfill and the no-Extra synthesis stack a card's fields in this order.
+    // AssetScoring is last (ordering 9): it is alone in the Scoring card, so
+    // the in-card order of every other field is unchanged.
+    return ['AssetName', 'IPAddress', 'AssetValuation', 'Team', 'SiteLocation', 'AssetDetails', 'MappedControls', 'AssociatedRisks', 'Tags', 'AssetScoring'];
+}
+
+/**********************************************************************
+ * FUNCTION: GET ASSET SYNTHETIC REQUIRED FIELD NAMES                 *
+ * Asset fields the record UI treats as required although the seeded    *
+ * custom_fields.required column is 0 (the same idea as Subject for    *
+ * risks). The column itself is deliberately not changed.              *
+ **********************************************************************/
+function get_asset_synthetic_required_field_names(): array
+{
+    return ['AssetName'];
+}
+
+/**********************************************************************
+ * FUNCTION: ASSET FIELD IS POSITIONABLE                              *
+ * Whether an asset field can be placed on the Assets designer canvas. *
+ * Every admin-created custom field can; a basic field only when it is *
+ * one of the core fields the card map knows a card for. A basic field *
+ * outside that map would have no card to land in.                     *
+ **********************************************************************/
+function asset_field_is_positionable(string $field_name, bool $is_basic): bool
+{
+    return !$is_basic || array_key_exists($field_name, get_asset_core_field_card_map());
+}
+
+/**********************************************************************
+ * FUNCTION: CUSTOMIZATION LAYOUT PAYLOAD REJECTION REASON            *
+ * Pure decision behind save_customization_layout()'s safety net: does *
+ * the raw client payload lose anything when normalised against the    *
+ * scope's card-key set? save_customization_layout() DELETEs every     *
+ * existing field the (normalised) payload omits, so a field dropped   *
+ * because its card_key failed validation would be silently deleted.   *
+ *                                                                     *
+ * Always rejects a field entry that carries a positive id but whose   *
+ * id did not survive normalisation. With $strict (asset) it rejects   *
+ * ANY entry, card or field, that did not normalise, any duplicate     *
+ * field id, and an empty field list. Returns a short machine reason,  *
+ * or null when the payload may be applied.                            *
+ **********************************************************************/
+function customization_layout_payload_rejection_reason($raw_cards, $raw_fields, array $normalized_cards, array $normalized_fields, bool $strict): ?string
+{
+    $raw_cards = is_array($raw_cards) ? $raw_cards : [];
+    $raw_fields = is_array($raw_fields) ? $raw_fields : [];
+
+    foreach ($raw_fields as $field) {
+        // A positive id that did not survive normalisation had a card_key outside
+        // the scope's set; treating it as "omitted" would delete the field.
+        if (is_array($field) && isset($field['id']) && is_scalar($field['id']) && (int)$field['id'] > 0
+            && !isset($normalized_fields[(int)$field['id']])) {
+            return 'invalid_field';
+        }
+    }
+
+    if (!$strict) {
+        return null;
+    }
+
+    if (empty($raw_fields) || empty($normalized_fields)) {
+        return 'empty_fields';
+    }
+    if (count($raw_fields) !== count($normalized_fields)) {
+        return 'invalid_field';
+    }
+    if (count($raw_cards) !== count($normalized_cards)) {
+        return 'invalid_card';
+    }
+
+    return null;
+}
+
+/**********************************************************************
+ * FUNCTION: GET RISK DETAILS CORE FIELD DEFAULT ORDER                *
+ * The order a FRESH Customization-Extra install actually writes the   *
+ * risk Details tab's core fields in -- panel 'top', 'left', 'right',  *
+ * 'bottom', each by its own `ordering`. Mirrors the literal INSERTs   *
+ * in seed_customization_extra_initial_data() (extras/customization/   *
+ * upgrade.php) and the ORDER BY in                                    *
+ * backfill_customization_cards_layout().                              *
+ *                                                                     *
+ * Core owns this because the no-Extra Submit Risk fallback has no     *
+ * custom_template rows to read an order OUT of, and it has to produce *
+ * the layout a fresh Extra-on install would or the two render         *
+ * differently. That used to be invisible: in the old one-per-row      *
+ * stack both orders produced the same visible sequence once the two   *
+ * widget-less fields were dropped. With two fields to a row the order *
+ * decides which fields PAIR, so the divergence became visible and     *
+ * this list is now load-bearing rather than cosmetic.                 *
+ *                                                                     *
+ * 'JiraIssueKey' is absent on purpose -- it only ever exists because  *
+ * the Jira Extra inserts it through the Customization Extra's tables, *
+ * so no default seed contains it.                                     *
+ *                                                                     *
+ * 'SubmittedBy' IS here, deliberately. It draws no control on Submit  *
+ * Risk (risk_details_field_renders_no_control(), below), but the same *
+ * custom_template row feeds the risk View / Edit / Print detail pages *
+ * through get_active_fields(), which INNER JOINs that table -- so     *
+ * keeping the field off the default template would silently drop      *
+ * "Submitted By" from all three. It is seated LAST inside its card     *
+ * instead (sort_risk_details_fields_widgetless_last()), which is what  *
+ * stops it pairing with a real field and leaving a visible hole.       *
+ **********************************************************************/
+function get_risk_details_core_field_default_order(): array
+{
+    return [
+        // panel 'top'
+        'RiskMapping', 'ThreatMapping',
+        // panel 'left'
+        'SubmissionDate', 'Category', 'SiteLocation', 'ExternalReferenceId',
+        'ControlRegulation', 'ControlNumber', 'AffectedAssets', 'Technology',
+        'Owner', 'OwnersManager', 'Team', 'AdditionalStakeholders',
+        // panel 'right'
+        'SubmittedBy', 'RiskSource', 'RiskScoringMethod', 'RiskScoringHistory', 'RiskAssessment',
+        'AdditionalNotes', 'SupportingDocumentation',
+        // panel 'bottom'
+        'Tags',
+    ];
+}
+
+/**********************************************************************
+ * FUNCTION: RISK DETAILS FIELD RENDERS NO CONTROL                    *
+ * True for a core field that draws NOTHING on Submit Risk.           *
+ * SubmissionDate and SubmittedBy are both set automatically by the    *
+ * submit handler and the real Add flow renders no control for either, *
+ * which submit-risk.js reproduces with its 'skip' widget type.        *
+ * RiskScoringHistory has no Submit Risk representation at all -- it's *
+ * a read-only chart widget (buildScoringHistoryWidget(),              *
+ * risk-details-view.js) with nothing to create/edit.                  *
+ *                                                                     *
+ * The seeders need to know this, even though "what the client draws"  *
+ * normally is not their business: a field that draws nothing still    *
+ * occupies a slot in the seeded layout, and with two fields to a row  *
+ * it would otherwise take the slot NEXT TO a real field and leave a   *
+ * visible hole beside it. Seeding them last lets them pair with each  *
+ * other, so the row they share disappears cleanly instead.            *
+ **********************************************************************/
+function risk_details_field_renders_no_control(string $field_name): bool
+{
+    return in_array($field_name, ['SubmissionDate', 'SubmittedBy', 'RiskScoringHistory'], true);
+}
+
+/**********************************************************************
+ * FUNCTION: RISK DETAILS FIELD FORCED FULL WIDTH                     *
+ * True for a core field that is always seeded full width, on its own *
+ * row, regardless of its card's normal two-per-row pairing:           *
+ * RiskScoringMethod (a dedicated one-field 'scoring' card_key) and    *
+ * RiskScoringHistory (the chart widget seated directly beneath it,    *
+ * same card_key -- too wide a widget to ever share a row),            *
+ * RiskAssessment (General's only other drawn field, sits directly     *
+ * under Subject), AdditionalNotes/Tags (Additional Information's      *
+ * leading/trailing rows -- get_additional_info_card_field_default_    *
+ * order()), and AffectedAssets (Classification's leading row --       *
+ * get_classification_card_field_default_order()).                     *
+ *                                                                      *
+ * Every seeding path that positions risk Details-tab fields must       *
+ * consult this rather than its own literal list -- see                *
+ * reseat_customization_fields_two_per_row()'s docblock                *
+ * (extras/customization/upgrade.php) for what happened when one        *
+ * didn't: that migration's "was this card left untouched at the OLD    *
+ * single-column shape" heuristic can't tell a genuinely-unmigrated      *
+ * card from a card that is SUPPOSED to be full width (the 'scoring'     *
+ * card, whose one field satisfies that exact signature by design),      *
+ * and silently shrank RiskScoringMethod back to half width on every      *
+ * instance that ran it.                                                  *
+ **********************************************************************/
+function risk_details_field_forced_full_width(string $field_name): bool
+{
+    // MitigationControls (Mitigation tab): the redesigned picker/chips field
+    // now carries its own embedded, collapsed-by-default Mitigation Controls
+    // table below it (risk-mitigation-controls.js) -- same "selector plus
+    // its own data, together, full width" shape as RiskScoringMethod/
+    // RiskScoringHistory above, just embedded in one field instead of two.
+    //
+    // CurrentSolution/SecurityRequirements/SecurityRecommendations: upgraded
+    // to 'richtext' (js/simplerisk/common/risk-details-form.js's
+    // CORE_FIELD_WIDGETS) alongside RiskAssessment/AdditionalNotes above --
+    // every richtext field in this list is full width for the same reason:
+    // HugeRTE's fixed-height editor chrome doesn't shrink to a half-width
+    // column usefully.
+    return in_array($field_name, ['RiskScoringMethod', 'RiskScoringHistory', 'RiskAssessment', 'AdditionalNotes', 'Tags', 'AffectedAssets', 'MitigationControls', 'CurrentSolution', 'SecurityRequirements', 'SecurityRecommendations'], true);
+}
+
+/**********************************************************************
+ * FUNCTION: SORT RISK DETAILS FIELDS WIDGETLESS LAST                 *
+ * Stable partition of one CARD's fields: everything that draws a real *
+ * control keeps its relative order at the front, and the fields that  *
+ * draw nothing (see above) move to the end. $name_of extracts the     *
+ * field name, so both seeding paths can use this on their own row     *
+ * shape -- DB rows on the Extra side, plain names on the Core side.   *
+ **********************************************************************/
+function sort_risk_details_fields_widgetless_last(array $items, callable $name_of): array
+{
+    $drawn = [];
+    $widgetless = [];
+
+    foreach ($items as $item) {
+        if (risk_details_field_renders_no_control((string)$name_of($item))) {
+            $widgetless[] = $item;
+        } else {
+            $drawn[] = $item;
+        }
+    }
+
+    return array_merge($drawn, $widgetless);
+}
+
+/**********************************************************************
+ * FUNCTION: SORT RISK DETAILS FIELDS WIDGETLESS FIRST                *
+ * The General card's mirror image of sort_risk_details_fields_        *
+ * widgetless_last() above: SubmissionDate/SubmittedBy lead so they     *
+ * occupy the row immediately before the synthetic Subject entry's      *
+ * reserved gap (get_subject_synthetic_field_entry(), pos_y=2), and any *
+ * drawn field (RiskAssessment) follows after that gap. Every OTHER     *
+ * card wants its widgetless members trailing instead -- so they don't  *
+ * leave a hole beside a real field -- which is why this is a separate  *
+ * function rather than a flag on the one above.                       *
+ **********************************************************************/
+function sort_risk_details_fields_widgetless_first(array $items, callable $name_of): array
+{
+    $drawn = [];
+    $widgetless = [];
+
+    foreach ($items as $item) {
+        if (risk_details_field_renders_no_control((string)$name_of($item))) {
+            $widgetless[] = $item;
+        } else {
+            $drawn[] = $item;
+        }
+    }
+
+    return array_merge($widgetless, $drawn);
+}
+
+/**********************************************************************
+ * FUNCTION: GET ADDITIONAL INFORMATION CARD FIELD DEFAULT ORDER      *
+ * The default row order inside Additional Information: Additional     *
+ * Notes leads full width, then Control Regulation/Control Number pair *
+ * up, then External Reference ID/Supporting Documentation pair up,    *
+ * then Tags trails full width. Consumed by                            *
+ * sort_risk_details_fields_by_explicit_order() below -- a separate     *
+ * data function (rather than inlining the array at the call site) so   *
+ * both seeding paths and any future test can read the canonical        *
+ * sequence without re-deriving it.                                     *
+ **********************************************************************/
+function get_additional_info_card_field_default_order(): array
+{
+    return ['AdditionalNotes', 'ControlRegulation', 'ControlNumber', 'ExternalReferenceId', 'SupportingDocumentation', 'Tags'];
+}
+
+/**********************************************************************
+ * FUNCTION: GET CLASSIFICATION CARD FIELD DEFAULT ORDER               *
+ * The default row order inside Classification: Affected Assets leads   *
+ * full width (2 nested-grid columns), then Risk Mapping/Threat Mapping *
+ * pair up, then Site/Location/Technology pair up, then Category/Risk   *
+ * Source pair up. Consumed by                                          *
+ * sort_risk_details_fields_by_explicit_order() below, same as          *
+ * Additional Information's own default-order data function above.      *
+ **********************************************************************/
+function get_classification_card_field_default_order(): array
+{
+    return ['AffectedAssets', 'RiskMapping', 'ThreatMapping', 'SiteLocation', 'Technology', 'Category', 'RiskSource'];
+}
+
+/**********************************************************************
+ * FUNCTION: SORT RISK DETAILS FIELDS BY EXPLICIT ORDER                *
+ * Reorders a card's fields to $order's explicit sequence, stably       *
+ * appending anything $order does not name -- JiraIssueKey (Jira Extra  *
+ * only), an uncategorized custom field defaulting into Additional      *
+ * Information as the Details tab's catch-all (see                      *
+ * backfill_customization_cards_layout()'s docblock), or any field a    *
+ * future card gains that its own curated order hasn't been updated     *
+ * for yet -- after it, in their original relative order. $name_of      *
+ * extracts the field name so both seeding paths can use this on their  *
+ * own item shape -- DB rows on the Extra side, plain names on the Core *
+ * side -- the same split sort_risk_details_fields_widgetless_last()    *
+ * uses. Shared by every card with a curated (non-widgetless-driven)    *
+ * default order -- see get_additional_info_card_field_default_order()  *
+ * and get_classification_card_field_default_order() above.             *
+ **********************************************************************/
+function sort_risk_details_fields_by_explicit_order(array $items, callable $name_of, array $order): array
+{
+    $priority = array_flip($order);
+
+    $known = [];
+    $rest = [];
+
+    foreach ($items as $item) {
+        $name = (string)$name_of($item);
+        if (isset($priority[$name])) {
+            $known[$priority[$name]] = $item;
+        } else {
+            $rest[] = $item;
+        }
+    }
+
+    ksort($known);
+
+    return array_merge(array_values($known), $rest);
+}
+
+/**********************************************************************
+ * FUNCTION: RISK DETAILS DRAWN FIELD COUNT                           *
+ * How many of $field_names actually draw a control on Submit Risk --  *
+ * the number every seeding path must hand                             *
+ * customization_card_height_for_field_count(), rather than the raw    *
+ * row count.                                                          *
+ *                                                                     *
+ * The widget-less pair is seated LAST inside its card                  *
+ * (sort_risk_details_fields_widgetless_last()) precisely so the row    *
+ * it occupies contains nothing else, which means Submit Risk reclaims  *
+ * that row whole. Excluding them from the height is therefore exact,   *
+ * not an approximation: the tile ends up the height of what actually   *
+ * renders. The layout EDITOR does draw a chip for every field, and it  *
+ * grows each card to fit its own chips on build (growCardToFit(),      *
+ * js/simplerisk/pages/customization-layout-editor.js), so the shorter  *
+ * seeded height costs it nothing.                                     *
+ **********************************************************************/
+function risk_details_drawn_field_count(array $field_names): int
+{
+    $count = 0;
+
+    foreach ($field_names as $field_name) {
+        if (!risk_details_field_renders_no_control((string)$field_name)) {
+            $count++;
+        }
+    }
+
+    return $count;
+}
+
+/**********************************************************************
+ * FUNCTION: GET RISK DETAILS CORE FIELD CARD MAP                     *
+ * Deterministic name -> card_key map for the risk Details tab's core *
+ * (is_basic=1) fields. Pure data, no DB access -- safe to call from  *
+ * the Customization Extra's migration (the raw-SQL-only rule is about *
+ * helpers that QUERY tables assuming current schema; this has no such *
+ * dependency), from the Core no-Extra Submit Risk fallback, and from  *
+ * runtime/tests directly.                                            *
+ **********************************************************************/
+function get_risk_details_core_field_card_map(): array
+{
+    return [
+        'SubmissionDate' => 'general',
+        'SubmittedBy' => 'general',
+
+        // Risk Assessment sits directly underneath Subject -- both are the
+        // free-text material an author writes about the risk itself, before
+        // the form moves into classifying/scoring/assigning it. Seeded full
+        // width in the same card, immediately after Subject's reserved row
+        // (see backfill_customization_cards_layout()'s 'general'-card
+        // branch and get_subject_synthetic_field_entry()'s docblock).
+        'RiskAssessment' => 'general',
+
+        // Site/Location and Risk Source describe what KIND of risk this is --
+        // where it lives and where it came from -- which is Classification's
+        // job, not General's. Risk Mapping and Threat Mapping are the same
+        // question asked against a catalog, so they belong here too rather
+        // than in the free-text material at the bottom of the form.
+        'Category' => 'classification',
+        'SiteLocation' => 'classification',
+        'AffectedAssets' => 'classification',
+        'Technology' => 'classification',
+        'RiskSource' => 'classification',
+        'RiskMapping' => 'classification',
+        'ThreatMapping' => 'classification',
+
+        // Who is on the hook. Same grouping Incident Management already uses
+        // for the same four concepts -- see the card-order helper above.
+        'Owner' => 'assignment',
+        'OwnersManager' => 'assignment',
+        'AdditionalStakeholders' => 'assignment',
+        'Team' => 'assignment',
+
+        'RiskScoringMethod' => 'scoring',
+
+        // Chart widget, not a scored/editable value -- lives in the same
+        // card as RiskScoringMethod (buildScoringHistoryWidget(),
+        // risk-details-view.js), directly beneath it.
+        'RiskScoringHistory' => 'scoring',
+
+        // External Reference ID is a bookkeeping value an author fills in
+        // afterwards when their organisation uses one, not part of stating
+        // what the risk is -- it reads as supporting material.
+        'ExternalReferenceId' => 'additional_info',
+        'ControlRegulation' => 'additional_info',
+        'ControlNumber' => 'additional_info',
+        'AdditionalNotes' => 'additional_info',
+        'JiraIssueKey' => 'additional_info',
+        'SupportingDocumentation' => 'additional_info',
+        'Tags' => 'additional_info',
+    ];
+}
+
+/**********************************************************************
+ * FUNCTION: CUSTOMIZATION MITIGATION CARDS LAYOUT CARD KEYS           *
+ * Sibling to customization_cards_layout_card_keys() (Details' cards). *
+ * A distinct function rather than a generic parameterization of that  *
+ * one: Mitigation's card set is structurally different (5 cards, not  *
+ * 6), and keeping them separate means a bug in this migration or map  *
+ * carries zero risk to Details' already-shipped card set.             *
+ **********************************************************************/
+function customization_mitigation_cards_layout_card_keys(): array
+{
+    // 'custom_fields' is the SAME catch-all concept Details' own card set
+    // uses (identical key, identical $lang['CardCustomFields'] label,
+    // identical "computed, not stored" visibility rule client-side -- see
+    // customization-layout-editor.js's buildCanvas(), which skips rendering
+    // this card entirely when it holds zero fields) -- reused rather than
+    // reinvented so a newly-picked custom field always has one obvious,
+    // consistent landing card regardless of which canvas the admin is on.
+    return ['strategy', 'assignment', 'solution', 'controls', 'custom_fields'];
+}
+
+/**********************************************************************
+ * FUNCTION: GET RISK MITIGATION CORE FIELD CARD MAP                   *
+ * Field name -> card_key for every POSITIONABLE Mitigation-tab          *
+ * (tab_index=2) core field -- see risk_mitigation_field_is_positionable() *
+ * just below for the two that are excluded and why (MitigationControlsList, *
+ * a derived read-only table view of MitigationControls; AcceptMitigation, *
+ * now a top-level Accept/Reject action widget next to Edit Mitigation,  *
+ * not a Cards field at all -- see docs/superpowers/specs/2026-09-21-    *
+ * mitigation-tab-customization-layout-phase4b-i-design.md's field-      *
+ * roster table for the original design and the 20260925001 migration    *
+ * (extras/customization/upgrade.php) for AcceptMitigation's move out.   *
+ *                                                                      *
+ * MitigationSubmittedBy is a later addition to that same migration --  *
+ * a read-only "who submitted this mitigation" field mirroring the      *
+ * Details tab's SubmittedBy, added as MitigationDate's top-row partner *
+ * on the Strategy card (both 'skip' widgets in edit mode -- see        *
+ * risk-details-form.js's CORE_FIELD_WIDGETS). Without it, MitigationDate *
+ * alone left a half-width gap in the Strategy card's edit view.        *
+ **********************************************************************/
+function get_risk_mitigation_core_field_card_map(): array
+{
+    return [
+        'MitigationDate' => 'strategy',
+        'MitigationSubmittedBy' => 'strategy',
+        'MitigationPlanning' => 'strategy',
+        'PlanningStrategy' => 'strategy',
+        'MitigationEffort' => 'strategy',
+        'MitigationCost' => 'strategy',
+        'MitigationPercent' => 'strategy',
+        'MitigationOwner' => 'assignment',
+        'MitigationTeam' => 'assignment',
+        'CurrentSolution' => 'solution',
+        'SecurityRequirements' => 'solution',
+        'SecurityRecommendations' => 'solution',
+        'MitigationSupportingDocumentation' => 'solution',
+        'MitigationControls' => 'controls',
+    ];
+}
+
+/**********************************************************************
+ * FUNCTION: RISK MITIGATION FIELD IS POSITIONABLE                      *
+ * False for MitigationControlsList and AcceptMitigation -- the two     *
+ * Mitigation-tab (tab_index=2) fields that are NOT in                  *
+ * get_risk_mitigation_core_field_card_map() above.                     *
+ *                                                                      *
+ * MitigationControlsList is a derived, read-only table view of         *
+ * MitigationControls, not an independently positionable field. Task    *
+ * 2's migration (extras/customization/upgrade.php) deliberately leaves *
+ * its custom_template.card_key at NULL forever, so it must never be    *
+ * offered to the Cards layout editor as a draggable chip (which would  *
+ * let a Save assign it a card_key and permanently defeat that NULL     *
+ * idempotency guard).                                                  *
+ *                                                                      *
+ * AcceptMitigation moved OUT of the Cards field roster entirely: it is *
+ * now a top-level Accept/Reject action widget rendered next to Edit    *
+ * Mitigation (risk-view-mitigation.js), not a positionable field -- it *
+ * never had a real edit-mode control to position in the first place    *
+ * (risk_mitigation_field_renders_no_control() below still reflects     *
+ * that). The 20260925001 migration (extras/customization/upgrade.php)  *
+ * NULLs out the card_key/pos_* every existing install already has on   *
+ * this row (unlike MitigationControlsList, which was NULL from birth), *
+ * so a stale position doesn't sit there meaning nothing.               *
+ *                                                                      *
+ * Callers: customization_extra_getFields()'s GET response filter and   *
+ * save_customization_layout()'s removed-field accounting (both in      *
+ * extras/customization/index.php), and                                 *
+ * api_resolve_ui_risk_fields_for_group()'s own roster filter            *
+ * (api/v2/includes/api.php).                                            *
+ **********************************************************************/
+function risk_mitigation_field_is_positionable(string $field_name): bool
+{
+    return $field_name !== 'MitigationControlsList' && $field_name !== 'AcceptMitigation';
+}
+
+/**********************************************************************
+ * FUNCTION: GET RISK MITIGATION CORE FIELD DEFAULT ORDER               *
+ * The order set_default_main_fields() (extras/customization/index.php) *
+ * already seeds these fields in for a fresh install: panel 'left' by   *
+ * ordering (0-8, MitigationDate through MitigationControls), then      *
+ * panel 'right' by ordering (0-3, CurrentSolution through               *
+ * MitigationSupportingDocumentation). MitigationControlsList (panel     *
+ * 'bottom') and AcceptMitigation (no longer a Cards field at all -- see *
+ * risk_mitigation_field_is_positionable() above) are excluded.          *
+ **********************************************************************/
+function get_risk_mitigation_core_field_default_order(): array
+{
+    return [
+        'MitigationDate', 'MitigationSubmittedBy', 'MitigationPlanning', 'PlanningStrategy', 'MitigationEffort',
+        'MitigationCost', 'MitigationOwner', 'MitigationTeam', 'MitigationPercent',
+        'MitigationControls',
+        'CurrentSolution', 'SecurityRequirements', 'SecurityRecommendations',
+        'MitigationSupportingDocumentation',
+    ];
+}
+
+/**********************************************************************
+ * FUNCTION: RISK MITIGATION FIELD RENDERS NO CONTROL                   *
+ * True only for AcceptMitigation -- absent from                        *
+ * display_main_mitigation_fields_by_panel_edit()'s switch entirely      *
+ * (includes/displayrisks.php), unlike every other field in the map      *
+ * above, which all render a real (if sometimes disabled) control.       *
+ **********************************************************************/
+function risk_mitigation_field_renders_no_control(string $field_name): bool
+{
+    return $field_name === 'AcceptMitigation';
+}
+
+/**********************************************************************
+ * FUNCTION: SORT RISK MITIGATION FIELDS WIDGETLESS LAST                 *
+ * Sibling to sort_risk_details_fields_widgetless_last() -- same stable  *
+ * partition, driven by risk_mitigation_field_renders_no_control()       *
+ * instead of the Details-tab check.                                     *
+ **********************************************************************/
+function sort_risk_mitigation_fields_widgetless_last(array $items, callable $name_of): array
+{
+    $drawn = [];
+    $widgetless = [];
+
+    foreach ($items as $item) {
+        if (risk_mitigation_field_renders_no_control((string)$name_of($item))) {
+            $widgetless[] = $item;
+        } else {
+            $drawn[] = $item;
+        }
+    }
+
+    return array_merge($drawn, $widgetless);
+}
+
+/**********************************************************************
+ * FUNCTION: CUSTOMIZATION REVIEW CARDS LAYOUT CARD KEYS                *
+ * Sibling to customization_mitigation_cards_layout_card_keys() (the    *
+ * Mitigation tab's cards). Review gets a single curated card ('review')*
+ * instead of a multi-card split -- there are only 7 fields total, and  *
+ * the user chose one card given the small count (see the design spec's *
+ * Components section). 'custom_fields' is the same catch-all every tab *
+ * carries (Details/Mitigation both have one), so a newly-picked custom *
+ * field always has one obvious landing spot regardless of which canvas *
+ * the admin is on.                                                     *
+ **********************************************************************/
+function customization_review_cards_layout_card_keys(): array
+{
+    return ['review', 'custom_fields'];
+}
+
+/**********************************************************************
+ * FUNCTION: GET RISK REVIEW CORE FIELD CARD MAP                        *
+ * Field name -> card_key for every POSITIONABLE Review-tab (tab_index=3)*
+ * core field. All 6 map to the single 'review' card -- see              *
+ * customization_review_cards_layout_card_keys()'s own docblock for why *
+ * there is only one curated card here, unlike Mitigation's four.       *
+ *                                                                       *
+ * 'SetNextReviewDate' is deliberately ABSENT: it used to be a separate  *
+ * 7th roster field here, merged into 'NextReviewDate' at the user's     *
+ * request (CORE_FIELD_WIDGETS' own comment on 'NextReviewDate',         *
+ * risk-details-form.js, explains the merge -- the two were already the *
+ * SAME concept showing in two different modes: NextReviewDate the      *
+ * read-only historical value, SetNextReviewDate the edit-mode override *
+ * widget). Now the same shape as Mitigation's MitigationControlsList/   *
+ * AcceptMitigation: a real, still-seeded custom_fields catalog row      *
+ * (set_default_main_fields(), extras/customization/index.php) that is  *
+ * deliberately NOT positionable any more -- see                        *
+ * risk_review_field_is_positionable() just below.                      *
+ **********************************************************************/
+function get_risk_review_core_field_card_map(): array
+{
+    return [
+        'ReviewDate' => 'review',
+        'Reviewer' => 'review',
+        'Review' => 'review',
+        'NextStep' => 'review',
+        'NextReviewDate' => 'review',
+        'Comment' => 'review',
+    ];
+}
+
+/**********************************************************************
+ * FUNCTION: RISK REVIEW FIELD IS POSITIONABLE                           *
+ * False for SetNextReviewDate only -- see get_risk_review_core_field_   *
+ * card_map()'s own docblock for why (merged into NextReviewDate).       *
+ * Mirrors risk_mitigation_field_is_positionable()'s identical shape.    *
+ * Callers: backfill_customization_review_cards_layout()'s bucketing     *
+ * loop (extras/customization/upgrade.php), which must skip this field   *
+ * outright rather than let it fall into the generic 'custom_fields'     *
+ * bucket -- it is_basic=1 (core) but absent from the card map above,    *
+ * exactly the "core but unmapped" case that bucket exists for every     *
+ * OTHER field, and landing there would make it a draggable chip in the  *
+ * admin Cards layout editor the next time this backfill runs.           *
+ **********************************************************************/
+function risk_review_field_is_positionable(string $field_name): bool
+{
+    return $field_name !== 'SetNextReviewDate';
+}
+
+/**********************************************************************
+ * FUNCTION: GET RISK REVIEW CORE FIELD DEFAULT ORDER                   *
+ * The order set_default_main_fields() (extras/customization/index.php) *
+ * already seeds these fields in: panel 'left' by ordering (0-5,         *
+ * ReviewDate through Comment) -- confirmed against that function's real *
+ * seed SQL. SetNextReviewDate (panel 'right') is excluded -- see        *
+ * get_risk_review_core_field_card_map()'s own docblock; it is no        *
+ * longer a positionable field at all.                                  *
+ **********************************************************************/
+function get_risk_review_core_field_default_order(): array
+{
+    return ['ReviewDate', 'Reviewer', 'Review', 'NextStep', 'NextReviewDate', 'Comment'];
+}
+
+/**********************************************************************
+ * FUNCTION: RISK REVIEW FIELD RENDERS NO CONTROL                       *
+ * True for ReviewDate and Reviewer only -- both are plain echoed text   *
+ * in the legacy edit form (display_review_date_edit()/                 *
+ * display_reviewer_name_edit(), includes/displayrisks.php), not real    *
+ * controls at all. Every other Review field renders a real control.    *
+ **********************************************************************/
+function risk_review_field_renders_no_control(string $field_name): bool
+{
+    return in_array($field_name, ['ReviewDate', 'Reviewer'], true);
+}
+
+/**********************************************************************
+ * FUNCTION: GET REVIEW CARD FIELD POSITIONS                            *
+ * Explicit pos_x/pos_y for every core Review-tab field on the single    *
+ * 'review' card -- an intentionally ASYMMETRIC two-column layout (4     *
+ * fields in the left column, 2 in the right), at the user's request,   *
+ * which a generic row-major "fill left, then right, repeat" packer      *
+ * (the one backfill_customization_mitigation_cards_layout() and every   *
+ * OTHER card here still uses) cannot produce: that packer always        *
+ * alternates columns every field, so it can only ever pair fields into  *
+ * even left/right halves, never stack 4 in one column against 2 in the  *
+ * other. Left column top-to-bottom: ReviewDate, Review, NextStep,       *
+ * NextReviewDate (the merged field, y=6 is now the card's bottom row -- *
+ * see CORE_FIELD_WIDGETS' own comment on 'NextReviewDate' in             *
+ * risk-details-form.js; the former separate 'SetNextReviewDate' entry   *
+ * at y=8 is gone, absorbed into this one -- see                         *
+ * get_risk_review_core_field_card_map()'s docblock for the merge        *
+ * rationale). Right column: Reviewer, Comment (half width, under        *
+ * Reviewer, by explicit user request -- NOT forced full width the way   *
+ * every OTHER richtext field on this canvas is; a half-width richtext   *
+ * field is a genuinely new shape here, and it exposed a real bug in     *
+ * risk-details-form.js's packRenderableFields() fixed separately: that  *
+ * function's richtext "reserve extra height" bookkeeping tracked        *
+ * reservations by ROW ONLY, not by column, so Comment's own minimum-    *
+ * height reservation pushed NextStep -- a DIFFERENT column sharing only *
+ * the same row range -- down by its entire reserved amount. Made        *
+ * column-aware there instead of solved by avoiding half-width richtext  *
+ * fields here).                                                         *
+ * Consulted by backfill_customization_review_cards_layout()             *
+ * (extras/customization/upgrade.php) for the 'review' card specifically *
+ * -- the SAME source of truth for both a fresh template group's initial *
+ * layout and (via the 20260925001 migration's own explicit UPDATEs,     *
+ * which mirror this map by hand for existing installs' already-stored   *
+ * rows) an existing install's reflow.                                   *
+ **********************************************************************/
+function get_review_card_field_positions(): array
+{
+    return [
+        'ReviewDate' => ['x' => 0, 'y' => 0],
+        'Review' => ['x' => 0, 'y' => 2],
+        'NextStep' => ['x' => 0, 'y' => 4],
+        'NextReviewDate' => ['x' => 0, 'y' => 6],
+        'Reviewer' => ['x' => 3, 'y' => 0],
+        'Comment' => ['x' => 3, 'y' => 2],
+    ];
+}
+
+/**********************************************************************
+ * FUNCTION: SORT RISK REVIEW FIELDS WIDGETLESS FIRST                   *
+ * The Review card's mirror image of what a widgetless-last partition   *
+ * would give it -- ReviewDate/Reviewer lead so they occupy the top row *
+ * (mirroring the Details tab's General card, whose SubmissionDate/     *
+ * SubmittedBy pair leads via sort_risk_details_fields_widgetless_first()*
+ * above), with every drawn field (Review, NextStep, NextReviewDate,    *
+ * Comment) following in original order. Unlike                        *
+ * Details' General card, Review has no synthetic Subject-style entry   *
+ * reserving a gap between the two groups -- the drawn fields simply    *
+ * start on the row right after ReviewDate/Reviewer's own row. Replaces *
+ * a former sort_risk_review_fields_widgetless_last() (the OPPOSITE     *
+ * ordering, changed at the user's request -- editing the Strategy      *
+ * card's own read-only pair into a matching top row surfaced that the  *
+ * Review card's read-only pair was trailing at the BOTTOM instead of   *
+ * leading, unlike Details/Mitigation).                                 *
+ **********************************************************************/
+function sort_risk_review_fields_widgetless_first(array $items, callable $name_of): array
+{
+    $drawn = [];
+    $widgetless = [];
+
+    foreach ($items as $item) {
+        if (risk_review_field_renders_no_control((string)$name_of($item))) {
+            $widgetless[] = $item;
+        } else {
+            $drawn[] = $item;
+        }
+    }
+
+    return array_merge($widgetless, $drawn);
+}
+
+/**********************************************************
+ * FUNCTION: GET SUBJECT SYNTHETIC FIELD ENTRY             *
+ * Subject is hardcoded outside the custom_template system *
+ * (rendered directly in add_risk_details(), includes/     *
+ * display.php) -- it has no custom_fields/custom_template *
+ * row. The field-config API still needs one complete list *
+ * to render from, so this synthesizes its entry: always in *
+ * the General card, always required, always full width.   *
+ *                                                          *
+ * pos_y=2, BELOW SubmissionDate/SubmittedBy's row (y=0) -- *
+ * so Subject reads second in General, not first. Those two *
+ * fields draw no control on Submit Risk (CORE_FIELD_WIDGETS *
+ * 'skip', risk-details-form.js) and are collapsed out of    *
+ * the create/edit render entirely (packRenderableFields()), *
+ * so this ordering only has a visible effect in the admin   *
+ * Cards layout editor and on the risk VIEW page, where both *
+ * fields DO render (risk-details-view.js has no 'skip'      *
+ * treatment for them). backfill_customization_cards_layout() *
+ * (extras/customization/upgrade.php) and the no-Extra        *
+ * fallback (api_synthesize_no_extra_risk_fields(),           *
+ * api/v2/includes/api.php) both seed SubmissionDate/          *
+ * SubmittedBy starting at y=0 to match.                       *
+ **********************************************************/
+function get_subject_synthetic_field_entry(): array
+{
+    return [
+        'id' => 0,
+        'name' => 'Subject',
+        'type' => 'text',
+        'is_basic' => 1,
+        'required' => 1,
+        'encryption' => 0,
+        'card_key' => 'general',
+        'pos_x' => 0,
+        'pos_y' => 2,
+        'pos_w' => 6,
+        'pos_h' => 2,
+        'active' => 1,
+    ];
 }
 
 /*****************************
@@ -34763,6 +36328,842 @@ function resolve_header_script_asset(string $token): ?array {
         return ['type' => 'css', 'path' => "../extras/{$matches[1]}/css/{$matches[2]}"];
     }
     return null;
+}
+
+/**
+ * Localization keys required by certain scripts -- the source of truth
+ * resolve_required_localization_keys() (below) consults to decide which
+ * $lang keys a page's requested script/css list pulls into its emitted
+ * `_lang` JS object. Factored out of header.php (the only caller for a long
+ * time) so a standalone page that renders its own <head> without going
+ * through render_header_and_sidebar() -- management/print_view.php is the
+ * first -- can resolve the SAME canonical per-script key lists instead of
+ * keeping a second, driftable copy.
+ *
+ * @return array map of script/css token => key list
+ */
+function get_localization_required_by_scripts(): array {
+    return [
+    'CUSTOM:common.js' => ['Yes', 'Cancel', 'FieldRequired', 'Remove'],
+    'CUSTOM:sr-select.js' => ['NSelected', 'Search', 'NoMatchingOptions'],
+    // Status' inline-edit icon buttons (view_top_table()'s hover-revealed
+    // change-status shortcut, includes/display.php -- the header's own
+    // Cancel/Save icons, built client-side after the change-status fetch
+    // returns, unlike Subject's, which are server-rendered up front and
+    // need no registration here).
+    // 'Cancel'/'Save' back Status' inline-edit icon buttons. The rest back
+    // the Close Risk modal (buildCloseRiskModal()) -- all pre-existing keys
+    // (used identically by the legacy close.php partial this modal
+    // replaces), just newly registered for this script.
+    'CUSTOM:pages/risk.js' => ['Cancel', 'Save', 'CloseRisk', 'Reason', 'CloseOutInformation', 'Submit', 'RequestFailed'],
+    'EXTRA:JS:assessments:questionnaire_templates.js' => ['SelectedOnAnotherTab', 'ID', 'SelectedQuestions', 'SearchForQuestion', 'ConfirmDisableTabbedExperience', 'ConfirmDeleteTab', 'NewTab', 'Default', 'Actions', 'Required'],
+    'CUSTOM:pages/plan-projects.js' => ['AreYouSureYouWantToDeleteThisProject', 'Risks', 'HighestRisk', 'OnHold', 'Active', 'Completed', 'Canceled', 'ALL', 'Priority', 'ProjectName', 'DueDate', 'Consultant', 'BusinessOwner', 'DataClassification', 'Status', 'Actions', 'Edit', 'Delete', 'ChangeStatus', 'View', 'AssignToProject', 'RemoveFromProject', 'AddRisksToThisProject', 'NoProjectsYet', 'NoProjectsYetHint', 'NoProjectsMatchFilters', 'NoRisksInThisProject', 'NoRisksWaitingForProject', 'NoRisksWaitingForProjectHint', 'NMoreRisks', 'ChangeStatusClosesRisks', 'ChangeStatusReopensRisks', 'ChangeStatusNoCloseRightsHint', 'DeleteProjectReturnsRisks', 'ReorderNeedsPrioritySort', 'CouldNotLoadProjects', 'OnTrack', 'DueSoon', 'Overdue', 'NoDueDate', 'MitigationNotPlanned', 'MitigationStatePlanned', 'Mitigated', 'InherentRisk', 'Subject', 'ID', 'Owner', 'Team', 'Reviewed', 'Mitigation', 'Search', 'NoMatchingOptions', 'Retry', 'ClearFilters', 'Yes', 'Cancel', 'Add', 'Update', 'Save', 'AddProject', 'SavedSuccess', 'RequestFailed', 'NoRisksMatchYourSearch', 'Select', 'Details', 'Close', 'SelectAll', 'Clear', 'ProcessingPleaseWait', 'AllUnassignedRisks', 'NoRisksSelectedYet', 'Remove', 'NoPermissionForRiskManagement', 'Show', 'MitigationPlanning', 'SelectAllN'],
+    // Manage assets (asset management redesign, Task 9). The column labels are
+    // the lang keys asset_core_column_labels() returns (GET /assets/column-settings
+    // sends label_key, the page resolves it here).
+    // (ProcessingPleaseWait: header.php's $.blockUI() wrapper reads it, and
+    // the page blocks the UI while loading the legacy edit modal.)
+    'CUSTOM:pages/manage-assets.js' => ['RestoreDefaultLayout', 'Verified', 'Unverified', 'Status', 'View', 'Edit', 'Verify', 'Delete', 'Actions', 'Select', 'SelectAll', 'NSelected', 'Retry', 'Show', 'Search', 'NoMatchingOptions', 'RequestFailed', 'Loading', 'ProcessingPleaseWait', 'AddAsset', 'AssetFields', 'CustomFields', 'ViewAsset', 'EditAsset',
+        'AssetName', 'IPAddress', 'AssetValuation', 'SiteLocation', 'Team', 'AssetDetails', 'MappedControls', 'Tags', 'AssociatedRisks', 'NAssociatedRisks', 'CreationDate',
+        'AssetBulkSelectAll', 'AssetBulkAllSelected', 'AssetBulkAddToGroup', 'AssetBulkDeleteConfirmTitle', 'AssetDeleteConfirmTitle', 'DeleteAsset', 'DeleteAssets', 'AssetBulkAssignTeamsTitle', 'AssetAddToGroupTitle',
+        'AssetBulkVerifiedSummary', 'AssetBulkDeletedSummary', 'AssetBulkTeamsSummary', 'AssetBulkGroupSummary', 'AssetBulkSkippedList', 'AssetBulkReasonNotFound', 'Failed',
+        'NoAssetsYet', 'NoAssetsYetHint', 'NoAssetsMatchFilters', 'ClearFilters', 'CouldNotLoadAssets',
+        'AssetBulkTooManyAssets', 'AssetBulkTooManyToDelete', 'AssetBulkReasonNotAttempted',
+        'AssetCreateNewGroupOption', 'AssetGroupNameAlreadyInUse', 'SavedSuccess',
+        'AssetFilterByTeam', 'AssetFilterByValuation', 'AssetFilterByTag', 'AssetFilterByLocation', 'AssetFilteringByTeam', 'AssetFilteringByValuation', 'AssetFilteringByTag', 'AssetFilteringByLocation',
+        'AssetShowOnlyVerified', 'AssetShowOnlyUnverified', 'AssetShowingVerified', 'AssetShowingUnverified',
+        // Asset Scoring columns and filter chips
+        'Confidentiality', 'Integrity', 'Availability', 'FIPSCategorization', 'WeightedScore', 'WeightedBand',
+        'AssetFilterByCategorization', 'AssetFilteringByCategorization', 'AssetFilterByBand', 'AssetFilteringByBand',
+        'AssetFilterByConfidentiality', 'AssetFilteringByConfidentiality', 'AssetFilterByIntegrity', 'AssetFilteringByIntegrity',
+        'AssetFilterByAvailability', 'AssetFilteringByAvailability'],
+    // Manage assets, Asset groups tab (asset management redesign, Task 10).
+    'CUSTOM:pages/manage-asset-groups.js' => ['Loading', 'AllAssets', 'NoAssetsMatchFilters', 'PickerShowingFirstN', 'NoControlsSelectedYet', 'Remove', 'Show', 'HighestValuation', 'Assets', 'LinkedRisks', 'TeamsHeader',
+        'CouldNotLoadAssetGroups', 'Retry', 'NoAssetGroupsMatchSearch', 'Clear', 'NoAssetGroupsYet', 'NoAssetGroupsYetHint', 'AddAssetGroup', 'ViewGroupMembers', 'Actions', 'EditAssetGroup', 'DeleteAssetGroup',
+        'CouldNotLoadGroupMembers', 'NoAssetsInGroup', 'AssetName', 'IPAddress', 'AssetValuation', 'Status', 'Verified', 'Unverified', 'AssetShowOnlyVerified', 'AssetShowOnlyUnverified', 'RemoveFromGroup', 'AssetGroupMoreMembers', 'ViewAllInAssetsTab',
+        'Name', 'FieldRequired', 'AddOrRemoveAssets', 'SavedSuccess', 'AssetGroupNameAlreadyInUse', 'AssetGroupDeleteConfirmTitle', 'RequestFailed',
+        'HighestFIPSCategorization', 'HighestWeightedScore', 'HighestWeightedBand', 'AssetGroupFields', 'Search', 'NoMatchingOptions',
+        'FIPSCategorization', 'WeightedScore', 'WeightedBand', 'ViewAsset', 'SiteLocation', 'Tags', 'ClearFilters', 'NoAssetGroupsMatchFilters',
+        'AssetFilterByTeam', 'AssetFilteringByTeam', 'AssetFilterByLocation', 'AssetFilteringByLocation', 'AssetFilterByTag', 'AssetFilteringByTag',
+        'AssetGroupFilterByHighestCategorization', 'AssetGroupFilteringByHighestCategorization', 'AssetGroupFilterByHighestBand', 'AssetGroupFilteringByHighestBand',
+        'Select', 'SelectAll', 'NSelected', 'Failed', 'AssetBulkReasonNotFound', 'AssetBulkSkippedList', 'AssetGroupDeleteKeepsAssets', 'DeleteAssetGroups',
+        'AssetGroupBulkSelectAll', 'AssetGroupBulkAllSelected', 'AssetGroupBulkDeleteConfirmTitle', 'AssetGroupBulkDeleteKeepsAssets', 'AssetGroupBulkDeletedSummary', 'RestoreDefaultLayout'],
+    // Manage assets, background discovery (asset management redesign, Task 11).
+    'CUSTOM:pages/manage-asset-discovery.js' => ['DiscoveryRangeInvalid', 'DiscoveryRangeTooLarge', 'DiscoveryRangeReserved', 'DiscoveryTeamsInvalid', 'DiscoveryRunQueued', 'DiscoveryRunCompleted',
+        'DiscoveryRunFailedToast', 'DiscoveryRunCancelled', 'DiscoveryStatusQueued', 'UpgradeStateRunning', 'Completed', 'Failed', 'Canceled', 'DiscoveryProgress',
+        'DiscoveryCancelRun', 'CouldNotLoadDiscoveryRuns', 'Retry', 'RequestFailed', 'DiscoveryPortsInvalid', 'DiscoveryProbeMethod', 'DiscoveryTcpPortsHint',
+        'DiscoveryNotConfigured', 'DiscoveryRangeNotAllowed', 'DiscoveryAllowedRangesList'],
+    'CUSTOM:pages/compliance-initiate-audits.js' => ['EligibleTests', 'TestName', 'ControlName', 'FrameworkName', 'Schedule', 'ScheduleManual', 'ScheduleInterval', 'ScheduleCalendar', 'LastTestDate', 'NextTestDate', 'ALL', 'Cancel', 'Clear', 'SelectAll', 'NSelected', 'NSelectedAllPages', 'Tags', 'Initiate', 'InitiateSelected', 'InitiateNAudits', 'TagsOptionalAppliedToSelection', 'NoEligibleTestsFound', 'RequestFailed', 'FailedInitiate', 'Search', 'AllFrameworks', 'AllControls', 'ShowAllTests', 'AllTesters', 'AnySchedule', 'Tests', 'InProgress', 'AllTeams', 'days', 'Day', 'ShowingXToYOfZ'],
+    'datatables' => ['All', 'datatables_ShowAll', 'datatables_ShowLess', 'First', 'Previous', 'Next', 'Last'],
+    'blockUI' => ['ProcessingPleaseWait'],
+    'UILayoutWidget' => ['WidgetType_chart', 'WidgetType_table', 'WidgetType_WYSIWYG', 'WidgetType_kpi', 'WidgetType_whats_next'],
+    'CUSTOM:pages/governance.js' => ['ExistingMappings', 'Unassigned', 'DocumentName', 'DocumentType', 'ControlFrameworks', 'Controls', 'CreationDate', 'ApprovalDate', 'Status', 'All', 'ExceptionName', 'ID', 'Description', 'Justification', 'NextReviewDate'],
+    // Document Program grid redesign (js/simplerisk/pages/governance-documents.js, split out of governance.js -- Task 9)
+    'CUSTOM:pages/governance-documents.js' => ['DocumentProgram', 'Policies', 'Guidelines', 'Standards', 'Procedures', 'DocumentName', 'DocumentType', 'ControlFrameworks', 'Approver', 'Status', 'NextReviewDate', 'Actions', 'Submitter', 'UpdatedBy', 'Draft', 'InReview', 'Approved', 'Approve', 'Unapprove', 'ApproveSelected',
+        'SearchDocumentsPlaceholder', 'NoDocumentsYet', 'NoDocumentsYetBody', 'NoDocumentsMatchFilters', 'NoDocumentsMatchFiltersBody', 'ClearFilters', 'CouldNotLoadDocuments', 'CouldNotLoadDocumentsBody', 'Retry',
+        'ApproveDocumentQuestion', 'ApproveDocumentConfirmBody', 'UnapproveDocumentQuestion', 'UnapproveDocumentConfirmBody', 'ApproveSelectedDocumentsQuestion', 'ApproveSelectedDocumentsConfirmBody',
+        'DocumentApproved', 'DocumentUnapproved', 'DocumentsApproved', 'NoApproveDocumentationPermission', 'NSelected', 'Cancel', 'Clear', 'Show', 'SelectAll', 'Select', 'Edit', 'Delete', 'Download', 'YouNeedToSpecifyAnIdParameter', 'Previous', 'Next',
+        // Select all N (cross-page/filtered selection banner)
+        'SelectAllN', 'SelectAllTooManyMatches', 'Documents',
+        // Bulk delete (bulk bar's "Delete selected" action)
+        'DeleteSelected', 'AreYouSureYouWantToDeleteThisDocument', 'AreYouSureYouWantToDeleteTheseDocuments', 'DocumentsDeleted', 'SomeDocumentsNotDeleted',
+        // Filters row + Columns picker (design-system.md §6b/6c)
+        'Filters', 'ShowFilters', 'HideFilters', 'AllTypes', 'AllFrameworks', 'AllStatuses', 'AllApprovers',
+        'Overdue', 'DueSoon', 'OnTrack', 'NotScheduled', 'Columns', 'LastReviewDate', 'Controls', 'CreationDate', 'ApprovalDate',
+        // Version history row expander (design-system.md §6 row-expander pattern).
+        // 'EncryptionStatusVersion' reused for the "Version" column header --
+        // see the identical comment at its usage site in governance-documents.js.
+        'VersionHistory', 'EncryptionStatusVersion', 'Current', 'FileName', 'FileSize', 'UploadedBy', 'DeleteVersion',
+        'ConfirmDeleteVersionQuestion', 'ConfirmDeleteVersionConfirmBody', 'DocumentVersionDeleted', 'CouldNotLoadVersionHistory',
+    ],
+    // Customization Extra: Document Types / Fields / Template Groups / Template
+    // Assignment widgets (js/simplerisk/pages/customization.js). Extend this
+    // list in later tasks (8, 10, 12) as they add more L(...) calls to the
+    // same file -- do not create a second array entry for the same token.
+    'CUSTOM:pages/customization.js' => ['BuiltIn', 'CantDeleteSeededDocumentCategory', 'CantRenameSeededDocumentCategory', 'DocumentType', 'AddDocumentType', 'Required', 'Dropdown', 'MultiDropdown', 'ShortText', 'LongText', 'DateSelector', 'UserMultiDropdown', 'Hyperlink', 'AddTemplateGroup', 'UpdateTemplateGroup', 'CantDeleteDefaultTemplateGroup', 'AreYouSureYouWantToDeleteThisTemplateGroup', 'CloneTemplateGroup', 'AddFieldsToPrefix', 'AddFieldsHeading', 'FieldPickerHint', 'PickFieldToAdd', 'NoFieldsMatchSearchTerm', 'ClearSearch', 'NoCustomFieldsYet', 'AllCoreFieldsAddedToTab', 'AllCustomFieldsAddedToTemplate', 'FieldAddedToTab', 'FieldRemovedBackToList', 'NowAddingToTab', 'FieldCreatedAndAddedToTab', 'Template',
+        // Task 20: row-action icons on the field picker + delete confirm dialog
+        'DeleteCustomFieldTitle'],
+    // Details-tab two-level Gridstack layout editor
+    // (js/simplerisk/pages/customization-layout-editor.js). RequestFailed
+    // and SavedSuccess are reused from CUSTOM:pages/plan-projects.js's map
+    // below rather than duplicated -- see using-language-lookups.
+    // 'Assignment' is the Assignment card's label on BOTH surfaces. It is the
+    // pre-existing key Incident Management's own assignment section already
+    // uses, reused rather than duplicated as a 'CardAssignment' twin, per
+    // using-language-lookups.
+    'CUSTOM:pages/customization-layout-editor.js' => ['CardGeneral', 'CardClassification', 'CardScoring', 'CardAdditionalInformation', 'CardCustomFields', 'CardCustomFieldsHint', 'Assignment', 'Remove', 'RequestFailed', 'SavedSuccess',
+        // Resize-handle tooltip + the "card is shorter than its fields" pill.
+        'DragToResize', 'NFieldsDoNotFitCard',
+        // Mitigation tab's 3 cards without a Details-tab equivalent to reuse
+        // ('Assignment' and 'CardCustomFields' above already cover Mitigation's
+        // other two) -- final-review fix-wave regression guard (C2): these were
+        // appended to lang.en.php but never registered here, so _lang[key] was
+        // undefined at runtime and the card titles rendered blank.
+        'CardMitigationStrategy', 'CardMitigationSolution', 'CardMitigationControls',
+        // Review tab's single card (Phase 4c-i) -- same C2 class of gap:
+        // appended to lang.en.php by the Review Cards migration but never
+        // registered here, caught live by customization-review-layout.spec.ts's
+        // SCENARIO-1 (verifyRenderedCardTitlesAreNotEmpty()) before it ever
+        // shipped.
+        'CardReview',
+        // The Assets designer canvas (fgroup asset) reuses the risk Details
+        // card labels above (General, Assignment, Classification, Additional
+        // Information, Custom fields), so it needs no keys of its own.
+        ],
+    // The shared Cards/GridStack risk-details rendering engine
+    // (js/simplerisk/common/risk-details-form.js), used by the standalone
+    // Submit Risk page and by the risk modals. These keys belong to THIS
+    // entry rather than to 'CUSTOM:pages/submit-risk.js' because this is the
+    // file whose code actually reads them: submit-risk.js is now a thin
+    // wrapper that calls RiskDetailsForm.init() and reads no _lang key of its
+    // own, so it has no localization entry at all. Registering them here also
+    // means a modal caller that loads only this engine token still gets every
+    // key the rendered form needs.
+    //
+    // Card* keys are reused from CUSTOM:pages/customization-layout-editor.js's
+    // map above rather than duplicated, per using-language-lookups. The
+    // field-name keys (Category..ThreatMapping) are every field label
+    // populateFieldContent() renders via _lang[field.name] -- all pre-existing
+    // keys already used by includes/displayrisks.php's display_*_edit()
+    // functions for the same fields, reused rather than duplicated.
+    'CUSTOM:common/risk-details-form.js' => [
+        'CardGeneral', 'CardClassification', 'CardScoring', 'CardAdditionalInformation', 'CardCustomFields', 'Assignment', 'RequestFailed',
+        // buildActionsBar()'s opt-in sticky-bar Cancel button (instance.onCancel).
+        'Cancel',
+        'Subject', 'Category', 'SiteLocation', 'RiskSource', 'ExternalReferenceId', 'ControlRegulation', 'ControlNumber',
+        'Team', 'AdditionalStakeholders', 'Owner', 'OwnersManager', 'RiskAssessment', 'AdditionalNotes',
+        'SupportingDocumentation', 'Tags', 'RiskMapping', 'ThreatMapping', 'Technology',
+        // AffectedAssets/RiskScoringMethod/JiraIssueKey each render a real
+        // widget (buildAssetsAssetGroupsWidget()/buildScoringMethodWidget()/
+        // the plain 'text' CORE_FIELD_WIDGETS entry) rather than falling
+        // through to the placeholder branch, but still need this key --
+        // populateFieldContent()'s generic label lookup reads
+        // _lang[field.name] for every field, not just placeholders. Extra-
+        // gated at the roster level for JiraIssueKey specifically
+        // (api_resolve_ui_risk_fields_for_group(), api/v2/includes/api.php)
+        // -- with the Jira Extra disabled the field never reaches this page
+        // at all, so this key simply goes unused rather than needing its
+        // own gate here too.
+        'AffectedAssets', 'RiskScoringMethod', 'JiraIssueKey',
+        'AddOrRemove', 'Remove', 'UserDropdownPlaceholder', 'TagsWidgetPlaceholder',
+        'RiskCatalogDropdownPlaceholder', 'ThreatCatalogDropdownPlaceholder', 'NoGroup',
+        'ScoringNotYetAvailableInThisView',
+        // Phase 4d-i: buildScoringMethodWidget()'s Classic/Custom sub-widget
+        // labels (js/simplerisk/common/risk-details-form.js) -- all three
+        // keys already exist in lang.en.php (legacy Classic/Custom scoring
+        // display), reused here.
+        'CurrentLikelihood', 'CurrentImpact', 'CustomValue',
+        // AffectedAssets' widget (buildAssetsAssetGroupsWidget()) reads this
+        // for its selectize `placeholder` option -- the same key the legacy
+        // display_affected_assets_edit() markup already uses
+        // (includes/displayrisks.php), reused as-is.
+        'AffectedAssetsWidgetPlaceholder',
+        // Phase 4b-ii: MitigationControls' field label -- populateFieldContent()'s
+        // generic _lang[field.name] lookup. The embedded table section's own
+        // header reads 'ControlValidation' instead (RiskMitigationControls.
+        // buildTableSection(), js/simplerisk/pages/risk-mitigation-controls.js,
+        // registered under that file's own token below).
+        'MitigationControls',
+        // buildMitigationControlsWidget()'s no-permission branch, shown
+        // instead of the interactive picker when
+        // instance.canSelectMitigationControls is false.
+        'MitigationControlsRequiresGovernance',
+        // Mitigation tab (tab_index=2, Phase 4b-iii) core fields + card
+        // labels. MitigationDate is absent on purpose -- its widget is
+        // 'skip', which returns before ever reading _lang[field.name], same
+        // as SubmissionDate/SubmittedBy above.
+        'MitigationPlanning', 'PlanningStrategy', 'MitigationEffort', 'MitigationCost', 'MitigationOwner',
+        'MitigationTeam', 'MitigationPercent', 'CurrentSolution', 'SecurityRequirements', 'SecurityRecommendations',
+        'MitigationSupportingDocumentation',
+        // buildSupportingDocumentationWidget()'s own permission-denied hints
+        // (risk-details-form.js) -- one per gate (submit_risks/modify_risks
+        // create/update split on SupportingDocumentation, plan_mitigations
+        // on MitigationSupportingDocumentation).
+        'SupportingDocumentationRequiresSubmitRisk', 'SupportingDocumentationRequiresModifyRisks',
+        'MitigationSupportingDocumentationRequiresPlanMitigations',
+        // buildSupportingDocumentationWidget()'s empty-file-list indicator --
+        // same key the legacy supporting_documentation() read-mode
+        // passthrough already uses for the identical empty state.
+        'None',
+        // AcceptMitigation is absent here on purpose: it never reaches this
+        // engine at all any more (moved out of the Cards field roster
+        // entirely -- see CORE_FIELD_WIDGETS' own comment,
+        // risk-details-form.js). Its own localization keys are registered
+        // under 'CUSTOM:common/risk-details-view.js' below instead, since
+        // that is the file whose code actually reads them.
+        'CardMitigationStrategy', 'CardMitigationSolution', 'CardMitigationControls',
+        // Review tab (tab_index=3, Phase 4c-ii). 'Review'/'NextStep'/'Comment'
+        // are field labels populateFieldContent()'s generic _lang[field.name]
+        // lookup reads (ReviewDate/Reviewer are absent on purpose -- both are
+        // 'skip' widgets, which return before ever reading that lookup, same
+        // as MitigationDate above). 'ProjectName'/'ReviewProjectSelectionPlaceholder'
+        // are the NextStep widget's own internal Project sub-control strings
+        // (buildNextStepWidget()/initNextStepField()). 'UseADifferentDate' is
+        // the NextReviewDate widget's own toggle-switch label
+        // (buildSetNextReviewDateWidget()/initSetNextReviewDateField() --
+        // kept their old function names, see CORE_FIELD_WIDGETS' own
+        // comment on 'NextReviewDate' for why: this used to be a separate
+        // 'SetNextReviewDate' field, merged into NextReviewDate at the
+        // user's request; the former 'No'/'Yes' radio-pair labels and
+        // 'WouldYouLikeToUseADifferentDate' prompt are gone with the radios
+        // themselves, replaced by this one switch). 'CardReview' is
+        // CARD_LABELS' entry for the 'review' card. 'NextReviewDate' IS a
+        // rendered widget now ('set-next-review-date'), so
+        // populateFieldContent()'s generic _lang[field.name] lookup reads it
+        // too, unlike ReviewDate/Reviewer above -- this is the SAME key the
+        // read engine's own list already registers (see
+        // 'CUSTOM:common/risk-details-view.js' below), so no new key was
+        // needed for it, just this engine gaining a reason to read it.
+        'Review', 'NextStep', 'Comment', 'ProjectName', 'ReviewProjectSelectionPlaceholder',
+        'UseADifferentDate', 'CardReview', 'NextReviewDate',
+        'BasedOnTheCurrentRiskScore',
+        // The Submit Risk page's three action-bar buttons (buildActionsBar(),
+        // submitMode 'create' only) and the Save & New success toast's
+        // fallback text -- the primary path reads addRisk()'s own already-
+        // formatted status_message instead, this is only used if that's
+        // somehow absent on a 200 response.
+        'ResetForm', 'SaveAndNew', 'SaveAndView', 'RiskSubmitSuccess',
+        // The CVSS holder's inline fields and always-visible score summary
+        // (buildCvssHolder()/buildCvssScoreItem()/buildCvssScoreDisplay()).
+        // Every key here already exists in lang.en.php from the legacy CVSS
+        // calculator display, reused as-is -- no new keys needed.
+        'CVSSScore',
+        'BaseScore', 'ExploitabilityScore', 'ImpactScore', 'TemporalScore', 'EnvironmentalScore',
+        'BaseScoreMetrics', 'ExploitabilityMetrics', 'ImpactMetrics',
+        'TemporalScoreMetrics', 'EnvironmentalScoreMetrics', 'ImpactSubscoreModifiers',
+        'AttackVector', 'AttackComplexity', 'Authentication',
+        'ConfidentialityImpact', 'IntegrityImpact', 'AvailabilityImpact',
+        'Exploitability', 'RemediationLevel', 'ReportConfidence',
+        'CollateralDamagePotential', 'TargetDistribution',
+        'ConfidentialityRequirement', 'IntegrityRequirement', 'AvailabilityRequirement',
+        // The CVSS/DREAD holders' live risk-level pill (buildRiskLevelPill()/
+        // updateRiskLevelPill(), risk-details-form.js -- shared by both
+        // scoring methods since Phase 4d-iii).
+        // Already exists in lang.en.php (Review Risk's own Risk Level
+        // column/filter), reused as-is.
+        'RiskLevel',
+        // The CVSS holder's collapsed Temporal/Environmental/Impact-
+        // Modifiers accordion header and its OPTIONAL badge (already used
+        // elsewhere in the app; not previously exposed to this file).
+        'AdvancedMetrics', 'Optional',
+        // Base Score Metrics' two sub-group headers.
+        'BaseScoreExploitabilityMetrics', 'BaseScoreImpactMetrics',
+        // Per-field help popovers on the CVSS holder's 14 metric selects
+        // (buildCvssScoreItem()).
+        'AttackVectorHelp', 'AttackComplexityHelp', 'AuthenticationHelp',
+        'ConfidentialityImpactHelp', 'IntegrityImpactHelp', 'AvailabilityImpactHelp',
+        // 'ExploitabilityHelp' intentionally NOT read for CVSS's own
+        // Exploitability field -- 'Exploitability' collides with DREAD's
+        // labelKey of the same name, so buildCvssScoreItem() reads
+        // 'CVSSExploitabilityHelp' instead (see that key's own comment in
+        // lang.en.php). 'ExploitabilityHelp' stays registered here because
+        // it's still DREAD's own key, read by this same script's DREAD block
+        // below.
+        'CVSSExploitabilityHelp', 'RemediationLevelHelp', 'ReportConfidenceHelp',
+        'CollateralDamagePotentialHelp', 'TargetDistributionHelp',
+        'ConfidentialityRequirementHelp', 'IntegrityRequirementHelp', 'AvailabilityRequirementHelp',
+        // Base Score Metrics' and Advanced Metrics' sub-group intro sentences
+        // (metricsSubGroup()'s `descKey`).
+        'BaseScoreExploitabilityMetricsDescription', 'BaseScoreImpactMetricsDescription',
+        'TemporalScoreMetricsDescription', 'EnvironmentalScoreMetricsDescription', 'ImpactSubscoreModifiersDescription',
+        // The DREAD holder's inline fields, live score, and Risk Level pill
+        // (buildDreadHolder()/buildDreadScoreItem()). 'RiskLevel' already
+        // registered above (CVSS's own pill); the 5 field labels
+        // (DamagePotential/Reproducibility/Exploitability/AffectedUsers/
+        // Discoverability) already exist in lang.en.php and are reused as-is.
+        'DreadScore', 'DreadMetrics',
+        'DamagePotential', 'Reproducibility', 'Exploitability', 'AffectedUsers', 'Discoverability',
+        'DamagePotentialHelp', 'ReproducibilityHelp', 'ExploitabilityHelp', 'AffectedUsersHelp', 'DiscoverabilityHelp',
+        // The OWASP holder's inline fields, live score, and Risk Level
+        // pill (buildOwaspHolder()/buildOwaspScoreItem()). 'RiskLevel'
+        // already registered above; the 16 field labels and 4 group
+        // headers (ThreatAgentFactors/VulnerabilityFactors/TechnicalImpact/
+        // BusinessImpact) already exist in lang.en.php and are reused
+        // as-is. 'Likelihood'/'Impact' (the Likelihood/Impact card
+        // headings) weren't previously registered for this script -- no
+        // other holder built here has a Likelihood/Impact card split --
+        // so they're added here too, or buildOwaspHolder()'s two
+        // $('<h5>').text(_lang.Likelihood)/_lang.Impact calls would render
+        // blank (an unregistered key is simply absent from _lang, and
+        // jQuery's .text(undefined) is a getter call, not a setter).
+        'OwaspScore', 'Likelihood', 'Impact',
+        'ThreatAgentFactors', 'VulnerabilityFactors', 'TechnicalImpact', 'BusinessImpact',
+        'SkillLevel', 'Motive', 'Opportunity', 'Size',
+        'EaseOfDiscovery', 'EaseOfExploit', 'Awareness', 'IntrusionDetection',
+        'LossOfConfidentiality', 'LossOfIntegrity', 'LossOfAvailability', 'LossOfAccountability',
+        'FinancialDamage', 'ReputationDamage', 'NonCompliance', 'PrivacyViolation',
+        'SkillLevelHelp', 'MotiveHelp', 'OpportunityHelp', 'SizeHelp',
+        'EaseOfDiscoveryHelp', 'EaseOfExploitHelp', 'AwarenessHelp', 'IntrusionDetectionHelp',
+        'LossOfConfidentialityHelp', 'LossOfIntegrityHelp', 'LossOfAvailabilityHelp', 'LossOfAccountabilityHelp',
+        'FinancialDamageHelp', 'ReputationDamageHelp', 'NonComplianceHelp', 'PrivacyViolationHelp',
+        // Phase 4d-iv follow-up: the OWASP Likelihood/Impact cards' 4
+        // subgroup captions (owaspSubGroup()'s `descKey`).
+        'ThreatAgentFactorsDescription', 'VulnerabilityFactorsDescription',
+        'TechnicalImpactDescription', 'BusinessImpactDescription',
+        // Risk Scoring -- Classic Inline (Task 3): the Classic holder's
+        // Score card heading (buildClassicHolder()) and its Likelihood/
+        // Impact cards' description captions. 'Likelihood'/'Impact' (the
+        // card headings themselves) are already registered above, from the
+        // OWASP phase.
+        'ClassicScore', 'ClassicLikelihoodDescription', 'ClassicImpactDescription',
+        // Risk Scoring -- Custom Inline (Task 2): the Custom holder's Score
+        // card heading (buildCustomHolder()) and its Custom Value card's
+        // description caption. 'CustomValue' (the card heading itself) is
+        // already registered above (Phase 4d-i).
+        'CustomScore', 'CustomValueDescription',
+        // Risk Scoring -- Contributing Risk Inline (Phase 4d-v): the
+        // Contributing Risk holder's Score card heading (buildContributingRiskHolder())
+        // and its Likelihood/Contributing Risk cards' description captions.
+        // 'ContributingRisk'/'ContributingLikelihood'/'Weight' (the card
+        // headings and per-factor label text) were never registered for
+        // this script before now -- Contributing Risk previously rendered
+        // only the generic "not yet available" notice, which reads a
+        // DIFFERENT key ('ScoringNotYetAvailableInThisView', removed by
+        // Task 2 once this method has a real holder). 'ContributingRiskScore'
+        // already exists (a legacy key, reused as-is per lang.en.php).
+        'ContributingRiskScore', 'ContributingLikelihoodDescription', 'ContributingRiskDescription',
+        'ContributingRisk', 'ContributingLikelihood', 'Weight',
+        // Scoring widget formula captions (live-updating .sr-cvss-vector
+        // rows, calculateDread()/calculateOwasp()/calculateClassic()/
+        // calculateContributingRisk() in their own formula files):
+        // DREAD's Score row, OWASP's 4 sub-score rows (OwaspSubgroupFormula
+        // -- previously only registered for the read-mode script below,
+        // now needed here too), Classic's Score row (RISKClassicExp1-5,
+        // model-keyed, model 6 shows none), and Contributing Risk's shared
+        // Likelihood term plus one per-factor term.
+        'DreadScoreFormula', 'OwaspSubgroupFormula',
+        'RISKClassicExp1', 'RISKClassicExp2', 'RISKClassicExp3', 'RISKClassicExp4', 'RISKClassicExp5',
+        'ContributingLikelihoodFormula', 'ContributingFactorFormula', 'ContributingRiskSubtotalFormula', 'ContributingRiskScoreFormula',
+        // Edit-mode parity follow-up: the OWASP Risk Rating Methodology
+        // link note (buildOwaspHolder()) -- already registered below for
+        // the read-mode script, was missing here.
+        'OwaspMethodologyNote', 'Here',
+        // score.php parity: the CVSS v2 spec link note (buildCvssHolder()).
+        'CvssMethodologyNote',
+    ],
+    // The read-only Cards renderer for an existing risk's Details tab
+    // (js/simplerisk/common/risk-details-view.js), companion to
+    // 'CUSTOM:common/risk-details-form.js' above. Same field-name keys, PLUS
+    // 'SubmissionDate'/'SubmittedBy' -- unlike the edit engine (which treats
+    // both as 'skip' widgets that render no control and therefore never read
+    // their _lang[field.name] label at all), this module renders them as
+    // ordinary label:value rows, so both keys ARE read here.
+    'CUSTOM:common/risk-details-view.js' => [
+        // 'Edit'/'Cancel'/'Save' back the Details-tab-only per-field inline
+        // edit affordance (renderFieldItem()'s edit/cancel/save icon
+        // buttons) -- all three are pre-existing keys used identically
+        // elsewhere; this only adds THIS script to their registration.
+        'CardGeneral', 'CardClassification', 'CardScoring', 'CardAdditionalInformation', 'CardCustomFields', 'Assignment', 'RequestFailed',
+        'Edit', 'Cancel', 'Save',
+        // 'Asset'/'AssetGroup' back the AffectedAssets chip row's own
+        // per-chip title/aria-label (distinguishing an asset chip from an
+        // asset-group chip) -- 'Asset' is a pre-existing key used
+        // identically elsewhere; 'AssetGroup' (singular -- 'AssetGroups' is
+        // a section/list label, not a fit for a single chip's tooltip) is new.
+        'Asset', 'AssetGroup',
+        'Subject', 'Category', 'SiteLocation', 'RiskSource', 'ExternalReferenceId', 'ControlRegulation', 'ControlNumber',
+        'Team', 'AdditionalStakeholders', 'Owner', 'OwnersManager', 'RiskAssessment', 'AdditionalNotes',
+        'SupportingDocumentation', 'Tags', 'RiskMapping', 'ThreatMapping', 'Technology',
+        'SubmissionDate', 'SubmittedBy',
+        // AffectedAssets/RiskScoringMethod/JiraIssueKey all resolve through
+        // the generic label:value path (api_ui_core_field_resolvers(),
+        // api/v2/includes/api.php) -- still need their label key here, same
+        // as every other real field. See the edit engine's identical entry
+        // above for JiraIssueKey's own Extra-gating note.
+        'AffectedAssets', 'RiskScoringMethod', 'JiraIssueKey',
+        // Phase 4b-ii: same key, same reasoning as the edit engine's entry above.
+        'MitigationControls',
+        // Mitigation tab (tab_index=2, Phase 4b-iii). Unlike the edit engine's
+        // entry above, 'MitigationDate'/'MitigationSubmittedBy' ARE read here
+        // -- this module renders every resolved field (both included) as an
+        // ordinary label:value row regardless of whether edit mode draws a
+        // control for it, same reasoning as 'SubmissionDate'/'SubmittedBy'
+        // above (MitigationSubmittedBy is that same pair's Mitigation-tab
+        // counterpart, added alongside MitigationDate as its top-row
+        // partner).
+        'MitigationDate', 'MitigationSubmittedBy', 'MitigationPlanning', 'PlanningStrategy', 'MitigationEffort', 'MitigationCost',
+        'MitigationOwner', 'MitigationTeam', 'MitigationPercent', 'CurrentSolution', 'SecurityRequirements',
+        'SecurityRecommendations', 'MitigationSupportingDocumentation',
+        // AcceptMitigation's own Accept/Reject action widget
+        // (buildAcceptMitigationWidget()) reads all four of these directly --
+        // button labels plus their in-flight ("Accepting..."/"Rejecting...")
+        // states.
+        'AcceptMitigation', 'RejectMitigation', 'Accepting', 'Rejecting',
+        'CardMitigationStrategy', 'CardMitigationSolution', 'CardMitigationControls',
+        // Review tab (tab_index=3, Phase 4c-ii). Unlike the edit engine's
+        // entry above, 'NextReviewDate' IS read here -- same
+        // "resolved fields render regardless of edit-mode control" reasoning
+        // as 'MitigationDate' above; 'SetNextReviewDate' is absent on
+        // purpose (no resolver, no label lookup -- see CORE_FIELD_FORM_NAMES'
+        // own comment). 'CardReview' is CARD_LABELS' entry for the 'review'
+        // card.
+        'Review', 'NextStep', 'Comment', 'ReviewDate', 'Reviewer', 'NextReviewDate', 'CardReview',
+        // CVSS read-mode card (Phase 4d-iii, buildCvssReadView()) -- every
+        // key its own code reads directly, matching the edit engine's
+        // identical CVSS block above (this module has no dependency on that
+        // registration; each token lists what ITS code reads, per
+        // using-language-lookups).
+        'CVSSScore', 'RiskLevel',
+        'BaseScore', 'ExploitabilityScore', 'ImpactScore', 'TemporalScore', 'EnvironmentalScore',
+        'BaseScoreExploitabilityMetrics', 'BaseScoreImpactMetrics',
+        'TemporalScoreMetrics', 'EnvironmentalScoreMetrics', 'ImpactSubscoreModifiers',
+        'AttackVector', 'AttackComplexity', 'Authentication',
+        'ConfidentialityImpact', 'IntegrityImpact', 'AvailabilityImpact',
+        'Exploitability', 'RemediationLevel', 'ReportConfidence',
+        'CollateralDamagePotential', 'TargetDistribution',
+        'ConfidentialityRequirement', 'IntegrityRequirement', 'AvailabilityRequirement',
+        'AdvancedMetrics', 'Optional',
+        // Read-mode parity follow-up: per-field help popovers on the CVSS
+        // read card's metric rows (cvssMetricValueRow()'s metricHelpIcon()
+        // call), reusing the SAME keys the edit engine's identical block
+        // above already registers for buildCvssScoreItem().
+        'AttackVectorHelp', 'AttackComplexityHelp', 'AuthenticationHelp',
+        'ConfidentialityImpactHelp', 'IntegrityImpactHelp', 'AvailabilityImpactHelp',
+        // 'ExploitabilityHelp' intentionally NOT read for CVSS's own
+        // Exploitability field -- 'Exploitability' collides with DREAD's
+        // labelKey of the same name, so cvssMetricValueRow() reads
+        // 'CVSSExploitabilityHelp' instead (see that key's own comment in
+        // lang.en.php). 'ExploitabilityHelp' is registered separately below,
+        // for DREAD's own read card.
+        'CVSSExploitabilityHelp', 'RemediationLevelHelp', 'ReportConfidenceHelp',
+        'CollateralDamagePotentialHelp', 'TargetDistributionHelp',
+        'ConfidentialityRequirementHelp', 'IntegrityRequirementHelp', 'AvailabilityRequirementHelp',
+        // DREAD read-mode card (Phase 4d-iii, buildDreadReadView()).
+        'DreadScore', 'DreadMetrics',
+        'DamagePotential', 'Reproducibility', 'Exploitability', 'AffectedUsers', 'Discoverability',
+        // Read-mode parity follow-up: per-field help popovers on the DREAD
+        // read card's metric rows (dreadMetricRow()'s metricHelpIcon()
+        // call).
+        'DamagePotentialHelp', 'ReproducibilityHelp', 'ExploitabilityHelp', 'AffectedUsersHelp', 'DiscoverabilityHelp',
+        // DREAD read-mode formula caption under its Score row
+        // (buildDreadReadView()), same ".sr-cvss-vector" treatment as
+        // OwaspSubgroupFormula below.
+        'DreadScoreFormula',
+        // OWASP read-mode card (Phase 4d-iv, buildOwaspReadView()).
+        'OwaspScore', 'Likelihood', 'Impact',
+        'ThreatAgentFactors', 'VulnerabilityFactors', 'TechnicalImpact', 'BusinessImpact',
+        'SkillLevel', 'Motive', 'Opportunity', 'Size',
+        'EaseOfDiscovery', 'EaseOfExploit', 'Awareness', 'IntrusionDetection',
+        'LossOfConfidentiality', 'LossOfIntegrity', 'LossOfAvailability', 'LossOfAccountability',
+        'FinancialDamage', 'ReputationDamage', 'NonCompliance', 'PrivacyViolation',
+        // Phase 4d-iv follow-up: the OWASP Likelihood/Impact cards' 4
+        // subgroup captions (owaspReadSubGroup()'s `descKey`).
+        'ThreatAgentFactorsDescription', 'VulnerabilityFactorsDescription',
+        'TechnicalImpactDescription', 'BusinessImpactDescription',
+        // Read-mode parity follow-up: the live calculation formula under
+        // each of the 4 subgroup names (owaspReadSubGroup()'s `formula`
+        // param), and the OWASP Risk Rating Methodology link note in the
+        // OWASP Score column's open space below the summary numbers.
+        'OwaspSubgroupFormula', 'OwaspMethodologyNote', 'Here',
+        // score.php parity: the CVSS v2 spec link note (buildCvssReadView()).
+        'CvssMethodologyNote',
+        // Read-mode parity follow-up: per-field help popovers on the OWASP
+        // read card's metric rows (owaspMetricRow()'s metricHelpIcon()
+        // call), reusing the SAME keys the edit engine's identical block
+        // above already registers for buildOwaspScoreItem().
+        'SkillLevelHelp', 'MotiveHelp', 'OpportunityHelp', 'SizeHelp',
+        'EaseOfDiscoveryHelp', 'EaseOfExploitHelp', 'AwarenessHelp', 'IntrusionDetectionHelp',
+        'LossOfConfidentialityHelp', 'LossOfIntegrityHelp', 'LossOfAvailabilityHelp', 'LossOfAccountabilityHelp',
+        'FinancialDamageHelp', 'ReputationDamageHelp', 'NonComplianceHelp', 'PrivacyViolationHelp',
+        // Classic read-mode card (Risk Scoring -- Classic Inline, Task 4,
+        // buildClassicReadView()). 'RiskLevel'/'Likelihood'/'Impact' are
+        // already registered above (the OWASP read card); 'CurrentLikelihood'/
+        // 'CurrentImpact' are the two field labels (classicMetricRow()) --
+        // same keys the edit engine's buildClassicHolder() already registers
+        // above via scoringSubField(_lang['CurrentLikelihood']/['CurrentImpact']).
+        'ClassicScore', 'ClassicLikelihoodDescription', 'ClassicImpactDescription',
+        'CurrentLikelihood', 'CurrentImpact',
+        // Read-mode parity follow-up: Classic's formula caption under its
+        // Score row (buildClassicReadView(), inside the same async
+        // formulaConfig().then() the score/pill patch already runs in) --
+        // model-keyed (1-5), model 6 (custom lookup grid) shows none.
+        'RISKClassicExp1', 'RISKClassicExp2', 'RISKClassicExp3', 'RISKClassicExp4', 'RISKClassicExp5',
+        // Custom read-mode card (Risk Scoring -- Custom Inline, Task 3,
+        // buildCustomReadView()). 'RiskLevel' is already registered above
+        // (the OWASP read card). 'CustomScore'/'CustomValueDescription' are
+        // already registered for the edit engine above
+        // ('CUSTOM:common/risk-details-form.js', Task 2) but not yet for
+        // this module. 'CustomValue' (the Custom Value card heading) is
+        // read here for the first time -- the edit engine's own
+        // buildCustomHolder() also uses it, but only via the
+        // ('CUSTOM:common/risk-details-form.js') entry above, a separate
+        // allowlist from this one.
+        'CustomScore', 'CustomValueDescription', 'CustomValue',
+        // Contributing Risk read-mode card (Phase 4d-v, buildContributingRiskReadView()).
+        'ContributingRiskScore', 'ContributingLikelihoodDescription', 'ContributingRiskDescription',
+        'ContributingRisk', 'ContributingLikelihood', 'Weight',
+        // Read-mode parity follow-up: the shared Likelihood term's formula,
+        // the Contributing Risk subtotal's formula, and each factor row's
+        // own weighted-term formula (contributingRiskFactorRow()/
+        // buildContributingRiskReadView()).
+        'ContributingLikelihoodFormula', 'ContributingFactorFormula', 'ContributingRiskSubtotalFormula', 'ContributingRiskScoreFormula',
+        // "Risk Scoring History" widget (Scoring card) -- buildScoringHistoryWidget()/
+        // loadScoringHistoryChart(). Replaces the legacy score_over_time()
+        // expander's own identical set of keys (score-overtime.php).
+        'RiskScoringHistory', 'Loading', 'NoDataAvailable', 'InherentRisk', 'ResidualRisk', 'Insignificant', 'Date', 'RiskScore',
+        // Widget's own download button (buildScoringHistoryDownloadButton()).
+        'DownloadChartAsImage',
+    ],
+    // Coordinates the Details tab's read/edit toggle on management/view.php
+    // (js/simplerisk/pages/risk-view-details.js). 'Cancel' backs this file's
+    // OWN top-of-tab Cancel trigger (renderEditMode()'s $cancelBtn, mirroring
+    // risk-view-mitigation.js's/risk-view-review.js's identical registration
+    // below) -- the engine's own 'RequestFailed' is already covered by
+    // 'CUSTOM:common.js'/'CUSTOM:common/risk-details-form.js' on this same
+    // page, but this token's own registration lists every key ITS code reads
+    // directly, per using-language-lookups -- a future page that loads only
+    // this token must not come up short.
+    'CUSTOM:pages/risk-view-details.js' => ['EditDetails', 'Cancel', 'Save', 'RequestFailed'],
+    // Coordinates the Mitigation tab's read/edit toggle on management/view.php
+    // (js/simplerisk/pages/risk-view-mitigation.js, Phase 4b-iii). Sibling to
+    // 'CUSTOM:pages/risk-view-details.js' above -- same reasoning for why this
+    // token lists every key its own code reads directly.
+    'CUSTOM:pages/risk-view-mitigation.js' => ['EditMitigation', 'Cancel', 'Save', 'RequestFailed'],
+    // Mitigation Controls redesign (js/simplerisk/pages/risk-mitigation-
+    // controls.js): the shared control picker (same keys Document Program's
+    // control picker already registers) plus the top-level table/expander
+    // and the Control Validation modal's own labels.
+    'CUSTOM:pages/risk-mitigation-controls.js' => [
+        'ChooseControls', 'AddOrRemoveControls', 'NoControlsMatchFilters', 'NoControlsSelectedYet',
+        'AllControls', 'AllFrameworks', 'AllFamilies', 'Framework', 'ControlFamily', 'Controls', 'Selected',
+        'Clear', 'Close', 'Cancel', 'UseTheseControls', 'PickerKeyboardHint', 'SearchControlsPlaceholder', 'Remove',
+        'MitigationControls', 'ControlNumber', 'ControlShortName', 'ValidationOwner', 'MitigationPercent',
+        'ValidationStatus', 'NotStarted', 'InProgress', 'Complete', 'RequestFailed',
+        'ControlValidation', 'Details', 'Owner', 'UploadArtifact', 'ControlType', 'ControlStatus', 'Pass', 'Fail', 'NotTested', 'Save',
+        'ViewControlValidation', 'EditControlValidation',
+        // renderValidationFiles()'s empty-file-list indicator -- same key
+        // buildSupportingDocumentationWidget() (risk-details-form.js) and
+        // the legacy supporting_documentation() passthrough both use.
+        'None',
+    ],
+    // Asset record profile for the Cards engines (js/simplerisk/common/
+    // asset-card-profile.js): the asset card labels, the Mapped controls
+    // composite's own strings, and the asset core field labels the engines
+    // read through _lang[field.name] (populateFieldContent()/renderFieldItem())
+    // -- the engines' own tokens register only the risk field names. The
+    // Mapped controls picker's strings come from
+    // 'CUSTOM:pages/risk-mitigation-controls.js', which the host page loads too.
+    // The asset record modal (view / edit / add) on Manage assets
+    // (js/simplerisk/pages/asset-record-modal.js). Every key its own L()
+    // calls read; the rest of its copy is server-rendered in the markup.
+    'CUSTOM:pages/asset-record-modal.js' => [
+        'AddAsset', 'AssetRecordEdit', 'AssetRecordIdN', 'Verified', 'Unverified',
+        'AssetRecordProvenanceVerified', 'AssetRecordProvenanceUnverified', 'AssetRecordUnsavedHint',
+        'AssetRecordLoadFailed', 'SavedSuccess', 'RequestFailed', 'Loading',
+        'AssetRecordAuditTrailEmpty', 'AssetRecordAuditTrailFailed',
+        'AssetRecordLinkCopied', 'AssetRecordLinkCopyFailed', 'AssetRecordDiscardQuestion',
+        'AssetRecordEditField',
+    ],
+    'CUSTOM:common/asset-card-profile.js' => [
+        'CardGeneral', 'Assignment', 'CardClassification', 'CardScoring', 'CardAdditionalInformation', 'CardCustomFields', 'AssetScoring',
+        'AssetName', 'IPAddress', 'AssetValuation', 'SiteLocation', 'Team', 'AssetDetails', 'Tags',
+        'MappedControls', 'AssociatedRisks',
+        'ControlMaturity', 'Controls', 'Remove', 'AddControlsAtAnotherMaturity',
+        'ChoosingControlsNeedsGovernancePermission', 'NControls',
+        'ChoosingRisksNeedsRiskManagementPermission', 'NAssociatedRisks', 'SavingKeepsTheCurrentRiskAssociations',
+        'SavingKeepsTheCurrentControlMappings','LoadingControls', 'ControlListCouldNotBeLoaded',
+        'RemoveControlsAtMaturity', 'Retry', 'ControlIdUnavailable',
+        'Confidentiality', 'Integrity', 'Availability', 'AssetScoringLevelLow', 'AssetScoringLevelModerate',
+        'AssetScoringLevelHigh', 'AssetScoringNotSet', 'ApplicabilityNotApplicable', 'FIPSCategorization',
+        'WeightedScore', 'WeightedBand', 'NotScored', 'AssetScoringNotScoredHint',
+        'Summary', 'AssetScoringSecurityObjectives', 'AssetScoringConfidentialityHelp', 'AssetScoringIntegrityHelp',
+        'AssetScoringAvailabilityHelp', 'AssetScoringHelpHigh', 'AssetScoringHelpModerate', 'AssetScoringHelpLow',
+        'AssetScoringHelpNotApplicable', 'AssetScoringHelpLabel', 'AssetScoringResultHelpLabel', 'AssetScoringScoreHelp',
+        'AssetScoringCategorizationHelp', 'AssetScoringBandHelp', 'AssetScoringMeterValue',
+        'AssetScoringNoWeightedScore', 'AssetScoringNoWeightedScoreNote',
+    ],
+    // Coordinates the Review tab's read/submit toggle on management/view.php
+    // (js/simplerisk/pages/risk-view-review.js, Phase 4c-ii). Sibling to
+    // 'CUSTOM:pages/risk-view-mitigation.js' above -- same reasoning for why
+    // this token lists every key its own code reads directly. 'SubmitReview'
+    // (not 'Save') is the submit-mode label, matching the sticky action
+    // bar's data-submit-label for an append-only-log submission rather than
+    // an update.
+    // 'ViewAllReviews'/'ReviewHistory'/'Close'/'None' back the "View All
+    // Reviews" modal (buildHistoryModal()/renderHistoryEntries()); the six
+    // field-label keys ('ReviewDate' through 'Comment') are the SAME ones
+    // 'CUSTOM:common/risk-details-view.js' already registers for the
+    // current-review Card's own field.name lookups (renderFieldItem()) --
+    // duplicated here because localization keys are scoped per SCRIPT
+    // TOKEN, and this file reads them directly rather than through that
+    // other module.
+    'CUSTOM:pages/risk-view-review.js' => [
+        'PerformAReview', 'Cancel', 'SubmitReview', 'RequestFailed',
+        'ViewAllReviews', 'ReviewHistory', 'Close', 'None',
+        'ReviewDate', 'Reviewer', 'Review', 'NextStep', 'NextReviewDate', 'Comment',
+    ],
+    // Risk view Audit Trail redesign (design-system.md §6/§7, js/simplerisk/
+    // pages/risk-audit-trail.js) -- mirrors the Document Program/Define
+    // Exceptions audit trails' own key lists below, minus the entity-column
+    // keys ('Document'/'AllDocuments' etc.): this card's entityKey is null
+    // (see that file's own comment), and minus 'Export'/'Downloaded'/
+    // 'DeletedVersion'/'Approved'/'Unapproved': no export button and no
+    // approve/unapprove-shaped activity in classify_risk_audit_activity()
+    // (includes/functions.php). Adds this risk-lifecycle's own activity
+    // labels ('Closed'/'Reopened'/'Reviewed'/'Comment'/'MitigationAccepted'/
+    // 'Rejected') in their place.
+    'CUSTOM:pages/risk-audit-trail.js' => [
+        'AuditTrail', 'Refresh', 'AuditTrailDateAndTime', 'Activity', 'User',
+        'EncryptionBackupCreatedAt', 'Updated', 'Closed', 'Reopened', 'Reviewed', 'Deleted', 'Comment', 'Uploaded', 'MitigationAccepted', 'Rejected',
+        'DateRange', 'PastWeek', 'PastMonth', 'PastQuarter', 'Past6Months', 'PastYear', 'AllTime',
+        'AllActivities', 'AllUsers', 'ClearFilters', 'Columns', 'Filters', 'ShowFilters', 'HideFilters',
+        'SearchAuditTrailPlaceholder', 'NoAuditLogEntries', 'NoAuditLogEntriesBody',
+        'NoAuditLogEntriesMatchFilters', 'NoAuditLogEntriesMatchFiltersBody',
+        'Show', 'All', 'Previous', 'Next', 'RequestFailed', 'By', 'UnknownUser',
+    ],
+    // Document Program audit trail redesign (design-system.md §6/§7,
+    // js/simplerisk/pages/governance-document-audit-trail.js)
+    'CUSTOM:pages/governance-document-audit-trail.js' => [
+        'AuditTrail', 'Refresh', 'Export', 'AuditTrailDateAndTime', 'Document', 'Activity', 'User',
+        // 'EncryptionBackupCreatedAt' reused for the "Created" activity pill --
+        // see the identical comment at its usage site in
+        // governance-document-audit-trail.js's activityMeta.
+        'EncryptionBackupCreatedAt', 'Updated', 'Deleted', 'DeletedVersion', 'Approved', 'Unapproved', 'Downloaded', 'Uploaded',
+        'DateRange', 'PastWeek', 'PastMonth', 'PastQuarter', 'Past6Months', 'PastYear', 'AllTime',
+        'AllDocuments', 'AllActivities', 'AllUsers', 'DocumentName', 'ClearFilters', 'Filters', 'ShowFilters', 'HideFilters', 'Columns',
+        'SearchAuditTrailPlaceholder', 'NoAuditLogEntries', 'NoAuditLogEntriesBody',
+        'NoAuditLogEntriesMatchFilters', 'NoAuditLogEntriesMatchFiltersBody',
+        'Show', 'All', 'Previous', 'Next', 'RequestFailed', 'By', 'UnknownUser',
+    ],
+    // Define Exceptions audit trail redesign (design-system.md §6/§7,
+    // js/simplerisk/pages/governance-exception-audit-trail.js) -- mirrors
+    // the Document Program audit trail above exactly.
+    'CUSTOM:pages/governance-exception-audit-trail.js' => [
+        'AuditTrail', 'Refresh', 'Export', 'AuditTrailDateAndTime', 'Exception', 'Activity', 'User',
+        // 'EncryptionBackupCreatedAt' reused for the "Created" activity pill --
+        // see the identical comment in governance-document-audit-trail.js's activityMeta.
+        'EncryptionBackupCreatedAt', 'Updated', 'Deleted', 'Approved', 'Unapproved',
+        'DateRange', 'PastWeek', 'PastMonth', 'PastQuarter', 'Past6Months', 'PastYear', 'AllTime',
+        'AllExceptions', 'AllActivities', 'AllUsers', 'ClearFilters', 'Filters', 'ShowFilters', 'HideFilters', 'Columns',
+        'SearchAuditTrailPlaceholder', 'NoAuditLogEntries', 'NoAuditLogEntriesBody',
+        'NoAuditLogEntriesMatchFilters', 'NoAuditLogEntriesMatchFiltersBody',
+        'Show', 'All', 'Previous', 'Next', 'RequestFailed', 'By', 'UnknownUser',
+    ],
+    // Define Exceptions grid redesign (js/simplerisk/pages/governance-exceptions.js,
+    // split out of governance.js -- Task 11)
+    'CUSTOM:pages/governance-exceptions.js' => [
+        'Owner', 'FrameworkControl', 'AssociatedRisks', 'NextReviewDate', 'Control', 'Policy',
+        'Approved', 'Pending', 'View', 'Edit', 'Unapprove', 'Approve', 'Delete', 'Select', 'SelectAll',
+        'ExceptionName', 'Type', 'ExceptionStatus', 'ApprovalStatus', 'Actions',
+        'SearchExceptionsPlaceholder', 'NoExceptionsYet', 'NoExceptionsYetBody',
+        'NoExceptionsMatchFilters', 'NoExceptionsMatchFiltersBody', 'ClearFilters',
+        'CouldNotLoadExceptions', 'CouldNotLoadExceptionsBody', 'Retry', 'Previous', 'Next', 'NSelected',
+        'UnapproveExceptionQuestion', 'UnapproveExceptionConfirmBody',
+        'ApproveSelectedExceptionsQuestion', 'ApproveSelectedExceptionsConfirmBody', 'ApproveSelected',
+        'ApproveExceptionQuestion', 'ApproveExceptionConfirmBody',
+        'AreYouSureYouWantToDeleteTheseExceptions', 'AreYouSureYouWantToDeleteThisException',
+        'DeleteSelected', 'ExceptionsDeleted', 'SomeExceptionsNotDeleted',
+        // Filters row (design-system.md §6b/§6c)
+        'Filters', 'ControlFrameworks', 'AllTypes', 'AllFrameworks', 'AllControls', 'AllStates', 'AllStatuses', 'AllRisks',
+        // Select all N (cross-page/filtered selection banner)
+        'SelectAllN', 'SelectAllTooManyMatches', 'Exceptions',
+    ],
+    'CUSTOM:pages/governance-frameworks.js' => ['AllControls', 'UnassignedControls', 'ControlNumber', 'ControlName', 'ControlFamily', 'Owner', 'Maturity', 'Status', 'Pass', 'Fail', 'NotTested', 'BelowMaturity', 'NoOwner', 'Unassigned', 'ShowingXToYOfZ', 'Controls', 'SearchControls', 'Filters', 'ClearFilters', 'AddControl', 'NSelected', 'ControlClass', 'ControlPhase', 'ControlPriority', 'ControlType', 'AnyFamily', 'AnyOwner', 'AnyClass', 'AnyPhase', 'AnyPriority', 'AnyType', 'AnyStatus', 'Description', 'SupplementalGuidance', 'MitigationPercent', 'SelectAllN', 'SelectAll', 'Clear', 'DeleteSelectedControls',
+        // Task 8: modal wiring (row-action labels, destructive-confirm titles, generic API-failure fallback)
+        'Edit', 'Delete', 'RequestFailed', 'DeleteFrameworkTitle', 'DeleteControlTitle', 'DeleteControlsTitle',
+        // Task 54: the bulk-delete confirmation states SERVER-RESOLVED numbers before
+        // anything is committed, so it needs the three split sentences (both halves,
+        // kept-only, removed-only), the nothing-left case, the in-flight placeholder,
+        // and the result toast. Task 8's 'BulkDeleteAllFilteredUnsupported' and
+        // 'ControlsDeleteResult' are GONE: the escalated case is supported now, and
+        // the delete is one transactional call rather than N parallel ones, so
+        // "{$ok} of {$total}" no longer describes anything that can happen.
+        'DeleteControlsPreviewChecking', 'DeleteControlsPreviewSplit', 'DeleteControlsPreviewKeptOnly',
+        'DeleteControlsPreviewRemovedOnly', 'DeleteControlsPreviewNone', 'ControlsDeletedResult',
+        // Task 24: restored Clone row action (row-action label; success/error toast text
+        // comes straight from the server's own status_message, same as every other control
+        // CRUD action on this page) plus the pre-fill banner naming which control was cloned.
+        'Clone', 'ClonedFromControlNotice', 'CloneOfControlTitle', 'NewControl',
+        // Task 22: framework rail search -- showFrameworksEmptyState() swaps the shared #sr-fw-filtered tile's title/action between these two pairs depending on whether a status filter or a search caused the empty result.
+        'NoFrameworksMatchFilter', 'ViewActiveFrameworks', 'NoFrameworksMatchSearch', 'ClearSearch',
+        // Task 23: the row-expand caret (renderRow()) swapped its glyph text for an
+        // icon-only .sr-group-caret button, so it needs its own accessible name.
+        'Details',
+        // Task 27: the rail's SCF-origin chip (railRow()) -- badge text + tooltip.
+        'SCF', 'ScfOriginHint',
+        // Task 34: the Maturity column's Below/At/Above chip (renderMaturity()),
+        // the matching filter facet (its three option labels reuse the same
+        // three keys) and its "Any maturity" placeholder, plus the drawer's
+        // label for the exact current -> desired level pair. 'BelowMaturity'
+        // and 'Maturity' are already registered above.
+        'AtMaturity', 'AboveMaturity', 'AnyMaturity', 'ControlMaturity',
+        // Task 36: the row-actions overflow toggle (rowActionsWrap()) is
+        // icon-only, so it needs its own accessible name. Same key Define
+        // Tests' identical toggle already uses -- reused, not re-added.
+        'Actions',
+        // Task 46: the control table's pager (renderPager()). Previous/Next
+        // are the SAME two keys Define Tests' pager already uses -- reused,
+        // not re-added -- alongside the new landmark label. ShowingXToYOfZ is
+        // already registered above; the rows-per-page select's own labels are
+        // server-rendered in governance/index.php.
+        'Previous', 'Next', 'ControlsPagination',
+        // Task 14: the Applicability column chip (renderApplicability()), the
+        // matching filter facet, and the drawer's applicability record. The
+        // column header, the facet's accessible name and three of the record's
+        // labels reuse existing keys ('Applicability', 'Reason', 'Provider',
+        // 'Justification') -- registered here, not re-added to lang.en.php.
+        'Applicability', 'ApplicabilityApplicable', 'ApplicabilityNotApplicable', 'ApplicabilityInherited',
+        'AnyApplicability', 'Reason', 'Provider', 'Justification',
+        'ApplicabilityDecidedBy', 'ApplicabilityDecidedOn',
+        // Task 15: bulk-set applicability from the selection bar. The bulk bar's
+        // action label, the modal's scope note (two sentences -- one naming the
+        // framework, one naming the population), the per-state hints, and the
+        // two result toasts. The modal's own static labels are server-rendered
+        // in governance/index.php; these are the strings the JS builds at
+        // runtime.
+        //
+        // 'ChooseAReason' / 'ApplicabilityNoReason' are gone from this list: the
+        // reason field became a CHECKBOX GROUP when reasons went multi-select,
+        // and a checkbox group has no placeholder row to label. The keys stay in
+        // lang.en.php -- they are generic enough to be reused, and retiring a
+        // key costs 39 locales a Crowdin round trip to gain nothing.
+        'SetApplicability', 'ApplicabilityScopeNote', 'ApplicabilityAppliesToSelected',
+        'ApplicabilityAppliesToAllFiltered', 'ApplicabilityApplicableHint',
+        'ApplicabilityNotApplicableHint', 'ApplicabilityInheritedHint',
+        'ApplicabilitySetResult', 'ApplicabilityClearResult',
+        // Task 60: the same modal, opened from a single control's row action.
+        // The row button's own label reuses 'SetApplicability' above; these two
+        // are the row-scoped title and population sentence, which name the
+        // control so the modal cannot be read as acting on the checkbox
+        // selection.
+        // Task 63 adds the second population spelling, used only when other
+        // controls are actually selected behind the row action.
+        'SetApplicabilityForControl', 'ApplicabilityAppliesToControl',
+        'ApplicabilityAppliesToControlNotSelection',
+        // Task 17: the "Generate statement of applicability" header button. It
+        // is shown only when exactly one framework is scoped -- the SoA is a
+        // per-framework document and there is no cross-framework roll-up -- so
+        // the label is the only string the JS needs for it.
+        // Task 65 adds the short visible label; the full string above stays as
+        // the button's title/aria-label, so both are needed.
+        'GenerateStatementOfApplicability', 'GenerateSoa',
+        // Task 53: the Mapped Assets widget's one runtime string -- the refusal
+        // shown when a second asset row picks a maturity level another row
+        // already holds. Same key js/simplerisk/pages/governance.js uses for
+        // the identical guard on the pre-redesign page: reused, not re-added.
+        'ExistingMappings',
+        // Task 64: Clone framework -- the rail row action's label, the
+        // pre-filled Add Framework modal's title and banner, and the seeded
+        // name. 'Clone' is already registered above (the control row action)
+        // and is deliberately NOT re-added; 'CloneFramework' is the rail
+        // button's own title/aria-label, which has to name the object because
+        // the rail and the control table both carry a Clone icon.
+        'CloneFramework', 'CloneOfFrameworkTitle', 'ClonedFromFrameworkNotice',
+        'CloneOfFrameworkName', 'NewFramework',
+        // Mapped Frameworks section in the row drawer (renderDrawer()) --
+        // restores the pre-redesign badge + lazy-loaded table
+        // (display_mapping_framework_view(), includes/governance.php).
+        // 'ReferenceName' names the OTHER framework's own control identifier
+        // -- deliberately not 'Control', which this page already uses
+        // throughout for OUR OWN control (ControlName, ControlNumber, etc.)
+        // and would read as a second, conflicting "Control" column here.
+        // 'Controls' is already registered above; 'MappedControlFrameworks',
+        // 'Framework', 'ReferenceName', 'ReferenceText', 'Frameworks' and
+        // 'Loading' (the section's initial AJAX-pending state) are existing
+        // lang.en.php keys not previously needed by this script.
+        'MappedControlFrameworks', 'Frameworks', 'Framework', 'ReferenceName', 'ReferenceText', 'Loading',
+        'CouldNotLoadMappedFrameworks', 'NoMappedFrameworksFound', 'SearchMappedFrameworks',
+        // Task: Columns picker + saved layout/filters -- the picker button's
+        // own label, its search box, the "no matches" empty state, and the
+        // two group labels its grouped/searchable panel renders (Review
+        // Risk's variant of design-system.md §6c). 'Columns', 'Search' and
+        // 'NoMatchingOptions' are existing lang.en.php keys not previously
+        // needed by this script.
+        'Columns', 'Search', 'NoMatchingOptions', 'StandardFields', 'CustomFields'],
+    // Task 17: the Statement of Applicability report
+    // (reports/statement_of_applicability.php). The page is a thin shell and
+    // EVERY visible string is built by this script, so the whole document's
+    // vocabulary is registered here: the cover, the six column headings, the
+    // three applicability states, the four implementation values, the
+    // missing-cover-fields prompt, the framework picker the Reporting Hub route
+    // lands on, and the two explained refusals.
+    'CUSTOM:pages/statement-of-applicability.js' => [
+        'StatementOfApplicability', 'SoaGeneratedOn', 'Controls', 'Framework', 'Frameworks',
+        'ApplicabilityApplicable', 'ApplicabilityNotApplicable', 'ApplicabilityInherited',
+        'SoaExcludedCount', 'IsmsScopeStatement', 'DefaultInclusionJustification',
+        'Reference', 'ControlName', 'Applicability', 'Justification', 'SoaImplemented', 'Evidence',
+        'Yes', 'No', 'SoaImplementedPartial', 'NotApplicable',
+        'Reason', 'Provider', 'ApplicabilityDecidedBy',
+        'SoaMissingFieldsTitle', 'SoaMissingScopeStatement', 'SoaMissingInclusionJustification',
+        'SoaEditFrameworkToAdd', 'SoaChooseFramework', 'SoaChooseFrameworkHint',
+        // The framework picker: its sr-select search field, the launcher's
+        // "Open" affordance, and the state where the roster itself is empty.
+        // The two exports beside it: the spreadsheet, and the ONE PDF affordance
+        // ('SoaPdf' -- just "PDF"), whose mechanism the framework's size picks
+        // and whose label it does not. Registered unconditionally -- the labels
+        // are just strings; whether the affordances are BUILT is decided by the
+        // page's data-sr-soa-can-export attribute, not by this list.
+        //
+        // THE THREE ACTION LABELS ARE SYMMETRIC and namespaced to this launcher:
+        // 'SoaOpen' / 'SoaXlsx' / 'SoaPdf' -- one word each, because the row itself
+        // supplies the verb and 'SoaPdf' could not honestly carry one anyway: above
+        // SOA_EXPORT_PDF_MAX_CONTROLS it opens a print view rather than downloading
+        // a file. ('DownloadAsXLSX' still has a caller of its own in the Assessments
+        // Extra, which is why that key is untouched.)
+        'Search', 'SoaOpen', 'SoaXlsx', 'SoaPdf',
+        'SoaNoFrameworks', 'SoaNoFrameworksHint',
+        'SoaFrameworkInactiveTitle', 'SoaFrameworkInactiveBody', 'SoaFrameworkNotFoundBody',
+        'SoaNoControls', 'SoaNoControlsHint', 'RequestFailed'],
+    'CUSTOM:pages/compliance.js' => ['AuditInitiationOffsetMustBeANonNegativeValue', 'AuditInitiationOffsetMustBeLessThanOrEqualToTestFrequency', 'AnchorDateMustBeTodayOrLater', 'TestSuccessCreated', 'RequestFailed', 'SuggestionDismissFailed', 'AreYouSureYouWantToApproveThisAudit', 'RejectCommentRequired', 'AtLeastOneControlRequired', 'AddOrRemove', 'Remove', 'CreateTagX', 'DeleteTestUsedByNControls', 'NoControlsMatchFilters', 'NoControlsSelectedYet', 'AllControls', 'AddOrRemoveControls', 'ChooseControls', 'Selected'],
+    'CUSTOM:pages/compliance-define-tests.js' => ['Frameworks', 'Test', 'Tests', 'AddTest', 'NotTested', 'Retired', 'Edit', 'Delete', 'ScheduleManual', 'Overdue', 'DueSoon', 'Failing', 'Passing', 'Scheduled', 'NoTestsForThisControl', 'ShowingXToYOfZ', 'Previous', 'Next', 'All', 'Pass', 'Fail', 'Inconclusive', 'Framework', 'Control', 'Reference', 'NoFrameworksMapped', 'CouldNotLoadTests', 'Objective', 'TestSteps', 'ExpectedResults', 'Tester', 'ApproximateTime', 'Tags', 'minutes', 'minute', 'Retire', 'Restore', 'Select', 'NSelected', 'SelectAllN', 'ConfirmRetireSelectedTests', 'ConfirmDeleteSelectedTests', 'BulkPartialFailure', 'RequestFailed', 'TestMethod', 'TestMethodInquiry', 'TestMethodObservation', 'TestMethodInspection', 'TestMethodReperformance', 'Sample', 'RequiredEvidence', 'Approvers', 'AllFrameworks', 'AllFamilies', 'AllTesters', 'ScheduleCalendar', 'ScheduleInterval', 'OverdueByXDays', 'OverdueByOneDay', 'DueInXDays', 'DueTomorrow', 'DueToday', 'ScheduledForX', 'Common', 'Controls', 'Description', 'ValidatesAcrossMappedFrameworks', 'EditTest', 'Archived', 'ControlHasNoTestCoverage', 'AddTheFirstTest', 'ApplyCommonTests', 'SelectOneOrMoreTests', 'CommonTestApplied', 'CommonTestsApplied', 'CouldNotApplyCommonTest', 'History', 'Date', 'Result', 'Approval', 'InProgress', 'Approved', 'Pending', 'Rejected', 'ThisTestHasNotBeenRunYet', 'CouldNotLoadTestHistory', 'Open', 'RemoveFromThisControl', 'RemoveTestFromControlConfirm', 'RemoveTestFromControlStays', 'RemoveTestFromControlStaysOne', 'TestRemovedFromControl', 'CouldNotRemoveTestFromControl', 'BulkDeleteSharedTestsNote', 'BulkRetireSharedTestsNote', 'BulkDeleteOneSharedTestNote', 'BulkRetireOneSharedTestNote', 'ViewTest', 'CouldNotLoadTest', 'NotSpecified', 'Teams', 'LastTestDate', 'NextTestDate', 'AdditionalStakeholders', 'AuditInitiationOffset', 'Cadence', 'AnchorDate', 'Close', 'TestName', 'Schedule', 'Identity', 'ProcedureAndEvidence', 'SearchMappings', 'NoMatchingMappings', 'Actions', 'ShowFilters', 'HideFilters', 'Create', 'Dismiss', 'ReviewAndEdit', 'AiSuggested', 'GenerateTestsWithAI', 'TestCreatedFromSuggestion', 'SuggestionDismissed', 'TestGenerationQueued', 'Generating', 'TestGenerationComplete', 'TestGenerationStillRunning', 'TestGenerationNoNew'],
+    'CUSTOM:pages/assessment.js' => ['SimpleriskUsers', 'AssessmentContacts'],
+    // Data Integrity review/repair page controller (data-integrity.js).
+    'CUSTOM:pages/data-integrity.js' => ['DataIntegrityTotalCount', 'Repair', 'DataIntegrityRecordLocation', 'Selected', 'Open', 'RequestFailed', 'DataIntegrityShowingCapped'],
+    'CUSTOM:dynamic.js' => ['Risk', 'Mitigation', 'Review', 'RiskScoring', 'Unassigned', 'RiskMapping', 'Remove', 'NoColumnsSelected'],
+    'CUSTOM:pages/connectivity-visualizer.js' => ['SearchEntities', 'SearchEntitiesPlaceholder', 'ShowTypes', 'Depth', 'Inspector', 'Connections', 'NoConnectionsFound', 'CouldNotLoadGraph', 'CouldNotSearchEntities', 'ShowingTopNOfM', 'RankedByMaturityGap', 'RankedByRiskScore', 'RankedByRecentFailure', 'RankedByReviewDate', 'RankedBySeverity', 'RankedByName', 'RiskCatalog', 'ThreatCatalog', 'Vulnerability', 'Audit', 'TestResult', 'NodeTypeSelfAssessmentResult', 'Relationship', 'CurrentMaturity', 'DesiredMaturity', 'ControlFamily', 'ApprovalState', 'ApprovalStatus', 'Manager', 'Approver', 'Tester', 'AssetValuation', 'Verified', 'Risk', 'Asset', 'Framework', 'Control', 'Test', 'Document', 'Exception', 'Name', 'Type', 'Status', 'Approved', 'Owner', 'RequestFailed', 'All', 'Close', 'RelationshipOfType', 'MitigationPercent', 'Objective', 'TestSteps', 'ExpectedResults', 'DesiredFrequency', 'LastDate', 'LastResult', 'LastResultDate', 'CalculatedRisk', 'Justification', 'NextReviewDate', 'PercentComplete', 'Response', 'AssessmentDate', 'FrameworkName', 'Score', 'Playbook', 'Severity', 'NextDate', 'ControlID', 'TestID', 'Number', 'Grouping', 'Description', 'Hidden', 'RiskId', 'FirstFound', 'LastFound', 'Patchable', 'Solution', 'Platform', 'Breadcrumb', 'SelectANodeToInspect', 'HiddenUnreachableNodes', 'BrowsableEntityTypes', 'CountFloor', 'NoBrowsableTypes', 'AllTypes', 'FilterEntitiesPlaceholder', 'NoMatchingEntities', 'LoadMore', 'Loading', 'CouldNotLoadEntityCounts', 'CouldNotLoadEntities', 'ClearGraph'],
+    // My Profile redesign (js/simplerisk/pages/account-profile.js)
+    'CUSTOM:pages/account-profile.js' => [
+        'Administrator', 'AccountDetails', 'YourPermissions', 'RoleAndTeamsGrantAccess', 'AllGranted', 'PermissionsCountLabel',
+        'ManagedByYourAdministrator', 'MultiFactorAuthenticationHint', 'ChangingPasswordSignsOutEverywhere', 'APIKeyHint', 'ResetDisplaySettingsHint',
+        'ShowMore', 'ShowLess', 'Cancel', 'Save', 'Update', 'EnableMFA', 'DisableMFA',
+        'CurrentPassword', 'NewPassword', 'ConfirmPassword', 'ChangePassword', 'PasswordUpdated',
+        'RequestFailed', 'Enabled', 'Disabled', 'LanguageUpdated', 'OtherSessionsNotCleared',
+        'RotateAPIKey', 'InvalidateAPIKey', 'GenerateAPIKey', 'APIKey',
+        'ResetCustomDisplaySettings', 'CustomResetSuccessMessage',
+        'FullName', 'EmailAddress', 'Username', 'Manager', 'Teams', 'Role', 'Language', 'Display',
+        'Resources', 'UserGuide', 'AdminGuide', 'GSWalkthrough',
+    ],
+    ];
 }
 
 /**

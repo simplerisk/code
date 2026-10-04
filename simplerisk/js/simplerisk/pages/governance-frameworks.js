@@ -961,8 +961,8 @@
             .append($actions);
     }
 
-    // Row-actions overflow close/orient (vertical is-up flip + scroller
-    // unclip) is shared with Manage Audits and Define Tests via
+    // Row-actions overflow close/orient (vertical is-up flip + pinning the
+    // open menu to the viewport) is shared with Manage Audits and Define Tests via
     // js/simplerisk/sr-row-actions-menu.js -- SRRowActionsMenu. This page adds
     // one extension on top, passed to SRRowActionsMenu.orient() as its
     // `extend` callback: in the framework rail only, open the menu RIGHTWARD
@@ -1998,6 +1998,32 @@
             .val(filters.text)
             .appendTo($tools);
 
+        // Columns picker (Task: Columns picker + saved layout/filters,
+        // design-system.md §6c) -- same .colpicker/.filterbtn/.colpanel
+        // markup shape Document Program/Define Exceptions render statically
+        // in PHP (governance/documentation.php, governance/document_
+        // exceptions.php); built here in JS instead because this toolbar,
+        // unlike theirs, is fully rebuilt every render. #sr-ctl-colpanel's
+        // CONTENTS are rendered once by renderColpanel() (below, wired from
+        // the init block) rather than on every renderToolbar() call -- a
+        // checkbox's `checked` state lives in columnVisible, not in this
+        // markup, so there's nothing here that would go stale between
+        // renders the way Family/Owner's own enhanced <select> would.
+        //
+        // Appended BEFORE "Filters · n" (Family/Owner then insert themselves
+        // immediately before #sr-ctl-filters via placeInlineFacet()'s anchor,
+        // landing between this and Filters either way) -- SCENARIO-26 pins
+        // "Filters · n" as the LAST control on row 2, flush with the
+        // toolbar's right edge; appending this picker after it would have
+        // silently displaced Filters from that position, which is the one
+        // thing this task was not supposed to touch.
+        $('<div class="colpicker">').append(
+            $('<button type="button" class="filterbtn sr-table-filter" id="sr-ctl-colpicker-btn" aria-haspopup="true" aria-expanded="false">')
+                .append($('<i class="fa fa-table-columns" aria-hidden="true">'))
+                .append(document.createTextNode(' ' + _lang['Columns'])),
+            $('<div class="colpanel d-none" id="sr-ctl-colpanel">')
+        ).appendTo($tools);
+
         $('<button type="button" class="sr-table-filter" id="sr-ctl-filters" aria-haspopup="true" aria-expanded="false">')
             .append(document.createTextNode(_lang['Filters'] + ' '))
             .append($('<span class="sr-table-fcount" id="sr-ctl-fcount">').text(activeFilterCount()))
@@ -2127,6 +2153,14 @@
 
         $tools.appendTo($toolbar);
 
+        // #sr-ctl-colpanel was just recreated (fresh, always `d-none`) as
+        // part of $tools above -- repopulate it. A render that happens to
+        // land while the panel is open (an unrelated background reload, not
+        // a picker interaction itself) closes it, the same trade-off a full
+        // renderTable() already makes for any other open transient UI on
+        // this page; re-opening is one click.
+        renderColpanel();
+
         if (hadFocus) {
             var $newSearch = $toolbar.find('.sr-table-search');
             $newSearch.trigger('focus');
@@ -2169,6 +2203,11 @@
     // right or obviously missing, never subtly half-right.
     function reloadFirstPage() {
         state.start = 0;
+        // A filter facet, the search text, "Clear filters" and a plain rail
+        // framework click all reset to page one -- none of them touch column
+        // visibility, so there is nothing for persistDisplaySettings() to
+        // save here. It is called only from the colpanel checkbox handler,
+        // where a column actually changed.
         return reloadTable();
     }
 
@@ -2286,23 +2325,238 @@
     // Column order mirrors the <td> order renderRow() builds below. Only the
     // columns with a `sort` field are clickable/sortable -- the server's
     // allowlist (governance/controls/table) is exactly these six fields, so
-    // there is nothing here for the checkbox or actions columns to sort by.
-    var COLUMNS = [
-        { cls: 'sr-col-check' },
-        { key: 'ControlNumber', sort: 'control_number', cls: 'sr-col-num' },
-        { key: 'ControlName', sort: 'short_name', cls: 'sr-col-name' },
-        { key: 'ControlFamily', sort: 'family_name', cls: 'sr-col-family' },
-        { key: 'Owner', sort: 'control_owner_name', cls: 'sr-col-owner' },
-        // Applicability (Task 14) is spliced in HERE, between Owner and
-        // Maturity, only when the view is scoped to one framework -- see
-        // controlColumns() below. Its position follows spec §4.3's column
-        // order, and it deliberately sits BEFORE the two columns the compact
-        // tier drops, so folding the table narrower moves it left rather than
-        // stranding it beyond a column that has already gone.
-        { key: 'Maturity', sort: 'control_maturity', cls: 'sr-col-mat' },
-        { key: 'Status', sort: 'control_status', cls: 'sr-col-stat' },
-        { cls: 'sr-col-acts' }
+    // there is nothing here for the checkbox, applicability, the four new
+    // Columns-picker fields, or the actions column to sort by.
+    //
+    // Fixed structural columns -- never toggleable, never in the picker.
+    // CHECK comes and goes only with canSelectRows(); ACTIONS is always
+    // last; APPLICABILITY is presence-gated by state.applicabilityScoped
+    // (Task 14), not a user choice. Compared by reference (===) in
+    // renderRow() below, so these stay the SAME objects controlColumns()
+    // pushes -- never cloned.
+    var CHECK_COLUMN = { cls: 'sr-col-check' };
+    var NUMBER_COLUMN = { key: 'ControlNumber', sort: 'control_number', cls: 'sr-col-num' };
+    var NAME_COLUMN = { key: 'ControlName', sort: 'short_name', cls: 'sr-col-name' };
+    var APPLICABILITY_COLUMN = { id: 'applicability', key: 'Applicability', cls: 'sr-col-appl' };
+    // sr-actions-col-sticky (Task: Columns picker + saved layout/filters)
+    // pins this column to the right edge of the horizontal scroll, same fix
+    // Review Risk shipped for its own optional-column growth -- see
+    // _governance-frameworks.scss's #sr-ctl-table block for why this page
+    // gets its own rule rather than joining that shared one.
+    var ACTIONS_COLUMN = { cls: 'sr-col-acts sr-actions-col-sticky' };
+
+    // The Columns picker's catalog (Task: Columns picker + saved layout/
+    // filters) -- this page's OWN always-available column list, present even
+    // when the Customization Extra is off (build_active_control_columns(),
+    // includes/functions.php, returns null in that case and this is exactly
+    // the client-side fallback it falls back to). Order matches the ORIGINAL
+    // fixed column order (family, owner, maturity, status) so a user who
+    // toggles nothing sees the identical table this page always rendered;
+    // the four new fields (class/phase/priority/control_type) are appended
+    // after Status rather than interleaved, so Applicability's splice below
+    // (still relative to Maturity, per spec §4.3) lands in exactly the same
+    // slot it always has.
+    //
+    // family/owner/maturity/status default to VISIBLE, same as always --
+    // this page had no picker before this task, so those four were never
+    // hideable and a user who toggles nothing must keep seeing exactly the
+    // table this page always rendered. class/phase/priority/control_type
+    // are genuinely NEW surface, not a re-presentation of something already
+    // on screen, so design-system.md §6c's "never opt-in" rule doesn't
+    // apply to them the way it does on Document Program/Define Exceptions/
+    // Review Risk, where every togglable column was already new when the
+    // picker shipped: defaulting all eight to visible doubled this table's
+    // on-load column count and pushed the existing compact-tier fold
+    // (evaluateResponsiveTiers() below) into triggering at common desktop
+    // widths (1440x900, 1600x1000) where it never had before -- silently
+    // hiding Owner/Maturity via #sr-ctl-table's own .sr-fw-compact rule.
+    // These four default to HIDDEN instead (see DEFAULT_HIDDEN_COLUMNS /
+    // isColumnVisible() below); a user opts them in deliberately. class/
+    // phase/priority/control_type are also NOT in CONTROLS_TABLE_SORTS
+    // (api/v2/includes/governance_controls.php), so they follow
+    // Applicability's own precedent and go unsortable rather than offering
+    // a header that would silently sort by something else.
+    var STANDARD_TOGGLE_COLUMNS = [
+        { id: 'family',       key: 'ControlFamily',   sort: 'family_name',        cls: 'sr-col-family' },
+        { id: 'owner',        key: 'Owner',           sort: 'control_owner_name', cls: 'sr-col-owner' },
+        { id: 'maturity',     key: 'Maturity',        sort: 'control_maturity',   cls: 'sr-col-mat' },
+        { id: 'status',       key: 'Status',          sort: 'control_status',     cls: 'sr-col-stat' },
+        { id: 'class',        key: 'ControlClass',    sort: null,                 cls: 'sr-col-class' },
+        { id: 'phase',        key: 'ControlPhase',    sort: null,                 cls: 'sr-col-phase' },
+        { id: 'priority',     key: 'ControlPriority', sort: null,                 cls: 'sr-col-priority' },
+        { id: 'control_type', key: 'ControlType',     sort: null,                 cls: 'sr-col-ctype' }
     ];
+
+    // The four columns that are new AS OF this task (not a re-presentation
+    // of an already-shown field) and so default to HIDDEN rather than
+    // VISIBLE -- see the STANDARD_TOGGLE_COLUMNS comment above for why.
+    // Custom fields are unaffected: they follow the shared "never opt-in"
+    // rule like every other Columns picker on the site.
+    var DEFAULT_HIDDEN_COLUMNS = { class: true, phase: true, priority: true, control_type: true };
+
+    // Column visibility -- keyed by STANDARD_TOGGLE_COLUMNS[].id or
+    // custom_field_{id}, valued '0'/'1' exactly as stored. Absent from the
+    // map (nothing saved yet, or a column that started existing after the
+    // user's last save) means VISIBLE, UNLESS the id is in
+    // DEFAULT_HIDDEN_COLUMNS -- see isColumnVisible(). Seeded from
+    // window.SR_CTL_DISPLAY_SETTINGS.columns by seedColumnVisibility() below
+    // (called from the init block, NOT here at IIFE-eval time -- this file's
+    // own SR_GOV_PERMS precedent applies equally to this second inline blob:
+    // governance/index.php emits BOTH further down the document than this
+    // header-loaded <script>, so reading either at top-level closure-eval
+    // time would read them as not-yet-defined). Kept in sync as the user
+    // toggles the picker (the colpanel checkbox change handler, wired from
+    // the init block).
+    var columnVisible = {};
+    function seedColumnVisibility() {
+        var saved = window.SR_CTL_DISPLAY_SETTINGS && window.SR_CTL_DISPLAY_SETTINGS.columns;
+        (saved || []).forEach(function (pair) {
+            if (Array.isArray(pair) && pair.length === 2 && typeof pair[0] === 'string') {
+                columnVisible[pair[0]] = pair[1];
+            }
+        });
+    }
+
+    function isColumnVisible(id) {
+        var v = columnVisible[id];
+        if (v === undefined) {
+            return !DEFAULT_HIDDEN_COLUMNS[id];
+        }
+        return v !== '0' && v !== 0 && v !== false;
+    }
+
+    // The CUSTOM ('custom_field_{id}') entries from window.SR_CTL_DISPLAY_
+    // SETTINGS.active_columns (build_active_control_columns(), includes/
+    // functions.php), shaped into the same column-def shape STANDARD_
+    // TOGGLE_COLUMNS uses. `titleRaw` (not `key`) because a custom field's
+    // label is ADMIN-NAMED, not a lang lookup -- renderThead() below renders
+    // it through a text node, never innerHTML, so no client-side escaping is
+    // needed (a text node cannot be interpreted as markup either way).
+    // Memoized: the active set is fixed for the life of the page, same
+    // staleness every other consumer of this server-rendered-once blob
+    // already accepts.
+    var _activeCustomColumns = null;
+    function activeCustomColumns() {
+        if (_activeCustomColumns) { return _activeCustomColumns; }
+        var active = (window.SR_CTL_DISPLAY_SETTINGS && window.SR_CTL_DISPLAY_SETTINGS.active_columns) || [];
+        _activeCustomColumns = active.filter(function (col) { return col && col.custom; }).map(function (col) {
+            return { id: col.key, cls: 'sr-col-custom', sort: null, titleRaw: col.label };
+        });
+        return _activeCustomColumns;
+    }
+
+    // Renders #sr-ctl-colpanel's contents -- called from renderToolbar()'s
+    // tail on EVERY render, unlike ensureFilterSheet()'s one-time build:
+    // #sr-ctl-colpanel lives inside $tools (renderToolbar()'s own comment
+    // above explains why -- rebuilt on every load, same as the search box
+    // and the Filters button), so it is wiped and needs repopulating every
+    // time, not preserved across renders the way Family/Owner's enhanced
+    // <select> pair is. Safe to rebuild freely because every handler that
+    // reaches into it (open/close, a checkbox's change, the search input) is
+    // delegated from `document` (wired once, in the init block below) rather
+    // than bound to these specific nodes. Two groups, "Standard" and "Custom Fields"
+    // (design-system.md §6c's flat-list picker, extended with Review Risk's
+    // grouped/searchable variant since this catalog -- 8 standard fields
+    // plus an admin-configurable number of custom fields -- can run longer
+    // than Define Exceptions/Document Program's own flat lists ever do); the
+    // Custom Fields group is omitted entirely when there are none, rather
+    // than rendered empty. Each checkbox's default state is isColumnVisible()'s:
+    // VISIBLE unless columnVisible explicitly says otherwise, EXCEPT the four
+    // columns in DEFAULT_HIDDEN_COLUMNS (class/phase/priority/control_type),
+    // which start unchecked -- see the STANDARD_TOGGLE_COLUMNS comment above.
+    function renderColpanel() {
+        var $panel = $('#sr-ctl-colpanel').empty();
+        var $search = $('<div class="colpanel-search">').append(
+            $('<i class="fa fa-search colpanel-search-icon" aria-hidden="true">'),
+            $('<input type="text" class="colpanel-search-input" id="sr-ctl-colpanel-search" autocomplete="off">')
+                .attr({ placeholder: _lang['Search'], 'aria-label': _lang['Search'] })
+        );
+        $panel.append($search);
+
+        function appendGroup(labelKey, cols) {
+            if (!cols.length) { return; }
+            var $group = $('<div class="colpanel-group">').append(
+                $('<div class="colpanel-group-label">').text(_lang[labelKey]));
+            cols.forEach(function (col) {
+                var $label = $('<label class="colpanel-item">').append(
+                    $('<input type="checkbox" data-col="' + col.id + '">').prop('checked', isColumnVisible(col.id)),
+                    // Raw text node either way: col.key resolves through
+                    // _lang (an app string), col.titleRaw is the admin-named
+                    // custom-field label (RAW by contract -- see
+                    // activeCustomColumns()'s own comment). Neither needs or
+                    // gets HTML escaping; a text node cannot be interpreted
+                    // as markup regardless of the string's contents.
+                    document.createTextNode(' ' + (col.key ? _lang[col.key] : col.titleRaw)));
+                $group.append($label);
+            });
+            $panel.append($group);
+        }
+        appendGroup('StandardFields', STANDARD_TOGGLE_COLUMNS);
+        appendGroup('CustomFields', activeCustomColumns());
+
+        $panel.append($('<div class="colpanel-empty d-none">').text(_lang['NoMatchingOptions']));
+    }
+
+    // Case-insensitive substring match against each item's own label text --
+    // mirrors review-risk.js's identical filterColpanelItems(). Hides via
+    // `d-none`, never by touching `checked` -- a checked-but-filtered-out
+    // column must stay checked underneath.
+    function filterColpanelItems(query) {
+        var q = String(query || '').toLowerCase();
+        var anyVisible = false;
+        $('#sr-ctl-colpanel .colpanel-group').each(function () {
+            var $group = $(this);
+            var groupHasMatch = false;
+            $group.find('.colpanel-item').each(function () {
+                var matches = !q || $(this).text().toLowerCase().indexOf(q) !== -1;
+                $(this).toggleClass('d-none', !matches);
+                if (matches) { groupHasMatch = true; }
+            });
+            $group.toggleClass('d-none', !groupHasMatch);
+            if (groupHasMatch) { anyVisible = true; }
+        });
+        $('#sr-ctl-colpanel .colpanel-empty').toggleClass('d-none', anyVisible);
+    }
+
+    // The `columns` payload persistDisplaySettings() sends -- every known
+    // column id (standard + active custom) paired with its CURRENT
+    // visibility, '1'/'0'. Sent in full on every save, not just the one the
+    // user just toggled, matching Plan Projects'/Review Risk's own
+    // save-the-whole-set convention -- the server's column_settings row is a
+    // full snapshot, not a diff.
+    function currentColumnsPayload() {
+        var pairs = [];
+        STANDARD_TOGGLE_COLUMNS.forEach(function (col) {
+            pairs.push([col.id, isColumnVisible(col.id) ? '1' : '0']);
+        });
+        activeCustomColumns().forEach(function (col) {
+            pairs.push([col.id, isColumnVisible(col.id) ? '1' : '0']);
+        });
+        return pairs;
+    }
+
+    // Persists the Columns picker's visibility choices as one JSON blob
+    // (Task: Columns picker) -- read back on the NEXT page load via
+    // window.SR_CTL_DISPLAY_SETTINGS (governance/index.php's inline blob),
+    // never on this one. Best-effort and fire-and-forget: nothing on this
+    // page re-reads its own save, so a failed request leaves the user's
+    // current session exactly as they left it rather than interrupting a
+    // checkbox toggle with an error toast over a background preference
+    // write.
+    //
+    // The filter sheet's facet state is deliberately NOT persisted here --
+    // it is search state, not layout, and every fresh page load (or a
+    // reload after a plain resize) is expected to come back unfiltered, the
+    // same as before this page had a Columns picker at all. An earlier
+    // version of this task persisted it too; that made a stale filter from
+    // one visit (or, on the shared CI test account, one earlier test) leak
+    // silently into the next, with no on-screen explanation for why a fresh
+    // load already showed a narrowed table.
+    function persistDisplaySettings() {
+        $.post(BASE_URL + '/api/v2/governance/controls/display_settings', {
+            columns: currentColumnsPayload()
+        });
+    }
 
     // The columns for the CURRENT view.
     //
@@ -2323,23 +2577,30 @@
     function controlColumns() {
         // The selection column comes and goes with the user's bulk permissions
         // exactly as the Applicability column comes and goes with the rail's
-        // scope (Task 58). Filtered FIRST, so the splice below still locates
-        // Maturity by its class rather than by an index that would have
-        // shifted. renderRow() applies the identical canSelectRows() test, and
-        // renderDrawer()'s colspan reads this function -- so the header, the
-        // rows and the drawer all move together.
-        var base = canSelectRows() ? COLUMNS : COLUMNS.filter(function (col) {
-            return col.cls !== 'sr-col-check';
+        // scope (Task 58). renderRow() applies the identical canSelectRows()
+        // test, and renderDrawer()'s colspan reads this function -- so the
+        // header, the rows and the drawer all move together.
+        var cols = canSelectRows() ? [CHECK_COLUMN] : [];
+        cols.push(NUMBER_COLUMN, NAME_COLUMN);
+        STANDARD_TOGGLE_COLUMNS.forEach(function (col) {
+            if (isColumnVisible(col.id)) { cols.push(col); }
         });
-        if (!state.applicabilityScoped) { return base; }
-        var cols = base.slice();
-        // Positioned relative to the Maturity column rather than at a literal
-        // index -- a number here would silently point at the wrong slot the
-        // first time a column is added or reordered above it, and the header
-        // and the row would then disagree about which cell is which.
-        var at = cols.length;
-        cols.forEach(function (col, i) { if (col.cls === 'sr-col-mat') { at = i; } });
-        cols.splice(at, 0, { key: 'Applicability', cls: 'sr-col-appl' });
+        if (state.applicabilityScoped) {
+            // Positioned relative to the Maturity column rather than at a
+            // literal index -- a number here would silently point at the
+            // wrong slot the first time a column is added or reordered
+            // above it, and the header and the row would then disagree
+            // about which cell is which. Falls back to the end of the
+            // standard group (before any custom columns) when Maturity
+            // itself is toggled off.
+            var at = cols.length;
+            cols.forEach(function (col, i) { if (col.cls === 'sr-col-mat') { at = i; } });
+            cols.splice(at, 0, APPLICABILITY_COLUMN);
+        }
+        activeCustomColumns().forEach(function (col) {
+            if (isColumnVisible(col.id)) { cols.push(col); }
+        });
+        cols.push(ACTIONS_COLUMN);
         return cols;
     }
 
@@ -2347,6 +2608,7 @@
         var $tr = $('<tr>');
         controlColumns().forEach(function (col) {
             var $th = $('<th scope="col">').addClass(col.cls);
+            if (col.id) { $th.attr('data-col', col.id); }
             // "Select all" for the current PAGE only. The thead IS rebuilt on
             // every load now (the Applicability column comes and goes with the
             // rail's scope), which is harmless: every handler that reaches into
@@ -2373,11 +2635,20 @@
                     .append(document.createTextNode(_lang[col.key]))
                     .append($('<i class="fa sr-sort-icon" aria-hidden="true">'));
             } else if (col.key) {
-                // A labelled but unsortable column (Applicability). Without
-                // this branch the header cell would render EMPTY -- every
-                // labelled column happened to be sortable until Task 14, so the
-                // label only ever went in inside the branch above.
+                // A labelled but unsortable column (Applicability, and now
+                // the four Columns-picker standard fields that have no
+                // server-side sort allowlist entry). Without this branch the
+                // header cell would render EMPTY -- every labelled column
+                // happened to be sortable until Task 14, so the label only
+                // ever went in inside the branch above.
                 $th.append(document.createTextNode(_lang[col.key]));
+            } else if (col.titleRaw) {
+                // A custom field's admin-named label -- RAW, never a lang
+                // lookup (build_active_control_columns()'s own docblock).
+                // document.createTextNode() never interprets its argument as
+                // markup, so this is the correct, complete rendering: no
+                // escaping needed going in, nothing to double-escape later.
+                $th.append(document.createTextNode(col.titleRaw));
             }
             $tr.append($th);
         });
@@ -2610,6 +2881,46 @@
             .append(document.createTextNode(' ' + c.mapped_frameworks_count));
     }
 
+    // One cell per toggle-able/contextual column id (Task: Columns picker +
+    // saved layout/filters) -- everything controlColumns() can return between
+    // NAME_COLUMN and ACTIONS_COLUMN. The four original fields (family/
+    // owner/maturity/status) and applicability render exactly the markup
+    // they always did; class/phase/priority/control_type are new, plain-text
+    // cells following the SAME "Unassigned" fallback family/class/phase/
+    // priority already share server-side (controls_table_shape_row(),
+    // api/v2/includes/governance_controls.php -- an unset facet id comes
+    // back 0, and get_framework_controls_by_filter()'s own name join returns
+    // no row for it, matching family's existing '' -> Unassigned fallback).
+    // The default case is every custom_field_{id} column: c[col.id] is
+    // controls_table_shape_row()'s own custom-field key, ALREADY escaped
+    // server-side -- .html(), never .text(), the same contract Review Risk's
+    // custom-field columns follow (review-risk.js, toggleColumnDef()'s
+    // `data:` binding renders through the DOM's default HTML sink too).
+    function renderToggleableCell(col, c) {
+        switch (col.id) {
+            case 'family':
+                return $('<td class="sr-col-family">').text(c.family_name || _lang['Unassigned']);
+            case 'owner':
+                return $('<td class="sr-col-owner">').text(c.control_owner_name || _lang['NoOwner']);
+            case 'class':
+                return $('<td class="sr-col-class">').text(c.control_class_name || _lang['Unassigned']);
+            case 'phase':
+                return $('<td class="sr-col-phase">').text(c.control_phase_name || _lang['Unassigned']);
+            case 'priority':
+                return $('<td class="sr-col-priority">').text(c.control_priority_name || _lang['Unassigned']);
+            case 'control_type':
+                return $('<td class="sr-col-ctype">').text((c.control_type_names || []).join(', '));
+            case 'maturity':
+                return $('<td class="sr-col-mat">').append(renderMaturity(c.control_maturity, c.desired_maturity));
+            case 'status':
+                return $('<td class="sr-col-stat">').append(renderStatusPill(c.control_status));
+            case 'applicability':
+                return $('<td class="sr-col-appl">').append(renderApplicability(c.applicability));
+            default:
+                return $('<td class="sr-col-custom">').html(c[col.id] || '');
+        }
+    }
+
     function renderRow(c) {
         var $tr = $('<tr class="sr-ctl-row">').attr('data-sr-ctl', c.id);
         // Selection checkbox. .sr-check-col is the shipped checkbox-column
@@ -2639,20 +2950,46 @@
             .append($('<span class="sr-ctl-name">').text(c.short_name || ''));
         var $mappedBadge = mappedFrameworksBadge(c);
         if ($mappedBadge) { $nameCell.append($mappedBadge); }
-        $nameCell.append($('<span class="sr-ctl-sub">').text(
-            (c.family_name || _lang['Unassigned']) + (c.control_owner_name ? ' · ' + c.control_owner_name : '')));
-        $tr.append($nameCell);
-        $tr.append($('<td class="sr-col-family">').text(c.family_name || _lang['Unassigned']));
-        $tr.append($('<td class="sr-col-owner">').text(c.control_owner_name || _lang['NoOwner']));
-        // Only when the server said applicability is answerable for this view
-        // -- the same flag controlColumns() builds the header from, so the cell
-        // count and the header count are one decision, not two.
-        if (state.applicabilityScoped) {
-            $tr.append($('<td class="sr-col-appl">').append(renderApplicability(c.applicability)));
+        // .sr-ctl-sub is the compact/queue-tier fallback for Family, Owner AND
+        // Maturity -- the three columns #sr-ctl-table's own .sr-fw-compact rule
+        // (.sr-col-family/.sr-col-owner/.sr-col-mat { display: none; },
+        // _governance-frameworks.scss) removes from the row entirely at that
+        // tier. Status is the one folded column with no line here, because it
+        // is the LAST column standing (never folds -- see that rule's own
+        // comment) and so never needs one. Bug found reviewing the Columns
+        // picker task: Maturity was missing from this line even though it
+        // folds on the exact same condition as Family/Owner, so a control
+        // whose Maturity column had folded showed no maturity information
+        // anywhere on the row. maturityBucket()/MATURITY_OPTIONS are the same
+        // lookup renderMaturity() below uses for the column chip itself, so
+        // the two never disagree about wording; omitted (like Owner) when
+        // there is no desired maturity to bucket against, rather than
+        // rendering "—" a second time.
+        var $sub = $('<span class="sr-ctl-sub">').text(c.family_name || _lang['Unassigned']);
+        if (c.control_owner_name) {
+            $sub.append(document.createTextNode(' · ' + c.control_owner_name));
         }
-        $tr.append($('<td class="sr-col-mat">').append(
-            renderMaturity(c.control_maturity, c.desired_maturity)));
-        $tr.append($('<td class="sr-col-stat">').append(renderStatusPill(c.control_status)));
+        var subMaturityOpt = MATURITY_OPTIONS.filter(function (o) {
+            return o.value === maturityBucket(c.control_maturity, c.desired_maturity);
+        })[0];
+        if (subMaturityOpt) {
+            $sub.append(document.createTextNode(' · ' + _lang[subMaturityOpt.key]));
+        }
+        $nameCell.append($sub);
+        $tr.append($nameCell);
+        // The toggle-able standard columns, Applicability (when scoped) and
+        // any visible custom fields -- one dispatch per column id, driven by
+        // the SAME controlColumns() the thead is built from, so the header
+        // and the row can never disagree about which columns exist or in
+        // what order (the invariant CHECK_COLUMN/NUMBER_COLUMN/NAME_COLUMN/
+        // ACTIONS_COLUMN above already carry -- this loop only ever sees the
+        // slice between NAME_COLUMN and ACTIONS_COLUMN).
+        controlColumns().forEach(function (col) {
+            if (col === CHECK_COLUMN || col === NUMBER_COLUMN || col === NAME_COLUMN || col === ACTIONS_COLUMN) {
+                return;
+            }
+            $tr.append(renderToggleableCell(col, c));
+        });
         // Row actions (Task 8, Clone restored by Task 24): Edit / Clone /
         // Delete, revealed on hover -- the SHIPPED
         // .sr-row-actions/.sr-row-action(-danger) component (_tables.scss,
@@ -2750,7 +3087,7 @@
         // cell count keeps matching controlColumns(), which always emits the
         // .sr-col-acts header (it is unlabelled, so an empty column is a blank
         // gutter, not a header with nothing under it).
-        var $acts = $('<td class="sr-col-acts">');
+        var $acts = $('<td class="sr-col-acts sr-actions-col-sticky">');
         if ($actions.children().length) { $acts.append(rowActionsWrap($actions)); }
         $tr.append($acts);
         return $tr;
@@ -3334,10 +3671,9 @@
             if (sc) { sc.focus({ preventScroll: true }); }
         }
         // A row-actions menu open inside a row about to leave the DOM would be
-        // detached mid-flight -- the wrap, its is-open class and the scroller's
-        // is-unclipped state would all be lost with it, leaving the scroller
-        // permanently unclipped. Closing through the one function that owns that
-        // state keeps the invariant instead of unwinding it by hand.
+        // detached mid-flight -- the wrap and its is-open state would be lost
+        // with it. Closing through the one function that owns that state keeps
+        // the invariant instead of unwinding it by hand.
         if (entry.$row.find('.sr-row-actions-wrap.is-open').length) { SRRowActionsMenu.close(); }
         virtNodesOf(entry).remove();
         delete virt.rendered[i];
@@ -3593,8 +3929,8 @@
         // so nothing is lost by replacing it.
         renderThead();
         // Emptying the tbody detaches whatever wrap a menu was open in, so the
-        // shared close path runs first -- otherwise .sr-table-scroll keeps the
-        // is-unclipped class the open menu put on it, forever.
+        // shared close path runs first rather than leaving an orphaned open
+        // menu behind.
         SRRowActionsMenu.close();
         var $b = $('#sr-ctl-tbody').empty();
         if (virt.on) {
@@ -6134,6 +6470,7 @@
     }
 
     $(function () {
+        seedColumnVisibility();
         readUrl();
         renderThead();
 
@@ -6167,16 +6504,16 @@
         // scroller, which governance/index.php ships and nothing ever replaces,
         // so this survives every table rebuild.
         //
-        // Menus close on scroll, unconditionally and before anything is
-        // recycled. SRRowActionsMenu.orient() flips a menu by measuring the
-        // scroller's edges ONCE, at open time, so a menu left standing while the
-        // rows move under it is mis-oriented by construction -- and its row can
-        // be recycled out from under it entirely. Closing is the behaviour a
-        // popover in a scroll container wants anyway; it is not a workaround.
+        // Open row menus are closed by SRRowActionsMenu itself, not here: it
+        // pins the menu to the viewport at open time and closes it on any
+        // scroll that actually moves the menu's row -- and only then, so this
+        // list's own anchor corrections (which scroll precisely to keep the
+        // visible rows where they were) leave an open menu alone. A row that
+        // is recycled out of the DOM closes its menu first
+        // (virtDrop()'s SRRowActionsMenu.close()).
         var $ctlScroll = $('#sr-ctl-table .sr-table-scroll');
         $ctlScroll.on('scroll', function () {
             if (virt.adjusting) { return; }   // our own anchor correction, not the user
-            if ($('.sr-row-actions-wrap.is-open').length) { SRRowActionsMenu.close(); }
             virtScheduleRender();
         });
 
@@ -6296,6 +6633,33 @@
             // as before.
             if (facet === 'status' || facet === 'maturity' || facet === 'applicability') { writeUrl(); }
             reloadFirstPage();
+        });
+
+        // Columns picker (Task: Columns picker + saved layout/filters,
+        // design-system.md §6c) -- click-to-toggle, click-outside-to-close,
+        // mirroring Document Program's identical wiring (governance-
+        // documents.js) exactly. Delegated from `document` throughout: both
+        // the button and the panel are recreated on every renderToolbar()
+        // call (this page's own convention, see renderColpanel()'s comment).
+        $(document).on('click', '#sr-ctl-colpicker-btn', function (e) {
+            e.stopPropagation();
+            var $panel = $('#sr-ctl-colpanel').toggleClass('d-none');
+            $(this).attr('aria-expanded', $panel.hasClass('d-none') ? 'false' : 'true');
+        });
+        $(document).on('click', function (e) {
+            if (!$(e.target).closest('.colpicker').length) {
+                $('#sr-ctl-colpanel').addClass('d-none');
+                $('#sr-ctl-colpicker-btn').attr('aria-expanded', 'false');
+            }
+        });
+        $(document).on('change', '#sr-ctl-colpanel input[type="checkbox"]', function () {
+            var col = $(this).attr('data-col');
+            columnVisible[col] = this.checked ? '1' : '0';
+            renderTable(state);
+            persistDisplaySettings();
+        });
+        $(document).on('input', '#sr-ctl-colpanel-search', function () {
+            filterColpanelItems($(this).val());
         });
 
         // Rows-per-page (Task 46). Server-rendered and never rebuilt, but

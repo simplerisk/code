@@ -2828,14 +2828,11 @@
         // isn't there. Keep the standing decision; the next render re-measures.
         if (!scroll.clientWidth) { return; }
 
-        // No guard for .is-unclipped here, deliberately. SRRowActionsMenu.orient()
-        // lifts the scroller's clip to `overflow: visible` while a row menu is
-        // open, and the worry is that an element which is no longer a scroll
-        // container would report scrollWidth == clientWidth -- which would read
-        // as "everything fits" and strip a fold that was the only reason it did.
-        // Measured on this page at 1520px with the clip lifted: scrollWidth
-        // still reports 1265 against a 1230 clientWidth, i.e. the overflow is
-        // still visible to this test. Nothing to guard.
+        // No guard for .is-unclipped here. SRRowActionsMenu no longer lifts the
+        // scroller's clip while a row menu is open (the menu is pinned to the
+        // viewport instead), so the scroller is always a scroll container when
+        // this measures. (When it did lift it, this was measured anyway: at
+        // 1520px scrollWidth still reported 1265 against a 1230 clientWidth.)
 
         // Rung 0's state: none of our own classes. Stripped BEFORE anything is
         // read, so each rung's input is the page rather than the output of the

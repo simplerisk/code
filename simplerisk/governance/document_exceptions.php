@@ -275,6 +275,15 @@ function display($display = "")
         ?>
                     </div>
                 </div>
+                <!-- Narrow-width filter sheet (design-system.md §6b) --
+                     matches the grid's own #exceptions-filters-toggle above;
+                     wired generically in createAuditTrail() (js/simplerisk/
+                     sr-audit-trail.js) rather than per-page. -->
+                <button type="button" class="sr-qf-toggle" id="exception-audit-trail-filters-toggle" aria-expanded="false" aria-controls="exception-audit-trail-quickfilters">
+                    <i class="fa fa-filter" aria-hidden="true"></i>
+                    <span><?= $escaper->escapeHtml($lang['Filters']); ?></span>
+                    <span class="sr-qf-toggle-count" id="exception-audit-trail-filters-count" hidden></span>
+                </button>
                 <div class="sr-table-quickfilters" id="exception-audit-trail-quickfilters">
                     <div class="sr-qf-selects" id="exception-audit-trail-filters">
                         <div class="audit-select-folder">

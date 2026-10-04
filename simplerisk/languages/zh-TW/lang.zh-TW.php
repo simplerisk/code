@@ -814,7 +814,7 @@ $lang = array(
     'UserSessions' => '使用者會話',
     'SessionActivityTimeout' => '會話活動超時',
     'Security' => '安全',
-    'EnableCSP' => '啟用內容安全性原則 (這在過去已經打破了 Chrome)',
+    'EnableCSP' => '啟用內容安全性原則（建議）',
     'EnableDebugLogging' => '啟用調試日誌記錄',
     'seconds' => '秒',
     'FieldSample' => '欄位示例',
@@ -4967,6 +4967,572 @@ $lang = array(
     // closeriskForm()'s own (hardcoded, pre-existing) single-risk denial text.
     'NoCloseRiskPermission' => '您沒有權限關閉風險。',
     'QuestionnaireRequiredQuestionUnanswered' => '請在完成評估前回答所有必填問題。',
+    'AuditLog_ControlStatusAutoSynced' => '根據最近的測試結果，控制「{$short_name}」的狀態已自動更新為「{$status_text}」。',
+    'EnableCSPHelp' => '內容安全性原則 (CSP) 限制瀏覽器僅從 SimpleRisk 本身載入腳本、樣式、圖像和字體，並阻止頁面框架和跨網域表單提交。它是目前最強大的內建跨站腳本防禦機制。除非它與您的環境中的代理、瀏覽器擴充功能或第三方整合存在衝突，否則請保持啟用狀態。',
+    // Define Control Frameworks' Columns picker (Task: Columns picker + saved layout/filters) -- the "Standard" group label above its built-in fields (Family/Owner/Maturity/Status/Class/Phase/Priority/Type); 'CustomFields' already exists.
+    'StandardFields' => '標準字段',
+    // My Profile redesign (js/simplerisk/pages/account-profile.js)
+    'Administrator' => '管理員',
+    'AccountDetails' => '帳戶詳情',
+    'YourPermissions' => '您的權限',
+    'RoleAndTeamsGrantAccess' => '你的角色和團隊賦予你哪些權限',
+    'AllGranted' => '已全部授予',
+    'PermissionsCountLabel' => '$count 權限',
+    'ManagedByYourAdministrator' => '這些資訊由您的管理員管理。如有任何更改，請聯絡他們。',
+    'MultiFactorAuthenticationHint' => '為您的登入新增第二道驗證步驟，以確保您的帳戶安全。',
+    'ChangingPasswordSignsOutEverywhere' => '更改密碼後，您將從其他所有地方登出。',
+    'APIKeyHint' => '用於對您自己的腳本和整合進行 SimpleRisk API 身份驗證。',
+    'ResetDisplaySettingsHint' => '將自訂列選擇重設為預設值。',
+    'CardGeneral' => '一般',
+    'CardClassification' => '分類',
+    'CardScoring' => '得分',
+    'CardAdditionalInformation' => '其他資訊',
+    'CardCustomFields' => '自訂欄位',
+    'CardCustomFieldsHint' => '這些字段需要整理到一張卡片中。',
+    'LayoutEditorHint' => '將欄位拖曳到不同的卡片中以重新分配，在卡片內拖曳以重新排序或調整大小，拖曳或調整卡片的大小以改變其在頁面上的位置。',
+    'ScoringNotYetAvailableInThisView' => '此視圖中尚不支援評分配置。',
+    // Native tooltip on the Cards layout editor's Gridstack resize handles
+    // (js/simplerisk/pages/customization-layout-editor.js) -- the bare corner
+    // bracket read as an unexplained mark until it said what it does.
+    'DragToResize' => '拖曳調整大小',
+    // Warning pill on a Cards layout editor card the admin has sized shorter
+    // than the fields it holds. Replaces the silent inner scrollbar that state
+    // used to produce.
+    'NFieldsDoNotFitCard' => '{n} 欄位無法完整顯示在卡片中。請調整卡片大小以顯示這些欄位。',
+    // Card titles for the Mitigation tab's Cards layout editor
+    // (js/simplerisk/pages/customization-layout-editor.js), mirroring the
+    // Card* keys above for the Details tab. Order follows
+    // customization_mitigation_cards_layout_card_keys() (includes/functions.php).
+    'CardMitigationStrategy' => '緩解策略',
+    'CardMitigationSolution' => '緩解方案',
+    'CardMitigationControls' => '緩解措施',
+    'CardReview' => '审查',
+    // Submit Risk page's three action-bar buttons (buildActionsBar(),
+    // risk-details-form.js, submitMode 'create' only) and the Reset Form
+    // confirm modal (management/index.php, design-system.md #8's "Confirm"
+    // type). 'Discard'/'Cancel'/'Close' already exist and are reused for the
+    // modal's own buttons.
+    'ResetForm' => '重設表單',
+    'SaveAndNew' => '儲存並更新',
+    'SaveAndView' => '儲存並查看',
+    'ResetFormConfirmTitle' => '是否放棄此風險評估？',
+    'ResetFormConfirmBody' => '您輸入的所有資訊都將遺失。',
+    // Restore-template destructive confirm (Customization Extra, Save/Restore
+    // action bar). Two body variants: risk's Details/Mitigation/Review tabs
+    // named explicitly (the only fgroup with that 3-tab Cards layout), a
+    // generic fallback for every other fgroup (single legacy-panel tab).
+    // Both end on the same scoping reassurance -- confirmed via direct source
+    // read that Restore only ever touches the currently-selected template
+    // group, never any other.
+    'RestoreTemplateConfirmTitle' => '恢復預設佈局?',
+    'RestoreTemplateConfirmBodyRisk' => '此操作會將此範本組中「詳細資料」、「緩解措施」和「審核」標籤上的所有欄位重設為其預設值。其他模板組不受影響。',
+    'RestoreTemplateConfirmBody' => '此操作會將此範本上的所有欄位重設為該範本組的預設值。其他模板組不受影響。',
+    // CVSS holder's collapsed Temporal/Environmental/Impact-Modifiers
+    // accordion (buildCvssHolder(), risk-details-form.js) -- these three
+    // groups are optional CVSS v2 refinements on top of the required Base
+    // Score Metrics, so they collapse behind this header by default.
+    'AdvancedMetrics' => '進階指標',
+    // CVSS holder's Base Score Metrics sub-group headers (buildCvssHolder(),
+    // risk-details-form.js) -- distinct from the existing 'ExploitabilityMetrics'/
+    // 'ImpactMetrics' keys, which the legacy cvss_modal_content.php modal
+    // still renders as plain "Exploitability Metrics"/"Impact Metrics" and
+    // must keep unchanged. These fold the umbrella "Base Score Metrics"
+    // heading into each sub-group's own header instead of a separate label.
+    'BaseScoreExploitabilityMetrics' => '基礎得分可利用性指標',
+    'BaseScoreImpactMetrics' => '基礎得分影響指標',
+    // Per-field help popovers on the CVSS holder's 14 metric selects
+    // (buildCvssScoreItem(), risk-details-form.js) -- one per CVSS v2
+    // metric, matching the standard CVSS v2 specification definitions.
+    // Double-quoted (not single-quoted, this file's usual style) so the
+    // \n line breaks are real escape sequences: each popover leads with one
+    // overall sentence, then one bullet line per option, rendered via
+    // white-space: pre-line on .sr-scoring-help-popover .popover-body
+    // (scss/modules/_questionnaire.scss) -- plain text throughout, no HTML,
+    // so the popover stays initialized without Bootstrap's `html: true`.
+    "AttackVectorHelp" => "漏洞利用方式：\n• 本機：需要本地存取權限，例如控制台或 shell。\n• 相鄰網路：攻擊者必須位於同一實體或邏輯網段。\n• 網路：可透過網路遠端利用，無需本地或相鄰網路存取權限。",
+    "AttackComplexityHelp" => "攻擊者獲得目標存取權限後，攻擊的複雜程度。\n• 高：需要難以達成的特殊條件。\n• 中：需要滿足一些條件，但一旦滿足，利用起來並不困難。\n• 低：無特殊條件。",
+    "AuthenticationHelp" => "攻擊者必須向目標進行身份驗證才能利用該目標的次數。\n• 多次：即使使用相同的憑證，也需要進行兩次或兩次以上的驗證。\n• 單次：只需進行一次身份驗證。\n• 無：無須進行任何身份驗證。",
+    "ConfidentialityImpactHelp" => "如果系統遭到攻擊，其處理的資料的機密性將受到以下影響：\n• 無：無影響。\n• 部分：部分資訊洩露，但攻擊者無法控制洩露的內容，或損失有限。\n• 完全：系統上的所有資訊全部外洩。",
+    "IntegrityImpactHelp" => "漏洞利用後對系統完整性的影響。\n• 無：無影響。\n• 部分：部分資料可修改，但攻擊者無法控制修改內容，或修改範圍有限。\n• 完全：系統完整性完全喪失；攻擊者可以修改任何檔案。",
+    "AvailabilityImpactHelp" => "若漏洞被利用，對系統可用性的影響如下：\n• 無：無影響。\n• 部分：效能下降或可用性中斷。\n• 完全：受影響的資源完全關閉。",
+    "RemediationLevelHelp" => "針對此漏洞的可用修復等級。\n• 官方修復：提供完整的廠商解決方案。\n• 暫時修復：提供官方的暫時修復方案。\n• 變通方案：存在非官方的非廠商變通方案。\n• 無可用方案：沒有可用的解決方案，或無法套用任何解決方案。",
+    "ReportConfidenceHelp" => "對漏洞存在的置信度及其技術細節的可信度。\n• 未確認：僅有一份未經證實的來源報告；根本問題尚屬推測。\n• 未經證實：多個獨立來源報告了相同的行為，但根本原因尚未得到確認。\n• 已確認：供應商已承認此問題，或已透過原始程式碼或漏洞分析確認。",
+    "CollateralDamagePotentialHelp" => "如果漏洞被利用，可能造成生命損失、財產損失或經濟損失。\n• 無：較不可能造成此類損失。\n• 低至中：可能造成中等程度的損失。\n• 高：對組織的資產、收入或安全造成災難性影響。",
+    "TargetDistributionHelp" => "您環境中易受攻擊系統的比例。\n• 無：不存在目標系統。\n• 低：1-25% 的系統易受攻擊。\n• 中：26-75% 的系統易受攻擊。\n• 高：76-100% 的系統易受攻擊。",
+    "ConfidentialityRequirementHelp" => "受影響資產的保密性對貴組織的重要性如何？\n• 低：保密性外洩的影響有限。\n• 中：影響嚴重。\n• 高：影響災難性。",
+    "IntegrityRequirementHelp" => "受影響資產的完整性對貴組織的重要性為何？\n• 低：完整性損失的影響有限。\n• 中：影響嚴重。\n• 高：影響災難性。",
+    "AvailabilityRequirementHelp" => "受影響資產的可用性對貴組織的重要性如何？\n• 低：可用性損失的影響有限。\n• 中：影響嚴重。\n• 高：影響災難性。",
+    // Base Score Metrics' two sub-group intro sentences (metricsSubGroup()'s
+    // `descKey`, risk-details-form.js) -- orient the user to what the GROUP
+    // as a whole is asking, distinct from the per-field *Help popover keys
+    // above which explain each metric's own options.
+    'BaseScoreExploitabilityMetricsDescription' => '攻擊者需要如何到達並觸發此漏洞：他們必須在哪裡，攻擊有多複雜，以及他們是否需要先進行身份驗證。',
+    'BaseScoreImpactMetricsDescription' => '如果漏洞被成功利用會發生什麼：對受影響系統的機密性、完整性和可用性的影響。',
+    // Advanced Metrics' three optional sub-group intro sentences -- same
+    // metricsSubGroup() `descKey` as the two Base Score groups above.
+    'TemporalScoreMetricsDescription' => '該漏洞在現實世界中的威脅如何隨時間變化：當前漏洞利用程式碼的狀態、可用的補救措施以及相關報告對其存在的信心程度。',
+    'EnvironmentalScoreMetricsDescription' => '此漏洞的風險取決於您的環境：實際損害的可能性，以及有多少系統實際受到影響。',
+    'ImpactSubscoreModifiersDescription' => '根據保密、完整性和可用性對該特定資產的實際重要性，對基礎評分的影響進行加權。',
+    // Phase 4d-iii: DREAD holder help popovers (view_dread_help()'s
+    // existing English text, includes/display.php, extracted to real $lang
+    // keys -- that function's own content was raw hardcoded HTML, never
+    // localized, so it could not be reused verbatim).
+    'DamagePotentialHelp' => '如果發生安全漏洞利用，會造成多大的損失？' . "\n" . '0 = 無' . "\n" . '5 = 個人用戶資料遭到外洩或影響。' . "\n" . '10 = 系統或資料完全銷毀',
+    'ReproducibilityHelp' => '重現該威脅漏洞有多容易？' . "\n" . '0 = 即使對於應用程式管理員來說，也非常困難或不可能。' . "\n" . '5 = 需要一到兩個步驟，可能需要授權使用者。' . "\n" . '10 = 只需一個網頁瀏覽器和網址列即可，無需身份驗證。',
+    'ExploitabilityHelp' => '利用這種威脅需要什麼？' . "\n" . '0 = 具備高階程式設計和網路知識，以及自訂或進階攻擊工具。' . "\n" . '5 = 網路上存在惡意軟體，或使用現有的攻擊工具很容易進行攻擊。' . "\n" . '10 = 只是一個網頁瀏覽器',
+    'AffectedUsersHelp' => '會有多少用戶受到影響？' . "\n" . '0 = 無' . "\n" . '5 = 部分用戶，但並非所有用戶' . "\n" . '10 = 所有用戶',
+    'DiscoverabilityHelp' => '發現這種威脅有多容易？' . "\n" . '0 = 非常困難甚至不可能；需要原始碼或管理員權限。' . "\n" . '5 = 可以透過猜測或監控網路追蹤來找出答案。' . "\n" . '9 = 此類故障的詳細資訊已公開，可以使用搜尋引擎輕鬆找到。' . "\n" . '10 = 此資訊顯示在網頁瀏覽器網址列或表單中。',
+    // The DREAD holder's summary card heading and "DREAD Metrics" card
+    // heading. No existing key covers either (confirmed via grep before
+    // adding).
+    'DreadScore' => 'DREAD評分',
+    'DreadMetrics' => 'DREAD 指標',
+    // Phase 4d-iv: OWASP holder help popovers (view_owasp_help()'s
+    // existing English text, includes/display.php, extracted to real
+    // $lang keys -- same never-localized-legacy-content extraction the
+    // DREAD phase already did for its own 5 fields). Wording/levels
+    // trued up against that function's real source text, not transcribed
+    // from an earlier standard-methodology draft.
+    'SkillLevelHelp' => '這群威脅人員的技術水準如何？' . "\n" . '1 = 無技術技能' . "\n" . '3 = 一些技術技能' . "\n" . '5 = 高級電腦用戶' . "\n" . '6 = 網路和程式設計技能' . "\n" . '9 = 安全滲透測試技能',
+    'MotiveHelp' => '這群威脅分子有多大的動機去發現並利用這個漏洞？' . "\n" . '1 = 低迴報或無回報' . "\n" . '4 = 可能的獎勵' . "\n" . '9 = 高回報',
+    'OpportunityHelp' => '這群威脅主體需要哪些資源和機會才能發現並利用這個漏洞？' . "\n" . '0 = 完全存取權限或需要昂貴資源' . "\n" . '4 = 需要特殊權限或資源' . "\n" . '7 = 需要一些權限或資源' . "\n" . '9 = 無需存取權限或資源',
+    'SizeHelp' => '這個威脅組織規模有多大？' . "\n" . '2 = 開發人員' . "\n" . '2 = 系統管理員' . "\n" . '4 = 內網用戶' . "\n" . '5 = 合作夥伴' . "\n" . '6 = 已驗證用戶' . "\n" . '9 = 匿名網路用戶',
+    'EaseOfDiscoveryHelp' => '這群攻擊者要發現這個漏洞有多容易？' . "\n" . '1 = 幾乎不可能' . "\n" . '3 = 困難' . "\n" . '7 = 簡單' . "\n" . '9 = 可用的自動化工具',
+    'EaseOfExploitHelp' => '這群攻擊者利用此漏洞有多容易？' . "\n" . '1 = 理論值' . "\n" . '3 = 困難' . "\n" . '5 = 簡單' . "\n" . '9 = 可用的自動化工具',
+    'AwarenessHelp' => '對於這群威脅主體而言，這種漏洞的了解程度如何？' . "\n" . '1 = 未知' . "\n" . '4 = 隱藏' . "\n" . '6 = 顯而易見' . "\n" . '9 = 公眾知識',
+    'IntrusionDetectionHelp' => '漏洞利用被偵測到的可能性有多大？' . "\n" . '1 = 應用中的主動偵測' . "\n" . '3 = 已記錄並審核' . "\n" . '8 = 未經審核已記錄' . "\n" . '9 = 未記錄',
+    'LossOfConfidentialityHelp' => '可能披露的數據量有多大？這些數據的敏感度如何？' . "\n" . '2 = 揭露的非敏感資料最少' . "\n" . '6 = 揭露的最低關鍵數據' . "\n" . '6 = 揭露大量非敏感數據' . "\n" . '7 = 揭露大量關鍵數據' . "\n" . '9 = 所有數據公開',
+    'LossOfIntegrityHelp' => '有多少資料可能已損壞？損壞程度如何？' . "\n" . '1 = 輕微損壞數據' . "\n" . '3 = 極少量嚴重損壞數據' . "\n" . '5 = 大量輕微損壞的數據' . "\n" . '7 = 大量嚴重損壞的數據' . "\n" . '9 = 所有資料完全損壞',
+    'LossOfAvailabilityHelp' => '可能會損失多少服務？這項服務有多重要？' . "\n" . '1 = 最低限度的輔助服務中斷' . "\n" . '5 = 最低限度的主要服務中斷' . "\n" . '5 = 大量二級服務中斷' . "\n" . '7 = 大範圍主要服務中斷' . "\n" . '9 = 所有服務完全中斷',
+    'LossOfAccountabilityHelp' => '威脅主體的行為是否可以追溯到個人？' . "\n" . '1 = 完全可追溯' . "\n" . '7 = 可能可追溯' . "\n" . '9 = 完全匿名',
+    'FinancialDamageHelp' => '漏洞利用會造成多大的經濟損失？' . "\n" . '1 = 低於修復漏洞的成本' . "\n" . '3 = 對年度利潤影響甚微' . "\n" . '7 = 對年度利潤有顯著影響' . "\n" . '9 = 破產',
+    'ReputationDamageHelp' => '漏洞利用是否會導致聲譽受損，進而損害企業利益？' . "\n" . '1 = 最小損傷' . "\n" . '4 = 失去主要客戶' . "\n" . '5 = 商譽損失' . "\n" . '9 = 品牌損害',
+    'NonComplianceHelp' => '不合規行為會帶來多大的風險敞口？' . "\n" . '2 = 輕微違規' . "\n" . '5 = 明顯違規' . "\n" . '7 = 高調違規',
+    'PrivacyViolationHelp' => '可以揭露多少個人識別資訊？' . "\n" . '3 = 一個人' . "\n" . '5 = 數百人' . "\n" . '7 = 數千人' . "\n" . '9 = 百萬人',
+    // The OWASP holder's Score card heading. No existing key covers this
+    // (confirmed via grep before adding) -- the Likelihood/Impact card
+    // headings reuse the already-existing bare 'Likelihood'/'Impact' keys.
+    'OwaspScore' => 'OWASP評分',
+    // Phase 4d-iv follow-up: group-level descriptions for the 4 OWASP
+    // subgroup headings, sourced from OWASP's own Risk Rating Methodology
+    // (https://community.owasp.org/OWASP_Risk_Rating_Methodology), tightened
+    // into short UI captions -- not a verbatim quote (see this task's own
+    // source table for the original wording).
+    'ThreatAgentFactorsDescription' => '評估該威脅團體發動攻擊成功的可能性。',
+    'VulnerabilityFactorsDescription' => '評估此漏洞被發現和利用的可能性。',
+    'TechnicalImpactDescription' => '依保密、完整性、可用性和問責制來分析影響。',
+    'BusinessImpactDescription' => '反映了對企業而言真正重要的東西，而不僅僅是技術上的影響。',
+    // CVSS's own Temporal-metric 'Exploitability' help text. This key shares
+    // a labelKey ('Exploitability') with DREAD's own field, so both would
+    // otherwise derive the same generic lang key ('ExploitabilityHelp'),
+    // with DREAD's entry silently winning for both -- risk-details-form.js's
+    // buildCvssScoreItem() and risk-details-view.js's cvssMetricValueRow()
+    // reference this key directly for CVSS's Exploitability field instead
+    // of the generic '<labelKey>Help' derivation.
+    'CVSSExploitabilityHelp' => "目前漏洞利用技術或程式碼可用性的狀態。\n• 未經證實：沒有可用的漏洞程式碼，或漏洞利用尚處於理論階段。\n• 概念驗證：漏洞利用程式碼存在，但對大多數攻擊者而言並不實用。\n• 功能完善：功能完善的漏洞程式碼在大多數情況下都有效。\n• 高：漏洞利用可靠，要麼是自動化的（例如蠕蟲），要麼完全不需要漏洞利用程式碼。",
+    // Risk Scoring -- Classic Inline (Task 3): the Classic scoring method's
+    // new inline Score card heading and its Likelihood/Impact cards' short
+    // plain-English descriptions (js/simplerisk/common/risk-details-form.js's
+    // buildClassicHolder()). Deliberately NOT sourced from NIST SP 800-30 or
+    // any other external standard -- confirmed with the user via the
+    // approved mockup review, unlike OWASP's own subgroup descriptions
+    // above, which do cite OWASP's Risk Rating Methodology.
+    'ClassicScore' => '經典配樂',
+    'ClassicLikelihoodDescription' => '這種風險發生的可能性有多大？',
+    'ClassicImpactDescription' => '如果這種風險發生，後果會多嚴重？',
+    // Risk Scoring -- Custom Inline (Task 2): the Custom scoring method's
+    // new inline Score card heading (js/simplerisk/common/risk-details-form.js's
+    // buildCustomHolder()) and the Custom Value card's short description
+    // caption. 'CustomValueDescription' text confirmed directly with the
+    // user, same as Classic's own description keys above.
+    'CustomScore' => '自訂分數',
+    'CustomValueDescription' => '自訂值可以是介於 0 和 10 之間的十進制值。',
+    // Risk Scoring -- Contributing Risk Inline (Phase 4d-v): the last of
+    // the three deferred scoring methods (DREAD/OWASP shipped earlier in
+    // this same project). The Likelihood/Contributing Risk cards' short
+    // plain-English descriptions (js/simplerisk/common/risk-details-form.js's
+    // buildContributingRiskHolder()). The Score card heading reuses the
+    // EXISTING 'ContributingRiskScore' key (already present above, same
+    // text) rather than duplicating it -- 'ContributingRisk'/
+    // 'ContributingLikelihood'/'Weight'/'Subject' are likewise reused as-is.
+    'ContributingLikelihoodDescription' => '這種風險發生的可能性有多大？',
+    'ContributingRiskDescription' => '以下每個因素都依其相對重要性加權－請選擇每個因素對此風險的影響程度。',
+    // OWASP read-mode card (buildOwaspReadView(), risk-details-view.js):
+    // the live calculation formula under each of the 4 sub-group names
+    // (Threat Agent Factors/Vulnerability Factors/Technical Impact/
+    // Business Impact), matching the legacy risk-scoring-details panel's
+    // own "= ( a + b + c + d ) / 4" text (includes/display.php), and the
+    // OWASP Risk Rating Methodology link note placed in the OWASP Score
+    // column's open space below the summary numbers.
+    'OwaspSubgroupFormula' => '= ( {a} + {b} + {c} + {d} ) / 4',
+    'OwaspMethodologyNote' => 'OWASP風險評級方法的完整詳情可在此處找到。',
+    'Here' => '這裡',
+    // Scoring widget formula captions (Classic/DREAD/Contributing Risk),
+    // the same ".sr-cvss-vector under the score label" treatment CVSS's
+    // vector caption and OwaspSubgroupFormula above already have, on both
+    // the edit-mode holder (risk-details-form.js) and the read-mode card
+    // (risk-details-view.js). Classic reuses the existing RISKClassicExp1-5
+    // keys instead of a new one -- see those keys' own long-standing
+    // definitions above.
+    'DreadScoreFormula' => '= ( {a} + {b} + {c} + {d} + {e} ) / 5',
+    // Contributing Risk's per-factor weighted term and its shared
+    // Likelihood term (update_contributing_risk_score(), includes/
+    // functions.php) -- unlike DREAD/OWASP's fixed roster, the factor list
+    // is admin-configured, so this is one formula PER FACTOR ROW rather
+    // than one fixed caption under the total score.
+    // {maxName}: score.php parity -- legacy's "Maximum Value" column showed
+    // the max option's human-readable name alongside its number (e.g.
+    // "[5] Certain", includes/display.php); these formulas only showed the
+    // bare number.
+    'ContributingLikelihoodFormula' => '= {value} x 5 / {max} ({maxName})',
+    'ContributingFactorFormula' => '= {weight}% x {impact} x 5 / {max} ({maxName})',
+    // Contributing Risk's own subscore row in the Score card -- the sum of
+    // every factor's own term above it. Generic (not substituted with real
+    // numbers) since the number of terms is however many factors are
+    // configured, unlike the fixed-roster formulas above.
+    'ContributingRiskSubtotalFormula' => '= (重量 x 衝擊力 x 5 / 最大值)總和',
+    // Contributing Risk Score's own formula, under the total row -- always
+    // exactly 2 terms (unlike the Contributing Risk subtotal above), so
+    // substituted with the real current subtotal values, same convention
+    // DreadScoreFormula/OwaspSubgroupFormula use for their own fixed roster.
+    'ContributingRiskScoreFormula' => '= {likelihood} + {contributing}',
+    // Risk Scoring History widget (risk-details-view.js) -- replaces the
+    // legacy chart's bare save icon with a real menu item, structured for
+    // future export types alongside it.
+    'DownloadChartAsImage' => '下載為圖片',
+    // Legacy score.php's CVSS table had a "Full details of CVSS Version 2.0
+    // scoring can be found here." link (includes/display.php); this is its
+    // inline-scoring-card equivalent, same shape as OwaspMethodologyNote.
+    'CvssMethodologyNote' => 'CVSS 2.0 版評分的完整詳情請見此處。',
+    // Mitigation Controls redesign: the picker reuses ChooseControls/
+    // AddOrRemoveControls/etc from Document Program's control picker.
+    'InvalidControlID' => '無效的控制項 ID。',
+    'ValidationOwner' => '驗證所有者',
+    'ValidationStatus' => '驗證狀態',
+    'NotStarted' => '尚未開始',
+    // management/view.php's "risk ID does not exist" empty state.
+    'RiskIdDoesNotExistBody' => '您要查找的風險可能已被刪除，或者連結可能不正確。',
+    'MitigationControlsRequiresGovernance' => '需要管理權限才能查看。',
+    'ViewControlValidation' => '視圖控制項驗證',
+    'EditControlValidation' => '編輯控制項驗證',
+    'SupportingDocumentationRequiresSubmitRisk' => '需要「提交風險」權限才能上傳文件。',
+    'SupportingDocumentationRequiresModifyRisks' => '需要「修改風險」權限才能管理文件。',
+    'MitigationSupportingDocumentationRequiresPlanMitigations' => '需要「計劃緩解措施」權限才能管理文件。',
+    'MitigationSubmittedBy' => '提交緩解措施',
+    'UseADifferentDate' => '請使用其他日期',
+    'AssetGroup' => '資產集團',
+    // Customization Cards Layout API (extras/customization/index.php) scope-validation errors.
+    'InvalidFgroup' => '無效的 fgroup。',
+    'CustomizationCardsLayoutApiScopeError' => '自訂卡片佈局 API 僅適用於 fgroup=risk、tab_index=1、tab_index=2 或 tab_index=3。',
+    // Asset management redesign
+    'DiscoverAssets' => '發現資產',
+    'DiscoveryRuns' => '探索之旅',
+    'DiscoveryRangeHint' => '一個位址、一個起始-結束範圍或 IPv4 CIDR',
+    'DiscoveryResolveNames' => '尋找主機名',
+    'DiscoveryAddAs' => '新增資產',
+    'DiscoveryStart' => '開始探索',
+    'DiscoveryBackgroundNote' => '在後台運行。已存在的地址將被跳過。',
+    'DiscoveryRangeInvalid' => '請輸入有效的 IPv4 位址、位址範圍或 CIDR 區塊。',
+    'DiscoveryRangeTooLarge' => '這個範圍太大了。限制是 {$max} 個位址。',
+    'DiscoveryRunQueued' => '探索之旅開始了。',
+    'DiscoveryRunCompleted' => '發現完成： {$new} 新資產。',
+    'AssetBulkSelectAll' => '選擇所有 {$count} 資產',
+    'AssetBulkAssignTeams' => '分配團隊…',
+    'AssetBulkAddToGroup' => '加入群組…',
+    'AssetBulkDeleteConfirmTitle' => '刪除 {$count} 資產？',
+    'AbleToEditAssets' => '能夠編輯資產',
+    'AbleToDeleteAssets' => '能夠刪除資產',
+    'AbleToVerifyAssets' => '能夠核實資產',
+    'AbleToRunAssetDiscovery' => '能夠運行資產發現',
+    'AbleToCreateAssetGroups' => '能夠建立資產組',
+    'AbleToEditAssetGroups' => '能夠編輯資產組',
+    'AbleToDeleteAssetGroups' => '能夠刪除資產組',
+    'ViewAsset' => '查看資產',
+    'AssetUnverifiedByEditLog' => '資產「{$name}」被退回為未驗證狀態，因為使用者「{$user}」未經授權更改了其名稱或 IP 位址，無法驗證資產。',
+    'AssetTeamsAssignedLog' => '資產「{$name}」由使用者「{$user}」分配給團隊「{$teams}」。',
+    // Manage assets page (asset management redesign, Task 9)
+    'AddAsset' => '新增資產',
+    'SearchAssetsPlaceholder' => '按名稱或 IP 位址搜尋',
+    'AllLocations' => '所有地點',
+    'AllTags' => '所有標籤',
+    'AllAssetGroups' => '所有資產組',
+    'AssetFields' => '資產字段',
+    'AssetBulkAllSelected' => 'All {$count} matching assets selected',
+    'AssetDeleteConfirmTitle' => '刪除資產「{$name}」？',
+    'DeleteAsset' => '刪除資產',
+    'DeleteAssets' => '刪除資產',
+    'AssetBulkAssignTeamsTitle' => '將團隊分配給 {$count} 資產',
+    'AssetAssignTeamsHint' => '選定的隊伍將會被加入。已在資產上的隊伍將保留。',
+    'AssetAddToGroupTitle' => '將 {$count} 資產加入群組',
+    'AssetChooseTeams' => '選擇隊伍',
+    'AssetChooseGroup' => '選擇一個群組',
+    'Assign' => '分配',
+    'AssetBulkVerifiedSummary' => '{$ok} 已驗證， {$failed} 已跳過',
+    'AssetBulkDeletedSummary' => '{$ok} 已刪除， {$failed} 已跳過',
+    'AssetBulkTeamsSummary' => '分配到 {$ok} 個資產的團隊，跳過 {$failed} 個資產',
+    'AssetBulkGroupSummary' => '{$ok} 已加入群組， {$failed} 已跳過',
+    'AssetBulkSkippedList' => '已跳過： {$list}',
+    'AssetBulkReasonNotFound' => '未找到',
+    'NoAssetsYet' => '目前尚無資產',
+    'NoAssetsYetHint' => '您新增或發現的資源將顯示在此。',
+    'NoAssetsMatchFilters' => '沒有資產符合您的篩選條件',
+    'CouldNotLoadAssets' => '資源加載失敗。您的資料安全無虞。',
+    'AllValuations' => '所有估值',
+    // Manage assets page, Asset groups tab (asset management redesign, Task 10)
+    'AddAssetGroup' => '新增群組',
+    'EditAssetGroup' => '編輯群組',
+    'DeleteAssetGroup' => '刪除群組',
+    'ViewGroupMembers' => '查看會員',
+    'SearchAssetGroupsPlaceholder' => '按名稱搜尋群組',
+    'HighestValuation' => '最高估值',
+    'LinkedRisks' => '相關風險',
+    'RemoveFromGroup' => '從組中移除',
+    'AssetGroupMoreMembers' => '+ {$count} 更多',
+    'ViewAllInAssetsTab' => '在「資產」標籤中查看所有內容',
+    'NoAssetsInGroup' => '該組沒有資產。',
+    'CouldNotLoadGroupMembers' => '無法載入此群組成員。',
+    'AssetGroupMembers' => '成員',
+    'AssetGroupMembersHint' => '只有您能看到的資產才會列出。您看不到的成員仍留在群組中。',
+    'ChooseAssets' => '資產',
+    'AddOrRemoveAssets' => '新增或移除資產…',
+    'UseTheseAssets' => '使用這些資源',
+    'AllAssets' => '所有資產',
+    'Valuation' => '估價',
+    'PickerShowingFirstN' => '顯示第一個 {$count} ，共 {$total}。搜尋或縮小範圍以尋找其餘結果。',
+    'AssetGroupDeleteConfirmTitle' => '刪除群組“{$name}”？',
+    'AssetGroupDeleteKeepsAssets' => '該組中的資產不會被刪除，只會移除該組本身。',
+    'NoAssetGroupsYet' => '暫無資產組',
+    'NoAssetGroupsYetHint' => '將資產分組，以便集中進行對應和報告。',
+    'NoAssetGroupsMatchSearch' => '沒有符合您搜尋條件的資產組',
+    'CouldNotLoadAssetGroups' => '無法載入資產組。您的資料安全無虞。',
+    'DiscoveryAssignTeams' => '分配到團隊',
+    'DiscoveryAssignTeamsHint' => '可選。所有新資產都會加入這些團隊。',
+    'DiscoveryAddAsHint' => '經您授權，用於驗證資產。',
+    'DiscoveryTeamsInvalid' => '選擇你所屬且已存在的隊伍。',
+    'DiscoveryResolveNamesInvalid' => '尋找主機名稱功能必須開啟或關閉。',
+    'DiscoveryTooManyActiveRuns' => '您目前已有 {$max} 次探索任務正在進行中。請等待其中一次完成或取消它。',
+    'DiscoveryRunNotFound' => '未找到發現運行記錄。',
+    'DiscoveryRunAlreadyFinished' => '本次探索性測試已經結束。',
+    'DiscoveryRunCancelled' => '探索之旅取消。',
+    'DiscoveryRunFailedToast' => '{$range} 的發現失敗。',
+    'DiscoveryStatusQueued' => '已排隊',
+    'DiscoveryProgress' => '{$scanned} 的 {$total}',
+    'DiscoveryLiveHosts' => '現場主持人',
+    'DiscoveryNewAssets' => '新資產',
+    'DiscoveryStartedAt' => '開始',
+    'DiscoveryCancelRun' => '取消運行',
+    'CouldNotLoadDiscoveryRuns' => '無法載入探索性運行資料。',
+    'DiscoveryRangeReserved' => '此範圍包括無法掃描的保留位址（環回位址、連結本地位址、群播位址或 0.0.0.0/8）。',
+    'DiscoveryTooManyActiveRunsInstance' => '目前已有 {$max} 次發現任務正在進行中。請等待其中一次完成後再試一次。',
+    'DiscoveryErrorScan' => '掃描因出錯而停止。請查看系統日誌以了解詳情。',
+    'DiscoveryErrorWorkerLost' => '後台佇列已停止處理此運行。',
+    'DiscoveryErrorRequesterInactive' => '發起此次運作的用戶已不再活躍。',
+    // Asset management redesign: translated API errors (bulk actions, column settings, discovery) and discovery audit lines
+    'AssetBulkBodyInvalid' => '將批次操作以 JSON 格式傳送。',
+    'AssetBulkActionRequired' => '選擇批次操作。',
+    'AssetBulkUnknownAction' => '批量操作不可用。',
+    'AssetBulkSelectionRequired' => '可透過ID或篩選條件選擇資產。',
+    'AssetBulkIdsRequired' => '至少選擇一項資產。',
+    'AssetBulkIdsInvalid' => '資產編號必須為整數。',
+    'AssetBulkTooManyAssets' => '您一次最多可以操作 {$max} 個資產。請縮小選擇範圍並重試。',
+    'AssetBulkFilterInvalid' => '篩選條件無效。請重新載入頁面後重試。',
+    'AssetBulkFilterUnknownKey' => '過濾器“{$key}”無法辨識。',
+    'AssetBulkFilterBadValue' => '過濾器「{$key}」的值無效。',
+    'AssetBulkFilterTooManyValues' => '過濾器「{$key}」最多可以列出 {$max} 個值。',
+    'AssetBulkFilterAllAlone' => '選擇所有資產不能與其他篩選條件同時使用。',
+    'AssetBulkFilterEmpty' => '執行批次操作前，請選擇篩選條件或選擇所有資產。',
+    'AssetBulkExpectedCountInvalid' => '預期資產數量必須為整數。',
+    'AssetBulkParamsInvalid' => '此批量操作的選項無效。',
+    'AssetBulkTeamsRequired' => '至少選擇一支隊伍。',
+    'AssetBulkTeamsNotFound' => '這些球隊中至少有一支已經不存在了。',
+    'AssetBulkTeamsNotMember' => '你只能分配你所屬的隊伍。',
+    'AssetBulkGroupNotFound' => '該資產集團已不復存在。',
+    'AssetBulkNoMatch' => '沒有符合您選擇的資產。',
+    'AssetBulkCountMismatch' => '您選擇後，匹配的資產已從 {$expected} 更改為 {$actual} 。請檢查清單並重試。',
+    'AssetColumnSettingsBodyInvalid' => '將列設定作為 JSON 正文發送，並指定列名或順序。',
+    'AssetColumnSettingsSaveFailed' => '無法儲存您的列。請聯絡管理員完成 SimpleRisk 升級。',
+    'DiscoveryRunQueueFailed' => '無法將發現運行加入佇列。請重試。',
+    'DiscoveryRunStartedLog' => '使用者「{$user}」啟動了對 {$range} （{$count} 地址）的資產發現運作 #{$id}。',
+    'DiscoveryRunCancelledLog' => '使用者「{$user}」取消了 {$range} 的資產發現運作 #{$id}。',
+    'AssetBulkTooManyToDelete' => '您一次最多可以刪除 {$max} 個資產。請縮小選擇範圍並重試。',
+    'AssetBulkFilterNotApplied' => '傳送的篩選器「{$key}」無法套用，因此沒有任何變更。',
+    'AssetBulkExpectedCountRequired' => '依篩選條件刪除資產需要指定要刪除的資產數量。',
+    'AssetBulkReasonNotAttempted' => '未嘗試',
+    'MoreActions' => '更多操作',
+    'AssetCreateNewGroupOption' => '建立新群組…',
+    'AssetNewGroupName' => '新群組名',
+    'AssetFilterByTeam' => '依團隊篩選 {$name}',
+    'AssetFilterByValuation' => '依估價篩檢 {$name}',
+    'AssetFilterByTag' => '依標籤篩選 {$name}',
+    'AssetFilterByLocation' => '依站點/地點篩選 {$name}',
+    'AssetFilteringByTeam' => '依團隊篩選 {$name}',
+    'AssetFilteringByValuation' => '依估價篩檢 {$name}',
+    'AssetFilteringByTag' => '依標籤篩選 {$name}',
+    'AssetFilteringByLocation' => '依站點/地點篩選 {$name}',
+    'AssetShowOnlyVerified' => '僅顯示已驗證資產',
+    'AssetShowOnlyUnverified' => '僅顯示未經核實的資產',
+    'AssetShowingVerified' => '顯示已驗證資產',
+    'AssetShowingUnverified' => '顯示未經核實的資產',
+    'CustomizationLayoutPayloadRejected' => '由於佈局中包含不屬於此範本的欄位或卡片，因此無法儲存。但實際上並未進行任何更改。',
+    'CustomizationLayoutRejectedUnknownScope' => '此範本範圍無法從佈局編輯器儲存。沒有任何更改。',
+    'CustomizationLayoutRejectedEmptyFields' => '此佈局沒有有效字段，因此未儲存。沒有任何更改。',
+    'CustomizationLayoutRejectedWouldDeleteAll' => '儲存此佈局會刪除範本中的所有字段，因此未儲存。請重新載入頁面並重試。',
+    'CustomizationLayoutRejectedRequiredField' => '必填欄位無法從佈局中移除。沒有任何更改。',
+    'CustomizationLayoutRejectedBulkRemoval' => '儲存此佈局會移除大部分模板字段，即使您沒有在此處刪除它們。請重新載入頁面並重試。但沒有任何變化。',
+    'CustomizationLayoutRejectedGroupMismatch' => '範本組不存在或屬於其他類型的記錄。未做任何更改。',
+    'CustomizationLayoutLegacySaveRefused' => '此範本使用版面編輯器進行編輯，無法透過舊版面板端點儲存。',
+    // Asset discovery probe methods
+    'DiscoveryPortsInvalid' => '輸入 1 到 65535 之間的最多 {$max} 個 TCP 端口，用逗號分隔。',
+    'DiscoveryErrorProbeUnavailable' => '本次運行開始時所使用的探測方法已不再可供後台工作進程使用。請重新開始運行。',
+    'DiscoveryProbeIcmpUnprivileged' => 'ICMP ping（非特權套接字）',
+    'DiscoveryProbeIcmpRaw' => 'ICMP ping（原始套接字）',
+    'DiscoveryProbePingCommand' => 'ICMP ping（ping 指令）',
+    'DiscoveryProbeTcpConnect' => 'TCP 連線',
+    'DiscoveryProbeMethod' => '探測方法： {$method}',
+    'DiscoveryProbeDetectedByWebServer' => '由 Web 伺服器偵測到。後台工作進程可能會使用不同的方法。',
+    'DiscoveryTcpProbeWarning' => '只有當主機回應掃描到的 TCP 連接埠時才能找到它們，因此屏蔽這些連接埠的主機將無法被找到。為了獲得完整的掃描結果，請允許伺服器發送 ICMP ping 請求：允許非特權 ping 套接字或啟用 NET_RAW 功能，或安裝 ping 工具。',
+    'DiscoveryTcpPortsForRun' => '本次運行的 TCP 連接埠',
+    'DiscoveryTcpPortsHint' => '以逗號分隔，最多可設定 {$max} 個連接埠。留空則使用預設值： {$ports}。',
+    'DiscoveryDefaultTcpPorts' => '資產發現 TCP 連接埠',
+    'DiscoveryDefaultTcpPortsHint' => '當後台工作進程無法發送 ICMP ping 時使用。以逗號分隔，支援最多 {$max} 個連接埠。',
+    'DiscoveryErrorTcpUnreliable' => '掃描停止的原因是網路回應了來自不可能是真實主機的位址（可能是代理或防火牆造成的）的 TCP 連接，導致所有位址看起來都像是線上的。請聯絡管理員，允許伺服器發送 ICMP ping 請求。',
+    'DiscoveryDefaultTcpPortsResetLog' => '使用者「{$user}」將資產發現 TCP 連接埠重設為預設值。',
+    'DiscoveryNotConfigured' => '尚未配置發現功能。請聯絡系統管理員，在 config.php 檔案中設定允許的範圍。',
+    'DiscoveryRangeNotAllowed' => '此範圍超出了發現功能允許掃描的範圍。',
+    'DiscoveryAllowedRangesList' => '允許的範圍： {$ranges}',
+    // Asset record modal
+    'AssetNotAvailable' => '此資產不可用。它可能已被刪除，或者您可能沒有存取權限。',
+    'AssetCustomFieldNotInTemplate' => '一個或多個自訂欄位不屬於此資產的範本。未做任何更改。',
+    'AssetMappedControlsInvalid' => '映射的控制項無法儲存。每一行都需要一個成熟度，並且至少需要一個已存在的控制項。沒有任何更改。',
+    'AssetMappedControlsTooMany' => '一個資產最多可以對應到 {$max} 個控制項。沒有任何更改。',
+    'AddControlsAtAnotherMaturity' => '在另一個成熟階段加入控制措施',
+    'ChoosingControlsNeedsGovernancePermission' => '選擇控制項需要治理權限。',
+    'NControls' => '{n} 控制',
+    'SavingKeepsTheCurrentControlMappings' => '儲存操作會保留目前的控制映射。',
+    'LoadingControls' => '載入控制…',
+    'ControlListCouldNotBeLoaded' => '控制項清單無法加載，因此目前無法變更映射控制項。',
+    'RemoveControlsAtMaturity' => '成熟時移除控制 {maturity}',
+    'ControlIdUnavailable' => '#{id} （不可用）',
+    'AssetRecordEdit' => '編輯資產',
+    'AssetRecordIdN' => '資產 #{$id}',
+    'AssetRecordCopyLink' => '複製此資產的連結',
+    'AssetRecordLinkCopied' => '連結已複製。',
+    'AssetRecordLinkCopyFailed' => '連結無法複製，請從網址列複製。',
+    'AssetRecordMarkUnverified' => '標記未經核實',
+    'AssetRecordViewAuditTrail' => '查看審計追蹤',
+    'AssetRecordAuditTrailTitle' => '審計追蹤',
+    'AssetRecordAuditTrailEmpty' => '本期間該資產未發生任何活動。',
+    'AssetRecordAuditTrailFailed' => '審計追蹤無法載入。',
+    'AssetRecordBackToAsset' => '返回資產',
+    'AssetRecordSave' => '保存資產',
+    'AssetRecordProvenanceVerified' => '已驗證 · 已新增 {$date}',
+    'AssetRecordProvenanceUnverified' => '未核實：尚未經過有權核實資產的人員確認 · 已新增 {$date}',
+    'AssetRecordUnsavedHint' => '關閉未儲存變更的檔案時，系統會先要求您確認。',
+    'AssetRecordDiscardQuestion' => '放棄未儲存的變更？',
+    'AssetRecordKeepEditing' => '繼續編輯',
+    'AssetRecordDiscardChanges' => '放棄更改',
+    'AssetRecordVerificationCard' => '確認',
+    'AssetRecordVerificationTag' => '需要驗證資產權限',
+    'AssetRecordVerifiedHint' => '已由相關負責人審核過此資產。未經資產驗證權限變更其名稱或 IP 位址，將導致其狀態變為未驗證。',
+    'AssetRecordLoadFailed' => '資源載入失敗，請重試。',
+    'CustomizationCardsLayoutApiScopeErrorWithAsset' => '自訂卡片佈局 API 僅適用於 fgroup=risk（tab_index 1、2 或 3）和 fgroup=asset（tab_index 1）。',
+    'DiscoveryErrorRequesterNotPermitted' => '發起此次運作的用戶已無權運作資產發現功能。',
+    'AssetRecordEditField' => '編輯 {$field}',
+    // Asset Scoring (FIPS 199 categorization + weighted score)
+    'Confidentiality' => '保密性',
+    'Integrity' => '正直',
+    'Availability' => '可用性',
+    'AssetScoringLevelLow' => '低的',
+    'AssetScoringLevelModerate' => '緩和',
+    'AssetScoringLevelHigh' => '高的',
+    'AssetScoringValueInvalid' => '保密、完整性和可用性接受低、中或高（保密性也接受不適用）。',
+    'AssetScoringChangedLog' => 'Asset "{$name}" {$objective} was changed from {$from} to {$to} by user "{$user}".',
+    'FIPSCategorization' => 'FIPS分類',
+    'WeightedScore' => '加權分數',
+    'WeightedBand' => '加重帶',
+    'AllCategorizations' => '所有分類',
+    'AllBands' => '所有樂隊',
+    'AssetFilterByCategorization' => '依 FIPS 分類篩選 {$name}',
+    'AssetFilteringByCategorization' => '依 FIPS 分類篩選 {$name}',
+    'AssetFilterByBand' => '按加權頻帶過濾 {$name}',
+    'AssetFilteringByBand' => '按加權頻帶濾波 {$name}',
+    'AssetScoring' => '資產評分',
+    'AssetScoringSettingsHint' => '每項資產都會根據其機密性、完整性和可用性被評為低、中或高，機密性也可能被評為“不適用”，此時該資產不會出現在任何結果中。其 FIPS 分類為三個評級中的最高等級。其加權分數是三個等級值的加權平均值，而等級閾值會將該分數轉換為低、中或高等級。更改這些設定會立即重新評估每項資產。',
+    'Weights' => '重量',
+    'AssetScoringWeightsHint' => '每個目標在加權評分中的權重：0 到 100，最多保留兩位小數。權重為 0 的目標將被排除在外。完整性和可用性不能同時為 0，因為「不適用」的保密性總是會被排除在外。',
+    'LevelValues' => '水平值',
+    'AssetScoringLevelValuesHint' => '每個評級對加權分數的貢獻值：大於 0 且小於 100，最多保留兩位小數，分為「低」、「中」和「高」三個等級。預設值分別為“低”1，“中”2，“高”3。',
+    'BandThresholds' => '頻帶閾值',
+    'AssetScoringBandThresholdsHint' => '加權分數達到或超過閾值即為該等級，低於中等閾值的分數為低。中等等級的起始值必須高於低值，高等級的起始值必須高於中等等級且不得高於高值。',
+    'ModerateStartsAt' => '中型起始價',
+    'HighStartsAt' => '高起點',
+    'DefaultScoringForNewAssets' => '新資產的預設評分',
+    'AssetScoringDefaultsHint' => '當使用者在資產表單中新增資產時，系統會自動預先選擇這些評分。透過發現、匯入或 API 建立的資產，除非使用者自行提供評分，否則不會自動評分。如果將這三項都設為“未設定”，則此功能將關閉。',
+    'AssetScoringWeightsInvalid' => '資產評分權重必須是 0 到 100 之間的數字，最多可有兩位小數，且完整性和可用性不能同時為 0。',
+    'AssetScoringValuesInvalid' => '資產評分等級值必須是大於 0 且小於 100 的數字，最多保留兩位小數，低低於中低於高。',
+    'AssetScoringThresholdsInvalid' => '資產評分等級閾值最多只能有兩位小數，中等從低值開始，高從中等開始，高從不高於高值。',
+    'AssetScoringDefaultsInvalid' => '新資產的預設評分必須與每個目標所提供的等級相符。',
+    'AssetScoringSettingsNotSaved' => '資產評分設定無法儲存。所有設定均未更改。',
+    'AssetScoringSettingsChangedLog' => '使用者「{$user}」更改了資產評分設定。',
+    'AssetScoringNotSet' => '未設定',
+    'NotScored' => '未得分',
+    'AssetScoringNotScoredHint' => '完成所有三個目標即可獲得此項資產的評分。',
+    'ImportAssetScoringValueIgnored' => '資產「{$asset_name}」的 {$objective} 值「{$value}」不是有效評級，已被忽略。',
+    'AssetScoringSecurityObjectives' => '安全目標',
+    'AssetScoringConfidentialityHelp' => '如果未經授權披露有關該資產的信息，可能會造成什麼潛在影響？',
+    'AssetScoringIntegrityHelp' => '如果未經授權修改或銷毀該資產上的訊息，可能會造成什麼影響？',
+    'AssetScoringAvailabilityHelp' => '如果該資產的取得或使用受到干擾，可能會造成哪些潛在影響？',
+    'AssetScoringHelpHigh' => '嚴重或災難性不良反應',
+    'AssetScoringHelpModerate' => '嚴重不良反應',
+    'AssetScoringHelpLow' => '不良反應輕微或無不良反應',
+    'AssetScoringHelpNotApplicable' => '對於這項資產而言，保密性並非需要考慮的問題（例如，公開資訊）。',
+    'AssetScoringHelpLabel' => '{$objective} 評級指南',
+    'AssetScoringMeterValue' => '{$score}， {$band} 樂隊',
+    'AssetScoringNoWeightedScore' => '無加權分數',
+    'AssetScoringNoWeightedScoreNote' => '無加權評分：每個計分目標的權重均為 0。',
+    'AssetScoringUpgradePending' => '在完成 SimpleRisk 資料庫升級之前，資產評分無法儲存。但實際上並沒有做任何更改。',
+    'AssetScoringResultHelpLabel' => '{$result} 解釋',
+    'AssetScoringScoreHelp' => '加權分數將三個評級合併為一個介於 {$low} 到 {$high}之間的數值。每個評級都具有其設定值，並乘以其目標的權重。將所有結果相加，然後除以權重的總和。 「不適用」保密性及其權重將被忽略。設定值和權重在「首選項」中進行配置。必須先對所有三個目標進行評級，才能顯示分數。',
+    'AssetScoringCategorizationHelp' => 'FIPS 199 安全分類是最高標準：即所有適用目標中的最高評級。無論其他目標為何，只要有一個「高」評級，該資產即被評為「高」。 「不適用」評級將被忽略。',
+    'AssetScoringBandHelp' => '此評分系統將加權分數分為低、中、高三個等級。低於 {$moderate} 的分數為低， {$moderate} 至 {$highAt} 為中， {$highAt} 及以上為高。閾值可在「偏好設定」中進行配置。',
+    // Manage assets: Confidentiality / Integrity / Availability rating filters
+    'AllConfidentialityRatings' => '所有保密等級',
+    'AllIntegrityRatings' => '所有誠信評級',
+    'AllAvailabilityRatings' => '所有可用性評級',
+    'AssetFilterByConfidentiality' => '依保密等級篩選 {$name}',
+    'AssetFilteringByConfidentiality' => '依保密等級篩選 {$name}',
+    'AssetFilterByIntegrity' => '依完整篩選 {$name}',
+    'AssetFilteringByIntegrity' => '依完整性過濾 {$name}',
+    'AssetFilterByAvailability' => '依可用性篩選 {$name}',
+    'AssetFilteringByAvailability' => '依可用性篩選 {$name}',
+    'HighestFIPSCategorization' => '最高FIPS分類',
+    'HighestWeightedScore' => '最高加權得分',
+    'HighestWeightedBand' => '最高權重頻段',
+    'AssetGroupFields' => '資產組字段',
+    'NoAssetGroupsMatchFilters' => '沒有資產組符合您的篩選條件。',
+    'AssetGroupFilterByHighestCategorization' => '依最高 FIPS 分類篩選 {$name}',
+    'AssetGroupFilteringByHighestCategorization' => '依最高 FIPS 分類篩選 {$name}',
+    'AssetGroupFilterByHighestBand' => '依最高權重頻段篩選 {$name}',
+    'AssetGroupFilteringByHighestBand' => '依最高權重頻段過濾 {$name}',
+    'AssetGroupBulkSelectionRequired' => '可以透過ID或篩選條件選擇資產組。',
+    'AssetGroupBulkIdsRequired' => '至少選擇一個資產類別。',
+    'AssetGroupBulkIdsInvalid' => '資產組 ID 必須為整數。',
+    'AssetGroupBulkFilterAllAlone' => '選擇所有資產組不能與其他篩選條件同時使用。',
+    'AssetGroupBulkFilterEmpty' => '刪除前，請選擇篩選條件或選擇所有資產組。',
+    'AssetGroupBulkExpectedCountInvalid' => '資產組的預期數量必須是整數。',
+    'AssetGroupBulkExpectedCountRequired' => '依篩選條件刪除資產組需要指定要刪除的資產組數量。',
+    'AssetGroupBulkNoMatch' => '沒有資產組符合您的選擇。',
+    'AssetGroupBulkCountMismatch' => '您選擇後，匹配的資產組已從 {$expected} 更改為 {$actual} 。請檢查清單並重試。',
+    'AssetGroupBulkTooManyToDelete' => '您一次最多可以刪除 {$max} 個資產組。請縮小選擇範圍並重試。',
+    'AssetGroupBulkSelectAll' => '選取所有 {$count} 資產組',
+    'AssetGroupBulkAllSelected' => 'All {$count} matching asset groups selected',
+    'AssetGroupBulkDeleteConfirmTitle' => '刪除 {$count} 資產組？',
+    'AssetGroupBulkDeleteKeepsAssets' => '這些組中的資產不會被刪除，只會移除這些組。',
+    'DeleteAssetGroups' => '刪除群組',
+    'AssetGroupBulkDeletedSummary' => '{$ok} 組已刪除， {$failed} 個群組已跳過',
+    'ChoosingRisksNeedsRiskManagementPermission' => '選擇相關風險需要風險管理部門的批准。',
+    'NAssociatedRisks' => '{n} 相關風險',
+    'SavingKeepsTheCurrentRiskAssociations' => '儲蓄會帶來當前相關的風險。',
     '' => '',
 );
 ?>

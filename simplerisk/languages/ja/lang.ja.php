@@ -814,7 +814,7 @@ $lang = array(
     'UserSessions' => 'ユーザーセッション',
     'SessionActivityTimeout' => 'セッションアクティビティのタイムアウト',
     'Security' => 'セキュリティ',
-    'EnableCSP' => 'コンテンツセキュリティポリシーを有効にする (これは過去にクロームが壊れています)',
+    'EnableCSP' => 'コンテンツセキュリティポリシーを有効にする（推奨）',
     'EnableDebugLogging' => 'デバッグログを有効にする',
     'seconds' => '秒',
     'FieldSample' => 'フィールドサンプル',
@@ -4967,6 +4967,572 @@ $lang = array(
     // closeriskForm()'s own (hardcoded, pre-existing) single-risk denial text.
     'NoCloseRiskPermission' => 'あなたにはリスクをクローズする権限がありません。',
     'QuestionnaireRequiredQuestionUnanswered' => '評価を完了する前に、必須の質問すべてに回答してください。',
+    'AuditLog_ControlStatusAutoSynced' => 'コントロール「{$short_name}」の状態は、最新のテスト結果に基づいて「{$status_text}」に自動的に更新されました。',
+    'EnableCSPHelp' => 'コンテンツセキュリティポリシー（CSP）は、ブラウザがスクリプト、スタイル、画像、フォントをSimpleRisk自体からのみ読み込むように制限し、ページフレームやクロスオリジンフォーム送信をブロックします。これは、クロスサイトスクリプティングに対する最も強力な組み込み防御策です。プロキシ、ブラウザ拡張機能、または環境内のサードパーティ統合と競合しない限り、有効にしておいてください。',
+    // Define Control Frameworks' Columns picker (Task: Columns picker + saved layout/filters) -- the "Standard" group label above its built-in fields (Family/Owner/Maturity/Status/Class/Phase/Priority/Type); 'CustomFields' already exists.
+    'StandardFields' => '標準フィールド',
+    // My Profile redesign (js/simplerisk/pages/account-profile.js)
+    'Administrator' => '管理者',
+    'AccountDetails' => 'アカウントの詳細',
+    'YourPermissions' => 'あなたの権限',
+    'RoleAndTeamsGrantAccess' => 'あなたの役割とチームによってアクセスが許可されるもの',
+    'AllGranted' => 'すべて許可されました',
+    'PermissionsCountLabel' => '$count 権限',
+    'ManagedByYourAdministrator' => 'これらの情報は管理者によって管理されています。変更が必要な場合は、管理者にご連絡ください。',
+    'MultiFactorAuthenticationHint' => 'アカウントの安全性を高めるため、ログインに2段階認証を追加してください。',
+    'ChangingPasswordSignsOutEverywhere' => 'パスワードを変更すると、他のすべてのサービスからログアウトされます。',
+    'APIKeyHint' => 'SimpleRisk APIに対して、独自のスクリプトや統合機能を認証するために使用されます。',
+    'ResetDisplaySettingsHint' => 'カスタム列の選択をデフォルト設定に戻します。',
+    'CardGeneral' => '一般',
+    'CardClassification' => '分類',
+    'CardScoring' => '得点',
+    'CardAdditionalInformation' => '追加情報',
+    'CardCustomFields' => 'ユーザー設定フィールド',
+    'CardCustomFieldsHint' => 'これらのフィールドはカードに分類する必要があります',
+    'LayoutEditorHint' => 'フィールドを別のカードにドラッグすると、そのフィールドの割り当てが変わります。カード内でドラッグすると、カードの順序を変更したり、サイズを変更したりできます。カードをドラッグまたはサイズ変更すると、ページ上の位置を変更できます。',
+    'ScoringNotYetAvailableInThisView' => 'このビューでは、スコアリング設定はまだ利用できません。',
+    // Native tooltip on the Cards layout editor's Gridstack resize handles
+    // (js/simplerisk/pages/customization-layout-editor.js) -- the bare corner
+    // bracket read as an unexplained mark until it said what it does.
+    'DragToResize' => 'ドラッグしてサイズを変更',
+    // Warning pill on a Cards layout editor card the admin has sized shorter
+    // than the fields it holds. Replaces the silent inner scrollbar that state
+    // used to produce.
+    'NFieldsDoNotFitCard' => '{n} 個のフィールドがこのカードに収まりきりません。カードのサイズを変更して表示してください。',
+    // Card titles for the Mitigation tab's Cards layout editor
+    // (js/simplerisk/pages/customization-layout-editor.js), mirroring the
+    // Card* keys above for the Details tab. Order follows
+    // customization_mitigation_cards_layout_card_keys() (includes/functions.php).
+    'CardMitigationStrategy' => '緩和戦略',
+    'CardMitigationSolution' => '緩和策',
+    'CardMitigationControls' => '軽減コントロール',
+    'CardReview' => '見直し',
+    // Submit Risk page's three action-bar buttons (buildActionsBar(),
+    // risk-details-form.js, submitMode 'create' only) and the Reset Form
+    // confirm modal (management/index.php, design-system.md #8's "Confirm"
+    // type). 'Discard'/'Cancel'/'Close' already exist and are reused for the
+    // modal's own buttons.
+    'ResetForm' => 'フォームをリセット',
+    'SaveAndNew' => '保存＆新規',
+    'SaveAndView' => '保存して表示',
+    'ResetFormConfirmTitle' => 'このリスク報告を破棄しますか？',
+    'ResetFormConfirmBody' => '入力された情報はすべて失われます。',
+    // Restore-template destructive confirm (Customization Extra, Save/Restore
+    // action bar). Two body variants: risk's Details/Mitigation/Review tabs
+    // named explicitly (the only fgroup with that 3-tab Cards layout), a
+    // generic fallback for every other fgroup (single legacy-panel tab).
+    // Both end on the same scoping reassurance -- confirmed via direct source
+    // read that Restore only ever touches the currently-selected template
+    // group, never any other.
+    'RestoreTemplateConfirmTitle' => 'デフォルトのレイアウトを復元?',
+    'RestoreTemplateConfirmBodyRisk' => 'これにより、このテンプレートグループの「詳細」、「対策」、「レビュー」タブにあるすべてのフィールドがデフォルト値にリセットされます。他のテンプレートグループには影響はありません。',
+    'RestoreTemplateConfirmBody' => 'これにより、このテンプレートのすべてのフィールドが、このテンプレートグループのデフォルト値にリセットされます。他のテンプレートグループには影響はありません。',
+    // CVSS holder's collapsed Temporal/Environmental/Impact-Modifiers
+    // accordion (buildCvssHolder(), risk-details-form.js) -- these three
+    // groups are optional CVSS v2 refinements on top of the required Base
+    // Score Metrics, so they collapse behind this header by default.
+    'AdvancedMetrics' => '高度な指標',
+    // CVSS holder's Base Score Metrics sub-group headers (buildCvssHolder(),
+    // risk-details-form.js) -- distinct from the existing 'ExploitabilityMetrics'/
+    // 'ImpactMetrics' keys, which the legacy cvss_modal_content.php modal
+    // still renders as plain "Exploitability Metrics"/"Impact Metrics" and
+    // must keep unchanged. These fold the umbrella "Base Score Metrics"
+    // heading into each sub-group's own header instead of a separate label.
+    'BaseScoreExploitabilityMetrics' => '基本スコアの悪用可能性指標',
+    'BaseScoreImpactMetrics' => '基本スコア影響指標',
+    // Per-field help popovers on the CVSS holder's 14 metric selects
+    // (buildCvssScoreItem(), risk-details-form.js) -- one per CVSS v2
+    // metric, matching the standard CVSS v2 specification definitions.
+    // Double-quoted (not single-quoted, this file's usual style) so the
+    // \n line breaks are real escape sequences: each popover leads with one
+    // overall sentence, then one bullet line per option, rendered via
+    // white-space: pre-line on .sr-scoring-help-popover .popover-body
+    // (scss/modules/_questionnaire.scss) -- plain text throughout, no HTML,
+    // so the popover stays initialized without Bootstrap's `html: true`.
+    "AttackVectorHelp" => "脆弱性へのアクセス方法。\n• ローカル: コンソールやシェルなどのローカルアクセスが必要です。\n• 隣接ネットワーク: 攻撃者は同じ物理的または論理的なネットワークセグメント上にいる必要があります。\n• ネットワーク: ローカルアクセスや隣接アクセスを必要とせずに、ネットワーク経由でリモートから悪用できます。",
+    "AttackComplexityHelp" => "攻撃者がターゲットにアクセスした後の攻撃の複雑さ。\n• 高: 準備が難しい特殊な条件が必要です。\n• 中: いくつかの条件を満たす必要がありますが、それらが満たされれば悪用は難しくありません。\n• 低: 特別な条件は必要ありません。",
+    "AuthenticationHelp" => "攻撃者がターゲットを悪用するために認証を行う必要がある回数。\n• 複数: 同じ認証情報を使用しても、2 回以上の認証が必要です。\n• 単一: 1 回認証が必要です。\n• なし: 認証は不要です。",
+    "ConfidentialityImpactHelp" => "システムが悪用された場合に、システムが処理するデータの機密性に及ぼす影響。\n• なし: 影響なし。\n• 部分的: 情報が一部漏洩するが、攻撃者は何を漏洩するかを制御できないか、損失が限定的である。\n• 完全: システム上のすべての情報が完全に漏洩する。",
+    "IntegrityImpactHelp" => "悪用された場合のシステムの完全性への影響。\n• なし: 影響なし。\n• 部分的: 一部のデータは変更可能ですが、攻撃者は何を変更できるかを制御できないか、範囲が限定されています。\n• 完全: システムの完全性が完全に侵害され、攻撃者は任意のファイルを変更できます。",
+    "AvailabilityImpactHelp" => "悪用された場合のシステムの可用性への影響。\n• なし：影響なし。\n• 部分的：パフォーマンスの低下または可用性の中断。\n• 完全：影響を受けるリソースの完全なシャットダウン。",
+    "RemediationLevelHelp" => "脆弱性に対する修復レベル。\n• 公式修正: ベンダーによる完全なソリューションが利用可能です。\n• 一時的な修正: 公式ではあるが一時的な修正が利用可能です。\n• 回避策: 非公式のベンダー以外の回避策が存在します。\n• 利用不可: ソリューションが利用できないか、適用できません。",
+    "ReportConfidenceHelp" => "脆弱性の存在に対する信頼度と、その技術的な詳細の信憑性。\n• 未確認: 単一の未確認の情報源からの報告。根本的な問題は推測の域を出ない。\n• 裏付けなし: 複数の独立した情報源が同じ動作を報告しているが、根本原因は確認されていない。\n• 確認済み: ベンダーが問題を認めているか、ソースコードまたはエクスプロイト分析によって確認されている。",
+    "CollateralDamagePotentialHelp" => "脆弱性が悪用された場合、生命、物的資産、または金銭的損失が発生する可能性。\n• なし: そのような損失が発生する可能性はありません。\n• 低～中: 中程度の損失が発生する可能性があります。\n• 高: 組織の資産、収益、または安全に壊滅的な影響があります。",
+    "TargetDistributionHelp" => "環境内の脆弱なシステムの割合。\n• なし: 対象システムは存在しません。\n• 低: システムの 1 ～ 25% が脆弱です。\n• 中: 26 ～ 75% が脆弱です。\n• 高: 76 ～ 100% が脆弱です。",
+    "ConfidentialityRequirementHelp" => "影響を受ける資産の機密性が組織にとってどれほど重要か。\n• 低: 機密性の喪失による影響は限定的です。\n• 中: 深刻な影響があります。\n• 高: 壊滅的な影響があります。",
+    "IntegrityRequirementHelp" => "影響を受ける資産の完全性が組織にとってどれほど重要か。\n• 低: 完全性の損失による影響は限定的です。\n• 中: 深刻な影響があります。\n• 高: 壊滅的な影響があります。",
+    "AvailabilityRequirementHelp" => "影響を受ける資産の可用性が組織にとってどれほど重要か。\n• 低: 可用性の喪失による影響は限定的です。\n• 中: 深刻な影響があります。\n• 高: 壊滅的な影響があります。",
+    // Base Score Metrics' two sub-group intro sentences (metricsSubGroup()'s
+    // `descKey`, risk-details-form.js) -- orient the user to what the GROUP
+    // as a whole is asking, distinct from the per-field *Help popover keys
+    // above which explain each metric's own options.
+    'BaseScoreExploitabilityMetricsDescription' => '攻撃者がこの脆弱性に到達し、悪用するにはどうすればよいか：攻撃者はどこにいる必要があるのか、攻撃の複雑さはどの程度か、そして最初に認証が必要かどうか。',
+    'BaseScoreImpactMetricsDescription' => '脆弱性が悪用された場合、影響を受けるシステムの機密性、完全性、可用性にどのような影響が生じるか。',
+    // Advanced Metrics' three optional sub-group intro sentences -- same
+    // metricsSubGroup() `descKey` as the two Base Score groups above.
+    'TemporalScoreMetricsDescription' => 'この脆弱性が現実世界で及ぼす脅威が時間とともにどのように変化するか：現在のエクスプロイトコードの状態、利用可能な対策、そして脆弱性の存在に関する報告の確実性。',
+    'EnvironmentalScoreMetricsDescription' => 'この脆弱性のリスクは、お客様の環境によって大きく異なります。具体的には、現実世界での被害の可能性や、実際に影響を受けるシステムの数などが挙げられます。',
+    'ImpactSubscoreModifiersDescription' => '基本スコアの影響度は、この特定の資産にとって機密性、完全性、可用性が実際にどれほど重要かによって重み付けされます。',
+    // Phase 4d-iii: DREAD holder help popovers (view_dread_help()'s
+    // existing English text, includes/display.php, extracted to real $lang
+    // keys -- that function's own content was raw hardcoded HTML, never
+    // localized, so it could not be reused verbatim).
+    'DamagePotentialHelp' => '脅威が悪用された場合、どの程度の損害が発生するでしょうか？' . "\n" . '0 = なし' . "\n" . '5 = 個々のユーザーデータが侵害または影響を受けている。' . "\n" . '10 = システムまたはデータの完全破壊',
+    'ReproducibilityHelp' => 'この脅威を再現するのはどれくらい簡単ですか？' . "\n" . '0 = アプリケーションの管理者にとっても非常に困難または不可能。' . "\n" . '5 = 1つまたは2つの手順が必要で、承認されたユーザーである必要がある場合があります。' . "\n" . '10 = 認証なしで、ウェブブラウザとアドレスバーだけで十分です。',
+    'ExploitabilityHelp' => 'この脅威を悪用するには何が必要でしょうか？' . "\n" . '0 = 高度なプログラミングとネットワークの知識、およびカスタムまたは高度な攻撃ツールの使用経験。' . "\n" . '5 = インターネット上にマルウェアが存在するか、または入手可能な攻撃ツールを使用して容易にエクスプロイトを実行できる。' . "\n" . '10 = ただのウェブブラウザ',
+    'AffectedUsersHelp' => '影響を受けるユーザーは何人ですか？' . "\n" . '0 = なし' . "\n" . '5 = 一部のユーザーだが、全員ではない' . "\n" . '10 = すべてのユーザー',
+    'DiscoverabilityHelp' => 'この脅威を発見するのはどれくらい簡単ですか？' . "\n" . '0 = 非常に困難または不可能。ソースコードまたは管理者権限が必要。' . "\n" . '5 = 推測するか、ネットワークトレースを監視することで特定できる。' . "\n" . '9 = このような欠陥の詳細は既に公開されており、検索エンジンを使用すれば簡単に見つけることができます。' . "\n" . '10 = 情報はウェブブラウザのアドレスバーまたはフォームに表示されます。',
+    // The DREAD holder's summary card heading and "DREAD Metrics" card
+    // heading. No existing key covers either (confirmed via grep before
+    // adding).
+    'DreadScore' => 'ドレッドスコア',
+    'DreadMetrics' => 'DREADメトリクス',
+    // Phase 4d-iv: OWASP holder help popovers (view_owasp_help()'s
+    // existing English text, includes/display.php, extracted to real
+    // $lang keys -- same never-localized-legacy-content extraction the
+    // DREAD phase already did for its own 5 fields). Wording/levels
+    // trued up against that function's real source text, not transcribed
+    // from an earlier standard-methodology draft.
+    'SkillLevelHelp' => 'この脅威グループの技術力はどの程度なのか？' . "\n" . '1 = 技術スキルなし' . "\n" . '3 = ある程度の技術スキル' . "\n" . '5 = 上級コンピュータユーザー' . "\n" . '6 = ネットワークおよびプログラミングスキル' . "\n" . '9 = セキュリティ侵入スキル',
+    'MotiveHelp' => 'この脅威グループは、この脆弱性を発見し悪用することにどれほど意欲的だろうか？' . "\n" . '1 = 報酬が低い、または全くない' . "\n" . '4 = 獲得可能な報酬' . "\n" . '9 = 高報酬',
+    'OpportunityHelp' => 'この脅威グループがこの脆弱性を発見し悪用するためには、どのような資源と機会が必要でしょうか？' . "\n" . '0 = フルアクセスまたは高価なリソースが必要' . "\n" . '4 = 特別なアクセスまたはリソースが必要' . "\n" . '7 = アクセスまたはリソースが必要' . "\n" . '9 = アクセスやリソースは不要',
+    'SizeHelp' => 'この脅威グループの規模はどれくらいですか？' . "\n" . '2 = 開発者' . "\n" . '2 = システム管理者' . "\n" . '4 = イントラネットユーザー' . "\n" . '5 = パートナー' . "\n" . '6 = 認証済みユーザー' . "\n" . '9 = 匿名インターネットユーザー',
+    'EaseOfDiscoveryHelp' => 'この脅威グループにとって、この脆弱性を発見するのはどれほど容易なことだろうか？' . "\n" . '1 = 事実上不可能' . "\n" . '3 = 難しい' . "\n" . '7 = 簡単' . "\n" . '9 = 自動化ツールが利用可能',
+    'EaseOfExploitHelp' => 'この脅威グループが実際にこの脆弱性を悪用するのはどれほど容易なのだろうか？' . "\n" . '1 = 理論値' . "\n" . '3 = 難しい' . "\n" . '5 = 簡単' . "\n" . '9 = 自動化ツールが利用可能',
+    'AwarenessHelp' => 'この脆弱性は、この脅威グループの間でどの程度知られているのか？' . "\n" . '1 = 不明' . "\n" . '4 = 隠された' . "\n" . '6 = 明白' . "\n" . '9 = 公知',
+    'IntrusionDetectionHelp' => '脆弱性が発見される可能性はどのくらいですか？' . "\n" . '1 = アプリケーションにおけるアクティブ検出' . "\n" . '3 = 記録およびレビュー済み' . "\n" . '8 = レビューなしで記録' . "\n" . '9 = ログなし',
+    'LossOfConfidentialityHelp' => 'どの程度のデータが開示される可能性があり、その機密性はどの程度か？' . "\n" . '2 = 最小限の非機密データの開示' . "\n" . '6 = 最小限の重要データ開示' . "\n" . '6 = 機密性の低いデータが広範囲に開示されている' . "\n" . '7 = 重大なデータが広範囲に開示されている' . "\n" . '9 = すべてのデータが公開されています',
+    'LossOfIntegrityHelp' => 'どの程度のデータが破損する可能性があり、どの程度損傷を受けるのか？' . "\n" . '1 = 軽微なデータ破損' . "\n" . '3 = 重大なデータ破損が最小限' . "\n" . '5 = 広範囲にわたる軽微なデータ破損' . "\n" . '7 = 広範囲にわたる深刻なデータ破損' . "\n" . '9 = すべてのデータが完全に破損しています',
+    'LossOfAvailabilityHelp' => 'どの程度のサービスが失われる可能性があり、そのサービスはどれほど重要なのか？' . "\n" . '1 = 二次サービスの中断が最小限' . "\n" . '5 = 主要サービスの中断が最小限' . "\n" . '5 = 広範囲にわたる二次サービスが中断' . "\n" . '7 = 広範囲にわたる主要サービスの中断' . "\n" . '9 = 全サービスが完全に停止',
+    'LossOfAccountabilityHelp' => '脅威となる行為を行った人物を特定できるだろうか？' . "\n" . '1 = 完全な追跡可能性' . "\n" . '7 = 追跡可能の可能性あり' . "\n" . '9 = 完全匿名',
+    'FinancialDamageHelp' => '不正利用によってどれだけの経済的損害が発生するだろうか？' . "\n" . '1 = 脆弱性を修正するコストよりも低い' . "\n" . '3 = 年間利益への影響は軽微' . "\n" . '7 = 年間利益に重大な影響' . "\n" . '9 = 破産',
+    'ReputationDamageHelp' => '不正行為によって企業の評判が損なわれ、事業に悪影響を及ぼす可能性はあるだろうか？' . "\n" . '1 = 最小限の損傷' . "\n" . '4 = 主要顧客の喪失' . "\n" . '5 = 信用の喪失' . "\n" . '9 = ブランド損傷',
+    'NonComplianceHelp' => '法令遵守を怠ると、どの程度のリスクが生じるのか？' . "\n" . '2 = 軽微な違反' . "\n" . '5 = 明らかな違反' . "\n" . '7 = 重大な違反',
+    'PrivacyViolationHelp' => 'どの程度の個人識別情報が開示される可能性があるのか？' . "\n" . '3 = 個人1人' . "\n" . '5 = 数百人' . "\n" . '7 = 数千人' . "\n" . '9 = 数百万の人々',
+    // The OWASP holder's Score card heading. No existing key covers this
+    // (confirmed via grep before adding) -- the Likelihood/Impact card
+    // headings reuse the already-existing bare 'Likelihood'/'Impact' keys.
+    'OwaspScore' => 'OWASPスコア',
+    // Phase 4d-iv follow-up: group-level descriptions for the 4 OWASP
+    // subgroup headings, sourced from OWASP's own Risk Rating Methodology
+    // (https://community.owasp.org/OWASP_Risk_Rating_Methodology), tightened
+    // into short UI captions -- not a verbatim quote (see this task's own
+    // source table for the original wording).
+    'ThreatAgentFactorsDescription' => 'この脅威グループによる攻撃が成功する可能性を推定します。',
+    'VulnerabilityFactorsDescription' => 'この脆弱性が発見され、悪用される可能性を推定します。',
+    'TechnicalImpactDescription' => '機密性、完全性、可用性、説明責任の観点から影響を分析します。',
+    'BusinessImpactDescription' => '技術的な影響という表面的なものだけでなく、ビジネスにとって何が重要なのかを反映している。',
+    // CVSS's own Temporal-metric 'Exploitability' help text. This key shares
+    // a labelKey ('Exploitability') with DREAD's own field, so both would
+    // otherwise derive the same generic lang key ('ExploitabilityHelp'),
+    // with DREAD's entry silently winning for both -- risk-details-form.js's
+    // buildCvssScoreItem() and risk-details-view.js's cvssMetricValueRow()
+    // reference this key directly for CVSS's Exploitability field instead
+    // of the generic '<labelKey>Help' derivation.
+    'CVSSExploitabilityHelp' => "エクスプロイト技術またはコードの入手可能性の現状。\n• 未実証: エクスプロイトコードは入手できないか、エクスプロイトは理論上のものです。\n• 概念実証: エクスプロイトコードは存在しますが、ほとんどの攻撃者にとって実用的ではありません。\n• 機能的: 機能的なエクスプロイトコードは、ほとんどの状況で動作します。\n• 高: エクスプロイトは信頼性が高く、自動化されているか (たとえばワーム)、エクスプロイトコードがまったく必要ありません。",
+    // Risk Scoring -- Classic Inline (Task 3): the Classic scoring method's
+    // new inline Score card heading and its Likelihood/Impact cards' short
+    // plain-English descriptions (js/simplerisk/common/risk-details-form.js's
+    // buildClassicHolder()). Deliberately NOT sourced from NIST SP 800-30 or
+    // any other external standard -- confirmed with the user via the
+    // approved mockup review, unlike OWASP's own subgroup descriptions
+    // above, which do cite OWASP's Risk Rating Methodology.
+    'ClassicScore' => 'クラシックスコア',
+    'ClassicLikelihoodDescription' => 'このリスクが発生する可能性はどのくらいか。',
+    'ClassicImpactDescription' => 'このリスクが発生した場合、どれほど深刻な結果を招くか。',
+    // Risk Scoring -- Custom Inline (Task 2): the Custom scoring method's
+    // new inline Score card heading (js/simplerisk/common/risk-details-form.js's
+    // buildCustomHolder()) and the Custom Value card's short description
+    // caption. 'CustomValueDescription' text confirmed directly with the
+    // user, same as Classic's own description keys above.
+    'CustomScore' => 'カスタムスコア',
+    'CustomValueDescription' => 'カスタム値は、0から10までの小数値を指定できます。',
+    // Risk Scoring -- Contributing Risk Inline (Phase 4d-v): the last of
+    // the three deferred scoring methods (DREAD/OWASP shipped earlier in
+    // this same project). The Likelihood/Contributing Risk cards' short
+    // plain-English descriptions (js/simplerisk/common/risk-details-form.js's
+    // buildContributingRiskHolder()). The Score card heading reuses the
+    // EXISTING 'ContributingRiskScore' key (already present above, same
+    // text) rather than duplicating it -- 'ContributingRisk'/
+    // 'ContributingLikelihood'/'Weight'/'Subject' are likewise reused as-is.
+    'ContributingLikelihoodDescription' => 'このリスクが発生する可能性はどのくらいか。',
+    'ContributingRiskDescription' => '以下の各要素は、その相対的な重要度に応じて重み付けされています。それぞれの要素がこのリスクにどの程度影響を与えるかを選択してください。',
+    // OWASP read-mode card (buildOwaspReadView(), risk-details-view.js):
+    // the live calculation formula under each of the 4 sub-group names
+    // (Threat Agent Factors/Vulnerability Factors/Technical Impact/
+    // Business Impact), matching the legacy risk-scoring-details panel's
+    // own "= ( a + b + c + d ) / 4" text (includes/display.php), and the
+    // OWASP Risk Rating Methodology link note placed in the OWASP Score
+    // column's open space below the summary numbers.
+    'OwaspSubgroupFormula' => '= ( {a} + {b} + {c} + {d} ) / 4',
+    'OwaspMethodologyNote' => 'OWASPリスク評価方法論の詳細は、以下をご覧ください。',
+    'Here' => 'ここ',
+    // Scoring widget formula captions (Classic/DREAD/Contributing Risk),
+    // the same ".sr-cvss-vector under the score label" treatment CVSS's
+    // vector caption and OwaspSubgroupFormula above already have, on both
+    // the edit-mode holder (risk-details-form.js) and the read-mode card
+    // (risk-details-view.js). Classic reuses the existing RISKClassicExp1-5
+    // keys instead of a new one -- see those keys' own long-standing
+    // definitions above.
+    'DreadScoreFormula' => '= ( {a} + {b} + {c} + {d} + {e} ) / 5',
+    // Contributing Risk's per-factor weighted term and its shared
+    // Likelihood term (update_contributing_risk_score(), includes/
+    // functions.php) -- unlike DREAD/OWASP's fixed roster, the factor list
+    // is admin-configured, so this is one formula PER FACTOR ROW rather
+    // than one fixed caption under the total score.
+    // {maxName}: score.php parity -- legacy's "Maximum Value" column showed
+    // the max option's human-readable name alongside its number (e.g.
+    // "[5] Certain", includes/display.php); these formulas only showed the
+    // bare number.
+    'ContributingLikelihoodFormula' => '= {value} x 5 / {max} ({maxName})',
+    'ContributingFactorFormula' => '= {weight}% x {impact} x 5 / {max} ({maxName})',
+    // Contributing Risk's own subscore row in the Score card -- the sum of
+    // every factor's own term above it. Generic (not substituted with real
+    // numbers) since the number of terms is however many factors are
+    // configured, unlike the fixed-roster formulas above.
+    'ContributingRiskSubtotalFormula' => '= （重量 × 衝撃 × 5 / 最大）の合計',
+    // Contributing Risk Score's own formula, under the total row -- always
+    // exactly 2 terms (unlike the Contributing Risk subtotal above), so
+    // substituted with the real current subtotal values, same convention
+    // DreadScoreFormula/OwaspSubgroupFormula use for their own fixed roster.
+    'ContributingRiskScoreFormula' => '= {likelihood} + {contributing}',
+    // Risk Scoring History widget (risk-details-view.js) -- replaces the
+    // legacy chart's bare save icon with a real menu item, structured for
+    // future export types alongside it.
+    'DownloadChartAsImage' => '画像としてダウンロード',
+    // Legacy score.php's CVSS table had a "Full details of CVSS Version 2.0
+    // scoring can be found here." link (includes/display.php); this is its
+    // inline-scoring-card equivalent, same shape as OwaspMethodologyNote.
+    'CvssMethodologyNote' => 'CVSSバージョン2.0の採点に関する詳細は、以下をご覧ください。',
+    // Mitigation Controls redesign: the picker reuses ChooseControls/
+    // AddOrRemoveControls/etc from Document Program's control picker.
+    'InvalidControlID' => '無効なコントロールIDです。',
+    'ValidationOwner' => '検証責任者',
+    'ValidationStatus' => '検証ステータス',
+    'NotStarted' => '未開始',
+    // management/view.php's "risk ID does not exist" empty state.
+    'RiskIdDoesNotExistBody' => 'お探しのリスク情報は削除されたか、リンクが間違っている可能性があります。',
+    'MitigationControlsRequiresGovernance' => '閲覧するにはガバナンス権限が必要です。',
+    'ViewControlValidation' => 'ビューコントロールの検証',
+    'EditControlValidation' => '編集コントロールの検証',
+    'SupportingDocumentationRequiresSubmitRisk' => 'ファイルをアップロードするには、「リスク送信」権限が必要です。',
+    'SupportingDocumentationRequiresModifyRisks' => 'ファイルを管理するには、「リスクの変更」権限が必要です。',
+    'MitigationSupportingDocumentationRequiresPlanMitigations' => 'ファイルを管理するには、計画緩和策の権限が必要です。',
+    'MitigationSubmittedBy' => '緩和策の提出者',
+    'UseADifferentDate' => '別の日付を使用する',
+    'AssetGroup' => 'アセットグループ',
+    // Customization Cards Layout API (extras/customization/index.php) scope-validation errors.
+    'InvalidFgroup' => '無効なfgroupです。',
+    'CustomizationCardsLayoutApiScopeError' => 'カスタマイズカードレイアウトAPIは、fgroup=risk、tab_index=1、tab_index=2、またはtab_index=3の場合にのみ利用可能です。',
+    // Asset management redesign
+    'DiscoverAssets' => '資産を発見する',
+    'DiscoveryRuns' => 'ディスカバリーランズ',
+    'DiscoveryRangeHint' => '1つのアドレス、開始-終了範囲、またはIPv4 CIDR',
+    'DiscoveryResolveNames' => 'ホスト名を調べる',
+    'DiscoveryAddAs' => '新しいアセットを追加する',
+    'DiscoveryStart' => '発見を始めましょう',
+    'DiscoveryBackgroundNote' => 'バックグラウンドで実行されます。既に存在するアドレスはスキップされます。',
+    'DiscoveryRangeInvalid' => '有効なIPv4アドレス、範囲、またはCIDRブロックを入力してください。',
+    'DiscoveryRangeTooLarge' => 'その範囲は大きすぎます。制限は {$max} アドレスです。',
+    'DiscoveryRunQueued' => '発見が始まった。',
+    'DiscoveryRunCompleted' => '発見が完了しました: {$new} 個の新しいアセット。',
+    'AssetBulkSelectAll' => '{$count} アセットをすべて選択',
+    'AssetBulkAssignTeams' => 'チームを割り当てる…',
+    'AssetBulkAddToGroup' => 'グループに追加…',
+    'AssetBulkDeleteConfirmTitle' => '{$count} のアセットを削除しますか？',
+    'AbleToEditAssets' => 'アセットを編集可能',
+    'AbleToDeleteAssets' => '資産を削除可能',
+    'AbleToVerifyAssets' => '資産を検証可能',
+    'AbleToRunAssetDiscovery' => 'アセットディスカバリを実行可能',
+    'AbleToCreateAssetGroups' => 'アセットグループを作成可能',
+    'AbleToEditAssetGroups' => 'アセットグループを編集可能',
+    'AbleToDeleteAssetGroups' => 'アセットグループを削除可能',
+    'ViewAsset' => 'アセットを表示',
+    'AssetUnverifiedByEditLog' => 'アセット「{$name}」は、ユーザー「{$user}」がアセットを検証する許可なしに名前またはIPアドレスを変更したため、未検証に戻されました。',
+    'AssetTeamsAssignedLog' => 'アセット "{$name}" は、ユーザー "{$user} " によってチーム "{$teams}" に割り当てられました。',
+    // Manage assets page (asset management redesign, Task 9)
+    'AddAsset' => 'アセットを追加する',
+    'SearchAssetsPlaceholder' => '名前またはIPアドレスで検索',
+    'AllLocations' => '全店舗',
+    'AllTags' => 'すべてのタグ',
+    'AllAssetGroups' => 'すべての資産グループ',
+    'AssetFields' => '資産分野',
+    'AssetBulkAllSelected' => '選択されたすべての {$count} 一致するアセット',
+    'AssetDeleteConfirmTitle' => 'アセット「{$name}」を削除しますか？',
+    'DeleteAsset' => 'アセットを削除する',
+    'DeleteAssets' => 'アセットを削除する',
+    'AssetBulkAssignTeamsTitle' => '{$count} 個のアセットにチームを割り当てる',
+    'AssetAssignTeamsHint' => '選ばれたチームが追加されます。既に資産に登録されているチームはそのまま残ります。',
+    'AssetAddToGroupTitle' => '{$count} 個のアセットをグループに追加します',
+    'AssetChooseTeams' => 'チームを選択する',
+    'AssetChooseGroup' => 'グループを選択してください',
+    'Assign' => '割り当てる',
+    'AssetBulkVerifiedSummary' => '{$ok} 検証済み、 {$failed} スキップ',
+    'AssetBulkDeletedSummary' => '{$ok} 削除、 {$failed} スキップ',
+    'AssetBulkTeamsSummary' => '{$ok} の資産に割り当てられたチーム、 {$failed} はスキップされました',
+    'AssetBulkGroupSummary' => '{$ok} がグループに追加されました、 {$failed} はスキップされました',
+    'AssetBulkSkippedList' => 'スキップ: {$list}',
+    'AssetBulkReasonNotFound' => '見つかりません',
+    'NoAssetsYet' => 'アセットはまだありません',
+    'NoAssetsYetHint' => '追加または発見したアセットはここに表示されます。',
+    'NoAssetsMatchFilters' => 'フィルターに一致するアセットはありません',
+    'CouldNotLoadAssets' => 'アセットを読み込めませんでした。お客様のデータは安全です。',
+    'AllValuations' => 'すべての評価',
+    // Manage assets page, Asset groups tab (asset management redesign, Task 10)
+    'AddAssetGroup' => 'グループを追加',
+    'EditAssetGroup' => 'グループを編集',
+    'DeleteAssetGroup' => 'グループを削除',
+    'ViewGroupMembers' => 'メンバーを見る',
+    'SearchAssetGroupsPlaceholder' => 'グループを名前で検索',
+    'HighestValuation' => '最高評価額',
+    'LinkedRisks' => '関連リスク',
+    'RemoveFromGroup' => 'グループから削除',
+    'AssetGroupMoreMembers' => '+ {$count} もっと見る',
+    'ViewAllInAssetsTab' => 'アセットタブですべてを表示',
+    'NoAssetsInGroup' => 'このグループには資産がありません。',
+    'CouldNotLoadGroupMembers' => 'このグループのメンバーを読み込めませんでした。',
+    'AssetGroupMembers' => 'メンバー',
+    'AssetGroupMembersHint' => '表示されるのは、あなたが閲覧できる資産のみです。閲覧できないメンバーもグループに残ります。',
+    'ChooseAssets' => 'アセットを選択',
+    'AddOrRemoveAssets' => 'アセットを追加または削除します…',
+    'UseTheseAssets' => 'これらのアセットを使用する',
+    'AllAssets' => 'すべての資産',
+    'Valuation' => '評価',
+    'PickerShowingFirstN' => '{$count} のうち最初の {$total}を表示しています。検索または絞り込みで残りの部分を見つけてください。',
+    'AssetGroupDeleteConfirmTitle' => 'グループ "{$name} "を削除しますか？',
+    'AssetGroupDeleteKeepsAssets' => 'このグループ内のアセットは削除されません。グループのみが削除されます。',
+    'NoAssetGroupsYet' => '資産グループはまだありません',
+    'NoAssetGroupsYetHint' => '資産をグループ化することで、それらをまとめてマッピングしたり、レポートを作成したりできます。',
+    'NoAssetGroupsMatchSearch' => '検索条件に一致する資産グループは見つかりませんでした。',
+    'CouldNotLoadAssetGroups' => 'アセットグループを読み込めませんでした。データは安全です。',
+    'DiscoveryAssignTeams' => 'チームに割り当てる',
+    'DiscoveryAssignTeamsHint' => '任意。新しいアセットはすべてこれらのチームに追加されます。',
+    'DiscoveryAddAsHint' => '資産の検証は、お客様の許可に基づいて行われます。',
+    'DiscoveryTeamsInvalid' => '既に存在するチームの中から、自分が所属しているチームを選びましょう。',
+    'DiscoveryResolveNamesInvalid' => 'ホスト名のルックアップは、有効または無効にする必要があります。',
+    'DiscoveryTooManyActiveRuns' => '既に {$max} 件の探索実行が進行中です。いずれかの実行が完了するまで待つか、キャンセルしてください。',
+    'DiscoveryRunNotFound' => '検出実行が見つかりませんでした。',
+    'DiscoveryRunAlreadyFinished' => 'この探索実験は既に終了しました。',
+    'DiscoveryRunCancelled' => 'ディスカバリー号の航行は中止となりました。',
+    'DiscoveryRunFailedToast' => '{$range} の発見に失敗しました。',
+    'DiscoveryStatusQueued' => 'キューに追加済み',
+    'DiscoveryProgress' => '{$scanned} / {$total}',
+    'DiscoveryLiveHosts' => 'ライブホスト',
+    'DiscoveryNewAssets' => '新しい資産',
+    'DiscoveryStartedAt' => '開始しました',
+    'DiscoveryCancelRun' => 'キャンセル実行',
+    'CouldNotLoadDiscoveryRuns' => '検出実行をロードできませんでした。',
+    'DiscoveryRangeReserved' => 'その範囲には、スキャンできない予約済みアドレス（ループバック、リンクローカル、マルチキャスト、または0.0.0.0/8）が含まれます。',
+    'DiscoveryTooManyActiveRunsInstance' => '既に {$max} 件の探索実行が進行中です。1件が完了したら、もう一度お試しください。',
+    'DiscoveryErrorScan' => 'エラーが発生したため、スキャンが停止しました。詳細はシステムログをご確認ください。',
+    'DiscoveryErrorWorkerLost' => 'バックグラウンドキューはこの実行の処理を停止しました。',
+    'DiscoveryErrorRequesterInactive' => 'この実行を開始したユーザーは、現在アクティブではありません。',
+    // Asset management redesign: translated API errors (bulk actions, column settings, discovery) and discovery audit lines
+    'AssetBulkBodyInvalid' => '一括処理をJSON形式の本文として送信します。',
+    'AssetBulkActionRequired' => '一括操作を選択してください。',
+    'AssetBulkUnknownAction' => 'その一括操作は利用できません。',
+    'AssetBulkSelectionRequired' => 'IDまたはフィルターを使用してアセットを選択してください。',
+    'AssetBulkIdsRequired' => '少なくとも1つの資産を選択してください。',
+    'AssetBulkIdsInvalid' => '資産IDは整数でなければなりません。',
+    'AssetBulkTooManyAssets' => '一度に操作できるアセットは最大で {$max} 個です。選択範囲を絞り込んで、もう一度お試しください。',
+    'AssetBulkFilterInvalid' => 'フィルターが無効です。ページを再読み込みして、もう一度お試しください。',
+    'AssetBulkFilterUnknownKey' => 'フィルター "{$key}" は認識されません。',
+    'AssetBulkFilterBadValue' => 'フィルター "{$key}" の値は無効です。',
+    'AssetBulkFilterTooManyValues' => 'フィルター "{$key}" は最大で {$max} 個の値をリストできます。',
+    'AssetBulkFilterAllAlone' => 'すべてのアセットを選択するオプションは、他のフィルターと組み合わせることはできません。',
+    'AssetBulkFilterEmpty' => '一括操作を実行する前に、フィルターを選択するか、すべてのアセットを選択してください。',
+    'AssetBulkExpectedCountInvalid' => '資産の予想数は整数でなければならない。',
+    'AssetBulkParamsInvalid' => 'この一括操作のオプションは無効です。',
+    'AssetBulkTeamsRequired' => '少なくとも1つのチームを選択してください。',
+    'AssetBulkTeamsNotFound' => 'それらのチームのうち、1つ以上が既に存在しない。',
+    'AssetBulkTeamsNotMember' => '自分が所属するチームのみを割り当てることができます。',
+    'AssetBulkGroupNotFound' => 'その資産グループはもはや存在しません。',
+    'AssetBulkNoMatch' => '選択された条件に一致する資産はありません。',
+    'AssetBulkCountMismatch' => '選択したアセットが {$expected} から {$actual} に変更されました。リストを確認して、もう一度お試しください。',
+    'AssetColumnSettingsBodyInvalid' => '列設定をJSONボディとして、列または順序を指定して送信してください。',
+    'AssetColumnSettingsSaveFailed' => '列を保存できませんでした。SimpleRiskのアップグレードを完了させるには、管理者に依頼してください。',
+    'DiscoveryRunQueueFailed' => '検出実行をキューに追加できませんでした。もう一度お試しください。',
+    'DiscoveryRunStartedLog' => 'アセット検出実行 #{$id} ( {$range} アドレス、{$count} ) は、ユーザー "{$user} " によって開始されました。',
+    'DiscoveryRunCancelledLog' => 'アセット検出実行 #{$id} ( {$range} ) は、ユーザー "{$user} " によってキャンセルされました。',
+    'AssetBulkTooManyToDelete' => '一度に削除できるアセットの数は最大で {$max} 個です。選択範囲を絞り込んで、もう一度お試しください。',
+    'AssetBulkFilterNotApplied' => 'フィルター "{$key}" は送信されたとおりに適用できなかったため、何も変更されませんでした。',
+    'AssetBulkExpectedCountRequired' => 'フィルターを使用してアセットを削除するには、削除予定のアセットの数を指定する必要があります。',
+    'AssetBulkReasonNotAttempted' => '試みられなかった',
+    'MoreActions' => 'その他の操作',
+    'AssetCreateNewGroupOption' => '新しいグループを作成します…',
+    'AssetNewGroupName' => '新しいグループ名',
+    'AssetFilterByTeam' => 'チームで絞り込む {$name}',
+    'AssetFilterByValuation' => '評価額で絞り込む {$name}',
+    'AssetFilterByTag' => 'タグでフィルタリング {$name}',
+    'AssetFilterByLocation' => 'サイト/場所で絞り込む {$name}',
+    'AssetFilteringByTeam' => 'チームで絞り込み {$name}',
+    'AssetFilteringByValuation' => '評価額でフィルタリング {$name}',
+    'AssetFilteringByTag' => 'タグによるフィルタリング {$name}',
+    'AssetFilteringByLocation' => 'サイト/場所で絞り込み {$name}',
+    'AssetShowOnlyVerified' => '検証済みの資産のみを表示する',
+    'AssetShowOnlyUnverified' => '未検証の資産のみを表示する',
+    'AssetShowingVerified' => '検証済みの資産を表示しています',
+    'AssetShowingUnverified' => '未確認資産を表示しています',
+    'CustomizationLayoutPayloadRejected' => 'レイアウトには、このテンプレートに属さないフィールドまたはカードが含まれているため、保存できませんでした。変更は行われませんでした。',
+    'CustomizationLayoutRejectedUnknownScope' => 'このテンプレートスコープはレイアウトエディタから保存できません。何も変更されていません。',
+    'CustomizationLayoutRejectedEmptyFields' => 'レイアウトに有効なフィールドがないため、保存されませんでした。何も変更されていません。',
+    'CustomizationLayoutRejectedWouldDeleteAll' => 'このレイアウトを保存するとテンプレートからすべてのフィールドが削除されるため、保存されませんでした。ページを再読み込みして、もう一度お試しください。',
+    'CustomizationLayoutRejectedRequiredField' => '必須項目はレイアウトから削除できません。何も変更されていません。',
+    'CustomizationLayoutRejectedBulkRemoval' => 'このレイアウトを保存すると、ここで削除しなくてもほとんどのテンプレートフィールドが削除されます。ページを再読み込みしてもう一度お試しください。何も変更されませんでした。',
+    'CustomizationLayoutRejectedGroupMismatch' => 'テンプレートグループが存在しないか、別の種類のレコードに属しています。何も変更されていません。',
+    'CustomizationLayoutLegacySaveRefused' => 'このテンプレートはレイアウトエディタで編集されるため、従来のパネルエンドポイントからは保存できません。',
+    // Asset discovery probe methods
+    'DiscoveryPortsInvalid' => '1～65535の範囲で、カンマで区切って最大 {$max} 個のTCPポートを入力してください。',
+    'DiscoveryErrorProbeUnavailable' => 'この実行の開始時に使用されたプローブ方法は、バックグラウンドワーカーでは利用できなくなりました。新しい実行を開始してください。',
+    'DiscoveryProbeIcmpUnprivileged' => 'ICMP ping（非特権ソケット）',
+    'DiscoveryProbeIcmpRaw' => 'ICMP ping (生ソケット)',
+    'DiscoveryProbePingCommand' => 'ICMP ping（pingコマンド）',
+    'DiscoveryProbeTcpConnect' => 'TCP接続',
+    'DiscoveryProbeMethod' => 'プローブ方法: {$method}',
+    'DiscoveryProbeDetectedByWebServer' => 'ウェブサーバーによって検出されました。バックグラウンドワーカーは別の方法を使用する場合があります。',
+    'DiscoveryTcpProbeWarning' => 'ホストは、スキャン対象のTCPポートのいずれかで応答する場合にのみ検出されるため、これらのポートをブロックしているホストは検出されません。完全な結果を得るには、サーバーにICMP pingを送信させてください。そのためには、特権のないpingソケットまたはNET_RAW機能を許可するか、pingをインストールしてください。',
+    'DiscoveryTcpPortsForRun' => 'この実行用のTCPポート',
+    'DiscoveryTcpPortsHint' => 'カンマ区切りで、最大 {$max} 個のポートを指定します。空欄のままにすると、デフォルト値 {$ports} が使用されます。',
+    'DiscoveryDefaultTcpPorts' => 'アセット検出用TCPポート',
+    'DiscoveryDefaultTcpPortsHint' => 'バックグラウンドワーカーが ICMP ping を送信できない場合に使用します。カンマ区切りで、最大 {$max} 個のポートを指定します。',
+    'DiscoveryErrorTcpUnreliable' => 'スキャンが停止したのは、ネットワークが実際のホストではないアドレス（プロキシやファイアウォールなど）へのTCP接続に応答したため、すべてのアドレスがアクティブに見えてしまったからです。管理者に、サーバーがICMP pingを送信できるように設定するよう依頼してください。',
+    'DiscoveryDefaultTcpPortsResetLog' => 'アセット検出のTCPポートは、"{$user}"ユーザーによってデフォルトにリセットされました。',
+    'DiscoveryNotConfigured' => '検出機能が設定されていません。システム管理者に、config.php ファイルで許可範囲を設定するよう依頼してください。',
+    'DiscoveryRangeNotAllowed' => 'その範囲は、検出機能がスキャンを許可されている範囲外です。',
+    'DiscoveryAllowedRangesList' => '許可される範囲: {$ranges}',
+    // Asset record modal
+    'AssetNotAvailable' => 'このアセットは利用できません。削除されたか、アクセス権がない可能性があります。',
+    'AssetCustomFieldNotInTemplate' => '1つ以上のカスタムフィールドが、このアセットのテンプレートに属していません。変更は行われていません。',
+    'AssetMappedControlsInvalid' => 'マッピングされたコントロールを保存できませんでした。各行には成熟度と少なくとも1つの既存のコントロールが必要です。何も変更されませんでした。',
+    'AssetMappedControlsTooMany' => 'アセットは最大で {$max} 個のコントロールにマッピングできます。何も変更されていません。',
+    'AddControlsAtAnotherMaturity' => '別の成熟度で制御を追加する',
+    'ChoosingControlsNeedsGovernancePermission' => 'コントロールを選択するには、ガバナンス権限が必要です。',
+    'NControls' => '{n} コントロール',
+    'SavingKeepsTheCurrentControlMappings' => '保存すると、現在の制御マッピングが保持されます。',
+    'LoadingControls' => 'コントロールを読み込んでいます…',
+    'ControlListCouldNotBeLoaded' => 'コントロールリストを読み込めなかったため、マッピングされたコントロールは現在変更できません。',
+    'RemoveControlsAtMaturity' => '成熟時に制御を解除 {maturity}',
+    'ControlIdUnavailable' => '#{id} (利用不可)',
+    'AssetRecordEdit' => 'アセットを編集',
+    'AssetRecordIdN' => 'アセット #{$id}',
+    'AssetRecordCopyLink' => 'このアセットへのリンクをコピー',
+    'AssetRecordLinkCopied' => 'リンクをコピーしました。',
+    'AssetRecordLinkCopyFailed' => 'リンクをコピーできませんでした。アドレスバーからコピーしてください。',
+    'AssetRecordMarkUnverified' => '未確認としてマークする',
+    'AssetRecordViewAuditTrail' => '監査証跡を表示する',
+    'AssetRecordAuditTrailTitle' => '監査証跡',
+    'AssetRecordAuditTrailEmpty' => 'この期間において、この資産に関する活動は記録されていません。',
+    'AssetRecordAuditTrailFailed' => '監査ログを読み込めませんでした。',
+    'AssetRecordBackToAsset' => '資産に戻る',
+    'AssetRecordSave' => 'アセットを保存する',
+    'AssetRecordProvenanceVerified' => '確認済み · 追加済み {$date}',
+    'AssetRecordProvenanceUnverified' => '未確認：資産を検証できる人物によってまだ確認されていません · {$date} が追加されました',
+    'AssetRecordUnsavedHint' => '変更を保存せずに閉じようとすると、まず確認を求められます。',
+    'AssetRecordDiscardQuestion' => '保存していない変更を破棄しますか？',
+    'AssetRecordKeepEditing' => '編集を続ける',
+    'AssetRecordDiscardChanges' => '変更を破棄する',
+    'AssetRecordVerificationCard' => '検証',
+    'AssetRecordVerificationTag' => '資産の検証権限が必要です',
+    'AssetRecordVerifiedHint' => '責任者がこの資産を審査済みです。資産の検証権限なしに名前やIPアドレスを変更すると、未検証の状態に戻ります。',
+    'AssetRecordLoadFailed' => 'アセットを読み込めませんでした。もう一度お試しください。',
+    'CustomizationCardsLayoutApiScopeErrorWithAsset' => 'カスタマイズカードレイアウトAPIは、fgroup=risk（tab_index 1、2、または3）およびfgroup=asset（tab_index 1）の場合にのみ利用可能です。',
+    'DiscoveryErrorRequesterNotPermitted' => 'この実行を開始したユーザーは、アセット検出を実行する権限を既に持っていません。',
+    'AssetRecordEditField' => '編集 {$field}',
+    // Asset Scoring (FIPS 199 categorization + weighted score)
+    'Confidentiality' => '機密保持',
+    'Integrity' => '誠実さ',
+    'Availability' => '可用性',
+    'AssetScoringLevelLow' => '低い',
+    'AssetScoringLevelModerate' => '適度',
+    'AssetScoringLevelHigh' => '高い',
+    'AssetScoringValueInvalid' => '機密性、完全性、可用性については、低、中、高のいずれかを選択できます（機密性については、該当なしも選択可能です）。',
+    'AssetScoringChangedLog' => 'アセット "{$name}" {$objective} は、ユーザー "{$user} " によって {$from} から {$to} に変更されました。',
+    'FIPSCategorization' => 'FIPS分類',
+    'WeightedScore' => '加重スコア',
+    'WeightedBand' => '加重バンド',
+    'AllCategorizations' => 'すべての分類',
+    'AllBands' => 'すべてのバンド',
+    'AssetFilterByCategorization' => 'FIPS分類でフィルタリング {$name}',
+    'AssetFilteringByCategorization' => 'FIPS分類によるフィルタリング {$name}',
+    'AssetFilterByBand' => '重み付きバンドでフィルタリング {$name}',
+    'AssetFilteringByBand' => '重み付きバンドによるフィルタリング {$name}',
+    'AssetScoring' => '資産スコアリング',
+    'AssetScoringSettingsHint' => '各資産は、機密性、完全性、可用性について「低」「中」「高」のいずれかで評価されます。機密性については「該当なし」と設定することもでき、その場合は両方の評価結果から除外されます。FIPS分類は、3つの評価の中で最も高い値です。加重スコアは、3つのレベル値の加重平均であり、バンドしきい値によって、そのスコアが「低」「中」「高」のいずれかのバンドに変換されます。これらの設定を変更すると、すべての資産のスコアが即座に再計算されます。',
+    'Weights' => '重量',
+    'AssetScoringWeightsHint' => '各目標が加重スコアに占める割合：0～100（小数点以下2桁まで）。重みが0の場合は、その目標は除外されます。機密保持が「該当しない」場合は常に除外されるため、完全性と可用性の両方が0になることはありません。',
+    'LevelValues' => 'レベル値',
+    'AssetScoringLevelValuesHint' => '各評価が加重スコアに寄与する数値：0より大きく100まで、小数点以下2桁まで。低評価は中評価より高く、高評価より低い。デフォルト値は、低評価1、中評価2、高評価3です。',
+    'BandThresholds' => 'バンドしきい値',
+    'AssetScoringBandThresholdsHint' => '加重スコアが閾値以上であればその区分に属し、中程度の閾値を下回るスコアは低度と分類されます。中程度は低度より上の値から始まり、高度は中程度より上の値から始まり、高度より上の値を超えてはなりません。',
+    'ModerateStartsAt' => '中程度の開始',
+    'HighStartsAt' => 'ハイは',
+    'DefaultScoringForNewAssets' => '新規アセットのデフォルトスコアリング',
+    'AssetScoringDefaultsHint' => 'アセットフォームでアセットを追加する際に、これらの評価を事前に選択します。検出、インポート、またはAPIによって作成されたアセットは、独自の評価を提供しない限り、スコアリングされません。3つすべてを「未設定」のままにすると、この機能が無効になります。',
+    'AssetScoringWeightsInvalid' => '資産スコアリングの重みは、0から100までの数値で、小数点以下は最大2桁までとし、完全性と可用性の両方が0であってはならない。',
+    'AssetScoringValuesInvalid' => '資産スコアリングレベルの値は、0より大きく100以下の数値で、小数点以下は最大2桁までとし、低、中、高の順とする。',
+    'AssetScoringThresholdsInvalid' => '資産スコアリングのバンドしきい値は、小数点以下最大2桁までとし、中程度は低値より高く、高は中程度より高く、高は高値以下から開始するものとする。',
+    'AssetScoringDefaultsInvalid' => '新規アセットのデフォルトのスコアリングは、各目標が提供するレベルである必要があります。',
+    'AssetScoringSettingsNotSaved' => '資産スコアリングの設定を保存できませんでした。何も変更されませんでした。',
+    'AssetScoringSettingsChangedLog' => 'アセットスコアリング設定はユーザー「{$user}」によって変更されました。',
+    'AssetScoringNotSet' => '設定されていません',
+    'NotScored' => '得点なし',
+    'AssetScoringNotScoredHint' => 'この資産を評価するには、3つの目標すべてに回答してください。',
+    'ImportAssetScoringValueIgnored' => 'The {$objective} value "{$value}" for asset "{$asset_name}" is not a valid rating and was ignored.',
+    'AssetScoringSecurityObjectives' => 'セキュリティ目標',
+    'AssetScoringConfidentialityHelp' => 'この資産に関する情報が不正に開示された場合、どのような影響が生じる可能性がありますか？',
+    'AssetScoringIntegrityHelp' => 'この資産上の情報が不正に改変または破壊された場合、どのような影響が生じる可能性がありますか？',
+    'AssetScoringAvailabilityHelp' => 'この資産へのアクセスや利用が中断された場合、どのような影響が生じる可能性がありますか？',
+    'AssetScoringHelpHigh' => '重篤または壊滅的な有害事象',
+    'AssetScoringHelpModerate' => '重篤な副作用',
+    'AssetScoringHelpLow' => '副作用は限定的または全くない',
+    'AssetScoringHelpNotApplicable' => 'この資産（例えば、公開情報）に関しては、機密保持は問題になりません。',
+    'AssetScoringHelpLabel' => '{$objective} レーティングガイダンス',
+    'AssetScoringMeterValue' => '{$score}、 {$band} バンド',
+    'AssetScoringNoWeightedScore' => '加重スコアなし',
+    'AssetScoringNoWeightedScoreNote' => '加重スコアなし：評価対象となるすべての目標の重みは0です。',
+    'AssetScoringUpgradePending' => 'SimpleRiskデータベースのアップグレードが実行されるまで、資産スコアリングは保存できません。変更は何も行われていません。',
+    'AssetScoringResultHelpLabel' => '{$result} 説明',
+    'AssetScoringScoreHelp' => '加重スコアは、3つの評価を {$low} から {$high}までの1つの数値に統合します。各評価は設定値となり、それぞれがその目標の重みで乗算されます。結果は合計され、重みの合計で割られます。「該当なし」の機密性は、その重みとともに除外されます。設定値と重みは「環境設定」で構成します。スコアが表示される前に、3つの目標すべてを評価する必要があります。',
+    'AssetScoringCategorizationHelp' => 'FIPS 199セキュリティ分類は最高水準であり、適用される目標の中で最も高い評価です。単一の評価が「高」であれば、他の評価がどうであれ、その資産は「高」と判断されます。「該当なし」は無視されます。',
+    'AssetScoringBandHelp' => 'このバンドは、加重スコアを低、中、高の3段階に分類します。 {$moderate} 未満のスコアは低、 {$moderate} から {$highAt} までは中、 {$highAt} 以上は高と判定されます。しきい値は環境設定で設定できます。',
+    // Manage assets: Confidentiality / Integrity / Availability rating filters
+    'AllConfidentialityRatings' => 'すべての機密性評価',
+    'AllIntegrityRatings' => 'すべての健全性評価',
+    'AllAvailabilityRatings' => 'すべての空室状況評価',
+    'AssetFilterByConfidentiality' => '機密性でフィルタリング {$name}',
+    'AssetFilteringByConfidentiality' => '機密性によるフィルタリング {$name}',
+    'AssetFilterByIntegrity' => '整合性でフィルタリング {$name}',
+    'AssetFilteringByIntegrity' => '整合性によるフィルタリング {$name}',
+    'AssetFilterByAvailability' => '空室状況で絞り込む {$name}',
+    'AssetFilteringByAvailability' => '空室状況で絞り込み {$name}',
+    'HighestFIPSCategorization' => '最高FIPS分類',
+    'HighestWeightedScore' => '最高加重スコア',
+    'HighestWeightedBand' => '最高加重バンド',
+    'AssetGroupFields' => '資産グループフィールド',
+    'NoAssetGroupsMatchFilters' => 'フィルターに一致する資産グループはありません。',
+    'AssetGroupFilterByHighestCategorization' => 'FIPS分類の最高ランクでフィルタリング {$name}',
+    'AssetGroupFilteringByHighestCategorization' => 'FIPS分類の最高値でフィルタリング {$name}',
+    'AssetGroupFilterByHighestBand' => '最も重み付けの高いバンドでフィルタリング {$name}',
+    'AssetGroupFilteringByHighestBand' => '最も重み付けの高いバンドでフィルタリング {$name}',
+    'AssetGroupBulkSelectionRequired' => '資産グループは、IDまたはフィルターで選択できます。',
+    'AssetGroupBulkIdsRequired' => '少なくとも1つの資産グループを選択してください。',
+    'AssetGroupBulkIdsInvalid' => '資産グループIDは整数でなければなりません。',
+    'AssetGroupBulkFilterAllAlone' => 'すべての資産グループを選択するオプションは、他のフィルターと組み合わせることはできません。',
+    'AssetGroupBulkFilterEmpty' => '削除する前に、フィルターを選択するか、すべてのアセットグループを選択してください。',
+    'AssetGroupBulkExpectedCountInvalid' => '想定される資産グループの数は整数でなければなりません。',
+    'AssetGroupBulkExpectedCountRequired' => 'フィルターを使用してアセットグループを削除するには、削除予定のグループの数を指定する必要があります。',
+    'AssetGroupBulkNoMatch' => '選択された条件に一致する資産グループは見つかりませんでした。',
+    'AssetGroupBulkCountMismatch' => '選択した資産グループが {$expected} から {$actual} に変更されました。リストを確認して、もう一度お試しください。',
+    'AssetGroupBulkTooManyToDelete' => '一度に削除できるアセットグループは最大で {$max} 個です。選択範囲を絞り込んで、もう一度お試しください。',
+    'AssetGroupBulkSelectAll' => 'すべての資産グループを選択します {$count}',
+    'AssetGroupBulkAllSelected' => '選択されたすべての {$count} 一致する資産グループ',
+    'AssetGroupBulkDeleteConfirmTitle' => '{$count} アセットグループを削除しますか？',
+    'AssetGroupBulkDeleteKeepsAssets' => 'これらのグループに含まれるアセットは削除されません。グループのみが削除されます。',
+    'DeleteAssetGroups' => 'グループを削除する',
+    'AssetGroupBulkDeletedSummary' => '{$ok} グループが削除され、 {$failed} がスキップされました',
+    'ChoosingRisksNeedsRiskManagementPermission' => '関連リスクを選択するには、リスク管理権限が必要です。',
+    'NAssociatedRisks' => '{n} 関連するリスク',
+    'SavingKeepsTheCurrentRiskAssociations' => '貯蓄は、現在発生している関連リスクを維持する。',
     '' => '',
 );
 ?>

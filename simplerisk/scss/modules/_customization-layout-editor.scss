@@ -1,0 +1,459 @@
+// The Customization Extra's layout editors (risk Details/Mitigation/Review
+// tabs and the Asset designer) --
+// the two-level Gridstack canvas (a top grid of curated card tiles, each
+// holding its own nested grid of field chips) that replaced the four
+// top/left/right/bottom `connectedSortable` <ul>s for fgroup=risk (and asset).
+// Markup: extras/customization/index.php (#details-layout-canvas,
+// #mitigation-layout-canvas, #review-layout-canvas, and the Asset designer's
+// #asset-layout-canvas) plus
+// js/simplerisk/pages/customization-layout-editor.js, which builds every
+// class below at runtime.
+//
+// Page-scoped like its sibling _customization-fgroup.scss rather than shared:
+// none of these are design-system components yet. The visual language is
+// deliberately the admin/settings one already established by `.sr-qcard`
+// (modules/_questionnaire.scss) -- $sr-body card on a $gray-300 border at an
+// 8px radius with a $gray-100 header strip -- and the info-banner + drag-grip +
+// resize-handle affordances mirror the dashboard's edit mode, per the design
+// spec's S2.
+//
+// Everything is nested under the canvas ids in $sr-cust-layout-canvases
+// below (or the banner's own class) so none of it can reach the legacy panel
+// markup other fgroups still render. Deliberately an ID list, not the
+// `[data-canvas-key]` attribute (or the shared `.sr-cust-layout-canvas`
+// class) every canvas container also carries: several
+// rules below (`.sr-cust-field`'s `overflow: hidden`, see its own comment)
+// only win against Gridstack's own `.grid-stack > .grid-stack-item >
+// .grid-stack-item-content` rule -- specificity (0,3,0) -- because an ID
+// selector prefix makes THIS rule (1,1,0), which beats any number of
+// classes outright. `[data-canvas-key] .sr-cust-field` is only (0,2,0) --
+// it would lose to Gridstack's own rule the exact same way the historical
+// `position: relative` bug that comment documents did. Mitigation and
+// Review originally reused #details-layout-canvas's OWN id-scoped rules
+// here (copy-paste, never updated to add their own ids), which is why
+// Review shipped, and Mitigation existed, with real markup but literally
+// zero styling: every rule below only ever matched Details.
+//
+// The Asset designer's #asset-layout-canvas then repeated that exact
+// failure -- same markup, same JS, never added to the list, so the asset
+// page rendered every card and chip completely unstyled. The list now lives
+// in ONE variable that both the main block and the reduced-motion override
+// below interpolate, so a new canvas is a one-line addition here (plus the
+// `.sr-cust-layout-canvas` class on its markup, which the e2e suite and any
+// class-level hook key off) rather than a hunt for every copy of the list.
+$sr-cust-layout-canvases: "#details-layout-canvas, #mitigation-layout-canvas, #review-layout-canvas, #asset-layout-canvas";
+
+// ── Edit-mode info banner ──────────────────────────────────────────────────
+// Sits above the canvas and explains the drag interactions. Left accent bar
+// is the same "this is a mode, not just a page" signal .sr-cust-exthead uses.
+.sr-cust-layout-banner {
+    background: $gray-100;
+    border: 1px solid $gray-300;
+    border-left: 4px solid $sr-important;
+    border-radius: 8px;
+    padding: 11px 16px;
+    margin: 16px 0;
+    font-size: 12.5px;
+    line-height: 1.5;
+    color: $gray-700;
+}
+
+#{$sr-cust-layout-canvases} {
+    // Gridstack sizes the grid itself, but an empty/failed canvas should still
+    // occupy space rather than collapsing the tab to nothing.
+    min-height: 120px;
+    margin-bottom: 16px;
+
+    // ── Top-level canvas: the card tiles ───────────────────────────────────
+    .sr-cust-top-grid {
+        background: transparent;
+
+        // Gridstack's own default item margin (--gs-item-margin-left/right,
+        // set as an inline custom property on THIS element by
+        // GridStack.init() -- see gridstack.js's setMargin()) insets EVERY
+        // item from the container edge, not just from its neighbors, so a
+        // card sitting at the edge of a row gets an unwanted ~10px gutter
+        // against #details-layout-canvas's own edge -- the same
+        // misalignment risk-submit-view-redesign's read-only
+        // submit-risk-canvas had (see risk-details-form.js's topGrid
+        // margin comment) and fixed by zeroing the horizontal margin
+        // outright. That fix does not transfer here: cards on THIS canvas
+        // are admin-resizable to less than full width and can sit side by
+        // side (LayoutEditorHint: "drag or resize a card to change its
+        // position on the page"), so zeroing the margin option would also
+        // delete the gap BETWEEN two side-by-side cards.
+        //
+        // Pulling the grid container itself out by the item margin (a
+        // negative margin equal to it) cancels only the OUTER inset:
+        // Gridstack sizes every item's column width as a percentage of
+        // this container's own (now widened) box, so the gap BETWEEN
+        // items is unaffected -- only the outermost edges move, landing
+        // flush with the container again.
+        margin-left: calc(-1 * var(--gs-item-margin-left, 10px));
+        margin-right: calc(-1 * var(--gs-item-margin-right, 10px));
+    }
+
+    .sr-cust-card {
+        background: $sr-body;
+        border: 1px solid $gray-300;
+        border-radius: 8px;
+        box-shadow: $shadow;
+        display: flex;
+        flex-direction: column;
+        // No overflow:hidden -- it would clip the nested grid's own drag
+        // helper while a field chip is being dragged out of this card into
+        // another one, which is the editor's primary interaction.
+    }
+
+    // FIXED height, and that is arithmetic rather than taste.
+    //
+    // Every height budget on this canvas -- customization_card_height_for_field
+    // _count() in Core, its cardHeightForNestedRows() mirror in
+    // customization-layout-editor.js, and the seeded pos_h in the Extra's
+    // backfill -- spends exactly ONE top-grid row (60px) on "the card's header
+    // strip". A top-grid row only yields 60 - 20 (Gridstack's own item margin)
+    // - 2 (this card's border) = 38px of usable card content, so a header
+    // taller than 38px silently overdraws the budget and the card scrolls by
+    // the difference no matter how tall it is grown.
+    //
+    // It used to: 10px padding + a 26px icon + 10px padding + 1px border = 47px
+    // against a 38px budget, which is where the 9px of dead space under the
+    // last chip -- and the scrollbar the admin actually complained about --
+    // came from. A fixed 36px keeps 2px in hand and, unlike padding plus
+    // intrinsic content, cannot drift when a font or a label changes.
+    .sr-cust-card-head {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex: none;
+        height: 36px;
+        padding: 0 14px;
+        background: $gray-100;
+        border-bottom: 1px solid $gray-300;
+        border-top-left-radius: 8px;
+        border-top-right-radius: 8px;
+        // The header strip is the card's drag grip (Gridstack's own handle is
+        // the whole content element, so this is an affordance cue only).
+        cursor: move;
+        user-select: none;
+    }
+
+    .sr-cust-card-ico {
+        flex: none;
+        // Must stay inside .sr-cust-card-head's fixed 36px -- see the budget
+        // note there.
+        width: 24px;
+        height: 24px;
+        border-radius: 6px;
+        background: $sr-body;
+        border: 1px solid $gray-300;
+        display: grid;
+        place-items: center;
+        color: $sr-primary;
+        font-size: 12px;
+    }
+
+    .sr-cust-card-title {
+        flex: 1;
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        font-size: 14px;
+        font-weight: 800;
+        color: $sr-primary;
+    }
+
+    // Live field count -- recomputed client-side on every add/remove.
+    .sr-cust-card-count {
+        flex: none;
+        min-width: 22px;
+        padding: 1px 8px;
+        border-radius: 999px;
+        background: $gray-200;
+        color: $gray-700;
+        font-size: 11px;
+        font-weight: 700;
+        text-align: center;
+    }
+
+    // "N fields don't fit" warning pill, next to the field count.
+    //
+    // Hidden by default and revealed by customization-layout-editor.js adding
+    // `.is-overflowing` to the card, so the DOM node exists from build time and
+    // only its visibility changes -- no markup churn on every drag.
+    //
+    // This exists because a card CAN legitimately be shorter than its content
+    // here, unlike the read-only Submit Risk page: an admin is allowed to drag
+    // a card smaller than the fields it holds, so the editor auto-grows a card
+    // only when its CONTENT changes and otherwise leaves a deliberate manual
+    // size alone (see syncCardFit() in customization-layout-editor.js). What is
+    // not acceptable is the silent inner scrollbar that state used to produce,
+    // which is what this pill replaces.
+    .sr-cust-card-overflow {
+        display: none;
+        flex: none;
+        align-items: center;
+        gap: 5px;
+        padding: 1px 8px;
+        border-radius: 999px;
+        background: $sr-important;
+        color: $sr-body;
+        font-size: 11px;
+        font-weight: 700;
+        white-space: nowrap;
+        cursor: help;
+    }
+
+    .sr-cust-card.is-overflowing .sr-cust-card-overflow {
+        display: inline-flex;
+    }
+
+    // Reinforce the pill at the card level, so the cue is visible even when the
+    // admin's eye is on the clipped chip rather than the header strip.
+    .sr-cust-card.is-overflowing {
+        border-color: $sr-important;
+    }
+
+    .sr-cust-card.is-overflowing > .sr-cust-card-head {
+        border-bottom-color: $sr-important;
+    }
+
+    // Only the Custom fields catch-all renders this.
+    .sr-cust-card-hint {
+        flex: none;
+        padding: 8px 14px 0;
+        font-size: 11.5px;
+        color: $gray-600;
+    }
+
+    // ── Nested grid: the field chips inside one card ───────────────────────
+    // NO padding, deliberately. Gridstack positions its items absolutely
+    // against this element's PADDING box and sizes them from `--gs-column-width`
+    // as a percentage of that same box, so padding here moves and sizes exactly
+    // nothing -- the chips span it edge to edge regardless. (That is why the
+    // 10px side padding this rule used to carry never produced the side gutter
+    // it looks like it should: the only thing insetting a chip is Gridstack's
+    // own 10px per-item margin.) Worse, `min-height` is set inline by Gridstack
+    // as rows x 30px and `box-sizing: border-box` is global here, so the
+    // padding ate into the chips' own area while still costing the card's
+    // height budget. Inert in one direction and harmful in the other.
+    .sr-cust-nested-grid {
+        flex: 1;
+        min-height: 60px;
+        padding: 0;
+        background: transparent;
+    }
+
+    // NO `position` and NO `height` here, and both omissions are load-bearing.
+    //
+    // This element IS Gridstack's own `.grid-stack-item-content`, which
+    // gridstack.css positions as
+    //   position: absolute;
+    //   top/right/bottom/left: var(--gs-item-margin-*)
+    // -- four insets against the item box, with `width`/`height` left `auto`,
+    // which is the ONLY thing that makes a chip fill its grid slot inset by
+    // the grid's 10px item margin.
+    //
+    // A `position: relative` here (which this rule used to carry, purely so
+    // the absolutely-positioned `.sr-cust-field-remove` below would have a
+    // containing block) silently defeats all four. `#details-layout-canvas
+    // .sr-cust-field` is (1,1,0) against gridstack's (0,3,0), so ours wins,
+    // and on a RELATIVELY positioned box `left`/`right` stop being a pair
+    // that resolves the width: `left` becomes a pure offset and `right` is
+    // ignored outright. The chip therefore kept its full static width and
+    // was merely SHIFTED 10px right -- measured live at 1536px wide, a
+    // Scoring chip spanned 308..1500 inside a card whose right border is at
+    // 1490, so the field rendered 10px PAST the card's own border. `height:
+    // 100%` did the same thing vertically (`bottom` dropped, height taken
+    // from the slot rather than the slot-minus-margins), pushing every chip
+    // 10px below its slot and leaving no visual gap between stacked chips.
+    //
+    // Dropping both restores gridstack's insets. The remove control keeps
+    // its containing block for free, because the element is then `position:
+    // absolute` -- which is also a containing block for an absolutely
+    // positioned descendant.
+    .sr-cust-field {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        // Right padding reserves the absolutely-positioned remove control's
+        // lane so a long field name never runs under it.
+        padding: 4px 26px 4px 10px;
+        background: $sr-body;
+        border: 1px solid $gray-400;
+        border-radius: 6px;
+        font-size: 12.5px;
+        color: $sr-primary;
+        cursor: grab;
+        overflow: hidden;
+
+        &:hover,
+        &:focus-within {
+            border-color: $sr-important;
+        }
+
+        &:active {
+            cursor: grabbing;
+        }
+    }
+
+    .sr-cust-field-name {
+        flex: 1;
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    // Un-assign the field from the tab entirely. Kept visible (not
+    // hover-only) so it is reachable on touch and by keyboard, but muted
+    // until the chip is hovered/focused so a dense card does not read as a
+    // wall of red X's.
+    //
+    // Pinned to the chip's TOP right, not centred in the flex row, and given
+    // a z-index above Gridstack's own handle layer (z-index 100 in
+    // gridstack.min.css): the south-east resize handle is a 20x20 box at the
+    // item's bottom-right corner, and a vertically-centred button landed
+    // inside it on a short chip -- the handle then swallowed every click
+    // (reproduced in Playwright: "<div class='ui-resizable-handle
+    // ui-resizable-se'> intercepts pointer events", 120s of retries). Both
+    // halves of the fix matter: the top anchor keeps the two apart on a
+    // normal two-row chip, and the z-index keeps the remove control usable
+    // on a one-row chip where they cannot help but overlap.
+    .sr-cust-field-remove {
+        position: absolute;
+        top: 2px;
+        right: 2px;
+        z-index: 101;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 20px;
+        height: 20px;
+        padding: 0;
+        border: 0;
+        border-radius: 6px;
+        background: transparent;
+        color: $gray-500;
+        font-size: 11px;
+        opacity: 0.55;
+        cursor: pointer;
+
+        &:hover,
+        &:focus-visible {
+            opacity: 1;
+            color: $sr-important;
+            background: $gray-100;
+        }
+    }
+
+    .sr-cust-field:hover .sr-cust-field-remove,
+    .sr-cust-field:focus-within .sr-cust-field-remove {
+        opacity: 1;
+    }
+
+    // A one-beat flash on the chip the field picker just added, matching the
+    // legacy '.field-holder.is-new' treatment in custom.scss so both add paths
+    // feel identical.
+    .sr-cust-field.is-new {
+        animation: sr-cust-field-just-added 1400ms ease-out;
+    }
+
+    // Gridstack's stock resize handle is a bare, nearly invisible corner.
+    // Give both levels the same visible grip the dashboard's edit mode uses.
+    //
+    // The bare L-bracket on its own read as "a weird >" to the first admin who
+    // used this editor -- real, working functionality with nothing saying so.
+    // Two cheap signals fix that without redesigning the affordance away from
+    // the dashboard's established one: an explicit `nwse-resize` cursor (the
+    // universal "this corner resizes" pointer, so the intent is legible before
+    // any tooltip delay elapses) and a native `title` stamped on the handle by
+    // customization-layout-editor.js's delegated hover handler.
+    .ui-resizable-se {
+        border-right: 2px solid $gray-500;
+        border-bottom: 2px solid $gray-500;
+        border-bottom-right-radius: 3px;
+        opacity: 0.75;
+        cursor: nwse-resize;
+    }
+
+    .grid-stack-item:hover > .ui-resizable-se {
+        border-right-color: $sr-important;
+        border-bottom-color: $sr-important;
+        opacity: 1;
+    }
+
+    // Field chips are only two grid rows (~60px) tall, so Gridstack's stock
+    // 20x20 handle takes a third of the chip. Shrinking the FIELD-level one
+    // (card tiles keep the full-size handle) also guarantees it clears the
+    // remove control pinned to the chip's top-right corner above.
+    .sr-cust-nested-grid .ui-resizable-se {
+        width: 14px;
+        height: 14px;
+    }
+}
+
+// ── Save/Restore action bar ─────────────────────────────────────────────
+// Markup: extras/customization/index.php, the Template section's footer --
+// one shared bar below whichever of Details/Mitigation/Review is active
+// (Save posts the active tab's canvas via window.saveLayoutCanvas(), keyed
+// off the tab index at click time), not nested under any one canvas id.
+//
+// Mirrors modules/_questionnaire.scss's .sr-qactions two-weight recipe
+// (ghost low weight, red-fill primary) rather than wrapping this page in
+// `.sr-qform` to reuse that rule directly: `.sr-qform` also carries a
+// page-wide `.form-control, .form-select { border-radius: 6px }` and
+// selectize-chip override meant for the questionnaire form surface, which
+// would apply to every OTHER field/select on this settings page too, not
+// just this action bar.
+.sr-cust-actions {
+    display: flex;
+    flex-direction: row-reverse;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 10px;
+    margin-top: 16px;
+
+    .btn { border-radius: 6px; }
+
+    // Restore -- ghost. Reverting to the shipped default template is the
+    // lower-weight action here, the same "walking away from what's on the
+    // canvas" semantic .sr-qcancel gives Cancel.
+    .sr-cust-restore {
+        background: transparent;
+        color: $gray-600;
+        border: 1px solid $gray-300;
+
+        &:hover { color: $sr-primary; border-color: $gray-500; }
+    }
+
+    // Save -- red primary. The one $sr-important spend in this bar.
+    .sr-cust-save {
+        background: $sr-important;
+        color: $white;
+        border: 1px solid $sr-important;
+
+        &:hover { background: darken($sr-important, 8%); border-color: darken($sr-important, 8%); }
+    }
+}
+
+@keyframes sr-cust-field-just-added {
+    0%,
+    60% {
+        background-color: $sr-row-selected;
+        border-color: $sr-important;
+    }
+    100% {
+        background-color: $sr-body;
+        border-color: $gray-400;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    #{$sr-cust-layout-canvases} {
+        .sr-cust-field.is-new {
+            animation-duration: 0.001ms !important;
+        }
+    }
+}

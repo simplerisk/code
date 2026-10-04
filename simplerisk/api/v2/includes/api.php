@@ -5,8 +5,16 @@
 
 // Include required functions file
 require_once(realpath(__DIR__ . '/../../../includes/functions.php'));
+require_once(realpath(__DIR__ . '/../../../includes/cvss.php'));
 require_once(realpath(__DIR__ . '/../../../includes/extras.php'));
 require_once(realpath(__DIR__ . '/../../../includes/reports_catalog.php'));
+// get_assets_and_asset_groups_of_type_as_string() (AffectedAssets resolver,
+// api_ui_core_field_resolvers() below) -- not reachable transitively via the
+// three requires above (confirmed by grep before adding this).
+require_once(realpath(__DIR__ . '/../../../includes/assets.php'));
+// assets_ui_*() builders behind the /ui/asset/* endpoints below.
+require_once(realpath(__DIR__ . '/../../../includes/assets_ui.php'));
+require_once(realpath(__DIR__ . '/../../../includes/permissions.php'));
 
 /********************************
  * FUNCTION: API V2 JSON RESULT *
@@ -146,8 +154,10 @@ function api_save_ui_layout() {
     if (!empty($layout)) {
 
         // Remove widget configuration that's not alowed on the layout (sanitizing widget name and type coming from client side)
-        $layout = array_filter($layout, function($widget) use($ui_layout_config, $layout_name) {
-            return in_array($widget['name'], $ui_layout_config[$layout_name]['available_widgets']) || (!empty($ui_layout_config[$layout_name]['available_custom_widgets']) && in_array($widget['name'], $ui_layout_config[$layout_name]['available_custom_widgets']));
+        $layout_available_widgets = $ui_layout_config[$layout_name]['available_widgets'] ?? [];
+        $layout_available_custom_widgets = $ui_layout_config[$layout_name]['available_custom_widgets'] ?? [];
+        $layout = array_filter($layout, function($widget) use($layout_available_widgets, $layout_available_custom_widgets) {
+            return in_array($widget['name'], $layout_available_widgets) || (!empty($layout_available_custom_widgets) && in_array($widget['name'], $layout_available_custom_widgets));
         });
 
         if (!empty($layout)) {
@@ -234,9 +244,9 @@ function api_get_ui_widget() {
     // Checking if the widget name is allowed
     if (empty($layout_name) || empty($widget_name) || 
         // Either there're no custom widgets configured and it's not in the list of available widgets
-        (empty($ui_layout_config[$layout_name]['available_custom_widgets']) && !in_array($widget_name, $ui_layout_config[$layout_name]['available_widgets']))
+        (empty($ui_layout_config[$layout_name]['available_custom_widgets'] ?? []) && !in_array($widget_name, $ui_layout_config[$layout_name]['available_widgets'] ?? []))
         // or there are custom widgets configured, but it's not in the list of available widgets nor the list of available custom widgets
-        || (!empty($ui_layout_config[$layout_name]['available_custom_widgets']) && !in_array($widget_name, $ui_layout_config[$layout_name]['available_custom_widgets']) && !in_array($widget_name, $ui_layout_config[$layout_name]['available_widgets']))) {
+        || (!empty($ui_layout_config[$layout_name]['available_custom_widgets'] ?? []) && !in_array($widget_name, $ui_layout_config[$layout_name]['available_custom_widgets'] ?? []) && !in_array($widget_name, $ui_layout_config[$layout_name]['available_widgets'] ?? []))) {
         set_alert(true, "bad", $lang['InvalidWidgetName']);
         api_v2_json_result(400, get_alert(true), null);
     }
@@ -263,6 +273,2336 @@ function api_get_ui_widget() {
     }
 
     api_v2_json_result(200, null, $widget_html);
+}
+
+/**
+ * Used for 'GET' API call '/ui/risk/template_groups'. The candidate set a
+ * risk-submitting user may create a risk under -- the read side of the same
+ * contract resolve_template_group_id_from_core('risk', ...) enforces on
+ * write (Task 3). Core-owned and submit_risks-gated (not is_admin) because
+ * any risk submitter, not just admins, needs this to render Submit Risk's
+ * template-group tabs.
+ */
+function api_get_ui_risk_template_groups() {
+    global $lang;
+
+    if (!check_permission('submit_risks')) {
+        set_alert(true, "bad", $lang['NoPermissionForThisAction']);
+        api_v2_json_result(403, get_alert(true), null);
+    }
+
+    // Default fallback: a single synthetic "default" group so the client always
+    // has exactly one tab to render, matching resolve_template_group_id_from_core()'s
+    // own no-Extra contract (falls back to id 1).
+    $data = [['id' => 1, 'name' => $lang['Risk'], 'is_default' => 1]];
+
+    if (customization_extra() && table_exists('custom_template_group')) {
+        $extra_index = realpath(__DIR__ . '/../../../extras/customization/index.php');
+        if ($extra_index !== false) {
+            require_once($extra_index);
+        }
+        if (function_exists('get_template_groups_for_user')) {
+            $groups = get_template_groups_for_user('risk');
+            $data = array_map(function ($group) {
+                return [
+                    'id' => (int)$group['id'],
+                    'name' => $group['name'],
+                    'is_default' => (int)$group['is_default'],
+                ];
+            }, $groups);
+        }
+    }
+
+    api_v2_json_result(200, null, $data);
+}
+
+/**
+ * Used for 'GET' API call '/ui/risk/fields'. Core-owned, submit_risks-gated.
+ * Works whether the Customization Extra is active or not: when inactive,
+ * synthesizes the same core-field roster with the same curated card_key
+ * mapping the Cards migration uses, via get_risk_details_core_field_card_map()
+ * (includes/functions.php) -- one client rendering path always.
+ *
+ * The caller-supplied template_group_id goes through
+ * resolve_template_group_id_from_core('risk', ...) -- the SAME membership
+ * validation addRisk() applies on the write side -- rather than straight into
+ * the query. Without it any risk submitter could read another business unit's
+ * full field roster (including every dropdown's option values) just by
+ * changing the query parameter; the helper falls back to the caller's own
+ * default group for an id they aren't assigned to.
+ */
+function api_get_ui_risk_fields() {
+    global $lang;
+
+    // submit_risks OR riskmanagement -- this is a read-only field-roster
+    // metadata endpoint, consumed identically by edit mode (risk-details-
+    // form.js) AND read mode (risk-details-view.js). Gating it to
+    // submit_risks alone blocked a review-only role (holding only
+    // review_* permissions, not submit_risks) from loading ANY of the
+    // three Cards tabs, even in read mode. Mirrors api_get_ui_risk_values()'s
+    // own gate (check_permission('riskmanagement')) -- no write happens
+    // through this endpoint; the actual mutation endpoints
+    // (PATCH /risks/{id}, PATCH /risks/{id}/mitigations,
+    // POST /risks/{id}/reviews) each re-check their own specific
+    // permission independently and are unaffected by this widening.
+    if (!check_permission('submit_risks') && !check_permission('riskmanagement')) {
+        set_alert(true, "bad", $lang['NoPermissionForThisAction']);
+        api_v2_json_result(403, get_alert(true), null);
+    }
+
+    $template_group_id = resolve_template_group_id_from_core('risk', get_param("GET", "template_group_id", null));
+    // Defaults to 1 (Details) for every pre-existing caller (Submit Risk, the
+    // 3 Add Risk modals, the redesigned Details tab), which never send this
+    // param. Phase 4b-iii's Mitigation tab is the first caller to pass 2.
+    $tab_index = (int)get_param("GET", "tab_index", 1);
+
+    api_v2_json_result(200, null, api_resolve_ui_risk_fields_for_group($template_group_id, $tab_index));
+}
+
+/**
+ * Shared by api_get_ui_risk_fields() and api_get_ui_risk_values(): the active
+ * field roster for one template group's tab (tab_index 1 = Details,
+ * tab_index 2 = Mitigation, Phase 4b-iii), with per-field option lists
+ * attached. Extracted so both endpoints resolve the SAME roster the SAME
+ * way -- a risk's values response must describe exactly the fields its own
+ * fields response would, or the two API responses could disagree about what
+ * fields exist for that risk's group.
+ *
+ * Unlike Details, Mitigation has no no-Extra fallback: every tab_index=2
+ * custom_template row is seeded by the Customization Extra's own
+ * set_default_main_fields() (extras/customization/upgrade.php) -- there is
+ * no Core-native Mitigation field roster to synthesize the way
+ * api_synthesize_no_extra_risk_fields() does for Details (see that
+ * function's own tab_index!==1 early return, and
+ * backfill_customization_mitigation_cards_layout()'s docblock, which states
+ * this explicitly). A no-Extra or Extra-inactive install therefore gets an
+ * empty Mitigation Cards roster here -- a known, accepted gap from Phase
+ * 4b-i's design, not something this task re-opens.
+ */
+function api_resolve_ui_risk_fields_for_group(int $template_group_id, int $tab_index = 1): array {
+    if (customization_extra() && table_exists('custom_template')) {
+        $extra_index = realpath(__DIR__ . '/../../../extras/customization/index.php');
+        if ($extra_index !== false) {
+            require_once($extra_index);
+        }
+
+        $fields = function_exists('get_active_fields') ? get_active_fields('risk', $template_group_id, $tab_index) : [];
+        if ($tab_index === 1) {
+            // Subject is hardcoded outside the custom_template system on the
+            // Details tab only -- see get_subject_synthetic_field_entry()'s
+            // own docblock. Mitigation has no equivalent synthetic field.
+            array_unshift($fields, get_subject_synthetic_field_entry());
+        }
+    } else {
+        $fields = api_synthesize_no_extra_risk_fields($tab_index);
+    }
+
+    // JiraIssueKey's presence in $fields (the Customization-Extra branch
+    // above) is driven purely by whether a `custom_fields`/`custom_template`
+    // row named 'JiraIssueKey' exists in the DB -- inserted by
+    // add_jira_issue_key_field_to_customization() when the Jira Extra is
+    // enabled (extras/jira/index.php), removed by its disable counterpart,
+    // but BOTH of those are themselves gated on customization_extra() being
+    // active at that moment (see their own docblocks), so a row can outlive
+    // the Jira Extra being disabled (Customization inactive at disable time,
+    // or a pre-existing row from before this cleanup logic shipped). Unlike
+    // every other field here, this one has a live, cheap, authoritative
+    // gate available (jira_extra(), the same is_extra_installed-family
+    // check the legacy display_jira_issue_key_view()/_edit() functions,
+    // includes/displayrisks.php, call on every single render) -- so re-check
+    // it here rather than trusting the DB row's mere existence, the same way
+    // those legacy functions never trusted a stale DB state either.
+    if (!jira_extra()) {
+        $fields = array_values(array_filter($fields, function ($field) {
+            return ($field['name'] ?? null) !== 'JiraIssueKey';
+        }));
+    }
+
+    // AcceptMitigation is no longer a Cards field at all -- it moved to a
+    // top-level Accept/Reject action widget next to Edit Mitigation
+    // (risk-view-mitigation.js), so it must never reach the client's field
+    // roster, unconditionally (unlike JiraIssueKey above, this isn't
+    // Extra-state-dependent). get_active_fields() still returns its row
+    // like any other (it's a real custom_fields row, is_basic=1), and
+    // risk_mitigation_field_is_positionable() is the single source of
+    // truth for excluding it -- the same function the admin Cards editor
+    // (customization_extra_getFields(), extras/customization/index.php)
+    // already uses, so a field neither surface can position never shows up
+    // in either one's roster.
+    if ($tab_index === 2) {
+        $fields = array_values(array_filter($fields, function ($field) {
+            return risk_mitigation_field_is_positionable((string)($field['name'] ?? ''));
+        }));
+    }
+
+    // SetNextReviewDate: same shape as AcceptMitigation above, merged into
+    // NextReviewDate as one widget rather than moved to a top-level action
+    // (see CORE_FIELD_WIDGETS' own comment on 'NextReviewDate', risk-
+    // details-form.js, and risk_review_field_is_positionable()'s docblock,
+    // includes/functions.php). get_active_fields() still returns its row
+    // (card_key NULL, per the retirement migration), and without this
+    // filter that null card_key falls through both engines' own "unknown
+    // card -> generic bucket" fallback (buildCanvas()'s
+    // `field.card_key || 'custom_fields'`, risk-details-form.js;
+    // renderCards()'s `field.card_key || 'general'`, risk-details-view.js)
+    // -- confirmed live: the Review tab's edit mode rendered an empty
+    // "Custom Fields" card purely from this one orphaned field landing in
+    // that bucket with nothing drawable inside it.
+    if ($tab_index === 3) {
+        $fields = array_values(array_filter($fields, function ($field) {
+            return risk_review_field_is_positionable((string)($field['name'] ?? ''));
+        }));
+    }
+
+    return api_attach_ui_risk_field_options($fields);
+}
+
+/**
+ * Attaches an `options` array to every select-shaped field in $fields
+ * (Task 7's client-side widget rendering needs a populated roster, not just
+ * a widget hint -- an unpopulated select is a functional regression, not a
+ * cosmetic one). Sourced from EXACTLY the same helper each field's real
+ * display_*_edit() function already calls today
+ * (simplerisk/includes/displayrisks.php), so the roster matches what a
+ * customer already sees -- no new query shapes, just get_options_from_table()
+ * (includes/functions.php, already in scope via this file's top-of-file
+ * require_once) called with the same table key.
+ *
+ * Core (is_basic=1) fields are resolved by NAME, never by `type`: Task 2
+ * confirmed every is_basic=1 row has type='' always (schema-level, not dev-DB
+ * drift -- see UiRiskFieldsApiTest and its docblock), so `type` carries no
+ * widget signal for these. Only fields whose display_*_edit() function
+ * actually renders a <select>/<select multiple> get an entry here --
+ * AffectedAssets/JiraIssueKey render other widget families (a permission-
+ * gated AJAX asset/asset-group selectize with free-text creation, a plain
+ * text input) and are out of this map on purpose.
+ *
+ * RiskScoringMethod, JiraIssueKey: real, editable core fields on the legacy Add page, but out
+ * of scope for different reasons each: JiraIssueKey is Extra-gated. RiskScoringMethod now DOES
+ * carry options (this function) even though CVSS/DREAD/OWASP/Contributing Risk (4 of its 6
+ * methods) still render only a "not yet available" notice client-side -- the dropdown itself
+ * needs every method's real name, and existing risks already scored via any of the 6 methods
+ * (predating this whole redesign) need their method name to resolve correctly in read mode
+ * regardless of which methods have a real edit-mode widget yet.
+ *
+ * Technology IS included: display_technology_edit()
+ * (includes/displayrisks.php) uses the exact same create_multiple_dropdown()
+ * bootstrap-multiselect mechanism as SiteLocation/Team, sourced from
+ * get_options_from_table('technology') -- already one of that helper's own
+ * supported table keys.
+ *
+ * Custom (is_basic=0) fields DO carry a real `type`
+ * (display_custom_field_input_element(), extras/customization/index.php) --
+ * only 'dropdown'/'multidropdown' (options live in a dedicated
+ * `custom_field_<id>` table, created by the Customization Extra itself, see
+ * create_custom_field()/upgrade.php) and 'user_multidropdown' (options are
+ * always the enabled_users roster) carry an options list; shorttext/longtext/
+ * date/hyperlink never do.
+ *
+ * MitigationControls (Mitigation tab, tab_index=2) carries no $field['options']
+ * at all -- unlike every other core field here, it doesn't render from a
+ * dropdown/multiselect roster attached to the field. The Mitigation Controls
+ * picker (risk-mitigation-controls.js) fetches its roster from
+ * GET /governance/controls/roster?include_facets=1
+ * (api_v2_governance_control_roster(), api/v2/includes/governance.php),
+ * the same faceted-picker roster Document Program's control_ids[] field uses.
+ *
+ * RiskMapping/ThreatMapping are GROUPED catalogs:
+ * get_options_from_table('risk_catalog_grouped'/'threat_catalog_grouped')
+ * already returns PDO::FETCH_GROUP shape ({group_name: [{value,name}, ...]}),
+ * matching create_selectize_dropdown()'s own grouped branch exactly --
+ * json_encode() turns that PHP assoc array into a JS object, which is what
+ * submit-risk.js's initSelectizeGroupedField() expects.
+ */
+function api_attach_ui_risk_field_options(array $fields): array {
+    static $core_field_options_source = [
+        'Category' => 'category',
+        'SiteLocation' => 'location',
+        'Team' => 'team',
+        'AdditionalStakeholders' => 'enabled_users',
+        'Owner' => 'enabled_users',
+        'OwnersManager' => 'enabled_users',
+        'RiskSource' => 'source',
+        'ControlRegulation' => 'frameworks',
+        'RiskMapping' => 'risk_catalog_grouped',
+        'ThreatMapping' => 'threat_catalog_grouped',
+        'Technology' => 'technology',
+        'RiskScoringMethod' => 'scoring_methods',
+        // Mitigation tab (tab_index=2, Phase 4b-iii). MitigationControls is
+        // NOT here -- see the field-loop comment below; it carries no
+        // $field['options'] at all.
+        'PlanningStrategy' => 'planning_strategy',
+        'MitigationEffort' => 'mitigation_effort',
+        'MitigationCost' => 'asset_valuation',
+        'MitigationOwner' => 'enabled_users',
+        'MitigationTeam' => 'team',
+        // Review tab (tab_index=3, Phase 4c-ii). 'review' is a real DB table
+        // with the same {value, name} column shape as every other lookup
+        // source here (confirmed against get_name_by_value()'s identical use
+        // of it in api_ui_review_field_resolvers() above), so the generic
+        // get_options_from_table()/api_trim_ui_field_options() path handles
+        // it with no special-casing needed. Without this entry Review's
+        // outcome <select> renders with zero options -- $field['options'] is
+        // never set at all. NextStep is NOT here -- it needs a SECOND
+        // options list (the Project selectize field) alongside its own, so
+        // it is special-cased in the loop below instead, the same way
+        // MitigationControls is.
+        'Review' => 'review',
+    ];
+    static $custom_field_option_types = ['dropdown', 'multidropdown', 'user_multidropdown'];
+
+    // Per-request memo, keyed by options source. Several fields legitimately
+    // share ONE source -- AdditionalStakeholders/Owner/OwnersManager are all
+    // 'enabled_users', and every 'user_multidropdown' custom field is too --
+    // and get_options_from_table() re-runs its whole query on every call. On
+    // an install with the Organizational Hierarchy Extra active that query is
+    // the single most expensive thing this endpoint does, so calling it once
+    // per FIELD instead of once per SOURCE tripled the cost of the whole
+    // /ui/risk/fields response for no added information.
+    //
+    // Deliberately request-local (a plain local, not a `static`): the roster
+    // is business-unit- and session-scoped, so it must never outlive the
+    // request that built it. Keyed by source string, which fully determines
+    // get_options_from_table()'s result for a given request -- two fields
+    // with the same source cannot want different rosters.
+    $options_by_source = [];
+    $resolve_options = function ($source) use (&$options_by_source) {
+        if (!array_key_exists($source, $options_by_source)) {
+            $options_by_source[$source] = api_trim_ui_field_options(get_options_from_table($source));
+        }
+
+        return $options_by_source[$source];
+    };
+
+    foreach ($fields as &$field) {
+        if ((int)($field['is_basic'] ?? 0) === 1) {
+            // MitigationControls (Mitigation tab, tab_index=2) is deliberately
+            // NOT in $core_field_options_source above -- it carries no
+            // $field['options'] at all; its picker fetches its own roster
+            // (see the docblock above this function).
+            if ($field['name'] === 'MitigationControls') {
+                continue;
+            }
+            // NextStep (Review tab, tab_index=3) carries a SECOND options
+            // list alongside its own outcome dropdown: buildNextStepWidget()/
+            // initNextStepField() (risk-details-form.js) render a Project
+            // selectize field beside it (shown only when NextStep=2,
+            // "Consider for Project"), matching display_next_step_edit()'s
+            // own project-holder (includes/displayrisks.php), which sources
+            // its dropdown from create_dropdown("projects", ...). Attached
+            // under `project_options` (not `options`, which stays the
+            // ordinary next_step outcome list every other core field's
+            // `options` key holds) so the client can tell the two apart.
+            // Without this, the Project field renders with zero options and
+            // an existing project can never be selected -- only a brand-new
+            // one (selectize's own `create`).
+            //
+            // array_values() here is load-bearing, not defensive boilerplate:
+            // get_options_from_table('projects') runs a SECOND uasort() (on
+            // top of get_table_ordered_by_name()'s own usort()) whose
+            // case-sensitive comparator can flip pairs the first,
+            // trim+lowercase sort already placed -- uasort() preserves keys
+            // rather than reindexing, so the result can come back with
+            // integer keys present but out of iteration order (e.g. keys 0-4
+            // then 7-23 then 5,6). PHP's own array_is_list() is false for
+            // that shape, so json_encode() serializes it as a JSON OBJECT
+            // ({"0":..,"1":..}) instead of an array -- confirmed live against
+            // this dev DB's real `projects` table. buildNextStepWidget()
+            // (risk-details-form.js) expects a plain array to .forEach()
+            // over; an object silently threw and aborted the ENTIRE
+            // create-log-entry canvas build partway through (only the
+            // NextStep field rendered; Review/Comment/etc never did).
+            // array_values() normalizes back to a clean 0..N-1 list
+            // regardless of what order get_options_from_table() iterates its
+            // rows in -- option ORDER is unaffected (array_values() preserves
+            // iteration order, only the keys change), so the dropdown's
+            // alphabetical sort is untouched.
+            if ($field['name'] === 'NextStep') {
+                $field['options'] = $resolve_options('next_step');
+                $field['project_options'] = array_values($resolve_options('projects'));
+                continue;
+            }
+            $source = $core_field_options_source[$field['name']] ?? null;
+            if ($source !== null && function_exists('get_options_from_table')) {
+                $field['options'] = $resolve_options($source);
+            }
+            if ($field['name'] === 'RiskScoringMethod') {
+                // Routed through the same per-request memoizing
+                // $resolve_options() closure NextStep's project_options uses
+                // above, rather than calling get_options_from_table()
+                // directly -- matches that precedent exactly (no separate
+                // function_exists() guard here either; NextStep's own calls
+                // don't carry one, only the generic $core_field_options_source
+                // path below does).
+                $field['likelihood_options'] = $resolve_options('likelihood');
+                $field['impact_options'] = $resolve_options('impact');
+                // Phase 4d-ii: the 14 CVSS v2 sub-fields, each its own
+                // options source (get_custom_table('AccessVector') differs
+                // from get_custom_table('AccessComplexity'), etc.) --
+                // api_resolve_cvss_field_options() does its own remap, not
+                // $resolve_options()/get_options_from_table(), which has no
+                // CVSS support (see that function's own docblock).
+                $cvss_field_names = [
+                    'AccessVector', 'AccessComplexity', 'Authentication',
+                    'ConfImpact', 'IntegImpact', 'AvailImpact',
+                    'Exploitability', 'RemediationLevel', 'ReportConfidence',
+                    'CollateralDamagePotential', 'TargetDistribution',
+                    'ConfidentialityRequirement', 'IntegrityRequirement', 'AvailabilityRequirement',
+                ];
+                foreach ($cvss_field_names as $cvss_field_name) {
+                    $field[$cvss_field_name . '_options'] = api_resolve_cvss_field_options($cvss_field_name);
+                }
+                // Phase 4d-v: Contributing Risk's own options are shaped
+                // differently from every other method's -- the factor
+                // roster is admin-configured and variable-length (unlike
+                // CVSS's/OWASP's fixed field lists), so each factor carries
+                // its OWN impact options nested alongside it, rather than
+                // one flat {Metric}_options key per fixed field name.
+                // get_options_from_table('contributing_risks_likelihood')
+                // falls through that function's generic get_table() branch
+                // (the name matches none of its special-cased tables) --
+                // the table's own `value`/`name` columns already match the
+                // shape api_trim_ui_field_options() expects, same as
+                // 'likelihood'/'impact' above.
+                $field['contributing_likelihood_options'] = api_trim_ui_field_options(get_options_from_table('contributing_risks_likelihood'));
+                $field['contributing_risks'] = array_map(function (array $contributing_risk): array {
+                    return [
+                        'id' => (int)$contributing_risk['id'],
+                        'subject' => (string)$contributing_risk['subject'],
+                        'weight' => (float)$contributing_risk['weight'],
+                        'impact_options' => api_trim_ui_field_options(get_impact_values_from_contributing_risks_id($contributing_risk['id'])),
+                    ];
+                }, get_contributing_risks());
+            }
+        } elseif (function_exists('get_options_from_table') && in_array($field['type'] ?? '', $custom_field_option_types, true)) {
+            $source = $field['type'] === 'user_multidropdown' ? 'enabled_users' : ('custom_field_' . (int)$field['id']);
+            $field['options'] = $resolve_options($source);
+        }
+    }
+    unset($field);
+
+    return $fields;
+}
+
+/**
+ * Options resolver for the RiskScoringMethod field's 14 CVSS v2 sub-fields
+ * (Phase 4d-ii) -- deliberately separate from api_attach_ui_risk_field_
+ * options()'s generic $core_field_options_source + get_options_from_table()
+ * path: get_options_from_table() has no CVSS branch at all (only
+ * get_custom_table() does -- confirmed by reading both functions directly),
+ * and get_custom_table()'s CVSS branch returns rows keyed
+ * abrv_metric_value/metric_value (create_cvss_dropdown()'s own column
+ * names, includes/functions.php), not the value/name shape
+ * api_trim_ui_field_options() expects. Remapped here rather than piped
+ * through that function, since the remap already produces its exact target
+ * shape directly.
+ */
+function api_resolve_cvss_field_options(string $metricName): array {
+    return array_map(function ($row) {
+        return [
+            'value' => $row['abrv_metric_value'],
+            'name' => $row['metric_value'],
+        ];
+    }, get_custom_table($metricName));
+}
+
+/**
+ * Reduces one get_options_from_table() roster to the ONLY two keys a rendered
+ * <select>/selectize option can use: `value` and `name` (see buildSelect(),
+ * buildMultiselect(), initSelectizeSingleField() and initSelectizeGroupedField()
+ * in js/simplerisk/pages/submit-risk.js -- every one of them reads opt.value and
+ * opt.name and nothing else).
+ *
+ * This is a data-exposure fix, not a tidy-up. get_options_from_table() is a
+ * server-side helper whose 'user'/'enabled_users'/'disabled_users' branches
+ * select `u`.* (get_custom_table(), includes/functions.php) -- the whole `user`
+ * row, including `password` (the bcrypt hash), `salt`, `username`, `email`,
+ * `last_login` and every custom_*_settings blob. Its normal callers hand that to
+ * create_dropdown(), which reads two columns and drops the rest, so it never
+ * left the server. Serializing it straight into a JSON API response instead
+ * published every enabled user's credential material to anyone holding the
+ * `submit_risks` permission -- and inflated this one response to 932 KB.
+ *
+ * Trimming here rather than in get_options_from_table() is deliberate: that
+ * helper is shared with callers that DO read the extra columns (the `teams`
+ * GROUP_CONCAT feeds user-management and team-filtering code paths), so
+ * narrowing it there would be a silent breaking change across the app. The API
+ * boundary is the correct place to decide what leaves the server.
+ *
+ * Handles both roster shapes get_options_from_table() returns: a flat list, and
+ * the PDO::FETCH_GROUP shape ({group_name: [{value,name}, ...]}) that
+ * risk_catalog_grouped/threat_catalog_grouped use.
+ *
+ * Fails CLOSED, by construction: every row is rebuilt from scratch out of
+ * whichever of `value`/`name` it actually carries, so a key this function does
+ * not name can never reach the response no matter what shape the row arrives
+ * in. A row carrying neither key collapses to []; a row that is not an array at
+ * all collapses to []. That matters because this is an allow-list on credential
+ * material: the previous revision returned an unrecognized row UNTOUCHED, which
+ * meant a roster row carrying `value` but not `name` -- or any future source
+ * added to $core_field_options_source whose rows are shaped differently -- would
+ * have been serialized whole, reintroducing exactly the leak this function
+ * exists to stop. Every source reachable today (category, location, source,
+ * technology, team, frameworks, enabled_users, the two grouped catalogs and
+ * custom_field_<id>) does carry both keys, so the old default was not
+ * exploitable; it was simply the wrong default for a data-exposure control, and
+ * the next source someone adds is not required to ask permission first.
+ *
+ * The flat-vs-grouped test below asks whether the entry's OWN first element is
+ * itself an array, not merely whether the entry lacks value/name. A group's
+ * elements are option rows (arrays); a flat row's elements are its column
+ * values (scalars). Testing for the absence of value/name alone would read a
+ * malformed flat row -- one carrying neither key, i.e. exactly the shape this
+ * function most needs to distrust -- as a group and array_map() over its own
+ * columns, which put that row's column NAMES in the response as group keys.
+ * Checking the element type instead sends it down the row branch, where it
+ * collapses to [].
+ */
+function api_trim_ui_field_options($options): array {
+
+    if (!is_array($options)) {
+        return [];
+    }
+
+    $trim_row = function ($row) {
+        if (!is_array($row)) {
+            return [];
+        }
+
+        $trimmed = [];
+        if (array_key_exists('value', $row)) {
+            $trimmed['value'] = $row['value'];
+        }
+        if (array_key_exists('name', $row)) {
+            $trimmed['name'] = $row['name'];
+        }
+
+        return $trimmed;
+    };
+
+    $trimmed = [];
+    foreach ($options as $key => $entry) {
+        // Grouped shape: the entry is itself a list of option ROWS, which is
+        // what makes its first element an array. A flat row's first element is
+        // a column value -- a scalar or null -- so it fails this test and goes
+        // down the row branch even when it carries neither `value` nor `name`.
+        $is_group = is_array($entry)
+            && !array_key_exists('value', $entry)
+            && !array_key_exists('name', $entry)
+            && $entry !== []
+            && is_array(reset($entry));
+
+        $trimmed[$key] = $is_group ? array_map($trim_row, $entry) : $trim_row($entry);
+    }
+
+    return $trimmed;
+}
+
+/**
+ * No-Extra fallback for api_get_ui_risk_fields(): the fixed core roster with
+ * card_key/pos_* filled in from get_risk_details_core_field_card_map()
+ * (includes/functions.php) instead of a custom_template row -- there are no
+ * rows to read without the Extra installed. Mirrors the migration's own
+ * two-per-row default geometry (see backfill_customization_cards_layout(),
+ * extras/customization/upgrade.php) so
+ * a no-Extra install renders identically to a fresh Extra-on install before
+ * any admin customizes the layout. Calls get_subject_synthetic_field_entry()
+ * directly (pure -- a literal array, no DB reads or Extra-state checks)
+ * rather than duplicating its literal here, so the two branches can never
+ * drift.
+ *
+ * BOTH helpers are CORE (includes/functions.php), deliberately: this whole
+ * function only ever runs on an install WITHOUT the Customization Extra, and
+ * the shipped customer bundle deletes simplerisk/extras/ outright
+ * (.github/workflows/publish-bundle.yml). Sourcing them from an Extra file
+ * would mean this fallback produces an empty roster -- a completely unusable
+ * Submit Risk page -- on exactly the installs it exists to serve. Do not
+ * reintroduce a realpath()/require_once() of extras/customization/* here.
+ *
+ * 'type' is left '' on every synthesized core row, matching reality: every
+ * is_basic=1 row that get_active_fields() actually returns has type='' --
+ * confirmed against the dev DB (`SELECT DISTINCT type FROM custom_fields
+ * WHERE is_basic=1` returns only '') and against every core-field seed
+ * INSERT in extras/customization/upgrade.php, which all write '' for type.
+ * Core fields have never carried a real `type` value; the widget for a core
+ * field is chosen by field name, not this column, in both the Extra-on and
+ * no-Extra cases. Hardcoding a guessed type per field here would make the
+ * no-Extra response MORE specific than the real Extra-on data ever is for
+ * the same field name, breaking the "one client rendering path always"
+ * contract this function exists to uphold.
+ *
+ * 'JiraIssueKey' is skipped even though get_risk_details_core_field_card_map()
+ * lists it: that field only ever exists in `custom_fields` because the Jira
+ * Extra's add_jira_issue_key_field_to_customization() (extras/jira/index.php)
+ * inserts it through the Customization Extra's own tables -- and that insert
+ * itself is gated on customization_extra() being active. With Customization
+ * inactive there is no code path, Jira installed or not, that could ever
+ * produce this field, so including it here would show a "Jira Issue Key"
+ * field on Submit Risk that no real no-Extra install (or even a
+ * Customization-active-but-Jira-inactive install) would ever have.
+ *
+ * 'SubmittedBy' is NOT skipped, even though it draws no control on Submit
+ * Risk: a fresh Extra-on install seeds a custom_template row for it, so
+ * omitting it here would make this roster shorter than the Extra-on one --
+ * exactly the divergence this function exists to prevent. It is seated last
+ * within its card below, which is what keeps it from pairing with a real
+ * field, and the client's 'skip' widget drops it at render time.
+ */
+function api_synthesize_no_extra_risk_fields(int $tab_index): array {
+    if ($tab_index !== 1) {
+        return [];
+    }
+
+    $map = get_risk_details_core_field_card_map();
+
+    $field_width = customization_default_field_width();
+    $per_row = customization_fields_per_row();
+
+    // Iterate in the order a fresh Extra-on install actually SEEDS these rows
+    // (panel top/left/right/bottom, then `ordering`), not in this map's own
+    // declaration order -- the map is grouped by card for readability and the
+    // two orders genuinely differ. That divergence used to be invisible:
+    // one-per-row produced the same visible sequence either way once the two
+    // widget-less fields were dropped. With two fields to a row the order
+    // decides which fields PAIR, so iterating the map directly made this
+    // branch lay General out differently from the Extra-on branch -- exactly
+    // the "one client rendering path always" contract this function exists to
+    // uphold. Anything the default order does not name is appended in map
+    // order rather than dropped.
+    $ordered_names = [];
+    foreach (get_risk_details_core_field_default_order() as $name) {
+        if (isset($map[$name])) {
+            $ordered_names[] = $name;
+        }
+    }
+    foreach (array_keys($map) as $name) {
+        if (!in_array($name, $ordered_names, true)) {
+            $ordered_names[] = $name;
+        }
+    }
+
+    // Bucket per card so the widget-less fields can be seated LAST within
+    // their own card, for the same reason backfill_customization_cards_layout()
+    // does it -- see risk_details_field_renders_no_control().
+    $names_by_card = [];
+    foreach ($ordered_names as $name) {
+        if ($name === 'JiraIssueKey') {
+            continue;
+        }
+        $names_by_card[$map[$name]][] = $name;
+    }
+
+    // Additional Information and Classification each use their own curated
+    // row order instead of widgetless-last -- see
+    // get_additional_info_card_field_default_order() and
+    // get_classification_card_field_default_order() (Core,
+    // includes/functions.php).
+    $explicit_order_by_card = [
+        'additional_info' => get_additional_info_card_field_default_order(),
+        'classification' => get_classification_card_field_default_order(),
+    ];
+
+    $fields = [get_subject_synthetic_field_entry()];
+    foreach ($names_by_card as $card_key => $names) {
+        // General leads with its widgetless pair (SubmissionDate/SubmittedBy)
+        // so they occupy the row immediately before the synthetic Subject
+        // entry's reserved gap -- the OPPOSITE of every other card. Mirrors
+        // backfill_customization_cards_layout()'s identical branches
+        // (extras/customization/upgrade.php).
+        if ($card_key === 'general') {
+            $names = sort_risk_details_fields_widgetless_first($names, static fn(string $name): string => $name);
+        } elseif (isset($explicit_order_by_card[$card_key])) {
+            $names = sort_risk_details_fields_by_explicit_order(
+                $names,
+                static fn(string $name): string => $name,
+                $explicit_order_by_card[$card_key]
+            );
+        } else {
+            $names = sort_risk_details_fields_widgetless_last($names, static fn(string $name): string => $name);
+        }
+
+        // Subject is synthesized at pos_y=2, BELOW SubmissionDate/SubmittedBy
+        // (get_subject_synthetic_field_entry()'s own docblock) -- so General's
+        // real fields start at y=0 like every other card, mirroring
+        // backfill_customization_cards_layout()'s identical fallback.
+        $cursor = ['y' => 0, 'slot' => 0];
+        foreach ($names as $name) {
+            // RiskAssessment sits directly under Subject in General, full
+            // width, own row -- see backfill_customization_cards_layout()'s
+            // identical treatment for the reasoning. Subject's reserved row
+            // (pos_y=2) isn't part of $names, so skip over it here too.
+            //
+            // AdditionalNotes and Tags get the same "own row" treatment inside
+            // Additional Information, and AffectedAssets leads Classification
+            // full width -- see the identical forceFullWidth change in
+            // backfill_customization_cards_layout().
+            $force_full_width = risk_details_field_forced_full_width($name);
+            $width = $force_full_width ? customization_nested_grid_columns() : $field_width;
+
+            if ($card_key === 'general' && $name === 'RiskAssessment') {
+                $cursor['y'] += 2;
+                $cursor['slot'] = 0;
+            }
+
+            $fields[] = [
+                'id' => 0,
+                'name' => $name,
+                'type' => '',
+                'is_basic' => 1,
+                'required' => 0,
+                'card_key' => $card_key,
+                'pos_x' => $force_full_width ? 0 : $cursor['slot'] * $field_width,
+                'pos_y' => $cursor['y'],
+                'pos_w' => $width,
+                'pos_h' => 2,
+                'active' => 1,
+            ];
+
+            if ($force_full_width) {
+                $cursor['slot'] = 0;
+                $cursor['y'] += 2;
+            } else {
+                $cursor['slot']++;
+                if ($cursor['slot'] >= $per_row) {
+                    $cursor['slot'] = 0;
+                    $cursor['y'] += 2;
+                }
+            }
+        }
+    }
+
+    return $fields;
+}
+
+/**
+ * Used for 'GET' API call '/ui/risk/layout'. Core-owned, submit_risks-gated.
+ * Extra-off: synthesizes the same 4 curated cards (no custom_fields -- there
+ * is no such thing without the Extra) at the migration's own default
+ * geometry, via customization_cards_layout_card_keys()
+ * and customization_card_height_for_field_count() (includes/functions.php).
+ *
+ * The caller-supplied template_group_id goes through
+ * resolve_template_group_id_from_core('risk', ...) for the same reason
+ * api_get_ui_risk_fields() does -- see that function's docblock.
+ */
+function api_get_ui_risk_layout() {
+    global $lang;
+
+    // See api_get_ui_risk_fields()'s identical comment -- same read-only
+    // metadata reasoning, same widened gate.
+    if (!check_permission('submit_risks') && !check_permission('riskmanagement')) {
+        set_alert(true, "bad", $lang['NoPermissionForThisAction']);
+        api_v2_json_result(403, get_alert(true), null);
+        return;
+    }
+
+    $template_group_id = resolve_template_group_id_from_core('risk', get_param("GET", "template_group_id", null));
+    $tab_index = (int)get_param("GET", "tab_index", 1);
+
+    if (customization_extra() && table_exists('custom_template_card')) {
+        $extra_index = realpath(__DIR__ . '/../../../extras/customization/index.php');
+        if ($extra_index !== false) {
+            require_once($extra_index);
+        }
+
+        $cards = function_exists('get_customization_layout') ? get_customization_layout('risk', $template_group_id, $tab_index) : [];
+    } else {
+        $cards = api_synthesize_no_extra_risk_layout($tab_index);
+    }
+
+    api_v2_json_result(200, null, $cards);
+}
+
+/**
+ * Core-field name -> resolver. Mirrors the SAME per-field resolution
+ * includes/displayrisks.php's display_<field>_view() functions already use
+ * for the legacy Details tab (verified against real source, not guessed --
+ * see the design spec's field-by-field table), minus HTML escaping/markup,
+ * for the same reason api_ui_custom_field_raw_and_display_value() gives.
+ *
+ * Every closure receives the full get_risk_by_id() row and returns
+ * ['raw' => mixed, 'display' => string], plus an optional
+ * 'display_html' => string for the rich-text fields whose stored value is
+ * HTML (assessment/notes -- see their closures). Only fields risk-details-form.js
+ * actually renders a control for (CORE_FIELD_WIDGETS, risk-details-form.js)
+ * are listed -- Status/JiraIssueKey/SupportingDocumentation
+ * are deliberately absent; the client's placeholder path
+ * (populateFieldContent()) does not consult field values for them.
+ * AffectedAssets/RiskScoringMethod are no longer among those -- see their own
+ * resolvers below/here (RiskScoringMethod's 'scoring_method' entry resolves
+ * the method name and, for Classic, the resolved likelihood/impact names too
+ * -- see that closure's own logic).
+ */
+/**
+ * LOW/MEDIUM/HIGH categorization for an OWASP Likelihood or Impact
+ * average -- matches update_owasp_score()'s own thresholds exactly
+ * (includes/functions.php).
+ */
+function api_owasp_category(float $avg): string {
+    if ($avg < 3) {
+        return 'LOW';
+    }
+    if ($avg < 6) {
+        return 'MEDIUM';
+    }
+    return 'HIGH';
+}
+
+/**
+ * The exact 5-branch Likelihood x Impact severity matrix
+ * update_owasp_score() computes: LOW/LOW and HIGH/HIGH are hardcoded (0
+ * and 10); the three middle tiers each average two specific named
+ * risk_levels rows together via the SAME live query that function runs.
+ *
+ * This is the only resolver in api_ui_core_field_resolvers() that opens a
+ * DB connection -- deliberate, mirroring update_owasp_score()'s own
+ * live-average dependency for 3 of its 5 severity tiers, and bounded: it
+ * runs at most once per /ui/risk/{id}/values request, and short-circuits
+ * before db_open() on the two hardcoded LOW/LOW and HIGH/HIGH corners.
+ */
+function api_owasp_severity_score(string $likelihoodCategory, string $impactCategory): float {
+    if ($likelihoodCategory === 'LOW' && $impactCategory === 'LOW') {
+        return 0;
+    }
+    if ($likelihoodCategory === 'HIGH' && $impactCategory === 'HIGH') {
+        return 10;
+    }
+    if (($likelihoodCategory === 'LOW' && $impactCategory === 'MEDIUM') || ($likelihoodCategory === 'MEDIUM' && $impactCategory === 'LOW')) {
+        $names = ['Low', 'Medium'];
+    } elseif (($likelihoodCategory === 'LOW' && $impactCategory === 'HIGH') || ($likelihoodCategory === 'MEDIUM' && $impactCategory === 'MEDIUM') || ($likelihoodCategory === 'HIGH' && $impactCategory === 'LOW')) {
+        $names = ['Medium', 'High'];
+    } else {
+        $names = ['High', 'Very High'];
+    }
+
+    $db = db_open();
+    $placeholders = implode(',', array_fill(0, count($names), '?'));
+    $stmt = $db->prepare("SELECT AVG(value) AS avg_value FROM (SELECT value FROM risk_levels WHERE name IN ($placeholders)) AS matched");
+    $stmt->execute($names);
+    $row = $stmt->fetch();
+    db_close($db);
+
+    return round((float)($row['avg_value'] ?? 0), 2);
+}
+
+function api_ui_core_field_resolvers(): array {
+    $multi = function (string $column, string $namesColumn) {
+        return function (array $risk) use ($column, $namesColumn) {
+            $rawString = $risk[$column] ?? '';
+            $raw = ($rawString === '' || $rawString === null) ? [] : explode(',', (string)$rawString);
+            $namesString = (string)($risk[$namesColumn] ?? '');
+            // 'names' is the per-item array risk-details-view.js's chip
+            // renderer needs. $namesColumn is GROUP_CONCAT(DISTINCT x.name)
+            // with MySQL's default bare-comma separator (includes/
+            // functions.php's main risk-fetch query), so splitting on ','
+            // here reproduces exactly what the database concatenated, not a
+            // guessed separator. 'display' keeps the joined string as-is for
+            // any other consumer of this resolver.
+            return [
+                'raw' => $raw,
+                'display' => $namesString,
+                'names' => ($namesString === '') ? [] : explode(',', $namesString),
+            ];
+        };
+    };
+
+    return [
+        'subject' => function (array $risk) {
+            $v = try_decrypt($risk['subject'] ?? '');
+            return ['raw' => $v, 'display' => $v];
+        },
+        'reference_id' => function (array $risk) {
+            $v = (string)($risk['reference_id'] ?? '');
+            return ['raw' => $v, 'display' => $v];
+        },
+        'control_number' => function (array $risk) {
+            $v = (string)($risk['control_number'] ?? '');
+            return ['raw' => $v, 'display' => $v];
+        },
+        'category' => function (array $risk) {
+            $raw = (string)($risk['category'] ?? '');
+            return ['raw' => $raw, 'display' => get_name_by_value('category', $raw)];
+        },
+        'scoring_method' => function (array $risk) {
+            global $lang;
+            $raw = (string)($risk['scoring_method'] ?? '');
+            $display = get_name_by_value('scoring_methods', $raw);
+            if ($raw === '1') {
+                // Phase 4d-v: calculate_risk() (includes/functions.php)
+                // already centralizes the admin-configurable risk_model
+                // formula (1-6) + normalization -- unlike the CVSS/DREAD/
+                // OWASP branches below, which DO replicate their math here
+                // because it wasn't already centralized in one reusable
+                // function, this branch just calls it directly. Matches
+                // those branches' own non-redundant "(Score: X)" precedent
+                // -- the old "(Current Likelihood: X, Current Impact: Y)"
+                // level-names text is dropped, confirmed with the user.
+                $classicImpact = (int)($risk['CLASSIC_impact'] ?? 0);
+                $classicLikelihood = (int)($risk['CLASSIC_likelihood'] ?? 0);
+                $classicScore = calculate_risk($classicImpact, $classicLikelihood);
+                $display .= ' (' . $lang['Score'] . ': ' . $classicScore . ')';
+            } elseif ($raw === '2') {
+                // Phase 4d-ii: same low-level functions update_risk_scoring()
+                // (includes/functions.php) already calls for the persisted
+                // CVSS branch, and the same DB-backed conversion
+                // (get_cvss_numeric_value()) create_cvss_dropdown()'s own
+                // stored abbreviations need before they mean anything
+                // numerically. Only the Base Score is shown (the modal's own
+                // first-listed score, matching Classic's own single-value
+                // parenthetical) -- Temporal/Environmental are not computed
+                // here, since they are unaffected by whether the admin ever
+                // touched the Temporal/Environmental sub-fields.
+                //
+                // KNOWN, PRE-EXISTING QUIRK, not introduced here:
+                // round_up_1_decimal() (includes/cvss.php) uses ceil(), while
+                // the client-side modal's own roundTo1Decimal() (Task 1's
+                // relocated JS) uses Math.round() -- the two already-existing
+                // implementations can round the SAME inputs to slightly
+                // different displayed values. Both predate this phase; do
+                // not "fix" one to match the other as part of this work.
+                // get_cvss_numeric_value()'s first argument is the CVSS_scoring
+                // table's short abrv_metric_name ("AV", "AC", "Au", "C", "I",
+                // "A", ...), NOT the long field name -- confirmed against
+                // every other call site (includes/functions.php's own
+                // calculate_cvss_score()/update_risk_scoring(),
+                // extras/assessments/index.php) and against the live
+                // CVSS_scoring table (SELECT DISTINCT abrv_metric_name).
+                // Passing the long name (e.g. 'ConfImpact') matches no row
+                // and silently resolves to 0 for every metric.
+                $confImpact = get_cvss_numeric_value('C', (string)($risk['CVSS_ConfImpact'] ?? ''));
+                $integImpact = get_cvss_numeric_value('I', (string)($risk['CVSS_IntegImpact'] ?? ''));
+                $availImpact = get_cvss_numeric_value('A', (string)($risk['CVSS_AvailImpact'] ?? ''));
+                $accessComplexity = get_cvss_numeric_value('AC', (string)($risk['CVSS_AccessComplexity'] ?? ''));
+                $authentication = get_cvss_numeric_value('Au', (string)($risk['CVSS_Authentication'] ?? ''));
+                $accessVector = get_cvss_numeric_value('AV', (string)($risk['CVSS_AccessVector'] ?? ''));
+
+                // calculate_cvss_score() (includes/cvss.php) rounds $impact
+                // BEFORE feeding it into impact_function()/base_score(), not
+                // just at the end -- matching that exact ordering here.
+                // Skipping this intermediate round (as an earlier version of
+                // this branch did) silently disagrees with the persisted/
+                // canonical score for the same inputs (e.g. AV:N, AC:L,
+                // Au:N, C/I/A:C rounds to 10.1 canonically, but only 10.0
+                // without this step).
+                $impactValue = impact($confImpact, $integImpact, $availImpact);
+                $impactValue = round_up_1_decimal($impactValue);
+                $impactFn = impact_function($impactValue);
+                $exploitabilitySubscore = exploitability_subscore($accessComplexity, $authentication, $accessVector);
+                $baseScore = round_up_1_decimal(base_score($impactValue, $exploitabilitySubscore, $impactFn));
+                // base_score(0, 0, 0) (every base metric blank) evaluates to
+                // IEEE-754 negative zero, which PHP renders as the literal
+                // string "-0" when concatenated -- normalize to a clean 0
+                // rather than showing that to the user.
+                if ($baseScore == 0) {
+                    $baseScore = 0;
+                }
+
+                $display .= ' (' . $lang['BaseScore'] . ': ' . $baseScore . ')';
+            } elseif ($raw === '3') {
+                // Same plain average update_dread_score() (includes/
+                // functions.php) already computes and persists into
+                // calculated_risk -- recomputed here from the raw DREAD_*
+                // columns rather than trusting a possibly-stale
+                // calculated_risk, matching how the CVSS branch above
+                // recomputes from CVSS_* rather than trusting a stored
+                // value.
+                $damagePotential = (float)($risk['DREAD_DamagePotential'] ?? 0);
+                $reproducibility = (float)($risk['DREAD_Reproducibility'] ?? 0);
+                $exploitability = (float)($risk['DREAD_Exploitability'] ?? 0);
+                $affectedUsers = (float)($risk['DREAD_AffectedUsers'] ?? 0);
+                $discoverability = (float)($risk['DREAD_Discoverability'] ?? 0);
+                $dreadScore = round(
+                    ($damagePotential + $reproducibility + $exploitability + $affectedUsers + $discoverability) / 5,
+                    2
+                );
+                // $lang['Score'] ("Score"), not $lang['DreadScore']
+                // ("DREAD Score") -- $display already starts with the
+                // method name itself, so "DREAD (DREAD Score: 7)" would be
+                // redundant. Matches CVSS's own non-redundant "(Base Score:
+                // X)" and Classic's "(Current Likelihood: X, ...)" -- a
+                // specific sub-label, never the method's own name again.
+                $display .= ' (' . $lang['Score'] . ': ' . $dreadScore . ')';
+            } elseif ($raw === '4') {
+                // Same Likelihood x Impact severity matrix
+                // update_owasp_score() (includes/functions.php) already
+                // computes, recomputed here from the raw OWASP_* columns
+                // (see api_owasp_severity_score()'s own docblock for the
+                // live-DB-average dependency this branch has, unlike the
+                // CVSS/DREAD branches above).
+                $skillLevel = (float)($risk['OWASP_SkillLevel'] ?? 0);
+                $motive = (float)($risk['OWASP_Motive'] ?? 0);
+                $opportunity = (float)($risk['OWASP_Opportunity'] ?? 0);
+                $size = (float)($risk['OWASP_Size'] ?? 0);
+                $easeOfDiscovery = (float)($risk['OWASP_EaseOfDiscovery'] ?? 0);
+                $easeOfExploit = (float)($risk['OWASP_EaseOfExploit'] ?? 0);
+                $awareness = (float)($risk['OWASP_Awareness'] ?? 0);
+                $intrusionDetection = (float)($risk['OWASP_IntrusionDetection'] ?? 0);
+                $lossOfConfidentiality = (float)($risk['OWASP_LossOfConfidentiality'] ?? 0);
+                $lossOfIntegrity = (float)($risk['OWASP_LossOfIntegrity'] ?? 0);
+                $lossOfAvailability = (float)($risk['OWASP_LossOfAvailability'] ?? 0);
+                $lossOfAccountability = (float)($risk['OWASP_LossOfAccountability'] ?? 0);
+                $financialDamage = (float)($risk['OWASP_FinancialDamage'] ?? 0);
+                $reputationDamage = (float)($risk['OWASP_ReputationDamage'] ?? 0);
+                $nonCompliance = (float)($risk['OWASP_NonCompliance'] ?? 0);
+                $privacyViolation = (float)($risk['OWASP_PrivacyViolation'] ?? 0);
+
+                $threatAgent = ($skillLevel + $motive + $opportunity + $size) / 4;
+                $vulnerability = ($easeOfDiscovery + $easeOfExploit + $awareness + $intrusionDetection) / 4;
+                $likelihoodCategory = api_owasp_category(($threatAgent + $vulnerability) / 2);
+
+                $technicalImpact = ($lossOfConfidentiality + $lossOfIntegrity + $lossOfAvailability + $lossOfAccountability) / 4;
+                $businessImpact = ($financialDamage + $reputationDamage + $nonCompliance + $privacyViolation) / 4;
+                $impactCategory = api_owasp_category(($technicalImpact + $businessImpact) / 2);
+
+                $owaspScore = api_owasp_severity_score($likelihoodCategory, $impactCategory);
+
+                $display .= ' (' . $lang['Score'] . ': ' . $owaspScore . ')';
+            } elseif ($raw === '5') {
+                // Custom scoring: just use the already-stored Custom score
+                // value directly (exposed via the 'Custom' resolver already
+                // in scope). No calculation needed: the Custom score IS the
+                // stored value. Matches the non-redundant "(Score: X)"
+                // precedent of Classic/CVSS/DREAD/OWASP above.
+                $customScore = (float)($risk['Custom'] ?? 0);
+                $display .= ' (' . $lang['Score'] . ': ' . $customScore . ')';
+            } elseif ($raw === '6') {
+                // Phase 4d-v: no pure "compute only" counterpart to
+                // update_contributing_risk_score() (includes/functions.php)
+                // exists -- that function always writes (UPDATE + DELETE +
+                // INSERT) -- so this branch reuses ITS OWN read-only
+                // helpers (get_max_value(), get_contributing_impacts_by_
+                // subjectimpact_values(), get_impact_values_from_
+                // contributing_risks_id(), get_contributing_weight_by_id())
+                // and re-derives the SAME weighted-sum arithmetic that
+                // function computes, matching the DREAD/OWASP branches'
+                // own precedent of recomputing from raw stored values
+                // rather than trusting a possibly-stale calculated_risk.
+                $contributingLikelihood = (int)($risk['Contributing_Likelihood'] ?? 0);
+                $maxLikelihood = get_max_value('contributing_risks_likelihood');
+                $likelihoodSum = $maxLikelihood ? ($contributingLikelihood * 5 / $maxLikelihood) : 0;
+
+                $contributingImpacts = get_contributing_impacts_by_subjectimpact_values((string)($risk['Contributing_Risks_Impacts'] ?? ''));
+                $impactSum = 0;
+                foreach ($contributingImpacts as $contributingRiskId => $contributingImpact) {
+                    $impactValues = get_impact_values_from_contributing_risks_id($contributingRiskId);
+                    $maxImpact = $impactValues ? max(array_column($impactValues, 'value')) : 0;
+                    $weight = get_contributing_weight_by_id($contributingRiskId);
+                    // Review Focus: a factor referenced in stored data but
+                    // since deleted from contributing_risks resolves to
+                    // $maxImpact=0/$weight=false here -- skip it rather
+                    // than divide by zero or add a false weight.
+                    if ($maxImpact && $weight !== false) {
+                        $impactSum += $weight * ($contributingImpact * 5 / $maxImpact);
+                    }
+                }
+                $contributingRiskScore = round($likelihoodSum + $impactSum, 2);
+                $display .= ' (' . $lang['Score'] . ': ' . $contributingRiskScore . ')';
+            }
+            return ['raw' => $raw, 'display' => $display];
+        },
+        // Raw-only siblings of 'scoring_method' above -- NOT their own roster
+        // field (RiskScoringMethod is the only entry in the field roster;
+        // these have no card_key/label of their own). Exposed purely so
+        // risk-details-form.js's applyPrefillValue() can restore the
+        // RiskScoringMethod widget's Classic/Custom/CVSS sub-controls when
+        // Edit Details opens on an existing risk -- $risk already carries
+        // risk_scoring.* (get_risk_by_id()'s own SELECT), so this is zero new
+        // queries for these. Column capitalization (CLASSIC_likelihood/
+        // CLASSIC_impact/Custom/CVSS_*) matches submit_risk_scoring()'s own
+        // `INSERT INTO risk_scoring` statement exactly.
+        'likelihood' => function (array $risk) {
+            $raw = (string)($risk['CLASSIC_likelihood'] ?? '');
+            return ['raw' => $raw, 'display' => get_name_by_value('likelihood', $raw)];
+        },
+        'impact' => function (array $risk) {
+            $raw = (string)($risk['CLASSIC_impact'] ?? '');
+            return ['raw' => $raw, 'display' => get_name_by_value('impact', $raw)];
+        },
+        'Custom' => function (array $risk) {
+            $raw = (string)($risk['Custom'] ?? '');
+            return ['raw' => $raw, 'display' => $raw];
+        },
+        // Raw-only siblings of 'scoring_method' for DREAD (Phase 4d-iii) --
+        // same purpose as 'likelihood'/'impact'/'Custom' above: let
+        // risk-details-form.js's applyPrefillValue() restore the
+        // RiskScoringMethod widget's 5 DREAD sub-controls on Edit Details.
+        // Column names match update_dread_score()'s own UPDATE statement
+        // exactly (includes/functions.php).
+        // Resolver KEYS are the DREAD-prefixed POST names (matching
+        // addRisk()/updateRisk()'s actual reads -- see Global Constraints),
+        // not the bare metric names -- applyPrefillValue() (Task 2, Step 6)
+        // looks these up by DREAD_FIELDS[].name, which uses the same names.
+        'DREADDamage' => function (array $risk) {
+            $raw = (string)($risk['DREAD_DamagePotential'] ?? '');
+            return ['raw' => $raw, 'display' => $raw];
+        },
+        'DREADReproducibility' => function (array $risk) {
+            $raw = (string)($risk['DREAD_Reproducibility'] ?? '');
+            return ['raw' => $raw, 'display' => $raw];
+        },
+        'DREADExploitability' => function (array $risk) {
+            $raw = (string)($risk['DREAD_Exploitability'] ?? '');
+            return ['raw' => $raw, 'display' => $raw];
+        },
+        'DREADAffectedUsers' => function (array $risk) {
+            $raw = (string)($risk['DREAD_AffectedUsers'] ?? '');
+            return ['raw' => $raw, 'display' => $raw];
+        },
+        'DREADDiscoverability' => function (array $risk) {
+            $raw = (string)($risk['DREAD_Discoverability'] ?? '');
+            return ['raw' => $raw, 'display' => $raw];
+        },
+        // Raw-only siblings of 'scoring_method' for OWASP (Phase 4d-iv) --
+        // same purpose as DREAD's own 5 above: let risk-details-form.js's
+        // applyPrefillValue() restore the RiskScoringMethod widget's 16
+        // OWASP sub-controls on Edit Details. Resolver keys are the
+        // VERIFIED WIRE NAMES (matching every <select name="..."> in
+        // risk-details-form.js), not the DB column names read from
+        // $risk[] (which differ only by an inserted underscore) or
+        // update_owasp_score()'s own PHP parameter names (which differ
+        // for 3 of these 16 -- see this phase's own spec).
+        'OWASPSkillLevel' => function (array $risk) {
+            $raw = (string)($risk['OWASP_SkillLevel'] ?? '');
+            return ['raw' => $raw, 'display' => $raw];
+        },
+        'OWASPMotive' => function (array $risk) {
+            $raw = (string)($risk['OWASP_Motive'] ?? '');
+            return ['raw' => $raw, 'display' => $raw];
+        },
+        'OWASPOpportunity' => function (array $risk) {
+            $raw = (string)($risk['OWASP_Opportunity'] ?? '');
+            return ['raw' => $raw, 'display' => $raw];
+        },
+        'OWASPSize' => function (array $risk) {
+            $raw = (string)($risk['OWASP_Size'] ?? '');
+            return ['raw' => $raw, 'display' => $raw];
+        },
+        'OWASPEaseOfDiscovery' => function (array $risk) {
+            $raw = (string)($risk['OWASP_EaseOfDiscovery'] ?? '');
+            return ['raw' => $raw, 'display' => $raw];
+        },
+        'OWASPEaseOfExploit' => function (array $risk) {
+            $raw = (string)($risk['OWASP_EaseOfExploit'] ?? '');
+            return ['raw' => $raw, 'display' => $raw];
+        },
+        'OWASPAwareness' => function (array $risk) {
+            $raw = (string)($risk['OWASP_Awareness'] ?? '');
+            return ['raw' => $raw, 'display' => $raw];
+        },
+        'OWASPIntrusionDetection' => function (array $risk) {
+            $raw = (string)($risk['OWASP_IntrusionDetection'] ?? '');
+            return ['raw' => $raw, 'display' => $raw];
+        },
+        'OWASPLossOfConfidentiality' => function (array $risk) {
+            $raw = (string)($risk['OWASP_LossOfConfidentiality'] ?? '');
+            return ['raw' => $raw, 'display' => $raw];
+        },
+        'OWASPLossOfIntegrity' => function (array $risk) {
+            $raw = (string)($risk['OWASP_LossOfIntegrity'] ?? '');
+            return ['raw' => $raw, 'display' => $raw];
+        },
+        'OWASPLossOfAvailability' => function (array $risk) {
+            $raw = (string)($risk['OWASP_LossOfAvailability'] ?? '');
+            return ['raw' => $raw, 'display' => $raw];
+        },
+        'OWASPLossOfAccountability' => function (array $risk) {
+            $raw = (string)($risk['OWASP_LossOfAccountability'] ?? '');
+            return ['raw' => $raw, 'display' => $raw];
+        },
+        'OWASPFinancialDamage' => function (array $risk) {
+            $raw = (string)($risk['OWASP_FinancialDamage'] ?? '');
+            return ['raw' => $raw, 'display' => $raw];
+        },
+        'OWASPReputationDamage' => function (array $risk) {
+            $raw = (string)($risk['OWASP_ReputationDamage'] ?? '');
+            return ['raw' => $raw, 'display' => $raw];
+        },
+        'OWASPNonCompliance' => function (array $risk) {
+            $raw = (string)($risk['OWASP_NonCompliance'] ?? '');
+            return ['raw' => $raw, 'display' => $raw];
+        },
+        'OWASPPrivacyViolation' => function (array $risk) {
+            $raw = (string)($risk['OWASP_PrivacyViolation'] ?? '');
+            return ['raw' => $raw, 'display' => $raw];
+        },
+        'AccessVector' => function (array $risk) {
+            $raw = (string)($risk['CVSS_AccessVector'] ?? '');
+            return ['raw' => $raw, 'display' => $raw];
+        },
+        'AccessComplexity' => function (array $risk) {
+            $raw = (string)($risk['CVSS_AccessComplexity'] ?? '');
+            return ['raw' => $raw, 'display' => $raw];
+        },
+        'Authentication' => function (array $risk) {
+            $raw = (string)($risk['CVSS_Authentication'] ?? '');
+            return ['raw' => $raw, 'display' => $raw];
+        },
+        'ConfImpact' => function (array $risk) {
+            $raw = (string)($risk['CVSS_ConfImpact'] ?? '');
+            return ['raw' => $raw, 'display' => $raw];
+        },
+        'IntegImpact' => function (array $risk) {
+            $raw = (string)($risk['CVSS_IntegImpact'] ?? '');
+            return ['raw' => $raw, 'display' => $raw];
+        },
+        'AvailImpact' => function (array $risk) {
+            $raw = (string)($risk['CVSS_AvailImpact'] ?? '');
+            return ['raw' => $raw, 'display' => $raw];
+        },
+        'Exploitability' => function (array $risk) {
+            $raw = (string)($risk['CVSS_Exploitability'] ?? '');
+            return ['raw' => $raw, 'display' => $raw];
+        },
+        'RemediationLevel' => function (array $risk) {
+            $raw = (string)($risk['CVSS_RemediationLevel'] ?? '');
+            return ['raw' => $raw, 'display' => $raw];
+        },
+        'ReportConfidence' => function (array $risk) {
+            $raw = (string)($risk['CVSS_ReportConfidence'] ?? '');
+            return ['raw' => $raw, 'display' => $raw];
+        },
+        'CollateralDamagePotential' => function (array $risk) {
+            $raw = (string)($risk['CVSS_CollateralDamagePotential'] ?? '');
+            return ['raw' => $raw, 'display' => $raw];
+        },
+        'TargetDistribution' => function (array $risk) {
+            $raw = (string)($risk['CVSS_TargetDistribution'] ?? '');
+            return ['raw' => $raw, 'display' => $raw];
+        },
+        'ConfidentialityRequirement' => function (array $risk) {
+            $raw = (string)($risk['CVSS_ConfidentialityRequirement'] ?? '');
+            return ['raw' => $raw, 'display' => $raw];
+        },
+        'IntegrityRequirement' => function (array $risk) {
+            $raw = (string)($risk['CVSS_IntegrityRequirement'] ?? '');
+            return ['raw' => $raw, 'display' => $raw];
+        },
+        'AvailabilityRequirement' => function (array $risk) {
+            $raw = (string)($risk['CVSS_AvailabilityRequirement'] ?? '');
+            return ['raw' => $raw, 'display' => $raw];
+        },
+        'source' => function (array $risk) {
+            $raw = (string)($risk['source'] ?? '');
+            return ['raw' => $raw, 'display' => get_name_by_value('source', $raw)];
+        },
+        'regulation' => function (array $risk) {
+            $raw = (string)($risk['regulation'] ?? '');
+            return ['raw' => $raw, 'display' => get_name_by_value('frameworks', $raw)];
+        },
+        'location' => $multi('location', 'location_names'),
+        'team' => $multi('team', 'team_names'),
+        'technology' => function (array $risk) {
+            $rawString = $risk['technology'] ?? '';
+            $raw = ($rawString === '' || $rawString === null) ? [] : explode(',', (string)$rawString);
+            // 'names' is sourced from the main risk-fetch query's own
+            // GROUP_CONCAT(DISTINCT technology.name) column (includes/
+            // functions.php), NOT by re-splitting get_technology_names()'s
+            // ", "-joined, unlimited string -- same reasoning $multi()'s
+            // identical comment gives: reproduce what the database actually
+            // concatenated (bare comma) rather than parse a differently-
+            // separated derived string.
+            $namesString = (string)($risk['technology_names'] ?? '');
+            return [
+                'raw' => $raw,
+                'display' => get_technology_names($rawString),
+                'names' => ($namesString === '') ? [] : explode(',', $namesString),
+            ];
+        },
+        'additional_stakeholders' => function (array $risk) {
+            $rawString = $risk['additional_stakeholders'] ?? '';
+            $raw = ($rawString === '' || $rawString === null) ? [] : explode(',', (string)$rawString);
+            // 'names' is sourced from the main risk-fetch query's own
+            // GROUP_CONCAT(DISTINCT adsh.name) column (includes/
+            // functions.php) rather than get_stakeholder_names() -- that
+            // helper also truncates at its own $limit=4 and appends a
+            // literal ", ..." string, which would render as a bogus extra
+            // chip. The GROUP_CONCAT column has every stakeholder, comma-
+            // separated, with nothing to strip.
+            $namesString = (string)($risk['additional_stakeholder_names'] ?? '');
+            return [
+                'raw' => $raw,
+                'display' => get_stakeholder_names($rawString),
+                'names' => ($namesString === '') ? [] : explode(',', $namesString),
+            ];
+        },
+        'owner' => function (array $risk) {
+            $raw = (string)($risk['owner'] ?? '');
+            return ['raw' => $raw, 'display' => get_name_by_value('user', $raw)];
+        },
+        'manager' => function (array $risk) {
+            $raw = (string)($risk['manager'] ?? '');
+            return ['raw' => $raw, 'display' => get_name_by_value('user', $raw)];
+        },
+        // The two rich-text (WYSIWYG) fields are the only ones whose stored
+        // value is HTML rather than plain text, so they are the only ones that
+        // carry a third key. `display_html` is an explicit, per-field opt-in the
+        // read view renders with .html() instead of .text() -- see
+        // risk-details-view.js's renderFieldItem(). Without it the Cards showed
+        // the user literal "<p>...</p>" angle brackets, because .text() is the
+        // right default for every other field and must stay that way.
+        //
+        // purify_html() is the SAME HTMLPurifier pass the legacy read view used
+        // at its sink ($escaper->purifyHtml() in display_risk_assessment_view()
+        // / display_additional_notes_view(), includes/displayrisks.php -- that
+        // method is a straight delegate to this function), so behaviour here is
+        // identical to what this view replaced: the stored value is purified
+        // exactly once, on read, and is never pre-escaped on the way in.
+        //
+        // `raw` deliberately stays UNpurified: it is what risk-details-form.js
+        // prefills the HugeRTE editor with, and purifying it would let a read
+        // -> edit -> save round-trip silently drop content the user had typed.
+        'assessment' => function (array $risk) {
+            $v = try_decrypt($risk['assessment'] ?? '');
+            return ['raw' => $v, 'display' => $v, 'display_html' => purify_html($v)];
+        },
+        'notes' => function (array $risk) {
+            $v = try_decrypt($risk['notes'] ?? '');
+            return ['raw' => $v, 'display' => $v, 'display_html' => purify_html($v)];
+        },
+        'tags' => function (array $risk) {
+            $rawString = (string)($risk['risk_tags'] ?? '');
+            $raw = ($rawString === '') ? [] : explode(',', $rawString);
+            // Tags store their own text directly (no id -> name lookup), so
+            // 'raw' already IS the per-item array the chip renderer needs.
+            return ['raw' => $raw, 'display' => $rawString, 'names' => $raw];
+        },
+        'risk_catalog_mapping' => function (array $risk) {
+            $rawString = $risk['risk_catalog_mapping'] ?? '';
+            $raw = ($rawString === '' || $rawString === null) ? [] : explode(',', (string)$rawString);
+            // get_names_by_multi_values()'s own $return_array param gives the
+            // per-item array the chip renderer needs directly -- no need to
+            // re-split a joined string. 'display' is then derived from that
+            // same array (implode with the identical separator the old
+            // single call used) rather than querying twice.
+            $names = get_names_by_multi_values('risk_catalog', $rawString, true, ', ', true);
+            return ['raw' => $raw, 'display' => implode(', ', $names), 'names' => $names];
+        },
+        'threat_catalog_mapping' => function (array $risk) {
+            $rawString = $risk['threat_catalog_mapping'] ?? '';
+            $raw = ($rawString === '' || $rawString === null) ? [] : explode(',', (string)$rawString);
+            $names = get_names_by_multi_values('threat_catalog', $rawString, true, ', ', true);
+            return ['raw' => $raw, 'display' => implode(', ', $names), 'names' => $names];
+        },
+        'submission_date' => function (array $risk) {
+            $v = (string)($risk['submission_date'] ?? '');
+            return ['raw' => $v, 'display' => $v];
+        },
+        'submitted_by' => function (array $risk) {
+            $raw = (string)($risk['submitted_by'] ?? '');
+            return ['raw' => $raw, 'display' => get_name_by_value('user', $raw)];
+        },
+        // Unlike 'team'/'location' above, there is no risks-row column to
+        // explode -- assets/asset groups live in separate junction tables
+        // (risks_to_assets/risks_to_asset_groups), joined by
+        // get_assets_and_asset_groups_of_type(). $risk['id'] here is the
+        // INTERNAL id (get_risk_by_id() does its own -1000 before querying,
+        // confirmed by reading that function directly), but
+        // get_assets_and_asset_groups_of_type() expects the EXTERNAL one --
+        // it does its OWN -1000 internally for type='risk'. Passing
+        // $risk['id'] straight through would silently double-subtract and
+        // query the wrong risk.
+        // `display` keeps the exact comma-joined, group-name-bracketed string
+        // get_assets_and_asset_groups_of_type_as_string()/
+        // get_list_of_asset_and_asset_group_names() already build from this
+        // data (kept for any caller still reading the plain string) --
+        // `items` is new: a {name, class} pair per selection (class is
+        // 'asset' or 'group', matching get_assets_and_asset_groups_of_type()'s
+        // own column), which is what renderFieldItem()'s AffectedAssets chip
+        // branch (risk-details-view.js) reads to tell an asset chip from an
+        // asset-group chip. Read mode ONLY -- risk-details-form.js's edit-mode
+        // widget (buildAssetsAssetGroupsWidget()) never reads this resolver's
+        // output at all; it fetches and pre-selects the risk's current picks
+        // itself via its own /api/v2/asset-group/options call, so widening
+        // this resolver's return shape cannot affect it.
+        'assets_asset_groups' => function (array $risk) {
+            $externalId = (int)($risk['id'] ?? 0) + 1000;
+            $items = get_assets_and_asset_groups_of_type($externalId, 'risk', true);
+            $display = implode(',', array_map(function ($item) {
+                return $item['class'] === 'asset' ? $item['name'] : "[{$item['name']}]";
+            }, $items));
+            return [
+                'raw' => $display,
+                'display' => $display,
+                'items' => array_map(function ($item) {
+                    return ['name' => $item['name'], 'class' => $item['class']];
+                }, $items),
+            ];
+        },
+        // Raw-only siblings of 'scoring_method' for Contributing Risk
+        // (Phase 4d-v) -- same purpose as DREAD's/OWASP's own siblings
+        // above: let risk-details-form.js's applyPrefillValue() restore
+        // the RiskScoringMethod widget's Contributing Risk sub-controls on
+        // Edit Details. Unlike every other sibling resolver here,
+        // 'ContributingImpacts' resolves to an OBJECT (factor_id => impact),
+        // not a scalar -- the factor roster is dynamic, so there is no
+        // fixed set of column names to expose one resolver per field the
+        // way DREAD's/OWASP's fixed rosters allow.
+        'ContributingLikelihood' => function (array $risk) {
+            $raw = (string)($risk['Contributing_Likelihood'] ?? '');
+            return ['raw' => $raw, 'display' => $raw];
+        },
+        'ContributingImpacts' => function (array $risk) {
+            $raw = get_contributing_impacts_by_subjectimpact_values((string)($risk['Contributing_Risks_Impacts'] ?? ''));
+            return ['raw' => $raw, 'display' => ''];
+        },
+        // Extra-gated the same way api_resolve_ui_risk_fields_for_group()
+        // gates the field's presence in the roster (that function's own
+        // docblock has the full reasoning) -- this resolver runs
+        // unconditionally for EVERY core field regardless of roster
+        // membership (see the plain foreach above), so without this check
+        // a stale `jira_issues` join value would still leak into the JSON
+        // response's `values.jira_issue_key` even with the Extra disabled
+        // and the field correctly absent from `fields`/`layout`.
+        'jira_issue_key' => function (array $risk) {
+            if (!jira_extra()) {
+                return ['raw' => '', 'display' => ''];
+            }
+            $v = (string)($risk['jira_issue_key'] ?? '');
+            return ['raw' => $v, 'display' => $v];
+        },
+    ];
+}
+
+/**
+ * Used for 'GET' API call '/ui/risk/{id}/values'. Core-owned. Unlike the
+ * rest of the /ui/risk/* family (template-only, no risk-instance data,
+ * gated on the coarse submit_risks), this returns ONE SPECIFIC risk's real
+ * data -- so it carries viewrisk()'s own dual gate (includes/api.php:592)
+ * instead: check_permission('riskmanagement') says the caller may use the
+ * risk module; check_access_for_risk($id) says they may see THIS risk.
+ * Both are needed for the same reason viewrisk()'s own comment gives.
+ */
+function api_get_ui_risk_values($id = null) {
+    global $lang;
+
+    if (!check_permission('riskmanagement')) {
+        set_alert(true, "bad", $lang['NoPermissionForRiskManagement']);
+        api_v2_json_result(400, get_alert(true), null);
+        return;
+    }
+
+    $id = (int)($id ?? get_param("GET", "id", 0));
+    if (!$id) {
+        set_alert(true, "bad", $lang['YouNeedToSpecifyAnIdParameter']);
+        api_v2_json_result(400, get_alert(true), null);
+        return;
+    }
+
+    if (!check_access_for_risk($id)) {
+        set_alert(true, "bad", $lang['NoPermissionForThisAction']);
+        api_v2_json_result(403, get_alert(true), null);
+        return;
+    }
+
+    $risk = get_risk_by_id($id);
+    if (count($risk) === 0) {
+        api_v2_json_result(404, "Risk ID not found.", null);
+        return;
+    }
+    $risk = $risk[0];
+
+    // Resolved once: it selects the custom-field roster below AND is returned
+    // to the client so the field/layout calls it makes next ask for the same
+    // group. The two must not be able to drift.
+    $templateGroupId = (int)($risk['template_group_id'] ?? 1);
+
+    $values = [];
+    $resolvers = api_ui_core_field_resolvers();
+    foreach ($resolvers as $formName => $resolve) {
+        $values[$formName] = $resolve($risk);
+    }
+
+    if (customization_extra() && table_exists('custom_risk_data')) {
+        $extra_index = realpath(__DIR__ . '/../../../extras/customization/index.php');
+        if ($extra_index !== false) {
+            require_once($extra_index);
+        }
+        if (function_exists('getCustomFieldValuesByRiskId')) {
+            $fields = api_resolve_ui_risk_fields_for_group($templateGroupId);
+            $customValuesByFieldId = [];
+            foreach (getCustomFieldValuesByRiskId($id, 1) as $row) {
+                $customValuesByFieldId[(int)$row['field_id']] = $row['value'];
+            }
+            foreach ($fields as $field) {
+                if ((int)($field['is_basic'] ?? 0) === 1 || !function_exists('api_ui_custom_field_raw_and_display_value')) {
+                    continue;
+                }
+                $fieldId = (int)$field['id'];
+                $rawStored = $customValuesByFieldId[$fieldId] ?? '';
+                $values['custom_field_' . $fieldId] = api_ui_custom_field_raw_and_display_value($field, $rawStored);
+            }
+        }
+    }
+
+    // Preserves the legacy read view's supporting-documentation UI (file
+    // list + download links) verbatim -- the generic raw/display shape
+    // above doesn't fit it (it's not a label:value pair, it's a rendered
+    // list), and rebuilding that list client-side is out of this phase's
+    // scope (see the Global Constraints note on file upload). Server-
+    // rendered HTML, same as it always was; the client (Task 4) injects it
+    // via .html() into ONLY this one card slot, never via the generic
+    // text-insertion path the rest of the fields use.
+    ob_start();
+    supporting_documentation($id, "view", 1);
+    $supportingDocumentationHtml = ob_get_clean();
+
+    // Inherent/residual risk score, level name, and color -- the SAME
+    // 3 server-side helpers view_score_html() (includes/display.php) calls
+    // to render the page-header risk-level tiles at initial page load. The
+    // Details tab's Cards system already re-fetches THIS endpoint after a
+    // successful save (risk-details-form.js's saveDetailsForm()); returning
+    // this here (no second round-trip) is what lets risk-view-details.js
+    // patch those tiles in place afterward instead of leaving them frozen at
+    // whatever they were on page load -- the header tiles have no client-
+    // side render path of their own to refresh otherwise (they're plain
+    // server-rendered HTML), which is exactly the bug this exists to fix.
+    $residualRisk = (!$risk['calculated_risk'] || $risk['calculated_risk'] == "0.0") ? "0" : get_residual_risk($id);
+    $riskSummary = [
+        'calculated_risk' => $risk['calculated_risk'],
+        'calculated_risk_level_name' => get_risk_level_name($risk['calculated_risk']),
+        'calculated_risk_color' => get_risk_color($risk['calculated_risk']),
+        'residual_risk' => $residualRisk,
+        'residual_risk_level_name' => get_risk_level_name($residualRisk),
+        'residual_risk_color' => get_risk_color($residualRisk),
+    ];
+
+    api_v2_json_result(200, null, [
+        // THIS risk's own template group, not the viewer's default. The custom
+        // field values above are already resolved against it
+        // (api_resolve_ui_risk_fields_for_group($templateGroupId)), so a client
+        // that then asks /ui/risk/fields and /ui/risk/layout for the viewer's
+        // default group instead would lay a different group's field roster over
+        // this group's values. Returning it here is what lets the Details tab
+        // ask for the matching roster -- and lets edit mode pin itself to this
+        // group rather than offering a mid-edit group switcher.
+        'template_group_id' => $templateGroupId,
+        'values' => $values,
+        'supporting_documentation_html' => $supportingDocumentationHtml,
+        'risk_summary' => $riskSummary,
+        // Gates SupportingDocumentation's edit-mode file widget
+        // (buildSupportingDocumentationWidget(), risk-details-form.js) --
+        // same shape as api_get_ui_risk_mitigation_values()'s own
+        // 'can_edit_mitigation' flag.
+        'can_modify_risk' => !empty($_SESSION['modify_risks']),
+    ]);
+}
+
+/**
+ * Field-name -> resolver for the Mitigation tab (tab_index=2, Phase 4b-iii).
+ * Sibling to api_ui_core_field_resolvers() (Details tab): every closure
+ * receives the full get_mitigation_by_id() row and returns
+ * ['raw' => mixed, 'display' => string]. Keyed by the SAME form names
+ * risk-details-form.js's CORE_FIELD_FORM_NAMES maps the Mitigation-tab core
+ * field NAMES to (MitigationDate -> submission_date, MitigationPlanning ->
+ * planning_date, etc.) -- see that table's own comment block for the
+ * field-by-field widget mapping this mirrors.
+ *
+ * AcceptMitigation and MitigationControlsList are deliberately absent --
+ * neither is a Cards field at all any more, so neither ever reaches the
+ * client's field roster in the first place (risk_mitigation_field_is_
+ * positionable(), includes/functions.php, excludes both;
+ * api_resolve_ui_risk_fields_for_group()'s own filter enforces it here).
+ * MitigationControlsList is a derived, non-positionable view of
+ * MitigationControls. AcceptMitigation is a top-level Accept/Reject action
+ * widget rendered next to Edit Mitigation (risk-view-mitigation.js,
+ * api_get_ui_risk_mitigation_values()'s own 'accept_mitigation' key) --
+ * it never had a real edit-mode control to position in the Cards grid to
+ * begin with (risk_mitigation_field_renders_no_control() still reflects
+ * that, unrelated to this exclusion). MitigationControls itself IS here --
+ * it is a real, positionable field with its own dedicated widget (Phase
+ * 4b-ii).
+ */
+function api_ui_mitigation_field_resolvers(): array {
+    return [
+        'submission_date' => function (array $mitigation) {
+            $v = (string)($mitigation['submission_date'] ?? '');
+            return ['raw' => $v, 'display' => $v];
+        },
+        // MitigationDate's top-row partner on the Strategy card (20260925001
+        // migration, extras/customization/upgrade.php). get_mitigation_by_id()
+        // (includes/functions.php) already joins `user t7 ON t1.submitted_by
+        // =t7.value` and selects `t7.name AS submitted_by_name` -- this was
+        // collected for every mitigation already, just never surfaced as a
+        // roster field until now. Same shape as api_ui_core_field_resolvers()'s
+        // own 'submitted_by' (Details tab), except that one calls
+        // get_name_by_value('user', ...) itself because get_risk_by_id() has
+        // no equivalent pre-joined name column.
+        'submitted_by' => function (array $mitigation) {
+            $raw = (string)($mitigation['submitted_by'] ?? '');
+            return ['raw' => $raw, 'display' => (string)($mitigation['submitted_by_name'] ?? '')];
+        },
+        'planning_date' => function (array $mitigation) {
+            $v = (string)($mitigation['planning_date'] ?? '');
+            return ['raw' => $v, 'display' => $v];
+        },
+        'planning_strategy' => function (array $mitigation) {
+            $raw = (string)($mitigation['planning_strategy'] ?? '');
+            return ['raw' => $raw, 'display' => (string)($mitigation['planning_strategy_name'] ?? '')];
+        },
+        'mitigation_effort' => function (array $mitigation) {
+            $raw = (string)($mitigation['mitigation_effort'] ?? '');
+            return ['raw' => $raw, 'display' => (string)($mitigation['mitigation_effort_name'] ?? '')];
+        },
+        'mitigation_cost' => function (array $mitigation) {
+            $raw = (string)($mitigation['mitigation_cost'] ?? '');
+            return ['raw' => $raw, 'display' => api_ui_mitigation_cost_display($mitigation)];
+        },
+        'mitigation_owner' => function (array $mitigation) {
+            $raw = (string)($mitigation['mitigation_owner'] ?? '');
+            return ['raw' => $raw, 'display' => (string)($mitigation['mitigation_owner_name'] ?? '')];
+        },
+        'mitigation_team' => function (array $mitigation) {
+            $rawString = (string)($mitigation['mitigation_team'] ?? '');
+            $raw = ($rawString === '') ? [] : explode(',', $rawString);
+            return ['raw' => $raw, 'display' => (string)($mitigation['mitigation_team_name'] ?? '')];
+        },
+        'mitigation_percent' => function (array $mitigation) {
+            $v = (string)($mitigation['mitigation_percent'] ?? '0');
+            return ['raw' => $v, 'display' => $v];
+        },
+        // Rich-text (WYSIWYG) fields, same shape as 'assessment'/'notes'
+        // above: `display_html` is the opt-in the read view renders with
+        // .html() instead of .text() (risk-details-view.js's
+        // renderFieldItem()), purified with the SAME purify_html() the
+        // legacy view already uses at its sink (display_current_solution_
+        // view()/display_security_requirements_view()/display_security_
+        // recommendations_view(), includes/displayrisks.php -- all three
+        // already call $escaper->purifyHtml() there today, even though the
+        // legacy EDIT form only ever offered a plain <textarea>; this
+        // resolver is what finally wires a real HugeRTE editor to that
+        // existing purify-on-read behavior). `raw` stays UNpurified for the
+        // same reason as 'assessment'/'notes': it prefills the HugeRTE
+        // editor, and purifying it here would let a read -> edit -> save
+        // round-trip silently drop content the user had typed.
+        'current_solution' => function (array $mitigation) {
+            $v = try_decrypt($mitigation['current_solution'] ?? '');
+            return ['raw' => $v, 'display' => $v, 'display_html' => purify_html($v)];
+        },
+        'security_requirements' => function (array $mitigation) {
+            $v = try_decrypt($mitigation['security_requirements'] ?? '');
+            return ['raw' => $v, 'display' => $v, 'display_html' => purify_html($v)];
+        },
+        'security_recommendations' => function (array $mitigation) {
+            $v = try_decrypt($mitigation['security_recommendations'] ?? '');
+            return ['raw' => $v, 'display' => $v, 'display_html' => purify_html($v)];
+        },
+        'mitigation_controls' => function (array $mitigation) {
+            global $lang;
+
+            $rawString = (string)($mitigation['mitigation_controls'] ?? '');
+            $raw = ($rawString === '') ? [] : explode(',', $rawString);
+
+            // Control names -- and which ones are mapped to THIS risk -- are
+            // governance-owned (api_v2_governance_control_roster()'s own
+            // docblock, api/v2/includes/governance.php); a riskmanagement-only
+            // viewer must not see them via
+            // this side channel either, or gating the picker/table endpoints
+            // on governance would be security theater. 'raw'/'control_ids'
+            // are blanked too, not just 'display' -- risk-mitigation-
+            // controls.js's edit-mode field never renders the interactive
+            // picker for this viewer at all (see buildMitigationControlsWidget()'s
+            // own instance.canSelectMitigationControls check, risk-details-form.js),
+            // so it has no legitimate use for the real ids either.
+            if (empty($_SESSION['governance'])) {
+                return [
+                    'raw' => [],
+                    'display' => $lang['MitigationControlsRequiresGovernance'],
+                    'control_ids' => [],
+                    'mitigation_id' => (string)($mitigation['mitigation_id'] ?? ''),
+                ];
+            }
+
+            $names = api_ui_mitigation_controls_names($raw);
+
+            return [
+                'raw' => $raw,
+                'display' => implode(', ', $names),
+                // risk-details-view.js's generic read-mode chip renderer
+                // (renderFieldItem()'s Array.isArray(entry.names) branch,
+                // the same mechanism Tags/RiskMapping etc. already use) --
+                // falls through to the plain 'display' text above when
+                // empty, so a mitigation with no controls selected still
+                // renders as a blank row rather than an empty chip strip.
+                'names' => $names,
+                // Consumed by risk-mitigation-controls.js's edit-mode
+                // prefill (applyPrefill()) and the Mitigation Controls table
+                // section's control_id-keyed lookups.
+                'control_ids' => $raw,
+                'mitigation_id' => (string)($mitigation['mitigation_id'] ?? ''),
+            ];
+        },
+    ];
+}
+
+/**
+ * MitigationCost's display string, from get_mitigation_by_id()'s already-
+ * joined mitigation_min_cost/mitigation_max_cost columns (the same
+ * asset_values row create_asset_valuation_dropdown() reads for the legacy
+ * edit widget) -- formatted the SAME way that function and get_options_from_
+ * table()'s 'asset_valuation' branch both do. Deliberately NOT
+ * get_asset_value_by_id() (includes/assets.php): that file is not in this
+ * file's require chain (CLAUDE.md's function-reachability rule), and the two
+ * already-joined columns make a second DB round trip unnecessary anyway.
+ */
+function api_ui_mitigation_cost_display(array $mitigation): string {
+    $min = $mitigation['mitigation_min_cost'] ?? null;
+    $max = $mitigation['mitigation_max_cost'] ?? null;
+
+    if ($min === null && $max === null) {
+        return '';
+    }
+
+    $currency = get_setting('currency');
+
+    if ($min === $max) {
+        return $currency . number_format((float)$min);
+    }
+
+    return $currency . number_format((float)$min) . ' to ' . $currency . number_format((float)$max);
+}
+
+/**
+ * MitigationControls' resolved short_names, in $control_ids' own order, for
+ * the given framework_controls ids. Deliberately NOT
+ * get_names_by_multi_values('framework_controls', ...): that helper's query
+ * is a plain `SELECT name FROM {$table} ...`, and framework_controls has no
+ * `name` column (only `short_name`/`long_name` -- confirmed against the live
+ * schema), so it would fail outright for this table. Reuses
+ * get_framework_controls_dropdown_data() (includes/governance.php).
+ */
+function api_ui_mitigation_controls_names(array $control_ids): array {
+    if (empty($control_ids)) {
+        return [];
+    }
+
+    require_once(realpath(__DIR__ . '/../../../includes/governance.php'));
+    if (!function_exists('get_framework_controls_dropdown_data')) {
+        return [];
+    }
+
+    $namesById = [];
+    foreach (get_framework_controls_dropdown_data() as $control) {
+        $namesById[(string)$control['id']] = (string)$control['short_name'];
+    }
+
+    $names = [];
+    foreach ($control_ids as $control_id) {
+        if (isset($namesById[(string)$control_id])) {
+            $names[] = $namesById[(string)$control_id];
+        }
+    }
+
+    return $names;
+}
+
+/**
+ * Used for 'GET' API call '/ui/risk/{id}/mitigation-values'. Core-owned,
+ * dual-gated exactly like api_get_ui_risk_values() (mirroring
+ * viewmitigation()'s own gate, includes/api.php) -- riskmanagement grants
+ * the module, check_access_for_risk($id) grants THIS risk. A thin wrapper
+ * around get_mitigation_by_id($id) (already-available columns, no new query
+ * shapes), reshaped into the same {formName: {raw, display}} contract
+ * api_get_ui_risk_values() uses, for the Mitigation tab's read/edit Cards
+ * (Phase 4b-iii).
+ */
+function api_get_ui_risk_mitigation_values($id = null) {
+    global $lang;
+
+    if (!check_permission('riskmanagement')) {
+        set_alert(true, "bad", $lang['NoPermissionForRiskManagement']);
+        api_v2_json_result(400, get_alert(true), null);
+        return;
+    }
+
+    $id = (int)($id ?? get_param("GET", "id", 0));
+    if (!$id) {
+        set_alert(true, "bad", $lang['YouNeedToSpecifyAnIdParameter']);
+        api_v2_json_result(400, get_alert(true), null);
+        return;
+    }
+
+    if (!check_access_for_risk($id)) {
+        set_alert(true, "bad", $lang['NoPermissionForThisAction']);
+        api_v2_json_result(403, get_alert(true), null);
+        return;
+    }
+
+    $risk = get_risk_by_id($id);
+    if (count($risk) === 0) {
+        api_v2_json_result(404, "Risk ID not found.", null);
+        return;
+    }
+    $risk = $risk[0];
+
+    $mitigation = get_mitigation_by_id($id);
+    // get_mitigation_by_id() returns false, not [], when the risk has no
+    // mitigation row yet -- a real, expected state (matching viewmitigation()'s
+    // own !isset($mitigation[0]) check), not a 404. The Mitigation tab's read
+    // mode still needs to render every field's (empty) shape, and its edit
+    // mode still needs to be reachable to CREATE the first mitigation via
+    // saveMitigation()'s create branch -- so this responds 200 with every
+    // resolver applied to an all-empty row rather than refusing the request.
+    $mitigation = $mitigation ? $mitigation[0] : [];
+
+    $values = [];
+    $resolvers = api_ui_mitigation_field_resolvers();
+    foreach ($resolvers as $formName => $resolve) {
+        $values[$formName] = $resolve($mitigation);
+    }
+
+    // Custom (is_basic=0) fields on the Mitigation tab -- api_get_ui_risk_
+    // values() (Details, tab_index=1) has always resolved these; this
+    // function never did, which is a real, pre-existing gap the Details-tab
+    // code never had to guard against. It went unnoticed until now because
+    // Mitigation's 'custom_fields' catch-all card (customization_mitigation_
+    // cards_layout_card_keys()) was already being unconditionally seeded
+    // empty, so no risk actually reached this with a custom field to
+    // render -- confirmed live: a brand-new custom field placed on
+    // Mitigation showed correctly in EDIT mode (populateFieldContent()
+    // builds a control for every field the roster names, prefilled or not)
+    // but never appeared in READ mode, because renderFieldItem()
+    // (risk-details-view.js) skips a field entirely when fieldValueEntry()
+    // finds no 'custom_field_<id>' key in $values at all -- which, with
+    // this block missing, was every custom field on this tab, always.
+    // Mirrors api_get_ui_risk_values()'s own block exactly, scoped to
+    // tab_index=2 instead of 1 (getCustomFieldValuesByRiskId()'s own
+    // $tab_index param, extras/customization/index.php -- custom_risk_data
+    // is ONE shared table for every tab, distinguished only by the
+    // custom_template row's own tab_index).
+    if (customization_extra() && table_exists('custom_risk_data')) {
+        $extra_index = realpath(__DIR__ . '/../../../extras/customization/index.php');
+        if ($extra_index !== false) {
+            require_once($extra_index);
+        }
+        if (function_exists('getCustomFieldValuesByRiskId')) {
+            $mitigationTemplateGroupId = (int)($risk['template_group_id'] ?? 1);
+            $mitigationFields = api_resolve_ui_risk_fields_for_group($mitigationTemplateGroupId, 2);
+            $customValuesByFieldId = [];
+            foreach (getCustomFieldValuesByRiskId($id, 2) as $row) {
+                $customValuesByFieldId[(int)$row['field_id']] = $row['value'];
+            }
+            foreach ($mitigationFields as $field) {
+                if ((int)($field['is_basic'] ?? 0) === 1 || !function_exists('api_ui_custom_field_raw_and_display_value')) {
+                    continue;
+                }
+                $fieldId = (int)$field['id'];
+                $rawStored = $customValuesByFieldId[$fieldId] ?? '';
+                $values['custom_field_' . $fieldId] = api_ui_custom_field_raw_and_display_value($field, $rawStored);
+            }
+        }
+    }
+
+    // Preserves the legacy read view's supporting-documentation UI verbatim,
+    // same reasoning as api_get_ui_risk_values()'s own
+    // $supportingDocumentationHtml -- view_type 2 is the Mitigation
+    // attachment set (get_supporting_files($risk_id, 2),
+    // includes/functions.php), distinct from the Details tab's view_type 1.
+    ob_start();
+    supporting_documentation($id, "view", 2);
+    $mitigationSupportingDocumentationHtml = ob_get_clean();
+
+    // AcceptMitigation is a self-contained action widget, not a generic
+    // label:value field (risk_mitigation_field_renders_no_control(),
+    // includes/functions.php confirms the legacy form renders no EDIT
+    // control for it either -- display_accept_mitigation_view(),
+    // includes/displayrisks.php, is the only rendering this field ever
+    // had), so it gets its own top-level response key rather than an entry
+    // in $values. 'can_accept' mirrors the legacy view function's own
+    // `!empty($_SESSION['accept_mitigation'])` gate exactly -- a plain
+    // session permission flag, not a has_permission() call, matching every
+    // other call site for it (acceptMitigationForm(), includes/api.php).
+    // 'html' is the SAME server-rendered accepted-by sentence list
+    // acceptMitigationForm() returns after a click, reused here for the
+    // initial render so both paths stay byte-identical.
+    api_v2_json_result(200, null, [
+        // THIS risk's own template group -- see api_get_ui_risk_values()'s
+        // identical comment for why the client must ask /ui/risk/fields and
+        // /ui/risk/layout for this group rather than the viewer's default.
+        'template_group_id' => (int)($risk['template_group_id'] ?? 1),
+        'values' => $values,
+        'mitigation_supporting_documentation_html' => $mitigationSupportingDocumentationHtml,
+        'mitigation_id' => (string)($mitigation['mitigation_id'] ?? ''),
+        'accept_mitigation' => [
+            'can_accept' => !empty($_SESSION['accept_mitigation']),
+            'current_user_accepted' => (bool)get_accpeted_mitigation($id),
+            'html' => view_accepted_mitigations($id),
+        ],
+        // Governance, not riskmanagement -- selecting WHICH controls apply
+        // is a governance-owned decision (api_v2_governance_control_roster()'s
+        // own docblock, api/v2/includes/governance.php); this endpoint's own riskmanagement
+        // gate above is what lets someone reach the Mitigation tab at all,
+        // planning a mitigation's OTHER fields never touches this. The
+        // client (risk-mitigation-controls.js) reads this to decide whether
+        // to show the "Add or remove controls…" trigger at all, the same
+        // show/hide-on-permission treatment 'can_accept' above gets.
+        'can_select_mitigation_controls' => !empty($_SESSION['governance']),
+        // plan_mitigations -- the SAME permission management/partials/
+        // details.php's data-can-edit attribute checks for the tab's own
+        // "Edit Mitigation" button (has_permission('plan_mitigations')).
+        // The Control Validation table's row edit-action (risk-mitigation-
+        // controls.js) is gated on this too, in BOTH read and edit mode --
+        // a viewer who can see the Mitigation tab (riskmanagement) and even
+        // see which controls are selected (governance, above) still
+        // shouldn't get an edit affordance for something they can't
+        // actually save (saveMitigationControlValidation()'s own
+        // plan_mitigations gate, includes/api.php).
+        'can_edit_mitigation' => !empty($_SESSION['plan_mitigations']),
+    ]);
+}
+
+/**
+ * Field-name -> resolver for the Review tab (tab_index=3, Phase 4c-ii).
+ * Sibling to api_ui_mitigation_field_resolvers() (Mitigation tab): every
+ * closure receives get_review_by_id($id)[0] -- confirmed by reading that
+ * function directly (includes/functions.php:12618): it runs the same
+ * `ORDER BY submission_date DESC` query get_reviews() uses and fetchAll()s
+ * every row, so index [0] is genuinely the latest review, matching
+ * viewreview()'s own established use of it. Column names verified against
+ * the live `mgmt_reviews` schema (DESCRIBE mgmt_reviews on simplerisk-dev):
+ * submission_date, review, reviewer, next_step, comments, next_review --
+ * all present verbatim, matching get_review_by_id()'s `SELECT *`.
+ *
+ * Unlike Mitigation, this resolver set has NO editable-field entries for
+ * next_review_date or a "set next review date" concept -- there is no
+ * "current value" to show for an override input on an append-only log with
+ * no current record to edit. review_date/reviewer/next_review_date are
+ * display-only (read mode always shows them; edit mode never renders a
+ * control for any of them -- ReviewDate/Reviewer are CORE_FIELD_WIDGETS
+ * 'skip', NextReviewDate has no edit-mode counterpart at all, see the
+ * design spec's field-roster table).
+ */
+function api_ui_review_field_resolvers(): array {
+    return [
+        'review_date' => function (array $review) {
+            $v = (string)($review['submission_date'] ?? '');
+            return ['raw' => $v, 'display' => $v];
+        },
+        'reviewer' => function (array $review) {
+            $raw = (string)($review['reviewer'] ?? '');
+            return ['raw' => $raw, 'display' => get_name_by_value('user', $raw)];
+        },
+        'review' => function (array $review) {
+            $raw = (string)($review['review'] ?? '');
+            return ['raw' => $raw, 'display' => get_name_by_value('review', $raw)];
+        },
+        'next_step' => function (array $review) {
+            $raw = (string)($review['next_step'] ?? '');
+            return ['raw' => $raw, 'display' => get_name_by_value('next_step', $raw)];
+        },
+        'next_review_date' => function (array $review) {
+            $v = (string)($review['next_review'] ?? '');
+            return ['raw' => $v, 'display' => $v];
+        },
+        // Comment is richtext (CORE_FIELD_WIDGETS, risk-details-form.js) --
+        // submit_management_review() (includes/functions.php) already
+        // purify_html()'s every incoming comment before encrypting it, so
+        // existing stored reviews genuinely contain HTML. 'display_html' is
+        // the same opt-in key the Mitigation richtext fields use (see
+        // 'current_solution' etc. below): present -> render as markup,
+        // matching the legacy display_comments_view()'s purifyHtml() +
+        // 'rich-text-container' sink. 'raw' stays unpurified for the HugeRTE
+        // edit-mode prefill (there is none here -- Review is append-only --
+        // but the shape stays consistent with every other richtext resolver).
+        'comments' => function (array $review) {
+            $v = try_decrypt($review['comments'] ?? '');
+            return ['raw' => $v, 'display' => $v, 'display_html' => purify_html($v)];
+        },
+    ];
+}
+
+/**
+ * Used for 'GET' API call '/ui/risk/{id}/review-values'. Core-owned,
+ * dual-gated exactly like viewreview() (includes/api.php) -- riskmanagement
+ * grants the module, check_access_for_risk($id) grants THIS risk. A thin
+ * wrapper around get_review_by_id($id)[0] (already-available columns, no
+ * new query shapes), reshaped into the same {formName: {raw, display}}
+ * contract api_get_ui_risk_values()/api_get_ui_risk_mitigation_values()
+ * use, for the Review tab's read Cards (Phase 4c-ii).
+ *
+ * can_perform_review reuses check_review_permission_by_risk_id() as-is --
+ * this is a single-risk endpoint, not the Review Risk grid's N-row case
+ * that motivated that grid's own batch-permission optimization (see
+ * includes/api.php's own comment on 'can_perform_review' in that other
+ * handler for why the batch path exists there and does not apply here).
+ */
+function api_get_ui_risk_review_values($id = null) {
+    global $lang;
+
+    if (!check_permission('riskmanagement')) {
+        set_alert(true, "bad", $lang['NoPermissionForRiskManagement']);
+        api_v2_json_result(400, get_alert(true), null);
+        return;
+    }
+
+    $id = (int)($id ?? get_param("GET", "id", 0));
+    if (!$id) {
+        set_alert(true, "bad", $lang['YouNeedToSpecifyAnIdParameter']);
+        api_v2_json_result(400, get_alert(true), null);
+        return;
+    }
+
+    if (!check_access_for_risk($id)) {
+        set_alert(true, "bad", $lang['NoPermissionForThisAction']);
+        api_v2_json_result(403, get_alert(true), null);
+        return;
+    }
+
+    $risk = get_risk_by_id($id);
+    if (count($risk) === 0) {
+        api_v2_json_result(404, "Risk ID not found.", null);
+        return;
+    }
+    $risk = $risk[0];
+
+    $reviews = get_review_by_id($id);
+    $review = $reviews ? $reviews[0] : [];
+
+    $values = [];
+    $resolvers = api_ui_review_field_resolvers();
+    foreach ($resolvers as $formName => $resolve) {
+        $values[$formName] = $resolve($review);
+    }
+
+    // Live default for the SetNextReviewDate widget's read-only
+    // informational text -- what next-review date a submission RIGHT NOW
+    // would default to, per the risk's CURRENT calculated/residual level
+    // (next_review_date_uses setting), matching saveReview()'s own
+    // custom_date=no computation. Deliberately NOT values['next_review_date']
+    // above, which reports the LAST review's own stored date -- a stale
+    // value once the risk's score has changed since that review, and
+    // simply absent for a risk with no review yet. get_next_review_default()
+    // (includes/functions.php) already does exactly this, keyed off the
+    // INTERNAL risk id -- confirmed unused elsewhere in the codebase before
+    // reusing it here.
+    $nextReviewDefault = get_next_review_default($id - 1000);
+
+    api_v2_json_result(200, null, [
+        'template_group_id' => (int)($risk['template_group_id'] ?? 1),
+        'values' => $values,
+        'can_perform_review' => check_review_permission_by_risk_id($id),
+        'next_review_default' => ['raw' => $nextReviewDefault, 'display' => $nextReviewDefault],
+    ]);
+}
+
+/**
+ * Used for 'GET' API call '/ui/risk/{id}/review-history'. Sibling to
+ * api_get_ui_risk_review_values() just above -- same dual gate
+ * (riskmanagement + check_access_for_risk($id)), same api_ui_review_field_
+ * resolvers() reuse, but over EVERY row get_review_by_id($id) returns
+ * (already ordered newest-first), not just index [0]. Backs the Review
+ * tab's "View All Reviews" modal (risk-view-review.js) -- replaces the
+ * former review_history_html passthrough this function used to return
+ * (a raw get_reviews() HTML dump, includes/functions.php): that rendered
+ * as an unlabeled, always-visible duplicate of the SAME single review
+ * already shown above it whenever a risk had exactly one review (the
+ * overwhelmingly common case), and its own 'comments' cell echoed
+ * try_decrypt() with no purify/escape at all, showing literal "<p>...</p>"
+ * for any review whose comment happened to contain markup. A clean JSON
+ * array lets the client render its own list on demand instead.
+ */
+function api_get_ui_risk_review_history($id = null) {
+    global $lang;
+
+    if (!check_permission('riskmanagement')) {
+        set_alert(true, "bad", $lang['NoPermissionForRiskManagement']);
+        api_v2_json_result(400, get_alert(true), null);
+        return;
+    }
+
+    $id = (int)($id ?? get_param("GET", "id", 0));
+    if (!$id) {
+        set_alert(true, "bad", $lang['YouNeedToSpecifyAnIdParameter']);
+        api_v2_json_result(400, get_alert(true), null);
+        return;
+    }
+
+    if (!check_access_for_risk($id)) {
+        set_alert(true, "bad", $lang['NoPermissionForThisAction']);
+        api_v2_json_result(403, get_alert(true), null);
+        return;
+    }
+
+    // get_review_by_id() returns false, not [], when the risk has no
+    // review yet (same shape as get_mitigation_by_id() -- see
+    // api_get_ui_risk_mitigation_values()'s own comment on that) -- a
+    // real, expected state for this endpoint specifically, since "no
+    // reviews yet" is exactly when an admin/reviewer would open this
+    // modal to CONFIRM that, not an error.
+    $resolvers = api_ui_review_field_resolvers();
+    $reviews = [];
+    foreach ((get_review_by_id($id) ?: []) as $review) {
+        $entry = ['id' => (int)($review['id'] ?? 0)];
+        foreach ($resolvers as $formName => $resolve) {
+            $entry[$formName] = $resolve($review);
+        }
+        $reviews[] = $entry;
+    }
+
+    api_v2_json_result(200, null, ['reviews' => $reviews]);
+}
+
+/**
+ * Used for 'GET' API call '/riskformula/config'. Core-owned, read-only
+ * config endpoint for Classic scoring (Phase 4d-v) -- everything the client
+ * needs to replicate calculate_risk()'s exact 6-branch formula +
+ * calculate_maximum_risk_score()'s normalization without a network
+ * round-trip per field change: the admin-configured risk_model (1-6),
+ * whether normalization is on, the current likelihood/impact counts
+ * (NOT fixed -- an admin can add/remove levels via /riskformula/add_impact
+ * etc., see get_impact_and_likelihood_counts()), and default_risk_score --
+ * calculate_risk()'s own out-of-range fallback (functions.php:7460-7463:
+ * when impact/likelihood fall outside range(1, count), the WHOLE formula is
+ * skipped and $risk is just get_setting('default_risk_score') instead).
+ * Without this the client has no way to replicate that fallback, so a fresh
+ * Classic holder left on the blank '--' option (value 0, out of range)
+ * showed 0 while a save would have stored default_risk_score server-side --
+ * the widget and the persisted value disagreed.
+ *
+ * Gated submit_risks OR riskmanagement, mirroring api_get_ui_risk_fields()'s
+ * own OR-gate exactly -- this is consumed identically by edit mode
+ * (risk-details-form.js, submit_risks) and read mode (risk-details-view.js,
+ * riskmanagement); gating to submit_risks alone would block a review-only
+ * role from computing the Classic pill in read mode.
+ *
+ * custom_risk_model_values is only queried when risk_model === 6, avoiding
+ * an unnecessary query for the other 5 (purely arithmetic) models. NOTE:
+ * the table has no stored `color` column (confirmed against its own CREATE
+ * TABLE in includes/upgrade.php and get_stored_risk_score()'s own SELECT --
+ * only `impact`, `likelihood`, `value`) and no consumer (client or test)
+ * reads a per-cell color off this endpoint, so rows are reported as plain
+ * {impact, likelihood, value} -- no derived get_risk_color() call, no
+ * per-row query.
+ */
+function api_get_risk_formula_config() {
+    global $lang;
+
+    if (!check_permission('submit_risks') && !check_permission('riskmanagement')) {
+        set_alert(true, "bad", $lang['NoPermissionForThisAction']);
+        api_v2_json_result(403, get_alert(true), null);
+        return;
+    }
+
+    $risk_model = (int)get_setting('risk_model');
+    $need_normalization = get_setting('need_risk_score_normalization', default: 'true') === 'true';
+    $default_risk_score = (float)get_setting('default_risk_score');
+
+    [$impact_count, $likelihood_count] = get_impact_and_likelihood_counts();
+
+    $custom_risk_model_values = [];
+    if ($risk_model === 6) {
+        $db = db_open();
+        $stmt = $db->prepare("SELECT `impact`, `likelihood`, `value` FROM `custom_risk_model_values` ORDER BY `impact`, `likelihood`");
+        $stmt->execute();
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        db_close($db);
+
+        foreach ($rows as $row) {
+            $custom_risk_model_values[] = [
+                'impact' => (int)$row['impact'],
+                'likelihood' => (int)$row['likelihood'],
+                'value' => (float)$row['value'],
+            ];
+        }
+    }
+
+    api_v2_json_result(200, null, [
+        'risk_model' => $risk_model,
+        'need_risk_score_normalization' => $need_normalization,
+        'likelihood_count' => (int)$likelihood_count,
+        'impact_count' => (int)$impact_count,
+        'default_risk_score' => $default_risk_score,
+        'custom_risk_model_values' => $custom_risk_model_values,
+    ]);
+}
+
+/**
+ * No-Extra fallback for api_get_ui_risk_layout(): the 4 curated cards that
+ * exist without the Customization Extra (custom_fields is dropped entirely
+ * -- there are no custom fields to catch-all without the Extra), at the
+ * migration's own default geometry (backfill_customization_cards_layout()).
+ *
+ * The per-card field count driving each card's height comes from the SAME
+ * source api_synthesize_no_extra_risk_fields() uses --
+ * get_risk_details_core_field_card_map(), minus 'JiraIssueKey' (that field
+ * only ever exists via the Jira Extra writing through the Customization
+ * Extra's own tables -- see api_synthesize_no_extra_risk_fields()'s docblock
+ * for the full reasoning) -- so the no-Extra layout's default heights match
+ * the no-Extra field roster exactly, the same way
+ * backfill_customization_cards_layout() derives height from each group's
+ * real per-card field count rather than a placeholder.
+ *
+ * All three helpers this calls -- customization_cards_layout_card_keys(),
+ * customization_card_height_for_field_count() and
+ * get_risk_details_core_field_card_map() -- are CORE (includes/functions.php),
+ * for the reason spelled out in api_synthesize_no_extra_risk_fields()'s
+ * docblock: the shipped bundle has no simplerisk/extras/ directory at all.
+ */
+function api_synthesize_no_extra_risk_layout(int $tab_index): array {
+    if ($tab_index !== 1) {
+        return [];
+    }
+
+    $cardKeys = array_diff(customization_cards_layout_card_keys(), ['custom_fields']);
+
+    // Only the fields that actually DRAW a control count toward a card's
+    // height -- see risk_details_drawn_field_count() (includes/functions.php).
+    // api_synthesize_no_extra_risk_fields() still emits the widget-less rows
+    // (they are real fields, and the layout editor shows them); they just do
+    // not buy the tile a row, because Submit Risk reclaims the row they sit in.
+    $namesByCard = [];
+    foreach (get_risk_details_core_field_card_map() as $name => $cardKey) {
+        if ($name === 'JiraIssueKey') {
+            continue;
+        }
+        $namesByCard[$cardKey][] = $name;
+    }
+
+    $fieldCounts = [];
+    foreach ($namesByCard as $cardKey => $names) {
+        $fieldCounts[$cardKey] = risk_details_drawn_field_count($names);
+    }
+
+    $cards = [];
+    $posY = 0;
+    foreach ($cardKeys as $cardKey) {
+        $height = customization_card_height_for_field_count($fieldCounts[$cardKey] ?? 0, $cardKey === 'general');
+        $cards[] = [
+            'card_key' => $cardKey,
+            'pos_x' => 0,
+            'pos_y' => $posY,
+            'pos_w' => 12,
+            'pos_h' => $height,
+        ];
+        $posY += $height;
+    }
+
+    return $cards;
+}
+
+/**
+ * Used for 'GET' API call '/ui/asset/template_groups' (asset record modal,
+ * Task 4): the asset template groups the caller may file a new asset under.
+ * Gated on `asset` -- Add is open to anyone with it (spec D8).
+ */
+function api_get_ui_asset_template_groups() {
+    global $lang;
+
+    if (!check_permission('asset')) {
+        set_alert(true, "bad", $lang['NoPermissionForAsset']);
+        api_v2_json_result(403, get_alert(true), null);
+        return;
+    }
+
+    api_v2_json_result(200, null, assets_ui_template_groups());
+}
+
+/**
+ * The asset template group /ui/asset/fields and /ui/asset/layout describe.
+ *
+ * With `asset_id`: that asset's own group (asset_record_template_group_id()),
+ * so an edit form always shows the roster the asset's values and writes use
+ * -- even when, under Organizational Hierarchy, that group is not one the
+ * caller could file a NEW asset under. The asset is gated exactly like
+ * /ui/asset/{id}/values: check_access_for_asset() first, and a foreign or
+ * missing asset answers asset_record_not_available_response() (which exits).
+ *
+ * Without it: template_group_id through resolve_template_group_id_from_core(),
+ * the same membership check add_asset() applies on create, so a caller cannot
+ * read another business unit's roster by changing the parameter.
+ */
+function api_ui_asset_template_group_from_request(): int {
+    $asset_id = get_param("GET", "asset_id", null);
+    if ($asset_id !== null && $asset_id !== '') {
+        $asset_id = is_scalar($asset_id) && ctype_digit((string)$asset_id) ? (int)$asset_id : 0;
+        $asset = ($asset_id > 0 && check_access_for_asset($asset_id)) ? get_asset_by_id($asset_id) : false;
+        if (!$asset) {
+            asset_record_not_available_response();
+            exit;
+        }
+        return asset_record_template_group_id($asset);
+    }
+
+    return resolve_template_group_id_from_core('asset', get_param("GET", "template_group_id", null));
+}
+
+/**
+ * Used for 'GET' API call '/ui/asset/fields'. The asset field roster for a
+ * template group (or for one asset's own group, via asset_id -- see
+ * api_ui_asset_template_group_from_request()), every field placed on an asset
+ * card (defensive in-memory synthesis for unplaced rows; read-only).
+ */
+function api_get_ui_asset_fields() {
+    global $lang;
+
+    if (!check_permission('asset')) {
+        set_alert(true, "bad", $lang['NoPermissionForAsset']);
+        api_v2_json_result(403, get_alert(true), null);
+        return;
+    }
+
+    api_v2_json_result(200, null, assets_ui_fields_for_group(api_ui_asset_template_group_from_request()));
+}
+
+/**
+ * Used for 'GET' API call '/ui/asset/layout'. Card tiles for a template
+ * group, with missing tiles synthesized in memory (read-only). Same gate and
+ * template-group resolution (template_group_id or asset_id) as
+ * api_get_ui_asset_fields().
+ */
+function api_get_ui_asset_layout() {
+    global $lang;
+
+    if (!check_permission('asset')) {
+        set_alert(true, "bad", $lang['NoPermissionForAsset']);
+        api_v2_json_result(403, get_alert(true), null);
+        return;
+    }
+
+    api_v2_json_result(200, null, assets_ui_layout_for_group(api_ui_asset_template_group_from_request()));
+}
+
+/**
+ * Used for 'GET' API call '/ui/asset/{id}/values'. One asset's values for the
+ * record modal plus the caller's can_edit / can_verify / can_delete flags.
+ *
+ * check_access_for_asset() runs before anything about the asset is read, and
+ * a foreign-team asset answers exactly like a nonexistent one
+ * (asset_record_not_available_response(): same status, message and empty
+ * data) -- the product owner's rule that the modal never shows, or confirms
+ * the existence of, an asset the caller cannot access.
+ */
+function api_get_ui_asset_values($id = null) {
+    global $lang;
+
+    if (!check_permission('asset')) {
+        set_alert(true, "bad", $lang['NoPermissionForAsset']);
+        api_v2_json_result(403, get_alert(true), null);
+        return;
+    }
+
+    $id = (int)($id ?? get_param("GET", "id", 0));
+    if ($id <= 0) {
+        set_alert(true, "bad", $lang['YouNeedToSpecifyAnIdParameter']);
+        api_v2_json_result(400, get_alert(true), null);
+        return;
+    }
+
+    if (!check_access_for_asset($id)) {
+        asset_record_not_available_response();
+        return;
+    }
+
+    $payload = assets_ui_values_for_asset($id);
+    if ($payload === null) {
+        asset_record_not_available_response();
+        return;
+    }
+
+    api_v2_json_result(200, null, $payload + [
+        'can_edit' => asset_user_can('edit'),
+        'can_verify' => asset_user_can('verify'),
+        'can_delete' => asset_user_can('delete'),
+    ]);
 }
 
 /**

@@ -21,6 +21,11 @@ require_once(realpath(__DIR__ . '/audit_schedule.php'));
 // rather than relying on a caller (save_test_result()'s pending branch) to
 // have pulled notifications.php into scope first.
 require_once(realpath(__DIR__ . '/notifications.php'));
+// sync_control_status_for_test() (SR-2255-followup) is defined in
+// compliance_grid.php -- declare the require directly rather than relying on
+// a transitive pull (e.g. via ai_proposal_capabilities.php requiring this
+// file back) per CLAUDE.md reachability rules.
+require_once(realpath(__DIR__ . '/compliance_grid.php'));
 
 // Include the language file
 require_once(language_file());
@@ -1094,8 +1099,13 @@ function compute_test_next_date(array $test, $on_or_after) {
 
     // interval AND manual both advance by test_frequency from last_date
     // (preserves pre-cadence behavior for legacy/backfilled tests).
+    // Advance via a relative date string ("+N days"), not N*86400 seconds --
+    // a fixed second count is NOT a fixed number of calendar days across a
+    // DST transition (a fall-back day has 90000 seconds, a spring-forward day
+    // has 82800), so the seconds form silently lands on the wrong date
+    // whenever the span crosses one.
     $base = (!empty($test['last_date']) && $test['last_date'] !== '0000-00-00') ? $test['last_date'] : date('Y-m-d');
-    $calc = date('Y-m-d', strtotime($base) + ((int)$test['test_frequency']) * 24 * 60 * 60);
+    $calc = date('Y-m-d', strtotime("{$base} +" . ((int)$test['test_frequency']) . " days"));
     return ($calc < date('Y-m-d')) ? date('Y-m-d') : $calc;
 }
 
@@ -1762,7 +1772,14 @@ function add_framework_control_test($tester, $test_frequency, $name, $objective,
         } elseif (!$last_date || $last_date === "0000-00-00") {
             $next_date = date("Y-m-d");
         } else {
-            $calc_next_date = date("Y-m-d", strtotime($last_date) + $test_frequency*24*60*60);
+            // Advance via a relative date string ("+N days"), not N*86400
+            // seconds -- a fixed second count is NOT a fixed number of
+            // calendar days across a DST transition (a fall-back day has
+            // 90000 seconds, a spring-forward day has 82800), so the seconds
+            // form silently lands on the wrong date whenever the span
+            // crosses one. Same fix as compute_test_next_date() above and
+            // resolve_interval_next_date() in audit_schedule.php.
+            $calc_next_date = date("Y-m-d", strtotime("{$last_date} +{$test_frequency} days"));
             if($calc_next_date < date("Y-m-d")){
                 $next_date = date("Y-m-d");
             } else {
@@ -1963,9 +1980,14 @@ function delete_framework_control_test($test_id){
 
     $test = get_framework_control_test_by_id($test_id);
 
+    // SR-2255-followup: capture the test's mapped controls BEFORE the
+    // test_control_map cleanup below removes them -- those controls' Status
+    // needs re-deriving now that this test's evidence is gone entirely.
+    $controls_mapped_before_delete = get_controls_mapped_to_test((int) $test_id);
+
     // Open the database connection
     $db = db_open();
-    
+
     $stmt = $db->prepare("DELETE FROM `framework_control_tests` WHERE id=:id;");
     $stmt->bindParam(":id", $test_id, PDO::PARAM_INT);
     $stmt->execute();
@@ -1981,6 +2003,10 @@ function delete_framework_control_test($test_id){
 
     // Close the database connection
     db_close($db);
+
+    foreach ($controls_mapped_before_delete as $control_id) {
+        sync_control_status_from_tests($control_id);
+    }
 
     $message = _lang('TestDeletedAuditLogMessage', array('test_name' => $test['name'], 'test_id' => $test_id, 'user' => $_SESSION['user']));
     write_log((int)$test_id + 1000, $_SESSION['uid'] ?? 0, $message, "test");
@@ -5234,6 +5260,11 @@ function save_test_result($test_audit_id, $status, $test_result, $tester, $test_
     // Close the database connection
     db_close($db);
 
+    // SR-2255-followup: this test's mapped Enterprise-type control(s), if any,
+    // may need their Status re-derived now that its last recorded result can
+    // have changed.
+    sync_control_status_for_test((int) $test_audit['test_id']);
+
     // Update teams of the active audit
     updateTeamsOfItem($test_audit_id, 'audit', $teams, false);
 
@@ -5859,6 +5890,12 @@ function display_detail_test() {
  *******************************/
 function delete_test_audit($test_audit_id) {
 
+    // SR-2255-followup: capture which test this audit belongs to BEFORE the
+    // delete below removes it -- deleting this audit can change the test's
+    // last recorded result, which its mapped Enterprise-type control(s) may
+    // need reflected in their Status.
+    $test_audit_before_delete = get_framework_control_test_audit_by_id($test_audit_id);
+
     // Open the database connection
     $db = db_open();
 
@@ -5886,6 +5923,10 @@ function delete_test_audit($test_audit_id) {
 
     // Close the database connection
     db_close($db);
+
+    if (!empty($test_audit_before_delete['test_id'])) {
+        sync_control_status_for_test((int) $test_audit_before_delete['test_id']);
+    }
 
     $message = _lang_raw('TestAuditDeleteAuditTrailMessage', array('test_audit_id' => $test_audit_id, 'user' => $_SESSION['user']));
     write_log((int)$test_audit_id + 1000, $_SESSION['uid'] ?? 0, $message, "test_audit");

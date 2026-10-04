@@ -17,80 +17,167 @@
     'use strict';
 
     /**
-     * Walks up from $wrap to find the nearest ancestor that's actually
-     * clipping (computed overflow-x or overflow-y other than 'visible'),
-     * stopping at .sr-table-card (which never clips -- see its own SCSS
-     * comment -- so it's a safe search boundary, not a candidate).
-     *
-     * On a plain (non-DataTables) table this is .sr-table-scroll itself. On
-     * a DataTables scrollX table, .sr-table-scroll is deliberately made
-     * NON-clipping (_tables.scss's '.sr-table-scroll:has(.dt-container)'
-     * rule, avoiding a redundant second scrollbar under DataTables' own), so
-     * the real clipping ancestor is one level further in: DataTables' own
-     * '.dt-scroll' wrapper. Measuring/unclipping the wrong one is exactly
-     * what let a downward-opened menu render invisible and unclickable on
-     * Manage Audits at 900-1150px: the floor/ceiling math below, computed
-     * against .sr-table-scroll's looser (non-clipping) rect, concluded a
-     * menu "fits downward" while '.dt-scroll' clipped it anyway.
-     */
-    function findClipAncestor($wrap) {
-        var card = $wrap.closest('.sr-table-card')[0];
-        var el = $wrap[0] ? $wrap[0].parentElement : null;
-        while (el && el !== card && el !== document.body) {
-            var cs = getComputedStyle(el);
-            if (cs.overflowX !== 'visible' || cs.overflowY !== 'visible') {
-                return $(el);
-            }
-            el = el.parentElement;
-        }
-        return $();
-    }
-
-    /**
      * Shuts every open row-actions menu. `$scope` limits the search to one
      * page's own menus (a jQuery collection, e.g. a table's $tbody, or a
      * comma-selector covering more than one container); omit it to close
      * every open menu in the document, which is correct when a single page
      * has more than one independent surface (Governance's table + rail).
-     *
-     * The clipping ancestor's unclip is lifted only for as long as a menu
-     * needs it -- leaving .is-unclipped behind would hand the table a
-     * permanently unclipped scroller, so a genuinely wide table could then
-     * spill its rows out of the card instead of scrolling them. Searched by
-     * the .is-unclipped class itself rather than a specific element/class
-     * (orient() below can land it on .sr-table-scroll OR, on a DataTables
-     * scrollX table, DataTables' own '.dt-scroll' -- see findClipAncestor()).
      */
     function close($scope) {
-        var $scroller = $scope ? $scope.find('.is-unclipped') : $('.is-unclipped');
-        $scroller.removeClass('is-unclipped');
-
         var $open = $scope ? $scope.find('.sr-row-actions-wrap.is-open') : $('.sr-row-actions-wrap.is-open');
+        clearPlacement($open.find('.sr-row-actions'));
         $open.removeClass('is-open is-up is-right')
             .find('.sr-row-actions-toggle')
             .attr('aria-expanded', 'false');
     }
 
+    var PLACEMENT = { position: '', top: '', left: '', right: '', bottom: '', maxHeight: '', overflowY: '', justifyContent: '' };
+
+    function clearPlacement($menu) {
+        $menu.css(PLACEMENT);
+        $menu.closest('.sr-row-actions-wrap').removeData('srRowActionsAnchor');
+    }
+
+    // The viewport the menu has to fit in, WITHOUT the page's own scrollbars:
+    // window.innerWidth/innerHeight include them, so a menu clamped against
+    // those could still slide under a real (space-taking) scrollbar.
+    function viewportSize() {
+        var root = document.documentElement;
+        return { width: root.clientWidth || window.innerWidth, height: root.clientHeight || window.innerHeight };
+    }
+
+    // The top of the area a menu may use: below the app shell's fixed top
+    // bar, which paints above page content (a menu slid under it has its
+    // first items covered). A menu inside a modal sits above the top bar, so
+    // it may use the whole height.
+    function usableTop($wrap) {
+        if ($wrap.closest('.modal').length) { return 0; }
+        var bar = document.querySelector('.topbar');
+        if (!bar) { return 0; }
+        var position = getComputedStyle(bar).position;
+        if (position !== 'fixed' && position !== 'sticky') { return 0; }
+        return Math.max(0, bar.getBoundingClientRect().bottom);
+    }
+
     /**
-     * Gives an already-open menu somewhere to go: lifts its clipping
-     * ancestor's clip when it is only clipping, and flips the menu upward
-     * when it still won't fit below. (The stylesheet owns what "unclipped"
-     * and "up" look like; both are measurements, so the decision lives
-     * here.)
+     * Pins an open menu to the viewport (position: fixed) exactly where the
+     * stylesheet already put it -- under the toggle, right-aligned, or above
+     * it for .is-up, or left-aligned for .is-right -- by measuring its box
+     * before pinning and re-applying that box as fixed coordinates, nudged
+     * back inside the viewport if it would run off a side.
      *
-     * A row's clipping ancestor (findClipAncestor()) typically has
-     * `overflow-x: auto`, which computes `overflow-y` to `auto` along with
-     * it -- the two axes cannot be auto and visible at once -- so a menu
-     * popped from a row near the bottom of the list is clipped VERTICALLY by
-     * a container that only ever wanted to scroll horizontally. Unclipping
-     * fixes that wherever the table isn't actually scrolling sideways, which
-     * is the normal case once a narrower tier has trimmed the columns to
-     * fit. Where it IS scrolling the clip has to stay, and the flip is
-     * what's left.
+     * Why fixed. Left in the flow, the menu is a descendant of the table's
+     * horizontal scroller (.sr-table-scroll, or DataTables' .dt-scroll), and
+     * `overflow-x: auto` computes overflow-y to `auto`. A menu hanging below
+     * the last rows therefore became vertical overflow of that scroller.
+     * Measured on Manage assets with real (non-overlay) scrollbars: opening
+     * the last row's menu gave the scroller a vertical scrollbar, the
+     * scrollbar narrowed the scroller until the table overflowed sideways,
+     * a horizontal scrollbar appeared too, and the menu was cut off beneath
+     * it. The earlier remedy -- lifting the scroller's clip while a menu was
+     * open -- only applied when the table was not scrolling sideways, and it
+     * decided that AFTER the menu's own overflow had already added the
+     * vertical scrollbar. A fixed box is laid out against the viewport, so
+     * no scroller clips it and it adds nothing to any scroller's overflow:
+     * opening a menu cannot change a scrollbar anywhere. It stays inside its
+     * row's stacking context (the open row's pinned cell is lifted above the
+     * rows below it, _tables.scss), so it paints where it always did.
+     *
+     * The measured correction handles an ancestor that would become the
+     * fixed box's containing block (a transform, filter or contain): the box
+     * is moved by however far it landed from where it was asked to go.
+     */
+    function placeFixed($wrap, $menu) {
+        var menu = $menu[0];
+        var box = menu.getBoundingClientRect();
+        var view = viewportSize();
+        var edge = 4;
+        var ceiling = usableTop($wrap) + edge;
+        var left = Math.max(edge, Math.min(box.left, view.width - box.width - edge));
+        var top = box.top;
+        var css = { position: 'fixed', right: 'auto', bottom: 'auto' };
+
+        // Taller than the viewport: cap it and let it scroll inside itself
+        // (that scroll is exempt from the close-on-scroll below, and focus
+        // moving to an item scrolls the menu, not the page, so Tab never
+        // strands an item out of reach). Otherwise keep it whole on screen --
+        // when neither the downward nor the upward position fits (orient()
+        // then leaves it opening down), slide it up just far enough.
+        var room = view.height - edge - ceiling;
+        if (box.height > room) {
+            css.maxHeight = room + 'px';
+            css.overflowY = 'auto';
+            // The cluster's own justify-content (flex-end, which right-aligns
+            // the inline icon row) packs a column from the BOTTOM, so a capped
+            // menu would overflow upward -- negative overflow no scroller can
+            // reach. Pack from the top so the overflow is scrollable.
+            css.justifyContent = 'flex-start';
+            top = ceiling;
+        } else {
+            top = Math.max(ceiling, Math.min(top, view.height - box.height - edge));
+        }
+
+        css.top = top + 'px';
+        css.left = left + 'px';
+        $menu.css(css);
+        var landed = menu.getBoundingClientRect();
+        if (Math.abs(landed.left - left) > 0.5 || Math.abs(landed.top - top) > 0.5) {
+            $menu.css({ top: (2 * top - landed.top) + 'px', left: (2 * left - landed.left) + 'px' });
+        }
+
+        // Where the row was when the menu was pinned; the scroll handler
+        // below closes the menu only once the row has actually moved.
+        var anchor = $wrap[0].getBoundingClientRect();
+        $wrap.data('srRowActionsAnchor', { left: anchor.left, top: anchor.top });
+    }
+
+    // A fixed menu does not travel with its row, so a scroll that MOVES the
+    // row under it -- the page, a table scrolling sideways, a modal body --
+    // closes it, the usual contract for a popup menu, and so does a viewport
+    // resize. Registered once for every page.
+    //
+    // Keyed on whether the open row actually moved, not on the mere fact of a
+    // scroll event, so two kinds of scroll never close it:
+    //   - scrolling inside the menu itself (a menu taller than the viewport
+    //     scrolls; its own scroll events also carry it as their target), and
+    //   - a scroll that leaves the row where it was, such as Governance's
+    //     virtual list re-anchoring its scroller after a re-render so the
+    //     visible rows stay put. (Scroll events fire asynchronously, at the
+    //     next frame, so a synchronous "I'm adjusting" flag set around the
+    //     scrollTop write would already be cleared by then; comparing the
+    //     row's position does not depend on timing.)
+    var scrollCloseBound = false;
+    function bindScrollClose() {
+        if (scrollCloseBound || !global.addEventListener) { return; }
+        scrollCloseBound = true;
+        global.addEventListener('scroll', function (e) {
+            var $open = $('.sr-row-actions-wrap.is-open');
+            if (!$open.length) { return; }
+            if (e && e.target && e.target.nodeType === 1 && $(e.target).closest('.sr-row-actions').length) { return; }
+            var moved = false;
+            $open.each(function () {
+                var was = $(this).data('srRowActionsAnchor');
+                var now = this.getBoundingClientRect();
+                if (!was || Math.abs(now.left - was.left) > 1 || Math.abs(now.top - was.top) > 1) { moved = true; }
+            });
+            if (moved) { close(); }
+        }, true);
+        global.addEventListener('resize', function () {
+            if ($('.sr-row-actions-wrap.is-open').length) { close(); }
+        });
+    }
+
+    /**
+     * Gives an already-open menu somewhere to go: flips it upward when it
+     * won't fit below the toggle inside the viewport but does fit above,
+     * then pins it there with position: fixed (placeFixed()). The stylesheet
+     * owns what "up" looks like; whether it applies is a measurement, so the
+     * decision lives here.
      *
      * `extend`, when given, runs after the vertical decision with
      * ($wrap, $menu, wrapRect) -- Governance's framework rail uses it to add
      * its own horizontal is-right flip, which only that narrow pane needs.
+     * It measures the menu in its stylesheet position, before it is pinned.
      *
      * Must run AFTER .is-open -- a display:none menu measures 0 high.
      */
@@ -98,18 +185,14 @@
         $wrap.removeClass('is-up is-right');
         var $menu = $wrap.find('.sr-row-actions');
         if (!$wrap.length || !$menu.length) { return; }
+        clearPlacement($menu);
 
-        var $scroller = findClipAncestor($wrap);
-        if ($scroller.length && $scroller[0].scrollWidth <= $scroller[0].clientWidth) {
-            $scroller.addClass('is-unclipped');
-            $scroller = $();          // no longer a clipping ancestor
-        }
-
+        // The menu is placed against the viewport (placeFixed() below), so
+        // no scroller clips it: the viewport is the only floor and ceiling.
         var wrapRect = $wrap[0].getBoundingClientRect();
         var menuHeight = $menu[0].getBoundingClientRect().height;
-        var scrollerRect = $scroller.length ? $scroller[0].getBoundingClientRect() : null;
-        var floor = scrollerRect ? Math.min(scrollerRect.bottom, window.innerHeight) : window.innerHeight;
-        var ceiling = scrollerRect ? Math.max(scrollerRect.top, 0) : 0;
+        var floor = viewportSize().height;
+        var ceiling = usableTop($wrap);
 
         // Only flip when down doesn't fit AND up does -- a menu with room on
         // neither side is better left opening downward, where at least its
@@ -121,6 +204,8 @@
         if (typeof extend === 'function') {
             extend($wrap, $menu, wrapRect);
         }
+
+        placeFixed($wrap, $menu);
     }
 
     /**
@@ -150,6 +235,7 @@
      */
     function bind(opts) {
         opts = opts || {};
+        bindScrollClose();
         var $container = $(opts.container);
         // A page's container selector is a fixed, hand-written string, not
         // user input -- a typo or a markup rename that drops it out of sync

@@ -814,7 +814,7 @@ $lang = array(
     'UserSessions' => 'Сесија корисника',
     'SessionActivityTimeout' => 'Временско ограничење сесије активност',
     'Security' => 'Сигурност',
-    'EnableCSP' => 'Омогућавање садржаја правила сигурности (ово не ради хрома у прошлости)',
+    'EnableCSP' => 'Омогући политику безбедности садржаја (препоручено)',
     'EnableDebugLogging' => 'Омогући вођење евиденције о отклањању грешака',
     'seconds' => 'секунди',
     'FieldSample' => 'Поље узорка',
@@ -4967,6 +4967,572 @@ $lang = array(
     // closeriskForm()'s own (hardcoded, pre-existing) single-risk denial text.
     'NoCloseRiskPermission' => 'Немате дозволу да затворите ризике.',
     'QuestionnaireRequiredQuestionUnanswered' => 'Молимо вас да одговорите на сва потребна питања пре него што завршите процену.',
+    'AuditLog_ControlStatusAutoSynced' => 'Статус контроле „{$short_name}“ је аутоматски ажуриран на „{$status_text}“ на основу њених најновијих резултата теста.',
+    'EnableCSPHelp' => 'Политика безбедности садржаја (CSP) ограничава прегледач на учитавање скрипти, стилова, слика и фонтова само из самог SimpleRisk-а и блокира уоквиривање страница и слање образаца из различитих извора. То је најјача уграђена одбрана од унакрсног скриптовања. Оставите омогућено осим ако није у сукобу са проксијем, екстензијом прегледача или интеграцијом треће стране у вашем окружењу.',
+    // Define Control Frameworks' Columns picker (Task: Columns picker + saved layout/filters) -- the "Standard" group label above its built-in fields (Family/Owner/Maturity/Status/Class/Phase/Priority/Type); 'CustomFields' already exists.
+    'StandardFields' => 'Стандардна поља',
+    // My Profile redesign (js/simplerisk/pages/account-profile.js)
+    'Administrator' => 'Администратор',
+    'AccountDetails' => 'Подаци о налогу',
+    'YourPermissions' => 'Ваше дозволе',
+    'RoleAndTeamsGrantAccess' => 'Чему вам ваша улога и тимови омогућавају приступ',
+    'AllGranted' => 'Све одобрено',
+    'PermissionsCountLabel' => '$count дозволе',
+    'ManagedByYourAdministrator' => 'Овим подацима управља ваш администратор. Контактирајте га ако је потребно нешто променити.',
+    'MultiFactorAuthenticationHint' => 'Додајте други корак при пријављивању да бисте заштитили налог.',
+    'ChangingPasswordSignsOutEverywhere' => 'Променом лозинке одјавићете се са свих других локација.',
+    'APIKeyHint' => 'Користи се за аутентификацију ваших скрипти и интеграција са SimpleRisk API-јем.',
+    'ResetDisplaySettingsHint' => 'Враћа ваше прилагођене изборе колона на подразумеване вредности.',
+    'CardGeneral' => 'Генерале',
+    'CardClassification' => 'Класификација',
+    'CardScoring' => 'Бодовање',
+    'CardAdditionalInformation' => 'Додатне информације',
+    'CardCustomFields' => 'Прилагођена поља',
+    'CardCustomFieldsHint' => 'Ова поља треба сортирати у картицу',
+    'LayoutEditorHint' => 'Превуците поље на другу картицу да бисте га поново доделили, превуците унутар картице да бисте му променили редослед или величину и превуците или промените величину картице да бисте променили њен положај на страници.',
+    'ScoringNotYetAvailableInThisView' => 'Конфигурација бодовања још увек није доступна у овом приказу.',
+    // Native tooltip on the Cards layout editor's Gridstack resize handles
+    // (js/simplerisk/pages/customization-layout-editor.js) -- the bare corner
+    // bracket read as an unexplained mark until it said what it does.
+    'DragToResize' => 'Превуците да бисте променили величину',
+    // Warning pill on a Cards layout editor card the admin has sized shorter
+    // than the fields it holds. Replaces the silent inner scrollbar that state
+    // used to produce.
+    'NFieldsDoNotFitCard' => 'Поља {n} не стану на ову картицу. Промените величину картице да би се приказивала.',
+    // Card titles for the Mitigation tab's Cards layout editor
+    // (js/simplerisk/pages/customization-layout-editor.js), mirroring the
+    // Card* keys above for the Details tab. Order follows
+    // customization_mitigation_cards_layout_card_keys() (includes/functions.php).
+    'CardMitigationStrategy' => 'Стратегија ублажавања',
+    'CardMitigationSolution' => 'Решење за ублажавање',
+    'CardMitigationControls' => 'Још више поспјешује контроле',
+    'CardReview' => 'Коментар',
+    // Submit Risk page's three action-bar buttons (buildActionsBar(),
+    // risk-details-form.js, submitMode 'create' only) and the Reset Form
+    // confirm modal (management/index.php, design-system.md #8's "Confirm"
+    // type). 'Discard'/'Cancel'/'Close' already exist and are reused for the
+    // modal's own buttons.
+    'ResetForm' => 'Ресетуј образац',
+    'SaveAndNew' => 'Сачувај и ново',
+    'SaveAndView' => 'Сачувај и погледај',
+    'ResetFormConfirmTitle' => 'Желите ли да одбаците ову пријаву ризика?',
+    'ResetFormConfirmBody' => 'Све информације које сте унели биће изгубљене.',
+    // Restore-template destructive confirm (Customization Extra, Save/Restore
+    // action bar). Two body variants: risk's Details/Mitigation/Review tabs
+    // named explicitly (the only fgroup with that 3-tab Cards layout), a
+    // generic fallback for every other fgroup (single legacy-panel tab).
+    // Both end on the same scoping reassurance -- confirmed via direct source
+    // read that Restore only ever touches the currently-selected template
+    // group, never any other.
+    'RestoreTemplateConfirmTitle' => 'Врати подразумевани изглед?',
+    'RestoreTemplateConfirmBodyRisk' => 'Овим се сва поља на картицама Детаљи, Ублажавање и Преглед враћају на подразумеване вредности за ову групу шаблона. Остале групе шаблона нису погођене.',
+    'RestoreTemplateConfirmBody' => 'Овим се свако поље у овом шаблону враћа на подразумеване вредности за ову групу шаблона. Остале групе шаблона нису погођене.',
+    // CVSS holder's collapsed Temporal/Environmental/Impact-Modifiers
+    // accordion (buildCvssHolder(), risk-details-form.js) -- these three
+    // groups are optional CVSS v2 refinements on top of the required Base
+    // Score Metrics, so they collapse behind this header by default.
+    'AdvancedMetrics' => 'Напредне метрике',
+    // CVSS holder's Base Score Metrics sub-group headers (buildCvssHolder(),
+    // risk-details-form.js) -- distinct from the existing 'ExploitabilityMetrics'/
+    // 'ImpactMetrics' keys, which the legacy cvss_modal_content.php modal
+    // still renders as plain "Exploitability Metrics"/"Impact Metrics" and
+    // must keep unchanged. These fold the umbrella "Base Score Metrics"
+    // heading into each sub-group's own header instead of a separate label.
+    'BaseScoreExploitabilityMetrics' => 'Метрике експлоатације основног резултата',
+    'BaseScoreImpactMetrics' => 'Метрике утицаја основне оцене',
+    // Per-field help popovers on the CVSS holder's 14 metric selects
+    // (buildCvssScoreItem(), risk-details-form.js) -- one per CVSS v2
+    // metric, matching the standard CVSS v2 specification definitions.
+    // Double-quoted (not single-quoted, this file's usual style) so the
+    // \n line breaks are real escape sequences: each popover leads with one
+    // overall sentence, then one bullet line per option, rendered via
+    // white-space: pre-line on .sr-scoring-help-popover .popover-body
+    // (scss/modules/_questionnaire.scss) -- plain text throughout, no HTML,
+    // so the popover stays initialized without Bootstrap's `html: true`.
+    "AttackVectorHelp" => "Како се рањивости може приступити.\n• Локални: захтева локални приступ, као што је конзола или љуска.\n• Суседна мрежа: нападач мора бити на истом физичком или логичком сегменту мреже.\n• Мрежа: може се искористити даљински преко мреже, без потребе за локалним или суседним приступом.",
+    "AttackComplexityHelp" => "Колико је напад сложен када нападач има приступ мети.\n• Висок: захтева специјализоване услове које је тешко организовати.\n• Средњи: неки услови морају бити испуњени, али експлоатација није тешка када јесу.\n• Низак: нису потребни посебни услови.",
+    "AuthenticationHelp" => "Број пута колико нападач мора да се аутентификује код мете да би је искористио.\n• Вишеструка: аутентификација је потребна два или више пута, чак и са истим акредитивима.\n• Једнострука: аутентификација је потребна једном.\n• Ниједна: аутентификација није потребна.",
+    "ConfidentialityImpactHelp" => "Утицај на поверљивост података које систем обрађује у случају искоришћавања.\n• Нема: нема утицаја.\n• Делимично: откривање неких информација, али нападач не контролише које или је губитак ограничен.\n• Потпуно: потпуно откривање свих информација на систему.",
+    "IntegrityImpactHelp" => "Утицај на интегритет система у случају искоришћавања.\n• Нема: нема утицаја.\n• Делимично: неки подаци могу бити измењени, али нападач не контролише које или је обим ограничен.\n• Потпуно: потпуно угрожавање интегритета система; нападач може да измени било које датотеке.",
+    "AvailabilityImpactHelp" => "Утицај на доступност система у случају искоришћавања.\n• Нема: нема утицаја.\n• Делимично: смањене перформансе или прекиди у доступности.\n• Потпуно: потпуно искључивање погођеног ресурса.",
+    "RemediationLevelHelp" => "Ниво доступног санирања рањивости.\n• Званично решење: доступно је комплетно решење произвођача.\n• Привремено решење: доступно је званично, али привремено решење.\n• Заобилазно решење: постоји незванично решење које није од произвођача.\n• Недоступно: није доступно решење или се ниједно не може применити.",
+    "ReportConfidenceHelp" => "Степен поверења у постојање рањивости и кредибилитет њених техничких детаља.\n• Непотврђено: један, непотврђен извор извештава; основни проблем је спекулативан.\n• Непотврђено: више независних извора извештава о истом понашању, али основни узрок није потврђен.\n• Потврђено: продавац је потврдио проблем или је потврђен анализом изворног кода или експлоатације.",
+    "CollateralDamagePotentialHelp" => "Потенцијал за губитак живота, физичке имовине или финансијски губитак ако се рањивост искористи.\n• Ниједан: такав губитак није вероватан.\n• Низак до средњи: могућ је умерен губитак.\n• Висок: катастрофалан утицај на имовину, приходе или безбедност организације.",
+    "TargetDistributionHelp" => "Удео рањивих система у вашем окружењу.\n• Ниједан: не постоје циљни системи.\n• Низак: 1-25% система је рањиво.\n• Средњи: 26-75% је рањиво.\n• Висок: 76-100% је рањиво.",
+    "ConfidentialityRequirementHelp" => "Колико је поверљивост погођене имовине важна за вашу организацију.\n• Ниско: губитак поверљивости има ограничен утицај.\n• Средње: има озбиљан утицај.\n• Високо: има катастрофалан утицај.",
+    "IntegrityRequirementHelp" => "Колико је интегритет погођене имовине важан за вашу организацију.\n• Низак: губитак интегритета има ограничен утицај.\n• Средњи: има озбиљан утицај.\n• Висок: има катастрофалан утицај.",
+    "AvailabilityRequirementHelp" => "Колико је важна доступност погођене имовине за вашу организацију.\n• Ниско: губитак доступности има ограничен утицај.\n• Средње: има озбиљан утицај.\n• Високо: има катастрофалан утицај.",
+    // Base Score Metrics' two sub-group intro sentences (metricsSubGroup()'s
+    // `descKey`, risk-details-form.js) -- orient the user to what the GROUP
+    // as a whole is asking, distinct from the per-field *Help popover keys
+    // above which explain each metric's own options.
+    'BaseScoreExploitabilityMetricsDescription' => 'Како би нападач требало да досегне и активира ову рањивост: где мора бити, колико је напад сложен и да ли прво треба да се аутентификује.',
+    'BaseScoreImpactMetricsDescription' => 'Шта се дешава ако се рањивост успешно искористи: ефекат на поверљивост, интегритет и доступност погођеног система.',
+    // Advanced Metrics' three optional sub-group intro sentences -- same
+    // metricsSubGroup() `descKey` as the two Base Score groups above.
+    'TemporalScoreMetricsDescription' => 'Како се стварна претња ове рањивости мења током времена: тренутно стање експлоатационог кода, која су решења доступна и колико су извештаји сигурни да она постоји.',
+    'EnvironmentalScoreMetricsDescription' => 'Како ризик од ове рањивости зависи од вашег окружења: потенцијал за штету у стварном свету и колико је ваших система заправо погођено.',
+    'ImpactSubscoreModifiersDescription' => 'Процените утицај основне оцене према томе колико су поверљивост, интегритет и доступност заправо важни за ову специфичну имовину.',
+    // Phase 4d-iii: DREAD holder help popovers (view_dread_help()'s
+    // existing English text, includes/display.php, extracted to real $lang
+    // keys -- that function's own content was raw hardcoded HTML, never
+    // localized, so it could not be reused verbatim).
+    'DamagePotentialHelp' => 'Ако дође до злоупотребе претње, колика ће штета бити проузрокована?' . "\n" . '0 = Ништа' . "\n" . '5 = Подаци појединачних корисника су угрожени или погођени.' . "\n" . '10 = Потпуно уништење система или података',
+    'ReproducibilityHelp' => 'Колико је лако репродуковати претњу?' . "\n" . '0 = Веома тешко или немогуће, чак и за администраторе апликације.' . "\n" . '5 = Потребан је један или два корака, можда ће бити потребно да будете овлашћени корисник.' . "\n" . '10 = Само веб прегледач и адресна трака су довољни, без аутентификације.',
+    'ExploitabilityHelp' => 'Шта је потребно да би се искористила ова претња?' . "\n" . '0 = Напредно знање програмирања и умрежавања, са прилагођеним или напредним алатима за напад.' . "\n" . '5 = Злонамерни софтвер постоји на интернету или се његова експлоатација лако изводи коришћењем доступних алата за напад.' . "\n" . '10 = Само веб прегледач',
+    'AffectedUsersHelp' => 'Колико ће корисника бити погођено?' . "\n" . '0 = Ниједан' . "\n" . '5 = Неки корисници, али не сви' . "\n" . '10 = Сви корисници',
+    'DiscoverabilityHelp' => 'Колико је лако открити ову претњу?' . "\n" . '0 = Веома тешко до немогуће; потребан је изворни код или администраторски приступ.' . "\n" . '5 = Може се схватити погађањем или праћењем мрежних трагова.' . "\n" . '9 = Детаљи о оваквим грешкама су већ јавно доступни и могу се лако открити помоћу претраживача.' . "\n" . '10 = Информације су видљиве у адресној траци веб прегледача или у обрасцу.',
+    // The DREAD holder's summary card heading and "DREAD Metrics" card
+    // heading. No existing key covers either (confirmed via grep before
+    // adding).
+    'DreadScore' => 'DREAD резултат',
+    'DreadMetrics' => 'DREAD метрике',
+    // Phase 4d-iv: OWASP holder help popovers (view_owasp_help()'s
+    // existing English text, includes/display.php, extracted to real
+    // $lang keys -- same never-localized-legacy-content extraction the
+    // DREAD phase already did for its own 5 fields). Wording/levels
+    // trued up against that function's real source text, not transcribed
+    // from an earlier standard-methodology draft.
+    'SkillLevelHelp' => 'Колико је технички вешта ова група претећих агената?' . "\n" . '1 = Без техничких вештина' . "\n" . '3 = Неке техничке вештине' . "\n" . '5 = Напредни корисник рачунара' . "\n" . '6 = Мрежне и програмске вештине' . "\n" . '9 = Вештине безбедносног продора',
+    'MotiveHelp' => 'Колико је мотивисана ова група претњи да пронађе и искористи ову рањивост?' . "\n" . '1 = Мала или никаква награда' . "\n" . '4 = Могућа награда' . "\n" . '9 = Висока награда',
+    'OpportunityHelp' => 'Који ресурси и могућности су потребни овој групи претњи да би пронашли и искористили ову рањивост?' . "\n" . '0 = Потребан је потпун приступ или скупи ресурси' . "\n" . '4 = Потребан је посебан приступ или ресурси' . "\n" . '7 = Потребан је известан приступ или ресурси' . "\n" . '9 = Није потребан приступ нити ресурси',
+    'SizeHelp' => 'Колико је велика ова група претећих агената?' . "\n" . '2 = Програмери' . "\n" . '2 = Системски администратори' . "\n" . '4 = Корисници интранета' . "\n" . '5 = Партнери' . "\n" . '6 = Аутентификовани корисници' . "\n" . '9 = Анонимни корисници интернета',
+    'EaseOfDiscoveryHelp' => 'Колико је лако овој групи претњи да открије ову рањивост?' . "\n" . '1 = Практично немогуће' . "\n" . '3 = Тешко' . "\n" . '7 = Лако' . "\n" . '9 = Доступни аутоматизовани алати',
+    'EaseOfExploitHelp' => 'Колико је лако овој групи претњи да заправо искористи ову рањивост?' . "\n" . '1 = Теоријски' . "\n" . '3 = Тешко' . "\n" . '5 = Лако' . "\n" . '9 = Доступни аутоматизовани алати',
+    'AwarenessHelp' => 'Колико је добро позната ова рањивост овој групи претњи?' . "\n" . '1 = Непознато' . "\n" . '4 = Скривено' . "\n" . '6 = Очигледно' . "\n" . '9 = Јавно знање',
+    'IntrusionDetectionHelp' => 'Колика је вероватноћа да ће експлоатација бити откривена?' . "\n" . '1 = Активна детекција у апликацији' . "\n" . '3 = Забележено и прегледано' . "\n" . '8 = Забележено без прегледа' . "\n" . '9 = Није пријављено',
+    'LossOfConfidentialityHelp' => 'Колико података може бити откривено и колико су осетљиви?' . "\n" . '2 = Минимално откривени неосетљиви подаци' . "\n" . '6 = Минимални критични подаци откривени' . "\n" . '6 = Откривени су опсежни неосетљиви подаци' . "\n" . '7 = Откривени опсежни критични подаци' . "\n" . '9 = Сви подаци су откривени',
+    'LossOfIntegrityHelp' => 'Колико података може бити оштећено и колико су оштећени?' . "\n" . '1 = Минимално благо оштећени подаци' . "\n" . '3 = Минимално озбиљно оштећени подаци' . "\n" . '5 = Опсежни, благо оштећени подаци' . "\n" . '7 = Опсежни, озбиљно корумпирани подаци' . "\n" . '9 = Сви подаци потпуно оштећени',
+    'LossOfAvailabilityHelp' => 'Колико услуга може бити изгубљено и колико је то од виталног значаја?' . "\n" . '1 = Минималне секундарне услуге прекинуте' . "\n" . '5 = Минимални прекид примарних услуга' . "\n" . '5 = Прекинут обим секундарних услуга' . "\n" . '7 = Прекинут обим примарних услуга' . "\n" . '9 = Све услуге потпуно изгубљене',
+    'LossOfAccountabilityHelp' => 'Да ли се радње агената претње могу пратити до појединца?' . "\n" . '1 = Потпуно праћење' . "\n" . '7 = Могуће праћење' . "\n" . '9 = Потпуно анонимно',
+    'FinancialDamageHelp' => 'Колика ће финансијска штета настати због експлоатације?' . "\n" . '1 = Мање од трошкова за отклањање рањивости' . "\n" . '3 = Мањи утицај на годишњи профит' . "\n" . '7 = Значајан утицај на годишњи профит' . "\n" . '9 = Банкрот',
+    'ReputationDamageHelp' => 'Да ли би експлоатација резултирала штетом по репутацију која би наштетила пословању?' . "\n" . '1 = Минимална штета' . "\n" . '4 = Губитак главних рачуна' . "\n" . '5 = Губитак добре воље' . "\n" . '9 = Оштећење бренда',
+    'NonComplianceHelp' => 'Колику изложеност представља непоштовање прописа?' . "\n" . '2 = Мањи прекршај' . "\n" . '5 = Јасан прекршај' . "\n" . '7 = Кршење високог профила',
+    'PrivacyViolationHelp' => 'Колико личних података може бити откривено?' . "\n" . '3 = Једна особа' . "\n" . '5 = Стотине људи' . "\n" . '7 = Хиљаде људи' . "\n" . '9 = Милиони људи',
+    // The OWASP holder's Score card heading. No existing key covers this
+    // (confirmed via grep before adding) -- the Likelihood/Impact card
+    // headings reuse the already-existing bare 'Likelihood'/'Impact' keys.
+    'OwaspScore' => 'OWASP резултат',
+    // Phase 4d-iv follow-up: group-level descriptions for the 4 OWASP
+    // subgroup headings, sourced from OWASP's own Risk Rating Methodology
+    // (https://community.owasp.org/OWASP_Risk_Rating_Methodology), tightened
+    // into short UI captions -- not a verbatim quote (see this task's own
+    // source table for the original wording).
+    'ThreatAgentFactorsDescription' => 'Процењује вероватноћу успешног напада ове групе претњи.',
+    'VulnerabilityFactorsDescription' => 'Процењује вероватноћу да ће ова рањивост бити откривена и искоришћена.',
+    'TechnicalImpactDescription' => 'Рашчлањује утицај на поверљивост, интегритет, доступност и одговорност.',
+    'BusinessImpactDescription' => 'Одражава оно што је важно за пословање, изван самог техничког утицаја.',
+    // CVSS's own Temporal-metric 'Exploitability' help text. This key shares
+    // a labelKey ('Exploitability') with DREAD's own field, so both would
+    // otherwise derive the same generic lang key ('ExploitabilityHelp'),
+    // with DREAD's entry silently winning for both -- risk-details-form.js's
+    // buildCvssScoreItem() and risk-details-view.js's cvssMetricValueRow()
+    // reference this key directly for CVSS's Exploitability field instead
+    // of the generic '<labelKey>Help' derivation.
+    'CVSSExploitabilityHelp' => "Тренутно стање техника експлоатације или доступности кода.\n• Недоказано: није доступан експлоатациони код или је експлоатација теоретска.\n• Доказ концепта: експлоатациони код постоји, али није практичан за већину нападача.\n• Функционално: функционални експлоатациони код ради у већини ситуација.\n• Високо: експлоатација је поуздана и или аутоматизована (нпр. црв) или уопште не захтева експлоатациони код.",
+    // Risk Scoring -- Classic Inline (Task 3): the Classic scoring method's
+    // new inline Score card heading and its Likelihood/Impact cards' short
+    // plain-English descriptions (js/simplerisk/common/risk-details-form.js's
+    // buildClassicHolder()). Deliberately NOT sourced from NIST SP 800-30 or
+    // any other external standard -- confirmed with the user via the
+    // approved mockup review, unlike OWASP's own subgroup descriptions
+    // above, which do cite OWASP's Risk Rating Methodology.
+    'ClassicScore' => 'Класична партитура',
+    'ClassicLikelihoodDescription' => 'Колико је вероватно да ће се овај ризик догодити.',
+    'ClassicImpactDescription' => 'Колико би озбиљне биле последице ако би се овај ризик догодио.',
+    // Risk Scoring -- Custom Inline (Task 2): the Custom scoring method's
+    // new inline Score card heading (js/simplerisk/common/risk-details-form.js's
+    // buildCustomHolder()) and the Custom Value card's short description
+    // caption. 'CustomValueDescription' text confirmed directly with the
+    // user, same as Classic's own description keys above.
+    'CustomScore' => 'Прилагођени резултат',
+    'CustomValueDescription' => 'Прилагођена вредност може бити децимална вредност између 0 и 10.',
+    // Risk Scoring -- Contributing Risk Inline (Phase 4d-v): the last of
+    // the three deferred scoring methods (DREAD/OWASP shipped earlier in
+    // this same project). The Likelihood/Contributing Risk cards' short
+    // plain-English descriptions (js/simplerisk/common/risk-details-form.js's
+    // buildContributingRiskHolder()). The Score card heading reuses the
+    // EXISTING 'ContributingRiskScore' key (already present above, same
+    // text) rather than duplicating it -- 'ContributingRisk'/
+    // 'ContributingLikelihood'/'Weight'/'Subject' are likewise reused as-is.
+    'ContributingLikelihoodDescription' => 'Колико је вероватно да ће се овај ризик догодити.',
+    'ContributingRiskDescription' => 'Сваки фактор испод је пондерисан према својој релативној важности -- изаберите колико сваки од њих утиче на овај ризик.',
+    // OWASP read-mode card (buildOwaspReadView(), risk-details-view.js):
+    // the live calculation formula under each of the 4 sub-group names
+    // (Threat Agent Factors/Vulnerability Factors/Technical Impact/
+    // Business Impact), matching the legacy risk-scoring-details panel's
+    // own "= ( a + b + c + d ) / 4" text (includes/display.php), and the
+    // OWASP Risk Rating Methodology link note placed in the OWASP Score
+    // column's open space below the summary numbers.
+    'OwaspSubgroupFormula' => '= ( {a} + {b} + {c} + {d} ) / 4',
+    'OwaspMethodologyNote' => 'Сви детаљи методологије за оцењивање ризика OWASP-а могу се пронаћи',
+    'Here' => 'овде',
+    // Scoring widget formula captions (Classic/DREAD/Contributing Risk),
+    // the same ".sr-cvss-vector under the score label" treatment CVSS's
+    // vector caption and OwaspSubgroupFormula above already have, on both
+    // the edit-mode holder (risk-details-form.js) and the read-mode card
+    // (risk-details-view.js). Classic reuses the existing RISKClassicExp1-5
+    // keys instead of a new one -- see those keys' own long-standing
+    // definitions above.
+    'DreadScoreFormula' => '= ( {a} + {b} + {c} + {d} + {e} ) / 5',
+    // Contributing Risk's per-factor weighted term and its shared
+    // Likelihood term (update_contributing_risk_score(), includes/
+    // functions.php) -- unlike DREAD/OWASP's fixed roster, the factor list
+    // is admin-configured, so this is one formula PER FACTOR ROW rather
+    // than one fixed caption under the total score.
+    // {maxName}: score.php parity -- legacy's "Maximum Value" column showed
+    // the max option's human-readable name alongside its number (e.g.
+    // "[5] Certain", includes/display.php); these formulas only showed the
+    // bare number.
+    'ContributingLikelihoodFormula' => '= {value} x 5 / {max} ({maxName})',
+    'ContributingFactorFormula' => '= {weight}% x {impact} x 5 / {max} ({maxName})',
+    // Contributing Risk's own subscore row in the Score card -- the sum of
+    // every factor's own term above it. Generic (not substituted with real
+    // numbers) since the number of terms is however many factors are
+    // configured, unlike the fixed-roster formulas above.
+    'ContributingRiskSubtotalFormula' => '= Збир (Тежина x Удар x 5 / Макс.)',
+    // Contributing Risk Score's own formula, under the total row -- always
+    // exactly 2 terms (unlike the Contributing Risk subtotal above), so
+    // substituted with the real current subtotal values, same convention
+    // DreadScoreFormula/OwaspSubgroupFormula use for their own fixed roster.
+    'ContributingRiskScoreFormula' => '= {likelihood} + {contributing}',
+    // Risk Scoring History widget (risk-details-view.js) -- replaces the
+    // legacy chart's bare save icon with a real menu item, structured for
+    // future export types alongside it.
+    'DownloadChartAsImage' => 'Преузми као слику',
+    // Legacy score.php's CVSS table had a "Full details of CVSS Version 2.0
+    // scoring can be found here." link (includes/display.php); this is its
+    // inline-scoring-card equivalent, same shape as OwaspMethodologyNote.
+    'CvssMethodologyNote' => 'Сви детаљи о бодовању CVSS верзије 2.0 могу се пронаћи',
+    // Mitigation Controls redesign: the picker reuses ChooseControls/
+    // AddOrRemoveControls/etc from Document Program's control picker.
+    'InvalidControlID' => 'Неважећи ИД контроле.',
+    'ValidationOwner' => 'Власник валидације',
+    'ValidationStatus' => 'Статус валидације',
+    'NotStarted' => 'Није започето',
+    // management/view.php's "risk ID does not exist" empty state.
+    'RiskIdDoesNotExistBody' => 'Ризик који тражите је можда обрисан или је линк нетачан.',
+    'MitigationControlsRequiresGovernance' => 'За преглед је потребна дозвола за управљање.',
+    'ViewControlValidation' => 'Валидација контроле прегледа',
+    'EditControlValidation' => 'Валидација контроле за уређивање',
+    'SupportingDocumentationRequiresSubmitRisk' => 'За отпремање датотека потребна је дозвола за слање ризика.',
+    'SupportingDocumentationRequiresModifyRisks' => 'За управљање датотекама је потребна дозвола за измену ризика.',
+    'MitigationSupportingDocumentationRequiresPlanMitigations' => 'За управљање датотекама потребна је дозвола за ублажавање плана.',
+    'MitigationSubmittedBy' => 'Ублажавање поднео/ла',
+    'UseADifferentDate' => 'Користите други датум',
+    'AssetGroup' => 'Група имовине',
+    // Customization Cards Layout API (extras/customization/index.php) scope-validation errors.
+    'InvalidFgroup' => 'Неважећа f-група.',
+    'CustomizationCardsLayoutApiScopeError' => 'API за прилагођавање распореда картица је доступан само за fgroup=risk, tab_index=1, tab_index=2 или tab_index=3.',
+    // Asset management redesign
+    'DiscoverAssets' => 'Откријте средства',
+    'DiscoveryRuns' => 'Откривање се покреће',
+    'DiscoveryRangeHint' => 'Једна адреса, опсег почетка и краја или IPv4 CIDR',
+    'DiscoveryResolveNames' => 'Претражите имена хостова',
+    'DiscoveryAddAs' => 'Додај нове елементе као',
+    'DiscoveryStart' => 'Покрени откривање',
+    'DiscoveryBackgroundNote' => 'Ради у позадини. Адресе које већ постоје се прескачу.',
+    'DiscoveryRangeInvalid' => 'Унесите важећу IPv4 адресу, опсег или CIDR блок.',
+    'DiscoveryRangeTooLarge' => 'Тај опсег је превелик. Ограничење је {$max} адреса.',
+    'DiscoveryRunQueued' => 'Откривање је почело.',
+    'DiscoveryRunCompleted' => 'Откривање завршено: {$new} нових елемената.',
+    'AssetBulkSelectAll' => 'Изаберите све {$count} елементе',
+    'AssetBulkAssignTeams' => 'Додели тимове…',
+    'AssetBulkAddToGroup' => 'Додај у групу…',
+    'AssetBulkDeleteConfirmTitle' => 'Да ли желите да обришете {$count} елемената?',
+    'AbleToEditAssets' => 'Могућност уређивања средстава',
+    'AbleToDeleteAssets' => 'Могућност брисања средстава',
+    'AbleToVerifyAssets' => 'Могућност верификације средстава',
+    'AbleToRunAssetDiscovery' => 'Могућност покретања откривања имовине',
+    'AbleToCreateAssetGroups' => 'Могућност креирања група средстава',
+    'AbleToEditAssetGroups' => 'Могућност уређивања група средстава',
+    'AbleToDeleteAssetGroups' => 'Могућност брисања група средстава',
+    'ViewAsset' => 'Прикажи имовину',
+    'AssetUnverifiedByEditLog' => 'Имови „{$name}“ су враћени као непроверени јер је корисник „{$user}“ променио своје име или IP адресу без дозволе за верификацију имовине.',
+    'AssetTeamsAssignedLog' => 'Asset "{$name}" was assigned to team(s) "{$teams}" by user "{$user}".',
+    // Manage assets page (asset management redesign, Task 9)
+    'AddAsset' => 'Додај елемент',
+    'SearchAssetsPlaceholder' => 'Претрага по имену или ИП адреси',
+    'AllLocations' => 'Све локације',
+    'AllTags' => 'Све ознаке',
+    'AllAssetGroups' => 'Све групе средстава',
+    'AssetFields' => 'Поља имовине',
+    'AssetBulkAllSelected' => 'Изабрана су сва {$count} одговарајућа средства',
+    'AssetDeleteConfirmTitle' => 'Обрисати елемент „{$name}“?',
+    'DeleteAsset' => 'Обриши елемент',
+    'DeleteAssets' => 'Обриши средства',
+    'AssetBulkAssignTeamsTitle' => 'Доделите тимовима {$count} средстава',
+    'AssetAssignTeamsHint' => 'Изабрани тимови се додају. Тимови који су већ на ресурсу остају.',
+    'AssetAddToGroupTitle' => 'Додај {$count} елемената у групу',
+    'AssetChooseTeams' => 'Изаберите тимове',
+    'AssetChooseGroup' => 'Изаберите групу',
+    'Assign' => 'Додели',
+    'AssetBulkVerifiedSummary' => '{$ok} верификовано, {$failed} прескочено',
+    'AssetBulkDeletedSummary' => '{$ok} обрисано, {$failed} прескочено',
+    'AssetBulkTeamsSummary' => 'Тимови додељени са {$ok} средстава, {$failed} прескочено',
+    'AssetBulkGroupSummary' => '{$ok} додато у групу, {$failed} прескочено',
+    'AssetBulkSkippedList' => 'Прескочено: {$list}',
+    'AssetBulkReasonNotFound' => 'није пронађено',
+    'NoAssetsYet' => 'Још нема средстава',
+    'NoAssetsYetHint' => 'Овде се појављују средства која додате или откријете.',
+    'NoAssetsMatchFilters' => 'Ниједан елемент не одговара вашим филтерима',
+    'CouldNotLoadAssets' => 'Није могуће учитати елементе. Ваши подаци су безбедни.',
+    'AllValuations' => 'Све процене',
+    // Manage assets page, Asset groups tab (asset management redesign, Task 10)
+    'AddAssetGroup' => 'Додај групу',
+    'EditAssetGroup' => 'Измени групу',
+    'DeleteAssetGroup' => 'Обриши групу',
+    'ViewGroupMembers' => 'Прикажи чланове',
+    'SearchAssetGroupsPlaceholder' => 'Претражи групе по имену',
+    'HighestValuation' => 'Највиша процена',
+    'LinkedRisks' => 'Повезани ризици',
+    'RemoveFromGroup' => 'Уклони из групе',
+    'AssetGroupMoreMembers' => '+ {$count} више',
+    'ViewAllInAssetsTab' => 'Погледајте све на картици Средства',
+    'NoAssetsInGroup' => 'Нема средстава у овој групи.',
+    'CouldNotLoadGroupMembers' => 'Није могуће учитати чланове ове групе.',
+    'AssetGroupMembers' => 'Чланови',
+    'AssetGroupMembersHint' => 'Наведена су само средства која можете видети. Чланови које не можете видети остају у групи.',
+    'ChooseAssets' => 'Изаберите средства',
+    'AddOrRemoveAssets' => 'Додај или уклони елементе…',
+    'UseTheseAssets' => 'Користите ове ресурсе',
+    'AllAssets' => 'Сва средства',
+    'Valuation' => 'Процена вредности',
+    'PickerShowingFirstN' => 'Приказује се првих {$count} од {$total}. Претражите или сузите претрагу да бисте пронашли остатак.',
+    'AssetGroupDeleteConfirmTitle' => 'Обришите групу „{$name}“?',
+    'AssetGroupDeleteKeepsAssets' => 'Елементи у овој групи се не бришу. Уклања се само група.',
+    'NoAssetGroupsYet' => 'Још нема група елемената',
+    'NoAssetGroupsYetHint' => 'Групишите средства како бисте их могли заједно мапирати и извештавати о њима.',
+    'NoAssetGroupsMatchSearch' => 'Ниједна група елемената не одговара вашој претрази',
+    'CouldNotLoadAssetGroups' => 'Није могуће учитати групе елемената. Ваши подаци су безбедни.',
+    'DiscoveryAssignTeams' => 'Додели тимовима',
+    'DiscoveryAssignTeamsHint' => 'Опционо. Сваки нови ресурс се додаје овим тимовима.',
+    'DiscoveryAddAsHint' => 'Постављено уз вашу дозволу за верификацију средстава.',
+    'DiscoveryTeamsInvalid' => 'Изаберите тимове који постоје и којима припадате.',
+    'DiscoveryResolveNamesInvalid' => 'Претраживање имена хоста мора бити укључено или искључено.',
+    'DiscoveryTooManyActiveRuns' => 'Већ имате {$max} покретања откривања у току. Сачекајте да се једно заврши или га откажите.',
+    'DiscoveryRunNotFound' => 'Откривање није пронађено.',
+    'DiscoveryRunAlreadyFinished' => 'Ово откривање је већ завршено.',
+    'DiscoveryRunCancelled' => 'Откривање је отказано.',
+    'DiscoveryRunFailedToast' => 'Откривање {$range} није успело.',
+    'DiscoveryStatusQueued' => 'У реду чекања',
+    'DiscoveryProgress' => '{$scanned} од {$total}',
+    'DiscoveryLiveHosts' => 'Водитељи уживо',
+    'DiscoveryNewAssets' => 'Нова средства',
+    'DiscoveryStartedAt' => 'Започето',
+    'DiscoveryCancelRun' => 'Откажи трчање',
+    'CouldNotLoadDiscoveryRuns' => 'Није могуће учитати покретања откривања.',
+    'DiscoveryRangeReserved' => 'Тај опсег укључује резервисане адресе (петљбекова, локална веза, мултикаст или 0.0.0.0/8) које се не могу скенирати.',
+    'DiscoveryTooManyActiveRunsInstance' => 'Већ је {$max} покретања откривања у току. Покушајте поново када се једно заврши.',
+    'DiscoveryErrorScan' => 'Скенирање је заустављено због грешке. Проверите системске евиденције за детаље.',
+    'DiscoveryErrorWorkerLost' => 'Ред чекања у позадини је престао да обрађује ово покретање.',
+    'DiscoveryErrorRequesterInactive' => 'Корисник који је покренуо ово извршавање више није активан.',
+    // Asset management redesign: translated API errors (bulk actions, column settings, discovery) and discovery audit lines
+    'AssetBulkBodyInvalid' => 'Пошаљите групну акцију као JSON тело.',
+    'AssetBulkActionRequired' => 'Изаберите групну акцију.',
+    'AssetBulkUnknownAction' => 'Та групна акција није доступна.',
+    'AssetBulkSelectionRequired' => 'Изаберите средства или по ИД-у или по филтеру.',
+    'AssetBulkIdsRequired' => 'Изаберите барем један елемент.',
+    'AssetBulkIdsInvalid' => 'ИД-ови имовине морају бити цели бројеви.',
+    'AssetBulkTooManyAssets' => 'Можете да радите на највише {$max} елемената истовремено. Сузите избор и покушајте поново.',
+    'AssetBulkFilterInvalid' => 'Филтер није важећи. Поново учитајте страницу и покушајте поново.',
+    'AssetBulkFilterUnknownKey' => 'Филтер „{$key}“ није препознат.',
+    'AssetBulkFilterBadValue' => 'Филтер „{$key}“ има вредност која није важећа.',
+    'AssetBulkFilterTooManyValues' => 'Филтер „{$key}“ може да прикаже највише {$max} вредности.',
+    'AssetBulkFilterAllAlone' => 'Избор свих елемената не може се комбиновати са другим филтерима.',
+    'AssetBulkFilterEmpty' => 'Изаберите филтер или изаберите сва средства пре него што покренете групну акцију.',
+    'AssetBulkExpectedCountInvalid' => 'Очекивани број елемената мора бити цео број.',
+    'AssetBulkParamsInvalid' => 'Опције за ову групну акцију нису важеће.',
+    'AssetBulkTeamsRequired' => 'Изаберите барем један тим.',
+    'AssetBulkTeamsNotFound' => 'Један или више тих тимова више не постоје.',
+    'AssetBulkTeamsNotMember' => 'Можете доделити само тимове којима припадате.',
+    'AssetBulkGroupNotFound' => 'Та група средстава више не постоји.',
+    'AssetBulkNoMatch' => 'Ниједан елемент не одговара вашем избору.',
+    'AssetBulkCountMismatch' => 'Подударни елементи су се променили са {$expected} на {$actual} откако сте их изабрали. Прегледајте листу и покушајте поново.',
+    'AssetColumnSettingsBodyInvalid' => 'Пошаљите подешавања колоне као JSON тело са колонама или редоследом.',
+    'AssetColumnSettingsSaveFailed' => 'Није могуће сачувати ваше колоне. Замолите администратора да заврши надоградњу SimpleRisk-а.',
+    'DiscoveryRunQueueFailed' => 'Није могуће додати откривање у ред. Покушајте поново.',
+    'DiscoveryRunStartedLog' => 'Корисник „{$user}“ је покренуо откривање средстава #{$id} од {$range} ({$count} адреса).',
+    'DiscoveryRunCancelledLog' => 'Корисник „{$user}“ је отказао покретање откривања средстава #{$id} од {$range}.',
+    'AssetBulkTooManyToDelete' => 'Можете да обришете највише {$max} елемената истовремено. Сузите избор и покушајте поново.',
+    'AssetBulkFilterNotApplied' => 'Филтер „{$key}“ није могао бити примењен онако како је послат, тако да ништа није промењено.',
+    'AssetBulkExpectedCountRequired' => 'За брисање елемената помоћу филтера потребан је број елемената који очекујете да ћете избрисати.',
+    'AssetBulkReasonNotAttempted' => 'није покушано',
+    'MoreActions' => 'Више акција',
+    'AssetCreateNewGroupOption' => 'Направи нову групу…',
+    'AssetNewGroupName' => 'Ново име групе',
+    'AssetFilterByTeam' => 'Филтрирај по тиму {$name}',
+    'AssetFilterByValuation' => 'Филтрирај по процени {$name}',
+    'AssetFilterByTag' => 'Филтрирај по ознаци {$name}',
+    'AssetFilterByLocation' => 'Филтрирај по сајту/локацији {$name}',
+    'AssetFilteringByTeam' => 'Филтрирање по тиму {$name}',
+    'AssetFilteringByValuation' => 'Филтрирање по вредности {$name}',
+    'AssetFilteringByTag' => 'Филтрирање по ознаци {$name}',
+    'AssetFilteringByLocation' => 'Филтрирање по сајту/локацији {$name}',
+    'AssetShowOnlyVerified' => 'Прикажи само верификована средства',
+    'AssetShowOnlyUnverified' => 'Прикажи само непроверена средства',
+    'AssetShowingVerified' => 'Приказ верификованих средстава',
+    'AssetShowingUnverified' => 'Приказују се непроверена средства',
+    'CustomizationLayoutPayloadRejected' => 'Распоред није могао бити сачуван јер садржи поља или картице које не припадају овом шаблону. Ништа није промењено.',
+    'CustomizationLayoutRejectedUnknownScope' => 'Овај опсег шаблона не може бити сачуван из уређивача распореда. Ништа није промењено.',
+    'CustomizationLayoutRejectedEmptyFields' => 'Распоред нема важећих поља, тако да није сачуван. Ништа није промењено.',
+    'CustomizationLayoutRejectedWouldDeleteAll' => 'Чување овог распореда би уклонило сва поља из шаблона, тако да није сачуван. Поново учитајте страницу и покушајте поново.',
+    'CustomizationLayoutRejectedRequiredField' => 'Обавезно поље не може бити уклоњено из распореда. Ништа није промењено.',
+    'CustomizationLayoutRejectedBulkRemoval' => 'Чување овог распореда би уклонило већину поља шаблона, а да их ви не уклоните овде. Поново учитајте страницу и покушајте поново. Ништа није промењено.',
+    'CustomizationLayoutRejectedGroupMismatch' => 'Група шаблона не постоји или припада другом типу записа. Ништа није промењено.',
+    'CustomizationLayoutLegacySaveRefused' => 'Овај шаблон се уређује помоћу уређивача распореда и не може се сачувати преко застареле крајње тачке панела.',
+    // Asset discovery probe methods
+    'DiscoveryPortsInvalid' => 'Унесите до {$max} TCP портова између 1 и 65535, одвојених зарезима.',
+    'DiscoveryErrorProbeUnavailable' => 'Метода сонде којом је ово покретање започето више није доступна позадинском раднику. Покрените ново покретање.',
+    'DiscoveryProbeIcmpUnprivileged' => 'ICMP пинг (непривилеговани сокет)',
+    'DiscoveryProbeIcmpRaw' => 'ICMP пинг (сирови сокет)',
+    'DiscoveryProbePingCommand' => 'ICMP ping (ping команда)',
+    'DiscoveryProbeTcpConnect' => 'TCP веза',
+    'DiscoveryProbeMethod' => 'Метод сонде: {$method}',
+    'DiscoveryProbeDetectedByWebServer' => 'Детектовано од стране веб сервера. Позадински радник може користити другачији метод.',
+    'DiscoveryTcpProbeWarning' => 'Домаћини се проналазе само ако одговарају на једном од скенираних TCP портова, тако да хостови који блокирају те портове неће бити пронађени. За потпуне резултате, дозволите серверу да шаље ICMP пинг: дозволите непривилеговане ping сокете или NET_RAW могућност или инсталирајте ping.',
+    'DiscoveryTcpPortsForRun' => 'TCP портови за ово покретање',
+    'DiscoveryTcpPortsHint' => 'Раздвојено зарезима, до {$max} портова. Оставите празно да бисте користили подразумевану вредност: {$ports}.',
+    'DiscoveryDefaultTcpPorts' => 'TCP портови за откривање средстава',
+    'DiscoveryDefaultTcpPortsHint' => 'Користи се када позадински радник не може да пошаље ICMP пинг. Раздвојено зарезима, до {$max} портова.',
+    'DiscoveryErrorTcpUnreliable' => 'Скенирање је заустављено јер мрежа одговара на TCP везе за адресе које не могу бити прави хостови (прокси или заштитни зид су на путу), тако да би свака адреса изгледала активна. Замолите администратора да дозволи серверу да шаље ICMP пинг.',
+    'DiscoveryDefaultTcpPortsResetLog' => 'Корисник „{$user}“ је ресетовао TCP портове за откривање средстава на подразумеване вредности.',
+    'DiscoveryNotConfigured' => 'Откривање није конфигурисано. Замолите администратора система да подеси дозвољене опсеге у датотеци config.php.',
+    'DiscoveryRangeNotAllowed' => 'Тај опсег је ван опсега које је дозвољено скенирати помоћу функције Discovery.',
+    'DiscoveryAllowedRangesList' => 'Дозвољени опсези: {$ranges}',
+    // Asset record modal
+    'AssetNotAvailable' => 'Ова имовина није доступна. Можда је обрисана или јој можда немате приступ.',
+    'AssetCustomFieldNotInTemplate' => 'Једно или више прилагођених поља не припадају шаблону овог елемента. Ништа није промењено.',
+    'AssetMappedControlsInvalid' => 'Мапиране контроле нису могле бити сачуване. Сваки ред захтева период зрелости и барем једну постојећу контролу. Ништа није промењено.',
+    'AssetMappedControlsTooMany' => 'Имовина може бити мапирана на највише {$max} контрола. Ништа није промењено.',
+    'AddControlsAtAnotherMaturity' => 'Додајте контроле за другу доб',
+    'ChoosingControlsNeedsGovernancePermission' => 'За избор контрола потребна је дозвола за управљање.',
+    'NControls' => '{n} контрола(е)',
+    'SavingKeepsTheCurrentControlMappings' => 'Чување задржава тренутна мапирања контрола.',
+    'LoadingControls' => 'Учитавање контрола…',
+    'ControlListCouldNotBeLoaded' => 'Листа контрола није могла бити учитана, тако да мапиране контроле тренутно не могу бити промењене.',
+    'RemoveControlsAtMaturity' => 'Уклоните контроле по зрелости {maturity}',
+    'ControlIdUnavailable' => '#{id} (недоступно)',
+    'AssetRecordEdit' => 'Измени елемент',
+    'AssetRecordIdN' => 'Средство #{$id}',
+    'AssetRecordCopyLink' => 'Копирај везу до овог елемента',
+    'AssetRecordLinkCopied' => 'Линк је копиран.',
+    'AssetRecordLinkCopyFailed' => 'Линк није могао бити копиран. Уместо тога, копирајте га из адресне траке.',
+    'AssetRecordMarkUnverified' => 'Означи као непроверено',
+    'AssetRecordViewAuditTrail' => 'Погледајте ревизорски траг',
+    'AssetRecordAuditTrailTitle' => 'Ревизорски траг',
+    'AssetRecordAuditTrailEmpty' => 'У овом периоду није забележена никаква активност за ову имовину.',
+    'AssetRecordAuditTrailFailed' => 'Ревизијска трага није могла бити учитана.',
+    'AssetRecordBackToAsset' => 'Назад на имовину',
+    'AssetRecordSave' => 'Сачувај елемент',
+    'AssetRecordProvenanceVerified' => 'Верификовано · додато {$date}',
+    'AssetRecordProvenanceUnverified' => 'Непроверено: још није потврђено од стране некога ко може да верификује средства · додато {$date}',
+    'AssetRecordUnsavedHint' => 'Затварање са несачуваним променама захтева прво потврду.',
+    'AssetRecordDiscardQuestion' => 'Желите да одбаците несачуване измене?',
+    'AssetRecordKeepEditing' => 'Настави са уређивањем',
+    'AssetRecordDiscardChanges' => 'Одбаци измене',
+    'AssetRecordVerificationCard' => 'Верификација',
+    'AssetRecordVerificationTag' => 'Потребна је дозвола за верификацију средстава',
+    'AssetRecordVerifiedHint' => 'Неко одговоран је прегледао ову имовину. Промена њеног имена или IP адресе без дозволе за верификацију имовине враћа је у статус „неверификовано“.',
+    'AssetRecordLoadFailed' => 'Учитавање материјала није успело. Молимо покушајте поново.',
+    'CustomizationCardsLayoutApiScopeErrorWithAsset' => 'API за прилагођавање распореда картица је доступан само за fgroup=risk (tab_index 1, 2 или 3) и fgroup=asset (tab_index 1).',
+    'DiscoveryErrorRequesterNotPermitted' => 'Корисник који је покренуо ово покретање више нема дозволу за покретање откривања средстава.',
+    'AssetRecordEditField' => 'Измени {$field}',
+    // Asset Scoring (FIPS 199 categorization + weighted score)
+    'Confidentiality' => 'Поверљивост',
+    'Integrity' => 'Интегритет',
+    'Availability' => 'Доступност',
+    'AssetScoringLevelLow' => 'Ниско',
+    'AssetScoringLevelModerate' => 'Умерено',
+    'AssetScoringLevelHigh' => 'Високо',
+    'AssetScoringValueInvalid' => 'Поверљивост, интегритет и доступност прихватају ниску, средњу или високу (поверљивост такође прихвата није применљиво).',
+    'AssetScoringChangedLog' => 'Asset "{$name}" {$objective} was changed from {$from} to {$to} by user "{$user}".',
+    'FIPSCategorization' => 'FIPS категоризација',
+    'WeightedScore' => 'Пондерисани резултат',
+    'WeightedBand' => 'Пондерисани бенд',
+    'AllCategorizations' => 'Све категоризације',
+    'AllBands' => 'Сви бендови',
+    'AssetFilterByCategorization' => 'Филтрирај по FIPS категоризацији {$name}',
+    'AssetFilteringByCategorization' => 'Филтрирање по FIPS категоризацији {$name}',
+    'AssetFilterByBand' => 'Филтрирај по пондерисаном опсегу {$name}',
+    'AssetFilteringByBand' => 'Филтрирање по тежинском опсегу {$name}',
+    'AssetScoring' => 'Бодовање имовине',
+    'AssetScoringSettingsHint' => 'Свако средство је оцењено са Ниско, Средње или Високо за поверљивост, интегритет и доступност, а поверљивост може уместо тога бити Није применљиво, што га искључује из оба резултата. Његова FIPS категоризација је највиша од три оцене. Његова пондерисана оцена је пондерисани просек вредности три нивоа, а прагови опсега претварају ту оцену у низак, средњи или висок опсег. Промена ових подешавања одмах поново оцењује свако средство.',
+    'Weights' => 'Тегови',
+    'AssetScoringWeightsHint' => 'Колико сваки циљ утиче на пондерисану оцену: од 0 до 100, са највише две децимале. Тежина 0 изоставља тај циљ. Интегритет и доступност не могу заједно бити 0, јер се поверљивост „Није применљиво“ увек изоставља.',
+    'LevelValues' => 'Вредности нивоа',
+    'AssetScoringLevelValuesHint' => 'Број којим свака оцена доприноси пондерисаној оцени: изнад 0 и до 100, са највише две децимале, и Ниско испод Средње испод Високо. Подразумеване вредности су Ниско 1, Средње 2 и Високо 3.',
+    'BandThresholds' => 'Прагови опсега',
+    'AssetScoringBandThresholdsHint' => 'Пондерисани резултат на или изнад прага је у том опсегу, а резултат испод умереног прага је низак. Умерен мора почети изнад ниске вредности, а висок мора почети изнад умерене и не више од високе вредности.',
+    'ModerateStartsAt' => 'Умерено почиње од',
+    'HighStartsAt' => 'Висока почиње од',
+    'DefaultScoringForNewAssets' => 'Подразумевано бодовање за нове елементе',
+    'AssetScoringDefaultsHint' => 'Унапред бира ове оцене када неко дода средство у образац средства. Средства креирана откривањем, увозом или API-јем остају без оцене осим ако не доставе сопствене оцене. Оставите сва три подешена на Није подешено да бисте ово искључили.',
+    'AssetScoringWeightsInvalid' => 'Тежине бодовања имовине морају бити бројеви од 0 до 100 са највише две децимале, а интегритет и доступност не могу заједно бити 0.',
+    'AssetScoringValuesInvalid' => 'Вредности нивоа бодовања имовине морају бити бројеви изнад 0 и до 100 са највише две децимале, при чему је Ниско испод Средњег испод Високог.',
+    'AssetScoringThresholdsInvalid' => 'Прагови опсега бодовања имовине морају имати највише две децимале, при чему средња почиње изнад ниске вредности, висока почиње изнад умерене, а висока почиње највише изнад високе вредности.',
+    'AssetScoringDefaultsInvalid' => 'Подразумевано бодовање за нове ресурсе мора бити ниво који сваки циљ нуди.',
+    'AssetScoringSettingsNotSaved' => 'Подешавања бодовања средстава нису могла бити сачувана. Ништа није промењено.',
+    'AssetScoringSettingsChangedLog' => 'Корисник „{$user}“ је променио подешавања за бодовање средстава.',
+    'AssetScoringNotSet' => 'Није подешено',
+    'NotScored' => 'Није постигнут резултат',
+    'AssetScoringNotScoredHint' => 'Одговорите на сва три циља да бисте освојили ову предност.',
+    'ImportAssetScoringValueIgnored' => 'Вредност {$objective} „{$value}“ за елемент „{$asset_name}“ није важећа оцена и игнорисана је.',
+    'AssetScoringSecurityObjectives' => 'Безбедносни циљеви',
+    'AssetScoringConfidentialityHelp' => 'Какав је потенцијални утицај ако дође до неовлашћеног откривања информација о овој имовини?',
+    'AssetScoringIntegrityHelp' => 'Какав је потенцијални утицај ако дође до неовлашћене измене или уништења информација на овој имовини?',
+    'AssetScoringAvailabilityHelp' => 'Какав је потенцијални утицај ако дође до поремећаја приступа или коришћења ове имовине?',
+    'AssetScoringHelpHigh' => 'Тежак или катастрофалан нежељени ефекат',
+    'AssetScoringHelpModerate' => 'Озбиљан нежељени ефекат',
+    'AssetScoringHelpLow' => 'Ограничен или никакав нежељени ефекат',
+    'AssetScoringHelpNotApplicable' => 'Поверљивост није проблем за ову имовину (на пример, јавне информације)',
+    'AssetScoringHelpLabel' => '{$objective} смернице за оцењивање',
+    'AssetScoringMeterValue' => '{$score}, {$band} бенд',
+    'AssetScoringNoWeightedScore' => 'Без пондерисаног резултата',
+    'AssetScoringNoWeightedScoreNote' => 'Без пондерисане оцене: сваки циљ који се рачуна има тежину 0.',
+    'AssetScoringUpgradePending' => 'Бодовање имовине не може бити сачувано док се не изврши надоградња базе података SimpleRisk. Ништа није промењено.',
+    'AssetScoringResultHelpLabel' => '{$result} објашњење',
+    'AssetScoringScoreHelp' => 'Пондерисана оцена спаја три оцене у један број од {$low} до {$high}. Свака оцена постаје њена задата вредност, и свака се множи са тежином свог циља. Резултати се сабирају и деле са укупним бројем тежина. Поверљивост „Није применљиво“ се изоставља, заједно са њеном тежином. Задате вредности и тежине се конфигуришу у Подешавањима. Сва три циља морају бити оцењена пре него што се прикаже оцена.',
+    'AssetScoringCategorizationHelp' => 'Безбедносна категоризација FIPS 199 је највиша оцена: највиша оцена међу применљивим циљевима. Једна висока оцена чини имовину високом, без обзира на остале. „Није применљиво“ се игнорише.',
+    'AssetScoringBandHelp' => 'Бенд ставља пондерисани резултат на скалу од ниског, средњег или високог. Резултат испод {$moderate} је низак, од {$moderate} до {$highAt} је средњи, а {$highAt} или више је висок. Прагови се конфигуришу у подешавањима.',
+    // Manage assets: Confidentiality / Integrity / Availability rating filters
+    'AllConfidentialityRatings' => 'Све оцене поверљивости',
+    'AllIntegrityRatings' => 'Све оцене интегритета',
+    'AllAvailabilityRatings' => 'Све оцене доступности',
+    'AssetFilterByConfidentiality' => 'Филтрирај по поверљивости {$name}',
+    'AssetFilteringByConfidentiality' => 'Филтрирање по поверљивости {$name}',
+    'AssetFilterByIntegrity' => 'Филтрирај по интегритету {$name}',
+    'AssetFilteringByIntegrity' => 'Филтрирање по интегритету {$name}',
+    'AssetFilterByAvailability' => 'Филтрирај по доступности {$name}',
+    'AssetFilteringByAvailability' => 'Филтрирање по доступности {$name}',
+    'HighestFIPSCategorization' => 'Највиша FIPS категоризација',
+    'HighestWeightedScore' => 'Највиши пондерисани резултат',
+    'HighestWeightedBand' => 'Највише пондерисани опсег',
+    'AssetGroupFields' => 'Поља групе средстава',
+    'NoAssetGroupsMatchFilters' => 'Ниједна група елемената не одговара вашим филтерима',
+    'AssetGroupFilterByHighestCategorization' => 'Филтрирај по највишој FIPS категоризацији {$name}',
+    'AssetGroupFilteringByHighestCategorization' => 'Филтрирање по највишој FIPS категоризацији {$name}',
+    'AssetGroupFilterByHighestBand' => 'Филтрирај по највећем пондерисаном опсегу {$name}',
+    'AssetGroupFilteringByHighestBand' => 'Филтрирање по највећој тежинској групи {$name}',
+    'AssetGroupBulkSelectionRequired' => 'Изаберите групе средстава или по ИД-у или по филтеру.',
+    'AssetGroupBulkIdsRequired' => 'Изаберите барем једну групу елемената.',
+    'AssetGroupBulkIdsInvalid' => 'ИД-ови групе елемената морају бити цели бројеви.',
+    'AssetGroupBulkFilterAllAlone' => 'Избор свих група елемената не може се комбиновати са другим филтерима.',
+    'AssetGroupBulkFilterEmpty' => 'Изаберите филтер или изаберите све групе елемената пре брисања.',
+    'AssetGroupBulkExpectedCountInvalid' => 'Очекивани број група средстава мора бити цео број.',
+    'AssetGroupBulkExpectedCountRequired' => 'За брисање група елемената помоћу филтера потребан је број група који очекујете да избришете.',
+    'AssetGroupBulkNoMatch' => 'Ниједна група елемената не одговара вашем избору.',
+    'AssetGroupBulkCountMismatch' => 'Групе елемената које се подударају су се промениле са {$expected} на {$actual} откако сте их изабрали. Прегледајте листу и покушајте поново.',
+    'AssetGroupBulkTooManyToDelete' => 'Можете да обришете највише {$max} група елемената истовремено. Сузите избор и покушајте поново.',
+    'AssetGroupBulkSelectAll' => 'Изаберите све {$count} групе елемената',
+    'AssetGroupBulkAllSelected' => 'Све {$count} одговарајуће групе елемената су изабране',
+    'AssetGroupBulkDeleteConfirmTitle' => 'Да ли желите да обришете {$count} група елемената?',
+    'AssetGroupBulkDeleteKeepsAssets' => 'Елементи у овим групама се не бришу. Уклањају се само групе.',
+    'DeleteAssetGroups' => 'Обриши групе',
+    'AssetGroupBulkDeletedSummary' => '{$ok} групе су обрисане, {$failed} прескочено',
+    'ChoosingRisksNeedsRiskManagementPermission' => 'За избор повезаних ризика потребна је дозвола Управљања ризицима.',
+    'NAssociatedRisks' => '{n} повезани ризик(и)',
+    'SavingKeepsTheCurrentRiskAssociations' => 'Штедња задржава тренутне повезане ризике.',
     '' => '',
 );
 ?>

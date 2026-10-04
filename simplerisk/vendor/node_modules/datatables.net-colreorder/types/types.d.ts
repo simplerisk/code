@@ -105,6 +105,18 @@ declare module 'datatables.net' {
     interface ColumnContext {
         _crOriginalIdx?: number;
     }
+    interface State {
+        /**
+         * Column ordering position
+         */
+        colReorder?: number[];
+    }
+    interface StateLoad {
+        /**
+         * Column ordering position
+         */
+        colReorder?: number[];
+    }
 }
 interface ConfigColReorder {
     /**

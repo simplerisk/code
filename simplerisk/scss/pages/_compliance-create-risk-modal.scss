@@ -1,0 +1,59 @@
+// Compliance "Create Risk from a failed test" modal (#modal-new-risk).
+//
+// The SAME id is rendered by two pages -- compliance/testing.php (from a
+// failed test result in the Testing queue) and compliance/view_test.php
+// (from an individual test's view) -- and never by both at once, so one
+// block covers both. Both ship the identical shell markup:
+// `.modal.fade.sr-modal > .modal-dialog.modal-xl.modal-dialog-scrollable`,
+// with an empty canvas div that window.RiskDetailsForm.init() renders the
+// Cards form into.
+//
+// --- Width ---------------------------------------------------------------
+// Exactly the problem #review-risk-add-modal documents in
+// scss/pages/_review-risk.scss, reached by a different route. Before this
+// modal was reshelled onto the design system its root was
+// `class='modal hide fade in'`, so the shell's own
+// `.sr-modal .modal-dialog { max-width: 640px }` (specificity 0,2,0) never
+// applied and the dialog rendered at Bootstrap's full `.modal-xl` width.
+// Adopting `.sr-modal` (required for the shared modal shape: header icon,
+// grey body, footer action row) brought that 640px cap with it -- which
+// outranks Bootstrap's `.modal-xl` (0,1,0) whatever the source order -- and
+// silently narrowed both Compliance modals from ~1140px to 640px, squeezing
+// the two-column Cards canvas and its HugeRTE editors.
+//
+// Rather than an arbitrary `!important` override, this restates Bootstrap
+// 5.3's OWN modal-xl ladder at ID specificity, so the dialog stays
+// responsive instead of forcing 1140px onto a small viewport and
+// overflowing it. Same values and same breakpoints as the
+// #review-risk-add-modal block, deliberately: the two modals render the
+// same engine's form and must be the same width.
+//
+// Deliberately NOT lifted into a shared `.sr-modal-xl` class: every OTHER
+// sr-modal on these pages (Add Test, the destructive confirms) is a short
+// dialog the 640px shell cap is right for, and a shared class would have to
+// be applied to each of these two modals' markup anyway. Two ID-scoped
+// blocks that each carry their own reasoning is the lower-risk shape here.
+#modal-new-risk {
+
+    .modal-dialog {
+        max-width: none;
+    }
+
+    @media (min-width: 576px) {
+        .modal-dialog {
+            max-width: 500px;
+        }
+    }
+
+    @media (min-width: 992px) {
+        .modal-dialog {
+            max-width: 800px;
+        }
+    }
+
+    @media (min-width: 1200px) {
+        .modal-dialog {
+            max-width: 1140px;
+        }
+    }
+}

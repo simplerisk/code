@@ -1,0 +1,69 @@
+// Asset record "Mapped controls" composite (js/simplerisk/common/
+// asset-card-profile.js): one row per maturity -- maturity select, the shared
+// control picker's chips field, a remove icon -- plus a dashed add-row button.
+// Everything is scoped under .sr-asset-mapped-controls so nothing here reaches
+// another page.
+
+.sr-asset-mapped-controls {
+    .sr-asset-mapped-controls-row {
+        display: flex;
+        align-items: flex-start;
+        gap: 8px;
+    }
+
+    .sr-asset-mapped-controls-maturity {
+        flex: 0 0 220px;
+        max-width: 40%;
+    }
+
+    .sr-asset-mapped-controls-picker {
+        flex: 1 1 auto;
+        min-width: 0;
+    }
+
+    .sr-asset-mapped-controls-remove-cell {
+        flex: none;
+        padding-top: 5px;
+    }
+
+    // Same dashed "repeatable rows" add button as .sr-qaddrow
+    // (_questionnaire.scss, design-system.md §5), which ships scoped under
+    // other surfaces; restated here for this composite only.
+    .sr-asset-mapped-controls-add {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        font-size: 13px;
+        font-weight: 700;
+        color: $sr-primary;
+        background: $gray-100;
+        border: 1px dashed $gray-400;
+        border-radius: 6px;
+        padding: 9px 14px;
+
+        &:hover,
+        &:focus-visible {
+            border-color: $sr-important;
+            color: $sr-important;
+        }
+    }
+}
+
+// Narrow Cards form (risk-details-form.js adds .sr-qform-narrow at or below
+// its responsive breakpoint): maturity + remove on one line, the controls
+// field full width below.
+.sr-qform-narrow .sr-asset-mapped-controls {
+    .sr-asset-mapped-controls-row {
+        flex-wrap: wrap;
+    }
+
+    .sr-asset-mapped-controls-maturity {
+        flex: 1 1 0;
+        max-width: none;
+    }
+
+    .sr-asset-mapped-controls-picker {
+        order: 3;
+        flex-basis: 100%;
+    }
+}

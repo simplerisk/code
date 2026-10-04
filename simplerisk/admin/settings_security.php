@@ -262,6 +262,7 @@
                                 <div class="form-check mr-sm-4">
                                     <input <?php if($escaper->escapeHtml(get_setting('content_security_policy')) == 1){ echo "checked"; } ?> name="content_security_policy" size="2" value="90" id="content_security_policy" type="checkbox"  class="form-check-input">
                                     <label  for="content_security_policy" class="form-check-label mb-0 ms-2" ><?= $escaper->escapeHtml($lang['EnableCSP']); ?></label>
+                                    <div class="text-muted small mt-1"><?= $escaper->escapeHtml($lang['EnableCSPHelp']); ?></div>
                                 </div>
                             </div>
                         </div>

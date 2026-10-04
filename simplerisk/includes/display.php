@@ -152,6 +152,106 @@ function display_auth_brand_panel()
     ";
 }
 
+/*******************************************
+* FUNCTION: CSS NAMED COLOR TO HEX *
+*******************************************/
+// Resolves a CSS3 extended-keyword color name (e.g. 'orange') to its hex
+// equivalent, so risk_level_tile_is_light_color() below can compute a real
+// luminance for it instead of treating every non-hex value as "not light".
+// Mirrors admin/risk_configuration.php's own colourNameToHex() JS helper
+// (same table, same source: the CSS Color Module Level 3 extended keyword
+// list) -- PHP has no built-in equivalent, and the browser normally does
+// this resolution for free (see risk_level_tile_is_light_color()'s own
+// docblock). Returns $name unchanged (lowercased/trimmed) when it isn't a
+// recognized keyword, so an already-hex value or genuine garbage input
+// passes through for the caller's own validation.
+function css_named_color_to_hex($name) {
+    static $colors = [
+        'aliceblue' => '#f0f8ff', 'antiquewhite' => '#faebd7', 'aqua' => '#00ffff', 'aquamarine' => '#7fffd4', 'azure' => '#f0ffff',
+        'beige' => '#f5f5dc', 'bisque' => '#ffe4c4', 'black' => '#000000', 'blanchedalmond' => '#ffebcd', 'blue' => '#0000ff', 'blueviolet' => '#8a2be2', 'brown' => '#a52a2a', 'burlywood' => '#deb887',
+        'cadetblue' => '#5f9ea0', 'chartreuse' => '#7fff00', 'chocolate' => '#d2691e', 'coral' => '#ff7f50', 'cornflowerblue' => '#6495ed', 'cornsilk' => '#fff8dc', 'crimson' => '#dc143c', 'cyan' => '#00ffff',
+        'darkblue' => '#00008b', 'darkcyan' => '#008b8b', 'darkgoldenrod' => '#b8860b', 'darkgray' => '#a9a9a9', 'darkgreen' => '#006400', 'darkkhaki' => '#bdb76b', 'darkmagenta' => '#8b008b', 'darkolivegreen' => '#556b2f',
+        'darkorange' => '#ff8c00', 'darkorchid' => '#9932cc', 'darkred' => '#8b0000', 'darksalmon' => '#e9967a', 'darkseagreen' => '#8fbc8f', 'darkslateblue' => '#483d8b', 'darkslategray' => '#2f4f4f', 'darkturquoise' => '#00ced1',
+        'darkviolet' => '#9400d3', 'deeppink' => '#ff1493', 'deepskyblue' => '#00bfff', 'dimgray' => '#696969', 'dodgerblue' => '#1e90ff',
+        'firebrick' => '#b22222', 'floralwhite' => '#fffaf0', 'forestgreen' => '#228b22', 'fuchsia' => '#ff00ff',
+        'gainsboro' => '#dcdcdc', 'ghostwhite' => '#f8f8ff', 'gold' => '#ffd700', 'goldenrod' => '#daa520', 'gray' => '#808080', 'green' => '#008000', 'greenyellow' => '#adff2f',
+        'honeydew' => '#f0fff0', 'hotpink' => '#ff69b4',
+        'indianred' => '#cd5c5c', 'indigo' => '#4b0082', 'ivory' => '#fffff0', 'khaki' => '#f0e68c',
+        'lavender' => '#e6e6fa', 'lavenderblush' => '#fff0f5', 'lawngreen' => '#7cfc00', 'lemonchiffon' => '#fffacd', 'lightblue' => '#add8e6', 'lightcoral' => '#f08080', 'lightcyan' => '#e0ffff', 'lightgoldenrodyellow' => '#fafad2',
+        'lightgrey' => '#d3d3d3', 'lightgreen' => '#90ee90', 'lightpink' => '#ffb6c1', 'lightsalmon' => '#ffa07a', 'lightseagreen' => '#20b2aa', 'lightskyblue' => '#87cefa', 'lightslategray' => '#778899', 'lightsteelblue' => '#b0c4de',
+        'lightyellow' => '#ffffe0', 'lime' => '#00ff00', 'limegreen' => '#32cd32', 'linen' => '#faf0e6',
+        'magenta' => '#ff00ff', 'maroon' => '#800000', 'mediumaquamarine' => '#66cdaa', 'mediumblue' => '#0000cd', 'mediumorchid' => '#ba55d3', 'mediumpurple' => '#9370d8', 'mediumseagreen' => '#3cb371', 'mediumslateblue' => '#7b68ee',
+        'mediumspringgreen' => '#00fa9a', 'mediumturquoise' => '#48d1cc', 'mediumvioletred' => '#c71585', 'midnightblue' => '#191970', 'mintcream' => '#f5fffa', 'mistyrose' => '#ffe4e1', 'moccasin' => '#ffe4b5',
+        'navajowhite' => '#ffdead', 'navy' => '#000080',
+        'oldlace' => '#fdf5e6', 'olive' => '#808000', 'olivedrab' => '#6b8e23', 'orange' => '#ffa500', 'orangered' => '#ff4500', 'orchid' => '#da70d6',
+        'palegoldenrod' => '#eee8aa', 'palegreen' => '#98fb98', 'paleturquoise' => '#afeeee', 'palevioletred' => '#d87093', 'papayawhip' => '#ffefd5', 'peachpuff' => '#ffdab9', 'peru' => '#cd853f', 'pink' => '#ffc0cb', 'plum' => '#dda0dd', 'powderblue' => '#b0e0e6', 'purple' => '#800080',
+        'rebeccapurple' => '#663399', 'red' => '#ff0000', 'rosybrown' => '#bc8f8f', 'royalblue' => '#4169e1',
+        'saddlebrown' => '#8b4513', 'salmon' => '#fa8072', 'sandybrown' => '#f4a460', 'seagreen' => '#2e8b57', 'seashell' => '#fff5ee', 'sienna' => '#a0522d', 'silver' => '#c0c0c0', 'skyblue' => '#87ceeb', 'slateblue' => '#6a5acd', 'slategray' => '#708090', 'snow' => '#fffafa', 'springgreen' => '#00ff7f', 'steelblue' => '#4682b4',
+        'tan' => '#d2b48c', 'teal' => '#008080', 'thistle' => '#d8bfd8', 'tomato' => '#ff6347', 'turquoise' => '#40e0d0',
+        'violet' => '#ee82ee',
+        'wheat' => '#f5deb3', 'white' => '#ffffff', 'whitesmoke' => '#f5f5f5',
+        'yellow' => '#ffff00', 'yellowgreen' => '#9acd32',
+    ];
+    $key = strtolower(trim((string)$name));
+    return $colors[$key] ?? $name;
+}
+
+/*********************************************
+* FUNCTION: RISK LEVEL TILE IS LIGHT COLOR *
+*********************************************/
+// Decides whether a .sr-risk-level-tile needs the .on-light contrast
+// modifier (charcoal text) instead of the default white -- the same
+// luminance-based contrast pick risk-details-form.js's
+// paintCvssRiskLevelTile() uses for the CVSS holder's own risk-level tile
+// client-side (0.299/0.587/0.114 weights, >150 threshold), ported here
+// because view_score_html() is plain server-rendered HTML with no client
+// paint pass of its own. get_risk_color() can return a hex string OR a
+// named CSS color -- risk_levels.color ships seeded with names (red/
+// orangered/orange/yellow, includes/upgrade.php) and stays a name unless
+// an admin later re-picks it via admin/risk_configuration.php's native
+// <input type="color">, which always saves hex from then on.
+//
+// Every OTHER consumer of this same tile (risk-details-form.js's CVSS/
+// DREAD/OWASP/Classic holders, risk-details-view.js's read-mode cards, and
+// risk-view-details.js's post-load patchRiskSummaryTiles()) resolves the
+// color through the BROWSER's own CSS engine first (assigning it to an
+// element's style.color and reading back getComputedStyle()), so a named
+// color already arrives here as real RGB and this exact bug never surfaces
+// on any page that repaints client-side after load. management/
+// print_view.php (no such repaint -- it renders once, server-side, on
+// purpose) is what actually exposed it: "Medium"/orange read white text
+// live (JS-repainted) vs. white-on-orange in print (server-rendered only),
+// even though it's the SAME risk, the SAME color string, and the SAME
+// 0.299/0.587/0.114/>150 formula on both sides -- css_named_color_to_hex()
+// below is what the browser was doing for free that PHP wasn't.
+function risk_level_tile_is_light_color($color)
+{
+    if (empty($color)) {
+        return false;
+    }
+    if (strcasecmp($color, 'white') === 0) {
+        return true;
+    }
+    if ($color[0] !== '#') {
+        $color = css_named_color_to_hex($color);
+    }
+    if (empty($color) || $color[0] !== '#') {
+        return false;
+    }
+    $hex = ltrim($color, '#');
+    if (strlen($hex) === 3) {
+        $hex = $hex[0] . $hex[0] . $hex[1] . $hex[1] . $hex[2] . $hex[2];
+    }
+    if (strlen($hex) !== 6 || !ctype_xdigit($hex)) {
+        return false;
+    }
+    $r = hexdec(substr($hex, 0, 2));
+    $g = hexdec(substr($hex, 2, 2));
+    $b = hexdec(substr($hex, 4, 2));
+    $luminance = 0.299 * $r + 0.587 * $g + 0.114 * $b;
+    return $luminance > 150;
+}
+
 /****************************
 * FUNCTION: VIEW SCORE HTML *
 ****************************/
@@ -159,19 +259,25 @@ function view_score_html($risk_id, $calculated_risk, $mitigation_percent)
 {
     global $lang, $escaper;
 
-    echo "
-        <div class='row'>
-            <div class='col-6'>
-    ";
-
     // Inherent Risk
+    // Stable ids -- the ONLY hook risk-view-details.js's saveDetailsForm()
+    // success handler has to patch this tile's number/level/color after a
+    // scoring save, since this whole block is plain server-rendered HTML
+    // with no client-side render path of its own to refresh otherwise (see
+    // api_get_ui_risk_values()'s 'risk_summary' key, api/v2/includes/api.php).
+    // Markup/classes follow the .sr-risk-level-tile hero component
+    // (scss/modules/_risks.scss) -- the same "solid, saturated, colored
+    // chip" severity treatment as .sr-sev-pill/.sr-cvss-risk-level-tile
+    // (design-system.md §7), sized for the record header. Fill color is
+    // painted inline here (server-rendered, no client render pass of its
+    // own) via escapeCssColor(), same mechanism those two components use.
+    $inherent_color = get_risk_color($calculated_risk);
     echo "
-                <div class='risk-square p-10 text-center' style='background-color: " . $escaper->escapeCssColor(get_risk_color($calculated_risk)) . "'>
-                    <h5 class=''>" .$escaper->escapeHtml($lang['InherentRisk']) . "</h5>
-                    <h1 class='my-0'>" .$escaper->escapeHtml($calculated_risk) . "</h5>
-                    <h5 class=''>" . $escaper->escapeHtml(get_risk_level_name($calculated_risk)) . "</h5>
+                <div class='sr-risk-level-tile" . (risk_level_tile_is_light_color($inherent_color) ? " on-light" : "") . "' id='inherent-risk-tile' style='background-color: " . $escaper->escapeCssColor($inherent_color) . "'>
+                    <div class='sr-risk-level-label'>" . $escaper->escapeHtml($lang['InherentRisk']) . "</div>
+                    <div class='sr-risk-level-score' id='inherent-risk-score'>" . $escaper->escapeHtml($calculated_risk) . "</div>
+                    <div class='sr-risk-level-name' id='inherent-risk-level'>" . $escaper->escapeHtml(get_risk_level_name($calculated_risk)) . "</div>
                 </div>
-            </div>
     ";
 
     // Residual Risk
@@ -184,15 +290,13 @@ function view_score_html($risk_id, $calculated_risk, $mitigation_percent)
         $residual_risk = get_residual_risk($risk_id);
     }
 
+    $residual_color = get_risk_color($residual_risk);
     echo "
-            <div class='col-6'>
-                <div class='risk-square p-10 text-center' style='background-color: " . $escaper->escapeCssColor(get_risk_color($residual_risk)) . "'>
-                    <h5 class=''>" . $escaper->escapeHtml($lang['ResidualRisk']) . "</h5>
-                    <h1 class='my-0'>" . $escaper->escapeHtml($residual_risk) . "</h5>
-                    <h5 class=''>" . $escaper->escapeHtml(get_risk_level_name($residual_risk)) . "</h5>
+                <div class='sr-risk-level-tile" . (risk_level_tile_is_light_color($residual_color) ? " on-light" : "") . "' id='residual-risk-tile' style='background-color: " . $escaper->escapeCssColor($residual_color) . "'>
+                    <div class='sr-risk-level-label'>" . $escaper->escapeHtml($lang['ResidualRisk']) . "</div>
+                    <div class='sr-risk-level-score' id='residual-risk-score'>" . $escaper->escapeHtml($residual_risk) . "</div>
+                    <div class='sr-risk-level-name' id='residual-risk-level'>" . $escaper->escapeHtml(get_risk_level_name($residual_risk)) . "</div>
                 </div>
-            </div>
-        </div>
     ";
 }
 
@@ -201,37 +305,77 @@ function view_score_html($risk_id, $calculated_risk, $mitigation_percent)
 ****************************/
 function view_top_table($risk_id, $calculated_risk, $subject, $status, $show_details = false, $mitigation_percent = 0, $display_risk = true)
 {
-    
+
     global $lang, $escaper;
 
     // Decrypt fields
     $subject = try_decrypt($subject);
 
+    // Status -> the design-system.md §7 "state" pill family, by MEANING
+    // rather than exact label -- `status` is free text on the `risks` table
+    // (no enum), so an unrecognized/custom status still reads as a
+    // reasonable in-progress state instead of falling back to plain,
+    // unstyled text. The three values the workflow actually writes today
+    // (see includes/functions.php's status assignments): New/Mitigation
+    // Planned read as the spec's own "New, In Progress" info example;
+    // Mgmt Reviewed as its "Reviewed" success example; Closed as its own
+    // named neutral example.
+    $status_pill_family = 'info';
+    if ($status === 'Closed') {
+        $status_pill_family = 'neutral';
+    } elseif ($status === 'Mgmt Reviewed') {
+        $status_pill_family = 'success';
+    }
+
     echo "
-        <div class='row pt-2'>
-            <div class='col-md-12 col-lg-3 score--wrapper'>
+        <div class='sr-risk-record-header'>
     ";
                 view_score_html($risk_id, $calculated_risk, $mitigation_percent);
     echo "
-            </div>
-            
-            <div class='col-md-12 col-lg-9 details--wrapper'>
-                <div class='row mb-2'>
-                    <div class='col-3'>
-                        <label>" . $escaper->escapeHtml($lang['IDNumber']) . ": <span class='fs-3 risk-id'>" . $escaper->escapeHtml($risk_id) . "</span></label>
-                    </div>
-                    <div class='col-5'>
-                        <label>" . $escaper->escapeHtml($lang['Status']) . ": <span class='fs-3 status-text'>" . $escaper->escapeHtml($status) . "</span></label>
+            <div class='sr-qcard sr-risk-record-card'>
+                <div class='sr-risk-record-top'>
+                    <div class='sr-risk-record-meta'>
+                        <div class='sr-qfield'>
+                            <span class='sr-qlabel'>" . $escaper->escapeHtml($lang['IDNumber']) . "</span>
+                            <span class='sr-qfield-value risk-id'>" . $escaper->escapeHtml($risk_id) . "</span>
+                        </div>
+                        <div class='sr-qfield sr-risk-record-status'>
+                            <div id='static-status' class='static-status'>
+                                <span class='sr-qlabel'>" . $escaper->escapeHtml($lang['Status']) . "</span>
+                                <span class='sr-state-pill sr-state-" . $escaper->escapeHtmlAttr($status_pill_family) . " status-text'>" . $escaper->escapeHtml($status) . "</span>
+    ";
+
+    // Same gate as the Actions-menu "Change Status" item below (has_permission
+    // check duplicated, not shared, since that item is inside the
+    // $display_risk-only block further down and this one is not). Clicking
+    // this swaps the pill for a <select> in place, same shape as Subject
+    // below -- but it still submits through the EXISTING changestatus/
+    // updateStatus flow (risk.js), not a parallel one: status changes are
+    // not a simple text swap (closing/reopening carries real business logic
+    // downstream, and a successful change re-renders the whole tab, unlike
+    // Subject's narrower refresh), so only the PRESENTATION changed here,
+    // not the underlying mechanism.
+    if ($display_risk == true && has_permission("modify_risks")) {
+        echo "
+                                <button type='button' class='sr-row-action change-status' title='" . $escaper->escapeHtmlAttr($lang['ChangeStatus']) . "' aria-label='" . $escaper->escapeHtmlAttr($lang['ChangeStatus']) . "'>
+                                    <i class='fa fa-edit' aria-hidden='true'></i>
+                                </button>
+        ";
+    }
+
+    echo "
+                            </div>
+                            <div class='edit-status d-none'></div>
+                        </div>
                     </div>
     ";
 
     if($display_risk == true) {
 
         echo "
-                    <div class='col-4 text-end'>
-                        <div class='btn-group pull-right'>
-                            <a class='btn btn-primary dropdown-toggle' data-bs-toggle='dropdown' href='#'>" . $escaper->escapeHtml($lang['RiskActions']) . "<span class='caret'></span></a>
-                                <ul class='dropdown-menu'>
+                    <div class='dropdown'>
+                        <button type='button' class='sr-record-actions-trigger dropdown-toggle' data-bs-toggle='dropdown'>" . $escaper->escapeHtml($lang['RiskActions']) . "</button>
+                        <ul class='dropdown-menu sr-record-actions-menu dropdown-menu-end'>
         ";
 
         // If the risk is closed, offer to reopen
@@ -273,16 +417,23 @@ function view_top_table($risk_id, $calculated_risk, $subject, $status, $show_det
         // If the user has permission to review the current level
         if ($approved) {
             echo "
-                                    <li><a class='perform-review dropdown-item' href='#'>" . $escaper->escapeHtml($lang['PerformAReview']) . "</a></li>
+                                    <li><a class='risk-review-perform-from-actions dropdown-item' href='#'>" . $escaper->escapeHtml($lang['PerformAReview']) . "</a></li>
             ";
         }
 
-        // If the user has permission to modify risks
-        if (has_permission("modify_risks")) {
-            echo "
-                                    <li><a class='change-status dropdown-item' href='#'>" . $escaper->escapeHtml($lang['ChangeStatus']) . "</a></li>
-            ";
-        }
+        // Viewing review HISTORY is a read concern, not the (risk-level-
+        // tiered) permission to submit a NEW one -- reaching this menu at
+        // all already required riskmanagement + access to this risk, same
+        // gate the modal's own endpoint enforces, so no extra check here.
+        echo "
+                                    <li><a class='risk-review-view-all-from-actions dropdown-item' href='#'>" . $escaper->escapeHtml($lang['ViewAllReviews']) . "</a></li>
+        ";
+
+        // Change Status moved out of this menu -- the Status pill's own
+        // hover-revealed .sr-row-action.change-status icon (just above,
+        // this same function) now does the same job in one fewer click,
+        // and .change-status is still just a class-based delegate handler
+        // (risk.js), so wiring stays with whichever element carries it.
 
         // If the user has permission to comment on risk management
         if (has_permission("comment_risk_management")) {
@@ -308,96 +459,49 @@ function view_top_table($risk_id, $calculated_risk, $subject, $status, $show_det
                                     <li><a class='printable-veiw dropdown-item' href='print_view.php?id=" . $escaper->escapeHtml($risk_id) . "' target='_blank'>" . $escaper->escapeHtml($lang['PrintableView']) . "</a></li>
                                 </ul>
                             </div>
-                        </div>
         ";
     }
 
     echo "
                     </div>
-                    
-                    <div class='row border-top pt-2'>
-                        <div class='col-12'>
-                            <div id='static-subject' class='static-subject'>
-                                <label>Subject : <span class='fs-3 risk-subject'>" . $escaper->escapeHtml($subject) . "</span>
+                    <div class='sr-risk-record-subject'>
+                        <div id='static-subject' class='static-subject'>
+                            <span class='sr-qlabel'>" . $escaper->escapeHtml($lang['Subject']) . "</span>
+                            <span class='sr-qfield-value risk-subject'>" . $escaper->escapeHtml($subject) . "</span>
     ";
 
     // If we are displaying the risk and the user has modify risk permissions
     if($display_risk == true && has_permission("modify_risks")) {
         echo "
-                                    <div id='edit-subject' class='edit-subject-btn d-inline ms-2 fs-4' role='button'>
-                                        <i class='fa fa-edit' aria-hidden='true'></i>
-                                    </div>
+                            <button type='button' id='edit-subject' class='sr-row-action edit-subject-btn' title='" . $escaper->escapeHtmlAttr($lang['Edit']) . "' aria-label='" . $escaper->escapeHtmlAttr($lang['Edit']) . "'>
+                                <i class='fa fa-edit' aria-hidden='true'></i>
+                            </button>
         ";
     }
 
     echo "
-                                </label>
-                            </div>
-                            
-                            <form name='details' method='post' action=''>
-                                <input type='hidden' name='riskid' value='" . $escaper->escapeHtml($risk_id) . "'/>
-                                <div class='edit-subject row d-none'>
-                                    <div class='d-flex align-items-center'>
-                                        <input maxlength='" . (int)get_setting('maximum_risk_subject_length', 300) . "' class='form-control' type='text' name='subject' value='" . $escaper->escapeHtml($subject) . "' style='max-width:none;'/>
-                                        <div style='width: 200px;' class='m-l-20 text-end'>
-                                            <button type='button' class='btn btn-primary cancel-edit-subject' style='margin:0 5px 0 0;' >Cancel</button>
-                                            <button type='button' class='btn btn-submit' name='update_subject' >Save</button>
-                                        </div>
+                        </div>
+                        <form name='details' method='post' action=''>
+                            <input type='hidden' name='riskid' value='" . $escaper->escapeHtml($risk_id) . "'/>
+                            <div class='edit-subject row d-none'>
+                                <div class='d-flex align-items-center'>
+                                    <input maxlength='" . (int)get_setting('maximum_risk_subject_length', 300) . "' class='form-control' type='text' name='subject' value='" . $escaper->escapeHtml($subject) . "' style='max-width:none;'/>
+                                    <div class='sr-inline-edit-actions'>
+                                        <button type='button' class='sr-row-action cancel-edit-subject' title='" . $escaper->escapeHtmlAttr($lang['Cancel']) . "' aria-label='" . $escaper->escapeHtmlAttr($lang['Cancel']) . "'>
+                                            <i class='fa fa-xmark' aria-hidden='true'></i>
+                                        </button>
+                                        <button type='button' class='sr-row-action' name='update_subject' title='" . $escaper->escapeHtmlAttr($lang['Save']) . "' aria-label='" . $escaper->escapeHtmlAttr($lang['Save']) . "'>
+                                            <i class='fa fa-check' aria-hidden='true'></i>
+                                        </button>
                                     </div>
                                 </div>
-                            </form>
-                        </div>
+                            </div>
+                        </form>
                     </div>
                 </div>
             </div>
     ";
 
-}
-
-/**********************************
-* FUNCTION: VIEW PRINT TOP TABLE *
-**********************************/
-function view_print_top_table($id, $calculated_risk, $subject, $status) {
-
-    global $lang;
-    global $escaper;
-
-    // Decrypt fields
-    $subject = try_decrypt($subject);
-
-    echo "
-        <div class='d-flex align-items-center'>
-            <div class='flex-shrink-0 d-flex flex-column align-items-center justify-content-center py-2 border' style='height: 120px; width: 120px; background-color: " . $escaper->escapeCssColor(get_risk_color($calculated_risk)) . "'>
-                <span>" . $escaper->escapeHtml($lang['InherentRisk']) . "</span>
-                <span style='font-size: 30px;'>" . $escaper->escapeHtml($calculated_risk) . "</span>
-                <span>(". $escaper->escapeHtml(get_risk_level_name($calculated_risk)) . ")</span>
-            </div>
-    ";
-
-    $residual_risk = get_residual_risk($id);
-
-    echo "
-            <div class='flex-shrink-0 d-flex flex-column align-items-center justify-content-center py-2 ms-3 border' style='height: 120px; width: 120px; background-color: " . $escaper->escapeCssColor(get_risk_color($residual_risk)) . "'>
-                <span>" . $escaper->escapeHtml($lang['ResidualRisk']) . "</span>
-                <span style='font-size: 30px;'>" . $escaper->escapeHtml($residual_risk) . "</span>
-                <span>(". $escaper->escapeHtml(get_risk_level_name($residual_risk)) . ")</span>
-            </div>
-            <div class='ms-5 font-18'>
-                <div class='d-flex align-items-center mb-2'>
-                    <label class='mb-0' style='min-width: 100px;'>" . $escaper->escapeHtml($lang['RiskId']) . ":</label>
-                    <p class='mb-0'>" . $escaper->escapeHtml($id) . "</p>
-                </div>
-                <div class='d-flex align-items-center mb-2'>
-                    <label class='mb-0' style='min-width: 100px;'>" . $escaper->escapeHtml($lang['Subject']) . ":</label>
-                    <p class='mb-0'>" . $escaper->escapeHtml($subject) . "</p>
-                </div>
-                <div class='d-flex align-items-center'>
-                    <label class='mb-0' style='min-width: 100px;'>" . $escaper->escapeHtml($lang['Status']) . ":</label>
-                    <p class='mb-0'>" . $escaper->escapeHtml($status) . "</p>
-                </div>
-            </div>
-        </div>
-    ";
 }
 
 /*****************************
@@ -754,327 +858,6 @@ function view_risk_details($id, $submission_date, $submitted_by, $subject, $refe
         </div>
         ";
     }
-}
-
-/*************************************
-* FUNCTION: VIEW PRINT RISK DETAILS *
-*************************************/
-function view_print_risk_details($id, $submission_date, $subject, $reference_id, $regulation, $control_number, $location, $category, $team, $technology, $additional_stakeholders, $owner, $manager, $assessment, $notes, $tags, $submitted_by, $source, $scoring_method, $CLASSIC_likelihood, $CLASSIC_impact, $risk_catalog_mapping, $threat_catalog_mapping, $template_group_id="") {
-
-    global $lang;
-    global $escaper;
-
-    // Decrypt fields
-    $subject = try_decrypt($subject);
-    $assessment = try_decrypt($assessment);
-    $notes = try_decrypt($notes);
-
-    echo "
-        <h4>" . $escaper->escapeHtml($lang['Details']) . "</h4>
-        <div class='risk-details-container card-body border mt-2'>
-    ";
-
-    // If customization extra is enabled
-    if(customization_extra()) {
-
-        // Include the extra
-        require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
-        
-        $custom_values = getCustomFieldValuesByRiskId($id);
-        
-        $template_group = get_custom_template_group_by_id($template_group_id);
-        if(!$template_group_id || !$template_group) {
-            $group = get_default_template_group("risk");
-            $template_group_id = $group["id"];
-        }
-
-        $active_fields = get_active_fields("risk", $template_group_id);
-        foreach($active_fields as $field) {
-
-            // Check if this field is custom field and details
-            if($field['tab_index'] == 1) {
-
-                if($field['is_basic'] == 1) {
-
-                    switch($field['name']) {
-
-                        case 'SubmissionDate':
-                            echo "
-            <div class='d-flex align-items-center mb-2'>
-                <label class='mb-0' style='width: 200px; min-width: 200px;'>" . $escaper->escapeHtml($lang['SubmissionDate']) . ":</label>
-                <p class='mb-0'>" . $escaper->escapeHtml($submission_date) . "</p>
-            </div>
-                            ";
-                            break;
-
-                        case 'Category':
-                            echo "
-            <div class='d-flex align-items-center mb-2'>
-                <label class='mb-0' style='width: 200px; min-width: 200px;'>" . $escaper->escapeHtml($lang['Category']) . ":</label>
-                <p class='mb-0'>" . $escaper->escapeHtml(get_name_by_value("category", $category)) . "</p>
-            </div>
-                            ";
-                            break;
-
-                        case 'SiteLocation':
-                            echo "
-            <div class='d-flex align-items-center mb-2'>
-                <label class='mb-0' style='width: 200px; min-width: 200px;'>" . $escaper->escapeHtml($lang['SiteLocation']) . ":</label>
-                <p class='mb-0'>" . $escaper->escapeHtml($location) . "</p>
-            </div>
-                            ";
-                            break;
-                            
-                        case 'ExternalReferenceId':
-                            echo "
-            <div class='d-flex align-items-center mb-2'>
-                <label class='mb-0' style='width: 200px; min-width: 200px;'>" . $escaper->escapeHtml($lang['ExternalReferenceId']) . ":</label>
-                <p class='mb-0'>" . $escaper->escapeHtml($reference_id) . "</p>
-            </div>
-                            ";
-                            break;
-                            
-                        case 'ControlRegulation':
-                            echo "
-            <div class='d-flex align-items-center mb-2'>
-                <label class='mb-0' style='width: 200px; min-width: 200px;'>" . $escaper->escapeHtml($lang['ControlRegulation']) . ":</label>
-                <p class='mb-0'>" . $escaper->escapeHtml(get_name_by_value("frameworks", $regulation)) . "</p>
-            </div>
-                            ";
-                            break;
-                            
-                        case 'ControlNumber':
-                            echo "
-            <div class='d-flex align-items-center mb-2'>
-                <label class='mb-0' style='width: 200px; min-width: 200px;'>" . $escaper->escapeHtml($lang['ControlNumber']) . ":</label>
-                <p class='mb-0'>" . $escaper->escapeHtml($control_number) . "</p>
-            </div>
-                            ";
-                            break;
-                            
-                        case 'AffectedAssets':
-                            echo "
-            <div class='d-flex align-items-center mb-2'>
-                <label class='mb-0' style='width: 200px; min-width: 200px;'>" . $escaper->escapeHtml($lang['AffectedAssets']) . ":</label>
-                <p class='mb-0'>" . $escaper->escapeHtml(implode(',', array_map(function($item) use ($escaper) {
-                    return $item['class'] === 'group' ? "[{$item['name']}]" : $item['name'];
-                }, get_assets_and_asset_groups_of_type($id, 'risk', true)))) . "</p>
-            </div>
-                            ";
-                            break;
-                            
-                        case 'Technology':
-                            echo "
-            <div class='d-flex align-items-center mb-2'>
-                <label class='mb-0' style='width: 200px; min-width: 200px;'>" . $escaper->escapeHtml($lang['Technology']) . ":</label>
-                <p class='mb-0'>" . $escaper->escapeHtml($technology) . "</p>
-            </div>
-                            ";
-                            break;
-                            
-                        case 'Team':
-                            echo "
-            <div class='d-flex align-items-center mb-2'>
-                <label class='mb-0' style='width: 200px; min-width: 200px;'>" . $escaper->escapeHtml($lang['Team']) . ":</label>
-                <p class='mb-0'>" . $escaper->escapeHtml($team) . "</p>
-            </div>
-                            ";
-                            break;
-                            
-                        case 'AdditionalStakeholders':
-                            echo "
-            <div class='d-flex align-items-center mb-2'>
-                <label class='mb-0' style='width: 200px; min-width: 200px;'>" . $escaper->escapeHtml($lang['AdditionalStakeholders']) . ":</label>
-                <p class='mb-0'>" . $escaper->escapeHtml($additional_stakeholders) . "</p>
-            </div>
-                            ";
-                            break;
-                        
-                        case 'Owner':
-                            echo "
-            <div class='d-flex align-items-center mb-2'>
-                <label class='mb-0' style='width: 200px; min-width: 200px;'>" . $escaper->escapeHtml($lang['Owner']) . ":</label>
-                <p class='mb-0'>" . $escaper->escapeHtml(get_name_by_value("user", $owner)) . "</p>
-            </div>
-                            ";
-                            break;
-                            
-                        case 'OwnersManager':
-                            echo "
-            <div class='d-flex align-items-center mb-2'>
-                <label class='mb-0' style='width: 200px; min-width: 200px;'>" . $escaper->escapeHtml($lang['OwnersManager']) . ":</label>
-                <p class='mb-0'>" . $escaper->escapeHtml(get_name_by_value("user", $manager)) . "</p>
-            </div>
-                            ";
-                            break;
-                        
-                        case 'SubmittedBy':
-                            echo "
-            <div class='d-flex align-items-center mb-2'>
-                <label class='mb-0' style='width: 200px; min-width: 200px;'>" . $escaper->escapeHtml($lang['SubmittedBy']) . ":</label>
-                <p class='mb-0'>" . $escaper->escapeHtml(get_name_by_value("user", $submitted_by)) . "</p>
-            </div>
-                            ";
-                            break;
-                            
-                        case 'RiskSource':
-                            echo "
-            <div class='d-flex align-items-center mb-2'>
-                <label class='mb-0' style='width: 200px; min-width: 200px;'>" . $escaper->escapeHtml($lang['RiskSource']) . ":</label>
-                <p class='mb-0'>" . $escaper->escapeHtml(get_name_by_value("source", $source)) . "</p>
-            </div>
-                            ";
-                            break;
-                            
-                        case 'RiskScoringMethod':
-                            echo "
-            <div class='d-flex align-items-center mb-2'>
-                <label class='mb-0' style='width: 200px; min-width: 200px;'>" . $escaper->escapeHtml($lang['RiskScoringMethod']) . ":</label>
-                <p class='mb-0'>" . $escaper->escapeHtml(get_name_by_value("scoring_methods", $scoring_method)) . "</p>
-            </div>
-                            ";
-                            
-                            if($scoring_method == "1") {
-                                echo "
-            <div class='d-flex align-items-center mb-2'>
-                <label class='mb-0' style='width: 200px; min-width: 200px;'>" . $escaper->escapeHtml($lang['CurrentLikelihood']) . ":</label>
-                <p class='mb-0'>" . $escaper->escapeHtml(get_name_by_value("likelihood", $CLASSIC_likelihood)) . "</p>
-            </div>
-            <div class='d-flex align-items-center mb-2'>
-                <label class='mb-0' style='width: 200px; min-width: 200px;'>" . $escaper->escapeHtml($lang['CurrentImpact']) . ":</label>
-                <p class='mb-0'>" . $escaper->escapeHtml(get_name_by_value("impact", $CLASSIC_impact)) . "</p>
-            </div>
-                                ";
-                            }
-
-                            break;
-                        
-                        case 'RiskAssessment':
-                            echo "
-            <div class='d-flex align-items-center mb-2'>
-                <label class='mb-0' style='width: 200px; min-width: 200px;'>" . $escaper->escapeHtml($lang['RiskAssessment']) . ":</label>
-                <p class='mb-0'>" . $escaper->escapeHtml($assessment) . "</p>
-            </div>
-                            ";
-                            break;
-
-                        case 'AdditionalNotes':
-                            echo "
-            <div class='d-flex align-items-center mb-2'>
-                <label class='mb-0' style='width: 200px; min-width: 200px;'>" . $escaper->escapeHtml($lang['AdditionalNotes']) . ":</label>
-                <p class='mb-0'>" . $escaper->escapeHtml($notes) . "</p>
-            </div>
-                            ";
-                            break;
-
-                        case 'Tags':
-                            echo "
-            <div class='d-flex align-items-center mb-2'>
-                <label class='mb-0' style='width: 200px; min-width: 200px;'>" . $escaper->escapeHtml($lang['Tags']) . ":</label>
-                <p class='mb-0'>" . $escaper->escapeHtml($tags) . "</p>
-            </div>
-                            ";
-                            break;
-
-                        case 'RiskMapping':
-                            echo "
-            <div class='d-flex align-items-center mb-2'>
-                <label class='mb-0' style='width: 200px; min-width: 200px;'>" . $escaper->escapeHtml($lang['RiskMapping']) . ":</label>
-                <p class='mb-0'>" . $escaper->escapeHtml(get_names_by_multi_values("risk_catalog", $risk_catalog_mapping, false, ", ", true)) . "</p>
-            </div>
-                            ";
-                            break;
-
-                        case 'ThreatMapping':
-                            echo "
-            <div class='d-flex align-items-center mb-2'>
-                <label class='mb-0' style='width: 200px; min-width: 200px;'>" . $escaper->escapeHtml($lang['ThreatMapping']) . ":</label>
-                <p class='mb-0'>" . $escaper->escapeHtml(get_names_by_multi_values("threat_catalog", $threat_catalog_mapping, false, ", ", true)) . "</p>
-            </div>
-                            ";
-                            break;
-
-                    }
-                } else {
-                    display_custom_field_print($field, $custom_values);
-                }
-            }
-            
-        }
-    } else {
-        echo "
-            <div class='d-flex align-items-center mb-2'>
-                <label class='mb-0' style='width: 200px; min-width: 200px;'>" . $escaper->escapeHtml($lang['SubmissionDate']) . ":</label>
-                <p class='mb-0'>" . $escaper->escapeHtml($submission_date) . "</p>
-            </div>
-            <div class='d-flex align-items-center mb-2'>
-                <label class='mb-0' style='width: 200px; min-width: 200px;'>" . $escaper->escapeHtml($lang['Subject']) . ":</label>
-                <p class='mb-0'>" . $escaper->escapeHtml($subject) . "</p>
-            </div>
-            <div class='d-flex align-items-center mb-2'>
-                <label class='mb-0' style='width: 200px; min-width: 200px;'>" . $escaper->escapeHtml($lang['ExternalReferenceId']) . ":</label>
-                <p class='mb-0'>" . $escaper->escapeHtml($reference_id) . "</p>
-            </div>
-            <div class='d-flex align-items-center mb-2'>
-                <label class='mb-0' style='width: 200px; min-width: 200px;'>" . $escaper->escapeHtml($lang['ControlRegulation']) . ":</label>
-                <p class='mb-0'>" . $escaper->escapeHtml(get_name_by_value("frameworks", $regulation)) . "</p>
-            </div>
-            <div class='d-flex align-items-center mb-2'>
-                <label class='mb-0' style='width: 200px; min-width: 200px;'>" . $escaper->escapeHtml($lang['ControlNumber']) . ":</label>
-                <p class='mb-0'>" . $escaper->escapeHtml($control_number) . "</p>
-            </div>
-            <div class='d-flex align-items-center mb-2'>
-                <label class='mb-0' style='width: 200px; min-width: 200px;'>" . $escaper->escapeHtml($lang['SiteLocation']) . ":</label>
-                <p class='mb-0'>" . $escaper->escapeHtml($location) . "</p>
-            </div>
-            <div class='d-flex align-items-center mb-2'>
-                <label class='mb-0' style='width: 200px; min-width: 200px;'>" . $escaper->escapeHtml($lang['Category']) . ":</label>
-                <p class='mb-0'>" . $escaper->escapeHtml(get_name_by_value("category", $category)) . "</p>
-            </div>
-            <div class='d-flex align-items-center mb-2'>
-                <label class='mb-0' style='width: 200px; min-width: 200px;'>" . $escaper->escapeHtml($lang['Team']) . ":</label>
-                <p class='mb-0'>" . $escaper->escapeHtml($team) . "</p>
-            </div>
-            <div class='d-flex align-items-center mb-2'>
-                <label class='mb-0' style='width: 200px; min-width: 200px;'>" . $escaper->escapeHtml($lang['Technology']) . ":</label>
-                <p class='mb-0'>" . $escaper->escapeHtml($technology) . "</p>
-            </div>
-            <div class='d-flex align-items-center mb-2'>
-                <label class='mb-0' style='width: 200px; min-width: 200px;'>" . $escaper->escapeHtml($lang['AdditionalStakeholders']) . ":</label>
-                <p class='mb-0'>" . $escaper->escapeHtml($additional_stakeholders) . "</p>
-            </div>
-            <div class='d-flex align-items-center mb-2'>
-                <label class='mb-0' style='width: 200px; min-width: 200px;'>" . $escaper->escapeHtml($lang['Owner']) . ":</label>
-                <p class='mb-0'>" . $escaper->escapeHtml(get_name_by_value("user", $owner)) . "</p>
-            </div>
-            <div class='d-flex align-items-center mb-2'>
-                <label class='mb-0' style='width: 200px; min-width: 200px;'>" . $escaper->escapeHtml($lang['OwnersManager']) . ":</label>
-                <p class='mb-0'>" . $escaper->escapeHtml(get_name_by_value("user", $manager)) . "</p>
-            </div>
-            <div class='d-flex align-items-center mb-2'>
-                <label class='mb-0' style='width: 200px; min-width: 200px;'>" . $escaper->escapeHtml($lang['RiskAssessment']) . ":</label>
-                <p class='mb-0'>" . $escaper->escapeHtml($assessment) . "</p>
-            </div>
-            <div class='d-flex align-items-center mb-2'>
-                <label class='mb-0' style='width: 200px; min-width: 200px;'>" . $escaper->escapeHtml($lang['AdditionalNotes']) . ":</label>
-                <p class='mb-0'>" . $escaper->escapeHtml($notes) . "</p>
-            </div>
-            <div class='d-flex align-items-center mb-2'>
-                <label class='mb-0' style='width: 200px; min-width: 200px;'>" . $escaper->escapeHtml($lang['AffectedAssets']) . ":</label>
-                <p class='mb-0'>" . $escaper->escapeHtml(implode(',', array_map(function($item) use ($escaper) {
-                    return $item['class'] === 'group' ? "[{$item['name']}]" : $item['name'];
-                }, get_assets_and_asset_groups_of_type($id, 'risk')))) . "</p>
-            </div>
-            <div class='d-flex align-items-center'>
-                <label class='mb-0' style='width: 200px; min-width: 200px;'>" . $escaper->escapeHtml($lang['Tags']) . ":</label>
-                <p class='mb-0'>" . $escaper->escapeHtml($tags) . "</p>
-            </div>
-        ";
-    }
-
-    echo "
-        </div>
-    ";
 }
 
 /****************************************
@@ -1547,362 +1330,6 @@ function view_mitigation_details($risk_id, $mitigation_id, $mitigation_date, $pl
     }
 }
 
-/*******************************************
-* FUNCTION: VIEW PRINT MITIGATION DETAILS *
-*******************************************/
-function view_print_mitigation_details($id, $mitigation_date, $planning_strategy, $mitigation_effort, $current_solution, $security_requirements, $security_recommendations, $planning_date, $mitigation_cost, $mitigation_owner, $mitigation_team, $mitigation_percent, $template_group_id) {
-
-    global $lang;
-    global $escaper;
-
-    // Decrypt fields
-    $current_solution = try_decrypt($current_solution);
-    $security_requirements = try_decrypt($security_requirements);
-    $security_recommendations = try_decrypt($security_recommendations);
-
-    echo "
-        <h4>". $escaper->escapeHtml($lang['Mitigation']) ."</h4>
-        <div class='mitigation-details-container card-body border mt-2'>
-    ";
-
-    // If customization extra is enabled
-    if(customization_extra()) {
-
-        // Include the extra
-        require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
-        
-        $custom_values = getCustomFieldValuesByRiskId($id);
-        
-        $template_group = get_custom_template_group_by_id($template_group_id);
-        if(!$template_group_id || !$template_group) {
-            $group = get_default_template_group("risk");
-            $template_group_id = $group["id"];
-        }
-
-        $active_fields = get_active_fields("risk", $template_group_id);
-        foreach($active_fields as $field) {
-
-            // Check if this field is custom field and details
-            if($field['tab_index'] == 2) {
-
-                if($field['is_basic'] == 1) {
-
-                    switch($field['name']) {
-
-                        case 'MitigationDate':
-                            echo "
-            <div class='d-flex align-items-center mb-2'>
-                <label class='mb-0' style='width: 200px; min-width: 200px;'>" . $escaper->escapeHtml($lang['MitigationDate']) . ":</label>
-                <p class='mb-0'>" . $escaper->escapeHtml($mitigation_date) . "</p>
-            </div>
-                            ";
-                            break;
-                        
-                        case 'MitigationPlanning':
-                            echo "
-            <div class='d-flex align-items-center mb-2'>
-                <label class='mb-0' style='width: 200px; min-width: 200px;'>" . $escaper->escapeHtml($lang['MitigationPlanning']) . ":</label>
-                <p class='mb-0'>" . $escaper->escapeHtml($planning_date) . "</p>
-            </div>
-                            ";
-                            break;
-                            
-                        case 'PlanningStrategy':
-                            echo "
-            <div class='d-flex align-items-center mb-2'>
-                <label class='mb-0' style='width: 200px; min-width: 200px;'>" . $escaper->escapeHtml($lang['PlanningStrategy']) . ":</label>
-                <p class='mb-0'>" . $escaper->escapeHtml(get_name_by_value("planning_strategy", $planning_strategy)) . "</p>
-            </div>
-                            ";
-                            break;
-                            
-                        case 'MitigationEffort':
-                            echo "
-            <div class='d-flex align-items-center mb-2'>
-                <label class='mb-0' style='width: 200px; min-width: 200px;'>" . $escaper->escapeHtml($lang['MitigationEffort']) . ":</label>
-                <p class='mb-0'>" . $escaper->escapeHtml(get_name_by_value("mitigation_effort", $mitigation_effort)) . "</p>
-            </div>
-                            ";
-                            break;
-                            
-                        case 'MitigationCost':
-                            echo "
-            <div class='d-flex align-items-center mb-2'>
-                <label class='mb-0' style='width: 200px; min-width: 200px;'>" . $escaper->escapeHtml($lang['MitigationCost']) . ":</label>
-                <p class='mb-0'>" . $escaper->escapeHtml(get_asset_value_by_id($mitigation_cost)) . "</p>
-            </div>
-                            ";
-                            break;
-                            
-                        case 'MitigationOwner':
-                            echo "
-            <div class='d-flex align-items-center mb-2'>
-                <label class='mb-0' style='width: 200px; min-width: 200px;'>" . $escaper->escapeHtml($lang['MitigationOwner']) . ":</label>
-                <p class='mb-0'>" . $escaper->escapeHtml(get_name_by_value("user", $mitigation_owner)) . "</p>
-            </div>
-                            ";
-                            break;
-                            
-                        case 'MitigationTeam':
-                            echo "
-            <div class='d-flex align-items-center mb-2'>
-                <label class='mb-0' style='width: 200px; min-width: 200px;'>" . $escaper->escapeHtml($lang['MitigationTeam']) . ":</label>
-                <p class='mb-0'>" . $escaper->escapeHtml(get_names_by_multi_values("team", $mitigation_team)) . "</p>
-            </div>
-                            ";
-                            break;
-                            
-                        case 'MitigationPercent':
-                            echo "
-            <div class='d-flex align-items-center mb-2'>
-                <label class='mb-0' style='width: 200px; min-width: 200px;'>" . $escaper->escapeHtml($lang['MitigationPercent']) . ":</label>
-                <p class='mb-0'>" . $escaper->escapeHtml($mitigation_percent) . "</p>
-            </div>
-                            ";
-                            break;
-                            
-                        case 'AcceptMitigation':
-                            $message = view_accepted_mitigations($id);
-                            if($message) {
-                                echo "
-            <div class='d-flex align-items-center mb-2'>
-                <label class='mb-0' style='width: 200px; min-width: 200px;'>" . $escaper->escapeHtml($lang['AcceptMitigation']) . ":</label>
-                <p class='mb-0'>" . $message . "</p>
-            </div>
-                                ";
-                            }
-                            break;
-                            
-                        case 'CurrentSolution':
-                            echo "
-            <div class='d-flex align-items-center mb-2'>
-                <label class='mb-0' style='width: 200px; min-width: 200px;'>" . $escaper->escapeHtml($lang['CurrentSolution']) . ":</label>
-                <p class='mb-0'>" . $escaper->escapeHtml($current_solution) . "</p>
-            </div>
-                            ";
-                            break;
-                            
-                        case 'SecurityRequirements':
-                            echo "
-            <div class='d-flex align-items-center mb-2'>
-                <label class='mb-0' style='width: 200px; min-width: 200px;'>" . $escaper->escapeHtml($lang['SecurityRequirements']) . ":</label>
-                <p class='mb-0'>" . $escaper->escapeHtml($security_requirements) . "</p>
-            </div>
-                            ";
-                            break;
-                            
-                        case 'SecurityRecommendations':
-                            echo "
-            <div class='d-flex align-items-center mb-2'>
-                <label class='mb-0' style='width: 200px; min-width: 200px;'>" . $escaper->escapeHtml($lang['SecurityRecommendations']) . ":</label>
-                <p class='mb-0'>" . $escaper->escapeHtml($security_recommendations) . "</p>
-            </div>
-                            ";
-                            break;
-                    }
-                } else {
-                   display_custom_field_print($field, $custom_values);
-                }
-            }
-        }
-    } else {
-        echo "
-            <div class='d-flex align-items-center mb-2'>
-                <label class='mb-0' style='width: 200px; min-width: 200px;'>" . $escaper->escapeHtml($lang['MitigationDate']) . ":</label>
-                <p class='mb-0'>" . $escaper->escapeHtml($mitigation_date) . "</p>
-            </div>
-            <div class='d-flex align-items-center mb-2'>
-                <label class='mb-0' style='width: 200px; min-width: 200px;'>" . $escaper->escapeHtml($lang['PlanningStrategy']) . ":</label>
-                <p class='mb-0'>" . $escaper->escapeHtml(get_name_by_value("planning_strategy", $planning_strategy)) . "</p>
-            </div>
-            <div class='d-flex align-items-center mb-2'>
-                <label class='mb-0' style='width: 200px; min-width: 200px;'>" . $escaper->escapeHtml($lang['MitigationEffort']) . ":</label>
-                <p class='mb-0'>" . $escaper->escapeHtml(get_name_by_value("mitigation_effort", $mitigation_effort)) . "</p>
-            </div>
-            <div class='d-flex align-items-center mb-2'>
-                <label class='mb-0' style='width: 200px; min-width: 200px;'>" . $escaper->escapeHtml($lang['MitigationCost']) . ":</label>
-                <p class='mb-0'>" . $escaper->escapeHtml(get_asset_value_by_id($mitigation_cost)) . "</p>
-            </div>
-            <div class='d-flex align-items-center mb-2'>
-                <label class='mb-0' style='width: 200px; min-width: 200px;'>" . $escaper->escapeHtml($lang['MitigationOwner']) . ":</label>
-                <p class='mb-0'>" . $escaper->escapeHtml(get_name_by_value("user", $mitigation_owner)) . "</p>
-            </div>
-            <div class='d-flex align-items-center mb-2'>
-                <label class='mb-0' style='width: 200px; min-width: 200px;'>" . $escaper->escapeHtml($lang['MitigationTeam']) . ":</label>
-                <p class='mb-0'>" . $escaper->escapeHtml(get_names_by_multi_values("team", $mitigation_team)) . "</p>
-            </div>
-            <div class='d-flex align-items-center mb-2'>
-                <label class='mb-0' style='width: 200px; min-width: 200px;'>" . $escaper->escapeHtml($lang['MitigationPercent']) . ":</label>
-                <p class='mb-0'>" . $escaper->escapeHtml($mitigation_percent) . "</p>
-            </div>
-            <div class='d-flex align-items-center mb-2'>
-                <label class='mb-0' style='width: 200px; min-width: 200px;'>" . $escaper->escapeHtml($lang['CurrentSolution']) . ":</label>
-                <p class='mb-0'>" . $escaper->escapeHtml($current_solution) . "</p>
-            </div>
-            <div class='d-flex align-items-center mb-2'>
-                <label class='mb-0' style='width: 200px; min-width: 200px;'>" . $escaper->escapeHtml($lang['SecurityRequirements']) . ":</label>
-                <p class='mb-0'>" . $escaper->escapeHtml($security_requirements) . "</p>
-            </div>
-            <div class='d-flex align-items-center'>
-                <label class='mb-0' style='width: 200px; min-width: 200px;'>" . $escaper->escapeHtml($lang['SecurityRecommendations']) . ":</label>
-                <p class='mb-0'>" . $escaper->escapeHtml($security_recommendations) . "</p>
-            </div>
-        ";
-    }
-    echo "
-        </div>
-    ";
-}
-
-/*******************************************
-* FUNCTION: VIEW PRINT MITIGATION CONTROLS *
-*******************************************/
-function view_print_mitigation_controls($mitigation) {
-    
-    global $lang;
-    global $escaper;
-
-    $control_ids = empty($mitigation[0]['mitigation_controls']) ? "" : $mitigation[0]['mitigation_controls'];
-    $controls = get_framework_controls($control_ids);
-    $html = "";
-
-    echo "
-        <h4>" . $escaper->escapeHtml($lang['MitigationControls']) . "</h4>
-    ";
-
-    foreach ($controls as $key=>$control) {
-        echo "
-        <div class='card-body border my-2'>
-            <div class='row'>
-                <div class='col-12'>
-                    <div class='d-flex align-items-center mb-2'>
-                        <label class='mb-0' style='width: 200px; min-width: 200px;'>" . $escaper->escapeHtml($lang['ControlLongName']) . ":</label>
-                        <p class='mb-0'>" . $escaper->escapeHtml($control['long_name']) . "</p>
-                    </div>
-                </div>
-            </div>
-            <div class='row'>
-                <div class='col-8'>
-                    <div class='d-flex align-items-center mb-2'>
-                        <label class='mb-0' style='width: 200px; min-width: 200px;'>" . $escaper->escapeHtml($lang['ControlShortName']) . ":</label>
-                        <p class='mb-0'>" . $escaper->escapeHtml($control['short_name']) . "</p>
-                    </div>
-                </div>
-                <div class='col-4'>
-                    <div class='d-flex align-items-center mb-2'>
-                        <label class='mb-0' style='width: 200px; min-width: 200px;'>" . $escaper->escapeHtml($lang['ControlOwner']) . ":</label>
-                        <p class='mb-0'>" . $escaper->escapeHtml($control['control_owner_name']) . "</p>
-                    </div>
-                </div>
-            </div>
-            <div class='row'>
-                <div class='col-4'>
-                    <div class='d-flex align-items-center mb-2'>
-                        <label class='mb-0' style='width: 200px; min-width: 200px;'>" . $escaper->escapeHtml($lang['ControlClass']) . ":</label>
-                        <p class='mb-0'>" . $escaper->escapeHtml($control['control_class_name']) . "</p>
-                    </div>
-                </div>
-                <div class='col-4'>
-                    <div class='d-flex align-items-center mb-2'>
-                        <label class='mb-0' style='width: 200px; min-width: 200px;'>" . $escaper->escapeHtml($lang['ControlPhase']) . ":</label>
-                        <p class='mb-0'>" . $escaper->escapeHtml($control['control_phase_name']) . "</p>
-                    </div>
-                </div>
-                <div class='col-4'>
-                    <div class='d-flex align-items-center mb-2'>
-                        <label class='mb-0' style='width: 200px; min-width: 200px;'>" . $escaper->escapeHtml($lang['ControlNumber']) . ":</label>
-                        <p class='mb-0'>" . $escaper->escapeHtml($control['control_number']) . "</p>
-                    </div>
-                </div>
-            </div>
-            <div class='row'>
-                <div class='col-4'>
-                    <div class='d-flex align-items-center mb-2'>
-                        <label class='mb-0' style='width: 200px; min-width: 200px;'>" . $escaper->escapeHtml($lang['ControlPriority']) . ":</label>
-                        <p class='mb-0'>" . $escaper->escapeHtml($control['control_priority_name']) . "</p>
-                    </div>
-                </div>
-                <div class='col-4'>
-                    <div class='d-flex align-items-center mb-2'>
-                        <label class='mb-0' style='width: 200px; min-width: 200px;'>" . $escaper->escapeHtml($lang['ControlFamily']) . ":</label>
-                        <p class='mb-0'>" . $escaper->escapeHtml($control['family_short_name']) . "</p>
-                    </div>
-                </div>
-                <div class='col-4'>
-                    <div class='d-flex align-items-center mb-2'>
-                        <label class='mb-0' style='width: 200px; min-width: 200px;'>" . $escaper->escapeHtml($lang['MitigationPercent']) . ":</label>
-                        <p class='mb-0'>" . $escaper->escapeHtml($control['mitigation_percent']) . "</p>
-                    </div>
-                </div>
-            </div>
-            <div class='row'>
-                <div class='col-12'>
-                    <div class='d-flex align-items-center mb-2'>
-                        <label class='mb-0' style='width: 200px; min-width: 200px;'>" . $escaper->escapeHtml($lang['Description']) . ":</label>
-                        <p class='mb-0'>" . $escaper->escapeHtml($control['description']) . "</p>
-                    </div>
-                </div>
-            </div>
-            <div class='row'>
-                <div class='col-12'>
-                    <div class='d-flex align-items-center mb-2'>
-                        <label class='mb-0' style='width: 200px; min-width: 200px;'>" . $escaper->escapeHtml($lang['SupplementalGuidance']) . ":</label>
-                        <p class='mb-0'>" . $escaper->escapeHtml($control['supplemental_guidance']) . "</p>
-                    </div>
-                </div>
-            </div>
-        ";
-
-        $mapped_frameworks = get_mapping_control_frameworks($control['id']);
-
-        echo "
-            <h5 class='mt-2'>" . $escaper->escapeHtml($lang['MappedControlFrameworks']) . "</h5>
-            <table width='100%' class='table table-bordered mb-0'>
-                <tr>
-                    <th width='50%'>" . $escaper->escapeHtml($lang['Framework']) . "</th>
-                    <th width='35%'>" . $escaper->escapeHtml($lang['Control']) . "</th>
-                </tr>
-        ";
-
-        foreach ($mapped_frameworks as $framework) {
-            echo "
-                <tr>
-                    <td>" . $escaper->escapeHtml($framework['framework_name']) . "</td>
-                    <td>" . $escaper->escapeHtml($framework['reference_name']) . "</td>
-                </tr>
-            ";
-        }
-
-        echo "
-            </table>
-        ";
-
-        $validation = get_mitigation_to_controls($mitigation[0]['mitigation_id'],$control['id']);
-        $validation_mitigation_percent = ($validation["validation_mitigation_percent"] >= 0 && $validation["validation_mitigation_percent"] <= 100) ? $validation["validation_mitigation_percent"] : 0;
-
-        if($validation["validation_details"] || $validation["validation_owner"] || $validation_mitigation_percent) {
-            echo "
-            <h5 class='mt-2'>" . $escaper->escapeHtml($lang['ControlValidation']) . "</h5>
-            <div class='d-flex align-items-center mb-2'>
-                <label class='mb-0' style='width: 200px; min-width: 200px;'>" . $escaper->escapeHtml($lang['Details']) . ":</label>
-                <p class='mb-0'>" . nl2br($escaper->escapeHtml($validation["validation_details"])) . "</p>
-            </div>
-            <div class='d-flex align-items-center mb-2'>
-                <label class='mb-0' style='width: 200px; min-width: 200px;'>" . $escaper->escapeHtml($lang['Owner']) . ":</label>
-                <p class='mb-0'>" . $escaper->escapeHtml(get_name_by_value("user", $validation["validation_owner"])) . "</p>
-            </div>
-            <div class='d-flex align-items-center mb-2'>
-                <label class='mb-0' style='width: 200px; min-width: 200px;'>" . $escaper->escapeHtml($lang['MitigationPercent']) . ":</label>
-                <p class='mb-0'>" . $validation_mitigation_percent . " %</p>
-            </div>
-            ";
-        }
-        echo "
-        </div>
-        ";
-    }
-}
-
 /*************************************
 * FUNCTION: EDIT MITIGATION DETAILS *
 *************************************/
@@ -2323,139 +1750,6 @@ function view_review_details($id, $review_id, $review_date, $reviewer, $review, 
     ";
 }
 
-/***************************************
-* FUNCTION: VIEW PRINT REVIEW DETAILS *
-***************************************/
-function view_print_review_details($id, $review_id, $review_date, $reviewer, $review, $next_step, $next_review, $comments, $template_group_id) {
-
-    global $lang;
-    global $escaper;
-
-    // Decrypt fields
-    $comments = try_decrypt($comments);
-
-    echo "
-        <h4>" . $escaper->escapeHtml($lang['LastReview']) . "</h4>
-        <div class='review-details-container card-body border mt-2'>
-    ";
-
-    // If customization extra is enabled
-    if(customization_extra()) {
-
-        // Include the extra
-        require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
-        
-        $custom_values = getCustomFieldValuesByRiskId($id);
-        
-        $template_group = get_custom_template_group_by_id($template_group_id);
-        if(!$template_group_id || !$template_group) {
-            $group = get_default_template_group("risk");
-            $template_group_id = $group["id"];
-        }
-
-        $active_fields = get_active_fields("risk", $template_group_id);
-        foreach($active_fields as $field) {
-
-            // Check if this field is custom field and review
-            if($field['tab_index'] == 3) {
-
-                if($field['is_basic'] == 1) {
-
-                    switch($field['name']) {
-
-                        case 'ReviewDate':
-                            echo "
-            <div class='d-flex align-items-center mb-2'>
-                <label class='mb-0' style='width: 200px; min-width: 200px;'>" . $escaper->escapeHtml($lang['ReviewDate']) . ":</label>
-                <p class='mb-0'>" . $escaper->escapeHtml($review_date) . "</p>
-            </div>
-                            ";
-                            break;
-                        
-                        case 'Reviewer':
-                            echo "
-            <div class='d-flex align-items-center mb-2'>
-                <label class='mb-0' style='width: 200px; min-width: 200px;'>" . $escaper->escapeHtml($lang['Reviewer']) . ":</label>
-                <p class='mb-0'>" . $escaper->escapeHtml(get_name_by_value("user", $reviewer)) . "</p>
-            </div>
-                            ";
-                            break;
-
-                        case 'Review':
-                            echo "
-            <div class='d-flex align-items-center mb-2'>
-                <label class='mb-0' style='width: 200px; min-width: 200px;'>" . $escaper->escapeHtml($lang['Review']) . ":</label>
-                <p class='mb-0'>" . $escaper->escapeHtml(get_name_by_value("review", $review)) . "</p>
-            </div>
-                            ";
-                            break;
-                            
-                        case 'NextStep':
-                            echo "
-            <div class='d-flex align-items-center mb-2'>
-                <label class='mb-0' style='width: 200px; min-width: 200px;'>" . $escaper->escapeHtml($lang['NextStep']) . ":</label>
-                <p class='mb-0'>" . $escaper->escapeHtml(get_name_by_value("next_step", $next_step)) . "</p>
-            </div>
-                            ";
-                            break;
-                            
-                        case 'NextReviewDate':
-                            echo "
-            <div class='d-flex align-items-center mb-2'>
-                <label class='mb-0' style='width: 200px; min-width: 200px;'>" . $escaper->escapeHtml($lang['NextReviewDate']) . ":</label>
-                <p class='mb-0'>" . $escaper->escapeHtml($next_review) . "</p>
-            </div>
-                            ";
-                            break;
-
-                        case 'Comment':
-                            echo "
-            <div class='d-flex align-items-center mb-2'>
-                <label class='mb-0' style='width: 200px; min-width: 200px;'>" . $escaper->escapeHtml($lang['Comments']) . ":</label>
-                <p class='mb-0'>" . $escaper->escapeHtml($comments) . "</p>
-            </div>
-                            ";
-                            break;
-                    }
-                } else {
-                    display_custom_field_print($field, $custom_values, $review_id);
-                }
-            }
-        }
-    } else {
-        echo "
-            <div class='d-flex align-items-center mb-2'>
-                <label class='mb-0' style='width: 200px; min-width: 200px;'>" . $escaper->escapeHtml($lang['ReviewDate']) . ":</label>
-                <p class='mb-0'>" . $escaper->escapeHtml($review_date) . "</p>
-            </div>
-            <div class='d-flex align-items-center mb-2'>
-                <label class='mb-0' style='width: 200px; min-width: 200px;'>" . $escaper->escapeHtml($lang['Reviewer']) . ":</label>
-                <p class='mb-0'>" . $escaper->escapeHtml(get_name_by_value("user", $reviewer)) . "</p>
-            </div>
-            <div class='d-flex align-items-center mb-2'>
-                <label class='mb-0' style='width: 200px; min-width: 200px;'>" . $escaper->escapeHtml($lang['Review']) . ":</label>
-                <p class='mb-0'>" . $escaper->escapeHtml(get_name_by_value("review", $review)) . "</p>
-            </div>
-            <div class='d-flex align-items-center mb-2'>
-                <label class='mb-0' style='width: 200px; min-width: 200px;'>" . $escaper->escapeHtml($lang['NextStep']) . ":</label>
-                <p class='mb-0'>" . $escaper->escapeHtml(get_name_by_value("next_step", $next_step)) . "</p>
-            </div>
-            <div class='d-flex align-items-center mb-2'>
-                <label class='mb-0' style='width: 200px; min-width: 200px;'>" . $escaper->escapeHtml($lang['NextReviewDate']) . ":</label>
-                <p class='mb-0'>" . $escaper->escapeHtml($next_review) . "</p>
-            </div>
-            <div class='d-flex align-items-center'>
-                <label class='mb-0' style='width: 200px; min-width: 200px;'>" . $escaper->escapeHtml($lang['Comments']) . ":</label>
-                <p class='mb-0'>" . $escaper->escapeHtml($comments) . "</p>
-            </div>
-        ";        
-    }
-
-    echo "
-        </div>
-    ";
-}
-
 /************************************
 * FUNCTION: edit_review_submission *
 ************************************/
@@ -2560,1291 +1854,6 @@ function edit_review_submission($id, $review_id, $review, $next_step, $next_revi
     
 }
 
-/********************************
-* FUNCTION: edit_classic_score *
-********************************/
-function edit_classic_score($CLASSIC_likelihood, $CLASSIC_impact)
-{
-    global $lang;
-    global $escaper;
-    echo "
-        <form name='update_classic' method='post' action=''>
-            <div class='row mb-2'>
-                <div class='col-12'>
-                    <h4>" . $escaper->escapeHtml($lang['UpdateClassicScore']) . "</h4>
-                </div>
-            </div>
-            <div class='row'>
-                <div class='col-12 col-md-4'>
-                    <div class='row mb-2 align-items-center'>
-                        <div class='col-5'>
-                            <label>" . $escaper->escapeHtml($lang['CurrentLikelihood']) . ":</label>
-                        </div>
-                        <div class='col-6'>" .
-                            create_dropdown("likelihood", $CLASSIC_likelihood, NULL, false, false, true) . "
-                        </div>
-                        <div class='col-1'>
-                            <a type='button' class='btn score--help' href='#' onClick=\"javascript:showHelp('likelihoodHelp');\"><i class='fa fa-question-circle'></i></a>
-                        </div>
-                    </div>
-                    <div class='row mb-2 align-items-center'>
-                        <div class='col-5'>
-                            <label>" . $escaper->escapeHtml($lang['CurrentImpact']) . ":</label>
-                        </div>
-                        <div class='col-6'>" . 
-                            create_dropdown("impact", $CLASSIC_impact, NULL, false, false, true) . "
-                        </div>
-                        <div class='col-1'>
-                            <a type='button' class='btn score--help' href='#' onClick=\"javascript:showHelp('impactHelp');\"><i class='fa fa-question-circle'></i></a>
-                        </div>
-                    </div>
-                </div>
-                <div class='col-12 col-md-8 p-l-40'>
-    ";
-                    view_classic_help();
-    echo "
-                </div>
-            </div>
-            <div class='form-actions mt-2'>
-                <button type='button' class='btn btn-primary cancel-update'>" . $escaper->escapeHtml($lang['Cancel']) . "</button>
-                <button type='submit' name='update_classic' class='btn btn-submit'>" . $escaper->escapeHtml($lang['Update']) . "</button>
-            </div>
-        </form>
-    ";
-}
-
-/*****************************
-* FUNCTION: edit_cvss_score *
-*****************************/
-function edit_cvss_score($AccessVector, $AccessComplexity, $Authentication, $ConfImpact, $IntegImpact, $AvailImpact, $Exploitability, $RemediationLevel, $ReportConfidence, $CollateralDamagePotential, $TargetDistribution, $ConfidentialityRequirement, $IntegrityRequirement, $AvailabilityRequirement)
-{
-    global $lang;
-    global $escaper;
-
-    echo "
-        <form name='update_cvss' method='post' action=''>
-            <div class='row mb-2'>
-                <div class='col-12'>
-                    <h4>" . $escaper->escapeHtml($lang['UpdateCVSSScore']) . "</h4>
-                </div>
-            </div>
-            <div class='row'>
-                <div class='col-12 col-md-4'>
-                    <div class='row mb-2'>
-                        <div class='col-12'>
-                            <h5>" . $escaper->escapeHtml($lang['BaseVector']) . "</h5>
-                        </div>
-                    </div>
-                    <div class='row mb-2 align-items-center'>
-                        <div class='col-5'>
-                            <label>" . $escaper->escapeHtml($lang['AttackVector']) . ":</label>
-                        </div>
-                        <div class='col-6'>
-    ";
-                            create_cvss_dropdown("AccessVector", $AccessVector, false);
-    echo "
-                        </div>
-                        <div class='col-1'>
-                            <a type='button' class='btn score--help' href='#' onClick=\"javascript:showHelp('AccessVectorHelp');\"><i class='fa fa-question-circle'></i></a>
-                        </div>
-                    </div>
-                    <div class='row mb-2 align-items-center'>
-                        <div class='col-5'>
-                            <label>" . $escaper->escapeHtml($lang['AttackComplexity']) . ":</label>
-                        </div>
-                        <div class='col-6'>
-    ";
-                            create_cvss_dropdown("AccessComplexity", $AccessComplexity, false);
-    echo "
-                        </div>
-                        <div class='col-1'>
-                            <a type='button' class='btn score--help' href='#' onClick=\"javascript:showHelp('AccessComplexityHelp');\"><i class='fa fa-question-circle'></i></a>
-                        </div>
-                    </div>
-                    <div class='row mb-2 align-items-center'>
-                        <div class='col-5'>
-                            <label>" . $escaper->escapeHtml($lang['Authentication']) . ":</label>
-                        </div>
-                        <div class='col-6'>
-    ";
-                            create_cvss_dropdown("Authentication", $Authentication, false);
-    echo "
-                        </div>
-                        <div class='col-1'>
-                            <a type='button' class='btn score--help' href='#' onClick=\"javascript:showHelp('AuthenticationHelp');\"><i class='fa fa-question-circle'></i></a>
-                        </div>
-                    </div>
-                    <div class='row mb-2 align-items-center'>
-                        <div class='col-5'>
-                            <label>" . $escaper->escapeHtml($lang['ConfidentialityImpact']) . ":</label>
-                        </div>
-                        <div class='col-6'>
-    ";
-                            create_cvss_dropdown("ConfImpact", $ConfImpact, false);
-    echo "
-                        </div>
-                        <div class='col-1'>
-                            <a type='button' class='btn score--help' href='#' onClick=\"javascript:showHelp('ConfImpactHelp');\"><i class='fa fa-question-circle'></i></a>
-                        </div>
-                    </div>
-                    <div class='row mb-2 align-items-center'>
-                        <div class='col-5'>
-                            <label>" . $escaper->escapeHtml($lang['IntegrityImpact']) . ":</label>
-                        </div>
-                        <div class='col-6'>
-    ";
-                            create_cvss_dropdown("IntegImpact", $IntegImpact, false);
-    echo "
-                        </div>
-                        <div class='col-1'>
-                            <a type='button' class='btn score--help' href='#' onClick=\"javascript:showHelp('IntegImpactHelp');\"><i class='fa fa-question-circle'></i></a>
-                        </div>
-                    </div>
-                    <div class='row mb-2 align-items-center'>
-                        <div class='col-5'>
-                            <label>" . $escaper->escapeHtml($lang['AvailabilityImpact']) . ":</label>
-                        </div>
-                        <div class='col-6'>
-    ";
-                            create_cvss_dropdown("AvailImpact", $AvailImpact, false);
-    echo "
-                        </div>
-                        <div class='col-1'>
-                            <a type='button' class='btn score--help' href='#' onClick=\"javascript:showHelp('AvailImpactHelp');\"><i class='fa fa-question-circle'></i></a>
-                        </div>
-                    </div>
-
-                    <div class='row mt-4 mb-2'>
-                        <div class='col-12'>
-                            <h5>" . $escaper->escapeHtml($lang['TemporalScoreMetrics']) . "</h5>
-                        </div>
-                    </div>
-                    <div class='row mb-2 align-items-center'>
-                        <div class='col-5'>
-                            <label>" . $escaper->escapeHtml($lang['Exploitability']) . ":</label>
-                        </div>
-                        <div class='col-6'>
-    ";
-                            create_cvss_dropdown("Exploitability", $Exploitability, false);
-    echo "
-                        </div>
-                        <div class='col-1'>
-                            <a type='button' class='btn score--help' href='#' onClick=\"javascript:showHelp('ExploitabilityHelp');\"><i class='fa fa-question-circle'></i></a>
-                        </div>
-                    </div>
-                    <div class='row mb-2 align-items-center'>
-                        <div class='col-5'>
-                            <label>" . $escaper->escapeHtml($lang['RemediationLevel']) . ":</label>
-                        </div>
-                        <div class='col-6'>
-    ";
-                            create_cvss_dropdown("RemediationLevel", $RemediationLevel, false);
-    echo "
-                        </div>
-                        <div class='col-1'>
-                            <a type='button' class='btn score--help' href='#' onClick=\"javascript:showHelp('RemediationLevelHelp');\"><i class='fa fa-question-circle'></i></a>
-                        </div>
-                    </div>
-                    <div class='row mb-2 align-items-center'>
-                        <div class='col-5'>
-                            <label>" . $escaper->escapeHtml($lang['ReportConfidence']) . ":</label>
-                        </div>
-                        <div class='col-6'>
-    ";
-                            create_cvss_dropdown("ReportConfidence", $ReportConfidence, false);
-    echo "
-                        </div>
-                        <div class='col-1'>
-                            <a type='button' class='btn score--help' href='#' onClick=\"javascript:showHelp('ReportConfidenceHelp');\"><i class='fa fa-question-circle'></i></a>
-                        </div>
-                    </div>
-
-                    <div class='row mt-4 mb-2'>
-                        <div class='col-12'>
-                            <h5>" . $escaper->escapeHtml($lang['EnvironmentalScoreMetrics']) . "</h5>
-                        </div>
-                    </div>
-                    <div class='row mb-2 align-items-center'>
-                        <div class='col-5'>
-                            <label>" . $escaper->escapeHtml($lang['CollateralDamagePotential']) . ":</label>
-                        </div>
-                        <div class='col-6'>
-    ";
-                            create_cvss_dropdown("CollateralDamagePotential", $CollateralDamagePotential, false);
-    echo "
-                        </div>
-                        <div class='col-1'>
-                            <a type='button' class='btn score--help' href='#' onClick=\"javascript:showHelp('CollateralDamagePotentialHelp');\"><i class='fa fa-question-circle'></i></a>
-                        </div>
-                    </div>
-                    <div class='row mb-2 align-items-center'>
-                        <div class='col-5'>
-                            <label>" . $escaper->escapeHtml($lang['TargetDistribution']) . ":</label>
-                        </div>
-                        <div class='col-6'>
-    ";
-                            create_cvss_dropdown("TargetDistribution", $TargetDistribution, false);
-    echo "
-                        </div>
-                        <div class='col-1'>
-                            <a type='button' class='btn score--help' href='#' onClick=\"javascript:showHelp('TargetDistributionHelp');\"><i class='fa fa-question-circle'></i></a>
-                        </div>
-                    </div>
-                    <div class='row mb-2 align-items-center'>
-                        <div class='col-5'>
-                            <label>" . $escaper->escapeHtml($lang['ConfidentialityRequirement']) . ":</label>
-                        </div>
-                        <div class='col-6'>
-    ";
-                            create_cvss_dropdown("ConfidentialityRequirement", $ConfidentialityRequirement, false);
-    echo "
-                        </div>
-                        <div class='col-1'>
-                            <a type='button' class='btn score--help' href='#' onClick=\"javascript:showHelp('ConfidentialityRequirementHelp');\"><i class='fa fa-question-circle'></i></a>
-                        </div>
-                    </div>
-                    <div class='row mb-2 align-items-center'>
-                        <div class='col-5'>
-                            <label>" . $escaper->escapeHtml($lang['IntegrityRequirement']) . ":</label>
-                        </div>
-                        <div class='col-6'>
-    ";
-                            create_cvss_dropdown("IntegrityRequirement", $IntegrityRequirement, false);
-    echo "
-                        </div>
-                        <div class='col-1'>
-                            <a type='button' class='btn score--help' href='#' onClick=\"javascript:showHelp('IntegrityRequirementHelp');\"><i class='fa fa-question-circle'></i></a>
-                        </div>
-                    </div>
-                    <div class='row mb-2 align-items-center'>
-                        <div class='col-5'>
-                            <label>" . $escaper->escapeHtml($lang['AvailabilityRequirement']) . ":</label>
-                        </div>
-                        <div class='col-6'>
-    ";
-                            create_cvss_dropdown("AvailabilityRequirement", $AvailabilityRequirement, false);
-    echo "
-                        </div>
-                        <div class='col-1'>
-                            <a type='button' class='btn score--help' href='#' onClick=\"javascript:showHelp('AvailabilityRequirementHelp');\"><i class='fa fa-question-circle'></i></a>
-                        </div>
-                    </div>
-                </div>
-                <div class='col-12 col-md-8 p-l-40'>
-    ";
-                    view_cvss_help();
-    echo "
-                </div>
-            </div>
-            <div class='form-actions mt-2'>
-                <button type='button' class='btn btn-primary cancel-update'>" . $escaper->escapeHtml($lang['Cancel']) . "</button>
-                <button type='submit' name='update_cvss' class='btn btn-submit'>" . $escaper->escapeHtml($lang['Update']) . "</button>
-            </div>
-        </form>
-    ";
-}
-
-/******************************
-* FUNCTION: edit_dread_score *
-******************************/
-function edit_dread_score($DamagePotential, $Reproducibility, $Exploitability, $AffectedUsers, $Discoverability)
-{
-
-    global $lang;
-    global $escaper;
-
-    echo "
-        <form name='update_dread' method='post' action=''>
-            <div class='row mb-2'>
-                <div class='col-12'>
-                    <h4>" . $escaper->escapeHtml($lang['UpdateDREADScore']) . "</h4>
-                </div>
-            </div>
-            <div class='row'>
-                <div class='col-12 col-md-4'>
-                    <div class='row mb-2 align-items-center'>
-                        <div class='col-5'>
-                            <label>" . $escaper->escapeHtml($lang['DamagePotential']) . ":</label>
-                        </div>
-                        <div class='col-6'>
-    ";
-                            create_numeric_dropdown("DamagePotential", $DamagePotential, false);
-    echo "
-                        </div>
-                        <div class='col-1'>
-                            <a type='button' class='btn score--help' href=\"#\" onClick=\"javascript:showHelp('DamagePotentialHelp');\"><i class=\"fa fa-question-circle\"></i></a>
-                        </div>
-                    </div>
-                    <div class='row mb-2 align-items-center'>
-                        <div class='col-5'>
-                            <label>" . $escaper->escapeHtml($lang['Reproducibility']) . ":</label>
-                        </div>
-                        <div class='col-6'>
-    ";
-                            create_numeric_dropdown("Reproducibility", $Reproducibility, false);
-    echo "
-                        </div>
-                        <div class='col-1'>
-                            <a type='button' class='btn score--help' href=\"#\" onClick=\"javascript:showHelp('ReproducibilityHelp');\"><i class=\"fa fa-question-circle\"></i></a>
-                        </div>
-                    </div>
-                    <div class='row mb-2 align-items-center'>
-                        <div class='col-5'>
-                            <label>" . $escaper->escapeHtml($lang['Exploitability']) . ":</label>
-                        </div>
-                        <div class='col-6'>
-    ";
-                            create_numeric_dropdown("Exploitability", $Exploitability, false);
-    echo "
-                        </div>
-                        <div class='col-1'>
-                            <a type='button' class='btn score--help' href=\"#\" onClick=\"javascript:showHelp('ExploitabilityHelp');\"><i class=\"fa fa-question-circle\"></i></a>
-                        </div>
-                    </div>
-                    <div class='row mb-2 align-items-center'>
-                        <div class='col-5'>
-                            <label>" . $escaper->escapeHtml($lang['AffectedUsers']) . ":</label>
-                        </div>
-                        <div class='col-6'>
-    ";
-                            create_numeric_dropdown("AffectedUsers", $AffectedUsers, false);
-    echo "
-                        </div>
-                        <div class='col-1'>
-                            <a type='button' class='btn score--help' href=\"#\" onClick=\"javascript:showHelp('AffectedUsersHelp');\"><i class=\"fa fa-question-circle\"></i></a>
-                        </div>
-                    </div>
-                    <div class='row mb-2 align-items-center'>
-                        <div class='col-5'>
-                            <label>" . $escaper->escapeHtml($lang['Discoverability']) . ":</label>
-                        </div>
-                        <div class='col-6'>
-    ";
-                            create_numeric_dropdown("Discoverability", $Discoverability, false);
-    echo "
-                        </div>
-                        <div class='col-1'>
-                            <a type='button' class='btn score--help' href=\"#\" onClick=\"javascript:showHelp('DiscoverabilityHelp');\"><i class=\"fa fa-question-circle\"></i></a>
-                        </div>
-                    </div>
-                </div>
-                <div class='col-12 col-md-8 p-l-40'>
-    ";
-                    view_dread_help();
-    echo "
-                </div>
-            </div>
-            <div class='form-actions mt-2'>
-                <button type='button' class='btn btn-primary cancel-update'>" . $escaper->escapeHtml($lang['Cancel']) . "</button>
-                <button type='submit' name='update_dread' class='btn btn-submit'>" . $escaper->escapeHtml($lang['Update']) . "</button>
-            </div>
-        </form>
-    ";
-}
-
-/******************************
-* FUNCTION: edit_owasp_score *
-******************************/
-function edit_owasp_score($OWASPSkillLevel, $OWASPMotive, $OWASPOpportunity, $OWASPSize, $OWASPEaseOfDiscovery, $OWASPEaseOfExploit, $OWASPAwareness, $OWASPIntrusionDetection, $OWASPLossOfConfidentiality, $OWASPLossOfIntegrity, $OWASPLossOfAvailability, $OWASPLossOfAccountability, $OWASPFinancialDamage, $OWASPReputationDamage, $OWASPNonCompliance, $OWASPPrivacyViolation)
-{
-    global $lang;
-    global $escaper;
-
-    echo "
-        <form name='update_owasp' method='post' action=''>
-            <div class='row mb-2'>
-                <div class='col-12'>
-                    <h4>" . $escaper->escapeHtml($lang['UpdateOWASPScore']) . "</h4>
-                </div>
-            </div>
-            <div class='row'>
-                <div class='col-12 col-md-4'>
-                    <div class='row mt-4 mb-2'>
-                        <div class='col-12'>
-                            <h5>" . $escaper->escapeHtml($lang['ThreatAgentFactors']) . "</h5>
-                        </div>
-                    </div>
-                    <div class='row mb-2 align-items-center'>
-                        <div class='col-5'>
-                            <label>" . $escaper->escapeHtml($lang['SkillLevel']) . ":</label>
-                        </div>
-                        <div class='col-6'>
-    ";
-                            create_numeric_dropdown("SkillLevel", $OWASPSkillLevel, false);
-    echo "
-                        </div>
-                        <div class='col-1'>
-                            <a type='button' class='btn score--help' href='#' onClick=\"javascript:showHelp('SkillLevelHelp');\"><i class='fa fa-question-circle'></i></a>
-                        </div>
-                    </div>
-                    <div class='row mb-2 align-items-center'>
-                        <div class='col-5'>
-                            <label>" . $escaper->escapeHtml($lang['Motive']) . ":</label>
-                        </div>
-                        <div class='col-6'>
-    ";
-                            create_numeric_dropdown("Motive", $OWASPMotive, false);
-    echo "
-                        </div>
-                        <div class='col-1'>
-                            <a type='button' class='btn score--help' href='#' onClick=\"javascript:showHelp('MotiveHelp');\"><i class='fa fa-question-circle'></i></a>
-                        </div>
-                    </div>
-                    <div class='row mb-2 align-items-center'>
-                        <div class='col-5'>
-                            <label>" . $escaper->escapeHtml($lang['Opportunity']) . ":</label>
-                        </div>
-                        <div class='col-6'>
-    ";
-                            create_numeric_dropdown("Opportunity", $OWASPOpportunity, false);
-    echo "
-                        </div>
-                        <div class='col-1'>
-                            <a type='button' class='btn score--help' href='#' onClick=\"javascript:showHelp('OpportunityHelp');\"><i class='fa fa-question-circle'></i></a>
-                        </div>
-                    </div>
-                    <div class='row mb-2 align-items-center'>
-                        <div class='col-5'>
-                            <label>" . $escaper->escapeHtml($lang['Size']) . ":</label>
-                        </div>
-                        <div class='col-6'>
-    ";
-                            create_numeric_dropdown("Size", $OWASPSize, false);
-    echo "
-                        </div>
-                        <div class='col-1'>
-                            <a type='button' class='btn score--help' href='#' onClick=\"javascript:showHelp('SizeHelp');\"><i class='fa fa-question-circle'></i></a>
-                        </div>
-                    </div>
-
-                    <div class='row mt-4 mb-2'>
-                        <div class='col-12'>
-                            <h5>" . $escaper->escapeHtml($lang['VulnerabilityFactors']) . "</h5>
-                        </div>
-                    </div>
-                    <div class='row mb-2 align-items-center'>
-                        <div class='col-5'>
-                            <label>" . $escaper->escapeHtml($lang['EaseOfDiscovery']) . ":</label>
-                        </div>
-                        <div class='col-6'>
-    ";
-                            create_numeric_dropdown("EaseOfDiscovery", $OWASPEaseOfDiscovery, false);
-    echo "
-                        </div>
-                        <div class='col-1'>
-                            <a type='button' class='btn score--help' href='#' onClick=\"javascript:showHelp('EaseOfDiscoveryHelp');\"><i class='fa fa-question-circle'></i></a>
-                        </div>
-                    </div>
-                    <div class='row mb-2 align-items-center'>
-                        <div class='col-5'>
-                            <label>" . $escaper->escapeHtml($lang['EaseOfExploit']) . ":</label>
-                        </div>
-                        <div class='col-6'>
-    ";
-                            create_numeric_dropdown("EaseOfExploit", $OWASPEaseOfExploit, false);
-    echo "
-                        </div>
-                        <div class='col-1'>
-                            <a type='button' class='btn score--help' href='#' onClick=\"javascript:showHelp('EaseOfExploitHelp');\"><i class='fa fa-question-circle'></i></a>
-                        </div>
-                    </div>
-                    <div class='row mb-2 align-items-center'>
-                        <div class='col-5'>
-                            <label>" . $escaper->escapeHtml($lang['Awareness']) . ":</label>
-                        </div>
-                        <div class='col-6'>
-    ";
-                            create_numeric_dropdown("Awareness", $OWASPAwareness, false);
-    echo "
-                        </div>
-                        <div class='col-1'>
-                            <a type='button' class='btn score--help' href='#' onClick=\"javascript:showHelp('AwarenessHelp');\"><i class='fa fa-question-circle'></i></a>
-                        </div>
-                    </div>
-                    <div class='row mb-2 align-items-center'>
-                        <div class='col-5'>
-                            <label>" . $escaper->escapeHtml($lang['IntrusionDetection']) . ":</label>
-                        </div>
-                        <div class='col-6'>
-    ";
-                            create_numeric_dropdown("IntrusionDetection", $OWASPIntrusionDetection, false);
-    echo "
-                        </div>
-                        <div class='col-1'>
-                            <a type='button' class='btn score--help' href='#' onClick=\"javascript:showHelp('IntrusionDetectionHelp');\"><i class='fa fa-question-circle'></i></a>
-                        </div>
-                    </div>
-
-                    <div class='row mt-4 mb-2'>
-                        <div class='col-12'>
-                            <h5>" . $escaper->escapeHtml($lang['TechnicalImpact']) . "</h5>
-                        </div>
-                    </div>
-                    <div class='row mb-2 align-items-center'>
-                        <div class='col-5'>
-                            <label>" . $escaper->escapeHtml($lang['LossOfConfidentiality']) . ":</label>
-                        </div>
-                        <div class='col-6'>
-    ";
-                            create_numeric_dropdown("LossOfConfidentiality", $OWASPLossOfConfidentiality, false);
-    echo "
-                        </div>
-                        <div class='col-1'>
-                            <a type='button' class='btn score--help' href='#' onClick=\"javascript:showHelp('LossOfConfidentialityHelp');\"><i class='fa fa-question-circle'></i></a>
-                        </div>
-                    </div>
-                    <div class='row mb-2 align-items-center'>
-                        <div class='col-5'>
-                            <label>" . $escaper->escapeHtml($lang['LossOfIntegrity']) . ":</label>
-                        </div>
-                        <div class='col-6'>
-    ";
-                            create_numeric_dropdown("LossOfIntegrity", $OWASPLossOfIntegrity, false);
-    echo "
-                        </div>
-                        <div class='col-1'>
-                            <a type='button' class='btn score--help' href='#' onClick=\"javascript:showHelp('LossOfIntegrityHelp');\"><i class='fa fa-question-circle'></i></a>
-                        </div>
-                    </div>
-                    <div class='row mb-2 align-items-center'>
-                        <div class='col-5'>
-                            <label>" . $escaper->escapeHtml($lang['LossOfAvailability']) . ":</label>
-                        </div>
-                        <div class='col-6'>
-    ";
-                            create_numeric_dropdown("LossOfAvailability", $OWASPLossOfAvailability, false);
-    echo "
-                        </div>
-                        <div class='col-1'>
-                            <a type='button' class='btn score--help' href='#' onClick=\"javascript:showHelp('LossOfAvailabilityHelp');\"><i class='fa fa-question-circle'></i></a>
-                        </div>
-                    </div>
-                    <div class='row mb-2 align-items-center'>
-                        <div class='col-5'>
-                            <label>" . $escaper->escapeHtml($lang['LossOfAccountability']) . ":</label>
-                        </div>
-                        <div class='col-6'>
-    ";
-                            create_numeric_dropdown("LossOfAccountability", $OWASPLossOfAccountability, false);
-    echo "
-                        </div>
-                        <div class='col-1'>
-                            <a type='button' class='btn score--help' href='#' onClick=\"javascript:showHelp('LossOfAccountabilityHelp');\"><i class='fa fa-question-circle'></i></a>
-                        </div>
-                    </div>
-
-                    <div class='row mt-4 mb-2'>
-                        <div class='col-12'>
-                            <h5>" . $escaper->escapeHtml($lang['BusinessImpact']) . "</h5>
-                        </div>
-                    </div>
-                    <div class='row mb-2 align-items-center'>
-                        <div class='col-5'>
-                            <label>" . $escaper->escapeHtml($lang['FinancialDamage']) . ":</label>
-                        </div>
-                        <div class='col-6'>
-    ";
-                            create_numeric_dropdown("FinancialDamage", $OWASPFinancialDamage, false);
-    echo "
-                        </div>
-                        <div class='col-1'>
-                            <a type='button' class='btn score--help' href='#' onClick=\"javascript:showHelp('FinancialDamageHelp');\"><i class='fa fa-question-circle'></i></a>
-                        </div>
-                    </div>
-                    <div class='row mb-2 align-items-center'>
-                        <div class='col-5'>
-                            <label>" . $escaper->escapeHtml($lang['ReputationDamage']) . ":</label>
-                        </div>
-                        <div class='col-6'>
-    ";
-                            create_numeric_dropdown("ReputationDamage", $OWASPReputationDamage, false);
-    echo "
-                        </div>
-                        <div class='col-1'>
-                            <a type='button' class='btn score--help' href='#' onClick=\"javascript:showHelp('ReputationDamageHelp');\"><i class='fa fa-question-circle'></i></a>
-                        </div>
-                    </div>
-                    <div class='row mb-2 align-items-center'>
-                        <div class='col-5'>
-                            <label>" . $escaper->escapeHtml($lang['NonCompliance']) . ":</label>
-                        </div>
-                        <div class='col-6'>
-    ";
-                            create_numeric_dropdown("NonCompliance", $OWASPNonCompliance, false);
-    echo "
-                        </div>
-                        <div class='col-1'>
-                            <a type='button' class='btn score--help' href='#' onClick=\"javascript:showHelp('NonComplianceHelp');\"><i class='fa fa-question-circle'></i></a>
-                        </div>
-                    </div>
-                    <div class='row mb-2 align-items-center'>
-                        <div class='col-5'>
-                            <label>" . $escaper->escapeHtml($lang['PrivacyViolation']) . ":</label>
-                        </div>
-                        <div class='col-6'>
-    ";
-                            create_numeric_dropdown("PrivacyViolation", $OWASPPrivacyViolation, false);
-    echo "
-                        </div>
-                        <div class='col-1'>
-                            <a type='button' class='btn score--help' href='#' onClick=\"javascript:showHelp('PrivacyViolationHelp');\"><i class='fa fa-question-circle'></i></a>
-                        </div>
-                    </div>
-                </div>
-                <div class='col-12 col-md-8 p-l-40'>
-    ";
-                    view_owasp_help();
-    echo "
-                </div>
-            </div>
-            <div class='form-actions mt-2'>
-                <button type='button' class='btn btn-primary cancel-update'>" . $escaper->escapeHtml($lang['Cancel']) . "</button>
-                <button type='submit' name='update_owasp' class='btn btn-submit'>" . $escaper->escapeHtml($lang['Update']) . "</button>
-            </div>
-        </form>
-    ";
-
-}
-
-/*******************************
-* FUNCTION: edit_custom_score *
-*******************************/
-function edit_custom_score($custom)
-{
-    global $lang;
-    global $escaper;
-
-    echo "
-        <form name='update_custom' method='post' action=''>
-            <div class='row mb-2'>
-                <div class='col-12'>
-                    <h4>" . $escaper->escapeHtml($lang['UpdateCustomScore']) . "</h4>
-                </div>
-            </div>
-            <div class='row'>
-                <div class='col-12 col-md-6'>
-                    <div class='row mb-2'>
-                        <div class='col col-md-4 col-form-label'>
-                            <label>" . $escaper->escapeHtml($lang['ManuallyEnteredValue']) . ":</label>
-                        </div>
-                        <div class='col col-md-2'>
-                            <input type='number' class='form-control' min='0' max='10' name='Custom' id='Custom' style='width:70px;' value='" . $escaper->escapeHtml($custom) . "' step='0.1' />
-                        </div>
-                        <div class='col col-md-6 col-form-label'>
-                            (Must be a numeric value between 0 and 10)
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class='form-actions mt-2'>
-                <button type='button' class='btn btn-primary cancel-update'>" . $escaper->escapeHtml($lang['Cancel']) . "</button>
-                <button type='submit' name='update_custom' class='btn btn-submit'>" . $escaper->escapeHtml($lang['Update']) . "</button>
-            </div>
-        </form>
-    ";
-}
-
-/*****************************************
-* FUNCTION: edit_contributing_risk_score *
-******************************************/
-function edit_contributing_risk_score($ContributingLikelihood, $ContributingImpacts)
-{
-    global $lang;
-    global $escaper;
-
-    $max_likelihood = get_max_value("contributing_risks_likelihood");
-    $ContributingLikelihood = $ContributingLikelihood ? $ContributingLikelihood : $max_likelihood;
-    $contributing_risks = get_contributing_risks();
-    
-    echo "
-        <form name='update_contributing_risk' method='post' action=''>
-            <div class='row mb-2'>
-                <div class='col-12'>
-                    <h4>" . $escaper->escapeHtml($lang['UpdateContributingRiskScore']) . "</h4>
-                </div>
-            </div>
-            <div class='row'>
-                <div class='col-12 col-md-6'>
-                    <div class='row mb-2 align-items-center'>
-                        <div class='col col-md-4'>
-                            <label>" . $escaper->escapeHtml($lang['ContributingLikelihood']) . ":</label>
-                        </div>
-                        <div class='col col-md-4'>" . 
-                            create_dropdown("contributing_risks_likelihood", $ContributingLikelihood, "ContributingLikelihood", false, false, true) . "
-                        </div>
-                    </div>
-                    <div class='row my-3'>
-                        <div class='col-12'>
-                            <h5>" . $escaper->escapeHtml($lang['ContributingRisk']) . "</h5>
-                        </div>
-                    </div>
-                    <div class='row mb-2 align-items-center'>
-                        <div class='col col-md-4'>
-                            <h5>" . $escaper->escapeHtml($lang['Subject']) .  "</h5>
-                        </div>
-                        <div class='col col-md-4'>
-                            <h5>" . $escaper->escapeHtml($lang['Weight']) . "</h5>
-                        </div>
-                        <div class='col col-md-4'>
-                            <h5>" . $escaper->escapeHtml($lang['Impact']) . "</h5>
-                        </div>
-                    </div>
-    ";
-
-    foreach($contributing_risks as $contributing_risk){
-
-        $impacts = get_impact_values_from_contributing_risks_id($contributing_risk['id']);
-        $max_impact = max(array_column($impacts, 'value'));
-        $impact = empty($ContributingImpacts[$contributing_risk["id"]]) ? $max_impact : $ContributingImpacts[$contributing_risk["id"]];
-        
-        echo "
-                    <div class='row mb-2 align-items-center'>
-                        <div class='col col-md-4'>" . 
-                            $escaper->escapeHtml($contributing_risk['subject']) . "
-                        </div>
-                        <div class='col col-md-4'>" . 
-                            $escaper->escapeHtml($contributing_risk['weight']) . "
-                        </div>
-                        <div class='col col-md-4'>" . 
-                            create_dropdown("", $impact, "ContributingImpacts[{$contributing_risk["id"]}]", false, false, true, "", "--", "", true, 0, $impacts) . "
-                        </div>
-                    </div>
-        ";
-    }
-
-    echo "
-                </div>
-            </div>
-            <div class='form-actions'>
-                <button type='button' class='btn btn-primary cancel-update'>" . $escaper->escapeHtml($lang['Cancel']) . "</button>
-                <button type='submit' name='update_contributing_risk' class='btn btn-submit'>" . $escaper->escapeHtml($lang['Update']) . "</button>
-            </div>
-        </form>
-    ";
-
-    // echo "<h4>" . $escaper->escapeHtml($lang['UpdateContributingRiskScore']) . "</h4>\n";
-    // echo "<form name=\"update_contributing_risk\" method=\"post\" action=\"\">\n";
-    // echo "<table width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" style=\"border:none;\">\n";
-
-    // echo "<tr>\n";
-    // echo "<td colspan=\"4\">&nbsp;</td>\n";
-    // echo "</tr>\n";
-
-    // echo "<tr>\n";
-    // echo "<td width=\"175\">" . $escaper->escapeHtml($lang['ContributingLikelihood']) . ":</td>\n";
-    // echo "<td width=\"200\">\n";
-    // create_dropdown("contributing_risks_likelihood", $ContributingLikelihood, "ContributingLikelihood", false);
-    // echo "</td>\n";
-    // echo "<td colspan='2'>&nbsp;</td>\n";
-    // echo "</tr>\n";
-    
-    // echo "<tr>\n";
-    // echo "<td colspan=\"4\"><b class=\"section--header\">" . $escaper->escapeHtml($lang['ContributingRisk']) . "</b></td>\n";
-    // echo "</tr>\n";
-
-    // echo "<tr>\n";
-    // echo "<td ><b>" . $escaper->escapeHtml($lang["Subject"]) . "</b></td>\n";
-    // echo "<td ><b>" . $escaper->escapeHtml($lang["Weight"]) . "</b></td>\n";
-    // echo "<td ><b>" . $escaper->escapeHtml($lang["Impact"]) . "</b></td>\n";
-    // echo "<td>&nbsp;</td>\n";
-    // echo "</tr>\n";
-
-    // foreach($contributing_risks as $contributing_risk){
-    //     $impacts = get_impact_values_from_contributing_risks_id($contributing_risk['id']);
-    //     $max_impact = max(array_column($impacts, 'value'));
-    //     echo "<tr>\n";
-    //     echo "<td >" . $escaper->escapeHtml($contributing_risk['subject']) . "</td>\n";
-    //     echo "<td >" . $escaper->escapeHtml($contributing_risk['weight']) . "</td>\n";
-    //     $impact = empty($ContributingImpacts[$contributing_risk["id"]]) ? $max_impact : $ContributingImpacts[$contributing_risk["id"]];
-    //     echo "<td >\n";
-    //     create_dropdown("", $impact, "ContributingImpacts[{$contributing_risk["id"]}]", false, false, false, "", "--", "", true, 0, $impacts);
-    //     echo "</td>\n";
-    //     echo "<td>&nbsp;</td>\n";
-    //     echo "</tr>\n";
-    // }
-    
-    // echo "</table>\n";
-
-    // echo "<div class=\"form-actions\">\n";
-    // echo "<button type=\"submit\" name=\"update_contributing_risk\" class=\"btn btn-danger\">" . $escaper->escapeHtml($lang['Update']) . "</button>\n";
-    // echo "</div>\n";
-    // echo "</form>\n";
-}
-
-/***********************************
-* FUNCTION: CLASSIC SCORING TABLE *
-***********************************/
-function classic_scoring_table($id, $calculated_risk, $CLASSIC_likelihood, $CLASSIC_impact,$type=0)
-{
-
-    global $lang;
-    global $escaper;
-
-    echo "
-        <div class='row mb-2 align-items-center'>
-            <div class='col-6'>
-                <h4>" . $escaper->escapeHtml($lang['ClassicRiskScoring']) . "</h4>
-            </div>
-            <div class='col-6 text-end'>
-                <button type='button' class='btn btn-primary update-score'>" . $escaper->escapeHtml($lang['UpdateClassicScore']) . "</button>
-                <button type='button' class='btn btn-secondary dropdown-toggle' data-bs-toggle='dropdown'>" . $escaper->escapeHtml($lang['RiskScoringActions']) . "</button>
-                <ul class='dropdown-menu'>
-                    <li><a class='dropdown-item score-action' data-method='2' href='#'>" . $escaper->escapeHtml($lang['ScoreByCVSS']) . "</a></li>
-                    <li><a class='dropdown-item score-action' data-method='3' href='#'>" . $escaper->escapeHtml($lang['ScoreByDREAD']) . "</a></li>
-                    <li><a class='dropdown-item score-action' data-method='4' href='#'>" . $escaper->escapeHtml($lang['ScoreByOWASP']) . "</a></li>
-                    <li><a class='dropdown-item score-action' data-method='5' href='#'>" . $escaper->escapeHtml($lang['ScoreByCustom']) . "</a></li>
-                    <li><a class='dropdown-item score-action' data-method='6' href='#'>" . $escaper->escapeHtml($lang['ScoreByContributingRisk']) . "</a></li>
-                </ul>
-            </div>
-        </div>
-        
-        <table width='100%' class='table table-borderless mb-0' cellpadding='0' cellspacing='0'>
-            <tr>
-                <td width='180'>" . $escaper->escapeHtml($lang['Likelihood']) . ":</td>
-                <td width='40'>[ " . $escaper->escapeHtml($CLASSIC_likelihood) . " ]</td>
-                <td>" . $escaper->escapeHtml(get_name_by_value("likelihood", $CLASSIC_likelihood)) . "</td>
-                <td>&nbsp;</td>
-            </tr>
-            <tr>
-                <td width='200'>" . $escaper->escapeHtml($lang['Impact']) . ":</td>
-                <td width='80'>[ " . $escaper->escapeHtml($CLASSIC_impact) . " ]</td>
-                <td>" . $escaper->escapeHtml(get_name_by_value("impact", $CLASSIC_impact)) . "</td>
-                <td>&nbsp;</td>
-            </tr>
-    ";
-
-    if (get_setting("risk_model") == 1) {
-        echo "
-            <tr>
-                <td colspan='4'><b>" . $escaper->escapeHtml($lang['RISKClassicExp1']) . " x ( 10 / 35 ) = " . $escaper->escapeHtml($calculated_risk) . "</b></td>
-            </tr>
-        ";
-    } else if (get_setting("risk_model") == 2) {
-        echo "
-            <tr>
-                <td colspan='4'><b>" . $escaper->escapeHtml($lang['RISKClassicExp2']) . " x ( 10 / 30 ) = " . $escaper->escapeHtml($calculated_risk) . "</b></td>
-            </tr>
-        ";
-    } else if (get_setting("risk_model") == 3) {
-        echo "
-            <tr>
-                <td colspan='4'><b>" . $escaper->escapeHtml($lang['RISKClassicExp3']) . " x ( 10 / 25 ) = " . $escaper->escapeHtml($calculated_risk) . "</b></td>
-            </tr>
-        ";
-    } else if (get_setting("risk_model") == 4)
-    {
-        echo "
-            <tr>
-                <td colspan='4'><b>" . $escaper->escapeHtml($lang['RISKClassicExp4']) . " x ( 10 / 30 ) = " . $escaper->escapeHtml($calculated_risk) . "</b></td>
-            </tr>
-        ";
-    } else if (get_setting("risk_model") == 5) {
-        echo "
-            <tr>
-                <td colspan='4'><b>" . $escaper->escapeHtml($lang['RISKClassicExp5']) . " x ( 10 / 35 ) = " . $escaper->escapeHtml($calculated_risk) . "</b></td>
-            </tr>
-        ";
-    }
-
-    echo "
-        </table>
-    ";
-}
-
-/********************************
-* FUNCTION: CVSS SCORING TABLE *
-********************************/
-function cvss_scoring_table($id, $calculated_risk, $AccessVector, $AccessComplexity, $Authentication, $ConfImpact, $IntegImpact, $AvailImpact, $Exploitability, $RemediationLevel, $ReportConfidence, $CollateralDamagePotential, $TargetDistribution, $ConfidentialityRequirement, $IntegrityRequirement, $AvailabilityRequirement,$type=0)
-{
-    global $lang;
-    global $escaper;
-
-    echo "
-        <div class='row mb-2 align-items-center'>
-            <div class='col-6'>
-                <h4>" . $escaper->escapeHtml($lang['CVSSRiskScoring']) . "</h4>
-            </div>
-            <div class='col-6 text-end'>
-                <button type='button' class='btn btn-primary update-score'>" . $escaper->escapeHtml($lang['UpdateCVSSScore']) . "</button>
-                <button type='button' class='btn btn-secondary dropdown-toggle' data-bs-toggle='dropdown'>" . $escaper->escapeHtml($lang['RiskScoringActions']) . "</button>
-                <ul class='dropdown-menu'>
-                    <li><a class='dropdown-item score-action' data-method='1' href='#'>" . $escaper->escapeHtml($lang['ScoreByClassic']) . "</a></li>
-                    <li><a class='dropdown-item score-action' data-method='3' href='#'>" . $escaper->escapeHtml($lang['ScoreByDREAD']) . "</a></li>
-                    <li><a class='dropdown-item score-action' data-method='4' href='#'>" . $escaper->escapeHtml($lang['ScoreByOWASP']) . "</a></li>
-                    <li><a class='dropdown-item score-action' data-method='5' href='#'>" . $escaper->escapeHtml($lang['ScoreByCustom']) . "</a></li>
-                    <li><a class='dropdown-item score-action' data-method='6' href='#'>" . $escaper->escapeHtml($lang['ScoreByContributingRisk']) . "</a></li>
-                </ul>
-            </div>
-        </div>
-        
-        <table width='100%' class='table table-borderless mb-0' cellpadding='0'' cellspacing='0'>
-            <tr>
-                <td colspan='6'>" . $escaper->escapeHtml($lang['BaseVector']) . ": AV:" . $escaper->escapeHtml($AccessVector) . "/AC:" . $escaper->escapeHtml($AccessComplexity) . "/Au:" . $escaper->escapeHtml($Authentication) . "/C:" . $escaper->escapeHtml($ConfImpact) . "/I:" . $escaper->escapeHtml($IntegImpact) . "/A:" . $escaper->escapeHtml($AvailImpact) . "</td>
-            </tr>
-            <tr>
-                <td colspan='6'>" . $escaper->escapeHtml($lang['TemporalVector']) . ": E:" . $escaper->escapeHtml($Exploitability) . "/RL:" . $escaper->escapeHtml($RemediationLevel) . "/RC:" . $escaper->escapeHtml($ReportConfidence) . "</td>
-            </tr>
-            <tr>
-                <td colspan='6'>" . $escaper->escapeHtml($lang['EnvironmentalVector']) . ": CDP:" . $escaper->escapeHtml($CollateralDamagePotential) . "/TD:" . $escaper->escapeHtml($TargetDistribution) . "/CR:" . $escaper->escapeHtml($ConfidentialityRequirement) . "/IR:" . $escaper->escapeHtml($IntegrityRequirement) . "/AR:" . $escaper->escapeHtml($AvailabilityRequirement) . "</td>
-            </tr>
-            <tr><td colspan='6'>&nbsp;</td></tr>
-            <tr class='fw-bold'>
-                <td colspan='2'>" . $escaper->escapeHtml($lang['BaseScoreMetrics']) . "</td>
-                <td colspan='2'>" . $escaper->escapeHtml($lang['TemporalScoreMetrics']) . "</td>
-                <td colspan='2'>" . $escaper->escapeHtml($lang['EnvironmentalScoreMetrics']) . "</td>
-            </tr>
-            <tr>
-                <td width='20%'>" . $escaper->escapeHtml($lang['AttackVector']) . ":</td>
-                <td width='10%'>" . $escaper->escapeHtml(get_cvss_name("AccessVector", $AccessVector)) . "</td>
-                <td width='20%'>" . $escaper->escapeHtml($lang['Exploitability']) . ":</td>
-                <td width='10%''>" . $escaper->escapeHtml(get_cvss_name("Exploitability", $Exploitability)) . "</td>
-                <td width='20%'>" . $escaper->escapeHtml($lang['CollateralDamagePotential']) . ":</td>
-                <td width='10%'>" . $escaper->escapeHtml(get_cvss_name("CollateralDamagePotential", $CollateralDamagePotential)) . "</td>
-            </tr>
-            <tr>
-                <td width='20%'>" . $escaper->escapeHtml($lang['AttackComplexity']) . ":</td>
-                <td width='10%'>" . $escaper->escapeHtml(get_cvss_name("AccessComplexity", $AccessComplexity)) . "</td>
-                <td width='20%'>" . $escaper->escapeHtml($lang['RemediationLevel']) . ":</td>
-                <td width='10%'>" . $escaper->escapeHtml(get_cvss_name("RemediationLevel", $RemediationLevel)) . "</td>
-                <td width='20%'>" . $escaper->escapeHtml($lang['TargetDistribution']) . ":</td>
-                <td width='10%'>" . $escaper->escapeHtml(get_cvss_name("TargetDistribution", $TargetDistribution)) . "</td>
-            </tr>
-            <tr>
-                <td width='20%'>" . $escaper->escapeHtml($lang['Authentication']) . ":</td>
-                <td width='10%'>" . $escaper->escapeHtml(get_cvss_name("Authentication", $Authentication)) . "</td>
-                <td width='20%'>" . $escaper->escapeHtml($lang['ReportConfidence']) . ":</td>
-                <td width='10%'>" . $escaper->escapeHtml(get_cvss_name("ReportConfidence", $ReportConfidence)) . "</td>
-                <td width='20%'>" . $escaper->escapeHtml($lang['ConfidentialityRequirement']) . ":</td>
-                <td width='10%'>" . $escaper->escapeHtml(get_cvss_name("ConfidentialityRequirement", $ConfidentialityRequirement)) . "</td>
-            </tr>
-            <tr>
-                <td width='20%'>" . $escaper->escapeHtml($lang['ConfidentialityImpact']) . ":</td>
-                <td width='10%'>" . $escaper->escapeHtml(get_cvss_name("ConfImpact", $ConfImpact)) . "</td>
-                <td width='20%'>&nbsp;</td>
-                <td width='10%'>&nbsp</td>
-                <td width='20%'>" . $escaper->escapeHtml($lang['IntegrityRequirement']) . ":</td>
-                <td width='10%'>" . $escaper->escapeHtml(get_cvss_name("IntegrityRequirement", $IntegrityRequirement)) . "</td>
-            </tr>
-            <tr>
-                <td width='20%'>" . $escaper->escapeHtml($lang['IntegrityImpact']) . ":</td>
-                <td width='10%'>" . $escaper->escapeHtml(get_cvss_name("IntegImpact", $IntegImpact)) . "</td>
-                <td width='20%'>&nbsp;</td>
-                <td width='10%'>&nbsp</td>
-                <td width='20%'>" . $escaper->escapeHtml($lang['AvailabilityRequirement']) . ":</td>
-                <td width='10%'>" . $escaper->escapeHtml(get_cvss_name("AvailabilityRequirement", $AvailabilityRequirement)) . "</td>
-            </tr>
-            <tr>
-                <td width='20%'>" . $escaper->escapeHtml($lang['AvailabilityImpact']) . ":</td>
-                <td width='10%'>" . $escaper->escapeHtml(get_cvss_name("AvailImpact", $AvailImpact)) . "</td>
-                <td width='20%'>&nbsp;</td>
-                <td width='10%'>&nbsp</td>
-                <td width='20%'>&nbsp;</td>
-                <td width='10%'>&nbsp</td>
-            </tr>
-            <tr>
-                <td colspan='6'>&nbsp;</td>
-            </tr>
-            <tr>
-                <td colspan='6'><strong>Full details of CVSS Version 2.0 scoring can be found <a href='https://www.first.org/cvss/v2/guide' class='link-success' target='_blank'>here</a>.</strong></td>
-            </tr>
-        </table>
-    ";
-}
-
-/*********************************
-* FUNCTION: DREAD SCORING TABLE *
-*********************************/
-function dread_scoring_table($id, $calculated_risk, $DREADDamagePotential, $DREADReproducibility, $DREADExploitability, $DREADAffectedUsers, $DREADDiscoverability,$type=0)
-{
-    global $lang;
-    global $escaper;
-
-    echo "
-        <div class='row mb-2 align-items-center'>
-            <div class='col-6'>
-                <h4>". $escaper->escapeHtml($lang['DREADRiskScoring']) . "</h4>
-            </div>
-            <div class='col-6 text-end'>
-                <button type='button' class='btn btn-primary update-score'>" . $escaper->escapeHtml($lang['UpdateDREADScore']) . "</button>
-                <button type='button' class='btn btn-secondary dropdown-toggle' data-bs-toggle='dropdown'>" . $escaper->escapeHtml($lang['RiskScoringActions']) . "</button>
-                <ul class='dropdown-menu'>
-                    <li><a class='dropdown-item score-action' data-method='1' href='#'>" . $escaper->escapeHtml($lang['ScoreByClassic']) . "</a></li>
-                    <li><a class='dropdown-item score-action' data-method='2' href='#'>" . $escaper->escapeHtml($lang['ScoreByCVSS']) . "</a></li>
-                    <li><a class='dropdown-item score-action' data-method='4' href='#'>" . $escaper->escapeHtml($lang['ScoreByOWASP']) . "</a></li>
-                    <li><a class='dropdown-item score-action' data-method='5' href='#'>" . $escaper->escapeHtml($lang['ScoreByCustom']) . "</a></li>
-                    <li><a class='dropdown-item score-action' data-method='6' href='#'>" . $escaper->escapeHtml($lang['ScoreByContributingRisk']) . "</a></li>
-                </ul>
-            </div>
-        </div>
-        
-        <table width='100%' class='table table-borderless mb-0'>
-            <tr>
-                <td width='150'>" . $escaper->escapeHtml($lang['DamagePotential']) . ":</td>
-                <td>" . $escaper->escapeHtml($DREADDamagePotential) . "</td>
-                <td>&nbsp;</td>
-            </tr>
-            <tr>
-                <td width='150'>" . $escaper->escapeHtml($lang['Reproducibility']) . ":</td>
-                <td>" . $escaper->escapeHtml($DREADReproducibility) . "</td>
-                <td>&nbsp;</td>
-            </tr>
-            <tr>
-                <td width='150'>" . $escaper->escapeHtml($lang['Exploitability']) . ":</td>
-                <td>" . $escaper->escapeHtml($DREADExploitability) . "</td>
-                <td>&nbsp;</td>
-            </tr>
-            <tr>
-                <td width='150'>" . $escaper->escapeHtml($lang['AffectedUsers']) . ":</td>
-                <td>" . $escaper->escapeHtml($DREADAffectedUsers) . "</td>
-                <td>&nbsp;</td>
-            </tr>
-            <tr>
-                <td width='150'>" . $escaper->escapeHtml($lang['Discoverability']) . ":</td>
-                <td>" . $escaper->escapeHtml($DREADDiscoverability) . "</td>
-                <td>&nbsp;</td>
-            </tr>
-            <tr>
-                <td colspan='3'><b>RISK = ( " . $escaper->escapeHtml($DREADDamagePotential) . " + " . $escaper->escapeHtml($DREADReproducibility) . " + " . $escaper->escapeHtml($DREADExploitability) . " + " . $escaper->escapeHtml($DREADAffectedUsers) . " + " . $escaper->escapeHtml($DREADDiscoverability) . " ) / 5 = " . $escaper->escapeHtml($calculated_risk) . "</b></td>
-            </tr>
-        </table>
-    ";
-}
-
-/*********************************
-* FUNCTION: OWASP SCORING TABLE *
-*********************************/
-function owasp_scoring_table($id, $calculated_risk, $OWASPSkillLevel, $OWASPEaseOfDiscovery, $OWASPLossOfConfidentiality, $OWASPFinancialDamage, $OWASPMotive, $OWASPEaseOfExploit, $OWASPLossOfIntegrity, $OWASPReputationDamage, $OWASPOpportunity, $OWASPAwareness, $OWASPLossOfAvailability, $OWASPNonCompliance, $OWASPSize, $OWASPIntrusionDetection, $OWASPLossOfAccountability, $OWASPPrivacyViolation,$type=0)
-{
-    global $lang;
-    global $escaper;
-
-    echo "
-        <div class='row mb-2'>
-            <div class='col-6'>
-                <h4>" . $escaper->escapeHtml($lang['OWASPRiskScoring']) . "</h4>
-            </div>
-            <div class='col-6 text-end'>
-                    <button type='button' class='btn btn-primary update-score'>". $escaper->escapeHtml($lang['UpdateOWASPScore']) . "</button>
-                    <button type='button' class='btn btn-secondary dropdown-toggle' data-bs-toggle='dropdown'>" . $escaper->escapeHtml($lang['RiskScoringActions']) . "</button>
-                    <ul class='dropdown-menu'>
-                        <li><a class='dropdown-item score-action' data-method='1' href='#'>" . $escaper->escapeHtml($lang['ScoreByClassic']) . "</a></li>
-                        <li><a class='dropdown-item score-action' data-method='2' href='#'>" . $escaper->escapeHtml($lang['ScoreByCVSS']) . "</a></li>
-                        <li><a class='dropdown-item score-action' data-method='3' href='#'>" . $escaper->escapeHtml($lang['ScoreByDREAD']) . "</a></li>
-                        <li><a class='dropdown-item score-action' data-method='5' href='#'>" . $escaper->escapeHtml($lang['ScoreByCustom']) . "</a></li>
-                        <li><a class='dropdown-item score-action' data-method='6' href='#'>" . $escaper->escapeHtml($lang['ScoreByContributingRisk']) . "</a></li>
-                    </ul>
-            </div>
-        </div>
-
-        <table width='100%' class='table table-borderless mb-0'>
-            <tr>
-                <td colspan='2'><b class='section--header'>" . $escaper->escapeHtml($lang['ThreatAgentFactors']) . "</b></td>
-                <td colspan='2'><b class='section--header'>" . $escaper->escapeHtml($lang['VulnerabilityFactors']) . "</b></td>
-                <td colspan='2'><b class='section--header'>" . $escaper->escapeHtml($lang['TechnicalImpact']) . "</b></td>
-                <td colspan='2'><b class='section--header'>" . $escaper->escapeHtml($lang['BusinessImpact']) . "</b></td>
-                <td>&nbsp;</td>
-            </tr>
-            <tr>
-                <td width='20%'>" . $escaper->escapeHtml($lang['SkillLevel']) . ":</td>
-                <td width='5%' class='vtop'>" . $escaper->escapeHtml($OWASPSkillLevel) . "</td>
-                <td width='20%'>" . $escaper->escapeHtml($lang['EaseOfDiscovery']) . ":</td>
-                <td width='5%' class='vtop'>" . $escaper->escapeHtml($OWASPEaseOfDiscovery) . "</td>
-                <td width='20%'>" . $escaper->escapeHtml($lang['LossOfConfidentiality']) . ":</td>
-                <td width='5%' class='vtop'>" . $escaper->escapeHtml($OWASPLossOfConfidentiality) . "</td>
-                <td width='20%'>" . $escaper->escapeHtml($lang['FinancialDamage']) . ":</td>
-                <td width='5%' class='vtop'>" . $escaper->escapeHtml($OWASPFinancialDamage) . "</td>
-            </tr>
-            <tr>
-                <td>" . $escaper->escapeHtml($lang['Motive']) . ":</td>
-                <td>" . $escaper->escapeHtml($OWASPMotive) . "</td>
-                <td>" . $escaper->escapeHtml($lang['EaseOfExploit']) . ":</td>
-                <td>" . $escaper->escapeHtml($OWASPEaseOfExploit) . "</td>
-                <td>" . $escaper->escapeHtml($lang['LossOfIntegrity']) . ":</td>
-                <td>" . $escaper->escapeHtml($OWASPLossOfIntegrity) . "</td>
-                <td>" . $escaper->escapeHtml($lang['ReputationDamage']) . ":</td>
-                <td>" . $escaper->escapeHtml($OWASPReputationDamage) . "</td>
-            </tr>
-            <tr>
-                <td>" . $escaper->escapeHtml($lang['Opportunity']) . ":</td>
-                <td>" . $escaper->escapeHtml($OWASPOpportunity) . "</td>
-                <td>" . $escaper->escapeHtml($lang['Awareness']) . ":</td>
-                <td>" . $escaper->escapeHtml($OWASPAwareness) . "</td>
-                <td>" . $escaper->escapeHtml($lang['LossOfAvailability']) . ":</td>
-                <td>" . $escaper->escapeHtml($OWASPLossOfAvailability) . "</td>
-                <td>" . $escaper->escapeHtml($lang['NonCompliance']) . ":</td>
-                <td>" . $escaper->escapeHtml($OWASPNonCompliance) . "</td>
-            </tr>
-            <tr>
-                <td>" . $escaper->escapeHtml($lang['Size']) . ":</td>
-                <td>" . $escaper->escapeHtml($OWASPSize) . "</td>
-                <td>" . $escaper->escapeHtml($lang['IntrusionDetection']) . ":</td>
-                <td>" . $escaper->escapeHtml($OWASPIntrusionDetection) . "</td>
-                <td>" . $escaper->escapeHtml($lang['LossOfAccountability']) . ":</td>
-                <td>" . $escaper->escapeHtml($OWASPLossOfAccountability) . "</td>
-                <td>" . $escaper->escapeHtml($lang['PrivacyViolation']) . ":</td>
-                <td>" . $escaper->escapeHtml($OWASPPrivacyViolation) . "</td>
-            </tr>
-            <tr>
-                <td colspan='9'>&nbsp;</td>
-            </tr>
-            <tr>
-                <td colspan='4'><b class='section--header'>" . $escaper->escapeHtml($lang['Likelihood']) . "</b></td>
-                <td colspan='4'><b class='section--header'>" . $escaper->escapeHtml($lang['Impact']) . "</b></td>
-                <td>&nbsp;</td>
-            </tr>
-            <tr>
-                <td colspan='4'>" . $escaper->escapeHtml($lang['ThreatAgentFactors']) . " = ( " . $escaper->escapeHtml($OWASPSkillLevel) . " + " . $escaper->escapeHtml($OWASPMotive) . " + " . $escaper->escapeHtml($OWASPOpportunity) . " + " . $escaper->escapeHtml($OWASPSize) . " ) / 4</td>
-                <td colspan='4'>" . $escaper->escapeHtml($lang['TechnicalImpact']) . " = ( " . $escaper->escapeHtml($OWASPLossOfConfidentiality) . " + " . $escaper->escapeHtml($OWASPLossOfIntegrity) . " + " . $escaper->escapeHtml($OWASPLossOfAvailability) . " + " . $escaper->escapeHtml($OWASPLossOfAccountability) . " ) / 4</td>
-                <td>&nbsp;</td>
-            </tr>
-            <tr>
-                <td colspan='4'>" . $escaper->escapeHtml($lang['VulnerabilityFactors']) . " = ( " . $escaper->escapeHtml($OWASPEaseOfDiscovery) . " + " . $escaper->escapeHtml($OWASPEaseOfExploit) . " + " . $escaper->escapeHtml($OWASPAwareness) . " + " . $escaper->escapeHtml($OWASPIntrusionDetection) . " ) / 4</td>
-                <td colspan='4'>" . $escaper->escapeHtml($lang['BusinessImpact']) . " = ( " . $escaper->escapeHtml($OWASPFinancialDamage) . " + " . $escaper->escapeHtml($OWASPReputationDamage) . " + " . $escaper->escapeHtml($OWASPNonCompliance) . " + " . $escaper->escapeHtml($OWASPPrivacyViolation) . " ) / 4</td>
-                <td>&nbsp;</td>
-            </tr>
-            <tr>
-                <td colspan='9'>&nbsp;</td>
-            </tr>
-            <tr>
-                <td colspan='9'><strong>Full details of the OWASP Risk Rating Methodology can be found <a href='https://owasp.org/www-community/OWASP_Risk_Rating_Methodology' class='link-success' target='_blank'>here</a>.</strong></td>
-            </tr>
-        </table>
-    ";
-}
-
-/**********************************
-* FUNCTION: CUSTOM SCORING TABLE *
-**********************************/
-function custom_scoring_table($id, $custom,$type=0)
-{
-    global $lang;
-    global $escaper;
-
-    echo "
-        <div class='row mb-2 align-items-center'>
-            <div class='col-6'>
-                <h4>" . $escaper->escapeHtml($lang['CustomRiskScoring']) . "</h4>
-            </div>
-            <div class='col-6 text-end'>
-                <button type='button' class='btn btn-primary update-score'>" . $escaper->escapeHtml($lang['UpdateCustomScore']) . "</button>
-                <button type='button' class='btn btn-secondary dropdown-toggle' data-bs-toggle='dropdown'>" . $escaper->escapeHtml($lang['RiskScoringActions']) . "</button>
-                <ul class='dropdown-menu'>
-                    <li><a class='dropdown-item score-action' data-method='1' href='#'>" . $escaper->escapeHtml($lang['ScoreByClassic']) . "</a></li>
-                    <li><a class='dropdown-item score-action' data-method='2' href='#'>" . $escaper->escapeHtml($lang['ScoreByCVSS']) . "</a></li>
-                    <li><a class='dropdown-item score-action' data-method='3' href='#'>" . $escaper->escapeHtml($lang['ScoreByDREAD']) . "</a></li>
-                    <li><a class='dropdown-item score-action' data-method='4' href='#'>" . $escaper->escapeHtml($lang['ScoreByOWASP']) . "</a></li>
-                    <li><a class='dropdown-item score-action' data-method='6' href='#'>" . $escaper->escapeHtml($lang['ScoreByContributingRisk']) . "</a></li>
-                </ul>
-            </div>
-        </div>
-        <div class='row mb-2'>
-            <div class='col-12'><label>" . $escaper->escapeHtml($lang['ManuallyEnteredValue']) . ":</label> &nbsp; ".$escaper->escapeHtml($custom) . "</div>
-        </div>
-    ";
-}
-
-/********************************************
-* FUNCTION: CONTRIBUTING RISK SCORING TABLE *
-*********************************************/
-function contributing_risk_scoring_table($id, $calculated_risk, $Contributing_Likelihood, $Contributing_Impacts, $type=0)
-{
-    global $lang;
-    global $escaper;
-
-    $max_likelihood = get_max_value("contributing_risks_likelihood");
-    $max_likelihood_name = get_name_by_value("contributing_risks_likelihood", $max_likelihood);
-    $Contributing_Likelihood = $Contributing_Likelihood ? $Contributing_Likelihood : $max_likelihood;
-    $Contributing_Likelihood_name = get_name_by_value("contributing_risks_likelihood", $Contributing_Likelihood);
-
-    echo "
-        <div class='row mb-2 align-items-center'>
-            <div class='col-6'>
-                <h4>" . $escaper->escapeHtml($lang['ContributingRiskScoring']) . "</h4>
-            </div>
-            <div class='col-6 text-end'>
-                <button type='button' class='btn btn-primary update-score'>" . $escaper->escapeHtml($lang['UpdateContributingRiskScore']) . "</button>
-                <button type='button' class='btn btn-secondary dropdown-toggle' data-bs-toggle='dropdown'>" . $escaper->escapeHtml($lang['RiskScoringActions']) . "</button>
-                <ul class='dropdown-menu'>
-                    <li><a class='dropdown-item score-action' data-method='1' href='#'>" . $escaper->escapeHtml($lang['ScoreByClassic']) . "</a></li>
-                    <li><a class='dropdown-item score-action' data-method='2' href='#'>" . $escaper->escapeHtml($lang['ScoreByCVSS']) . "</a></li>
-                    <li><a class='dropdown-item score-action' data-method='3' href='#'>" . $escaper->escapeHtml($lang['ScoreByDREAD']) . "</a></li>
-                    <li><a class='dropdown-item score-action' data-method='4' href='#'>" . $escaper->escapeHtml($lang['ScoreByOWASP']) . "</a></li>
-                    <li><a class='dropdown-item score-action' data-method='5' href='#'>" . $escaper->escapeHtml($lang['ScoreByCustom']) . "</a></li>
-                </ul>
-            </div>
-        </div>
-        
-        <table width='100%' class='table table-bordered mb-0'>
-        <!------<table class='risk_scores' width='100%' cellpadding='0' cellspacing='0' border='1'>   --->
-            <tr class='table-dark'>
-                <th colspan='2' class='text-center'><u>" . $escaper->escapeHtml($lang['ContributingLikelihood']) . "</u></th>
-            </tr>
-            <tr class='table-secondary'>
-                <th width='50%' class='text-center'>" . $escaper->escapeHtml($lang['Selected']) . "</th>
-                <th width='50%' class='text-center'>" . $escaper->escapeHtml($lang['MaximumValue']) . "</th>
-            </tr>
-            <tr>
-                <td align='center'>[ " . (int)$Contributing_Likelihood . " ] ". $escaper->escapeHtml($Contributing_Likelihood_name) . "</td>
-                <td align='center'>[ " . (int)$max_likelihood . " ] " . $escaper->escapeHtml($max_likelihood_name) . "</td>
-            </tr>
-        </table>
-        <br>
-        <table width='100%' class='table table-bordered table-light'>
-        <!------<table class='risk_scores' width='100%' cellpadding='0' cellspacing='0' border='1'>  --->
-            <tr class='table-dark'>
-                <th colspan='4' class='text-center'><u>" . $escaper->escapeHtml($lang['ContributingImpact']) . "</u></td>
-            </tr>
-            <tr class='table-secondary'>
-                <th width='20%' class='text-center'>" . $escaper->escapeHtml($lang['Subject']) . "</th>
-                <th width='20%' class='text-center'>" . $escaper->escapeHtml($lang['Weight']) . "</th>
-                <th width='30%' class='text-center'>" . $escaper->escapeHtml($lang['Selected']) . "</th>
-                <th width='30%' class='text-center'>" . $escaper->escapeHtml($lang['MaximumValue']) . "</th>
-            </tr>
-    ";
-
-    $contributing_risks = get_contributing_risks();
-    
-    $contributing_likelihood_formula = "( " . $escaper->escapeHtml($Contributing_Likelihood) . " X 5 / " . $escaper->escapeHtml($max_likelihood) . " )";
-    $contributing_impact_formula = array();
-    
-    foreach($contributing_risks as $index => $contributing_risk){
-
-        $impacts = get_impact_values_from_contributing_risks_id($contributing_risk['id']);
-        $impact_names = [];
-
-        foreach($impacts as $row){
-            $impact_names[$row['value']] = $row['name'];
-        }
-
-        $max_impact = max(array_column($impacts, 'value'));
-        $max_impact_name = $impact_names[$max_impact];
-        $impact = empty($Contributing_Impacts[$contributing_risk['id']]) ? $max_impact : $Contributing_Impacts[$contributing_risk['id']];
-        $impact_name = $impact_names[$impact];
-
-        echo "
-            <tr>
-                <td align='center'>" . $escaper->escapeHtml($contributing_risk['subject']) . "</td>
-                <td align='center'>" . $escaper->escapeHtml($contributing_risk['weight']) . "</td>
-                <td align='center'>[ " . $escaper->escapeHtml($impact) . " ] " . $escaper->escapeHtml($impact_name) . "</td>
-                <td align='center'>[ " . $escaper->escapeHtml($max_impact) . " ] " . $escaper->escapeHtml($max_impact_name) . "</td>
-            </tr>
-        ";
-
-        $contributing_impact_formula[] = " ( " . $escaper->escapeHtml($contributing_risk['weight']) . " X (" . $escaper->escapeHtml($impact) . " X 5 / " . $escaper->escapeHtml($max_impact) . "))"; 
-
-    }
-
-    echo "
-        </table>
-        <br>
-    ";
-
-    $risk_formula = $contributing_likelihood_formula . " +  (" . implode(" + ", $contributing_impact_formula) . " = " . $escaper->escapeHtml($calculated_risk);
-    
-    echo "
-        <b>RISK = " . $risk_formula . " </b>
-    ";
-}
 
 /*******************************
 * FUNCTION: VIEW CLASSIC HELP *
@@ -6517,102 +4526,6 @@ function risk_average_baseline_metric($time = "day", $title = "") {
     create_chartjs_line_code($title, $element_id, $labels, $datasets, $tooltip, $x_axis_title, $y_axis_title, 10);
 }
 
-/*****************************
- * FUNCTION: SCORE OVER TIME *
- *****************************/
-function score_over_time($time = "day")
-{
-    global $escaper, $lang;
-
-    // Get the risk id
-    $risk_id = get_param("GET", "id", null);
-
-    // Get the inherent risk average values by day
-    $endpoint = "/api/v2/reports/risk/average?risk_id={$risk_id}&type=inherent&timeframe={$time}";
-    $inherent_averages_result = call_simplerisk_api_endpoint($endpoint);
-
-    // Get the residual risk average values by day
-    $endpoint = "/api/v2/reports/risk/average?risk_id={$risk_id}&type=residual&timeframe={$time}";
-    $residual_averages_result = call_simplerisk_api_endpoint($endpoint);
-
-    // Create the data arrays
-    $labels = $inherent_averages_result['dates'] ?? [];
-    $inherent_averages = $inherent_averages_result['averages'] ?? [];
-    $residual_averages = $residual_averages_result['averages'] ?? [];
-
-    // Create the inherent average dataset
-    $label = $lang['InherentRisk'];
-    $inherent_average_dataset = [
-        "label" => "{$label}",
-        "data" => $inherent_averages,
-        "fill" => "false",
-        "borderColor" => "#000000",
-        "borderWidth" => "1",
-        "tension" => "0.1"
-    ];
-
-    // Create the residual average dataset
-    $label = $lang['ResidualRisk'];
-    $residual_average_dataset = [
-        "label" => "{$label}",
-        "data" => $residual_averages,
-        "fill" => "false",
-        "borderColor" => "#0000FF",
-        "borderWidth" => "1",
-        "tension" => "0.1"
-    ];
-
-    // Create an array of the combined datasets
-    $datasets = [
-        $inherent_average_dataset,
-        $residual_average_dataset,
-    ];
-
-    // Add the background dataset
-    $background_dataset = create_background_dataset(count($labels));
-    $datasets = array_merge($datasets, $background_dataset);
-
-    // Create the Chart.js line chart
-    $title = $lang['RiskScoringHistory'];
-    $element_id = "risk_score_average";
-    $x_axis_title = $lang['Date'];
-    $y_axis_title = $lang['RiskScore'];
-    $tooltip = "
-        tooltip: {
-            callbacks: {
-                label: function (tooltipItem) {
-                    // Use the average risk score index
-                    if (tooltipItem.datasetIndex === 0)
-                    {
-                        var dataIndex = tooltipItem.dataIndex;
-                        var value = tooltipItem.formattedValue;
-                        var label = tooltipItem.label;
-                        var datasetLabel = tooltipItem.dataset.label;
-                        result = [
-                            datasetLabel + ': ' + value,
-                        ];
-                        return result;
-                    }
-                    else if (tooltipItem.datasetIndex === 1)
-                    {
-                        var dataIndex = tooltipItem.dataIndex;
-                        var value = tooltipItem.formattedValue;
-                        var label = tooltipItem.label;
-                        var datasetLabel = tooltipItem.dataset.label;
-                        result = [
-                            datasetLabel + ': ' + value,
-                        ];
-                        return result;
-                    }
-                    else return '';
-                }
-            }
-        }
-    ";
-    // @phan-suppress-next-line SecurityCheck-XSS -- chart data from internal API encoded via json_encode() inside function
-    create_chartjs_line_code($title, $element_id, $labels, $datasets, $tooltip, $x_axis_title, $y_axis_title, 10);
-}
-
 /********************************************
  * FUNCTION: RISK FOR LIKELIHOOD AND IMPACT *
  ********************************************/
@@ -8331,7 +6244,7 @@ function display_review_risk()
                         <button type='button' class='filterbtn sr-table-filter' id='review-risk-colpicker-btn'>
                             <i class='fa fa-table-columns' aria-hidden='true'></i> {$escaper->escapeHtml($lang['Columns'])}
                         </button>
-                        <div class='colpanel d-none' id='review-risk-colpanel'></div>
+                        <div class='colpanel colpanel-searchable d-none' id='review-risk-colpanel'></div>
                     </div>
                     <!-- Clear Filters -- moved to the END of this row (after
                          Columns), per explicit product-owner direction.
@@ -8722,15 +6635,17 @@ function display_review_risk()
     }
 
     // + Add Risk modal (review-risk-add-modal): an sr-modal shell (design-
-    // system.md §8, "Form-in-modal") around the exact same display_add_risk()
-    // call the Compliance module already embeds twice (compliance/testing.php
-    // and compliance/view_test.php's #modal-new-risk) -- reused verbatim, zero
-    // changes to display_add_risk() or anything it calls, so the Customization
-    // Extra's field layout/order/labels come along automatically. Deliberately
-    // NOT #modal-new-risk / the legacy 'modal hide fade in' chrome those two
-    // pages use -- this page is built on the sr-modal shell throughout, and
-    // that id/behavior is tied to Compliance's own associate-with-a-test flow
-    // elsewhere in the app. Gated on the same submit_risks session permission
+    // system.md §8, "Form-in-modal") around an empty canvas div that
+    // review-risk.js hands to window.RiskDetailsForm.init() (embedded: true)
+    // on open -- the reusable Cards-form engine extracted from the standalone
+    // Submit Risk page (js/simplerisk/common/risk-details-form.js), not the
+    // legacy display_add_risk() Compliance still embeds twice
+    // (compliance/testing.php and compliance/view_test.php's
+    // #modal-new-risk). Deliberately NOT #modal-new-risk / the legacy 'modal
+    // hide fade in' chrome those two pages use -- this page is built on the
+    // sr-modal shell throughout, and that id/behavior is tied to Compliance's
+    // own associate-with-a-test flow elsewhere in the app. Gated on the same
+    // submit_risks session permission
     // (see the trigger button's comment above for why it's 'submit_risks',
     // plural, not the brief's originally-named 'submit_risk').
     //
@@ -8753,25 +6668,38 @@ function display_review_risk()
                         </div>
                         <div class='modal-body'>
         ";
-        display_add_risk();
+        // .sr-qform is REQUIRED, not decorative -- see management/index.php's
+        // own #submit-risk-container comment for the full explanation.
+        // _questionnaire.scss scopes every .sr-cvss-metric-row/.sr-cvss-
+        // holder-summary/.sr-qcard rule the widget (and every scoring
+        // method, not just OWASP) needs under a `.sr-qform { ... }` parent
+        // selector -- window.RiskDetailsForm.init() never adds this class
+        // itself (the same convention #submit-risk-container and
+        // risk-view-details.js's own dynamically-created form container
+        // already follow), so the embedding page must supply it.
+        // data-can-submit-risk carries the REAL submit_risks session check --
+        // unlike management/index.php's own #submit-risk-container, THIS
+        // modal is embedded in Review Risk, which gates on the broader
+        // riskmanagement permission (management/review_risk.php), not
+        // submit_risks specifically -- a reviewer without submit_risks can
+        // reach this modal, so its SupportingDocumentation file input
+        // (buildSupportingDocumentationWidget(), risk-details-form.js) must
+        // not render unconditionally the way it used to.
+        echo "<div id='review-risk-add-modal-canvas' class='sr-qform' data-can-submit-risk='" . (!empty($_SESSION['submit_risks']) ? '1' : '0') . "'></div>";
         // The sr-modal shell's documented anatomy (scss/modules/_sr-modal.scss,
         // header comment) puts a modal's actions in a .modal-footer -- 'left
         // hint text + right-aligned actions' -- pinned below the scrolling
-        // body. display_add_risk() renders its own Submit/Clear buttons and
-        // its instruction line INSIDE the <form>, deep in the body, because
-        // its four other consumers are full pages rather than modals; that
-        // shared output is deliberately left alone here.
+        // body. window.RiskDetailsForm renders its own hidden submit
+        // affordance and no instruction line INSIDE the <form>, since it is
+        // built for embedding (see risk-details-form.js's
+        // buildEmbeddedSubmitAffordance()).
         //
         // So this footer ships empty and review-risk.js fills it on open (see
-        // its syncAddRiskModalFooter()). The buttons are NOT moved into it:
-        // risk.js resolves the form to submit with $this.closest('form') and
-        // display.php's own #reset_form handler resolves the tab with
-        // $(reset_btn).closest('.tab-data'), so a button re-parented out of
-        // the form stops submitting and stops resetting. The footer gets
-        // proxy buttons that forward their clicks to the real (CSS-hidden)
-        // ones still sitting inside the active tab's form -- which also keeps
-        // the Customization Extra's one-form-per-template-group tabs working,
-        // since the proxy always targets whichever tab is currently active.
+        // its syncAddRiskModalFooter()). The button is NOT moved into it:
+        // risk.js resolves the form to submit with $this.closest('form'), so
+        // a button re-parented out of the form stops submitting. The footer
+        // gets a proxy button that forwards its click to the real (CSS-hidden)
+        // one still sitting inside the rendered form.
         echo "
                         </div>
                         <div class='modal-footer' id='review-risk-add-modal-footer'>
@@ -9938,7 +7866,7 @@ function display_plan_projects()
                         <button type='button' class='filterbtn sr-table-filter' id='plan-projects-colpicker-btn' aria-haspopup='true' aria-expanded='false'>
                             <i class='fa fa-table-columns' aria-hidden='true'></i> {$escaper->escapeHtml($lang['Columns'])}
                         </button>
-                        <div class='colpanel d-none' id='plan-projects-colpanel'></div>
+                        <div class='colpanel colpanel-searchable d-none' id='plan-projects-colpanel'></div>
                     </div>
     ";
     if ($can_add === 'true') {
@@ -10674,21 +8602,27 @@ function render_field_edit_popup_modal($view) {
                                                         sortField: [{ field: 'label', direction: 'asc' }],
                                                         onChange: function() { $('#{$tag_input_id}').data('changed', true);},
                                                     });
-                                                    $.ajax({
-                                                        url: BASE_URL + '/api/v2/management/tag_options_of_type?type={$view_type}',
-                                                        type: 'GET',
-                                                        dataType: 'json',
-                                                        error: function(xhr,status,error){
-                                                            if(!retryCSRF(xhr, this)){
-                                                                if(xhr.responseJSON && xhr.responseJSON.status_message){
-                                                                    showAlertsFromArray(xhr.responseJSON.status_message);
+                                                    // One tag-options request per tag type per page, shared by
+                                                    // every tags field on it (a page can render both the create
+                                                    // and the edit modal, e.g. Manage assets).
+                                                    var srTagReqs = window.srTagOptionsRequests = window.srTagOptionsRequests || {};
+                                                    if (!srTagReqs['{$view_type}']) {
+                                                        srTagReqs['{$view_type}'] = $.ajax({
+                                                            url: BASE_URL + '/api/v2/management/tag_options_of_type?type={$view_type}',
+                                                            type: 'GET',
+                                                            dataType: 'json',
+                                                            error: function(xhr,status,error){
+                                                                if(!retryCSRF(xhr, this)){
+                                                                    if(xhr.responseJSON && xhr.responseJSON.status_message){
+                                                                        showAlertsFromArray(xhr.responseJSON.status_message);
+                                                                    }
                                                                 }
                                                             }
-                                                        },
-                                                        success: function(res) {
-                                                            tags_{$tag_input_id}_selectize[0].selectize.addOption(res.data);
-                                                            tags_{$tag_input_id}_selectize[0].selectize.refreshOptions(true);
-                                                        }
+                                                        });
+                                                    }
+                                                    srTagReqs['{$view_type}'].done(function(res) {
+                                                        tags_{$tag_input_id}_selectize[0].selectize.addOption(res.data);
+                                                        tags_{$tag_input_id}_selectize[0].selectize.refreshOptions(true);
                                                     });
                                                 });
                                             </script>";
@@ -11155,21 +9089,27 @@ function render_create_modal($view) {
                                                         sortField: [{ field: 'label', direction: 'asc' }],
                                                         onChange: function() { $('#{$tag_input_id}').data('changed', true);},
                                                     });
-                                                    $.ajax({
-                                                        url: BASE_URL + '/api/v2/management/tag_options_of_type?type={$view_type}',
-                                                        type: 'GET',
-                                                        dataType: 'json',
-                                                        error: function(xhr,status,error){
-                                                            if(!retryCSRF(xhr, this)){
-                                                                if(xhr.responseJSON && xhr.responseJSON.status_message){
-                                                                    showAlertsFromArray(xhr.responseJSON.status_message);
+                                                    // One tag-options request per tag type per page, shared by
+                                                    // every tags field on it (a page can render both the create
+                                                    // and the edit modal, e.g. Manage assets).
+                                                    var srTagReqs = window.srTagOptionsRequests = window.srTagOptionsRequests || {};
+                                                    if (!srTagReqs['{$view_type}']) {
+                                                        srTagReqs['{$view_type}'] = $.ajax({
+                                                            url: BASE_URL + '/api/v2/management/tag_options_of_type?type={$view_type}',
+                                                            type: 'GET',
+                                                            dataType: 'json',
+                                                            error: function(xhr,status,error){
+                                                                if(!retryCSRF(xhr, this)){
+                                                                    if(xhr.responseJSON && xhr.responseJSON.status_message){
+                                                                        showAlertsFromArray(xhr.responseJSON.status_message);
+                                                                    }
                                                                 }
                                                             }
-                                                        },
-                                                        success: function(res) {
-                                                            tags_{$tag_input_id}_selectize[0].selectize.addOption(res.data);
-                                                            tags_{$tag_input_id}_selectize[0].selectize.refreshOptions(true);
-                                                        }
+                                                        });
+                                                    }
+                                                    srTagReqs['{$view_type}'].done(function(res) {
+                                                        tags_{$tag_input_id}_selectize[0].selectize.addOption(res.data);
+                                                        tags_{$tag_input_id}_selectize[0].selectize.refreshOptions(true);
                                                     });
                                                 });
                                             </script>

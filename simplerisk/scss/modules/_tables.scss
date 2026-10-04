@@ -769,24 +769,24 @@
         }
     }
 
-    // Column-search follow-up: a search box at the top of the Review Risk
-    // Columns picker (#review-risk-colpanel) that live-filters the ~40
-    // `.colpanel-item` checkboxes as the user types, plus a "no matches"
-    // state. Visually mirrors sr-select.js's own per-dropdown search box
-    // (.sr-select-search / .sr-select-search-icon / .sr-select-search-input
-    // / .sr-select-empty, scss/modules/_sr-select.scss) -- the closer UX
-    // precedent for "a small search box inside a dropdown panel" than the
-    // toolbar's own wide #review-risk-search bar.
+    // The searchable Columns picker: a search box at the top of the panel
+    // that live-filters the `.colpanel-item` checkboxes as the user types,
+    // plus a "no matches" state. Visually mirrors sr-select.js's own
+    // per-dropdown search box (.sr-select-search / .sr-select-search-icon /
+    // .sr-select-search-input / .sr-select-empty, scss/modules/_sr-select.scss)
+    // -- the closer UX precedent for "a small search box inside a dropdown
+    // panel" than a toolbar's wide search bar.
     //
-    // Scoped to #review-risk-colpanel specifically, NOT the bare .colpanel
-    // class above -- .colpanel/.colpicker are shared class names across
-    // three pages' column pickers (Review Risk here, Define Exceptions'
-    // #exceptions-colpanel in governance-exceptions.js, and Document
-    // Library's #document-program-colpanel in governance-documents.js).
-    // Only review-risk.js's renderColpanel() renders this search markup, so
-    // ID-scoping keeps it from ever being mistaken for shared .colpanel
-    // infra those other two pages could inherit unintentionally.
-    #review-risk-colpanel {
+    // Opt-in via a second class on the panel (`colpanel colpanel-searchable`),
+    // NOT the bare .colpanel class above: .colpanel/.colpicker are shared by
+    // pickers that render no search markup (Define Exceptions'
+    // #exceptions-colpanel, Document Library's #document-program-colpanel).
+    // Users: Review Risk (#review-risk-colpanel, review-risk.js), Plan
+    // Projects (#plan-projects-colpanel, plan-projects.js) and Manage assets
+    // (#manage-assets-colpanel, manage-assets.js). This was scoped to
+    // #review-risk-colpanel alone until a second page needed it; a new page
+    // adds the class, not another ID here.
+    .colpanel-searchable {
         .colpanel-search {
             display: flex;
             align-items: center;
@@ -915,40 +915,6 @@
     // actually needs.
     .sr-table-scroll:has(.dt-scroll) {
         overflow-x: visible;
-    }
-
-    // Lifted while a row-actions overflow menu is open, and ONLY when the
-    // table isn't actually using the horizontal scroll (the page's toggle
-    // handler checks scrollWidth against clientWidth before adding this).
-    //
-    // `overflow-x: auto` computes overflow-y to `auto` along with it -- the two
-    // axes cannot be auto/visible -- so the scroller clips the popped menu
-    // vertically even though it was only ever asked to handle horizontal
-    // overflow. On a short table that is fatal in both directions at once:
-    // measured with a single filtered row at 1200px, the scroller was 117px
-    // tall against a 92px menu, so the menu was cut off opening downward AND
-    // cut off opening upward, and elementFromPoint() on its top item returned
-    // the toolbar button above the table. Nothing is being scrolled in that
-    // state, so the clip costs the menu everything and buys the table nothing.
-    //
-    // Not scoped to .sr-table-scroll specifically: sr-row-actions-menu.js's
-    // findClipAncestor() walks up to whichever element is ACTUALLY clipping,
-    // which on a DataTables scrollX table is DataTables' own '.dt-scroll'
-    // wrapper one level further in (.sr-table-scroll is deliberately made
-    // non-clipping there -- see its own ':has(.dt-container)' rule above --
-    // to avoid a redundant second scrollbar under DataTables' own). A menu
-    // measured/unclipped against the wrong ancestor is exactly what left a
-    // downward-opened menu invisible and unclickable on Manage Audits.
-    //
-    // !important: '.dt-scroll's own `overflow: auto` comes from the vendor
-    // dataTables.bootstrap5.min.css bundle, loaded as a separate stylesheet
-    // (header.php) whose rule could tie or beat this one on specificity
-    // depending on exactly how the vendor authored it -- a JS-driven state
-    // override has to win regardless, the same way .sr-table-scroll's own
-    // version never had to worry about it (that element was always
-    // SimpleRisk's own, so both competing rules lived in this one file).
-    .is-unclipped {
-        overflow: visible !important;
     }
 
     table.sr-table,
@@ -1212,6 +1178,23 @@
                 outline: 0;
                 box-shadow: none;
             }
+
+            // Bootstrap's .pagination lifts the active, hovered and focused
+            // .page-link to z-index 2/3 (position: relative) so a highlighted
+            // button's border overlaps its neighbour's in the joined button
+            // group. This pager's buttons are separated by a 3px gap, so that
+            // overlap never happens -- but the z-index still ranks the button
+            // in the page's stacking order, above a row-actions menu opened
+            // from the table's last rows (its pinned cell is only lifted to
+            // z-index 1, see td.sr-actions-col-sticky above), and the active
+            // page number painted through the open menu. `auto` keeps the
+            // buttons out of that competition without changing how they look.
+            &,
+            &:hover,
+            &:focus,
+            &.active {
+                z-index: auto;
+            }
         }
 
         // Previous/Next render their language.paginate string ("Previous"/
@@ -1251,6 +1234,9 @@
             background: $sr-primary;
             color: $sr-body;
             border-color: $sr-primary;
+            // See the z-index note on .page-link above (Bootstrap's
+            // `.active > .page-link` lift).
+            z-index: auto;
         }
 
         .paginate_button.disabled,
@@ -1392,6 +1378,15 @@
     &::before {
         background: $danger;
     }
+}
+
+// For a state that represents an actually-running background job (the AI
+// Analysis accordion's "Processing" pill, management/partials/viewhtml.php /
+// risk.js's setAIStatusBadge()) -- a real fa-spinner fa-spin <i> takes the
+// place of the family dot, so this just suppresses the ::before dot rather
+// than showing both.
+.sr-state-pill-spinning::before {
+    display: none;
 }
 
 // Last-result lane modifier. Content-width made "Fail" (55px) and
@@ -2258,6 +2253,24 @@
         // `@media (max-width: 1100px) { .sr-qf-selects { ... } }` block
         // further down), which is the intended behavior: Columns now lives
         // inside the collapsed Filters sheet rather than standing outside it.
+
+        // createAuditTrail's searchBesideFilters option (js/simplerisk/sr-
+        // audit-trail.js, currently only risk-audit-trail.js) appends
+        // DataTables' relocated search box here as this row's own last flex
+        // item. flex-basis (not a fixed width) so it claims the row's slack
+        // like .sr-table-tools' own .dt-search does, but still wraps onto
+        // its own line -- left-aligned with the filters above it, not
+        // pinned right -- when the row runs out of width, since .sr-qf-
+        // selects (unlike .sr-table-tools) has no margin-left:auto pushing
+        // it to the end of the line.
+        .dt-search {
+            flex: 1 1 220px;
+            max-width: 380px;
+
+            input {
+                width: 100%;
+            }
+        }
     }
 
     // --- Empty / coverage-gap state (design-system.md §10) ---------------
@@ -2600,6 +2613,35 @@
     }
 }
 
+// DataTables' own bootstrap5 stylesheet pairs `text-align: right` on
+// th.dt-type-date/dt-type-numeric with `flex-direction: row-reverse` on
+// their .dt-column-header -- a right-aligned column's title stays flush
+// with its right-aligned cell values, so the sort icon (rendered before
+// the title in DOM order) lands next to it on the left, toward the
+// column's center. This app's own table headers are left-aligned
+// everywhere (Bootstrap's reset already overrides the `text-align: right`
+// half of that pair), so only the icon-side half survived: a date/numeric
+// column's title reads flush left like every other column, but its icon
+// stays glued to the LEFT of it -- the two rules were designed as a pair
+// and only one half got neutralized. Audit Trail's Date & Time column
+// (auto-detected dt-type-date from its own cell content) is the first
+// .sr-sortable table with a date/numeric-typed column, surfacing this.
+// Forces the icon back onto .sr-sort-icon's own right-side convention
+// (`margin-left`, set above) to match every other sortable column.
+// !important: DataTables' own selector (table.dataTable th.dt-type-date
+// div.dt-column-header) out-specifies a same-depth class selector here
+// (three element-qualified steps vs. this file's class-only chain), so
+// matching specificity instead of overriding it would mean re-shadowing
+// DataTables' exact `table.dataTable th.dt-type-...` shape -- more brittle
+// against a DataTables version bump than naming the one property this
+// override actually contests.
+.sr-table-card {
+    th.dt-type-date .dt-column-header,
+    th.dt-type-numeric .dt-column-header {
+        flex-direction: row !important;
+    }
+}
+
 
 // ===== Narrow-screen column budget =================================
 // The grid carries more columns than a 1366px laptop has room for: at that
@@ -2730,17 +2772,13 @@
         visibility: visible;
     }
 
-    // Opens UPWARD when there is no room below it. A table's rows sit inside
-    // .sr-table-scroll, whose `overflow-x: auto` computes overflow-y to `auto`
-    // along with it -- so a menu popped from the LAST row is clipped by that
-    // scroller rather than overhanging the card. Measured at 1200px on the
-    // Define Control Frameworks table before this existed: the menu ran 52px
-    // past the scroller and elementFromPoint on Clone and Delete landed on the
-    // footer, i.e. the last row's actions were opened but not clickable.
-    //
-    // The stylesheet only says what "up" looks like; whether it applies is a
-    // measurement (the menu's height against the space below it), so the class
-    // is set by the page's own toggle handler at open time.
+    // Opens UPWARD when there is no room below it in the viewport.
+    // sr-row-actions-menu.js measures that at open time (the menu's height
+    // against the space below the toggle), sets this class, and then pins the
+    // open menu to the viewport with position: fixed at the box these rules
+    // produce -- so the menu is never clipped by the table's horizontal
+    // scroller and never adds to its overflow. The stylesheet only says what
+    // "up" looks like.
     .sr-row-actions-wrap.is-up .sr-row-actions {
         top: auto;
         bottom: calc(100% + 4px);

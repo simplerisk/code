@@ -532,6 +532,66 @@ class OpenApiContributingRisksTableList {}
 
 /**
  * @OA\Get(
+ *     path="/riskformula/config",
+ *     summary="Get the current risk-scoring configuration for Classic scoring (risk_model, normalization, level counts, and the model-6 custom value grid).",
+ *     operationId="getRiskFormulaConfig",
+ *     tags={"risk_formula"},
+ *     security={{"ApiKeyAuth":{}}},
+ *     @OA\Response(
+ *         response=200,
+ *         description="Current risk-scoring configuration.",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(
+ *                 property="risk_model",
+ *                 type="integer",
+ *                 description="The admin-configured risk formula. 1-5 are arithmetic formulas; 6 is a custom lookup grid.",
+ *                 enum={1, 2, 3, 4, 5, 6}
+ *             ),
+ *             @OA\Property(
+ *                 property="need_risk_score_normalization",
+ *                 type="boolean",
+ *                 description="Whether the raw formula result is rescaled onto a 0-10 scale."
+ *             ),
+ *             @OA\Property(
+ *                 property="likelihood_count",
+ *                 type="integer",
+ *                 description="The number of configured likelihood levels."
+ *             ),
+ *             @OA\Property(
+ *                 property="impact_count",
+ *                 type="integer",
+ *                 description="The number of configured impact levels."
+ *             ),
+ *             @OA\Property(
+ *                 property="default_risk_score",
+ *                 type="number",
+ *                 format="float",
+ *                 description="calculate_risk()'s own out-of-range fallback score (the default_risk_score setting), used when the supplied likelihood or impact falls outside the configured 1-N range."
+ *             ),
+ *             @OA\Property(
+ *                 property="custom_risk_model_values",
+ *                 type="array",
+ *                 description="The model-6 custom score grid. Only populated when risk_model is 6; an empty array otherwise.",
+ *                 @OA\Items(
+ *                     type="object",
+ *                     @OA\Property(property="impact", type="integer"),
+ *                     @OA\Property(property="likelihood", type="integer"),
+ *                     @OA\Property(property="value", type="number", format="float")
+ *                 )
+ *             )
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=403,
+ *         description="FORBIDDEN: submit_risks or riskmanagement permission is required."
+ *     )
+ * )
+ */
+class OpenApiGetRiskFormulaConfig {}
+
+/**
+ * @OA\Get(
  *     path="/cve/lookup",
  *     summary="Look up CVE details from the NVD (National Vulnerability Database) by CVE ID.",
  *     operationId="cveLookup",

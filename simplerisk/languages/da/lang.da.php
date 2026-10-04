@@ -814,7 +814,7 @@ $lang = array(
     'UserSessions' => 'Brugersessioner',
     'SessionActivityTimeout' => 'Timeout for sessionsaktivitet',
     'Security' => 'Sikkerheds',
-    'EnableCSP' => 'Aktiver indholds sikkerhedspolitik (dette har tidligere brudt Chrome)',
+    'EnableCSP' => 'Aktivér indholdssikkerhedspolitik (anbefales)',
     'EnableDebugLogging' => 'Aktiver logføring af fejlfinding',
     'seconds' => 'sekunder',
     'FieldSample' => 'Felt eksempel',
@@ -4967,6 +4967,572 @@ $lang = array(
     // closeriskForm()'s own (hardcoded, pre-existing) single-risk denial text.
     'NoCloseRiskPermission' => 'Du har ikke tilladelse til at lukke risici.',
     'QuestionnaireRequiredQuestionUnanswered' => 'Besvar venligst alle obligatoriske spørgsmål, inden du gennemfører vurderingen.',
+    'AuditLog_ControlStatusAutoSynced' => 'Status for kontrollen "{$short_name}" blev automatisk opdateret til "{$status_text}" baseret på dens seneste testresultat(er).',
+    'EnableCSPHelp' => 'Content Security Policy (CSP) begrænser browseren til kun at indlæse scripts, stilarter, billeder og skrifttyper fra SimpleRisk selv og blokerer sideindramning og indsendelse af formularer på tværs af oprindelse. Det er det stærkeste indbyggede forsvar mod cross-site scripting. Lad være aktiveret, medmindre det er i konflikt med en proxy, browserudvidelse eller tredjepartsintegration i dit miljø.',
+    // Define Control Frameworks' Columns picker (Task: Columns picker + saved layout/filters) -- the "Standard" group label above its built-in fields (Family/Owner/Maturity/Status/Class/Phase/Priority/Type); 'CustomFields' already exists.
+    'StandardFields' => 'Standardfelter',
+    // My Profile redesign (js/simplerisk/pages/account-profile.js)
+    'Administrator' => 'Administrator',
+    'AccountDetails' => 'Kontooplysninger',
+    'YourPermissions' => 'Dine tilladelser',
+    'RoleAndTeamsGrantAccess' => 'Hvad din rolle og dine teams giver dig adgang til',
+    'AllGranted' => 'Alle bevilget',
+    'PermissionsCountLabel' => '$count tilladelser',
+    'ManagedByYourAdministrator' => 'Disse oplysninger administreres af din administrator. Kontakt dem, hvis noget her skal ændres.',
+    'MultiFactorAuthenticationHint' => 'Tilføj et andet trin til dit login for at beskytte din konto.',
+    'ChangingPasswordSignsOutEverywhere' => 'Hvis du ændrer din adgangskode, logger du dig ud alle andre steder.',
+    'APIKeyHint' => 'Bruges til at godkende dine egne scripts og integrationer mod SimpleRisk API\'en.',
+    'ResetDisplaySettingsHint' => 'Nulstiller dine brugerdefinerede kolonnevalg til standardindstillingerne.',
+    'CardGeneral' => 'Generelle',
+    'CardClassification' => 'Klassifikation',
+    'CardScoring' => 'Scoring',
+    'CardAdditionalInformation' => 'Yderligere oplysninger',
+    'CardCustomFields' => 'Brugerdefinerede felter',
+    'CardCustomFieldsHint' => 'Disse felter skal sorteres på et kort',
+    'LayoutEditorHint' => 'Træk et felt til et andet kort for at tildele det igen, træk inden for et kort for at omarrangere eller ændre størrelsen på det, og træk eller tilpas størrelsen på et kort for at ændre dets placering på siden.',
+    'ScoringNotYetAvailableInThisView' => 'Konfiguration af scoring er endnu ikke tilgængelig i denne visning.',
+    // Native tooltip on the Cards layout editor's Gridstack resize handles
+    // (js/simplerisk/pages/customization-layout-editor.js) -- the bare corner
+    // bracket read as an unexplained mark until it said what it does.
+    'DragToResize' => 'Træk for at ændre størrelsen',
+    // Warning pill on a Cards layout editor card the admin has sized shorter
+    // than the fields it holds. Replaces the silent inner scrollbar that state
+    // used to produce.
+    'NFieldsDoNotFitCard' => 'Feltet/felterne {n} passer ikke på dette kort. Tilpas størrelsen på kortet for at vise dem.',
+    // Card titles for the Mitigation tab's Cards layout editor
+    // (js/simplerisk/pages/customization-layout-editor.js), mirroring the
+    // Card* keys above for the Details tab. Order follows
+    // customization_mitigation_cards_layout_card_keys() (includes/functions.php).
+    'CardMitigationStrategy' => 'Afbødningsstrategi',
+    'CardMitigationSolution' => 'Afhjælpningsløsning',
+    'CardMitigationControls' => 'Afhjælpningskontroller',
+    'CardReview' => 'Gennemgang',
+    // Submit Risk page's three action-bar buttons (buildActionsBar(),
+    // risk-details-form.js, submitMode 'create' only) and the Reset Form
+    // confirm modal (management/index.php, design-system.md #8's "Confirm"
+    // type). 'Discard'/'Cancel'/'Close' already exist and are reused for the
+    // modal's own buttons.
+    'ResetForm' => 'Nulstil formular',
+    'SaveAndNew' => 'Gem og ny',
+    'SaveAndView' => 'Gem og vis',
+    'ResetFormConfirmTitle' => 'Vil du kassere denne risikoindberetning?',
+    'ResetFormConfirmBody' => 'Alle oplysninger, du har indtastet, vil gå tabt.',
+    // Restore-template destructive confirm (Customization Extra, Save/Restore
+    // action bar). Two body variants: risk's Details/Mitigation/Review tabs
+    // named explicitly (the only fgroup with that 3-tab Cards layout), a
+    // generic fallback for every other fgroup (single legacy-panel tab).
+    // Both end on the same scoping reassurance -- confirmed via direct source
+    // read that Restore only ever touches the currently-selected template
+    // group, never any other.
+    'RestoreTemplateConfirmTitle' => 'Gendan standardlayout?',
+    'RestoreTemplateConfirmBodyRisk' => 'Dette nulstiller alle felter på fanerne Detaljer, Afhjælpning og Gennemgang til deres standardværdier for denne skabelongruppe. Andre skabelongrupper påvirkes ikke.',
+    'RestoreTemplateConfirmBody' => 'Dette nulstiller alle felter i denne skabelon til standardværdierne for denne skabelongruppe. Andre skabelongrupper påvirkes ikke.',
+    // CVSS holder's collapsed Temporal/Environmental/Impact-Modifiers
+    // accordion (buildCvssHolder(), risk-details-form.js) -- these three
+    // groups are optional CVSS v2 refinements on top of the required Base
+    // Score Metrics, so they collapse behind this header by default.
+    'AdvancedMetrics' => 'Avancerede målinger',
+    // CVSS holder's Base Score Metrics sub-group headers (buildCvssHolder(),
+    // risk-details-form.js) -- distinct from the existing 'ExploitabilityMetrics'/
+    // 'ImpactMetrics' keys, which the legacy cvss_modal_content.php modal
+    // still renders as plain "Exploitability Metrics"/"Impact Metrics" and
+    // must keep unchanged. These fold the umbrella "Base Score Metrics"
+    // heading into each sub-group's own header instead of a separate label.
+    'BaseScoreExploitabilityMetrics' => 'Grundscorens udnyttelsesmetrikker',
+    'BaseScoreImpactMetrics' => 'Basisscore-påvirkningsmålinger',
+    // Per-field help popovers on the CVSS holder's 14 metric selects
+    // (buildCvssScoreItem(), risk-details-form.js) -- one per CVSS v2
+    // metric, matching the standard CVSS v2 specification definitions.
+    // Double-quoted (not single-quoted, this file's usual style) so the
+    // \n line breaks are real escape sequences: each popover leads with one
+    // overall sentence, then one bullet line per option, rendered via
+    // white-space: pre-line on .sr-scoring-help-popover .popover-body
+    // (scss/modules/_questionnaire.scss) -- plain text throughout, no HTML,
+    // so the popover stays initialized without Bootstrap's `html: true`.
+    "AttackVectorHelp" => "Hvordan sårbarheden kan tilgås.\n• Lokal: kræver lokal adgang, f.eks. en konsol eller shell.\n• Tilstødende netværk: angriberen skal være på det samme fysiske eller logiske netværkssegment.\n• Netværk: kan udnyttes eksternt over et netværk, uden behov for lokal eller tilstødende adgang.",
+    "AttackComplexityHelp" => "Hvor komplekst angrebet er, når en angriber har adgang til målet.\n• Høj: kræver specialiserede betingelser, der er svære at arrangere.\n• Mellem: visse betingelser skal være opfyldt, men udnyttelse er ikke vanskelig, når de er.\n• Lav: ingen særlige betingelser er nødvendige.",
+    "AuthenticationHelp" => "Antallet af gange en angriber skal autentificere over for målet for at udnytte det.\n• Flere: godkendelse kræves to eller flere gange, selv med de samme legitimationsoplysninger.\n• Enkelt: godkendelse kræves én gang.\n• Ingen: ingen godkendelse kræves.",
+    "ConfidentialityImpactHelp" => "Virkningen på fortroligheden af de data, systemet behandler, hvis de udnyttes.\n• Ingen: ingen indvirkning.\n• Delvis: en vis videregivelse af oplysninger, men angriberen kontrollerer ikke hvad, eller tabet er begrænset.\n• Fuldstændig: total videregivelse af alle oplysninger på systemet.",
+    "IntegrityImpactHelp" => "Indvirkningen på systemets integritet, hvis det udnyttes.\n• Ingen: ingen indvirkning.\n• Delvis: Nogle data kan ændres, men angriberen kontrollerer ikke hvad, eller omfanget er begrænset.\n• Fuldstændig: Total kompromis med systemintegriteten; angriberen kan ændre alle filer.",
+    "AvailabilityImpactHelp" => "Indvirkningen på systemets tilgængelighed, hvis det udnyttes.\n• Ingen: ingen indvirkning.\n• Delvis: reduceret ydeevne eller afbrydelser i tilgængeligheden.\n• Fuldstændig: total nedlukning af den berørte ressource.",
+    "RemediationLevelHelp" => "Det tilgængelige afhjælpningsniveau for sårbarheden.\n• Officiel løsning: En komplet leverandørløsning er tilgængelig.\n• Midlertidig løsning: En officiel, men midlertidig løsning er tilgængelig.\n• Løsning: Der findes en uofficiel, ikke-leverandørmæssig løsning.\n• Ikke tilgængelig: Der er ingen løsning tilgængelig, eller ingen kan anvendes.",
+    "ReportConfidenceHelp" => "Graden af tillid til sårbarhedens eksistens og troværdigheden af dens tekniske detaljer.\n• Ubekræftet: en enkelt, ubekræftet kilderapport; det underliggende problem er spekulativt.\n• Ubekræftet: flere uafhængige kilder rapporterer den samme adfærd, men den grundlæggende årsag er ikke bekræftet.\n• Bekræftet: leverandøren har anerkendt problemet, eller det er bekræftet af kildekode- eller exploit-analyse.",
+    "CollateralDamagePotentialHelp" => "Potentialet for tab af liv, fysiske aktiver eller økonomisk tab, hvis sårbarheden udnyttes.\n• Ingen: Et sådant tab er sandsynligt ikke.\n• Lav til Mellem: Et moderat tab er muligt.\n• Høj: En katastrofal indvirkning på organisationens aktiver, omsætning eller sikkerhed.",
+    "TargetDistributionHelp" => "Andelen af sårbare systemer i dit miljø.\n• Ingen: Der findes ingen målsystemer.\n• Lav: 1-25 % af systemerne er sårbare.\n• Mellem: 26-75 % er sårbare.\n• Høj: 76-100 % er sårbare.",
+    "ConfidentialityRequirementHelp" => "Hvor vigtig fortroligheden af det berørte aktiv er for din organisation.\n• Lav: et tab af fortrolighed har begrænset indflydelse.\n• Mellem: det har en alvorlig indflydelse.\n• Høj: det har en katastrofal indflydelse.",
+    "IntegrityRequirementHelp" => "Hvor vigtig integriteten af det berørte aktiv er for din organisation.\n• Lav: et integritetstab har begrænset indvirkning.\n• Mellem: det har en alvorlig indvirkning.\n• Høj: det har en katastrofal indvirkning.",
+    "AvailabilityRequirementHelp" => "Hvor vigtig tilgængeligheden af det berørte aktiv er for din organisation.\n• Lav: et tab af tilgængelighed har begrænset indflydelse.\n• Mellem: det har en alvorlig indflydelse.\n• Høj: det har en katastrofal indflydelse.",
+    // Base Score Metrics' two sub-group intro sentences (metricsSubGroup()'s
+    // `descKey`, risk-details-form.js) -- orient the user to what the GROUP
+    // as a whole is asking, distinct from the per-field *Help popover keys
+    // above which explain each metric's own options.
+    'BaseScoreExploitabilityMetricsDescription' => 'Hvordan en angriber skal nå og udløse denne sårbarhed: hvor de skal være, hvor komplekst angrebet er, og om de skal autentificere sig først.',
+    'BaseScoreImpactMetricsDescription' => 'Hvad sker der, hvis sårbarheden udnyttes med succes: effekten på det berørte systems fortrolighed, integritet og tilgængelighed.',
+    // Advanced Metrics' three optional sub-group intro sentences -- same
+    // metricsSubGroup() `descKey` as the two Base Score groups above.
+    'TemporalScoreMetricsDescription' => 'Hvordan denne sårbarheds trussel i den virkelige verden ændrer sig over tid: den nuværende tilstand af exploit-koden, hvilken afhjælpning der er tilgængelig, og hvor sikre rapporterne er på, at den eksisterer.',
+    'EnvironmentalScoreMetricsDescription' => 'Hvordan risikoen ved denne sårbarhed afhænger af dit miljø: potentialet for skade i den virkelige verden, og hvor mange af dine systemer der rent faktisk er berørt.',
+    'ImpactSubscoreModifiersDescription' => 'Vægt basisscorens indflydelse efter, hvor meget fortrolighed, integritet og tilgængelighed rent faktisk betyder noget for dette specifikke aktiv.',
+    // Phase 4d-iii: DREAD holder help popovers (view_dread_help()'s
+    // existing English text, includes/display.php, extracted to real $lang
+    // keys -- that function's own content was raw hardcoded HTML, never
+    // localized, so it could not be reused verbatim).
+    'DamagePotentialHelp' => 'Hvis en trussel udnyttes, hvor meget skade vil der så blive forårsaget?' . "\n" . '0 = Intet' . "\n" . '5 = Individuelle brugerdata er kompromitteret eller påvirket.' . "\n" . '10 = Fuldstændig system- eller datadestruktion',
+    'ReproducibilityHelp' => 'Hvor nemt er det at reproducere trusselsudnyttelsen?' . "\n" . '0 = Meget svært eller umuligt, selv for applikationens administratorer.' . "\n" . '5 = Et eller to trin kræves, muligvis skal du være en autoriseret bruger.' . "\n" . '10 = Bare en webbrowser og adresselinjen er tilstrækkeligt, uden godkendelse.',
+    'ExploitabilityHelp' => 'Hvad skal der til for at udnytte denne trussel?' . "\n" . '0 = Avanceret programmerings- og netværksviden med brugerdefinerede eller avancerede angrebsværktøjer.' . "\n" . '5 = Der findes malware på internettet, eller en udnyttelse kan nemt udføres ved hjælp af tilgængelige angrebsværktøjer.' . "\n" . '10 = Bare en webbrowser',
+    'AffectedUsersHelp' => 'Hvor mange brugere vil blive berørt?' . "\n" . '0 = Ingen' . "\n" . '5 = Nogle brugere, men ikke alle' . "\n" . '10 = Alle brugere',
+    'DiscoverabilityHelp' => 'Hvor nemt er det at opdage denne trussel?' . "\n" . '0 = Meget svært til umuligt; kræver kildekode eller administratoradgang.' . "\n" . '5 = Kan finde ud af det ved at gætte eller ved at overvåge netværksspor.' . "\n" . '9 = Detaljer om fejl som denne er allerede offentligt tilgængelige og kan nemt findes ved hjælp af en søgemaskine.' . "\n" . '10 = Oplysningerne er synlige i webbrowserens adresselinje eller i en formular.',
+    // The DREAD holder's summary card heading and "DREAD Metrics" card
+    // heading. No existing key covers either (confirmed via grep before
+    // adding).
+    'DreadScore' => 'DREAD-score',
+    'DreadMetrics' => 'DREAD-målinger',
+    // Phase 4d-iv: OWASP holder help popovers (view_owasp_help()'s
+    // existing English text, includes/display.php, extracted to real
+    // $lang keys -- same never-localized-legacy-content extraction the
+    // DREAD phase already did for its own 5 fields). Wording/levels
+    // trued up against that function's real source text, not transcribed
+    // from an earlier standard-methodology draft.
+    'SkillLevelHelp' => 'Hvor teknisk dygtige er denne gruppe af trusselsagenter?' . "\n" . '1 = Ingen tekniske færdigheder' . "\n" . '3 = Nogle tekniske færdigheder' . "\n" . '5 = Avanceret computerbruger' . "\n" . '6 = Netværks- og programmeringsfærdigheder' . "\n" . '9 = Sikkerhedspenetrationsfærdigheder',
+    'MotiveHelp' => 'Hvor motiverede er denne gruppe af trusselsagenter til at finde og udnytte denne sårbarhed?' . "\n" . '1 = Lav eller ingen belønning' . "\n" . '4 = Mulig belønning' . "\n" . '9 = Høj belønning',
+    'OpportunityHelp' => 'Hvilke ressourcer og muligheder kræves der for, at denne gruppe af trusselsagenter kan finde og udnytte denne sårbarhed?' . "\n" . '0 = Fuld adgang eller dyre ressourcer kræves' . "\n" . '4 = Særlig adgang eller nødvendige ressourcer' . "\n" . '7 = Nogle adgangs- eller ressourcekrav' . "\n" . '9 = Ingen adgang eller ressourcer kræves',
+    'SizeHelp' => 'Hvor stor er denne gruppe af trusselsagenter?' . "\n" . '2 = Udviklere' . "\n" . '2 = Systemadministratorer' . "\n" . '4 = Intranetbrugere' . "\n" . '5 = Partnere' . "\n" . '6 = Godkendte brugere' . "\n" . '9 = Anonyme internetbrugere',
+    'EaseOfDiscoveryHelp' => 'Hvor nemt er det for denne gruppe af trusselsagenter at opdage denne sårbarhed?' . "\n" . '1 = Praktisk umuligt' . "\n" . '3 = Vanskelig' . "\n" . '7 = Let' . "\n" . '9 = Automatiserede værktøjer tilgængelige',
+    'EaseOfExploitHelp' => 'Hvor nemt er det for denne gruppe af trusselsagenter rent faktisk at udnytte denne sårbarhed?' . "\n" . '1 = Teoretisk' . "\n" . '3 = Vanskelig' . "\n" . '5 = Let' . "\n" . '9 = Automatiserede værktøjer tilgængelige',
+    'AwarenessHelp' => 'Hvor velkendt er denne sårbarhed for denne gruppe af trusselsagenter?' . "\n" . '1 = Ukendt' . "\n" . '4 = Skjult' . "\n" . '6 = Indlysende' . "\n" . '9 = Offentlig viden',
+    'IntrusionDetectionHelp' => 'Hvor sandsynligt er det, at et angreb bliver opdaget?' . "\n" . '1 = Aktiv detektion i applikation' . "\n" . '3 = Registreret og gennemgået' . "\n" . '8 = Logget uden gennemgang' . "\n" . '9 = Ikke logget',
+    'LossOfConfidentialityHelp' => 'Hvor mange data kan videregives, og hvor følsomme er de?' . "\n" . '2 = Minimalt antal ikke-følsomme data offentliggjort' . "\n" . '6 = Minimalt antal kritiske data offentliggjort' . "\n" . '6 = Omfattende ikke-følsomme data offentliggjort' . "\n" . '7 = Omfattende kritiske data offentliggjort' . "\n" . '9 = Alle data er offentliggjort',
+    'LossOfIntegrityHelp' => 'Hvor meget data kan være ødelagt, og hvor beskadiget er det?' . "\n" . '1 = Minimalt let korrupt data' . "\n" . '3 = Minimal alvorligt korrupte data' . "\n" . '5 = Omfattende, let korrupte data' . "\n" . '7 = Omfattende alvorligt korrupte data' . "\n" . '9 = Alle data er fuldstændig beskadiget',
+    'LossOfAvailabilityHelp' => 'Hvor meget service kan gå tabt, og hvor vigtig er den?' . "\n" . '1 = Minimale sekundære tjenester afbrudt' . "\n" . '5 = Minimale primære tjenester afbrudt' . "\n" . '5 = Omfattende sekundære tjenester afbrudt' . "\n" . '7 = Omfattende primære tjenester afbrudt' . "\n" . '9 = Alle tjenester fuldstændig tabt',
+    'LossOfAccountabilityHelp' => 'Kan trusselsagenternes handlinger spores til en person?' . "\n" . '1 = Fuldt sporbar' . "\n" . '7 = Muligvis sporbar' . "\n" . '9 = Helt anonym',
+    'FinancialDamageHelp' => 'Hvor stor økonomisk skade vil en udnyttelse medføre?' . "\n" . '1 = Mindre end omkostningerne ved at udbedre sårbarheden' . "\n" . '3 = Mindre effekt på årligt overskud' . "\n" . '7 = Væsentlig effekt på årligt overskud' . "\n" . '9 = Konkurs',
+    'ReputationDamageHelp' => 'Ville en udnyttelse resultere i omdømmeskade, der ville skade virksomheden?' . "\n" . '1 = Minimal skade' . "\n" . '4 = Tab af større konti' . "\n" . '5 = Tab af goodwill' . "\n" . '9 = Brandskade',
+    'NonComplianceHelp' => 'Hvor meget eksponering medfører manglende overholdelse?' . "\n" . '2 = Mindre overtrædelse' . "\n" . '5 = Klar overtrædelse' . "\n" . '7 = Overtrædelse med høj profil',
+    'PrivacyViolationHelp' => 'Hvor mange personligt identificerbare oplysninger kunne videregives?' . "\n" . '3 = Én person' . "\n" . '5 = Hundredvis af mennesker' . "\n" . '7 = Tusindvis af mennesker' . "\n" . '9 = Millioner af mennesker',
+    // The OWASP holder's Score card heading. No existing key covers this
+    // (confirmed via grep before adding) -- the Likelihood/Impact card
+    // headings reuse the already-existing bare 'Likelihood'/'Impact' keys.
+    'OwaspScore' => 'OWASP-score',
+    // Phase 4d-iv follow-up: group-level descriptions for the 4 OWASP
+    // subgroup headings, sourced from OWASP's own Risk Rating Methodology
+    // (https://community.owasp.org/OWASP_Risk_Rating_Methodology), tightened
+    // into short UI captions -- not a verbatim quote (see this task's own
+    // source table for the original wording).
+    'ThreatAgentFactorsDescription' => 'Estimerer sandsynligheden for et vellykket angreb fra denne gruppe af trusselsagenter.',
+    'VulnerabilityFactorsDescription' => 'Estimerer sandsynligheden for, at denne sårbarhed vil blive opdaget og udnyttet.',
+    'TechnicalImpactDescription' => 'Opdeler påvirkning efter fortrolighed, integritet, tilgængelighed og ansvarlighed.',
+    'BusinessImpactDescription' => 'Afspejler, hvad der er vigtigt for virksomheden, ud over den rå tekniske effekt.',
+    // CVSS's own Temporal-metric 'Exploitability' help text. This key shares
+    // a labelKey ('Exploitability') with DREAD's own field, so both would
+    // otherwise derive the same generic lang key ('ExploitabilityHelp'),
+    // with DREAD's entry silently winning for both -- risk-details-form.js's
+    // buildCvssScoreItem() and risk-details-view.js's cvssMetricValueRow()
+    // reference this key directly for CVSS's Exploitability field instead
+    // of the generic '<labelKey>Help' derivation.
+    'CVSSExploitabilityHelp' => "Den nuværende status for exploit-teknikker eller kodetilgængelighed.\n• Ubevist: ingen exploit-kode er tilgængelig, eller udnyttelsen er teoretisk.\n• Proof-of-Concept: exploit-kode findes, men er ikke praktisk for de fleste angribere.\n• Funktionel: funktionel exploit-kode fungerer i de fleste situationer.\n• Høj: udnyttelsen er pålidelig og enten automatiseret (f.eks. en orm) eller kræver slet ikke exploit-kode.",
+    // Risk Scoring -- Classic Inline (Task 3): the Classic scoring method's
+    // new inline Score card heading and its Likelihood/Impact cards' short
+    // plain-English descriptions (js/simplerisk/common/risk-details-form.js's
+    // buildClassicHolder()). Deliberately NOT sourced from NIST SP 800-30 or
+    // any other external standard -- confirmed with the user via the
+    // approved mockup review, unlike OWASP's own subgroup descriptions
+    // above, which do cite OWASP's Risk Rating Methodology.
+    'ClassicScore' => 'Klassisk score',
+    'ClassicLikelihoodDescription' => 'Hvor sandsynligt det er, at denne risiko vil forekomme.',
+    'ClassicImpactDescription' => 'Hvor alvorlige konsekvenserne ville være, hvis denne risiko opstod.',
+    // Risk Scoring -- Custom Inline (Task 2): the Custom scoring method's
+    // new inline Score card heading (js/simplerisk/common/risk-details-form.js's
+    // buildCustomHolder()) and the Custom Value card's short description
+    // caption. 'CustomValueDescription' text confirmed directly with the
+    // user, same as Classic's own description keys above.
+    'CustomScore' => 'Brugerdefineret score',
+    'CustomValueDescription' => 'En brugerdefineret værdi kan være en decimalværdi mellem 0 og 10.',
+    // Risk Scoring -- Contributing Risk Inline (Phase 4d-v): the last of
+    // the three deferred scoring methods (DREAD/OWASP shipped earlier in
+    // this same project). The Likelihood/Contributing Risk cards' short
+    // plain-English descriptions (js/simplerisk/common/risk-details-form.js's
+    // buildContributingRiskHolder()). The Score card heading reuses the
+    // EXISTING 'ContributingRiskScore' key (already present above, same
+    // text) rather than duplicating it -- 'ContributingRisk'/
+    // 'ContributingLikelihood'/'Weight'/'Subject' are likewise reused as-is.
+    'ContributingLikelihoodDescription' => 'Hvor sandsynligt det er, at denne risiko vil forekomme.',
+    'ContributingRiskDescription' => 'Hver faktor nedenfor vægtes efter dens relative betydning – vælg, hvor meget denne risiko påvirkes af hver enkelt.',
+    // OWASP read-mode card (buildOwaspReadView(), risk-details-view.js):
+    // the live calculation formula under each of the 4 sub-group names
+    // (Threat Agent Factors/Vulnerability Factors/Technical Impact/
+    // Business Impact), matching the legacy risk-scoring-details panel's
+    // own "= ( a + b + c + d ) / 4" text (includes/display.php), and the
+    // OWASP Risk Rating Methodology link note placed in the OWASP Score
+    // column's open space below the summary numbers.
+    'OwaspSubgroupFormula' => '= ( {a} + {b} + {c} + {d} ) / 4',
+    'OwaspMethodologyNote' => 'Alle detaljer om OWASP-risikovurderingsmetoden kan findes',
+    'Here' => 'her',
+    // Scoring widget formula captions (Classic/DREAD/Contributing Risk),
+    // the same ".sr-cvss-vector under the score label" treatment CVSS's
+    // vector caption and OwaspSubgroupFormula above already have, on both
+    // the edit-mode holder (risk-details-form.js) and the read-mode card
+    // (risk-details-view.js). Classic reuses the existing RISKClassicExp1-5
+    // keys instead of a new one -- see those keys' own long-standing
+    // definitions above.
+    'DreadScoreFormula' => '= ( {a} + {b} + {c} + {d} + {e} ) / 5',
+    // Contributing Risk's per-factor weighted term and its shared
+    // Likelihood term (update_contributing_risk_score(), includes/
+    // functions.php) -- unlike DREAD/OWASP's fixed roster, the factor list
+    // is admin-configured, so this is one formula PER FACTOR ROW rather
+    // than one fixed caption under the total score.
+    // {maxName}: score.php parity -- legacy's "Maximum Value" column showed
+    // the max option's human-readable name alongside its number (e.g.
+    // "[5] Certain", includes/display.php); these formulas only showed the
+    // bare number.
+    'ContributingLikelihoodFormula' => '= {value} x 5 / {max} ({maxName})',
+    'ContributingFactorFormula' => '= {weight}% x {impact} x 5 / {max} ({maxName})',
+    // Contributing Risk's own subscore row in the Score card -- the sum of
+    // every factor's own term above it. Generic (not substituted with real
+    // numbers) since the number of terms is however many factors are
+    // configured, unlike the fixed-roster formulas above.
+    'ContributingRiskSubtotalFormula' => '= Sum af (Vægt x Påvirkning x 5 / Maks.)',
+    // Contributing Risk Score's own formula, under the total row -- always
+    // exactly 2 terms (unlike the Contributing Risk subtotal above), so
+    // substituted with the real current subtotal values, same convention
+    // DreadScoreFormula/OwaspSubgroupFormula use for their own fixed roster.
+    'ContributingRiskScoreFormula' => '= {likelihood} + {contributing}',
+    // Risk Scoring History widget (risk-details-view.js) -- replaces the
+    // legacy chart's bare save icon with a real menu item, structured for
+    // future export types alongside it.
+    'DownloadChartAsImage' => 'Download som billede',
+    // Legacy score.php's CVSS table had a "Full details of CVSS Version 2.0
+    // scoring can be found here." link (includes/display.php); this is its
+    // inline-scoring-card equivalent, same shape as OwaspMethodologyNote.
+    'CvssMethodologyNote' => 'Alle detaljer om CVSS version 2.0-scoring kan findes',
+    // Mitigation Controls redesign: the picker reuses ChooseControls/
+    // AddOrRemoveControls/etc from Document Program's control picker.
+    'InvalidControlID' => 'Ugyldigt kontrol-ID.',
+    'ValidationOwner' => 'Valideringsejer',
+    'ValidationStatus' => 'Valideringsstatus',
+    'NotStarted' => 'Ikke startet',
+    // management/view.php's "risk ID does not exist" empty state.
+    'RiskIdDoesNotExistBody' => 'Den risiko, du leder efter, er muligvis blevet slettet, eller linket er muligvis forkert.',
+    'MitigationControlsRequiresGovernance' => 'Kræver administrationstilladelse for at se.',
+    'ViewControlValidation' => 'Validering af visningskontrol',
+    'EditControlValidation' => 'Rediger kontrolvalidering',
+    'SupportingDocumentationRequiresSubmitRisk' => 'Kræver tilladelse til at sende risiko for at uploade filer.',
+    'SupportingDocumentationRequiresModifyRisks' => 'Kræver tilladelse til at ændre risici for at administrere filer.',
+    'MitigationSupportingDocumentationRequiresPlanMitigations' => 'Kræver tilladelse til Plan Mitigations for at administrere filer.',
+    'MitigationSubmittedBy' => 'Afbødende foranstaltninger indsendt af',
+    'UseADifferentDate' => 'Brug en anden dato',
+    'AssetGroup' => 'Aktivgruppe',
+    // Customization Cards Layout API (extras/customization/index.php) scope-validation errors.
+    'InvalidFgroup' => 'Ugyldig fgruppe.',
+    'CustomizationCardsLayoutApiScopeError' => 'API\'en til layout af tilpasningskort er kun tilgængelig for fgroup=risk, tab_index=1, tab_index=2 eller tab_index=3.',
+    // Asset management redesign
+    'DiscoverAssets' => 'Opdag aktiver',
+    'DiscoveryRuns' => 'Discovery-løb',
+    'DiscoveryRangeHint' => 'Én adresse, et start-slut-interval eller IPv4 CIDR',
+    'DiscoveryResolveNames' => 'Slå værtsnavne op',
+    'DiscoveryAddAs' => 'Tilføj nye aktiver som',
+    'DiscoveryStart' => 'Start opdagelse',
+    'DiscoveryBackgroundNote' => 'Kører i baggrunden. Adresser, der allerede findes, springes over.',
+    'DiscoveryRangeInvalid' => 'Indtast en gyldig IPv4-adresse, et gyldigt IPv4-interval eller en gyldig CIDR-blok.',
+    'DiscoveryRangeTooLarge' => 'Det interval er for stort. Grænsen er {$max} adresser.',
+    'DiscoveryRunQueued' => 'Opdagelsen begyndte.',
+    'DiscoveryRunCompleted' => 'Opdagelse afsluttet: {$new} nye aktiver.',
+    'AssetBulkSelectAll' => 'Vælg alle {$count} aktiver',
+    'AssetBulkAssignTeams' => 'Tildel hold…',
+    'AssetBulkAddToGroup' => 'Føj til gruppe…',
+    'AssetBulkDeleteConfirmTitle' => 'Slet {$count} aktiver?',
+    'AbleToEditAssets' => 'Mulighed for at redigere aktiver',
+    'AbleToDeleteAssets' => 'Mulighed for at slette aktiver',
+    'AbleToVerifyAssets' => 'I stand til at verificere aktiver',
+    'AbleToRunAssetDiscovery' => 'Kan køre Asset Discovery',
+    'AbleToCreateAssetGroups' => 'Mulighed for at oprette aktivgrupper',
+    'AbleToEditAssetGroups' => 'Mulighed for at redigere aktivgrupper',
+    'AbleToDeleteAssetGroups' => 'Mulighed for at slette aktivgrupper',
+    'ViewAsset' => 'Se aktiv',
+    'AssetUnverifiedByEditLog' => 'Aktivet "{$name}" blev returneret til ubekræftet, fordi brugeren "{$user}" ændrede sit navn eller IP-adresse uden tilladelse til at bekræfte aktiver.',
+    'AssetTeamsAssignedLog' => 'Aktivet "{$name}" blev tildelt team(s) "{$teams}" af brugeren "{$user}".',
+    // Manage assets page (asset management redesign, Task 9)
+    'AddAsset' => 'Tilføj aktiv',
+    'SearchAssetsPlaceholder' => 'Søg efter navn eller IP-adresse',
+    'AllLocations' => 'Alle lokationer',
+    'AllTags' => 'Alle tags',
+    'AllAssetGroups' => 'Alle aktivgrupper',
+    'AssetFields' => 'Aktivfelter',
+    'AssetBulkAllSelected' => 'Alle {$count} matchende aktiver er valgt',
+    'AssetDeleteConfirmTitle' => 'Slet aktiv "{$name}"?',
+    'DeleteAsset' => 'Slet aktiv',
+    'DeleteAssets' => 'Slet aktiver',
+    'AssetBulkAssignTeamsTitle' => 'Tildel teams til {$count} aktiver',
+    'AssetAssignTeamsHint' => 'De valgte hold er tilføjet. Hold, der allerede er på et aktiv, forbliver.',
+    'AssetAddToGroupTitle' => 'Tilføj {$count} aktiver til en gruppe',
+    'AssetChooseTeams' => 'Vælg hold',
+    'AssetChooseGroup' => 'Vælg en gruppe',
+    'Assign' => 'Tildel',
+    'AssetBulkVerifiedSummary' => '{$ok} bekræftet, {$failed} sprunget over',
+    'AssetBulkDeletedSummary' => '{$ok} slettet, {$failed} sprunget over',
+    'AssetBulkTeamsSummary' => 'Hold tildelt {$ok} aktiver, {$failed} sprunget over',
+    'AssetBulkGroupSummary' => '{$ok} tilføjet til gruppen, {$failed} sprunget over',
+    'AssetBulkSkippedList' => 'Springet over: {$list}',
+    'AssetBulkReasonNotFound' => 'ikke fundet',
+    'NoAssetsYet' => 'Ingen aktiver endnu',
+    'NoAssetsYetHint' => 'Aktiver, du tilføjer eller opdager, vises her.',
+    'NoAssetsMatchFilters' => 'Ingen aktiver matcher dine filtre',
+    'CouldNotLoadAssets' => 'Kunne ikke indlæse aktiver. Dine data er sikre.',
+    'AllValuations' => 'Alle værdiansættelser',
+    // Manage assets page, Asset groups tab (asset management redesign, Task 10)
+    'AddAssetGroup' => 'Tilføj gruppe',
+    'EditAssetGroup' => 'Rediger gruppe',
+    'DeleteAssetGroup' => 'Slet gruppe',
+    'ViewGroupMembers' => 'Se medlemmer',
+    'SearchAssetGroupsPlaceholder' => 'Søg i grupper efter navn',
+    'HighestValuation' => 'Højeste værdiansættelse',
+    'LinkedRisks' => 'Tilknyttede risici',
+    'RemoveFromGroup' => 'Fjern fra gruppe',
+    'AssetGroupMoreMembers' => '+ {$count} mere',
+    'ViewAllInAssetsTab' => 'Se alle i fanen Aktiver',
+    'NoAssetsInGroup' => 'Ingen aktiver i denne gruppe.',
+    'CouldNotLoadGroupMembers' => 'Medlemmerne af denne gruppe kunne ikke indlæses.',
+    'AssetGroupMembers' => 'Medlemmer',
+    'AssetGroupMembersHint' => 'Kun aktiver, du kan se, er angivet. Medlemmer, du ikke kan se, forbliver i gruppen.',
+    'ChooseAssets' => 'Vælg aktiver',
+    'AddOrRemoveAssets' => 'Tilføj eller fjern aktiver…',
+    'UseTheseAssets' => 'Brug disse aktiver',
+    'AllAssets' => 'Alle aktiver',
+    'Valuation' => 'Vurdering',
+    'PickerShowingFirstN' => 'Viser den første {$count} af {$total}. Søg eller indsnævre for at finde resten.',
+    'AssetGroupDeleteConfirmTitle' => 'Slet gruppen "{$name}"?',
+    'AssetGroupDeleteKeepsAssets' => 'Aktiverne i denne gruppe slettes ikke. Kun gruppen fjernes.',
+    'NoAssetGroupsYet' => 'Ingen aktivgrupper endnu',
+    'NoAssetGroupsYetHint' => 'Gruppér aktiver, så du kan kortlægge og rapportere om dem sammen.',
+    'NoAssetGroupsMatchSearch' => 'Ingen aktivgrupper matcher din søgning',
+    'CouldNotLoadAssetGroups' => 'Kunne ikke indlæse aktivgrupper. Dine data er sikre.',
+    'DiscoveryAssignTeams' => 'Tildel til teams',
+    'DiscoveryAssignTeamsHint' => 'Valgfrit. Alle nye aktiver tilføjes til disse teams.',
+    'DiscoveryAddAsHint' => 'Indstillet med din tilladelse til at verificere aktiver.',
+    'DiscoveryTeamsInvalid' => 'Vælg hold, der eksisterer, og som du tilhører.',
+    'DiscoveryResolveNamesInvalid' => 'Slå værtsnavne op, skal være aktiveret eller deaktiveret.',
+    'DiscoveryTooManyActiveRuns' => 'Du har allerede {$max} registreringskørsler i gang. Vent på, at en af dem er færdig, eller annuller den.',
+    'DiscoveryRunNotFound' => 'Discovery-kørsel ikke fundet.',
+    'DiscoveryRunAlreadyFinished' => 'Denne opdagelseskørsel er allerede afsluttet.',
+    'DiscoveryRunCancelled' => 'Discovery-kørsel aflyst.',
+    'DiscoveryRunFailedToast' => 'Opdagelsen af {$range} mislykkedes.',
+    'DiscoveryStatusQueued' => 'I kø',
+    'DiscoveryProgress' => '{$scanned} af {$total}',
+    'DiscoveryLiveHosts' => 'Live værter',
+    'DiscoveryNewAssets' => 'Nye aktiver',
+    'DiscoveryStartedAt' => 'Startet',
+    'DiscoveryCancelRun' => 'Annuller kørsel',
+    'CouldNotLoadDiscoveryRuns' => 'Kunne ikke indlæse opdagelseskørsler.',
+    'DiscoveryRangeReserved' => 'Det interval inkluderer reserverede adresser (loopback, link-local, multicast eller 0.0.0.0/8), der ikke kan scannes.',
+    'DiscoveryTooManyActiveRunsInstance' => 'Der er allerede {$max} registreringskørsler i gang. Prøv igen, når en af dem er færdig.',
+    'DiscoveryErrorScan' => 'Scanningen stoppede på grund af en fejl. Tjek systemloggene for at få flere oplysninger.',
+    'DiscoveryErrorWorkerLost' => 'Baggrundskøen stoppede behandlingen af denne kørsel.',
+    'DiscoveryErrorRequesterInactive' => 'Brugeren, der startede denne kørsel, er ikke længere aktiv.',
+    // Asset management redesign: translated API errors (bulk actions, column settings, discovery) and discovery audit lines
+    'AssetBulkBodyInvalid' => 'Send massehandlingen som en JSON-brødtekst.',
+    'AssetBulkActionRequired' => 'Vælg en massehandling.',
+    'AssetBulkUnknownAction' => 'Den massehandling er ikke tilgængelig.',
+    'AssetBulkSelectionRequired' => 'Vælg aktiver enten efter ID eller filter.',
+    'AssetBulkIdsRequired' => 'Vælg mindst ét aktiv.',
+    'AssetBulkIdsInvalid' => 'Aktiv-ID\'er skal være hele tal.',
+    'AssetBulkTooManyAssets' => 'Du kan højst handle på {$max} aktiver ad gangen. Indskrænk dit valg, og prøv igen.',
+    'AssetBulkFilterInvalid' => 'Filteret er ikke gyldigt. Genindlæs siden, og prøv igen.',
+    'AssetBulkFilterUnknownKey' => 'Filteret "{$key}" genkendes ikke.',
+    'AssetBulkFilterBadValue' => 'Filteret "{$key}" har en ugyldig værdi.',
+    'AssetBulkFilterTooManyValues' => 'Filteret "{$key}" kan højst vise {$max} værdier.',
+    'AssetBulkFilterAllAlone' => 'Valg af alle aktiver kan ikke kombineres med andre filtre.',
+    'AssetBulkFilterEmpty' => 'Vælg et filter, eller vælg alle aktiver, før du kører en massehandling.',
+    'AssetBulkExpectedCountInvalid' => 'Det forventede antal aktiver skal være et helt tal.',
+    'AssetBulkParamsInvalid' => 'Indstillingerne for denne massehandling er ikke gyldige.',
+    'AssetBulkTeamsRequired' => 'Vælg mindst ét hold.',
+    'AssetBulkTeamsNotFound' => 'Et eller flere af disse hold eksisterer ikke længere.',
+    'AssetBulkTeamsNotMember' => 'Du kan kun tildele hold, du tilhører.',
+    'AssetBulkGroupNotFound' => 'Den pågældende aktivgruppe findes ikke længere.',
+    'AssetBulkNoMatch' => 'Ingen aktiver matcher dit valg.',
+    'AssetBulkCountMismatch' => 'De matchende aktiver er ændret fra {$expected} til {$actual} , siden du valgte dem. Gennemgå listen, og prøv igen.',
+    'AssetColumnSettingsBodyInvalid' => 'Send kolonneindstillingerne som en JSON-brødtekst med kolonner eller rækkefølge.',
+    'AssetColumnSettingsSaveFailed' => 'Dine kolonner kunne ikke gemmes. Bed en administrator om at færdiggøre SimpleRisk-opgraderingen.',
+    'DiscoveryRunQueueFailed' => 'Kunne ikke sætte opdagelseskørslen i kø. Prøv igen.',
+    'DiscoveryRunStartedLog' => 'Kørslen af aktivregistrering #{$id} af {$range} ({$count} adresser) blev startet af brugeren "{$user}".',
+    'DiscoveryRunCancelledLog' => 'Kørslen af aktivregistrering #{$id} af {$range} blev annulleret af brugeren "{$user}".',
+    'AssetBulkTooManyToDelete' => 'Du kan højst slette {$max} aktiver ad gangen. Indskrænk dit valg, og prøv igen.',
+    'AssetBulkFilterNotApplied' => 'Filteret "{$key}" kunne ikke anvendes som sendt, så intet blev ændret.',
+    'AssetBulkExpectedCountRequired' => 'Sletning af aktiver via filter kræver det antal aktiver, du forventer at slette.',
+    'AssetBulkReasonNotAttempted' => 'ikke forsøgt',
+    'MoreActions' => 'Flere handlinger',
+    'AssetCreateNewGroupOption' => 'Opret en ny gruppe…',
+    'AssetNewGroupName' => 'Nyt gruppenavn',
+    'AssetFilterByTeam' => 'Filtrer efter hold {$name}',
+    'AssetFilterByValuation' => 'Filtrer efter værdiansættelse {$name}',
+    'AssetFilterByTag' => 'Filtrer efter tag {$name}',
+    'AssetFilterByLocation' => 'Filtrer efter sted/lokation {$name}',
+    'AssetFilteringByTeam' => 'Filtrering efter hold {$name}',
+    'AssetFilteringByValuation' => 'Filtrering efter værdiansættelse {$name}',
+    'AssetFilteringByTag' => 'Filtrering efter tag {$name}',
+    'AssetFilteringByLocation' => 'Filtrering efter sted/lokation {$name}',
+    'AssetShowOnlyVerified' => 'Vis kun verificerede aktiver',
+    'AssetShowOnlyUnverified' => 'Vis kun ubekræftede aktiver',
+    'AssetShowingVerified' => 'Viser verificerede aktiver',
+    'AssetShowingUnverified' => 'Viser ubekræftede aktiver',
+    'CustomizationLayoutPayloadRejected' => 'Layoutet kunne ikke gemmes, da det indeholder felter eller kort, der ikke tilhører denne skabelon. Intet blev ændret.',
+    'CustomizationLayoutRejectedUnknownScope' => 'Dette skabelonomfang kan ikke gemmes fra layouteditoren. Intet blev ændret.',
+    'CustomizationLayoutRejectedEmptyFields' => 'Layoutet har ingen gyldige felter, så det blev ikke gemt. Intet blev ændret.',
+    'CustomizationLayoutRejectedWouldDeleteAll' => 'Hvis du gemmer dette layout, fjernes alle felter fra skabelonen, så den blev ikke gemt. Genindlæs siden, og prøv igen.',
+    'CustomizationLayoutRejectedRequiredField' => 'Et obligatorisk felt kan ikke fjernes fra layoutet. Intet blev ændret.',
+    'CustomizationLayoutRejectedBulkRemoval' => 'Hvis du gemmer dette layout, fjernes de fleste skabelonfelter, uden at du fjerner dem her. Genindlæs siden, og prøv igen. Der er ikke ændret noget.',
+    'CustomizationLayoutRejectedGroupMismatch' => 'Skabelongruppen findes ikke eller tilhører en anden type post. Intet blev ændret.',
+    'CustomizationLayoutLegacySaveRefused' => 'Denne skabelon redigeres med layouteditoren og kan ikke gemmes via det ældre panelslutpunkt.',
+    // Asset discovery probe methods
+    'DiscoveryPortsInvalid' => 'Indtast op til {$max} TCP-porte mellem 1 og 65535, adskilt af kommaer.',
+    'DiscoveryErrorProbeUnavailable' => 'Den probemetode, som denne kørsel startede med, er ikke længere tilgængelig for baggrundsarbejderen. Start en ny kørsel.',
+    'DiscoveryProbeIcmpUnprivileged' => 'ICMP-ping (ikke-privilegeret socket)',
+    'DiscoveryProbeIcmpRaw' => 'ICMP-ping (rå socket)',
+    'DiscoveryProbePingCommand' => 'ICMP ping (ping-kommando)',
+    'DiscoveryProbeTcpConnect' => 'TCP-forbindelse',
+    'DiscoveryProbeMethod' => 'Probemetode: {$method}',
+    'DiscoveryProbeDetectedByWebServer' => 'Registreret af webserveren. Baggrundsarbejderen bruger muligvis en anden metode.',
+    'DiscoveryTcpProbeWarning' => 'Værter findes kun, hvis de svarer på en af de scannede TCP-porte, så værter, der blokerer disse porte, vil ikke blive fundet. For at få komplette resultater, lad serveren sende ICMP-ping: tillad ikke-privilegerede ping-sockets eller NET_RAW-funktionen, eller installer ping.',
+    'DiscoveryTcpPortsForRun' => 'TCP-porte til denne kørsel',
+    'DiscoveryTcpPortsHint' => 'Kommasepareret, op til {$max} porte. Lad feltet stå tomt for at bruge standardindstillingen: {$ports}.',
+    'DiscoveryDefaultTcpPorts' => 'TCP-porte til registrering af aktiver',
+    'DiscoveryDefaultTcpPortsHint' => 'Bruges når baggrundsarbejderen ikke kan sende ICMP-ping. Kommasepareret, op til {$max} porte.',
+    'DiscoveryErrorTcpUnreliable' => 'Scanningen stoppede, fordi netværket besvarer TCP-forbindelser for adresser, der ikke kan være rigtige værter (en proxy eller firewall i vejen), så alle adresser ville se aktive ud. Bed din administrator om at lade serveren sende ICMP-ping.',
+    'DiscoveryDefaultTcpPortsResetLog' => 'TCP-portene til aktivregistrering blev nulstillet til standardværdierne af brugeren "{$user}".',
+    'DiscoveryNotConfigured' => 'Opdagelse er ikke konfigureret. Bed din systemadministrator om at indstille de tilladte intervaller i config.php.',
+    'DiscoveryRangeNotAllowed' => 'Det område er uden for de områder, som Discovery har tilladelse til at scanne.',
+    'DiscoveryAllowedRangesList' => 'Tilladte intervaller: {$ranges}',
+    // Asset record modal
+    'AssetNotAvailable' => 'Dette aktiv er ikke tilgængeligt. Det er muligvis blevet slettet, eller du har muligvis ikke adgang til det.',
+    'AssetCustomFieldNotInTemplate' => 'Et eller flere brugerdefinerede felter tilhører ikke skabelonen for dette aktiv. Intet blev ændret.',
+    'AssetMappedControlsInvalid' => 'De tilknyttede kontrolelementer kunne ikke gemmes. Hver række skal have en modenhed og mindst én eksisterende kontrolelement. Intet blev ændret.',
+    'AssetMappedControlsTooMany' => 'Et aktiv kan højst knyttes til {$max} kontrolelementer. Intet blev ændret.',
+    'AddControlsAtAnotherMaturity' => 'Tilføj kontroller ved en anden udløbsdato',
+    'ChoosingControlsNeedsGovernancePermission' => 'Valg af kontrolelementer kræver tilladelsen Governance.',
+    'NControls' => '{n} kontrol(er)',
+    'SavingKeepsTheCurrentControlMappings' => 'Hvis du gemmer, bevares de nuværende kontroltilknytninger.',
+    'LoadingControls' => 'Indlæser kontrolelementer…',
+    'ControlListCouldNotBeLoaded' => 'Kontrollisten kunne ikke indlæses, så de tilknyttede kontrolelementer kan ikke ændres lige nu.',
+    'RemoveControlsAtMaturity' => 'Fjern kontroller ved udløb {maturity}',
+    'ControlIdUnavailable' => '#{id} (ikke tilgængelig)',
+    'AssetRecordEdit' => 'Rediger aktiv',
+    'AssetRecordIdN' => 'Aktiv #{$id}',
+    'AssetRecordCopyLink' => 'Kopiér link til dette aktiv',
+    'AssetRecordLinkCopied' => 'Link kopieret.',
+    'AssetRecordLinkCopyFailed' => 'Linket kunne ikke kopieres. Kopier det i stedet fra adresselinjen.',
+    'AssetRecordMarkUnverified' => 'Markér som ubekræftet',
+    'AssetRecordViewAuditTrail' => 'Se revisionsspor',
+    'AssetRecordAuditTrailTitle' => 'Revisionsspor',
+    'AssetRecordAuditTrailEmpty' => 'Der blev ikke registreret nogen aktivitet for dette aktiv i denne periode.',
+    'AssetRecordAuditTrailFailed' => 'Revisionssporet kunne ikke indlæses.',
+    'AssetRecordBackToAsset' => 'Tilbage til aktiv',
+    'AssetRecordSave' => 'Gem aktiv',
+    'AssetRecordProvenanceVerified' => 'Bekræftet · tilføjet {$date}',
+    'AssetRecordProvenanceUnverified' => 'Ubekræftet: endnu ikke bekræftet af en person, der kan verificere aktiver · tilføjet {$date}',
+    'AssetRecordUnsavedHint' => 'Hvis du lukker med ikke-gemte ændringer, bliver du bedt om at bekræfte først.',
+    'AssetRecordDiscardQuestion' => 'Vil du kassere dine ikke-gemte ændringer?',
+    'AssetRecordKeepEditing' => 'Fortsæt med at redigere',
+    'AssetRecordDiscardChanges' => 'Kassér ændringer',
+    'AssetRecordVerificationCard' => 'Verifikation',
+    'AssetRecordVerificationTag' => 'Kræver tilladelsen til at verificere aktiver',
+    'AssetRecordVerifiedHint' => 'En ansvarlig person har gennemgået dette aktiv. Ændring af dets navn eller IP-adresse uden tilladelse til at verificere aktiver sætter det tilbage til ubekræftet tilstand.',
+    'AssetRecordLoadFailed' => 'Aktivet kunne ikke indlæses. Prøv igen.',
+    'CustomizationCardsLayoutApiScopeErrorWithAsset' => 'API\'en til layout af tilpasningskort er kun tilgængelig for fgroup=risk (tab_index 1, 2 eller 3) og fgroup=asset (tab_index 1).',
+    'DiscoveryErrorRequesterNotPermitted' => 'Den bruger, der startede denne kørsel, har ikke længere tilladelse til at køre aktivregistrering.',
+    'AssetRecordEditField' => 'Rediger {$field}',
+    // Asset Scoring (FIPS 199 categorization + weighted score)
+    'Confidentiality' => 'Fortrolighed',
+    'Integrity' => 'Integritet',
+    'Availability' => 'Tilgængelighed',
+    'AssetScoringLevelLow' => 'Lav',
+    'AssetScoringLevelModerate' => 'Moderat',
+    'AssetScoringLevelHigh' => 'Høj',
+    'AssetScoringValueInvalid' => 'Fortrolighed, integritet og tilgængelighed accepteres som lav, moderat eller høj (fortrolighed accepteres også som ikke_relevant).',
+    'AssetScoringChangedLog' => 'Aktivet "{$name}" {$objective} blev ændret fra {$from} til {$to} af brugeren "{$user}".',
+    'FIPSCategorization' => 'FIPS-kategorisering',
+    'WeightedScore' => 'Vægtet score',
+    'WeightedBand' => 'Vægtet bånd',
+    'AllCategorizations' => 'Alle kategoriseringer',
+    'AllBands' => 'Alle bands',
+    'AssetFilterByCategorization' => 'Filtrer efter FIPS-kategorisering {$name}',
+    'AssetFilteringByCategorization' => 'Filtrering efter FIPS-kategorisering {$name}',
+    'AssetFilterByBand' => 'Filtrer efter vægtet bånd {$name}',
+    'AssetFilteringByBand' => 'Filtrering efter vægtet bånd {$name}',
+    'AssetScoring' => 'Asset Scoring',
+    'AssetScoringSettingsHint' => 'Hvert aktiv er vurderet som Lav, Moderat eller Høj for fortrolighed, integritet og tilgængelighed, og fortrolighed kan i stedet være Ikke relevant, hvilket udelukker det fra begge resultater. Dets FIPS-kategorisering er den højeste af de tre vurderinger. Dets vægtede score er det vægtede gennemsnit af de tre niveauværdier, og båndtærsklerne ændrer denne score til et Lavt, Moderat eller Højt bånd. Ændring af disse indstillinger giver hvert aktiv øjeblikkelig en ny score.',
+    'Weights' => 'Vægte',
+    'AssetScoringWeightsHint' => 'Hvor meget hvert mål tæller i den vægtede score: 0 til 100, med op til to decimaler. En vægtning på 0 udelader det pågældende mål. Integritet og Tilgængelighed kan ikke begge være 0, fordi en "Ikke relevant" fortrolighed altid udelades.',
+    'LevelValues' => 'Niveauværdier',
+    'AssetScoringLevelValuesHint' => 'Det tal, som hver vurdering bidrager med til den vægtede score: over 0 og op til 100, med op til to decimaler, og Lav under Moderat under Høj. Standardindstillingerne er Lav 1, Moderat 2 og Høj 3.',
+    'BandThresholds' => 'Båndtærskler',
+    'AssetScoringBandThresholdsHint' => 'En vægtet score på eller over en tærskelværdi er i det pågældende bånd, og en score under den moderate tærskelværdi er lav. Moderat skal starte over den lave værdi, og Høj skal starte over Moderat og ikke højere end den høje værdi.',
+    'ModerateStartsAt' => 'Moderat starter kl.',
+    'HighStartsAt' => 'Høj starter kl.',
+    'DefaultScoringForNewAssets' => 'Standardscoring for nye aktiver',
+    'AssetScoringDefaultsHint' => 'Forudvælger disse vurderinger, når nogen tilføjer et aktiv i aktivformularen. Aktiver, der er oprettet via opdagelse, import eller API\'en, forbliver uden vurdering, medmindre de angiver deres egne vurderinger. Lad alle tre være indstillet til Ikke for at slå dette fra.',
+    'AssetScoringWeightsInvalid' => 'Vægte for aktivscoring skal være tal fra 0 til 100 med højst to decimaler, og integritet og tilgængelighed må ikke begge være 0.',
+    'AssetScoringValuesInvalid' => 'Værdier for aktivscoringniveauer skal være tal over 0 og op til 100 med højst to decimaler, hvor Lav er under Moderat og under Høj.',
+    'AssetScoringThresholdsInvalid' => 'Grænser for aktivscoringbånd må højst indeholde to decimaler, hvor Moderat starter over den lave værdi, Høj starter over Moderat og Høj starter ikke højere end den høje værdi.',
+    'AssetScoringDefaultsInvalid' => 'Standardscoren for nye aktiver skal være et niveau, som hvert mål tilbyder.',
+    'AssetScoringSettingsNotSaved' => 'Indstillingerne for aktivscoring kunne ikke gemmes. Intet blev ændret.',
+    'AssetScoringSettingsChangedLog' => 'Indstillingerne for aktivscoring blev ændret af brugeren "{$user}".',
+    'AssetScoringNotSet' => 'Ikke indstillet',
+    'NotScored' => 'Ikke scoret',
+    'AssetScoringNotScoredHint' => 'Besvar alle tre mål for at få point på dette aktiv.',
+    'ImportAssetScoringValueIgnored' => 'Værdien {$objective} "{$value}" for aktivet "{$asset_name}" er ikke en gyldig vurdering og blev ignoreret.',
+    'AssetScoringSecurityObjectives' => 'Sikkerhedsmål',
+    'AssetScoringConfidentialityHelp' => 'Hvad er den potentielle indvirkning, hvis der sker en uautoriseret videregivelse af oplysningerne om dette aktiv?',
+    'AssetScoringIntegrityHelp' => 'Hvad er den potentielle indvirkning, hvis der sker en uautoriseret ændring eller ødelæggelse af oplysningerne på dette aktiv?',
+    'AssetScoringAvailabilityHelp' => 'Hvad er den potentielle indvirkning, hvis der er en afbrydelse af adgangen til eller brugen af dette aktiv?',
+    'AssetScoringHelpHigh' => 'Alvorlig eller katastrofal negativ effekt',
+    'AssetScoringHelpModerate' => 'Alvorlig bivirkning',
+    'AssetScoringHelpLow' => 'Begrænset eller ingen negativ effekt',
+    'AssetScoringHelpNotApplicable' => 'Fortrolighed er ikke et problem for dette aktiv (for eksempel offentlige oplysninger)',
+    'AssetScoringHelpLabel' => '{$objective} vurderingsvejledning',
+    'AssetScoringMeterValue' => '{$score}, {$band} bånd',
+    'AssetScoringNoWeightedScore' => 'Ingen vægtet score',
+    'AssetScoringNoWeightedScoreNote' => 'Ingen vægtet score: hvert mål, der tæller, har en vægtning på 0.',
+    'AssetScoringUpgradePending' => 'Asset Scoring kan ikke gemmes, før SimpleRisk-databaseopgraderingen er kørt. Intet blev ændret.',
+    'AssetScoringResultHelpLabel' => '{$result} forklaring',
+    'AssetScoringScoreHelp' => 'Den vægtede score blander de tre vurderinger til ét tal fra {$low} til {$high}. Hver vurdering får sin fastsatte værdi, og hver gange ganges med dens målsætnings vægtning. Resultaterne lægges sammen og divideres med summen af vægtene. En fortrolighedsgrad på Ikke relevant udelades sammen med dens vægtning. De fastsatte værdier og vægte konfigureres i Præferencer. Alle tre målsætninger skal vurderes, før en score vises.',
+    'AssetScoringCategorizationHelp' => 'FIPS 199-sikkerhedskategoriseringen er high water mark: den højeste vurdering blandt de gældende mål. En enkelt høj vurdering gør aktivet til højt, uanset hvad de andre er. Ikke relevant ignoreres.',
+    'AssetScoringBandHelp' => 'Båndet placerer den vægtede score på en Lav, Moderat eller Høj skala. En score under {$moderate} er Lav, fra {$moderate} op til {$highAt} er Moderat, og {$highAt} eller mere er Høj. Grænserne konfigureres i Præferencer.',
+    // Manage assets: Confidentiality / Integrity / Availability rating filters
+    'AllConfidentialityRatings' => 'Alle fortrolighedsvurderinger',
+    'AllIntegrityRatings' => 'Alle integritetsvurderinger',
+    'AllAvailabilityRatings' => 'Alle tilgængelighedsvurderinger',
+    'AssetFilterByConfidentiality' => 'Filtrer efter fortrolighed {$name}',
+    'AssetFilteringByConfidentiality' => 'Filtrering efter fortrolighed {$name}',
+    'AssetFilterByIntegrity' => 'Filtrer efter integritet {$name}',
+    'AssetFilteringByIntegrity' => 'Filtrering efter integritet {$name}',
+    'AssetFilterByAvailability' => 'Filtrer efter tilgængelighed {$name}',
+    'AssetFilteringByAvailability' => 'Filtrering efter tilgængelighed {$name}',
+    'HighestFIPSCategorization' => 'Højeste FIPS-kategorisering',
+    'HighestWeightedScore' => 'Højeste vægtede score',
+    'HighestWeightedBand' => 'Højest vægtede bånd',
+    'AssetGroupFields' => 'Felter for aktivgruppe',
+    'NoAssetGroupsMatchFilters' => 'Ingen aktivgrupper matcher dine filtre',
+    'AssetGroupFilterByHighestCategorization' => 'Filtrer efter højeste FIPS-kategorisering {$name}',
+    'AssetGroupFilteringByHighestCategorization' => 'Filtrering efter højeste FIPS-kategorisering {$name}',
+    'AssetGroupFilterByHighestBand' => 'Filtrer efter højest vægtede bånd {$name}',
+    'AssetGroupFilteringByHighestBand' => 'Filtrering efter højest vægtede bånd {$name}',
+    'AssetGroupBulkSelectionRequired' => 'Vælg aktivgrupper enten efter ID eller filter.',
+    'AssetGroupBulkIdsRequired' => 'Vælg mindst én aktivgruppe.',
+    'AssetGroupBulkIdsInvalid' => 'Aktivgruppe-id\'er skal være hele tal.',
+    'AssetGroupBulkFilterAllAlone' => 'Valg af alle aktivgrupper kan ikke kombineres med andre filtre.',
+    'AssetGroupBulkFilterEmpty' => 'Vælg et filter, eller vælg alle aktivgrupper, før du sletter.',
+    'AssetGroupBulkExpectedCountInvalid' => 'Det forventede antal aktivgrupper skal være et helt tal.',
+    'AssetGroupBulkExpectedCountRequired' => 'Sletning af aktivgrupper via filter kræver det antal grupper, du forventer at slette.',
+    'AssetGroupBulkNoMatch' => 'Ingen aktivgrupper matcher dit valg.',
+    'AssetGroupBulkCountMismatch' => 'De matchende aktivgrupper er ændret fra {$expected} til {$actual} , siden du valgte dem. Gennemgå listen, og prøv igen.',
+    'AssetGroupBulkTooManyToDelete' => 'Du kan højst slette {$max} aktivgrupper ad gangen. Indskrænk dit valg, og prøv igen.',
+    'AssetGroupBulkSelectAll' => 'Vælg alle {$count} aktivgrupper',
+    'AssetGroupBulkAllSelected' => 'Alle {$count} matchende aktivgrupper er valgt',
+    'AssetGroupBulkDeleteConfirmTitle' => 'Slet {$count} aktivgrupper?',
+    'AssetGroupBulkDeleteKeepsAssets' => 'Aktiverne i disse grupper slettes ikke. Kun grupperne fjernes.',
+    'DeleteAssetGroups' => 'Slet grupper',
+    'AssetGroupBulkDeletedSummary' => '{$ok} grupper slettet, {$failed} sprunget over',
+    'ChoosingRisksNeedsRiskManagementPermission' => 'Valg af tilknyttede risici kræver tilladelse til risikostyring.',
+    'NAssociatedRisks' => '{n} tilknyttede risici',
+    'SavingKeepsTheCurrentRiskAssociations' => 'Opsparing bevarer de nuværende tilknyttede risici.',
     '' => '',
 );
 ?>

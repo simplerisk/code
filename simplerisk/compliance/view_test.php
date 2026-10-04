@@ -9,7 +9,49 @@
     $breadcrumb_title_key = "ViewTest";
     $active_sidebar_submenu = "ManageAudits";
     $active_sidebar_menu = "Compliance";
-    render_header_and_sidebar(['blockUI', 'selectize', 'WYSIWYG', 'multiselect', 'datetimerangepicker', 'CUSTOM:common.js', 'CUSTOM:pages/risk.js', 'CUSTOM:cve_lookup.js', 'CUSTOM:pages/compliance.js'], ['check_compliance' => true], $breadcrumb_title_key, $active_sidebar_menu, $active_sidebar_submenu);
+    // 'gridstack' + CUSTOM:common/risk-details-form.js: the create-risk
+    // modal's Cards-based form engine (js/simplerisk/common/
+    // risk-details-form.js, the same one management/review_risk.php's + Add
+    // Risk modal and the standalone Submit Risk page use) -- the modal's own
+    // shown.bs.modal handler below calls window.RiskDetailsForm.init()
+    // against #view-test-modal-new-risk-canvas. selectize/multiselect/
+    // WYSIWYG/datetimerangepicker (already listed above for this page's own
+    // use) double as this engine's field-widget dependencies -- gridstack is
+    // the only one this page didn't already need for itself.
+    // required_localization_keys: 'SubmitRisk' is read by this file's own
+    // syncViewTestNewRiskModalFooter() below as the fallback label for the
+    // modal footer's Submit proxy button (window.RiskDetailsForm's embedded
+    // .save-risk-form affordance is deliberately unlabeled).
+    // CUSTOM:common/cvss-v2-scoring.js MUST precede CUSTOM:common/
+    // risk-details-form.js: the RiskScoringMethod widget's CVSS holder
+    // (Phase 4d-ii) calls window.CvssV2Scoring.loadFromHiddenFields()/
+    // calculateCVSS() directly from its "Score with CVSS" click handler --
+    // without this script this page's own create-risk modal throws
+    // TypeError: Cannot read properties of undefined (reading
+    // 'loadFromHiddenFields') the moment CVSS is picked. Same insertion
+    // management/index.php and management/view.php already carry.
+    // CUSTOM:common/dread-scoring.js MUST precede CUSTOM:common/
+    // risk-details-form.js for the same reason: the RiskScoringMethod
+    // widget's DREAD holder (Phase 4d-iii) calls
+    // window.DreadScoring.calculateDread() at BUILD time, the moment the
+    // holder is constructed -- not only from a later change handler like
+    // CVSS's own click-triggered call above -- so the script must already
+    // be loaded before this page's own create-risk modal's canvas is
+    // first built, not merely by the time a user interacts with it.
+    // CUSTOM:common/owasp-scoring.js MUST precede CUSTOM:common/
+    // risk-details-form.js for the same reason as DREAD above: the
+    // RiskScoringMethod widget's OWASP holder (Phase 4d-iv) calls
+    // window.OwaspScoring.calculateOwasp() at BUILD time.
+    // CUSTOM:common/classic-scoring.js MUST precede CUSTOM:common/
+    // risk-details-form.js for the same reason: the RiskScoringMethod
+    // widget's Classic holder (Risk Scoring -- Classic Inline) calls
+    // window.ClassicScoring.calculateClassic() at BUILD time.
+    // CUSTOM:common/contributing-risk-scoring.js MUST precede CUSTOM:common/
+    // risk-details-form.js for the same reason as Classic/CVSS/DREAD/OWASP's
+    // own scoring scripts: the RiskScoringMethod widget's Contributing Risk
+    // holder calls window.ContributingRiskScoring.calculateContributingRisk()
+    // at BUILD time, the moment the holder is constructed.
+    render_header_and_sidebar(['blockUI', 'selectize', 'WYSIWYG', 'multiselect', 'datetimerangepicker', 'CUSTOM:common.js', 'CUSTOM:pages/risk.js', 'CUSTOM:cve_lookup.js', 'CUSTOM:pages/compliance.js', 'gridstack', 'CUSTOM:common/cvss-v2-scoring.js', 'CUSTOM:common/dread-scoring.js', 'CUSTOM:common/owasp-scoring.js', 'CUSTOM:common/classic-scoring.js', 'CUSTOM:common/contributing-risk-scoring.js', 'CUSTOM:common/risk-details-form.js'], ['check_compliance' => true], $breadcrumb_title_key, $active_sidebar_menu, $active_sidebar_submenu, required_localization_keys: ['SubmitRisk']);
 
     // Include required functions file
     require_once(realpath(__DIR__ . '/../includes/governance.php'));
@@ -59,19 +101,40 @@
 ?>
 
 <!-- MODEL WINDOW FOR SUBMIT RISK -->
-<div id="modal-new-risk" class="modal hide fade in" tabindex="-1" role="dialog" aria-labelledby="modal-new-risk" aria-hidden="true">
+<?php
+    // sr-modal shell (design-system.md §8, "Form-in-modal") around an empty
+    // canvas div that this page's own shown.bs.modal handler (below) hands to
+    // window.RiskDetailsForm.init() (embedded: true) -- the reusable
+    // Cards-form engine extracted from the standalone Submit Risk page
+    // (js/simplerisk/common/risk-details-form.js), replacing the legacy
+    // display_add_risk() embed. Mirrors includes/display.php's
+    // #review-risk-add-modal shell exactly, except:
+    //  - id stays 'modal-new-risk' (not a page-specific id) -- risk.js's
+    //    addRisk() success handler hides this modal by that hardcoded id on
+    //    the associate_test == 1 branch (js/simplerisk/pages/risk.js), and
+    //    the .associate_new_risk trigger below already targets it.
+    //  - no data-on-save='refresh-and-close': this modal's success path is
+    //    the associate_test branch below, not the refresh-and-close
+    //    convention review-risk-add-modal uses.
+?>
+<div class="modal fade sr-modal" id="modal-new-risk" tabindex="-1" aria-labelledby="modal-new-risk-title" aria-hidden="true">
     <div class="modal-dialog modal-xl modal-dialog-scrollable">
         <div class="modal-content">
             <div class="modal-header">
-                <h4 class="modal-title"><?= $escaper->escapeHtml($lang['NewRisk']); ?></h4>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <span class="sr-modal-icon"><i class="fa fa-plus" aria-hidden="true"></i></span>
+                <h4 class="modal-title" id="modal-new-risk-title"><?= $escaper->escapeHtml($lang['NewRisk']); ?></h4>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="<?= $escaper->escapeHtml($lang['Close']); ?>"></button>
             </div>
             <div class="modal-body">
-                <div id="tab-content-container" class="tab-data" style="background-color:#fff;padding-top:20px;padding-right:20px;margin-bottom:15px">
-    <?php
-                    display_add_risk();
-    ?>
-                </div>
+                <!-- .sr-qform is REQUIRED, not decorative -- see
+                     management/index.php's #submit-risk-container comment.
+                     Without it every card the embedded RiskDetailsForm
+                     engine renders (not just OWASP's scoring cards) has no
+                     background/border/shadow/header styling. -->
+                <div id="view-test-modal-new-risk-canvas" class="sr-qform"></div>
+            </div>
+            <div class="modal-footer" id="view-test-modal-new-risk-footer">
+                <span class="sr-modal-hint"></span>
             </div>
         </div>
     </div>
@@ -110,9 +173,12 @@
 <script>
     $(document).ready(function() {
 
-        // Have to do the selector like this, because #risk-submit-form only returns a single result and sadly
-        // this functionality is built in a way that there're duplicate IDs
-        $("form[id='risk-submit-form']").append("<input type='hidden' name='associate_test' value='1'>");
+        // The associate_test hidden input is now appended by
+        // syncViewTestNewRiskModalCanvas() (below), which runs every time
+        // window.RiskDetailsForm (re-)renders
+        // #view-test-modal-new-risk-canvas -- appending it here, synchronously
+        // at document.ready, would run before the engine's async init() has
+        // rendered any form at all.
 
         $(".datepicker").initAsDatePicker();
 
@@ -125,10 +191,6 @@
             enableCaseInsensitiveFiltering: true,
         });
 
-        $('#tab-content-container select.assets-asset-groups-select').each(function() {
-            setupAssetsAssetGroupsWidget($(this));
-        });
-        
         //render multiselects which are not rendered yet after the page is loaded.
         //multiselects which were already rendered contain 'button.multiselect'.
         $(".multiselect:not(button)").multiselect({enableFiltering: true, buttonWidth: '100%', enableCaseInsensitiveFiltering: true,});
@@ -153,13 +215,16 @@
             $('#edit-test').submit();
         });
         $(document).on("click", ".associate_new_risk", function() {
-
-            // Reset the form
-            reset_new_risk_form("#reset_form");
-
+            // No separate reset step is needed here any more:
+            // window.RiskDetailsForm.init() (bound to #modal-new-risk's
+            // shown.bs.modal below) is idempotent -- it tears down and
+            // rebuilds the form fresh on every open -- so the modal already
+            // renders clean without calling reset_new_risk_form(), which no
+            // longer exists on this page now that display_add_risk() isn't
+            // embedded here (that function was only ever defined inline by
+            // display_add_risk() itself, includes/display.php).
             $("#modal-new-risk").modal("show");
             $("#associate-risk").modal("hide");
-
         });
         $(document).on("click", ".associate_existing_risk", function() {
             $("#modal-existing-risk").modal("show");
@@ -186,27 +251,128 @@
             $('form#edit-test').submit();
         });
 
-        // If there're template tabs we have to separately initialize the WYSIWYG editors
-        if ($("#template_group_id").length > 0) {
-            // Have to make sure that the IDs are unique
+        // The legacy "if there're template tabs, initialize the WYSIWYG
+        // editors per-template-group, else initialize the single
+        // #risk-submit-form pair" branch that used to live here is gone:
+        // both branches were tied 1:1 to display_add_risk()'s hardcoded
+        // ids/structure, which #modal-new-risk no longer renders.
+        // window.RiskDetailsForm handles its own rich-text field
+        // initialization internally as part of rendering the Cards form.
 
-            $("[name='assessment']").each(function() {
-                let template_group_id = $(this).closest('form').find('#template_group_id').val();
-                $(this).attr('id', 'assessment_' + template_group_id);
-                init_minimun_editor("#assessment_" + template_group_id);
-            });
+        // ---- Create Risk modal (#modal-new-risk): footer + associate_test wiring ----
+        //
+        // Mirrors management/review_risk.php's + Add Risk modal
+        // (js/simplerisk/pages/review-risk.js's syncAddRiskModalFooter() /
+        // reviewRiskAddModalCanvasObserver): #modal-new-risk's body is an
+        // empty canvas div that window.RiskDetailsForm.init() (embedded:
+        // true) renders the Cards form into on open. That engine's embedded
+        // affordance is a hidden .save-risk-form button with no visible
+        // label and no instruction text -- the footer below is filled with a
+        // visible proxy button that forwards its click to the real one,
+        // since risk.js's save handler resolves the form via
+        // $this.closest('form') and a button re-parented out of the form
+        // would submit nothing.
+        //
+        // window.RiskDetailsForm.init() is async (it fetches
+        // /ui/risk/template_groups before rendering anything), so neither the
+        // form nor its .save-risk-form button exist in the DOM at the moment
+        // shown.bs.modal fires. The MutationObserver below closes that gap.
+        //
+        // It fires ONCE per open, not once per template-group tab switch. It
+        // watches the canvas with `{ childList: true }` and no `subtree`, so
+        // the only mutation it can see is a change to the canvas's own direct
+        // children -- which happens in exactly one place: renderTabs()'s
+        // `container.empty().append($form)` on the initial render. Every later
+        // tab switch goes through loadTemplateGroup()/buildCanvas(), which only
+        // rewrite a NESTED canvas div inside the already-built $form and leave
+        // the mount's direct children untouched. That single fire is
+        // sufficient: the <form>, its hidden .save-risk-form affordance and the
+        // associate_test hidden input are built/appended once and persist
+        // across tab switches.
+        function syncViewTestNewRiskModalFooter() {
 
-            $("[name='notes']").each(function() {
-                let template_group_id = $(this).closest('form').find('#template_group_id').val();
-                $(this).attr('id', 'notes_' + template_group_id);
-                init_minimun_editor("#notes_" + template_group_id);
-            });
+            var $modal = $('#modal-new-risk');
+            var $footer = $modal.find('#view-test-modal-new-risk-footer');
 
-        } else {
-            // init WYSIWYG editor
-            init_minimun_editor("#risk-submit-form [name=assessment]");
-            init_minimun_editor("#risk-submit-form [name=notes]");
+            if (!$footer.length) {
+                return;
+            }
+
+            var $pane = $modal.find('.tab-pane.tab-data.active');
+            if (!$pane.length) {
+                $pane = $modal.find('.tab-data').first();
+            }
+            if (!$pane.length) {
+                $pane = $modal;
+            }
+
+            var $realSave = $pane.find('.save-risk-form').first();
+
+            if (!$realSave.length) {
+                return;
+            }
+
+            var $hintSource = $pane.find('.risk-form-actions').prevAll('p').first();
+            $footer.find('.sr-modal-hint').text($hintSource.text().trim());
+
+            $footer.find('.view-test-new-risk-footer-action').remove();
+
+            var saveLabel = $realSave.text().trim();
+            if (!saveLabel) {
+                // See the comment above: the engine's hidden .save-risk-form
+                // button carries no text of its own.
+                saveLabel = _lang['SubmitRisk'];
+            }
+            $('<button>', {
+                'type': 'button',
+                'class': 'btn btn-submit view-test-new-risk-footer-action',
+                'text': saveLabel
+            }).on('click', function () {
+                $pane.find('.save-risk-form').first().trigger('click');
+            }).appendTo($footer);
         }
+
+        // Has to run off the observer rather than once at page load: the
+        // engine renders (and re-renders, on every re-open) the whole form
+        // asynchronously, so a document.ready-time append would run before
+        // there is a <form> to append to.
+        function syncViewTestNewRiskModalCanvas() {
+            $("#view-test-modal-new-risk-canvas form").append("<input type='hidden' name='associate_test' value='1'>");
+            syncViewTestNewRiskModalFooter();
+        }
+
+        var viewTestNewRiskModalCanvasObserver = null;
+
+        $('#modal-new-risk')
+            .on('shown.bs.modal', function () {
+                window.RiskDetailsForm.init('#view-test-modal-new-risk-canvas', { embedded: true });
+
+                var canvasEl = document.getElementById('view-test-modal-new-risk-canvas');
+                if (canvasEl && typeof MutationObserver !== 'undefined') {
+                    if (viewTestNewRiskModalCanvasObserver) {
+                        viewTestNewRiskModalCanvasObserver.disconnect();
+                    }
+                    viewTestNewRiskModalCanvasObserver = new MutationObserver(function () {
+                        syncViewTestNewRiskModalCanvas();
+                    });
+                    viewTestNewRiskModalCanvasObserver.observe(canvasEl, { childList: true });
+                }
+            })
+            .on('hidden.bs.modal', function () {
+                if (viewTestNewRiskModalCanvasObserver) {
+                    viewTestNewRiskModalCanvasObserver.disconnect();
+                    viewTestNewRiskModalCanvasObserver = null;
+                }
+
+                // Full teardown on close: every nested GridStack instance,
+                // HugeRTE editor and pending timer the engine built for this
+                // container. window.RiskDetailsForm.init() tears down and
+                // rebuilds from scratch regardless (see the comment on the
+                // .associate_new_risk handler above), but destroying here as
+                // soon as the modal is gone avoids leaving a live instance
+                // (and its window resize binding) around while hidden.
+                window.RiskDetailsForm.destroy('#view-test-modal-new-risk-canvas');
+            });
     });
 </script>
 <?php

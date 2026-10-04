@@ -109,9 +109,9 @@
 		<table id='business_units' class='easyui-treegrid framework-table'>
 			<thead>
 				<tr>
-					<th data-options="field:'name'" width='20%'><?= $escaper->escapeHtml($lang['Name']); ?></th>
-					<th data-options="field:'description'" width='70%'><?= $escaper->escapeHtml($lang['Description']); ?></th>
-					<th data-options="field:'actions'" width='10%'><?= $escaper->escapeHtml($lang['Actions']); ?></th>
+					<th field='name' width='20%'><?= $escaper->escapeHtml($lang['Name']); ?></th>
+					<th field='description' width='70%'><?= $escaper->escapeHtml($lang['Description']); ?></th>
+					<th field='actions' width='10%'><?= $escaper->escapeHtml($lang['Actions']); ?></th>
 				</tr>
 			</thead>
 		</table>

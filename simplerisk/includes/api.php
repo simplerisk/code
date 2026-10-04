@@ -15,6 +15,11 @@ require_once(realpath(__DIR__ . '/reporting.php'));
 // directly rather than relying on that, per the CLAUDE.md reachability rule.
 require_once(realpath(__DIR__ . '/entity_graph.php'));
 require_once(realpath(__DIR__ . '/assets.php'));
+require_once(realpath(__DIR__ . '/permissions.php'));
+require_once(realpath(__DIR__ . '/assets_page_rules.php'));
+require_once(realpath(__DIR__ . '/assets_write_rules.php'));
+require_once(realpath(__DIR__ . '/asset_scoring.php'));
+require_once(realpath(__DIR__ . '/asset_groups_list.php'));
 require_once(realpath(__DIR__ . '/compliance.php'));
 // get_test_audit_history() -- declared directly here rather than relying on
 // api/v2/index.php's own require, per the CLAUDE.md reachability rule.
@@ -841,10 +846,12 @@ function viewmitigation($id = null) {
     }
 
     // NOTE (SR-1898): current_solution / security_requirements / security_recommendations
-    // are encrypted-at-rest fields (Encrypted DB Extra); the value here is still
-    // ciphertext (decrypted downstream), so it must NOT be purified at this boundary —
-    // purifying ciphertext corrupts it and breaks decryption. These fields are purified
-    // on write (submit_mitigation / update_mitigation purify the plaintext before try_encrypt).
+    // are encrypted-at-rest fields (Encrypted DB Extra). They must NOT be purified
+    // at this boundary -- they are purified on write (submit_mitigation /
+    // update_mitigation purify the plaintext before try_encrypt) -- but they must
+    // be decrypted: nothing downstream of this JSON response can, and returning
+    // the stored value handed API clients ciphertext whenever the Extra was active.
+    $mitigation = try_decrypt_fields($mitigation, ['current_solution', 'security_requirements', 'security_recommendations']);
 
     $data = array(
         "submission_date"=> $mitigation['submission_date'],
@@ -917,7 +924,9 @@ function viewreview($id = null) {
         // Return a JSON response
         json_response(400, $escaper->escapeHtml($lang['NoReview']), NULL);
     }
-    $review = $review[0];
+    // comments is encrypted at rest (Encrypted DB Extra); decrypt it here, as
+    // the client cannot (see viewmitigation()).
+    $review = try_decrypt_fields($review[0], ['comments']);
     $risk = get_risk_by_id($risk_id);
     $risk = $risk[0];
     $risk_level = get_risk_level_name($risk['calculated_risk']);
@@ -2293,11 +2302,25 @@ function saveDetailsForm()
         $OWASPPrivacyViolation = (int)get_param("post", "OWASPPrivacyViolation");
 
         // Custom Risk Scoring
-        $custom = (float)get_param("post", "Custom");
-        
+        // Not cast to (float) -- see updateRisk()'s identical comment
+        // (includes/api.php); an empty POST value must reach
+        // update_risk_scoring()'s own range check as the string "", not as
+        // (float)"" == 0.0, or the get_setting('default_risk_score')
+        // blank-value fallback never fires.
+        $custom = get_param("post", "Custom");
+
         // Contributing Risk Scoring
         $ContributingLikelihood = (int)get_param("post", "ContributingLikelihood");
-        $ContributingImpacts = get_param("post", "ContributingImpacts");
+        // PHASE 4d-v FIX (sibling of updateRisk()'s own fix, includes/api.php):
+        // get_param()'s own default is "" when the key is absent (includes/
+        // functions.php), so with no default here update_contributing_risk_score()'s
+        // `foreach ($ContributingImpacts as ...)` (includes/functions.php) would
+        // fatal with "foreach() argument must be of type array|object, string
+        // given" the moment a request omits ContributingImpacts entirely --
+        // e.g. saving a risk via saveDetailsForm() while Contributing Risk is
+        // selected with zero factors filled in. Matches updateRisk()'s own
+        // `get_param("POST", "ContributingImpacts", [])` call exactly.
+        $ContributingImpacts = get_param("post", "ContributingImpacts", []);
 
         update_risk_scoring($id, $scoring_method, $CLASSIC_likelihood, $CLASSIC_impact, $AccessVector, $AccessComplexity, $Authentication, $ConfImpact, $IntegImpact, $AvailImpact, $Exploitability, $RemediationLevel, $ReportConfidence, $CollateralDamagePotential, $TargetDistribution, $ConfidentialityRequirement, $IntegrityRequirement, $AvailabilityRequirement, $DREADDamagePotential, $DREADReproducibility, $DREADExploitability, $DREADAffectedUsers, $DREADDiscoverability, $OWASPSkillLevel, $OWASPMotive, $OWASPOpportunity, $OWASPSize, $OWASPEaseOfDiscovery, $OWASPEaseOfExploit, $OWASPAwareness, $OWASPIntrusionDetection, $OWASPLossOfConfidentiality, $OWASPLossOfIntegrity, $OWASPLossOfAvailability, $OWASPLossOfAccountability, $OWASPFinancialDamage, $OWASPReputationDamage, $OWASPNonCompliance, $OWASPPrivacyViolation, $custom, $ContributingLikelihood, $ContributingImpacts);
 
@@ -3138,6 +3161,83 @@ function saveSubjectForm($id = null)
 
 }
 
+/*************************************************
+ * FUNCTION: MANAGEMENT - GET RISK AUDIT LOG      *
+ * GET /management/risk/auditLog?id={id}&days={} *
+ *************************************************/
+/**
+ * Structured counterpart to get_audit_trail_html() (includes/display.php)
+ * for management/view.php's Audit Trail section -- same design-system.md
+ * §6/§7 shape as get_exceptions_audit_log_api()/get_documents_audit_log_api()
+ * (Define Exceptions / Document Program's own audit trails, this file),
+ * consumed by js/simplerisk/pages/risk-audit-trail.js's createAuditTrail()
+ * config. No Entity column/filter, unlike those two: this endpoint is
+ * already scoped to ONE risk by $id (a list-page concept those two need,
+ * this one doesn't), so entityKey is omitted in the JS config entirely
+ * rather than repeating this risk's own name on every row.
+ *
+ * get_audit_trail() already decrypts `message` and resolves `user_fullname`
+ * via its own LEFT JOIN -- no extra query needed, just the same ['risk',
+ * 'jira'] log_type filter get_audit_trail_html() already passes for this
+ * page, reshaped into the structured response shape.
+ */
+function get_risk_audit_log_api($id = null)
+{
+    global $lang;
+
+    if ($id === null && !isset($_GET['id']))
+    {
+        set_alert(true, "bad", $lang['YouNeedToSpecifyAnIdParameter']);
+        json_response(400, get_alert(true), NULL);
+        return;
+    }
+    $id = $id ?? $_GET['id'];
+
+    if (!has_permission("riskmanagement") || !check_access_for_risk($id)) {
+        set_alert(true, "bad", $lang['NoPermissionForRiskManagement']);
+        json_response(400, get_alert(true), NULL);
+        return;
+    }
+
+    $days = !empty($_GET['days']) && ctype_digit($_GET['days']) ? (int)$_GET['days'] : 7;
+
+    if ($days < 0)
+        $days = 7;
+
+    json_response(200, null, array_map(function($log) {
+            // Several risk-lifecycle messages (Risk details/Risk mitigation
+            // details updated -- see update_risk_details()/edit_mitigation_
+            // details() in includes/functions.php) append a field-by-field
+            // diff after a "\n": "Field name : `x` (`old`=>`new`), ...". That
+            // diff is the actual useful audit content beyond "Updated by
+            // <user>" (already conveyed by the activity pill + actor), so
+            // it's split out as its own `detail` field rather than dropped --
+            // the OLD get_audit_trail_html() display showed the whole
+            // message including this, so a structured table that hides it
+            // entirely would be a real information loss, not just a
+            // re-styling. html_entity_decode(): those diff values were
+            // escapeHtml()'d before storage (see that function's own
+            // comment on why), so decode once here to plain text -- same
+            // normalization extract_exception_name_from_audit_message()
+            // (includes/governance.php) already applies for an identical
+            // reason -- and let the client's own esc() (js/simplerisk/sr-
+            // audit-trail.js) escape it exactly once at render time, per
+            // this response's own "raw values, client escapes once" contract.
+            $decrypted_message = $log['message'];
+            $message_parts = explode("\n", $decrypted_message, 2);
+            return array(
+                'timestamp' => $log['timestamp'],
+                'timestamp_display' => date(get_default_datetime_format("g:i A T"), strtotime($log['timestamp'])),
+                'message' => $decrypted_message,
+                'detail' => isset($message_parts[1]) ? html_entity_decode($message_parts[1]) : null,
+                'activity' => classify_risk_audit_activity($decrypted_message),
+                'user_id' => (int)$log['user_id'],
+                'user_name' => $log['user_fullname'],
+            );
+        }, get_audit_trail($id, $days, ['risk', 'jira']))
+    );
+}
+
 /*****************************************************
  * FUNCTION: MANAGEMENT - SET PROJECT TO A RISK      *
  * POST /management/risk/setProjectToRisk?id={id}    *
@@ -3403,6 +3503,479 @@ function acceptMitigationForm($id = null)
     }
 }
 
+/*****************************************************
+ * FUNCTION: MANAGEMENT - Mitigation Controls List     *
+ * GET /risks/{id}/mitigations/controls -- structured   *
+ * JSON for the redesigned Mitigation Controls table,   *
+ * replacing getMitigationControlsDatatable()'s raw-    *
+ * HTML-blob v1 endpoint for the Cards UI only (that     *
+ * legacy endpoint is left in place for its other        *
+ * caller). $id is the risk's DISPLAY id (+1000), same    *
+ * convention as acceptMitigationForm()/saveMitigation().  *
+ * Gated on BOTH governance AND riskmanagement (plus team  *
+ * separation) -- unlike the pure-catalog control roster    *
+ * (GET /governance/controls/roster, api_v2_governance_       *
+ * control_roster(), api/v2/includes/governance.php), this     *
+ * response mixes governance-owned control data WITH             *
+ * risk-management-owned mapping data (which controls a           *
+ * SPECIFIC risk's mitigation has attached, plus validation        *
+ * owner/percent/status), so it needs the intersection of           *
+ * both permissions, not either alone.                                *
+ *****************************************************/
+function getMitigationControlsList($id = null)
+{
+    global $lang, $escaper;
+
+    if (!check_permission("riskmanagement") || !check_permission("governance")) {
+        set_alert(true, "bad", $escaper->escapeHtml($lang['NoPermissionForRiskManagement']));
+        json_response(400, get_alert(true), NULL);
+        return;
+    }
+
+    $id = (int)($id ?? $_GET['id'] ?? 0);
+    if (!$id) {
+        set_alert(true, "bad", $escaper->escapeHtml($lang['YouNeedToSpecifyAnIdParameter']));
+        json_response(400, get_alert(true), NULL);
+        return;
+    }
+
+    // Team separation
+    if (!check_access_for_risk($id)) {
+        set_alert(true, "bad", $escaper->escapeHtml($lang['NoPermissionForRiskManagement']));
+        json_response(403, get_alert(true), NULL);
+        return;
+    }
+
+    $mitigation = get_mitigation_by_id($id);
+    $control_ids_csv = !empty($mitigation) ? ($mitigation[0]['mitigation_controls'] ?? '') : '';
+
+    if (empty($control_ids_csv)) {
+        json_response(200, null, array());
+        return;
+    }
+
+    $mitigation_id = $mitigation[0]['mitigation_id'];
+    $controls = get_framework_controls($control_ids_csv);
+
+    // Bulk-fetch validation + file counts for the whole mitigation in two
+    // queries rather than one per control -- a mitigation control list is
+    // typically a few dozen rows at most, but there is no reason to pay an
+    // N+1 for it.
+    $db = db_open();
+
+    $stmt = $db->prepare("SELECT control_id, validation_details, validation_owner, validation_mitigation_percent FROM `mitigation_to_controls` WHERE mitigation_id = :mitigation_id");
+    $stmt->bindParam(":mitigation_id", $mitigation_id, PDO::PARAM_INT);
+    $stmt->execute();
+    $validation_by_control = array();
+    foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $row) {
+        $validation_by_control[(int)$row['control_id']] = $row;
+    }
+
+    $stmt = $db->prepare("SELECT control_id, COUNT(*) AS file_count FROM `validation_files` WHERE mitigation_id = :mitigation_id GROUP BY control_id");
+    $stmt->bindParam(":mitigation_id", $mitigation_id, PDO::PARAM_INT);
+    $stmt->execute();
+    $file_counts = array();
+    foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $row) {
+        $file_counts[(int)$row['control_id']] = (int)$row['file_count'];
+    }
+
+    db_close($db);
+
+    $data = array_map(function ($control) use ($validation_by_control, $file_counts) {
+        $control_id = (int)$control['id'];
+        $validation = $validation_by_control[$control_id] ?? null;
+        // "Enterprise" control_type carries its own control_status
+        // (Pass/Fail/Not Tested) -- read-only here, same as the legacy
+        // getMitigationControlsDatatable() display.
+        $control_type_names = get_names_by_multi_values("control_type", $control['control_type_ids']);
+        $is_enterprise = strpos($control_type_names, "Enterprise") !== false;
+
+        return array(
+            'control_id' => $control_id,
+            'control_number' => $control['control_number'],
+            'short_name' => $control['short_name'],
+            'family_short_name' => $control['family_short_name'],
+            'validation_owner' => $validation ? (int)$validation['validation_owner'] : 0,
+            'validation_owner_name' => ($validation && (int)$validation['validation_owner']) ? get_name_by_value('user', (int)$validation['validation_owner']) : '',
+            'validation_mitigation_percent' => $validation ? (int)$validation['validation_mitigation_percent'] : 0,
+            'has_validation_details' => $validation ? (($validation['validation_details'] ?? '') !== '') : false,
+            'file_count' => $file_counts[$control_id] ?? 0,
+            'control_type' => $control_type_names,
+            'control_status' => $is_enterprise ? (int)($control['control_status'] ?? 0) : null,
+        );
+    }, $controls);
+
+    json_response(200, null, $data);
+}
+
+/*****************************************************
+ * FUNCTION: MANAGEMENT - Get Mitigation Control       *
+ * Validation                                          *
+ * GET /risks/{id}/mitigations/controls/{control_id}/   *
+ * validation -- data source for the Control Validation  *
+ * modal. Gated on BOTH governance AND riskmanagement --   *
+ * see getMitigationControlsList()'s own docblock for the   *
+ * reasoning; this response mixes the same two data owners.  *
+ *****************************************************/
+function getMitigationControlValidation($id = null, $control_id = null)
+{
+    global $lang, $escaper;
+
+    if (!check_permission("riskmanagement") || !check_permission("governance")) {
+        set_alert(true, "bad", $escaper->escapeHtml($lang['NoPermissionForRiskManagement']));
+        json_response(400, get_alert(true), NULL);
+        return;
+    }
+
+    $id = (int)($id ?? $_GET['id'] ?? 0);
+    $control_id = (int)($control_id ?? $_GET['control_id'] ?? 0);
+    if (!$id || !$control_id) {
+        set_alert(true, "bad", $escaper->escapeHtml($lang['YouNeedToSpecifyAnIdParameter']));
+        json_response(400, get_alert(true), NULL);
+        return;
+    }
+
+    if (!check_access_for_risk($id)) {
+        set_alert(true, "bad", $escaper->escapeHtml($lang['NoPermissionForRiskManagement']));
+        json_response(403, get_alert(true), NULL);
+        return;
+    }
+
+    $controls = get_framework_controls((string)$control_id);
+    if (empty($controls)) {
+        set_alert(true, "bad", $escaper->escapeHtml($lang['InvalidControlID']));
+        json_response(400, get_alert(true), NULL);
+        return;
+    }
+    $control = $controls[0];
+
+    $mitigation = get_mitigation_by_id($id);
+    $mitigation_id = !empty($mitigation) ? $mitigation[0]['mitigation_id'] : 0;
+
+    $validation = $mitigation_id ? get_mitigation_to_controls($mitigation_id, $control_id) : false;
+    $files = $mitigation_id ? get_validation_files($mitigation_id, $control_id) : array();
+
+    $control_type_names = get_names_by_multi_values("control_type", $control['control_type_ids']);
+    $is_enterprise = strpos($control_type_names, "Enterprise") !== false;
+
+    $data = array(
+        'control_id' => $control_id,
+        'control_number' => $control['control_number'],
+        'short_name' => $control['short_name'],
+        'description' => $control['description'],
+        'family_short_name' => $control['family_short_name'],
+        'control_type' => $control_type_names,
+        'control_status' => $is_enterprise ? (int)($control['control_status'] ?? 0) : null,
+        'validation_details' => $validation['validation_details'] ?? '',
+        'validation_owner' => isset($validation['validation_owner']) ? (int)$validation['validation_owner'] : 0,
+        'validation_mitigation_percent' => isset($validation['validation_mitigation_percent']) ? (int)$validation['validation_mitigation_percent'] : 0,
+        'files' => $files,
+        'owner_options' => get_options_from_table('enabled_users'),
+    );
+
+    json_response(200, null, $data);
+}
+
+/*****************************************************
+ * FUNCTION: MANAGEMENT - Save Mitigation Control       *
+ * Validation                                            *
+ * POST /risks/{id}/mitigations/controls/{control_id}/    *
+ * validation -- multipart/form-data (real file upload,    *
+ * unlike the big Edit Mitigation form's urlencoded PATCH,  *
+ * which could never carry a file). Saves independently of  *
+ * the rest of the mitigation and touches only this one      *
+ * control's mitigation_to_controls row (see                  *
+ * save_mitigation_control_validation()'s own docblock,        *
+ * includes/functions.php) -- this is the fix for the data-     *
+ * loss bug where saving the mitigation form used to wipe       *
+ * every control's validation data. Gated on governance AND      *
+ * riskmanagement (+ plan_mitigations), same reasoning as the      *
+ * two GET endpoints above -- mitigation_to_controls IS the         *
+ * control-to-risk mapping table, just extended with validation      *
+ * columns, so writing to it needs the same intersection as reading   *
+ * from it.                                                            *
+ *****************************************************/
+function saveMitigationControlValidation($id = null, $control_id = null)
+{
+    global $lang, $escaper;
+
+    if (!check_permission("riskmanagement") || !check_permission("governance") || empty($_SESSION["plan_mitigations"]) || $_SESSION["plan_mitigations"] != 1) {
+        set_alert(true, "bad", $escaper->escapeHtml($lang['MitigationPermissionMessage']));
+        json_response(400, get_alert(true), NULL);
+        return;
+    }
+
+    $id = (int)($id ?? $_GET['id'] ?? 0);
+    $control_id = (int)($control_id ?? $_GET['control_id'] ?? 0);
+    if (!$id || !$control_id) {
+        set_alert(true, "bad", $escaper->escapeHtml($lang['YouNeedToSpecifyAnIdParameter']));
+        json_response(400, get_alert(true), NULL);
+        return;
+    }
+
+    if (!check_access_for_risk($id)) {
+        set_alert(true, "bad", $escaper->escapeHtml($lang['NoPermissionForRiskManagement']));
+        json_response(403, get_alert(true), NULL);
+        return;
+    }
+
+    // The control must actually be attached to this mitigation --
+    // save_mitigation_control_validation() has no attachment check of its
+    // own (it will happily create a row for any control_id it's given), so
+    // that check belongs here, at the request boundary.
+    $mitigation = get_mitigation_by_id($id);
+    $mitigation_id = !empty($mitigation) ? (int)$mitigation[0]['mitigation_id'] : 0;
+    $attached_ids = !empty($mitigation) ? array_map('intval', array_filter(explode(',', (string)($mitigation[0]['mitigation_controls'] ?? '')))) : array();
+
+    if (!$mitigation_id || !in_array($control_id, $attached_ids, true)) {
+        set_alert(true, "bad", $escaper->escapeHtml($lang['InvalidControlID']));
+        json_response(400, get_alert(true), NULL);
+        return;
+    }
+
+    $validation_details = (string)get_param("POST", "validation_details", "");
+    $validation_owner = (int)get_param("POST", "validation_owner", 0);
+    $validation_mitigation_percent = (int)get_param("POST", "validation_mitigation_percent", 0);
+
+    save_mitigation_control_validation($mitigation_id, $control_id, $validation_details, $validation_owner, $validation_mitigation_percent);
+
+    // file_ids[] names the EXISTING files the caller wants to keep (the
+    // modal's remove-file "x" already dropped the rest from this list
+    // client-side) -- anything not named is deleted. A newly-chosen file
+    // is uploaded in addition, same two-step shape save_mitigation_
+    // controls() used to do inline.
+    $file_ids = !empty($_POST['file_ids']) ? sanitize_int_array($_POST['file_ids']) : array();
+    refresh_files_for_validation($mitigation_id, $control_id, $file_ids);
+
+    if (!empty($_FILES['artifact_file']) && !empty($_FILES['artifact_file']['name'])) {
+        $error = upload_validation_file($mitigation_id, $control_id, $_FILES['artifact_file']);
+        if ($error !== 1) {
+            set_alert(true, "bad", $escaper->escapeHtml(is_string($error) ? $error : $lang['RequestFailed']));
+            json_response(400, get_alert(true), NULL);
+            return;
+        }
+    }
+
+    set_alert(true, "good", $lang['Success']);
+    json_response(200, get_alert(true), array('files' => get_validation_files($mitigation_id, $control_id)));
+}
+
+/*****************************************************
+ * Supporting Documentation (Details tab, view_type=1) *
+ * and Mitigation Supporting Documentation (Mitigation  *
+ * tab, view_type=2) -- both use these SAME two shared   *
+ * helpers, parameterized by $view_type, since the two     *
+ * fields are otherwise byte-for-byte identical: one         *
+ * `files` row family (get_supporting_files()/upload_file()/  *
+ * refresh_files_for_risk(), includes/functions.php),          *
+ * distinguished only by that column. Real (multipart)          *
+ * upload+list+remove for the Cards edit form, the same fix      *
+ * pattern as the Control Validation modal's own dedicated         *
+ * endpoint above: the big Edit form's PATCH is urlencoded/JSON,     *
+ * so a file input rendered inside it could never actually submit    *
+ * (populateFieldContent()'s own 'file'+submitMode==='update' guard,  *
+ * risk-details-form.js) -- this is what makes it real instead.        *
+ *****************************************************/
+function _get_supporting_documentation_files_response($id, $view_type)
+{
+    $files = get_supporting_files($id, $view_type);
+    return array_map(function ($file) {
+        return array('unique_name' => $file['unique_name'], 'name' => $file['name']);
+    }, $files);
+}
+
+// $id here is the DISPLAY (risk.id + 1000) id, matching check_access_for_risk()'s
+// own convention -- get_supporting_files() does the -1000 internally, but
+// refresh_files_for_risk()/upload_file() do not (confirmed against their real
+// callers, update_risk()/update_mitigation(), includes/functions.php, both of
+// which subtract 1000 themselves before calling either), so this function
+// subtracts once, up front, rather than leaving each call site to remember it.
+function _save_supporting_documentation($id, $view_type)
+{
+    global $lang;
+
+    $raw_id = (int)$id - 1000;
+
+    // unique_names[] names the EXISTING files the caller wants to KEEP -- the
+    // same "kept list, diff-delete the rest" shape saveMitigationControlValidation()
+    // uses via file_ids[] above, not a separate remove-by-id action. An absent
+    // key would mean "delete everything" to refresh_files_for_risk() (see that
+    // function's own callers' comments), so this always sends the field,
+    // defaulting to an empty array only when the caller genuinely has none left.
+    $unique_names = !empty($_POST['unique_names']) && is_array($_POST['unique_names'])
+        ? array_values(array_filter(array_map('strval', $_POST['unique_names']), function ($v) { return $v !== ''; }))
+        : array();
+    refresh_files_for_risk($unique_names, $raw_id, $view_type);
+
+    if (!empty($_FILES['file']) && !empty($_FILES['file']['name'])) {
+        $result = upload_file($raw_id, $_FILES['file'], $view_type);
+        if ($result !== 1) {
+            return is_string($result) ? $result : $lang['RequestFailed'];
+        }
+    }
+
+    return true;
+}
+
+/*****************************************************
+ * FUNCTION: MANAGEMENT - Get Supporting Documentation *
+ * GET /risks/{id}/supporting-documentation -- the       *
+ * Details tab's file list (view_type=1). Gated on         *
+ * riskmanagement (read access), same tier as every other    *
+ * GET this file already exposes -- WRITE is the narrower      *
+ * modify_risks gate, enforced separately below.                *
+ *****************************************************/
+function getSupportingDocumentation($id = null)
+{
+    global $lang, $escaper;
+
+    if (!check_permission("riskmanagement")) {
+        set_alert(true, "bad", $escaper->escapeHtml($lang['NoPermissionForRiskManagement']));
+        json_response(400, get_alert(true), NULL);
+        return;
+    }
+
+    $id = (int)($id ?? $_GET['id'] ?? 0);
+    if (!$id) {
+        set_alert(true, "bad", $escaper->escapeHtml($lang['YouNeedToSpecifyAnIdParameter']));
+        json_response(400, get_alert(true), NULL);
+        return;
+    }
+
+    if (!check_access_for_risk($id)) {
+        set_alert(true, "bad", $escaper->escapeHtml($lang['NoPermissionForRiskManagement']));
+        json_response(403, get_alert(true), NULL);
+        return;
+    }
+
+    json_response(200, null, array('files' => _get_supporting_documentation_files_response($id, 1)));
+}
+
+/*****************************************************
+ * FUNCTION: MANAGEMENT - Save Supporting Documentation *
+ * POST /risks/{id}/supporting-documentation --           *
+ * multipart/form-data. Gated on modify_risks: this is       *
+ * ALWAYS an edit of an EXISTING risk (the create-mode         *
+ * Submit Risk / +Add Risk modal path uploads its own file       *
+ * inline with the risk-creation POST -- see addRisk(), which      *
+ * never reaches this endpoint at all), so there is no create-      *
+ * mode variant to distinguish here, unlike the client-side           *
+ * submit_risks-vs-modify_risks split risk-details-form.js's own       *
+ * gate makes for WHICH widget renders in the first place.              *
+ *****************************************************/
+function saveSupportingDocumentation($id = null)
+{
+    global $lang, $escaper;
+
+    if (empty($_SESSION["modify_risks"]) || $_SESSION["modify_risks"] != 1) {
+        set_alert(true, "bad", $escaper->escapeHtml($lang['NoPermissionForRiskManagement']));
+        json_response(400, get_alert(true), NULL);
+        return;
+    }
+
+    $id = (int)($id ?? $_GET['id'] ?? 0);
+    if (!$id) {
+        set_alert(true, "bad", $escaper->escapeHtml($lang['YouNeedToSpecifyAnIdParameter']));
+        json_response(400, get_alert(true), NULL);
+        return;
+    }
+
+    if (!check_access_for_risk($id)) {
+        set_alert(true, "bad", $escaper->escapeHtml($lang['NoPermissionForRiskManagement']));
+        json_response(403, get_alert(true), NULL);
+        return;
+    }
+
+    $result = _save_supporting_documentation($id, 1);
+    if ($result !== true) {
+        set_alert(true, "bad", $escaper->escapeHtml($result));
+        json_response(400, get_alert(true), NULL);
+        return;
+    }
+
+    set_alert(true, "good", $lang['Success']);
+    json_response(200, get_alert(true), array('files' => _get_supporting_documentation_files_response($id, 1)));
+}
+
+/*****************************************************
+ * FUNCTION: MANAGEMENT - Get Mitigation Supporting     *
+ * Documentation                                          *
+ * GET /risks/{id}/mitigations/supporting-documentation --  *
+ * the Mitigation tab's file list (view_type=2). Gated the    *
+ * same as the sibling Details endpoint above -- riskmanagement *
+ * read access; WRITE is plan_mitigations, enforced separately.  *
+ *****************************************************/
+function getMitigationSupportingDocumentation($id = null)
+{
+    global $lang, $escaper;
+
+    if (!check_permission("riskmanagement")) {
+        set_alert(true, "bad", $escaper->escapeHtml($lang['NoPermissionForRiskManagement']));
+        json_response(400, get_alert(true), NULL);
+        return;
+    }
+
+    $id = (int)($id ?? $_GET['id'] ?? 0);
+    if (!$id) {
+        set_alert(true, "bad", $escaper->escapeHtml($lang['YouNeedToSpecifyAnIdParameter']));
+        json_response(400, get_alert(true), NULL);
+        return;
+    }
+
+    if (!check_access_for_risk($id)) {
+        set_alert(true, "bad", $escaper->escapeHtml($lang['NoPermissionForRiskManagement']));
+        json_response(403, get_alert(true), NULL);
+        return;
+    }
+
+    json_response(200, null, array('files' => _get_supporting_documentation_files_response($id, 2)));
+}
+
+/*****************************************************
+ * FUNCTION: MANAGEMENT - Save Mitigation Supporting     *
+ * Documentation                                            *
+ * POST /risks/{id}/mitigations/supporting-documentation --   *
+ * multipart/form-data. Gated on plan_mitigations, the SAME      *
+ * permission canEditMitigation already threads through the       *
+ * Mitigation tab's edit form (risk-details-form.js) -- a           *
+ * mitigation is always an edit of something attached to an          *
+ * already-existing risk, so there is no create-mode variant to       *
+ * distinguish, unlike Supporting Documentation above.                 *
+ *****************************************************/
+function saveMitigationSupportingDocumentation($id = null)
+{
+    global $lang, $escaper;
+
+    if (empty($_SESSION["plan_mitigations"]) || $_SESSION["plan_mitigations"] != 1) {
+        set_alert(true, "bad", $escaper->escapeHtml($lang['MitigationPermissionMessage']));
+        json_response(400, get_alert(true), NULL);
+        return;
+    }
+
+    $id = (int)($id ?? $_GET['id'] ?? 0);
+    if (!$id) {
+        set_alert(true, "bad", $escaper->escapeHtml($lang['YouNeedToSpecifyAnIdParameter']));
+        json_response(400, get_alert(true), NULL);
+        return;
+    }
+
+    if (!check_access_for_risk($id)) {
+        set_alert(true, "bad", $escaper->escapeHtml($lang['NoPermissionForRiskManagement']));
+        json_response(403, get_alert(true), NULL);
+        return;
+    }
+
+    $result = _save_supporting_documentation($id, 2);
+    if ($result !== true) {
+        set_alert(true, "bad", $escaper->escapeHtml($result));
+        json_response(400, get_alert(true), NULL);
+        return;
+    }
+
+    set_alert(true, "good", $lang['Success']);
+    json_response(200, get_alert(true), array('files' => _get_supporting_documentation_files_response($id, 2)));
+}
+
 /*************************************
  * FUNCTION: MANAGEMENT - Save Scores*
  *************************************/
@@ -3501,7 +4074,16 @@ function saveScoreForm()
         
         case "update_contributing_risk":
             $ContributingLikelihood = (int)$_POST['ContributingLikelihood'];
-            $ContributingImpacts = $_POST['ContributingImpacts'];
+            // PHASE 4d-v FIX (third sibling of updateRisk()'s/saveDetailsForm()'s
+            // own fixes, includes/api.php): a bare $_POST['ContributingImpacts']
+            // read is null when the key is absent (this legacy per-tab AJAX
+            // form always submits it today, but nothing guarantees that), and
+            // passing null explicitly overrides update_contributing_risk_score()'s
+            // own `$ContributingImpacts=[]` default parameter -- its
+            // `foreach ($ContributingImpacts as ...)` then silently skips every
+            // factor instead of computing the real weighted sum. `?? []`
+            // matches the fix already applied to the other two call sites.
+            $ContributingImpacts = $_POST['ContributingImpacts'] ?? [];
             update_contributing_risk_score($id, $ContributingLikelihood, $ContributingImpacts);
         break;
 
@@ -3682,6 +4264,55 @@ function updateRisk($id = null){
     $access = check_access_for_risk($id);
     if(isset($_SESSION["modify_risks"]) && $_SESSION["modify_risks"] == 1 && $access){
 
+        $risk_id = $id - 1000;
+
+        // Jira sync setup -- resolved BEFORE any write below, for two
+        // reasons that both require the PRE-update state:
+        //  1. jira_validate_issue_key() (a sent key) must 400 before any
+        //     write happens, not after -- same ordering saveDetailsForm()
+        //     (this file, the now-retired legacy Details-tab AJAX handler
+        //     this PATCH endpoint replaces for the Cards Details tab) uses.
+        //  2. $jira_old_values captures the risk's status/subject/
+        //     assessment/notes as they stood BEFORE this request's writes,
+        //     which jira_update_pending_risk_changes() (called after a
+        //     successful update, below) needs to diff against the NEW
+        //     values and correctly extend/collapse the accumulated pending-
+        //     change record in `jira_risk_pending_changes` -- the same
+        //     table jira_push_changes() reads to decide what to actually
+        //     push to Jira. Without this snapshot, an edit that changes
+        //     Subject/Status/Assessment/Notes but never touches the Jira
+        //     Issue Key field (the common case: most saves from the Cards
+        //     Details tab) would silently never reach Jira at all, even
+        //     though the risk stays connected.
+        //
+        // A jira_issue_key ABSENT from POST entirely (the Extra-gated field
+        // wasn't even in the Cards roster for this request -- see
+        // api_resolve_ui_risk_fields_for_group()'s own docblock, api/v2/
+        // includes/api.php) falls back to the risk's CURRENT connection
+        // rather than saveDetailsForm()'s own "absent means blank": that
+        // full-page POST always resends every field, so "absent" never
+        // really happens there, but this PATCH endpoint's other callers
+        // legitimately send partial bodies (e.g. an owner-only reassignment,
+        // see the docblock on the bulk-reassign loop below in this file) --
+        // falling back to blank would silently disconnect the risk from
+        // Jira on any save that doesn't happen to include this one field.
+        $jira_old_values = null;
+        $jira_issue_key = null;
+        if (jira_extra()) {
+            require_once(realpath(__DIR__ . '/../extras/jira/index.php'));
+            $jira_old_values = get_synchronized_risk_field_values($risk_id);
+
+            if (get_param("POST", 'jira_issue_key', false) !== false) {
+                $jira_issue_key = strtoupper(trim(get_param("POST", 'jira_issue_key')));
+                if ($jira_issue_key && !jira_validate_issue_key($jira_issue_key, $risk_id)) {
+                    json_response(400, get_alert(true), NULL);
+                    return;
+                }
+            } else {
+                $jira_issue_key = get_risk_issue_association_metadata($risk_id)['issue_key'] ?? '';
+            }
+        }
+
         if($new_subject !== false){
             // Limit the subject's length
             $new_subject = substr($new_subject, 0, (int)get_setting('maximum_risk_subject_length', 300));
@@ -3693,6 +4324,15 @@ function updateRisk($id = null){
         $success = update_risk($id, true);
 
         if($success == 1){
+
+            // Create/update (or, given a blank key, remove) the connection
+            // between this risk and its Jira issue, then push whatever
+            // changed -- mirrors saveDetailsForm()'s own call sequence
+            // below in this file.
+            if (jira_extra() && jira_update_risk_issue_connection($risk_id, $jira_issue_key, false)) {
+                jira_update_pending_risk_changes($risk_id, $jira_old_values);
+                jira_push_changes($jira_issue_key, $risk_id);
+            }
 
             /************************** Save Risk Score Method *********************************************/
             // Risk scoring method
@@ -3750,12 +4390,32 @@ function updateRisk($id = null){
             $OWASPPrivacyViolation = (int)get_param("POST", 'OWASPPrivacyViolation');
 
             // Custom Risk Scoring
-            $custom = (float)get_param("POST", 'Custom');
+            // Not cast to (float) -- an empty/blank POST value must reach
+            // update_risk_scoring()'s own range check as the string "",
+            // the same way update_custom_score()'s call site (below) already
+            // does. (float)"" casts to 0.0, which is a legitimately in-range
+            // Custom value (0-10 inclusive), so it silently defeated that
+            // function's get_setting('default_risk_score') blank-value
+            // fallback -- every blank Custom save persisted 0 instead of the
+            // default, even though the live preview correctly showed the
+            // default_risk_score fallback value.
+            $custom = get_param("POST", 'Custom');
 
             // Contributing Risk Scoring
+            // PHASE 4d-v FIX: was `(int)get_param("POST", "ContributingImpacts")` --
+            // casting the array to int silently discards the whole impacts
+            // structure (a non-empty array casts to int(1)), which then
+            // fatals update_contributing_risk_score()'s own
+            // `foreach ($ContributingImpacts as ...)` with "foreach()
+            // argument must be of type array|object, int given" (PHP's
+            // strict error handler here converts the warning into an
+            // ErrorException) -- a 500 on every Edit Details Save of a
+            // Contributing-Risk-scored risk. addRisk() (below in this same
+            // file) already reads this field correctly via
+            // `get_param("POST", "ContributingImpacts", [])`; matched here.
             $ContributingLikelihood = (int)get_param("POST", "ContributingLikelihood");
-            $ContributingImpacts = (int)get_param("POST", "ContributingImpacts");
-            
+            $ContributingImpacts = get_param("POST", "ContributingImpacts", []);
+
             update_risk_scoring($id, $scoring_method, $CLASSIC_likelihood, $CLASSIC_impact, $AccessVector, $AccessComplexity, $Authentication, $ConfImpact, $IntegImpact, $AvailImpact, $Exploitability, $RemediationLevel, $ReportConfidence, $CollateralDamagePotential, $TargetDistribution, $ConfidentialityRequirement, $IntegrityRequirement, $AvailabilityRequirement, $DREADDamagePotential, $DREADReproducibility, $DREADExploitability, $DREADAffectedUsers, $DREADDiscoverability, $OWASPSkillLevel, $OWASPMotive, $OWASPOpportunity, $OWASPSize, $OWASPEaseOfDiscovery, $OWASPEaseOfExploit, $OWASPAwareness, $OWASPIntrusionDetection, $OWASPLossOfConfidentiality, $OWASPLossOfIntegrity, $OWASPLossOfAvailability, $OWASPLossOfAccountability, $OWASPFinancialDamage, $OWASPReputationDamage, $OWASPNonCompliance, $OWASPPrivacyViolation, $custom, $ContributingLikelihood, $ContributingImpacts);
             $status = 200;
             $status_message = "Risk ID " . $id . " updated successfully!";
@@ -3894,14 +4554,36 @@ function addRisk(){
         $location = implode(",", $location);
         $source = (int)get_param("POST", 'source');
         $category = (int)get_param("POST", 'category');
-        if(is_array(get_param("POST", 'team'))){
-            $team = get_param("POST", 'team');
-        }else{
-            $team = get_value_string_by_table('team');
-        }
-        
+        // An absent or empty `team` means NO team, never EVERY team. This
+        // used to fall back to get_value_string_by_table('team') -- the
+        // comma-separated list of every team in the system -- which is how a
+        // <select multiple> with nothing selected (it posts no field at all)
+        // ended up assigning the new risk to the entire organization. That was
+        // never deliberate: the default here was "0" until a15de01dcc ("Added
+        // custom fields to API") incidentally swapped it, and both of the
+        // handlers this endpoint stands in for default to no team --
+        // management/index.php's retired inline handler used
+        // get_param("POST", 'team', []), and the sibling api_v2_risk_submit()
+        // (api/v2/includes/risks.php, POST /risks/submit) still does. Under
+        // the Team Separation Extra, over-assigning teams is a disclosure, so
+        // the permissive default is the wrong way to fail.
+        //
+        // save_junction_values() accepts either an array of ids or a
+        // comma-separated string, so passing get_param()'s value through
+        // untouched keeps BOTH posted shapes working -- including `team=1,2`,
+        // which the is_array() test above used to discard on its way to the
+        // every-team fallback.
+        $team = get_param("POST", 'team', []);
+
         if(is_array(get_param("POST", 'technology'))){
-            $technology = get_param("POST", '$technology');
+            // Was '$technology' (a literal '$' inside the string) -- a typo
+            // that always missed, so $technology was silently "" no matter
+            // what was posted. Dormant since this code predates any real
+            // caller of addRisk() posting technology[]; Task 7 wired up the
+            // Technology multiselect (posts technology[]) and this task made
+            // addRisk() reachable from a real page for the first time, which
+            // is what surfaces it now.
+            $technology = get_param("POST", 'technology');
         }else{
             $technology = [];
         }
@@ -3914,6 +4596,11 @@ function addRisk(){
         }else{
             $additional_stakeholders = [];
         }
+
+        // Risk catalog / threat catalog mappings (same param names as the
+        // legacy handler, management/index.php:35-36)
+        $risk_catalog_mapping = get_param("POST", 'risk_catalog_mapping', []);
+        $threat_catalog_mapping = get_param("POST", 'threat_catalog_mapping', []);
 
         // Risk scoring method
         // 1 = Classic
@@ -3969,14 +4656,48 @@ function addRisk(){
         $OWASPPrivacyViolation = (int)get_param("POST", 'OWASPPrivacyViolation');
 
         // Custom Risk Scoring
-        $custom = (float)get_param("POST", 'Custom');
+        // Not cast to (float) -- see updateRisk()'s identical comment above;
+        // an empty POST value must reach submit_risk_scoring()'s own range
+        // check as the string "", not as (float)"" == 0.0, or the
+        // get_setting('default_risk_score') blank-value fallback never fires.
+        $custom = get_param("POST", 'Custom');
 
         // Contributing Risk Scroing
         $ContributingLikelihood = (int)get_param("POST", "ContributingLikelihood", "");
         $ContributingImpacts = get_param("POST", "ContributingImpacts", []);
         
+        $template_group_id = resolve_template_group_id_from_core('risk', get_param("POST", "template_group_id", null));
+
+        // Compliance's "create a risk from a failed test" modal
+        // (compliance/testing.php, compliance/view_test.php) appends a hidden
+        // associate_test=1 field to the risk form and its client
+        // (addRisk() in js/simplerisk/pages/risk.js) reads it back off the
+        // response to decide whether to submit the test-association form
+        // instead of navigating away. Purely an echo -- nothing server-side
+        // branches on it except the status_message contract below.
+        $associate_test = (int)get_param("POST", "associate_test", 0);
+
+        // Affected Assets. Two different input shapes reach this endpoint and
+        // both must keep working:
+        //  - 'assets_asset_groups' is what the Affected Assets WIDGET posts
+        //    (display_affected_assets_edit(), includes/displayrisks.php emits
+        //    `assets_asset_groups[]`): pre-resolved '<id>_asset'/'<id>_group'
+        //    tokens plus 'new_asset_<name>' entries for free-text additions.
+        //    process_selected_assets_asset_groups_of_type() is the only thing
+        //    that understands those tokens. This is the shape the retired
+        //    management/index.php handler consumed, and it is what the
+        //    "+ Add Risk" modal (management/review_risk.php) and the
+        //    create-risk-from-failed-test modal still post today.
+        //  - 'affected_assets' is the plain comma-separated NAME list an
+        //    external/import API caller sends; import_assets_asset_groups_for_type()
+        //    resolves names rather than tokens.
+        $assets_asset_groups = get_param("POST", "assets_asset_groups", []);
+        if (!is_array($assets_asset_groups)) {
+            $assets_asset_groups = array_values(array_filter(array_map('trim', explode(",", (string)$assets_asset_groups))));
+        }
+
         // Submit risk and get back the id
-        $last_insert_id = submit_risk($status, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $technology, $owner, $manager, $assessment, $notes, 0, 0, false, $additional_stakeholders);
+        $last_insert_id = submit_risk($status, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $technology, $owner, $manager, $assessment, $notes, 0, 0, false, $additional_stakeholders, $risk_catalog_mapping, $threat_catalog_mapping, $template_group_id);
 
         // If the encryption extra is enabled, updates order_by_subject
         if (encryption_extra())
@@ -3994,6 +4715,12 @@ function addRisk(){
         else{
             // Submit risk scoring
             submit_risk_scoring($last_insert_id);
+        }
+
+        // Widget-shaped selection (browser callers) -- see the
+        // $assets_asset_groups read above for why both shapes are handled.
+        if (!empty($assets_asset_groups)) {
+            process_selected_assets_asset_groups_of_type($last_insert_id, $assets_asset_groups, 'risk');
         }
 
         $affected_assets = get_param("POST", 'affected_assets');
@@ -4015,6 +4742,81 @@ function addRisk(){
             }
         }
 
+        // File uploads (if any), same field name ('file[]') and failure
+        // contract as the legacy handler (management/index.php: on any
+        // upload failure, delete the just-created risk and return 400).
+        // Normalizes $_FILES['file'] to an array of files the way
+        // api_v2_risk_submit() (api/v2/includes/risks.php) already does for
+        // its own risk-creation endpoint, rather than the legacy handler's
+        // browser-specific loop: management/index.php's loop unconditionally
+        // skips index 0 (`$i == 0`), which is only correct there because its
+        // JS file-uploader widget always prepends an empty placeholder input
+        // as the first file[] field (see js/simplerisk/common.js) -- an API
+        // caller has no such placeholder, so mirroring that skip here would
+        // silently drop the first real file on every multi-file upload.
+        $uploadError = 1;
+        if (!empty($_FILES) && isset($_FILES['file'])) {
+            $isMulti = is_array($_FILES['file']['name']);
+            $count   = $isMulti ? count($_FILES['file']['name']) : 1;
+
+            for ($i = 0; $i < $count; $i++) {
+                // Phan's $_FILES stub only declares the 'name' key; PHP populates
+                // all five keys identically for every upload, so 'type'/'tmp_name'/
+                // 'size'/'error' are suspicious-null/invalid-offset false positives.
+                $file = $isMulti
+                    ? [
+                        'name'     => $_FILES['file']['name'][$i],
+                        // @phan-suppress-next-line PhanTypeArraySuspiciousNull,PhanTypeInvalidDimOffset
+                        'type'     => $_FILES['file']['type'][$i],
+                        // @phan-suppress-next-line PhanTypeArraySuspiciousNull,PhanTypeInvalidDimOffset
+                        'tmp_name' => $_FILES['file']['tmp_name'][$i],
+                        // @phan-suppress-next-line PhanTypeArraySuspiciousNull,PhanTypeInvalidDimOffset
+                        'size'     => $_FILES['file']['size'][$i],
+                        // @phan-suppress-next-line PhanTypeArraySuspiciousNull,PhanTypeInvalidDimOffset
+                        'error'    => $_FILES['file']['error'][$i],
+                    ]
+                    : [
+                        'name'     => $_FILES['file']['name'],
+                        // @phan-suppress-next-line PhanTypeInvalidDimOffset
+                        'type'     => $_FILES['file']['type'],
+                        // @phan-suppress-next-line PhanTypeInvalidDimOffset
+                        'tmp_name' => $_FILES['file']['tmp_name'],
+                        // @phan-suppress-next-line PhanTypeInvalidDimOffset
+                        'size'     => $_FILES['file']['size'],
+                        // @phan-suppress-next-line PhanTypeInvalidDimOffset
+                        'error'    => $_FILES['file']['error'],
+                    ];
+
+                // UPLOAD_ERR_NO_FILE is the normal PHP error code for an
+                // empty file[] slot -- submit-risk.js's plain
+                // <input type="file" multiple"> still contributes one via
+                // FormData(form) when nothing is attached, unlike the
+                // legacy widget's placeholder-input skip this loop already
+                // doesn't rely on. Not a real failure.
+                if ($file['error'] === UPLOAD_ERR_NO_FILE) {
+                    continue;
+                }
+
+                if (!empty($file['error'])) {
+                    $uploadError = $file['error'];
+                    break;
+                }
+
+                $uploadError = upload_file($last_insert_id, $file, 1);
+                if ($uploadError != 1) {
+                    break;
+                }
+            }
+        }
+
+        if ($uploadError != 1) {
+            // Delete the risk that was just created
+            delete_risk($last_insert_id);
+
+            set_alert(true, "bad", is_string($uploadError) ? $uploadError : $lang['ThereAreUnexpectedProblems']);
+            json_response(400, get_alert(true), NULL);
+        }
+
         // Send the notification (no-op if notification extra is disabled)
         call_extra_function(
             'notification_extra',
@@ -4026,10 +4828,50 @@ function addRisk(){
         // There is an alert message
         $risk_id = (int)$last_insert_id + 1000;
 
+        // The success message is localized (never a hardcoded English literal)
+        // and delivered TWICE, by two independent channels that are not
+        // mutually exclusive:
+        //
+        //  1. In the JSON body, as status_message -- for EVERY caller. This
+        //     function is registered on three routes (v1 /management/risk/add,
+        //     v2 /management/risk/add, v2 /risks), so most of its callers are
+        //     sessionless API-key integrations with no session to read an
+        //     alert out of and no page to redirect to. Returning null to them
+        //     does not relocate the message, it discards it.
+        //  2. In the SESSION, via set_alert() -- for the browser callers that
+        //     navigate away on success (submit-risk.js and risk.js both go to
+        //     management/view.php?id=<risk_id>). A toast raised before that
+        //     navigation is destroyed mid-render, so the message has to
+        //     survive the redirect and render on the page they land on.
+        //
+        // Escaping, exactly once per channel (CLAUDE.md's HTML Encoding rule):
+        //
+        //  - _lang() for the JSON copy: it escapes its params, and nothing
+        //    downstream escapes again -- json_response() only json_encode()s,
+        //    and every browser consumer hands the value straight to toastr,
+        //    which renders HTML and therefore decodes those entities once.
+        //    This is the same shape as this function's own error responses
+        //    (e.g. $escaper->escapeHtml($lang['SubjectRiskCannotBeEmpty'])).
+        //  - _lang_raw() for the SESSION copy: get_alert() escapes every
+        //    message at read time, so pre-escaping here would double-encode
+        //    the subject.
+        //
+        // associate_test keeps get_alert(true)'s alert-ARRAY shape instead of
+        // the plain string: that is what Compliance's create-risk-from-a-
+        // failed-test client already parses, and get_alert(true) is a
+        // read-AND-CLEAR, which is correct for that flow specifically because
+        // it submits form#edit-test straight after -- leaving the session copy
+        // behind would replay the same message on the page that submit lands
+        // on.
+        set_alert(true, "good", _lang_raw("RiskSubmitSuccess", ["subject" => $subject]));
+
         $status = 200;
-        $status_message = $escaper->escapeHtml("Risk ID " . $risk_id . " submitted successfully!");
+        $status_message = $associate_test
+            ? get_alert(true)
+            : _lang("RiskSubmitSuccess", ["subject" => $subject]);
         $data = array(
-            'risk_id' => $risk_id
+            'risk_id' => $risk_id,
+            'associate_test' => $associate_test,
         );
     }
 
@@ -4108,6 +4950,12 @@ function saveMitigation($id = null){
             'security_recommendations',
             'planning_date',
             'mitigation_percent',
+            // Comma-separated (legacy multipart form) or array (mitigation_controls[],
+            // the new Cards edit form's serialize() shape) list of framework_controls
+            // ids. update_mitigation() already knows how to save this -- see its own
+            // array_key_exists('mitigation_controls', $post) partial-update branch --
+            // this endpoint just never forwarded the key.
+            'mitigation_controls',
         );
 
         $post = array();
@@ -4115,6 +4963,26 @@ function saveMitigation($id = null){
             if (param_was_sent($mitigation_field)) {
                 $post[$mitigation_field] = get_param("POST", $mitigation_field);
             }
+        }
+
+        // Selecting WHICH controls a mitigation attaches is governance-owned
+        // (see api_v2_governance_control_roster()'s docblock, api/v2/includes/
+        // governance.php) -- riskmanagement alone is enough to plan a mitigation's OTHER fields,
+        // since a mitigation can be fully planned without ever specifying
+        // controls. Scoped to an ACTUAL change (mitigation_controls_selection_
+        // changed()), not mere presence in $post: the Cards edit form
+        // serializes mitigation_controls[] on every save regardless of
+        // whether the user touched the picker, so gating on presence alone
+        // would block a riskmanagement-only user from saving e.g. a
+        // planning_strategy edit that never went near the control list.
+        if (
+            array_key_exists('mitigation_controls', $post)
+            && mitigation_controls_selection_changed($mitigation_id, $post['mitigation_controls'])
+            && !check_permission("governance")
+        ) {
+            $status = 403;
+            $status_message = $escaper->escapeHtml($lang['NoPermissionForGovernance']);
+            return json_response($status, $status_message, $data);
         }
 
         // If we don't yet have a mitigation
@@ -4995,8 +5863,18 @@ function getMitigationControlsDatatable(){
                                 <h5><span>" . $escaper->escapeHtml($lang['ControlValidation']) . "</span></h5>
                                 <div class='row mb-2'>
                                     <div class='span4'>
-                                        <label class='m-r-20'>" . $escaper->escapeHtml($lang['Details']) . ":</label>&nbsp;" . 
-                                        nl2br($escaper->escapeHtml($validation_details)) . "
+                                        <label class='m-r-20'>" . $escaper->escapeHtml($lang['Details']) . ":</label>&nbsp;" .
+                                        // validation_details is now WYSIWYG-authored HTML (the Cards
+                                        // Control Validation modal, risk-mitigation-controls.js) rather
+                                        // than plain text -- purifyHtml() is the same sink treatment
+                                        // every other rich-text field's legacy view uses (display_risk_
+                                        // assessment_view()/display_current_solution_view() etc.,
+                                        // includes/displayrisks.php). nl2br() dropped alongside it: HTML
+                                        // content already carries its own <p>/<br> structure, so nl2br()
+                                        // on top would double every line break for anything saved through
+                                        // the new editor (harmless no-op for old plain-text values, which
+                                        // have no literal HTML in them to begin with).
+                                        $escaper->purifyHtml($validation_details) . "
                                     </div>
                                 </div>
                                 <div class='row mb-2'>
@@ -9689,8 +10567,32 @@ function get_associated_exceptions_as_treegrid_api() {
         json_response(400, get_alert(true), NULL);
         return;
     }
+
+    if (empty($_GET['id']) || !trim($_GET['id']) || !ctype_digit($_GET['id'])) {
+        set_alert(true, "bad", $lang['YouNeedToSpecifyAnIdParameter']);
+
+        json_response(400, get_alert(true), NULL);
+        return;
+    }
+
     $type = $_GET['type'];
     $risk_id = $_GET['id'];
+
+    // SR-2257 (HackerOne #3928882 residual, 2nd pass): get_associated_exceptions_as_treegrid()
+    // scopes each returned row's associated_risks field, but the underlying
+    // query matches on this caller-supplied $risk_id itself with no team-scope
+    // check -- an attacker could pass an arbitrary foreign-team risk id and use
+    // "a row came back" / "no rows came back" as a membership oracle revealing
+    // that risk's existence and its association with a visible exception, even
+    // though the fixed associated_risks field would never display that id. Deny
+    // up front, the same way get_exception_api() denies an out-of-scope
+    // exception id, rather than only scrubbing the response after the query runs.
+    if (empty(filter_risk_ids_by_team_scope([(int)$risk_id - 1000]))) {
+        set_alert(true, "bad", $lang['ExceptionDoesNotExist']);
+        json_response(404, get_alert(true), NULL);
+        return;
+    }
+
     $result = get_associated_exceptions_as_treegrid($risk_id, $type);
     json_response(200, null, $result);
 }
@@ -9736,7 +10638,12 @@ function get_exception_api()
     }
 
     $exception['additional_stakeholders'] = $exception['additional_stakeholders'] ? explode(',', $exception['additional_stakeholders']) : [];
-    $exception['associated_risks'] = $exception['associated_risks'] ? explode(',', $exception['associated_risks']) : [];
+    // SR-2257 (HackerOne #3928882 residual): SR-2034 filtered the DECRYPTED
+    // SUBJECT text returned by get_exception_for_display_api(), but this raw
+    // id list was never routed through the same team-scope filter -- a caller
+    // who can view this exception could still read a hidden cross-team risk's
+    // internal id here even though its subject is correctly withheld elsewhere.
+    $exception['associated_risks'] = $exception['associated_risks'] ? filter_risk_ids_by_team_scope(explode(',', $exception['associated_risks'])) : [];
     $exception['creation_date'] = format_date($exception['creation_date']);
     $exception['next_review_date'] = format_date($exception['next_review_date']);
     $exception['approval_date'] = format_date($exception['approval_date']);
@@ -11103,6 +12010,17 @@ function get_asset_options() {
     }
 }
 
+/**
+ * Whether the caller may perform an asset-group mutation: the base `asset`
+ * permission plus the one narrow permission the verb needs
+ * (assets_endpoint_required_permission(), spec section 9 -- never an OR of
+ * broad permissions).
+ */
+function asset_group_endpoint_allowed(string $endpoint_key): bool
+{
+    return check_permission("asset") && has_permission(assets_endpoint_required_permission($endpoint_key));
+}
+
 /*******************************************
  * FUNCTION: ASSET GROUP CRUD - LIST ALL   *
  *******************************************/
@@ -11115,13 +12033,29 @@ function listAssetGroups()
         return;
     }
 
-    $db = db_open();
-    $stmt = $db->prepare("SELECT id, name FROM `asset_groups` ORDER BY name");
-    $stmt->execute();
-    $groups = $stmt->fetchAll(PDO::FETCH_ASSOC);
-    db_close($db);
+    // Without q/page/per_page/aggregates this is the original response (every
+    // group, id + name). The Asset groups tab adds search, paging and the
+    // per-group aggregates (member count, highest valuation, teams, linked
+    // risks), computed over what the caller may see (asset_groups_list()).
+    // Filters (team, location, tag: groups with a visible member carrying the
+    // id; categorization, band: the group's highest results) and the
+    // aggregate sorts are applied in PHP over the computed rows.
+    $opts = [
+        'q' => get_param("GET", "q", ""),
+        'page' => get_param("GET", "page", 1),
+        'per_page' => get_param("GET", "per_page", 0),
+        'sort' => get_param("GET", "sort", "name"),
+        'dir' => get_param("GET", "dir", "asc"),
+        'aggregates' => get_param("GET", "aggregates", ""),
+        'team' => get_param("GET", "team", ""),
+        'location' => get_param("GET", "location", ""),
+        'tag' => get_param("GET", "tag", ""),
+        'categorization' => get_param("GET", "categorization", ""),
+        'band' => get_param("GET", "band", ""),
+    ];
+    $result = asset_groups_list($opts);
 
-    json_response(200, "SUCCESS", ['asset_groups' => $groups]);
+    json_response(200, "SUCCESS", $result);
 }
 
 /***********************************************
@@ -11131,23 +12065,29 @@ function createAssetGroupCrud()
 {
     global $escaper, $lang;
 
-    if (!check_permission("asset")) {
+    if (!asset_group_endpoint_allowed('group_create')) {
         json_response(403, $escaper->escapeHtml($lang['NoPermissionForAsset']), NULL);
         return;
     }
 
-    $name = get_param("POST", "name", null);
-    if (!$name) {
+    $name = assets_normalize_group_name(get_param("POST", "name", null));
+    if ($name === '') {
         json_response(400, $escaper->escapeHtml($lang['YouNeedToSpecifyANameParameter']), NULL);
         return;
     }
 
-    if (get_value_by_name('asset_groups', $name)) {
-        json_response(400, $escaper->escapeHtml($lang['AssetGroupNameAlreadyInUse']), NULL);
+    // Same name = same after trim, collapsed whitespace and case (SR-1881).
+    if (check_asset_group_name($name)['conflict']) {
+        // `error` lets a form put the message on the name field.
+        json_response(400, $escaper->escapeHtml($lang['AssetGroupNameAlreadyInUse']), ['error' => 'duplicate_name']);
         return;
     }
 
+    // Team Separation: a new group can only be given assets the caller can see.
     $selected_assets = $_POST['selected_assets'] ?? [];
+    $selected_assets = is_array($selected_assets)
+        ? filter_accessible_assets(array_values(array_filter(array_map('intval', $selected_assets))))
+        : [];
 
     try {
         $id = create_asset_group($name, $selected_assets);
@@ -11214,7 +12154,7 @@ function updateAssetGroupById($id = null)
 
     parse_non_post_body_into_post();
 
-    if (!check_permission("asset")) {
+    if (!asset_group_endpoint_allowed('group_update')) {
         json_response(403, $escaper->escapeHtml($lang['NoPermissionForAsset']), NULL);
         return;
     }
@@ -11239,7 +12179,12 @@ function updateAssetGroupById($id = null)
         return;
     }
 
-    $name = get_param("POST", "name", null) ?: $current['name'];
+    // An absent or blank name keeps the current one; a name is stored trimmed
+    // with inner whitespace collapsed so the duplicate check compares like with like.
+    $name = assets_normalize_group_name(get_param("POST", "name", null));
+    if ($name === '') {
+        $name = $current['name'];
+    }
     $current_ids = array_column($current['selected_assets'], 'id');
 
     // Team Separation: only accept caller-supplied asset ids the caller can
@@ -11248,18 +12193,28 @@ function updateAssetGroupById($id = null)
     // shown to them in the first place (getAssetGroupById() already filters
     // selected_assets before the client ever sees it to build this request)
     // -- mirroring the additive semantics addAssetsToAssetGroup() uses.
-    $inaccessible_current_ids = array_diff($current_ids, filter_accessible_assets($current_ids));
-    $selected_assets = isset($_POST['selected_assets'])
-        ? filter_accessible_assets(array_map('intval', $_POST['selected_assets']))
-        : $current_ids;
-    $selected_assets = array_values(array_unique(array_merge($selected_assets, $inaccessible_current_ids)));
+    // Only an actual array replaces the members (`selected_assets: []` empties
+    // the visible part of the group); null, a scalar or an absent key keeps them.
+    if (isset($_POST['selected_assets']) && is_array($_POST['selected_assets'])) {
+        $posted = array_values(array_filter(array_map('intval', $_POST['selected_assets'])));
+        $selected_assets = assets_group_members_after_replace(
+            $current_ids,
+            filter_accessible_assets($current_ids),
+            filter_accessible_assets($posted)
+        );
+    } else {
+        $selected_assets = $current_ids;
+    }
 
-    // Validate name uniqueness (allow same name if it's this group's own name)
-    $id_check = get_value_by_name('asset_groups', $name);
-    if ($id_check != $id && $id_check !== null) {
-        json_response(400, $escaper->escapeHtml($lang['AssetGroupNameAlreadyInUse']), NULL);
+    // Validate name uniqueness. The group is never compared with itself, so it
+    // can always keep its own name (SR-1881); the check also says which
+    // spelling to store.
+    $name_check = check_asset_group_name($name, $id);
+    if ($name_check['conflict']) {
+        json_response(400, $escaper->escapeHtml($lang['AssetGroupNameAlreadyInUse']), ['error' => 'duplicate_name']);
         return;
     }
+    $name = $name_check['name'];
 
     try {
         update_asset_group($id, $name, $selected_assets);
@@ -11279,7 +12234,7 @@ function deleteAssetGroupById($id = null)
 {
     global $escaper, $lang;
 
-    if (!check_permission("asset")) {
+    if (!asset_group_endpoint_allowed('group_delete')) {
         json_response(403, $escaper->escapeHtml($lang['NoPermissionForAsset']), NULL);
         return;
     }
@@ -11336,6 +12291,25 @@ function getAssetGroupAssets($id = null)
         return;
     }
 
+    // Paged form (the Asset groups tab's member drawer): the visible members
+    // with only the columns it shows (their Asset Scoring results included),
+    // sorted over every visible member before paging -- by name unless
+    // sort/dir ask otherwise -- plus how many there are.
+    $per_page = (int)get_param("GET", "per_page", 0);
+    if ($per_page > 0) {
+        $per_page = min(500, $per_page);
+        $page = max(1, (int)get_param("GET", "page", 1));
+        $sort = asset_group_members_sort_options(get_param("GET", "sort", "name"), get_param("GET", "dir", "asc"));
+        $members = asset_group_visible_members($id, $sort['sort'], $sort['dir']);
+        json_response(200, "SUCCESS", [
+            'assets' => array_slice($members, ($page - 1) * $per_page, $per_page),
+            'total' => count($members),
+            'page' => $page,
+            'per_page' => $per_page,
+        ]);
+        return;
+    }
+
     $assets = get_assets_of_asset_group($id);
 
     // Team Separation: don't leak the names of assets the caller can't otherwise see.
@@ -11351,7 +12325,7 @@ function addAssetsToAssetGroup($id = null)
 {
     global $escaper, $lang;
 
-    if (!check_permission("asset")) {
+    if (!asset_group_endpoint_allowed('group_add_asset')) {
         json_response(403, $escaper->escapeHtml($lang['NoPermissionForAsset']), NULL);
         return;
     }
@@ -11411,7 +12385,7 @@ function removeAssetFromAssetGroupById($id = null, $asset_id = null)
 {
     global $escaper, $lang;
 
-    if (!check_permission("asset")) {
+    if (!asset_group_endpoint_allowed('group_remove_asset')) {
         json_response(403, $escaper->escapeHtml($lang['NoPermissionForAsset']), NULL);
         return;
     }
@@ -11522,9 +12496,9 @@ function asset_group_create()
 {
     global $lang;
 
-    if (!check_permission("asset")) {
+    if (!asset_group_endpoint_allowed('group_create')) {
         set_alert(true, "bad", $lang['NoPermissionForAsset']);
-        json_response(400, get_alert(true), NULL);
+        json_response(403, get_alert(true), NULL);
         return;
     } elseif (empty($_POST['name'])) {
         set_alert(true, "bad", $lang['YouNeedToSpecifyANameParameter']);
@@ -11532,10 +12506,20 @@ function asset_group_create()
         return;
     }
 
-    $name = $_POST['name'];
-    $selected_assets = empty($_POST['selected_assets']) ? [] : $_POST['selected_assets'];
+    $name = assets_normalize_group_name($_POST['name']);
+    if ($name === '') {
+        set_alert(true, "bad", $lang['YouNeedToSpecifyANameParameter']);
+        json_response(400, get_alert(true), NULL);
+        return;
+    }
 
-    if (get_value_by_name('asset_groups', $name)) {
+    // Team Separation: a new group can only be given assets the caller can see.
+    $selected_assets = (!empty($_POST['selected_assets']) && is_array($_POST['selected_assets']))
+        ? filter_accessible_assets(array_values(array_filter(array_map('intval', $_POST['selected_assets']))))
+        : [];
+
+    // Same name = same after trim, collapsed whitespace and case (SR-1881).
+    if (check_asset_group_name($name)['conflict']) {
         set_alert(true, "bad", $lang['AssetGroupNameAlreadyInUse']);
         json_response(400, get_alert(true), NULL);
         return;
@@ -11563,9 +12547,9 @@ function asset_group_update()
 {
     global $lang;
 
-    if (!check_permission("asset")) {
+    if (!asset_group_endpoint_allowed('group_update')) {
         set_alert(true, "bad", $lang['NoPermissionForAsset']);
-        json_response(400, get_alert(true), NULL);
+        json_response(403, get_alert(true), NULL);
         return;
     } elseif (empty($_POST['asset_group_id']) || !ctype_digit($_POST['asset_group_id'])) {
         set_alert(true, "bad", $lang['YouNeedToSpecifyAnIdParameter']);
@@ -11578,15 +12562,44 @@ function asset_group_update()
     }
 
     $id = (int)$_POST['asset_group_id'];
-    $name = $_POST['name'];
-    $selected_assets = empty($_POST['selected_assets']) ? [] : $_POST['selected_assets'];
+    $name = assets_normalize_group_name($_POST['name']);
+    if ($name === '') {
+        set_alert(true, "bad", $lang['YouNeedToSpecifyANameParameter']);
+        json_response(400, get_alert(true), NULL);
+        return;
+    }
 
-    $id_check = get_value_by_name('asset_groups', $name);
-    if ($id_check != $id && $id_check !== null) {
+    // Team Separation, same as PATCH /asset-groups/{id}: the caller chooses
+    // only among assets they can see, and members they cannot see are kept.
+    try {
+        $current = get_asset_group($id);
+    } catch (Exception $e) {
+        write_debug_log('asset_group_update: loading asset group #' . (int)$id . ' failed: ' . $e->getMessage(), 'error');
+        $current = null;
+    }
+    if (empty($current)) {
+        set_alert(true, "bad", $lang['ThereWasAProblemUpdatingTheAssetGroup']);
+        json_response(400, get_alert(true), NULL);
+        return;
+    }
+    $current_ids = array_column($current['selected_assets'], 'id');
+    $posted = (!empty($_POST['selected_assets']) && is_array($_POST['selected_assets']))
+        ? array_values(array_filter(array_map('intval', $_POST['selected_assets'])))
+        : [];
+    $selected_assets = assets_group_members_after_replace(
+        $current_ids,
+        filter_accessible_assets($current_ids),
+        filter_accessible_assets($posted)
+    );
+
+    // The group is never compared with itself (SR-1881); see updateAssetGroupById().
+    $name_check = check_asset_group_name($name, $id);
+    if ($name_check['conflict']) {
         set_alert(true, "bad", $lang['AssetGroupNameAlreadyInUse']);
         json_response(400, get_alert(true), NULL);
         return;
     }
+    $name = $name_check['name'];
     
     try {
         update_asset_group($id, $name, $selected_assets);
@@ -11605,9 +12618,9 @@ function asset_group_delete()
 {
     global $lang;
 
-    if (!check_permission("asset")) {
+    if (!asset_group_endpoint_allowed('group_delete')) {
         set_alert(true, "bad", $lang['NoPermissionForAsset']);
-        json_response(400, get_alert(true), NULL);
+        json_response(403, get_alert(true), NULL);
         return;
     } elseif (empty($_POST['asset_group_id']) || !ctype_digit($_POST['asset_group_id'])) {
         set_alert(true, "bad", $lang['YouNeedToSpecifyAnIdParameter']);
@@ -11636,9 +12649,9 @@ function asset_group_remove_asset()
 {
     global $lang;
 
-    if (!check_permission("asset")) {
+    if (!asset_group_endpoint_allowed('group_remove_asset')) {
         set_alert(true, "bad", $lang['NoPermissionForAsset']);
-        json_response(400, get_alert(true), NULL);
+        json_response(403, get_alert(true), NULL);
         return;
     } elseif (empty($_POST['asset_group_id']) || !ctype_digit($_POST['asset_group_id'])
             || empty($_POST['asset_id']) || !ctype_digit($_POST['asset_id'])) {
@@ -13272,33 +14285,23 @@ function plan_projects_emit_json(array $payload)
  */
 function plan_projects_column_value_is_valid($value): bool
 {
-    return in_array($value, ['0', '1', 0, 1], true);
+    return custom_display_column_value_is_valid($value);
 }
 
 /** Coerce an already-validated column-visibility flag to the canonical '1'/'0' string. */
 function plan_projects_normalize_column_flag($value): string
 {
-    return in_array($value, ['1', 1], true) ? '1' : '0';
+    return custom_display_normalize_column_flag($value);
 }
 
 /**
- * Validate + normalise a `columns` array for saving: every pair's value must
- * pass plan_projects_column_value_is_valid() (name validity is the caller's
- * job via custom_display_columns_are_valid()). Returns the pairs with value
- * coerced to '1'/'0', or null if any pair's value is not one of '0','1',0,1.
+ * Validate + normalise a `columns` array for saving. Delegates to the shared
+ * custom_display_normalize_columns_for_save() (includes/functions.php), same
+ * as plan_projects_column_value_is_valid() delegates its own value check.
  */
 function plan_projects_normalize_columns_for_save(array $columns): ?array
 {
-    $normalized = [];
-    foreach ($columns as $pair) {
-        $value = is_array($pair) ? ($pair[1] ?? null) : null;
-        if (!plan_projects_column_value_is_valid($value)) {
-            return null;
-        }
-        $name = is_array($pair) ? ($pair[0] ?? null) : $pair;
-        $normalized[] = [$name, plan_projects_normalize_column_flag($value)];
-    }
-    return $normalized;
+    return custom_display_normalize_columns_for_save($columns);
 }
 
 /**
@@ -13523,6 +14526,76 @@ function savePlanProjectsDisplaySettingsApi()
         $data["order"] = $_POST["order"];
     }
     save_custom_risk_display_settings("custom_plan_projects_display_settings", $data);
+    set_alert(true, "good", $lang['SavedSuccess']);
+    json_response(200, get_alert(true), NULL);
+}
+
+/**
+ * Whether $value is an accepted column-visibility flag -- same contract as
+ * plan_projects_column_value_is_valid()'s own docblock: custom_display_
+ * columns_are_valid() (shared with Review Risk/Plan Projects) only validates
+ * the column NAME half of each pair, so the value half is validated here.
+ * Delegates to the shared custom_display_column_value_is_valid() (includes/
+ * functions.php), same as plan_projects_column_value_is_valid() does.
+ */
+function control_frameworks_column_value_is_valid($value): bool
+{
+    return custom_display_column_value_is_valid($value);
+}
+
+/** Coerce an already-validated column-visibility flag to the canonical '1'/'0' string. */
+function control_frameworks_normalize_column_flag($value): string
+{
+    return custom_display_normalize_column_flag($value);
+}
+
+/**
+ * Validate + normalise a `columns` array for saving. Delegates to the shared
+ * custom_display_normalize_columns_for_save() (includes/functions.php), same
+ * as control_frameworks_column_value_is_valid() delegates its own value check.
+ */
+function control_frameworks_normalize_columns_for_save(array $columns): ?array
+{
+    return custom_display_normalize_columns_for_save($columns);
+}
+
+/*****************************************************************
+ * FUNCTION: SAVE CONTROL FRAMEWORKS DISPLAY SETTINGS API        *
+ * Persists the Define Control Frameworks page's Columns picker  *
+ * selection as one JSON blob, the same {"columns": [...]} shape *
+ * control_frameworks_sanitize_display_settings()                *
+ * (includes/functions.php) reads back on the next page load.    *
+ * The filter sheet's facet state is deliberately NOT accepted    *
+ * here -- it is search state, not layout, and is never persisted.*
+ *****************************************************************/
+function saveControlFrameworksDisplaySettingsApi()
+{
+    global $escaper, $lang;
+    if (!check_permission("governance")) {
+        json_response(403, $escaper->escapeHtml($lang['NoPermissionForThisAction']), NULL);
+        return;
+    }
+    $data = [];
+    if (isset($_POST["columns"])) {
+        if (!is_array($_POST["columns"]) || !custom_display_columns_are_valid([$_POST["columns"]])) {
+            set_alert(true, "bad", $lang['NoDataAvailable']);
+            json_response(400, get_alert(true), NULL);
+            return;
+        }
+        $normalized_columns = control_frameworks_normalize_columns_for_save($_POST["columns"]);
+        if ($normalized_columns === null) {
+            set_alert(true, "bad", $lang['NoDataAvailable']);
+            json_response(400, get_alert(true), NULL);
+            return;
+        }
+        $data["columns"] = $normalized_columns;
+    }
+    if (empty($data)) {
+        set_alert(true, "bad", $lang['NoDataAvailable']);
+        json_response(400, get_alert(true), NULL);
+        return;
+    }
+    save_custom_risk_display_settings("custom_control_frameworks_display_settings", $data);
     set_alert(true, "good", $lang['SavedSuccess']);
     json_response(200, get_alert(true), NULL);
 }
@@ -14422,7 +15495,7 @@ function recent_commented_risk_datatable() {
         case "subject":
             // If the encryption extra is enabled, sort by order_by_subject field
             if (encryption_extra()) {
-                $sort = "ORDER BY b.`order_by_subject` {$orderDir}, b.`comment` DESC";
+                $sort = "ORDER BY b.`order_by_subject` {$orderDir}, b.`comment` DESC, b.`id` ASC";
             } else {
                 $sort = "ORDER BY b.`subject` {$orderDir}, b.`comment` DESC";
             }
@@ -15224,8 +16297,9 @@ function createAsset()
         return;
     }
 
-    $name = get_param("POST", "name", null);
-    if (!$name) {
+    // A name that is only whitespace is no name (add_asset() trims).
+    $name = trim((string)get_param("POST", "name", ""));
+    if ($name === '') {
         json_response(400, $escaper->escapeHtml($lang['AssetNameIsRequired']), NULL);
         return;
     }
@@ -15236,26 +16310,84 @@ function createAsset()
     $teams            = $_POST['team'] ?? [];
     $details          = get_param("POST", "details", "");
     $tags             = $_POST['tags'] ?? [];
-    $verified         = (bool)get_param("POST", "verified", 0);
+    // Only a user who can verify assets may choose the verified state, and
+    // that choice -- including an explicit verified=0 -- is kept (R11). An
+    // omitted value, or any value from a non-verifier, gets the new-asset
+    // default. Decided here and passed to add_asset() as explicit.
+    $verified         = (bool)assets_verified_for_new_from_client(
+        assets_parse_client_verified($_POST['verified'] ?? null),
+        asset_user_can('verify'),
+        (bool)get_setting("auto_verify_new_assets")
+    );
     $associated_risks = $_POST['associated_risks'] ?? [];
 
-    $control_maturity = $_POST['control_maturity'] ?? [];
-    $control_id       = $_POST['control_id'] ?? [];
-    $mapped_controls  = [];
-    foreach ($control_maturity as $index => $maturity) {
-        if (!empty($control_id[$index])) {
-            $mapped_controls[] = [$maturity, $control_id[$index]];
+    // `teams` is accepted as an alias of `team` (the legacy routes' name).
+    if (!isset($_POST['team']) && isset($_POST['teams'])) {
+        $teams = $_POST['teams'];
+    }
+    $template_group_id = get_param("POST", "template_group_id", null);
+    $custom_values     = isset($_POST['custom_field']) && is_array($_POST['custom_field']) ? $_POST['custom_field'] : [];
+
+    // Choosing mapped controls needs Governance. Refused before anything is
+    // written; the record modal never sends mapping input without it.
+    if (assets_body_has_mapping_input($_POST) && !check_permission('governance')) {
+        json_response(403, $escaper->escapeHtml($lang['ChoosingControlsNeedsGovernancePermission']), NULL);
+        return;
+    }
+
+    // Choosing associated risks needs Risk Management (SR-2313), refused the
+    // same way; the record modal never sends them without it.
+    if (assets_body_has_associated_risks_input($_POST) && !assets_caller_can_see_associated_risks()) {
+        json_response(403, $escaper->escapeHtml($lang['ChoosingRisksNeedsRiskManagementPermission']), NULL);
+        return;
+    }
+
+    // [maturity => [control ids]], the shape save_asset_to_controls() reads,
+    // validated (shape, cap, one maturity per control, existing ids) first.
+    $mapping = asset_mapped_controls_from_request($_POST);
+    if ($mapping['error'] !== null) {
+        json_response(400, asset_mapped_controls_error_message($mapping['error']), NULL);
+        return;
+    }
+    $mapped_controls = $mapping['mapping'] ?? [];
+
+    // Custom field ids must belong to the group the asset will be filed under.
+    // (Core-only installs have no custom fields and ignore custom_field.)
+    if ($custom_values && customization_extra()) {
+        $split = assets_split_custom_field_input($custom_values, asset_custom_fields_by_id_for_group(resolve_template_group_id_from_core('asset', $template_group_id)));
+        $rejection = assets_custom_field_rejection($split, true);
+        if ($rejection !== null) {
+            json_response(400, $escaper->escapeHtml($lang[$rejection]), NULL);
+            return;
         }
     }
 
+    if (!is_array($tags) || !is_array($associated_risks)) {
+        json_response(400, $escaper->escapeHtml($lang['ThereWasAProblemAddingTheAsset']), NULL);
+        return;
+    }
     foreach ($tags as $tag) {
-        if (strlen($tag) > 255) {
+        if (strlen((string)$tag) > 255) {
             json_response(400, $escaper->escapeHtml($lang['MaxTagLengthWarning']), NULL);
             return;
         }
     }
 
-    $asset_id = add_asset($ip, $name, $value, $location, $teams, $details, $tags, $verified, $mapped_controls, $associated_risks);
+    // Asset Scoring selections: validated before anything is written. A body
+    // naming an objective while the database upgrade is pending is refused
+    // (503) rather than answered 200 with the scoring silently dropped.
+    $scoring = asset_scoring_parse_request($_POST);
+    if ($scoring['error'] !== null) {
+        json_response(400, $escaper->escapeHtml($lang[$scoring['error']]), NULL);
+        return;
+    }
+    $refusal = asset_scoring_write_refusal($scoring['selections'], asset_scoring_schema_ready());
+    if ($refusal !== null) {
+        json_response(503, $escaper->escapeHtml($lang[$refusal]), ['error' => $refusal]);
+        return;
+    }
+
+    $asset_id = add_asset($ip, $name, $value, $location, $teams, $details, $tags, $verified, $mapped_controls, $associated_risks, false, $template_group_id, $custom_values, true, $scoring['selections']);
 
     if ($asset_id) {
         json_response(200, $escaper->escapeHtml($lang['AssetWasAddedSuccessfully']), ['id' => $asset_id]);
@@ -15282,30 +16414,48 @@ function updateAssetById($id = null)
     // silently drops the entire body while still answering 200.
     parse_non_post_body_into_post();
 
+    // A body carrying only `verified` is a verify/unverify and needs asset_verify;
+    // anything else is an edit and needs asset_edit (spec section 10).
+    if (!has_permission(assets_patch_required_permission(array_keys($_POST)))) {
+        json_response(403, $escaper->escapeHtml($lang['NoPermissionForAsset']), NULL);
+        return;
+    }
+
     $id = (int)($id ?? get_param("POST", "id", 0));
     if (!$id) {
         json_response(400, $escaper->escapeHtml($lang['YouNeedToSpecifyAnIdParameter']), NULL);
         return;
     }
 
-    if (!asset_exists_by_id($id)) {
-        json_response(404, "NOT FOUND: Unable to find an asset with the specified id.", NULL);
+    // Access is checked before existence, and a foreign-team asset gets the
+    // exact response a nonexistent one gets, so the id space leaks nothing
+    // under Team Separation (asset record modal, Task 4).
+    if (!check_access_for_asset($id) || !asset_exists_by_id($id)) {
+        asset_record_not_available_response();
         return;
     }
 
-    if (!check_access_for_asset($id)) {
-        json_response(403, $escaper->escapeHtml($lang['NoPermissionForAsset']), NULL);
+    // A key that is present but empty clears ip/details (spec section 5d);
+    // only an absent key leaves the column alone. The name is required, so a
+    // blank one is refused rather than ignored.
+    $ip               = isset($_POST['ip']) && is_scalar($_POST['ip']) ? trim((string)$_POST['ip']) : null;
+    $name             = isset($_POST['name']) && is_scalar($_POST['name']) ? trim((string)$_POST['name']) : null;
+    if ($name === '') {
+        json_response(400, $escaper->escapeHtml($lang['AssetNameIsRequired']), NULL);
         return;
     }
-
-    $ip               = get_param("POST", "ip", null) ?: null;
-    $name             = get_param("POST", "name", null) ?: null;
     $value            = get_param("POST", "value", null);
     $location         = isset($_POST['location']) ? $_POST['location'] : null;
-    $teams            = isset($_POST['team']) ? $_POST['team'] : null;
-    $details          = get_param("POST", "details", null) ?: null;
+    // `team` is the documented name, `teams` the legacy routes' name.
+    $teams            = isset($_POST['team']) ? $_POST['team'] : ($_POST['teams'] ?? null);
+    $details          = isset($_POST['details']) && is_scalar($_POST['details']) ? (string)$_POST['details'] : null;
     $tags             = isset($_POST['tags']) ? $_POST['tags'] : null;
-    $verified         = isset($_POST['verified']) ? (bool)$_POST['verified'] : null;
+    $custom_values    = isset($_POST['custom_field']) && is_array($_POST['custom_field']) ? $_POST['custom_field'] : null;
+    // Only a user who can verify assets may set the verified state; for anyone
+    // else this is null so update_asset()'s edit-demotion rule applies.
+    // Same parser as POST /assets: '0'/'false'/'off' mean unverified, an
+    // omitted or unreadable value means "not asked".
+    $verified         = assets_effective_client_verified(assets_parse_client_verified($_POST['verified'] ?? null), asset_user_can('verify'));
     // null, not [] -- every other field here already uses null to mean "the
     // caller did not name this, leave it alone", and update_asset() skips nulls.
     // [] does NOT mean the same thing: update_asset_risks_associations() deletes
@@ -15314,28 +16464,68 @@ function updateAssetById($id = null)
     // association set on any PATCH that did not re-send it.
     $associated_risks = isset($_POST['associated_risks']) ? $_POST['associated_risks'] : null;
 
-    $control_maturity = $_POST['control_maturity'] ?? [];
-    $control_id       = $_POST['control_id'] ?? [];
-    $mapped_controls  = null;
-    if (!empty($control_maturity)) {
-        $mapped_controls = [];
-        foreach ($control_maturity as $index => $maturity) {
-            if (!empty($control_id[$index])) {
-                $mapped_controls[] = [$maturity, $control_id[$index]];
-            }
+    // Choosing mapped controls (including clearing them) needs Governance.
+    if (assets_body_has_mapping_input($_POST) && !check_permission('governance')) {
+        json_response(403, $escaper->escapeHtml($lang['ChoosingControlsNeedsGovernancePermission']), NULL);
+        return;
+    }
+
+    // Choosing associated risks (including clearing them) needs Risk
+    // Management (SR-2313). A body that does not name associated_risks keeps
+    // every link (null above), so an asset-only user's edit never drops them.
+    if (assets_body_has_associated_risks_input($_POST) && !assets_caller_can_see_associated_risks()) {
+        json_response(403, $escaper->escapeHtml($lang['ChoosingRisksNeedsRiskManagementPermission']), NULL);
+        return;
+    }
+
+    // [maturity => [control ids]] (save_asset_to_controls()'s shape); null
+    // when the body names no mapping, [] only for an explicit empty marker.
+    // Everything is validated here, before update_asset() writes anything.
+    $mapping = asset_mapped_controls_from_request($_POST);
+    if ($mapping['error'] !== null) {
+        json_response(400, asset_mapped_controls_error_message($mapping['error']), NULL);
+        return;
+    }
+    $mapped_controls = $mapping['mapping'];
+
+    // Core-only installs have no custom fields and ignore custom_field.
+    if ($custom_values !== null && customization_extra()) {
+        $split = assets_split_custom_field_input($custom_values, asset_custom_fields_by_id_for_asset($id));
+        $rejection = assets_custom_field_rejection($split, true);
+        if ($rejection !== null) {
+            json_response(400, $escaper->escapeHtml($lang[$rejection]), NULL);
+            return;
         }
     }
 
     if ($tags !== null) {
+        if (!is_array($tags)) {
+            $tags = [$tags];
+        }
         foreach ($tags as $tag) {
-            if (strlen($tag) > 255) {
+            if (strlen((string)$tag) > 255) {
                 json_response(400, $escaper->escapeHtml($lang['MaxTagLengthWarning']), NULL);
                 return;
             }
         }
     }
+    if ($associated_risks !== null && !is_array($associated_risks)) {
+        $associated_risks = $associated_risks === '' ? [] : [$associated_risks];
+    }
 
-    $success = update_asset($id, $ip, $name, $value, $location, $teams, $details, $tags, $verified, $mapped_controls, $associated_risks);
+    $scoring = asset_scoring_parse_request($_POST);
+    if ($scoring['error'] !== null) {
+        json_response(400, $escaper->escapeHtml($lang[$scoring['error']]), NULL);
+        return;
+    }
+    // Scoring while the database upgrade is pending: 503 before any write.
+    $refusal = asset_scoring_write_refusal($scoring['selections'], asset_scoring_schema_ready());
+    if ($refusal !== null) {
+        json_response(503, $escaper->escapeHtml($lang[$refusal]), ['error' => $refusal]);
+        return;
+    }
+
+    $success = update_asset($id, $ip, $name, $value, $location, $teams, $details, $tags, $verified, $mapped_controls, $associated_risks, false, $custom_values, $scoring['selections']);
 
     if ($success !== false) {
         json_response(200, $escaper->escapeHtml($lang['AssetWasUpdatedSuccessfully']), ['id' => $id]);
@@ -15351,7 +16541,7 @@ function deleteAssetById($id = null)
 {
     global $escaper, $lang;
 
-    if (!check_permission("asset")) {
+    if (!check_permission("asset") || !has_permission(assets_endpoint_required_permission('delete_asset'))) {
         json_response(403, $escaper->escapeHtml($lang['NoPermissionForAsset']), NULL);
         return;
     }
@@ -15362,13 +16552,10 @@ function deleteAssetById($id = null)
         return;
     }
 
-    if (!asset_exists_by_id($id)) {
-        json_response(404, "NOT FOUND: Unable to find an asset with the specified id.", NULL);
-        return;
-    }
-
-    if (!check_access_for_asset($id)) {
-        json_response(403, $escaper->escapeHtml($lang['NoPermissionForAsset']), NULL);
+    // Same rule as updateAssetById(): a foreign-team asset answers exactly
+    // like a nonexistent one.
+    if (!check_access_for_asset($id) || !asset_exists_by_id($id)) {
+        asset_record_not_available_response();
         return;
     }
 
@@ -15404,8 +16591,40 @@ function getAssetAssociations($id = null)
         return;
     }
 
-    $risk_associations = get_risk_connectivity_for_asset($id);
+    // Risk subjects need Risk Management (SR-2313); the bucket is empty
+    // without it, and Team Separation still strips risks the caller cannot see.
+    $risk_associations = graph_bucket_if_permitted('riskmanagement', fn() => get_risk_connectivity_for_asset($id));
     json_response(200, "SUCCESS", ['risks' => $risk_associations]);
+}
+
+/*************************************************
+ * FUNCTION: ASSET CRUD - GET ASSET AUDIT TRAIL  *
+ * GET /assets/{id}/audit-trail?days=<n>         *
+ *************************************************/
+function getAssetAuditTrail($id = null)
+{
+    global $escaper, $lang;
+
+    if (!check_permission("asset")) {
+        json_response(403, $escaper->escapeHtml($lang['NoPermissionForAsset']), NULL);
+        return;
+    }
+
+    $id = (int)($id ?? $_GET['id'] ?? 0);
+    if ($id <= 0) {
+        json_response(400, $escaper->escapeHtml($lang['YouNeedToSpecifyAnIdParameter']), NULL);
+        return;
+    }
+
+    // Access before existence, and a foreign-team asset answers exactly as a
+    // nonexistent one (the asset record modal's no-leak rule).
+    if (!check_access_for_asset($id) || !asset_exists_by_id($id)) {
+        asset_record_not_available_response();
+        return;
+    }
+
+    $days = assets_audit_trail_days($_GET['days'] ?? null);
+    json_response(200, null, ['entries' => get_asset_audit_trail_entries($id, $days), 'days' => $days]);
 }
 
 /*********************************************
@@ -17157,10 +18376,16 @@ function create_asset_api(){
         $teams              = empty($_POST['team']) ? [] : $_POST['team'];
         $details            = isset($_POST['details']) ? $_POST['details'] : "";
         $tags               = empty($_POST['tags']) ? [] : $_POST['tags'];
-        $verified           = $_POST['verified'] ? boolval($_POST['verified']) : 0;
+        // Only a user who can verify assets may choose the verified state.
+        $verified           = (bool)assets_effective_client_verified(!empty($_POST['verified']), asset_user_can('verify'));
         $control_maturity   = empty($_POST['control_maturity']) ? [] : $_POST['control_maturity'];
         $control_id         = empty($_POST['control_id']) ? [] : $_POST['control_id'];
         $associated_risks   = empty($_POST['associated_risks']) ? [] : $_POST['associated_risks'];
+
+        // Choosing associated risks needs Risk Management (SR-2313).
+        if (assets_body_has_associated_risks_input($_POST) && !assets_caller_can_see_associated_risks()) {
+            return json_response(403, $escaper->escapeHtml($lang['ChoosingRisksNeedsRiskManagementPermission']), NULL);
+        }
 
         $mapped_controls = array();
         foreach($control_maturity as $index=>$maturity){
@@ -17209,6 +18434,10 @@ function create_asset_api(){
 function delete_asset_api(){
     global $escaper, $lang;
     $message = null;
+    if (check_permission("asset") && !has_permission(assets_endpoint_required_permission('delete_asset_legacy'))) {
+        $message = $escaper->escapeHtml($lang['NoPermissionForAsset']);
+        return json_response(403, $message, NULL);
+    }
     if (check_permission("asset")){
         $id = isset($_POST['id']) ? (int)$_POST['id'] : NULL;
         if(!is_null($id) && $id != "") {

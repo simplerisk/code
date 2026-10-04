@@ -814,7 +814,7 @@ $lang = array(
     'UserSessions' => 'הפעלות משתמש',
     'SessionActivityTimeout' => 'פעילות הקצוב להפעלה',
     'Security' => 'אבטחה',
-    'EnableCSP' => 'להפעיל תוכן מדיניות אבטחה (זה מקולקל כרום בעבר)',
+    'EnableCSP' => 'הפעל מדיניות אבטחת תוכן (מומלץ)',
     'EnableDebugLogging' => 'הפעל רישום של איתור באגים',
     'seconds' => 'שניות',
     'FieldSample' => 'דגימת שדה',
@@ -4967,6 +4967,572 @@ $lang = array(
     // closeriskForm()'s own (hardcoded, pre-existing) single-risk denial text.
     'NoCloseRiskPermission' => 'אין לך הרשאה לסגור סיכונים.',
     'QuestionnaireRequiredQuestionUnanswered' => 'אנא ענו על כל השאלות הנדרשות לפני השלמת ההערכה.',
+    'AuditLog_ControlStatusAutoSynced' => 'סטטוס הבקרה "{$short_name}" עודכן אוטומטית ל- "{$status_text}" בהתבסס על תוצאות הבדיקה האחרונות שלה.',
+    'EnableCSPHelp' => 'מדיניות אבטחת תוכן (CSP) מגבילה את הדפדפן לטעינת סקריפטים, סגנונות, תמונות וגופנים רק מ-SimpleRisk עצמו, וחוסמת מסגור דפים ושליחת טפסים בין אתרים. זוהי ההגנה המובנית החזקה ביותר מפני סקריפטים בין אתרים. השאר את האפשרות מופעלת אלא אם כן היא מתנגשת עם פרוקסי, הרחבת דפדפן או שילוב של צד שלישי בסביבה שלך.',
+    // Define Control Frameworks' Columns picker (Task: Columns picker + saved layout/filters) -- the "Standard" group label above its built-in fields (Family/Owner/Maturity/Status/Class/Phase/Priority/Type); 'CustomFields' already exists.
+    'StandardFields' => 'שדות סטנדרטיים',
+    // My Profile redesign (js/simplerisk/pages/account-profile.js)
+    'Administrator' => 'מְנַהֵל',
+    'AccountDetails' => 'פרטי חשבון',
+    'YourPermissions' => 'ההרשאות שלך',
+    'RoleAndTeamsGrantAccess' => 'למה מעניקים לך גישה התפקיד והצוותים שלך',
+    'AllGranted' => 'הכל אושר',
+    'PermissionsCountLabel' => 'הרשאות $count',
+    'ManagedByYourAdministrator' => 'פרטים אלה מנוהלים על ידי מנהל המערכת שלך. צור איתם קשר אם יש צורך לשנות משהו כאן.',
+    'MultiFactorAuthenticationHint' => 'הוסף שלב שני לכניסה שלך כדי לשמור על בטיחות החשבון שלך.',
+    'ChangingPasswordSignsOutEverywhere' => 'שינוי הסיסמה שלך מנתק אותך מכל מקום אחר.',
+    'APIKeyHint' => 'משמש לאימות הסקריפטים והאינטגרציות שלך מול ממשק ה-API של SimpleRisk.',
+    'ResetDisplaySettingsHint' => 'מאפס את בחירות העמודות המותאמות אישית שלך לברירת המחדל.',
+    'CardGeneral' => 'כללי',
+    'CardClassification' => 'מִיוּן',
+    'CardScoring' => 'מְנִיָה',
+    'CardAdditionalInformation' => 'פרטים נוספים',
+    'CardCustomFields' => 'שדות מותאמים אישית',
+    'CardCustomFieldsHint' => 'יש למיין את השדות האלה לתוך כרטיס',
+    'LayoutEditorHint' => 'גרור שדה לכרטיס אחר כדי להקצות אותו מחדש, גרור בתוך כרטיס כדי לשנות את הסדר או גודלו, וגרור או שנה גודל של כרטיס כדי לשנות את מיקומו בדף.',
+    'ScoringNotYetAvailableInThisView' => 'הגדרת הניקוד אינה זמינה עדיין בתצוגה זו.',
+    // Native tooltip on the Cards layout editor's Gridstack resize handles
+    // (js/simplerisk/pages/customization-layout-editor.js) -- the bare corner
+    // bracket read as an unexplained mark until it said what it does.
+    'DragToResize' => 'גרור כדי לשנות גודל',
+    // Warning pill on a Cards layout editor card the admin has sized shorter
+    // than the fields it holds. Replaces the silent inner scrollbar that state
+    // used to produce.
+    'NFieldsDoNotFitCard' => 'שדה/ים {n} אינו/הם מתאימים לכרטיס זה. שנה את גודל הכרטיס כדי להציג אותם.',
+    // Card titles for the Mitigation tab's Cards layout editor
+    // (js/simplerisk/pages/customization-layout-editor.js), mirroring the
+    // Card* keys above for the Details tab. Order follows
+    // customization_mitigation_cards_layout_card_keys() (includes/functions.php).
+    'CardMitigationStrategy' => 'אסטרטגיית הפחתה',
+    'CardMitigationSolution' => 'פתרון הפחתה',
+    'CardMitigationControls' => 'פקדים להפחתת הסיכון',
+    'CardReview' => 'סקירה',
+    // Submit Risk page's three action-bar buttons (buildActionsBar(),
+    // risk-details-form.js, submitMode 'create' only) and the Reset Form
+    // confirm modal (management/index.php, design-system.md #8's "Confirm"
+    // type). 'Discard'/'Cancel'/'Close' already exist and are reused for the
+    // modal's own buttons.
+    'ResetForm' => 'איפוס טופס',
+    'SaveAndNew' => 'שמור וחדש',
+    'SaveAndView' => 'שמור והצג',
+    'ResetFormConfirmTitle' => 'למחוק את הגשת הסיכון הזו?',
+    'ResetFormConfirmBody' => 'כל מידע שהזנת יאבד.',
+    // Restore-template destructive confirm (Customization Extra, Save/Restore
+    // action bar). Two body variants: risk's Details/Mitigation/Review tabs
+    // named explicitly (the only fgroup with that 3-tab Cards layout), a
+    // generic fallback for every other fgroup (single legacy-panel tab).
+    // Both end on the same scoping reassurance -- confirmed via direct source
+    // read that Restore only ever touches the currently-selected template
+    // group, never any other.
+    'RestoreTemplateConfirmTitle' => 'שחזר פריסת ברירת מחדל?',
+    'RestoreTemplateConfirmBodyRisk' => 'פעולה זו מאפסת כל שדה בכרטיסיות פרטים, הקלה וסקירה לערכי ברירת המחדל שלהם עבור קבוצת תבניות זו. קבוצות תבניות אחרות אינן מושפעות.',
+    'RestoreTemplateConfirmBody' => 'פעולה זו מאפסת כל שדה בתבנית זו לערכי ברירת המחדל שלו עבור קבוצת תבניות זו. קבוצות תבניות אחרות אינן מושפעות.',
+    // CVSS holder's collapsed Temporal/Environmental/Impact-Modifiers
+    // accordion (buildCvssHolder(), risk-details-form.js) -- these three
+    // groups are optional CVSS v2 refinements on top of the required Base
+    // Score Metrics, so they collapse behind this header by default.
+    'AdvancedMetrics' => 'מדדים מתקדמים',
+    // CVSS holder's Base Score Metrics sub-group headers (buildCvssHolder(),
+    // risk-details-form.js) -- distinct from the existing 'ExploitabilityMetrics'/
+    // 'ImpactMetrics' keys, which the legacy cvss_modal_content.php modal
+    // still renders as plain "Exploitability Metrics"/"Impact Metrics" and
+    // must keep unchanged. These fold the umbrella "Base Score Metrics"
+    // heading into each sub-group's own header instead of a separate label.
+    'BaseScoreExploitabilityMetrics' => 'מדדי ניצול של ציון בסיס',
+    'BaseScoreImpactMetrics' => 'מדדי השפעה של ציון בסיס',
+    // Per-field help popovers on the CVSS holder's 14 metric selects
+    // (buildCvssScoreItem(), risk-details-form.js) -- one per CVSS v2
+    // metric, matching the standard CVSS v2 specification definitions.
+    // Double-quoted (not single-quoted, this file's usual style) so the
+    // \n line breaks are real escape sequences: each popover leads with one
+    // overall sentence, then one bullet line per option, rendered via
+    // white-space: pre-line on .sr-scoring-help-popover .popover-body
+    // (scss/modules/_questionnaire.scss) -- plain text throughout, no HTML,
+    // so the popover stays initialized without Bootstrap's `html: true`.
+    "AttackVectorHelp" => "כיצד ניתן לגשת לפגיעות.\n• מקומי: דורש גישה מקומית, כגון קונסולה או מעטפת.\n• רשת סמוכה: התוקף חייב להיות באותו מקטע רשת פיזי או לוגי.\n• רשת: ניתן לניצול מרחוק דרך רשת, ללא צורך בגישה מקומית או סמוכה.",
+    "AttackComplexityHelp" => "כמה מורכבת ההתקפה ברגע שלתוקף יש גישה למטרה.\n• גבוה: דורש תנאים מיוחדים שקשה לארגן.\n• בינוני: יש לעמוד בתנאים מסוימים, אך ניצול אינו קשה ברגע שהם מתקיימים.\n• נמוך: אין צורך בתנאים מיוחדים.",
+    "AuthenticationHelp" => "מספר הפעמים שתוקף חייב לאמת את עצמו מול היעד כדי לנצל אותו.\n• מרובה: נדרש אימות פעמיים או יותר, אפילו עם אותם אישורים.\n• יחיד: נדרש אימות פעם אחת.\n• ללא: לא נדרש אימות.",
+    "ConfidentialityImpactHelp" => "ההשפעה על סודיות הנתונים שהמערכת מעבדת אם ינוצלו.\n• ללא: אין השפעה.\n• חלקי: גילוי מסוים של מידע, אך התוקף אינו שולט על מה, או שההפסד מוגבל.\n• מלא: גילוי מלא של כל המידע במערכת.",
+    "IntegrityImpactHelp" => "ההשפעה על שלמות המערכת אם מנוצלת.\n• ללא: אין השפעה.\n• חלקי: ניתן לשנות חלק מהנתונים, אך התוקף אינו שולט במה, או שההיקף מוגבל.\n• מלא: פגיעה מוחלטת בשלמות המערכת; התוקף יכול לשנות כל קובץ.",
+    "AvailabilityImpactHelp" => "ההשפעה על זמינות המערכת אם מנוצלת.\n• ללא: אין השפעה.\n• חלקי: ביצועים מופחתים או הפרעות בזמינות.\n• מלא: כיבוי מוחלט של המשאב המושפע.",
+    "RemediationLevelHelp" => "רמת התיקון הזמינה עבור הפגיעות.\n• תיקון רשמי: קיים פתרון מלא של הספק.\n• תיקון זמני: קיים תיקון רשמי אך זמני.\n• פתרון עוקף: קיים פתרון לא רשמי, שאינו של הספק.\n• לא זמין: אין פתרון זמין, או שלא ניתן להחיל אף פתרון.",
+    "ReportConfidenceHelp" => "מידת הביטחון בקיומה של הפגיעות ובאמינות הפרטים הטכניים שלה.\n• לא אושר: דיווח ממקור יחיד ולא אושר; הבעיה הבסיסית היא ספקולטיבית.\n• לא אושר: מספר מקורות בלתי תלויים מדווחים על אותה התנהגות, אך שורש הבעיה אינו אושר.\n• אושר: הספק הודה בבעיה, או שהיא אושרה על ידי קוד מקור או ניתוח פרצות.",
+    "CollateralDamagePotentialHelp" => "הפוטנציאל לאובדן חיים, נכסים פיזיים או הפסד כספי אם הפגיעות מנוצלת.\n• ללא: לא סביר להניח שאובדן כזה.\n• נמוך עד בינוני: הפסד בינוני אפשרי.\n• גבוה: השפעה קטסטרופלית על נכסי הארגון, הכנסותיו או בטיחותו.",
+    "TargetDistributionHelp" => "שיעור המערכות הפגיעות בסביבה שלך.\n• ללא: לא קיימות מערכות יעד.\n• נמוך: 1-25% מהמערכות פגיעות.\n• בינוני: 26-75% פגיעות.\n• גבוה: 76-100% פגיעות.",
+    "ConfidentialityRequirementHelp" => "עד כמה חשובה סודיות הנכס המושפע לארגון שלך.\n• נמוכה: לאובדן סודיות יש השפעה מוגבלת.\n• בינונית: יש לה השפעה חמורה.\n• גבוהה: יש לה השפעה קטסטרופלית.",
+    "IntegrityRequirementHelp" => "עד כמה חשובה שלמות הנכס המושפע לארגון שלך.\n• נמוכה: לאובדן שלמות יש השפעה מוגבלת.\n• בינונית: יש לה השפעה חמורה.\n• גבוהה: יש לה השפעה קטסטרופלית.",
+    "AvailabilityRequirementHelp" => "עד כמה חשובה זמינות הנכס המושפע לארגון שלך.\n• נמוכה: לאובדן זמינות יש השפעה מוגבלת.\n• בינונית: יש לה השפעה חמורה.\n• גבוהה: יש לה השפעה קטסטרופלית.",
+    // Base Score Metrics' two sub-group intro sentences (metricsSubGroup()'s
+    // `descKey`, risk-details-form.js) -- orient the user to what the GROUP
+    // as a whole is asking, distinct from the per-field *Help popover keys
+    // above which explain each metric's own options.
+    'BaseScoreExploitabilityMetricsDescription' => 'כיצד תוקף יצטרך להגיע ולהפעיל את הפגיעות הזו: היכן עליו להיות, כמה מורכבת ההתקפה, והאם עליו לבצע אימות תחילה.',
+    'BaseScoreImpactMetricsDescription' => 'מה קורה אם הפגיעות מנוצלת בהצלחה: ההשפעה על הסודיות, השלמות והזמינות של המערכת המושפעת.',
+    // Advanced Metrics' three optional sub-group intro sentences -- same
+    // metricsSubGroup() `descKey` as the two Base Score groups above.
+    'TemporalScoreMetricsDescription' => 'כיצד האיום האמיתי של פגיעות זו משתנה עם הזמן: המצב הנוכחי של קוד הניצול לרעה, אילו אפשרויות תיקון זמינות, ועד כמה הדיווחים בטוחים בקיומה.',
+    'EnvironmentalScoreMetricsDescription' => 'כיצד הסיכון של פגיעות זו תלוי בסביבה שלך: הפוטנציאל לנזק בעולם האמיתי, וכמה מהמערכות שלך מושפעות בפועל.',
+    'ImpactSubscoreModifiersDescription' => 'שקללו את השפעת ציון הבסיס לפי מידת החשיבות בפועל של סודיות, שלמות וזמינות עבור נכס ספציפי זה.',
+    // Phase 4d-iii: DREAD holder help popovers (view_dread_help()'s
+    // existing English text, includes/display.php, extracted to real $lang
+    // keys -- that function's own content was raw hardcoded HTML, never
+    // localized, so it could not be reused verbatim).
+    'DamagePotentialHelp' => 'אם מתרחשת ניצול לרעה של איום, כמה נזק ייגרם?' . "\n" . '0 = כלום' . "\n" . '5 = נתוני משתמש אישיים נפגעו או מושפעים.' . "\n" . '10 = השמדה מלאה של המערכת או הנתונים',
+    'ReproducibilityHelp' => 'כמה קל לשחזר את ניצול האיום?' . "\n" . '0 = קשה מאוד או בלתי אפשרי, אפילו עבור מנהלי האפליקציה.' . "\n" . '5 = נדרשים שלב אחד או שניים, ייתכן שיהיה צורך להיות משתמש מורשה.' . "\n" . '10 = מספיקים דפדפן אינטרנט ושורת הכתובת, ללא אימות.',
+    'ExploitabilityHelp' => 'מה נדרש כדי לנצל את האיום הזה?' . "\n" . '0 = ידע מתקדם בתכנות וברשתות, עם כלי תקיפה מותאמים אישית או מתקדמים.' . "\n" . '5 = קיימת תוכנה זדונית באינטרנט, או שניתן לבצע ניצול בקלות, באמצעות כלי התקפה זמינים.' . "\n" . '10 = רק דפדפן אינטרנט',
+    'AffectedUsersHelp' => 'כמה משתמשים יושפעו?' . "\n" . '0 = אין' . "\n" . '5 = חלק מהמשתמשים, אך לא כולם' . "\n" . '10 = כל המשתמשים',
+    'DiscoverabilityHelp' => 'כמה קל לגלות את האיום הזה?' . "\n" . '0 = קשה מאוד עד בלתי אפשרי; דורש קוד מקור או גישת ניהול.' . "\n" . '5 = ניתן להבין זאת על ידי ניחוש או על ידי ניטור עקבות רשת.' . "\n" . '9 = פרטי תקלות כאלה כבר זמינים לציבור וניתן לגלותם בקלות באמצעות מנוע חיפוש.' . "\n" . '10 = המידע גלוי בשורת הכתובת של דפדפן האינטרנט או בטופס.',
+    // The DREAD holder's summary card heading and "DREAD Metrics" card
+    // heading. No existing key covers either (confirmed via grep before
+    // adding).
+    'DreadScore' => 'ציון DREAD',
+    'DreadMetrics' => 'מדדי DREAD',
+    // Phase 4d-iv: OWASP holder help popovers (view_owasp_help()'s
+    // existing English text, includes/display.php, extracted to real
+    // $lang keys -- same never-localized-legacy-content extraction the
+    // DREAD phase already did for its own 5 fields). Wording/levels
+    // trued up against that function's real source text, not transcribed
+    // from an earlier standard-methodology draft.
+    'SkillLevelHelp' => 'עד כמה קבוצת סוכני האיום הזו מיומנת מבחינה טכנית?' . "\n" . '1 = ללא כישורים טכניים' . "\n" . '3 = מיומנויות טכניות מסוימות' . "\n" . '5 = משתמש מחשב מתקדם' . "\n" . '6 = מיומנויות רשת ותכנות' . "\n" . '9 = מיומנויות חדירה לאבטחה',
+    'MotiveHelp' => 'עד כמה קבוצת סוכני האיום הזו מונעת למצוא ולנצל את הפגיעות הזו?' . "\n" . '1 = תגמול נמוך או ללא תגמול כלל' . "\n" . '4 = תגמול אפשרי' . "\n" . '9 = תגמול גבוה',
+    'OpportunityHelp' => 'אילו משאבים והזדמנויות נדרשים מקבוצת סוכני איום זו כדי למצוא ולנצל פגיעות זו?' . "\n" . '0 = גישה מלאה או משאבים יקרים נדרשים' . "\n" . '4 = נדרשת גישה או משאבים מיוחדים' . "\n" . '7 = נדרשת גישה או משאבים מסוימים' . "\n" . '9 = אין צורך בגישה או משאבים',
+    'SizeHelp' => 'מה גודלה של קבוצת סוכני האיום הזו?' . "\n" . '2 = מפתחים' . "\n" . '2 = מנהלי מערכת' . "\n" . '4 = משתמשי אינטראנט' . "\n" . '5 = שותפים' . "\n" . '6 = משתמשים מאומתים' . "\n" . '9 = משתמשי אינטרנט אנונימיים',
+    'EaseOfDiscoveryHelp' => 'כמה קל לקבוצה זו של סוכני איום לגלות את הפגיעות הזו?' . "\n" . '1 = כמעט בלתי אפשרי' . "\n" . '3 = קשה' . "\n" . '7 = קל' . "\n" . '9 = כלים אוטומטיים זמינים',
+    'EaseOfExploitHelp' => 'כמה קל לקבוצת סוכני איום זו לנצל בפועל את הפגיעות הזו?' . "\n" . '1 = תיאורטי' . "\n" . '3 = קשה' . "\n" . '5 = קל' . "\n" . '9 = כלים אוטומטיים זמינים',
+    'AwarenessHelp' => 'עד כמה ידועה פגיעות זו לקבוצת סוכני איום זו?' . "\n" . '1 = לא ידוע' . "\n" . '4 = מוסתר' . "\n" . '6 = ברור' . "\n" . '9 = ידע ציבורי',
+    'IntrusionDetectionHelp' => 'מה הסיכוי להתגלות ניצול לרעה?' . "\n" . '1 = זיהוי פעיל ביישום' . "\n" . '3 = נרשם ונבדק' . "\n" . '8 = נרשם ללא בדיקה' . "\n" . '9 = לא נרשם',
+    'LossOfConfidentialityHelp' => 'כמה מידע ניתן לחשוף וכמה זה רגיש?' . "\n" . '2 = נחשפו נתונים מינימליים שאינם רגישים' . "\n" . '6 = נחשפו נתונים קריטיים מינימליים' . "\n" . '6 = נחשפו נתונים נרחבים שאינם רגישים' . "\n" . '7 = נחשפו נתונים קריטיים נרחבים' . "\n" . '9 = כל הנתונים נחשפו',
+    'LossOfIntegrityHelp' => 'כמה נתונים עלולים להיפגם וכמה הם ניזוק?' . "\n" . '1 = נתונים פגומים באופן מינימלי' . "\n" . '3 = נתונים פגומים באופן מינימלי' . "\n" . '5 = נתונים נרחבים מעט פגומים' . "\n" . '7 = נתונים נרחבים ומושחתים באופן חמור' . "\n" . '9 = כל הנתונים פגומים לחלוטין',
+    'LossOfAvailabilityHelp' => 'כמה שירות עלול ללכת לאיבוד וכמה הוא חיוני?' . "\n" . '1 = שירותים משניים מינימליים הופסקו' . "\n" . '5 = שירותים ראשיים מינימליים מופסקים' . "\n" . '5 = שירותים משניים נרחבים הופסקו' . "\n" . '7 = שירותים ראשיים נרחבים הופסקו' . "\n" . '9 = כל השירותים אבדו לחלוטין',
+    'LossOfAccountabilityHelp' => 'האם פעולותיהם של גורמי האיום ניתנות לייחס לאדם פרטי?' . "\n" . '1 = ניתן למעקב מלא' . "\n" . '7 = ניתן למעקב אפשרי' . "\n" . '9 = אנונימי לחלוטין',
+    'FinancialDamageHelp' => 'כמה נזק כלכלי ייגרם כתוצאה מניצול לרעה?' . "\n" . '1 = פחות מעלות תיקון הפגיעות' . "\n" . '3 = השפעה מינורית על הרווח השנתי' . "\n" . '7 = השפעה משמעותית על הרווח השנתי' . "\n" . '9 = פשיטת רגל',
+    'ReputationDamageHelp' => 'האם ניצול לרעה יגרום לפגיעה במוניטין שיפגע בעסק?' . "\n" . '1 = נזק מינימלי' . "\n" . '4 = אובדן חשבונות עיקריים' . "\n" . '5 = אובדן מוניטין' . "\n" . '9 = נזק למותג',
+    'NonComplianceHelp' => 'כמה חשיפה גורם אי ציות?' . "\n" . '2 = הפרה קלה' . "\n" . '5 = הפרה ברורה' . "\n" . '7 = הפרה בפרופיל גבוה',
+    'PrivacyViolationHelp' => 'כמה מידע מזהה אישי ניתן לחשוף?' . "\n" . '3 = אדם אחד' . "\n" . '5 = מאות אנשים' . "\n" . '7 = אלפי אנשים' . "\n" . '9 = מיליוני אנשים',
+    // The OWASP holder's Score card heading. No existing key covers this
+    // (confirmed via grep before adding) -- the Likelihood/Impact card
+    // headings reuse the already-existing bare 'Likelihood'/'Impact' keys.
+    'OwaspScore' => 'ציון OWASP',
+    // Phase 4d-iv follow-up: group-level descriptions for the 4 OWASP
+    // subgroup headings, sourced from OWASP's own Risk Rating Methodology
+    // (https://community.owasp.org/OWASP_Risk_Rating_Methodology), tightened
+    // into short UI captions -- not a verbatim quote (see this task's own
+    // source table for the original wording).
+    'ThreatAgentFactorsDescription' => 'מעריך את הסבירות להצלחה של מתקפה על ידי קבוצת סוכני איום זו.',
+    'VulnerabilityFactorsDescription' => 'מעריך את הסבירות שפגיעות זו תתגלה ותינוצל.',
+    'TechnicalImpactDescription' => 'מחלק את ההשפעה לפי סודיות, יושרה, זמינות ואחריות.',
+    'BusinessImpactDescription' => 'משקף את מה שחשוב לעסק, מעבר להשפעה הטכנית הגולמית.',
+    // CVSS's own Temporal-metric 'Exploitability' help text. This key shares
+    // a labelKey ('Exploitability') with DREAD's own field, so both would
+    // otherwise derive the same generic lang key ('ExploitabilityHelp'),
+    // with DREAD's entry silently winning for both -- risk-details-form.js's
+    // buildCvssScoreItem() and risk-details-view.js's cvssMetricValueRow()
+    // reference this key directly for CVSS's Exploitability field instead
+    // of the generic '<labelKey>Help' derivation.
+    'CVSSExploitabilityHelp' => "המצב הנוכחי של טכניקות ניצול או זמינות קוד.\n• לא מוכח: אין קוד ניצול זמין, או שהניצול הוא תיאורטי.\n• הוכחת היתכנות: קוד ניצול קיים אך אינו מעשי עבור רוב התוקפים.\n• פונקציונלי: קוד ניצול פונקציונלי עובד ברוב המצבים.\n• גבוה: הניצול אמין ואוטומטי (למשל תולעת) או שאינו דורש קוד ניצול כלל.",
+    // Risk Scoring -- Classic Inline (Task 3): the Classic scoring method's
+    // new inline Score card heading and its Likelihood/Impact cards' short
+    // plain-English descriptions (js/simplerisk/common/risk-details-form.js's
+    // buildClassicHolder()). Deliberately NOT sourced from NIST SP 800-30 or
+    // any other external standard -- confirmed with the user via the
+    // approved mockup review, unlike OWASP's own subgroup descriptions
+    // above, which do cite OWASP's Risk Rating Methodology.
+    'ClassicScore' => 'ציון קלאסי',
+    'ClassicLikelihoodDescription' => 'כמה סביר להניח שסיכון זה יתרחש.',
+    'ClassicImpactDescription' => 'כמה חמורות יהיו ההשלכות אם סיכון זה יתרחש.',
+    // Risk Scoring -- Custom Inline (Task 2): the Custom scoring method's
+    // new inline Score card heading (js/simplerisk/common/risk-details-form.js's
+    // buildCustomHolder()) and the Custom Value card's short description
+    // caption. 'CustomValueDescription' text confirmed directly with the
+    // user, same as Classic's own description keys above.
+    'CustomScore' => 'ציון מותאם אישית',
+    'CustomValueDescription' => 'ערך מותאם אישית יכול להיות ערך עשרוני בין 0 ל-10.',
+    // Risk Scoring -- Contributing Risk Inline (Phase 4d-v): the last of
+    // the three deferred scoring methods (DREAD/OWASP shipped earlier in
+    // this same project). The Likelihood/Contributing Risk cards' short
+    // plain-English descriptions (js/simplerisk/common/risk-details-form.js's
+    // buildContributingRiskHolder()). The Score card heading reuses the
+    // EXISTING 'ContributingRiskScore' key (already present above, same
+    // text) rather than duplicating it -- 'ContributingRisk'/
+    // 'ContributingLikelihood'/'Weight'/'Subject' are likewise reused as-is.
+    'ContributingLikelihoodDescription' => 'כמה סביר להניח שסיכון זה יתרחש.',
+    'ContributingRiskDescription' => 'כל גורם להלן משוקלל לפי חשיבותו היחסית -- בחר באיזו מידה כל אחד מהם מושפע מסיכון זה.',
+    // OWASP read-mode card (buildOwaspReadView(), risk-details-view.js):
+    // the live calculation formula under each of the 4 sub-group names
+    // (Threat Agent Factors/Vulnerability Factors/Technical Impact/
+    // Business Impact), matching the legacy risk-scoring-details panel's
+    // own "= ( a + b + c + d ) / 4" text (includes/display.php), and the
+    // OWASP Risk Rating Methodology link note placed in the OWASP Score
+    // column's open space below the summary numbers.
+    'OwaspSubgroupFormula' => '= ( {a} + {b} + {c} + {d} ) / 4',
+    'OwaspMethodologyNote' => 'ניתן למצוא פרטים מלאים על מתודולוגיית דירוג הסיכונים של OWASP',
+    'Here' => 'כָּאן',
+    // Scoring widget formula captions (Classic/DREAD/Contributing Risk),
+    // the same ".sr-cvss-vector under the score label" treatment CVSS's
+    // vector caption and OwaspSubgroupFormula above already have, on both
+    // the edit-mode holder (risk-details-form.js) and the read-mode card
+    // (risk-details-view.js). Classic reuses the existing RISKClassicExp1-5
+    // keys instead of a new one -- see those keys' own long-standing
+    // definitions above.
+    'DreadScoreFormula' => '= ( {a} + {b} + {c} + {d} + {e} ) / 5',
+    // Contributing Risk's per-factor weighted term and its shared
+    // Likelihood term (update_contributing_risk_score(), includes/
+    // functions.php) -- unlike DREAD/OWASP's fixed roster, the factor list
+    // is admin-configured, so this is one formula PER FACTOR ROW rather
+    // than one fixed caption under the total score.
+    // {maxName}: score.php parity -- legacy's "Maximum Value" column showed
+    // the max option's human-readable name alongside its number (e.g.
+    // "[5] Certain", includes/display.php); these formulas only showed the
+    // bare number.
+    'ContributingLikelihoodFormula' => '= {value} x 5 / {max} ({maxName})',
+    'ContributingFactorFormula' => '= {weight}% x {impact} x 5 / {max} ({maxName})',
+    // Contributing Risk's own subscore row in the Score card -- the sum of
+    // every factor's own term above it. Generic (not substituted with real
+    // numbers) since the number of terms is however many factors are
+    // configured, unlike the fixed-roster formulas above.
+    'ContributingRiskSubtotalFormula' => '= סכום של (משקל x פגיעה x 5 / מקסימום)',
+    // Contributing Risk Score's own formula, under the total row -- always
+    // exactly 2 terms (unlike the Contributing Risk subtotal above), so
+    // substituted with the real current subtotal values, same convention
+    // DreadScoreFormula/OwaspSubgroupFormula use for their own fixed roster.
+    'ContributingRiskScoreFormula' => '= {likelihood} + {contributing}',
+    // Risk Scoring History widget (risk-details-view.js) -- replaces the
+    // legacy chart's bare save icon with a real menu item, structured for
+    // future export types alongside it.
+    'DownloadChartAsImage' => 'הורד כתמונה',
+    // Legacy score.php's CVSS table had a "Full details of CVSS Version 2.0
+    // scoring can be found here." link (includes/display.php); this is its
+    // inline-scoring-card equivalent, same shape as OwaspMethodologyNote.
+    'CvssMethodologyNote' => 'ניתן למצוא פרטים מלאים על ניקוד CVSS גרסה 2.0',
+    // Mitigation Controls redesign: the picker reuses ChooseControls/
+    // AddOrRemoveControls/etc from Document Program's control picker.
+    'InvalidControlID' => 'מזהה בקרה לא חוקי.',
+    'ValidationOwner' => 'בעל האימות',
+    'ValidationStatus' => 'סטטוס אימות',
+    'NotStarted' => 'לא התחיל',
+    // management/view.php's "risk ID does not exist" empty state.
+    'RiskIdDoesNotExistBody' => 'ייתכן שהסיכון שאתה מחפש נמחק, או שהקישור שגוי.',
+    'MitigationControlsRequiresGovernance' => 'נדרשת הרשאת ממשל לצפייה.',
+    'ViewControlValidation' => 'אימות בקרת תצוגה',
+    'EditControlValidation' => 'עריכת אימות בקרה',
+    'SupportingDocumentationRequiresSubmitRisk' => 'נדרשת הרשאת "שלח סיכון" להעלאת קבצים.',
+    'SupportingDocumentationRequiresModifyRisks' => 'נדרשת הרשאת שינוי סיכונים לניהול קבצים.',
+    'MitigationSupportingDocumentationRequiresPlanMitigations' => 'נדרשת הרשאת תוכנית Mitigations לניהול קבצים.',
+    'MitigationSubmittedBy' => 'הוגשה על ידי',
+    'UseADifferentDate' => 'השתמש בתאריך אחר',
+    'AssetGroup' => 'קבוצת נכסים',
+    // Customization Cards Layout API (extras/customization/index.php) scope-validation errors.
+    'InvalidFgroup' => 'קבוצת f לא חוקית.',
+    'CustomizationCardsLayoutApiScopeError' => 'ממשק ה-API לעיצוב כרטיסי התאמה אישית זמין רק עבור fgroup=risk, tab_index=1, tab_index=2 או tab_index=3.',
+    // Asset management redesign
+    'DiscoverAssets' => 'גלה נכסים',
+    'DiscoveryRuns' => 'ריצות דיסקברי',
+    'DiscoveryRangeHint' => 'כתובת אחת, טווח התחלה-סיום, או IPv4 CIDR',
+    'DiscoveryResolveNames' => 'חפש שמות מארחים',
+    'DiscoveryAddAs' => 'הוסף נכסים חדשים כ',
+    'DiscoveryStart' => 'התחל גילוי',
+    'DiscoveryBackgroundNote' => 'פועל ברקע. כתובות שכבר קיימות מדלגות.',
+    'DiscoveryRangeInvalid' => 'הזן כתובת IPv4, טווח או בלוק CIDR חוקיים.',
+    'DiscoveryRangeTooLarge' => 'טווח זה גדול מדי. המגבלה היא {$max} כתובות.',
+    'DiscoveryRunQueued' => 'התגליות החלו.',
+    'DiscoveryRunCompleted' => 'הגילוי הסתיים: {$new} נכסים חדשים.',
+    'AssetBulkSelectAll' => 'בחר את כל הנכסים {$count}',
+    'AssetBulkAssignTeams' => 'הקצאת צוותים…',
+    'AssetBulkAddToGroup' => 'הוסף לקבוצה…',
+    'AssetBulkDeleteConfirmTitle' => 'למחוק נכסים {$count}?',
+    'AbleToEditAssets' => 'יכולת עריכת נכסים',
+    'AbleToDeleteAssets' => 'אפשרות למחוק נכסים',
+    'AbleToVerifyAssets' => 'מסוגל לאמת נכסים',
+    'AbleToRunAssetDiscovery' => 'מסוגל להפעיל גילוי נכסים',
+    'AbleToCreateAssetGroups' => 'מסוגל ליצור קבוצות נכסים',
+    'AbleToEditAssetGroups' => 'אפשרות לערוך קבוצות נכסים',
+    'AbleToDeleteAssetGroups' => 'אפשרות למחוק קבוצות נכסים',
+    'ViewAsset' => 'הצג נכס',
+    'AssetUnverifiedByEditLog' => 'הנכס "{$name}" הוחזר למצב לא מאומת מכיוון שהמשתמש "{$user}" שינה את שמו או כתובת ה-IP שלו ללא הרשאה לאמת נכסים.',
+    'AssetTeamsAssignedLog' => 'הנכס "{$name}" הוקצה לצוות/ים "{$teams}" על ידי המשתמש "{$user}".',
+    // Manage assets page (asset management redesign, Task 9)
+    'AddAsset' => 'הוסף נכס',
+    'SearchAssetsPlaceholder' => 'חיפוש לפי שם או כתובת IP',
+    'AllLocations' => 'כל המיקומים',
+    'AllTags' => 'כל התגים',
+    'AllAssetGroups' => 'כל קבוצות הנכסים',
+    'AssetFields' => 'שדות נכס',
+    'AssetBulkAllSelected' => 'כל הנכסים התואמים {$count} נבחרו',
+    'AssetDeleteConfirmTitle' => 'למחוק את הנכס "{$name}"?',
+    'DeleteAsset' => 'מחיקת נכס',
+    'DeleteAssets' => 'מחיקת נכסים',
+    'AssetBulkAssignTeamsTitle' => 'הקצאת צוותים לנכסים {$count}',
+    'AssetAssignTeamsHint' => 'הקבוצות שנבחרו נוספו. קבוצות שכבר נמצאות בנכס נשארות.',
+    'AssetAddToGroupTitle' => 'הוסף נכסים {$count} לקבוצה',
+    'AssetChooseTeams' => 'בחירת צוותים',
+    'AssetChooseGroup' => 'בחר קבוצה',
+    'Assign' => 'לְהַקְצוֹת',
+    'AssetBulkVerifiedSummary' => '{$ok} אומת, {$failed} דילג',
+    'AssetBulkDeletedSummary' => '{$ok} נמחק, {$failed} דילג',
+    'AssetBulkTeamsSummary' => 'צוותים שהוקצו לנכסים {$ok} , {$failed} דילגו עליהם',
+    'AssetBulkGroupSummary' => '{$ok} נוסף לקבוצה, {$failed} דילג',
+    'AssetBulkSkippedList' => 'דילג: {$list}',
+    'AssetBulkReasonNotFound' => 'לא נמצא',
+    'NoAssetsYet' => 'אין עדיין נכסים',
+    'NoAssetsYetHint' => 'נכסים שאתה מוסיף או מגלה מופיעים כאן.',
+    'NoAssetsMatchFilters' => 'אין נכסים התואמים את המסננים שלך',
+    'CouldNotLoadAssets' => 'לא ניתן היה לטעון את הנכסים. הנתונים שלך בטוחים.',
+    'AllValuations' => 'כל הערכות השווי',
+    // Manage assets page, Asset groups tab (asset management redesign, Task 10)
+    'AddAssetGroup' => 'הוסף קבוצה',
+    'EditAssetGroup' => 'עריכת קבוצה',
+    'DeleteAssetGroup' => 'מחיקת קבוצה',
+    'ViewGroupMembers' => 'הצג חברים',
+    'SearchAssetGroupsPlaceholder' => 'חיפוש קבוצות לפי שם',
+    'HighestValuation' => 'הערכת השווי הגבוהה ביותר',
+    'LinkedRisks' => 'סיכונים קשורים',
+    'RemoveFromGroup' => 'הסר מהקבוצה',
+    'AssetGroupMoreMembers' => '+ {$count} עוד',
+    'ViewAllInAssetsTab' => 'הצג הכל בכרטיסייה נכסים',
+    'NoAssetsInGroup' => 'אין נכסים בקבוצה זו.',
+    'CouldNotLoadGroupMembers' => 'לא ניתן היה לטעון את חברי הקבוצה הזו.',
+    'AssetGroupMembers' => 'חברים',
+    'AssetGroupMembersHint' => 'רק נכסים שאתה יכול לראות מופיעים ברשימה. חברים שאתה לא יכול לראות נשארים בקבוצה.',
+    'ChooseAssets' => 'בחירת נכסים',
+    'AddOrRemoveAssets' => 'הוספה או הסרה של נכסים…',
+    'UseTheseAssets' => 'השתמשו בנכסים אלה',
+    'AllAssets' => 'כל הנכסים',
+    'Valuation' => 'הַעֲרָכָה',
+    'PickerShowingFirstN' => 'מציג את {$count} הראשון מתוך {$total}. חפש או צמצם כדי למצוא את השאר.',
+    'AssetGroupDeleteConfirmTitle' => 'למחוק את הקבוצה "{$name}"?',
+    'AssetGroupDeleteKeepsAssets' => 'הנכסים בקבוצה זו לא נמחקים. רק הקבוצה מוסרת.',
+    'NoAssetGroupsYet' => 'עדיין אין קבוצות נכסים',
+    'NoAssetGroupsYetHint' => 'קבצו נכסים כדי שתוכלו למפות ולדווח עליהם יחד.',
+    'NoAssetGroupsMatchSearch' => 'אין קבוצות נכסים התואמות את החיפוש שלך',
+    'CouldNotLoadAssetGroups' => 'לא ניתן היה לטעון קבוצות נכסים. הנתונים שלך בטוחים.',
+    'DiscoveryAssignTeams' => 'הקצאה לצוותים',
+    'DiscoveryAssignTeamsHint' => 'אופציונלי. כל נכס חדש נוסף לצוותים אלה.',
+    'DiscoveryAddAsHint' => 'הוגדר על ידי הרשאתך לאימות נכסים.',
+    'DiscoveryTeamsInvalid' => 'בחרו קבוצות שקיימות ושאליהן אתם שייכים.',
+    'DiscoveryResolveNamesInvalid' => 'חיפוש שמות מארחים חייבים להיות פעילים או כבויים.',
+    'DiscoveryTooManyActiveRuns' => 'כבר יש לך {$max} ריצות גילוי בתהליך. המתן עד שאחת מהן תסתיים או בטל אותה.',
+    'DiscoveryRunNotFound' => 'ריצת גילוי לא נמצאה.',
+    'DiscoveryRunAlreadyFinished' => 'סבב הגילוי הזה כבר הסתיים.',
+    'DiscoveryRunCancelled' => 'ריצת הגילוי בוטלה.',
+    'DiscoveryRunFailedToast' => 'גילוי {$range} נכשל.',
+    'DiscoveryStatusQueued' => 'בתור',
+    'DiscoveryProgress' => '{$scanned} מתוך {$total}',
+    'DiscoveryLiveHosts' => 'מארחים חיים',
+    'DiscoveryNewAssets' => 'נכסים חדשים',
+    'DiscoveryStartedAt' => 'התחיל',
+    'DiscoveryCancelRun' => 'ביטול ריצה',
+    'CouldNotLoadDiscoveryRuns' => 'לא ניתן היה לטעון את ריצות הגילוי.',
+    'DiscoveryRangeReserved' => 'טווח זה כולל כתובות שמורות (לולאה חוזרת, קישור מקומי, שידור מרובה או 0.0.0.0/8) שלא ניתן לסרוק.',
+    'DiscoveryTooManyActiveRunsInstance' => 'כבר מתבצעות {$max} ריצות גילוי. נסה שוב כאשר אחת מהן תסתיים.',
+    'DiscoveryErrorScan' => 'הסריקה הופסקה עקב שגיאה. בדוק את יומני המערכת לקבלת פרטים.',
+    'DiscoveryErrorWorkerLost' => 'תור הרקע הפסיק לעבד ריצה זו.',
+    'DiscoveryErrorRequesterInactive' => 'המשתמש שהתחיל את הריצה הזו אינו פעיל עוד.',
+    // Asset management redesign: translated API errors (bulk actions, column settings, discovery) and discovery audit lines
+    'AssetBulkBodyInvalid' => 'שלח את הפעולה בכמות גדולה כגוף JSON.',
+    'AssetBulkActionRequired' => 'בחר פעולה בכמות גדולה.',
+    'AssetBulkUnknownAction' => 'פעולה בכמות גדולה זו אינה זמינה.',
+    'AssetBulkSelectionRequired' => 'בחר נכסים לפי מזהה או לפי מסנן.',
+    'AssetBulkIdsRequired' => 'בחר לפחות נכס אחד.',
+    'AssetBulkIdsInvalid' => 'מזהי נכסים חייבים להיות מספרים שלמים.',
+    'AssetBulkTooManyAssets' => 'ניתן לפעול על לכל היותר {$max} נכסים בו זמנית. צמצם את הבחירה ונסה שוב.',
+    'AssetBulkFilterInvalid' => 'המסנן אינו תקין. טען מחדש את הדף ונסה שוב.',
+    'AssetBulkFilterUnknownKey' => 'המסנן "{$key}" אינו מזוהה.',
+    'AssetBulkFilterBadValue' => 'למסנן "{$key}" יש ערך שאינו חוקי.',
+    'AssetBulkFilterTooManyValues' => 'המסנן "{$key}" יכול לכלול לכל היותר ערכים {$max}.',
+    'AssetBulkFilterAllAlone' => 'לא ניתן לשלב בחירת כל הנכסים עם מסננים אחרים.',
+    'AssetBulkFilterEmpty' => 'בחר מסנן, או בחר את כל הנכסים, לפני ביצוע פעולה בכמות גדולה.',
+    'AssetBulkExpectedCountInvalid' => 'מספר הנכסים הצפוי חייב להיות מספר שלם.',
+    'AssetBulkParamsInvalid' => 'האפשרויות לפעולה בכמות גדולה זו אינן תקפות.',
+    'AssetBulkTeamsRequired' => 'בחרו לפחות קבוצה אחת.',
+    'AssetBulkTeamsNotFound' => 'אחת או יותר מהקבוצות הללו כבר לא קיימות.',
+    'AssetBulkTeamsNotMember' => 'אתה יכול להקצות רק קבוצות שאתה שייך אליהן.',
+    'AssetBulkGroupNotFound' => 'קבוצת הנכסים הזו כבר לא קיימת.',
+    'AssetBulkNoMatch' => 'אין נכסים התואמים לבחירה שלך.',
+    'AssetBulkCountMismatch' => 'הנכסים התואמים השתנו מ- {$expected} ל- {$actual} מאז שבחרת אותם. בדוק את הרשימה ונסה שוב.',
+    'AssetColumnSettingsBodyInvalid' => 'שלח את הגדרות העמודה כגוף JSON עם עמודות או סדר.',
+    'AssetColumnSettingsSaveFailed' => 'לא ניתן היה לשמור את העמודות שלך. בקש ממנהל מערכת להשלים את שדרוג SimpleRisk.',
+    'DiscoveryRunQueueFailed' => 'לא ניתן היה להכניס את ריצת הגילוי לתור. נסה שוב.',
+    'DiscoveryRunStartedLog' => 'הפעלת גילוי נכסים #{$id} של {$range} (כתובות{$count} ) הופעלה על ידי המשתמש "{$user}".',
+    'DiscoveryRunCancelledLog' => 'הפעלת גילוי נכסים #{$id} של {$range} בוטלה על ידי המשתמש "{$user}".',
+    'AssetBulkTooManyToDelete' => 'ניתן למחוק לכל היותר {$max} נכסים בו זמנית. צמצם את הבחירה ונסה שוב.',
+    'AssetBulkFilterNotApplied' => 'לא ניתן היה להחיל את המסנן "{$key}" כמסנן שנשלח, ולכן לא השתנה דבר.',
+    'AssetBulkExpectedCountRequired' => 'מחיקת נכסים לפי מסנן דורשת את מספר הנכסים שאתה מצפה למחוק.',
+    'AssetBulkReasonNotAttempted' => 'לא ניסו',
+    'MoreActions' => 'פעולות נוספות',
+    'AssetCreateNewGroupOption' => 'צור קבוצה חדשה…',
+    'AssetNewGroupName' => 'שם קבוצה חדש',
+    'AssetFilterByTeam' => 'סנן לפי צוות {$name}',
+    'AssetFilterByValuation' => 'סנן לפי הערכה {$name}',
+    'AssetFilterByTag' => 'סנן לפי תגית {$name}',
+    'AssetFilterByLocation' => 'סנן לפי אתר/מיקום {$name}',
+    'AssetFilteringByTeam' => 'סינון לפי צוות {$name}',
+    'AssetFilteringByValuation' => 'סינון לפי הערכה {$name}',
+    'AssetFilteringByTag' => 'סינון לפי תגית {$name}',
+    'AssetFilteringByLocation' => 'סינון לפי אתר/מיקום {$name}',
+    'AssetShowOnlyVerified' => 'הצג רק נכסים מאומתים',
+    'AssetShowOnlyUnverified' => 'הצג רק נכסים שלא אומתו',
+    'AssetShowingVerified' => 'מציג נכסים מאומתים',
+    'AssetShowingUnverified' => 'מציג נכסים שלא אומתו',
+    'CustomizationLayoutPayloadRejected' => 'לא ניתן היה לשמור את הפריסה מכיוון שהיא מכילה שדות או כרטיסים שאינם שייכים לתבנית זו. לא השתנה דבר.',
+    'CustomizationLayoutRejectedUnknownScope' => 'לא ניתן לשמור את היקף התבנית הזו מעורך הפריסה. לא השתנה דבר.',
+    'CustomizationLayoutRejectedEmptyFields' => 'הפריסה אינה מכילה שדות חוקיים, ולכן היא לא נשמרה. לא השתנה דבר.',
+    'CustomizationLayoutRejectedWouldDeleteAll' => 'שמירת פריסה זו תסיר כל שדות מהתבנית, ולכן היא לא נשמרה. טען מחדש את הדף ונסה שוב.',
+    'CustomizationLayoutRejectedRequiredField' => 'לא ניתן להסיר שדה חובה מהפריסה. לא השתנה דבר.',
+    'CustomizationLayoutRejectedBulkRemoval' => 'שמירת פריסה זו תסיר את רוב שדות התבנית מבלי שתסיר אותם מכאן. טען מחדש את הדף ונסה שוב. לא השתנה דבר.',
+    'CustomizationLayoutRejectedGroupMismatch' => 'קבוצת התבניות אינה קיימת או שייכת לסוג רשומה אחר. לא השתנה דבר.',
+    'CustomizationLayoutLegacySaveRefused' => 'תבנית זו ערוכה באמצעות עורך הפריסה ולא ניתן לשמור אותה דרך נקודת הקצה של הפאנל מדור קודם.',
+    // Asset discovery probe methods
+    'DiscoveryPortsInvalid' => 'הזן עד {$max} פורטי TCP בין 1 ל-65535, מופרדים באמצעות פסיקים.',
+    'DiscoveryErrorProbeUnavailable' => 'שיטת הבדיקה שבה הפעלה זו החלה אינה זמינה עוד לעובד הרקע. התחל הפעלה חדשה.',
+    'DiscoveryProbeIcmpUnprivileged' => 'ICMP ping (שקע לא מורשה)',
+    'DiscoveryProbeIcmpRaw' => 'ICMP ping (שקע גולמי)',
+    'DiscoveryProbePingCommand' => 'ICMP ping (פקודת ping)',
+    'DiscoveryProbeTcpConnect' => 'חיבור TCP',
+    'DiscoveryProbeMethod' => 'שיטת בדיקה: {$method}',
+    'DiscoveryProbeDetectedByWebServer' => 'זוהה על ידי שרת האינטרנט. ייתכן שעובד הרקע משתמש בשיטה שונה.',
+    'DiscoveryTcpProbeWarning' => 'מארחים נמצאים רק אם הם עונים באחת מיציאות ה-TCP הסרוקות, כך שמארחים שחוסמים יציאות אלה לא יימצאו. לקבלת תוצאות מלאות, אפשר לשרת לשלוח ping של ICMP: אפשר sockets ping לא מורשים או את יכולת NET_RAW, או התקן ping.',
+    'DiscoveryTcpPortsForRun' => 'פורטי TCP עבור ריצה זו',
+    'DiscoveryTcpPortsHint' => 'מופרדים בפסיקים, עד {$max} יציאות. השאר ריק כדי להשתמש בברירת המחדל: {$ports}.',
+    'DiscoveryDefaultTcpPorts' => 'יציאות TCP לגילוי נכסים',
+    'DiscoveryDefaultTcpPortsHint' => 'משמש כאשר עובד הרקע אינו יכול לשלוח פינג של ICMP. מופרד בפסיקים, עד {$max} יציאות.',
+    'DiscoveryErrorTcpUnreliable' => 'הסריקה הופסקה מכיוון שהרשת עונה לחיבורי TCP עבור כתובות שלא יכולות להיות מארחים אמיתיים (פרוקסי או חומת אש בדרך), כך שכל כתובת תיראה פעילה. בקש ממנהל המערכת שלך לאפשר לשרת לשלוח פינג ICMP.',
+    'DiscoveryDefaultTcpPortsResetLog' => 'פורטי ה-TCP של גילוי הנכסים אופסו לברירת המחדל על ידי המשתמש "{$user}".',
+    'DiscoveryNotConfigured' => 'גילוי לא הוגדר. בקש ממנהל המערכת שלך להגדיר את הטווחים המותרים ב-config.php.',
+    'DiscoveryRangeNotAllowed' => 'טווח זה נמצא מחוץ לטווחים ש-Discovery מורשה לסרוק.',
+    'DiscoveryAllowedRangesList' => 'טווחים מותרים: {$ranges}',
+    // Asset record modal
+    'AssetNotAvailable' => 'נכס זה אינו זמין. ייתכן שהוא נמחק, או שאין לך גישה אליו.',
+    'AssetCustomFieldNotInTemplate' => 'שדה מותאם אישית אחד או יותר אינם שייכים לתבנית של נכס זה. לא בוצע שינוי.',
+    'AssetMappedControlsInvalid' => 'לא ניתן היה לשמור את הפקדים הממופים. כל שורה זקוקה לגיל בגרות ולפחות פקד קיים אחד. לא השתנה דבר.',
+    'AssetMappedControlsTooMany' => 'ניתן למפות נכס לפקדים לכל היותר {$max} . לא השתנה דבר.',
+    'AddControlsAtAnotherMaturity' => 'הוסף בקרות במועד בוגר אחר',
+    'ChoosingControlsNeedsGovernancePermission' => 'בחירת בקרות דורשת הרשאת ממשל.',
+    'NControls' => 'פקדים {n}',
+    'SavingKeepsTheCurrentControlMappings' => 'שמירה שומרת על מיפויי הבקרה הנוכחיים.',
+    'LoadingControls' => 'טעינת בקרות…',
+    'ControlListCouldNotBeLoaded' => 'לא ניתן היה לטעון את רשימת הבקרה, לכן לא ניתן לשנות כעת את הבקרות הממופות.',
+    'RemoveControlsAtMaturity' => 'הסר בקרות במועד הפדיון {maturity}',
+    'ControlIdUnavailable' => '#{id} (לא זמין)',
+    'AssetRecordEdit' => 'עריכת נכס',
+    'AssetRecordIdN' => 'נכס #{$id}',
+    'AssetRecordCopyLink' => 'העתק קישור לנכס זה',
+    'AssetRecordLinkCopied' => 'קישור הועתק.',
+    'AssetRecordLinkCopyFailed' => 'לא ניתן היה להעתיק את הקישור. העתק אותו משורת הכתובת במקום זאת.',
+    'AssetRecordMarkUnverified' => 'סמן כלא מאומת',
+    'AssetRecordViewAuditTrail' => 'צפה בנתיב הביקורת',
+    'AssetRecordAuditTrailTitle' => 'נתיב ביקורת',
+    'AssetRecordAuditTrailEmpty' => 'לא נרשמה פעילות עבור נכס זה בתקופה זו.',
+    'AssetRecordAuditTrailFailed' => 'לא ניתן היה לטעון את נתיב הביקורת.',
+    'AssetRecordBackToAsset' => 'חזרה לנכס',
+    'AssetRecordSave' => 'שמור נכס',
+    'AssetRecordProvenanceVerified' => 'אומת · נוסף {$date}',
+    'AssetRecordProvenanceUnverified' => 'לא מאומת: עדיין לא אושר על ידי מישהו שיכול לאמת נכסים · נוסף {$date}',
+    'AssetRecordUnsavedHint' => 'סגירה עם שינויים שלא נשמרו מבקשת ממך לאשר תחילה.',
+    'AssetRecordDiscardQuestion' => 'למחוק את השינויים שלא נשמרו?',
+    'AssetRecordKeepEditing' => 'המשך לערוך',
+    'AssetRecordDiscardChanges' => 'בטל שינויים',
+    'AssetRecordVerificationCard' => 'אימות',
+    'AssetRecordVerificationTag' => 'נדרשת הרשאת אימות נכסים',
+    'AssetRecordVerifiedHint' => 'מישהו אחראי בדק את הנכס הזה. שינוי שמו או כתובת ה-IP שלו ללא הרשאת אימות נכסים מחזיר אותו למצב לא מאומת.',
+    'AssetRecordLoadFailed' => 'לא ניתן היה לטעון את הנכס. אנא נסה שוב.',
+    'CustomizationCardsLayoutApiScopeErrorWithAsset' => 'ממשק ה-API של פריסת כרטיסי התאמה אישית זמין רק עבור fgroup=risk (tab_index 1, 2 או 3) ו-fgroup=asset (tab_index 1).',
+    'DiscoveryErrorRequesterNotPermitted' => 'למשתמש שהתחיל הפעלה זו אין עוד הרשאה להפעיל גילוי נכסים.',
+    'AssetRecordEditField' => 'עריכה {$field}',
+    // Asset Scoring (FIPS 199 categorization + weighted score)
+    'Confidentiality' => 'סודיות',
+    'Integrity' => 'שְׁלֵמוּת',
+    'Availability' => 'זְמִינוּת',
+    'AssetScoringLevelLow' => 'נָמוּך',
+    'AssetScoringLevelModerate' => 'לְמַתֵן',
+    'AssetScoringLevelHigh' => 'גָבוֹהַ',
+    'AssetScoringValueInvalid' => 'סודיות, שלמות וזמינות מקבלים ערכים נמוכים, בינוניים או גבוהים (סודיות מקבלת גם ערכים של לא רלוונטי).',
+    'AssetScoringChangedLog' => 'הנכס "{$name}" {$objective} שונה מ- {$from} ל- {$to} על ידי המשתמש "{$user}".',
+    'FIPSCategorization' => 'סיווג FIPS',
+    'WeightedScore' => 'ציון משוקלל',
+    'WeightedBand' => 'פס משוקלל',
+    'AllCategorizations' => 'כל הקטגוריות',
+    'AllBands' => 'כל הלהקות',
+    'AssetFilterByCategorization' => 'סנן לפי קטגוריזציה של FIPS {$name}',
+    'AssetFilteringByCategorization' => 'סינון לפי קטגוריזציה של FIPS {$name}',
+    'AssetFilterByBand' => 'סנן לפי רצועה משוקללת {$name}',
+    'AssetFilteringByBand' => 'סינון לפי רצועה משוקללת {$name}',
+    'AssetScoring' => 'ניקוד נכסים',
+    'AssetScoringSettingsHint' => 'כל נכס מדורג כנמוך, בינוני או גבוה מבחינת סודיות, שלמות וזמינות, וסודיות עשויה להיות מדורג במקום זאת כ"לא רלוונטי", מה שמשאיר אותו מחוץ לשתי התוצאות. סיווג ה-FIPS שלו הוא הגבוה ביותר מבין שלושת הדירוגים. הציון המשוקלל שלו הוא הממוצע המשוקלל של שלושת ערכי הרמה, וספי הטווח הופכים את הציון הזה לטווח נמוך, בינוני או גבוה. שינוי הגדרות אלו יגרום לכל נכס להיות מדורג מחדש באופן מיידי.',
+    'Weights' => 'משקולות',
+    'AssetScoringWeightsHint' => 'כמה כל מטרה נחשבת בציון המשוקלל: 0 עד 100, עם עד שתי ספרות עשרוניות. משקל של 0 משאיר את המטרה הזו מחוץ לרשימה. יושרה וזמינות לא יכולות להיות שתיהן 0, מכיוון שסודיות "לא רלוונטי" תמיד מושמטת.',
+    'LevelValues' => 'ערכי רמה',
+    'AssetScoringLevelValuesHint' => 'המספר שכל דירוג תורם לציון המשוקלל: מעל 0 ועד 100, עם עד שתי ספרות עשרוניות, ונמוך מתחת לבינוני מתחת לגבוה. ברירות המחדל הן נמוך 1, בינוני 2 וגבוה 3.',
+    'BandThresholds' => 'ספי פס',
+    'AssetScoringBandThresholdsHint' => 'ציון משוקלל הנמצא בסף מסוים או מעליו נמצא בטווח זה, וציון מתחת לסף הבינוני נחשב נמוך. בינוני חייב להתחיל מעל הערך הנמוך, וציון גבוה חייב להתחיל מעל בינוני ולא גבוה מהערך הגבוה.',
+    'ModerateStartsAt' => 'מתחיל ב-',
+    'HighStartsAt' => 'גבוה מתחיל ב',
+    'DefaultScoringForNewAssets' => 'ניקוד ברירת מחדל עבור נכסים חדשים',
+    'AssetScoringDefaultsHint' => 'בוחר מראש את הדירוגים האלה כאשר מישהו מוסיף נכס בטופס הנכס. נכסים שנוצרו על ידי גילוי, ייבוא או ה-API נשארים ללא ציון אלא אם כן הם מספקים דירוגים משלהם. השאר את שלושתם מוגדרים כ"לא" כדי לכבות אפשרות זו.',
+    'AssetScoringWeightsInvalid' => 'משקלי ניקוד נכסים חייבים להיות מספרים מ-0 עד 100 עם לכל היותר שתי ספרות עשרוניות, ו-Integrity ו-Availability לא יכולים להיות שניהם 0.',
+    'AssetScoringValuesInvalid' => 'ערכי רמת ניקוד הנכסים חייבים להיות מספרים מעל 0 ועד 100 עם לכל היותר שתי ספרות עשרוניות, כאשר "נמוך" מתחת לבינוני מתחת לגבוה.',
+    'AssetScoringThresholdsInvalid' => 'ספי ניקוד הנכסים חייבים להכיל לכל היותר שתי ספרות עשרוניות, כאשר בינוני מתחיל מעל הערך הנמוך, גבוה מתחיל מעל בינוני, וגבוה מתחיל לא גבוה מהערך הגבוה.',
+    'AssetScoringDefaultsInvalid' => 'ניקוד ברירת המחדל עבור נכסים חדשים חייב להיות רמה שכל מטרה מציעה.',
+    'AssetScoringSettingsNotSaved' => 'לא ניתן היה לשמור את הגדרות ניקוד הנכסים. לא השתנה דבר.',
+    'AssetScoringSettingsChangedLog' => 'הגדרות ניקוד הנכסים שונו על ידי המשתמש "{$user}".',
+    'AssetScoringNotSet' => 'לא מוגדר',
+    'NotScored' => 'לא ניקח תוצאה',
+    'AssetScoringNotScoredHint' => 'ענו על כל שלושת המטרות כדי לצבור ציון לנכס זה.',
+    'ImportAssetScoringValueIgnored' => 'הערך {$objective} "{$value}" עבור הנכס "{$asset_name}" אינו דירוג תקין והוזנח.',
+    'AssetScoringSecurityObjectives' => 'יעדי אבטחה',
+    'AssetScoringConfidentialityHelp' => 'מהי ההשפעה הפוטנציאלית אם תהיה גילוי בלתי מורשה של המידע על נכס זה?',
+    'AssetScoringIntegrityHelp' => 'מהי ההשפעה הפוטנציאלית אם יהיה שינוי או השמדה בלתי מורשים של המידע בנכס זה?',
+    'AssetScoringAvailabilityHelp' => 'מהי ההשפעה הפוטנציאלית אם תהיה שיבוש בגישה או בשימוש בנכס זה?',
+    'AssetScoringHelpHigh' => 'השפעה שלילית חמורה או קטסטרופלית',
+    'AssetScoringHelpModerate' => 'תופעת לוואי חמורה',
+    'AssetScoringHelpLow' => 'השפעה שלילית מוגבלת או ללא השפעה שלילית',
+    'AssetScoringHelpNotApplicable' => 'סודיות אינה מהווה דאגה עבור נכס זה (לדוגמה, מידע ציבורי)',
+    'AssetScoringHelpLabel' => 'הנחיות דירוג {$objective}',
+    'AssetScoringMeterValue' => '{$score}, {$band} להקה',
+    'AssetScoringNoWeightedScore' => 'אין ציון משוקלל',
+    'AssetScoringNoWeightedScoreNote' => 'אין ציון משוקלל: לכל מטרה שקובעת יש משקל של 0.',
+    'AssetScoringUpgradePending' => 'לא ניתן לשמור את ניקוד הנכסים עד להפעלת שדרוג מסד הנתונים של SimpleRisk. לא השתנה דבר.',
+    'AssetScoringResultHelpLabel' => 'הסבר {$result}',
+    'AssetScoringScoreHelp' => 'הציון המשוקלל משלב את שלושת הדירוגים למספר אחד מ- {$low} עד {$high}. כל דירוג הופך לערך שנקבע, וכל אחד מהם מוכפל במשקל המטרה שלו. התוצאות מחוברות ומחולקות בסך המשקלים. סודיות של "לא רלוונטי" מושמטת, יחד עם המשקל שלו. הערכים והמשקלים שנקבעו מוגדרים בהעדפות. יש לדרג את שלושת המטרות לפני שמוצג ציון.',
+    'AssetScoringCategorizationHelp' => 'סיווג האבטחה לפי FIPS 199 הוא הדירוג הגבוה ביותר: הדירוג הגבוה ביותר מבין היעדים הרלוונטיים. דירוג גבוה יחיד הופך את הנכס לגבוהה, ללא קשר לשאר הדירוגים. הקטגוריה "לא רלוונטי" מתעלמת.',
+    'AssetScoringBandHelp' => 'הקבוצה ממקמת את הציון המשוקלל בסולם נמוך, בינוני או גבוה. ציון מתחת ל- {$moderate} הוא נמוך, מ- {$moderate} עד {$highAt} הוא בינוני, ו- {$highAt} ומעלה הוא גבוה. ערכי הסף מוגדרים בהעדפות.',
+    // Manage assets: Confidentiality / Integrity / Availability rating filters
+    'AllConfidentialityRatings' => 'כל דירוגי הסודיות',
+    'AllIntegrityRatings' => 'כל דירוגי היושרה',
+    'AllAvailabilityRatings' => 'כל דירוגי הזמינות',
+    'AssetFilterByConfidentiality' => 'סנן לפי סודיות {$name}',
+    'AssetFilteringByConfidentiality' => 'סינון לפי סודיות {$name}',
+    'AssetFilterByIntegrity' => 'סנן לפי שלמות {$name}',
+    'AssetFilteringByIntegrity' => 'סינון לפי שלמות {$name}',
+    'AssetFilterByAvailability' => 'סנן לפי זמינות {$name}',
+    'AssetFilteringByAvailability' => 'סינון לפי זמינות {$name}',
+    'HighestFIPSCategorization' => 'סיווג FIPS הגבוה ביותר',
+    'HighestWeightedScore' => 'הציון המשוקלל הגבוה ביותר',
+    'HighestWeightedBand' => 'הרצועה המשוקללת ביותר',
+    'AssetGroupFields' => 'שדות קבוצת נכסים',
+    'NoAssetGroupsMatchFilters' => 'אין קבוצות נכסים התואמות את המסננים שלך',
+    'AssetGroupFilterByHighestCategorization' => 'סנן לפי סיווג FIPS הגבוה ביותר {$name}',
+    'AssetGroupFilteringByHighestCategorization' => 'סינון לפי סיווג FIPS הגבוה ביותר {$name}',
+    'AssetGroupFilterByHighestBand' => 'סנן לפי הרצועה המשוקללת ביותר {$name}',
+    'AssetGroupFilteringByHighestBand' => 'סינון לפי הרצועה המשוקללת ביותר {$name}',
+    'AssetGroupBulkSelectionRequired' => 'בחר קבוצות נכסים לפי מזהה או לפי מסנן.',
+    'AssetGroupBulkIdsRequired' => 'בחר לפחות קבוצת נכסים אחת.',
+    'AssetGroupBulkIdsInvalid' => 'מזהי קבוצות נכסים חייבים להיות מספרים שלמים.',
+    'AssetGroupBulkFilterAllAlone' => 'לא ניתן לשלב בחירת כל קבוצות הנכסים עם מסננים אחרים.',
+    'AssetGroupBulkFilterEmpty' => 'בחר מסנן, או בחר את כל קבוצות הנכסים, לפני המחיקה.',
+    'AssetGroupBulkExpectedCountInvalid' => 'המספר הצפוי של קבוצות נכסים חייב להיות מספר שלם.',
+    'AssetGroupBulkExpectedCountRequired' => 'מחיקת קבוצות נכסים לפי מסנן דורשת את מספר הקבוצות שאתה מצפה למחוק.',
+    'AssetGroupBulkNoMatch' => 'אין קבוצות נכסים התואמות לבחירה שלך.',
+    'AssetGroupBulkCountMismatch' => 'קבוצות הנכסים התואמות השתנו מ- {$expected} ל- {$actual} מאז שבחרת אותן. בדוק את הרשימה ונסה שוב.',
+    'AssetGroupBulkTooManyToDelete' => 'ניתן למחוק לכל היותר {$max} קבוצות נכסים בו זמנית. צמצם את הבחירה ונסה שוב.',
+    'AssetGroupBulkSelectAll' => 'בחר את כל קבוצות הנכסים {$count}',
+    'AssetGroupBulkAllSelected' => 'כל קבוצות הנכסים התואמות {$count} נבחרו',
+    'AssetGroupBulkDeleteConfirmTitle' => 'למחוק קבוצות נכסים {$count}?',
+    'AssetGroupBulkDeleteKeepsAssets' => 'הנכסים בקבוצות אלה לא נמחקים. רק הקבוצות מוסרות.',
+    'DeleteAssetGroups' => 'מחיקת קבוצות',
+    'AssetGroupBulkDeletedSummary' => 'קבוצות {$ok} נמחקו, קבוצות {$failed} דילגו עליהן',
+    'ChoosingRisksNeedsRiskManagementPermission' => 'בחירת סיכונים קשורים דורשת הרשאת ניהול סיכונים.',
+    'NAssociatedRisks' => '{n} associated risk(s)',
+    'SavingKeepsTheCurrentRiskAssociations' => 'חיסכון שומר על הסיכונים הנוכחיים הנלווים.',
     '' => '',
 );
 ?>

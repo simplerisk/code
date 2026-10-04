@@ -103,36 +103,26 @@ require_once(realpath(__DIR__ . '/includes/artificial_intelligence.php'));
                         </li>
                     </ul>
                 </li>
-                <li class="sidebar-item">
     <?php
         // If the user has asset management permissions
-        if(isset($_SESSION["asset"]) && $_SESSION["asset"] == "1") { 
+        if(isset($_SESSION["asset"]) && $_SESSION["asset"] == "1") {
     ?>
-                    <a class="sidebar-link has-arrow waves-effect waves-dark" href="javascript:void(0)" aria-expanded="false">
+                <li class="sidebar-item <?= ($active_sidebar_menu =="AssetManagement")?'selected':''; ?>">
+                    <a class="sidebar-link has-arrow waves-effect waves-dark <?= ($active_sidebar_menu =="AssetManagement")?'active':''?>" href="javascript:void(0)" aria-expanded="false">
                         <span class="sr-nav-ico"><i class="fas fa-server"></i></span>
                         <span class="hide-menu"><?= $escaper->escapeHtml($lang['AssetManagement']);?></span>
                     </a>
-    <?php
-        }
-    ?>
-                    <ul aria-expanded="false" class="collapse first-level">
-                        <li class="sidebar-item">
-                            <a href="../assets/index.php" class="sidebar-link">
-                                <span class="hide-menu"><?= $escaper->escapeHtml($lang['AutomatedDiscovery']);?></span>
-                            </a>
-                        </li>
-                        <li class="sidebar-item">
-                            <a href="../assets/manage_assets.php" class="sidebar-link ">
+                    <ul aria-expanded="false" class="collapse first-level <?= ($active_sidebar_menu =='AssetManagement')?'in':''; ?>">
+                        <li class="sidebar-item <?= ($active_sidebar_submenu == 'ManageAssets')?'active':''; ?>">
+                            <a href="../assets/manage_assets.php" class="sidebar-link">
                                 <span class="hide-menu"><?= $escaper->escapeHtml($lang['ManageAssets']);?></span>
-                            </a>
-                        </li>
-                        <li class="sidebar-item <?= ($active_sidebar_submenu =='ManageAssetGroups')?'active':''; ?>">
-                            <a href="../assets/manage_asset_groups.php" class="sidebar-link">
-                                <span class="hide-menu"><?= $escaper->escapeHtml($lang['ManageAssetGroups']);?></span>
                             </a>
                         </li>
                     </ul>
                 </li>
+    <?php
+        }
+    ?>
     <?php
         // If the VM Extra is enabled and the user has vulnerability management permissions
         if (vulnmgmt_extra() && check_permission("vm_vulnerabilities")) { 
@@ -235,7 +225,7 @@ require_once(realpath(__DIR__ . '/includes/artificial_intelligence.php'));
                         <span class="sr-nav-ico"><i class="fas fa-robot"></i></span>
                         <span class="hide-menu"><?= $escaper->escapeHtml($lang['AI']); ?></span>
                     </a>
-                    <ul aria-expanded="false" class="collapse first-level <?= in_array($active_sidebar_submenu, ['Recommendations', 'DocumentInstallation']) ? 'in' : ''; ?>">
+                    <ul aria-expanded="false" class="collapse first-level <?= /* @phan-suppress-current-line PhanSuspiciousWeakTypeComparisonInGlobalScope -- $active_sidebar_submenu is a dynamic per-page string set by whichever page includes this sidebar; this file compares it against dozens of literal values throughout */ in_array($active_sidebar_submenu, ['Recommendations', 'DocumentInstallation']) ? 'in' : ''; ?>">
     <?php
                 foreach ($ai_submenus as $sm) {
     ?>

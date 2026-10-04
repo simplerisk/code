@@ -1744,6 +1744,19 @@ function run_upgrade_integrity_checks($db, ?callable $transport = null, ?callabl
             'error'
         );
     }
+
+    // asset_discovery_runs.probe_method / tcp_ports joined the discovery-runs
+    // helper after some databases had already run it; its guarded steps are a
+    // no-op (two column lookups) once everything is there.
+    try {
+        upgrade_add_asset_discovery_runs($db);
+    } catch (\Throwable $e) {
+        write_debug_log(
+            'run_upgrade_integrity_checks: upgrade_add_asset_discovery_runs() failed: '
+            . $e->getMessage(),
+            'error'
+        );
+    }
 }
 
 /*******************************************************************************
@@ -2018,4 +2031,297 @@ function refresh_file_encoding_issue_counts($type = 'all') {
     }
 
     db_close($db);
+}
+
+/**
+ * Seeds the seven granular asset-management permissions (asset_edit,
+ * asset_delete, asset_verify, asset_discovery, asset_group_create,
+ * asset_group_edit, asset_group_delete) into the existing "Asset Management"
+ * permission group and grants them to every user and role that already holds
+ * the parent `asset` permission, so upgrading customers keep today's behavior.
+ *
+ * The grant happens once per key, recorded in the
+ * `asset_granular_permissions_granted` setting (a JSON list of the keys whose
+ * grant completed), which is written only AFTER both grant statements. A
+ * re-run (the in-flight release is re-applied by every CI/dev upgrade, a
+ * retried upgrade, the upgrade API) grants only keys not recorded yet, so it
+ * never hands the permissions back to a user or role an admin has since
+ * narrowed to `asset` alone: before, every re-run re-granted all seven to
+ * every `asset` holder, which also escalated test users created with `asset`
+ * only (asset-record-modal SCENARIO-14's viewer saw Edit asset). And a run
+ * that died between the seed and the grants is finished by the retry: gating
+ * on "the key already exists" instead stranded every existing holder without
+ * the new keys for good.
+ *
+ * Idempotent: `permissions.key`, `permission_groups.name` and the junction
+ * tables' composite primary keys are all UNIQUE, so the INSERT IGNOREs dedupe,
+ * and a run whose keys are all recorded grants nothing. $after_seed is a test
+ * seam (a crash between the seed and the grants). add_new_permissions() also
+ * grants the new keys to admin users. Permission names are stored as English
+ * literals (the roles UI renders them raw), the same as every other seeded
+ * permission.
+ *
+ * Upgrade-only: called from the current unreleased upgrade_from_*().
+ */
+function upgrade_add_asset_granular_permissions($db, ?callable $after_seed = null)
+{
+    require_once(realpath(__DIR__ . '/../permissions.php'));
+
+    $keys = ['asset_edit', 'asset_delete', 'asset_verify', 'asset_discovery', 'asset_group_create', 'asset_group_edit', 'asset_group_delete'];
+
+    add_new_permissions([
+        'asset_management' => [
+            'name' => 'Asset Management',
+            'description' => '',
+            'order' => 4,
+            'permissions' => [
+                'asset_edit' => [
+                    'name' => 'Able to Edit Assets',
+                    'description' => 'This permission allows a user to edit assets.',
+                    'order' => 2,
+                ],
+                'asset_delete' => [
+                    'name' => 'Able to Delete Assets',
+                    'description' => 'This permission allows a user to delete assets.',
+                    'order' => 3,
+                ],
+                'asset_verify' => [
+                    'name' => 'Able to Verify Assets',
+                    'description' => 'This permission allows a user to verify assets.',
+                    'order' => 4,
+                ],
+                'asset_discovery' => [
+                    'name' => 'Able to Run Asset Discovery',
+                    'description' => 'This permission allows a user to run asset discovery.',
+                    'order' => 5,
+                ],
+                'asset_group_create' => [
+                    'name' => 'Able to Create Asset Groups',
+                    'description' => 'This permission allows a user to create asset groups.',
+                    'order' => 6,
+                ],
+                'asset_group_edit' => [
+                    'name' => 'Able to Edit Asset Groups',
+                    'description' => 'This permission allows a user to edit asset groups.',
+                    'order' => 7,
+                ],
+                'asset_group_delete' => [
+                    'name' => 'Able to Delete Asset Groups',
+                    'description' => 'This permission allows a user to delete asset groups.',
+                    'order' => 8,
+                ],
+            ],
+        ],
+    ]);
+
+    if ($after_seed) {
+        $after_seed();
+    }
+
+    // Read uncached: the grant decision must see the stored state.
+    $marker = 'asset_granular_permissions_granted';
+    $stmt = $db->prepare("SELECT `value` FROM `settings` WHERE `name` = :name");
+    $stmt->execute([':name' => $marker]);
+    $new_keys = upgrade_asset_permission_keys_to_grant($keys, $stmt->fetchColumn());
+    if (!$new_keys) {
+        write_debug_log('Asset permissions: the granular asset permissions were already granted to asset holders; nothing to grant on this run.', 'debug');
+        return; // granted once already: an admin's later choices stand
+    }
+
+    // Grant the not-yet-granted keys to every current holder of `asset`
+    // (direct user grants and role grants).
+    $in = implode(',', array_fill(0, count($new_keys), '?'));
+
+    $stmt = $db->prepare("
+        INSERT IGNORE INTO `permission_to_user` (`permission_id`, `user_id`)
+        SELECT `np`.`id`, `p2u`.`user_id`
+        FROM `permission_to_user` `p2u`
+            INNER JOIN `permissions` `ap` ON `ap`.`id` = `p2u`.`permission_id` AND `ap`.`key` = 'asset'
+            INNER JOIN `permissions` `np` ON `np`.`key` IN ({$in})
+    ");
+    $stmt->execute($new_keys);
+
+    $stmt = $db->prepare("
+        INSERT IGNORE INTO `role_responsibilities` (`role_id`, `permission_id`)
+        SELECT `rr`.`role_id`, `np`.`id`
+        FROM `role_responsibilities` `rr`
+            INNER JOIN `permissions` `ap` ON `ap`.`id` = `rr`.`permission_id` AND `ap`.`key` = 'asset'
+            INNER JOIN `permissions` `np` ON `np`.`key` IN ({$in})
+    ");
+    $stmt->execute($new_keys);
+
+    // Recorded only now, after both grants: a run that dies before this line
+    // is finished by the next one.
+    $db->prepare("INSERT INTO `settings` (`name`, `value`) VALUES (:name, :value) ON DUPLICATE KEY UPDATE `value` = :value_update")
+        ->execute([':name' => $marker, ':value' => json_encode($keys), ':value_update' => json_encode($keys)]);
+    unset($GLOBALS['setting_' . $marker]);
+
+    // add_new_permissions() refreshed the open sessions of the admins it
+    // granted; the non-admin holders granted just above need the same, or
+    // anyone logged in across the upgrade keeps a session without the new
+    // keys (no Edit, Verify, Add group, Discover assets...) until they log
+    // out and back in.
+    foreach (upgrade_asset_permission_session_holders($db, $new_keys) as $uid) {
+        refresh_permissions_in_sessions_of_user($uid);
+    }
+}
+
+/**
+ * The granular asset permission keys upgrade_add_asset_granular_permissions()
+ * still has to grant: every key of $keys not listed in the stored completion
+ * marker ($stored: the setting's raw value, false when absent). A missing or
+ * unreadable marker means nothing was granted yet. Pure.
+ *
+ * @param string[] $keys
+ * @param string|false|null $stored
+ * @return string[]
+ */
+function upgrade_asset_permission_keys_to_grant(array $keys, $stored): array
+{
+    $granted = is_string($stored) && $stored !== '' ? json_decode($stored, true) : [];
+    if (!is_array($granted)) {
+        $granted = [];
+    }
+    return array_values(array_diff($keys, array_filter($granted, 'is_string')));
+}
+
+/**
+ * Non-admin users who hold any of $keys directly and have an open session:
+ * the sessions upgrade_add_asset_granular_permissions() must refresh after
+ * granting (admins are refreshed by add_new_permissions() itself). Empty
+ * before sessions.user_id exists (refresh_permissions_in_sessions_of_user()
+ * skips those sessions anyway).
+ *
+ * @param string[] $keys
+ * @return int[]
+ */
+function upgrade_asset_permission_session_holders($db, array $keys): array
+{
+    if (!$keys || !field_exists_in_table('user_id', 'sessions')) {
+        return [];
+    }
+    $in = implode(',', array_fill(0, count($keys), '?'));
+    $stmt = $db->prepare("
+        SELECT DISTINCT `u`.`value`
+        FROM `sessions` `s`
+            INNER JOIN `user` `u` ON `u`.`value` = `s`.`user_id` AND `u`.`admin` = 0
+            INNER JOIN `permission_to_user` `p2u` ON `p2u`.`user_id` = `u`.`value`
+            INNER JOIN `permissions` `p` ON `p`.`id` = `p2u`.`permission_id` AND `p`.`key` IN ({$in})
+        ORDER BY `u`.`value`
+    ");
+    $stmt->execute(array_values($keys));
+    return array_map('intval', $stmt->fetchAll(PDO::FETCH_COLUMN));
+}
+
+/**
+ * Asset management redesign: per-user column visibility / order for the
+ * Manage assets grid. Same JSON shape family as
+ * custom_plan_projects_display_settings ({"columns": [[key,"1"|"0"],...],
+ * "order": [key,...]}); NULL means "defaults". Idempotent.
+ *
+ * Upgrade-only: called from the current unreleased upgrade_from_*().
+ */
+function upgrade_add_asset_column_settings($db)
+{
+    if (!field_exists_in_table('custom_manage_assets_display_settings', 'user')) {
+        echo "Adding a custom_manage_assets_display_settings field to user table.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `user` ADD COLUMN `custom_manage_assets_display_settings` TEXT NULL");
+        $stmt->execute();
+    }
+}
+
+/**
+ * Asset management redesign: per-user column visibility / order for the
+ * Manage assets page's Asset groups table -- its own column, so the two
+ * tables' layouts never collide. Same JSON shape as
+ * custom_manage_assets_display_settings; NULL means "defaults". Idempotent.
+ *
+ * Upgrade-only: called from the current unreleased upgrade_from_*().
+ */
+function upgrade_add_asset_group_column_settings($db)
+{
+    if (!field_exists_in_table('custom_manage_asset_groups_display_settings', 'user')) {
+        echo "Adding a custom_manage_asset_groups_display_settings field to user table.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `user` ADD COLUMN `custom_manage_asset_groups_display_settings` TEXT NULL");
+        $stmt->execute();
+    }
+}
+
+/**
+ * Asset management redesign: background asset discovery runs (spec section
+ * 7). One row per run a user starts from Manage assets; the
+ * core_asset_discovery queue job records its progress here. A Core table.
+ * Idempotent (table_exists guard + CREATE TABLE IF NOT EXISTS, and
+ * field_exists_in_table guards on the columns added later).
+ *
+ * Upgrade-only: called from the current unreleased upgrade_from_*().
+ */
+function upgrade_add_asset_discovery_runs($db)
+{
+    if (!table_exists('asset_discovery_runs')) {
+        echo "Creating the asset_discovery_runs table.<br />\n";
+        $stmt = $db->prepare("
+            CREATE TABLE IF NOT EXISTS `asset_discovery_runs` (
+                `id` INT NOT NULL AUTO_INCREMENT,
+                `range_text` VARCHAR(100) NOT NULL,
+                `resolve_names` TINYINT(1) NOT NULL DEFAULT 1,
+                `add_as_verified` TINYINT(1) NOT NULL DEFAULT 0,
+                `team_ids` VARCHAR(4000) NOT NULL DEFAULT '',
+                `created_by` INT NOT NULL,
+                `status` VARCHAR(20) NOT NULL DEFAULT 'queued',
+                `total_hosts` INT NOT NULL DEFAULT 0,
+                `hosts_scanned` INT NOT NULL DEFAULT 0,
+                `live_hosts` INT NOT NULL DEFAULT 0,
+                `new_assets` INT NOT NULL DEFAULT 0,
+                `error_text` VARCHAR(1000) NULL,
+                `probe_method` VARCHAR(20) NULL,
+                `tcp_ports` VARCHAR(200) NULL,
+                `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                `started_at` DATETIME NULL,
+                `finished_at` DATETIME NULL,
+                PRIMARY KEY (`id`),
+                INDEX `idx_asset_discovery_runs_user_status` (`created_by`, `status`)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+        ");
+        $stmt->execute();
+    }
+
+    // The probe method a run used and its TCP ports (discovery probe
+    // methods). The CREATE above has them; a table created before they
+    // existed gets them here.
+    if (!field_exists_in_table('probe_method', 'asset_discovery_runs')) {
+        echo "Adding the probe_method column to the asset_discovery_runs table.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `asset_discovery_runs` ADD COLUMN `probe_method` VARCHAR(20) NULL AFTER `error_text`");
+        $stmt->execute();
+    }
+    if (!field_exists_in_table('tcp_ports', 'asset_discovery_runs')) {
+        echo "Adding the tcp_ports column to the asset_discovery_runs table.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `asset_discovery_runs` ADD COLUMN `tcp_ports` VARCHAR(200) NULL AFTER `probe_method`");
+        $stmt->execute();
+    }
+}
+
+/**
+ * Asset Scoring (spec 2026-09-30-asset-scoring-design.md §4): the asset's
+ * FIPS 199 potential impact per security objective. NULL = not set; only
+ * confidentiality accepts not_applicable. Scores are computed on read
+ * (includes/asset_scoring.php) and never stored. Idempotent
+ * (field_exists_in_table guard per column).
+ *
+ * Upgrade-only: called from the current unreleased upgrade_from_*().
+ */
+function upgrade_add_asset_scoring_columns($db)
+{
+    $columns = [
+        'confidentiality' => "ENUM('low','moderate','high','not_applicable') NULL DEFAULT NULL",
+        'integrity' => "ENUM('low','moderate','high') NULL DEFAULT NULL",
+        'availability' => "ENUM('low','moderate','high') NULL DEFAULT NULL",
+    ];
+    foreach ($columns as $column => $definition) {
+        if (!field_exists_in_table($column, 'assets')) {
+            echo "Adding a {$column} field to the assets table.<br />\n";
+            $stmt = $db->prepare("ALTER TABLE `assets` ADD COLUMN `{$column}` {$definition}");
+            $stmt->execute();
+        }
+    }
 }

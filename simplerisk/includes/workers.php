@@ -420,6 +420,29 @@ function worker_restart_requested_since(int $workerStartTime, $flagTimestamp): b
 }
 
 /***********************************************
+ * FUNCTION: WORKER CONFIG CHANGED SINCE
+ * Pure decision helper: should a worker that
+ * started at $workerStartTime exit because
+ * config.php (read once, at start) was edited
+ * after it started? $configMtime is filemtime()
+ * (false on a stat failure). Fails safe: a stat
+ * failure, a non-number, or an mtime in the
+ * future (clock skew, touch -d) never requests
+ * a restart -- a future mtime would otherwise
+ * make every freshly spawned worker exit at
+ * once. Strictly greater than the start time,
+ * so the respawned worker (started after the
+ * edit) keeps running: no respawn storm.
+ ***********************************************/
+function worker_config_changed_since(int $workerStartTime, $configMtime, int $now): bool
+{
+    if (!is_int($configMtime)) {
+        return false;
+    }
+    return $configMtime > $workerStartTime && $configMtime <= $now;
+}
+
+/***********************************************
  * FUNCTION: REQUEST WORKER RESTART
  * Writes the current Unix timestamp to the
  * worker_restart_requested_at setting. Every

@@ -428,6 +428,16 @@ if (document_program_read_permitted()) {
         ?>
                     </div>
                 </div>
+                <!-- Narrow-width filter sheet (design-system.md §6b) -- same
+                     pattern as the Define Exceptions audit trail's own
+                     #exception-audit-trail-filters-toggle; wired generically
+                     in createAuditTrail() (js/simplerisk/sr-audit-trail.js)
+                     rather than per-page. -->
+                <button type="button" class="sr-qf-toggle" id="document-audit-trail-filters-toggle" aria-expanded="false" aria-controls="document-audit-trail-quickfilters">
+                    <i class="fa fa-filter" aria-hidden="true"></i>
+                    <span><?= $escaper->escapeHtml($lang['Filters']); ?></span>
+                    <span class="sr-qf-toggle-count" id="document-audit-trail-filters-count" hidden></span>
+                </button>
                 <div class="sr-table-quickfilters" id="document-audit-trail-quickfilters">
                     <div class="sr-qf-selects" id="document-audit-trail-filters">
                         <div class="audit-select-folder">

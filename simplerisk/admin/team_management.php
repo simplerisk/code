@@ -166,7 +166,7 @@ if ($selected_team_id) {
                     <div class="col-md-2">
                         <label><?= $escaper->escapeHtml($lang['Change']); ?> :</label>
     <?php 
-                        create_dropdown("team", null, "team_update_from"); 
+                        create_dropdown("team_all", null, "team_update_from");
     ?>
                     </div>
                     <div class="col-md-2">
@@ -181,7 +181,7 @@ if ($selected_team_id) {
                     <div class="col-md-4">
                         <label><?= $escaper->escapeHtml($lang['DeleteItemNamed']); ?> :</label>
     <?php 
-                        create_dropdown("team", null, "team_delete"); 
+                        create_dropdown("team_all", null, "team_delete");
     ?>
                     </div>
                     <div class="col-md-1">
@@ -197,7 +197,7 @@ if ($selected_team_id) {
                     <div class="col-md-4">
                         <label><?= $escaper->escapeHtml($lang['Team']); ?> :</label>
     <?php 
-                        create_dropdown("team", $selected_team_id, "membership_team", false); 
+                        create_dropdown("team_all", $selected_team_id, "membership_team", false);
     ?>
                     </div>
                 </div>

@@ -68,12 +68,44 @@
 // design-system.md §12 pattern (documented, not yet built). Distinct from
 // this file's existing .nav-tabs/.nav-link block above, which is legacy
 // Bootstrap tab styling used elsewhere in the app -- unrelated, left as-is.
+//
+// No fill of its own -- the design system's "chrome recedes" rule (§12) means
+// the bar just sits on whatever canvas it's placed on rather than imposing
+// its own surface color. Its one shipped usage before this (admin/data_
+// integrity.php's #data-integrity-tabs) sits inside a white .sr-table-card,
+// so a hardcoded $sr-body (white) fill happened to match and the assumption
+// went untested. risk-details-form.js's template-group picker
+// (renderFormShell()) reuses this same component on the Submit Risk page's
+// and the + Add Risk modal's grey canvas, where the white fill read as a
+// mismatched panel rather than part of the page -- transparent fixes both
+// without a page-scoped override, and is a no-op for the one white-canvas
+// usage (it already reads as white with nothing behind it to show through).
 .sr-tabs {
     display: flex;
     gap: 1.375rem;
     padding: 0.75rem 1.25rem 0;
     border-bottom: 1px solid $gray-300;
-    background: $sr-body;
+    background: transparent;
+}
+
+// risk-details-form.js's template-group picker (renderFormShell()) is this
+// component's only usage where the CONTAINER around it already supplies its
+// own lead-in space before the tab bar starts: the Submit Risk page's
+// `.page-breadcrumb` (12px bottom padding) and the + Add Risk modal's
+// `.modal-body` (15px top padding) both sit above `.sr-qform`, so this rule's
+// own 0.75rem (12px) padding-top stacked on top of either one read as a
+// doubled, empty-looking band. Zeroed here rather than trimmed on
+// `.page-breadcrumb`/`.modal-body` themselves -- those are shared classes
+// used on pages that don't follow them with a tab bar at all, so touching
+// them risks changing spacing nobody asked to change. Scoped to `.sr-qform`'s
+// own markup shape (`.sr-qform > form > .sr-tabs`) rather than `.sr-tabs`
+// generally: the OTHER shipped usage (admin/data_integrity.php's
+// #data-integrity-tabs, a direct child of `.sr-table-card`) supplies NO
+// lead-in space of its own, so THIS padding-top is the only thing keeping its
+// tab labels off the card's top edge -- zeroing it there would be a
+// regression, not a fix.
+.sr-qform > form > .sr-tabs {
+    padding-top: 0;
 }
 
 .sr-tab {
@@ -99,4 +131,368 @@
 .sr-tab-count {
     font-weight: 700;
     margin-left: 0.1875rem;
+}
+
+// Content-pane counterpart to .sr-tabs/.sr-tab, for a page that needs its
+// OWN tab-switched panes to stay outside Bootstrap's .tab-pane/.active
+// vocabulary entirely (management/partials/viewhtml.php's Associated
+// Exceptions sub-tabs -- see that markup's own comment for why: header.php's
+// sitewide 'tabs:logic' script treats any `div.tab-pane.active` as its own
+// to manage, sitewide, on every page load). Mirrors the theme's own
+// `.tab-content>.active{display:block}` rule under our class names instead.
+.sr-tab-pane {
+    display: none;
+}
+
+.sr-tab-pane.is-active {
+    display: block;
+}
+
+// The risk view page's Details/Mitigation/Review tab strip (management/
+// partials/details.php) and the admin Customization editor's own identical
+// Details/Mitigation/Review switcher (extras/customization/index.php) --
+// both wrap their tab bar in the SAME `.risk-details` container class, so
+// one rule covers both. Restyled to the same §12 spec as .sr-tabs/.sr-tab
+// above (2px App Red underline, charcoal active text) WITHOUT swapping
+// their markup to that component: both pages' `<nav class="nav nav-tabs">`
+// + `data-bs-toggle="tab"`/`data-bs-target` is real Bootstrap tab behavior
+// (Bootstrap's own JS toggles `.active`, not .sr-tab's hand-rolled
+// `.is-active`), and header.php's sitewide 'tabs:logic' script hash-syncs
+// the URL specifically against `nav.nav-tabs a[data-bs-target]` for
+// bookmarkable/shareable deep links (view.php's own #mitigation/#review
+// links: ~12+ call sites across includes/functions.php, includes/
+// reporting.php, and the Notification Extra's emails). Swapping to .sr-
+// tabs/.sr-tab's own markup would either break that hash-sync (no
+// equivalent in the hand-rolled component) or simply never re-style on
+// tab switch (nothing would ever add its .is-active class). This gets the
+// identical visual result by keying off Bootstrap's own `.active` class
+// instead, so both the deep-linking and Bootstrap's native tab-switching
+// keep working exactly as before -- only the paint changes.
+.risk-details .nav-tabs {
+    display: flex;
+    gap: 1.375rem;
+    padding: 0.75rem 0 0;
+    border-bottom: 1px solid $gray-300;
+    background: transparent;
+
+    // Overrides this file's own legacy .nav-tabs rule above (the `a.btn-*`
+    // margins, the `:first-child` left margin) -- that rule targets the
+    // OLDER, unrelated bare `.nav-tabs` usages elsewhere in the app; this
+    // one only applies inside `.risk-details`.
+    > :first-child.nav-link {
+        margin-left: 0;
+    }
+
+    .nav-link {
+        padding: 0.5rem 0.125rem 0.75rem;
+        margin: 0;
+        font-size: 0.84375rem;
+        font-weight: 700;
+        color: $gray-600;
+        border: 0;
+        border-bottom: 2px solid transparent;
+        border-radius: 0;
+        background: transparent;
+
+        &.active {
+            color: $sr-primary;
+            border-bottom-color: $sr-important;
+            background: transparent;
+        }
+
+        &:hover:not(.active) {
+            color: $sr-primary;
+        }
+    }
+}
+
+// Vertical-only breathing room for the tab CONTENT (the Cards stack read
+// mode renders, or the GridStack canvas edit mode renders) -- restores just
+// the top/bottom gap the removed 'card-body my-2 border' wrapper used to
+// supply (management/partials/details.php), without reintroducing that
+// wrapper's horizontal inset, which was the actual thing that misaligned
+// this content against the breadcrumb/title above it. 16px matches
+// .sr-qcards-stack's own between-card gap (scss/modules/_sr-modal.scss), so
+// the space above the first card and below the last one reads as part of
+// the same rhythm rather than an arbitrary different amount. Padding, not
+// margin, so it can't collapse against the .nav-tabs border above it.
+.risk-details .tab-content {
+    padding-top: 16px;
+    padding-bottom: 16px;
+}
+
+// Details/Mitigation/Review's per-tab Edit/Perform-review button (Edit
+// Details, Edit Mitigation, Perform a Review, and their edit-mode Cancel
+// counterparts -- risk-view-details.js/risk-view-mitigation.js/risk-view-
+// review.js) used to anchor to .tab-content's own top-right corner, which
+// starts BELOW the .nav-tabs row -- so the button floated at the top of the
+// content card underneath the tabs instead of reading as part of the tab
+// bar. Each button still lives inside its own #details/#mitigation/#review
+// tab-pane (only one is ever visible at a time -- Bootstrap's own tab-pane
+// display toggling hides the other two for free, no extra JS needed), but
+// .risk-details is now the positioned ancestor (see the .position-relative
+// class on it, management/partials/details.php) instead of .tab-content, so
+// this class's own `top` is relative to the SAME box the tab row starts in
+// -- letting it sit at the tab labels' own vertical position rather than the
+// content area's.
+.risk-details .sr-risk-tab-action {
+    top: 7px;
+    // §3's 6px control radius -- the theme's own global $border-radius is 1px
+    // (near-square by default; .sr-q* components apply this 6px as a LOCAL
+    // override rather than it being a global default), so an un-overridden
+    // .btn here renders at the theme's square 1px, not the design system's.
+    border-radius: 6px;
+}
+
+// Edit-mode Cancel counterpart to the .btn-submit primary triggers above
+// (Mitigation's risk-mitigation-cancel-edit, Review's risk-review-cancel-
+// edit -- Details' own Cancel lives in RiskDetailsForm's .sr-qactions bar
+// instead and already gets the real .sr-qcancel ghost treatment there, since
+// it's built by that engine's own buildActionsBar()). Plain .btn-secondary
+// renders Bootstrap's solid grey fill -- a 3rd, undocumented button look
+// next to .btn-submit's red primary and .sr-qcancel's ghost. This reproduces
+// .sr-qcancel's own declarations (scss/modules/_questionnaire.scss) as a
+// standalone rule, since that one only applies nested under .sr-qactions, so
+// both Cancel buttons read as the same ghost/secondary language the rest of
+// the system uses.
+.sr-risk-tab-cancel {
+    background: transparent;
+    color: $gray-600;
+    border: 1px solid $gray-300;
+
+    &:hover,
+    &:focus {
+        color: $sr-primary;
+        border-color: $gray-500;
+    }
+}
+
+// The record-header card above (.sr-risk-record-header, scss/modules/
+// _riskmanagement.scss) already supplies its own 16px margin-bottom -- the
+// same "between things" rhythm .sr-qcards-stack uses elsewhere -- so this
+// tab strip's OWN lead-in padding (the base .risk-details .nav-tabs rule's
+// 0.75rem top, further padded by mt-2 that used to sit on this wrapper) just
+// doubled up on top of it, reading as an oversized gap before "Details/
+// Mitigation/Review". Zeroed here rather than on the shared `.risk-details
+// .nav-tabs` rule itself (mirroring `.sr-qform > form > .sr-tabs`'s own
+// identical padding-top:0 override above): the OTHER page sharing that base
+// rule, the Customization editor's #template-container.risk-details.hero-
+// unit tab strip, sits directly under its own "Template" section-card
+// header with no equivalent 16px lead-in of its own, so zeroing the shared
+// rule would leave ITS tabs pressed up against that header instead. Scoped
+// to .sr-risk-view-tabs, the class unique to THIS wrapper (management/
+// partials/details.php), so the Customization editor is untouched.
+.sr-risk-view-tabs .nav-tabs {
+    padding-top: 0;
+}
+
+// Wraps the Mitigation tab's Accept/Reject Mitigation buttons together with
+// its Edit Mitigation/Cancel trigger (risk-view-mitigation.js) so both
+// clusters share the ONE top-right anchor point .sr-risk-tab-action used
+// alone -- two separately `position: absolute; end: 0` elements in the same
+// tab-pane would stack directly on top of each other instead of sitting
+// side by side. `top: 7px` duplicates .sr-risk-tab-action's own value
+// (rather than reusing that class on the wrapper) to keep the two rules
+// independent: the buttons INSIDE still carry .sr-risk-tab-action for its
+// border-radius, and applying that class to both the wrapper and its
+// children would double up harmlessly today but couples two rules that
+// have no reason to change together.
+.risk-details .sr-risk-tab-actions {
+    position: absolute;
+    top: 7px;
+    right: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+// Accept/Reject Mitigation's "accepted by X on Y" status line
+// (buildAcceptMitigationWidget(), risk-details-view.js) -- reads as the
+// mitigation's approval STATUS, not a field, so it sits on its own line
+// above the Cards stack rather than inside a card. Left, not right-aligned:
+// the sentence can run long ("Mitigation accepted by <name> on <date> at
+// <time>"), and the action buttons already own the right-hand corner above.
+.accept-mitigation-text {
+    margin-bottom: 12px;
+
+    .form-check-input {
+        margin-right: 4px;
+    }
+}
+
+// Modifier for a .sr-table-card that shouldn't draw its own shell border:
+// either standing entirely alone as a page-level empty state
+// (management/view.php's "risk ID does not exist" state, the first user)
+// with no toolbar/footer to visually separate it from, or nested inside
+// another shell that already reads as the card -- the Control Validation
+// table embedded in a .sr-qaccordion (RiskMitigationControls.buildTableSection(),
+// js/simplerisk/pages/risk-mitigation-controls.js), where a second bordered
+// box would double-frame it. Scoped as a modifier rather than changed on
+// .sr-table-card itself, which every real STANDALONE data table still
+// wants bordered. Chained (not a bare single-class selector) so its two
+// classes' combined specificity beats the base .sr-table-card rule
+// regardless of import order -- modules/tables is @imported AFTER
+// modules/tabs in custom.scss, so a same-specificity tie would otherwise
+// go to the base rule's border no matter which class the markup lists last.
+.sr-table-card.sr-table-card--no-border {
+    border: none;
+}
+
+// The Control Validation table (RiskMitigationControls.buildTableSection(),
+// js/simplerisk/pages/risk-mitigation-controls.js) must never grow past the
+// Mitigation Controls card that contains it, in either mode: edit mode
+// nests it inside a CSS-grid .sr-qgrid track (.sr-qfield--full), read mode
+// inside a plain .sr-qcard-body -- in both, a grid/flex item's default
+// min-width is `auto`, not `0`, so it refuses to shrink below its content's
+// intrinsic width unless told to. The table's own folded Control column
+// (rowHtml()'s own comment -- number/name/family wrap in one cell instead
+// of three fixed-width columns fighting for space) is what keeps the
+// table's CONTENT from needing horizontal scroll in the first place;
+// min-width:0 + overflow-x:hidden here is the structural backstop that
+// still applies regardless of content width, so a future column addition
+// can't silently push the card wider again without a build error making
+// the regression obvious.
+.sr-mitigation-controls-accordion {
+    min-width: 0;
+    max-width: 100%;
+    overflow-x: hidden;
+    // Separates the Control Validation expander from the picker/chips
+    // above it (buildMitigationControlsWidget(), risk-details-form.js,
+    // appends this accordion directly into the same field wrapper with no
+    // gap of its own) -- same spacing value as the questionnaire's own
+    // field-to-field rhythm (scss/modules/_questionnaire.scss).
+    margin-top: 12px;
+
+    .sr-mitigation-controls-body,
+    .sr-table-scroll {
+        min-width: 0;
+        max-width: 100%;
+    }
+
+    // The folded Control cell (control number + short name + family,
+    // rowHtml()) is the one column allowed to wrap and grow the ROW taller
+    // -- every other column (owner/percent/status/actions) stays a single
+    // short line. Family reads as secondary/contextual under the number:
+    // name line, so it's smaller and muted rather than matching weight.
+    .sr-mitigation-controls-name {
+        white-space: normal;
+    }
+
+    .sr-mitigation-controls-family {
+        font-size: 12px;
+        color: $gray-600;
+    }
+
+    // This table's row-actions cluster (view + edit, rowHtml()) is the
+    // ONLY way to reach the Control Validation modal at all, so at the
+    // WIDE tier it must always be visible -- unlike .sr-row-actions'
+    // shared default (scss/modules/_tables.scss), which is hover-revealed
+    // because it exists for a CLUSTER of secondary actions elsewhere in
+    // the app where the primary action is a plain row click. Hiding the
+    // sole entry point to this modal until hover made the whole feature
+    // read as missing (confirmed by the user). This override touches only
+    // the wide/inline-cluster state -- the compact tier's collapsed menu
+    // (sr-row-actions-overflow-tier, same file) is unaffected: it's driven
+    // by .is-open, not opacity, and stays exactly as shared elsewhere.
+    // `.sr-table-card.sr-mitigation-controls-body` (3 classes) is
+    // deliberate, not decorative -- .sr-mitigation-controls-body already
+    // carries .sr-table-card too, so this compiles to a HIGHER specificity
+    // tier than the base rule's own `.sr-table-card .sr-row-actions` (2
+    // classes): modules/tables is @imported AFTER modules/tabs in
+    // custom.scss, so a same-specificity override here would lose the
+    // cascade tie to the base opacity:0 rule regardless of DOM order.
+    .sr-table-card.sr-mitigation-controls-body .sr-row-actions {
+        opacity: 1;
+    }
+
+    // Actions column pinned to the right edge of the horizontal scroll --
+    // same pattern #review_risk_table/#plan_projects_table/
+    // #unassigned_risks_table use (scss/modules/_tables.scss's own comment
+    // there), scoped by this accordion's own class instead of a table ID:
+    // the table's id is generated per instance (buildTableSection()'s own
+    // counter, risk-mitigation-controls.js), not a fixed page-unique
+    // string those tables can rely on. `top` on the header cell is
+    // inherited as-is from the generic `thead th` rule; only `right` is
+    // added here, matching that reference exactly.
+    thead th.sr-actions-col-sticky {
+        right: 0;
+    }
+
+    tbody td.sr-actions-col-sticky {
+        position: sticky;
+        right: 0;
+        // Opaque so scrolled-under cells don't show through -- this table
+        // has no zebra striping or per-row selected tint, so the resting
+        // background is simply the card's own $sr-body, same reasoning as
+        // the reference implementation.
+        background: $sr-body;
+        // Subtle "something's behind me" separator while actually
+        // mid-scroll, reusing the card's own ambient shadow token rather
+        // than a new hardcoded value.
+        box-shadow: $shadow;
+    }
+
+    // Tracks the hover tint (tbody tr:hover, _tables.scss) -- otherwise the
+    // sticky cell's own opaque resting background paints a flat,
+    // mismatched seam over an otherwise grey-tinted hovered row.
+    tbody tr:hover td.sr-actions-col-sticky {
+        background: $gray-100;
+    }
+
+    // A row-actions menu opened from a pinned cell: position:sticky makes
+    // every pinned <td> its own stacking context, so the menu's own
+    // z-index (20, .sr-row-actions, _tables.scss) only ranks it INSIDE its
+    // own cell, and the FOLLOWING row's pinned "..." toggle cell -- later
+    // in DOM order at the same auto level -- paints over the popped-open
+    // menu underneath it (confirmed by the user: the menu rendered behind
+    // the next row's toggle). Same fix #review_risk_table/
+    // #plan_projects_table/#unassigned_risks_table use (_tables.scss),
+    // reproduced here rather than reused directly since this table isn't
+    // in that ID list (dynamic per-instance id, same reasoning as the
+    // sticky-column rule above): lift the open row's cell above its
+    // siblings for as long as its menu is open.
+    tbody tr:has(.sr-row-actions-wrap.is-open) td.sr-actions-col-sticky {
+        z-index: 1;
+    }
+}
+
+// SupportingDocumentation / MitigationSupportingDocumentation's edit-mode
+// file widget (buildSupportingDocumentationWidget(), risk-details-form.js).
+// Minimal, purely-structural polish -- .sr-chip-remove (scss/modules/
+// _sr-modal.scss) already styles the remove button itself; this only
+// spaces the list and its rows.
+// Empty state -- both buildSupportingDocumentationWidget()'s own list
+// (risk-details-form.js) AND the Control Validation modal's file <ul>
+// (renderValidationFiles(), risk-mitigation-controls.js) render this SAME
+// row when there are no files, so it's a bare top-level class rather than
+// nested under .sr-supporting-docs-list, which only the former carries.
+// Same muted, small treatment .sr-qhint uses elsewhere (scss/modules/
+// _sr-modal.scss) for a hint-level, non-interactive line. No border, unlike
+// a real file row -- it isn't one of a list, it's the list saying it's
+// empty.
+.sr-supporting-docs-empty {
+    font-size: 11.5px;
+    color: $gray-600;
+    padding: 4px 0;
+    border-bottom: none !important;
+}
+
+.sr-supporting-docs-list {
+    margin: 0 0 6px;
+
+    li {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        padding: 4px 0;
+
+        &:not(:last-child) {
+            border-bottom: 1px solid $gray-200;
+        }
+
+        a {
+            overflow-wrap: anywhere;
+        }
+    }
 }

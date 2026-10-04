@@ -814,7 +814,7 @@ $lang = array(
     'UserSessions' => 'Användarsessioner',
     'SessionActivityTimeout' => 'Timeout för sessions aktivitet',
     'Security' => 'Säkerhets',
-    'EnableCSP' => 'Aktivera innehålls säkerhetsprincip (detta har brutit Chrome tidigare)',
+    'EnableCSP' => 'Aktivera innehållssäkerhetspolicy (rekommenderas)',
     'EnableDebugLogging' => 'Aktivera felsökningsloggning',
     'seconds' => 'sekunder',
     'FieldSample' => 'Fältprov',
@@ -4967,6 +4967,572 @@ $lang = array(
     // closeriskForm()'s own (hardcoded, pre-existing) single-risk denial text.
     'NoCloseRiskPermission' => 'Du har inte behörighet att stänga risker.',
     'QuestionnaireRequiredQuestionUnanswered' => 'Vänligen svara på alla obligatoriska frågor innan du slutför bedömningen.',
+    'AuditLog_ControlStatusAutoSynced' => 'Statusen för kontrollen "{$short_name}" uppdaterades automatiskt till "{$status_text}" baserat på dess senaste testresultat.',
+    'EnableCSPHelp' => 'Content Security Policy (CSP) begränsar webbläsaren till att endast ladda skript, stilar, bilder och teckensnitt från SimpleRisk självt, och blockerar sidframing och inskickade formulär mellan olika ursprung. Det är det starkaste inbyggda försvaret mot skriptning mellan olika webbplatser. Låt det vara aktiverat om det inte strider mot en proxy, ett webbläsartillägg eller en tredjepartsintegration i din miljö.',
+    // Define Control Frameworks' Columns picker (Task: Columns picker + saved layout/filters) -- the "Standard" group label above its built-in fields (Family/Owner/Maturity/Status/Class/Phase/Priority/Type); 'CustomFields' already exists.
+    'StandardFields' => 'Standardfält',
+    // My Profile redesign (js/simplerisk/pages/account-profile.js)
+    'Administrator' => 'Administratör',
+    'AccountDetails' => 'Kontouppgifter',
+    'YourPermissions' => 'Dina behörigheter',
+    'RoleAndTeamsGrantAccess' => 'Vad din roll och dina team ger dig åtkomst till',
+    'AllGranted' => 'Alla beviljade',
+    'PermissionsCountLabel' => '$count behörigheter',
+    'ManagedByYourAdministrator' => 'Dessa uppgifter hanteras av din administratör. Kontakta dem om något här behöver ändras.',
+    'MultiFactorAuthenticationHint' => 'Lägg till ett andra steg i din inloggning för att skydda ditt konto.',
+    'ChangingPasswordSignsOutEverywhere' => 'Om du ändrar ditt lösenord loggas du ut från alla andra ställen.',
+    'APIKeyHint' => 'Används för att autentisera dina egna skript och integrationer mot SimpleRisk API.',
+    'ResetDisplaySettingsHint' => 'Återställer dina anpassade kolumnval till standardinställningarna.',
+    'CardGeneral' => 'De allmänna',
+    'CardClassification' => 'Klassificering',
+    'CardScoring' => 'Poängsättning',
+    'CardAdditionalInformation' => 'Ytterligare information',
+    'CardCustomFields' => 'Anpassade fält',
+    'CardCustomFieldsHint' => 'Dessa fält behöver sorteras till ett kort',
+    'LayoutEditorHint' => 'Dra ett fält till ett annat kort för att tilldela det på nytt, dra inom ett kort för att ändra ordning eller storlek på det och dra eller ändra storlek på ett kort för att ändra dess position på sidan.',
+    'ScoringNotYetAvailableInThisView' => 'Poängkonfiguration är ännu inte tillgänglig i den här vyn.',
+    // Native tooltip on the Cards layout editor's Gridstack resize handles
+    // (js/simplerisk/pages/customization-layout-editor.js) -- the bare corner
+    // bracket read as an unexplained mark until it said what it does.
+    'DragToResize' => 'Dra för att ändra storlek',
+    // Warning pill on a Cards layout editor card the admin has sized shorter
+    // than the fields it holds. Replaces the silent inner scrollbar that state
+    // used to produce.
+    'NFieldsDoNotFitCard' => 'Fältet/fälten {n} får inte plats på det här kortet. Ändra storlek på kortet för att visa dem.',
+    // Card titles for the Mitigation tab's Cards layout editor
+    // (js/simplerisk/pages/customization-layout-editor.js), mirroring the
+    // Card* keys above for the Details tab. Order follows
+    // customization_mitigation_cards_layout_card_keys() (includes/functions.php).
+    'CardMitigationStrategy' => 'Strategi för begränsning av åtgärder',
+    'CardMitigationSolution' => 'Lösning för att minska risken',
+    'CardMitigationControls' => 'Begränsnings kontroller',
+    'CardReview' => 'Granskning',
+    // Submit Risk page's three action-bar buttons (buildActionsBar(),
+    // risk-details-form.js, submitMode 'create' only) and the Reset Form
+    // confirm modal (management/index.php, design-system.md #8's "Confirm"
+    // type). 'Discard'/'Cancel'/'Close' already exist and are reused for the
+    // modal's own buttons.
+    'ResetForm' => 'Återställ formulär',
+    'SaveAndNew' => 'Spara och nytt',
+    'SaveAndView' => 'Spara och visa',
+    'ResetFormConfirmTitle' => 'Vill du ignorera den här riskrapporten?',
+    'ResetFormConfirmBody' => 'All information du har angett kommer att gå förlorad.',
+    // Restore-template destructive confirm (Customization Extra, Save/Restore
+    // action bar). Two body variants: risk's Details/Mitigation/Review tabs
+    // named explicitly (the only fgroup with that 3-tab Cards layout), a
+    // generic fallback for every other fgroup (single legacy-panel tab).
+    // Both end on the same scoping reassurance -- confirmed via direct source
+    // read that Restore only ever touches the currently-selected template
+    // group, never any other.
+    'RestoreTemplateConfirmTitle' => 'Återställ standardlayout?',
+    'RestoreTemplateConfirmBodyRisk' => 'Detta återställer alla fält på flikarna Detaljer, Begränsning och Granskning till standardvärdena för den här mallgruppen. Andra mallgrupper påverkas inte.',
+    'RestoreTemplateConfirmBody' => 'Detta återställer alla fält i den här mallen till standardvärdena för den här mallgruppen. Andra mallgrupper påverkas inte.',
+    // CVSS holder's collapsed Temporal/Environmental/Impact-Modifiers
+    // accordion (buildCvssHolder(), risk-details-form.js) -- these three
+    // groups are optional CVSS v2 refinements on top of the required Base
+    // Score Metrics, so they collapse behind this header by default.
+    'AdvancedMetrics' => 'Avancerade mätvärden',
+    // CVSS holder's Base Score Metrics sub-group headers (buildCvssHolder(),
+    // risk-details-form.js) -- distinct from the existing 'ExploitabilityMetrics'/
+    // 'ImpactMetrics' keys, which the legacy cvss_modal_content.php modal
+    // still renders as plain "Exploitability Metrics"/"Impact Metrics" and
+    // must keep unchanged. These fold the umbrella "Base Score Metrics"
+    // heading into each sub-group's own header instead of a separate label.
+    'BaseScoreExploitabilityMetrics' => 'Baspoängens utnyttjandemått',
+    'BaseScoreImpactMetrics' => 'Baspoängpåverkansmått',
+    // Per-field help popovers on the CVSS holder's 14 metric selects
+    // (buildCvssScoreItem(), risk-details-form.js) -- one per CVSS v2
+    // metric, matching the standard CVSS v2 specification definitions.
+    // Double-quoted (not single-quoted, this file's usual style) so the
+    // \n line breaks are real escape sequences: each popover leads with one
+    // overall sentence, then one bullet line per option, rendered via
+    // white-space: pre-line on .sr-scoring-help-popover .popover-body
+    // (scss/modules/_questionnaire.scss) -- plain text throughout, no HTML,
+    // so the popover stays initialized without Bootstrap's `html: true`.
+    "AttackVectorHelp" => "Hur sårbarheten kan nås.\n• Lokalt: kräver lokal åtkomst, till exempel en konsol eller ett skal.\n• Angränsande nätverk: angriparen måste befinna sig på samma fysiska eller logiska nätverkssegment.\n• Nätverk: kan utnyttjas på distans över ett nätverk, utan behov av lokal eller angränsande åtkomst.",
+    "AttackComplexityHelp" => "Hur komplex attacken är när en angripare väl har tillgång till målet.\n• Hög: kräver specialiserade villkor som är svåra att ordna.\n• Medel: vissa villkor måste vara uppfyllda, men utnyttjande är inte svårt när de väl är det.\n• Låg: inga speciella villkor behövs.",
+    "AuthenticationHelp" => "Antalet gånger en angripare måste autentisera sig mot målet för att utnyttja det.\n• Flera: autentisering krävs två eller fler gånger, även med samma inloggningsuppgifter.\n• Enkel: autentisering krävs en gång.\n• Ingen: ingen autentisering krävs.",
+    "ConfidentialityImpactHelp" => "Påverkan på sekretessen för de data som systemet behandlar om det utnyttjas.\n• Ingen: ingen påverkan.\n• Delvis: viss information avslöjas, men angriparen kontrollerar inte vad, eller förlusten är begränsad.\n• Fullständig: fullständig information avslöjas i systemet.",
+    "IntegrityImpactHelp" => "Påverkan på systemets integritet om det utnyttjas.\n• Ingen: ingen påverkan.\n• Delvis: vissa data kan ändras, men angriparen kontrollerar inte vad, eller så är omfattningen begränsad.\n• Fullständig: total äventyrning av systemintegriteten; angriparen kan ändra vilka filer som helst.",
+    "AvailabilityImpactHelp" => "Påverkan på systemets tillgänglighet om det utnyttjas.\n• Ingen: ingen påverkan.\n• Delvis: minskad prestanda eller avbrott i tillgängligheten.\n• Fullständig: total avstängning av den berörda resursen.",
+    "RemediationLevelHelp" => "Nivån av åtgärd som är tillgänglig för sårbarheten.\n• Officiell åtgärd: en komplett leverantörslösning finns tillgänglig.\n• Tillfällig åtgärd: en officiell men tillfällig åtgärd finns tillgänglig.\n• Lösning: en inofficiell, icke-leverantörsbaserad lösning finns.\n• Ej tillgänglig: ingen lösning är tillgänglig, eller så kan ingen tillämpas.",
+    "ReportConfidenceHelp" => "Graden av tilltro till sårbarhetens existens och trovärdigheten hos dess tekniska detaljer.\n• Obekräftad: en enda, obekräftad källrapport; det underliggande problemet är spekulativt.\n• Obekräftad: flera oberoende källor rapporterar samma beteende, men grundorsaken är inte bekräftad.\n• Bekräftad: leverantören har bekräftat problemet, eller så har det bekräftats genom källkod eller exploitanalys.",
+    "CollateralDamagePotentialHelp" => "Potentialen för förlust av liv, fysiska tillgångar eller ekonomisk förlust om sårbarheten utnyttjas.\n• Ingen: ingen sådan förlust är trolig.\n• Låg till Medel: en måttlig förlust är möjlig.\n• Hög: en katastrofal inverkan på organisationens tillgångar, intäkter eller säkerhet.",
+    "TargetDistributionHelp" => "Andelen sårbara system i din miljö.\n• Ingen: inga målsystem finns.\n• Låg: 1–25 % av systemen är sårbara.\n• Medel: 26–75 % är sårbara.\n• Hög: 76–100 % är sårbara.",
+    "ConfidentialityRequirementHelp" => "Hur viktig sekretessen för den berörda tillgången är för din organisation.\n• Låg: en förlust av sekretess har begränsad inverkan.\n• Medel: den har en allvarlig inverkan.\n• Hög: den har en katastrofal inverkan.",
+    "IntegrityRequirementHelp" => "Hur viktig den berörda tillgångens integritet är för din organisation.\n• Låg: en integritetsförlust har begränsad inverkan.\n• Medel: den har en allvarlig inverkan.\n• Hög: den har en katastrofal inverkan.",
+    "AvailabilityRequirementHelp" => "Hur viktig tillgängligheten för den berörda tillgången är för din organisation.\n• Låg: en tillgänglighetsförlust har begränsad inverkan.\n• Medel: den har en allvarlig inverkan.\n• Hög: den har en katastrofal inverkan.",
+    // Base Score Metrics' two sub-group intro sentences (metricsSubGroup()'s
+    // `descKey`, risk-details-form.js) -- orient the user to what the GROUP
+    // as a whole is asking, distinct from the per-field *Help popover keys
+    // above which explain each metric's own options.
+    'BaseScoreExploitabilityMetricsDescription' => 'Hur en angripare skulle behöva nå och utlösa denna sårbarhet: var de måste befinna sig, hur komplex attacken är och om de behöver autentisera sig först.',
+    'BaseScoreImpactMetricsDescription' => 'Vad händer om sårbarheten utnyttjas framgångsrikt: effekten på det berörda systemets konfidentialitet, integritet och tillgänglighet.',
+    // Advanced Metrics' three optional sub-group intro sentences -- same
+    // metricsSubGroup() `descKey` as the two Base Score groups above.
+    'TemporalScoreMetricsDescription' => 'Hur det verkliga hotet från denna sårbarhet förändras över tid: det aktuella tillståndet för exploitkod, vilken åtgärd som finns tillgänglig och hur säkra rapporterna är på att den existerar.',
+    'EnvironmentalScoreMetricsDescription' => 'Hur risken för denna sårbarhet beror på din miljö: potentialen för verklig skada och hur många av dina system som faktiskt påverkas.',
+    'ImpactSubscoreModifiersDescription' => 'Vikta baspoängens inverkan utifrån hur mycket konfidentialitet, integritet och tillgänglighet faktiskt spelar roll för just denna tillgång.',
+    // Phase 4d-iii: DREAD holder help popovers (view_dread_help()'s
+    // existing English text, includes/display.php, extracted to real $lang
+    // keys -- that function's own content was raw hardcoded HTML, never
+    // localized, so it could not be reused verbatim).
+    'DamagePotentialHelp' => 'Om ett hotutnyttjande inträffar, hur mycket skada kommer att orsakas?' . "\n" . '0 = Ingenting' . "\n" . '5 = Enskilda användardata har äventyrats eller påverkats.' . "\n" . '10 = Fullständig system- eller dataförstöring',
+    'ReproducibilityHelp' => 'Hur lätt är det att reproducera hotet?' . "\n" . '0 = Mycket svårt eller omöjligt, även för applikationens administratörer.' . "\n" . '5 = Ett eller två steg krävs, kan kräva att du är en auktoriserad användare.' . "\n" . '10 = Bara en webbläsare och adressfältet räcker, utan autentisering.',
+    'ExploitabilityHelp' => 'Vad krävs för att utnyttja detta hot?' . "\n" . '0 = Avancerade programmerings- och nätverkskunskaper, med anpassade eller avancerade attackverktyg.' . "\n" . '5 = Skadlig kod finns på internet, eller så kan en attack enkelt utföras med tillgängliga attackverktyg.' . "\n" . '10 = Bara en webbläsare',
+    'AffectedUsersHelp' => 'Hur många användare kommer att påverkas?' . "\n" . '0 = Ingen' . "\n" . '5 = Vissa användare, men inte alla' . "\n" . '10 = Alla användare',
+    'DiscoverabilityHelp' => 'Hur lätt är det att upptäcka detta hot?' . "\n" . '0 = Mycket svårt till omöjligt; kräver källkod eller administratörsåtkomst.' . "\n" . '5 = Kan räkna ut det genom att gissa eller genom att övervaka nätverksspår.' . "\n" . '9 = Detaljer om fel som detta är redan offentliga och kan enkelt upptäckas med hjälp av en sökmotor.' . "\n" . '10 = Informationen visas i webbläsarens adressfält eller i ett formulär.',
+    // The DREAD holder's summary card heading and "DREAD Metrics" card
+    // heading. No existing key covers either (confirmed via grep before
+    // adding).
+    'DreadScore' => 'DREAD-poäng',
+    'DreadMetrics' => 'DREAD-mätvärden',
+    // Phase 4d-iv: OWASP holder help popovers (view_owasp_help()'s
+    // existing English text, includes/display.php, extracted to real
+    // $lang keys -- same never-localized-legacy-content extraction the
+    // DREAD phase already did for its own 5 fields). Wording/levels
+    // trued up against that function's real source text, not transcribed
+    // from an earlier standard-methodology draft.
+    'SkillLevelHelp' => 'Hur tekniskt skicklig är denna grupp av hotagenter?' . "\n" . '1 = Inga tekniska färdigheter' . "\n" . '3 = Vissa tekniska färdigheter' . "\n" . '5 = Avancerad datoranvändare' . "\n" . '6 = Nätverks- och programmeringsfärdigheter' . "\n" . '9 = Säkerhetspenetrationsfärdigheter',
+    'MotiveHelp' => 'Hur motiverade är denna grupp av hotagenter att hitta och utnyttja denna sårbarhet?' . "\n" . '1 = Låg eller ingen belöning' . "\n" . '4 = Möjlig belöning' . "\n" . '9 = Hög belöning',
+    'OpportunityHelp' => 'Vilka resurser och möjligheter krävs för att denna grupp av hotagenter ska kunna hitta och utnyttja denna sårbarhet?' . "\n" . '0 = Full åtkomst eller dyra resurser krävs' . "\n" . '4 = Särskild åtkomst eller resurser krävs' . "\n" . '7 = Viss åtkomst eller resurser krävs' . "\n" . '9 = Ingen åtkomst eller resurser krävs',
+    'SizeHelp' => 'Hur stor är denna grupp av hotande agenter?' . "\n" . '2 = Utvecklare' . "\n" . '2 = Systemadministratörer' . "\n" . '4 = Intranätanvändare' . "\n" . '5 = Partners' . "\n" . '6 = Autentiserade användare' . "\n" . '9 = Anonyma internetanvändare',
+    'EaseOfDiscoveryHelp' => 'Hur lätt är det för den här gruppen av hotagenter att upptäcka denna sårbarhet?' . "\n" . '1 = Praktiskt taget omöjligt' . "\n" . '3 = Svårt' . "\n" . '7 = Lätt' . "\n" . '9 = Automatiserade verktyg tillgängliga',
+    'EaseOfExploitHelp' => 'Hur lätt är det för den här gruppen av hotagenter att faktiskt utnyttja denna sårbarhet?' . "\n" . '1 = Teoretisk' . "\n" . '3 = Svårt' . "\n" . '5 = Lätt' . "\n" . '9 = Automatiserade verktyg tillgängliga',
+    'AwarenessHelp' => 'Hur välkänd är denna sårbarhet för denna grupp av hotagenter?' . "\n" . '1 = Okänd' . "\n" . '4 = Dold' . "\n" . '6 = Uppenbart' . "\n" . '9 = Allmän kännedom',
+    'IntrusionDetectionHelp' => 'Hur sannolikt är det att ett utnyttjande upptäcks?' . "\n" . '1 = Aktiv detektering i applikation' . "\n" . '3 = Loggad och granskad' . "\n" . '8 = Loggad utan granskning' . "\n" . '9 = Inte loggad',
+    'LossOfConfidentialityHelp' => 'Hur mycket data kan lämnas ut och hur känslig är den?' . "\n" . '2 = Minimalt antal icke-känsliga uppgifter som lämnats ut' . "\n" . '6 = Minimala kritiska data offentliggjorda' . "\n" . '6 = Omfattande icke-känsliga uppgifter har offentliggjorts' . "\n" . '7 = Omfattande kritisk data har offentliggjorts' . "\n" . '9 = Alla uppgifter har lämnats ut',
+    'LossOfIntegrityHelp' => 'Hur mycket data kan vara korrupt och hur skadad är den?' . "\n" . '1 = Minimalt Något Korrupt Data' . "\n" . '3 = Minimal allvarligt korrupt data' . "\n" . '5 = Omfattande, något korrupt data' . "\n" . '7 = Omfattande allvarligt korrupt data' . "\n" . '9 = All data är helt korrupt',
+    'LossOfAvailabilityHelp' => 'Hur mycket service skulle kunna gå förlorad och hur viktig är den?' . "\n" . '1 = Minimala sekundära tjänster avbrutna' . "\n" . '5 = Minimala primära tjänster avbrutna' . "\n" . '5 = Omfattande sekundära tjänster avbrutna' . "\n" . '7 = Omfattande primära tjänster avbrutna' . "\n" . '9 = Alla tjänster helt borta',
+    'LossOfAccountabilityHelp' => 'Kan hotande agenternas handlingar spåras till en individ?' . "\n" . '1 = Fullt spårbar' . "\n" . '7 = Möjligen spårbar' . "\n" . '9 = Helt anonym',
+    'FinancialDamageHelp' => 'Hur mycket ekonomisk skada kommer att uppstå vid ett utnyttjande?' . "\n" . '1 = Mindre än kostnaden för att åtgärda sårbarheten' . "\n" . '3 = Mindre effekt på årsresultatet' . "\n" . '7 = Betydande effekt på årsresultatet' . "\n" . '9 = Konkurs',
+    'ReputationDamageHelp' => 'Skulle ett utnyttjande leda till skadat rykte som skulle skada företaget?' . "\n" . '1 = Minimal skada' . "\n" . '4 = Förlust av större kundkonton' . "\n" . '5 = Förlust av goodwill' . "\n" . '9 = Varumärkesskada',
+    'NonComplianceHelp' => 'Hur mycket exponering medför bristande efterlevnad?' . "\n" . '2 = Mindre överträdelse' . "\n" . '5 = Klar överträdelse' . "\n" . '7 = Överträdelse med hög profil',
+    'PrivacyViolationHelp' => 'Hur mycket personligt identifierbar information får lämnas ut?' . "\n" . '3 = En individ' . "\n" . '5 = Hundratals människor' . "\n" . '7 = Tusentals människor' . "\n" . '9 = Miljontals människor',
+    // The OWASP holder's Score card heading. No existing key covers this
+    // (confirmed via grep before adding) -- the Likelihood/Impact card
+    // headings reuse the already-existing bare 'Likelihood'/'Impact' keys.
+    'OwaspScore' => 'OWASP-poäng',
+    // Phase 4d-iv follow-up: group-level descriptions for the 4 OWASP
+    // subgroup headings, sourced from OWASP's own Risk Rating Methodology
+    // (https://community.owasp.org/OWASP_Risk_Rating_Methodology), tightened
+    // into short UI captions -- not a verbatim quote (see this task's own
+    // source table for the original wording).
+    'ThreatAgentFactorsDescription' => 'Uppskattar sannolikheten för en lyckad attack av denna grupp av hotagenter.',
+    'VulnerabilityFactorsDescription' => 'Uppskattar sannolikheten att denna sårbarhet kommer att upptäckas och utnyttjas.',
+    'TechnicalImpactDescription' => 'Delar upp påverkan efter konfidentialitet, integritet, tillgänglighet och ansvarsskyldighet.',
+    'BusinessImpactDescription' => 'Återspeglar vad som är viktigt för verksamheten, utöver den råa tekniska effekten.',
+    // CVSS's own Temporal-metric 'Exploitability' help text. This key shares
+    // a labelKey ('Exploitability') with DREAD's own field, so both would
+    // otherwise derive the same generic lang key ('ExploitabilityHelp'),
+    // with DREAD's entry silently winning for both -- risk-details-form.js's
+    // buildCvssScoreItem() and risk-details-view.js's cvssMetricValueRow()
+    // reference this key directly for CVSS's Exploitability field instead
+    // of the generic '<labelKey>Help' derivation.
+    'CVSSExploitabilityHelp' => "Nuvarande tillstånd för exploiteringstekniker eller kodens tillgänglighet.\n• Obevisad: ingen exploiteringskod finns tillgänglig, eller så är exploitationen teoretisk.\n• Konceptbevis: exploiteringskod finns men är inte praktisk för de flesta angripare.\n• Funktionell: funktionell exploiteringskod fungerar i de flesta situationer.\n• Hög: exploitationen är tillförlitlig och antingen automatiserad (t.ex. en mask) eller kräver ingen exploiteringskod alls.",
+    // Risk Scoring -- Classic Inline (Task 3): the Classic scoring method's
+    // new inline Score card heading and its Likelihood/Impact cards' short
+    // plain-English descriptions (js/simplerisk/common/risk-details-form.js's
+    // buildClassicHolder()). Deliberately NOT sourced from NIST SP 800-30 or
+    // any other external standard -- confirmed with the user via the
+    // approved mockup review, unlike OWASP's own subgroup descriptions
+    // above, which do cite OWASP's Risk Rating Methodology.
+    'ClassicScore' => 'Klassisk poäng',
+    'ClassicLikelihoodDescription' => 'Hur sannolikt det är att denna risk inträffar.',
+    'ClassicImpactDescription' => 'Hur allvarliga konsekvenserna skulle bli om denna risk inträffade.',
+    // Risk Scoring -- Custom Inline (Task 2): the Custom scoring method's
+    // new inline Score card heading (js/simplerisk/common/risk-details-form.js's
+    // buildCustomHolder()) and the Custom Value card's short description
+    // caption. 'CustomValueDescription' text confirmed directly with the
+    // user, same as Classic's own description keys above.
+    'CustomScore' => 'Anpassad poäng',
+    'CustomValueDescription' => 'Ett anpassat värde kan vara ett decimalvärde mellan 0 och 10.',
+    // Risk Scoring -- Contributing Risk Inline (Phase 4d-v): the last of
+    // the three deferred scoring methods (DREAD/OWASP shipped earlier in
+    // this same project). The Likelihood/Contributing Risk cards' short
+    // plain-English descriptions (js/simplerisk/common/risk-details-form.js's
+    // buildContributingRiskHolder()). The Score card heading reuses the
+    // EXISTING 'ContributingRiskScore' key (already present above, same
+    // text) rather than duplicating it -- 'ContributingRisk'/
+    // 'ContributingLikelihood'/'Weight'/'Subject' are likewise reused as-is.
+    'ContributingLikelihoodDescription' => 'Hur sannolikt det är att denna risk inträffar.',
+    'ContributingRiskDescription' => 'Varje faktor nedan viktas efter sin relativa betydelse – välj hur mycket denna risk påverkas av var och en.',
+    // OWASP read-mode card (buildOwaspReadView(), risk-details-view.js):
+    // the live calculation formula under each of the 4 sub-group names
+    // (Threat Agent Factors/Vulnerability Factors/Technical Impact/
+    // Business Impact), matching the legacy risk-scoring-details panel's
+    // own "= ( a + b + c + d ) / 4" text (includes/display.php), and the
+    // OWASP Risk Rating Methodology link note placed in the OWASP Score
+    // column's open space below the summary numbers.
+    'OwaspSubgroupFormula' => '= ( {a} + {b} + {c} + {d} ) / 4',
+    'OwaspMethodologyNote' => 'Fullständig information om OWASP:s riskklassificeringsmetod finns på',
+    'Here' => 'här',
+    // Scoring widget formula captions (Classic/DREAD/Contributing Risk),
+    // the same ".sr-cvss-vector under the score label" treatment CVSS's
+    // vector caption and OwaspSubgroupFormula above already have, on both
+    // the edit-mode holder (risk-details-form.js) and the read-mode card
+    // (risk-details-view.js). Classic reuses the existing RISKClassicExp1-5
+    // keys instead of a new one -- see those keys' own long-standing
+    // definitions above.
+    'DreadScoreFormula' => '= ( {a} + {b} + {c} + {d} + {e} ) / 5',
+    // Contributing Risk's per-factor weighted term and its shared
+    // Likelihood term (update_contributing_risk_score(), includes/
+    // functions.php) -- unlike DREAD/OWASP's fixed roster, the factor list
+    // is admin-configured, so this is one formula PER FACTOR ROW rather
+    // than one fixed caption under the total score.
+    // {maxName}: score.php parity -- legacy's "Maximum Value" column showed
+    // the max option's human-readable name alongside its number (e.g.
+    // "[5] Certain", includes/display.php); these formulas only showed the
+    // bare number.
+    'ContributingLikelihoodFormula' => '= {value} x 5 / {max} ({maxName})',
+    'ContributingFactorFormula' => '= {weight}% x {impact} x 5 / {max} ({maxName})',
+    // Contributing Risk's own subscore row in the Score card -- the sum of
+    // every factor's own term above it. Generic (not substituted with real
+    // numbers) since the number of terms is however many factors are
+    // configured, unlike the fixed-roster formulas above.
+    'ContributingRiskSubtotalFormula' => '= Summa av (Vikt x Stöt x 5 / Max)',
+    // Contributing Risk Score's own formula, under the total row -- always
+    // exactly 2 terms (unlike the Contributing Risk subtotal above), so
+    // substituted with the real current subtotal values, same convention
+    // DreadScoreFormula/OwaspSubgroupFormula use for their own fixed roster.
+    'ContributingRiskScoreFormula' => '= {likelihood} + {contributing}',
+    // Risk Scoring History widget (risk-details-view.js) -- replaces the
+    // legacy chart's bare save icon with a real menu item, structured for
+    // future export types alongside it.
+    'DownloadChartAsImage' => 'Ladda ner som bild',
+    // Legacy score.php's CVSS table had a "Full details of CVSS Version 2.0
+    // scoring can be found here." link (includes/display.php); this is its
+    // inline-scoring-card equivalent, same shape as OwaspMethodologyNote.
+    'CvssMethodologyNote' => 'Fullständig information om CVSS version 2.0-poängsättning finns',
+    // Mitigation Controls redesign: the picker reuses ChooseControls/
+    // AddOrRemoveControls/etc from Document Program's control picker.
+    'InvalidControlID' => 'Ogiltigt kontroll-ID.',
+    'ValidationOwner' => 'Valideringsägare',
+    'ValidationStatus' => 'Valideringsstatus',
+    'NotStarted' => 'Inte påbörjad',
+    // management/view.php's "risk ID does not exist" empty state.
+    'RiskIdDoesNotExistBody' => 'Risken du letar efter kan ha tagits bort, eller så kan länken vara felaktig.',
+    'MitigationControlsRequiresGovernance' => 'Kräver behörighet för styrning för att visa.',
+    'ViewControlValidation' => 'Validering av vykontroll',
+    'EditControlValidation' => 'Redigera kontrollvalidering',
+    'SupportingDocumentationRequiresSubmitRisk' => 'Kräver behörighet att skicka risk för att ladda upp filer.',
+    'SupportingDocumentationRequiresModifyRisks' => 'Kräver behörighet att ändra risker för att hantera filer.',
+    'MitigationSupportingDocumentationRequiresPlanMitigations' => 'Kräver behörighet för planeringsbegränsningar för att hantera filer.',
+    'MitigationSubmittedBy' => 'Reducerande åtgärder inlämnade av',
+    'UseADifferentDate' => 'Använd ett annat datum',
+    'AssetGroup' => 'Tillgångsgrupp',
+    // Customization Cards Layout API (extras/customization/index.php) scope-validation errors.
+    'InvalidFgroup' => 'Ogiltig fgrupp.',
+    'CustomizationCardsLayoutApiScopeError' => 'API:et för layout av anpassningskort är endast tillgängligt för fgroup=risk, tab_index=1, tab_index=2 eller tab_index=3.',
+    // Asset management redesign
+    'DiscoverAssets' => 'Upptäck tillgångar',
+    'DiscoveryRuns' => 'Discovery-körningar',
+    'DiscoveryRangeHint' => 'En adress, ett start-slutintervall eller IPv4 CIDR',
+    'DiscoveryResolveNames' => 'Slå upp värdnamn',
+    'DiscoveryAddAs' => 'Lägg till nya tillgångar som',
+    'DiscoveryStart' => 'Börja upptäcka',
+    'DiscoveryBackgroundNote' => 'Körs i bakgrunden. Adresser som redan finns hoppas över.',
+    'DiscoveryRangeInvalid' => 'Ange en giltig IPv4-adress, ett giltigt IPv4-intervall eller ett giltigt CIDR-block.',
+    'DiscoveryRangeTooLarge' => 'Det intervallet är för stort. Gränsen är {$max} adresser.',
+    'DiscoveryRunQueued' => 'Upptäckten började.',
+    'DiscoveryRunCompleted' => 'Upptäckten är klar: {$new} nya tillgångar.',
+    'AssetBulkSelectAll' => 'Markera alla {$count} tillgångar',
+    'AssetBulkAssignTeams' => 'Tilldela lag…',
+    'AssetBulkAddToGroup' => 'Lägg till i grupp…',
+    'AssetBulkDeleteConfirmTitle' => 'Ta bort {$count} tillgångar?',
+    'AbleToEditAssets' => 'Kan redigera tillgångar',
+    'AbleToDeleteAssets' => 'Kan ta bort tillgångar',
+    'AbleToVerifyAssets' => 'Kan verifiera tillgångar',
+    'AbleToRunAssetDiscovery' => 'Kan köra tillgångsupptäckt',
+    'AbleToCreateAssetGroups' => 'Möjlighet att skapa tillgångsgrupper',
+    'AbleToEditAssetGroups' => 'Kan redigera tillgångsgrupper',
+    'AbleToDeleteAssetGroups' => 'Kan ta bort tillgångsgrupper',
+    'ViewAsset' => 'Visa tillgång',
+    'AssetUnverifiedByEditLog' => 'Tillgången "{$name}" returnerades till overifierad eftersom användaren "{$user}" ändrade sitt namn eller sin IP-adress utan tillstånd att verifiera tillgångar.',
+    'AssetTeamsAssignedLog' => 'Tillgången "{$name}" tilldelades teamet/teamen "{$teams}" av användaren "{$user}".',
+    // Manage assets page (asset management redesign, Task 9)
+    'AddAsset' => 'Lägg till tillgång',
+    'SearchAssetsPlaceholder' => 'Sök efter namn eller IP-adress',
+    'AllLocations' => 'Alla platser',
+    'AllTags' => 'Alla taggar',
+    'AllAssetGroups' => 'Alla tillgångsgrupper',
+    'AssetFields' => 'Tillgångsfält',
+    'AssetBulkAllSelected' => 'Alla {$count} matchande tillgångar har valts',
+    'AssetDeleteConfirmTitle' => 'Ta bort tillgången "{$name}"?',
+    'DeleteAsset' => 'Ta bort tillgång',
+    'DeleteAssets' => 'Ta bort tillgångar',
+    'AssetBulkAssignTeamsTitle' => 'Tilldela team till {$count} resurser',
+    'AssetAssignTeamsHint' => 'De valda lagen läggs till. Lag som redan finns på en tillgång stannar.',
+    'AssetAddToGroupTitle' => 'Lägg till {$count} resurser i en grupp',
+    'AssetChooseTeams' => 'Välj lag',
+    'AssetChooseGroup' => 'Välj en grupp',
+    'Assign' => 'Tilldela',
+    'AssetBulkVerifiedSummary' => '{$ok} verifierad, {$failed} hoppad över',
+    'AssetBulkDeletedSummary' => '{$ok} borttagen, {$failed} hoppad över',
+    'AssetBulkTeamsSummary' => 'Lag tilldelade till {$ok} tillgångar, {$failed} hoppades över',
+    'AssetBulkGroupSummary' => '{$ok} tillagd i gruppen, {$failed} hoppades över',
+    'AssetBulkSkippedList' => 'Hoppad över: {$list}',
+    'AssetBulkReasonNotFound' => 'inte hittad',
+    'NoAssetsYet' => 'Inga tillgångar ännu',
+    'NoAssetsYetHint' => 'Tillgångar som du lägger till eller upptäcker visas här.',
+    'NoAssetsMatchFilters' => 'Inga tillgångar matchar dina filter',
+    'CouldNotLoadAssets' => 'Det gick inte att läsa in resurserna. Dina data är säkra.',
+    'AllValuations' => 'Alla värderingar',
+    // Manage assets page, Asset groups tab (asset management redesign, Task 10)
+    'AddAssetGroup' => 'Lägg till grupp',
+    'EditAssetGroup' => 'Redigera grupp',
+    'DeleteAssetGroup' => 'Ta bort grupp',
+    'ViewGroupMembers' => 'Visa medlemmar',
+    'SearchAssetGroupsPlaceholder' => 'Sök grupper efter namn',
+    'HighestValuation' => 'Högsta värdering',
+    'LinkedRisks' => 'Kopplade risker',
+    'RemoveFromGroup' => 'Ta bort från gruppen',
+    'AssetGroupMoreMembers' => '+ {$count} mer',
+    'ViewAllInAssetsTab' => 'Visa alla på fliken Tillgångar',
+    'NoAssetsInGroup' => 'Inga tillgångar i den här gruppen.',
+    'CouldNotLoadGroupMembers' => 'Det gick inte att läsa in medlemmarna i den här gruppen.',
+    'AssetGroupMembers' => 'Medlemmar',
+    'AssetGroupMembersHint' => 'Endast tillgångar som du kan se listas. Medlemmar som du inte kan se stannar kvar i gruppen.',
+    'ChooseAssets' => 'Välj tillgångar',
+    'AddOrRemoveAssets' => 'Lägg till eller ta bort tillgångar…',
+    'UseTheseAssets' => 'Använd dessa tillgångar',
+    'AllAssets' => 'Alla tillgångar',
+    'Valuation' => 'Värdering',
+    'PickerShowingFirstN' => 'Visar den första {$count} av {$total}. Sök eller begränsa för att hitta resten.',
+    'AssetGroupDeleteConfirmTitle' => 'Ta bort gruppen "{$name}"?',
+    'AssetGroupDeleteKeepsAssets' => 'Tillgångarna i den här gruppen tas inte bort. Endast gruppen tas bort.',
+    'NoAssetGroupsYet' => 'Inga tillgångsgrupper ännu',
+    'NoAssetGroupsYetHint' => 'Gruppera tillgångar så att du kan kartlägga och rapportera om dem tillsammans.',
+    'NoAssetGroupsMatchSearch' => 'Inga tillgångsgrupper matchar din sökning',
+    'CouldNotLoadAssetGroups' => 'Det gick inte att läsa in tillgångsgrupperna. Dina data är säkra.',
+    'DiscoveryAssignTeams' => 'Tilldela till team',
+    'DiscoveryAssignTeamsHint' => 'Valfritt. Varje ny tillgång läggs till i dessa team.',
+    'DiscoveryAddAsHint' => 'Inställd med din behörighet för att verifiera tillgångar.',
+    'DiscoveryTeamsInvalid' => 'Välj lag som finns och som du tillhör.',
+    'DiscoveryResolveNamesInvalid' => 'Slå upp värdnamn måste vara på eller av.',
+    'DiscoveryTooManyActiveRuns' => 'Du har redan {$max} identifieringskörningar på gång. Vänta tills en är klar eller avbryt den.',
+    'DiscoveryRunNotFound' => 'Discovery-körningen hittades inte.',
+    'DiscoveryRunAlreadyFinished' => 'Denna upptäcktsresa är redan avslutad.',
+    'DiscoveryRunCancelled' => 'Discovery-körningen avbröts.',
+    'DiscoveryRunFailedToast' => 'Upptäckten av {$range} misslyckades.',
+    'DiscoveryStatusQueued' => 'I kö',
+    'DiscoveryProgress' => '{$scanned} av {$total}',
+    'DiscoveryLiveHosts' => 'Livevärdar',
+    'DiscoveryNewAssets' => 'Nya tillgångar',
+    'DiscoveryStartedAt' => 'Började',
+    'DiscoveryCancelRun' => 'Avbryt körning',
+    'CouldNotLoadDiscoveryRuns' => 'Det gick inte att läsa in identifieringskörningarna.',
+    'DiscoveryRangeReserved' => 'Det intervallet inkluderar reserverade adresser (loopback, länklokal, multicast eller 0.0.0.0/8) som inte kan skannas.',
+    'DiscoveryTooManyActiveRunsInstance' => 'Det finns redan {$max} identifieringskörningar på gång. Försök igen när en är klar.',
+    'DiscoveryErrorScan' => 'Skanningen stoppades på grund av ett fel. Kontrollera systemloggarna för mer information.',
+    'DiscoveryErrorWorkerLost' => 'Bakgrundskön slutade bearbeta den här körningen.',
+    'DiscoveryErrorRequesterInactive' => 'Användaren som startade den här körningen är inte längre aktiv.',
+    // Asset management redesign: translated API errors (bulk actions, column settings, discovery) and discovery audit lines
+    'AssetBulkBodyInvalid' => 'Skicka massåtgärden som en JSON-kropp.',
+    'AssetBulkActionRequired' => 'Välj en massåtgärd.',
+    'AssetBulkUnknownAction' => 'Den massåtgärden är inte tillgänglig.',
+    'AssetBulkSelectionRequired' => 'Välj tillgångar antingen efter ID eller filter.',
+    'AssetBulkIdsRequired' => 'Välj minst en tillgång.',
+    'AssetBulkIdsInvalid' => 'Tillgångs-ID:n måste vara heltal.',
+    'AssetBulkTooManyAssets' => 'Du kan agera på högst {$max} tillgångar åt gången. Begränsa ditt urval och försök igen.',
+    'AssetBulkFilterInvalid' => 'Filtret är inte giltigt. Ladda om sidan och försök igen.',
+    'AssetBulkFilterUnknownKey' => 'Filtret "{$key}" känns inte igen.',
+    'AssetBulkFilterBadValue' => 'Filtret "{$key}" har ett ogiltigt värde.',
+    'AssetBulkFilterTooManyValues' => 'Filtret "{$key}" kan lista högst {$max} värden.',
+    'AssetBulkFilterAllAlone' => 'Att välja alla tillgångar kan inte kombineras med andra filter.',
+    'AssetBulkFilterEmpty' => 'Välj ett filter, eller välj alla resurser, innan du kör en massåtgärd.',
+    'AssetBulkExpectedCountInvalid' => 'Det förväntade antalet tillgångar måste vara ett heltal.',
+    'AssetBulkParamsInvalid' => 'Alternativen för denna massåtgärd är ogiltiga.',
+    'AssetBulkTeamsRequired' => 'Välj minst ett lag.',
+    'AssetBulkTeamsNotFound' => 'Ett eller flera av dessa lag finns inte längre.',
+    'AssetBulkTeamsNotMember' => 'Du kan bara tilldela lag som du tillhör.',
+    'AssetBulkGroupNotFound' => 'Den tillgångsgruppen finns inte längre.',
+    'AssetBulkNoMatch' => 'Inga tillgångar matchar ditt val.',
+    'AssetBulkCountMismatch' => 'De matchande tillgångarna har ändrats från {$expected} till {$actual} sedan du valde dem. Granska listan och försök igen.',
+    'AssetColumnSettingsBodyInvalid' => 'Skicka kolumninställningarna som en JSON-text med kolumner eller ordning.',
+    'AssetColumnSettingsSaveFailed' => 'Det gick inte att spara dina kolumner. Be en administratör att slutföra SimpleRisk-uppgraderingen.',
+    'DiscoveryRunQueueFailed' => 'Det gick inte att köa identifieringskörningen. Försök igen.',
+    'DiscoveryRunStartedLog' => 'Körningen av tillgångsidentifieringen #{$id} av {$range} ({$count} adresser) startades av användaren "{$user}".',
+    'DiscoveryRunCancelledLog' => 'Körningen av tillgångsidentifieringen #{$id} av {$range} avbröts av användaren "{$user}".',
+    'AssetBulkTooManyToDelete' => 'Du kan ta bort högst {$max} resurser åt gången. Begränsa ditt urval och försök igen.',
+    'AssetBulkFilterNotApplied' => 'Filtret "{$key}" kunde inte tillämpas som skickat, så ingenting ändrades.',
+    'AssetBulkExpectedCountRequired' => 'Att ta bort resurser via filter behöver det antal resurser du förväntar dig att ta bort.',
+    'AssetBulkReasonNotAttempted' => 'inte försökt',
+    'MoreActions' => 'Fler åtgärder',
+    'AssetCreateNewGroupOption' => 'Skapa en ny grupp…',
+    'AssetNewGroupName' => 'Nytt gruppnamn',
+    'AssetFilterByTeam' => 'Filtrera efter lag {$name}',
+    'AssetFilterByValuation' => 'Filtrera efter värdering {$name}',
+    'AssetFilterByTag' => 'Filtrera efter tagg {$name}',
+    'AssetFilterByLocation' => 'Filtrera efter plats/plats {$name}',
+    'AssetFilteringByTeam' => 'Filtrering efter lag {$name}',
+    'AssetFilteringByValuation' => 'Filtrering efter värdering {$name}',
+    'AssetFilteringByTag' => 'Filtrering efter tagg {$name}',
+    'AssetFilteringByLocation' => 'Filtrering efter plats/plats {$name}',
+    'AssetShowOnlyVerified' => 'Visa endast verifierade tillgångar',
+    'AssetShowOnlyUnverified' => 'Visa endast overifierade tillgångar',
+    'AssetShowingVerified' => 'Visar verifierade tillgångar',
+    'AssetShowingUnverified' => 'Visar overifierade tillgångar',
+    'CustomizationLayoutPayloadRejected' => 'Layouten kunde inte sparas eftersom den innehåller fält eller kort som inte hör till den här mallen. Ingenting ändrades.',
+    'CustomizationLayoutRejectedUnknownScope' => 'Det går inte att spara den här mallens omfattning från layoutredigeraren. Ingenting har ändrats.',
+    'CustomizationLayoutRejectedEmptyFields' => 'Layouten har inga giltiga fält, så den sparades inte. Ingenting ändrades.',
+    'CustomizationLayoutRejectedWouldDeleteAll' => 'Om du sparar den här layouten tas alla fält bort från mallen, så den sparades inte. Ladda om sidan och försök igen.',
+    'CustomizationLayoutRejectedRequiredField' => 'Ett obligatoriskt fält kan inte tas bort från layouten. Ingenting har ändrats.',
+    'CustomizationLayoutRejectedBulkRemoval' => 'Om du sparar den här layouten tas de flesta mallfälten bort utan att du tar bort dem här. Ladda om sidan och försök igen. Ingenting har ändrats.',
+    'CustomizationLayoutRejectedGroupMismatch' => 'Mallgruppen finns inte eller tillhör en annan typ av post. Ingenting har ändrats.',
+    'CustomizationLayoutLegacySaveRefused' => 'Den här mallen redigeras med layoutredigeraren och kan inte sparas via den äldre panelens slutpunkt.',
+    // Asset discovery probe methods
+    'DiscoveryPortsInvalid' => 'Ange upp till {$max} TCP-portar mellan 1 och 65535, separerade med kommatecken.',
+    'DiscoveryErrorProbeUnavailable' => 'Den probmetoden som den här körningen startade med är inte längre tillgänglig för bakgrundsarbetaren. Starta en ny körning.',
+    'DiscoveryProbeIcmpUnprivileged' => 'ICMP-ping (oprivilegierad socket)',
+    'DiscoveryProbeIcmpRaw' => 'ICMP-ping (rå socket)',
+    'DiscoveryProbePingCommand' => 'ICMP-ping (ping-kommando)',
+    'DiscoveryProbeTcpConnect' => 'TCP-anslutning',
+    'DiscoveryProbeMethod' => 'Probmetod: {$method}',
+    'DiscoveryProbeDetectedByWebServer' => 'Upptäckt av webbservern. Bakgrundsarbetaren kan använda en annan metod.',
+    'DiscoveryTcpProbeWarning' => 'Värdar hittas bara om de svarar på en av de skannade TCP-portarna, så värdar som blockerar dessa portar kommer inte att hittas. För fullständiga resultat, låt servern skicka ICMP-ping: tillåt oprivilegierade ping-sockets eller NET_RAW-funktionen, eller installera ping.',
+    'DiscoveryTcpPortsForRun' => 'TCP-portar för den här körningen',
+    'DiscoveryTcpPortsHint' => 'Kommaavgränsade, upp till {$max} portar. Lämna tomt om du vill använda standardvärdet: {$ports}.',
+    'DiscoveryDefaultTcpPorts' => 'TCP-portar för identifiering av tillgångar',
+    'DiscoveryDefaultTcpPortsHint' => 'Används när bakgrundsarbetaren inte kan skicka ICMP-ping. Kommaavgränsad, upp till {$max} portar.',
+    'DiscoveryErrorTcpUnreliable' => 'Skanningen stoppades eftersom nätverket svarar på TCP-anslutningar för adresser som inte kan vara riktiga värdar (en proxy eller brandvägg i vägen), så varje adress skulle se aktiv ut. Be administratören att låta servern skicka ICMP-ping.',
+    'DiscoveryDefaultTcpPortsResetLog' => 'TCP-portarna för tillgångsidentifiering återställdes till standardvärdena av användaren "{$user}".',
+    'DiscoveryNotConfigured' => 'Identifiering är inte konfigurerad. Be systemadministratören att ange tillåtna intervall i config.php.',
+    'DiscoveryRangeNotAllowed' => 'Det intervallet ligger utanför de intervall som Discovery har tillåtelse att skanna.',
+    'DiscoveryAllowedRangesList' => 'Tillåtna intervall: {$ranges}',
+    // Asset record modal
+    'AssetNotAvailable' => 'Den här tillgången är inte tillgänglig. Den kan ha tagits bort, eller så har du kanske inte åtkomst till den.',
+    'AssetCustomFieldNotInTemplate' => 'Ett eller flera anpassade fält hör inte till den här tillgångens mall. Ingenting har ändrats.',
+    'AssetMappedControlsInvalid' => 'De mappade kontrollerna kunde inte sparas. Varje rad behöver en mognad och minst en befintlig kontroll. Ingenting ändrades.',
+    'AssetMappedControlsTooMany' => 'En tillgång kan mappas till högst {$max} kontroller. Ingenting ändrades.',
+    'AddControlsAtAnotherMaturity' => 'Lägg till kontroller vid en annan löptid',
+    'ChoosingControlsNeedsGovernancePermission' => 'Att välja kontroller kräver styrningsbehörighet.',
+    'NControls' => '{n} kontroll(er)',
+    'SavingKeepsTheCurrentControlMappings' => 'Om du sparar behålls de aktuella kontrollmappningarna.',
+    'LoadingControls' => 'Laddar kontroller…',
+    'ControlListCouldNotBeLoaded' => 'Kontrollistan kunde inte läsas in, så mappade kontroller kan inte ändras just nu.',
+    'RemoveControlsAtMaturity' => 'Ta bort kontroller vid förfall {maturity}',
+    'ControlIdUnavailable' => '#{id} (ej tillgänglig)',
+    'AssetRecordEdit' => 'Redigera tillgång',
+    'AssetRecordIdN' => 'Tillgång #{$id}',
+    'AssetRecordCopyLink' => 'Kopiera länk till den här tillgången',
+    'AssetRecordLinkCopied' => 'Länk kopierad.',
+    'AssetRecordLinkCopyFailed' => 'Länken kunde inte kopieras. Kopiera den från adressfältet istället.',
+    'AssetRecordMarkUnverified' => 'Markera som overifierad',
+    'AssetRecordViewAuditTrail' => 'Visa revisionslogg',
+    'AssetRecordAuditTrailTitle' => 'Revisionslogg',
+    'AssetRecordAuditTrailEmpty' => 'Ingen aktivitet registrerades för denna tillgång under denna period.',
+    'AssetRecordAuditTrailFailed' => 'Revisionsloggen kunde inte läsas in.',
+    'AssetRecordBackToAsset' => 'Tillbaka till tillgången',
+    'AssetRecordSave' => 'Spara tillgång',
+    'AssetRecordProvenanceVerified' => 'Verifierad · tillagd {$date}',
+    'AssetRecordProvenanceUnverified' => 'Overifierad: ännu inte bekräftad av någon som kan verifiera tillgångar · tillagd {$date}',
+    'AssetRecordUnsavedHint' => 'Om du stänger med osparade ändringar blir du ombedd att bekräfta först.',
+    'AssetRecordDiscardQuestion' => 'Vill du ignorera dina osparade ändringar?',
+    'AssetRecordKeepEditing' => 'Fortsätt redigera',
+    'AssetRecordDiscardChanges' => 'Ignorera ändringar',
+    'AssetRecordVerificationCard' => 'Kontroll',
+    'AssetRecordVerificationTag' => 'Behöver behörighet att verifiera tillgångar',
+    'AssetRecordVerifiedHint' => 'Någon ansvarig har granskat den här tillgången. Om du ändrar dess namn eller IP-adress utan behörighet att verifiera tillgångar återställs den till overifierad.',
+    'AssetRecordLoadFailed' => 'Det gick inte att läsa in tillgången. Försök igen.',
+    'CustomizationCardsLayoutApiScopeErrorWithAsset' => 'API:et för layout av anpassningskort är endast tillgängligt för fgroup=risk (tab_index 1, 2 eller 3) och fgroup=asset (tab_index 1).',
+    'DiscoveryErrorRequesterNotPermitted' => 'Användaren som startade den här körningen har inte längre behörighet att köra resursidentifiering.',
+    'AssetRecordEditField' => 'Redigera {$field}',
+    // Asset Scoring (FIPS 199 categorization + weighted score)
+    'Confidentiality' => 'Sekretess',
+    'Integrity' => 'Integritet',
+    'Availability' => 'Tillgänglighet',
+    'AssetScoringLevelLow' => 'Låg',
+    'AssetScoringLevelModerate' => 'Måttlig',
+    'AssetScoringLevelHigh' => 'Hög',
+    'AssetScoringValueInvalid' => 'Sekretess, integritet och tillgänglighet accepteras som låg, måttlig eller hög (sekretess accepteras även som ej tillämpligt).',
+    'AssetScoringChangedLog' => 'Tillgången "{$name}" {$objective} ändrades från {$from} till {$to} av användaren "{$user}".',
+    'FIPSCategorization' => 'FIPS-kategorisering',
+    'WeightedScore' => 'Viktad poäng',
+    'WeightedBand' => 'Viktat band',
+    'AllCategorizations' => 'Alla kategoriseringar',
+    'AllBands' => 'Alla band',
+    'AssetFilterByCategorization' => 'Filtrera efter FIPS-kategorisering {$name}',
+    'AssetFilteringByCategorization' => 'Filtrering efter FIPS-kategorisering {$name}',
+    'AssetFilterByBand' => 'Filtrera efter viktat band {$name}',
+    'AssetFilteringByBand' => 'Filtrering efter viktat band {$name}',
+    'AssetScoring' => 'Tillgångspoängsättning',
+    'AssetScoringSettingsHint' => 'Varje tillgång betygsätts som Låg, Måttlig eller Hög för konfidentialitet, integritet och tillgänglighet, och konfidentialitet kan istället vara Ej tillämpligt, vilket utesluter den från båda resultaten. Dess FIPS-kategorisering är den högsta av de tre betygen. Dess viktade poäng är det viktade medelvärdet av de tre nivåvärdena, och bandtröskelvärdena omvandlar poängen till ett Lågt, Måttligt eller Högt band. Om dessa inställningar ändras poängsätts varje tillgång omedelbart.',
+    'Weights' => 'Vikter',
+    'AssetScoringWeightsHint' => 'Hur mycket varje mål räknas i den viktade poängen: 0 till 100, med upp till två decimaler. En viktning på 0 utelämnar det målet. Integritet och Tillgänglighet kan inte båda vara 0, eftersom en Ej tillämpligt sekretess alltid utelämnas.',
+    'LevelValues' => 'Nivåvärden',
+    'AssetScoringLevelValuesHint' => 'Antalet som varje betyg bidrar till den viktade poängen: över 0 och upp till 100, med upp till två decimaler, och Låg under Måttlig under Hög. Standardvärdena är Låg 1, Måttlig 2 och Hög 3.',
+    'BandThresholds' => 'Bandtrösklar',
+    'AssetScoringBandThresholdsHint' => 'En viktad poäng på eller över ett tröskelvärde ligger i det bandet, och en poäng under det måttliga tröskelvärdet är Låg. Måttlig måste börja över det låga värdet, och Hög måste börja över Måttlig och inte högre än det höga värdet.',
+    'ModerateStartsAt' => 'Medelstark startar kl.',
+    'HighStartsAt' => 'Hög start kl.',
+    'DefaultScoringForNewAssets' => 'Standardpoängsättning för nya tillgångar',
+    'AssetScoringDefaultsHint' => 'Förhandsväljer dessa betyg när någon lägger till en tillgång i tillgångsformuläret. Tillgångar som skapats genom identifiering, import eller API:et förblir obetygsatta om de inte anger sina egna betyg. Låt alla tre vara inställda på Inte för att inaktivera detta.',
+    'AssetScoringWeightsInvalid' => 'Vikter för tillgångspoäng måste vara tal från 0 till 100 med högst två decimaler, och integritet och tillgänglighet kan inte båda vara 0.',
+    'AssetScoringValuesInvalid' => 'Värden för tillgångspoängnivån måste vara tal över 0 och upp till 100 med högst två decimaler, där Låg är under Medel och under Hög.',
+    'AssetScoringThresholdsInvalid' => 'Tröskelvärdena för tillgångspoäng får ha högst två decimaler, där Måttlig börjar över det Låga värdet, Hög börjar över Måttlig och Hög börjar inte högre än det Höga värdet.',
+    'AssetScoringDefaultsInvalid' => 'Standardpoängsättningen för nya tillgångar måste vara en nivå som varje mål erbjuder.',
+    'AssetScoringSettingsNotSaved' => 'Inställningarna för tillgångspoäng kunde inte sparas. Ingenting ändrades.',
+    'AssetScoringSettingsChangedLog' => 'Inställningarna för tillgångspoäng ändrades av användaren "{$user}".',
+    'AssetScoringNotSet' => 'Inte inställd',
+    'NotScored' => 'Inte poängsatt',
+    'AssetScoringNotScoredHint' => 'Besvara alla tre målen för att få poäng för denna tillgång.',
+    'ImportAssetScoringValueIgnored' => 'Värdet {$objective} "{$value}" för tillgången "{$asset_name}" är inte ett giltigt betyg och ignorerades.',
+    'AssetScoringSecurityObjectives' => 'Säkerhetsmål',
+    'AssetScoringConfidentialityHelp' => 'Vilka är de potentiella konsekvenserna om informationen om denna tillgång avslöjas utan tillstånd?',
+    'AssetScoringIntegrityHelp' => 'Vad är den potentiella effekten om det sker en obehörig modifiering eller förstörelse av informationen på denna tillgång?',
+    'AssetScoringAvailabilityHelp' => 'Vad är den potentiella effekten om det uppstår en störning i åtkomsten till eller användningen av denna tillgång?',
+    'AssetScoringHelpHigh' => 'Allvarlig eller katastrofal negativ effekt',
+    'AssetScoringHelpModerate' => 'Allvarlig biverkning',
+    'AssetScoringHelpLow' => 'Begränsad eller ingen negativ effekt',
+    'AssetScoringHelpNotApplicable' => 'Sekretess är inte en fråga för denna tillgång (till exempel offentlig information)',
+    'AssetScoringHelpLabel' => '{$objective} betygsguide',
+    'AssetScoringMeterValue' => '{$score}, {$band} band',
+    'AssetScoringNoWeightedScore' => 'Ingen viktad poäng',
+    'AssetScoringNoWeightedScoreNote' => 'Ingen viktad poäng: varje mål som räknas har vikten 0.',
+    'AssetScoringUpgradePending' => 'Tillgångspoängning kan inte sparas förrän SimpleRisk-databasens uppgradering har körts. Ingenting har ändrats.',
+    'AssetScoringResultHelpLabel' => '{$result} förklaring',
+    'AssetScoringScoreHelp' => 'Den viktade poängen blandar de tre betygen till ett tal från {$low} till {$high}. Varje betyg får sitt inställda värde, och varje värde multipliceras med dess måls viktning. Resultaten läggs ihop och divideras med summan av vikterna. En konfidentialitet på Ej tillämpligt utelämnas, tillsammans med dess viktning. De inställda värdena och vikterna konfigureras i Inställningar. Alla tre mål måste betygsättas innan en poäng visas.',
+    'AssetScoringCategorizationHelp' => 'FIPS 199-säkerhetskategoriseringen är den högsta bedömningen: den högsta bedömningen bland de tillämpliga målen. En enda Hög bedömning gör tillgången till Hög, oavsett vilka andra bedömningar de är. Ej tillämpligt ignoreras.',
+    'AssetScoringBandHelp' => 'Bandet placerar den viktade poängen på en Låg, Medel eller Hög skala. En poäng under {$moderate} är Låg, från {$moderate} upp till {$highAt} är Medel, och {$highAt} eller mer är Hög. Tröskelvärdena konfigureras i Inställningar.',
+    // Manage assets: Confidentiality / Integrity / Availability rating filters
+    'AllConfidentialityRatings' => 'Alla sekretessbedömningar',
+    'AllIntegrityRatings' => 'Alla integritetsbetyg',
+    'AllAvailabilityRatings' => 'Alla tillgänglighetsbetyg',
+    'AssetFilterByConfidentiality' => 'Filtrera efter sekretess {$name}',
+    'AssetFilteringByConfidentiality' => 'Filtrering efter sekretess {$name}',
+    'AssetFilterByIntegrity' => 'Filtrera efter integritet {$name}',
+    'AssetFilteringByIntegrity' => 'Filtrering efter integritet {$name}',
+    'AssetFilterByAvailability' => 'Filtrera efter tillgänglighet {$name}',
+    'AssetFilteringByAvailability' => 'Filtrering efter tillgänglighet {$name}',
+    'HighestFIPSCategorization' => 'Högsta FIPS-kategorisering',
+    'HighestWeightedScore' => 'Högsta viktade poäng',
+    'HighestWeightedBand' => 'Högst viktade band',
+    'AssetGroupFields' => 'Fält för tillgångsgrupp',
+    'NoAssetGroupsMatchFilters' => 'Inga tillgångsgrupper matchar dina filter',
+    'AssetGroupFilterByHighestCategorization' => 'Filtrera efter högsta FIPS-kategorisering {$name}',
+    'AssetGroupFilteringByHighestCategorization' => 'Filtrering efter högsta FIPS-kategorisering {$name}',
+    'AssetGroupFilterByHighestBand' => 'Filtrera efter högst viktade band {$name}',
+    'AssetGroupFilteringByHighestBand' => 'Filtrering efter högst viktade band {$name}',
+    'AssetGroupBulkSelectionRequired' => 'Välj tillgångsgrupper antingen efter ID eller filter.',
+    'AssetGroupBulkIdsRequired' => 'Välj minst en tillgångsgrupp.',
+    'AssetGroupBulkIdsInvalid' => 'Tillgångsgrupps-ID:n måste vara heltal.',
+    'AssetGroupBulkFilterAllAlone' => 'Att välja alla tillgångsgrupper kan inte kombineras med andra filter.',
+    'AssetGroupBulkFilterEmpty' => 'Välj ett filter, eller markera alla tillgångsgrupper, innan du tar bort.',
+    'AssetGroupBulkExpectedCountInvalid' => 'Det förväntade antalet tillgångsgrupper måste vara ett heltal.',
+    'AssetGroupBulkExpectedCountRequired' => 'Att ta bort tillgångsgrupper med filter behöver det antal grupper du förväntar dig att ta bort.',
+    'AssetGroupBulkNoMatch' => 'Inga tillgångsgrupper matchar ditt val.',
+    'AssetGroupBulkCountMismatch' => 'De matchande tillgångsgrupperna har ändrats från {$expected} till {$actual} sedan du valde dem. Granska listan och försök igen.',
+    'AssetGroupBulkTooManyToDelete' => 'Du kan ta bort högst {$max} tillgångsgrupper åt gången. Begränsa ditt urval och försök igen.',
+    'AssetGroupBulkSelectAll' => 'Välj alla {$count} tillgångsgrupper',
+    'AssetGroupBulkAllSelected' => 'Alla {$count} matchande tillgångsgrupper har valts',
+    'AssetGroupBulkDeleteConfirmTitle' => 'Ta bort {$count} tillgångsgrupper?',
+    'AssetGroupBulkDeleteKeepsAssets' => 'Tillgångarna i dessa grupper tas inte bort. Endast grupperna tas bort.',
+    'DeleteAssetGroups' => 'Ta bort grupper',
+    'AssetGroupBulkDeletedSummary' => '{$ok} grupper raderade, {$failed} hoppades över',
+    'ChoosingRisksNeedsRiskManagementPermission' => 'Att välja associerade risker kräver behörighet för riskhantering.',
+    'NAssociatedRisks' => '{n} associerad(e) risk(er)',
+    'SavingKeepsTheCurrentRiskAssociations' => 'Sparandet bibehåller de nuvarande riskerna.',
     '' => '',
 );
 ?>

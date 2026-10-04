@@ -468,8 +468,8 @@ function extra_download_verdict(
  * it; anything less definite falls back to the coarse comparison, which fails
  * open when the release feed is unknown.
  *
- * @param array<string, array<string, list<string>>>|null $compat         Feed data, or null when unavailable.
  * @param string|null                                     $served_version Version the service will send, or null when unknown.
+ * @param array<string, array<string, list<string>>>|null $compat         Feed data, or null when unavailable.
  */
 function extra_install_decision(
     string $name,

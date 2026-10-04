@@ -356,7 +356,29 @@ function api_v2_governance_controls_table() {
     $start = controls_table_clamp_start($req['start'], $req['length'], $filtered);
     $page = array_slice($controls, $start, $req['length']);
 
-    $rows = array_map('controls_table_shape_row', $page);
+    // Active custom 'control' fields (Task: Columns picker + saved layout/
+    // filters) + their resolved display values for just this PAGE's rows --
+    // batched per request, not per row, matching get_plan_custom_field_
+    // names_by_row_ids()'s own O(fields) query shape.
+    $custom_field_defs = [];
+    if (customization_extra()) {
+        $customization_file = realpath(__DIR__ . '/../../../extras/customization/index.php');
+        if ($customization_file !== false) {
+            require_once($customization_file);
+            foreach (get_active_fields('control') as $field) {
+                if ((int)$field['is_basic'] !== 1) {
+                    $custom_field_defs[] = $field;
+                }
+            }
+        }
+    }
+    $custom_field_values = $custom_field_defs
+        ? get_plan_custom_field_names_by_row_ids($custom_field_defs, array_map(static fn($c) => (int)$c['id'], $page), 'control')
+        : [];
+
+    $rows = array_map(static function ($c) use ($custom_field_defs, $custom_field_values) {
+        return controls_table_shape_row($c, $custom_field_defs, $custom_field_values);
+    }, $page);
     if ($applicability_framework !== null) {
         $rows = controls_table_attach_applicability($rows, $decisions);
     }
@@ -497,7 +519,18 @@ function controls_table_status_to_db(array $tokens): array {
  * Rich text is purified here, once, on the server. The drawer inserts it with
  * .html(), so it must never carry raw stored markup.
  */
-function controls_table_shape_row(array $c): array {
+/**
+ * $custom_field_defs / $custom_field_values (Task: Columns picker + saved
+ * layout/filters) are the ACTIVE Customization Extra 'control' custom fields
+ * and their batched, already-resolved display text (get_plan_custom_field_
+ * names_by_row_ids(), extras/customization/index.php), keyed [control_id =>
+ * [field_id => text]]. Both default to empty so every existing caller of this
+ * function keeps working unchanged. Populated for every active field
+ * regardless of which the requesting user currently has toggled visible in
+ * the picker -- the client decides what to render, mirroring get_risks()'s
+ * identical split for Review Risk's own dynamic columns.
+ */
+function controls_table_shape_row(array $c, array $custom_field_defs = [], array $custom_field_values = []): array {
     global $escaper;
     // Computed once and reused below for mapped_frameworks_count, rather
     // than re-parsing framework_ids a second time -- the two must never
@@ -505,7 +538,7 @@ function controls_table_shape_row(array $c): array {
     // different N in the badge would be showing two counts of the same
     // fact.
     $frameworks = array_values(array_filter(explode(',', (string)$c['framework_ids'])));
-    return [
+    $row = [
         'id'                  => (int)$c['id'],
         'control_number'      => $c['control_number'],
         'short_name'          => $c['short_name'],
@@ -560,6 +593,21 @@ function controls_table_shape_row(array $c): array {
         'description_purified'            => $escaper->purifyHtml((string)$c['description']),
         'supplemental_guidance_purified'  => $escaper->purifyHtml((string)$c['supplemental_guidance']),
     ];
+
+    // Active custom 'control' field values (Task: Columns picker + saved
+    // layout/filters). get_plan_custom_field_names_by_row_ids() already
+    // resolves dropdown/multidropdown option names and decrypts an encrypted
+    // field -- escaped here, once, the same contract every other free-text
+    // field on this row carries (get_plan_custom_field_names_by_row_ids()
+    // itself returns raw text, matching get_projects_for_grid()'s identical
+    // escape-at-the-call-site pattern for the same helper).
+    $control_id = (int)$c['id'];
+    foreach ($custom_field_defs as $field) {
+        $field_id = (int)$field['id'];
+        $row['custom_field_' . $field_id] = $escaper->escapeHtml($custom_field_values[$control_id][$field_id] ?? '');
+    }
+
+    return $row;
 }
 
 function controls_table_sort(array $rows, string $sort, string $dir): array {

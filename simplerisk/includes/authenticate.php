@@ -414,22 +414,9 @@ function set_user_permissions($user, $upgrade = false)
         }
     }
 
-    // If the users language is not null
-    if (!is_null($array[0]['lang']))
-    {
-        // Set the session value
-        $_SESSION['lang'] = $array[0]['lang'];
-    }
-    // Otherwise, the session should use the default language
-    else
-    {
-        $default_language = get_setting("default_language");
-        if (!$default_language)
-        {
-            $_SESSION['lang'] = "en";
-        }
-        else $_SESSION['lang'] = get_setting("default_language");
-    }
+    // See resolve_user_lang_preference() (functions.php) for why NULL and ''
+    // are both treated as "no preference" (SD-854).
+    $_SESSION['lang'] = resolve_user_lang_preference($array[0]['lang']);
 
     // Close the database connection
     db_close($db);

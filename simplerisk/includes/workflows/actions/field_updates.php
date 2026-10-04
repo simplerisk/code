@@ -201,6 +201,34 @@ function workflow_action_update_asset_field(array $inputs, array $context): arra
             }
         }
     }
+    elseif ($field === 'asset__name')
+    {
+        // The asset name rule every other edit path follows (SR-37): trimmed,
+        // a blank one refused, another asset's name (case and surrounding
+        // space ignored) refused, and with the Encryption Extra the encrypted
+        // name order kept up to date -- the same checks and upkeep as
+        // update_asset(). Not routed through update_asset() itself: that fires
+        // asset.updated, which could re-trigger this workflow.
+        require_once(realpath(__DIR__ . '/../../assets.php'));
+        if (!get_asset_by_id($asset_id)) {
+            db_close($db);
+            return ['status' => 'failed', 'output' => [], 'error' => "update_asset_field: Asset ID {$asset_id} not found."];
+        }
+        $name = asset_name_for_edit($value, $asset_id);
+        if ($name === null) {
+            db_close($db);
+            return ['status' => 'failed', 'output' => [], 'error' => 'update_asset_field: The asset name is blank or already used by another asset.'];
+        }
+        $stmt = $db->prepare("UPDATE `assets` SET `name` = :value WHERE `id` = :id");
+        $stmt->bindValue(':value', try_encrypt($name));
+        $stmt->bindParam(':id', $asset_id, PDO::PARAM_INT);
+        $stmt->execute();
+        if (encryption_extra()) {
+            require_once(realpath(__DIR__ . '/../../../extras/encryption/index.php'));
+            update_name_order_for_asset($asset_id, $name);
+        }
+        $value = $name;
+    }
     elseif (isset($encrypted_fields[$field]))
     {
         $column    = $encrypted_fields[$field];

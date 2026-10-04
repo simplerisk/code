@@ -814,7 +814,7 @@ $lang = array(
     'UserSessions' => 'Хэрэглэгчийн Уулзалт',
     'SessionActivityTimeout' => 'Хуралдааны Үйл Ажиллагаа Хугацаа',
     'Security' => 'Аюулгүй байдал',
-    'EnableCSP' => 'Идэвхжүүлэх Агуулга Аюулгүй байдлын Бодлого (Энэ нь эвдэрсэн Chrome in the past)',
+    'EnableCSP' => 'Контентын аюулгүй байдлын бодлогыг идэвхжүүлэх (Санал болгож байна)',
     'EnableDebugLogging' => 'Идэвхжүүлэх Дибаг Бүртгэх',
     'seconds' => 'секунд',
     'FieldSample' => 'Хээрийн Дээж',
@@ -4967,6 +4967,572 @@ $lang = array(
     // closeriskForm()'s own (hardcoded, pre-existing) single-risk denial text.
     'NoCloseRiskPermission' => 'Та эрсдэлийг хаах зөвшөөрөлгүй.',
     'QuestionnaireRequiredQuestionUnanswered' => 'Үнэлгээг бөглөхөөс өмнө шаардлагатай бүх асуултанд хариулна уу.',
+    'AuditLog_ControlStatusAutoSynced' => '"{$short_name}" хяналтын төлөвийг хамгийн сүүлийн үеийн туршилтын үр дүнд үндэслэн автоматаар "{$status_text}" болгон шинэчилсэн.',
+    'EnableCSPHelp' => 'Контентын аюулгүй байдлын бодлого (CSP) нь хөтөчийг зөвхөн SimpleRisk-ээс скрипт, хэв маяг, зураг, фонтыг ачаалахаар хязгаарладаг бөгөөд хуудасны хүрээ болон гарал үүслийн маягт илгээхийг хаадаг. Энэ нь сайт хоорондын скриптийн эсрэг хамгийн хүчтэй суурилуулсан хамгаалалт юм. Хэрэв энэ нь таны орчинд прокси, хөтчийн өргөтгөл эсвэл гуравдагч талын интеграцтай зөрчилдөхгүй бол идэвхжүүлсэн хэвээр үлдээнэ үү.',
+    // Define Control Frameworks' Columns picker (Task: Columns picker + saved layout/filters) -- the "Standard" group label above its built-in fields (Family/Owner/Maturity/Status/Class/Phase/Priority/Type); 'CustomFields' already exists.
+    'StandardFields' => 'Стандарт талбарууд',
+    // My Profile redesign (js/simplerisk/pages/account-profile.js)
+    'Administrator' => 'Администратор',
+    'AccountDetails' => 'Дансны дэлгэрэнгүй мэдээлэл',
+    'YourPermissions' => 'Таны зөвшөөрөл',
+    'RoleAndTeamsGrantAccess' => 'Таны үүрэг болон багуудаас олгогдох хандалт',
+    'AllGranted' => 'Бүгд зөвшөөрөгдсөн',
+    'PermissionsCountLabel' => '$count зөвшөөрөл',
+    'ManagedByYourAdministrator' => 'Эдгээр мэдээллийг танай админ удирддаг. Хэрэв энд ямар нэгэн зүйл өөрчлөх шаардлагатай бол тэдэнтэй холбогдоно уу.',
+    'MultiFactorAuthenticationHint' => 'Бүртгэлээ илүү аюулгүй байлгахын тулд нэвтрэхдээ хоёр дахь алхам нэмнэ үү.',
+    'ChangingPasswordSignsOutEverywhere' => 'Нууц үгээ өөрчилснөөр та хаана ч бүртгэлээс хасагдах болно.',
+    'APIKeyHint' => 'SimpleRisk API-ийн эсрэг өөрийн скриптүүд болон интеграцуудыг баталгаажуулахад ашигладаг.',
+    'ResetDisplaySettingsHint' => 'Таны өөрчлөн тохируулсан баганын сонголтыг анхдагч утга руу буцаана.',
+    'CardGeneral' => 'Ерөнхий',
+    'CardClassification' => 'Ангилал',
+    'CardScoring' => 'Оноо авах',
+    'CardAdditionalInformation' => 'Нэмэлт Мэдээлэл',
+    'CardCustomFields' => 'Гаалийн Талбай',
+    'CardCustomFieldsHint' => 'Эдгээр талбаруудыг карт болгон ангилах шаардлагатай',
+    'LayoutEditorHint' => 'Талбарыг өөр карт руу чирж дахин оноож болно, картын эрэмбийг өөрчлөх эсвэл хэмжээг өөрчлөхийн тулд картын дотор чирж болно, мөн хуудсан дээрх байрлалыг нь өөрчлөхийн тулд картыг чирж эсвэл хэмжээг нь өөрчилж болно.',
+    'ScoringNotYetAvailableInThisView' => 'Энэ харагдацад онооны тохиргоо хараахан байхгүй байна.',
+    // Native tooltip on the Cards layout editor's Gridstack resize handles
+    // (js/simplerisk/pages/customization-layout-editor.js) -- the bare corner
+    // bracket read as an unexplained mark until it said what it does.
+    'DragToResize' => 'Хэмжээг өөрчлөхийн тулд чирнэ үү',
+    // Warning pill on a Cards layout editor card the admin has sized shorter
+    // than the fields it holds. Replaces the silent inner scrollbar that state
+    // used to produce.
+    'NFieldsDoNotFitCard' => '{n} талбар(ууд) энэ картанд багтахгүй байна. Картыг харуулахын тулд хэмжээг нь өөрчилнө үү.',
+    // Card titles for the Mitigation tab's Cards layout editor
+    // (js/simplerisk/pages/customization-layout-editor.js), mirroring the
+    // Card* keys above for the Details tab. Order follows
+    // customization_mitigation_cards_layout_card_keys() (includes/functions.php).
+    'CardMitigationStrategy' => 'Бууруулах стратеги',
+    'CardMitigationSolution' => 'Бууруулах шийдэл',
+    'CardMitigationControls' => 'Нөлөөллийг Бууруулах Арга Хэмжээг Хянах',
+    'CardReview' => 'Хяналт',
+    // Submit Risk page's three action-bar buttons (buildActionsBar(),
+    // risk-details-form.js, submitMode 'create' only) and the Reset Form
+    // confirm modal (management/index.php, design-system.md #8's "Confirm"
+    // type). 'Discard'/'Cancel'/'Close' already exist and are reused for the
+    // modal's own buttons.
+    'ResetForm' => 'Маягтыг дахин тохируулах',
+    'SaveAndNew' => 'Хадгалах ба Шинэчлэх',
+    'SaveAndView' => 'Хадгалах ба харах',
+    'ResetFormConfirmTitle' => 'Энэ эрсдэлийн мэдүүлгийг устгах уу?',
+    'ResetFormConfirmBody' => 'Таны оруулсан аливаа мэдээлэл устах болно.',
+    // Restore-template destructive confirm (Customization Extra, Save/Restore
+    // action bar). Two body variants: risk's Details/Mitigation/Review tabs
+    // named explicitly (the only fgroup with that 3-tab Cards layout), a
+    // generic fallback for every other fgroup (single legacy-panel tab).
+    // Both end on the same scoping reassurance -- confirmed via direct source
+    // read that Restore only ever touches the currently-selected template
+    // group, never any other.
+    'RestoreTemplateConfirmTitle' => 'Өгөгдмөл бүдүүвчийг сэргээх?',
+    'RestoreTemplateConfirmBodyRisk' => 'Энэ нь энэ загварын бүлгийн Дэлгэрэнгүй мэдээлэл, Бууруулах болон Тойм табууд дээрх бүх талбарыг анхдагч утга руу нь буцаан тохируулна. Бусад загварын бүлгүүдэд нөлөөлөхгүй.',
+    'RestoreTemplateConfirmBody' => 'Энэ нь загварын бүх талбарыг энэ загварын бүлгийн анхдагч утга руу нь буцаан тохируулна. Бусад загварын бүлгүүдэд нөлөөлөхгүй.',
+    // CVSS holder's collapsed Temporal/Environmental/Impact-Modifiers
+    // accordion (buildCvssHolder(), risk-details-form.js) -- these three
+    // groups are optional CVSS v2 refinements on top of the required Base
+    // Score Metrics, so they collapse behind this header by default.
+    'AdvancedMetrics' => 'Дэвшилтэт хэмжүүрүүд',
+    // CVSS holder's Base Score Metrics sub-group headers (buildCvssHolder(),
+    // risk-details-form.js) -- distinct from the existing 'ExploitabilityMetrics'/
+    // 'ImpactMetrics' keys, which the legacy cvss_modal_content.php modal
+    // still renders as plain "Exploitability Metrics"/"Impact Metrics" and
+    // must keep unchanged. These fold the umbrella "Base Score Metrics"
+    // heading into each sub-group's own header instead of a separate label.
+    'BaseScoreExploitabilityMetrics' => 'Үндсэн онооны ашиглалтын үзүүлэлтүүд',
+    'BaseScoreImpactMetrics' => 'Үндсэн онооны нөлөөллийн үзүүлэлтүүд',
+    // Per-field help popovers on the CVSS holder's 14 metric selects
+    // (buildCvssScoreItem(), risk-details-form.js) -- one per CVSS v2
+    // metric, matching the standard CVSS v2 specification definitions.
+    // Double-quoted (not single-quoted, this file's usual style) so the
+    // \n line breaks are real escape sequences: each popover leads with one
+    // overall sentence, then one bullet line per option, rendered via
+    // white-space: pre-line on .sr-scoring-help-popover .popover-body
+    // (scss/modules/_questionnaire.scss) -- plain text throughout, no HTML,
+    // so the popover stays initialized without Bootstrap's `html: true`.
+    "AttackVectorHelp" => "Эмзэг байдалд хэрхэн хандах боломжтой вэ.\n• Орон нутгийн: консол эсвэл бүрхүүл гэх мэт орон нутгийн хандалт шаарддаг.\n• Зэргэлдээ сүлжээ: халдагч нь ижил физик эсвэл логик сүлжээний сегмент дээр байх ёстой.\n• Сүлжээ: орон нутгийн болон зэргэлдээ хандалт шаардлагагүйгээр сүлжээгээр алсаас ашиглах боломжтой.",
+    "AttackComplexityHelp" => "Халдагч бай руугаа нэвтрэх боломжтой болсон үед халдлага хэр төвөгтэй болох вэ.\n• Өндөр: зохион байгуулахад хэцүү тусгай нөхцөл шаарддаг.\n• Дунд: зарим нөхцөл хангагдсан байх ёстой боловч тэдгээрийг биелүүлсний дараа ашиглахад хэцүү биш.\n• Бага: тусгай нөхцөл шаардлагагүй.",
+    "AuthenticationHelp" => "Халдагч этгээд байг ашиглахын тулд түүнийг хэдэн удаа баталгаажуулах ёстой тоо.\n• Олон: баталгаажуулалт нь ижил итгэмжлэлтэй байсан ч хоёр ба түүнээс дээш удаа шаардлагатай.\n• Ганц: баталгаажуулалт нэг удаа шаардлагатай.\n• Байхгүй: баталгаажуулалт шаардлагагүй.",
+    "ConfidentialityImpactHelp" => "Системийн боловсруулсан өгөгдлийн нууцлалд ашигласан тохиолдолд үзүүлэх нөлөө.\n• Байхгүй: нөлөөлөл байхгүй.\n• Хэсэгчилсэн: мэдээллийн зарим хэсгийг задруулсан боловч халдагч юуг хянадаггүй, эсвэл алдагдал хязгаарлагдмал.\n• Бүрэн: систем дээрх бүх мэдээллийг бүрэн задруулсан.",
+    "IntegrityImpactHelp" => "Системийн бүрэн бүтэн байдалд нөлөөлөх нөлөөлөл.\n• Байхгүй: нөлөөлөл байхгүй.\n• Хэсэгчилсэн: зарим өгөгдлийг өөрчилж болох боловч халдагч юуг хянадаггүй, эсвэл хамрах хүрээ хязгаарлагдмал.\n• Бүрэн: системийн бүрэн бүтэн байдал бүрэн алдагдсан; халдагч аливаа файлыг өөрчилж болно.",
+    "AvailabilityImpactHelp" => "Системийг ашигласан тохиолдолд системийн хүртээмжид үзүүлэх нөлөө.\n• Байхгүй: нөлөөлөл байхгүй.\n• Хэсэгчилсэн: гүйцэтгэл буурсан эсвэл хүртээмж тасалдсан.\n• Бүрэн: нөлөөлөлд өртсөн нөөцийг бүрэн унтраах.",
+    "RemediationLevelHelp" => "Эмзэг байдлыг арилгах боломжтой түвшин.\n• Албан ёсны засвар: бүрэн үйлдвэрлэгчийн шийдэл боломжтой.\n• Түр зуурын засвар: албан ёсны боловч түр зуурын засвар боломжтой.\n• Тойрог зам: албан бус, үйлдвэрлэгчийн бус тойрог зам байдаг.\n• Боломжгүй: шийдэл байхгүй эсвэл хэрэглэх боломжгүй.",
+    "ReportConfidenceHelp" => "Эмзэг байдлын оршин тогтнолд итгэх итгэлийн түвшин болон түүний техникийн дэлгэрэнгүй мэдээллийн найдвартай байдал.\n• Баталгаажаагүй: ганц, баталгаажаагүй эх сурвалжийн тайлан; үндсэн асуудал нь таамаглал юм.\n• Баталгаажаагүй: олон бие даасан эх сурвалжууд ижил зан авирыг мэдээлж байгаа боловч үндсэн шалтгаан нь батлагдаагүй байна.\n• Баталгаажсан: үйлдвэрлэгч асуудлыг хүлээн зөвшөөрсөн эсвэл эх код эсвэл ашиглалтын шинжилгээгээр баталгаажуулсан байна.",
+    "CollateralDamagePotentialHelp" => "Эмзэг байдлыг ашиглавал амь нас, биет хөрөнгө, санхүүгийн алдагдалд орох магадлалтай.\n• Байхгүй: ийм алдагдал гарах магадлал байхгүй.\n• Багаас дунд хүртэл: дунд зэргийн алдагдал гарах боломжтой.\n• Өндөр: байгууллагын хөрөнгө, орлого, аюулгүй байдалд сүйрлийн нөлөө үзүүлэх.",
+    "TargetDistributionHelp" => "Таны орчин дахь эмзэг системийн эзлэх хувь.\n• Байхгүй: зорилтот систем байхгүй.\n• Бага: Системийн 1-25% нь эмзэг.\n• Дунд: 26-75% нь эмзэг.\n• Өндөр: 76-100% нь эмзэг.",
+    "ConfidentialityRequirementHelp" => "Нөлөөлөлд өртсөн хөрөнгийн нууцлал танай байгууллагад хэр чухал вэ.\n• Бага: нууцлалын алдагдал хязгаарлагдмал нөлөөтэй.\n• Дунд: ноцтой нөлөөтэй.\n• Өндөр: сүйрлийн нөлөөтэй.",
+    "IntegrityRequirementHelp" => "Нөлөөлөлд өртсөн хөрөнгийн бүрэн бүтэн байдал танай байгууллагад хэр чухал вэ.\n• Бага: бүрэн бүтэн байдлын алдагдал хязгаарлагдмал нөлөөтэй.\n• Дунд: ноцтой нөлөөтэй.\n• Өндөр: сүйрлийн нөлөөтэй.",
+    "AvailabilityRequirementHelp" => "Нөлөөлөлд өртсөн хөрөнгийн бэлэн байдал танай байгууллагад хэр чухал вэ.\n• Бага: бэлэн байдлын алдагдал хязгаарлагдмал нөлөөтэй.\n• Дунд: ноцтой нөлөөтэй.\n• Өндөр: сүйрлийн нөлөөтэй.",
+    // Base Score Metrics' two sub-group intro sentences (metricsSubGroup()'s
+    // `descKey`, risk-details-form.js) -- orient the user to what the GROUP
+    // as a whole is asking, distinct from the per-field *Help popover keys
+    // above which explain each metric's own options.
+    'BaseScoreExploitabilityMetricsDescription' => 'Халдагч энэ эмзэг байдалд хэрхэн хүрч, түүнийг хэрхэн идэвхжүүлэх шаардлагатай вэ: тэд хаана байх ёстой, халдлага хэр төвөгтэй, эхлээд баталгаажуулах шаардлагатай эсэх.',
+    'BaseScoreImpactMetricsDescription' => 'Эмзэг байдлыг амжилттай ашиглавал юу болох вэ: нөлөөлөлд өртсөн системийн нууцлал, бүрэн бүтэн байдал, хүртээмжид үзүүлэх нөлөө.',
+    // Advanced Metrics' three optional sub-group intro sentences -- same
+    // metricsSubGroup() `descKey` as the two Base Score groups above.
+    'TemporalScoreMetricsDescription' => 'Энэхүү эмзэг байдлын бодит ертөнцийн аюул занал цаг хугацааны явцад хэрхэн өөрчлөгддөг: эксплойт кодын одоогийн байдал, ямар залруулга боломжтой байгаа, мөн энэ нь оршин байгаа гэдэгт хэр итгэлтэй байгаа талаарх тайлангууд.',
+    'EnvironmentalScoreMetricsDescription' => 'Энэ эмзэг байдлын эрсдэл нь таны орчноос хэрхэн хамаарна: бодит ертөнцөд учирч болзошгүй хохирол, таны хэдэн систем үнэхээр өртсөн бэ.',
+    'ImpactSubscoreModifiersDescription' => 'Энэ тодорхой хөрөнгийн хувьд нууцлал, бүрэн бүтэн байдал, хүртээмж хэр чухал болохыг үндэслэн үндсэн онооны нөлөөллийг жинлэнэ үү.',
+    // Phase 4d-iii: DREAD holder help popovers (view_dread_help()'s
+    // existing English text, includes/display.php, extracted to real $lang
+    // keys -- that function's own content was raw hardcoded HTML, never
+    // localized, so it could not be reused verbatim).
+    'DamagePotentialHelp' => 'Хэрэв аюул заналхийллийн үйлдэл гарвал хэр их хохирол учрах вэ?' . "\n" . '0 = Юу ч биш' . "\n" . '5 = Хэрэглэгчийн хувийн мэдээлэл алдагдсан эсвэл нөлөөлөлд өртсөн.' . "\n" . '10 = Систем эсвэл өгөгдлийг бүрэн устгах',
+    'ReproducibilityHelp' => 'Аюул заналхийллийг хуулбарлах нь хэр амархан вэ?' . "\n" . '0 = Аппликейшны админуудад ч гэсэн маш хэцүү эсвэл боломжгүй.' . "\n" . '5 = Нэг эсвэл хоёр алхам шаардлагатай, эрх бүхий хэрэглэгч байх шаардлагатай байж магадгүй.' . "\n" . '10 = Баталгаажуулалтгүйгээр зүгээр л вэб хөтөч болон хаягийн мөр хангалттай.',
+    'ExploitabilityHelp' => 'Энэ аюулыг ашиглахын тулд юу хэрэгтэй вэ?' . "\n" . '0 = Өөрчлөн тохируулсан эсвэл дэвшилтэт халдлагын хэрэгслүүдтэй, дэвшилтэт програмчлал болон сүлжээний мэдлэгтэй.' . "\n" . '5 = Интернетэд хортой програм хангамж байгаа эсвэл боломжтой халдлагын хэрэгслийг ашиглан амархан эвдрэлийг гүйцэтгэж байна.' . "\n" . '10 = Зүгээр л вэб хөтөч',
+    'AffectedUsersHelp' => 'Хэдэн хэрэглэгч нөлөөлөх вэ?' . "\n" . '0 = Байхгүй' . "\n" . '5 = Зарим хэрэглэгчид, гэхдээ бүгд биш' . "\n" . '10 = Бүх хэрэглэгчид',
+    'DiscoverabilityHelp' => 'Энэ аюулыг илрүүлэх нь хэр амархан вэ?' . "\n" . '0 = Маш хэцүүгээс боломжгүй хүртэл; эх код эсвэл администраторын хандалт шаарддаг.' . "\n" . '5 = Таамаглал эсвэл сүлжээний ул мөрийг хянах замаар үүнийг олж мэдэх боломжтой.' . "\n" . '9 = Иймэрхүү алдааны дэлгэрэнгүй мэдээлэл аль хэдийн олон нийтийн домэйнд байгаа бөгөөд хайлтын систем ашиглан амархан олж болно.' . "\n" . '10 = Мэдээлэл нь вэб хөтчийн хаягийн мөр эсвэл маягт дотор харагдана.',
+    // The DREAD holder's summary card heading and "DREAD Metrics" card
+    // heading. No existing key covers either (confirmed via grep before
+    // adding).
+    'DreadScore' => 'АЙМШГИЙН оноо',
+    'DreadMetrics' => 'АЙДСЫН ХЭМЖЭЭ',
+    // Phase 4d-iv: OWASP holder help popovers (view_owasp_help()'s
+    // existing English text, includes/display.php, extracted to real
+    // $lang keys -- same never-localized-legacy-content extraction the
+    // DREAD phase already did for its own 5 fields). Wording/levels
+    // trued up against that function's real source text, not transcribed
+    // from an earlier standard-methodology draft.
+    'SkillLevelHelp' => 'Энэ бүлэг аюул заналхийллийн агентууд техникийн хувьд хэр чадварлаг вэ?' . "\n" . '1 = Техникийн ур чадвар байхгүй' . "\n" . '3 = Зарим техникийн ур чадварууд' . "\n" . '5 = Дэвшилтэт компьютерын хэрэглэгч' . "\n" . '6 = Сүлжээ болон програмчлалын ур чадвар' . "\n" . '9 = Аюулгүй байдлын нэвтрэлтийн ур чадвар',
+    'MotiveHelp' => 'Энэ эмзэг байдлыг олж, ашиглахад аюул заналхийллийн агентуудын энэ бүлэг хэр их урам зоригтой байна вэ?' . "\n" . '1 = Бага эсвэл Шагналгүй' . "\n" . '4 = Боломжит шагнал' . "\n" . '9 = Өндөр шагнал',
+    'OpportunityHelp' => 'Энэ бүлгийн аюул заналхийллийн агентууд энэхүү эмзэг байдлыг олж, ашиглахын тулд ямар нөөц, боломж шаардлагатай вэ?' . "\n" . '0 = Бүрэн хандалт эсвэл үнэтэй нөөц шаардлагатай' . "\n" . '4 = Шаардлагатай тусгай хандалт эсвэл нөөц' . "\n" . '7 = Шаардлагатай зарим хандалт эсвэл нөөц' . "\n" . '9 = Хандалт эсвэл нөөц шаардлагагүй',
+    'SizeHelp' => 'Энэ аюул заналхийллийн агентуудын бүлэг хэр том вэ?' . "\n" . '2 = Хөгжүүлэгчид' . "\n" . '2 = Системийн администраторууд' . "\n" . '4 = Дотоод сүлжээний хэрэглэгчид' . "\n" . '5 = Хамтрагчид' . "\n" . '6 = Баталгаажсан хэрэглэгчид' . "\n" . '9 = Нэргүй интернет хэрэглэгчид',
+    'EaseOfDiscoveryHelp' => 'Энэ бүлгийн аюул заналхийллийн агентууд энэ эмзэг байдлыг илрүүлэхэд хэр хялбар вэ?' . "\n" . '1 = Бараг боломжгүй' . "\n" . '3 = Хэцүү' . "\n" . '7 = Хялбар' . "\n" . '9 = Автоматжуулсан хэрэгслүүд боломжтой',
+    'EaseOfExploitHelp' => 'Энэ бүлэг аюул заналхийллийн агентууд энэхүү эмзэг байдлыг ашиглахад хэр амархан вэ?' . "\n" . '1 = Онолын' . "\n" . '3 = Хэцүү' . "\n" . '5 = Хялбар' . "\n" . '9 = Автоматжуулсан хэрэгслүүд боломжтой',
+    'AwarenessHelp' => 'Энэ бүлгийн аюул заналхийллийн агентуудад энэ эмзэг байдал хэр сайн мэдэгдэж байна вэ?' . "\n" . '1 = Тодорхойгүй' . "\n" . '4 = Нуугдсан' . "\n" . '6 = Илэрхий' . "\n" . '9 = Олон нийтийн мэдлэг',
+    'IntrusionDetectionHelp' => 'Урвалт илрэх магадлал хэр өндөр вэ?' . "\n" . '1 = Хэрэглээнд идэвхтэй илрүүлэлт' . "\n" . '3 = Бүртгүүлж, хянасан' . "\n" . '8 = Шалгалтгүйгээр нэвтэрсэн' . "\n" . '9 = Бүртгэл хийгдээгүй байна',
+    'LossOfConfidentialityHelp' => 'Хэр их мэдээлэл задруулж болох бөгөөд энэ нь хэр мэдрэг вэ?' . "\n" . '2 = Мэдрэмжгүй хамгийн бага мэдээлэл ил болсон' . "\n" . '6 = Хамгийн бага чухал мэдээлэл ил болсон' . "\n" . '6 = Ил болсон өргөн хүрээтэй мэдрэмтгий бус өгөгдөл' . "\n" . '7 = Ил болсон өргөн хүрээтэй чухал өгөгдөл' . "\n" . '9 = Бүх мэдээлэл ил болсон',
+    'LossOfIntegrityHelp' => 'Хэр их өгөгдөл эвдэрч болзошгүй бөгөөд хэр их хохирол амссан бэ?' . "\n" . '1 = Бага зэрэг эвдэрсэн өгөгдөл хамгийн бага' . "\n" . '3 = Хамгийн бага ноцтой авлигад өртсөн өгөгдөл' . "\n" . '5 = Бага зэрэг эвдэрсэн өргөн хүрээтэй өгөгдөл' . "\n" . '7 = Өргөн хүрээтэй ноцтой авлигад автсан өгөгдөл' . "\n" . '9 = Бүх өгөгдөл бүрэн эвдэрсэн',
+    'LossOfAvailabilityHelp' => 'Хэр их үйлчилгээ алдагдаж болох вэ, энэ нь хэр чухал вэ?' . "\n" . '1 = Хоёрдогч үйлчилгээ тасалдсан хамгийн бага хэмжээ' . "\n" . '5 = Анхан шатны үйлчилгээ тасалдсан хамгийн бага хэмжээ' . "\n" . '5 = Өргөн хүрээтэй хоёрдогч үйлчилгээ тасалдсан' . "\n" . '7 = Өргөн хүрээтэй үндсэн үйлчилгээ тасалдсан' . "\n" . '9 = Бүх үйлчилгээ бүрэн алдагдсан',
+    'LossOfAccountabilityHelp' => 'Аюул заналхийлэгчдийн үйлдлийг хувь хүнээс улбаатай юу?' . "\n" . '1 = Бүрэн мөрдөх боломжтой' . "\n" . '7 = Мөрдөх боломжтой' . "\n" . '9 = Бүрэн нэргүй',
+    'FinancialDamageHelp' => 'Мөргөлдөөнөөс болж хэр их санхүүгийн хохирол учирч болох вэ?' . "\n" . '1 = Эмзэг байдлыг засах өртгөөс бага' . "\n" . '3 = Жилийн ашигт бага нөлөө үзүүлсэн' . "\n" . '7 = Жилийн ашигт мэдэгдэхүйц нөлөө' . "\n" . '9 = Дампуурал',
+    'ReputationDamageHelp' => 'Энэхүү мөлжлөг нь бизнест хор хөнөөл учруулж болзошгүй нэр хүндэд хохирол учруулах уу?' . "\n" . '1 = Хамгийн бага хохирол' . "\n" . '4 = Том дансны алдагдал' . "\n" . '5 = Сайн санааны алдагдал' . "\n" . '9 = Брэндийн хохирол',
+    'NonComplianceHelp' => 'Зөрчлөөс болж хэр их өртөлт үүсдэг вэ?' . "\n" . '2 = Бага зэргийн зөрчил' . "\n" . '5 = Илэрхий зөрчил' . "\n" . '7 = Өндөр түвшний зөрчил',
+    'PrivacyViolationHelp' => 'Хувь хүнийг тодорхойлох боломжтой хэр их мэдээллийг задруулж болох вэ?' . "\n" . '3 = Нэг хүн' . "\n" . '5 = Олон зуун хүн' . "\n" . '7 = Мянга мянган хүн' . "\n" . '9 = Сая сая хүн',
+    // The OWASP holder's Score card heading. No existing key covers this
+    // (confirmed via grep before adding) -- the Likelihood/Impact card
+    // headings reuse the already-existing bare 'Likelihood'/'Impact' keys.
+    'OwaspScore' => 'OWASP оноо',
+    // Phase 4d-iv follow-up: group-level descriptions for the 4 OWASP
+    // subgroup headings, sourced from OWASP's own Risk Rating Methodology
+    // (https://community.owasp.org/OWASP_Risk_Rating_Methodology), tightened
+    // into short UI captions -- not a verbatim quote (see this task's own
+    // source table for the original wording).
+    'ThreatAgentFactorsDescription' => 'Энэ бүлгийн аюул заналхийллийн агентуудын амжилттай халдлагын магадлалыг тооцоолно.',
+    'VulnerabilityFactorsDescription' => 'Энэ эмзэг байдлыг илрүүлж, ашиглах магадлалыг тооцоолно.',
+    'TechnicalImpactDescription' => 'Нөлөөллийг нууцлал, шударга байдал, хүртээмж, хариуцлагаар нь задалдаг.',
+    'BusinessImpactDescription' => 'Түүхий техникийн нөлөөллөөс гадна бизнест юу чухал болохыг тусгасан.',
+    // CVSS's own Temporal-metric 'Exploitability' help text. This key shares
+    // a labelKey ('Exploitability') with DREAD's own field, so both would
+    // otherwise derive the same generic lang key ('ExploitabilityHelp'),
+    // with DREAD's entry silently winning for both -- risk-details-form.js's
+    // buildCvssScoreItem() and risk-details-view.js's cvssMetricValueRow()
+    // reference this key directly for CVSS's Exploitability field instead
+    // of the generic '<labelKey>Help' derivation.
+    'CVSSExploitabilityHelp' => "Эксплойт техникүүдийн одоогийн байдал эсвэл кодын бэлэн байдал.\n• Батлагдаагүй: эксплойт код байхгүй, эсвэл эксплойт нь онолын шинжтэй.\n• Концепцийн баталгаа: эксплойт код байдаг боловч ихэнх халдагчдын хувьд практик биш.\n• Функциональ: функциональ эксплойт код ихэнх тохиолдолд ажилладаг.\n• Өндөр: эксплойт нь найдвартай бөгөөд автоматжуулсан (жишээ нь өт) эсвэл огт эксплойт код шаарддаггүй.",
+    // Risk Scoring -- Classic Inline (Task 3): the Classic scoring method's
+    // new inline Score card heading and its Likelihood/Impact cards' short
+    // plain-English descriptions (js/simplerisk/common/risk-details-form.js's
+    // buildClassicHolder()). Deliberately NOT sourced from NIST SP 800-30 or
+    // any other external standard -- confirmed with the user via the
+    // approved mockup review, unlike OWASP's own subgroup descriptions
+    // above, which do cite OWASP's Risk Rating Methodology.
+    'ClassicScore' => 'Сонгодог оноо',
+    'ClassicLikelihoodDescription' => 'Энэ эрсдэл гарах магадлал хэр өндөр байна.',
+    'ClassicImpactDescription' => 'Хэрэв энэ эрсдэл тохиолдвол үр дагавар нь хэр ноцтой байх вэ.',
+    // Risk Scoring -- Custom Inline (Task 2): the Custom scoring method's
+    // new inline Score card heading (js/simplerisk/common/risk-details-form.js's
+    // buildCustomHolder()) and the Custom Value card's short description
+    // caption. 'CustomValueDescription' text confirmed directly with the
+    // user, same as Classic's own description keys above.
+    'CustomScore' => 'Захиалгат оноо',
+    'CustomValueDescription' => 'Өөрчлөн тохируулсан утга нь 0-ээс 10 хүртэлх аравтын бутархай утга байж болно.',
+    // Risk Scoring -- Contributing Risk Inline (Phase 4d-v): the last of
+    // the three deferred scoring methods (DREAD/OWASP shipped earlier in
+    // this same project). The Likelihood/Contributing Risk cards' short
+    // plain-English descriptions (js/simplerisk/common/risk-details-form.js's
+    // buildContributingRiskHolder()). The Score card heading reuses the
+    // EXISTING 'ContributingRiskScore' key (already present above, same
+    // text) rather than duplicating it -- 'ContributingRisk'/
+    // 'ContributingLikelihood'/'Weight'/'Subject' are likewise reused as-is.
+    'ContributingLikelihoodDescription' => 'Энэ эрсдэл гарах магадлал хэр өндөр байна.',
+    'ContributingRiskDescription' => 'Доорх хүчин зүйл бүрийг харьцангуй ач холбогдлоор нь жигнэсэн -- энэ эрсдэл тус бүрээс хэр их нөлөөлөхийг сонгоно уу.',
+    // OWASP read-mode card (buildOwaspReadView(), risk-details-view.js):
+    // the live calculation formula under each of the 4 sub-group names
+    // (Threat Agent Factors/Vulnerability Factors/Technical Impact/
+    // Business Impact), matching the legacy risk-scoring-details panel's
+    // own "= ( a + b + c + d ) / 4" text (includes/display.php), and the
+    // OWASP Risk Rating Methodology link note placed in the OWASP Score
+    // column's open space below the summary numbers.
+    'OwaspSubgroupFormula' => '= ( {a} + {b} + {c} + {d} ) / 4',
+    'OwaspMethodologyNote' => 'OWASP-ийн эрсдэлийн үнэлгээний арга зүйн талаарх дэлгэрэнгүй мэдээллийг эндээс авах боломжтой.',
+    'Here' => 'энд',
+    // Scoring widget formula captions (Classic/DREAD/Contributing Risk),
+    // the same ".sr-cvss-vector under the score label" treatment CVSS's
+    // vector caption and OwaspSubgroupFormula above already have, on both
+    // the edit-mode holder (risk-details-form.js) and the read-mode card
+    // (risk-details-view.js). Classic reuses the existing RISKClassicExp1-5
+    // keys instead of a new one -- see those keys' own long-standing
+    // definitions above.
+    'DreadScoreFormula' => '= ( {a} + {b} + {c} + {d} + {e} ) / 5',
+    // Contributing Risk's per-factor weighted term and its shared
+    // Likelihood term (update_contributing_risk_score(), includes/
+    // functions.php) -- unlike DREAD/OWASP's fixed roster, the factor list
+    // is admin-configured, so this is one formula PER FACTOR ROW rather
+    // than one fixed caption under the total score.
+    // {maxName}: score.php parity -- legacy's "Maximum Value" column showed
+    // the max option's human-readable name alongside its number (e.g.
+    // "[5] Certain", includes/display.php); these formulas only showed the
+    // bare number.
+    'ContributingLikelihoodFormula' => '= {value} x 5 / {max} ({maxName})',
+    'ContributingFactorFormula' => '= {weight}% x {impact} x 5 / {max} ({maxName})',
+    // Contributing Risk's own subscore row in the Score card -- the sum of
+    // every factor's own term above it. Generic (not substituted with real
+    // numbers) since the number of terms is however many factors are
+    // configured, unlike the fixed-roster formulas above.
+    'ContributingRiskSubtotalFormula' => '= (Жин x Нөлөөлөл x 5 / Хамгийн их)-ийн нийлбэр',
+    // Contributing Risk Score's own formula, under the total row -- always
+    // exactly 2 terms (unlike the Contributing Risk subtotal above), so
+    // substituted with the real current subtotal values, same convention
+    // DreadScoreFormula/OwaspSubgroupFormula use for their own fixed roster.
+    'ContributingRiskScoreFormula' => '= {likelihood} + {contributing}',
+    // Risk Scoring History widget (risk-details-view.js) -- replaces the
+    // legacy chart's bare save icon with a real menu item, structured for
+    // future export types alongside it.
+    'DownloadChartAsImage' => 'Зураг хэлбэрээр татаж авах',
+    // Legacy score.php's CVSS table had a "Full details of CVSS Version 2.0
+    // scoring can be found here." link (includes/display.php); this is its
+    // inline-scoring-card equivalent, same shape as OwaspMethodologyNote.
+    'CvssMethodologyNote' => 'CVSS хувилбар 2.0-ийн онооны талаарх дэлгэрэнгүй мэдээллийг олж болно.',
+    // Mitigation Controls redesign: the picker reuses ChooseControls/
+    // AddOrRemoveControls/etc from Document Program's control picker.
+    'InvalidControlID' => 'Хяналтын ID буруу байна.',
+    'ValidationOwner' => 'Баталгаажуулалтын эзэмшигч',
+    'ValidationStatus' => 'Баталгаажуулалтын төлөв',
+    'NotStarted' => 'Эхлээгүй байна',
+    // management/view.php's "risk ID does not exist" empty state.
+    'RiskIdDoesNotExistBody' => 'Таны хайж буй эрсдэлийг устгасан эсвэл холбоос буруу байж магадгүй.',
+    'MitigationControlsRequiresGovernance' => 'Үзэхийн тулд Засаг захиргааны зөвшөөрөл шаардлагатай.',
+    'ViewControlValidation' => 'Харах хяналтын баталгаажуулалт',
+    'EditControlValidation' => 'Засварлах Хяналтын Баталгаажуулалт',
+    'SupportingDocumentationRequiresSubmitRisk' => 'Файл байршуулахын тулд Submit Risk зөвшөөрөл шаардлагатай.',
+    'SupportingDocumentationRequiresModifyRisks' => 'Файлуудыг удирдахын тулд Modify Risks-н зөвшөөрөл шаардлагатай.',
+    'MitigationSupportingDocumentationRequiresPlanMitigations' => 'Файлуудыг удирдахын тулд Plan Mitigations-ийн зөвшөөрөл шаардлагатай.',
+    'MitigationSubmittedBy' => 'Бууруулах арга хэмжээг ирүүлсэн',
+    'UseADifferentDate' => 'Өөр огноо ашиглах',
+    'AssetGroup' => 'Хөрөнгийн бүлэг',
+    // Customization Cards Layout API (extras/customization/index.php) scope-validation errors.
+    'InvalidFgroup' => 'Буруу fgroup.',
+    'CustomizationCardsLayoutApiScopeError' => 'Customization Cards Layout API нь зөвхөн fgroup=risk, tab_index=1, tab_index=2, эсвэл tab_index=3-д л боломжтой.',
+    // Asset management redesign
+    'DiscoverAssets' => 'Хөрөнгийг илрүүлэх',
+    'DiscoveryRuns' => 'Discovery гүйлтүүд',
+    'DiscoveryRangeHint' => 'Нэг хаяг, эхлэх-төгсгөлийн хүрээ, эсвэл IPv4 CIDR',
+    'DiscoveryResolveNames' => 'Хост нэрсийг хайх',
+    'DiscoveryAddAs' => 'Шинэ хөрөнгө нэмэх',
+    'DiscoveryStart' => 'Нээлтийг эхлүүлэх',
+    'DiscoveryBackgroundNote' => 'Арын дэвсгэр дээр ажилладаг. Аль хэдийн байгаа хаягуудыг алгасдаг.',
+    'DiscoveryRangeInvalid' => 'Хүчинтэй IPv4 хаяг, хүрээ эсвэл CIDR блок оруулна уу.',
+    'DiscoveryRangeTooLarge' => 'Энэ хүрээ хэт том байна. Хязгаар нь {$max} хаягууд юм.',
+    'DiscoveryRunQueued' => 'Нээлт эхэллээ.',
+    'DiscoveryRunCompleted' => 'Нээлт дууссан: {$new} шинэ хөрөнгө.',
+    'AssetBulkSelectAll' => 'Бүх {$count} хөрөнгийг сонгох',
+    'AssetBulkAssignTeams' => 'Багуудыг оноох…',
+    'AssetBulkAddToGroup' => '… бүлэгт нэмэх',
+    'AssetBulkDeleteConfirmTitle' => '{$count} хөрөнгийг устгах уу?',
+    'AbleToEditAssets' => 'Хөрөнгийг засах боломжтой',
+    'AbleToDeleteAssets' => 'Эд хөрөнгийг устгах боломжтой',
+    'AbleToVerifyAssets' => 'Хөрөнгийг баталгаажуулах чадвартай',
+    'AbleToRunAssetDiscovery' => 'Хөрөнгийн нээлтийг ажиллуулах чадвартай',
+    'AbleToCreateAssetGroups' => 'Хөрөнгийн бүлгүүдийг үүсгэх чадвартай',
+    'AbleToEditAssetGroups' => 'Хөрөнгийн бүлгүүдийг засах боломжтой',
+    'AbleToDeleteAssetGroups' => 'Хөрөнгийн бүлгүүдийг устгах боломжтой',
+    'ViewAsset' => 'Хөрөнгийг харах',
+    'AssetUnverifiedByEditLog' => '"{$user}" хэрэглэгч хөрөнгийг баталгаажуулах зөвшөөрөлгүйгээр нэр эсвэл IP хаягаа өөрчилсөн тул "{$name}" хөрөнгийг баталгаажуулаагүй болгож буцаасан.',
+    'AssetTeamsAssignedLog' => '"{$name}" хөрөнгийг "{$user} " хэрэглэгч "{$teams}" багт оноолоо.',
+    // Manage assets page (asset management redesign, Task 9)
+    'AddAsset' => 'Өмч нэмэх',
+    'SearchAssetsPlaceholder' => 'Нэр эсвэл IP хаягаар хайх',
+    'AllLocations' => 'Бүх байршил',
+    'AllTags' => 'Бүх шошго',
+    'AllAssetGroups' => 'Бүх хөрөнгийн бүлгүүд',
+    'AssetFields' => 'Хөрөнгийн талбарууд',
+    'AssetBulkAllSelected' => 'Бүх {$count} тохирох хөрөнгийг сонгосон',
+    'AssetDeleteConfirmTitle' => '"{$name} " хөрөнгийг устгах уу?',
+    'DeleteAsset' => 'Хөрөнгийг устгах',
+    'DeleteAssets' => 'Хөрөнгийг устгах',
+    'AssetBulkAssignTeamsTitle' => 'Багуудад {$count} хөрөнгө оноох',
+    'AssetAssignTeamsHint' => 'Сонгосон багууд нэмэгдсэн. Багууд аль хэдийн хөрөнгө дээрээ үлдэнэ.',
+    'AssetAddToGroupTitle' => 'Бүлэгт {$count} хөрөнгийг нэмэх',
+    'AssetChooseTeams' => 'Багуудыг сонгоно уу',
+    'AssetChooseGroup' => 'Бүлэг сонгох',
+    'Assign' => 'Оноох',
+    'AssetBulkVerifiedSummary' => '{$ok} баталгаажсан, {$failed} алгассан',
+    'AssetBulkDeletedSummary' => '{$ok} устгагдсан, {$failed} алгассан',
+    'AssetBulkTeamsSummary' => 'Багуудад {$ok} хөрөнгө оноогдсон, {$failed} алгассан',
+    'AssetBulkGroupSummary' => '{$ok} бүлэгт нэмэгдсэн, {$failed} алгассан',
+    'AssetBulkSkippedList' => 'Алгассан: {$list}',
+    'AssetBulkReasonNotFound' => 'олдсонгүй',
+    'NoAssetsYet' => 'Одоогоор хөрөнгө байхгүй',
+    'NoAssetsYetHint' => 'Таны нэмсэн эсвэл нээсэн хөрөнгө энд харагдана.',
+    'NoAssetsMatchFilters' => 'Таны шүүлтүүртэй тохирох хөрөнгө байхгүй',
+    'CouldNotLoadAssets' => 'Хөрөнгийг ачаалж чадсангүй. Таны өгөгдөл аюулгүй байна.',
+    'AllValuations' => 'Бүх үнэлгээ',
+    // Manage assets page, Asset groups tab (asset management redesign, Task 10)
+    'AddAssetGroup' => 'Бүлэг нэмэх',
+    'EditAssetGroup' => 'Бүлгийг засах',
+    'DeleteAssetGroup' => 'Бүлгийг устгах',
+    'ViewGroupMembers' => 'Гишүүдийг харах',
+    'SearchAssetGroupsPlaceholder' => 'Бүлгүүдийг нэрээр нь хайх',
+    'HighestValuation' => 'Хамгийн өндөр үнэлгээ',
+    'LinkedRisks' => 'Холбоотой эрсдэлүүд',
+    'RemoveFromGroup' => 'Бүлгээс хасах',
+    'AssetGroupMoreMembers' => '+ {$count} бусад',
+    'ViewAllInAssetsTab' => 'Хөрөнгө таб дээрээс бүгдийг харах',
+    'NoAssetsInGroup' => 'Энэ бүлэгт хөрөнгө байхгүй.',
+    'CouldNotLoadGroupMembers' => 'Энэ бүлгийн гишүүдийг ачаалж чадсангүй.',
+    'AssetGroupMembers' => 'Гишүүд',
+    'AssetGroupMembersHint' => 'Зөвхөн таны харж чадах хөрөнгийг жагсаасан болно. Таны харж чадахгүй гишүүд бүлэгт үлдэнэ.',
+    'ChooseAssets' => 'Хөрөнгө сонгох',
+    'AddOrRemoveAssets' => 'Хөрөнгө нэмэх эсвэл хасах…',
+    'UseTheseAssets' => 'Эдгээр хөрөнгийг ашиглах',
+    'AllAssets' => 'Бүх хөрөнгө',
+    'Valuation' => 'Үнэлгээ',
+    'PickerShowingFirstN' => '{$total}-н эхний {$count} -г харуулж байна. Үлдсэнийг нь олохын тулд хайх эсвэл нарийсгана уу.',
+    'AssetGroupDeleteConfirmTitle' => '"{$name} " бүлгийг устгах уу?',
+    'AssetGroupDeleteKeepsAssets' => 'Энэ бүлгийн хөрөнгийг устгахгүй. Зөвхөн бүлгийг л устгана.',
+    'NoAssetGroupsYet' => 'Одоогоор хөрөнгийн бүлэг алга',
+    'NoAssetGroupsYetHint' => 'Хөрөнгийг бүлэглэснээр та тэдгээрийг хамтад нь зураглаж, тайлагнаж болно.',
+    'NoAssetGroupsMatchSearch' => 'Таны хайлтад тохирох хөрөнгийн бүлэг алга',
+    'CouldNotLoadAssetGroups' => 'Өмчийн бүлгүүдийг ачаалж чадсангүй. Таны өгөгдөл аюулгүй байна.',
+    'DiscoveryAssignTeams' => 'Багуудад хуваарилах',
+    'DiscoveryAssignTeamsHint' => 'Заавал биш. Эдгээр багуудад шинэ хөрөнгө бүр нэмэгддэг.',
+    'DiscoveryAddAsHint' => 'Хөрөнгийг баталгаажуулах таны зөвшөөрлөөр тохируулсан.',
+    'DiscoveryTeamsInvalid' => 'Өөрийн харьяалагддаг болон одоо байгаа багуудыг сонгоорой.',
+    'DiscoveryResolveNamesInvalid' => 'Хайлт хийхдээ хостын нэр асаалттай эсвэл унтраалттай байх ёстой.',
+    'DiscoveryTooManyActiveRuns' => 'Танд {$max} нээлтийн ажил аль хэдийн явагдаж байна. Нэгийг нь дуустал хүлээх эсвэл цуцлах.',
+    'DiscoveryRunNotFound' => 'Нээлтийн гүйлт олдсонгүй.',
+    'DiscoveryRunAlreadyFinished' => 'Энэ нээлтийн аялал аль хэдийн дууссан.',
+    'DiscoveryRunCancelled' => 'Discovery-н ажиллагаа цуцлагдсан.',
+    'DiscoveryRunFailedToast' => '{$range} -г нээхэд алдаа гарлаа.',
+    'DiscoveryStatusQueued' => 'Дараалалд орсон',
+    'DiscoveryProgress' => '{$total}-с {$scanned}',
+    'DiscoveryLiveHosts' => 'Шууд хөтлөгчид',
+    'DiscoveryNewAssets' => 'Шинэ хөрөнгө',
+    'DiscoveryStartedAt' => 'Эхлүүлсэн',
+    'DiscoveryCancelRun' => 'Гүйлтийг цуцлах',
+    'CouldNotLoadDiscoveryRuns' => 'Илрүүлэлтийн гүйлтийг ачаалж чадсангүй.',
+    'DiscoveryRangeReserved' => 'Энэ хүрээнд сканнердах боломжгүй нөөцлөгдсөн хаягууд (loopback, link-local, multicast эсвэл 0.0.0.0/8) багтана.',
+    'DiscoveryTooManyActiveRunsInstance' => '{$max} нээлтийн ажил аль хэдийн явагдаж байна. Нэг нь дуусахад дахин оролдоно уу.',
+    'DiscoveryErrorScan' => 'Алдаа гарсны улмаас скан зогссон. Дэлгэрэнгүй мэдээллийг системийн бүртгэлээс шалгана уу.',
+    'DiscoveryErrorWorkerLost' => 'Арын дараалал энэ гүйлгээг боловсруулахаа зогсоосон.',
+    'DiscoveryErrorRequesterInactive' => 'Энэ ажиллуулалтыг эхлүүлсэн хэрэглэгч цаашид идэвхгүй болсон.',
+    // Asset management redesign: translated API errors (bulk actions, column settings, discovery) and discovery audit lines
+    'AssetBulkBodyInvalid' => 'Бөөнөөр үйлдлийг JSON бие хэлбэрээр илгээнэ үү.',
+    'AssetBulkActionRequired' => 'Бөөнөөр хийх үйлдлийг сонгоно уу.',
+    'AssetBulkUnknownAction' => 'Тэр бөөн үйлдэл боломжгүй байна.',
+    'AssetBulkSelectionRequired' => 'ID эсвэл шүүлтүүрээр өмчийг сонгоно уу.',
+    'AssetBulkIdsRequired' => 'Дор хаяж нэг хөрөнгө сонгоно уу.',
+    'AssetBulkIdsInvalid' => 'Хөрөнгийн дугаарууд нь бүхэл тоо байх ёстой.',
+    'AssetBulkTooManyAssets' => 'Та нэг удаад хамгийн ихдээ {$max} хөрөнгө дээр үйлдэл хийж болно. Сонголтоо нарийсгаад дахин оролдоно уу.',
+    'AssetBulkFilterInvalid' => 'Шүүлтүүр хүчингүй байна. Хуудсыг дахин ачаалаад дахин оролдоно уу.',
+    'AssetBulkFilterUnknownKey' => '"{$key}" шүүлтүүр танигдаагүй байна.',
+    'AssetBulkFilterBadValue' => '"{$key}" шүүлтүүрийн утга буруу байна.',
+    'AssetBulkFilterTooManyValues' => '"{$key}" шүүлтүүр нь хамгийн ихдээ {$max} утгыг жагсааж чадна.',
+    'AssetBulkFilterAllAlone' => 'Бүх хөрөнгийг сонгохыг бусад шүүлтүүртэй нэгтгэх боломжгүй.',
+    'AssetBulkFilterEmpty' => 'Бөөнөөр үйлдлийг ажиллуулахаасаа өмнө шүүлтүүр сонгох эсвэл бүх хөрөнгийг сонгоно уу.',
+    'AssetBulkExpectedCountInvalid' => 'Хүлээгдэж буй хөрөнгийн тоо нь бүхэл тоо байх ёстой.',
+    'AssetBulkParamsInvalid' => 'Энэ бөөн үйлдлийн сонголтууд хүчингүй байна.',
+    'AssetBulkTeamsRequired' => 'Дор хаяж нэг баг сонгоно уу.',
+    'AssetBulkTeamsNotFound' => 'Эдгээр багуудын нэг буюу хэд хэд нь байхгүй болсон.',
+    'AssetBulkTeamsNotMember' => 'Та зөвхөн өөрийн харьяалагддаг багуудыг оноож болно.',
+    'AssetBulkGroupNotFound' => 'Тэр хөрөнгийн бүлэг байхгүй болсон.',
+    'AssetBulkNoMatch' => 'Таны сонголттой тохирох хөрөнгө алга.',
+    'AssetBulkCountMismatch' => 'Та тэдгээрийг сонгосон тул тохирох хөрөнгө нь {$expected} байснаас {$actual} болж өөрчлөгдсөн. Жагсаалтыг хянаад дахин оролдоно уу.',
+    'AssetColumnSettingsBodyInvalid' => 'Баганын тохиргоог багана эсвэл дарааллын хамт JSON биет хэлбэрээр илгээнэ үү.',
+    'AssetColumnSettingsSaveFailed' => 'Таны багануудыг хадгалж чадсангүй. SimpleRisk шинэчлэлтийг дуусгахын тулд админаас хүснэ үү.',
+    'DiscoveryRunQueueFailed' => 'Нээлтийн гүйлгээг дараалалд оруулж чадсангүй. Дахин оролдоно уу.',
+    'DiscoveryRunStartedLog' => '"{$user} " хэрэглэгч {$range} ({$count} хаяг)-ын #{$id} хөрөнгийг илрүүлэх ажиллагааг эхлүүлсэн.',
+    'DiscoveryRunCancelledLog' => '"{$user} " хэрэглэгч {$range} -ын #{$id} хөрөнгийг илрүүлэх ажиллагааг цуцалсан.',
+    'AssetBulkTooManyToDelete' => 'Та нэг дор хамгийн ихдээ {$max} хөрөнгө устгах боломжтой. Сонголтоо нарийсгаад дахин оролдоно уу.',
+    'AssetBulkFilterNotApplied' => '"{$key}" шүүлтүүрийг илгээсэн гэж үзэн ашиглаж чадаагүй тул юу ч өөрчлөгдөөгүй.',
+    'AssetBulkExpectedCountRequired' => 'Шүүлтүүрээр өмчийг устгахын тулд таны устгах гэж буй хөрөнгийн тоо шаардлагатай.',
+    'AssetBulkReasonNotAttempted' => 'оролдоогүй',
+    'MoreActions' => 'Бусад үйлдлүүд',
+    'AssetCreateNewGroupOption' => 'Шинэ бүлэг үүсгэх…',
+    'AssetNewGroupName' => 'Шинэ бүлгийн нэр',
+    'AssetFilterByTeam' => 'Багаар шүүх {$name}',
+    'AssetFilterByValuation' => 'Үнэлгээгээр шүүх {$name}',
+    'AssetFilterByTag' => '{$name} шошгоор шүүх',
+    'AssetFilterByLocation' => 'Сайт/байршлаар шүүх {$name}',
+    'AssetFilteringByTeam' => '{$name} багаар шүүж байна',
+    'AssetFilteringByValuation' => 'Үнэлгээгээр шүүх {$name}',
+    'AssetFilteringByTag' => '{$name} шошгоор шүүж байна',
+    'AssetFilteringByLocation' => 'Сайт/байршлаар шүүх {$name}',
+    'AssetShowOnlyVerified' => 'Зөвхөн баталгаажсан хөрөнгийг харуулах',
+    'AssetShowOnlyUnverified' => 'Зөвхөн баталгаажаагүй хөрөнгийг харуулах',
+    'AssetShowingVerified' => 'Баталгаажсан хөрөнгийг харуулж байна',
+    'AssetShowingUnverified' => 'Баталгаажаагүй хөрөнгийг харуулж байна',
+    'CustomizationLayoutPayloadRejected' => 'Энэ загварт хамаарахгүй талбар эсвэл карт агуулсан тул байршлыг хадгалах боломжгүй. Юу ч өөрчлөгдөөгүй.',
+    'CustomizationLayoutRejectedUnknownScope' => 'Энэ загварын хүрээг байршлын засварлагчаас хадгалах боломжгүй. Юу ч өөрчлөгдөөгүй.',
+    'CustomizationLayoutRejectedEmptyFields' => 'Байршилд хүчинтэй талбар байхгүй тул хадгалагдаагүй. Юу ч өөрчлөгдөөгүй.',
+    'CustomizationLayoutRejectedWouldDeleteAll' => 'Энэ байршлыг хадгалах нь загвараас бүх талбарыг устгах тул хадгалагдаагүй. Хуудсыг дахин ачаалаад дахин оролдоно уу.',
+    'CustomizationLayoutRejectedRequiredField' => 'Заавал бөглөх талбарыг загвараас хасах боломжгүй. Юу ч өөрчлөгдөөгүй.',
+    'CustomizationLayoutRejectedBulkRemoval' => 'Энэ байршлыг хадгалах нь загварын талбаруудын ихэнхийг та эндээс устгахгүйгээр устгах болно. Хуудсыг дахин ачаалаад дахин оролдоно уу. Юу ч өөрчлөгдөөгүй.',
+    'CustomizationLayoutRejectedGroupMismatch' => 'Загварын бүлэг байхгүй эсвэл өөр төрлийн бичлэгт хамаарахгүй. Юу ч өөрчлөгдөөгүй.',
+    'CustomizationLayoutLegacySaveRefused' => 'Энэ загварыг байршлын засварлагчаар засварласан бөгөөд хуучин самбарын төгсгөл цэгээр дамжуулан хадгалах боломжгүй.',
+    // Asset discovery probe methods
+    'DiscoveryPortsInvalid' => '1-ээс 65535 хүртэлх тоонуудын хооронд таслалаар тусгаарлагдсан {$max} хүртэлх TCP портуудыг оруулна уу.',
+    'DiscoveryErrorProbeUnavailable' => 'Энэ эхлүүлсэн шалгах аргыг арын ажилтан ашиглах боломжгүй болсон. Шинэ ажиллуулалт эхлүүлнэ үү.',
+    'DiscoveryProbeIcmpUnprivileged' => 'ICMP ping (эрх мэдэлгүй сокет)',
+    'DiscoveryProbeIcmpRaw' => 'ICMP ping (түүхий сокет)',
+    'DiscoveryProbePingCommand' => 'ICMP ping (ping команд)',
+    'DiscoveryProbeTcpConnect' => 'TCP холболт',
+    'DiscoveryProbeMethod' => 'Шалгах арга: {$method}',
+    'DiscoveryProbeDetectedByWebServer' => 'Вэб сервер илрүүлсэн. Арын ажилтан өөр арга ашиглаж магадгүй.',
+    'DiscoveryTcpProbeWarning' => 'Хостууд нь зөвхөн сканнердсан TCP портуудын аль нэгэнд нь хариулсан тохиолдолд л олддог тул эдгээр портуудыг хаасан хостууд олдохгүй. Бүрэн үр дүнг авахын тулд серверт ICMP ping илгээхийг зөвшөөрнө үү: давуу эрхгүй ping сокетууд эсвэл NET_RAW боломжийг зөвшөөрөх эсвэл ping суулгана уу.',
+    'DiscoveryTcpPortsForRun' => 'Энэ ажиллуулахад зориулсан TCP портууд',
+    'DiscoveryTcpPortsHint' => 'Таслалаар тусгаарлагдсан, {$max} хүртэлх портууд. Анхдагч утгыг ашиглахын тулд хоосон үлдээнэ үү: {$ports}.',
+    'DiscoveryDefaultTcpPorts' => 'Хөрөнгийн илрүүлэлтийн TCP портууд',
+    'DiscoveryDefaultTcpPortsHint' => 'Арын ажилтан ICMP ping илгээж чадахгүй үед ашиглагддаг. Таслалаар тусгаарлагдсан, {$max} хүртэлх портууд.',
+    'DiscoveryErrorTcpUnreliable' => 'Сүлжээ нь жинхэнэ хост байж болохгүй хаягуудын (прокси эсвэл галт хана) TCP холболтуудад хариулдаг тул скан зогссон тул хаяг бүр ажиллаж байгаа мэт харагдах болно. Серверт ICMP ping илгээхийг зөвшөөрөхийг админаасаа хүснэ үү.',
+    'DiscoveryDefaultTcpPortsResetLog' => '"{$user}" хэрэглэгч хөрөнгийн илрүүлэлтийн TCP портуудыг анхдагч утгаар нь дахин тохируулсан.',
+    'DiscoveryNotConfigured' => 'Discovery тохируулагдаагүй байна. Системийн админаасаа config.php файлд зөвшөөрөгдсөн хүрээг тохируулахыг хүснэ үү.',
+    'DiscoveryRangeNotAllowed' => 'Энэ хүрээ нь сканнердах боломжтой хүрээнээс гадуур байна.',
+    'DiscoveryAllowedRangesList' => 'Зөвшөөрөгдсөн хүрээ: {$ranges}',
+    // Asset record modal
+    'AssetNotAvailable' => 'Энэ өмч боломжгүй байна. Үүнийг устгасан эсвэл та үүнд хандах эрхгүй байж магадгүй.',
+    'AssetCustomFieldNotInTemplate' => 'Нэг буюу хэд хэдэн өөрчлөн тохируулсан талбар нь энэ хөрөнгийн загварт хамаарахгүй. Юу ч өөрчлөгдөөгүй.',
+    'AssetMappedControlsInvalid' => 'Зураглагдсан хяналтуудыг хадгалж чадсангүй. Мөр бүр төлөвшсөн болон дор хаяж нэг одоо байгаа хяналттай байх шаардлагатай. Юу ч өөрчлөгдөөгүй.',
+    'AssetMappedControlsTooMany' => 'Өмчийг хамгийн ихдээ {$max} хяналттай холбож болно. Юу ч өөрчлөгдөөгүй.',
+    'AddControlsAtAnotherMaturity' => 'Өөр нэг насанд хүрсэн үед хяналт нэмэх',
+    'ChoosingControlsNeedsGovernancePermission' => 'Хяналтыг сонгохдоо Засаг захиргааны зөвшөөрөл шаардлагатай.',
+    'NControls' => '{n} удирдлага(ууд)',
+    'SavingKeepsTheCurrentControlMappings' => 'Хадгалах нь одоогийн хяналтын тохируулгыг хадгалдаг.',
+    'LoadingControls' => 'Хяналтыг ачаалж байна…',
+    'ControlListCouldNotBeLoaded' => 'Хяналтын жагсаалтыг ачаалж чадсангүй, тиймээс зураглагдсан удирдлагуудыг одоогоор өөрчлөх боломжгүй.',
+    'RemoveControlsAtMaturity' => 'Боловсорсон үед хяналтыг арилгах {maturity}',
+    'ControlIdUnavailable' => '#{id} (боломжгүй)',
+    'AssetRecordEdit' => 'Өмчийг засах',
+    'AssetRecordIdN' => 'Хөрөнгө #{$id}',
+    'AssetRecordCopyLink' => 'Энэ хөрөнгийн холбоосыг хуулах',
+    'AssetRecordLinkCopied' => 'Холбоосыг хуулсан.',
+    'AssetRecordLinkCopyFailed' => 'Холбоосыг хуулж чадсангүй. Үүний оронд хаягийн мөрөөс хуулж авна уу.',
+    'AssetRecordMarkUnverified' => 'Баталгаажаагүй гэж тэмдэглэх',
+    'AssetRecordViewAuditTrail' => 'Аудитын мөрийг харах',
+    'AssetRecordAuditTrailTitle' => 'Аудитын мөр',
+    'AssetRecordAuditTrailEmpty' => 'Энэ хугацаанд энэ хөрөнгийн хувьд ямар ч үйл ажиллагаа бүртгэгдээгүй.',
+    'AssetRecordAuditTrailFailed' => 'Аудитын мөрийг ачаалж чадсангүй.',
+    'AssetRecordBackToAsset' => 'Хөрөнгө рүү буцах',
+    'AssetRecordSave' => 'Хөрөнгийг хадгалах',
+    'AssetRecordProvenanceVerified' => 'Баталгаажсан · {$date} нэмсэн',
+    'AssetRecordProvenanceUnverified' => 'Баталгаажаагүй: хөрөнгийг баталгаажуулж чадах хүнээр хараахан баталгаажуулаагүй байна · нэмсэн {$date}',
+    'AssetRecordUnsavedHint' => 'Хадгалаагүй өөрчлөлтүүдээр хаах нь танаас эхлээд баталгаажуулахыг хүсэх болно.',
+    'AssetRecordDiscardQuestion' => 'Хадгалаагүй өөрчлөлтүүдээ устгах уу?',
+    'AssetRecordKeepEditing' => 'Засаж байх',
+    'AssetRecordDiscardChanges' => 'Өөрчлөлтүүдийг болих',
+    'AssetRecordVerificationCard' => 'Баталгаажуулалт',
+    'AssetRecordVerificationTag' => 'Хөрөнгийг баталгаажуулах зөвшөөрөл шаардлагатай',
+    'AssetRecordVerifiedHint' => 'Хариуцлагатай хэн нэгэн энэ хөрөнгийг хянасан байна. Хөрөнгийг баталгаажуулах зөвшөөрөлгүйгээр нэр эсвэл IP хаягийг нь өөрчлөх нь үүнийг баталгаажаагүй болгож буцаана.',
+    'AssetRecordLoadFailed' => 'Өмчийг ачаалж чадсангүй. Дахин оролдоно уу.',
+    'CustomizationCardsLayoutApiScopeErrorWithAsset' => 'Customization Cards Layout API нь зөвхөн fgroup=risk (tab_index 1, 2 эсвэл 3) болон fgroup=asset (tab_index 1)-д л боломжтой.',
+    'DiscoveryErrorRequesterNotPermitted' => 'Энэ ажиллуулалтыг эхлүүлсэн хэрэглэгч цаашид хөрөнгийн нээлтийг ажиллуулах зөвшөөрөлгүй болсон.',
+    'AssetRecordEditField' => '{$field}-г засах',
+    // Asset Scoring (FIPS 199 categorization + weighted score)
+    'Confidentiality' => 'Нууцлал',
+    'Integrity' => 'Шударга байдал',
+    'Availability' => 'Бэлэн байдал',
+    'AssetScoringLevelLow' => 'Бага',
+    'AssetScoringLevelModerate' => 'Дунд зэрэг',
+    'AssetScoringLevelHigh' => 'Өндөр',
+    'AssetScoringValueInvalid' => 'Нууцлал, бүрэн бүтэн байдал болон хүртээмж нь бага, дунд эсвэл өндөр гэж тооцогддог (нууцлал нь хамаарахгүй гэж тооцогддог).',
+    'AssetScoringChangedLog' => 'Asset "{$name}" {$objective} was changed from {$from} to {$to} by user "{$user}".',
+    'FIPSCategorization' => 'FIPS ангилал',
+    'WeightedScore' => 'Жинлэсэн оноо',
+    'WeightedBand' => 'Жинлүүрийн тууз',
+    'AllCategorizations' => 'Бүх ангилал',
+    'AllBands' => 'Бүх хамтлагууд',
+    'AssetFilterByCategorization' => 'FIPS ангиллаар шүүх {$name}',
+    'AssetFilteringByCategorization' => 'FIPS ангиллаар шүүх {$name}',
+    'AssetFilterByBand' => 'Жинлүүрийн туузаар шүүх {$name}',
+    'AssetFilteringByBand' => 'Жинлүүрийн туузаар шүүх {$name}',
+    'AssetScoring' => 'Хөрөнгийн оноо',
+    'AssetScoringSettingsHint' => 'Хөрөнгө бүрийг нууцлал, бүрэн бүтэн байдал, хүртээмжийн хувьд Бага, Дунд эсвэл Өндөр гэж үнэлдэг бөгөөд нууцлал нь хамаарахгүй байж болох тул хоёр үр дүнгээс хасдаг. Үүний FIPS ангилал нь гурван үнэлгээний хамгийн өндөр нь юм. Жинлэсэн оноо нь гурван түвшний утгын жигнэсэн дундаж бөгөөд хязгаарын босго нь уг оноог Бага, Дунд эсвэл Өндөр хязгаар болгон хувиргадаг. Эдгээр тохиргоог өөрчлөх нь хөрөнгө бүрийг нэн даруй дахин оноож өгдөг.',
+    'Weights' => 'Жинлүүр',
+    'AssetScoringWeightsHint' => 'Жинлэсэн оноонд зорилго тус бүр хэр их тооцогдох вэ: 0-ээс 100 хүртэл, хоёр аравтын бутархай хүртэл. 0 жинтэй бол тухайн зорилгыг орхигдуулна. Бүрэн бүтэн байдал болон хүртээмжтэй байдал хоёулаа 0 байж болохгүй, учир нь хамаарахгүй нууцлалыг үргэлж орхигдуулдаг.',
+    'LevelValues' => 'Түвшний утгууд',
+    'AssetScoringLevelValuesHint' => 'Үнэлгээ бүрийн жигнэсэн оноонд оруулсан хувь нэмэр: 0-ээс дээш 100 хүртэл, хоёр хүртэлх бутархайтай, Бага нь Дунд зэрэг, Өндөр нь Бага гэсэн утгатай. Анхдагч утга нь Бага 1, Дунд зэрэг 2, Өндөр 3 байна.',
+    'BandThresholds' => 'Зурвасын босго',
+    'AssetScoringBandThresholdsHint' => 'Босго буюу түүнээс дээш жигнэсэн оноо нь тухайн хязгаарт багтах бөгөөд Дунд зэргийн босгоос доош оноо нь Бага байна. Дунд зэрэг нь Бага утгаас дээш эхлэх ёстой бөгөөд Өндөр нь Дунд зэрэгээс дээш эхлэх бөгөөд Өндөр утгаас ихгүй байх ёстой.',
+    'ModerateStartsAt' => 'Дунд зэрэг эхэлнэ',
+    'HighStartsAt' => 'Өндөр цагаас эхэлнэ',
+    'DefaultScoringForNewAssets' => 'Шинэ хөрөнгийн анхдагч оноо',
+    'AssetScoringDefaultsHint' => 'Хэн нэгэн хөрөнгийн хэлбэрт хөрөнгө нэмэх үед эдгээр үнэлгээг урьдчилан сонгоно. Нээлт, импорт эсвэл API-аар үүсгэсэн хөрөнгө нь өөрсдийн үнэлгээг өгөхгүй бол оноогүй хэвээр байна. Үүнийг унтраахын тулд гурвууланг нь тохируулаагүй үлдээнэ үү.',
+    'AssetScoringWeightsInvalid' => 'Хөрөнгийн онооны жин нь 0-ээс 100 хүртэлх тоо, хамгийн ихдээ хоёр аравтын бутархай байх ёстой бөгөөд Бүрэн бүтэн байдал болон Боломжийн байдал хоёулаа 0 байж болохгүй.',
+    'AssetScoringValuesInvalid' => 'Хөрөнгийн онооны түвшний утга нь 0-ээс дээш, 100 хүртэлх тоо, хамгийн ихдээ хоёр аравтын бутархайтай, Багаас Дунд зэрэг, Өндөр гэсэн тоо байх ёстой.',
+    'AssetScoringThresholdsInvalid' => 'Хөрөнгийн онооны хязгаарын босго нь хамгийн ихдээ хоёр аравтын бутархайтай байх ёстой бөгөөд Дунд зэрэг нь Бага утгаас дээш, Өндөр нь Дунд зэрэгээс дээш, Өндөр нь Өндөр утгаас ихгүй байх ёстой.',
+    'AssetScoringDefaultsInvalid' => 'Шинэ хөрөнгийн анхдагч оноо нь зорилго бүрийн санал болгож буй түвшин байх ёстой.',
+    'AssetScoringSettingsNotSaved' => 'Хөрөнгийн онооны тохиргоог хадгалж чадсангүй. Юу ч өөрчлөгдөөгүй.',
+    'AssetScoringSettingsChangedLog' => 'Хөрөнгийн онооны тохиргоог "{$user} " хэрэглэгч өөрчилсөн.',
+    'AssetScoringNotSet' => 'Тохируулаагүй байна',
+    'NotScored' => 'Оноо аваагүй',
+    'AssetScoringNotScoredHint' => 'Энэ хөрөнгийг оноо авахын тулд гурван зорилгодоо бүгдэд нь хариул.',
+    'ImportAssetScoringValueIgnored' => '"{$asset_name}" хөрөнгийн " {$objective} утга "{$value}" нь хүчин төгөлдөр үнэлгээ биш бөгөөд үл тоомсорлогдсон.',
+    'AssetScoringSecurityObjectives' => 'Аюулгүй байдлын зорилтууд',
+    'AssetScoringConfidentialityHelp' => 'Энэ хөрөнгийн талаарх мэдээллийг зөвшөөрөлгүй задруулсан тохиолдолд ямар нөлөө үзүүлэх вэ?',
+    'AssetScoringIntegrityHelp' => 'Энэ хөрөнгийн мэдээллийг зөвшөөрөлгүй өөрчлөх эсвэл устгах тохиолдолд ямар нөлөө үзүүлэх вэ?',
+    'AssetScoringAvailabilityHelp' => 'Энэ хөрөнгөд хандах эсвэл ашиглахад саад учруулбал ямар нөлөө үзүүлэх вэ?',
+    'AssetScoringHelpHigh' => 'Хүнд эсвэл сүйрлийн сөрөг нөлөө',
+    'AssetScoringHelpModerate' => 'Ноцтой сөрөг нөлөө',
+    'AssetScoringHelpLow' => 'Хязгаарлагдмал эсвэл сөрөг нөлөөгүй',
+    'AssetScoringHelpNotApplicable' => 'Нууцлал нь энэ хөрөнгийн хувьд асуудал биш юм (жишээлбэл, олон нийтийн мэдээлэл)',
+    'AssetScoringHelpLabel' => '{$objective} үнэлгээний удирдамж',
+    'AssetScoringMeterValue' => '{$score}, {$band} хамтлаг',
+    'AssetScoringNoWeightedScore' => 'Жинлэсэн оноо байхгүй',
+    'AssetScoringNoWeightedScoreNote' => 'Жинлэсэн оноо байхгүй: тооцогдох зорилт бүр 0 жинтэй байна.',
+    'AssetScoringUpgradePending' => 'SimpleRisk мэдээллийн сангийн шинэчлэлтийг ажиллуулах хүртэл хөрөнгийн оноог хадгалах боломжгүй. Юу ч өөрчлөгдөөгүй.',
+    'AssetScoringResultHelpLabel' => '{$result} тайлбар',
+    'AssetScoringScoreHelp' => 'Жинлэсэн оноо нь гурван үнэлгээг {$low} -с {$high}хүртэлх нэг тоо болгон нэгтгэдэг. Үнэлгээ бүр нь тогтоосон утга болж, тус бүрийг зорилгынхоо жингээр үржүүлнэ. Үр дүнг нэмж, жингийн нийлбэрт хуваана. Хамаарахгүй гэсэн нууцлалыг жингийн хамт орхигдуулна. Тогтсон утга болон жинг Тохиргоо хэсэгт тохируулсан болно. Оноог харуулахаас өмнө гурван зорилтыг бүгдийг нь үнэлэх ёстой.',
+    'AssetScoringCategorizationHelp' => 'FIPS 199 аюулгүй байдлын ангилал нь хамгийн өндөр үнэлгээ юм: хамаарах зорилтуудын дундаас хамгийн өндөр үнэлгээ. Ганцхан өндөр үнэлгээ нь хөрөнгийг бусад нь ямар ч байсан өндөр болгодог. Хамаарахгүй гэсэн үнэлгээг үл тоомсорлодог.',
+    'AssetScoringBandHelp' => 'Хамтлаг жигнэсэн оноог Бага, Дунд эсвэл Өндөр шатлалаар байрлуулна. {$moderate} -аас доош оноо нь Бага, {$moderate} -аас {$highAt} хүртэлх оноо нь Дунд зэрэг, {$highAt} ба түүнээс дээш оноо нь Өндөр байна. Босго утгыг Тохиргоо хэсэгт тохируулсан болно.',
+    // Manage assets: Confidentiality / Integrity / Availability rating filters
+    'AllConfidentialityRatings' => 'Бүх нууцлалын үнэлгээ',
+    'AllIntegrityRatings' => 'Бүх бүрэн бүтэн байдлын үнэлгээ',
+    'AllAvailabilityRatings' => 'Бүх боломжийн үнэлгээ',
+    'AssetFilterByConfidentiality' => 'Нууцлалаар шүүх {$name}',
+    'AssetFilteringByConfidentiality' => 'Нууцлалаар шүүх {$name}',
+    'AssetFilterByIntegrity' => 'Бүрэн бүтэн байдлаар шүүх {$name}',
+    'AssetFilteringByIntegrity' => 'Бүрэн бүтэн байдлаар шүүх {$name}',
+    'AssetFilterByAvailability' => 'Боломжтой байдлаар шүүх {$name}',
+    'AssetFilteringByAvailability' => 'Боломжтой байдлаар шүүх {$name}',
+    'HighestFIPSCategorization' => 'Хамгийн өндөр FIPS ангилал',
+    'HighestWeightedScore' => 'Хамгийн өндөр жигнэсэн оноо',
+    'HighestWeightedBand' => 'Хамгийн өндөр жингийн тууз',
+    'AssetGroupFields' => 'Хөрөнгийн бүлгийн талбарууд',
+    'NoAssetGroupsMatchFilters' => 'Таны шүүлтүүртэй тохирох хөрөнгийн бүлэг алга',
+    'AssetGroupFilterByHighestCategorization' => 'Хамгийн өндөр FIPS ангилалаар шүүх {$name}',
+    'AssetGroupFilteringByHighestCategorization' => 'Хамгийн өндөр FIPS ангилалаар шүүх {$name}',
+    'AssetGroupFilterByHighestBand' => 'Хамгийн өндөр жинтэй туузаар шүүх {$name}',
+    'AssetGroupFilteringByHighestBand' => 'Хамгийн өндөр жинтэй туузаар шүүх {$name}',
+    'AssetGroupBulkSelectionRequired' => 'ID эсвэл шүүлтүүрээр хөрөнгийн бүлгүүдийг сонгоно уу.',
+    'AssetGroupBulkIdsRequired' => 'Дор хаяж нэг хөрөнгийн бүлэг сонгоно уу.',
+    'AssetGroupBulkIdsInvalid' => 'Өмчийн бүлгийн ID нь бүхэл тоо байх ёстой.',
+    'AssetGroupBulkFilterAllAlone' => 'Бүх хөрөнгийн бүлгийг сонгохыг бусад шүүлтүүртэй нэгтгэх боломжгүй.',
+    'AssetGroupBulkFilterEmpty' => 'Устгахаасаа өмнө шүүлтүүр сонгох эсвэл бүх хөрөнгийн бүлгийг сонгоно уу.',
+    'AssetGroupBulkExpectedCountInvalid' => 'Хөрөнгийн бүлгийн хүлээгдэж буй тоо нь бүхэл тоо байх ёстой.',
+    'AssetGroupBulkExpectedCountRequired' => 'Шүүлтүүрээр хөрөнгийн бүлгүүдийг устгахын тулд таны устгахыг хүссэн бүлгүүдийн тоо шаардлагатай.',
+    'AssetGroupBulkNoMatch' => 'Таны сонголттой тохирох хөрөнгийн бүлэг алга.',
+    'AssetGroupBulkCountMismatch' => 'Та сонгосон тул тохирох хөрөнгийн бүлгүүд {$expected} байснаас {$actual} болж өөрчлөгдсөн. Жагсаалтыг хянаад дахин оролдоно уу.',
+    'AssetGroupBulkTooManyToDelete' => 'Та нэг дор хамгийн ихдээ {$max} хөрөнгийн бүлгийг устгаж болно. Сонголтоо нарийсгаад дахин оролдоно уу.',
+    'AssetGroupBulkSelectAll' => 'Бүх {$count} хөрөнгийн бүлгүүдийг сонгох',
+    'AssetGroupBulkAllSelected' => 'Бүх {$count} тохирох хөрөнгийн бүлгүүдийг сонгосон',
+    'AssetGroupBulkDeleteConfirmTitle' => '{$count} хөрөнгийн бүлгүүдийг устгах уу?',
+    'AssetGroupBulkDeleteKeepsAssets' => 'Эдгээр бүлгүүдийн хөрөнгийг устгахгүй. Зөвхөн бүлгүүдийг л устгана.',
+    'DeleteAssetGroups' => 'Бүлгүүдийг устгах',
+    'AssetGroupBulkDeletedSummary' => '{$ok} бүлгүүдийг устгасан, {$failed} алгассан',
+    'ChoosingRisksNeedsRiskManagementPermission' => 'Холбогдох эрсдэлийг сонгохдоо Эрсдэлийн удирдлагын зөвшөөрөл шаардлагатай.',
+    'NAssociatedRisks' => '{n} холбогдох эрсдэл(үүд)',
+    'SavingKeepsTheCurrentRiskAssociations' => 'Хадгаламж нь одоогийн холбоотой эрсдэлийг хадгалж байдаг.',
     '' => '',
 );
 ?>

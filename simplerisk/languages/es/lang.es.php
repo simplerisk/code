@@ -814,7 +814,7 @@ $lang = array(
     'UserSessions' => 'Sesiones de usuario',
     'SessionActivityTimeout' => 'Tiempo de espera de actividad de sesión',
     'Security' => 'Seguridad',
-    'EnableCSP' => 'Habilitar la política de seguridad de contenido (esto ha roto Chrome en el pasado)',
+    'EnableCSP' => 'Habilitar la Política de seguridad de contenido (recomendado)',
     'EnableDebugLogging' => 'Habilitar el registro de depuración',
     'seconds' => 'segundos',
     'FieldSample' => 'Muestra de campo',
@@ -4967,6 +4967,572 @@ $lang = array(
     // closeriskForm()'s own (hardcoded, pre-existing) single-risk denial text.
     'NoCloseRiskPermission' => 'No tienes permiso para cerrar riesgos.',
     'QuestionnaireRequiredQuestionUnanswered' => 'Por favor, responda a todas las preguntas obligatorias antes de completar la evaluación.',
+    'AuditLog_ControlStatusAutoSynced' => 'El estado del control "{$short_name}" se actualizó automáticamente a "{$status_text}" en función de su(s) resultado(s) de prueba más reciente(s).',
+    'EnableCSPHelp' => 'La Política de Seguridad de Contenido (CSP) restringe la carga de scripts, estilos, imágenes y fuentes del navegador a solo SimpleRisk, y bloquea la incrustación de páginas y el envío de formularios desde otros sitios. Es la defensa integrada más sólida contra la inyección de código entre sitios (XSS). Manténgala habilitada a menos que entre en conflicto con un proxy, una extensión del navegador o una integración de terceros en su entorno.',
+    // Define Control Frameworks' Columns picker (Task: Columns picker + saved layout/filters) -- the "Standard" group label above its built-in fields (Family/Owner/Maturity/Status/Class/Phase/Priority/Type); 'CustomFields' already exists.
+    'StandardFields' => 'Campos estándar',
+    // My Profile redesign (js/simplerisk/pages/account-profile.js)
+    'Administrator' => 'Administrador',
+    'AccountDetails' => 'Detalles de la cuenta',
+    'YourPermissions' => 'Tus permisos',
+    'RoleAndTeamsGrantAccess' => 'A qué te dan acceso tu rol y tus equipos',
+    'AllGranted' => 'Todo concedido',
+    'PermissionsCountLabel' => '$count permisos',
+    'ManagedByYourAdministrator' => 'Estos detalles son gestionados por tu administrador. Ponte en contacto con él si necesitas modificar algo.',
+    'MultiFactorAuthenticationHint' => 'Añade un segundo paso a tu inicio de sesión para mantener tu cuenta más segura.',
+    'ChangingPasswordSignsOutEverywhere' => 'Cambiar tu contraseña cierra tu sesión en todos los demás sitios.',
+    'APIKeyHint' => 'Se utiliza para autenticar tus propios scripts e integraciones frente a la API de SimpleRisk.',
+    'ResetDisplaySettingsHint' => 'Restablece la selección de columnas personalizadas a los valores predeterminados.',
+    'CardGeneral' => 'General',
+    'CardClassification' => 'Clasificación',
+    'CardScoring' => 'Tanteo',
+    'CardAdditionalInformation' => 'Información adicional',
+    'CardCustomFields' => 'Campos personalizados',
+    'CardCustomFieldsHint' => 'Estos campos deben clasificarse en una tarjeta.',
+    'LayoutEditorHint' => 'Arrastra un campo a una tarjeta diferente para reasignarlo, arrastra dentro de una tarjeta para reordenarla o cambiar su tamaño, y arrastra o cambia el tamaño de una tarjeta para modificar su posición en la página.',
+    'ScoringNotYetAvailableInThisView' => 'La configuración de la puntuación aún no está disponible en esta vista.',
+    // Native tooltip on the Cards layout editor's Gridstack resize handles
+    // (js/simplerisk/pages/customization-layout-editor.js) -- the bare corner
+    // bracket read as an unexplained mark until it said what it does.
+    'DragToResize' => 'Arrastra para cambiar el tamaño.',
+    // Warning pill on a Cards layout editor card the admin has sized shorter
+    // than the fields it holds. Replaces the silent inner scrollbar that state
+    // used to produce.
+    'NFieldsDoNotFitCard' => 'Los campos {n} no caben en esta tarjeta. Cambie el tamaño de la tarjeta para que se muestren.',
+    // Card titles for the Mitigation tab's Cards layout editor
+    // (js/simplerisk/pages/customization-layout-editor.js), mirroring the
+    // Card* keys above for the Details tab. Order follows
+    // customization_mitigation_cards_layout_card_keys() (includes/functions.php).
+    'CardMitigationStrategy' => 'Estrategia de mitigación',
+    'CardMitigationSolution' => 'Solución de mitigación',
+    'CardMitigationControls' => 'Controles de mitigación',
+    'CardReview' => 'Revisión',
+    // Submit Risk page's three action-bar buttons (buildActionsBar(),
+    // risk-details-form.js, submitMode 'create' only) and the Reset Form
+    // confirm modal (management/index.php, design-system.md #8's "Confirm"
+    // type). 'Discard'/'Cancel'/'Close' already exist and are reused for the
+    // modal's own buttons.
+    'ResetForm' => 'Restablecer formulario',
+    'SaveAndNew' => 'Ahorra y Novedades',
+    'SaveAndView' => 'Guardar y ver',
+    'ResetFormConfirmTitle' => '¿Descartar esta solicitud de riesgo?',
+    'ResetFormConfirmBody' => 'Se perderá toda la información que haya introducido.',
+    // Restore-template destructive confirm (Customization Extra, Save/Restore
+    // action bar). Two body variants: risk's Details/Mitigation/Review tabs
+    // named explicitly (the only fgroup with that 3-tab Cards layout), a
+    // generic fallback for every other fgroup (single legacy-panel tab).
+    // Both end on the same scoping reassurance -- confirmed via direct source
+    // read that Restore only ever touches the currently-selected template
+    // group, never any other.
+    'RestoreTemplateConfirmTitle' => 'Restaurar el diseño predeterminado?',
+    'RestoreTemplateConfirmBodyRisk' => 'Esto restablece todos los campos de las pestañas Detalles, Mitigación y Revisión a sus valores predeterminados para este grupo de plantillas. Los demás grupos de plantillas no se ven afectados.',
+    'RestoreTemplateConfirmBody' => 'Esto restablece todos los campos de esta plantilla a sus valores predeterminados para este grupo de plantillas. Los demás grupos de plantillas no se ven afectados.',
+    // CVSS holder's collapsed Temporal/Environmental/Impact-Modifiers
+    // accordion (buildCvssHolder(), risk-details-form.js) -- these three
+    // groups are optional CVSS v2 refinements on top of the required Base
+    // Score Metrics, so they collapse behind this header by default.
+    'AdvancedMetrics' => 'Métricas avanzadas',
+    // CVSS holder's Base Score Metrics sub-group headers (buildCvssHolder(),
+    // risk-details-form.js) -- distinct from the existing 'ExploitabilityMetrics'/
+    // 'ImpactMetrics' keys, which the legacy cvss_modal_content.php modal
+    // still renders as plain "Exploitability Metrics"/"Impact Metrics" and
+    // must keep unchanged. These fold the umbrella "Base Score Metrics"
+    // heading into each sub-group's own header instead of a separate label.
+    'BaseScoreExploitabilityMetrics' => 'Métricas de explotabilidad de la puntuación base',
+    'BaseScoreImpactMetrics' => 'Métricas de impacto de la puntuación base',
+    // Per-field help popovers on the CVSS holder's 14 metric selects
+    // (buildCvssScoreItem(), risk-details-form.js) -- one per CVSS v2
+    // metric, matching the standard CVSS v2 specification definitions.
+    // Double-quoted (not single-quoted, this file's usual style) so the
+    // \n line breaks are real escape sequences: each popover leads with one
+    // overall sentence, then one bullet line per option, rendered via
+    // white-space: pre-line on .sr-scoring-help-popover .popover-body
+    // (scss/modules/_questionnaire.scss) -- plain text throughout, no HTML,
+    // so the popover stays initialized without Bootstrap's `html: true`.
+    "AttackVectorHelp" => "Cómo se puede acceder a la vulnerabilidad.\n• Local: requiere acceso local, como una consola o shell.\n• Red adyacente: el atacante debe estar en el mismo segmento de red físico o lógico.\n• Red: explotable remotamente a través de una red, sin necesidad de acceso local o adyacente.",
+    "AttackComplexityHelp" => "Qué tan complejo es el ataque una vez que un atacante tiene acceso al objetivo.\n• Alto: requiere condiciones especializadas que son difíciles de organizar.\n• Medio: se deben cumplir algunas condiciones, pero la explotación no es difícil una vez que se cumplen.\n• Bajo: no se necesitan condiciones especiales.",
+    "AuthenticationHelp" => "Número de veces que un atacante debe autenticarse en el objetivo para explotarlo.\n• Múltiple: se requiere autenticación dos o más veces, incluso con las mismas credenciales.\n• Única: se requiere autenticación una sola vez.\n• Ninguna: no se requiere autenticación.",
+    "ConfidentialityImpactHelp" => "El impacto en la confidencialidad de los datos que procesa el sistema si se explota.\n• Ninguno: ningún impacto.\n• Parcial: cierta divulgación de información, pero el atacante no controla qué, o la pérdida es limitada.\n• Completo: divulgación total de toda la información en el sistema.",
+    "IntegrityImpactHelp" => "El impacto en la integridad del sistema si se explota.\n• Ninguno: ningún impacto.\n• Parcial: se pueden modificar algunos datos, pero el atacante no controla qué, o el alcance es limitado.\n• Completo: compromiso total de la integridad del sistema; el atacante puede modificar cualquier archivo.",
+    "AvailabilityImpactHelp" => "Impacto en la disponibilidad del sistema si se explota.\n• Ninguno: ningún impacto.\n• Parcial: rendimiento reducido o interrupciones en la disponibilidad.\n• Completo: apagado total del recurso afectado.",
+    "RemediationLevelHelp" => "Nivel de remediación disponible para la vulnerabilidad.\n• Solución oficial: hay una solución completa del proveedor disponible.\n• Solución temporal: hay una solución oficial pero temporal disponible.\n• Solución alternativa: existe una solución alternativa no oficial, que no es del proveedor.\n• No disponible: no hay ninguna solución disponible o no se puede aplicar ninguna.",
+    "ReportConfidenceHelp" => "Grado de confianza en la existencia de la vulnerabilidad y credibilidad de sus detalles técnicos.\n• Sin confirmar: un único informe de fuente no confirmado; el problema subyacente es especulativo.\n• Sin corroborar: múltiples fuentes independientes informan del mismo comportamiento, pero la causa raíz no está confirmada.\n• Confirmado: el proveedor ha reconocido el problema, o está confirmado por el código fuente o el análisis de exploits.",
+    "CollateralDamagePotentialHelp" => "El potencial de pérdida de vidas, bienes físicos o pérdidas financieras si se explota la vulnerabilidad.\n• Ninguna: no es probable que se produzca tal pérdida.\n• Baja a media: es posible una pérdida moderada.\n• Alta: un impacto catastrófico en los activos, ingresos o seguridad de la organización.",
+    "TargetDistributionHelp" => "La proporción de sistemas vulnerables en su entorno.\n• Ninguno: no existen sistemas objetivo.\n• Bajo: entre el 1 y el 25 % de los sistemas son vulnerables.\n• Medio: entre el 26 y el 75 % son vulnerables.\n• Alto: entre el 76 y el 100 % son vulnerables.",
+    "ConfidentialityRequirementHelp" => "Qué tan importante es la confidencialidad del activo afectado para su organización.\n• Baja: una pérdida de confidencialidad tiene un impacto limitado.\n• Media: tiene un impacto grave.\n• Alta: tiene un impacto catastrófico.",
+    "IntegrityRequirementHelp" => "Qué tan importante es la integridad del activo afectado para su organización.\n• Baja: una pérdida de integridad tiene un impacto limitado.\n• Media: tiene un impacto grave.\n• Alta: tiene un impacto catastrófico.",
+    "AvailabilityRequirementHelp" => "Qué tan importante es la disponibilidad del activo afectado para su organización.\n• Baja: una pérdida de disponibilidad tiene un impacto limitado.\n• Media: tiene un impacto grave.\n• Alta: tiene un impacto catastrófico.",
+    // Base Score Metrics' two sub-group intro sentences (metricsSubGroup()'s
+    // `descKey`, risk-details-form.js) -- orient the user to what the GROUP
+    // as a whole is asking, distinct from the per-field *Help popover keys
+    // above which explain each metric's own options.
+    'BaseScoreExploitabilityMetricsDescription' => 'Cómo tendría que acceder un atacante a esta vulnerabilidad y activarla: dónde tendría que estar, cuán complejo sería el ataque y si necesitaría autenticarse previamente.',
+    'BaseScoreImpactMetricsDescription' => '¿Qué ocurre si la vulnerabilidad se explota con éxito?: ¿Qué efectos tendrá en la confidencialidad, la integridad y la disponibilidad del sistema afectado?',
+    // Advanced Metrics' three optional sub-group intro sentences -- same
+    // metricsSubGroup() `descKey` as the two Base Score groups above.
+    'TemporalScoreMetricsDescription' => 'Cómo cambia con el tiempo la amenaza real que representa esta vulnerabilidad: el estado actual del código de explotación, las soluciones disponibles y el grado de certeza de los informes sobre su existencia.',
+    'EnvironmentalScoreMetricsDescription' => 'El riesgo que supone esta vulnerabilidad depende de su entorno: del potencial de daños en el mundo real y de cuántos de sus sistemas se vean afectados realmente.',
+    'ImpactSubscoreModifiersDescription' => 'Valora el impacto de la puntuación base según la importancia que tengan la confidencialidad, la integridad y la disponibilidad para este activo en particular.',
+    // Phase 4d-iii: DREAD holder help popovers (view_dread_help()'s
+    // existing English text, includes/display.php, extracted to real $lang
+    // keys -- that function's own content was raw hardcoded HTML, never
+    // localized, so it could not be reused verbatim).
+    'DamagePotentialHelp' => 'Si se produce una vulnerabilidad, ¿cuánto daño se causará?' . "\n" . '0 = Nada' . "\n" . '5 = Los datos de los usuarios individuales se ven comprometidos o afectados.' . "\n" . '10 = Destrucción total del sistema o de los datos',
+    'ReproducibilityHelp' => '¿Qué tan fácil es reproducir la vulnerabilidad?' . "\n" . '0 = Muy difícil o imposible, incluso para los administradores de la aplicación.' . "\n" . '5 = Se requieren uno o dos pasos; es posible que se necesite ser un usuario autorizado.' . "\n" . '10 = Basta con un navegador web y la barra de direcciones, sin autenticación.',
+    'ExploitabilityHelp' => '¿Qué se necesita para explotar esta amenaza?' . "\n" . '0 = Conocimientos avanzados de programación y redes, con herramientas de ataque personalizadas o avanzadas.' . "\n" . '5 = Existe malware en Internet, o se puede explotar fácilmente utilizando las herramientas de ataque disponibles.' . "\n" . '10 = Solo un navegador web',
+    'AffectedUsersHelp' => '¿Cuántos usuarios se verán afectados?' . "\n" . '0 = Ninguno' . "\n" . '5 = Algunos usuarios, pero no todos' . "\n" . '10 = Todos los usuarios',
+    'DiscoverabilityHelp' => '¿Qué tan fácil es descubrir esta amenaza?' . "\n" . '0 = Muy difícil a imposible; requiere código fuente o acceso administrativo.' . "\n" . '5 = Puede averiguarlo adivinando o monitorizando los rastros de la red.' . "\n" . '9 = Los detalles de fallas como esta ya son de dominio público y se pueden encontrar fácilmente utilizando un motor de búsqueda.' . "\n" . '10 = La información es visible en la barra de direcciones del navegador web o en un formulario.',
+    // The DREAD holder's summary card heading and "DREAD Metrics" card
+    // heading. No existing key covers either (confirmed via grep before
+    // adding).
+    'DreadScore' => 'Puntuación DREAD',
+    'DreadMetrics' => 'Métricas DREAD',
+    // Phase 4d-iv: OWASP holder help popovers (view_owasp_help()'s
+    // existing English text, includes/display.php, extracted to real
+    // $lang keys -- same never-localized-legacy-content extraction the
+    // DREAD phase already did for its own 5 fields). Wording/levels
+    // trued up against that function's real source text, not transcribed
+    // from an earlier standard-methodology draft.
+    'SkillLevelHelp' => '¿Qué nivel de conocimientos técnicos posee este grupo de agentes de amenazas?' . "\n" . '1 = Sin conocimientos técnicos' . "\n" . '3 = Algunas habilidades técnicas' . "\n" . '5 = Usuario avanzado de informática' . "\n" . '6 = Habilidades de redes y programación' . "\n" . '9 = Habilidades de penetración de seguridad',
+    'MotiveHelp' => '¿Hasta qué punto está motivado este grupo de agentes maliciosos para encontrar y explotar esta vulnerabilidad?' . "\n" . '1 = Recompensa baja o nula' . "\n" . '4 = Posible recompensa' . "\n" . '9 = Alta recompensa',
+    'OpportunityHelp' => '¿Qué recursos y oportunidades necesita este grupo de agentes maliciosos para encontrar y explotar esta vulnerabilidad?' . "\n" . '0 = Acceso completo o se requieren recursos costosos' . "\n" . '4 = Se requiere acceso o recursos especiales' . "\n" . '7 = Se requiere cierto acceso o recursos.' . "\n" . '9 = No se requiere acceso ni recursos.',
+    'SizeHelp' => '¿Qué tamaño tiene este grupo de agentes de amenaza?' . "\n" . '2 = Desarrolladores' . "\n" . '2 = Administradores de sistemas' . "\n" . '4 = Usuarios de la intranet' . "\n" . '5 = Socios' . "\n" . '6 = Usuarios autenticados' . "\n" . '9 = Usuarios anónimos de Internet',
+    'EaseOfDiscoveryHelp' => '¿Qué tan fácil es para este grupo de agentes maliciosos descubrir esta vulnerabilidad?' . "\n" . '1 = Prácticamente imposible' . "\n" . '3 = Difícil' . "\n" . '7 = Fácil' . "\n" . '9 = Herramientas automatizadas disponibles',
+    'EaseOfExploitHelp' => '¿Qué tan fácil es para este grupo de agentes maliciosos explotar esta vulnerabilidad?' . "\n" . '1 = Teórico' . "\n" . '3 = Difícil' . "\n" . '5 = Fácil' . "\n" . '9 = Herramientas automatizadas disponibles',
+    'AwarenessHelp' => '¿Hasta qué punto es conocida esta vulnerabilidad para este grupo de agentes maliciosos?' . "\n" . '1 = Desconocido' . "\n" . '4 = Oculto' . "\n" . '6 = Obvio' . "\n" . '9 = Conocimiento público',
+    'IntrusionDetectionHelp' => '¿Qué probabilidades hay de que se detecte una vulnerabilidad?' . "\n" . '1 = Detección activa en la aplicación' . "\n" . '3 = Registrado y revisado' . "\n" . '8 = Registrado sin revisión' . "\n" . '9 = No ha iniciado sesión',
+    'LossOfConfidentialityHelp' => '¿Cuántos datos podrían divulgarse y cuán sensibles son?' . "\n" . '2 = Datos mínimos no sensibles divulgados' . "\n" . '6 = Datos críticos mínimos divulgados' . "\n" . '6 = Se divulgaron datos no confidenciales extensos.' . "\n" . '7 = Se divulgan datos críticos extensos' . "\n" . '9 = Todos los datos divulgados',
+    'LossOfIntegrityHelp' => '¿Cuántos datos podrían estar dañados y cuál es el grado de corrupción de datos?' . "\n" . '1 = Datos ligeramente corruptos mínimos' . "\n" . '3 = Mínimo de datos gravemente corruptos' . "\n" . '5 = Datos extensos ligeramente corruptos' . "\n" . '7 = Datos extensos y gravemente corruptos' . "\n" . '9 = Todos los datos están totalmente corruptos',
+    'LossOfAvailabilityHelp' => '¿Cuánto servicio podría perderse y cuán vital es?' . "\n" . '1 = Interrupción mínima de servicios secundarios' . "\n" . '5 = Interrupción de los servicios primarios mínimos' . "\n" . '5 = Interrupción de servicios secundarios extensos' . "\n" . '7 = Interrupción generalizada de los servicios primarios' . "\n" . '9 = Todos los servicios completamente perdidos',
+    'LossOfAccountabilityHelp' => '¿Es posible rastrear las acciones de los agentes de la amenaza hasta un individuo?' . "\n" . '1 = Totalmente trazable' . "\n" . '7 = Posiblemente rastreable' . "\n" . '9 = Completamente anónimo',
+    'FinancialDamageHelp' => '¿Qué perjuicio económico podría ocasionar una vulnerabilidad?' . "\n" . '1 = Menos que el costo de solucionar la vulnerabilidad' . "\n" . '3 = Efecto menor en la ganancia anual' . "\n" . '7 = Efecto significativo en las ganancias anuales' . "\n" . '9 = Quiebra',
+    'ReputationDamageHelp' => '¿Una vulnerabilidad podría causar daños a la reputación de la empresa y perjudicarla?' . "\n" . '1 = Daño mínimo' . "\n" . '4 = Pérdida de cuentas importantes' . "\n" . '5 = Pérdida de fondo de comercio' . "\n" . '9 = Daño a la marca',
+    'NonComplianceHelp' => '¿Qué nivel de riesgo conlleva el incumplimiento?' . "\n" . '2 = Infracción menor' . "\n" . '5 = Clara infracción' . "\n" . '7 = Violación de alto perfil',
+    'PrivacyViolationHelp' => '¿Cuánta información personal identificable podría divulgarse?' . "\n" . '3 = Un individuo' . "\n" . '5 = Cientos de personas' . "\n" . '7 = Miles de personas' . "\n" . '9 = Millones de personas',
+    // The OWASP holder's Score card heading. No existing key covers this
+    // (confirmed via grep before adding) -- the Likelihood/Impact card
+    // headings reuse the already-existing bare 'Likelihood'/'Impact' keys.
+    'OwaspScore' => 'Puntuación OWASP',
+    // Phase 4d-iv follow-up: group-level descriptions for the 4 OWASP
+    // subgroup headings, sourced from OWASP's own Risk Rating Methodology
+    // (https://community.owasp.org/OWASP_Risk_Rating_Methodology), tightened
+    // into short UI captions -- not a verbatim quote (see this task's own
+    // source table for the original wording).
+    'ThreatAgentFactorsDescription' => 'Estima la probabilidad de un ataque exitoso por parte de este grupo de agentes maliciosos.',
+    'VulnerabilityFactorsDescription' => 'Estima la probabilidad de que esta vulnerabilidad sea descubierta y explotada.',
+    'TechnicalImpactDescription' => 'Analiza el impacto en función de la confidencialidad, la integridad, la disponibilidad y la rendición de cuentas.',
+    'BusinessImpactDescription' => 'Refleja lo que le importa al negocio, más allá del impacto puramente técnico.',
+    // CVSS's own Temporal-metric 'Exploitability' help text. This key shares
+    // a labelKey ('Exploitability') with DREAD's own field, so both would
+    // otherwise derive the same generic lang key ('ExploitabilityHelp'),
+    // with DREAD's entry silently winning for both -- risk-details-form.js's
+    // buildCvssScoreItem() and risk-details-view.js's cvssMetricValueRow()
+    // reference this key directly for CVSS's Exploitability field instead
+    // of the generic '<labelKey>Help' derivation.
+    'CVSSExploitabilityHelp' => "Estado actual de las técnicas de explotación o disponibilidad de código.\n• No probado: no hay código de explotación disponible, o la explotación es teórica.\n• Prueba de concepto: existe código de explotación pero no es práctico para la mayoría de los atacantes.\n• Funcional: el código de explotación funcional funciona en la mayoría de las situaciones.\n• Alto: la explotación es confiable y automatizada (por ejemplo, un gusano) o no requiere código de explotación en absoluto.",
+    // Risk Scoring -- Classic Inline (Task 3): the Classic scoring method's
+    // new inline Score card heading and its Likelihood/Impact cards' short
+    // plain-English descriptions (js/simplerisk/common/risk-details-form.js's
+    // buildClassicHolder()). Deliberately NOT sourced from NIST SP 800-30 or
+    // any other external standard -- confirmed with the user via the
+    // approved mockup review, unlike OWASP's own subgroup descriptions
+    // above, which do cite OWASP's Risk Rating Methodology.
+    'ClassicScore' => 'Banda sonora clásica',
+    'ClassicLikelihoodDescription' => '¿Qué probabilidad hay de que se produzca este riesgo?',
+    'ClassicImpactDescription' => '¿Qué tan graves serían las consecuencias si se materializara este riesgo?',
+    // Risk Scoring -- Custom Inline (Task 2): the Custom scoring method's
+    // new inline Score card heading (js/simplerisk/common/risk-details-form.js's
+    // buildCustomHolder()) and the Custom Value card's short description
+    // caption. 'CustomValueDescription' text confirmed directly with the
+    // user, same as Classic's own description keys above.
+    'CustomScore' => 'Puntuación personalizada',
+    'CustomValueDescription' => 'Un valor personalizado puede ser un valor decimal entre 0 y 10.',
+    // Risk Scoring -- Contributing Risk Inline (Phase 4d-v): the last of
+    // the three deferred scoring methods (DREAD/OWASP shipped earlier in
+    // this same project). The Likelihood/Contributing Risk cards' short
+    // plain-English descriptions (js/simplerisk/common/risk-details-form.js's
+    // buildContributingRiskHolder()). The Score card heading reuses the
+    // EXISTING 'ContributingRiskScore' key (already present above, same
+    // text) rather than duplicating it -- 'ContributingRisk'/
+    // 'ContributingLikelihood'/'Weight'/'Subject' are likewise reused as-is.
+    'ContributingLikelihoodDescription' => '¿Qué probabilidad hay de que se produzca este riesgo?',
+    'ContributingRiskDescription' => 'Cada factor que se muestra a continuación está ponderado según su importancia relativa; seleccione cuánto influye cada uno de ellos en este riesgo.',
+    // OWASP read-mode card (buildOwaspReadView(), risk-details-view.js):
+    // the live calculation formula under each of the 4 sub-group names
+    // (Threat Agent Factors/Vulnerability Factors/Technical Impact/
+    // Business Impact), matching the legacy risk-scoring-details panel's
+    // own "= ( a + b + c + d ) / 4" text (includes/display.php), and the
+    // OWASP Risk Rating Methodology link note placed in the OWASP Score
+    // column's open space below the summary numbers.
+    'OwaspSubgroupFormula' => '= ( {a} + {b} + {c} + {d} ) / 4',
+    'OwaspMethodologyNote' => 'Se pueden encontrar todos los detalles de la metodología de calificación de riesgos de OWASP.',
+    'Here' => 'aquí',
+    // Scoring widget formula captions (Classic/DREAD/Contributing Risk),
+    // the same ".sr-cvss-vector under the score label" treatment CVSS's
+    // vector caption and OwaspSubgroupFormula above already have, on both
+    // the edit-mode holder (risk-details-form.js) and the read-mode card
+    // (risk-details-view.js). Classic reuses the existing RISKClassicExp1-5
+    // keys instead of a new one -- see those keys' own long-standing
+    // definitions above.
+    'DreadScoreFormula' => '= ( {a} + {b} + {c} + {d} + {e} ) / 5',
+    // Contributing Risk's per-factor weighted term and its shared
+    // Likelihood term (update_contributing_risk_score(), includes/
+    // functions.php) -- unlike DREAD/OWASP's fixed roster, the factor list
+    // is admin-configured, so this is one formula PER FACTOR ROW rather
+    // than one fixed caption under the total score.
+    // {maxName}: score.php parity -- legacy's "Maximum Value" column showed
+    // the max option's human-readable name alongside its number (e.g.
+    // "[5] Certain", includes/display.php); these formulas only showed the
+    // bare number.
+    'ContributingLikelihoodFormula' => '= {value} x 5 / {max} ({maxName})',
+    'ContributingFactorFormula' => '= {weight}% x {impact} x 5 / {max} ({maxName})',
+    // Contributing Risk's own subscore row in the Score card -- the sum of
+    // every factor's own term above it. Generic (not substituted with real
+    // numbers) since the number of terms is however many factors are
+    // configured, unlike the fixed-roster formulas above.
+    'ContributingRiskSubtotalFormula' => '= Suma de ( Peso x Impacto x 5 / Máx )',
+    // Contributing Risk Score's own formula, under the total row -- always
+    // exactly 2 terms (unlike the Contributing Risk subtotal above), so
+    // substituted with the real current subtotal values, same convention
+    // DreadScoreFormula/OwaspSubgroupFormula use for their own fixed roster.
+    'ContributingRiskScoreFormula' => '= {likelihood} + {contributing}',
+    // Risk Scoring History widget (risk-details-view.js) -- replaces the
+    // legacy chart's bare save icon with a real menu item, structured for
+    // future export types alongside it.
+    'DownloadChartAsImage' => 'Descargar como imagen',
+    // Legacy score.php's CVSS table had a "Full details of CVSS Version 2.0
+    // scoring can be found here." link (includes/display.php); this is its
+    // inline-scoring-card equivalent, same shape as OwaspMethodologyNote.
+    'CvssMethodologyNote' => 'Los detalles completos de la puntuación de la versión 2.0 de CVSS se pueden encontrar',
+    // Mitigation Controls redesign: the picker reuses ChooseControls/
+    // AddOrRemoveControls/etc from Document Program's control picker.
+    'InvalidControlID' => 'ID de control no válido.',
+    'ValidationOwner' => 'Propietario de la validación',
+    'ValidationStatus' => 'Estado de validación',
+    'NotStarted' => 'No ha comenzado',
+    // management/view.php's "risk ID does not exist" empty state.
+    'RiskIdDoesNotExistBody' => 'Es posible que el riesgo que busca haya sido eliminado o que el enlace sea incorrecto.',
+    'MitigationControlsRequiresGovernance' => 'Se requiere permiso de Gobernanza para visualizarlo.',
+    'ViewControlValidation' => 'Validación del control de vista',
+    'EditControlValidation' => 'Validación del control de edición',
+    'SupportingDocumentationRequiresSubmitRisk' => 'Se requiere permiso para enviar información sobre riesgos para cargar archivos.',
+    'SupportingDocumentationRequiresModifyRisks' => 'Requiere permiso para modificar riesgos para administrar archivos.',
+    'MitigationSupportingDocumentationRequiresPlanMitigations' => 'Requiere permiso de Plan Mitigations para administrar archivos.',
+    'MitigationSubmittedBy' => 'Medidas de mitigación presentadas por',
+    'UseADifferentDate' => 'Utilice una fecha diferente',
+    'AssetGroup' => 'Grupo de Activos',
+    // Customization Cards Layout API (extras/customization/index.php) scope-validation errors.
+    'InvalidFgroup' => 'Grupo de funciones no válido.',
+    'CustomizationCardsLayoutApiScopeError' => 'La API de diseño de tarjetas de personalización solo está disponible para fgroup=risk, tab_index=1, tab_index=2 o tab_index=3.',
+    // Asset management redesign
+    'DiscoverAssets' => 'Descubra activos',
+    'DiscoveryRuns' => 'Discovery se ejecuta',
+    'DiscoveryRangeHint' => 'Una dirección, un rango de inicio-fin o un rango CIDR IPv4.',
+    'DiscoveryResolveNames' => 'Buscar nombres de host',
+    'DiscoveryAddAs' => 'Agregar nuevos activos como',
+    'DiscoveryStart' => 'Comienza el descubrimiento',
+    'DiscoveryBackgroundNote' => 'Se ejecuta en segundo plano. Las direcciones que ya existen se omiten.',
+    'DiscoveryRangeInvalid' => 'Introduzca una dirección IPv4, un rango o un bloque CIDR válido.',
+    'DiscoveryRangeTooLarge' => 'Ese rango es demasiado grande. El límite es {$max} direcciones.',
+    'DiscoveryRunQueued' => 'El descubrimiento ha comenzado.',
+    'DiscoveryRunCompleted' => 'Descubrimiento finalizado: {$new} nuevos activos.',
+    'AssetBulkSelectAll' => 'Seleccione todos los activos {$count}',
+    'AssetBulkAssignTeams' => 'Asignar equipos…',
+    'AssetBulkAddToGroup' => 'Agregar al grupo…',
+    'AssetBulkDeleteConfirmTitle' => '¿Eliminar los activos {$count}?',
+    'AbleToEditAssets' => 'Capaz de editar activos',
+    'AbleToDeleteAssets' => 'Capaz de eliminar activos',
+    'AbleToVerifyAssets' => 'Capaz de verificar activos',
+    'AbleToRunAssetDiscovery' => 'Capaz de ejecutar descubrimiento de activos',
+    'AbleToCreateAssetGroups' => 'Capaz de crear grupos de activos',
+    'AbleToEditAssetGroups' => 'Capaz de editar grupos de activos',
+    'AbleToDeleteAssetGroups' => 'Posibilidad de eliminar grupos de activos',
+    'ViewAsset' => 'Ver activo',
+    'AssetUnverifiedByEditLog' => 'El activo "{$name}" fue devuelto como no verificado porque el usuario "{$user}" cambió su nombre o dirección IP sin el permiso para verificar activos.',
+    'AssetTeamsAssignedLog' => 'El recurso "{$name}" fue asignado al/los equipo(s) "{$teams}" por el usuario "{$user}".',
+    // Manage assets page (asset management redesign, Task 9)
+    'AddAsset' => 'Agregar activo',
+    'SearchAssetsPlaceholder' => 'Buscar por nombre o dirección IP',
+    'AllLocations' => 'Todas las ubicaciones',
+    'AllTags' => 'Todas las etiquetas',
+    'AllAssetGroups' => 'Todos los grupos de activos',
+    'AssetFields' => 'Campos de activos',
+    'AssetBulkAllSelected' => 'Se han seleccionado todos los activos coincidentes {$count}',
+    'AssetDeleteConfirmTitle' => '¿Eliminar el activo "{$name}"?',
+    'DeleteAsset' => 'Eliminar activo',
+    'DeleteAssets' => 'Eliminar activos',
+    'AssetBulkAssignTeamsTitle' => 'Asignar equipos a los activos {$count}',
+    'AssetAssignTeamsHint' => 'Se añaden los equipos seleccionados. Los equipos que ya están en un activo permanecen.',
+    'AssetAddToGroupTitle' => 'Agregar {$count} activos a un grupo',
+    'AssetChooseTeams' => 'Elige equipos',
+    'AssetChooseGroup' => 'Elige un grupo',
+    'Assign' => 'Asignar',
+    'AssetBulkVerifiedSummary' => '{$ok} verificado, {$failed} omitido',
+    'AssetBulkDeletedSummary' => '{$ok} eliminado, {$failed} omitido',
+    'AssetBulkTeamsSummary' => 'Equipos asignados a {$ok} activos, {$failed} omitido',
+    'AssetBulkGroupSummary' => '{$ok} añadido al grupo, {$failed} omitido',
+    'AssetBulkSkippedList' => 'Omitido: {$list}',
+    'AssetBulkReasonNotFound' => 'extraviado',
+    'NoAssetsYet' => 'Aún no hay activos.',
+    'NoAssetsYetHint' => 'Los recursos que añadas o descubras aparecerán aquí.',
+    'NoAssetsMatchFilters' => 'No se encontraron activos que coincidan con sus filtros.',
+    'CouldNotLoadAssets' => 'No se pudieron cargar los archivos. Tus datos están a salvo.',
+    'AllValuations' => 'Todas las valoraciones',
+    // Manage assets page, Asset groups tab (asset management redesign, Task 10)
+    'AddAssetGroup' => 'Agregar grupo',
+    'EditAssetGroup' => 'Editar grupo',
+    'DeleteAssetGroup' => 'Eliminar grupo',
+    'ViewGroupMembers' => 'Ver miembros',
+    'SearchAssetGroupsPlaceholder' => 'Buscar grupos por nombre',
+    'HighestValuation' => 'Valoración más alta',
+    'LinkedRisks' => 'Riesgos vinculados',
+    'RemoveFromGroup' => 'Eliminar del grupo',
+    'AssetGroupMoreMembers' => '+ {$count} más',
+    'ViewAllInAssetsTab' => 'Ver todo en la pestaña Activos',
+    'NoAssetsInGroup' => 'No hay activos en este grupo.',
+    'CouldNotLoadGroupMembers' => 'No se pudieron cargar los miembros de este grupo.',
+    'AssetGroupMembers' => 'Miembros',
+    'AssetGroupMembersHint' => 'Solo se muestran los activos que puedes ver. Los miembros que no puedes ver permanecen en el grupo.',
+    'ChooseAssets' => 'Seleccionar activos',
+    'AddOrRemoveAssets' => 'Agregar o eliminar activos…',
+    'UseTheseAssets' => 'Utilice estos recursos',
+    'AllAssets' => 'Todos los activos',
+    'Valuation' => 'Valuación',
+    'PickerShowingFirstN' => 'Mostrando el primer {$count} de {$total}. Busca o filtra para encontrar el resto.',
+    'AssetGroupDeleteConfirmTitle' => '¿Eliminar grupo "{$name}"?',
+    'AssetGroupDeleteKeepsAssets' => 'Los activos de este grupo no se eliminan. Solo se elimina el grupo.',
+    'NoAssetGroupsYet' => 'Aún no hay grupos de activos',
+    'NoAssetGroupsYetHint' => 'Agrupa los activos para poder visualizarlos y generar informes sobre ellos de forma conjunta.',
+    'NoAssetGroupsMatchSearch' => 'No se encontraron grupos de activos que coincidan con su búsqueda.',
+    'CouldNotLoadAssetGroups' => 'No se pudieron cargar los grupos de activos. Sus datos están a salvo.',
+    'DiscoveryAssignTeams' => 'Asignar a equipos',
+    'DiscoveryAssignTeamsHint' => 'Opcional. Cada nuevo activo se añade a estos equipos.',
+    'DiscoveryAddAsHint' => 'Establecido según su permiso para verificar activos.',
+    'DiscoveryTeamsInvalid' => 'Elige equipos que existan y a los que pertenezcas.',
+    'DiscoveryResolveNamesInvalid' => 'La opción de buscar nombres de host debe estar activada o desactivada.',
+    'DiscoveryTooManyActiveRuns' => 'Ya tienes {$max} recorridos de descubrimiento en curso. Espera a que uno termine o cancélalo.',
+    'DiscoveryRunNotFound' => 'No se encontró ninguna prueba de detección.',
+    'DiscoveryRunAlreadyFinished' => 'Esta fase de exploración ya ha finalizado.',
+    'DiscoveryRunCancelled' => 'Se canceló la prueba de descubrimiento.',
+    'DiscoveryRunFailedToast' => 'Falló el descubrimiento de {$range}.',
+    'DiscoveryStatusQueued' => 'En cola',
+    'DiscoveryProgress' => '{$scanned} de {$total}',
+    'DiscoveryLiveHosts' => 'Presentadores en directo',
+    'DiscoveryNewAssets' => 'Nuevos activos',
+    'DiscoveryStartedAt' => 'Comenzó',
+    'DiscoveryCancelRun' => 'Cancelar la ejecución',
+    'CouldNotLoadDiscoveryRuns' => 'No se pudieron cargar las ejecuciones de descubrimiento.',
+    'DiscoveryRangeReserved' => 'Ese rango incluye direcciones reservadas (loopback, link-local, multicast o 0.0.0.0/8) que no se pueden escanear.',
+    'DiscoveryTooManyActiveRunsInstance' => 'Ya hay {$max} ejecuciones de descubrimiento en curso. Inténtalo de nuevo cuando termine una.',
+    'DiscoveryErrorScan' => 'El análisis se detuvo debido a un error. Consulte los registros del sistema para obtener más detalles.',
+    'DiscoveryErrorWorkerLost' => 'La cola de procesamiento en segundo plano dejó de procesar esta ejecución.',
+    'DiscoveryErrorRequesterInactive' => 'El usuario que inició esta partida ya no está activo.',
+    // Asset management redesign: translated API errors (bulk actions, column settings, discovery) and discovery audit lines
+    'AssetBulkBodyInvalid' => 'Envía la acción masiva como un cuerpo JSON.',
+    'AssetBulkActionRequired' => 'Seleccione una acción masiva.',
+    'AssetBulkUnknownAction' => 'Esa acción masiva no está disponible.',
+    'AssetBulkSelectionRequired' => 'Seleccione los activos por ID o mediante un filtro.',
+    'AssetBulkIdsRequired' => 'Seleccione al menos un activo.',
+    'AssetBulkIdsInvalid' => 'Los identificadores de activos deben ser números enteros.',
+    'AssetBulkTooManyAssets' => 'Puedes actuar sobre un máximo de {$max} activos a la vez. Limita tu selección e inténtalo de nuevo.',
+    'AssetBulkFilterInvalid' => 'El filtro no es válido. Recarga la página e inténtalo de nuevo.',
+    'AssetBulkFilterUnknownKey' => 'El filtro "{$key}" no se reconoce.',
+    'AssetBulkFilterBadValue' => 'El filtro "{$key}" tiene un valor que no es válido.',
+    'AssetBulkFilterTooManyValues' => 'El filtro "{$key}" puede listar como máximo {$max} valores.',
+    'AssetBulkFilterAllAlone' => 'La selección de todos los activos no se puede combinar con otros filtros.',
+    'AssetBulkFilterEmpty' => 'Antes de ejecutar una acción masiva, seleccione un filtro o seleccione todos los activos.',
+    'AssetBulkExpectedCountInvalid' => 'El número esperado de activos debe ser un número entero.',
+    'AssetBulkParamsInvalid' => 'Las opciones para esta acción masiva no son válidas.',
+    'AssetBulkTeamsRequired' => 'Elige al menos un equipo.',
+    'AssetBulkTeamsNotFound' => 'Uno o más de esos equipos ya no existen.',
+    'AssetBulkTeamsNotMember' => 'Solo puedes asignar equipos a los que perteneces.',
+    'AssetBulkGroupNotFound' => 'Ese grupo de activos ya no existe.',
+    'AssetBulkNoMatch' => 'No se encontraron activos que coincidan con su selección.',
+    'AssetBulkCountMismatch' => 'Los elementos coincidentes cambiaron de {$expected} a {$actual} desde que los seleccionaste. Revisa la lista e inténtalo de nuevo.',
+    'AssetColumnSettingsBodyInvalid' => 'Envíe la configuración de las columnas como un cuerpo JSON con las columnas o el orden.',
+    'AssetColumnSettingsSaveFailed' => 'No se pudieron guardar las columnas. Pídele a un administrador que finalice la actualización de SimpleRisk.',
+    'DiscoveryRunQueueFailed' => 'No se pudo poner en cola la ejecución de descubrimiento. Inténtalo de nuevo.',
+    'DiscoveryRunStartedLog' => 'La ejecución de descubrimiento de activos #{$id} de {$range} (direcciones{$count} ) fue iniciada por el usuario "{$user}".',
+    'DiscoveryRunCancelledLog' => 'La ejecución de descubrimiento de activos #{$id} de {$range} fue cancelada por el usuario "{$user}".',
+    'AssetBulkTooManyToDelete' => 'Puedes eliminar como máximo {$max} recursos a la vez. Limita tu selección e inténtalo de nuevo.',
+    'AssetBulkFilterNotApplied' => 'El filtro "{$key}" no se pudo aplicar tal como se envió, por lo que no se cambió nada.',
+    'AssetBulkExpectedCountRequired' => 'Para eliminar activos mediante filtros, necesita especificar la cantidad de activos que desea eliminar.',
+    'AssetBulkReasonNotAttempted' => 'no se intentó',
+    'MoreActions' => 'Más acciones',
+    'AssetCreateNewGroupOption' => 'Crear un nuevo grupo…',
+    'AssetNewGroupName' => 'Nuevo nombre de grupo',
+    'AssetFilterByTeam' => 'Filtrar por equipo {$name}',
+    'AssetFilterByValuation' => 'Filtrar por valoración {$name}',
+    'AssetFilterByTag' => 'Filtrar por etiqueta {$name}',
+    'AssetFilterByLocation' => 'Filtrar por sitio/ubicación {$name}',
+    'AssetFilteringByTeam' => 'Filtrado por equipo {$name}',
+    'AssetFilteringByValuation' => 'Filtrado por valoración {$name}',
+    'AssetFilteringByTag' => 'Filtrado por etiqueta {$name}',
+    'AssetFilteringByLocation' => 'Filtrado por sitio/ubicación {$name}',
+    'AssetShowOnlyVerified' => 'Mostrar solo activos verificados',
+    'AssetShowOnlyUnverified' => 'Mostrar solo activos no verificados',
+    'AssetShowingVerified' => 'Mostrando activos verificados',
+    'AssetShowingUnverified' => 'Mostrando activos no verificados',
+    'CustomizationLayoutPayloadRejected' => 'No se pudo guardar el diseño porque contiene campos o tarjetas que no pertenecen a esta plantilla. No se realizó ningún cambio.',
+    'CustomizationLayoutRejectedUnknownScope' => 'Este ámbito de plantilla no se puede guardar desde el editor de diseño. No se ha modificado nada.',
+    'CustomizationLayoutRejectedEmptyFields' => 'El diseño no tiene campos válidos, por lo que no se guardó. No se modificó nada.',
+    'CustomizationLayoutRejectedWouldDeleteAll' => 'Guardar este diseño eliminaría todos los campos de la plantilla, por lo que no se guardó. Recargue la página e inténtelo de nuevo.',
+    'CustomizationLayoutRejectedRequiredField' => 'No se puede eliminar un campo obligatorio del diseño. No se ha modificado nada.',
+    'CustomizationLayoutRejectedBulkRemoval' => 'Al guardar este diseño, se eliminarían la mayoría de los campos de la plantilla si no los eliminas aquí. Recarga la página e inténtalo de nuevo. No se ha realizado ningún cambio.',
+    'CustomizationLayoutRejectedGroupMismatch' => 'El grupo de plantillas no existe o pertenece a un tipo de registro diferente. No se ha modificado nada.',
+    'CustomizationLayoutLegacySaveRefused' => 'Esta plantilla se edita con el editor de diseño y no se puede guardar a través del punto final del panel heredado.',
+    // Asset discovery probe methods
+    'DiscoveryPortsInvalid' => 'Introduzca hasta {$max} puertos TCP entre 1 y 65535, separados por comas.',
+    'DiscoveryErrorProbeUnavailable' => 'El método de sondeo con el que se inició esta ejecución ya no está disponible para el proceso en segundo plano. Inicie una nueva ejecución.',
+    'DiscoveryProbeIcmpUnprivileged' => 'Ping ICMP (socket no privilegiado)',
+    'DiscoveryProbeIcmpRaw' => 'Ping ICMP (socket sin procesar)',
+    'DiscoveryProbePingCommand' => 'Ping ICMP (comando ping)',
+    'DiscoveryProbeTcpConnect' => 'Conexión TCP',
+    'DiscoveryProbeMethod' => 'Método de sondeo: {$method}',
+    'DiscoveryProbeDetectedByWebServer' => 'Detectado por el servidor web. El proceso en segundo plano puede utilizar un método diferente.',
+    'DiscoveryTcpProbeWarning' => 'Los hosts solo se detectan si responden en alguno de los puertos TCP escaneados; por lo tanto, los hosts que bloquean esos puertos no se encontrarán. Para obtener resultados completos, permita que el servidor envíe pings ICMP: habilite los sockets de ping sin privilegios o la capacidad NET_RAW, o instale ping.',
+    'DiscoveryTcpPortsForRun' => 'Puertos TCP para esta ejecución',
+    'DiscoveryTcpPortsHint' => 'Separados por comas, hasta {$max} puertos. Déjelo en blanco para usar el valor predeterminado: {$ports}.',
+    'DiscoveryDefaultTcpPorts' => 'Puertos TCP de descubrimiento de activos',
+    'DiscoveryDefaultTcpPortsHint' => 'Se utiliza cuando el proceso en segundo plano no puede enviar pings ICMP. Separados por comas, hasta {$max} puertos.',
+    'DiscoveryErrorTcpUnreliable' => 'El escaneo se detuvo porque la red responde a las conexiones TCP de direcciones que no pueden ser hosts reales (debido a un proxy o un cortafuegos), por lo que todas las direcciones aparecerían como activas. Pídele a tu administrador que permita que el servidor envíe pings ICMP.',
+    'DiscoveryDefaultTcpPortsResetLog' => 'Los puertos TCP de descubrimiento de activos fueron restablecidos a los valores predeterminados por el usuario "{$user}".',
+    'DiscoveryNotConfigured' => 'La detección no está configurada. Pida a su administrador de sistema que configure los rangos permitidos en config.php.',
+    'DiscoveryRangeNotAllowed' => 'Ese rango está fuera de los rangos que el sistema de detección tiene permitido escanear.',
+    'DiscoveryAllowedRangesList' => 'Rangos permitidos: {$ranges}',
+    // Asset record modal
+    'AssetNotAvailable' => 'Este recurso no está disponible. Puede que se haya eliminado o que no tengas acceso a él.',
+    'AssetCustomFieldNotInTemplate' => 'Uno o más campos personalizados no pertenecen a la plantilla de este recurso. No se realizó ningún cambio.',
+    'AssetMappedControlsInvalid' => 'No se pudieron guardar los controles asignados. Cada fila requiere un nivel de madurez y al menos un control existente. No se realizó ningún cambio.',
+    'AssetMappedControlsTooMany' => 'Un activo puede asignarse a un máximo de {$max} controles. No se modificó nada.',
+    'AddControlsAtAnotherMaturity' => 'Agregar controles en otra etapa de madurez.',
+    'ChoosingControlsNeedsGovernancePermission' => 'Para seleccionar los controles se necesita el permiso de Gobernanza.',
+    'NControls' => '{n} control(es)',
+    'SavingKeepsTheCurrentControlMappings' => 'Al guardar, se conservan las asignaciones de controles actuales.',
+    'LoadingControls' => 'Cargando controles…',
+    'ControlListCouldNotBeLoaded' => 'No se pudo cargar la lista de controles, por lo que los controles asignados no se pueden modificar en este momento.',
+    'RemoveControlsAtMaturity' => 'Eliminar los controles al alcanzar la madurez {maturity}',
+    'ControlIdUnavailable' => '#{id} (no disponible)',
+    'AssetRecordEdit' => 'Editar recurso',
+    'AssetRecordIdN' => 'Activo #{$id}',
+    'AssetRecordCopyLink' => 'Copiar enlace a este recurso',
+    'AssetRecordLinkCopied' => 'Enlace copiado.',
+    'AssetRecordLinkCopyFailed' => 'No se pudo copiar el enlace. Cópielo desde la barra de direcciones.',
+    'AssetRecordMarkUnverified' => 'Marcar como no verificado',
+    'AssetRecordViewAuditTrail' => 'Ver registro de auditoría',
+    'AssetRecordAuditTrailTitle' => 'Registro de auditoría',
+    'AssetRecordAuditTrailEmpty' => 'No se registró ninguna actividad relacionada con este activo durante este período.',
+    'AssetRecordAuditTrailFailed' => 'No se pudo cargar el registro de auditoría.',
+    'AssetRecordBackToAsset' => 'Volver al activo',
+    'AssetRecordSave' => 'Guardar activo',
+    'AssetRecordProvenanceVerified' => 'Verificado · añadido {$date}',
+    'AssetRecordProvenanceUnverified' => 'Sin verificar: aún no confirmado por alguien que pueda verificar los activos · añadido {$date}',
+    'AssetRecordUnsavedHint' => 'Si cierra la aplicación sin guardar los cambios, le pedirá que confirme primero.',
+    'AssetRecordDiscardQuestion' => '¿Descartar los cambios no guardados?',
+    'AssetRecordKeepEditing' => 'Sigue editando',
+    'AssetRecordDiscardChanges' => 'Descartar cambios',
+    'AssetRecordVerificationCard' => 'Verificación',
+    'AssetRecordVerificationTag' => 'Necesita el permiso de verificación de activos',
+    'AssetRecordVerifiedHint' => 'Alguien responsable ha revisado este activo. Cambiar su nombre o dirección IP sin el permiso de verificación lo devuelve al estado no verificado.',
+    'AssetRecordLoadFailed' => 'No se pudo cargar el archivo. Inténtelo de nuevo.',
+    'CustomizationCardsLayoutApiScopeErrorWithAsset' => 'La API de diseño de tarjetas de personalización solo está disponible para fgroup=risk (tab_index 1, 2 o 3) y fgroup=asset (tab_index 1).',
+    'DiscoveryErrorRequesterNotPermitted' => 'El usuario que inició esta ejecución ya no tiene permiso para ejecutar el descubrimiento de activos.',
+    'AssetRecordEditField' => 'Editar {$field}',
+    // Asset Scoring (FIPS 199 categorization + weighted score)
+    'Confidentiality' => 'Confidencialidad',
+    'Integrity' => 'Integridad',
+    'Availability' => 'Disponibilidad',
+    'AssetScoringLevelLow' => 'Bajo',
+    'AssetScoringLevelModerate' => 'Moderado',
+    'AssetScoringLevelHigh' => 'Alto',
+    'AssetScoringValueInvalid' => 'La confidencialidad, la integridad y la disponibilidad aceptan niveles bajo, moderado o alto (la confidencialidad también acepta no aplicable).',
+    'AssetScoringChangedLog' => 'El activo "{$name}" {$objective} fue cambiado de {$from} a {$to} por el usuario "{$user}".',
+    'FIPSCategorization' => 'Categorización FIPS',
+    'WeightedScore' => 'Puntuación ponderada',
+    'WeightedBand' => 'Banda ponderada',
+    'AllCategorizations' => 'Todas las categorías',
+    'AllBands' => 'Todas las bandas',
+    'AssetFilterByCategorization' => 'Filtrar por categorización FIPS {$name}',
+    'AssetFilteringByCategorization' => 'Filtrado por categorización FIPS {$name}',
+    'AssetFilterByBand' => 'Filtrar por banda ponderada {$name}',
+    'AssetFilteringByBand' => 'Filtrado por banda ponderada {$name}',
+    'AssetScoring' => 'Calificación de activos',
+    'AssetScoringSettingsHint' => 'Cada activo se clasifica como Bajo, Moderado o Alto en cuanto a confidencialidad, integridad y disponibilidad. La confidencialidad puede no ser aplicable, lo que lo excluye de ambos resultados. Su categorización FIPS es la más alta de las tres clasificaciones. Su puntuación ponderada es el promedio ponderado de los tres valores de nivel, y los umbrales de banda convierten esa puntuación en una banda Baja, Moderada o Alta. Modificar esta configuración recalifica cada activo de inmediato.',
+    'Weights' => 'Pesos',
+    'AssetScoringWeightsHint' => 'Valor de cada objetivo en la puntuación ponderada: de 0 a 100, con hasta dos decimales. Un valor de 0 excluye dicho objetivo. Integridad y Disponibilidad no pueden ser ambas 0, ya que la confidencialidad no aplicable siempre se excluye.',
+    'LevelValues' => 'Valores de nivel',
+    'AssetScoringLevelValuesHint' => 'El valor que aporta cada calificación a la puntuación ponderada: entre 0 y 100, con hasta dos decimales, y Bajo por debajo de Moderado por debajo de Alto. Los valores predeterminados son Bajo 1, Moderado 2 y Alto 3.',
+    'BandThresholds' => 'Umbrales de banda',
+    'AssetScoringBandThresholdsHint' => 'Una puntuación ponderada igual o superior a un umbral se encuentra dentro de esa banda, y una puntuación inferior al umbral Moderado se considera Baja. El valor Moderado debe comenzar por encima del valor Bajo, y el valor Alto debe comenzar por encima del valor Moderado y no superar el valor Alto.',
+    'ModerateStartsAt' => 'El nivel moderado comienza en',
+    'HighStartsAt' => 'Lo alto comienza en',
+    'DefaultScoringForNewAssets' => 'Puntuación predeterminada para nuevos activos',
+    'AssetScoringDefaultsHint' => 'Preselecciona estas calificaciones cuando alguien agrega un activo en el formulario de activos. Los activos creados mediante descubrimiento, importación o API permanecen sin calificación a menos que proporcionen sus propias calificaciones. Deje las tres opciones en No para desactivar esta función.',
+    'AssetScoringWeightsInvalid' => 'Los pesos de la puntuación de activos deben ser números del 0 al 100 con un máximo de dos decimales, y la integridad y la disponibilidad no pueden ser ambas iguales a 0.',
+    'AssetScoringValuesInvalid' => 'Los valores del nivel de puntuación de activos deben ser números superiores a 0 y hasta 100 con un máximo de dos decimales, donde Bajo es inferior a Moderado y este a Alto.',
+    'AssetScoringThresholdsInvalid' => 'Los umbrales de la banda de puntuación de activos deben tener como máximo dos decimales, comenzando Moderado por encima del valor Bajo, Alto por encima de Moderado y Alto sin superar el valor Alto.',
+    'AssetScoringDefaultsInvalid' => 'La puntuación predeterminada para los nuevos activos debe ser un nivel que ofrezca cada objetivo.',
+    'AssetScoringSettingsNotSaved' => 'No se pudieron guardar los ajustes de puntuación de activos. No se modificó nada.',
+    'AssetScoringSettingsChangedLog' => 'La configuración de puntuación de activos fue modificada por el usuario "{$user}".',
+    'AssetScoringNotSet' => 'No está configurado',
+    'NotScored' => 'No puntuado',
+    'AssetScoringNotScoredHint' => 'Responda a los tres objetivos para puntuar este recurso.',
+    'ImportAssetScoringValueIgnored' => 'El valor {$objective} "{$value}" para el activo "{$asset_name}" no es una calificación válida y fue ignorado.',
+    'AssetScoringSecurityObjectives' => 'Objetivos de seguridad',
+    'AssetScoringConfidentialityHelp' => '¿Cuál sería el impacto potencial en caso de una divulgación no autorizada de la información sobre este activo?',
+    'AssetScoringIntegrityHelp' => '¿Cuál sería el impacto potencial en caso de modificación o destrucción no autorizada de la información contenida en este activo?',
+    'AssetScoringAvailabilityHelp' => '¿Cuál sería el impacto potencial si se interrumpiera el acceso o el uso de este activo?',
+    'AssetScoringHelpHigh' => 'Efecto adverso grave o catastrófico',
+    'AssetScoringHelpModerate' => 'Efecto adverso grave',
+    'AssetScoringHelpLow' => 'Efecto adverso limitado o nulo',
+    'AssetScoringHelpNotApplicable' => 'La confidencialidad no es un problema para este activo (por ejemplo, información pública).',
+    'AssetScoringHelpLabel' => '{$objective} guía de calificación',
+    'AssetScoringMeterValue' => '{$score}, {$band} banda',
+    'AssetScoringNoWeightedScore' => 'Sin puntuación ponderada',
+    'AssetScoringNoWeightedScoreNote' => 'Sin puntuación ponderada: cada objetivo que cuenta tiene un peso de 0.',
+    'AssetScoringUpgradePending' => 'La puntuación de activos no se puede guardar hasta que se haya ejecutado la actualización de la base de datos de SimpleRisk. No se realizó ningún cambio.',
+    'AssetScoringResultHelpLabel' => '{$result} explicación',
+    'AssetScoringScoreHelp' => 'La puntuación ponderada combina las tres calificaciones en un solo número, desde {$low} hasta {$high}. Cada calificación se convierte en su valor asignado y se multiplica por el peso de su objetivo. Los resultados se suman y se dividen por la suma total de los pesos. Se omite la opción "No aplicable" para la confidencialidad, junto con su peso. Los valores asignados y los pesos se configuran en Preferencias. Es necesario calificar los tres objetivos para que se muestre la puntuación.',
+    'AssetScoringCategorizationHelp' => 'La categorización de seguridad FIPS 199 es el máximo nivel: la calificación más alta entre los objetivos aplicables. Una sola calificación de Alto indica que el activo es Alto, independientemente de las demás. La opción No aplicable se ignora.',
+    'AssetScoringBandHelp' => 'La banda asigna la puntuación ponderada a una escala Baja, Moderada o Alta. Una puntuación inferior a {$moderate} es Baja, de {$moderate} a {$highAt} es Moderada, y {$highAt} o superior es Alta. Los umbrales se configuran en Preferencias.',
+    // Manage assets: Confidentiality / Integrity / Availability rating filters
+    'AllConfidentialityRatings' => 'Todas las clasificaciones de confidencialidad',
+    'AllIntegrityRatings' => 'Todas las calificaciones de integridad',
+    'AllAvailabilityRatings' => 'Todas las clasificaciones de disponibilidad',
+    'AssetFilterByConfidentiality' => 'Filtrar por confidencialidad {$name}',
+    'AssetFilteringByConfidentiality' => 'Filtrado por confidencialidad {$name}',
+    'AssetFilterByIntegrity' => 'Filtrar por integridad {$name}',
+    'AssetFilteringByIntegrity' => 'Filtrado por integridad {$name}',
+    'AssetFilterByAvailability' => 'Filtrar por disponibilidad {$name}',
+    'AssetFilteringByAvailability' => 'Filtrado por disponibilidad {$name}',
+    'HighestFIPSCategorization' => 'Máxima categoría FIPS',
+    'HighestWeightedScore' => 'Puntuación ponderada más alta',
+    'HighestWeightedBand' => 'Banda de mayor peso',
+    'AssetGroupFields' => 'campos del grupo de activos',
+    'NoAssetGroupsMatchFilters' => 'No se encontraron grupos de activos que coincidan con sus filtros.',
+    'AssetGroupFilterByHighestCategorization' => 'Filtrar por la categoría FIPS más alta {$name}',
+    'AssetGroupFilteringByHighestCategorization' => 'Filtrado por la categorización FIPS más alta {$name}',
+    'AssetGroupFilterByHighestBand' => 'Filtrar por la banda de mayor peso {$name}',
+    'AssetGroupFilteringByHighestBand' => 'Filtrado por banda de mayor peso {$name}',
+    'AssetGroupBulkSelectionRequired' => 'Seleccione los grupos de activos por ID o mediante un filtro.',
+    'AssetGroupBulkIdsRequired' => 'Seleccione al menos un grupo de activos.',
+    'AssetGroupBulkIdsInvalid' => 'Los identificadores de grupo de activos deben ser números enteros.',
+    'AssetGroupBulkFilterAllAlone' => 'La selección de todos los grupos de activos no se puede combinar con otros filtros.',
+    'AssetGroupBulkFilterEmpty' => 'Antes de eliminar, seleccione un filtro o seleccione todos los grupos de activos.',
+    'AssetGroupBulkExpectedCountInvalid' => 'El número esperado de grupos de activos debe ser un número entero.',
+    'AssetGroupBulkExpectedCountRequired' => 'Para eliminar grupos de activos mediante un filtro, necesita especificar la cantidad de grupos que desea eliminar.',
+    'AssetGroupBulkNoMatch' => 'No se encontraron grupos de activos que coincidan con su selección.',
+    'AssetGroupBulkCountMismatch' => 'Los grupos de activos coincidentes cambiaron de {$expected} a {$actual} desde que los seleccionaste. Revisa la lista e inténtalo de nuevo.',
+    'AssetGroupBulkTooManyToDelete' => 'Puedes eliminar como máximo {$max} grupos de activos a la vez. Limita tu selección e inténtalo de nuevo.',
+    'AssetGroupBulkSelectAll' => 'Seleccione todos los grupos de activos {$count}',
+    'AssetGroupBulkAllSelected' => 'Se han seleccionado todos los grupos de activos coincidentes {$count}',
+    'AssetGroupBulkDeleteConfirmTitle' => '¿Eliminar {$count} grupos de activos?',
+    'AssetGroupBulkDeleteKeepsAssets' => 'Los activos de estos grupos no se eliminan. Solo se eliminan los grupos.',
+    'DeleteAssetGroups' => 'Eliminar grupos',
+    'AssetGroupBulkDeletedSummary' => '{$ok} grupos eliminados, {$failed} omitidos',
+    'ChoosingRisksNeedsRiskManagementPermission' => 'La selección de los riesgos asociados requiere la autorización del Departamento de Gestión de Riesgos.',
+    'NAssociatedRisks' => '{n} riesgo(s) asociado(s)',
+    'SavingKeepsTheCurrentRiskAssociations' => 'Ahorrar permite mantener los riesgos asociados actuales.',
     '' => '',
 );
 ?>

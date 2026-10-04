@@ -1,0 +1,25 @@
+// A small bordered card inside a section card: white body, 1px $gray-300
+// border, 8px radius, and a gray head bled to the INSIDE of the border on
+// three sides (a negative margin equal to the body's own padding, not the
+// border width, so the border visibly frames the head too). The SAME
+// gray-head/white-body relationship .sr-qcard/.sr-qcard-head has, one size
+// down. Two consumers: the risk Scoring card's groups (.sr-cvss-holder-
+// summary / .sr-cvss-metric-group, modules/_questionnaire.scss) and the
+// asset record's Asset Scoring cards (.sr-asset-scoring-card,
+// modules/_asset-scoring.scss).
+@mixin sr-mini-card {
+    background: $sr-body;
+    border: 1px solid $gray-300;
+    border-radius: 8px;
+    padding: 14px 16px;
+}
+
+@mixin sr-mini-card-head {
+    margin: -14px -16px 14px;
+    padding: 10px 16px;
+    background: $gray-100;
+    border-bottom: 1px solid $gray-300;
+    border-top-left-radius: 7px;
+    border-top-right-radius: 7px;
+    font-weight: 700;
+}

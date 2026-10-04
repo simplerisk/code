@@ -814,7 +814,7 @@ $lang = array(
     'UserSessions' => 'جلسات عمل المستخدم',
     'SessionActivityTimeout' => 'مهله نشاط جلسة العمل',
     'Security' => 'أمن',
-    'EnableCSP' => 'تمكين نهج أمان المحتوي (هذا قد كسر كروم في الماضي)',
+    'EnableCSP' => 'تفعيل سياسة أمان المحتوى (موصى به)',
     'EnableDebugLogging' => 'تمكين تسجيل التصحيح',
     'seconds' => 'ثانيه',
     'FieldSample' => 'نموذج حقل',
@@ -4967,6 +4967,572 @@ $lang = array(
     // closeriskForm()'s own (hardcoded, pre-existing) single-risk denial text.
     'NoCloseRiskPermission' => 'ليس لديك إذن بإغلاق المخاطر.',
     'QuestionnaireRequiredQuestionUnanswered' => 'يرجى الإجابة على جميع الأسئلة المطلوبة قبل إكمال التقييم.',
+    'AuditLog_ControlStatusAutoSynced' => 'تم تحديث حالة التحكم "{$short_name}" تلقائيًا إلى "{$status_text}" بناءً على أحدث نتائج الاختبار الخاصة بها.',
+    'EnableCSPHelp' => 'تُقيّد سياسة أمان المحتوى (CSP) المتصفحَ بتحميل البرامج النصية والأنماط والصور والخطوط من SimpleRisk فقط، وتمنع تضمين الصفحات وإرسال النماذج من مصادر مختلفة. وهي أقوى حماية مُدمجة ضد هجمات البرمجة النصية عبر المواقع. اتركها مُفعّلة ما لم تتعارض مع خادم وكيل أو إضافة متصفح أو تكامل مع جهة خارجية في بيئتك.',
+    // Define Control Frameworks' Columns picker (Task: Columns picker + saved layout/filters) -- the "Standard" group label above its built-in fields (Family/Owner/Maturity/Status/Class/Phase/Priority/Type); 'CustomFields' already exists.
+    'StandardFields' => 'الحقول القياسية',
+    // My Profile redesign (js/simplerisk/pages/account-profile.js)
+    'Administrator' => 'المسؤول',
+    'AccountDetails' => 'تفاصيل الحساب',
+    'YourPermissions' => 'أذوناتك',
+    'RoleAndTeamsGrantAccess' => 'ما يتيحه لك دورك وفرقك من إمكانية الوصول',
+    'AllGranted' => 'تم منح الجميع',
+    'PermissionsCountLabel' => '$count الأذونات',
+    'ManagedByYourAdministrator' => 'تُدار هذه التفاصيل من قِبل مشرفك. تواصل معهم إذا كان أي شيء هنا يحتاج إلى تغيير.',
+    'MultiFactorAuthenticationHint' => 'أضف خطوة ثانية إلى عملية تسجيل الدخول الخاصة بك للحفاظ على أمان حسابك.',
+    'ChangingPasswordSignsOutEverywhere' => 'تغيير كلمة المرور الخاصة بك يؤدي إلى تسجيل خروجك من جميع المواقع الأخرى.',
+    'APIKeyHint' => 'تُستخدم للمصادقة على البرامج النصية وعمليات التكامل الخاصة بك مقابل واجهة برمجة تطبيقات SimpleRisk.',
+    'ResetDisplaySettingsHint' => 'يعيد ضبط اختيارات الأعمدة المخصصة إلى الوضع الافتراضي.',
+    'CardGeneral' => 'العامة',
+    'CardClassification' => 'تصنيف',
+    'CardScoring' => 'التقييم',
+    'CardAdditionalInformation' => 'معلومات إضافية',
+    'CardCustomFields' => 'الحقول المخصصة',
+    'CardCustomFieldsHint' => 'يجب فرز هذه الحقول في بطاقة',
+    'LayoutEditorHint' => 'اسحب حقلاً إلى بطاقة مختلفة لإعادة تعيينه، واسحب داخل بطاقة لإعادة ترتيبها أو تغيير حجمها، واسحب أو غيّر حجم بطاقة لتغيير موضعها على الصفحة.',
+    'ScoringNotYetAvailableInThisView' => 'إعدادات التقييم غير متاحة بعد في هذه الشاشة.',
+    // Native tooltip on the Cards layout editor's Gridstack resize handles
+    // (js/simplerisk/pages/customization-layout-editor.js) -- the bare corner
+    // bracket read as an unexplained mark until it said what it does.
+    'DragToResize' => 'اسحب لتغيير الحجم',
+    // Warning pill on a Cards layout editor card the admin has sized shorter
+    // than the fields it holds. Replaces the silent inner scrollbar that state
+    // used to produce.
+    'NFieldsDoNotFitCard' => 'حقل/حقول {n} لا تتناسب مع هذه البطاقة. قم بتغيير حجم البطاقة لإظهارها.',
+    // Card titles for the Mitigation tab's Cards layout editor
+    // (js/simplerisk/pages/customization-layout-editor.js), mirroring the
+    // Card* keys above for the Details tab. Order follows
+    // customization_mitigation_cards_layout_card_keys() (includes/functions.php).
+    'CardMitigationStrategy' => 'استراتيجية التخفيف',
+    'CardMitigationSolution' => 'حل التخفيف',
+    'CardMitigationControls' => 'ضوابط التخفيف',
+    'CardReview' => 'استعراض',
+    // Submit Risk page's three action-bar buttons (buildActionsBar(),
+    // risk-details-form.js, submitMode 'create' only) and the Reset Form
+    // confirm modal (management/index.php, design-system.md #8's "Confirm"
+    // type). 'Discard'/'Cancel'/'Close' already exist and are reused for the
+    // modal's own buttons.
+    'ResetForm' => 'إعادة تعيين النموذج',
+    'SaveAndNew' => 'حفظ وجديد',
+    'SaveAndView' => 'حفظ وعرض',
+    'ResetFormConfirmTitle' => 'هل تريد تجاهل تقديم هذه المخاطر؟',
+    'ResetFormConfirmBody' => 'سيُفقد أي معلومات قمت بإدخالها.',
+    // Restore-template destructive confirm (Customization Extra, Save/Restore
+    // action bar). Two body variants: risk's Details/Mitigation/Review tabs
+    // named explicitly (the only fgroup with that 3-tab Cards layout), a
+    // generic fallback for every other fgroup (single legacy-panel tab).
+    // Both end on the same scoping reassurance -- confirmed via direct source
+    // read that Restore only ever touches the currently-selected template
+    // group, never any other.
+    'RestoreTemplateConfirmTitle' => 'استعادة التخطيط الافتراضي?',
+    'RestoreTemplateConfirmBodyRisk' => 'يؤدي هذا إلى إعادة ضبط جميع الحقول في علامات التبويب "التفاصيل" و"التخفيف" و"المراجعة" إلى قيمها الافتراضية لمجموعة القوالب هذه. ولا تتأثر مجموعات القوالب الأخرى.',
+    'RestoreTemplateConfirmBody' => 'يؤدي هذا إلى إعادة ضبط جميع الحقول في هذا القالب إلى قيمها الافتراضية لمجموعة القوالب هذه. ولا تتأثر مجموعات القوالب الأخرى.',
+    // CVSS holder's collapsed Temporal/Environmental/Impact-Modifiers
+    // accordion (buildCvssHolder(), risk-details-form.js) -- these three
+    // groups are optional CVSS v2 refinements on top of the required Base
+    // Score Metrics, so they collapse behind this header by default.
+    'AdvancedMetrics' => 'المقاييس المتقدمة',
+    // CVSS holder's Base Score Metrics sub-group headers (buildCvssHolder(),
+    // risk-details-form.js) -- distinct from the existing 'ExploitabilityMetrics'/
+    // 'ImpactMetrics' keys, which the legacy cvss_modal_content.php modal
+    // still renders as plain "Exploitability Metrics"/"Impact Metrics" and
+    // must keep unchanged. These fold the umbrella "Base Score Metrics"
+    // heading into each sub-group's own header instead of a separate label.
+    'BaseScoreExploitabilityMetrics' => 'مقاييس قابلية الاستغلال للدرجة الأساسية',
+    'BaseScoreImpactMetrics' => 'مقاييس تأثير النتيجة الأساسية',
+    // Per-field help popovers on the CVSS holder's 14 metric selects
+    // (buildCvssScoreItem(), risk-details-form.js) -- one per CVSS v2
+    // metric, matching the standard CVSS v2 specification definitions.
+    // Double-quoted (not single-quoted, this file's usual style) so the
+    // \n line breaks are real escape sequences: each popover leads with one
+    // overall sentence, then one bullet line per option, rendered via
+    // white-space: pre-line on .sr-scoring-help-popover .popover-body
+    // (scss/modules/_questionnaire.scss) -- plain text throughout, no HTML,
+    // so the popover stays initialized without Bootstrap's `html: true`.
+    "AttackVectorHelp" => "كيفية استغلال الثغرة الأمنية.\n• محلي: يتطلب الوصول المحلي، مثل وحدة تحكم أو واجهة سطر أوامر.\n• شبكة مجاورة: يجب أن يكون المهاجم على نفس جزء الشبكة المادي أو المنطقي.\n• شبكة: يمكن استغلالها عن بُعد عبر الشبكة، دون الحاجة إلى الوصول المحلي أو الوصول إلى الشبكة المجاورة.",
+    "AttackComplexityHelp" => "مدى تعقيد الهجوم بمجرد حصول المهاجم على إمكانية الوصول إلى الهدف.\n• عالي: يتطلب شروطًا خاصة يصعب تحقيقها.\n• متوسط: يجب استيفاء بعض الشروط، ولكن الاستغلال ليس صعبًا بمجرد استيفائها.\n• منخفض: لا حاجة لشروط خاصة.",
+    "AuthenticationHelp" => "عدد مرات مصادقة المهاجم للهدف لاستغلاله.\n• متعدد: المصادقة مطلوبة مرتين أو أكثر، حتى مع نفس بيانات الاعتماد.\n• فردي: المصادقة مطلوبة مرة واحدة.\n• لا شيء: لا حاجة للمصادقة.",
+    "ConfidentialityImpactHelp" => "تأثير استغلال الثغرة على سرية البيانات التي يعالجها النظام.\n• لا يوجد تأثير: لا يوجد تأثير.\n• جزئي: كشف بعض المعلومات، لكن المهاجم لا يتحكم في نوعها، أو أن الخسارة محدودة.\n• كامل: كشف جميع المعلومات الموجودة على النظام.",
+    "IntegrityImpactHelp" => "تأثير الاستغلال على سلامة النظام.\n• لا يوجد تأثير: لا يوجد تأثير.\n• جزئي: يمكن تعديل بعض البيانات، لكن المهاجم لا يتحكم في البيانات المُعدّلة، أو أن نطاق التعديل محدود.\n• كامل: اختراق كامل لسلامة النظام؛ يمكن للمهاجم تعديل أي ملفات.",
+    "AvailabilityImpactHelp" => "تأثير الاستغلال على توافر النظام.\n• لا يوجد: لا يوجد تأثير.\n• جزئي: انخفاض في الأداء أو انقطاعات في التوافر.\n• كامل: إيقاف تشغيل كامل للمورد المتأثر.",
+    "RemediationLevelHelp" => "مستوى المعالجة المتاحة للثغرة الأمنية.\n• حل رسمي: يتوفر حل كامل من الشركة المصنعة.\n• حل مؤقت: يتوفر حل رسمي ولكنه مؤقت.\n• حل بديل: يوجد حل بديل غير رسمي وغير تابع للشركة المصنعة.\n• غير متوفر: لا يوجد حل متاح، أو لا يمكن تطبيق أي حل.",
+    "ReportConfidenceHelp" => "درجة الثقة في وجود الثغرة الأمنية ومصداقية تفاصيلها التقنية.\n• غير مؤكد: تقرير من مصدر واحد غير مؤكد؛ المشكلة الأساسية غير مؤكدة.\n• غير مدعوم: مصادر مستقلة متعددة تُبلغ عن نفس السلوك، ولكن السبب الجذري غير مؤكد.\n• مؤكد: أقرّ المورّد بالمشكلة، أو تم تأكيدها من خلال تحليل شفرة المصدر أو تحليل الاستغلال.",
+    "CollateralDamagePotentialHelp" => "احتمالية وقوع خسائر في الأرواح أو الممتلكات المادية أو الخسائر المالية في حال استغلال الثغرة الأمنية.\n• لا يوجد: من غير المرجح حدوث مثل هذه الخسائر.\n• منخفض إلى متوسط: من المحتمل حدوث خسارة متوسطة.\n• مرتفع: تأثير كارثي على أصول المنظمة أو إيراداتها أو سلامتها.",
+    "TargetDistributionHelp" => "نسبة الأنظمة المعرضة للخطر في بيئتك.\n• لا يوجد: لا توجد أنظمة مستهدفة.\n• منخفض: 1-25% من الأنظمة معرضة للخطر.\n• متوسط: 26-75% من الأنظمة معرضة للخطر.\n• مرتفع: 76-100% من الأنظمة معرضة للخطر.",
+    "ConfidentialityRequirementHelp" => "مدى أهمية سرية الأصل المتأثر لمؤسستك.\n• منخفض: فقدان السرية له تأثير محدود.\n• متوسط: له تأثير خطير.\n• مرتفع: له تأثير كارثي.",
+    "IntegrityRequirementHelp" => "مدى أهمية سلامة الأصل المتضرر لمؤسستك.\n• منخفض: فقدان السلامة له تأثير محدود.\n• متوسط: له تأثير خطير.\n• مرتفع: له تأثير كارثي.",
+    "AvailabilityRequirementHelp" => "مدى أهمية توافر الأصل المتأثر لمؤسستك.\n• منخفض: تأثير فقدان التوافر محدود.\n• متوسط: تأثيره خطير.\n• مرتفع: تأثيره كارثي.",
+    // Base Score Metrics' two sub-group intro sentences (metricsSubGroup()'s
+    // `descKey`, risk-details-form.js) -- orient the user to what the GROUP
+    // as a whole is asking, distinct from the per-field *Help popover keys
+    // above which explain each metric's own options.
+    'BaseScoreExploitabilityMetricsDescription' => 'كيف سيحتاج المهاجم للوصول إلى هذه الثغرة الأمنية واستغلالها: أين يجب أن يكون، ومدى تعقيد الهجوم، وما إذا كان بحاجة إلى المصادقة أولاً.',
+    'BaseScoreImpactMetricsDescription' => 'ماذا يحدث إذا تم استغلال الثغرة الأمنية بنجاح: التأثير على سرية وسلامة وتوافر النظام المتأثر.',
+    // Advanced Metrics' three optional sub-group intro sentences -- same
+    // metricsSubGroup() `descKey` as the two Base Score groups above.
+    'TemporalScoreMetricsDescription' => 'كيف يتغير التهديد الواقعي لهذه الثغرة الأمنية بمرور الوقت: الحالة الحالية لرمز الاستغلال، وما هي الحلول المتاحة، ومدى ثقة التقارير في وجودها.',
+    'EnvironmentalScoreMetricsDescription' => 'كيف يعتمد خطر هذه الثغرة الأمنية على بيئتك: احتمالية حدوث ضرر في العالم الحقيقي، وعدد الأنظمة التي تتأثر فعلياً.',
+    'ImpactSubscoreModifiersDescription' => 'قم بتقييم تأثير النتيجة الأساسية بناءً على مدى أهمية السرية والنزاهة والتوافر بالنسبة لهذا الأصل المحدد.',
+    // Phase 4d-iii: DREAD holder help popovers (view_dread_help()'s
+    // existing English text, includes/display.php, extracted to real $lang
+    // keys -- that function's own content was raw hardcoded HTML, never
+    // localized, so it could not be reused verbatim).
+    'DamagePotentialHelp' => 'في حال حدوث استغلال للتهديدات، ما مقدار الضرر الذي سيحدث؟' . "\n" . '0 = لا شيء' . "\n" . '5 = تم اختراق بيانات المستخدم الفردية أو تأثرها.' . "\n" . '10 = تدمير النظام أو البيانات بالكامل',
+    'ReproducibilityHelp' => 'ما مدى سهولة إعادة إنتاج ثغرة استغلال التهديد؟' . "\n" . '0 = صعب للغاية أو مستحيل، حتى بالنسبة لمسؤولي التطبيق.' . "\n" . '5 = يلزم خطوة أو خطوتين، وقد يتطلب الأمر أن تكون مستخدمًا مصرحًا له.' . "\n" . '10 = يكفي متصفح الويب وشريط العناوين فقط، دون الحاجة إلى مصادقة.',
+    'ExploitabilityHelp' => 'ما الذي يلزم لاستغلال هذا التهديد؟' . "\n" . '0 = معرفة متقدمة في البرمجة والشبكات، مع أدوات هجوم مخصصة أو متقدمة.' . "\n" . '5 = البرامج الضارة موجودة على الإنترنت، أو يمكن تنفيذ عملية استغلال بسهولة باستخدام أدوات الهجوم المتاحة.' . "\n" . '10 = مجرد متصفح ويب',
+    'AffectedUsersHelp' => 'كم عدد المستخدمين الذين سيتأثرون؟' . "\n" . '0 = لا شيء' . "\n" . '5 = بعض المستخدمين، وليس جميعهم' . "\n" . '10 = جميع المستخدمين',
+    'DiscoverabilityHelp' => 'ما مدى سهولة اكتشاف هذا التهديد؟' . "\n" . '0 = صعب للغاية إلى مستحيل؛ يتطلب الوصول إلى شفرة المصدر أو صلاحيات إدارية.' . "\n" . '5 = يمكن معرفة ذلك عن طريق التخمين أو عن طريق مراقبة آثار الشبكة.' . "\n" . '9 = تفاصيل مثل هذه الأعطال موجودة بالفعل في المجال العام ويمكن اكتشافها بسهولة باستخدام محرك بحث.' . "\n" . '10 = تظهر المعلومات في شريط عنوان متصفح الويب أو في نموذج.',
+    // The DREAD holder's summary card heading and "DREAD Metrics" card
+    // heading. No existing key covers either (confirmed via grep before
+    // adding).
+    'DreadScore' => 'درجة DREAD',
+    'DreadMetrics' => 'مقاييس DREAD',
+    // Phase 4d-iv: OWASP holder help popovers (view_owasp_help()'s
+    // existing English text, includes/display.php, extracted to real
+    // $lang keys -- same never-localized-legacy-content extraction the
+    // DREAD phase already did for its own 5 fields). Wording/levels
+    // trued up against that function's real source text, not transcribed
+    // from an earlier standard-methodology draft.
+    'SkillLevelHelp' => 'ما مدى مهارة هذه المجموعة من عملاء التهديد من الناحية التقنية؟' . "\n" . '1 = لا توجد مهارات تقنية' . "\n" . '3 = بعض المهارات التقنية' . "\n" . '5 = مستخدم حاسوب متقدم' . "\n" . '6 = مهارات الشبكات والبرمجة' . "\n" . '9 = مهارات اختراق الأمن',
+    'MotiveHelp' => 'ما مدى دافع هذه المجموعة من الجهات الخبيثة للعثور على هذه الثغرة الأمنية واستغلالها؟' . "\n" . '1 = مكافأة منخفضة أو معدومة' . "\n" . '4 = مكافأة محتملة' . "\n" . '9 = مكافأة عالية',
+    'OpportunityHelp' => 'ما هي الموارد والفرص المطلوبة لهذه المجموعة من الجهات الفاعلة في مجال التهديدات للعثور على هذه الثغرة الأمنية واستغلالها؟' . "\n" . '0 = الوصول الكامل أو الموارد المكلفة مطلوبة' . "\n" . '4 = يتطلب وصولاً خاصاً أو موارد خاصة' . "\n" . '7 = بعض الوصول أو الموارد المطلوبة' . "\n" . '9 = لا يتطلب الوصول أو الموارد',
+    'SizeHelp' => 'ما هو حجم هذه المجموعة من الجهات الفاعلة التي تشكل تهديداً؟' . "\n" . '2 = المطورون' . "\n" . '2 = مسؤولو النظام' . "\n" . '4 = مستخدمو الشبكة الداخلية' . "\n" . '5 = شركاء' . "\n" . '6 = المستخدمون المصادق عليهم' . "\n" . '9 = مستخدمو الإنترنت المجهولون',
+    'EaseOfDiscoveryHelp' => 'ما مدى سهولة اكتشاف هذه الثغرة الأمنية من قبل هذه المجموعة من الجهات الخبيثة؟' . "\n" . '1 = مستحيل عملياً' . "\n" . '3 = صعب' . "\n" . '7 = سهل' . "\n" . '9 = الأدوات الآلية المتاحة',
+    'EaseOfExploitHelp' => 'ما مدى سهولة استغلال هذه الثغرة الأمنية من قبل هذه المجموعة من الجهات الخبيثة؟' . "\n" . '1 = نظري' . "\n" . '3 = صعب' . "\n" . '5 = سهل' . "\n" . '9 = الأدوات الآلية المتاحة',
+    'AwarenessHelp' => 'ما مدى معرفة هذه المجموعة من الجهات الفاعلة في مجال التهديدات بهذه الثغرة الأمنية؟' . "\n" . '1 = غير معروف' . "\n" . '4 = مخفي' . "\n" . '6 = واضح' . "\n" . '9 = المعرفة العامة',
+    'IntrusionDetectionHelp' => 'ما مدى احتمالية اكتشاف الثغرة الأمنية؟' . "\n" . '1 = الكشف النشط في التطبيق' . "\n" . '3 = تم التسجيل والمراجعة' . "\n" . '8 = تم التسجيل بدون مراجعة' . "\n" . '9 = غير مسجل',
+    'LossOfConfidentialityHelp' => 'ما مقدار البيانات التي يمكن الكشف عنها، وما مدى حساسيتها؟' . "\n" . '2 = الحد الأدنى من البيانات غير الحساسة التي تم الكشف عنها' . "\n" . '6 = الحد الأدنى من البيانات الحرجة التي تم الكشف عنها' . "\n" . '6 = تم الكشف عن بيانات غير حساسة واسعة النطاق' . "\n" . '7 = تم الكشف عن بيانات حساسة واسعة النطاق' . "\n" . '9 = تم الكشف عن جميع البيانات',
+    'LossOfIntegrityHelp' => 'ما مقدار البيانات التي يمكن أن تتعرض للتلف، وما مدى الضرر الذي لحق بها؟' . "\n" . '1 = بيانات تالفة بشكل طفيف' . "\n" . '3 = الحد الأدنى من البيانات التالفة بشكل خطير' . "\n" . '5 = بيانات تالفة بشكل طفيف وواسعة النطاق' . "\n" . '7 = بيانات تالفة بشكل خطير وواسع النطاق' . "\n" . '9 = جميع البيانات تالفة تمامًا',
+    'LossOfAvailabilityHelp' => 'ما مقدار الخدمة التي يمكن أن تُفقد، وما مدى أهميتها؟' . "\n" . '1 = الحد الأدنى من انقطاع الخدمات الثانوية' . "\n" . '5 = الحد الأدنى من انقطاع الخدمات الأساسية' . "\n" . '5 = انقطاع واسع النطاق للخدمات الثانوية' . "\n" . '7 = انقطاع واسع النطاق للخدمات الأساسية' . "\n" . '9 = فقدان جميع الخدمات بالكامل',
+    'LossOfAccountabilityHelp' => 'هل يمكن تتبع أفعال الجهات الفاعلة في التهديد إلى فرد معين؟' . "\n" . '1 = قابل للتتبع بالكامل' . "\n" . '7 = قابل للتتبع على الأرجح' . "\n" . '9 = مجهول الهوية تمامًا',
+    'FinancialDamageHelp' => 'ما حجم الضرر المالي الذي سينتج عن استغلال ثغرة أمنية؟' . "\n" . '1 = أقل من تكلفة إصلاح الثغرة الأمنية' . "\n" . '3 = تأثير طفيف على الربح السنوي' . "\n" . '7 = تأثير كبير على الربح السنوي' . "\n" . '9 = الإفلاس',
+    'ReputationDamageHelp' => 'هل يمكن أن يؤدي استغلال ثغرة أمنية إلى الإضرار بسمعة الشركة؟' . "\n" . '1 = الحد الأدنى من الضرر' . "\n" . '4 = خسارة حسابات رئيسية' . "\n" . '5 = فقدان السمعة التجارية' . "\n" . '9 = تلف العلامة التجارية',
+    'NonComplianceHelp' => 'ما مدى المخاطر التي يسببها عدم الامتثال؟' . "\n" . '2 = مخالفة بسيطة' . "\n" . '5 = انتهاك واضح' . "\n" . '7 = انتهاك بارز',
+    'PrivacyViolationHelp' => 'ما مقدار المعلومات الشخصية التي يمكن الكشف عنها؟' . "\n" . '3 = فرد واحد' . "\n" . '5 = مئات الأشخاص' . "\n" . '7 = آلاف الأشخاص' . "\n" . '9 = ملايين الأشخاص',
+    // The OWASP holder's Score card heading. No existing key covers this
+    // (confirmed via grep before adding) -- the Likelihood/Impact card
+    // headings reuse the already-existing bare 'Likelihood'/'Impact' keys.
+    'OwaspScore' => 'تقييم OWASP',
+    // Phase 4d-iv follow-up: group-level descriptions for the 4 OWASP
+    // subgroup headings, sourced from OWASP's own Risk Rating Methodology
+    // (https://community.owasp.org/OWASP_Risk_Rating_Methodology), tightened
+    // into short UI captions -- not a verbatim quote (see this task's own
+    // source table for the original wording).
+    'ThreatAgentFactorsDescription' => 'يقدر احتمالية نجاح هجوم من قبل هذه المجموعة من الجهات الفاعلة المهددة.',
+    'VulnerabilityFactorsDescription' => 'يقدر احتمالية اكتشاف هذه الثغرة الأمنية واستغلالها.',
+    'TechnicalImpactDescription' => 'يحلل التأثير من خلال السرية والنزاهة والتوافر والمساءلة.',
+    'BusinessImpactDescription' => 'يعكس ما يهم العمل، بما يتجاوز التأثير التقني الخام.',
+    // CVSS's own Temporal-metric 'Exploitability' help text. This key shares
+    // a labelKey ('Exploitability') with DREAD's own field, so both would
+    // otherwise derive the same generic lang key ('ExploitabilityHelp'),
+    // with DREAD's entry silently winning for both -- risk-details-form.js's
+    // buildCvssScoreItem() and risk-details-view.js's cvssMetricValueRow()
+    // reference this key directly for CVSS's Exploitability field instead
+    // of the generic '<labelKey>Help' derivation.
+    'CVSSExploitabilityHelp' => "الوضع الحالي لتقنيات الاستغلال أو توفر الشيفرة.\n• غير مُثبت: لا تتوفر شيفرة استغلال، أو أن الاستغلال نظري.\n• إثبات المفهوم: شيفرة الاستغلال موجودة ولكنها غير عملية لمعظم المهاجمين.\n• فعال: شيفرة الاستغلال فعالة وتعمل في معظم الحالات.\n• عالي: الاستغلال موثوق، إما مؤتمت (مثل دودة) أو لا يتطلب شيفرة استغلال على الإطلاق.",
+    // Risk Scoring -- Classic Inline (Task 3): the Classic scoring method's
+    // new inline Score card heading and its Likelihood/Impact cards' short
+    // plain-English descriptions (js/simplerisk/common/risk-details-form.js's
+    // buildClassicHolder()). Deliberately NOT sourced from NIST SP 800-30 or
+    // any other external standard -- confirmed with the user via the
+    // approved mockup review, unlike OWASP's own subgroup descriptions
+    // above, which do cite OWASP's Risk Rating Methodology.
+    'ClassicScore' => 'النتيجة الكلاسيكية',
+    'ClassicLikelihoodDescription' => 'ما مدى احتمالية حدوث هذا الخطر؟',
+    'ClassicImpactDescription' => 'ما مدى خطورة العواقب في حال حدوث هذا الخطر؟',
+    // Risk Scoring -- Custom Inline (Task 2): the Custom scoring method's
+    // new inline Score card heading (js/simplerisk/common/risk-details-form.js's
+    // buildCustomHolder()) and the Custom Value card's short description
+    // caption. 'CustomValueDescription' text confirmed directly with the
+    // user, same as Classic's own description keys above.
+    'CustomScore' => 'نتيجة مخصصة',
+    'CustomValueDescription' => 'يمكن أن تكون القيمة المخصصة قيمة عشرية بين 0 و 10.',
+    // Risk Scoring -- Contributing Risk Inline (Phase 4d-v): the last of
+    // the three deferred scoring methods (DREAD/OWASP shipped earlier in
+    // this same project). The Likelihood/Contributing Risk cards' short
+    // plain-English descriptions (js/simplerisk/common/risk-details-form.js's
+    // buildContributingRiskHolder()). The Score card heading reuses the
+    // EXISTING 'ContributingRiskScore' key (already present above, same
+    // text) rather than duplicating it -- 'ContributingRisk'/
+    // 'ContributingLikelihood'/'Weight'/'Subject' are likewise reused as-is.
+    'ContributingLikelihoodDescription' => 'ما مدى احتمالية حدوث هذا الخطر؟',
+    'ContributingRiskDescription' => 'يتم ترجيح كل عامل من العوامل أدناه حسب أهميته النسبية - حدد مدى تأثر هذا الخطر بكل عامل.',
+    // OWASP read-mode card (buildOwaspReadView(), risk-details-view.js):
+    // the live calculation formula under each of the 4 sub-group names
+    // (Threat Agent Factors/Vulnerability Factors/Technical Impact/
+    // Business Impact), matching the legacy risk-scoring-details panel's
+    // own "= ( a + b + c + d ) / 4" text (includes/display.php), and the
+    // OWASP Risk Rating Methodology link note placed in the OWASP Score
+    // column's open space below the summary numbers.
+    'OwaspSubgroupFormula' => '= ( {a} + {b} + {c} + {d} ) / 4',
+    'OwaspMethodologyNote' => 'يمكن الاطلاع على التفاصيل الكاملة لمنهجية تصنيف مخاطر OWASP',
+    'Here' => 'هنا',
+    // Scoring widget formula captions (Classic/DREAD/Contributing Risk),
+    // the same ".sr-cvss-vector under the score label" treatment CVSS's
+    // vector caption and OwaspSubgroupFormula above already have, on both
+    // the edit-mode holder (risk-details-form.js) and the read-mode card
+    // (risk-details-view.js). Classic reuses the existing RISKClassicExp1-5
+    // keys instead of a new one -- see those keys' own long-standing
+    // definitions above.
+    'DreadScoreFormula' => '= ( {a} + {b} + {c} + {d} + {e} ) / 5',
+    // Contributing Risk's per-factor weighted term and its shared
+    // Likelihood term (update_contributing_risk_score(), includes/
+    // functions.php) -- unlike DREAD/OWASP's fixed roster, the factor list
+    // is admin-configured, so this is one formula PER FACTOR ROW rather
+    // than one fixed caption under the total score.
+    // {maxName}: score.php parity -- legacy's "Maximum Value" column showed
+    // the max option's human-readable name alongside its number (e.g.
+    // "[5] Certain", includes/display.php); these formulas only showed the
+    // bare number.
+    'ContributingLikelihoodFormula' => '= {value} x 5 / {max} ({maxName})',
+    'ContributingFactorFormula' => '= {weight}% x {impact} x 5 / {max} ({maxName})',
+    // Contributing Risk's own subscore row in the Score card -- the sum of
+    // every factor's own term above it. Generic (not substituted with real
+    // numbers) since the number of terms is however many factors are
+    // configured, unlike the fixed-roster formulas above.
+    'ContributingRiskSubtotalFormula' => '= مجموع (الوزن × التأثير × 5 / الحد الأقصى)',
+    // Contributing Risk Score's own formula, under the total row -- always
+    // exactly 2 terms (unlike the Contributing Risk subtotal above), so
+    // substituted with the real current subtotal values, same convention
+    // DreadScoreFormula/OwaspSubgroupFormula use for their own fixed roster.
+    'ContributingRiskScoreFormula' => '= {likelihood} + {contributing}',
+    // Risk Scoring History widget (risk-details-view.js) -- replaces the
+    // legacy chart's bare save icon with a real menu item, structured for
+    // future export types alongside it.
+    'DownloadChartAsImage' => 'تنزيل كصورة',
+    // Legacy score.php's CVSS table had a "Full details of CVSS Version 2.0
+    // scoring can be found here." link (includes/display.php); this is its
+    // inline-scoring-card equivalent, same shape as OwaspMethodologyNote.
+    'CvssMethodologyNote' => 'يمكن الاطلاع على التفاصيل الكاملة لنظام تسجيل نقاط CVSS الإصدار 2.0',
+    // Mitigation Controls redesign: the picker reuses ChooseControls/
+    // AddOrRemoveControls/etc from Document Program's control picker.
+    'InvalidControlID' => 'معرف عنصر تحكم غير صالح.',
+    'ValidationOwner' => 'مالك التحقق',
+    'ValidationStatus' => 'حالة التحقق',
+    'NotStarted' => 'لم يبدأ بعد',
+    // management/view.php's "risk ID does not exist" empty state.
+    'RiskIdDoesNotExistBody' => 'قد يكون الخطر الذي تبحث عنه قد تم حذفه، أو قد يكون الرابط غير صحيح.',
+    'MitigationControlsRequiresGovernance' => 'يتطلب الأمر إذنًا من قسم الحوكمة للاطلاع عليه.',
+    'ViewControlValidation' => 'عرض التحقق من صحة الضابط',
+    'EditControlValidation' => 'تعديل التحقق من صحة الضابط',
+    'SupportingDocumentationRequiresSubmitRisk' => 'يتطلب الأمر الحصول على إذن "إرسال المخاطر" لتحميل الملفات.',
+    'SupportingDocumentationRequiresModifyRisks' => 'يتطلب إذن تعديل المخاطر لإدارة الملفات.',
+    'MitigationSupportingDocumentationRequiresPlanMitigations' => 'يتطلب الأمر إذنًا من قسم "خطط التخفيف" لإدارة الملفات.',
+    'MitigationSubmittedBy' => 'التخفيف المقدم من',
+    'UseADifferentDate' => 'استخدم تاريخًا مختلفًا',
+    'AssetGroup' => 'مجموعة الأصول',
+    // Customization Cards Layout API (extras/customization/index.php) scope-validation errors.
+    'InvalidFgroup' => 'مجموعة إطار غير صالحة.',
+    'CustomizationCardsLayoutApiScopeError' => 'تتوفر واجهة برمجة تطبيقات تخطيط بطاقات التخصيص فقط لـ fgroup=risk، tab_index=1، tab_index=2، أو tab_index=3.',
+    // Asset management redesign
+    'DiscoverAssets' => 'اكتشف الأصول',
+    'DiscoveryRuns' => 'عمليات الاكتشاف',
+    'DiscoveryRangeHint' => 'عنوان واحد، أو نطاق بداية-نهاية، أو IPv4 CIDR',
+    'DiscoveryResolveNames' => 'ابحث عن أسماء المضيفين',
+    'DiscoveryAddAs' => 'أضف أصولًا جديدة كـ',
+    'DiscoveryStart' => 'ابدأ الاكتشاف',
+    'DiscoveryBackgroundNote' => 'يعمل في الخلفية. يتم تخطي العناوين الموجودة مسبقاً.',
+    'DiscoveryRangeInvalid' => 'أدخل عنوان IPv4 صالحًا، أو نطاقًا، أو كتلة CIDR.',
+    'DiscoveryRangeTooLarge' => 'هذا النطاق واسع جدًا. الحد الأقصى هو {$max} عنوانًا.',
+    'DiscoveryRunQueued' => 'بدأ الاكتشاف.',
+    'DiscoveryRunCompleted' => 'تم الانتهاء من عملية الاكتشاف: {$new} أصول جديدة.',
+    'AssetBulkSelectAll' => 'حدد جميع الأصول {$count}',
+    'AssetBulkAssignTeams' => 'تعيين الفرق…',
+    'AssetBulkAddToGroup' => 'أضف إلى المجموعة…',
+    'AssetBulkDeleteConfirmTitle' => 'حذف الأصول {$count}؟',
+    'AbleToEditAssets' => 'القدرة على تعديل الأصول',
+    'AbleToDeleteAssets' => 'القدرة على حذف الأصول',
+    'AbleToVerifyAssets' => 'القدرة على التحقق من الأصول',
+    'AbleToRunAssetDiscovery' => 'القدرة على تشغيل عملية اكتشاف الأصول',
+    'AbleToCreateAssetGroups' => 'القدرة على إنشاء مجموعات الأصول',
+    'AbleToEditAssetGroups' => 'القدرة على تعديل مجموعات الأصول',
+    'AbleToDeleteAssetGroups' => 'إمكانية حذف مجموعات الأصول',
+    'ViewAsset' => 'عرض الأصل',
+    'AssetUnverifiedByEditLog' => 'تمت إعادة الأصل "{$name}" إلى حالة غير موثقة لأن المستخدم "{$user}" قام بتغيير اسمه أو عنوان IP الخاص به دون الحصول على إذن للتحقق من الأصول.',
+    'AssetTeamsAssignedLog' => 'تم تعيين الأصل "{$name}" للفريق (الفرق) "{$teams}" بواسطة المستخدم "{$user}".',
+    // Manage assets page (asset management redesign, Task 9)
+    'AddAsset' => 'إضافة أصل',
+    'SearchAssetsPlaceholder' => 'ابحث بالاسم أو عنوان IP',
+    'AllLocations' => 'جميع المواقع',
+    'AllTags' => 'جميع العلامات',
+    'AllAssetGroups' => 'جميع مجموعات الأصول',
+    'AssetFields' => 'حقول الأصول',
+    'AssetBulkAllSelected' => 'تم تحديد جميع الأصول المطابقة {$count}',
+    'AssetDeleteConfirmTitle' => 'حذف الأصل "{$name}"؟',
+    'DeleteAsset' => 'حذف الأصل',
+    'DeleteAssets' => 'حذف الأصول',
+    'AssetBulkAssignTeamsTitle' => 'قم بتعيين الفرق للأصول {$count}',
+    'AssetAssignTeamsHint' => 'تتم إضافة الفرق المختارة. أما الفرق الموجودة بالفعل على نفس الأصل فتبقى.',
+    'AssetAddToGroupTitle' => 'أضف {$count} أصلاً إلى مجموعة',
+    'AssetChooseTeams' => 'اختر الفرق',
+    'AssetChooseGroup' => 'اختر مجموعة',
+    'Assign' => 'تعيين',
+    'AssetBulkVerifiedSummary' => 'تم التحقق من {$ok} ، تم تخطي {$failed}',
+    'AssetBulkDeletedSummary' => 'تم حذف {$ok} ، وتم تخطي {$failed}',
+    'AssetBulkTeamsSummary' => 'تم تعيين الفرق للأصول {$ok} ، وتم تخطي {$failed}',
+    'AssetBulkGroupSummary' => 'تمت إضافة {$ok} إلى المجموعة، وتم تخطي {$failed}',
+    'AssetBulkSkippedList' => 'تم التخطي: {$list}',
+    'AssetBulkReasonNotFound' => 'غير موجود',
+    'NoAssetsYet' => 'لا توجد أصول حتى الآن',
+    'NoAssetsYetHint' => 'تظهر الأصول التي تضيفها أو تكتشفها هنا.',
+    'NoAssetsMatchFilters' => 'لا توجد أصول مطابقة لمرشحاتك',
+    'CouldNotLoadAssets' => 'تعذر تحميل الأصول. بياناتك آمنة.',
+    'AllValuations' => 'جميع التقييمات',
+    // Manage assets page, Asset groups tab (asset management redesign, Task 10)
+    'AddAssetGroup' => 'إضافة مجموعة',
+    'EditAssetGroup' => 'تحرير المجموعة',
+    'DeleteAssetGroup' => 'حذف المجموعة',
+    'ViewGroupMembers' => 'عرض الأعضاء',
+    'SearchAssetGroupsPlaceholder' => 'ابحث عن المجموعات بالاسم',
+    'HighestValuation' => 'أعلى قيمة',
+    'LinkedRisks' => 'المخاطر المرتبطة',
+    'RemoveFromGroup' => 'إزالة من المجموعة',
+    'AssetGroupMoreMembers' => '+ {$count} المزيد',
+    'ViewAllInAssetsTab' => 'عرض الكل في علامة تبويب الأصول',
+    'NoAssetsInGroup' => 'لا توجد أصول في هذه المجموعة.',
+    'CouldNotLoadGroupMembers' => 'تعذر تحميل أعضاء هذه المجموعة.',
+    'AssetGroupMembers' => 'أعضاء',
+    'AssetGroupMembersHint' => 'لا تظهر في القائمة إلا الأصول التي يمكنك رؤيتها. أما الأعضاء الذين لا يمكنك رؤيتهم فيبقون في المجموعة.',
+    'ChooseAssets' => 'اختر الأصول',
+    'AddOrRemoveAssets' => 'إضافة أو إزالة الأصول…',
+    'UseTheseAssets' => 'استخدم هذه الأصول',
+    'AllAssets' => 'جميع الأصول',
+    'Valuation' => 'تقييم',
+    'PickerShowingFirstN' => 'يتم عرض أول {$count} من {$total}. ابحث أو حدد نطاق البحث للعثور على الباقي.',
+    'AssetGroupDeleteConfirmTitle' => 'حذف المجموعة "{$name}"؟',
+    'AssetGroupDeleteKeepsAssets' => 'لا يتم حذف الأصول الموجودة في هذه المجموعة. يتم إزالة المجموعة فقط.',
+    'NoAssetGroupsYet' => 'لا توجد مجموعات أصول حتى الآن',
+    'NoAssetGroupsYetHint' => 'قم بتجميع الأصول حتى تتمكن من رسم خرائط لها وإعداد تقارير عنها معًا.',
+    'NoAssetGroupsMatchSearch' => 'لم يتم العثور على أي مجموعات أصول مطابقة لبحثك',
+    'CouldNotLoadAssetGroups' => 'تعذر تحميل مجموعات الأصول. بياناتك آمنة.',
+    'DiscoveryAssignTeams' => 'قم بتوزيعها على الفرق',
+    'DiscoveryAssignTeamsHint' => 'اختياري. تتم إضافة كل أصل جديد إلى هذه الفرق.',
+    'DiscoveryAddAsHint' => 'تم تعيين هذا الإجراء بناءً على إذنك للتحقق من الأصول.',
+    'DiscoveryTeamsInvalid' => 'اختر الفرق الموجودة والتي تنتمي إليها.',
+    'DiscoveryResolveNamesInvalid' => 'يجب تفعيل أو تعطيل البحث عن أسماء المضيفين.',
+    'DiscoveryTooManyActiveRuns' => 'لديك بالفعل {$max} عمليات استكشاف جارية. انتظر حتى تنتهي إحداها أو قم بإلغائها.',
+    'DiscoveryRunNotFound' => 'لم يتم العثور على عملية استكشاف.',
+    'DiscoveryRunAlreadyFinished' => 'انتهت هذه الجولة الاستكشافية بالفعل.',
+    'DiscoveryRunCancelled' => 'تم إلغاء عملية الاكتشاف.',
+    'DiscoveryRunFailedToast' => 'فشل اكتشاف {$range}.',
+    'DiscoveryStatusQueued' => 'تمت إضافته إلى قائمة الانتظار',
+    'DiscoveryProgress' => '{$scanned} من {$total}',
+    'DiscoveryLiveHosts' => 'المضيفون النشطون',
+    'DiscoveryNewAssets' => 'أصول جديدة',
+    'DiscoveryStartedAt' => 'بدأ',
+    'DiscoveryCancelRun' => 'إلغاء التشغيل',
+    'CouldNotLoadDiscoveryRuns' => 'تعذر تحميل عمليات الاكتشاف.',
+    'DiscoveryRangeReserved' => 'يشمل هذا النطاق العناوين المحجوزة (loopback، link-local، multicast أو 0.0.0.0/8) التي لا يمكن مسحها ضوئيًا.',
+    'DiscoveryTooManyActiveRunsInstance' => 'هناك بالفعل {$max} عمليات استكشاف جارية. حاول مرة أخرى عند انتهاء إحداها.',
+    'DiscoveryErrorScan' => 'توقف الفحص بسبب خطأ. راجع سجلات النظام للاطلاع على التفاصيل.',
+    'DiscoveryErrorWorkerLost' => 'توقفت قائمة الانتظار الخلفية عن معالجة هذه العملية.',
+    'DiscoveryErrorRequesterInactive' => 'المستخدم الذي بدأ هذه العملية لم يعد نشطاً.',
+    // Asset management redesign: translated API errors (bulk actions, column settings, discovery) and discovery audit lines
+    'AssetBulkBodyInvalid' => 'أرسل الإجراء المجمع كنص JSON.',
+    'AssetBulkActionRequired' => 'اختر إجراءً جماعيًا.',
+    'AssetBulkUnknownAction' => 'هذا الإجراء الجماعي غير متاح.',
+    'AssetBulkSelectionRequired' => 'اختر الأصول إما عن طريق المعرف أو عن طريق الفلتر.',
+    'AssetBulkIdsRequired' => 'اختر أصلاً واحداً على الأقل.',
+    'AssetBulkIdsInvalid' => 'يجب أن تكون معرفات الأصول أعدادًا صحيحة.',
+    'AssetBulkTooManyAssets' => 'يمكنك التعامل مع عدد أقصى من الأصول في المرة الواحدة يبلغ {$max} . قلّص نطاق اختيارك وحاول مرة أخرى.',
+    'AssetBulkFilterInvalid' => 'الفلتر غير صالح. أعد تحميل الصفحة وحاول مرة أخرى.',
+    'AssetBulkFilterUnknownKey' => 'لم يتم التعرف على عامل التصفية "{$key}".',
+    'AssetBulkFilterBadValue' => 'يحتوي عامل التصفية "{$key}" على قيمة غير صالحة.',
+    'AssetBulkFilterTooManyValues' => 'يمكن للمرشح "{$key}" أن يسرد على الأكثر {$max} قيمة.',
+    'AssetBulkFilterAllAlone' => 'لا يمكن دمج تحديد جميع الأصول مع عوامل التصفية الأخرى.',
+    'AssetBulkFilterEmpty' => 'اختر فلترًا، أو حدد جميع الأصول، قبل تشغيل إجراء جماعي.',
+    'AssetBulkExpectedCountInvalid' => 'يجب أن يكون العدد المتوقع للأصول عددًا صحيحًا.',
+    'AssetBulkParamsInvalid' => 'خيارات هذا الإجراء الجماعي غير صالحة.',
+    'AssetBulkTeamsRequired' => 'اختر فريقًا واحدًا على الأقل.',
+    'AssetBulkTeamsNotFound' => 'لم يعد واحد أو أكثر من تلك الفرق موجوداً.',
+    'AssetBulkTeamsNotMember' => 'لا يمكنك تعيين سوى الفرق التي تنتمي إليها.',
+    'AssetBulkGroupNotFound' => 'لم تعد تلك المجموعة من الأصول موجودة.',
+    'AssetBulkNoMatch' => 'لا توجد أصول مطابقة لاختيارك.',
+    'AssetBulkCountMismatch' => 'تغيرت الأصول المطابقة من {$expected} إلى {$actual} منذ أن قمت بتحديدها. راجع القائمة وحاول مرة أخرى.',
+    'AssetColumnSettingsBodyInvalid' => 'أرسل إعدادات الأعمدة كنص JSON مع الأعمدة أو الترتيب.',
+    'AssetColumnSettingsSaveFailed' => 'تعذر حفظ أعمدتك. اطلب من أحد المسؤولين إكمال ترقية SimpleRisk.',
+    'DiscoveryRunQueueFailed' => 'تعذر بدء عملية الاكتشاف. حاول مرة أخرى.',
+    'DiscoveryRunStartedLog' => 'تم بدء تشغيل اكتشاف الأصول #{$id} لـ {$range} ({$count} عناوين) بواسطة المستخدم "{$user}".',
+    'DiscoveryRunCancelledLog' => 'تم إلغاء عملية اكتشاف الأصول #{$id} من {$range} بواسطة المستخدم "{$user}".',
+    'AssetBulkTooManyToDelete' => 'يمكنك حذف ما يصل إلى {$max} من الأصول في المرة الواحدة. قلّص نطاق اختيارك وحاول مرة أخرى.',
+    'AssetBulkFilterNotApplied' => 'لم يكن من الممكن تطبيق عامل التصفية "{$key}" كما تم إرساله، لذلك لم يتم تغيير أي شيء.',
+    'AssetBulkExpectedCountRequired' => 'يتطلب حذف الأصول بواسطة عامل التصفية تحديد عدد الأصول التي تتوقع حذفها.',
+    'AssetBulkReasonNotAttempted' => 'لم تتم المحاولة',
+    'MoreActions' => 'المزيد من الإجراءات',
+    'AssetCreateNewGroupOption' => 'أنشئ مجموعة جديدة…',
+    'AssetNewGroupName' => 'اسم المجموعة الجديد',
+    'AssetFilterByTeam' => 'تصفية حسب الفريق {$name}',
+    'AssetFilterByValuation' => 'تصفية حسب التقييم {$name}',
+    'AssetFilterByTag' => 'تصفية حسب الوسم {$name}',
+    'AssetFilterByLocation' => 'تصفية حسب الموقع/المكان {$name}',
+    'AssetFilteringByTeam' => 'تصفية حسب الفريق {$name}',
+    'AssetFilteringByValuation' => 'تصفية النتائج حسب التقييم {$name}',
+    'AssetFilteringByTag' => 'تصفية النتائج حسب الوسم {$name}',
+    'AssetFilteringByLocation' => 'تصفية حسب الموقع/المكان {$name}',
+    'AssetShowOnlyVerified' => 'عرض الأصول التي تم التحقق منها فقط',
+    'AssetShowOnlyUnverified' => 'عرض الأصول غير الموثقة فقط',
+    'AssetShowingVerified' => 'عرض الأصول التي تم التحقق منها',
+    'AssetShowingUnverified' => 'عرض الأصول غير الموثقة',
+    'CustomizationLayoutPayloadRejected' => 'لم يتم حفظ التصميم لاحتوائه على حقول أو بطاقات لا تنتمي إلى هذا القالب. لم يتم إجراء أي تغييرات.',
+    'CustomizationLayoutRejectedUnknownScope' => 'لا يمكن حفظ نطاق هذا القالب من محرر التخطيط. لم يتم تغيير أي شيء.',
+    'CustomizationLayoutRejectedEmptyFields' => 'لا يحتوي التصميم على حقول صالحة، لذلك لم يتم حفظه. لم يتم تغيير أي شيء.',
+    'CustomizationLayoutRejectedWouldDeleteAll' => 'سيؤدي حفظ هذا التصميم إلى حذف جميع الحقول من القالب، لذا لم يتم حفظه. أعد تحميل الصفحة وحاول مرة أخرى.',
+    'CustomizationLayoutRejectedRequiredField' => 'لا يمكن إزالة حقل مطلوب من التصميم. لم يتم تغيير أي شيء.',
+    'CustomizationLayoutRejectedBulkRemoval' => 'سيؤدي حفظ هذا التصميم إلى إزالة معظم حقول القالب دون أن تقوم أنت بإزالتها هنا. أعد تحميل الصفحة وحاول مرة أخرى. لم يتم تغيير أي شيء.',
+    'CustomizationLayoutRejectedGroupMismatch' => 'مجموعة القوالب غير موجودة أو تنتمي إلى نوع سجل مختلف. لم يتم تغيير أي شيء.',
+    'CustomizationLayoutLegacySaveRefused' => 'يتم تعديل هذا القالب باستخدام محرر التخطيط ولا يمكن حفظه من خلال نقطة نهاية اللوحة القديمة.',
+    // Asset discovery probe methods
+    'DiscoveryPortsInvalid' => 'أدخل ما يصل إلى {$max} منافذ TCP بين 1 و 65535، مفصولة بفواصل.',
+    'DiscoveryErrorProbeUnavailable' => 'لم تعد طريقة التحقق التي بدأ بها هذا التشغيل متاحةً للعامل الذي يعمل في الخلفية. ابدأ تشغيلًا جديدًا.',
+    'DiscoveryProbeIcmpUnprivileged' => 'اختبار اتصال ICMP (مقبس غير مميز)',
+    'DiscoveryProbeIcmpRaw' => 'اختبار اتصال ICMP (مقبس خام)',
+    'DiscoveryProbePingCommand' => 'ICMP ping (أمر ping)',
+    'DiscoveryProbeTcpConnect' => 'اتصال TCP',
+    'DiscoveryProbeMethod' => 'طريقة التحقق: {$method}',
+    'DiscoveryProbeDetectedByWebServer' => 'تم اكتشاف ذلك بواسطة خادم الويب. قد يستخدم العامل الذي يعمل في الخلفية طريقة مختلفة.',
+    'DiscoveryTcpProbeWarning' => 'لا يتم العثور على الأجهزة المضيفة إلا إذا استجابت على أحد منافذ TCP الممسوحة ضوئيًا، لذا لن يتم العثور على الأجهزة المضيفة التي تحظر هذه المنافذ. للحصول على نتائج كاملة، اسمح للخادم بإرسال طلبات ICMP ping: اسمح بمنافذ ping غير المميزة أو بتفعيل خاصية NET_RAW، أو ثبّت برنامج ping.',
+    'DiscoveryTcpPortsForRun' => 'منافذ TCP لهذا التشغيل',
+    'DiscoveryTcpPortsHint' => 'يتم فصل المنافذ بفواصل، حتى {$max} . اترك هذا الحقل فارغًا لاستخدام القيمة الافتراضية: {$ports}.',
+    'DiscoveryDefaultTcpPorts' => 'منافذ TCP لاكتشاف الأصول',
+    'DiscoveryDefaultTcpPortsHint' => 'يُستخدم هذا الخيار عندما يتعذر على العامل الذي يعمل في الخلفية إرسال طلبات ICMP ping. يتم فصل البيانات بفواصل، حتى {$max} منفذ.',
+    'DiscoveryErrorTcpUnreliable' => 'توقف الفحص لأن الشبكة تستجيب لاتصالات TCP لعناوين لا يمكن أن تكون مضيفات حقيقية (بسبب وجود خادم وكيل أو جدار حماية)، لذا سيبدو كل عنوان نشطًا. اطلب من مسؤول النظام السماح للخادم بإرسال طلبات ICMP ping.',
+    'DiscoveryDefaultTcpPortsResetLog' => 'تمت إعادة ضبط منافذ TCP لاكتشاف الأصول إلى الوضع الافتراضي بواسطة المستخدم "{$user}".',
+    'DiscoveryNotConfigured' => 'لم يتم تكوين خاصية الاكتشاف. اطلب من مسؤول النظام لديك تحديد النطاقات المسموح بها في ملف config.php.',
+    'DiscoveryRangeNotAllowed' => 'يقع هذا النطاق خارج نطاقات المسح المسموح بها للاكتشاف.',
+    'DiscoveryAllowedRangesList' => 'النطاقات المسموح بها: {$ranges}',
+    // Asset record modal
+    'AssetNotAvailable' => 'هذا العنصر غير متاح. ربما تم حذفه، أو ربما لا يمكنك الوصول إليه.',
+    'AssetCustomFieldNotInTemplate' => 'لا ينتمي حقل مخصص واحد أو أكثر إلى قالب هذا الأصل. لم يتم تغيير أي شيء.',
+    'AssetMappedControlsInvalid' => 'تعذر حفظ عناصر التحكم المُرتبطة. يتطلب كل صف تحديد مستوى نضج وعنصر تحكم واحد على الأقل موجود مسبقًا. لم يتم إجراء أي تغييرات.',
+    'AssetMappedControlsTooMany' => 'يمكن ربط الأصل بحد أقصى {$max} من عناصر التحكم. لم يتم تغيير أي شيء.',
+    'AddControlsAtAnotherMaturity' => 'أضف عناصر تحكم عند مستوى نضج آخر',
+    'ChoosingControlsNeedsGovernancePermission' => 'يتطلب اختيار عناصر التحكم الحصول على إذن الحوكمة.',
+    'NControls' => '{n} عنصر تحكم(ات)',
+    'SavingKeepsTheCurrentControlMappings' => 'يؤدي الحفظ إلى الاحتفاظ بتعيينات التحكم الحالية.',
+    'LoadingControls' => 'جارٍ تحميل عناصر التحكم…',
+    'ControlListCouldNotBeLoaded' => 'تعذر تحميل قائمة عناصر التحكم، لذا لا يمكن تغيير عناصر التحكم المعينة في الوقت الحالي.',
+    'RemoveControlsAtMaturity' => 'إزالة الضوابط عند النضج {maturity}',
+    'ControlIdUnavailable' => '#{id} (غير متوفر)',
+    'AssetRecordEdit' => 'تحرير الأصل',
+    'AssetRecordIdN' => 'الأصل #{$id}',
+    'AssetRecordCopyLink' => 'انسخ رابط هذا الأصل',
+    'AssetRecordLinkCopied' => 'تم نسخ الرابط.',
+    'AssetRecordLinkCopyFailed' => 'تعذر نسخ الرابط. انسخه من شريط العناوين بدلاً من ذلك.',
+    'AssetRecordMarkUnverified' => 'ضع علامة "غير موثق"',
+    'AssetRecordViewAuditTrail' => 'عرض سجل التدقيق',
+    'AssetRecordAuditTrailTitle' => 'سجل التدقيق',
+    'AssetRecordAuditTrailEmpty' => 'لم يتم تسجيل أي نشاط لهذا الأصل خلال هذه الفترة.',
+    'AssetRecordAuditTrailFailed' => 'تعذر تحميل سجل التدقيق.',
+    'AssetRecordBackToAsset' => 'العودة إلى الأصل',
+    'AssetRecordSave' => 'حفظ الأصول',
+    'AssetRecordProvenanceVerified' => 'تم التحقق · تمت الإضافة {$date}',
+    'AssetRecordProvenanceUnverified' => 'غير مُؤكَّد: لم يتم تأكيده بعد من قِبل شخصٍ مُخوَّلٍ بالتحقق من الأصول · تمت الإضافة {$date}',
+    'AssetRecordUnsavedHint' => 'يطلب منك إغلاق العملية مع وجود تغييرات غير محفوظة التأكيد أولاً.',
+    'AssetRecordDiscardQuestion' => 'هل تريد تجاهل التغييرات غير المحفوظة؟',
+    'AssetRecordKeepEditing' => 'استمر في التحرير',
+    'AssetRecordDiscardChanges' => 'تجاهل التغييرات',
+    'AssetRecordVerificationCard' => 'تَحَقّق',
+    'AssetRecordVerificationTag' => 'يتطلب إذن التحقق من الأصول',
+    'AssetRecordVerifiedHint' => 'قام شخص مسؤول بمراجعة هذا الأصل. تغيير اسمه أو عنوان IP الخاص به دون إذن التحقق من الأصول يعيده إلى حالة غير موثقة.',
+    'AssetRecordLoadFailed' => 'تعذر تحميل الملف. يرجى المحاولة مرة أخرى.',
+    'CustomizationCardsLayoutApiScopeErrorWithAsset' => 'تتوفر واجهة برمجة تطبيقات تخطيط بطاقات التخصيص فقط لـ fgroup=risk (tab_index 1 أو 2 أو 3) و fgroup=asset (tab_index 1).',
+    'DiscoveryErrorRequesterNotPermitted' => 'لم يعد لدى المستخدم الذي بدأ هذه العملية إذن لتشغيل عملية اكتشاف الأصول.',
+    'AssetRecordEditField' => 'تعديل {$field}',
+    // Asset Scoring (FIPS 199 categorization + weighted score)
+    'Confidentiality' => 'السرية',
+    'Integrity' => 'نزاهة',
+    'Availability' => 'التوافر',
+    'AssetScoringLevelLow' => 'منخفض',
+    'AssetScoringLevelModerate' => 'معتدل',
+    'AssetScoringLevelHigh' => 'عالي',
+    'AssetScoringValueInvalid' => 'تقبل السرية والنزاهة والتوافر مستويات منخفضة أو متوسطة أو عالية (كما تقبل السرية أيضًا مستوى غير قابل للتطبيق).',
+    'AssetScoringChangedLog' => 'تم تغيير الأصل "{$name}" {$objective} من {$from} إلى {$to} بواسطة المستخدم "{$user}".',
+    'FIPSCategorization' => 'تصنيف FIPS',
+    'WeightedScore' => 'النتيجة المرجحة',
+    'WeightedBand' => 'النطاق المرجّح',
+    'AllCategorizations' => 'جميع التصنيفات',
+    'AllBands' => 'جميع النطاقات',
+    'AssetFilterByCategorization' => 'تصفية حسب تصنيف FIPS {$name}',
+    'AssetFilteringByCategorization' => 'التصفية حسب تصنيف FIPS {$name}',
+    'AssetFilterByBand' => 'تصفية حسب النطاق المرجح {$name}',
+    'AssetFilteringByBand' => 'التصفية حسب النطاق المرجح {$name}',
+    'AssetScoring' => 'تقييم الأصول',
+    'AssetScoringSettingsHint' => 'يُصنّف كل أصل على أنه منخفض أو متوسط أو مرتفع من حيث السرية والنزاهة والتوافر، وقد يُصنّف الأصل على أنه غير قابل للتطبيق من حيث السرية، مما يستبعده من كلا النتيجتين. ويُعدّ تصنيفه وفقًا لمعايير FIPS هو الأعلى بين التصنيفات الثلاثة. أما درجته المرجّحة فهي المتوسط المرجّح لقيم المستويات الثلاثة، وتُحوّل عتبات النطاق هذه الدرجة إلى نطاق منخفض أو متوسط أو مرتفع. ويؤدي تغيير هذه الإعدادات إلى إعادة تقييم كل أصل فورًا.',
+    'Weights' => 'الأوزان',
+    'AssetScoringWeightsHint' => 'نسبة كل هدف في النتيجة المرجحة: من 0 إلى 100، مع إمكانية تقريبها إلى منزلتين عشريتين. يؤدي وزن 0 إلى استبعاد ذلك الهدف. لا يمكن أن يكون كل من النزاهة والتوافر صفرًا، لأن السرية غير المطبقة تُستبعد دائمًا.',
+    'LevelValues' => 'قيم المستوى',
+    'AssetScoringLevelValuesHint' => 'يُحدد الرقم الذي يُساهم به كل تقييم في النتيجة المرجحة: أعلى من 0 وحتى 100، مع إمكانية الوصول إلى منزلتين عشريتين، ومنخفض أقل من متوسط أقل من مرتفع. القيم الافتراضية هي منخفض 1، متوسط 2، ومرتفع 3.',
+    'BandThresholds' => 'عتبات النطاق',
+    'AssetScoringBandThresholdsHint' => 'تُصنّف الدرجة المرجّحة التي تساوي أو تتجاوز عتبة معينة ضمن تلك الفئة، بينما تُصنّف الدرجة الأقل من عتبة "المتوسط" ضمن فئة "المنخفض". يجب أن تبدأ فئة "المتوسط" فوق قيمة "المنخفض"، ويجب أن تبدأ فئة "العالي" فوق قيمة "المتوسط" ولا تتجاوزها.',
+    'ModerateStartsAt' => 'يبدأ المستوى المعتدل عند',
+    'HighStartsAt' => 'يبدأ العالي عند',
+    'DefaultScoringForNewAssets' => 'التقييم الافتراضي للأصول الجديدة',
+    'AssetScoringDefaultsHint' => 'يُحدد هذا الخيار هذه التقييمات تلقائيًا عند إضافة أصل في نموذج الأصول. تبقى الأصول التي تم إنشاؤها عن طريق الاكتشاف أو الاستيراد أو واجهة برمجة التطبيقات بدون تقييم ما لم يتم توفير تقييماتها الخاصة. اترك الخيارات الثلاثة غير مُفعّلة لإيقاف تشغيل هذا الخيار.',
+    'AssetScoringWeightsInvalid' => 'يجب أن تكون أوزان تقييم الأصول أرقامًا من 0 إلى 100 مع منزلتين عشريتين على الأكثر، ولا يمكن أن تكون كل من السلامة والتوافر 0.',
+    'AssetScoringValuesInvalid' => 'يجب أن تكون قيم مستوى تقييم الأصول أرقامًا أعلى من 0 وحتى 100 مع منزلتين عشريتين على الأكثر، مع كون منخفض أقل من متوسط أقل من مرتفع.',
+    'AssetScoringThresholdsInvalid' => 'يجب ألا تتجاوز عتبات نطاق تقييم الأصول رقمين عشريين، حيث يبدأ المستوى المتوسط فوق القيمة المنخفضة، ويبدأ المستوى العالي فوق المستوى المتوسط، ولا يبدأ المستوى العالي أعلى من القيمة العالية.',
+    'AssetScoringDefaultsInvalid' => 'يجب أن يكون التقييم الافتراضي للأصول الجديدة مستوىً يقدمه كل هدف.',
+    'AssetScoringSettingsNotSaved' => 'لم يتم حفظ إعدادات تقييم الأصول. لم يتم تغيير أي شيء.',
+    'AssetScoringSettingsChangedLog' => 'تم تغيير إعدادات تقييم الأصول بواسطة المستخدم "{$user}".',
+    'AssetScoringNotSet' => 'غير محدد',
+    'NotScored' => 'لم يتم احتساب النقاط',
+    'AssetScoringNotScoredHint' => 'أجب عن جميع الأهداف الثلاثة لتقييم هذا الأصل.',
+    'ImportAssetScoringValueIgnored' => 'القيمة {$objective} "{$value}" للأصل "{$asset_name}" ليست تقييمًا صالحًا وتم تجاهلها.',
+    'AssetScoringSecurityObjectives' => 'الأهداف الأمنية',
+    'AssetScoringConfidentialityHelp' => 'ما هو الأثر المحتمل في حالة الكشف غير المصرح به عن المعلومات المتعلقة بهذا الأصل؟',
+    'AssetScoringIntegrityHelp' => 'ما هو الأثر المحتمل في حالة حدوث تعديل أو تدمير غير مصرح به للمعلومات الموجودة على هذا الأصل؟',
+    'AssetScoringAvailabilityHelp' => 'ما هو الأثر المحتمل في حال حدوث انقطاع في الوصول إلى هذا الأصل أو استخدامه؟',
+    'AssetScoringHelpHigh' => 'تأثير ضار شديد أو كارثي',
+    'AssetScoringHelpModerate' => 'تأثير ضار خطير',
+    'AssetScoringHelpLow' => 'تأثير ضار محدود أو معدوم',
+    'AssetScoringHelpNotApplicable' => 'لا تشكل السرية مصدر قلق بالنسبة لهذا الأصل (على سبيل المثال، المعلومات العامة).',
+    'AssetScoringHelpLabel' => 'إرشادات التقييم {$objective}',
+    'AssetScoringMeterValue' => '{$score}، نطاق {$band}',
+    'AssetScoringNoWeightedScore' => 'لا يوجد ترجيح للنتيجة',
+    'AssetScoringNoWeightedScoreNote' => 'لا توجد نقاط مرجحة: كل هدف مهم له وزن يساوي صفرًا.',
+    'AssetScoringUpgradePending' => 'لا يمكن حفظ تقييم الأصول إلا بعد تشغيل ترقية قاعدة بيانات SimpleRisk. لم يتم إجراء أي تغييرات.',
+    'AssetScoringResultHelpLabel' => 'شرح {$result}',
+    'AssetScoringScoreHelp' => 'تُدمج النتيجة المرجحة التقييمات الثلاثة في رقم واحد يتراوح بين {$low} و {$high}. يُصبح لكل تقييم قيمته المحددة، ويُضرب كل تقييم بوزن هدفه. تُجمع النتائج وتُقسم على مجموع الأوزان. يُستثنى خيار "السرية غير قابلة للتطبيق" مع وزنه. تُضبط القيم المحددة والأوزان في الإعدادات. يجب تقييم الأهداف الثلاثة جميعها قبل عرض النتيجة.',
+    'AssetScoringCategorizationHelp' => 'يُعدّ تصنيف FIPS 199 للأمن المعيار الأعلى: فهو أعلى تصنيف بين المعايير المطبقة. ويُصنّف الأصل بدرجة "عالية" بغض النظر عن التصنيفات الأخرى. أما تصنيف "غير قابل للتطبيق" فيُتجاهل.',
+    'AssetScoringBandHelp' => 'يضع النطاق الدرجة المرجّحة على مقياس منخفض أو معتدل أو مرتفع. تُعد الدرجة الأقل من {$moderate} منخفضة، ومن {$moderate} حتى {$highAt} معتدلة، و{$highAt} أو أكثر مرتفعة. تُضبط العتبات في التفضيلات.',
+    // Manage assets: Confidentiality / Integrity / Availability rating filters
+    'AllConfidentialityRatings' => 'جميع تصنيفات السرية',
+    'AllIntegrityRatings' => 'جميع تقييمات النزاهة',
+    'AllAvailabilityRatings' => 'جميع تقييمات التوافر',
+    'AssetFilterByConfidentiality' => 'تصفية حسب السرية {$name}',
+    'AssetFilteringByConfidentiality' => 'تصفية النتائج حسب السرية {$name}',
+    'AssetFilterByIntegrity' => 'تصفية حسب النزاهة {$name}',
+    'AssetFilteringByIntegrity' => 'التصفية حسب النزاهة {$name}',
+    'AssetFilterByAvailability' => 'تصفية حسب التوافر {$name}',
+    'AssetFilteringByAvailability' => 'تصفية النتائج حسب التوافر {$name}',
+    'HighestFIPSCategorization' => 'أعلى تصنيف FIPS',
+    'HighestWeightedScore' => 'أعلى درجة مرجحة',
+    'HighestWeightedBand' => 'أعلى نطاق وزن',
+    'AssetGroupFields' => 'حقول مجموعة الأصول',
+    'NoAssetGroupsMatchFilters' => 'لا توجد مجموعات أصول مطابقة لمرشحاتك',
+    'AssetGroupFilterByHighestCategorization' => 'تصفية حسب أعلى تصنيف FIPS {$name}',
+    'AssetGroupFilteringByHighestCategorization' => 'تصفية النتائج حسب أعلى تصنيف FIPS {$name}',
+    'AssetGroupFilterByHighestBand' => 'تصفية حسب النطاق ذي الوزن الأعلى {$name}',
+    'AssetGroupFilteringByHighestBand' => 'التصفية حسب النطاق ذي الوزن الأعلى {$name}',
+    'AssetGroupBulkSelectionRequired' => 'حدد مجموعات الأصول إما عن طريق المعرف أو عن طريق الفلتر.',
+    'AssetGroupBulkIdsRequired' => 'اختر مجموعة أصول واحدة على الأقل.',
+    'AssetGroupBulkIdsInvalid' => 'يجب أن تكون معرفات مجموعات الأصول أعدادًا صحيحة.',
+    'AssetGroupBulkFilterAllAlone' => 'لا يمكن دمج تحديد جميع مجموعات الأصول مع عوامل التصفية الأخرى.',
+    'AssetGroupBulkFilterEmpty' => 'اختر فلترًا، أو حدد جميع مجموعات الأصول، قبل الحذف.',
+    'AssetGroupBulkExpectedCountInvalid' => 'يجب أن يكون العدد المتوقع لمجموعات الأصول عددًا صحيحًا.',
+    'AssetGroupBulkExpectedCountRequired' => 'يتطلب حذف مجموعات الأصول بواسطة عامل التصفية تحديد عدد المجموعات التي تتوقع حذفها.',
+    'AssetGroupBulkNoMatch' => 'لا توجد مجموعات أصول مطابقة لاختيارك.',
+    'AssetGroupBulkCountMismatch' => 'تغيرت مجموعات الأصول المطابقة من {$expected} إلى {$actual} منذ أن قمت بتحديدها. راجع القائمة وحاول مرة أخرى.',
+    'AssetGroupBulkTooManyToDelete' => 'يمكنك حذف ما يصل إلى {$max} مجموعة أصول في المرة الواحدة. قلّص نطاق اختيارك وحاول مرة أخرى.',
+    'AssetGroupBulkSelectAll' => 'حدد جميع مجموعات الأصول {$count}',
+    'AssetGroupBulkAllSelected' => 'تم تحديد جميع مجموعات الأصول المطابقة {$count}',
+    'AssetGroupBulkDeleteConfirmTitle' => 'حذف مجموعات الأصول {$count}؟',
+    'AssetGroupBulkDeleteKeepsAssets' => 'لا يتم حذف الأصول الموجودة في هذه المجموعات، بل يتم إزالة المجموعات فقط.',
+    'DeleteAssetGroups' => 'حذف المجموعات',
+    'AssetGroupBulkDeletedSummary' => 'تم حذف {$ok} مجموعة، وتم تخطي {$failed} مجموعة',
+    'ChoosingRisksNeedsRiskManagementPermission' => 'يتطلب اختيار المخاطر المرتبطة الحصول على إذن من إدارة المخاطر.',
+    'NAssociatedRisks' => '{n} المخاطر المرتبطة',
+    'SavingKeepsTheCurrentRiskAssociations' => 'يحافظ الحفظ على المخاطر المرتبطة الحالية.',
     '' => '',
 );
 ?>

@@ -814,7 +814,7 @@ $lang = array(
     'UserSessions' => 'उपयोगकर्ता सत्र',
     'SessionActivityTimeout' => 'सत्र गतिविधि टाइमआउट',
     'Security' => 'सुरक्षा',
-    'EnableCSP' => 'सामग्री सुरक्षा नीति सक्षम करें (इससे पूर्व में Chrome टूट चुका है)',
+    'EnableCSP' => 'सामग्री सुरक्षा नीति सक्षम करें (अनुशंसित)',
     'EnableDebugLogging' => 'डीबग लॉगिंग सक्षम करें',
     'seconds' => 'सेकंड',
     'FieldSample' => 'फ़ील्ड नमूना',
@@ -4967,6 +4967,572 @@ $lang = array(
     // closeriskForm()'s own (hardcoded, pre-existing) single-risk denial text.
     'NoCloseRiskPermission' => 'आपको जोखिमों को बंद करने की अनुमति नहीं है।',
     'QuestionnaireRequiredQuestionUnanswered' => 'कृपया मूल्यांकन पूरा करने से पहले सभी आवश्यक प्रश्नों के उत्तर दें।',
+    'AuditLog_ControlStatusAutoSynced' => 'नियंत्रण "{$short_name}" की स्थिति उसके नवीनतम परीक्षण परिणाम(ओं) के आधार पर स्वचालित रूप से "{$status_text}" में अपडेट कर दी गई।',
+    'EnableCSPHelp' => 'कंटेंट सिक्योरिटी पॉलिसी (CSP) ब्राउज़र को केवल SimpleRisk से ही स्क्रिप्ट, स्टाइल, इमेज और फ़ॉन्ट लोड करने तक सीमित रखती है, और पेज फ़्रेमिंग और क्रॉस-ओरिजिन फ़ॉर्म सबमिशन को ब्लॉक करती है। यह क्रॉस-साइट स्क्रिप्टिंग के खिलाफ सबसे मजबूत अंतर्निर्मित सुरक्षा है। इसे तब तक सक्षम रहने दें जब तक कि यह आपके वातावरण में किसी प्रॉक्सी, ब्राउज़र एक्सटेंशन या तृतीय-पक्ष एकीकरण के साथ टकराव न करे।',
+    // Define Control Frameworks' Columns picker (Task: Columns picker + saved layout/filters) -- the "Standard" group label above its built-in fields (Family/Owner/Maturity/Status/Class/Phase/Priority/Type); 'CustomFields' already exists.
+    'StandardFields' => 'मानक फ़ील्ड',
+    // My Profile redesign (js/simplerisk/pages/account-profile.js)
+    'Administrator' => 'प्रशासक',
+    'AccountDetails' => 'खाता विवरण',
+    'YourPermissions' => 'आपकी अनुमतियाँ',
+    'RoleAndTeamsGrantAccess' => 'आपकी भूमिका और टीमें आपको किन चीज़ों तक पहुंच प्रदान करती हैं',
+    'AllGranted' => 'सभी स्वीकृत',
+    'PermissionsCountLabel' => '$count अनुमतियाँ',
+    'ManagedByYourAdministrator' => 'ये विवरण आपके प्रशासक द्वारा प्रबंधित किए जाते हैं। यदि इसमें कुछ भी बदलाव करने की आवश्यकता हो, तो उनसे संपर्क करें।',
+    'MultiFactorAuthenticationHint' => 'अपने खाते को अधिक सुरक्षित रखने के लिए साइन-इन प्रक्रिया में एक दूसरा चरण जोड़ें।',
+    'ChangingPasswordSignsOutEverywhere' => 'पासवर्ड बदलने से आप हर जगह से लॉग आउट हो जाएंगे।',
+    'APIKeyHint' => 'SimpleRisk API के विरुद्ध अपनी स्वयं की स्क्रिप्ट और एकीकरणों को प्रमाणित करने के लिए उपयोग किया जाता है।',
+    'ResetDisplaySettingsHint' => 'यह आपके कस्टम कॉलम चयनों को डिफ़ॉल्ट मानों पर रीसेट करता है।',
+    'CardGeneral' => 'सामान्य',
+    'CardClassification' => 'वर्गीकरण',
+    'CardScoring' => 'स्कोरिंग',
+    'CardAdditionalInformation' => 'अतिरिक्त जानकारी',
+    'CardCustomFields' => 'कस्टम फ़ील्ड्स',
+    'CardCustomFieldsHint' => 'इन फ़ील्ड्स को कार्ड में सॉर्ट करने की आवश्यकता है',
+    'LayoutEditorHint' => 'किसी फ़ील्ड को पुनः असाइन करने के लिए उसे किसी दूसरे कार्ड में खींचें, कार्ड के भीतर खींचकर उसका क्रम बदलें या आकार बदलें, और पृष्ठ पर कार्ड की स्थिति बदलने के लिए उसे खींचें या उसका आकार बदलें।',
+    'ScoringNotYetAvailableInThisView' => 'इस व्यू में स्कोरिंग कॉन्फ़िगरेशन अभी उपलब्ध नहीं है।',
+    // Native tooltip on the Cards layout editor's Gridstack resize handles
+    // (js/simplerisk/pages/customization-layout-editor.js) -- the bare corner
+    // bracket read as an unexplained mark until it said what it does.
+    'DragToResize' => 'आकार बदलने के लिए खींचें',
+    // Warning pill on a Cards layout editor card the admin has sized shorter
+    // than the fields it holds. Replaces the silent inner scrollbar that state
+    // used to produce.
+    'NFieldsDoNotFitCard' => 'इस कार्ड में {n} फ़ील्ड फिट नहीं हो रहे हैं। उन्हें दिखाने के लिए कार्ड का आकार बदलें।',
+    // Card titles for the Mitigation tab's Cards layout editor
+    // (js/simplerisk/pages/customization-layout-editor.js), mirroring the
+    // Card* keys above for the Details tab. Order follows
+    // customization_mitigation_cards_layout_card_keys() (includes/functions.php).
+    'CardMitigationStrategy' => 'शमन रणनीति',
+    'CardMitigationSolution' => 'शमन समाधान',
+    'CardMitigationControls' => 'शमन नियंत्रण',
+    'CardReview' => 'समीक्षा',
+    // Submit Risk page's three action-bar buttons (buildActionsBar(),
+    // risk-details-form.js, submitMode 'create' only) and the Reset Form
+    // confirm modal (management/index.php, design-system.md #8's "Confirm"
+    // type). 'Discard'/'Cancel'/'Close' already exist and are reused for the
+    // modal's own buttons.
+    'ResetForm' => 'फ़ॉर्म रीसेट करें',
+    'SaveAndNew' => 'सहेजें और नया',
+    'SaveAndView' => 'सहेजें और देखें',
+    'ResetFormConfirmTitle' => 'क्या इस जोखिम संबंधी रिपोर्ट को खारिज कर देना चाहिए?',
+    'ResetFormConfirmBody' => 'आपके द्वारा दर्ज की गई कोई भी जानकारी नष्ट हो जाएगी।',
+    // Restore-template destructive confirm (Customization Extra, Save/Restore
+    // action bar). Two body variants: risk's Details/Mitigation/Review tabs
+    // named explicitly (the only fgroup with that 3-tab Cards layout), a
+    // generic fallback for every other fgroup (single legacy-panel tab).
+    // Both end on the same scoping reassurance -- confirmed via direct source
+    // read that Restore only ever touches the currently-selected template
+    // group, never any other.
+    'RestoreTemplateConfirmTitle' => 'डिफ़ॉल्ट लेआउट पुनर्स्थापित करें?',
+    'RestoreTemplateConfirmBodyRisk' => 'इससे डिटेल्स, मिटिगेशन और रिव्यू टैब के सभी फ़ील्ड इस टेम्प्लेट समूह के लिए अपने डिफ़ॉल्ट मानों पर रीसेट हो जाते हैं। अन्य टेम्प्लेट समूह अप्रभावित रहते हैं।',
+    'RestoreTemplateConfirmBody' => 'इससे इस टेम्प्लेट समूह के सभी फ़ील्ड अपने डिफ़ॉल्ट मानों पर रीसेट हो जाते हैं। अन्य टेम्प्लेट समूहों पर इसका कोई प्रभाव नहीं पड़ता।',
+    // CVSS holder's collapsed Temporal/Environmental/Impact-Modifiers
+    // accordion (buildCvssHolder(), risk-details-form.js) -- these three
+    // groups are optional CVSS v2 refinements on top of the required Base
+    // Score Metrics, so they collapse behind this header by default.
+    'AdvancedMetrics' => 'उन्नत मेट्रिक्स',
+    // CVSS holder's Base Score Metrics sub-group headers (buildCvssHolder(),
+    // risk-details-form.js) -- distinct from the existing 'ExploitabilityMetrics'/
+    // 'ImpactMetrics' keys, which the legacy cvss_modal_content.php modal
+    // still renders as plain "Exploitability Metrics"/"Impact Metrics" and
+    // must keep unchanged. These fold the umbrella "Base Score Metrics"
+    // heading into each sub-group's own header instead of a separate label.
+    'BaseScoreExploitabilityMetrics' => 'बेस स्कोर एक्सप्लॉइटेबिलिटी मेट्रिक्स',
+    'BaseScoreImpactMetrics' => 'बेस स्कोर इम्पैक्ट मेट्रिक्स',
+    // Per-field help popovers on the CVSS holder's 14 metric selects
+    // (buildCvssScoreItem(), risk-details-form.js) -- one per CVSS v2
+    // metric, matching the standard CVSS v2 specification definitions.
+    // Double-quoted (not single-quoted, this file's usual style) so the
+    // \n line breaks are real escape sequences: each popover leads with one
+    // overall sentence, then one bullet line per option, rendered via
+    // white-space: pre-line on .sr-scoring-help-popover .popover-body
+    // (scss/modules/_questionnaire.scss) -- plain text throughout, no HTML,
+    // so the popover stays initialized without Bootstrap's `html: true`.
+    "AttackVectorHelp" => "इस भेद्यता तक कैसे पहुँचा जा सकता है।\n• स्थानीय: इसके लिए स्थानीय पहुँच की आवश्यकता होती है, जैसे कि कंसोल या शेल।\n• आसन्न नेटवर्क: हमलावर को उसी भौतिक या तार्किक नेटवर्क खंड पर होना चाहिए।\n• नेटवर्क: इसे नेटवर्क पर दूरस्थ रूप से उपयोग किया जा सकता है, इसके लिए स्थानीय या आसन्न पहुँच की आवश्यकता नहीं होती है।",
+    "AttackComplexityHelp" => "एक बार हमलावर को लक्ष्य तक पहुंच मिल जाने के बाद हमला कितना जटिल हो जाता है।\n• उच्च: इसके लिए विशेष परिस्थितियों की आवश्यकता होती है जिन्हें व्यवस्थित करना कठिन होता है।\n• मध्यम: कुछ शर्तों को पूरा करना आवश्यक है, लेकिन एक बार वे पूरी हो जाने पर शोषण करना मुश्किल नहीं होता है।\n• निम्न: किसी विशेष शर्त की आवश्यकता नहीं होती है।",
+    "AuthenticationHelp" => "किसी लक्ष्य का फायदा उठाने के लिए हमलावर को कितनी बार प्रमाणीकरण करना होगा।\n• एकाधिक: प्रमाणीकरण दो या दो से अधिक बार आवश्यक है, भले ही क्रेडेंशियल समान हों।\n• एकल: प्रमाणीकरण केवल एक बार आवश्यक है।\n• कोई नहीं: किसी प्रमाणीकरण की आवश्यकता नहीं है।",
+    "ConfidentialityImpactHelp" => "सिस्टम द्वारा संसाधित डेटा की गोपनीयता पर दुरुपयोग होने पर पड़ने वाला प्रभाव।\n• कोई प्रभाव नहीं: कोई असर नहीं।\n• आंशिक: कुछ जानकारी का खुलासा होगा, लेकिन हमलावर का इस पर कोई नियंत्रण नहीं होगा, या नुकसान सीमित होगा।\n• पूर्ण: सिस्टम पर मौजूद सभी जानकारी का पूर्ण खुलासा।",
+    "IntegrityImpactHelp" => "सिस्टम की अखंडता पर दुरुपयोग होने पर पड़ने वाला प्रभाव।\n• कोई प्रभाव नहीं: कोई असर नहीं।\n• आंशिक: कुछ डेटा संशोधित किया जा सकता है, लेकिन हमलावर का इस पर कोई नियंत्रण नहीं होता, या इसका दायरा सीमित होता है।\n• पूर्ण: सिस्टम की अखंडता पूरी तरह से भंग हो जाती है; हमलावर किसी भी फ़ाइल को संशोधित कर सकता है।",
+    "AvailabilityImpactHelp" => "दुरुपयोग किए जाने पर सिस्टम की उपलब्धता पर प्रभाव।\n• कोई नहीं: कोई प्रभाव नहीं।\n• आंशिक: प्रदर्शन में कमी या उपलब्धता में व्यवधान।\n• पूर्ण: प्रभावित संसाधन का पूर्णतः बंद होना।",
+    "RemediationLevelHelp" => "इस भेद्यता के लिए उपलब्ध निवारण का स्तर।\n• आधिकारिक समाधान: एक पूर्ण विक्रेता समाधान उपलब्ध है।\n• अस्थायी समाधान: एक आधिकारिक लेकिन अस्थायी समाधान उपलब्ध है।\n• वैकल्पिक समाधान: एक अनौपचारिक, गैर-विक्रेता वैकल्पिक समाधान मौजूद है।\n• अनुपलब्ध: कोई समाधान उपलब्ध नहीं है, या कोई भी लागू नहीं किया जा सकता है।",
+    "ReportConfidenceHelp" => "सुरक्षा खामी के अस्तित्व पर विश्वास का स्तर और उसके तकनीकी विवरणों की विश्वसनीयता।\n• अपुष्ट: एक ही अपुष्ट स्रोत से रिपोर्ट; अंतर्निहित समस्या अनुमानित है।\n• असत्यापित: कई स्वतंत्र स्रोत एक ही व्यवहार की रिपोर्ट करते हैं, लेकिन मूल कारण की पुष्टि नहीं हुई है।\n• पुष्ट: विक्रेता ने समस्या को स्वीकार कर लिया है, या स्रोत कोड या एक्सप्लॉइट विश्लेषण द्वारा इसकी पुष्टि की गई है।",
+    "CollateralDamagePotentialHelp" => "यदि इस भेद्यता का फायदा उठाया जाता है तो जानमाल, भौतिक संपत्तियों या वित्तीय हानि की संभावना है।\n• कोई नहीं: ऐसी किसी हानि की संभावना नहीं है।\n• कम से मध्यम: मध्यम हानि संभव है।\n• उच्च: संगठन की संपत्तियों, राजस्व या सुरक्षा पर विनाशकारी प्रभाव पड़ेगा।",
+    "TargetDistributionHelp" => "आपके वातावरण में असुरक्षित प्रणालियों का अनुपात।\n• कोई नहीं: कोई लक्षित प्रणाली मौजूद नहीं है।\n• कम: 1-25% प्रणालियाँ असुरक्षित हैं।\n• मध्यम: 26-75% प्रणालियाँ असुरक्षित हैं।\n• उच्च: 76-100% प्रणालियाँ असुरक्षित हैं।",
+    "ConfidentialityRequirementHelp" => "आपकी संस्था के लिए प्रभावित संपत्ति की गोपनीयता कितनी महत्वपूर्ण है?\n• कम: गोपनीयता भंग होने का प्रभाव सीमित होता है।\n• मध्यम: इसका गंभीर प्रभाव पड़ता है।\n• उच्च: इसका विनाशकारी प्रभाव पड़ता है।",
+    "IntegrityRequirementHelp" => "आपकी संस्था के लिए प्रभावित परिसंपत्ति की अखंडता कितनी महत्वपूर्ण है?\n• कम: अखंडता के नुकसान का सीमित प्रभाव होता है।\n• मध्यम: इसका गंभीर प्रभाव होता है।\n• उच्च: इसका विनाशकारी प्रभाव होता है।",
+    "AvailabilityRequirementHelp" => "आपकी संस्था के लिए प्रभावित परिसंपत्ति की उपलब्धता कितनी महत्वपूर्ण है?\n• कम: उपलब्धता में कमी का प्रभाव सीमित होता है।\n• मध्यम: इसका गंभीर प्रभाव पड़ता है।\n• उच्च: इसका विनाशकारी प्रभाव पड़ता है।",
+    // Base Score Metrics' two sub-group intro sentences (metricsSubGroup()'s
+    // `descKey`, risk-details-form.js) -- orient the user to what the GROUP
+    // as a whole is asking, distinct from the per-field *Help popover keys
+    // above which explain each metric's own options.
+    'BaseScoreExploitabilityMetricsDescription' => 'किसी हमलावर को इस भेद्यता तक पहुंचने और इसे सक्रिय करने के लिए किस प्रकार की आवश्यकता होगी: उन्हें कहां होना चाहिए, हमला कितना जटिल है, और क्या उन्हें पहले प्रमाणीकरण की आवश्यकता है।',
+    'BaseScoreImpactMetricsDescription' => 'यदि इस भेद्यता का सफलतापूर्वक फायदा उठाया जाता है तो क्या होगा: प्रभावित सिस्टम की गोपनीयता, अखंडता और उपलब्धता पर क्या प्रभाव पड़ेगा।',
+    // Advanced Metrics' three optional sub-group intro sentences -- same
+    // metricsSubGroup() `descKey` as the two Base Score groups above.
+    'TemporalScoreMetricsDescription' => 'समय के साथ इस भेद्यता का वास्तविक दुनिया में खतरा कैसे बदलता है: एक्सप्लॉइट कोड की वर्तमान स्थिति, उपलब्ध निवारण उपाय और इसके अस्तित्व के बारे में रिपोर्टों की विश्वसनीयता।',
+    'EnvironmentalScoreMetricsDescription' => 'इस भेद्यता का जोखिम आपके परिवेश पर निर्भर करता है: वास्तविक दुनिया में होने वाले नुकसान की संभावना और वास्तव में आपके कितने सिस्टम प्रभावित होते हैं।',
+    'ImpactSubscoreModifiersDescription' => 'इस विशिष्ट परिसंपत्ति के लिए गोपनीयता, अखंडता और उपलब्धता वास्तव में कितनी मायने रखती है, इसके आधार पर बेस स्कोर के प्रभाव को भारित करें।',
+    // Phase 4d-iii: DREAD holder help popovers (view_dread_help()'s
+    // existing English text, includes/display.php, extracted to real $lang
+    // keys -- that function's own content was raw hardcoded HTML, never
+    // localized, so it could not be reused verbatim).
+    'DamagePotentialHelp' => 'यदि कोई खतरा उत्पन्न होता है, तो कितना नुकसान होगा?' . "\n" . '0 = कुछ नहीं' . "\n" . '5 = व्यक्तिगत उपयोगकर्ता डेटा से समझौता किया गया है या वह प्रभावित हुआ है।' . "\n" . '10 = संपूर्ण सिस्टम या डेटा का विनाश',
+    'ReproducibilityHelp' => 'इस खतरे के शोषण को दोहराना कितना आसान है?' . "\n" . '0 = बहुत कठिन या असंभव, यहां तक कि एप्लिकेशन के प्रशासकों के लिए भी।' . "\n" . '5 = एक या दो चरणों की आवश्यकता है, अधिकृत उपयोगकर्ता होना आवश्यक हो सकता है।' . "\n" . '10 = प्रमाणीकरण की आवश्यकता नहीं है, केवल एक वेब ब्राउज़र और एड्रेस बार ही पर्याप्त है।',
+    'ExploitabilityHelp' => 'इस खतरे का फायदा उठाने के लिए क्या आवश्यक है?' . "\n" . '0 = उन्नत प्रोग्रामिंग और नेटवर्किंग ज्ञान, साथ ही कस्टम या उन्नत हमला करने वाले उपकरणों का ज्ञान।' . "\n" . '5 = इंटरनेट पर मैलवेयर मौजूद है, या उपलब्ध हमलावर उपकरणों का उपयोग करके आसानी से कोई हमला किया जा सकता है।' . "\n" . '10 = केवल एक वेब ब्राउज़र',
+    'AffectedUsersHelp' => 'कितने उपयोगकर्ता प्रभावित होंगे?' . "\n" . '0 = कोई नहीं' . "\n" . '5 = कुछ उपयोगकर्ता, लेकिन सभी नहीं' . "\n" . '10 = सभी उपयोगकर्ता',
+    'DiscoverabilityHelp' => 'इस खतरे का पता लगाना कितना आसान है?' . "\n" . '0 = बहुत कठिन से असंभव; इसके लिए सोर्स कोड या प्रशासनिक पहुँच की आवश्यकता है।' . "\n" . '5 = अनुमान लगाकर या नेटवर्क ट्रेस की निगरानी करके इसका पता लगाया जा सकता है।' . "\n" . '9 = इस तरह की खामियों का विवरण पहले से ही सार्वजनिक डोमेन में है और इसे सर्च इंजन का उपयोग करके आसानी से खोजा जा सकता है।' . "\n" . '10 = जानकारी वेब ब्राउज़र के एड्रेस बार में या किसी फॉर्म में दिखाई देती है।',
+    // The DREAD holder's summary card heading and "DREAD Metrics" card
+    // heading. No existing key covers either (confirmed via grep before
+    // adding).
+    'DreadScore' => 'डर स्कोर',
+    'DreadMetrics' => 'डर मेट्रिक्स',
+    // Phase 4d-iv: OWASP holder help popovers (view_owasp_help()'s
+    // existing English text, includes/display.php, extracted to real
+    // $lang keys -- same never-localized-legacy-content extraction the
+    // DREAD phase already did for its own 5 fields). Wording/levels
+    // trued up against that function's real source text, not transcribed
+    // from an earlier standard-methodology draft.
+    'SkillLevelHelp' => 'तकनीकी रूप से ये खतरा पैदा करने वाले एजेंट कितने कुशल हैं?' . "\n" . '1 = कोई तकनीकी कौशल नहीं' . "\n" . '3 = कुछ तकनीकी कौशल' . "\n" . '5 = उन्नत कंप्यूटर उपयोगकर्ता' . "\n" . '6 = नेटवर्क और प्रोग्रामिंग कौशल' . "\n" . '9 = सुरक्षा भेदन कौशल',
+    'MotiveHelp' => 'खतरे पैदा करने वाले एजेंटों का यह समूह इस भेद्यता को खोजने और उसका फायदा उठाने के लिए कितना प्रेरित है?' . "\n" . '1 = कम या कोई इनाम नहीं' . "\n" . '4 = संभावित पुरस्कार' . "\n" . '9 = उच्च पुरस्कार',
+    'OpportunityHelp' => 'इस समूह के हमलावरों को इस भेद्यता को खोजने और उसका फायदा उठाने के लिए किन संसाधनों और अवसरों की आवश्यकता है?' . "\n" . '0 = पूर्ण पहुँच या महंगे संसाधनों की आवश्यकता' . "\n" . '4 = विशेष पहुँच या संसाधनों की आवश्यकता है' . "\n" . '7 = कुछ पहुंच या संसाधनों की आवश्यकता है' . "\n" . '9 = किसी पहुंच या संसाधन की आवश्यकता नहीं है',
+    'SizeHelp' => 'खतरे पैदा करने वाले इन एजेंटों का समूह कितना बड़ा है?' . "\n" . '2 = डेवलपर्स' . "\n" . '2 = सिस्टम प्रशासक' . "\n" . '4 = इंट्रानेट उपयोगकर्ता' . "\n" . '5 = साझेदार' . "\n" . '6 = प्रमाणित उपयोगकर्ता' . "\n" . '9 = गुमनाम इंटरनेट उपयोगकर्ता',
+    'EaseOfDiscoveryHelp' => 'इस समूह के लिए इस भेद्यता का पता लगाना कितना आसान है?' . "\n" . '1 = व्यावहारिक रूप से असंभव' . "\n" . '3 = कठिन' . "\n" . '7 = आसान' . "\n" . '9 = स्वचालित उपकरण उपलब्ध हैं',
+    'EaseOfExploitHelp' => 'इस समूह के लिए इस भेद्यता का फायदा उठाना कितना आसान है?' . "\n" . '1 = सैद्धांतिक' . "\n" . '3 = कठिन' . "\n" . '5 = आसान' . "\n" . '9 = स्वचालित उपकरण उपलब्ध हैं',
+    'AwarenessHelp' => 'इस समूह के हमलावरों को इस भेद्यता के बारे में कितनी अच्छी तरह से पता है?' . "\n" . '1 = अज्ञात' . "\n" . '4 = छिपा हुआ' . "\n" . '6 = स्पष्ट' . "\n" . '9 = सार्वजनिक ज्ञान',
+    'IntrusionDetectionHelp' => 'किसी खामी का पता लगने की कितनी संभावना है?' . "\n" . '1 = अनुप्रयोग में सक्रिय पहचान' . "\n" . '3 = लॉग किया गया और समीक्षा की गई' . "\n" . '8 = बिना समीक्षा के लॉग किया गया' . "\n" . '9 = लॉग इन नहीं किया गया',
+    'LossOfConfidentialityHelp' => 'कितना डेटा लीक हो सकता है और वह कितना संवेदनशील है?' . "\n" . '2 = न्यूनतम गैर-संवेदनशील डेटा का खुलासा' . "\n" . '6 = न्यूनतम महत्वपूर्ण डेटा का खुलासा किया गया' . "\n" . '6 = व्यापक गैर-संवेदनशील डेटा का खुलासा' . "\n" . '7 = व्यापक महत्वपूर्ण डेटा का खुलासा किया गया' . "\n" . '9 = सभी डेटा का खुलासा किया गया',
+    'LossOfIntegrityHelp' => 'कितना डेटा दूषित हो सकता है और कितना नुकसान हुआ है?' . "\n" . '1 = न्यूनतम मामूली रूप से दूषित डेटा' . "\n" . '3 = न्यूनतम गंभीर रूप से दूषित डेटा' . "\n" . '5 = व्यापक रूप से थोड़ा दूषित डेटा' . "\n" . '7 = व्यापक रूप से गंभीर रूप से भ्रष्ट डेटा' . "\n" . '9 = सारा डेटा पूरी तरह से दूषित है',
+    'LossOfAvailabilityHelp' => 'इससे कितनी सेवा बाधित हो सकती है और यह कितनी महत्वपूर्ण है?' . "\n" . '1 = न्यूनतम द्वितीयक सेवाओं में व्यवधान' . "\n" . '5 = प्राथमिक सेवाओं में न्यूनतम व्यवधान' . "\n" . '5 = व्यापक द्वितीयक सेवाएं बाधित हुईं' . "\n" . '7 = प्राथमिक सेवाओं में व्यापक व्यवधान' . "\n" . '9 = सभी सेवाएं पूरी तरह से बंद',
+    'LossOfAccountabilityHelp' => 'क्या खतरा पैदा करने वाले तत्वों की गतिविधियों का पता किसी व्यक्ति से लगाया जा सकता है?' . "\n" . '1 = पूरी तरह से पता लगाने योग्य' . "\n" . '7 = संभवतः पता लगाया जा सकता है' . "\n" . '9 = पूरी तरह से गुमनाम',
+    'FinancialDamageHelp' => 'किसी भी तरह के दुरुपयोग से कितना वित्तीय नुकसान होगा?' . "\n" . '1 = सुरक्षा खामी को ठीक करने की लागत से कम' . "\n" . '3 = वार्षिक लाभ पर मामूली प्रभाव' . "\n" . '7 = वार्षिक लाभ पर महत्वपूर्ण प्रभाव' . "\n" . '9 = दिवालियापन',
+    'ReputationDamageHelp' => 'क्या किसी तरह की गड़बड़ी से प्रतिष्ठा को नुकसान पहुंचेगा जिससे व्यवसाय को हानि होगी?' . "\n" . '1 = न्यूनतम क्षति' . "\n" . '4 = प्रमुख खातों का नुकसान' . "\n" . '5 = सद्भावना की हानि' . "\n" . '9 = ब्रांड को नुकसान',
+    'NonComplianceHelp' => 'नियमों का पालन न करने से कितना जोखिम उत्पन्न होता है?' . "\n" . '2 = मामूली उल्लंघन' . "\n" . '5 = स्पष्ट उल्लंघन' . "\n" . '7 = हाई प्रोफाइल उल्लंघन',
+    'PrivacyViolationHelp' => 'कितनी व्यक्तिगत पहचान योग्य जानकारी का खुलासा किया जा सकता है?' . "\n" . '3 = एक व्यक्ति' . "\n" . '5 = सैकड़ों लोग' . "\n" . '7 = हजारों लोग' . "\n" . '9 = लाखों लोग',
+    // The OWASP holder's Score card heading. No existing key covers this
+    // (confirmed via grep before adding) -- the Likelihood/Impact card
+    // headings reuse the already-existing bare 'Likelihood'/'Impact' keys.
+    'OwaspScore' => 'OWASP स्कोर',
+    // Phase 4d-iv follow-up: group-level descriptions for the 4 OWASP
+    // subgroup headings, sourced from OWASP's own Risk Rating Methodology
+    // (https://community.owasp.org/OWASP_Risk_Rating_Methodology), tightened
+    // into short UI captions -- not a verbatim quote (see this task's own
+    // source table for the original wording).
+    'ThreatAgentFactorsDescription' => 'इस समूह के हमलावरों द्वारा सफल हमले की संभावना का अनुमान लगाता है।',
+    'VulnerabilityFactorsDescription' => 'यह अनुमान लगाता है कि इस खामी का पता चलने और इसका फायदा उठाने की कितनी संभावना है।',
+    'TechnicalImpactDescription' => 'गोपनीयता, सत्यनिष्ठा, उपलब्धता और जवाबदेही के आधार पर प्रभाव का विश्लेषण करता है।',
+    'BusinessImpactDescription' => 'यह तकनीकी प्रभाव से परे, व्यवसाय के लिए महत्वपूर्ण पहलुओं को दर्शाता है।',
+    // CVSS's own Temporal-metric 'Exploitability' help text. This key shares
+    // a labelKey ('Exploitability') with DREAD's own field, so both would
+    // otherwise derive the same generic lang key ('ExploitabilityHelp'),
+    // with DREAD's entry silently winning for both -- risk-details-form.js's
+    // buildCvssScoreItem() and risk-details-view.js's cvssMetricValueRow()
+    // reference this key directly for CVSS's Exploitability field instead
+    // of the generic '<labelKey>Help' derivation.
+    'CVSSExploitabilityHelp' => "शोषण तकनीकों या कोड की उपलब्धता की वर्तमान स्थिति।\n• अप्रमाणित: कोई शोषण कोड उपलब्ध नहीं है, या शोषण सैद्धांतिक है।\n• अवधारणा का प्रमाण: शोषण कोड मौजूद है लेकिन अधिकांश हमलावरों के लिए व्यावहारिक नहीं है।\n• कार्यात्मक: कार्यात्मक शोषण कोड अधिकांश स्थितियों में काम करता है।\n• उच्च: शोषण विश्वसनीय है और या तो स्वचालित है (जैसे कि एक वर्म) या इसके लिए शोषण कोड की बिल्कुल भी आवश्यकता नहीं है।",
+    // Risk Scoring -- Classic Inline (Task 3): the Classic scoring method's
+    // new inline Score card heading and its Likelihood/Impact cards' short
+    // plain-English descriptions (js/simplerisk/common/risk-details-form.js's
+    // buildClassicHolder()). Deliberately NOT sourced from NIST SP 800-30 or
+    // any other external standard -- confirmed with the user via the
+    // approved mockup review, unlike OWASP's own subgroup descriptions
+    // above, which do cite OWASP's Risk Rating Methodology.
+    'ClassicScore' => 'क्लासिक स्कोर',
+    'ClassicLikelihoodDescription' => 'इस जोखिम के घटित होने की कितनी संभावना है।',
+    'ClassicImpactDescription' => 'यदि यह जोखिम उत्पन्न हो जाए तो इसके परिणाम कितने गंभीर होंगे।',
+    // Risk Scoring -- Custom Inline (Task 2): the Custom scoring method's
+    // new inline Score card heading (js/simplerisk/common/risk-details-form.js's
+    // buildCustomHolder()) and the Custom Value card's short description
+    // caption. 'CustomValueDescription' text confirmed directly with the
+    // user, same as Classic's own description keys above.
+    'CustomScore' => 'कस्टम स्कोर',
+    'CustomValueDescription' => 'कस्टम मान 0 और 10 के बीच का दशमलव मान हो सकता है।',
+    // Risk Scoring -- Contributing Risk Inline (Phase 4d-v): the last of
+    // the three deferred scoring methods (DREAD/OWASP shipped earlier in
+    // this same project). The Likelihood/Contributing Risk cards' short
+    // plain-English descriptions (js/simplerisk/common/risk-details-form.js's
+    // buildContributingRiskHolder()). The Score card heading reuses the
+    // EXISTING 'ContributingRiskScore' key (already present above, same
+    // text) rather than duplicating it -- 'ContributingRisk'/
+    // 'ContributingLikelihood'/'Weight'/'Subject' are likewise reused as-is.
+    'ContributingLikelihoodDescription' => 'इस जोखिम के घटित होने की कितनी संभावना है।',
+    'ContributingRiskDescription' => 'नीचे दिए गए प्रत्येक कारक को उसके सापेक्ष महत्व के आधार पर भारित किया गया है - चुनें कि यह जोखिम प्रत्येक कारक से कितना प्रभावित होता है।',
+    // OWASP read-mode card (buildOwaspReadView(), risk-details-view.js):
+    // the live calculation formula under each of the 4 sub-group names
+    // (Threat Agent Factors/Vulnerability Factors/Technical Impact/
+    // Business Impact), matching the legacy risk-scoring-details panel's
+    // own "= ( a + b + c + d ) / 4" text (includes/display.php), and the
+    // OWASP Risk Rating Methodology link note placed in the OWASP Score
+    // column's open space below the summary numbers.
+    'OwaspSubgroupFormula' => '= ( {a} + {b} + {c} + {d} ) / 4',
+    'OwaspMethodologyNote' => 'OWASP जोखिम रेटिंग पद्धति का पूरा विवरण यहाँ पाया जा सकता है।',
+    'Here' => 'यहाँ',
+    // Scoring widget formula captions (Classic/DREAD/Contributing Risk),
+    // the same ".sr-cvss-vector under the score label" treatment CVSS's
+    // vector caption and OwaspSubgroupFormula above already have, on both
+    // the edit-mode holder (risk-details-form.js) and the read-mode card
+    // (risk-details-view.js). Classic reuses the existing RISKClassicExp1-5
+    // keys instead of a new one -- see those keys' own long-standing
+    // definitions above.
+    'DreadScoreFormula' => '= ( {a} + {b} + {c} + {d} + {e} ) / 5',
+    // Contributing Risk's per-factor weighted term and its shared
+    // Likelihood term (update_contributing_risk_score(), includes/
+    // functions.php) -- unlike DREAD/OWASP's fixed roster, the factor list
+    // is admin-configured, so this is one formula PER FACTOR ROW rather
+    // than one fixed caption under the total score.
+    // {maxName}: score.php parity -- legacy's "Maximum Value" column showed
+    // the max option's human-readable name alongside its number (e.g.
+    // "[5] Certain", includes/display.php); these formulas only showed the
+    // bare number.
+    'ContributingLikelihoodFormula' => '= {value} x 5 / {max} ({maxName})',
+    'ContributingFactorFormula' => '= {weight}% x {impact} x 5 / {max} ({maxName})',
+    // Contributing Risk's own subscore row in the Score card -- the sum of
+    // every factor's own term above it. Generic (not substituted with real
+    // numbers) since the number of terms is however many factors are
+    // configured, unlike the fixed-roster formulas above.
+    'ContributingRiskSubtotalFormula' => '= (वजन x प्रभाव x 5 / अधिकतम) का योग',
+    // Contributing Risk Score's own formula, under the total row -- always
+    // exactly 2 terms (unlike the Contributing Risk subtotal above), so
+    // substituted with the real current subtotal values, same convention
+    // DreadScoreFormula/OwaspSubgroupFormula use for their own fixed roster.
+    'ContributingRiskScoreFormula' => '= {likelihood} + {contributing}',
+    // Risk Scoring History widget (risk-details-view.js) -- replaces the
+    // legacy chart's bare save icon with a real menu item, structured for
+    // future export types alongside it.
+    'DownloadChartAsImage' => 'छवि के रूप में डाउनलोड करें',
+    // Legacy score.php's CVSS table had a "Full details of CVSS Version 2.0
+    // scoring can be found here." link (includes/display.php); this is its
+    // inline-scoring-card equivalent, same shape as OwaspMethodologyNote.
+    'CvssMethodologyNote' => 'CVSS वर्जन 2.0 स्कोरिंग की पूरी जानकारी यहाँ मिल सकती है।',
+    // Mitigation Controls redesign: the picker reuses ChooseControls/
+    // AddOrRemoveControls/etc from Document Program's control picker.
+    'InvalidControlID' => 'अमान्य नियंत्रण आईडी।',
+    'ValidationOwner' => 'सत्यापन स्वामी',
+    'ValidationStatus' => 'सत्यापन स्थिति',
+    'NotStarted' => 'शुरू नहीं',
+    // management/view.php's "risk ID does not exist" empty state.
+    'RiskIdDoesNotExistBody' => 'जिस जोखिम की आप तलाश कर रहे हैं, वह शायद हटा दिया गया हो, या लिंक गलत हो सकता है।',
+    'MitigationControlsRequiresGovernance' => 'इसे देखने के लिए शासन की अनुमति आवश्यक है।',
+    'ViewControlValidation' => 'व्यू कंट्रोल वैलिडेशन',
+    'EditControlValidation' => 'संपादन नियंत्रण सत्यापन',
+    'SupportingDocumentationRequiresSubmitRisk' => 'फाइलें अपलोड करने के लिए सबमिट रिस्क की अनुमति आवश्यक है।',
+    'SupportingDocumentationRequiresModifyRisks' => 'फ़ाइलों को प्रबंधित करने के लिए जोखिम संशोधन अनुमति आवश्यक है।',
+    'MitigationSupportingDocumentationRequiresPlanMitigations' => 'फाइलों को प्रबंधित करने के लिए प्लान मिटिगेशन की अनुमति आवश्यक है।',
+    'MitigationSubmittedBy' => 'शमन प्रस्तुतकर्ता',
+    'UseADifferentDate' => 'किसी दूसरी तारीख का उपयोग करें',
+    'AssetGroup' => 'परिसंपत्ति समूह',
+    // Customization Cards Layout API (extras/customization/index.php) scope-validation errors.
+    'InvalidFgroup' => 'अमान्य fgroup.',
+    'CustomizationCardsLayoutApiScopeError' => 'कस्टमाइजेशन कार्ड लेआउट एपीआई केवल fgroup=risk, tab_index=1, tab_index=2, या tab_index=3 के लिए उपलब्ध है।',
+    // Asset management redesign
+    'DiscoverAssets' => 'संपत्तियों की खोज करें',
+    'DiscoveryRuns' => 'डिस्कवरी चलाती है',
+    'DiscoveryRangeHint' => 'एक पता, एक प्रारंभ-अंत सीमा, या IPv4 CIDR',
+    'DiscoveryResolveNames' => 'होस्ट नामों की खोज करें',
+    'DiscoveryAddAs' => 'नई संपत्तियों को इस प्रकार जोड़ें',
+    'DiscoveryStart' => 'खोज शुरू करें',
+    'DiscoveryBackgroundNote' => 'यह बैकग्राउंड में चलता है। पहले से मौजूद पतों को छोड़ दिया जाता है।',
+    'DiscoveryRangeInvalid' => 'एक वैध IPv4 पता, श्रेणी या CIDR ब्लॉक दर्ज करें।',
+    'DiscoveryRangeTooLarge' => 'वह दायरा बहुत बड़ा है। सीमा {$max} पते हैं।',
+    'DiscoveryRunQueued' => 'खोज शुरू हुई।',
+    'DiscoveryRunCompleted' => 'खोज समाप्त: {$new} नई संपत्तियाँ.',
+    'AssetBulkSelectAll' => 'सभी {$count} संपत्तियों का चयन करें',
+    'AssetBulkAssignTeams' => 'टीमों को असाइन करें…',
+    'AssetBulkAddToGroup' => 'समूह में जोड़ें…',
+    'AssetBulkDeleteConfirmTitle' => '{$count} संपत्तियों को हटाएँ?',
+    'AbleToEditAssets' => 'एसेट्स को एडिट करने में सक्षम',
+    'AbleToDeleteAssets' => 'एसेट्स को डिलीट करने में सक्षम',
+    'AbleToVerifyAssets' => 'परिसंपत्तियों का सत्यापन करने में सक्षम',
+    'AbleToRunAssetDiscovery' => 'एसेट डिस्कवरी चलाने में सक्षम',
+    'AbleToCreateAssetGroups' => 'एसेट ग्रुप बनाने में सक्षम',
+    'AbleToEditAssetGroups' => 'एसेट ग्रुप को संपादित करने में सक्षम',
+    'AbleToDeleteAssetGroups' => 'एसेट ग्रुप को डिलीट करने में सक्षम',
+    'ViewAsset' => 'संपत्ति देखें',
+    'AssetUnverifiedByEditLog' => 'एसेट "{$name}" को अप्रमाणित के रूप में लौटा दिया गया क्योंकि उपयोगकर्ता "{$user}" ने एसेट को सत्यापित करने की अनुमति के बिना अपना नाम या आईपी पता बदल दिया।',
+    'AssetTeamsAssignedLog' => 'एसेट "{$name}" को टीम(टीमों) "{$teams}" को उपयोगकर्ता "{$user} " द्वारा सौंपा गया था।',
+    // Manage assets page (asset management redesign, Task 9)
+    'AddAsset' => 'संपत्ति जोड़ें',
+    'SearchAssetsPlaceholder' => 'नाम या आईपी पते से खोजें',
+    'AllLocations' => 'सभी स्थान',
+    'AllTags' => 'सभी टैग',
+    'AllAssetGroups' => 'सभी परिसंपत्ति समूह',
+    'AssetFields' => 'परिसंपत्ति क्षेत्र',
+    'AssetBulkAllSelected' => 'सभी मिलान करने वाली संपत्तियां चयनित {$count}',
+    'AssetDeleteConfirmTitle' => 'एसेट "{$name} " हटाएं?',
+    'DeleteAsset' => 'एसेट हटाएं',
+    'DeleteAssets' => 'संपत्तियां हटाएं',
+    'AssetBulkAssignTeamsTitle' => '{$count} संपत्तियों को टीमें असाइन करें',
+    'AssetAssignTeamsHint' => 'चयनित टीमों को जोड़ दिया जाता है। जो टीमें पहले से ही किसी संपत्ति पर मौजूद हैं, वे वहीं रहती हैं।',
+    'AssetAddToGroupTitle' => 'समूह में {$count} संपत्तियां जोड़ें',
+    'AssetChooseTeams' => 'टीमों का चयन करें',
+    'AssetChooseGroup' => 'एक समूह चुनें',
+    'Assign' => 'सौंपना',
+    'AssetBulkVerifiedSummary' => '{$ok} सत्यापित, {$failed} छोड़ा गया',
+    'AssetBulkDeletedSummary' => '{$ok} हटा दिया गया, {$failed} छोड़ दिया गया',
+    'AssetBulkTeamsSummary' => '{$ok} संपत्तियों को सौंपी गई टीमें, {$failed} छोड़ी गईं',
+    'AssetBulkGroupSummary' => '{$ok} को समूह में जोड़ा गया, {$failed} को छोड़ दिया गया',
+    'AssetBulkSkippedList' => 'छोड़ा गया: {$list}',
+    'AssetBulkReasonNotFound' => 'नहीं मिला',
+    'NoAssetsYet' => 'अभी तक कोई संपत्ति नहीं है',
+    'NoAssetsYetHint' => 'आपके द्वारा जोड़े गए या खोजे गए एसेट यहां दिखाई देंगे।',
+    'NoAssetsMatchFilters' => 'आपके फ़िल्टर से मेल खाने वाली कोई संपत्ति नहीं है',
+    'CouldNotLoadAssets' => 'एसेट्स लोड नहीं हो सके। आपका डेटा सुरक्षित है।',
+    'AllValuations' => 'सभी मूल्यांकन',
+    // Manage assets page, Asset groups tab (asset management redesign, Task 10)
+    'AddAssetGroup' => 'समूह जोड़ें',
+    'EditAssetGroup' => 'समूह संपादित करें',
+    'DeleteAssetGroup' => 'समूह हटाएं',
+    'ViewGroupMembers' => 'सदस्यों को देखें',
+    'SearchAssetGroupsPlaceholder' => 'नाम के आधार पर समूहों को खोजें',
+    'HighestValuation' => 'उच्चतम मूल्यांकन',
+    'LinkedRisks' => 'संबंधित जोखिम',
+    'RemoveFromGroup' => 'समूह से हटाएँ',
+    'AssetGroupMoreMembers' => '+ {$count} अधिक',
+    'ViewAllInAssetsTab' => 'एसेट्स टैब में सभी देखें',
+    'NoAssetsInGroup' => 'इस समूह में कोई संपत्ति नहीं है।',
+    'CouldNotLoadGroupMembers' => 'इस समूह के सदस्यों को लोड नहीं किया जा सका।',
+    'AssetGroupMembers' => 'सदस्यों',
+    'AssetGroupMembersHint' => 'केवल वही संपत्तियां सूचीबद्ध हैं जिन्हें आप देख सकते हैं। जिन सदस्यों को आप नहीं देख सकते वे समूह में बने रहते हैं।',
+    'ChooseAssets' => 'संपत्तियां चुनें',
+    'AddOrRemoveAssets' => 'संपत्तियां जोड़ें या हटाएं…',
+    'UseTheseAssets' => 'इन संसाधनों का उपयोग करें',
+    'AllAssets' => 'सभी संपत्तियां',
+    'Valuation' => 'मूल्यांकन',
+    'PickerShowingFirstN' => '{$total}का पहला {$count} दिखाया जा रहा है। शेष को खोजने के लिए खोजें या सीमित करें।',
+    'AssetGroupDeleteConfirmTitle' => 'समूह "{$name} " हटाएं?',
+    'AssetGroupDeleteKeepsAssets' => 'इस समूह की संपत्तियां हटाई नहीं जातीं। केवल समूह को हटाया जाता है।',
+    'NoAssetGroupsYet' => 'अभी तक कोई परिसंपत्ति समूह नहीं हैं',
+    'NoAssetGroupsYetHint' => 'संपत्तियों को समूहबद्ध करें ताकि आप उन्हें एक साथ मैप कर सकें और उन पर रिपोर्ट तैयार कर सकें।',
+    'NoAssetGroupsMatchSearch' => 'आपकी खोज से मेल खाने वाले कोई परिसंपत्ति समूह नहीं हैं।',
+    'CouldNotLoadAssetGroups' => 'एसेट ग्रुप लोड नहीं हो सके। आपका डेटा सुरक्षित है।',
+    'DiscoveryAssignTeams' => 'टीमों को सौंपें',
+    'DiscoveryAssignTeamsHint' => 'यह वैकल्पिक है। प्रत्येक नई संपत्ति इन टीमों में जोड़ी जाती है।',
+    'DiscoveryAddAsHint' => 'आपकी अनुमति से परिसंपत्तियों का सत्यापन किया जा सकता है।',
+    'DiscoveryTeamsInvalid' => 'उन टीमों को चुनें जो मौजूद हैं और जिनसे आप संबंधित हैं।',
+    'DiscoveryResolveNamesInvalid' => 'होस्ट नामों की खोज चालू या बंद होनी चाहिए।',
+    'DiscoveryTooManyActiveRuns' => 'आपके पास पहले से ही {$max} खोज अभियान चल रहे हैं। किसी एक के समाप्त होने की प्रतीक्षा करें या उसे रद्द कर दें।',
+    'DiscoveryRunNotFound' => 'डिस्कवरी रन नहीं मिला।',
+    'DiscoveryRunAlreadyFinished' => 'यह खोज अभियान पहले ही समाप्त हो चुका है।',
+    'DiscoveryRunCancelled' => 'डिस्कवरी का प्रसारण रद्द कर दिया गया।',
+    'DiscoveryRunFailedToast' => '{$range} की खोज विफल रही।',
+    'DiscoveryStatusQueued' => 'कतारबद्ध',
+    'DiscoveryProgress' => '{$scanned} का {$total}',
+    'DiscoveryLiveHosts' => 'लाइव होस्ट',
+    'DiscoveryNewAssets' => 'नई संपत्तियाँ',
+    'DiscoveryStartedAt' => 'शुरू कर दिया',
+    'DiscoveryCancelRun' => 'रन रद्द करें',
+    'CouldNotLoadDiscoveryRuns' => 'डिस्कवरी रन लोड नहीं हो सके।',
+    'DiscoveryRangeReserved' => 'उस श्रेणी में आरक्षित पते (लूपबैक, लिंक-लोकल, मल्टीकास्ट या 0.0.0.0/8) शामिल हैं जिन्हें स्कैन नहीं किया जा सकता है।',
+    'DiscoveryTooManyActiveRunsInstance' => 'पहले से ही {$max} खोज अभियान चल रहे हैं। एक अभियान समाप्त होने पर पुनः प्रयास करें।',
+    'DiscoveryErrorScan' => 'त्रुटि के कारण स्कैन रुक गया। विवरण के लिए सिस्टम लॉग देखें।',
+    'DiscoveryErrorWorkerLost' => 'बैकग्राउंड क्यू ने इस रन की प्रोसेसिंग रोक दी।',
+    'DiscoveryErrorRequesterInactive' => 'इस प्रक्रिया को शुरू करने वाला उपयोगकर्ता अब सक्रिय नहीं है।',
+    // Asset management redesign: translated API errors (bulk actions, column settings, discovery) and discovery audit lines
+    'AssetBulkBodyInvalid' => 'बल्क एक्शन को JSON बॉडी के रूप में भेजें।',
+    'AssetBulkActionRequired' => 'बल्क एक्शन चुनें।',
+    'AssetBulkUnknownAction' => 'वह बल्क एक्शन उपलब्ध नहीं है।',
+    'AssetBulkSelectionRequired' => 'एसेट का चयन आईडी या फ़िल्टर के आधार पर करें।',
+    'AssetBulkIdsRequired' => 'कम से कम एक परिसंपत्ति का चयन करें।',
+    'AssetBulkIdsInvalid' => 'एसेट आईडी पूर्ण संख्याएँ होनी चाहिए।',
+    'AssetBulkTooManyAssets' => 'आप एक समय में अधिकतम {$max} संपत्तियों पर कार्रवाई कर सकते हैं। अपने चयन को सीमित करें और पुनः प्रयास करें।',
+    'AssetBulkFilterInvalid' => 'यह फ़िल्टर मान्य नहीं है। कृपया पेज को रीलोड करके दोबारा प्रयास करें।',
+    'AssetBulkFilterUnknownKey' => 'फ़िल्टर "{$key}" पहचाना नहीं गया है।',
+    'AssetBulkFilterBadValue' => 'फ़िल्टर "{$key}" का मान मान्य नहीं है।',
+    'AssetBulkFilterTooManyValues' => 'फ़िल्टर "{$key}" अधिकतम {$max} मानों को सूचीबद्ध कर सकता है।',
+    'AssetBulkFilterAllAlone' => 'सभी संपत्तियों का चयन अन्य फ़िल्टरों के साथ संयोजित नहीं किया जा सकता है।',
+    'AssetBulkFilterEmpty' => 'बल्क एक्शन चलाने से पहले फ़िल्टर चुनें, या सभी एसेट्स का चयन करें।',
+    'AssetBulkExpectedCountInvalid' => 'अपेक्षित परिसंपत्तियों की संख्या एक पूर्ण संख्या होनी चाहिए।',
+    'AssetBulkParamsInvalid' => 'इस बल्क एक्शन के लिए विकल्प मान्य नहीं हैं।',
+    'AssetBulkTeamsRequired' => 'कम से कम एक टीम चुनें।',
+    'AssetBulkTeamsNotFound' => 'उनमें से एक या अधिक टीमें अब अस्तित्व में नहीं हैं।',
+    'AssetBulkTeamsNotMember' => 'आप केवल उन्हीं टीमों को असाइन कर सकते हैं जिनसे आप संबंधित हैं।',
+    'AssetBulkGroupNotFound' => 'वह परिसंपत्ति समूह अब मौजूद नहीं है।',
+    'AssetBulkNoMatch' => 'आपके द्वारा चुने गए विकल्पों से कोई संपत्ति मेल नहीं खाती।',
+    'AssetBulkCountMismatch' => 'आपके द्वारा चुने जाने के बाद से मिलान करने वाली संपत्तियां {$expected} से {$actual} में बदल गई हैं। सूची की समीक्षा करें और पुनः प्रयास करें।',
+    'AssetColumnSettingsBodyInvalid' => 'कॉलम सेटिंग्स को कॉलम या क्रम के साथ JSON बॉडी के रूप में भेजें।',
+    'AssetColumnSettingsSaveFailed' => 'आपके कॉलम सहेजे नहीं जा सके। कृपया किसी व्यवस्थापक से SimpleRisk अपग्रेड पूरा करने का अनुरोध करें।',
+    'DiscoveryRunQueueFailed' => 'डिस्कवरी रन को कतार में नहीं डाला जा सका। कृपया पुनः प्रयास करें।',
+    'DiscoveryRunStartedLog' => 'एसेट डिस्कवरी रन #{$id} {$range} ({$count} पते) उपयोगकर्ता "{$user} द्वारा शुरू किया गया था।',
+    'DiscoveryRunCancelledLog' => 'एसेट डिस्कवरी रन #{$id} का {$range} उपयोगकर्ता "{$user} द्वारा रद्द कर दिया गया था।',
+    'AssetBulkTooManyToDelete' => 'आप एक बार में अधिकतम {$max} एसेट हटा सकते हैं। कृपया अपने चयन को सीमित करें और पुनः प्रयास करें।',
+    'AssetBulkFilterNotApplied' => 'फ़िल्टर "{$key}" को भेजे गए रूप में लागू नहीं किया जा सका, इसलिए कुछ भी नहीं बदला गया।',
+    'AssetBulkExpectedCountRequired' => 'फ़िल्टर द्वारा एसेट को हटाने के लिए आपको उन एसेट की संख्या बतानी होगी जिन्हें आप हटाना चाहते हैं।',
+    'AssetBulkReasonNotAttempted' => 'प्रयास नहीं किया गया',
+    'MoreActions' => 'और कार्रवाइयां',
+    'AssetCreateNewGroupOption' => 'एक नया समूह बनाएँ…',
+    'AssetNewGroupName' => 'नए समूह का नाम',
+    'AssetFilterByTeam' => 'टीम के अनुसार फ़िल्टर करें {$name}',
+    'AssetFilterByValuation' => 'मूल्यांकन के आधार पर फ़िल्टर करें {$name}',
+    'AssetFilterByTag' => 'टैग द्वारा फ़िल्टर करें {$name}',
+    'AssetFilterByLocation' => 'साइट/स्थान के आधार पर फ़िल्टर करें {$name}',
+    'AssetFilteringByTeam' => 'टीम के आधार पर फ़िल्टर करना {$name}',
+    'AssetFilteringByValuation' => 'मूल्यांकन के आधार पर फ़िल्टर करना {$name}',
+    'AssetFilteringByTag' => 'टैग {$name} द्वारा फ़िल्टर करना',
+    'AssetFilteringByLocation' => 'साइट/स्थान के आधार पर फ़िल्टर करना {$name}',
+    'AssetShowOnlyVerified' => 'केवल सत्यापित संपत्तियां दिखाएं',
+    'AssetShowOnlyUnverified' => 'केवल अपुष्ट संपत्तियां दिखाएं',
+    'AssetShowingVerified' => 'सत्यापित संपत्तियां प्रदर्शित करना',
+    'AssetShowingUnverified' => 'अपुष्ट संपत्तियों को प्रदर्शित करना',
+    'CustomizationLayoutPayloadRejected' => 'इस लेआउट को सहेजा नहीं जा सका क्योंकि इसमें ऐसे फ़ील्ड या कार्ड शामिल हैं जो इस टेम्पलेट से संबंधित नहीं हैं। कुछ भी नहीं बदला गया।',
+    'CustomizationLayoutRejectedUnknownScope' => 'इस टेम्पलेट स्कोप को लेआउट एडिटर से सेव नहीं किया जा सकता। कुछ भी नहीं बदला गया।',
+    'CustomizationLayoutRejectedEmptyFields' => 'लेआउट में कोई मान्य फ़ील्ड नहीं है, इसलिए इसे सहेजा नहीं गया। कुछ भी नहीं बदला गया।',
+    'CustomizationLayoutRejectedWouldDeleteAll' => 'इस लेआउट को सेव करने से टेम्पलेट के सभी फ़ील्ड हट जाएंगे, इसलिए इसे सेव नहीं किया गया। पेज को रीलोड करें और दोबारा कोशिश करें।',
+    'CustomizationLayoutRejectedRequiredField' => 'लेआउट से अनिवार्य फ़ील्ड को हटाया नहीं जा सकता। कोई बदलाव नहीं हुआ है।',
+    'CustomizationLayoutRejectedBulkRemoval' => 'इस लेआउट को सेव करने से टेम्पलेट के अधिकांश फ़ील्ड अपने आप हट जाएंगे, जबकि आपको उन्हें यहाँ से हटाना नहीं होगा। पेज को रीलोड करके दोबारा कोशिश करें। कुछ भी नहीं बदला है।',
+    'CustomizationLayoutRejectedGroupMismatch' => 'टेम्प्लेट समूह मौजूद नहीं है या किसी अन्य प्रकार के रिकॉर्ड से संबंधित है। कुछ भी नहीं बदला गया।',
+    'CustomizationLayoutLegacySaveRefused' => 'इस टेम्पलेट को लेआउट एडिटर के माध्यम से संपादित किया जाता है और इसे पुराने पैनल एंडपॉइंट के माध्यम से सहेजा नहीं जा सकता है।',
+    // Asset discovery probe methods
+    'DiscoveryPortsInvalid' => 'कॉमा से अलग करके 1 और 65535 के बीच अधिकतम {$max} टीसीपी पोर्ट दर्ज करें।',
+    'DiscoveryErrorProbeUnavailable' => 'इस रन की शुरुआत में इस्तेमाल की गई जांच विधि अब बैकग्राउंड वर्कर के लिए उपलब्ध नहीं है। कृपया नया रन शुरू करें।',
+    'DiscoveryProbeIcmpUnprivileged' => 'ICMP पिंग (अप्रतिबंधित सॉकेट)',
+    'DiscoveryProbeIcmpRaw' => 'ICMP पिंग (रॉ सॉकेट)',
+    'DiscoveryProbePingCommand' => 'ICMP पिंग (पिंग कमांड)',
+    'DiscoveryProbeTcpConnect' => 'टीसीपी कनेक्ट',
+    'DiscoveryProbeMethod' => 'जांच विधि: {$method}',
+    'DiscoveryProbeDetectedByWebServer' => 'वेब सर्वर द्वारा पता लगाया गया। बैकग्राउंड वर्कर किसी अन्य विधि का उपयोग कर सकता है।',
+    'DiscoveryTcpProbeWarning' => 'होस्ट तभी मिलेंगे जब वे स्कैन किए गए TCP पोर्ट में से किसी एक पर प्रतिक्रिया देंगे, इसलिए जो होस्ट उन पोर्ट को ब्लॉक करते हैं वे नहीं मिलेंगे। पूर्ण परिणाम प्राप्त करने के लिए, सर्वर को ICMP पिंग भेजने दें: अनधिकृत पिंग सॉकेट या NET_RAW क्षमता की अनुमति दें, या पिंग इंस्टॉल करें।',
+    'DiscoveryTcpPortsForRun' => 'इस रन के लिए टीसीपी पोर्ट',
+    'DiscoveryTcpPortsHint' => 'अल्पविराम से अलग किए गए, अधिकतम {$max} पोर्ट तक। डिफ़ॉल्ट का उपयोग करने के लिए खाली छोड़ दें: {$ports}।',
+    'DiscoveryDefaultTcpPorts' => 'एसेट डिस्कवरी टीसीपी पोर्ट',
+    'DiscoveryDefaultTcpPortsHint' => 'इसका उपयोग तब किया जाता है जब बैकग्राउंड वर्कर ICMP पिंग नहीं भेज सकता। अल्पविराम से अलग किया गया, अधिकतम {$max} पोर्ट तक।',
+    'DiscoveryErrorTcpUnreliable' => 'स्कैन रुक गया क्योंकि नेटवर्क उन पतों के लिए TCP कनेक्शन का जवाब देता है जो वास्तविक होस्ट नहीं हो सकते (बीच में कोई प्रॉक्सी या फ़ायरवॉल है), इसलिए हर पता सक्रिय प्रतीत होता है। अपने एडमिनिस्ट्रेटर से सर्वर को ICMP पिंग भेजने की अनुमति देने का अनुरोध करें।',
+    'DiscoveryDefaultTcpPortsResetLog' => 'एसेट डिस्कवरी टीसीपी पोर्ट को "{$user}" उपयोगकर्ता द्वारा डिफ़ॉल्ट पर रीसेट कर दिया गया था।',
+    'DiscoveryNotConfigured' => 'डिस्कवरी कॉन्फ़िगर नहीं है। कृपया अपने सिस्टम एडमिनिस्ट्रेटर से config.php में अनुमत रेंज सेट करने का अनुरोध करें।',
+    'DiscoveryRangeNotAllowed' => 'वह दायरा उन दायरों से बाहर है जिन्हें डिस्कवरी स्कैन करने की अनुमति देती है।',
+    'DiscoveryAllowedRangesList' => 'अनुमत श्रेणियाँ: {$ranges}',
+    // Asset record modal
+    'AssetNotAvailable' => 'यह संसाधन उपलब्ध नहीं है। हो सकता है इसे हटा दिया गया हो, या हो सकता है आपके पास इस तक पहुंच न हो।',
+    'AssetCustomFieldNotInTemplate' => 'एक या अधिक कस्टम फ़ील्ड इस एसेट के टेम्पलेट से संबंधित नहीं हैं। कुछ भी नहीं बदला गया।',
+    'AssetMappedControlsInvalid' => 'मैप किए गए कंट्रोल्स को सेव नहीं किया जा सका। प्रत्येक पंक्ति के लिए एक मैच्योरिटी और कम से कम एक मौजूदा कंट्रोल आवश्यक है। कोई बदलाव नहीं हुआ।',
+    'AssetMappedControlsTooMany' => 'एक एसेट को अधिकतम {$max} कंट्रोल्स से मैप किया जा सकता है। कुछ भी नहीं बदला गया।',
+    'AddControlsAtAnotherMaturity' => 'एक और परिपक्वता स्तर पर नियंत्रण जोड़ें',
+    'ChoosingControlsNeedsGovernancePermission' => 'नियंत्रणों का चयन करने के लिए गवर्नेंस अनुमति की आवश्यकता होती है।',
+    'NControls' => '{n} नियंत्रण(ओं)',
+    'SavingKeepsTheCurrentControlMappings' => 'सेव करने से वर्तमान कंट्रोल मैपिंग बरकरार रहती है।',
+    'LoadingControls' => 'नियंत्रण लोड हो रहे हैं…',
+    'ControlListCouldNotBeLoaded' => 'नियंत्रण सूची लोड नहीं हो सकी, इसलिए मैप किए गए नियंत्रणों को अभी बदला नहीं जा सकता है।',
+    'RemoveControlsAtMaturity' => 'परिपक्वता पर नियंत्रण हटाएँ {maturity}',
+    'ControlIdUnavailable' => '#{id} (अनुपलब्ध)',
+    'AssetRecordEdit' => 'एसेट संपादित करें',
+    'AssetRecordIdN' => 'परिसंपत्ति #{$id}',
+    'AssetRecordCopyLink' => 'इस एसेट का लिंक कॉपी करें',
+    'AssetRecordLinkCopied' => 'लिंक कॉपी हो गया।',
+    'AssetRecordLinkCopyFailed' => 'लिंक कॉपी नहीं हो सका। कृपया इसे एड्रेस बार से कॉपी करें।',
+    'AssetRecordMarkUnverified' => 'अपुष्ट के रूप में चिह्नित करें',
+    'AssetRecordViewAuditTrail' => 'ऑडिट ट्रेल देखें',
+    'AssetRecordAuditTrailTitle' => 'लेखापरीक्षा',
+    'AssetRecordAuditTrailEmpty' => 'इस अवधि में इस परिसंपत्ति के लिए कोई गतिविधि दर्ज नहीं की गई।',
+    'AssetRecordAuditTrailFailed' => 'ऑडिट ट्रेल लोड नहीं हो सका।',
+    'AssetRecordBackToAsset' => 'संपत्ति पर वापस जाएँ',
+    'AssetRecordSave' => 'संपत्ति सहेजें',
+    'AssetRecordProvenanceVerified' => 'सत्यापित · जोड़ा गया {$date}',
+    'AssetRecordProvenanceUnverified' => 'अपुष्ट: अभी तक किसी ऐसे व्यक्ति द्वारा पुष्टि नहीं की गई है जो संपत्तियों का सत्यापन कर सके · जोड़ा गया {$date}',
+    'AssetRecordUnsavedHint' => 'बिना सेव किए गए बदलावों के साथ बंद करने पर आपसे पहले पुष्टि करने के लिए कहा जाएगा।',
+    'AssetRecordDiscardQuestion' => 'क्या आप अपने असहेजित परिवर्तनों को हटा देना चाहते हैं?',
+    'AssetRecordKeepEditing' => 'संपादन जारी रखें',
+    'AssetRecordDiscardChanges' => 'परिवर्तनों को निरस्त करें',
+    'AssetRecordVerificationCard' => 'सत्यापन',
+    'AssetRecordVerificationTag' => 'परिसंपत्तियों को सत्यापित करने की अनुमति आवश्यक है',
+    'AssetRecordVerifiedHint' => 'किसी उत्तरदायी व्यक्ति ने इस संपत्ति की समीक्षा की है। संपत्ति सत्यापन की अनुमति के बिना इसका नाम या आईपी पता बदलने पर यह फिर से असत्यापित हो जाएगी।',
+    'AssetRecordLoadFailed' => 'एसेट लोड नहीं हो सका। कृपया पुनः प्रयास करें।',
+    'CustomizationCardsLayoutApiScopeErrorWithAsset' => 'कस्टमाइजेशन कार्ड लेआउट एपीआई केवल fgroup=risk (tab_index 1, 2 या 3) और fgroup=asset (tab_index 1) के लिए उपलब्ध है।',
+    'DiscoveryErrorRequesterNotPermitted' => 'इस रन को शुरू करने वाले उपयोगकर्ता के पास अब एसेट डिस्कवरी चलाने की अनुमति नहीं है।',
+    'AssetRecordEditField' => 'संपादन {$field}',
+    // Asset Scoring (FIPS 199 categorization + weighted score)
+    'Confidentiality' => 'गोपनीयता',
+    'Integrity' => 'अखंडता',
+    'Availability' => 'उपलब्धता',
+    'AssetScoringLevelLow' => 'कम',
+    'AssetScoringLevelModerate' => 'मध्यम',
+    'AssetScoringLevelHigh' => 'उच्च',
+    'AssetScoringValueInvalid' => 'गोपनीयता, अखंडता और उपलब्धता निम्न, मध्यम या उच्च स्तर स्वीकार करती हैं (गोपनीयता के लिए \'लागू नहीं\' का विकल्प भी उपलब्ध है)।',
+    'AssetScoringChangedLog' => 'एसेट "{$name}" {$objective} को उपयोगकर्ता "{$user} द्वारा {$from} से {$to} में बदल दिया गया।',
+    'FIPSCategorization' => 'एफआईपीएस वर्गीकरण',
+    'WeightedScore' => 'भारित स्कोर्त',
+    'WeightedBand' => 'भारित बैंड',
+    'AllCategorizations' => 'सभी वर्गीकरण',
+    'AllBands' => 'सभी बैंड',
+    'AssetFilterByCategorization' => 'एफआईपीएस वर्गीकरण के आधार पर फ़िल्टर करें {$name}',
+    'AssetFilteringByCategorization' => 'एफआईपीएस वर्गीकरण द्वारा फ़िल्टरिंग {$name}',
+    'AssetFilterByBand' => 'भारित बैंड {$name} द्वारा फ़िल्टर करें',
+    'AssetFilteringByBand' => 'भारित बैंड {$name} द्वारा फ़िल्टरिंग',
+    'AssetScoring' => 'एसेट स्कोरिंग',
+    'AssetScoringSettingsHint' => 'प्रत्येक परिसंपत्ति को गोपनीयता, अखंडता और उपलब्धता के लिए निम्न, मध्यम या उच्च रेटिंग दी जाती है, और गोपनीयता को \'लागू नहीं\' के रूप में भी परिभाषित किया जा सकता है, जिससे यह दोनों परिणामों से बाहर हो जाती है। इसका FIPS वर्गीकरण तीनों रेटिंग में उच्चतम होता है। इसका भारित स्कोर तीनों स्तरों के मानों का भारित औसत होता है, और बैंड सीमाएँ उस स्कोर को निम्न, मध्यम या उच्च श्रेणी में बदल देती हैं। इन सेटिंग्स को बदलने से प्रत्येक परिसंपत्ति का स्कोर तुरंत बदल जाता है।',
+    'Weights' => 'तौल',
+    'AssetScoringWeightsHint' => 'भारित स्कोर में प्रत्येक उद्देश्य का महत्व: 0 से 100 तक, अधिकतम दो दशमलव स्थानों तक। 0 का भार होने पर वह उद्देश्य शामिल नहीं होता। सत्यनिष्ठा और उपलब्धता दोनों का मान 0 नहीं हो सकता, क्योंकि \'लागू नहीं\' की गोपनीयता हमेशा शामिल नहीं होती।',
+    'LevelValues' => 'स्तर मान',
+    'AssetScoringLevelValuesHint' => 'प्रत्येक रेटिंग का भारित स्कोर में योगदान: 0 से 100 तक, अधिकतम दो दशमलव स्थानों तक, और निम्न, मध्यम और उच्च के अंतर्गत आता है। डिफ़ॉल्ट मान निम्न 1, मध्यम 2 और उच्च 3 हैं।',
+    'BandThresholds' => 'बैंड सीमाएँ',
+    'AssetScoringBandThresholdsHint' => 'किसी निर्धारित सीमा के बराबर या उससे अधिक भारित स्कोर उस श्रेणी में आता है, और मध्यम सीमा से नीचे का स्कोर निम्न श्रेणी में आता है। मध्यम श्रेणी का स्कोर निम्न श्रेणी के स्कोर से ऊपर होना चाहिए, और उच्च श्रेणी का स्कोर मध्यम श्रेणी से ऊपर होना चाहिए और उच्च श्रेणी के स्कोर से अधिक नहीं होना चाहिए।',
+    'ModerateStartsAt' => 'मध्यम स्तर की शुरुआत',
+    'HighStartsAt' => 'हाई की शुरुआत होती है',
+    'DefaultScoringForNewAssets' => 'नई संपत्तियों के लिए डिफ़ॉल्ट स्कोरिंग',
+    'AssetScoringDefaultsHint' => 'जब कोई व्यक्ति एसेट फॉर्म में कोई एसेट जोड़ता है, तो ये रेटिंग पहले से ही चुन ली जाती हैं। खोज, आयात या API द्वारा बनाए गए एसेट तब तक बिना स्कोर के रहते हैं जब तक वे अपनी रेटिंग खुद नहीं देते। इसे बंद करने के लिए तीनों विकल्पों को \'सेट नहीं\' रहने दें।',
+    'AssetScoringWeightsInvalid' => 'एसेट स्कोरिंग वेट 0 से 100 तक की संख्याएँ होनी चाहिए जिनमें अधिकतम दो दशमलव स्थान हों, और इंटीग्रिटी और अवेलेबिलिटी दोनों 0 नहीं हो सकते।',
+    'AssetScoringValuesInvalid' => 'एसेट स्कोरिंग स्तर के मान 0 से ऊपर और 100 तक की संख्याएँ होनी चाहिए, जिनमें अधिकतम दो दशमलव स्थान हों, और निम्न, मध्यम और उच्च क्रमशः आते हों।',
+    'AssetScoringThresholdsInvalid' => 'एसेट स्कोरिंग बैंड थ्रेशहोल्ड में अधिकतम दो दशमलव स्थान होने चाहिए, जिसमें मॉडरेट का मान लो से ऊपर, हाई का मान मॉडरेट से ऊपर और हाई का मान हाई से अधिक नहीं होना चाहिए।',
+    'AssetScoringDefaultsInvalid' => 'नई संपत्तियों के लिए डिफ़ॉल्ट स्कोरिंग प्रत्येक उद्देश्य द्वारा प्रदान किए गए स्तर पर होनी चाहिए।',
+    'AssetScoringSettingsNotSaved' => 'एसेट स्कोरिंग सेटिंग्स सहेजी नहीं जा सकीं। कुछ भी नहीं बदला गया।',
+    'AssetScoringSettingsChangedLog' => 'एसेट स्कोरिंग सेटिंग्स को उपयोगकर्ता "{$user} " द्वारा बदल दिया गया था।',
+    'AssetScoringNotSet' => 'सेट नहीं',
+    'NotScored' => 'स्कोर नहीं किया गया',
+    'AssetScoringNotScoredHint' => 'इस एसेट को हासिल करने के लिए तीनों उद्देश्यों का उत्तर दें।',
+    'ImportAssetScoringValueIgnored' => 'परिसंपत्ति "{$asset_name}" के लिए {$objective} मान "{$value}" एक वैध रेटिंग नहीं है और इसे अनदेखा कर दिया गया था।',
+    'AssetScoringSecurityObjectives' => 'सुरक्षा उद्देश्य',
+    'AssetScoringConfidentialityHelp' => 'इस संपत्ति से संबंधित जानकारी का अनधिकृत रूप से खुलासा होने पर संभावित प्रभाव क्या होगा?',
+    'AssetScoringIntegrityHelp' => 'इस परिसंपत्ति पर मौजूद जानकारी में अनधिकृत संशोधन या उसे नष्ट करने की स्थिति में संभावित प्रभाव क्या हो सकते हैं?',
+    'AssetScoringAvailabilityHelp' => 'इस परिसंपत्ति तक पहुंच या इसके उपयोग में व्यवधान उत्पन्न होने पर संभावित प्रभाव क्या होगा?',
+    'AssetScoringHelpHigh' => 'गंभीर या विनाशकारी प्रतिकूल प्रभाव',
+    'AssetScoringHelpModerate' => 'गंभीर प्रतिकूल प्रभाव',
+    'AssetScoringHelpLow' => 'सीमित या कोई प्रतिकूल प्रभाव नहीं',
+    'AssetScoringHelpNotApplicable' => 'इस संपत्ति (उदाहरण के लिए, सार्वजनिक जानकारी) के लिए गोपनीयता कोई चिंता का विषय नहीं है।',
+    'AssetScoringHelpLabel' => '{$objective} रेटिंग मार्गदर्शन',
+    'AssetScoringMeterValue' => '{$score}, {$band} बैंड',
+    'AssetScoringNoWeightedScore' => 'कोई भारित स्कोर नहीं',
+    'AssetScoringNoWeightedScoreNote' => 'कोई भारित स्कोर नहीं: प्रत्येक महत्वपूर्ण उद्देश्य का भार 0 है।',
+    'AssetScoringUpgradePending' => 'SimpleRisk डेटाबेस अपग्रेड पूरा होने तक एसेट स्कोरिंग को सेव नहीं किया जा सकता। कोई बदलाव नहीं हुआ है।',
+    'AssetScoringResultHelpLabel' => '{$result} स्पष्टीकरण',
+    'AssetScoringScoreHelp' => 'भारित स्कोर तीनों रेटिंग को मिलाकर एक संख्या में परिवर्तित करता है, जो {$low} से {$high}तक होती है। प्रत्येक रेटिंग का अपना निर्धारित मान होता है, और प्रत्येक को उसके उद्देश्य के भार से गुणा किया जाता है। परिणामों को एक साथ जोड़ा जाता है और भारों के योग से विभाजित किया जाता है। \'लागू नहीं\' की गोपनीयता को उसके भार के साथ छोड़ दिया जाता है। निर्धारित मान और भार वरीयताओं में कॉन्फ़िगर किए जाते हैं। स्कोर प्रदर्शित होने से पहले तीनों उद्देश्यों को रेट किया जाना आवश्यक है।',
+    'AssetScoringCategorizationHelp' => 'FIPS 199 प्रतिभूति वर्गीकरण सर्वोच्च मानक है: लागू होने वाले उद्देश्यों में यह सर्वोच्च रेटिंग है। एक बार \'उच्च\' रेटिंग मिलने पर परिसंपत्ति \'उच्च\' श्रेणी में आ जाती है, चाहे अन्य रेटिंग्स कुछ भी हों। \'लागू नहीं\' को अनदेखा कर दिया जाता है।',
+    'AssetScoringBandHelp' => 'यह बैंड भारित स्कोर को निम्न, मध्यम या उच्च पैमाने पर निर्धारित करता है। {$moderate} से कम स्कोर निम्न है, {$moderate} से {$highAt} तक का स्कोर मध्यम है, और {$highAt} या उससे अधिक का स्कोर उच्च है। इन सीमाओं को वरीयताओं में कॉन्फ़िगर किया जा सकता है।',
+    // Manage assets: Confidentiality / Integrity / Availability rating filters
+    'AllConfidentialityRatings' => 'सभी गोपनीयता रेटिंग',
+    'AllIntegrityRatings' => 'सभी सत्यनिष्ठा रेटिंग',
+    'AllAvailabilityRatings' => 'सभी उपलब्धता रेटिंग',
+    'AssetFilterByConfidentiality' => 'गोपनीयता के आधार पर फ़िल्टर करें {$name}',
+    'AssetFilteringByConfidentiality' => 'गोपनीयता के आधार पर फ़िल्टरिंग {$name}',
+    'AssetFilterByIntegrity' => 'अखंडता के आधार पर फ़िल्टर करें {$name}',
+    'AssetFilteringByIntegrity' => 'अखंडता द्वारा फ़िल्टरिंग {$name}',
+    'AssetFilterByAvailability' => 'उपलब्धता के आधार पर फ़िल्टर करें {$name}',
+    'AssetFilteringByAvailability' => 'उपलब्धता के आधार पर फ़िल्टर करना {$name}',
+    'HighestFIPSCategorization' => 'उच्चतम एफआईपीएस वर्गीकरण',
+    'HighestWeightedScore' => 'उच्चतम भारित स्कोर',
+    'HighestWeightedBand' => 'उच्चतम भारित बैंड',
+    'AssetGroupFields' => 'परिसंपत्ति समूह फ़ील्ड',
+    'NoAssetGroupsMatchFilters' => 'आपके फ़िल्टर से कोई परिसंपत्ति समूह मेल नहीं खाता।',
+    'AssetGroupFilterByHighestCategorization' => 'उच्चतम FIPS वर्गीकरण के आधार पर फ़िल्टर करें {$name}',
+    'AssetGroupFilteringByHighestCategorization' => 'उच्चतम FIPS वर्गीकरण के आधार पर फ़िल्टरिंग {$name}',
+    'AssetGroupFilterByHighestBand' => 'उच्चतम भारित बैंड {$name} द्वारा फ़िल्टर करें',
+    'AssetGroupFilteringByHighestBand' => 'उच्चतम भारित बैंड {$name} द्वारा फ़िल्टरिंग',
+    'AssetGroupBulkSelectionRequired' => 'एसेट समूहों का चयन आईडी या फ़िल्टर के आधार पर करें।',
+    'AssetGroupBulkIdsRequired' => 'कम से कम एक परिसंपत्ति समूह का चयन करें।',
+    'AssetGroupBulkIdsInvalid' => 'एसेट ग्रुप आईडी पूर्ण संख्याएँ होनी चाहिए।',
+    'AssetGroupBulkFilterAllAlone' => 'सभी परिसंपत्ति समूहों का चयन अन्य फ़िल्टरों के साथ संयोजित नहीं किया जा सकता है।',
+    'AssetGroupBulkFilterEmpty' => 'डिलीट करने से पहले एक फ़िल्टर चुनें, या सभी एसेट ग्रुप्स को सेलेक्ट करें।',
+    'AssetGroupBulkExpectedCountInvalid' => 'परिसंपत्ति समूहों की अपेक्षित संख्या एक पूर्ण संख्या होनी चाहिए।',
+    'AssetGroupBulkExpectedCountRequired' => 'फ़िल्टर द्वारा एसेट समूहों को हटाने के लिए आपको उन समूहों की संख्या की आवश्यकता होगी जिन्हें आप हटाना चाहते हैं।',
+    'AssetGroupBulkNoMatch' => 'आपके द्वारा चुने गए एसेट ग्रुप से कोई मेल नहीं खाता।',
+    'AssetGroupBulkCountMismatch' => 'आपके द्वारा चुने जाने के बाद से मिलान करने वाले परिसंपत्ति समूह {$expected} से {$actual} में बदल गए हैं। सूची की समीक्षा करें और पुनः प्रयास करें।',
+    'AssetGroupBulkTooManyToDelete' => 'आप एक बार में अधिकतम {$max} एसेट समूह हटा सकते हैं। कृपया अपने चयन को सीमित करें और पुनः प्रयास करें।',
+    'AssetGroupBulkSelectAll' => 'सभी {$count} परिसंपत्ति समूहों का चयन करें',
+    'AssetGroupBulkAllSelected' => 'सभी {$count} मिलान करने वाले परिसंपत्ति समूह चयनित',
+    'AssetGroupBulkDeleteConfirmTitle' => '{$count} परिसंपत्ति समूहों को हटाएँ?',
+    'AssetGroupBulkDeleteKeepsAssets' => 'इन समूहों में मौजूद संपत्तियां हटाई नहीं जातीं। केवल समूह ही हटाए जाते हैं।',
+    'DeleteAssetGroups' => 'समूहों को हटाएं',
+    'AssetGroupBulkDeletedSummary' => '{$ok} समूह हटा दिए गए, {$failed} छोड़ दिए गए',
+    'ChoosingRisksNeedsRiskManagementPermission' => 'संबंधित जोखिमों का चयन करने के लिए जोखिम प्रबंधन की अनुमति आवश्यक है।',
+    'NAssociatedRisks' => '{n} संबंधित जोखिम(ओं)',
+    'SavingKeepsTheCurrentRiskAssociations' => 'बचत करने से उससे जुड़े मौजूदा जोखिम बने रहते हैं।',
     '' => '',
 );
 ?>

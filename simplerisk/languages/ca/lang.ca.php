@@ -814,7 +814,7 @@ $lang = array(
     'UserSessions' => 'Sessions d\'usuari',
     'SessionActivityTimeout' => 'Temps d\'espera de sessió activitat',
     'Security' => 'Seguretat',
-    'EnableCSP' => 'Permetre contingut política de seguretat (això ha trencat Chrome en el passat)',
+    'EnableCSP' => 'Activa la política de seguretat del contingut (recomanat)',
     'EnableDebugLogging' => 'Permetre depuració',
     'seconds' => 'segons',
     'FieldSample' => 'Mostra camp',
@@ -4967,6 +4967,572 @@ $lang = array(
     // closeriskForm()'s own (hardcoded, pre-existing) single-risk denial text.
     'NoCloseRiskPermission' => 'No teniu permís per tancar riscos.',
     'QuestionnaireRequiredQuestionUnanswered' => 'Si us plau, responeu a totes les preguntes obligatòries abans de completar l\'avaluació.',
+    'AuditLog_ControlStatusAutoSynced' => 'L\'estat del control "{$short_name}" s\'ha actualitzat automàticament a "{$status_text}" en funció del resultat o resultats de la prova més recent.',
+    'EnableCSPHelp' => 'La Política de seguretat de contingut (CSP) restringeix el navegador a carregar scripts, estils, imatges i fonts només des del mateix SimpleRisk i bloqueja l\'emmarcament de pàgines i els enviaments de formularis entre orígens. És la defensa integrada més potent contra els scripts entre llocs. Deixeu-la habilitada tret que entri en conflicte amb un servidor intermediari, una extensió del navegador o una integració de tercers al vostre entorn.',
+    // Define Control Frameworks' Columns picker (Task: Columns picker + saved layout/filters) -- the "Standard" group label above its built-in fields (Family/Owner/Maturity/Status/Class/Phase/Priority/Type); 'CustomFields' already exists.
+    'StandardFields' => 'Camps estàndard',
+    // My Profile redesign (js/simplerisk/pages/account-profile.js)
+    'Administrator' => 'Administrador/a',
+    'AccountDetails' => 'Detalls del compte',
+    'YourPermissions' => 'Els vostres permisos',
+    'RoleAndTeamsGrantAccess' => 'A què et donen accés el teu rol i els teus equips',
+    'AllGranted' => 'Tot concedit',
+    'PermissionsCountLabel' => '$count permisos',
+    'ManagedByYourAdministrator' => 'Aquestes dades les gestiona el vostre administrador. Poseu-vos en contacte amb ell si cal canviar alguna cosa aquí.',
+    'MultiFactorAuthenticationHint' => 'Afegeix un segon pas a l\'inici de sessió per mantenir el teu compte més segur.',
+    'ChangingPasswordSignsOutEverywhere' => 'Canviar la contrasenya tanca la sessió a tots els altres llocs.',
+    'APIKeyHint' => 'S\'utilitza per autenticar els vostres propis scripts i integracions amb l\'API de SimpleRisk.',
+    'ResetDisplaySettingsHint' => 'Restableix les seleccions de columna personalitzades als valors predeterminats.',
+    'CardGeneral' => 'General',
+    'CardClassification' => 'Classificació',
+    'CardScoring' => 'Puntuació',
+    'CardAdditionalInformation' => 'Informació addicional',
+    'CardCustomFields' => 'Camps personalitzats',
+    'CardCustomFieldsHint' => 'Aquests camps cal assignar-los a una targeta',
+    'LayoutEditorHint' => 'Arrossegueu un camp a una targeta diferent per reassignar-lo, arrossegueu dins d\'una targeta per reordenar-lo o redimensionar-lo, i arrossegueu o redimensioneu una targeta per canviar la seva posició a la pàgina.',
+    'ScoringNotYetAvailableInThisView' => 'La configuració de puntuació encara no està disponible en aquesta vista.',
+    // Native tooltip on the Cards layout editor's Gridstack resize handles
+    // (js/simplerisk/pages/customization-layout-editor.js) -- the bare corner
+    // bracket read as an unexplained mark until it said what it does.
+    'DragToResize' => 'Arrossega per canviar la mida',
+    // Warning pill on a Cards layout editor card the admin has sized shorter
+    // than the fields it holds. Replaces the silent inner scrollbar that state
+    // used to produce.
+    'NFieldsDoNotFitCard' => '{n} camp(s) no caben en aquesta targeta. Canvia la mida de la targeta per mostrar-los.',
+    // Card titles for the Mitigation tab's Cards layout editor
+    // (js/simplerisk/pages/customization-layout-editor.js), mirroring the
+    // Card* keys above for the Details tab. Order follows
+    // customization_mitigation_cards_layout_card_keys() (includes/functions.php).
+    'CardMitigationStrategy' => 'Estratègia de mitigació',
+    'CardMitigationSolution' => 'Solució de mitigació',
+    'CardMitigationControls' => 'Controls de mitigació',
+    'CardReview' => 'Revisió',
+    // Submit Risk page's three action-bar buttons (buildActionsBar(),
+    // risk-details-form.js, submitMode 'create' only) and the Reset Form
+    // confirm modal (management/index.php, design-system.md #8's "Confirm"
+    // type). 'Discard'/'Cancel'/'Close' already exist and are reused for the
+    // modal's own buttons.
+    'ResetForm' => 'Restableix el formulari',
+    'SaveAndNew' => 'Desa i nou',
+    'SaveAndView' => 'Desa i visualitza',
+    'ResetFormConfirmTitle' => 'Voleu descartar aquesta sol·licitud de risc?',
+    'ResetFormConfirmBody' => 'Es perdrà qualsevol informació que hagis introduït.',
+    // Restore-template destructive confirm (Customization Extra, Save/Restore
+    // action bar). Two body variants: risk's Details/Mitigation/Review tabs
+    // named explicitly (the only fgroup with that 3-tab Cards layout), a
+    // generic fallback for every other fgroup (single legacy-panel tab).
+    // Both end on the same scoping reassurance -- confirmed via direct source
+    // read that Restore only ever touches the currently-selected template
+    // group, never any other.
+    'RestoreTemplateConfirmTitle' => 'Restaura el disseny predeterminat?',
+    'RestoreTemplateConfirmBodyRisk' => 'Això restableix tots els camps de les pestanyes Detalls, Mitigació i Revisió als seus valors predeterminats per a aquest grup de plantilles. La resta de grups de plantilles no es veuen afectats.',
+    'RestoreTemplateConfirmBody' => 'Això restableix tots els camps d\'aquesta plantilla als seus valors predeterminats per a aquest grup de plantilles. Els altres grups de plantilles no es veuen afectats.',
+    // CVSS holder's collapsed Temporal/Environmental/Impact-Modifiers
+    // accordion (buildCvssHolder(), risk-details-form.js) -- these three
+    // groups are optional CVSS v2 refinements on top of the required Base
+    // Score Metrics, so they collapse behind this header by default.
+    'AdvancedMetrics' => 'Mètriques avançades',
+    // CVSS holder's Base Score Metrics sub-group headers (buildCvssHolder(),
+    // risk-details-form.js) -- distinct from the existing 'ExploitabilityMetrics'/
+    // 'ImpactMetrics' keys, which the legacy cvss_modal_content.php modal
+    // still renders as plain "Exploitability Metrics"/"Impact Metrics" and
+    // must keep unchanged. These fold the umbrella "Base Score Metrics"
+    // heading into each sub-group's own header instead of a separate label.
+    'BaseScoreExploitabilityMetrics' => 'Mètriques d\'explotabilitat de la puntuació base',
+    'BaseScoreImpactMetrics' => 'Mètriques d\'impacte de la puntuació base',
+    // Per-field help popovers on the CVSS holder's 14 metric selects
+    // (buildCvssScoreItem(), risk-details-form.js) -- one per CVSS v2
+    // metric, matching the standard CVSS v2 specification definitions.
+    // Double-quoted (not single-quoted, this file's usual style) so the
+    // \n line breaks are real escape sequences: each popover leads with one
+    // overall sentence, then one bullet line per option, rendered via
+    // white-space: pre-line on .sr-scoring-help-popover .popover-body
+    // (scss/modules/_questionnaire.scss) -- plain text throughout, no HTML,
+    // so the popover stays initialized without Bootstrap's `html: true`.
+    "AttackVectorHelp" => "Com es pot accedir a la vulnerabilitat.\n• Local: requereix accés local, com ara una consola o un shell.\n• Xarxa adjacent: l'atacant ha d'estar al mateix segment de xarxa físic o lògic.\n• Xarxa: explotable de forma remota a través d'una xarxa, sense necessitat d'accés local o adjacent.",
+    "AttackComplexityHelp" => "Complexitat de l'atac un cop l'atacant té accés a l'objectiu.\n• Alt: requereix condicions especialitzades que són difícils d'organitzar.\n• Mitjà: s'han de complir algunes condicions, però l'explotació no és difícil un cop es compleixen.\n• Baix: no calen condicions especials.",
+    "AuthenticationHelp" => "El nombre de vegades que un atacant ha d'autenticar-se a l'objectiu per explotar-lo.\n• Múltiple: cal autenticació dues o més vegades, fins i tot amb les mateixes credencials.\n• Únic: cal autenticació una vegada.\n• Cap: no cal autenticació.",
+    "ConfidentialityImpactHelp" => "L'impacte en la confidencialitat de les dades que processa el sistema si s'explota.\n• Cap: sense impacte.\n• Parcial: certa divulgació d'informació, però l'atacant no controla què, o la pèrdua és limitada.\n• Complet: divulgació total de tota la informació del sistema.",
+    "IntegrityImpactHelp" => "L'impacte en la integritat del sistema si s'explota.\n• Cap: sense impacte.\n• Parcial: es poden modificar algunes dades, però l'atacant no controla què, o l'abast és limitat.\n• Complet: compromís total de la integritat del sistema; l'atacant pot modificar qualsevol fitxer.",
+    "AvailabilityImpactHelp" => "L'impacte en la disponibilitat del sistema si s'explota.\n• Cap: sense impacte.\n• Parcial: rendiment reduït o interrupcions en la disponibilitat.\n• Complet: aturada total del recurs afectat.",
+    "RemediationLevelHelp" => "El nivell de remediació disponible per a la vulnerabilitat.\n• Correcció oficial: hi ha disponible una solució completa del proveïdor.\n• Correcció temporal: hi ha disponible una solució oficial però temporal.\n• Solució alternativa: existeix una solució alternativa no oficial i no del proveïdor.\n• No disponible: no hi ha cap solució disponible o no se'n pot aplicar cap.",
+    "ReportConfidenceHelp" => "El grau de confiança en l'existència de la vulnerabilitat i la credibilitat dels seus detalls tècnics.\n• Sense confirmar: un informe d'una sola font no confirmat; el problema subjacent és especulatiu.\n• Sense corroborar: diverses fonts independents informen del mateix comportament, però la causa arrel no està confirmada.\n• Confirmat: el proveïdor ha reconegut el problema o està confirmat per anàlisi de codi font o exploit.",
+    "CollateralDamagePotentialHelp" => "El potencial de pèrdua de vides, actius físics o pèrdues financeres si s'explota la vulnerabilitat.\n• Cap: no és probable que es produeixi aquesta pèrdua.\n• Baix a mitjà: és possible una pèrdua moderada.\n• Alt: un impacte catastròfic en els actius, els ingressos o la seguretat de l'organització.",
+    "TargetDistributionHelp" => "La proporció de sistemes vulnerables al vostre entorn.\n• Cap: no existeixen sistemes de destinació.\n• Baix: entre l'1 i el 25% dels sistemes són vulnerables.\n• Mitjà: entre el 26 i el 75% són vulnerables.\n• Alt: entre el 76 i el 100% són vulnerables.",
+    "ConfidentialityRequirementHelp" => "Quina importància té la confidencialitat de l'actiu afectat per a la vostra organització.\n• Baixa: una pèrdua de confidencialitat té un impacte limitat.\n• Mitjana: té un impacte greu.\n• Alta: té un impacte catastròfic.",
+    "IntegrityRequirementHelp" => "Quina importància té la integritat de l'actiu afectat per a la vostra organització.\n• Baixa: una pèrdua d'integritat té un impacte limitat.\n• Mitjana: té un impacte greu.\n• Alta: té un impacte catastròfic.",
+    "AvailabilityRequirementHelp" => "Quina importància té la disponibilitat de l'actiu afectat per a la vostra organització.\n• Baixa: una pèrdua de disponibilitat té un impacte limitat.\n• Mitjana: té un impacte greu.\n• Alta: té un impacte catastròfic.",
+    // Base Score Metrics' two sub-group intro sentences (metricsSubGroup()'s
+    // `descKey`, risk-details-form.js) -- orient the user to what the GROUP
+    // as a whole is asking, distinct from the per-field *Help popover keys
+    // above which explain each metric's own options.
+    'BaseScoreExploitabilityMetricsDescription' => 'Com hauria d\'arribar i activar aquesta vulnerabilitat un atacant: on ha de ser, quina complexitat té l\'atac i si primer s\'ha d\'autenticar.',
+    'BaseScoreImpactMetricsDescription' => 'Què passa si la vulnerabilitat s\'explota amb èxit: l\'efecte sobre la confidencialitat, la integritat i la disponibilitat del sistema afectat.',
+    // Advanced Metrics' three optional sub-group intro sentences -- same
+    // metricsSubGroup() `descKey` as the two Base Score groups above.
+    'TemporalScoreMetricsDescription' => 'Com l\'amenaça real d\'aquesta vulnerabilitat canvia amb el temps: l\'estat actual del codi d\'explotació, quina remediació està disponible i quant de segurs estan els informes que existeix.',
+    'EnvironmentalScoreMetricsDescription' => 'Com depèn el risc d\'aquesta vulnerabilitat del vostre entorn: el potencial de danys al món real i quants dels vostres sistemes estan realment afectats.',
+    'ImpactSubscoreModifiersDescription' => 'Pondereu l\'impacte de la puntuació base segons la importància real de la confidencialitat, la integritat i la disponibilitat per a aquest actiu específic.',
+    // Phase 4d-iii: DREAD holder help popovers (view_dread_help()'s
+    // existing English text, includes/display.php, extracted to real $lang
+    // keys -- that function's own content was raw hardcoded HTML, never
+    // localized, so it could not be reused verbatim).
+    'DamagePotentialHelp' => 'Si es produeix una explotació d\'amenaces, quants danys es causaran?' . "\n" . '0 = Res' . "\n" . '5 = Les dades individuals dels usuaris estan compromeses o afectades.' . "\n" . '10 = Destrucció completa del sistema o de les dades',
+    'ReproducibilityHelp' => 'Què tan fàcil és reproduir l\'explotació d\'amenaces?' . "\n" . '0 = Molt difícil o impossible, fins i tot per als administradors de l\'aplicació.' . "\n" . '5 = Cal un o dos passos, potser cal ser un usuari autoritzat.' . "\n" . '10 = Només un navegador web i la barra d\'adreces són suficients, sense autenticació.',
+    'ExploitabilityHelp' => 'Què cal per explotar aquesta amenaça?' . "\n" . '0 = Coneixements avançats de programació i xarxes, amb eines d\'atac personalitzades o avançades.' . "\n" . '5 = Existeix programari maliciós a Internet o es pot fer una exploació fàcilment utilitzant les eines d\'atac disponibles.' . "\n" . '10 = Només un navegador web',
+    'AffectedUsersHelp' => 'Quants usuaris es veuran afectats?' . "\n" . '0 = Cap' . "\n" . '5 = Alguns usuaris, però no tots' . "\n" . '10 = Tots els usuaris',
+    'DiscoverabilityHelp' => 'Què tan fàcil és descobrir aquesta amenaça?' . "\n" . '0 = Molt difícil o impossible; requereix codi font o accés administratiu.' . "\n" . '5 = Ho pot esbrinar endevinant o monitoritzant les traces de la xarxa.' . "\n" . '9 = Els detalls d\'errors com aquest ja són de domini públic i es poden trobar fàcilment mitjançant un motor de cerca.' . "\n" . '10 = La informació és visible a la barra d\'adreces del navegador web o en un formulari.',
+    // The DREAD holder's summary card heading and "DREAD Metrics" card
+    // heading. No existing key covers either (confirmed via grep before
+    // adding).
+    'DreadScore' => 'Puntuació DREAD',
+    'DreadMetrics' => 'Mètriques DREAD',
+    // Phase 4d-iv: OWASP holder help popovers (view_owasp_help()'s
+    // existing English text, includes/display.php, extracted to real
+    // $lang keys -- same never-localized-legacy-content extraction the
+    // DREAD phase already did for its own 5 fields). Wording/levels
+    // trued up against that function's real source text, not transcribed
+    // from an earlier standard-methodology draft.
+    'SkillLevelHelp' => 'Quina habilitat tècnica té aquest grup d\'agents d\'amenaces?' . "\n" . '1 = Sense habilitats tècniques' . "\n" . '3 = Algunes habilitats tècniques' . "\n" . '5 = Usuari avançat d\'ordinador' . "\n" . '6 = Habilitats de xarxa i programació' . "\n" . '9 = Habilitats de penetració de seguretat',
+    'MotiveHelp' => 'Quina motivació té aquest grup d\'agents d\'amenaces per trobar i explotar aquesta vulnerabilitat?' . "\n" . '1 = Recompensa baixa o nul·la' . "\n" . '4 = Possible recompensa' . "\n" . '9 = Alta recompensa',
+    'OpportunityHelp' => 'Quins recursos i oportunitats es necessiten perquè aquest grup d\'agents d\'amenaces trobi i exploti aquesta vulnerabilitat?' . "\n" . '0 = Accés complet o recursos cars necessaris' . "\n" . '4 = Accés o recursos especials necessaris' . "\n" . '7 = Cal accés o recursos' . "\n" . '9 = No cal accés ni recursos',
+    'SizeHelp' => 'Quina és la mida d\'aquest grup d\'agents amenaçadors?' . "\n" . '2 = Desenvolupadors' . "\n" . '2 = Administradors del sistema' . "\n" . '4 = Usuaris de la intranet' . "\n" . '5 = Socis' . "\n" . '6 = Usuaris autenticats' . "\n" . '9 = Usuaris d\'Internet anònims',
+    'EaseOfDiscoveryHelp' => 'Amb quina facilitat és per a aquest grup d\'agents d\'amenaces descobrir aquesta vulnerabilitat?' . "\n" . '1 = Pràcticament impossible' . "\n" . '3 = Difícil' . "\n" . '7 = Fàcil' . "\n" . '9 = Eines automatitzades disponibles',
+    'EaseOfExploitHelp' => 'Fins a quin punt és fàcil per a aquest grup d\'agents d\'amenaces explotar aquesta vulnerabilitat?' . "\n" . '1 = Teòric' . "\n" . '3 = Difícil' . "\n" . '5 = Fàcil' . "\n" . '9 = Eines automatitzades disponibles',
+    'AwarenessHelp' => 'Fins a quin punt és coneguda aquesta vulnerabilitat a aquest grup d\'agents amenaçadors?' . "\n" . '1 = Desconegut' . "\n" . '4 = Ocult' . "\n" . '6 = Obvi' . "\n" . '9 = Coneixement públic',
+    'IntrusionDetectionHelp' => 'Quina probabilitat hi ha que es detecti un exploit?' . "\n" . '1 = Detecció activa a l\'aplicació' . "\n" . '3 = Registrat i revisat' . "\n" . '8 = Registrat sense revisió' . "\n" . '9 = No registrat',
+    'LossOfConfidentialityHelp' => 'Quantes dades es poden divulgar i quina és la seva sensibilitat?' . "\n" . '2 = Dades mínimes no sensibles divulgades' . "\n" . '6 = Dades crítiques mínimes divulgades' . "\n" . '6 = Dades no sensibles extenses divulgades' . "\n" . '7 = Dades crítiques extenses divulgades' . "\n" . '9 = Totes les dades divulgades',
+    'LossOfIntegrityHelp' => 'Quantes dades es poden corrompre i com de malmeses estan?' . "\n" . '1 = Dades mínimes lleugerament corruptes' . "\n" . '3 = Dades mínimes i greument corruptes' . "\n" . '5 = Dades extenses i lleugerament corruptes' . "\n" . '7 = Dades extenses i greument corruptes' . "\n" . '9 = Totes les dades estan totalment corruptes',
+    'LossOfAvailabilityHelp' => 'Quant servei es podria perdre i quina és la seva vitalitat?' . "\n" . '1 = Serveis secundaris mínims interromputs' . "\n" . '5 = Serveis primaris mínims interromputs' . "\n" . '5 = Serveis secundaris extensos interromputs' . "\n" . '7 = Serveis primaris extensos interromputs' . "\n" . '9 = Tots els serveis completament perduts',
+    'LossOfAccountabilityHelp' => 'Les accions dels agents amenaçadors són rastrejables fins a un individu?' . "\n" . '1 = Totalment rastrejable' . "\n" . '7 = Possiblement rastrejable' . "\n" . '9 = Completament anònim',
+    'FinancialDamageHelp' => 'Quants danys econòmics es produiran com a resultat d\'una explotació?' . "\n" . '1 = Menys que el cost de solucionar la vulnerabilitat' . "\n" . '3 = Efecte menor sobre el benefici anual' . "\n" . '7 = Efecte significatiu en el benefici anual' . "\n" . '9 = Fallida',
+    'ReputationDamageHelp' => 'Una vulnerabilitat podria causar danys a la reputació que perjudicarien el negoci?' . "\n" . '1 = Dany mínim' . "\n" . '4 = Pèrdua de comptes importants' . "\n" . '5 = Pèrdua de bona voluntat' . "\n" . '9 = Dany a la marca',
+    'NonComplianceHelp' => 'Quanta exposició introdueix l\'incompliment?' . "\n" . '2 = Infracció menor' . "\n" . '5 = Violació clara' . "\n" . '7 = Violació d\'alt perfil',
+    'PrivacyViolationHelp' => 'Quanta informació personal identificable es podria divulgar?' . "\n" . '3 = Un individu' . "\n" . '5 = Centenars de persones' . "\n" . '7 = Milers de persones' . "\n" . '9 = Milions de persones',
+    // The OWASP holder's Score card heading. No existing key covers this
+    // (confirmed via grep before adding) -- the Likelihood/Impact card
+    // headings reuse the already-existing bare 'Likelihood'/'Impact' keys.
+    'OwaspScore' => 'Puntuació OWASP',
+    // Phase 4d-iv follow-up: group-level descriptions for the 4 OWASP
+    // subgroup headings, sourced from OWASP's own Risk Rating Methodology
+    // (https://community.owasp.org/OWASP_Risk_Rating_Methodology), tightened
+    // into short UI captions -- not a verbatim quote (see this task's own
+    // source table for the original wording).
+    'ThreatAgentFactorsDescription' => 'Estima la probabilitat d\'un atac reeixit per part d\'aquest grup d\'agents d\'amenaça.',
+    'VulnerabilityFactorsDescription' => 'Estima la probabilitat que aquesta vulnerabilitat sigui descoberta i explotada.',
+    'TechnicalImpactDescription' => 'Desglossa l\'impacte per confidencialitat, integritat, disponibilitat i responsabilitat.',
+    'BusinessImpactDescription' => 'Reflecteix allò que importa al negoci, més enllà de l\'impacte tècnic brut.',
+    // CVSS's own Temporal-metric 'Exploitability' help text. This key shares
+    // a labelKey ('Exploitability') with DREAD's own field, so both would
+    // otherwise derive the same generic lang key ('ExploitabilityHelp'),
+    // with DREAD's entry silently winning for both -- risk-details-form.js's
+    // buildCvssScoreItem() and risk-details-view.js's cvssMetricValueRow()
+    // reference this key directly for CVSS's Exploitability field instead
+    // of the generic '<labelKey>Help' derivation.
+    'CVSSExploitabilityHelp' => "L'estat actual de les tècniques d'explotació o la disponibilitat del codi.\n• No provat: no hi ha cap codi d'explotació disponible, o l'explotació és teòrica.\n• Prova de concepte: existeix codi d'explotació però no és pràctic per a la majoria dels atacants.\n• Funcional: el codi d'explotació funcional funciona en la majoria de situacions.\n• Alt: l'explotació és fiable i està automatitzada (p. ex., un cuc) o no requereix cap codi d'explotació.",
+    // Risk Scoring -- Classic Inline (Task 3): the Classic scoring method's
+    // new inline Score card heading and its Likelihood/Impact cards' short
+    // plain-English descriptions (js/simplerisk/common/risk-details-form.js's
+    // buildClassicHolder()). Deliberately NOT sourced from NIST SP 800-30 or
+    // any other external standard -- confirmed with the user via the
+    // approved mockup review, unlike OWASP's own subgroup descriptions
+    // above, which do cite OWASP's Risk Rating Methodology.
+    'ClassicScore' => 'Puntuació clàssica',
+    'ClassicLikelihoodDescription' => 'Quina probabilitat hi ha que es produeixi aquest risc.',
+    'ClassicImpactDescription' => 'Quina gravetat tindrien les conseqüències si es produís aquest risc.',
+    // Risk Scoring -- Custom Inline (Task 2): the Custom scoring method's
+    // new inline Score card heading (js/simplerisk/common/risk-details-form.js's
+    // buildCustomHolder()) and the Custom Value card's short description
+    // caption. 'CustomValueDescription' text confirmed directly with the
+    // user, same as Classic's own description keys above.
+    'CustomScore' => 'Puntuació personalitzada',
+    'CustomValueDescription' => 'Un valor personalitzat pot ser un valor decimal entre 0 i 10.',
+    // Risk Scoring -- Contributing Risk Inline (Phase 4d-v): the last of
+    // the three deferred scoring methods (DREAD/OWASP shipped earlier in
+    // this same project). The Likelihood/Contributing Risk cards' short
+    // plain-English descriptions (js/simplerisk/common/risk-details-form.js's
+    // buildContributingRiskHolder()). The Score card heading reuses the
+    // EXISTING 'ContributingRiskScore' key (already present above, same
+    // text) rather than duplicating it -- 'ContributingRisk'/
+    // 'ContributingLikelihood'/'Weight'/'Subject' are likewise reused as-is.
+    'ContributingLikelihoodDescription' => 'Quina probabilitat hi ha que es produeixi aquest risc.',
+    'ContributingRiskDescription' => 'Cada factor següent es pondera segons la seva importància relativa; seleccioneu quant afecta cadascun d\'ells aquest risc.',
+    // OWASP read-mode card (buildOwaspReadView(), risk-details-view.js):
+    // the live calculation formula under each of the 4 sub-group names
+    // (Threat Agent Factors/Vulnerability Factors/Technical Impact/
+    // Business Impact), matching the legacy risk-scoring-details panel's
+    // own "= ( a + b + c + d ) / 4" text (includes/display.php), and the
+    // OWASP Risk Rating Methodology link note placed in the OWASP Score
+    // column's open space below the summary numbers.
+    'OwaspSubgroupFormula' => '= ( {a} + {b} + {c} + {d} ) / 4',
+    'OwaspMethodologyNote' => 'Podeu trobar tots els detalls de la metodologia de classificació de riscos de l\'OWASP',
+    'Here' => 'aquí',
+    // Scoring widget formula captions (Classic/DREAD/Contributing Risk),
+    // the same ".sr-cvss-vector under the score label" treatment CVSS's
+    // vector caption and OwaspSubgroupFormula above already have, on both
+    // the edit-mode holder (risk-details-form.js) and the read-mode card
+    // (risk-details-view.js). Classic reuses the existing RISKClassicExp1-5
+    // keys instead of a new one -- see those keys' own long-standing
+    // definitions above.
+    'DreadScoreFormula' => '= ( {a} + {b} + {c} + {d} + {e} ) / 5',
+    // Contributing Risk's per-factor weighted term and its shared
+    // Likelihood term (update_contributing_risk_score(), includes/
+    // functions.php) -- unlike DREAD/OWASP's fixed roster, the factor list
+    // is admin-configured, so this is one formula PER FACTOR ROW rather
+    // than one fixed caption under the total score.
+    // {maxName}: score.php parity -- legacy's "Maximum Value" column showed
+    // the max option's human-readable name alongside its number (e.g.
+    // "[5] Certain", includes/display.php); these formulas only showed the
+    // bare number.
+    'ContributingLikelihoodFormula' => '= {value} x 5 / {max} ({maxName})',
+    'ContributingFactorFormula' => '= {weight}% x {impact} x 5 / {max} ({maxName})',
+    // Contributing Risk's own subscore row in the Score card -- the sum of
+    // every factor's own term above it. Generic (not substituted with real
+    // numbers) since the number of terms is however many factors are
+    // configured, unlike the fixed-roster formulas above.
+    'ContributingRiskSubtotalFormula' => '= Suma de (Pes x Impacte x 5 / Màx.)',
+    // Contributing Risk Score's own formula, under the total row -- always
+    // exactly 2 terms (unlike the Contributing Risk subtotal above), so
+    // substituted with the real current subtotal values, same convention
+    // DreadScoreFormula/OwaspSubgroupFormula use for their own fixed roster.
+    'ContributingRiskScoreFormula' => '= {likelihood} + {contributing}',
+    // Risk Scoring History widget (risk-details-view.js) -- replaces the
+    // legacy chart's bare save icon with a real menu item, structured for
+    // future export types alongside it.
+    'DownloadChartAsImage' => 'Descarrega com a imatge',
+    // Legacy score.php's CVSS table had a "Full details of CVSS Version 2.0
+    // scoring can be found here." link (includes/display.php); this is its
+    // inline-scoring-card equivalent, same shape as OwaspMethodologyNote.
+    'CvssMethodologyNote' => 'Podeu trobar tots els detalls de la puntuació de la versió 2.0 de CVSS',
+    // Mitigation Controls redesign: the picker reuses ChooseControls/
+    // AddOrRemoveControls/etc from Document Program's control picker.
+    'InvalidControlID' => 'ID de control no vàlid.',
+    'ValidationOwner' => 'Propietari de validació',
+    'ValidationStatus' => 'Estat de validació',
+    'NotStarted' => 'No iniciat',
+    // management/view.php's "risk ID does not exist" empty state.
+    'RiskIdDoesNotExistBody' => 'Pot ser que el risc que busques s\'hagi suprimit o que l\'enllaç sigui incorrecte.',
+    'MitigationControlsRequiresGovernance' => 'Requereix permís de governança per veure-ho.',
+    'ViewControlValidation' => 'Veure la validació del control',
+    'EditControlValidation' => 'Edita la validació del control',
+    'SupportingDocumentationRequiresSubmitRisk' => 'Requereix permís d\'enviament de riscos per carregar fitxers.',
+    'SupportingDocumentationRequiresModifyRisks' => 'Requereix permís de Modificació de Riscos per gestionar fitxers.',
+    'MitigationSupportingDocumentationRequiresPlanMitigations' => 'Requereix permís de Plan Mitigations per gestionar fitxers.',
+    'MitigationSubmittedBy' => 'Mitigació enviada per',
+    'UseADifferentDate' => 'Utilitza una data diferent',
+    'AssetGroup' => 'Grup d\'actius',
+    // Customization Cards Layout API (extras/customization/index.php) scope-validation errors.
+    'InvalidFgroup' => 'Fgroup no vàlid.',
+    'CustomizationCardsLayoutApiScopeError' => 'L\'API de disseny de targetes de personalització només està disponible per a fgroup=risk, tab_index=1, tab_index=2 o tab_index=3.',
+    // Asset management redesign
+    'DiscoverAssets' => 'Descobreix actius',
+    'DiscoveryRuns' => 'Execucions de descobriment',
+    'DiscoveryRangeHint' => 'Una adreça, un interval inicial-final o un CIDR IPv4',
+    'DiscoveryResolveNames' => 'Cerca noms d\'amfitrió',
+    'DiscoveryAddAs' => 'Afegeix nous actius com a',
+    'DiscoveryStart' => 'Inicia el descobriment',
+    'DiscoveryBackgroundNote' => 'S\'executa en segon pla. Les adreces que ja existeixen s\'ometen.',
+    'DiscoveryRangeInvalid' => 'Introduïu una adreça IPv4, un interval o un bloc CIDR vàlids.',
+    'DiscoveryRangeTooLarge' => 'Aquest interval és massa gran. El límit és {$max} adreces.',
+    'DiscoveryRunQueued' => 'El descobriment va començar.',
+    'DiscoveryRunCompleted' => 'Descobriment finalitzat: {$new} nous recursos.',
+    'AssetBulkSelectAll' => 'Selecciona tots els recursos {$count}',
+    'AssetBulkAssignTeams' => 'Assigna equips…',
+    'AssetBulkAddToGroup' => 'Afegeix al grup…',
+    'AssetBulkDeleteConfirmTitle' => 'Voleu suprimir els recursos {$count}?',
+    'AbleToEditAssets' => 'Capacitat per editar actius',
+    'AbleToDeleteAssets' => 'Capacitat per suprimir actius',
+    'AbleToVerifyAssets' => 'Capaç de verificar actius',
+    'AbleToRunAssetDiscovery' => 'Capaç d\'executar la descoberta d\'actius',
+    'AbleToCreateAssetGroups' => 'Capacitat per crear grups d\'actius',
+    'AbleToEditAssetGroups' => 'Capacitat per editar grups d\'actius',
+    'AbleToDeleteAssetGroups' => 'Possibilitat d\'eliminar grups d\'actius',
+    'ViewAsset' => 'Veure l\'actiu',
+    'AssetUnverifiedByEditLog' => 'L\'actiu "{$name}" s\'ha retornat a l\'estat sense verificar perquè l\'usuari "{$user}" ha canviat el seu nom o adreça IP sense el permís per verificar els actius.',
+    'AssetTeamsAssignedLog' => 'L\'actiu "{$name}" ha estat assignat a l\'equip o equips "{$teams}" per l\'usuari "{$user}".',
+    // Manage assets page (asset management redesign, Task 9)
+    'AddAsset' => 'Afegeix un actiu',
+    'SearchAssetsPlaceholder' => 'Cerca per nom o adreça IP',
+    'AllLocations' => 'Totes les ubicacions',
+    'AllTags' => 'Totes les etiquetes',
+    'AllAssetGroups' => 'Tots els grups d\'actius',
+    'AssetFields' => 'Camps d\'actius',
+    'AssetBulkAllSelected' => 'Tots els recursos coincidents {$count} seleccionats',
+    'AssetDeleteConfirmTitle' => 'Voleu suprimir l\'actiu "{$name}"?',
+    'DeleteAsset' => 'Suprimeix l\'actiu',
+    'DeleteAssets' => 'Suprimeix els recursos',
+    'AssetBulkAssignTeamsTitle' => 'Assigna equips a {$count} recursos',
+    'AssetAssignTeamsHint' => 'Els equips seleccionats s\'afegeixen. Els equips que ja són en un actiu es queden.',
+    'AssetAddToGroupTitle' => 'Afegir recursos {$count} a un grup',
+    'AssetChooseTeams' => 'Tria equips',
+    'AssetChooseGroup' => 'Trieu un grup',
+    'Assign' => 'Assignar',
+    'AssetBulkVerifiedSummary' => '{$ok} verificat, {$failed} omès',
+    'AssetBulkDeletedSummary' => '{$ok} suprimit, {$failed} omès',
+    'AssetBulkTeamsSummary' => 'Equips assignats a {$ok} actius, {$failed} omesos',
+    'AssetBulkGroupSummary' => '{$ok} afegit al grup, {$failed} omès',
+    'AssetBulkSkippedList' => 'Omès: {$list}',
+    'AssetBulkReasonNotFound' => 'no s\'ha trobat',
+    'NoAssetsYet' => 'Encara no hi ha actius',
+    'NoAssetsYetHint' => 'Els recursos que afegiu o descobriu apareixen aquí.',
+    'NoAssetsMatchFilters' => 'No hi ha recursos que coincideixin amb els filtres',
+    'CouldNotLoadAssets' => 'No s\'han pogut carregar els recursos. Les teves dades estan segures.',
+    'AllValuations' => 'Totes les valoracions',
+    // Manage assets page, Asset groups tab (asset management redesign, Task 10)
+    'AddAssetGroup' => 'Afegeix un grup',
+    'EditAssetGroup' => 'Edita el grup',
+    'DeleteAssetGroup' => 'Suprimeix el grup',
+    'ViewGroupMembers' => 'Veure membres',
+    'SearchAssetGroupsPlaceholder' => 'Cerca grups per nom',
+    'HighestValuation' => 'Valoració més alta',
+    'LinkedRisks' => 'Riscos vinculats',
+    'RemoveFromGroup' => 'Elimina del grup',
+    'AssetGroupMoreMembers' => '+ {$count} més',
+    'ViewAllInAssetsTab' => 'Veure-ho tot a la pestanya Actius',
+    'NoAssetsInGroup' => 'No hi ha actius en aquest grup.',
+    'CouldNotLoadGroupMembers' => 'No s\'han pogut carregar els membres d\'aquest grup.',
+    'AssetGroupMembers' => 'Membres',
+    'AssetGroupMembersHint' => 'Només s\'enumeren els recursos que podeu veure. Els membres que no podeu veure romanen al grup.',
+    'ChooseAssets' => 'Tria els actius',
+    'AddOrRemoveAssets' => 'Afegir o eliminar recursos…',
+    'UseTheseAssets' => 'Utilitza aquests actius',
+    'AllAssets' => 'Tots els actius',
+    'Valuation' => 'Valoració',
+    'PickerShowingFirstN' => 'Mostrant el primer {$count} de {$total}. Cerca o restringeix la cerca per trobar la resta.',
+    'AssetGroupDeleteConfirmTitle' => 'Voleu suprimir el grup "{$name}"?',
+    'AssetGroupDeleteKeepsAssets' => 'Els recursos d\'aquest grup no s\'eliminen. Només s\'elimina el grup.',
+    'NoAssetGroupsYet' => 'Encara no hi ha grups d\'actius',
+    'NoAssetGroupsYetHint' => 'Agrupeu els recursos per poder-los mapejar i elaborar informes conjuntament.',
+    'NoAssetGroupsMatchSearch' => 'No hi ha grups d\'actius que coincideixin amb la teva cerca',
+    'CouldNotLoadAssetGroups' => 'No s\'han pogut carregar els grups d\'actius. Les teves dades estan segures.',
+    'DiscoveryAssignTeams' => 'Assignar a equips',
+    'DiscoveryAssignTeamsHint' => 'Opcional. Cada nou actiu s\'afegeix a aquests equips.',
+    'DiscoveryAddAsHint' => 'Definit pel vostre permís per verificar els actius.',
+    'DiscoveryTeamsInvalid' => 'Trieu equips que existeixin i als quals pertanyeu.',
+    'DiscoveryResolveNamesInvalid' => 'La cerca de noms d\'amfitrió ha d\'estar activada o desactivada.',
+    'DiscoveryTooManyActiveRuns' => 'Ja teniu {$max} execucions de descobriment en curs. Espereu que una acabi o cancel·leu-la.',
+    'DiscoveryRunNotFound' => 'No s\'ha trobat l\'execució de descobriment.',
+    'DiscoveryRunAlreadyFinished' => 'Aquesta cursa de descobriment ja ha acabat.',
+    'DiscoveryRunCancelled' => 'Execució de descobriment cancel·lada.',
+    'DiscoveryRunFailedToast' => 'No s\'ha pogut detectar {$range}.',
+    'DiscoveryStatusQueued' => 'En cua',
+    'DiscoveryProgress' => '{$scanned} de {$total}',
+    'DiscoveryLiveHosts' => 'Presentadors en directe',
+    'DiscoveryNewAssets' => 'Nous actius',
+    'DiscoveryStartedAt' => 'Iniciat',
+    'DiscoveryCancelRun' => 'Cancel·la l\'execució',
+    'CouldNotLoadDiscoveryRuns' => 'No s\'han pogut carregar les execucions de descobriment.',
+    'DiscoveryRangeReserved' => 'Aquest interval inclou adreces reservades (loopback, link-local, multicast o 0.0.0.0/8) que no es poden escanejar.',
+    'DiscoveryTooManyActiveRunsInstance' => 'Ja hi ha {$max} execucions de descobriment en curs. Torna-ho a provar quan una acabi.',
+    'DiscoveryErrorScan' => 'L\'escaneig s\'ha aturat a causa d\'un error. Consulteu els registres del sistema per obtenir més informació.',
+    'DiscoveryErrorWorkerLost' => 'La cua en segon pla ha deixat de processar aquesta execució.',
+    'DiscoveryErrorRequesterInactive' => 'L\'usuari que va iniciar aquesta execució ja no està actiu.',
+    // Asset management redesign: translated API errors (bulk actions, column settings, discovery) and discovery audit lines
+    'AssetBulkBodyInvalid' => 'Envia l\'acció massiva com a cos JSON.',
+    'AssetBulkActionRequired' => 'Trieu una acció massiva.',
+    'AssetBulkUnknownAction' => 'Aquesta acció massiva no està disponible.',
+    'AssetBulkSelectionRequired' => 'Seleccioneu els actius per ID o per filtre.',
+    'AssetBulkIdsRequired' => 'Seleccioneu com a mínim un actiu.',
+    'AssetBulkIdsInvalid' => 'Els identificadors d\'actius han de ser nombres enters.',
+    'AssetBulkTooManyAssets' => 'Podeu actuar sobre un màxim de {$max} recursos alhora. Reduïu la selecció i torneu-ho a provar.',
+    'AssetBulkFilterInvalid' => 'El filtre no és vàlid. Torneu a carregar la pàgina i torneu-ho a provar.',
+    'AssetBulkFilterUnknownKey' => 'No es reconeix el filtre "{$key}".',
+    'AssetBulkFilterBadValue' => 'El filtre "{$key}" té un valor que no és vàlid.',
+    'AssetBulkFilterTooManyValues' => 'El filtre "{$key}" pot llistar com a màxim valors {$max}.',
+    'AssetBulkFilterAllAlone' => 'La selecció de tots els recursos no es pot combinar amb altres filtres.',
+    'AssetBulkFilterEmpty' => 'Trieu un filtre o seleccioneu tots els recursos abans d\'executar una acció massiva.',
+    'AssetBulkExpectedCountInvalid' => 'El nombre previst d\'actius ha de ser un nombre enter.',
+    'AssetBulkParamsInvalid' => 'Les opcions per a aquesta acció massiva no són vàlides.',
+    'AssetBulkTeamsRequired' => 'Trieu com a mínim un equip.',
+    'AssetBulkTeamsNotFound' => 'Un o més d\'aquests equips ja no existeixen.',
+    'AssetBulkTeamsNotMember' => 'Només pots assignar equips als quals pertanys.',
+    'AssetBulkGroupNotFound' => 'Aquest grup d\'actius ja no existeix.',
+    'AssetBulkNoMatch' => 'No hi ha cap actiu que coincideixi amb la teva selecció.',
+    'AssetBulkCountMismatch' => 'Els recursos coincidents han canviat de {$expected} a {$actual} des que els heu seleccionat. Reviseu la llista i torneu-ho a provar.',
+    'AssetColumnSettingsBodyInvalid' => 'Envia la configuració de la columna com a cos JSON amb columnes o ordre.',
+    'AssetColumnSettingsSaveFailed' => 'No s\'han pogut desar les columnes. Demana a un administrador que acabi l\'actualització de SimpleRisk.',
+    'DiscoveryRunQueueFailed' => 'No s\'ha pogut posar a la cua l\'execució de descobriment. Torna-ho a provar.',
+    'DiscoveryRunStartedLog' => 'L\'usuari "{$user}" ha iniciat l\'execució de descobriment d\'actius #{$id} de {$range} (adreces{$count}).',
+    'DiscoveryRunCancelledLog' => 'L\'execució de descobriment d\'actius #{$id} de {$range} ha estat cancel·lada per l\'usuari "{$user}".',
+    'AssetBulkTooManyToDelete' => 'Pots suprimir com a màxim {$max} recursos alhora. Restringeix la selecció i torna-ho a provar.',
+    'AssetBulkFilterNotApplied' => 'El filtre "{$key}" no s\'ha pogut aplicar tal com s\'ha enviat, per la qual cosa no s\'ha canviat res.',
+    'AssetBulkExpectedCountRequired' => 'Per suprimir recursos per filtre, cal el nombre de recursos que es preveu suprimir.',
+    'AssetBulkReasonNotAttempted' => 'no intentat',
+    'MoreActions' => 'Més accions',
+    'AssetCreateNewGroupOption' => 'Crea un grup nou…',
+    'AssetNewGroupName' => 'Nom del nou grup',
+    'AssetFilterByTeam' => 'Filtra per equip {$name}',
+    'AssetFilterByValuation' => 'Filtra per valoració {$name}',
+    'AssetFilterByTag' => 'Filtra per etiqueta {$name}',
+    'AssetFilterByLocation' => 'Filtra per lloc/ubicació {$name}',
+    'AssetFilteringByTeam' => 'Filtratge per equip {$name}',
+    'AssetFilteringByValuation' => 'Filtratge per valoració {$name}',
+    'AssetFilteringByTag' => 'Filtratge per etiqueta {$name}',
+    'AssetFilteringByLocation' => 'Filtratge per lloc/ubicació {$name}',
+    'AssetShowOnlyVerified' => 'Mostra només els recursos verificats',
+    'AssetShowOnlyUnverified' => 'Mostra només els recursos no verificats',
+    'AssetShowingVerified' => 'Mostrant els actius verificats',
+    'AssetShowingUnverified' => 'Mostrant recursos no verificats',
+    'CustomizationLayoutPayloadRejected' => 'No s\'ha pogut desar el disseny perquè conté camps o targetes que no pertanyen a aquesta plantilla. No s\'ha canviat res.',
+    'CustomizationLayoutRejectedUnknownScope' => 'Aquest àmbit de plantilla no es pot desar des de l\'editor de disseny. No s\'ha canviat res.',
+    'CustomizationLayoutRejectedEmptyFields' => 'El disseny no té camps vàlids, per tant no s\'ha desat. No s\'ha canviat res.',
+    'CustomizationLayoutRejectedWouldDeleteAll' => 'Si deseu aquest disseny, s\'eliminarien tots els camps de la plantilla, per la qual cosa no s\'ha desat. Torneu a carregar la pàgina i torneu-ho a provar.',
+    'CustomizationLayoutRejectedRequiredField' => 'No es pot eliminar un camp obligatori del disseny. No s\'ha canviat res.',
+    'CustomizationLayoutRejectedBulkRemoval' => 'Si deseu aquest disseny, s\'eliminarien la majoria dels camps de la plantilla sense que els hàgiu d\'eliminar aquí. Torneu a carregar la pàgina i torneu-ho a provar. No s\'ha canviat res.',
+    'CustomizationLayoutRejectedGroupMismatch' => 'El grup de plantilles no existeix o pertany a un tipus de registre diferent. No s\'ha canviat res.',
+    'CustomizationLayoutLegacySaveRefused' => 'Aquesta plantilla s\'edita amb l\'editor de disseny i no es pot desar a través del punt final del panell antic.',
+    // Asset discovery probe methods
+    'DiscoveryPortsInvalid' => 'Introduïu fins a {$max} ports TCP entre 1 i 65535, separats per comes.',
+    'DiscoveryErrorProbeUnavailable' => 'El mètode de sonda amb què es va iniciar aquesta execució ja no està disponible per al treballador en segon pla. Inicia una nova execució.',
+    'DiscoveryProbeIcmpUnprivileged' => 'Ping ICMP (sòcol sense privilegis)',
+    'DiscoveryProbeIcmpRaw' => 'Ping ICMP (socket cru)',
+    'DiscoveryProbePingCommand' => 'Ping ICMP (ordre ping)',
+    'DiscoveryProbeTcpConnect' => 'Connexió TCP',
+    'DiscoveryProbeMethod' => 'Mètode de sonda: {$method}',
+    'DiscoveryProbeDetectedByWebServer' => 'Detectat pel servidor web. El treballador en segon pla pot utilitzar un mètode diferent.',
+    'DiscoveryTcpProbeWarning' => 'Els hosts només es troben si responen en un dels ports TCP escanejats, de manera que no es trobaran els hosts que bloquegin aquests ports. Per obtenir resultats complets, permeteu que el servidor enviï ping ICMP: permeteu sòcols ping sense privilegis o la capacitat NET_RAW, o instal·leu ping.',
+    'DiscoveryTcpPortsForRun' => 'Ports TCP per a aquesta execució',
+    'DiscoveryTcpPortsHint' => 'Separats per comes, fins a {$max} ports. Deixeu-ho en blanc per utilitzar el valor per defecte: {$ports}.',
+    'DiscoveryDefaultTcpPorts' => 'Ports TCP de descobriment d\'actius',
+    'DiscoveryDefaultTcpPortsHint' => 'S\'utilitza quan el treballador en segon pla no pot enviar ping ICMP. Separats per comes, fins a {$max} ports.',
+    'DiscoveryErrorTcpUnreliable' => 'L\'escaneig s\'ha aturat perquè la xarxa respon a connexions TCP per adreces que no poden ser hosts reals (un proxy o un tallafocs s\'interposa), de manera que totes les adreces es veurien actives. Demana a l\'administrador que permeti que el servidor enviï ping ICMP.',
+    'DiscoveryDefaultTcpPortsResetLog' => 'L\'usuari "{$user}" ha restablert els ports TCP de descobriment d\'actius als valors predeterminats.',
+    'DiscoveryNotConfigured' => 'El descobriment no està configurat. Demaneu a l\'administrador del sistema que defineixi els intervals permesos a config.php.',
+    'DiscoveryRangeNotAllowed' => 'Aquest interval està fora dels intervals que el descobriment pot escanejar.',
+    'DiscoveryAllowedRangesList' => 'Intervals permesos: {$ranges}',
+    // Asset record modal
+    'AssetNotAvailable' => 'Aquest actiu no està disponible. Potser s\'ha suprimit o potser no hi teniu accés.',
+    'AssetCustomFieldNotInTemplate' => 'Un o més camps personalitzats no pertanyen a la plantilla d\'aquest recurs. No s\'ha canviat res.',
+    'AssetMappedControlsInvalid' => 'No s\'han pogut desar els controls assignats. Cada fila necessita una maduresa i com a mínim un control existent. No s\'ha canviat res.',
+    'AssetMappedControlsTooMany' => 'Un actiu es pot assignar a un màxim de controls {$max} . No s\'ha canviat res.',
+    'AddControlsAtAnotherMaturity' => 'Afegir controls a una altra maduresa',
+    'ChoosingControlsNeedsGovernancePermission' => 'L\'elecció de controls requereix el permís de Governança.',
+    'NControls' => 'control(s) {n}',
+    'SavingKeepsTheCurrentControlMappings' => 'En desar, es mantenen les assignacions de control actuals.',
+    'LoadingControls' => 'Controls de càrrega…',
+    'ControlListCouldNotBeLoaded' => 'No s\'ha pogut carregar la llista de controls, per tant, els controls assignats no es poden canviar ara mateix.',
+    'RemoveControlsAtMaturity' => 'Elimina els controls a la maduresa {maturity}',
+    'ControlIdUnavailable' => '#{id} (no disponible)',
+    'AssetRecordEdit' => 'Edita l\'actiu',
+    'AssetRecordIdN' => 'Actiu #{$id}',
+    'AssetRecordCopyLink' => 'Copia l\'enllaç a aquest recurs',
+    'AssetRecordLinkCopied' => 'Enllaç copiat.',
+    'AssetRecordLinkCopyFailed' => 'No s\'ha pogut copiar l\'enllaç. Copieu-lo des de la barra d\'adreces.',
+    'AssetRecordMarkUnverified' => 'Marca com a no verificat',
+    'AssetRecordViewAuditTrail' => 'Veure la pista d\'auditoria',
+    'AssetRecordAuditTrailTitle' => 'Pista d\'auditoria',
+    'AssetRecordAuditTrailEmpty' => 'No s\'ha registrat cap activitat per a aquest actiu durant aquest període.',
+    'AssetRecordAuditTrailFailed' => 'No s\'ha pogut carregar la pista d\'auditoria.',
+    'AssetRecordBackToAsset' => 'Torna a l\'actiu',
+    'AssetRecordSave' => 'Desa l\'actiu',
+    'AssetRecordProvenanceVerified' => 'Verificat · afegit {$date}',
+    'AssetRecordProvenanceUnverified' => 'Sense verificar: encara no confirmat per algú que pugui verificar els actius · afegit {$date}',
+    'AssetRecordUnsavedHint' => 'En tancar amb canvis no desats, primer us demanem que confirmeu.',
+    'AssetRecordDiscardQuestion' => 'Voleu descartar els canvis no desats?',
+    'AssetRecordKeepEditing' => 'Continua editant',
+    'AssetRecordDiscardChanges' => 'Descarta els canvis',
+    'AssetRecordVerificationCard' => 'Verificació',
+    'AssetRecordVerificationTag' => 'Necessita el permís de verificació d\'actius',
+    'AssetRecordVerifiedHint' => 'Algú responsable ha revisat aquest actiu. Si es canvia el nom o l\'adreça IP sense el permís de verificació d\'actius, es retorna a l\'estat no verificat.',
+    'AssetRecordLoadFailed' => 'No s\'ha pogut carregar l\'actiu. Torna-ho a provar.',
+    'CustomizationCardsLayoutApiScopeErrorWithAsset' => 'L\'API de disseny de targetes de personalització només està disponible per a fgroup=risk (tab_index 1, 2 o 3) i fgroup=asset (tab_index 1).',
+    'DiscoveryErrorRequesterNotPermitted' => 'L\'usuari que va iniciar aquesta execució ja no té permís per executar la descoberta d\'actius.',
+    'AssetRecordEditField' => 'Edita {$field}',
+    // Asset Scoring (FIPS 199 categorization + weighted score)
+    'Confidentiality' => 'Confidencialitat',
+    'Integrity' => 'Integritat',
+    'Availability' => 'Disponibilitat',
+    'AssetScoringLevelLow' => 'Baix',
+    'AssetScoringLevelModerate' => 'Moderat',
+    'AssetScoringLevelHigh' => 'Alt',
+    'AssetScoringValueInvalid' => 'La confidencialitat, la integritat i la disponibilitat accepten nivells de baixa, moderada o alta (la confidencialitat també accepta not_applicable).',
+    'AssetScoringChangedLog' => 'L\'actiu "{$name}" {$objective} ha estat canviat de {$from} a {$to} per l\'usuari "{$user}".',
+    'FIPSCategorization' => 'Categorització FIPS',
+    'WeightedScore' => 'Puntuació ponderada',
+    'WeightedBand' => 'Banda ponderada',
+    'AllCategorizations' => 'Totes les categoritzacions',
+    'AllBands' => 'Totes les bandes',
+    'AssetFilterByCategorization' => 'Filtra per categorització FIPS {$name}',
+    'AssetFilteringByCategorization' => 'Filtratge per categorització FIPS {$name}',
+    'AssetFilterByBand' => 'Filtra per banda ponderada {$name}',
+    'AssetFilteringByBand' => 'Filtratge per banda ponderada {$name}',
+    'AssetScoring' => 'Puntuació d\'actius',
+    'AssetScoringSettingsHint' => 'Cada actiu té una qualificació de Baixa, Moderada o Alta pel que fa a la confidencialitat, la integritat i la disponibilitat, i la confidencialitat pot ser No aplicable, cosa que l\'exclou dels dos resultats. La seva categorització FIPS és la més alta de les tres qualificacions. La seva puntuació ponderada és la mitjana ponderada dels tres valors de nivell, i els llindars de banda converteixen aquesta puntuació en una banda Baixa, Moderada o Alta. Si es canvien aquests paràmetres, es tornen a puntuar tots els actius immediatament.',
+    'Weights' => 'Pesos',
+    'AssetScoringWeightsHint' => 'Quant compta cada objectiu en la puntuació ponderada: de 0 a 100, amb un màxim de dos decimals. Un pes de 0 deixa fora aquest objectiu. La integritat i la disponibilitat no poden ser 0 alhora, perquè sempre s\'omet una confidencialitat No aplicable.',
+    'LevelValues' => 'Valors de nivell',
+    'AssetScoringLevelValuesHint' => 'El número que cada qualificació contribueix a la puntuació ponderada: per sobre de 0 i fins a 100, amb un màxim de dos decimals, i Baix per sota de Moderat per sota d\'Alt. Els valors per defecte són Baix 1, Moderat 2 i Alt 3.',
+    'BandThresholds' => 'Llindars de banda',
+    'AssetScoringBandThresholdsHint' => 'Una puntuació ponderada igual o superior a un llindar es troba en aquesta banda, i una puntuació inferior al llindar Moderat és Baixa. Moderada ha de començar per sobre del valor Baix, i Alta ha de començar per sobre de Moderat i no superior al valor Alt.',
+    'ModerateStartsAt' => 'Començament moderat a les',
+    'HighStartsAt' => 'Comença a les',
+    'DefaultScoringForNewAssets' => 'Puntuació predeterminada per a nous actius',
+    'AssetScoringDefaultsHint' => 'Preselecciona aquestes qualificacions quan algú afegeix un actiu al formulari d\'actius. Els actius creats per descobriment, importació o l\'API no reben puntuació tret que proporcionin les seves pròpies qualificacions. Deixeu-les totes tres sense definir per desactivar-ho.',
+    'AssetScoringWeightsInvalid' => 'Els pesos de puntuació dels actius han de ser números del 0 al 100 amb un màxim de dos decimals, i la integritat i la disponibilitat no poden ser 0 alhora.',
+    'AssetScoringValuesInvalid' => 'Els valors del nivell de puntuació dels actius han de ser números per sobre de 0 i fins a 100 amb un màxim de dos decimals, amb Baix per sota de Moderat per sota d\'Alt.',
+    'AssetScoringThresholdsInvalid' => 'Els llindars de la banda de puntuació d\'actius han de tenir com a màxim dos decimals, amb un valor moderat que comença per sobre del valor baix, un valor alt que comença per sobre del valor moderat i un valor alt que no comença per sobre del valor alt.',
+    'AssetScoringDefaultsInvalid' => 'La puntuació per defecte per als nous actius ha de ser un nivell que ofereixi cada objectiu.',
+    'AssetScoringSettingsNotSaved' => 'No s\'ha pogut desar la configuració de la puntuació dels actius. No s\'ha canviat res.',
+    'AssetScoringSettingsChangedLog' => 'L\'usuari "{$user}" ha canviat la configuració de la puntuació dels actius.',
+    'AssetScoringNotSet' => 'No definit',
+    'NotScored' => 'Sense puntuar',
+    'AssetScoringNotScoredHint' => 'Respon els tres objectius per puntuar aquest actiu.',
+    'ImportAssetScoringValueIgnored' => 'El valor {$objective} "{$value}" per a l\'actiu "{$asset_name}" no és una qualificació vàlida i s\'ha ignorat.',
+    'AssetScoringSecurityObjectives' => 'Objectius de seguretat',
+    'AssetScoringConfidentialityHelp' => 'Quin és l\'impacte potencial si hi ha una divulgació no autoritzada de la informació sobre aquest actiu?',
+    'AssetScoringIntegrityHelp' => 'Quin és l\'impacte potencial si hi ha una modificació o destrucció no autoritzada de la informació d\'aquest actiu?',
+    'AssetScoringAvailabilityHelp' => 'Quin és l\'impacte potencial si hi ha una interrupció de l\'accés o de l\'ús d\'aquest actiu?',
+    'AssetScoringHelpHigh' => 'Efecte advers greu o catastròfic',
+    'AssetScoringHelpModerate' => 'Efecte advers greu',
+    'AssetScoringHelpLow' => 'Efecte advers limitat o nul',
+    'AssetScoringHelpNotApplicable' => 'La confidencialitat no és un problema per a aquest actiu (per exemple, informació pública)',
+    'AssetScoringHelpLabel' => '{$objective} guia de qualificació',
+    'AssetScoringMeterValue' => 'banda {$score}, banda {$band}',
+    'AssetScoringNoWeightedScore' => 'Sense puntuació ponderada',
+    'AssetScoringNoWeightedScoreNote' => 'Sense puntuació ponderada: cada objectiu que compta té un pes de 0.',
+    'AssetScoringUpgradePending' => 'La puntuació d\'actius no es pot desar fins que no s\'hagi executat l\'actualització de la base de dades de SimpleRisk. No s\'ha canviat res.',
+    'AssetScoringResultHelpLabel' => 'explicació {$result}',
+    'AssetScoringScoreHelp' => 'La puntuació ponderada combina les tres puntuacions en un sol número de {$low} a {$high}. Cada puntuació esdevé el seu valor definit i cadascuna es multiplica pel pes del seu objectiu. Els resultats se sumen i es divideixen pel total dels pesos. S\'omet la casella de confidencialitat No aplicable, juntament amb el seu pes. Els valors i pesos definits es configuren a Preferències. Els tres objectius s\'han de valorar abans que es mostri una puntuació.',
+    'AssetScoringCategorizationHelp' => 'La categorització de seguretat FIPS 199 és el punt àlgid: la qualificació més alta entre els objectius que s\'apliquen. Una sola qualificació Alta fa que l\'actiu sigui Alt, independentment de les altres. No aplicable s\'ignora.',
+    'AssetScoringBandHelp' => 'La banda situa la puntuació ponderada en una escala Baixa, Moderada o Alta. Una puntuació per sota de {$moderate} és Baixa, des de {$moderate} fins a {$highAt} és Moderada i {$highAt} o més és Alta. Els llindars es configuren a Preferències.',
+    // Manage assets: Confidentiality / Integrity / Availability rating filters
+    'AllConfidentialityRatings' => 'Totes les qualificacions de confidencialitat',
+    'AllIntegrityRatings' => 'Totes les qualificacions d\'integritat',
+    'AllAvailabilityRatings' => 'Totes les qualificacions de disponibilitat',
+    'AssetFilterByConfidentiality' => 'Filtra per confidencialitat {$name}',
+    'AssetFilteringByConfidentiality' => 'Filtratge per confidencialitat {$name}',
+    'AssetFilterByIntegrity' => 'Filtra per integritat {$name}',
+    'AssetFilteringByIntegrity' => 'Filtratge per integritat {$name}',
+    'AssetFilterByAvailability' => 'Filtra per disponibilitat {$name}',
+    'AssetFilteringByAvailability' => 'Filtratge per disponibilitat {$name}',
+    'HighestFIPSCategorization' => 'Categorització FIPS més alta',
+    'HighestWeightedScore' => 'Puntuació ponderada més alta',
+    'HighestWeightedBand' => 'Banda amb més pes',
+    'AssetGroupFields' => 'Camps del grup d\'actius',
+    'NoAssetGroupsMatchFilters' => 'No hi ha cap grup d\'actius que coincideixi amb els filtres',
+    'AssetGroupFilterByHighestCategorization' => 'Filtra per la categorització FIPS més alta {$name}',
+    'AssetGroupFilteringByHighestCategorization' => 'Filtratge per la categorització FIPS més alta {$name}',
+    'AssetGroupFilterByHighestBand' => 'Filtra per banda amb el pes més alt {$name}',
+    'AssetGroupFilteringByHighestBand' => 'Filtratge per banda amb el pes més alt {$name}',
+    'AssetGroupBulkSelectionRequired' => 'Seleccioneu els grups d\'actius per ID o per filtre.',
+    'AssetGroupBulkIdsRequired' => 'Seleccioneu com a mínim un grup d\'actius.',
+    'AssetGroupBulkIdsInvalid' => 'Els identificadors de grup d\'actius han de ser nombres enters.',
+    'AssetGroupBulkFilterAllAlone' => 'La selecció de tots els grups d\'actius no es pot combinar amb altres filtres.',
+    'AssetGroupBulkFilterEmpty' => 'Trieu un filtre o seleccioneu tots els grups d\'actius abans de suprimir-los.',
+    'AssetGroupBulkExpectedCountInvalid' => 'El nombre previst de grups d\'actius ha de ser un nombre enter.',
+    'AssetGroupBulkExpectedCountRequired' => 'Per suprimir grups d\'actius per filtre, cal el nombre de grups que es preveu suprimir.',
+    'AssetGroupBulkNoMatch' => 'No hi ha cap grup d\'actius que coincideixi amb la teva selecció.',
+    'AssetGroupBulkCountMismatch' => 'Els grups d\'actius coincidents han canviat de {$expected} a {$actual} des que els heu seleccionat. Reviseu la llista i torneu-ho a provar.',
+    'AssetGroupBulkTooManyToDelete' => 'Pots suprimir com a màxim {$max} grups d\'actius alhora. Restringeix la selecció i torna-ho a provar.',
+    'AssetGroupBulkSelectAll' => 'Selecciona tots els grups d\'actius {$count}',
+    'AssetGroupBulkAllSelected' => 'Tots els {$count} grups d\'actius coincidents seleccionats',
+    'AssetGroupBulkDeleteConfirmTitle' => 'Voleu suprimir els grups d\'actius {$count}?',
+    'AssetGroupBulkDeleteKeepsAssets' => 'Els recursos d\'aquests grups no s\'eliminen. Només s\'eliminen els grups.',
+    'DeleteAssetGroups' => 'Suprimeix grups',
+    'AssetGroupBulkDeletedSummary' => '{$ok} grups suprimits, {$failed} omesos',
+    'ChoosingRisksNeedsRiskManagementPermission' => 'L\'elecció de riscos associats requereix el permís de Gestió de Riscos.',
+    'NAssociatedRisks' => '{n} risc(s) associat(s)',
+    'SavingKeepsTheCurrentRiskAssociations' => 'Estalviar manté els riscos actuals associats.',
     '' => '',
 );
 ?>

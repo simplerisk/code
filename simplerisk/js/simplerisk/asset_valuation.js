@@ -2,163 +2,115 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-/******************************
- * FUNCTION: UPDATE MIN VALUE *
- ******************************/
-function updateMinValue(id)
-{
-	// Check for negative values
-	//checkNegatives();
+/*
+ * Manual Asset Valuation table (Settings > Preferences > Asset Management):
+ * keeps neighbouring levels in step while an administrator edits a boundary.
+ *
+ *  - Changing a level's minimum moves the level below's maximum to one less,
+ *    so the ranges stay contiguous; a minimum raised above its own maximum
+ *    raises that maximum too. The first level's minimum never goes below 0.
+ *  - Changing a level's maximum moves the level above's minimum to one more;
+ *    a maximum lowered below its own minimum lowers that minimum too.
+ *  - Each move is followed through: a level pushed out of range by its
+ *    neighbour adjusts its other boundary, and so on, so no two levels ever
+ *    overlap after an edit.
+ *
+ * SR-86: the previous version compared the new value with an `oldvalue` that
+ * only an onFocus handler set, so a change that arrived without a focus event
+ * (the spinner arrows in some browsers, a script, autofill) compared against
+ * `undefined` and nothing moved; lowering a maximum also threw on an undefined
+ * `prev_id`. Nothing here needs the previous value: each rule follows from the
+ * new value and the fields around it. The inputs are found by the
+ * data-valuation-bound / data-valuation-level attributes that
+ * display_asset_valuation_table() (includes/assets.php) renders.
+ */
+(function () {
+    'use strict';
 
-	// Get the old and new values of the field that changed
-	var min_name = "min_value_" + id;
-	var old_value = this.document.getElementsByName(min_name)[0].oldvalue;
-	var new_value = this.document.getElementsByName(min_name)[0].value;
+    var SELECTOR = 'input[data-valuation-bound][data-valuation-level]';
 
-	// If the new value is less than the old value
-	if (parseInt(new_value) < parseInt(old_value))
-	{
-		// If the id is not 1
-		if (id != 1)
-		{
-			// We need to decrease the maximum value of the id below it
-			var prev_id = id - 1;
-			var max_name = "max_value_" + prev_id;
-			var value = new_value - 1;
-			this.document.getElementsByName(max_name)[0].value = value;
+    function boundaryInput(bound, level) {
+        return document.querySelector('input[data-valuation-bound="' + bound + '"][data-valuation-level="' + level + '"]');
+    }
 
-			// Run the update function on the maximum value of the id below
-			//updateMaxValue(prev_id);
-		}
-		// If the id is 1
-		else
-		{
-			// If the new value is negative
-			if (parseInt(new_value) < 0)
-			{
-				// Set the minimum value to 0
-				this.document.getElementsByName(min_name)[0].value = 0;
-			}
-		}
-	}
-	
-        // If the new value is more than the old value
-        if (parseInt(new_value) > parseInt(old_value))
-        {
-		// If the id is not 1
-		if (id != 1)
-		{
-			// We need to increase the maximum value of the id below it
-			var prev_id = id - 1;
-			var max_name = "max_value_" + prev_id;
-			var value = new_value - 1;
-			this.document.getElementsByName(max_name)[0].value = value;
+    function numberOf(input) {
+        if (!input || input.value === '') {
+            return null;
+        }
+        var n = parseInt(input.value, 10);
+        return isNaN(n) ? null : n;
+    }
 
-			// Run the update function on the maximum value of the id below
-			//updateMaxValue(prev_id);
-		}
+    // Returns whether the field actually changed.
+    function setValue(input, value) {
+        if (input && String(input.value) !== String(value)) {
+            input.value = value;
+            return true;
+        }
+        return false;
+    }
 
-		// Get the max value at the same level
-		var max_name = "max_value_" + id;
-		var max_value = this.document.getElementsByName(max_name)[0].value;
+    // Moving one boundary can push the next level out of range, and that
+    // level's other boundary then has to move too, and so on down the table
+    // (review S5: the first version stopped after one hop and left levels
+    // overlapping). Setting a value from script fires no change event, so each
+    // handler calls the other side's handler itself whenever it changed a
+    // field. Every step only moves a boundary toward consistency, so the walk
+    // ends; `depth` is a safety net against a table this code does not expect.
+    var MAX_DEPTH = 100;
 
-		// If the max value is less than the new value
-		if (max_value < new_value)
-		{
-			// Set the max value to the new value
-			this.document.getElementsByName(max_name)[0].value = new_value;
-		}
-	}
-}
-
-/******************************
- * FUNCTION: UPDATE MAX VALUE *
- ******************************/
-function updateMaxValue(id)
-{
-        // Check for negative values
-        //checkNegatives();
-
-        // Get the old and new values of the field that changed
-        var max_name = "max_value_" + id;
-        var old_value = this.document.getElementsByName(max_name)[0].oldvalue;
-        var new_value = this.document.getElementsByName(max_name)[0].value;
-
-        // If the new value is greater than the old value
-        if (parseInt(new_value) > parseInt(old_value))
-        {
-                // If the id is not 10
-                if (id != 10)
-                {
-                        // We need to increase the minimum value of the id above it
-                        var next_id = parseInt(id) + 1;
-                        var min_name = "min_value_" + next_id;
-                        var value = parseInt(new_value) + 1;
-                        this.document.getElementsByName(min_name)[0].value = value;
-
-                        // Run the update function on the minimum value of the id above
-                        //updateMinValue(next_id);
-                }
-                // If the id is 10 do nothing
+    function onMinimumChanged(input, level, depth) {
+        var value = numberOf(input);
+        if (value === null || depth > MAX_DEPTH) {
+            return;
+        }
+        var below = boundaryInput('max', level - 1);
+        if (value < 0 && !below) {
+            // The lowest level starts at 0.
+            value = 0;
+            setValue(input, value);
+        }
+        if (setValue(below, value - 1)) {
+            onMaximumChanged(below, level - 1, depth + 1);
         }
 
-	// If the new value is less than the old value
-	if (parseInt(new_value) < parseInt(old_value))
-	{
-                // If the id is not 10
-                if (id != 10)
-                {
-                        // We need to decrease the minimum value of the id above it
-                        var next_id = parseInt(id) + 1;
-                        var min_name = "min_value_" + prev_id;
-                        var value = parseInt(new_value) + 1;
-                        this.document.getElementsByName(min_name)[0].value = value;
+        var ownMax = boundaryInput('max', level);
+        var max = numberOf(ownMax);
+        if (max !== null && max < value && setValue(ownMax, value)) {
+            onMaximumChanged(ownMax, level, depth + 1);
+        }
+    }
 
-			// Run the update function on the minimum value of the id above
-			//updateMinValue(next_id);
-                }
+    function onMaximumChanged(input, level, depth) {
+        var value = numberOf(input);
+        if (value === null || depth > MAX_DEPTH) {
+            return;
+        }
+        var above = boundaryInput('min', level + 1);
+        if (setValue(above, value + 1)) {
+            onMinimumChanged(above, level + 1, depth + 1);
+        }
 
-                // Get the min value at the same level
-                var min_name = "min_value_" + id;
-                var min_value = this.document.getElementsByName(min_name)[0].value;
+        var ownMin = boundaryInput('min', level);
+        var min = numberOf(ownMin);
+        if (min !== null && min > value && setValue(ownMin, value)) {
+            onMinimumChanged(ownMin, level, depth + 1);
+        }
+    }
 
-                // If the min value is greater than the new value
-                if (parseInt(min_value) > parseInt(new_value))
-                {
-                        // Set the min value to the new value
-                        this.document.getElementsByName(min_name)[0].value = new_value;
-                }
-	}
-}
-
-/*****************************
- * FUNCTION: CHECK NEGATIVES *
- *****************************/
-function checkNegatives()
-{
-	// For each level
-	for (id = 1; id <= 10; id++)
-	{
-		// Get the min_value
-	        var min_name = "min_value_" + id;
-        	var min_value = this.document.getElementsByName(min_name)[0].value;
-		
-		// If the min_value is negative
-		if (parseInt(min_value) < 0)
-		{
-			// Set it back to its original value
-			this.document.getElementsByName(min_name)[0].value = this.document.getElementsByName(min_name)[0].oldvalue;
-		}
-
-		// Get the max_value
-	        var max_name = "max_value_" + id;
-        	var max_value = this.document.getElementsByName(max_name)[0].value;
-
-		// If the max_value is negative
-		if (parseInt(max_value) < 0)
-		{
-			// Set it back to its original value
-			this.document.getElementsByName(max_name)[0].value = this.document.getElementsByName(max_name)[0].oldvalue;
-		}
-	}
-}
+    document.addEventListener('change', function (event) {
+        var input = event.target;
+        if (!input || typeof input.matches !== 'function' || !input.matches(SELECTOR)) {
+            return;
+        }
+        var level = parseInt(input.getAttribute('data-valuation-level'), 10);
+        if (isNaN(level)) {
+            return;
+        }
+        if (input.getAttribute('data-valuation-bound') === 'min') {
+            onMinimumChanged(input, level, 0);
+        } else {
+            onMaximumChanged(input, level, 0);
+        }
+    });
+})();
